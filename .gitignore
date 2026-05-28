@@ -1,0 +1,5 @@
+Manifest.toml
+*.cov
+/docs/build
+/benchmarks/*.json
+.DS_Store
