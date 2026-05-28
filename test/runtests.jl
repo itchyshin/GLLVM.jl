@@ -8,3 +8,4 @@ end
 include("test_likelihood.jl")
 include("test_packing.jl")
 include("test_fit.jl")
+include("test_fixed_effects.jl")

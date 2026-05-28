@@ -31,18 +31,30 @@ struct GllvmFit
 end
 
 """
-    fit_gaussian_gllvm(y; K, σ_eps_init=1.0, λ_init=nothing,
-                        x_tol=1e-8, f_tol=1e-10, g_tol=1e-6,
-                        iterations=500) -> GllvmFit
+    fit_gaussian_gllvm(y; K, X=nothing, σ_eps_init=1.0, λ_init=nothing,
+                        β_init=nothing, x_tol=1e-8, f_tol=1e-10,
+                        g_tol=1e-6, iterations=500) -> GllvmFit
 
 L-BFGS minimisation of the closed-form Gaussian marginal NLL via
 ForwardDiff gradients. Returns a `GllvmFit` with parameter estimates,
 convergence diagnostics, and wall-clock fit time.
+
+Optional fixed effects:
+- `X::AbstractArray{<:Real, 3}` of shape `(p, n_sites, q)` — per-trait,
+  per-site design array. When supplied, the model becomes
+  `y[t, s] = (Λ η_s)[t] + (X[t, s, :]' β) + ε[t, s]`.
+- `β_init::AbstractVector` (length `q`) — initial coefficients,
+  defaults to `zeros(q)`.
+
+`X = nothing` preserves the J1 behaviour exactly. The resulting fit's
+`pars.β` field is an empty `Float64[]` in that case.
 """
 function fit_gaussian_gllvm(y::AbstractMatrix;
                             K::Integer,
+                            X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
                             σ_eps_init = 1.0,
                             λ_init = nothing,
+                            β_init = nothing,
                             x_tol = 1e-8,
                             f_tol = 1e-10,
                             g_tol = 1e-6,
@@ -51,12 +63,33 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
     @assert K ≥ 1
     @assert n ≥ p "Need n_sites ≥ p for a well-posed Gaussian GLLVM"
 
-    # Build initial parameter vector
+    # Validate X dims if present
+    q = 0
+    if X !== nothing
+        size(X, 1) == p ||
+            throw(ArgumentError("X first dim ($(size(X,1))) must equal p ($p)"))
+        size(X, 2) == n ||
+            throw(ArgumentError("X second dim ($(size(X,2))) must equal n_sites ($n)"))
+        q = size(X, 3)
+    end
+
+    # Build initial parameter vector: [β; log σ_eps; θ_rr]
+    β₀ = if q > 0
+        if isnothing(β_init)
+            zeros(Float64, q)
+        else
+            length(β_init) == q ||
+                throw(ArgumentError("β_init length ($(length(β_init))) must equal q ($q)"))
+            collect(Float64, β_init)
+        end
+    else
+        Float64[]
+    end
     θ₀ = isnothing(λ_init) ? init_theta_rr(p, K) : pack_lambda(λ_init)
-    params₀ = [log(σ_eps_init); θ₀]
+    params₀ = vcat(β₀, log(σ_eps_init), θ₀)
 
     # Objective
-    nll = params -> gaussian_nll_packed(params, y, p, K)
+    nll = params -> gaussian_nll_packed(params, y, p, K; X = X, q = q)
 
     # Optimise with ForwardDiff gradients (autodiff = :forward)
     opts = Optim.Options(
@@ -72,13 +105,14 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
     t1 = time()
 
     params_hat = Optim.minimizer(res)
-    σ_eps_hat  = exp(params_hat[1])
-    Λ_hat      = unpack_lambda(@view(params_hat[2:end]), p, K)
+    β_hat      = q > 0 ? collect(params_hat[1:q]) : Float64[]
+    σ_eps_hat  = exp(params_hat[q + 1])
+    Λ_hat      = unpack_lambda(@view(params_hat[(q + 2):end]), p, K)
     nll_hat    = Optim.minimum(res)
 
     return GllvmFit(
         GllvmModel(p, K),
-        (σ_eps = σ_eps_hat, Λ = Λ_hat, θ_packed = collect(params_hat)),
+        (σ_eps = σ_eps_hat, Λ = Λ_hat, β = β_hat, θ_packed = collect(params_hat)),
         -nll_hat,
         Optim.iterations(res),
         Optim.converged(res),
