@@ -18,10 +18,32 @@
 #   Σ⁻¹ = D⁻¹ - D⁻¹ Λ_B (I + Λ_B' D⁻¹ Λ_B)⁻¹ Λ_B' D⁻¹
 #   logdet(Σ) = sum(log.(d_total)) + logdet(I + Λ_B' D⁻¹ Λ_B)
 # When D = σ²_eps I (the J1 case) this collapses to the J1 formula.
+#
+# Phylogenetic extension (J3):
+# Two extra contributions, both *species-level* (shared across sites):
+#   phylo_latent: y[t, s] += Σ_k Λ_phy[t, k] η_phy[k, t]
+#       where η_phy[k, :] ~ MVN(0, Σ_phy) independently per axis k.
+#   phylo_unique: y[t, s] += s_phy[t]
+#       where s_phy[t] = σ_phy[t] * φ[t], φ ~ MVN(0, Σ_phy) once.
+# Letting Λ_phy_aug = hcat(Λ_phy, σ_phy) (p × (K_phy + 1)), the marginal
+# covariance of y_full = vec(y) (column-major) becomes:
+#   Σ_y_full = I_n ⊗ A + J_n ⊗ B
+# where A = Λ_B Λ_B' + diag(d_total) (the J2 site covariance) and
+#       B = (Λ_phy_aug Λ_phy_aug') .* Σ_phy
+# (Hadamard product with the supplied species covariance Σ_phy, p × p).
+# J_n = 1_n 1_n' is rank 1: eigenvalue n with eigenvector 1_n/√n, and
+# (n − 1) zero eigenvalues. In a basis with first row 1_n/√n the (p·n
+# × p·n) covariance is block-diagonal: diag(A + n·B, A, …, A). Hence:
+#   logdet(Σ_y_full) = logdet(A + n·B) + (n − 1)·logdet(A)
+#   y' Σ⁻¹ y = n · m' (A + n·B)⁻¹ m + tr(Y_c' A⁻¹ Y_c)
+# where m = mean(y, dims=2) and Y_c = y .- m. Two p×p Cholesky factor-
+# isations suffice regardless of n.
 
 """
     gaussian_marginal_loglik(y, Λ_B, σ_eps; X=nothing, β=nothing,
-                              Λ_W=nothing, σ²_B=nothing, σ²_W=nothing) -> Real
+                              Λ_W=nothing, σ²_B=nothing, σ²_W=nothing,
+                              Λ_phy=nothing, σ_phy=nothing,
+                              Σ_phy=nothing) -> Real
 
 Marginal log-likelihood of `y` (size p × n_sites) under the Gaussian
 GLLVM with unit-tier loadings `Λ_B` (p × K_B), residual SD `σ_eps`,
@@ -30,21 +52,33 @@ effects (`σ²_B`, `σ²_W`, length p, positive variances).
 
 The per-trait diagonal contribution is
     d_total[t] = (Λ_W Λ_W')[t,t] + σ²_B[t] + σ²_W[t] + σ²_eps.
-The site covariance is `Σ_y = Λ_B Λ_B' + diag(d_total)`, inverted via
-Woodbury (cost O(p K_B² + K_B³) per site).
+Without phylogeny, the site covariance is `A = Λ_B Λ_B' + diag(d_total)`,
+inverted via Woodbury (cost O(p K_B² + K_B³) per site).
 
 Fixed effects: pass both `X::Array{<:Real, 3}` of shape (p, n_sites, q)
 and `β::Vector` of length q, or neither.
 
 `Λ_W = nothing`, `σ²_B = nothing`, `σ²_W = nothing` together reproduce
 the J1 behaviour exactly (D = σ²_eps I).
+
+Phylogenetic extension (`Σ_phy::AbstractMatrix`, p × p, supplied by
+caller — typically a species-trait covariance derived from a tree):
+  - `Λ_phy::AbstractMatrix` (p × K_phy): phylo-latent loadings.
+  - `σ_phy::AbstractVector` (length p): per-trait phylo-unique SDs.
+With Λ_phy_aug = hcat(Λ_phy, σ_phy) the marginal covariance of vec(y)
+is `I_n ⊗ A + J_n ⊗ B` where `B = (Λ_phy_aug Λ_phy_aug') .* Σ_phy`.
+The rotation trick (J_n has rank 1) reduces this to two p×p Cholesky
+factorisations regardless of n.
 """
 function gaussian_marginal_loglik(y::AbstractMatrix, Λ_B::AbstractMatrix, σ_eps::Real;
                                   X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
                                   β::Union{Nothing, AbstractVector} = nothing,
                                   Λ_W::Union{Nothing, AbstractMatrix} = nothing,
                                   σ²_B::Union{Nothing, AbstractVector} = nothing,
-                                  σ²_W::Union{Nothing, AbstractVector} = nothing)
+                                  σ²_W::Union{Nothing, AbstractVector} = nothing,
+                                  Λ_phy::Union{Nothing, AbstractMatrix} = nothing,
+                                  σ_phy::Union{Nothing, AbstractVector} = nothing,
+                                  Σ_phy::Union{Nothing, AbstractMatrix} = nothing)
     p, n = size(y)
     K    = size(Λ_B, 2)
     σ²   = σ_eps^2
@@ -94,6 +128,31 @@ function gaussian_marginal_loglik(y::AbstractMatrix, Λ_B::AbstractMatrix, σ_ep
         Td = promote_type(Td, eltype(σ²_W))
     end
 
+    # Phylogenetic block: Σ_phy is the (p × p) species covariance supplied by
+    # the caller. Without Σ_phy the J3 branch is skipped and the code falls
+    # back to the J2 site-stacked Woodbury path.
+    has_phy = Σ_phy !== nothing && (Λ_phy !== nothing || σ_phy !== nothing)
+    if Σ_phy !== nothing
+        size(Σ_phy, 1) == p ||
+            throw(ArgumentError("Σ_phy first dim ($(size(Σ_phy, 1))) must equal p ($p)"))
+        size(Σ_phy, 2) == p ||
+            throw(ArgumentError("Σ_phy second dim ($(size(Σ_phy, 2))) must equal p ($p)"))
+        Td = promote_type(Td, eltype(Σ_phy))
+    end
+    if Λ_phy !== nothing
+        size(Λ_phy, 1) == p ||
+            throw(ArgumentError("Λ_phy first dim ($(size(Λ_phy, 1))) must equal p ($p)"))
+        Td = promote_type(Td, eltype(Λ_phy))
+    end
+    if σ_phy !== nothing
+        length(σ_phy) == p ||
+            throw(ArgumentError("σ_phy length ($(length(σ_phy))) must equal p ($p)"))
+        Td = promote_type(Td, eltype(σ_phy))
+    end
+    if has_phy && Σ_phy === nothing
+        throw(ArgumentError("Σ_phy must be supplied when Λ_phy or σ_phy is non-nothing"))
+    end
+
     d_total = Vector{Td}(undef, p)
     @inbounds for t in 1:p
         v = convert(Td, σ²)
@@ -112,37 +171,82 @@ function gaussian_marginal_loglik(y::AbstractMatrix, Λ_B::AbstractMatrix, σ_ep
         d_total[t] = v
     end
 
-    # Generalised Woodbury:
-    #   Σ_y = Λ_B Λ_B' + diag(d_total)
-    #   Σ_y⁻¹ r = D⁻¹ r - D⁻¹ Λ_B (I + Λ_B' D⁻¹ Λ_B)⁻¹ Λ_B' D⁻¹ r
-    #   logdet(Σ_y) = sum(log.(d_total)) + logdet(I + Λ_B' D⁻¹ Λ_B)
-    d_inv = Vector{Td}(undef, p)
-    @inbounds for t in 1:p
-        d_inv[t] = one(Td) / d_total[t]
+    if !has_phy
+        # ----- J2-A-WD path: site-stacked Woodbury, A = Λ_B Λ_B' + diag(d_total)
+        #   Σ_y = Λ_B Λ_B' + diag(d_total)
+        #   Σ_y⁻¹ r = D⁻¹ r - D⁻¹ Λ_B (I + Λ_B' D⁻¹ Λ_B)⁻¹ Λ_B' D⁻¹ r
+        #   logdet(Σ_y) = sum(log.(d_total)) + logdet(I + Λ_B' D⁻¹ Λ_B)
+        d_inv = Vector{Td}(undef, p)
+        @inbounds for t in 1:p
+            d_inv[t] = one(Td) / d_total[t]
+        end
+
+        # A_K = I_K + Λ_B' D⁻¹ Λ_B  (K × K, cheap)
+        DinvΛ = (d_inv) .* Λ_B                          # p × K, broadcast scales rows
+        A_K   = I + Λ_B' * DinvΛ                        # K × K
+        cA    = cholesky(Symmetric(A_K))
+
+        logdet_Σ = sum(log, d_total) + logdet(cA)
+
+        # quadratic form Σ_s r_s' Σ_y⁻¹ r_s
+        #   D⁻¹ r              -> Dinv_r  (p × n)
+        #   Λ_B' D⁻¹ r         -> ΛtDr    (K × n)
+        #   (I + Λ_B' D⁻¹ Λ_B)⁻¹ Λ_B' D⁻¹ r -> z (K × n) via cA \
+        #   D⁻¹ Λ_B z          -> DinvΛz (p × n)
+        #   Σ⁻¹ r = D⁻¹ r - D⁻¹ Λ_B z
+        Dinv_r = d_inv .* resid                          # p × n
+        ΛtDr   = Λ_B' * Dinv_r                           # K × n
+        z      = cA \ ΛtDr                               # K × n
+        DinvΛz = DinvΛ * z                               # p × n
+        Σinv_r = Dinv_r .- DinvΛz                        # p × n
+        quad   = sum(resid .* Σinv_r)
+
+        Tout = promote_type(T, Td)
+        return -convert(Tout, 0.5) * (n * p * log(convert(Tout, 2π)) + n * logdet_Σ + quad)
+    else
+        # ----- J3 phylogenetic path via rotation trick.
+        # Build A = Λ_B Λ_B' + diag(d_total) (full p × p) and
+        #       B = (Λ_phy_aug Λ_phy_aug') .* Σ_phy.
+        # Λ_phy_aug = hcat(Λ_phy, σ_phy) when both supplied, else whichever
+        # is non-nothing (as a p × K_aug matrix).
+        A = Λ_B * Λ_B'
+        @inbounds for t in 1:p
+            A[t, t] += d_total[t]
+        end
+
+        Λ_phy_aug = if Λ_phy !== nothing && σ_phy !== nothing
+            hcat(Λ_phy, σ_phy)
+        elseif Λ_phy !== nothing
+            Λ_phy
+        else
+            reshape(σ_phy, p, 1)
+        end
+        B = (Λ_phy_aug * Λ_phy_aug') .* Σ_phy
+
+        # Per-trait mean across sites and column-centered residual matrix.
+        # m::Vector keeps the linear-algebra below 1-D for AD compatibility.
+        m = vec(sum(resid, dims = 2)) ./ n             # length p
+        Y_centered = resid .- reshape(m, p, 1)         # p × n
+
+        # Symmetrise to defeat round-off-induced asymmetry before cholesky.
+        cA_sym  = cholesky(Symmetric((A + A') ./ 2))
+        AnB     = A .+ n .* B
+        cAnB    = cholesky(Symmetric((AnB + AnB') ./ 2))
+
+        # Quadratic form via the rotation trick:
+        #   y' Σ⁻¹ y = n · m' (A + n·B)⁻¹ m + tr(Y_c' A⁻¹ Y_c)
+        # Solve (A + n·B) x = m and A X = Y_c, then accumulate.
+        v_mean = cAnB \ m                              # length p
+        quad_mean = n * dot(m, v_mean)
+        V_c = cA_sym \ Y_centered                      # p × n
+        quad_centered = sum(Y_centered .* V_c)
+
+        logdet_Σ_full = logdet(cAnB) + (n - 1) * logdet(cA_sym)
+        quad = quad_mean + quad_centered
+
+        Tout = promote_type(T, Td)
+        return -convert(Tout, 0.5) * (n * p * log(convert(Tout, 2π)) + logdet_Σ_full + quad)
     end
-
-    # A_K = I_K + Λ_B' D⁻¹ Λ_B  (K × K, cheap)
-    DinvΛ = (d_inv) .* Λ_B                              # p × K, broadcast scales rows
-    A_K   = I + Λ_B' * DinvΛ                            # K × K
-    cA    = cholesky(Symmetric(A_K))
-
-    logdet_Σ = sum(log, d_total) + logdet(cA)
-
-    # quadratic form Σ_s r_s' Σ_y⁻¹ r_s
-    #   D⁻¹ r              -> Dinv_r  (p × n)
-    #   Λ_B' D⁻¹ r         -> ΛtDr    (K × n)
-    #   (I + Λ_B' D⁻¹ Λ_B)⁻¹ Λ_B' D⁻¹ r -> z (K × n) via cA \
-    #   D⁻¹ Λ_B z          -> DinvΛz (p × n)
-    #   Σ⁻¹ r = D⁻¹ r - D⁻¹ Λ_B z
-    Dinv_r = d_inv .* resid                              # p × n
-    ΛtDr   = Λ_B' * Dinv_r                               # K × n
-    z      = cA \ ΛtDr                                   # K × n
-    DinvΛz = DinvΛ * z                                   # p × n
-    Σinv_r = Dinv_r .- DinvΛz                            # p × n
-    quad   = sum(resid .* Σinv_r)
-
-    Tout = promote_type(T, Td)
-    -convert(Tout, 0.5) * (n * p * log(convert(Tout, 2π)) + n * logdet_Σ + quad)
 end
 
 # ---------------------------------------------------------------------------
@@ -178,19 +282,23 @@ function gaussian_nll_packed(params::AbstractVector, y::AbstractMatrix,
 end
 
 """
-    gaussian_nll_packed(params, y; spec) -> Real
+    gaussian_nll_packed(params, y; spec, X=nothing, Σ_phy=nothing) -> Real
 
-J2-A-WD signature carrying a `spec::NamedTuple` with fields
-`(q, p, K_B, K_W, has_diag)`. Parameter layout:
+J2-A-WD / J3 signature carrying a `spec::NamedTuple` with fields
+`(q, p, K_B, K_W, has_diag)` and optionally `K_phy` and
+`has_phy_unique` for the phylogenetic block. Parameter layout:
 
     [β               (spec.q entries)
      log_σ_eps       (1)
      log_σ_B         (p entries if spec.has_diag)
      log_σ_W         (p entries if spec.has_diag)
      θ_rr_B          (rr_theta_len(p, K_B) entries)
-     θ_rr_W          (rr_theta_len(p, K_W) entries if spec.K_W > 0)]
+     θ_rr_W          (rr_theta_len(p, K_W) entries if spec.K_W > 0)
+     log_σ_phy       (p entries if spec.has_phy_unique)
+     θ_rr_phy        (rr_theta_len(p, K_phy) entries if spec.K_phy > 0)]
 
-`X` may be passed as a keyword (required iff `spec.q > 0`).
+`X` may be passed as a keyword (required iff `spec.q > 0`). `Σ_phy`
+(p × p) is required iff `spec.K_phy > 0` or `spec.has_phy_unique`.
 
 For the J1 case `(K_W = 0, has_diag = false)`, the layout collapses to
 `[β; log_σ_eps; θ_rr_B]` and the result matches the legacy positional
@@ -198,23 +306,34 @@ method above.
 """
 function gaussian_nll_packed(params::AbstractVector, y::AbstractMatrix;
                              spec::NamedTuple,
-                             X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing)
+                             X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                             Σ_phy::Union{Nothing, AbstractMatrix} = nothing)
     q        = spec.q
     p        = spec.p
     K_B      = spec.K_B
     K_W      = spec.K_W
     has_diag = spec.has_diag
+    # Phy fields are optional on the spec so existing call sites keep working.
+    K_phy          = hasproperty(spec, :K_phy)          ? spec.K_phy          : 0
+    has_phy_unique = hasproperty(spec, :has_phy_unique) ? spec.has_phy_unique : false
 
     size(y, 1) == p ||
         throw(ArgumentError("y first dim ($(size(y, 1))) must equal spec.p ($p)"))
 
     rr_B = rr_theta_len(p, K_B)
     rr_W = K_W > 0 ? rr_theta_len(p, K_W) : 0
+    rr_phy = K_phy > 0 ? rr_theta_len(p, K_phy) : 0
     diag_count = has_diag ? 2 * p : 0
-    n_expected = q + 1 + diag_count + rr_B + rr_W
+    phy_diag_count = has_phy_unique ? p : 0
+    n_expected = q + 1 + diag_count + rr_B + rr_W + phy_diag_count + rr_phy
     length(params) == n_expected || throw(ArgumentError(
         "params length ($(length(params))) must equal $n_expected " *
-        "(q=$q + 1 + diag=$(diag_count) + rr_B=$rr_B + rr_W=$rr_W)"))
+        "(q=$q + 1 + diag=$(diag_count) + rr_B=$rr_B + rr_W=$rr_W " *
+        "+ phy_diag=$(phy_diag_count) + rr_phy=$rr_phy)"))
+
+    if (K_phy > 0 || has_phy_unique) && Σ_phy === nothing
+        throw(ArgumentError("Σ_phy is required when spec.K_phy > 0 or spec.has_phy_unique"))
+    end
 
     # Layout cursor
     cursor = 0
@@ -258,8 +377,25 @@ function gaussian_nll_packed(params::AbstractVector, y::AbstractMatrix;
         Λ_W = nothing
     end
 
+    if has_phy_unique
+        log_σ_phy = @view params[(cursor + 1):(cursor + p)]
+        cursor += p
+        σ_phy = exp.(log_σ_phy)
+    else
+        σ_phy = nothing
+    end
+
+    if K_phy > 0
+        θ_rr_phy = @view params[(cursor + 1):(cursor + rr_phy)]
+        cursor += rr_phy
+        Λ_phy    = unpack_lambda(θ_rr_phy, p, K_phy)
+    else
+        Λ_phy = nothing
+    end
+
     σ_eps = exp(log_σ_eps)
     -gaussian_marginal_loglik(y, Λ_B, σ_eps;
                               X = X, β = β,
-                              Λ_W = Λ_W, σ²_B = σ²_B, σ²_W = σ²_W)
+                              Λ_W = Λ_W, σ²_B = σ²_B, σ²_W = σ²_W,
+                              Λ_phy = Λ_phy, σ_phy = σ_phy, Σ_phy = Σ_phy)
 end
