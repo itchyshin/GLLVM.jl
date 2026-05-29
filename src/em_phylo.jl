@@ -651,6 +651,10 @@ Result of `em_fit_phylo`. Fields:
 * `blup_phy`   – ancestral-state BLUP of the phylo effect on the data scale
                  (μ_z, length p) from the LAST E-step.
 * `blup_phi`   – BLUP of the unit-scale phylo latent φ (μ_φ, length p).
+* `fallback_used` – `true` iff this fit was returned by the SQUAREM
+                 inferior-basin safety check after it fell back to plain EM
+                 from the warm start (see `em_fit_phylo_squarem`). Always
+                 `false` for `em_fit_phylo` and for an unguarded SQUAREM run.
 """
 struct EMPhyloFit
     Λ_B::Matrix{Float64}
@@ -662,6 +666,14 @@ struct EMPhyloFit
     loglik_trace::Vector{Float64}
     blup_phy::Vector{Float64}
     blup_phi::Vector{Float64}
+    fallback_used::Bool
+    # Default `fallback_used = false` so existing 9-argument positional
+    # constructions (in this file, em_squarem.jl, and the tests) are unchanged.
+    function EMPhyloFit(Λ_B, σ_eps, σ_phy, logLik, n_iter, converged,
+                        loglik_trace, blup_phy, blup_phi, fallback_used = false)
+        new(Λ_B, σ_eps, σ_phy, logLik, n_iter, converged,
+            loglik_trace, blup_phy, blup_phi, fallback_used)
+    end
 end
 
 """
