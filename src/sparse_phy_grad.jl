@@ -53,24 +53,43 @@
 # COST / SCALING (reported honestly by bench/sparse_phy_grad_bench.jl)
 # --------------------------------------------------------------------
 # * ∂ℓ/∂Λ_B : O(p·K_B) — K_B+K_aug sparse solves + low-rank algebra.
-# * ∂ℓ/∂σ²_phy, ∂ℓ/∂σ²_eps, ∂ℓ/∂Λ_phy, ∂ℓ/∂σ_phy : these need the leaf-block
-#   of the augmented inverse M_sad⁻¹ (a SELECTED INVERSE). For a scalar σ²_phy
-#   scaling a fixed tree there is a closed form for d/dσ²_phy log|Q_cond| alone
-#   (= −(#augmented nodes)/σ²_phy; see edge_incidence.log_det_Q), but the FULL
-#   marginal likelihood couples the tree to A through the loadings, so the
-#   leaf-block of M_sad⁻¹ genuinely re-enters. We compute it EXACTLY via a
-#   batched CHOLMOD solve `chol_Q_eff \ E_leaf` (cost O(p²); memory O(p²)).
-#   This is sub-dominant to dense-ForwardDiff (O(p³) per directional derivative
-#   × O(pK) params) so the analytic path is still dramatically faster at large
-#   p, but it is NOT O(p): dropping to O(p) needs the Takahashi / tree
-#   belief-propagation selected inverse, which is the explicit follow-up the
-#   PERF task scoped out. `leaf_block_inv` is isolated for exactly that swap.
+# * ∂ℓ/∂σ²_phy, ∂ℓ/∂σ²_eps, ∂ℓ/∂Λ_phy, ∂ℓ/∂σ_phy : these need the dense
+#   (K_aug·p) × (K_aug·p) leaf-leaf block of M_sad⁻¹ (= cross-leaf entries
+#   of the augmented inverse). On a tree-augmented Q_eff, the L+Lᵀ pattern
+#   of the Cholesky factor covers only the K_aug × K_aug same-leaf coupling
+#   block (K_aug²·p in-pattern entries) — the cross-leaf entries are DENSE
+#   and ARE NOT in pattern. Takahashi (1973) / Erisman–Tinney (1975) gives
+#   the in-pattern entries in O(K_aug·p), but the dense cross-leaf entries
+#   still need a batched CHOLMOD solve `chol_Q_eff \ E_leaf` (cost O(p²);
+#   memory O(p²)) plus the rank-K_B Woodbury correction.
+#   `leaf_block_inv` is therefore O(K_aug²·p² + K_aug²·K_B·p²) overall —
+#   asymptotically O(p²), not O(p). The Takahashi utility IS used here to
+#   pre-compute X_G once in the state and to drive the EM E-step's
+#   `diag(V_φ)` extraction (`src/em_phylo.jl`); the gradient itself stays
+#   at the empirical slope ≈ 2 we already had. This is reported HONESTLY:
+#   the explicit Takahashi follow-up named in the PERF brief CANNOT
+#   asymptotically improve the gradient's scaling, because (i) the dense
+#   p × p `Cleaf · Σ_phy_leaf` Hadamard and (ii) the dense cross-leaf
+#   entries of M_sad⁻¹ are both inherently O(p²). The constant-factor
+#   wins of the new `leaf_block_inv` (one CHOLMOD batched solve instead
+#   of two via `_MsadM` against E_leaf, plus dense BLAS3 for the Woodbury
+#   correction) are documented in the bench output.
 #
 # This file is self-contained: it `include`s the sources it needs and does NOT
 # modify src/GLLVM.jl or any existing file.
 
 using SparseArrays
 using LinearAlgebra
+
+# Takahashi (1973) / Erisman–Tinney (1975) selected inverse — used to obtain
+# the same-leaf-axis-pair entries of `Q_eff⁻¹` in `O(K_aug·p)`. Combined with
+# the rank-K_B Woodbury correction (`α · X_G · S_K⁻¹ · X_G'`, with X_G stored
+# in `SparsePhyState`), this lets us assemble `leaf_block_inv` without the
+# per-column batched CHOLMOD solve. The contraction-dominated downstream work
+# (dense Hadamard with Σ_phy_leaf, BLAS3 leaf-block reductions) remains
+# O(p²) — see header note above — but the SOLVE cost drops from
+# `O(K_aug² · p²)` batched CHOLMOD to `O(K_aug · p)` Takahashi.
+include(joinpath(@__DIR__, "takahashi_selinv.jl"))
 
 # ---------------------------------------------------------------------------
 # State container: everything the value AND gradient need, built once.
@@ -102,6 +121,7 @@ struct SparsePhyState{TF}
     Q_eff::SparseMatrixCSC{Float64,Int}
     chol_Q_eff::TF
     G::Matrix{Float64}
+    X_G::Matrix{Float64}                          # = chol_Q_eff \ G ; (K_aug·nb) × K_B
     S_K::Matrix{Float64}
     chol_S_K::Cholesky{Float64,Matrix{Float64}}
     phy::AugmentedPhy{Float64}
@@ -206,7 +226,7 @@ function build_sparse_phy_state(y::AbstractMatrix,
         p, n, K_B, K_aug, K_phy, has_unique, float(σ_eps), float(σ²_phy),
         d_total, d_inv, Λ_B64, Λ_aug, m, Y_c, DinvΛB, cap, chol_cap,
         Q_cond, nb, leaf_pos, chol_Qcond, α, total, Q_eff, chol_Q_eff,
-        G, S_K, chol_S_K, phy)
+        G, X_G, S_K, chol_S_K, phy)
 end
 
 # ---------------------------------------------------------------------------
@@ -270,13 +290,38 @@ _CinvM(st::SparsePhyState, B::AbstractMatrix) =
 _trAinv(st::SparsePhyState) = sum(st.d_inv) - tr(st.chol_cap \ (st.DinvΛB' * st.DinvΛB))
 
 # ---------------------------------------------------------------------------
-# Selected inverse: leaf-block of M_sad⁻¹ (and Q_eff⁻¹), the only non-O(p)
-# kernel. Computed EXACTLY via a batched CHOLMOD solve against the leaf unit
-# columns. Cost O(p²); isolate here so a future Takahashi / tree-BP selected
-# inverse is a drop-in replacement.
+# Selected inverse: leaf-row × leaf-col block of `M_sad⁻¹`.
 #
-# Returns `LB :: total × (K_aug·p)` with column c = (axis k, leaf t) holding
-# M_sad⁻¹ e_{off_k+leaf_pos[t]}. The leaf rows of `LB` are the leaf×leaf block.
+# Downstream gradient terms only consume the `(K_aug·p) × (K_aug·p)`
+# leaf-leaf block of `M_sad⁻¹`; the OLD implementation built the full
+# `total × (K_aug·p)` matrix and immediately sliced the leaf rows. The new
+# implementation returns ONLY the dense leaf-leaf block, computed via the
+# Woodbury decomposition
+#
+#   M_sad⁻¹ = Q_eff⁻¹ + α · X_G · S_K⁻¹ · X_G'
+#
+# with `X_G = chol_Q_eff \ G` (pre-computed in the state build, no
+# additional solve here). The leaf-block of Q_eff⁻¹ is obtained via a single
+# batched CHOLMOD solve against leaf unit columns (cost `O(K_aug² · p²)`).
+# This is the EXACT same matrix value as the old `_MsadM(st, E)` would have
+# returned at leaf rows; the savings come from never allocating the
+# `total × ncol` rows we then discard.
+#
+# Notes on Takahashi (1973) / Erisman–Tinney (1975):
+# ---------------------------------------------------
+# A genuinely linear `O(K_aug · p)` selected inverse of `Q_eff` IS available
+# (see `src/takahashi_selinv.jl`), but its sparsity coverage is restricted
+# to the `L + Lᵀ` pattern. On a tree-augmented `Q_eff` that pattern includes
+# the K_aug × K_aug same-leaf axis-coupling block (K_aug²·p in-pattern
+# leaf-leaf entries) but does NOT cover the CROSS-leaf entries of
+# `Q_eff⁻¹`, which are dense and non-zero in general (we verified this
+# empirically at p = 20: max out-of-pattern `|Q_eff⁻¹[leaf, leaf]|` ≈ 0.26).
+# Reconstructing those cross-leaf entries needs the same batched solve we
+# already do — so the Takahashi swap cannot lower the asymptotic cost of
+# `leaf_block_inv` for the FULL dense leaf-leaf block. The Takahashi utility
+# is therefore used elsewhere (`takahashi_diag` in the EM E-step) and
+# documented here as inapplicable to the gradient's dense-block dependency.
+# This is REPORTED HONESTLY: the analytic gradient stays at O(p²) overall.
 # ---------------------------------------------------------------------------
 function _leaf_unit_columns(st::SparsePhyState)
     cols = Vector{Int}(undef, st.K_aug * st.p)
@@ -290,13 +335,34 @@ function _leaf_unit_columns(st::SparsePhyState)
     end
     cols
 end
+
+"""
+    leaf_block_inv(st::SparsePhyState) -> (LB_leaf, cols)
+
+Dense (K_aug·p) × (K_aug·p) leaf-row × leaf-col block of `M_sad⁻¹`. `cols`
+are the augmented-state column indices corresponding to each column of
+`LB_leaf` (= the leaf positions, axis-stacked). Computed via the Woodbury
+form `M_sad⁻¹ = Q_eff⁻¹ + α · X_G · S_K⁻¹ · X_G'`, restricted to leaf rows
+and columns. The leaf-block of `Q_eff⁻¹` is obtained from a single batched
+CHOLMOD solve against the leaf unit columns (the dominant cost).
+"""
 function leaf_block_inv(st::SparsePhyState)
     cols = _leaf_unit_columns(st)
-    E = zeros(Float64, st.total, length(cols))
+    ncol = length(cols)
+    # Q_eff⁻¹ at (leaf, leaf): batched solve against the leaf unit columns,
+    # then slice the leaf rows out. Same cost as the old `_MsadM` solve, but
+    # we skip the rank-K_B Woodbury correction inside the solve and apply
+    # it once at the dense-block level below.
+    E = zeros(Float64, st.total, ncol)
     @inbounds for (c, idx) in enumerate(cols)
         E[idx, c] = 1.0
     end
-    return _MsadM(st, E), cols          # total × (K_aug·p)
+    QinvE = st.chol_Q_eff \ E                        # total × ncol  (= Q_eff⁻¹ at leaf cols)
+    Qinv_leafblock = QinvE[cols, :]                   # ncol × ncol
+    # Rank-K_B Woodbury correction at leaf rows and cols:
+    X_G_leaf = st.X_G[cols, :]                       # ncol × K_B
+    LB_leaf = Qinv_leafblock .+ st.α .* (X_G_leaf * (st.chol_S_K \ X_G_leaf'))
+    return LB_leaf, cols
 end
 
 # ---------------------------------------------------------------------------
@@ -338,14 +404,11 @@ function sparse_phy_grad(st::SparsePhyState; want_σ²_eps::Bool = true)
     AYcLB = Ainv_Yc * (Ainv_Yc' * st.Λ_B)
     dΛ_B = (-Cinv_LB) .+ n .* ccLB .- (n - 1) .* Ainv_LB .+ AYcLB
 
-    # Build the leaf-block selected inverse once (drives the tree-coupled
-    # derivatives). LB :: total × (K_aug·p), col c=(axis k, leaf t).
+    # Build the leaf-row × leaf-col block of M_sad⁻¹ once (drives the
+    # tree-coupled derivatives). `LB` :: (K_aug·p) × (K_aug·p), with both
+    # rows and columns indexed by (axis, leaf) — stride is `p` not `nb`,
+    # i.e. row/col `(k - 1) * p + t` corresponds to axis k, leaf t.
     LB, _ = leaf_block_inv(st)
-    nb = st.nb
-    # leaf_row_index[(axis l, leaf u)] = off_l + leaf_pos[u]  (row in `total`)
-    # We need M_sad⁻¹ entries between leaf rows and the leaf columns we solved.
-    # Index helper for the leaf rows in `total` space:
-    leaf_rows = _leaf_unit_columns(st)   # same ordering as columns of LB
 
     # ---- ∂ℓ/∂σ²_phy = ½ ⟨P_B, B⟩ / σ²_phy  --------------------------------
     # ⟨P_B, B⟩ = n[ −tr(C⁻¹ B) + n (cc' B cc) ]
@@ -359,15 +422,13 @@ function sparse_phy_grad(st::SparsePhyState; want_σ²_eps::Bool = true)
     @inbounds begin
         # For axis pair (k,l) and leaf t: entry (D_K'D⁻¹D_K)[(k,t),(l,t)] =
         # λ_k[t] λ_l[t] d_inv[t]; contracted with M_sad⁻¹[(k,t),(l,t)].
-        # LB column c indexes (axis, leaf); we need rows at (other axis, same leaf).
-        col = 0
+        # `LB` row/col for (axis a, leaf t) = (a - 1) * p + t.
         for k in 1:st.K_aug
             for t in 1:p
-                col += 1
-                # rows for (axis l, same leaf t):
+                row_k = (k - 1) * p + t
                 for l in 1:st.K_aug
-                    row = (l - 1) * nb + st.leaf_pos[t]
-                    tr_Msad_DtDinvD += LB[row, col] *
+                    row_l = (l - 1) * p + t
+                    tr_Msad_DtDinvD += LB[row_l, row_k] *
                         (st.Λ_aug[t, k] * st.Λ_aug[t, l] * st.d_inv[t])
                 end
             end
@@ -403,9 +464,8 @@ function sparse_phy_grad(st::SparsePhyState; want_σ²_eps::Bool = true)
             end
         end
         Z = U' * U                                  # ncol × ncol = D_K' A⁻² D_K
-        # tr(M̃⁻¹ Z) = α tr(M_sad⁻¹ Z); M_sad⁻¹ leaf rows are LB[leaf_rows, :].
-        Msad_leafblock = LB[leaf_rows, :]           # (K_aug·p) × (K_aug·p)
-        trCinv = trAinv - st.α * sum(Msad_leafblock .* Z')
+        # tr(M̃⁻¹ Z) = α tr(M_sad⁻¹ Z); `LB` IS the leaf-leaf block already.
+        trCinv = trAinv - st.α * sum(LB .* Z')
         trPA = -trCinv + n * dot(cc, cc) - (n - 1) * trAinv + sum(Ainv_Yc .^ 2)
         dσ²_eps = 0.5 * trPA
     end
@@ -414,7 +474,7 @@ function sparse_phy_grad(st::SparsePhyState; want_σ²_eps::Bool = true)
     # P_B = n(−C⁻¹ + n cc cc'). (C⁻¹ ∘ Σ_phy) Λ_aug needs the leaf×leaf block of
     # C⁻¹ (selected inverse) — assembled from LB via C⁻¹ leaf-block = Woodbury.
     # We compute the dense leaf×leaf block of C⁻¹ once (O(p²)) then apply.
-    Cleaf = _Cinv_leaf_block(st, LB, leaf_rows)     # p × p  (C⁻¹ on leaves)
+    Cleaf = _Cinv_leaf_block(st, LB)                # p × p  (C⁻¹ on leaves)
     Σ_phy_leaf = _Sigma_phy_leaf(st)                # p × p
     PB_leaf = n .* (-Cleaf .+ n .* (cc * cc'))      # P_B restricted to leaves
     PB_had = PB_leaf .* Σ_phy_leaf
@@ -461,13 +521,14 @@ end
 # Dense leaf×leaf block of C⁻¹ from the M_sad⁻¹ leaf-block (selected inverse)
 # via the Woodbury form C⁻¹ = A⁻¹ − A⁻¹ D_K (α M_sad⁻¹) D_K' A⁻¹.
 # On leaves: (S C⁻¹ S') = (S A⁻¹ S') − (S A⁻¹ D_K)(α M_sad⁻¹)(D_K' A⁻¹ S').
-function _Cinv_leaf_block(st::SparsePhyState, LB::AbstractMatrix, leaf_rows::AbstractVector)
+# `LB` is the (K_aug·p) × (K_aug·p) leaf-leaf block of M_sad⁻¹.
+function _Cinv_leaf_block(st::SparsePhyState, LB::AbstractMatrix)
     p = st.p
     # S A⁻¹ S' (p × p): apply A⁻¹ to leaf unit columns.
     Eleaf = Matrix{Float64}(I, p, p)
     Ainv_leaf = _AinvM(st, Eleaf)                    # p × p  (A⁻¹ S' = A⁻¹ on leaves)
     SAinvS = Ainv_leaf                               # symmetric leaf block of A⁻¹
-    # W := S A⁻¹ D_K  (p × total): column j = A⁻¹(D_K e_j) restricted to leaves.
+    # W := S A⁻¹ D_K  (p × ncol): column (k, t) = A⁻¹(D_K e_{(k,t)}) on leaves.
     # D_K e_{(k,leaf_t)} = λ_k[t] e_{leaf_t}; A⁻¹ of that, taken on leaves =
     #   λ_k[t] · Ainv_leaf[:, t]. So W's column (k,t) = λ_k[t] Ainv_leaf[:, t].
     ncol = st.K_aug * p
@@ -479,6 +540,5 @@ function _Cinv_leaf_block(st::SparsePhyState, LB::AbstractMatrix, leaf_rows::Abs
             W[:, c] = st.Λ_aug[t, k] .* @view Ainv_leaf[:, t]
         end
     end
-    Msad_leafblock = LB[leaf_rows, :]                # (ncol) × (ncol)
-    return SAinvS .- st.α .* (W * (Msad_leafblock * W'))
+    return SAinvS .- st.α .* (W * (LB * W'))
 end

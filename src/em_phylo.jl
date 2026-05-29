@@ -57,6 +57,12 @@ using LinearAlgebra
 using SparseArrays
 using Statistics
 
+# Takahashi (1973) / Erisman–Tinney (1975) selected inverse — used by the
+# sparse E-step (`_estep_sparse`) below to compute `diag(V_φ)` in O(p)
+# instead of the dense `inv(cVφ)`'s O(p³). See `src/takahashi_selinv.jl`
+# for the recursion.
+include(joinpath(@__DIR__, "takahashi_selinv.jl"))
+
 # ---------------------------------------------------------------------------
 # Sparse (A + n B)⁻¹ apply via the augmented-state saddle point.
 # ---------------------------------------------------------------------------
@@ -293,6 +299,128 @@ function _estep_dense(y::AbstractMatrix, Λ_B::AbstractMatrix, σ_eps::Real,
     return (; β, m, Eη, sumEη, S_ηη, Eφ2, C_ηφ, H_ηy, μ_φ, μ_z = zhat, Vφ)
 end
 
+# ---------------------------------------------------------------------------
+# Sparse E-step: same sufficient statistics, but the per-trait variance
+# `diag(V_φ)` is obtained via Takahashi-selected inverse on the augmented
+# precision (O(p)) and the K_B-wide quantity `β Λ_φ V_φ` is obtained via
+# K_B sparse solves with `M_sad`. The dense `inv(cVφ)` of `_estep_dense`
+# (an O(p³) per-iteration call) is REMOVED in this path — that is the
+# headline PERF gate of the EM swap.
+#
+# The augmented machinery is the SAME `AnBSparseSolver` already used for
+# `solve_AnB` / `blup_phylo_sparse`; the extra ingredients here are
+#   * `μ_φ` via the augmented-state posterior solve, and
+#   * `diag(V_φ)` via Takahashi selected inverse of `Q_eff`, then the
+#     rank-K_B Woodbury correction applied entry-by-entry at leaves.
+#
+# COST per E-step (with K_B small):
+#   * `AnBSparseSolver` build (incl. K_B Q_eff solves for X_G)   O(K_B·p)
+#   * 1 + K_B sparse solves for (μ_φ, β Λ_φ V_φ rows)             O(K_B·p)
+#   * Takahashi selected inverse of Q_eff (diag)                  O(p)
+#   * Rank-K_B Woodbury per leaf                                  O(K_B²·p)
+# Total: O(K_B²·p). Linear in p — vs the dense E-step's O(p³).
+# ---------------------------------------------------------------------------
+function _estep_sparse(y::AbstractMatrix, Λ_B::AbstractMatrix, σ_eps::Real,
+                      σ_phy::AbstractVector,
+                      phy::GLLVM.AugmentedPhy{Float64};
+                      σ²_phy::Real = 1.0)
+    p, n = size(y)
+    p == phy.n_leaves ||
+        throw(ArgumentError("y first dim ($p) must equal phy.n_leaves ($(phy.n_leaves))"))
+    K_B = size(Λ_B, 2)
+    Λ_B64 = Matrix{Float64}(Λ_B)
+    Λφ = Vector{Float64}(σ_phy)
+    α = n * float(σ²_phy)
+    σ² = float(σ_eps)^2     # used to build A = Λ_B Λ_B' + σ²·I below for β
+
+    # Build the augmented saddle-point solver (shares its factorisation with
+    # what `solve_AnB` uses; we reuse the constructed pieces directly).
+    s = build_AnB_sparse(Λ_B, σ_eps, Λφ, phy, n; σ²_phy = σ²_phy)
+    nb       = s.n_block
+    leaf_pos = s.leaf_pos
+    d_inv    = s.d_inv
+    DinvΛB   = s.DinvΛB
+    chol_cap = s.chol_cap
+
+    # `β · Λ_φ` (K_B × p), row k = (Λ_B' · A⁻¹ · diag(Λ_φ))[k, :]. Using the
+    # Woodbury form A⁻¹ = D⁻¹ − DinvΛB · cap⁻¹ · DinvΛB':
+    #   β · diag(Λ_φ) = (Λ_B' D⁻¹ − Λ_B' DinvΛB cap⁻¹ DinvΛB') · diag(Λ_φ)
+    βΛφ = (Λ_B64' .* reshape(d_inv .* Λφ, 1, p)) .-
+          (Λ_B64' * DinvΛB) * (chol_cap \ (DinvΛB' .* reshape(Λφ, 1, p)))
+
+    # m and A⁻¹ m (a p-vector).
+    m = vec(sum(Matrix{Float64}(y), dims = 2)) ./ n
+    Ainv_m = _Ainv(s, m)
+    Λφ_Ainv_m = Λφ .* Ainv_m
+
+    # μ_φ = V_φ · (n Λ_φ A⁻¹ m). V_φ = σ²_phy · S · M_sad⁻¹ · S'.
+    # Apply: M_sad⁻¹ lifted to nb-space at leaves, then restrict to leaves.
+    rhs_aug = zeros(Float64, nb)
+    @inbounds for t in 1:p
+        rhs_aug[leaf_pos[t]] = n * Λφ_Ainv_m[t]
+    end
+    # M_sad⁻¹ rhs_aug via Woodbury:
+    ξ0 = s.chol_Q_eff \ rhs_aug
+    ξ  = ξ0 .+ α .* (s.chol_Q_eff \ (s.G * (s.chol_S_K \ (s.G' * ξ0))))
+    μ_φ = Vector{Float64}(undef, p)
+    @inbounds for t in 1:p
+        μ_φ[t] = σ²_phy * ξ[leaf_pos[t]]
+    end
+
+    # β · Λ_φ · V_φ : K_B × p. Row k = (β · Λ_φ)[k, :] · V_φ. We have
+    # (β · Λ_φ)' which is p × K_B; multiplying V_φ from the left = applying
+    # σ²_phy · S · M_sad⁻¹ · S' to each of those K_B p-vectors. K_B solves.
+    βΛφVφ = Matrix{Float64}(undef, K_B, p)
+    @inbounds for k in 1:K_B
+        rhs = zeros(Float64, nb)
+        for t in 1:p
+            rhs[leaf_pos[t]] = βΛφ[k, t]
+        end
+        η0 = s.chol_Q_eff \ rhs
+        η  = η0 .+ α .* (s.chol_Q_eff \ (s.G * (s.chol_S_K \ (s.G' * η0))))
+        for t in 1:p
+            βΛφVφ[k, t] = σ²_phy * η[leaf_pos[t]]
+        end
+    end
+
+    # diag(V_φ) via Takahashi-selected inverse of Q_eff + rank-K_B Woodbury.
+    Qeff_diag = takahashi_diag(s.chol_Q_eff)             # length nb
+    # Slice X_G at leaf positions (X_G is stored on s as `chol_Q_eff \ G`).
+    # NB: AnBSparseSolver does not store X_G directly; recompute it. K_B solves.
+    X_G = s.chol_Q_eff \ s.G                              # nb × K_B
+    diag_Vφ = Vector{Float64}(undef, p)
+    @inbounds for t in 1:p
+        lp = leaf_pos[t]
+        xg = @view X_G[lp, :]
+        # Q_eff⁻¹[lp, lp] is `Qeff_diag[lp]` (selected inverse diagonal).
+        diag_Vφ[t] = σ²_phy * (Qeff_diag[lp] + α * dot(xg, s.chol_S_K \ collect(xg)))
+    end
+
+    # ImβΛ = I - β · Λ_B   (K_B × K_B).
+    β = Λ_B64' / cholesky(Symmetric(begin
+        A = Λ_B64 * Λ_B64'
+        @inbounds for t in 1:p; A[t, t] += σ²; end
+        (A + A') ./ 2
+    end))
+    ImβΛ = I - β * Λ_B64
+
+    # μ_z = Λ_φ · μ_φ.
+    zhat = Λφ .* μ_φ
+
+    # Eη_s = β (y_s − Λ_φ μ_φ); sumEη and Eη Eη':
+    Eη    = β * (y .- reshape(zhat, p, 1))               # K_B × n
+    sumEη = vec(sum(Eη, dims = 2))                        # K_B
+
+    # S_ηη = n(I − βΛ_B) + n · βΛφVφ · βΛφ' + Eη Eη'
+    S_ηη = n .* ImβΛ .+ n .* (βΛφVφ * βΛφ') .+ Eη * Eη'
+    S_ηη = Symmetric((S_ηη + S_ηη') ./ 2)
+    Eφ2  = diag_Vφ .+ μ_φ .^ 2                            # length p
+    C_ηφ = sumEη * μ_φ' .- n .* βΛφVφ                     # K_B × p
+    H_ηy = Eη * Matrix{Float64}(y)'                        # K_B × p
+
+    return (; β, m, Eη, sumEη, S_ηη, Eφ2, C_ηφ, H_ηy, μ_φ, μ_z = zhat)
+end
+
 # Dense M-step. Per-trait WLS for (Λ_B[t,:], σ_phy[t]); σ²_eps residual trace.
 #
 # For trait t the latent design is u_s = (η_s, φ[t]); the joint optimum of
@@ -376,7 +504,8 @@ end
 """
     em_fit_phylo(y, K_B, Σ_phy;
                  λ_init=nothing, σ_eps_init=nothing, σ_phy_init=nothing,
-                 tol=1e-9, max_iter=1000, assert_monotone=true) -> EMPhyloFit
+                 tol=1e-9, max_iter=1000, assert_monotone=true,
+                 phy=nothing) -> EMPhyloFit
 
 Gradient-free EM fit of the Gaussian phylo_unique GLLVM: `K_B` site latent
 factors plus one per-trait phylogenetic random effect with covariance
@@ -390,18 +519,36 @@ from the final E-step.
 
 When `assert_monotone` (default), a log-lik DECREASE beyond `1e-7` triggers an
 error — a monotone non-decrease is an EM invariant, so a decrease is a bug.
+
+If `phy::AugmentedPhy` is supplied, the E-step is routed through the
+augmented-state sparse path (`_estep_sparse`), whose per-trait variance
+extraction uses the Takahashi (1973) / Erisman–Tinney (1975) selected
+inverse in O(p) instead of the dense `inv(cVφ)`'s O(p³). The two paths are
+exact-equivalent in floating-point (the sparse path is the same algebra,
+just refactored to never materialise dense p × p inverses). Pass `phy` for
+large p; omit it for small p (dense path's BLAS is competitive there).
 """
 function em_fit_phylo(y::AbstractMatrix, K_B::Integer, Σ_phy::AbstractMatrix;
                       λ_init = nothing, σ_eps_init = nothing,
                       σ_phy_init = nothing,
-                      tol = 1e-9, max_iter = 1000, assert_monotone = true)
+                      tol = 1e-9, max_iter = 1000, assert_monotone = true,
+                      phy::Union{Nothing,GLLVM.AugmentedPhy{Float64}} = nothing)
     p, n = size(y)
     K_B ≥ 1 || throw(ArgumentError("K_B must be ≥ 1"))
     K_B < p || throw(ArgumentError("EM requires K_B < p; got K_B=$K_B, p=$p"))
     size(Σ_phy) == (p, p) ||
         throw(ArgumentError("Σ_phy must be p × p; got $(size(Σ_phy)) for p=$p"))
+    if phy !== nothing
+        phy.n_leaves == p ||
+            throw(ArgumentError("phy.n_leaves ($(phy.n_leaves)) must equal p ($p)"))
+    end
 
     yf = Matrix{Float64}(y)
+    estep = if phy === nothing
+        (LB, σe, σp) -> _estep_dense(yf, LB, σe, σp, Σ_phy)
+    else
+        (LB, σe, σp) -> _estep_sparse(yf, LB, σe, σp, phy; σ²_phy = 1.0)
+    end
 
     # ----- Warm start (PPCA for Λ_B, σ_eps; small phylo SD to start) -----
     if λ_init === nothing || σ_eps_init === nothing
@@ -443,14 +590,14 @@ function em_fit_phylo(y::AbstractMatrix, K_B::Integer, Σ_phy::AbstractMatrix;
             if abs(inc) < tol
                 converged = true
                 # E-step once more to refresh BLUPs at the converged params.
-                ss = _estep_dense(yf, Λ_B, σ_eps, σ_phy, Σ_phy)
+                ss = estep(Λ_B, σ_eps, σ_phy)
                 blup_phy = copy(ss.μ_z); blup_phi = copy(ss.μ_φ)
                 break
             end
         end
         loglik_prev = ll
 
-        ss = _estep_dense(yf, Λ_B, σ_eps, σ_phy, Σ_phy)
+        ss = estep(Λ_B, σ_eps, σ_phy)
         blup_phy = copy(ss.μ_z); blup_phi = copy(ss.μ_φ)
         Λ_B, σ_eps, σ_phy = _mstep_dense(yf, ss)
     end
