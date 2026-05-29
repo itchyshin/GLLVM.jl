@@ -1,4 +1,4 @@
-# Benchmark the Dinaj edge-incidence phylogenetic log-likelihood at
+# Benchmark the edge-node incidence phylogenetic log-likelihood at
 # p ∈ {100, 500, 1000, 5000, 10_000}. Run via:
 #
 #     julia --project=bench bench/edge_incidence_bench.jl

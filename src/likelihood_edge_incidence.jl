@@ -1,5 +1,5 @@
 # Gaussian marginal log-likelihood with the phylogenetic covariance
-# represented in the Dinaj edge-incidence form (`EdgePhy`).
+# represented in the edge-node incidence form (`EdgePhy`).
 #
 # The model is identical to the J3 path in `likelihood.jl` and to the
 # augmented-Q path in `likelihood_sparse_phy.jl`:
@@ -56,7 +56,7 @@ using LinearAlgebra
         Λ_phy=nothing, σ_phy=nothing,
         phy::EdgePhy, σ²_phy = 1.0)
 
-Closed-form Gaussian marginal log-likelihood using the Dinaj edge-
+Closed-form Gaussian marginal log-likelihood using the edge-node incidence
 incidence representation of the phylogenetic precision (`phy::EdgePhy`).
 The phylogenetic covariance Σ_phy is built from the tree topology in B
 and the branch lengths, then plugged into the same rotation-trick path

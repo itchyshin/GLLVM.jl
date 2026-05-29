@@ -33,7 +33,7 @@ using Statistics
 using Printf
 using ForwardDiff
 
-# The Felsenstein-contrast and Dinaj edge-incidence paths are NEW files
+# The Felsenstein-contrast and edge-node incidence paths are NEW files
 # that are deliberately NOT wired into the GLLVM module on this branch
 # (hard constraint: do NOT modify src/GLLVM.jl). Include them directly,
 # exactly as test/test_phylo_contrasts.jl and test/test_edge_incidence.jl
@@ -118,7 +118,7 @@ function build_fixture(p::Integer; σ²_phy::Float64 = 0.7, σ_eps::Float64 = 0.
     #     so its internal `sigma_phy_dense` (Main) dispatches.
     tree_aug_gllvm = GLLVM.augmented_phy(newick)
     tree_aug_main  = augmented_phy(newick)
-    tree_edge = edge_phy(newick)             # EdgePhy — Dinaj path
+    tree_edge = edge_phy(newick)             # EdgePhy — edge-incidence path
 
     # Dense Σ_phy built from the edge tree (closed-form BM covariance).
     # Equals σ²_phy · V_tree, the matrix the contrasts path forms internally
@@ -166,7 +166,7 @@ ll_edge(fx) = gaussian_marginal_loglik_edge_phy(
     fx.y, fx.Λ_B, fx.σ_eps;
     Λ_phy = fx.Λ_phy, σ_phy = fx.σ_phy, phy = fx.tree_edge, σ²_phy = fx.σ²_phy)
 
-const METHODS = ["Dense", "Hadfield-Nakagawa", "Felsenstein", "Dinaj-edge"]
+const METHODS = ["Dense", "Hadfield-Nakagawa", "Felsenstein", "Edge-incidence"]
 const LL_FUNS = [ll_dense, ll_sparse, ll_contrasts, ll_edge]
 
 # ---------------------------------------------------------------------------

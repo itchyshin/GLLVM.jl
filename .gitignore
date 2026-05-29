@@ -3,3 +3,8 @@ Manifest.toml
 /docs/build
 /benchmarks/*.json
 .DS_Store
+
+# Personal notes — must never be tracked / uploaded to public repos
+*russell*
+*Russell*
+*Dinnage*

@@ -1,8 +1,8 @@
-# Relaxed-clock per-branch evolution-rate model on the Dinaj edge-incidence
+# Relaxed-clock per-branch evolution-rate model on the edge-node incidence
 # substrate.
 #
 # ===========================================================================
-# THE QUESTION (Russell Dinaj, personal communication via maintainer)
+# THE QUESTION (personal communication via the maintainer)
 # ===========================================================================
 # The edge-incidence precision Q = B · W · Bᵀ writes the phylogenetic
 # Brownian-motion precision as a weighted graph Laplacian of the tree with
@@ -11,7 +11,7 @@
 #       W = diag(w_e),   w_e = 1 / (σ²_e · ℓ_e)
 #
 # where ℓ_e is the branch length and σ²_e is a PER-BRANCH evolution rate. In
-# the single-rate model σ²_e ≡ σ²_phy for every edge. Russell's conjecture:
+# the single-rate model σ²_e ≡ σ²_phy for every edge. the conjecture:
 # because the per-branch rates ARE the diagonal of W, the edge-incidence form
 # is the natural substrate for estimating a SEPARATE rate per branch — a
 # relaxed molecular clock — rather than only ancestral states.
@@ -106,7 +106,7 @@ using Statistics
 
 Per-edge diagonal of `W` for the relaxed-clock model: `W[e,e] = 1/(σ²_e · ℓ_e)`.
 `σ²_e` is the length-`n_edges` vector of per-branch rates (the diagonal that
-Russell's conjecture targets). The single-rate model is the special case
+the conjecture targets). The single-rate model is the special case
 `σ²_e ≡ σ²_phy`.
 """
 function edge_W_diag(phy::EdgePhy, σ²_e::AbstractVector)

@@ -1,9 +1,9 @@
-# Relaxed-clock per-branch evolution-rate DEMONSTRATION on the Dinaj edge-
+# Relaxed-clock per-branch evolution-rate DEMONSTRATION on the edge-node incidence
 # incidence substrate. Run via:
 #
 #     julia --project=bench bench/relaxed_clock_demo.jl
 #
-# Empirical test of Russell Dinaj's conjecture: can the edge-incidence form
+# Empirical test of the conjecture: can the edge-incidence form
 # Q = B·W·Bᵀ (with per-branch rates σ²_e on the diagonal of W) estimate a
 # SEPARATE evolution rate per branch, under a hierarchical / relaxed-clock
 # prior log σ²_e ~ N(μ, τ²), recovered as SHRINKAGE estimates?

@@ -1,4 +1,4 @@
-# Russell Dinaj edge-incidence sparse representation for the phylogenetic
+# Edge-node incidence sparse representation for the phylogenetic
 # precision matrix. For a binary tree with p leaves:
 #   * Nodes:      2p − 1 (p leaves + p − 1 internal)
 #   * Edges:      2p − 2
@@ -25,9 +25,9 @@
 #       z2 = W .* z1       # diagonal scale, 1 flop per edge
 #       z3 = B * z2        # sparse mat-vec, 2 flops per edge
 #
-# Reference (representation): Golub & Van Loan §4.6 (incidence matrices);
-# R. Dinaj 2026 (personal communication via maintainer — first application
-# of this representation to the phylogenetic likelihood).
+# Reference (representation): Golub & Van Loan §4.6 (incidence matrices).
+# First application of this representation to the phylogenetic likelihood
+# in this work.
 
 using SparseArrays
 using LinearAlgebra
