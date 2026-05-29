@@ -8,7 +8,7 @@
 include("benchmarks.jl")
 using BenchmarkTools
 
-println("Running gllvmTMB.jl benchmark suite...")
+println("Running GLLVM.jl benchmark suite...")
 results = run(SUITE; verbose = true, seconds = 10)
 
 println("\nSummary (median wall-clock per cell):\n")

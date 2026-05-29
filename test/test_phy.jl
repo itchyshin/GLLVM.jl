@@ -1,4 +1,4 @@
-using gllvmTMB, Test, Random, LinearAlgebra, Distributions
+using GLLVM, Test, Random, LinearAlgebra, Distributions
 
 @testset "phylogenetic" begin
     @testset "K_phy=0 has_phy_unique=false reproduces J2 behaviour" begin
@@ -30,7 +30,7 @@ using gllvmTMB, Test, Random, LinearAlgebra, Distributions
         y_vec = rand(d_dist)
         y = reshape(y_vec, p, n)
         ll_direct = logpdf(d_dist, y_vec)
-        ll_ours = gllvmTMB.gaussian_marginal_loglik(
+        ll_ours = GLLVM.gaussian_marginal_loglik(
             y, Λ_B, σ_eps;
             Λ_phy = Λ_phy, Σ_phy = Σ_phy
         )
@@ -51,7 +51,7 @@ using gllvmTMB, Test, Random, LinearAlgebra, Distributions
         y_vec = rand(d_dist)
         y = reshape(y_vec, p, n)
         ll_direct = logpdf(d_dist, y_vec)
-        ll_ours = gllvmTMB.gaussian_marginal_loglik(
+        ll_ours = GLLVM.gaussian_marginal_loglik(
             y, Λ_B, σ_eps;
             σ_phy = σ_phy, Σ_phy = Σ_phy
         )
@@ -74,7 +74,7 @@ using gllvmTMB, Test, Random, LinearAlgebra, Distributions
         y_vec = rand(d_dist)
         y = reshape(y_vec, p, n)
         ll_direct = logpdf(d_dist, y_vec)
-        ll_ours = gllvmTMB.gaussian_marginal_loglik(
+        ll_ours = GLLVM.gaussian_marginal_loglik(
             y, Λ_B, σ_eps;
             Λ_phy = Λ_phy, σ_phy = σ_phy, Σ_phy = Σ_phy
         )
@@ -105,8 +105,8 @@ using gllvmTMB, Test, Random, LinearAlgebra, Distributions
         p, K_B, K_phy, n = 4, 1, 1, 20
         T_phy = randn(p, p); Σ_phy = T_phy * T_phy' + 0.5 * I
         y = randn(p, n)
-        rr_B = gllvmTMB.rr_theta_len(p, K_B)
-        rr_phy = gllvmTMB.rr_theta_len(p, K_phy)
+        rr_B = GLLVM.rr_theta_len(p, K_B)
+        rr_phy = GLLVM.rr_theta_len(p, K_phy)
         # Skip detailed packing — just call fit and check it runs to convergence with finite gradients
         fit = fit_gaussian_gllvm(y; K = K_B, K_phy = K_phy, Σ_phy = Σ_phy)
         @test isfinite(fit.logLik)

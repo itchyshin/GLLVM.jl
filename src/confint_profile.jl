@@ -20,11 +20,11 @@
 #
 # Loading model: this file is loaded by the verify command via
 #
-#     julia --project=. -e 'using gllvmTMB; include("src/confint_profile.jl"); ...'
+#     julia --project=. -e 'using GLLVM; include("src/confint_profile.jl"); ...'
 #
-# We deliberately do NOT modify src/gllvmTMB.jl (hard constraint). To make
-# `gllvmTMB.profile_ci(...)` callable from the test file, the definitions
-# below are injected directly into the `gllvmTMB` module via Core.eval on
+# We deliberately do NOT modify src/GLLVM.jl (hard constraint). To make
+# `GLLVM.profile_ci(...)` callable from the test file, the definitions
+# below are injected directly into the `GLLVM` module via Core.eval on
 # a single quote block, matching the pattern used by src/confint.jl.
 #
 # Algorithm:
@@ -56,7 +56,7 @@
 # Active plan:
 #   ~/.claude/plans/please-have-a-robust-elephant.md
 
-Core.eval(gllvmTMB, quote
+Core.eval(GLLVM, quote
 
 using ForwardDiff
 using Distributions: Chisq, quantile
@@ -506,4 +506,4 @@ function profile_ci(fit::GllvmFit, parm::Symbol; kwargs...)
     return profile_ci(fit, String(parm); kwargs...)
 end
 
-end) # Core.eval(gllvmTMB, quote ... end)
+end) # Core.eval(GLLVM, quote ... end)

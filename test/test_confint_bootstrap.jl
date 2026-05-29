@@ -1,16 +1,16 @@
-using gllvmTMB, Test, Random, LinearAlgebra, Statistics
+using GLLVM, Test, Random, LinearAlgebra, Statistics
 
 # The bootstrap CI source lives in src/confint_bootstrap.jl and is NOT
 # wired into the main module file (the hard constraint for this slice
 # is "new files only"). The verify recipe in the spec includes the
 # source file directly into Main:
 #
-#   julia --project=. -e 'using gllvmTMB, Test;
+#   julia --project=. -e 'using GLLVM, Test;
 #                          include("src/confint_bootstrap.jl");
 #                          include("test/test_confint_bootstrap.jl")'
 #
 # When loaded that way, `bootstrap_ci` lives in `Main`, not in
-# `gllvmTMB`. The tests below call it unqualified for that reason.
+# `GLLVM`. The tests below call it unqualified for that reason.
 
 # Local guard: include the source file if it has not already been
 # loaded into the current scope (e.g. when running this file via

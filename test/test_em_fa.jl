@@ -1,4 +1,4 @@
-using gllvmTMB, Test, Random, LinearAlgebra, Distributions
+using GLLVM, Test, Random, LinearAlgebra, Distributions
 
 @testset "EM-FA solver" begin
     @testset "log-likelihood monotonically non-decreasing (EM invariant)" begin
@@ -10,7 +10,7 @@ using gllvmTMB, Test, Random, LinearAlgebra, Distributions
         y = rand(MvNormal(zeros(p), Symmetric(Σ_true)), n)
 
         # Run EM with logging
-        Λ, ψ, ll, n_iter, conv = gllvmTMB.em_fa(y, K, tol = 1e-12, max_iter = 200)
+        Λ, ψ, ll, n_iter, conv = GLLVM.em_fa(y, K, tol = 1e-12, max_iter = 200)
         @test conv
         @test n_iter ≥ 1
         @test n_iter < 200
@@ -24,7 +24,7 @@ using gllvmTMB, Test, Random, LinearAlgebra, Distributions
         Σ_true = Λ_true * Λ_true' + Diagonal(ψ_true)
         y = rand(MvNormal(zeros(p), Symmetric(Σ_true)), n)
 
-        Λ, ψ, ll, n_iter, conv = gllvmTMB.em_fa(y, K, tol = 1e-10)
+        Λ, ψ, ll, n_iter, conv = GLLVM.em_fa(y, K, tol = 1e-10)
         @test conv
         Σ_hat = Λ * Λ' + Diagonal(ψ)
         @test norm(Σ_true - Σ_hat) / norm(Σ_true) < 0.10
@@ -39,7 +39,7 @@ using gllvmTMB, Test, Random, LinearAlgebra, Distributions
         Σ_true = Λ_true * Λ_true' + Diagonal(ψ_true)
         y = rand(MvNormal(zeros(p), Symmetric(Σ_true)), n)
 
-        Λ_em, ψ_em, ll_em, _, _ = gllvmTMB.em_fa(y, K)
+        Λ_em, ψ_em, ll_em, _, _ = GLLVM.em_fa(y, K)
         # Compare Σ_y (rotation-invariant)
         Σ_em = Λ_em * Λ_em' + Diagonal(ψ_em)
         @test norm(Σ_true - Σ_em) / norm(Σ_true) < 0.15

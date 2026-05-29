@@ -10,10 +10,10 @@
 # only a few LBFGS iterations to refine the smaller contributions.
 #
 # Wiring:
-#   This file expects to be `include`d by `src/gllvmTMB.jl`; the
+#   This file expects to be `include`d by `src/GLLVM.jl`; the
 #   integration agent will add that include line and (optionally) export
 #   `ppca_init`. Until then, the function is reachable inside the package
-#   namespace as `gllvmTMB.ppca_init` once the include is in place. This
+#   namespace as `GLLVM.ppca_init` once the include is in place. This
 #   file exports nothing on its own.
 
 using LinearAlgebra

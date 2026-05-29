@@ -1,6 +1,6 @@
 # Benchmark suite
 
-In-process performance suite for the `gllvmTMB.jl` Gaussian GLLVM
+In-process performance suite for the `GLLVM.jl` Gaussian GLLVM
 engine. Built on `BenchmarkTools.jl`, layout patterned after
 [`MixedModels.jl/bench`](https://github.com/JuliaStats/MixedModels.jl/tree/main/bench).
 

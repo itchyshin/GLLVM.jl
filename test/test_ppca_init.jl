@@ -1,4 +1,4 @@
-using gllvmTMB, Test, Random, LinearAlgebra, Distributions
+using GLLVM, Test, Random, LinearAlgebra, Distributions
 
 @testset "PPCA closed-form initialisation" begin
     @testset "exact recovery on pure PPCA fixture (K=1)" begin
@@ -12,7 +12,7 @@ using gllvmTMB, Test, Random, LinearAlgebra, Distributions
         η = randn(K, n)
         y = Λ_true * η + σ_true * randn(p, n)
 
-        Λ_init, σ_init = gllvmTMB.ppca_init(y, K)
+        Λ_init, σ_init = GLLVM.ppca_init(y, K)
         # Σ_y recovery (rotation-invariant)
         Σ_true = Λ_true * Λ_true' + σ_true^2 * I
         Σ_init = Λ_init * Λ_init' + σ_init^2 * I
@@ -33,7 +33,7 @@ using gllvmTMB, Test, Random, LinearAlgebra, Distributions
         η = randn(K, n)
         y = Λ_true * η + σ_true * randn(p, n)
 
-        Λ_init, σ_init = gllvmTMB.ppca_init(y, K)
+        Λ_init, σ_init = GLLVM.ppca_init(y, K)
         Σ_true = Λ_true * Λ_true' + σ_true^2 * I
         Σ_init = Λ_init * Λ_init' + σ_init^2 * I
         @test norm(Σ_true - Σ_init) / norm(Σ_true) < 0.05
@@ -46,7 +46,7 @@ using gllvmTMB, Test, Random, LinearAlgebra, Distributions
         Λ_true = randn(p, K); for i in 1:K, k in 1:K; if i < k; Λ_true[i, k] = 0; end; end
         for k in 1:K; Λ_true[k, k] = abs(Λ_true[k, k]) + 0.5; end
         y = Λ_true * randn(K, n) + 0.5 * randn(p, n)
-        Λ_init, _ = gllvmTMB.ppca_init(y, K)
+        Λ_init, _ = GLLVM.ppca_init(y, K)
         # Check strict-upper is zero (after rotation)
         for i in 1:K, k in (i+1):K
             @test abs(Λ_init[i, k]) < 1e-10
@@ -66,7 +66,7 @@ using gllvmTMB, Test, Random, LinearAlgebra, Distributions
         y = Λ_true * η + 0.5 * randn(p, n)
 
         fit_default = fit_gaussian_gllvm(y; K = K)
-        Λ_init, σ_init = gllvmTMB.ppca_init(y, K)
+        Λ_init, σ_init = GLLVM.ppca_init(y, K)
         fit_warm = fit_gaussian_gllvm(y; K = K, λ_init = Λ_init, σ_eps_init = σ_init)
 
         # Same answer (Σ_y recovery)

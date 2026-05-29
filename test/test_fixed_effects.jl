@@ -1,4 +1,4 @@
-using gllvmTMB, Test, Random, LinearAlgebra
+using GLLVM, Test, Random, LinearAlgebra
 
 @testset "fixed effects" begin
     @testset "X = nothing reproduces J1 behaviour" begin
@@ -51,10 +51,10 @@ using gllvmTMB, Test, Random, LinearAlgebra
         p, K, n, q = 4, 1, 30, 2
         X = randn(p, n, q)
         y = randn(p, n)
-        nll = params -> gllvmTMB.gaussian_nll_packed(params, y, p, K; X = X, q = q)
-        params0 = [zeros(q); 0.0; gllvmTMB.init_theta_rr(p, K)]
+        nll = params -> GLLVM.gaussian_nll_packed(params, y, p, K; X = X, q = q)
+        params0 = [zeros(q); 0.0; GLLVM.init_theta_rr(p, K)]
         g = ForwardDiff.gradient(nll, params0)
         @test all(isfinite, g)
-        @test length(g) == q + 1 + gllvmTMB.rr_theta_len(p, K)
+        @test length(g) == q + 1 + GLLVM.rr_theta_len(p, K)
     end
 end

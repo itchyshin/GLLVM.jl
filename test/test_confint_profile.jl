@@ -1,4 +1,4 @@
-using gllvmTMB, Test, Random, LinearAlgebra
+using GLLVM, Test, Random, LinearAlgebra
 
 # The profile_ci() entry point takes `y` as a kwarg so it can reconstruct
 # the NLL closure without touching src/fit.jl (the PERF agent is
@@ -18,7 +18,7 @@ using gllvmTMB, Test, Random, LinearAlgebra
         σ_true = 0.5
         y = Λ_true * randn(K, n) + σ_true * randn(p, n)
         fit = fit_gaussian_gllvm(y; K = K)
-        ci_prof = gllvmTMB.profile_ci(fit, "sigma_eps"; y = y)
+        ci_prof = GLLVM.profile_ci(fit, "sigma_eps"; y = y)
         # Both bounds should bracket the truth
         @test ci_prof.lower < σ_true < ci_prof.upper
         # Width should be sensible (not collapsed, not absurd)
@@ -33,7 +33,7 @@ using gllvmTMB, Test, Random, LinearAlgebra
         Λ_true = reshape([0.7, 0.5, 0.4], p, K)
         y = Λ_true * randn(K, n) + 0.05 * randn(p, n)
         fit = fit_gaussian_gllvm(y; K = K)
-        ci_prof = gllvmTMB.profile_ci(fit, "sigma_eps"; y = y)
+        ci_prof = GLLVM.profile_ci(fit, "sigma_eps"; y = y)
         @test ci_prof.lower >= 0   # σ_eps is positive — profile respects this
         @info "σ_eps profile CI (small σ)" lower=ci_prof.lower upper=ci_prof.upper method=ci_prof.method
     end
@@ -45,7 +45,7 @@ using gllvmTMB, Test, Random, LinearAlgebra
         y = randn(p, n)
         try
             fit = fit_gaussian_gllvm(y; K = K)
-            ci = gllvmTMB.profile_ci(fit, "sigma_eps"; y = y)
+            ci = GLLVM.profile_ci(fit, "sigma_eps"; y = y)
             # Either both NaN (failed) or finite (improbably succeeded)
             @test (isnan(ci.lower) && isnan(ci.upper)) || (ci.lower < ci.upper)
         catch

@@ -11,7 +11,7 @@
 #     include("bench/benchmarks.jl"); run(SUITE)
 
 using BenchmarkTools, Random, Distributions, LinearAlgebra
-using gllvmTMB
+using GLLVM
 
 const SUITE = BenchmarkGroup()
 

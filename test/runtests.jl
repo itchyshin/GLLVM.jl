@@ -1,5 +1,5 @@
 using Test
-using gllvmTMB
+using GLLVM
 
 @testset "smoke" begin
     @test 1 + 1 == 2

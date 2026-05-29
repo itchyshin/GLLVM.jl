@@ -8,11 +8,11 @@
 #
 # Loading model: this file is loaded by the verify command via
 #
-#     julia --project=. -e 'using gllvmTMB; include("src/confint.jl"); ...'
+#     julia --project=. -e 'using GLLVM; include("src/confint.jl"); ...'
 #
-# We deliberately do NOT modify src/gllvmTMB.jl (hard constraint). To make
-# `gllvmTMB.confint(...)` callable from the test file, the definitions
-# below are injected directly into the `gllvmTMB` module via Core.eval on
+# We deliberately do NOT modify src/GLLVM.jl (hard constraint). To make
+# `GLLVM.confint(...)` callable from the test file, the definitions
+# below are injected directly into the `GLLVM` module via Core.eval on
 # a single quote block. The body otherwise reads as normal Julia source.
 #
 # Strategy:
@@ -42,7 +42,7 @@
 # Active plan:
 #   ~/.claude/plans/please-have-a-robust-elephant.md
 
-Core.eval(gllvmTMB, quote
+Core.eval(GLLVM, quote
 
 using ForwardDiff
 using Distributions: Normal, quantile
@@ -359,4 +359,4 @@ function confint(fit::GllvmFit;
             pd_hessian = pd)
 end
 
-end) # Core.eval(gllvmTMB, quote ... end)
+end) # Core.eval(GLLVM, quote ... end)

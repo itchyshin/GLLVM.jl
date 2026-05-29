@@ -1,4 +1,4 @@
-using gllvmTMB, Test, Random, LinearAlgebra, Distributions
+using GLLVM, Test, Random, LinearAlgebra, Distributions
 
 @testset "W tier and diag RE" begin
     @testset "K_W=0 has_diag=false reproduces J1 behaviour" begin
@@ -27,7 +27,7 @@ using gllvmTMB, Test, Random, LinearAlgebra, Distributions
         d_dist = MvNormal(zeros(p), Symmetric(Σ_y))
         y = rand(d_dist, n)
         ll_direct = sum(logpdf(d_dist, y[:, s]) for s in 1:n)
-        ll_ours = gllvmTMB.gaussian_marginal_loglik(
+        ll_ours = GLLVM.gaussian_marginal_loglik(
             y, Λ_B, σ_eps;
             Λ_W = Λ_W, σ²_B = σ²_B, σ²_W = σ²_W
         )
@@ -73,17 +73,17 @@ using gllvmTMB, Test, Random, LinearAlgebra, Distributions
         p, K_B, K_W, n = 4, 1, 1, 30
         y = randn(p, n)
         # params layout: [log_σ_eps; log_σ_B (p); log_σ_W (p); θ_rr_B; θ_rr_W]
-        rr_B = gllvmTMB.rr_theta_len(p, K_B)
-        rr_W = gllvmTMB.rr_theta_len(p, K_W)
+        rr_B = GLLVM.rr_theta_len(p, K_B)
+        rr_W = GLLVM.rr_theta_len(p, K_W)
         n_params = 1 + 2 * p + rr_B + rr_W
         params₀ = zeros(n_params)
         params₀[1] = 0.0   # log_σ_eps
         params₀[2:(1 + p)] .= log(0.1)   # log_σ_B
         params₀[(2 + p):(1 + 2 * p)] .= log(0.1)  # log_σ_W
-        params₀[(2 + 2 * p):(1 + 2 * p + rr_B)] .= gllvmTMB.init_theta_rr(p, K_B)
-        params₀[(2 + 2 * p + rr_B):end] .= gllvmTMB.init_theta_rr(p, K_W)
+        params₀[(2 + 2 * p):(1 + 2 * p + rr_B)] .= GLLVM.init_theta_rr(p, K_B)
+        params₀[(2 + 2 * p + rr_B):end] .= GLLVM.init_theta_rr(p, K_W)
         spec = (q = 0, p = p, K_B = K_B, K_W = K_W, has_diag = true)
-        nll = params -> gllvmTMB.gaussian_nll_packed(params, y; spec = spec)
+        nll = params -> GLLVM.gaussian_nll_packed(params, y; spec = spec)
         g = ForwardDiff.gradient(nll, params₀)
         @test all(isfinite, g)
         @test length(g) == n_params

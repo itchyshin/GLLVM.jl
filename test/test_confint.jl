@@ -1,4 +1,4 @@
-using gllvmTMB, Test, Random, LinearAlgebra, Distributions
+using GLLVM, Test, Random, LinearAlgebra, Distributions
 
 # The confint() entry point takes `y` as a kwarg so it can reconstruct
 # the NLL closure without touching src/fit.jl (the PERF agent is
@@ -12,7 +12,7 @@ using gllvmTMB, Test, Random, LinearAlgebra, Distributions
         Λ_true = reshape([0.7, 0.5, 0.4, -0.3, 0.2], p, K)
         y = Λ_true * randn(K, n) + 0.5 * randn(p, n)
         fit = fit_gaussian_gllvm(y; K = K)
-        ci = gllvmTMB.confint(fit; y = y)
+        ci = GLLVM.confint(fit; y = y)
         @test isa(ci.term, Vector{String})
         @test isa(ci.lower, Vector{<:Real})
         @test isa(ci.upper, Vector{<:Real})
@@ -32,7 +32,7 @@ using gllvmTMB, Test, Random, LinearAlgebra, Distributions
         σ_true = 0.5
         y = Λ_true * randn(K, n) + σ_true * randn(p, n)
         fit = fit_gaussian_gllvm(y; K = K)
-        ci = gllvmTMB.confint(fit; y = y, level = 0.95)
+        ci = GLLVM.confint(fit; y = y, level = 0.95)
         idx_se = findfirst(==("sigma_eps"), ci.term)
         @test !isnothing(idx_se)
         @test ci.lower[idx_se] <= σ_true <= ci.upper[idx_se]
@@ -45,7 +45,7 @@ using gllvmTMB, Test, Random, LinearAlgebra, Distributions
         p, K, n = 4, 1, 100
         y = 0.5 * randn(p, n)
         fit = fit_gaussian_gllvm(y; K = K)
-        ci = gllvmTMB.confint(fit; y = y, parm = "sigma_eps")
+        ci = GLLVM.confint(fit; y = y, parm = "sigma_eps")
         @test ci.term == ["sigma_eps"]
         @test length(ci.lower) == 1
     end
@@ -56,7 +56,7 @@ using gllvmTMB, Test, Random, LinearAlgebra, Distributions
         Λ_true = reshape([0.7, 0.5, 0.3, -0.2], p, K)
         y = Λ_true * randn(K, n) + 0.5 * randn(p, n)
         fit = fit_gaussian_gllvm(y; K = K)
-        ci = gllvmTMB.confint(fit; y = y, parm = "Lambda:1,1")
+        ci = GLLVM.confint(fit; y = y, parm = "Lambda:1,1")
         @test ci.term == ["Lambda_B[1,1]"]
         @test length(ci.lower) == 1
     end
@@ -75,7 +75,7 @@ using gllvmTMB, Test, Random, LinearAlgebra, Distributions
         ok = true
         try
             fit = fit_gaussian_gllvm(y; K = K)
-            ci = gllvmTMB.confint(fit; y = y)
+            ci = GLLVM.confint(fit; y = y)
         catch err
             # Allow the fit itself to error on the degenerate fixture; the
             # contract is about confint() being graceful, not the fitter.
