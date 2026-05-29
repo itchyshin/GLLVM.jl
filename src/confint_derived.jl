@@ -608,16 +608,66 @@ end
 #   NLL_pen(θ; c, w) = NLL(θ) + (w / 2) · (g(θ) − c)²
 # where g(θ) = derived_fn(θ). Minimise over θ via LBFGS. The
 # *unpenalised* NLL evaluated at θ̂(c) is the profile log-likelihood at
-# c. We pick w large enough that |g(θ̂(c)) − c| is below `constraint_tol`.
+# c.
 #
 # Bracket-then-bisect mirrors src/confint_profile.jl's _profile_bisect_side.
 # Initial step: heuristic based on the derived value at the MLE (we don't
 # have a Wald SE for the derived quantity directly — we *could* compute
 # one via the delta method, but it adds complexity and the geometric
 # expansion handles the slack well enough in practice).
+#
+# Numerical hardening (fixes the degenerate-interval bug in phylo cells):
+#
+#   1. Augmented-Lagrangian-style penalty escalation. A fixed large
+#      `penalty_weight = 1e6` instantly inflates the penalty term at the
+#      warm-start θ̂ (where g(θ̂) ≠ c by O(0.1)), driving LBFGS into bad
+#      regions of θ-space from which it cannot recover. Instead we sweep
+#      w through an increasing schedule (1e2 → 1e3 → … → final), warm-
+#      starting each stage from the previous minimiser. This lets the
+#      optimiser move smoothly to the {g ≈ c} manifold first, then tighten
+#      the constraint.
+#
+#   2. PosDef-safe NLL wrapper. As c moves away from g(θ̂) in phylo-active
+#      cells, the constrained per-site Σ can drift to near-singular,
+#      where `gaussian_nll_packed` throws `PosDefException` from its
+#      internal Cholesky. We wrap the NLL to convert that exception (and
+#      any non-finite NLL value) into a finite barrier — the optimiser
+#      then sees a large but finite penalty and backs away from the
+#      infeasible region instead of crashing.
+#
+#   3. BackTracking line search. The default HagerZhang line search
+#      asserts `isfinite(phi_c) && isfinite(dphi_c)` at trial points and
+#      crashes when steep gradients in near-singular regions produce
+#      non-finite directional derivatives during cubic interpolation.
+#      BackTracking only requires Armijo's sufficient-decrease condition
+#      and tolerates non-finite trial values by simply halving the step
+#      and trying again — which composes correctly with the safe-NLL
+#      barrier.
 # ---------------------------------------------------------------------------
 
+# Safe NLL wrapper: converts PosDefException / non-finite values into a
+# large finite barrier so LBFGS can back away gracefully. AD-friendly:
+# the barrier value is constructed with `oftype(...)` / `T(...)` so it
+# preserves ForwardDiff Dual eltype.
+const _DERIVED_NLL_BARRIER = 1e10
+
+function _derived_safe_nll(θ::AbstractVector, y::AbstractMatrix,
+                           spec::NamedTuple,
+                           X::Union{Nothing, AbstractArray{<:Real, 3}},
+                           Σ_phy::Union{Nothing, AbstractMatrix})
+    T = eltype(θ)
+    v = try
+        gaussian_nll_packed(θ, y; spec = spec, X = X, Σ_phy = Σ_phy)
+    catch
+        return T(_DERIVED_NLL_BARRIER)
+    end
+    return isfinite(v) ? v : T(_DERIVED_NLL_BARRIER)
+end
+
 # Constrained refit returning (ll_profile, success, θ_warm_new, g_at_min).
+# Uses an increasing-w (augmented-Lagrangian-flavoured) schedule, a
+# PosDef-safe NLL, and BackTracking line search — see the block comment
+# above.
 function _derived_refit_with_fixed(fit::GllvmFit,
                                    derived_fn_packed::Function,
                                    c::Real,
@@ -626,6 +676,7 @@ function _derived_refit_with_fixed(fit::GllvmFit,
                                    Σ_phy::Union{Nothing, AbstractMatrix};
                                    θ_warm::Union{Nothing, AbstractVector} = nothing,
                                    penalty_weight::Real = 1e6,
+                                   penalty_schedule::Union{Nothing, AbstractVector{<:Real}} = nothing,
                                    x_tol::Real = 1e-6,
                                    f_tol::Real = 1e-8,
                                    g_tol::Real = 1e-4,
@@ -635,12 +686,26 @@ function _derived_refit_with_fixed(fit::GllvmFit,
     θ0 = θ_warm === nothing ? collect(Float64, θ̂) : collect(Float64, θ_warm)
 
     c_float = float(c)
-    w = float(penalty_weight)
+    w_final = float(penalty_weight)
 
-    nll_pen = θ -> begin
-        nll = gaussian_nll_packed(θ, y; spec = spec, X = X, Σ_phy = Σ_phy)
-        g = derived_fn_packed(θ)
-        return nll + 0.5 * w * (g - c_float)^2
+    # Build the escalating-w schedule. We climb in roughly decade steps
+    # from 1e2 up to w_final, capping at 6 stages so a single refit costs
+    # at most ~6 LBFGS solves. If the caller passes a custom schedule we
+    # honour it verbatim.
+    schedule = if penalty_schedule !== nothing
+        [float(w) for w in penalty_schedule]
+    else
+        # Geometric ramp ending at w_final. Each stage warm-starts from
+        # the previous, so each LBFGS call only needs to tighten the
+        # constraint by a decade — ~5-15 iters in practice.
+        s = Float64[]
+        w = 1e2
+        while w < w_final
+            push!(s, w)
+            w *= 10.0
+        end
+        push!(s, w_final)
+        s
     end
 
     opts = Optim.Options(
@@ -651,25 +716,37 @@ function _derived_refit_with_fixed(fit::GllvmFit,
         show_trace = false,
     )
 
-    res = try
-        Optim.optimize(nll_pen, θ0, Optim.LBFGS(), opts; autodiff = :forward)
-    catch
-        return (NaN, false, θ0, NaN)
+    # BackTracking line search tolerates non-finite trial points by
+    # halving the step (cf. HagerZhang's assertion-based termination).
+    method = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking())
+
+    # Sweep penalty weight w through the schedule; warm-start each stage
+    # from the previous minimiser.
+    for w in schedule
+        nll_pen = θ -> begin
+            nll = _derived_safe_nll(θ, y, spec, X, Σ_phy)
+            g = derived_fn_packed(θ)
+            return nll + 0.5 * w * (g - c_float)^2
+        end
+        res = try
+            Optim.optimize(nll_pen, θ0, method, opts; autodiff = :forward)
+        catch
+            return (NaN, false, θ0, NaN)
+        end
+        θ0 = Optim.minimizer(res)
     end
 
-    θ_min = Optim.minimizer(res)
-    nll_unpen = try
-        gaussian_nll_packed(θ_min, y; spec = spec, X = X, Σ_phy = Σ_phy)
-    catch
-        return (NaN, false, θ0, NaN)
+    θ_min = θ0
+    nll_unpen = _derived_safe_nll(θ_min, y, spec, X, Σ_phy)
+    # If the final unpenalised NLL is still at the barrier, the refit
+    # landed in a non-PD region of θ-space — treat as a failure.
+    if !isfinite(nll_unpen) || nll_unpen ≥ _DERIVED_NLL_BARRIER / 2
+        return (NaN, false, θ_min, NaN)
     end
     g_at_min = try
         derived_fn_packed(θ_min)
     catch
-        return (NaN, false, θ0, NaN)
-    end
-    if !isfinite(nll_unpen)
-        return (NaN, false, θ0, NaN)
+        return (NaN, false, θ_min, NaN)
     end
     return (-nll_unpen, true, θ_min, g_at_min)
 end
@@ -677,6 +754,13 @@ end
 # Reuse the bisection helper structure from src/confint_profile.jl but
 # inlined here so this slice does not depend on internal names from a
 # sibling file (Core.eval scoping makes that brittle).
+#
+# Degenerate-interval guard: if the expansion phase failed to cross
+# `cutoff` AND the bracket's "outer" point is at the very first step
+# (no real bracket established) we return NaN rather than collapsing
+# to `(lo + hi)/2 ≈ x0`. The old code returned a near-x0 midpoint when
+# the expansion exited on the very first refit failure, which is what
+# produced the "zero-width CI" pathology in phylo-active cells.
 function _derived_bisect_side(D::Function, x0::Real, step_init::Real,
                               cutoff::Real;
                               max_expand::Integer = 20,
@@ -691,6 +775,7 @@ function _derived_bisect_side(D::Function, x0::Real, step_init::Real,
     x_out = x_in + sign_step * abs_step
     D_out = NaN
     found = false
+    n_in_advances = 0   # how many times we successfully advanced x_in (i.e. real progress)
     for _ in 1:max_expand
         D_val = D(x_out)
         if !isfinite(D_val)
@@ -705,10 +790,19 @@ function _derived_bisect_side(D::Function, x0::Real, step_init::Real,
         end
         x_in = x_out
         D_in = D_val
+        n_in_advances += 1
         abs_step *= 2
         x_out = x_in + sign_step * abs_step
     end
     found || return NaN
+    # If we found the bracket on the *very first* refit and it was a
+    # non-finite refit (PosDef failure right next to x0), we have no
+    # interior evidence of where the cutoff actually lies. Return NaN
+    # so callers see this as a failure rather than a degenerate
+    # near-x0 interval.
+    if n_in_advances == 0 && !isfinite(D_out)
+        return NaN
+    end
 
     lo, hi = x_in, x_out
     D_lo, D_hi = D_in, D_out
@@ -767,14 +861,21 @@ Or, for σ²_eps (sanity check vs the parameter profile CI on σ_eps):
 f_s2 = θ -> exp(2 * θ[1])    # log_σ_eps is at index 1 when q = 0
 ```
 
-`penalty_weight` defaults to 1e6, large enough to drive
-`|g(θ̂(c)) − c|` below ~1e-4 in practice. Increase if you need tighter
-constraint enforcement (at the cost of poorer LBFGS conditioning).
+`penalty_weight` defaults to 1e6 — the *final* weight at the end of an
+internal escalating schedule (1e2 → 1e3 → … → `penalty_weight`). The
+escalation is essential: in phylogenetically active cells, jumping
+straight to a large w at the warm-start θ̂ inflates the penalty term by
+O(w · (g(θ̂) − c)²) and pushes LBFGS into pathological regions (the
+constrained per-site covariance can drift non-PD), producing degenerate
+CIs. The schedule lets the optimiser move smoothly to the {g ≈ c}
+manifold first, then tightens. The internal NLL is also wrapped to
+return a finite barrier on `PosDefException`.
 
-`initial_step` (default `nothing` → `max(0.1 · |g(θ̂)|, 0.01)`) seeds
-the bracket expansion. Geometric expansion inside the bisection makes
-the exact value forgiving — small initial steps just take a few extra
-refits to reach the bracket.
+`initial_step` (default `nothing` → `max(0.05 · |g(θ̂)|, 0.01)`) seeds
+the bracket expansion. Smaller is better here — the geometric expansion
+inside the bisection grows the step rapidly, while a small first step
+keeps the very first constrained refit close to θ̂ (where the safe-NLL
+barrier is rarely triggered).
 
 Returns a NamedTuple with fields:
   - `estimate::Float64` — `g(θ̂)` at the original MLE
@@ -805,7 +906,7 @@ function profile_ci_derived(fit::GllvmFit, derived_fn::Function;
     ll_full = fit.logLik
 
     step_init = if initial_step === nothing
-        max(0.1 * abs(g_hat), 0.01)
+        max(0.05 * abs(g_hat), 0.01)
     else
         float(initial_step)
     end
