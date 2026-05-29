@@ -56,6 +56,7 @@
 using LinearAlgebra
 using SparseArrays
 using Statistics
+using ForwardDiff
 
 # Takahashi (1973) / Erisman–Tinney (1975) selected inverse — used by the
 # sparse E-step (`_estep_sparse`) below to compute `diag(V_φ)` in O(p)
@@ -471,6 +472,168 @@ function _mstep_dense(y::AbstractMatrix, ss)
 end
 
 # ---------------------------------------------------------------------------
+# Observed information matrix via Supplemented EM (Meng & Rubin 1991 JASA).
+#
+# Louis (1982) defines the observed information at the MLE as
+#       I_obs(θ̂) = I_complete(θ̂) − I_missing(θ̂),
+# where I_complete = E[−∂²_θ log p(y, Z; θ) | y, θ̂]  (the expected complete-
+# data information) and I_missing = Var[∂_θ log p(y, Z; θ̂) | y, θ̂] (the
+# variance of the complete-data score under the posterior of the latents).
+# At the EM stationary point E[∂_θ log p(y, Z; θ̂) | y, θ̂] = 0, so I_obs is the
+# negative Hessian of the marginal log-likelihood. Computing I_missing
+# analytically for our Gaussian phylo factor model requires fourth-moment
+# posterior identities (Isserlis/Wick) that are TEDIOUS; we instead use
+# Meng & Rubin's (1991) Supplemented EM (SEM) identity
+#       I_obs(θ̂) = (I − DM(θ̂)) · I_complete(θ̂)
+# where DM(θ̂) = ∂M/∂θ |_{θ̂} is the Jacobian of the EM map M = M_step ∘ E_step
+# at the MLE. The covariance is
+#       V = I_obs⁻¹ = I_complete⁻¹ · (I − DM)⁻¹.
+# Both I_complete and DM are evaluated via ForwardDiff:
+#   * I_complete = −∂²_θ Q(θ | θ̂) at θ = θ̂, where Q is the expected complete-
+#     data log-likelihood. Q is a CLOSED-FORM quadratic in (Λ_B, σ_φ) plus
+#     a log+quadratic piece in log σ_ε, using the sufficient statistics
+#     produced by one E-step at θ̂. Differentiation is trivial.
+#   * DM = ∂_θ M(θ) at θ = θ̂. M is the analytic E-step + M-step composition
+#     (`_em_map_ad`), implemented in a type-generic form so ForwardDiff Duals
+#     propagate through it.
+# Parameterisation: θ = [log σ_ε; vec(Λ_B); σ_φ] (length p·K_B + p + 1). For
+# K_B = 1 this matches the strict-lower-triangular packing the dense fitter
+# (`gaussian_nll_packed`) uses, so SEs are directly comparable to confint.
+# K_B > 1 requires a QR rotation to enforce strict-upper = 0 before packing;
+# this path is currently restricted to K_B = 1 (the regime the gate covers).
+#
+# Refs: Louis (1982) JRSSB 44:226–233 (the observed-information identity).
+#       Meng & Rubin (1991) JASA 86:899–909 (Supplemented EM).
+# ---------------------------------------------------------------------------
+
+# AD-friendly composite E-step + M-step on packed θ = [log σ_ε; vec(Λ_B); σ_φ].
+# Returns the updated packed θ. Type-generic in `eltype(θ)` so ForwardDiff
+# Duals propagate through both the E-step linear solves and the M-step WLS.
+function _em_map_ad(θ::AbstractVector, y::AbstractMatrix{<:Real},
+                    Σ_phy::AbstractMatrix, p::Integer, K_B::Integer)
+    T = eltype(θ)
+    n = size(y, 2)
+    σ_eps = exp(θ[1])
+    Λ_B = reshape(view(θ, 2:(1 + p * K_B)), p, K_B)
+    σ_phy = view(θ, (2 + p * K_B):(1 + p * K_B + p))
+
+    # ---- E-step (dense; type-generic) -------------------------------------
+    σ² = σ_eps^2
+    A  = Λ_B * Λ_B'
+    @inbounds for t in 1:p
+        A[t, t] += σ²
+    end
+    cA = cholesky(Symmetric((A + A') ./ 2))
+    β  = Λ_B' / cA                                # K_B × p   (= Λ_B' A⁻¹)
+
+    m   = vec(sum(y, dims = 2)) ./ n              # length p
+
+    # φ posterior: V_φ = (Σ_phy⁻¹ + n Λ_φ A⁻¹ Λ_φ)⁻¹, μ_φ = V_φ n Λ_φ A⁻¹ m.
+    Ainv_Λφ = cA \ Diagonal(σ_phy)                # A⁻¹ Λ_φ  (p × p)
+    Vφ_inv  = inv(Symmetric((Σ_phy + Σ_phy') ./ 2)) .+
+              n .* (Diagonal(σ_phy) * Ainv_Λφ)
+    cVφ     = cholesky(Symmetric((Vφ_inv + Vφ_inv') ./ 2))
+    Vφ      = inv(cVφ)                            # p × p
+    μ_φ     = Vφ * (n .* (σ_phy .* (cA \ m)))     # length p
+
+    # η posterior aggregated over sites.
+    ImβΛ   = I - β * Λ_B
+    βΛφ    = β .* reshape(σ_phy, 1, p)
+    βΛφVφ  = βΛφ * Vφ
+    zhat   = σ_phy .* μ_φ
+    Eη     = β * (y .- reshape(zhat, p, 1))       # K_B × n
+    sumEη  = vec(sum(Eη, dims = 2))
+
+    S_ηη = n .* ImβΛ .+ n .* (βΛφVφ * βΛφ') .+ Eη * Eη'
+    S_ηη = (S_ηη + S_ηη') ./ 2
+    Eφ2  = [Vφ[t, t] + μ_φ[t]^2 for t in 1:p]
+    C_ηφ = sumEη * μ_φ' .- n .* βΛφVφ             # K_B × p
+    H_ηy = Eη * y'                                # K_B × p
+
+    # ---- M-step (per-trait WLS; type-generic) -----------------------------
+    sy2 = sum(abs2, y)
+    Λ_B_new = Matrix{T}(undef, p, K_B)
+    σ_phy_new = Vector{T}(undef, p)
+    quad_fit = zero(T)
+    @inbounds for t in 1:p
+        Gt = Matrix{T}(undef, K_B + 1, K_B + 1)
+        for j in 1:K_B, i in 1:K_B
+            Gt[i, j] = S_ηη[i, j]
+        end
+        for k in 1:K_B
+            Gt[k, K_B + 1] = C_ηφ[k, t]
+            Gt[K_B + 1, k] = C_ηφ[k, t]
+        end
+        Gt[K_B + 1, K_B + 1] = n * Eφ2[t]
+        ht = Vector{T}(undef, K_B + 1)
+        for k in 1:K_B
+            ht[k] = H_ηy[k, t]
+        end
+        ht[K_B + 1] = μ_φ[t] * (n * m[t])
+        θt = Symmetric((Gt + Gt') ./ 2) \ ht
+        for k in 1:K_B
+            Λ_B_new[t, k] = θt[k]
+        end
+        σ_phy_new[t] = θt[K_B + 1]
+        quad_fit += dot(θt, ht)
+    end
+    σ²_eps_new = (sy2 - quad_fit) / (n * p)
+    σ_eps_new  = sqrt(σ²_eps_new)
+
+    # Pack: [log σ_ε; vec(Λ_B); σ_φ]
+    out = Vector{T}(undef, 1 + p * K_B + p)
+    out[1] = log(σ_eps_new)
+    for k in 1:K_B, i in 1:p
+        out[1 + (k - 1) * p + i] = Λ_B_new[i, k]
+    end
+    @inbounds for t in 1:p
+        out[1 + p * K_B + t] = σ_phy_new[t]
+    end
+    return out
+end
+
+# Expected complete-data log-likelihood Q(θ | θ̂), evaluated using the
+# sufficient statistics from one E-step at θ̂. Closed-form quadratic in
+# (Λ_B, σ_φ); log + quadratic in log σ_ε. Differentiating −Q via ForwardDiff
+# gives I_complete at θ̂. Constants in Z = (η, φ) that do not depend on θ
+# are dropped — they cancel in −∇²_θ Q.
+function _Q_expected_complete(θ::AbstractVector, y::AbstractMatrix{<:Real},
+                              ss, p::Integer, K_B::Integer)
+    T = eltype(θ)
+    n = size(y, 2)
+    log_σ_eps = θ[1]
+    σ_eps     = exp(log_σ_eps)
+    Λ_B       = reshape(view(θ, 2:(1 + p * K_B)), p, K_B)
+    σ_phy     = view(θ, (2 + p * K_B):(1 + p * K_B + p))
+
+    sy2 = sum(abs2, y)
+    cross = zero(T)
+    quad  = zero(T)
+    @inbounds for t in 1:p
+        # Linear cross: Λ_B[t,:]' H_ηy[:,t] + σ_φ[t] μ_φ[t] (n m[t])
+        c = zero(T)
+        for k in 1:K_B
+            c += Λ_B[t, k] * ss.H_ηy[k, t]
+        end
+        c += σ_phy[t] * ss.μ_φ[t] * (n * ss.m[t])
+        cross += c
+
+        # Quadratic: Λ_B[t,:]' S_ηη Λ_B[t,:] + 2 σ_φ[t] Λ_B[t,:]' C_ηφ[:,t] + n σ_φ[t]² Eφ2[t]
+        q = zero(T)
+        for j in 1:K_B, i in 1:K_B
+            q += Λ_B[t, i] * ss.S_ηη[i, j] * Λ_B[t, j]
+        end
+        for k in 1:K_B
+            q += 2 * σ_phy[t] * Λ_B[t, k] * ss.C_ηφ[k, t]
+        end
+        q += n * σ_phy[t]^2 * ss.Eφ2[t]
+        quad += q
+    end
+    # Q(θ) = -np log σ_ε - (1 / 2σ_ε²) [sy2 - 2 cross + quad] + const
+    return -n * p * log_σ_eps - (sy2 - 2 * cross + quad) / (2 * σ_eps^2)
+end
+
+# ---------------------------------------------------------------------------
 # Public EM driver
 # ---------------------------------------------------------------------------
 
@@ -621,4 +784,110 @@ function em_fit_phylo(y::AbstractMatrix, K_B::Integer, Σ_phy::AbstractMatrix;
 
     return EMPhyloFit(Λ_B, σ_eps, σ_phy, ll_final, iters_run, converged,
                       loglik_trace, blup_phy, blup_phi)
+end
+
+"""
+    em_observed_information(emf, y, Σ_phy) -> NamedTuple
+
+Compute the observed information matrix at the EM MLE via the Supplemented
+EM identity (Meng & Rubin 1991 JASA), which evaluates Louis's (1982)
+`I_obs = I_complete − I_missing` from the EM map's rate matrix and the
+expected complete-data information:
+
+        I_obs(θ̂) = (I − DM(θ̂)) · I_complete(θ̂) ,
+        V(θ̂)    = I_obs⁻¹ = I_complete⁻¹ · (I − DM)⁻¹.
+
+`I_complete` is the negative Hessian of the expected complete-data log-
+likelihood `Q(θ | θ̂)` at `θ̂`; `DM` is the Jacobian of one EM step. Both
+are computed via ForwardDiff on type-generic implementations of `Q` and
+the EM map.
+
+Parameterisation: `θ = [log σ_ε; vec(Λ_B); σ_φ]` (length `1 + p·K_B + p`).
+For `K_B = 1` this matches the strict-lower-triangular packing that
+`gaussian_nll_packed` / `confint` uses, so the standard errors returned
+here are directly comparable to `confint(fit; y = …)`.
+
+CURRENTLY RESTRICTED TO K_B = 1. For K_B > 1 the strict-upper triangle of
+Λ_B is not enforced by EM (the M-step is rotation-equivariant); SEM on the
+raw `vec(Λ_B)` parameterisation gives a singular `I_obs` along the
+rotation directions. A QR-rotation onto the lower-triangular orbit before
+packing would generalise this; postponed.
+
+Returns a NamedTuple with fields:
+  * `info::Matrix`         — observed information matrix `I_obs`
+  * `cov::Matrix`          — asymptotic covariance `I_obs⁻¹`
+  * `se::Vector`           — `sqrt.(diag(cov))` on the packed scale
+  * `se_raw::Vector`       — SEs back-transformed to the raw scale via the
+                             delta method (σ_ε via exp, others identity)
+  * `term::Vector{String}` — parameter names matching `confint(fit).term`
+                             when fit is a dense fit on the same model
+  * `pd::Bool`             — whether `I_obs` is positive-definite
+
+Refs: Louis (1982) JRSSB 44:226–233; Meng & Rubin (1991) JASA 86:899–909.
+"""
+function em_observed_information(emf::EMPhyloFit, y::AbstractMatrix,
+                                 Σ_phy::AbstractMatrix)
+    p, n = size(y)
+    K_B  = size(emf.Λ_B, 2)
+    K_B == 1 || throw(ArgumentError(
+        "em_observed_information currently supports K_B = 1 only; got K_B=$K_B"))
+    size(Σ_phy) == (p, p) ||
+        throw(ArgumentError("Σ_phy must be p × p; got $(size(Σ_phy))"))
+
+    yf = Matrix{Float64}(y)
+    Σf = Matrix{Float64}(Σ_phy)
+
+    # Pack the EM MLE: θ̂ = [log σ̂_ε; vec(Λ̂_B); σ̂_φ].
+    θ̂ = vcat(log(emf.σ_eps), vec(emf.Λ_B), copy(emf.σ_phy))
+
+    # Sufficient statistics from one E-step at θ̂ (drives Q).
+    ss = _estep_dense(yf, emf.Λ_B, emf.σ_eps, emf.σ_phy, Σf)
+
+    # I_complete = −∂² Q(θ | θ̂)|_{θ̂}  (Hessian of −Q via ForwardDiff).
+    I_complete = ForwardDiff.hessian(
+        θ -> -_Q_expected_complete(θ, yf, ss, p, K_B), θ̂)
+    I_complete = (I_complete + I_complete') ./ 2
+
+    # DM = ∂_θ M(θ)|_{θ̂}  (Jacobian of one EM step via ForwardDiff).
+    DM = ForwardDiff.jacobian(
+        θ -> _em_map_ad(θ, yf, Σf, p, K_B), θ̂)
+
+    # I_obs = I_complete · (I − DM) = (I − DMᵀ) · I_complete  (Meng & Rubin
+    # 1991, eq. 2.2.4-6). Both forms are symmetric because I_m = I_c·DM is
+    # symmetric (the fraction-of-missing-information identity I_c⁻¹ I_m = DM).
+    # We use the symmetric average for round-off; the constituent matrices are
+    # symmetric in exact arithmetic.
+    Ipar = size(DM, 1)
+    A1   = I_complete * (Matrix{Float64}(I, Ipar, Ipar) - DM)
+    I_obs = (A1 + A1') ./ 2                        # symmetrise round-off
+
+    pd = true
+    cov_ = try
+        inv(Symmetric(I_obs))
+    catch
+        pd = false
+        fill(NaN, Ipar, Ipar)
+    end
+    diag_cov = diag(cov_)
+    if any(!isfinite(v) || v ≤ 0 for v in diag_cov)
+        pd = false
+    end
+
+    se = [v > 0 ? sqrt(v) : NaN for v in diag_cov]
+
+    # Raw-scale SEs (delta method): σ_ε = exp(log σ_ε) ⇒ SE_σ_ε = σ_ε · SE_log σ_ε.
+    se_raw = copy(se)
+    se_raw[1] = isfinite(se[1]) ? emf.σ_eps * se[1] : NaN
+
+    # Term names (mirror confint's convention for the phylo_unique-only case).
+    terms = String["sigma_eps"]
+    for i in 1:p
+        push!(terms, "Lambda_B[$i,1]")
+    end
+    for t in 1:p
+        push!(terms, "sigma_phy[$t]")
+    end
+
+    return (info = I_obs, cov = cov_, se = se, se_raw = se_raw,
+            term = terms, pd = pd)
 end
