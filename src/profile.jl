@@ -13,13 +13,15 @@
 #   σ²_B = σ²_eps · τ_B
 #   σ²_W = σ²_eps · τ_W
 #   Λ_phy = σ_eps · L_phy
-#   σ_phy = σ_eps · ρ_phy
+#   σ_phy = σ_eps · ρ_phy   (identity link — ρ_phy is signed)
 # Then per-site site covariance Σ_y_site = σ²_eps · Ã with
 #   Ã = L_B L_B' + diag(d̃)
 #   d̃[t] = (L_W L_W')[t,t] + τ_B[t] + τ_W[t] + 1
 #
 # Phylogenetic block (J3) — same trick: Σ_y_full = σ²_eps · (I_n ⊗ Ã + J_n ⊗ B̃)
 # with B̃ = (L_phy_aug L_phy_aug') .* Σ_phy, L_phy_aug = hcat(L_phy, ρ_phy).
+# Joint sign flip (ρ_phy → -ρ_phy, φ → -φ) is the lone non-identifiable
+# symmetry; fit.jl applies a global sign anchor post-hoc.
 #
 # Profile σ²_eps: -2ℓ has the form
 #   -2ℓ = n·p·log(2π) + n·p·log(σ²_eps) + (logdet pieces in Ã)
@@ -48,7 +50,7 @@ Parameter layout (length = `profile_nparams(spec; profile_beta)`):
 - log_τ_W (p entries if spec.has_diag)
 - θ_rr_B for L_B (rr_theta_len(p, K_B) entries)
 - θ_rr_W for L_W (rr_theta_len(p, K_W) entries if K_W > 0)
-- log_ρ_phy (p entries if has_phy_unique) — ρ_phy = exp(log_ρ_phy).
+- ρ_phy (p entries if has_phy_unique) — identity link, signed.
 - θ_rr_phy for L_phy (rr_theta_len(p, K_phy) entries if K_phy > 0)
 """
 function gaussian_profile_nll(params::AbstractVector, y::AbstractMatrix;
@@ -119,7 +121,7 @@ function gaussian_profile_nll(params::AbstractVector, y::AbstractMatrix;
     end
 
     if has_phy_unique
-        log_ρ_phy = @view params[(cursor + 1):(cursor + p)]
+        ρ_phy_raw = @view params[(cursor + 1):(cursor + p)]
         cursor += p
     end
 
@@ -142,7 +144,7 @@ function gaussian_profile_nll(params::AbstractVector, y::AbstractMatrix;
         Td = promote_type(Td, eltype(Σ_phy))
     end
     if has_phy_unique
-        Td = promote_type(Td, eltype(log_ρ_phy))
+        Td = promote_type(Td, eltype(ρ_phy_raw))
     end
     if K_phy > 0
         Td = promote_type(Td, eltype(L_phy))
@@ -281,12 +283,11 @@ function gaussian_profile_nll(params::AbstractVector, y::AbstractMatrix;
         end
 
         L_phy_aug = if K_phy > 0 && has_phy_unique
-            ρ_phy_col = exp.(log_ρ_phy)
-            hcat(L_phy, ρ_phy_col)
+            hcat(L_phy, collect(ρ_phy_raw))
         elseif K_phy > 0
             L_phy
         else
-            reshape(exp.(log_ρ_phy), p, 1)
+            reshape(collect(ρ_phy_raw), p, 1)
         end
         B_tilde = (L_phy_aug * L_phy_aug') .* Σ_phy
 
@@ -414,9 +415,10 @@ function profile_recover(params::AbstractVector, y::AbstractMatrix;
         L_W = unpack_lambda(θ_rr_W, p, K_W)
     end
     if has_phy_unique
-        log_ρ_phy = collect(params[(cursor + 1):(cursor + p)])
+        # Identity link: ρ_phy is signed (joint flip with φ is the lone
+        # non-identifiable symmetry).
+        ρ_phy = collect(params[(cursor + 1):(cursor + p)])
         cursor += p
-        ρ_phy = exp.(log_ρ_phy)
     end
     if K_phy > 0
         θ_rr_phy = collect(params[(cursor + 1):(cursor + rr_phy)])

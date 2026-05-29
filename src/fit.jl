@@ -252,8 +252,9 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
     log_τ_B₀ = has_diag ? fill(0.5 * log(σ²_B_init / σ_e₀^2), p) : Float64[]
     log_τ_W₀ = has_diag ? fill(0.5 * log(σ²_W_init / σ_e₀^2), p) : Float64[]
 
-    # ρ_phy on log scale: log_ρ = log(σ_phy_init / σ_eps_init)
-    log_ρ_phy₀ = has_phy_unique ? fill(log(σ_phy_init / σ_e₀), p) : Float64[]
+    # ρ_phy on identity (signed) scale: ρ_phy = σ_phy / σ_eps. Signed because
+    # σ_phy now uses an identity link — see src/likelihood.jl, src/profile.jl.
+    ρ_phy₀ = has_phy_unique ? fill(σ_phy_init / σ_e₀, p) : Float64[]
 
     θ_phy₀ = if K_phy > 0
         if isnothing(λ_phy_init)
@@ -266,11 +267,11 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
     end
 
     # Assemble profile params0 in the canonical order:
-    # [β (if not profiled), log_τ_B, log_τ_W, θ_B, θ_W, log_ρ_phy, θ_phy]
+    # [β (if not profiled), log_τ_B, log_τ_W, θ_B, θ_W, ρ_phy, θ_phy]
     params₀ = if β_in_params
-        vcat(β₀, log_τ_B₀, log_τ_W₀, θ_B₀, θ_W₀, log_ρ_phy₀, θ_phy₀)
+        vcat(β₀, log_τ_B₀, log_τ_W₀, θ_B₀, θ_W₀, ρ_phy₀, θ_phy₀)
     else
-        vcat(log_τ_B₀, log_τ_W₀, θ_B₀, θ_W₀, log_ρ_phy₀, θ_phy₀)
+        vcat(log_τ_B₀, log_τ_W₀, θ_B₀, θ_W₀, ρ_phy₀, θ_phy₀)
     end
 
     nll = params -> gaussian_profile_nll(params, y;
@@ -292,15 +293,81 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
 
     params_hat = Optim.minimizer(res)
 
+    # Signed-σ_phy: escape sign-pattern basins via greedy single-flip restarts.
+    # The identity-link σ_phy lets the optimisation reach any signed value, but
+    # LBFGS is a *smooth* optimiser — to move from one sign pattern to another
+    # it would have to pass through a saddle where some |σ_phy[t]| ≈ 0, and
+    # in practice it gets trapped in the basin of its initial sign pattern.
+    # We restore the discrete moves: at each converged point, evaluate the
+    # NLL after flipping the sign of each individual σ_phy[t]; if any flip
+    # strictly improves, restart LBFGS from the best single flip. Iterate
+    # until no single flip helps. Bounded by O(p) outer iterations (each
+    # iteration commits one sign change); in practice 0–2 restarts suffice.
+    # Without this loop, LBFGS can stall at sign-pattern-local optima that
+    # are *not* the global MLE — exactly the seed-17 / signed-MLE pathology
+    # the identity link was introduced to fix.
+    if has_phy_unique
+        q_in_params = β_in_params ? q : 0
+        diag_count = has_diag ? 2 * p : 0
+        offset_pre_ρ = q_in_params + diag_count + rr_B + rr_W
+        ρ_range = (offset_pre_ρ + 1):(offset_pre_ρ + p)
+        max_flip_iters = p + 2  # safety cap
+        for _ in 1:max_flip_iters
+            nll_current = nll(params_hat)
+            best_drop = 0.0
+            best_idx  = 0
+            for t in 1:p
+                trial = copy(params_hat)
+                trial[ρ_range[t]] = -trial[ρ_range[t]]
+                drop = nll_current - nll(trial)
+                if drop > best_drop + 1e-8
+                    best_drop = drop
+                    best_idx  = t
+                end
+            end
+            best_idx == 0 && break
+            # Restart LBFGS from the best single-flipped point.
+            params_seed = copy(params_hat)
+            params_seed[ρ_range[best_idx]] = -params_seed[ρ_range[best_idx]]
+            res_flip = Optim.optimize(nll, params_seed, Optim.LBFGS(), opts;
+                                       autodiff = :forward)
+            if Optim.minimum(res_flip) < Optim.minimum(res) - 1e-8
+                res = res_flip
+                params_hat = Optim.minimizer(res)
+            else
+                break
+            end
+        end
+        t1 = time()  # account for sign-exploration time in cputime
+    end
+
     # Recover user-facing parameters
     rec = profile_recover(params_hat, y;
                           spec = spec, X = X, Σ_phy = Σ_phy,
                           profile_beta = do_profile_beta)
 
+    # Post-hoc global sign anchor for σ_phy (identity-link, signed).
+    # The marginal likelihood is invariant under the joint flip
+    # (σ_phy → -σ_phy, φ → -φ); this is the lone non-identifiable
+    # symmetry (cross terms B[t,t'] = σ_phy[t]·σ_phy[t']·Σ_phy[t,t'] are
+    # bilinear in σ_phy so a *global* sign flip leaves B unchanged).
+    # Convention: flip so the largest-magnitude entry has non-negative
+    # sign. Estimates are then deterministic up to the flip.
+    if has_phy_unique && rec.σ_phy !== nothing
+        i_max = argmax(abs.(rec.σ_phy))
+        if rec.σ_phy[i_max] < 0
+            σ_phy_anchored = -rec.σ_phy
+            rec = (logLik = rec.logLik, σ_eps = rec.σ_eps, β = rec.β,
+                   Λ_B = rec.Λ_B, Λ_W = rec.Λ_W,
+                   σ²_B = rec.σ²_B, σ²_W = rec.σ²_W,
+                   Λ_phy = rec.Λ_phy, σ_phy = σ_phy_anchored)
+        end
+    end
+
     # Build θ_packed in the *original* (legacy) layout for backward
     # compatibility with consumers that read .pars.θ_packed:
     # [β; log_σ_eps; (log_σ_B; log_σ_W if has_diag);
-    #  θ_rr_B; θ_rr_W; (log_σ_phy if has_phy_unique); θ_rr_phy]
+    #  θ_rr_B; θ_rr_W; (σ_phy if has_phy_unique, identity link); θ_rr_phy]
     legacy_pieces = Any[]
     if q > 0
         push!(legacy_pieces, rec.β)
@@ -315,7 +382,8 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
         push!(legacy_pieces, pack_lambda(rec.Λ_W))
     end
     if has_phy_unique
-        push!(legacy_pieces, log.(rec.σ_phy))
+        # Identity link: store signed σ_phy values directly (no log).
+        push!(legacy_pieces, collect(rec.σ_phy))
     end
     if K_phy > 0
         push!(legacy_pieces, pack_lambda(rec.Λ_phy))

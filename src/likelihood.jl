@@ -294,7 +294,7 @@ J2-A-WD / J3 signature carrying a `spec::NamedTuple` with fields
      log_σ_W         (p entries if spec.has_diag)
      θ_rr_B          (rr_theta_len(p, K_B) entries)
      θ_rr_W          (rr_theta_len(p, K_W) entries if spec.K_W > 0)
-     log_σ_phy       (p entries if spec.has_phy_unique)
+     σ_phy           (p entries if spec.has_phy_unique, identity link — signed)
      θ_rr_phy        (rr_theta_len(p, K_phy) entries if spec.K_phy > 0)]
 
 `X` may be passed as a keyword (required iff `spec.q > 0`). `Σ_phy`
@@ -378,9 +378,11 @@ function gaussian_nll_packed(params::AbstractVector, y::AbstractMatrix;
     end
 
     if has_phy_unique
-        log_σ_phy = @view params[(cursor + 1):(cursor + p)]
+        # Identity link: σ_phy is a signed loading-like vector (entries may
+        # be negative). Joint sign flip (σ_phy → -σ_phy, φ → -φ) is the lone
+        # non-identifiable symmetry; fit.jl applies a global sign anchor.
+        σ_phy = @view params[(cursor + 1):(cursor + p)]
         cursor += p
-        σ_phy = exp.(log_σ_phy)
     else
         σ_phy = nothing
     end

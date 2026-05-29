@@ -9,12 +9,14 @@
 #   - Wald CI: θ̂ ± z * SE on the working scale of each parameter, where
 #     z = quantile(Normal(), 0.5 + level/2).
 #
-# Working-scale CIs: σ_eps, σ_B, σ_W, σ_phy are stored as logs in the
-# packed vector, so the CI bounds returned by this function are on the
-# *raw* scale via exp(log_θ ± z * SE_log). β and Λ entries are linear in
-# the packed vector and reported as-is. This matches glmmTMB/gllvmTMB's
+# Working-scale CIs: σ_eps, σ_B, σ_W are stored as logs in the packed
+# vector, so their CI bounds are on the *raw* (positive) scale via
+# exp(log_θ ± z * SE_log). σ_phy uses an identity (signed) link — its
+# CI is the plain Wald θ̂ ± z * SE. β and Λ entries are linear in the
+# packed vector and reported as-is. This matches glmmTMB/gllvmTMB's
 # default behaviour for SD-style parameters (reported on the raw scale,
-# Wald-on-log-then-exponentiated).
+# Wald-on-log-then-exponentiated) while treating σ_phy as the signed
+# loading-like quantity it actually is in the marginal likelihood.
 #
 # Non-PD Hessian handling:
 #   - If ForwardDiff.hessian errors, return NaN bounds with pd_hessian=false.
@@ -96,9 +98,10 @@ function _confint_all_term_names(fit::GllvmFit)
     end
 
     if has_phy_unique
+        # σ_phy uses an identity (signed) link — Wald CI is plain linear.
         for t in 1:p
             push!(terms, "sigma_phy[$t]")
-            push!(kinds, :log_sd)
+            push!(kinds, :linear)
         end
     end
 
@@ -177,7 +180,7 @@ end
 # signature) requires to evaluate at an arbitrary θ. The θ stored on
 # fit.pars.θ_packed is in the legacy layout
 #   [β; log_σ_eps; (log_σ_B; log_σ_W if has_diag);
-#    θ_rr_B; θ_rr_W; (log_σ_phy if has_phy_unique); θ_rr_phy]
+#    θ_rr_B; θ_rr_W; (σ_phy if has_phy_unique, identity link); θ_rr_phy]
 # which is exactly what gaussian_nll_packed expects.
 function _confint_reconstruct_nll(fit::GllvmFit, y::AbstractMatrix,
                                   X::Union{Nothing, AbstractArray{<:Real, 3}},
@@ -214,10 +217,11 @@ GLLVM. Returns a NamedTuple with fields:
   - `"Lambda:1,1"` — shorthand for `"Lambda_B[1,1]"`
   - `["sigma_eps", "Lambda:1,1"]` — mixed list
 
-Working-scale convention: σ_eps, σ_B, σ_W, σ_phy are parameterised on
-the log scale internally. The CI bounds returned for those entries are
-on the *raw* (positive) scale via `exp(log_θ ± z * SE_log)`. β and Λ
-entries are reported on their native (linear) scale.
+Working-scale convention: σ_eps, σ_B, σ_W are parameterised on the log
+scale internally. The CI bounds returned for those entries are on the
+*raw* (positive) scale via `exp(log_θ ± z * SE_log)`. σ_phy uses an
+identity (signed) link — its Wald CI is the plain `θ̂ ± z * SE`. β and
+Λ entries are reported on their native (linear) scale.
 
 The Hessian is computed via ForwardDiff at the fitted parameter vector
 stored on `fit.pars.θ_packed`. The function needs the original data
