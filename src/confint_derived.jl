@@ -1,8 +1,8 @@
 # Profile-likelihood and parametric-bootstrap confidence intervals for
 # *derived quantities* of a fitted Gaussian GLLVM.
 #
-# Why a separate file? PERF+F (Wald, src/confint.jl), PERF+H (profile,
-# src/confint_profile.jl), and PERF+I (bootstrap, src/confint_bootstrap.jl)
+# The Wald CI machinery in src/confint.jl, the profile CI in
+# src/confint_profile.jl, and the bootstrap CI in src/confint_bootstrap.jl
 # all operate on individual *packed parameters*. Ecologists care about
 # *derived quantities* — entries of Σ_y, communalities c² = (ΛΛ')_tt / Σ_tt,
 # cross-trait correlations, ICCs, phylogenetic signal H² — which are
@@ -11,10 +11,10 @@
 #
 # Two complementary CI methods here:
 #
-# Bootstrap (cheap once PERF+I exists): replay the parametric bootstrap
-# from src/confint_bootstrap.jl, compute the scalar derived quantity on
-# each successfully refit replicate, and take percentiles. Single-line
-# wrapper around the existing bootstrap infrastructure.
+# Bootstrap: replay the parametric bootstrap from src/confint_bootstrap.jl,
+# compute the scalar derived quantity on each successfully refit replicate,
+# and take percentiles. Single-line wrapper around the existing bootstrap
+# infrastructure.
 #
 # Profile (constrained refit): for a candidate c we hold the derived
 # quantity fixed at c via a quadratic penalty
@@ -24,27 +24,11 @@
 # D(c) = 2(ℓ̂ − ℓ_p(c)) is ~ χ²₁ under the null derived_fn(θ) = c, so
 # the 100(1−α)% profile CI is {c : D(c) ≤ qchisq(1−α, 1)}. We then
 # bracket-then-bisect, mirroring src/confint_profile.jl's strategy.
-#
-# Required for the ADEMP simulation's biological-quantity coverage gates.
-# Mirrors R/gllvmTMB's extract_Sigma_bootstrap / extract_communality_bootstrap
-# / extract_ICC_bootstrap and the profile variants in PR #307.
-#
-# Loading model: included on demand by the verify recipe, exactly like
-# its sister CI files. Definitions land directly in GLLVM via Core.eval.
-#
-# Active plan: ~/.claude/plans/please-have-a-robust-elephant.md
 
-Core.eval(GLLVM, quote
-
-using ForwardDiff
 using Distributions: Chisq, quantile
-using LinearAlgebra
-using Random
-using Optim
 
 # Linear-interpolation percentile (matches Statistics.quantile default,
-# i.e. R type 7). Avoids a dependency on Statistics, which is not a dep
-# of GLLVM (this Core.eval block runs inside the GLLVM module).
+# i.e. R type 7). Self-contained so this file does not need Statistics.
 function _derived_percentile(v::AbstractVector{<:Real}, p::Real)
     0 ≤ p ≤ 1 || throw(ArgumentError("p must be in [0, 1]; got $p"))
     n = length(v)
@@ -872,4 +856,3 @@ function profile_ci_derived(fit::GllvmFit, derived_fn::Function;
             estimate = g_hat, method = method)
 end
 
-end) # Core.eval(GLLVM, quote ... end)

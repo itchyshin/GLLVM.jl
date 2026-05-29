@@ -7,14 +7,6 @@
 # Both M-step updates have closed form (no inner optimisation). For
 # moderate p and K, this is competitive with LBFGS + AD on wall-clock
 # per iteration AND often converges in fewer iterations.
-#
-# This file defines `em_fa` inside the GLLVM module via `@eval`, so it
-# can be referenced as `GLLVM.em_fa` without modifying the module's
-# top-level `GLLVM.jl` include list.
-
-@eval GLLVM begin
-
-using LinearAlgebra
 
 """
     em_fa(y::AbstractMatrix, K::Integer;
@@ -145,4 +137,3 @@ function em_fa(y::AbstractMatrix, K::Integer;
     return (Λ_final, ψ_final, loglik_final, max_iter, false)
 end
 
-end  # @eval GLLVM

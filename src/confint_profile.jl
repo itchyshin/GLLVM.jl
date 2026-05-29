@@ -1,9 +1,5 @@
 # Profile-likelihood confidence intervals for the Gaussian GLLVM.
 #
-# This is a NEW file added alongside the PERF overhaul of src/likelihood.jl
-# and src/fit.jl, and the sibling Wald CI implementation in src/confint.jl.
-# It deliberately does not touch those files.
-#
 # For parameter θ_i with MLE θ̂_i and full log-likelihood ℓ̂,
 # the profile log-lik at candidate value c is
 #     ℓ_p(c) = max_{θ_{-i}} ℓ(c, θ_{-i}),
@@ -17,15 +13,6 @@
 #   (common for ratios like ICC, H²), or the fit is near-singular.
 #   Profile CIs invert the LRT directly — wider tail support, better
 #   coverage at boundaries.
-#
-# Loading model: this file is loaded by the verify command via
-#
-#     julia --project=. -e 'using GLLVM; include("src/confint_profile.jl"); ...'
-#
-# We deliberately do NOT modify src/GLLVM.jl (hard constraint). To make
-# `GLLVM.profile_ci(...)` callable from the test file, the definitions
-# below are injected directly into the `GLLVM` module via Core.eval on
-# a single quote block, matching the pattern used by src/confint.jl.
 #
 # Algorithm:
 #   1. Build the full negative log-likelihood closure as a function of the
@@ -50,18 +37,8 @@
 # fixed value c at index i to form θ_full ∈ R^N before calling
 # gaussian_nll_packed. This is the standard Julia idiom and keeps
 # ForwardDiff happy (the closure is differentiable in θ_red).
-#
-# Required for the ADEMP simulation:
-#   docs/please-have-a-robust-elephant.md
-# Active plan:
-#   ~/.claude/plans/please-have-a-robust-elephant.md
 
-Core.eval(GLLVM, quote
-
-using ForwardDiff
 using Distributions: Chisq, quantile
-using LinearAlgebra
-using Optim
 
 # Build the lambda part of the term-name list in pack_lambda order.
 # Diagonals (k = 1..K) first, then strict-lower entries column-by-column.
@@ -506,4 +483,3 @@ function profile_ci(fit::GllvmFit, parm::Symbol; kwargs...)
     return profile_ci(fit, String(parm); kwargs...)
 end
 
-end) # Core.eval(GLLVM, quote ... end)

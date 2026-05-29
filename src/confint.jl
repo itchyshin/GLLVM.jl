@@ -1,20 +1,5 @@
 # Wald confidence intervals via the observed information matrix.
 #
-# This is a NEW file added alongside the PERF overhaul of src/likelihood.jl
-# and src/fit.jl; it deliberately does not touch those files.
-#
-# The required ADEMP simulation needs Julia-side CI coverage to compare
-# against R, so without confint() the Julia coverage column was NA.
-#
-# Loading model: this file is loaded by the verify command via
-#
-#     julia --project=. -e 'using GLLVM; include("src/confint.jl"); ...'
-#
-# We deliberately do NOT modify src/GLLVM.jl (hard constraint). To make
-# `GLLVM.confint(...)` callable from the test file, the definitions
-# below are injected directly into the `GLLVM` module via Core.eval on
-# a single quote block. The body otherwise reads as normal Julia source.
-#
 # Strategy:
 #   - Reconstruct the negative log-likelihood used during fitting by
 #     calling gaussian_nll_packed on the legacy-layout θ_packed vector
@@ -36,17 +21,8 @@
 #   - If the Hessian is finite but inversion fails or any diagonal is
 #     non-positive, mark pd_hessian=false and return NaN bounds for those
 #     entries.
-#
-# Required for the ADEMP simulation:
-#   docs/please-have-a-robust-elephant.md
-# Active plan:
-#   ~/.claude/plans/please-have-a-robust-elephant.md
 
-Core.eval(GLLVM, quote
-
-using ForwardDiff
 using Distributions: Normal, quantile
-using LinearAlgebra
 
 # Build the lambda part of the term-name list in pack_lambda order.
 # Mirrors `pack_lambda` / `unpack_lambda` in src/packing.jl: diagonals
@@ -359,4 +335,3 @@ function confint(fit::GllvmFit;
             pd_hessian = pd)
 end
 
-end) # Core.eval(GLLVM, quote ... end)

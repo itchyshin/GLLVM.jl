@@ -93,6 +93,15 @@ as O(p) thanks to the sparse Cholesky on the augmented precision.
 
 Use this on phylogenies with hundreds to tens of thousands of species,
 where forming or factorising the dense p × p Σ_phy is prohibitive.
+
+# Evaluation-only (AD limitation)
+
+This path is **evaluation-only**: CHOLMOD (Julia's sparse Cholesky) does
+not support `ForwardDiff.Dual` element types, so inputs are cast to
+`Float64` for the sparse solve. AD-based fitting (`fit_gaussian_gllvm`)
+must therefore use the dense `gaussian_marginal_loglik` path. The sparse
+path is intended for likelihood evaluation, simulation, and verification
+on large trees — not for the optimiser's inner loop.
 """
 function gaussian_marginal_loglik_sparse_phy(y::AbstractMatrix,
                                              Λ_B::AbstractMatrix,
