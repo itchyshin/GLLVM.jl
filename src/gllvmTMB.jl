@@ -4,6 +4,8 @@ using LinearAlgebra, Distributions, Optim, ForwardDiff, Random
 
 include("packing.jl")
 include("likelihood.jl")
+include("ppca_init.jl")
+include("profile.jl")
 include("fit.jl")
 include("simulate.jl")
 
