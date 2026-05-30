@@ -1,6 +1,10 @@
 Manifest.toml
 *.cov
 /docs/build
+/docs/node_modules
+/docs/package-lock.json
+/docs/src/.vitepress/cache
+/docs/src/.vitepress/.temp
 /benchmarks/*.json
 .DS_Store
 
