@@ -32,7 +32,7 @@ Factorisation of `M = Λ Λ' + Diagonal(d)` that stores three small pieces:
   matrix `I_K + Λ' D⁻¹ Λ`.
 
 Use [`low_rank_chol`](@ref) to construct, then `\\`, [`ldiv!`](@ref), or
-[`logdet`](@ref) for the Woodbury-based operations.
+`logdet` for the Woodbury-based operations.
 """
 struct LowRankPlusDiagChol{T, MK <: AbstractMatrix{T}}
     d::Vector{T}

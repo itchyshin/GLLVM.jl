@@ -217,11 +217,11 @@ Per-trait variance decomposition. Each entry is in [0, 1]; the
 non-zero).
 
 `component` can be:
-  - `:shared`    — (Λ_B Λ_B')[t,t] / Σ_y_site[t,t]   (== communality)
-  - `:unique_W`  — (Λ_W Λ_W')[t,t] / Σ_y_site[t,t]
-  - `:unique_B`  — σ²_B[t] / Σ_y_site[t,t]            (J2-A-WD path)
-  - `:unique_Wd` — σ²_W[t] / Σ_y_site[t,t]            (J2-A-WD path)
-  - `:residual`  — σ²_eps / Σ_y_site[t,t]
+  - `:shared`    — `(Λ_B Λ_B')[t,t] / Σ_y_site[t,t]`   (== communality)
+  - `:unique_W`  — `(Λ_W Λ_W')[t,t] / Σ_y_site[t,t]`
+  - `:unique_B`  — `σ²_B[t] / Σ_y_site[t,t]`            (J2-A-WD path)
+  - `:unique_Wd` — `σ²_W[t] / Σ_y_site[t,t]`            (J2-A-WD path)
+  - `:residual`  — `σ²_eps / Σ_y_site[t,t]`
 """
 function proportions(fit::GllvmFit; component::Symbol = :shared)
     spec = _derived_spec(fit)
