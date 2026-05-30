@@ -259,15 +259,18 @@ Fields
 * `Λ̃`         – augmented node precision `Q_cond + σ_eps⁻² S' Λ_φ² S`.
 * `cΛ̃`        – Cholesky of `Λ̃`.
 """
-struct NodePerSpecies
+# Parametric on the factor type `TF` (mirrors `SparsePhyState{TF}`): the
+# CHOLMOD factor's index type is concrete per instance, so `st.cΛ̃ \ …` and
+# `takahashi_diag(st.cΛ̃)` dispatch statically instead of at runtime.
+struct NodePerSpecies{TF<:SparseArrays.CHOLMOD.Factor{Float64}}
     phy::AugmentedPhy{Float64}
     σ_phy::Vector{Float64}
     σ²_eps::Float64
     nb::Int
     leaf_pos::Vector{Int}
-    chol_Qcond::SparseArrays.CHOLMOD.Factor{Float64}
+    chol_Qcond::TF
     Λ̃::SparseMatrixCSC{Float64,Int}
-    cΛ̃::SparseArrays.CHOLMOD.Factor{Float64}
+    cΛ̃::TF
 end
 
 """
@@ -326,7 +329,7 @@ function grad_node_perspecies(st::NodePerSpecies, y::AbstractVector, μ::Real)
     Λφr = sp .* r
     rhs = zeros(Float64, st.nb)
     @inbounds for t in 1:p; rhs[st.leaf_pos[t]] = Λφr[t]; end
-    sol = st.cΛ̃ \ rhs
+    sol = (st.cΛ̃ \ rhs)::Vector{Float64}     # assert: CHOLMOD `\` is not inferred
     u = Vector{Float64}(undef, p)
     @inbounds for t in 1:p
         u[t] = inve * r[t] - inve^2 * sp[t] * sol[st.leaf_pos[t]]
@@ -335,7 +338,7 @@ function grad_node_perspecies(st::NodePerSpecies, y::AbstractVector, μ::Real)
     Λφu = sp .* u
     rhs2 = zeros(Float64, st.nb)
     @inbounds for t in 1:p; rhs2[st.leaf_pos[t]] = Λφu[t]; end
-    sol2 = st.chol_Qcond \ rhs2
+    sol2 = (st.chol_Qcond \ rhs2)::Vector{Float64}
     # node diagonal of Λ̃⁻¹ (selected-inverse diagonal), O(nnz L).
     dg = takahashi_diag(st.cΛ̃)
     g = Vector{Float64}(undef, p)

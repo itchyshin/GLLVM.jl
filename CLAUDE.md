@@ -16,8 +16,8 @@ GLLVM.jl is a Julia implementation of the **Gaussian + phylogenetic** Generalise
 
 - Julia ≥ 1.10 (project compat). The maintainer's local Julia binary is at `~/.juliaup/bin/julialauncher`; `julia` may not be on every shell's PATH.
 - Install deps: `julia --project=. -e 'using Pkg; Pkg.instantiate()'`
-- **Run tests**: `julia --project=. test/runtests.jl`
-- **Do NOT use `Pkg.test()`** on this project — it fails with `can not merge projects` from the Pkg test-sandbox. The direct `julia --project=. test/runtests.jl` invocation works.
+- **Full suite (canonical)**: `julia --project=. -e 'using Pkg; Pkg.test()'` — verified working on macOS + all CI runners (the earlier `can not merge projects` problem is resolved; root `Project.toml` carries no conflicting `[extras]`/`[targets]`). This is what CI runs, and the only invocation that loads the test-only quality tools (Aqua, JET) declared in `test/Project.toml`.
+- **Quick core run**: `julia --project=. test/runtests.jl` runs the core suite directly — faster, no test-env setup, but skips the quality tools (they live in the test environment).
 
 ### Design discipline (apply throughout)
 

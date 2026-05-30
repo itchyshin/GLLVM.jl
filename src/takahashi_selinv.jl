@@ -101,8 +101,16 @@ Cost: `O(nnz(L))` arithmetic + O(nnz(L)·log(max_col_nnz)) for the symmetric
 lookups (with constant `max_col_nnz` on a tree this is `O(nnz(L))` overall).
 """
 function takahashi_selinv(ch::SparseArrays.CHOLMOD.Factor{Float64})
-    L = sparse(ch.L)                         # n × n lower triangular
-    perm = ch.p                              # Q[perm, perm] == L * Lᵀ
+    # Function barrier: `ch.L` / `ch.p` are getproperty accesses on a
+    # CHOLMOD.Factor (type-unstable, inferred `Any`). Hop into a typed kernel
+    # so the recursion compiles fully type-stable on the concrete factor type.
+    # `sparse(::FactorComponent)` infers as a Union (Symmetric | CSC); the L
+    # factor is always the lower-triangular CSC, so assert it to resolve the
+    # barrier call to a static dispatch.
+    return _takahashi_selinv(sparse(ch.L)::SparseMatrixCSC{Float64}, ch.p)
+end
+
+function _takahashi_selinv(L::SparseMatrixCSC{Float64}, perm::AbstractVector{<:Integer})
     n = size(L, 1)
     colptr = L.colptr
     rowval = L.rowval
@@ -197,8 +205,12 @@ without materialising the full sparse output (a small allocation win when
 only the diagonal is needed, as in the EM E-step's per-trait variance).
 """
 function takahashi_diag(ch::SparseArrays.CHOLMOD.Factor{Float64})
-    L = sparse(ch.L)
-    perm = ch.p
+    # Function barrier (see `takahashi_selinv`): `ch.L` / `ch.p` are
+    # type-unstable getproperty accesses; the typed kernel below is stable.
+    return _takahashi_diag(sparse(ch.L)::SparseMatrixCSC{Float64}, ch.p)
+end
+
+function _takahashi_diag(L::SparseMatrixCSC{Float64}, perm::AbstractVector{<:Integer})
     n = size(L, 1)
     colptr = L.colptr
     rowval = L.rowval

@@ -46,3 +46,25 @@ significant digits on every fit.
 Full per-rep details, the wall-clock log-log plot, and the verification
 gate summary live in the source benchmark repo at
 `gllvmTMB-julia-bench/report/grid-bench.md`.
+
+## O(p) phylogenetic gradient scaling
+
+The headline of the node-frame analytic gradient (`grad_node_perspecies`) is
+that a single **exact** gradient evaluation scales **linearly** in the number
+of species `p` on a tree — where R `gllvmTMB` caps near `p ≈ 500`. Timed on a
+balanced tree (one evaluation, median over `BenchmarkTools` samples; reproduce
+with `julia --project=bench bench/node_gradient_bench.jl`):
+
+| p      | state build (ms) | gradient (ms) | gradient / p (µs) |
+|-------:|-----------------:|--------------:|------------------:|
+| 100    |            0.088 |        0.0094 |             0.094 |
+| 500    |            0.287 |        0.041  |             0.081 |
+| 1 000  |            0.583 |        0.077  |             0.077 |
+| 5 000  |            2.935 |        0.393  |             0.079 |
+| 10 000 |            5.968 |        0.771  |             0.077 |
+
+The per-tip time (last column) is essentially flat, and the log–log scaling
+slope is **0.96 for the gradient** and **0.92 for the state build** — both
+≈ 1, confirming `O(p)`. A single exact gradient at `p = 10 000` takes
+**0.77 ms**. (The older `sparse_phy_grad` path is `O(p²)`, slope ≈ 2; it is
+retained as an independent-complexity cross-check, not the production path.)

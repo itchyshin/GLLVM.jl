@@ -51,7 +51,8 @@ are blockers at the Rose pre-publish gate.
 ## Standard commands
 
 ```sh
-julia --project=. test/runtests.jl          # full test suite — NEVER Pkg.test
+julia --project=. -e 'using Pkg; Pkg.test()' # full suite incl. Aqua/JET (what CI runs)
+julia --project=. test/runtests.jl          # quick core suite (skips quality tools)
 julia --project=docs docs/make.jl           # local Documenter build
 gh run list --limit 3                       # confirm CI state
 git status; git rev-parse --short HEAD      # evidence-first state check
@@ -86,14 +87,19 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
-- **Phase 0 — Team and memory scaffolding (complete, 2026-05-30).** This
-  file, the `.codex/agents/` set, the project-local skills, the
-  recovery-checkpoint helper, and the memory patches. No engine code
-  touched. After-task report:
-  `docs/dev-log/after-task/2026-05-30-phase-0-team-scaffolding.md`.
-- **Phase 1.0 — RCall.jl parity scaffold (active next).** Starts the
-  capability-completion arc toward v0.2.0. Then 1.1 (O(p) node-frame
-  gradient via Workflow Q) is the first load-bearing engine slice.
+- **Phase 0 — Team and memory scaffolding (complete, 2026-05-30).** PR #1.
+- **Phase 1.1 — O(p) node-frame gradient (complete, CI green cross-platform,
+  2026-05-30).** PR #2; `src/node_gradient.jl` (+ wired `sparse_phy_grad.jl`);
+  58 tests; full suite 491 pass; ~O(p) confirmed (35.7× vs `sparse_phy_grad`
+  at p=2000).
+- **Phase 1.0 — RCall.jl parity scaffold (DRAFT, committed).** Isolated
+  `test/parity/`; R call shape pending live-R validation.
+- **Phase 1.3 — quality battery + perf (in progress).** Aqua + JET wired
+  always-on (green). JET-flagged type-instabilities fixed: function barrier in
+  `takahashi_selinv.jl` + parametric `NodePerSpecies{TF}`; the O(p) recursion
+  kernels are JET-clean (one residual `sparse(::FactorComponent)` Union is
+  stdlib-boundary, not gated). Still next: Takahashi O(p) selected-inverse swap
+  into `sparse_phy_grad.jl` + BenchmarkTools sweep + Allocs check.
 
 Update this snapshot after every after-task report.
 
@@ -120,8 +126,8 @@ release thereafter.
 A task is done only when **all** of these are present:
 
 1. Implementation in `src/`.
-2. Tests in `test/` exercising the change, passing under
-   `julia --project=. test/runtests.jl`.
+2. Tests in `test/` exercising the change, passing under `Pkg.test()` (full,
+   incl. quality tools) and `julia --project=. test/runtests.jl` (core).
 3. Docstrings on every new exported symbol.
 4. Worked example or reference entry in `docs/` if the change is
    user-facing.
@@ -137,7 +143,7 @@ A task is done only when **all** of these are present:
 | Pre-edit lane check | `gh pr list` + `git log --all --oneline --since="6 hours ago"` before editing AGENTS.md, CLAUDE.md, or shared design docs |
 | Named-perspective reporting | Status reports speak as Ada and name which perspectives reviewed |
 | Recovery checkpoint | `julia --project=. tools/julia-checkpoint.jl --goal "..." --next "..."` writes a snapshot under `docs/dev-log/recovery-checkpoints/` |
-| Local checks before push | `julia --project=. test/runtests.jl` clean; local Documenter build clean if docs touched |
+| Local checks before push | `Pkg.test()` clean (full, incl. Aqua/JET); local Documenter build clean if docs touched |
 | Verify CI green | `gh run view` after every push, before claiming green |
 | Confidence Eye contract | Pale CI region + darker outline + darker center mark + hollow point-estimate circle; Florence owns the CairoMakie.jl port |
 
@@ -149,8 +155,9 @@ A task is done only when **all** of these are present:
   commit locally first; ask before pushing.
 - **Never `git add -A`** or `git add .`. Stage by name only — disjoint
   agents may be editing in parallel.
-- **Never `Pkg.test()`** on this project — the Pkg test-sandbox fails with
-  `can not merge projects`. Use `julia --project=. test/runtests.jl`.
+- **Test commands:** `Pkg.test()` is the full suite (incl. Aqua/JET; what CI
+  runs); `julia --project=. test/runtests.jl` is the quick core run. The old
+  `can not merge projects` breakage is resolved — verified macOS + CI.
 - The benchmark / comparison repo (`gllvmTMB-julia-bench/`) stays local
   and is intentionally separate from this repo.
 - **Private-provenance rule.** One collaborator's name (recorded only in
