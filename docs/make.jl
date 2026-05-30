@@ -14,10 +14,14 @@ makedocs(;
     pages    = [
         "Home"        => "index.md",
         "Get started" => "quickstart.md",
-        "Model"       => "model.md",
+        "Articles"    => [
+            "Model"                  => "model.md",
+            "Benchmarks"             => "benchmarks.md",
+            "Comparison vs gllvmTMB" => "comparison.md",
+        ],
+        "Roadmap"     => "roadmap.md",
         "Reference"   => "api.md",
-        "Benchmarks"  => "benchmarks.md",
-        "Comparison"  => "comparison.md",
+        "Changelog"   => "changelog.md",
     ],
     warnonly = true,   # pilot: don't fail the build on small doc issues
 )
