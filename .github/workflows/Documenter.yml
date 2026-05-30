@@ -4,6 +4,9 @@ on:
     branches: [main]
     tags: ['*']
   pull_request:
+permissions:
+  contents: write      # let GITHUB_TOKEN push the gh-pages branch (Documenter deploy)
+  statuses: write
 jobs:
   Documenter:
     runs-on: ubuntu-latest
