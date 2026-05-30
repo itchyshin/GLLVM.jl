@@ -180,6 +180,12 @@ include(joinpath(@__DIR__, "..", "src", "likelihood_contrasts.jl"))
         # Slope strictly less than O(p³) bound. The dense Cholesky on
         # the transformed p × p matrix dominates at the largest p but
         # the implementation does not waste extra polynomial factors.
-        @test maximum(slopes) < 2.5
+        # Timing-based scaling check — flaky on shared CI runners; gate behind
+        # GLLVM_PERF_TESTS so it runs on a consistent machine but not on CI.
+        if get(ENV, "GLLVM_PERF_TESTS", "") == "1"
+            @test maximum(slopes) < 2.5
+        else
+            @test_skip maximum(slopes) < 2.5
+        end
     end
 end

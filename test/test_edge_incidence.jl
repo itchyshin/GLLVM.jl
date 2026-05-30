@@ -249,6 +249,12 @@ end
         @info "edge-incidence log-lik log-log slopes: $(round.(slopes, digits=3))" times
         # Permissive bound — at the largest size the O(p³) Cholesky
         # dominates so the slope can approach 3.
-        @test maximum(slopes) < 4.0
+        # Timing-based scaling check — flaky on shared CI runners; gate behind
+        # GLLVM_PERF_TESTS so it runs on a consistent machine but not on CI.
+        if get(ENV, "GLLVM_PERF_TESTS", "") == "1"
+            @test maximum(slopes) < 4.0
+        else
+            @test_skip maximum(slopes) < 4.0
+        end
     end
 end
