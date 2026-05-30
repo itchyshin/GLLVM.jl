@@ -21,10 +21,14 @@ const navTemp = {
   nav: [
 { text: 'Home', link: '/index' },
 { text: 'Get started', link: '/quickstart' },
+{ text: 'Articles', collapsed: false, items: [
 { text: 'Model', link: '/model' },
-{ text: 'Reference', link: '/api' },
 { text: 'Benchmarks', link: '/benchmarks' },
-{ text: 'Comparison', link: '/comparison' }
+{ text: 'Comparison vs gllvmTMB', link: '/comparison' }]
+ },
+{ text: 'Roadmap', link: '/roadmap' },
+{ text: 'Reference', link: '/api' },
+{ text: 'Changelog', link: '/changelog' }
 ]
 ,
 }
@@ -103,10 +107,14 @@ export default defineConfig({
     sidebar: [
 { text: 'Home', link: '/index' },
 { text: 'Get started', link: '/quickstart' },
+{ text: 'Articles', collapsed: false, items: [
 { text: 'Model', link: '/model' },
-{ text: 'Reference', link: '/api' },
 { text: 'Benchmarks', link: '/benchmarks' },
-{ text: 'Comparison', link: '/comparison' }
+{ text: 'Comparison vs gllvmTMB', link: '/comparison' }]
+ },
+{ text: 'Roadmap', link: '/roadmap' },
+{ text: 'Reference', link: '/api' },
+{ text: 'Changelog', link: '/changelog' }
 ]
 ,
     sidebarDrawer: false,
