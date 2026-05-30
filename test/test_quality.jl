@@ -1,25 +1,37 @@
-using GLLVM, Test
+using GLLVM, Test, SparseArrays
 
-# Quality battery. Aqua (package hygiene) runs always-on under `Pkg.test()`
-# (the full-suite command, also what CI runs). Under the quick core run
-# `julia --project=. test/runtests.jl` (root env) Aqua is not installed, so the
-# testset skips gracefully — run `Pkg.test()` for full coverage.
-#
-# JET (type-stability) is intentionally NOT wired here yet: it currently
-# surfaces real instabilities in the CHOLMOD / sparse gradient path
-# (`takahashi_diag` infers as `Any`; CHOLMOD `\` runtime dispatch), which
-# cascade through `grad_node_perspecies`. These are correctness-neutral perf
-# targets for the Phase 1.3 perf round (tests pass, cross-platform CI green);
-# JET wires green once they are fixed.
+# Quality battery. Aqua (hygiene) + JET (type-stability) live in
+# test/Project.toml, so they run under `Pkg.test()` (the full suite — what CI
+# runs) and skip gracefully under the bare `julia --project=. test/runtests.jl`
+# core run, where they are not installed.
+
+const _HAS_AQUA = Base.find_package("Aqua") !== nothing
+const _HAS_JET  = Base.find_package("JET")  !== nothing
+_HAS_AQUA && @eval using Aqua
+_HAS_JET  && @eval using JET
 
 @testset "quality" begin
-    if Base.find_package("Aqua") === nothing
-        @info "Aqua not in this environment — run `Pkg.test()` for the full quality battery"
-        @test_skip false
-    else
-        @eval using Aqua
-        # ambiguities=false: method ambiguities here originate in dependencies,
-        # not GLLVM, so they are noise for this package's hygiene gate.
-        Aqua.test_all(GLLVM; ambiguities = false)
+    @testset "Aqua (package hygiene)" begin
+        if _HAS_AQUA
+            # ambiguities=false: method ambiguities here originate in
+            # dependencies, not GLLVM, so they are noise for this hygiene gate.
+            Aqua.test_all(GLLVM; ambiguities = false)
+        else
+            @info "Aqua not in this environment — run `Pkg.test()` for the full battery"
+            @test_skip false
+        end
+    end
+
+    @testset "JET type-stability (O(p) Takahashi kernels)" begin
+        if _HAS_JET
+            # The `JET.@test_opt` macros live in a separate file so they are
+            # only PARSED when JET is present — macros expand at lowering,
+            # before this runtime guard, so an inline call would UndefVarError
+            # under the JET-less core run.
+            include("test_quality_jet.jl")
+        else
+            @info "JET not in this environment — run `Pkg.test()` for the type-stability gate"
+            @test_skip false
+        end
     end
 end

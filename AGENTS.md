@@ -94,10 +94,12 @@ Full responsibility detail lives in §2 of the reference plan.
   at p=2000).
 - **Phase 1.0 — RCall.jl parity scaffold (DRAFT, committed).** Isolated
   `test/parity/`; R call shape pending live-R validation.
-- **Phase 1.3 — quality battery + perf (in progress).** Aqua wired always-on
-  (green); JET surfaced type-instabilities in the CHOLMOD/sparse path
-  (perf-round targets, not bugs); Takahashi O(p) selected-inverse +
-  BenchmarkTools sweep are the perf half, next.
+- **Phase 1.3 — quality battery + perf (in progress).** Aqua + JET wired
+  always-on (green). JET-flagged type-instabilities fixed: function barrier in
+  `takahashi_selinv.jl` + parametric `NodePerSpecies{TF}`; the O(p) recursion
+  kernels are JET-clean (one residual `sparse(::FactorComponent)` Union is
+  stdlib-boundary, not gated). Still next: Takahashi O(p) selected-inverse swap
+  into `sparse_phy_grad.jl` + BenchmarkTools sweep + Allocs check.
 
 Update this snapshot after every after-task report.
 
