@@ -15,6 +15,8 @@ include("simulate.jl")
 # Sparse phylogenetic path (evaluation-only — see docstring for AD limitation)
 include("sparse_phy.jl")
 include("likelihood_sparse_phy.jl")
+include("sparse_phy_grad.jl")            # analytic gradient + SparsePhyState (self-includes takahashi_selinv.jl)
+include("node_gradient.jl")              # O(p) node-frame gradient + per-species BLUPs (Phase 1.1)
 
 # Confidence intervals
 include("confint.jl")                    # Wald
@@ -27,6 +29,8 @@ export fit_gaussian_gllvm, GllvmModel, GllvmFit,
        confint, profile_ci, bootstrap_ci,
        ppca_init, em_fa,
        sigma_y_site, communality, correlation, phylo_signal,
-       augmented_phy, gaussian_marginal_loglik_sparse_phy
+       augmented_phy, gaussian_marginal_loglik_sparse_phy,
+       node_grad, node_dσ_phy_only, NodePerSpecies, build_node_perspecies,
+       grad_node_perspecies, node_blups
 
 end # module GLLVM
