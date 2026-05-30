@@ -146,6 +146,7 @@ A task is done only when **all** of these are present:
 | Local checks before push | `Pkg.test()` clean (full, incl. Aqua/JET); local Documenter build clean if docs touched |
 | Verify CI green | `gh run view` after every push, before claiming green |
 | Confidence Eye contract | Pale CI region + darker outline + darker center mark + hollow point-estimate circle; Florence owns the CairoMakie.jl port |
+| Cross-project learning | Routinely scan the sister/twin projects — **gllvmTMB** (our R twin; pkgdown + repo), **drmTMB** + **DRM.jl** (the DRM family) — at session start, before docs/API slices, and at phase boundaries. Port good ideas *and improve them*; share ours back. Log in the cross-pollination tracking issue (#13). |
 
 ## Hard boundaries
 
