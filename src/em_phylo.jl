@@ -680,7 +680,7 @@ end
     em_fit_phylo(y, K_B, Σ_phy;
                  λ_init=nothing, σ_eps_init=nothing, σ_phy_init=nothing,
                  tol=1e-9, max_iter=1000, assert_monotone=true,
-                 phy=nothing) -> EMPhyloFit
+                 phy=nothing, force_dense_estep=false) -> EMPhyloFit
 
 Gradient-free EM fit of the Gaussian phylo_unique GLLVM: `K_B` site latent
 factors plus one per-trait phylogenetic random effect with covariance
@@ -695,19 +695,26 @@ from the final E-step.
 When `assert_monotone` (default), a log-lik DECREASE beyond `1e-7` triggers an
 error — a monotone non-decrease is an EM invariant, so a decrease is a bug.
 
-If `phy::AugmentedPhy` is supplied, the E-step is routed through the
-augmented-state sparse path (`_estep_sparse`), whose per-trait variance
-extraction uses the Takahashi (1973) / Erisman–Tinney (1975) selected
-inverse in O(p) instead of the dense `inv(cVφ)`'s O(p³). The two paths are
-exact-equivalent in floating-point (the sparse path is the same algebra,
-just refactored to never materialise dense p × p inverses). Pass `phy` for
-large p; omit it for small p (dense path's BLAS is competitive there).
+E-STEP PATH. The phylo block's per-trait posterior variance `diag(V_φ)` is the
+only O(p³) ingredient of the E-step. When the tree (`phy::AugmentedPhy`) is
+supplied, the E-step is routed BY DEFAULT through the augmented-state sparse
+path (`_estep_sparse`), which obtains `diag(V_φ)` via the Takahashi (1973) /
+Erisman–Tinney (1975) selected inverse in O(p) instead of the dense
+`inv(cVφ)`'s O(p³). The two paths are exact-equivalent in floating point (the
+sparse path is the same algebra, just refactored to never materialise dense
+p × p inverses), so the MLE and BLUPs are identical — only the per-iteration
+cost differs. Set `force_dense_estep = true` to use the dense E-step even when
+`phy` is supplied (the dense path's BLAS is competitive at small p, and it is
+the only option when `phy` is omitted, since an `AugmentedPhy` cannot be
+recovered from the dense `Σ_phy` alone). When `phy === nothing` the dense path
+is always used regardless of `force_dense_estep`.
 """
 function em_fit_phylo(y::AbstractMatrix, K_B::Integer, Σ_phy::AbstractMatrix;
                       λ_init = nothing, σ_eps_init = nothing,
                       σ_phy_init = nothing,
                       tol = 1e-9, max_iter = 1000, assert_monotone = true,
-                      phy::Union{Nothing,GLLVM.AugmentedPhy{Float64}} = nothing)
+                      phy::Union{Nothing,GLLVM.AugmentedPhy{Float64}} = nothing,
+                      force_dense_estep::Bool = false)
     p, n = size(y)
     K_B ≥ 1 || throw(ArgumentError("K_B must be ≥ 1"))
     K_B < p || throw(ArgumentError("EM requires K_B < p; got K_B=$K_B, p=$p"))
@@ -719,10 +726,14 @@ function em_fit_phylo(y::AbstractMatrix, K_B::Integer, Σ_phy::AbstractMatrix;
     end
 
     yf = Matrix{Float64}(y)
-    estep = if phy === nothing
-        (LB, σe, σp) -> _estep_dense(yf, LB, σe, σp, Σ_phy)
-    else
+    # Sparse Takahashi E-step is the DEFAULT whenever the tree is available;
+    # fall back to the dense E-step when `phy` is omitted (no AugmentedPhy to
+    # build from the dense Σ_phy) or when `force_dense_estep` is requested.
+    use_sparse = phy !== nothing && !force_dense_estep
+    estep = if use_sparse
         (LB, σe, σp) -> _estep_sparse(yf, LB, σe, σp, phy; σ²_phy = 1.0)
+    else
+        (LB, σe, σp) -> _estep_dense(yf, LB, σe, σp, Σ_phy)
     end
 
     # ----- Warm start (PPCA for Λ_B, σ_eps; small phylo SD to start) -----
