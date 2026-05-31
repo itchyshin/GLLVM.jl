@@ -637,3 +637,88 @@ function Base.show(io::IO, ::MIME"text/plain", fit::OrdinalFit)
             ", AIC = ", round(aic(fit); sigdigits = 7))
     print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
 end
+
+# ---------------------------------------------------------------------------
+# Gamma post-fit methods (positive continuous; mean μ = exp(η), shape α —
+# Var = μ²/α — via the log link). Responses are continuous, so the Dunn–Smyth
+# residual reduces to the deterministic PIT, as in the Gaussian and Beta cases.
+# ---------------------------------------------------------------------------
+
+_loadings(fit::GammaFit) = fit.Λ
+_loglik(fit::GammaFit)   = fit.loglik
+
+function _nparams(fit::GammaFit)
+    p, K = size(fit.Λ)
+    return p + (p * K - div(K * (K - 1), 2)) + 1       # β + Λ + shape α
+end
+
+"""
+    getLV(fit::GammaFit, Y; rotate=true) -> n×K matrix
+
+Conditional latent-variable scores for a Gamma fit: the per-site Laplace mode `ẑₛ`
+(computed at the fitted shape `α`). `Y` is the p×n matrix of positive reals;
+`rotate=true` applies the canonical [`rotation`](@ref).
+"""
+function getLV(fit::GammaFit, Y::AbstractMatrix{<:Real}; rotate::Bool = true)
+    p, n = size(Y)
+    K = size(fit.Λ, 2)
+    fam = Gamma(fit.α, 1.0)
+    ones_p = ones(Int, p)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        Z[:, s] = _laplace_mode(fam, view(Y, :, s), ones_p, fit.Λ, fit.β, fit.link)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
+end
+
+"""
+    predict(fit::GammaFit, Y; type=:response) -> p×n matrix
+
+In-sample fitted values at the Laplace mode: `type=:link` returns `η = β + Λ ẑ`;
+`type=:response` the inverse-link fitted means `linkinv(link, η) = exp(η)` (positive reals).
+"""
+function predict(fit::GammaFit, Y::AbstractMatrix{<:Real}; type::Symbol = :response)
+    type in (:link, :response) ||
+        throw(ArgumentError("type must be :link or :response; got :$type"))
+    Z = getLV(fit, Y; rotate = false)
+    η = fit.β .+ fit.Λ * Z'
+    type === :link && return η
+    return linkinv.(Ref(fit.link), η)
+end
+
+"""
+    residuals(fit::GammaFit, Y; type=:dunnsmyth) -> p×n matrix
+
+Conditional residuals for a Gamma fit. The Gamma CDF is continuous, so the
+`:dunnsmyth` randomized quantile residual reduces to the deterministic PIT
+`Φ⁻¹(F(y))` under `Gamma(α, μ/α)` — ≈ N(0,1) under a correct model — exactly as
+in the Gaussian and Beta cases. `:pearson` returns `(Y − μ) / √(μ²/α)`.
+"""
+function residuals(fit::GammaFit, Y::AbstractMatrix{<:Real}; type::Symbol = :dunnsmyth)
+    type in (:dunnsmyth, :pearson) ||
+        throw(ArgumentError("type must be :dunnsmyth or :pearson; got :$type"))
+    p, n = size(Y)
+    α = fit.α
+    μ = predict(fit, Y; type = :response)
+    if type === :pearson
+        return (Y .- μ) ./ sqrt.(μ .^ 2 ./ α)
+    end
+    R = Matrix{Float64}(undef, p, n)
+    @inbounds for s in 1:n, t in 1:p
+        d = Gamma(α, μ[t, s] / α)
+        u = cdf(d, max(float(Y[t, s]), 1e-300))
+        R[t, s] = quantile(Normal(), clamp(u, 1e-12, 1 - 1e-12))
+    end
+    return R
+end
+
+function Base.show(io::IO, ::MIME"text/plain", fit::GammaFit)
+    p, K = size(fit.Λ)
+    println(io, "Gamma GLLVM fit")
+    println(io, "  responses p = ", p, ", latent factors K = ", K,
+            ", link = ", nameof(typeof(fit.link)), ", shape α = ", round(fit.α; sigdigits = 4))
+    println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
+            ", AIC = ", round(aic(fit); sigdigits = 7))
+    print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
+end

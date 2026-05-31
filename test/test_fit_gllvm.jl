@@ -35,6 +35,10 @@ using GLLVM, Test, Distributions, Random
     Yp = clamp.(rand(p, n), 1e-3, 1 - 1e-3)
     @test fit_gllvm(Yp; family = Beta(), K = 1) isa BetaFit
 
+    # Gamma() now dispatches to fit_gamma_gllvm
+    Ypos = abs.(randn(p, n)) .+ 0.1
+    @test fit_gllvm(Ypos; family = Gamma(), K = 1) isa GammaFit
+
     # a still-unimplemented family → clear error
-    @test_throws ArgumentError fit_gllvm(Yb; family = Gamma(), K = 1)
+    @test_throws ArgumentError fit_gllvm(Yb; family = Geometric(), K = 1)
 end
