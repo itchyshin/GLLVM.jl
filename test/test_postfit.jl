@@ -97,3 +97,37 @@ end
         @test GLLVM.getLoadings(fit; rotate = true) * Zr' ≈ fit.Λ * Z' atol = 1e-7
     end
 end
+
+@testset "post-fit predict/fitted" begin
+    @testset "predict (Gaussian): link == response, η = Λẑ" begin
+        Random.seed!(2)
+        p, K, n = 5, 2, 120
+        Λt = 0.8 .* randn(p, K)
+        y = Λt * randn(K, n) .+ 0.5 .* randn(p, n)
+        fit = fit_gaussian_gllvm(y; K = K)
+
+        η = GLLVM.predict(fit, y; type = :link)
+        μ = GLLVM.predict(fit, y; type = :response)
+        @test size(η) == (p, n)
+        @test η ≈ μ                                   # identity link
+        Z = GLLVM.getLV(fit, y; rotate = false)
+        @test η ≈ fit.pars.Λ * Z' atol = 1e-10        # no fixed-effect mean
+        @test GLLVM.fitted(fit, y) ≈ μ
+        @test_throws ArgumentError GLLVM.predict(fit, y; type = :bogus)
+    end
+
+    @testset "predict (Binomial): probabilities in [0,1], logit-consistent" begin
+        Random.seed!(4)
+        p, K, n = 6, 2, 80
+        η0 = 0.3 .* randn(p) .+ (0.9 .* randn(p, K)) * randn(K, n)
+        Y  = Int.(rand(p, n) .< inv.(1 .+ exp.(-η0)))
+        fit = fit_binomial_gllvm(Y; K = K)
+
+        ηp = GLLVM.predict(fit, Y; type = :link)
+        pr = GLLVM.predict(fit, Y; type = :response)
+        @test size(pr) == (p, n)
+        @test all(0 .≤ pr .≤ 1)
+        @test pr ≈ inv.(1 .+ exp.(-ηp))               # logit link
+        @test GLLVM.fitted(fit, Y) ≈ pr
+    end
+end
