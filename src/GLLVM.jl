@@ -24,6 +24,9 @@ include("families/links.jl")
 include("families/binomial.jl")          # per-site Laplace marginal (Binomial, Phase 3)
 include("families/fit_gllvm.jl")         # unified fit_gllvm(Y; family) dispatcher
 
+# Post-fit API (ordination, predict, residuals, summary)
+include("postfit.jl")
+
 # Confidence intervals
 include("confint.jl")                    # Wald
 include("confint_profile.jl")            # profile likelihood
@@ -40,6 +43,7 @@ export fit_gaussian_gllvm, GllvmModel, GllvmFit,
        grad_node_perspecies, node_blups,
        fit_phylo_gaussian, PhyloGaussianFit,
        LogitLink, ProbitLink, CLogLogLink, IdentityLink,
-       fit_binomial_gllvm, BinomialFit, fit_gllvm
+       fit_binomial_gllvm, BinomialFit, fit_gllvm,
+       getLV, getLoadings, rotation
 
 end # module GLLVM

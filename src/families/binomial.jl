@@ -18,6 +18,29 @@
 _clamp_eta(η) = clamp(η, -30.0, 30.0)
 _clamp_mu(μ)  = clamp(μ, 1e-12, 1 - 1e-12)
 
+# Inner Laplace mode-finder (Fisher-scoring Newton). Returns the conditional
+# mode ẑ (length K) for one site. Shared by the marginal log-likelihood and
+# by getLV (src/postfit.jl).
+function _laplace_mode(y::AbstractVector, n::AbstractVector,
+        Λ::AbstractMatrix, β::AbstractVector, link::Link;
+        maxiter::Integer = 100, tol::Real = 1e-9)
+    K = size(Λ, 2)
+    z = zeros(K)
+    for _ in 1:maxiter
+        η  = _clamp_eta.(β .+ Λ * z)
+        μ  = _clamp_mu.(linkinv.(Ref(link), η))
+        me = mu_eta.(Ref(link), η)
+        v  = μ .* (1 .- μ)
+        s  = (y .- n .* μ) ./ v .* me
+        W  = n .* me .^ 2 ./ v
+        A  = Symmetric(Λ' * (W .* Λ) + I)
+        Δ  = A \ (Λ' * s .- z)
+        z  = z .+ Δ
+        maximum(abs, Δ) < tol && break
+    end
+    return z
+end
+
 """
     laplace_loglik_site(y, n, Λ, β, link; maxiter=100, tol=1e-9) -> Float64
 
@@ -29,19 +52,7 @@ function laplace_loglik_site(y::AbstractVector, n::AbstractVector,
         Λ::AbstractMatrix, β::AbstractVector, link::Link;
         maxiter::Integer = 100, tol::Real = 1e-9)
     p, K = size(Λ)
-    z = zeros(K)
-    for _ in 1:maxiter
-        η = _clamp_eta.(β .+ Λ * z)
-        μ = _clamp_mu.(linkinv.(Ref(link), η))
-        me = mu_eta.(Ref(link), η)
-        v  = μ .* (1 .- μ)
-        s  = (y .- n .* μ) ./ v .* me        # working-residual contribution
-        W  = n .* me .^ 2 ./ v               # Fisher working weights (≥ 0)
-        A  = Symmetric(Λ' * (W .* Λ) + I)
-        Δ  = A \ (Λ' * s .- z)
-        z  = z .+ Δ
-        maximum(abs, Δ) < tol && break
-    end
+    z = _laplace_mode(y, n, Λ, β, link; maxiter = maxiter, tol = tol)
     η = _clamp_eta.(β .+ Λ * z)
     μ = _clamp_mu.(linkinv.(Ref(link), η))
     me = mu_eta.(Ref(link), η)
