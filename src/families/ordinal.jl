@@ -118,6 +118,50 @@ function ordinal_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix,
     return acc
 end
 
+function _ordinal_laplace_qF(y::AbstractVector, θ::AbstractVector,
+        z::AbstractVector, p::Int, K::Int)
+    rr = rr_theta_len(p, K)
+    Λ = unpack_lambda(θ[1:rr], p, K)
+    τ = _unpack_cutpoints(θ[(rr + 1):end])
+    η = _clamp_eta.(Λ * z)
+    W = similar(η)
+    ℓ = zero(promote_type(eltype(θ), eltype(z)))
+    s = similar(η)
+    @inbounds for t in 1:p
+        ℓ += log(max(_ord_prob(Int(y[t]), η[t], τ), 1e-12))
+        st, wt = _ord_score_weight(Int(y[t]), η[t], τ)
+        s[t] = st
+        W[t] = wt
+    end
+    A = Symmetric(Λ' * (W .* Λ) + I)
+    q = ℓ - 0.5 * dot(z, z) - 0.5 * logdet(A)
+    F = Λ' * s .- z
+    return vcat(q, F)
+end
+
+function _ordinal_site_implicit_value_grad(y::AbstractVector,
+        θ::AbstractVector, p::Int, K::Int; maxiter::Integer = 100, tol::Real = 1e-9)
+    rr = rr_theta_len(p, K)
+    Λ = unpack_lambda(θ[1:rr], p, K)
+    τ = _unpack_cutpoints(θ[(rr + 1):end])
+    z = _ordinal_laplace_mode(y, Λ, τ; maxiter = maxiter, tol = tol)
+    x0 = vcat(z, θ)
+    qF = x -> _ordinal_laplace_qF(y, x[(K + 1):end], x[1:K], p, K)
+    return _implicit_site_gradient(qF, x0, K)
+end
+
+function ordinal_marginal_loglik_laplace_implicit_value_grad(
+        Y::AbstractMatrix, θ::AbstractVector, p::Int, K::Int; kwargs...)
+    value = zero(eltype(θ))
+    grad = zeros(eltype(θ), length(θ))
+    @inbounds for s in axes(Y, 2)
+        v, g = _ordinal_site_implicit_value_grad(view(Y, :, s), θ, p, K; kwargs...)
+        value += v
+        grad .+= g
+    end
+    return value, grad
+end
+
 # ---------------------------------------------------------------------------
 # Fit driver (Ordinal family slice 2).
 # ---------------------------------------------------------------------------
@@ -166,10 +210,10 @@ Fit a proportional-odds cumulative-logit ordinal GLLVM by L-BFGS over
 `[vec(Λ); ψ]`, where the `C−1` ordered cutpoints are the unconstrained increments
 `τ₁ = ψ₁, τ_c = τ_{c-1} + exp(ψ_c)` (so ordering holds for free) and the marginal
 is [`ordinal_marginal_loglik_laplace`](@ref). `Y` is a p×n matrix of ordinal
-responses coded `1:C` (`C = maximum(Y)`). The L-BFGS gradient uses ForwardDiff
-through the dense Laplace marginal and its inner Fisher-scoring solve; warm
-start = empirical cumulative-proportion cutpoints + a normal-scores SVD loadings
-init.
+responses coded `1:C` (`C = maximum(Y)`). The L-BFGS gradient uses an implicit
+dense-Laplace gradient that avoids differentiating through the inner
+Fisher-scoring iterations; warm start = empirical cumulative-proportion cutpoints
+and a normal-scores SVD loadings init.
 """
 function fit_ordinal_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
         link::Link = LogitLink(), Λ_init = nothing,
@@ -210,20 +254,12 @@ function fit_ordinal_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
     end
 
     θ0 = vcat(pack_lambda(Λ0), ψ0)
-    function negll(θ)
-        Λ = unpack_lambda(θ[1:rr], p, K)
-        τ = _unpack_cutpoints(θ[(rr + 1):(rr + C - 1)])
-        v = try
-            -ordinal_marginal_loglik_laplace(Y, Λ, τ;
-                                             maxiter = newton_maxiter, tol = newton_tol)
-        catch
-            return oftype(first(θ), 1e12)
-        end
-        return isfinite(v) ? v : oftype(v, 1e12)
-    end
+    value_grad(θ) = ordinal_marginal_loglik_laplace_implicit_value_grad(
+        Y, θ, p, K; maxiter = newton_maxiter, tol = newton_tol)
+    negll_fg!(F, G, θ) = _penalized_negloglik_fg!(F, G, value_grad, θ)
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
-    res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
-                         autodiff = :forward)
+    res = Optim.optimize(Optim.only_fg!(negll_fg!), θ0, ls,
+                         Optim.Options(g_tol = g_tol, iterations = iterations))
     θ̂ = Optim.minimizer(res)
     Λ̂ = unpack_lambda(θ̂[1:rr], p, K)
     τ̂ = _unpack_cutpoints(θ̂[(rr + 1):(rr + C - 1)])

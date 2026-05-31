@@ -59,9 +59,11 @@ end
 Fit a Gamma GLLVM by L-BFGS over `[β; vec(Λ); log α]` on the Laplace marginal
 (`gamma_marginal_loglik_laplace`), jointly estimating the shape `α`
 (`Var = μ²/α`). `Y` is a p×n matrix of positive reals; `K` the latent
-dimension. The L-BFGS gradient uses ForwardDiff through the dense Laplace marginal
-and its inner Fisher-scoring solve; warm start = log row-means as intercepts + SVD
-of row-centred log-Y as loadings + `logα₀ = log(2.0)`.
+dimension. The L-BFGS gradient uses ForwardDiff through the dense Laplace
+objective. The implicit-gradient path is retained as a verification/research
+helper, but Gamma fitting stays on direct AD until its inner mode convergence is
+hardened. Warm start = log row-means as intercepts + SVD of row-centred log-Y as
+loadings + `logα₀ = log(2.0)`.
 """
 function fit_gamma_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         link::Link = LogLink(),
@@ -91,7 +93,7 @@ function fit_gamma_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     function negll(θ)
         β = θ[1:p]
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
-        α = exp(θ[p + rr + 1])
+        α = _positive_from_log(θ[p + rr + 1])
         v = try
             -gamma_marginal_loglik_laplace(Y, Λ, β, α;
                                            maxiter = newton_maxiter, tol = newton_tol)
@@ -106,7 +108,7 @@ function fit_gamma_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     θ̂ = Optim.minimizer(res)
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
-    α̂ = exp(θ̂[p + rr + 1])
+    α̂ = _positive_from_log(θ̂[p + rr + 1])
     return GammaFit(β̂, Λ̂, α̂, link, -Optim.minimum(res),
                    Optim.converged(res), Optim.iterations(res))
 end

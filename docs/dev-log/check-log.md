@@ -1,5 +1,143 @@
 # Check Log
 
+## 2026-05-31 — Non-Gaussian Implicit Dense-Laplace Gradients
+
+Branch: `codex/non-gaussian-fitter-gradients`
+
+Head before local commit: rebased on `origin/main` at `7e4c64b`, with previous
+ForwardDiff slice at `6481e95`.
+
+### Implementation Checks
+
+- Added an implicit dense-Laplace value/gradient helper for scalar families.
+- Added an ordinal implicit-gradient helper for the cumulative-logit mode
+  equation.
+- Switched Binomial, Poisson, Negative Binomial, Beta, and Ordinal fitters to
+  `Optim.only_fg!` with explicit objective/gradient callbacks.
+- Kept Gamma on direct ForwardDiff through the dense Laplace objective after a
+  post-fit fixture exposed non-converged Gamma site modes where the implicit
+  mode-equation assumption is not yet reliable.
+- Kept public APIs unchanged.
+- Did not edit `src/sparse_phy_grad.jl` or `src/em_phylo.jl`.
+
+### Gradient Verification
+
+Command:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_family_forwarddiff_gradients.jl")'
+```
+
+Result:
+
+```text
+Test Summary:                                         | Pass  Total   Time
+non-Gaussian fitter objectives: AD/implicit gradients |   42     42  25.4s
+```
+
+The test now checks both direct ForwardDiff-through-objective and the implicit
+gradient against central finite differences for all six non-Gaussian families.
+Gamma's implicit helper is verified on the stable small objective, but the Gamma
+fitter still uses direct ForwardDiff pending mode convergence hardening.
+
+### Targeted Recovery Tests
+
+Command:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_binomial_fit.jl"); include("test/test_poisson_fit.jl"); include("test/test_nb_fit.jl"); include("test/test_beta_fit.jl"); include("test/test_gamma_fit.jl"); include("test/test_ordinal_fit.jl")'
+```
+
+Result:
+
+```text
+fit_binomial_gllvm — recovery | 8/8 pass
+fit_poisson_gllvm — recovery  | 7/7 pass
+fit_nb_gllvm — recovery       | 7/7 pass
+fit_beta_gllvm                | 7/7 pass
+fit_gamma_gllvm               | 7/7 pass
+fit_ordinal_gllvm             | 9/9 pass
+```
+
+### Core Suite
+
+Command:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. The direct core environment again reported the expected
+quality-tool placeholders as broken because Aqua/JET are loaded only by
+`Pkg.test()`.
+
+Key touched blocks:
+
+```text
+non-Gaussian fitter objectives: AD/implicit gradients | 42/42 pass
+fit_binomial_gllvm — recovery                         | 8/8 pass
+fit_poisson_gllvm — recovery                          | 7/7 pass
+fit_nb_gllvm — recovery                               | 7/7 pass
+fit_beta_gllvm                                        | 7/7 pass
+fit_gamma_gllvm                                       | 7/7 pass
+fit_ordinal_gllvm                                     | 9/9 pass
+post-fit residuals                                    | 10/10 pass
+structured_cov                                        | 31/31 pass
+```
+
+### Full Package Suite
+
+Command:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       |   12     12  9.5s
+Testing GLLVM tests passed
+```
+
+Manual tally from the emitted `Test Summary` blocks: 1774 pass, 1 existing
+broken sparse-phy precision check, 0 fail, 0 error.
+
+### Benchmarks
+
+Poisson gradient-evaluation benchmark:
+
+| p | n | K | params | ForwardDiff-through-Newton (s) | implicit (s) | speedup |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 5 | 60 | 1 | 10 | 0.0003 | 0.0004 | 0.72x |
+| 10 | 100 | 1 | 20 | 0.0021 | 0.0015 | 1.42x |
+| 30 | 200 | 2 | 89 | 0.1733 | 0.0197 | 8.80x |
+
+R-vs-Julia warmed smoke command:
+
+```sh
+julia --project=. --startup-file=no bench/non_gaussian_gllvmtmb_bench.jl --smoke --iterations=80 --reps=1 --warmups=1
+```
+
+| family | Julia (s) | gllvmTMB (s) | R / Julia | agreement_status |
+| --- | ---: | ---: | ---: | --- |
+| gaussian | 0.0002 | 0.4690 | 1898.8x | same_data_loglik_comparable |
+| binomial | 0.0180 | 0.4990 | 27.7x | same_data_loglik_comparable |
+| poisson | 0.0182 | 0.4910 | 27.0x | same_data_loglik_comparable |
+| negative-binomial | 0.0300 | 0.6540 | 21.8x | same_data_parameterization_audit_needed |
+| beta | 0.0317 | 0.6040 | 19.0x | same_data_parameterization_audit_needed |
+| gamma | 0.0405 | 0.5000 | 12.3x | same_data_parameterization_audit_needed |
+| ordinal | 0.0463 | 0.5200 | 11.2x | non_equivalent_link |
+
+Representative Poisson full-grid attempt:
+
+```sh
+julia --project=. --startup-file=no bench/non_gaussian_gllvmtmb_bench.jl --full --families=poisson --iterations=80 --warmups=1 --reps=1
+```
+
+Result: stopped after several minutes because the large R cell exceeded the
+interactive budget. No CSV was written.
+
 ## 2026-05-31 — Non-Gaussian ForwardDiff Fitter Gradients
 
 Branch: `codex/non-gaussian-fitter-gradients`

@@ -1,5 +1,10 @@
 # After Task: Non-Gaussian ForwardDiff Gradients
 
+Superseded note (later 2026-05-31): this slice was immediately followed by the
+implicit dense-Laplace gradient slice, which keeps ForwardDiff as the gradient
+oracle but no longer differentiates through the inner Fisher-scoring iterations
+inside the fitters.
+
 ## Goal
 
 Remove Optim finite-difference gradients from the implemented non-Gaussian

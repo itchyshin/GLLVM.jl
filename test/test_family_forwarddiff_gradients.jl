@@ -13,7 +13,7 @@ function central_difference_gradient(f, theta; h = 1e-6)
     return g
 end
 
-@testset "non-Gaussian fitter objectives: ForwardDiff gradients" begin
+@testset "non-Gaussian fitter objectives: AD/implicit gradients" begin
     Random.seed!(20260531)
     p, n, K = 4, 8, 1
     rr = GLLVM.rr_theta_len(p, K)
@@ -92,5 +92,87 @@ end
         @test all(isfinite, gad)
         @test all(isfinite, gfd)
         @test maximum(abs.(gad .- gfd)) ≤ 1e-6
+    end
+
+    implicit_cases = Tuple{String, Function, Function, Vector{Float64}}[]
+
+    push!(implicit_cases, (
+        "binomial",
+        theta -> GLLVM.marginal_loglik_laplace_implicit_value_grad(
+            _ -> Binomial(), Y_binomial, N_binomial, theta, p, K, LogitLink();
+            tol = 1e-12),
+        theta -> GLLVM.binomial_marginal_loglik_laplace(
+            Y_binomial, N_binomial,
+            GLLVM.unpack_lambda(theta[(p + 1):(p + rr)], p, K),
+            theta[1:p], LogitLink(); tol = 1e-12),
+        vcat(beta_logit, theta_lambda0),
+    ))
+
+    push!(implicit_cases, (
+        "poisson",
+        theta -> GLLVM.marginal_loglik_laplace_implicit_value_grad(
+            _ -> Poisson(), Y_poisson, ones(Int, p, n), theta, p, K, LogLink();
+            tol = 1e-12),
+        theta -> GLLVM.poisson_marginal_loglik_laplace(
+            Y_poisson,
+            GLLVM.unpack_lambda(theta[(p + 1):(p + rr)], p, K),
+            theta[1:p]; tol = 1e-12),
+        vcat(beta_log, theta_lambda0),
+    ))
+
+    push!(implicit_cases, (
+        "negative-binomial",
+        theta -> GLLVM.marginal_loglik_laplace_implicit_value_grad(
+            t -> NegativeBinomial(exp(t[p + rr + 1]), 0.5),
+            Y_nb, ones(Int, p, n), theta, p, K, LogLink(); tol = 1e-12),
+        theta -> GLLVM.nb_marginal_loglik_laplace(
+            Y_nb,
+            GLLVM.unpack_lambda(theta[(p + 1):(p + rr)], p, K),
+            theta[1:p], exp(theta[p + rr + 1]); tol = 1e-12),
+        vcat(beta_log, theta_lambda0, log(8.0)),
+    ))
+
+    push!(implicit_cases, (
+        "beta",
+        theta -> GLLVM.marginal_loglik_laplace_implicit_value_grad(
+            t -> Beta(exp(t[p + rr + 1]), 1.0),
+            Y_beta, ones(Int, p, n), theta, p, K, LogitLink(); tol = 1e-12),
+        theta -> GLLVM.beta_marginal_loglik_laplace(
+            Y_beta,
+            GLLVM.unpack_lambda(theta[(p + 1):(p + rr)], p, K),
+            theta[1:p], exp(theta[p + rr + 1]); tol = 1e-12),
+        vcat(beta_logit, theta_lambda0, log(6.0)),
+    ))
+
+    push!(implicit_cases, (
+        "gamma",
+        theta -> GLLVM.marginal_loglik_laplace_implicit_value_grad(
+            t -> Gamma(exp(t[p + rr + 1]), 1.0),
+            Y_gamma, ones(Int, p, n), theta, p, K, LogLink(); tol = 1e-12),
+        theta -> GLLVM.gamma_marginal_loglik_laplace(
+            Y_gamma,
+            GLLVM.unpack_lambda(theta[(p + 1):(p + rr)], p, K),
+            theta[1:p], exp(theta[p + rr + 1]); tol = 1e-12),
+        vcat(beta_log, theta_lambda0, log(3.0)),
+    ))
+
+    push!(implicit_cases, (
+        "ordinal",
+        theta -> GLLVM.ordinal_marginal_loglik_laplace_implicit_value_grad(
+            Y_ordinal, theta, p, K; tol = 1e-12),
+        theta -> GLLVM.ordinal_marginal_loglik_laplace(
+            Y_ordinal,
+            GLLVM.unpack_lambda(theta[1:rr], p, K),
+            GLLVM._unpack_cutpoints(theta[(rr + 1):(rr + 2)]); tol = 1e-12),
+        vcat(theta_lambda0, psi0),
+    ))
+
+    @testset "$name implicit gradient" for (name, implicit_value_grad, loglik, theta0) in implicit_cases
+        value, gimp = implicit_value_grad(theta0)
+        gfd = central_difference_gradient(loglik, theta0)
+        @test isfinite(value)
+        @test all(isfinite, gimp)
+        @test all(isfinite, gfd)
+        @test maximum(abs.(gimp .- gfd)) ≤ 1e-6
     end
 end

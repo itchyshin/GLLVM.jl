@@ -73,9 +73,9 @@ end
 Fit a Beta GLLVM by L-BFGS over `[β; vec(Λ); log φ]` on the Laplace marginal
 (`beta_marginal_loglik_laplace`), jointly estimating the precision `φ`
 (`Var = μ(1−μ)/(1+φ)`). `Y` is a p×n matrix of proportions in (0,1); `K` the latent
-dimension. The L-BFGS gradient uses ForwardDiff through the dense Laplace marginal
-and its inner Fisher-scoring solve; warm start = empirical logit-mean intercepts +
-an SVD loadings init + a moderate `φ₀`.
+dimension. The L-BFGS gradient uses an implicit dense-Laplace gradient that
+avoids differentiating through the inner Fisher-scoring iterations; warm start =
+empirical logit-mean intercepts + an SVD loadings init + a moderate `φ₀`.
 """
 function fit_beta_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         link::Link = LogitLink(),
@@ -102,25 +102,18 @@ function fit_beta_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     logφ0 = φ_init === nothing ? log(10.0) : log(float(φ_init))
 
     θ0 = vcat(β0, pack_lambda(Λ0), logφ0)
-    function negll(θ)
-        β = θ[1:p]
-        Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
-        φ = exp(θ[p + rr + 1])
-        v = try
-            -beta_marginal_loglik_laplace(Y, Λ, β, φ;
-                                          maxiter = newton_maxiter, tol = newton_tol)
-        catch
-            return oftype(first(θ), 1e12)
-        end
-        return isfinite(v) ? v : oftype(v, 1e12)
-    end
+    family_fromθ = θ -> Beta(_positive_from_log(θ[p + rr + 1]), 1.0)
+    N = ones(Int, size(Y))
+    value_grad(θ) = marginal_loglik_laplace_implicit_value_grad(
+        family_fromθ, Y, N, θ, p, K, link; maxiter = newton_maxiter, tol = newton_tol)
+    negll_fg!(F, G, θ) = _penalized_negloglik_fg!(F, G, value_grad, θ)
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
-    res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
-                         autodiff = :forward)
+    res = Optim.optimize(Optim.only_fg!(negll_fg!), θ0, ls,
+                         Optim.Options(g_tol = g_tol, iterations = iterations))
     θ̂ = Optim.minimizer(res)
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
-    φ̂ = exp(θ̂[p + rr + 1])
+    φ̂ = _positive_from_log(θ̂[p + rr + 1])
     return BetaFit(β̂, Λ̂, φ̂, link, -Optim.minimum(res),
                    Optim.converged(res), Optim.iterations(res))
 end

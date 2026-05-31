@@ -79,9 +79,10 @@ matrix (responses × sites); `N` the matching trial counts (default all-ones,
 i.e. Bernoulli / binary). `K` is the latent dimension. Optimises the intercepts
 `β` and loadings `Λ`.
 
-The L-BFGS gradient uses ForwardDiff through the dense Laplace marginal and its
-inner Fisher-scoring solve. Warm start: empirical link-scale intercepts + an SVD
-(PPCA-style) loadings init.
+The L-BFGS gradient uses an implicit dense-Laplace gradient: site modes are found
+once by Fisher scoring, then the mode equation supplies `dz/dθ` without
+differentiating through the Newton iterations. Warm start: empirical link-scale
+intercepts + an SVD (PPCA-style) loadings init.
 """
 function fit_binomial_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
         link::Link = LogitLink(),
@@ -112,20 +113,13 @@ function fit_binomial_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
     end
 
     θ0 = vcat(β0, pack_lambda(Λ0))
-    function negll(θ)
-        β = θ[1:p]
-        Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
-        v = try
-            -binomial_marginal_loglik_laplace(Y, Nm, Λ, β, link;
-                                              maxiter = newton_maxiter, tol = newton_tol)
-        catch
-            return oftype(first(θ), 1e12)
-        end
-        return isfinite(v) ? v : oftype(v, 1e12)
-    end
+    family_fromθ = _ -> Binomial()
+    value_grad(θ) = marginal_loglik_laplace_implicit_value_grad(
+        family_fromθ, Y, Nm, θ, p, K, link; maxiter = newton_maxiter, tol = newton_tol)
+    negll_fg!(F, G, θ) = _penalized_negloglik_fg!(F, G, value_grad, θ)
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
-    res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
-                         autodiff = :forward)
+    res = Optim.optimize(Optim.only_fg!(negll_fg!), θ0, ls,
+                         Optim.Options(g_tol = g_tol, iterations = iterations))
     θ̂ = Optim.minimizer(res)
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
