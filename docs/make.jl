@@ -15,9 +15,10 @@ makedocs(;
         "Home"        => "index.md",
         "Get started" => "quickstart.md",
         "Articles"    => [
-            "Model"                  => "model.md",
-            "Benchmarks"             => "benchmarks.md",
-            "Comparison vs gllvmTMB" => "comparison.md",
+            "Model"                    => "model.md",
+            "Covariance & correlation" => "covariance-correlation.md",
+            "Benchmarks"               => "benchmarks.md",
+            "Comparison vs gllvmTMB"   => "comparison.md",
         ],
         "Roadmap"     => "roadmap.md",
         "Reference"   => "api.md",
