@@ -329,3 +329,51 @@ end
         @test occursin("Beta", s) && occursin("AIC", s)
     end
 end
+
+@testset "post-fit Ordinal fits" begin
+    Random.seed!(140)
+    p, K, n = 6, 2, 200
+    C = 4
+    τ = [-1.0, 0.1, 1.2]
+    Λt = 0.5 .* randn(p, K)
+    η = Λt * randn(K, n)
+    Y = Matrix{Int}(undef, p, n)
+    for s in 1:n, t in 1:p
+        pr = [GLLVM._ord_prob(c, η[t, s], τ) for c in 1:C]
+        Y[t, s] = rand(Categorical(pr))
+    end
+    fit = fit_gllvm(Y; family = Ordinal(), K = K)
+
+    @testset "getLV / getLoadings / rotation" begin
+        Z = GLLVM.getLV(fit, Y; rotate = false)
+        @test size(Z) == (n, K)
+        for s in 1:n
+            ẑ = GLLVM._ordinal_laplace_mode(view(Y, :, s), fit.Λ, fit.τ)
+            @test Z[s, :] ≈ ẑ atol = 1e-7
+        end
+        @test size(GLLVM.getLoadings(fit)) == (p, K)
+        @test GLLVM.rotation(fit)' * GLLVM.rotation(fit) ≈ I(K) atol = 1e-10
+    end
+
+    @testset "predict (class/prob/link) + residuals + AIC/BIC + show" begin
+        cls = GLLVM.predict(fit, Y; type = :class)
+        @test size(cls) == (p, n)
+        @test all(c -> 1 ≤ c ≤ C, cls)
+        P = GLLVM.predict(fit, Y; type = :prob)
+        @test size(P) == (p, n, C)
+        @test all(≥(0), P)
+        @test all(isapprox.(sum(P; dims = 3), 1.0; atol = 1e-8))   # probs sum to 1
+        @test GLLVM.fitted(fit, Y) == cls                          # response == modal class
+        @test size(GLLVM.predict(fit, Y; type = :link)) == (p, n)
+        r1 = GLLVM.residuals(fit, Y; rng = MersenneTwister(5))
+        r2 = GLLVM.residuals(fit, Y; rng = MersenneTwister(5))
+        @test r1 == r2 && all(isfinite, r1)
+        @test_throws ArgumentError GLLVM.residuals(fit, Y; type = :pearson)
+        k = (p * K - div(K * (K - 1), 2)) + (C - 1)
+        @test GLLVM._nparams(fit) == k
+        @test GLLVM.aic(fit) ≈ 2k - 2 * fit.loglik
+        @test GLLVM.bic(fit, n) ≈ k * log(n) - 2 * fit.loglik
+        s = sprint(show, MIME("text/plain"), fit)
+        @test occursin("Ordinal", s) && occursin("AIC", s)
+    end
+end
