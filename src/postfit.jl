@@ -152,3 +152,52 @@ end
 Response-scale in-sample fitted values — `predict(fit, data; type=:response, kwargs...)`.
 """
 fitted(fit, data; kwargs...) = predict(fit, data; type = :response, kwargs...)
+
+"""
+    residuals(fit::GllvmFit, y; type=:dunnsmyth, X=nothing) -> p×n matrix
+
+Conditional residuals at the predicted latent scores. For the Gaussian family the
+Dunn–Smyth randomized quantile residual reduces (continuous CDF) to the
+standardized residual `(y − μ) / σ_eps`, which also equals the `:pearson`
+residual. `μ` is the conditional fitted mean (see [`predict`](@ref)).
+"""
+function residuals(fit::GllvmFit, y::AbstractMatrix;
+                   type::Symbol = :dunnsmyth,
+                   X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing)
+    type in (:dunnsmyth, :pearson) ||
+        throw(ArgumentError("type must be :dunnsmyth or :pearson; got :$type"))
+    μ = predict(fit, y; type = :response, X = X)
+    return (y .- μ) ./ fit.pars.σ_eps
+end
+
+"""
+    residuals(fit::BinomialFit, Y; type=:dunnsmyth, N=nothing, rng=Random.default_rng())
+        -> p×n matrix
+
+Conditional residuals at the predicted latent mode. `:dunnsmyth` returns Dunn–
+Smyth randomized quantile residuals — `Φ⁻¹(u)`, `u` uniform on `[F(y−1), F(y)]`
+under `Binomial(N, μ)` — ≈ N(0,1) under a correct model (pass a fixed `rng` for
+reproducibility). `:pearson` returns `(Y − Nμ) / √(Nμ(1−μ))`.
+"""
+function residuals(fit::BinomialFit, Y::AbstractMatrix{<:Integer};
+                   type::Symbol = :dunnsmyth,
+                   N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
+                   rng::AbstractRNG = Random.default_rng())
+    type in (:dunnsmyth, :pearson) ||
+        throw(ArgumentError("type must be :dunnsmyth or :pearson; got :$type"))
+    p, n = size(Y)
+    Nm = N === nothing ? fill(1, p, n) : N
+    μ = predict(fit, Y; type = :response, N = N)
+    if type === :pearson
+        return (Y .- Nm .* μ) ./ sqrt.(Nm .* μ .* (1 .- μ))
+    end
+    R = Matrix{Float64}(undef, p, n)
+    @inbounds for s in 1:n, t in 1:p
+        d = Binomial(Int(Nm[t, s]), μ[t, s])
+        Flo = cdf(d, Y[t, s] - 1)
+        Fhi = cdf(d, Y[t, s])
+        u = Flo + (Fhi - Flo) * rand(rng)
+        R[t, s] = quantile(Normal(), clamp(u, 1e-12, 1 - 1e-12))
+    end
+    return R
+end

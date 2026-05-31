@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra
+using GLLVM, Test, Random, LinearAlgebra, Statistics
 
 if !isdefined(GLLVM, :getLoadings)
     include(joinpath(@__DIR__, "..", "src", "postfit.jl"))
@@ -129,5 +129,42 @@ end
         @test all(0 .≤ pr .≤ 1)
         @test pr ≈ inv.(1 .+ exp.(-ηp))               # logit link
         @test GLLVM.fitted(fit, Y) ≈ pr
+    end
+end
+
+@testset "post-fit residuals" begin
+    @testset "residuals (Gaussian): standardized, DS == Pearson" begin
+        Random.seed!(11)
+        p, K, n = 5, 2, 300
+        Λt = 0.8 .* randn(p, K)
+        y = Λt * randn(K, n) .+ 0.5 .* randn(p, n)
+        fit = fit_gaussian_gllvm(y; K = K)
+        rDS = GLLVM.residuals(fit, y; type = :dunnsmyth)
+        rP  = GLLVM.residuals(fit, y; type = :pearson)
+        @test size(rDS) == (p, n)
+        @test rDS ≈ rP                                   # continuous CDF
+        μ = GLLVM.predict(fit, y; type = :response)
+        @test rDS ≈ (y .- μ) ./ fit.pars.σ_eps atol = 1e-10
+        @test_throws ArgumentError GLLVM.residuals(fit, y; type = :bogus)
+    end
+
+    @testset "residuals (Binomial): DS reproducible + finite, Pearson formula" begin
+        Random.seed!(13)
+        p, K, n = 12, 1, 200
+        η0 = 0.2 .* randn(p) .+ (0.9 .* randn(p, K)) * randn(K, n)
+        Y  = Int.(rand(p, n) .< inv.(1 .+ exp.(-η0)))
+        fit = fit_binomial_gllvm(Y; K = K)
+        r1 = GLLVM.residuals(fit, Y; type = :dunnsmyth, rng = MersenneTwister(1))
+        r2 = GLLVM.residuals(fit, Y; type = :dunnsmyth, rng = MersenneTwister(1))
+        @test size(r1) == (p, n)
+        @test r1 == r2                                    # reproducible with fixed rng
+        @test all(isfinite, r1)
+        # Loose sanity: roughly centered with real spread.
+        @test abs(mean(r1)) < 0.3
+        @test 0.3 < std(r1) < 2.0
+        # Pearson formula (N = 1).
+        μ = GLLVM.predict(fit, Y; type = :response)
+        rP = GLLVM.residuals(fit, Y; type = :pearson)
+        @test rP ≈ (Y .- μ) ./ sqrt.(μ .* (1 .- μ)) atol = 1e-10
     end
 end
