@@ -48,4 +48,29 @@ end
         s = (vec(y) .- vec(N) .* μ) ./ (μ .* (1 .- μ)) .* me
         @test maximum(abs.(Λ' * s .- ẑ)) < 1e-6
     end
+
+    @testset "getLV (Gaussian) matches the factor-analysis posterior" begin
+        Random.seed!(1)
+        p, K, n = 5, 2, 150
+        Λt = 0.9 .* randn(p, K)
+        y = Λt * randn(K, n) .+ 0.5 .* randn(p, n)
+        fit = fit_gaussian_gllvm(y; K = K)
+
+        Z = GLLVM.getLV(fit, y; rotate = false)
+        @test size(Z) == (n, K)
+
+        # Independent reference: m_s = (I + Λ'Ψ⁻¹Λ)⁻¹ Λ'Ψ⁻¹ y_s, Ψ = Σ_y − ΛΛ'.
+        Λ = fit.pars.Λ
+        Σ = GLLVM.sigma_y_site(fit)
+        Ψ = Σ - Λ * Λ'
+        ΨiΛ = Ψ \ Λ
+        M = Symmetric(I(K) + Λ' * ΨiΛ)
+        Zref = (M \ (ΨiΛ' * y))'              # n×K
+        @test Z ≈ Zref atol = 1e-8
+
+        # Rotation consistency: Λ_rot Z_rotᵀ == Λ Z_rawᵀ.
+        Zr = GLLVM.getLV(fit, y; rotate = true)
+        Lr = GLLVM.getLoadings(fit; rotate = true)
+        @test Lr * Zr' ≈ Λ * Z' atol = 1e-8
+    end
 end
