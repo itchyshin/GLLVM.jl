@@ -22,6 +22,7 @@ include("fit_phylo.jl")                  # O(p) single-trait phylogenetic Gaussi
 # Response families (Phase 3): Distributions types as markers + link functions
 include("families/links.jl")
 include("families/binomial.jl")          # per-site Laplace marginal (Binomial, Phase 3)
+include("families/fit_gllvm.jl")         # unified fit_gllvm(Y; family) dispatcher
 
 # Confidence intervals
 include("confint.jl")                    # Wald
@@ -39,6 +40,6 @@ export fit_gaussian_gllvm, GllvmModel, GllvmFit,
        grad_node_perspecies, node_blups,
        fit_phylo_gaussian, PhyloGaussianFit,
        LogitLink, ProbitLink, CLogLogLink, IdentityLink,
-       fit_binomial_gllvm, BinomialFit
+       fit_binomial_gllvm, BinomialFit, fit_gllvm
 
 end # module GLLVM

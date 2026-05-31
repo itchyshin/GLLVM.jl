@@ -1,0 +1,30 @@
+using GLLVM, Test, Distributions, Random
+
+@testset "fit_gllvm — unified family dispatch" begin
+    Random.seed!(7)
+    p, n, K = 5, 120, 2
+
+    # Normal() dispatches to the Gaussian fitter (identical result)
+    Yg = 0.7 .* randn(p, K) * randn(K, n) .+ 0.5 .* randn(p, n)
+    f1 = fit_gllvm(Yg; family = Normal(), K = K)
+    f2 = fit_gaussian_gllvm(Yg; K = K)
+    @test f1 isa GllvmFit
+    @test f1.logLik ≈ f2.logLik
+
+    # Binomial() dispatches to the binomial fitter (identical result)
+    Λ = 1.0 .* randn(p, 1); β = 0.3 .* randn(p)
+    η = β .+ Λ * randn(1, n)
+    Yb = Int.(rand(p, n) .< 1 ./ (1 .+ exp.(-η)))
+    b1 = fit_gllvm(Yb; family = Binomial(), K = 1)
+    b2 = fit_binomial_gllvm(Yb; K = 1)
+    @test b1 isa BinomialFit
+    @test b1.loglik ≈ b2.loglik
+    @test b1.link isa LogitLink            # default link
+
+    # an explicit link flows through
+    b3 = fit_gllvm(Yb; family = Binomial(), K = 1, link = ProbitLink())
+    @test b3.link isa ProbitLink
+
+    # unimplemented family → clear error
+    @test_throws ArgumentError fit_gllvm(Yb; family = Poisson(), K = 1)
+end
