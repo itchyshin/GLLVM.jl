@@ -536,3 +536,104 @@ function Base.show(io::IO, ::MIME"text/plain", fit::BetaFit)
             ", AIC = ", round(aic(fit); sigdigits = 7))
     print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
 end
+
+# ---------------------------------------------------------------------------
+# Ordinal post-fit methods (ordered categories 1:C; cumulative logit, common
+# ordered cutpoints τ; latent η = (Λz)_t, no intercept). The "fitted value" is
+# the modal category; residuals are Dunn–Smyth randomized quantile (discrete CDF).
+# ---------------------------------------------------------------------------
+
+_loadings(fit::OrdinalFit) = fit.Λ
+_loglik(fit::OrdinalFit)   = fit.loglik
+
+function _nparams(fit::OrdinalFit)
+    p, K = size(fit.Λ)
+    return (p * K - div(K * (K - 1), 2)) + (fit.C - 1)   # Λ + (C−1) cutpoints, no β
+end
+
+"""
+    getLV(fit::OrdinalFit, Y; rotate=true) -> n×K matrix
+
+Conditional latent-variable scores for an ordinal fit: the per-site Laplace mode
+`ẑₛ` (at the fitted cutpoints). `Y` is the p×n matrix of ordinal responses (`1:C`);
+`rotate=true` applies the canonical [`rotation`](@ref).
+"""
+function getLV(fit::OrdinalFit, Y::AbstractMatrix{<:Integer}; rotate::Bool = true)
+    p, n = size(Y)
+    K = size(fit.Λ, 2)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        Z[:, s] = _ordinal_laplace_mode(view(Y, :, s), fit.Λ, fit.τ)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
+end
+
+"""
+    predict(fit::OrdinalFit, Y; type=:class) -> matrix or p×n×C array
+
+In-sample predictions at the Laplace mode `ẑ` (η = Λẑ). `type=:link` returns the
+linear predictor `η` (p×n); `type=:prob` the category probabilities (p×n×C array,
+summing to 1 over the last axis); `type=:class` / `:response` the modal category
+(p×n integer matrix).
+"""
+function predict(fit::OrdinalFit, Y::AbstractMatrix{<:Integer}; type::Symbol = :class)
+    type in (:link, :prob, :class, :response) ||
+        throw(ArgumentError("type must be :link, :prob, :class, or :response; got :$type"))
+    p, n = size(Y); C = fit.C
+    Z = getLV(fit, Y; rotate = false)
+    η = fit.Λ * Z'                                   # p×n
+    type === :link && return η
+    if type === :prob
+        P = Array{Float64, 3}(undef, p, n, C)
+        @inbounds for s in 1:n, t in 1:p, c in 1:C
+            P[t, s, c] = _ord_prob(c, η[t, s], fit.τ)
+        end
+        return P
+    end
+    M = Matrix{Int}(undef, p, n)                     # modal category
+    @inbounds for s in 1:n, t in 1:p
+        best = 1; bestp = -1.0
+        for c in 1:C
+            pc = _ord_prob(c, η[t, s], fit.τ)
+            pc > bestp && (bestp = pc; best = c)
+        end
+        M[t, s] = best
+    end
+    return M
+end
+
+"""
+    residuals(fit::OrdinalFit, Y; type=:dunnsmyth, rng=Random.default_rng()) -> p×n matrix
+
+Dunn–Smyth randomized quantile residuals for an ordinal fit — `Φ⁻¹(u)`, `u` uniform
+on `[P(Y≤c−1), P(Y≤c)]` under the fitted cumulative-logit model at the Laplace mode
+— ≈ N(0,1) under a correct model (pass a fixed `rng` to reproduce). Only
+`:dunnsmyth` is defined for ordered categories.
+"""
+function residuals(fit::OrdinalFit, Y::AbstractMatrix{<:Integer};
+                   type::Symbol = :dunnsmyth, rng::AbstractRNG = Random.default_rng())
+    type === :dunnsmyth ||
+        throw(ArgumentError("ordinal residuals support type=:dunnsmyth only; got :$type"))
+    p, n = size(Y); C = fit.C
+    Z = getLV(fit, Y; rotate = false)
+    η = fit.Λ * Z'
+    R = Matrix{Float64}(undef, p, n)
+    @inbounds for s in 1:n, t in 1:p
+        c = Int(Y[t, s])
+        Fhi = c >= C ? 1.0 : _ord_F(fit.τ[c] - η[t, s])
+        Flo = c <= 1 ? 0.0 : _ord_F(fit.τ[c - 1] - η[t, s])
+        u = Flo + (Fhi - Flo) * rand(rng)
+        R[t, s] = quantile(Normal(), clamp(u, 1e-12, 1 - 1e-12))
+    end
+    return R
+end
+
+function Base.show(io::IO, ::MIME"text/plain", fit::OrdinalFit)
+    p, K = size(fit.Λ)
+    println(io, "Ordinal GLLVM fit (cumulative logit)")
+    println(io, "  responses p = ", p, ", latent factors K = ", K, ", categories C = ", fit.C)
+    println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
+            ", AIC = ", round(aic(fit); sigdigits = 7))
+    print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
+end
