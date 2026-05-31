@@ -16,6 +16,7 @@ makedocs(;
         "Get started" => "quickstart.md",
         "Articles"    => [
             "Model"                    => "model.md",
+            "Morphometrics"            => "morphometrics.md",
             "Covariance & correlation" => "covariance-correlation.md",
             "Response families"        => "response-families.md",
             "Common pitfalls"          => "pitfalls.md",
