@@ -24,6 +24,7 @@ include("families/links.jl")
 include("families/laplace.jl")           # generic family-dispatched Laplace marginal core
 include("families/binomial.jl")          # Binomial family pieces + fit (Phase 3)
 include("families/poisson.jl")           # Poisson family pieces (Phase 3)
+include("families/negbin.jl")            # Negative-binomial family pieces (Phase 3)
 include("families/fit_gllvm.jl")         # unified fit_gllvm(Y; family) dispatcher
 
 # Post-fit API (ordination, predict, residuals, summary)
