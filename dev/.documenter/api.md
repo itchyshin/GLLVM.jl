@@ -36,7 +36,7 @@ nnz(phy.Q_topology)          # 16  (4 per edge × 4 edges)
 
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/sparse_phy.jl#L196-L221" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/sparse_phy.jl#L196-L221" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -110,7 +110,7 @@ ci.upper     # 97.5% percentile bounds
 
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/confint_bootstrap.jl#L193-L256" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/confint_bootstrap.jl#L193-L256" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -152,7 +152,7 @@ Pass `y`, `X`, `Σ_phy` matching what was originally passed to `fit_gaussian_gll
 `n_boot` defaults to 500 — publication-grade. Lower (e.g. 100) for quick checks. The cost is `n_boot × per-fit time`; PERF+I already optimised the per-fit path.
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/confint_derived.jl#L443-L475" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/confint_derived.jl#L443-L475" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -169,7 +169,7 @@ build_node_perspecies(phy::AugmentedPhy{Float64}, σ_phy, σ²_eps) -> NodePerSp
 Assemble a `NodePerSpecies` solver for the matched single-trait per-species model. `σ_phy` is the length-`p` per-tip phylogenetic SD (with `σ²_phy` folded in); `σ²_eps` is the residual variance. Builds the root-dropped tree precision `Q_cond`, the augmented node precision `Λ̃ = Q_cond + σ_eps⁻² S' diag(σ_phy²) S`, and their sparse Cholesky factors (O(p) on a tree).
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/node_gradient.jl#L276-L284" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/node_gradient.jl#L276-L284" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -186,7 +186,7 @@ build_sparse_phy_state(y, Λ_B, σ_eps; Λ_phy, σ_phy, phy, σ²_phy)
 Assemble the augmented-state sparse machinery for the STANDARD phylogenetic GLLVM (no W tier, no per-trait diagonal REs, scalar `σ²_phy`). Mirrors the construction in `likelihood_sparse_phy.jl` and is shared between the value (`sparse_phy_value`) and the analytic gradient (`sparse_phy_grad`).
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/sparse_phy_grad.jl#L130-L137" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/sparse_phy_grad.jl#L130-L137" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -203,7 +203,7 @@ communality(fit::GllvmFit) -> Vector
 Per-trait communality `c²[t] = (Λ_B Λ_B')[t, t] / Σ_y_site[t, t]`. This is the fraction of the per-site trait variance explained by the shared latent factors. Values are in [0, 1].
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/confint_derived.jl#L196-L202" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/confint_derived.jl#L196-L202" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -253,7 +253,7 @@ The Hessian is computed via ForwardDiff at the fitted parameter vector stored on
 When PERF lands with reverse-mode AD, the integration agent can swap the ForwardDiff.hessian call for the faster path; the public API stays stable.
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/confint.jl#L196-L236" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/confint.jl#L196-L236" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -272,7 +272,7 @@ Cross-trait correlation derived from `Σ_y_site`: `ρ[i, j] = Σ_y_site[i, j] / 
 Diagonal entries are exactly 1.0. The off-diagonals are the _site-level_ correlations driven by the shared loadings Λ_B.
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/confint_derived.jl#L266-L274" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/confint_derived.jl#L266-L274" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -298,7 +298,7 @@ M-step (aggregated over s = 1, …, n):     S_yy = Y Y'                         
 Both updates are closed-form. The log-likelihood is evaluated via Woodbury at the start of each iteration (i.e. at the parameters produced by the previous M-step) so monotone non-decrease is testable.
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/em_fa.jl#L11-L36" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/em_fa.jl#L11-L36" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -339,7 +339,7 @@ Optional fixed effects:
 The fit's `pars` NamedTuple always contains `(σ_eps, Λ, β, Λ_W, σ²_B, σ²_W, Λ_phy, σ_phy, θ_packed)` where `Λ_W`, `σ²_B`, `σ²_W`, `Λ_phy`, `σ_phy` are `nothing` when the corresponding flag is off.
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/fit.jl#L61-L98" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/fit.jl#L61-L98" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -361,7 +361,7 @@ Fit the O(p) single-trait single-variance phylogenetic Gaussian model `y ~ N(μ�
 A single exact gradient/likelihood evaluation scales linearly in the number of species `p` (≈0.8 ms at p=10,000), where dense phylogenetic GLLVMs cap near `p ≈ 500`.
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/fit_phylo.jl#L84-L104" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/fit_phylo.jl#L84-L104" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -395,7 +395,7 @@ Phylogenetic extension (`Σ_phy::AbstractMatrix`, p × p, supplied by caller —
 With Λ_phy_aug = hcat(Λ_phy, σ_phy) the marginal covariance of vec(y) is `I_n ⊗ A + J_n ⊗ B` where `B = (Λ_phy_aug Λ_phy_aug') .* Σ_phy`. The rotation trick (J_n has rank 1) reduces this to two p×p Cholesky factorisations regardless of n.
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/likelihood.jl#L42-L72" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/likelihood.jl#L42-L72" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -422,7 +422,7 @@ Use this on phylogenies with hundreds to tens of thousands of species, where for
 This path is **evaluation-only**: CHOLMOD (Julia's sparse Cholesky) does not support `ForwardDiff.Dual` element types, so inputs are cast to `Float64` for the sparse solve. AD-based fitting (`fit_gaussian_gllvm`) must therefore use the dense `gaussian_marginal_loglik` path. The sparse path is intended for likelihood evaluation, simulation, and verification on large trees — not for the optimiser's inner loop.
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/likelihood_sparse_phy.jl#L80-L105" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/likelihood_sparse_phy.jl#L80-L105" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -445,7 +445,7 @@ J1 / J2-A signature (single-tier, optional fixed effects). Parameter layout:
   
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/likelihood.jl#L256-L264" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/likelihood.jl#L256-L264" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -478,7 +478,7 @@ J2-A-WD / J3 signature carrying a `spec::NamedTuple` with fields `(q, p, K_B, K_
 For the J1 case `(K_W = 0, has_diag = false)`, the layout collapses to `[β; log_σ_eps; θ_rr_B]` and the result matches the legacy positional method above.
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/likelihood.jl#L284-L306" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/likelihood.jl#L284-L306" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -512,7 +512,7 @@ Parameter layout (length = `profile_nparams(spec; profile_beta)`):
   
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/profile.jl#L38-L55" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/profile.jl#L38-L55" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -540,7 +540,7 @@ with the node-diagonal `(Λ̃⁻¹)_{ll}` from `takahashi_diag` (O(nnz L)) and `
 Sign convention: returns `∂negll/∂σ_phy` — the gradient of the _negative_ log-likelihood (what an optimiser minimises; consumed by the O(p) single-trait fitter). This is the OPPOSITE sign to [`node_grad`](/api#GLLVM.node_grad-Tuple{GLLVM.SparsePhyState}), whose blocks are `∂loglik/∂θ`. Verified against central FD of `+negll` to `rel < 1e-6`.
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/node_gradient.jl#L303-L324" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/node_gradient.jl#L303-L324" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -561,7 +561,7 @@ Default initial values matching gllvmTMB::init_rr_theta (R/fit-multi.R:1291-1295
   
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/packing.jl#L87-L93" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/packing.jl#L87-L93" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -578,7 +578,7 @@ leaf_block_inv(st::SparsePhyState) -> (LB_leaf, cols)
 Dense (K_aug·p) × (K_aug·p) leaf-row × leaf-col block of `M_sad⁻¹`. `cols` are the augmented-state column indices corresponding to each column of `LB_leaf` (= the leaf positions, axis-stacked). Computed via the Woodbury form `M_sad⁻¹ = Q_eff⁻¹ + α · X_G · S_K⁻¹ · X_G'`, restricted to leaf rows and columns. The leaf-block of `Q_eff⁻¹` is obtained from a single batched CHOLMOD solve against the leaf unit columns (the dominant cost).
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/sparse_phy_grad.jl#L339-L348" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/sparse_phy_grad.jl#L339-L348" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -597,7 +597,7 @@ Build the [`LowRankPlusDiagChol`](/api#GLLVM.LowRankPlusDiagChol) factorisation 
 Promotes `eltype(Λ)` and `eltype(d)` so AD element types (e.g. `ForwardDiff.Dual`) flow through. Constructs the `K × K` capacitance matrix `I_K + Λ' D⁻¹ Λ` and factorises it once.
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/lowrank_cholesky.jl#L43-L52" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/lowrank_cholesky.jl#L43-L52" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -619,7 +619,7 @@ If `root_index < 0` it is auto-detected as the unique node that is not a child i
 This bypasses the Newick parser — useful for tests and for trees that arrive from another tool already as edge lists.
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/sparse_phy.jl#L302-L316" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/sparse_phy.jl#L302-L316" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -645,7 +645,7 @@ and the tip phylo BLUP on the data scale is `ẑ_tip[t] = σ_phy[t] û[leaf(t)]`
 CAVEAT. Node-frame posterior-mean BLUPs `û` are exact (≤8e-16 vs the dense reference). Edge-frame branch increments derived by differencing (`û_child − û_parent`) differ from the edge-frame (P2) representation by a `√σ²_phy`-scale convention; do not treat them as P2-equivalent branch BLUPs. See `docs/dev-log/decisions/2026-05-30-node-gradient-5.4e-2-convention.md`.
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/node_gradient.jl#L353-L369" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/node_gradient.jl#L353-L369" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -662,7 +662,7 @@ node_dσ_phy_only(st::SparsePhyState) -> Vector{Float64}
 Per-species `dσ_phy` block alone (length `p`), sharing the O(p) `cc = C⁻¹m` solve. This is the headline node-diagonal object — the apples-to-apples analogue of the edge-frame per-species gradient — isolated from the global `dΛ_B` / `dσ²_eps` / `dσ²_phy` work for timing and scaling studies.
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/node_gradient.jl#L215-L222" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/node_gradient.jl#L215-L222" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -685,7 +685,7 @@ Assumes the phylo_unique configuration (`st.K_aug == 1`): one shared per-trait p
 Evaluation-only for ForwardDiff: the node-diagonal uses a CHOLMOD Float64 factor (see file header).
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/node_gradient.jl#L184-L205" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/node_gradient.jl#L184-L205" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -702,7 +702,7 @@ pack_lambda(Λ::AbstractMatrix) -> AbstractVector
 Forward pack: given a p × K loading matrix with strict-upper = 0, return the flat θ vector of length rr_theta_len(p, K).
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/packing.jl#L66-L71" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/packing.jl#L66-L71" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -721,7 +721,7 @@ Per-trait phylogenetic signal `H²[t] = (Λ_phy_aug Λ_phy_aug')[t, t] · Σ_phy
 `Σ_phy` defaults to the identity matrix (standardised convention, diag == 1 per trait), so the diagonal entries reduce to `H²[t] = (Λ_phy_aug Λ_phy_aug')[t, t] / Σ_y_site[t, t]`. Supply the fitted phylogenetic VCV explicitly when the diagonal is not unit.
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/confint_derived.jl#L286-L300" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/confint_derived.jl#L286-L300" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -748,7 +748,7 @@ If `lower_tri = true` (default), rotate Λ so its top K × K block is lower tria
 For p ≤ K the closed-form PPCA solution is degenerate (no residual eigenvalues to estimate σ² from); this implementation requires K &lt; p.
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/ppca_init.jl#L21-L46" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/ppca_init.jl#L21-L46" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -768,7 +768,7 @@ Convenience method that looks up `parm` by name (e.g., `"sigma_eps"`, `"Lambda_B
 Naming convention matches `confint(fit)` from src/confint.jl: SDs are reported on the raw (positive) scale, β and Λ on their native scale.
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/confint_profile.jl#L467-L476" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/confint_profile.jl#L467-L476" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -809,7 +809,7 @@ Failure modes (each side independently):
   
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/confint_profile.jl#L347-L381" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/confint_profile.jl#L347-L381" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -862,7 +862,7 @@ Returns a NamedTuple with fields:
   
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/confint_derived.jl#L829-L886" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/confint_derived.jl#L829-L886" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -879,7 +879,7 @@ profile_nparams(spec; profile_beta=true) -> Int
 Number of parameters the profile NLL optimises over. Drops σ_eps (always) and β (when `profile_beta && !has_phy`).
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/profile.jl#L339-L344" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/profile.jl#L339-L344" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -897,7 +897,7 @@ profile_recover(params, y; spec, X=nothing, Σ_phy=nothing,
 Run one final NLL pass at `params` and return everything needed to build the user-facing fit:   (logLik, σ_eps, β, Λ_B, Λ_W, σ²_B, σ²_W, Λ_phy, σ_phy)
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/profile.jl#L365-L372" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/profile.jl#L365-L372" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -926,7 +926,7 @@ Per-trait variance decomposition. Each entry is in [0, 1]; the `:shared`, `:uniq
   
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/confint_derived.jl#L211-L225" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/confint_derived.jl#L211-L225" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -945,7 +945,7 @@ Build a near-balanced binary tree with `p` leaves. All branch lengths equal `bra
 When `p` is a power of 2 this is perfectly balanced. Otherwise the left-over leaf at each level is carried up one extra step (so the tree remains binary, just with slightly uneven depths). Branch lengths stay uniform — the goal is a representative sparse-tree topology, not an ultrametric one.
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/sparse_phy.jl#L379-L390" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/sparse_phy.jl#L379-L390" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -966,7 +966,7 @@ Convention used here: QR-decompose Λ' (a K × p matrix). The thin Q factor is K
 Note that this convention determines a sign per column but does NOT fix the overall orientation when Λ Λ' has repeated eigenvalues. In that degenerate case any rotation within the repeated-eigenvalue subspace is equally valid; the QR pivoting choice is implementation- defined.
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/ppca_init.jl#L76-L96" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/ppca_init.jl#L76-L96" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -983,7 +983,7 @@ rr_theta_len(p::Integer, K::Integer) -> Int
 Number of parameters needed to pack a p × K lower-triangular loading matrix with zero strict upper triangle.
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/packing.jl#L18-L23" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/packing.jl#L18-L23" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -1002,7 +1002,7 @@ Build the dense (p × p) leaf covariance `Σ_phy = σ²_phy · (S Q_cond⁻¹ S'
 This is **O(p³)** in storage and time — only intended for small trees in tests. Do NOT call it on the real workload; the entire point of `AugmentedPhy` is to avoid materialising Σ_phy.
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/sparse_phy.jl#L358-L369" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/sparse_phy.jl#L358-L369" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -1021,7 +1021,7 @@ The per-site (within-species) trait covariance `Σ_y_site = Λ_B Λ_B' + diag(d_
 The phylogenetic block is _not_ included — for J3, the phylo contribution is rank-1 across species and is separated out for biological interpretation. Use `phylo_signal` to recover the phy component, and `correlation` for the per-site cross-trait correlations.
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/confint_derived.jl#L173-L185" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/confint_derived.jl#L173-L185" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -1038,7 +1038,7 @@ takahashi_diag(ch::SparseArrays.CHOLMOD.Factor) -> Vector{Float64}
 Convenience: return ONLY `diag(Q⁻¹)` (a length-n vector, in the ORIGINAL ordering) via the Takahashi recursion. Same cost as `takahashi_selinv` but without materialising the full sparse output (a small allocation win when only the diagonal is needed, as in the EM E-step's per-trait variance).
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/takahashi_selinv.jl#L199-L206" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/takahashi_selinv.jl#L199-L206" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -1057,7 +1057,7 @@ Compute the Takahashi selected inverse of the matrix `Q` whose sparse Cholesky f
 Cost: `O(nnz(L))` arithmetic + O(nnz(L)·log(max_col_nnz)) for the symmetric lookups (with constant `max_col_nnz` on a tree this is `O(nnz(L))` overall).
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/takahashi_selinv.jl#L91-L102" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/takahashi_selinv.jl#L91-L102" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -1076,7 +1076,7 @@ Inverse of `pack_lambda`. Returns a p × K matrix Λ with the diagonals and stri
 AD-friendly: `eltype(θ)` is preserved, so `θ::Vector{<:ForwardDiff.Dual}` returns a matrix of `Dual`s.
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/packing.jl#L38-L46" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/packing.jl#L38-L46" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -1096,7 +1096,7 @@ In-place Woodbury solve `out = M⁻¹ b` with `M = F.Λ F.Λ' + Diagonal(F.d)`.
 If `buf_K` is omitted a fresh `K`-vector is allocated; pass one in to make this fully allocation-free on the hot path.
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/lowrank_cholesky.jl#L92-L100" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/lowrank_cholesky.jl#L92-L100" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -1131,7 +1131,7 @@ Augmented-state sparse phylogenetic precision for a binary tree.
 `Q_topology` is positive **semi**-definite (rank 2p − 2). The all-ones vector is its sole zero eigenvector — fixing the root removes the degeneracy. The sparse log-likelihood path adds a positive contribution to the leaf diagonals (proportional to `λ_phy² / d_total`) which renders the active solve matrix positive definite without any explicit ridge.
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/sparse_phy.jl#L39-L64" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/sparse_phy.jl#L39-L64" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -1148,7 +1148,7 @@ GllvmFit
 Result of `fit_gaussian_gllvm`. Holds the fitted parameters, the converged log-likelihood, convergence info, and the raw Optim result.
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/fit.jl#L45-L50" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/fit.jl#L45-L50" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -1165,7 +1165,7 @@ GllvmModel(p, K; K_W=0, has_diag=false, K_phy=0, has_phy_unique=false)
 Immutable spec describing a Gaussian GLLVM. `p` traits, `K` (= K_B) unit-tier latent factors, plus optional W tier (`K_W`), per-trait diagonal random effects (`has_diag`), and phylogenetic block (`K_phy`axes of`Λ_phy`and/or per-trait`σ_phy`when`has_phy_unique`). The single-tier J1 case is the default`K_W = 0`,`has_diag = false`,`K_phy = 0`,`has_phy_unique = false`.
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/fit.jl#L19-L28" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/fit.jl#L19-L28" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -1190,7 +1190,7 @@ Factorisation of `M = Λ Λ' + Diagonal(d)` that stores three small pieces:
 Use [`low_rank_chol`](/api#GLLVM.low_rank_chol-Tuple{AbstractMatrix,%20AbstractVector}) to construct, then `\`, [`ldiv!`](/api#LinearAlgebra.ldiv!-Tuple{AbstractVector,%20GLLVM.LowRankPlusDiagChol,%20AbstractVector}), or `logdet` for the Woodbury-based operations.
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/lowrank_cholesky.jl#L24-L36" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/lowrank_cholesky.jl#L24-L36" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
@@ -1207,7 +1207,7 @@ PhyloGaussianFit
 Result of [`fit_phylo_gaussian`](/api#GLLVM.fit_phylo_gaussian-Tuple{GLLVM.AugmentedPhy,%20AbstractVector}): the maximum-likelihood estimates `μ`, `σ²_phy`, `σ²_eps` of the single-trait single-variance phylogenetic Gaussian model, the achieved `negll`, the optimiser `converged` flag, and the number of `iterations` taken.
 
 
-<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/3f6d2abd9c02a5aefa06aecaa9b36041e24d017b/src/fit_phylo.jl#L18-L25" target="_blank" rel="noreferrer">source</a></Badge>
+<Badge type="info" class="source-link" text="source"><a href="https://github.com/itchyshin/GLLVM.jl/blob/0f33de9703296b5ddcd9a89c8d428a09fae188ee/src/fit_phylo.jl#L18-L25" target="_blank" rel="noreferrer">source</a></Badge>
 
 </details>
 
