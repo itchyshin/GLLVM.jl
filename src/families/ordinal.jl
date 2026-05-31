@@ -115,3 +115,114 @@ function ordinal_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix,
     end
     return acc
 end
+
+# ---------------------------------------------------------------------------
+# Fit driver (Ordinal family slice 2).
+# ---------------------------------------------------------------------------
+
+"""
+    OrdinalFit
+
+Result of [`fit_ordinal_gllvm`](@ref): loadings `Λ` (p×K), the `C−1` ordered
+cutpoints `τ`, the number of categories `C`, the `link`, the maximised Laplace
+`loglik`, the optimiser `converged` flag, and `iterations`. (No species intercept
+— the common cutpoints carry the category levels.)
+"""
+struct OrdinalFit
+    Λ::Matrix{Float64}
+    τ::Vector{Float64}
+    C::Int
+    link::Link
+    loglik::Float64
+    converged::Bool
+    iterations::Int
+end
+
+function Base.show(io::IO, f::OrdinalFit)
+    p, K = size(f.Λ)
+    print(io, "OrdinalFit(p=", p, ", K=", K, ", C=", f.C,
+          ", link=", nameof(typeof(f.link)),
+          ", loglik=", round(f.loglik; sigdigits = 7),
+          f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+# Ordered cutpoints from unconstrained ψ: τ₁ = ψ₁, τ_c = τ_{c-1} + exp(ψ_c).
+function _unpack_cutpoints(ψ::AbstractVector)
+    m = length(ψ)
+    τ = Vector{float(eltype(ψ))}(undef, m)
+    τ[1] = ψ[1]
+    @inbounds for c in 2:m
+        τ[c] = τ[c - 1] + exp(ψ[c])
+    end
+    return τ
+end
+
+"""
+    fit_ordinal_gllvm(Y; K, link=LogitLink(), …) -> OrdinalFit
+
+Fit a proportional-odds cumulative-logit ordinal GLLVM by L-BFGS over
+`[vec(Λ); ψ]`, where the `C−1` ordered cutpoints are the unconstrained increments
+`τ₁ = ψ₁, τ_c = τ_{c-1} + exp(ψ_c)` (so ordering holds for free) and the marginal
+is [`ordinal_marginal_loglik_laplace`](@ref). `Y` is a p×n matrix of ordinal
+responses coded `1:C` (`C = maximum(Y)`). Finite-difference gradient; warm start =
+empirical cumulative-proportion cutpoints + a normal-scores SVD loadings init.
+"""
+function fit_ordinal_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
+        link::Link = LogitLink(), Λ_init = nothing,
+        g_tol::Real = 1e-5, iterations::Integer = 500,
+        newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    p, n = size(Y)
+    C = Int(maximum(Y))
+    C ≥ 2 || throw(ArgumentError("ordinal response needs ≥ 2 categories; got maximum(Y) = $C"))
+    rr = rr_theta_len(p, K)
+
+    # Loadings warm start: SVD of a row-centred normal-scores latent proxy.
+    Zproxy = [quantile(Normal(), clamp((Y[t, i] - 0.5) / C, 1e-3, 1 - 1e-3))
+              for t in 1:p, i in 1:n]
+    Λ0 = if Λ_init === nothing
+        Zc = Zproxy .- (sum(Zproxy; dims = 2) ./ n)
+        F = svd(Zc); kk = min(K, length(F.S))
+        L = zeros(p, K)
+        @inbounds for j in 1:kk
+            L[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
+        end
+        L
+    else
+        collect(float.(Λ_init))
+    end
+
+    # Cutpoint warm start: τ_c = logit(empirical P(y ≤ c)); to ψ increments.
+    counts = zeros(Int, C)
+    @inbounds for v in Y
+        counts[Int(v)] += 1
+    end
+    cum = cumsum(counts ./ sum(counts))
+    τ0 = [log(clamp(cum[c], 1e-3, 1 - 1e-3) / (1 - clamp(cum[c], 1e-3, 1 - 1e-3)))
+          for c in 1:(C - 1)]
+    ψ0 = similar(τ0)
+    ψ0[1] = τ0[1]
+    @inbounds for c in 2:(C - 1)
+        ψ0[c] = log(max(τ0[c] - τ0[c - 1], 1e-3))
+    end
+
+    θ0 = vcat(pack_lambda(Λ0), ψ0)
+    function negll(θ)
+        Λ = unpack_lambda(θ[1:rr], p, K)
+        τ = _unpack_cutpoints(θ[(rr + 1):(rr + C - 1)])
+        v = try
+            -ordinal_marginal_loglik_laplace(Y, Λ, τ;
+                                             maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
+    res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
+                         autodiff = :finite)
+    θ̂ = Optim.minimizer(res)
+    Λ̂ = unpack_lambda(θ̂[1:rr], p, K)
+    τ̂ = _unpack_cutpoints(θ̂[(rr + 1):(rr + C - 1)])
+    return OrdinalFit(Λ̂, τ̂, C, link, -Optim.minimum(res),
+                      Optim.converged(res), Optim.iterations(res))
+end
