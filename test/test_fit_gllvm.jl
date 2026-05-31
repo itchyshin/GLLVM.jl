@@ -31,6 +31,10 @@ using GLLVM, Test, Distributions, Random
 
     @test fit_gllvm(Yc; family = NegativeBinomial(), K = 1) isa NBFit
 
+    # Beta() dispatches to the Beta fitter (proportions in (0,1))
+    Yp = clamp.(rand(p, n), 1e-3, 1 - 1e-3)
+    @test fit_gllvm(Yp; family = Beta(), K = 1) isa BetaFit
+
     # a still-unimplemented family → clear error
-    @test_throws ArgumentError fit_gllvm(Yb; family = Beta(), K = 1)
+    @test_throws ArgumentError fit_gllvm(Yb; family = Gamma(), K = 1)
 end
