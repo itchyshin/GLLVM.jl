@@ -21,6 +21,7 @@ include("fit_phylo.jl")                  # O(p) single-trait phylogenetic Gaussi
 
 # Response families (Phase 3): Distributions types as markers + link functions
 include("families/links.jl")
+include("families/binomial.jl")          # per-site Laplace marginal (Binomial, Phase 3)
 
 # Confidence intervals
 include("confint.jl")                    # Wald
