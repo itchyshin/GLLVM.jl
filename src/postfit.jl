@@ -86,3 +86,25 @@ function getLV(fit::GllvmFit, y::AbstractMatrix;
     Zt = permutedims(Z)                 # n×K
     return rotate ? Zt * _svd_rotation(Λ) : Zt
 end
+
+"""
+    getLV(fit::BinomialFit, Y; N=nothing, rotate=true) -> n×K matrix
+
+Conditional latent-variable scores: the per-site Laplace mode `ẑₛ` (the inner
+Fisher-scoring solve of the marginal). `Y` is the p×n integer response matrix;
+`N` the trial counts (default all-ones, i.e. Bernoulli). `rotate=true` applies
+the canonical [`rotation`](@ref).
+"""
+function getLV(fit::BinomialFit, Y::AbstractMatrix{<:Integer};
+               N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
+               rotate::Bool = true)
+    p, n = size(Y)
+    Nm = N === nothing ? fill(1, p, n) : N
+    K = size(fit.Λ, 2)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        Z[:, s] = _laplace_mode(view(Y, :, s), view(Nm, :, s), fit.Λ, fit.β, fit.link)
+    end
+    Zt = permutedims(Z)                 # n×K
+    return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
+end

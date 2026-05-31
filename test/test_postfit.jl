@@ -73,4 +73,27 @@ end
         Lr = GLLVM.getLoadings(fit; rotate = true)
         @test Lr * Zr' ≈ Λ * Z' atol = 1e-8
     end
+
+    @testset "getLV (Binomial) matches per-site Laplace mode" begin
+        Random.seed!(3)
+        p, K, n = 6, 2, 80
+        Λt = 0.9 .* randn(p, K)
+        β  = 0.3 .* randn(p)
+        η  = β .+ Λt * randn(K, n)
+        μ  = inv.(1 .+ exp.(-η))
+        Y  = Int.(rand(p, n) .< μ)
+        fit = fit_binomial_gllvm(Y; K = K)
+
+        Z = GLLVM.getLV(fit, Y; rotate = false)
+        @test size(Z) == (n, K)
+        # Each row equals the per-site Laplace mode.
+        N = ones(Int, p, n)
+        for s in 1:n
+            ẑ = GLLVM._laplace_mode(view(Y, :, s), view(N, :, s), fit.Λ, fit.β, fit.link)
+            @test Z[s, :] ≈ ẑ atol = 1e-7
+        end
+        # Rotation consistency.
+        Zr = GLLVM.getLV(fit, Y; rotate = true)
+        @test GLLVM.getLoadings(fit; rotate = true) * Zr' ≈ fit.Λ * Z' atol = 1e-7
+    end
 end
