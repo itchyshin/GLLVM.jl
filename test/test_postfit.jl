@@ -283,3 +283,49 @@ end
         @test occursin("Negative-binomial", s) && occursin("AIC", s)
     end
 end
+
+@testset "post-fit Beta fits" begin
+    Random.seed!(110)
+    p, K, n = 6, 2, 200
+    β = zeros(p)
+    Λt = 0.5 .* randn(p, K)
+    φ_true = 12.0
+    μ = inv.(1 .+ exp.(-(β .+ Λt * randn(K, n))))
+    Y = [rand(Beta(μ[t, s] * φ_true, (1 - μ[t, s]) * φ_true)) for t in 1:p, s in 1:n]
+    fit = fit_gllvm(Y; family = Beta(), K = K)
+
+    @testset "getLV / getLoadings / rotation" begin
+        Z = GLLVM.getLV(fit, Y; rotate = false)
+        @test size(Z) == (n, K)
+        for s in 1:n
+            ẑ = GLLVM._laplace_mode(Beta(fit.φ, 1.0), view(Y, :, s),
+                                    ones(Int, p), fit.Λ, fit.β, fit.link)
+            @test Z[s, :] ≈ ẑ atol = 1e-7
+        end
+        @test size(GLLVM.getLoadings(fit)) == (p, K)
+        @test GLLVM.rotation(fit)' * GLLVM.rotation(fit) ≈ I(K) atol = 1e-10
+        Zr = GLLVM.getLV(fit, Y; rotate = true)
+        @test GLLVM.getLoadings(fit; rotate = true) * Zr' ≈ fit.Λ * Z' atol = 1e-7
+    end
+
+    @testset "predict (proportions) + residuals + AIC/BIC + show" begin
+        η_hat = GLLVM.predict(fit, Y; type = :link)
+        μ_hat = GLLVM.predict(fit, Y; type = :response)
+        @test size(μ_hat) == (p, n)
+        @test all(0 .< μ_hat .< 1)
+        @test μ_hat ≈ inv.(1 .+ exp.(-η_hat))                # logit link
+        # Continuous CDF ⇒ Dunn–Smyth residual is deterministic (no rng arg).
+        rDS = GLLVM.residuals(fit, Y; type = :dunnsmyth)
+        @test size(rDS) == (p, n)
+        @test all(isfinite, rDS)
+        rp = GLLVM.residuals(fit, Y; type = :pearson)
+        @test rp ≈ (Y .- μ_hat) ./ sqrt.(μ_hat .* (1 .- μ_hat) ./ (1 + fit.φ)) atol = 1e-9
+        @test_throws ArgumentError GLLVM.residuals(fit, Y; type = :bogus)
+        k = p + (p * K - div(K * (K - 1), 2)) + 1            # + precision φ
+        @test GLLVM._nparams(fit) == k
+        @test GLLVM.aic(fit) ≈ 2k - 2 * fit.loglik
+        @test GLLVM.bic(fit, n) ≈ k * log(n) - 2 * fit.loglik
+        s = sprint(show, MIME("text/plain"), fit)
+        @test occursin("Beta", s) && occursin("AIC", s)
+    end
+end
