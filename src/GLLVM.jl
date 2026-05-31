@@ -52,7 +52,7 @@ export fit_gaussian_gllvm, GllvmModel, GllvmFit,
        LogitLink, ProbitLink, CLogLogLink, IdentityLink, LogLink,
        fit_binomial_gllvm, BinomialFit, fit_poisson_gllvm, PoissonFit,
        fit_nb_gllvm, NBFit, fit_beta_gllvm, BetaFit,
-       Ordinal, fit_ordinal_gllvm, OrdinalFit, fit_gllvm,
+       Ordinal, fit_ordinal_gllvm, OrdinalFit, fit_gamma_gllvm, GammaFit, fit_gllvm,
        getLV, getLoadings, rotation,
        predict, fitted, residuals, aic, bic
 

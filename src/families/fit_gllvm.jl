@@ -12,6 +12,7 @@ distribution used as a marker (the GLM.jl convention):
 - `NegativeBinomial()` → [`fit_nb_gllvm`](@ref) — Laplace marginal (overdispersed counts)
 - `Beta()`     → [`fit_beta_gllvm`](@ref) — Laplace marginal (proportions in (0,1))
 - `Ordinal()`  → [`fit_ordinal_gllvm`](@ref) — Laplace marginal (ordered categories)
+- `Gamma()`    → [`fit_gamma_gllvm`](@ref) — Laplace marginal (positive continuous)
 
 `K` is the latent dimension; family-specific keyword arguments (`link`, `N`,
 `Σ_phy`, …) pass through to the underlying fitter.
@@ -19,6 +20,7 @@ distribution used as a marker (the GLM.jl convention):
 ```julia
 fit_gllvm(Y; family = Normal(),   K = 2)                      # Gaussian
 fit_gllvm(Y; family = Binomial(), K = 2, link = LogitLink())  # binary
+fit_gllvm(Y; family = Gamma(),    K = 2)                      # positive continuous
 ```
 """
 fit_gllvm(Y::AbstractMatrix; family = Normal(), kwargs...) = _fit_gllvm(family, Y; kwargs...)
@@ -29,8 +31,9 @@ _fit_gllvm(::Poisson,  Y::AbstractMatrix; kwargs...) = fit_poisson_gllvm(Y; kwar
 _fit_gllvm(::NegativeBinomial, Y::AbstractMatrix; kwargs...) = fit_nb_gllvm(Y; kwargs...)
 _fit_gllvm(::Beta,     Y::AbstractMatrix; kwargs...) = fit_beta_gllvm(Y; kwargs...)
 _fit_gllvm(::Ordinal,  Y::AbstractMatrix; kwargs...) = fit_ordinal_gllvm(Y; kwargs...)
+_fit_gllvm(::Gamma,    Y::AbstractMatrix; kwargs...) = fit_gamma_gllvm(Y; kwargs...)
 
-# Clear error for families not yet implemented (gamma, hurdle, zero-inflated, …).
+# Clear error for families not yet implemented (hurdle, zero-inflated, …).
 _fit_gllvm(family, Y::AbstractMatrix; kwargs...) = throw(ArgumentError(
     "fit_gllvm: family $(nameof(typeof(family))) is not implemented yet " *
-    "(available: Normal, Binomial, Poisson, NegativeBinomial, Beta, Ordinal)"))
+    "(available: Normal, Binomial, Poisson, NegativeBinomial, Beta, Ordinal, Gamma)"))
