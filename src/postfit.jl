@@ -201,3 +201,71 @@ function residuals(fit::BinomialFit, Y::AbstractMatrix{<:Integer};
     end
     return R
 end
+
+# ---------------------------------------------------------------------------
+# Model-selection criteria + display.
+# ---------------------------------------------------------------------------
+
+_loglik(fit::GllvmFit)    = fit.logLik
+_loglik(fit::BinomialFit) = fit.loglik
+
+# Free-parameter count k (loadings counted modulo the K(K−1)/2 rotational df).
+function _nparams(fit::GllvmFit)
+    m = fit.model
+    p = m.p
+    q = fit.pars.β === nothing ? 0 : length(fit.pars.β)
+    k = q + 1                                          # fixed effects + σ_eps
+    k += p * m.K - div(m.K * (m.K - 1), 2)            # Λ_B
+    m.K_W > 0        && (k += p * m.K_W - div(m.K_W * (m.K_W - 1), 2))
+    m.has_diag       && (k += 2p)                      # σ²_B, σ²_W
+    m.K_phy > 0      && (k += p * m.K_phy - div(m.K_phy * (m.K_phy - 1), 2))
+    m.has_phy_unique && (k += p)                       # σ_phy
+    return k
+end
+
+function _nparams(fit::BinomialFit)
+    p, K = size(fit.Λ)
+    return p + (p * K - div(K * (K - 1), 2))           # β intercepts + Λ
+end
+
+"""
+    aic(fit) -> Float64
+
+Akaike information criterion `2k − 2ℓ`: `k` the free-parameter count (loadings
+counted modulo the `K(K−1)/2` rotational identifiability), `ℓ` the maximised
+marginal log-likelihood.
+"""
+aic(fit) = 2 * _nparams(fit) - 2 * _loglik(fit)
+
+"""
+    bic(fit, n_sites) -> Float64
+
+Bayesian information criterion `k·log(n_sites) − 2ℓ`. `n_sites` (the number of
+independent sites/rows) is passed explicitly because the fit does not store the
+data.
+"""
+bic(fit, n_sites::Integer) = _nparams(fit) * log(n_sites) - 2 * _loglik(fit)
+
+# Rich REPL display (the idiomatic "summary").
+function Base.show(io::IO, ::MIME"text/plain", fit::GllvmFit)
+    println(io, "Gaussian GLLVM fit")
+    println(io, "  responses p = ", fit.model.p, ", latent factors K = ", fit.model.K)
+    println(io, "  logLik = ", round(fit.logLik; sigdigits = 7),
+            ", AIC = ", round(aic(fit); sigdigits = 7))
+    print(io,   "  converged = ", fit.converged, " (", fit.n_iter, " iterations)")
+end
+
+function Base.show(io::IO, ::MIME"text/plain", fit::BinomialFit)
+    p, K = size(fit.Λ)
+    println(io, "Binomial GLLVM fit")
+    println(io, "  responses p = ", p, ", latent factors K = ", K,
+            ", link = ", nameof(typeof(fit.link)))
+    println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
+            ", AIC = ", round(aic(fit); sigdigits = 7))
+    print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
+end
+
+Base.show(io::IO, fit::GllvmFit) =
+    print(io, "GllvmFit(p=", fit.model.p, ", K=", fit.model.K,
+          ", logLik=", round(fit.logLik; sigdigits = 6),
+          fit.converged ? "" : ", NOT CONVERGED", ")")

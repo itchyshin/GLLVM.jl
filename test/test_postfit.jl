@@ -168,3 +168,33 @@ end
         @test rP ≈ (Y .- μ) ./ sqrt.(μ .* (1 .- μ)) atol = 1e-10
     end
 end
+
+@testset "post-fit AIC/BIC + show" begin
+    @testset "param count + AIC/BIC (Gaussian J1)" begin
+        Random.seed!(21)
+        p, K, n = 5, 2, 200
+        Λt = 0.8 .* randn(p, K)
+        y = Λt * randn(K, n) .+ 0.5 .* randn(p, n)
+        fit = fit_gaussian_gllvm(y; K = K)
+        k = p * K - div(K * (K - 1), 2) + 1          # loadings + σ_eps (no intercepts, X=nothing)
+        @test GLLVM._nparams(fit) == k
+        @test GLLVM.aic(fit) ≈ 2k - 2 * fit.logLik
+        @test GLLVM.bic(fit, n) ≈ k * log(n) - 2 * fit.logLik
+        s = sprint(show, MIME("text/plain"), fit)
+        @test occursin("Gaussian", s) && occursin("logLik", s) && occursin("AIC", s)
+    end
+
+    @testset "param count + AIC/BIC (Binomial)" begin
+        Random.seed!(22)
+        p, K, n = 6, 2, 120
+        η0 = 0.3 .* randn(p) .+ (0.9 .* randn(p, K)) * randn(K, n)
+        Y  = Int.(rand(p, n) .< inv.(1 .+ exp.(-η0)))
+        fit = fit_binomial_gllvm(Y; K = K)
+        k = p + (p * K - div(K * (K - 1), 2))        # intercepts + loadings
+        @test GLLVM._nparams(fit) == k
+        @test GLLVM.aic(fit) ≈ 2k - 2 * fit.loglik
+        @test GLLVM.bic(fit, n) ≈ k * log(n) - 2 * fit.loglik
+        s = sprint(show, MIME("text/plain"), fit)
+        @test occursin("Binomial", s) && occursin("AIC", s)
+    end
+end
