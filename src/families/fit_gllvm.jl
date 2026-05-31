@@ -23,8 +23,9 @@ fit_gllvm(Y::AbstractMatrix; family = Normal(), kwargs...) = _fit_gllvm(family, 
 _fit_gllvm(::Normal,   Y::AbstractMatrix; kwargs...) = fit_gaussian_gllvm(Y; kwargs...)
 _fit_gllvm(::Binomial, Y::AbstractMatrix; kwargs...) = fit_binomial_gllvm(Y; kwargs...)
 _fit_gllvm(::Poisson,  Y::AbstractMatrix; kwargs...) = fit_poisson_gllvm(Y; kwargs...)
+_fit_gllvm(::NegativeBinomial, Y::AbstractMatrix; kwargs...) = fit_nb_gllvm(Y; kwargs...)
 
-# Clear error for families not yet implemented (NB, ordinal, beta, …).
+# Clear error for families not yet implemented (ordinal, beta, …).
 _fit_gllvm(family, Y::AbstractMatrix; kwargs...) = throw(ArgumentError(
     "fit_gllvm: family $(nameof(typeof(family))) is not implemented yet " *
-    "(available: Normal, Binomial, Poisson)"))
+    "(available: Normal, Binomial, Poisson, NegativeBinomial)"))
