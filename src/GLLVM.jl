@@ -19,6 +19,9 @@ include("sparse_phy_grad.jl")            # analytic gradient + SparsePhyState (s
 include("node_gradient.jl")              # O(p) node-frame gradient + per-species BLUPs (Phase 1.1)
 include("fit_phylo.jl")                  # O(p) single-trait phylogenetic Gaussian fitter (Phase 1.4)
 
+# Response families (Phase 3): Distributions types as markers + link functions
+include("families/links.jl")
+
 # Confidence intervals
 include("confint.jl")                    # Wald
 include("confint_profile.jl")            # profile likelihood
@@ -33,6 +36,7 @@ export fit_gaussian_gllvm, GllvmModel, GllvmFit,
        augmented_phy, gaussian_marginal_loglik_sparse_phy,
        node_grad, node_dσ_phy_only, NodePerSpecies, build_node_perspecies,
        grad_node_perspecies, node_blups,
-       fit_phylo_gaussian, PhyloGaussianFit
+       fit_phylo_gaussian, PhyloGaussianFit,
+       LogitLink, ProbitLink, CLogLogLink, IdentityLink
 
 end # module GLLVM
