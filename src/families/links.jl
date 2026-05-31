@@ -57,3 +57,4 @@ Canonical link for a response family: identity for `Normal`, logit for
 default_link(::Normal)   = IdentityLink()
 default_link(::Binomial) = LogitLink()
 default_link(::Poisson)  = LogLink()
+default_link(::NegativeBinomial) = LogLink()
