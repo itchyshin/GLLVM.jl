@@ -25,6 +25,7 @@ const navTemp = {
 { text: 'Model', link: '/model' },
 { text: 'Covariance & correlation', link: '/covariance-correlation' },
 { text: 'Response families', link: '/response-families' },
+{ text: 'Common pitfalls', link: '/pitfalls' },
 { text: 'Benchmarks', link: '/benchmarks' },
 { text: 'Comparison vs gllvmTMB', link: '/comparison' }]
  },
@@ -113,6 +114,7 @@ export default defineConfig({
 { text: 'Model', link: '/model' },
 { text: 'Covariance & correlation', link: '/covariance-correlation' },
 { text: 'Response families', link: '/response-families' },
+{ text: 'Common pitfalls', link: '/pitfalls' },
 { text: 'Benchmarks', link: '/benchmarks' },
 { text: 'Comparison vs gllvmTMB', link: '/comparison' }]
  },
