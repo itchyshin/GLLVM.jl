@@ -19,6 +19,7 @@ makedocs(;
             "Morphometrics"            => "morphometrics.md",
             "Working with a fit"       => "working-with-a-fit.md",
             "Covariance & correlation" => "covariance-correlation.md",
+            "Structured dependence"    => "structured-dependence.md",
             "Response families"        => "response-families.md",
             "Common pitfalls"          => "pitfalls.md",
             "Benchmarks"               => "benchmarks.md",
