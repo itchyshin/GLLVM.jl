@@ -1,7 +1,7 @@
 module GLLVM
 
 using LinearAlgebra, Distributions, Optim, ForwardDiff, Random, SparseArrays, Statistics
-using SpecialFunctions: digamma, trigamma
+using SpecialFunctions: digamma, trigamma, besselk, gamma
 
 # Core
 include("packing.jl")
@@ -12,6 +12,7 @@ include("em_fa.jl")                      # alternative EM solver
 include("profile.jl")                    # σ_eps profile-out (used by fit)
 include("fit.jl")
 include("simulate.jl")
+include("structured_cov.jl")             # spatial_cov, relatedness_cov builders
 
 # Sparse phylogenetic path (evaluation-only — see docstring for AD limitation)
 include("sparse_phy.jl")
@@ -41,7 +42,8 @@ include("confint_bootstrap.jl")          # parametric bootstrap
 include("confint_derived.jl")            # derived quantities (Σ_y, communality, ...)
 
 # Public API
-export fit_gaussian_gllvm, GllvmModel, GllvmFit,
+export spatial_cov, relatedness_cov,
+       fit_gaussian_gllvm, GllvmModel, GllvmFit,
        confint, profile_ci, bootstrap_ci,
        ppca_init, em_fa,
        sigma_y_site, communality, correlation, phylo_signal,
