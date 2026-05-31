@@ -28,7 +28,15 @@ R = rotation(fit)         # K×K canonical rotation (Z and L share it)
 Latent factors are identified only up to rotation, so the canonical orientation
 (principal-axis SVD, signs fixed) makes the ordination reproducible — and `Λ Λᵀ`,
 hence every covariance summary, is unchanged by it. Pass `rotate = false` for the
-raw fitted loadings. *(A ready-made ordination biplot is the next addition.)*
+raw fitted loadings.
+
+Plotting the site scores against the (scaled) loadings gives the model-based
+ordination biplot — sites as points, species as labeled vectors:
+
+![Model-based ordination biplot](assets/ordination_biplot.png)
+
+*Simulated two-block data, two-factor Gaussian GLLVM. Species loading on the same
+latent factor point the same way; the grey cloud is the site scores `getLV(fit, y)`.*
 
 ## Predictions and fitted values
 
