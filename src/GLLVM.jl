@@ -21,7 +21,9 @@ include("fit_phylo.jl")                  # O(p) single-trait phylogenetic Gaussi
 
 # Response families (Phase 3): Distributions types as markers + link functions
 include("families/links.jl")
-include("families/binomial.jl")          # per-site Laplace marginal (Binomial, Phase 3)
+include("families/laplace.jl")           # generic family-dispatched Laplace marginal core
+include("families/binomial.jl")          # Binomial family pieces + fit (Phase 3)
+include("families/poisson.jl")           # Poisson family pieces (Phase 3)
 include("families/fit_gllvm.jl")         # unified fit_gllvm(Y; family) dispatcher
 
 # Post-fit API (ordination, predict, residuals, summary)
@@ -42,7 +44,7 @@ export fit_gaussian_gllvm, GllvmModel, GllvmFit,
        node_grad, node_dσ_phy_only, NodePerSpecies, build_node_perspecies,
        grad_node_perspecies, node_blups,
        fit_phylo_gaussian, PhyloGaussianFit,
-       LogitLink, ProbitLink, CLogLogLink, IdentityLink,
+       LogitLink, ProbitLink, CLogLogLink, IdentityLink, LogLink,
        fit_binomial_gllvm, BinomialFit, fit_gllvm,
        getLV, getLoadings, rotation,
        predict, fitted, residuals, aic, bic
