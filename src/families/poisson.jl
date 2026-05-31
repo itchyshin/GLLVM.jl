@@ -84,8 +84,12 @@ function fit_poisson_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
     function negll(θ)
         β = θ[1:p]
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
-        v = -poisson_marginal_loglik_laplace(Y, Λ, β, link;
+        v = try
+            -poisson_marginal_loglik_laplace(Y, Λ, β, link;
                                              maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
         return isfinite(v) ? v : 1e12
     end
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
