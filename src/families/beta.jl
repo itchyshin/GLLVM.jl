@@ -37,3 +37,89 @@ precision `φ` — responses `Y ∈ (0,1)`, mean `μ = logistic(η)`, per-observ
 beta_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVector,
         φ::Real; link::Link = LogitLink(), kwargs...) =
     marginal_loglik_laplace(Beta(float(φ), 1.0), Y, ones(Int, size(Y)), Λ, β, link; kwargs...)
+
+# ---------------------------------------------------------------------------
+# Fit driver (Beta family slice 2).
+# ---------------------------------------------------------------------------
+
+"""
+    BetaFit
+
+Result of [`fit_beta_gllvm`](@ref): intercepts `β` (length p), loadings `Λ` (p×K),
+the estimated precision `φ` (Var = μ(1−μ)/(1+φ)), the `link`, the maximised Laplace
+`loglik`, the optimiser `converged` flag, and `iterations`.
+"""
+struct BetaFit
+    β::Vector{Float64}
+    Λ::Matrix{Float64}
+    φ::Float64
+    link::Link
+    loglik::Float64
+    converged::Bool
+    iterations::Int
+end
+
+function Base.show(io::IO, f::BetaFit)
+    p, K = size(f.Λ)
+    print(io, "BetaFit(p=", p, ", K=", K, ", φ=", round(f.φ; sigdigits = 4),
+          ", link=", nameof(typeof(f.link)),
+          ", loglik=", round(f.loglik; sigdigits = 7),
+          f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+"""
+    fit_beta_gllvm(Y; K, link=LogitLink(), φ_init=nothing, …) -> BetaFit
+
+Fit a Beta GLLVM by L-BFGS over `[β; vec(Λ); log φ]` on the Laplace marginal
+(`beta_marginal_loglik_laplace`), jointly estimating the precision `φ`
+(`Var = μ(1−μ)/(1+φ)`). `Y` is a p×n matrix of proportions in (0,1); `K` the latent
+dimension. Finite-difference gradient; warm start = empirical logit-mean intercepts +
+an SVD loadings init + a moderate `φ₀`.
+"""
+function fit_beta_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
+        link::Link = LogitLink(),
+        β_init = nothing, Λ_init = nothing, φ_init = nothing,
+        g_tol::Real = 1e-5, iterations::Integer = 500,
+        newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    p, n = size(Y)
+    rr = rr_theta_len(p, K)
+
+    Zemp = [linkfun(link, clamp(float(Y[t, i]), 1e-6, 1 - 1e-6)) for t in 1:p, i in 1:n]
+    β0 = β_init === nothing ? vec(sum(Zemp; dims = 2)) ./ n : collect(float.(β_init))
+    Λ0 = if Λ_init === nothing
+        Zc = Zemp .- β0
+        F = svd(Zc)
+        kk = min(K, length(F.S))
+        L = zeros(p, K)
+        @inbounds for j in 1:kk
+            L[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
+        end
+        L
+    else
+        collect(float.(Λ_init))
+    end
+    logφ0 = φ_init === nothing ? log(10.0) : log(float(φ_init))
+
+    θ0 = vcat(β0, pack_lambda(Λ0), logφ0)
+    function negll(θ)
+        β = θ[1:p]
+        Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+        φ = exp(θ[p + rr + 1])
+        v = try
+            -beta_marginal_loglik_laplace(Y, Λ, β, φ;
+                                          maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
+    res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
+                         autodiff = :finite)
+    θ̂ = Optim.minimizer(res)
+    β̂ = θ̂[1:p]
+    Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
+    φ̂ = exp(θ̂[p + rr + 1])
+    return BetaFit(β̂, Λ̂, φ̂, link, -Optim.minimum(res),
+                   Optim.converged(res), Optim.iterations(res))
+end
