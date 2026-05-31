@@ -17,6 +17,7 @@ makedocs(;
         "Articles"    => [
             "Model"                    => "model.md",
             "Morphometrics"            => "morphometrics.md",
+            "Working with a fit"       => "working-with-a-fit.md",
             "Covariance & correlation" => "covariance-correlation.md",
             "Response families"        => "response-families.md",
             "Common pitfalls"          => "pitfalls.md",
