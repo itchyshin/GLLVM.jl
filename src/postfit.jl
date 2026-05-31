@@ -108,3 +108,47 @@ function getLV(fit::BinomialFit, Y::AbstractMatrix{<:Integer};
     Zt = permutedims(Z)                 # n×K
     return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
 end
+
+"""
+    predict(fit::GllvmFit, y; type=:response, X=nothing) -> p×n matrix
+
+In-sample fitted values at the conditional latent scores `ẑ` (see [`getLV`](@ref)):
+`type=:link` returns the linear predictor `η = μ + Λ ẑ` (`μ` the fixed-effect
+mean, `0` without `X`); `type=:response` applies the inverse link (identity for
+the Gaussian family, so both types coincide). No `newdata` — `y` (and `X`) must
+match the fit.
+"""
+function predict(fit::GllvmFit, y::AbstractMatrix;
+                 type::Symbol = :response,
+                 X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing)
+    type in (:link, :response) ||
+        throw(ArgumentError("type must be :link or :response; got :$type"))
+    Z = getLV(fit, y; X = X, rotate = false)         # n×K
+    η = _fitted_mean(fit, y, X) .+ fit.pars.Λ * Z'   # p×n
+    return η                                          # identity link
+end
+
+"""
+    predict(fit::BinomialFit, Y; type=:response, N=nothing) -> p×n matrix
+
+In-sample fitted values at the Laplace conditional mode `ẑ` (see [`getLV`](@ref)):
+`type=:link` returns `η = β + Λ ẑ`; `type=:response` returns the inverse-link
+fitted probabilities `linkinv(link, η)`.
+"""
+function predict(fit::BinomialFit, Y::AbstractMatrix{<:Integer};
+                 type::Symbol = :response,
+                 N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing)
+    type in (:link, :response) ||
+        throw(ArgumentError("type must be :link or :response; got :$type"))
+    Z = getLV(fit, Y; N = N, rotate = false)         # n×K
+    η = fit.β .+ fit.Λ * Z'                           # p×n
+    type === :link && return η
+    return linkinv.(Ref(fit.link), η)
+end
+
+"""
+    fitted(fit, data; kwargs...) -> p×n matrix
+
+Response-scale in-sample fitted values — `predict(fit, data; type=:response, kwargs...)`.
+"""
+fitted(fit, data; kwargs...) = predict(fit, data; type = :response, kwargs...)

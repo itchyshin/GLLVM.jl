@@ -44,6 +44,7 @@ export fit_gaussian_gllvm, GllvmModel, GllvmFit,
        fit_phylo_gaussian, PhyloGaussianFit,
        LogitLink, ProbitLink, CLogLogLink, IdentityLink,
        fit_binomial_gllvm, BinomialFit, fit_gllvm,
-       getLV, getLoadings, rotation
+       getLV, getLoadings, rotation,
+       predict, fitted
 
 end # module GLLVM
