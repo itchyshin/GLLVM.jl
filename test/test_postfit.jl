@@ -330,6 +330,53 @@ end
     end
 end
 
+@testset "post-fit Gamma fits" begin
+    Random.seed!(170)
+    p, K, n = 6, 2, 200
+    β = 0.5 .* randn(p)
+    Λt = 0.4 .* randn(p, K)
+    α_true = 5.0
+    μ = exp.(β .+ Λt * randn(K, n))
+    Y = [rand(Gamma(α_true, μ[t, s] / α_true)) for t in 1:p, s in 1:n]
+    fit = fit_gllvm(Y; family = Gamma(), K = K)
+
+    @testset "getLV / getLoadings / rotation" begin
+        Z = GLLVM.getLV(fit, Y; rotate = false)
+        @test size(Z) == (n, K)
+        ones_p = ones(Int, p)
+        for s in 1:n
+            ẑ = GLLVM._laplace_mode(Gamma(fit.α, 1.0), view(Y, :, s),
+                                    ones_p, fit.Λ, fit.β, fit.link)
+            @test Z[s, :] ≈ ẑ atol = 1e-7
+        end
+        @test size(GLLVM.getLoadings(fit)) == (p, K)
+        @test GLLVM.rotation(fit)' * GLLVM.rotation(fit) ≈ I(K) atol = 1e-10
+        Zr = GLLVM.getLV(fit, Y; rotate = true)
+        @test GLLVM.getLoadings(fit; rotate = true) * Zr' ≈ fit.Λ * Z' atol = 1e-7
+    end
+
+    @testset "predict (positive) + residuals + AIC/BIC + show" begin
+        η_hat = GLLVM.predict(fit, Y; type = :link)
+        μ_hat = GLLVM.predict(fit, Y; type = :response)
+        @test size(μ_hat) == (p, n)
+        @test all(μ_hat .> 0)
+        @test μ_hat ≈ exp.(η_hat)                              # log link
+        # Continuous CDF ⇒ Dunn–Smyth residual is deterministic (no rng arg).
+        rDS = GLLVM.residuals(fit, Y; type = :dunnsmyth)
+        @test size(rDS) == (p, n)
+        @test all(isfinite, rDS)
+        rp = GLLVM.residuals(fit, Y; type = :pearson)
+        @test rp ≈ (Y .- μ_hat) ./ sqrt.(μ_hat .^ 2 ./ fit.α) atol = 1e-9
+        @test_throws ArgumentError GLLVM.residuals(fit, Y; type = :bogus)
+        k = p + (p * K - div(K * (K - 1), 2)) + 1            # + shape α
+        @test GLLVM._nparams(fit) == k
+        @test GLLVM.aic(fit) ≈ 2k - 2 * fit.loglik
+        @test GLLVM.bic(fit, n) ≈ k * log(n) - 2 * fit.loglik
+        s = sprint(show, MIME("text/plain"), fit)
+        @test occursin("Gamma", s) && occursin("AIC", s)
+    end
+end
+
 @testset "post-fit Ordinal fits" begin
     Random.seed!(140)
     p, K, n = 6, 2, 200
