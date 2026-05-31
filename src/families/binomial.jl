@@ -14,72 +14,34 @@
 # log. Inner mode-finder uses the Fisher information (expected Hessian), so
 # Λ' W Λ + I_K is always SPD.
 
-# Numerical-safety clamps for separated data (η → ±∞, μ → 0/1).
-_clamp_eta(η) = clamp(η, -30.0, 30.0)
-_clamp_mu(μ)  = clamp(μ, 1e-12, 1 - 1e-12)
+# Binomial family pieces for the generic Laplace core (src/families/laplace.jl).
+# y_t ~ Binomial(n_t, μ_t); E[y]=nμ, Var=nμ(1−μ). Score/weight wrt η below; with
+# the logit link (me = μ(1−μ)) the weight reduces to the canonical nμ(1−μ).
+_clamp_mu(::Binomial, μ) = clamp(μ, 1e-12, 1 - 1e-12)
+_glm_score(::Binomial, μ, n, me, y) = (y - n * μ) / (μ * (one(μ) - μ)) * me
+_glm_weight(::Binomial, μ, n, me)   = n * me^2 / (μ * (one(μ) - μ))
+_glm_logpdf(::Binomial, μ, n, y)    = logpdf(Binomial(Int(n), μ), Int(y))
 
-# Inner Laplace mode-finder (Fisher-scoring Newton). Returns the conditional
-# mode ẑ (length K) for one site. Shared by the marginal log-likelihood and
-# by getLV (src/postfit.jl).
-function _laplace_mode(y::AbstractVector, n::AbstractVector,
-        Λ::AbstractMatrix, β::AbstractVector, link::Link;
-        maxiter::Integer = 100, tol::Real = 1e-9)
-    K = size(Λ, 2)
-    z = zeros(K)
-    for _ in 1:maxiter
-        η  = _clamp_eta.(β .+ Λ * z)
-        μ  = _clamp_mu.(linkinv.(Ref(link), η))
-        me = mu_eta.(Ref(link), η)
-        v  = μ .* (1 .- μ)
-        s  = (y .- n .* μ) ./ v .* me
-        W  = n .* me .^ 2 ./ v
-        A  = Symmetric(Λ' * (W .* Λ) + I)
-        Δ  = A \ (Λ' * s .- z)
-        z  = z .+ Δ
-        maximum(abs, Δ) < tol && break
-    end
-    return z
-end
+# Binomial-default convenience methods (back-compat: family ⇒ Binomial()), used
+# by getLV(::BinomialFit) and the Binomial tests.
+_laplace_mode(y::AbstractVector, n::AbstractVector, Λ::AbstractMatrix,
+        β::AbstractVector, link::Link; kwargs...) =
+    _laplace_mode(Binomial(), y, n, Λ, β, link; kwargs...)
 
-"""
-    laplace_loglik_site(y, n, Λ, β, link; maxiter=100, tol=1e-9) -> Float64
-
-Laplace-approximated log-marginal for one site. `y`, `n` are the response counts
-and trial counts (length p); `Λ` is p×K loadings; `β` length-p intercepts;
-`link` a `Link`. Returns `ℓ(ẑ) − ½ẑ'ẑ − ½logdet(Λ'WΛ + I)`.
-"""
-function laplace_loglik_site(y::AbstractVector, n::AbstractVector,
-        Λ::AbstractMatrix, β::AbstractVector, link::Link;
-        maxiter::Integer = 100, tol::Real = 1e-9)
-    p, K = size(Λ)
-    z = _laplace_mode(y, n, Λ, β, link; maxiter = maxiter, tol = tol)
-    η = _clamp_eta.(β .+ Λ * z)
-    μ = _clamp_mu.(linkinv.(Ref(link), η))
-    me = mu_eta.(Ref(link), η)
-    v  = μ .* (1 .- μ)
-    W  = n .* me .^ 2 ./ v
-    A  = Symmetric(Λ' * (W .* Λ) + I)
-    ℓ = 0.0
-    @inbounds for t in 1:p
-        ℓ += logpdf(Binomial(Int(n[t]), μ[t]), Int(y[t]))   # incl. binomial coefficient
-    end
-    return ℓ - 0.5 * dot(z, z) - 0.5 * logdet(A)
-end
+laplace_loglik_site(y::AbstractVector, n::AbstractVector, Λ::AbstractMatrix,
+        β::AbstractVector, link::Link; kwargs...) =
+    laplace_loglik_site(Binomial(), y, n, Λ, β, link; kwargs...)
 
 """
     binomial_marginal_loglik_laplace(Y, N, Λ, β, link; kwargs...) -> Float64
 
-Total Laplace log-marginal over the `n` sites of a Binomial GLLVM. `Y`, `N` are
-p×n response and trial-count matrices; `Λ` p×K; `β` length-p; `link` a `Link`.
+Total Laplace log-marginal over the `n` sites of a Binomial GLLVM — a thin
+wrapper over the family-generic `marginal_loglik_laplace` with `Binomial()`.
+`Y`, `N` are p×n response and trial-count matrices; `Λ` p×K; `β` length-p.
 """
-function binomial_marginal_loglik_laplace(Y::AbstractMatrix, N::AbstractMatrix,
-        Λ::AbstractMatrix, β::AbstractVector, link::Link; kwargs...)
-    acc = 0.0
-    @inbounds for i in axes(Y, 2)
-        acc += laplace_loglik_site(view(Y, :, i), view(N, :, i), Λ, β, link; kwargs...)
-    end
-    return acc
-end
+binomial_marginal_loglik_laplace(Y::AbstractMatrix, N::AbstractMatrix,
+        Λ::AbstractMatrix, β::AbstractVector, link::Link; kwargs...) =
+    marginal_loglik_laplace(Binomial(), Y, N, Λ, β, link; kwargs...)
 
 # ---------------------------------------------------------------------------
 # Fit driver (Binomial slice 4).

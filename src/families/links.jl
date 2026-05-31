@@ -12,6 +12,7 @@ struct LogitLink    <: Link end
 struct ProbitLink   <: Link end
 struct CLogLogLink  <: Link end
 struct IdentityLink <: Link end
+struct LogLink      <: Link end
 
 """
     linkinv(link, η) -> μ
@@ -22,6 +23,7 @@ linkinv(::LogitLink, η)    = inv(one(η) + exp(-η))
 linkinv(::ProbitLink, η)   = cdf(Normal(), η)
 linkinv(::CLogLogLink, η)  = -expm1(-exp(η))
 linkinv(::IdentityLink, η) = η
+linkinv(::LogLink, η)      = exp(η)
 
 """
     mu_eta(link, η) -> dμ/dη
@@ -33,6 +35,7 @@ mu_eta(::LogitLink, η)    = (e = exp(-abs(η)); e / (one(η) + e)^2)
 mu_eta(::ProbitLink, η)   = pdf(Normal(), η)
 mu_eta(::CLogLogLink, η)  = exp(η - exp(η))
 mu_eta(::IdentityLink, η) = one(η)
+mu_eta(::LogLink, η)      = exp(η)
 
 """
     linkfun(link, μ) -> η
@@ -43,12 +46,14 @@ linkfun(::LogitLink, μ)    = log(μ / (one(μ) - μ))
 linkfun(::ProbitLink, μ)   = quantile(Normal(), μ)
 linkfun(::CLogLogLink, μ)  = log(-log1p(-μ))
 linkfun(::IdentityLink, μ) = μ
+linkfun(::LogLink, μ)      = log(μ)
 
 """
     default_link(family) -> Link
 
 Canonical link for a response family: identity for `Normal`, logit for
-`Binomial`.
+`Binomial`, log for `Poisson`.
 """
 default_link(::Normal)   = IdentityLink()
 default_link(::Binomial) = LogitLink()
+default_link(::Poisson)  = LogLink()
