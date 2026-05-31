@@ -19,6 +19,16 @@
 # η clamp is family-agnostic; μ clamp dispatches on the family.
 _clamp_eta(η) = clamp(η, -30.0, 30.0)
 
+# Robust linear solve: returns `nothing` if the factorization is singular or
+# fails, so the inner Newton can stop gracefully. A = Λ'WΛ + I is SPD by
+# construction but can be numerically singular when the Fisher weights blow up
+# (huge μ at the η clamp — e.g. a Poisson rate driven to exp(30)).
+_safe_solve(A, b) = try
+    A \ b
+catch
+    nothing
+end
+
 # Inner Laplace mode-finder (Fisher-scoring Newton). Returns the conditional mode
 # ẑ (length K) for one site. Shared across families and by getLV (src/postfit.jl).
 function _laplace_mode(family, y::AbstractVector, n::AbstractVector,
@@ -33,7 +43,8 @@ function _laplace_mode(family, y::AbstractVector, n::AbstractVector,
         s  = _glm_score.(Ref(family), μ, n, me, y)
         W  = _glm_weight.(Ref(family), μ, n, me)
         A  = Symmetric(Λ' * (W .* Λ) + I)
-        Δ  = A \ (Λ' * s .- z)
+        Δ  = _safe_solve(A, Λ' * s .- z)
+        (Δ === nothing || !all(isfinite, Δ)) && break   # singular A ⇒ stop at current ẑ
         z  = z .+ Δ
         maximum(abs, Δ) < tol && break
     end

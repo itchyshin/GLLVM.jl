@@ -29,4 +29,17 @@ using GLLVM, Test, Random, Distributions
         ll_quad = log(marg)
         @test ll_lap ≈ ll_quad atol = 0.15
     end
+
+    @testset "robust to extreme parameters (singular inner solve ⇒ no throw)" begin
+        # Rank-deficient loadings + huge intercepts drive μ = exp(η) to the η-clamp,
+        # where the Fisher weights blow up and A = Λ'WΛ + I is numerically singular.
+        # The mode-finder must stop gracefully and return a finite marginal.
+        p, K = 5, 2
+        Y = reshape([3, 0, 7, 2, 5], p, 1)
+        Λ = fill(5.0, p, K)              # identical columns ⇒ rank-1 ΛΛ'
+        β = fill(25.0, p)                # μ → exp(30) under the clamp
+        ẑ = GLLVM._laplace_mode(Poisson(), vec(Y), ones(Int, p), Λ, β, LogLink())
+        @test all(isfinite, ẑ)
+        @test isfinite(GLLVM.poisson_marginal_loglik_laplace(Y, Λ, β))
+    end
 end
