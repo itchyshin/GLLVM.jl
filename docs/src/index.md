@@ -28,10 +28,10 @@ features:
 ---
 
 !!! note "Status — what works today"
-    **Gaussian and binary (Bernoulli / binomial) responses are implemented**, and
-    the Gaussian + phylogenetic engine is benchmarked (v0.1.0 → v0.2.0). Further
-    families — **Poisson, negative binomial, ordinal, beta** — are planned; see
-    the [Roadmap](/roadmap).
+    **Gaussian, Binomial, Poisson, NegativeBinomial, Beta, Ordinal, and Gamma
+    responses are implemented** (v0.1.0 → v0.2.0+). Hurdle / zero-inflated / delta
+    families are planned; see the [Roadmap](/roadmap) and
+    [Response families](/response-families).
 
 ## Install
 
