@@ -269,3 +269,92 @@ Base.show(io::IO, fit::GllvmFit) =
     print(io, "GllvmFit(p=", fit.model.p, ", K=", fit.model.K,
           ", logLik=", round(fit.logLik; sigdigits = 6),
           fit.converged ? "" : ", NOT CONVERGED", ")")
+
+# ---------------------------------------------------------------------------
+# Poisson post-fit methods (parallel to Binomial; counts via the log link).
+# ---------------------------------------------------------------------------
+
+_loadings(fit::PoissonFit) = fit.Λ
+_loglik(fit::PoissonFit)   = fit.loglik
+
+function _nparams(fit::PoissonFit)
+    p, K = size(fit.Λ)
+    return p + (p * K - div(K * (K - 1), 2))           # β intercepts + Λ
+end
+
+"""
+    getLV(fit::PoissonFit, Y; N=nothing, rotate=true) -> n×K matrix
+
+Conditional latent-variable scores for a Poisson fit: the per-site Laplace mode
+`ẑₛ`. `Y` is the p×n integer count matrix; `rotate=true` applies the canonical
+[`rotation`](@ref). (`N` is accepted for signature symmetry and ignored.)
+"""
+function getLV(fit::PoissonFit, Y::AbstractMatrix{<:Integer};
+               N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
+               rotate::Bool = true)
+    p, n = size(Y)
+    Nm = N === nothing ? fill(1, p, n) : N
+    K = size(fit.Λ, 2)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        Z[:, s] = _laplace_mode(Poisson(), view(Y, :, s), view(Nm, :, s), fit.Λ, fit.β, fit.link)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
+end
+
+"""
+    predict(fit::PoissonFit, Y; type=:response, N=nothing) -> p×n matrix
+
+In-sample fitted values at the Laplace mode: `type=:link` returns `η = β + Λ ẑ`;
+`type=:response` the inverse-link fitted rates `linkinv(link, η) = exp(η)`.
+"""
+function predict(fit::PoissonFit, Y::AbstractMatrix{<:Integer};
+                 type::Symbol = :response,
+                 N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing)
+    type in (:link, :response) ||
+        throw(ArgumentError("type must be :link or :response; got :$type"))
+    Z = getLV(fit, Y; N = N, rotate = false)
+    η = fit.β .+ fit.Λ * Z'
+    type === :link && return η
+    return linkinv.(Ref(fit.link), η)
+end
+
+"""
+    residuals(fit::PoissonFit, Y; type=:dunnsmyth, rng=Random.default_rng()) -> p×n matrix
+
+Conditional residuals for a Poisson fit. `:dunnsmyth` returns Dunn–Smyth
+randomized quantile residuals — `Φ⁻¹(u)`, `u` uniform on `[F(y−1), F(y)]` under
+`Poisson(μ)` — ≈ N(0,1) under a correct model (pass a fixed `rng` to reproduce).
+`:pearson` returns `(Y − μ) / √μ`.
+"""
+function residuals(fit::PoissonFit, Y::AbstractMatrix{<:Integer};
+                   type::Symbol = :dunnsmyth,
+                   rng::AbstractRNG = Random.default_rng())
+    type in (:dunnsmyth, :pearson) ||
+        throw(ArgumentError("type must be :dunnsmyth or :pearson; got :$type"))
+    p, n = size(Y)
+    μ = predict(fit, Y; type = :response)
+    if type === :pearson
+        return (Y .- μ) ./ sqrt.(μ)
+    end
+    R = Matrix{Float64}(undef, p, n)
+    @inbounds for s in 1:n, t in 1:p
+        d = Poisson(μ[t, s])
+        Flo = cdf(d, Y[t, s] - 1)
+        Fhi = cdf(d, Y[t, s])
+        u = Flo + (Fhi - Flo) * rand(rng)
+        R[t, s] = quantile(Normal(), clamp(u, 1e-12, 1 - 1e-12))
+    end
+    return R
+end
+
+function Base.show(io::IO, ::MIME"text/plain", fit::PoissonFit)
+    p, K = size(fit.Λ)
+    println(io, "Poisson GLLVM fit")
+    println(io, "  responses p = ", p, ", latent factors K = ", K,
+            ", link = ", nameof(typeof(fit.link)))
+    println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
+            ", AIC = ", round(aic(fit); sigdigits = 7))
+    print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
+end
