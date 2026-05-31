@@ -30,4 +30,22 @@ end
             @test Lr[argmax(abs.(@view Lr[:, k])), k] ≥ 0
         end
     end
+
+    @testset "_laplace_mode matches the marginal's inner solve" begin
+        Random.seed!(7)
+        p, K, n = 4, 1, 1
+        Λ = reshape([1.0, 0.8, -0.6, 0.4], p, K)
+        β = [0.2, -0.1, 0.0, 0.3]
+        y = reshape([1, 0, 1, 1], p, n)
+        N = ones(Int, p, n)
+        ẑ = GLLVM._laplace_mode(view(y, :, 1), view(N, :, 1), Λ, β, LogitLink())
+        @test length(ẑ) == K
+        # At the mode the penalised-score stationarity holds: Λ'(working
+        # residual) − ẑ ≈ 0 (the inner Newton step is ~0).
+        η = β .+ Λ * ẑ
+        μ = inv.(1 .+ exp.(-η))
+        me = μ .* (1 .- μ)
+        s = (vec(y) .- vec(N) .* μ) ./ (μ .* (1 .- μ)) .* me
+        @test maximum(abs.(Λ' * s .- ẑ)) < 1e-6
+    end
 end
