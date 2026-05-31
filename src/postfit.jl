@@ -450,3 +450,89 @@ function Base.show(io::IO, ::MIME"text/plain", fit::NBFit)
             ", AIC = ", round(aic(fit); sigdigits = 7))
     print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
 end
+
+# ---------------------------------------------------------------------------
+# Beta post-fit methods (proportions in (0,1); mean μ = logistic(η), precision
+# φ — Var = μ(1−μ)/(1+φ) — via the logit link). Responses are continuous, so the
+# Dunn–Smyth residual reduces to the (deterministic) PIT, as in the Gaussian case.
+# ---------------------------------------------------------------------------
+
+_loadings(fit::BetaFit) = fit.Λ
+_loglik(fit::BetaFit)   = fit.loglik
+
+function _nparams(fit::BetaFit)
+    p, K = size(fit.Λ)
+    return p + (p * K - div(K * (K - 1), 2)) + 1       # β + Λ + precision φ
+end
+
+"""
+    getLV(fit::BetaFit, Y; rotate=true) -> n×K matrix
+
+Conditional latent-variable scores for a Beta fit: the per-site Laplace mode `ẑₛ`
+(computed at the fitted precision `φ`). `Y` is the p×n matrix of proportions in
+(0,1); `rotate=true` applies the canonical [`rotation`](@ref).
+"""
+function getLV(fit::BetaFit, Y::AbstractMatrix{<:Real}; rotate::Bool = true)
+    p, n = size(Y)
+    K = size(fit.Λ, 2)
+    fam = Beta(fit.φ, 1.0)
+    ones_p = ones(Int, p)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        Z[:, s] = _laplace_mode(fam, view(Y, :, s), ones_p, fit.Λ, fit.β, fit.link)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
+end
+
+"""
+    predict(fit::BetaFit, Y; type=:response) -> p×n matrix
+
+In-sample fitted values at the Laplace mode: `type=:link` returns `η = β + Λ ẑ`;
+`type=:response` the inverse-link fitted means `linkinv(link, η) = logistic(η)`
+(proportions in (0,1)).
+"""
+function predict(fit::BetaFit, Y::AbstractMatrix{<:Real}; type::Symbol = :response)
+    type in (:link, :response) ||
+        throw(ArgumentError("type must be :link or :response; got :$type"))
+    Z = getLV(fit, Y; rotate = false)
+    η = fit.β .+ fit.Λ * Z'
+    type === :link && return η
+    return linkinv.(Ref(fit.link), η)
+end
+
+"""
+    residuals(fit::BetaFit, Y; type=:dunnsmyth) -> p×n matrix
+
+Conditional residuals for a Beta fit. The Beta CDF is continuous, so the
+`:dunnsmyth` randomized quantile residual reduces to the deterministic PIT
+`Φ⁻¹(F(y))` under `Beta(μφ, (1−μ)φ)` — ≈ N(0,1) under a correct model — exactly as
+in the Gaussian case. `:pearson` returns `(Y − μ) / √(μ(1−μ)/(1+φ))`.
+"""
+function residuals(fit::BetaFit, Y::AbstractMatrix{<:Real}; type::Symbol = :dunnsmyth)
+    type in (:dunnsmyth, :pearson) ||
+        throw(ArgumentError("type must be :dunnsmyth or :pearson; got :$type"))
+    p, n = size(Y)
+    φ = fit.φ
+    μ = predict(fit, Y; type = :response)
+    if type === :pearson
+        return (Y .- μ) ./ sqrt.(μ .* (1 .- μ) ./ (1 + φ))
+    end
+    R = Matrix{Float64}(undef, p, n)
+    @inbounds for s in 1:n, t in 1:p
+        d = Beta(μ[t, s] * φ, (1 - μ[t, s]) * φ)
+        u = cdf(d, clamp(float(Y[t, s]), 1e-12, 1 - 1e-12))
+        R[t, s] = quantile(Normal(), clamp(u, 1e-12, 1 - 1e-12))
+    end
+    return R
+end
+
+function Base.show(io::IO, ::MIME"text/plain", fit::BetaFit)
+    p, K = size(fit.Λ)
+    println(io, "Beta GLLVM fit")
+    println(io, "  responses p = ", p, ", latent factors K = ", K,
+            ", link = ", nameof(typeof(fit.link)), ", precision φ = ", round(fit.φ; sigdigits = 4))
+    println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
+            ", AIC = ", round(aic(fit); sigdigits = 7))
+    print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
+end
