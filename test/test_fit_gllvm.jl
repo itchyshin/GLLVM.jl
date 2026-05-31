@@ -25,6 +25,10 @@ using GLLVM, Test, Distributions, Random
     b3 = fit_gllvm(Yb; family = Binomial(), K = 1, link = ProbitLink())
     @test b3.link isa ProbitLink
 
-    # unimplemented family → clear error
-    @test_throws ArgumentError fit_gllvm(Yb; family = Poisson(), K = 1)
+    # Poisson() now dispatches to the Poisson fitter
+    Yc = [rand(0:5) for _ in 1:p, _ in 1:n]
+    @test fit_gllvm(Yc; family = Poisson(), K = 1) isa PoissonFit
+
+    # a still-unimplemented family → clear error
+    @test_throws ArgumentError fit_gllvm(Yb; family = NegativeBinomial(), K = 1)
 end
