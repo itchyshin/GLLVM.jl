@@ -17,6 +17,7 @@ makedocs(;
         "Articles"    => [
             "Model"                    => "model.md",
             "Covariance & correlation" => "covariance-correlation.md",
+            "Response families"        => "response-families.md",
             "Benchmarks"               => "benchmarks.md",
             "Comparison vs gllvmTMB"   => "comparison.md",
         ],
