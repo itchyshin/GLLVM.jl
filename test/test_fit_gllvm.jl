@@ -29,6 +29,8 @@ using GLLVM, Test, Distributions, Random
     Yc = [rand(0:5) for _ in 1:p, _ in 1:n]
     @test fit_gllvm(Yc; family = Poisson(), K = 1) isa PoissonFit
 
+    @test fit_gllvm(Yc; family = NegativeBinomial(), K = 1) isa NBFit
+
     # a still-unimplemented family → clear error
-    @test_throws ArgumentError fit_gllvm(Yb; family = NegativeBinomial(), K = 1)
+    @test_throws ArgumentError fit_gllvm(Yb; family = Beta(), K = 1)
 end
