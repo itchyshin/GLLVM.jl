@@ -243,3 +243,43 @@ end
         @test occursin("Poisson", s) && occursin("AIC", s)
     end
 end
+
+@testset "post-fit NB fits" begin
+    Random.seed!(80)
+    p, K, n = 6, 2, 150
+    β = log.(fill(5.0, p))
+    Λt = 0.4 .* randn(p, K)
+    r_true = 6.0
+    μ = exp.(β .+ Λt * randn(K, n))
+    Y = [rand(NegativeBinomial(r_true, r_true / (r_true + μ[t, s]))) for t in 1:p, s in 1:n]
+    fit = fit_gllvm(Y; family = NegativeBinomial(), K = K)
+
+    @testset "getLV / getLoadings / rotation" begin
+        Z = GLLVM.getLV(fit, Y; rotate = false)
+        @test size(Z) == (n, K)
+        for s in 1:n
+            ẑ = GLLVM._laplace_mode(NegativeBinomial(fit.r, 0.5), view(Y, :, s),
+                                    ones(Int, p), fit.Λ, fit.β, fit.link)
+            @test Z[s, :] ≈ ẑ atol = 1e-7
+        end
+        @test size(GLLVM.getLoadings(fit)) == (p, K)
+        @test GLLVM.rotation(fit)' * GLLVM.rotation(fit) ≈ I(K) atol = 1e-10
+    end
+
+    @testset "predict (means) + residuals + AIC/BIC + show" begin
+        η_hat = GLLVM.predict(fit, Y; type = :link)
+        μ_hat = GLLVM.predict(fit, Y; type = :response)
+        @test all(μ_hat .≥ 0)
+        @test μ_hat ≈ exp.(η_hat)
+        r1 = GLLVM.residuals(fit, Y; rng = MersenneTwister(3))
+        r2 = GLLVM.residuals(fit, Y; rng = MersenneTwister(3))
+        @test r1 == r2 && all(isfinite, r1)
+        rp = GLLVM.residuals(fit, Y; type = :pearson)
+        @test rp ≈ (Y .- μ_hat) ./ sqrt.(μ_hat .+ μ_hat .^ 2 ./ fit.r) atol = 1e-9
+        k = p + (p * K - div(K * (K - 1), 2)) + 1            # + dispersion r
+        @test GLLVM._nparams(fit) == k
+        @test GLLVM.aic(fit) ≈ 2k - 2 * fit.loglik
+        s = sprint(show, MIME("text/plain"), fit)
+        @test occursin("Negative-binomial", s) && occursin("AIC", s)
+    end
+end
