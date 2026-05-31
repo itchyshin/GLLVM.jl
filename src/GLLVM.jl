@@ -27,6 +27,7 @@ include("families/binomial.jl")          # Binomial family pieces + fit (Phase 3
 include("families/poisson.jl")           # Poisson family pieces (Phase 3)
 include("families/negbin.jl")            # Negative-binomial family pieces (Phase 3)
 include("families/beta.jl")              # Beta family pieces (Phase 3)
+include("families/ordinal.jl")           # Ordinal (cumulative-logit) family pieces (Phase 3)
 include("families/fit_gllvm.jl")         # unified fit_gllvm(Y; family) dispatcher
 
 # Post-fit API (ordination, predict, residuals, summary)
@@ -49,7 +50,7 @@ export fit_gaussian_gllvm, GllvmModel, GllvmFit,
        fit_phylo_gaussian, PhyloGaussianFit,
        LogitLink, ProbitLink, CLogLogLink, IdentityLink, LogLink,
        fit_binomial_gllvm, BinomialFit, fit_poisson_gllvm, PoissonFit,
-       fit_nb_gllvm, NBFit, fit_beta_gllvm, BetaFit, fit_gllvm,
+       fit_nb_gllvm, NBFit, fit_beta_gllvm, BetaFit, Ordinal, fit_gllvm,
        getLV, getLoadings, rotation,
        predict, fitted, residuals, aic, bic
 
