@@ -23,7 +23,7 @@ _clamp_mu(μ)  = clamp(μ, 1e-12, 1 - 1e-12)
 
 Laplace-approximated log-marginal for one site. `y`, `n` are the response counts
 and trial counts (length p); `Λ` is p×K loadings; `β` length-p intercepts;
-`link` a [`Link`](@ref). Returns `ℓ(ẑ) − ½ẑ'ẑ − ½logdet(Λ'WΛ + I)`.
+`link` a `Link`. Returns `ℓ(ẑ) − ½ẑ'ẑ − ½logdet(Λ'WΛ + I)`.
 """
 function laplace_loglik_site(y::AbstractVector, n::AbstractVector,
         Λ::AbstractMatrix, β::AbstractVector, link::Link;
@@ -101,7 +101,7 @@ end
     fit_binomial_gllvm(Y; K, link=LogitLink(), N=nothing, …) -> BinomialFit
 
 Fit a Binomial GLLVM by L-BFGS on the Laplace marginal log-likelihood
-([`binomial_marginal_loglik_laplace`](@ref)). `Y` is a p×n integer response
+(`binomial_marginal_loglik_laplace`). `Y` is a p×n integer response
 matrix (responses × sites); `N` the matching trial counts (default all-ones,
 i.e. Bernoulli / binary). `K` is the latent dimension. Optimises the intercepts
 `β` and loadings `Λ`.
