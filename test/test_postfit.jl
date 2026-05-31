@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra, Statistics
+using GLLVM, Test, Random, LinearAlgebra, Statistics, Distributions
 
 if !isdefined(GLLVM, :getLoadings)
     include(joinpath(@__DIR__, "..", "src", "postfit.jl"))
@@ -196,5 +196,50 @@ end
         @test GLLVM.bic(fit, n) ≈ k * log(n) - 2 * fit.loglik
         s = sprint(show, MIME("text/plain"), fit)
         @test occursin("Binomial", s) && occursin("AIC", s)
+    end
+end
+
+@testset "post-fit Poisson fits" begin
+    Random.seed!(50)
+    p, K, n = 6, 2, 150
+    β = log.(fill(5.0, p))
+    Λt = 0.4 .* randn(p, K)
+    η = β .+ Λt * randn(K, n)
+    Y = [rand(Poisson(exp(η[t, s]))) for t in 1:p, s in 1:n]
+    fit = fit_gllvm(Y; family = Poisson(), K = K)
+
+    @testset "getLV / getLoadings / rotation" begin
+        Z = GLLVM.getLV(fit, Y; rotate = false)
+        @test size(Z) == (n, K)
+        for s in 1:n
+            ẑ = GLLVM._laplace_mode(Poisson(), view(Y, :, s), ones(Int, p), fit.Λ, fit.β, fit.link)
+            @test Z[s, :] ≈ ẑ atol = 1e-7
+        end
+        @test size(GLLVM.getLoadings(fit)) == (p, K)
+        R = GLLVM.rotation(fit)
+        @test R' * R ≈ I(K) atol = 1e-10
+        Zr = GLLVM.getLV(fit, Y; rotate = true)
+        @test GLLVM.getLoadings(fit; rotate = true) * Zr' ≈ fit.Λ * Z' atol = 1e-7
+    end
+
+    @testset "predict (rates) + residuals + AIC/BIC + show" begin
+        η_hat = GLLVM.predict(fit, Y; type = :link)
+        μ_hat = GLLVM.predict(fit, Y; type = :response)
+        @test size(μ_hat) == (p, n)
+        @test all(μ_hat .≥ 0)
+        @test μ_hat ≈ exp.(η_hat)                          # log link
+
+        r1 = GLLVM.residuals(fit, Y; rng = MersenneTwister(2))
+        r2 = GLLVM.residuals(fit, Y; rng = MersenneTwister(2))
+        @test r1 == r2 && all(isfinite, r1)
+        rp = GLLVM.residuals(fit, Y; type = :pearson)
+        @test rp ≈ (Y .- μ_hat) ./ sqrt.(μ_hat) atol = 1e-10
+
+        k = p + (p * K - div(K * (K - 1), 2))
+        @test GLLVM._nparams(fit) == k
+        @test GLLVM.aic(fit) ≈ 2k - 2 * fit.loglik
+        @test GLLVM.bic(fit, n) ≈ k * log(n) - 2 * fit.loglik
+        s = sprint(show, MIME("text/plain"), fit)
+        @test occursin("Poisson", s) && occursin("AIC", s)
     end
 end
