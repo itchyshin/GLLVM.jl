@@ -23,6 +23,7 @@ const navTemp = {
 { text: 'Get started', link: '/quickstart' },
 { text: 'Articles', collapsed: false, items: [
 { text: 'Model', link: '/model' },
+{ text: 'Morphometrics', link: '/morphometrics' },
 { text: 'Covariance & correlation', link: '/covariance-correlation' },
 { text: 'Response families', link: '/response-families' },
 { text: 'Common pitfalls', link: '/pitfalls' },
@@ -112,6 +113,7 @@ export default defineConfig({
 { text: 'Get started', link: '/quickstart' },
 { text: 'Articles', collapsed: false, items: [
 { text: 'Model', link: '/model' },
+{ text: 'Morphometrics', link: '/morphometrics' },
 { text: 'Covariance & correlation', link: '/covariance-correlation' },
 { text: 'Response families', link: '/response-families' },
 { text: 'Common pitfalls', link: '/pitfalls' },
