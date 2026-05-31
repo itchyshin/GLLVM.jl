@@ -21,33 +21,9 @@ features:
 ---
 
 
-## Which responses vary together — and how much is shared? {#Which-responses-vary-together-—-and-how-much-is-shared?}
+::: tip Status — what works today
 
-GLLVM.jl fits **multivariate models for data where each site, individual, or species carries several responses** — multi-species abundance, multi-trait morphometrics, multi-assay panels — and answers the question behind ordination: _which responses covary, and how much of that variation is shared across responses versus response-specific?_ It is a from-scratch Julia port of the Gaussian + phylogenetic part of R's [`gllvmTMB`](https://itchyshin.github.io/gllvmTMB/), reproducing its estimates and likelihoods to machine precision while fitting markedly faster.
-
-|                          Quantity |     Julia extractor |                               Reads as |
-| ---------------------------------:| -------------------:| --------------------------------------:|
-| `Σ_y` — among-response covariance | `sigma_y_site(fit)` |           how responses covary overall |
-|      `ΛΛᵀ` — shared (latent) part |  `communality(fit)` |      variation shared across responses |
-|           cross-trait correlation |  `correlation(fit)` |          which responses move together |
-|          phylogenetic signal `H²` | `phylo_signal(fit)` | variation explained by shared ancestry |
-
-
-## Start here {#Start-here}
-
-|                   If you want to… |                      Go to |
-| ---------------------------------:| --------------------------:|
-|              Fit your first model | [Get started](/quickstart) |
-|     See the math behind the model |            [Model](/model) |
-|          See the O(p) speed story |  [Benchmarks](/benchmarks) |
-| Check agreement with R `gllvmTMB` |  [Comparison](/comparison) |
-|                Look up a function |          [Reference](/api) |
-|                See what's planned |        [Roadmap](/roadmap) |
-
-
-::: tip Status
-
-The **Gaussian + phylogenetic engine is production-ready and benchmarked** (v0.1.0 → v0.2.0). Non-Gaussian families — **binary first**, then Poisson, negative binomial, ordinal, and beta — are in active development; see the [Roadmap](/roadmap).
+**Gaussian and binary (Bernoulli / binomial) responses are implemented**, and the Gaussian + phylogenetic engine is benchmarked (v0.1.0 → v0.2.0). Further families — **Poisson, negative binomial, ordinal, beta** — are planned; see the [Roadmap](/roadmap).
 
 :::
 
@@ -59,26 +35,62 @@ Pkg.add(url = "https://github.com/itchyshin/GLLVM.jl")
 ```
 
 
+GLLVM.jl is not yet in the General registry, so install from the URL above (`Pkg.add("GLLVM")` will not resolve). Julia 1.10 or later.
+
 A quick taste — simulate a small multivariate dataset and fit a 2-factor model:
 
 ```julia
 using GLLVM, Random
 Random.seed!(1)
-n, p, K = 80, 5, 2                       # sites, responses, latent factors
+n, p, K = 80, 5, 2                          # sites, responses, latent factors
 Λ = 0.7 .* randn(p, K)
 Y = Λ * randn(K, n) .+ 0.5 .* randn(p, n)   # p × n responses
 
 fit = fit_gaussian_gllvm(Y; K = K)
-communality(fit)                         # shared variance per response
-correlation(fit)                         # cross-response correlation matrix
+communality(fit)   # 5-element vector: shared-variance fraction per response, each in [0,1]
+correlation(fit)   # 5×5 cross-response correlation matrix, entries in [-1,1]
 ```
 
 
-Julia 1.10 or later.
+## Which responses vary together — and how much is shared? {#Which-responses-vary-together-—-and-how-much-is-shared?}
 
-## Citation & acknowledgements {#Citation-and-acknowledgements}
 
-If you use GLLVM.jl, please cite the methods it builds on: Hadfield & Nakagawa (2010, _J. Evol. Biol._) for the sparse phylogenetic precision; Tipping & Bishop (1999, _JRSS-B_) for the probabilistic-PCA initialiser; and Bates et al. (2015, _J. Stat. Soft._) for the profile-out / sparse mixed-model machinery. The edge-incidence phylogenetic representation follows Bolker's `phylog.rmd`.
+![](assets/correlation_heatmap.png)
+
+
+The heatmap is illustrative: a two-factor Gaussian GLLVM fitted to simulated data built from two response blocks. The off-diagonal structure is exactly what `correlation(fit)` reads off — responses that share a latent factor correlate, the rest do not.
+
+GLLVM.jl fits **multivariate models for data where each site, individual, or species carries several responses** — multi-species abundance, multi-trait morphometrics, multi-assay panels — and answers the question behind ordination: _which responses covary, and how much of that variation is shared across responses versus response-specific?_ It is a from-scratch Julia port of the Gaussian + phylogenetic part of R's [`gllvmTMB`](https://itchyshin.github.io/gllvmTMB/), reproducing its estimates and likelihoods to machine precision while fitting markedly faster (see the [Comparison](/comparison)).
+
+|                          Quantity |     Julia extractor |                               Reads as |
+| ---------------------------------:| -------------------:| --------------------------------------:|
+| `Σ_y` — among-response covariance | `sigma_y_site(fit)` |           how responses covary overall |
+|      `ΛΛᵀ` — shared (latent) part |  `communality(fit)` |      variation shared across responses |
+|           cross-trait correlation |  `correlation(fit)` |          which responses move together |
+|          phylogenetic signal `H²` | `phylo_signal(fit)` | variation explained by shared ancestry |
+
+
+## Start here {#Start-here}
+
+|               If you want to… |                      Go to |
+| -----------------------------:| --------------------------:|
+|          Fit your first model | [Get started](/quickstart) |
+| See the math behind the model |            [Model](/model) |
+|      See the O(p) speed story |  [Benchmarks](/benchmarks) |
+|            Look up a function |          [Reference](/api) |
+
+
+## Citing {#Citing}
+
+GLLVM.jl does not yet have its own software citation — one will be added at the first tagged release. For now, please cite the methods it builds on: Hadfield & Nakagawa (2010, _J. Evol. Biol._) for the sparse phylogenetic precision; Tipping & Bishop (1999, _JRSS-B_) for the probabilistic-PCA initialiser; and Bates et al. (2015, _J. Stat. Soft._) for the profile-out / sparse mixed-model machinery. The edge-incidence phylogenetic representation follows Bolker's `phylog.rmd`.
+
+## Getting help {#Getting-help}
+- **Questions & bugs** — open an issue on [GitHub](https://github.com/itchyshin/GLLVM.jl/issues).
+  
+- **Function help** — in the Julia REPL, type `?` then a name, e.g. `?fit_gaussian_gllvm`.
+  
+- **What's planned** — see the [Roadmap](/roadmap).
+  
 
 ## Related packages {#Related-packages}
 - [`gllvmTMB`](https://itchyshin.github.io/gllvmTMB/) — the R package GLLVM.jl ports.

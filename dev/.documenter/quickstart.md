@@ -40,7 +40,7 @@ fit = fit_gaussian_gllvm(y; K = K)
 ```julia
 fit.pars                  # named tuple of optimised parameters
 fit.logLik                # marginal log-likelihood at the optimum
-fit.Σ_y                   # marginal covariance Σ_y at the optimum
+sigma_y_site(fit)         # marginal covariance Σ_y at the optimum
 ```
 
 
@@ -59,13 +59,22 @@ ci_bootstrap = bootstrap_ci(fit; n_boot = 200)             # parametric bootstra
 
 Wald CIs are cheapest and rely on the local quadratic approximation; profile CIs are exact up to grid resolution; bootstrap CIs make no distributional assumption on the sampling distribution of the estimator.
 
-## 5. Visualise `Σ_y` recovery {#5.-Visualise-Σ_y-recovery}
+## 5. Check `Σ_y` recovery {#5.-Check-Σ_y-recovery}
+
+```julia
+Σ_true = Λ_true * Λ_true' + σ_eps^2 .* I(n_species)
+Σ_hat  = sigma_y_site(fit)
+
+maximum(abs, Σ_hat .- Σ_true)        # largest per-cell discrepancy — should be small
+```
+
+
+Per-cell agreement at the relative Frobenius scale is `< 1e-3` on the benchmark grid (see [Benchmarks](benchmarks.md)).
+
+To visualise it, with Plots.jl installed separately (`Pkg.add("Plots")` — it is not a GLLVM.jl dependency):
 
 ```julia
 using Plots
-
-Σ_true = Λ_true * Λ_true' + σ_eps^2 .* I(n_species)
-Σ_hat  = fit.Σ_y
 
 heatmap(
     [Σ_true Σ_hat (Σ_hat .- Σ_true)],
@@ -75,4 +84,4 @@ heatmap(
 ```
 
 
-The residual panel should sit close to zero across the full species-by-species surface. Per-cell agreement at the relative Frobenius scale is `< 1e-3` on the benchmark grid (see [Benchmarks](benchmarks.md)).
+The residual panel should sit close to zero across the full species-by-species surface.
