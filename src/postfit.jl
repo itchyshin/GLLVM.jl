@@ -358,3 +358,95 @@ function Base.show(io::IO, ::MIME"text/plain", fit::PoissonFit)
             ", AIC = ", round(aic(fit); sigdigits = 7))
     print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
 end
+
+# ---------------------------------------------------------------------------
+# Negative-binomial post-fit methods (parallel to Poisson; counts with
+# dispersion r — Var = μ + μ²/r — via the log link).
+# ---------------------------------------------------------------------------
+
+_loadings(fit::NBFit) = fit.Λ
+_loglik(fit::NBFit)   = fit.loglik
+
+function _nparams(fit::NBFit)
+    p, K = size(fit.Λ)
+    return p + (p * K - div(K * (K - 1), 2)) + 1       # β + Λ + dispersion r
+end
+
+"""
+    getLV(fit::NBFit, Y; N=nothing, rotate=true) -> n×K matrix
+
+Conditional latent-variable scores for a negative-binomial fit: the per-site
+Laplace mode `ẑₛ` (computed at the fitted dispersion `r`). `rotate=true` applies
+the canonical [`rotation`](@ref).
+"""
+function getLV(fit::NBFit, Y::AbstractMatrix{<:Integer};
+               N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
+               rotate::Bool = true)
+    p, n = size(Y)
+    Nm = N === nothing ? fill(1, p, n) : N
+    K = size(fit.Λ, 2)
+    fam = NegativeBinomial(fit.r, 0.5)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        Z[:, s] = _laplace_mode(fam, view(Y, :, s), view(Nm, :, s), fit.Λ, fit.β, fit.link)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
+end
+
+"""
+    predict(fit::NBFit, Y; type=:response, N=nothing) -> p×n matrix
+
+In-sample fitted values at the Laplace mode: `type=:link` returns `η = β + Λ ẑ`;
+`type=:response` the inverse-link fitted means `linkinv(link, η) = exp(η)`.
+"""
+function predict(fit::NBFit, Y::AbstractMatrix{<:Integer};
+                 type::Symbol = :response,
+                 N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing)
+    type in (:link, :response) ||
+        throw(ArgumentError("type must be :link or :response; got :$type"))
+    Z = getLV(fit, Y; N = N, rotate = false)
+    η = fit.β .+ fit.Λ * Z'
+    type === :link && return η
+    return linkinv.(Ref(fit.link), η)
+end
+
+"""
+    residuals(fit::NBFit, Y; type=:dunnsmyth, rng=Random.default_rng()) -> p×n matrix
+
+Conditional residuals for a negative-binomial fit. `:dunnsmyth` returns Dunn–Smyth
+randomized quantile residuals — `Φ⁻¹(u)`, `u` uniform on `[F(y−1), F(y)]` under
+`NegativeBinomial(r, r/(r+μ))` — ≈ N(0,1) under a correct model (pass a fixed
+`rng` to reproduce). `:pearson` returns `(Y − μ) / √(μ + μ²/r)`.
+"""
+function residuals(fit::NBFit, Y::AbstractMatrix{<:Integer};
+                   type::Symbol = :dunnsmyth,
+                   rng::AbstractRNG = Random.default_rng())
+    type in (:dunnsmyth, :pearson) ||
+        throw(ArgumentError("type must be :dunnsmyth or :pearson; got :$type"))
+    p, n = size(Y)
+    r = fit.r
+    μ = predict(fit, Y; type = :response)
+    if type === :pearson
+        return (Y .- μ) ./ sqrt.(μ .+ μ .^ 2 ./ r)
+    end
+    R = Matrix{Float64}(undef, p, n)
+    @inbounds for s in 1:n, t in 1:p
+        d = NegativeBinomial(r, r / (r + μ[t, s]))
+        Flo = cdf(d, Y[t, s] - 1)
+        Fhi = cdf(d, Y[t, s])
+        u = Flo + (Fhi - Flo) * rand(rng)
+        R[t, s] = quantile(Normal(), clamp(u, 1e-12, 1 - 1e-12))
+    end
+    return R
+end
+
+function Base.show(io::IO, ::MIME"text/plain", fit::NBFit)
+    p, K = size(fit.Λ)
+    println(io, "Negative-binomial GLLVM fit")
+    println(io, "  responses p = ", p, ", latent factors K = ", K,
+            ", link = ", nameof(typeof(fit.link)), ", dispersion r = ", round(fit.r; sigdigits = 4))
+    println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
+            ", AIC = ", round(aic(fit); sigdigits = 7))
+    print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
+end
