@@ -4,11 +4,24 @@ This file orients AI coding agents (Claude Code, Codex, etc.) to the GLLVM.jl re
 
 ## What this package is
 
-GLLVM.jl is a Julia implementation of the **Gaussian + phylogenetic** Generalised Linear Latent Variable Model (GLLVM) class. It is a from-scratch port of the Gaussian subset of R's `gllvmTMB`, prioritising fitting speed at moderate-to-large p (species count) and rigorous inference. Headline result: ~340× per-fit median speedup over R/`gllvmTMB` while reproducing point estimates and likelihoods to machine precision.
+GLLVM.jl is a Julia implementation of the Generalised Linear Latent Variable
+Model (GLLVM) class. It is a from-scratch Julia twin of R's `gllvmTMB`,
+prioritising fitting speed at moderate-to-large p (species count), rigorous
+inference, and clear parity checks against the R reference. The Gaussian +
+phylogenetic path remains the headline speed benchmark: ~340× per-fit median
+speedup over R/`gllvmTMB` while reproducing point estimates and likelihoods to
+machine precision.
 
-**Status**: v0.1.0 pilot — **Gaussian only**. Non-Gaussian families (Poisson, binomial, ordinal, negative binomial, beta, hurdle/zero-inflated) are **not yet implemented**. Expanding to the full GLM family is the next planned stage; see "Planned next" below.
+**Status**: current development supports Gaussian plus six dense-Laplace
+non-Gaussian fitters: Binomial, Poisson, Negative Binomial, Beta, Gamma, and
+Ordinal. The non-Gaussian fitters use Optim L-BFGS with ForwardDiff gradients
+through the dense Laplace marginal. Two-part families and large-p
+non-Gaussian structured dependence are the next algorithm tracks; see "Planned
+next" below.
 
-**Size**: 32 commits, 25 source files, 14 test files, 256 passing tests as of v0.1.0.
+**Size**: this repo is moving quickly; use `git rev-parse --short HEAD`,
+`git status`, and `julia --project=. -e 'using Pkg; Pkg.test()'` for the live
+state rather than relying on a static file-count snapshot.
 
 ## Working with this repo
 
@@ -42,13 +55,19 @@ Core engine:
 - `fit.jl` — `fit_gaussian_gllvm` (Optim LBFGS + PPCA warm-start)
 - `simulate.jl` — Julia-side data simulator
 
+Response families:
+- `families/laplace.jl` — shared dense Laplace mode solve and marginal
+- `families/binomial.jl`, `poisson.jl`, `negbin.jl`, `beta.jl`, `gamma.jl`,
+  `ordinal.jl` — family likelihood pieces and non-Gaussian fit drivers
+- `families/fit_gllvm.jl` — unified family-dispatch entry point
+
 Phylogenetic representations (all compute the identical log-likelihood to machine precision; differ in cost and AD compatibility):
 - `sparse_phy.jl` + `likelihood_sparse_phy.jl` — augmented-state sparse phylogenetic precision (Hadfield & Nakagawa 2010 *JEB* appendix), via CHOLMOD — **the fastest path**, ~O(p), but CHOLMOD blocks generic forward-mode AD
 - `phylo_contrasts.jl` + `likelihood_contrasts.jl` — Felsenstein independent contrasts (Felsenstein 1985; Lande 1979)
 - `edge_incidence.jl` + `likelihood_edge_incidence.jl` — edge-node incidence representation: matrix-free Q = B·W·Bᵀ; per-branch evolution rates naturally on `diag(W)`
 
 Fitting at scale (closes the fast-and-fittable gap):
-- `sparse_phy_grad.jl` — hand-coded analytic gradient for the sparse phylo path (TMB-style; the maintainer-approved Takahashi O(p) selected-inverse swap is the next planned optimisation, currently O(p²))
+- `sparse_phy_grad.jl` — hand-coded analytic gradient for the sparse phylo path (TMB-style). Do not re-open the Takahashi selected-inverse swap as a default next step; the current fast lane is non-Gaussian gradients and scalable non-Gaussian structured dependence.
 - `em_phylo.jl` — gradient-free EM fit using the fast sparse phylo solves in the E-step; conditional means double as ancestral-state BLUPs
 - `em_squarem.jl` — SQUAREM extrapolation accelerator for EM (Varadhan & Roland 2008)
 - `relaxed_clock.jl` — per-branch evolution-rate prototype on the edge-incidence substrate (with the hierarchical-prior identifiability caveat)
@@ -62,15 +81,18 @@ Confidence intervals:
 
 ## Planned next
 
-The maintainer has indicated this package should expand from **Gaussian-only** to the **full GLM family**: Poisson, binomial, ordinal, negative-binomial, beta, then hurdle / zero-inflated / delta families. That expansion will require:
+The active fast-algorithm track is now about making the implemented
+non-Gaussian families fast and scalable:
 
-- Link function infrastructure (`logit`, `log`, `probit`, `cloglog`, …). The current Gaussian path uses identity, so no link layer exists yet.
-- **Laplace approximation** for the marginal likelihood. Gaussian + identity admits a closed-form marginal; non-conjugate families do not, so a Laplace step is unavoidable.
-- Dispersion parameters where relevant (NB shape `r`; beta precision `φ`).
-- A non-Gaussian-aware init (PPCA assumes Gaussian; either generalise or accept a slower init).
-- Updated ADEMP simulation cells covering each new family.
-
-Before starting that expansion, **study the design pattern** the Gaussian path follows: the marginal log-likelihood is a single function (`gaussian_marginal_loglik`), and `fit_gaussian_gllvm` is a thin driver. The non-Gaussian path likely wants `<family>_marginal_loglik_laplace` and `fit_<family>_gllvm` mirrors, with shared packing / Cholesky / init helpers.
+- Keep every non-Gaussian packed objective AD-clean and verified against a
+  central finite-difference gradient to ≤ 1e-6.
+- Benchmark GLLVM.jl against R `gllvmTMB` on the same simulated data across
+  sample-size grids; keep the comparison harness outside package tests.
+- If ForwardDiff through the dense Laplace marginal stops winning on
+  medium/large cells, move to an implicit/envelope site-gradient.
+- Build the large-p determinant path for non-Gaussian structured dependence.
+- Add two-part / zero-inflated / delta families with ADEMP recovery tests and
+  provenance notes when their likelihood parameterisations land.
 
 ## Hard boundaries
 

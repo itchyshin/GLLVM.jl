@@ -39,6 +39,38 @@ subprocess invocation + serialisation) and takes minutes per cell.
 This in-process suite runs the Julia engine alone, in milliseconds,
 so PERF / PERF+ / PERF++ optimisations can be evaluated quickly.
 
+## Non-Gaussian gllvmTMB Comparison
+
+`bench/non_gaussian_gllvmtmb_bench.jl` is the row-level benchmark driver for the
+fast non-Gaussian gradient track. It generates one simulated p×n response matrix
+per family/cell, fits the same data in GLLVM.jl and R `gllvmTMB`, and records
+wall time, convergence, iteration counts, objective/gradient calls when exposed,
+log-likelihood, parameter count, median speedup, and an `agreement_status`
+column.
+
+Cheap smoke run:
+
+```bash
+julia --project=. bench/non_gaussian_gllvmtmb_bench.jl --smoke
+```
+
+Planned full grid:
+
+```bash
+julia --project=. bench/non_gaussian_gllvmtmb_bench.jl --full --out=non-gaussian-gllvmtmb.csv
+```
+
+The full grid uses small `(p = 10, n = 100, K = 1)`, medium
+`(p = 30, n = 500, K = 2)`, and large `(p = 80, n = 2000, K = 3)` cells. It
+uses 3 warmup fits, then 10 repetitions for small/medium and 3 repetitions for
+large. Gaussian, binomial, and Poisson rows are marked
+`same_data_loglik_comparable`. Negative-binomial, Beta, and Gamma rows are marked
+`same_data_parameterization_audit_needed` until the R-side dispersion /
+parameter-count conventions are pinned down. Ordinal rows are marked
+`non_equivalent_link`: GLLVM.jl currently fits a cumulative-logit ordinal model,
+while `gllvmTMB` exposes `ordinal_probit()`, so those rows are timing smoke
+rather than likelihood parity.
+
 ## JIT vs steady-state
 
 `BenchmarkTools.@benchmarkable` does a single untimed warmup call

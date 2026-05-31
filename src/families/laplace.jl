@@ -70,7 +70,7 @@ function laplace_loglik_site(family, y::AbstractVector, n::AbstractVector,
     me = mu_eta.(Ref(link), η)
     W  = _glm_weight.(Ref(family), μ, n, me)
     A  = Symmetric(Λ' * (W .* Λ) + I)
-    ℓ = 0.0
+    ℓ = zero(eltype(A))
     @inbounds for t in 1:p
         ℓ += _glm_logpdf(family, μ[t], n[t], y[t])
     end
@@ -85,7 +85,7 @@ Total Laplace log-marginal over the `n` sites (columns) of a non-Gaussian GLLVM.
 """
 function marginal_loglik_laplace(family, Y::AbstractMatrix, N::AbstractMatrix,
         Λ::AbstractMatrix, β::AbstractVector, link::Link; kwargs...)
-    acc = 0.0
+    acc = zero(promote_type(eltype(Λ), eltype(β)))
     @inbounds for i in axes(Y, 2)
         acc += laplace_loglik_site(family, view(Y, :, i), view(N, :, i), Λ, β, link; kwargs...)
     end

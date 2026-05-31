@@ -57,9 +57,10 @@ end
 function _ordinal_laplace_mode(y::AbstractVector, Λ::AbstractMatrix, τ::AbstractVector;
         maxiter::Integer = 100, tol::Real = 1e-9)
     p, K = size(Λ)
-    z = zeros(K)
-    s = Vector{Float64}(undef, p)
-    W = Vector{Float64}(undef, p)
+    T = promote_type(eltype(Λ), eltype(τ))
+    z = zeros(T, K)
+    s = Vector{T}(undef, p)
+    W = Vector{T}(undef, p)
     for _ in 1:maxiter
         η = _clamp_eta.(Λ * z)
         @inbounds for t in 1:p
@@ -87,8 +88,9 @@ function ordinal_loglik_site(y::AbstractVector, Λ::AbstractMatrix, τ::Abstract
     p = size(Λ, 1)
     z = _ordinal_laplace_mode(y, Λ, τ; maxiter = maxiter, tol = tol)
     η = _clamp_eta.(Λ * z)
-    W = Vector{Float64}(undef, p)
-    ℓ = 0.0
+    T = promote_type(eltype(Λ), eltype(τ), eltype(z))
+    W = Vector{T}(undef, p)
+    ℓ = zero(T)
     @inbounds for t in 1:p
         ℓ += log(max(_ord_prob(Int(y[t]), η[t], τ), 1e-12))
         _, wt = _ord_score_weight(Int(y[t]), η[t], τ)
@@ -109,7 +111,7 @@ independent cumulative-logit log-likelihood.
 """
 function ordinal_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix,
         τ::AbstractVector; kwargs...)
-    acc = 0.0
+    acc = zero(promote_type(eltype(Λ), eltype(τ)))
     @inbounds for s in axes(Y, 2)
         acc += ordinal_loglik_site(view(Y, :, s), Λ, τ; kwargs...)
     end
@@ -164,8 +166,10 @@ Fit a proportional-odds cumulative-logit ordinal GLLVM by L-BFGS over
 `[vec(Λ); ψ]`, where the `C−1` ordered cutpoints are the unconstrained increments
 `τ₁ = ψ₁, τ_c = τ_{c-1} + exp(ψ_c)` (so ordering holds for free) and the marginal
 is [`ordinal_marginal_loglik_laplace`](@ref). `Y` is a p×n matrix of ordinal
-responses coded `1:C` (`C = maximum(Y)`). Finite-difference gradient; warm start =
-empirical cumulative-proportion cutpoints + a normal-scores SVD loadings init.
+responses coded `1:C` (`C = maximum(Y)`). The L-BFGS gradient uses ForwardDiff
+through the dense Laplace marginal and its inner Fisher-scoring solve; warm
+start = empirical cumulative-proportion cutpoints + a normal-scores SVD loadings
+init.
 """
 function fit_ordinal_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
         link::Link = LogitLink(), Λ_init = nothing,
@@ -213,13 +217,13 @@ function fit_ordinal_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
             -ordinal_marginal_loglik_laplace(Y, Λ, τ;
                                              maxiter = newton_maxiter, tol = newton_tol)
         catch
-            return 1e12
+            return oftype(first(θ), 1e12)
         end
-        return isfinite(v) ? v : 1e12
+        return isfinite(v) ? v : oftype(v, 1e12)
     end
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
     res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
-                         autodiff = :finite)
+                         autodiff = :forward)
     θ̂ = Optim.minimizer(res)
     Λ̂ = unpack_lambda(θ̂[1:rr], p, K)
     τ̂ = _unpack_cutpoints(θ̂[(rr + 1):(rr + C - 1)])

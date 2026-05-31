@@ -79,10 +79,9 @@ matrix (responses × sites); `N` the matching trial counts (default all-ones,
 i.e. Bernoulli / binary). `K` is the latent dimension. Optimises the intercepts
 `β` and loadings `Λ`.
 
-The L-BFGS gradient is finite-difference: the Laplace inner mode-finder is not
-forward-AD-friendly, so this keeps the first driver simple and robust (an
-envelope-theorem analytic gradient is the planned optimisation). Warm start:
-empirical link-scale intercepts + an SVD (PPCA-style) loadings init.
+The L-BFGS gradient uses ForwardDiff through the dense Laplace marginal and its
+inner Fisher-scoring solve. Warm start: empirical link-scale intercepts + an SVD
+(PPCA-style) loadings init.
 """
 function fit_binomial_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
         link::Link = LogitLink(),
@@ -120,13 +119,13 @@ function fit_binomial_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
             -binomial_marginal_loglik_laplace(Y, Nm, Λ, β, link;
                                               maxiter = newton_maxiter, tol = newton_tol)
         catch
-            return 1e12
+            return oftype(first(θ), 1e12)
         end
-        return isfinite(v) ? v : 1e12
+        return isfinite(v) ? v : oftype(v, 1e12)
     end
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
     res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
-                         autodiff = :finite)
+                         autodiff = :forward)
     θ̂ = Optim.minimizer(res)
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)

@@ -52,9 +52,9 @@ end
 Fit a Poisson GLLVM by L-BFGS on the Laplace marginal log-likelihood
 (`poisson_marginal_loglik_laplace`). `Y` is a p×n integer count matrix
 (responses × sites); `K` the latent dimension. Optimises intercepts `β` and
-loadings `Λ`. Finite-difference gradient (the Laplace inner mode-finder is not
-forward-AD-friendly); warm start = empirical log-mean intercepts + an SVD
-(PPCA-style) loadings init.
+loadings `Λ`. The L-BFGS gradient uses ForwardDiff through the dense Laplace
+marginal and its inner Fisher-scoring solve; warm start = empirical log-mean
+intercepts + an SVD (PPCA-style) loadings init.
 """
 function fit_poisson_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
         link::Link = LogLink(),
@@ -88,13 +88,13 @@ function fit_poisson_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
             -poisson_marginal_loglik_laplace(Y, Λ, β, link;
                                              maxiter = newton_maxiter, tol = newton_tol)
         catch
-            return 1e12
+            return oftype(first(θ), 1e12)
         end
-        return isfinite(v) ? v : 1e12
+        return isfinite(v) ? v : oftype(v, 1e12)
     end
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
     res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
-                         autodiff = :finite)
+                         autodiff = :forward)
     θ̂ = Optim.minimizer(res)
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)

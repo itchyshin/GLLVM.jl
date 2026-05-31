@@ -73,7 +73,8 @@ end
 Fit a Beta GLLVM by L-BFGS over `[β; vec(Λ); log φ]` on the Laplace marginal
 (`beta_marginal_loglik_laplace`), jointly estimating the precision `φ`
 (`Var = μ(1−μ)/(1+φ)`). `Y` is a p×n matrix of proportions in (0,1); `K` the latent
-dimension. Finite-difference gradient; warm start = empirical logit-mean intercepts +
+dimension. The L-BFGS gradient uses ForwardDiff through the dense Laplace marginal
+and its inner Fisher-scoring solve; warm start = empirical logit-mean intercepts +
 an SVD loadings init + a moderate `φ₀`.
 """
 function fit_beta_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
@@ -109,13 +110,13 @@ function fit_beta_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
             -beta_marginal_loglik_laplace(Y, Λ, β, φ;
                                           maxiter = newton_maxiter, tol = newton_tol)
         catch
-            return 1e12
+            return oftype(first(θ), 1e12)
         end
-        return isfinite(v) ? v : 1e12
+        return isfinite(v) ? v : oftype(v, 1e12)
     end
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
     res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
-                         autodiff = :finite)
+                         autodiff = :forward)
     θ̂ = Optim.minimizer(res)
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)

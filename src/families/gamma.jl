@@ -59,8 +59,9 @@ end
 Fit a Gamma GLLVM by L-BFGS over `[β; vec(Λ); log α]` on the Laplace marginal
 (`gamma_marginal_loglik_laplace`), jointly estimating the shape `α`
 (`Var = μ²/α`). `Y` is a p×n matrix of positive reals; `K` the latent
-dimension. Finite-difference gradient; warm start = log row-means as intercepts +
-SVD of row-centred log-Y as loadings + `logα₀ = log(2.0)`.
+dimension. The L-BFGS gradient uses ForwardDiff through the dense Laplace marginal
+and its inner Fisher-scoring solve; warm start = log row-means as intercepts + SVD
+of row-centred log-Y as loadings + `logα₀ = log(2.0)`.
 """
 function fit_gamma_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         link::Link = LogLink(),
@@ -95,13 +96,13 @@ function fit_gamma_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
             -gamma_marginal_loglik_laplace(Y, Λ, β, α;
                                            maxiter = newton_maxiter, tol = newton_tol)
         catch
-            return 1e12
+            return oftype(first(θ), 1e12)
         end
-        return isfinite(v) ? v : 1e12
+        return isfinite(v) ? v : oftype(v, 1e12)
     end
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
     res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
-                         autodiff = :finite)
+                         autodiff = :forward)
     θ̂ = Optim.minimizer(res)
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
