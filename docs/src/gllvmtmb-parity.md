@@ -48,7 +48,7 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 | `residuals` (Dunn–Smyth + Pearson) | ✅ | all families |
 | `aic` / `bic` / `show` | ✅ | all families |
 | Σ_y / communality / correlation / phylo signal H² | ✅ Gaussian | report-ready extractors |
-| Confidence intervals (Wald / profile / bootstrap) | ✅ Gaussian · ✅ GLM + two-part | Poisson / Binomial / NB / Beta / Gamma and Delta / Hurdle / ZI via `confint(fit, Y; method=…)`; bootstrap is thread-parallel. Ordinal CIs still pending |
+| Confidence intervals (Wald / profile / bootstrap) | ✅ all families | Gaussian, the GLM families, the two-part families, and ordinal via `confint(fit, Y; method=…)`; bootstrap is thread-parallel |
 | Ordination biplot | ✅ | |
 
 ## Interface
@@ -69,10 +69,8 @@ fit-time gains.
 
 ## Honest gaps
 
-- **Confidence intervals for non-Gaussian families** — Wald / profile / parametric
-  bootstrap now wired for the GLM families (Poisson, Binomial, NB, Beta, Gamma)
-  and the two-part families (Delta-lognormal / Delta-Gamma / Hurdle-Poisson /
-  Hurdle-NB / ZIP / ZINB); ordinal CIs are still pending.
+- **Confidence intervals** — Wald / profile / parametric bootstrap are wired for
+  every family (Gaussian, the GLM families, the two-part families, and ordinal).
 - **Structured dependence (phylo / animal / spatial) with non-Gaussian responses** — in design/build (b).
 - **`@formula` interface and random slopes** — in build (c).
 - **Tweedie / exponential families** — planned.

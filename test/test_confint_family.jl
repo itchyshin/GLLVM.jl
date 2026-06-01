@@ -177,4 +177,38 @@ end
         @test a.lower == b.lower && a.upper == b.upper
         @test a.n_converged ≥ 12
     end
+
+    @testset "Ordinal Wald + bootstrap (τ in natural scale)" begin
+        Random.seed!(34)
+        p, K, n, C = 4, 1, 220, 4
+        Λ = 0.7 .* randn(p, K)
+        τ = [-1.0, 0.0, 1.2]
+        Y = Matrix{Int}(undef, p, n)
+        for s in 1:n
+            η = Λ * randn(K)
+            for t in 1:p
+                u = rand(); cum = 0.0; cat = C
+                for c in 1:C
+                    Fhi = c == C ? 1.0 : inv(1 + exp(-(τ[c] - η[t])))
+                    Flo = c == 1 ? 0.0 : inv(1 + exp(-(τ[c - 1] - η[t])))
+                    cum += Fhi - Flo
+                    if u <= cum
+                        cat = c; break
+                    end
+                end
+                Y[t, s] = cat
+            end
+        end
+        fit = fit_ordinal_gllvm(Y; K = K)
+        ci = confint(fit, Y; method = :wald)
+        @test length(ci.term) == (p * K) + (C - 1)        # Λ + τ
+        @test "tau[1]" in ci.term && "Lambda[1,1]" in ci.term
+        # cutpoints are ordered; their Wald point estimates inherit that
+        taus = [ci.estimate[findfirst(==("tau[$c]"), ci.term)] for c in 1:(C - 1)]
+        @test issorted(taus)
+
+        bo = confint(fit, Y; method = :bootstrap, n_boot = 20, seed = 3, parm = "Lambda")
+        @test bo.method === :bootstrap
+        @test bo.n_converged ≥ 10
+    end
 end

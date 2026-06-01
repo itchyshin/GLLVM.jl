@@ -35,7 +35,7 @@ const _TwoPartFit = Union{DeltaLogNormalFit, DeltaGammaFit, HurdlePoissonFit,
                           HurdleNBFit, ZIPFit, ZINBFit}
 
 # Everything the unified confint(fit, Y; method=…) entry accepts.
-const _CIFit = Union{_FamilyFit, _TwoPartFit}
+const _CIFit = Union{_FamilyFit, _TwoPartFit, OrdinalFit}
 
 # ---------------------------------------------------------------------------
 # Per-family adapter. Bundles everything the generic routines need:
@@ -453,6 +453,53 @@ function _family_ci(fit::ZINBFit, Y::AbstractMatrix;
     end
     names = vcat(_twopart_lin_names(p, K), "r")
     return _FamilyCI(θ, nll, names, vcat(fill(:linear, length(θ) - 1), :log), sim, refit)
+end
+
+# --- Ordinal (cumulative logit) --------------------------------------------
+# Working vector [pack_lambda(Λ); τ] in the NATURAL cutpoint parameterisation
+# (the fitter optimises ψ-increments, but the MLE τ̂ is strictly ordered, so the
+# Wald Hessian / profile / bootstrap all run directly in τ-space — the
+# interpretable scale). The ordinal marginal clamps category probabilities at
+# 1e-12, so the small perturbations used by the Hessian / refits stay finite even
+# if a τ momentarily loses ordering.
+function _family_ci(fit::OrdinalFit, Y::AbstractMatrix;
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); C = fit.C
+    θ = vcat(pack_lambda(fit.Λ), fit.τ)
+    nll = function (θv)
+        Λ = unpack_lambda(θv[1:rr], p, K)
+        τ = θv[(rr + 1):(rr + C - 1)]
+        v = try
+            -ordinal_marginal_loglik_laplace(Y, Λ, τ; maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    sim = function (rng)
+        Yb = Matrix{Int}(undef, p, n)
+        @inbounds for s in 1:n
+            η = fit.Λ * randn(rng, K)
+            for t in 1:p
+                u = rand(rng); cum = 0.0; cat = C
+                for c in 1:C
+                    cum += _ord_prob(c, η[t], fit.τ)
+                    if u <= cum
+                        cat = c; break
+                    end
+                end
+                Yb[t, s] = cat
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try fit_ordinal_gllvm(Yb; K = K) catch; return nothing end
+        fb.C == C || return nothing                 # category-count mismatch ⇒ drop replicate
+        return vcat(pack_lambda(fb.Λ), fb.τ)
+    end
+    names = vcat(_confint_lambda_term_names("Lambda", p, K), ["tau[$c]" for c in 1:(C - 1)])
+    return _FamilyCI(θ, nll, names, fill(:linear, length(θ)), sim, refit)
 end
 
 # ---------------------------------------------------------------------------
