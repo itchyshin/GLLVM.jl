@@ -30,6 +30,13 @@ using Random: AbstractRNG, MersenneTwister, randn
 # Families handled by this layer (single latent block, optional scalar dispersion).
 const _FamilyFit = Union{PoissonFit, BinomialFit, NBFit, BetaFit, GammaFit}
 
+# Two-part families ([βz; βc; pack_lambda(Λc); (log-dispersion)] layout).
+const _TwoPartFit = Union{DeltaLogNormalFit, DeltaGammaFit, HurdlePoissonFit,
+                          HurdleNBFit, ZIPFit, ZINBFit}
+
+# Everything the unified confint(fit, Y; method=…) entry accepts.
+const _CIFit = Union{_FamilyFit, _TwoPartFit}
+
 # ---------------------------------------------------------------------------
 # Per-family adapter. Bundles everything the generic routines need:
 #   θ        — MLE working vector (matches the fitter's negll layout)
@@ -216,6 +223,236 @@ function _glm_simulate_counts(rng::AbstractRNG, β::AbstractVector, Λ::Abstract
         end
     end
     return Yb
+end
+
+# ---------------------------------------------------------------------------
+# Two-part family adapters. Shared layout [βz; βc; pack_lambda(Λc); (log-disp)];
+# βz are occurrence/zero-inflation logits, βc the positive/count log-(or log-mean)
+# intercepts. `make_nll` closes over the family's marginal; `sim` draws Yᵇ; `refit`
+# returns the working vector or `nothing`.
+# ---------------------------------------------------------------------------
+_twopart_lin_names(p::Integer, K::Integer) =
+    vcat(["betaz[$t]" for t in 1:p], ["betac[$t]" for t in 1:p],
+         _confint_lambda_term_names("Lambda", p, K))
+
+# Zero-truncated count samplers (rejection; rare fall-through returns 1).
+function _rand_ztpois(rng::AbstractRNG, μ)
+    d = Poisson(max(μ, 1e-12))
+    for _ in 1:10_000
+        y = rand(rng, d); y > 0 && return y
+    end
+    return 1
+end
+function _rand_ztnb(rng::AbstractRNG, r, μ)
+    d = NegativeBinomial(r, r / (r + max(μ, 1e-12)))
+    for _ in 1:10_000
+        y = rand(rng, d); y > 0 && return y
+    end
+    return 1
+end
+
+# --- Delta-lognormal -------------------------------------------------------
+function _family_ci(fit::DeltaLogNormalFit, Y::AbstractMatrix;
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λc); n = size(Y, 2); rr = rr_theta_len(p, K)
+    θ = vcat(fit.βz, fit.βc, pack_lambda(fit.Λc), log(fit.σ))
+    nll = function (θv)
+        βz = θv[1:p]; βc = θv[(p + 1):(2p)]
+        Λc = unpack_lambda(θv[(2p + 1):(2p + rr)], p, K); σ = exp(θv[2p + rr + 1])
+        v = try
+            -delta_lognormal_marginal_loglik_laplace(Y, Λc, βz, βc, σ; maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    sim = function (rng)
+        Yb = zeros(Float64, p, n)
+        @inbounds for s in 1:n
+            ηc = fit.βc .+ fit.Λc * randn(rng, K)
+            for t in 1:p
+                π = inv(1 + exp(-fit.βz[t]))
+                rand(rng) < π && (Yb[t, s] = exp(ηc[t] + fit.σ * randn(rng)))
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try fit_delta_lognormal_gllvm(Yb; K = K) catch; return nothing end
+        return vcat(fb.βz, fb.βc, pack_lambda(fb.Λc), log(fb.σ))
+    end
+    names = vcat(_twopart_lin_names(p, K), "sigma")
+    return _FamilyCI(θ, nll, names, vcat(fill(:linear, length(θ) - 1), :log), sim, refit)
+end
+
+# --- Delta-Gamma -----------------------------------------------------------
+function _family_ci(fit::DeltaGammaFit, Y::AbstractMatrix;
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λc); n = size(Y, 2); rr = rr_theta_len(p, K)
+    θ = vcat(fit.βz, fit.βc, pack_lambda(fit.Λc), log(fit.α))
+    nll = function (θv)
+        βz = θv[1:p]; βc = θv[(p + 1):(2p)]
+        Λc = unpack_lambda(θv[(2p + 1):(2p + rr)], p, K); α = exp(θv[2p + rr + 1])
+        v = try
+            -delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α; maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    sim = function (rng)
+        Yb = zeros(Float64, p, n)
+        @inbounds for s in 1:n
+            ηc = fit.βc .+ fit.Λc * randn(rng, K)
+            for t in 1:p
+                π = inv(1 + exp(-fit.βz[t]))
+                if rand(rng) < π
+                    μ = exp(ηc[t]); Yb[t, s] = rand(rng, Gamma(fit.α, μ / fit.α))
+                end
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try fit_delta_gamma_gllvm(Yb; K = K) catch; return nothing end
+        return vcat(fb.βz, fb.βc, pack_lambda(fb.Λc), log(fb.α))
+    end
+    names = vcat(_twopart_lin_names(p, K), "alpha")
+    return _FamilyCI(θ, nll, names, vcat(fill(:linear, length(θ) - 1), :log), sim, refit)
+end
+
+# --- Hurdle-Poisson --------------------------------------------------------
+function _family_ci(fit::HurdlePoissonFit, Y::AbstractMatrix;
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λc); n = size(Y, 2); rr = rr_theta_len(p, K)
+    θ = vcat(fit.βz, fit.βc, pack_lambda(fit.Λc))
+    nll = function (θv)
+        βz = θv[1:p]; βc = θv[(p + 1):(2p)]
+        Λc = unpack_lambda(θv[(2p + 1):(2p + rr)], p, K)
+        v = try
+            -hurdle_poisson_marginal_loglik_laplace(Y, Λc, βz, βc; maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    sim = function (rng)
+        Yb = zeros(Int, p, n)
+        @inbounds for s in 1:n
+            ηc = fit.βc .+ fit.Λc * randn(rng, K)
+            for t in 1:p
+                π = inv(1 + exp(-fit.βz[t]))
+                rand(rng) < π && (Yb[t, s] = _rand_ztpois(rng, exp(ηc[t])))
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try fit_hurdle_poisson_gllvm(Yb; K = K) catch; return nothing end
+        return vcat(fb.βz, fb.βc, pack_lambda(fb.Λc))
+    end
+    return _FamilyCI(θ, nll, _twopart_lin_names(p, K), fill(:linear, length(θ)), sim, refit)
+end
+
+# --- Hurdle-NB -------------------------------------------------------------
+function _family_ci(fit::HurdleNBFit, Y::AbstractMatrix;
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λc); n = size(Y, 2); rr = rr_theta_len(p, K)
+    θ = vcat(fit.βz, fit.βc, pack_lambda(fit.Λc), log(fit.r))
+    nll = function (θv)
+        βz = θv[1:p]; βc = θv[(p + 1):(2p)]
+        Λc = unpack_lambda(θv[(2p + 1):(2p + rr)], p, K); r = exp(θv[2p + rr + 1])
+        v = try
+            -hurdle_nb_marginal_loglik_laplace(Y, Λc, βz, βc, r; maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    sim = function (rng)
+        Yb = zeros(Int, p, n)
+        @inbounds for s in 1:n
+            ηc = fit.βc .+ fit.Λc * randn(rng, K)
+            for t in 1:p
+                π = inv(1 + exp(-fit.βz[t]))
+                rand(rng) < π && (Yb[t, s] = _rand_ztnb(rng, fit.r, exp(ηc[t])))
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try fit_hurdle_nb_gllvm(Yb; K = K) catch; return nothing end
+        return vcat(fb.βz, fb.βc, pack_lambda(fb.Λc), log(fb.r))
+    end
+    names = vcat(_twopart_lin_names(p, K), "r")
+    return _FamilyCI(θ, nll, names, vcat(fill(:linear, length(θ) - 1), :log), sim, refit)
+end
+
+# --- Zero-inflated Poisson -------------------------------------------------
+function _family_ci(fit::ZIPFit, Y::AbstractMatrix;
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λc); n = size(Y, 2); rr = rr_theta_len(p, K)
+    θ = vcat(fit.βz, fit.βc, pack_lambda(fit.Λc))
+    nll = function (θv)
+        βz = θv[1:p]; βc = θv[(p + 1):(2p)]
+        Λc = unpack_lambda(θv[(2p + 1):(2p + rr)], p, K)
+        v = try
+            -zip_marginal_loglik_laplace(Y, Λc, βz, βc; maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    sim = function (rng)
+        Yb = zeros(Int, p, n)
+        @inbounds for s in 1:n
+            ηc = fit.βc .+ fit.Λc * randn(rng, K)
+            for t in 1:p
+                π = inv(1 + exp(-fit.βz[t]))
+                Yb[t, s] = rand(rng) < π ? 0 : rand(rng, Poisson(exp(ηc[t])))
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try fit_zip_gllvm(Yb; K = K) catch; return nothing end
+        return vcat(fb.βz, fb.βc, pack_lambda(fb.Λc))
+    end
+    return _FamilyCI(θ, nll, _twopart_lin_names(p, K), fill(:linear, length(θ)), sim, refit)
+end
+
+# --- Zero-inflated NB ------------------------------------------------------
+function _family_ci(fit::ZINBFit, Y::AbstractMatrix;
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λc); n = size(Y, 2); rr = rr_theta_len(p, K)
+    θ = vcat(fit.βz, fit.βc, pack_lambda(fit.Λc), log(fit.r))
+    nll = function (θv)
+        βz = θv[1:p]; βc = θv[(p + 1):(2p)]
+        Λc = unpack_lambda(θv[(2p + 1):(2p + rr)], p, K); r = exp(θv[2p + rr + 1])
+        v = try
+            -zinb_marginal_loglik_laplace(Y, Λc, βz, βc, r; maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    sim = function (rng)
+        Yb = zeros(Int, p, n)
+        @inbounds for s in 1:n
+            ηc = fit.βc .+ fit.Λc * randn(rng, K)
+            for t in 1:p
+                π = inv(1 + exp(-fit.βz[t])); μ = exp(ηc[t])
+                Yb[t, s] = rand(rng) < π ? 0 : rand(rng, NegativeBinomial(fit.r, fit.r / (fit.r + μ)))
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try fit_zinb_gllvm(Yb; K = K) catch; return nothing end
+        return vcat(fb.βz, fb.βc, pack_lambda(fb.Λc), log(fb.r))
+    end
+    names = vcat(_twopart_lin_names(p, K), "r")
+    return _FamilyCI(θ, nll, names, vcat(fill(:linear, length(θ) - 1), :log), sim, refit)
 end
 
 # ---------------------------------------------------------------------------
@@ -438,9 +675,16 @@ end
             n_boot = 200, seed = 0, parallel = false,
             newton_maxiter = 100, newton_tol = 1e-9) -> NamedTuple
 
-Confidence intervals for a non-Gaussian family GLLVM fit (`PoissonFit`,
-`BinomialFit`, `NBFit`, `BetaFit`, `GammaFit`). `Y` is the same response matrix
-passed to the fitter; it is needed to reconstruct the marginal likelihood.
+Confidence intervals for a non-Gaussian family GLLVM fit — the scalar-μ GLM
+families (`PoissonFit`, `BinomialFit`, `NBFit`, `BetaFit`, `GammaFit`) and the
+two-part families (`DeltaLogNormalFit`, `DeltaGammaFit`, `HurdlePoissonFit`,
+`HurdleNBFit`, `ZIPFit`, `ZINBFit`). `Y` is the same response matrix passed to
+the fitter; it is needed to reconstruct the marginal likelihood.
+
+Term names are `beta[t]` / `Lambda[i,k]` (+ a dispersion `r`/`phi`/`alpha`) for
+the GLM families, and `betaz[t]` (occurrence / zero-inflation logits) / `betac[t]`
+(positive / count intercepts) / `Lambda[i,k]` (+ `sigma`/`alpha`/`r`) for the
+two-part families.
 
 `method` selects the inference:
 
@@ -475,7 +719,7 @@ confint(fit, Y; method = :profile, parm = "beta[1]")
 confint(fit, Y; method = :bootstrap, n_boot = 500, parallel = true)
 ```
 """
-function confint(fit::_FamilyFit, Y::AbstractMatrix;
+function confint(fit::_CIFit, Y::AbstractMatrix;
                  method::Symbol = :wald,
                  level::Real = 0.95,
                  parm = nothing,

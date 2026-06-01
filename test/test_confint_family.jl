@@ -111,4 +111,70 @@ end
         fit = fit_poisson_gllvm(Y; K = 1)
         @test_throws ArgumentError confint(fit, Y; method = :nope)
     end
+
+    @testset "Two-part: Hurdle-Poisson Wald + profile" begin
+        Random.seed!(31)
+        p, K, n = 4, 1, 160
+        βz = 0.4 .* randn(p) .+ 0.5; βc = 0.3 .* randn(p) .+ 1.0
+        Λc = 0.4 .* randn(p, K)
+        Y = zeros(Int, p, n)
+        for s in 1:n
+            ηc = βc .+ Λc * randn(K)
+            for t in 1:p
+                if rand() < inv(1 + exp(-βz[t]))
+                    y = 0; while y == 0; y = rand(Poisson(exp(ηc[t]))); end
+                    Y[t, s] = y
+                end
+            end
+        end
+        fit = fit_hurdle_poisson_gllvm(Y; K = K)
+        ci = confint(fit, Y; method = :wald)
+        @test length(ci.term) == 2p + (p * K)         # βz + βc + Λ
+        @test "betaz[1]" in ci.term && "betac[1]" in ci.term
+        w = confint(fit, Y; method = :wald, parm = "betac[1]")
+        @test isfinite(w.se[1])
+        pr = confint(fit, Y; method = :profile, parm = "betac[1]")
+        @test pr.method === :profile
+        @test pr.lower[1] < pr.estimate[1] < pr.upper[1]
+    end
+
+    @testset "Two-part: Delta-lognormal Wald σ on natural scale" begin
+        Random.seed!(32)
+        p, K, n = 4, 1, 200; σ_true = 0.5
+        βz = 0.3 .* randn(p) .+ 0.6; βc = 0.4 .* randn(p)
+        Λc = 0.4 .* randn(p, K)
+        Y = zeros(p, n)
+        for s in 1:n
+            ηc = βc .+ Λc * randn(K)
+            for t in 1:p
+                rand() < inv(1 + exp(-βz[t])) && (Y[t, s] = exp(ηc[t] + σ_true * randn()))
+            end
+        end
+        fit = fit_delta_lognormal_gllvm(Y; K = K)
+        ci = confint(fit, Y; method = :wald, parm = "sigma")
+        @test ci.term == ["sigma"]
+        @test ci.estimate[1] ≈ fit.σ atol = 1e-8
+        if isfinite(ci.lower[1])
+            @test 0 < ci.lower[1] < ci.estimate[1] < ci.upper[1]
+        end
+    end
+
+    @testset "Two-part: ZIP bootstrap single- vs multi-core identical" begin
+        Random.seed!(33)
+        p, K, n = 4, 1, 140
+        βz = 0.3 .* randn(p) .- 0.6; βc = 0.3 .* randn(p) .+ 1.2
+        Λc = 0.4 .* randn(p, K)
+        Y = zeros(Int, p, n)
+        for s in 1:n
+            ηc = βc .+ Λc * randn(K)
+            for t in 1:p
+                Y[t, s] = rand() < inv(1 + exp(-βz[t])) ? 0 : rand(Poisson(exp(ηc[t])))
+            end
+        end
+        fit = fit_zip_gllvm(Y; K = K)
+        a = confint(fit, Y; method = :bootstrap, n_boot = 20, seed = 5, parallel = false)
+        b = confint(fit, Y; method = :bootstrap, n_boot = 20, seed = 5, parallel = true)
+        @test a.lower == b.lower && a.upper == b.upper
+        @test a.n_converged ≥ 12
+    end
 end
