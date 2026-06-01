@@ -372,6 +372,29 @@ function _obs_lsw_aux_derivatives(f::Beta, family_from_aux, link::LogitLink,
     return ℓ, s, W, qaux, sη, saux, Wη, Waux
 end
 
+function _obs_lsw_aux_derivatives(f::Gamma, family_from_aux, link::LogLink,
+        y, n, η, aux)
+    ηc = _clamp_eta(η)
+    ηc == η || return _obs_lsw_aux_derivatives_fallback(
+        family_from_aux, link, y, n, η, aux)
+    y > zero(y) || return _obs_lsw_aux_derivatives_fallback(
+        family_from_aux, link, y, n, η, aux)
+    α = f.α
+    μ = _clamp_mu(f, exp(ηc))
+    μ > 1e-12 || return _obs_lsw_aux_derivatives_fallback(
+        family_from_aux, link, y, n, η, aux)
+    ℓ = α * (log(α) - log(μ)) - loggamma(α) +
+        (α - one(α)) * log(y) - α * y / μ
+    s = α * (y / μ - one(μ))
+    W = α
+    qaux = α * (log(α) + one(α) - digamma(α) - log(μ) + log(y) - y / μ)
+    sη = -α * y / μ
+    saux = s
+    Wη = zero(α)
+    Waux = α
+    return ℓ, s, W, qaux, sη, saux, Wη, Waux
+end
+
 function _scalar_aux_laplace_site_implicit_value_grad(family_from_aux,
         y::AbstractVector, n::AbstractVector, θ::AbstractVector,
         p::Int, K::Int, link::Link; maxiter::Integer = 100, tol::Real = 1e-9,

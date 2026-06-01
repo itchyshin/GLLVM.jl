@@ -10,7 +10,9 @@
 _clamp_mu(::Gamma, μ) = max(μ, 1e-12)
 _glm_score(f::Gamma, μ, n, me, y) = f.α * (y - μ) / μ^2 * me
 _glm_weight(f::Gamma, μ, n, me)   = f.α * me^2 / μ^2
-_glm_logpdf(f::Gamma, μ, n, y)    = logpdf(Gamma(f.α, μ / f.α), y)
+_glm_logpdf(f::Gamma, μ, n, y) =
+    f.α * (log(f.α) - log(μ)) - loggamma(f.α) +
+    (f.α - one(f.α)) * log(y) - f.α * y / μ
 
 """
     gamma_marginal_loglik_laplace(Y, Λ, β, α; link=LogLink(), kwargs...) -> Float64
@@ -56,14 +58,13 @@ end
 """
     fit_gamma_gllvm(Y; K, link=LogLink(), α_init=nothing, …) -> GammaFit
 
-Fit a Gamma GLLVM by L-BFGS over `[β; vec(Λ); log α]` on the Laplace marginal
-(`gamma_marginal_loglik_laplace`), jointly estimating the shape `α`
-(`Var = μ²/α`). `Y` is a p×n matrix of positive reals; `K` the latent
-dimension. The L-BFGS gradient uses ForwardDiff through the dense Laplace
-objective. The implicit-gradient path is retained as a verification/research
-helper, but Gamma fitting stays on direct AD until its inner mode convergence is
-hardened. Warm start = log row-means as intercepts + SVD of row-centred log-Y as
-loadings + `logα₀ = log(2.0)`.
+Fit a Gamma GLLVM by L-BFGS over `[β; vec(Λ); log α]` on the Laplace marginal,
+jointly estimating the shape `α` (`Var = μ²/α`). `Y` is a p×n matrix of
+positive reals; `K` the latent dimension. The L-BFGS gradient uses the
+scalar-auxiliary implicit-gradient path: the site mode is held by the envelope
+equation, while the Gamma log-link observation derivatives are closed form.
+Warm start = log row-means as intercepts + SVD of row-centred log-Y as loadings
+and `logα₀ = log(2.0)`.
 """
 function fit_gamma_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         link::Link = LogLink(),
@@ -90,21 +91,14 @@ function fit_gamma_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     logα0 = α_init === nothing ? log(2.0) : log(float(α_init))
 
     θ0 = vcat(β0, pack_lambda(Λ0), logα0)
-    function negll(θ)
-        β = θ[1:p]
-        Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
-        α = _positive_from_log(θ[p + rr + 1])
-        v = try
-            -gamma_marginal_loglik_laplace(Y, Λ, β, α;
-                                           maxiter = newton_maxiter, tol = newton_tol)
-        catch
-            return oftype(first(θ), 1e12)
-        end
-        return isfinite(v) ? v : oftype(v, 1e12)
-    end
+    family_from_aux = aux -> Gamma(_positive_from_log(aux[1]), 1.0)
+    N = ones(Int, size(Y))
+    value_grad(θ) = marginal_loglik_laplace_aux_value_grad(
+        family_from_aux, Y, N, θ, p, K, link; maxiter = newton_maxiter, tol = newton_tol)
+    negll_fg!(F, G, θ) = _penalized_negloglik_fg!(F, G, value_grad, θ)
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
-    res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
-                         autodiff = :forward)
+    res = Optim.optimize(Optim.only_fg!(negll_fg!), θ0, ls,
+                         Optim.Options(g_tol = g_tol, iterations = iterations))
     θ̂ = Optim.minimizer(res)
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)

@@ -1,5 +1,139 @@
 # Check Log
 
+## 2026-05-31 — Gamma Scalar-Aux Implicit Fitter
+
+Branch: `codex/non-gaussian-fitter-gradients`
+
+Head before local commit: `f3564b1`.
+
+### Scope
+
+- Added closed-form Gamma log-link scalar-auxiliary observation derivatives for
+  the dense-Laplace implicit-gradient helper: log density, score, expected
+  weight, and derivatives with respect to `η` and `log α`.
+- Switched `fit_gamma_gllvm` from `Optim` ForwardDiff over the dense Laplace
+  objective to the existing scalar-auxiliary implicit-gradient route.
+- Kept the public API unchanged and did not widen tolerances.
+- Tested a cache-backed Gamma variant and rejected it because it slowed the
+  medium benchmark cell; the committed path is the simpler stateless implicit
+  gradient.
+- Did not edit `src/sparse_phy_grad.jl`, `src/em_phylo.jl`, or the open
+  non-Gaussian CI / two-part PR lane.
+
+### Verification
+
+Gradient gate:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_family_forwarddiff_gradients.jl")'
+```
+
+Result:
+
+```text
+non-Gaussian fitter objectives: AD/implicit gradients | 92/92 pass
+```
+
+Targeted Gamma recovery:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_gamma_fit.jl")'
+```
+
+Result:
+
+```text
+fit_gamma_gllvm | 7/7 pass
+```
+
+All non-Gaussian recovery command:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_binomial_fit.jl"); include("test/test_poisson_fit.jl"); include("test/test_nb_fit.jl"); include("test/test_beta_fit.jl"); include("test/test_gamma_fit.jl"); include("test/test_ordinal_fit.jl")'
+```
+
+Result:
+
+```text
+fit_binomial_gllvm — recovery | 8/8 pass
+fit_poisson_gllvm — recovery  | 7/7 pass
+fit_nb_gllvm — recovery       | 7/7 pass
+fit_beta_gllvm                | 7/7 pass
+fit_gamma_gllvm               | 7/7 pass
+fit_ordinal_gllvm             | 9/9 pass
+```
+
+Core command:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. Manual tally from emitted summaries: 2214 pass, 3 broken
+placeholders, 0 fail, 0 error. The touched blocks included:
+
+```text
+non-Gaussian fitter objectives: AD/implicit gradients | 92/92 pass
+fit_gamma_gllvm                                      | 7/7 pass
+post-fit Gamma fits                                  | 215/215 pass
+quality                                              | 2 broken placeholders
+```
+
+Full command:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Manual tally from emitted summaries: 2226 pass, 1 existing broken sparse-phy
+precision check, 0 fail, 0 error.
+
+### Benchmarks
+
+Julia-only warmed Gamma benchmark, same command before and after the change:
+
+```sh
+julia --project=. --startup-file=no bench/non_gaussian_gllvmtmb_bench.jl --full --cells=small,medium --families=gamma --iterations=120 --warmups=1 --reps=1 --julia-only
+```
+
+| cell | p | n | K | before Julia (s) | after Julia (s) | speedup |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| small | 10 | 100 | 1 | 0.0884 | 0.0723 | 1.22x |
+| medium | 30 | 500 | 2 | 18.7340 | 1.5403 | 12.16x |
+
+R comparator smoke:
+
+```sh
+julia --project=. --startup-file=no bench/non_gaussian_gllvmtmb_bench.jl --full --cells=small,medium --families=gamma --iterations=120 --warmups=1 --reps=1
+```
+
+| cell | Julia (s) | gllvmTMB (s) | R / Julia | agreement_status |
+| --- | ---: | ---: | ---: | --- |
+| small | 0.0723 | 0.5260 | 7.28x | same_data_parameterization_audit_needed |
+| medium | 1.5403 | 3.5810 | 2.32x | same_data_parameterization_audit_needed |
+
+The R rows are timing evidence only until the Gamma parameterisation audit is
+closed; the likelihood values differ by more than the comparable Gaussian /
+Binomial / Poisson rows and are therefore not used as a strict parity claim.
+
+### CI Status
+
+The interval layer was not changed in this slice. The current full suite passed
+the existing Wald, profile-likelihood, parametric-bootstrap, and derived-CI
+tests. The broader non-Gaussian CI catch-up remains in PR #59's lane.
+
+### Hygiene
+
+- `git diff --check`: clean.
+- Sensitive-provenance guard scan over public repo artifacts: clean.
+
 ## 2026-05-31 — Beta Cache-Then-Polish Fitter
 
 Branch: `codex/non-gaussian-fitter-gradients`
