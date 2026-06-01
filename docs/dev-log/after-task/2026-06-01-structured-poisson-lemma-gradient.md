@@ -62,10 +62,10 @@ julia --project=. --startup-file=no bench/structured_poisson_lemma_gradient_benc
 Results:
 
 ```text
-smoke    p= 160 n= 120 K=2 dense=  0.0112 s lemma=  0.0133 s speedup= 0.85x bytes=(1.74e+06, 6.80e+06) valuediff=0.00e+00 gradrel=1.20e-16
-medium   p= 512 n= 128 K=2 dense=  0.0520 s lemma=  0.0328 s speedup= 1.59x bytes=(9.87e+06, 1.87e+07) valuediff=0.00e+00 gradrel=1.24e-16
-large    p=1024 n= 256 K=2 dense=  0.1471 s lemma=  0.1090 s speedup= 1.35x bytes=(3.86e+07, 7.31e+07) valuediff=0.00e+00 gradrel=1.60e-16
-xlarge   p=2048 n= 512 K=2 dense=  0.8351 s lemma=  0.4553 s speedup= 1.83x bytes=(1.53e+08, 2.89e+08) valuediff=0.00e+00 gradrel=1.72e-16
+smoke    p= 160 n= 120 K=2 dense=  0.0085 s lemma=  0.0145 s speedup= 0.59x bytes=(1.74e+06, 6.80e+06) valuediff=0.00e+00 gradrel=1.20e-16
+medium   p= 512 n= 128 K=2 dense=  0.0429 s lemma=  0.0269 s speedup= 1.60x bytes=(9.87e+06, 1.87e+07) valuediff=0.00e+00 gradrel=1.24e-16
+large    p=1024 n= 256 K=2 dense=  0.1342 s lemma=  0.1235 s speedup= 1.09x bytes=(3.86e+07, 7.31e+07) valuediff=0.00e+00 gradrel=1.60e-16
+xlarge   p=2048 n= 512 K=2 dense=  1.0541 s lemma=  0.4880 s speedup= 2.16x bytes=(1.53e+08, 2.89e+08) valuediff=0.00e+00 gradrel=1.72e-16
 ```
 
 Interpretation: exact lemma is slower on the smoke cell but faster on the
