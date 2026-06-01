@@ -794,7 +794,7 @@ function _structured_poisson_implicit_value_grad(θ::AbstractVector,
         maxiter::Integer = 50, tol::Real = 1e-8,
         U_init = nothing, Z_init = nothing,
         U_store = nothing, Z_store = nothing)
-    if logdet_method == :dense
+    if logdet_method == :dense || (logdet_method == :auto && p <= dense_cutoff)
         return _structured_poisson_block_implicit_value_grad(
             θ, Y, precision, p, K; sigma2 = sigma2, dense_cutoff = dense_cutoff,
             probes = probes, rng = rng, nprobes = nprobes,

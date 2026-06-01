@@ -1,5 +1,96 @@
 # Check Log
 
+## 2026-06-01 - Structured Poisson Auto Dense Gradient
+
+Branch: `codex/non-gaussian-fitter-gradients`
+
+Head before local commit: `fecc69c`.
+
+### Scope
+
+- Routed `_structured_poisson_implicit_value_grad(...; logdet_method = :auto)`
+  to the dense block implicit gradient when `p <= dense_cutoff`.
+- Added regression coverage that checks the `:auto` value and gradient match
+  the exact dense block path and that the tiny auto path stays below a generous
+  allocation ceiling. The allocation guard catches the previous AD fallback.
+- Kept the public API unchanged. No edits to `src/sparse_phy_grad.jl`,
+  `src/em_phylo.jl`, or the PR #59 formula/family/CIs lane.
+
+### Verification
+
+Focused structured command:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_schur.jl"); include("test/test_structured_poisson_laplace.jl")'
+```
+
+Result:
+
+```text
+structured Schur operator                     | 43/43 pass
+structured Schur SLQ logdet                   | 18/18 pass
+structured Poisson Laplace prototype          | 13/13 pass
+structured Poisson implicit gradient          | 19/19 pass
+structured Poisson internal fitter            | 23/23 pass
+structured Poisson sigma-to-zero reduction    | 1/1 pass
+```
+
+Focused total: 117 pass, 0 fail, 0 error.
+
+Core command:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. Manual tally from emitted summaries: 2331 pass, 1 existing
+broken sparse-phy precision placeholder, 2 expected direct-env quality
+placeholders, 0 fail, 0 error.
+
+Full command:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Manual tally from emitted summaries: 2343 pass, 1 existing broken sparse-phy
+precision placeholder, quality 12/12 pass, 0 fail, 0 error.
+
+### Benchmark And Allocation Probe
+
+Fixed-seed warmed probe, `p = 8`, `n = 12`, `K = 2`, comparing the old direct
+AD scaffold (`_structured_poisson_implicit_value_grad_ad`) to the routed
+`logdet_method = :auto` path:
+
+```text
+p=8 n=12 K=2 old_ad_auto=0.000429 s fast_auto=8.762e-5 s speedup=4.896x valuediff=0.0 gradmax=1.11e-15
+old_alloc_bytes=3936824 new_alloc_bytes=31168 allocation_reduction=126.3x
+```
+
+Interpretation: this is a narrow constant-factor route fix, not a new
+asymptotic algorithm. It prevents small/medium `:auto` cells from paying the
+old joint ForwardDiff implicit-gradient scaffold after the dense cutoff was
+raised to `p <= 2048`.
+
+### Hygiene
+
+- `git diff --check`: clean after the dev-log update.
+- Private-source trace scan over tracked public artifacts: clean.
+- Placeholder rerun/fill-result scan over this check-log entry and the
+  matching after-task report: clean.
+- Stale-wording/performance scans: expected historical and command-pattern
+  hits only; this slice adds no public R `gllvmTMB` comparison claim and no
+  20x-100x claim.
+- GitHub lane check: PR #59 remains the separate draft
+  `claude/package-work-catchup-mQiZM` lane; this slice does not modify it.
+
 ## 2026-05-31 — Dense-Laplace Mode Workspace For Scalar-Aux Fits
 
 Branch: `codex/non-gaussian-fitter-gradients`
