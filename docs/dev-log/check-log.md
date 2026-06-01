@@ -1157,3 +1157,136 @@ gh pr list --limit 5 --json number,title,headRefName,isDraft,state
 ```
 
 No issue or PR was modified.
+
+## 2026-06-01 — Structured Schur Logdet Benchmark Harness
+
+### Scope
+
+Added a Julia-only benchmark harness for the structured non-Gaussian determinant
+lane. The script compares exact dense `logdet(S_u)` against frozen-probe SLQ on
+the internal `_SchurUOperator`, records the dense/SLQ speedup and SLQ relative
+error, and can write row-level CSV output. This does not change package source
+or public APIs.
+
+### Commands
+
+Smoke run:
+
+```sh
+julia --project=. --startup-file=no bench/structured_schur_logdet_bench.jl --smoke --reps=3
+```
+
+Result:
+
+```text
+Structured Schur logdet benchmark (smoke); reps=3, warmups=3
+smoke    p=  80 n=  12 K=2 dense=  0.0008 s  slq=  0.0009 s  speedup=   0.95x  relerr=5.371e-03
+```
+
+Full local grid:
+
+```sh
+julia --project=. --startup-file=no bench/structured_schur_logdet_bench.jl --full --reps=3
+```
+
+Result:
+
+| cell | p | n | K | probes | steps | dense (s) | SLQ (s) | dense / SLQ | relative error |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| small | 80 | 20 | 2 | 4 | 20 | 0.0013 | 0.0013 | 0.96x | 4.382e-3 |
+| medium | 160 | 40 | 2 | 4 | 20 | 0.0083 | 0.0043 | 1.94x | 2.776e-3 |
+| large | 320 | 80 | 3 | 4 | 20 | 0.0743 | 0.0189 | 3.92x | 3.018e-3 |
+| frontier | 640 | 160 | 3 | 4 | 20 | 0.5886 | 0.0734 | 8.02x | 2.825e-4 |
+
+Accuracy-oriented probe sweep:
+
+```sh
+julia --project=. --startup-file=no bench/structured_schur_logdet_bench.jl --full --cells=large,frontier --reps=3 --nprobes=8 --lanczos-steps=20
+```
+
+Result:
+
+| cell | p | n | K | probes | steps | dense (s) | SLQ (s) | dense / SLQ | relative error |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| large | 320 | 80 | 3 | 8 | 20 | 0.0764 | 0.0375 | 2.04x | 4.717e-4 |
+| frontier | 640 | 160 | 3 | 8 | 20 | 0.5849 | 0.1440 | 4.06x | 6.225e-4 |
+
+CSV smoke path:
+
+```sh
+julia --project=. --startup-file=no bench/structured_schur_logdet_bench.jl --smoke --reps=1 --out=/tmp/structured-schur-smoke.csv
+head -2 /tmp/structured-schur-smoke.csv
+```
+
+Result: CSV file written with the expected header and one smoke row.
+
+### Test Suites
+
+Focused structured test:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_schur.jl")'
+```
+
+Result:
+
+```text
+structured Schur operator     | 22/22 pass
+structured Schur SLQ logdet   | 9/9 pass
+```
+
+Core suite:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. Manual tally from emitted `Test Summary` blocks:
+2257 pass, 1 existing broken sparse-phy precision placeholder, 2 expected
+quality placeholders in the direct core environment, 0 fail, 0 error.
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Manual tally from emitted `Test Summary` blocks: 2257 pass, 1 existing broken
+sparse-phy precision placeholder, 0 fail, 0 error.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src docs/dev-log/check-log.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p" README.md docs/src docs/dev-log/check-log.md bench CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+<private-source trace scan over tracked repo content>
+```
+
+Results:
+
+- `git diff --check`: clean.
+- No private-source trace in tracked repo content.
+- The stale-wording scan still finds the user-provided AGENTS.md "Gaussian only"
+  snapshot; not edited because AGENTS.md changes require maintainer approval.
+- Performance-claim scan finds this new benchmark entry plus existing Gaussian /
+  non-Gaussian speedup records. The new claim is local to the structured Schur
+  determinant benchmark and is not a fitted-model speed claim.
+
+Open PR / collision check:
+
+```text
+gh pr list --limit 5 --json number,title,headRefName,isDraft,state
+[#59 draft: gllvmTMB catch-up: Delta-Gamma + zero-inflated (ZIP/ZINB) families + non-Gaussian CIs]
+```
+
+No issue or PR was modified.

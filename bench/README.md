@@ -71,6 +71,33 @@ parameter-count conventions are pinned down. Ordinal rows are marked
 while `gllvmTMB` exposes `ordinal_probit()`, so those rows are timing smoke
 rather than likelihood parity.
 
+## Structured Schur Logdet
+
+`bench/structured_schur_logdet_bench.jl` is the Julia-only benchmark for the
+planned large-`p` structured non-Gaussian determinant path. It constructs a
+sparse tridiagonal precision plus per-site weights, then compares exact dense
+`logdet(S_u)` against frozen-probe SLQ on the internal Schur operator.
+
+Cheap smoke run:
+
+```bash
+julia --project=. bench/structured_schur_logdet_bench.jl --smoke
+```
+
+Full local grid:
+
+```bash
+julia --project=. bench/structured_schur_logdet_bench.jl --full --out=structured-schur-logdet.csv
+```
+
+Rows report construction time, dense logdet time, SLQ time, dense/SLQ speedup,
+and SLQ relative error. The default grid uses 4 frozen Rademacher probes and 20
+Lanczos steps, which is intentionally a speed-oriented operating point; use
+`--nprobes=` and `--lanczos-steps=` to inspect the accuracy/speed trade-off.
+This benchmark is not an R `gllvmTMB` parity test; it is the fast-algorithm
+workbench for deciding when the structured determinant should switch from exact
+dense to approximate SLQ.
+
 ## JIT vs steady-state
 
 `BenchmarkTools.@benchmarkable` does a single untimed warmup call
