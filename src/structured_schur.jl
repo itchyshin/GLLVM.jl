@@ -181,13 +181,42 @@ function _schur_u_dense(op::_SchurUOperator)
     y = zeros(T, p)
     tmp = zeros(T, size(op.Lambda, 2))
     sol = similar(tmp)
+    return _schur_u_dense!(S, op, e, y, tmp, sol)
+end
+
+function _symmetrize_schur_dense!(S::AbstractMatrix)
+    p = size(S, 1)
+    size(S, 2) == p || throw(DimensionMismatch("S must be square; got $(size(S))"))
+    half = one(eltype(S)) / 2
     @inbounds for j in 1:p
-        fill!(e, zero(T))
+        for i in (j + 1):p
+            v = (S[i, j] + S[j, i]) * half
+            S[i, j] = v
+            S[j, i] = v
+        end
+    end
+    return Symmetric(S)
+end
+
+function _schur_u_dense!(S::AbstractMatrix, op::_SchurUOperator,
+        e::AbstractVector, y::AbstractVector, tmp::AbstractVector, sol::AbstractVector)
+    p, K = size(op.Lambda)
+    size(S) == (p, p) || throw(DimensionMismatch("S must be $(p)×$(p); got $(size(S))"))
+    length(e) == p || throw(DimensionMismatch("e must have length $p; got $(length(e))"))
+    length(y) == p || throw(DimensionMismatch("y must have length $p; got $(length(y))"))
+    length(tmp) == K || throw(DimensionMismatch("tmp must have length $K; got $(length(tmp))"))
+    length(sol) == K || throw(DimensionMismatch("sol must have length $K; got $(length(sol))"))
+    T = eltype(op)
+    fill!(e, zero(T))
+    @inbounds for j in 1:p
         e[j] = one(T)
         _schur_u_mul!(y, op, e, tmp, sol)
-        S[:, j] .= y
+        e[j] = zero(T)
+        for i in 1:p
+            S[i, j] = y[i]
+        end
     end
-    return Symmetric((S + S') ./ 2)
+    return _symmetrize_schur_dense!(S)
 end
 
 function _rademacher_probes(rng::AbstractRNG, p::Integer, nprobes::Integer)

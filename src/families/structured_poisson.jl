@@ -132,8 +132,7 @@ function _structured_poisson_mode(Y::AbstractMatrix, Λ::AbstractMatrix,
         end
 
         if mode_solve == :dense
-            Sdense = Matrix(_schur_u_dense(op))
-            Csu = cholesky(Symmetric(Sdense))
+            Csu = cholesky(_schur_u_dense(op))
             copyto!(ΔU, rhsU)
             ldiv!(Csu, ΔU)
         elseif mode_solve == :cg

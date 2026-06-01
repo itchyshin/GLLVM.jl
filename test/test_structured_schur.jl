@@ -19,6 +19,13 @@ using GLLVM, Test, Random, LinearAlgebra, SparseArrays
     @test sparse_dense ≈ dense atol = 1e-10 rtol = 1e-10
     @test minimum(eigvals(Symmetric(dense))) > 0
 
+    S_work = Matrix{Float64}(undef, p, p)
+    dense_work = Matrix(GLLVM._schur_u_dense!(
+        S_work, op, zeros(p), zeros(p), zeros(K), zeros(K)))
+    @test dense_work ≈ dense atol = 1e-10 rtol = 1e-10
+    @test_throws DimensionMismatch GLLVM._schur_u_dense!(
+        zeros(p + 1, p), op, zeros(p), zeros(p), zeros(K), zeros(K))
+
     y = zeros(p)
     y_sparse = zeros(p)
     for _ in 1:5

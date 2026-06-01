@@ -1158,6 +1158,121 @@ gh pr list --limit 5 --json number,title,headRefName,isDraft,state
 
 No issue or PR was modified.
 
+## 2026-06-01 — Dense Schur Materialization Allocation Trim
+
+### Scope
+
+Reduced dense Schur materialization overhead in the internal structured
+Poisson Laplace path. `_schur_u_dense` now fills and symmetrizes caller-owned
+storage through `_schur_u_dense!`, avoiding the extra `S + S'` and broadcast
+temporaries. The exact dense mode solve now factors the returned `Symmetric`
+Schur matrix directly rather than first copying it back to a plain `Matrix`.
+
+### Commands
+
+Focused structured tests:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_schur.jl"); include("test/test_structured_poisson_laplace.jl")'
+```
+
+Result:
+
+```text
+structured Schur operator                    | 36/36 pass
+structured Schur SLQ logdet                  | 9/9 pass
+structured Poisson Laplace prototype         | 13/13 pass
+structured Poisson sigma-to-zero reduction   | 1/1 pass
+```
+
+Dense Schur materialization microbenchmark, fixed seed, BLAS threads set to 1:
+
+| p | n | K | dense build (s) | dense build bytes | build + logdet (s) | build + logdet bytes |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 80 | 80 | 2 | 0.004513 | 59,280 | 0.004519 | 110,528 |
+| 160 | 120 | 2 | 0.024074 | 220,528 | 0.024098 | 425,376 |
+| 320 | 160 | 3 | 0.156511 | 850,384 | 0.147645 | 1,669,632 |
+
+Compared with the pre-slice checkpoint in the same session:
+
+| p | dense build bytes before | dense build bytes after | build + logdet bytes before | build + logdet bytes after |
+| ---: | ---: | ---: | ---: | ---: |
+| 80 | 162,768 | 59,280 | 214,144 | 110,528 |
+| 160 | 630,256 | 220,528 | 835,088 | 425,376 |
+| 320 | 2,488,912 | 850,384 | 3,308,144 | 1,669,632 |
+
+Full structured Poisson objective benchmark:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_laplace_bench.jl --full --reps=5 --warmups=3 --out=/tmp/structured-poisson-laplace-dense-copyless.csv
+```
+
+Result:
+
+| cell | p | n | K | dense (s) | CG + dense (s) | CG + SLQ (s) | dense / CG+dense | dense / CG+SLQ | CG+dense abs diff | CG+SLQ abs diff |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| small | 40 | 40 | 2 | 0.0047 | 0.0020 | 0.0028 | 2.40x | 1.71x | 9.55e-11 | 4.73e-1 |
+| medium | 80 | 80 | 2 | 0.0420 | 0.0103 | 0.0093 | 4.07x | 4.49x | 4.91e-11 | 6.36e-1 |
+| large | 160 | 120 | 2 | 0.1661 | 0.0363 | 0.0242 | 4.58x | 6.87x | 0.00e+00 | 9.13e-1 |
+
+The ratio speedups are objective-level internal comparisons, not fitted-model
+or R-parity claims. The exact CG path remains the reference-quality fast path;
+SLQ is approximate and still needs optimizer-stability work before production
+use.
+
+### Test Suites
+
+Core suite:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. Manual tally from emitted `Test Summary` blocks:
+2273 pass, 1 existing broken sparse-phy precision placeholder, 2 expected
+quality placeholders in the direct core environment, 0 fail, 0 error.
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Manual tally from emitted `Test Summary` blocks: 2285 pass, 1 existing broken
+sparse-phy precision placeholder, 0 fail, 0 error.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src docs/dev-log/check-log.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p|100x|100.?x" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task bench CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+git grep -n -E 'JABE|D-26-00105|CloudStorage|OneDrive|Reviewing/TODO|private PDF|uploaded PDF|pasted-text|417bec04|Library/CloudStorage' -- . ':!docs/dev-log/check-log.md'
+gh pr list --limit 5 --json number,title,headRefName,isDraft,state
+```
+
+Results:
+
+- `git diff --check`: clean.
+- No private-source trace in tracked repo content.
+- The stale-wording scan still finds the user-provided AGENTS.md "Gaussian only"
+  snapshot and prior check-log entries; not edited because AGENTS.md changes
+  require maintainer approval.
+- Performance-claim scan finds this new benchmark entry plus existing Gaussian /
+  non-Gaussian speedup records. The new numbers are internal objective and
+  allocation timings, not fitted-model or R-parity claims.
+- Open PR collision check still finds draft PR #59 as the separate
+  non-Gaussian CI / extra-family lane.
+
 ## 2026-06-01 — Structured Schur Workspace And Sparse Precision Logdet
 
 ### Scope
