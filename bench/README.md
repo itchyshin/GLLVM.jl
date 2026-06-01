@@ -143,6 +143,10 @@ Full local grid:
 julia --project=. bench/structured_poisson_fit_bench.jl --full --out=structured-poisson-fit.csv
 ```
 
+The fitter defaults to the private implicit-gradient scaffold. Use
+`--gradient=finite` to time the previous Optim finite-difference path on the
+same cells.
+
 Rows report fitted wall time, final log-likelihood agreement, objective-call
 counts, and dense/CG fitted speedup. This is still not an R `gllvmTMB` parity
 test; it is the bridge from objective-level timing to fitted structured-model

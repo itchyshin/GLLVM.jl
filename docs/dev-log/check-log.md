@@ -1158,6 +1158,143 @@ gh pr list --limit 5 --json number,title,headRefName,isDraft,state
 
 No issue or PR was modified.
 
+## 2026-06-01 — Structured Poisson Implicit Fitted Gradient
+
+### Scope
+
+Added a private implicit value/gradient helper for the fixed-covariance
+structured Poisson Laplace objective. The helper builds the joint random-effect
+mode equation for `u` and all site-level `z` values, applies the
+implicit-function adjoint, and makes the private fitted helper default to
+`gradient=:implicit`. The old Optim finite-difference path remains available
+with `gradient=:finite`.
+
+### Commands
+
+Focused structured tests:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_schur.jl"); include("test/test_structured_poisson_laplace.jl")'
+```
+
+Result:
+
+```text
+structured Schur operator                    | 36/36 pass
+structured Schur SLQ logdet                  | 9/9 pass
+structured Poisson Laplace prototype         | 13/13 pass
+structured Poisson implicit gradient         | 4/4 pass
+structured Poisson internal fitter           | 18/18 pass
+structured Poisson sigma-to-zero reduction   | 1/1 pass
+```
+
+Gradient verification:
+
+```text
+structured implicit gradient max abs diff vs central finite difference: 2.32e-09
+threshold: 1e-6
+```
+
+Structured Poisson fitted benchmark, finite-difference gradient:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_fit_bench.jl --full --gradient=finite --out=/tmp/structured-poisson-fit-implicit-slice-finite-full.csv
+```
+
+Result:
+
+| cell | p | n | K | iterations | dense (s) | CG (s) | dense / CG | abs loglik diff | calls |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| small | 5 | 8 | 1 | 6 | 0.0069 | 0.0060 | 1.15x | 1.02e-09 | 8/8 |
+| medium | 8 | 12 | 2 | 6 | 0.0334 | 0.0278 | 1.20x | 4.71e-08 | 9/9 |
+
+Structured Poisson fitted benchmark, implicit gradient:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_fit_bench.jl --full --gradient=implicit --out=/tmp/structured-poisson-fit-implicit-slice-implicit-full.csv
+```
+
+Result:
+
+| cell | p | n | K | iterations | dense (s) | CG (s) | dense / CG | abs loglik diff | calls |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| small | 5 | 8 | 1 | 6 | 0.0018 | 0.0018 | 1.00x | 9.24e-13 | 8/8 |
+| medium | 8 | 12 | 2 | 6 | 0.0058 | 0.0057 | 1.01x | 2.67e-12 | 9/9 |
+
+Before/after gradient speedup from the benchmark above:
+
+| cell | path | finite (s) | implicit (s) | speedup |
+| --- | --- | ---: | ---: | ---: |
+| small | dense | 0.0069 | 0.0018 | 3.83x |
+| small | CG | 0.0060 | 0.0018 | 3.33x |
+| medium | dense | 0.0334 | 0.0058 | 5.76x |
+| medium | CG | 0.0278 | 0.0057 | 4.88x |
+
+Exploratory warm large-ish CG cells:
+
+| p | n | K | finite (s) | implicit (s) | speedup | abs loglik diff |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 12 | 16 | 2 | 0.0329-0.0348 | 0.0133-0.0134 | 2.45x-2.60x | 2.88e-07 |
+| 20 | 25 | 2 | 0.1535 | 0.0714 | 2.15x | 1.60e-07 |
+
+Interpretation: the private structured fitted path now avoids Optim
+finite-difference gradients by default on the dense reference objective. This
+is the first true structured implicit-gradient slice, but the generic joint
+ForwardDiff Jacobian is still a scaffold; the production large-p path needs the
+matrix-free structured adjoint.
+
+Full core suite:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result:
+
+```text
+2295 pass, 3 expected broken placeholders, 0 fail, 0 error.
+Notable blocks:
+structured Poisson implicit gradient | 4/4 pass
+structured Poisson internal fitter   | 18/18 pass
+quality (direct environment)         | 2 expected broken
+```
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+Testing GLLVM tests passed.
+2307 pass, 1 expected broken placeholder, 0 fail, 0 error.
+quality | 12/12 pass
+```
+
+Final scans:
+
+```sh
+git diff --check
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src docs/dev-log/check-log.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p|100x|100.?x" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task bench CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+<private-source trace scan over tracked repo content>
+```
+
+Result:
+
+- `git diff --check`: clean.
+- Stale-wording scan: known historical check-log entries plus the
+  user-provided AGENTS.md "Gaussian only" snapshot; no new public API/status
+  claim was added by this private gradient scaffold.
+- Performance-claim scan: existing Gaussian/gllvmTMB speedup claims and
+  historical non-Gaussian/structured speed records; the new text explicitly
+  labels the fitted speedup as a private structured implicit-gradient scaffold,
+  not the final 20x-100x large-p structured algorithm.
+- Private-source trace scan: no matches in tracked repo content checked for
+  this slice.
+
 ## 2026-06-01 — Structured Poisson Fitted Mode Cache
 
 ### Scope

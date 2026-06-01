@@ -17,7 +17,7 @@ using GLLVM
 
 const CSV_HEADER = [
     "timestamp", "mode", "cell", "p", "n", "K", "iterations", "reps",
-    "dense_seconds", "cg_seconds", "speedup_dense_over_cg",
+    "gradient", "dense_seconds", "cg_seconds", "speedup_dense_over_cg",
     "dense_loglik", "cg_loglik", "absdiff_loglik",
     "dense_objective_calls", "cg_objective_calls",
 ]
@@ -40,6 +40,7 @@ function usage()
     Options:
       --cells=a,b,c      Comma-separated cell subset.
       --iterations=N     Optimizer iteration budget (default: 4 smoke, 6 full).
+      --gradient=MODE    :finite or :implicit (default: :implicit).
       --reps=N           Measured repetitions (default: 1 smoke, 3 full).
       --warmups=N        Warmup repetitions (default: 1).
       --seed=N           Base random seed (default: 9401).
@@ -56,6 +57,7 @@ function parse_args(args)
     warmups = 1
     seed = 9401
     out = nothing
+    gradient = :implicit
 
     for arg in args
         if arg == "--help" || arg == "-h"
@@ -69,6 +71,11 @@ function parse_args(args)
             cells = String.(split(arg[(lastindex("--cells=") + 1):end], ","))
         elseif startswith(arg, "--iterations=")
             iterations = parse(Int, arg[(lastindex("--iterations=") + 1):end])
+        elseif startswith(arg, "--gradient=")
+            value = Symbol(arg[(lastindex("--gradient=") + 1):end])
+            value in (:finite, :implicit) || throw(ArgumentError(
+                "--gradient must be finite or implicit; got $value"))
+            gradient = value
         elseif startswith(arg, "--reps=")
             reps = parse(Int, arg[(lastindex("--reps=") + 1):end])
         elseif startswith(arg, "--warmups=")
@@ -85,7 +92,7 @@ function parse_args(args)
     iterations === nothing && (iterations = mode == "full" ? 6 : 4)
     reps === nothing && (reps = mode == "full" ? 3 : 1)
     return (mode = mode, cells = cells, iterations = iterations, reps = reps,
-            warmups = warmups, seed = seed, out = out)
+            warmups = warmups, seed = seed, out = out, gradient = gradient)
 end
 
 function select_cells(mode::String, wanted)
@@ -129,7 +136,8 @@ function time_fit(Y, precision, cell, mode_solve, args)
         value = GLLVM._fit_structured_poisson_laplace(
             Y, precision; K = cell.K, sigma2 = 0.5, mode_solve = mode_solve,
             logdet_method = :dense, iterations = args.iterations,
-            g_tol = 1e-4, cg_tol = 1e-10, maxiter = 80, tol = 1e-9)
+            g_tol = 1e-4, cg_tol = 1e-10, maxiter = 80, tol = 1e-9,
+            gradient = args.gradient)
     end
     times = Float64[]
     for _ in 1:args.reps
@@ -137,7 +145,8 @@ function time_fit(Y, precision, cell, mode_solve, args)
         elapsed = @elapsed value = GLLVM._fit_structured_poisson_laplace(
             Y, precision; K = cell.K, sigma2 = 0.5, mode_solve = mode_solve,
             logdet_method = :dense, iterations = args.iterations,
-            g_tol = 1e-4, cg_tol = 1e-10, maxiter = 80, tol = 1e-9)
+            g_tol = 1e-4, cg_tol = 1e-10, maxiter = 80, tol = 1e-9,
+            gradient = args.gradient)
         push!(times, elapsed)
     end
     return (fit = value, seconds = median(times))
@@ -175,6 +184,7 @@ function run_cell(cell, args, index)
         "K" => cell.K,
         "iterations" => args.iterations,
         "reps" => args.reps,
+        "gradient" => args.gradient,
         "dense_seconds" => dense.seconds,
         "cg_seconds" => cg.seconds,
         "speedup_dense_over_cg" => dense.seconds / cg.seconds,
@@ -197,7 +207,7 @@ function main()
     args = parse_args(ARGS)
     cells = select_cells(args.mode, args.cells)
     rows = Dict{String, Any}[]
-    println("Structured Poisson fitted benchmark ($(args.mode)); reps=$(args.reps), warmups=$(args.warmups), iterations=$(args.iterations)")
+    println("Structured Poisson fitted benchmark ($(args.mode)); reps=$(args.reps), warmups=$(args.warmups), iterations=$(args.iterations), gradient=$(args.gradient)")
     for (idx, cell) in enumerate(cells)
         row = run_cell(cell, args, idx)
         push!(rows, row)

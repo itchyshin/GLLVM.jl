@@ -249,6 +249,112 @@ function _structured_poisson_marginal_loglik_laplace(Y::AbstractMatrix,
     return value
 end
 
+function _structured_poisson_pack_mode(U::AbstractVector, Z::AbstractMatrix)
+    return vcat(U, vec(Z))
+end
+
+function _structured_poisson_unpack_mode(x::AbstractVector, p::Integer,
+        K::Integer, n::Integer)
+    m = p + K * n
+    length(x) == m || throw(ArgumentError(
+        "structured Poisson mode vector has length $(length(x)); expected $m"))
+    U = @view x[1:p]
+    Z = reshape(@view(x[(p + 1):m]), K, n)
+    return U, Z
+end
+
+function _structured_poisson_qF(Y::AbstractMatrix, precision::AbstractMatrix,
+        x::AbstractVector, θ::AbstractVector, p::Integer, K::Integer;
+        sigma2::Real, logdet_method::Symbol = :dense,
+        dense_cutoff::Integer = 256, probes = nothing,
+        rng::AbstractRNG = Random.default_rng(), nprobes::Integer = 16,
+        lanczos_steps::Integer = 40, reorth::Bool = false)
+    n = size(Y, 2)
+    U, Z = _structured_poisson_unpack_mode(x, p, K, n)
+    β, Λ = _structured_poisson_unpackθ(θ, p, K)
+    _structured_poisson_check_dims(Y, Λ, β, precision, sigma2)
+
+    T = promote_type(eltype(x), eltype(θ), typeof(float(sigma2)))
+    L = _matrix_storage(Λ, T)
+    b = Vector{T}(β)
+    Q = _schur_precision_storage(precision, eltype(precision))
+    S = Matrix{T}(undef, p, n)
+    W = Matrix{T}(undef, p, n)
+    ℓ = _structured_poisson_lsw!(S, W, Y, L, b, U, Z)
+
+    op = _SchurUOperator(Q, L, W; sigma2 = sigma2)
+    logdet_Su = _schur_u_logdet(op; method = logdet_method,
+        dense_cutoff = dense_cutoff, probes = probes, rng = rng,
+        nprobes = nprobes, lanczos_steps = lanczos_steps, reorth = reorth)
+    logdet_A = zero(T)
+    @inbounds for i in 1:n
+        logdet_A += logdet(op.Achols[i])
+    end
+
+    Qu = Vector{T}(undef, p)
+    mul!(Qu, Q, U)
+    invsigma2 = inv(T(sigma2))
+    quad_u = invsigma2 * dot(U, Qu)
+    quad_z = sum(abs2, Z)
+    logdet_Qscaled = T(_structured_poisson_logdet_precision(precision)) -
+                     p * log(T(sigma2))
+    value = ℓ - T(0.5) * (quad_z + quad_u + logdet_A + logdet_Su) +
+            T(0.5) * logdet_Qscaled
+
+    F = Vector{T}(undef, p + K * n)
+    @inbounds for t in 1:p
+        F[t] = -invsigma2 * Qu[t]
+        for i in 1:n
+            F[t] += S[t, i]
+        end
+    end
+    offset = p
+    @inbounds for i in 1:n
+        for k in 1:K
+            g = -Z[k, i]
+            for t in 1:p
+                g += L[t, k] * S[t, i]
+            end
+            F[offset + (i - 1) * K + k] = g
+        end
+    end
+    return vcat(value, F)
+end
+
+function _structured_poisson_implicit_value_grad(θ::AbstractVector,
+        Y::AbstractMatrix, precision::AbstractMatrix, p::Integer, K::Integer;
+        sigma2::Real, logdet_method::Symbol = :dense,
+        dense_cutoff::Integer = 256, probes = nothing,
+        rng::AbstractRNG = Random.default_rng(), nprobes::Integer = 16,
+        lanczos_steps::Integer = 40, reorth::Bool = false,
+        mode_solve::Symbol = :dense, cg_tol::Real = 1e-8,
+        cg_maxiter::Union{Nothing, Integer} = nothing,
+        maxiter::Integer = 50, tol::Real = 1e-8,
+        U_init = nothing, Z_init = nothing,
+        U_store = nothing, Z_store = nothing)
+    β, Λ = _structured_poisson_unpackθ(θ, p, K)
+    mode = _structured_poisson_mode(
+        Y, Λ, β, precision; sigma2 = sigma2, maxiter = maxiter, tol = tol,
+        mode_solve = mode_solve, cg_tol = cg_tol, cg_maxiter = cg_maxiter,
+        U_init = U_init, Z_init = Z_init, U_store = U_store, Z_store = Z_store)
+    x0 = _structured_poisson_pack_mode(mode.U, mode.Z)
+    m = length(x0)
+    qF_from_all = allx -> _structured_poisson_qF(
+        Y, precision, allx[1:m], allx[(m + 1):end], p, K;
+        sigma2 = sigma2, logdet_method = logdet_method,
+        dense_cutoff = dense_cutoff, probes = probes, rng = rng,
+        nprobes = nprobes, lanczos_steps = lanczos_steps, reorth = reorth)
+    all0 = vcat(x0, θ)
+    J = ForwardDiff.jacobian(qF_from_all, all0)
+    qx = vec(J[1, 1:m])
+    qθ = vec(J[1, (m + 1):end])
+    Fx = J[2:end, 1:m]
+    Fθ = J[2:end, (m + 1):end]
+    adj = Fx' \ qx
+    grad = qθ - Fθ' * adj
+    return qF_from_all(all0)[1], grad
+end
+
 function _structured_poisson_initial_theta(Y::AbstractMatrix, K::Integer;
         β_init = nothing, Λ_init = nothing)
     p, n = size(Y)
@@ -322,7 +428,9 @@ Laplace prototype. It estimates only `β` and the lower-triangular loadings `Λ`
 for a supplied structured precision and variance scale; public formula/API
 wiring waits until the exact CG and determinant paths have fitted-model tests.
 By default, neighbouring objective probes reuse the previous fitted latent mode
-as a warm start through `mode_cache=true`.
+as a warm start through `mode_cache=true`, and L-BFGS uses the private
+implicit-gradient scaffold (`gradient=:implicit`) instead of Optim finite
+differences.
 """
 function _fit_structured_poisson_laplace(Y::AbstractMatrix{<:Integer},
         precision::AbstractMatrix; K::Integer, sigma2::Real,
@@ -334,7 +442,7 @@ function _fit_structured_poisson_laplace(Y::AbstractMatrix{<:Integer},
         reorth::Bool = false, mode_solve::Symbol = :cg,
         cg_tol::Real = 1e-8, cg_maxiter::Union{Nothing, Integer} = nothing,
         maxiter::Integer = 50, tol::Real = 1e-8,
-        mode_cache::Bool = true)
+        mode_cache::Bool = true, gradient::Symbol = :implicit)
     p, _ = size(Y)
     0 < K <= p || throw(ArgumentError("K must satisfy 0 < K <= p; got K=$K for p=$p"))
     _structured_poisson_check_dims(Y, zeros(Float64, p, K), zeros(Float64, p),
@@ -343,6 +451,8 @@ function _fit_structured_poisson_laplace(Y::AbstractMatrix{<:Integer},
         "mode_solve must be :dense or :cg; got $mode_solve"))
     logdet_method in (:auto, :dense, :slq) || throw(ArgumentError(
         "logdet_method must be :auto, :dense, or :slq; got $logdet_method"))
+    gradient in (:finite, :implicit) || throw(ArgumentError(
+        "gradient must be :finite or :implicit; got $gradient"))
 
     θ0 = _structured_poisson_initial_theta(Y, K; β_init = β_init, Λ_init = Λ_init)
     active_probes = if probes === nothing &&
@@ -366,9 +476,21 @@ function _fit_structured_poisson_laplace(Y::AbstractMatrix{<:Integer},
         lanczos_steps = lanczos_steps, reorth = reorth, mode_solve = mode_solve,
         cg_tol = cg_tol, cg_maxiter = cg_maxiter, maxiter = maxiter, tol = tol,
         U_init = Ucache, Z_init = Zcache, U_store = Ucache, Z_store = Zcache)
+    value_grad(θ) = _structured_poisson_implicit_value_grad(
+        θ, Y, precision, p, K; sigma2 = sigma2, logdet_method = logdet_method,
+        dense_cutoff = dense_cutoff, probes = active_probes, rng = rng,
+        nprobes = nprobes, lanczos_steps = lanczos_steps, reorth = reorth,
+        mode_solve = mode_solve, cg_tol = cg_tol, cg_maxiter = cg_maxiter,
+        maxiter = maxiter, tol = tol,
+        U_init = Ucache, Z_init = Zcache, U_store = Ucache, Z_store = Zcache)
+    negll_fg!(F, G, θ) = _penalized_negloglik_fg!(F, G, value_grad, θ)
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
-    res = Optim.optimize(negll, θ0, ls,
-        Optim.Options(g_tol = g_tol, iterations = iterations); autodiff = :finite)
+    opts = Optim.Options(g_tol = g_tol, iterations = iterations)
+    res = if gradient == :finite
+        Optim.optimize(negll, θ0, ls, opts; autodiff = :finite)
+    else
+        Optim.optimize(Optim.only_fg!(negll_fg!), θ0, ls, opts)
+    end
     θ̂ = Optim.minimizer(res)
     β̂, Λ̂ = _structured_poisson_unpackθ(θ̂, p, K)
     return (β = collect(β̂), Λ = Matrix(Λ̂), loglik = -Optim.minimum(res),
@@ -376,5 +498,5 @@ function _fit_structured_poisson_laplace(Y::AbstractMatrix{<:Integer},
             iterations = Optim.iterations(res), objective_calls = Optim.f_calls(res),
             gradient_calls = Optim.g_calls(res), mode_solve = mode_solve,
             logdet_method = logdet_method, sigma2 = float(sigma2),
-            mode_cache = mode_cache)
+            mode_cache = mode_cache, gradient = gradient)
 end

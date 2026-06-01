@@ -1,5 +1,18 @@
 using GLLVM, Test, Random, LinearAlgebra, SparseArrays, Distributions
 
+function structured_central_difference_gradient(f, theta; h = 1e-6)
+    g = similar(theta)
+    @inbounds for i in eachindex(theta)
+        step = h * max(1.0, abs(theta[i]))
+        theta_plus = copy(theta)
+        theta_minus = copy(theta)
+        theta_plus[i] += step
+        theta_minus[i] -= step
+        g[i] = (f(theta_plus) - f(theta_minus)) / (2 * step)
+    end
+    return g
+end
+
 @testset "structured Poisson Laplace prototype" begin
     Random.seed!(821)
     p, n, K = 6, 5, 2
@@ -47,6 +60,33 @@ using GLLVM, Test, Random, LinearAlgebra, SparseArrays, Distributions
         Y, Λ, β, precision; sigma2 = 0.6, mode_solve = :wat)
 end
 
+@testset "structured Poisson implicit gradient" begin
+    Random.seed!(824)
+    p, n, K = 4, 3, 1
+    β = fill(log(1.4), p)
+    Λ = 0.08 .* randn(p, K)
+    Y = rand.(Poisson.(exp.(β .+ 0.05 .* randn(p, n))))
+    precision = Symmetric(spdiagm(
+        -1 => fill(-0.10, p - 1),
+         0 => fill(1.25, p),
+         1 => fill(-0.10, p - 1)))
+    θ0 = vcat(β, GLLVM.pack_lambda(Λ))
+
+    loglik = θ -> GLLVM._structured_poisson_marginal_loglik_laplace(
+        Y, GLLVM.unpack_lambda(θ[(p + 1):end], p, K), θ[1:p], precision;
+        sigma2 = 0.5, logdet_method = :dense, mode_solve = :dense,
+        maxiter = 100, tol = 1e-12)
+    value, gimp = GLLVM._structured_poisson_implicit_value_grad(
+        θ0, Y, precision, p, K; sigma2 = 0.5, logdet_method = :dense,
+        mode_solve = :dense, maxiter = 100, tol = 1e-12)
+    gfd = structured_central_difference_gradient(loglik, θ0)
+
+    @test value ≈ loglik(θ0) atol = 1e-10 rtol = 1e-10
+    @test all(isfinite, gimp)
+    @test all(isfinite, gfd)
+    @test maximum(abs.(gimp .- gfd)) ≤ 1e-6
+end
+
 @testset "structured Poisson internal fitter" begin
     Random.seed!(823)
     p, n, K = 5, 8, 1
@@ -66,6 +106,10 @@ end
         Y, precision; K = K, sigma2 = 0.5, mode_solve = :cg,
         logdet_method = :dense, iterations = 4, g_tol = 1e-4,
         cg_tol = 1e-10, maxiter = 80, tol = 1e-9)
+    cg_finite = GLLVM._fit_structured_poisson_laplace(
+        Y, precision; K = K, sigma2 = 0.5, mode_solve = :cg,
+        logdet_method = :dense, iterations = 4, g_tol = 1e-4,
+        cg_tol = 1e-10, maxiter = 80, tol = 1e-9, gradient = :finite)
     cg_cold = GLLVM._fit_structured_poisson_laplace(
         Y, precision; K = K, sigma2 = 0.5, mode_solve = :cg,
         logdet_method = :dense, iterations = 4, g_tol = 1e-4,
@@ -74,16 +118,21 @@ end
     @test dense.loglik >= dense.initial_loglik - 1e-7
     @test cg.loglik >= cg.initial_loglik - 1e-7
     @test cg.loglik ≈ dense.loglik atol = 1e-5 rtol = 1e-5
+    @test cg.loglik ≈ cg_finite.loglik atol = 1e-5 rtol = 1e-5
     @test cg.loglik ≈ cg_cold.loglik atol = 1e-5 rtol = 1e-5
     @test cg.β ≈ dense.β atol = 1e-5 rtol = 1e-5
     @test cg.Λ ≈ dense.Λ atol = 1e-5 rtol = 1e-5
     @test cg.mode_cache === true
     @test cg_cold.mode_cache === false
+    @test cg.gradient === :implicit
+    @test cg_finite.gradient === :finite
     @test dense.objective_calls > 0
     @test cg.objective_calls > 0
 
     @test_throws ArgumentError GLLVM._fit_structured_poisson_laplace(
         Y, precision; K = 0, sigma2 = 0.5)
+    @test_throws ArgumentError GLLVM._fit_structured_poisson_laplace(
+        Y, precision; K = K, sigma2 = 0.5, gradient = :wat)
     @test_throws DimensionMismatch GLLVM._fit_structured_poisson_laplace(
         Y, precision; K = K, sigma2 = 0.5, β_init = zeros(p + 1))
     @test_throws DimensionMismatch GLLVM._structured_poisson_mode(
