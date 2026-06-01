@@ -82,6 +82,9 @@ end
     value_auto, gauto = GLLVM._structured_poisson_implicit_value_grad(
         θ0, Y, precision, p, K; sigma2 = 0.5, logdet_method = :auto,
         mode_solve = :dense, maxiter = 100, tol = 1e-12)
+    value_lemma, glemma = GLLVM._structured_poisson_implicit_value_grad(
+        θ0, Y, precision, p, K; sigma2 = 0.5, logdet_method = :lemma,
+        mode_solve = :dense, maxiter = 100, tol = 1e-12)
     full_basis = sqrt(float(p)) .* Matrix{Float64}(I, p, p)
     value_slq, gslq = GLLVM._structured_poisson_implicit_value_grad(
         θ0, Y, precision, p, K; sigma2 = 0.5, logdet_method = :slq,
@@ -101,17 +104,20 @@ end
 
     @test value ≈ loglik(θ0) atol = 1e-10 rtol = 1e-10
     @test value_auto ≈ value atol = 1e-10 rtol = 1e-10
+    @test value_lemma ≈ value atol = 1e-8 rtol = 1e-8
     @test value_slq ≈ value atol = 1e-8 rtol = 1e-8
     @test value_slq_cg ≈ value atol = 1e-8 rtol = 1e-8
     @test value_slq_lanczos ≈ value atol = 1e-8 rtol = 1e-8
     @test all(isfinite, gimp)
     @test all(isfinite, gauto)
+    @test all(isfinite, glemma)
     @test all(isfinite, gslq)
     @test all(isfinite, gslq_cg)
     @test all(isfinite, gslq_lanczos)
     @test all(isfinite, gfd)
     @test maximum(abs.(gimp .- gfd)) ≤ 1e-6
     @test maximum(abs.(gauto .- gimp)) ≤ 1e-10
+    @test maximum(abs.(glemma .- gimp)) ≤ 1e-6
     @test (@allocated GLLVM._structured_poisson_implicit_value_grad(
         θ0, Y, precision, p, K; sigma2 = 0.5, logdet_method = :auto,
         mode_solve = :dense, maxiter = 100, tol = 1e-12)) < 200_000
@@ -137,8 +143,12 @@ end
     cg_adj = GLLVM._structured_poisson_adjoint_solve(
         qx, Y, Λ, β, precision, mode.U, mode.Z; sigma2 = 0.5,
         mode_solve = :cg, cg_tol = 1e-12, cg_maxiter = 100)
+    woodbury_adj = GLLVM._structured_poisson_adjoint_solve(
+        qx, Y, Λ, β, precision, mode.U, mode.Z; sigma2 = 0.5,
+        mode_solve = :woodbury)
     @test maximum(abs.(schur_adj .- dense_adj)) ≤ 1e-8
     @test maximum(abs.(cg_adj .- dense_adj)) ≤ 1e-8
+    @test maximum(abs.(woodbury_adj .- dense_adj)) ≤ 1e-8
 end
 
 @testset "structured Poisson internal fitter" begin
@@ -159,6 +169,10 @@ end
     cg = GLLVM._fit_structured_poisson_laplace(
         Y, precision; K = K, sigma2 = 0.5, mode_solve = :cg,
         logdet_method = :dense, iterations = 4, g_tol = 1e-4,
+        cg_tol = 1e-10, maxiter = 80, tol = 1e-9)
+    lemma = GLLVM._fit_structured_poisson_laplace(
+        Y, precision; K = K, sigma2 = 0.5, mode_solve = :cg,
+        logdet_method = :lemma, iterations = 4, g_tol = 1e-4,
         cg_tol = 1e-10, maxiter = 80, tol = 1e-9)
     default_auto = GLLVM._fit_structured_poisson_laplace(
         Y, precision; K = K, sigma2 = 0.5, mode_solve = :cg,
@@ -192,6 +206,7 @@ end
     @test dense.loglik >= dense.initial_loglik - 1e-7
     @test cg.loglik >= cg.initial_loglik - 1e-7
     @test cg.loglik ≈ dense.loglik atol = 1e-5 rtol = 1e-5
+    @test lemma.loglik ≈ cg.loglik atol = 1e-5 rtol = 1e-5
     @test default_auto.loglik ≈ cg.loglik atol = 1e-5 rtol = 1e-5
     @test cg.loglik ≈ cg_finite.loglik atol = 1e-5 rtol = 1e-5
     @test cg.loglik ≈ cg_cold.loglik atol = 1e-5 rtol = 1e-5
@@ -201,6 +216,7 @@ end
     @test cg.mode_cache === true
     @test cg_cold.mode_cache === false
     @test default_auto.logdet_method === :auto
+    @test lemma.logdet_method === :lemma
     @test cg.gradient === :implicit
     @test cg_finite.gradient === :finite
     @test default_auto.trace_solve === :solve
@@ -216,6 +232,8 @@ end
         Y, precision; K = 0, sigma2 = 0.5)
     @test_throws ArgumentError GLLVM._fit_structured_poisson_laplace(
         Y, precision; K = K, sigma2 = 0.5, gradient = :wat)
+    @test_throws ArgumentError GLLVM._fit_structured_poisson_laplace(
+        Y, precision; K = K, sigma2 = 0.5, logdet_method = :wat)
     @test_throws ArgumentError GLLVM._fit_structured_poisson_laplace(
         Y, precision; K = K, sigma2 = 0.5, trace_solve = :wat)
     @test_throws DimensionMismatch GLLVM._fit_structured_poisson_laplace(

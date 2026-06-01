@@ -49,22 +49,22 @@ dense/sparse precision, and two dimension guardrails.
 Repeatable harness:
 
 ```text
-smoke    p=  80 n=  24 K=2 dense_setup=0.0002 woodbury_setup=0.0001 setup_speed=1.68x dense_batch=0.0007 woodbury_batch=0.0005 batch_speed=1.31x apply_err=2.22e-16 diag_err=4.16e-17
-giant    p=1024 n= 256 K=2 dense_setup=0.0437 woodbury_setup=0.0128 setup_speed=3.41x dense_batch=0.0352 woodbury_batch=0.0397 batch_speed=0.89x apply_err=2.08e-17 diag_err=6.07e-18
-xlarge   p=2048 n= 512 K=2 dense_setup=0.1554 woodbury_setup=0.0464 setup_speed=3.35x dense_batch=0.1529 woodbury_batch=0.1019 batch_speed=1.50x apply_err=1.56e-17 diag_err=3.90e-18
+smoke    p=  80 n=  24 K=2 dense_setup=0.0015 woodbury_setup=0.0001 setup_speed=11.50x dense_batch=0.0011 woodbury_batch=0.0032 batch_speed=0.33x apply_err=2.22e-16 diag_err=4.16e-17
+giant    p=1024 n= 256 K=2 dense_setup=0.0224 woodbury_setup=0.0095 setup_speed=2.35x dense_batch=0.0208 woodbury_batch=0.0372 batch_speed=0.56x apply_err=2.08e-17 diag_err=6.07e-18
+xlarge   p=2048 n= 512 K=2 dense_setup=0.1181 woodbury_setup=0.0263 setup_speed=4.49x dense_batch=0.1229 woodbury_batch=0.1454 batch_speed=0.85x apply_err=1.56e-17 diag_err=3.90e-18
 ```
 
 CSV details for break-even cells:
 
 ```text
-giant:  dense_apply=0.0013703125 s, woodbury_apply=0.0028394585 s, dense_batch_bytes=33,616,240, woodbury_batch_bytes=59,576,264
-xlarge: dense_apply=0.0028924375 s, woodbury_apply=0.0015654165 s, dense_batch_bytes=134,340,976, woodbury_batch_bytes=236,584,176
+giant:  dense_apply=0.000106666 s, woodbury_apply=0.0002880625 s, dense_batch_bytes=33,616,240, woodbury_batch_bytes=59,576,264
+xlarge: dense_apply=0.0008307085 s, woodbury_apply=0.012988583 s, dense_batch_bytes=134,340,976, woodbury_batch_bytes=236,584,176
 ```
 
 Interpretation: the setup phase is a clear exact speedup, but the full
-all-site apply-plus-diagonal workload is mixed and uses more memory. This slice
-is therefore an exact enabling substrate, not a fitted-gradient speed
-promotion.
+all-site apply-plus-diagonal workload is slower in this rerun and uses more
+memory. This slice is therefore an exact enabling substrate, not a
+fitted-gradient speed promotion.
 
 ## R-Parity Verdict
 
@@ -142,7 +142,7 @@ slice; it does not change public family support or R parity surfaces.
 
 ## What Did Not Go Smoothly
 
-The full all-site Woodbury batch was mixed after including the exact diagonal
+The full all-site Woodbury batch was slower after including the exact diagonal
 and still allocated more than the dense reference. That is useful evidence:
 promotion needs a more fused trace formula, not just replacing dense inverse
 calls mechanically.
@@ -156,7 +156,8 @@ Fisher: exactness is proven to roundoff before any fitter policy changes.
 ## Remaining Risks
 
 - This helper is not wired into the fitted gradient path yet.
-- Full batch timing is mixed and memory-heavier on large cells.
+- Full batch timing is slower and memory-heavier on large cells in the latest
+  rerun.
 - The helper currently supports the determinant-lemma `K <= 3` path.
 
 ## Known Limitations

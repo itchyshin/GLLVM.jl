@@ -322,7 +322,7 @@ end
 function _structured_poisson_joint_solve(qx::AbstractVector, op::_SchurUOperator;
         mode_solve::Symbol = :dense, cg_tol::Real = 1e-8,
         cg_maxiter::Union{Nothing, Integer} = nothing,
-        Csu = nothing, rhs_scale = 1)
+        Csu = nothing, wb = nothing, rhs_scale = 1)
     p, K = size(op.Lambda)
     n = size(op.Wsites, 2)
     m = p + K * n
@@ -354,13 +354,18 @@ function _structured_poisson_joint_solve(qx::AbstractVector, op::_SchurUOperator
         C = Csu === nothing ? cholesky(_schur_u_dense(op)) : Csu
         copyto!(solU, rhsU)
         ldiv!(C, solU)
+    elseif mode_solve == :woodbury
+        Wb = wb === nothing ? _schur_u_woodbury(op) : wb
+        _schur_u_woodbury_inv_apply!(
+            reshape(solU, p, 1), Wb, reshape(rhsU, p, 1))
     elseif mode_solve == :cg
         cg = _schur_u_cg!(solU, op, rhsU; tol = cg_tol,
             maxiter = cg_maxiter === nothing ? max(100, 2 * p) : cg_maxiter)
         cg.converged || throw(ArgumentError(
             "structured Poisson joint CG failed to converge; residual $(cg.residual)"))
     else
-        throw(ArgumentError("mode_solve must be :dense or :cg; got $mode_solve"))
+        throw(ArgumentError(
+            "mode_solve must be :dense, :woodbury, or :cg; got $mode_solve"))
     end
 
     sol = Vector{T}(undef, m)
@@ -454,7 +459,8 @@ end
 
 function _structured_poisson_block_implicit_value_grad(θ::AbstractVector,
         Y::AbstractMatrix, precision::AbstractMatrix, p::Integer, K::Integer;
-        sigma2::Real, dense_cutoff::Integer = _STRUCTURED_SCHUR_DENSE_CUTOFF,
+        sigma2::Real, logdet_method::Symbol = :dense,
+        dense_cutoff::Integer = _STRUCTURED_SCHUR_DENSE_CUTOFF,
         probes = nothing,
         rng::AbstractRNG = Random.default_rng(), nprobes::Integer = 16,
         lanczos_steps::Integer = 40, reorth::Bool = false,
@@ -479,9 +485,24 @@ function _structured_poisson_block_implicit_value_grad(θ::AbstractVector,
     W = Matrix{T}(undef, p, n)
     ℓ = _structured_poisson_lsw!(S, W, Y, L, b, U, Z)
     op = _SchurUOperator(Q, L, W; sigma2 = sigma2)
-    Csu = cholesky(_schur_u_dense(op))
-    G = Matrix{T}(I, p, p)
-    ldiv!(Csu, G)
+    logdet_method in (:dense, :lemma) || throw(ArgumentError(
+        "exact structured Poisson block gradient requires :dense or :lemma logdet; got $logdet_method"))
+    use_lemma = logdet_method == :lemma
+    Csu = nothing
+    wb = nothing
+    G = nothing
+    Gdiag = nothing
+    logdet_Su = zero(T)
+    if use_lemma
+        wb = _schur_u_woodbury(op)
+        Gdiag = _schur_u_woodbury_inv_diag(wb)
+        logdet_Su = wb.logdet
+    else
+        Csu = cholesky(_schur_u_dense(op))
+        G = Matrix{T}(I, p, p)
+        ldiv!(Csu, G)
+        logdet_Su = logdet(Csu)
+    end
 
     logdet_A = zero(T)
     @inbounds for i in 1:n
@@ -493,7 +514,7 @@ function _structured_poisson_block_implicit_value_grad(θ::AbstractVector,
     quad_u = invsigma2 * dot(U, Qu)
     quad_z = sum(abs2, Z)
     logdet_Qscaled = _structured_poisson_logdet_precision(Q) - p * log(T(sigma2))
-    value = ℓ - T(0.5) * (quad_z + quad_u + logdet_A + logdet(Csu)) +
+    value = ℓ - T(0.5) * (quad_z + quad_u + logdet_A + logdet_Su) +
             T(0.5) * logdet_Qscaled
 
     q_u = zeros(T, p)
@@ -502,19 +523,43 @@ function _structured_poisson_block_implicit_value_grad(θ::AbstractVector,
     gradΛ = zeros(T, p, K)
     Usite = Matrix{T}(undef, p, K)
     GU = Matrix{T}(undef, p, K)
+    Uall = nothing
+    GUall = nothing
     C = Matrix{T}(undef, K, K)
     v = Vector{T}(undef, K)
     tmp = Vector{T}(undef, K)
     rz = Vector{T}(undef, K)
-
-    @inbounds for i in 1:n
-        for t in 1:p
-            for k in 1:K
-                Usite[t, k] = W[t, i] * L[t, k]
+    if use_lemma
+        Uall = Matrix{T}(undef, p, K * n)
+        GUall = similar(Uall)
+        @inbounds for i in 1:n
+            offset = (i - 1) * K
+            for t in 1:p
+                for k in 1:K
+                    Uall[t, offset + k] = W[t, i] * L[t, k]
+                end
             end
         end
-        mul!(GU, G, Usite)
-        mul!(C, transpose(Usite), GU)
+        _schur_u_woodbury_inv_apply!(GUall, wb, Uall)
+    end
+
+    @inbounds for i in 1:n
+        if use_lemma
+            cols = ((i - 1) * K + 1):(i * K)
+            Usite_i = view(Uall, :, cols)
+            GU_i = view(GUall, :, cols)
+            mul!(C, transpose(Usite_i), GU_i)
+        else
+            for t in 1:p
+                for k in 1:K
+                    Usite[t, k] = W[t, i] * L[t, k]
+                end
+            end
+            mul!(GU, G, Usite)
+            mul!(C, transpose(Usite), GU)
+            Usite_i = Usite
+            GU_i = GU
+        end
         M = op.Ainvs[i]
         for t in 1:p
             for k in 1:K
@@ -525,7 +570,7 @@ function _structured_poisson_block_implicit_value_grad(θ::AbstractVector,
                 v[k] = acc
             end
             for k in 1:K
-                acc = GU[t, k]
+                acc = GU_i[t, k]
                 for l in 1:K
                     acc -= C[k, l] * v[l]
                 end
@@ -538,9 +583,9 @@ function _structured_poisson_block_implicit_value_grad(θ::AbstractVector,
                 end
                 rz[k] = acc
             end
-            h = G[t, t]
+            h = use_lemma ? Gdiag[t] : G[t, t]
             for k in 1:K
-                h -= GU[t, k] * v[k]
+                h -= GU_i[t, k] * v[k]
                 h += L[t, k] * rz[k]
             end
             Wh = W[t, i] * h
@@ -562,8 +607,11 @@ function _structured_poisson_block_implicit_value_grad(θ::AbstractVector,
             qx[offset + k] = q_Z[k, i]
         end
     end
-    α = _structured_poisson_joint_solve(
-        qx, op; mode_solve = :dense, Csu = Csu)
+    α = if use_lemma
+        _structured_poisson_joint_solve(qx, op; mode_solve = :woodbury, wb = wb)
+    else
+        _structured_poisson_joint_solve(qx, op; mode_solve = :dense, Csu = Csu)
+    end
     αu = @view α[1:p]
     αZ = reshape(@view(α[(p + 1):end]), K, n)
     @inbounds for i in 1:n
@@ -795,9 +843,12 @@ function _structured_poisson_implicit_value_grad(θ::AbstractVector,
         maxiter::Integer = 50, tol::Real = 1e-8,
         U_init = nothing, Z_init = nothing,
         U_store = nothing, Z_store = nothing)
-    if logdet_method == :dense || (logdet_method == :auto && p <= dense_cutoff)
+    if logdet_method == :dense || logdet_method == :lemma ||
+            (logdet_method == :auto && p <= dense_cutoff)
         return _structured_poisson_block_implicit_value_grad(
-            θ, Y, precision, p, K; sigma2 = sigma2, dense_cutoff = dense_cutoff,
+            θ, Y, precision, p, K; sigma2 = sigma2,
+            logdet_method = logdet_method == :lemma ? :lemma : :dense,
+            dense_cutoff = dense_cutoff,
             probes = probes, rng = rng, nprobes = nprobes,
             lanczos_steps = lanczos_steps, reorth = reorth,
             mode_solve = mode_solve, cg_tol = cg_tol, cg_maxiter = cg_maxiter,
@@ -898,10 +949,12 @@ By default, neighbouring objective probes reuse the previous fitted latent mode
 as a warm start through `mode_cache=true`, L-BFGS uses the private
 implicit-gradient scaffold (`gradient=:implicit`) instead of Optim finite
 differences, and `logdet_method=:auto` keeps the exact dense determinant below
-the shared cutoff before falling to SLQ. With the default `trace_solve=:auto`,
-SLQ fits reuse the SLQ Lanczos bases for the inverse-probe approximation in the
-trace-gradient path; set `trace_solve=:solve` to keep the older explicit solve
-path.
+the shared cutoff before falling to SLQ. `logdet_method=:lemma` uses the exact
+determinant-lemma / Woodbury path for `K <= 3`, avoiding dense
+`S_u^{-1}` materialization in the block gradient. With the default
+`trace_solve=:auto`, SLQ fits reuse the SLQ Lanczos bases for the inverse-probe
+approximation in the trace-gradient path; set `trace_solve=:solve` to keep the
+older explicit solve path.
 """
 function _fit_structured_poisson_laplace(Y::AbstractMatrix{<:Integer},
         precision::AbstractMatrix; K::Integer, sigma2::Real,
@@ -922,8 +975,8 @@ function _fit_structured_poisson_laplace(Y::AbstractMatrix{<:Integer},
         precision, sigma2)
     mode_solve in (:dense, :cg) || throw(ArgumentError(
         "mode_solve must be :dense or :cg; got $mode_solve"))
-    logdet_method in (:auto, :dense, :slq) || throw(ArgumentError(
-        "logdet_method must be :auto, :dense, or :slq; got $logdet_method"))
+    logdet_method in (:auto, :dense, :lemma, :slq) || throw(ArgumentError(
+        "logdet_method must be :auto, :dense, :lemma, or :slq; got $logdet_method"))
     trace_solve in (:auto, :solve, :lanczos) || throw(ArgumentError(
         "trace_solve must be :auto, :solve, or :lanczos; got $trace_solve"))
     gradient in (:finite, :implicit) || throw(ArgumentError(

@@ -4089,6 +4089,108 @@ Results:
 - GitHub lane check: PR #59 remains the separate draft
   `claude/package-work-catchup-mQiZM` lane; no PR or issue was modified.
 
+## 2026-06-01 - Structured Poisson Exact Lemma Gradient Route
+
+### Scope
+
+Added an opt-in exact `logdet_method = :lemma` route for the internal
+structured Poisson implicit-gradient path. The route reuses the Schur
+determinant-lemma / Woodbury factors to compute `logdet(S_u)`,
+`diag(S_u^-1)`, `S_u^-1` times all site-loading RHS columns, and the adjoint
+Schur solve without materializing the dense `S_u^-1`. Defaults are unchanged:
+`:auto` still selects exact dense below the cutoff and SLQ above it.
+
+### Correctness Tests
+
+Focused structured tests:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_schur.jl"); include("test/test_structured_poisson_laplace.jl")'
+```
+
+Result: 165 pass, 0 fail, 0 error. New checks compare lemma value/gradient to
+the exact dense block gradient, compare Woodbury adjoint solve to the dense
+joint solve, exercise a fitted `logdet_method = :lemma` path, and keep the
+invalid-logdet guard active.
+
+Core suite:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. Manual tally from emitted `Test Summary` blocks:
+2374 pass, 1 existing broken sparse-phy precision placeholder, 2 expected
+quality placeholders in the direct core environment, 0 fail, 0 error.
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Manual tally from emitted `Test Summary` blocks: 2386 pass, 1 existing broken
+sparse-phy precision placeholder, quality 12/12 pass, 0 fail, 0 error.
+
+### Benchmark Evidence
+
+New repeatable harness:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_lemma_gradient_bench.jl --smoke --reps=2 --warmups=1 --out=/tmp/structured-poisson-lemma-gradient-smoke-rerun.csv
+julia --project=. --startup-file=no bench/structured_poisson_lemma_gradient_bench.jl --break-even --reps=2 --warmups=1 --out=/tmp/structured-poisson-lemma-gradient-break-even-reps2.csv
+```
+
+Results:
+
+```text
+smoke    p= 160 n= 120 K=2 dense=  0.0112 s lemma=  0.0133 s speedup= 0.85x bytes=(1.74e+06, 6.80e+06) valuediff=0.00e+00 gradrel=1.20e-16
+medium   p= 512 n= 128 K=2 dense=  0.0520 s lemma=  0.0328 s speedup= 1.59x bytes=(9.87e+06, 1.87e+07) valuediff=0.00e+00 gradrel=1.24e-16
+large    p=1024 n= 256 K=2 dense=  0.1471 s lemma=  0.1090 s speedup= 1.35x bytes=(3.86e+07, 7.31e+07) valuediff=0.00e+00 gradrel=1.60e-16
+xlarge   p=2048 n= 512 K=2 dense=  0.8351 s lemma=  0.4553 s speedup= 1.83x bytes=(1.53e+08, 2.89e+08) valuediff=0.00e+00 gradrel=1.72e-16
+```
+
+Interpretation: the exact lemma path is slower on the smoke cell but faster on
+the medium-to-xlarge gradient cells. It is still memory-heavier, so it remains
+opt-in until the batched RHS workspace is reduced or reused across optimizer
+calls.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+<private-source trace scan over tracked repo content>
+<placeholder rerun scan over current check-log and after-task report>
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-01-structured-poisson-lemma-gradient.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p|100x|100.?x|gllvmTMB" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-01-structured-poisson-lemma-gradient.md bench CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+gh pr list --limit 5 --json number,title,headRefName,isDraft,state
+```
+
+Results:
+
+- `git diff --check`: clean after this report.
+- Private-source trace scan over tracked public artifacts: no matches.
+- Placeholder rerun scan: no stale rerun/fill-result placeholders after this
+  report was finalized.
+- Stale-wording scan: expected historical and command-pattern hits only,
+  including the user-provided AGENTS.md "Gaussian only" snapshot; this slice
+  adds no public API/status claim.
+- Performance-claim scan: expected historical benchmark records, existing
+  Gaussian/gllvmTMB claims, and this internal exact lemma-gradient speed
+  evidence only; no public 100x structured speed claim or new R `gllvmTMB`
+  parity claim was added.
+- GitHub lane check: PR #59 remains the separate draft
+  `claude/package-work-catchup-mQiZM` lane; no PR or issue was modified.
+
 ## 2026-06-01 - Structured Poisson Trace Break-Even Harness
 
 ### Scope
@@ -4892,23 +4994,23 @@ julia --project=. --startup-file=no bench/structured_schur_woodbury_bench.jl --b
 Results:
 
 ```text
-smoke    p=  80 n=  24 K=2 dense_setup=0.0002 woodbury_setup=0.0001 setup_speed=1.68x dense_batch=0.0007 woodbury_batch=0.0005 batch_speed=1.31x apply_err=2.22e-16 diag_err=4.16e-17
-giant    p=1024 n= 256 K=2 dense_setup=0.0437 woodbury_setup=0.0128 setup_speed=3.41x dense_batch=0.0352 woodbury_batch=0.0397 batch_speed=0.89x apply_err=2.08e-17 diag_err=6.07e-18
-xlarge   p=2048 n= 512 K=2 dense_setup=0.1554 woodbury_setup=0.0464 setup_speed=3.35x dense_batch=0.1529 woodbury_batch=0.1019 batch_speed=1.50x apply_err=1.56e-17 diag_err=3.90e-18
+smoke    p=  80 n=  24 K=2 dense_setup=0.0015 woodbury_setup=0.0001 setup_speed=11.50x dense_batch=0.0011 woodbury_batch=0.0032 batch_speed=0.33x apply_err=2.22e-16 diag_err=4.16e-17
+giant    p=1024 n= 256 K=2 dense_setup=0.0224 woodbury_setup=0.0095 setup_speed=2.35x dense_batch=0.0208 woodbury_batch=0.0372 batch_speed=0.56x apply_err=2.08e-17 diag_err=6.07e-18
+xlarge   p=2048 n= 512 K=2 dense_setup=0.1181 woodbury_setup=0.0263 setup_speed=4.49x dense_batch=0.1229 woodbury_batch=0.1454 batch_speed=0.85x apply_err=1.56e-17 diag_err=3.90e-18
 ```
 
 CSV details for the break-even cells:
 
 ```text
-giant:  dense_apply=0.0013703125 s, woodbury_apply=0.0028394585 s, dense_batch_bytes=33,616,240, woodbury_batch_bytes=59,576,264
-xlarge: dense_apply=0.0028924375 s, woodbury_apply=0.0015654165 s, dense_batch_bytes=134,340,976, woodbury_batch_bytes=236,584,176
+giant:  dense_apply=0.000106666 s, woodbury_apply=0.0002880625 s, dense_batch_bytes=33,616,240, woodbury_batch_bytes=59,576,264
+xlarge: dense_apply=0.0008307085 s, woodbury_apply=0.012988583 s, dense_batch_bytes=134,340,976, woodbury_batch_bytes=236,584,176
 ```
 
-Interpretation: Woodbury setup is exact and `3.35x` to `3.41x` faster than
+Interpretation: Woodbury setup is exact and `2.35x` to `4.49x` faster than
 materializing the full dense inverse on large cells. The full all-site
-apply-plus-diagonal batch is mixed (`0.89x` to `1.50x`) and allocates more, so
-this is an enabling inverse substrate, not a fitted-gradient speed promotion
-yet.
+apply-plus-diagonal batch is slower in this rerun (`0.56x` to `0.85x`) and
+allocates more, so this is an enabling inverse substrate, not a fitted-gradient
+speed promotion yet.
 
 ### Quality And Audit Scans
 

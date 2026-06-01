@@ -152,7 +152,8 @@ julia --project=. bench/structured_poisson_fit_bench.jl --full --out=structured-
 The fitter defaults to `--logdet=auto`: exact dense below the shared structured
 Schur cutoff, and SLQ above it. Use `--gradient=finite` to time the previous
 Optim finite-difference path on the same cells. Use
-`--logdet=slq --nprobes=4 --lanczos-steps=20`, or
+`--logdet=lemma` to exercise the exact determinant-lemma / Woodbury block
+gradient path. Use `--logdet=slq --nprobes=4 --lanczos-steps=20`, or
 `--logdet=auto --dense-cutoff=0`, to exercise the frozen-probe stochastic
 trace-gradient path used for the large-p determinant prototype. The fitted
 benchmark defaults to `--trace-solve=auto`, which uses the fused Lanczos
@@ -197,6 +198,22 @@ identity-basis tests keep that fused path tied to the exact dense solve.
 This benchmark is deliberately Julia-only: it answers where the large-p
 structured determinant path starts to beat dense `S_u^{-1}` materialization,
 not whether the public fit agrees with R `gllvmTMB`.
+
+### Structured Poisson Exact Lemma Gradient
+
+`structured_poisson_lemma_gradient_bench.jl` isolates one exact block-gradient
+evaluation and compares the dense `S_u^{-1}` materialization against the exact
+determinant-lemma / Woodbury path.
+
+```bash
+julia --project=. bench/structured_poisson_lemma_gradient_bench.jl --smoke
+julia --project=. bench/structured_poisson_lemma_gradient_bench.jl --break-even --out=structured-poisson-lemma-gradient.csv
+```
+
+Rows report dense and lemma gradient time, allocation count, value agreement,
+and gradient relative error. This is the exact-gradient counterpart to the SLQ
+trace-gradient benchmark; it is still an internal Julia-only algorithm bench,
+not an R `gllvmTMB` parity claim.
 
 ## JIT vs steady-state
 

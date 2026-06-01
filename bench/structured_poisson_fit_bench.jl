@@ -43,7 +43,7 @@ function usage()
       --cells=a,b,c      Comma-separated cell subset.
       --iterations=N     Optimizer iteration budget (default: 4 smoke, 6 full).
       --gradient=MODE    :finite or :implicit (default: :implicit).
-      --logdet=MODE      :auto, :dense, or :slq (default: :auto).
+      --logdet=MODE      :auto, :dense, :lemma, or :slq (default: :auto).
       --dense-cutoff=N   Auto logdet exact-dense cutoff (default: GLLVM internal cutoff).
       --trace-solve=MODE auto, solve, or lanczos for SLQ trace gradients (default: auto).
       --probe-kind=KIND  rademacher or orthogonal for SLQ fits (default: rademacher).
@@ -92,8 +92,8 @@ function parse_args(args)
             gradient = value
         elseif startswith(arg, "--logdet=")
             value = Symbol(arg[(lastindex("--logdet=") + 1):end])
-            value in (:auto, :dense, :slq) || throw(ArgumentError(
-                "--logdet must be auto, dense, or slq; got $value"))
+            value in (:auto, :dense, :lemma, :slq) || throw(ArgumentError(
+                "--logdet must be auto, dense, lemma, or slq; got $value"))
             logdet_method = value
         elseif startswith(arg, "--dense-cutoff=")
             dense_cutoff = parse(Int, arg[(lastindex("--dense-cutoff=") + 1):end])
