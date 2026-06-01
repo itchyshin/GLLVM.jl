@@ -76,8 +76,8 @@ Memory patches (outside the repo — not part of this commit):
   that, in a file checked into the public repo. Reworded to refer obliquely
   ("one collaborator's name, recorded only in private notes… consult the
   private notes; do not transcribe them here").
-- **Post-fix scan:** `grep -rli "dinnage\|russell"` across all
-  `*.md`/`*.toml`/`*.jl`/`*.json` (excluding `.git/`) → **CLEAN**. The
+- **Post-fix scan:** private-provenance guard pattern scan across all
+  `*.md`/`*.toml`/`*.jl`/`*.json` (excluding `.git/`) -> **CLEAN**. The
   `.gitignore` guard patterns remain (pre-existing; glob ignores must
   literally contain the substring to match — out of scope to change here).
 
