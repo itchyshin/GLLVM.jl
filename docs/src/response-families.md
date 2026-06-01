@@ -61,10 +61,18 @@ link is `LogLink()`. For `Beta` and `Ordinal` the default is `LogitLink()`.
 | `Beta()` | ✅ available | logit | Laplace | precision `φ` (Var = μ(1−μ)/(1+φ)) | proportions in (0,1); `φ` jointly estimated |
 | `Ordinal()` | ✅ available | cumulative logit | Laplace | `C−1` cutpoints `τ` | ordered categories `1:C`; common cutpoints, no species intercept |
 | `Gamma()` | ✅ available | log | Laplace | shape `α` (Var = μ²/α) | positive continuous; `α` jointly estimated |
-| hurdle / zero-inflated / delta | ⏳ planned | — | — | — | two-part families; not yet started |
+| Delta-lognormal | ✅ available | logit × identity(log) | two-part Laplace | log-SD `σ` | occurrence × positive lognormal; `fit_delta_lognormal_gllvm` |
+| Delta-Gamma | ✅ available | logit × log | two-part Laplace | shape `α` | occurrence × positive Gamma; `fit_delta_gamma_gllvm` |
+| Hurdle-Poisson | ✅ available | logit × log | two-part Laplace | — | occurrence × zero-truncated Poisson; `fit_hurdle_poisson_gllvm` |
+| Hurdle-NB | ✅ available | logit × log | two-part Laplace | dispersion `r` | occurrence × zero-truncated NB2; `fit_hurdle_nb_gllvm` |
+| ZIP | ✅ available | logit × log | two-part Laplace | — | zero-inflated Poisson; `fit_zip_gllvm` |
+| ZINB | ✅ available | logit × log | two-part Laplace | dispersion `r` | zero-inflated NB2; `fit_zinb_gllvm` |
 
-Calling `fit_gllvm` with an unimplemented family raises a clear error listing
-what is currently available.
+The single-block GLM families above are reached through the unified `fit_gllvm`
+entry; the two-part families currently have dedicated `fit_<family>_gllvm`
+drivers (their parameters — `σ`, `α`, `r` — are estimated, so they do not share
+a single `Distributions` marker yet). Calling `fit_gllvm` with an unimplemented
+family raises a clear error listing what is currently available.
 
 ## Family details
 
@@ -144,6 +152,34 @@ the shape `α`:
 ```julia
 fit = fit_gllvm(Yp; family = Gamma(), K = 2)   # Yp > 0
 ```
+
+## Two-part families (occurrence/zero × value)
+
+Two-part families model a response with a point mass at zero plus a distribution
+over the non-zero (or count) part. They share a single latent `z` that loads on
+the value part (`Λ_c`); the occurrence / zero-inflation part is a per-species
+intercept (`β_z`, i.e. `Λ_z = 0`). Each has a dedicated fitter returning a
+result with `βz`, `βc`, `Λc` (and a dispersion where relevant):
+
+```julia
+fit = fit_delta_lognormal_gllvm(Y; K = 2)   # Y ≥ 0; positive part lognormal, log-SD σ
+fit = fit_delta_gamma_gllvm(Y;     K = 2)   # Y ≥ 0; positive part Gamma, shape α
+fit = fit_hurdle_poisson_gllvm(Y;  K = 2)   # counts; occurrence × zero-truncated Poisson
+fit = fit_hurdle_nb_gllvm(Y;       K = 2)   # counts; occurrence × zero-truncated NB2, r
+fit = fit_zip_gllvm(Y;             K = 2)   # counts; structural zero × Poisson
+fit = fit_zinb_gllvm(Y;            K = 2)   # counts; structural zero × NB2, r
+```
+
+**Hurdle vs zero-inflated.** A *hurdle* model treats every zero as a
+non-occurrence and the positive part as a **zero-truncated** count. A
+*zero-inflated* model mixes a structural-zero process with an **ordinary** count
+that can itself produce zeros: `P(y=0) = π + (1−π)·P_count(0)`. ZIP → Poisson as
+the zero-inflation `π → 0`; ZINB → ZIP as `r → ∞`.
+
+`predict` exposes the parts: `:occurrence` / `:zeroinfl` (the Bernoulli
+probability), `:positive` / `:mean` (the value-part mean), and `:response` (the
+unconditional mean). `residuals` gives randomized-quantile (Dunn–Smyth) residuals
+under the correct two-part CDF.
 
 ## Extractors
 

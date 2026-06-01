@@ -21,6 +21,7 @@ makedocs(;
             "Covariance & correlation" => "covariance-correlation.md",
             "Structured dependence"    => "structured-dependence.md",
             "Response families"        => "response-families.md",
+            "Confidence intervals"     => "confidence-intervals.md",
             "Common pitfalls"          => "pitfalls.md",
             "Benchmarks"               => "benchmarks.md",
             "Comparison vs gllvmTMB"   => "comparison.md",
