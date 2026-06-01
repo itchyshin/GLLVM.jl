@@ -57,7 +57,7 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 | Capability | GLLVM.jl | Notes |
 |-----------|:---:|-------|
 | Matrix-level fit API | ✅ | `fit_gllvm(Y; family, K, …)` |
-| `@formula` front-end | ✅ fixed effects (wide) · 🔨 rest | `gllvm(@formula(y ~ 1 + x), Y, data; family, K)` (continuous covariates, wide data) → engine; long data, random slopes, `traits()`/`phylo()` terms deferred |
+| `@formula` front-end | ✅ fixed effects (wide + long) · 🔨 rest | `gllvm(@formula(y ~ 1 + x), Y, data; …)` and `gllvm(@formula(y ~ 1 + x), long; species, site, …)`; random slopes, `traits()`/`phylo()`, categoricals deferred |
 | `traits()` / `phylo()` formula terms · random slopes `(1+x\|g)` | 🔨 | custom StatsModels terms + RE substrate (design spec'd) |
 
 ## Performance — the differentiator

@@ -53,4 +53,34 @@ using GLLVM, Test, Random, Distributions, Statistics
         @test_throws ArgumentError gllvm(@formula(y ~ 1 + grp), Y, data; family = Normal(), K = 1)    # categorical
         @test_throws ArgumentError gllvm(@formula(y ~ 1 + nope), Y, data; family = Normal(), K = 1)   # missing column
     end
+
+    @testset "long-format front door == wide (exact round-trip)" begin
+        Random.seed!(203)
+        p, K, n = 5, 1, 40
+        temp = randn(n)
+        Λ = 0.5 .* randn(p, K); Z = randn(K, n)
+        Y = Λ * Z .+ 0.3 .* randn(p, n) .+ 0.6 .* temp'
+        site_data = (temp = temp,)
+        fwide = gllvm(@formula(y ~ 1 + temp), Y, site_data; family = Normal(), K = K)
+
+        # melt to long (species 1:p, site 1:n) so reconstruction matches wide order
+        sp = Int[]; st = Int[]; yv = Float64[]; tv = Float64[]
+        for s in 1:n, t in 1:p
+            push!(sp, t); push!(st, s); push!(yv, Y[t, s]); push!(tv, temp[s])
+        end
+        long = (y = yv, species = sp, site = st, temp = tv)
+        flong = gllvm(@formula(y ~ 1 + temp), long; family = Normal(), K = K,
+                      species = :species, site = :site)
+        @test flong.logLik ≈ fwide.logLik atol = 1e-8
+    end
+
+    @testset "long-format validation errors" begin
+        # incomplete species×site grid (missing the (2,2) cell)
+        long_bad = (y = [1.0, 2.0, 3.0], species = [1, 2, 1], site = [1, 1, 2])
+        @test_throws ArgumentError gllvm(@formula(y ~ 1), long_bad; family = Normal(), K = 1)
+        # site covariate not constant within site
+        long_nc = (y = randn(4), species = [1, 2, 1, 2], site = [1, 1, 2, 2],
+                   temp = [0.5, 0.9, 0.1, 0.2])
+        @test_throws ArgumentError gllvm(@formula(y ~ 1 + temp), long_nc; family = Normal(), K = 1)
+    end
 end

@@ -110,3 +110,83 @@ function gllvm(formula::FormulaTerm, Y::AbstractMatrix, data;
     return family isa Normal ? fit_gaussian_gllvm(Y; X = X, K = K, kwargs...) :
                                fit_gllvm_cov(Y; family = family, X = X, K = K, kwargs...)
 end
+
+"""
+    gllvm(formula, long_data; family = Normal(), K, species = :species, site = :site, kwargs...)
+
+Long-format (melted) front door: one row per `(species, site)` observation. Pivots
+`long_data` to the wide `(Y, site_data)` representation and calls the wide
+[`gllvm`](@ref) — so the two data shapes share one engine path.
+
+```julia
+# long_data has columns y, species, site, temp (site covariate repeated per species)
+gllvm(@formula(y ~ 1 + temp), long_data; family = Poisson(), K = 2,
+      species = :species, site = :site)
+```
+
+The formula LHS names the response column; `species`/`site` name the grouping
+keys (default `:species`/`:site`). `Y` is built in sorted species×site order, so
+`gllvm(f, long)` and `gllvm(f, Y, site_data)` give **identical** fits (a tested
+round-trip identity). v1 requires a **complete** species×site grid (no missing
+cells) and site covariates that are **constant within site** (both validated with
+a clear error), matching the wide-mode contract.
+"""
+function gllvm(formula::FormulaTerm, long_data; family = Normal(), K::Integer,
+               species::Symbol = :species, site::Symbol = :site, kwargs...)
+    cols = Tables.columntable(long_data)
+    formula.lhs isa Term || throw(ArgumentError(
+        "long-format gllvm needs a single response column on the formula LHS; got $(formula.lhs)"))
+    rsym = formula.lhs.sym
+    for key in (rsym, species, site)
+        haskey(cols, key) || throw(ArgumentError("column `$key` not found in long data"))
+    end
+    spcol = getproperty(cols, species)
+    stcol = getproperty(cols, site)
+    ycol  = getproperty(cols, rsym)
+    nrow = length(ycol)
+    (length(spcol) == nrow && length(stcol) == nrow) ||
+        throw(DimensionMismatch("response, species, and site columns must have equal length"))
+
+    splevels = sort(unique(spcol)); stlevels = sort(unique(stcol))
+    p = length(splevels); n = length(stlevels)
+    spidx = Dict(v => i for (i, v) in enumerate(splevels))
+    stidx = Dict(v => j for (j, v) in enumerate(stlevels))
+
+    Y = Matrix{eltype(ycol)}(undef, p, n)
+    filled = falses(p, n)
+    @inbounds for r in 1:nrow
+        i = spidx[spcol[r]]; j = stidx[stcol[r]]
+        filled[i, j] && throw(ArgumentError(
+            "duplicate (species, site) = ($(spcol[r]), $(stcol[r])) in long data"))
+        Y[i, j] = ycol[r]; filled[i, j] = true
+    end
+    all(filled) || throw(ArgumentError(
+        "long data is not a complete species×site grid (v1 requires every cell present; " *
+        "missing-response handling is a separate capability)"))
+
+    syms = _formula_covariates(formula.rhs)
+    site_data = if isempty(syms)
+        NamedTuple()
+    else
+        vecs = map(syms) do cv
+            haskey(cols, cv) || throw(ArgumentError("covariate `$cv` not found in long data"))
+            col = getproperty(cols, cv)
+            vals = Vector{eltype(col)}(undef, n)
+            seen = falses(n)
+            for r in 1:nrow
+                j = stidx[stcol[r]]
+                if seen[j]
+                    isequal(vals[j], col[r]) || throw(ArgumentError(
+                        "covariate `$cv` is not constant within site `$(stcol[r])` " *
+                        "(a site-level covariate must repeat identically down the species axis)"))
+                else
+                    vals[j] = col[r]; seen[j] = true
+                end
+            end
+            vals
+        end
+        NamedTuple{Tuple(syms)}(Tuple(vecs))
+    end
+
+    return gllvm(formula, Y, site_data; family = family, K = K, kwargs...)
+end
