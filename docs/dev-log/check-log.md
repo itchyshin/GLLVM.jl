@@ -1,5 +1,79 @@
 # Check Log
 
+## 2026-06-01 - Non-Gaussian gllvmTMB Smoke Refresh
+
+### Scope
+
+Refreshed the local smoke comparison against R `gllvmTMB` 0.2.0 using the
+existing `bench/non_gaussian_gllvmtmb_bench.jl` harness. This was benchmark
+evidence only; no source code, public API, or fitter default changed.
+
+### Environment
+
+```sh
+which R
+Rscript -e 'cat(as.character(utils::packageVersion("gllvmTMB")), "\n")'
+```
+
+Result: `/usr/local/bin/R`; `gllvmTMB` 0.2.0.
+
+### Cold Smoke
+
+```sh
+julia --project=. --startup-file=no bench/non_gaussian_gllvmtmb_bench.jl --smoke --reps=1 --warmups=0 --out=/tmp/non-gaussian-gllvmtmb-smoke-2026-06-01.csv
+```
+
+Cold result: completed, but Gaussian/binomial/ordinal are dominated by Julia
+first-call compilation and should not be used as speed claims.
+
+### Warm Smoke
+
+```sh
+julia --project=. --startup-file=no bench/non_gaussian_gllvmtmb_bench.jl --smoke --reps=1 --warmups=1 --out=/tmp/non-gaussian-gllvmtmb-smoke-warm-2026-06-01.csv
+```
+
+Warm median elapsed seconds:
+
+| family | Julia (s) | gllvmTMB (s) | R / Julia | agreement status |
+| --- | ---: | ---: | ---: | --- |
+| Gaussian | 0.0002 | 0.4440 | 1921.85x | same data logLik comparable |
+| Binomial | 0.0059 | 0.4450 | 75.67x | same data logLik comparable |
+| Poisson | 0.0111 | 0.4400 | 39.56x | same data logLik comparable |
+| NegBin | 0.0264 | 0.5780 | 21.90x | parameterization audit needed |
+| Beta | 0.0768 | 0.5600 | 7.29x | parameterization audit needed |
+| Gamma | 0.0165 | 0.4750 | 28.84x | parameterization audit needed |
+| Ordinal | 0.0408 | 0.4960 | 12.17x | non-equivalent link |
+
+Interpretation: the smoke cell confirms the warmed Julia fitters are materially
+faster than R `gllvmTMB` locally, but it is not the full grid. Only
+Gaussian/binomial/Poisson currently have same-data comparable log-likelihood
+status in this harness; NegBin/Beta/Gamma still need parameterization parity
+audit before strict likelihood claims, and ordinal remains a timing smoke
+because the links differ.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+<private-source trace scan over tracked repo content>
+<placeholder rerun scan over current check-log and after-task report>
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p|100x|100.?x|gllvmTMB" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-01-nongaussian-gllvmtmb-smoke-refresh.md bench CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+gh pr list --limit 5 --json number,title,headRefName,isDraft,state
+```
+
+Results:
+
+- `git diff --check`: clean.
+- Private-source trace scan over tracked public artifacts: clean.
+- Placeholder rerun scan: clean after finalizing this report.
+- Performance-claim scan: expected existing Gaussian/gllvmTMB and internal
+  benchmark-log hits only. This entry records a smoke benchmark with caveats,
+  not a full-grid or public 100x claim.
+- GitHub lane check: open PR #59 remains the separate draft
+  `claude/package-work-catchup-mQiZM`; this slice did not edit that lane.
+
 ## 2026-06-01 - Structured Poisson Lemma RHS Chunking
 
 ### Scope
