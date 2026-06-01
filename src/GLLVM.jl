@@ -32,6 +32,7 @@ include("families/ordinal.jl")           # Ordinal (cumulative-logit) family pie
 include("families/gamma.jl")             # Gamma (positive continuous) family pieces (Phase 3)
 include("families/twopart.jl")           # Two-part substrate + Delta-lognormal / Delta-Gamma / Hurdle (Phase 3)
 include("families/fit_gllvm.jl")         # unified fit_gllvm(Y; family) dispatcher
+include("families/covariates.jl")        # fixed-effect covariates (Xβ) for the Laplace families
 
 # Post-fit API (ordination, predict, residuals, summary)
 include("postfit.jl")
@@ -67,6 +68,7 @@ export spatial_cov, relatedness_cov,
        delta_gamma_marginal_loglik_laplace,
        fit_zip_gllvm, ZIPFit, zip_marginal_loglik_laplace,
        fit_zinb_gllvm, ZINBFit, zinb_marginal_loglik_laplace, fit_gllvm,
+       fit_gllvm_cov, GllvmCovFit,
        getLV, getLoadings, rotation,
        predict, fitted, residuals, aic, bic
 
