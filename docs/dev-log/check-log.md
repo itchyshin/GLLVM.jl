@@ -1,5 +1,125 @@
 # Check Log
 
+## 2026-06-01 - Structured Poisson Fitter Auto Logdet Default
+
+Branch: `codex/non-gaussian-fitter-gradients`
+
+Head before local commit: `95df912`.
+
+### Scope
+
+- Changed the private `_fit_structured_poisson_laplace` default from
+  `logdet_method = :dense` to `logdet_method = :auto`, so the fitted structured
+  Poisson prototype follows the shared exact-dense/SLQ cutoff by default.
+- Extended `bench/structured_poisson_fit_bench.jl` with `--logdet=auto` as the
+  default and a `--dense-cutoff=N` option; row-level CSV now records the cutoff.
+- Added tests proving the default small-p auto path matches explicit dense and
+  that forced `:auto` above the cutoff uses the SLQ/Lanczos route.
+- Kept public APIs unchanged. No edits to `src/sparse_phy_grad.jl`,
+  `src/em_phylo.jl`, or the PR #59 formula/family/CIs lane.
+
+### Verification
+
+Focused structured command:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_schur.jl"); include("test/test_structured_poisson_laplace.jl")'
+```
+
+Result:
+
+```text
+structured Schur operator                     | 43/43 pass
+structured Schur SLQ logdet                   | 18/18 pass
+structured Poisson Laplace prototype          | 13/13 pass
+structured Poisson implicit gradient          | 19/19 pass
+structured Poisson internal fitter            | 28/28 pass
+structured Poisson sigma-to-zero reduction    | 1/1 pass
+```
+
+Focused total: 122 pass, 0 fail, 0 error.
+
+Core command:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. Manual tally from emitted summaries: 2336 pass, 1 existing
+broken sparse-phy precision placeholder, 2 expected direct-env quality
+placeholders, 0 fail, 0 error.
+
+Full command:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Manual tally from emitted summaries: 2348 pass, 1 existing broken sparse-phy
+precision placeholder, quality 12/12 pass, 0 fail, 0 error.
+
+CI/bootstrap status from both suite runs stayed green:
+
+```text
+confint                         | 14/14 pass
+profile CI                      | 4/4 pass
+parametric bootstrap CI         | 9/9 pass
+derived-quantity CIs            | 45/45 pass
+profile_ci_derived phylo cell   | 20/20 pass
+```
+
+### Benchmark Smoke Evidence
+
+Default fitted benchmark now reports `logdet=auto` and the shared dense cutoff:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_fit_bench.jl --smoke --reps=1 --warmups=1 --out=/tmp/structured-poisson-fit-auto-smoke.csv
+```
+
+Result:
+
+```text
+Structured Poisson fitted benchmark (smoke); reps=1, warmups=1, iterations=4, gradient=implicit, logdet=auto, dense_cutoff=2048, trace_solve=auto
+smoke   p=  5 n=  8 K=1 dense= 0.0005 s  cg= 0.0005 s  speedup= 1.08x  diff=5.26e-12 calls=(6,6)
+```
+
+Forced large-p route smoke (`dense_cutoff=0`) chooses the SLQ/Lanczos trace
+path:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_fit_bench.jl --smoke --logdet=auto --dense-cutoff=0 --nprobes=5 --lanczos-steps=5 --reps=1 --warmups=1 --out=/tmp/structured-poisson-fit-auto-forced-slq-smoke.csv
+```
+
+Result:
+
+```text
+Structured Poisson fitted benchmark (smoke); reps=1, warmups=1, iterations=4, gradient=implicit, logdet=auto, dense_cutoff=0, trace_solve=auto
+smoke   p=  5 n=  8 K=1 dense= 0.0010 s  cg= 0.0009 s  speedup= 1.04x  diff=2.97e-12 calls=(6,6)
+```
+
+CSV headers include the new `dense_cutoff` column, and the row-level
+`trace_solve` column records `solve` for the default small-p route and
+`lanczos` for the forced-SLQ route.
+
+### Hygiene
+
+- `git diff --check`: clean after the dev-log update.
+- Private-source trace scan over tracked public artifacts: clean.
+- Placeholder rerun/fill-result scan over this check-log entry and the
+  matching after-task report: clean.
+- Stale-wording/performance scans: expected historical and command-pattern
+  hits only; this slice adds no public R `gllvmTMB` comparison claim and no
+  20x-100x claim.
+- GitHub lane check: PR #59 remains the separate draft
+  `claude/package-work-catchup-mQiZM` lane; this slice does not modify it.
+
 ## 2026-06-01 - Structured Poisson Auto Dense Gradient
 
 Branch: `codex/non-gaussian-fitter-gradients`

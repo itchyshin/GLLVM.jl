@@ -160,6 +160,10 @@ end
         Y, precision; K = K, sigma2 = 0.5, mode_solve = :cg,
         logdet_method = :dense, iterations = 4, g_tol = 1e-4,
         cg_tol = 1e-10, maxiter = 80, tol = 1e-9)
+    default_auto = GLLVM._fit_structured_poisson_laplace(
+        Y, precision; K = K, sigma2 = 0.5, mode_solve = :cg,
+        iterations = 4, g_tol = 1e-4, cg_tol = 1e-10,
+        maxiter = 80, tol = 1e-9)
     cg_finite = GLLVM._fit_structured_poisson_laplace(
         Y, precision; K = K, sigma2 = 0.5, mode_solve = :cg,
         logdet_method = :dense, iterations = 4, g_tol = 1e-4,
@@ -179,21 +183,31 @@ end
         logdet_method = :slq, probes = full_basis, lanczos_steps = p,
         trace_solve = :auto, iterations = 2, g_tol = 1e-4,
         cg_tol = 1e-10, maxiter = 80, tol = 1e-9)
+    auto_slq = GLLVM._fit_structured_poisson_laplace(
+        Y, precision; K = K, sigma2 = 0.5, mode_solve = :cg,
+        logdet_method = :auto, dense_cutoff = 0, probes = full_basis,
+        lanczos_steps = p, trace_solve = :auto, iterations = 2,
+        g_tol = 1e-4, cg_tol = 1e-10, maxiter = 80, tol = 1e-9)
 
     @test dense.loglik >= dense.initial_loglik - 1e-7
     @test cg.loglik >= cg.initial_loglik - 1e-7
     @test cg.loglik ≈ dense.loglik atol = 1e-5 rtol = 1e-5
+    @test default_auto.loglik ≈ cg.loglik atol = 1e-5 rtol = 1e-5
     @test cg.loglik ≈ cg_finite.loglik atol = 1e-5 rtol = 1e-5
     @test cg.loglik ≈ cg_cold.loglik atol = 1e-5 rtol = 1e-5
+    @test auto_slq.loglik ≈ slq_auto.loglik atol = 1e-5 rtol = 1e-5
     @test cg.β ≈ dense.β atol = 1e-5 rtol = 1e-5
     @test cg.Λ ≈ dense.Λ atol = 1e-5 rtol = 1e-5
     @test cg.mode_cache === true
     @test cg_cold.mode_cache === false
+    @test default_auto.logdet_method === :auto
     @test cg.gradient === :implicit
     @test cg_finite.gradient === :finite
+    @test default_auto.trace_solve === :solve
     @test cg.trace_solve === :solve
     @test slq_solve.trace_solve === :solve
     @test slq_auto.trace_solve === :lanczos
+    @test auto_slq.trace_solve === :lanczos
     @test slq_auto.loglik ≈ slq_solve.loglik atol = 1e-5 rtol = 1e-5
     @test dense.objective_calls > 0
     @test cg.objective_calls > 0

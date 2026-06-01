@@ -894,17 +894,19 @@ Laplace prototype. It estimates only `β` and the lower-triangular loadings `Λ`
 for a supplied structured precision and variance scale; public formula/API
 wiring waits until the exact CG and determinant paths have fitted-model tests.
 By default, neighbouring objective probes reuse the previous fitted latent mode
-as a warm start through `mode_cache=true`, and L-BFGS uses the private
+as a warm start through `mode_cache=true`, L-BFGS uses the private
 implicit-gradient scaffold (`gradient=:implicit`) instead of Optim finite
-differences. With the default `trace_solve=:auto`, SLQ fits reuse the SLQ
-Lanczos bases for the inverse-probe approximation in the trace-gradient path;
-set `trace_solve=:solve` to keep the older explicit solve path.
+differences, and `logdet_method=:auto` keeps the exact dense determinant below
+the shared cutoff before falling to SLQ. With the default `trace_solve=:auto`,
+SLQ fits reuse the SLQ Lanczos bases for the inverse-probe approximation in the
+trace-gradient path; set `trace_solve=:solve` to keep the older explicit solve
+path.
 """
 function _fit_structured_poisson_laplace(Y::AbstractMatrix{<:Integer},
         precision::AbstractMatrix; K::Integer, sigma2::Real,
         β_init = nothing, Λ_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 80,
-        logdet_method::Symbol = :dense,
+        logdet_method::Symbol = :auto,
         dense_cutoff::Integer = _STRUCTURED_SCHUR_DENSE_CUTOFF,
         probes = nothing, rng::AbstractRNG = Random.default_rng(),
         nprobes::Integer = 16, lanczos_steps::Integer = 40,

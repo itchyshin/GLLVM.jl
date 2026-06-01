@@ -149,13 +149,15 @@ Full local grid:
 julia --project=. bench/structured_poisson_fit_bench.jl --full --out=structured-poisson-fit.csv
 ```
 
-The fitter defaults to the private dense-logdet block implicit gradient. Use
-`--gradient=finite` to time the previous Optim finite-difference path on the
-same cells. Use `--logdet=slq --nprobes=4 --lanczos-steps=20` to exercise the
-frozen-probe stochastic trace-gradient path used for the large-p determinant
-prototype. The fitted benchmark defaults to `--trace-solve=auto`, which uses
-the fused Lanczos inverse-probe approximation for SLQ fits; use
-`--trace-solve=solve` to time the older explicit solve path.
+The fitter defaults to `--logdet=auto`: exact dense below the shared structured
+Schur cutoff, and SLQ above it. Use `--gradient=finite` to time the previous
+Optim finite-difference path on the same cells. Use
+`--logdet=slq --nprobes=4 --lanczos-steps=20`, or
+`--logdet=auto --dense-cutoff=0`, to exercise the frozen-probe stochastic
+trace-gradient path used for the large-p determinant prototype. The fitted
+benchmark defaults to `--trace-solve=auto`, which uses the fused Lanczos
+inverse-probe approximation for SLQ fits; use `--trace-solve=solve` to time the
+older explicit solve path.
 
 Rows report fitted wall time, final log-likelihood agreement, objective-call
 counts, and dense/CG fitted speedup. This is still not an R `gllvmTMB` parity

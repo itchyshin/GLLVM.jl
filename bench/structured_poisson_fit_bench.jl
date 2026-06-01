@@ -18,7 +18,7 @@ using GLLVM
 const CSV_HEADER = [
     "timestamp", "mode", "cell", "p", "n", "K", "iterations", "reps",
     "gradient", "logdet_method", "trace_solve", "nprobes", "lanczos_steps",
-    "dense_seconds", "cg_seconds", "speedup_dense_over_cg",
+    "dense_cutoff", "dense_seconds", "cg_seconds", "speedup_dense_over_cg",
     "dense_loglik", "cg_loglik", "absdiff_loglik",
     "dense_objective_calls", "cg_objective_calls",
 ]
@@ -43,7 +43,8 @@ function usage()
       --cells=a,b,c      Comma-separated cell subset.
       --iterations=N     Optimizer iteration budget (default: 4 smoke, 6 full).
       --gradient=MODE    :finite or :implicit (default: :implicit).
-      --logdet=MODE      :dense or :slq (default: :dense).
+      --logdet=MODE      :auto, :dense, or :slq (default: :auto).
+      --dense-cutoff=N   Auto logdet exact-dense cutoff (default: GLLVM internal cutoff).
       --trace-solve=MODE auto, solve, or lanczos for SLQ trace gradients (default: auto).
       --nprobes=N        Frozen SLQ probe count (default: 4).
       --lanczos-steps=N  SLQ Lanczos steps (default: 20).
@@ -64,7 +65,8 @@ function parse_args(args)
     seed = 9401
     out = nothing
     gradient = :implicit
-    logdet_method = :dense
+    logdet_method = :auto
+    dense_cutoff = GLLVM._STRUCTURED_SCHUR_DENSE_CUTOFF
     trace_solve = :auto
     nprobes = 4
     lanczos_steps = 20
@@ -88,9 +90,11 @@ function parse_args(args)
             gradient = value
         elseif startswith(arg, "--logdet=")
             value = Symbol(arg[(lastindex("--logdet=") + 1):end])
-            value in (:dense, :slq) || throw(ArgumentError(
-                "--logdet must be dense or slq; got $value"))
+            value in (:auto, :dense, :slq) || throw(ArgumentError(
+                "--logdet must be auto, dense, or slq; got $value"))
             logdet_method = value
+        elseif startswith(arg, "--dense-cutoff=")
+            dense_cutoff = parse(Int, arg[(lastindex("--dense-cutoff=") + 1):end])
         elseif startswith(arg, "--trace-solve=")
             value = Symbol(arg[(lastindex("--trace-solve=") + 1):end])
             value in (:auto, :solve, :lanczos) || throw(ArgumentError(
@@ -118,10 +122,13 @@ function parse_args(args)
     nprobes > 0 || throw(ArgumentError("--nprobes must be positive; got $nprobes"))
     lanczos_steps > 0 || throw(ArgumentError(
         "--lanczos-steps must be positive; got $lanczos_steps"))
+    dense_cutoff >= 0 || throw(ArgumentError(
+        "--dense-cutoff must be non-negative; got $dense_cutoff"))
     return (mode = mode, cells = cells, iterations = iterations, reps = reps,
             warmups = warmups, seed = seed, out = out, gradient = gradient,
-            logdet_method = logdet_method, trace_solve = trace_solve,
-            nprobes = nprobes, lanczos_steps = lanczos_steps)
+            logdet_method = logdet_method, dense_cutoff = dense_cutoff,
+            trace_solve = trace_solve, nprobes = nprobes,
+            lanczos_steps = lanczos_steps)
 end
 
 function select_cells(mode::String, wanted)
@@ -156,7 +163,8 @@ function fixture(cell, seed, args)
         -1 => fill(-0.15, cell.p - 1),
          0 => fill(1.3, cell.p),
          1 => fill(-0.15, cell.p - 1)))
-    probes = args.logdet_method == :slq ?
+    probes = (args.logdet_method == :slq ||
+              (args.logdet_method == :auto && cell.p > args.dense_cutoff)) ?
              GLLVM._rademacher_probes(MersenneTwister(seed + 1), cell.p, args.nprobes) :
              nothing
     return Y, precision, probes
@@ -168,6 +176,7 @@ function time_fit(Y, precision, probes, cell, mode_solve, args)
         value = GLLVM._fit_structured_poisson_laplace(
             Y, precision; K = cell.K, sigma2 = 0.5, mode_solve = mode_solve,
             logdet_method = args.logdet_method, probes = probes,
+            dense_cutoff = args.dense_cutoff,
             nprobes = args.nprobes, lanczos_steps = args.lanczos_steps,
             reorth = true, trace_solve = args.trace_solve,
             iterations = args.iterations,
@@ -180,6 +189,7 @@ function time_fit(Y, precision, probes, cell, mode_solve, args)
         elapsed = @elapsed value = GLLVM._fit_structured_poisson_laplace(
             Y, precision; K = cell.K, sigma2 = 0.5, mode_solve = mode_solve,
             logdet_method = args.logdet_method, probes = probes,
+            dense_cutoff = args.dense_cutoff,
             nprobes = args.nprobes, lanczos_steps = args.lanczos_steps,
             reorth = true, trace_solve = args.trace_solve,
             iterations = args.iterations,
@@ -227,6 +237,7 @@ function run_cell(cell, args, index)
         "trace_solve" => cg.fit.trace_solve,
         "nprobes" => args.nprobes,
         "lanczos_steps" => args.lanczos_steps,
+        "dense_cutoff" => args.dense_cutoff,
         "dense_seconds" => dense.seconds,
         "cg_seconds" => cg.seconds,
         "speedup_dense_over_cg" => dense.seconds / cg.seconds,
@@ -249,7 +260,7 @@ function main()
     args = parse_args(ARGS)
     cells = select_cells(args.mode, args.cells)
     rows = Dict{String, Any}[]
-    println("Structured Poisson fitted benchmark ($(args.mode)); reps=$(args.reps), warmups=$(args.warmups), iterations=$(args.iterations), gradient=$(args.gradient), logdet=$(args.logdet_method), trace_solve=$(args.trace_solve)")
+    println("Structured Poisson fitted benchmark ($(args.mode)); reps=$(args.reps), warmups=$(args.warmups), iterations=$(args.iterations), gradient=$(args.gradient), logdet=$(args.logdet_method), dense_cutoff=$(args.dense_cutoff), trace_solve=$(args.trace_solve)")
     for (idx, cell) in enumerate(cells)
         row = run_cell(cell, args, idx)
         push!(rows, row)
