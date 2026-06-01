@@ -1335,6 +1335,24 @@ fitted(fit::GllvmCovFit, Y::AbstractMatrix{<:Real}, X::AbstractArray{<:Real, 3};
        N::Union{Nothing, AbstractMatrix} = nothing) =
     predict(fit, Y, X; type = :response, N = N)
 
+"""
+    predict(fit::GllvmCovFit, X; type=:response) -> p×n matrix
+
+Population-level (new-site) prediction at a covariate design `X` (`(p, n, q)`) with
+the latent at its prior mean `z = 0` — the latent is not estimable at unseen sites.
+`:link` returns the fixed-effect linear predictor `η = β + Xγ`; `:response`
+(= `:mean`) the mean `μ = linkinv(link, η)`. (For in-sample *conditional*
+predictions at the fitted sites, use the three-argument `predict(fit, Y, X)`.)
+"""
+function predict(fit::GllvmCovFit, X::AbstractArray{<:Real, 3}; type::Symbol = :response)
+    type in (:response, :mean, :link) ||
+        throw(ArgumentError("type must be :response, :mean, or :link; got :$type"))
+    O = _build_offset(X, fit.γ)
+    η = fit.β .+ O
+    type === :link && return η
+    return linkinv.(Ref(fit.link), _clamp_eta.(η))
+end
+
 function Base.show(io::IO, ::MIME"text/plain", fit::GllvmCovFit)
     p, K = size(fit.Λ); q = length(fit.γ)
     println(io, "GLLVM fit with covariates (", nameof(typeof(fit.family)), ", Laplace)")

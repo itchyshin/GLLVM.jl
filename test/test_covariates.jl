@@ -103,4 +103,21 @@ end
         @test ci.estimate[1] ≈ fit.γ[1] atol = 1e-8
         @test_throws ArgumentError confint(fit, Y; method = :wald)   # X required
     end
+
+    @testset "new-site prediction (z=0, exact)" begin
+        Random.seed!(185)
+        p, K, n = 5, 1, 150
+        temp = randn(n)
+        X = zeros(p, n, 1); for s in 1:n, t in 1:p; X[t, s, 1] = temp[s]; end
+        Y = [rand(Poisson(exp(0.3 + 0.5 * temp[s]))) for t in 1:p, s in 1:n]
+        fit = fit_gllvm_cov(Y; family = Poisson(), X = X, K = K)
+
+        Xnew = zeros(p, 3, 1)
+        Xnew[:, :, 1] .= [0.0 1.0 -1.0]               # 3 new sites, broadcast across species
+        Pl = predict(fit, Xnew; type = :link)
+        @test Pl ≈ fit.β .+ GLLVM._build_offset(Xnew, fit.γ)   # exact fixed-effect predictor
+        Pr = predict(fit, Xnew; type = :response)
+        @test Pr ≈ exp.(Pl)
+        @test size(Pr) == (p, 3) && all(Pr .>= 0)
+    end
 end
