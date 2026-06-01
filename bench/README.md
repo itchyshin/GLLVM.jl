@@ -154,6 +154,22 @@ counts, and dense/CG fitted speedup. This is still not an R `gllvmTMB` parity
 test; it is the bridge from objective-level timing to fitted structured-model
 timing before public API wiring.
 
+### Structured Poisson Trace-Gradient Scaling
+
+`structured_poisson_trace_gradient_bench.jl` isolates one gradient evaluation
+for the internal fixed-covariance structured Poisson prototype. It compares the
+exact dense block gradient against the frozen-probe SLQ trace gradient and
+reports both timing and gradient relative error.
+
+```bash
+julia --project=. bench/structured_poisson_trace_gradient_bench.jl --smoke
+julia --project=. bench/structured_poisson_trace_gradient_bench.jl --full --out=structured-poisson-trace-gradient.csv
+```
+
+This benchmark is deliberately Julia-only: it answers where the large-p
+structured determinant path starts to beat dense `S_u^{-1}` materialization,
+not whether the public fit agrees with R `gllvmTMB`.
+
 ## JIT vs steady-state
 
 `BenchmarkTools.@benchmarkable` does a single untimed warmup call

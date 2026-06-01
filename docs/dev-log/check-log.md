@@ -1158,6 +1158,168 @@ gh pr list --limit 5 --json number,title,headRefName,isDraft,state
 
 No issue or PR was modified.
 
+## 2026-06-01 — Structured Poisson Trace-Gradient Benchmark And Workspace Reuse
+
+### Implemented Claim
+
+Added a dedicated benchmark for the structured Poisson dense-vs-SLQ
+trace-gradient crossover, and removed one per-site `K×K` matrix allocation from
+both dense block and SLQ trace gradient loops by reusing the site inverse
+workspace. This is an internal performance/evidence slice, not a public API
+change and not an R `gllvmTMB` parity claim.
+
+### Collision And Lane Checks
+
+```sh
+git status --short --branch && git rev-parse --short HEAD
+gh pr list --limit 20
+git log --all --oneline --since='6 hours ago' --decorate
+```
+
+Result:
+
+```text
+## codex/non-gaussian-fitter-gradients...origin/main [ahead 19]
+?? .claude/
+c453962
+
+59 gllvmTMB catch-up: Delta-Gamma + zero-inflated (ZIP/ZINB) families + non-Gaussian CIs claude/package-work-catchup-mQiZM DRAFT
+```
+
+No edits were made to `src/sparse_phy_grad.jl`, `src/em_phylo.jl`, or PR #59
+files. `.claude/` remains untracked and untouched.
+
+### Focused Tests
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_poisson_laplace.jl")'
+```
+
+Result:
+
+```text
+structured Poisson Laplace prototype      | 13/13 pass
+structured Poisson implicit gradient      | 12/12 pass
+structured Poisson internal fitter        | 18/18 pass
+structured Poisson sigma-to-zero reduction| 1/1 pass
+```
+
+### Benchmarks
+
+Allocation/timing spot check for one SLQ trace-gradient evaluation:
+
+```text
+baseline slq p=160 n=120 K=2 time=0.03400 bytes=869920 value=-28793.6191
+after    slq p=160 n=120 K=2 time=0.03400 bytes=858496 value=-28793.6191
+```
+
+Interpretation: the workspace reuse is a small allocation cleanup, not a major
+time speedup by itself.
+
+New trace-gradient benchmark smoke + CSV:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_trace_gradient_bench.jl --smoke --out=/tmp/structured-poisson-trace-gradient-smoke.csv
+head -2 /tmp/structured-poisson-trace-gradient-smoke.csv
+```
+
+Result:
+
+```text
+Structured Poisson trace-gradient benchmark (smoke); reps=1, warmups=2, nprobes=4, steps=20
+smoke    p=  80 n=  80 K=2 dense=  0.0090 s  slq=  0.0121 s  speedup= 0.74x  valuediff=1.36e-01  gradrel=6.79e-02
+Wrote /tmp/structured-poisson-trace-gradient-smoke.csv
+```
+
+CSV header and first row were written as expected.
+
+Full trace-gradient benchmark:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_trace_gradient_bench.jl --full --reps=1 --warmups=2
+```
+
+Result:
+
+```text
+Structured Poisson trace-gradient benchmark (full); reps=1, warmups=2, nprobes=4, steps=20
+small    p=  80 n=  80 K=2 dense=  0.0098 s  slq=  0.0121 s  speedup= 0.81x  valuediff=1.36e-01  gradrel=6.79e-02
+medium   p= 160 n= 120 K=2 dense=  0.0379 s  slq=  0.0358 s  speedup= 1.06x  valuediff=4.18e-01  gradrel=7.70e-02
+large    p= 320 n= 160 K=2 dense=  0.1583 s  slq=  0.0855 s  speedup= 1.85x  valuediff=3.99e-01  gradrel=1.07e-01
+frontier p= 640 n= 160 K=2 dense=  0.5423 s  slq=  0.1730 s  speedup= 3.13x  valuediff=7.84e-01  gradrel=1.62e-01
+```
+
+Fitted SLQ smoke still runs:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_fit_bench.jl --smoke --gradient=implicit --logdet=slq --nprobes=4 --lanczos-steps=20 --reps=1 --warmups=1
+```
+
+Result:
+
+```text
+Structured Poisson fitted benchmark (smoke); reps=1, warmups=1, iterations=4, gradient=implicit, logdet=slq
+smoke   p=  5 n=  8 K=1 dense= 0.0014 s  cg= 0.0016 s  speedup= 0.91x  diff=1.42e-13 calls=(6,6)
+```
+
+### Test Suites
+
+Core suite:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. Manual tally from emitted `Test Summary` blocks:
+2303 pass, 1 existing broken sparse-phy precision placeholder, 2 expected
+quality placeholders in the direct core environment, 0 fail, 0 error.
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Manual tally from emitted `Test Summary` blocks: 2315 pass, 1 existing broken
+sparse-phy precision placeholder, 0 fail, 0 error.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+<private-source trace scan over tracked repo content>
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src docs/dev-log/check-log.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p|100x|100.?x|gllvmTMB" README.md docs/src docs/dev-log/check-log.md bench CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+```
+
+Results:
+
+- `git diff --check`: clean.
+- Private-upload trace scan: no matches.
+- Stale-wording scan: still finds the user-provided AGENTS.md "Gaussian only"
+  snapshot and historical check-log entries; no new stale public claim was
+  introduced.
+- Performance-claim scan: existing Gaussian/gllvmTMB speedup claims and
+  historical internal structured speed records. The new benchmark labels the
+  result as internal structured Poisson trace-gradient scaling evidence.
+
+Open PR / collision check:
+
+```text
+[#59 draft: gllvmTMB catch-up: Delta-Gamma + zero-inflated (ZIP/ZINB) families + non-Gaussian CIs]
+```
+
+No issue or PR was modified.
+
 ## 2026-06-01 — Structured Poisson SLQ Trace Gradient
 
 ### Implemented Claim

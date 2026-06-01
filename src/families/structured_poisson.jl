@@ -503,6 +503,7 @@ function _structured_poisson_block_implicit_value_grad(θ::AbstractVector,
     GU = Matrix{T}(undef, p, K)
     C = Matrix{T}(undef, K, K)
     eyeK = Matrix{T}(I, K, K)
+    M = Matrix{T}(undef, K, K)
     v = Vector{T}(undef, K)
     tmp = Vector{T}(undef, K)
     rz = Vector{T}(undef, K)
@@ -515,7 +516,8 @@ function _structured_poisson_block_implicit_value_grad(θ::AbstractVector,
         end
         mul!(GU, G, Usite)
         mul!(C, transpose(Usite), GU)
-        M = op.Achols[i] \ eyeK
+        copyto!(M, eyeK)
+        ldiv!(op.Achols[i], M)
         for t in 1:p
             for k in 1:K
                 acc = zero(T)
@@ -672,6 +674,7 @@ function _structured_poisson_trace_implicit_value_grad(θ::AbstractVector,
     UX = Matrix{T}(undef, K, nprobe)
     C = Matrix{T}(undef, K, K)
     eyeK = Matrix{T}(I, K, K)
+    M = Matrix{T}(undef, K, K)
     v = Vector{T}(undef, K)
     geUt = Vector{T}(undef, K)
     Cv = Vector{T}(undef, K)
@@ -689,7 +692,8 @@ function _structured_poisson_trace_implicit_value_grad(θ::AbstractVector,
         mul!(UX, transpose(Usite), X)
         mul!(C, UX, transpose(UR))
         C .*= invnprobe
-        M = op.Achols[i] \ eyeK
+        copyto!(M, eyeK)
+        ldiv!(op.Achols[i], M)
         for t in 1:p
             Gtt = zero(T)
             for j in 1:nprobe
