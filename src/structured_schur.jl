@@ -400,6 +400,21 @@ function _schur_u_tinyk_factor!(C::AbstractMatrix, op::_SchurUOperator)
                 C[t, s] = op.Wsites[t, s] * op.Lambda[t, 1] * scale
             end
         end
+    elseif K == 2
+        @inbounds for s in 1:nsites
+            A = op.Ainvs[s]
+            l11 = sqrt(A[1, 1])
+            l21 = A[2, 1] / l11
+            l22 = sqrt(A[2, 2] - l21 * l21)
+            offset = (s - 1) * K
+            for t in 1:p
+                wt = op.Wsites[t, s]
+                λ1 = op.Lambda[t, 1]
+                λ2 = op.Lambda[t, 2]
+                C[t, offset + 1] = wt * (λ1 * l11 + λ2 * l21)
+                C[t, offset + 2] = wt * λ2 * l22
+            end
+        end
     else
         @inbounds for s in 1:nsites
             F = cholesky(Symmetric(op.Ainvs[s])).L
@@ -636,12 +651,38 @@ function _schur_u_woodbury_inv_apply!(Y::AbstractMatrix,
     size(V, 1) == p || throw(DimensionMismatch("V must have $p rows; got $(size(V, 1))"))
     size(Y) == size(V) || throw(DimensionMismatch("Y must have size $(size(V)); got $(size(Y))"))
     T = promote_type(eltype(wb.C), eltype(V), eltype(Y))
-    BinvV = wb.Bchol \ Matrix{T}(V)
+    BinvV = Matrix{T}(undef, size(V))
     rhs = Matrix{T}(undef, r, size(V, 2))
+    return _schur_u_woodbury_inv_apply!(Y, wb, V, BinvV, rhs)
+end
+
+function _schur_u_woodbury_inv_apply!(Y::AbstractMatrix,
+        wb::_SchurUWoodbury, V::AbstractMatrix,
+        BinvV::AbstractMatrix, rhs::AbstractMatrix)
+    p, r = size(wb.C)
+    size(V, 1) == p || throw(DimensionMismatch("V must have $p rows; got $(size(V, 1))"))
+    size(Y) == size(V) || throw(DimensionMismatch("Y must have size $(size(V)); got $(size(Y))"))
+    size(BinvV) == size(V) || throw(DimensionMismatch(
+        "BinvV workspace must have size $(size(V)); got $(size(BinvV))"))
+    size(rhs) == (r, size(V, 2)) || throw(DimensionMismatch(
+        "rhs workspace must be $(r)×$(size(V, 2)); got $(size(rhs))"))
+    _schur_chol_ldiv_copy!(BinvV, wb.Bchol, V)
     mul!(rhs, transpose(wb.C), BinvV)
     ldiv!(wb.Hchol, rhs)
     mul!(Y, wb.BinvC, rhs)
     Y .+= BinvV
+    return Y
+end
+
+function _schur_chol_ldiv_copy!(Y::AbstractMatrix, ch, V::AbstractMatrix)
+    copyto!(Y, V)
+    ldiv!(ch, Y)
+    return Y
+end
+
+function _schur_chol_ldiv_copy!(Y::AbstractMatrix,
+        ch::SparseArrays.CHOLMOD.Factor{Float64}, V::AbstractMatrix)
+    copyto!(Y, ch \ Matrix{Float64}(V))
     return Y
 end
 

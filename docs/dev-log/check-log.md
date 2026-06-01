@@ -1,5 +1,106 @@
 # Check Log
 
+## 2026-06-01 - Structured Schur K2 Workspace
+
+### Scope
+
+Reduced exact determinant-lemma/Woodbury overhead for the internal structured
+Poisson gradient path. This is an internal fast-algorithm slice only: no public
+API, fitter default, confidence-interval, bootstrap, or R-parity surface
+changed.
+
+### Implementation
+
+- Added a closed-form `K == 2` lower factor in `_schur_u_tinyk_factor!`,
+  avoiding a generic tiny Cholesky per site.
+- Added a workspace overload for `_schur_u_woodbury_inv_apply!`.
+- Reused the Woodbury apply workspaces across chunked exact lemma-gradient site
+  RHS blocks in `src/families/structured_poisson.jl`.
+- Added workspace-overload correctness and dimension-guard tests.
+
+### Rejected Scout
+
+An exact `mode_solve = :woodbury` path for the structured Poisson inner mode was
+tested and removed before commit. It matched dense to roundoff but was slower
+than CG on the measured medium/large cells and used more memory.
+
+### Correctness Tests
+
+Focused structured tests:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_schur.jl"); include("test/test_structured_poisson_laplace.jl")'
+```
+
+Result: 168 pass, 0 fail, 0 error.
+
+Core suite:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: 2382 pass, 3 expected broken placeholders, 0 fail, 0 error.
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result: 2394 pass, 1 existing sparse-phy precision placeholder, 0 fail, 0
+error. The `quality` testset passed 12/12.
+
+### Benchmark Evidence
+
+Exact structured Poisson dense-vs-lemma gradient benchmark:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_lemma_gradient_bench.jl --break-even --reps=2 --warmups=1 --out=/tmp/structured-poisson-lemma-gradient-k2factor-workspace-2026-06-01.csv
+```
+
+Result:
+
+```text
+medium   p= 512 n= 128 K=2 dense=0.0317 s lemma=0.0288 s speedup=1.10x bytes=(9.85e+06, 1.97e+07) valuediff=0.00e+00 gradrel=1.20e-16
+large    p=1024 n= 256 K=2 dense=0.1253 s lemma=0.1105 s speedup=1.13x bytes=(3.86e+07, 6.99e+07) valuediff=0.00e+00 gradrel=1.73e-16
+xlarge   p=2048 n= 512 K=2 dense=0.7084 s lemma=0.4419 s speedup=1.60x bytes=(1.53e+08, 2.61e+08) valuediff=0.00e+00 gradrel=1.64e-16
+```
+
+Higher-rep large/xlarge spot check:
+
+```text
+large    p=1024 n= 256 K=2 dense=0.1200 s lemma=0.1101 s speedup=1.09x bytes=(3.86e+07, 6.99e+07) valuediff=0.00e+00 gradrel=1.44e-16
+xlarge   p=2048 n= 512 K=2 dense=0.8349 s lemma=0.5128 s speedup=1.63x bytes=(1.53e+08, 2.61e+08) valuediff=0.00e+00 gradrel=1.99e-16
+```
+
+Interpretation: the exact lemma path is faster than dense in the large and
+xlarge rows and agrees to roundoff, but it remains memory-heavier than dense.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+<private-source trace scan over tracked repo content>
+<placeholder rerun scan over current check-log and after-task report>
+rg -n "mode_solve = :woodbury|mode_solve=:woodbury|K2 Workspace|k2factor|workspace" src/structured_schur.jl src/families/structured_poisson.jl test/test_structured_schur.jl docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-01-structured-schur-k2-workspace.md
+gh pr list --limit 5 --json number,title,headRefName,isDraft,state
+```
+
+Results:
+
+- `git diff --check`: clean.
+- Private-source trace scan over tracked public artifacts: clean.
+- Placeholder rerun scan: clean for the guard patterns used in this audit.
+- Workspace scan: expected current helper/report hits plus older historical
+  workspace ledger rows. The pre-existing exact lemma adjoint still calls the
+  joint solve with `mode_solve = :woodbury`; the rejected inner-mode solver
+  branch and fitter option do not remain.
+- GitHub lane check: open PR #59 remains the separate draft
+  `claude/package-work-catchup-mQiZM`; this slice did not edit that lane.
+
 ## 2026-06-01 - Non-Gaussian Benchmark Parity Labels
 
 ### Scope

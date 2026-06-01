@@ -171,9 +171,14 @@ end
     R = randn(p, 3)
     Ywb = similar(R)
     Ysparse = similar(R)
+    Ywork = similar(R)
+    BinvR = similar(R)
+    rhswork = Matrix{Float64}(undef, size(wb.C, 2), size(R, 2))
     @test wb.logdet ≈ dense_logdet atol = 1e-8 rtol = 1e-8
     @test sparse_wb.logdet ≈ dense_logdet atol = 1e-8 rtol = 1e-8
     @test GLLVM._schur_u_woodbury_inv_apply!(Ywb, wb, R) ≈ dense \ R atol = 1e-8 rtol = 1e-8
+    @test GLLVM._schur_u_woodbury_inv_apply!(
+        Ywork, wb, R, BinvR, rhswork) ≈ dense \ R atol = 1e-8 rtol = 1e-8
     @test GLLVM._schur_u_woodbury_inv_apply!(Ysparse, sparse_wb, R) ≈ dense \ R atol = 1e-8 rtol = 1e-8
     @test GLLVM._schur_u_woodbury_inv_diag(wb) ≈ diag(inv(dense)) atol = 1e-8 rtol = 1e-8
     @test GLLVM._schur_u_woodbury_inv_diag(sparse_wb) ≈ diag(inv(dense)) atol = 1e-8 rtol = 1e-8
@@ -181,6 +186,10 @@ end
         zeros(p, 2), wb, zeros(p + 1, 2))
     @test_throws DimensionMismatch GLLVM._schur_u_woodbury_inv_apply!(
         zeros(p, 3), wb, zeros(p, 2))
+    @test_throws DimensionMismatch GLLVM._schur_u_woodbury_inv_apply!(
+        Ywork, wb, R, zeros(p + 1, 3), rhswork)
+    @test_throws DimensionMismatch GLLVM._schur_u_woodbury_inv_apply!(
+        Ywork, wb, R, BinvR, zeros(size(wb.C, 2) + 1, 3))
     @test GLLVM._schur_u_logdet(op; method = :auto, dense_cutoff = p) ≈ dense_logdet atol = 1e-10 rtol = 1e-10
     @test GLLVM._schur_u_logdet(op; method = :slq, probes = full_basis,
         lanczos_steps = p, reorth = true) ≈ dense_logdet atol = 1e-8 rtol = 1e-8

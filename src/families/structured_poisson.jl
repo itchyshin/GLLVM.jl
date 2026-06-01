@@ -527,6 +527,8 @@ function _structured_poisson_block_implicit_value_grad(θ::AbstractVector,
     GU = Matrix{T}(undef, p, K)
     Ublock = nothing
     GUblock = nothing
+    BinvUblock = nothing
+    woodbury_rhs = nothing
     lemma_chunk_sites = 0
     lemma_chunk_start = 0
     lemma_chunk_stop = -1
@@ -538,6 +540,8 @@ function _structured_poisson_block_implicit_value_grad(θ::AbstractVector,
         lemma_chunk_sites = max(1, min(n, _STRUCTURED_POISSON_LEMMA_CHUNK_COLS ÷ K))
         Ublock = Matrix{T}(undef, p, K * lemma_chunk_sites)
         GUblock = similar(Ublock)
+        BinvUblock = similar(Ublock)
+        woodbury_rhs = Matrix{T}(undef, size(wb.C, 2), size(Ublock, 2))
     end
 
     @inbounds for i in 1:n
@@ -549,6 +553,8 @@ function _structured_poisson_block_implicit_value_grad(θ::AbstractVector,
                 active_cols = K * active_sites
                 Uactive = view(Ublock, :, 1:active_cols)
                 GUactive = view(GUblock, :, 1:active_cols)
+                BinvUactive = view(BinvUblock, :, 1:active_cols)
+                rhsactive = view(woodbury_rhs, :, 1:active_cols)
                 for site in lemma_chunk_start:lemma_chunk_stop
                     offset = (site - lemma_chunk_start) * K
                     for t in 1:p
@@ -557,7 +563,8 @@ function _structured_poisson_block_implicit_value_grad(θ::AbstractVector,
                         end
                     end
                 end
-                _schur_u_woodbury_inv_apply!(GUactive, wb, Uactive)
+                _schur_u_woodbury_inv_apply!(
+                    GUactive, wb, Uactive, BinvUactive, rhsactive)
             end
             offset = (i - lemma_chunk_start) * K
             cols = (offset + 1):(offset + K)
