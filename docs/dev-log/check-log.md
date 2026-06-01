@@ -1,5 +1,94 @@
 # Check Log
 
+## 2026-06-01 - Woodbury Apply Correction In-Place
+
+### Scope
+
+Removed one temporary correction matrix from `_schur_u_woodbury_inv_apply!` by
+solving the small Woodbury correction system in-place in the existing RHS
+buffer. This preserves the sparse CHOLMOD-safe base solve path and does not
+change any public API or fitter default.
+
+### Correctness Tests
+
+Focused structured tests:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_schur.jl"); include("test/test_structured_poisson_laplace.jl")'
+```
+
+Result: 165 pass, 0 fail, 0 error.
+
+Core suite:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: 2379 pass, 3 broken placeholders, 0 fail, 0 error.
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result: 2391 pass, 1 existing broken sparse-phy precision placeholder, 0 fail,
+0 error. The `quality` testset passed 12/12, covering Aqua/JET in the full
+package battery.
+
+### Benchmark Evidence
+
+Dense-base helper microbenchmark comparing the previous correction allocation
+against the in-place correction solve:
+
+```text
+dense_base_apply p=512 n=128 K=2 old=0.003497 new=0.003417 speedup=1.02x old_bytes=3145920 new_bytes=2621584 alloc_reduction=1.20x err=0.00e+00
+```
+
+Structured Poisson exact lemma-gradient benchmark after the helper change:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_lemma_gradient_bench.jl --break-even --reps=2 --warmups=1 --out=/tmp/structured-poisson-lemma-gradient-correction-inplace.csv
+```
+
+Result:
+
+```text
+medium   p= 512 n= 128 K=2 dense=  0.0717 s lemma=  0.0458 s speedup= 1.57x bytes=(9.87e+06, 1.82e+07) valuediff=0.00e+00 gradrel=1.24e-16
+large    p=1024 n= 256 K=2 dense=  0.1962 s lemma=  0.1227 s speedup= 1.60x bytes=(3.86e+07, 7.10e+07) valuediff=0.00e+00 gradrel=1.60e-16
+xlarge   p=2048 n= 512 K=2 dense=  0.9555 s lemma=  0.5032 s speedup= 1.90x bytes=(1.53e+08, 2.80e+08) valuediff=0.00e+00 gradrel=1.72e-16
+```
+
+Interpretation: this is a small allocation cleanup, not a new algorithmic
+breakthrough. It preserves exactness and trims memory in the lemma-gradient
+route without weakening the existing speed evidence.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+<private-source trace scan over tracked repo content>
+<placeholder rerun scan over current check-log and after-task report>
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-01-woodbury-apply-correction-inplace.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p|100x|100.?x|gllvmTMB" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-01-woodbury-apply-correction-inplace.md bench CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+gh pr list --limit 5 --json number,title,headRefName,isDraft,state
+```
+
+Results:
+
+- `git diff --check`: clean.
+- Private-source trace scan over tracked public artifacts: clean.
+- Placeholder rerun scan: clean for the pending/rerun guard patterns.
+- Stale-wording scan: expected historical and command-pattern hits only; no
+  public API/status claim changed by this internal helper cleanup.
+- Performance-claim scan: expected existing Gaussian/gllvmTMB and internal
+  benchmark-log hits only; no public 100x structured speed claim was added.
+- GitHub lane check: open PR #59 remains the separate draft
+  `claude/package-work-catchup-mQiZM`; this slice did not edit that lane.
+
 ## 2026-06-01 - Private Provenance Historical Report Scrub
 
 ### Scope

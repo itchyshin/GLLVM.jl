@@ -639,8 +639,8 @@ function _schur_u_woodbury_inv_apply!(Y::AbstractMatrix,
     BinvV = wb.Bchol \ Matrix{T}(V)
     rhs = Matrix{T}(undef, r, size(V, 2))
     mul!(rhs, transpose(wb.C), BinvV)
-    correction = wb.Hchol \ rhs
-    mul!(Y, wb.BinvC, correction)
+    ldiv!(wb.Hchol, rhs)
+    mul!(Y, wb.BinvC, rhs)
     Y .+= BinvV
     return Y
 end
