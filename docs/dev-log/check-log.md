@@ -1,5 +1,25 @@
 # Check Log
 
+## 2026-06-01 - Private Provenance Historical Report Scrub
+
+### Scope
+
+Scrubbed a historical after-task report line that named private-provenance scan
+terms. The report now records only a generic private-provenance guard pattern.
+No source, tests, public API, or benchmark code changed.
+
+### Checks
+
+```sh
+git diff --check
+```
+
+Result: clean.
+
+Private-source trace scan over tracked public artifacts: no PDF/upload trace
+matches in the current working tree. A broader private-provenance guard remains
+in force; do not transcribe the guarded terms in public artifacts.
+
 ## 2026-06-01 - Structured Poisson Fitter Auto Logdet Default
 
 Branch: `codex/non-gaussian-fitter-gradients`
