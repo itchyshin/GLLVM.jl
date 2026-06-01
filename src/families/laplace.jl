@@ -30,6 +30,30 @@ catch
     nothing
 end
 
+struct _LaplaceModeWorkspace{T}
+    η::Vector{T}
+    μ::Vector{T}
+    me::Vector{T}
+    s::Vector{T}
+    W::Vector{T}
+    A::Matrix{T}
+    rhs::Vector{T}
+    Δ::Vector{T}
+end
+
+function _LaplaceModeWorkspace(::Type{T}, p::Int, K::Int) where {T}
+    return _LaplaceModeWorkspace{T}(
+        Vector{T}(undef, p),
+        Vector{T}(undef, p),
+        Vector{T}(undef, p),
+        Vector{T}(undef, p),
+        Vector{T}(undef, p),
+        Matrix{T}(undef, K, K),
+        Vector{T}(undef, K),
+        Vector{T}(undef, K),
+    )
+end
+
 # In-place inner Laplace mode-finder (Fisher-scoring Newton). Starts from the
 # contents of `z` and overwrites it with the conditional mode ẑ. This is used by
 # cached fitter paths so neighbouring Optim probes do not repeatedly cold-start
@@ -46,6 +70,64 @@ function _laplace_mode!(z::AbstractVector, family, y::AbstractVector, n::Abstrac
         A  = Symmetric(Λ' * (W .* Λ) + I)
         Δ  = _safe_solve(A, Λ' * s .- z)
         (Δ === nothing || !all(isfinite, Δ)) && break   # singular A ⇒ stop at current ẑ
+        z .+= Δ
+        maximum(abs, Δ) < tol && break
+    end
+    return z
+end
+
+function _laplace_mode!(z::AbstractVector, family, y::AbstractVector, n::AbstractVector,
+        Λ::AbstractMatrix, β::AbstractVector, link::Link,
+        work::_LaplaceModeWorkspace; maxiter::Integer = 100, tol::Real = 1e-9)
+    p, K = size(Λ)
+    η = work.η
+    μ = work.μ
+    me = work.me
+    s = work.s
+    W = work.W
+    A = work.A
+    rhs = work.rhs
+    Δ = work.Δ
+    for _ in 1:maxiter
+        mul!(η, Λ, z)
+        @inbounds for t in 1:p
+            η[t] = _clamp_eta(β[t] + η[t])
+            μ[t] = _clamp_mu(family, linkinv(link, η[t]))
+            me[t] = mu_eta(link, η[t])
+            s[t] = _glm_score(family, μ[t], n[t], me[t], y[t])
+            W[t] = _glm_weight(family, μ[t], n[t], me[t])
+        end
+
+        fill!(A, zero(eltype(A)))
+        @inbounds for k in 1:K
+            A[k, k] = one(eltype(A))
+        end
+        @inbounds for t in 1:p
+            for k in 1:K
+                WΛtk = W[t] * Λ[t, k]
+                for l in 1:K
+                    A[k, l] += WΛtk * Λ[t, l]
+                end
+            end
+        end
+
+        @inbounds for k in 1:K
+            rhs[k] = -z[k]
+        end
+        @inbounds for t in 1:p
+            for k in 1:K
+                rhs[k] += Λ[t, k] * s[t]
+            end
+        end
+
+        C = try
+            cholesky(Symmetric(A))
+        catch
+            break
+        end
+        copyto!(Δ, rhs)
+        ldiv!(C, Δ)
+        all(isfinite, Δ) || break
         z .+= Δ
         maximum(abs, Δ) < tol && break
     end
@@ -183,15 +265,33 @@ function _canonical_laplace_site_implicit_value_grad(family,
         p::Int, K::Int, link::Link; maxiter::Integer = 100, tol::Real = 1e-9,
         z_init = nothing, z_store = nothing)
     rr = rr_theta_len(p, K)
-    β = θ[1:p]
+    β = @view θ[1:p]
     Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+    return _canonical_laplace_site_implicit_value_grad_parts(
+        family, y, n, β, Λ, θ, p, K, link;
+        maxiter = maxiter, tol = tol, z_init = z_init, z_store = z_store)
+end
+
+function _canonical_laplace_site_implicit_value_grad_parts(family,
+        y::AbstractVector, n::AbstractVector, β::AbstractVector,
+        Λ::AbstractMatrix, θ::AbstractVector, p::Int, K::Int, link::Link;
+        maxiter::Integer = 100, tol::Real = 1e-9,
+        z_init = nothing, z_store = nothing, mode_work = nothing)
     z = if z_store === nothing
-        _laplace_mode(family, y, n, Λ, β, link;
-                      maxiter = maxiter, tol = tol, z_init = z_init)
+        zlocal = z_init === nothing ? zeros(promote_type(eltype(Λ), eltype(β)), K) :
+                 collect(promote_type(eltype(Λ), eltype(β)), z_init)
+        mode_work === nothing ?
+            _laplace_mode!(zlocal, family, y, n, Λ, β, link;
+                           maxiter = maxiter, tol = tol) :
+            _laplace_mode!(zlocal, family, y, n, Λ, β, link, mode_work;
+                           maxiter = maxiter, tol = tol)
     else
         z_init !== nothing && z_init !== z_store && copyto!(z_store, z_init)
-        _laplace_mode!(z_store, family, y, n, Λ, β, link;
-                       maxiter = maxiter, tol = tol)
+        mode_work === nothing ?
+            _laplace_mode!(z_store, family, y, n, Λ, β, link;
+                           maxiter = maxiter, tol = tol) :
+            _laplace_mode!(z_store, family, y, n, Λ, β, link, mode_work;
+                           maxiter = maxiter, tol = tol)
     end
     η  = _clamp_eta.(β .+ Λ * z)
     μ  = _clamp_mu.(Ref(family), linkinv.(Ref(link), η))
@@ -256,11 +356,14 @@ Poisson-log and Binomial-logit, where `∂s/∂η = -W` and
 function marginal_loglik_laplace_canonical_value_grad(family,
         Y::AbstractMatrix, N::AbstractMatrix, θ::AbstractVector,
         p::Int, K::Int, link::Link; kwargs...)
+    rr = rr_theta_len(p, K)
+    β = @view θ[1:p]
+    Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
     value = zero(eltype(θ))
     grad = zeros(eltype(θ), length(θ))
     @inbounds for i in axes(Y, 2)
-        v, g = _canonical_laplace_site_implicit_value_grad(
-            family, view(Y, :, i), view(N, :, i), θ, p, K, link; kwargs...)
+        v, g = _canonical_laplace_site_implicit_value_grad_parts(
+            family, view(Y, :, i), view(N, :, i), β, Λ, θ, p, K, link; kwargs...)
         value += v
         grad .+= g
     end
@@ -270,12 +373,15 @@ end
 function marginal_loglik_laplace_canonical_value_grad!(Zcache::AbstractMatrix,
         family, Y::AbstractMatrix, N::AbstractMatrix, θ::AbstractVector,
         p::Int, K::Int, link::Link; kwargs...)
+    rr = rr_theta_len(p, K)
+    β = @view θ[1:p]
+    Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
     value = zero(eltype(θ))
     grad = zeros(eltype(θ), length(θ))
     @inbounds for i in axes(Y, 2)
         zbuf = view(Zcache, :, i)
-        v, g = _canonical_laplace_site_implicit_value_grad(
-            family, view(Y, :, i), view(N, :, i), θ, p, K, link;
+        v, g = _canonical_laplace_site_implicit_value_grad_parts(
+            family, view(Y, :, i), view(N, :, i), β, Λ, θ, p, K, link;
             z_init = zbuf, z_store = zbuf, kwargs...)
         value += v
         grad .+= g
@@ -400,19 +506,37 @@ function _scalar_aux_laplace_site_implicit_value_grad(family_from_aux,
         p::Int, K::Int, link::Link; maxiter::Integer = 100, tol::Real = 1e-9,
         z_init = nothing, z_store = nothing)
     rr = rr_theta_len(p, K)
-    β = θ[1:p]
+    β = @view θ[1:p]
     Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
-    aux = θ[(p + rr + 1):end]
+    aux = @view θ[(p + rr + 1):length(θ)]
     length(aux) == 1 || throw(ArgumentError(
         "scalar-aux implicit gradient expects one auxiliary parameter; got $(length(aux))"))
     family = family_from_aux(aux)
+    return _scalar_aux_laplace_site_implicit_value_grad_parts(
+        family, family_from_aux, y, n, β, Λ, aux, θ, p, K, link;
+        maxiter = maxiter, tol = tol, z_init = z_init, z_store = z_store)
+end
+
+function _scalar_aux_laplace_site_implicit_value_grad_parts(family, family_from_aux,
+        y::AbstractVector, n::AbstractVector, β::AbstractVector,
+        Λ::AbstractMatrix, aux::AbstractVector, θ::AbstractVector,
+        p::Int, K::Int, link::Link; maxiter::Integer = 100, tol::Real = 1e-9,
+        z_init = nothing, z_store = nothing, mode_work = nothing)
     z = if z_store === nothing
-        _laplace_mode(family, y, n, Λ, β, link;
-                      maxiter = maxiter, tol = tol, z_init = z_init)
+        zlocal = z_init === nothing ? zeros(promote_type(eltype(Λ), eltype(β)), K) :
+                 collect(promote_type(eltype(Λ), eltype(β)), z_init)
+        mode_work === nothing ?
+            _laplace_mode!(zlocal, family, y, n, Λ, β, link;
+                           maxiter = maxiter, tol = tol) :
+            _laplace_mode!(zlocal, family, y, n, Λ, β, link, mode_work;
+                           maxiter = maxiter, tol = tol)
     else
         z_init !== nothing && z_init !== z_store && copyto!(z_store, z_init)
-        _laplace_mode!(z_store, family, y, n, Λ, β, link;
-                       maxiter = maxiter, tol = tol)
+        mode_work === nothing ?
+            _laplace_mode!(z_store, family, y, n, Λ, β, link;
+                           maxiter = maxiter, tol = tol) :
+            _laplace_mode!(z_store, family, y, n, Λ, β, link, mode_work;
+                           maxiter = maxiter, tol = tol)
     end
     η = _clamp_eta.(β .+ Λ * z)
 
@@ -491,13 +615,36 @@ to `(η, aux)` and applies the packed implicit-gradient chain rule analytically.
 function marginal_loglik_laplace_aux_value_grad(family_from_aux,
         Y::AbstractMatrix, N::AbstractMatrix, θ::AbstractVector,
         p::Int, K::Int, link::Link; kwargs...)
+    rr = rr_theta_len(p, K)
+    β = @view θ[1:p]
+    Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+    aux = @view θ[(p + rr + 1):length(θ)]
+    length(aux) == 1 || throw(ArgumentError(
+        "scalar-aux implicit gradient expects one auxiliary parameter; got $(length(aux))"))
+    family = family_from_aux(aux)
+    use_mode_work = !(family isa NegativeBinomial)
     value = zero(eltype(θ))
     grad = zeros(eltype(θ), length(θ))
-    @inbounds for i in axes(Y, 2)
-        v, g = _scalar_aux_laplace_site_implicit_value_grad(
-            family_from_aux, view(Y, :, i), view(N, :, i), θ, p, K, link; kwargs...)
-        value += v
-        grad .+= g
+    if use_mode_work
+        mode_work = _LaplaceModeWorkspace(eltype(θ), p, K)
+        zwork = zeros(eltype(θ), K)
+        @inbounds for i in axes(Y, 2)
+            fill!(zwork, zero(eltype(zwork)))
+            v, g = _scalar_aux_laplace_site_implicit_value_grad_parts(
+                family, family_from_aux, view(Y, :, i), view(N, :, i),
+                β, Λ, aux, θ, p, K, link;
+                z_store = zwork, mode_work = mode_work, kwargs...)
+            value += v
+            grad .+= g
+        end
+    else
+        @inbounds for i in axes(Y, 2)
+            v, g = _scalar_aux_laplace_site_implicit_value_grad_parts(
+                family, family_from_aux, view(Y, :, i), view(N, :, i),
+                β, Λ, aux, θ, p, K, link; kwargs...)
+            value += v
+            grad .+= g
+        end
     end
     return value, grad
 end
@@ -515,15 +662,37 @@ function marginal_loglik_laplace_aux_value_grad!(Zcache::AbstractMatrix,
         p::Int, K::Int, link::Link; kwargs...)
     size(Zcache, 1) == K && size(Zcache, 2) == size(Y, 2) ||
         throw(DimensionMismatch("Zcache must have size (K, n_sites) = ($(K), $(size(Y, 2))); got $(size(Zcache))"))
+    rr = rr_theta_len(p, K)
+    β = @view θ[1:p]
+    Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+    aux = @view θ[(p + rr + 1):length(θ)]
+    length(aux) == 1 || throw(ArgumentError(
+        "scalar-aux implicit gradient expects one auxiliary parameter; got $(length(aux))"))
+    family = family_from_aux(aux)
+    use_mode_work = !(family isa NegativeBinomial)
     value = zero(eltype(θ))
     grad = zeros(eltype(θ), length(θ))
-    @inbounds for i in axes(Y, 2)
-        zbuf = view(Zcache, :, i)
-        v, g = _scalar_aux_laplace_site_implicit_value_grad(
-            family_from_aux, view(Y, :, i), view(N, :, i), θ, p, K, link;
-            z_init = zbuf, z_store = zbuf, kwargs...)
-        value += v
-        grad .+= g
+    if use_mode_work
+        mode_work = _LaplaceModeWorkspace(eltype(θ), p, K)
+        @inbounds for i in axes(Y, 2)
+            zbuf = view(Zcache, :, i)
+            v, g = _scalar_aux_laplace_site_implicit_value_grad_parts(
+                family, family_from_aux, view(Y, :, i), view(N, :, i),
+                β, Λ, aux, θ, p, K, link;
+                z_init = zbuf, z_store = zbuf, mode_work = mode_work, kwargs...)
+            value += v
+            grad .+= g
+        end
+    else
+        @inbounds for i in axes(Y, 2)
+            zbuf = view(Zcache, :, i)
+            v, g = _scalar_aux_laplace_site_implicit_value_grad_parts(
+                family, family_from_aux, view(Y, :, i), view(N, :, i),
+                β, Λ, aux, θ, p, K, link;
+                z_init = zbuf, z_store = zbuf, kwargs...)
+            value += v
+            grad .+= g
+        end
     end
     return value, grad
 end

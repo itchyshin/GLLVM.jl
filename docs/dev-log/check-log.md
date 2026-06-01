@@ -1,5 +1,117 @@
 # Check Log
 
+## 2026-05-31 — Dense-Laplace Mode Workspace For Scalar-Aux Fits
+
+Branch: `codex/non-gaussian-fitter-gradients`
+
+Head before local commit: `646d02b`.
+
+### Scope
+
+- Added an internal `_LaplaceModeWorkspace` for the Fisher-scoring mode finder
+  to reuse `η`, `μ`, `dμ/dη`, score, weight, Hessian, RHS, and Newton-step
+  buffers.
+- Reused packed `β`, `Λ`, and scalar auxiliary views once per aggregate
+  objective call instead of reconstructing them at every site.
+- Enabled the workspace only for scalar-auxiliary Beta/Gamma paths. A broader
+  canonical Poisson/Binomial workspace variant caused an isolated
+  `fit_poisson_gllvm` convergence failure under `Pkg.test()`, so that path was
+  deliberately backed out.
+- Kept NegativeBinomial on the old BLAS-heavy mode solve because the workspace
+  loop reduced allocations but slowed the medium NB fit.
+- No public API changes. No edits to `src/sparse_phy_grad.jl`, `src/em_phylo.jl`,
+  or the PR #59 non-Gaussian CI / two-part lane.
+
+### Verification
+
+Gradient gate:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_family_forwarddiff_gradients.jl")'
+```
+
+Result:
+
+```text
+non-Gaussian fitter objectives: AD/implicit gradients | 92/92 pass
+```
+
+All non-Gaussian recovery command:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_binomial_fit.jl"); include("test/test_poisson_fit.jl"); include("test/test_nb_fit.jl"); include("test/test_beta_fit.jl"); include("test/test_gamma_fit.jl"); include("test/test_ordinal_fit.jl")'
+```
+
+Result:
+
+```text
+fit_binomial_gllvm — recovery | 8/8 pass
+fit_poisson_gllvm — recovery  | 7/7 pass
+fit_nb_gllvm — recovery       | 7/7 pass
+fit_beta_gllvm                | 7/7 pass
+fit_gamma_gllvm               | 7/7 pass
+fit_ordinal_gllvm             | 9/9 pass
+```
+
+Core command:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. Manual tally from emitted summaries: 2214 pass, 3 broken
+placeholders, 0 fail, 0 error.
+
+Full command:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Manual tally from emitted summaries: 2226 pass, 1 existing broken sparse-phy
+precision check, 0 fail, 0 error.
+
+### Allocation Probes
+
+Probe shape: `p = 30`, `n = 120`, `K = 2`; one warmed aggregate value/gradient
+call measured with `@allocated`.
+
+| family/path | before bytes | after bytes | allocation reduction |
+| --- | ---: | ---: | ---: |
+| Gamma scalar-aux | 8,650,448 | 1,974,224 | 4.38x |
+| Beta scalar-aux | not recorded before this slice | 1,920,752 | reported as after-only |
+| Negative-binomial scalar-aux | 6,145,616 | 6,020,016 | intentionally near unchanged |
+
+### Benchmarks
+
+Julia-only warmed medium-cell benchmark:
+
+```sh
+julia --project=. --startup-file=no bench/non_gaussian_gllvmtmb_bench.jl --full --cells=medium --families=negbin,beta,gamma --iterations=120 --warmups=2 --reps=3 --julia-only
+```
+
+| family | p | n | K | median seconds | convergence |
+| --- | ---: | ---: | ---: | ---: | --- |
+| negbin | 30 | 500 | 2 | 0.8786 | 3/3 |
+| beta | 30 | 500 | 2 | 2.2930 | 3/3 |
+| gamma | 30 | 500 | 2 | 1.1868 | 3/3 |
+
+For comparison with immediately prior logged medians on this branch:
+negative-binomial remains near the previous `0.8803s`; Beta improves from the
+previous logged `2.5687s`; Gamma improves from the previous logged `1.5403s`.
+
+### Hygiene
+
+- `git diff --check`: clean.
+- Sensitive-provenance guard scan over public repo artifacts: clean.
+
 ## 2026-05-31 — Gamma Scalar-Aux Implicit Fitter
 
 Branch: `codex/non-gaussian-fitter-gradients`
