@@ -229,6 +229,31 @@ function _rademacher_probes(rng::AbstractRNG, p::Integer, nprobes::Integer)
     return probes
 end
 
+function _orthogonal_probes(rng::AbstractRNG, p::Integer, nprobes::Integer)
+    p > 0 || throw(ArgumentError("p must be positive; got $p"))
+    nprobes > 0 || throw(ArgumentError("nprobes must be positive; got $nprobes"))
+    nprobes <= p || throw(ArgumentError(
+        "orthogonal probes require nprobes <= p; got nprobes=$nprobes, p=$p"))
+    probes = randn(rng, p, nprobes)
+    target_norm2 = float(p)
+    @inbounds for j in 1:nprobes
+        for h in 1:(j - 1)
+            coeff = dot(view(probes, :, h), view(probes, :, j)) / target_norm2
+            for i in 1:p
+                probes[i, j] -= coeff * probes[i, h]
+            end
+        end
+        normj = norm(view(probes, :, j))
+        normj > sqrt(eps(Float64)) || throw(ArgumentError(
+            "failed to generate linearly independent orthogonal probe $j"))
+        scale = sqrt(float(p)) / normj
+        for i in 1:p
+            probes[i, j] *= scale
+        end
+    end
+    return probes
+end
+
 function _slq_logdet(op::_SchurUOperator, probes::AbstractMatrix;
         lanczos_steps::Integer = 40, reorth::Bool = false)
     p = size(op, 1)

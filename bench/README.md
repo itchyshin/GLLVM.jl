@@ -166,6 +166,12 @@ julia --project=. bench/structured_poisson_trace_gradient_bench.jl --smoke
 julia --project=. bench/structured_poisson_trace_gradient_bench.jl --full --out=structured-poisson-trace-gradient.csv
 ```
 
+The default probe strategy is frozen Rademacher probing. Use
+`--probe-kind=orthogonal` to compare against scaled orthogonal Gaussian probes
+when studying stochastic-trace accuracy; this is a probe-study control, not the
+default operating point. `--nprobes=` and `--lanczos-steps=` control the usual
+speed/accuracy trade-off.
+
 This benchmark is deliberately Julia-only: it answers where the large-p
 structured determinant path starts to beat dense `S_u^{-1}` materialization,
 not whether the public fit agrees with R `gllvmTMB`.

@@ -1158,6 +1158,155 @@ gh pr list --limit 5 --json number,title,headRefName,isDraft,state
 
 No issue or PR was modified.
 
+## 2026-06-01 — Structured Poisson Orthogonal Probe Control
+
+### Implemented Claim
+
+Added a scaled orthogonal Gaussian probe generator for the internal structured
+Schur SLQ workbench and exposed it in
+`bench/structured_poisson_trace_gradient_bench.jl` via
+`--probe-kind=orthogonal`. This is an optional probe-strategy control for
+accuracy studies, not a new default and not a public fitted-model claim.
+
+### Collision And Lane Checks
+
+```sh
+git status --short --branch
+git branch --show-current
+git rev-parse --short HEAD
+gh pr list --limit 10 --state open
+gh run list --limit 3
+```
+
+Result:
+
+```text
+## codex/non-gaussian-fitter-gradients...origin/main [ahead 20]
+M bench/structured_poisson_trace_gradient_bench.jl
+M src/structured_schur.jl
+M test/test_structured_schur.jl
+?? .claude/
+branch: codex/non-gaussian-fitter-gradients
+head: 8ab244d
+open PR: #59 draft, claude/package-work-catchup-mQiZM
+latest runs: pages success; PR #59 Documenter success; PR #59 CI failure
+```
+
+No edits were made to `src/sparse_phy_grad.jl`, `src/em_phylo.jl`, or PR #59
+files. `.claude/` remains untracked and untouched.
+
+### Focused Tests
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_schur.jl")'
+```
+
+Result:
+
+```text
+structured Schur operator     | 36/36 pass
+structured Schur SLQ logdet   | 14/14 pass
+```
+
+The new tests check the orthogonal probe shape, scaled Gram matrix
+`P'P = pI`, SLQ compatibility, and the malformed `nprobes > p` failure path.
+
+### Benchmarks
+
+Smoke paths:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_trace_gradient_bench.jl --smoke --probe-kind=rademacher
+julia --project=. --startup-file=no bench/structured_poisson_trace_gradient_bench.jl --smoke --probe-kind=orthogonal
+```
+
+Result:
+
+```text
+rademacher smoke: dense=0.0098 s, slq=0.0121 s, speedup=0.81x, valuediff=1.36e-01, gradrel=6.79e-02
+orthogonal smoke: dense=0.0851 s, slq=0.0149 s, speedup=5.73x, valuediff=2.12e-01, gradrel=6.44e-02
+```
+
+Large/frontier comparison with `nprobes=4`, `lanczos_steps=20`,
+`reps=1`, `warmups=2`:
+
+| probe kind | cell | p | n | dense (s) | SLQ (s) | dense / SLQ | value diff | gradient relative error |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| rademacher | large | 320 | 160 | 0.1973 | 0.0837 | 2.36x | 6.15e-01 | 1.41e-01 |
+| rademacher | frontier | 640 | 160 | 0.5337 | 0.1672 | 3.19x | 2.46e+00 | 3.18e-01 |
+| orthogonal | large | 320 | 160 | 0.1815 | 0.0848 | 2.14x | 7.40e-01 | 1.49e-01 |
+| orthogonal | frontier | 640 | 160 | 0.5460 | 0.1708 | 3.20x | 2.72e+00 | 3.34e-01 |
+
+Higher-probe large-cell comparison with `nprobes=16`, `lanczos_steps=20`,
+`reps=1`, `warmups=2`:
+
+| probe kind | cell | p | n | dense (s) | SLQ (s) | dense / SLQ | value diff | gradient relative error |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| rademacher | large | 320 | 160 | 0.1591 | 0.2320 | 0.69x | 7.08e-01 | 6.98e-02 |
+| orthogonal | large | 320 | 160 | 0.1582 | 0.2314 | 0.68x | 2.12e-01 | 6.61e-02 |
+
+Interpretation: orthogonal probes are a useful benchmark control and may reduce
+noise at higher probe budgets, but the live evidence does not justify making
+them the default.
+
+### Test Suites
+
+Core suite:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. Manual tally from emitted `Test Summary` blocks:
+2308 pass, 1 existing broken sparse-phy precision placeholder, 2 expected
+quality placeholders in the direct core environment, 0 fail, 0 error.
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Manual tally from emitted `Test Summary` blocks: 2320 pass, 1 existing broken
+sparse-phy precision placeholder, 0 fail, 0 error.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+<private-source trace scan over tracked repo content>
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src docs/dev-log/check-log.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p|100x|100.?x|gllvmTMB" README.md docs/src docs/dev-log/check-log.md bench CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+```
+
+Results:
+
+- `git diff --check`: clean after code and documentation edits.
+- Private-source trace scan: no matches in tracked repo content.
+- Stale-wording scan is expected to find the user-provided AGENTS.md
+  "Gaussian only" snapshot and historical check-log entries; this slice adds no
+  new stale public claim.
+- Performance-claim scan is expected to find existing Gaussian/gllvmTMB claims
+  and historical internal structured benchmark records. This new section labels
+  the orthogonal-probe result as optional internal evidence only.
+
+Open PR / collision check:
+
+```text
+[#59 draft: gllvmTMB catch-up: Delta-Gamma + zero-inflated (ZIP/ZINB) families + non-Gaussian CIs]
+```
+
+No issue or PR was modified.
+
 ## 2026-06-01 — Structured Poisson Trace-Gradient Benchmark And Workspace Reuse
 
 ### Implemented Claim

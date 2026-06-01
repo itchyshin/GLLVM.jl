@@ -19,8 +19,8 @@ using Statistics
 using GLLVM
 
 const CSV_HEADER = [
-    "timestamp", "mode", "cell", "p", "n", "K", "nprobes", "lanczos_steps",
-    "dense_seconds", "slq_seconds", "speedup_dense_over_slq",
+    "timestamp", "mode", "cell", "p", "n", "K", "probe_kind", "nprobes",
+    "lanczos_steps", "dense_seconds", "slq_seconds", "speedup_dense_over_slq",
     "dense_value", "slq_value", "absdiff_value", "relerr_gradient", "reps",
 ]
 
@@ -45,6 +45,7 @@ function usage()
       --cells=a,b,c          Comma-separated cell subset.
       --reps=N               Measured repetitions (default: 1).
       --warmups=N            Warmup repetitions (default: 2).
+      --probe-kind=KIND      rademacher or orthogonal (default: rademacher).
       --nprobes=N            Frozen SLQ probe count (default: 4).
       --lanczos-steps=N      SLQ Lanczos steps (default: 20).
       --seed=N               Base random seed (default: 9701).
@@ -60,6 +61,7 @@ function parse_args(args)
     warmups = 2
     seed = 9701
     out = nothing
+    probe_kind = :rademacher
     nprobes = 4
     lanczos_steps = 20
 
@@ -77,6 +79,10 @@ function parse_args(args)
             reps = parse(Int, arg[(lastindex("--reps=") + 1):end])
         elseif startswith(arg, "--warmups=")
             warmups = parse(Int, arg[(lastindex("--warmups=") + 1):end])
+        elseif startswith(arg, "--probe-kind=")
+            probe_kind = Symbol(arg[(lastindex("--probe-kind=") + 1):end])
+            probe_kind in (:rademacher, :orthogonal) || throw(ArgumentError(
+                "--probe-kind must be rademacher or orthogonal; got $probe_kind"))
         elseif startswith(arg, "--nprobes=")
             nprobes = parse(Int, arg[(lastindex("--nprobes=") + 1):end])
         elseif startswith(arg, "--lanczos-steps=")
@@ -95,7 +101,7 @@ function parse_args(args)
     lanczos_steps > 0 || throw(ArgumentError(
         "--lanczos-steps must be positive; got $lanczos_steps"))
     return (mode = mode, cells = cells, reps = reps, warmups = warmups,
-        seed = seed, out = out, nprobes = nprobes,
+        seed = seed, out = out, probe_kind = probe_kind, nprobes = nprobes,
         lanczos_steps = lanczos_steps)
 end
 
@@ -120,7 +126,7 @@ function lower_triangular_loadings(rng, p::Int, K::Int)
     return Λ
 end
 
-function fixture(cell, seed, nprobes)
+function fixture(cell, seed, args)
     rng = MersenneTwister(seed)
     β = fill(log(1.35), cell.p)
     Λ = lower_triangular_loadings(rng, cell.p, cell.K)
@@ -131,7 +137,10 @@ function fixture(cell, seed, nprobes)
         -1 => fill(-0.15, cell.p - 1),
          0 => fill(1.3, cell.p),
          1 => fill(-0.15, cell.p - 1)))
-    probes = GLLVM._rademacher_probes(MersenneTwister(seed + 1), cell.p, nprobes)
+    probe_rng = MersenneTwister(seed + 1)
+    probes = args.probe_kind == :rademacher ?
+             GLLVM._rademacher_probes(probe_rng, cell.p, args.nprobes) :
+             GLLVM._orthogonal_probes(probe_rng, cell.p, args.nprobes)
     return Y, precision, vcat(β, GLLVM.pack_lambda(Λ)), probes
 end
 
@@ -167,7 +176,7 @@ function write_csv(path, rows)
 end
 
 function run_cell(cell, args, index)
-    Y, precision, θ, probes = fixture(cell, args.seed + 1000 * index, args.nprobes)
+    Y, precision, θ, probes = fixture(cell, args.seed + 1000 * index, args)
     dense = time_value_grad(args.warmups, args.reps) do
         GLLVM._structured_poisson_implicit_value_grad(
             θ, Y, precision, cell.p, cell.K; sigma2 = 0.5,
@@ -191,6 +200,7 @@ function run_cell(cell, args, index)
         "p" => cell.p,
         "n" => cell.n,
         "K" => cell.K,
+        "probe_kind" => args.probe_kind,
         "nprobes" => args.nprobes,
         "lanczos_steps" => args.lanczos_steps,
         "dense_seconds" => dense.seconds,
@@ -215,7 +225,7 @@ function main()
     args = parse_args(ARGS)
     cells = select_cells(args.mode, args.cells)
     rows = Dict{String, Any}[]
-    println("Structured Poisson trace-gradient benchmark ($(args.mode)); reps=$(args.reps), warmups=$(args.warmups), nprobes=$(args.nprobes), steps=$(args.lanczos_steps)")
+    println("Structured Poisson trace-gradient benchmark ($(args.mode)); reps=$(args.reps), warmups=$(args.warmups), probe_kind=$(args.probe_kind), nprobes=$(args.nprobes), steps=$(args.lanczos_steps)")
     for (idx, cell) in enumerate(cells)
         row = run_cell(cell, args, idx)
         push!(rows, row)

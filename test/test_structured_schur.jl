@@ -103,6 +103,15 @@ end
     estimate_2 = GLLVM._slq_logdet(op, probes; lanczos_steps = 12, reorth = true)
     @test estimate_1 == estimate_2
     @test isfinite(estimate_1)
+
+    orthogonal = GLLVM._orthogonal_probes(MersenneTwister(804), p, 5)
+    @test size(orthogonal) == (p, 5)
+    @test diag(orthogonal' * orthogonal) ≈ fill(float(p), 5) atol = 1e-10 rtol = 1e-10
+    @test maximum(abs, orthogonal' * orthogonal - float(p) * I) ≤ 1e-10
+    orthogonal_estimate = GLLVM._slq_logdet(op, orthogonal; lanczos_steps = 12, reorth = true)
+    @test isfinite(orthogonal_estimate)
+
     @test_throws ArgumentError GLLVM._schur_u_logdet(op; method = :wat)
     @test_throws ArgumentError GLLVM._schur_u_logdet(op; dense_cutoff = -1)
+    @test_throws ArgumentError GLLVM._orthogonal_probes(MersenneTwister(805), p, p + 1)
 end
