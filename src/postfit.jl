@@ -898,3 +898,88 @@ function Base.show(io::IO, ::MIME"text/plain", fit::HurdlePoissonFit)
             ", AIC = ", round(aic(fit); sigdigits = 7))
     print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
 end
+
+# ---------------------------------------------------------------------------
+# Hurdle-NB post-fit (occurrence Bernoulli × zero-truncated NB2 count).
+# ---------------------------------------------------------------------------
+
+_loadings(fit::HurdleNBFit) = fit.Λc
+_loglik(fit::HurdleNBFit)   = fit.loglik
+
+function _nparams(fit::HurdleNBFit)
+    p, K = size(fit.Λc)
+    return 2p + (p * K - div(K * (K - 1), 2)) + 1   # βz + βc + Λc + r
+end
+
+function getLV(fit::HurdleNBFit, Y::AbstractMatrix{<:Real}; rotate::Bool = true)
+    p, n = size(Y); K = size(fit.Λc, 2)
+    Λz = zeros(p, K)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        Z[:, s] = _twopart_mode(HurdleNB(fit.r), view(Y, :, s), Λz, fit.Λc, fit.βz, fit.βc)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λc) : Zt
+end
+
+"""
+    predict(fit::HurdleNBFit, Y; type=:response) -> p×n matrix
+
+`:link` = `η^c`; `:occurrence` = `π`; `:positive` = zero-truncated NB mean
+`μ/(1−p₀)` (`p₀=(r/(r+μ))^r`); `:response` = `π · μ/(1−p₀)`.
+"""
+function predict(fit::HurdleNBFit, Y::AbstractMatrix{<:Real}; type::Symbol = :response)
+    type in (:response, :occurrence, :positive, :link) ||
+        throw(ArgumentError("type must be :response, :occurrence, :positive, or :link; got :$type"))
+    p, n = size(Y)
+    Z = getLV(fit, Y; rotate = false)
+    ηc = fit.βc .+ fit.Λc * Z'
+    type === :link && return ηc
+    π = inv.(1 .+ exp.(-fit.βz))
+    type === :occurrence && return repeat(π, 1, n)
+    μ = exp.(ηc); r = fit.r
+    μtr = μ ./ (1 .- (r ./ (r .+ μ)) .^ r)
+    type === :positive && return μtr
+    return π .* μtr
+end
+
+"""
+    residuals(fit::HurdleNBFit, Y; rng=Random.default_rng()) -> p×n matrix
+
+Dunn–Smyth randomized quantile residuals for the discrete two-part fit, using the
+hurdle CDF `F(k) = (1−π) + π·F_trunc(k)` (`F_trunc` the zero-truncated NB2 CDF).
+"""
+function residuals(fit::HurdleNBFit, Y::AbstractMatrix{<:Real};
+                   rng::AbstractRNG = Random.default_rng())
+    p, n = size(Y); r = fit.r
+    Z = getLV(fit, Y; rotate = false)
+    ηc = fit.βc .+ fit.Λc * Z'
+    π = inv.(1 .+ exp.(-fit.βz))
+    R = Matrix{Float64}(undef, p, n)
+    @inbounds for s in 1:n, t in 1:p
+        πt = π[t]; y = Int(Y[t, s])
+        if y == 0
+            lo = 0.0; hi = 1 - πt
+        else
+            μ = exp(ηc[t, s]); p0 = (r / (r + μ))^r
+            nb = NegativeBinomial(r, r / (r + μ))
+            Flo = y == 1 ? 0.0 : (cdf(nb, y - 1) - p0) / (1 - p0)
+            Fhi = (cdf(nb, y) - p0) / (1 - p0)
+            lo = (1 - πt) + πt * Flo
+            hi = (1 - πt) + πt * Fhi
+        end
+        u = lo + (hi - lo) * rand(rng)
+        R[t, s] = quantile(Normal(), clamp(u, 1e-12, 1 - 1e-12))
+    end
+    return R
+end
+
+function Base.show(io::IO, ::MIME"text/plain", fit::HurdleNBFit)
+    p, K = size(fit.Λc)
+    println(io, "Hurdle-NB GLLVM fit (two-part)")
+    println(io, "  responses p = ", p, ", latent factors K = ", K,
+            ", dispersion r = ", round(fit.r; sigdigits = 4))
+    println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
+            ", AIC = ", round(aic(fit); sigdigits = 7))
+    print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
+end
