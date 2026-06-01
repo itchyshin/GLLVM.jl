@@ -21,6 +21,14 @@ struct _SchurUOperatorWorkspace{T}
     Ainvs::Vector{Matrix{T}}
 end
 
+struct _SchurUWoodbury{T, TB, TH}
+    Bchol::TB
+    Hchol::TH
+    C::Matrix{T}
+    BinvC::Matrix{T}
+    logdet::T
+end
+
 _matrix_storage(A::Matrix{T}, ::Type{T}) where {T} = A
 _matrix_storage(A::AbstractMatrix, ::Type{T}) where {T} = Matrix{T}(A)
 
@@ -604,6 +612,10 @@ function _schur_u_logdet(op::_SchurUOperator; method::Symbol = :auto,
 end
 
 function _schur_u_logdet_lemma(op::_SchurUOperator)
+    return _schur_u_woodbury(op).logdet
+end
+
+function _schur_u_woodbury(op::_SchurUOperator)
     p, K = size(op.Lambda)
     nsites = size(op.Wsites, 2)
     K <= 3 || throw(ArgumentError("determinant-lemma logdet requires K <= 3; got K=$K"))
@@ -614,7 +626,51 @@ function _schur_u_logdet_lemma(op::_SchurUOperator)
     X = FB \ C
     H = Matrix{T}(I, size(C, 2), size(C, 2))
     mul!(H, transpose(C), X, -one(T), one(T))
-    return logdet(FB) + logdet(cholesky(Symmetric(H)))
+    FH = cholesky(Symmetric(H))
+    return _SchurUWoodbury(FB, FH, C, X, logdet(FB) + logdet(FH))
+end
+
+function _schur_u_woodbury_inv_apply!(Y::AbstractMatrix,
+        wb::_SchurUWoodbury, V::AbstractMatrix)
+    p, r = size(wb.C)
+    size(V, 1) == p || throw(DimensionMismatch("V must have $p rows; got $(size(V, 1))"))
+    size(Y) == size(V) || throw(DimensionMismatch("Y must have size $(size(V)); got $(size(Y))"))
+    T = promote_type(eltype(wb.C), eltype(V), eltype(Y))
+    BinvV = wb.Bchol \ Matrix{T}(V)
+    rhs = Matrix{T}(undef, r, size(V, 2))
+    mul!(rhs, transpose(wb.C), BinvV)
+    correction = wb.Hchol \ rhs
+    mul!(Y, wb.BinvC, correction)
+    Y .+= BinvV
+    return Y
+end
+
+function _schur_u_woodbury_inv_diag(wb::_SchurUWoodbury)
+    d = _schur_chol_inv_diag(wb.Bchol)
+    Y = wb.Hchol \ transpose(wb.BinvC)
+    p, r = size(wb.BinvC)
+    length(d) == p || throw(DimensionMismatch(
+        "base inverse diagonal must have length $p; got $(length(d))"))
+    @inbounds for i in 1:p
+        acc = zero(eltype(d))
+        for j in 1:r
+            acc += wb.BinvC[i, j] * Y[j, i]
+        end
+        d[i] += acc
+    end
+    return d
+end
+
+function _schur_chol_inv_diag(ch::Cholesky)
+    n = size(ch, 1)
+    T = eltype(ch)
+    G = Matrix{T}(I, n, n)
+    ldiv!(ch, G)
+    return diag(G)
+end
+
+function _schur_chol_inv_diag(ch::SparseArrays.CHOLMOD.Factor{Float64})
+    return takahashi_diag(ch)
 end
 
 function _schur_u_cg!(x::AbstractVector, op::_SchurUOperator, b::AbstractVector;

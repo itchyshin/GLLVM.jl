@@ -4823,3 +4823,118 @@ Results:
   was added.
 - GitHub lane check: PR #59 remains the separate draft
   `claude/package-work-catchup-mQiZM` lane; no PR or issue was modified.
+
+## 2026-06-01 - Structured Schur Woodbury Inverse Helper
+
+### Scope
+
+Added an exact internal Woodbury inverse substrate for the determinant-lemma
+Schur path. Given `S_u = B - C C'`, `_schur_u_woodbury(op)` now caches the
+base Cholesky, the small determinant Cholesky, `C`, `B^-1 C`, and the exact
+logdet. New helpers compute `S_u^-1 V` and `diag(S_u^-1)` from those factors.
+This does not change the default fitter or the `:auto` determinant policy.
+
+### Correctness Tests
+
+Added direct structured Schur tests proving:
+
+- Woodbury cached logdet matches exact dense logdet for dense and sparse
+  precision.
+- `_schur_u_woodbury_inv_apply!` matches dense `S_u \ R` for dense and sparse
+  precision.
+- `_schur_u_woodbury_inv_diag` matches `diag(inv(S_u))` for dense and sparse
+  precision.
+- malformed RHS/output dimensions throw `DimensionMismatch`.
+
+Focused structured tests:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_schur.jl"); include("test/test_structured_poisson_laplace.jl")'
+```
+
+Result: 158 pass, 0 fail, 0 error.
+
+Core suite:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. Manual tally from emitted `Test Summary` blocks:
+2367 pass, 1 existing broken sparse-phy precision placeholder, 2 expected
+quality placeholders in the direct core environment, 0 fail, 0 error.
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Manual tally from emitted `Test Summary` blocks: 2379 pass, 1 existing broken
+sparse-phy precision placeholder, quality 12/12 pass, 0 fail, 0 error.
+
+### Benchmark Evidence
+
+New repeatable harness:
+
+```sh
+julia --project=. --startup-file=no bench/structured_schur_woodbury_bench.jl --smoke --reps=2 --warmups=1 --out=/tmp/structured-schur-woodbury-smoke.csv
+julia --project=. --startup-file=no bench/structured_schur_woodbury_bench.jl --break-even --reps=2 --warmups=1 --out=/tmp/structured-schur-woodbury-break-even.csv
+```
+
+Results:
+
+```text
+smoke    p=  80 n=  24 K=2 dense_setup=0.0002 woodbury_setup=0.0001 setup_speed=1.68x dense_batch=0.0007 woodbury_batch=0.0005 batch_speed=1.31x apply_err=2.22e-16 diag_err=4.16e-17
+giant    p=1024 n= 256 K=2 dense_setup=0.0437 woodbury_setup=0.0128 setup_speed=3.41x dense_batch=0.0352 woodbury_batch=0.0397 batch_speed=0.89x apply_err=2.08e-17 diag_err=6.07e-18
+xlarge   p=2048 n= 512 K=2 dense_setup=0.1554 woodbury_setup=0.0464 setup_speed=3.35x dense_batch=0.1529 woodbury_batch=0.1019 batch_speed=1.50x apply_err=1.56e-17 diag_err=3.90e-18
+```
+
+CSV details for the break-even cells:
+
+```text
+giant:  dense_apply=0.0013703125 s, woodbury_apply=0.0028394585 s, dense_batch_bytes=33,616,240, woodbury_batch_bytes=59,576,264
+xlarge: dense_apply=0.0028924375 s, woodbury_apply=0.0015654165 s, dense_batch_bytes=134,340,976, woodbury_batch_bytes=236,584,176
+```
+
+Interpretation: Woodbury setup is exact and `3.35x` to `3.41x` faster than
+materializing the full dense inverse on large cells. The full all-site
+apply-plus-diagonal batch is mixed (`0.89x` to `1.50x`) and allocates more, so
+this is an enabling inverse substrate, not a fitted-gradient speed promotion
+yet.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+<private-source trace scan over tracked repo content>
+<placeholder rerun scan over current check-log and after-task report>
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-01-structured-schur-woodbury-inverse.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p|100x|100.?x|gllvmTMB" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-01-structured-schur-woodbury-inverse.md bench CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+gh pr list --limit 5 --json number,title,headRefName,isDraft,state
+```
+
+Results:
+
+- `git diff --check`: clean after this report.
+- Private-source trace scan over tracked public artifacts: no matches.
+- Placeholder rerun scan: no stale rerun/fill-result placeholders after this
+  report was finalized.
+- Stale-wording scan: expected historical and command-pattern hits only,
+  including the user-provided AGENTS.md "Gaussian only" snapshot; this slice
+  adds no public API/status claim.
+- Performance-claim scan: expected historical benchmark records, existing
+  Gaussian/gllvmTMB claims, and this internal Woodbury inverse setup speed
+  evidence only; no public 100x structured speed claim or new R `gllvmTMB`
+  parity claim was added.
+- GitHub lane check: PR #59 remains the separate draft
+  `claude/package-work-catchup-mQiZM` lane; no PR or issue was modified.
