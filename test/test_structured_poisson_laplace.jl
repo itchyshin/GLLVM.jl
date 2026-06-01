@@ -7,6 +7,10 @@ using GLLVM, Test, Random, LinearAlgebra, SparseArrays, Distributions
     Λ = 0.18 .* randn(p, K)
     Y = rand.(Poisson.(exp.(β .+ 0.1 .* randn(p, n))))
     precision = Symmetric(spdiagm(0 => fill(1.4, p)))
+    dense_precision = Symmetric(Matrix(parent(precision)))
+
+    @test GLLVM._structured_poisson_logdet_precision(precision) ≈
+        GLLVM._structured_poisson_logdet_precision(dense_precision) atol = 1e-12 rtol = 1e-12
 
     l1, S1, W1 = GLLVM._structured_poisson_lsw(Y, Λ, β, zeros(p), zeros(K, n))
     S2 = similar(S1)

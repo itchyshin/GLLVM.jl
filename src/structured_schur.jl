@@ -11,6 +11,12 @@ struct _SchurUOperator{T,TP<:AbstractMatrix{T}}
     invsigma2::T
 end
 
+struct _SchurUOperatorWorkspace{T}
+    Wsum::Vector{T}
+    Achols::Vector{Cholesky{T, Matrix{T}}}
+    Amats::Vector{Matrix{T}}
+end
+
 _matrix_storage(A::Matrix{T}, ::Type{T}) where {T} = A
 _matrix_storage(A::AbstractMatrix, ::Type{T}) where {T} = Matrix{T}(A)
 
@@ -35,6 +41,34 @@ function _schur_precision_storage(precision::Symmetric, ::Type{T}) where {T}
     return Symmetric(_schur_precision_parent(parent(precision), T), Symbol(precision.uplo))
 end
 
+function _SchurUOperatorWorkspace(::Type{T}, p::Integer, K::Integer, nsites::Integer) where {T}
+    p > 0 || throw(ArgumentError("p must be positive; got $p"))
+    K > 0 || throw(ArgumentError("K must be positive; got $K"))
+    nsites > 0 || throw(ArgumentError("nsites must be positive; got $nsites"))
+    Wsum = zeros(T, p)
+    Amats = [Matrix{T}(I, K, K) for _ in 1:nsites]
+    Achols = Vector{Cholesky{T, Matrix{T}}}(undef, nsites)
+    @inbounds for s in 1:nsites
+        Achols[s] = cholesky!(Symmetric(Amats[s]))
+    end
+    return _SchurUOperatorWorkspace(Wsum, Achols, Amats)
+end
+
+function _check_schur_workspace(ws::_SchurUOperatorWorkspace, p::Integer,
+        K::Integer, nsites::Integer)
+    length(ws.Wsum) == p || throw(DimensionMismatch(
+        "workspace Wsum must have length $p; got $(length(ws.Wsum))"))
+    length(ws.Achols) == nsites || throw(DimensionMismatch(
+        "workspace Achols must have length $nsites; got $(length(ws.Achols))"))
+    length(ws.Amats) == nsites || throw(DimensionMismatch(
+        "workspace Amats must have length $nsites; got $(length(ws.Amats))"))
+    @inbounds for s in 1:nsites
+        size(ws.Amats[s]) == (K, K) || throw(DimensionMismatch(
+            "workspace Amats[$s] must be $(K)×$(K); got $(size(ws.Amats[s]))"))
+    end
+    return nothing
+end
+
 function _SchurUOperator(precision::AbstractMatrix, Lambda::AbstractMatrix,
         Wsites::AbstractMatrix; sigma2::Real)
     p, K = size(Lambda)
@@ -48,10 +82,38 @@ function _SchurUOperator(precision::AbstractMatrix, Lambda::AbstractMatrix,
     L = _matrix_storage(Lambda, T)
     W = _matrix_storage(Wsites, T)
     Q = _schur_precision_storage(precision, T)
-    Wsum = vec(sum(W; dims = 2))
-    Achols = Vector{Cholesky{T, Matrix{T}}}(undef, size(W, 2))
+    ws = _SchurUOperatorWorkspace(T, p, K, size(W, 2))
+    return _SchurUOperator(Q, L, W, ws; sigma2 = sigma2)
+end
+
+function _SchurUOperator(precision::AbstractMatrix, Lambda::AbstractMatrix,
+        Wsites::AbstractMatrix, ws::_SchurUOperatorWorkspace; sigma2::Real)
+    p, K = size(Lambda)
+    size(Wsites, 1) == p || throw(DimensionMismatch(
+        "Wsites must have one row per response; got $(size(Wsites, 1)) rows for p=$p"))
+    size(precision) == (p, p) || throw(DimensionMismatch(
+        "precision must be $(p)×$(p); got $(size(precision))"))
+    sigma2 > 0 || throw(ArgumentError("sigma2 must be positive; got $sigma2"))
+    nsites = size(Wsites, 2)
+
+    T = promote_type(eltype(precision), eltype(Lambda), eltype(Wsites), typeof(float(sigma2)))
+    ws isa _SchurUOperatorWorkspace{T} || throw(ArgumentError(
+        "workspace element type must be $T; got $(eltype(ws.Wsum))"))
+    _check_schur_workspace(ws, p, K, nsites)
+    L = _matrix_storage(Lambda, T)
+    W = _matrix_storage(Wsites, T)
+    Q = _schur_precision_storage(precision, T)
+
+    fill!(ws.Wsum, zero(T))
+    @inbounds for s in axes(W, 2), t in 1:p
+        ws.Wsum[t] += W[t, s]
+    end
     @inbounds for s in axes(W, 2)
-        A = Matrix{T}(I, K, K)
+        A = ws.Amats[s]
+        fill!(A, zero(T))
+        for k in 1:K
+            A[k, k] = one(T)
+        end
         for t in 1:p
             for k in 1:K
                 WLtk = W[t, s] * L[t, k]
@@ -60,9 +122,9 @@ function _SchurUOperator(precision::AbstractMatrix, Lambda::AbstractMatrix,
                 end
             end
         end
-        Achols[s] = cholesky(Symmetric(A))
+        ws.Achols[s] = cholesky!(Symmetric(A))
     end
-    return _SchurUOperator(Q, L, W, Wsum, Achols, inv(T(sigma2)))
+    return _SchurUOperator(Q, L, W, ws.Wsum, ws.Achols, inv(T(sigma2)))
 end
 
 Base.size(op::_SchurUOperator) = (size(op.Lambda, 1), size(op.Lambda, 1))

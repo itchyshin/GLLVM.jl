@@ -52,13 +52,11 @@ function _structured_poisson_lsw!(S::AbstractMatrix, W::AbstractMatrix,
 end
 
 function _structured_poisson_logdet_precision(precision::AbstractMatrix)
-    Q = Symmetric(Matrix(precision))
-    return logdet(cholesky(Q))
+    return logdet(cholesky(Symmetric(precision)))
 end
 
 function _structured_poisson_logdet_precision(precision::Symmetric)
-    Q = Symmetric(Matrix(parent(precision)), Symbol(precision.uplo))
-    return logdet(cholesky(Q))
+    return logdet(cholesky(precision))
 end
 
 function _structured_poisson_mode(Y::AbstractMatrix, Λ::AbstractMatrix,
@@ -91,6 +89,7 @@ function _structured_poisson_mode(Y::AbstractMatrix, Λ::AbstractMatrix,
     cg_q = zeros(T, p)
     cg_tmp = zeros(T, K)
     cg_sol = similar(cg_tmp)
+    schur_ws = _SchurUOperatorWorkspace(T, p, K, n)
     maxstep = T(Inf)
     gradnorm = T(Inf)
     iterations = 0
@@ -109,7 +108,7 @@ function _structured_poisson_mode(Y::AbstractMatrix, Λ::AbstractMatrix,
             end
         end
 
-        op = _SchurUOperator(Q, L, W; sigma2 = sigma2)
+        op = _SchurUOperator(Q, L, W, schur_ws; sigma2 = sigma2)
         copyto!(rhsU, gU)
         gradnorm = maximum(abs, gU)
 

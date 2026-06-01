@@ -30,6 +30,18 @@ using GLLVM, Test, Random, LinearAlgebra, SparseArrays
         @test dot(x, y) > 0
     end
 
+    ws = GLLVM._SchurUOperatorWorkspace(Float64, p, K, n)
+    op_ws = GLLVM._SchurUOperator(precision, Lambda, Wsites, ws; sigma2 = 0.7)
+    @test op_ws.Wsum === ws.Wsum
+    @test op_ws.Achols === ws.Achols
+    @test Matrix(GLLVM._schur_u_dense(op_ws)) ≈ dense atol = 1e-10 rtol = 1e-10
+
+    Wsites2 = Wsites .+ 0.05
+    op_ws2 = GLLVM._SchurUOperator(precision, Lambda, Wsites2, ws; sigma2 = 0.7)
+    op_ref2 = GLLVM._SchurUOperator(precision, Lambda, Wsites2; sigma2 = 0.7)
+    @test Matrix(GLLVM._schur_u_dense(op_ws2)) ≈
+        Matrix(GLLVM._schur_u_dense(op_ref2)) atol = 1e-10 rtol = 1e-10
+
     b = randn(p)
     x_cg = zeros(p)
     cg = GLLVM._schur_u_cg!(x_cg, op, b; tol = 1e-10, maxiter = 4 * p)
@@ -47,6 +59,9 @@ using GLLVM, Test, Random, LinearAlgebra, SparseArrays
 
     @test_throws DimensionMismatch GLLVM._SchurUOperator(precision, randn(p + 1, K), Wsites; sigma2 = 1.0)
     @test_throws ArgumentError GLLVM._SchurUOperator(precision, Lambda, Wsites; sigma2 = 0.0)
+    @test_throws DimensionMismatch GLLVM._SchurUOperator(
+        precision, Lambda, Wsites, GLLVM._SchurUOperatorWorkspace(Float64, p + 1, K, n);
+        sigma2 = 0.7)
     @test_throws DimensionMismatch GLLVM._schur_u_cg!(zeros(p + 1), op, b)
     @test_throws DimensionMismatch GLLVM._schur_u_cg!(
         zeros(p), op, b, zeros(p - 1), scratch.d, scratch.q,
