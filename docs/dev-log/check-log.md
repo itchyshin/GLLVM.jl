@@ -1158,6 +1158,174 @@ gh pr list --limit 5 --json number,title,headRefName,isDraft,state
 
 No issue or PR was modified.
 
+## 2026-06-01 — Structured Poisson Schur Adjoint And Block Gradient
+
+### Implemented Claim
+
+Replaced the dense-logdet structured Poisson fitted-gradient path with an
+exact block implicit gradient. The mode equations are still solved with the
+existing structured Schur operator, but the gradient no longer materializes the
+full joint `ForwardDiff.jacobian` over `[U; Z; θ]` for `logdet_method = :dense`.
+The non-dense determinant path keeps the previous ForwardDiff fallback.
+
+This is an internal fixed-covariance structured Poisson prototype, not a public
+API change and not an R `gllvmTMB` parity claim.
+
+### Collision And Lane Checks
+
+```sh
+git status --short --branch && git rev-parse --short HEAD
+gh pr list --limit 20
+git log --all --oneline --since='6 hours ago' --decorate
+```
+
+Result:
+
+```text
+## codex/non-gaussian-fitter-gradients...origin/main [ahead 17]
+ M src/families/structured_poisson.jl
+?? .claude/
+9d4e6ef
+
+59 gllvmTMB catch-up: Delta-Gamma + zero-inflated (ZIP/ZINB) families + non-Gaussian CIs claude/package-work-catchup-mQiZM DRAFT
+```
+
+No edits were made to `src/sparse_phy_grad.jl`, `src/em_phylo.jl`, or PR #59
+files. `.claude/` remains untracked and untouched.
+
+### Tests Added
+
+Added a structured Poisson implicit-gradient check comparing the new block
+Schur adjoint against the old dense `Fx' \ qx` adjoint, for both dense and CG
+Schur solves, on the existing `p=4, n=3, K=1` fixture.
+
+### Focused Tests
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_schur.jl"); include("test/test_structured_poisson_laplace.jl")'
+```
+
+Result:
+
+```text
+structured Schur operator                 | 36/36 pass
+structured Schur SLQ logdet               | 9/9 pass
+structured Poisson Laplace prototype      | 13/13 pass
+structured Poisson implicit gradient      | 6/6 pass
+structured Poisson internal fitter        | 18/18 pass
+structured Poisson sigma-to-zero reduction| 1/1 pass
+```
+
+### Benchmarks
+
+Full fitted grid, implicit block gradient:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_fit_bench.jl --full --gradient=implicit
+```
+
+Result:
+
+```text
+Structured Poisson fitted benchmark (full); reps=3, warmups=1, iterations=6, gradient=implicit
+small   p=  5 n=  8 K=1 dense= 0.0011 s  cg= 0.0010 s  speedup= 1.07x  diff=9.66e-13 calls=(8,8)
+medium  p=  8 n= 12 K=2 dense= 0.0025 s  cg= 0.0029 s  speedup= 0.87x  diff=2.90e-12 calls=(9,9)
+```
+
+Full fitted grid, finite-difference comparator:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_fit_bench.jl --full --gradient=finite
+```
+
+Result:
+
+```text
+Structured Poisson fitted benchmark (full); reps=3, warmups=1, iterations=6, gradient=finite
+small   p=  5 n=  8 K=1 dense= 0.0068 s  cg= 0.0063 s  speedup= 1.08x  diff=1.02e-09 calls=(8,8)
+medium  p=  8 n= 12 K=2 dense= 0.0330 s  cg= 0.0281 s  speedup= 1.17x  diff=4.71e-08 calls=(9,9)
+```
+
+Finite-difference to block-gradient speedup:
+
+| cell | path | finite (s) | block implicit (s) | speedup | abs loglik diff |
+| --- | --- | ---: | ---: | ---: | ---: |
+| small | dense | 0.0068 | 0.0011 | 6.18x | 1.02e-09 |
+| small | cg | 0.0063 | 0.0010 | 6.30x | 1.02e-09 |
+| medium | dense | 0.0330 | 0.0025 | 13.20x | 4.71e-08 |
+| medium | cg | 0.0281 | 0.0029 | 9.69x | 4.71e-08 |
+
+Exploratory larger CG cells:
+
+```text
+p=12 n=16 K=2 cg finite=0.0702 implicit=0.0038 speedup=18.51 diff=6.469241498052725e-8 calls=(9,9)
+p=20 n=25 K=2 cg finite=0.2972 implicit=0.0098 speedup=30.48 diff=1.8724563233263325e-8 calls=(9,9)
+```
+
+Interpretation: this is the first structured non-Gaussian fitted path where
+the speedup grows with problem size because the gradient no longer scales with
+a full joint AD Jacobian. It is still exact dense-logdet work; the next
+large-p jump needs the structured leverage / trace path for SLQ rather than
+dense `S_u^{-1}`.
+
+### Test Suites
+
+Core suite:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. Manual tally from emitted `Test Summary` blocks:
+2297 pass, 1 existing broken sparse-phy precision placeholder, 2 expected
+quality placeholders in the direct core environment, 0 fail, 0 error.
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Manual tally from emitted `Test Summary` blocks: 2309 pass, 1 existing broken
+sparse-phy precision placeholder, 0 fail, 0 error.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+<private-source trace scan over tracked repo content>
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src docs/dev-log/check-log.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p|gllvmTMB" README.md docs/src docs/dev-log/check-log.md bench CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+```
+
+Results:
+
+- `git diff --check`: clean.
+- Private-upload trace scan: no matches.
+- Stale-wording scan: still finds the user-provided AGENTS.md "Gaussian only"
+  snapshot and historical check-log entries; no new stale public claim was
+  introduced.
+- Performance-claim scan: existing Gaussian/gllvmTMB speedup claims and
+  historical internal structured speed records. The new claim is explicitly
+  internal to the fixed-covariance structured Poisson prototype.
+
+Open PR / collision check:
+
+```text
+[#59 draft: gllvmTMB catch-up: Delta-Gamma + zero-inflated (ZIP/ZINB) families + non-Gaussian CIs]
+```
+
+No issue or PR was modified.
+
 ## 2026-06-01 — Structured Poisson Implicit Fitted Gradient
 
 ### Scope

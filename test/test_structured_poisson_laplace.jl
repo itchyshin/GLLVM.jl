@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra, SparseArrays, Distributions
+using GLLVM, Test, Random, LinearAlgebra, SparseArrays, Distributions, ForwardDiff
 
 function structured_central_difference_gradient(f, theta; h = 1e-6)
     g = similar(theta)
@@ -85,6 +85,27 @@ end
     @test all(isfinite, gimp)
     @test all(isfinite, gfd)
     @test maximum(abs.(gimp .- gfd)) ≤ 1e-6
+
+    mode = GLLVM._structured_poisson_mode(
+        Y, Λ, β, precision; sigma2 = 0.5, mode_solve = :dense,
+        maxiter = 100, tol = 1e-12)
+    x0 = GLLVM._structured_poisson_pack_mode(mode.U, mode.Z)
+    m = length(x0)
+    qF = allx -> GLLVM._structured_poisson_qF(
+        Y, precision, allx[1:m], allx[(m + 1):end], p, K;
+        sigma2 = 0.5, logdet_method = :dense)
+    J = ForwardDiff.jacobian(qF, vcat(x0, θ0))
+    qx = vec(J[1, 1:m])
+    Fx = J[2:end, 1:m]
+    dense_adj = Fx' \ qx
+    schur_adj = GLLVM._structured_poisson_adjoint_solve(
+        qx, Y, Λ, β, precision, mode.U, mode.Z; sigma2 = 0.5,
+        mode_solve = :dense)
+    cg_adj = GLLVM._structured_poisson_adjoint_solve(
+        qx, Y, Λ, β, precision, mode.U, mode.Z; sigma2 = 0.5,
+        mode_solve = :cg, cg_tol = 1e-12, cg_maxiter = 100)
+    @test maximum(abs.(schur_adj .- dense_adj)) ≤ 1e-8
+    @test maximum(abs.(cg_adj .- dense_adj)) ≤ 1e-8
 end
 
 @testset "structured Poisson internal fitter" begin

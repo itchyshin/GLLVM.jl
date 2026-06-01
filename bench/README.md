@@ -143,7 +143,7 @@ Full local grid:
 julia --project=. bench/structured_poisson_fit_bench.jl --full --out=structured-poisson-fit.csv
 ```
 
-The fitter defaults to the private implicit-gradient scaffold. Use
+The fitter defaults to the private dense-logdet block implicit gradient. Use
 `--gradient=finite` to time the previous Optim finite-difference path on the
 same cells.
 
