@@ -254,17 +254,23 @@ function _orthogonal_probes(rng::AbstractRNG, p::Integer, nprobes::Integer)
     return probes
 end
 
-function _slq_logdet(op::_SchurUOperator, probes::AbstractMatrix;
+function _slq_logdet_with_invprobes!(X::Union{Nothing, AbstractMatrix},
+        op::_SchurUOperator, probes::AbstractMatrix;
         lanczos_steps::Integer = 40, reorth::Bool = false)
     p = size(op, 1)
     size(probes, 1) == p || throw(DimensionMismatch(
         "probes must have $p rows; got $(size(probes, 1))"))
     nprobes = size(probes, 2)
+    if X !== nothing
+        size(X) == (p, nprobes) || throw(DimensionMismatch(
+            "X must be $(p)×$(nprobes); got $(size(X))"))
+    end
     nprobes > 0 || throw(ArgumentError("at least one probe is required"))
     mmax = min(Int(lanczos_steps), p)
     mmax > 0 || throw(ArgumentError("lanczos_steps must be positive; got $lanczos_steps"))
 
-    T = promote_type(eltype(op), eltype(probes))
+    T = X === nothing ? promote_type(eltype(op), eltype(probes)) :
+        promote_type(eltype(op), eltype(probes), eltype(X))
     q = zeros(T, p)
     qprev = zeros(T, p)
     w = zeros(T, p)
@@ -273,6 +279,7 @@ function _slq_logdet(op::_SchurUOperator, probes::AbstractMatrix;
     Qbasis = Matrix{T}(undef, p, mmax)
     alphas = Vector{T}(undef, mmax)
     betas = Vector{T}(undef, max(mmax - 1, 0))
+    tri_sol = Vector{T}(undef, mmax)
     total = zero(T)
 
     @inbounds for j in 1:nprobes
@@ -321,8 +328,42 @@ function _slq_logdet(op::_SchurUOperator, probes::AbstractMatrix;
             probe_est += abs2(F.vectors[1, h]) * log(vals[h])
         end
         total += probe_norm2 * probe_est
+        if X !== nothing
+            fill!(tri_sol, zero(T))
+            for h in eachindex(vals)
+                coeff = F.vectors[1, h] / vals[h]
+                for k in 1:m
+                    tri_sol[k] += F.vectors[k, h] * coeff
+                end
+            end
+            probe_norm = sqrt(probe_norm2)
+            for i in 1:p
+                xi = zero(T)
+                for k in 1:m
+                    xi += Qbasis[i, k] * tri_sol[k]
+                end
+                X[i, j] = probe_norm * xi
+            end
+        end
     end
     return total / nprobes
+end
+
+function _slq_logdet(op::_SchurUOperator, probes::AbstractMatrix;
+        lanczos_steps::Integer = 40, reorth::Bool = false)
+    return _slq_logdet_with_invprobes!(
+        nothing, op, probes; lanczos_steps = lanczos_steps, reorth = reorth)
+end
+
+function _slq_logdet_invprobes(op::_SchurUOperator, probes::AbstractMatrix;
+        lanczos_steps::Integer = 40, reorth::Bool = false)
+    p = size(op, 1)
+    size(probes, 1) == p || throw(DimensionMismatch(
+        "probes must have $p rows; got $(size(probes, 1))"))
+    X = Matrix{promote_type(eltype(op), eltype(probes))}(undef, p, size(probes, 2))
+    logdet = _slq_logdet_with_invprobes!(
+        X, op, probes; lanczos_steps = lanczos_steps, reorth = reorth)
+    return logdet, X
 end
 
 function _schur_u_logdet(op::_SchurUOperator; method::Symbol = :auto,

@@ -20,8 +20,9 @@ using GLLVM
 
 const CSV_HEADER = [
     "timestamp", "mode", "cell", "p", "n", "K", "probe_kind", "nprobes",
-    "lanczos_steps", "dense_seconds", "slq_seconds", "speedup_dense_over_slq",
-    "dense_value", "slq_value", "absdiff_value", "relerr_gradient", "reps",
+    "lanczos_steps", "trace_solve", "dense_seconds", "slq_seconds",
+    "speedup_dense_over_slq", "dense_value", "slq_value", "absdiff_value",
+    "relerr_gradient", "reps",
 ]
 
 const SMOKE_CELLS = [
@@ -48,6 +49,7 @@ function usage()
       --probe-kind=KIND      rademacher or orthogonal (default: rademacher).
       --nprobes=N            Frozen SLQ probe count (default: 4).
       --lanczos-steps=N      SLQ Lanczos steps (default: 20).
+      --trace-solve=MODE     solve or lanczos (default: solve).
       --seed=N               Base random seed (default: 9701).
       --out=PATH             Write row-level CSV in addition to stdout.
       --help                 Show this message.
@@ -64,6 +66,7 @@ function parse_args(args)
     probe_kind = :rademacher
     nprobes = 4
     lanczos_steps = 20
+    trace_solve = :solve
 
     for arg in args
         if arg == "--help" || arg == "-h"
@@ -87,6 +90,10 @@ function parse_args(args)
             nprobes = parse(Int, arg[(lastindex("--nprobes=") + 1):end])
         elseif startswith(arg, "--lanczos-steps=")
             lanczos_steps = parse(Int, arg[(lastindex("--lanczos-steps=") + 1):end])
+        elseif startswith(arg, "--trace-solve=")
+            trace_solve = Symbol(arg[(lastindex("--trace-solve=") + 1):end])
+            trace_solve in (:solve, :lanczos) || throw(ArgumentError(
+                "--trace-solve must be solve or lanczos; got $trace_solve"))
         elseif startswith(arg, "--seed=")
             seed = parse(Int, arg[(lastindex("--seed=") + 1):end])
         elseif startswith(arg, "--out=")
@@ -102,7 +109,7 @@ function parse_args(args)
         "--lanczos-steps must be positive; got $lanczos_steps"))
     return (mode = mode, cells = cells, reps = reps, warmups = warmups,
         seed = seed, out = out, probe_kind = probe_kind, nprobes = nprobes,
-        lanczos_steps = lanczos_steps)
+        lanczos_steps = lanczos_steps, trace_solve = trace_solve)
 end
 
 function select_cells(mode::String, wanted)
@@ -188,6 +195,7 @@ function run_cell(cell, args, index)
             θ, Y, precision, cell.p, cell.K; sigma2 = 0.5,
             logdet_method = :slq, probes = probes,
             lanczos_steps = args.lanczos_steps, reorth = true,
+            trace_solve = args.trace_solve,
             mode_solve = :cg, cg_tol = 1e-8, maxiter = 80, tol = 1e-9)
     end
     dense_value, dense_grad = dense.value_grad
@@ -203,6 +211,7 @@ function run_cell(cell, args, index)
         "probe_kind" => args.probe_kind,
         "nprobes" => args.nprobes,
         "lanczos_steps" => args.lanczos_steps,
+        "trace_solve" => args.trace_solve,
         "dense_seconds" => dense.seconds,
         "slq_seconds" => slq.seconds,
         "speedup_dense_over_slq" => dense.seconds / slq.seconds,
@@ -225,7 +234,7 @@ function main()
     args = parse_args(ARGS)
     cells = select_cells(args.mode, args.cells)
     rows = Dict{String, Any}[]
-    println("Structured Poisson trace-gradient benchmark ($(args.mode)); reps=$(args.reps), warmups=$(args.warmups), probe_kind=$(args.probe_kind), nprobes=$(args.nprobes), steps=$(args.lanczos_steps)")
+    println("Structured Poisson trace-gradient benchmark ($(args.mode)); reps=$(args.reps), warmups=$(args.warmups), probe_kind=$(args.probe_kind), nprobes=$(args.nprobes), steps=$(args.lanczos_steps), trace_solve=$(args.trace_solve)")
     for (idx, cell) in enumerate(cells)
         row = run_cell(cell, args, idx)
         push!(rows, row)

@@ -172,6 +172,11 @@ when studying stochastic-trace accuracy; this is a probe-study control, not the
 default operating point. `--nprobes=` and `--lanczos-steps=` control the usual
 speed/accuracy trade-off.
 
+By default, the benchmark estimates the SLQ log determinant and then solves
+`S_u X = R` for the trace probes. Use `--trace-solve=lanczos` to reuse each
+Lanczos basis for both the log determinant and inverse-probe approximation; full
+identity-basis tests keep that fused path tied to the exact dense solve.
+
 This benchmark is deliberately Julia-only: it answers where the large-p
 structured determinant path starts to beat dense `S_u^{-1}` materialization,
 not whether the public fit agrees with R `gllvmTMB`.

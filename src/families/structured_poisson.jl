@@ -597,11 +597,14 @@ function _structured_poisson_trace_implicit_value_grad(θ::AbstractVector,
         sigma2::Real, dense_cutoff::Integer = 256, probes = nothing,
         rng::AbstractRNG = Random.default_rng(), nprobes::Integer = 16,
         lanczos_steps::Integer = 40, reorth::Bool = false,
-        mode_solve::Symbol = :dense, cg_tol::Real = 1e-8,
+        mode_solve::Symbol = :dense, trace_solve::Symbol = :solve,
+        cg_tol::Real = 1e-8,
         cg_maxiter::Union{Nothing, Integer} = nothing,
         maxiter::Integer = 50, tol::Real = 1e-8,
         U_init = nothing, Z_init = nothing,
         U_store = nothing, Z_store = nothing)
+    trace_solve in (:solve, :lanczos) || throw(ArgumentError(
+        "trace_solve must be :solve or :lanczos; got $trace_solve"))
     β, Λ = _structured_poisson_unpackθ(θ, p, K)
     mode = _structured_poisson_mode(
         Y, Λ, β, precision; sigma2 = sigma2, maxiter = maxiter, tol = tol,
@@ -625,31 +628,35 @@ function _structured_poisson_trace_implicit_value_grad(θ::AbstractVector,
     W = Matrix{T}(undef, p, n)
     ℓ = _structured_poisson_lsw!(S, W, Y, L, b, U, Z)
     op = _SchurUOperator(Q, L, W; sigma2 = sigma2)
-    logdet_Su = _schur_u_logdet(op; method = :slq,
-        dense_cutoff = dense_cutoff, probes = R, rng = rng,
-        nprobes = nprobe, lanczos_steps = lanczos_steps, reorth = reorth)
-
-    X = Matrix{T}(undef, p, nprobe)
-    if mode_solve == :dense
-        Csu = cholesky(_schur_u_dense(op))
-        copyto!(X, R)
-        ldiv!(Csu, X)
-    elseif mode_solve == :cg
-        r = zeros(T, p)
-        d = zeros(T, p)
-        q = zeros(T, p)
-        tmp_cg = zeros(T, K)
-        sol_cg = similar(tmp_cg)
-        @inbounds for j in 1:nprobe
-            fill!(view(X, :, j), zero(T))
-            cg = _schur_u_cg!(view(X, :, j), op, view(R, :, j),
-                r, d, q, tmp_cg, sol_cg; tol = cg_tol,
-                maxiter = cg_maxiter === nothing ? max(100, 2 * p) : cg_maxiter)
-            cg.converged || throw(ArgumentError(
-                "structured Poisson trace-gradient CG failed to converge; residual $(cg.residual)"))
-        end
+    logdet_Su, X = if trace_solve == :lanczos
+        _slq_logdet_invprobes(op, R; lanczos_steps = lanczos_steps, reorth = reorth)
     else
-        throw(ArgumentError("mode_solve must be :dense or :cg; got $mode_solve"))
+        logdet_value = _schur_u_logdet(op; method = :slq,
+            dense_cutoff = dense_cutoff, probes = R, rng = rng,
+            nprobes = nprobe, lanczos_steps = lanczos_steps, reorth = reorth)
+        Xsolve = Matrix{T}(undef, p, nprobe)
+        if mode_solve == :dense
+            Csu = cholesky(_schur_u_dense(op))
+            copyto!(Xsolve, R)
+            ldiv!(Csu, Xsolve)
+        elseif mode_solve == :cg
+            r = zeros(T, p)
+            d = zeros(T, p)
+            q = zeros(T, p)
+            tmp_cg = zeros(T, K)
+            sol_cg = similar(tmp_cg)
+            @inbounds for j in 1:nprobe
+                fill!(view(Xsolve, :, j), zero(T))
+                cg = _schur_u_cg!(view(Xsolve, :, j), op, view(R, :, j),
+                    r, d, q, tmp_cg, sol_cg; tol = cg_tol,
+                    maxiter = cg_maxiter === nothing ? max(100, 2 * p) : cg_maxiter)
+                cg.converged || throw(ArgumentError(
+                    "structured Poisson trace-gradient CG failed to converge; residual $(cg.residual)"))
+            end
+        else
+            throw(ArgumentError("mode_solve must be :dense or :cg; got $mode_solve"))
+        end
+        logdet_value, Xsolve
     end
 
     logdet_A = zero(T)
@@ -786,7 +793,8 @@ function _structured_poisson_implicit_value_grad(θ::AbstractVector,
         dense_cutoff::Integer = 256, probes = nothing,
         rng::AbstractRNG = Random.default_rng(), nprobes::Integer = 16,
         lanczos_steps::Integer = 40, reorth::Bool = false,
-        mode_solve::Symbol = :dense, cg_tol::Real = 1e-8,
+        mode_solve::Symbol = :dense, trace_solve::Symbol = :solve,
+        cg_tol::Real = 1e-8,
         cg_maxiter::Union{Nothing, Integer} = nothing,
         maxiter::Integer = 50, tol::Real = 1e-8,
         U_init = nothing, Z_init = nothing,
@@ -804,7 +812,8 @@ function _structured_poisson_implicit_value_grad(θ::AbstractVector,
             θ, Y, precision, p, K; sigma2 = sigma2, dense_cutoff = dense_cutoff,
             probes = probes, rng = rng, nprobes = nprobes,
             lanczos_steps = lanczos_steps, reorth = reorth,
-            mode_solve = mode_solve, cg_tol = cg_tol, cg_maxiter = cg_maxiter,
+            mode_solve = mode_solve, trace_solve = trace_solve,
+            cg_tol = cg_tol, cg_maxiter = cg_maxiter,
             maxiter = maxiter, tol = tol, U_init = U_init, Z_init = Z_init,
             U_store = U_store, Z_store = Z_store)
     end
@@ -892,7 +901,9 @@ wiring waits until the exact CG and determinant paths have fitted-model tests.
 By default, neighbouring objective probes reuse the previous fitted latent mode
 as a warm start through `mode_cache=true`, and L-BFGS uses the private
 implicit-gradient scaffold (`gradient=:implicit`) instead of Optim finite
-differences.
+differences. When `logdet_method=:slq`, `trace_solve=:lanczos` reuses the SLQ
+Lanczos bases for the inverse-probe approximation in the trace-gradient path;
+the default `trace_solve=:solve` keeps the older explicit solve path.
 """
 function _fit_structured_poisson_laplace(Y::AbstractMatrix{<:Integer},
         precision::AbstractMatrix; K::Integer, sigma2::Real,
@@ -902,7 +913,8 @@ function _fit_structured_poisson_laplace(Y::AbstractMatrix{<:Integer},
         probes = nothing, rng::AbstractRNG = Random.default_rng(),
         nprobes::Integer = 16, lanczos_steps::Integer = 40,
         reorth::Bool = false, mode_solve::Symbol = :cg,
-        cg_tol::Real = 1e-8, cg_maxiter::Union{Nothing, Integer} = nothing,
+        trace_solve::Symbol = :solve, cg_tol::Real = 1e-8,
+        cg_maxiter::Union{Nothing, Integer} = nothing,
         maxiter::Integer = 50, tol::Real = 1e-8,
         mode_cache::Bool = true, gradient::Symbol = :implicit)
     p, _ = size(Y)
@@ -913,6 +925,8 @@ function _fit_structured_poisson_laplace(Y::AbstractMatrix{<:Integer},
         "mode_solve must be :dense or :cg; got $mode_solve"))
     logdet_method in (:auto, :dense, :slq) || throw(ArgumentError(
         "logdet_method must be :auto, :dense, or :slq; got $logdet_method"))
+    trace_solve in (:solve, :lanczos) || throw(ArgumentError(
+        "trace_solve must be :solve or :lanczos; got $trace_solve"))
     gradient in (:finite, :implicit) || throw(ArgumentError(
         "gradient must be :finite or :implicit; got $gradient"))
 
@@ -942,7 +956,8 @@ function _fit_structured_poisson_laplace(Y::AbstractMatrix{<:Integer},
         θ, Y, precision, p, K; sigma2 = sigma2, logdet_method = logdet_method,
         dense_cutoff = dense_cutoff, probes = active_probes, rng = rng,
         nprobes = nprobes, lanczos_steps = lanczos_steps, reorth = reorth,
-        mode_solve = mode_solve, cg_tol = cg_tol, cg_maxiter = cg_maxiter,
+        mode_solve = mode_solve, trace_solve = trace_solve,
+        cg_tol = cg_tol, cg_maxiter = cg_maxiter,
         maxiter = maxiter, tol = tol,
         U_init = Ucache, Z_init = Zcache, U_store = Ucache, Z_store = Zcache)
     negll_fg!(F, G, θ) = _penalized_negloglik_fg!(F, G, value_grad, θ)
@@ -960,5 +975,6 @@ function _fit_structured_poisson_laplace(Y::AbstractMatrix{<:Integer},
             iterations = Optim.iterations(res), objective_calls = Optim.f_calls(res),
             gradient_calls = Optim.g_calls(res), mode_solve = mode_solve,
             logdet_method = logdet_method, sigma2 = float(sigma2),
-            mode_cache = mode_cache, gradient = gradient)
+            mode_cache = mode_cache, gradient = gradient,
+            trace_solve = trace_solve)
 end

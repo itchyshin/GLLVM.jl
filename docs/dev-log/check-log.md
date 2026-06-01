@@ -1307,6 +1307,164 @@ Open PR / collision check:
 
 No issue or PR was modified.
 
+## 2026-06-01 — Structured Poisson Fused SLQ Trace Solve
+
+### Implemented Claim
+
+Added an internal fused SLQ helper that reuses each Lanczos basis for both the
+`logdet(S_u)` estimate and the inverse-probe approximation `S_u^{-1}R` in the
+structured Poisson trace-gradient path. The new path is opt-in via
+`trace_solve = :lanczos`; the default remains the previous explicit solve path.
+This is an internal speed slice, not a public API change and not an R
+`gllvmTMB` parity claim.
+
+### Collision And Lane Checks
+
+```sh
+git status --short --branch
+git rev-parse --short HEAD
+gh pr list --limit 10 --state open
+```
+
+Result:
+
+```text
+## codex/non-gaussian-fitter-gradients...origin/main [ahead 21]
+M bench/README.md
+M bench/structured_poisson_trace_gradient_bench.jl
+M src/families/structured_poisson.jl
+M src/structured_schur.jl
+M test/test_structured_poisson_laplace.jl
+M test/test_structured_schur.jl
+?? .claude/
+head before commit: 3226d79
+open PR: #59 draft, claude/package-work-catchup-mQiZM
+```
+
+No edits were made to `src/sparse_phy_grad.jl`, `src/em_phylo.jl`, or PR #59
+files. `.claude/` remains untracked and untouched.
+
+### Focused Tests
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_schur.jl"); include("test/test_structured_poisson_laplace.jl")'
+```
+
+Result:
+
+```text
+structured Schur operator                    | 36/36 pass
+structured Schur SLQ logdet                  | 17/17 pass
+structured Poisson Laplace prototype         | 13/13 pass
+structured Poisson implicit gradient         | 15/15 pass
+structured Poisson internal fitter           | 19/19 pass
+structured Poisson sigma-to-zero reduction   | 1/1 pass
+```
+
+The new exact-reference checks use a full scaled identity probe basis and
+`lanczos_steps = p`: the fused inverse-probe helper must match `S_u \ R`, and
+the structured Poisson fused trace-gradient must match the dense/block gradient
+to the existing `1e-6` tolerance.
+
+### Benchmarks
+
+Smoke and CSV path:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_trace_gradient_bench.jl --smoke --trace-solve=lanczos --out=/tmp/structured-poisson-trace-fused-smoke.csv
+head -2 /tmp/structured-poisson-trace-fused-smoke.csv
+```
+
+Result:
+
+```text
+Structured Poisson trace-gradient benchmark (smoke); reps=1, warmups=2, probe_kind=rademacher, nprobes=4, steps=20, trace_solve=lanczos
+smoke    p=  80 n=  80 K=2 dense=  0.0100 s  slq=  0.0102 s  speedup= 0.97x  valuediff=1.36e-01  gradrel=6.79e-02
+CSV header includes trace_solve.
+```
+
+Large/frontier comparison with `nprobes=4`, `lanczos_steps=20`,
+`reps=1`, `warmups=2`:
+
+| trace solve | cell | p | n | dense (s) | SLQ (s) | dense / SLQ | value diff | gradient relative error |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| solve | large | 320 | 160 | 0.1599 | 0.0873 | 1.83x | 6.15e-01 | 1.41e-01 |
+| solve | frontier | 640 | 160 | 0.5523 | 0.1719 | 3.21x | 2.46e+00 | 3.18e-01 |
+| lanczos | large | 320 | 160 | 0.1785 | 0.0700 | 2.55x | 6.15e-01 | 1.41e-01 |
+| lanczos | frontier | 640 | 160 | 0.5628 | 0.1341 | 4.20x | 2.46e+00 | 3.18e-01 |
+
+Frontier comparison with `nprobes=8`, `lanczos_steps=20`, `reps=1`,
+`warmups=2`:
+
+| trace solve | cell | p | n | dense (s) | SLQ (s) | dense / SLQ | value diff | gradient relative error |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| solve | frontier | 640 | 160 | 0.5606 | 0.2729 | 2.05x | 1.55e-01 | 1.36e-01 |
+| lanczos | frontier | 640 | 160 | 0.5937 | 0.1970 | 3.01x | 1.55e-01 | 1.36e-01 |
+
+Interpretation: fused Lanczos removes the separate trace-probe solve cost while
+preserving the same frozen-probe value and gradient approximation. On the
+frontier cell it cut SLQ trace-gradient time by about 22% with four probes and
+about 28% with eight probes.
+
+### Test Suites
+
+Core suite:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. Manual tally from emitted `Test Summary` blocks:
+2315 pass, 1 existing broken sparse-phy precision placeholder, 2 expected
+quality placeholders in the direct core environment, 0 fail, 0 error.
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Manual tally from emitted `Test Summary` blocks: 2327 pass, 1 existing broken
+sparse-phy precision placeholder, 0 fail, 0 error.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+<private-source trace scan over tracked repo content>
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src docs/dev-log/check-log.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p|100x|100.?x|gllvmTMB" README.md docs/src docs/dev-log/check-log.md bench CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+```
+
+Results:
+
+- `git diff --check`: clean after code and documentation edits.
+- Private-source trace scan: no matches in tracked repo content.
+- Stale-wording scan is expected to find the user-provided AGENTS.md
+  "Gaussian only" snapshot and historical check-log entries; this slice adds no
+  new stale public claim.
+- Performance-claim scan is expected to find existing Gaussian/gllvmTMB claims
+  and historical internal structured benchmark records. This new section labels
+  the fused-Lanczos result as internal structured Poisson trace-gradient
+  evidence only.
+
+Open PR / collision check:
+
+```text
+[#59 draft: gllvmTMB catch-up: Delta-Gamma + zero-inflated (ZIP/ZINB) families + non-Gaussian CIs]
+```
+
+No issue or PR was modified.
+
 ## 2026-06-01 — Structured Poisson Trace-Gradient Benchmark And Workspace Reuse
 
 ### Implemented Claim

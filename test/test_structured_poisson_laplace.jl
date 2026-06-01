@@ -89,18 +89,26 @@ end
         probes = full_basis, lanczos_steps = p, reorth = true,
         mode_solve = :cg, cg_tol = 1e-12, cg_maxiter = 100,
         maxiter = 100, tol = 1e-12)
+    value_slq_lanczos, gslq_lanczos = GLLVM._structured_poisson_implicit_value_grad(
+        θ0, Y, precision, p, K; sigma2 = 0.5, logdet_method = :slq,
+        probes = full_basis, lanczos_steps = p, reorth = true,
+        mode_solve = :cg, trace_solve = :lanczos,
+        cg_tol = 1e-12, cg_maxiter = 100, maxiter = 100, tol = 1e-12)
     gfd = structured_central_difference_gradient(loglik, θ0)
 
     @test value ≈ loglik(θ0) atol = 1e-10 rtol = 1e-10
     @test value_slq ≈ value atol = 1e-8 rtol = 1e-8
     @test value_slq_cg ≈ value atol = 1e-8 rtol = 1e-8
+    @test value_slq_lanczos ≈ value atol = 1e-8 rtol = 1e-8
     @test all(isfinite, gimp)
     @test all(isfinite, gslq)
     @test all(isfinite, gslq_cg)
+    @test all(isfinite, gslq_lanczos)
     @test all(isfinite, gfd)
     @test maximum(abs.(gimp .- gfd)) ≤ 1e-6
     @test maximum(abs.(gslq .- gimp)) ≤ 1e-6
     @test maximum(abs.(gslq_cg .- gimp)) ≤ 1e-6
+    @test maximum(abs.(gslq_lanczos .- gimp)) ≤ 1e-6
 
     mode = GLLVM._structured_poisson_mode(
         Y, Λ, β, precision; sigma2 = 0.5, mode_solve = :dense,
@@ -170,6 +178,8 @@ end
         Y, precision; K = 0, sigma2 = 0.5)
     @test_throws ArgumentError GLLVM._fit_structured_poisson_laplace(
         Y, precision; K = K, sigma2 = 0.5, gradient = :wat)
+    @test_throws ArgumentError GLLVM._fit_structured_poisson_laplace(
+        Y, precision; K = K, sigma2 = 0.5, trace_solve = :wat)
     @test_throws DimensionMismatch GLLVM._fit_structured_poisson_laplace(
         Y, precision; K = K, sigma2 = 0.5, β_init = zeros(p + 1))
     @test_throws DimensionMismatch GLLVM._structured_poisson_mode(
