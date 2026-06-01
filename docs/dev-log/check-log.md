@@ -1158,6 +1158,179 @@ gh pr list --limit 5 --json number,title,headRefName,isDraft,state
 
 No issue or PR was modified.
 
+## 2026-06-01 - Structured Schur Direct Dense Assembly
+
+### Scope
+
+Replaced `_schur_u_dense` construction by basis-vector matvecs with direct
+assembly of the exact Schur matrix:
+`S_u = Q / sigma2 + Diagonal(Wsum) - sum_i B_i A_i^{-1} B_i'`, where
+`B_i = Diagonal(W_i) Lambda`. This keeps the same exact dense determinant path
+but moves the dense construction onto small BLAS-3 updates. A sparse
+`Symmetric(SparseMatrixCSC)` precision copy path avoids p-squared sparse
+lookups before the low-rank site updates.
+
+This is an internal structured algorithm speed slice, not a public API change.
+It does not edit `src/sparse_phy_grad.jl` or `src/em_phylo.jl`, and open PR #59
+remains the separate formula/family catch-up lane.
+
+### Implementation Notes
+
+- `_schur_u_dense` now allocates two `p x K` workspaces and calls
+  `_schur_u_dense_direct!`.
+- `_schur_u_dense_direct!` copies/scales the structured precision, adds the
+  diagonal site-weight sum, then subtracts `B_i A_i^{-1} B_i'` per site.
+- `_copy_scaled_precision!` has a sparse-Symmetric specialization for banded or
+  tree precision inputs.
+- The public internal `_schur_u_dense!` scratch-argument method is preserved for
+  tests/callers, but delegates to the direct assembler after dimension checks.
+
+### Tests
+
+Focused structured tests:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_schur.jl"); include("test/test_structured_poisson_laplace.jl")'
+```
+
+Result: 112 pass, 0 fail, 0 error. The additional check covers
+`Symmetric(sparse(...), :L)` precision storage for the new sparse copy path.
+
+Core suite:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. Manual tally from emitted `Test Summary` blocks:
+2326 pass, 1 existing broken sparse-phy precision placeholder, 2 expected
+quality placeholders in the direct core environment, 0 fail, 0 error.
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Manual tally from emitted `Test Summary` blocks: 2338 pass, 1 existing broken
+sparse-phy precision placeholder, quality 12/12 pass, 0 fail, 0 error.
+
+### Benchmarks
+
+Direct in-process median timer comparing the previous basis-vector dense
+assembly against the new direct assembly on the same `_SchurUOperator`:
+
+| p | n | K | old basis-vector dense (s) | direct dense (s) | old / direct | max abs diff |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 80 | 80 | 2 | 0.00369 | 0.00014 | 26.45x | 4.44e-16 |
+| 160 | 120 | 2 | 0.02183 | 0.00091 | 24.07x | 1.42e-14 |
+| 320 | 160 | 2 | 0.11519 | 0.00468 | 24.61x | 1.42e-14 |
+| 320 | 160 | 3 | 0.14154 | 0.00547 | 25.87x | 6.66e-16 |
+
+Structured Schur logdet benchmark:
+
+```sh
+julia --project=. --startup-file=no bench/structured_schur_logdet_bench.jl --full --reps=3 --warmups=3 --nprobes=16 --lanczos-steps=40
+```
+
+Result:
+
+| cell | p | n | K | dense exact (s) | SLQ (s) | dense / SLQ | relerr |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| small | 80 | 20 | 2 | 0.0002 | 0.0095 | 0.02x | 2.119e-03 |
+| medium | 160 | 40 | 2 | 0.0008 | 0.0319 | 0.03x | 7.706e-04 |
+| large | 320 | 80 | 3 | 0.0035 | 0.1469 | 0.02x | 5.466e-04 |
+| frontier | 640 | 160 | 3 | 0.0186 | 0.5673 | 0.03x | 1.449e-04 |
+
+Interpretation: for these current benchmark cells, exact dense is now much
+faster than the frozen-probe SLQ approximation. The scalable determinant lane
+therefore needs larger-p break-even evidence, not an assumption that SLQ wins
+at p <= 640.
+
+Structured Poisson trace-gradient benchmark:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_trace_gradient_bench.jl --full --cells=large,frontier --trace-solve=lanczos --reps=3 --warmups=3 --nprobes=4 --lanczos-steps=20
+```
+
+Before this direct assembler, same command at commit `c021e07`:
+
+| cell | p | n | K | dense (s) | SLQ (s) | dense / SLQ | value diff | grad rel |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| large | 320 | 160 | 2 | 0.1652 | 0.0647 | 2.55x | 6.15e-01 | 1.41e-01 |
+| frontier | 640 | 160 | 2 | 0.5805 | 0.1283 | 4.53x | 2.46e+00 | 3.18e-01 |
+
+After this direct assembler:
+
+| cell | p | n | K | dense (s) | SLQ (s) | dense / SLQ | value diff | grad rel |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| large | 320 | 160 | 2 | 0.0462 | 0.0657 | 0.70x | 6.15e-01 | 1.41e-01 |
+| frontier | 640 | 160 | 2 | 0.1220 | 0.1336 | 0.91x | 2.46e+00 | 3.18e-01 |
+
+The exact dense trace-gradient comparison improved by about 3.6x on `large`
+and 4.8x on `frontier`, changing the local default recommendation: exact dense
+is competitive or faster at these sizes, while stochastic SLQ still carries the
+fixed-probe approximation error shown above.
+
+Fitted dense-logdet calibration:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_fit_bench.jl --full --logdet=dense --reps=3 --warmups=3 --iterations=10
+```
+
+Result:
+
+| cell | p | n | K | dense mode (s) | CG mode (s) | dense / CG | abs loglik diff | calls |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| small | 5 | 8 | 1 | 0.0009 | 0.0009 | 1.07x | 9.95e-14 | (12,12) |
+| medium | 8 | 12 | 2 | 0.0017 | 0.0020 | 0.88x | 4.15e-12 | (13,13) |
+| large | 20 | 25 | 2 | 0.0051 | 0.0079 | 0.65x | 9.09e-13 | (13,13) |
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+<private-source trace scan over tracked repo content>
+<placeholder rerun scan over current check-log and after-task report>
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-01-structured-schur-direct-dense-assembly.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p|100x|100.?x|gllvmTMB" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-01-structured-schur-direct-dense-assembly.md bench CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+```
+
+Results:
+
+- `git diff --check`: clean.
+- Private-source trace scan over tracked repo content: no matches.
+- Placeholder rerun scan: no stale rerun/fill-result placeholders remain after
+  this update.
+- Stale-wording scan: expected hits only - the user-provided AGENTS.md
+  "Gaussian only" snapshot, historical check-log command/result records, and
+  this scan command.
+- Performance-claim scan: expected hits only - existing Gaussian/gllvmTMB
+  claims, historical internal speed records, benchmark-script column names, and
+  this slice's internal structured Schur/Poisson benchmark evidence. This slice
+  adds no R `gllvmTMB` parity claim and no public 20x-100x structured speedup
+  claim.
+- GitHub lane check: open PR #59 is still the separate draft
+  formula/family/CIs catch-up lane; no issue or PR was modified.
+
+### Open Risks
+
+- Exact dense assembly is still paired with dense Cholesky for `logdet(S_u)`;
+  the very-large-p break-even against SLQ remains a separate benchmark question.
+- The direct assembler allocates two `p x K` workspaces per dense construction;
+  a future workspace-threaded variant can remove those allocations if they show
+  up in Allocs/JET work.
+- This is internal Julia evidence, not an R `gllvmTMB` comparison.
+
 ## 2026-06-01 - Structured Poisson Mode Cached Inverse Reuse
 
 ### Scope

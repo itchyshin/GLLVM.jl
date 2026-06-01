@@ -12,11 +12,15 @@ using GLLVM, Test, Random, LinearAlgebra, SparseArrays
     dense = Matrix(GLLVM._schur_u_dense(op))
     sparse_op = GLLVM._SchurUOperator(Symmetric(sparse(precision)), Lambda, Wsites; sigma2 = 0.7)
     sparse_dense = Matrix(GLLVM._schur_u_dense(sparse_op))
+    sparse_lower_op = GLLVM._SchurUOperator(
+        Symmetric(sparse(LowerTriangular(Matrix(precision))), :L), Lambda, Wsites; sigma2 = 0.7)
+    sparse_lower_dense = Matrix(GLLVM._schur_u_dense(sparse_lower_op))
 
     @test size(op) == (p, p)
     @test dense ≈ dense' atol = 1e-12
     @test parent(sparse_op.precision) isa SparseMatrixCSC
     @test sparse_dense ≈ dense atol = 1e-10 rtol = 1e-10
+    @test sparse_lower_dense ≈ dense atol = 1e-10 rtol = 1e-10
     @test minimum(eigvals(Symmetric(dense))) > 0
     @inbounds for s in 1:n
         A = Matrix{Float64}(I, K, K)

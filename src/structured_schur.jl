@@ -189,11 +189,9 @@ function _schur_u_dense(op::_SchurUOperator)
     p = size(op, 1)
     T = eltype(op)
     S = Matrix{T}(undef, p, p)
-    e = zeros(T, p)
-    y = zeros(T, p)
-    tmp = zeros(T, size(op.Lambda, 2))
-    sol = similar(tmp)
-    return _schur_u_dense!(S, op, e, y, tmp, sol)
+    B = Matrix{T}(undef, p, size(op.Lambda, 2))
+    BA = similar(B)
+    return _schur_u_dense_direct!(S, op, B, BA)
 end
 
 function _symmetrize_schur_dense!(S::AbstractMatrix)
@@ -219,14 +217,63 @@ function _schur_u_dense!(S::AbstractMatrix, op::_SchurUOperator,
     length(tmp) == K || throw(DimensionMismatch("tmp must have length $K; got $(length(tmp))"))
     length(sol) == K || throw(DimensionMismatch("sol must have length $K; got $(length(sol))"))
     T = eltype(op)
-    fill!(e, zero(T))
+    B = Matrix{T}(undef, p, K)
+    BA = similar(B)
+    _schur_u_dense_direct!(S, op, B, BA)
+end
+
+function _copy_scaled_precision!(S::AbstractMatrix, precision::AbstractMatrix, scale)
+    p = size(S, 1)
     @inbounds for j in 1:p
-        e[j] = one(T)
-        _schur_u_mul!(y, op, e, tmp, sol)
-        e[j] = zero(T)
         for i in 1:p
-            S[i, j] = y[i]
+            S[i, j] = scale * precision[i, j]
         end
+    end
+    return S
+end
+
+function _copy_scaled_precision!(S::AbstractMatrix,
+        precision::Symmetric{<:Any, <:SparseArrays.SparseMatrixCSC}, scale)
+    p = size(S, 1)
+    A = parent(precision)
+    fill!(S, zero(eltype(S)))
+    use_upper = precision.uplo == 'U'
+    @inbounds for j in 1:p
+        for ptr in A.colptr[j]:(A.colptr[j + 1] - 1)
+            i = A.rowval[ptr]
+            if i == j
+                S[i, j] = scale * A.nzval[ptr]
+            elseif (use_upper && i < j) || (!use_upper && i > j)
+                v = scale * A.nzval[ptr]
+                S[i, j] = v
+                S[j, i] = v
+            end
+        end
+    end
+    return S
+end
+
+function _schur_u_dense_direct!(S::AbstractMatrix, op::_SchurUOperator,
+        B::AbstractMatrix, BA::AbstractMatrix)
+    p, K = size(op.Lambda)
+    size(S) == (p, p) || throw(DimensionMismatch("S must be $(p)×$(p); got $(size(S))"))
+    size(B) == (p, K) || throw(DimensionMismatch("B must be $(p)×$(K); got $(size(B))"))
+    size(BA) == (p, K) || throw(DimensionMismatch("BA must be $(p)×$(K); got $(size(BA))"))
+    T = eltype(op)
+
+    _copy_scaled_precision!(S, op.precision, op.invsigma2)
+    @inbounds for t in 1:p
+        S[t, t] += op.Wsum[t]
+    end
+
+    @inbounds for s in axes(op.Wsites, 2)
+        for k in 1:K
+            for t in 1:p
+                B[t, k] = op.Wsites[t, s] * op.Lambda[t, k]
+            end
+        end
+        mul!(BA, B, op.Ainvs[s])
+        mul!(S, BA, transpose(B), -one(T), one(T))
     end
     return _symmetrize_schur_dense!(S)
 end
