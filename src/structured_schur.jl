@@ -192,6 +192,61 @@ function _schur_u_mul!(y::AbstractVector, op::_SchurUOperator, x::AbstractVector
         y[t] = op.invsigma2 * y[t] + op.Wsum[t] * x[t]
     end
 
+    if K == 1
+        @inbounds for s in axes(op.Wsites, 2)
+            acc1 = zero(T)
+            for t in 1:p
+                acc1 += op.Lambda[t, 1] * op.Wsites[t, s] * x[t]
+            end
+            sol1 = op.Ainvs[s][1, 1] * acc1
+            for t in 1:p
+                y[t] -= op.Wsites[t, s] * op.Lambda[t, 1] * sol1
+            end
+        end
+        return y
+    elseif K == 2
+        @inbounds for s in axes(op.Wsites, 2)
+            acc1 = zero(T)
+            acc2 = zero(T)
+            for t in 1:p
+                wx = op.Wsites[t, s] * x[t]
+                acc1 += op.Lambda[t, 1] * wx
+                acc2 += op.Lambda[t, 2] * wx
+            end
+            A = op.Ainvs[s]
+            sol1 = A[1, 1] * acc1 + A[1, 2] * acc2
+            sol2 = A[2, 1] * acc1 + A[2, 2] * acc2
+            for t in 1:p
+                y[t] -= op.Wsites[t, s] *
+                    (op.Lambda[t, 1] * sol1 + op.Lambda[t, 2] * sol2)
+            end
+        end
+        return y
+    elseif K == 3
+        @inbounds for s in axes(op.Wsites, 2)
+            acc1 = zero(T)
+            acc2 = zero(T)
+            acc3 = zero(T)
+            for t in 1:p
+                wx = op.Wsites[t, s] * x[t]
+                acc1 += op.Lambda[t, 1] * wx
+                acc2 += op.Lambda[t, 2] * wx
+                acc3 += op.Lambda[t, 3] * wx
+            end
+            A = op.Ainvs[s]
+            sol1 = A[1, 1] * acc1 + A[1, 2] * acc2 + A[1, 3] * acc3
+            sol2 = A[2, 1] * acc1 + A[2, 2] * acc2 + A[2, 3] * acc3
+            sol3 = A[3, 1] * acc1 + A[3, 2] * acc2 + A[3, 3] * acc3
+            for t in 1:p
+                y[t] -= op.Wsites[t, s] * (
+                    op.Lambda[t, 1] * sol1 +
+                    op.Lambda[t, 2] * sol2 +
+                    op.Lambda[t, 3] * sol3)
+            end
+        end
+        return y
+    end
+
     @inbounds for s in axes(op.Wsites, 2)
         fill!(tmp, zero(T))
         for t in 1:p

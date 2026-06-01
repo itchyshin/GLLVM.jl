@@ -4442,3 +4442,120 @@ Results:
   no public 100x structured speed claim was added.
 - GitHub lane check: PR #59 remains the separate draft
   `claude/package-work-catchup-mQiZM` lane; no PR or issue was modified.
+
+## 2026-06-01 - Structured Schur Tiny-K Matvec
+
+### Scope
+
+Specialized the matrix-free Schur matvec `_schur_u_mul!` for `K = 1`, `K = 2`,
+and `K = 3`. These are the current structured Poisson benchmark and planned
+large-grid dimensions. The generic `K >= 4` loop remains unchanged. This
+directly targets the CG mode solve and the SLQ/Lanczos determinant path, where
+one objective or gradient evaluation can call the Schur matvec many times.
+
+### Before/After Benchmark
+
+Manual matvec microbenchmark on `p = 1024`, `n = 256`, tridiagonal sparse
+precision, 200 reps for `K = 1` and `K = 2`, 100 reps for `K = 3`, after one
+warmup:
+
+Before:
+
+```text
+K=1 matvec median=1286.7085 us bytes=80
+K=2 matvec median=1824.1045 us bytes=80
+K=3 matvec median=2227.7295 us bytes=80
+```
+
+After:
+
+```text
+K=1 matvec median=314.5835 us bytes=80
+K=2 matvec median=335.0420 us bytes=80
+K=3 matvec median=368.6670 us bytes=80
+```
+
+Interpretation: matrix-free Schur matvec improved by about `4.09x` for
+`K = 1`, `5.44x` for `K = 2`, and `6.04x` for `K = 3`, with no allocation
+increase.
+
+Trace-gradient benchmark after the change, compared with the immediately
+previous direct-site-factor slice:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_trace_gradient_bench.jl --break-even --cells=giant --trace-solve=lanczos --probe-kind=orthogonal --nprobes=16 --lanczos-steps=20 --reps=3 --warmups=2 --out=/tmp/structured-poisson-trace-giant-after-tinyk-matvec.csv
+```
+
+Result:
+
+```text
+giant    p=1024 n= 256 K=2 dense=  0.1950 s  slq=  0.2253 s  speedup=   0.87x  valuediff=7.29e-01  gradrel=9.89e-02
+```
+
+Previous same-cell result: dense `0.2220s`, SLQ `0.7712s`. Interpretation:
+exact dense trace-gradient improved by about `1.14x`, while the SLQ/Lanczos
+trace-gradient path improved by about `3.42x` and is now close to the dense
+reference timing on this `p = 1024` cell. The SLQ value/gradient approximation
+error is unchanged, so this is speed evidence only, not a parity claim.
+
+### Test Suites
+
+Focused structured tests:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_schur.jl"); include("test/test_structured_poisson_laplace.jl")'
+```
+
+Result: 139 pass, 0 fail, 0 error. The structured Schur operator test now
+includes explicit matvec checks for `K = 1`, `K = 2`, and `K = 3`.
+
+Core suite:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. Manual tally from emitted `Test Summary` blocks:
+2348 pass, 1 existing broken sparse-phy precision placeholder, 2 expected
+quality placeholders in the direct core environment, 0 fail, 0 error.
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Manual tally from emitted `Test Summary` blocks: 2360 pass, 1 existing broken
+sparse-phy precision placeholder, quality 12/12 pass, 0 fail, 0 error.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+<private-source trace scan over tracked repo content>
+<placeholder rerun scan over current check-log and after-task report>
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-01-structured-schur-tinyk-matvec.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p|100x|100.?x|gllvmTMB" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-01-structured-schur-tinyk-matvec.md bench CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+gh pr list --limit 5 --json number,title,headRefName,isDraft,state
+```
+
+Results:
+
+- `git diff --check`: clean after the audit report.
+- Private-source trace scan over tracked public artifacts: no matches.
+- Placeholder rerun scan: no stale rerun/fill-result placeholders.
+- Stale-wording scan: expected historical and command-pattern hits only.
+- Performance-claim scan: expected historical benchmark records, existing
+  Gaussian/gllvmTMB claims, and this internal Schur-matvec speed evidence only;
+  no public 100x structured speed claim was added.
+- GitHub lane check: PR #59 remains the separate draft
+  `claude/package-work-catchup-mQiZM` lane; no PR or issue was modified.

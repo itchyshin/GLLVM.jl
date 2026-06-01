@@ -62,10 +62,24 @@ using GLLVM, Test, Random, LinearAlgebra, SparseArrays
     @test Matrix(GLLVM._schur_u_dense(op_ws2)) ≈
         Matrix(GLLVM._schur_u_dense(op_ref2)) atol = 1e-10 rtol = 1e-10
 
+    Lambda1 = 0.25 .* randn(p, 1)
+    Wsites1 = 0.2 .+ abs.(randn(p, n))
+    op1 = GLLVM._SchurUOperator(precision, Lambda1, Wsites1; sigma2 = 0.7)
+    dense1 = Matrix(GLLVM._schur_u_dense(op1))
+    y1 = zeros(p)
+    x1 = randn(p)
+    mul!(y1, op1, x1)
+    @test y1 ≈ dense1 * x1 atol = 1e-10 rtol = 1e-10
+
     K3 = 3
     Lambda3 = 0.25 .* randn(p, K3)
     Wsites3 = 0.2 .+ abs.(randn(p, n))
     op3 = GLLVM._SchurUOperator(precision, Lambda3, Wsites3; sigma2 = 0.7)
+    dense3 = Matrix(GLLVM._schur_u_dense(op3))
+    y3 = zeros(p)
+    x3 = randn(p)
+    mul!(y3, op3, x3)
+    @test y3 ≈ dense3 * x3 atol = 1e-10 rtol = 1e-10
     @inbounds for s in 1:n
         A3 = Matrix{Float64}(I, K3, K3)
         for t in 1:p
