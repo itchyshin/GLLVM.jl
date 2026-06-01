@@ -20,9 +20,10 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 | Beta | ✅ | precision `φ` |
 | Ordinal (cumulative logit) | ✅ | common ordered cutpoints |
 | Gamma | ✅ | shape `α` |
-| Hurdle (Poisson / NB) | 🔨 | two-part substrate building |
-| Zero-inflated (ZIP / ZINB) | 🔨 | two-part substrate building |
-| Delta (lognormal / Gamma) | 🔨 | two-part substrate building |
+| Delta-lognormal | ✅ | first two-part family; shared 2-block Laplace substrate |
+| Delta-Gamma | 🔨 | on the substrate, building |
+| Hurdle (Poisson / NB) | 🔨 | on the substrate, building |
+| Zero-inflated (ZIP / ZINB) | 🔨 | on the substrate, building |
 | Tweedie · Exponential | ⬜ | planned (Exponential ⊂ Gamma) |
 
 ## Model structure
