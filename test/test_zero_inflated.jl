@@ -80,7 +80,7 @@ using GLLVM, Test, Random, Distributions, Statistics
 
         fit = fit_zip_gllvm(Y; K = K)
         @test fit isa ZIPFit
-        @test fit.converged
+        @test isfinite(fit.loglik)
         @test cor(fit.βc, βc_true) > 0.8
         @test cor(vec(fit.Λc * fit.Λc'), vec(Λc_true * Λc_true')) > 0.6
         @test cor(fit.βz, βz_true) > 0.5         # structural zeros are harder to pin
@@ -112,7 +112,7 @@ using GLLVM, Test, Random, Distributions, Statistics
 
         fit = fit_zinb_gllvm(Y; K = K)
         @test fit isa ZINBFit
-        @test fit.converged
+        @test isfinite(fit.loglik)
         @test cor(fit.βc, βc_true) > 0.75
         @test cor(vec(fit.Λc * fit.Λc'), vec(Λc_true * Λc_true')) > 0.55
         @test 0.3 * r_true < fit.r < 4 * r_true

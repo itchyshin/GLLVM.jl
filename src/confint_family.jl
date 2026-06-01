@@ -679,7 +679,11 @@ function _family_bootstrap(ad::_FamilyCI, sel::Vector{Int}, level::Real,
     ok = fill(false, n_boot)   # Vector{Bool} (one byte/elt) — safe for concurrent distinct-index writes (a BitVector is not)
     work = function (b)
         rng = MersenneTwister(seed + b)
-        θb = ad.refit(ad.simulate(rng))
+        θb = try
+            ad.refit(ad.simulate(rng))     # guard both sim + refit so one bad replicate can't crash the run
+        catch
+            nothing
+        end
         if θb !== nothing && length(θb) == m && all(isfinite, θb)
             @inbounds reps[b, :] .= θb
             ok[b] = true
