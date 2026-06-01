@@ -9,6 +9,10 @@
 # Full mode expands the p/n/K grid but still stays in-tree and Julia-only:
 #
 #     julia --project=. bench/structured_schur_logdet_bench.jl --full --out=structured-schur-logdet.csv
+#
+# Break-even mode probes the current auto dense cutoff range:
+#
+#     julia --project=. bench/structured_schur_logdet_bench.jl --break-even --reps=1
 
 using Dates
 using LinearAlgebra
@@ -36,11 +40,19 @@ const FULL_CELLS = [
     (id = "frontier", p = 640, n = 160, K = 3, nprobes = 4, lanczos_steps = 20),
 ]
 
+const BREAK_EVEN_CELLS = [
+    (id = "frontier", p = 640,  n = 160, K = 3, nprobes = 16, lanczos_steps = 40),
+    (id = "giant",    p = 1024, n = 256, K = 3, nprobes = 16, lanczos_steps = 40),
+    (id = "huge",     p = 1280, n = 320, K = 3, nprobes = 16, lanczos_steps = 40),
+    (id = "xlarge",   p = 2048, n = 512, K = 3, nprobes = 16, lanczos_steps = 40),
+]
+
 function usage()
     println("""
     Usage:
       julia --project=. bench/structured_schur_logdet_bench.jl --smoke [options]
       julia --project=. bench/structured_schur_logdet_bench.jl --full [options]
+      julia --project=. bench/structured_schur_logdet_bench.jl --break-even [options]
 
     Options:
       --cells=a,b,c          Comma-separated cell subset.
@@ -78,6 +90,8 @@ function parse_args(args)
             mode = "smoke"
         elseif arg == "--full"
             mode = "full"
+        elseif arg == "--break-even"
+            mode = "break-even"
         elseif startswith(arg, "--cells=")
             cells = String.(split(arg[(lastindex("--cells=") + 1):end], ","))
         elseif startswith(arg, "--reps=")
@@ -99,14 +113,15 @@ function parse_args(args)
         end
     end
 
-    reps === nothing && (reps = mode == "full" ? 5 : 3)
+    reps === nothing && (reps = mode == "break-even" ? 1 : mode == "full" ? 5 : 3)
     return (mode = mode, cells = cells, reps = reps, warmups = warmups,
             seed = seed, out = out, run_dense = run_dense,
             nprobes_override = nprobes_override, lanczos_override = lanczos_override)
 end
 
 function select_cells(mode::String, wanted)
-    all_cells = mode == "full" ? FULL_CELLS : SMOKE_CELLS
+    all_cells = mode == "full" ? FULL_CELLS :
+        mode == "break-even" ? BREAK_EVEN_CELLS : SMOKE_CELLS
     wanted === nothing && return all_cells
     selected = filter(c -> c.id in wanted, all_cells)
     missing = setdiff(wanted, [c.id for c in selected])

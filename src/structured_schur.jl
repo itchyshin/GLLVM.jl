@@ -2,6 +2,8 @@
 # dependence Laplace path. This is an internal substrate: it is not wired into
 # fitters yet.
 
+const _STRUCTURED_SCHUR_DENSE_CUTOFF = 2048
+
 struct _SchurUOperator{T,TP<:AbstractMatrix{T}}
     precision::TP
     Lambda::Matrix{T}
@@ -426,7 +428,8 @@ function _slq_logdet_invprobes(op::_SchurUOperator, probes::AbstractMatrix;
 end
 
 function _schur_u_logdet(op::_SchurUOperator; method::Symbol = :auto,
-        dense_cutoff::Integer = 256, probes::Union{Nothing, AbstractMatrix} = nothing,
+        dense_cutoff::Integer = _STRUCTURED_SCHUR_DENSE_CUTOFF,
+        probes::Union{Nothing, AbstractMatrix} = nothing,
         rng::AbstractRNG = Random.default_rng(), nprobes::Integer = 16,
         lanczos_steps::Integer = 40, reorth::Bool = false)
     p = size(op, 1)

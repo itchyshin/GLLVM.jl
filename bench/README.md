@@ -90,6 +90,12 @@ Full local grid:
 julia --project=. bench/structured_schur_logdet_bench.jl --full --out=structured-schur-logdet.csv
 ```
 
+Larger dense-vs-SLQ cutoff probe:
+
+```bash
+julia --project=. bench/structured_schur_logdet_bench.jl --break-even --reps=1 --warmups=1
+```
+
 Rows report construction time, dense logdet time, SLQ time, dense/SLQ speedup,
 and SLQ relative error. The default grid uses 4 frozen Rademacher probes and 20
 Lanczos steps, which is intentionally a speed-oriented operating point; use

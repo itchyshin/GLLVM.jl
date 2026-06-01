@@ -1158,6 +1158,145 @@ gh pr list --limit 5 --json number,title,headRefName,isDraft,state
 
 No issue or PR was modified.
 
+## 2026-06-01 - Structured Schur Auto Dense Cutoff
+
+### Scope
+
+Raised the internal structured Schur automatic dense/SLQ cutoff from `256` to
+`2048` after direct dense assembly made exact dense logdet faster than
+frozen-probe SLQ through the new break-even grid. This changes only internal
+structured non-Gaussian prototype defaults: `logdet_method=:auto` now keeps the
+exact dense path for `p <= 2048`, and only falls to SLQ above that cutoff.
+
+### Implementation Notes
+
+- Added `_STRUCTURED_SCHUR_DENSE_CUTOFF = 2048` in `src/structured_schur.jl`.
+- `_schur_u_logdet(...; method=:auto)` now uses that constant by default.
+- Structured Poisson prototype helpers and `_fit_structured_poisson_laplace`
+  now share the same cutoff default instead of carrying local `256` literals.
+- `bench/structured_schur_logdet_bench.jl` now has `--break-even` mode with
+  cells up to `p=2048`.
+- `bench/README.md` documents the break-even command.
+- Added a regression test where `p=257` must still choose exact dense under
+  the default `:auto` path.
+- Lane check: branch was `codex/non-gaussian-fitter-gradients` at `2f96967`
+  before this slice. Open PR #59 remains the separate draft formula/family/CIs
+  catch-up lane. This slice did not edit `src/sparse_phy_grad.jl` or
+  `src/em_phylo.jl`.
+
+### Tests
+
+Focused structured tests:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_schur.jl"); include("test/test_structured_poisson_laplace.jl")'
+```
+
+Result:
+
+```text
+structured Schur operator                    | 43/43 pass
+structured Schur SLQ logdet                  | 18/18 pass
+structured Poisson Laplace prototype         | 13/13 pass
+structured Poisson implicit gradient         | 15/15 pass
+structured Poisson internal fitter           | 23/23 pass
+structured Poisson sigma-to-zero reduction   |  1/1 pass
+```
+
+Focused total: 113 pass, 0 fail, 0 error.
+
+Core suite:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. Manual tally from emitted `Test Summary` blocks:
+2327 pass, 1 existing broken sparse-phy precision placeholder, 2 expected
+quality placeholders in the direct core environment, 0 fail, 0 error.
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Manual tally from emitted `Test Summary` blocks: 2339 pass, 1 existing broken
+sparse-phy precision placeholder, quality 12/12 pass, 0 fail, 0 error.
+
+### Benchmarks
+
+Ad hoc larger-cell probe before editing the cutoff:
+
+| p | n | K | dense exact (s) | SLQ (s) | dense / SLQ | relerr |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 640 | 160 | 3 | 0.0610 | 0.5669 | 0.108x | 5.441e-04 |
+| 1024 | 256 | 3 | 0.0697 | 1.4366 | 0.048x | 8.351e-05 |
+| 1280 | 320 | 3 | 0.1105 | 2.2370 | 0.049x | 4.740e-05 |
+| 2048 | 512 | 3 | 0.4463 | 5.7495 | 0.078x | 3.135e-04 |
+
+Reproducible benchmark command after adding `--break-even`:
+
+```sh
+julia --project=. --startup-file=no bench/structured_schur_logdet_bench.jl --break-even --reps=1 --warmups=1
+```
+
+Result:
+
+| cell | p | n | K | dense exact (s) | SLQ (s) | dense / SLQ | relerr |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| frontier | 640 | 160 | 3 | 0.0258 | 0.5663 | 0.05x | 1.292e-03 |
+| giant | 1024 | 256 | 3 | 0.0769 | 1.4375 | 0.05x | 1.845e-04 |
+| huge | 1280 | 320 | 3 | 0.0899 | 2.2793 | 0.04x | 2.640e-04 |
+| xlarge | 2048 | 512 | 3 | 0.4604 | 5.7120 | 0.08x | 3.157e-05 |
+
+Interpretation: exact dense remains both faster and exact through `p=2048` on
+this structured benchmark grid. SLQ remains the future large-p path, but the
+break-even is above the previous `256` cutoff.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+<private-source trace scan over tracked repo content>
+<placeholder rerun scan over current check-log and after-task report>
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-01-structured-schur-auto-cutoff.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p|100x|100.?x|gllvmTMB" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-01-structured-schur-auto-cutoff.md bench CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+```
+
+Results:
+
+- `git diff --check`: clean.
+- Private-source trace scan over tracked repo content: no matches.
+- Placeholder rerun scan: no stale rerun/fill-result placeholders remain after
+  this update.
+- Stale-wording scan: expected hits only - the user-provided AGENTS.md
+  "Gaussian only" snapshot, historical check-log command/result records, and
+  this scan command.
+- Performance-claim scan: expected hits only - existing Gaussian/gllvmTMB
+  claims, historical internal speed records, benchmark-script column names, and
+  this slice's internal structured Schur cutoff evidence. This slice adds no R
+  `gllvmTMB` parity claim and no public 20x-100x structured speedup claim.
+- GitHub lane check: open PR #59 is still the separate draft
+  formula/family/CIs catch-up lane; no issue or PR was modified.
+
+### Open Risks
+
+- The dense/SLQ break-even is still above, not identified exactly. The next
+  dedicated run should probe `p > 2048` with `--skip-dense` fallbacks ready.
+- Dense remains exact but memory-bound at sufficiently large `p`; the SLQ path
+  still matters for the eventual very-large structured dependence lane.
+- This is internal Julia structured evidence, not an R `gllvmTMB` comparison.
+
 ## 2026-06-01 - Structured Schur Direct Dense Assembly
 
 ### Scope

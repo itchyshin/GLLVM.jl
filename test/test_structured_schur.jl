@@ -132,4 +132,11 @@ end
     @test_throws DimensionMismatch GLLVM._slq_logdet_invprobes(
         op, zeros(p + 1, 2); lanczos_steps = 2)
     @test_throws ArgumentError GLLVM._orthogonal_probes(MersenneTwister(805), p, p + 1)
+
+    p_auto = 257
+    op_auto = GLLVM._SchurUOperator(
+        Symmetric(spdiagm(0 => fill(1.3, p_auto))),
+        zeros(p_auto, 1), fill(0.2, p_auto, 1); sigma2 = 1.0)
+    @test GLLVM._schur_u_logdet(op_auto; method = :auto) ≈
+        GLLVM._schur_u_logdet(op_auto; method = :dense) atol = 1e-10 rtol = 1e-10
 end

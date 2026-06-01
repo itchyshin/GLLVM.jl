@@ -201,7 +201,7 @@ end
 function _structured_poisson_marginal_loglik_laplace(Y::AbstractMatrix,
         Λ::AbstractMatrix, β::AbstractVector, precision::AbstractMatrix;
         sigma2::Real, logdet_method::Symbol = :dense,
-        dense_cutoff::Integer = 256, probes = nothing,
+        dense_cutoff::Integer = _STRUCTURED_SCHUR_DENSE_CUTOFF, probes = nothing,
         rng::AbstractRNG = Random.default_rng(), nprobes::Integer = 16,
         lanczos_steps::Integer = 40, reorth::Bool = false,
         maxiter::Integer = 50, tol::Real = 1e-8,
@@ -264,7 +264,7 @@ end
 function _structured_poisson_qF(Y::AbstractMatrix, precision::AbstractMatrix,
         x::AbstractVector, θ::AbstractVector, p::Integer, K::Integer;
         sigma2::Real, logdet_method::Symbol = :dense,
-        dense_cutoff::Integer = 256, probes = nothing,
+        dense_cutoff::Integer = _STRUCTURED_SCHUR_DENSE_CUTOFF, probes = nothing,
         rng::AbstractRNG = Random.default_rng(), nprobes::Integer = 16,
         lanczos_steps::Integer = 40, reorth::Bool = false)
     n = size(Y, 2)
@@ -415,7 +415,7 @@ end
 function _structured_poisson_implicit_value_grad_ad(θ::AbstractVector,
         Y::AbstractMatrix, precision::AbstractMatrix, p::Integer, K::Integer;
         sigma2::Real, logdet_method::Symbol = :dense,
-        dense_cutoff::Integer = 256, probes = nothing,
+        dense_cutoff::Integer = _STRUCTURED_SCHUR_DENSE_CUTOFF, probes = nothing,
         rng::AbstractRNG = Random.default_rng(), nprobes::Integer = 16,
         lanczos_steps::Integer = 40, reorth::Bool = false,
         mode_solve::Symbol = :dense, cg_tol::Real = 1e-8,
@@ -454,7 +454,8 @@ end
 
 function _structured_poisson_block_implicit_value_grad(θ::AbstractVector,
         Y::AbstractMatrix, precision::AbstractMatrix, p::Integer, K::Integer;
-        sigma2::Real, dense_cutoff::Integer = 256, probes = nothing,
+        sigma2::Real, dense_cutoff::Integer = _STRUCTURED_SCHUR_DENSE_CUTOFF,
+        probes = nothing,
         rng::AbstractRNG = Random.default_rng(), nprobes::Integer = 16,
         lanczos_steps::Integer = 40, reorth::Bool = false,
         mode_solve::Symbol = :dense, cg_tol::Real = 1e-8,
@@ -590,7 +591,8 @@ end
 
 function _structured_poisson_trace_implicit_value_grad(θ::AbstractVector,
         Y::AbstractMatrix, precision::AbstractMatrix, p::Integer, K::Integer;
-        sigma2::Real, dense_cutoff::Integer = 256, probes = nothing,
+        sigma2::Real, dense_cutoff::Integer = _STRUCTURED_SCHUR_DENSE_CUTOFF,
+        probes = nothing,
         rng::AbstractRNG = Random.default_rng(), nprobes::Integer = 16,
         lanczos_steps::Integer = 40, reorth::Bool = false,
         mode_solve::Symbol = :dense, trace_solve::Symbol = :solve,
@@ -783,7 +785,7 @@ end
 function _structured_poisson_implicit_value_grad(θ::AbstractVector,
         Y::AbstractMatrix, precision::AbstractMatrix, p::Integer, K::Integer;
         sigma2::Real, logdet_method::Symbol = :dense,
-        dense_cutoff::Integer = 256, probes = nothing,
+        dense_cutoff::Integer = _STRUCTURED_SCHUR_DENSE_CUTOFF, probes = nothing,
         rng::AbstractRNG = Random.default_rng(), nprobes::Integer = 16,
         lanczos_steps::Integer = 40, reorth::Bool = false,
         mode_solve::Symbol = :dense, trace_solve::Symbol = :solve,
@@ -902,7 +904,8 @@ function _fit_structured_poisson_laplace(Y::AbstractMatrix{<:Integer},
         precision::AbstractMatrix; K::Integer, sigma2::Real,
         β_init = nothing, Λ_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 80,
-        logdet_method::Symbol = :dense, dense_cutoff::Integer = 256,
+        logdet_method::Symbol = :dense,
+        dense_cutoff::Integer = _STRUCTURED_SCHUR_DENSE_CUTOFF,
         probes = nothing, rng::AbstractRNG = Random.default_rng(),
         nprobes::Integer = 16, lanczos_steps::Integer = 40,
         reorth::Bool = false, mode_solve::Symbol = :cg,
