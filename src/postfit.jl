@@ -713,6 +713,61 @@ function residuals(fit::GammaFit, Y::AbstractMatrix{<:Real}; type::Symbol = :dun
     return R
 end
 
+# --- Exponential post-fit (positive continuous, Var = μ², no dispersion) ---
+_loadings(fit::ExponentialFit) = fit.Λ
+_loglik(fit::ExponentialFit)   = fit.loglik
+_nparams(fit::ExponentialFit)  = (p = size(fit.Λ, 1); K = size(fit.Λ, 2); p + (p * K - div(K * (K - 1), 2)))
+
+function getLV(fit::ExponentialFit, Y::AbstractMatrix{<:Real}; rotate::Bool = true)
+    p, n = size(Y); K = size(fit.Λ, 2)
+    fam = Exponential(1.0); ones_p = ones(Int, p)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        Z[:, s] = _laplace_mode(fam, view(Y, :, s), ones_p, fit.Λ, fit.β, fit.link)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
+end
+
+function predict(fit::ExponentialFit, Y::AbstractMatrix{<:Real}; type::Symbol = :response)
+    type in (:link, :response) ||
+        throw(ArgumentError("type must be :link or :response; got :$type"))
+    Z = getLV(fit, Y; rotate = false)
+    η = fit.β .+ fit.Λ * Z'
+    type === :link && return η
+    return linkinv.(Ref(fit.link), η)
+end
+
+"""
+    residuals(fit::ExponentialFit, Y; type=:dunnsmyth) -> p×n matrix
+
+`:dunnsmyth` randomized-quantile (here deterministic PIT, the Exponential CDF being
+continuous) `Φ⁻¹(F(y))` under `Exponential(μ)`; `:pearson` returns `(Y − μ)/μ`.
+"""
+function residuals(fit::ExponentialFit, Y::AbstractMatrix{<:Real}; type::Symbol = :dunnsmyth)
+    type in (:dunnsmyth, :pearson) ||
+        throw(ArgumentError("type must be :dunnsmyth or :pearson; got :$type"))
+    p, n = size(Y)
+    μ = predict(fit, Y; type = :response)
+    type === :pearson && return (Y .- μ) ./ μ
+    R = Matrix{Float64}(undef, p, n)
+    @inbounds for s in 1:n, t in 1:p
+        u = cdf(Exponential(μ[t, s]), max(float(Y[t, s]), 1e-300))
+        R[t, s] = quantile(Normal(), clamp(u, 1e-12, 1 - 1e-12))
+    end
+    return R
+end
+
+function Base.show(io::IO, ::MIME"text/plain", fit::ExponentialFit)
+    p, K = size(fit.Λ)
+    println(io, "Exponential GLLVM fit")
+    println(io, "  responses p = ", p, ", latent factors K = ", K,
+            ", link = ", nameof(typeof(fit.link)))
+    println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
+            ", AIC = ", round(aic(fit); sigdigits = 7))
+    print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
+end
+
 function Base.show(io::IO, ::MIME"text/plain", fit::GammaFit)
     p, K = size(fit.Λ)
     println(io, "Gamma GLLVM fit")

@@ -30,6 +30,7 @@ include("families/negbin.jl")            # Negative-binomial family pieces (Phas
 include("families/beta.jl")              # Beta family pieces (Phase 3)
 include("families/ordinal.jl")           # Ordinal (cumulative-logit) family pieces (Phase 3)
 include("families/gamma.jl")             # Gamma (positive continuous) family pieces (Phase 3)
+include("families/exponential.jl")       # Exponential (positive continuous, no dispersion) — Gamma(α=1)
 include("families/twopart.jl")           # Two-part substrate + Delta-lognormal / Delta-Gamma / Hurdle (Phase 3)
 include("families/fit_gllvm.jl")         # unified fit_gllvm(Y; family) dispatcher
 include("families/covariates.jl")        # fixed-effect covariates (Xβ) for the Laplace families
@@ -58,6 +59,7 @@ export spatial_cov, relatedness_cov,
        fit_binomial_gllvm, BinomialFit, fit_poisson_gllvm, PoissonFit,
        fit_nb_gllvm, NBFit, fit_beta_gllvm, BetaFit,
        Ordinal, fit_ordinal_gllvm, OrdinalFit, fit_gamma_gllvm, GammaFit,
+       fit_exponential_gllvm, ExponentialFit, exponential_marginal_loglik_laplace,
        fit_delta_lognormal_gllvm, DeltaLogNormalFit,
        delta_lognormal_marginal_loglik_laplace,
        fit_hurdle_poisson_gllvm, HurdlePoissonFit,

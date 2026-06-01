@@ -86,9 +86,11 @@ _cov_default_link(::NegativeBinomial) = LogLink()
 _cov_default_link(::Binomial)         = LogitLink()
 _cov_default_link(::Beta)             = LogitLink()
 _cov_default_link(::Gamma)            = LogLink()
+_cov_default_link(::Exponential)      = LogLink()
 
 _cov_has_disp(::Poisson)          = false
 _cov_has_disp(::Binomial)         = false
+_cov_has_disp(::Exponential)      = false
 _cov_has_disp(::NegativeBinomial) = true
 _cov_has_disp(::Beta)             = true
 _cov_has_disp(::Gamma)            = true
@@ -105,6 +107,7 @@ _cov_family(::Binomial, d)         = Binomial()
 _cov_family(::NegativeBinomial, d) = NegativeBinomial(d, 0.5)
 _cov_family(::Beta, d)             = Beta(d, 1.0)
 _cov_family(::Gamma, d)            = Gamma(d, 1.0)
+_cov_family(::Exponential, d)      = Exponential(1.0)
 
 # CI term name for the dispersion parameter (if any).
 _cov_dispname(::NegativeBinomial) = "r"
@@ -123,6 +126,7 @@ function _cov_sample(f::Beta, μ, nt, rng)
     return clamp(rand(rng, Beta(m * f.α, (1 - m) * f.α)), 1e-6, 1 - 1e-6)
 end
 _cov_sample(f::Gamma, μ, nt, rng)           = rand(rng, Gamma(f.α, max(μ, 1e-12) / f.α))
+_cov_sample(::Exponential, μ, nt, rng)      = rand(rng, Exponential(max(μ, 1e-12)))
 
 # Link-scale latent proxy for the warm start (per family).
 function _cov_zemp(family, Y::AbstractMatrix, N::AbstractMatrix, link::Link)

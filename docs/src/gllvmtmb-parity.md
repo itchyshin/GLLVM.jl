@@ -24,7 +24,8 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 | Delta-Gamma | ✅ | occurrence Bernoulli × positive Gamma (log-link mean) on the substrate |
 | Hurdle (Poisson / NB) | ✅ | occurrence Bernoulli × zero-truncated Poisson / NB2 |
 | Zero-inflated (ZIP / ZINB) | ✅ | structural zero × Poisson / NB2; zero-inflation intercept-only (Λ_z = 0) so the coupled-zero cross-term drops out |
-| Tweedie · Exponential | ⬜ | planned (Exponential ⊂ Gamma) |
+| Exponential | ✅ | positive continuous, `Var = μ²` (Gamma with shape α=1) |
+| Tweedie | ⬜ | planned (compound Poisson–Gamma) |
 
 ## Model structure
 

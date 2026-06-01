@@ -28,7 +28,7 @@ using Distributions: Normal, Chisq, quantile
 using Random: AbstractRNG, MersenneTwister, randn
 
 # Families handled by this layer (single latent block, optional scalar dispersion).
-const _FamilyFit = Union{PoissonFit, BinomialFit, NBFit, BetaFit, GammaFit}
+const _FamilyFit = Union{PoissonFit, BinomialFit, NBFit, BetaFit, GammaFit, ExponentialFit}
 
 # Two-part families ([βz; βc; pack_lambda(Λc); (log-dispersion)] layout).
 const _TwoPartFit = Union{DeltaLogNormalFit, DeltaGammaFit, HurdlePoissonFit,
@@ -207,6 +207,37 @@ function _family_ci(fit::GammaFit, Y::AbstractMatrix;
     names = vcat(_glm_lin_names(p, K), "alpha")
     kinds = vcat(fill(:linear, length(θ) - 1), :log)
     return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+end
+
+# --- Exponential (positive continuous, no dispersion) ----------------------
+function _family_ci(fit::ExponentialFit, Y::AbstractMatrix;
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); link = fit.link
+    θ = vcat(fit.β, pack_lambda(fit.Λ))
+    nll = function (θv)
+        β = θv[1:p]; Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+        v = try
+            -exponential_marginal_loglik_laplace(Y, Λ, β; link = link, maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    simulate = function (rng)
+        Yb = Matrix{Float64}(undef, p, n)
+        @inbounds for s in 1:n
+            η = fit.β .+ fit.Λ * randn(rng, K)
+            for t in 1:p
+                Yb[t, s] = rand(rng, Exponential(max(linkinv(link, _clamp_eta(η[t])), 1e-12)))
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try fit_exponential_gllvm(Yb; K = K, link = link) catch; return nothing end
+        return vcat(fb.β, pack_lambda(fb.Λ))
+    end
+    return _FamilyCI(θ, nll, _glm_lin_names(p, K), fill(:linear, length(θ)), simulate, refit)
 end
 
 # Count-family simulation (Poisson / NB share the loop; `make` builds the
