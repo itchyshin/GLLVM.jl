@@ -176,13 +176,18 @@ reports both timing and gradient relative error.
 ```bash
 julia --project=. bench/structured_poisson_trace_gradient_bench.jl --smoke
 julia --project=. bench/structured_poisson_trace_gradient_bench.jl --full --out=structured-poisson-trace-gradient.csv
+julia --project=. bench/structured_poisson_trace_gradient_bench.jl --break-even --cells=frontier
 ```
 
 The default probe strategy is frozen Rademacher probing. Use
 `--probe-kind=orthogonal` to compare against scaled orthogonal Gaussian probes
 when studying stochastic-trace accuracy; this is a probe-study control, not the
 default operating point. `--nprobes=` and `--lanczos-steps=` control the usual
-speed/accuracy trade-off.
+speed/accuracy trade-off. Use `--skip-dense` for exploratory cells above the
+exact-dense cutoff when only approximate SLQ timing is needed.
+
+Run probe-kind timing comparisons sequentially. Concurrent benchmark processes
+can distort the dense reference timings enough to create spurious SLQ speedups.
 
 By default, the benchmark estimates the SLQ log determinant and then solves
 `S_u X = R` for the trace probes. Use `--trace-solve=lanczos` to reuse each

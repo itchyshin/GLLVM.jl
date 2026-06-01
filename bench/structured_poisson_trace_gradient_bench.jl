@@ -8,6 +8,9 @@
 #
 # Full local grid:
 #     julia --project=. bench/structured_poisson_trace_gradient_bench.jl --full --out=structured-poisson-trace-gradient.csv
+#
+# Break-even grid around and above the exact-dense auto cutoff:
+#     julia --project=. bench/structured_poisson_trace_gradient_bench.jl --break-even --cells=frontier
 
 using Dates
 using Distributions
@@ -36,11 +39,19 @@ const FULL_CELLS = [
     (id = "frontier", p = 640, n = 160, K = 2),
 ]
 
+const BREAK_EVEN_CELLS = [
+    (id = "frontier", p = 640, n = 160, K = 2),
+    (id = "giant", p = 1024, n = 256, K = 2),
+    (id = "huge", p = 1536, n = 320, K = 2),
+    (id = "xlarge", p = 2048, n = 512, K = 2),
+]
+
 function usage()
     println("""
     Usage:
       julia --project=. bench/structured_poisson_trace_gradient_bench.jl --smoke [options]
       julia --project=. bench/structured_poisson_trace_gradient_bench.jl --full [options]
+      julia --project=. bench/structured_poisson_trace_gradient_bench.jl --break-even [options]
 
     Options:
       --cells=a,b,c          Comma-separated cell subset.
@@ -52,6 +63,7 @@ function usage()
       --trace-solve=MODE     solve or lanczos (default: solve).
       --seed=N               Base random seed (default: 9701).
       --out=PATH             Write row-level CSV in addition to stdout.
+      --skip-dense           Run SLQ only; dense speed/accuracy fields become NA.
       --help                 Show this message.
     """)
 end
@@ -67,6 +79,7 @@ function parse_args(args)
     nprobes = 4
     lanczos_steps = 20
     trace_solve = :solve
+    run_dense = true
 
     for arg in args
         if arg == "--help" || arg == "-h"
@@ -76,6 +89,8 @@ function parse_args(args)
             mode = "smoke"
         elseif arg == "--full"
             mode = "full"
+        elseif arg == "--break-even"
+            mode = "break-even"
         elseif startswith(arg, "--cells=")
             cells = String.(split(arg[(lastindex("--cells=") + 1):end], ","))
         elseif startswith(arg, "--reps=")
@@ -98,6 +113,8 @@ function parse_args(args)
             seed = parse(Int, arg[(lastindex("--seed=") + 1):end])
         elseif startswith(arg, "--out=")
             out = arg[(lastindex("--out=") + 1):end]
+        elseif arg == "--skip-dense"
+            run_dense = false
         else
             throw(ArgumentError("unknown argument: $arg"))
         end
@@ -109,11 +126,13 @@ function parse_args(args)
         "--lanczos-steps must be positive; got $lanczos_steps"))
     return (mode = mode, cells = cells, reps = reps, warmups = warmups,
         seed = seed, out = out, probe_kind = probe_kind, nprobes = nprobes,
-        lanczos_steps = lanczos_steps, trace_solve = trace_solve)
+        lanczos_steps = lanczos_steps, trace_solve = trace_solve,
+        run_dense = run_dense)
 end
 
 function select_cells(mode::String, wanted)
-    all_cells = mode == "full" ? FULL_CELLS : SMOKE_CELLS
+    all_cells = mode == "full" ? FULL_CELLS :
+        mode == "break-even" ? BREAK_EVEN_CELLS : SMOKE_CELLS
     wanted === nothing && return all_cells
     selected = filter(c -> c.id in wanted, all_cells)
     missing = setdiff(wanted, [c.id for c in selected])
@@ -184,11 +203,15 @@ end
 
 function run_cell(cell, args, index)
     Y, precision, θ, probes = fixture(cell, args.seed + 1000 * index, args)
-    dense = time_value_grad(args.warmups, args.reps) do
-        GLLVM._structured_poisson_implicit_value_grad(
-            θ, Y, precision, cell.p, cell.K; sigma2 = 0.5,
-            logdet_method = :dense, mode_solve = :cg, cg_tol = 1e-8,
-            maxiter = 80, tol = 1e-9)
+    dense = if args.run_dense
+        time_value_grad(args.warmups, args.reps) do
+            GLLVM._structured_poisson_implicit_value_grad(
+                θ, Y, precision, cell.p, cell.K; sigma2 = 0.5,
+                logdet_method = :dense, mode_solve = :cg, cg_tol = 1e-8,
+                maxiter = 80, tol = 1e-9)
+        end
+    else
+        nothing
     end
     slq = time_value_grad(args.warmups, args.reps) do
         GLLVM._structured_poisson_implicit_value_grad(
@@ -198,9 +221,19 @@ function run_cell(cell, args, index)
             trace_solve = args.trace_solve,
             mode_solve = :cg, cg_tol = 1e-8, maxiter = 80, tol = 1e-9)
     end
-    dense_value, dense_grad = dense.value_grad
     slq_value, slq_grad = slq.value_grad
-    relerr = norm(slq_grad .- dense_grad) / max(norm(dense_grad), eps(Float64))
+    dense_value = missing
+    absdiff = missing
+    relerr = missing
+    speedup = missing
+    dense_seconds = missing
+    if dense !== nothing
+        dense_value, dense_grad = dense.value_grad
+        dense_seconds = dense.seconds
+        absdiff = abs(slq_value - dense_value)
+        relerr = norm(slq_grad .- dense_grad) / max(norm(dense_grad), eps(Float64))
+        speedup = dense.seconds / slq.seconds
+    end
     return Dict(
         "timestamp" => Dates.format(now(), dateformat"yyyy-mm-ddTHH:MM:SS"),
         "mode" => args.mode,
@@ -212,29 +245,34 @@ function run_cell(cell, args, index)
         "nprobes" => args.nprobes,
         "lanczos_steps" => args.lanczos_steps,
         "trace_solve" => args.trace_solve,
-        "dense_seconds" => dense.seconds,
+        "dense_seconds" => dense_seconds,
         "slq_seconds" => slq.seconds,
-        "speedup_dense_over_slq" => dense.seconds / slq.seconds,
+        "speedup_dense_over_slq" => speedup,
         "dense_value" => dense_value,
         "slq_value" => slq_value,
-        "absdiff_value" => abs(slq_value - dense_value),
+        "absdiff_value" => absdiff,
         "relerr_gradient" => relerr,
         "reps" => args.reps,
     )
 end
 
+fmt_seconds(x) = x === missing ? "NA" : @sprintf("%8.4f", x)
+fmt_speedup(x) = x === missing ? "NA" : @sprintf("%5.2fx", x)
+fmt_sci(x) = x === missing ? "NA" : @sprintf("%.2e", x)
+
 function print_row(row)
-    @printf("%-8s p=%4d n=%4d K=%d dense=%8.4f s  slq=%8.4f s  speedup=%5.2fx  valuediff=%.2e  gradrel=%.2e\n",
-        row["cell"], row["p"], row["n"], row["K"], row["dense_seconds"],
-        row["slq_seconds"], row["speedup_dense_over_slq"], row["absdiff_value"],
-        row["relerr_gradient"])
+    @printf("%-8s p=%4d n=%4d K=%d dense=%8s s  slq=%8.4f s  speedup=%8s  valuediff=%s  gradrel=%s\n",
+        row["cell"], row["p"], row["n"], row["K"],
+        fmt_seconds(row["dense_seconds"]), row["slq_seconds"],
+        fmt_speedup(row["speedup_dense_over_slq"]),
+        fmt_sci(row["absdiff_value"]), fmt_sci(row["relerr_gradient"]))
 end
 
 function main()
     args = parse_args(ARGS)
     cells = select_cells(args.mode, args.cells)
     rows = Dict{String, Any}[]
-    println("Structured Poisson trace-gradient benchmark ($(args.mode)); reps=$(args.reps), warmups=$(args.warmups), probe_kind=$(args.probe_kind), nprobes=$(args.nprobes), steps=$(args.lanczos_steps), trace_solve=$(args.trace_solve)")
+    println("Structured Poisson trace-gradient benchmark ($(args.mode)); reps=$(args.reps), warmups=$(args.warmups), probe_kind=$(args.probe_kind), nprobes=$(args.nprobes), steps=$(args.lanczos_steps), trace_solve=$(args.trace_solve), dense=$(args.run_dense)")
     for (idx, cell) in enumerate(cells)
         row = run_cell(cell, args, idx)
         push!(rows, row)
