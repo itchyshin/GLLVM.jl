@@ -901,9 +901,9 @@ wiring waits until the exact CG and determinant paths have fitted-model tests.
 By default, neighbouring objective probes reuse the previous fitted latent mode
 as a warm start through `mode_cache=true`, and L-BFGS uses the private
 implicit-gradient scaffold (`gradient=:implicit`) instead of Optim finite
-differences. When `logdet_method=:slq`, `trace_solve=:lanczos` reuses the SLQ
+differences. With the default `trace_solve=:auto`, SLQ fits reuse the SLQ
 Lanczos bases for the inverse-probe approximation in the trace-gradient path;
-the default `trace_solve=:solve` keeps the older explicit solve path.
+set `trace_solve=:solve` to keep the older explicit solve path.
 """
 function _fit_structured_poisson_laplace(Y::AbstractMatrix{<:Integer},
         precision::AbstractMatrix; K::Integer, sigma2::Real,
@@ -913,7 +913,7 @@ function _fit_structured_poisson_laplace(Y::AbstractMatrix{<:Integer},
         probes = nothing, rng::AbstractRNG = Random.default_rng(),
         nprobes::Integer = 16, lanczos_steps::Integer = 40,
         reorth::Bool = false, mode_solve::Symbol = :cg,
-        trace_solve::Symbol = :solve, cg_tol::Real = 1e-8,
+        trace_solve::Symbol = :auto, cg_tol::Real = 1e-8,
         cg_maxiter::Union{Nothing, Integer} = nothing,
         maxiter::Integer = 50, tol::Real = 1e-8,
         mode_cache::Bool = true, gradient::Symbol = :implicit)
@@ -925,11 +925,15 @@ function _fit_structured_poisson_laplace(Y::AbstractMatrix{<:Integer},
         "mode_solve must be :dense or :cg; got $mode_solve"))
     logdet_method in (:auto, :dense, :slq) || throw(ArgumentError(
         "logdet_method must be :auto, :dense, or :slq; got $logdet_method"))
-    trace_solve in (:solve, :lanczos) || throw(ArgumentError(
-        "trace_solve must be :solve or :lanczos; got $trace_solve"))
+    trace_solve in (:auto, :solve, :lanczos) || throw(ArgumentError(
+        "trace_solve must be :auto, :solve, or :lanczos; got $trace_solve"))
     gradient in (:finite, :implicit) || throw(ArgumentError(
         "gradient must be :finite or :implicit; got $gradient"))
 
+    active_trace_solve = trace_solve == :auto ?
+        ((logdet_method == :slq || (logdet_method == :auto && p > dense_cutoff)) ?
+         :lanczos : :solve) :
+        trace_solve
     θ0 = _structured_poisson_initial_theta(Y, K; β_init = β_init, Λ_init = Λ_init)
     active_probes = if probes === nothing &&
             (logdet_method == :slq || (logdet_method == :auto && p > dense_cutoff))
@@ -956,7 +960,7 @@ function _fit_structured_poisson_laplace(Y::AbstractMatrix{<:Integer},
         θ, Y, precision, p, K; sigma2 = sigma2, logdet_method = logdet_method,
         dense_cutoff = dense_cutoff, probes = active_probes, rng = rng,
         nprobes = nprobes, lanczos_steps = lanczos_steps, reorth = reorth,
-        mode_solve = mode_solve, trace_solve = trace_solve,
+        mode_solve = mode_solve, trace_solve = active_trace_solve,
         cg_tol = cg_tol, cg_maxiter = cg_maxiter,
         maxiter = maxiter, tol = tol,
         U_init = Ucache, Z_init = Zcache, U_store = Ucache, Z_store = Zcache)
@@ -976,5 +980,5 @@ function _fit_structured_poisson_laplace(Y::AbstractMatrix{<:Integer},
             gradient_calls = Optim.g_calls(res), mode_solve = mode_solve,
             logdet_method = logdet_method, sigma2 = float(sigma2),
             mode_cache = mode_cache, gradient = gradient,
-            trace_solve = trace_solve)
+            trace_solve = active_trace_solve)
 end

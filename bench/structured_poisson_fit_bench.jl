@@ -17,7 +17,7 @@ using GLLVM
 
 const CSV_HEADER = [
     "timestamp", "mode", "cell", "p", "n", "K", "iterations", "reps",
-    "gradient", "logdet_method", "nprobes", "lanczos_steps",
+    "gradient", "logdet_method", "trace_solve", "nprobes", "lanczos_steps",
     "dense_seconds", "cg_seconds", "speedup_dense_over_cg",
     "dense_loglik", "cg_loglik", "absdiff_loglik",
     "dense_objective_calls", "cg_objective_calls",
@@ -44,6 +44,7 @@ function usage()
       --iterations=N     Optimizer iteration budget (default: 4 smoke, 6 full).
       --gradient=MODE    :finite or :implicit (default: :implicit).
       --logdet=MODE      :dense or :slq (default: :dense).
+      --trace-solve=MODE auto, solve, or lanczos for SLQ trace gradients (default: auto).
       --nprobes=N        Frozen SLQ probe count (default: 4).
       --lanczos-steps=N  SLQ Lanczos steps (default: 20).
       --reps=N           Measured repetitions (default: 1 smoke, 3 full).
@@ -64,6 +65,7 @@ function parse_args(args)
     out = nothing
     gradient = :implicit
     logdet_method = :dense
+    trace_solve = :auto
     nprobes = 4
     lanczos_steps = 20
 
@@ -89,6 +91,11 @@ function parse_args(args)
             value in (:dense, :slq) || throw(ArgumentError(
                 "--logdet must be dense or slq; got $value"))
             logdet_method = value
+        elseif startswith(arg, "--trace-solve=")
+            value = Symbol(arg[(lastindex("--trace-solve=") + 1):end])
+            value in (:auto, :solve, :lanczos) || throw(ArgumentError(
+                "--trace-solve must be auto, solve, or lanczos; got $value"))
+            trace_solve = value
         elseif startswith(arg, "--nprobes=")
             nprobes = parse(Int, arg[(lastindex("--nprobes=") + 1):end])
         elseif startswith(arg, "--lanczos-steps=")
@@ -113,8 +120,8 @@ function parse_args(args)
         "--lanczos-steps must be positive; got $lanczos_steps"))
     return (mode = mode, cells = cells, iterations = iterations, reps = reps,
             warmups = warmups, seed = seed, out = out, gradient = gradient,
-            logdet_method = logdet_method, nprobes = nprobes,
-            lanczos_steps = lanczos_steps)
+            logdet_method = logdet_method, trace_solve = trace_solve,
+            nprobes = nprobes, lanczos_steps = lanczos_steps)
 end
 
 function select_cells(mode::String, wanted)
@@ -162,7 +169,8 @@ function time_fit(Y, precision, probes, cell, mode_solve, args)
             Y, precision; K = cell.K, sigma2 = 0.5, mode_solve = mode_solve,
             logdet_method = args.logdet_method, probes = probes,
             nprobes = args.nprobes, lanczos_steps = args.lanczos_steps,
-            reorth = true, iterations = args.iterations,
+            reorth = true, trace_solve = args.trace_solve,
+            iterations = args.iterations,
             g_tol = 1e-4, cg_tol = 1e-10, maxiter = 80, tol = 1e-9,
             gradient = args.gradient)
     end
@@ -173,7 +181,8 @@ function time_fit(Y, precision, probes, cell, mode_solve, args)
             Y, precision; K = cell.K, sigma2 = 0.5, mode_solve = mode_solve,
             logdet_method = args.logdet_method, probes = probes,
             nprobes = args.nprobes, lanczos_steps = args.lanczos_steps,
-            reorth = true, iterations = args.iterations,
+            reorth = true, trace_solve = args.trace_solve,
+            iterations = args.iterations,
             g_tol = 1e-4, cg_tol = 1e-10, maxiter = 80, tol = 1e-9,
             gradient = args.gradient)
         push!(times, elapsed)
@@ -215,6 +224,7 @@ function run_cell(cell, args, index)
         "reps" => args.reps,
         "gradient" => args.gradient,
         "logdet_method" => args.logdet_method,
+        "trace_solve" => cg.fit.trace_solve,
         "nprobes" => args.nprobes,
         "lanczos_steps" => args.lanczos_steps,
         "dense_seconds" => dense.seconds,
@@ -239,7 +249,7 @@ function main()
     args = parse_args(ARGS)
     cells = select_cells(args.mode, args.cells)
     rows = Dict{String, Any}[]
-    println("Structured Poisson fitted benchmark ($(args.mode)); reps=$(args.reps), warmups=$(args.warmups), iterations=$(args.iterations), gradient=$(args.gradient), logdet=$(args.logdet_method)")
+    println("Structured Poisson fitted benchmark ($(args.mode)); reps=$(args.reps), warmups=$(args.warmups), iterations=$(args.iterations), gradient=$(args.gradient), logdet=$(args.logdet_method), trace_solve=$(args.trace_solve)")
     for (idx, cell) in enumerate(cells)
         row = run_cell(cell, args, idx)
         push!(rows, row)

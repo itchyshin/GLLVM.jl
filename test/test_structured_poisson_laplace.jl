@@ -159,6 +159,17 @@ end
         Y, precision; K = K, sigma2 = 0.5, mode_solve = :cg,
         logdet_method = :dense, iterations = 4, g_tol = 1e-4,
         cg_tol = 1e-10, maxiter = 80, tol = 1e-9, mode_cache = false)
+    full_basis = sqrt(float(p)) .* Matrix{Float64}(I, p, p)
+    slq_solve = GLLVM._fit_structured_poisson_laplace(
+        Y, precision; K = K, sigma2 = 0.5, mode_solve = :cg,
+        logdet_method = :slq, probes = full_basis, lanczos_steps = p,
+        trace_solve = :solve, iterations = 2, g_tol = 1e-4,
+        cg_tol = 1e-10, maxiter = 80, tol = 1e-9)
+    slq_auto = GLLVM._fit_structured_poisson_laplace(
+        Y, precision; K = K, sigma2 = 0.5, mode_solve = :cg,
+        logdet_method = :slq, probes = full_basis, lanczos_steps = p,
+        trace_solve = :auto, iterations = 2, g_tol = 1e-4,
+        cg_tol = 1e-10, maxiter = 80, tol = 1e-9)
 
     @test dense.loglik >= dense.initial_loglik - 1e-7
     @test cg.loglik >= cg.initial_loglik - 1e-7
@@ -171,6 +182,10 @@ end
     @test cg_cold.mode_cache === false
     @test cg.gradient === :implicit
     @test cg_finite.gradient === :finite
+    @test cg.trace_solve === :solve
+    @test slq_solve.trace_solve === :solve
+    @test slq_auto.trace_solve === :lanczos
+    @test slq_auto.loglik ≈ slq_solve.loglik atol = 1e-5 rtol = 1e-5
     @test dense.objective_calls > 0
     @test cg.objective_calls > 0
 

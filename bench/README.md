@@ -147,7 +147,9 @@ The fitter defaults to the private dense-logdet block implicit gradient. Use
 `--gradient=finite` to time the previous Optim finite-difference path on the
 same cells. Use `--logdet=slq --nprobes=4 --lanczos-steps=20` to exercise the
 frozen-probe stochastic trace-gradient path used for the large-p determinant
-prototype.
+prototype. The fitted benchmark defaults to `--trace-solve=auto`, which uses
+the fused Lanczos inverse-probe approximation for SLQ fits; use
+`--trace-solve=solve` to time the older explicit solve path.
 
 Rows report fitted wall time, final log-likelihood agreement, objective-call
 counts, and dense/CG fitted speedup. This is still not an R `gllvmTMB` parity

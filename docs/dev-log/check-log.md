@@ -1158,6 +1158,162 @@ gh pr list --limit 5 --json number,title,headRefName,isDraft,state
 
 No issue or PR was modified.
 
+## 2026-06-01 - Structured Poisson Auto Fused SLQ Fitted Path
+
+### Scope
+
+Promoted the private fixed-covariance structured Poisson fitter to
+`trace_solve=:auto`. For fitted SLQ log-determinant runs, `:auto` now selects
+the fused Lanczos inverse-probe path added in the previous slice; dense
+log-determinant runs keep the older explicit solve path. The benchmark script
+now records the effective trace-solve path in CSV output. This is an internal
+prototype/fitted-benchmark change, not a public API change.
+
+### Implementation Notes
+
+- `_fit_structured_poisson_laplace` accepts `trace_solve=:auto|:solve|:lanczos`
+  and stores the effective choice in the returned fit object.
+- `:auto` maps to `:lanczos` when `logdet_method=:slq`, or when
+  `logdet_method=:auto` would use the large-p SLQ path; otherwise it maps to
+  `:solve`.
+- `bench/structured_poisson_fit_bench.jl` defaults to `--trace-solve=auto`,
+  writes a `trace_solve` CSV column, and records the effective fitted value.
+- Lane check: branch was `codex/non-gaussian-fitter-gradients` at `2901ca8`
+  before this slice, with open PR #59 still on
+  `claude/package-work-catchup-mQiZM` for Delta-Gamma, ZIP/ZINB, and
+  non-Gaussian CIs. This slice did not touch that lane and did not edit
+  `src/sparse_phy_grad.jl` or `src/em_phylo.jl`.
+
+### Tests
+
+Focused structured Poisson test:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_poisson_laplace.jl")'
+```
+
+Result:
+
+```text
+structured Poisson Laplace prototype         | 13/13 pass
+structured Poisson implicit gradient         | 15/15 pass
+structured Poisson internal fitter           | 23/23 pass
+structured Poisson sigma-to-zero reduction   |  1/1 pass
+```
+
+Core suite:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. Manual tally from emitted `Test Summary` blocks:
+2319 pass, 1 existing broken sparse-phy precision placeholder, 2 expected
+quality placeholders in the direct core environment, 0 fail, 0 error.
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Manual tally from emitted `Test Summary` blocks: 2331 pass, 1 existing broken
+sparse-phy precision placeholder, 0 fail, 0 error.
+
+### Benchmarks
+
+Fitted SLQ grid with explicit solve trace path:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_fit_bench.jl --full --logdet=slq --trace-solve=solve --reps=1 --warmups=1 --iterations=6
+```
+
+Result:
+
+| trace solve | cell | p | n | K | dense (s) | CG (s) | dense / CG | abs loglik diff | calls |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| solve | small | 5 | 8 | 1 | 0.0018 | 0.0021 | 0.88x | 5.68e-14 | (8,8) |
+| solve | medium | 8 | 12 | 2 | 0.0046 | 0.0111 | 0.42x | 4.55e-13 | (9,9) |
+| solve | large | 20 | 25 | 2 | 0.0299 | 0.0302 | 0.99x | 2.39e-12 | (10,10) |
+
+Fitted SLQ grid with the new auto default:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_fit_bench.jl --full --logdet=slq --trace-solve=auto --reps=1 --warmups=1 --iterations=6
+```
+
+Result:
+
+| trace solve | cell | p | n | K | dense (s) | CG (s) | dense / CG | abs loglik diff | calls |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| auto -> lanczos | small | 5 | 8 | 1 | 0.0018 | 0.0017 | 1.06x | 5.68e-14 | (8,8) |
+| auto -> lanczos | medium | 8 | 12 | 2 | 0.0043 | 0.0041 | 1.04x | 4.26e-13 | (9,9) |
+| auto -> lanczos | large | 20 | 25 | 2 | 0.0275 | 0.0226 | 1.22x | 2.61e-12 | (10,10) |
+
+For the CG fitted path on this tiny calibrated grid, `:auto` improved measured
+CG time over `:solve` by about 1.24x, 2.71x, and 1.34x for the small, medium,
+and large cells respectively, with the same objective-call counts and
+sub-`1e-11` likelihood agreement against the corresponding dense-mode fit.
+
+Larger single-cell probe, `p=80`, `n=80`, `K=2`, `iterations=4`,
+`nprobes=4`, `lanczos_steps=20`, same fixed data/probes:
+
+```text
+p=80 n=80 K=2 solve time=0.2508 effective=solve loglik=-9860.455381 calls=(8,5)
+p=80 n=80 K=2 auto  time=0.1987 effective=lanczos loglik=-9860.455381 calls=(8,5) speedup=1.26x diff=1.819e-11
+```
+
+CSV smoke path:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_fit_bench.jl --smoke --logdet=slq --trace-solve=auto --reps=1 --warmups=1 --iterations=4 --out=/tmp/structured-poisson-fit-auto-smoke.csv
+head -2 /tmp/structured-poisson-fit-auto-smoke.csv
+```
+
+Result: CSV file written with the expected `trace_solve` header, and the smoke
+row recorded the effective value `lanczos`.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src docs/dev-log/check-log.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p|100x|100.?x|gllvmTMB" README.md docs/src docs/dev-log/check-log.md bench CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+<private-source trace scan over tracked repo content>
+```
+
+Results:
+
+- `git diff --check`: clean.
+- Private-source trace scan over `README.md`, `docs/src`, `docs/dev-log`,
+  `bench`, `src`, `test`, `CLAUDE.md`, and `AGENTS.md`: no matches.
+- Stale-wording scan: expected hits only - the AGENTS.md "Gaussian only"
+  snapshot, historical check-log command/result records, and the newly recorded
+  scan command itself. This slice adds no new public status claim.
+- Performance-claim scan: expected hits only - existing Gaussian/gllvmTMB
+  claims, historical internal benchmark records, benchmark-script column names,
+  and this new internal structured Poisson fitted-benchmark evidence. This
+  slice does not add an R `gllvmTMB` parity or public speed claim.
+
+### Open Risks
+
+- This is still a private fixed-covariance structured Poisson prototype, not a
+  public structured non-Gaussian API.
+- The benchmark cells are deliberately small calibration cells plus one larger
+  probe. Wider stochastic-probe and covariance-shape sweeps remain needed
+  before making public speed claims.
+- R `gllvmTMB` parity is N/A for this internal fitted path; the separate
+  comparison repo remains the place for public R-vs-Julia timing claims.
+
 ## 2026-06-01 — Structured Poisson Orthogonal Probe Control
 
 ### Implemented Claim
