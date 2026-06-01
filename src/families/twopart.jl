@@ -346,3 +346,125 @@ function fit_hurdle_poisson_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     return HurdlePoissonFit(βz, βc, Λc, -Optim.minimum(res),
                             Optim.converged(res), Optim.iterations(res))
 end
+
+# ---------------------------------------------------------------------------
+# Hurdle-NB — occurrence Bernoulli × zero-truncated negative-binomial (NB2) count
+# with shared dispersion r (Var = μ + μ²/r). p0=(r/(r+μ))^r; μ_tr=μ/(1−p0);
+# s^c=y−μ_tr; W^c=(V+μ²)/(1−p0)−μ_tr², V=μ+μ²/r (y>0; 0 for y=0). r→∞ ⇒ Hurdle-Poisson.
+# ---------------------------------------------------------------------------
+
+"""
+    HurdleNB(r)
+
+Marker for the Hurdle-NB family (Bernoulli occurrence × zero-truncated NB2 count,
+shared dispersion `r`).
+"""
+struct HurdleNB
+    r::Float64
+end
+
+function _tp_pieces(f::HurdleNB, y, ηz, ηc)
+    π = inv(one(ηz) + exp(-ηz))
+    Wz = π * (one(π) - π)
+    if y > 0
+        μ = exp(ηc); r = f.r
+        p0 = (r / (r + μ))^r
+        μtr = μ / (1 - p0)
+        V = μ + μ^2 / r
+        Wc = (V + μ^2) / (1 - p0) - μtr^2
+        logf = log(π) + logpdf(NegativeBinomial(r, r / (r + μ)), Int(y)) - log1p(-p0)
+        return (one(π) - π, y - μtr, Wz, Wc, logf)
+    else
+        return (-π, zero(ηc), Wz, zero(ηc), log1p(-π))
+    end
+end
+
+"""
+    hurdle_nb_marginal_loglik_laplace(Y, Λc, βz, βc, r; Λz=nothing, kwargs...) -> Float64
+
+Two-part Laplace log-marginal for a Hurdle-NB GLLVM. `Λc=0` ⇒ exact independent
+hurdle-NB loglik; as `r→∞` tends to the Hurdle-Poisson marginal.
+"""
+function hurdle_nb_marginal_loglik_laplace(Y::AbstractMatrix, Λc::AbstractMatrix,
+        βz::AbstractVector, βc::AbstractVector, r::Real;
+        Λz::Union{Nothing, AbstractMatrix} = nothing, kwargs...)
+    p, K = size(Λc)
+    Λz_ = Λz === nothing ? zeros(p, K) : Λz
+    return twopart_marginal_loglik_laplace(HurdleNB(float(r)), Y, Λz_, Λc, βz, βc; kwargs...)
+end
+
+"""
+    HurdleNBFit
+
+Result of [`fit_hurdle_nb_gllvm`](@ref): `βz`, `βc`, `Λc`, dispersion `r`, `loglik`,
+`converged`, `iterations`.
+"""
+struct HurdleNBFit
+    βz::Vector{Float64}
+    βc::Vector{Float64}
+    Λc::Matrix{Float64}
+    r::Float64
+    loglik::Float64
+    converged::Bool
+    iterations::Int
+end
+
+function Base.show(io::IO, f::HurdleNBFit)
+    p, K = size(f.Λc)
+    print(io, "HurdleNBFit(p=", p, ", K=", K, ", r=", round(f.r; sigdigits = 4),
+          ", loglik=", round(f.loglik; sigdigits = 7),
+          f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+"""
+    fit_hurdle_nb_gllvm(Y; K, …) -> HurdleNBFit
+
+Fit a Hurdle-NB two-part GLLVM by L-BFGS over `[βz; βc; vec(Λc); log r]` (Λz=0).
+"""
+function fit_hurdle_nb_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
+        g_tol::Real = 1e-5, iterations::Integer = 500,
+        newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    p, n = size(Y)
+    rr = rr_theta_len(p, K)
+    βz0 = Vector{Float64}(undef, p); βc0 = Vector{Float64}(undef, p)
+    @inbounds for t in 1:p
+        npres = count(>(0), view(Y, t, :))
+        pr = clamp((npres + 0.5) / (n + 1), 1e-3, 1 - 1e-3)
+        βz0[t] = log(pr / (1 - pr))
+        s = 0.0; c = 0
+        for j in 1:n
+            if Y[t, j] > 0
+                s += Y[t, j]; c += 1
+            end
+        end
+        βc0[t] = c == 0 ? 0.0 : log(max(s / c, 1.0))
+    end
+    Zc = [Y[t, j] > 0 ? log(max(Y[t, j], 0.5)) - βc0[t] : 0.0 for t in 1:p, j in 1:n]
+    F = svd(Zc); kk = min(K, length(F.S))
+    Λc0 = zeros(p, K)
+    @inbounds for j in 1:kk
+        Λc0[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
+    end
+    θ0 = vcat(βz0, βc0, pack_lambda(Λc0), log(10.0))
+    function negll(θ)
+        βz = θ[1:p]; βc = θ[(p + 1):(2p)]
+        Λc = unpack_lambda(θ[(2p + 1):(2p + rr)], p, K)
+        r = exp(θ[2p + rr + 1])
+        v = try
+            -hurdle_nb_marginal_loglik_laplace(Y, Λc, βz, βc, r;
+                                               maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
+    res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
+                         autodiff = :finite)
+    θ̂ = Optim.minimizer(res)
+    βz = θ̂[1:p]; βc = θ̂[(p + 1):(2p)]
+    Λc = unpack_lambda(θ̂[(2p + 1):(2p + rr)], p, K)
+    r = exp(θ̂[2p + rr + 1])
+    return HurdleNBFit(βz, βc, Λc, r, -Optim.minimum(res),
+                       Optim.converged(res), Optim.iterations(res))
+end
