@@ -1028,3 +1028,132 @@ Open PR / collision check:
 gh pr list --limit 10 --json number,title,headRefName,updatedAt
 []
 ```
+
+## 2026-05-31 — Structured Schur/SLQ Substrate
+
+### Scope
+
+Added the first internal substrate for the large-`p` non-Gaussian structured
+dependence path: a Schur-complement operator for the latent structured response
+block plus deterministic stochastic-Lanczos quadrature (SLQ) log-determinant
+estimation over supplied probes. The substrate also includes an internal
+determinant selector that uses exact dense `logdet` for small `p` and frozen-probe
+SLQ for large `p`. This is not yet wired into public fitters.
+
+The implemented operator applies
+
+```text
+S_u x = σ⁻² Qx + (sum_s w_s) .* x
+        - sum_s D_s Λ (I + Λ' D_s Λ)⁻¹ Λ' D_s x
+```
+
+where `D_s = diag(w_s)`. Sparse precision matrices are preserved rather than
+densified, and the internal dense-reference / SLQ paths reuse multiply scratch.
+
+### Targeted Tests
+
+Command:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_schur.jl")'
+```
+
+Result:
+
+```text
+structured Schur operator | 22/22 pass
+structured Schur SLQ logdet | 9/9 pass
+```
+
+The tests cover dense and sparse precision storage, `mul!` agreement with the
+independent dense Schur matrix, SPD checks, malformed dimensions / boundary
+`sigma2`, exact-basis SLQ agreement with dense `logdet`, deterministic
+repeatability with frozen Rademacher probes, dense/SLQ selector branches, and
+invalid selector inputs.
+
+### Core Suite
+
+Command:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. Manual tally from the emitted `Test Summary` blocks:
+2257 pass, 1 existing broken sparse-phy precision placeholder, 2 expected
+quality placeholders in the direct core environment, 0 fail, 0 error.
+
+Key touched blocks:
+
+```text
+structured Schur operator     | 22/22 pass
+structured Schur SLQ logdet   | 9/9 pass
+quality                       | 2 broken placeholders
+```
+
+### Full Package Suite
+
+Command:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+structured Schur operator     | 22/22 pass
+structured Schur SLQ logdet   | 9/9 pass
+quality                       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Manual tally from the emitted `Test Summary` blocks: 2257 pass, 1 existing
+broken sparse-phy precision placeholder, 0 fail, 0 error.
+
+### Allocation / Timing Smoke
+
+Command:
+
+```sh
+julia --project=. --startup-file=no -e 'using GLLVM, Random, LinearAlgebra, SparseArrays; p=80; n=12; K=2; Random.seed!(804); Λ=0.2 .* randn(p,K); W=0.1 .+ rand(p,n); main=fill(2.2,p); off=fill(-0.4,p-1); Q=spdiagm(-1=>off,0=>main,1=>off); op=GLLVM._SchurUOperator(Symmetric(Q), Λ, W; sigma2=1.1); probes=GLLVM._rademacher_probes(MersenneTwister(805), p, 8); GLLVM._slq_logdet(op, probes; lanczos_steps=20); bytes=@allocated GLLVM._slq_logdet(op, probes; lanczos_steps=20); t=@elapsed GLLVM._slq_logdet(op, probes; lanczos_steps=20); println("slq_p80_n12_K2_steps20_probes8 elapsed=", t, " allocated=", bytes)'
+```
+
+Result:
+
+```text
+slq_p80_n12_K2_steps20_probes8 elapsed=0.001644 allocated=103552
+```
+
+This is a smoke number for the new substrate, not a before/after fitter
+speedup. The next meaningful benchmark is dense `logdet(S_u)` vs sparse/SLQ
+inside the structured non-Gaussian Laplace objective.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src docs/dev-log/check-log.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p" README.md docs/src docs/dev-log/check-log.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+<private-source trace scan over tracked repo content>
+```
+
+Results:
+
+- `git diff --check`: clean.
+- No private-source trace in tracked repo content.
+- The stale-wording scan still finds the user-provided AGENTS.md "Gaussian only"
+  snapshot; not edited because AGENTS.md changes require maintainer approval.
+- Performance-claim scan finds existing Gaussian / benchmark wording only; no
+  new user-facing speed claim was added.
+
+Open PR / collision check:
+
+```text
+gh pr list --limit 5 --json number,title,headRefName,isDraft,state
+[#59 draft: gllvmTMB catch-up: Delta-Gamma + zero-inflated (ZIP/ZINB) families + non-Gaussian CIs]
+```
+
+No issue or PR was modified.

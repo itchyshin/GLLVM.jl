@@ -13,6 +13,7 @@ include("profile.jl")                    # σ_eps profile-out (used by fit)
 include("fit.jl")
 include("simulate.jl")
 include("structured_cov.jl")             # spatial_cov, relatedness_cov builders
+include("structured_schur.jl")           # internal Schur/SLQ substrate for structured non-Gaussian Laplace
 
 # Sparse phylogenetic path (evaluation-only — see docstring for AD limitation)
 include("sparse_phy.jl")
