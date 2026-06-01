@@ -4687,3 +4687,139 @@ Results:
   parity claim was added.
 - GitHub lane check: PR #59 remains the separate draft
   `claude/package-work-catchup-mQiZM` lane; no PR or issue was modified.
+
+## 2026-06-01 - Structured Schur Determinant Lemma
+
+### Scope
+
+Added an exact determinant-lemma logdet path for the internal structured Schur
+operator:
+
+```text
+S_u = B - C C',
+B = sigma2^-1 Q + diag(sum_s w_s),
+C_s = D_s Lambda chol(A_s^-1),
+A_s = I_K + Lambda' D_s Lambda.
+```
+
+The new method is exposed only through the internal `_schur_u_logdet(op;
+method = :lemma)` path. It does not change the default `:auto` policy and is
+not wired into the fitted gradient path yet, because the gradient still needs
+either dense inverse information or a matching Woodbury-style inverse/trace
+derivation.
+
+### Correctness Tests
+
+Added structured Schur tests proving:
+
+- `method = :lemma` matches exact dense logdet for dense precision.
+- `method = :lemma` matches exact dense logdet for sparse precision.
+- `method = :lemma` rejects unsupported `K > 3`.
+
+Focused structured tests:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_schur.jl"); include("test/test_structured_poisson_laplace.jl")'
+```
+
+Result: 150 pass, 0 fail, 0 error.
+
+Core suite:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. Manual tally from emitted `Test Summary` blocks:
+2359 pass, 1 existing broken sparse-phy precision placeholder, 2 expected
+quality placeholders in the direct core environment, 0 fail, 0 error.
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Manual tally from emitted `Test Summary` blocks: 2371 pass, 1 existing broken
+sparse-phy precision placeholder, quality 12/12 pass, 0 fail, 0 error.
+
+### Benchmark Evidence
+
+SLQ calibration probe that motivated the exact path:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_trace_gradient_bench.jl --break-even --cells=xlarge --trace-solve=lanczos --probe-kind=orthogonal --nprobes=32 --lanczos-steps=40 --reps=2 --warmups=1 --out=/tmp/structured-poisson-trace-xlarge-orth32-l40-after-dense-batch.csv
+```
+
+Result:
+
+```text
+xlarge   p=2048 n= 512 K=2 dense=  0.8562 s  slq=  2.5396 s  speedup=   0.34x  valuediff=3.73e-01  gradrel=1.17e-01
+```
+
+Interpretation: increasing probes/steps made the SLQ trace-gradient path slower
+while still leaving material approximation error, so the next useful algorithm
+slice was exact structured determinant work rather than more probes.
+
+Updated durable Schur logdet benchmark:
+
+```sh
+julia --project=. --startup-file=no bench/structured_schur_logdet_bench.jl --smoke --reps=2 --warmups=1 --out=/tmp/structured-schur-logdet-lemma-smoke.csv
+julia --project=. --startup-file=no bench/structured_schur_logdet_bench.jl --break-even --cells=giant,xlarge --reps=2 --warmups=1 --out=/tmp/structured-schur-logdet-lemma-break-even.csv
+```
+
+Results:
+
+```text
+smoke    p=  80 n=  12 K=2 dense=  0.0001 s  lemma=  0.0001 s  slq=  0.0003 s  dense/lemma=   1.69x  dense/slq=   0.48x  lemma_relerr=0.000e+00  slq_relerr=5.371e-03
+giant    p=1024 n= 256 K=3 dense=  0.0116 s  lemma=  0.0101 s  slq=  0.2415 s  dense/lemma=   1.15x  dense/slq=   0.05x  lemma_relerr=1.587e-15  slq_relerr=3.181e-04
+xlarge   p=2048 n= 512 K=3 dense=  0.1159 s  lemma=  0.0666 s  slq=  1.0721 s  dense/lemma=   1.74x  dense/slq=   0.11x  lemma_relerr=1.551e-15  slq_relerr=2.610e-04
+```
+
+Current-method K=2 probe for the structured Poisson trace-gradient grid shape:
+
+```text
+p=1024 n=256 K=2 dense=0.01502425 lemma=0.005754917 dense/lemma=2.610680571066446 absdiff=9.094947017729282e-13
+p=2048 n=512 K=2 dense=0.091694896 lemma=0.0296673545 dense/lemma=3.090767530350574 absdiff=1.6370904631912708e-11
+```
+
+Interpretation: the lemma path is exact to roundoff and is faster than exact
+dense logdet in the tested K=2/K=3 cells, but it allocates more memory because
+it forms `C`, `B\\C`, and the smaller `K*n` determinant matrix. It is not yet
+a full fitted-gradient replacement.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+<private-source trace scan over tracked repo content>
+<placeholder rerun scan over current check-log and after-task report>
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-01-structured-schur-determinant-lemma.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p|100x|100.?x|gllvmTMB" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-01-structured-schur-determinant-lemma.md bench CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+gh pr list --limit 5 --json number,title,headRefName,isDraft,state
+```
+
+Results:
+
+- `git diff --check`: clean after this report.
+- Private-source trace scan over tracked public artifacts: no matches.
+- Placeholder rerun scan: no stale rerun/fill-result placeholders after this
+  report was finalized.
+- Stale-wording scan: expected historical and command-pattern hits only,
+  including the user-provided AGENTS.md "Gaussian only" snapshot; this slice
+  adds no public API/status claim.
+- Performance-claim scan: expected historical benchmark records, existing
+  Gaussian/gllvmTMB claims, and this internal determinant-lemma speed evidence
+  only; no public 100x structured speed claim or new R `gllvmTMB` parity claim
+  was added.
+- GitHub lane check: PR #59 remains the separate draft
+  `claude/package-work-catchup-mQiZM` lane; no PR or issue was modified.

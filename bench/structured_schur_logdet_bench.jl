@@ -2,7 +2,8 @@
 
 # Benchmark the structured non-Gaussian Schur determinant substrate.
 #
-# Smoke mode is cheap and compares exact dense logdet against frozen-probe SLQ:
+# Smoke mode is cheap and compares exact dense logdet against the determinant
+# lemma path and frozen-probe SLQ:
 #
 #     julia --project=. bench/structured_schur_logdet_bench.jl --smoke
 #
@@ -24,8 +25,10 @@ using GLLVM
 
 const CSV_HEADER = [
     "timestamp", "mode", "cell", "p", "n", "K", "nprobes", "lanczos_steps",
-    "construction_seconds", "dense_seconds", "slq_seconds", "speedup_dense_over_slq",
-    "dense_logdet", "slq_logdet", "abs_error", "rel_error", "dense_bytes",
+    "construction_seconds", "dense_seconds", "lemma_seconds", "slq_seconds",
+    "speedup_dense_over_lemma", "speedup_dense_over_slq", "dense_logdet",
+    "lemma_logdet", "slq_logdet", "lemma_abs_error", "slq_abs_error",
+    "lemma_rel_error", "slq_rel_error", "dense_bytes", "lemma_bytes",
     "slq_bytes", "reps", "notes",
 ]
 
@@ -67,7 +70,8 @@ function usage()
 
     The benchmark constructs a sparse tridiagonal precision, random loadings,
     positive site weights, and then compares exact dense logdet(S_u) with the
-    frozen-probe SLQ estimate used by the large-p determinant lane.
+    exact determinant-lemma path and the frozen-probe SLQ estimate used by the
+    large-p determinant lane.
     """)
 end
 
@@ -209,6 +213,10 @@ function run_cell(cell, args, index::Integer)
             lanczos_steps = lanczos_steps, reorth = true)
     end
 
+    lemma = time_value(args.warmups, args.reps) do
+        GLLVM._schur_u_logdet(op; method = :lemma)
+    end
+
     dense = if args.run_dense
         time_value(args.warmups, args.reps) do
             GLLVM._schur_u_logdet(op; method = :dense)
@@ -218,11 +226,17 @@ function run_cell(cell, args, index::Integer)
     end
 
     dense_logdet = dense === nothing ? nothing : dense.value
+    lemma_logdet = lemma.value
     slq_logdet = slq.value
-    abs_error = dense === nothing ? nothing : abs(slq_logdet - dense_logdet)
-    rel_error = dense === nothing ? nothing : abs_error / max(abs(dense_logdet), eps(Float64))
-    speedup = dense === nothing ? nothing : dense.seconds / slq.seconds
-    notes = dense === nothing ? "slq_only" : "dense_vs_slq"
+    lemma_abs_error = dense === nothing ? nothing : abs(lemma_logdet - dense_logdet)
+    slq_abs_error = dense === nothing ? nothing : abs(slq_logdet - dense_logdet)
+    lemma_rel_error = dense === nothing ? nothing :
+        lemma_abs_error / max(abs(dense_logdet), eps(Float64))
+    slq_rel_error = dense === nothing ? nothing :
+        slq_abs_error / max(abs(dense_logdet), eps(Float64))
+    lemma_speedup = dense === nothing ? nothing : dense.seconds / lemma.seconds
+    slq_speedup = dense === nothing ? nothing : dense.seconds / slq.seconds
+    notes = dense === nothing ? "lemma_and_slq_only" : "dense_vs_lemma_vs_slq"
 
     return Dict(
         "timestamp" => Dates.format(now(), dateformat"yyyy-mm-ddTHH:MM:SS"),
@@ -235,13 +249,19 @@ function run_cell(cell, args, index::Integer)
         "lanczos_steps" => lanczos_steps,
         "construction_seconds" => construction.seconds,
         "dense_seconds" => dense === nothing ? nothing : dense.seconds,
+        "lemma_seconds" => lemma.seconds,
         "slq_seconds" => slq.seconds,
-        "speedup_dense_over_slq" => speedup,
+        "speedup_dense_over_lemma" => lemma_speedup,
+        "speedup_dense_over_slq" => slq_speedup,
         "dense_logdet" => dense_logdet,
+        "lemma_logdet" => lemma_logdet,
         "slq_logdet" => slq_logdet,
-        "abs_error" => abs_error,
-        "rel_error" => rel_error,
+        "lemma_abs_error" => lemma_abs_error,
+        "slq_abs_error" => slq_abs_error,
+        "lemma_rel_error" => lemma_rel_error,
+        "slq_rel_error" => slq_rel_error,
         "dense_bytes" => dense === nothing ? nothing : dense.bytes,
+        "lemma_bytes" => lemma.bytes,
         "slq_bytes" => slq.bytes,
         "reps" => args.reps,
         "notes" => notes,
@@ -250,12 +270,19 @@ end
 
 function print_row(row)
     dense_s = row["dense_seconds"] === nothing ? "NA" : @sprintf("%.4f", row["dense_seconds"])
+    lemma_s = @sprintf("%.4f", row["lemma_seconds"])
     slq_s = @sprintf("%.4f", row["slq_seconds"])
-    speedup = row["speedup_dense_over_slq"] === nothing ? "NA" :
+    lemma_speedup = row["speedup_dense_over_lemma"] === nothing ? "NA" :
+        @sprintf("%.2fx", row["speedup_dense_over_lemma"])
+    slq_speedup = row["speedup_dense_over_slq"] === nothing ? "NA" :
         @sprintf("%.2fx", row["speedup_dense_over_slq"])
-    relerr = row["rel_error"] === nothing ? "NA" : @sprintf("%.3e", row["rel_error"])
-    @printf("%-8s p=%4d n=%4d K=%d dense=%8s s  slq=%8s s  speedup=%8s  relerr=%s\n",
-        row["cell"], row["p"], row["n"], row["K"], dense_s, slq_s, speedup, relerr)
+    lemma_relerr = row["lemma_rel_error"] === nothing ? "NA" :
+        @sprintf("%.3e", row["lemma_rel_error"])
+    slq_relerr = row["slq_rel_error"] === nothing ? "NA" :
+        @sprintf("%.3e", row["slq_rel_error"])
+    @printf("%-8s p=%4d n=%4d K=%d dense=%8s s  lemma=%8s s  slq=%8s s  dense/lemma=%8s  dense/slq=%8s  lemma_relerr=%s  slq_relerr=%s\n",
+        row["cell"], row["p"], row["n"], row["K"], dense_s, lemma_s, slq_s,
+        lemma_speedup, slq_speedup, lemma_relerr, slq_relerr)
 end
 
 function main()

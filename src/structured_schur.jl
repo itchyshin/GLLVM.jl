@@ -281,6 +281,23 @@ function _schur_u_dense(op::_SchurUOperator)
     return _schur_u_dense_direct!(S, op, B, BA)
 end
 
+function _schur_u_base_matrix(op::_SchurUOperator)
+    p = size(op, 1)
+    T = eltype(op)
+    B = Matrix{T}(undef, p, p)
+    _copy_scaled_precision!(B, op.precision, op.invsigma2)
+    @inbounds for t in 1:p
+        B[t, t] += op.Wsum[t]
+    end
+    return Symmetric(B)
+end
+
+function _schur_u_base_matrix(
+        op::_SchurUOperator{T, <:Symmetric{<:Any, <:SparseArrays.SparseMatrixCSC}}) where {T}
+    B = op.invsigma2 .* sparse(op.precision)
+    return Symmetric(B + spdiagm(0 => op.Wsum))
+end
+
 function _symmetrize_schur_dense!(S::AbstractMatrix)
     p = size(S, 1)
     size(S, 2) == p || throw(DimensionMismatch("S must be square; got $(size(S))"))
@@ -355,6 +372,19 @@ function _schur_u_dense_tinyk!(S::AbstractMatrix, op::_SchurUOperator,
         S[t, t] += op.Wsum[t]
     end
 
+    _schur_u_tinyk_factor!(C, op)
+    mul!(S, C, transpose(C), -one(T), one(T))
+    return _symmetrize_schur_dense!(S)
+end
+
+function _schur_u_tinyk_factor!(C::AbstractMatrix, op::_SchurUOperator)
+    p, K = size(op.Lambda)
+    nsites = size(op.Wsites, 2)
+    size(C) == (p, K * nsites) || throw(DimensionMismatch(
+        "C must be $(p)×$(K * nsites); got $(size(C))"))
+    K <= 3 || throw(ArgumentError("tiny-K factor assembly requires K <= 3; got K=$K"))
+    T = eltype(op)
+
     if K == 1
         @inbounds for s in 1:nsites
             scale = sqrt(op.Ainvs[s][1, 1])
@@ -378,8 +408,7 @@ function _schur_u_dense_tinyk!(S::AbstractMatrix, op::_SchurUOperator,
             end
         end
     end
-    mul!(S, C, transpose(C), -one(T), one(T))
-    return _symmetrize_schur_dense!(S)
+    return C
 end
 
 function _schur_u_dense_direct!(S::AbstractMatrix, op::_SchurUOperator,
@@ -564,12 +593,28 @@ function _schur_u_logdet(op::_SchurUOperator; method::Symbol = :auto,
 
     if method == :dense || (method == :auto && p <= dense_cutoff)
         return logdet(cholesky(_schur_u_dense(op)))
+    elseif method == :lemma
+        return _schur_u_logdet_lemma(op)
     elseif method == :slq || method == :auto
         active_probes = probes === nothing ? _rademacher_probes(rng, p, nprobes) : probes
         return _slq_logdet(op, active_probes; lanczos_steps = lanczos_steps, reorth = reorth)
     else
-        throw(ArgumentError("method must be :auto, :dense, or :slq; got $method"))
+        throw(ArgumentError("method must be :auto, :dense, :lemma, or :slq; got $method"))
     end
+end
+
+function _schur_u_logdet_lemma(op::_SchurUOperator)
+    p, K = size(op.Lambda)
+    nsites = size(op.Wsites, 2)
+    K <= 3 || throw(ArgumentError("determinant-lemma logdet requires K <= 3; got K=$K"))
+    T = eltype(op)
+    C = Matrix{T}(undef, p, K * nsites)
+    _schur_u_tinyk_factor!(C, op)
+    FB = cholesky(_schur_u_base_matrix(op))
+    X = FB \ C
+    H = Matrix{T}(I, size(C, 2), size(C, 2))
+    mul!(H, transpose(C), X, -one(T), one(T))
+    return logdet(FB) + logdet(cholesky(Symmetric(H)))
 end
 
 function _schur_u_cg!(x::AbstractVector, op::_SchurUOperator, b::AbstractVector;

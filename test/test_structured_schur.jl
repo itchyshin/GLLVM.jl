@@ -154,6 +154,7 @@ end
     op = GLLVM._SchurUOperator(precision, Lambda, Wsites; sigma2 = 1.3)
     dense = Matrix(GLLVM._schur_u_dense(op))
     dense_logdet = logdet(cholesky(Symmetric(dense)))
+    sparse_op = GLLVM._SchurUOperator(Symmetric(sparse(precision)), Lambda, Wsites; sigma2 = 1.3)
 
     full_basis = sqrt(float(p)) .* Matrix{Float64}(I, p, p)
     exact_slq = GLLVM._slq_logdet(op, full_basis; lanczos_steps = p, reorth = true)
@@ -163,6 +164,8 @@ end
     @test exact_slq_inv ≈ dense_logdet atol = 1e-8 rtol = 1e-8
     @test Xfull ≈ dense \ full_basis atol = 1e-7 rtol = 1e-7
     @test GLLVM._schur_u_logdet(op; method = :dense) ≈ dense_logdet atol = 1e-10 rtol = 1e-10
+    @test GLLVM._schur_u_logdet(op; method = :lemma) ≈ dense_logdet atol = 1e-8 rtol = 1e-8
+    @test GLLVM._schur_u_logdet(sparse_op; method = :lemma) ≈ dense_logdet atol = 1e-8 rtol = 1e-8
     @test GLLVM._schur_u_logdet(op; method = :auto, dense_cutoff = p) ≈ dense_logdet atol = 1e-10 rtol = 1e-10
     @test GLLVM._schur_u_logdet(op; method = :slq, probes = full_basis,
         lanczos_steps = p, reorth = true) ≈ dense_logdet atol = 1e-8 rtol = 1e-8
@@ -185,6 +188,9 @@ end
 
     @test_throws ArgumentError GLLVM._schur_u_logdet(op; method = :wat)
     @test_throws ArgumentError GLLVM._schur_u_logdet(op; dense_cutoff = -1)
+    op4 = GLLVM._SchurUOperator(precision, 0.2 .* randn(p, 4),
+        0.1 .+ rand(p, n); sigma2 = 1.3)
+    @test_throws ArgumentError GLLVM._schur_u_logdet(op4; method = :lemma)
     @test_throws DimensionMismatch GLLVM._slq_logdet_invprobes(
         op, zeros(p + 1, 2); lanczos_steps = 2)
     @test_throws ArgumentError GLLVM._orthogonal_probes(MersenneTwister(805), p, p + 1)
