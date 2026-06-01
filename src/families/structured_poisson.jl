@@ -4,6 +4,8 @@
 # structured-dependence path. It is deliberately not exported: fitters should
 # only depend on it after the dense-mode and SLQ determinant checks are stable.
 
+const _STRUCTURED_POISSON_LEMMA_CHUNK_COLS = 256
+
 function _structured_poisson_check_dims(Y::AbstractMatrix, Λ::AbstractMatrix,
         β::AbstractVector, precision::AbstractMatrix, sigma2::Real)
     p, _ = size(Y)
@@ -523,31 +525,44 @@ function _structured_poisson_block_implicit_value_grad(θ::AbstractVector,
     gradΛ = zeros(T, p, K)
     Usite = Matrix{T}(undef, p, K)
     GU = Matrix{T}(undef, p, K)
-    Uall = nothing
-    GUall = nothing
+    Ublock = nothing
+    GUblock = nothing
+    lemma_chunk_sites = 0
+    lemma_chunk_start = 0
+    lemma_chunk_stop = -1
     C = Matrix{T}(undef, K, K)
     v = Vector{T}(undef, K)
     tmp = Vector{T}(undef, K)
     rz = Vector{T}(undef, K)
     if use_lemma
-        Uall = Matrix{T}(undef, p, K * n)
-        GUall = similar(Uall)
-        @inbounds for i in 1:n
-            offset = (i - 1) * K
-            for t in 1:p
-                for k in 1:K
-                    Uall[t, offset + k] = W[t, i] * L[t, k]
-                end
-            end
-        end
-        _schur_u_woodbury_inv_apply!(GUall, wb, Uall)
+        lemma_chunk_sites = max(1, min(n, _STRUCTURED_POISSON_LEMMA_CHUNK_COLS ÷ K))
+        Ublock = Matrix{T}(undef, p, K * lemma_chunk_sites)
+        GUblock = similar(Ublock)
     end
 
     @inbounds for i in 1:n
         if use_lemma
-            cols = ((i - 1) * K + 1):(i * K)
-            Usite_i = view(Uall, :, cols)
-            GU_i = view(GUall, :, cols)
+            if i > lemma_chunk_stop
+                lemma_chunk_start = i
+                lemma_chunk_stop = min(n, i + lemma_chunk_sites - 1)
+                active_sites = lemma_chunk_stop - lemma_chunk_start + 1
+                active_cols = K * active_sites
+                Uactive = view(Ublock, :, 1:active_cols)
+                GUactive = view(GUblock, :, 1:active_cols)
+                for site in lemma_chunk_start:lemma_chunk_stop
+                    offset = (site - lemma_chunk_start) * K
+                    for t in 1:p
+                        for k in 1:K
+                            Uactive[t, offset + k] = W[t, site] * L[t, k]
+                        end
+                    end
+                end
+                _schur_u_woodbury_inv_apply!(GUactive, wb, Uactive)
+            end
+            offset = (i - lemma_chunk_start) * K
+            cols = (offset + 1):(offset + K)
+            Usite_i = view(Ublock, :, cols)
+            GU_i = view(GUblock, :, cols)
             mul!(C, transpose(Usite_i), GU_i)
         else
             for t in 1:p

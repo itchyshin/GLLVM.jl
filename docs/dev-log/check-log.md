@@ -1,5 +1,97 @@
 # Check Log
 
+## 2026-06-01 - Structured Poisson Lemma RHS Chunking
+
+### Scope
+
+Chunked the exact structured Poisson lemma-gradient site RHS matrices so the
+trace block no longer materializes all `K * n` site-loading columns at once.
+The internal chunk cap is 256 RHS columns. This preserves the exact Woodbury
+route, keeps `logdet_method = :lemma` opt-in, and changes no public API.
+
+### Correctness Tests
+
+Focused structured tests:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_schur.jl"); include("test/test_structured_poisson_laplace.jl")'
+```
+
+Result: 165 pass, 0 fail, 0 error.
+
+Core suite:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: 2379 pass, 3 broken placeholders, 0 fail, 0 error.
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result: 2391 pass, 1 existing broken sparse-phy precision placeholder, 0 fail,
+0 error. The `quality` testset passed 12/12, covering Aqua/JET in the full
+package battery.
+
+### Benchmark Evidence
+
+Structured Poisson exact lemma-gradient benchmark with 256-column chunks:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_lemma_gradient_bench.jl --break-even --reps=2 --warmups=1 --out=/tmp/structured-poisson-lemma-gradient-chunked.csv
+```
+
+Result:
+
+```text
+medium   p= 512 n= 128 K=2 dense=  0.0332 s lemma=  0.0311 s speedup= 1.07x bytes=(9.87e+06, 1.87e+07) valuediff=0.00e+00 gradrel=1.21e-16
+large    p=1024 n= 256 K=2 dense=  0.1847 s lemma=  0.1111 s speedup= 1.66x bytes=(3.86e+07, 6.89e+07) valuediff=0.00e+00 gradrel=1.71e-16
+xlarge   p=2048 n= 512 K=2 dense=  0.8321 s lemma=  0.4542 s speedup= 1.83x bytes=(1.53e+08, 2.64e+08) valuediff=0.00e+00 gradrel=1.73e-16
+```
+
+Rejected 512-column chunk probe:
+
+```text
+medium   p= 512 n= 128 K=2 dense=  0.0327 s lemma=  0.0282 s speedup= 1.16x bytes=(9.87e+06, 1.87e+07) valuediff=0.00e+00 gradrel=1.21e-16
+large    p=1024 n= 256 K=2 dense=  0.1293 s lemma=  0.1050 s speedup= 1.23x bytes=(3.86e+07, 7.31e+07) valuediff=0.00e+00 gradrel=1.71e-16
+xlarge   p=2048 n= 512 K=2 dense=  0.8257 s lemma=  0.4768 s speedup= 1.73x bytes=(1.53e+08, 2.72e+08) valuediff=0.00e+00 gradrel=1.73e-16
+```
+
+Interpretation: chunking trims the largest-cell lemma allocation
+(`2.89e8` bytes before this memory slice after the triangular diagonal change,
+`2.64e8` bytes with 256-column chunks) while preserving exact value/gradient
+agreement and an xlarge speedup over dense. It is a memory-budget improvement,
+not a default-policy change.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+<private-source trace scan over tracked repo content>
+<placeholder rerun scan over current check-log and after-task report>
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-01-structured-poisson-lemma-rhs-chunking.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p|100x|100.?x|gllvmTMB" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-01-structured-poisson-lemma-rhs-chunking.md bench CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+gh pr list --limit 5 --json number,title,headRefName,isDraft,state
+```
+
+Results:
+
+- `git diff --check`: clean.
+- Private-source trace scan over tracked public artifacts: clean.
+- Placeholder rerun scan: clean for the pending/rerun guard patterns.
+- Stale-wording scan: expected historical and command-pattern hits only; no
+  public API/status claim changed by this internal memory cleanup.
+- Performance-claim scan: expected existing Gaussian/gllvmTMB and internal
+  benchmark-log hits only; no public 100x structured speed claim was added.
+- GitHub lane check: open PR #59 remains the separate draft
+  `claude/package-work-catchup-mQiZM`; this slice did not edit that lane.
+
 ## 2026-06-01 - Woodbury Diagonal Triangular Correction
 
 ### Scope
