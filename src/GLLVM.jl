@@ -57,7 +57,9 @@ export spatial_cov, relatedness_cov,
        fit_nb_gllvm, NBFit, fit_beta_gllvm, BetaFit,
        Ordinal, fit_ordinal_gllvm, OrdinalFit, fit_gamma_gllvm, GammaFit,
        fit_delta_lognormal_gllvm, DeltaLogNormalFit,
-       delta_lognormal_marginal_loglik_laplace, fit_gllvm,
+       delta_lognormal_marginal_loglik_laplace,
+       fit_hurdle_poisson_gllvm, HurdlePoissonFit,
+       hurdle_poisson_marginal_loglik_laplace, fit_gllvm,
        getLV, getLoadings, rotation,
        predict, fitted, residuals, aic, bic
 

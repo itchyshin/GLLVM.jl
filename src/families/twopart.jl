@@ -224,3 +224,125 @@ function fit_delta_lognormal_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     return DeltaLogNormalFit(βz, βc, Λc, σ, -Optim.minimum(res),
                              Optim.converged(res), Optim.iterations(res))
 end
+
+# ---------------------------------------------------------------------------
+# Hurdle-Poisson — occurrence Bernoulli × ZERO-TRUNCATED Poisson count.
+# P(y=0)=1−π, P(y=k)=π·Poisson(k;μ)/(1−e^{−μ}) for k≥1, π=logistic(η^z), μ=exp(η^c).
+# Positive-block score/weight use the truncated mean μ_tr=μ/(1−e^{−μ}) and its
+# variance Var_tr = μ_tr(1+μ−μ_tr): s^c = y−μ_tr, W^c = Var_tr (y>0; 0 for y=0).
+# ---------------------------------------------------------------------------
+
+"""
+    HurdlePoisson()
+
+Marker for the Hurdle-Poisson two-part family (Bernoulli occurrence × zero-truncated
+Poisson count).
+"""
+struct HurdlePoisson end
+
+function _tp_pieces(::HurdlePoisson, y, ηz, ηc)
+    π = inv(one(ηz) + exp(-ηz))
+    Wz = π * (one(π) - π)
+    if y > 0
+        μ = exp(ηc)
+        p0 = exp(-μ)
+        μtr = μ / (1 - p0)                       # zero-truncated mean
+        Wc = μtr * (1 + μ - μtr)                 # zero-truncated variance ≥ 0
+        logf = log(π) + logpdf(Poisson(μ), Int(y)) - log1p(-p0)
+        return (one(π) - π, y - μtr, Wz, Wc, logf)
+    else
+        return (-π, zero(ηc), Wz, zero(ηc), log1p(-π))
+    end
+end
+
+"""
+    hurdle_poisson_marginal_loglik_laplace(Y, Λc, βz, βc; Λz=nothing, kwargs...) -> Float64
+
+Total two-part Laplace log-marginal for a Hurdle-Poisson GLLVM (occurrence
+`π=logistic(β^z)`, intercept-only by default; zero-truncated Poisson count with
+`μ=exp(β^c+Λ_c z)`). `Y` is p×n integer counts (`0`=absence). `Λc=0` ⇒ exact
+independent hurdle-Poisson loglik.
+"""
+function hurdle_poisson_marginal_loglik_laplace(Y::AbstractMatrix, Λc::AbstractMatrix,
+        βz::AbstractVector, βc::AbstractVector;
+        Λz::Union{Nothing, AbstractMatrix} = nothing, kwargs...)
+    p, K = size(Λc)
+    Λz_ = Λz === nothing ? zeros(p, K) : Λz
+    return twopart_marginal_loglik_laplace(HurdlePoisson(), Y, Λz_, Λc, βz, βc; kwargs...)
+end
+
+"""
+    HurdlePoissonFit
+
+Result of [`fit_hurdle_poisson_gllvm`](@ref): occurrence logits `βz`, count log-mean
+intercepts `βc`, count loadings `Λc`, `loglik`, `converged`, `iterations`.
+"""
+struct HurdlePoissonFit
+    βz::Vector{Float64}
+    βc::Vector{Float64}
+    Λc::Matrix{Float64}
+    loglik::Float64
+    converged::Bool
+    iterations::Int
+end
+
+function Base.show(io::IO, f::HurdlePoissonFit)
+    p, K = size(f.Λc)
+    print(io, "HurdlePoissonFit(p=", p, ", K=", K,
+          ", loglik=", round(f.loglik; sigdigits = 7),
+          f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+"""
+    fit_hurdle_poisson_gllvm(Y; K, …) -> HurdlePoissonFit
+
+Fit a Hurdle-Poisson two-part GLLVM by L-BFGS over `[βz; βc; vec(Λc)]` (Λz=0).
+`Y` p×n integer counts. Finite-difference gradient; warm start =
+`logit(empirical P(y>0))` + `log` mean positive count + SVD loadings.
+"""
+function fit_hurdle_poisson_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
+        g_tol::Real = 1e-5, iterations::Integer = 500,
+        newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    p, n = size(Y)
+    rr = rr_theta_len(p, K)
+    βz0 = Vector{Float64}(undef, p); βc0 = Vector{Float64}(undef, p)
+    @inbounds for t in 1:p
+        npres = count(>(0), view(Y, t, :))
+        pr = clamp((npres + 0.5) / (n + 1), 1e-3, 1 - 1e-3)
+        βz0[t] = log(pr / (1 - pr))
+        s = 0.0; c = 0
+        for j in 1:n
+            if Y[t, j] > 0
+                s += Y[t, j]; c += 1
+            end
+        end
+        βc0[t] = c == 0 ? 0.0 : log(max(s / c, 1.0))
+    end
+    Zc = [Y[t, j] > 0 ? log(max(Y[t, j], 0.5)) - βc0[t] : 0.0 for t in 1:p, j in 1:n]
+    F = svd(Zc); kk = min(K, length(F.S))
+    Λc0 = zeros(p, K)
+    @inbounds for j in 1:kk
+        Λc0[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
+    end
+
+    θ0 = vcat(βz0, βc0, pack_lambda(Λc0))
+    function negll(θ)
+        βz = θ[1:p]; βc = θ[(p + 1):(2p)]
+        Λc = unpack_lambda(θ[(2p + 1):(2p + rr)], p, K)
+        v = try
+            -hurdle_poisson_marginal_loglik_laplace(Y, Λc, βz, βc;
+                                                    maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
+    res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
+                         autodiff = :finite)
+    θ̂ = Optim.minimizer(res)
+    βz = θ̂[1:p]; βc = θ̂[(p + 1):(2p)]
+    Λc = unpack_lambda(θ̂[(2p + 1):(2p + rr)], p, K)
+    return HurdlePoissonFit(βz, βc, Λc, -Optim.minimum(res),
+                            Optim.converged(res), Optim.iterations(res))
+end
