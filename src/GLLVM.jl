@@ -30,7 +30,7 @@ include("families/negbin.jl")            # Negative-binomial family pieces (Phas
 include("families/beta.jl")              # Beta family pieces (Phase 3)
 include("families/ordinal.jl")           # Ordinal (cumulative-logit) family pieces (Phase 3)
 include("families/gamma.jl")             # Gamma (positive continuous) family pieces (Phase 3)
-include("families/twopart.jl")           # Two-part substrate + Delta-lognormal (Phase 3)
+include("families/twopart.jl")           # Two-part substrate + Delta-lognormal / Delta-Gamma / Hurdle (Phase 3)
 include("families/fit_gllvm.jl")         # unified fit_gllvm(Y; family) dispatcher
 
 # Post-fit API (ordination, predict, residuals, summary)
@@ -61,7 +61,9 @@ export spatial_cov, relatedness_cov,
        fit_hurdle_poisson_gllvm, HurdlePoissonFit,
        hurdle_poisson_marginal_loglik_laplace,
        fit_hurdle_nb_gllvm, HurdleNBFit,
-       hurdle_nb_marginal_loglik_laplace, fit_gllvm,
+       hurdle_nb_marginal_loglik_laplace,
+       fit_delta_gamma_gllvm, DeltaGammaFit,
+       delta_gamma_marginal_loglik_laplace, fit_gllvm,
        getLV, getLoadings, rotation,
        predict, fitted, residuals, aic, bic
 

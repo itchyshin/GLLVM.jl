@@ -468,3 +468,151 @@ function fit_hurdle_nb_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     return HurdleNBFit(βz, βc, Λc, r, -Optim.minimum(res),
                        Optim.converged(res), Optim.iterations(res))
 end
+
+# ---------------------------------------------------------------------------
+# Delta-Gamma family — occurrence Bernoulli × positive Gamma (log-link mean).
+# P(y=0)=1−π, density for y>0 = π·Gamma(y; shape α, scale μ/α), so E[y|y>0]=μ,
+# Var[y|y>0]=μ²/α, μ=exp(η^c), π=logistic(η^z). The positive-block score/weight
+# are the Gamma GLM pieces (log link, V(μ)=μ²/α): s^c=α(y−μ)/μ, W^c=α (y>0; 0 for
+# y=0) — the expected-information weight, exactly as in families/gamma.jl. This is
+# the second Delta family: same occurrence block as Delta-lognormal, Gamma swapped
+# in for the positive part.
+# ---------------------------------------------------------------------------
+
+"""
+    DeltaGamma(α)
+
+Marker for the Delta-Gamma two-part family: Bernoulli occurrence × positive Gamma
+with shared shape `α` (mean `μ=exp(η^c)`, `Var=μ²/α`).
+"""
+struct DeltaGamma
+    α::Float64
+end
+
+function _tp_pieces(f::DeltaGamma, y, ηz, ηc)
+    π = inv(one(ηz) + exp(-ηz))                 # occurrence prob = logistic(η^z)
+    Wz = π * (one(π) - π)
+    if y > 0
+        α = f.α
+        μ = exp(ηc)                             # mean (log link)
+        sc = α * (y - μ) / μ                    # ∂logf/∂η^c (Gamma GLM, log link)
+        return (one(π) - π, sc, Wz, α,
+                log(π) + logpdf(Gamma(α, μ / α), y))
+    else
+        return (-π, zero(ηc), Wz, zero(ηc), log1p(-π))
+    end
+end
+
+"""
+    delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α; Λz=nothing, kwargs...) -> Float64
+
+Total two-part Laplace log-marginal for a Delta-Gamma GLLVM: occurrence probability
+`π = logistic(β^z + Λ_z z)` (intercept-only by default, `Λ_z = 0`) times a positive
+Gamma with mean `μ = exp(β^c + Λ_c z)` and shape `α` (`Var = μ²/α`). `Y` is p×n with
+`0` for absences and positive reals for the positive part. With `Λ_c = 0` (and
+`Λ_z = 0`) this reduces exactly to the independent two-part-regression log-likelihood.
+"""
+function delta_gamma_marginal_loglik_laplace(Y::AbstractMatrix, Λc::AbstractMatrix,
+        βz::AbstractVector, βc::AbstractVector, α::Real;
+        Λz::Union{Nothing, AbstractMatrix} = nothing, kwargs...)
+    p, K = size(Λc)
+    Λz_ = Λz === nothing ? zeros(p, K) : Λz
+    return twopart_marginal_loglik_laplace(DeltaGamma(float(α)), Y, Λz_, Λc, βz, βc; kwargs...)
+end
+
+"""
+    DeltaGammaFit
+
+Result of [`fit_delta_gamma_gllvm`](@ref): occurrence logits `βz` (length p),
+positive-part log-mean intercepts `βc` (length p), positive-part loadings `Λc`
+(p×K), the shared shape `α` (`Var = μ²/α`), the maximised `loglik`, `converged`,
+and `iterations`. (`Λz = 0` — occurrence is intercept-only in v1.)
+"""
+struct DeltaGammaFit
+    βz::Vector{Float64}
+    βc::Vector{Float64}
+    Λc::Matrix{Float64}
+    α::Float64
+    loglik::Float64
+    converged::Bool
+    iterations::Int
+end
+
+function Base.show(io::IO, f::DeltaGammaFit)
+    p, K = size(f.Λc)
+    print(io, "DeltaGammaFit(p=", p, ", K=", K, ", α=", round(f.α; sigdigits = 4),
+          ", loglik=", round(f.loglik; sigdigits = 7),
+          f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+"""
+    fit_delta_gamma_gllvm(Y; K, …) -> DeltaGammaFit
+
+Fit a Delta-Gamma two-part GLLVM by L-BFGS over `[βz; βc; vec(Λc); log α]` on the
+two-part Laplace marginal ([`delta_gamma_marginal_loglik_laplace`](@ref)), with
+`Λz = 0` (per-species occurrence intercept), jointly estimating the shape `α`. `Y`
+is p×n with `0` for absences and positive reals otherwise. Finite-difference
+gradient; warm start = `logit(empirical P(y>0))` occurrence intercepts + `log` mean
+positive value as log-mean intercepts + SVD of positive-part log-residuals as
+loadings + a method-of-moments `α₀` from the standardised positives.
+"""
+function fit_delta_gamma_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
+        g_tol::Real = 1e-5, iterations::Integer = 500,
+        newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    p, n = size(Y)
+    rr = rr_theta_len(p, K)
+
+    βz0 = Vector{Float64}(undef, p); βc0 = Vector{Float64}(undef, p)
+    @inbounds for t in 1:p
+        npres = count(>(0), view(Y, t, :))
+        pr = clamp((npres + 0.5) / (n + 1), 1e-3, 1 - 1e-3)
+        βz0[t] = log(pr / (1 - pr))
+        s = 0.0; c = 0
+        for j in 1:n
+            if Y[t, j] > 0
+                s += Y[t, j]; c += 1
+            end
+        end
+        βc0[t] = c == 0 ? 0.0 : log(max(s / c, 1e-6))
+    end
+    # method-of-moments shape from standardised positives r = y/μ̂ (mean≈1, Var≈1/α)
+    sumsq = 0.0; nres = 0
+    @inbounds for t in 1:p
+        μt = exp(βc0[t])
+        for j in 1:n
+            if Y[t, j] > 0
+                r = Y[t, j] / μt - 1.0; sumsq += r^2; nres += 1
+            end
+        end
+    end
+    α0 = nres > 1 ? clamp((nres - 1) / sumsq, 0.1, 100.0) : 1.0
+    Zc = [Y[t, j] > 0 ? log(max(Y[t, j], 1e-6)) - βc0[t] : 0.0 for t in 1:p, j in 1:n]
+    F = svd(Zc); kk = min(K, length(F.S))
+    Λc0 = zeros(p, K)
+    @inbounds for j in 1:kk
+        Λc0[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
+    end
+
+    θ0 = vcat(βz0, βc0, pack_lambda(Λc0), log(α0))
+    function negll(θ)
+        βz = θ[1:p]; βc = θ[(p + 1):(2p)]
+        Λc = unpack_lambda(θ[(2p + 1):(2p + rr)], p, K)
+        α = exp(θ[2p + rr + 1])
+        v = try
+            -delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α;
+                                                 maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
+    res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
+                         autodiff = :finite)
+    θ̂ = Optim.minimizer(res)
+    βz = θ̂[1:p]; βc = θ̂[(p + 1):(2p)]
+    Λc = unpack_lambda(θ̂[(2p + 1):(2p + rr)], p, K)
+    α = exp(θ̂[2p + rr + 1])
+    return DeltaGammaFit(βz, βc, Λc, α, -Optim.minimum(res),
+                         Optim.converged(res), Optim.iterations(res))
+end

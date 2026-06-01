@@ -21,9 +21,9 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 | Ordinal (cumulative logit) | ✅ | common ordered cutpoints |
 | Gamma | ✅ | shape `α` |
 | Delta-lognormal | ✅ | first two-part family; shared 2-block Laplace substrate |
-| Delta-Gamma | 🔨 | on the substrate, building |
-| Hurdle (Poisson / NB) | 🔨 | on the substrate, building |
-| Zero-inflated (ZIP / ZINB) | 🔨 | on the substrate, building |
+| Delta-Gamma | ✅ | occurrence Bernoulli × positive Gamma (log-link mean) on the substrate |
+| Hurdle (Poisson / NB) | ✅ | occurrence Bernoulli × zero-truncated Poisson / NB2 |
+| Zero-inflated (ZIP / ZINB) | 🔨 | needs the coupled-zero cross-term (structural + count zeros) |
 | Tweedie · Exponential | ⬜ | planned (Exponential ⊂ Gamma) |
 
 ## Model structure

@@ -983,3 +983,91 @@ function Base.show(io::IO, ::MIME"text/plain", fit::HurdleNBFit)
             ", AIC = ", round(aic(fit); sigdigits = 7))
     print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
 end
+
+# ---------------------------------------------------------------------------
+# Delta-Gamma post-fit (occurrence Bernoulli × positive Gamma, log-link mean).
+# ---------------------------------------------------------------------------
+
+_loadings(fit::DeltaGammaFit) = fit.Λc
+_loglik(fit::DeltaGammaFit)   = fit.loglik
+
+function _nparams(fit::DeltaGammaFit)
+    p, K = size(fit.Λc)
+    return 2p + (p * K - div(K * (K - 1), 2)) + 1   # βz + βc + Λc + α
+end
+
+"""
+    getLV(fit::DeltaGammaFit, Y; rotate=true) -> n×K matrix
+
+Conditional latent scores for a Delta-Gamma fit: the per-site two-part Laplace mode
+`ẑₛ` (occurrence intercept-only, so only the positive part loads on `z`).
+"""
+function getLV(fit::DeltaGammaFit, Y::AbstractMatrix{<:Real}; rotate::Bool = true)
+    p, n = size(Y); K = size(fit.Λc, 2)
+    fam = DeltaGamma(fit.α)
+    Λz = zeros(p, K)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        Z[:, s] = _twopart_mode(fam, view(Y, :, s), Λz, fit.Λc, fit.βz, fit.βc)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λc) : Zt
+end
+
+"""
+    predict(fit::DeltaGammaFit, Y; type=:response) -> p×n matrix
+
+`:link` = positive-part log-mean predictor `η^c`; `:occurrence` = presence
+probability `π = logistic(β^z)`; `:positive` = conditional positive mean `μ = exp(η^c)`
+(the Gamma mean); `:response` = unconditional mean `π · μ`.
+"""
+function predict(fit::DeltaGammaFit, Y::AbstractMatrix{<:Real}; type::Symbol = :response)
+    type in (:response, :occurrence, :positive, :link) ||
+        throw(ArgumentError("type must be :response, :occurrence, :positive, or :link; got :$type"))
+    p, n = size(Y)
+    Z = getLV(fit, Y; rotate = false)
+    ηc = fit.βc .+ fit.Λc * Z'                       # p×n
+    type === :link && return ηc
+    π = inv.(1 .+ exp.(-fit.βz))                     # length p
+    type === :occurrence && return repeat(π, 1, n)
+    μ = exp.(ηc)
+    type === :positive && return μ
+    return π .* μ
+end
+
+"""
+    residuals(fit::DeltaGammaFit, Y; rng=Random.default_rng()) -> p×n matrix
+
+Dunn–Smyth randomized quantile residuals for the two-part fit: `Φ⁻¹(u)` with
+`u = (1−π) + π·G(y)` for `y>0` (`G` the Gamma CDF) and `u` uniform on `[0, 1−π]`
+for `y=0` — ≈ N(0,1) under a correct model (pass a fixed `rng` to reproduce).
+"""
+function residuals(fit::DeltaGammaFit, Y::AbstractMatrix{<:Real};
+                   rng::AbstractRNG = Random.default_rng())
+    p, n = size(Y); α = fit.α
+    Z = getLV(fit, Y; rotate = false)
+    ηc = fit.βc .+ fit.Λc * Z'
+    π = inv.(1 .+ exp.(-fit.βz))
+    R = Matrix{Float64}(undef, p, n)
+    @inbounds for s in 1:n, t in 1:p
+        πt = π[t]
+        if Y[t, s] > 0
+            μ = exp(ηc[t, s])
+            u = (1 - πt) + πt * cdf(Gamma(α, μ / α), Y[t, s])
+        else
+            u = (1 - πt) * rand(rng)
+        end
+        R[t, s] = quantile(Normal(), clamp(u, 1e-12, 1 - 1e-12))
+    end
+    return R
+end
+
+function Base.show(io::IO, ::MIME"text/plain", fit::DeltaGammaFit)
+    p, K = size(fit.Λc)
+    println(io, "Delta-Gamma GLLVM fit (two-part)")
+    println(io, "  responses p = ", p, ", latent factors K = ", K,
+            ", shape α = ", round(fit.α; sigdigits = 4))
+    println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
+            ", AIC = ", round(aic(fit); sigdigits = 7))
+    print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
+end
