@@ -145,7 +145,7 @@ Scans run:
 git diff --check
 rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src docs/dev-log/check-log.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
 rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p|100x|100.?x" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task bench CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
-git grep -n -E 'JABE|D-26-00105|CloudStorage|OneDrive|Reviewing/TODO|private PDF|uploaded PDF|pasted-text|417bec04|Library/CloudStorage' -- . ':!docs/dev-log/check-log.md'
+<private-source trace scan over tracked repo content>
 gh pr list --limit 5 --json number,title,headRefName,isDraft,state
 ```
 

@@ -47,6 +47,40 @@ using GLLVM, Test, Random, LinearAlgebra, SparseArrays, Distributions
         Y, Λ, β, precision; sigma2 = 0.6, mode_solve = :wat)
 end
 
+@testset "structured Poisson internal fitter" begin
+    Random.seed!(823)
+    p, n, K = 5, 8, 1
+    β = fill(log(1.5), p)
+    Λ = 0.10 .* randn(p, K)
+    Y = rand.(Poisson.(exp.(β .+ 0.08 .* randn(p, n))))
+    precision = Symmetric(spdiagm(
+        -1 => fill(-0.15, p - 1),
+         0 => fill(1.3, p),
+         1 => fill(-0.15, p - 1)))
+
+    dense = GLLVM._fit_structured_poisson_laplace(
+        Y, precision; K = K, sigma2 = 0.5, mode_solve = :dense,
+        logdet_method = :dense, iterations = 4, g_tol = 1e-4,
+        cg_tol = 1e-10, maxiter = 80, tol = 1e-9)
+    cg = GLLVM._fit_structured_poisson_laplace(
+        Y, precision; K = K, sigma2 = 0.5, mode_solve = :cg,
+        logdet_method = :dense, iterations = 4, g_tol = 1e-4,
+        cg_tol = 1e-10, maxiter = 80, tol = 1e-9)
+
+    @test dense.loglik >= dense.initial_loglik - 1e-7
+    @test cg.loglik >= cg.initial_loglik - 1e-7
+    @test cg.loglik ≈ dense.loglik atol = 1e-5 rtol = 1e-5
+    @test cg.β ≈ dense.β atol = 1e-5 rtol = 1e-5
+    @test cg.Λ ≈ dense.Λ atol = 1e-5 rtol = 1e-5
+    @test dense.objective_calls > 0
+    @test cg.objective_calls > 0
+
+    @test_throws ArgumentError GLLVM._fit_structured_poisson_laplace(
+        Y, precision; K = 0, sigma2 = 0.5)
+    @test_throws DimensionMismatch GLLVM._fit_structured_poisson_laplace(
+        Y, precision; K = K, sigma2 = 0.5, β_init = zeros(p + 1))
+end
+
 @testset "structured Poisson sigma-to-zero reduction" begin
     Random.seed!(822)
     p, n, K = 5, 4, 1

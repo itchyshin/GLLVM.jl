@@ -1158,6 +1158,125 @@ gh pr list --limit 5 --json number,title,headRefName,isDraft,state
 
 No issue or PR was modified.
 
+## 2026-06-01 — Structured Poisson Internal Fitted Prototype
+
+### Scope
+
+Added a private fixed-covariance structured Poisson fitter around the existing
+joint Laplace objective. The helper estimates `β` and lower-triangular `Λ` for
+a supplied structured precision and fixed `sigma2`, and lets the fitted path
+switch between the exact dense mode solve and the matrix-free CG mode solve.
+No public API or formula syntax changed.
+
+### Commands
+
+Focused structured tests:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_schur.jl"); include("test/test_structured_poisson_laplace.jl")'
+```
+
+Result:
+
+```text
+structured Schur operator                    | 36/36 pass
+structured Schur SLQ logdet                  | 9/9 pass
+structured Poisson Laplace prototype         | 13/13 pass
+structured Poisson internal fitter           | 9/9 pass
+structured Poisson sigma-to-zero reduction   | 1/1 pass
+```
+
+Structured Poisson fitted benchmark smoke:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_fit_bench.jl --smoke --out=/tmp/structured-poisson-fit-smoke.csv
+```
+
+Result:
+
+| cell | p | n | K | iterations | dense (s) | CG (s) | dense / CG | abs loglik diff | calls |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| smoke | 5 | 8 | 1 | 4 | 0.0099 | 0.0096 | 1.03x | 1.09e-10 | 6/6 |
+
+Structured Poisson fitted benchmark full grid:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_fit_bench.jl --full --out=/tmp/structured-poisson-fit-full.csv
+```
+
+Result:
+
+| cell | p | n | K | iterations | dense (s) | CG (s) | dense / CG | abs loglik diff | calls |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| small | 5 | 8 | 1 | 6 | 0.0138 | 0.0133 | 1.04x | 2.14e-11 | 8/8 |
+| medium | 8 | 12 | 2 | 6 | 0.0779 | 0.0722 | 1.08x | 1.07e-10 | 9/9 |
+
+Exploratory larger fitted cells, two L-BFGS iterations:
+
+| p | n | K | dense (s) | CG (s) | dense / CG | abs loglik diff | calls |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 20 | 25 | 2 | 0.4099 | 0.2669 | 1.54x | 2.59e-8 | 5/5 |
+| 40 | 40 | 2 | 3.4018 | 1.6331 | 2.08x | 1.87e-8 | 6/6 |
+
+Interpretation: this is the fitted-model bridge for the structured
+non-Gaussian fast path. The current private fitter still uses Optim finite
+differences, so it is not yet the 20x-100x algorithm. It proves that the exact
+CG mode solve can be carried through fitted optimization with matching
+log-likelihoods; the next multiplier is the structured implicit/envelope
+gradient.
+
+Full core suite:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result:
+
+```text
+2282 pass, 3 expected broken placeholders, 0 fail, 0 error.
+Notable blocks:
+non-Gaussian fitter objectives: AD/implicit gradients | 92/92 pass
+structured Poisson internal fitter                   | 9/9 pass
+quality (direct environment)                         | 2 expected broken
+```
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+Testing GLLVM tests passed.
+2294 pass, 1 expected broken placeholder, 0 fail, 0 error.
+quality | 12/12 pass
+```
+
+Final scans:
+
+```sh
+git diff --check
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src docs/dev-log/check-log.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p|100x|100.?x" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task bench CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+<private-source trace scan over tracked repo content>
+```
+
+Result:
+
+- `git diff --check`: clean.
+- Stale-wording scan: known historical check-log entries plus the
+  user-provided AGENTS.md "Gaussian only" snapshot; no new public API/status
+  claim was added by this private helper.
+- Performance-claim scan: existing Gaussian/gllvmTMB speedup claims and
+  historical non-Gaussian/structured speed records; the new fitted-prototype
+  text explicitly limits the claim to internal dense-vs-CG timing and says it
+  is not the 20x-100x structured algorithm.
+- Private-source trace scan: no matches in tracked repo content checked for
+  this slice.
+
 ## 2026-06-01 — Dense Schur Materialization Allocation Trim
 
 ### Scope
@@ -1256,7 +1375,7 @@ Commands:
 git diff --check
 rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src docs/dev-log/check-log.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
 rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p|100x|100.?x" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task bench CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
-git grep -n -E 'JABE|D-26-00105|CloudStorage|OneDrive|Reviewing/TODO|private PDF|uploaded PDF|pasted-text|417bec04|Library/CloudStorage' -- . ':!docs/dev-log/check-log.md'
+<private-source trace scan over tracked repo content>
 gh pr list --limit 5 --json number,title,headRefName,isDraft,state
 ```
 

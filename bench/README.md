@@ -121,6 +121,31 @@ Rows report full objective-evaluation time, not just determinant time. The
 `cg+dense` column isolates the Schur-step solve speedup; `cg+slq` adds the
 approximate determinant path.
 
+## Structured Poisson Fitted Prototype
+
+`bench/structured_poisson_fit_bench.jl` is the Julia-only fitted-model benchmark
+for the private fixed-covariance structured Poisson prototype. It estimates
+`β` and lower-triangular `Λ` for a supplied sparse precision and fixed
+`sigma2`, comparing the exact dense mode solve with the matrix-free CG mode
+solve under the exact dense determinant.
+
+Cheap smoke run:
+
+```bash
+julia --project=. bench/structured_poisson_fit_bench.jl --smoke
+```
+
+Full local grid:
+
+```bash
+julia --project=. bench/structured_poisson_fit_bench.jl --full --out=structured-poisson-fit.csv
+```
+
+Rows report fitted wall time, final log-likelihood agreement, objective-call
+counts, and dense/CG fitted speedup. This is still not an R `gllvmTMB` parity
+test; it is the bridge from objective-level timing to fitted structured-model
+timing before public API wiring.
+
 ## JIT vs steady-state
 
 `BenchmarkTools.@benchmarkable` does a single untimed warmup call
