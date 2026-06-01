@@ -70,6 +70,15 @@ using GLLVM, Test, Random, LinearAlgebra, SparseArrays
             S_tiny = Matrix{Float64}(undef, p, p)
             C_tiny = Matrix{Float64}(undef, p, Ktiny * n)
             dense_tiny = Matrix(GLLVM._schur_u_dense_tinyk!(S_tiny, op_tiny, C_tiny))
+            @inbounds for s in 1:n
+                cols = ((s - 1) * Ktiny + 1):(s * Ktiny)
+                B_site = Matrix{Float64}(undef, p, Ktiny)
+                for k in 1:Ktiny, t in 1:p
+                    B_site[t, k] = Wsites_tiny[t, s] * Lambda_tiny[t, k]
+                end
+                @test C_tiny[:, cols] * C_tiny[:, cols]' ≈
+                    B_site * op_tiny.Ainvs[s] * B_site' atol = 1e-10 rtol = 1e-10
+            end
 
             S_direct = Matrix{Float64}(undef, p, p)
             B_direct = Matrix{Float64}(undef, p, Ktiny)

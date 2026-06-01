@@ -415,6 +415,26 @@ function _schur_u_tinyk_factor!(C::AbstractMatrix, op::_SchurUOperator)
                 C[t, offset + 2] = wt * λ2 * l22
             end
         end
+    elseif K == 3
+        @inbounds for s in 1:nsites
+            A = op.Ainvs[s]
+            l11 = sqrt(A[1, 1])
+            l21 = A[2, 1] / l11
+            l31 = A[3, 1] / l11
+            l22 = sqrt(A[2, 2] - l21 * l21)
+            l32 = (A[3, 2] - l31 * l21) / l22
+            l33 = sqrt(A[3, 3] - l31 * l31 - l32 * l32)
+            offset = (s - 1) * K
+            for t in 1:p
+                wt = op.Wsites[t, s]
+                λ1 = op.Lambda[t, 1]
+                λ2 = op.Lambda[t, 2]
+                λ3 = op.Lambda[t, 3]
+                C[t, offset + 1] = wt * (λ1 * l11 + λ2 * l21 + λ3 * l31)
+                C[t, offset + 2] = wt * (λ2 * l22 + λ3 * l32)
+                C[t, offset + 3] = wt * λ3 * l33
+            end
+        end
     else
         @inbounds for s in 1:nsites
             F = cholesky(Symmetric(op.Ainvs[s])).L
