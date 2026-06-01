@@ -480,7 +480,8 @@ function _structured_poisson_block_implicit_value_grad(θ::AbstractVector,
     ℓ = _structured_poisson_lsw!(S, W, Y, L, b, U, Z)
     op = _SchurUOperator(Q, L, W; sigma2 = sigma2)
     Csu = cholesky(_schur_u_dense(op))
-    G = Csu \ Matrix{T}(I, p, p)
+    G = Matrix{T}(I, p, p)
+    ldiv!(Csu, G)
 
     logdet_A = zero(T)
     @inbounds for i in 1:n

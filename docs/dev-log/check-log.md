@@ -4225,3 +4225,106 @@ Results:
   result.
 - GitHub lane check: PR #59 remains the separate draft
   `claude/package-work-catchup-mQiZM` lane; no PR or issue was modified.
+
+## 2026-06-01 - Structured Poisson Dense In-Place Inverse
+
+### Scope
+
+Removed one avoidable dense allocation in the exact dense structured Poisson
+block-gradient path. `_structured_poisson_block_implicit_value_grad` now builds
+the identity matrix once and overwrites it with `ldiv!(Csu, G)` instead of
+forming `Csu \ Matrix{T}(I, p, p)`, which allocated both the identity and a
+separate inverse result. The likelihood, gradient formula, and public API are
+unchanged.
+
+### Before/After Benchmark
+
+Before:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_trace_gradient_bench.jl --break-even --cells=giant --trace-solve=lanczos --probe-kind=orthogonal --nprobes=16 --lanczos-steps=20 --reps=3 --warmups=2 --out=/tmp/structured-poisson-trace-giant-before-inplace-inv.csv
+```
+
+Result:
+
+```text
+giant    p=1024 n= 256 K=2 dense=  0.2608 s  slq=  0.7842 s  speedup=   0.33x  valuediff=7.29e-01  gradrel=9.89e-02
+```
+
+After:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_trace_gradient_bench.jl --break-even --cells=giant --trace-solve=lanczos --probe-kind=orthogonal --nprobes=16 --lanczos-steps=20 --reps=3 --warmups=2 --out=/tmp/structured-poisson-trace-giant-after-inplace-inv.csv
+```
+
+Result:
+
+```text
+giant    p=1024 n= 256 K=2 dense=  0.2329 s  slq=  0.7841 s  speedup=   0.30x  valuediff=7.29e-01  gradrel=9.89e-02
+```
+
+Interpretation: exact dense trace-gradient time improved by about `1.12x` on
+the `p=1024, n=256, K=2` break-even cell. This is a modest constant-factor
+speedup on the current winning dense path, not a new SLQ or R `gllvmTMB` parity
+claim.
+
+### Test Suites
+
+Focused structured tests:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_schur.jl"); include("test/test_structured_poisson_laplace.jl")'
+```
+
+Result: 122 pass, 0 fail, 0 error.
+
+Core suite:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. Manual tally from emitted `Test Summary` blocks:
+2336 pass, 1 existing broken sparse-phy precision placeholder, 2 expected
+quality placeholders in the direct core environment, 0 fail, 0 error.
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Manual tally from emitted `Test Summary` blocks: 2348 pass, 1 existing broken
+sparse-phy precision placeholder, quality 12/12 pass, 0 fail, 0 error.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+<private-source trace scan over tracked repo content>
+<placeholder rerun scan over current check-log and after-task report>
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-01-structured-poisson-dense-inplace-inverse.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p|100x|100.?x|gllvmTMB" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-01-structured-poisson-dense-inplace-inverse.md bench CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+gh pr list --limit 5 --json number,title,headRefName,isDraft,state
+```
+
+Results:
+
+- `git diff --check`: clean after the audit report.
+- Private-source trace scan over tracked public artifacts: no matches.
+- Placeholder rerun scan: no stale rerun/fill-result placeholders.
+- Stale-wording scan: expected historical and command-pattern hits only.
+- Performance-claim scan: expected historical benchmark records, existing
+  Gaussian/gllvmTMB claims, and this internal constant-factor dense-path
+  improvement only; no public 100x structured speed claim was added.
+- GitHub lane check: PR #59 remains the separate draft
+  `claude/package-work-catchup-mQiZM` lane; no PR or issue was modified.
