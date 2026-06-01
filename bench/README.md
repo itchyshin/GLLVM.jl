@@ -157,7 +157,9 @@ Optim finite-difference path on the same cells. Use
 trace-gradient path used for the large-p determinant prototype. The fitted
 benchmark defaults to `--trace-solve=auto`, which uses the fused Lanczos
 inverse-probe approximation for SLQ fits; use `--trace-solve=solve` to time the
-older explicit solve path.
+older explicit solve path. Use `--probe-kind=orthogonal` to run the same fitted
+SLQ cells with the orthogonal-probe control used by the trace-gradient
+workbench.
 
 Rows report fitted wall time, final log-likelihood agreement, objective-call
 counts, and dense/CG fitted speedup. This is still not an R `gllvmTMB` parity

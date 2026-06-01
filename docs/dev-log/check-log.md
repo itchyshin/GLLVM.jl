@@ -3955,3 +3955,136 @@ gh pr list --limit 5 --json number,title,headRefName,isDraft,state
 ```
 
 No issue or PR was modified.
+
+## 2026-06-01 - Structured Poisson Fitted Probe Controls
+
+### Scope
+
+Added a fitted-benchmark CLI/CSV control for SLQ probe construction:
+`bench/structured_poisson_fit_bench.jl` now accepts
+`--probe-kind=rademacher|orthogonal`, freezes the matching probe matrix for
+forced-SLQ fitted cells, prints the selected kind at startup, and records
+`probe_kind` in the CSV. `bench/README.md` documents the new orthogonal-probe
+control. This is benchmark instrumentation only; no package API, likelihood,
+or fitter default changed.
+
+### Benchmark Smoke Evidence
+
+Help output:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_fit_bench.jl --help
+```
+
+Result: help includes
+`--probe-kind=KIND  rademacher or orthogonal for SLQ fits (default: rademacher).`
+
+Rademacher forced-SLQ smoke:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_fit_bench.jl --smoke --logdet=auto --dense-cutoff=0 --probe-kind=rademacher --nprobes=5 --lanczos-steps=5 --reps=1 --warmups=1 --out=/tmp/structured-poisson-fit-probes-rademacher.csv
+```
+
+Result:
+
+```text
+Structured Poisson fitted benchmark (smoke); reps=1, warmups=1, iterations=4, gradient=implicit, logdet=auto, dense_cutoff=0, trace_solve=auto, probe_kind=rademacher
+smoke   p=  5 n=  8 K=1 dense= 0.0009 s  cg= 0.0009 s  speedup= 0.99x  diff=2.97e-12 calls=(6,6)
+Wrote /tmp/structured-poisson-fit-probes-rademacher.csv
+```
+
+Orthogonal forced-SLQ smoke:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_fit_bench.jl --smoke --logdet=auto --dense-cutoff=0 --probe-kind=orthogonal --nprobes=5 --lanczos-steps=5 --reps=1 --warmups=1 --out=/tmp/structured-poisson-fit-probes-orthogonal.csv
+```
+
+Result:
+
+```text
+Structured Poisson fitted benchmark (smoke); reps=1, warmups=1, iterations=4, gradient=implicit, logdet=auto, dense_cutoff=0, trace_solve=auto, probe_kind=orthogonal
+smoke   p=  5 n=  8 K=1 dense= 0.0009 s  cg= 0.0009 s  speedup= 1.04x  diff=5.24e-12 calls=(6,6)
+Wrote /tmp/structured-poisson-fit-probes-orthogonal.csv
+```
+
+CSV checks:
+
+```sh
+head -n 2 /tmp/structured-poisson-fit-probes-rademacher.csv
+head -n 2 /tmp/structured-poisson-fit-probes-orthogonal.csv
+```
+
+Results: both CSVs include the new `probe_kind` column. The rademacher row
+records `trace_solve=lanczos, probe_kind=rademacher, absdiff_loglik=2.970e-12`;
+the orthogonal row records
+`trace_solve=lanczos, probe_kind=orthogonal, absdiff_loglik=5.244e-12`.
+
+Invalid option smoke:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_fit_bench.jl --smoke --logdet=auto --dense-cutoff=0 --probe-kind=invalid --reps=1 --warmups=0 --out=/tmp/structured-poisson-fit-invalid.csv
+```
+
+Result: exit code 1 with
+`ArgumentError: --probe-kind must be rademacher or orthogonal; got invalid`.
+
+### Test Suites
+
+Focused structured tests:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_schur.jl"); include("test/test_structured_poisson_laplace.jl")'
+```
+
+Result: 122 pass, 0 fail, 0 error.
+
+Core suite:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. Manual tally from emitted `Test Summary` blocks:
+2336 pass, 1 existing broken sparse-phy precision placeholder, 2 expected
+quality placeholders in the direct core environment, 0 fail, 0 error.
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Manual tally from emitted `Test Summary` blocks: 2348 pass, 1 existing broken
+sparse-phy precision placeholder, quality 12/12 pass, 0 fail, 0 error.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+<private-source trace scan over tracked repo content>
+<placeholder rerun scan over current check-log and after-task report>
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-01-structured-poisson-fitted-probe-controls.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p|100x|100.?x|gllvmTMB" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-01-structured-poisson-fitted-probe-controls.md bench CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+gh pr list --limit 5 --json number,title,headRefName,isDraft,state
+```
+
+Results:
+
+- `git diff --check`: clean after the audit report.
+- Private-source trace scan over tracked public artifacts: no matches.
+- Placeholder rerun scan: no stale rerun/fill-result placeholders.
+- Stale-wording scan: expected historical and command-pattern hits only.
+- Performance-claim scan: expected historical benchmark records, existing
+  Gaussian/gllvmTMB claims, and this internal benchmark-instrumentation record
+  only.
+- GitHub lane check: PR #59 remains the separate draft
+  `claude/package-work-catchup-mQiZM` lane; no PR or issue was modified.
