@@ -1,5 +1,68 @@
 # Check Log
 
+## 2026-05-31 — Structured Fast-Algorithm Scout
+
+Branch: `codex/non-gaussian-fitter-gradients`
+
+Head after rebase onto `origin/main`: `f442b78`.
+
+### Scope
+
+- Rebased the local non-Gaussian gradient branch onto current `origin/main`,
+  which now includes the structured-dependence design spec.
+- Added a public-source-only strategy memo:
+  `docs/dev-log/2026-05-31-structured-fast-algorithm-scout.md`.
+- The memo synthesizes two scout passes and ranks the 100x path as sparse
+  precision / node-frame / operator-based structured Laplace, with warm mode
+  reuse, profiling, Kronecker/SPDE/Vecchia extensions, and determinant tiers.
+- No `src/` files were edited.
+- Did not edit `src/sparse_phy_grad.jl` or `src/em_phylo.jl`.
+
+### Verification
+
+- Core command:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. The direct core run retained the expected direct-run
+quality placeholders because Aqua/JET are loaded by `Pkg.test()`. Key
+post-rebase touched blocks included:
+
+```text
+non-Gaussian fitter objectives: AD/implicit gradients | 74/74 pass
+fit_binomial_gllvm — recovery                         | 8/8 pass
+fit_poisson_gllvm — recovery                          | 7/7 pass
+fit_nb_gllvm — recovery                               | 7/7 pass
+fit_beta_gllvm                                        | 7/7 pass
+fit_gamma_gllvm                                       | 7/7 pass
+fit_ordinal_gllvm                                     | 9/9 pass
+Hurdle-Poisson                                        | 166/166 pass
+Hurdle-NB                                             | 15/15 pass
+```
+
+- Full command:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       |   12     12  8.8s
+Testing GLLVM tests passed
+```
+
+Manual tally from emitted `Test Summary` blocks after the rebase: 2208 pass,
+1 existing broken sparse-phy precision check, 0 fail, 0 error.
+- Benchmarks: not run; the memo records existing benchmark evidence from the
+  canonical-gradient slice and labels 100x structured speedups as unproven
+  targets.
+- Provenance: public citations only; no non-public source path or metadata was
+  added.
+
 ## 2026-05-31 — Canonical And Scalar-Aux Non-Gaussian Gradients
 
 Branch: `codex/non-gaussian-fitter-gradients`
