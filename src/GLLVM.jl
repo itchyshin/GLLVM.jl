@@ -1,7 +1,7 @@
 module GLLVM
 
 using LinearAlgebra, Distributions, Optim, ForwardDiff, Random, SparseArrays, Statistics
-using SpecialFunctions: digamma, trigamma, besselk, gamma
+using SpecialFunctions: digamma, trigamma, polygamma, loggamma, besselk, gamma
 
 # Core
 include("packing.jl")

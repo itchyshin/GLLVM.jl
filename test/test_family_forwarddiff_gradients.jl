@@ -272,4 +272,25 @@ end
         @test all(isfinite, gfd)
         @test maximum(abs.(gaux .- gfd)) ≤ 1e-6
     end
+
+    @testset "$name cached scalar-aux gradient" for (name, value_grad, _, theta0) in aux_cases
+        Y = name == "negative-binomial" ? Y_nb : name == "beta" ? Y_beta : Y_gamma
+        link = name == "beta" ? LogitLink() : LogLink()
+        family_from_aux = if name == "negative-binomial"
+            aux -> NegativeBinomial(exp(aux[1]), 0.5)
+        elseif name == "beta"
+            aux -> Beta(exp(aux[1]), 1.0)
+        else
+            aux -> Gamma(exp(aux[1]), 1.0)
+        end
+        Zcache = zeros(K, n)
+        for theta in (theta0, theta0 .+ 0.01 .* randn(length(theta0)), theta0)
+            v_ref, g_ref = value_grad(theta)
+            v_cache, g_cache = GLLVM.marginal_loglik_laplace_aux_value_grad!(
+                Zcache, family_from_aux, Y, ones(Int, p, n), theta, p, K, link;
+                tol = 1e-12)
+            @test isapprox(v_cache, v_ref; atol = 1e-8, rtol = 1e-10)
+            @test maximum(abs.(g_cache .- g_ref)) ≤ 1e-7
+        end
+    end
 end

@@ -30,13 +30,13 @@ catch
     nothing
 end
 
-# Inner Laplace mode-finder (Fisher-scoring Newton). Returns the conditional mode
-# ẑ (length K) for one site. Shared across families and by getLV (src/postfit.jl).
-function _laplace_mode(family, y::AbstractVector, n::AbstractVector,
+# In-place inner Laplace mode-finder (Fisher-scoring Newton). Starts from the
+# contents of `z` and overwrites it with the conditional mode ẑ. This is used by
+# cached fitter paths so neighbouring Optim probes do not repeatedly cold-start
+# each site's latent mode.
+function _laplace_mode!(z::AbstractVector, family, y::AbstractVector, n::AbstractVector,
         Λ::AbstractMatrix, β::AbstractVector, link::Link;
-        maxiter::Integer = 100, tol::Real = 1e-9, z_init = nothing)
-    K = size(Λ, 2)
-    z = z_init === nothing ? zeros(K) : collect(z_init)
+        maxiter::Integer = 100, tol::Real = 1e-9)
     for _ in 1:maxiter
         η  = _clamp_eta.(β .+ Λ * z)
         μ  = _clamp_mu.(Ref(family), linkinv.(Ref(link), η))
@@ -46,10 +46,22 @@ function _laplace_mode(family, y::AbstractVector, n::AbstractVector,
         A  = Symmetric(Λ' * (W .* Λ) + I)
         Δ  = _safe_solve(A, Λ' * s .- z)
         (Δ === nothing || !all(isfinite, Δ)) && break   # singular A ⇒ stop at current ẑ
-        z  = z .+ Δ
+        z .+= Δ
         maximum(abs, Δ) < tol && break
     end
     return z
+end
+
+# Inner Laplace mode-finder (Fisher-scoring Newton). Returns the conditional mode
+# ẑ (length K) for one site. Shared across families and by getLV (src/postfit.jl).
+function _laplace_mode(family, y::AbstractVector, n::AbstractVector,
+        Λ::AbstractMatrix, β::AbstractVector, link::Link;
+        maxiter::Integer = 100, tol::Real = 1e-9, z_init = nothing)
+    K = size(Λ, 2)
+    T = promote_type(eltype(Λ), eltype(β))
+    z = z_init === nothing ? zeros(T, K) : collect(T, z_init)
+    return _laplace_mode!(z, family, y, n, Λ, β, link;
+                          maxiter = maxiter, tol = tol)
 end
 
 """
@@ -173,9 +185,14 @@ function _canonical_laplace_site_implicit_value_grad(family,
     rr = rr_theta_len(p, K)
     β = θ[1:p]
     Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
-    z = _laplace_mode(family, y, n, Λ, β, link;
+    z = if z_store === nothing
+        _laplace_mode(family, y, n, Λ, β, link;
                       maxiter = maxiter, tol = tol, z_init = z_init)
-    z_store !== nothing && copyto!(z_store, z)
+    else
+        z_init !== nothing && z_init !== z_store && copyto!(z_store, z_init)
+        _laplace_mode!(z_store, family, y, n, Λ, β, link;
+                       maxiter = maxiter, tol = tol)
+    end
     η  = _clamp_eta.(β .+ Λ * z)
     μ  = _clamp_mu.(Ref(family), linkinv.(Ref(link), η))
     me = mu_eta.(Ref(link), η)
@@ -279,6 +296,82 @@ function _obs_lsw_aux(family_from_aux, link::Link, y, n, v::AbstractVector)
     ]
 end
 
+function _obs_lsw_aux_derivatives_fallback(family_from_aux, link::Link, y, n, η, aux)
+    v0 = vcat(η, aux)
+    lsw = v -> _obs_lsw_aux(family_from_aux, link, y, n, v)
+    vals = lsw(v0)
+    J = ForwardDiff.jacobian(lsw, v0)
+    return vals[1], vals[2], vals[3], J[1, 2], J[2, 1], J[2, 2], J[3, 1], J[3, 2]
+end
+
+function _obs_lsw_aux_derivatives(family, family_from_aux, link::Link, y, n, η, aux)
+    return _obs_lsw_aux_derivatives_fallback(family_from_aux, link, y, n, η, aux)
+end
+
+function _obs_lsw_aux_derivatives(f::NegativeBinomial, family_from_aux, link::LogLink,
+        y, n, η, aux)
+    ηc = _clamp_eta(η)
+    ηc == η || return _obs_lsw_aux_derivatives_fallback(
+        family_from_aux, link, y, n, η, aux)
+    r = f.r
+    μ = _clamp_mu(f, exp(ηc))
+    μ > 1e-12 || return _obs_lsw_aux_derivatives_fallback(
+        family_from_aux, link, y, n, η, aux)
+    rpμ = r + μ
+    logrpμ = log(rpμ)
+    ℓ = loggamma(y + r) - loggamma(r) - loggamma(y + one(r)) +
+        r * (log(r) - logrpμ) + y * (log(μ) - logrpμ)
+    s = r * (y - μ) / rpμ
+    W = r * μ / rpμ
+    qaux = r * (digamma(y + r) - digamma(r) + log(r) - log(rpμ) +
+                one(r) - (r + y) / rpμ)
+    sη = -r * μ * (r + y) / rpμ^2
+    saux = r * μ * (y - μ) / rpμ^2
+    Wη = r^2 * μ / rpμ^2
+    Waux = r * μ^2 / rpμ^2
+    return ℓ, s, W, qaux, sη, saux, Wη, Waux
+end
+
+function _obs_lsw_aux_derivatives(f::Beta, family_from_aux, link::LogitLink,
+        y, n, η, aux)
+    ηc = _clamp_eta(η)
+    ηc == η || return _obs_lsw_aux_derivatives_fallback(
+        family_from_aux, link, y, n, η, aux)
+    φ = f.α
+    μ = _clamp_mu(f, inv(one(ηc) + exp(-ηc)))
+    (1e-6 < μ < 1 - 1e-6) || return _obs_lsw_aux_derivatives_fallback(
+        family_from_aux, link, y, n, η, aux)
+
+    a = μ * φ
+    b = (one(μ) - μ) * φ
+    ystar = log(y) - log1p(-y)
+    log1my = log1p(-y)
+    ψa = digamma(a)
+    ψb = digamma(b)
+    ψφ = digamma(φ)
+    ψ1a = trigamma(a)
+    ψ1b = trigamma(b)
+    ψ2a = polygamma(2, a)
+    ψ2b = polygamma(2, b)
+    μstar = ψa - ψb
+    A = ystar - μstar
+    me = μ * (one(μ) - μ)
+    m2 = me * (one(μ) - 2 * μ)
+    ν = ψ1a + ψ1b
+
+    ℓ = loggamma(φ) - loggamma(a) - loggamma(b) +
+        (a - one(a)) * log(y) + (b - one(b)) * log1my
+    s = φ * A * me
+    W = φ^2 * ν * me^2
+    qaux = φ * (ψφ - μ * ψa - (one(μ) - μ) * ψb +
+                μ * log(y) + (one(μ) - μ) * log1my)
+    sη = φ * (-φ * ν * me^2 + A * m2)
+    saux = φ * me * (A - (a * ψ1a - b * ψ1b))
+    Wη = φ^2 * (φ * (ψ2a - ψ2b) * me^3 + 2 * ν * me * m2)
+    Waux = 2 * W + φ^2 * me^2 * (a * ψ2a + b * ψ2b)
+    return ℓ, s, W, qaux, sη, saux, Wη, Waux
+end
+
 function _scalar_aux_laplace_site_implicit_value_grad(family_from_aux,
         y::AbstractVector, n::AbstractVector, θ::AbstractVector,
         p::Int, K::Int, link::Link; maxiter::Integer = 100, tol::Real = 1e-9,
@@ -290,9 +383,14 @@ function _scalar_aux_laplace_site_implicit_value_grad(family_from_aux,
     length(aux) == 1 || throw(ArgumentError(
         "scalar-aux implicit gradient expects one auxiliary parameter; got $(length(aux))"))
     family = family_from_aux(aux)
-    z = _laplace_mode(family, y, n, Λ, β, link;
+    z = if z_store === nothing
+        _laplace_mode(family, y, n, Λ, β, link;
                       maxiter = maxiter, tol = tol, z_init = z_init)
-    z_store !== nothing && copyto!(z_store, z)
+    else
+        z_init !== nothing && z_init !== z_store && copyto!(z_store, z_init)
+        _laplace_mode!(z_store, family, y, n, Λ, β, link;
+                       maxiter = maxiter, tol = tol)
+    end
     η = _clamp_eta.(β .+ Λ * z)
 
     T = promote_type(eltype(θ), eltype(z))
@@ -305,18 +403,16 @@ function _scalar_aux_laplace_site_implicit_value_grad(family_from_aux,
     Wη = Vector{T}(undef, p)
     Waux = Vector{T}(undef, p)
     @inbounds for t in 1:p
-        v0 = vcat(η[t], aux)
-        lsw = v -> _obs_lsw_aux(family_from_aux, link, y[t], n[t], v)
-        vals = lsw(v0)
-        J = ForwardDiff.jacobian(lsw, v0)
-        ℓ += vals[1]
-        s[t] = vals[2]
-        W[t] = vals[3]
-        qaux += J[1, 2]
-        sη[t] = J[2, 1]
-        saux[t] = J[2, 2]
-        Wη[t] = J[3, 1]
-        Waux[t] = J[3, 2]
+        ℓt, st, Wt, qauxt, sηt, sauxt, Wηt, Wauxt =
+            _obs_lsw_aux_derivatives(family, family_from_aux, link, y[t], n[t], η[t], aux)
+        ℓ += ℓt
+        s[t] = st
+        W[t] = Wt
+        qaux += qauxt
+        sη[t] = sηt
+        saux[t] = sauxt
+        Wη[t] = Wηt
+        Waux[t] = Wauxt
     end
 
     A = Symmetric(Λ' * (W .* Λ) + I)
@@ -377,6 +473,32 @@ function marginal_loglik_laplace_aux_value_grad(family_from_aux,
     @inbounds for i in axes(Y, 2)
         v, g = _scalar_aux_laplace_site_implicit_value_grad(
             family_from_aux, view(Y, :, i), view(N, :, i), θ, p, K, link; kwargs...)
+        value += v
+        grad .+= g
+    end
+    return value, grad
+end
+
+"""
+    marginal_loglik_laplace_aux_value_grad!(Zcache, family_from_aux, Y, N, θ, p, K, link; kwargs...)
+
+Cache-backed variant of [`marginal_loglik_laplace_aux_value_grad`](@ref) for
+benchmarking and future fitter experiments. `Zcache` stores the per-site
+Laplace modes between calls; production fitters stay on the stateless path
+until optimizer line-search behaviour is fully validated with the cache.
+"""
+function marginal_loglik_laplace_aux_value_grad!(Zcache::AbstractMatrix,
+        family_from_aux, Y::AbstractMatrix, N::AbstractMatrix, θ::AbstractVector,
+        p::Int, K::Int, link::Link; kwargs...)
+    size(Zcache, 1) == K && size(Zcache, 2) == size(Y, 2) ||
+        throw(DimensionMismatch("Zcache must have size (K, n_sites) = ($(K), $(size(Y, 2))); got $(size(Zcache))"))
+    value = zero(eltype(θ))
+    grad = zeros(eltype(θ), length(θ))
+    @inbounds for i in axes(Y, 2)
+        zbuf = view(Zcache, :, i)
+        v, g = _scalar_aux_laplace_site_implicit_value_grad(
+            family_from_aux, view(Y, :, i), view(N, :, i), θ, p, K, link;
+            z_init = zbuf, z_store = zbuf, kwargs...)
         value += v
         grad .+= g
     end

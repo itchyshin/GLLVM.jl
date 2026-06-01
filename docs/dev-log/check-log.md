@@ -1,5 +1,166 @@
 # Check Log
 
+## 2026-05-31 — Scalar-Aux Analytic Derivatives
+
+Branch: `codex/non-gaussian-fitter-gradients`
+
+Head before local commit: `8165059`.
+
+### Scope
+
+- Replaced per-observation ForwardDiff Jacobians in the scalar-auxiliary
+  dense-Laplace gradient with analytic derivatives for the production
+  Negative Binomial log-link (`log r`) and Beta logit-link (`log φ`) paths.
+- Replaced the corresponding NB/Beta per-observation `logpdf(...)`
+  distribution-object calls with closed-form `loggamma` log densities.
+- Added an in-place Laplace mode helper and a cache-backed scalar-auxiliary
+  value/gradient helper for benchmark/future fitter experiments.
+- Left NB/Beta production fitters on the stateless scalar-auxiliary gradient:
+  the cache-backed helper is faster but the NB recovery fixture can lose the
+  Optim convergence flag through line-search behaviour.
+- Public model APIs are unchanged.
+- Did not edit `src/sparse_phy_grad.jl` or `src/em_phylo.jl`.
+
+### Confidence-Interval Lane Check
+
+- Current branch already has Gaussian Wald/profile/bootstrap and derived CI
+  tests passing.
+- Non-Gaussian CIs are not part of this speed slice. Open draft PR #59
+  (`claude/package-work-catchup-mQiZM`) owns Delta-Gamma / ZIP-ZINB /
+  non-Gaussian CI work, so this branch avoids those files.
+
+### Gradient And Recovery Verification
+
+Command:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_family_forwarddiff_gradients.jl")'
+```
+
+Result:
+
+```text
+non-Gaussian fitter objectives: AD/implicit gradients | 92/92 pass
+```
+
+Command:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_binomial_fit.jl"); include("test/test_poisson_fit.jl"); include("test/test_nb_fit.jl"); include("test/test_beta_fit.jl"); include("test/test_gamma_fit.jl"); include("test/test_ordinal_fit.jl")'
+```
+
+Result:
+
+```text
+fit_binomial_gllvm — recovery | 8/8 pass
+fit_poisson_gllvm — recovery  | 7/7 pass
+fit_nb_gllvm — recovery       | 7/7 pass
+fit_beta_gllvm                | 7/7 pass
+fit_gamma_gllvm               | 7/7 pass
+fit_ordinal_gllvm             | 9/9 pass
+```
+
+### Core Suite
+
+Command:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. Manual tally from emitted `Test Summary` blocks:
+2214 pass, 3 broken placeholders, 0 fail, 0 error. The broken entries are the
+existing sparse-phy precision check plus the direct-run Aqua/JET placeholders
+that are exercised by `Pkg.test()`.
+
+Key touched blocks:
+
+```text
+non-Gaussian fitter objectives: AD/implicit gradients | 92/92 pass
+fit_nb_gllvm — recovery                               | 7/7 pass
+fit_beta_gllvm                                        | 7/7 pass
+post-fit NB fits                                      | 160/160 pass
+post-fit Beta fits                                    | 215/215 pass
+Hurdle-Poisson                                        | 166/166 pass
+Hurdle-NB                                             | 15/15 pass
+```
+
+### Full Package Suite
+
+Command:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Manual tally from emitted `Test Summary` blocks: 2226 pass, 1 existing broken
+sparse-phy precision check, 0 fail, 0 error.
+
+### Benchmarks
+
+Production scalar-auxiliary value/gradient kernel, p = 80, n = 400, K = 3,
+24 reps:
+
+| family | median (s) | min (s) | mean allocations |
+| --- | ---: | ---: | ---: |
+| negative-binomial | 0.0180 | 0.0173 | 43.9 MB |
+| beta | 0.0429 | 0.0417 | 44.0 MB |
+
+Compared with the earlier generic-observation-AD scalar-aux path in this same
+branch, the production kernel is now about 2.5x faster for NB and 1.7x faster
+for Beta on this cell.
+
+Cache-backed scalar-auxiliary helper, same cell:
+
+| family | median (s) | mean allocations | verdict |
+| --- | ---: | ---: | --- |
+| negative-binomial | 0.0134 | 21.1 MB | verified as value/gradient-equivalent, not production-wired |
+| beta | 0.0296 | 21.1 MB | verified as value/gradient-equivalent, not production-wired |
+
+R comparator smoke, small cell only, warmed with 3 warmup fits and 3 measured
+reps:
+
+```sh
+julia --project=. --startup-file=no bench/non_gaussian_gllvmtmb_bench.jl --full --cells=small --families=negbin,beta --iterations=80 --warmups=3 --reps=3
+```
+
+| family | Julia (s) | gllvmTMB (s) | R / Julia | agreement_status |
+| --- | ---: | ---: | ---: | --- |
+| negative-binomial | 0.0488 | 1.1510 | 23.58x | same_data_parameterization_audit_needed |
+| beta | 0.0524 | 0.9980 | 19.04x | same_data_parameterization_audit_needed |
+
+The earlier zero-warmup smoke included Julia compilation cost and is not a
+per-fit engine comparison. Strict likelihood interpretation still needs the
+NB/Beta parameterisation audit.
+
+Medium warmed smoke, one warmup and one measured repetition:
+
+```sh
+julia --project=. --startup-file=no bench/non_gaussian_gllvmtmb_bench.jl --full --cells=medium --families=negbin,beta --iterations=120 --warmups=1 --reps=1
+```
+
+| family | Julia (s) | gllvmTMB (s) | R / Julia | agreement_status |
+| --- | ---: | ---: | ---: | --- |
+| negative-binomial | 0.8803 | 27.7240 | 31.49x | same_data_parameterization_audit_needed |
+| beta | 2.9037 | 10.3560 | 3.57x | same_data_parameterization_audit_needed |
+
+Medium Beta is now the named scalar-aux bottleneck; NB is comfortably ahead
+against the R comparator on the warmed small and medium cells.
+
+### Hygiene
+
+- `git diff --check`: clean.
+- `rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src CLAUDE.md AGENTS.md -g '!docs/node_modules/**'`:
+  existing `AGENTS.md` status snapshot hit only; not edited.
+- Sensitive-provenance guard scan over public repo artifacts: clean.
+
 ## 2026-05-31 — Structured Fast-Algorithm Scout
 
 Branch: `codex/non-gaussian-fitter-gradients`
