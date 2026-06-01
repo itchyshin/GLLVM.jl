@@ -41,7 +41,7 @@ using GLLVM, Test, Random, Distributions, Statistics
 
         # CI
         ci = confint(fit, Y; method = :wald)
-        @test length(ci.term) == p + (p * K)
+        @test length(ci.term) == p + (p * K - div(K * (K - 1), 2))   # β + packed Λ
         @test ci.estimate[1] ≈ fit.β[1] atol = 1e-8
     end
 end
