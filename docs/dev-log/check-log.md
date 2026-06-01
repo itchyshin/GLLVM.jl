@@ -1,5 +1,115 @@
 # Check Log
 
+## 2026-05-31 — Beta Cache-Then-Polish Fitter
+
+Branch: `codex/non-gaussian-fitter-gradients`
+
+Head before local commit: `9a731e3`.
+
+### Scope
+
+- Updated `fit_beta_gllvm` to run a cache-backed scalar-auxiliary dense-Laplace
+  pass first, then use the existing stateless value/gradient as a final polish
+  whenever the cached pass does not satisfy Optim's convergence criteria.
+- The final `BetaFit.converged` flag is still based on the stateless polish when
+  polishing is needed; the cache is used only to get close quickly.
+- No public API changes.
+- Did not edit `src/sparse_phy_grad.jl`, `src/em_phylo.jl`, or the open
+  non-Gaussian CI PR lane.
+
+### Verification
+
+Targeted command:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_beta_fit.jl")'
+```
+
+Result:
+
+```text
+fit_beta_gllvm | 7/7 pass
+```
+
+All non-Gaussian recovery command:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_binomial_fit.jl"); include("test/test_poisson_fit.jl"); include("test/test_nb_fit.jl"); include("test/test_beta_fit.jl"); include("test/test_gamma_fit.jl"); include("test/test_ordinal_fit.jl")'
+```
+
+Result:
+
+```text
+fit_binomial_gllvm — recovery | 8/8 pass
+fit_poisson_gllvm — recovery  | 7/7 pass
+fit_nb_gllvm — recovery       | 7/7 pass
+fit_beta_gllvm                | 7/7 pass
+fit_gamma_gllvm               | 7/7 pass
+fit_ordinal_gllvm             | 9/9 pass
+```
+
+Core command:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. Manual tally from emitted summaries: 2214 pass, 3 broken
+placeholders, 0 fail, 0 error. The touched blocks included:
+
+```text
+non-Gaussian fitter objectives: AD/implicit gradients | 92/92 pass
+fit_beta_gllvm                                        | 7/7 pass
+post-fit Beta fits                                    | 215/215 pass
+```
+
+Full command:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Manual tally from emitted summaries: 2226 pass, 1 existing broken sparse-phy
+precision check, 0 fail, 0 error.
+
+### Benchmarks
+
+Julia-only warmed Beta benchmark, medium cell:
+
+```sh
+julia --project=. --startup-file=no bench/non_gaussian_gllvmtmb_bench.jl --full --cells=medium --families=beta --iterations=120 --warmups=1 --reps=3 --julia-only
+```
+
+| family | p | n | K | before median (s) | after median (s) | speedup |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| beta | 30 | 500 | 2 | 2.9037 | 2.5687 | 1.13x |
+
+Julia-only warmed Beta benchmark, small cell:
+
+```sh
+julia --project=. --startup-file=no bench/non_gaussian_gllvmtmb_bench.jl --full --cells=small --families=beta --iterations=80 --warmups=3 --reps=5 --julia-only
+```
+
+| family | p | n | K | before median (s) | after median (s) | speedup |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| beta | 10 | 100 | 1 | 0.0524 | 0.0362 | 1.45x |
+
+The larger 100x target still needs a workspace-based site-mode implementation
+or a structured sparse/operator Laplace path; cache-then-polish is a safe
+constant-factor improvement, not the final algorithm.
+
+### Hygiene
+
+- `git diff --check`: clean.
+- Sensitive-provenance guard scan over public repo artifacts: clean.
+
 ## 2026-05-31 — Scalar-Aux Analytic Derivatives
 
 Branch: `codex/non-gaussian-fitter-gradients`

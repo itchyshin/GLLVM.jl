@@ -107,14 +107,30 @@ function fit_beta_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     N = ones(Int, size(Y))
     value_grad(θ) = marginal_loglik_laplace_aux_value_grad(
         family_from_aux, Y, N, θ, p, K, link; maxiter = newton_maxiter, tol = newton_tol)
+    Zcache = zeros(Float64, K, n)
+    cached_value_grad(θ) = marginal_loglik_laplace_aux_value_grad!(
+        Zcache, family_from_aux, Y, N, θ, p, K, link;
+        maxiter = newton_maxiter, tol = newton_tol)
     negll_fg!(F, G, θ) = _penalized_negloglik_fg!(F, G, value_grad, θ)
+    cached_negll_fg!(F, G, θ) = _penalized_negloglik_fg!(F, G, cached_value_grad, θ)
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
-    res = Optim.optimize(Optim.only_fg!(negll_fg!), θ0, ls,
-                         Optim.Options(g_tol = g_tol, iterations = iterations))
+    cached_res = Optim.optimize(Optim.only_fg!(cached_negll_fg!), θ0, ls,
+                                Optim.Options(g_tol = g_tol, iterations = iterations))
+    res, total_iterations = if Optim.converged(cached_res)
+        cached_res, Optim.iterations(cached_res)
+    else
+        polish_res = Optim.optimize(Optim.only_fg!(negll_fg!), Optim.minimizer(cached_res), ls,
+                                    Optim.Options(g_tol = g_tol, iterations = iterations))
+        if Optim.converged(polish_res) || Optim.minimum(polish_res) <= Optim.minimum(cached_res)
+            polish_res, Optim.iterations(cached_res) + Optim.iterations(polish_res)
+        else
+            cached_res, Optim.iterations(cached_res)
+        end
+    end
     θ̂ = Optim.minimizer(res)
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
     φ̂ = _positive_from_log(θ̂[p + rr + 1])
     return BetaFit(β̂, Λ̂, φ̂, link, -Optim.minimum(res),
-                   Optim.converged(res), Optim.iterations(res))
+                   Optim.converged(res), total_iterations)
 end
