@@ -52,8 +52,8 @@ end
 Fit a Poisson GLLVM by L-BFGS on the Laplace marginal log-likelihood
 (`poisson_marginal_loglik_laplace`). `Y` is a p×n integer count matrix
 (responses × sites); `K` the latent dimension. Optimises intercepts `β` and
-loadings `Λ`. The L-BFGS gradient uses an implicit dense-Laplace gradient that
-avoids differentiating through the inner Fisher-scoring iterations; warm start =
+loadings `Λ`. For the canonical log link, the L-BFGS gradient uses a hand-coded
+implicit dense-Laplace gradient and a per-site latent-mode cache; warm start =
 empirical log-mean intercepts + an SVD (PPCA-style) loadings init.
 """
 function fit_poisson_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
@@ -83,8 +83,15 @@ function fit_poisson_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
     θ0 = vcat(β0, pack_lambda(Λ0))
     family_fromθ = _ -> Poisson()
     N = ones(Int, size(Y))
-    value_grad(θ) = marginal_loglik_laplace_implicit_value_grad(
-        family_fromθ, Y, N, θ, p, K, link; maxiter = newton_maxiter, tol = newton_tol)
+    Zcache = zeros(Float64, K, n)
+    value_grad = if link isa LogLink
+        θ -> marginal_loglik_laplace_canonical_value_grad!(
+            Zcache,
+            Poisson(), Y, N, θ, p, K, link; maxiter = newton_maxiter, tol = newton_tol)
+    else
+        θ -> marginal_loglik_laplace_implicit_value_grad(
+            family_fromθ, Y, N, θ, p, K, link; maxiter = newton_maxiter, tol = newton_tol)
+    end
     negll_fg!(F, G, θ) = _penalized_negloglik_fg!(F, G, value_grad, θ)
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
     res = Optim.optimize(Optim.only_fg!(negll_fg!), θ0, ls,

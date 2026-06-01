@@ -34,9 +34,9 @@ end
 # ẑ (length K) for one site. Shared across families and by getLV (src/postfit.jl).
 function _laplace_mode(family, y::AbstractVector, n::AbstractVector,
         Λ::AbstractMatrix, β::AbstractVector, link::Link;
-        maxiter::Integer = 100, tol::Real = 1e-9)
+        maxiter::Integer = 100, tol::Real = 1e-9, z_init = nothing)
     K = size(Λ, 2)
-    z = zeros(K)
+    z = z_init === nothing ? zeros(K) : collect(z_init)
     for _ in 1:maxiter
         η  = _clamp_eta.(β .+ Λ * z)
         μ  = _clamp_mu.(Ref(family), linkinv.(Ref(link), η))
@@ -157,6 +157,226 @@ function marginal_loglik_laplace_implicit_value_grad(family_fromθ,
     @inbounds for i in axes(Y, 2)
         v, g = _scalar_laplace_site_implicit_value_grad(
             family_fromθ, view(Y, :, i), view(N, :, i), θ, p, K, link; kwargs...)
+        value += v
+        grad .+= g
+    end
+    return value, grad
+end
+
+_canonical_weight_eta_derivative(::Poisson, μ, n, W) = W
+_canonical_weight_eta_derivative(::Binomial, μ, n, W) = W * (one(μ) - 2 * μ)
+
+function _canonical_laplace_site_implicit_value_grad(family,
+        y::AbstractVector, n::AbstractVector, θ::AbstractVector,
+        p::Int, K::Int, link::Link; maxiter::Integer = 100, tol::Real = 1e-9,
+        z_init = nothing, z_store = nothing)
+    rr = rr_theta_len(p, K)
+    β = θ[1:p]
+    Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+    z = _laplace_mode(family, y, n, Λ, β, link;
+                      maxiter = maxiter, tol = tol, z_init = z_init)
+    z_store !== nothing && copyto!(z_store, z)
+    η  = _clamp_eta.(β .+ Λ * z)
+    μ  = _clamp_mu.(Ref(family), linkinv.(Ref(link), η))
+    me = mu_eta.(Ref(link), η)
+    s  = _glm_score.(Ref(family), μ, n, me, y)
+    W  = _glm_weight.(Ref(family), μ, n, me)
+    Wη = similar(W)
+    @inbounds for t in 1:p
+        Wη[t] = _canonical_weight_eta_derivative(family, μ[t], n[t], W[t])
+    end
+
+    A = Symmetric(Λ' * (W .* Λ) + I)
+    C = cholesky(A)
+    M = C \ Matrix{eltype(A)}(I, K, K)
+    ΛM = Λ * M
+
+    ℓ = zero(eltype(A))
+    h = similar(W)
+    @inbounds for t in 1:p
+        ℓ += _glm_logpdf(family, μ[t], n[t], y[t])
+        h[t] = dot(view(Λ, t, :), view(ΛM, t, :))
+    end
+    value = ℓ - 0.5 * dot(z, z) - 0.5 * logdet(C)
+
+    # q = log-likelihood Laplace contribution, F = Λ's - z.
+    # For canonical Poisson-log and Binomial-logit, ∂s/∂η = -W and
+    # F_z = -(I + Λ'WΛ), so only one K×K adjoint solve is needed.
+    a = similar(s)
+    @inbounds for t in 1:p
+        a[t] = s[t] - 0.5 * h[t] * Wη[t]
+    end
+    qz = Λ' * a .- z
+    adj = -(C \ qz)
+    λadj = Λ * adj
+
+    grad = zeros(eltype(θ), length(θ))
+    @inbounds for t in 1:p
+        grad[t] = a[t] + W[t] * λadj[t]
+    end
+    @inbounds for k in 1:K
+        # Diagonal loading Λ[k,k] is stored in θ[p+k].
+        t = k
+        grad[p + k] = a[t] * z[k] - W[t] * ΛM[t, k] -
+                      s[t] * adj[k] + W[t] * z[k] * λadj[t]
+        for t in (k + 1):p
+            idx = p + _lower_index(p, K, t, k)
+            grad[idx] = a[t] * z[k] - W[t] * ΛM[t, k] -
+                        s[t] * adj[k] + W[t] * z[k] * λadj[t]
+        end
+    end
+    return value, grad
+end
+
+"""
+    marginal_loglik_laplace_canonical_value_grad(family, Y, N, θ, p, K, link; kwargs...)
+
+Return `(loglik, gradient)` for canonical scalar-family Laplace objectives
+without a per-site ForwardDiff Jacobian. This is currently valid for
+Poisson-log and Binomial-logit, where `∂s/∂η = -W` and
+`F_z = -(I + Λ'WΛ)`.
+"""
+function marginal_loglik_laplace_canonical_value_grad(family,
+        Y::AbstractMatrix, N::AbstractMatrix, θ::AbstractVector,
+        p::Int, K::Int, link::Link; kwargs...)
+    value = zero(eltype(θ))
+    grad = zeros(eltype(θ), length(θ))
+    @inbounds for i in axes(Y, 2)
+        v, g = _canonical_laplace_site_implicit_value_grad(
+            family, view(Y, :, i), view(N, :, i), θ, p, K, link; kwargs...)
+        value += v
+        grad .+= g
+    end
+    return value, grad
+end
+
+function marginal_loglik_laplace_canonical_value_grad!(Zcache::AbstractMatrix,
+        family, Y::AbstractMatrix, N::AbstractMatrix, θ::AbstractVector,
+        p::Int, K::Int, link::Link; kwargs...)
+    value = zero(eltype(θ))
+    grad = zeros(eltype(θ), length(θ))
+    @inbounds for i in axes(Y, 2)
+        zbuf = view(Zcache, :, i)
+        v, g = _canonical_laplace_site_implicit_value_grad(
+            family, view(Y, :, i), view(N, :, i), θ, p, K, link;
+            z_init = zbuf, z_store = zbuf, kwargs...)
+        value += v
+        grad .+= g
+    end
+    return value, grad
+end
+
+function _obs_lsw_aux(family_from_aux, link::Link, y, n, v::AbstractVector)
+    η = v[1]
+    aux = view(v, 2:length(v))
+    family = family_from_aux(aux)
+    μ = _clamp_mu(family, linkinv(link, _clamp_eta(η)))
+    me = mu_eta(link, _clamp_eta(η))
+    return [
+        _glm_logpdf(family, μ, n, y),
+        _glm_score(family, μ, n, me, y),
+        _glm_weight(family, μ, n, me),
+    ]
+end
+
+function _scalar_aux_laplace_site_implicit_value_grad(family_from_aux,
+        y::AbstractVector, n::AbstractVector, θ::AbstractVector,
+        p::Int, K::Int, link::Link; maxiter::Integer = 100, tol::Real = 1e-9,
+        z_init = nothing, z_store = nothing)
+    rr = rr_theta_len(p, K)
+    β = θ[1:p]
+    Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+    aux = θ[(p + rr + 1):end]
+    length(aux) == 1 || throw(ArgumentError(
+        "scalar-aux implicit gradient expects one auxiliary parameter; got $(length(aux))"))
+    family = family_from_aux(aux)
+    z = _laplace_mode(family, y, n, Λ, β, link;
+                      maxiter = maxiter, tol = tol, z_init = z_init)
+    z_store !== nothing && copyto!(z_store, z)
+    η = _clamp_eta.(β .+ Λ * z)
+
+    T = promote_type(eltype(θ), eltype(z))
+    ℓ = zero(T)
+    qaux = zero(T)
+    s = Vector{T}(undef, p)
+    W = Vector{T}(undef, p)
+    sη = Vector{T}(undef, p)
+    saux = Vector{T}(undef, p)
+    Wη = Vector{T}(undef, p)
+    Waux = Vector{T}(undef, p)
+    @inbounds for t in 1:p
+        v0 = vcat(η[t], aux)
+        lsw = v -> _obs_lsw_aux(family_from_aux, link, y[t], n[t], v)
+        vals = lsw(v0)
+        J = ForwardDiff.jacobian(lsw, v0)
+        ℓ += vals[1]
+        s[t] = vals[2]
+        W[t] = vals[3]
+        qaux += J[1, 2]
+        sη[t] = J[2, 1]
+        saux[t] = J[2, 2]
+        Wη[t] = J[3, 1]
+        Waux[t] = J[3, 2]
+    end
+
+    A = Symmetric(Λ' * (W .* Λ) + I)
+    C = cholesky(A)
+    M = C \ Matrix{eltype(A)}(I, K, K)
+    ΛM = Λ * M
+
+    h = similar(W)
+    @inbounds for t in 1:p
+        h[t] = dot(view(Λ, t, :), view(ΛM, t, :))
+        qaux -= 0.5 * h[t] * Waux[t]
+    end
+    value = ℓ - 0.5 * dot(z, z) - 0.5 * logdet(C)
+
+    a = similar(s)
+    @inbounds for t in 1:p
+        a[t] = s[t] - 0.5 * h[t] * Wη[t]
+    end
+    qz = Λ' * a .- z
+    Fz = Λ' * (sη .* Λ)
+    @inbounds for k in 1:K
+        Fz[k, k] -= one(eltype(Fz))
+    end
+    adj = Fz' \ qz
+    λadj = Λ * adj
+
+    grad = zeros(eltype(θ), length(θ))
+    @inbounds for t in 1:p
+        grad[t] = a[t] - sη[t] * λadj[t]
+    end
+    @inbounds for k in 1:K
+        t = k
+        grad[p + k] = a[t] * z[k] - W[t] * ΛM[t, k] -
+                      s[t] * adj[k] - sη[t] * z[k] * λadj[t]
+        for t in (k + 1):p
+            idx = p + _lower_index(p, K, t, k)
+            grad[idx] = a[t] * z[k] - W[t] * ΛM[t, k] -
+                        s[t] * adj[k] - sη[t] * z[k] * λadj[t]
+        end
+    end
+    grad[end] = qaux - dot(Λ' * saux, adj)
+    return value, grad
+end
+
+"""
+    marginal_loglik_laplace_aux_value_grad(family_from_aux, Y, N, θ, p, K, link; kwargs...)
+
+Return `(loglik, gradient)` for scalar-family Laplace objectives with one
+auxiliary packed parameter after `[β; vec(Λ)]`, such as `log r` for NB2 or
+`log φ` for Beta. The helper differentiates each observation only with respect
+to `(η, aux)` and applies the packed implicit-gradient chain rule analytically.
+"""
+function marginal_loglik_laplace_aux_value_grad(family_from_aux,
+        Y::AbstractMatrix, N::AbstractMatrix, θ::AbstractVector,
+        p::Int, K::Int, link::Link; kwargs...)
+    value = zero(eltype(θ))
+    grad = zeros(eltype(θ), length(θ))
+    @inbounds for i in axes(Y, 2)
+        v, g = _scalar_aux_laplace_site_implicit_value_grad(
+            family_from_aux, view(Y, :, i), view(N, :, i), θ, p, K, link; kwargs...)
         value += v
         grad .+= g
     end

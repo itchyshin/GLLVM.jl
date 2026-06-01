@@ -79,9 +79,9 @@ matrix (responses × sites); `N` the matching trial counts (default all-ones,
 i.e. Bernoulli / binary). `K` is the latent dimension. Optimises the intercepts
 `β` and loadings `Λ`.
 
-The L-BFGS gradient uses an implicit dense-Laplace gradient: site modes are found
-once by Fisher scoring, then the mode equation supplies `dz/dθ` without
-differentiating through the Newton iterations. Warm start: empirical link-scale
+For the canonical logit link, the L-BFGS gradient uses a hand-coded implicit
+dense-Laplace gradient and a per-site latent-mode cache. Non-canonical links
+fall back to the generic implicit gradient. Warm start: empirical link-scale
 intercepts + an SVD (PPCA-style) loadings init.
 """
 function fit_binomial_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
@@ -114,8 +114,15 @@ function fit_binomial_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
 
     θ0 = vcat(β0, pack_lambda(Λ0))
     family_fromθ = _ -> Binomial()
-    value_grad(θ) = marginal_loglik_laplace_implicit_value_grad(
-        family_fromθ, Y, Nm, θ, p, K, link; maxiter = newton_maxiter, tol = newton_tol)
+    Zcache = zeros(Float64, K, n)
+    value_grad = if link isa LogitLink
+        θ -> marginal_loglik_laplace_canonical_value_grad!(
+            Zcache,
+            Binomial(), Y, Nm, θ, p, K, link; maxiter = newton_maxiter, tol = newton_tol)
+    else
+        θ -> marginal_loglik_laplace_implicit_value_grad(
+            family_fromθ, Y, Nm, θ, p, K, link; maxiter = newton_maxiter, tol = newton_tol)
+    end
     negll_fg!(F, G, θ) = _penalized_negloglik_fg!(F, G, value_grad, θ)
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
     res = Optim.optimize(Optim.only_fg!(negll_fg!), θ0, ls,

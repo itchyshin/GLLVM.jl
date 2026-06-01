@@ -59,9 +59,10 @@ end
 Fit a negative-binomial (NB2) GLLVM by L-BFGS over `[β; vec(Λ); log r]` on the
 Laplace marginal (`nb_marginal_loglik_laplace`), jointly estimating the dispersion
 `r`. `Y` is a p×n integer count matrix; `K` the latent dimension. The L-BFGS
-gradient uses an implicit dense-Laplace gradient that avoids differentiating
-through the inner Fisher-scoring iterations; warm start = empirical log-mean
-intercepts + an SVD loadings init + a moderate `r₀`.
+gradient uses a scalar-auxiliary implicit dense-Laplace gradient: observation
+derivatives are taken only with respect to `(η, log r)`, then the packed
+gradient is assembled analytically. Warm start = empirical log-mean intercepts
++ an SVD loadings init + a moderate `r₀`.
 """
 function fit_nb_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
         link::Link = LogLink(),
@@ -88,10 +89,10 @@ function fit_nb_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
     logr0 = r_init === nothing ? log(10.0) : log(float(r_init))
 
     θ0 = vcat(β0, pack_lambda(Λ0), logr0)
-    family_fromθ = θ -> NegativeBinomial(_positive_from_log(θ[p + rr + 1]), 0.5)
+    family_from_aux = aux -> NegativeBinomial(_positive_from_log(aux[1]), 0.5)
     N = ones(Int, size(Y))
-    value_grad(θ) = marginal_loglik_laplace_implicit_value_grad(
-        family_fromθ, Y, N, θ, p, K, link; maxiter = newton_maxiter, tol = newton_tol)
+    value_grad(θ) = marginal_loglik_laplace_aux_value_grad(
+        family_from_aux, Y, N, θ, p, K, link; maxiter = newton_maxiter, tol = newton_tol)
     negll_fg!(F, G, θ) = _penalized_negloglik_fg!(F, G, value_grad, θ)
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
     res = Optim.optimize(Optim.only_fg!(negll_fg!), θ0, ls,

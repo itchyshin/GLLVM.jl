@@ -44,6 +44,7 @@ function usage()
 
     Options:
       --families=a,b,c    Comma-separated family subset.
+      --cells=a,b,c       Comma-separated cell subset (smoke, small, medium, large).
       --iterations=N      Optimizer iteration budget per fit (default: 80 smoke, 500 full).
       --warmups=N         Override warmup repetitions (default: 0 smoke, 3 full).
       --reps=N            Override measured repetitions (default: 1 smoke, 10 small/medium, 3 large).
@@ -62,6 +63,7 @@ end
 function parse_args(args)
     mode = "smoke"
     families = copy(DEFAULT_FAMILIES)
+    cells = nothing
     iterations = nothing
     warmups = nothing
     reps = nothing
@@ -78,6 +80,8 @@ function parse_args(args)
             mode = "full"
         elseif startswith(arg, "--families=")
             families = String.(split(arg[(lastindex("--families=") + 1):end], ","))
+        elseif startswith(arg, "--cells=")
+            cells = String.(split(arg[(lastindex("--cells=") + 1):end], ","))
         elseif startswith(arg, "--iterations=")
             iterations = parse(Int, arg[(lastindex("--iterations=") + 1):end])
         elseif startswith(arg, "--warmups=")
@@ -100,7 +104,8 @@ function parse_args(args)
     warmups === nothing && (warmups = mode == "full" ? 3 : 0)
 
     return (mode = mode, families = families, iterations = iterations,
-            warmups = warmups, reps = reps, run_r = run_r, out = out)
+            warmups = warmups, reps = reps, run_r = run_r, out = out,
+            cells = cells)
 end
 
 logistic(x) = inv(one(x) + exp(-x))
@@ -435,6 +440,14 @@ end
 function main(args = ARGS)
     options = parse_args(args)
     cells = options.mode == "full" ? FULL_CELLS : SMOKE_CELLS
+    if options.cells !== nothing
+        wanted = Set(options.cells)
+        known = Set(string(cell.id) for cell in vcat(SMOKE_CELLS, FULL_CELLS))
+        unknown = setdiff(wanted, known)
+        isempty(unknown) || throw(ArgumentError("unknown cells: $(join(sort(collect(unknown)), ", "))"))
+        cells = [cell for cell in cells if string(cell.id) in wanted]
+        isempty(cells) && throw(ArgumentError("no cells from $(join(options.cells, ",")) are available in $(options.mode) mode"))
+    end
     rows = Tuple[]
     timestamp = Dates.format(now(), dateformat"yyyy-mm-ddTHH:MM:SS")
 

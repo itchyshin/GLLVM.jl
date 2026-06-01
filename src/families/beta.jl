@@ -73,9 +73,10 @@ end
 Fit a Beta GLLVM by L-BFGS over `[β; vec(Λ); log φ]` on the Laplace marginal
 (`beta_marginal_loglik_laplace`), jointly estimating the precision `φ`
 (`Var = μ(1−μ)/(1+φ)`). `Y` is a p×n matrix of proportions in (0,1); `K` the latent
-dimension. The L-BFGS gradient uses an implicit dense-Laplace gradient that
-avoids differentiating through the inner Fisher-scoring iterations; warm start =
-empirical logit-mean intercepts + an SVD loadings init + a moderate `φ₀`.
+dimension. The L-BFGS gradient uses a scalar-auxiliary implicit dense-Laplace
+gradient: observation derivatives are taken only with respect to `(η, log φ)`,
+then the packed gradient is assembled analytically. Warm start = empirical
+logit-mean intercepts + an SVD loadings init + a moderate `φ₀`.
 """
 function fit_beta_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         link::Link = LogitLink(),
@@ -102,10 +103,10 @@ function fit_beta_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     logφ0 = φ_init === nothing ? log(10.0) : log(float(φ_init))
 
     θ0 = vcat(β0, pack_lambda(Λ0), logφ0)
-    family_fromθ = θ -> Beta(_positive_from_log(θ[p + rr + 1]), 1.0)
+    family_from_aux = aux -> Beta(_positive_from_log(aux[1]), 1.0)
     N = ones(Int, size(Y))
-    value_grad(θ) = marginal_loglik_laplace_implicit_value_grad(
-        family_fromθ, Y, N, θ, p, K, link; maxiter = newton_maxiter, tol = newton_tol)
+    value_grad(θ) = marginal_loglik_laplace_aux_value_grad(
+        family_from_aux, Y, N, θ, p, K, link; maxiter = newton_maxiter, tol = newton_tol)
     negll_fg!(F, G, θ) = _penalized_negloglik_fg!(F, G, value_grad, θ)
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
     res = Optim.optimize(Optim.only_fg!(negll_fg!), θ0, ls,

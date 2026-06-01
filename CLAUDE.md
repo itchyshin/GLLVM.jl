@@ -14,11 +14,12 @@ machine precision.
 
 **Status**: current development supports Gaussian plus six dense-Laplace
 non-Gaussian fitters: Binomial, Poisson, Negative Binomial, Beta, Gamma, and
-Ordinal. Binomial, Poisson, Negative Binomial, Beta, and Ordinal use Optim
-L-BFGS with implicit dense-Laplace gradients: site modes are found once by
-Fisher scoring, then the mode equation supplies `dz/dθ` without differentiating
-through the Newton iterations. Gamma currently stays on direct ForwardDiff
-through the dense Laplace objective until its inner mode convergence is hardened.
+Ordinal. Binomial-logit and Poisson-log use hand-coded implicit dense-Laplace
+gradients plus per-site latent-mode caches; Negative Binomial and Beta use a
+scalar-auxiliary implicit gradient over `(η, log dispersion)`; Ordinal uses the
+generic implicit cumulative-logit gradient. Gamma currently stays on direct
+ForwardDiff through the dense Laplace objective until its inner mode convergence
+is hardened.
 Two-part families and large-p non-Gaussian structured dependence are the next
 algorithm tracks; see "Planned next" below.
 
@@ -91,9 +92,9 @@ non-Gaussian families fast and scalable:
   central finite-difference gradient to ≤ 1e-6.
 - Benchmark GLLVM.jl against R `gllvmTMB` on the same simulated data across
   sample-size grids; keep the comparison harness outside package tests.
-- Keep the implicit/envelope site-gradient ahead of direct ForwardDiff-through-
-  Newton on medium/large cells; use direct ForwardDiff only as a verification
-  oracle and small-cell fallback candidate.
+- Keep moving hot scalar families from generic implicit AD to hand-coded
+  chain-rule kernels; use direct ForwardDiff only as a verification oracle and
+  small-cell fallback candidate.
 - Build the large-p determinant path for non-Gaussian structured dependence.
 - Add two-part / zero-inflated / delta families with ADEMP recovery tests and
   provenance notes when their likelihood parameterisations land.

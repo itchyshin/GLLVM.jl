@@ -1,5 +1,153 @@
 # Check Log
 
+## 2026-05-31 — Canonical And Scalar-Aux Non-Gaussian Gradients
+
+Branch: `codex/non-gaussian-fitter-gradients`
+
+Head before local commit: `e1a971f`.
+
+### Implementation Checks
+
+- Added hand-coded implicit dense-Laplace gradients for canonical Poisson-log
+  and Binomial-logit objectives.
+- Added per-fitter latent-mode caches for the canonical Binomial and Poisson
+  paths; non-canonical Binomial links still use the generic implicit fallback.
+- Added a scalar-auxiliary implicit gradient for one dispersion-like parameter
+  after `[β; vec(Λ)]`; wired Negative Binomial (`log r`) and Beta (`log φ`) to
+  it.
+- Left Gamma on direct ForwardDiff for fitting; its scalar-auxiliary helper is
+  tested but not production-wired until mode convergence is hardened.
+- Added `--cells=` to `bench/non_gaussian_gllvmtmb_bench.jl` so small/medium
+  benchmark cells can run without entering the long large R cell.
+- Kept public model APIs unchanged.
+- Did not edit `src/sparse_phy_grad.jl` or `src/em_phylo.jl`.
+
+### Gradient Verification
+
+Command:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_family_forwarddiff_gradients.jl")'
+```
+
+Result:
+
+```text
+Test Summary:                                         | Pass  Total   Time
+non-Gaussian fitter objectives: AD/implicit gradients |   74     74  26.3s
+```
+
+The test now checks direct ForwardDiff-through-objective, generic implicit
+gradients, canonical hand-coded gradients, cached canonical gradients, and
+scalar-auxiliary gradients against central finite differences or the stateless
+canonical reference.
+
+### Targeted Recovery Tests
+
+Command:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_family_forwarddiff_gradients.jl"); include("test/test_binomial_fit.jl"); include("test/test_poisson_fit.jl"); include("test/test_nb_fit.jl"); include("test/test_beta_fit.jl")'
+```
+
+Result:
+
+```text
+non-Gaussian fitter objectives: AD/implicit gradients | 62/62 pass
+fit_binomial_gllvm — recovery                         | 8/8 pass
+fit_poisson_gllvm — recovery                          | 7/7 pass
+fit_nb_gllvm — recovery                               | 7/7 pass
+fit_beta_gllvm                                        | 7/7 pass
+```
+
+The standalone gradient test was then rerun after adding the cache-equivalence
+checks and passed 74/74.
+
+### Core Suite
+
+Command:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. The direct core environment reported only the expected
+quality-tool placeholders because Aqua/JET are loaded by `Pkg.test()`.
+
+Key touched blocks:
+
+```text
+non-Gaussian fitter objectives: AD/implicit gradients | 74/74 pass
+fit_binomial_gllvm — recovery                         | 8/8 pass
+fit_poisson_gllvm — recovery                          | 7/7 pass
+fit_nb_gllvm — recovery                               | 7/7 pass
+fit_beta_gllvm                                        | 7/7 pass
+fit_gamma_gllvm                                       | 7/7 pass
+fit_ordinal_gllvm                                     | 9/9 pass
+post-fit residuals                                    | 10/10 pass
+structured_cov                                        | 31/31 pass
+```
+
+### Full Package Suite
+
+Command:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       |   12     12  8.6s
+Testing GLLVM tests passed
+```
+
+Manual tally from the emitted `Test Summary` blocks: 1806 pass, 1 existing
+broken sparse-phy precision check, 0 fail, 0 error.
+
+### Benchmarks
+
+Poisson finite-difference baseline vs canonical hand-coded gradient:
+
+| p | n | K | params | finite-diff gradient (s) | canonical gradient (s) | speedup |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 10 | 100 | 1 | 20 | 0.0154 | 0.0004 | 35.4x |
+| 30 | 200 | 2 | 89 | 0.2693 | 0.0017 | 160.7x |
+
+Generic implicit gradient vs fast hand-coded / scalar-auxiliary gradient:
+
+| family | p | n | K | params | generic implicit (s) | fast gradient (s) | speedup |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| binomial | 80 | 400 | 3 | 317 | 0.4542 | 0.0064 | 70.8x |
+| poisson | 80 | 400 | 3 | 317 | 0.3374 | 0.0057 | 58.8x |
+| negative-binomial | 80 | 400 | 3 | 318 | 0.4073 | 0.0379 | 10.7x |
+| beta | 80 | 400 | 3 | 318 | 0.7635 | 0.0642 | 11.9x |
+
+R-vs-Julia full-grid subset command:
+
+```sh
+julia --project=. --startup-file=no bench/non_gaussian_gllvmtmb_bench.jl --full --cells=small,medium --families=binomial,poisson --iterations=80 --warmups=1 --reps=1
+```
+
+| cell | family | Julia (s) | gllvmTMB (s) | R / Julia | agreement_status |
+| --- | --- | ---: | ---: | ---: | --- |
+| small | binomial | 0.0235 | 0.5040 | 21.5x | same_data_loglik_comparable |
+| small | poisson | 0.0189 | 0.5060 | 26.8x | same_data_loglik_comparable |
+| medium | binomial | 0.2590 | 2.0170 | 7.8x | same_data_loglik_comparable |
+| medium | poisson | 0.4000 | 3.8250 | 9.6x | same_data_loglik_comparable |
+
+Large-cell command:
+
+```sh
+julia --project=. --startup-file=no bench/non_gaussian_gllvmtmb_bench.jl --full --cells=large --families=binomial,poisson --iterations=80 --warmups=0 --reps=1
+```
+
+| cell | family | Julia (s) | gllvmTMB (s) | R / Julia | agreement_status | note |
+| --- | --- | ---: | ---: | ---: | --- | --- |
+| large | binomial | 5.9188 | 64.1420 | 10.8x | same_data_loglik_comparable | Julia converged |
+| large | poisson | 5.7804 | 147.9730 | 25.6x | same_data_loglik_comparable | Julia hit 80-iteration cap but matched logLik |
+
 ## 2026-05-31 — Non-Gaussian Implicit Dense-Laplace Gradients
 
 Branch: `codex/non-gaussian-fitter-gradients`

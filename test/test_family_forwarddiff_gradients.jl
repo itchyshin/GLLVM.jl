@@ -175,4 +175,101 @@ end
         @test all(isfinite, gfd)
         @test maximum(abs.(gimp .- gfd)) ≤ 1e-6
     end
+
+    canonical_cases = Tuple{String, Function, Function, Vector{Float64}}[]
+
+    push!(canonical_cases, (
+        "binomial",
+        theta -> GLLVM.marginal_loglik_laplace_canonical_value_grad(
+            Binomial(), Y_binomial, N_binomial, theta, p, K, LogitLink();
+            tol = 1e-12),
+        theta -> GLLVM.binomial_marginal_loglik_laplace(
+            Y_binomial, N_binomial,
+            GLLVM.unpack_lambda(theta[(p + 1):(p + rr)], p, K),
+            theta[1:p], LogitLink(); tol = 1e-12),
+        vcat(beta_logit, theta_lambda0),
+    ))
+
+    push!(canonical_cases, (
+        "poisson",
+        theta -> GLLVM.marginal_loglik_laplace_canonical_value_grad(
+            Poisson(), Y_poisson, ones(Int, p, n), theta, p, K, LogLink();
+            tol = 1e-12),
+        theta -> GLLVM.poisson_marginal_loglik_laplace(
+            Y_poisson,
+            GLLVM.unpack_lambda(theta[(p + 1):(p + rr)], p, K),
+            theta[1:p]; tol = 1e-12),
+        vcat(beta_log, theta_lambda0),
+    ))
+
+    @testset "$name canonical implicit gradient" for (name, value_grad, loglik, theta0) in canonical_cases
+        value, gcan = value_grad(theta0)
+        gfd = central_difference_gradient(loglik, theta0)
+        @test isfinite(value)
+        @test all(isfinite, gcan)
+        @test all(isfinite, gfd)
+        @test maximum(abs.(gcan .- gfd)) ≤ 1e-6
+    end
+
+    @testset "$name cached canonical gradient" for (name, value_grad, _, theta0) in canonical_cases
+        Y = name == "binomial" ? Y_binomial : Y_poisson
+        N = name == "binomial" ? N_binomial : ones(Int, p, n)
+        family = name == "binomial" ? Binomial() : Poisson()
+        link = name == "binomial" ? LogitLink() : LogLink()
+        Zcache = zeros(K, n)
+        for theta in (theta0, theta0 .+ 0.01 .* randn(length(theta0)), theta0)
+            v_ref, g_ref = value_grad(theta)
+            v_cache, g_cache = GLLVM.marginal_loglik_laplace_canonical_value_grad!(
+                Zcache, family, Y, N, theta, p, K, link; tol = 1e-12)
+            @test isapprox(v_cache, v_ref; atol = 1e-8, rtol = 1e-10)
+            @test maximum(abs.(g_cache .- g_ref)) ≤ 1e-7
+        end
+    end
+
+    aux_cases = Tuple{String, Function, Function, Vector{Float64}}[]
+
+    push!(aux_cases, (
+        "negative-binomial",
+        theta -> GLLVM.marginal_loglik_laplace_aux_value_grad(
+            aux -> NegativeBinomial(exp(aux[1]), 0.5),
+            Y_nb, ones(Int, p, n), theta, p, K, LogLink(); tol = 1e-12),
+        theta -> GLLVM.nb_marginal_loglik_laplace(
+            Y_nb,
+            GLLVM.unpack_lambda(theta[(p + 1):(p + rr)], p, K),
+            theta[1:p], exp(theta[p + rr + 1]); tol = 1e-12),
+        vcat(beta_log, theta_lambda0, log(8.0)),
+    ))
+
+    push!(aux_cases, (
+        "beta",
+        theta -> GLLVM.marginal_loglik_laplace_aux_value_grad(
+            aux -> Beta(exp(aux[1]), 1.0),
+            Y_beta, ones(Int, p, n), theta, p, K, LogitLink(); tol = 1e-12),
+        theta -> GLLVM.beta_marginal_loglik_laplace(
+            Y_beta,
+            GLLVM.unpack_lambda(theta[(p + 1):(p + rr)], p, K),
+            theta[1:p], exp(theta[p + rr + 1]); tol = 1e-12),
+        vcat(beta_logit, theta_lambda0, log(6.0)),
+    ))
+
+    push!(aux_cases, (
+        "gamma",
+        theta -> GLLVM.marginal_loglik_laplace_aux_value_grad(
+            aux -> Gamma(exp(aux[1]), 1.0),
+            Y_gamma, ones(Int, p, n), theta, p, K, LogLink(); tol = 1e-12),
+        theta -> GLLVM.gamma_marginal_loglik_laplace(
+            Y_gamma,
+            GLLVM.unpack_lambda(theta[(p + 1):(p + rr)], p, K),
+            theta[1:p], exp(theta[p + rr + 1]); tol = 1e-12),
+        vcat(beta_log, theta_lambda0, log(3.0)),
+    ))
+
+    @testset "$name scalar-aux implicit gradient" for (name, value_grad, loglik, theta0) in aux_cases
+        value, gaux = value_grad(theta0)
+        gfd = central_difference_gradient(loglik, theta0)
+        @test isfinite(value)
+        @test all(isfinite, gaux)
+        @test all(isfinite, gfd)
+        @test maximum(abs.(gaux .- gfd)) ≤ 1e-6
+    end
 end
