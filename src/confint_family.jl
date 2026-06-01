@@ -35,7 +35,7 @@ const _TwoPartFit = Union{DeltaLogNormalFit, DeltaGammaFit, HurdlePoissonFit,
                           HurdleNBFit, ZIPFit, ZINBFit}
 
 # Everything the unified confint(fit, Y; method=…) entry accepts.
-const _CIFit = Union{_FamilyFit, _TwoPartFit, OrdinalFit}
+const _CIFit = Union{_FamilyFit, _TwoPartFit, OrdinalFit, GllvmCovFit}
 
 # ---------------------------------------------------------------------------
 # Per-family adapter. Bundles everything the generic routines need:
@@ -502,6 +502,63 @@ function _family_ci(fit::OrdinalFit, Y::AbstractMatrix;
     return _FamilyCI(θ, nll, names, fill(:linear, length(θ)), sim, refit)
 end
 
+# --- Covariate fit (GllvmCovFit: β + Xγ + Λz) ------------------------------
+# Working vector [β; γ; pack_lambda(Λ); (log-dispersion)]. Requires the (p,n,q)
+# design `X` (and Binomial trial counts `N`) via confint(...; X=…, N=…).
+function _family_ci(fit::GllvmCovFit, Y::AbstractMatrix;
+                    X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                    N::Union{Nothing, AbstractMatrix} = nothing,
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    X === nothing && throw(ArgumentError("confint on a GllvmCovFit needs the design `X` (the same array passed to fit_gllvm_cov): confint(fit, Y; method=…, X=X)"))
+    p, K = size(fit.Λ); n = size(Y, 2); q = length(fit.γ); rr = rr_theta_len(p, K)
+    lk = fit.link; has_disp = !isnan(fit.dispersion)
+    Nm = N === nothing ? fill(1, p, n) : N
+    θ = has_disp ? vcat(fit.β, fit.γ, pack_lambda(fit.Λ), log(fit.dispersion)) :
+                   vcat(fit.β, fit.γ, pack_lambda(fit.Λ))
+    nll = function (θv)
+        β = θv[1:p]; γ = θv[(p + 1):(p + q)]
+        Λ = unpack_lambda(θv[(p + q + 1):(p + q + rr)], p, K)
+        disp = has_disp ? exp(θv[p + q + rr + 1]) : NaN
+        fam = _cov_family(fit.family, disp)
+        O = _build_offset(X, γ)
+        v = try
+            -_marginal_loglik_offset(fam, Y, Nm, Λ, β, O, lk; maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    sim = function (rng)
+        Yb = Matrix{Float64}(undef, p, n)
+        O = _build_offset(X, fit.γ); fam = _cov_family(fit.family, fit.dispersion)
+        @inbounds for s in 1:n
+            η = fit.β .+ view(O, :, s) .+ fit.Λ * randn(rng, K)
+            for t in 1:p
+                μ = linkinv(lk, _clamp_eta(η[t]))
+                Yb[t, s] = _cov_sample(fam, μ, Nm[t, s], rng)
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try
+            fit_gllvm_cov(Yb; family = fit.family, X = X, K = K, link = lk,
+                          N = fit.family isa Binomial ? Nm : nothing)
+        catch
+            return nothing
+        end
+        return has_disp ? vcat(fb.β, fb.γ, pack_lambda(fb.Λ), log(fb.dispersion)) :
+                          vcat(fb.β, fb.γ, pack_lambda(fb.Λ))
+    end
+    names = vcat(["beta[$t]" for t in 1:p], ["gamma[$k]" for k in 1:q],
+                 _confint_lambda_term_names("Lambda", p, K))
+    kinds = fill(:linear, length(names))
+    if has_disp
+        names = vcat(names, _cov_dispname(fit.family)); kinds = vcat(kinds, :log)
+    end
+    return _FamilyCI(θ, nll, names, kinds, sim, refit)
+end
+
 # ---------------------------------------------------------------------------
 # Generic numerics
 # ---------------------------------------------------------------------------
@@ -775,13 +832,14 @@ function confint(fit::_CIFit, Y::AbstractMatrix;
                  level::Real = 0.95,
                  parm = nothing,
                  N::Union{Nothing, AbstractMatrix} = nothing,
+                 X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
                  n_boot::Integer = 200,
                  seed::Integer = 0,
                  parallel::Bool = false,
                  newton_maxiter::Integer = 100,
                  newton_tol::Real = 1e-9)
     0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
-    ad = _family_ci(fit, Y; N = N, newton_maxiter = newton_maxiter, newton_tol = newton_tol)
+    ad = _family_ci(fit, Y; N = N, X = X, newton_maxiter = newton_maxiter, newton_tol = newton_tol)
     sel = _family_select(parm, ad.names)
     isempty(sel) && throw(ArgumentError("parm selector matched no parameters"))
     if method === :wald

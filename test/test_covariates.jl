@@ -79,4 +79,28 @@ end
         fit = fit_gllvm_cov(Y; family = Poisson(), X = X, K = K)
         @test abs(fit.γ[1]) < 0.2                        # near zero: no spurious effect
     end
+
+    @testset "covariate post-fit + confidence intervals" begin
+        Random.seed!(184)
+        p, K, n = 6, 1, 200
+        β_true = 0.3 .* randn(p); γ_true = [0.7]; Λ_true = 0.4 .* randn(p, K)
+        x = randn(n); X = _site_design(x, p)
+        Z = randn(K, n)
+        η = β_true .+ γ_true[1] .* x' .+ Λ_true * Z
+        Y = [rand(Poisson(exp(η[t, s]))) for t in 1:p, s in 1:n]
+        fit = fit_gllvm_cov(Y; family = Poisson(), X = X, K = K)
+
+        # post-fit surface
+        @test size(getLV(fit, Y, X)) == (n, K)
+        P = predict(fit, Y, X; type = :response)
+        @test size(P) == (p, n) && all(P .>= 0)
+        @test size(predict(fit, Y, X; type = :link)) == (p, n)
+        @test isfinite(aic(fit)) && isfinite(bic(fit, n))
+
+        # confidence intervals (needs X)
+        ci = confint(fit, Y; method = :wald, X = X, parm = "gamma[1]")
+        @test ci.term == ["gamma[1]"]
+        @test ci.estimate[1] ≈ fit.γ[1] atol = 1e-8
+        @test_throws ArgumentError confint(fit, Y; method = :wald)   # X required
+    end
 end

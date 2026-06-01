@@ -1220,3 +1220,72 @@ function Base.show(io::IO, ::MIME"text/plain", fit::ZINBFit)
             ", AIC = ", round(aic(fit); sigdigits = 7))
     print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
 end
+
+# ---------------------------------------------------------------------------
+# Covariate-fit post-fit (GllvmCovFit: η = β + Xγ + Λẑ). Needs the (p,n,q) design
+# `X` (and Binomial trial counts `N`) to rebuild the linear predictor.
+# ---------------------------------------------------------------------------
+
+_loadings(fit::GllvmCovFit) = fit.Λ
+_loglik(fit::GllvmCovFit)   = fit.loglik
+
+function _nparams(fit::GllvmCovFit)
+    p, K = size(fit.Λ); q = length(fit.γ)
+    return p + q + (p * K - div(K * (K - 1), 2)) + (isnan(fit.dispersion) ? 0 : 1)
+end
+
+"""
+    getLV(fit::GllvmCovFit, Y, X; rotate=true, N=nothing) -> n×K matrix
+
+Conditional latent scores for a covariate fit: the per-site offset-aware Laplace
+mode `ẑₛ` at `η = β + Xγ + Λz`.
+"""
+function getLV(fit::GllvmCovFit, Y::AbstractMatrix{<:Real}, X::AbstractArray{<:Real, 3};
+               rotate::Bool = true, N::Union{Nothing, AbstractMatrix} = nothing)
+    p, n = size(Y); K = size(fit.Λ, 2)
+    Nm = N === nothing ? fill(1, p, n) : N
+    fam = _cov_family(fit.family, fit.dispersion)
+    O = _build_offset(X, fit.γ)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        η0 = fit.β .+ view(O, :, s)
+        Z[:, s] = _laplace_mode_off(fam, view(Y, :, s), view(Nm, :, s), fit.Λ, η0, fit.link)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
+end
+
+"""
+    predict(fit::GllvmCovFit, Y, X; type=:response, N=nothing) -> p×n matrix
+
+`:link` = the linear predictor `η = β + Xγ + Λẑ`; `:response` (= `:mean`) = the
+mean `μ = linkinv(link, η)` (a probability for Binomial, a positive mean for the
+count/positive families).
+"""
+function predict(fit::GllvmCovFit, Y::AbstractMatrix{<:Real}, X::AbstractArray{<:Real, 3};
+                 type::Symbol = :response, N::Union{Nothing, AbstractMatrix} = nothing)
+    type in (:response, :mean, :link) ||
+        throw(ArgumentError("type must be :response, :mean, or :link; got :$type"))
+    Z = getLV(fit, Y, X; rotate = false, N = N)
+    O = _build_offset(X, fit.γ)
+    η = fit.β .+ O .+ fit.Λ * Z'
+    type === :link && return η
+    return linkinv.(Ref(fit.link), _clamp_eta.(η))
+end
+
+"""
+    fitted(fit::GllvmCovFit, Y, X; N=nothing) -> p×n matrix of fitted means.
+"""
+fitted(fit::GllvmCovFit, Y::AbstractMatrix{<:Real}, X::AbstractArray{<:Real, 3};
+       N::Union{Nothing, AbstractMatrix} = nothing) =
+    predict(fit, Y, X; type = :response, N = N)
+
+function Base.show(io::IO, ::MIME"text/plain", fit::GllvmCovFit)
+    p, K = size(fit.Λ); q = length(fit.γ)
+    println(io, "GLLVM fit with covariates (", nameof(typeof(fit.family)), ", Laplace)")
+    println(io, "  responses p = ", p, ", covariates q = ", q, ", latent factors K = ", K,
+            isnan(fit.dispersion) ? "" : ", dispersion = $(round(fit.dispersion; sigdigits = 4))")
+    println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
+            ", AIC = ", round(aic(fit); sigdigits = 7))
+    print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
+end

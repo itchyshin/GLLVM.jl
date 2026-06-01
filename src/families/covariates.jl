@@ -106,6 +106,24 @@ _cov_family(::NegativeBinomial, d) = NegativeBinomial(d, 0.5)
 _cov_family(::Beta, d)             = Beta(d, 1.0)
 _cov_family(::Gamma, d)            = Gamma(d, 1.0)
 
+# CI term name for the dispersion parameter (if any).
+_cov_dispname(::NegativeBinomial) = "r"
+_cov_dispname(::Beta)             = "phi"
+_cov_dispname(::Gamma)            = "alpha"
+_cov_dispname(f)                  = "disp"
+
+# Draw one response from `family` (carrying its dispersion) at mean `μ`; `nt` is
+# the Binomial trial count (ignored otherwise). Used by predict-side simulation
+# and the bootstrap CI.
+_cov_sample(::Poisson, μ, nt, rng)          = rand(rng, Poisson(max(μ, 1e-12)))
+_cov_sample(f::NegativeBinomial, μ, nt, rng) = (m = max(μ, 1e-12); rand(rng, NegativeBinomial(f.r, f.r / (f.r + m))))
+_cov_sample(::Binomial, μ, nt, rng)         = rand(rng, Binomial(nt, clamp(μ, 1e-12, 1 - 1e-12)))
+function _cov_sample(f::Beta, μ, nt, rng)
+    m = clamp(μ, 1e-6, 1 - 1e-6)
+    return clamp(rand(rng, Beta(m * f.α, (1 - m) * f.α)), 1e-6, 1 - 1e-6)
+end
+_cov_sample(f::Gamma, μ, nt, rng)           = rand(rng, Gamma(f.α, max(μ, 1e-12) / f.α))
+
 # Link-scale latent proxy for the warm start (per family).
 function _cov_zemp(family, Y::AbstractMatrix, N::AbstractMatrix, link::Link)
     p, n = size(Y)
