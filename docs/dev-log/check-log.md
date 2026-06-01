@@ -1,5 +1,76 @@
 # Check Log
 
+## 2026-06-01 - Non-Gaussian Benchmark Parity Labels
+
+### Scope
+
+Sharpened `bench/non_gaussian_gllvmtmb_bench.jl` agreement labels for families
+that are fast but not yet strict R parity. This prevents NB/Beta/Gamma rows from
+being collapsed into a vague parameterization note.
+
+### R Parameter-Name Audit
+
+Temporary R introspection on `gllvmTMB` 0.2.0, smoke-sized data:
+
+```text
+NB par length: 15
+"b_fix" x5, "theta_rr_B" x5, "log_phi_nbinom2" x5
+Beta par length: 15
+"b_fix" x5, "theta_rr_B" x5, "log_phi_beta" x5
+Gamma par length: 11
+"b_fix" x5, "log_sigma_eps" x1, "theta_rr_B" x5
+```
+
+Conclusion: for `p=5,K=1`, R `gllvmTMB` uses trait-specific NB dispersion and
+Beta precision, while Julia currently uses one shared scalar. Gamma has the same
+parameter count as Julia but uses an R-side `log_sigma_eps` parameter, so it
+needs a separate sigma/shape likelihood audit.
+
+### Benchmark Smoke Check
+
+```sh
+julia --project=. --startup-file=no bench/non_gaussian_gllvmtmb_bench.jl --smoke --families=negbin,beta,gamma,ordinal --reps=1 --warmups=1 --out=/tmp/non-gaussian-gllvmtmb-status-labels-2026-06-01.csv
+```
+
+Result: completed. A current-tree rerun wrote
+`/tmp/non-gaussian-gllvmtmb-status-labels-2026-06-01-rerun.csv`.
+Agreement labels now report:
+
+| family | Julia (s) | gllvmTMB (s) | R / Julia | agreement status |
+| --- | ---: | ---: | ---: | --- |
+| NegBin | 0.0348 | 0.5860 | 16.85x | `dispersion_scope_mismatch_r_trait_specific` |
+| Beta | 0.0158 | 0.5580 | 35.29x | `precision_scope_mismatch_r_trait_specific` |
+| Gamma | 0.0161 | 0.4940 | 30.59x | `gamma_sigma_eps_shape_audit_needed` |
+| Ordinal | 0.1090 | 0.4830 | 4.43x | `non_equivalent_link` |
+
+The smoke timings still show Julia faster locally, but these rows should not be
+used as strict likelihood parity claims until the labeled audit items are
+resolved.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+<private-source trace scan over tracked repo content>
+<placeholder rerun scan over current check-log and after-task report>
+rg -n "dispersion_scope_mismatch|precision_scope_mismatch|gamma_sigma_eps_shape_audit_needed|same_data_parameterization_audit_needed" bench/non_gaussian_gllvmtmb_bench.jl docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-01-nongaussian-benchmark-parity-labels.md
+gh pr list --limit 5 --json number,title,headRefName,isDraft,state
+```
+
+Results:
+
+- `git diff --check`: clean.
+- Private-source trace scan over tracked public artifacts: clean.
+- Placeholder rerun scan: clean for the guard patterns used in this audit.
+- Status-label scan: expected current harness/report hits plus older historical
+  benchmark-ledger rows that retain their original generic status wording. The
+  generic fallback remains in `agreement_status` for unknown future family
+  names.
+- GitHub lane check: open PR #59 remains the separate draft
+  `claude/package-work-catchup-mQiZM`; this slice did not edit that lane.
+
 ## 2026-06-01 - Non-Gaussian gllvmTMB Smoke Refresh
 
 ### Scope

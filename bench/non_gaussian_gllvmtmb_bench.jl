@@ -379,6 +379,9 @@ end
 
 function agreement_status(family::String)
     family in ("gaussian", "binomial", "poisson") && return "same_data_loglik_comparable"
+    family == "negbin" && return "dispersion_scope_mismatch_r_trait_specific"
+    family == "beta" && return "precision_scope_mismatch_r_trait_specific"
+    family == "gamma" && return "gamma_sigma_eps_shape_audit_needed"
     family == "ordinal" && return "non_equivalent_link"
     return "same_data_parameterization_audit_needed"
 end
