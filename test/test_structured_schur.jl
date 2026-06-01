@@ -30,8 +30,16 @@ using GLLVM, Test, Random, LinearAlgebra, SparseArrays
         @test dot(x, y) > 0
     end
 
+    b = randn(p)
+    x_cg = zeros(p)
+    cg = GLLVM._schur_u_cg!(x_cg, op, b; tol = 1e-10, maxiter = 4 * p)
+    @test cg.converged
+    @test x_cg ≈ dense \ b atol = 1e-8 rtol = 1e-8
+
     @test_throws DimensionMismatch GLLVM._SchurUOperator(precision, randn(p + 1, K), Wsites; sigma2 = 1.0)
     @test_throws ArgumentError GLLVM._SchurUOperator(precision, Lambda, Wsites; sigma2 = 0.0)
+    @test_throws DimensionMismatch GLLVM._schur_u_cg!(zeros(p + 1), op, b)
+    @test_throws ArgumentError GLLVM._schur_u_cg!(zeros(p), op, b; tol = 0.0)
 end
 
 @testset "structured Schur SLQ logdet" begin

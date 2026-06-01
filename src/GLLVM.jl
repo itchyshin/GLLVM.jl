@@ -27,6 +27,7 @@ include("families/links.jl")
 include("families/laplace.jl")           # generic family-dispatched Laplace marginal core
 include("families/binomial.jl")          # Binomial family pieces + fit (Phase 3)
 include("families/poisson.jl")           # Poisson family pieces (Phase 3)
+include("families/structured_poisson.jl") # internal structured Poisson Laplace prototype
 include("families/negbin.jl")            # Negative-binomial family pieces (Phase 3)
 include("families/beta.jl")              # Beta family pieces (Phase 3)
 include("families/ordinal.jl")           # Ordinal (cumulative-logit) family pieces (Phase 3)

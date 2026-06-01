@@ -1158,6 +1158,112 @@ gh pr list --limit 5 --json number,title,headRefName,isDraft,state
 
 No issue or PR was modified.
 
+## 2026-06-01 — Structured Poisson Laplace Prototype
+
+### Scope
+
+Added the first full structured non-Gaussian objective prototype: an internal
+Poisson Laplace marginal with a response-structured Gaussian random effect,
+site latent factors, dense Schur fallback, matrix-free CG mode solve, and the
+existing dense/SLQ Schur determinant selector. This is not exported and is not
+yet wired into public fitters.
+
+### Commands
+
+Focused structured tests:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_schur.jl"); include("test/test_structured_poisson_laplace.jl")'
+```
+
+Result:
+
+```text
+structured Schur operator                    | 26/26 pass
+structured Schur SLQ logdet                  | 9/9 pass
+structured Poisson Laplace prototype         | 9/9 pass
+structured Poisson sigma-to-zero reduction   | 1/1 pass
+```
+
+Full structured Poisson objective benchmark:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_laplace_bench.jl --full --out=/tmp/structured-poisson-laplace-full.csv
+```
+
+Result:
+
+| cell | p | n | K | dense (s) | CG + dense (s) | CG + SLQ (s) | dense / CG+dense | dense / CG+SLQ | CG+dense abs diff | CG+SLQ abs diff |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| small | 40 | 40 | 2 | 0.0050 | 0.0022 | 0.0030 | 2.31x | 1.69x | 9.55e-11 | 4.73e-1 |
+| medium | 80 | 80 | 2 | 0.0903 | 0.0097 | 0.0098 | 9.31x | 9.26x | 4.55e-11 | 6.36e-1 |
+| large | 160 | 120 | 2 | 0.1772 | 0.0394 | 0.0279 | 4.49x | 6.35x | 0.00e+00 | 9.13e-1 |
+
+CSV smoke path:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_laplace_bench.jl --smoke --reps=1 --out=/tmp/structured-poisson-laplace-smoke.csv
+head -2 /tmp/structured-poisson-laplace-smoke.csv
+```
+
+Result: CSV file written with the expected header and one smoke row.
+
+Core suite:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. Manual tally from emitted `Test Summary` blocks:
+2259 pass, 1 existing broken sparse-phy precision placeholder, 2 expected
+quality placeholders in the direct core environment, 0 fail, 0 error.
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Manual tally from `/tmp/gllvm-pkgtest-structured-poisson.log`: 2271 pass, 1
+existing broken sparse-phy precision placeholder, 0 fail, 0 error.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src docs/dev-log/check-log.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p" README.md docs/src docs/dev-log/check-log.md bench CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+<private-source trace scan over tracked repo content>
+```
+
+Results:
+
+- `git diff --check`: clean.
+- No private-source trace in tracked repo content.
+- The stale-wording scan still finds the user-provided AGENTS.md "Gaussian only"
+  snapshot; not edited because AGENTS.md changes require maintainer approval.
+- Performance-claim scan finds this new benchmark entry plus existing Gaussian /
+  non-Gaussian speedup records. The new claim is local to the internal
+  structured Poisson objective prototype and is not a gllvmTMB parity claim.
+
+Open PR / collision check:
+
+```text
+gh pr list --limit 5
+[#59 draft: gllvmTMB catch-up: Delta-Gamma + zero-inflated (ZIP/ZINB) families + non-Gaussian CIs]
+```
+
+No issue or PR was modified.
+
 ## 2026-06-01 — Structured Schur Logdet Benchmark Harness
 
 ### Scope

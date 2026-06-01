@@ -216,3 +216,53 @@ function _schur_u_logdet(op::_SchurUOperator; method::Symbol = :auto,
         throw(ArgumentError("method must be :auto, :dense, or :slq; got $method"))
     end
 end
+
+function _schur_u_cg!(x::AbstractVector, op::_SchurUOperator, b::AbstractVector;
+        tol::Real = 1e-8, maxiter::Integer = max(100, 2 * length(b)))
+    p = size(op, 1)
+    length(x) == p || throw(DimensionMismatch("x must have length $p; got $(length(x))"))
+    length(b) == p || throw(DimensionMismatch("b must have length $p; got $(length(b))"))
+    maxiter > 0 || throw(ArgumentError("maxiter must be positive; got $maxiter"))
+    tol > 0 || throw(ArgumentError("tol must be positive; got $tol"))
+
+    T = promote_type(eltype(op), eltype(x), eltype(b))
+    r = Vector{T}(undef, p)
+    d = Vector{T}(undef, p)
+    q = Vector{T}(undef, p)
+    tmp = zeros(T, size(op.Lambda, 2))
+    sol = similar(tmp)
+
+    _schur_u_mul!(q, op, x, tmp, sol)
+    @inbounds for i in 1:p
+        r[i] = b[i] - q[i]
+        d[i] = r[i]
+    end
+    rsold = dot(r, r)
+    threshold = (T(tol) * max(norm(b), one(T)))^2
+    if rsold <= threshold
+        return (converged = true, iterations = 0, residual = sqrt(rsold))
+    end
+
+    iterations = 0
+    for iter in 1:maxiter
+        iterations = iter
+        _schur_u_mul!(q, op, d, tmp, sol)
+        denom = dot(d, q)
+        denom > zero(T) || break
+        α = rsold / denom
+        @inbounds for i in 1:p
+            x[i] += α * d[i]
+            r[i] -= α * q[i]
+        end
+        rsnew = dot(r, r)
+        if rsnew <= threshold
+            return (converged = true, iterations = iterations, residual = sqrt(rsnew))
+        end
+        β = rsnew / rsold
+        @inbounds for i in 1:p
+            d[i] = r[i] + β * d[i]
+        end
+        rsold = rsnew
+    end
+    return (converged = false, iterations = iterations, residual = sqrt(rsold))
+end

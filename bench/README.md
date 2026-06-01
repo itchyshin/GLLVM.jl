@@ -98,6 +98,29 @@ This benchmark is not an R `gllvmTMB` parity test; it is the fast-algorithm
 workbench for deciding when the structured determinant should switch from exact
 dense to approximate SLQ.
 
+## Structured Poisson Laplace Prototype
+
+`bench/structured_poisson_laplace_bench.jl` is the Julia-only benchmark for the
+first full structured non-Gaussian objective prototype. It compares exact dense
+mode solve + dense `logdet(S_u)` against matrix-free CG mode solve with either
+dense or SLQ `logdet(S_u)`.
+
+Cheap smoke run:
+
+```bash
+julia --project=. bench/structured_poisson_laplace_bench.jl --smoke
+```
+
+Full local grid:
+
+```bash
+julia --project=. bench/structured_poisson_laplace_bench.jl --full --out=structured-poisson-laplace.csv
+```
+
+Rows report full objective-evaluation time, not just determinant time. The
+`cg+dense` column isolates the Schur-step solve speedup; `cg+slq` adds the
+approximate determinant path.
+
 ## JIT vs steady-state
 
 `BenchmarkTools.@benchmarkable` does a single untimed warmup call
