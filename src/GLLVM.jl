@@ -37,6 +37,7 @@ include("families/covariates.jl")        # fixed-effect covariates (Xβ) for the
 
 # Post-fit API (ordination, predict, residuals, summary)
 include("postfit.jl")
+include("simulate_fit.jl")               # simulate(fit, …) for the non-Gaussian families
 
 # Confidence intervals
 include("confint.jl")                    # Wald
@@ -73,6 +74,6 @@ export spatial_cov, relatedness_cov,
        fit_zinb_gllvm, ZINBFit, zinb_marginal_loglik_laplace, fit_gllvm,
        fit_gllvm_cov, GllvmCovFit, gllvm, @formula,
        getLV, getLoadings, rotation,
-       predict, fitted, residuals, aic, bic
+       predict, fitted, residuals, aic, bic, simulate
 
 end # module GLLVM
