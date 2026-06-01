@@ -21,22 +21,34 @@ function _structured_poisson_lsw(Y::AbstractMatrix, Λ::AbstractMatrix,
         β::AbstractVector, U::AbstractVector, Z::AbstractMatrix)
     p, n = size(Y)
     T = promote_type(eltype(Λ), eltype(β), eltype(U), eltype(Z))
-    ℓ = zero(T)
     S = Matrix{T}(undef, p, n)
     W = Matrix{T}(undef, p, n)
-    η = Vector{T}(undef, p)
-    μ = Vector{T}(undef, p)
+    ℓ = _structured_poisson_lsw!(S, W, Y, Λ, β, U, Z)
+    return ℓ, S, W
+end
+
+function _structured_poisson_lsw!(S::AbstractMatrix, W::AbstractMatrix,
+        Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVector,
+        U::AbstractVector, Z::AbstractMatrix)
+    p, n = size(Y)
+    size(S) == (p, n) || throw(DimensionMismatch("S must be $(p)×$(n); got $(size(S))"))
+    size(W) == (p, n) || throw(DimensionMismatch("W must be $(p)×$(n); got $(size(W))"))
+    T = promote_type(eltype(S), eltype(W), eltype(Λ), eltype(β), eltype(U), eltype(Z))
+    ℓ = zero(T)
     @inbounds for i in 1:n
-        mul!(η, Λ, view(Z, :, i))
         for t in 1:p
-            η[t] = _clamp_eta(β[t] + U[t] + η[t])
-            μ[t] = _clamp_mu(Poisson(), exp(η[t]))
-            S[t, i] = Y[t, i] - μ[t]
-            W[t, i] = μ[t]
-            ℓ += _glm_logpdf(Poisson(), μ[t], one(Int), Y[t, i])
+            η = β[t] + U[t]
+            for k in axes(Λ, 2)
+                η += Λ[t, k] * Z[k, i]
+            end
+            η = _clamp_eta(η)
+            μ = _clamp_mu(Poisson(), exp(η))
+            S[t, i] = Y[t, i] - μ
+            W[t, i] = μ
+            ℓ += _glm_logpdf(Poisson(), μ, one(Int), Y[t, i])
         end
     end
-    return ℓ, S, W
+    return ℓ
 end
 
 function _structured_poisson_logdet_precision(precision::AbstractMatrix)
@@ -72,6 +84,13 @@ function _structured_poisson_mode(Y::AbstractMatrix, Λ::AbstractMatrix,
     tmpP = zeros(T, p)
     ΔU = zeros(T, p)
     ΔZ = zeros(T, K)
+    S = Matrix{T}(undef, p, n)
+    W = Matrix{T}(undef, p, n)
+    cg_r = zeros(T, p)
+    cg_d = zeros(T, p)
+    cg_q = zeros(T, p)
+    cg_tmp = zeros(T, K)
+    cg_sol = similar(cg_tmp)
     maxstep = T(Inf)
     gradnorm = T(Inf)
     iterations = 0
@@ -81,7 +100,7 @@ function _structured_poisson_mode(Y::AbstractMatrix, Λ::AbstractMatrix,
 
     for iter in 1:maxiter
         iterations = iter
-        _, S, W = _structured_poisson_lsw(Y, L, b, U, Z)
+        _structured_poisson_lsw!(S, W, Y, L, b, U, Z)
         mul!(Qu, Q, U)
         @inbounds for t in 1:p
             gU[t] = -invsigma2 * Qu[t]
@@ -120,7 +139,7 @@ function _structured_poisson_mode(Y::AbstractMatrix, Λ::AbstractMatrix,
             ldiv!(Csu, ΔU)
         elseif mode_solve == :cg
             fill!(ΔU, zero(T))
-            cg = _schur_u_cg!(ΔU, op, rhsU; tol = cg_tol,
+            cg = _schur_u_cg!(ΔU, op, rhsU, cg_r, cg_d, cg_q, cg_tmp, cg_sol; tol = cg_tol,
                 maxiter = cg_maxiter === nothing ? max(100, 2 * p) : cg_maxiter)
             cg_iterations += cg.iterations
             cg_residual = cg.residual
@@ -175,9 +194,11 @@ function _structured_poisson_marginal_loglik_laplace(Y::AbstractMatrix,
     p, n = size(Y)
     T = promote_type(eltype(Y), eltype(Λ), eltype(β), typeof(float(sigma2)))
     Q = _schur_precision_storage(precision, T)
-    L = Matrix{T}(Λ)
+    L = _matrix_storage(Λ, T)
     b = Vector{T}(β)
-    ℓ, _, W = _structured_poisson_lsw(Y, L, b, U, Z)
+    S = Matrix{T}(undef, p, n)
+    W = Matrix{T}(undef, p, n)
+    ℓ = _structured_poisson_lsw!(S, W, Y, L, b, U, Z)
     op = _SchurUOperator(Q, L, W; sigma2 = sigma2)
     logdet_Su = _schur_u_logdet(op; method = logdet_method,
         dense_cutoff = dense_cutoff, probes = probes, rng = rng,

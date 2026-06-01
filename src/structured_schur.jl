@@ -11,8 +11,17 @@ struct _SchurUOperator{T,TP<:AbstractMatrix{T}}
     invsigma2::T
 end
 
+_matrix_storage(A::Matrix{T}, ::Type{T}) where {T} = A
+_matrix_storage(A::AbstractMatrix, ::Type{T}) where {T} = Matrix{T}(A)
+
+_schur_precision_parent(precision::Matrix{T}, ::Type{T}) where {T} = precision
 _schur_precision_parent(precision::AbstractMatrix, ::Type{T}) where {T} =
     Matrix{T}(precision)
+
+function _schur_precision_parent(
+        precision::SparseArrays.SparseMatrixCSC{T, Ti}, ::Type{T}) where {T, Ti}
+    return precision
+end
 
 function _schur_precision_parent(
         precision::SparseArrays.SparseMatrixCSC{<:Any, Ti}, ::Type{T}) where {T, Ti}
@@ -36,8 +45,8 @@ function _SchurUOperator(precision::AbstractMatrix, Lambda::AbstractMatrix,
     sigma2 > 0 || throw(ArgumentError("sigma2 must be positive; got $sigma2"))
 
     T = promote_type(eltype(precision), eltype(Lambda), eltype(Wsites), typeof(float(sigma2)))
-    L = Matrix{T}(Lambda)
-    W = Matrix{T}(Wsites)
+    L = _matrix_storage(Lambda, T)
+    W = _matrix_storage(Wsites, T)
     Q = _schur_precision_storage(precision, T)
     Wsum = vec(sum(W; dims = 2))
     Achols = Vector{Cholesky{T, Matrix{T}}}(undef, size(W, 2))
@@ -220,17 +229,33 @@ end
 function _schur_u_cg!(x::AbstractVector, op::_SchurUOperator, b::AbstractVector;
         tol::Real = 1e-8, maxiter::Integer = max(100, 2 * length(b)))
     p = size(op, 1)
-    length(x) == p || throw(DimensionMismatch("x must have length $p; got $(length(x))"))
-    length(b) == p || throw(DimensionMismatch("b must have length $p; got $(length(b))"))
-    maxiter > 0 || throw(ArgumentError("maxiter must be positive; got $maxiter"))
-    tol > 0 || throw(ArgumentError("tol must be positive; got $tol"))
-
     T = promote_type(eltype(op), eltype(x), eltype(b))
     r = Vector{T}(undef, p)
     d = Vector{T}(undef, p)
     q = Vector{T}(undef, p)
     tmp = zeros(T, size(op.Lambda, 2))
     sol = similar(tmp)
+    return _schur_u_cg!(x, op, b, r, d, q, tmp, sol; tol = tol, maxiter = maxiter)
+end
+
+function _schur_u_cg!(x::AbstractVector, op::_SchurUOperator, b::AbstractVector,
+        r::AbstractVector, d::AbstractVector, q::AbstractVector,
+        tmp::AbstractVector, sol::AbstractVector;
+        tol::Real = 1e-8, maxiter::Integer = max(100, 2 * length(b)))
+    p = size(op, 1)
+    K = size(op.Lambda, 2)
+    length(x) == p || throw(DimensionMismatch("x must have length $p; got $(length(x))"))
+    length(b) == p || throw(DimensionMismatch("b must have length $p; got $(length(b))"))
+    length(r) == p || throw(DimensionMismatch("r must have length $p; got $(length(r))"))
+    length(d) == p || throw(DimensionMismatch("d must have length $p; got $(length(d))"))
+    length(q) == p || throw(DimensionMismatch("q must have length $p; got $(length(q))"))
+    length(tmp) == K || throw(DimensionMismatch("tmp must have length $K; got $(length(tmp))"))
+    length(sol) == K || throw(DimensionMismatch("sol must have length $K; got $(length(sol))"))
+    maxiter > 0 || throw(ArgumentError("maxiter must be positive; got $maxiter"))
+    tol > 0 || throw(ArgumentError("tol must be positive; got $tol"))
+
+    T = promote_type(eltype(op), eltype(x), eltype(b), eltype(r), eltype(d),
+        eltype(q), eltype(tmp), eltype(sol))
 
     _schur_u_mul!(q, op, x, tmp, sol)
     @inbounds for i in 1:p

@@ -1158,6 +1158,115 @@ gh pr list --limit 5 --json number,title,headRefName,isDraft,state
 
 No issue or PR was modified.
 
+## 2026-06-01 — Structured Poisson Workspace Reuse
+
+### Scope
+
+Reduced allocation pressure in the internal structured Poisson Laplace
+prototype by reusing the score/weight matrices inside the mode loop, adding a
+scratch-aware Schur CG solve, and avoiding redundant dense/sparse storage copies
+when matrix element types already match. Public APIs remain unchanged.
+
+### Commands
+
+Focused structured tests:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_schur.jl"); include("test/test_structured_poisson_laplace.jl")'
+```
+
+Result:
+
+```text
+structured Schur operator                    | 29/29 pass
+structured Schur SLQ logdet                  | 9/9 pass
+structured Poisson Laplace prototype         | 12/12 pass
+structured Poisson sigma-to-zero reduction   | 1/1 pass
+```
+
+Allocation/timing probe against the exact CG+dense path:
+
+```sh
+julia --project=. --startup-file=no -e '<fixed-seed structured Poisson allocation probe>'
+```
+
+Result:
+
+| cell | before median (s) | after median (s) | before bytes | after bytes | time speedup | allocation reduction |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| p=80, n=80, K=2 | 0.0104 | 0.0095 | 1,429,560 | 645,864 | 1.10x | 54.8% |
+| p=160, n=120, K=2 | 0.0386 | 0.0383 | 4,327,576 | 2,050,040 | 1.01x | 52.6% |
+
+Full structured Poisson objective benchmark:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_laplace_bench.jl --full --out=/tmp/structured-poisson-laplace-workspace-final.csv
+```
+
+Result:
+
+| cell | p | n | K | dense (s) | CG + dense (s) | CG + SLQ (s) | dense / CG+dense | dense / CG+SLQ | CG+dense abs diff | CG+SLQ abs diff |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| small | 40 | 40 | 2 | 0.0047 | 0.0019 | 0.0027 | 2.43x | 1.72x | 9.55e-11 | 4.73e-1 |
+| medium | 80 | 80 | 2 | 0.0345 | 0.0089 | 0.0090 | 3.89x | 3.82x | 4.91e-11 | 6.36e-1 |
+| large | 160 | 120 | 2 | 0.2190 | 0.0363 | 0.0262 | 6.04x | 8.35x | 0.00e+00 | 9.13e-1 |
+
+Core suite:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. Manual tally from emitted `Test Summary` blocks:
+2265 pass, 1 existing broken sparse-phy precision placeholder, 2 expected
+quality placeholders in the direct core environment, 0 fail, 0 error.
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Manual tally from emitted `Test Summary` blocks: 2277 pass, 1 existing broken
+sparse-phy precision placeholder, 0 fail, 0 error.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src docs/dev-log/check-log.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p" README.md docs/src docs/dev-log/check-log.md bench CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+<private-source trace scan over tracked repo content>
+```
+
+Results:
+
+- `git diff --check`: clean.
+- No private-source trace in tracked repo content.
+- The stale-wording scan still finds the user-provided AGENTS.md "Gaussian only"
+  snapshot; not edited because AGENTS.md changes require maintainer approval.
+- Performance-claim scan finds this new benchmark entry plus existing Gaussian /
+  non-Gaussian speedup records. The new numbers are internal objective and
+  allocation evidence, not an R `gllvmTMB` parity claim.
+
+Open PR / collision check:
+
+```text
+gh pr list --limit 5
+[#59 draft: gllvmTMB catch-up: Delta-Gamma + zero-inflated (ZIP/ZINB) families + non-Gaussian CIs]
+```
+
+No issue or PR was modified.
+
 ## 2026-06-01 — Structured Poisson Laplace Prototype
 
 ### Scope

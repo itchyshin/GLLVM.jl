@@ -8,6 +8,14 @@ using GLLVM, Test, Random, LinearAlgebra, SparseArrays, Distributions
     Y = rand.(Poisson.(exp.(β .+ 0.1 .* randn(p, n))))
     precision = Symmetric(spdiagm(0 => fill(1.4, p)))
 
+    l1, S1, W1 = GLLVM._structured_poisson_lsw(Y, Λ, β, zeros(p), zeros(K, n))
+    S2 = similar(S1)
+    W2 = similar(W1)
+    l2 = GLLVM._structured_poisson_lsw!(S2, W2, Y, Λ, β, zeros(p), zeros(K, n))
+    @test l2 ≈ l1 atol = 1e-12 rtol = 1e-12
+    @test S2 ≈ S1 atol = 1e-12 rtol = 1e-12
+    @test W2 ≈ W1 atol = 1e-12 rtol = 1e-12
+
     dense = GLLVM._structured_poisson_marginal_loglik_laplace(
         Y, Λ, β, precision; sigma2 = 0.6, logdet_method = :dense,
         return_diagnostics = true)

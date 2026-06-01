@@ -36,9 +36,21 @@ using GLLVM, Test, Random, LinearAlgebra, SparseArrays
     @test cg.converged
     @test x_cg ≈ dense \ b atol = 1e-8 rtol = 1e-8
 
+    scratch = (r = zeros(p), d = zeros(p), q = zeros(p),
+        tmp = zeros(K), sol = zeros(K))
+    x_scratch = zeros(p)
+    cg_scratch = GLLVM._schur_u_cg!(
+        x_scratch, op, b, scratch.r, scratch.d, scratch.q,
+        scratch.tmp, scratch.sol; tol = 1e-10, maxiter = 4 * p)
+    @test cg_scratch.converged
+    @test x_scratch ≈ x_cg atol = 1e-10 rtol = 1e-10
+
     @test_throws DimensionMismatch GLLVM._SchurUOperator(precision, randn(p + 1, K), Wsites; sigma2 = 1.0)
     @test_throws ArgumentError GLLVM._SchurUOperator(precision, Lambda, Wsites; sigma2 = 0.0)
     @test_throws DimensionMismatch GLLVM._schur_u_cg!(zeros(p + 1), op, b)
+    @test_throws DimensionMismatch GLLVM._schur_u_cg!(
+        zeros(p), op, b, zeros(p - 1), scratch.d, scratch.q,
+        scratch.tmp, scratch.sol)
     @test_throws ArgumentError GLLVM._schur_u_cg!(zeros(p), op, b; tol = 0.0)
 end
 
