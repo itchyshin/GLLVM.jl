@@ -41,6 +41,7 @@ include("confint.jl")                    # Wald
 include("confint_profile.jl")            # profile likelihood
 include("confint_bootstrap.jl")          # parametric bootstrap
 include("confint_derived.jl")            # derived quantities (Σ_y, communality, ...)
+include("confint_family.jl")             # Wald / profile / bootstrap CIs for non-Gaussian families
 
 # Public API
 export spatial_cov, relatedness_cov,
