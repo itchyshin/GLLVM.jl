@@ -127,7 +127,9 @@ approximate determinant path.
 for the private fixed-covariance structured Poisson prototype. It estimates
 `β` and lower-triangular `Λ` for a supplied sparse precision and fixed
 `sigma2`, comparing the exact dense mode solve with the matrix-free CG mode
-solve under the exact dense determinant.
+solve under the exact dense determinant. The private fitter keeps a fitted-mode
+cache by default so neighbouring optimizer probes warm-start from the previous
+Laplace mode.
 
 Cheap smoke run:
 

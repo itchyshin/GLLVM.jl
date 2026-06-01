@@ -66,12 +66,19 @@ end
         Y, precision; K = K, sigma2 = 0.5, mode_solve = :cg,
         logdet_method = :dense, iterations = 4, g_tol = 1e-4,
         cg_tol = 1e-10, maxiter = 80, tol = 1e-9)
+    cg_cold = GLLVM._fit_structured_poisson_laplace(
+        Y, precision; K = K, sigma2 = 0.5, mode_solve = :cg,
+        logdet_method = :dense, iterations = 4, g_tol = 1e-4,
+        cg_tol = 1e-10, maxiter = 80, tol = 1e-9, mode_cache = false)
 
     @test dense.loglik >= dense.initial_loglik - 1e-7
     @test cg.loglik >= cg.initial_loglik - 1e-7
     @test cg.loglik ≈ dense.loglik atol = 1e-5 rtol = 1e-5
+    @test cg.loglik ≈ cg_cold.loglik atol = 1e-5 rtol = 1e-5
     @test cg.β ≈ dense.β atol = 1e-5 rtol = 1e-5
     @test cg.Λ ≈ dense.Λ atol = 1e-5 rtol = 1e-5
+    @test cg.mode_cache === true
+    @test cg_cold.mode_cache === false
     @test dense.objective_calls > 0
     @test cg.objective_calls > 0
 
@@ -79,6 +86,10 @@ end
         Y, precision; K = 0, sigma2 = 0.5)
     @test_throws DimensionMismatch GLLVM._fit_structured_poisson_laplace(
         Y, precision; K = K, sigma2 = 0.5, β_init = zeros(p + 1))
+    @test_throws DimensionMismatch GLLVM._structured_poisson_mode(
+        Y, Λ, β, precision; sigma2 = 0.5, U_init = zeros(p + 1))
+    @test_throws DimensionMismatch GLLVM._structured_poisson_mode(
+        Y, Λ, β, precision; sigma2 = 0.5, Z_init = zeros(K + 1, n))
 end
 
 @testset "structured Poisson sigma-to-zero reduction" begin
