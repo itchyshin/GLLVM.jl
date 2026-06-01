@@ -4328,3 +4328,117 @@ Results:
   improvement only; no public 100x structured speed claim was added.
 - GitHub lane check: PR #59 remains the separate draft
   `claude/package-work-catchup-mQiZM` lane; no PR or issue was modified.
+
+## 2026-06-01 - Structured Schur Direct Site Factors
+
+### Scope
+
+Replaced stored per-site Schur Cholesky factors with stored `logdet(A_s)` values
+and `A_s^{-1}` matrices, where `A_s = I + Lambda' W_s Lambda`. The
+`K = 1` and `K = 2` site factors now use closed-form log-determinant/inverse
+formulas; the generic `K >= 3` path still uses Cholesky locally and stores only
+the resulting log determinant plus inverse. The structured Poisson likelihood,
+gradient formula, public API, and dense/SLQ selector are unchanged.
+
+### Before/After Benchmark
+
+Manual setup microbenchmark, after one warmup on `p = 1024`, `n = 256`,
+`K = 2`, tridiagonal sparse precision, 30 workspace reps, 20 operator reps:
+
+Before:
+
+```text
+workspace median=0.0322495 ms bytes=68144
+operator median=2.3687919999999996 ms bytes=68256
+```
+
+After:
+
+```text
+workspace median=0.0162085 ms bytes=64048
+operator median=0.3101455 ms bytes=64160
+```
+
+Interpretation: workspace setup improved about `1.99x`; `_SchurUOperator`
+construction improved about `7.64x` on the benchmarked `K = 2` site-factor
+cell.
+
+Trace-gradient benchmark after the change, compared with the immediately
+previous dense-in-place slice:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_trace_gradient_bench.jl --break-even --cells=giant --trace-solve=lanczos --probe-kind=orthogonal --nprobes=16 --lanczos-steps=20 --reps=3 --warmups=2 --out=/tmp/structured-poisson-trace-giant-after-direct-site-factors.csv
+```
+
+Result:
+
+```text
+giant    p=1024 n= 256 K=2 dense=  0.2220 s  slq=  0.7712 s  speedup=   0.29x  valuediff=7.29e-01  gradrel=9.89e-02
+```
+
+Previous same-cell result: dense `0.2329s`, SLQ `0.7841s`. Interpretation:
+about `1.05x` exact-dense trace-gradient improvement and about `1.02x` SLQ
+trace-gradient improvement. This is an internal setup-path speed slice, not a
+new public R `gllvmTMB` parity claim or a 100x structured result.
+
+### Test Suites
+
+Focused structured tests:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_schur.jl"); include("test/test_structured_poisson_laplace.jl")'
+```
+
+Result: 137 pass, 0 fail, 0 error. This includes direct `K = 1`/`K = 2`
+coverage and a new generic `K = 3` site-factor check.
+
+Core suite:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. Manual tally from emitted `Test Summary` blocks:
+2346 pass, 1 existing broken sparse-phy precision placeholder, 2 expected
+quality placeholders in the direct core environment, 0 fail, 0 error.
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Manual tally from emitted `Test Summary` blocks: 2358 pass, 1 existing broken
+sparse-phy precision placeholder, quality 12/12 pass, 0 fail, 0 error.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+<private-source trace scan over tracked repo content>
+<placeholder rerun scan over current check-log and after-task report>
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-01-structured-schur-direct-site-factors.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p|100x|100.?x|gllvmTMB" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-01-structured-schur-direct-site-factors.md bench CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+gh pr list --limit 5 --json number,title,headRefName,isDraft,state
+```
+
+Results:
+
+- `git diff --check`: clean after the audit report.
+- Private-source trace scan over tracked public artifacts: no matches.
+- Placeholder rerun scan: no stale rerun/fill-result placeholders.
+- Stale-wording scan: expected historical and command-pattern hits only.
+- Performance-claim scan: expected historical benchmark records, existing
+  Gaussian/gllvmTMB claims, and this internal setup-path speed evidence only;
+  no public 100x structured speed claim was added.
+- GitHub lane check: PR #59 remains the separate draft
+  `claude/package-work-catchup-mQiZM` lane; no PR or issue was modified.

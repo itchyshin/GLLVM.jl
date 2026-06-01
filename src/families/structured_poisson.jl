@@ -230,7 +230,7 @@ function _structured_poisson_marginal_loglik_laplace(Y::AbstractMatrix,
         nprobes = nprobes, lanczos_steps = lanczos_steps, reorth = reorth)
     logdet_A = zero(T)
     @inbounds for i in 1:n
-        logdet_A += logdet(op.Achols[i])
+        logdet_A += op.Alogdets[i]
     end
     Qu = similar(U)
     mul!(Qu, Q, U)
@@ -286,7 +286,7 @@ function _structured_poisson_qF(Y::AbstractMatrix, precision::AbstractMatrix,
         nprobes = nprobes, lanczos_steps = lanczos_steps, reorth = reorth)
     logdet_A = zero(T)
     @inbounds for i in 1:n
-        logdet_A += logdet(op.Achols[i])
+        logdet_A += op.Alogdets[i]
     end
 
     Qu = Vector{T}(undef, p)
@@ -485,7 +485,7 @@ function _structured_poisson_block_implicit_value_grad(θ::AbstractVector,
 
     logdet_A = zero(T)
     @inbounds for i in 1:n
-        logdet_A += logdet(op.Achols[i])
+        logdet_A += op.Alogdets[i]
     end
     Qu = similar(U)
     mul!(Qu, Q, U)
@@ -660,7 +660,7 @@ function _structured_poisson_trace_implicit_value_grad(θ::AbstractVector,
 
     logdet_A = zero(T)
     @inbounds for i in 1:n
-        logdet_A += logdet(op.Achols[i])
+        logdet_A += op.Alogdets[i]
     end
     Qu = similar(U)
     mul!(Qu, Q, U)

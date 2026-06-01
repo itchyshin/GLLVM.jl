@@ -28,6 +28,7 @@ using GLLVM, Test, Random, LinearAlgebra, SparseArrays
             A .+= Wsites[t, s] .* (Lambda[t, :] * Lambda[t, :]')
         end
         @test op.Ainvs[s] ≈ inv(Symmetric(A)) atol = 1e-12 rtol = 1e-12
+        @test op.Alogdets[s] ≈ logdet(cholesky(Symmetric(A))) atol = 1e-12 rtol = 1e-12
     end
 
     S_work = Matrix{Float64}(undef, p, p)
@@ -51,7 +52,7 @@ using GLLVM, Test, Random, LinearAlgebra, SparseArrays
     ws = GLLVM._SchurUOperatorWorkspace(Float64, p, K, n)
     op_ws = GLLVM._SchurUOperator(precision, Lambda, Wsites, ws; sigma2 = 0.7)
     @test op_ws.Wsum === ws.Wsum
-    @test op_ws.Achols === ws.Achols
+    @test op_ws.Alogdets === ws.Alogdets
     @test op_ws.Ainvs === ws.Ainvs
     @test Matrix(GLLVM._schur_u_dense(op_ws)) ≈ dense atol = 1e-10 rtol = 1e-10
 
@@ -60,6 +61,19 @@ using GLLVM, Test, Random, LinearAlgebra, SparseArrays
     op_ref2 = GLLVM._SchurUOperator(precision, Lambda, Wsites2; sigma2 = 0.7)
     @test Matrix(GLLVM._schur_u_dense(op_ws2)) ≈
         Matrix(GLLVM._schur_u_dense(op_ref2)) atol = 1e-10 rtol = 1e-10
+
+    K3 = 3
+    Lambda3 = 0.25 .* randn(p, K3)
+    Wsites3 = 0.2 .+ abs.(randn(p, n))
+    op3 = GLLVM._SchurUOperator(precision, Lambda3, Wsites3; sigma2 = 0.7)
+    @inbounds for s in 1:n
+        A3 = Matrix{Float64}(I, K3, K3)
+        for t in 1:p
+            A3 .+= Wsites3[t, s] .* (Lambda3[t, :] * Lambda3[t, :]')
+        end
+        @test op3.Ainvs[s] ≈ inv(Symmetric(A3)) atol = 1e-12 rtol = 1e-12
+        @test op3.Alogdets[s] ≈ logdet(cholesky(Symmetric(A3))) atol = 1e-12 rtol = 1e-12
+    end
 
     b = randn(p)
     x_cg = zeros(p)

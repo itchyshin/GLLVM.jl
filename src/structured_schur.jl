@@ -9,14 +9,14 @@ struct _SchurUOperator{T,TP<:AbstractMatrix{T}}
     Lambda::Matrix{T}
     Wsites::Matrix{T}
     Wsum::Vector{T}
-    Achols::Vector{Cholesky{T, Matrix{T}}}
+    Alogdets::Vector{T}
     Ainvs::Vector{Matrix{T}}
     invsigma2::T
 end
 
 struct _SchurUOperatorWorkspace{T}
     Wsum::Vector{T}
-    Achols::Vector{Cholesky{T, Matrix{T}}}
+    Alogdets::Vector{T}
     Amats::Vector{Matrix{T}}
     Ainvs::Vector{Matrix{T}}
 end
@@ -50,21 +50,18 @@ function _SchurUOperatorWorkspace(::Type{T}, p::Integer, K::Integer, nsites::Int
     K > 0 || throw(ArgumentError("K must be positive; got $K"))
     nsites > 0 || throw(ArgumentError("nsites must be positive; got $nsites"))
     Wsum = zeros(T, p)
-    Amats = [Matrix{T}(I, K, K) for _ in 1:nsites]
-    Ainvs = [Matrix{T}(I, K, K) for _ in 1:nsites]
-    Achols = Vector{Cholesky{T, Matrix{T}}}(undef, nsites)
-    @inbounds for s in 1:nsites
-        Achols[s] = cholesky!(Symmetric(Amats[s]))
-    end
-    return _SchurUOperatorWorkspace(Wsum, Achols, Amats, Ainvs)
+    Alogdets = zeros(T, nsites)
+    Amats = [Matrix{T}(undef, K, K) for _ in 1:nsites]
+    Ainvs = [Matrix{T}(undef, K, K) for _ in 1:nsites]
+    return _SchurUOperatorWorkspace(Wsum, Alogdets, Amats, Ainvs)
 end
 
 function _check_schur_workspace(ws::_SchurUOperatorWorkspace, p::Integer,
         K::Integer, nsites::Integer)
     length(ws.Wsum) == p || throw(DimensionMismatch(
         "workspace Wsum must have length $p; got $(length(ws.Wsum))"))
-    length(ws.Achols) == nsites || throw(DimensionMismatch(
-        "workspace Achols must have length $nsites; got $(length(ws.Achols))"))
+    length(ws.Alogdets) == nsites || throw(DimensionMismatch(
+        "workspace Alogdets must have length $nsites; got $(length(ws.Alogdets))"))
     length(ws.Amats) == nsites || throw(DimensionMismatch(
         "workspace Amats must have length $nsites; got $(length(ws.Amats))"))
     length(ws.Ainvs) == nsites || throw(DimensionMismatch(
@@ -118,28 +115,56 @@ function _SchurUOperator(precision::AbstractMatrix, Lambda::AbstractMatrix,
         ws.Wsum[t] += W[t, s]
     end
     @inbounds for s in axes(W, 2)
-        A = ws.Amats[s]
-        fill!(A, zero(T))
-        for k in 1:K
-            A[k, k] = one(T)
-        end
-        for t in 1:p
+        Ainv = ws.Ainvs[s]
+        if K == 1
+            a11 = one(T)
+            for t in 1:p
+                a11 += W[t, s] * L[t, 1] * L[t, 1]
+            end
+            ws.Alogdets[s] = log(a11)
+            Ainv[1, 1] = inv(a11)
+        elseif K == 2
+            a11 = one(T)
+            a12 = zero(T)
+            a22 = one(T)
+            for t in 1:p
+                wl1 = W[t, s] * L[t, 1]
+                l2 = L[t, 2]
+                a11 += wl1 * L[t, 1]
+                a12 += wl1 * l2
+                a22 += W[t, s] * l2 * l2
+            end
+            detA = a11 * a22 - a12 * a12
+            invdet = inv(detA)
+            ws.Alogdets[s] = log(detA)
+            Ainv[1, 1] = a22 * invdet
+            Ainv[1, 2] = -a12 * invdet
+            Ainv[2, 1] = -a12 * invdet
+            Ainv[2, 2] = a11 * invdet
+        else
+            A = ws.Amats[s]
+            fill!(A, zero(T))
             for k in 1:K
-                WLtk = W[t, s] * L[t, k]
-                for l in 1:K
-                    A[k, l] += WLtk * L[t, l]
+                A[k, k] = one(T)
+            end
+            for t in 1:p
+                for k in 1:K
+                    WLtk = W[t, s] * L[t, k]
+                    for l in 1:K
+                        A[k, l] += WLtk * L[t, l]
+                    end
                 end
             end
+            C = cholesky!(Symmetric(A))
+            ws.Alogdets[s] = logdet(C)
+            fill!(Ainv, zero(T))
+            for k in 1:K
+                Ainv[k, k] = one(T)
+            end
+            ldiv!(C, Ainv)
         end
-        ws.Achols[s] = cholesky!(Symmetric(A))
-        Ainv = ws.Ainvs[s]
-        fill!(Ainv, zero(T))
-        for k in 1:K
-            Ainv[k, k] = one(T)
-        end
-        ldiv!(ws.Achols[s], Ainv)
     end
-    return _SchurUOperator(Q, L, W, ws.Wsum, ws.Achols, ws.Ainvs, inv(T(sigma2)))
+    return _SchurUOperator(Q, L, W, ws.Wsum, ws.Alogdets, ws.Ainvs, inv(T(sigma2)))
 end
 
 Base.size(op::_SchurUOperator) = (size(op.Lambda, 1), size(op.Lambda, 1))
