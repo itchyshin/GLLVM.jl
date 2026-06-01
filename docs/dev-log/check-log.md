@@ -1158,6 +1158,166 @@ gh pr list --limit 5 --json number,title,headRefName,isDraft,state
 
 No issue or PR was modified.
 
+## 2026-06-01 - Structured Schur Cached Site Inverses
+
+### Scope
+
+Cached the tiny site-level inverses `A_i^{-1}` inside the internal
+`_SchurUOperator` workspace. The structured Poisson mode, trace-gradient,
+block-gradient, and joint-solve paths already pay to factor each
+`A_i = I + Λ'W_iΛ`; this slice also materializes the corresponding inverse once
+per operator build and reuses it in repeated Schur matvecs and adjoint solves.
+This is an internal fast-algorithm constant-factor slice, not a public API
+change.
+
+### Implementation Notes
+
+- `_SchurUOperator` now carries `Ainvs::Vector{Matrix{T}}` beside `Achols`.
+- `_SchurUOperatorWorkspace` owns reusable `Ainvs` buffers and checks their
+  shape alongside `Amats`.
+- `_schur_u_mul!` now uses `mul!(sol, A_i^{-1}, tmp)` instead of solving the
+  tiny Cholesky system on every matvec.
+- `_structured_poisson_joint_solve`, `_structured_poisson_block_implicit_value_grad`,
+  and `_structured_poisson_trace_implicit_value_grad` reuse `op.Ainvs[i]`
+  instead of repeatedly solving identity or vector right-hand sides.
+- Lane check: branch was `codex/non-gaussian-fitter-gradients` at `aa252aa`
+  before this slice. Open PR #59 remains the separate draft formula/family
+  catch-up lane. This slice did not edit `src/sparse_phy_grad.jl` or
+  `src/em_phylo.jl`.
+
+### Tests
+
+Focused structured tests:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_schur.jl"); include("test/test_structured_poisson_laplace.jl")'
+```
+
+Result:
+
+```text
+structured Schur operator                    | 42/42 pass
+structured Schur SLQ logdet                  | 17/17 pass
+structured Poisson Laplace prototype         | 13/13 pass
+structured Poisson implicit gradient         | 15/15 pass
+structured Poisson internal fitter           | 23/23 pass
+structured Poisson sigma-to-zero reduction   |  1/1 pass
+```
+
+The new operator checks compare each cached `A_i^{-1}` against an explicit
+site-level inverse and verify workspace identity reuse.
+
+Core suite:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. Manual tally from emitted `Test Summary` blocks:
+2325 pass, 1 existing broken sparse-phy precision placeholder, 2 expected
+quality placeholders in the direct core environment, 0 fail, 0 error.
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Manual tally from emitted `Test Summary` blocks: 2337 pass, 1 existing broken
+sparse-phy precision placeholder, 0 fail, 0 error.
+
+### Benchmarks
+
+Before the cached-inverse change, fitted SLQ auto default:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_fit_bench.jl --full --logdet=slq --trace-solve=auto --reps=3 --warmups=3 --iterations=10
+```
+
+Result:
+
+| state | cell | p | n | K | dense (s) | CG (s) | dense / CG | abs loglik diff | calls |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| before | small | 5 | 8 | 1 | 0.0063 | 0.0057 | 1.09x | 5.87e-12 | (54,48) |
+| before | medium | 8 | 12 | 2 | 0.0067 | 0.0063 | 1.06x | 3.41e-12 | (15,15) |
+| before | large | 20 | 25 | 2 | 0.0393 | 0.0317 | 1.24x | 5.34e-12 | (14,14) |
+
+After the cached-inverse change, same command:
+
+| state | cell | p | n | K | dense (s) | CG (s) | dense / CG | abs loglik diff | calls |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| after | small | 5 | 8 | 1 | 0.0030 | 0.0039 | 0.77x | 5.83e-12 | (37,48) |
+| after | medium | 8 | 12 | 2 | 0.0045 | 0.0042 | 1.09x | 3.41e-12 | (15,15) |
+| after | large | 20 | 25 | 2 | 0.0268 | 0.0225 | 1.19x | 5.12e-12 | (14,14) |
+
+CG fitted-path before/after ratios from this calibrated grid were about 1.46x,
+1.50x, and 1.41x for small, medium, and large respectively. Dense timings also
+shifted because the dense-mode gradient and joint solve reuse the cached
+site inverses, but the tiny-cell ratios are noisy.
+
+Before trace-gradient benchmark:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_trace_gradient_bench.jl --full --cells=large,frontier --trace-solve=lanczos --reps=3 --warmups=3 --nprobes=4 --lanczos-steps=20
+```
+
+Result:
+
+| state | cell | p | n | K | dense (s) | SLQ (s) | dense / SLQ | value diff | grad rel |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| before | large | 320 | 160 | 2 | 0.1616 | 0.0676 | 2.39x | 6.15e-01 | 1.41e-01 |
+| before | frontier | 640 | 160 | 2 | 0.5584 | 0.1337 | 4.18x | 2.46e+00 | 3.18e-01 |
+
+After trace-gradient benchmark, same command:
+
+| state | cell | p | n | K | dense (s) | SLQ (s) | dense / SLQ | value diff | grad rel |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| after | large | 320 | 160 | 2 | 0.1593 | 0.0651 | 2.45x | 6.15e-01 | 1.41e-01 |
+| after | frontier | 640 | 160 | 2 | 0.5268 | 0.1311 | 4.02x | 2.46e+00 | 3.18e-01 |
+
+SLQ trace-gradient time moved modestly, about 1.04x on `large` and 1.02x on
+`frontier`, while preserving the fixed-probe approximation error.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+<private-source trace scan over tracked repo content>
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src docs/dev-log/check-log.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p|100x|100.?x|gllvmTMB" README.md docs/src docs/dev-log/check-log.md bench CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+```
+
+Results:
+
+- `git diff --check`: clean.
+- Private-source trace scan over `README.md`, `docs/src`, `docs/dev-log`,
+  `bench`, `src`, `test`, `CLAUDE.md`, and `AGENTS.md`: no matches.
+- Stale-wording scan: expected hits only - the AGENTS.md "Gaussian only"
+  snapshot, historical check-log command/result records, and the newly recorded
+  scan command itself. This slice adds no new public status claim.
+- Performance-claim scan: expected hits only - existing Gaussian/gllvmTMB
+  claims, historical internal benchmark records, benchmark-script column names,
+  and this new internal structured Schur fitted/trace benchmark evidence. This
+  slice does not add an R `gllvmTMB` parity or public speed claim.
+
+### Open Risks
+
+- Caching `A_i^{-1}` adds small operator-construction work and memory, so this
+  is a repeated-matvec win rather than a universal tiny-cell win.
+- The trace-gradient frontier cell is effectively neutral in wall-clock ratio;
+  the useful gain is clearer in the fitted CG path.
+- This is internal Julia structured-Poisson evidence, not an R `gllvmTMB`
+  comparison.
+
 ## 2026-06-01 - Structured Poisson Auto Fused SLQ Fitted Path
 
 ### Scope

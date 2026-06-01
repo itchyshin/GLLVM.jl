@@ -18,6 +18,13 @@ using GLLVM, Test, Random, LinearAlgebra, SparseArrays
     @test parent(sparse_op.precision) isa SparseMatrixCSC
     @test sparse_dense ≈ dense atol = 1e-10 rtol = 1e-10
     @test minimum(eigvals(Symmetric(dense))) > 0
+    @inbounds for s in 1:n
+        A = Matrix{Float64}(I, K, K)
+        for t in 1:p
+            A .+= Wsites[t, s] .* (Lambda[t, :] * Lambda[t, :]')
+        end
+        @test op.Ainvs[s] ≈ inv(Symmetric(A)) atol = 1e-12 rtol = 1e-12
+    end
 
     S_work = Matrix{Float64}(undef, p, p)
     dense_work = Matrix(GLLVM._schur_u_dense!(
@@ -41,6 +48,7 @@ using GLLVM, Test, Random, LinearAlgebra, SparseArrays
     op_ws = GLLVM._SchurUOperator(precision, Lambda, Wsites, ws; sigma2 = 0.7)
     @test op_ws.Wsum === ws.Wsum
     @test op_ws.Achols === ws.Achols
+    @test op_ws.Ainvs === ws.Ainvs
     @test Matrix(GLLVM._schur_u_dense(op_ws)) ≈ dense atol = 1e-10 rtol = 1e-10
 
     Wsites2 = Wsites .+ 0.05

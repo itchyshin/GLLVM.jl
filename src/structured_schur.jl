@@ -8,6 +8,7 @@ struct _SchurUOperator{T,TP<:AbstractMatrix{T}}
     Wsites::Matrix{T}
     Wsum::Vector{T}
     Achols::Vector{Cholesky{T, Matrix{T}}}
+    Ainvs::Vector{Matrix{T}}
     invsigma2::T
 end
 
@@ -15,6 +16,7 @@ struct _SchurUOperatorWorkspace{T}
     Wsum::Vector{T}
     Achols::Vector{Cholesky{T, Matrix{T}}}
     Amats::Vector{Matrix{T}}
+    Ainvs::Vector{Matrix{T}}
 end
 
 _matrix_storage(A::Matrix{T}, ::Type{T}) where {T} = A
@@ -47,11 +49,12 @@ function _SchurUOperatorWorkspace(::Type{T}, p::Integer, K::Integer, nsites::Int
     nsites > 0 || throw(ArgumentError("nsites must be positive; got $nsites"))
     Wsum = zeros(T, p)
     Amats = [Matrix{T}(I, K, K) for _ in 1:nsites]
+    Ainvs = [Matrix{T}(I, K, K) for _ in 1:nsites]
     Achols = Vector{Cholesky{T, Matrix{T}}}(undef, nsites)
     @inbounds for s in 1:nsites
         Achols[s] = cholesky!(Symmetric(Amats[s]))
     end
-    return _SchurUOperatorWorkspace(Wsum, Achols, Amats)
+    return _SchurUOperatorWorkspace(Wsum, Achols, Amats, Ainvs)
 end
 
 function _check_schur_workspace(ws::_SchurUOperatorWorkspace, p::Integer,
@@ -62,9 +65,13 @@ function _check_schur_workspace(ws::_SchurUOperatorWorkspace, p::Integer,
         "workspace Achols must have length $nsites; got $(length(ws.Achols))"))
     length(ws.Amats) == nsites || throw(DimensionMismatch(
         "workspace Amats must have length $nsites; got $(length(ws.Amats))"))
+    length(ws.Ainvs) == nsites || throw(DimensionMismatch(
+        "workspace Ainvs must have length $nsites; got $(length(ws.Ainvs))"))
     @inbounds for s in 1:nsites
         size(ws.Amats[s]) == (K, K) || throw(DimensionMismatch(
             "workspace Amats[$s] must be $(K)×$(K); got $(size(ws.Amats[s]))"))
+        size(ws.Ainvs[s]) == (K, K) || throw(DimensionMismatch(
+            "workspace Ainvs[$s] must be $(K)×$(K); got $(size(ws.Ainvs[s]))"))
     end
     return nothing
 end
@@ -123,8 +130,14 @@ function _SchurUOperator(precision::AbstractMatrix, Lambda::AbstractMatrix,
             end
         end
         ws.Achols[s] = cholesky!(Symmetric(A))
+        Ainv = ws.Ainvs[s]
+        fill!(Ainv, zero(T))
+        for k in 1:K
+            Ainv[k, k] = one(T)
+        end
+        ldiv!(ws.Achols[s], Ainv)
     end
-    return _SchurUOperator(Q, L, W, ws.Wsum, ws.Achols, inv(T(sigma2)))
+    return _SchurUOperator(Q, L, W, ws.Wsum, ws.Achols, ws.Ainvs, inv(T(sigma2)))
 end
 
 Base.size(op::_SchurUOperator) = (size(op.Lambda, 1), size(op.Lambda, 1))
@@ -160,8 +173,7 @@ function _schur_u_mul!(y::AbstractVector, op::_SchurUOperator, x::AbstractVector
                 tmp[k] += op.Lambda[t, k] * Wtx
             end
         end
-        copyto!(sol, tmp)
-        ldiv!(op.Achols[s], sol)
+        mul!(sol, op.Ainvs[s], tmp)
         for t in 1:p
             correction = zero(T)
             for k in 1:K

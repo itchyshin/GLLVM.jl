@@ -334,6 +334,7 @@ function _structured_poisson_joint_solve(qx::AbstractVector, op::_SchurUOperator
     T = promote_type(eltype(qx), eltype(op), typeof(float(rhs_scale)))
     rhsU = Vector{T}(undef, p)
     tmpK = Vector{T}(undef, K)
+    solK = Vector{T}(undef, K)
     tmpP = Vector{T}(undef, p)
     @inbounds for t in 1:p
         rhsU[t] = rhs_scale * qx[t]
@@ -343,8 +344,8 @@ function _structured_poisson_joint_solve(qx::AbstractVector, op::_SchurUOperator
         for k in 1:K
             tmpK[k] = rhs_scale * qx[offset + k]
         end
-        ldiv!(op.Achols[i], tmpK)
-        mul!(tmpP, op.Lambda, tmpK)
+        mul!(solK, op.Ainvs[i], tmpK)
+        mul!(tmpP, op.Lambda, solK)
         for t in 1:p
             rhsU[t] -= op.Wsites[t, i] * tmpP[t]
         end
@@ -377,9 +378,9 @@ function _structured_poisson_joint_solve(qx::AbstractVector, op::_SchurUOperator
                 tmpK[k] -= op.Lambda[t, k] * Wa
             end
         end
-        ldiv!(op.Achols[i], tmpK)
+        mul!(solK, op.Ainvs[i], tmpK)
         for k in 1:K
-            sol[offset + k] = tmpK[k]
+            sol[offset + k] = solK[k]
         end
     end
     return sol
@@ -502,7 +503,6 @@ function _structured_poisson_block_implicit_value_grad(θ::AbstractVector,
     Usite = Matrix{T}(undef, p, K)
     GU = Matrix{T}(undef, p, K)
     C = Matrix{T}(undef, K, K)
-    eyeK = Matrix{T}(I, K, K)
     M = Matrix{T}(undef, K, K)
     v = Vector{T}(undef, K)
     tmp = Vector{T}(undef, K)
@@ -516,8 +516,7 @@ function _structured_poisson_block_implicit_value_grad(θ::AbstractVector,
         end
         mul!(GU, G, Usite)
         mul!(C, transpose(Usite), GU)
-        copyto!(M, eyeK)
-        ldiv!(op.Achols[i], M)
+        copyto!(M, op.Ainvs[i])
         for t in 1:p
             for k in 1:K
                 acc = zero(T)
@@ -680,7 +679,6 @@ function _structured_poisson_trace_implicit_value_grad(θ::AbstractVector,
     UR = Matrix{T}(undef, K, nprobe)
     UX = Matrix{T}(undef, K, nprobe)
     C = Matrix{T}(undef, K, K)
-    eyeK = Matrix{T}(I, K, K)
     M = Matrix{T}(undef, K, K)
     v = Vector{T}(undef, K)
     geUt = Vector{T}(undef, K)
@@ -699,8 +697,7 @@ function _structured_poisson_trace_implicit_value_grad(θ::AbstractVector,
         mul!(UX, transpose(Usite), X)
         mul!(C, UX, transpose(UR))
         C .*= invnprobe
-        copyto!(M, eyeK)
-        ldiv!(op.Achols[i], M)
+        copyto!(M, op.Ainvs[i])
         for t in 1:p
             Gtt = zero(T)
             for j in 1:nprobe
