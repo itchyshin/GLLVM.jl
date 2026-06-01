@@ -57,8 +57,8 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 | Capability | GLLVM.jl | Notes |
 |-----------|:---:|-------|
 | Matrix-level fit API | ✅ | `fit_gllvm(Y; family, K, …)` |
-| `@formula` front-end (wide + long data) | 🔨 | gllvmTMB-parity grammar (c) |
-| `traits()` / `phylo()` formula terms | 🔨 | custom StatsModels terms (c) |
+| `@formula` front-end | ✅ fixed effects (wide) · 🔨 rest | `gllvm(@formula(y ~ 1 + x), Y, data; family, K)` (continuous covariates, wide data) → engine; long data, random slopes, `traits()`/`phylo()` terms deferred |
+| `traits()` / `phylo()` formula terms · random slopes `(1+x\|g)` | 🔨 | custom StatsModels terms + RE substrate (design spec'd) |
 
 ## Performance — the differentiator
 
@@ -86,9 +86,11 @@ built *with* validation rather than shipped unverified:
 - **Tweedie family** — compound Poisson–Gamma (`Var = φμ^p`); reuses the scalar-μ
   Laplace core, the only hard part is the density series. Spec:
   `2026-06-01-tweedie-family-design.md`. Verdict: `p`-fixed is a ~2–3 day slice.
-- **`@formula` front-end + random slopes** — designed
-  (`2026-05-31-formula-frontend-random-slopes-design.md`); **blocked on a maintainer
-  decision** to add StatsModels + Tables — see
-  `2026-06-01-formula-dependency-decision.md`.
+- **`@formula` front-end** — **v1 landed**: `gllvm(@formula(y ~ 1 + covariates), Y,
+  data; family, K)` for continuous fixed effects over wide data routes to the
+  engine (StatsModels + Tables added). Still deferred (design spec'd in
+  `2026-05-31-formula-frontend-random-slopes-design.md`): long-format data, the
+  `traits()`/`phylo()`/`latent()` custom terms, categorical covariates, and the
+  headline random slopes `(1 + x | g)` (which need the new RE engine substrate).
 - **R bridge (`engine = "julia"`)** — deferred (post-v1.0); depends on the
   `@formula` front-end.

@@ -1,9 +1,13 @@
-# `@formula` front-end — dependency decision memo (maintainer call needed)
+# `@formula` front-end — dependency decision memo
 
-- **Status: DECISION REQUIRED from the maintainer.** This is not a design (that
-  exists: `2026-05-31-formula-frontend-random-slopes-design.md`); it is the
-  *one gating decision* that blocks starting the build — adding the package's
-  first formula/data-frame dependencies.
+- **Status: APPROVED (2026-06-01) — v1 front-end landed.** The maintainer approved
+  adding StatsModels + Tables; the fixed-effects front-end
+  (`gllvm(@formula(y ~ 1 + covariates), Y, data; family, K)`, continuous covariates
+  over wide data) is implemented in `src/formula.jl` and routes to the engine
+  (`fit_gaussian_gllvm` / `fit_gllvm_cov`). The full grammar (long data, `traits()`/
+  `phylo()`/`latent()` terms, categoricals, random slopes) remains per the design
+  spec `2026-05-31-formula-frontend-random-slopes-design.md`. This memo is retained
+  as the record of the dependency decision.
 - Date: 2026-06-01
 
 ## Why this is a separate, gated decision

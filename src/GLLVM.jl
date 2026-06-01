@@ -44,6 +44,7 @@ include("confint_profile.jl")            # profile likelihood
 include("confint_bootstrap.jl")          # parametric bootstrap
 include("confint_derived.jl")            # derived quantities (Σ_y, communality, ...)
 include("confint_family.jl")             # Wald / profile / bootstrap CIs for non-Gaussian families
+include("formula.jl")                    # @formula front-end (v1: fixed effects → engine)
 
 # Public API
 export spatial_cov, relatedness_cov,
@@ -70,7 +71,7 @@ export spatial_cov, relatedness_cov,
        delta_gamma_marginal_loglik_laplace,
        fit_zip_gllvm, ZIPFit, zip_marginal_loglik_laplace,
        fit_zinb_gllvm, ZINBFit, zinb_marginal_loglik_laplace, fit_gllvm,
-       fit_gllvm_cov, GllvmCovFit,
+       fit_gllvm_cov, GllvmCovFit, gllvm, @formula,
        getLV, getLoadings, rotation,
        predict, fitted, residuals, aic, bic
 
