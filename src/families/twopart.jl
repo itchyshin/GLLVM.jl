@@ -126,3 +126,101 @@ function delta_lognormal_marginal_loglik_laplace(Y::AbstractMatrix, Λc::Abstrac
     Λz_ = Λz === nothing ? zeros(p, K) : Λz
     return twopart_marginal_loglik_laplace(DeltaLogNormal(float(σ)), Y, Λz_, Λc, βz, βc; kwargs...)
 end
+
+# ---------------------------------------------------------------------------
+# Fit driver (Delta-lognormal slice 2).
+# ---------------------------------------------------------------------------
+
+"""
+    DeltaLogNormalFit
+
+Result of [`fit_delta_lognormal_gllvm`](@ref): occurrence logits `βz` (length p),
+positive-part meanlog intercepts `βc` (length p), positive-part loadings `Λc`
+(p×K), the shared log-scale SD `σ`, the maximised `loglik`, `converged`, and
+`iterations`. (`Λz = 0` — occurrence is intercept-only in v1.)
+"""
+struct DeltaLogNormalFit
+    βz::Vector{Float64}
+    βc::Vector{Float64}
+    Λc::Matrix{Float64}
+    σ::Float64
+    loglik::Float64
+    converged::Bool
+    iterations::Int
+end
+
+function Base.show(io::IO, f::DeltaLogNormalFit)
+    p, K = size(f.Λc)
+    print(io, "DeltaLogNormalFit(p=", p, ", K=", K, ", σ=", round(f.σ; sigdigits = 4),
+          ", loglik=", round(f.loglik; sigdigits = 7),
+          f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+"""
+    fit_delta_lognormal_gllvm(Y; K, …) -> DeltaLogNormalFit
+
+Fit a Delta-lognormal two-part GLLVM by L-BFGS over `[βz; βc; vec(Λc); log σ]` on
+the two-part Laplace marginal ([`delta_lognormal_marginal_loglik_laplace`](@ref)),
+with `Λz = 0` (per-species occurrence intercept). `Y` is p×n with `0` for absences
+and positive reals otherwise. Finite-difference gradient; warm start =
+`logit(empirical P(y>0))` occurrence intercepts + mean / SVD of the positive-part
+log-responses + `σ₀ = sd(log y_{>0})`.
+"""
+function fit_delta_lognormal_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
+        g_tol::Real = 1e-5, iterations::Integer = 500,
+        newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    p, n = size(Y)
+    rr = rr_theta_len(p, K)
+
+    βz0 = Vector{Float64}(undef, p)
+    βc0 = Vector{Float64}(undef, p)
+    @inbounds for t in 1:p
+        npres = count(>(0), view(Y, t, :))
+        pr = clamp((npres + 0.5) / (n + 1), 1e-3, 1 - 1e-3)
+        βz0[t] = log(pr / (1 - pr))
+        s = 0.0; c = 0
+        for j in 1:n
+            if Y[t, j] > 0
+                s += log(Y[t, j]); c += 1
+            end
+        end
+        βc0[t] = c == 0 ? 0.0 : s / c
+    end
+    sumsq = 0.0; nres = 0
+    @inbounds for t in 1:p, j in 1:n
+        if Y[t, j] > 0
+            r = log(Y[t, j]) - βc0[t]; sumsq += r^2; nres += 1
+        end
+    end
+    σ0 = nres > 1 ? max(sqrt(sumsq / (nres - 1)), 0.1) : 0.5
+    Zc = [Y[t, j] > 0 ? log(Y[t, j]) - βc0[t] : 0.0 for t in 1:p, j in 1:n]
+    F = svd(Zc); kk = min(K, length(F.S))
+    Λc0 = zeros(p, K)
+    @inbounds for j in 1:kk
+        Λc0[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
+    end
+
+    θ0 = vcat(βz0, βc0, pack_lambda(Λc0), log(σ0))
+    function negll(θ)
+        βz = θ[1:p]
+        βc = θ[(p + 1):(2p)]
+        Λc = unpack_lambda(θ[(2p + 1):(2p + rr)], p, K)
+        σ = exp(θ[2p + rr + 1])
+        v = try
+            -delta_lognormal_marginal_loglik_laplace(Y, Λc, βz, βc, σ;
+                                                     maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
+    res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
+                         autodiff = :finite)
+    θ̂ = Optim.minimizer(res)
+    βz = θ̂[1:p]; βc = θ̂[(p + 1):(2p)]
+    Λc = unpack_lambda(θ̂[(2p + 1):(2p + rr)], p, K)
+    σ = exp(θ̂[2p + rr + 1])
+    return DeltaLogNormalFit(βz, βc, Λc, σ, -Optim.minimum(res),
+                             Optim.converged(res), Optim.iterations(res))
+end
