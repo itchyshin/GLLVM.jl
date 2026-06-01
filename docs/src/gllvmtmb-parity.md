@@ -23,7 +23,7 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 | Delta-lognormal | ✅ | first two-part family; shared 2-block Laplace substrate |
 | Delta-Gamma | ✅ | occurrence Bernoulli × positive Gamma (log-link mean) on the substrate |
 | Hurdle (Poisson / NB) | ✅ | occurrence Bernoulli × zero-truncated Poisson / NB2 |
-| Zero-inflated (ZIP / ZINB) | 🔨 | needs the coupled-zero cross-term (structural + count zeros) |
+| Zero-inflated (ZIP / ZINB) | ✅ | structural zero × Poisson / NB2; zero-inflation intercept-only (Λ_z = 0) so the coupled-zero cross-term drops out |
 | Tweedie · Exponential | ⬜ | planned (Exponential ⊂ Gamma) |
 
 ## Model structure

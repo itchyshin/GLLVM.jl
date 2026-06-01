@@ -64,7 +64,9 @@ export spatial_cov, relatedness_cov,
        fit_hurdle_nb_gllvm, HurdleNBFit,
        hurdle_nb_marginal_loglik_laplace,
        fit_delta_gamma_gllvm, DeltaGammaFit,
-       delta_gamma_marginal_loglik_laplace, fit_gllvm,
+       delta_gamma_marginal_loglik_laplace,
+       fit_zip_gllvm, ZIPFit, zip_marginal_loglik_laplace,
+       fit_zinb_gllvm, ZINBFit, zinb_marginal_loglik_laplace, fit_gllvm,
        getLV, getLoadings, rotation,
        predict, fitted, residuals, aic, bic
 

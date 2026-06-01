@@ -1071,3 +1071,152 @@ function Base.show(io::IO, ::MIME"text/plain", fit::DeltaGammaFit)
             ", AIC = ", round(aic(fit); sigdigits = 7))
     print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
 end
+
+# ---------------------------------------------------------------------------
+# Zero-inflated post-fit (ZIP / ZINB: structural zero × Poisson / NB2 count).
+# Unconditional mean is (1−π)·μ (structural zeros contribute 0).
+# ---------------------------------------------------------------------------
+
+_loadings(fit::ZIPFit) = fit.Λc
+_loglik(fit::ZIPFit)   = fit.loglik
+_loadings(fit::ZINBFit) = fit.Λc
+_loglik(fit::ZINBFit)   = fit.loglik
+
+function _nparams(fit::ZIPFit)
+    p, K = size(fit.Λc)
+    return 2p + (p * K - div(K * (K - 1), 2))        # βz + βc + Λc
+end
+function _nparams(fit::ZINBFit)
+    p, K = size(fit.Λc)
+    return 2p + (p * K - div(K * (K - 1), 2)) + 1     # βz + βc + Λc + r
+end
+
+function getLV(fit::ZIPFit, Y::AbstractMatrix{<:Real}; rotate::Bool = true)
+    p, n = size(Y); K = size(fit.Λc, 2)
+    Λz = zeros(p, K)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        Z[:, s] = _twopart_mode(ZIPoisson(), view(Y, :, s), Λz, fit.Λc, fit.βz, fit.βc)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λc) : Zt
+end
+
+function getLV(fit::ZINBFit, Y::AbstractMatrix{<:Real}; rotate::Bool = true)
+    p, n = size(Y); K = size(fit.Λc, 2)
+    Λz = zeros(p, K)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        Z[:, s] = _twopart_mode(ZINB(fit.r), view(Y, :, s), Λz, fit.Λc, fit.βz, fit.βc)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λc) : Zt
+end
+
+"""
+    predict(fit::ZIPFit, Y; type=:response) -> p×n matrix
+
+`:link` = count log-mean predictor `η^c`; `:zeroinfl` = structural-zero
+probability `π = logistic(β^z)`; `:mean` = the count mean `μ = exp(η^c)`;
+`:response` = unconditional mean `(1−π)·μ`.
+"""
+function predict(fit::ZIPFit, Y::AbstractMatrix{<:Real}; type::Symbol = :response)
+    type in (:response, :zeroinfl, :mean, :link) ||
+        throw(ArgumentError("type must be :response, :zeroinfl, :mean, or :link; got :$type"))
+    p, n = size(Y)
+    Z = getLV(fit, Y; rotate = false)
+    ηc = fit.βc .+ fit.Λc * Z'
+    type === :link && return ηc
+    π = inv.(1 .+ exp.(-fit.βz))
+    type === :zeroinfl && return repeat(π, 1, n)
+    μ = exp.(ηc)
+    type === :mean && return μ
+    return (1 .- π) .* μ
+end
+
+"""
+    predict(fit::ZINBFit, Y; type=:response) -> p×n matrix
+
+As [`predict(::ZIPFit, …)`](@ref); `:mean` is the NB2 count mean `μ`, `:response`
+the unconditional mean `(1−π)·μ`.
+"""
+function predict(fit::ZINBFit, Y::AbstractMatrix{<:Real}; type::Symbol = :response)
+    type in (:response, :zeroinfl, :mean, :link) ||
+        throw(ArgumentError("type must be :response, :zeroinfl, :mean, or :link; got :$type"))
+    p, n = size(Y)
+    Z = getLV(fit, Y; rotate = false)
+    ηc = fit.βc .+ fit.Λc * Z'
+    type === :link && return ηc
+    π = inv.(1 .+ exp.(-fit.βz))
+    type === :zeroinfl && return repeat(π, 1, n)
+    μ = exp.(ηc)
+    type === :mean && return μ
+    return (1 .- π) .* μ
+end
+
+# Dunn–Smyth residuals for the zero-inflated CDF F(k) = π + (1−π)·F_count(k).
+function _zi_residuals(π::AbstractVector, ηc::AbstractMatrix, Y::AbstractMatrix,
+                       countdist, rng::AbstractRNG)
+    p, n = size(Y)
+    R = Matrix{Float64}(undef, p, n)
+    @inbounds for s in 1:n, t in 1:p
+        πt = π[t]; y = Int(Y[t, s])
+        d = countdist(exp(ηc[t, s]))
+        if y == 0
+            lo = 0.0
+            hi = πt + (1 - πt) * cdf(d, 0)
+        else
+            lo = πt + (1 - πt) * cdf(d, y - 1)
+            hi = πt + (1 - πt) * cdf(d, y)
+        end
+        u = lo + (hi - lo) * rand(rng)
+        R[t, s] = quantile(Normal(), clamp(u, 1e-12, 1 - 1e-12))
+    end
+    return R
+end
+
+"""
+    residuals(fit::ZIPFit, Y; rng=Random.default_rng()) -> p×n matrix
+
+Dunn–Smyth randomized quantile residuals under the zero-inflated CDF
+`F(k) = π + (1−π)·F_Poisson(k)`.
+"""
+function residuals(fit::ZIPFit, Y::AbstractMatrix{<:Real};
+                   rng::AbstractRNG = Random.default_rng())
+    Z = getLV(fit, Y; rotate = false)
+    ηc = fit.βc .+ fit.Λc * Z'
+    π = inv.(1 .+ exp.(-fit.βz))
+    return _zi_residuals(π, ηc, Y, μ -> Poisson(μ), rng)
+end
+
+"""
+    residuals(fit::ZINBFit, Y; rng=Random.default_rng()) -> p×n matrix
+
+Dunn–Smyth randomized quantile residuals under `F(k) = π + (1−π)·F_NB2(k)`.
+"""
+function residuals(fit::ZINBFit, Y::AbstractMatrix{<:Real};
+                   rng::AbstractRNG = Random.default_rng())
+    Z = getLV(fit, Y; rotate = false)
+    ηc = fit.βc .+ fit.Λc * Z'
+    π = inv.(1 .+ exp.(-fit.βz)); r = fit.r
+    return _zi_residuals(π, ηc, Y, μ -> NegativeBinomial(r, r / (r + μ)), rng)
+end
+
+function Base.show(io::IO, ::MIME"text/plain", fit::ZIPFit)
+    p, K = size(fit.Λc)
+    println(io, "Zero-inflated Poisson GLLVM fit (two-part)")
+    println(io, "  responses p = ", p, ", latent factors K = ", K)
+    println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
+            ", AIC = ", round(aic(fit); sigdigits = 7))
+    print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
+end
+
+function Base.show(io::IO, ::MIME"text/plain", fit::ZINBFit)
+    p, K = size(fit.Λc)
+    println(io, "Zero-inflated NB GLLVM fit (two-part)")
+    println(io, "  responses p = ", p, ", latent factors K = ", K,
+            ", dispersion r = ", round(fit.r; sigdigits = 4))
+    println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
+            ", AIC = ", round(aic(fit); sigdigits = 7))
+    print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
+end
