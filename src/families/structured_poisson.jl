@@ -139,8 +139,7 @@ function _structured_poisson_mode(Y::AbstractMatrix, Λ::AbstractMatrix,
                 gz[k] -= Z[k, i]
             end
             gradnorm = max(gradnorm, maximum(abs, gz))
-            copyto!(tmpK, gz)
-            ldiv!(op.Achols[i], tmpK)
+            mul!(tmpK, op.Ainvs[i], gz)
             mul!(tmpP, L, tmpK)
             for t in 1:p
                 rhsU[t] -= W[t, i] * tmpP[t]
@@ -174,8 +173,7 @@ function _structured_poisson_mode(Y::AbstractMatrix, Λ::AbstractMatrix,
             for k in 1:K
                 gz[k] -= Z[k, i]
             end
-            copyto!(ΔZ, gz)
-            ldiv!(op.Achols[i], ΔZ)
+            mul!(ΔZ, op.Ainvs[i], gz)
             for k in 1:K
                 Z[k, i] += ΔZ[k]
                 maxstep = max(maxstep, abs(ΔZ[k]))
@@ -503,7 +501,6 @@ function _structured_poisson_block_implicit_value_grad(θ::AbstractVector,
     Usite = Matrix{T}(undef, p, K)
     GU = Matrix{T}(undef, p, K)
     C = Matrix{T}(undef, K, K)
-    M = Matrix{T}(undef, K, K)
     v = Vector{T}(undef, K)
     tmp = Vector{T}(undef, K)
     rz = Vector{T}(undef, K)
@@ -516,7 +513,7 @@ function _structured_poisson_block_implicit_value_grad(θ::AbstractVector,
         end
         mul!(GU, G, Usite)
         mul!(C, transpose(Usite), GU)
-        copyto!(M, op.Ainvs[i])
+        M = op.Ainvs[i]
         for t in 1:p
             for k in 1:K
                 acc = zero(T)
@@ -679,7 +676,6 @@ function _structured_poisson_trace_implicit_value_grad(θ::AbstractVector,
     UR = Matrix{T}(undef, K, nprobe)
     UX = Matrix{T}(undef, K, nprobe)
     C = Matrix{T}(undef, K, K)
-    M = Matrix{T}(undef, K, K)
     v = Vector{T}(undef, K)
     geUt = Vector{T}(undef, K)
     Cv = Vector{T}(undef, K)
@@ -697,7 +693,7 @@ function _structured_poisson_trace_implicit_value_grad(θ::AbstractVector,
         mul!(UX, transpose(Usite), X)
         mul!(C, UX, transpose(UR))
         C .*= invnprobe
-        copyto!(M, op.Ainvs[i])
+        M = op.Ainvs[i]
         for t in 1:p
             Gtt = zero(T)
             for j in 1:nprobe
