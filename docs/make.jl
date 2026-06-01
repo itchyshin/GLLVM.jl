@@ -24,6 +24,7 @@ makedocs(;
             "Common pitfalls"          => "pitfalls.md",
             "Benchmarks"               => "benchmarks.md",
             "Comparison vs gllvmTMB"   => "comparison.md",
+            "Capability parity"        => "gllvmtmb-parity.md",
         ],
         "Roadmap"     => "roadmap.md",
         "Reference"   => "api.md",
