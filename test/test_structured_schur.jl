@@ -62,6 +62,34 @@ using GLLVM, Test, Random, LinearAlgebra, SparseArrays
     @test Matrix(GLLVM._schur_u_dense(op_ws2)) ≈
         Matrix(GLLVM._schur_u_dense(op_ref2)) atol = 1e-10 rtol = 1e-10
 
+    @testset "tiny-K dense assembly" begin
+        for Ktiny in 1:3
+            Lambda_tiny = 0.25 .* randn(p, Ktiny)
+            Wsites_tiny = 0.2 .+ abs.(randn(p, n))
+            op_tiny = GLLVM._SchurUOperator(precision, Lambda_tiny, Wsites_tiny; sigma2 = 0.7)
+            S_tiny = Matrix{Float64}(undef, p, p)
+            C_tiny = Matrix{Float64}(undef, p, Ktiny * n)
+            dense_tiny = Matrix(GLLVM._schur_u_dense_tinyk!(S_tiny, op_tiny, C_tiny))
+
+            S_direct = Matrix{Float64}(undef, p, p)
+            B_direct = Matrix{Float64}(undef, p, Ktiny)
+            BA_direct = similar(B_direct)
+            dense_direct = Matrix(GLLVM._schur_u_dense_direct!(
+                S_direct, op_tiny, B_direct, BA_direct))
+            @test dense_tiny ≈ dense_direct atol = 1e-10 rtol = 1e-10
+            @test Matrix(GLLVM._schur_u_dense(op_tiny)) ≈ dense_direct atol = 1e-10 rtol = 1e-10
+        end
+
+        op4 = GLLVM._SchurUOperator(precision, 0.2 .* randn(p, 4),
+            0.2 .+ abs.(randn(p, n)); sigma2 = 0.7)
+        @test_throws ArgumentError GLLVM._schur_u_dense_tinyk!(
+            zeros(p, p), op4, zeros(p, 4 * n))
+        op_dim = GLLVM._SchurUOperator(precision, 0.25 .* randn(p, 1),
+            0.2 .+ abs.(randn(p, n)); sigma2 = 0.7)
+        @test_throws DimensionMismatch GLLVM._schur_u_dense_tinyk!(
+            zeros(p, p), op_dim, zeros(p, n + 1))
+    end
+
     Lambda1 = 0.25 .* randn(p, 1)
     Wsites1 = 0.2 .+ abs.(randn(p, n))
     op1 = GLLVM._SchurUOperator(precision, Lambda1, Wsites1; sigma2 = 0.7)

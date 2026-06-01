@@ -271,6 +271,11 @@ function _schur_u_dense(op::_SchurUOperator)
     p = size(op, 1)
     T = eltype(op)
     S = Matrix{T}(undef, p, p)
+    K = size(op.Lambda, 2)
+    if K <= 3
+        C = Matrix{T}(undef, p, K * size(op.Wsites, 2))
+        return _schur_u_dense_tinyk!(S, op, C)
+    end
     B = Matrix{T}(undef, p, size(op.Lambda, 2))
     BA = similar(B)
     return _schur_u_dense_direct!(S, op, B, BA)
@@ -333,6 +338,48 @@ function _copy_scaled_precision!(S::AbstractMatrix,
         end
     end
     return S
+end
+
+function _schur_u_dense_tinyk!(S::AbstractMatrix, op::_SchurUOperator,
+        C::AbstractMatrix)
+    p, K = size(op.Lambda)
+    nsites = size(op.Wsites, 2)
+    size(S) == (p, p) || throw(DimensionMismatch("S must be $(p)×$(p); got $(size(S))"))
+    size(C) == (p, K * nsites) || throw(DimensionMismatch(
+        "C must be $(p)×$(K * nsites); got $(size(C))"))
+    K <= 3 || throw(ArgumentError("tiny-K dense assembly requires K <= 3; got K=$K"))
+    T = eltype(op)
+
+    _copy_scaled_precision!(S, op.precision, op.invsigma2)
+    @inbounds for t in 1:p
+        S[t, t] += op.Wsum[t]
+    end
+
+    if K == 1
+        @inbounds for s in 1:nsites
+            scale = sqrt(op.Ainvs[s][1, 1])
+            for t in 1:p
+                C[t, s] = op.Wsites[t, s] * op.Lambda[t, 1] * scale
+            end
+        end
+    else
+        @inbounds for s in 1:nsites
+            F = cholesky(Symmetric(op.Ainvs[s])).L
+            offset = (s - 1) * K
+            for t in 1:p
+                wt = op.Wsites[t, s]
+                for k in 1:K
+                    acc = zero(T)
+                    for l in 1:K
+                        acc += op.Lambda[t, l] * F[l, k]
+                    end
+                    C[t, offset + k] = wt * acc
+                end
+            end
+        end
+    end
+    mul!(S, C, transpose(C), -one(T), one(T))
+    return _symmetrize_schur_dense!(S)
 end
 
 function _schur_u_dense_direct!(S::AbstractMatrix, op::_SchurUOperator,
