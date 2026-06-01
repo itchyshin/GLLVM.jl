@@ -17,7 +17,8 @@ using GLLVM
 
 const CSV_HEADER = [
     "timestamp", "mode", "cell", "p", "n", "K", "iterations", "reps",
-    "gradient", "dense_seconds", "cg_seconds", "speedup_dense_over_cg",
+    "gradient", "logdet_method", "nprobes", "lanczos_steps",
+    "dense_seconds", "cg_seconds", "speedup_dense_over_cg",
     "dense_loglik", "cg_loglik", "absdiff_loglik",
     "dense_objective_calls", "cg_objective_calls",
 ]
@@ -29,6 +30,7 @@ const SMOKE_CELLS = [
 const FULL_CELLS = [
     (id = "small", p = 5, n = 8, K = 1),
     (id = "medium", p = 8, n = 12, K = 2),
+    (id = "large", p = 20, n = 25, K = 2),
 ]
 
 function usage()
@@ -41,6 +43,9 @@ function usage()
       --cells=a,b,c      Comma-separated cell subset.
       --iterations=N     Optimizer iteration budget (default: 4 smoke, 6 full).
       --gradient=MODE    :finite or :implicit (default: :implicit).
+      --logdet=MODE      :dense or :slq (default: :dense).
+      --nprobes=N        Frozen SLQ probe count (default: 4).
+      --lanczos-steps=N  SLQ Lanczos steps (default: 20).
       --reps=N           Measured repetitions (default: 1 smoke, 3 full).
       --warmups=N        Warmup repetitions (default: 1).
       --seed=N           Base random seed (default: 9401).
@@ -58,6 +63,9 @@ function parse_args(args)
     seed = 9401
     out = nothing
     gradient = :implicit
+    logdet_method = :dense
+    nprobes = 4
+    lanczos_steps = 20
 
     for arg in args
         if arg == "--help" || arg == "-h"
@@ -76,6 +84,15 @@ function parse_args(args)
             value in (:finite, :implicit) || throw(ArgumentError(
                 "--gradient must be finite or implicit; got $value"))
             gradient = value
+        elseif startswith(arg, "--logdet=")
+            value = Symbol(arg[(lastindex("--logdet=") + 1):end])
+            value in (:dense, :slq) || throw(ArgumentError(
+                "--logdet must be dense or slq; got $value"))
+            logdet_method = value
+        elseif startswith(arg, "--nprobes=")
+            nprobes = parse(Int, arg[(lastindex("--nprobes=") + 1):end])
+        elseif startswith(arg, "--lanczos-steps=")
+            lanczos_steps = parse(Int, arg[(lastindex("--lanczos-steps=") + 1):end])
         elseif startswith(arg, "--reps=")
             reps = parse(Int, arg[(lastindex("--reps=") + 1):end])
         elseif startswith(arg, "--warmups=")
@@ -91,8 +108,13 @@ function parse_args(args)
 
     iterations === nothing && (iterations = mode == "full" ? 6 : 4)
     reps === nothing && (reps = mode == "full" ? 3 : 1)
+    nprobes > 0 || throw(ArgumentError("--nprobes must be positive; got $nprobes"))
+    lanczos_steps > 0 || throw(ArgumentError(
+        "--lanczos-steps must be positive; got $lanczos_steps"))
     return (mode = mode, cells = cells, iterations = iterations, reps = reps,
-            warmups = warmups, seed = seed, out = out, gradient = gradient)
+            warmups = warmups, seed = seed, out = out, gradient = gradient,
+            logdet_method = logdet_method, nprobes = nprobes,
+            lanczos_steps = lanczos_steps)
 end
 
 function select_cells(mode::String, wanted)
@@ -116,7 +138,7 @@ function lower_triangular_loadings(rng, p::Int, K::Int)
     return Λ
 end
 
-function fixture(cell, seed)
+function fixture(cell, seed, args)
     rng = MersenneTwister(seed)
     β = fill(log(1.5), cell.p)
     Λ = lower_triangular_loadings(rng, cell.p, cell.K)
@@ -127,15 +149,20 @@ function fixture(cell, seed)
         -1 => fill(-0.15, cell.p - 1),
          0 => fill(1.3, cell.p),
          1 => fill(-0.15, cell.p - 1)))
-    return Y, precision
+    probes = args.logdet_method == :slq ?
+             GLLVM._rademacher_probes(MersenneTwister(seed + 1), cell.p, args.nprobes) :
+             nothing
+    return Y, precision, probes
 end
 
-function time_fit(Y, precision, cell, mode_solve, args)
+function time_fit(Y, precision, probes, cell, mode_solve, args)
     value = nothing
     for _ in 1:args.warmups
         value = GLLVM._fit_structured_poisson_laplace(
             Y, precision; K = cell.K, sigma2 = 0.5, mode_solve = mode_solve,
-            logdet_method = :dense, iterations = args.iterations,
+            logdet_method = args.logdet_method, probes = probes,
+            nprobes = args.nprobes, lanczos_steps = args.lanczos_steps,
+            reorth = true, iterations = args.iterations,
             g_tol = 1e-4, cg_tol = 1e-10, maxiter = 80, tol = 1e-9,
             gradient = args.gradient)
     end
@@ -144,7 +171,9 @@ function time_fit(Y, precision, cell, mode_solve, args)
         GC.gc()
         elapsed = @elapsed value = GLLVM._fit_structured_poisson_laplace(
             Y, precision; K = cell.K, sigma2 = 0.5, mode_solve = mode_solve,
-            logdet_method = :dense, iterations = args.iterations,
+            logdet_method = args.logdet_method, probes = probes,
+            nprobes = args.nprobes, lanczos_steps = args.lanczos_steps,
+            reorth = true, iterations = args.iterations,
             g_tol = 1e-4, cg_tol = 1e-10, maxiter = 80, tol = 1e-9,
             gradient = args.gradient)
         push!(times, elapsed)
@@ -172,9 +201,9 @@ function write_csv(path, rows)
 end
 
 function run_cell(cell, args, index)
-    Y, precision = fixture(cell, args.seed + 1000 * index)
-    dense = time_fit(Y, precision, cell, :dense, args)
-    cg = time_fit(Y, precision, cell, :cg, args)
+    Y, precision, probes = fixture(cell, args.seed + 1000 * index, args)
+    dense = time_fit(Y, precision, probes, cell, :dense, args)
+    cg = time_fit(Y, precision, probes, cell, :cg, args)
     return Dict(
         "timestamp" => Dates.format(now(), dateformat"yyyy-mm-ddTHH:MM:SS"),
         "mode" => args.mode,
@@ -185,6 +214,9 @@ function run_cell(cell, args, index)
         "iterations" => args.iterations,
         "reps" => args.reps,
         "gradient" => args.gradient,
+        "logdet_method" => args.logdet_method,
+        "nprobes" => args.nprobes,
+        "lanczos_steps" => args.lanczos_steps,
         "dense_seconds" => dense.seconds,
         "cg_seconds" => cg.seconds,
         "speedup_dense_over_cg" => dense.seconds / cg.seconds,
@@ -207,7 +239,7 @@ function main()
     args = parse_args(ARGS)
     cells = select_cells(args.mode, args.cells)
     rows = Dict{String, Any}[]
-    println("Structured Poisson fitted benchmark ($(args.mode)); reps=$(args.reps), warmups=$(args.warmups), iterations=$(args.iterations), gradient=$(args.gradient)")
+    println("Structured Poisson fitted benchmark ($(args.mode)); reps=$(args.reps), warmups=$(args.warmups), iterations=$(args.iterations), gradient=$(args.gradient), logdet=$(args.logdet_method)")
     for (idx, cell) in enumerate(cells)
         row = run_cell(cell, args, idx)
         push!(rows, row)

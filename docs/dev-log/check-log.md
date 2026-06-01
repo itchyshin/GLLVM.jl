@@ -1158,6 +1158,202 @@ gh pr list --limit 5 --json number,title,headRefName,isDraft,state
 
 No issue or PR was modified.
 
+## 2026-06-01 — Structured Poisson SLQ Trace Gradient
+
+### Implemented Claim
+
+Added a frozen-probe stochastic trace-gradient path for the internal structured
+Poisson fitter when `logdet_method = :slq` (or `:auto` above the dense cutoff).
+With a scaled identity probe basis and full Lanczos steps, the SLQ path recovers
+the dense block gradient to the existing `1e-6` gradient tolerance; with
+Rademacher probes it gives the first fitted large-p determinant-gradient
+prototype that avoids dense `S_u^{-1}` materialization.
+
+This is still an internal fixed-covariance structured Poisson path, not a public
+API change and not an R `gllvmTMB` parity claim.
+
+### Collision And Lane Checks
+
+```sh
+git status --short --branch && git rev-parse --short HEAD
+gh pr list --limit 20
+git log --all --oneline --since='6 hours ago' --decorate
+```
+
+Result:
+
+```text
+## codex/non-gaussian-fitter-gradients...origin/main [ahead 18]
+?? .claude/
+40e8994
+
+59 gllvmTMB catch-up: Delta-Gamma + zero-inflated (ZIP/ZINB) families + non-Gaussian CIs claude/package-work-catchup-mQiZM DRAFT
+```
+
+No edits were made to `src/sparse_phy_grad.jl`, `src/em_phylo.jl`, or PR #59
+files. `.claude/` remains untracked and untouched.
+
+### Tests Added
+
+Extended `structured Poisson implicit gradient` so that `logdet_method = :slq`
+with the full scaled identity probe basis must match the dense block value and
+gradient under both dense and CG Schur solves. This checks the trace-gradient
+formula against the exact dense-gradient reference before using stochastic
+probes for speed.
+
+### Focused Tests
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_schur.jl"); include("test/test_structured_poisson_laplace.jl")'
+```
+
+Result:
+
+```text
+structured Schur operator                 | 36/36 pass
+structured Schur SLQ logdet               | 9/9 pass
+structured Poisson Laplace prototype      | 13/13 pass
+structured Poisson implicit gradient      | 12/12 pass
+structured Poisson internal fitter        | 18/18 pass
+structured Poisson sigma-to-zero reduction| 1/1 pass
+```
+
+### Benchmarks
+
+Fitted benchmark, dense determinant, implicit block gradient:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_fit_bench.jl --full --gradient=implicit --logdet=dense
+```
+
+Result:
+
+```text
+Structured Poisson fitted benchmark (full); reps=3, warmups=1, iterations=6, gradient=implicit, logdet=dense
+small   p=  5 n=  8 K=1 dense= 0.0011 s  cg= 0.0010 s  speedup= 1.06x  diff=9.66e-13 calls=(8,8)
+medium  p=  8 n= 12 K=2 dense= 0.0025 s  cg= 0.0022 s  speedup= 1.10x  diff=2.90e-12 calls=(9,9)
+large   p= 20 n= 25 K=2 dense= 0.0140 s  cg= 0.0101 s  speedup= 1.39x  diff=3.98e-12 calls=(9,9)
+```
+
+Fitted benchmark, frozen-probe SLQ determinant, implicit trace gradient:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_fit_bench.jl --full --gradient=implicit --logdet=slq --nprobes=4 --lanczos-steps=20
+```
+
+Result:
+
+```text
+Structured Poisson fitted benchmark (full); reps=3, warmups=1, iterations=6, gradient=implicit, logdet=slq
+small   p=  5 n=  8 K=1 dense= 0.0018 s  cg= 0.0022 s  speedup= 0.83x  diff=5.68e-14 calls=(8,8)
+medium  p=  8 n= 12 K=2 dense= 0.0047 s  cg= 0.0057 s  speedup= 0.82x  diff=4.55e-13 calls=(9,9)
+large   p= 20 n= 25 K=2 dense= 0.0309 s  cg= 0.0313 s  speedup= 0.99x  diff=2.39e-12 calls=(10,10)
+```
+
+Fitted benchmark, frozen-probe SLQ determinant, finite-difference comparator
+(`reps=1` to keep the comparator cheap):
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_fit_bench.jl --full --gradient=finite --logdet=slq --nprobes=4 --lanczos-steps=20 --reps=1
+```
+
+Result:
+
+```text
+Structured Poisson fitted benchmark (full); reps=1, warmups=1, iterations=6, gradient=finite, logdet=slq
+small   p=  5 n=  8 K=1 dense= 0.0123 s  cg= 0.0116 s  speedup= 1.06x  diff=1.34e-09 calls=(8,8)
+medium  p=  8 n= 12 K=2 dense= 0.0625 s  cg= 0.0577 s  speedup= 1.08x  diff=7.03e-08 calls=(9,9)
+large   p= 20 n= 25 K=2 dense= 0.9753 s  cg= 0.8171 s  speedup= 1.19x  diff=2.16e-07 calls=(9,9)
+```
+
+SLQ finite-difference to SLQ trace-gradient speedup:
+
+| cell | path | finite SLQ (s) | trace SLQ (s) | speedup | abs loglik diff |
+| --- | --- | ---: | ---: | ---: | ---: |
+| small | dense mode | 0.0123 | 0.0018 | 6.83x | 1.34e-09 |
+| small | CG mode | 0.0116 | 0.0022 | 5.27x | 1.34e-09 |
+| medium | dense mode | 0.0625 | 0.0047 | 13.30x | 7.03e-08 |
+| medium | CG mode | 0.0577 | 0.0057 | 10.12x | 7.03e-08 |
+| large | dense mode | 0.9753 | 0.0309 | 31.56x | 2.16e-07 |
+| large | CG mode | 0.8171 | 0.0313 | 26.11x | 2.16e-07 |
+
+Single gradient-evaluation scaling, CG mode with 4 frozen probes:
+
+```text
+p=80 n=80 K=2 logdet=dense seconds=0.0094 value=-9667.157 gradnorm=75.3885
+p=80 n=80 K=2 logdet=slq seconds=0.0126 value=-9666.929 gradnorm=76.1265
+p=160 n=120 K=2 logdet=dense seconds=0.0386 value=-29138.3849 gradnorm=121.0937
+p=160 n=120 K=2 logdet=slq seconds=0.036 value=-29138.4019 gradnorm=121.7038
+p=320 n=160 K=2 logdet=dense seconds=0.1658 value=-77897.3181 gradnorm=168.0861
+p=320 n=160 K=2 logdet=slq seconds=0.1119 value=-77897.7654 gradnorm=171.9908
+p=640 n=160 K=2 logdet=dense seconds=0.5749 value=-152429.9588 gradnorm=210.2985
+p=640 n=160 K=2 logdet=slq seconds=0.1794 value=-152430.463 gradnorm=214.683
+```
+
+Interpretation: SLQ is slower than exact dense on very small fitted cells, but
+it begins to overtake exact dense gradient evaluation at `p≈160` and is about
+3.2x faster at `p=640` with 4 probes. This is a determinant-gradient substrate,
+not a final public large-p claim.
+
+### Test Suites
+
+Core suite:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. Manual tally from emitted `Test Summary` blocks:
+2303 pass, 1 existing broken sparse-phy precision placeholder, 2 expected
+quality placeholders in the direct core environment, 0 fail, 0 error.
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Manual tally from emitted `Test Summary` blocks: 2315 pass, 1 existing broken
+sparse-phy precision placeholder, 0 fail, 0 error.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+<private-source trace scan over tracked repo content>
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src docs/dev-log/check-log.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p|100x|100.?x|gllvmTMB" README.md docs/src docs/dev-log/check-log.md bench CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+```
+
+Results:
+
+- `git diff --check`: clean.
+- Private-upload trace scan: no matches.
+- Stale-wording scan: still finds the user-provided AGENTS.md "Gaussian only"
+  snapshot and historical check-log entries; no new stale public claim was
+  introduced.
+- Performance-claim scan: existing Gaussian/gllvmTMB speedup claims and
+  historical internal structured speed records. The new claim is explicitly
+  internal to the fixed-covariance structured Poisson SLQ trace-gradient
+  prototype.
+
+Open PR / collision check:
+
+```text
+[#59 draft: gllvmTMB catch-up: Delta-Gamma + zero-inflated (ZIP/ZINB) families + non-Gaussian CIs]
+```
+
+No issue or PR was modified.
+
 ## 2026-06-01 — Structured Poisson Schur Adjoint And Block Gradient
 
 ### Implemented Claim

@@ -590,6 +590,192 @@ function _structured_poisson_block_implicit_value_grad(θ::AbstractVector,
     return value, grad
 end
 
+function _structured_poisson_trace_implicit_value_grad(θ::AbstractVector,
+        Y::AbstractMatrix, precision::AbstractMatrix, p::Integer, K::Integer;
+        sigma2::Real, dense_cutoff::Integer = 256, probes = nothing,
+        rng::AbstractRNG = Random.default_rng(), nprobes::Integer = 16,
+        lanczos_steps::Integer = 40, reorth::Bool = false,
+        mode_solve::Symbol = :dense, cg_tol::Real = 1e-8,
+        cg_maxiter::Union{Nothing, Integer} = nothing,
+        maxiter::Integer = 50, tol::Real = 1e-8,
+        U_init = nothing, Z_init = nothing,
+        U_store = nothing, Z_store = nothing)
+    β, Λ = _structured_poisson_unpackθ(θ, p, K)
+    mode = _structured_poisson_mode(
+        Y, Λ, β, precision; sigma2 = sigma2, maxiter = maxiter, tol = tol,
+        mode_solve = mode_solve, cg_tol = cg_tol, cg_maxiter = cg_maxiter,
+        U_init = U_init, Z_init = Z_init, U_store = U_store, Z_store = Z_store)
+    U = mode.U
+    Z = mode.Z
+    n = size(Y, 2)
+    active_probes = probes === nothing ? _rademacher_probes(rng, p, nprobes) : probes
+    size(active_probes, 1) == p || throw(DimensionMismatch(
+        "probes must have $p rows; got $(size(active_probes, 1))"))
+    nprobe = size(active_probes, 2)
+    nprobe > 0 || throw(ArgumentError("at least one probe is required"))
+
+    T = promote_type(eltype(θ), eltype(Y), eltype(active_probes), typeof(float(sigma2)))
+    Q = _schur_precision_storage(precision, T)
+    L = _matrix_storage(Λ, T)
+    b = Vector{T}(β)
+    R = _matrix_storage(active_probes, T)
+    S = Matrix{T}(undef, p, n)
+    W = Matrix{T}(undef, p, n)
+    ℓ = _structured_poisson_lsw!(S, W, Y, L, b, U, Z)
+    op = _SchurUOperator(Q, L, W; sigma2 = sigma2)
+    logdet_Su = _schur_u_logdet(op; method = :slq,
+        dense_cutoff = dense_cutoff, probes = R, rng = rng,
+        nprobes = nprobe, lanczos_steps = lanczos_steps, reorth = reorth)
+
+    X = Matrix{T}(undef, p, nprobe)
+    if mode_solve == :dense
+        Csu = cholesky(_schur_u_dense(op))
+        copyto!(X, R)
+        ldiv!(Csu, X)
+    elseif mode_solve == :cg
+        r = zeros(T, p)
+        d = zeros(T, p)
+        q = zeros(T, p)
+        tmp_cg = zeros(T, K)
+        sol_cg = similar(tmp_cg)
+        @inbounds for j in 1:nprobe
+            fill!(view(X, :, j), zero(T))
+            cg = _schur_u_cg!(view(X, :, j), op, view(R, :, j),
+                r, d, q, tmp_cg, sol_cg; tol = cg_tol,
+                maxiter = cg_maxiter === nothing ? max(100, 2 * p) : cg_maxiter)
+            cg.converged || throw(ArgumentError(
+                "structured Poisson trace-gradient CG failed to converge; residual $(cg.residual)"))
+        end
+    else
+        throw(ArgumentError("mode_solve must be :dense or :cg; got $mode_solve"))
+    end
+
+    logdet_A = zero(T)
+    @inbounds for i in 1:n
+        logdet_A += logdet(op.Achols[i])
+    end
+    Qu = similar(U)
+    mul!(Qu, Q, U)
+    invsigma2 = inv(T(sigma2))
+    quad_u = invsigma2 * dot(U, Qu)
+    quad_z = sum(abs2, Z)
+    logdet_Qscaled = _structured_poisson_logdet_precision(Q) - p * log(T(sigma2))
+    value = ℓ - T(0.5) * (quad_z + quad_u + logdet_A + logdet_Su) +
+            T(0.5) * logdet_Qscaled
+
+    q_u = zeros(T, p)
+    q_Z = zeros(T, K, n)
+    gradβ = zeros(T, p)
+    gradΛ = zeros(T, p, K)
+    Usite = Matrix{T}(undef, p, K)
+    UR = Matrix{T}(undef, K, nprobe)
+    UX = Matrix{T}(undef, K, nprobe)
+    C = Matrix{T}(undef, K, K)
+    eyeK = Matrix{T}(I, K, K)
+    v = Vector{T}(undef, K)
+    geUt = Vector{T}(undef, K)
+    Cv = Vector{T}(undef, K)
+    tmp = Vector{T}(undef, K)
+    rz = Vector{T}(undef, K)
+    invnprobe = inv(T(nprobe))
+
+    @inbounds for i in 1:n
+        for t in 1:p
+            for k in 1:K
+                Usite[t, k] = W[t, i] * L[t, k]
+            end
+        end
+        mul!(UR, transpose(Usite), R)
+        mul!(UX, transpose(Usite), X)
+        mul!(C, UX, transpose(UR))
+        C .*= invnprobe
+        M = op.Achols[i] \ eyeK
+        for t in 1:p
+            Gtt = zero(T)
+            for j in 1:nprobe
+                Gtt += X[t, j] * R[t, j]
+            end
+            Gtt *= invnprobe
+            for k in 1:K
+                accv = zero(T)
+                accg = zero(T)
+                for l in 1:K
+                    accv += M[k, l] * L[t, l]
+                end
+                for j in 1:nprobe
+                    accg += UX[k, j] * R[t, j]
+                end
+                v[k] = accv
+                geUt[k] = accg * invnprobe
+            end
+            mul!(Cv, C, v)
+            for k in 1:K
+                tmp[k] = geUt[k] - Cv[k]
+            end
+            for k in 1:K
+                acc = v[k]
+                for l in 1:K
+                    acc -= M[k, l] * tmp[l]
+                end
+                rz[k] = acc
+            end
+            λMv = zero(T)
+            geUv = zero(T)
+            vCv = zero(T)
+            for k in 1:K
+                λMv += L[t, k] * v[k]
+                geUv += geUt[k] * v[k]
+                vCv += v[k] * Cv[k]
+            end
+            h = Gtt + λMv - T(2) * geUv + vCv
+            Wh = W[t, i] * h
+            a = S[t, i] - T(0.5) * Wh
+            q_u[t] -= T(0.5) * Wh
+            gradβ[t] += a
+            for k in 1:K
+                q_Z[k, i] -= T(0.5) * Wh * L[t, k]
+                gradΛ[t, k] += a * Z[k, i] - W[t, i] * rz[k]
+            end
+        end
+    end
+
+    qx = Vector{T}(undef, p + K * n)
+    copyto!(view(qx, 1:p), q_u)
+    @inbounds for i in 1:n
+        offset = p + (i - 1) * K
+        for k in 1:K
+            qx[offset + k] = q_Z[k, i]
+        end
+    end
+    α = _structured_poisson_joint_solve(
+        qx, op; mode_solve = mode_solve, cg_tol = cg_tol,
+        cg_maxiter = cg_maxiter)
+    αu = @view α[1:p]
+    αZ = reshape(@view(α[(p + 1):end]), K, n)
+    @inbounds for i in 1:n
+        for t in 1:p
+            δ = αu[t]
+            for k in 1:K
+                δ += L[t, k] * αZ[k, i]
+            end
+            gradβ[t] -= W[t, i] * δ
+            for k in 1:K
+                gradΛ[t, k] += S[t, i] * αZ[k, i] - W[t, i] * Z[k, i] * δ
+            end
+        end
+    end
+
+    grad = zeros(T, length(θ))
+    copyto!(view(grad, 1:p), gradβ)
+    @inbounds for k in 1:K
+        grad[p + k] = gradΛ[k, k]
+        for t in (k + 1):p
+            grad[p + _lower_index(p, K, t, k)] = gradΛ[t, k]
+        end
+    end
+    return value, grad
+end
+
 function _structured_poisson_implicit_value_grad(θ::AbstractVector,
         Y::AbstractMatrix, precision::AbstractMatrix, p::Integer, K::Integer;
         sigma2::Real, logdet_method::Symbol = :dense,
@@ -603,6 +789,14 @@ function _structured_poisson_implicit_value_grad(θ::AbstractVector,
         U_store = nothing, Z_store = nothing)
     if logdet_method == :dense
         return _structured_poisson_block_implicit_value_grad(
+            θ, Y, precision, p, K; sigma2 = sigma2, dense_cutoff = dense_cutoff,
+            probes = probes, rng = rng, nprobes = nprobes,
+            lanczos_steps = lanczos_steps, reorth = reorth,
+            mode_solve = mode_solve, cg_tol = cg_tol, cg_maxiter = cg_maxiter,
+            maxiter = maxiter, tol = tol, U_init = U_init, Z_init = Z_init,
+            U_store = U_store, Z_store = Z_store)
+    elseif logdet_method == :slq || (logdet_method == :auto && p > dense_cutoff)
+        return _structured_poisson_trace_implicit_value_grad(
             θ, Y, precision, p, K; sigma2 = sigma2, dense_cutoff = dense_cutoff,
             probes = probes, rng = rng, nprobes = nprobes,
             lanczos_steps = lanczos_steps, reorth = reorth,

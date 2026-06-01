@@ -79,12 +79,28 @@ end
     value, gimp = GLLVM._structured_poisson_implicit_value_grad(
         θ0, Y, precision, p, K; sigma2 = 0.5, logdet_method = :dense,
         mode_solve = :dense, maxiter = 100, tol = 1e-12)
+    full_basis = sqrt(float(p)) .* Matrix{Float64}(I, p, p)
+    value_slq, gslq = GLLVM._structured_poisson_implicit_value_grad(
+        θ0, Y, precision, p, K; sigma2 = 0.5, logdet_method = :slq,
+        probes = full_basis, lanczos_steps = p, reorth = true,
+        mode_solve = :dense, maxiter = 100, tol = 1e-12)
+    value_slq_cg, gslq_cg = GLLVM._structured_poisson_implicit_value_grad(
+        θ0, Y, precision, p, K; sigma2 = 0.5, logdet_method = :slq,
+        probes = full_basis, lanczos_steps = p, reorth = true,
+        mode_solve = :cg, cg_tol = 1e-12, cg_maxiter = 100,
+        maxiter = 100, tol = 1e-12)
     gfd = structured_central_difference_gradient(loglik, θ0)
 
     @test value ≈ loglik(θ0) atol = 1e-10 rtol = 1e-10
+    @test value_slq ≈ value atol = 1e-8 rtol = 1e-8
+    @test value_slq_cg ≈ value atol = 1e-8 rtol = 1e-8
     @test all(isfinite, gimp)
+    @test all(isfinite, gslq)
+    @test all(isfinite, gslq_cg)
     @test all(isfinite, gfd)
     @test maximum(abs.(gimp .- gfd)) ≤ 1e-6
+    @test maximum(abs.(gslq .- gimp)) ≤ 1e-6
+    @test maximum(abs.(gslq_cg .- gimp)) ≤ 1e-6
 
     mode = GLLVM._structured_poisson_mode(
         Y, Λ, β, precision; sigma2 = 0.5, mode_solve = :dense,
