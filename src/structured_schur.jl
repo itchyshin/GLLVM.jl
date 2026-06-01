@@ -647,14 +647,15 @@ end
 
 function _schur_u_woodbury_inv_diag(wb::_SchurUWoodbury)
     d = _schur_chol_inv_diag(wb.Bchol)
-    Y = wb.Hchol \ transpose(wb.BinvC)
+    # diag(B H^-1 B') = columnwise ||L \ B'||^2 for H = L L'.
+    Y = wb.Hchol.L \ transpose(wb.BinvC)
     p, r = size(wb.BinvC)
     length(d) == p || throw(DimensionMismatch(
         "base inverse diagonal must have length $p; got $(length(d))"))
     @inbounds for i in 1:p
         acc = zero(eltype(d))
         for j in 1:r
-            acc += wb.BinvC[i, j] * Y[j, i]
+            acc += abs2(Y[j, i])
         end
         d[i] += acc
     end

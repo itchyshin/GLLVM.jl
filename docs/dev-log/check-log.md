@@ -1,5 +1,103 @@
 # Check Log
 
+## 2026-06-01 - Woodbury Diagonal Triangular Correction
+
+### Scope
+
+Replaced the exact Woodbury inverse-diagonal correction
+`diag(BinvC * H^-1 * BinvC')` with the equivalent triangular form
+`sum(abs2, L \\ BinvC')`, where `H = L * L'`. This keeps the same exact
+determinant-lemma path and changes no public API or fitter default.
+
+The discarded CHOLMOD column-wise base-solve probe was slower than the current
+matrix RHS solve:
+
+```text
+cholmod_batch p=512 n=128 K=2 current=0.002258 colwise=0.002681 speedup=0.84x bytes=(6.82e+06, 9.07e+06) err=6.94e-18
+```
+
+### Correctness Tests
+
+Focused structured tests:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_schur.jl"); include("test/test_structured_poisson_laplace.jl")'
+```
+
+Result: 165 pass, 0 fail, 0 error.
+
+Core suite:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: 2379 pass, 3 broken placeholders, 0 fail, 0 error.
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result: 2391 pass, 1 existing broken sparse-phy precision placeholder, 0 fail,
+0 error. The `quality` testset passed 12/12, covering Aqua/JET in the full
+package battery.
+
+### Benchmark Evidence
+
+Woodbury inverse-diagonal helper microbenchmark, old SPD solve vs new
+triangular correction:
+
+```text
+woodbury_diag_tri p=512 n=128 K=2 old=0.002649 new=0.000719 speedup=3.68x bytes=(1.13e+06, 1.65e+06) err=1.73e-18
+woodbury_diag_tri p=1024 n=256 K=2 old=0.006510 new=0.003240 speedup=2.01x bytes=(4.35e+06, 6.45e+06) err=1.73e-18
+woodbury_diag_tri p=2048 n=512 K=2 old=0.026719 new=0.014880 speedup=1.80x bytes=(1.71e+07, 2.55e+07) err=8.67e-19
+```
+
+Structured Poisson exact lemma-gradient benchmark after the diagonal change:
+
+```sh
+julia --project=. --startup-file=no bench/structured_poisson_lemma_gradient_bench.jl --break-even --reps=2 --warmups=1 --out=/tmp/structured-poisson-lemma-gradient-tri-diag.csv
+```
+
+Result:
+
+```text
+medium   p= 512 n= 128 K=2 dense=  0.0351 s lemma=  0.0286 s speedup= 1.23x bytes=(9.87e+06, 1.87e+07) valuediff=0.00e+00 gradrel=1.21e-16
+large    p=1024 n= 256 K=2 dense=  0.1167 s lemma=  0.1092 s speedup= 1.07x bytes=(3.86e+07, 7.31e+07) valuediff=0.00e+00 gradrel=1.71e-16
+xlarge   p=2048 n= 512 K=2 dense=  0.7969 s lemma=  0.4118 s speedup= 1.94x bytes=(1.53e+08, 2.89e+08) valuediff=0.00e+00 gradrel=1.73e-16
+```
+
+Interpretation: the helper diagonal correction is faster but allocates more in
+isolation. The full lemma-gradient route remains exact and fastest in the
+largest cell, but memory is still not good enough for a default-policy change.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+<private-source trace scan over tracked repo content>
+<placeholder rerun scan over current check-log and after-task report>
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-01-woodbury-diag-triangular.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p|100x|100.?x|gllvmTMB" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-01-woodbury-diag-triangular.md bench CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+gh pr list --limit 5 --json number,title,headRefName,isDraft,state
+```
+
+Results:
+
+- `git diff --check`: clean.
+- Private-source trace scan over tracked public artifacts: clean.
+- Placeholder rerun scan: clean for the pending/rerun guard patterns.
+- Stale-wording scan: expected historical and command-pattern hits only; no
+  public API/status claim changed by this internal helper cleanup.
+- Performance-claim scan: expected existing Gaussian/gllvmTMB and internal
+  benchmark-log hits only; no public 100x structured speed claim was added.
+- GitHub lane check: open PR #59 remains the separate draft
+  `claude/package-work-catchup-mQiZM`; this slice did not edit that lane.
+
 ## 2026-06-01 - Woodbury Apply Correction In-Place
 
 ### Scope
