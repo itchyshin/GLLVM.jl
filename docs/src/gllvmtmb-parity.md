@@ -70,9 +70,25 @@ fit-time gains.
 
 ## Honest gaps
 
-- **Confidence intervals** — Wald / profile / parametric bootstrap are wired for
-  every family (Gaussian, the GLM families, the two-part families, and ordinal).
-- **Structured dependence (phylo / animal / spatial) with non-Gaussian responses** — in design/build (b).
-- **`@formula` interface and random slopes** — in build (c).
-- **Tweedie / exponential families** — planned.
-- **R bridge (`engine = "julia"`)** — deferred (post-v1.0).
+What's **done**: every response family except Tweedie; fixed-effect covariates
+(`Xβ`) for the non-Gaussian families (`fit_gllvm_cov`); and confidence intervals
+(Wald / profile / parametric bootstrap) for every family.
+
+The remaining gaps are each scoped by an execution-ready spec in
+`docs/superpowers/specs/` (design + slice plan + verifiable goals), so they can be
+built *with* validation rather than shipped unverified:
+
+- **Structured dependence (phylo / animal / spatial) × non-Gaussian** — a joint /
+  nested-Laplace substrate (a species random effect `u ~ N(0, σ²Σ)` shared across
+  sites). Spec: `2026-05-31-nongaussian-structured-dependence-design.md`. Verdict:
+  dense-`S_u`, moderate-`p` v1 is ~2 weeks; the scalable large-`p` determinant is a
+  research-flavoured follow-on.
+- **Tweedie family** — compound Poisson–Gamma (`Var = φμ^p`); reuses the scalar-μ
+  Laplace core, the only hard part is the density series. Spec:
+  `2026-06-01-tweedie-family-design.md`. Verdict: `p`-fixed is a ~2–3 day slice.
+- **`@formula` front-end + random slopes** — designed
+  (`2026-05-31-formula-frontend-random-slopes-design.md`); **blocked on a maintainer
+  decision** to add StatsModels + Tables — see
+  `2026-06-01-formula-dependency-decision.md`.
+- **R bridge (`engine = "julia"`)** — deferred (post-v1.0); depends on the
+  `@formula` front-end.
