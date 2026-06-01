@@ -30,6 +30,7 @@ include("families/negbin.jl")            # Negative-binomial family pieces (Phas
 include("families/beta.jl")              # Beta family pieces (Phase 3)
 include("families/ordinal.jl")           # Ordinal (cumulative-logit) family pieces (Phase 3)
 include("families/gamma.jl")             # Gamma (positive continuous) family pieces (Phase 3)
+include("families/twopart.jl")           # Two-part substrate + Delta-lognormal (Phase 3)
 include("families/fit_gllvm.jl")         # unified fit_gllvm(Y; family) dispatcher
 
 # Post-fit API (ordination, predict, residuals, summary)
