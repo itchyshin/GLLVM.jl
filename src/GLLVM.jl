@@ -15,7 +15,7 @@ include("simulate.jl")
 include("structured_cov.jl")             # spatial_cov, relatedness_cov builders
 include("structured_schur.jl")           # internal Schur/SLQ substrate for structured non-Gaussian Laplace
 
-# Sparse phylogenetic path (evaluation-only — see docstring for AD limitation)
+# Sparse phylogenetic path (CHOLMOD-backed value path + analytic-gradient fitter)
 include("sparse_phy.jl")
 include("likelihood_sparse_phy.jl")
 include("sparse_phy_grad.jl")            # analytic gradient + SparsePhyState (self-includes takahashi_selinv.jl)

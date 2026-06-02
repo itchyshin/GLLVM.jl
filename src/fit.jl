@@ -58,9 +58,234 @@ struct GllvmFit
     cputime::Float64
 end
 
+const _SPARSE_PHY_FIT_PENALTY = 1e12
+
+function _pack_lambda_gradient(G::AbstractMatrix, p::Integer, K::Integer)
+    out = Vector{Float64}(undef, rr_theta_len(p, K))
+    @inbounds for k in 1:K
+        out[k] = G[k, k]
+    end
+    @inbounds for k in 1:K
+        for i in (k + 1):p
+            out[_lower_index(p, K, i, k)] = G[i, k]
+        end
+    end
+    return out
+end
+
+function _sparse_phy_objective_grad(y::AbstractMatrix, θ::AbstractVector,
+                                    p::Integer, K_B::Integer, K_phy::Integer,
+                                    has_phy_unique::Bool, phy)
+    if !all(isfinite, θ)
+        return _SPARSE_PHY_FIT_PENALTY, fill(0.0, length(θ))
+    end
+    rr_B = rr_theta_len(p, K_B)
+    cursor = 0
+    θ_B = @view θ[(cursor + 1):(cursor + rr_B)]
+    cursor += rr_B
+    log_σ_eps = θ[cursor + 1]
+    cursor += 1
+    Λ_B = unpack_lambda(θ_B, p, K_B)
+    abs(log_σ_eps) < 50 ||
+        return _SPARSE_PHY_FIT_PENALTY + sum(abs2, θ), 2 .* collect(θ)
+    σ_eps = exp(log_σ_eps)
+
+    Λ_phy = nothing
+    σ_phy = nothing
+    if K_phy > 0
+        rr_phy = rr_theta_len(p, K_phy)
+        θ_phy = @view θ[(cursor + 1):(cursor + rr_phy)]
+        cursor += rr_phy
+        Λ_phy = unpack_lambda(θ_phy, p, K_phy)
+    end
+    if has_phy_unique
+        σ_phy = collect(@view θ[(cursor + 1):(cursor + p)])
+        cursor += p
+    end
+    cursor == length(θ) || error("Internal sparse phy fit packing bug")
+
+    st = try
+        build_sparse_phy_state(y, Λ_B, σ_eps;
+                               Λ_phy = Λ_phy, σ_phy = σ_phy, phy = phy,
+                               σ²_phy = 1.0)
+    catch
+        return _SPARSE_PHY_FIT_PENALTY + sum(abs2, θ), 2 .* collect(θ)
+    end
+    ll = try
+        sparse_phy_value(st)
+    catch
+        return _SPARSE_PHY_FIT_PENALTY + sum(abs2, θ), 2 .* collect(θ)
+    end
+    isfinite(ll) ||
+        return _SPARSE_PHY_FIT_PENALTY + sum(abs2, θ), 2 .* collect(θ)
+    g = try
+        sparse_phy_grad(st; want_σ²_eps = true)
+    catch
+        return _SPARSE_PHY_FIT_PENALTY + sum(abs2, θ), 2 .* collect(θ)
+    end
+
+    grad = Vector{Float64}(undef, length(θ))
+    cursor = 0
+    grad[(cursor + 1):(cursor + rr_B)] .= -_pack_lambda_gradient(g.dΛ_B, p, K_B)
+    cursor += rr_B
+    grad[cursor + 1] = -(2 * σ_eps^2 * g.dσ²_eps)
+    cursor += 1
+    if K_phy > 0
+        rr_phy = rr_theta_len(p, K_phy)
+        grad[(cursor + 1):(cursor + rr_phy)] .= -_pack_lambda_gradient(g.dΛ_phy, p, K_phy)
+        cursor += rr_phy
+    end
+    if has_phy_unique
+        grad[(cursor + 1):(cursor + p)] .= -g.dσ_phy
+    end
+    return -ll, grad
+end
+
+function _fit_gaussian_sparse_phy_analytic(y::AbstractMatrix;
+        K::Integer, K_W::Integer, has_diag::Bool, K_phy::Integer,
+        has_phy_unique::Bool, phy, X, σ_eps_init, λ_init, λ_phy_init,
+        σ_phy_init, β_init, x_tol, f_tol, g_tol, iterations)
+    p, n = size(y)
+    K_W == 0 || throw(ArgumentError("phy fast path currently requires K_W = 0"))
+    !has_diag || throw(ArgumentError("phy fast path currently requires has_diag = false"))
+    X === nothing || throw(ArgumentError("phy fast path currently requires X = nothing"))
+    β_init === nothing || throw(ArgumentError("phy fast path currently requires β_init = nothing"))
+    ((K_phy == 1 && !has_phy_unique) || (K_phy == 0 && has_phy_unique)) ||
+        throw(ArgumentError(
+            "phy fast path currently supports exactly one phylogenetic axis: " *
+            "`K_phy == 1, has_phy_unique == false` or " *
+            "`K_phy == 0, has_phy_unique == true`"))
+
+    phy_obj = phy isa AbstractString ? augmented_phy(phy) : phy
+    hasproperty(phy_obj, :n_leaves) ||
+        throw(ArgumentError("phy must be an AugmentedPhy or Newick string"))
+    phy_obj.n_leaves == p ||
+        throw(ArgumentError("y first dim ($p) must equal phy.n_leaves ($(phy_obj.n_leaves))"))
+
+    λ0, σ0 = if λ_init === nothing && σ_eps_init == 1.0 && K < p
+        ppca_init(y, K)
+    else
+        λ_in = λ_init === nothing ? unpack_lambda(init_theta_rr(p, K), p, K) : Matrix{Float64}(λ_init)
+        λ_in, float(σ_eps_init)
+    end
+    σ0 > 0 || throw(ArgumentError("σ_eps_init must be positive; got $σ0"))
+
+    θ_B0 = pack_lambda(λ0)
+    pieces = Vector{Float64}[θ_B0, Float64[log(σ0)]]
+    if K_phy > 0
+        Λ_phy0 = λ_phy_init === nothing ? fill(0.1, p, K_phy) : Matrix{Float64}(λ_phy_init)
+        push!(pieces, pack_lambda(Λ_phy0))
+    end
+    if has_phy_unique
+        σ_phy0 = σ_phy_init isa AbstractVector ? collect(Float64, σ_phy_init) :
+                 fill(float(σ_phy_init), p)
+        length(σ_phy0) == p ||
+            throw(ArgumentError("σ_phy_init length ($(length(σ_phy0))) must equal p ($p)"))
+        push!(pieces, σ_phy0)
+    end
+    θ0 = reduce(vcat, pieces)
+
+    function fg!(F, G, θ)
+        val, grad = _sparse_phy_objective_grad(y, θ, p, K, K_phy, has_phy_unique, phy_obj)
+        G !== nothing && copyto!(G, grad)
+        return F === nothing ? nothing : val
+    end
+
+    opts = Optim.Options(
+        x_abstol = x_tol,
+        f_reltol = f_tol,
+        g_tol = g_tol,
+        iterations = iterations,
+        show_trace = false,
+    )
+    t0 = time()
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
+    res = Optim.optimize(Optim.only_fg!(fg!), θ0, ls, opts)
+    if has_phy_unique
+        rr_B = rr_theta_len(p, K)
+        ρ_range = (rr_B + 2):(rr_B + 1 + p)
+        θ_hat = Optim.minimizer(res)
+        max_flip_iters = p + 2
+        for _ in 1:max_flip_iters
+            nll_current, _ = _sparse_phy_objective_grad(
+                y, θ_hat, p, K, K_phy, has_phy_unique, phy_obj)
+            best_drop = 0.0
+            best_idx = 0
+            for t in 1:p
+                trial = copy(θ_hat)
+                trial[ρ_range[t]] = -trial[ρ_range[t]]
+                nll_trial, _ = _sparse_phy_objective_grad(
+                    y, trial, p, K, K_phy, has_phy_unique, phy_obj)
+                drop = nll_current - nll_trial
+                if drop > best_drop + 1e-8
+                    best_drop = drop
+                    best_idx = t
+                end
+            end
+            best_idx == 0 && break
+            θ_seed = copy(θ_hat)
+            θ_seed[ρ_range[best_idx]] = -θ_seed[ρ_range[best_idx]]
+            res_flip = Optim.optimize(Optim.only_fg!(fg!), θ_seed, ls, opts)
+            if Optim.minimum(res_flip) < Optim.minimum(res) - 1e-8
+                res = res_flip
+                θ_hat = Optim.minimizer(res)
+            else
+                break
+            end
+        end
+    end
+    t1 = time()
+    θ̂ = Optim.minimizer(res)
+
+    rr_B = rr_theta_len(p, K)
+    cursor = 0
+    Λ_B_hat = unpack_lambda(@view(θ̂[(cursor + 1):(cursor + rr_B)]), p, K)
+    cursor += rr_B
+    σ_eps_hat = exp(θ̂[cursor + 1])
+    cursor += 1
+    Λ_phy_hat = nothing
+    σ_phy_hat = nothing
+    if K_phy > 0
+        rr_phy = rr_theta_len(p, K_phy)
+        Λ_phy_hat = unpack_lambda(@view(θ̂[(cursor + 1):(cursor + rr_phy)]), p, K_phy)
+        cursor += rr_phy
+    end
+    if has_phy_unique
+        σ_phy_hat = collect(@view θ̂[(cursor + 1):(cursor + p)])
+        i_max = argmax(abs.(σ_phy_hat))
+        if σ_phy_hat[i_max] < 0
+            σ_phy_hat .= -σ_phy_hat
+        end
+    end
+
+    legacy_pieces = Vector{Float64}[Float64[log(σ_eps_hat)], pack_lambda(Λ_B_hat)]
+    has_phy_unique && push!(legacy_pieces, σ_phy_hat)
+    K_phy > 0 && push!(legacy_pieces, pack_lambda(Λ_phy_hat))
+    θ_packed_legacy = reduce(vcat, legacy_pieces)
+
+    return GllvmFit(
+        GllvmModel(Int(p), Int(K), 0, false, Int(K_phy), has_phy_unique),
+        (σ_eps = σ_eps_hat,
+         Λ = Λ_B_hat,
+         β = Float64[],
+         Λ_W = nothing,
+         σ²_B = nothing,
+         σ²_W = nothing,
+         Λ_phy = Λ_phy_hat,
+         σ_phy = σ_phy_hat,
+         θ_packed = θ_packed_legacy),
+        -Optim.minimum(res),
+        Optim.iterations(res),
+        Optim.converged(res),
+        res,
+        t1 - t0,
+    )
+end
+
 """
     fit_gaussian_gllvm(y; K, K_W=0, has_diag=false, K_phy=0,
-                       has_phy_unique=false, Σ_phy=nothing, X=nothing,
+                       has_phy_unique=false, Σ_phy=nothing, phy=nothing,
+                       X=nothing,
                        σ_eps_init=1.0, λ_init=nothing, λ_W_init=nothing,
                        λ_phy_init=nothing,
                        σ²_B_init=0.1, σ²_W_init=0.1, σ_phy_init=0.1,
@@ -86,6 +311,11 @@ Optional extensions:
   `has_phy_unique::Bool = false` (per-trait σ_phy), and
   `Σ_phy::AbstractMatrix` (p × p species covariance, required when
   `K_phy > 0` or `has_phy_unique`).
+- Sparse Brownian-motion phylogenetic fast path: pass `phy` as an
+  `AugmentedPhy` or Newick string instead of dense `Σ_phy`. This route uses the
+  hand-coded sparse/Takahashi analytic gradient for the current single-axis
+  cases (`K_phy == 1, has_phy_unique == false` or
+  `K_phy == 0, has_phy_unique == true`) with no `X`, W tier, or diagonal tier.
 
 Optional fixed effects:
 - `X::AbstractArray{<:Real, 3}` of shape `(p, n_sites, q)`.
@@ -103,6 +333,7 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
                             K_phy::Integer = 0,
                             has_phy_unique::Bool = false,
                             Σ_phy::Union{Nothing, AbstractMatrix} = nothing,
+                            phy = nothing,
                             X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
                             σ_eps_init = 1.0,
                             λ_init = nothing,
@@ -122,9 +353,20 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
     @assert K_phy ≥ 0
     @assert n ≥ p "Need n_sites ≥ p for a well-posed Gaussian GLLVM"
 
-    if (K_phy > 0 || has_phy_unique) && Σ_phy === nothing
+    if (K_phy > 0 || has_phy_unique) && Σ_phy === nothing && phy === nothing
         throw(ArgumentError(
-            "Σ_phy is required when K_phy > 0 or has_phy_unique = true"))
+            "Σ_phy or phy is required when K_phy > 0 or has_phy_unique = true"))
+    end
+    if Σ_phy !== nothing && phy !== nothing
+        throw(ArgumentError("Pass only one of Σ_phy or phy; got both."))
+    end
+    if phy !== nothing
+        return _fit_gaussian_sparse_phy_analytic(
+            y; K = K, K_W = K_W, has_diag = has_diag, K_phy = K_phy,
+            has_phy_unique = has_phy_unique, phy = phy, X = X,
+            σ_eps_init = σ_eps_init, λ_init = λ_init, λ_phy_init = λ_phy_init,
+            σ_phy_init = σ_phy_init, β_init = β_init, x_tol = x_tol,
+            f_tol = f_tol, g_tol = g_tol, iterations = iterations)
     end
     if Σ_phy !== nothing
         size(Σ_phy, 1) == p && size(Σ_phy, 2) == p ||

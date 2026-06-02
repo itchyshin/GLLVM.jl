@@ -86,7 +86,8 @@ with sparse random-effect design matrices. `GLLVM.jl` solves a
 - Latent factor block (Λ_B, K-dimensional)
 - Observation-level latent factors (Λ_W)
 - Per-trait diagonal random effects (σ²_B, σ²_W)
-- Phylogenetic random effects (`phylo_latent`, `phylo_unique`) with user-supplied Σ_phy
+- Phylogenetic random effects (`phylo_latent`, `phylo_unique`) with dense
+  `Σ_phy`, plus sparse Brownian-tree single-axis fits via `phy=...`
 - Wald / profile / bootstrap CIs
 - Reverse-mode AD (via Enzyme.jl / ReverseDiff.jl)
 - PPCA closed-form initialisation

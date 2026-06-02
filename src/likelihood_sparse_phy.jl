@@ -66,13 +66,14 @@
 # Q_full_cond = blockdiag(Q_cond)^{K_aug}, so logdet(Q_full_cond) =
 # K_aug · logdet(Q_cond). The σ²_phy factor enters only through α.
 #
-# === Note on AD ===
+# === Note on AD and fitting ===
 # CHOLMOD operates on Float64 / Float32 only — ForwardDiff.Dual element
 # types are not supported. The sparse path therefore CASTS its inputs to
 # Float64 for the sparse solve; users who need AD through Σ_phy
 # parameters should fall back to the dense `gaussian_marginal_loglik`.
-# The result is still returned in the input promoted eltype so that
-# downstream code stays generic.
+# `fit_gaussian_gllvm(...; phy=...)` instead uses the hand-coded sparse
+# analytic gradient for the currently supported single-axis Brownian tree
+# cases.
 
 using SparseArrays
 using LinearAlgebra
@@ -94,14 +95,15 @@ as O(p) thanks to the sparse Cholesky on the augmented precision.
 Use this on phylogenies with hundreds to tens of thousands of species,
 where forming or factorising the dense p × p Σ_phy is prohibitive.
 
-# Evaluation-only (AD limitation)
+# AD limitation and fitter support
 
-This path is **evaluation-only**: CHOLMOD (Julia's sparse Cholesky) does
-not support `ForwardDiff.Dual` element types, so inputs are cast to
-`Float64` for the sparse solve. AD-based fitting (`fit_gaussian_gllvm`)
-must therefore use the dense `gaussian_marginal_loglik` path. The sparse
-path is intended for likelihood evaluation, simulation, and verification
-on large trees — not for the optimiser's inner loop.
+This likelihood function is **evaluation-only**: CHOLMOD (Julia's sparse
+Cholesky) does not support `ForwardDiff.Dual` element types, so inputs are
+cast to `Float64` for the sparse solve. Sparse fitting is still available
+through `fit_gaussian_gllvm(...; phy=...)` for the current single-axis
+Brownian tree cases because that route uses the hand-coded Takahashi
+analytic gradient rather than ForwardDiff through CHOLMOD. General
+multi-axis sparse fitting remains a later extension.
 """
 function gaussian_marginal_loglik_sparse_phy(y::AbstractMatrix,
                                              Λ_B::AbstractMatrix,

@@ -5008,6 +5008,111 @@ Results:
 - GitHub lane check: PR #59 remains the separate draft
   `claude/package-work-catchup-mQiZM` lane; no PR or issue was modified.
 
+## 2026-06-02 - Sparse Phy Analytic Fitter Route
+
+### Scope
+
+Wired `fit_gaussian_gllvm(...; phy=...)` to the sparse Brownian-tree analytic
+gradient for the current single-axis Gaussian phylogenetic cases:
+
+- `K_phy == 0, has_phy_unique == true`
+- `K_phy == 1, has_phy_unique == false`
+
+The dense `Σ_phy` route remains the general path. The sparse route rejects
+multi-axis combinations, fixed effects, W-tier, and diagonal-tier fits for now,
+and treats `Σ_phy` and `phy` as mutually exclusive inputs.
+
+### Correctness Tests
+
+Focused fitter smoke:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_fit.jl")'
+```
+
+Result: 27 pass, 0 fail, 0 error.
+
+Core suite:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: exit code 0. Manual tally from emitted `Test Summary` blocks:
+2414 pass, 1 existing sparse-phy precision placeholder, 2 expected
+direct-environment quality placeholders, 0 fail, 0 error.
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Manual tally from emitted summaries: 2426 pass, 1 existing sparse-phy precision
+placeholder, 0 fail, 0 error.
+
+Docs:
+
+```sh
+julia --project=. --startup-file=no -e 'push!(LOAD_PATH, "docs"); include("docs/make.jl")'
+```
+
+Result: exit code 0. Local build succeeded with pre-existing invalid-local-link
+warnings, Vitepress default-file warnings, missing logo/favicon warnings, and
+npm audit notices.
+
+### Benchmark Evidence
+
+Local timing smoke, unique sparse phylo cell, three timed refits after warmup:
+
+```text
+p=32, n=64:
+dense Σ_phy median = 0.428047042 s
+sparse phy median  = 0.068494209 s
+speedup            = 6.249390251371469x
+dense reps         = [0.458757292, 0.428047042, 0.409211042]
+sparse reps        = [0.05248425, 0.076899625, 0.068494209]
+```
+
+The attempted p=64/n=96 timing cell was terminated after the dense baseline ran
+too long for a quick audit smoke.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+rg -n "evaluation-only|AD-based fitting|must therefore use the dense|Dense path only|Σ_phy is required|user-supplied Σ_phy|phy fast path|phy=\\.\\.\\.|Brownian-tree" README.md docs/src src test
+rg -n "JABE|OneDrive|Library/CloudStorage|uploaded|private PDF|private-file|PDF" README.md docs/src src test docs/dev-log/check-log.md docs/dev-log/after-task -g '!docs/build/**' -g '!docs/node_modules/**'
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-02-sparse-phy-fit-analytic.md CLAUDE.md AGENTS.md -g '!docs/node_modules/**'
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p|100x|100.?x|gllvmTMB|6\\.25x|6\\.249" README.md docs/src docs/dev-log/check-log.md docs/dev-log/after-task bench CLAUDE.md AGENTS.md -g '!docs/node_modules/**' -g '!docs/build/**'
+gh pr list --limit 5 --json number,title,headRefName,isDraft,state,url
+```
+
+Results:
+
+- `git diff --check`: clean.
+- Sparse-phy stale wording scan: expected current `evaluation-only for
+  ForwardDiff` wording remains; stale "must use dense fitter" wording was
+  removed from the touched public docs.
+- Private-source trace scan: one historical check-log note only; no trace in
+  this slice's changed source, README, docs, tests, or new after-task report.
+- Stale wording scan: expected historical check-log hits and the user-provided
+  AGENTS.md "Gaussian only" snapshot.
+- Performance-claim scan: expected historical benchmark logs and existing
+  Gaussian/gllvmTMB claims. This slice adds only internal Julia dense-vs-sparse
+  timing evidence, not a new R `gllvmTMB` parity or public 100x claim.
+- GitHub lane check: PR #60 is this draft branch; PR #59 remains the separate
+  draft `claude/package-work-catchup-mQiZM`.
+
 ## 2026-06-01 - Structured Poisson Exact Lemma Gradient Route
 
 ### Scope

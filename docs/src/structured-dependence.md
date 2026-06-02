@@ -28,11 +28,10 @@ The marginal covariance of `vec(y)` is `I_n ⊗ A + J_n ⊗ B` where
 - `A = Λ_B Λ_B' + σ²_eps I_p` (site covariance),
 - `B = (Λ_phy_aug Λ_phy_aug') .* Σ_phy` (structured between-site block).
 
-Two p × p Cholesky factorisations handle this regardless of `n`.
-
-> **Dense path only.** The fast O(p) sparse path (`likelihood_sparse_phy.jl`,
-> `sparse_phy.jl`) exploits tree structure and is not applicable here. The
-> standard dense Gaussian path is used for all three cases below.
+Two p × p Cholesky factorisations handle this regardless of `n` on the dense
+path. For Brownian-motion phylogenies represented as a GLLVM `AugmentedPhy`,
+the current single-axis tree cases can instead use the sparse CHOLMOD /
+Takahashi route via `phy=...` and never materialise `Σ_phy`.
 
 ---
 
@@ -56,6 +55,27 @@ fit = fit_gaussian_gllvm(y;
 
 `vcv` returns a VCV matrix on the identity scale; the result is the
 Hadfield & Nakagawa (2010) phylogenetic mixed model.
+
+For Brownian-motion trees that can be represented by GLLVM's sparse tree
+helpers, pass the tree directly. This route currently supports one
+phylogenetic axis at a time: either per-trait structured SDs
+(`has_phy_unique = true`) or one structured latent axis (`K_phy = 1`).
+
+```julia
+using GLLVM
+
+phy = augmented_phy("((sp1:0.1,sp2:0.1):0.2,(sp3:0.2,sp4:0.2):0.1);")
+
+fit = fit_gaussian_gllvm(y;
+    K              = 1,
+    has_phy_unique = true,
+    phy            = phy)
+```
+
+The sparse route fixes the tree scale at `σ²_phy = 1.0`, matching the dense
+call `Σ_phy = sigma_phy_dense(phy; σ²_phy = 1.0)`. The estimated `Λ_phy` or
+`σ_phy` values absorb the random-effect scale, so `Σ_phy` and `phy` are
+mutually exclusive inputs.
 
 ---
 
@@ -138,13 +158,16 @@ relatedness_cov
 
 ## When to use each representation
 
-| Use case                                           | `Σ_phy` source                             |
-|----------------------------------------------------|---------------------------------------------|
-| Species traits with shared evolutionary history    | Phylogenetic VCV from tree (`vcv`)          |
+| Use case                                           | Structured input                             |
+|----------------------------------------------------|----------------------------------------------|
+| Species traits with shared evolutionary history    | `Σ_phy` from a VCV, or sparse Brownian `phy` |
 | Individual-level data with known pedigree          | NRM from pedigree tools (`kinship2`, `nadiv`) |
-| Individual-level genomic data                      | GRM from marker tools (`rrBLUP`, PLINK)    |
-| Spatially structured community or landscape data   | `spatial_cov(coords; ...)`                 |
+| Individual-level genomic data                      | GRM from marker tools (`rrBLUP`, PLINK)      |
+| Spatially structured community or landscape data   | `spatial_cov(coords; ...)`                   |
 
-In all cases, pass the result as `Σ_phy` to `fit_gaussian_gllvm`. The
-`has_phy_unique = true` flag activates per-trait structured SDs (`σ_phy`);
-`K_phy` activates structured latent axes (`Λ_phy`). Both can be used together.
+For arbitrary dense covariance matrices, pass the result as `Σ_phy` to
+`fit_gaussian_gllvm`. For supported Brownian tree fast paths, pass `phy`.
+The `has_phy_unique = true` flag activates per-trait structured SDs
+(`σ_phy`); `K_phy` activates structured latent axes (`Λ_phy`). The dense path
+can use both together. The sparse `phy` route currently supports one
+phylogenetic axis at a time.
