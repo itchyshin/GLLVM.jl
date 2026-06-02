@@ -90,13 +90,38 @@ becomes a row-wise contraction; packing gains `vec(B)`. Keep shared-`γ` as a
 special case (a one-row/broadcast `B`). Verifiable now via the existing exact
 `Λ=0` offset-reduction pattern (deterministic — no fit-quality dependence).
 
-### 2. Variational approximation (VA) — larger, staged
+### 2. Variational approximation (VA) — chosen next; larger, staged
 
-Mirror the Laplace design: a `<family>_marginal_loglik_va` alongside the existing
-`_laplace`, sharing packing/init. Start with the Gaussian-variational posterior
-q(z)=N(m_s, diag), optimise the ELBO jointly over (β, Λ, {m_s, diag_s}); closed-
-form ELBO terms for Poisson/NB/Bernoulli. Validate against Laplace (should agree
-as the posterior concentrates) and against `gllvm` numbers where available.
+gllvm's default estimator, and the fix for the Laplace fragility documented above
+(dispersion bias, ZINB multimodality). Mirror the Laplace design: a
+`<family>_marginal_loglik_va` alongside each `_laplace`, sharing packing/init.
+
+**Model.** Gaussian-variational posterior `q(z_s) = N(m_s, diag(v_s))`, prior
+`N(0, I_K)`. Per (t,s) the linear predictor under `q` is Gaussian:
+`η_ts ~ N(μ_ts, σ²_ts)` with `μ_ts = β_t + (Λ m_s)_t` and `σ²_ts = Σ_k Λ_tk² v_sk`.
+
+**ELBO** (maximise; a lower bound on the true marginal):
+`ELBO = Σ_s [ Σ_t E_q log p(y_ts | η_ts) − KL_s ]`,
+`KL_s = ½ Σ_k (v_sk + m_sk² − 1 − log v_sk)`.
+The `E_q log p` term is closed-form for the key families (η ~ N(μ,σ²)):
+- **Poisson/log:** `y·μ − exp(μ + σ²/2) − lgamma(y+1)`.
+- **Bernoulli/Binomial/logit:** needs a 1-D Gauss–Hermite quadrature in σ (no closed
+  form); a few nodes suffice.
+- **NB/log:** quadrature, or the gllvm closed-form bound.
+
+**Staging.**
+1. VA core + **Poisson** (closed-form ELBO), variational params profiled per site.
+   Anchor: as `Λ→0` the ELBO reduces **exactly** to the independent-Poisson loglik
+   (optimal `q` = prior, `KL=0`). Validate ELBO ≤ quadrature (K=1) and ELBO ≈ the
+   Laplace marginal as the posterior concentrates.
+2. Add a `fit_poisson_gllvm_va` driver; check it recovers params at least as well as
+   the Laplace fit (VA should be *more* stable on dispersion/multimodal cells).
+3. Generalise to Bernoulli/Binomial and NB via 1-D Gauss–Hermite; then revisit the
+   fragile families (Exponential/Delta-Gamma/ZINB) under VA.
+
+**Validation is deterministic where it counts** (the `Λ=0` reduction and the
+quadrature bound don't depend on fit-quality luck), which is what makes this
+tractable to build without a local Julia runtime.
 
 ---
 _Tick an item only with a committed, passing test that verifies it._
