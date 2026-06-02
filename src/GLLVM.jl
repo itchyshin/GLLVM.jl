@@ -35,10 +35,13 @@ include("families/twopart.jl")           # Two-part substrate + Delta-lognormal 
 include("families/fit_gllvm.jl")         # unified fit_gllvm(Y; family) dispatcher
 include("families/covariates.jl")        # fixed-effect covariates (Xβ) for the Laplace families
 include("families/species_covariates.jl") # species-specific covariate coefficients (XB) for the Laplace families
+include("families/fourthcorner.jl")       # fourth-corner trait–environment interaction for the Laplace families
+include("families/row_effects.jl")        # community row effects (per-site intercepts) for the Laplace families
 include("families/variational.jl")       # Gaussian-variational (VA/ELBO) marginal — Poisson (increment 1) + GH helper
 include("families/variational_binomial.jl") # VA/ELBO marginal — Binomial/Bernoulli (Gauss–Hermite)
 include("families/variational_negbin.jl") # VA/ELBO marginal — Negative Binomial (Gauss–Hermite)
 include("families/variational_gamma.jl") # VA/ELBO marginal — Gamma (closed form)
+include("families/variational_beta.jl")  # VA/ELBO marginal — Beta (Gauss–Hermite)
 
 # Post-fit API (ordination, predict, residuals, summary)
 include("postfit.jl")
@@ -79,6 +82,9 @@ export spatial_cov, relatedness_cov,
        fit_zinb_gllvm, ZINBFit, zinb_marginal_loglik_laplace, fit_gllvm,
        fit_gllvm_cov, GllvmCovFit, gllvm, @formula,
        fit_gllvm_speciescov, GllvmSpeciesCovFit,
+       fit_fourthcorner_gllvm, FourthCornerFit,
+       fit_roweffect_gllvm, RowEffectFit,
+       beta_marginal_loglik_va,
        poisson_marginal_loglik_va, fit_poisson_gllvm_va,
        binomial_marginal_loglik_va, nb_marginal_loglik_va,
        fit_binomial_gllvm_va, fit_nb_gllvm_va,
