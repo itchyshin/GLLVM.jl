@@ -42,12 +42,17 @@ goes beyond standard `gllvm`.
 
 Ordered roughly by real-world impact.
 
-- [ ] **Variational / extended-variational approximation (VA/EVA).** `gllvm`'s
-      default estimator; faster and often more stable than Laplace for discrete
-      families. We have Laplace only. *Largest single gap.*
-- [ ] **Species-specific environmental coefficients** (full `B`, p×q) — our
-      covariate path uses a single shared `γ`. Prerequisite for ↓
-- [ ] **Fourth-corner / trait–environment models** (`X` × `TR` interactions).
+- [~] **Variational / extended-variational approximation (VA/EVA).** *In progress.*
+      Closed-form Poisson ELBO + Gauss–Hermite ELBO for Binomial/Bernoulli and NB
+      (`*_marginal_loglik_va`), shared Golub–Welsch GH helper, and a
+      `fit_poisson_gllvm_va` driver — all gated by exact `Λ=0` reductions and
+      ELBO≤quadrature bounds. Remaining: Binomial/NB fit drivers; then revisit the
+      Laplace-fragile families (Exponential/Delta-Gamma/ZINB) under VA.
+- [x] **Species-specific environmental coefficients** (full p×q `B`) —
+      `fit_gllvm_speciescov` (`η_ts = β_t + Σ_k X[t,s,k]·B[t,k] + (Λz_s)_t`); the
+      shared-γ path is the special case all rows of `B` equal.
+- [ ] **Fourth-corner / trait–environment models** (`X` × `TR` interactions) — now
+      unblocked by species-specific `B`.
 - [ ] **Row (community) effects** — per-site intercepts, fixed or random.
 - [ ] **Quadratic-response GLLVM** (species optima/tolerances).
 - [ ] **Constrained & concurrent ordination** (reduced-rank regression of LVs on predictors).
