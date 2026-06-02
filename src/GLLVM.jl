@@ -1,7 +1,7 @@
 module GLLVM
 
 using LinearAlgebra, Distributions, Optim, ForwardDiff, Random, SparseArrays, Statistics
-using SpecialFunctions: digamma, trigamma, besselk, gamma
+using SpecialFunctions: digamma, trigamma, besselk, gamma, loggamma
 
 # Core
 include("packing.jl")
@@ -34,6 +34,7 @@ include("families/exponential.jl")       # Exponential (positive continuous, no 
 include("families/twopart.jl")           # Two-part substrate + Delta-lognormal / Delta-Gamma / Hurdle (Phase 3)
 include("families/fit_gllvm.jl")         # unified fit_gllvm(Y; family) dispatcher
 include("families/covariates.jl")        # fixed-effect covariates (Xβ) for the Laplace families
+include("families/variational.jl")       # Gaussian-variational (VA/ELBO) marginal — Poisson (increment 1)
 
 # Post-fit API (ordination, predict, residuals, summary)
 include("postfit.jl")
@@ -73,6 +74,7 @@ export spatial_cov, relatedness_cov,
        fit_zip_gllvm, ZIPFit, zip_marginal_loglik_laplace,
        fit_zinb_gllvm, ZINBFit, zinb_marginal_loglik_laplace, fit_gllvm,
        fit_gllvm_cov, GllvmCovFit, gllvm, @formula,
+       poisson_marginal_loglik_va,
        getLV, getLoadings, rotation,
        predict, fitted, residuals, aic, bic, simulate
 
