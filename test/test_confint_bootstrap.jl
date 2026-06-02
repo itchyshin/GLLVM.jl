@@ -70,4 +70,22 @@ end
         ci2 = bootstrap_ci(fit; y = y, n_boot = 20, seed = 42)
         @test ci1.replicates == ci2.replicates
     end
+
+    @testset "parallel and serial use the same per-replicate seeds" begin
+        Random.seed!(3)
+        p, K, n = 3, 1, 80
+        y = 0.5 * randn(p, n)
+        fit = fit_gaussian_gllvm(y; K = K)
+        ci_serial = bootstrap_ci(fit; y = y, n_boot = 12, seed = 43,
+                                 parallel = false)
+        ci_parallel = bootstrap_ci(fit; y = y, n_boot = 12, seed = 43,
+                                   parallel = true)
+        @test ci_serial.replicates == ci_parallel.replicates
+        @test ci_serial.n_converged == ci_parallel.n_converged
+
+        ci_warm = bootstrap_ci(fit; y = y, n_boot = 12, seed = 43,
+                               parallel = false, warm_start = true)
+        @test all(isfinite, ci_warm.lower)
+        @test ci_warm.n_converged ≥ 10
+    end
 end

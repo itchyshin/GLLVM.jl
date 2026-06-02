@@ -59,7 +59,7 @@ Three CI flavours share a common interface:
 ```julia
 ci_wald      = confint(fit)                                # Wald via observed information
 ci_profile   = profile_ci(fit, "sigma_eps")                # likelihood-profile CI
-ci_bootstrap = bootstrap_ci(fit; n_boot = 200)             # parametric bootstrap
+ci_bootstrap = bootstrap_ci(fit; y = y, n_boot = 200)      # parametric bootstrap
 ```
 
 Wald CIs are cheapest and rely on the local quadratic approximation;

@@ -65,7 +65,7 @@ Three methods, matching the surface of R's `confint()` from the
 ```julia
 GLLVM.confint(fit)                                    # Wald (default)
 GLLVM.profile_ci(fit, "sigma_eps")                    # profile likelihood
-GLLVM.bootstrap_ci(fit; n_boot = 1000, seed = 42)     # parametric bootstrap
+GLLVM.bootstrap_ci(fit; y = y, n_boot = 1000, seed = 42) # parametric bootstrap
 ```
 
 ## Comparison to MixedModels.jl

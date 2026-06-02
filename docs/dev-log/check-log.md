@@ -5008,6 +5008,149 @@ Results:
 - GitHub lane check: PR #59 remains the separate draft
   `claude/package-work-catchup-mQiZM` lane; no PR or issue was modified.
 
+## 2026-06-02 - Bootstrap CI Parallel Replicates And Warm Starts
+
+### Scope
+
+Added optional `parallel` and `warm_start` controls to the parametric
+bootstrap CI paths. `bootstrap_ci` and `bootstrap_ci_derived` now use
+deterministic per-replicate RNG seeds, can distribute bootstrap refits across
+Julia threads when the process has more than one thread, and share one private
+helper for refit warm-start keyword construction. README and quickstart
+bootstrap examples were corrected to pass the original response matrix `y`.
+
+### Correctness Tests
+
+Added tests proving:
+
+- serial and threaded `bootstrap_ci` calls produce identical replicate matrices
+  and convergence counts under the same seed;
+- `bootstrap_ci(...; warm_start = true)` returns finite percentile bounds on a
+  small Gaussian fixture;
+- serial and threaded `bootstrap_ci_derived` calls produce identical derived
+  replicate vectors, convergence counts, and valid replicate counts.
+
+Focused direct tests:
+
+```sh
+julia --project=. test/test_confint_bootstrap.jl
+julia --project=. test/test_confint_derived.jl
+```
+
+Results:
+
+```text
+parametric bootstrap CI | 13/13 pass
+derived-quantity CIs    | 48/48 pass
+```
+
+Focused threaded tests:
+
+```sh
+JULIA_NUM_THREADS=2 julia --project=. test/test_confint_bootstrap.jl
+JULIA_NUM_THREADS=2 julia --project=. test/test_confint_derived.jl
+```
+
+Results:
+
+```text
+parametric bootstrap CI | 13/13 pass
+derived-quantity CIs    | 48/48 pass
+```
+
+Core suite:
+
+```sh
+julia --project=. test/runtests.jl
+```
+
+Result: exit code 0. Manual tally from emitted `Test Summary` blocks:
+2421 pass, 1 existing broken sparse-phy precision placeholder, 2 expected
+quality placeholders in the direct core environment, 0 fail, 0 error.
+
+Full package suite:
+
+```sh
+julia --project=. -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Manual tally from emitted `Test Summary` blocks: 2433 pass, 1 existing broken
+sparse-phy precision placeholder, quality 12/12 pass, 0 fail, 0 error. The run
+also emitted non-failing duplicate-include warnings from `takahashi_selinv.jl`;
+this slice did not touch that path.
+
+### Documentation Build
+
+First attempt:
+
+```sh
+julia --project=docs docs/make.jl
+```
+
+Result: failed before rendering because a local ignored `docs/Manifest.toml`
+had stale path-dependency metadata for `GLLVM` and omitted `SpecialFunctions`.
+The tracked root `Project.toml` already declares `SpecialFunctions`.
+
+Local docs-environment refresh:
+
+```sh
+julia --project=docs -e 'using Pkg; Pkg.resolve(); Pkg.instantiate()'
+(cd docs && julia --project=. -e 'using Pkg; Pkg.develop(path=".."); Pkg.resolve(); Pkg.instantiate()')
+```
+
+Result: the ignored local docs manifest was refreshed; no tracked manifest
+change exists because root `.gitignore` ignores all `Manifest.toml` files.
+
+Second attempt:
+
+```sh
+julia --project=docs docs/make.jl
+```
+
+Result: exit code 0. Existing non-failing warnings remain: invalid local links
+from several docs pages, deployment skipped outside CI, missing Vitepress
+assets/default substitutions, and npm audit reporting 4 moderate issues.
+
+### Benchmark Evidence
+
+N/A - no speed claim is made in this slice. The new behavior is scheduling and
+initialization control for stochastic refits; correctness was checked by serial
+vs threaded deterministic equality rather than timing.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+<private-source trace scan over tracked public artifacts, excluding the guard file and historical dev logs>
+rg -n "bootstrap_ci\([^;\n]*;[^\n]*(n_boot|seed)" README.md docs/src src test
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src CLAUDE.md
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p|100x|100.?x|gllvmTMB" README.md docs/src docs/PERF-plus-design.md CLAUDE.md
+gh pr list --limit 5 --json number,title,headRefName,isDraft,state
+```
+
+Results:
+
+- `git diff --check`: clean.
+- Private-source trace scan: no matches in tracked public artifacts scanned.
+- Bootstrap example scan: all README/docs/src/src/test examples found by the
+  pattern now pass `y = y`; no stale no-data bootstrap example remains in the
+  searched files.
+- Stale status scan: no hits in README, docs/src, or CLAUDE.md.
+- Performance-claim scan: expected existing benchmark and gllvmTMB parity
+  wording only; this slice adds no new speed or R-parity claim.
+- GitHub lane check: PR #60 is the current draft branch
+  `codex/non-gaussian-fitter-gradients`; PR #59 remains the separate draft
+  `claude/package-work-catchup-mQiZM`. No PR or issue was modified.
+
 ## 2026-06-02 - Sparse Phy Analytic Fitter Route
 
 ### Scope

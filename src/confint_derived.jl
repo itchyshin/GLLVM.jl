@@ -445,6 +445,8 @@ end
                          n_boot = 500, seed = 0, level = 0.95,
                          y = nothing, n_sites = nothing,
                          X = nothing, Σ_phy = nothing,
+                         parallel = Threads.nthreads() > 1,
+                         warm_start = nothing,
                          verbose = false)
         -> NamedTuple
 
@@ -469,6 +471,12 @@ Returns a NamedTuple with fields:
 Pass `y`, `X`, `Σ_phy` matching what was originally passed to
 `fit_gaussian_gllvm` (the bootstrap needs them to simulate and refit).
 
+When `warm_start = nothing` (default), refits keep the PPCA start for the
+base Gaussian block and seed extended components (`β`, `Λ_W`, `Λ_phy`) from
+the original MLE. Set `warm_start = true` or `false` to force either
+behaviour. When `parallel = true`, bootstrap replicates are distributed across
+Julia threads with deterministic per-replicate RNG seeds.
+
 `n_boot` defaults to 500 — publication-grade. Lower (e.g. 100) for quick
 checks. The cost is `n_boot × per-fit time`; PERF+I already optimised
 the per-fit path.
@@ -481,6 +489,8 @@ function bootstrap_ci_derived(fit::GllvmFit, derived_fn::Function;
                               n_sites::Union{Nothing, Integer} = nothing,
                               X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
                               Σ_phy::Union{Nothing, AbstractMatrix} = nothing,
+                              parallel::Bool = Threads.nthreads() > 1,
+                              warm_start::Union{Nothing, Bool} = nothing,
                               verbose::Bool = false)
 
     0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
@@ -555,26 +565,25 @@ function bootstrap_ci_derived(fit::GllvmFit, derived_fn::Function;
         Λ_phy_aug = isempty(pieces) ? nothing : reduce(hcat, pieces)
     end
 
-    rng = MersenneTwister(seed)
     replicates = fill(NaN, n_boot)
-    n_converged = 0
+    converged = falses(n_boot)
 
-    y_b = Matrix{Float64}(undef, p, n)
+    refit_kwargs = (K = K_B,
+                    K_W = K_W,
+                    has_diag = has_diag,
+                    K_phy = K_phy,
+                    has_phy_unique = has_phy_unique,
+                    Σ_phy = Σ_phy,
+                    X = X)
+    warm_kwargs = _bootstrap_refit_warm_kwargs(fit, warm_start)
 
-    for b in 1:n_boot
+    function run_rep!(b::Int)
+        rng = MersenneTwister(seed + b)
+        y_b = Matrix{Float64}(undef, p, n)
         _derived_simulate!(rng, y_b, μ̂, L_site, L_phy, Λ_phy_aug)
         try
-            fit_b = fit_gaussian_gllvm(y_b;
-                                       K = K_B,
-                                       K_W = K_W,
-                                       has_diag = has_diag,
-                                       K_phy = K_phy,
-                                       has_phy_unique = has_phy_unique,
-                                       Σ_phy = Σ_phy,
-                                       X = X)
-            if fit_b.converged
-                n_converged += 1
-            end
+            fit_b = fit_gaussian_gllvm(y_b; refit_kwargs..., warm_kwargs...)
+            converged[b] = fit_b.converged
             v = call_derived(fit_b)
             if isfinite(v)
                 replicates[b] = v
@@ -582,7 +591,20 @@ function bootstrap_ci_derived(fit::GllvmFit, derived_fn::Function;
         catch e
             verbose && @info "bootstrap_ci_derived rep $b failed: $e"
         end
+        return nothing
     end
+
+    if parallel && Threads.nthreads() > 1 && n_boot > 1
+        Threads.@threads for b in 1:n_boot
+            run_rep!(b)
+        end
+    else
+        for b in 1:n_boot
+            run_rep!(b)
+        end
+    end
+
+    n_converged = count(converged)
 
     α = (1 - level) / 2
     valid = filter(isfinite, replicates)
@@ -956,4 +978,3 @@ function profile_ci_derived(fit::GllvmFit, derived_fn::Function;
     return (lower = lower, upper = upper,
             estimate = g_hat, method = method)
 end
-

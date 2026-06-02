@@ -186,6 +186,35 @@ function _bootstrap_simulate!(rng::AbstractRNG, y_out::AbstractMatrix,
     return y_out
 end
 
+function _bootstrap_refit_warm_kwargs(fit::GllvmFit,
+                                      warm_start::Union{Nothing, Bool})
+    model = fit.model
+    p = model.p
+    K_B = model.K
+    K_W = model.K_W
+    has_diag = model.has_diag
+    has_phy_block = (model.K_phy > 0) || model.has_phy_unique
+    q = fit.pars.β === nothing ? 0 : length(fit.pars.β)
+
+    do_warm_start = warm_start === nothing ?
+        (K_W > 0 || has_diag || has_phy_block || q > 0) :
+        warm_start
+    do_warm_start || return NamedTuple()
+
+    # Preserve the fitter's PPCA/OLS start for the base Gaussian block when
+    # available; only seed extension components that PPCA does not cover.
+    if K_B < p
+        return (λ_W_init = fit.pars.Λ_W,
+                λ_phy_init = fit.pars.Λ_phy,
+                β_init = fit.pars.β)
+    end
+    return (σ_eps_init = fit.pars.σ_eps,
+            λ_init = fit.pars.Λ,
+            λ_W_init = fit.pars.Λ_W,
+            λ_phy_init = fit.pars.Λ_phy,
+            β_init = fit.pars.β)
+end
+
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
@@ -200,6 +229,8 @@ end
                  X = nothing,
                  Σ_phy = nothing,
                  parms = nothing,
+                 parallel = Threads.nthreads() > 1,
+                 warm_start = nothing,
                  verbose = false)
         -> NamedTuple
 
@@ -223,6 +254,12 @@ Otherwise the bootstrap model spec would not match the fitted spec.
 
 `parms` selects a subset of returned terms (default `nothing` = all).
 Accepts a `String` (single term name) or `Vector{String}`.
+
+When `warm_start = nothing` (default), refits keep the PPCA start for the
+base Gaussian block and seed extended components (`β`, `Λ_W`, `Λ_phy`) from
+the original MLE. Set `warm_start = true` or `false` to force either
+behaviour. When `parallel = true`, bootstrap replicates are distributed across
+Julia threads with deterministic per-replicate RNG seeds.
 
 `n_boot` defaults to 100; publication-grade is 500–2000.
 
@@ -263,6 +300,8 @@ function bootstrap_ci(fit::GllvmFit;
                       X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
                       Σ_phy::Union{Nothing, AbstractMatrix} = nothing,
                       parms::Union{Nothing, AbstractString, AbstractVector} = nothing,
+                      parallel::Bool = Threads.nthreads() > 1,
+                      warm_start::Union{Nothing, Bool} = nothing,
                       verbose::Bool = false)
 
     0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
@@ -351,33 +390,28 @@ function bootstrap_ci(fit::GllvmFit;
         Λ_phy_aug = isempty(pieces) ? nothing : reduce(hcat, pieces)
     end
 
-    rng = MersenneTwister(seed)
-
     replicates = fill(NaN, n_boot, n_params)
-    n_converged = 0
+    converged = falses(n_boot)
 
-    y_b = Matrix{Float64}(undef, p, n)
+    refit_kwargs = (K = K_B,
+                    K_W = K_W,
+                    has_diag = has_diag,
+                    K_phy = K_phy,
+                    has_phy_unique = has_phy_unique,
+                    Σ_phy = Σ_phy,
+                    X = X)
+    warm_kwargs = _bootstrap_refit_warm_kwargs(fit, warm_start)
 
-    for b in 1:n_boot
-        # Sample y_b ~ N(μ̂, Σ̂_y_site)
+    function run_rep!(b::Int)
+        rng = MersenneTwister(seed + b)
+        y_b = Matrix{Float64}(undef, p, n)
         _bootstrap_simulate!(rng, y_b, μ̂, L_site, L_phy, Λ_phy_aug)
-
-        # Refit on y_b under the original spec.
         try
-            fit_b = fit_gaussian_gllvm(y_b;
-                                       K = K_B,
-                                       K_W = K_W,
-                                       has_diag = has_diag,
-                                       K_phy = K_phy,
-                                       has_phy_unique = has_phy_unique,
-                                       Σ_phy = Σ_phy,
-                                       X = X)
+            fit_b = fit_gaussian_gllvm(y_b; refit_kwargs..., warm_kwargs...)
             θ_b = fit_b.pars.θ_packed
             if length(θ_b) == n_params
                 replicates[b, :] = θ_b
-                if fit_b.converged
-                    n_converged += 1
-                end
+                converged[b] = fit_b.converged
             else
                 verbose && @info "Bootstrap rep $b: θ_packed length mismatch ($(length(θ_b)) vs $n_params)"
             end
@@ -385,7 +419,20 @@ function bootstrap_ci(fit::GllvmFit;
             verbose && @info "Bootstrap rep $b failed: $e"
             # replicates[b, :] stays NaN
         end
+        return nothing
     end
+
+    if parallel && Threads.nthreads() > 1 && n_boot > 1
+        Threads.@threads for b in 1:n_boot
+            run_rep!(b)
+        end
+    else
+        for b in 1:n_boot
+            run_rep!(b)
+        end
+    end
+
+    n_converged = count(converged)
 
     # ----- Percentile CIs
     α = (1 - level) / 2

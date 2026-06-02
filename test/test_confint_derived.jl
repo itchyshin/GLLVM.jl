@@ -114,6 +114,25 @@ end
         @test 0.0 ≤ ci.estimate ≤ 1.0
     end
 
+    @testset "derived bootstrap parallel and serial use the same seeds" begin
+        Random.seed!(55)
+        p, K, n = 4, 1, 120
+        Λ_true = reshape([0.8, 0.5, 0.4, -0.3], p, K)
+        y = Λ_true * randn(K, n) + 0.4 * randn(p, n)
+        fit = fit_gaussian_gllvm(y; K = K)
+
+        ci_serial = GLLVM.bootstrap_ci_derived(
+            fit, fb -> GLLVM.communality(fb)[1];
+            y = y, n_boot = 20, seed = 56, parallel = false)
+        ci_parallel = GLLVM.bootstrap_ci_derived(
+            fit, fb -> GLLVM.communality(fb)[1];
+            y = y, n_boot = 20, seed = 56, parallel = true)
+
+        @test ci_serial.replicates == ci_parallel.replicates
+        @test ci_serial.n_converged == ci_parallel.n_converged
+        @test ci_serial.n_valid == ci_parallel.n_valid
+    end
+
     @testset "profile CI for σ_eps² agrees with parameter profile CI on σ_eps" begin
         # Sanity: profile_ci_derived for the derived quantity σ_eps²
         # should yield the same bounds as profile_ci on σ_eps, squared.
