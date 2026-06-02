@@ -38,6 +38,7 @@ include("families/species_covariates.jl") # species-specific covariate coefficie
 include("families/variational.jl")       # Gaussian-variational (VA/ELBO) marginal — Poisson (increment 1) + GH helper
 include("families/variational_binomial.jl") # VA/ELBO marginal — Binomial/Bernoulli (Gauss–Hermite)
 include("families/variational_negbin.jl") # VA/ELBO marginal — Negative Binomial (Gauss–Hermite)
+include("families/variational_gamma.jl") # VA/ELBO marginal — Gamma (closed form)
 
 # Post-fit API (ordination, predict, residuals, summary)
 include("postfit.jl")
@@ -81,6 +82,7 @@ export spatial_cov, relatedness_cov,
        poisson_marginal_loglik_va, fit_poisson_gllvm_va,
        binomial_marginal_loglik_va, nb_marginal_loglik_va,
        fit_binomial_gllvm_va, fit_nb_gllvm_va,
+       gamma_marginal_loglik_va, fit_gamma_gllvm_va,
        getLV, getLoadings, rotation,
        predict, fitted, residuals, aic, bic, simulate
 
