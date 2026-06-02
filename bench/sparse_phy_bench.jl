@@ -14,9 +14,8 @@ using Random
 using LinearAlgebra
 using GLLVM
 
-# The sparse phy path is intentionally not exported by the GLLVM module on
-# this branch (see PERF++ hard constraint: do NOT modify src/GLLVM.jl).
-# Pull in the source files directly so the benchmark stays self-contained.
+# Pull in the sparse phy internals directly so the benchmark stays
+# self-contained when run as a standalone script.
 include(joinpath(@__DIR__, "..", "src", "sparse_phy.jl"))
 include(joinpath(@__DIR__, "..", "src", "likelihood_sparse_phy.jl"))
 

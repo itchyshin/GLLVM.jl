@@ -1,9 +1,8 @@
 using GLLVM, Test, Random, LinearAlgebra, ForwardDiff, SparseArrays
 using GLLVM: AugmentedPhy
 
-# The analytic-gradient sparse phylo path lives in a new src file that is not
-# wired into the GLLVM module (per the PERF++ hard constraint: never touch
-# src/GLLVM.jl on this branch). Pull it in directly. `using GLLVM` supplies the
+# Pull the analytic-gradient sparse phylo internals into this test module so the
+# tests can exercise non-exported helpers directly. `using GLLVM` supplies the
 # package functions it compares against (gaussian_marginal_loglik, the sparse
 # value, packing helpers, tree builders).
 include(joinpath(@__DIR__, "..", "src", "sparse_phy_grad.jl"))
@@ -104,6 +103,9 @@ end
         σ_eps = 0.5; σ²_phy = 0.9
         y = randn(p, n)
         st = build_sparse_phy_state(y, Λ_B, σ_eps; Λ_phy = Λ_phy, phy = phy, σ²_phy = σ²_phy)
+        msad_diag = _single_axis_Msad_inv_diag(st)
+        LB, _ = leaf_block_inv(st)
+        @test msad_diag ≈ diag(LB) atol = 1e-10 rtol = 1e-10
         g = sparse_phy_grad(st)
         f = _dense_packed(y, Gphy, p, K_B, 1, false)
         par0 = vcat(vec(Λ_B), σ_eps^2, σ²_phy, vec(Λ_phy))

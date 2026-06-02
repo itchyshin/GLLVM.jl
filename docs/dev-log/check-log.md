@@ -1,5 +1,173 @@
 # Check Log
 
+## 2026-06-02 - Sparse Phy Single-Axis Takahashi Gradient
+
+### Scope
+
+Swapped the `K_aug == 1` branch of `sparse_phy_grad` onto same-leaf Takahashi
+selected-inverse entries. This is an internal Gaussian sparse-phylo gradient
+performance slice: no exported API, likelihood parameterization, fitter default,
+or response-family interface changed. The general multi-axis branch remains
+the exact dense leaf-block path and is still `O(p²)`.
+
+### Implementation
+
+- `sparse_phy_grad(st)` now dispatches `K_aug == 1` to
+  `_sparse_phy_grad_single_axis_takahashi`.
+- `_single_axis_Msad_inv_diag` computes the same-leaf diagonal of
+  `M_sad^-1` from `takahashi_diag(st.chol_Q_eff)` plus the rank-`K_B`
+  Woodbury correction.
+- Single-axis loading/scalar gradient helpers reuse the existing low-rank
+  sparse-operator algebra and support both one `Λ_phy` axis and phylo-unique
+  `σ_phy`.
+- The source, benchmark comments, and `docs/src/benchmarks.md` now distinguish
+  the Takahashi-backed single-axis path from the still-`O(p²)` multi-axis path.
+
+### Correctness Tests
+
+Focused gradient tests:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_takahashi_selinv.jl"); include("test/test_sparse_phy_grad.jl"); include("test/test_node_gradient.jl")'
+```
+
+Result: `Takahashi selected inverse` 8/8 pass; `sparse phy analytic gradient`
+36/36 pass; `node-frame analytic gradient` 58/58 pass.
+
+Core suite:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: manual tally from emitted summaries = 2400 pass, 1 existing
+`sparse phy precision` broken placeholder, 2 expected direct-environment
+quality placeholders, 0 fail, 0 error.
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result: manual tally from emitted summaries = 2412 pass, 1 existing
+`sparse phy precision` broken placeholder, 0 fail, 0 error. The `quality`
+testset passed 12/12 and `Pkg.test()` printed `Testing GLLVM tests passed`.
+
+Docs:
+
+```sh
+julia --project=docs --startup-file=no docs/make.jl
+julia --project=. --startup-file=no -e 'push!(LOAD_PATH, "docs"); include("docs/make.jl")'
+```
+
+Result: the direct docs environment failed before rendering because its
+manifest is stale for the current package graph (`SpecialFunctions` direct-dep
+metadata was not visible from `docs/`). The stacked main+docs environment built
+successfully. Documenter still emitted pre-existing local-link warnings and npm
+reported existing moderate audit notices.
+
+### Tests Added
+
+- `test/test_sparse_phy_grad.jl`: one helper regression assertion checks
+  `_single_axis_Msad_inv_diag(st) ≈ diag(leaf_block_inv(st))` on the one-axis
+  `Λ_phy` fixture. This compares the new Takahashi diagonal route with the
+  independent exact dense leaf-block helper and would have failed before the
+  helper existed.
+
+### Benchmark Evidence
+
+Pre-edit scout at `d3c4899` (`@elapsed` / `@allocated`, same fixed-seed
+single-axis fixture):
+
+```text
+p=80  time=0.000867875  bytes=3127176
+p=160 time=0.001673083  bytes=12326232
+p=320 time=0.014568791  bytes=47541240
+```
+
+Current scout:
+
+```text
+p=80  time=0.000126458  bytes=900224
+p=160 time=0.000604542  bytes=3011760
+p=320 time=0.001408000  bytes=11183392
+```
+
+BenchmarkTools medians via stacked env
+(`julia --project=. --startup-file=no -e 'push!(LOAD_PATH, "bench"); ...'`):
+
+```text
+p=80  median_time_ns=205396.0    median_memory=900224   median_allocs=345
+p=160 median_time_ns=607542.0    median_memory=3011760  median_allocs=345
+p=320 median_time_ns=1.6402295e6 median_memory=10920448 median_allocs=373
+```
+
+Full sparse-gradient benchmark script:
+
+```sh
+julia --project=. --startup-file=no -e 'push!(LOAD_PATH, "bench"); include("bench/sparse_phy_grad_bench.jl")'
+```
+
+Result:
+
+```text
+p=100  analytic=0.219 ms dense-FD=120.654 ms speedup=549.9x
+p=500  analytic=0.773 ms dense-FD=52541.520 ms speedup=68000.2x
+p=1000 analytic=1.612 ms dense-FD=skipped
+p=5000 analytic=7.654 ms dense-FD=skipped
+analytic log-log slopes: [0.782, 1.061, 0.968]
+dense-FD log-log slopes: [3.776]
+```
+
+Interpretation: the single-axis sparse analytic gradient is now near-linear in
+the measured range. Dense ForwardDiff remains unusable beyond the cutoff.
+
+### DRM.jl Capacity Check
+
+Fetched `/Users/z3437171/Dropbox/Github Local/DRM.jl` and checked
+`origin/main` rather than the dirty local branch. DRM.jl already has the same
+capacity:
+
+- `src/DRM.jl` documents the q=4 sparse augmented-state Laplace path with an
+  exact `O(p)` gradient via Takahashi selected inverse.
+- `src/fit_q4_sparse_tmb.jl` calls `takahashi_selinv(chH)` for the selected
+  inverse of `H` and uses it in the log-determinant derivative.
+- `test/test_step1_sparse.jl` checks Takahashi selected inverse and diagonal
+  entries against dense inverse calculations.
+- `README.md` advertises the exact `O(p)` marginal gradient.
+
+No GitHub issue was opened for DRM.jl because the requested capacity is already
+present on `origin/main`.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+<private-source trace scan over tracked public content, excluding .gitignore and generated docs>
+rg -n 'Takahashi follow-up would bring|Analytic slope ≈ 2|NOT yet O\(p\)|selected-inverse term|older `sparse_phy_grad` path|gradient stays at O\(p²\) overall|inapplicable to the gradient|sparse analytic gradient code is intentionally NOT wired|PERF\+\+ hard constraint|do NOT modify src/GLLVM' src bench docs/src README.md CLAUDE.md test/test_sparse_phy_grad.jl
+rg -n 'single-axis|multi-axis|K_aug == 1|Takahashi|O\(p²\)|O\(p\)' src/sparse_phy_grad.jl bench/sparse_phy_grad_bench.jl docs/src/benchmarks.md test/test_sparse_phy_grad.jl
+gh pr list --limit 5 --json number,title,headRefName,isDraft,state
+```
+
+Results:
+
+- `git diff --check`: clean.
+- Private-source trace scan over tracked public content, excluding `.gitignore`
+  and generated docs: no matches.
+- Stale Takahashi/wiring scan: no remaining hits in the touched sparse-phy
+  gradient files; unrelated historical hard-constraint comments remain in other
+  benchmark/prototype files.
+- Scope scan: expected hits in `src/sparse_phy_grad.jl`,
+  `bench/sparse_phy_grad_bench.jl`, `docs/src/benchmarks.md`, and the focused
+  sparse-phy gradient test.
+- GitHub lane check: open PR #59 remains the separate draft
+  `claude/package-work-catchup-mQiZM`; this slice did not edit that lane.
+- Allocs.jl check: `Package Allocs not found in current path`; allocation
+  evidence is from `@allocated` and BenchmarkTools memory/alloc counters.
+
 ## 2026-06-02 - Structured Schur K3 Site Inverse
 
 ### Scope

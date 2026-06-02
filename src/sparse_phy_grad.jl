@@ -53,27 +53,20 @@
 # COST / SCALING (reported honestly by bench/sparse_phy_grad_bench.jl)
 # --------------------------------------------------------------------
 # * ∂ℓ/∂Λ_B : O(p·K_B) — K_B+K_aug sparse solves + low-rank algebra.
-# * ∂ℓ/∂σ²_phy, ∂ℓ/∂σ²_eps, ∂ℓ/∂Λ_phy, ∂ℓ/∂σ_phy : these need the dense
-#   (K_aug·p) × (K_aug·p) leaf-leaf block of M_sad⁻¹ (= cross-leaf entries
-#   of the augmented inverse). On a tree-augmented Q_eff, the L+Lᵀ pattern
-#   of the Cholesky factor covers only the K_aug × K_aug same-leaf coupling
-#   block (K_aug²·p in-pattern entries) — the cross-leaf entries are DENSE
-#   and ARE NOT in pattern. Takahashi (1973) / Erisman–Tinney (1975) gives
+# * Single phylogenetic axis (`K_aug == 1`): the tree-coupled scalar and
+#   loading-gradient terms reduce to same-leaf selected-inverse entries. The
+#   Takahashi branch below computes those entries in O(p) on tree factors, so
+#   the full single-axis gradient is O(p) up to small K_B dense algebra.
+# * Multiple phylogenetic axes (`K_aug >= 2`): ∂ℓ/∂σ²_phy, ∂ℓ/∂σ²_eps,
+#   ∂ℓ/∂Λ_phy, ∂ℓ/∂σ_phy need the dense (K_aug·p) × (K_aug·p) leaf-leaf block
+#   of M_sad⁻¹ (= cross-leaf entries of the augmented inverse). On a
+#   tree-augmented Q_eff, the L+Lᵀ pattern of the Cholesky factor covers only
+#   the K_aug × K_aug same-leaf coupling block (K_aug²·p in-pattern entries);
+#   the cross-leaf entries are DENSE and ARE NOT in pattern. Takahashi gives
 #   the in-pattern entries in O(K_aug·p), but the dense cross-leaf entries
 #   still need a batched CHOLMOD solve `chol_Q_eff \ E_leaf` (cost O(p²);
-#   memory O(p²)) plus the rank-K_B Woodbury correction.
-#   `leaf_block_inv` is therefore O(K_aug²·p² + K_aug²·K_B·p²) overall —
-#   asymptotically O(p²), not O(p). The Takahashi utility IS used here to
-#   pre-compute X_G once in the state and to drive the EM E-step's
-#   `diag(V_φ)` extraction (`src/em_phylo.jl`); the gradient itself stays
-#   at the empirical slope ≈ 2 we already had. This is reported HONESTLY:
-#   the explicit Takahashi follow-up named in the PERF brief CANNOT
-#   asymptotically improve the gradient's scaling, because (i) the dense
-#   p × p `Cleaf · Σ_phy_leaf` Hadamard and (ii) the dense cross-leaf
-#   entries of M_sad⁻¹ are both inherently O(p²). The constant-factor
-#   wins of the new `leaf_block_inv` (one CHOLMOD batched solve instead
-#   of two via `_MsadM` against E_leaf, plus dense BLAS3 for the Woodbury
-#   correction) are documented in the bench output.
+#   memory O(p²)) plus the rank-K_B Woodbury correction. That general
+#   multi-axis path is therefore O(p²), not O(p).
 #
 # This file is self-contained: it `include`s the sources it needs and does NOT
 # modify src/GLLVM.jl or any existing file.
@@ -82,13 +75,10 @@ using SparseArrays
 using LinearAlgebra
 
 # Takahashi (1973) / Erisman–Tinney (1975) selected inverse — used to obtain
-# the same-leaf-axis-pair entries of `Q_eff⁻¹` in `O(K_aug·p)`. Combined with
-# the rank-K_B Woodbury correction (`α · X_G · S_K⁻¹ · X_G'`, with X_G stored
-# in `SparsePhyState`), this lets us assemble `leaf_block_inv` without the
-# per-column batched CHOLMOD solve. The contraction-dominated downstream work
-# (dense Hadamard with Σ_phy_leaf, BLAS3 leaf-block reductions) remains
-# O(p²) — see header note above — but the SOLVE cost drops from
-# `O(K_aug² · p²)` batched CHOLMOD to `O(K_aug · p)` Takahashi.
+# same-leaf entries of `Q_eff⁻¹` in `O(K_aug·p)`. For `K_aug == 1`, those
+# selected entries are enough for the whole tree-coupled gradient. For
+# `K_aug >= 2`, they are not enough to reconstruct the dense cross-leaf block,
+# so `leaf_block_inv` keeps the exact batched-solve path.
 include(joinpath(@__DIR__, "takahashi_selinv.jl"))
 
 # ---------------------------------------------------------------------------
@@ -317,11 +307,11 @@ _trAinv(st::SparsePhyState) = sum(st.d_inv) - tr(st.chol_cap \ (st.DinvΛB' * st
 # `Q_eff⁻¹`, which are dense and non-zero in general (we verified this
 # empirically at p = 20: max out-of-pattern `|Q_eff⁻¹[leaf, leaf]|` ≈ 0.26).
 # Reconstructing those cross-leaf entries needs the same batched solve we
-# already do — so the Takahashi swap cannot lower the asymptotic cost of
-# `leaf_block_inv` for the FULL dense leaf-leaf block. The Takahashi utility
-# is therefore used elsewhere (`takahashi_diag` in the EM E-step) and
-# documented here as inapplicable to the gradient's dense-block dependency.
-# This is REPORTED HONESTLY: the analytic gradient stays at O(p²) overall.
+# already do — so Takahashi cannot lower the asymptotic cost of
+# `leaf_block_inv` for the FULL dense leaf-leaf block. The `K_aug == 1`
+# gradient branch below avoids this helper because its scalar/loading
+# contractions need only same-leaf entries. The general multi-axis gradient
+# still depends on `leaf_block_inv` and remains O(p²) overall.
 # ---------------------------------------------------------------------------
 function _leaf_unit_columns(st::SparsePhyState)
     cols = Vector{Int}(undef, st.K_aug * st.p)
@@ -383,6 +373,143 @@ function sparse_phy_value(st::SparsePhyState)
 end
 
 # ---------------------------------------------------------------------------
+# Takahashi fast path for a single phylogenetic axis (`K_aug == 1`).
+# ---------------------------------------------------------------------------
+function _single_axis_leaf_rows(st::SparsePhyState)
+    rows = Vector{Int}(undef, st.p)
+    @inbounds for t in 1:st.p
+        rows[t] = st.leaf_pos[t]
+    end
+    return rows
+end
+
+function _single_axis_Msad_inv_diag(st::SparsePhyState)
+    Qeff_diag = takahashi_diag(st.chol_Q_eff)
+    leafrows = _single_axis_leaf_rows(st)
+    XGleaf = st.X_G[leafrows, :]
+    WR = st.chol_S_K \ XGleaf'
+    out = Vector{Float64}(undef, st.p)
+    @inbounds for t in 1:st.p
+        out[t] = Qeff_diag[leafrows[t]] + st.α * dot(@view(XGleaf[t, :]), @view(WR[:, t]))
+    end
+    return out
+end
+
+function _single_axis_loading_grad(st::SparsePhyState, cc::AbstractVector,
+                                   msad_diag::AbstractVector)
+    p, n, K_B = st.p, st.n, st.K_B
+    λ = @view st.Λ_aug[:, 1]
+    c = st.d_inv[1]
+
+    # rank-K_B correction: σ²_phy (S M_sad⁻¹ D_K' F)_{t,:}·F_{t,:},
+    # F (p×K_B) with F Fᵀ = DinvΛB cap⁻¹ DinvΛBᵀ.
+    F = collect((st.chol_cap.L \ st.DinvΛB')')
+    DKtF = zeros(Float64, st.total, K_B)
+    @inbounds for a in 1:K_B, t in 1:p
+        DKtF[st.leaf_pos[t], a] += λ[t] * F[t, a]
+    end
+    MsadinvDKtF = _MsadM(st, DKtF)
+    leafrows = _single_axis_leaf_rows(st)
+    SMsadDKtF = MsadinvDKtF[leafrows, :]
+    corr = Vector{Float64}(undef, p)
+    @inbounds for t in 1:p
+        corr[t] = dot(@view(SMsadDKtF[t, :]), @view(F[t, :]))
+    end
+
+    # trace term τ_t = (Σ_phy Λ_axis C⁻¹)_{tt}.
+    τ = st.σ²_phy .* (c .* λ .* msad_diag .- corr)
+
+    # data term (Σ_phy Λ_axis cc)_t = σ²_phy (S Q_cond⁻¹ S')(λ .* cc).
+    λcc = λ .* cc
+    rhs = zeros(Float64, st.nb)
+    @inbounds for t in 1:p
+        rhs[st.leaf_pos[t]] = λcc[t]
+    end
+    sol = st.chol_Qcond \ rhs
+    Σλcc = Vector{Float64}(undef, p)
+    @inbounds for t in 1:p
+        Σλcc[t] = st.σ²_phy * sol[st.leaf_pos[t]]
+    end
+
+    dλ = Vector{Float64}(undef, p)
+    @inbounds for t in 1:p
+        dλ[t] = n * (n * cc[t] * Σλcc[t] - τ[t])
+    end
+    return dλ
+end
+
+function _single_axis_scalar_grads(st::SparsePhyState, cc::AbstractVector,
+                                   Ainv_Yc::AbstractMatrix,
+                                   msad_diag::AbstractVector;
+                                   want_σ²_eps::Bool)
+    p, n, K_B = st.p, st.n, st.K_B
+    λ = @view st.Λ_aug[:, 1]
+
+    # dσ²_phy = ½ ⟨P_B, B⟩ / σ²_phy.
+    tr_Msad_DtDinvD = 0.0
+    @inbounds for t in 1:p
+        tr_Msad_DtDinvD += msad_diag[t] * (λ[t]^2 * st.d_inv[t])
+    end
+    Msad_G = _MsadM(st, st.G)
+    tr_Msad_GcapG = tr(st.chol_cap \ (st.G' * Msad_G))
+    tr_Msad_H = tr_Msad_DtDinvD - tr_Msad_GcapG
+    trCinvB = st.σ²_phy * tr_Msad_H
+    Bcc = _Bphy_apply(st, cc)
+    ccBcc = dot(cc, Bcc)
+    dσ²_phy = 0.5 * (n * (-trCinvB + n * ccBcc)) / st.σ²_phy
+
+    want_σ²_eps || return dσ²_phy, 0.0
+
+    # dσ²_eps = ½ tr(P_A). With K_aug == 1, the trace contraction splits into
+    # same-leaf Takahashi diagonal and a small rank-K_B correction.
+    trAinv = _trAinv(st)
+    c = st.d_inv[1]
+    F = collect((st.chol_cap.L \ st.DinvΛB')')
+    M_F = F' * F
+    G_F = 2c .* Matrix{Float64}(I, K_B, K_B) .- M_F
+    sameleaf_c2 = 0.0
+    @inbounds for t in 1:p
+        sameleaf_c2 += λ[t]^2 * msad_diag[t]
+    end
+    sameleaf_c2 *= c^2
+
+    W = Matrix{Float64}(undef, st.total, K_B)
+    @inbounds for a in 1:K_B
+        W[:, a] = _DKt(st, @view F[:, a])
+    end
+    MW = _MsadM(st, W)
+    WtMW = W' * MW
+    lowrank = tr(G_F * WtMW)
+    sum_LB_Z = sameleaf_c2 - lowrank
+    trCinv = trAinv - st.α * sum_LB_Z
+    trPA = -trCinv + n * dot(cc, cc) - (n - 1) * trAinv + sum(Ainv_Yc .^ 2)
+    dσ²_eps = 0.5 * trPA
+
+    return dσ²_phy, dσ²_eps
+end
+
+function _sparse_phy_grad_single_axis_takahashi(st::SparsePhyState;
+                                                want_σ²_eps::Bool = true)
+    cc = _Cinv(st, st.m)
+    Ainv_Yc = _AinvM(st, st.Y_c)
+
+    Cinv_LB = _CinvM(st, st.Λ_B)
+    Ainv_LB = _AinvM(st, st.Λ_B)
+    ccLB = cc * (cc' * st.Λ_B)
+    AYcLB = Ainv_Yc * (Ainv_Yc' * st.Λ_B)
+    dΛ_B = (-Cinv_LB) .+ st.n .* ccLB .- (st.n - 1) .* Ainv_LB .+ AYcLB
+
+    msad_diag = _single_axis_Msad_inv_diag(st)
+    daxis = _single_axis_loading_grad(st, cc, msad_diag)
+    dσ²_phy, dσ²_eps = _single_axis_scalar_grads(
+        st, cc, Ainv_Yc, msad_diag; want_σ²_eps = want_σ²_eps)
+
+    dΛ_phy = st.K_phy > 0 ? reshape(daxis, st.p, 1) : nothing
+    dσ_phy = st.has_unique ? daxis : nothing
+    return (; dΛ_B, dσ²_eps, dσ²_phy, dΛ_phy, dσ_phy)
+end
+
+# ---------------------------------------------------------------------------
 # Analytic gradient. Returns a NamedTuple of derivatives w.r.t. the natural
 # parameters present in the standard model:
 #   dΛ_B    :: p × K_B
@@ -393,6 +520,10 @@ end
 # `dΛ_phy`/`dσ_phy` are `nothing` when the corresponding block is absent.
 # ---------------------------------------------------------------------------
 function sparse_phy_grad(st::SparsePhyState; want_σ²_eps::Bool = true)
+    if st.K_aug == 1
+        return _sparse_phy_grad_single_axis_takahashi(st; want_σ²_eps = want_σ²_eps)
+    end
+
     p, n, K_B = st.p, st.n, st.K_B
     cc = _Cinv(st, st.m)                 # C⁻¹ m
     Ainv_Yc = _AinvM(st, st.Y_c)         # p × n

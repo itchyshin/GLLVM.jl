@@ -66,5 +66,7 @@ with `julia --project=bench bench/node_gradient_bench.jl`):
 The per-tip time (last column) is essentially flat, and the log–log scaling
 slope is **0.96 for the gradient** and **0.92 for the state build** — both
 ≈ 1, confirming `O(p)`. A single exact gradient at `p = 10 000` takes
-**0.77 ms**. (The older `sparse_phy_grad` path is `O(p²)`, slope ≈ 2; it is
-retained as an independent-complexity cross-check, not the production path.)
+**0.77 ms**. The general `sparse_phy_grad` engine now uses the same-leaf
+Takahashi selected inverse for its single-axis branch (`K_aug == 1`), while the
+multi-axis branch remains `O(p²)` because it still needs dense cross-leaf inverse
+blocks outside the Takahashi sparsity pattern.

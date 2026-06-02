@@ -4,9 +4,10 @@
 #     julia --project=bench bench/node_gradient_bench.jl
 #
 # Headline under test (Phase 1.1 promotion): the node-frame analytic gradient
-# scales ~O(p) — log–log slope ≈ 1 — on a balanced tree, in contrast to the
-# older `sparse_phy_grad` path (slope ≈ 2; see sparse_phy_grad_bench.jl). Also
-# reports per-tip time, which should be roughly flat if the path is O(p).
+# scales ~O(p) — log–log slope ≈ 1 — on a balanced tree. The general
+# `sparse_phy_grad` engine has a separate benchmark: its single-axis branch is
+# now Takahashi-backed, while the multi-axis branch remains O(p²). This file
+# also reports per-tip time, which should be roughly flat if the path is O(p).
 
 using BenchmarkTools
 using Random

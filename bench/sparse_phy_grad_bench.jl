@@ -8,14 +8,10 @@
 # slope of each. Headline claim under test: the analytic sparse gradient is
 # dramatically faster than dense-ForwardDiff at large p, and scales far better.
 #
-# Honest caveat (see src/sparse_phy_grad.jl): the tree-coupled derivative terms
-# (σ²_phy, σ²_eps, Λ_phy/σ_phy) need the leaf-block of the augmented inverse, a
-# SELECTED INVERSE we currently compute exactly via batched CHOLMOD solves at
-# O(p²) cost. So the analytic gradient is NOT yet O(p) — its slope is expected
-# nearer 2 — but it is still hugely faster than dense-ForwardDiff (whose cost is
-# O(p³) per directional derivative × O(pK) parameters). The Takahashi / tree
-# belief-propagation selected inverse that would restore O(p) is the explicit
-# PERF follow-up; `leaf_block_inv` is isolated for that swap. The dense path is
+# Honest caveat (see src/sparse_phy_grad.jl): the single-axis sparse gradient
+# now uses Takahashi same-leaf selected inverse and should scale near O(p). The
+# general multi-axis gradient (`K_aug >= 2`) still needs dense cross-leaf blocks
+# outside the `L + Lᵀ` Takahashi pattern and remains O(p²). The dense path is
 # only run up to a cutoff (its p³ Cholesky × pK params becomes intractable).
 
 using BenchmarkTools
@@ -25,8 +21,8 @@ using SparseArrays
 using GLLVM
 using GLLVM: AugmentedPhy
 
-# Sparse analytic gradient code is intentionally NOT wired into the GLLVM module
-# on this branch (PERF++ hard constraint). Pull it in directly.
+# Pull the sparse analytic-gradient internals into the benchmark script so this
+# standalone run can access helper names while still comparing the package API.
 include(joinpath(@__DIR__, "..", "src", "sparse_phy_grad.jl"))
 
 # ForwardDiff is a transitive dep of GLLVM but not a direct bench dep, and the
@@ -43,8 +39,8 @@ const DENSE_CUTOFF = 500       # dense-ForwardDiff gradient run only for p ≤ t
 const K_B = 2
 const N_SITES = 20
 const SEED = 0
-# NOTE: large p has an O(p²) selected-inverse step (and O(p²) memory), so the
-# timing loop below takes a single sample there to bound wall-clock and RAM.
+# NOTE: the benchmark fixture uses one phylogenetic axis. Large p still takes a
+# single sample to bound wall-clock and RAM in local audit runs.
 
 # Build the fixed leaf covariance G_phy = S Q_cond⁻¹ S' (dense; only feasible
 # for the dense-path comparison sizes). For sparse-only sizes we skip it.
@@ -144,7 +140,6 @@ if length(dense_ps) >= 2
 end
 println()
 println("Interpretation: dense-ForwardDiff slope ≈ 4 (p³ Cholesky × O(pK) params).")
-println("Analytic slope ≈ 2 reflects the O(p²) selected-inverse term; the O(p)")
-println("Takahashi follow-up would bring it to ≈ 1. Even at the O(p²) stage the")
-println("analytic path is orders of magnitude faster than dense-ForwardDiff and")
-println("the gap widens with p.")
+println("The single-axis analytic path now uses Takahashi same-leaf selected inverse;")
+println("its slope should be near 1 on sparse tree factors. Multi-axis gradients still")
+println("need dense cross-leaf blocks and remain an O(p²) research problem.")
