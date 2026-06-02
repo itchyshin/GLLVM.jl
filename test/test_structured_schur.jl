@@ -125,6 +125,11 @@ using GLLVM, Test, Random, LinearAlgebra, SparseArrays
         @test op3.Ainvs[s] ≈ inv(Symmetric(A3)) atol = 1e-12 rtol = 1e-12
         @test op3.Alogdets[s] ≈ logdet(cholesky(Symmetric(A3))) atol = 1e-12 rtol = 1e-12
     end
+    ws3 = GLLVM._SchurUOperatorWorkspace(Float64, p, K3, n)
+    foreach(A -> fill!(A, NaN), ws3.Amats)
+    op3_ws = GLLVM._SchurUOperator(precision, Lambda3, Wsites3, ws3; sigma2 = 0.7)
+    @test Matrix(GLLVM._schur_u_dense(op3_ws)) ≈ dense3 atol = 1e-10 rtol = 1e-10
+    @test all(A -> all(isnan, A), ws3.Amats)
 
     b = randn(p)
     x_cg = zeros(p)

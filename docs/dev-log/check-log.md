@@ -1,5 +1,111 @@
 # Check Log
 
+## 2026-06-02 - Structured Schur K3 Site Inverse
+
+### Scope
+
+Specialized the `K == 3` site inverse/logdet construction inside
+`_SchurUOperator`. This is an internal structured Schur performance slice only:
+no public API, fitter default, likelihood parameterization, docs syntax, or
+R-parity surface changed.
+
+### Implementation
+
+- `_SchurUOperator` now builds each `K == 3` site matrix
+  `A_s = I + Lambda' diag(w_s) Lambda` by scalar upper-triangle accumulation.
+- The branch stores `A_s^-1` from the closed-form adjugate/determinant formula
+  and `logdet(A_s) = log(det(A_s))`, bypassing the generic tiny Cholesky path.
+- `test/test_structured_schur.jl` now includes a workspace sentinel check that
+  pre-fills `ws.Amats` with `NaN` and verifies the `K == 3` constructor leaves
+  those generic buffers untouched while preserving dense Schur equivalence.
+
+### Correctness Tests
+
+Focused structured tests:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_structured_schur.jl"); include("test/test_structured_poisson_laplace.jl")'
+```
+
+Result: 185 pass, 0 fail, 0 error.
+
+Core suite:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: 2399 pass, 3 expected broken placeholders, 0 fail, 0 error.
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result: 2411 pass, 1 existing sparse-phy precision placeholder, 0 fail, 0
+error. The `quality` testset passed 12/12.
+
+### Benchmark Evidence
+
+Baseline was a detached `HEAD` worktree at `3cd756d`, with the local ignored
+`Manifest.toml` copied in only to reproduce the same dependency set.
+
+```sh
+julia --project=. --startup-file=no bench/structured_schur_logdet_bench.jl --break-even --cells=giant,xlarge --reps=3 --warmups=2 --out=/tmp/structured-schur-k3ainv-baseline-2026-06-02.csv
+julia --project=. --startup-file=no bench/structured_schur_logdet_bench.jl --break-even --cells=giant,xlarge --reps=3 --warmups=2 --out=/tmp/structured-schur-k3ainv-current-2026-06-02.csv
+```
+
+Constructor timing from the benchmark CSV:
+
+```text
+giant  baseline=0.004299 s current=0.000370 s speedup=11.61x
+xlarge baseline=0.017711 s current=0.001396 s speedup=12.69x
+```
+
+Same-fixture constructor allocation check:
+
+```text
+giant  baseline=80432 bytes current=80432 bytes
+xlarge baseline=160304 bytes current=160304 bytes
+```
+
+Exact logdet check from the current benchmark:
+
+```text
+giant  dense=0.011113 s lemma=0.024175 s lemma_relerr=1.587e-15
+xlarge dense=0.089015 s lemma=0.054723 s lemma_relerr=1.551e-15
+```
+
+Interpretation: the target constructor path is about 11.6x-12.7x faster with
+stable constructor allocations. End-to-end exact lemma timing is mixed at this
+short-rep setting, but the exact lemma values remain at roundoff relative error.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+<private-source trace scan over tracked repo content>
+rg -n "[T]ODO|[F]IXME|[T]BD|[P]LACEHOLDER|[p]ending" docs/dev-log/after-task/2026-06-02-structured-schur-k3-site-inverse.md
+rg -n "K3 Site Inverse|K == 3|c11|c12|c13|detA|structured-schur-k3ainv" src/structured_schur.jl test/test_structured_schur.jl docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-02-structured-schur-k3-site-inverse.md
+rg -n "K3 Site Inverse|site inverse|A_s\\^-1|structured Schur" README.md CLAUDE.md docs/src docs/PERF-plus-design.md 2>/dev/null
+gh pr list --limit 5 --json number,title,headRefName,isDraft,state
+```
+
+Results:
+
+- `git diff --check`: clean.
+- Private-source trace scan over tracked public artifacts: clean.
+- Placeholder scan for the after-task report: clean.
+- K3 site-inverse scan: expected source and new report/check-log hits, plus
+  historical K3 factor check-log handles from the broad `K == 3` pattern.
+- User-facing stale wording scan: no hits requiring README, CLAUDE.md, or docs
+  updates for this internal-only change.
+- GitHub lane check: open PR #59 remains the separate draft
+  `claude/package-work-catchup-mQiZM`; this slice did not edit that lane.
+
 ## 2026-06-01 - Structured Schur K3 Factor
 
 ### Scope

@@ -149,6 +149,46 @@ function _SchurUOperator(precision::AbstractMatrix, Lambda::AbstractMatrix,
             Ainv[1, 2] = -a12 * invdet
             Ainv[2, 1] = -a12 * invdet
             Ainv[2, 2] = a11 * invdet
+        elseif K == 3
+            a11 = one(T)
+            a12 = zero(T)
+            a13 = zero(T)
+            a22 = one(T)
+            a23 = zero(T)
+            a33 = one(T)
+            for t in 1:p
+                wt = W[t, s]
+                l1 = L[t, 1]
+                l2 = L[t, 2]
+                l3 = L[t, 3]
+                wl1 = wt * l1
+                wl2 = wt * l2
+                wl3 = wt * l3
+                a11 += wl1 * l1
+                a12 += wl1 * l2
+                a13 += wl1 * l3
+                a22 += wl2 * l2
+                a23 += wl2 * l3
+                a33 += wl3 * l3
+            end
+            c11 = a22 * a33 - a23 * a23
+            c12 = a13 * a23 - a12 * a33
+            c13 = a12 * a23 - a13 * a22
+            c22 = a11 * a33 - a13 * a13
+            c23 = a12 * a13 - a11 * a23
+            c33 = a11 * a22 - a12 * a12
+            detA = a11 * c11 + a12 * c12 + a13 * c13
+            invdet = inv(detA)
+            ws.Alogdets[s] = log(detA)
+            Ainv[1, 1] = c11 * invdet
+            Ainv[1, 2] = c12 * invdet
+            Ainv[1, 3] = c13 * invdet
+            Ainv[2, 1] = c12 * invdet
+            Ainv[2, 2] = c22 * invdet
+            Ainv[2, 3] = c23 * invdet
+            Ainv[3, 1] = c13 * invdet
+            Ainv[3, 2] = c23 * invdet
+            Ainv[3, 3] = c33 * invdet
         else
             A = ws.Amats[s]
             fill!(A, zero(T))
