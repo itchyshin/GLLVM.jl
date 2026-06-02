@@ -735,7 +735,10 @@ function predict(fit::ExponentialFit, Y::AbstractMatrix{<:Real}; type::Symbol = 
     Z = getLV(fit, Y; rotate = false)
     η = fit.β .+ fit.Λ * Z'
     type === :link && return η
-    return linkinv.(Ref(fit.link), η)
+    # clamp η before the (exp) inverse link, matching the inner mode solver
+    # (_clamp_eta) and the other predict methods: an extreme conditional mode
+    # must not over/underflow μ (Exponential(0) is invalid; Inf corrupts residuals).
+    return linkinv.(Ref(fit.link), _clamp_eta.(η))
 end
 
 """
