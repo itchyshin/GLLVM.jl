@@ -71,6 +71,12 @@ Ordered roughly by real-world impact.
       variance). This is a known Laplace weakness and the main statistical
       motivation for adding VA/EVA. Until then, dispersion-parameter recovery is
       checked for sanity (positive, finite), not accuracy.
+- [ ] **ZINB multimodality.** Zero-inflated NB has a structural-zero ↔ low-count-
+      mean trade-off (`π` vs `βc`): the count intercept is weakly identified and the
+      optimiser can land in different local optima across platforms (observed
+      `cor(βc, βc_true)` flipping sign Linux/macOS vs Windows). Needs a better init
+      (e.g. a moment-based π/βc split) or multi-start; VA would also help. The test
+      checks the rotation-invariant loadings Gram, not `βc`.
 - [ ] **Wald Hessians are finite-difference.** Analytic gradients/Hessians per
       family (TMB-style) would speed CIs and improve PD-ness.
 
