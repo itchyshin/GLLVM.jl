@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
 
 @testset "Variational (VA) marginal — Negative Binomial" begin
     @testset "Λ=0 reduces to independent NB loglik (exact)" begin
@@ -58,5 +58,30 @@ using GLLVM, Test, Random, Distributions, Statistics
 
         @test va ≤ quad + 1e-4                  # ELBO ≤ log-marginal (Jensen / KL ≥ 0)
         @test isapprox(va, quad; atol = 0.3)    # and tight
+    end
+
+    @testset "fit_nb_gllvm_va — machinery" begin
+        # Small NB2 GLLVM; assert the driver returns a well-formed fit and the
+        # maximised ELBO does not sit below the no-LV bound at the fitted (β, r).
+        Random.seed!(303)
+        p, K, n = 5, 2, 100
+        r = 4.0
+        β = 0.3 .* randn(p) .+ 1.0
+        Λ = reshape(0.4 .* randn(p * K), p, K)
+        Y = Matrix{Int}(undef, p, n)
+        for s in 1:n
+            z = randn(K)
+            for t in 1:p
+                μ = exp(β[t] + dot(Λ[t, :], z))
+                Y[t, s] = rand(NegativeBinomial(r, r / (r + μ)))
+            end
+        end
+        fit = GLLVM.fit_nb_gllvm_va(Y; K = K)
+        @test fit isa GLLVM.NBFit
+        @test isfinite(fit.loglik)
+        @test fit.r > 0
+        @test size(fit.Λ) == (p, K)
+        @test fit.loglik ≥
+              GLLVM.nb_marginal_loglik_va(Y, zeros(p, K), fit.β, fit.r) - 1e-3
     end
 end

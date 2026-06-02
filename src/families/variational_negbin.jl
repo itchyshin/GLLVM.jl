@@ -101,3 +101,57 @@ function nb_marginal_loglik_va(Y::AbstractMatrix, Λ::AbstractMatrix,
     end
     return acc
 end
+
+"""
+    fit_nb_gllvm_va(Y; K, link=LogLink(), …) -> NBFit
+
+Fit a negative-binomial (NB2) GLLVM by maximising the **variational** lower bound
+([`nb_marginal_loglik_va`](@ref)) over `[β; vec(Λ); log r]` with L-BFGS, jointly
+estimating the dispersion `r` — the VA counterpart of [`fit_nb_gllvm`](@ref)
+(which maximises the Laplace marginal). `Y` is a p×n integer count matrix; `K` the
+latent dimension. Same warm start as the Laplace driver (empirical log-mean
+intercepts + SVD loadings + a moderate `r₀`) and finite-difference gradient. The
+returned `NBFit`'s `loglik` field holds the maximised ELBO (a lower bound on the
+true log-marginal), so it is directly comparable across VA fits but sits slightly
+below the Laplace `loglik` for the same data.
+"""
+function fit_nb_gllvm_va(Y::AbstractMatrix{<:Integer}; K::Integer,
+        link::Link = LogLink(),
+        g_tol::Real = 1e-5, iterations::Integer = 500,
+        maxiter::Integer = 100, tol::Real = 1e-9)
+    p, n = size(Y)
+    rr = rr_theta_len(p, K)
+
+    Zemp = [linkfun(link, max(Y[t, i] + 0.5, 1e-4)) for t in 1:p, i in 1:n]
+    β0 = vec(sum(Zemp; dims = 2)) ./ n
+    Zc = Zemp .- β0
+    F = svd(Zc)
+    kk = min(K, length(F.S))
+    Λ0 = zeros(p, K)
+    @inbounds for j in 1:kk
+        Λ0[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
+    end
+    logr0 = log(10.0)
+
+    θ0 = vcat(β0, pack_lambda(Λ0), logr0)
+    function negelbo(θ)
+        β = θ[1:p]
+        Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+        r = exp(θ[p + rr + 1])
+        v = try
+            -nb_marginal_loglik_va(Y, Λ, β, r; maxiter = maxiter, tol = tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
+    res = Optim.optimize(negelbo, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
+                         autodiff = :finite)
+    θ̂ = Optim.minimizer(res)
+    β̂ = θ̂[1:p]
+    Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
+    r̂ = exp(θ̂[p + rr + 1])
+    return NBFit(β̂, Λ̂, r̂, link, -Optim.minimum(res),
+                 Optim.converged(res), Optim.iterations(res))
+end

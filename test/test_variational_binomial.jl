@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
 
 logistic(x) = 1 / (1 + exp(-x))
 
@@ -57,5 +57,28 @@ logistic(x) = 1 / (1 + exp(-x))
 
         @test va ≤ quad + 1e-4               # ELBO ≤ log-marginal (Jensen / KL ≥ 0)
         @test isapprox(va, quad; atol = 0.3) # and tight
+    end
+
+    @testset "fit_binomial_gllvm_va — machinery" begin
+        # Small Bernoulli GLLVM; assert the driver returns a well-formed fit and
+        # the maximised ELBO does not sit below the no-LV bound at the fitted β.
+        Random.seed!(303)
+        p, K, n = 5, 2, 100
+        β = 0.4 .* randn(p)
+        Λ = reshape(0.5 .* randn(p * K), p, K)
+        Y = Matrix{Int}(undef, p, n)
+        for s in 1:n
+            z = randn(K)
+            for t in 1:p
+                Y[t, s] = rand(Bernoulli(logistic(β[t] + dot(Λ[t, :], z)))) ? 1 : 0
+            end
+        end
+        Nm = ones(Int, p, n)
+        fit = GLLVM.fit_binomial_gllvm_va(Y; K = K)
+        @test fit isa GLLVM.BinomialFit
+        @test isfinite(fit.loglik)
+        @test size(fit.Λ) == (p, K)
+        @test fit.loglik ≥
+              GLLVM.binomial_marginal_loglik_va(Y, Nm, zeros(p, K), fit.β) - 1e-3
     end
 end

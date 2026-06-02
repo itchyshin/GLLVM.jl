@@ -80,6 +80,7 @@ export spatial_cov, relatedness_cov,
        fit_gllvm_speciescov, GllvmSpeciesCovFit,
        poisson_marginal_loglik_va, fit_poisson_gllvm_va,
        binomial_marginal_loglik_va, nb_marginal_loglik_va,
+       fit_binomial_gllvm_va, fit_nb_gllvm_va,
        getLV, getLoadings, rotation,
        predict, fitted, residuals, aic, bic, simulate
 
