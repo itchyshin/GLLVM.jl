@@ -82,4 +82,32 @@ gram_cor(fit, Λtrue) = cor(vec(fit.Λ * fit.Λ'), vec(Λtrue * Λtrue'))
         @test isfinite(fitLA.loglik)
         @test isfinite(fitVA.loglik)
     end
+
+    # --- Delta-Gamma (THE headline: Laplace under-estimates the two-part shape α) ---
+    @testset "Delta-Gamma" begin
+        Random.seed!(91004)
+        α_true = 4.0
+        βz = 0.4 .* randn(p) .+ 0.5        # ≈60% presence
+        βc = 0.3 .* randn(p)
+        Λtrue = 0.5 .* randn(p, K)         # positive-part loadings Λc
+        Y = zeros(p, n)
+        for s in 1:n
+            z = randn(K)
+            for t in 1:p
+                if rand() < 1 / (1 + exp(-βz[t]))
+                    μ = exp(βc[t] + dot(Λtrue[t, :], z))
+                    Y[t, s] = rand(Gamma(α_true, μ / α_true))
+                end
+            end
+        end
+        fitLA = GLLVM.fit_delta_gamma_gllvm(Y; K = K)
+        fitVA = GLLVM.fit_delta_gamma_gllvm_va(Y; K = K)
+
+        gdg(fit) = cor(vec(fit.Λc * fit.Λc'), vec(Λtrue * Λtrue'))
+        @info "VA-vs-LA [Delta-Gamma] shape α (Laplace-biased cell)" α_true=α_true laplace_α=fitLA.α va_α=fitVA.α laplace_loglik=fitLA.loglik va_elbo=fitVA.loglik
+        @info "VA-vs-LA [Delta-Gamma] loadings gram cor" laplace=gdg(fitLA) va=gdg(fitVA)
+
+        @test isfinite(fitLA.loglik)
+        @test isfinite(fitVA.loglik)
+    end
 end

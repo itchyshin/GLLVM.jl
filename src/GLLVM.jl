@@ -42,6 +42,7 @@ include("families/variational_binomial.jl") # VA/ELBO marginal — Binomial/Bern
 include("families/variational_negbin.jl") # VA/ELBO marginal — Negative Binomial (Gauss–Hermite)
 include("families/variational_gamma.jl") # VA/ELBO marginal — Gamma (closed form)
 include("families/variational_beta.jl")  # VA/ELBO marginal — Beta (Gauss–Hermite)
+include("families/variational_dgamma.jl") # VA/ELBO marginal — Delta-Gamma two-part (closed form)
 
 # Post-fit API (ordination, predict, residuals, summary)
 include("postfit.jl")
@@ -85,6 +86,7 @@ export spatial_cov, relatedness_cov,
        fit_fourthcorner_gllvm, FourthCornerFit,
        fit_roweffect_gllvm, RowEffectFit,
        beta_marginal_loglik_va,
+       delta_gamma_marginal_loglik_va, fit_delta_gamma_gllvm_va,
        poisson_marginal_loglik_va, fit_poisson_gllvm_va,
        binomial_marginal_loglik_va, nb_marginal_loglik_va,
        fit_binomial_gllvm_va, fit_nb_gllvm_va,

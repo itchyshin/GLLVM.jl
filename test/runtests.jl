@@ -67,6 +67,7 @@ using GLLVM
     include("test_variational_negbin.jl")
     include("test_variational_gamma.jl")
     include("test_variational_beta.jl")
+    include("test_variational_dgamma.jl")
     include("test_va_vs_laplace.jl")
     include("test_quality.jl")
 end
