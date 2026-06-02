@@ -57,4 +57,26 @@ using GLLVM, Test, Random, Distributions, Statistics
         @test isfinite(va)
         @test isapprox(va, lap; rtol = 0.05)    # both approximate the same integral
     end
+
+    @testset "fit_poisson_gllvm_va machinery + ELBO monotonicity" begin
+        Random.seed!(203)
+        p, K, n = 6, 2, 120
+        β = 0.3 .* randn(p) .+ 1.0
+        Λ = 0.4 .* randn(p, K)
+        Y = Matrix{Int}(undef, p, n)
+        for s in 1:n
+            η = β .+ Λ * randn(K)
+            for t in 1:p
+                Y[t, s] = rand(Poisson(exp(η[t])))
+            end
+        end
+        fit = fit_poisson_gllvm_va(Y; K = K)
+        @test fit isa PoissonFit
+        @test isfinite(fit.loglik)
+        @test size(getLV(fit, Y)) == (n, K)
+        @test size(predict(fit, Y; type = :response)) == (p, n)
+        # the latent variables do not decrease the ELBO vs the no-LV bound at fitted β
+        ll0 = GLLVM.poisson_marginal_loglik_va(Y, zeros(p, K), fit.β)
+        @test fit.loglik ≥ ll0 - 1e-3
+    end
 end

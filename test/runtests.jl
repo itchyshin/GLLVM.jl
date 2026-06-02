@@ -59,6 +59,9 @@ using GLLVM
     include("test_covariates.jl")
     include("test_formula.jl")
     include("test_simulate.jl")
+    include("test_species_covariates.jl")
     include("test_variational.jl")
+    include("test_variational_binomial.jl")
+    include("test_variational_negbin.jl")
     include("test_quality.jl")
 end

@@ -1,0 +1,61 @@
+using GLLVM, Test, Random, Distributions, Statistics
+
+logistic(x) = 1 / (1 + exp(-x))
+
+@testset "Variational (VA) marginal — Binomial" begin
+    @testset "Λ=0 reduces to independent Binomial loglik (exact)" begin
+        # Bernoulli case (N ≡ 1): at Λ=0, σ²=0 ⇒ S = log(1+e^β) and the optimal
+        # q is the prior (m=0, v=1, KL=0), so the ELBO equals the independent
+        # Bernoulli loglik exactly.
+        Random.seed!(300)
+        p, K, n = 6, 2, 40
+        β = 0.5 .* randn(p)
+        N = ones(Int, p, n)
+        Y = [rand(Bernoulli(logistic(β[t]))) ? 1 : 0 for t in 1:p, s in 1:n]
+        va = GLLVM.binomial_marginal_loglik_va(Y, N, zeros(p, K), β)
+        ref = 0.0
+        for t in 1:p, s in 1:n
+            ref += logpdf(Binomial(N[t, s], logistic(β[t])), Y[t, s])
+        end
+        @test va ≈ ref atol = 1e-8
+
+        # Binomial case (N entries > 1): same exact reduction.
+        Random.seed!(301)
+        Nb = rand(3:8, p, n)
+        Yb = [rand(Binomial(Nb[t, s], logistic(β[t]))) for t in 1:p, s in 1:n]
+        vab = GLLVM.binomial_marginal_loglik_va(Yb, Nb, zeros(p, K), β)
+        refb = 0.0
+        for t in 1:p, s in 1:n
+            refb += logpdf(Binomial(Nb[t, s], logistic(β[t])), Yb[t, s])
+        end
+        @test vab ≈ refb atol = 1e-8
+    end
+
+    @testset "ELBO is a lower bound on the exact marginal, and tight (K=1)" begin
+        Random.seed!(302)
+        p = 6
+        β = 0.4 .* randn(p)
+        Λ = reshape(0.6 .* randn(p), p, 1)
+        N = rand(2:6, p)
+        ztrue = randn()
+        y = [rand(Binomial(N[t], logistic(β[t] + Λ[t, 1] * ztrue))) for t in 1:p]
+        Y = reshape(y, p, 1)
+        Nm = reshape(N, p, 1)
+        va = GLLVM.binomial_marginal_loglik_va(Y, Nm, Λ, β)
+
+        # exact single-site marginal by dense quadrature
+        zs = range(-10, 10; length = 8001); dz = step(zs)
+        marg = 0.0
+        for z in zs
+            lp = 0.0
+            for t in 1:p
+                lp += logpdf(Binomial(N[t], logistic(β[t] + Λ[t, 1] * z)), y[t])
+            end
+            marg += exp(lp) * pdf(Normal(), z) * dz
+        end
+        quad = log(marg)
+
+        @test va ≤ quad + 1e-4               # ELBO ≤ log-marginal (Jensen / KL ≥ 0)
+        @test isapprox(va, quad; atol = 0.3) # and tight
+    end
+end

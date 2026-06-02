@@ -22,6 +22,24 @@
 # which keeps v ∈ (0, 1] (posterior variance ≤ the unit prior). As Λ→0 the solver
 # returns m=0, v=1 and the ELBO reduces EXACTLY to the independent-Poisson loglik.
 
+"""
+    _gauss_hermite(G) -> (x, w)
+
+`G`-point Gauss–Hermite nodes `x` and weights `w` (for the weight `e^{-t²}`, so
+`∫ e^{-t²} f(t) dt ≈ Σ_j w_j f(x_j)` and `Σ_j w_j = √π`) via the Golub–Welsch
+algorithm: the nodes are the eigenvalues of the symmetric tridiagonal Jacobi matrix
+with zero diagonal and off-diagonals `√(j/2)`, and the weights are `√π` times the
+squared first components of the corresponding eigenvectors. Shared by the
+non-conjugate VA families (Binomial, NB) for their `E_q` quadrature.
+"""
+function _gauss_hermite(G::Integer)
+    G ≥ 1 || throw(ArgumentError("_gauss_hermite: need G ≥ 1, got $G"))
+    G == 1 && return ([0.0], [sqrt(π)])
+    off = [sqrt(j / 2) for j in 1:(G - 1)]
+    E = eigen(SymTridiagonal(zeros(G), off))
+    return (E.values, sqrt(π) .* (E.vectors[1, :] .^ 2))
+end
+
 # Per-site Poisson ELBO at the profiled variational optimum (m_s, v_s).
 function _va_site_poisson(y::AbstractVector, Λ::AbstractMatrix, Λ2::AbstractMatrix,
         β::AbstractVector; maxiter::Integer = 100, tol::Real = 1e-9)
@@ -79,3 +97,58 @@ function poisson_marginal_loglik_va(Y::AbstractMatrix, Λ::AbstractMatrix,
     end
     return acc
 end
+
+"""
+    fit_poisson_gllvm_va(Y; K, β_init=nothing, Λ_init=nothing, …) -> PoissonFit
+
+Fit a Poisson GLLVM by maximising the **variational** lower bound
+([`poisson_marginal_loglik_va`](@ref)) over `[β; vec(Λ)]` with L-BFGS — the VA
+counterpart of [`fit_poisson_gllvm`](@ref) (which maximises the Laplace marginal).
+Same warm start (empirical log-mean intercepts + SVD loadings) and finite-difference
+gradient. The returned `PoissonFit`'s `loglik` field holds the maximised ELBO (a
+lower bound on the true log-marginal), so it is directly comparable across VA fits
+but sits slightly below the Laplace `loglik` for the same data.
+"""
+function fit_poisson_gllvm_va(Y::AbstractMatrix{<:Integer}; K::Integer,
+        β_init = nothing, Λ_init = nothing,
+        g_tol::Real = 1e-5, iterations::Integer = 500,
+        maxiter::Integer = 100, tol::Real = 1e-9)
+    p, n = size(Y)
+    rr = rr_theta_len(p, K)
+    link = LogLink()
+
+    Zemp = [linkfun(link, max(Y[t, i] + 0.5, 1e-4)) for t in 1:p, i in 1:n]
+    β0 = β_init === nothing ? vec(sum(Zemp; dims = 2)) ./ n : collect(float.(β_init))
+    Λ0 = if Λ_init === nothing
+        Zc = Zemp .- β0
+        F = svd(Zc); kk = min(K, length(F.S))
+        L = zeros(p, K)
+        @inbounds for j in 1:kk
+            L[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
+        end
+        L
+    else
+        collect(float.(Λ_init))
+    end
+
+    θ0 = vcat(β0, pack_lambda(Λ0))
+    function negelbo(θ)
+        β = θ[1:p]
+        Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+        v = try
+            -poisson_marginal_loglik_va(Y, Λ, β; maxiter = maxiter, tol = tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
+    res = Optim.optimize(negelbo, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
+                         autodiff = :finite)
+    θ̂ = Optim.minimizer(res)
+    β̂ = θ̂[1:p]
+    Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
+    return PoissonFit(β̂, Λ̂, link, -Optim.minimum(res),
+                      Optim.converged(res), Optim.iterations(res))
+end
+
