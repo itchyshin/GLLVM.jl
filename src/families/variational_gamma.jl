@@ -96,10 +96,14 @@ function fit_gamma_gllvm_va(Y::AbstractMatrix{<:Real}; K::Integer,
     logα0 = log(2.0)
 
     θ0 = vcat(β0, pack_lambda(Λ0), logα0)
+    # Shape bounds: α·logα − logΓ(α) suffers catastrophic cancellation at very large
+    # α, which lets the optimiser run α away to nonsense (e.g. 1e125). Confine the
+    # shape to a generous, numerically safe range; the true shape is always inside it.
+    logαlo, logαhi = log(1e-3), log(1e3)
     function negelbo(θ)
         β = θ[1:p]
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
-        α = exp(θ[p + rr + 1])
+        α = exp(clamp(θ[p + rr + 1], logαlo, logαhi))
         v = try
             -gamma_marginal_loglik_va(Y, Λ, β, α; maxiter = maxiter, tol = tol)
         catch
@@ -113,7 +117,7 @@ function fit_gamma_gllvm_va(Y::AbstractMatrix{<:Real}; K::Integer,
     θ̂ = Optim.minimizer(res)
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
-    α̂ = exp(θ̂[p + rr + 1])
+    α̂ = exp(clamp(θ̂[p + rr + 1], logαlo, logαhi))
     return GammaFit(β̂, Λ̂, α̂, link, -Optim.minimum(res),
                     Optim.converged(res), Optim.iterations(res))
 end
