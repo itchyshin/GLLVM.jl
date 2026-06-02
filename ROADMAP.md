@@ -65,6 +65,12 @@ Ordered roughly by real-world impact.
       good independent init. Fix needs a non-SVD init (e.g. a Gamma/Gaussian-on-log
       stage, or method-of-moments on the log-scale) and possibly an analytic
       gradient. Until then the Exponential test verifies machinery, not recovery.
+- [ ] **Laplace bias on dispersion/shape parameters.** The Laplace marginal
+      systematically biases variance components — e.g. the Delta-Gamma shape `α` is
+      under-estimated (the method-of-moments warm start also can't net out the LV
+      variance). This is a known Laplace weakness and the main statistical
+      motivation for adding VA/EVA. Until then, dispersion-parameter recovery is
+      checked for sanity (positive, finite), not accuracy.
 - [ ] **Wald Hessians are finite-difference.** Analytic gradients/Hessians per
       family (TMB-style) would speed CIs and improve PD-ness.
 
