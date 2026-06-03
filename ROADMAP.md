@@ -51,8 +51,11 @@ Ordered roughly by real-world impact.
 - [x] **Species-specific environmental coefficients** (full p×q `B`) —
       `fit_gllvm_speciescov` (`η_ts = β_t + Σ_k X[t,s,k]·B[t,k] + (Λz_s)_t`); the
       shared-γ path is the special case all rows of `B` equal.
-- [ ] **Fourth-corner / trait–environment models** (`X` × `TR` interactions) — now
-      unblocked by species-specific `B`.
+- [x] **Row (community) effects** — `fit_roweffect_gllvm` (per-site intercepts, ρ₁=0 reference).
+- [x] **Fourth-corner / trait–environment models** (`X×TR`) — `fit_fourthcorner_gllvm`.
+- [x] **User-facing layer** — `coef_table` (Wald inference table), `ordination` (site/species
+      scores + principal rotation), `select_lv` (AIC/BIC latent-dimension selection), and an
+      end-to-end docs tutorial.
 - [ ] **Row (community) effects** — per-site intercepts, fixed or random.
 - [ ] **Quadratic-response GLLVM** (species optima/tolerances).
 - [ ] **Constrained & concurrent ordination** (reduced-rank regression of LVs on predictors).
