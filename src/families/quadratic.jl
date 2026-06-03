@@ -131,6 +131,52 @@ struct QuadraticFit
     iterations::Int
 end
 
+# ---------------------------------------------------------------------------
+# Post-fit ordination: getLV / predict (parallel to the linear families in
+# src/postfit.jl, but the per-site mode is the quadratic Fisher-scoring solve
+# `_quadratic_mode`, and the predictor carries the per-species quadratic term).
+# ---------------------------------------------------------------------------
+
+_loadings(fit::QuadraticFit) = fit.Λ
+_loglik(fit::QuadraticFit)   = fit.loglik
+
+"""
+    getLV(fit::QuadraticFit, Y; rotate=true) -> n×K matrix
+
+Conditional latent-variable scores for a quadratic-response fit: the per-site mode
+`ẑₛ` from the quadratic Fisher-scoring solve (`_quadratic_mode`) at the fitted
+`(Λ, D, β)` and dispersion. `Y` is the `p×n` response matrix; `rotate=true`
+applies the canonical [`rotation`](@ref).
+"""
+function getLV(fit::QuadraticFit, Y::AbstractMatrix{<:Real}; rotate::Bool = true)
+    p, n = size(Y)
+    K = size(fit.Λ, 2)
+    fam = _cov_family(fit.family, fit.dispersion)
+    ones_p = ones(Int, p)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        Z[:, s] = _quadratic_mode(fam, view(Y, :, s), ones_p, fit.Λ, fit.D, fit.β, fit.link)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
+end
+
+"""
+    predict(fit::QuadraticFit, Y; type=:response) -> p×n matrix
+
+In-sample fitted values at the quadratic conditional mode `ẑ` (see [`getLV`](@ref)):
+`type=:link` returns the linear predictor `η = β + Λ ẑ + D ẑ²`; `type=:response`
+applies the inverse link to the (clamped) `η`.
+"""
+function predict(fit::QuadraticFit, Y::AbstractMatrix{<:Real}; type::Symbol = :response)
+    type in (:link, :response) ||
+        throw(ArgumentError("type must be :link or :response; got :$type"))
+    Z = getLV(fit, Y; rotate = false)                 # n×K
+    η = fit.β .+ fit.Λ * Z' .+ fit.D * ((Z') .^ 2)    # p×n
+    type === :link && return η
+    return linkinv.(Ref(fit.link), _clamp_eta.(η))
+end
+
 function Base.show(io::IO, f::QuadraticFit)
     p, K = size(f.Λ)
     print(io, "QuadraticFit(", nameof(typeof(f.family)), ", p=", p, ", K=", K)

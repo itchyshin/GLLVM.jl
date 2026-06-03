@@ -49,6 +49,55 @@ struct RowEffectFit
     iterations::Int
 end
 
+# ---------------------------------------------------------------------------
+# Post-fit ordination: getLV / predict (parallel to GllvmCovFit in src/postfit.jl,
+# but the offset is the constant-in-species row effect O[t,s] = ρ_s).
+# ---------------------------------------------------------------------------
+
+_loadings(fit::RowEffectFit) = fit.Λ
+_loglik(fit::RowEffectFit)   = fit.loglik
+
+"""
+    getLV(fit::RowEffectFit, Y; rotate=true, N=nothing) -> n×K matrix
+
+Conditional latent-variable scores for a row-effect fit: the per-site offset-aware
+Laplace mode `ẑₛ` (`_laplace_mode_off`) at `η = β + ρ_s + Λz`, with the row-effect
+offset `O[t,s] = ρ_s`. `Y` is the `p×n` response matrix; `rotate=true` applies the
+canonical [`rotation`](@ref).
+"""
+function getLV(fit::RowEffectFit, Y::AbstractMatrix{<:Real};
+               rotate::Bool = true, N::Union{Nothing, AbstractMatrix} = nothing)
+    p, n = size(Y); K = size(fit.Λ, 2)
+    Nm = N === nothing ? fill(1, p, n) : N
+    fam = _cov_family(fit.family, fit.dispersion)
+    O = _build_offset_row(fit.ρ, p)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        η0 = fit.β .+ view(O, :, s)
+        Z[:, s] = _laplace_mode_off(fam, view(Y, :, s), view(Nm, :, s), fit.Λ, η0, fit.link)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
+end
+
+"""
+    predict(fit::RowEffectFit, Y; type=:response, N=nothing) -> p×n matrix
+
+In-sample fitted values at the Laplace mode `ẑ` (see [`getLV`](@ref)): `type=:link`
+returns the linear predictor `η = β + ρ_s + Λ ẑ`; `type=:response` applies the
+inverse link to the (clamped) `η`.
+"""
+function predict(fit::RowEffectFit, Y::AbstractMatrix{<:Real};
+                 type::Symbol = :response, N::Union{Nothing, AbstractMatrix} = nothing)
+    type in (:link, :response) ||
+        throw(ArgumentError("type must be :link or :response; got :$type"))
+    Z = getLV(fit, Y; rotate = false, N = N)          # n×K
+    O = _build_offset_row(fit.ρ, size(Y, 1))
+    η = fit.β .+ O .+ fit.Λ * Z'                       # p×n
+    type === :link && return η
+    return linkinv.(Ref(fit.link), _clamp_eta.(η))
+end
+
 function Base.show(io::IO, f::RowEffectFit)
     p, K = size(f.Λ); n = length(f.ρ)
     print(io, "RowEffectFit(", nameof(typeof(f.family)), ", p=", p, ", n=", n, ", K=", K)

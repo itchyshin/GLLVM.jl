@@ -62,4 +62,35 @@ using GLLVM, Test, Random, Distributions, Statistics
         @test length(fit.β) == p
         @test size(fit.Λ) == (p, K)
     end
+
+    # ------------------------------------------------------------------
+    # (d) MACHINERY ONLY — post-fit getLV / predict / ordination.
+    # ------------------------------------------------------------------
+    @testset "post-fit: getLV/predict" begin
+        Random.seed!(988)
+        p, n, K = 6, 10, 1
+        β = 0.5 .* randn(p)
+        ρ = vcat(0.0, 0.4 .* randn(n - 1))
+        Λ = 0.5 .* randn(p, K)
+        Z = randn(K, n)
+        Y = Matrix{Int}(undef, p, n)
+        for s in 1:n, t in 1:p
+            η = β[t] + ρ[s] + dot(Λ[t, :], Z[:, s])
+            Y[t, s] = rand(Poisson(exp(η)))
+        end
+        fit = fit_roweffect_gllvm(Y; family = Poisson(), K = K, iterations = 80)
+
+        S = getLV(fit, Y)
+        @test size(S) == (n, K)
+        @test all(isfinite, S)
+
+        ηhat = predict(fit, Y; type = :link)
+        @test size(ηhat) == (p, n)
+        μhat = predict(fit, Y; type = :response)
+        @test size(μhat) == (p, n)
+        @test all(isfinite, μhat)
+
+        ord = ordination(fit, Y)
+        @test size(ord.sites) == (n, K)
+    end
 end

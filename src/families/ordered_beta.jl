@@ -160,6 +160,52 @@ struct OrderedBetaFit
     iterations::Int
 end
 
+# ---------------------------------------------------------------------------
+# Post-fit ordination: getLV / predict. The link is identity-on-η (the family
+# marker carries c0, c1, φ; μ = σ(η)), so the per-site mode is this file's own
+# `_ordered_beta_mode`, and :mean returns the interior Beta mean μ = σ(η).
+# ---------------------------------------------------------------------------
+
+_loadings(fit::OrderedBetaFit) = fit.Λ
+_loglik(fit::OrderedBetaFit)   = fit.loglik
+
+"""
+    getLV(fit::OrderedBetaFit, Y; rotate=true) -> n×K matrix
+
+Conditional latent-variable scores for an ordered-beta fit: the per-site Laplace
+mode `ẑₛ` (`_ordered_beta_mode`) at the fitted `(Λ, β)`, cutpoints `c0 < c1`, and
+precision `φ`. `Y` is the `p×n` matrix of responses in `[0,1]`; `rotate=true`
+applies the canonical [`rotation`](@ref).
+"""
+function getLV(fit::OrderedBetaFit, Y::AbstractMatrix{<:Real}; rotate::Bool = true)
+    p, n = size(Y)
+    K = size(fit.Λ, 2)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        Z[:, s] = _ordered_beta_mode(view(Y, :, s), fit.Λ, fit.β, fit.c0, fit.c1, fit.φ)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
+end
+
+"""
+    predict(fit::OrderedBetaFit, Y; type=:mean) -> p×n matrix
+
+In-sample fitted values at the Laplace mode `ẑ` (see [`getLV`](@ref)): `type=:link`
+returns the linear predictor `η = β + Λ ẑ`; `type=:mean` returns the interior Beta
+mean `μ = logistic(η)` (η clamped). Note `:mean` is the *conditional Beta mean of
+the (0,1) interior*, not the unconditional `E[y]` over the full zero/interior/one
+mixture (which would weight by the point-mass probabilities).
+"""
+function predict(fit::OrderedBetaFit, Y::AbstractMatrix{<:Real}; type::Symbol = :mean)
+    type in (:link, :mean) ||
+        throw(ArgumentError("type must be :link or :mean; got :$type"))
+    Z = getLV(fit, Y; rotate = false)                 # n×K
+    η = fit.β .+ fit.Λ * Z'                            # p×n
+    type === :link && return η
+    return _ob_logistic.(_clamp_eta.(η))
+end
+
 function Base.show(io::IO, f::OrderedBetaFit)
     p, K = size(f.Λ)
     print(io, "OrderedBetaFit(p=", p, ", K=", K,

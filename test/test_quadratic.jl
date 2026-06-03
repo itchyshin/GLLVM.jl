@@ -52,4 +52,32 @@ using GLLVM, Test, Random, Distributions, Statistics
         @test size(fit.D) == (p, K)
         @test all(isfinite, fit.D)
     end
+
+    @testset "post-fit: getLV/predict" begin
+        Random.seed!(73)
+        p, K, n = 5, 1, 40
+        β = log.(fill(5.0, p))
+        Λ = reshape(0.5 .* randn(p), p, K)
+        D = reshape(-0.15 .* (0.5 .+ rand(p)), p, K)
+        Z = randn(n, K)
+        Y = Matrix{Int}(undef, p, n)
+        for s in 1:n, t in 1:p
+            η = β[t] + Λ[t, 1] * Z[s, 1] + D[t, 1] * Z[s, 1]^2
+            Y[t, s] = rand(Poisson(exp(η)))
+        end
+        fit = fit_quadratic_gllvm(Y; family = Poisson(), K = K, iterations = 120)
+
+        S = getLV(fit, Y)
+        @test size(S) == (n, K)
+        @test all(isfinite, S)
+
+        ηhat = predict(fit, Y; type = :link)
+        @test size(ηhat) == (p, n)
+        μhat = predict(fit, Y; type = :response)
+        @test size(μhat) == (p, n)
+        @test all(isfinite, μhat)
+
+        ord = ordination(fit, Y)
+        @test size(ord.sites) == (n, K)
+    end
 end

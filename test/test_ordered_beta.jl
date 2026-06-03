@@ -108,4 +108,47 @@ end
         @test size(fit.Λ) == (p, K)
         @test length(fit.β) == p
     end
+
+    @testset "post-fit: getLV/predict" begin
+        Random.seed!(12)
+        p, K, n = 4, 1, 50
+        βt = [-0.3, 0.5, 0.0, 0.8]
+        Λt = reshape([0.6, -0.4, 0.5, 0.3], p, 1)
+        c0, c1, φ = -1.0, 1.0, 10.0
+        Y = Matrix{Float64}(undef, p, n)
+        for i in 1:n
+            z = randn()
+            for t in 1:p
+                η = βt[t] + Λt[t, 1] * z
+                u = 1 / (1 + exp(-(η - c0)))
+                v = 1 / (1 + exp(-(η - c1)))
+                p0 = 1 - u
+                p1 = v
+                r = rand()
+                if r < p0
+                    Y[t, i] = 0.0
+                elseif r > 1 - p1
+                    Y[t, i] = 1.0
+                else
+                    μ = 1 / (1 + exp(-η))
+                    Y[t, i] = clamp(rand(Beta(μ * φ, (1 - μ) * φ)), 1e-4, 1 - 1e-4)
+                end
+            end
+        end
+        fit = fit_ordered_beta_gllvm(Y; K = K, iterations = 100)
+
+        S = getLV(fit, Y)
+        @test size(S) == (n, K)
+        @test all(isfinite, S)
+
+        ηhat = predict(fit, Y; type = :link)
+        @test size(ηhat) == (p, n)
+        μhat = predict(fit, Y; type = :mean)
+        @test size(μhat) == (p, n)
+        @test all(isfinite, μhat)
+        @test all(0 .<= μhat .<= 1)
+
+        ord = ordination(fit, Y)
+        @test size(ord.sites) == (n, K)
+    end
 end
