@@ -62,6 +62,12 @@ include("confint_family.jl")             # Wald / profile / bootstrap CIs for no
 include("summary_table.jl")              # coef_table: tidy Wald inference table
 include("formula.jl")                    # @formula front-end (v1: fixed effects → engine)
 
+# Ordination naming: the implemented z_s ~ N(B'x_s, I) model (covariate-informed LV
+# mean PLUS residual) is gllvm's *concurrent* ordination (num.lv.c). Expose the
+# accurate name as an alias of the as-built `*_constrained` API.
+const fit_concurrent_gllvm = fit_constrained_gllvm
+const ConcurrentOrdinationFit = ConstrainedOrdinationFit
+
 # Public API
 export spatial_cov, relatedness_cov,
        fit_gaussian_gllvm, GllvmModel, GllvmFit,
@@ -92,6 +98,7 @@ export spatial_cov, relatedness_cov,
        fit_fourthcorner_gllvm, FourthCornerFit,
        fit_roweffect_gllvm, RowEffectFit,
        fit_constrained_gllvm, ConstrainedOrdinationFit, constrained_marginal_loglik_laplace,
+       fit_concurrent_gllvm, ConcurrentOrdinationFit,
        fit_quadratic_gllvm, QuadraticFit, quadratic_marginal_loglik_laplace,
        fit_ordered_beta_gllvm, OrderedBetaFit, ordered_beta_marginal_loglik_laplace,
        beta_marginal_loglik_va, fit_beta_gllvm_va,
@@ -100,7 +107,7 @@ export spatial_cov, relatedness_cov,
        binomial_marginal_loglik_va, nb_marginal_loglik_va,
        fit_binomial_gllvm_va, fit_nb_gllvm_va,
        gamma_marginal_loglik_va, fit_gamma_gllvm_va,
-       getLV, getLoadings, rotation, ordination,
+       getLV, getLoadings, rotation, ordination, ordiplot,
        coef_table, GllvmCoefTable, select_lv, LVSelection,
        predict, fitted, residuals, aic, bic, simulate
 
