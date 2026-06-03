@@ -39,7 +39,7 @@ end
         ℓ_joint = spde_latent_marginal_loglik(Poisson(), Y, ones(Int, p, M),
                                               Λ, β, LogLink(), Aid, Qid;
                                               maxiter = 100, tol = 1e-12)
-        ℓ_site = marginal_loglik_laplace(Poisson(), Y, ones(Int, p, M),
+        ℓ_site = GLLVM.marginal_loglik_laplace(Poisson(), Y, ones(Int, p, M),
                                          Λ, β, LogLink(); maxiter = 100, tol = 1e-12)
         @test isapprox(ℓ_joint, ℓ_site; atol = 1e-7, rtol = 1e-8)
     end
