@@ -1,4 +1,4 @@
-using GLLVM, Test, LinearAlgebra, SparseArrays, SpecialFunctions
+using GLLVM, Test, LinearAlgebra, SparseArrays   # Matérn check uses GLLVM.matern_correlation (no direct SpecialFunctions dep in the test env)
 
 @testset "SPDE / Matérn-GMRF" begin
     # ---- regular triangulated grid over [0, L]² ---------------------------
