@@ -69,7 +69,8 @@ Ordered roughly by real-world impact.
       OUTER gradient for the Gauss–Hermite families (NB/Binomial/Beta), removing the
       ~2·n_params finite-difference factor.
 - [ ] **Correlated LV structures** (spatial/temporal: `corExp`, `corAR1`, `corCS`).
-- [ ] **Tweedie**, ordered-beta, beta-hurdle families.
+- [x] **Tweedie** (`fit_tweedie_gllvm`, compound Poisson–Gamma 1<p<2, Dunn–Smyth series)
+      and **ordered-beta** (`fit_ordered_beta_gllvm`). beta-hurdle still open.
 - [ ] **Missing-data (NA) handling.**
 - [ ] Ordination / biplot / coefplot ecosystem (lower priority for a compute lib).
 
