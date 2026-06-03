@@ -85,6 +85,57 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         end
     end
 
+    @testset "envelope-theorem outer gradient matches finite difference" begin
+        Random.seed!(314)
+        p, K, n = 4, 2, 40
+        r = 4.0
+        β = 0.3 .* randn(p) .+ 1.0
+        Λ = reshape(0.4 .* randn(p * K), p, K)
+        Y = Matrix{Int}(undef, p, n)
+        for s in 1:n
+            z = randn(K)
+            for t in 1:p
+                μ = exp(β[t] + dot(Λ[t, :], z))
+                Y[t, s] = rand(NegativeBinomial(r, r / (r + μ)))
+            end
+        end
+        rr = GLLVM.rr_theta_len(p, K)
+
+        # θ near a warm start: empirical intercepts + SVD loadings + log r₀.
+        link = GLLVM.LogLink()
+        Zemp = [GLLVM.linkfun(link, max(Y[t, i] + 0.5, 1e-4)) for t in 1:p, i in 1:n]
+        β0 = vec(sum(Zemp; dims = 2)) ./ n
+        Zc = Zemp .- β0
+        Fsvd = svd(Zc)
+        kk = min(K, length(Fsvd.S))
+        Λ0 = zeros(p, K)
+        for j in 1:kk
+            Λ0[:, j] = Fsvd.U[:, j] .* (Fsvd.S[j] / sqrt(n))
+        end
+        θ = vcat(β0, GLLVM.pack_lambda(Λ0), log(5.0))
+
+        x, w = GLLVM._gauss_hermite(20)
+        β_ = θ[1:p]
+        Λ_ = GLLVM.unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+        Λ2_ = Λ_ .^ 2
+        r_ = exp(θ[p + rr + 1])
+        _, M, V = GLLVM._va_negbin_solve_all(Y, Λ_, Λ2_, β_, r_, x, w)
+        G = zeros(length(θ))
+        GLLVM._va_negbin_outer_grad!(G, Y, Λ_, Λ2_, β_, r_, M, V, x, w)
+
+        f(θv) = -GLLVM.nb_marginal_loglik_va(Y,
+                    GLLVM.unpack_lambda(θv[(p + 1):(p + rr)], p, K),
+                    θv[1:p], exp(θv[p + rr + 1]))
+        h = 1e-5
+        fd = zeros(length(θ))
+        for i in eachindex(θ)
+            θp = copy(θ); θp[i] += h
+            θm = copy(θ); θm[i] -= h
+            fd[i] = (f(θp) - f(θm)) / (2h)
+        end
+        @test isapprox(G, fd; atol = 1e-3)
+    end
+
     @testset "fit_nb_gllvm_va — machinery" begin
         # Small NB2 GLLVM; assert the driver returns a well-formed fit and the
         # maximised ELBO does not sit below the no-LV bound at the fitted (β, r).

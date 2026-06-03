@@ -125,6 +125,116 @@ function _va_site_negbin(y::AbstractVector, Λ::AbstractMatrix, Λ2::AbstractMat
     return -Optim.minimum(res)
 end
 
+# Sibling of `_va_site_negbin` that ALSO returns the converged variational params.
+# Returns (ELBO_s, m*, v*) where m*, v* are length-K vectors (v on the natural,
+# not log, scale). Used by the envelope-theorem outer gradient: at the inner
+# optimum ∂ELBO/∂(m,v)=0, so dELBO/dθ = ∂ELBO/∂θ holding (m*,v*) fixed.
+function _va_site_negbin_mv(y::AbstractVector, Λ::AbstractMatrix, Λ2::AbstractMatrix,
+        β::AbstractVector, r::Real, x::AbstractVector, w::AbstractVector;
+        maxiter::Integer = 100, tol::Real = 1e-9)
+    K = size(Λ, 2)
+    negelbo(ψ) = -_va_site_negbin_elbo(ψ, y, Λ, Λ2, β, r, x, w)
+    g!(G, ψ) = _va_site_negbin_grad!(G, ψ, y, Λ, Λ2, β, r, x, w)
+    ψ0 = zeros(2K)
+    res = Optim.optimize(negelbo, g!, ψ0, Optim.LBFGS(),
+                         Optim.Options(g_tol = tol, iterations = maxiter))
+    ψ̂ = Optim.minimizer(res)
+    m = ψ̂[1:K]
+    v = exp.(ψ̂[(K + 1):(2K)])
+    return (-Optim.minimum(res), m, v)
+end
+
+# One full inner-solve pass over all `n` sites for given (Λ, β, r): returns the
+# total ELBO together with the converged variational means/variances stacked as
+# K×n matrices M, V (columns = sites). This is the single pass the envelope-theorem
+# outer gradient consumes — both objective and gradient come out of one solve.
+function _va_negbin_solve_all(Y::AbstractMatrix, Λ::AbstractMatrix, Λ2::AbstractMatrix,
+        β::AbstractVector, r::Real, x::AbstractVector, w::AbstractVector;
+        maxiter::Integer = 100, tol::Real = 1e-9)
+    K = size(Λ, 2)
+    n = size(Y, 2)
+    M = Matrix{Float64}(undef, K, n)
+    V = Matrix{Float64}(undef, K, n)
+    acc = 0.0
+    @inbounds for s in 1:n
+        elbo_s, m_s, v_s = _va_site_negbin_mv(view(Y, :, s), Λ, Λ2, β, float(r),
+                                              x, w; maxiter = maxiter, tol = tol)
+        acc += elbo_s
+        M[:, s] = m_s
+        V[:, s] = v_s
+    end
+    return acc, M, V
+end
+
+# Envelope-theorem outer gradient of the TOTAL ELBO over θ = [β; pack_lambda(Λ); log r],
+# given the converged (M, V) from `_va_negbin_solve_all`. Returns the gradient of
+# the OBJECTIVE (−ELBO) in θ-packed layout, written into `G`.
+#
+# At the inner optimum the (m,v) partials vanish, so the total θ-gradient equals the
+# partial ∂ELBO/∂θ at fixed (m*,v*). The KL term is θ-independent and drops out.
+# With per-(t,s) GH-weighted sums (μ=e^η):
+#   a_ts = Σ_j (w_j/√π)·ℓ'_η,   ℓ'_η = y − μ(r+y)/(r+μ)
+#   b_ts = Σ_j (w_j/√π)·ℓ'_η·x_j
+#   c_ts = Σ_j (w_j/√π)·ℓ'_r,   ℓ'_r = ψ(y+r) − ψ(r) + log(r/(r+μ)) + 1 − (r+y)/(r+μ)
+#   ∂ELBO/∂β_t  = Σ_s a_ts
+#   ∂ELBO/∂Λ_tk = Σ_s [ a_ts·M[k,s] + b_ts·(2·Λ_tk·V[k,s]/√(2σ²_ts)) ]   (σ²=0 ⇒ 0)
+#   ∂ELBO/∂r    = Σ_s Σ_t c_ts,   ∂ELBO/∂(log r) = r·∂ELBO/∂r
+function _va_negbin_outer_grad!(G::AbstractVector, Y::AbstractMatrix,
+        Λ::AbstractMatrix, Λ2::AbstractMatrix, β::AbstractVector, r::Real,
+        M::AbstractMatrix, V::AbstractMatrix, x::AbstractVector, w::AbstractVector)
+    p, K = size(Λ)
+    n = size(Y, 2)
+    invsqrtpi = 1.0 / sqrt(pi)
+    gβ = zeros(Float64, p)
+    gΛ = zeros(Float64, p, K)
+    gr = 0.0
+    @inbounds for s in 1:n
+        m_s = view(M, :, s)
+        v_s = view(V, :, s)
+        σ2 = Λ2 * v_s
+        μη = β .+ Λ * m_s
+        for t in 1:p
+            σ2t = σ2[t]
+            sd = sqrt(2.0 * max(σ2t, 0.0))
+            at = 0.0; bt = 0.0; ct = 0.0
+            for j in eachindex(x)
+                η = _clamp_eta(μη[t] + sd * x[j])
+                μ = exp(η)
+                rpμ = r + μ
+                ℓη = Y[t, s] - μ * (r + Y[t, s]) / rpμ
+                ℓr = digamma(Y[t, s] + r) - digamma(r) + log(r / rpμ) +
+                     1.0 - (r + Y[t, s]) / rpμ
+                wj = w[j]
+                at += wj * ℓη
+                bt += wj * ℓη * x[j]
+                ct += wj * ℓr
+            end
+            a_ts = invsqrtpi * at
+            b_ts = invsqrtpi * bt
+            c_ts = invsqrtpi * ct
+            gβ[t] += a_ts
+            gr += c_ts
+            for k in 1:K
+                gΛ[t, k] += a_ts * m_s[k]
+                if σ2t > 0
+                    gΛ[t, k] += b_ts * (2.0 * Λ[t, k] * v_s[k] / sd)
+                end
+            end
+        end
+    end
+    # Objective is −ELBO ⇒ negate. log-r chain rule: ∂/∂(log r) = r·∂/∂r.
+    rr = rr_theta_len(p, K)
+    @inbounds for t in 1:p
+        G[t] = -gβ[t]
+    end
+    gΛpacked = pack_lambda(gΛ)
+    @inbounds for i in 1:rr
+        G[p + i] = -gΛpacked[i]
+    end
+    G[p + rr + 1] = -(r * gr)
+    return G
+end
+
 """
     nb_marginal_loglik_va(Y, Λ, β, r; maxiter=100, tol=1e-9, gh=20) -> Float64
 
@@ -187,20 +297,28 @@ function fit_nb_gllvm_va(Y::AbstractMatrix{<:Integer}; K::Integer,
     logr0 = log(10.0)
 
     θ0 = vcat(β0, pack_lambda(Λ0), logr0)
-    function negelbo(θ)
+    x, w = _gauss_hermite(20)
+    # Combined objective/gradient: ONE inner-solve pass per evaluation. The outer
+    # gradient is exact via the envelope theorem (∂ELBO/∂(m,v)=0 at the inner
+    # optimum), eliminating the finite-difference factor of ~2·length(θ).
+    function fg!(F, G, θ)
         β = θ[1:p]
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+        Λ2 = Λ .^ 2
         r = exp(θ[p + rr + 1])
-        v = try
-            -nb_marginal_loglik_va(Y, Λ, β, r; maxiter = maxiter, tol = tol)
-        catch
-            return 1e12
+        elbo, M, V = _va_negbin_solve_all(Y, Λ, Λ2, β, r, x, w;
+                                          maxiter = maxiter, tol = tol)
+        if G !== nothing
+            _va_negbin_outer_grad!(G, Y, Λ, Λ2, β, r, M, V, x, w)
         end
-        return isfinite(v) ? v : 1e12
+        if F !== nothing
+            return isfinite(elbo) ? -elbo : 1e12
+        end
+        return nothing
     end
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
-    res = Optim.optimize(negelbo, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
-                         autodiff = :finite)
+    res = Optim.optimize(Optim.only_fg!(fg!), θ0, ls,
+                         Optim.Options(g_tol = g_tol, iterations = iterations))
     θ̂ = Optim.minimizer(res)
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
