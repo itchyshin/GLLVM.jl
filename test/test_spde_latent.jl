@@ -95,5 +95,53 @@ end
         @test size(fit.Λ) == (p, 1)
         @test length(fit.β) == p
         @test fit.κ > 0 && fit.τ > 0
+        @test isnan(fit.dispersion)              # Poisson has no dispersion
+    end
+
+    # ---- Dispersion families: NB → Poisson reduction (marginal anchor) -----
+    # As r → ∞ the NB2 marginal must collapse to the Poisson marginal at the same
+    # (Λ, β, A, Q). Deterministic — no fit.
+    @testset "NB(r→∞) marginal == Poisson marginal" begin
+        Random.seed!(44)
+        p, M, K = 3, 6, 1
+        β = randn(p) .* 0.3
+        Λ = randn(p, K) .* 0.4
+        Y = rand(0:5, p, M)
+        Aid = sparse(1.0I, M, M)
+        Qid = sparse(1.0I, M, M)
+
+        ℓ_nb = spde_latent_marginal_loglik(NegativeBinomial(1e7, 0.5), Y,
+                        ones(Int, p, M), Λ, β, LogLink(), Aid, Qid;
+                        maxiter = 100, tol = 1e-12)
+        ℓ_pois = spde_latent_marginal_loglik(Poisson(), Y, ones(Int, p, M),
+                        Λ, β, LogLink(), Aid, Qid; maxiter = 100, tol = 1e-12)
+        @test isapprox(ℓ_nb, ℓ_pois; atol = 1e-3)
+    end
+
+    # ---- Dispersion-family fit drivers: smoke (Gaussian σ², NB r) -----------
+    @testset "fit_spde_latent_gllvm dispersion families run" begin
+        Random.seed!(55)
+        m, L = 6, 5.0
+        nodes, tris = _grid_mesh(m, L)
+        Nn = m * m
+        site_nodes = collect(1:3:Nn)
+        locs = nodes[site_nodes, :]
+        Mn = length(site_nodes)
+
+        # Gaussian (σ²) — single species.
+        yG = reshape(randn(Mn) .+ 0.5, 1, Mn)
+        fG = fit_spde_latent_gllvm(yG, nodes, tris, locs;
+                                   family = Normal(), K = 1,
+                                   iterations = 30, newton_maxiter = 30)
+        @test isfinite(fG.loglik)
+        @test fG.dispersion > 0                  # σ²
+
+        # Negative binomial (r) — two species of counts.
+        YN = rand(0:4, 2, Mn)
+        fN = fit_spde_latent_gllvm(YN, nodes, tris, locs;
+                                   family = NegativeBinomial(1.0, 0.5), K = 1,
+                                   iterations = 30, newton_maxiter = 30)
+        @test isfinite(fN.loglik)
+        @test fN.dispersion > 0                  # r
     end
 end

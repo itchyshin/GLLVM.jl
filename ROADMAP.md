@@ -81,12 +81,13 @@ Ordered roughly by real-world impact.
       variable inside the (non-Gaussian) multi-species GLLVM** —
       `spde_latent_marginal_loglik` / `fit_spde_latent_gllvm` do a **joint Laplace over
       the spatial GMRF** (the K latent variables are spatially-smooth fields
-      `z_·k = A·u_k`, `u_k ~ N(0,Q⁻¹)`), gated by two machine-precision anchors: the
-      `Q=I,A=I` reduction to the independent-site Laplace, and the conjugate-Gaussian
-      reduction to `spde_gaussian_marginal_loglik`. A self-contained module,
-      shared-ready with DRM.jl. *Remaining (runtime-backed): Delaunay-of-points
-      meshing; dispersion-family fit drivers (NB / Gaussian σ²) beyond the
-      no-dispersion Poisson/Binomial path.* See SPDE design note below.
+      `z_·k = A·u_k`, `u_k ~ N(0,Q⁻¹)`), gated by machine-precision anchors: the
+      `Q=I,A=I` reduction to the independent-site Laplace, the conjugate-Gaussian
+      reduction to `spde_gaussian_marginal_loglik`, and the NB(r→∞)→Poisson marginal
+      reduction. The fit driver covers the no-dispersion families (Poisson/Binomial)
+      **and the dispersion families** (Gaussian `σ²`, negative-binomial `r`, jointly
+      estimated). A self-contained module, shared-ready with DRM.jl. *Remaining
+      (runtime-backed): Delaunay-of-points meshing.* See SPDE design note below.
 - [x] **Tweedie** (`fit_tweedie_gllvm`, compound Poisson–Gamma 1<p<2, Dunn–Smyth series)
       and **ordered-beta** (`fit_ordered_beta_gllvm`). beta-hurdle still open.
 - [ ] **Missing-data (NA) handling.**

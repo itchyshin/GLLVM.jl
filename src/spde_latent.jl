@@ -166,15 +166,18 @@ end
     SPDELatentFit
 
 Result of [`fit_spde_latent_gllvm`](@ref): intercepts `β` (length p), loadings `Λ`
-(p×K), the Matérn inverse-range `κ` and precision-scale `τ`, the `link` and
-`family`, the maximised joint-Laplace `loglik`, the optimiser `converged` flag and
-`iterations`, and the mesh (`nodes`, `tris`) the model was fit on.
+(p×K), the Matérn inverse-range `κ` and precision-scale `τ`, the estimated
+`dispersion` (σ² for Gaussian, `r` for negative binomial; `NaN` for the
+no-dispersion families), the `link` and `family`, the maximised joint-Laplace
+`loglik`, the optimiser `converged` flag and `iterations`, and the mesh (`nodes`,
+`tris`) the model was fit on.
 """
 struct SPDELatentFit
     β::Vector{Float64}
     Λ::Matrix{Float64}
     κ::Float64
     τ::Float64
+    dispersion::Float64
     link::Link
     family::Any
     loglik::Float64
@@ -189,6 +192,7 @@ function Base.show(io::IO, f::SPDELatentFit)
     print(io, "SPDELatentFit(p=", p, ", K=", K,
           ", family=", nameof(typeof(f.family)),
           ", κ=", round(f.κ; sigdigits = 4), ", τ=", round(f.τ; sigdigits = 4),
+          isnan(f.dispersion) ? "" : ", dispersion=$(round(f.dispersion; sigdigits = 4))",
           ", loglik=", round(f.loglik; sigdigits = 7),
           f.converged ? "" : ", NOT CONVERGED", ")")
 end
@@ -206,10 +210,12 @@ sites) observed at the M rows of `locs`, over the triangular mesh (`nodes`,
 `tris`). The FEM matrices and the projector `A` are built once; each evaluation
 rebuilds the sparse precision `Q = spde_precision(Cdiag, G, exp(logκ), exp(logτ); α)`.
 
-The parameter vector is `θ = [β; pack_lambda(Λ); log κ; log τ]`. Supported for the
-no-dispersion families (Poisson, Bernoulli/Binomial); supply trial counts `N`
-(p×M) for Binomial. Warm start: empirical link-scale intercepts + an SVD loadings
-init; `κ`, `τ` from `κ_init`, `τ_init`.
+The parameter vector is `θ = [β; pack_lambda(Λ); log κ; log τ; <log-dispersion>]`,
+where the trailing dispersion block is empty for the no-dispersion families
+(Poisson, Bernoulli/Binomial) and a single `log σ²` (Gaussian) or `log r` (negative
+binomial) otherwise — jointly estimated. Supply trial counts `N` (p×M) for
+Binomial. Warm start: empirical link-scale intercepts + an SVD loadings init;
+`κ`, `τ` from `κ_init`, `τ_init`; a family-appropriate dispersion init.
 """
 function fit_spde_latent_gllvm(Y::AbstractMatrix, nodes::AbstractMatrix,
         tris::AbstractMatrix{<:Integer}, locs::AbstractMatrix;
@@ -236,16 +242,20 @@ function fit_spde_latent_gllvm(Y::AbstractMatrix, nodes::AbstractMatrix,
         Λ0[:, j] = F.U[:, j] .* (F.S[j] / sqrt(M))
     end
 
-    θ0 = vcat(β0, pack_lambda(Λ0), log(float(κ_init)), log(float(τ_init)))
+    nd = _spde_disp_len(family)
+    dbase = p + rr + 2                                # index of the last (logτ) slot
+    θ0 = vcat(β0, pack_lambda(Λ0), log(float(κ_init)), log(float(τ_init)),
+              _spde_disp_init(family, Y))
 
     function negll(θ)
         β = θ[1:p]
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
         κ = exp(θ[p + rr + 1])
         τ = exp(θ[p + rr + 2])
+        fam = _spde_make_family(family, view(θ, (dbase + 1):(dbase + nd)))
         v = try
             Q = spde_precision(Cdiag, G, κ, τ; α = α)
-            -spde_latent_marginal_loglik(family, Y, Ntr, Λ, β, link, A, Q;
+            -spde_latent_marginal_loglik(fam, Y, Ntr, Λ, β, link, A, Q;
                                          maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
@@ -263,13 +273,34 @@ function fit_spde_latent_gllvm(Y::AbstractMatrix, nodes::AbstractMatrix,
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
     κ̂ = exp(θ̂[p + rr + 1])
     τ̂ = exp(θ̂[p + rr + 2])
+    disp = _spde_disp_value(family, θ̂[(dbase + 1):(dbase + nd)])
 
-    return SPDELatentFit(β̂, Λ̂, κ̂, τ̂, link, family, -Optim.minimum(res),
+    return SPDELatentFit(β̂, Λ̂, κ̂, τ̂, disp, link, family, -Optim.minimum(res),
                          Optim.converged(res), Optim.iterations(res), nodes, tris)
 end
 
 # Domain-safe empirical mean for the link-scale warm start.
 _ws_mean(::Poisson, y, n) = max(float(y) + 0.5, 1e-4)
+_ws_mean(::NegativeBinomial, y, n) = max(float(y) + 0.5, 1e-4)
 _ws_mean(::Binomial, y, n) = clamp((float(y) + 0.5) / (float(n) + 1.0), 1e-4, 1 - 1e-4)
 _ws_mean(::Normal, y, n) = float(y)
 _ws_mean(f, y, n) = float(y)
+
+# Dispersion plumbing: how many log-scale dispersion params a family carries, how
+# to rebuild the family marker from them, an init, and the reported value (σ² for
+# Gaussian, r for NB). No-dispersion families fall through to the zero-param case.
+_spde_disp_len(::Normal) = 1
+_spde_disp_len(::NegativeBinomial) = 1
+_spde_disp_len(f) = 0
+
+_spde_make_family(::Normal, θd) = Normal(0.0, exp(0.5 * θd[1]))         # θd = log σ²
+_spde_make_family(::NegativeBinomial, θd) = NegativeBinomial(exp(θd[1]), 0.5)  # θd = log r
+_spde_make_family(f, θd) = f
+
+_spde_disp_init(::Normal, Y) = [log(max(0.5 * var(vec(float.(Y))), 1e-4))]
+_spde_disp_init(::NegativeBinomial, Y) = [log(10.0)]
+_spde_disp_init(f, Y) = Float64[]
+
+_spde_disp_value(::Normal, θd) = exp(θd[1])                              # σ²
+_spde_disp_value(::NegativeBinomial, θd) = exp(θd[1])                    # r
+_spde_disp_value(f, θd) = NaN
