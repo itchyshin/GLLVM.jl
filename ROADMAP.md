@@ -73,14 +73,20 @@ Ordered roughly by real-world impact.
       relatedness/kernel builders (`relatedness_cov`); spatial/temporal correlation
       is just another kernel/covariance in that structured-random-effect framework,
       so a bespoke `corAR1`/`corExp`-on-LVs feature is subsumed and not needed for now.
-- [~] **SPDE / Matérn-GMRF spatial fields** (Lindgren, Rue & Lindström 2011) — core
-      done: `spde_fem` (P1 mass/stiffness), `spde_precision` (sparse `Q(κ,τ)`),
+- [x] **SPDE / Matérn-GMRF spatial fields** (Lindgren, Rue & Lindström 2011) —
+      `spde_fem` (P1 mass/stiffness), `spde_precision` (sparse `Q(κ,τ)`),
       `spde_projector` (`A`), `matern_correlation`, `spde_mesh_grid` (auto-mesher),
-      and `fit_spde_gaussian` (the INLA-style Woodbury/det-lemma Gaussian field fit —
-      gated by an exact dense-vs-sparse loglik). A self-contained module, shared-ready
-      with DRM.jl. *Remaining (runtime-backed): Delaunay-of-points meshing, and the
-      SPDE field as a latent variable inside the non-Gaussian / multi-species GLLVM
-      (joint Laplace over the GMRF).* See SPDE design note below.
+      `fit_spde_gaussian` (the INLA-style Woodbury/det-lemma Gaussian field fit —
+      gated by an exact dense-vs-sparse loglik), and now the **SPDE field as a latent
+      variable inside the (non-Gaussian) multi-species GLLVM** —
+      `spde_latent_marginal_loglik` / `fit_spde_latent_gllvm` do a **joint Laplace over
+      the spatial GMRF** (the K latent variables are spatially-smooth fields
+      `z_·k = A·u_k`, `u_k ~ N(0,Q⁻¹)`), gated by two machine-precision anchors: the
+      `Q=I,A=I` reduction to the independent-site Laplace, and the conjugate-Gaussian
+      reduction to `spde_gaussian_marginal_loglik`. A self-contained module,
+      shared-ready with DRM.jl. *Remaining (runtime-backed): Delaunay-of-points
+      meshing; dispersion-family fit drivers (NB / Gaussian σ²) beyond the
+      no-dispersion Poisson/Binomial path.* See SPDE design note below.
 - [x] **Tweedie** (`fit_tweedie_gllvm`, compound Poisson–Gamma 1<p<2, Dunn–Smyth series)
       and **ordered-beta** (`fit_ordered_beta_gllvm`). beta-hurdle still open.
 - [ ] **Missing-data (NA) handling.**

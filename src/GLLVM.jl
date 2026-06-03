@@ -52,6 +52,11 @@ include("families/variational_gamma.jl") # VA/ELBO marginal — Gamma (closed fo
 include("families/variational_beta.jl")  # VA/ELBO marginal — Beta (Gauss–Hermite)
 include("families/variational_dgamma.jl") # VA/ELBO marginal — Delta-Gamma two-part (closed form)
 
+# SPDE/Matérn-GMRF field as a latent variable inside a non-Gaussian GLLVM
+# (joint Laplace over the spatial GMRF). Depends on the SPDE FEM machinery
+# (src/spde.jl) and the family Laplace pieces above.
+include("spde_latent.jl")
+
 # Post-fit API (ordination, predict, residuals, summary)
 include("postfit.jl")
 include("ordination.jl")                  # ordination output (site scores + species loadings, canonical rotation)
@@ -77,6 +82,7 @@ const ConcurrentOrdinationFit = ConstrainedOrdinationFit
 export spatial_cov, relatedness_cov,
        spde_fem, spde_precision, spde_projector, matern_correlation, spde_mesh_grid,
        spde_gaussian_marginal_loglik, fit_spde_gaussian, SPDEGaussianFit,
+       spde_latent_marginal_loglik, fit_spde_latent_gllvm, SPDELatentFit,
        fit_gaussian_gllvm, GllvmModel, GllvmFit,
        confint, profile_ci, bootstrap_ci,
        ppca_init, em_fa,

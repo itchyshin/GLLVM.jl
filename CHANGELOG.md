@@ -63,6 +63,12 @@ analytic-vs-finite-difference gradient checks), validated on Linux/macOS/Windows
   (analytic reference), and `spde_mesh_grid` (auto-mesher over a bounding box).
 - `fit_spde_gaussian` — INLA-style Gaussian spatial-field fit via the Woodbury identity
   and matrix-determinant lemma, gated by an exact dense-vs-sparse log-likelihood equality.
+- **SPDE field as a latent variable inside the (non-Gaussian) GLLVM** —
+  `spde_latent_marginal_loglik` / `fit_spde_latent_gllvm` make the `K` latent variables
+  spatially-smooth Matérn-GMRF fields (`z_·k = A·u_k`, `u_k ~ N(0, Q⁻¹)`) via a **joint
+  Laplace over the spatial GMRF** (sparse CHOLMOD Cholesky of the `K·N` field Hessian),
+  gated by two machine-precision anchors: the `Q=I, A=I` reduction to the independent-site
+  Laplace, and the conjugate-Gaussian reduction to `spde_gaussian_marginal_loglik`.
 
 ### Beyond gllvm
 - Phylogenetic GLLVM toolkit (sparse-precision, contrasts, edge-incidence, relaxed
@@ -74,10 +80,10 @@ analytic-vs-finite-difference gradient checks), validated on Linux/macOS/Windows
 - Exponential LV recovery is weakly identified (CV = 1 swamps the SVD warm start); the
   test verifies machinery, not recovery.
 - Wald Hessians are finite-difference (analytic per-family Hessians would speed CIs).
-- Still open vs gllvm: the SPDE field as a *latent variable* inside the non-Gaussian /
-  multi-species GLLVM (joint Laplace over the GMRF — the Gaussian field fit is done),
-  Delaunay-of-points meshing, full VA/EVA inference beyond Wald SEs, beta-hurdle,
-  missing-data (NA) handling, and an internal fast phylogenetic-Poisson path (issue #61).
+- Still open vs gllvm: dispersion-family SPDE-latent fit drivers (NB / Gaussian σ²)
+  beyond the no-dispersion Poisson/Binomial path, Delaunay-of-points meshing, full
+  VA/EVA inference beyond Wald SEs, beta-hurdle, missing-data (NA) handling, and an
+  internal fast phylogenetic-Poisson path (issue #61).
 
 ## v0.1.0
 

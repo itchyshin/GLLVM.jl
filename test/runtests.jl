@@ -54,6 +54,7 @@ using GLLVM
     include("test_spde.jl")
     include("test_spde_mesh.jl")
     include("test_spde_fit.jl")
+    include("test_spde_latent.jl")
     include("test_twopart_substrate.jl")
     include("test_delta_fit.jl")
     include("test_delta_postfit.jl")
