@@ -58,9 +58,11 @@ Ordered roughly by real-world impact.
       end-to-end docs tutorial.
 - [ ] **Row (community) effects** — per-site intercepts, fixed or random.
 - [ ] **Quadratic-response GLLVM** (species optima/tolerances).
-- [x] **Constrained ordination** (`fit_constrained_gllvm`) — reduced-rank regression
-      of the LVs on predictors, `z_s ~ N(B'x_s, I)`, via the offset core (`O=Λ·B'·X'`).
-      Concurrent ordination (constrained + unconstrained LVs together) still open.
+- [x] **Ordination trio** — unconstrained (`num.lv`), **concurrent** (`num.lv.c`,
+      `fit_concurrent_gllvm`: `z_s ~ N(B'x_s, I)`), and **constrained/RRR** (`num.RR`,
+      `fit_rrr_gllvm`: deterministic `z_s = B'x_s`, a reduced-rank GLM with no integral).
+      All six new model types also have `getLV`/`predict`/`ordination` post-fit support.
+      (Concurrent+unconstrained LVs *together* in one model still open.)
 - [x] **VA estimator analytic gradients** — inner (all families) + envelope-theorem
       OUTER gradient for the Gauss–Hermite families (NB/Binomial/Beta), removing the
       ~2·n_params finite-difference factor.
