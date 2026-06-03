@@ -65,6 +65,7 @@ using GLLVM
     include("test_species_covariates.jl")
     include("test_fourthcorner.jl")
     include("test_row_effects.jl")
+    include("test_constrained_ordination.jl")
     include("test_variational.jl")
     include("test_variational_binomial.jl")
     include("test_variational_negbin.jl")

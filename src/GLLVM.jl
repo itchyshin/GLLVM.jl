@@ -35,6 +35,7 @@ include("families/twopart.jl")           # Two-part substrate + Delta-lognormal 
 include("families/fit_gllvm.jl")         # unified fit_gllvm(Y; family) dispatcher
 include("families/covariates.jl")        # fixed-effect covariates (Xβ) for the Laplace families
 include("families/species_covariates.jl") # species-specific covariate coefficients (XB) for the Laplace families
+include("families/constrained_ordination.jl") # constrained ordination (RRR of latent vars on env predictors)
 include("families/fourthcorner.jl")       # fourth-corner trait–environment interaction for the Laplace families
 include("families/row_effects.jl")        # community row effects (per-site intercepts) for the Laplace families
 include("families/variational.jl")       # Gaussian-variational (VA/ELBO) marginal — Poisson (increment 1) + GH helper
@@ -88,6 +89,7 @@ export spatial_cov, relatedness_cov,
        fit_gllvm_speciescov, GllvmSpeciesCovFit,
        fit_fourthcorner_gllvm, FourthCornerFit,
        fit_roweffect_gllvm, RowEffectFit,
+       fit_constrained_gllvm, ConstrainedOrdinationFit, constrained_marginal_loglik_laplace,
        beta_marginal_loglik_va, fit_beta_gllvm_va,
        delta_gamma_marginal_loglik_va, fit_delta_gamma_gllvm_va,
        poisson_marginal_loglik_va, fit_poisson_gllvm_va,
