@@ -7,7 +7,7 @@ makedocs(;
     authors  = "Shinichi Nakagawa",
     modules  = [GLLVM],
     format   = MarkdownVitepress(
-        repo      = "https://github.com/itchyshin/GLLVM.jl",
+        repo      = "github.com/itchyshin/GLLVM.jl",
         devbranch = "main",
         devurl    = "dev",
     ),
