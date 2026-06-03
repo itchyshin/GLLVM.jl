@@ -1337,6 +1337,108 @@ function _phylo_poisson_marginal_loglik_laplace(Y::AbstractMatrix,
     return value
 end
 
+function _phylo_poisson_hessian_inverse_dense(Q::AbstractMatrix,
+        Λ::AbstractMatrix, W::AbstractMatrix,
+        leaf_pos::AbstractVector{<:Integer}, sigma2::Real)
+    m = size(Q, 1)
+    p, n = size(W)
+    K = size(Λ, 2)
+    d = m + K * n
+    T = promote_type(eltype(Q), eltype(Λ), eltype(W), typeof(float(sigma2)))
+    H = zeros(T, d, d)
+    Qdense = Matrix{T}(Q)
+    invsigma2 = inv(T(sigma2))
+    @inbounds for b in 1:m, a in 1:m
+        H[a, b] = invsigma2 * Qdense[a, b]
+    end
+    @inbounds for i in 1:n
+        offset = m + (i - 1) * K
+        for k in 1:K
+            H[offset + k, offset + k] += one(T)
+        end
+        for t in 1:p
+            j = leaf_pos[t]
+            wt = W[t, i]
+            H[j, j] += wt
+            for k in 1:K
+                z_k = offset + k
+                cross = wt * Λ[t, k]
+                H[j, z_k] += cross
+                H[z_k, j] += cross
+                for l in 1:K
+                    H[z_k, offset + l] += cross * Λ[t, l]
+                end
+            end
+        end
+    end
+    C = cholesky(Symmetric(H))
+    Hinv = Matrix{T}(I, d, d)
+    ldiv!(C, Hinv)
+    return Hinv
+end
+
+function _phylo_poisson_logsigma2_value_grad_dense(Y::AbstractMatrix,
+        Λ::AbstractMatrix, β::AbstractVector, phy::AugmentedPhy;
+        sigma2::Real, maxiter::Integer = 50, tol::Real = 1e-8,
+        mode_solve::Symbol = :dense, cg_tol::Real = 1e-8,
+        cg_maxiter::Union{Nothing, Integer} = nothing)
+    diag = _phylo_poisson_marginal_loglik_laplace(
+        Y, Λ, β, phy; sigma2 = sigma2, logdet_method = :dense,
+        maxiter = maxiter, tol = tol, mode_solve = mode_solve,
+        cg_tol = cg_tol, cg_maxiter = cg_maxiter,
+        return_diagnostics = true)
+    U = diag.mode.U
+    Z = diag.mode.Z
+    p, n = size(Y)
+    K = size(Λ, 2)
+    Q_cond, leaf_pos = _phylo_poisson_conditional_precision(phy)
+    m = size(Q_cond, 1)
+    T = promote_type(eltype(Y), eltype(Λ), eltype(β), typeof(float(sigma2)))
+    Q = _schur_precision_storage(Q_cond, T)
+    L = Matrix{T}(Λ)
+    b = Vector{T}(β)
+    S = Matrix{T}(undef, p, n)
+    W = Matrix{T}(undef, p, n)
+    _phylo_poisson_lsw!(S, W, Y, L, b, U, Z, leaf_pos)
+    Hinv = _phylo_poisson_hessian_inverse_dense(Q, L, W, leaf_pos, sigma2)
+
+    Qdense = Matrix{T}(Q)
+    invsigma2 = inv(T(sigma2))
+    P = invsigma2 .* Qdense
+    Pu = P * U
+    quad_u = dot(U, Pu)
+    trace_GP = zero(T)
+    @inbounds for b in 1:m, a in 1:m
+        trace_GP += Hinv[a, b] * P[b, a]
+    end
+    qτ = T(0.5) * (quad_u + trace_GP - T(m))
+
+    d = m + K * n
+    qx = zeros(T, d)
+    Fτ = zeros(T, d)
+    copyto!(view(Fτ, 1:m), Pu)
+    @inbounds for i in 1:n
+        offset = m + (i - 1) * K
+        for t in 1:p
+            j = leaf_pos[t]
+            h = Hinv[j, j]
+            for k in 1:K
+                h += T(2) * L[t, k] * Hinv[j, offset + k]
+            end
+            for l in 1:K, k in 1:K
+                h += L[t, k] * L[t, l] * Hinv[offset + k, offset + l]
+            end
+            qη = -T(0.5) * W[t, i] * h
+            qx[j] += qη
+            for k in 1:K
+                qx[offset + k] += qη * L[t, k]
+            end
+        end
+    end
+    grad = qτ + dot(qx, Hinv * Fτ)
+    return diag.value, grad
+end
+
 function _fit_phylo_poisson_objective(θ::AbstractVector, Y::AbstractMatrix,
         phy::AugmentedPhy, p::Integer, K::Integer; sigma2::Real,
         estimate_sigma2::Bool, logdet_method::Symbol, dense_cutoff::Integer,

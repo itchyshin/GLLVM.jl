@@ -286,6 +286,18 @@ end
     @test augmented.value ≈ dense_tip atol = 1e-8 rtol = 1e-8
     @test augmented_cg.mode.cg_converged
     @test augmented_cg.value ≈ augmented.value atol = 1e-7 rtol = 1e-7
+    value_sigma, grad_logsigma2 = GLLVM._phylo_poisson_logsigma2_value_grad_dense(
+        Y, Λ, β, phy; sigma2 = 0.45, mode_solve = :dense,
+        maxiter = 100, tol = 1e-12)
+    logsigma2 = log(0.45)
+    sigma_objective = logs -> GLLVM._phylo_poisson_marginal_loglik_laplace(
+        Y, Λ, β, phy; sigma2 = exp(logs), logdet_method = :dense,
+        mode_solve = :dense, maxiter = 100, tol = 1e-12)
+    h = 1e-5
+    fd_logsigma2 = (sigma_objective(logsigma2 + h) -
+                    sigma_objective(logsigma2 - h)) / (2h)
+    @test value_sigma ≈ augmented.value atol = 1e-10 rtol = 1e-10
+    @test grad_logsigma2 ≈ fd_logsigma2 atol = 1e-5 rtol = 1e-5
 
     fit = GLLVM._fit_phylo_poisson_laplace(
         Y, phy; K = K, sigma2 = 0.45, estimate_sigma2 = true,

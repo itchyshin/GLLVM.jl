@@ -1,5 +1,66 @@
 # Check Log
 
+## 2026-06-03 - Augmented Poisson Log-sigma Gradient Check
+
+### Scope
+
+Added a narrow analytic derivative check for the internal augmented-tree
+phylogenetic Poisson path: `d loglik / d log(sigma2)` at fixed `β` and `Λ`.
+This is an exact dense-Hessian small-cell target, not the final scalable
+outer-gradient implementation. It closes the first piece needed before
+replacing the finite-difference scalar-variance fitter.
+
+### Files Changed
+
+- `src/families/structured_poisson.jl`
+  - Added `_phylo_poisson_hessian_inverse_dense`.
+  - Added `_phylo_poisson_logsigma2_value_grad_dense`.
+- `test/test_structured_poisson_laplace.jl`
+  - Added central finite-difference verification for `log(sigma2)`.
+
+### Checks Run
+
+Focused structured Poisson test:
+
+```sh
+julia --project=. test/test_structured_poisson_laplace.jl
+```
+
+Result:
+
+```text
+augmented phylogenetic Poisson Laplace prototype | 17/17 pass
+```
+
+Core suite:
+
+```sh
+julia --project=. test/runtests.jl
+```
+
+Result: exit code 0; direct core quality placeholders remain broken because
+Aqua/JET are loaded through `Pkg.test()`.
+
+Full package suite:
+
+```sh
+julia --project=. -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+### Rose Verdict
+
+PASS WITH NOTES. The derivative matches finite differences on the small
+augmented-tree fixture and gives the optimizer work a correct target. It is not
+yet the scalable Workflow Q gradient path: the current helper materializes the
+full dense Hessian inverse and should stay internal.
+
 ## 2026-06-03 - Phylogenetic Poisson gllvmTMB Speed Audit
 
 ### Scope
