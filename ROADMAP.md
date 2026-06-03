@@ -42,12 +42,14 @@ goes beyond standard `gllvm`.
 
 Ordered roughly by real-world impact.
 
-- [~] **Variational / extended-variational approximation (VA/EVA).** *In progress.*
-      Closed-form Poisson ELBO + Gauss–Hermite ELBO for Binomial/Bernoulli and NB
-      (`*_marginal_loglik_va`), shared Golub–Welsch GH helper, and a
-      `fit_poisson_gllvm_va` driver — all gated by exact `Λ=0` reductions and
-      ELBO≤quadrature bounds. Remaining: Binomial/NB fit drivers; then revisit the
-      Laplace-fragile families (Exponential/Delta-Gamma/ZINB) under VA.
+- [x] **Variational approximation (VA).** Marginals + `fit_*_gllvm_va` drivers for
+      Poisson/Gamma/Delta-Gamma (closed-form ELBO) and Binomial/NB/Beta (Gauss–Hermite);
+      analytic inner gradients for all, plus envelope-theorem analytic OUTER gradients
+      for the GH families (NB VA ~26×→~1.3× vs Laplace). **VA-based standard errors**
+      via `confint(fit, Y; method=:wald, objective=:va)` / `coef_table(...; objective=:va)`
+      (Hessian of the ELBO; approximate, as in gllvm). All gated by exact `Λ=0`
+      reductions, ELBO≤quadrature bounds, and FD gradient-checks. *(EVA / full VA
+      inference beyond Wald SEs still open.)*
 - [x] **Species-specific environmental coefficients** (full p×q `B`) —
       `fit_gllvm_speciescov` (`η_ts = β_t + Σ_k X[t,s,k]·B[t,k] + (Λz_s)_t`); the
       shared-γ path is the special case all rows of `B` equal.
