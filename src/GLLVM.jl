@@ -13,6 +13,7 @@ include("profile.jl")                    # σ_eps profile-out (used by fit)
 include("fit.jl")
 include("simulate.jl")
 include("structured_cov.jl")             # spatial_cov, relatedness_cov builders
+include("spde.jl")                        # SPDE / Matérn-GMRF FEM spatial field (shared-ready with DRM.jl)
 
 # Sparse phylogenetic path (evaluation-only — see docstring for AD limitation)
 include("sparse_phy.jl")
@@ -72,6 +73,7 @@ const ConcurrentOrdinationFit = ConstrainedOrdinationFit
 
 # Public API
 export spatial_cov, relatedness_cov,
+       spde_fem, spde_precision, spde_projector, matern_correlation,
        fit_gaussian_gllvm, GllvmModel, GllvmFit,
        confint, profile_ci, bootstrap_ci,
        ppca_init, em_fa,
