@@ -70,17 +70,69 @@ function _neg_elbo_site_binomial(φ::AbstractVector, y::AbstractVector,
     return -(ℓ - kl)
 end
 
+# In-place gradient of the negative per-site Binomial ELBO at φ = [m (K); logv (K)].
+# Recomputes the GH nodes η_{tj} EXACTLY as _neg_elbo_site_binomial does (same
+# (xs,ws), same _clamp_eta). With ℓ(y,η) = y·η − N·log(1+e^η) the conditional-density
+# η-derivative is ℓ'(y,η) = y − N·logistic(η), and the generic GH chain rule gives
+#   a_t = Σ_j (w_j/√π)·ℓ'(y_t,η_{tj}),  b_t = Σ_j (w_j/√π)·ℓ'(y_t,η_{tj})·x_j,
+#   ∂E_q_t/∂m_k  = Λ_tk·a_t,
+#   ∂E_q_t/∂lv_k = (Λ_tk²·v_k / √(2σ²_t))·b_t   (0 when σ²_t==0),
+# so with KL = ½ Σ_k (v_k + m_k² − 1 − lv_k),
+#   ∂ELBO/∂m_k  = Σ_t Λ_tk·a_t − m_k,
+#   ∂ELBO/∂lv_k = Σ_t (Λ_tk²·v_k/√(2σ²_t))·b_t − ½(v_k − 1).
+# The objective is −ELBO, so G holds the negation. (_clamp_eta's derivative is treated
+# as 1; the clamp is inactive for benign data.)
+function _va_site_binomial_grad!(G::AbstractVector, φ::AbstractVector,
+        y::AbstractVector, N::AbstractVector, Λ::AbstractMatrix, Λ2::AbstractMatrix,
+        β::AbstractVector, xs::AbstractVector, ws::AbstractVector)
+    p, K = size(Λ)
+    m  = @view φ[1:K]
+    lv = @view φ[(K + 1):(2K)]
+    v  = exp.(lv)
+    σ2 = Λ2 * v
+    μ  = β .+ Λ * m
+    invsqrtpi = 1.0 / sqrt(π)
+    a = zeros(eltype(φ), p)
+    b = zeros(eltype(φ), p)
+    @inbounds for t in 1:p
+        sd = sqrt(2.0 * max(σ2[t], 0.0))
+        at = zero(eltype(φ)); bt = zero(eltype(φ))
+        for j in eachindex(xs)
+            η = _clamp_eta(μ[t] + sd * xs[j])
+            ℓp = y[t] - N[t] / (1.0 + exp(-η))     # ℓ'(y,η) = y − N·logistic(η)
+            at += ws[j] * ℓp
+            bt += ws[j] * ℓp * xs[j]
+        end
+        a[t] = invsqrtpi * at
+        b[t] = invsqrtpi * bt
+    end
+    @inbounds for k in 1:K
+        gm = zero(eltype(φ)); gv = zero(eltype(φ))
+        for t in 1:p
+            gm += Λ[t, k] * a[t]
+            if σ2[t] > 0
+                gv += (Λ2[t, k] * v[k] / sqrt(2.0 * σ2[t])) * b[t]
+            end
+        end
+        dELBO_dm  = gm - m[k]
+        dELBO_dlv = gv - 0.5 * (v[k] - 1)
+        G[k]      = -dELBO_dm
+        G[K + k]  = -dELBO_dlv
+    end
+    return G
+end
+
 # Per-site Binomial ELBO at the profiled variational optimum (m_s, v_s), found by
-# jointly minimising the negative ELBO over [m; logv] with L-BFGS.
+# jointly minimising the negative ELBO over [m; logv] with L-BFGS (analytic gradient).
 function _va_site_binomial(y::AbstractVector, N::AbstractVector, Λ::AbstractMatrix,
         Λ2::AbstractMatrix, β::AbstractVector, xs::AbstractVector, ws::AbstractVector;
         maxiter::Integer = 100, tol::Real = 1e-9)
     K = size(Λ, 2)
     φ0 = zeros(2K)   # m = 0, logv = 0 ⇒ v = 1 (the prior)
     f(φ) = _neg_elbo_site_binomial(φ, y, N, Λ, Λ2, β, xs, ws)
-    res = Optim.optimize(f, φ0, Optim.LBFGS(),
-                         Optim.Options(g_tol = tol, iterations = maxiter);
-                         autodiff = :finite)
+    g!(G, φ) = _va_site_binomial_grad!(G, φ, y, N, Λ, Λ2, β, xs, ws)
+    res = Optim.optimize(f, g!, φ0, Optim.LBFGS(),
+                         Optim.Options(g_tol = tol, iterations = maxiter))
     return -Optim.minimum(res)
 end
 

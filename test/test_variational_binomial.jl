@@ -59,6 +59,31 @@ logistic(x) = 1 / (1 + exp(-x))
         @test isapprox(va, quad; atol = 0.3) # and tight
     end
 
+    @testset "analytic inner gradient matches central finite difference" begin
+        Random.seed!(310)
+        p, K = 5, 2
+        β = 0.4 .* randn(p)
+        Λ = reshape(0.5 .* randn(p * K), p, K)
+        Λ2 = Λ .^ 2
+        N = rand(2:6, p)                              # N > 1 trials
+        y = [rand(Binomial(N[t], logistic(β[t]))) for t in 1:p]
+        xs, ws = GLLVM._gauss_hermite(20)
+        f(ψ) = GLLVM._neg_elbo_site_binomial(ψ, y, N, Λ, Λ2, β, xs, ws)
+        h = 1e-6
+        for _ in 1:3
+            ψ = 0.5 .* randn(2K)
+            G = zeros(2K)
+            GLLVM._va_site_binomial_grad!(G, ψ, y, N, Λ, Λ2, β, xs, ws)
+            fd = zeros(2K)
+            for i in 1:2K
+                ψp = copy(ψ); ψp[i] += h
+                ψm = copy(ψ); ψm[i] -= h
+                fd[i] = (f(ψp) - f(ψm)) / (2h)
+            end
+            @test isapprox(G, fd; atol = 1e-5)
+        end
+    end
+
     @testset "fit_binomial_gllvm_va — machinery" begin
         # Small Bernoulli GLLVM; assert the driver returns a well-formed fit and
         # the maximised ELBO does not sit below the no-LV bound at the fitted β.

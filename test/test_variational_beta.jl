@@ -16,6 +16,32 @@ using GLLVM, Test, Random, Distributions, Statistics
         @test va ≈ ref atol = 1e-8
     end
 
+    @testset "analytic inner gradient matches central finite difference" begin
+        Random.seed!(410)
+        p, K = 5, 2
+        φ = 10.0
+        β = 0.3 .* randn(p) .+ 0.2
+        Λ = reshape(0.4 .* randn(p * K), p, K)
+        Λ2 = Λ .^ 2
+        μ = [1.0 / (1.0 + exp(-β[t])) for t in 1:p]
+        y = [rand(Beta(μ[t] * φ, (1 - μ[t]) * φ)) for t in 1:p]   # y ∈ (0,1)
+        x, w = GLLVM._gauss_hermite(20)
+        f(ψ) = -GLLVM._va_site_beta_elbo(ψ, y, Λ, Λ2, β, φ, x, w)
+        h = 1e-6
+        for _ in 1:3
+            ψ = 0.5 .* randn(2K)
+            G = zeros(2K)
+            GLLVM._va_site_beta_grad!(G, ψ, y, Λ, Λ2, β, φ, x, w)
+            fd = zeros(2K)
+            for i in 1:2K
+                ψp = copy(ψ); ψp[i] += h
+                ψm = copy(ψ); ψm[i] -= h
+                fd[i] = (f(ψp) - f(ψm)) / (2h)
+            end
+            @test isapprox(G, fd; atol = 1e-5)
+        end
+    end
+
     @testset "ELBO is a lower bound on the exact marginal, and tight (K=1)" begin
         Random.seed!(401)
         p = 6

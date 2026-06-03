@@ -57,17 +57,73 @@ function _va_site_beta_elbo(ψ::AbstractVector, y::AbstractVector,
     return ℓ - kl
 end
 
+# In-place gradient of the negative per-site Beta ELBO at ψ = [m (K); logv (K)].
+# Recomputes the GH nodes η_{tj} EXACTLY as _va_site_beta_elbo does (same (x,w),
+# same _clamp_eta, same μ-clamp into (1e-12,1−1e-12)). With g(η)=log p(y|μ,φ),
+# μ=logistic(η), and dμ/dη = μ(1−μ), the η-derivative is
+#   ℓ'(y,η) = μ(1−μ)·φ·[digamma((1−μ)φ) − digamma(μφ) + log y − log(1−y)],
+# and the generic GH chain rule gives
+#   a_t = Σ_j (w_j/√π)·ℓ'(y_t,η_{tj}),  b_t = Σ_j (w_j/√π)·ℓ'(y_t,η_{tj})·x_j,
+#   ∂E_q_t/∂m_k  = Λ_tk·a_t,
+#   ∂E_q_t/∂lv_k = (Λ_tk²·v_k / √(2σ²_t))·b_t   (0 when σ²_t==0).
+# With KL = ½ Σ_k (v_k + m_k² − 1 − lv_k),
+#   ∂ELBO/∂m_k  = Σ_t Λ_tk·a_t − m_k,
+#   ∂ELBO/∂lv_k = Σ_t (Λ_tk²·v_k/√(2σ²_t))·b_t − ½(v_k − 1).
+# The objective is −ELBO, so G holds the negation. (_clamp_eta's derivative ≈ 1.)
+function _va_site_beta_grad!(G::AbstractVector, ψ::AbstractVector, y::AbstractVector,
+        Λ::AbstractMatrix, Λ2::AbstractMatrix, β::AbstractVector,
+        φ::Real, x::AbstractVector, w::AbstractVector)
+    p, K = size(Λ)
+    m  = @view ψ[1:K]
+    lv = @view ψ[(K + 1):(2K)]
+    v  = exp.(lv)
+    σ2 = Λ2 * v
+    μη = β .+ Λ * m
+    invsqrtpi = 1.0 / sqrt(pi)
+    a = zeros(eltype(ψ), p)
+    b = zeros(eltype(ψ), p)
+    @inbounds for t in 1:p
+        sd = sqrt(2.0 * max(σ2[t], 0.0))
+        at = zero(eltype(ψ)); bt = zero(eltype(ψ))
+        ly  = log(y[t]); l1y = log1p(-y[t])
+        for j in eachindex(x)
+            η = _clamp_eta(μη[t] + sd * x[j])
+            μ = clamp(1.0 / (1.0 + exp(-η)), 1e-12, 1 - 1e-12)
+            ℓp = μ * (1 - μ) * φ *
+                 (digamma((1 - μ) * φ) - digamma(μ * φ) + ly - l1y)
+            at += w[j] * ℓp
+            bt += w[j] * ℓp * x[j]
+        end
+        a[t] = invsqrtpi * at
+        b[t] = invsqrtpi * bt
+    end
+    @inbounds for k in 1:K
+        gm = zero(eltype(ψ)); gv = zero(eltype(ψ))
+        for t in 1:p
+            gm += Λ[t, k] * a[t]
+            if σ2[t] > 0
+                gv += (Λ2[t, k] * v[k] / sqrt(2.0 * σ2[t])) * b[t]
+            end
+        end
+        dELBO_dm  = gm - m[k]
+        dELBO_dlv = gv - 0.5 * (v[k] - 1)
+        G[k]      = -dELBO_dm
+        G[K + k]  = -dELBO_dlv
+    end
+    return G
+end
+
 # Profile (m_s, v_s) for one site by jointly minimising the negative ELBO over
-# [m (K); logv (K)] with L-BFGS (finite-diff gradient), from m=0, logv=0.
+# [m (K); logv (K)] with L-BFGS (analytic gradient), from m=0, logv=0.
 function _va_site_beta(y::AbstractVector, Λ::AbstractMatrix, Λ2::AbstractMatrix,
         β::AbstractVector, φ::Real, x::AbstractVector, w::AbstractVector;
         maxiter::Integer = 100, tol::Real = 1e-9)
     K = size(Λ, 2)
     negelbo(ψ) = -_va_site_beta_elbo(ψ, y, Λ, Λ2, β, φ, x, w)
+    g!(G, ψ) = _va_site_beta_grad!(G, ψ, y, Λ, Λ2, β, φ, x, w)
     ψ0 = zeros(2K)
-    res = Optim.optimize(negelbo, ψ0, Optim.LBFGS(),
-                         Optim.Options(g_tol = tol, iterations = maxiter);
-                         autodiff = :finite)
+    res = Optim.optimize(negelbo, g!, ψ0, Optim.LBFGS(),
+                         Optim.Options(g_tol = tol, iterations = maxiter))
     return -Optim.minimum(res)
 end
 

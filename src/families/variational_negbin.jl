@@ -58,17 +58,70 @@ function _va_site_negbin_elbo(ψ::AbstractVector, y::AbstractVector,
     return ℓ - kl
 end
 
+# In-place gradient of the negative per-site NB2 ELBO at ψ = [m (K); logv (K)].
+# Recomputes the GH nodes η_{tj} EXACTLY as _va_site_negbin_elbo does (same (x,w),
+# same _clamp_eta). With g(η) = log p(y|μ=e^η,r) the η-derivative is
+#   ℓ'(y,η) = y − μ·(r+y)/(r+μ),  μ = e^η,
+# and the generic GH chain rule gives
+#   a_t = Σ_j (w_j/√π)·ℓ'(y_t,η_{tj}),  b_t = Σ_j (w_j/√π)·ℓ'(y_t,η_{tj})·x_j,
+#   ∂E_q_t/∂m_k  = Λ_tk·a_t,
+#   ∂E_q_t/∂lv_k = (Λ_tk²·v_k / √(2σ²_t))·b_t   (0 when σ²_t==0).
+# With KL = ½ Σ_k (v_k + m_k² − 1 − lv_k),
+#   ∂ELBO/∂m_k  = Σ_t Λ_tk·a_t − m_k,
+#   ∂ELBO/∂lv_k = Σ_t (Λ_tk²·v_k/√(2σ²_t))·b_t − ½(v_k − 1).
+# The objective is −ELBO, so G holds the negation. (_clamp_eta's derivative ≈ 1.)
+function _va_site_negbin_grad!(G::AbstractVector, ψ::AbstractVector, y::AbstractVector,
+        Λ::AbstractMatrix, Λ2::AbstractMatrix, β::AbstractVector,
+        r::Real, x::AbstractVector, w::AbstractVector)
+    p, K = size(Λ)
+    m  = @view ψ[1:K]
+    lv = @view ψ[(K + 1):(2K)]
+    v  = exp.(lv)
+    σ2 = Λ2 * v
+    μη = β .+ Λ * m
+    invsqrtpi = 1.0 / sqrt(pi)
+    a = zeros(eltype(ψ), p)
+    b = zeros(eltype(ψ), p)
+    @inbounds for t in 1:p
+        sd = sqrt(2.0 * max(σ2[t], 0.0))
+        at = zero(eltype(ψ)); bt = zero(eltype(ψ))
+        for j in eachindex(x)
+            η = _clamp_eta(μη[t] + sd * x[j])
+            μ = exp(η)
+            ℓp = y[t] - μ * (r + y[t]) / (r + μ)    # ℓ'(y,η) = y − μ(r+y)/(r+μ)
+            at += w[j] * ℓp
+            bt += w[j] * ℓp * x[j]
+        end
+        a[t] = invsqrtpi * at
+        b[t] = invsqrtpi * bt
+    end
+    @inbounds for k in 1:K
+        gm = zero(eltype(ψ)); gv = zero(eltype(ψ))
+        for t in 1:p
+            gm += Λ[t, k] * a[t]
+            if σ2[t] > 0
+                gv += (Λ2[t, k] * v[k] / sqrt(2.0 * σ2[t])) * b[t]
+            end
+        end
+        dELBO_dm  = gm - m[k]
+        dELBO_dlv = gv - 0.5 * (v[k] - 1)
+        G[k]      = -dELBO_dm
+        G[K + k]  = -dELBO_dlv
+    end
+    return G
+end
+
 # Profile (m_s, v_s) for one site by jointly minimising the negative ELBO over
-# [m (K); logv (K)] with L-BFGS (finite-diff gradient), from m=0, logv=0.
+# [m (K); logv (K)] with L-BFGS (analytic gradient), from m=0, logv=0.
 function _va_site_negbin(y::AbstractVector, Λ::AbstractMatrix, Λ2::AbstractMatrix,
         β::AbstractVector, r::Real, x::AbstractVector, w::AbstractVector;
         maxiter::Integer = 100, tol::Real = 1e-9)
     K = size(Λ, 2)
     negelbo(ψ) = -_va_site_negbin_elbo(ψ, y, Λ, Λ2, β, r, x, w)
+    g!(G, ψ) = _va_site_negbin_grad!(G, ψ, y, Λ, Λ2, β, r, x, w)
     ψ0 = zeros(2K)
-    res = Optim.optimize(negelbo, ψ0, Optim.LBFGS(),
-                         Optim.Options(g_tol = tol, iterations = maxiter);
-                         autodiff = :finite)
+    res = Optim.optimize(negelbo, g!, ψ0, Optim.LBFGS(),
+                         Optim.Options(g_tol = tol, iterations = maxiter))
     return -Optim.minimum(res)
 end
 
