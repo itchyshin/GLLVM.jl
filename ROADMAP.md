@@ -73,10 +73,14 @@ Ordered roughly by real-world impact.
       relatedness/kernel builders (`relatedness_cov`); spatial/temporal correlation
       is just another kernel/covariance in that structured-random-effect framework,
       so a bespoke `corAR1`/`corExp`-on-LVs feature is subsumed and not needed for now.
-- [ ] **SPDE / Matérn-GMRF spatial fields** (Lindgren, Rue & Lindström 2011) — a
-      *future* addition that sits naturally on the SAME sparse-precision substrate the
-      phylo path already uses (FEM mesh → sparse precision `Q(κ,τ)` + node→site
-      projector `A`). Shared value with DRM.jl. See SPDE design note below.
+- [~] **SPDE / Matérn-GMRF spatial fields** (Lindgren, Rue & Lindström 2011) — core
+      done: `spde_fem` (P1 mass/stiffness), `spde_precision` (sparse `Q(κ,τ)`),
+      `spde_projector` (`A`), `matern_correlation`, `spde_mesh_grid` (auto-mesher),
+      and `fit_spde_gaussian` (the INLA-style Woodbury/det-lemma Gaussian field fit —
+      gated by an exact dense-vs-sparse loglik). A self-contained module, shared-ready
+      with DRM.jl. *Remaining (runtime-backed): Delaunay-of-points meshing, and the
+      SPDE field as a latent variable inside the non-Gaussian / multi-species GLLVM
+      (joint Laplace over the GMRF).* See SPDE design note below.
 - [x] **Tweedie** (`fit_tweedie_gllvm`, compound Poisson–Gamma 1<p<2, Dunn–Smyth series)
       and **ordered-beta** (`fit_ordered_beta_gllvm`). beta-hurdle still open.
 - [ ] **Missing-data (NA) handling.**
