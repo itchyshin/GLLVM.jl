@@ -84,6 +84,46 @@ logistic(x) = 1 / (1 + exp(-x))
         end
     end
 
+    @testset "envelope-theorem outer gradient matches finite difference" begin
+        # At a warm start, the analytic outer gradient (envelope theorem, one inner
+        # solve) must match a central FD of −binomial_marginal_loglik_va over θ.
+        Random.seed!(320)
+        p, K, n = 4, 2, 40
+        β = 0.4 .* randn(p)
+        Λ = reshape(0.5 .* randn(p * K), p, K)
+        N = rand(2:6, p, n)
+        Y = Matrix{Int}(undef, p, n)
+        for s in 1:n
+            z = randn(K)
+            for t in 1:p
+                Y[t, s] = rand(Binomial(N[t, s], logistic(β[t] + dot(Λ[t, :], z))))
+            end
+        end
+        rr = GLLVM.rr_theta_len(p, K)
+        θ = vcat(β, GLLVM.pack_lambda(Λ))
+        xs, ws = GLLVM._gauss_hermite(20)
+
+        # analytic outer gradient via one inner-solve pass
+        βθ = θ[1:p]
+        Λθ = GLLVM.unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+        Λ2θ = Λθ .^ 2
+        _, M, V = GLLVM._va_binomial_solve_all(Y, N, Λθ, Λ2θ, βθ, xs, ws)
+        G = zeros(p + rr)
+        GLLVM._va_binomial_outer_grad!(G, Y, N, Λθ, Λ2θ, βθ, M, V, xs, ws)
+
+        # central FD of the objective −binomial_marginal_loglik_va
+        f(θ) = -GLLVM.binomial_marginal_loglik_va(Y, N,
+                    GLLVM.unpack_lambda(θ[(p + 1):end], p, K), θ[1:p])
+        h = 1e-5
+        fd = zeros(p + rr)
+        for i in eachindex(θ)
+            θp = copy(θ); θp[i] += h
+            θm = copy(θ); θm[i] -= h
+            fd[i] = (f(θp) - f(θm)) / (2h)
+        end
+        @test isapprox(G, fd; atol = 1e-3)
+    end
+
     @testset "fit_binomial_gllvm_va — machinery" begin
         # Small Bernoulli GLLVM; assert the driver returns a well-formed fit and
         # the maximised ELBO does not sit below the no-LV bound at the fitted β.

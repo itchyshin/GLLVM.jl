@@ -136,6 +136,110 @@ function _va_site_binomial(y::AbstractVector, N::AbstractVector, Λ::AbstractMat
     return -Optim.minimum(res)
 end
 
+# Sibling of `_va_site_binomial` that ALSO returns the converged variational params.
+# Returns (ELBO_s, m*, v*) where m*, v* are length-K vectors (v on the natural,
+# not log, scale). Used by the envelope-theorem outer gradient: at the inner
+# optimum ∂ELBO/∂(m,v)=0, so dELBO/dθ = ∂ELBO/∂θ holding (m*,v*) fixed.
+function _va_site_binomial_mv(y::AbstractVector, N::AbstractVector,
+        Λ::AbstractMatrix, Λ2::AbstractMatrix, β::AbstractVector,
+        xs::AbstractVector, ws::AbstractVector;
+        maxiter::Integer = 100, tol::Real = 1e-9)
+    K = size(Λ, 2)
+    φ0 = zeros(2K)   # m = 0, logv = 0 ⇒ v = 1 (the prior)
+    f(φ) = _neg_elbo_site_binomial(φ, y, N, Λ, Λ2, β, xs, ws)
+    g!(G, φ) = _va_site_binomial_grad!(G, φ, y, N, Λ, Λ2, β, xs, ws)
+    res = Optim.optimize(f, g!, φ0, Optim.LBFGS(),
+                         Optim.Options(g_tol = tol, iterations = maxiter))
+    φ̂ = Optim.minimizer(res)
+    m = φ̂[1:K]
+    v = exp.(φ̂[(K + 1):(2K)])
+    return (-Optim.minimum(res), m, v)
+end
+
+# One full inner-solve pass over all `n` sites for given (Λ, β): returns the total
+# ELBO together with the converged variational means/variances stacked as K×n
+# matrices M, V (columns = sites). This is the single pass the envelope-theorem
+# outer gradient consumes — both objective and gradient come out of one solve.
+function _va_binomial_solve_all(Y::AbstractMatrix, N::AbstractMatrix,
+        Λ::AbstractMatrix, Λ2::AbstractMatrix, β::AbstractVector,
+        xs::AbstractVector, ws::AbstractVector;
+        maxiter::Integer = 100, tol::Real = 1e-9)
+    K = size(Λ, 2)
+    n = size(Y, 2)
+    M = Matrix{Float64}(undef, K, n)
+    V = Matrix{Float64}(undef, K, n)
+    acc = 0.0
+    @inbounds for s in 1:n
+        elbo_s, m_s, v_s = _va_site_binomial_mv(view(Y, :, s), view(N, :, s), Λ,
+                                                Λ2, β, xs, ws;
+                                                maxiter = maxiter, tol = tol)
+        acc += elbo_s
+        M[:, s] = m_s
+        V[:, s] = v_s
+    end
+    return acc, M, V
+end
+
+# Envelope-theorem outer gradient of the TOTAL ELBO over θ = [β; pack_lambda(Λ)],
+# given the converged (M, V) from `_va_binomial_solve_all`. Returns the gradient of
+# the OBJECTIVE (−ELBO) in θ-packed layout, written into `G`. Binomial has NO
+# dispersion parameter, so there is no log-disp tail.
+#
+# At the inner optimum the (m,v) partials vanish, so the total θ-gradient equals the
+# partial ∂ELBO/∂θ at fixed (m*,v*). The KL term is θ-independent and drops out.
+# With per-(t,s) GH-weighted sums (logistic(η)=1/(1+e^{-η})):
+#   a_ts = Σ_j (w_j/√π)·ℓ'_η,   ℓ'_η = y − N·logistic(η)
+#   b_ts = Σ_j (w_j/√π)·ℓ'_η·x_j
+#   ∂ELBO/∂β_t  = Σ_s a_ts
+#   ∂ELBO/∂Λ_tk = Σ_s [ a_ts·M[k,s] + b_ts·(2·Λ_tk·V[k,s]/√(2σ²_ts)) ]   (σ²=0 ⇒ 0)
+function _va_binomial_outer_grad!(G::AbstractVector, Y::AbstractMatrix,
+        N::AbstractMatrix, Λ::AbstractMatrix, Λ2::AbstractMatrix,
+        β::AbstractVector, M::AbstractMatrix, V::AbstractMatrix,
+        xs::AbstractVector, ws::AbstractVector)
+    p, K = size(Λ)
+    n = size(Y, 2)
+    invsqrtpi = 1.0 / sqrt(π)
+    gβ = zeros(Float64, p)
+    gΛ = zeros(Float64, p, K)
+    @inbounds for s in 1:n
+        m_s = view(M, :, s)
+        v_s = view(V, :, s)
+        σ2 = Λ2 * v_s
+        μ = β .+ Λ * m_s
+        for t in 1:p
+            σ2t = σ2[t]
+            sd = sqrt(2.0 * max(σ2t, 0.0))
+            at = 0.0; bt = 0.0
+            for j in eachindex(xs)
+                η = _clamp_eta(μ[t] + sd * xs[j])
+                ℓη = Y[t, s] - N[t, s] / (1.0 + exp(-η))   # y − N·logistic(η)
+                wj = ws[j]
+                at += wj * ℓη
+                bt += wj * ℓη * xs[j]
+            end
+            a_ts = invsqrtpi * at
+            b_ts = invsqrtpi * bt
+            gβ[t] += a_ts
+            for k in 1:K
+                gΛ[t, k] += a_ts * m_s[k]
+                if σ2t > 0
+                    gΛ[t, k] += b_ts * (2.0 * Λ[t, k] * v_s[k] / sd)
+                end
+            end
+        end
+    end
+    # Objective is −ELBO ⇒ negate.
+    rr = rr_theta_len(p, K)
+    @inbounds for t in 1:p
+        G[t] = -gβ[t]
+    end
+    gΛpacked = pack_lambda(gΛ)
+    @inbounds for i in 1:rr
+        G[p + i] = -gΛpacked[i]
+    end
+    return G
+end
+
 """
     binomial_marginal_loglik_va(Y, N, Λ, β; maxiter=100, tol=1e-9, gh=20) -> Float64
 
@@ -174,8 +278,9 @@ Fit a Binomial GLLVM by maximising the **variational** lower bound
 counterpart of [`fit_binomial_gllvm`](@ref) (which maximises the Laplace
 marginal). `Y` is a p×n integer response matrix; `N` the matching trial counts
 (default all-ones, i.e. Bernoulli / binary). Same warm start as the Laplace
-driver (empirical link-scale intercepts + SVD loadings) and finite-difference
-gradient. The returned `BinomialFit`'s `loglik` field holds the maximised ELBO (a
+driver (empirical link-scale intercepts + SVD loadings); the outer optimiser is
+driven by an exact envelope-theorem analytic gradient (one inner-solve pass per
+evaluation). The returned `BinomialFit`'s `loglik` field holds the maximised ELBO (a
 lower bound on the true log-marginal), so it is directly comparable across VA fits
 but sits slightly below the Laplace `loglik` for the same data.
 """
@@ -202,19 +307,27 @@ function fit_binomial_gllvm_va(Y::AbstractMatrix{<:Integer};
     end
 
     θ0 = vcat(β0, pack_lambda(Λ0))
-    function negelbo(θ)
+    xs, ws = _gauss_hermite(20)
+    # Combined objective/gradient: ONE inner-solve pass per evaluation. The outer
+    # gradient is exact via the envelope theorem (∂ELBO/∂(m,v)=0 at the inner
+    # optimum), eliminating the finite-difference factor of ~2·length(θ).
+    function fg!(F, G, θ)
         β = θ[1:p]
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
-        v = try
-            -binomial_marginal_loglik_va(Y, Nm, Λ, β; maxiter = maxiter, tol = tol)
-        catch
-            return 1e12
+        Λ2 = Λ .^ 2
+        elbo, M, V = _va_binomial_solve_all(Y, Nm, Λ, Λ2, β, xs, ws;
+                                            maxiter = maxiter, tol = tol)
+        if G !== nothing
+            _va_binomial_outer_grad!(G, Y, Nm, Λ, Λ2, β, M, V, xs, ws)
         end
-        return isfinite(v) ? v : 1e12
+        if F !== nothing
+            return isfinite(elbo) ? -elbo : 1e12
+        end
+        return nothing
     end
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
-    res = Optim.optimize(negelbo, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
-                         autodiff = :finite)
+    res = Optim.optimize(Optim.only_fg!(fg!), θ0, ls,
+                         Optim.Options(g_tol = g_tol, iterations = iterations))
     θ̂ = Optim.minimizer(res)
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
