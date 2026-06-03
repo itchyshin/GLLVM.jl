@@ -68,7 +68,15 @@ Ordered roughly by real-world impact.
 - [x] **VA estimator analytic gradients** — inner (all families) + envelope-theorem
       OUTER gradient for the Gauss–Hermite families (NB/Binomial/Beta), removing the
       ~2·n_params finite-difference factor.
-- [ ] **Correlated LV structures** (spatial/temporal: `corExp`, `corAR1`, `corCS`).
+- [x] **Correlated / structured covariance** — covered by the phylogenetic
+      (animal-model) sparse-precision toolkit, `spatial_cov`, and the
+      relatedness/kernel builders (`relatedness_cov`); spatial/temporal correlation
+      is just another kernel/covariance in that structured-random-effect framework,
+      so a bespoke `corAR1`/`corExp`-on-LVs feature is subsumed and not needed for now.
+- [ ] **SPDE / Matérn-GMRF spatial fields** (Lindgren, Rue & Lindström 2011) — a
+      *future* addition that sits naturally on the SAME sparse-precision substrate the
+      phylo path already uses (FEM mesh → sparse precision `Q(κ,τ)` + node→site
+      projector `A`). Shared value with DRM.jl. See SPDE design note below.
 - [x] **Tweedie** (`fit_tweedie_gllvm`, compound Poisson–Gamma 1<p<2, Dunn–Smyth series)
       and **ordered-beta** (`fit_ordered_beta_gllvm`). beta-hurdle still open.
 - [ ] **Missing-data (NA) handling.**
@@ -140,6 +148,32 @@ The `E_q log p` term is closed-form for the key families (η ~ N(μ,σ²)):
 **Validation is deterministic where it counts** (the `Λ=0` reduction and the
 quadrature bound don't depend on fit-quality luck), which is what makes this
 tractable to build without a local Julia runtime.
+
+### 3. SPDE / Matérn-GMRF spatial fields (proposed; shared with DRM.jl)
+
+The Lindgren–Rue–Lindström (2011) SPDE approach represents a Matérn Gaussian random
+field as a GMRF with a **sparse precision** assembled from a finite-element mesh — the
+same kind of object the phylogenetic path already handles (sparse Cholesky / log-det
+via CHOLMOD, O(p) selected-inverse gradients via Takahashi). So the heavy
+infrastructure is **already in place**; the new pieces are mesh + FEM:
+
+- **Mesh**: a 2-D triangulation of the domain. Start with a *user-provided* mesh
+  (nodes `V`, triangles `T`) — testable, no mesh-gen dependency; auto-meshing
+  (Delaunay) is a later convenience.
+- **FEM matrices** (P1 elements): mass `C` (lumped → diagonal of vertex areas) and
+  stiffness `G` from the triangle gradients.
+- **Matérn precision**: `Q(κ,τ) = τ²(κ²C + G)` (α=1) or `τ²(κ⁴C + 2κ²G + G C⁻¹ G)`
+  (α=2). Smoothness ν via α = ν + d/2.
+- **Projector** `A`: barycentric weights mapping mesh nodes → observation sites, so
+  the field at a site is `A u`, `u ~ N(0, Q⁻¹)`.
+- Plug `Q` into the structured-random-effect Laplace path as the spatial-field
+  precision (mirrors the phylo sparse-precision usage).
+
+**Verification anchors** (no exact `Λ=0` here, so weaker): FEM identities (`C` row
+sums = vertex areas; `G` row sums ≈ 0; `Q` symmetric SPD); and the **implied
+covariance `Q⁻¹` ≈ analytic Matérn** at sampled node-pair distances (the statistical
+gate). Substantial, research-grade — best built against a real runtime — but a
+natural, high-value module for both GLLVM.jl and DRM.jl.
 
 ---
 _Tick an item only with a committed, passing test that verifies it._
