@@ -70,6 +70,48 @@ function Base.show(io::IO, f::FourthCornerFit)
 end
 
 """
+    getLV(fit::FourthCornerFit, Y, Xenv, TR; rotate=true, N=nothing) -> n×K matrix
+
+Conditional latent scores for a fourth-corner fit: the per-site offset-aware
+Laplace mode `ẑₛ` at `η = β + (TR Cᵀ Xenvᵀ) + Λz`, with the trait–environment
+offset `O = _build_offset_fourthcorner(Xenv, TR, C)`. `rotate=true` applies the
+canonical [`rotation`](@ref).
+"""
+function getLV(fit::FourthCornerFit, Y::AbstractMatrix{<:Real},
+               Xenv::AbstractMatrix{<:Real}, TR::AbstractMatrix{<:Real};
+               rotate::Bool = true, N::Union{Nothing, AbstractMatrix} = nothing)
+    p, n = size(Y); K = size(fit.Λ, 2)
+    Nm = N === nothing ? fill(1, p, n) : N
+    fam = _cov_family(fit.family, fit.dispersion)
+    O = _build_offset_fourthcorner(Xenv, TR, fit.C)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        η0 = fit.β .+ view(O, :, s)
+        Z[:, s] = _laplace_mode_off(fam, view(Y, :, s), view(Nm, :, s), fit.Λ, η0, fit.link)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
+end
+
+"""
+    predict(fit::FourthCornerFit, Y, Xenv, TR; type=:response, N=nothing) -> p×n matrix
+
+`:link` = the linear predictor `η = β + (TR Cᵀ Xenvᵀ) + Λẑ`; `:response`
+(= `:mean`) = the mean `μ = linkinv(link, η)`.
+"""
+function predict(fit::FourthCornerFit, Y::AbstractMatrix{<:Real},
+                 Xenv::AbstractMatrix{<:Real}, TR::AbstractMatrix{<:Real};
+                 type::Symbol = :response, N::Union{Nothing, AbstractMatrix} = nothing)
+    type in (:response, :mean, :link) ||
+        throw(ArgumentError("type must be :response, :mean, or :link; got :$type"))
+    Z = getLV(fit, Y, Xenv, TR; rotate = false, N = N)
+    O = _build_offset_fourthcorner(Xenv, TR, fit.C)
+    η = fit.β .+ O .+ fit.Λ * Z'
+    type === :link && return η
+    return linkinv.(Ref(fit.link), _clamp_eta.(η))
+end
+
+"""
     fit_fourthcorner_gllvm(Y; family, Xenv, TR, K, link=nothing, N=nothing, …) -> FourthCornerFit
 
 Fit a non-Gaussian **fourth-corner** trait–environment GLLVM by L-BFGS over

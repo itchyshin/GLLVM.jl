@@ -87,6 +87,61 @@ function Base.show(io::IO, f::ConstrainedOrdinationFit)
     print(io, ", loglik=", round(f.loglik; sigdigits = 7), f.converged ? "" : ", NOT CONVERGED", ")")
 end
 
+# Residual Laplace modes U (K×n): the per-site mode of u_s ~ N(0, I) at the
+# offset-augmented linear predictor η0 = β + (Λ B' x_s), with loadings Λ. Shared
+# by getLV (which adds the constrained mean B' x_s) and predict (which uses U
+# directly to reconstruct η = β + O + Λ U).
+function _constrained_residual_modes(fit::ConstrainedOrdinationFit,
+        Y::AbstractMatrix{<:Real}, X::AbstractMatrix{<:Real},
+        Nm::AbstractMatrix)
+    p, n = size(Y); K = size(fit.Λ, 2)
+    fam = _cov_family(fit.family, fit.dispersion)
+    O = _build_offset_constrained(fit.Λ, fit.B, X)
+    U = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        η0 = fit.β .+ view(O, :, s)
+        U[:, s] = _laplace_mode_off(fam, view(Y, :, s), view(Nm, :, s), fit.Λ, η0, fit.link)
+    end
+    return U, O
+end
+
+"""
+    getLV(fit::ConstrainedOrdinationFit, Y, X; rotate=true, N=nothing) -> n×K matrix
+
+Conditional latent scores for a constrained-ordination (RRR) fit: the FULL latent
+score `z_s = B' x_s + u_s`, where the constrained mean `B' x_s` is the
+environment-driven part and `u_s` the per-site residual Laplace mode at
+`η = β + Λ B' x_s + Λ u_s`. `X` is the `n×q` site-covariate matrix. `rotate=true`
+applies the canonical [`rotation`](@ref) of `Λ`.
+"""
+function getLV(fit::ConstrainedOrdinationFit, Y::AbstractMatrix{<:Real}, X::AbstractMatrix{<:Real};
+               rotate::Bool = true, N::Union{Nothing, AbstractMatrix} = nothing)
+    p, n = size(Y)
+    Nm = N === nothing ? fill(1, p, n) : N
+    U, _ = _constrained_residual_modes(fit, Y, X, Nm)
+    Zt = (fit.B' * X')' .+ permutedims(U)        # n×K full latent score z_s = B'x_s + u_s
+    return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
+end
+
+"""
+    predict(fit::ConstrainedOrdinationFit, Y, X; type=:response, N=nothing) -> p×n matrix
+
+`:link` = the linear predictor `η = β + (Λ B' x_s) + Λ û_s`, reconstructed from the
+unrotated residual modes `û` (so `η = β + O + Λ U`); `:response` (= `:mean`) = the
+mean `μ = linkinv(link, η)`.
+"""
+function predict(fit::ConstrainedOrdinationFit, Y::AbstractMatrix{<:Real}, X::AbstractMatrix{<:Real};
+                 type::Symbol = :response, N::Union{Nothing, AbstractMatrix} = nothing)
+    type in (:response, :mean, :link) ||
+        throw(ArgumentError("type must be :response, :mean, or :link; got :$type"))
+    p, n = size(Y)
+    Nm = N === nothing ? fill(1, p, n) : N
+    U, O = _constrained_residual_modes(fit, Y, X, Nm)
+    η = fit.β .+ O .+ fit.Λ * U
+    type === :link && return η
+    return linkinv.(Ref(fit.link), _clamp_eta.(η))
+end
+
 """
     fit_constrained_gllvm(Y; family, X, K, link=nothing, N=nothing, …) -> ConstrainedOrdinationFit
 

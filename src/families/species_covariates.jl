@@ -65,6 +65,46 @@ function Base.show(io::IO, f::GllvmSpeciesCovFit)
 end
 
 """
+    getLV(fit::GllvmSpeciesCovFit, Y, X; rotate=true, N=nothing) -> n×K matrix
+
+Conditional latent scores for a species-specific covariate fit: the per-site
+offset-aware Laplace mode `ẑₛ` at `η = β + Σ_k X[t,s,k]·B[t,k] + Λz`, with the
+species-specific offset `O = _build_offset_species(X, B)`. `rotate=true` applies
+the canonical [`rotation`](@ref).
+"""
+function getLV(fit::GllvmSpeciesCovFit, Y::AbstractMatrix{<:Real}, X::AbstractArray{<:Real, 3};
+               rotate::Bool = true, N::Union{Nothing, AbstractMatrix} = nothing)
+    p, n = size(Y); K = size(fit.Λ, 2)
+    Nm = N === nothing ? fill(1, p, n) : N
+    fam = _cov_family(fit.family, fit.dispersion)
+    O = _build_offset_species(X, fit.B)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        η0 = fit.β .+ view(O, :, s)
+        Z[:, s] = _laplace_mode_off(fam, view(Y, :, s), view(Nm, :, s), fit.Λ, η0, fit.link)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
+end
+
+"""
+    predict(fit::GllvmSpeciesCovFit, Y, X; type=:response, N=nothing) -> p×n matrix
+
+`:link` = the linear predictor `η = β + Σ_k X[t,s,k]·B[t,k] + Λẑ`; `:response`
+(= `:mean`) = the mean `μ = linkinv(link, η)`.
+"""
+function predict(fit::GllvmSpeciesCovFit, Y::AbstractMatrix{<:Real}, X::AbstractArray{<:Real, 3};
+                 type::Symbol = :response, N::Union{Nothing, AbstractMatrix} = nothing)
+    type in (:response, :mean, :link) ||
+        throw(ArgumentError("type must be :response, :mean, or :link; got :$type"))
+    Z = getLV(fit, Y, X; rotate = false, N = N)
+    O = _build_offset_species(X, fit.B)
+    η = fit.β .+ O .+ fit.Λ * Z'
+    type === :link && return η
+    return linkinv.(Ref(fit.link), _clamp_eta.(η))
+end
+
+"""
     fit_gllvm_speciescov(Y; family, X, K, link=nothing, N=nothing, …) -> GllvmSpeciesCovFit
 
 Fit a non-Gaussian GLLVM with **species-specific** covariate coefficients by

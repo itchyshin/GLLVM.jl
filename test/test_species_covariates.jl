@@ -54,4 +54,27 @@ end
         @test size(fit.Λ) == (p, K)
         @test all(isfinite, fit.B)
     end
+
+    @testset "post-fit: getLV/predict" begin
+        Random.seed!(282)
+        p, K, n, q = 5, 2, 25, 2
+        β_true = 0.3 .* randn(p)
+        B_true = 0.4 .* randn(p, q)
+        x1 = randn(n); x2 = randn(n)
+        X = _site_design_q([x1, x2], p)
+        Z = randn(K, n)
+        O = GLLVM._build_offset_species(X, B_true)
+        η = β_true .+ O .+ 0.4 .* randn(p, K) * Z
+        Y = [rand(Poisson(exp(η[t, s]))) for t in 1:p, s in 1:n]
+
+        fit = fit_gllvm_speciescov(Y; family = Poisson(), X = X, K = K)
+        LV = getLV(fit, Y, X)
+        @test size(LV) == (n, K)
+        @test all(isfinite, LV)
+        ηhat = predict(fit, Y, X; type = :link)
+        @test size(ηhat) == (p, n)
+        μhat = predict(fit, Y, X; type = :response)
+        @test size(μhat) == (p, n)
+        @test all(isfinite, μhat)
+    end
 end

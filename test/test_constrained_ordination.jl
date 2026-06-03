@@ -69,4 +69,31 @@ using GLLVM, Test, Random, Distributions, Statistics
         @test all(isfinite, fit.B)
         @test all(isfinite, fit.Λ)
     end
+
+    @testset "post-fit: getLV/predict" begin
+        rng = MersenneTwister(71)
+        p, n, q, K = 5, 25, 2, 2
+        β_true = randn(rng, p) .* 0.2
+        Λ_true = 0.5 .* randn(rng, p, K)
+        B_true = randn(rng, q, K) .* 0.5
+        X = randn(rng, n, q)
+        Y = Matrix{Int}(undef, p, n)
+        for s in 1:n
+            z = B_true' * X[s, :] .+ randn(rng, K)
+            η = β_true .+ Λ_true * z
+            for t in 1:p
+                Y[t, s] = rand(rng, Poisson(exp(clamp(η[t], -20, 20))))
+            end
+        end
+
+        fit = fit_constrained_gllvm(Y; family = Poisson(), X = X, K = K)
+        LV = getLV(fit, Y, X)                 # full latent score z_s = B'x_s + u_s
+        @test size(LV) == (n, K)
+        @test all(isfinite, LV)
+        ηhat = predict(fit, Y, X; type = :link)
+        @test size(ηhat) == (p, n)
+        μhat = predict(fit, Y, X; type = :response)
+        @test size(μhat) == (p, n)
+        @test all(isfinite, μhat)
+    end
 end
