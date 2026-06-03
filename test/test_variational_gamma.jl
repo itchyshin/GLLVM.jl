@@ -41,4 +41,27 @@ using GLLVM, Test, Random, Distributions, Statistics
         @test va ≤ quad + 1e-4                  # ELBO ≤ log-marginal (Jensen / KL ≥ 0)
         @test isapprox(va, quad; atol = 0.3)    # and tight
     end
+
+    @testset "analytic inner gradient matches central finite difference" begin
+        Random.seed!(312)
+        p, K = 5, 2
+        α = 3.0
+        β = 0.3 .* randn(p) .+ 0.5
+        Λ = 0.4 .* randn(p, K)
+        Λ2 = Λ .^ 2
+        y = [rand(Gamma(α, exp(β[t]) / α)) for t in 1:p]
+        negelbo(ψ) = -GLLVM._va_site_gamma_elbo(ψ, y, Λ, Λ2, β, α)
+        h = 1e-6
+        for _ in 1:3
+            ψ = randn(2K)
+            G = zeros(2K)
+            GLLVM._va_site_gamma_grad!(G, ψ, y, Λ, Λ2, β, α)
+            for i in 1:(2K)
+                ψp = copy(ψ); ψp[i] += h
+                ψm = copy(ψ); ψm[i] -= h
+                fd = (negelbo(ψp) - negelbo(ψm)) / (2h)
+                @test isapprox(G[i], fd; atol = 1e-5)
+            end
+        end
+    end
 end

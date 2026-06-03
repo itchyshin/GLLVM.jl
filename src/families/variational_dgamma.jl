@@ -46,15 +46,48 @@ function _va_site_dgamma_elbo(ψ::AbstractVector, y::AbstractVector,
     return ℓ - kl
 end
 
+# In-place gradient of the negative per-site Delta-Gamma ELBO at ψ = [m; logv].
+# Recomputes w_t = E_q[e^{−η^c_t}] exactly as _va_site_dgamma_elbo does. The
+# occurrence part and y=0 species are constant in z, so the sums run ONLY over
+# species with y_t>0. The (positive) ELBO gradient is
+#   ∂ELBO/∂m_k  = α·Σ_{t:y_t>0} Λc_tk·(y_t·w_t − 1) − m_k
+#   ∂ELBO/∂lv_k = −½·α·v_k·Σ_{t:y_t>0} Λc_tk²·y_t·w_t − ½·v_k + ½
+# and the objective is −ELBO, so G holds the negation of both. (_clamp_eta's
+# derivative is treated as 1; the clamp is inactive for benign data.)
+function _va_site_dgamma_grad!(G::AbstractVector, ψ::AbstractVector, y::AbstractVector,
+        Λc::AbstractMatrix, Λc2::AbstractMatrix, βz::AbstractVector,
+        βc::AbstractVector, α::Real)
+    p, K = size(Λc)
+    m  = @view ψ[1:K]
+    lv = @view ψ[(K + 1):(2K)]
+    v  = exp.(lv)
+    σ2 = Λc2 * v
+    μη = βc .+ Λc * m
+    @inbounds for k in 1:K
+        gm = zero(eltype(ψ)); gv = zero(eltype(ψ))
+        for t in 1:p
+            y[t] > 0 || continue
+            w = exp(_clamp_eta(-μη[t] + 0.5 * σ2[t]))      # E_q[e^{−η^c_t}]
+            gm += Λc[t, k] * (y[t] * w - 1)
+            gv += Λc2[t, k] * y[t] * w
+        end
+        dELBO_dm  = α * gm - m[k]
+        dELBO_dlv = -0.5 * α * v[k] * gv - 0.5 * v[k] + 0.5
+        G[k]      = -dELBO_dm
+        G[K + k]  = -dELBO_dlv
+    end
+    return G
+end
+
 # Profile (m_s, v_s) for one site by minimising the negative ELBO over [m; logv].
 function _va_site_dgamma(y::AbstractVector, Λc::AbstractMatrix, Λc2::AbstractMatrix,
         βz::AbstractVector, βc::AbstractVector, α::Real;
         maxiter::Integer = 100, tol::Real = 1e-9)
     K = size(Λc, 2)
     negelbo(ψ) = -_va_site_dgamma_elbo(ψ, y, Λc, Λc2, βz, βc, α)
-    res = Optim.optimize(negelbo, zeros(2K), Optim.LBFGS(),
-                         Optim.Options(g_tol = tol, iterations = maxiter);
-                         autodiff = :finite)
+    g!(G, ψ) = _va_site_dgamma_grad!(G, ψ, y, Λc, Λc2, βz, βc, α)
+    res = Optim.optimize(negelbo, g!, zeros(2K), Optim.LBFGS(),
+                         Optim.Options(g_tol = tol, iterations = maxiter))
     return -Optim.minimum(res)
 end
 

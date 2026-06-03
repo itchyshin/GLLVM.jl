@@ -33,14 +33,44 @@ function _va_site_gamma_elbo(ψ::AbstractVector, y::AbstractVector,
     return ℓ - kl
 end
 
+# In-place gradient of the negative per-site Gamma ELBO at ψ = [m (K); logv (K)].
+# Recomputes w_t = E_q[e^{−η_t}] exactly as _va_site_gamma_elbo does. The (positive)
+# ELBO gradient is
+#   ∂ELBO/∂m_k  = α·Σ_t Λ_tk·(y_t·w_t − 1) − m_k
+#   ∂ELBO/∂lv_k = −½·α·v_k·Σ_t Λ_tk²·y_t·w_t − ½·v_k + ½
+# and the objective is −ELBO, so G holds the negation of both. (_clamp_eta's
+# derivative is treated as 1; the clamp is inactive for benign data.)
+function _va_site_gamma_grad!(G::AbstractVector, ψ::AbstractVector, y::AbstractVector,
+        Λ::AbstractMatrix, Λ2::AbstractMatrix, β::AbstractVector, α::Real)
+    p, K = size(Λ)
+    m  = @view ψ[1:K]
+    lv = @view ψ[(K + 1):(2K)]
+    v  = exp.(lv)
+    σ2 = Λ2 * v
+    μη = β .+ Λ * m
+    @inbounds for k in 1:K
+        gm = zero(eltype(ψ)); gv = zero(eltype(ψ))
+        for t in 1:p
+            w = exp(_clamp_eta(-μη[t] + 0.5 * σ2[t]))      # E_q[e^{−η_t}]
+            gm += Λ[t, k] * (y[t] * w - 1)
+            gv += Λ2[t, k] * y[t] * w
+        end
+        dELBO_dm  = α * gm - m[k]
+        dELBO_dlv = -0.5 * α * v[k] * gv - 0.5 * v[k] + 0.5
+        G[k]      = -dELBO_dm
+        G[K + k]  = -dELBO_dlv
+    end
+    return G
+end
+
 # Profile (m_s, v_s) for one site by minimising the negative ELBO over [m; logv].
 function _va_site_gamma(y::AbstractVector, Λ::AbstractMatrix, Λ2::AbstractMatrix,
         β::AbstractVector, α::Real; maxiter::Integer = 100, tol::Real = 1e-9)
     K = size(Λ, 2)
     negelbo(ψ) = -_va_site_gamma_elbo(ψ, y, Λ, Λ2, β, α)
-    res = Optim.optimize(negelbo, zeros(2K), Optim.LBFGS(),
-                         Optim.Options(g_tol = tol, iterations = maxiter);
-                         autodiff = :finite)
+    g!(G, ψ) = _va_site_gamma_grad!(G, ψ, y, Λ, Λ2, β, α)
+    res = Optim.optimize(negelbo, g!, zeros(2K), Optim.LBFGS(),
+                         Optim.Options(g_tol = tol, iterations = maxiter))
     return -Optim.minimum(res)
 end
 
