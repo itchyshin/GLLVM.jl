@@ -258,3 +258,52 @@ end
         maxiter = 100, tol = 1e-10)
     @test structured ≈ base atol = 1e-5 rtol = 1e-5
 end
+
+@testset "augmented phylogenetic Poisson Laplace prototype" begin
+    Random.seed!(825)
+    p, n, K = 4, 4, 1
+    phy = GLLVM.random_balanced_tree(p; branch_length = 0.35)
+    β = fill(log(1.6), p)
+    Λ = 0.10 .* randn(p, K)
+    Y = rand.(Poisson.(exp.(β .+ 0.07 .* randn(p, n))))
+    Σ = GLLVM.sigma_phy_dense(phy; σ²_phy = 1.0)
+    precision = Symmetric(inv(Symmetric(Σ)))
+
+    dense_tip = GLLVM._structured_poisson_marginal_loglik_laplace(
+        Y, Λ, β, precision; sigma2 = 0.45, logdet_method = :dense,
+        maxiter = 100, tol = 1e-12)
+    augmented = GLLVM._phylo_poisson_marginal_loglik_laplace(
+        Y, Λ, β, phy; sigma2 = 0.45, logdet_method = :dense,
+        mode_solve = :dense, maxiter = 100, tol = 1e-12,
+        return_diagnostics = true)
+    augmented_cg = GLLVM._phylo_poisson_marginal_loglik_laplace(
+        Y, Λ, β, phy; sigma2 = 0.45, logdet_method = :dense,
+        mode_solve = :cg, cg_tol = 1e-12, cg_maxiter = 200,
+        maxiter = 100, tol = 1e-12, return_diagnostics = true)
+
+    @test augmented.n_augmented == phy.n_total - 1
+    @test augmented.mode.maxstep < 1e-8
+    @test augmented.value ≈ dense_tip atol = 1e-8 rtol = 1e-8
+    @test augmented_cg.mode.cg_converged
+    @test augmented_cg.value ≈ augmented.value atol = 1e-7 rtol = 1e-7
+
+    fit = GLLVM._fit_phylo_poisson_laplace(
+        Y, phy; K = K, sigma2 = 0.45, estimate_sigma2 = true,
+        iterations = 3, g_tol = 1e-4, logdet_method = :dense,
+        mode_solve = :dense, maxiter = 100, tol = 1e-10)
+    @test isfinite(fit.loglik)
+    @test fit.loglik >= fit.initial_loglik - 1e-7
+    @test isfinite(fit.sigma2)
+    @test fit.sigma2 > 0
+    @test fit.estimate_sigma2 === true
+    @test fit.gradient === :finite
+
+    @test_throws DimensionMismatch GLLVM._phylo_poisson_marginal_loglik_laplace(
+        Y, randn(p + 1, K), β, phy; sigma2 = 0.45)
+    @test_throws DimensionMismatch GLLVM._phylo_poisson_marginal_loglik_laplace(
+        Y[1:(p - 1), :], Λ[1:(p - 1), :], β[1:(p - 1)], phy; sigma2 = 0.45)
+    @test_throws ArgumentError GLLVM._phylo_poisson_marginal_loglik_laplace(
+        Y, Λ, β, phy; sigma2 = 0.0)
+    @test_throws ArgumentError GLLVM._fit_phylo_poisson_laplace(
+        Y, phy; K = 0, sigma2 = 0.45)
+end

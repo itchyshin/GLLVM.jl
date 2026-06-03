@@ -1,5 +1,281 @@
 # Check Log
 
+## 2026-06-03 - Phylogenetic Poisson gllvmTMB Speed Audit
+
+### Scope
+
+Added a focused benchmark for the maintainer's question: we already have a
+very fast phylogenetic Gaussian path; do we have evidence for a fast
+phylogenetic non-Gaussian path? The answer from this slice is "promising
+prototype evidence, not public parity yet."
+
+The new harness compares the internal Julia fixed-covariance structured
+Poisson prototype with the closest public R `gllvmTMB` model:
+
+```r
+value ~ 0 + trait +
+  phylo_scalar(species, vcv = Cphy) +
+  latent(0 + trait | site, d = K)
+```
+
+Two structures are kept separate:
+
+- `bm-tree`: true Brownian-tree VCV; Julia currently consumes the dense
+  tip-level precision, not the fast augmented-tree Gaussian representation.
+- `ar1-sparse`: sparse-precision relatedness proxy; useful for structured
+  algorithm timing, but not a Brownian-tree parity claim.
+
+The Julia path fixes `sigma2 = 0.35`; R `gllvmTMB` estimates the scalar
+phylogenetic variance. These rows are speed evidence, not likelihood parity.
+
+### Files Changed
+
+- `bench/phylo_poisson_gllvmtmb_bench.jl` — new benchmark driver.
+- `bench/README.md` — discoverability and interpretation caveats.
+- `docs/dev-log/check-log.md` — this evidence record.
+
+### Checks Run
+
+R-side availability and current syntax check:
+
+```sh
+Rscript --vanilla -e 'suppressPackageStartupMessages(library(gllvmTMB)); cat(as.character(utils::packageVersion("gllvmTMB")), "\n")'
+```
+
+Result: `gllvmTMB` 0.2.0. The current phylogenetic formula syntax is
+`phylo_scalar(species, vcv = Cphy)` plus `unit = "species"` and
+`unit_obs = "site"` for the latent site grouping.
+
+Default Julia-only smoke after the benchmark default was changed to 25 smoke
+iterations:
+
+```sh
+julia --project=. bench/phylo_poisson_gllvmtmb_bench.jl --smoke --julia-only
+```
+
+Result: exit code 0. All four Julia rows converged.
+
+Full R/J runs recorded under `bench/results/`:
+
+```sh
+julia --project=. bench/phylo_poisson_gllvmtmb_bench.jl --smoke --iterations=25 --reps=1 --warmups=1 --out=bench/results/phylo-poisson-smoke-2026-06-03.csv
+julia --project=. bench/phylo_poisson_gllvmtmb_bench.jl --full --cells=small,medium --iterations=80 --reps=1 --warmups=1 --out=bench/results/phylo-poisson-small-medium-80it-2026-06-03.csv
+julia --project=. bench/phylo_poisson_gllvmtmb_bench.jl --full --cells=large --iterations=80 --reps=1 --warmups=1 --out=bench/results/phylo-poisson-large-80it-2026-06-03.csv
+julia --project=. bench/phylo_poisson_gllvmtmb_bench.jl --full --cells=large --iterations=200 --reps=1 --warmups=1 --julia-only --out=bench/results/phylo-poisson-large-julia-200it-2026-06-03.csv
+```
+
+Converged same-run evidence:
+
+| cell | structure | p | n | K | Julia CG (s) | gllvmTMB (s) | R / Julia CG |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| smoke | bm-tree | 5 | 8 | 1 | 0.0011 | 0.4720 | 423.2x |
+| smoke | ar1-sparse | 5 | 8 | 1 | 0.0008 | 0.4700 | 575.5x |
+| small | bm-tree | 8 | 20 | 1 | 0.0029 | 0.4840 | 165.5x |
+| small | ar1-sparse | 8 | 20 | 1 | 0.0025 | 0.4720 | 186.3x |
+| medium | bm-tree | 16 | 40 | 2 | 0.0161 | 0.7840 | 48.8x |
+| medium | ar1-sparse | 16 | 40 | 2 | 0.0203 | 0.8920 | 43.9x |
+
+Large-cell interpretation:
+
+| cell | structure | p | n | K | Julia CG converged (s) | gllvmTMB converged (s) | R / Julia CG |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| large | bm-tree | 32 | 80 | 2 | 0.3634 | 2.8530 | 7.9x |
+| large | ar1-sparse | 32 | 80 | 2 | 0.3328 | 3.7240 | 11.2x |
+
+Large caveat: the R times come from the 80-iteration R/J run, where R
+converged but Julia hit the 80-iteration cap. The Julia times above come from
+the separate 200-iteration Julia-only run, where both Julia large rows
+converged.
+
+Audit scans:
+
+```sh
+git diff --check
+rg -n "phylo_poisson_gllvmtmb_bench|fixed_sigma2|likelihood parity|Brownian-tree|ar1-sparse|gllvmTMB" bench/README.md bench/phylo_poisson_gllvmtmb_bench.jl docs/dev-log/check-log.md -g '!docs/node_modules/**'
+rg -n "340.?x|same_data_loglik_comparable|machine precision|speedup|phylogenetic variance" bench/README.md bench/phylo_poisson_gllvmtmb_bench.jl docs/dev-log/check-log.md -g '!docs/node_modules/**'
+```
+
+Results: `git diff --check` clean. The wording scans find the new benchmark
+and its caveats plus expected historical benchmark records. This slice adds no
+public likelihood-parity claim and no public 100x phylogenetic non-Gaussian
+claim.
+
+Cross-project log:
+
+```sh
+gh issue comment 13 --body-file -
+```
+
+Result: logged the gllvmTMB syntax and benchmark caveat in
+<https://github.com/itchyshin/GLLVM.jl/issues/13#issuecomment-4609911289>.
+
+### Interpretation
+
+There is already a very fast **prototype** for phylogenetic/relatedness
+Poisson-style structure. On these first cells, converged Julia timings are
+about 44-186x faster through small/medium cells and about 8-11x faster on the
+large cell when the Julia optimizer is allowed to converge.
+
+What we do **not** yet have is the true public Gaussian-style win for
+non-Gaussian phylogenetics: the Julia non-Gaussian path still lacks the
+augmented-tree sparse precision representation and still fixes the structured
+variance in this prototype. The next real target is to wire an augmented-tree
+Poisson Laplace path that estimates the scalar variance and then rerun this
+same harness as likelihood parity, not just speed audit.
+
+### Rose Verdict
+
+PASS WITH NOTES. The speed-audit harness is repeatable and the first evidence
+is promising, but it is not a parity-complete public capability claim. Large
+rows need a higher Julia iteration budget, and a true augmented-tree
+non-Gaussian path remains the next implementation target.
+
+## 2026-06-02 - Documentation Homepage And Family Status Cleanup
+
+### Scope
+
+Audited the built documentation after the homepage looked messy. The concrete
+source bug was that `docs/src/index.md` used VitePress home-page frontmatter
+that Documenter rendered as ordinary page text. The cleanup also compared the
+GLLVM.jl pages with the R twin's pkgdown articles:
+
+- `vignettes/gllvmTMB.Rmd`
+- `vignettes/articles/morphometrics.Rmd`
+- `vignettes/articles/response-families.Rmd`
+- `vignettes/articles/covariance-correlation.Rmd`
+- `vignettes/articles/pitfalls.Rmd`
+
+Ada coordinated the pass. Pat and Darwin checked reader flow against the
+gllvmTMB article style; Rose checked claim-vs-evidence drift.
+After the maintainer clarified that the concern was the mobile page, the audit
+also compared deployed mobile views of GLLVM.jl and sister site DRM.jl.
+
+### Implementation
+
+- Replaced the homepage with plain Documenter-compatible Markdown: no rendered
+  YAML, a direct scientific opening, a small Gaussian example, quick links, and
+  a visible relation-to-gllvmTMB section.
+- Updated family/status pages to distinguish one-part `fit_gllvm` support from
+  dedicated two-part fitters (`fit_delta_lognormal_gllvm`,
+  `fit_hurdle_poisson_gllvm`, `fit_hurdle_nb_gllvm`).
+- Moved Delta-Gamma and zero-inflated families back to planned status.
+- Fixed internal documentation links from absolute site paths to local
+  `*.md` references.
+- Fixed the generated edit link by changing the DocumenterVitepress `repo`
+  value from a full URL to `github.com/itchyshin/GLLVM.jl`.
+- Synced README status wording so the public landing text no longer says only
+  "Fast Gaussian" while the docs advertise non-Gaussian fitters.
+- Second audit pass: simplified the homepage lookup tables into short lists,
+  left-aligned the remaining technical tables, softened "catch-up engine" to
+  "Julia companion", and changed the zero-inflated parity row from in-progress
+  to planned for this branch.
+- Third prose pass against the gllvmTMB article pattern: `quickstart.md` now
+  opens with the same scientific question and a scope boundary; `model.md`
+  uses `i` consistently for site/individual index instead of overloading `s`;
+  README uses the same notation and avoids internal "fixture" wording.
+- Mobile DRM.jl pass: reshaped the homepage first viewport to match the
+  sister site's cleaner phone flow, then simplified it further after maintainer
+  review: one plain identity sentence, `Install` immediately below it, and
+  "Fit your first model" next. Status and gllvmTMB/benchmark detail now sit
+  lower on the page.
+
+No `src/` code or exported API changed.
+
+### Checks Run
+
+```sh
+gh run list --limit 3
+```
+
+Result: PR #59 `CI` was still in progress; PR #59 `Documenter` had failed; the
+latest `pages-build-deployment` run had succeeded. The failed Documenter log
+showed many invalid local link warnings before an npm `ECONNRESET`.
+
+```sh
+julia --project=docs docs/make.jl
+```
+
+Result: exit code 0. The rebuild completed without the invalid local-link
+warnings. Remaining local warnings were deployment auto-detection skipped,
+missing `logo.png`/`favicon.ico`, missing `docs/package.json`, and npm audit
+reporting 4 moderate vulnerabilities.
+
+Second-pass rebuild after the visual/table edits: exit code 0. Documenter and
+DocumenterVitepress completed with the same residual local warnings only.
+
+Third-pass rebuild after quickstart/model wording: exit code 0. Documenter and
+DocumenterVitepress completed with the same residual local warnings only.
+
+Mobile-pass rebuilds after the DRM.jl comparison, divider cleanup, and final
+install-first simplification: exit code 0 each time. Documenter and
+DocumenterVitepress completed with the same residual local warnings only.
+
+Rendered DOM checks against a local static server for `docs/build/1`:
+
+- `/`: title `GLLVM.jl`, `h1` `GLLVM.jl`, no visible `layout: home` /
+  `hero:` / `features:` frontmatter, and a valid edit link to
+  `https://github.com/itchyshin/GLLVM.jl/edit/main/docs/src/index.md`.
+- `/response-families.html`: title `Response families | GLLVM.jl`, `h1`
+  `Response families`, with one-part and dedicated two-part family boundaries
+  visible.
+
+Playwright mobile audit at 390 x 664 px:
+
+- Deployed GLLVM.jl (`https://itchyshin.github.io/GLLVM.jl/`, redirected to
+  `/dev/`) still rendered `layout: home`, `hero:`, and `features:` as mobile
+  page text.
+- Deployed DRM.jl (`https://itchyshin.github.io/DRM.jl/`, redirected to
+  `/stable/`) had no rendered frontmatter and opened with a compact identity
+  paragraph before "Fit your first model".
+- Local GLLVM.jl after the final mobile pass had no rendered frontmatter, no
+  horizontal overflow, `Install` visible at y=304, the install code at y=377,
+  "Fit your first model" visible at y=614, and the status block moved to
+  y=2692.
+- Screenshots were written under `/tmp/gllvm-mobile-audit/screens/`, including
+  `gllvm_deployed_mobile.png`, `drm_deployed_mobile.png`,
+  `gllvm_local_mobile_final.png`, and `gllvm_local_mobile_simplified.png`.
+
+```sh
+julia --project=. test/runtests.jl
+```
+
+Result: exit code 0. The emitted summaries had 0 fail and 0 error; the direct
+core environment still reports 1 existing sparse-phy precision broken
+placeholder plus 2 expected quality placeholders because Aqua/JET are only run
+under `Pkg.test()`.
+
+```sh
+git diff --check
+rg -n "\]\(/[^)]+\)|layout: home|hero:|features:|https://https://" docs/src docs/make.jl
+rg -n "Gaussian family only|Gaussian only|10-100|Reverse-mode AD|Pkg.add\(\"GLLVM\"\)|not yet implemented|planned next|TODO|FIXME" README.md docs/src CLAUDE.md
+rg -n "text-align:right" docs/build/1/index.html docs/build/1/response-families.html docs/build/1/gllvmtmb-parity.html docs/build/1/roadmap.html docs/build/.documenter/index.md docs/build/.documenter/response-families.md docs/build/.documenter/gllvmtmb-parity.md docs/build/.documenter/roadmap.md
+rg -n "Zero-inflated \(ZIP / ZINB\)" docs/src/gllvmtmb-parity.md docs/build/.documenter/gllvmtmb-parity.md
+rg -n 'species `s`|site `s`|η_B\[s\]|ε\[:, s\]|fixture|R-side fixture|catch-up engine|Fast Gaussian|Gaussian Generalised|https://https://|layout: home|hero:|features:' README.md docs/src docs/make.jl
+rg -n 'The first question|Scope|For site or individual `i`|y_i|Response families|Simulate data|Julia companion' docs/build/.documenter/quickstart.md docs/build/.documenter/model.md docs/build/.documenter/index.md
+gh pr list --limit 5 --json number,title,headRefName,isDraft,state,url
+```
+
+Results: whitespace clean; no absolute local doc links or rendered-frontmatter
+tokens remain in `docs/src`; stale wording scan has only the intentional
+negative installation example in `docs/src/index.md`; PR #60 and PR #59 remain
+separate draft lanes. The touched rendered pages had no right-aligned table
+cells after the second pass. Zero-inflated support is rendered as planned, not
+in-progress, in the current branch parity table. The third-pass source scan has
+no old overloaded `s` index, internal fixture wording, or VitePress-frontmatter
+tokens in the public source pages; rendered markdown contains the new
+question/scope/model-index wording.
+
+### Rose Verdict
+
+PASS WITH NOTES. The webpage source mess, homepage clutter, table alignment,
+and the most visible public status drift are fixed and locally rendered.
+The mobile landing page is now a plain docs page: one identity sentence,
+install, then first model, checked by screenshot. Remaining notes: no full
+`Pkg.test()` was run for this docs-only slice; the deployed GLLVM.jl page will
+still show the old mobile frontmatter until this branch is published; local docs
+still warn about missing logo/favicon, missing `docs/package.json`, and npm
+audit vulnerabilities.
+
 ## 2026-06-02 - Sparse Phy Single-Axis Takahashi Gradient
 
 ### Scope
@@ -5007,6 +5283,123 @@ Results:
   only.
 - GitHub lane check: PR #59 remains the separate draft
   `claude/package-work-catchup-mQiZM` lane; no PR or issue was modified.
+
+## 2026-06-03 - Augmented Phylogenetic Poisson Laplace Prototype
+
+### Scope
+
+Added an internal augmented-tree phylogenetic Poisson Laplace path on top of
+the existing structured Schur substrate. The latent phylogenetic effect now
+lives on the root-dropped augmented tree precision, while the Poisson
+likelihood touches only the observed leaf rows. The route is intentionally
+private: it adds no exported API and no public response-family claim.
+
+Also retargeted `bench/phylo_poisson_gllvmtmb_bench.jl` so `bm-tree` uses the
+augmented-tree Julia path instead of a dense tip-level precision. The AR(1)
+proxy still uses the existing fixed-covariance structured Poisson route. The
+benchmark now has an explicit `--estimate-julia-sigma2` option for the finite-
+difference scalar-variance prototype.
+
+### Correctness Tests
+
+Added focused tests proving:
+
+- augmented-tree Laplace log-likelihood matches the dense tip-precision
+  structured Poisson value on the same tiny Brownian tree at fixed `sigma2`;
+- dense and CG augmented mode solves agree;
+- the internal finite-difference fitter can estimate scalar `sigma2` on the
+  log scale and improve the objective;
+- malformed dimensions, invalid variance, and invalid `K` throw.
+
+Focused test file:
+
+```sh
+julia --project=. test/test_structured_poisson_laplace.jl
+```
+
+Result:
+
+```text
+augmented phylogenetic Poisson Laplace prototype | 15/15 pass
+```
+
+Core suite:
+
+```sh
+julia --project=. test/runtests.jl
+```
+
+Result: exit code 0. The direct core environment reports the usual quality
+placeholders as broken because Aqua/JET are not loaded in that path; no test
+failures or errors.
+
+Full package suite:
+
+```sh
+julia --project=. -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+### Benchmark Smoke Evidence
+
+Fixed-sigma augmented Julia path vs R `gllvmTMB` smoke:
+
+```sh
+julia --project=. bench/phylo_poisson_gllvmtmb_bench.jl --smoke --structures=bm-tree --iterations=25 --warmups=1 --reps=1 --out=bench/results/phylo-poisson-augmented-smoke.csv
+```
+
+Result:
+
+```text
+julia-cg 0.022220625 s, loglik -62.24416145604612, fixed_sigma2=0.35
+gllvmTMB 0.462 s, loglik -58.7028024325027, estimates_phylo_scalar_scale
+r/cg 20.7915x
+```
+
+Scalar-variance augmented Julia path vs R `gllvmTMB` smoke:
+
+```sh
+julia --project=. bench/phylo_poisson_gllvmtmb_bench.jl --smoke --structures=bm-tree --estimate-julia-sigma2 --iterations=100 --warmups=1 --reps=1 --out=bench/results/phylo-poisson-augmented-estimate-smoke-100.csv
+```
+
+Result:
+
+```text
+julia-cg 0.069024792 s, loglik -58.70280243238997, estimated_sigma2=1.6093182946555366e-10
+gllvmTMB 0.426 s, loglik -58.7028024325027, estimates_phylo_scalar_scale
+r/cg 6.1717x
+```
+
+Interpretation: the augmented route now has a true tree-precision Poisson
+prototype and a scalar-variance smoke case matching R's log-likelihood to
+roundoff on the tiny fixture. The scalar-variance fitter is finite-difference
+and remains internal; no Workflow Q/public API promotion yet.
+
+### Quality And Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+<private-name scan over README.md docs src test bench AGENTS.md CLAUDE.md Project.toml Manifest.toml>
+```
+
+Results:
+
+- `git diff --check`: clean.
+- Private-name scan: no matches.
+- Cross-project issue log:
+  <https://github.com/itchyshin/GLLVM.jl/issues/13#issuecomment-4610093863>.
+- Rose verdict: OK for internal prototype and benchmark harness update.
+  Blockers before public promotion: analytic outer gradient for scalar
+  variance, ADEMP recovery, multi-shape Workflow Q, and a larger rerun against
+  `gllvmTMB`.
 
 ## 2026-06-02 - Bootstrap CI Parallel Replicates And Warm Starts
 

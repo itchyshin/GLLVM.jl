@@ -1056,3 +1056,376 @@ function _fit_structured_poisson_laplace(Y::AbstractMatrix{<:Integer},
             mode_cache = mode_cache, gradient = gradient,
             trace_solve = active_trace_solve)
 end
+
+# Internal phylogenetic Poisson prototype. This uses the augmented tree
+# precision directly: latent node effects live on the root-dropped tree, while
+# the Poisson likelihood touches only leaf rows.
+
+function _phylo_poisson_conditional_precision(phy::AugmentedPhy)
+    keep = filter(i -> i != phy.root_index, 1:phy.n_total)
+    Q_cond = phy.Q_topology[keep, keep]
+    leaf_pos = Vector{Int}(undef, phy.n_leaves)
+    @inbounds for t in 1:phy.n_leaves
+        lp = phy.leaf_indices[t]
+        leaf_pos[t] = phy.root_index < lp ? lp - 1 : lp
+    end
+    return Q_cond, leaf_pos
+end
+
+function _phylo_poisson_check_dims(Y::AbstractMatrix, Λ::AbstractMatrix,
+        β::AbstractVector, phy::AugmentedPhy, sigma2::Real)
+    p, _ = size(Y)
+    phy.n_leaves == p || throw(DimensionMismatch(
+        "phy must have one leaf per response; got $(phy.n_leaves) leaves for p=$p"))
+    size(Λ, 1) == p || throw(DimensionMismatch(
+        "Λ must have one row per response; got $(size(Λ, 1)) rows for p=$p"))
+    length(β) == p || throw(DimensionMismatch(
+        "β must have length $p; got $(length(β))"))
+    sigma2 > 0 || throw(ArgumentError("sigma2 must be positive; got $sigma2"))
+    return nothing
+end
+
+function _phylo_poisson_augmented_loadings(Λ::AbstractMatrix,
+        leaf_pos::AbstractVector{<:Integer}, m::Integer, ::Type{T}) where {T}
+    p, K = size(Λ)
+    Laug = zeros(T, m, K)
+    @inbounds for t in 1:p, k in 1:K
+        Laug[leaf_pos[t], k] = Λ[t, k]
+    end
+    return Laug
+end
+
+function _phylo_poisson_leaf_weights(W::AbstractMatrix,
+        leaf_pos::AbstractVector{<:Integer}, m::Integer, ::Type{T}) where {T}
+    p, n = size(W)
+    Waug = zeros(T, m, n)
+    @inbounds for i in 1:n, t in 1:p
+        Waug[leaf_pos[t], i] = W[t, i]
+    end
+    return Waug
+end
+
+function _phylo_poisson_leaf_weights!(Waug::AbstractMatrix, W::AbstractMatrix,
+        leaf_pos::AbstractVector{<:Integer})
+    fill!(Waug, zero(eltype(Waug)))
+    p, n = size(W)
+    @inbounds for i in 1:n, t in 1:p
+        Waug[leaf_pos[t], i] = W[t, i]
+    end
+    return Waug
+end
+
+function _phylo_poisson_lsw!(S::AbstractMatrix, W::AbstractMatrix,
+        Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVector,
+        U::AbstractVector, Z::AbstractMatrix, leaf_pos::AbstractVector{<:Integer})
+    p, n = size(Y)
+    size(S) == (p, n) || throw(DimensionMismatch("S must be $(p)×$(n); got $(size(S))"))
+    size(W) == (p, n) || throw(DimensionMismatch("W must be $(p)×$(n); got $(size(W))"))
+    T = promote_type(eltype(S), eltype(W), eltype(Λ), eltype(β), eltype(U), eltype(Z))
+    ℓ = zero(T)
+    @inbounds for i in 1:n
+        for t in 1:p
+            η = β[t] + U[leaf_pos[t]]
+            for k in axes(Λ, 2)
+                η += Λ[t, k] * Z[k, i]
+            end
+            η = _clamp_eta(η)
+            μ = _clamp_mu(Poisson(), exp(η))
+            S[t, i] = Y[t, i] - μ
+            W[t, i] = μ
+            ℓ += _glm_logpdf(Poisson(), μ, one(Int), Y[t, i])
+        end
+    end
+    return ℓ
+end
+
+function _phylo_poisson_mode(Y::AbstractMatrix, Λ::AbstractMatrix,
+        β::AbstractVector, phy::AugmentedPhy; sigma2::Real,
+        maxiter::Integer = 50, tol::Real = 1e-8,
+        mode_solve::Symbol = :dense, cg_tol::Real = 1e-8,
+        cg_maxiter::Union{Nothing, Integer} = nothing,
+        U_init = nothing, Z_init = nothing,
+        U_store = nothing, Z_store = nothing)
+    _phylo_poisson_check_dims(Y, Λ, β, phy, sigma2)
+    p, n = size(Y)
+    K = size(Λ, 2)
+    0 < K <= p || throw(ArgumentError("K must satisfy 0 < K <= p; got K=$K for p=$p"))
+    Q_cond, leaf_pos = _phylo_poisson_conditional_precision(phy)
+    m = size(Q_cond, 1)
+    T = promote_type(eltype(Y), eltype(Λ), eltype(β), typeof(float(sigma2)))
+    L = Matrix{T}(Λ)
+    b = Vector{T}(β)
+    Q = _schur_precision_storage(Q_cond, T)
+    Laug = _phylo_poisson_augmented_loadings(L, leaf_pos, m, T)
+    invsigma2 = inv(T(sigma2))
+
+    U = zeros(T, m)
+    if U_init !== nothing
+        length(U_init) == m || throw(DimensionMismatch(
+            "U_init must have length $m; got $(length(U_init))"))
+        copyto!(U, U_init)
+    end
+    Z = zeros(T, K, n)
+    if Z_init !== nothing
+        size(Z_init) == (K, n) || throw(DimensionMismatch(
+            "Z_init must be $(K)×$(n); got $(size(Z_init))"))
+        copyto!(Z, Z_init)
+    end
+
+    Qu = zeros(T, m)
+    gU = zeros(T, m)
+    gz = zeros(T, K)
+    rhsU = zeros(T, m)
+    tmpK = zeros(T, K)
+    tmpM = zeros(T, m)
+    ΔU = zeros(T, m)
+    ΔZ = zeros(T, K)
+    S = Matrix{T}(undef, p, n)
+    W = Matrix{T}(undef, p, n)
+    Waug = zeros(T, m, n)
+    cg_r = zeros(T, m)
+    cg_d = zeros(T, m)
+    cg_q = zeros(T, m)
+    cg_tmp = zeros(T, K)
+    cg_sol = similar(cg_tmp)
+    schur_ws = _SchurUOperatorWorkspace(T, m, K, n)
+    maxstep = T(Inf)
+    gradnorm = T(Inf)
+    iterations = 0
+    cg_iterations = 0
+    cg_residual = zero(T)
+    cg_converged = true
+
+    for iter in 1:maxiter
+        iterations = iter
+        _phylo_poisson_lsw!(S, W, Y, L, b, U, Z, leaf_pos)
+        _phylo_poisson_leaf_weights!(Waug, W, leaf_pos)
+        mul!(Qu, Q, U)
+        @inbounds for j in 1:m
+            gU[j] = -invsigma2 * Qu[j]
+        end
+        @inbounds for i in 1:n, t in 1:p
+            gU[leaf_pos[t]] += S[t, i]
+        end
+
+        op = _SchurUOperator(Q, Laug, Waug, schur_ws; sigma2 = sigma2)
+        copyto!(rhsU, gU)
+        gradnorm = maximum(abs, gU)
+
+        @inbounds for i in 1:n
+            fill!(gz, zero(T))
+            for t in 1:p
+                for k in 1:K
+                    gz[k] += L[t, k] * S[t, i]
+                end
+            end
+            for k in 1:K
+                gz[k] -= Z[k, i]
+            end
+            gradnorm = max(gradnorm, maximum(abs, gz))
+            mul!(tmpK, op.Ainvs[i], gz)
+            mul!(tmpM, Laug, tmpK)
+            for j in 1:m
+                rhsU[j] -= Waug[j, i] * tmpM[j]
+            end
+        end
+
+        if mode_solve == :dense
+            Csu = cholesky(_schur_u_dense(op))
+            copyto!(ΔU, rhsU)
+            ldiv!(Csu, ΔU)
+        elseif mode_solve == :cg
+            fill!(ΔU, zero(T))
+            cg = _schur_u_cg!(ΔU, op, rhsU, cg_r, cg_d, cg_q, cg_tmp, cg_sol; tol = cg_tol,
+                maxiter = cg_maxiter === nothing ? max(100, 2 * m) : cg_maxiter)
+            cg_iterations += cg.iterations
+            cg_residual = cg.residual
+            cg_converged &= cg.converged
+        else
+            throw(ArgumentError("mode_solve must be :dense or :cg; got $mode_solve"))
+        end
+        maxstep = maximum(abs, ΔU)
+
+        @inbounds for i in 1:n
+            fill!(gz, zero(T))
+            for t in 1:p
+                WΔu = W[t, i] * ΔU[leaf_pos[t]]
+                for k in 1:K
+                    gz[k] += L[t, k] * (S[t, i] - WΔu)
+                end
+            end
+            for k in 1:K
+                gz[k] -= Z[k, i]
+            end
+            mul!(ΔZ, op.Ainvs[i], gz)
+            for k in 1:K
+                Z[k, i] += ΔZ[k]
+                maxstep = max(maxstep, abs(ΔZ[k]))
+            end
+        end
+        U .+= ΔU
+        maxstep < tol && break
+    end
+    if U_store !== nothing
+        length(U_store) == m || throw(DimensionMismatch(
+            "U_store must have length $m; got $(length(U_store))"))
+        copyto!(U_store, U)
+    end
+    if Z_store !== nothing
+        size(Z_store) == (K, n) || throw(DimensionMismatch(
+            "Z_store must be $(K)×$(n); got $(size(Z_store))"))
+        copyto!(Z_store, Z)
+    end
+    return (U = U, Z = Z, leaf_pos = leaf_pos, iterations = iterations,
+            maxstep = maxstep, gradnorm = gradnorm,
+            cg_iterations = cg_iterations, cg_residual = cg_residual,
+            cg_converged = cg_converged)
+end
+
+function _phylo_poisson_marginal_loglik_laplace(Y::AbstractMatrix,
+        Λ::AbstractMatrix, β::AbstractVector, phy::AugmentedPhy;
+        sigma2::Real, logdet_method::Symbol = :dense,
+        dense_cutoff::Integer = _STRUCTURED_SCHUR_DENSE_CUTOFF,
+        probes = nothing, rng::AbstractRNG = Random.default_rng(),
+        nprobes::Integer = 16, lanczos_steps::Integer = 40,
+        reorth::Bool = false, maxiter::Integer = 50, tol::Real = 1e-8,
+        mode_solve::Symbol = :dense, cg_tol::Real = 1e-8,
+        cg_maxiter::Union{Nothing, Integer} = nothing,
+        U_init = nothing, Z_init = nothing,
+        U_store = nothing, Z_store = nothing,
+        return_diagnostics::Bool = false)
+    mode = _phylo_poisson_mode(
+        Y, Λ, β, phy; sigma2 = sigma2, maxiter = maxiter, tol = tol,
+        mode_solve = mode_solve, cg_tol = cg_tol, cg_maxiter = cg_maxiter,
+        U_init = U_init, Z_init = Z_init, U_store = U_store,
+        Z_store = Z_store)
+    U = mode.U
+    Z = mode.Z
+    p, n = size(Y)
+    Q_cond, leaf_pos = _phylo_poisson_conditional_precision(phy)
+    m = size(Q_cond, 1)
+    T = promote_type(eltype(Y), eltype(Λ), eltype(β), typeof(float(sigma2)))
+    Q = _schur_precision_storage(Q_cond, T)
+    L = Matrix{T}(Λ)
+    b = Vector{T}(β)
+    Laug = _phylo_poisson_augmented_loadings(L, leaf_pos, m, T)
+    S = Matrix{T}(undef, p, n)
+    W = Matrix{T}(undef, p, n)
+    ℓ = _phylo_poisson_lsw!(S, W, Y, L, b, U, Z, leaf_pos)
+    Waug = _phylo_poisson_leaf_weights(W, leaf_pos, m, T)
+    op = _SchurUOperator(Q, Laug, Waug; sigma2 = sigma2)
+    logdet_Su = _schur_u_logdet(op; method = logdet_method,
+        dense_cutoff = dense_cutoff, probes = probes, rng = rng,
+        nprobes = nprobes, lanczos_steps = lanczos_steps, reorth = reorth)
+    logdet_A = zero(T)
+    @inbounds for i in 1:n
+        logdet_A += op.Alogdets[i]
+    end
+    Qu = similar(U)
+    mul!(Qu, Q, U)
+    invsigma2 = inv(T(sigma2))
+    quad_u = invsigma2 * dot(U, Qu)
+    quad_z = sum(abs2, Z)
+    logdet_Qscaled = _structured_poisson_logdet_precision(Q) - m * log(T(sigma2))
+    value = ℓ - T(0.5) * (quad_z + quad_u + logdet_A + logdet_Su) +
+            T(0.5) * logdet_Qscaled
+    if return_diagnostics
+        return (value = value, mode = mode, logdet_Su = logdet_Su,
+                logdet_A = logdet_A, logdet_Qscaled = logdet_Qscaled,
+                n_augmented = m)
+    end
+    return value
+end
+
+function _fit_phylo_poisson_objective(θ::AbstractVector, Y::AbstractMatrix,
+        phy::AugmentedPhy, p::Integer, K::Integer; sigma2::Real,
+        estimate_sigma2::Bool, logdet_method::Symbol, dense_cutoff::Integer,
+        probes, nprobes::Integer, lanczos_steps::Integer, reorth::Bool,
+        mode_solve::Symbol, cg_tol::Real,
+        cg_maxiter::Union{Nothing, Integer}, maxiter::Integer, tol::Real)
+    try
+        rr = rr_theta_len(p, K)
+        θmain = estimate_sigma2 ? view(θ, 1:(p + rr)) : θ
+        β, Λ = _structured_poisson_unpackθ(θmain, p, K)
+        active_sigma2 = estimate_sigma2 ? exp(θ[p + rr + 1]) : sigma2
+        value = _phylo_poisson_marginal_loglik_laplace(
+            Y, Λ, β, phy; sigma2 = active_sigma2,
+            logdet_method = logdet_method, dense_cutoff = dense_cutoff,
+            probes = probes, nprobes = nprobes, lanczos_steps = lanczos_steps,
+            reorth = reorth, mode_solve = mode_solve, cg_tol = cg_tol,
+            cg_maxiter = cg_maxiter, maxiter = maxiter, tol = tol)
+        isfinite(value) && return -value
+    catch
+    end
+    penalty = zero(eltype(θ))
+    @inbounds for x in θ
+        isfinite(x) && (penalty += abs2(x))
+    end
+    return oftype(first(θ), 1e12) + penalty
+end
+
+"""
+    _fit_phylo_poisson_laplace(Y, phy; K, sigma2 = 1.0, estimate_sigma2 = false, kwargs...)
+
+Internal augmented-tree phylogenetic Poisson fitter. It estimates `β` and
+lower-triangular `Λ`; when `estimate_sigma2=true`, it also estimates the scalar
+phylogenetic variance on the log scale. This is intentionally finite-difference
+and internal until the analytic Workflow Q checks land.
+"""
+function _fit_phylo_poisson_laplace(Y::AbstractMatrix{<:Integer},
+        phy::AugmentedPhy; K::Integer, sigma2::Real = 1.0,
+        estimate_sigma2::Bool = false, β_init = nothing, Λ_init = nothing,
+        g_tol::Real = 1e-5, iterations::Integer = 40,
+        logdet_method::Symbol = :dense,
+        dense_cutoff::Integer = _STRUCTURED_SCHUR_DENSE_CUTOFF,
+        probes = nothing, rng::AbstractRNG = Random.default_rng(),
+        nprobes::Integer = 16, lanczos_steps::Integer = 40,
+        reorth::Bool = false, mode_solve::Symbol = :dense,
+        cg_tol::Real = 1e-8, cg_maxiter::Union{Nothing, Integer} = nothing,
+        maxiter::Integer = 50, tol::Real = 1e-8)
+    p, _ = size(Y)
+    0 < K <= p || throw(ArgumentError("K must satisfy 0 < K <= p; got K=$K for p=$p"))
+    _phylo_poisson_check_dims(Y, zeros(Float64, p, K), zeros(Float64, p), phy, sigma2)
+    mode_solve in (:dense, :cg) || throw(ArgumentError(
+        "mode_solve must be :dense or :cg; got $mode_solve"))
+    logdet_method in (:auto, :dense, :lemma, :slq) || throw(ArgumentError(
+        "logdet_method must be :auto, :dense, :lemma, or :slq; got $logdet_method"))
+
+    θbase = _structured_poisson_initial_theta(Y, K; β_init = β_init, Λ_init = Λ_init)
+    θ0 = estimate_sigma2 ? vcat(θbase, log(float(sigma2))) : θbase
+    active_probes = if probes === nothing &&
+            (logdet_method == :slq || (logdet_method == :auto &&
+             (phy.n_total - 1) > dense_cutoff))
+        _rademacher_probes(rng, phy.n_total - 1, nprobes)
+    else
+        probes
+    end
+    initial_loglik = -_fit_phylo_poisson_objective(
+        θ0, Y, phy, p, K; sigma2 = sigma2,
+        estimate_sigma2 = estimate_sigma2, logdet_method = logdet_method,
+        dense_cutoff = dense_cutoff, probes = active_probes,
+        nprobes = nprobes, lanczos_steps = lanczos_steps, reorth = reorth,
+        mode_solve = mode_solve, cg_tol = cg_tol, cg_maxiter = cg_maxiter,
+        maxiter = maxiter, tol = tol)
+
+    negll(θ) = _fit_phylo_poisson_objective(
+        θ, Y, phy, p, K; sigma2 = sigma2,
+        estimate_sigma2 = estimate_sigma2, logdet_method = logdet_method,
+        dense_cutoff = dense_cutoff, probes = active_probes,
+        nprobes = nprobes, lanczos_steps = lanczos_steps, reorth = reorth,
+        mode_solve = mode_solve, cg_tol = cg_tol, cg_maxiter = cg_maxiter,
+        maxiter = maxiter, tol = tol)
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
+    opts = Optim.Options(g_tol = g_tol, iterations = iterations)
+    res = Optim.optimize(negll, θ0, ls, opts; autodiff = :finite)
+    θ̂ = Optim.minimizer(res)
+    rr = rr_theta_len(p, K)
+    β̂, Λ̂ = _structured_poisson_unpackθ(view(θ̂, 1:(p + rr)), p, K)
+    sigma2_hat = estimate_sigma2 ? exp(θ̂[p + rr + 1]) : float(sigma2)
+    return (β = collect(β̂), Λ = Matrix(Λ̂), loglik = -Optim.minimum(res),
+            initial_loglik = initial_loglik, converged = Optim.converged(res),
+            iterations = Optim.iterations(res), objective_calls = Optim.f_calls(res),
+            mode_solve = mode_solve, logdet_method = logdet_method,
+            sigma2 = sigma2_hat, estimate_sigma2 = estimate_sigma2,
+            gradient = :finite)
+end

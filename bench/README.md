@@ -71,6 +71,46 @@ parameter-count conventions are pinned down. Ordinal rows are marked
 while `gllvmTMB` exposes `ordinal_probit()`, so those rows are timing smoke
 rather than likelihood parity.
 
+## Phylogenetic Poisson gllvmTMB Speed Audit
+
+`bench/phylo_poisson_gllvmtmb_bench.jl` is the focused speed audit for a
+phylogenetic/relatedness non-Gaussian model. It fits the same simulated Poisson
+matrix with:
+
+- Julia's internal augmented-tree phylogenetic Poisson prototype for `bm-tree`,
+  using both dense and matrix-free CG mode solves.
+- Julia's internal fixed-covariance structured Poisson prototype for the
+  `ar1-sparse` relatedness proxy.
+- R `gllvmTMB` with the closest public Brownian-tree model,
+  `phylo_scalar(species, vcv = Cphy) + latent(0 + trait | site, d = K)`.
+
+Cheap smoke run:
+
+```bash
+julia --project=. bench/phylo_poisson_gllvmtmb_bench.jl --smoke
+```
+
+Small/medium/large grid:
+
+```bash
+julia --project=. bench/phylo_poisson_gllvmtmb_bench.jl --full --out=phylo-poisson-gllvmtmb.csv
+```
+
+Scalar-variance smoke:
+
+```bash
+julia --project=. bench/phylo_poisson_gllvmtmb_bench.jl --smoke --structures=bm-tree --estimate-julia-sigma2
+```
+
+The audit keeps two structures separate. `bm-tree` uses a true Brownian-tree
+VCV and the Julia path now uses the augmented-tree precision directly.
+`ar1-sparse` is a sparse-precision relatedness proxy; it is useful for testing
+the structured Poisson algorithm, but it is not a Brownian-tree parity claim.
+Default Julia rows still fix `sigma2` for speed auditing, while `gllvmTMB`
+estimates the scalar phylogenetic variance. Use `--estimate-julia-sigma2` for
+the finite-difference Julia scalar-variance smoke path; that route remains
+internal until analytic gradients and Workflow Q land.
+
 ## Structured Schur Logdet
 
 `bench/structured_schur_logdet_bench.jl` is the Julia-only benchmark for the
