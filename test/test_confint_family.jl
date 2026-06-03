@@ -222,4 +222,56 @@ end
         @test bo.method === :bootstrap
         @test bo.n_converged ≥ 5
     end
+
+    @testset "VA-based standard errors" begin
+        Y, _, _ = _sim_poisson(4, 1, 140; seed = 41)
+        fit = fit_poisson_gllvm_va(Y; K = 1)
+
+        # Wald SEs from the variational (ELBO) marginal.
+        ci = confint(fit, Y; method = :wald, objective = :va)
+        @test ci.method === :wald
+        @test length(ci.term) == length(fit.β) + (4 * 1)     # β + Λ entries
+        @test ci.estimate[1] ≈ fit.β[1] atol = 1e-8
+        fin = isfinite.(ci.se)
+        @test any(fin)
+        @test all(ci.lower[fin] .< ci.estimate[fin] .< ci.upper[fin])
+
+        # coef_table forwards objective=:va through to the Wald confint.
+        ct = coef_table(fit, Y; objective = :va)
+        @test ct isa GllvmCoefTable
+        ctfin = isfinite.(ct.std_error)
+        @test any(ctfin)
+        @test all(ct.lower[ctfin] .< ct.estimate[ctfin] .< ct.upper[ctfin])
+        @test all(ct.z[ctfin] .≈ ct.estimate[ctfin] ./ ct.std_error[ctfin])
+
+        # NB VA fit: positive natural-scale dispersion r interval.
+        Random.seed!(42)
+        p, K, n, r_true = 4, 1, 200, 6.0
+        βr = 0.4 .* randn(p) .+ 1.2
+        Λr = 0.4 .* randn(p, K)
+        Yr = Matrix{Int}(undef, p, n)
+        for s in 1:n
+            η = βr .+ Λr * randn(K)
+            for t in 1:p
+                μ = exp(η[t])
+                Yr[t, s] = rand(NegativeBinomial(r_true, r_true / (r_true + μ)))
+            end
+        end
+        fnb = fit_nb_gllvm_va(Yr; K = K)
+        cir = confint(fnb, Yr; method = :wald, objective = :va, parm = "r")
+        @test cir.term == ["r"]
+        @test cir.estimate[1] ≈ fnb.r atol = 1e-8
+        if isfinite(cir.lower[1])
+            @test 0 < cir.lower[1] < cir.estimate[1] < cir.upper[1]
+        end
+
+        # objective=:va restricted to method=:wald.
+        @test_throws ArgumentError confint(fit, Y; method = :profile, objective = :va)
+
+        # objective=:va unsupported for families without a VA marginal.
+        Yo, _, _ = _sim_poisson(3, 1, 80; seed = 43)
+        Yo = (Yo .% 4) .+ 1                                   # fold counts into 4 ordered categories
+        ford = fit_ordinal_gllvm(Yo; K = 1)
+        @test_throws ArgumentError confint(ford, Yo; method = :wald, objective = :va)
+    end
 end

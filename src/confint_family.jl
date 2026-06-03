@@ -61,13 +61,16 @@ _glm_lin_names(p::Integer, K::Integer) =
 
 # --- Poisson ---------------------------------------------------------------
 function _family_ci(fit::PoissonFit, Y::AbstractMatrix;
+                    objective::Symbol = :laplace,
                     newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
     p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); link = fit.link
     θ = vcat(fit.β, pack_lambda(fit.Λ))
     nll = function (θv)
         β = θv[1:p]; Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K)
         v = try
-            -poisson_marginal_loglik_laplace(Y, Λ, β, link; maxiter = newton_maxiter, tol = newton_tol)
+            objective === :va ?
+                -poisson_marginal_loglik_va(Y, Λ, β; maxiter = newton_maxiter, tol = newton_tol) :
+                -poisson_marginal_loglik_laplace(Y, Λ, β, link; maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
         end
@@ -85,6 +88,7 @@ end
 # --- Binomial --------------------------------------------------------------
 function _family_ci(fit::BinomialFit, Y::AbstractMatrix;
                     N::Union{Nothing, AbstractMatrix} = nothing,
+                    objective::Symbol = :laplace,
                     newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
     p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); link = fit.link
     Nm = N === nothing ? fill(1, p, n) : Matrix{Int}(N)
@@ -92,7 +96,9 @@ function _family_ci(fit::BinomialFit, Y::AbstractMatrix;
     nll = function (θv)
         β = θv[1:p]; Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K)
         v = try
-            -binomial_marginal_loglik_laplace(Y, Nm, Λ, β, link; maxiter = newton_maxiter, tol = newton_tol)
+            objective === :va ?
+                -binomial_marginal_loglik_va(Y, Nm, Λ, β; maxiter = newton_maxiter, tol = newton_tol) :
+                -binomial_marginal_loglik_laplace(Y, Nm, Λ, β, link; maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
         end
@@ -118,13 +124,16 @@ end
 
 # --- Negative binomial -----------------------------------------------------
 function _family_ci(fit::NBFit, Y::AbstractMatrix;
+                    objective::Symbol = :laplace,
                     newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
     p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); link = fit.link
     θ = vcat(fit.β, pack_lambda(fit.Λ), log(fit.r))
     nll = function (θv)
         β = θv[1:p]; Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K); r = exp(θv[p + rr + 1])
         v = try
-            -nb_marginal_loglik_laplace(Y, Λ, β, r; link = link, maxiter = newton_maxiter, tol = newton_tol)
+            objective === :va ?
+                -nb_marginal_loglik_va(Y, Λ, β, r; maxiter = newton_maxiter, tol = newton_tol) :
+                -nb_marginal_loglik_laplace(Y, Λ, β, r; link = link, maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
         end
@@ -143,13 +152,16 @@ end
 
 # --- Beta ------------------------------------------------------------------
 function _family_ci(fit::BetaFit, Y::AbstractMatrix;
+                    objective::Symbol = :laplace,
                     newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
     p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); link = fit.link
     θ = vcat(fit.β, pack_lambda(fit.Λ), log(fit.φ))
     nll = function (θv)
         β = θv[1:p]; Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K); φ = exp(θv[p + rr + 1])
         v = try
-            -beta_marginal_loglik_laplace(Y, Λ, β, φ; link = link, maxiter = newton_maxiter, tol = newton_tol)
+            objective === :va ?
+                -beta_marginal_loglik_va(Y, Λ, β, φ; maxiter = newton_maxiter, tol = newton_tol) :
+                -beta_marginal_loglik_laplace(Y, Λ, β, φ; link = link, maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
         end
@@ -177,13 +189,16 @@ end
 
 # --- Gamma -----------------------------------------------------------------
 function _family_ci(fit::GammaFit, Y::AbstractMatrix;
+                    objective::Symbol = :laplace,
                     newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
     p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); link = fit.link
     θ = vcat(fit.β, pack_lambda(fit.Λ), log(fit.α))
     nll = function (θv)
         β = θv[1:p]; Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K); α = exp(θv[p + rr + 1])
         v = try
-            -gamma_marginal_loglik_laplace(Y, Λ, β, α; link = link, maxiter = newton_maxiter, tol = newton_tol)
+            objective === :va ?
+                -gamma_marginal_loglik_va(Y, Λ, β, α; maxiter = newton_maxiter, tol = newton_tol) :
+                -gamma_marginal_loglik_laplace(Y, Λ, β, α; link = link, maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
         end
@@ -811,7 +826,7 @@ end
 # ---------------------------------------------------------------------------
 """
     confint(fit, Y; method = :wald, level = 0.95, parm = nothing, N = nothing,
-            n_boot = 200, seed = 0, parallel = false,
+            n_boot = 200, seed = 0, parallel = false, objective = :laplace,
             newton_maxiter = 100, newton_tol = 1e-9) -> NamedTuple
 
 Confidence intervals for a non-Gaussian family GLLVM fit — the scalar-μ GLM
@@ -851,6 +866,13 @@ natural (positive) scale.
 `"r"`), a group (`"beta"`, `"Lambda"`), or a vector of these. `N` supplies the
 Binomial trial counts (default all-ones / Bernoulli).
 
+`objective` selects which marginal the Hessian is taken from. The default
+`:laplace` uses the negative Laplace marginal at the fit (the behaviour for all
+fit types). `:va` instead uses the negative variational (ELBO) marginal and is
+available only for the scalar-μ GLM families (`PoissonFit`, `NBFit`,
+`BinomialFit`, `BetaFit`, `GammaFit`) with `method = :wald`; combine it with a VA
+fit (e.g. `fit_poisson_gllvm_va`) for VA-consistent standard errors.
+
 ```julia
 fit = fit_poisson_gllvm(Y; K = 2)
 confint(fit, Y; method = :wald)
@@ -867,10 +889,20 @@ function confint(fit::_CIFit, Y::AbstractMatrix;
                  n_boot::Integer = 200,
                  seed::Integer = 0,
                  parallel::Bool = false,
+                 objective::Symbol = :laplace,
                  newton_maxiter::Integer = 100,
                  newton_tol::Real = 1e-9)
     0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
-    ad = _family_ci(fit, Y; N = N, X = X, newton_maxiter = newton_maxiter, newton_tol = newton_tol)
+    objective in (:laplace, :va) ||
+        throw(ArgumentError("objective must be :laplace or :va; got :$objective"))
+    if objective === :va && !(fit isa Union{PoissonFit, NBFit, BinomialFit, BetaFit, GammaFit})
+        throw(ArgumentError("objective=:va is only available for Poisson/NB/Binomial/Beta/Gamma fits"))
+    end
+    if objective === :va && method !== :wald
+        throw(ArgumentError("objective=:va currently supports method=:wald only"))
+    end
+    ad = _family_ci(fit, Y; N = N, X = X, objective = objective,
+                    newton_maxiter = newton_maxiter, newton_tol = newton_tol)
     sel = _family_select(parm, ad.names)
     isempty(sel) && throw(ArgumentError("parm selector matched no parameters"))
     if method === :wald
