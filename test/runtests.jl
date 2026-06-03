@@ -66,6 +66,7 @@ using GLLVM
     include("test_fourthcorner.jl")
     include("test_row_effects.jl")
     include("test_constrained_ordination.jl")
+    include("test_rrr.jl")
     include("test_quadratic.jl")
     include("test_ordered_beta.jl")
     include("test_variational.jl")
