@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
 
 @testset "Variational (VA) marginal — Beta" begin
     @testset "Λ=0 reduces to independent Beta loglik (exact)" begin
@@ -72,5 +72,56 @@ using GLLVM, Test, Random, Distributions, Statistics
 
         @test va ≤ quad + 1e-4                  # ELBO ≤ log-marginal (Jensen / KL ≥ 0)
         @test isapprox(va, quad; atol = 0.3)    # and tight
+    end
+
+    @testset "envelope-theorem outer gradient matches finite difference" begin
+        Random.seed!(414)
+        p, K, n = 4, 2, 40
+        φ = 10.0
+        β = 0.3 .* randn(p) .+ 0.2
+        Λ = reshape(0.4 .* randn(p * K), p, K)
+        Y = Matrix{Float64}(undef, p, n)
+        for s in 1:n
+            z = randn(K)
+            for t in 1:p
+                μ = 1.0 / (1.0 + exp(-(β[t] + dot(Λ[t, :], z))))
+                Y[t, s] = rand(Beta(μ * φ, (1 - μ) * φ))
+            end
+        end
+        rr = GLLVM.rr_theta_len(p, K)
+
+        # θ near a warm start: empirical logit-mean intercepts + SVD loadings + log φ₀.
+        link = GLLVM.LogitLink()
+        Zemp = [GLLVM.linkfun(link, clamp(Y[t, i], 1e-6, 1 - 1e-6)) for t in 1:p, i in 1:n]
+        β0 = vec(sum(Zemp; dims = 2)) ./ n
+        Zc = Zemp .- β0
+        Fsvd = svd(Zc)
+        kk = min(K, length(Fsvd.S))
+        Λ0 = zeros(p, K)
+        for j in 1:kk
+            Λ0[:, j] = Fsvd.U[:, j] .* (Fsvd.S[j] / sqrt(n))
+        end
+        θ = vcat(β0, GLLVM.pack_lambda(Λ0), log(10.0))
+
+        x, w = GLLVM._gauss_hermite(20)
+        β_ = θ[1:p]
+        Λ_ = GLLVM.unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+        Λ2_ = Λ_ .^ 2
+        φ_ = exp(θ[p + rr + 1])
+        _, M, V = GLLVM._va_beta_solve_all(Y, Λ_, Λ2_, β_, φ_, x, w)
+        G = zeros(length(θ))
+        GLLVM._va_beta_outer_grad!(G, Y, Λ_, Λ2_, β_, φ_, M, V, x, w)
+
+        f(θv) = -GLLVM.beta_marginal_loglik_va(Y,
+                    GLLVM.unpack_lambda(θv[(p + 1):(p + rr)], p, K),
+                    θv[1:p], exp(θv[p + rr + 1]))
+        h = 1e-5
+        fd = zeros(length(θ))
+        for i in eachindex(θ)
+            θp = copy(θ); θp[i] += h
+            θm = copy(θ); θm[i] -= h
+            fd[i] = (f(θp) - f(θm)) / (2h)
+        end
+        @test isapprox(G, fd; atol = 1e-3)
     end
 end
