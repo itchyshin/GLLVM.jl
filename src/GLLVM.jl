@@ -46,6 +46,8 @@ include("families/variational_dgamma.jl") # VA/ELBO marginal — Delta-Gamma two
 
 # Post-fit API (ordination, predict, residuals, summary)
 include("postfit.jl")
+include("ordination.jl")                  # ordination output (site scores + species loadings, canonical rotation)
+include("model_selection.jl")             # select_lv: latent-dimension selection by AIC/BIC
 include("simulate_fit.jl")               # simulate(fit, …) for the non-Gaussian families
 
 # Confidence intervals
@@ -54,6 +56,7 @@ include("confint_profile.jl")            # profile likelihood
 include("confint_bootstrap.jl")          # parametric bootstrap
 include("confint_derived.jl")            # derived quantities (Σ_y, communality, ...)
 include("confint_family.jl")             # Wald / profile / bootstrap CIs for non-Gaussian families
+include("summary_table.jl")              # coef_table: tidy Wald inference table
 include("formula.jl")                    # @formula front-end (v1: fixed effects → engine)
 
 # Public API
@@ -91,7 +94,8 @@ export spatial_cov, relatedness_cov,
        binomial_marginal_loglik_va, nb_marginal_loglik_va,
        fit_binomial_gllvm_va, fit_nb_gllvm_va,
        gamma_marginal_loglik_va, fit_gamma_gllvm_va,
-       getLV, getLoadings, rotation,
+       getLV, getLoadings, rotation, ordination,
+       coef_table, GllvmCoefTable, select_lv, LVSelection,
        predict, fitted, residuals, aic, bic, simulate
 
 end # module GLLVM
