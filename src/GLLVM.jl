@@ -30,6 +30,7 @@ include("families/negbin.jl")            # Negative-binomial family pieces (Phas
 include("families/beta.jl")              # Beta family pieces (Phase 3)
 include("families/ordinal.jl")           # Ordinal (cumulative-logit) family pieces (Phase 3)
 include("families/gamma.jl")             # Gamma (positive continuous) family pieces (Phase 3)
+include("families/tweedie.jl")           # Tweedie (compound Poisson–Gamma, 1<p<2) — biomass/abundance with zeros
 include("families/exponential.jl")       # Exponential (positive continuous, no dispersion) — Gamma(α=1)
 include("families/twopart.jl")           # Two-part substrate + Delta-lognormal / Delta-Gamma / Hurdle (Phase 3)
 include("families/fit_gllvm.jl")         # unified fit_gllvm(Y; family) dispatcher
@@ -84,6 +85,7 @@ export spatial_cov, relatedness_cov,
        fit_nb_gllvm, NBFit, fit_beta_gllvm, BetaFit,
        Ordinal, fit_ordinal_gllvm, OrdinalFit, fit_gamma_gllvm, GammaFit,
        fit_exponential_gllvm, ExponentialFit, exponential_marginal_loglik_laplace,
+       fit_tweedie_gllvm, TweedieFit, tweedie_marginal_loglik_laplace, tweedie_logpdf,
        fit_delta_lognormal_gllvm, DeltaLogNormalFit,
        delta_lognormal_marginal_loglik_laplace,
        fit_hurdle_poisson_gllvm, HurdlePoissonFit,

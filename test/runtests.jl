@@ -43,6 +43,7 @@ using GLLVM
     include("test_nb_fit.jl")
     include("test_beta_fit.jl")
     include("test_gamma_fit.jl")
+    include("test_tweedie.jl")
     include("test_exponential.jl")
     include("test_ordinal_fit.jl")
     include("test_fit_gllvm.jl")
