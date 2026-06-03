@@ -244,7 +244,7 @@ function _run_julia_fit(Y, sfx, cell, mode_solve::Symbol, args)
         Y, sfx.phy; K = cell.K, sigma2 = args.sigma2,
         estimate_sigma2 = args.estimate_julia_sigma2,
         mode_solve = mode_solve, iterations = args.iterations,
-        logdet_method = args.logdet_method, g_tol = 1e-4,
+        logdet_method = args.logdet_method, gradient = args.gradient, g_tol = 1e-4,
         cg_tol = 1e-10, maxiter = 80, tol = 1e-9)
 end
 

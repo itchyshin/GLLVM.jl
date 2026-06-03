@@ -108,8 +108,10 @@ VCV and the Julia path now uses the augmented-tree precision directly.
 the structured Poisson algorithm, but it is not a Brownian-tree parity claim.
 Default Julia rows still fix `sigma2` for speed auditing, while `gllvmTMB`
 estimates the scalar phylogenetic variance. Use `--estimate-julia-sigma2` for
-the finite-difference Julia scalar-variance smoke path; that route remains
-internal until analytic gradients and Workflow Q land.
+the Julia scalar-variance smoke path. The benchmark defaults to
+`--gradient=implicit`; use `--gradient=finite` only to rerun the older
+finite-difference optimizer baseline. The route remains internal until ADEMP
+recovery, multi-shape Workflow Q, and public API docs land.
 
 ## Structured Schur Logdet
 

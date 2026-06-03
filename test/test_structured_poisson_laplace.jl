@@ -298,6 +298,51 @@ end
                     sigma_objective(logsigma2 - h)) / (2h)
     @test value_sigma ≈ augmented.value atol = 1e-10 rtol = 1e-10
     @test grad_logsigma2 ≈ fd_logsigma2 atol = 1e-5 rtol = 1e-5
+    θ0 = vcat(β, GLLVM.pack_lambda(Λ))
+    phylo_loglik = θ -> GLLVM._phylo_poisson_marginal_loglik_laplace(
+        Y, GLLVM.unpack_lambda(θ[(p + 1):end], p, K), θ[1:p], phy;
+        sigma2 = 0.45, logdet_method = :dense, mode_solve = :dense,
+        maxiter = 100, tol = 1e-12)
+    value_imp, gimp = GLLVM._phylo_poisson_implicit_value_grad(
+        θ0, Y, phy, p, K; sigma2 = 0.45, logdet_method = :dense,
+        mode_solve = :dense, maxiter = 100, tol = 1e-12)
+    value_imp_cg, gimp_cg = GLLVM._phylo_poisson_implicit_value_grad(
+        θ0, Y, phy, p, K; sigma2 = 0.45, logdet_method = :auto,
+        mode_solve = :cg, cg_tol = 1e-12, cg_maxiter = 200,
+        maxiter = 100, tol = 1e-12)
+    gfd = structured_central_difference_gradient(phylo_loglik, θ0)
+    @test value_imp ≈ augmented.value atol = 1e-10 rtol = 1e-10
+    @test value_imp_cg ≈ augmented.value atol = 1e-7 rtol = 1e-7
+    @test all(isfinite, gimp)
+    @test all(isfinite, gimp_cg)
+    @test all(isfinite, gfd)
+    @test maximum(abs.(gimp .- gfd)) ≤ 1e-5
+    @test maximum(abs.(gimp_cg .- gimp)) ≤ 1e-5
+    θsigma = vcat(θ0, log(0.45))
+    phylo_loglik_sigma = θ -> GLLVM._phylo_poisson_marginal_loglik_laplace(
+        Y, GLLVM.unpack_lambda(θ[(p + 1):(end - 1)], p, K), θ[1:p], phy;
+        sigma2 = exp(θ[end]), logdet_method = :dense, mode_solve = :dense,
+        maxiter = 100, tol = 1e-12)
+    value_imp_sigma, gimp_sigma = GLLVM._phylo_poisson_implicit_value_grad_logsigma2(
+        θsigma, Y, phy, p, K; logdet_method = :dense, mode_solve = :dense,
+        maxiter = 100, tol = 1e-12)
+    gfd_sigma = structured_central_difference_gradient(phylo_loglik_sigma, θsigma)
+    @test value_imp_sigma ≈ augmented.value atol = 1e-10 rtol = 1e-10
+    @test all(isfinite, gimp_sigma)
+    @test maximum(abs.(gimp_sigma .- gfd_sigma)) ≤ 1e-5
+
+    fit_fixed_implicit = GLLVM._fit_phylo_poisson_laplace(
+        Y, phy; K = K, sigma2 = 0.45, iterations = 3,
+        g_tol = 1e-4, logdet_method = :dense, mode_solve = :dense,
+        gradient = :implicit, maxiter = 100, tol = 1e-10)
+    fit_fixed_finite = GLLVM._fit_phylo_poisson_laplace(
+        Y, phy; K = K, sigma2 = 0.45, iterations = 3,
+        g_tol = 1e-4, logdet_method = :dense, mode_solve = :dense,
+        gradient = :finite, maxiter = 100, tol = 1e-10)
+    @test fit_fixed_implicit.loglik >= fit_fixed_implicit.initial_loglik - 1e-7
+    @test fit_fixed_implicit.loglik ≈ fit_fixed_finite.loglik atol = 1e-5 rtol = 1e-5
+    @test fit_fixed_implicit.gradient === :implicit
+    @test fit_fixed_finite.gradient === :finite
 
     fit = GLLVM._fit_phylo_poisson_laplace(
         Y, phy; K = K, sigma2 = 0.45, estimate_sigma2 = true,
@@ -309,6 +354,16 @@ end
     @test fit.sigma2 > 0
     @test fit.estimate_sigma2 === true
     @test fit.gradient === :finite
+    fit_imp_sigma = GLLVM._fit_phylo_poisson_laplace(
+        Y, phy; K = K, sigma2 = 0.45, estimate_sigma2 = true,
+        iterations = 3, g_tol = 1e-4, logdet_method = :dense,
+        mode_solve = :dense, gradient = :implicit, maxiter = 100, tol = 1e-10)
+    @test isfinite(fit_imp_sigma.loglik)
+    @test fit_imp_sigma.loglik >= fit_imp_sigma.initial_loglik - 1e-7
+    @test isfinite(fit_imp_sigma.sigma2)
+    @test fit_imp_sigma.sigma2 > 0
+    @test fit_imp_sigma.estimate_sigma2 === true
+    @test fit_imp_sigma.gradient === :implicit
 
     @test_throws DimensionMismatch GLLVM._phylo_poisson_marginal_loglik_laplace(
         Y, randn(p + 1, K), β, phy; sigma2 = 0.45)
@@ -318,4 +373,6 @@ end
         Y, Λ, β, phy; sigma2 = 0.0)
     @test_throws ArgumentError GLLVM._fit_phylo_poisson_laplace(
         Y, phy; K = 0, sigma2 = 0.45)
+    @test_throws ArgumentError GLLVM._fit_phylo_poisson_laplace(
+        Y, phy; K = K, sigma2 = 0.45, gradient = :wat)
 end

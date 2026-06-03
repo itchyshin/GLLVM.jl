@@ -1439,6 +1439,190 @@ function _phylo_poisson_logsigma2_value_grad_dense(Y::AbstractMatrix,
     return diag.value, grad
 end
 
+function _phylo_poisson_block_implicit_value_grad(θ::AbstractVector,
+        Y::AbstractMatrix, phy::AugmentedPhy, p::Integer, K::Integer;
+        sigma2::Real, logdet_method::Symbol = :dense,
+        dense_cutoff::Integer = _STRUCTURED_SCHUR_DENSE_CUTOFF,
+        mode_solve::Symbol = :dense, cg_tol::Real = 1e-8,
+        cg_maxiter::Union{Nothing, Integer} = nothing,
+        maxiter::Integer = 50, tol::Real = 1e-8,
+        U_init = nothing, Z_init = nothing,
+        U_store = nothing, Z_store = nothing)
+    β, Λ = _structured_poisson_unpackθ(θ, p, K)
+    Q_cond, leaf_pos = _phylo_poisson_conditional_precision(phy)
+    m = size(Q_cond, 1)
+    active_logdet = logdet_method == :auto ? (m <= dense_cutoff ? :dense : :slq) : logdet_method
+    active_logdet == :dense || throw(ArgumentError(
+        "phylogenetic Poisson implicit gradient currently supports dense logdet only; got $logdet_method"))
+
+    mode = _phylo_poisson_mode(
+        Y, Λ, β, phy; sigma2 = sigma2, maxiter = maxiter, tol = tol,
+        mode_solve = mode_solve, cg_tol = cg_tol, cg_maxiter = cg_maxiter,
+        U_init = U_init, Z_init = Z_init, U_store = U_store, Z_store = Z_store)
+    U = mode.U
+    Z = mode.Z
+    n = size(Y, 2)
+    T = promote_type(eltype(θ), eltype(Y), typeof(float(sigma2)))
+    Q = _schur_precision_storage(Q_cond, T)
+    L = _matrix_storage(Λ, T)
+    b = Vector{T}(β)
+    Laug = _phylo_poisson_augmented_loadings(L, leaf_pos, m, T)
+    S = Matrix{T}(undef, p, n)
+    W = Matrix{T}(undef, p, n)
+    ℓ = _phylo_poisson_lsw!(S, W, Y, L, b, U, Z, leaf_pos)
+    Waug = _phylo_poisson_leaf_weights(W, leaf_pos, m, T)
+    op = _SchurUOperator(Q, Laug, Waug; sigma2 = sigma2)
+    Csu = cholesky(_schur_u_dense(op))
+    G = Matrix{T}(I, m, m)
+    ldiv!(Csu, G)
+    logdet_Su = logdet(Csu)
+
+    logdet_A = zero(T)
+    @inbounds for i in 1:n
+        logdet_A += op.Alogdets[i]
+    end
+    Qu = similar(U)
+    mul!(Qu, Q, U)
+    invsigma2 = inv(T(sigma2))
+    quad_u = invsigma2 * dot(U, Qu)
+    quad_z = sum(abs2, Z)
+    logdet_Qscaled = _structured_poisson_logdet_precision(Q) - m * log(T(sigma2))
+    value = ℓ - T(0.5) * (quad_z + quad_u + logdet_A + logdet_Su) +
+            T(0.5) * logdet_Qscaled
+
+    q_u = zeros(T, m)
+    q_Z = zeros(T, K, n)
+    gradβ = zeros(T, p)
+    gradΛ = zeros(T, p, K)
+    Usite = zeros(T, m, K)
+    GU = Matrix{T}(undef, m, K)
+    C = Matrix{T}(undef, K, K)
+    v = Vector{T}(undef, K)
+    tmp = Vector{T}(undef, K)
+    rz = Vector{T}(undef, K)
+
+    @inbounds for i in 1:n
+        fill!(Usite, zero(T))
+        for t in 1:p
+            j = leaf_pos[t]
+            for k in 1:K
+                Usite[j, k] = W[t, i] * L[t, k]
+            end
+        end
+        mul!(GU, G, Usite)
+        mul!(C, transpose(Usite), GU)
+        M = op.Ainvs[i]
+        for t in 1:p
+            j = leaf_pos[t]
+            for k in 1:K
+                acc = zero(T)
+                for l in 1:K
+                    acc += M[k, l] * L[t, l]
+                end
+                v[k] = acc
+            end
+            for k in 1:K
+                acc = GU[j, k]
+                for l in 1:K
+                    acc -= C[k, l] * v[l]
+                end
+                tmp[k] = acc
+            end
+            for k in 1:K
+                acc = v[k]
+                for l in 1:K
+                    acc -= M[k, l] * tmp[l]
+                end
+                rz[k] = acc
+            end
+            h = G[j, j]
+            for k in 1:K
+                h -= GU[j, k] * v[k]
+                h += L[t, k] * rz[k]
+            end
+            Wh = W[t, i] * h
+            a = S[t, i] - T(0.5) * Wh
+            q_u[j] -= T(0.5) * Wh
+            gradβ[t] += a
+            for k in 1:K
+                q_Z[k, i] -= T(0.5) * Wh * L[t, k]
+                gradΛ[t, k] += a * Z[k, i] - W[t, i] * rz[k]
+            end
+        end
+    end
+
+    qx = Vector{T}(undef, m + K * n)
+    copyto!(view(qx, 1:m), q_u)
+    @inbounds for i in 1:n
+        offset = m + (i - 1) * K
+        for k in 1:K
+            qx[offset + k] = q_Z[k, i]
+        end
+    end
+    α = _structured_poisson_joint_solve(qx, op; mode_solve = :dense, Csu = Csu)
+    αu = @view α[1:m]
+    αZ = reshape(@view(α[(m + 1):end]), K, n)
+    @inbounds for i in 1:n
+        for t in 1:p
+            j = leaf_pos[t]
+            δ = αu[j]
+            for k in 1:K
+                δ += L[t, k] * αZ[k, i]
+            end
+            gradβ[t] -= W[t, i] * δ
+            for k in 1:K
+                gradΛ[t, k] += S[t, i] * αZ[k, i] - W[t, i] * Z[k, i] * δ
+            end
+        end
+    end
+
+    grad = zeros(T, length(θ))
+    copyto!(view(grad, 1:p), gradβ)
+    @inbounds for k in 1:K
+        grad[p + k] = gradΛ[k, k]
+        for t in (k + 1):p
+            grad[p + _lower_index(p, K, t, k)] = gradΛ[t, k]
+        end
+    end
+    return value, grad
+end
+
+function _phylo_poisson_implicit_value_grad(θ::AbstractVector,
+        Y::AbstractMatrix, phy::AugmentedPhy, p::Integer, K::Integer; kwargs...)
+    return _phylo_poisson_block_implicit_value_grad(θ, Y, phy, p, K; kwargs...)
+end
+
+function _phylo_poisson_implicit_value_grad_logsigma2(θ::AbstractVector,
+        Y::AbstractMatrix, phy::AugmentedPhy, p::Integer, K::Integer;
+        logdet_method::Symbol = :dense,
+        dense_cutoff::Integer = _STRUCTURED_SCHUR_DENSE_CUTOFF,
+        mode_solve::Symbol = :dense, cg_tol::Real = 1e-8,
+        cg_maxiter::Union{Nothing, Integer} = nothing,
+        maxiter::Integer = 50, tol::Real = 1e-8,
+        U_init = nothing, Z_init = nothing,
+        U_store = nothing, Z_store = nothing)
+    rr = rr_theta_len(p, K)
+    length(θ) == p + rr + 1 || throw(ArgumentError(
+        "phylogenetic Poisson θ has length $(length(θ)); expected $(p + rr + 1) for p=$p, K=$K with log(sigma2)"))
+    θmain = view(θ, 1:(p + rr))
+    logsigma2 = θ[p + rr + 1]
+    sigma2 = exp(logsigma2)
+    value, gmain = _phylo_poisson_implicit_value_grad(
+        θmain, Y, phy, p, K; sigma2 = sigma2, logdet_method = logdet_method,
+        dense_cutoff = dense_cutoff, mode_solve = mode_solve,
+        cg_tol = cg_tol, cg_maxiter = cg_maxiter, maxiter = maxiter,
+        tol = tol, U_init = U_init, Z_init = Z_init, U_store = U_store,
+        Z_store = Z_store)
+    β, Λ = _structured_poisson_unpackθ(θmain, p, K)
+    value_sigma, gsigma = _phylo_poisson_logsigma2_value_grad_dense(
+        Y, Λ, β, phy; sigma2 = sigma2, maxiter = maxiter, tol = tol,
+        mode_solve = mode_solve, cg_tol = cg_tol, cg_maxiter = cg_maxiter)
+    grad = similar(θ)
+    copyto!(view(grad, 1:(p + rr)), gmain)
+    grad[p + rr + 1] = gsigma
+    return value_sigma, grad
+end
+
 function _fit_phylo_poisson_objective(θ::AbstractVector, Y::AbstractMatrix,
         phy::AugmentedPhy, p::Integer, K::Integer; sigma2::Real,
         estimate_sigma2::Bool, logdet_method::Symbol, dense_cutoff::Integer,
@@ -1471,8 +1655,10 @@ end
 
 Internal augmented-tree phylogenetic Poisson fitter. It estimates `β` and
 lower-triangular `Λ`; when `estimate_sigma2=true`, it also estimates the scalar
-phylogenetic variance on the log scale. This is intentionally finite-difference
-and internal until the analytic Workflow Q checks land.
+phylogenetic variance on the log scale. The fixed-`sigma2` path can use the
+internal dense implicit-gradient scaffold. Scalar-variance estimation can also
+use the implicit scaffold with a dense log-sigma derivative, but the route stays
+internal until the full Workflow Q checks land.
 """
 function _fit_phylo_poisson_laplace(Y::AbstractMatrix{<:Integer},
         phy::AugmentedPhy; K::Integer, sigma2::Real = 1.0,
@@ -1484,7 +1670,8 @@ function _fit_phylo_poisson_laplace(Y::AbstractMatrix{<:Integer},
         nprobes::Integer = 16, lanczos_steps::Integer = 40,
         reorth::Bool = false, mode_solve::Symbol = :dense,
         cg_tol::Real = 1e-8, cg_maxiter::Union{Nothing, Integer} = nothing,
-        maxiter::Integer = 50, tol::Real = 1e-8)
+        maxiter::Integer = 50, tol::Real = 1e-8,
+        mode_cache::Bool = true, gradient::Symbol = :finite)
     p, _ = size(Y)
     0 < K <= p || throw(ArgumentError("K must satisfy 0 < K <= p; got K=$K for p=$p"))
     _phylo_poisson_check_dims(Y, zeros(Float64, p, K), zeros(Float64, p), phy, sigma2)
@@ -1492,6 +1679,8 @@ function _fit_phylo_poisson_laplace(Y::AbstractMatrix{<:Integer},
         "mode_solve must be :dense or :cg; got $mode_solve"))
     logdet_method in (:auto, :dense, :lemma, :slq) || throw(ArgumentError(
         "logdet_method must be :auto, :dense, :lemma, or :slq; got $logdet_method"))
+    gradient in (:finite, :implicit) || throw(ArgumentError(
+        "gradient must be :finite or :implicit; got $gradient"))
 
     θbase = _structured_poisson_initial_theta(Y, K; β_init = β_init, Λ_init = Λ_init)
     θ0 = estimate_sigma2 ? vcat(θbase, log(float(sigma2))) : θbase
@@ -1502,6 +1691,9 @@ function _fit_phylo_poisson_laplace(Y::AbstractMatrix{<:Integer},
     else
         probes
     end
+    m = phy.n_total - 1
+    Ucache = mode_cache ? zeros(Float64, m) : nothing
+    Zcache = mode_cache ? zeros(Float64, K, size(Y, 2)) : nothing
     initial_loglik = -_fit_phylo_poisson_objective(
         θ0, Y, phy, p, K; sigma2 = sigma2,
         estimate_sigma2 = estimate_sigma2, logdet_method = logdet_method,
@@ -1517,9 +1709,27 @@ function _fit_phylo_poisson_laplace(Y::AbstractMatrix{<:Integer},
         nprobes = nprobes, lanczos_steps = lanczos_steps, reorth = reorth,
         mode_solve = mode_solve, cg_tol = cg_tol, cg_maxiter = cg_maxiter,
         maxiter = maxiter, tol = tol)
+    value_grad(θ) = estimate_sigma2 ?
+        _phylo_poisson_implicit_value_grad_logsigma2(
+            θ, Y, phy, p, K; logdet_method = logdet_method,
+            dense_cutoff = dense_cutoff, mode_solve = mode_solve,
+            cg_tol = cg_tol, cg_maxiter = cg_maxiter, maxiter = maxiter,
+            tol = tol, U_init = Ucache, Z_init = Zcache, U_store = Ucache,
+            Z_store = Zcache) :
+        _phylo_poisson_implicit_value_grad(
+            θ, Y, phy, p, K; sigma2 = sigma2, logdet_method = logdet_method,
+            dense_cutoff = dense_cutoff, mode_solve = mode_solve,
+            cg_tol = cg_tol, cg_maxiter = cg_maxiter, maxiter = maxiter,
+            tol = tol, U_init = Ucache, Z_init = Zcache, U_store = Ucache,
+            Z_store = Zcache)
+    negll_fg!(F, G, θ) = _penalized_negloglik_fg!(F, G, value_grad, θ)
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
     opts = Optim.Options(g_tol = g_tol, iterations = iterations)
-    res = Optim.optimize(negll, θ0, ls, opts; autodiff = :finite)
+    res = if gradient == :finite
+        Optim.optimize(negll, θ0, ls, opts; autodiff = :finite)
+    else
+        Optim.optimize(Optim.only_fg!(negll_fg!), θ0, ls, opts)
+    end
     θ̂ = Optim.minimizer(res)
     rr = rr_theta_len(p, K)
     β̂, Λ̂ = _structured_poisson_unpackθ(view(θ̂, 1:(p + rr)), p, K)
@@ -1527,7 +1737,8 @@ function _fit_phylo_poisson_laplace(Y::AbstractMatrix{<:Integer},
     return (β = collect(β̂), Λ = Matrix(Λ̂), loglik = -Optim.minimum(res),
             initial_loglik = initial_loglik, converged = Optim.converged(res),
             iterations = Optim.iterations(res), objective_calls = Optim.f_calls(res),
+            gradient_calls = Optim.g_calls(res),
             mode_solve = mode_solve, logdet_method = logdet_method,
             sigma2 = sigma2_hat, estimate_sigma2 = estimate_sigma2,
-            gradient = :finite)
+            mode_cache = mode_cache, gradient = gradient)
 end

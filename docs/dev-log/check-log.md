@@ -1,5 +1,180 @@
 # Check Log
 
+## 2026-06-03 - Phylogenetic Poisson Implicit Gradient Benchmark
+
+### Scope
+
+Replaced the finite-difference outer-gradient path in the internal
+augmented-tree phylogenetic Poisson fitter with an exact dense implicit-gradient
+route for `β`, lower-triangular `Λ`, and log scalar phylogenetic variance. The
+benchmark driver now defaults `bm-tree` rows to `--gradient=implicit`.
+
+This is an internal engine and benchmark slice, not a public API promotion.
+
+### Files Changed
+
+- `src/families/structured_poisson.jl`
+  - Added `_phylo_poisson_implicit_value_grad`.
+  - Added `_phylo_poisson_implicit_value_grad_logsigma2`.
+  - Wired `gradient = :implicit` into `_fit_phylo_poisson_laplace`.
+- `test/test_structured_poisson_laplace.jl`
+  - Added central finite-difference checks for fixed-sigma and
+    log-sigma implicit gradients.
+  - Added dense-vs-CG agreement and bad-gradient argument guard coverage.
+- `bench/phylo_poisson_gllvmtmb_bench.jl`
+  - Passed the parsed `--gradient` argument to the augmented-tree Julia fit.
+- `bench/README.md`
+  - Updated the phylogenetic Poisson benchmark instructions.
+
+### Checks Run
+
+Focused structured Poisson test:
+
+```sh
+julia --project=. test/test_structured_poisson_laplace.jl
+```
+
+Result:
+
+```text
+structured Poisson Laplace prototype | 13/13 pass
+structured Poisson implicit gradient | 23/23 pass
+structured Poisson internal fitter | 31/31 pass
+structured Poisson sigma-to-zero reduction | 1/1 pass
+augmented phylogenetic Poisson Laplace prototype | 38/38 pass
+```
+
+Core suite:
+
+```sh
+julia --project=. test/runtests.jl
+```
+
+Result: exit code 0. The direct core environment emitted the expected quality
+placeholders only:
+
+```text
+quality | 2 broken / 2 total
+```
+
+Full package suite:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+structured Poisson implicit gradient | 23/23 pass
+structured Poisson internal fitter | 31/31 pass
+augmented phylogenetic Poisson Laplace prototype | 38/38 pass
+quality | 12/12 pass
+Testing GLLVM tests passed
+```
+
+`Pkg.test()` emitted the pre-existing duplicate-include warnings from
+`src/takahashi_selinv.jl`; no test failed.
+
+Docs build:
+
+```sh
+julia --project=docs docs/make.jl
+```
+
+Initial result: failed because the temp worktree docs environment was not
+instantiated and expected registered `GLLVM`.
+
+Rerun setup and result:
+
+```sh
+julia --project=docs -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
+julia --project=docs docs/make.jl
+```
+
+Result: exit code 0. Existing warnings remain for absolute local links, missing
+`logo.png` / `favicon.ico`, missing `docs/package.json`, and npm audit reporting
+4 moderate vulnerabilities. No tracked docs project files changed; generated
+`docs/Manifest.toml`, `docs/build/`, and `docs/node_modules/` are ignored.
+
+### Benchmark Evidence
+
+R comparator:
+
+```sh
+Rscript --vanilla -e 'suppressPackageStartupMessages(library(gllvmTMB)); cat(as.character(utils::packageVersion("gllvmTMB")), "\n")'
+```
+
+Result: `gllvmTMB` 0.2.0.
+
+Finite-difference scalar-variance baseline:
+
+```sh
+julia --project=. bench/phylo_poisson_gllvmtmb_bench.jl --full --cells=small,medium --structures=bm-tree --estimate-julia-sigma2 --iterations=200 --warmups=1 --reps=3 --out=bench/results/phylo-poisson-augmented-estimate-small-medium-reps3-2026-06-03.csv
+```
+
+```text
+small:  julia-cg 0.15719425 s, gllvmTMB median 0.515 s, R/Julia 3.2762x
+medium: julia-cg 2.415410666 s, gllvmTMB median 0.814 s, R/Julia 0.3370x
+```
+
+Fixed-sigma implicit-gradient speed isolation:
+
+```sh
+julia --project=. bench/phylo_poisson_gllvmtmb_bench.jl --full --structures=bm-tree --iterations=200 --warmups=1 --reps=3 --out=bench/results/phylo-poisson-augmented-fixed-implicit-full-reps3-2026-06-03.csv
+```
+
+```text
+small:  julia-cg 0.004019 s, gllvmTMB median 0.479 s, R/Julia 119.1839x
+medium: julia-cg 0.022607208 s, gllvmTMB median 0.778 s, R/Julia 34.4138x
+large:  julia-cg 0.473812541 s, gllvmTMB median 2.774 s, R/Julia 5.8546x
+```
+
+These fixed-sigma rows are speed-isolation rows only; their log-likelihoods do
+not match R because R estimates the scalar phylogenetic variance.
+
+Estimated-sigma implicit-gradient R comparison:
+
+```sh
+julia --project=. bench/phylo_poisson_gllvmtmb_bench.jl --full --cells=small,medium --structures=bm-tree --estimate-julia-sigma2 --iterations=200 --warmups=1 --reps=3 --out=bench/results/phylo-poisson-augmented-estimate-implicit-small-medium-reps3-2026-06-03.csv
+julia --project=. bench/phylo_poisson_gllvmtmb_bench.jl --full --cells=large --structures=bm-tree --estimate-julia-sigma2 --iterations=400 --warmups=1 --reps=1 --out=bench/results/phylo-poisson-augmented-estimate-implicit-large-400it-rep1-2026-06-03.csv
+```
+
+```text
+small:  julia-cg 0.035451375 s, gllvmTMB median 0.485 s, R/Julia 13.6807x, |Δloglik| = 3.30e-8
+medium: julia-cg 0.128251625 s, gllvmTMB median 0.762 s, R/Julia 5.9414x, |Δloglik| = 8.36e-8
+large:  julia-cg 2.092373333 s, gllvmTMB 2.772 s, R/Julia 1.3248x, |Δloglik| = 2.44e-7
+```
+
+Large caveat: at the default 200-iteration cap, the large estimated-sigma
+Julia row matched the R log-likelihood to `2.44e-7` but reported
+`converged=false`. At `--iterations=400`, the same large cell reports
+`converged=true`.
+
+### Rose Scans
+
+```sh
+git diff --check
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs CLAUDE.md AGENTS.md bench/README.md src/families/structured_poisson.jl -g '!docs/node_modules/**'
+rg -n "finite-difference|implicit|phylo.*Poisson|Workflow Q|gllvmTMB" bench/README.md src/families/structured_poisson.jl docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-03-phylo-poisson-implicit-gradient-benchmark.md -g '!docs/node_modules/**'
+```
+
+Results: whitespace clean. Private-provenance scan over tracked public files
+was clean. Stale-wording hits are expected historical check-log/report command
+text plus the user-provided AGENTS.md "Gaussian only" snapshot. Claim-scan hits
+are expected internal engine, benchmark README, and audit-log text; this slice
+adds no public phylogenetic Poisson support claim.
+
+Cross-project tracking issue #13 was updated:
+<https://github.com/itchyshin/GLLVM.jl/issues/13#issuecomment-4611326362>.
+
+### Rose Verdict
+
+PASS WITH NOTES. The internal augmented-tree Poisson fitted path is now
+likelihood-comparable to `gllvmTMB` on the benchmark cells and no longer loses
+the medium cell to finite-difference outer gradients. It remains internal until
+ADEMP recovery, multi-shape Workflow Q, and public API/documentation work land.
+
 ## 2026-06-03 - Homepage Mobile Publication
 
 ### Scope
