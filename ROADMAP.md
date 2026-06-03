@@ -58,7 +58,12 @@ Ordered roughly by real-world impact.
       end-to-end docs tutorial.
 - [ ] **Row (community) effects** — per-site intercepts, fixed or random.
 - [ ] **Quadratic-response GLLVM** (species optima/tolerances).
-- [ ] **Constrained & concurrent ordination** (reduced-rank regression of LVs on predictors).
+- [x] **Constrained ordination** (`fit_constrained_gllvm`) — reduced-rank regression
+      of the LVs on predictors, `z_s ~ N(B'x_s, I)`, via the offset core (`O=Λ·B'·X'`).
+      Concurrent ordination (constrained + unconstrained LVs together) still open.
+- [x] **VA estimator analytic gradients** — inner (all families) + envelope-theorem
+      OUTER gradient for the Gauss–Hermite families (NB/Binomial/Beta), removing the
+      ~2·n_params finite-difference factor.
 - [ ] **Correlated LV structures** (spatial/temporal: `corExp`, `corAR1`, `corCS`).
 - [ ] **Tweedie**, ordered-beta, beta-hurdle families.
 - [ ] **Missing-data (NA) handling.**
