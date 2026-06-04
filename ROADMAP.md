@@ -86,11 +86,22 @@ Ordered roughly by real-world impact.
       reduction to `spde_gaussian_marginal_loglik`, and the NB(r→∞)→Poisson marginal
       reduction. The fit driver covers the no-dispersion families (Poisson/Binomial)
       **and the dispersion families** (Gaussian `σ²`, negative-binomial `r`, jointly
-      estimated). A self-contained module, shared-ready with DRM.jl. *Remaining
-      (runtime-backed): Delaunay-of-points meshing.* See SPDE design note below.
-- [x] **Tweedie** (`fit_tweedie_gllvm`, compound Poisson–Gamma 1<p<2, Dunn–Smyth series)
-      and **ordered-beta** (`fit_ordered_beta_gllvm`). beta-hurdle still open.
-- [ ] **Missing-data (NA) handling.**
+      estimated). Post-fit `getLV` / `predict` and **spatial prediction (kriging)**
+      `predict_spatial` interpolate the fitted Matérn field to new locations
+      (consistency anchor: equals `predict` when the new locations are the training
+      ones). Auto-meshing via `spde_mesh_grid` and **`spde_mesh_delaunay`** (Bowyer–Watson
+      Delaunay triangulation). A self-contained module, shared-ready with DRM.jl. See
+      SPDE design note below.
+- [x] **Tweedie** (`fit_tweedie_gllvm`, compound Poisson–Gamma 1<p<2, Dunn–Smyth series),
+      **ordered-beta** (`fit_ordered_beta_gllvm`), and **beta-hurdle**
+      (`fit_beta_hurdle_gllvm`, Bernoulli × Beta two-part — closes the two-part set).
+- [x] **Missing-data (NA) handling.** The Laplace core takes an observation `mask`
+      (`marginal_loglik_laplace(...; mask)`); masked/`missing` cells are dropped from the
+      score, Hessian weight, and log-density, so the marginal is over the observed cells
+      and invariant to whatever sits in the masked positions (the deterministic anchor).
+      Wired into `fit_poisson_gllvm` / `fit_nb_gllvm` (pass `mask`, or just include
+      `missing` in `Y`) with a mask-respecting warm start; `observed_mask(Y)` derives the
+      mask from `missing`. (Other family fitters follow the identical `mask` kwarg.)
 - [ ] Ordination / biplot / coefplot ecosystem (lower priority for a compute lib).
 
 ## Known limitations (implemented but imperfect)

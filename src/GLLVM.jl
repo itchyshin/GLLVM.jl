@@ -15,6 +15,7 @@ include("simulate.jl")
 include("structured_cov.jl")             # spatial_cov, relatedness_cov builders
 include("spde.jl")                        # SPDE / Matérn-GMRF FEM spatial field (shared-ready with DRM.jl)
 include("spde_mesh.jl")                   # SPDE grid auto-mesher
+include("spde_delaunay.jl")               # SPDE Delaunay triangulation (Bowyer–Watson)
 include("spde_fit.jl")                    # Gaussian SPDE spatial-field model + ML fit
 
 # Sparse phylogenetic path (evaluation-only — see docstring for AD limitation)
@@ -36,6 +37,7 @@ include("families/gamma.jl")             # Gamma (positive continuous) family pi
 include("families/tweedie.jl")           # Tweedie (compound Poisson–Gamma, 1<p<2) — biomass/abundance with zeros
 include("families/exponential.jl")       # Exponential (positive continuous, no dispersion) — Gamma(α=1)
 include("families/twopart.jl")           # Two-part substrate + Delta-lognormal / Delta-Gamma / Hurdle (Phase 3)
+include("families/beta_hurdle.jl")       # Beta-hurdle (Bernoulli × Beta) two-part family
 include("families/fit_gllvm.jl")         # unified fit_gllvm(Y; family) dispatcher
 include("families/covariates.jl")        # fixed-effect covariates (Xβ) for the Laplace families
 include("families/species_covariates.jl") # species-specific covariate coefficients (XB) for the Laplace families
@@ -56,6 +58,7 @@ include("families/variational_dgamma.jl") # VA/ELBO marginal — Delta-Gamma two
 # (joint Laplace over the spatial GMRF). Depends on the SPDE FEM machinery
 # (src/spde.jl) and the family Laplace pieces above.
 include("spde_latent.jl")
+include("spde_latent_postfit.jl")
 
 # Post-fit API (ordination, predict, residuals, summary)
 include("postfit.jl")
@@ -80,7 +83,8 @@ const ConcurrentOrdinationFit = ConstrainedOrdinationFit
 
 # Public API
 export spatial_cov, relatedness_cov,
-       spde_fem, spde_precision, spde_projector, matern_correlation, spde_mesh_grid,
+       spde_fem, spde_precision, spde_projector, matern_correlation,
+       spde_mesh_grid, spde_mesh_delaunay,
        spde_gaussian_marginal_loglik, fit_spde_gaussian, SPDEGaussianFit,
        spde_latent_marginal_loglik, fit_spde_latent_gllvm, SPDELatentFit,
        fit_gaussian_gllvm, GllvmModel, GllvmFit,
@@ -105,6 +109,8 @@ export spatial_cov, relatedness_cov,
        hurdle_nb_marginal_loglik_laplace,
        fit_delta_gamma_gllvm, DeltaGammaFit,
        delta_gamma_marginal_loglik_laplace,
+       fit_beta_hurdle_gllvm, BetaHurdleFit, beta_hurdle_marginal_loglik_laplace,
+       observed_mask,
        fit_zip_gllvm, ZIPFit, zip_marginal_loglik_laplace,
        fit_zinb_gllvm, ZINBFit, zinb_marginal_loglik_laplace, fit_gllvm,
        fit_gllvm_cov, GllvmCovFit, gllvm, @formula,
@@ -122,7 +128,7 @@ export spatial_cov, relatedness_cov,
        binomial_marginal_loglik_va, nb_marginal_loglik_va,
        fit_binomial_gllvm_va, fit_nb_gllvm_va,
        gamma_marginal_loglik_va, fit_gamma_gllvm_va,
-       getLV, getLoadings, rotation, ordination, ordiplot,
+       getLV, getLoadings, rotation, ordination, ordiplot, predict_spatial,
        coef_table, GllvmCoefTable, select_lv, LVSelection,
        predict, fitted, residuals, aic, bic, simulate
 

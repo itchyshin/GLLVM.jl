@@ -15,6 +15,8 @@ analytic-vs-finite-difference gradient checks), validated on Linux/macOS/Windows
 - Two-part / zero-inflated: Delta-lognormal, Delta-Gamma, Hurdle-Poisson, Hurdle-NB,
   ZIP, ZINB.
 - **Ordered-beta** (proportions/cover data with point masses at 0 and 1).
+- **Beta-hurdle** (`fit_beta_hurdle_gllvm`; Bernoulli occurrence × positive Beta —
+  closes the two-part/zero-inflated family set).
 - **Tweedie** (compound Poisson–Gamma, 1<p<2; biomass/abundance with true zeros;
   `fit_tweedie_gllvm`, Dunn–Smyth density series).
 - Links: identity, log, logit, probit, cloglog.
@@ -72,6 +74,19 @@ analytic-vs-finite-difference gradient checks), validated on Linux/macOS/Windows
   `NB(r→∞)→Poisson` marginal reduction). `fit_spde_latent_gllvm` jointly estimates
   `β, Λ, κ, τ` for the no-dispersion families (Poisson/Binomial) and the dispersion
   families (Gaussian `σ²`, negative-binomial `r`).
+- **Spatial prediction (kriging)** — `predict_spatial` interpolates the fitted Matérn
+  field to new, unobserved locations (with `getLV`/`predict` post-fit for the
+  SPDE-latent model); equals `predict` at the training locations (consistency anchor).
+- **`spde_mesh_delaunay`** — Bowyer–Watson Delaunay triangulation, so a mesh can be built
+  directly from observation points (gated by FEM-validity, convex-hull tiling, and the
+  empty-circumcircle property).
+
+### Missing data
+- **NA handling in the Laplace core** — `marginal_loglik_laplace(...; mask)` drops
+  unobserved cells from the score, Hessian weight, and log-density, so the marginal is
+  over the observed entries and invariant to placeholder values in the masked cells.
+  Wired into `fit_poisson_gllvm` / `fit_nb_gllvm` (pass a `mask`, or include `missing`
+  in `Y`) with a mask-respecting warm start; `observed_mask(Y)` derives the mask.
 
 ### Beyond gllvm
 - Phylogenetic GLLVM toolkit (sparse-precision, contrasts, edge-incidence, relaxed
