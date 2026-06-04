@@ -333,6 +333,7 @@ end
 
 # --- Delta-Gamma -----------------------------------------------------------
 function _family_ci(fit::DeltaGammaFit, Y::AbstractMatrix;
+                    objective::Symbol = :laplace,
                     newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
     p, K = size(fit.Λc); n = size(Y, 2); rr = rr_theta_len(p, K)
     θ = vcat(fit.βz, fit.βc, pack_lambda(fit.Λc), log(fit.α))
@@ -340,7 +341,9 @@ function _family_ci(fit::DeltaGammaFit, Y::AbstractMatrix;
         βz = θv[1:p]; βc = θv[(p + 1):(2p)]
         Λc = unpack_lambda(θv[(2p + 1):(2p + rr)], p, K); α = exp(θv[2p + rr + 1])
         v = try
-            -delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α; maxiter = newton_maxiter, tol = newton_tol)
+            objective === :va ?
+                -delta_gamma_marginal_loglik_va(Y, Λc, βz, βc, α; maxiter = newton_maxiter, tol = newton_tol) :
+                -delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α; maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
         end
@@ -935,8 +938,8 @@ function confint(fit::_CIFit, Y::AbstractMatrix;
     0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
     objective in (:laplace, :va) ||
         throw(ArgumentError("objective must be :laplace or :va; got :$objective"))
-    if objective === :va && !(fit isa Union{PoissonFit, NBFit, BinomialFit, BetaFit, GammaFit})
-        throw(ArgumentError("objective=:va is only available for Poisson/NB/Binomial/Beta/Gamma fits"))
+    if objective === :va && !(fit isa Union{PoissonFit, NBFit, BinomialFit, BetaFit, GammaFit, DeltaGammaFit})
+        throw(ArgumentError("objective=:va is only available for Poisson/NB/Binomial/Beta/Gamma/Delta-Gamma fits"))
     end
     if objective === :va && method !== :wald
         throw(ArgumentError("objective=:va currently supports method=:wald only"))

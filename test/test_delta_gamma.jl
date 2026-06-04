@@ -109,4 +109,39 @@ using GLLVM, Test, Random, Distributions, Statistics
         @test getLV(fit, Y) |> size == (n, K)
         @test isfinite(aic(fit)) && isfinite(bic(fit, n))
     end
+
+    # VA-based Wald standard errors for the two-part Delta-Gamma (objective=:va):
+    # extends the VA-SE path (previously GLM-only) to a two-part family.
+    @testset "VA-based standard errors (objective=:va)" begin
+        Random.seed!(808)
+        p, K, n = 4, 1, 150
+        βz = 0.5 .* randn(p) .+ 0.3
+        βc = 0.3 .* randn(p)
+        α  = 3.0
+        Λc = 0.4 .* randn(p, K)
+        Y = zeros(p, n)
+        for s in 1:n
+            ηc = βc .+ Λc * randn(K)
+            for t in 1:p
+                if rand() < inv(1 + exp(-βz[t]))
+                    Y[t, s] = rand(Gamma(α, exp(ηc[t]) / α))
+                end
+            end
+        end
+        fit = fit_delta_gamma_gllvm(Y; K = K)
+
+        ci_va = confint(fit, Y; method = :wald, objective = :va)
+        ci_la = confint(fit, Y; method = :wald, objective = :laplace)
+        nterm = 2p + (p * K - div(K * (K - 1), 2)) + 1     # βz + βc + Λc + α
+        @test length(ci_va.term) == nterm
+        @test ci_va.method == :wald
+        for i in eachindex(ci_va.term)
+            if isfinite(ci_va.lower[i]) && isfinite(ci_va.upper[i])
+                @test ci_va.lower[i] ≤ ci_va.estimate[i] ≤ ci_va.upper[i]
+            end
+        end
+        # Same point estimates as the Laplace path (both evaluated at the MLE θ).
+        @test ci_va.term == ci_la.term
+        @test ci_va.estimate ≈ ci_la.estimate
+    end
 end
