@@ -60,9 +60,13 @@ Missing data: pass a `mask` (p×n Bool, `false` = unobserved) or simply include
 `missing` entries in `Y` — either way the masked cells are dropped from the
 marginal *and* from the warm start, so the fit depends only on the observed cells
 (it is invariant to whatever sits in the masked positions).
+
+Offset: pass a p×n `offset` (known additive term in `η = β + offset + Λz`, e.g.
+log-exposure/effort/area). It is subtracted from the link-scale warm start so `β`
+estimates the offset-free intercept.
 """
 function fit_poisson_gllvm(Y::AbstractMatrix; K::Integer,
-        link::Link = LogLink(), mask = nothing,
+        link::Link = LogLink(), mask = nothing, offset = nothing,
         β_init = nothing, Λ_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
@@ -75,10 +79,11 @@ function fit_poisson_gllvm(Y::AbstractMatrix; K::Integer,
     Yc = Integer.(_sanitize_missing(Y, 0))
 
     # warm start: empirical log-scale intercepts + SVD (PPCA-like) loadings.
-    # Masked cells are overwritten with their row's observed mean so neither the
-    # intercept nor the SVD sees the placeholder/garbage — the warm start is
-    # mask-respecting, matching the masked objective.
+    # With an offset (η = β + offset + Λz), subtract it from the link-scale data so
+    # β₀/Λ₀ estimate the offset-free part. Masked cells are overwritten with their
+    # row's observed mean so neither the intercept nor the SVD sees the placeholder.
     Zemp = [linkfun(link, max(Yc[t, i] + 0.5, 1e-4)) for t in 1:p, i in 1:n]
+    offset === nothing || (Zemp .-= offset)
     if msk !== nothing
         @inbounds for t in 1:p
             obs = view(msk, t, :)
@@ -108,7 +113,7 @@ function fit_poisson_gllvm(Y::AbstractMatrix; K::Integer,
         β = θ[1:p]
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
         v = try
-            -poisson_marginal_loglik_laplace(Yc, Λ, β, link; mask = msk,
+            -poisson_marginal_loglik_laplace(Yc, Λ, β, link; mask = msk, offset = offset,
                                              maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12

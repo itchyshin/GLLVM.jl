@@ -32,6 +32,9 @@ goes beyond standard `gllvm`.
 - [x] Laplace marginal core (`marginal_loglik_laplace`) shared across families
 - [x] `@formula` interface (wide + long/tidy input)
 - [x] Covariates on the linear predictor (**shared** `γ`, length q)
+- [x] **Offsets** — known additive term in `η = β + offset + Λz` (log-exposure/effort/area);
+      `marginal_loglik_laplace(...; offset)` and `fit_poisson_gllvm(...; offset)`, gated by
+      the exact offset-absorption identity (a constant offset ≡ an intercept shift)
 - [x] `predict` / `residuals` (Dunn–Smyth) / `getLV` / `simulate`
 - [x] AIC / BIC
 - [x] Confidence intervals: Wald (FD-Hessian), profile (LRT inversion), parametric bootstrap

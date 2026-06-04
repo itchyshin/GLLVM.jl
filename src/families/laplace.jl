@@ -36,11 +36,12 @@ end
 # the mode nor enters the Hessian — exactly the marginal over the observed cells.
 function _laplace_mode(family, y::AbstractVector, n::AbstractVector,
         Λ::AbstractMatrix, β::AbstractVector, link::Link;
-        mask = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
+        mask = nothing, offset = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
     K = size(Λ, 2)
+    off = offset === nothing ? false : offset    # additive identity ⇒ no-offset path unchanged
     z = zeros(K)
     for _ in 1:maxiter
-        η  = _clamp_eta.(β .+ Λ * z)
+        η  = _clamp_eta.(β .+ off .+ Λ * z)
         μ  = _clamp_mu.(Ref(family), linkinv.(Ref(link), η))
         me = mu_eta.(Ref(link), η)
         s  = _glm_score.(Ref(family), μ, n, me, y)
@@ -71,10 +72,12 @@ the score, the Hessian weight, and the log-density sum. Returns
 """
 function laplace_loglik_site(family, y::AbstractVector, n::AbstractVector,
         Λ::AbstractMatrix, β::AbstractVector, link::Link;
-        mask = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
+        mask = nothing, offset = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
     p = size(Λ, 1)
-    z  = _laplace_mode(family, y, n, Λ, β, link; mask = mask, maxiter = maxiter, tol = tol)
-    η  = _clamp_eta.(β .+ Λ * z)
+    off = offset === nothing ? false : offset
+    z  = _laplace_mode(family, y, n, Λ, β, link;
+                       mask = mask, offset = offset, maxiter = maxiter, tol = tol)
+    η  = _clamp_eta.(β .+ off .+ Λ * z)
     μ  = _clamp_mu.(Ref(family), linkinv.(Ref(link), η))
     me = mu_eta.(Ref(link), η)
     W  = _glm_weight.(Ref(family), μ, n, me)
@@ -91,21 +94,28 @@ function laplace_loglik_site(family, y::AbstractVector, n::AbstractVector,
 end
 
 """
-    marginal_loglik_laplace(family, Y, N, Λ, β, link; mask=nothing, kwargs...) -> Float64
+    marginal_loglik_laplace(family, Y, N, Λ, β, link; mask=nothing, offset=nothing, kwargs...) -> Float64
 
 Total Laplace log-marginal over the `n` sites (columns) of a non-Gaussian GLLVM.
 `Y`, `N` are p×n response and trial-count matrices. `mask` (p×n Bool, or `nothing`)
 marks observed cells — missing responses (`mask` false) are dropped per site, so the
 marginal is over the observed entries only (gllvm-style NA handling). The value is
 invariant to whatever placeholder sits in the masked cells of `Y`.
+
+`offset` (p×n, or `nothing`) is a known additive term in the linear predictor
+`η = β + offset + Λz` (e.g. log-exposure/effort/area for counts). A constant
+per-species offset is equivalent to shifting that species' intercept (the
+offset-absorption identity), which serves as the exact verification anchor.
 """
 function marginal_loglik_laplace(family, Y::AbstractMatrix, N::AbstractMatrix,
-        Λ::AbstractMatrix, β::AbstractVector, link::Link; mask = nothing, kwargs...)
+        Λ::AbstractMatrix, β::AbstractVector, link::Link;
+        mask = nothing, offset = nothing, kwargs...)
     acc = 0.0
     @inbounds for i in axes(Y, 2)
-        mi = mask === nothing ? nothing : view(mask, :, i)
+        mi = mask   === nothing ? nothing : view(mask, :, i)
+        oi = offset === nothing ? nothing : view(offset, :, i)
         acc += laplace_loglik_site(family, view(Y, :, i), view(N, :, i), Λ, β, link;
-                                   mask = mi, kwargs...)
+                                   mask = mi, offset = oi, kwargs...)
     end
     return acc
 end
