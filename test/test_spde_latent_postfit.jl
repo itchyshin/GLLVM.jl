@@ -162,4 +162,10 @@ end
         end
     end
 
+    @testset "coef_table for SPDELatentFit" begin
+        ct = coef_table(fit, Y, locs)
+        @test ct isa GllvmCoefTable
+        @test length(ct.term) == p + GLLVM.rr_theta_len(p, K) + 2
+    end
+
 end
