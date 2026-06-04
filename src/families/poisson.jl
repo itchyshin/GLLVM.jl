@@ -47,25 +47,48 @@ function Base.show(io::IO, f::PoissonFit)
 end
 
 """
-    fit_poisson_gllvm(Y; K, link=LogLink(), …) -> PoissonFit
+    fit_poisson_gllvm(Y; K, link=LogLink(), mask=nothing, …) -> PoissonFit
 
 Fit a Poisson GLLVM by L-BFGS on the Laplace marginal log-likelihood
 (`poisson_marginal_loglik_laplace`). `Y` is a p×n integer count matrix
-(responses × sites); `K` the latent dimension. Optimises intercepts `β` and
-loadings `Λ`. Finite-difference gradient (the Laplace inner mode-finder is not
-forward-AD-friendly); warm start = empirical log-mean intercepts + an SVD
-(PPCA-style) loadings init.
+(responses × sites) that may contain `missing` (gllvm-style NA); `K` the latent
+dimension. Optimises intercepts `β` and loadings `Λ`. Finite-difference gradient
+(the Laplace inner mode-finder is not forward-AD-friendly); warm start = empirical
+log-mean intercepts + an SVD (PPCA-style) loadings init.
+
+Missing data: pass a `mask` (p×n Bool, `false` = unobserved) or simply include
+`missing` entries in `Y` — either way the masked cells are dropped from the
+marginal *and* from the warm start, so the fit depends only on the observed cells
+(it is invariant to whatever sits in the masked positions).
 """
-function fit_poisson_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
-        link::Link = LogLink(),
+function fit_poisson_gllvm(Y::AbstractMatrix; K::Integer,
+        link::Link = LogLink(), mask = nothing,
         β_init = nothing, Λ_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
     rr = rr_theta_len(p, K)
 
-    # warm start: empirical log-scale intercepts + SVD (PPCA-like) loadings
-    Zemp = [linkfun(link, max(Y[t, i] + 0.5, 1e-4)) for t in 1:p, i in 1:n]
+    # NA handling: derive the observation mask (explicit `mask`, else from `missing`)
+    # and a sanitized count matrix with a safe placeholder in the masked cells.
+    msk = mask === nothing ? (any(ismissing, Y) ? observed_mask(Y) : nothing) : mask
+    Yc = Integer.(_sanitize_missing(Y, 0))
+
+    # warm start: empirical log-scale intercepts + SVD (PPCA-like) loadings.
+    # Masked cells are overwritten with their row's observed mean so neither the
+    # intercept nor the SVD sees the placeholder/garbage — the warm start is
+    # mask-respecting, matching the masked objective.
+    Zemp = [linkfun(link, max(Yc[t, i] + 0.5, 1e-4)) for t in 1:p, i in 1:n]
+    if msk !== nothing
+        @inbounds for t in 1:p
+            obs = view(msk, t, :)
+            cnt = count(obs)
+            rowmean = cnt > 0 ? sum(Zemp[t, i] for i in 1:n if msk[t, i]) / cnt : 0.0
+            for i in 1:n
+                msk[t, i] || (Zemp[t, i] = rowmean)
+            end
+        end
+    end
     β0 = β_init === nothing ? vec(sum(Zemp; dims = 2)) ./ n : collect(float.(β_init))
     Λ0 = if Λ_init === nothing
         Zc = Zemp .- β0
@@ -85,7 +108,7 @@ function fit_poisson_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
         β = θ[1:p]
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
         v = try
-            -poisson_marginal_loglik_laplace(Y, Λ, β, link;
+            -poisson_marginal_loglik_laplace(Yc, Λ, β, link; mask = msk,
                                              maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12

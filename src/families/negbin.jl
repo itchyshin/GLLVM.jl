@@ -54,23 +54,40 @@ function Base.show(io::IO, f::NBFit)
 end
 
 """
-    fit_nb_gllvm(Y; K, link=LogLink(), r_init=nothing, …) -> NBFit
+    fit_nb_gllvm(Y; K, link=LogLink(), mask=nothing, r_init=nothing, …) -> NBFit
 
 Fit a negative-binomial (NB2) GLLVM by L-BFGS over `[β; vec(Λ); log r]` on the
 Laplace marginal (`nb_marginal_loglik_laplace`), jointly estimating the dispersion
-`r`. `Y` is a p×n integer count matrix; `K` the latent dimension. Finite-difference
-gradient; warm start = empirical log-mean intercepts + an SVD loadings init + a
-moderate `r₀`.
+`r`. `Y` is a p×n integer count matrix (may contain `missing`); `K` the latent
+dimension. Finite-difference gradient; warm start = empirical log-mean intercepts +
+an SVD loadings init + a moderate `r₀`.
+
+Missing data: pass a `mask` (p×n Bool, `false` = unobserved) or `missing` entries in
+`Y`; masked cells are dropped from the marginal and the warm start, so the fit
+depends only on the observed cells.
 """
-function fit_nb_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
-        link::Link = LogLink(),
+function fit_nb_gllvm(Y::AbstractMatrix; K::Integer,
+        link::Link = LogLink(), mask = nothing,
         β_init = nothing, Λ_init = nothing, r_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
     rr = rr_theta_len(p, K)
 
-    Zemp = [linkfun(link, max(Y[t, i] + 0.5, 1e-4)) for t in 1:p, i in 1:n]
+    # NA handling: observation mask + sanitized counts (see fit_poisson_gllvm).
+    msk = mask === nothing ? (any(ismissing, Y) ? observed_mask(Y) : nothing) : mask
+    Yc = Integer.(_sanitize_missing(Y, 0))
+
+    Zemp = [linkfun(link, max(Yc[t, i] + 0.5, 1e-4)) for t in 1:p, i in 1:n]
+    if msk !== nothing
+        @inbounds for t in 1:p
+            cnt = count(view(msk, t, :))
+            rowmean = cnt > 0 ? sum(Zemp[t, i] for i in 1:n if msk[t, i]) / cnt : 0.0
+            for i in 1:n
+                msk[t, i] || (Zemp[t, i] = rowmean)
+            end
+        end
+    end
     β0 = β_init === nothing ? vec(sum(Zemp; dims = 2)) ./ n : collect(float.(β_init))
     Λ0 = if Λ_init === nothing
         Zc = Zemp .- β0
@@ -92,7 +109,7 @@ function fit_nb_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
         r = exp(θ[p + rr + 1])
         v = try
-            -nb_marginal_loglik_laplace(Y, Λ, β, r;
+            -nb_marginal_loglik_laplace(Yc, Λ, β, r; mask = msk,
                                         maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
