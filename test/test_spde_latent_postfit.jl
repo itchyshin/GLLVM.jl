@@ -112,8 +112,8 @@ end
         β    = fit.β
         η    = GLLVM._clamp_eta.(β .+ Λ * Z')
         μ    = GLLVM._clamp_mu.(Ref(fit.family),
-                                 linkinv.(Ref(link), η))
-        me   = mu_eta.(Ref(link), η)
+                                 GLLVM.linkinv.(Ref(link), η))
+        me   = GLLVM.mu_eta.(Ref(link), η)
         Ntr  = ones(p, M)
         S    = GLLVM._glm_score.(Ref(fit.family), μ, Ntr, me, Y)
 
