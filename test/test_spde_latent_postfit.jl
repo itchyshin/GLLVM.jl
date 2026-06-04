@@ -135,4 +135,11 @@ end
         @test A * U ≈ Z
     end
 
+    @testset "aic / bic wired for SPDELatentFit" begin
+        k = p + GLLVM.rr_theta_len(p, K) + 2     # Poisson ⇒ no dispersion param
+        @test GLLVM._nparams(fit) == k
+        @test aic(fit) ≈ 2k - 2 * fit.loglik
+        @test bic(fit, M) ≈ k * log(M) - 2 * fit.loglik
+    end
+
 end

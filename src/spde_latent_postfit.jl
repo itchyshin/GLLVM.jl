@@ -144,3 +144,16 @@ function predict_spatial(fit::SPDELatentFit,
     type === :link && return η_new
     return linkinv.(Ref(fit.link), _clamp_eta.(η_new))
 end
+
+# ---------------------------------------------------------------------------
+# Information criteria: parameter count and log-likelihood accessors so the
+# generic `aic` / `bic` (src/postfit.jl) work for the SPDE-latent model.
+# Free parameters: β (p) + reduced lower-triangular loadings Λ + (κ, τ) +
+# a dispersion parameter for the dispersion families (Gaussian σ², NB r).
+# ---------------------------------------------------------------------------
+function _nparams(fit::SPDELatentFit)
+    p, K = size(fit.Λ)
+    ndisp = isnan(fit.dispersion) ? 0 : 1
+    return p + rr_theta_len(p, K) + 2 + ndisp
+end
+_loglik(fit::SPDELatentFit) = fit.loglik
