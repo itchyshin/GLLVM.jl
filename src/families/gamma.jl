@@ -62,15 +62,19 @@ Fit a Gamma GLLVM by L-BFGS over `[β; vec(Λ); log α]` on the Laplace marginal
 dimension. Finite-difference gradient; warm start = log row-means as intercepts +
 SVD of row-centred log-Y as loadings + `logα₀ = log(2.0)`.
 """
-function fit_gamma_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
-        link::Link = LogLink(),
+function fit_gamma_gllvm(Y::AbstractMatrix; K::Integer,
+        link::Link = LogLink(), mask = nothing,
         β_init = nothing, Λ_init = nothing, α_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
     rr = rr_theta_len(p, K)
 
-    Zemp = log.(max.(Y, 1e-6))
+    msk = _resolve_obs_mask(mask, Y)                  # NA handling
+    Yc  = _sanitize_missing(Y, 1.0)                   # positive placeholder
+
+    Zemp = log.(max.(Yc, 1e-6))
+    _mask_warmstart!(Zemp, msk)
     β0 = β_init === nothing ? vec(sum(Zemp; dims = 2)) ./ n : collect(float.(β_init))
     Λ0 = if Λ_init === nothing
         Zc = Zemp .- β0
@@ -92,7 +96,7 @@ function fit_gamma_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
         α = exp(θ[p + rr + 1])
         v = try
-            -gamma_marginal_loglik_laplace(Y, Λ, β, α;
+            -gamma_marginal_loglik_laplace(Yc, Λ, β, α; mask = msk,
                                            maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12

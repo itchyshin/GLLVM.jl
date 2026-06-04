@@ -84,9 +84,9 @@ forward-AD-friendly, so this keeps the first driver simple and robust (an
 envelope-theorem analytic gradient is the planned optimisation). Warm start:
 empirical link-scale intercepts + an SVD (PPCA-style) loadings init.
 """
-function fit_binomial_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
+function fit_binomial_gllvm(Y::AbstractMatrix; K::Integer,
         link::Link = LogitLink(),
-        N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
+        N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing, mask = nothing,
         β_init = nothing, Λ_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
@@ -95,9 +95,13 @@ function fit_binomial_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
     size(Nm) == (p, n) || throw(DimensionMismatch("N must be $(p)×$(n)"))
     rr = rr_theta_len(p, K)
 
+    msk = _resolve_obs_mask(mask, Y)                  # NA handling
+    Yc  = Integer.(_sanitize_missing(Y, 0))
+
     # warm start: empirical link-scale intercepts + SVD (PPCA-like) loadings
-    Zemp = [linkfun(link, clamp((Y[t, i] + 0.5) / (Nm[t, i] + 1), 1e-4, 1 - 1e-4))
+    Zemp = [linkfun(link, clamp((Yc[t, i] + 0.5) / (Nm[t, i] + 1), 1e-4, 1 - 1e-4))
             for t in 1:p, i in 1:n]
+    _mask_warmstart!(Zemp, msk)
     β0 = β_init === nothing ? vec(sum(Zemp; dims = 2)) ./ n : collect(float.(β_init))
     Λ0 = if Λ_init === nothing
         Zc = Zemp .- β0
@@ -117,7 +121,7 @@ function fit_binomial_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
         β = θ[1:p]
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
         v = try
-            -binomial_marginal_loglik_laplace(Y, Nm, Λ, β, link;
+            -binomial_marginal_loglik_laplace(Yc, Nm, Λ, β, link; mask = msk,
                                               maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12

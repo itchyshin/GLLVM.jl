@@ -468,3 +468,421 @@ function fit_hurdle_nb_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     return HurdleNBFit(βz, βc, Λc, r, -Optim.minimum(res),
                        Optim.converged(res), Optim.iterations(res))
 end
+
+# ---------------------------------------------------------------------------
+# Delta-Gamma family — occurrence Bernoulli × positive Gamma (log-link mean).
+# P(y=0)=1−π, density for y>0 = π·Gamma(y; shape α, scale μ/α), so E[y|y>0]=μ,
+# Var[y|y>0]=μ²/α, μ=exp(η^c), π=logistic(η^z). The positive-block score/weight
+# are the Gamma GLM pieces (log link, V(μ)=μ²/α): s^c=α(y−μ)/μ, W^c=α (y>0; 0 for
+# y=0) — the expected-information weight, exactly as in families/gamma.jl. This is
+# the second Delta family: same occurrence block as Delta-lognormal, Gamma swapped
+# in for the positive part.
+# ---------------------------------------------------------------------------
+
+"""
+    DeltaGamma(α)
+
+Marker for the Delta-Gamma two-part family: Bernoulli occurrence × positive Gamma
+with shared shape `α` (mean `μ=exp(η^c)`, `Var=μ²/α`).
+"""
+struct DeltaGamma
+    α::Float64
+end
+
+function _tp_pieces(f::DeltaGamma, y, ηz, ηc)
+    π = inv(one(ηz) + exp(-ηz))                 # occurrence prob = logistic(η^z)
+    Wz = π * (one(π) - π)
+    if y > 0
+        α = f.α
+        μ = exp(ηc)                             # mean (log link)
+        sc = α * (y - μ) / μ                    # ∂logf/∂η^c (Gamma GLM, log link)
+        return (one(π) - π, sc, Wz, α,
+                log(π) + logpdf(Gamma(α, μ / α), y))
+    else
+        return (-π, zero(ηc), Wz, zero(ηc), log1p(-π))
+    end
+end
+
+"""
+    delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α; Λz=nothing, kwargs...) -> Float64
+
+Total two-part Laplace log-marginal for a Delta-Gamma GLLVM: occurrence probability
+`π = logistic(β^z + Λ_z z)` (intercept-only by default, `Λ_z = 0`) times a positive
+Gamma with mean `μ = exp(β^c + Λ_c z)` and shape `α` (`Var = μ²/α`). `Y` is p×n with
+`0` for absences and positive reals for the positive part. With `Λ_c = 0` (and
+`Λ_z = 0`) this reduces exactly to the independent two-part-regression log-likelihood.
+"""
+function delta_gamma_marginal_loglik_laplace(Y::AbstractMatrix, Λc::AbstractMatrix,
+        βz::AbstractVector, βc::AbstractVector, α::Real;
+        Λz::Union{Nothing, AbstractMatrix} = nothing, kwargs...)
+    p, K = size(Λc)
+    Λz_ = Λz === nothing ? zeros(p, K) : Λz
+    return twopart_marginal_loglik_laplace(DeltaGamma(float(α)), Y, Λz_, Λc, βz, βc; kwargs...)
+end
+
+"""
+    DeltaGammaFit
+
+Result of [`fit_delta_gamma_gllvm`](@ref): occurrence logits `βz` (length p),
+positive-part log-mean intercepts `βc` (length p), positive-part loadings `Λc`
+(p×K), the shared shape `α` (`Var = μ²/α`), the maximised `loglik`, `converged`,
+and `iterations`. (`Λz = 0` — occurrence is intercept-only in v1.)
+"""
+struct DeltaGammaFit
+    βz::Vector{Float64}
+    βc::Vector{Float64}
+    Λc::Matrix{Float64}
+    α::Float64
+    loglik::Float64
+    converged::Bool
+    iterations::Int
+end
+
+function Base.show(io::IO, f::DeltaGammaFit)
+    p, K = size(f.Λc)
+    print(io, "DeltaGammaFit(p=", p, ", K=", K, ", α=", round(f.α; sigdigits = 4),
+          ", loglik=", round(f.loglik; sigdigits = 7),
+          f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+"""
+    fit_delta_gamma_gllvm(Y; K, …) -> DeltaGammaFit
+
+Fit a Delta-Gamma two-part GLLVM by L-BFGS over `[βz; βc; vec(Λc); log α]` on the
+two-part Laplace marginal ([`delta_gamma_marginal_loglik_laplace`](@ref)), with
+`Λz = 0` (per-species occurrence intercept), jointly estimating the shape `α`. `Y`
+is p×n with `0` for absences and positive reals otherwise. Finite-difference
+gradient; warm start = `logit(empirical P(y>0))` occurrence intercepts + `log` mean
+positive value as log-mean intercepts + SVD of positive-part log-residuals as
+loadings + a method-of-moments `α₀` from the standardised positives.
+"""
+function fit_delta_gamma_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
+        g_tol::Real = 1e-5, iterations::Integer = 500,
+        newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    p, n = size(Y)
+    rr = rr_theta_len(p, K)
+
+    βz0 = Vector{Float64}(undef, p); βc0 = Vector{Float64}(undef, p)
+    @inbounds for t in 1:p
+        npres = count(>(0), view(Y, t, :))
+        pr = clamp((npres + 0.5) / (n + 1), 1e-3, 1 - 1e-3)
+        βz0[t] = log(pr / (1 - pr))
+        s = 0.0; c = 0
+        for j in 1:n
+            if Y[t, j] > 0
+                s += Y[t, j]; c += 1
+            end
+        end
+        βc0[t] = c == 0 ? 0.0 : log(max(s / c, 1e-6))
+    end
+    # method-of-moments shape from standardised positives r = y/μ̂ (mean≈1, Var≈1/α)
+    sumsq = 0.0; nres = 0
+    @inbounds for t in 1:p
+        μt = exp(βc0[t])
+        for j in 1:n
+            if Y[t, j] > 0
+                r = Y[t, j] / μt - 1.0; sumsq += r^2; nres += 1
+            end
+        end
+    end
+    α0 = nres > 1 ? clamp((nres - 1) / sumsq, 0.1, 100.0) : 1.0
+    Zc = [Y[t, j] > 0 ? log(max(Y[t, j], 1e-6)) - βc0[t] : 0.0 for t in 1:p, j in 1:n]
+    F = svd(Zc); kk = min(K, length(F.S))
+    Λc0 = zeros(p, K)
+    @inbounds for j in 1:kk
+        Λc0[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
+    end
+
+    θ0 = vcat(βz0, βc0, pack_lambda(Λc0), log(α0))
+    function negll(θ)
+        βz = θ[1:p]; βc = θ[(p + 1):(2p)]
+        Λc = unpack_lambda(θ[(2p + 1):(2p + rr)], p, K)
+        α = exp(θ[2p + rr + 1])
+        v = try
+            -delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α;
+                                                 maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
+    res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
+                         autodiff = :finite)
+    θ̂ = Optim.minimizer(res)
+    βz = θ̂[1:p]; βc = θ̂[(p + 1):(2p)]
+    Λc = unpack_lambda(θ̂[(2p + 1):(2p + rr)], p, K)
+    α = exp(θ̂[2p + rr + 1])
+    return DeltaGammaFit(βz, βc, Λc, α, -Optim.minimum(res),
+                         Optim.converged(res), Optim.iterations(res))
+end
+
+# ===========================================================================
+# Zero-inflated families (ZIP / ZINB) — MIXTURE, not hurdle.
+#
+# A zero is produced by EITHER a structural-zero process (prob π) OR the count
+# process (prob 1−π times the count's own P(0)):
+#     P(y=0) = π + (1−π)·p₀,   P(y=k) = (1−π)·count(k)   (k ≥ 1)
+# with π = logistic(η^z) and the count mean μ = exp(η^c). Unlike the hurdle
+# families the count process is "active" at every observation, so a y=0 carries
+# count-part information — its score s^c and Fisher weight W^cc are non-zero.
+#
+# These DO couple η^z and η^c at y=0 (∂²logf/∂η^z∂η^c ≠ 0). In the v1 convention
+# the zero-inflation is per-species intercept-only (Λ_z = 0 — only β^z), so the
+# latent z enters ONLY through η^c; the cross-term is multiplied by Λ_z = 0 in
+# the shared-z mode-finder and drops out. The integral over z is therefore the
+# same K-dimensional Laplace as the hurdle path, and these slot straight onto the
+# existing `_tp_pieces` / `_twopart_mode` substrate — provided we supply the
+# count-part score s^c, the *expected* Fisher information W^cc (≥ 0 ⇒ SPD), and
+# the zero-inflated log-density. (Letting Λ_z load on z would need the 2×2
+# cross-term machinery; that is a deliberate future extension.)
+#
+# W^cc is the expected information E[(s^c)²] in closed form (verified: ZIP → the
+# Poisson weight μ as π → 0, ZINB → ZIP as r → ∞).
+# ---------------------------------------------------------------------------
+
+# Count-part expected information E[(∂logf/∂η^c)²] for the zero-inflated Poisson.
+function _zi_Icc_pois(π, μ)
+    e = exp(-μ); P0 = π + (one(π) - π) * e
+    Icc = (one(π) - π) * (μ - e * μ^2) + (one(π) - π)^2 * e^2 * μ^2 / P0
+    return max(Icc, 1e-12)
+end
+
+# Count-part expected information for the zero-inflated NB2 (dispersion r).
+function _zi_Icc_nb(π, μ, r)
+    p0 = (r / (r + μ))^r
+    P0 = π + (one(π) - π) * p0
+    Inb = μ * r / (r + μ)                    # = μ / (1 + μ/r), the NB2 info
+    c = (r * μ / (r + μ))^2
+    Icc = (one(π) - π) * (Inb - π * p0 * c / P0)
+    return max(Icc, 1e-12)
+end
+
+"""
+    ZIPoisson()
+
+Marker for the zero-inflated Poisson family (structural zero prob `π=logistic(η^z)`
+mixed with a Poisson count, mean `μ=exp(η^c)`).
+"""
+struct ZIPoisson end
+
+function _tp_pieces(::ZIPoisson, y, ηz, ηc)
+    π = inv(one(ηz) + exp(-ηz))
+    μ = exp(ηc)
+    Wz = π * (one(π) - π)                     # zero-inflation Fisher weight (unused: Λ_z = 0)
+    Wcc = _zi_Icc_pois(π, μ)
+    if y > 0
+        return (-π, y - μ, Wz, Wcc, log1p(-π) + logpdf(Poisson(μ), Int(y)))
+    else
+        e = exp(-μ)
+        P0 = π + (one(π) - π) * e
+        g = (one(π) - π) * e / P0             # posterior P(count-zero | y=0)
+        sz = π * (one(π) - π) * (one(π) - e) / P0
+        return (sz, -g * μ, Wz, Wcc, log(P0))
+    end
+end
+
+"""
+    zip_marginal_loglik_laplace(Y, Λc, βz, βc; Λz=nothing, kwargs...) -> Float64
+
+Two-part Laplace log-marginal for a zero-inflated Poisson GLLVM (structural-zero
+`π=logistic(β^z)`, intercept-only by default; Poisson count with `μ=exp(β^c+Λ_c z)`).
+`Y` is p×n integer counts. `Λc=0` ⇒ exact independent ZIP loglik; `β^z→−∞` ⇒ the
+Poisson marginal.
+"""
+function zip_marginal_loglik_laplace(Y::AbstractMatrix, Λc::AbstractMatrix,
+        βz::AbstractVector, βc::AbstractVector;
+        Λz::Union{Nothing, AbstractMatrix} = nothing, kwargs...)
+    p, K = size(Λc)
+    Λz_ = Λz === nothing ? zeros(p, K) : Λz
+    return twopart_marginal_loglik_laplace(ZIPoisson(), Y, Λz_, Λc, βz, βc; kwargs...)
+end
+
+"""
+    ZIPFit
+
+Result of [`fit_zip_gllvm`](@ref): structural-zero logits `βz`, count log-mean
+intercepts `βc`, count loadings `Λc`, `loglik`, `converged`, `iterations`.
+"""
+struct ZIPFit
+    βz::Vector{Float64}
+    βc::Vector{Float64}
+    Λc::Matrix{Float64}
+    loglik::Float64
+    converged::Bool
+    iterations::Int
+end
+
+function Base.show(io::IO, f::ZIPFit)
+    p, K = size(f.Λc)
+    print(io, "ZIPFit(p=", p, ", K=", K,
+          ", loglik=", round(f.loglik; sigdigits = 7),
+          f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+# Shared warm start for zero-inflated count fits: structural-zero logits from the
+# excess-zero fraction, count log-mean from the positive counts, SVD loadings.
+function _zi_warmstart(Y::AbstractMatrix, K::Integer)
+    p, n = size(Y)
+    βz0 = Vector{Float64}(undef, p); βc0 = Vector{Float64}(undef, p)
+    @inbounds for t in 1:p
+        nz = count(==(0), view(Y, t, :))
+        propzero = nz / n
+        s = 0.0; c = 0
+        for j in 1:n
+            if Y[t, j] > 0
+                s += Y[t, j]; c += 1
+            end
+        end
+        μ̂ = c == 0 ? 1.0 : max(s / c, 1.0)
+        βc0[t] = log(μ̂)
+        excess = clamp(propzero - exp(-μ̂), 1e-3, 0.8)   # structural-zero share
+        βz0[t] = log(excess / (1 - excess))
+    end
+    Zc = [Y[t, j] > 0 ? log(max(Y[t, j], 0.5)) - βc0[t] : 0.0 for t in 1:p, j in 1:n]
+    F = svd(Zc); kk = min(K, length(F.S))
+    Λc0 = zeros(p, K)
+    @inbounds for j in 1:kk
+        Λc0[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
+    end
+    return βz0, βc0, Λc0
+end
+
+"""
+    fit_zip_gllvm(Y; K, …) -> ZIPFit
+
+Fit a zero-inflated Poisson GLLVM by L-BFGS over `[βz; βc; vec(Λc)]` (Λz=0).
+`Y` p×n integer counts. Finite-difference gradient; warm start from the
+excess-zero fraction + positive-count log-means + SVD loadings.
+"""
+function fit_zip_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
+        g_tol::Real = 1e-5, iterations::Integer = 500,
+        newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    p, n = size(Y)
+    rr = rr_theta_len(p, K)
+    βz0, βc0, Λc0 = _zi_warmstart(Y, K)
+    θ0 = vcat(βz0, βc0, pack_lambda(Λc0))
+    function negll(θ)
+        βz = θ[1:p]; βc = θ[(p + 1):(2p)]
+        Λc = unpack_lambda(θ[(2p + 1):(2p + rr)], p, K)
+        v = try
+            -zip_marginal_loglik_laplace(Y, Λc, βz, βc;
+                                         maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
+    res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
+                         autodiff = :finite)
+    θ̂ = Optim.minimizer(res)
+    βz = θ̂[1:p]; βc = θ̂[(p + 1):(2p)]
+    Λc = unpack_lambda(θ̂[(2p + 1):(2p + rr)], p, K)
+    return ZIPFit(βz, βc, Λc, -Optim.minimum(res),
+                  Optim.converged(res), Optim.iterations(res))
+end
+
+# ---------------------------------------------------------------------------
+# Zero-inflated NB (ZINB) — structural zero × NB2 count with shared dispersion r.
+# ---------------------------------------------------------------------------
+
+"""
+    ZINB(r)
+
+Marker for the zero-inflated NB2 family (structural zero prob `π=logistic(η^z)`
+mixed with an NB2 count, mean `μ=exp(η^c)`, dispersion `r`). `r→∞ ⇒ ZIP`.
+"""
+struct ZINB
+    r::Float64
+end
+
+function _tp_pieces(f::ZINB, y, ηz, ηc)
+    π = inv(one(ηz) + exp(-ηz))
+    μ = exp(ηc); r = f.r
+    Wz = π * (one(π) - π)
+    Wcc = _zi_Icc_nb(π, μ, r)
+    if y > 0
+        sc = r * (y - μ) / (r + μ)
+        logf = log1p(-π) + logpdf(NegativeBinomial(r, r / (r + μ)), Int(y))
+        return (-π, sc, Wz, Wcc, logf)
+    else
+        p0 = (r / (r + μ))^r
+        P0 = π + (one(π) - π) * p0
+        g = (one(π) - π) * p0 / P0
+        sz = π * (one(π) - π) * (one(π) - p0) / P0
+        return (sz, -g * r * μ / (r + μ), Wz, Wcc, log(P0))
+    end
+end
+
+"""
+    zinb_marginal_loglik_laplace(Y, Λc, βz, βc, r; Λz=nothing, kwargs...) -> Float64
+
+Two-part Laplace log-marginal for a zero-inflated NB2 GLLVM. `Λc=0` ⇒ exact
+independent ZINB loglik; `r→∞` ⇒ the ZIP marginal.
+"""
+function zinb_marginal_loglik_laplace(Y::AbstractMatrix, Λc::AbstractMatrix,
+        βz::AbstractVector, βc::AbstractVector, r::Real;
+        Λz::Union{Nothing, AbstractMatrix} = nothing, kwargs...)
+    p, K = size(Λc)
+    Λz_ = Λz === nothing ? zeros(p, K) : Λz
+    return twopart_marginal_loglik_laplace(ZINB(float(r)), Y, Λz_, Λc, βz, βc; kwargs...)
+end
+
+"""
+    ZINBFit
+
+Result of [`fit_zinb_gllvm`](@ref): `βz`, `βc`, `Λc`, dispersion `r`, `loglik`,
+`converged`, `iterations`.
+"""
+struct ZINBFit
+    βz::Vector{Float64}
+    βc::Vector{Float64}
+    Λc::Matrix{Float64}
+    r::Float64
+    loglik::Float64
+    converged::Bool
+    iterations::Int
+end
+
+function Base.show(io::IO, f::ZINBFit)
+    p, K = size(f.Λc)
+    print(io, "ZINBFit(p=", p, ", K=", K, ", r=", round(f.r; sigdigits = 4),
+          ", loglik=", round(f.loglik; sigdigits = 7),
+          f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+"""
+    fit_zinb_gllvm(Y; K, …) -> ZINBFit
+
+Fit a zero-inflated NB2 GLLVM by L-BFGS over `[βz; βc; vec(Λc); log r]` (Λz=0).
+"""
+function fit_zinb_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
+        g_tol::Real = 1e-5, iterations::Integer = 500,
+        newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    p, n = size(Y)
+    rr = rr_theta_len(p, K)
+    βz0, βc0, Λc0 = _zi_warmstart(Y, K)
+    θ0 = vcat(βz0, βc0, pack_lambda(Λc0), log(10.0))
+    function negll(θ)
+        βz = θ[1:p]; βc = θ[(p + 1):(2p)]
+        Λc = unpack_lambda(θ[(2p + 1):(2p + rr)], p, K)
+        r = exp(θ[2p + rr + 1])
+        v = try
+            -zinb_marginal_loglik_laplace(Y, Λc, βz, βc, r;
+                                          maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
+    res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
+                         autodiff = :finite)
+    θ̂ = Optim.minimizer(res)
+    βz = θ̂[1:p]; βc = θ̂[(p + 1):(2p)]
+    Λc = unpack_lambda(θ̂[(2p + 1):(2p + rr)], p, K)
+    r = exp(θ̂[2p + rr + 1])
+    return ZINBFit(βz, βc, Λc, r, -Optim.minimum(res),
+                   Optim.converged(res), Optim.iterations(res))
+end

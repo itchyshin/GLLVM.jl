@@ -13,6 +13,7 @@ makedocs(;
     ),
     pages    = [
         "Home"        => "index.md",
+        "Tutorial"    => "tutorial.md",
         "Get started" => "quickstart.md",
         "Articles"    => [
             "Model"                    => "model.md",
@@ -21,6 +22,7 @@ makedocs(;
             "Covariance & correlation" => "covariance-correlation.md",
             "Structured dependence"    => "structured-dependence.md",
             "Response families"        => "response-families.md",
+            "Confidence intervals"     => "confidence-intervals.md",
             "Common pitfalls"          => "pitfalls.md",
             "Benchmarks"               => "benchmarks.md",
             "Comparison vs gllvmTMB"   => "comparison.md",

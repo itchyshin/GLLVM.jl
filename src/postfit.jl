@@ -713,6 +713,64 @@ function residuals(fit::GammaFit, Y::AbstractMatrix{<:Real}; type::Symbol = :dun
     return R
 end
 
+# --- Exponential post-fit (positive continuous, Var = μ², no dispersion) ---
+_loadings(fit::ExponentialFit) = fit.Λ
+_loglik(fit::ExponentialFit)   = fit.loglik
+_nparams(fit::ExponentialFit)  = (p = size(fit.Λ, 1); K = size(fit.Λ, 2); p + (p * K - div(K * (K - 1), 2)))
+
+function getLV(fit::ExponentialFit, Y::AbstractMatrix{<:Real}; rotate::Bool = true)
+    p, n = size(Y); K = size(fit.Λ, 2)
+    fam = Exponential(1.0); ones_p = ones(Int, p)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        Z[:, s] = _laplace_mode(fam, view(Y, :, s), ones_p, fit.Λ, fit.β, fit.link)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
+end
+
+function predict(fit::ExponentialFit, Y::AbstractMatrix{<:Real}; type::Symbol = :response)
+    type in (:link, :response) ||
+        throw(ArgumentError("type must be :link or :response; got :$type"))
+    Z = getLV(fit, Y; rotate = false)
+    η = fit.β .+ fit.Λ * Z'
+    type === :link && return η
+    # clamp η before the (exp) inverse link, matching the inner mode solver
+    # (_clamp_eta) and the other predict methods: an extreme conditional mode
+    # must not over/underflow μ (Exponential(0) is invalid; Inf corrupts residuals).
+    return linkinv.(Ref(fit.link), _clamp_eta.(η))
+end
+
+"""
+    residuals(fit::ExponentialFit, Y; type=:dunnsmyth) -> p×n matrix
+
+`:dunnsmyth` randomized-quantile (here deterministic PIT, the Exponential CDF being
+continuous) `Φ⁻¹(F(y))` under `Exponential(μ)`; `:pearson` returns `(Y − μ)/μ`.
+"""
+function residuals(fit::ExponentialFit, Y::AbstractMatrix{<:Real}; type::Symbol = :dunnsmyth)
+    type in (:dunnsmyth, :pearson) ||
+        throw(ArgumentError("type must be :dunnsmyth or :pearson; got :$type"))
+    p, n = size(Y)
+    μ = predict(fit, Y; type = :response)
+    type === :pearson && return (Y .- μ) ./ μ
+    R = Matrix{Float64}(undef, p, n)
+    @inbounds for s in 1:n, t in 1:p
+        u = cdf(Exponential(μ[t, s]), max(float(Y[t, s]), 1e-300))
+        R[t, s] = quantile(Normal(), clamp(u, 1e-12, 1 - 1e-12))
+    end
+    return R
+end
+
+function Base.show(io::IO, ::MIME"text/plain", fit::ExponentialFit)
+    p, K = size(fit.Λ)
+    println(io, "Exponential GLLVM fit")
+    println(io, "  responses p = ", p, ", latent factors K = ", K,
+            ", link = ", nameof(typeof(fit.link)))
+    println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
+            ", AIC = ", round(aic(fit); sigdigits = 7))
+    print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
+end
+
 function Base.show(io::IO, ::MIME"text/plain", fit::GammaFit)
     p, K = size(fit.Λ)
     println(io, "Gamma GLLVM fit")
@@ -979,6 +1037,330 @@ function Base.show(io::IO, ::MIME"text/plain", fit::HurdleNBFit)
     println(io, "Hurdle-NB GLLVM fit (two-part)")
     println(io, "  responses p = ", p, ", latent factors K = ", K,
             ", dispersion r = ", round(fit.r; sigdigits = 4))
+    println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
+            ", AIC = ", round(aic(fit); sigdigits = 7))
+    print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
+end
+
+# ---------------------------------------------------------------------------
+# Delta-Gamma post-fit (occurrence Bernoulli × positive Gamma, log-link mean).
+# ---------------------------------------------------------------------------
+
+_loadings(fit::DeltaGammaFit) = fit.Λc
+_loglik(fit::DeltaGammaFit)   = fit.loglik
+
+function _nparams(fit::DeltaGammaFit)
+    p, K = size(fit.Λc)
+    return 2p + (p * K - div(K * (K - 1), 2)) + 1   # βz + βc + Λc + α
+end
+
+"""
+    getLV(fit::DeltaGammaFit, Y; rotate=true) -> n×K matrix
+
+Conditional latent scores for a Delta-Gamma fit: the per-site two-part Laplace mode
+`ẑₛ` (occurrence intercept-only, so only the positive part loads on `z`).
+"""
+function getLV(fit::DeltaGammaFit, Y::AbstractMatrix{<:Real}; rotate::Bool = true)
+    p, n = size(Y); K = size(fit.Λc, 2)
+    fam = DeltaGamma(fit.α)
+    Λz = zeros(p, K)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        Z[:, s] = _twopart_mode(fam, view(Y, :, s), Λz, fit.Λc, fit.βz, fit.βc)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λc) : Zt
+end
+
+"""
+    predict(fit::DeltaGammaFit, Y; type=:response) -> p×n matrix
+
+`:link` = positive-part log-mean predictor `η^c`; `:occurrence` = presence
+probability `π = logistic(β^z)`; `:positive` = conditional positive mean `μ = exp(η^c)`
+(the Gamma mean); `:response` = unconditional mean `π · μ`.
+"""
+function predict(fit::DeltaGammaFit, Y::AbstractMatrix{<:Real}; type::Symbol = :response)
+    type in (:response, :occurrence, :positive, :link) ||
+        throw(ArgumentError("type must be :response, :occurrence, :positive, or :link; got :$type"))
+    p, n = size(Y)
+    Z = getLV(fit, Y; rotate = false)
+    ηc = fit.βc .+ fit.Λc * Z'                       # p×n
+    type === :link && return ηc
+    π = inv.(1 .+ exp.(-fit.βz))                     # length p
+    type === :occurrence && return repeat(π, 1, n)
+    μ = exp.(ηc)
+    type === :positive && return μ
+    return π .* μ
+end
+
+"""
+    residuals(fit::DeltaGammaFit, Y; rng=Random.default_rng()) -> p×n matrix
+
+Dunn–Smyth randomized quantile residuals for the two-part fit: `Φ⁻¹(u)` with
+`u = (1−π) + π·G(y)` for `y>0` (`G` the Gamma CDF) and `u` uniform on `[0, 1−π]`
+for `y=0` — ≈ N(0,1) under a correct model (pass a fixed `rng` to reproduce).
+"""
+function residuals(fit::DeltaGammaFit, Y::AbstractMatrix{<:Real};
+                   rng::AbstractRNG = Random.default_rng())
+    p, n = size(Y); α = fit.α
+    Z = getLV(fit, Y; rotate = false)
+    ηc = fit.βc .+ fit.Λc * Z'
+    π = inv.(1 .+ exp.(-fit.βz))
+    R = Matrix{Float64}(undef, p, n)
+    @inbounds for s in 1:n, t in 1:p
+        πt = π[t]
+        if Y[t, s] > 0
+            μ = exp(ηc[t, s])
+            u = (1 - πt) + πt * cdf(Gamma(α, μ / α), Y[t, s])
+        else
+            u = (1 - πt) * rand(rng)
+        end
+        R[t, s] = quantile(Normal(), clamp(u, 1e-12, 1 - 1e-12))
+    end
+    return R
+end
+
+function Base.show(io::IO, ::MIME"text/plain", fit::DeltaGammaFit)
+    p, K = size(fit.Λc)
+    println(io, "Delta-Gamma GLLVM fit (two-part)")
+    println(io, "  responses p = ", p, ", latent factors K = ", K,
+            ", shape α = ", round(fit.α; sigdigits = 4))
+    println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
+            ", AIC = ", round(aic(fit); sigdigits = 7))
+    print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
+end
+
+# ---------------------------------------------------------------------------
+# Zero-inflated post-fit (ZIP / ZINB: structural zero × Poisson / NB2 count).
+# Unconditional mean is (1−π)·μ (structural zeros contribute 0).
+# ---------------------------------------------------------------------------
+
+_loadings(fit::ZIPFit) = fit.Λc
+_loglik(fit::ZIPFit)   = fit.loglik
+_loadings(fit::ZINBFit) = fit.Λc
+_loglik(fit::ZINBFit)   = fit.loglik
+
+function _nparams(fit::ZIPFit)
+    p, K = size(fit.Λc)
+    return 2p + (p * K - div(K * (K - 1), 2))        # βz + βc + Λc
+end
+function _nparams(fit::ZINBFit)
+    p, K = size(fit.Λc)
+    return 2p + (p * K - div(K * (K - 1), 2)) + 1     # βz + βc + Λc + r
+end
+
+function getLV(fit::ZIPFit, Y::AbstractMatrix{<:Real}; rotate::Bool = true)
+    p, n = size(Y); K = size(fit.Λc, 2)
+    Λz = zeros(p, K)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        Z[:, s] = _twopart_mode(ZIPoisson(), view(Y, :, s), Λz, fit.Λc, fit.βz, fit.βc)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λc) : Zt
+end
+
+function getLV(fit::ZINBFit, Y::AbstractMatrix{<:Real}; rotate::Bool = true)
+    p, n = size(Y); K = size(fit.Λc, 2)
+    Λz = zeros(p, K)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        Z[:, s] = _twopart_mode(ZINB(fit.r), view(Y, :, s), Λz, fit.Λc, fit.βz, fit.βc)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λc) : Zt
+end
+
+"""
+    predict(fit::ZIPFit, Y; type=:response) -> p×n matrix
+
+`:link` = count log-mean predictor `η^c`; `:zeroinfl` = structural-zero
+probability `π = logistic(β^z)`; `:mean` = the count mean `μ = exp(η^c)`;
+`:response` = unconditional mean `(1−π)·μ`.
+"""
+function predict(fit::ZIPFit, Y::AbstractMatrix{<:Real}; type::Symbol = :response)
+    type in (:response, :zeroinfl, :mean, :link) ||
+        throw(ArgumentError("type must be :response, :zeroinfl, :mean, or :link; got :$type"))
+    p, n = size(Y)
+    Z = getLV(fit, Y; rotate = false)
+    ηc = fit.βc .+ fit.Λc * Z'
+    type === :link && return ηc
+    π = inv.(1 .+ exp.(-fit.βz))
+    type === :zeroinfl && return repeat(π, 1, n)
+    μ = exp.(ηc)
+    type === :mean && return μ
+    return (1 .- π) .* μ
+end
+
+"""
+    predict(fit::ZINBFit, Y; type=:response) -> p×n matrix
+
+As [`predict(::ZIPFit, …)`](@ref); `:mean` is the NB2 count mean `μ`, `:response`
+the unconditional mean `(1−π)·μ`.
+"""
+function predict(fit::ZINBFit, Y::AbstractMatrix{<:Real}; type::Symbol = :response)
+    type in (:response, :zeroinfl, :mean, :link) ||
+        throw(ArgumentError("type must be :response, :zeroinfl, :mean, or :link; got :$type"))
+    p, n = size(Y)
+    Z = getLV(fit, Y; rotate = false)
+    ηc = fit.βc .+ fit.Λc * Z'
+    type === :link && return ηc
+    π = inv.(1 .+ exp.(-fit.βz))
+    type === :zeroinfl && return repeat(π, 1, n)
+    μ = exp.(ηc)
+    type === :mean && return μ
+    return (1 .- π) .* μ
+end
+
+# Dunn–Smyth residuals for the zero-inflated CDF F(k) = π + (1−π)·F_count(k).
+function _zi_residuals(π::AbstractVector, ηc::AbstractMatrix, Y::AbstractMatrix,
+                       countdist, rng::AbstractRNG)
+    p, n = size(Y)
+    R = Matrix{Float64}(undef, p, n)
+    @inbounds for s in 1:n, t in 1:p
+        πt = π[t]; y = Int(Y[t, s])
+        d = countdist(exp(ηc[t, s]))
+        if y == 0
+            lo = 0.0
+            hi = πt + (1 - πt) * cdf(d, 0)
+        else
+            lo = πt + (1 - πt) * cdf(d, y - 1)
+            hi = πt + (1 - πt) * cdf(d, y)
+        end
+        u = lo + (hi - lo) * rand(rng)
+        R[t, s] = quantile(Normal(), clamp(u, 1e-12, 1 - 1e-12))
+    end
+    return R
+end
+
+"""
+    residuals(fit::ZIPFit, Y; rng=Random.default_rng()) -> p×n matrix
+
+Dunn–Smyth randomized quantile residuals under the zero-inflated CDF
+`F(k) = π + (1−π)·F_Poisson(k)`.
+"""
+function residuals(fit::ZIPFit, Y::AbstractMatrix{<:Real};
+                   rng::AbstractRNG = Random.default_rng())
+    Z = getLV(fit, Y; rotate = false)
+    ηc = fit.βc .+ fit.Λc * Z'
+    π = inv.(1 .+ exp.(-fit.βz))
+    return _zi_residuals(π, ηc, Y, μ -> Poisson(μ), rng)
+end
+
+"""
+    residuals(fit::ZINBFit, Y; rng=Random.default_rng()) -> p×n matrix
+
+Dunn–Smyth randomized quantile residuals under `F(k) = π + (1−π)·F_NB2(k)`.
+"""
+function residuals(fit::ZINBFit, Y::AbstractMatrix{<:Real};
+                   rng::AbstractRNG = Random.default_rng())
+    Z = getLV(fit, Y; rotate = false)
+    ηc = fit.βc .+ fit.Λc * Z'
+    π = inv.(1 .+ exp.(-fit.βz)); r = fit.r
+    return _zi_residuals(π, ηc, Y, μ -> NegativeBinomial(r, r / (r + μ)), rng)
+end
+
+function Base.show(io::IO, ::MIME"text/plain", fit::ZIPFit)
+    p, K = size(fit.Λc)
+    println(io, "Zero-inflated Poisson GLLVM fit (two-part)")
+    println(io, "  responses p = ", p, ", latent factors K = ", K)
+    println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
+            ", AIC = ", round(aic(fit); sigdigits = 7))
+    print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
+end
+
+function Base.show(io::IO, ::MIME"text/plain", fit::ZINBFit)
+    p, K = size(fit.Λc)
+    println(io, "Zero-inflated NB GLLVM fit (two-part)")
+    println(io, "  responses p = ", p, ", latent factors K = ", K,
+            ", dispersion r = ", round(fit.r; sigdigits = 4))
+    println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
+            ", AIC = ", round(aic(fit); sigdigits = 7))
+    print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
+end
+
+# ---------------------------------------------------------------------------
+# Covariate-fit post-fit (GllvmCovFit: η = β + Xγ + Λẑ). Needs the (p,n,q) design
+# `X` (and Binomial trial counts `N`) to rebuild the linear predictor.
+# ---------------------------------------------------------------------------
+
+_loadings(fit::GllvmCovFit) = fit.Λ
+_loglik(fit::GllvmCovFit)   = fit.loglik
+
+function _nparams(fit::GllvmCovFit)
+    p, K = size(fit.Λ); q = length(fit.γ)
+    return p + q + (p * K - div(K * (K - 1), 2)) + (isnan(fit.dispersion) ? 0 : 1)
+end
+
+"""
+    getLV(fit::GllvmCovFit, Y, X; rotate=true, N=nothing) -> n×K matrix
+
+Conditional latent scores for a covariate fit: the per-site offset-aware Laplace
+mode `ẑₛ` at `η = β + Xγ + Λz`.
+"""
+function getLV(fit::GllvmCovFit, Y::AbstractMatrix{<:Real}, X::AbstractArray{<:Real, 3};
+               rotate::Bool = true, N::Union{Nothing, AbstractMatrix} = nothing)
+    p, n = size(Y); K = size(fit.Λ, 2)
+    Nm = N === nothing ? fill(1, p, n) : N
+    fam = _cov_family(fit.family, fit.dispersion)
+    O = _build_offset(X, fit.γ)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        η0 = fit.β .+ view(O, :, s)
+        Z[:, s] = _laplace_mode_off(fam, view(Y, :, s), view(Nm, :, s), fit.Λ, η0, fit.link)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
+end
+
+"""
+    predict(fit::GllvmCovFit, Y, X; type=:response, N=nothing) -> p×n matrix
+
+`:link` = the linear predictor `η = β + Xγ + Λẑ`; `:response` (= `:mean`) = the
+mean `μ = linkinv(link, η)` (a probability for Binomial, a positive mean for the
+count/positive families).
+"""
+function predict(fit::GllvmCovFit, Y::AbstractMatrix{<:Real}, X::AbstractArray{<:Real, 3};
+                 type::Symbol = :response, N::Union{Nothing, AbstractMatrix} = nothing)
+    type in (:response, :mean, :link) ||
+        throw(ArgumentError("type must be :response, :mean, or :link; got :$type"))
+    Z = getLV(fit, Y, X; rotate = false, N = N)
+    O = _build_offset(X, fit.γ)
+    η = fit.β .+ O .+ fit.Λ * Z'
+    type === :link && return η
+    return linkinv.(Ref(fit.link), _clamp_eta.(η))
+end
+
+"""
+    fitted(fit::GllvmCovFit, Y, X; N=nothing) -> p×n matrix of fitted means.
+"""
+fitted(fit::GllvmCovFit, Y::AbstractMatrix{<:Real}, X::AbstractArray{<:Real, 3};
+       N::Union{Nothing, AbstractMatrix} = nothing) =
+    predict(fit, Y, X; type = :response, N = N)
+
+"""
+    predict(fit::GllvmCovFit, X; type=:response) -> p×n matrix
+
+Population-level (new-site) prediction at a covariate design `X` (`(p, n, q)`) with
+the latent at its prior mean `z = 0` — the latent is not estimable at unseen sites.
+`:link` returns the fixed-effect linear predictor `η = β + Xγ`; `:response`
+(= `:mean`) the mean `μ = linkinv(link, η)`. (For in-sample *conditional*
+predictions at the fitted sites, use the three-argument `predict(fit, Y, X)`.)
+"""
+function predict(fit::GllvmCovFit, X::AbstractArray{<:Real, 3}; type::Symbol = :response)
+    type in (:response, :mean, :link) ||
+        throw(ArgumentError("type must be :response, :mean, or :link; got :$type"))
+    O = _build_offset(X, fit.γ)
+    η = fit.β .+ O
+    type === :link && return η
+    return linkinv.(Ref(fit.link), _clamp_eta.(η))
+end
+
+function Base.show(io::IO, ::MIME"text/plain", fit::GllvmCovFit)
+    p, K = size(fit.Λ); q = length(fit.γ)
+    println(io, "GLLVM fit with covariates (", nameof(typeof(fit.family)), ", Laplace)")
+    println(io, "  responses p = ", p, ", covariates q = ", q, ", latent factors K = ", K,
+            isnan(fit.dispersion) ? "" : ", dispersion = $(round(fit.dispersion; sigdigits = 4))")
     println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
             ", AIC = ", round(aic(fit); sigdigits = 7))
     print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
