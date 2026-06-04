@@ -87,6 +87,7 @@ empirical link-scale intercepts + an SVD (PPCA-style) loadings init.
 function fit_binomial_gllvm(Y::AbstractMatrix; K::Integer,
         link::Link = LogitLink(),
         N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing, mask = nothing,
+        offset = nothing,
         β_init = nothing, Λ_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
@@ -101,6 +102,7 @@ function fit_binomial_gllvm(Y::AbstractMatrix; K::Integer,
     # warm start: empirical link-scale intercepts + SVD (PPCA-like) loadings
     Zemp = [linkfun(link, clamp((Yc[t, i] + 0.5) / (Nm[t, i] + 1), 1e-4, 1 - 1e-4))
             for t in 1:p, i in 1:n]
+    offset === nothing || (Zemp .-= offset)           # offset (η = β + offset + Λz)
     _mask_warmstart!(Zemp, msk)
     β0 = β_init === nothing ? vec(sum(Zemp; dims = 2)) ./ n : collect(float.(β_init))
     Λ0 = if Λ_init === nothing
@@ -121,7 +123,7 @@ function fit_binomial_gllvm(Y::AbstractMatrix; K::Integer,
         β = θ[1:p]
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
         v = try
-            -binomial_marginal_loglik_laplace(Yc, Nm, Λ, β, link; mask = msk,
+            -binomial_marginal_loglik_laplace(Yc, Nm, Λ, β, link; mask = msk, offset = offset,
                                               maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12

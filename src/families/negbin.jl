@@ -67,7 +67,7 @@ Missing data: pass a `mask` (p×n Bool, `false` = unobserved) or `missing` entri
 depends only on the observed cells.
 """
 function fit_nb_gllvm(Y::AbstractMatrix; K::Integer,
-        link::Link = LogLink(), mask = nothing,
+        link::Link = LogLink(), mask = nothing, offset = nothing,
         β_init = nothing, Λ_init = nothing, r_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
@@ -79,6 +79,7 @@ function fit_nb_gllvm(Y::AbstractMatrix; K::Integer,
     Yc = Integer.(_sanitize_missing(Y, 0))
 
     Zemp = [linkfun(link, max(Yc[t, i] + 0.5, 1e-4)) for t in 1:p, i in 1:n]
+    offset === nothing || (Zemp .-= offset)           # offset (η = β + offset + Λz)
     if msk !== nothing
         @inbounds for t in 1:p
             cnt = count(view(msk, t, :))
@@ -109,7 +110,7 @@ function fit_nb_gllvm(Y::AbstractMatrix; K::Integer,
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
         r = exp(θ[p + rr + 1])
         v = try
-            -nb_marginal_loglik_laplace(Yc, Λ, β, r; mask = msk,
+            -nb_marginal_loglik_laplace(Yc, Λ, β, r; mask = msk, offset = offset,
                                         maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
