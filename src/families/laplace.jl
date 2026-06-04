@@ -125,3 +125,25 @@ function _sanitize_missing(Y::AbstractMatrix, placeholder)
     any(ismissing, Y) || return Y
     return map(y -> ismissing(y) ? placeholder : y, Y)
 end
+
+# Resolve an observation mask: an explicit `mask` wins; otherwise derive it from
+# `missing` entries in `Y` (or `nothing` when `Y` is fully observed).
+_resolve_obs_mask(mask, Y) =
+    mask === nothing ? (any(ismissing, Y) ? observed_mask(Y) : nothing) : mask
+
+# Mask-respecting warm start: overwrite the masked cells of a link-scale empirical
+# matrix `Zemp` with their row's observed mean, so the intercept and SVD loadings
+# warm start ignore missing (and placeholder) values — the fit then depends only on
+# the observed cells.
+function _mask_warmstart!(Zemp::AbstractMatrix, msk)
+    msk === nothing && return Zemp
+    p, n = size(Zemp)
+    @inbounds for t in 1:p
+        cnt = count(view(msk, t, :))
+        rowmean = cnt > 0 ? sum(Zemp[t, i] for i in 1:n if msk[t, i]) / cnt : 0.0
+        for i in 1:n
+            msk[t, i] || (Zemp[t, i] = rowmean)
+        end
+    end
+    return Zemp
+end

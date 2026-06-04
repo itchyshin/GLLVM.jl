@@ -76,15 +76,19 @@ Fit a Beta GLLVM by L-BFGS over `[β; vec(Λ); log φ]` on the Laplace marginal
 dimension. Finite-difference gradient; warm start = empirical logit-mean intercepts +
 an SVD loadings init + a moderate `φ₀`.
 """
-function fit_beta_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
-        link::Link = LogitLink(),
+function fit_beta_gllvm(Y::AbstractMatrix; K::Integer,
+        link::Link = LogitLink(), mask = nothing,
         β_init = nothing, Λ_init = nothing, φ_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
     rr = rr_theta_len(p, K)
 
-    Zemp = [linkfun(link, clamp(float(Y[t, i]), 1e-6, 1 - 1e-6)) for t in 1:p, i in 1:n]
+    msk = _resolve_obs_mask(mask, Y)                  # NA handling
+    Yc  = _sanitize_missing(Y, 0.5)                   # in-(0,1) placeholder
+
+    Zemp = [linkfun(link, clamp(float(Yc[t, i]), 1e-6, 1 - 1e-6)) for t in 1:p, i in 1:n]
+    _mask_warmstart!(Zemp, msk)
     β0 = β_init === nothing ? vec(sum(Zemp; dims = 2)) ./ n : collect(float.(β_init))
     Λ0 = if Λ_init === nothing
         Zc = Zemp .- β0
@@ -106,7 +110,7 @@ function fit_beta_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
         φ = exp(θ[p + rr + 1])
         v = try
-            -beta_marginal_loglik_laplace(Y, Λ, β, φ;
+            -beta_marginal_loglik_laplace(Yc, Λ, β, φ; mask = msk,
                                           maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12

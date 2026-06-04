@@ -64,4 +64,40 @@ using GLLVM, Test, LinearAlgebra, Random
     nbB = fit_nb_gllvm(Yg; K = K, mask = mask, iterations = 40)
     @test isapprox(nbA.loglik, nbB.loglik; atol = 1e-8)
     @test isapprox(nbA.r, nbB.r; atol = 1e-6)
+
+    # ---- Beta / Gamma / Binomial fitters honour NA ------------------------
+    # Fitting with an explicit mask (original values in the masked cells) must
+    # equal fitting the same data with those cells set to `missing` — both ignore
+    # the masked cells (objective + mask-respecting warm start), so identical fit.
+    @testset "continuous & binomial fitters honour the mask" begin
+        Random.seed!(99)
+        pp, nn = 4, 10
+        msk2 = trues(pp, nn)
+        for (t, s) in [(1, 3), (2, 7), (4, 1), (3, 9)]
+            msk2[t, s] = false
+        end
+        miss = findall(.!msk2)
+
+        # Beta (proportions in (0,1))
+        Yb  = clamp.(rand(pp, nn), 0.02, 0.98)
+        Ybm = Matrix{Union{Missing, Float64}}(Yb); for I in miss; Ybm[I] = missing; end
+        fb1 = fit_beta_gllvm(Yb;  K = 1, mask = msk2, iterations = 30)
+        fb2 = fit_beta_gllvm(Ybm; K = 1, iterations = 30)
+        @test isapprox(fb1.loglik, fb2.loglik; atol = 1e-7)
+
+        # Gamma (positive)
+        Yg2 = 0.5 .+ 2 .* rand(pp, nn)
+        Ygm = Matrix{Union{Missing, Float64}}(Yg2); for I in miss; Ygm[I] = missing; end
+        fg1 = fit_gamma_gllvm(Yg2; K = 1, mask = msk2, iterations = 30)
+        fg2 = fit_gamma_gllvm(Ygm; K = 1, iterations = 30)
+        @test isapprox(fg1.loglik, fg2.loglik; atol = 1e-7)
+
+        # Binomial (counts out of N trials)
+        Ntr = fill(5, pp, nn)
+        Yco = rand(0:5, pp, nn)
+        Ycm = Matrix{Union{Missing, Int}}(Yco); for I in miss; Ycm[I] = missing; end
+        fc1 = fit_binomial_gllvm(Yco; K = 1, N = Ntr, mask = msk2, iterations = 30)
+        fc2 = fit_binomial_gllvm(Ycm; K = 1, N = Ntr, iterations = 30)
+        @test isapprox(fc1.loglik, fc2.loglik; atol = 1e-7)
+    end
 end

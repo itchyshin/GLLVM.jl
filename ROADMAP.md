@@ -99,9 +99,10 @@ Ordered roughly by real-world impact.
       (`marginal_loglik_laplace(...; mask)`); masked/`missing` cells are dropped from the
       score, Hessian weight, and log-density, so the marginal is over the observed cells
       and invariant to whatever sits in the masked positions (the deterministic anchor).
-      Wired into `fit_poisson_gllvm` / `fit_nb_gllvm` (pass `mask`, or just include
-      `missing` in `Y`) with a mask-respecting warm start; `observed_mask(Y)` derives the
-      mask from `missing`. (Other family fitters follow the identical `mask` kwarg.)
+      Wired into `fit_poisson_gllvm`, `fit_nb_gllvm`, `fit_binomial_gllvm`,
+      `fit_beta_gllvm`, and `fit_gamma_gllvm` (pass `mask`, or just include `missing`
+      in `Y`) with a mask-respecting warm start; `observed_mask(Y)` derives the mask
+      from `missing`. (Remaining family fitters follow the identical `mask` kwarg.)
 - [ ] Ordination / biplot / coefplot ecosystem (lower priority for a compute lib).
 
 ## Known limitations (implemented but imperfect)
