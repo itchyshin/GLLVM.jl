@@ -23,6 +23,7 @@ using GLLVM
     include("test_lowrank_cholesky.jl")
     include("test_confint.jl")
     include("test_confint_profile.jl")
+    include("test_profile_rootfind.jl")
     include("test_confint_bootstrap.jl")
     include("test_confint_derived.jl")
     include("test_profile_derived_fix.jl")

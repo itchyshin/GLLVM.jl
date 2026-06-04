@@ -44,6 +44,11 @@ analytic-vs-finite-difference gradient checks), validated on Linux/macOS/Windows
 ### Inference, ordination, workflow
 - Confidence intervals: Wald, profile-likelihood, parametric bootstrap (incl. derived
   quantities), and a tidy `coef_table`.
+- **Faster profile-likelihood CIs** — the LRT-crossing is now located by false position
+  on `√D` (near-linear in the parameter, since `D ≈ (c−θ̂)²/SE²`) with a bisection
+  safeguard, plus Wald-bound bracket seeding. This cuts the number of constrained refits
+  (the dominant cost) per bound from ~15 bisections to a handful, at the same crossing —
+  benefiting both the Gaussian and the GLM-family profile CIs.
 - **VA-based standard errors** — `confint(fit, Y; method=:wald, objective=:va)` and
   `coef_table(...; objective=:va)` take the Hessian of the ELBO instead of the Laplace
   marginal (Poisson/NB/Binomial/Beta/Gamma), matching gllvm's approximate VA inference.

@@ -757,7 +757,9 @@ function _family_profile(ad::_FamilyCI, sel::Vector{Int}, level::Real)
             ll, ok, sol = _family_profile_refit(ad, i, c, warm_hi)
             ok ? (warm_hi = sol; 2.0 * (ll_full - ll)) : NaN
         end
-        step = max(sei, 1e-3)
+        # Seed the first candidate near the Wald bound (θ̂ ± √cutoff·SE) so the
+        # bracket is found in ~1 refit; false-position root-finding does the rest.
+        step = max(sqrt(cutoff) * sei, 1e-3)
         lower = _profile_bisect_side(dev_lo, θi, -step, cutoff)
         upper = _profile_bisect_side(dev_hi, θi,  step, cutoff)
         if ad.kinds[i] === :log

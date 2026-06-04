@@ -24,8 +24,9 @@
 #      chisq cutoff. At each candidate c we re-optimise over θ_{-i} via
 #      LBFGS (warm-started from the previous solution) and compute
 #      D(c) = 2(ℓ̂ − ℓ_p(c)).
-#   4. Bisect inside the bracket to locate the threshold crossing to
-#      tolerance tol.
+#   4. Root-find inside the bracket via false position on √D (≈ linear in c
+#      near the MLE, since D ≈ (c−θ̂)²/SE²), with a bisection safeguard — a few
+#      refits instead of ~log2(width/tol) bisections, at the same crossing.
 #
 # The result on log-SD-style parameters (σ_eps, σ_B, σ_W, σ_phy) is
 # converted to the raw scale via exp(.) to match the convention of
@@ -256,16 +257,53 @@ function _profile_refit_with_fixed(fit::GllvmFit, i::Integer, c::Real,
     return (-nll_min, true, Optim.minimizer(res))
 end
 
-# Bracket-then-bisect on one side (lower if Δ_init < 0, upper if > 0).
+# Bracket-then-root-find on one side (lower if Δ_init < 0, upper if > 0).
 #
-# We walk outward from x0 = θ̂_i in steps of step_init until the deviance
-# D(c) crosses cutoff or we exhaust max_iter expansions. On bracket
-# failure we return NaN (the bracket simply isn't reached within
-# max_iter * step_init of the MLE).
+# Phase 1 (bracket): walk outward from x0 = θ̂_i in geometrically doubling steps
+# until the deviance D(c) crosses cutoff or we exhaust max_expand expansions.
 #
-# Inside a successful bracket, we bisect to locate D(c) = cutoff with
-# absolute tolerance tol_x in the parameter and fall-back stop on tol_D
-# in the deviance.
+# Phase 2 (root): locate D(c) = cutoff inside the bracket via false position on
+# s(c) = √(max(D(c),0)). Because D(c) ≈ (c−θ̂)²/SE² near the MLE, √D is nearly
+# LINEAR in c, so false position converges in a few refits where plain bisection
+# needs ~log2(width/tol) (~15). A bisection safeguard — taken whenever a proposal
+# lands on a bracket endpoint (one-sided stagnation) or the outer deviance is
+# non-finite (singular refit) — keeps it a strict bracketing method with worst-case
+# bisection rate. Each D call is one constrained refit (the dominant cost), so this
+# minimises refits at identical accuracy.
+function _profile_root_falsepos(D::Function, a::Real, b::Real,
+                                Da::Real, Db::Real, cutoff::Real;
+                                max_iter::Integer = 40, tol_x::Real = 1e-4,
+                                tol_D::Real = 1e-3)
+    S  = sqrt(cutoff)
+    fa = sqrt(max(float(Da), 0.0)) - S          # < 0  (D(a) < cutoff)
+    fb = isfinite(Db) ? sqrt(max(float(Db), 0.0)) - S : NaN   # ≥ 0, or NaN if singular
+    a  = float(a); b = float(b)
+    for _ in 1:max_iter
+        w = abs(b - a)
+        w < tol_x && break
+        lo, hi = minmax(a, b)
+        usefp = isfinite(fa) && isfinite(fb) && (fb - fa) != 0
+        c = usefp ? b - fb * (b - a) / (fb - fa) : (a + b) / 2
+        margin = 1e-3 * w
+        if !isfinite(c) || c ≤ lo + margin || c ≥ hi - margin
+            c = (a + b) / 2                       # safeguard ⇒ bisection step
+        end
+        Dc = D(c)
+        if !isfinite(Dc)
+            b = c; fb = NaN                       # singular outer region: contract in
+            continue
+        end
+        abs(Dc - cutoff) < tol_D && return c      # crossing located ⇒ stop (saves refits)
+        fc = sqrt(max(Dc, 0.0)) - S
+        if fc ≥ 0
+            b = c; fb = fc
+        else
+            a = c; fa = fc
+        end
+    end
+    return (a + b) / 2
+end
+
 function _profile_bisect_side(D::Function, x0::Real, step_init::Real,
                               cutoff::Real;
                               max_expand::Integer = 20,
@@ -276,8 +314,7 @@ function _profile_bisect_side(D::Function, x0::Real, step_init::Real,
     sign_step == 0 && return NaN
     abs_step = abs(step_init)
 
-    # Expansion phase: find x_out such that D(x_out) ≥ cutoff while
-    # D(x_in) < cutoff. x_in starts at x0 (where D ≈ 0).
+    # Phase 1 — bracket: find x_out with D(x_out) ≥ cutoff while D(x_in) < cutoff.
     x_in = float(x0)
     D_in = 0.0  # D(θ̂_i) = 0 by construction
     x_out = x_in + sign_step * abs_step
@@ -286,10 +323,7 @@ function _profile_bisect_side(D::Function, x0::Real, step_init::Real,
     for k in 1:max_expand
         D_val = D(x_out)
         if !isfinite(D_val)
-            # Refit failed at this candidate. Treat as having crossed
-            # (bracket the singular region) but also tighten the bracket
-            # towards the last successful x_in. Conservatively, set
-            # D_out to a "high" sentinel so bisection contracts in.
+            # Refit failed: bracket the singular region (root-finder contracts in).
             D_out = Inf
             found_bracket = true
             break
@@ -299,49 +333,16 @@ function _profile_bisect_side(D::Function, x0::Real, step_init::Real,
             found_bracket = true
             break
         end
-        # Still below cutoff — advance x_in to here and step further out.
         x_in = x_out
         D_in = D_val
-        # Geometric expansion: each step doubles. This keeps the worst
-        # case at O(log) refits even for very wide intervals.
-        abs_step *= 2
+        abs_step *= 2                              # geometric expansion ⇒ O(log) refits
         x_out = x_in + sign_step * abs_step
     end
     found_bracket || return NaN
 
-    # Bisection: shrink the bracket [x_in, x_out] until |x_out - x_in| < tol_x.
-    lo, hi = x_in, x_out
-    D_lo, D_hi = D_in, D_out
-    for _ in 1:max_bisect
-        mid = (lo + hi) / 2
-        D_mid = D(mid)
-        if !isfinite(D_mid)
-            # If refit fails, step the bracket conservatively inward
-            # by half from the failing side, treating the failing region
-            # as outside the CI.
-            if sign_step > 0
-                hi = mid
-                D_hi = Inf
-            else
-                hi = mid
-                D_hi = Inf
-            end
-        elseif D_mid ≥ cutoff
-            hi = mid
-            D_hi = D_mid
-        else
-            lo = mid
-            D_lo = D_mid
-        end
-        if abs(hi - lo) < tol_x
-            break
-        end
-        if isfinite(D_hi) && abs(D_hi - cutoff) < tol_D &&
-           isfinite(D_lo) && abs(D_lo - cutoff) < tol_D
-            break
-        end
-    end
-    return (lo + hi) / 2
+    # Phase 2 — root: false position on √D within [x_in, x_out].
+    return _profile_root_falsepos(D, x_in, x_out, D_in, D_out, cutoff;
+                                  max_iter = max_bisect, tol_x = tol_x, tol_D = tol_D)
 end
 
 """
@@ -436,9 +437,10 @@ function profile_ci(fit::GllvmFit, param_index::Integer;
         end
     end
 
-    # Initial step: one Wald SE in each direction. Geometric expansion
-    # inside _profile_bisect_side handles the rest.
-    step_init = max(grid_extent * se_i / max_expand, 1e-3)
+    # Initial step: aim the first candidate near the Wald bound (θ̂ ± √cutoff·SE),
+    # where D ≈ cutoff, so the bracket is found in ~1 refit; geometric expansion
+    # inside _profile_bisect_side handles asymmetric / non-quadratic deviances.
+    step_init = max(min(sqrt(cutoff), grid_extent) * se_i, 1e-3)
 
     lower = _profile_bisect_side(deviance_lower, θ̂_i, -step_init, cutoff;
                                  max_expand = max_expand,
