@@ -32,7 +32,7 @@ const _FamilyFit = Union{PoissonFit, BinomialFit, NBFit, BetaFit, GammaFit, Expo
 
 # Two-part families ([βz; βc; pack_lambda(Λc); (log-dispersion)] layout).
 const _TwoPartFit = Union{DeltaLogNormalFit, DeltaGammaFit, HurdlePoissonFit,
-                          HurdleNBFit, ZIPFit, ZINBFit}
+                          HurdleNBFit, ZIPFit, ZINBFit, BetaHurdleFit}
 
 # Everything the unified confint(fit, Y; method=…) entry accepts.
 const _CIFit = Union{_FamilyFit, _TwoPartFit, OrdinalFit, GllvmCovFit}
@@ -364,6 +364,44 @@ function _family_ci(fit::DeltaGammaFit, Y::AbstractMatrix;
         return vcat(fb.βz, fb.βc, pack_lambda(fb.Λc), log(fb.α))
     end
     names = vcat(_twopart_lin_names(p, K), "alpha")
+    return _FamilyCI(θ, nll, names, vcat(fill(:linear, length(θ) - 1), :log), sim, refit)
+end
+
+# --- Beta-hurdle (Bernoulli occurrence × positive Beta) --------------------
+function _family_ci(fit::BetaHurdleFit, Y::AbstractMatrix;
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λc); n = size(Y, 2); rr = rr_theta_len(p, K)
+    θ = vcat(fit.βz, fit.βc, pack_lambda(fit.Λc), log(fit.φ))
+    nll = function (θv)
+        βz = θv[1:p]; βc = θv[(p + 1):(2p)]
+        Λc = unpack_lambda(θv[(2p + 1):(2p + rr)], p, K); φ = exp(θv[2p + rr + 1])
+        v = try
+            -beta_hurdle_marginal_loglik_laplace(Y, Λc, βz, βc, φ;
+                                                 maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    sim = function (rng)
+        Yb = zeros(Float64, p, n)
+        @inbounds for s in 1:n
+            ηc = fit.βc .+ fit.Λc * randn(rng, K)
+            for t in 1:p
+                π = inv(1 + exp(-fit.βz[t]))
+                if rand(rng) < π
+                    μ = clamp(inv(1 + exp(-ηc[t])), 1e-6, 1 - 1e-6)
+                    Yb[t, s] = rand(rng, Beta(μ * fit.φ, (1 - μ) * fit.φ))
+                end
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try fit_beta_hurdle_gllvm(Yb; K = K) catch; return nothing end
+        return vcat(fb.βz, fb.βc, pack_lambda(fb.Λc), log(fb.φ))
+    end
+    names = vcat(_twopart_lin_names(p, K), "phi")
     return _FamilyCI(θ, nll, names, vcat(fill(:linear, length(θ) - 1), :log), sim, refit)
 end
 

@@ -248,4 +248,44 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         @test all(isfinite, R)
     end
 
+    # -----------------------------------------------------------------------
+    # 7. Wald confidence intervals + coef_table (confint_family dispatch).
+    # -----------------------------------------------------------------------
+    @testset "Wald CIs + coef_table" begin
+        Random.seed!(321)
+        p, K, n = 5, 1, 200
+        βz = 0.4 .* randn(p) .+ 0.5
+        βc = 0.3 .* randn(p)
+        φ  = 6.0
+        Z  = randn(K, n); Λc = 0.4 .* randn(p, K)
+        ηc = βc .+ Λc * Z
+        π  = inv.(1 .+ exp.(-βz)); μ = inv.(1 .+ exp.(-ηc))
+        Y = zeros(p, n)
+        for t in 1:p, s in 1:n
+            rand() < π[t] && (Y[t, s] = rand(Beta(μ[t, s] * φ, (1 - μ[t, s]) * φ)))
+        end
+        fit = fit_beta_hurdle_gllvm(Y; K = K)
+
+        ci = confint(fit, Y; method = :wald)
+        nparam = 2p + (p * K - div(K * (K - 1), 2)) + 1     # βz + βc + Λc + φ
+        @test length(ci.term) == nparam
+        @test ci.method == :wald
+
+        # Each finite-SE interval brackets its point estimate.
+        for i in eachindex(ci.term)
+            if isfinite(ci.lower[i]) && isfinite(ci.upper[i])
+                @test ci.lower[i] ≤ ci.estimate[i] ≤ ci.upper[i]
+            end
+        end
+
+        # The dispersion term is present and positive (reported on the raw scale).
+        iφ = findfirst(==("phi"), ci.term)
+        @test iφ !== nothing
+        @test ci.estimate[iφ] > 0
+
+        # coef_table builds a tidy table from the same machinery.
+        ct = coef_table(fit, Y)
+        @test ct isa GllvmCoefTable
+    end
+
 end  # @testset "beta-hurdle GLLVM"
