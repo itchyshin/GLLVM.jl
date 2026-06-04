@@ -79,6 +79,46 @@ function _spde_latent_hessian(Q::AbstractMatrix, A::AbstractMatrix,
 end
 
 """
+    _spde_latent_mode(family, Y, Ntr, Λ, β, link, A, Qs; maxiter, tol) -> U::Matrix
+
+Internal helper: run the Fisher-scoring Newton loop to find the joint-Laplace mode
+`Û` (N×K) for the stacked GMRF. `Qs` must be a sparse precision matrix. Returns
+the converged field mode, or `nothing` if a non-SPD Hessian is encountered.
+"""
+function _spde_latent_mode(family, Y::AbstractMatrix, Ntr::AbstractMatrix,
+        Λ::AbstractMatrix, β::AbstractVector, link::Link,
+        A::AbstractMatrix, Qs::AbstractMatrix;
+        maxiter::Integer = 50, tol::Real = 1e-9)
+    Nn = size(A, 2)
+    K = size(Λ, 2)
+    U = zeros(Nn, K)
+
+    # Fisher-scoring Newton on φ(U) = ℓ_data(U) − ½ Σ_k u_kᵀ Q u_k.
+    for _ in 1:maxiter
+        Z  = A * U                                   # M×K site scores
+        η  = _clamp_eta.(β .+ Λ * Z')                # p×M
+        μ  = _clamp_mu.(Ref(family), linkinv.(Ref(link), η))
+        me = mu_eta.(Ref(link), η)
+        S  = _glm_score.(Ref(family), μ, Ntr, me, Y) # p×M score wrt η
+        W  = _glm_weight.(Ref(family), μ, Ntr, me)   # p×M Fisher weight ≥ 0
+
+        Grad = A' * (S' * Λ) - Qs * U                # N×K gradient of φ
+        H = _spde_latent_hessian(Qs, A, Λ, W)
+        local cholH
+        try
+            cholH = cholesky(Symmetric(sparse(H)))
+        catch
+            return nothing
+        end
+        Δ = reshape(cholH \ vec(Grad), Nn, K)
+        all(isfinite, Δ) || return nothing
+        U .+= Δ
+        maximum(abs, Δ) < tol && break
+    end
+    return U
+end
+
+"""
     spde_latent_marginal_loglik(family, Y, N, Λ, β, link, A, Q;
                                 maxiter=50, tol=1e-9) -> Float64
 
@@ -99,7 +139,6 @@ function spde_latent_marginal_loglik(family, Y::AbstractMatrix, Ntr::AbstractMat
         maxiter::Integer = 50, tol::Real = 1e-9)
     p, M = size(Y)
     K = size(Λ, 2)
-    Nn = size(A, 2)
 
     Qs = sparse(Q)
     local cholQ
@@ -109,30 +148,9 @@ function spde_latent_marginal_loglik(family, Y::AbstractMatrix, Ntr::AbstractMat
         return -Inf
     end
 
-    U = zeros(Nn, K)
-
-    # Fisher-scoring Newton on φ(U) = ℓ_data(U) − ½ Σ_k u_kᵀ Q u_k.
-    for _ in 1:maxiter
-        Z  = A * U                                   # M×K site scores
-        η  = _clamp_eta.(β .+ Λ * Z')                # p×M
-        μ  = _clamp_mu.(Ref(family), linkinv.(Ref(link), η))
-        me = mu_eta.(Ref(link), η)
-        S  = _glm_score.(Ref(family), μ, Ntr, me, Y) # p×M score wrt η
-        W  = _glm_weight.(Ref(family), μ, Ntr, me)   # p×M Fisher weight ≥ 0
-
-        Grad = A' * (S' * Λ) - Qs * U                # N×K gradient of φ
-        H = _spde_latent_hessian(Qs, A, Λ, W)
-        local cholH
-        try
-            cholH = cholesky(Symmetric(sparse(H)))
-        catch
-            return -Inf
-        end
-        Δ = reshape(cholH \ vec(Grad), Nn, K)
-        all(isfinite, Δ) || return -Inf
-        U .+= Δ
-        maximum(abs, Δ) < tol && break
-    end
+    U = _spde_latent_mode(family, Y, Ntr, Λ, β, link, A, Qs;
+                          maxiter = maxiter, tol = tol)
+    U === nothing && return -Inf
 
     # Evaluate the Laplace marginal at the mode Û.
     Z  = A * U
