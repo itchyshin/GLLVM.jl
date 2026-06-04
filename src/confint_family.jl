@@ -955,3 +955,57 @@ function confint(fit::_CIFit, Y::AbstractMatrix;
         throw(ArgumentError("method must be :wald, :profile, or :bootstrap; got :$method"))
     end
 end
+
+# ---------------------------------------------------------------------------
+# Wald CIs for the SPDE-latent model. It needs the observation locations (not
+# stored in the fit) to rebuild the projector, so it gets a dedicated entry
+# rather than the generic confint(fit, Y) dispatch — but reuses the same Wald
+# machinery (_FamilyCI + _family_wald).
+# ---------------------------------------------------------------------------
+"""
+    confint_spde_latent(fit::SPDELatentFit, Y, locs; level=0.95, parm=nothing,
+                        α=2, newton_maxiter=50, newton_tol=1e-9) -> NamedTuple
+
+Wald confidence intervals for the SPDE-latent GLLVM. `Y` (p×M) and `locs` (M×2) must
+match the fit. β and Λ are reported on their natural scale; κ, τ, and any dispersion
+on the positive scale. SEs come from the observed information (finite-difference
+Hessian of the θ-marginal, which rebuilds the Matérn precision each evaluation).
+"""
+function confint_spde_latent(fit::SPDELatentFit, Y::AbstractMatrix, locs::AbstractMatrix;
+                             level::Real = 0.95, parm = nothing, α::Integer = 2,
+                             newton_maxiter::Integer = 50, newton_tol::Real = 1e-9)
+    0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
+    p, K = size(fit.Λ); rr = rr_theta_len(p, K)
+    Cdiag, G = spde_fem(fit.nodes, fit.tris)
+    A = spde_projector(fit.nodes, fit.tris, locs)
+    Ntr = ones(eltype(Y), size(Y))
+    nd = _spde_disp_len(fit.family)
+    dbase = p + rr + 2
+    θ = vcat(fit.β, pack_lambda(fit.Λ), log(fit.κ), log(fit.τ),
+             nd == 0 ? Float64[] : [log(fit.dispersion)])
+    nll = function (θv)
+        β = θv[1:p]; Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+        κ = exp(θv[p + rr + 1]); τ = exp(θv[p + rr + 2])
+        fam = _spde_make_family(fit.family, view(θv, (dbase + 1):(dbase + nd)))
+        v = try
+            Q = spde_precision(Cdiag, G, κ, τ; α = α)
+            -spde_latent_marginal_loglik(fam, Y, Ntr, Λ, β, fit.link, A, Q;
+                                         maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    names = vcat(["beta[$t]" for t in 1:p],
+                 _confint_lambda_term_names("Lambda", p, K), "kappa", "tau")
+    kinds = vcat(fill(:linear, p + rr), :log, :log)
+    if nd > 0
+        push!(names, "dispersion"); push!(kinds, :log)
+    end
+    sim   = _ -> error("bootstrap is not supported for SPDE-latent CIs")
+    refit = _ -> nothing
+    ad = _FamilyCI(θ, nll, names, kinds, sim, refit)
+    sel = _family_select(parm, ad.names)
+    isempty(sel) && throw(ArgumentError("parm selector matched no parameters"))
+    return _family_wald(ad, sel, level)
+end
