@@ -68,7 +68,23 @@ coef_table(fit, Y; parm = "beta", level = 0.90)
 ```
 """
 function coef_table(fit, Y::AbstractMatrix; level::Real = 0.95, kwargs...)
-    ci = confint(fit, Y; method = :wald, level = level, kwargs...)
+    return _coef_table_from_ci(confint(fit, Y; method = :wald, level = level, kwargs...))
+end
+
+"""
+    coef_table(fit::SPDELatentFit, Y, locs; level=0.95, kwargs...) -> GllvmCoefTable
+
+Tidy Wald inference table for the SPDE-latent model. It needs the observation `locs`
+(to rebuild the projector), so it routes through [`confint_spde_latent`](@ref); β and Λ
+are on the natural scale, κ/τ/dispersion on the positive scale.
+"""
+function coef_table(fit::SPDELatentFit, Y::AbstractMatrix, locs::AbstractMatrix;
+                    level::Real = 0.95, kwargs...)
+    return _coef_table_from_ci(confint_spde_latent(fit, Y, locs; level = level, kwargs...))
+end
+
+# Build the tidy estimate/SE/z/p/CI table from a Wald-CI NamedTuple.
+function _coef_table_from_ci(ci)
     est = collect(Float64, ci.estimate)
     se  = collect(Float64, ci.se)
     m   = length(est)

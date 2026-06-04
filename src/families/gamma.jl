@@ -63,7 +63,7 @@ dimension. Finite-difference gradient; warm start = log row-means as intercepts 
 SVD of row-centred log-Y as loadings + `logα₀ = log(2.0)`.
 """
 function fit_gamma_gllvm(Y::AbstractMatrix; K::Integer,
-        link::Link = LogLink(), mask = nothing,
+        link::Link = LogLink(), mask = nothing, offset = nothing,
         β_init = nothing, Λ_init = nothing, α_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
@@ -74,6 +74,7 @@ function fit_gamma_gllvm(Y::AbstractMatrix; K::Integer,
     Yc  = _sanitize_missing(Y, 1.0)                   # positive placeholder
 
     Zemp = log.(max.(Yc, 1e-6))
+    offset === nothing || (Zemp .-= offset)           # offset (η = β + offset + Λz)
     _mask_warmstart!(Zemp, msk)
     β0 = β_init === nothing ? vec(sum(Zemp; dims = 2)) ./ n : collect(float.(β_init))
     Λ0 = if Λ_init === nothing
@@ -96,7 +97,7 @@ function fit_gamma_gllvm(Y::AbstractMatrix; K::Integer,
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
         α = exp(θ[p + rr + 1])
         v = try
-            -gamma_marginal_loglik_laplace(Yc, Λ, β, α; mask = msk,
+            -gamma_marginal_loglik_laplace(Yc, Λ, β, α; mask = msk, offset = offset,
                                            maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12

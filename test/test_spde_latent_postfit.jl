@@ -142,4 +142,30 @@ end
         @test bic(fit, M) ≈ k * log(M) - 2 * fit.loglik
     end
 
+    @testset "confint_spde_latent (Wald)" begin
+        ci = confint_spde_latent(fit, Y, locs)
+        nterm = p + GLLVM.rr_theta_len(p, K) + 2     # β + Λ + κ + τ (Poisson: no dispersion)
+        @test length(ci.term) == nterm
+        @test ci.method == :wald
+        @test "kappa" in ci.term
+        @test "tau" in ci.term
+        # κ and τ are reported on the positive scale.
+        iκ = findfirst(==("kappa"), ci.term); iτ = findfirst(==("tau"), ci.term)
+        @test ci.estimate[iκ] > 0 && ci.estimate[iτ] > 0
+        @test isapprox(ci.estimate[iκ], fit.κ; rtol = 1e-6)
+        @test isapprox(ci.estimate[iτ], fit.τ; rtol = 1e-6)
+        # Finite-SE intervals bracket their estimates.
+        for i in eachindex(ci.term)
+            if isfinite(ci.lower[i]) && isfinite(ci.upper[i])
+                @test ci.lower[i] ≤ ci.estimate[i] ≤ ci.upper[i]
+            end
+        end
+    end
+
+    @testset "coef_table for SPDELatentFit" begin
+        ct = coef_table(fit, Y, locs)
+        @test ct isa GllvmCoefTable
+        @test length(ct.term) == p + GLLVM.rr_theta_len(p, K) + 2
+    end
+
 end

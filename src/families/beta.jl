@@ -77,7 +77,7 @@ dimension. Finite-difference gradient; warm start = empirical logit-mean interce
 an SVD loadings init + a moderate `φ₀`.
 """
 function fit_beta_gllvm(Y::AbstractMatrix; K::Integer,
-        link::Link = LogitLink(), mask = nothing,
+        link::Link = LogitLink(), mask = nothing, offset = nothing,
         β_init = nothing, Λ_init = nothing, φ_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
@@ -88,6 +88,7 @@ function fit_beta_gllvm(Y::AbstractMatrix; K::Integer,
     Yc  = _sanitize_missing(Y, 0.5)                   # in-(0,1) placeholder
 
     Zemp = [linkfun(link, clamp(float(Yc[t, i]), 1e-6, 1 - 1e-6)) for t in 1:p, i in 1:n]
+    offset === nothing || (Zemp .-= offset)           # offset (η = β + offset + Λz)
     _mask_warmstart!(Zemp, msk)
     β0 = β_init === nothing ? vec(sum(Zemp; dims = 2)) ./ n : collect(float.(β_init))
     Λ0 = if Λ_init === nothing
@@ -110,7 +111,7 @@ function fit_beta_gllvm(Y::AbstractMatrix; K::Integer,
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
         φ = exp(θ[p + rr + 1])
         v = try
-            -beta_marginal_loglik_laplace(Yc, Λ, β, φ; mask = msk,
+            -beta_marginal_loglik_laplace(Yc, Λ, β, φ; mask = msk, offset = offset,
                                           maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12

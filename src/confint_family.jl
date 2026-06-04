@@ -32,7 +32,7 @@ const _FamilyFit = Union{PoissonFit, BinomialFit, NBFit, BetaFit, GammaFit, Expo
 
 # Two-part families ([βz; βc; pack_lambda(Λc); (log-dispersion)] layout).
 const _TwoPartFit = Union{DeltaLogNormalFit, DeltaGammaFit, HurdlePoissonFit,
-                          HurdleNBFit, ZIPFit, ZINBFit}
+                          HurdleNBFit, ZIPFit, ZINBFit, BetaHurdleFit}
 
 # Everything the unified confint(fit, Y; method=…) entry accepts.
 const _CIFit = Union{_FamilyFit, _TwoPartFit, OrdinalFit, GllvmCovFit}
@@ -333,6 +333,7 @@ end
 
 # --- Delta-Gamma -----------------------------------------------------------
 function _family_ci(fit::DeltaGammaFit, Y::AbstractMatrix;
+                    objective::Symbol = :laplace,
                     newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
     p, K = size(fit.Λc); n = size(Y, 2); rr = rr_theta_len(p, K)
     θ = vcat(fit.βz, fit.βc, pack_lambda(fit.Λc), log(fit.α))
@@ -340,7 +341,9 @@ function _family_ci(fit::DeltaGammaFit, Y::AbstractMatrix;
         βz = θv[1:p]; βc = θv[(p + 1):(2p)]
         Λc = unpack_lambda(θv[(2p + 1):(2p + rr)], p, K); α = exp(θv[2p + rr + 1])
         v = try
-            -delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α; maxiter = newton_maxiter, tol = newton_tol)
+            objective === :va ?
+                -delta_gamma_marginal_loglik_va(Y, Λc, βz, βc, α; maxiter = newton_maxiter, tol = newton_tol) :
+                -delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α; maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
         end
@@ -364,6 +367,44 @@ function _family_ci(fit::DeltaGammaFit, Y::AbstractMatrix;
         return vcat(fb.βz, fb.βc, pack_lambda(fb.Λc), log(fb.α))
     end
     names = vcat(_twopart_lin_names(p, K), "alpha")
+    return _FamilyCI(θ, nll, names, vcat(fill(:linear, length(θ) - 1), :log), sim, refit)
+end
+
+# --- Beta-hurdle (Bernoulli occurrence × positive Beta) --------------------
+function _family_ci(fit::BetaHurdleFit, Y::AbstractMatrix;
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λc); n = size(Y, 2); rr = rr_theta_len(p, K)
+    θ = vcat(fit.βz, fit.βc, pack_lambda(fit.Λc), log(fit.φ))
+    nll = function (θv)
+        βz = θv[1:p]; βc = θv[(p + 1):(2p)]
+        Λc = unpack_lambda(θv[(2p + 1):(2p + rr)], p, K); φ = exp(θv[2p + rr + 1])
+        v = try
+            -beta_hurdle_marginal_loglik_laplace(Y, Λc, βz, βc, φ;
+                                                 maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    sim = function (rng)
+        Yb = zeros(Float64, p, n)
+        @inbounds for s in 1:n
+            ηc = fit.βc .+ fit.Λc * randn(rng, K)
+            for t in 1:p
+                π = inv(1 + exp(-fit.βz[t]))
+                if rand(rng) < π
+                    μ = clamp(inv(1 + exp(-ηc[t])), 1e-6, 1 - 1e-6)
+                    Yb[t, s] = rand(rng, Beta(μ * fit.φ, (1 - μ) * fit.φ))
+                end
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try fit_beta_hurdle_gllvm(Yb; K = K) catch; return nothing end
+        return vcat(fb.βz, fb.βc, pack_lambda(fb.Λc), log(fb.φ))
+    end
+    names = vcat(_twopart_lin_names(p, K), "phi")
     return _FamilyCI(θ, nll, names, vcat(fill(:linear, length(θ) - 1), :log), sim, refit)
 end
 
@@ -897,8 +938,8 @@ function confint(fit::_CIFit, Y::AbstractMatrix;
     0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
     objective in (:laplace, :va) ||
         throw(ArgumentError("objective must be :laplace or :va; got :$objective"))
-    if objective === :va && !(fit isa Union{PoissonFit, NBFit, BinomialFit, BetaFit, GammaFit})
-        throw(ArgumentError("objective=:va is only available for Poisson/NB/Binomial/Beta/Gamma fits"))
+    if objective === :va && !(fit isa Union{PoissonFit, NBFit, BinomialFit, BetaFit, GammaFit, DeltaGammaFit})
+        throw(ArgumentError("objective=:va is only available for Poisson/NB/Binomial/Beta/Gamma/Delta-Gamma fits"))
     end
     if objective === :va && method !== :wald
         throw(ArgumentError("objective=:va currently supports method=:wald only"))
@@ -916,4 +957,58 @@ function confint(fit::_CIFit, Y::AbstractMatrix;
     else
         throw(ArgumentError("method must be :wald, :profile, or :bootstrap; got :$method"))
     end
+end
+
+# ---------------------------------------------------------------------------
+# Wald CIs for the SPDE-latent model. It needs the observation locations (not
+# stored in the fit) to rebuild the projector, so it gets a dedicated entry
+# rather than the generic confint(fit, Y) dispatch — but reuses the same Wald
+# machinery (_FamilyCI + _family_wald).
+# ---------------------------------------------------------------------------
+"""
+    confint_spde_latent(fit::SPDELatentFit, Y, locs; level=0.95, parm=nothing,
+                        α=2, newton_maxiter=50, newton_tol=1e-9) -> NamedTuple
+
+Wald confidence intervals for the SPDE-latent GLLVM. `Y` (p×M) and `locs` (M×2) must
+match the fit. β and Λ are reported on their natural scale; κ, τ, and any dispersion
+on the positive scale. SEs come from the observed information (finite-difference
+Hessian of the θ-marginal, which rebuilds the Matérn precision each evaluation).
+"""
+function confint_spde_latent(fit::SPDELatentFit, Y::AbstractMatrix, locs::AbstractMatrix;
+                             level::Real = 0.95, parm = nothing, α::Integer = 2,
+                             newton_maxiter::Integer = 50, newton_tol::Real = 1e-9)
+    0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
+    p, K = size(fit.Λ); rr = rr_theta_len(p, K)
+    Cdiag, G = spde_fem(fit.nodes, fit.tris)
+    A = spde_projector(fit.nodes, fit.tris, locs)
+    Ntr = ones(eltype(Y), size(Y))
+    nd = _spde_disp_len(fit.family)
+    dbase = p + rr + 2
+    θ = vcat(fit.β, pack_lambda(fit.Λ), log(fit.κ), log(fit.τ),
+             nd == 0 ? Float64[] : [log(fit.dispersion)])
+    nll = function (θv)
+        β = θv[1:p]; Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+        κ = exp(θv[p + rr + 1]); τ = exp(θv[p + rr + 2])
+        fam = _spde_make_family(fit.family, view(θv, (dbase + 1):(dbase + nd)))
+        v = try
+            Q = spde_precision(Cdiag, G, κ, τ; α = α)
+            -spde_latent_marginal_loglik(fam, Y, Ntr, Λ, β, fit.link, A, Q;
+                                         maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    names = vcat(["beta[$t]" for t in 1:p],
+                 _confint_lambda_term_names("Lambda", p, K), "kappa", "tau")
+    kinds = vcat(fill(:linear, p + rr), :log, :log)
+    if nd > 0
+        push!(names, "dispersion"); push!(kinds, :log)
+    end
+    sim   = _ -> error("bootstrap is not supported for SPDE-latent CIs")
+    refit = _ -> nothing
+    ad = _FamilyCI(θ, nll, names, kinds, sim, refit)
+    sel = _family_select(parm, ad.names)
+    isempty(sel) && throw(ArgumentError("parm selector matched no parameters"))
+    return _family_wald(ad, sel, level)
 end
