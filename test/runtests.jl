@@ -79,6 +79,7 @@ using GLLVM
     include("test_constrained_ordination.jl")
     include("test_rrr.jl")
     include("test_quadratic.jl")
+    include("test_structural_confint.jl")
     include("test_ordered_beta.jl")
     include("test_variational.jl")
     include("test_variational_binomial.jl")

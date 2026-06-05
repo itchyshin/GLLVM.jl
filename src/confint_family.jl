@@ -35,7 +35,8 @@ const _TwoPartFit = Union{DeltaLogNormalFit, DeltaGammaFit, HurdlePoissonFit,
                           HurdleNBFit, ZIPFit, ZINBFit, BetaHurdleFit}
 
 # Everything the unified confint(fit, Y; method=…) entry accepts.
-const _CIFit = Union{_FamilyFit, _TwoPartFit, OrdinalFit, GllvmCovFit, OrderedBetaFit}
+const _CIFit = Union{_FamilyFit, _TwoPartFit, OrdinalFit, GllvmCovFit, OrderedBetaFit,
+                     QuadraticFit, RowEffectFit}
 
 # ---------------------------------------------------------------------------
 # Per-family adapter. Bundles everything the generic routines need:
@@ -432,6 +433,70 @@ function _family_ci(fit::OrderedBetaFit, Y::AbstractMatrix;
     names = vcat(_glm_lin_names(p, K), "cut0", "cut1", "phi")
     kinds = vcat(fill(:linear, p + rr + 2), :log)
     return _FamilyCI(θ, nll, names, kinds, sim, refit)
+end
+
+# ---------------------------------------------------------------------------
+# Structural models (quadratic, RRR, row-effects, species-cov, fourth-corner,
+# concurrent/constrained). Each adapter mirrors that fitter's own negll layout
+# and reconstructs the dispersion via _cov_family (covariates.jl). Bootstrap is
+# unsupported (sim stub errors); Wald + profile work. Dispersion (when present)
+# is the last θ entry on the log scale.
+# ---------------------------------------------------------------------------
+function _family_ci(fit::QuadraticFit, Y::AbstractMatrix;
+                    N::Union{Nothing, AbstractMatrix} = nothing,
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); pK = p * K
+    lk = fit.link; fam0 = fit.family; hasd = _cov_has_disp(fam0)
+    Nm = N === nothing ? fill(1, p, n) : N
+    θ = hasd ? vcat(fit.β, pack_lambda(fit.Λ), vec(fit.D), log(fit.dispersion)) :
+               vcat(fit.β, pack_lambda(fit.Λ), vec(fit.D))
+    nll = function (θv)
+        β = θv[1:p]; Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+        D = reshape(θv[(p + rr + 1):(p + rr + pK)], p, K)
+        disp = hasd ? exp(θv[p + rr + pK + 1]) : NaN
+        v = try
+            -quadratic_marginal_loglik_laplace(_cov_family(fam0, disp), Y, Nm, Λ, D, β, lk;
+                                               maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    names = vcat(_glm_lin_names(p, K), ["D[$t,$k]" for k in 1:K for t in 1:p])
+    kinds = fill(:linear, p + rr + pK)
+    hasd && (push!(names, "dispersion"); push!(kinds, :log))
+    return _FamilyCI(θ, nll, names, kinds,
+                     _ -> error("bootstrap not supported for quadratic CIs"), _ -> nothing)
+end
+
+function _family_ci(fit::RowEffectFit, Y::AbstractMatrix;
+                    N::Union{Nothing, AbstractMatrix} = nothing,
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); nfree = n - 1
+    lk = fit.link; fam0 = fit.family; hasd = _cov_has_disp(fam0)
+    Nm = N === nothing ? fill(1, p, n) : N
+    ρfree0 = fit.ρ[2:end]                       # ρ_1 ≡ 0 reference
+    θ = hasd ? vcat(fit.β, ρfree0, pack_lambda(fit.Λ), log(fit.dispersion)) :
+               vcat(fit.β, ρfree0, pack_lambda(fit.Λ))
+    nll = function (θv)
+        β = θv[1:p]; ρfree = θv[(p + 1):(p + nfree)]
+        Λ = unpack_lambda(θv[(p + nfree + 1):(p + nfree + rr)], p, K)
+        disp = hasd ? exp(θv[p + nfree + rr + 1]) : NaN
+        ρ = vcat(zero(eltype(ρfree)), ρfree); O = _build_offset_row(ρ, p)
+        v = try
+            -_marginal_loglik_offset(_cov_family(fam0, disp), Y, Nm, Λ, β, O, lk;
+                                     maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    names = vcat(["beta[$t]" for t in 1:p], ["rho[$(s + 1)]" for s in 1:nfree],
+                 _confint_lambda_term_names("Lambda", p, K))
+    kinds = fill(:linear, p + nfree + rr)
+    hasd && (push!(names, "dispersion"); push!(kinds, :log))
+    return _FamilyCI(θ, nll, names, kinds,
+                     _ -> error("bootstrap not supported for row-effect CIs"), _ -> nothing)
 end
 
 # --- Hurdle-Poisson --------------------------------------------------------
