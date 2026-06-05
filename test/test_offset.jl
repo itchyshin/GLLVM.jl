@@ -105,4 +105,29 @@ using GLLVM, Test, Random, Distributions
         ℓ_v = GLLVM.delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α; offsetc = 0.3 .* randn(pp, nn))
         @test isfinite(ℓ_v) && ℓ_v != ℓ0
     end
+
+    # ---- fit_delta_gamma_gllvm offset kwarg (reference two-part fitter) -----
+    # The maximised likelihood is invariant to a constant positive-part offset (it
+    # reparameterises β^c), so the offset fit matches the no-offset fit's loglik and
+    # its β^c is shifted by −c. (loglik invariance is robust to warm-start details.)
+    @testset "fit_delta_gamma_gllvm offset" begin
+        Random.seed!(616)
+        p, K, n = 3, 1, 120
+        βz = 0.4 .* randn(p) .+ 0.3; βc = 0.2 .* randn(p); α = 3.0
+        Λc = 0.3 .* randn(p, K)
+        Y = zeros(p, n)
+        for s in 1:n
+            ηc = βc .+ Λc * randn(K)
+            for t in 1:p
+                rand() < inv(1 + exp(-βz[t])) && (Y[t, s] = rand(Gamma(α, exp(ηc[t]) / α)))
+            end
+        end
+        cc = 0.5 .* randn(p); O = repeat(cc, 1, n)
+
+        f0 = fit_delta_gamma_gllvm(Y; K = K, iterations = 100)
+        fO = fit_delta_gamma_gllvm(Y; K = K, offset = O, iterations = 100)
+        @test isfinite(fO.loglik)
+        @test isapprox(f0.loglik, fO.loglik; atol = 2e-2)      # reparam-invariant
+        @test isapprox(f0.βc, fO.βc .+ cc; atol = 1.5e-1)      # β^c shifted by −c
+    end
 end

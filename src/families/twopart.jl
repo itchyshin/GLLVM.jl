@@ -575,6 +575,7 @@ positive value as log-mean intercepts + SVD of positive-part log-residuals as
 loadings + a method-of-moments `α₀` from the standardised positives.
 """
 function fit_delta_gamma_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
+        offset = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
@@ -605,6 +606,11 @@ function fit_delta_gamma_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     end
     α0 = nres > 1 ? clamp((nres - 1) / sumsq, 0.1, 100.0) : 1.0
     Zc = [Y[t, j] > 0 ? log(max(Y[t, j], 1e-6)) - βc0[t] : 0.0 for t in 1:p, j in 1:n]
+    # Offset (on the positive-part predictor η^c = β^c + offset + Λ^c z): remove it
+    # from the loadings warm start so the SVD sees the offset-free residual.
+    offset === nothing || (@inbounds for t in 1:p, j in 1:n
+        Y[t, j] > 0 && (Zc[t, j] -= offset[t, j])
+    end)
     F = svd(Zc); kk = min(K, length(F.S))
     Λc0 = zeros(p, K)
     @inbounds for j in 1:kk
@@ -617,7 +623,7 @@ function fit_delta_gamma_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         Λc = unpack_lambda(θ[(2p + 1):(2p + rr)], p, K)
         α = exp(θ[2p + rr + 1])
         v = try
-            -delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α;
+            -delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α; offsetc = offset,
                                                  maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
