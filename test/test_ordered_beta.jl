@@ -151,4 +151,42 @@ end
         ord = ordination(fit, Y)
         @test size(ord.sites) == (n, K)
     end
+
+    @testset "Wald CIs + coef_table" begin
+        Random.seed!(909)
+        p, K, n = 4, 1, 150
+        βt = 0.4 .* randn(p)
+        φ  = 8.0
+        Λt = 0.3 .* randn(p, K)
+        Y = Matrix{Float64}(undef, p, n)
+        for t in 1:p, s in 1:n
+            r = (t + 3s) % 6
+            if r == 0
+                Y[t, s] = 0.0
+            elseif r == 1
+                Y[t, s] = 1.0
+            else
+                μ = inv(1 + exp(-βt[t]))
+                Y[t, s] = clamp(rand(Beta(μ * φ, (1 - μ) * φ)), 1e-4, 1 - 1e-4)
+            end
+        end
+        fit = fit_ordered_beta_gllvm(Y; K = K)
+
+        ci = confint(fit, Y; method = :wald)
+        nterm = p + (p * K - div(K * (K - 1), 2)) + 3      # β + Λ + cut0 + cut1 + φ
+        @test length(ci.term) == nterm
+        @test ci.method == :wald
+        @test "cut0" in ci.term && "cut1" in ci.term
+        iφ = findfirst(==("phi"), ci.term)
+        @test iφ !== nothing && ci.estimate[iφ] > 0       # φ on the positive scale
+        for i in eachindex(ci.term)
+            if isfinite(ci.lower[i]) && isfinite(ci.upper[i])
+                @test ci.lower[i] ≤ ci.estimate[i] ≤ ci.upper[i]
+            end
+        end
+
+        ct = coef_table(fit, Y)
+        @test ct isa GllvmCoefTable
+        @test length(ct.term) == nterm
+    end
 end
