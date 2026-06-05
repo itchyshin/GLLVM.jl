@@ -41,6 +41,7 @@ using GLLVM
     include("test_gamma_laplace.jl")
     include("test_binomial_fit.jl")
     include("test_poisson_fit.jl")
+    include("test_laplace_grad.jl")
     include("test_nb_fit.jl")
     include("test_beta_fit.jl")
     include("test_gamma_fit.jl")
