@@ -256,6 +256,91 @@ function _profile_refit_with_fixed(fit::GllvmFit, i::Integer, c::Real,
     return (-nll_min, true, Optim.minimizer(res))
 end
 
+function _profile_can_ppca_sigma_eps(fit::GllvmFit,
+                                     param_index::Integer,
+                                     y::AbstractMatrix,
+                                     X::Union{Nothing, AbstractArray{<:Real, 3}},
+                                     Σ_phy::Union{Nothing, AbstractMatrix})
+    model = fit.model
+    q = fit.pars.β === nothing ? 0 : length(fit.pars.β)
+    return param_index == 1 &&
+        q == 0 &&
+        model.K < model.p &&
+        model.K_W == 0 &&
+        !model.has_diag &&
+        model.K_phy == 0 &&
+        !model.has_phy_unique &&
+        X === nothing &&
+        Σ_phy === nothing &&
+        size(y, 1) == model.p
+end
+
+function _profile_ppca_fixed_sigma_loglik_from_eig(λ::AbstractVector,
+                                                   σ²::Real,
+                                                   p::Integer,
+                                                   K::Integer,
+                                                   n::Integer)
+    σ² > 0 || return -Inf
+    logdet = 0.0
+    quad = 0.0
+    @inbounds for i in 1:p
+        λ_i = max(float(λ[i]), 0.0)
+        s_i = (i <= K && λ_i > σ²) ? λ_i : σ²
+        logdet += log(s_i)
+        quad += λ_i / s_i
+    end
+    return -0.5 * n * (p * log(2π) + logdet + quad)
+end
+
+function _profile_ppca_fixed_sigma_loglik(y::AbstractMatrix,
+                                          K::Integer,
+                                          σ_eps::Real)
+    p, n = size(y)
+    K < p || throw(ArgumentError("PPCA fixed-sigma profile requires K < p"))
+    σ_eps > 0 || return -Inf
+    S = (y * y') ./ n
+    λ = reverse(eigen(Symmetric(S)).values)
+    return _profile_ppca_fixed_sigma_loglik_from_eig(λ, σ_eps^2, p, K, n)
+end
+
+function _profile_ppca_sigma_eps_ci(fit::GllvmFit;
+                                    level::Real,
+                                    grid_extent::Real,
+                                    max_expand::Integer,
+                                    max_bisect::Integer,
+                                    y::AbstractMatrix)
+    model = fit.model
+    p, n = size(y)
+    S = (y * y') ./ n
+    λ = reverse(eigen(Symmetric(S)).values)
+    cutoff = quantile(Chisq(1), level)
+    ll_full = fit.logLik
+    x0 = log(fit.pars.σ_eps)
+    step_init = max(grid_extent / max_expand, 1e-3)
+
+    deviance(log_σ) = 2.0 * (ll_full -
+        _profile_ppca_fixed_sigma_loglik_from_eig(
+            λ, exp(2 * log_σ), p, model.K, n))
+
+    lower_log = _profile_bisect_side(deviance, x0, -step_init, cutoff;
+                                     max_expand = max_expand,
+                                     max_bisect = max_bisect)
+    upper_log = _profile_bisect_side(deviance, x0,  step_init, cutoff;
+                                     max_expand = max_expand,
+                                     max_bisect = max_bisect)
+
+    lower = isnan(lower_log) ? NaN : exp(lower_log)
+    upper = isnan(upper_log) ? NaN : exp(upper_log)
+    method = if isnan(lower) && isnan(upper)
+        :failed
+    elseif isnan(lower) || isnan(upper)
+        :partial
+    else
+        :profile
+    end
+    return (lower = lower, upper = upper, method = method)
+end
+
 # Bracket-then-bisect on one side (lower if Δ_init < 0, upper if > 0).
 #
 # We walk outward from x0 = θ̂_i in steps of step_init until the deviance
@@ -396,6 +481,15 @@ function profile_ci(fit::GllvmFit, param_index::Integer;
     1 ≤ param_index ≤ N ||
         throw(ArgumentError("param_index $param_index out of range 1:$N"))
 
+    if _profile_can_ppca_sigma_eps(fit, param_index, y, X, Σ_phy)
+        return _profile_ppca_sigma_eps_ci(fit;
+                                          level = level,
+                                          grid_extent = grid_extent,
+                                          max_expand = max_expand,
+                                          max_bisect = max_bisect,
+                                          y = y)
+    end
+
     cutoff = quantile(Chisq(1), level)
     θ̂_i = float(θ̂[param_index])
     ll_full = fit.logLik
@@ -482,4 +576,3 @@ end
 function profile_ci(fit::GllvmFit, parm::Symbol; kwargs...)
     return profile_ci(fit, String(parm); kwargs...)
 end
-

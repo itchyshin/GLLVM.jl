@@ -38,6 +38,26 @@ using GLLVM, Test, Random, LinearAlgebra
         @info "σ_eps profile CI (small σ)" lower=ci_prof.lower upper=ci_prof.upper method=ci_prof.method
     end
 
+    @testset "PPCA sigma profile matches constrained refit" begin
+        Random.seed!(12)
+        p, K, n = 5, 2, 200
+        y = randn(p, n)
+        fit = fit_gaussian_gllvm(y; K = K)
+        idx = GLLVM._profile_parm_index(fit, "sigma_eps")
+        c = fit.pars.θ_packed[idx] + 0.08
+        ll_refit, ok, _ = GLLVM._profile_refit_with_fixed(
+            fit, idx, c, y, nothing, nothing)
+        ll_ppca = GLLVM._profile_ppca_fixed_sigma_loglik(y, K, exp(c))
+
+        @test ok
+        @test ll_ppca ≈ ll_refit atol = 1e-6
+
+        ci = GLLVM.profile_ci(fit, "sigma_eps"; y = y)
+        @test ci.method == :profile
+        @test isfinite(ci.lower) && isfinite(ci.upper)
+        @test ci.lower < fit.pars.σ_eps < ci.upper
+    end
+
     @testset "returns NaN gracefully when refit fails" begin
         # Construct a degenerate fixture; profile should not crash
         Random.seed!(2)

@@ -582,7 +582,7 @@ function bootstrap_ci_derived(fit::GllvmFit, derived_fn::Function;
         y_b = Matrix{Float64}(undef, p, n)
         _derived_simulate!(rng, y_b, μ̂, L_site, L_phy, Λ_phy_aug)
         try
-            fit_b = fit_gaussian_gllvm(y_b; refit_kwargs..., warm_kwargs...)
+            fit_b = _bootstrap_refit_gaussian(y_b, refit_kwargs, warm_kwargs)
             converged[b] = fit_b.converged
             v = call_derived(fit_b)
             if isfinite(v)

@@ -1,5 +1,160 @@
 # Check Log
 
+## 2026-06-05 - Pure-J1 CI Fast Paths And Parity Scaffold Probe
+
+### Scope
+
+Resumed the dirty `codex/non-gaussian-fitter-gradients` worktree and verified
+the pure-J1 Gaussian confidence-interval speed slice. The code path is narrow:
+no `X`, no W block, no diagonal random effects, no phylogenetic block, and
+`K < p`.
+
+### Implementation
+
+- `bootstrap_ci` and `bootstrap_ci_derived` now route pure-J1 bootstrap refits
+  through `_bootstrap_refit_gaussian`, which uses `_bootstrap_ppca_direct_refit`
+  instead of paying generic `Optim` setup.
+- `profile_ci(fit, "sigma_eps"; y=...)` now uses the PPCA fixed-sigma
+  eigenvalue log-likelihood in the same pure-J1 regime, avoiding repeated
+  constrained LBFGS refits.
+- The opt-in R parity scaffold now gets past two plumbing bugs: invalid
+  `@test expr "message"` syntax and an R block that returned a list without
+  binding `r_result` for the later extractor calls.
+
+### Correctness Tests
+
+Focused tests:
+
+```sh
+/Users/z3437171/.juliaup/bin/julialauncher --project=. test/test_confint_profile.jl
+/Users/z3437171/.juliaup/bin/julialauncher --project=. test/test_confint_bootstrap.jl
+/Users/z3437171/.juliaup/bin/julialauncher --project=. test/test_confint_derived.jl
+```
+
+Results:
+
+```text
+profile CI             | 9/9 pass
+parametric bootstrap CI | 18/18 pass
+derived-quantity CIs   | 48/48 pass
+```
+
+Core suite:
+
+```sh
+/Users/z3437171/.juliaup/bin/julialauncher --project=. test/runtests.jl
+```
+
+Result: exit code 0. The run retained the existing `sparse phy precision`
+broken placeholder and the two direct-environment quality placeholders; there
+were 0 failures and 0 errors. Representative touched blocks:
+
+```text
+profile CI             | 9/9 pass
+parametric bootstrap CI | 18/18 pass
+derived-quantity CIs   | 48/48 pass
+quality                | 2 broken placeholders in direct core env
+```
+
+Full package suite:
+
+```sh
+/Users/z3437171/.juliaup/bin/julialauncher --project=. -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+quality       | 12/12 pass
+Testing GLLVM tests passed
+```
+
+The full run also retained the known non-failing duplicate-include warnings
+from `src/takahashi_selinv.jl`.
+
+### Documentation Build
+
+```sh
+/Users/z3437171/.juliaup/bin/julialauncher --project=docs docs/make.jl
+```
+
+Result: exit code 0. Remaining local warnings were deployment auto-detection
+skipped outside CI, missing optional Vitepress logo/favicon/package defaults,
+and npm audit reporting 4 moderate vulnerabilities.
+
+### Benchmark Evidence
+
+Ad hoc `time_ns` median harness on Julia 1.10.0, fixture `p=8, K=2, n=300`
+because `BenchmarkTools` is not a package dependency:
+
+```text
+bootstrap_refit_generic_seconds=0.000271146 bytes=1738544
+bootstrap_refit_fast_seconds=2.44165e-5 bytes=98320 speedup=11.1050x
+fixed_sigma_constrained_seconds=0.003627625 bytes=44074928
+fixed_sigma_eig_seconds=8.25e-6 bytes=6464 speedup=439.7121x
+profile_ci_sigma_fast_seconds=1.8417e-5 bytes=13568
+```
+
+### R-Parity Probe
+
+Environment:
+
+```text
+R=R version 4.5.2 (2025-10-31)
+gllvm=2.0.5
+gllvmTMB=0.2.0
+```
+
+The opt-in parity runner was executed from a temporary Julia project so its
+runtime `Pkg.develop(path=...)` did not dirty the tracked `test/parity`
+project:
+
+```sh
+tmpdir=$(mktemp -d); GLLVM_PARITY_TESTS=1 \
+  /Users/z3437171/.juliaup/bin/julialauncher --project="$tmpdir" \
+  -e 'using Pkg; Pkg.add("RCall"); include("test/parity/runparity.jl")'
+```
+
+Result after the scaffold plumbing fixes:
+
+```text
+Gaussian GLLVM parity: GLLVM.jl vs gllvmTMB | 2 pass, 27 fail, 0 error
+```
+
+The current CRAN `gllvm` call therefore is not a passing parity oracle for this
+branch. This does not contradict the pure-J1 fast-path tests, which compare
+against the existing Julia generic implementation, but it is a blocker before
+using `test/parity/` as release-grade R-parity evidence.
+
+### Audit Scans
+
+Commands:
+
+```sh
+git diff --check
+rg -n "Gaussian only|not yet implemented|planned next|TODO|FIXME" README.md docs/src CLAUDE.md
+rg -n "340.?x|speedup|per.?fit|moderate.?to.?large p|100x|100.?x|gllvmTMB" README.md docs/src docs/PERF-plus-design.md CLAUDE.md
+rg -n "\]\(/[^)]+\)|layout: home|hero:|features:|https://https://" docs/src docs/make.jl
+rg -l -e '<private-name-patterns>' README.md docs src test bench AGENTS.md CLAUDE.md Project.toml Manifest.toml
+```
+
+Results:
+
+- `git diff --check`: clean.
+- Gaussian-only/TODO scan: no matches.
+- Rendered-frontmatter/link-shape scan: no matches.
+- Performance/gllvmTMB scan: expected existing README, benchmark, comparison,
+  and roadmap/status hits only; this slice adds no new public speed claim.
+- Private-provenance scan: no matches.
+
+### Rose Verdict
+
+PASS WITH NOTES. The pure-J1 CI fast paths are validated against the generic
+Julia implementation, pass the core and full package suites, and show a clear
+local speedup. The opt-in R parity scaffold is now runnable through RCall but
+does not pass against the current CRAN `gllvm` call; do not use it as release
+parity evidence until the R call shape/objective are audited.
+
 ## 2026-06-03 - Augmented Poisson Log-sigma Gradient Check
 
 ### Scope

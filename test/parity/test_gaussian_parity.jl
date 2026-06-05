@@ -52,8 +52,8 @@ using GLLVM, RCall, Test, Random, LinearAlgebra, Statistics
     # ── 2. Julia fit via GLLVM.jl ────────────────────────────────────────────
     jl_fit = fit_gaussian_gllvm(y; K = K)
 
-    @test jl_fit.converged           "GLLVM.jl fit did not converge"
-    @test isfinite(jl_fit.logLik)    "GLLVM.jl logLik is not finite"
+    @test jl_fit.converged
+    @test isfinite(jl_fit.logLik)
 
     jl_logL  = jl_fit.logLik
     jl_Λ     = jl_fit.pars.Λ          # p × K loadings (rotation-non-unique)
@@ -131,9 +131,10 @@ using GLLVM, RCall, Test, Random, LinearAlgebra, Statistics
         sigma_eps_r <- if (length(r_sigma) == 1L) r_sigma else mean(r_sigma)
         Sigma_y_r   <- Lam %*% t(Lam) + diag(sigma_eps_r^2, p)
 
-        list(logL     = r_logL,
-             sigma    = sigma_eps_r,
-             Sigma_y  = Sigma_y_r)
+        r_result <- list(logL     = r_logL,
+                         sigma    = sigma_eps_r,
+                         Sigma_y  = Sigma_y_r)
+        r_result
     """
 
     r_logL   = rcopy(Float64,     R"r_result$logL")

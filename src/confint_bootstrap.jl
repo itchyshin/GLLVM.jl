@@ -215,6 +215,64 @@ function _bootstrap_refit_warm_kwargs(fit::GllvmFit,
             β_init = fit.pars.β)
 end
 
+function _bootstrap_ppca_direct_refit(y::AbstractMatrix; K::Integer)
+    t0 = time()
+    p, _ = size(y)
+    Λ, σ_eps = ppca_init(y, K)
+    θ = pack_lambda(Λ ./ σ_eps)
+    spec = (q = 0,
+            p = Int(p),
+            K_B = Int(K),
+            K_W = 0,
+            has_diag = false,
+            K_phy = 0,
+            has_phy_unique = false)
+    rec = profile_recover(θ, y;
+                          spec = spec,
+                          X = nothing,
+                          Σ_phy = nothing,
+                          profile_beta = false)
+    θ_packed = vcat([log(rec.σ_eps)], pack_lambda(rec.Λ_B))
+    t1 = time()
+    return GllvmFit(
+        GllvmModel(Int(p), Int(K), 0, false, 0, false),
+        (σ_eps = rec.σ_eps,
+         Λ = rec.Λ_B,
+         β = Float64[],
+         Λ_W = nothing,
+         σ²_B = nothing,
+         σ²_W = nothing,
+         Λ_phy = nothing,
+         σ_phy = nothing,
+         θ_packed = θ_packed),
+        rec.logLik,
+        0,
+        true,
+        nothing,
+        t1 - t0)
+end
+
+function _bootstrap_can_ppca_direct_refit(y::AbstractMatrix,
+                                          refit_kwargs::NamedTuple)
+    p = size(y, 1)
+    return refit_kwargs.K < p &&
+        refit_kwargs.K_W == 0 &&
+        !refit_kwargs.has_diag &&
+        refit_kwargs.K_phy == 0 &&
+        !refit_kwargs.has_phy_unique &&
+        refit_kwargs.Σ_phy === nothing &&
+        refit_kwargs.X === nothing
+end
+
+function _bootstrap_refit_gaussian(y::AbstractMatrix,
+                                   refit_kwargs::NamedTuple,
+                                   warm_kwargs::NamedTuple)
+    if _bootstrap_can_ppca_direct_refit(y, refit_kwargs)
+        return _bootstrap_ppca_direct_refit(y; K = refit_kwargs.K)
+    end
+    return fit_gaussian_gllvm(y; refit_kwargs..., warm_kwargs...)
+end
+
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
@@ -407,7 +465,7 @@ function bootstrap_ci(fit::GllvmFit;
         y_b = Matrix{Float64}(undef, p, n)
         _bootstrap_simulate!(rng, y_b, μ̂, L_site, L_phy, Λ_phy_aug)
         try
-            fit_b = fit_gaussian_gllvm(y_b; refit_kwargs..., warm_kwargs...)
+            fit_b = _bootstrap_refit_gaussian(y_b, refit_kwargs, warm_kwargs)
             θ_b = fit_b.pars.θ_packed
             if length(θ_b) == n_params
                 replicates[b, :] = θ_b

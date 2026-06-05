@@ -71,6 +71,32 @@ end
         @test ci1.replicates == ci2.replicates
     end
 
+    @testset "pure J1 bootstrap refit uses exact PPCA fast path" begin
+        Random.seed!(23)
+        p, K, n = 5, 2, 150
+        y = randn(p, n)
+        fit_generic = fit_gaussian_gllvm(y; K = K)
+        refit_kwargs = (K = K,
+                        K_W = 0,
+                        has_diag = false,
+                        K_phy = 0,
+                        has_phy_unique = false,
+                        Σ_phy = nothing,
+                        X = nothing)
+        refit_fast = GLLVM._bootstrap_refit_gaussian(y, refit_kwargs, NamedTuple())
+
+        @test refit_fast.converged
+        @test refit_fast.n_iter == 0
+        @test refit_fast.logLik ≈ fit_generic.logLik atol = 1e-8
+        @test length(refit_fast.pars.θ_packed) == length(fit_generic.pars.θ_packed)
+
+        Σ_fast = refit_fast.pars.Λ * refit_fast.pars.Λ' +
+            refit_fast.pars.σ_eps^2 * I
+        Σ_generic = fit_generic.pars.Λ * fit_generic.pars.Λ' +
+            fit_generic.pars.σ_eps^2 * I
+        @test norm(Σ_fast - Σ_generic) / norm(Σ_generic) < 1e-10
+    end
+
     @testset "parallel and serial use the same per-replicate seeds" begin
         Random.seed!(3)
         p, K, n = 3, 1, 80
