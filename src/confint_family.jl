@@ -35,7 +35,8 @@ const _TwoPartFit = Union{DeltaLogNormalFit, DeltaGammaFit, HurdlePoissonFit,
                           HurdleNBFit, ZIPFit, ZINBFit, BetaHurdleFit}
 
 # Everything the unified confint(fit, Y; method=…) entry accepts.
-const _CIFit = Union{_FamilyFit, _TwoPartFit, OrdinalFit, GllvmCovFit, OrderedBetaFit}
+const _CIFit = Union{_FamilyFit, _TwoPartFit, OrdinalFit, GllvmCovFit, OrderedBetaFit,
+                     QuadraticFit, RowEffectFit}
 
 # ---------------------------------------------------------------------------
 # Per-family adapter. Bundles everything the generic routines need:
@@ -432,6 +433,214 @@ function _family_ci(fit::OrderedBetaFit, Y::AbstractMatrix;
     names = vcat(_glm_lin_names(p, K), "cut0", "cut1", "phi")
     kinds = vcat(fill(:linear, p + rr + 2), :log)
     return _FamilyCI(θ, nll, names, kinds, sim, refit)
+end
+
+# ---------------------------------------------------------------------------
+# Structural models (quadratic, RRR, row-effects, species-cov, fourth-corner,
+# concurrent/constrained). Each adapter mirrors that fitter's own negll layout
+# and reconstructs the dispersion via _cov_family (covariates.jl). Bootstrap is
+# unsupported (sim stub errors); Wald + profile work. Dispersion (when present)
+# is the last θ entry on the log scale.
+# ---------------------------------------------------------------------------
+function _family_ci(fit::QuadraticFit, Y::AbstractMatrix;
+                    N::Union{Nothing, AbstractMatrix} = nothing,
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); pK = p * K
+    lk = fit.link; fam0 = fit.family; hasd = _cov_has_disp(fam0)
+    Nm = N === nothing ? fill(1, p, n) : N
+    θ = hasd ? vcat(fit.β, pack_lambda(fit.Λ), vec(fit.D), log(fit.dispersion)) :
+               vcat(fit.β, pack_lambda(fit.Λ), vec(fit.D))
+    nll = function (θv)
+        β = θv[1:p]; Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+        D = reshape(θv[(p + rr + 1):(p + rr + pK)], p, K)
+        disp = hasd ? exp(θv[p + rr + pK + 1]) : NaN
+        v = try
+            -quadratic_marginal_loglik_laplace(_cov_family(fam0, disp), Y, Nm, Λ, D, β, lk;
+                                               maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    names = vcat(_glm_lin_names(p, K), ["D[$t,$k]" for k in 1:K for t in 1:p])
+    kinds = fill(:linear, p + rr + pK)
+    hasd && (push!(names, "dispersion"); push!(kinds, :log))
+    return _FamilyCI(θ, nll, names, kinds,
+                     _ -> error("bootstrap not supported for quadratic CIs"), _ -> nothing)
+end
+
+function _family_ci(fit::RowEffectFit, Y::AbstractMatrix;
+                    N::Union{Nothing, AbstractMatrix} = nothing,
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); nfree = n - 1
+    lk = fit.link; fam0 = fit.family; hasd = _cov_has_disp(fam0)
+    Nm = N === nothing ? fill(1, p, n) : N
+    ρfree0 = fit.ρ[2:end]                       # ρ_1 ≡ 0 reference
+    θ = hasd ? vcat(fit.β, ρfree0, pack_lambda(fit.Λ), log(fit.dispersion)) :
+               vcat(fit.β, ρfree0, pack_lambda(fit.Λ))
+    nll = function (θv)
+        β = θv[1:p]; ρfree = θv[(p + 1):(p + nfree)]
+        Λ = unpack_lambda(θv[(p + nfree + 1):(p + nfree + rr)], p, K)
+        disp = hasd ? exp(θv[p + nfree + rr + 1]) : NaN
+        ρ = vcat(zero(eltype(ρfree)), ρfree); O = _build_offset_row(ρ, p)
+        v = try
+            -_marginal_loglik_offset(_cov_family(fam0, disp), Y, Nm, Λ, β, O, lk;
+                                     maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    names = vcat(["beta[$t]" for t in 1:p], ["rho[$(s + 1)]" for s in 1:nfree],
+                 _confint_lambda_term_names("Lambda", p, K))
+    kinds = fill(:linear, p + nfree + rr)
+    hasd && (push!(names, "dispersion"); push!(kinds, :log))
+    return _FamilyCI(θ, nll, names, kinds,
+                     _ -> error("bootstrap not supported for row-effect CIs"), _ -> nothing)
+end
+
+# The covariate structural models need their design matrix (not stored in the fit),
+# so they get dedicated Wald entries (like confint_spde_latent), reusing _family_wald.
+
+"""
+    confint_speciescov(fit::GllvmSpeciesCovFit, Y, X; level=0.95, parm=nothing, N=nothing) -> NamedTuple
+
+Wald CIs for the species-specific-covariate GLLVM. `X` is the p×n×q design used in the fit.
+"""
+function confint_speciescov(fit::GllvmSpeciesCovFit, Y::AbstractMatrix, X::AbstractArray{<:Real,3};
+        level::Real = 0.95, parm = nothing, N::Union{Nothing,AbstractMatrix} = nothing,
+        newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); q = size(X, 3); pq = p * q
+    lk = fit.link; fam0 = fit.family; hasd = _cov_has_disp(fam0)
+    Nm = N === nothing ? fill(1, p, n) : N
+    θ = hasd ? vcat(fit.β, vec(fit.B), pack_lambda(fit.Λ), log(fit.dispersion)) :
+               vcat(fit.β, vec(fit.B), pack_lambda(fit.Λ))
+    nll = function (θv)
+        β = θv[1:p]; B = reshape(θv[(p + 1):(p + pq)], p, q)
+        Λ = unpack_lambda(θv[(p + pq + 1):(p + pq + rr)], p, K)
+        disp = hasd ? exp(θv[p + pq + rr + 1]) : NaN
+        v = try
+            -_marginal_loglik_offset(_cov_family(fam0, disp), Y, Nm, Λ, β,
+                                     _build_offset_species(X, B), lk;
+                                     maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    names = vcat(["beta[$t]" for t in 1:p], ["B[$t,$j]" for j in 1:q for t in 1:p],
+                 _confint_lambda_term_names("Lambda", p, K))
+    kinds = fill(:linear, p + pq + rr)
+    hasd && (push!(names, "dispersion"); push!(kinds, :log))
+    ad = _FamilyCI(θ, nll, names, kinds, _ -> error("bootstrap unsupported"), _ -> nothing)
+    sel = _family_select(parm, ad.names)
+    isempty(sel) && throw(ArgumentError("parm selector matched no parameters"))
+    return _family_wald(ad, sel, level)
+end
+
+"""
+    confint_fourthcorner(fit::FourthCornerFit, Y, Xenv, TR; level=0.95, parm=nothing, N=nothing) -> NamedTuple
+
+Wald CIs for the fourth-corner trait–environment GLLVM (`Xenv` n×q, `TR` p×r).
+"""
+function confint_fourthcorner(fit::FourthCornerFit, Y::AbstractMatrix,
+        Xenv::AbstractMatrix, TR::AbstractMatrix;
+        level::Real = 0.95, parm = nothing, N::Union{Nothing,AbstractMatrix} = nothing,
+        newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K)
+    q = size(Xenv, 2); r = size(TR, 2); qr = q * r
+    lk = fit.link; fam0 = fit.family; hasd = _cov_has_disp(fam0)
+    Nm = N === nothing ? fill(1, p, n) : N
+    θ = hasd ? vcat(fit.β, vec(fit.C), pack_lambda(fit.Λ), log(fit.dispersion)) :
+               vcat(fit.β, vec(fit.C), pack_lambda(fit.Λ))
+    nll = function (θv)
+        β = θv[1:p]; C = reshape(θv[(p + 1):(p + qr)], q, r)
+        Λ = unpack_lambda(θv[(p + qr + 1):(p + qr + rr)], p, K)
+        disp = hasd ? exp(θv[p + qr + rr + 1]) : NaN
+        v = try
+            -_marginal_loglik_offset(_cov_family(fam0, disp), Y, Nm, Λ, β,
+                                     _build_offset_fourthcorner(Xenv, TR, C), lk;
+                                     maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    names = vcat(["beta[$t]" for t in 1:p], ["C[$i,$j]" for j in 1:r for i in 1:q],
+                 _confint_lambda_term_names("Lambda", p, K))
+    kinds = fill(:linear, p + qr + rr)
+    hasd && (push!(names, "dispersion"); push!(kinds, :log))
+    ad = _FamilyCI(θ, nll, names, kinds, _ -> error("bootstrap unsupported"), _ -> nothing)
+    sel = _family_select(parm, ad.names)
+    isempty(sel) && throw(ArgumentError("parm selector matched no parameters"))
+    return _family_wald(ad, sel, level)
+end
+
+"""
+    confint_rrr(fit::RRRFit, Y, X; level=0.95, parm=nothing, N=nothing) -> NamedTuple
+
+Wald CIs for the reduced-rank-regression (constrained) ordination (`X` n×q).
+"""
+function confint_rrr(fit::RRRFit, Y::AbstractMatrix, X::AbstractMatrix;
+        level::Real = 0.95, parm = nothing, N::Union{Nothing,AbstractMatrix} = nothing)
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); q = size(X, 2); qK = q * K
+    lk = fit.link; fam0 = fit.family; hasd = _cov_has_disp(fam0)
+    Nm = N === nothing ? fill(1, p, n) : N
+    θ = hasd ? vcat(fit.β, pack_lambda(fit.Λ), vec(fit.B), log(fit.dispersion)) :
+               vcat(fit.β, pack_lambda(fit.Λ), vec(fit.B))
+    nll = function (θv)
+        β = θv[1:p]; Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+        B = reshape(θv[(p + rr + 1):(p + rr + qK)], q, K)
+        disp = hasd ? exp(θv[p + rr + qK + 1]) : NaN
+        v = try
+            -rrr_marginal_loglik(_cov_family(fam0, disp), Y, Nm, Λ, B, β, X, lk)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    names = vcat(_glm_lin_names(p, K), ["B[$i,$k]" for k in 1:K for i in 1:q])
+    kinds = fill(:linear, p + rr + qK)
+    hasd && (push!(names, "dispersion"); push!(kinds, :log))
+    ad = _FamilyCI(θ, nll, names, kinds, _ -> error("bootstrap unsupported"), _ -> nothing)
+    sel = _family_select(parm, ad.names)
+    isempty(sel) && throw(ArgumentError("parm selector matched no parameters"))
+    return _family_wald(ad, sel, level)
+end
+
+"""
+    confint_constrained(fit::ConstrainedOrdinationFit, Y, X; level=0.95, parm=nothing, N=nothing) -> NamedTuple
+
+Wald CIs for the concurrent / constrained ordination (`X` n×q).
+"""
+function confint_constrained(fit::ConstrainedOrdinationFit, Y::AbstractMatrix, X::AbstractMatrix;
+        level::Real = 0.95, parm = nothing, N::Union{Nothing,AbstractMatrix} = nothing,
+        newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); q = size(X, 2); qK = q * K
+    lk = fit.link; fam0 = fit.family; hasd = _cov_has_disp(fam0)
+    Nm = N === nothing ? fill(1, p, n) : N
+    θ = hasd ? vcat(fit.β, pack_lambda(fit.Λ), vec(fit.B), log(fit.dispersion)) :
+               vcat(fit.β, pack_lambda(fit.Λ), vec(fit.B))
+    nll = function (θv)
+        β = θv[1:p]; Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+        B = reshape(θv[(p + rr + 1):(p + rr + qK)], q, K)
+        disp = hasd ? exp(θv[p + rr + qK + 1]) : NaN
+        v = try
+            -_marginal_loglik_offset(_cov_family(fam0, disp), Y, Nm, Λ, β,
+                                     _build_offset_constrained(Λ, B, X), lk;
+                                     maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    names = vcat(_glm_lin_names(p, K), ["B[$i,$k]" for k in 1:K for i in 1:q])
+    kinds = fill(:linear, p + rr + qK)
+    hasd && (push!(names, "dispersion"); push!(kinds, :log))
+    ad = _FamilyCI(θ, nll, names, kinds, _ -> error("bootstrap unsupported"), _ -> nothing)
+    sel = _family_select(parm, ad.names)
+    isempty(sel) && throw(ArgumentError("parm selector matched no parameters"))
+    return _family_wald(ad, sel, level)
 end
 
 # --- Hurdle-Poisson --------------------------------------------------------
