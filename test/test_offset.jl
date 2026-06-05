@@ -1,4 +1,4 @@
-using GLLVM, Test, Random
+using GLLVM, Test, Random, Distributions
 
 @testset "Offsets in the linear predictor" begin
     Random.seed!(4242)
@@ -74,5 +74,35 @@ using GLLVM, Test, Random
         @test isapprox(g0.loglik, gO.loglik; atol = 1e-4)
         @test isapprox(g0.β, gO.β .+ cc; atol = 2e-2)
         @test isapprox(g0.α, gO.α; rtol = 1e-3)
+    end
+
+    # ---- Two-part substrate: offset on the positive part (offsetc) ---------
+    # η^c = β^c + offsetc + Λ^c z. offsetc = 0 ≡ no offset; a constant per-species
+    # offsetc ≡ shifting β^c (the absorption identity), both machine precision.
+    @testset "two-part offsetc absorption (Delta-Gamma marginal)" begin
+        Random.seed!(515)
+        pp, K, nn = 4, 1, 30
+        βz = 0.3 .* randn(pp); βc = 0.2 .* randn(pp); α = 3.0
+        Λc = 0.3 .* randn(pp, K)
+        Y = zeros(pp, nn)
+        for s in 1:nn
+            ηc = βc .+ Λc * randn(K)
+            for t in 1:pp
+                rand() < inv(1 + exp(-βz[t])) && (Y[t, s] = rand(Gamma(α, exp(ηc[t]) / α)))
+            end
+        end
+
+        ℓ0 = GLLVM.delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α)
+        ℓz = GLLVM.delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α; offsetc = zeros(pp, nn))
+        @test isapprox(ℓ0, ℓz; atol = 1e-9)
+
+        cc = 0.5 .* randn(pp); O = repeat(cc, 1, nn)
+        ℓ_off = GLLVM.delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α; offsetc = O)
+        ℓ_sh  = GLLVM.delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc .+ cc, α)
+        @test isapprox(ℓ_off, ℓ_sh; atol = 1e-8)
+
+        # A non-constant offsetc changes the marginal.
+        ℓ_v = GLLVM.delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α; offsetc = 0.3 .* randn(pp, nn))
+        @test isfinite(ℓ_v) && ℓ_v != ℓ0
     end
 end

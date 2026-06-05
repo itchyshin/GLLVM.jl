@@ -21,14 +21,17 @@
 function _twopart_mode(family, y::AbstractVector,
         Λz::AbstractMatrix, Λc::AbstractMatrix,
         βz::AbstractVector, βc::AbstractVector;
+        offsetz = nothing, offsetc = nothing,
         maxiter::Integer = 100, tol::Real = 1e-9)
     p, K = size(Λc)
+    offz = offsetz === nothing ? false : offsetz    # additive identity ⇒ no-offset path unchanged
+    offc = offsetc === nothing ? false : offsetc
     z = zeros(K)
     sz = Vector{Float64}(undef, p); sc = Vector{Float64}(undef, p)
     Wz = Vector{Float64}(undef, p); Wc = Vector{Float64}(undef, p)
     for _ in 1:maxiter
-        ηz = _clamp_eta.(βz .+ Λz * z)
-        ηc = _clamp_eta.(βc .+ Λc * z)
+        ηz = _clamp_eta.(βz .+ offz .+ Λz * z)
+        ηc = _clamp_eta.(βc .+ offc .+ Λc * z)
         @inbounds for t in 1:p
             s_z, s_c, W_z, W_c, _ = _tp_pieces(family, y[t], ηz[t], ηc[t])
             sz[t] = s_z; sc[t] = s_c; Wz[t] = W_z; Wc[t] = W_c
@@ -43,18 +46,25 @@ function _twopart_mode(family, y::AbstractVector,
 end
 
 """
-    twopart_loglik_site(family, y, Λz, Λc, βz, βc; maxiter=100, tol=1e-9) -> Float64
+    twopart_loglik_site(family, y, Λz, Λc, βz, βc; offsetz=nothing, offsetc=nothing,
+                        maxiter=100, tol=1e-9) -> Float64
 
-Two-part Laplace log-marginal for one site: `ℓ_s(ẑ) − ½ẑ'ẑ − ½logdet A(ẑ)`.
+Two-part Laplace log-marginal for one site: `ℓ_s(ẑ) − ½ẑ'ẑ − ½logdet A(ẑ)`. Optional
+`offsetz` / `offsetc` are known additive terms on the occurrence / positive-part
+predictors (`η^z = β^z + offsetz + Λ^z z`, similarly `η^c`).
 """
 function twopart_loglik_site(family, y::AbstractVector,
         Λz::AbstractMatrix, Λc::AbstractMatrix,
         βz::AbstractVector, βc::AbstractVector;
+        offsetz = nothing, offsetc = nothing,
         maxiter::Integer = 100, tol::Real = 1e-9)
     p = size(Λc, 1)
-    ẑ = _twopart_mode(family, y, Λz, Λc, βz, βc; maxiter = maxiter, tol = tol)
-    ηz = _clamp_eta.(βz .+ Λz * ẑ)
-    ηc = _clamp_eta.(βc .+ Λc * ẑ)
+    offz = offsetz === nothing ? false : offsetz
+    offc = offsetc === nothing ? false : offsetc
+    ẑ = _twopart_mode(family, y, Λz, Λc, βz, βc;
+                      offsetz = offsetz, offsetc = offsetc, maxiter = maxiter, tol = tol)
+    ηz = _clamp_eta.(βz .+ offz .+ Λz * ẑ)
+    ηc = _clamp_eta.(βc .+ offc .+ Λc * ẑ)
     Wz = Vector{Float64}(undef, p); Wc = Vector{Float64}(undef, p)
     ℓ = 0.0
     @inbounds for t in 1:p
@@ -66,16 +76,24 @@ function twopart_loglik_site(family, y::AbstractVector,
 end
 
 """
-    twopart_marginal_loglik_laplace(family, Y, Λz, Λc, βz, βc; kwargs...) -> Float64
+    twopart_marginal_loglik_laplace(family, Y, Λz, Λc, βz, βc;
+                                    offsetz=nothing, offsetc=nothing, kwargs...) -> Float64
 
-Total two-part Laplace log-marginal over the `n` sites (columns of `Y`).
+Total two-part Laplace log-marginal over the `n` sites (columns of `Y`). `offsetz` /
+`offsetc` (p×n, or `nothing`) are known additive offsets on the occurrence /
+positive-part predictors; a constant per-species `offsetc` is equivalent to shifting
+`βc` (the offset-absorption identity).
 """
 function twopart_marginal_loglik_laplace(family, Y::AbstractMatrix,
         Λz::AbstractMatrix, Λc::AbstractMatrix,
-        βz::AbstractVector, βc::AbstractVector; kwargs...)
+        βz::AbstractVector, βc::AbstractVector;
+        offsetz = nothing, offsetc = nothing, kwargs...)
     acc = 0.0
     @inbounds for s in axes(Y, 2)
-        acc += twopart_loglik_site(family, view(Y, :, s), Λz, Λc, βz, βc; kwargs...)
+        ozs = offsetz === nothing ? nothing : view(offsetz, :, s)
+        ocs = offsetc === nothing ? nothing : view(offsetc, :, s)
+        acc += twopart_loglik_site(family, view(Y, :, s), Λz, Λc, βz, βc;
+                                   offsetz = ozs, offsetc = ocs, kwargs...)
     end
     return acc
 end
