@@ -39,6 +39,7 @@ include("families/exponential.jl")       # Exponential (positive continuous, no 
 include("families/twopart.jl")           # Two-part substrate + Delta-lognormal / Delta-Gamma / Hurdle (Phase 3)
 include("families/beta_hurdle.jl")       # Beta-hurdle (Bernoulli × Beta) two-part family
 include("families/fit_gllvm.jl")         # unified fit_gllvm(Y; family) dispatcher
+include("laplace_grad.jl")               # exact (AD + implicit-step) Poisson Laplace gradient (issue #65)
 include("families/covariates.jl")        # fixed-effect covariates (Xβ) for the Laplace families
 include("families/species_covariates.jl") # species-specific covariate coefficients (XB) for the Laplace families
 include("families/constrained_ordination.jl") # constrained ordination (RRR of latent vars on env predictors)
@@ -99,6 +100,8 @@ export spatial_cov, relatedness_cov,
        fit_phylo_gaussian, PhyloGaussianFit,
        LogitLink, ProbitLink, CLogLogLink, IdentityLink, LogLink,
        fit_binomial_gllvm, BinomialFit, fit_poisson_gllvm, PoissonFit,
+       poisson_laplace_grad, binomial_laplace_grad, nb_laplace_grad,
+       gamma_laplace_grad, beta_laplace_grad,
        fit_nb_gllvm, NBFit, fit_beta_gllvm, BetaFit,
        Ordinal, fit_ordinal_gllvm, OrdinalFit, fit_gamma_gllvm, GammaFit,
        fit_exponential_gllvm, ExponentialFit, exponential_marginal_loglik_laplace,

@@ -67,6 +67,7 @@ estimates the offset-free intercept.
 """
 function fit_poisson_gllvm(Y::AbstractMatrix; K::Integer,
         link::Link = LogLink(), mask = nothing, offset = nothing,
+        gradient::Symbol = :finite,
         β_init = nothing, Λ_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
@@ -121,8 +122,34 @@ function fit_poisson_gllvm(Y::AbstractMatrix; K::Integer,
         return isfinite(v) ? v : 1e12
     end
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
-    res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
-                         autodiff = :finite)
+    opts = Optim.Options(g_tol = g_tol, iterations = iterations)
+    # Opt-in exact gradient (issue #65): the implicit-step ForwardDiff gradient,
+    # valid for the plain Poisson marginal (no mask/offset). Default :finite keeps
+    # the existing behaviour. A finite-difference fallback covers any θ where the
+    # analytic gradient is non-finite (e.g. a pathological line-search probe).
+    res = if gradient === :analytic && msk === nothing && offset === nothing
+        function g!(G, θ)
+            β = θ[1:p]; Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+            gg = try
+                poisson_laplace_grad(Yc, Λ, β)
+            catch
+                nothing
+            end
+            if gg === nothing || !all(isfinite, gg)
+                hh = 1e-6
+                @inbounds for i in eachindex(θ)
+                    θp = copy(θ); θp[i] += hh; θm = copy(θ); θm[i] -= hh
+                    G[i] = (negll(θp) - negll(θm)) / (2hh)
+                end
+            else
+                G .= .-gg                       # ∇(negll) = −∇(marginal)
+            end
+            return G
+        end
+        Optim.optimize(negll, g!, θ0, ls, opts)
+    else
+        Optim.optimize(negll, θ0, ls, opts; autodiff = :finite)
+    end
     θ̂ = Optim.minimizer(res)
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
