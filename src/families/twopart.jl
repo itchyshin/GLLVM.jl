@@ -185,6 +185,7 @@ and positive reals otherwise. Finite-difference gradient; warm start =
 log-responses + `σ₀ = sd(log y_{>0})`.
 """
 function fit_delta_lognormal_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
+        offset = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
@@ -225,7 +226,7 @@ function fit_delta_lognormal_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         Λc = unpack_lambda(θ[(2p + 1):(2p + rr)], p, K)
         σ = exp(θ[2p + rr + 1])
         v = try
-            -delta_lognormal_marginal_loglik_laplace(Y, Λc, βz, βc, σ;
+            -delta_lognormal_marginal_loglik_laplace(Y, Λc, βz, βc, σ; offsetc = offset,
                                                      maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
@@ -319,6 +320,7 @@ Fit a Hurdle-Poisson two-part GLLVM by L-BFGS over `[βz; βc; vec(Λc)]` (Λz=0
 `logit(empirical P(y>0))` + `log` mean positive count + SVD loadings.
 """
 function fit_hurdle_poisson_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
+        offset = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
@@ -348,7 +350,7 @@ function fit_hurdle_poisson_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         βz = θ[1:p]; βc = θ[(p + 1):(2p)]
         Λc = unpack_lambda(θ[(2p + 1):(2p + rr)], p, K)
         v = try
-            -hurdle_poisson_marginal_loglik_laplace(Y, Λc, βz, βc;
+            -hurdle_poisson_marginal_loglik_laplace(Y, Λc, βz, βc; offsetc = offset,
                                                     maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
@@ -440,6 +442,7 @@ end
 Fit a Hurdle-NB two-part GLLVM by L-BFGS over `[βz; βc; vec(Λc); log r]` (Λz=0).
 """
 function fit_hurdle_nb_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
+        offset = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
@@ -469,7 +472,7 @@ function fit_hurdle_nb_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         Λc = unpack_lambda(θ[(2p + 1):(2p + rr)], p, K)
         r = exp(θ[2p + rr + 1])
         v = try
-            -hurdle_nb_marginal_loglik_laplace(Y, Λc, βz, βc, r;
+            -hurdle_nb_marginal_loglik_laplace(Y, Λc, βz, βc, r; offsetc = offset,
                                                maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
@@ -780,6 +783,7 @@ Fit a zero-inflated Poisson GLLVM by L-BFGS over `[βz; βc; vec(Λc)]` (Λz=0).
 excess-zero fraction + positive-count log-means + SVD loadings.
 """
 function fit_zip_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
+        offset = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
@@ -790,7 +794,7 @@ function fit_zip_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         βz = θ[1:p]; βc = θ[(p + 1):(2p)]
         Λc = unpack_lambda(θ[(2p + 1):(2p + rr)], p, K)
         v = try
-            -zip_marginal_loglik_laplace(Y, Λc, βz, βc;
+            -zip_marginal_loglik_laplace(Y, Λc, βz, βc; offsetc = offset,
                                          maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
@@ -882,6 +886,7 @@ end
 Fit a zero-inflated NB2 GLLVM by L-BFGS over `[βz; βc; vec(Λc); log r]` (Λz=0).
 """
 function fit_zinb_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
+        offset = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
@@ -893,7 +898,7 @@ function fit_zinb_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         Λc = unpack_lambda(θ[(2p + 1):(2p + rr)], p, K)
         r = exp(θ[2p + rr + 1])
         v = try
-            -zinb_marginal_loglik_laplace(Y, Λc, βz, βc, r;
+            -zinb_marginal_loglik_laplace(Y, Λc, βz, βc, r; offsetc = offset,
                                           maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
