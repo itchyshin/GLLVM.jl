@@ -35,7 +35,7 @@ const _TwoPartFit = Union{DeltaLogNormalFit, DeltaGammaFit, HurdlePoissonFit,
                           HurdleNBFit, ZIPFit, ZINBFit, BetaHurdleFit}
 
 # Everything the unified confint(fit, Y; method=…) entry accepts.
-const _CIFit = Union{_FamilyFit, _TwoPartFit, OrdinalFit, GllvmCovFit}
+const _CIFit = Union{_FamilyFit, _TwoPartFit, OrdinalFit, GllvmCovFit, OrderedBetaFit}
 
 # ---------------------------------------------------------------------------
 # Per-family adapter. Bundles everything the generic routines need:
@@ -406,6 +406,32 @@ function _family_ci(fit::BetaHurdleFit, Y::AbstractMatrix;
     end
     names = vcat(_twopart_lin_names(p, K), "phi")
     return _FamilyCI(θ, nll, names, vcat(fill(:linear, length(θ) - 1), :log), sim, refit)
+end
+
+# --- Ordered-beta (proportions with point masses at 0 and 1) ---------------
+function _family_ci(fit::OrderedBetaFit, Y::AbstractMatrix;
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λ); rr = rr_theta_len(p, K)
+    θ = vcat(fit.β, pack_lambda(fit.Λ), fit.c0, fit.c1, log(fit.φ))
+    nll = function (θv)
+        β = θv[1:p]; Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+        c0 = θv[p + rr + 1]; c1 = θv[p + rr + 2]; φ = exp(θv[p + rr + 3])
+        v = try
+            -ordered_beta_marginal_loglik_laplace(Y, Λ, β, c0, c1, φ;
+                                                  maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    sim   = _ -> error("bootstrap is not supported for ordered-beta CIs")
+    refit = function (Yb)
+        fb = try fit_ordered_beta_gllvm(Yb; K = K) catch; return nothing end
+        return vcat(fb.β, pack_lambda(fb.Λ), fb.c0, fb.c1, log(fb.φ))
+    end
+    names = vcat(_glm_lin_names(p, K), "cut0", "cut1", "phi")
+    kinds = vcat(fill(:linear, p + rr + 2), :log)
+    return _FamilyCI(θ, nll, names, kinds, sim, refit)
 end
 
 # --- Hurdle-Poisson --------------------------------------------------------
