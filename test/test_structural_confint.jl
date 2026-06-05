@@ -40,4 +40,46 @@ using GLLVM, Test, Random, Distributions
         end
         @test coef_table(fit, Y) isa GllvmCoefTable
     end
+
+    # ---- Covariate structural models: dedicated confint_* (need the design) ----
+    q, r = 2, 2
+    bracket_ok(ci) = all(i -> !(isfinite(ci.lower[i]) && isfinite(ci.upper[i])) ||
+                              ci.lower[i] ≤ ci.estimate[i] ≤ ci.upper[i], eachindex(ci.term))
+
+    @testset "species-covariate confint_speciescov" begin
+        X = randn(p, n, q)
+        fit = fit_gllvm_speciescov(Y; family = Poisson(), X = X, K = K, iterations = 60)
+        ci = confint_speciescov(fit, Y, X)
+        @test length(ci.term) == p + p * q + rr
+        @test ci.method == :wald
+        @test any(t -> startswith(t, "B["), ci.term)
+        @test bracket_ok(ci)
+    end
+
+    @testset "fourth-corner confint_fourthcorner" begin
+        Xenv = randn(n, q); TR = randn(p, r)
+        fit = fit_fourthcorner_gllvm(Y; family = Poisson(), Xenv = Xenv, TR = TR, K = K, iterations = 60)
+        ci = confint_fourthcorner(fit, Y, Xenv, TR)
+        @test length(ci.term) == p + q * r + rr
+        @test any(t -> startswith(t, "C["), ci.term)
+        @test bracket_ok(ci)
+    end
+
+    @testset "RRR confint_rrr" begin
+        X = randn(n, q)
+        fit = fit_rrr_gllvm(Y; family = Poisson(), X = X, K = K, iterations = 60)
+        ci = confint_rrr(fit, Y, X)
+        @test length(ci.term) == p + rr + q * K
+        @test any(t -> startswith(t, "B["), ci.term)
+        @test bracket_ok(ci)
+    end
+
+    @testset "constrained confint_constrained" begin
+        X = randn(n, q)
+        fit = fit_constrained_gllvm(Y; family = Poisson(), X = X, K = K, iterations = 60)
+        ci = confint_constrained(fit, Y, X)
+        @test length(ci.term) == p + rr + q * K
+        @test any(t -> startswith(t, "B["), ci.term)
+        @test bracket_ok(ci)
+    end
 end
