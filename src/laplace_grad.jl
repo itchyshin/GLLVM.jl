@@ -95,13 +95,16 @@ function _nb_site_diffable(y::AbstractVector, Λ::AbstractMatrix, β::AbstractVe
     ẑ = _laplace_mode(NegativeBinomial(rv, 0.5), y, ones(Int, p), Λv, βv, LogLink())
 
     η = _clamp_eta.(β .+ Λ * ẑ); μ = exp.(η)
-    s = (y .- μ) ./ (1 .+ μ ./ r)      # NB2/log score (= (y−μ)/(1+μ/r))
-    W = μ ./ (1 .+ μ ./ r)             # NB2/log weight (= μ/(1+μ/r))
-    A = Λ' * (W .* Λ) + I
-    z = ẑ .+ (A \ (Λ' * s .- ẑ))
+    s = (y .- μ) ./ (1 .+ μ ./ r)             # NB2/log score (= r(y−μ)/(r+μ))
+    # NB is non-canonical: the implicit dẑ/dθ uses the OBSERVED Hessian weight
+    # W_obs = −∂s/∂η = μr(r+y)/(r+μ)², not the Fisher weight. (For canonical links
+    # the two coincide, which is why Poisson/Binomial work with the Fisher weight.)
+    Wobs = μ .* r .* (r .+ y) ./ (r .+ μ) .^ 2
+    Aobs = Λ' * (Wobs .* Λ) + I
+    z = ẑ .+ (Aobs \ (Λ' * s .- ẑ))
 
     ηz = _clamp_eta.(β .+ Λ * z); μz = exp.(ηz)
-    Wz = μz ./ (1 .+ μz ./ r)
+    Wz = μz ./ (1 .+ μz ./ r)                 # Fisher weight — matches the marginal's logdet
     Az = Λ' * (Wz .* Λ) + I
     ℓ = zero(eltype(z))
     @inbounds for t in 1:p
