@@ -39,4 +39,26 @@ using GLLVM, Test, Random, LinearAlgebra
     # Agreement to finite-difference accuracy (the analytic gradient is exact; the
     # tolerance is set by the central-difference truncation error).
     @test isapprox(g_an, g_fd; rtol = 1e-4, atol = 1e-4)
+
+    # ---- Binomial (logit) — same technique, second family -----------------
+    @testset "Binomial" begin
+        Nb = fill(8, p, n)
+        Yb = [rand(0:Nb[t, s]) for t in 1:p, s in 1:n]
+        θb = vcat(β, GLLVM.pack_lambda(Λ))
+        fb = function (θv)
+            b = θv[1:p]
+            L = GLLVM.unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+            return GLLVM.binomial_marginal_loglik_laplace(Yb, Nb, L, b, LogitLink();
+                                                          maxiter = 200, tol = 1e-12)
+        end
+        gfd = similar(θb)
+        for i in 1:length(θb)
+            θp = copy(θb); θp[i] += h
+            θm = copy(θb); θm[i] -= h
+            gfd[i] = (fb(θp) - fb(θm)) / (2h)
+        end
+        gan = binomial_laplace_grad(Yb, Nb, Λ, β)
+        @test all(isfinite, gan)
+        @test isapprox(gan, gfd; rtol = 1e-4, atol = 1e-4)
+    end
 end

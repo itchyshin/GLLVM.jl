@@ -79,3 +79,57 @@ function poisson_laplace_grad(Y::AbstractMatrix, Λ::AbstractMatrix, β::Abstrac
     end
     return ForwardDiff.gradient(marg, θ̂)
 end
+
+# --- Binomial (logit link) — second no-dispersion family, same technique ---
+# AD-friendly logit-Binomial log-pmf kernel (the binomial-coefficient term is a
+# constant in θ ⇒ zero gradient, so it is dropped). μ = logistic(η).
+_binom_logker(μ, n, y) = y * log(μ) + (n - y) * log(one(μ) - μ)
+
+function _binomial_site_diffable(y::AbstractVector, nt::AbstractVector,
+                                 Λ::AbstractMatrix, β::AbstractVector)
+    p = size(Λ, 1)
+    Λv = ForwardDiff.value.(Λ); βv = ForwardDiff.value.(β)
+    ẑ = _laplace_mode(Binomial(), y, nt, Λv, βv, LogitLink())
+
+    η = _clamp_eta.(β .+ Λ * ẑ)
+    μ = 1 ./ (1 .+ exp.(-η))            # logistic
+    s = y .- nt .* μ                    # logit-link score (y − nμ)
+    W = nt .* μ .* (1 .- μ)             # logit-link weight (nμ(1−μ))
+    A = Λ' * (W .* Λ) + I
+    z = ẑ .+ (A \ (Λ' * s .- ẑ))
+
+    ηz = _clamp_eta.(β .+ Λ * z)
+    μz = 1 ./ (1 .+ exp.(-ηz))
+    Wz = nt .* μz .* (1 .- μz)
+    Az = Λ' * (Wz .* Λ) + I
+    ℓ = zero(eltype(z))
+    @inbounds for t in 1:p
+        ℓ += _binom_logker(μz[t], nt[t], y[t])
+    end
+    return ℓ - 0.5 * dot(z, z) - 0.5 * logdet(Az)
+end
+
+"""
+    binomial_laplace_grad(Y, N, Λ, β) -> Vector
+
+Exact gradient of the total Binomial (logit-link) Laplace marginal wrt
+`θ = [β; pack_lambda(Λ)]`, via the same ForwardDiff + implicit-step construction as
+[`poisson_laplace_grad`](@ref). `N` is the p×n trial-count matrix. Standalone +
+finite-difference-verified; not yet wired into `fit_binomial_gllvm`.
+"""
+function binomial_laplace_grad(Y::AbstractMatrix, N::AbstractMatrix,
+                               Λ::AbstractMatrix, β::AbstractVector)
+    p, K = size(Λ)
+    rr = rr_theta_len(p, K)
+    θ̂ = vcat(float.(β), pack_lambda(Λ))
+    function marg(θ)
+        b = θ[1:p]
+        L = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+        acc = zero(eltype(θ))
+        @inbounds for s in axes(Y, 2)
+            acc += _binomial_site_diffable(view(Y, :, s), view(N, :, s), L, b)
+        end
+        return acc
+    end
+    return ForwardDiff.gradient(marg, θ̂)
+end
