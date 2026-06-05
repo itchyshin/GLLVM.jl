@@ -139,6 +139,57 @@ function nb_laplace_grad(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVect
     return ForwardDiff.gradient(marg, θ̂)
 end
 
+# --- Gamma (log link, shape α) — dispersion family, non-canonical ----------
+# AD-friendly Gamma(shape α, mean μ) log-density kernel (Var = μ²/α). Score
+# s = α(y−μ)/μ; Fisher weight = α (constant); observed weight −∂s/∂η = αy/μ.
+_gamma_logker(μ, α, y) = (α - 1) * log(y) - y * α / μ - α * log(μ) + α * log(α) - loggamma(α)
+
+function _gamma_site_diffable(y::AbstractVector, Λ::AbstractMatrix, β::AbstractVector, logα)
+    p = size(Λ, 1)
+    α = exp(logα)
+    Λv = ForwardDiff.value.(Λ); βv = ForwardDiff.value.(β); αv = ForwardDiff.value(α)
+    ẑ = _laplace_mode(Gamma(αv, 1.0), y, ones(Int, p), Λv, βv, LogLink())
+
+    η = _clamp_eta.(β .+ Λ * ẑ); μ = exp.(η)
+    s = α .* (y .- μ) ./ μ                    # Gamma/log score
+    Wobs = α .* y ./ μ                        # observed weight −∂s/∂η (non-canonical)
+    Aobs = Λ' * (Wobs .* Λ) + I
+    z = ẑ .+ (Aobs \ (Λ' * s .- ẑ))
+
+    ηz = _clamp_eta.(β .+ Λ * z); μz = exp.(ηz)
+    Az = α .* (Λ' * Λ) + I                    # Fisher weight = α (constant) ⇒ logdet term
+    ℓ = zero(eltype(z))
+    @inbounds for t in 1:p
+        ℓ += _gamma_logker(μz[t], α, y[t])
+    end
+    return ℓ - 0.5 * dot(z, z) - 0.5 * logdet(Az)
+end
+
+"""
+    gamma_laplace_grad(Y, Λ, β, α) -> Vector
+
+Exact gradient of the total Gamma (log link, shape `α`) Laplace marginal wrt
+`θ = [β; pack_lambda(Λ); log α]`, via the ForwardDiff + implicit-step construction
+(observed weight `αy/μ` in the implicit step, Fisher weight `α` in the log-det).
+Standalone + finite-difference-verified; not yet wired into `fit_gamma_gllvm`.
+"""
+function gamma_laplace_grad(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVector, α::Real)
+    p, K = size(Λ)
+    rr = rr_theta_len(p, K)
+    θ̂ = vcat(float.(β), pack_lambda(Λ), log(float(α)))
+    function marg(θ)
+        b = θ[1:p]
+        L = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+        logα = θ[p + rr + 1]
+        acc = zero(eltype(θ))
+        @inbounds for s in axes(Y, 2)
+            acc += _gamma_site_diffable(view(Y, :, s), L, b, logα)
+        end
+        return acc
+    end
+    return ForwardDiff.gradient(marg, θ̂)
+end
+
 # --- Binomial (logit link) — second no-dispersion family, same technique ---
 # AD-friendly logit-Binomial log-pmf kernel (the binomial-coefficient term is a
 # constant in θ ⇒ zero gradient, so it is dropped). μ = logistic(η).

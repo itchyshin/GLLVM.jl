@@ -86,6 +86,29 @@ using GLLVM, Test, Random, LinearAlgebra
         @test isapprox(gan, gfd; rtol = 1e-4, atol = 1e-4)
     end
 
+    # ---- Gamma (log link) — dispersion family, non-canonical --------------
+    @testset "Gamma (with shape α)" begin
+        αsh = 3.0
+        Yg = 0.5 .+ 2 .* rand(p, n)                  # positive responses
+        θg = vcat(β, GLLVM.pack_lambda(Λ), log(αsh))
+        fg = function (θv)
+            b = θv[1:p]
+            L = GLLVM.unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+            a = exp(θv[p + rr + 1])
+            return GLLVM.gamma_marginal_loglik_laplace(Yg, L, b, a; maxiter = 200, tol = 1e-12)
+        end
+        gfd = similar(θg)
+        for i in 1:length(θg)
+            θp = copy(θg); θp[i] += h
+            θm = copy(θg); θm[i] -= h
+            gfd[i] = (fg(θp) - fg(θm)) / (2h)
+        end
+        gan = gamma_laplace_grad(Yg, Λ, β, αsh)
+        @test length(gan) == length(θg)
+        @test all(isfinite, gan)
+        @test isapprox(gan, gfd; rtol = 1e-4, atol = 1e-4)
+    end
+
     # ---- Opt-in analytic-gradient fit matches the finite-difference fit ----
     # Same objective + warm start, only the gradient differs, so both converge to
     # the same optimum (loglik + identifiable intercepts agree).
