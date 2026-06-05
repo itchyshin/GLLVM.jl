@@ -190,6 +190,77 @@ function gamma_laplace_grad(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractV
     return ForwardDiff.gradient(marg, θ̂)
 end
 
+# --- Beta (logit link, precision φ) — non-canonical; observed weight via AD ---
+# Beta's observed Hessian weight (−∂s/∂η) involves digamma/trigamma terms, so rather
+# than hand-derive it we take it from a 1-D ForwardDiff derivative of the per-species
+# score at the (concrete) mode — exact and low-risk. The implicit-step matrix is then
+# concrete (correct, since the bracket is 0 at the mode); the log-det uses the Fisher
+# weight (Dual) to match the marginal.
+_beta_score_scalar(η, φ, y) = begin
+    μ = 1 / (1 + exp(-η)); me = μ * (1 - μ)
+    ystar = log(y) - log1p(-y)
+    μstar = digamma(μ * φ) - digamma((1 - μ) * φ)
+    return φ * (ystar - μstar) * me
+end
+_beta_logker(μ, φ, y) = (μ * φ - 1) * log(y) + ((1 - μ) * φ - 1) * log1p(-y) -
+                        (loggamma(μ * φ) + loggamma((1 - μ) * φ) - loggamma(φ))
+
+function _beta_site_diffable(y::AbstractVector, Λ::AbstractMatrix, β::AbstractVector, logφ)
+    p = size(Λ, 1)
+    φ = exp(logφ)
+    Λv = ForwardDiff.value.(Λ); βv = ForwardDiff.value.(β); φv = ForwardDiff.value(φ)
+    ẑ = _laplace_mode(Beta(φv, 1.0), y, ones(Int, p), Λv, βv, LogitLink())
+
+    # Concrete observed-Hessian weights via AD-derivative of the scalar score.
+    ηc = _clamp_eta.(βv .+ Λv * ẑ)
+    Wobs = [-ForwardDiff.derivative(η_ -> _beta_score_scalar(η_, φv, y[t]), ηc[t]) for t in 1:p]
+    Aobs = Λv' * (Wobs .* Λv) + I                 # concrete (correct since bracket≈0 at ẑ)
+
+    # Differentiable score at ẑ.
+    η = _clamp_eta.(β .+ Λ * ẑ); μ = 1 ./ (1 .+ exp.(-η))
+    me = μ .* (1 .- μ)
+    ystar = log.(y) .- log1p.(-y)
+    μstar = digamma.(μ .* φ) .- digamma.((1 .- μ) .* φ)
+    s = φ .* (ystar .- μstar) .* me
+    z = ẑ .+ (Aobs \ (Λ' * s .- ẑ))
+
+    ηz = _clamp_eta.(β .+ Λ * z); μz = 1 ./ (1 .+ exp.(-ηz))
+    mez = μz .* (1 .- μz)
+    νz = trigamma.(μz .* φ) .+ trigamma.((1 .- μz) .* φ)
+    WFz = φ .^ 2 .* νz .* mez .^ 2                 # Fisher weight ⇒ logdet
+    Az = Λ' * (WFz .* Λ) + I
+    ℓ = zero(eltype(z))
+    @inbounds for t in 1:p
+        ℓ += _beta_logker(μz[t], φ, y[t])
+    end
+    return ℓ - 0.5 * dot(z, z) - 0.5 * logdet(Az)
+end
+
+"""
+    beta_laplace_grad(Y, Λ, β, φ) -> Vector
+
+Exact gradient of the total Beta (logit link, precision `φ`) Laplace marginal wrt
+`θ = [β; pack_lambda(Λ); log φ]`, via the ForwardDiff + implicit-step construction,
+with the observed-Hessian weight obtained from an AD-derivative of the score.
+Standalone + finite-difference-verified; not yet wired into `fit_beta_gllvm`.
+"""
+function beta_laplace_grad(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVector, φ::Real)
+    p, K = size(Λ)
+    rr = rr_theta_len(p, K)
+    θ̂ = vcat(float.(β), pack_lambda(Λ), log(float(φ)))
+    function marg(θ)
+        b = θ[1:p]
+        L = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+        logφ = θ[p + rr + 1]
+        acc = zero(eltype(θ))
+        @inbounds for s in axes(Y, 2)
+            acc += _beta_site_diffable(view(Y, :, s), L, b, logφ)
+        end
+        return acc
+    end
+    return ForwardDiff.gradient(marg, θ̂)
+end
+
 # --- Binomial (logit link) — second no-dispersion family, same technique ---
 # AD-friendly logit-Binomial log-pmf kernel (the binomial-coefficient term is a
 # constant in θ ⇒ zero gradient, so it is dropped). μ = logistic(η).

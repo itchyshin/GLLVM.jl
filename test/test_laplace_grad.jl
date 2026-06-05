@@ -109,6 +109,29 @@ using GLLVM, Test, Random, LinearAlgebra
         @test isapprox(gan, gfd; rtol = 1e-4, atol = 1e-4)
     end
 
+    # ---- Beta (logit link) — non-canonical; observed weight via AD ---------
+    @testset "Beta (with precision φ)" begin
+        φp = 7.0
+        Yb2 = clamp.(rand(p, n), 0.02, 0.98)             # responses in (0,1)
+        θb2 = vcat(β, GLLVM.pack_lambda(Λ), log(φp))
+        fb2 = function (θv)
+            b = θv[1:p]
+            L = GLLVM.unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+            ph = exp(θv[p + rr + 1])
+            return GLLVM.beta_marginal_loglik_laplace(Yb2, L, b, ph; maxiter = 200, tol = 1e-12)
+        end
+        gfd = similar(θb2)
+        for i in 1:length(θb2)
+            θp = copy(θb2); θp[i] += h
+            θm = copy(θb2); θm[i] -= h
+            gfd[i] = (fb2(θp) - fb2(θm)) / (2h)
+        end
+        gan = beta_laplace_grad(Yb2, Λ, β, φp)
+        @test length(gan) == length(θb2)
+        @test all(isfinite, gan)
+        @test isapprox(gan, gfd; rtol = 1e-4, atol = 1e-4)
+    end
+
     # ---- Opt-in analytic-gradient fit matches the finite-difference fit ----
     # Same objective + warm start, only the gradient differs, so both converge to
     # the same optimum (loglik + identifiable intercepts agree).
