@@ -80,6 +80,62 @@ function poisson_laplace_grad(Y::AbstractMatrix, Λ::AbstractMatrix, β::Abstrac
     return ForwardDiff.gradient(marg, θ̂)
 end
 
+# --- Negative binomial (log link) — dispersion family: r enters θ as log r ---
+# AD-friendly NB2 log-pmf kernel (mean μ, dispersion r); the loggamma(y+1) constant
+# is dropped (zero gradient). r is a θ parameter (via log r), so the r-dependent
+# loggamma(r+y) − loggamma(r) terms are kept and differentiated (loggamma' = digamma,
+# which ForwardDiff supports).
+_nb_logker(μ, r, y) = loggamma(r + y) - loggamma(r) +
+                      r * log(r) - (r + y) * log(r + μ) + y * log(μ)
+
+function _nb_site_diffable(y::AbstractVector, Λ::AbstractMatrix, β::AbstractVector, logr)
+    p = size(Λ, 1)
+    r = exp(logr)
+    Λv = ForwardDiff.value.(Λ); βv = ForwardDiff.value.(β); rv = ForwardDiff.value(r)
+    ẑ = _laplace_mode(NegativeBinomial(rv, 0.5), y, ones(Int, p), Λv, βv, LogLink())
+
+    η = _clamp_eta.(β .+ Λ * ẑ); μ = exp.(η)
+    s = (y .- μ) ./ (1 .+ μ ./ r)      # NB2/log score (= (y−μ)/(1+μ/r))
+    W = μ ./ (1 .+ μ ./ r)             # NB2/log weight (= μ/(1+μ/r))
+    A = Λ' * (W .* Λ) + I
+    z = ẑ .+ (A \ (Λ' * s .- ẑ))
+
+    ηz = _clamp_eta.(β .+ Λ * z); μz = exp.(ηz)
+    Wz = μz ./ (1 .+ μz ./ r)
+    Az = Λ' * (Wz .* Λ) + I
+    ℓ = zero(eltype(z))
+    @inbounds for t in 1:p
+        ℓ += _nb_logker(μz[t], r, y[t])
+    end
+    return ℓ - 0.5 * dot(z, z) - 0.5 * logdet(Az)
+end
+
+"""
+    nb_laplace_grad(Y, Λ, β, r) -> Vector
+
+Exact gradient of the total negative-binomial (NB2, log link) Laplace marginal wrt
+`θ = [β; pack_lambda(Λ); log r]` — including the dispersion direction — via the same
+ForwardDiff + implicit-step construction as [`poisson_laplace_grad`](@ref). This is the
+dispersion-family generalisation (r carried in θ as `log r`). Standalone +
+finite-difference-verified; not yet wired into `fit_nb_gllvm`.
+"""
+function nb_laplace_grad(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVector, r::Real)
+    p, K = size(Λ)
+    rr = rr_theta_len(p, K)
+    θ̂ = vcat(float.(β), pack_lambda(Λ), log(float(r)))
+    function marg(θ)
+        b = θ[1:p]
+        L = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+        logr = θ[p + rr + 1]
+        acc = zero(eltype(θ))
+        @inbounds for s in axes(Y, 2)
+            acc += _nb_site_diffable(view(Y, :, s), L, b, logr)
+        end
+        return acc
+    end
+    return ForwardDiff.gradient(marg, θ̂)
+end
+
 # --- Binomial (logit link) — second no-dispersion family, same technique ---
 # AD-friendly logit-Binomial log-pmf kernel (the binomial-coefficient term is a
 # constant in θ ⇒ zero gradient, so it is dropped). μ = logistic(η).

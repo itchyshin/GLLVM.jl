@@ -61,4 +61,28 @@ using GLLVM, Test, Random, LinearAlgebra
         @test all(isfinite, gan)
         @test isapprox(gan, gfd; rtol = 1e-4, atol = 1e-4)
     end
+
+    # ---- Negative binomial (log) — dispersion family; r in θ as log r ------
+    @testset "Negative binomial (with dispersion)" begin
+        rdisp = 4.0
+        Yn = rand(0:8, p, n)
+        θn = vcat(β, GLLVM.pack_lambda(Λ), log(rdisp))      # last entry = log r
+        fn = function (θv)
+            b = θv[1:p]
+            L = GLLVM.unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+            rr_ = exp(θv[p + rr + 1])
+            return GLLVM.nb_marginal_loglik_laplace(Yn, L, b, rr_;
+                                                    maxiter = 200, tol = 1e-12)
+        end
+        gfd = similar(θn)
+        for i in 1:length(θn)
+            θp = copy(θn); θp[i] += h
+            θm = copy(θn); θm[i] -= h
+            gfd[i] = (fn(θp) - fn(θm)) / (2h)
+        end
+        gan = nb_laplace_grad(Yn, Λ, β, rdisp)
+        @test length(gan) == length(θn)                      # includes the log r direction
+        @test all(isfinite, gan)
+        @test isapprox(gan, gfd; rtol = 1e-4, atol = 1e-4)
+    end
 end
