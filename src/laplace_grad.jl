@@ -25,6 +25,28 @@
 # Dual mean). The lgamma(y+1) term is a constant in θ.
 _pois_logpmf(μ, y) = y * log(μ) - μ - loggamma(y + 1.0)
 
+# Shared optimiser wrapper: drive L-BFGS with an analytic gradient closure
+# `analytic_grad(θ) -> Vector | nothing`, falling back to a central finite-difference
+# gradient of `negll` for any θ where the analytic value is missing/non-finite. The
+# fitters pass an `analytic_grad` that returns −∇(marginal) packing matched to θ.
+function _optimize_with_analytic(negll, analytic_grad, θ0, ls, opts)
+    function g!(G, θ)
+        gg = analytic_grad(θ)
+        if gg === nothing || !all(isfinite, gg)
+            hh = 1e-6
+            @inbounds for i in eachindex(θ)
+                θp = copy(θ); θp[i] += hh
+                θm = copy(θ); θm[i] -= hh
+                G[i] = (negll(θp) - negll(θm)) / (2hh)
+            end
+        else
+            G .= gg
+        end
+        return G
+    end
+    return Optim.optimize(negll, g!, θ0, ls, opts)
+end
+
 # Differentiable per-site Poisson Laplace marginal (log link), via the implicit step.
 # `β`, `Λ` may carry ForwardDiff duals; the mode is computed on their primal values.
 function _poisson_site_diffable(y::AbstractVector, Λ::AbstractMatrix, β::AbstractVector)

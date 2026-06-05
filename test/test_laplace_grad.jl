@@ -145,4 +145,31 @@ using GLLVM, Test, Random, LinearAlgebra
         @test isapprox(f_fd.loglik, f_an.loglik; atol = 1e-3)
         @test isapprox(f_fd.β, f_an.β; atol = 5e-2)
     end
+
+    # ---- gradient=:analytic matches :finite across the other GLM fitters ----
+    @testset "analytic-gradient fits (Binomial/NB/Gamma/Beta)" begin
+        Random.seed!(2468)
+        pp, KK, nn = 4, 1, 40
+
+        Nb = fill(6, pp, nn)
+        Yb = [rand(0:6) for t in 1:pp, s in 1:nn]
+        b_fd = fit_binomial_gllvm(Yb; K = KK, N = Nb, iterations = 300)
+        b_an = fit_binomial_gllvm(Yb; K = KK, N = Nb, gradient = :analytic, iterations = 300)
+        @test isapprox(b_fd.loglik, b_an.loglik; atol = 1e-3)
+
+        Yn = rand(0:8, pp, nn)
+        n_fd = fit_nb_gllvm(Yn; K = KK, iterations = 300)
+        n_an = fit_nb_gllvm(Yn; K = KK, gradient = :analytic, iterations = 300)
+        @test isapprox(n_fd.loglik, n_an.loglik; atol = 2e-2)
+
+        Yg = 0.5 .+ 2 .* rand(pp, nn)
+        g_fd = fit_gamma_gllvm(Yg; K = KK, iterations = 300)
+        g_an = fit_gamma_gllvm(Yg; K = KK, gradient = :analytic, iterations = 300)
+        @test isapprox(g_fd.loglik, g_an.loglik; atol = 2e-2)
+
+        Ybe = clamp.(rand(pp, nn), 0.02, 0.98)
+        be_fd = fit_beta_gllvm(Ybe; K = KK, iterations = 300)
+        be_an = fit_beta_gllvm(Ybe; K = KK, gradient = :analytic, iterations = 300)
+        @test isapprox(be_fd.loglik, be_an.loglik; atol = 2e-2)
+    end
 end
