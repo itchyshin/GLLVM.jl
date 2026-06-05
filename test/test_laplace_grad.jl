@@ -85,4 +85,18 @@ using GLLVM, Test, Random, LinearAlgebra
         @test all(isfinite, gan)
         @test isapprox(gan, gfd; rtol = 1e-4, atol = 1e-4)
     end
+
+    # ---- Opt-in analytic-gradient fit matches the finite-difference fit ----
+    # Same objective + warm start, only the gradient differs, so both converge to
+    # the same optimum (loglik + identifiable intercepts agree).
+    @testset "fit_poisson_gllvm gradient=:analytic" begin
+        Random.seed!(77)
+        pp, KK, nn = 4, 1, 40
+        Yf = rand(0:5, pp, nn)
+        f_fd = fit_poisson_gllvm(Yf; K = KK, iterations = 300)
+        f_an = fit_poisson_gllvm(Yf; K = KK, gradient = :analytic, iterations = 300)
+        @test isfinite(f_an.loglik)
+        @test isapprox(f_fd.loglik, f_an.loglik; atol = 1e-3)
+        @test isapprox(f_fd.β, f_an.β; atol = 5e-2)
+    end
 end
