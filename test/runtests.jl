@@ -52,6 +52,7 @@ using GLLVM
     include("test_tweedie.jl")
     include("test_exponential.jl")
     include("test_ordinal_fit.jl")
+    include("test_ordinal_probit.jl")
     include("test_fit_gllvm.jl")
     include("test_postfit.jl")
     include("test_postfit_zib_tweedie.jl")

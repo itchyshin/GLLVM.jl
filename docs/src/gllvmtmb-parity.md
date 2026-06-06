@@ -15,11 +15,12 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 |--------|:---:|-------|
 | Gaussian | ✅ | closed-form marginal |
 | Binomial (Bernoulli / counts) | ✅ | logit / probit / cloglog |
+| Beta-binomial | ✅ | overdispersed binomial; `fit_beta_binomial_gllvm`; `BetaBinomial(N, μφ, (1−μ)φ)`, precision `φ` matches gllvm family 15; `φ→∞ ⇒ Binomial` |
 | Poisson | ✅ | log link |
 | Negative binomial (NB2) | ✅ | size `r` jointly estimated; `Var = μ + μ²/r`. **gllvm uses dispersion `φ = 1/r`** (`Var = μ + μ²φ`) — see the bridge map below |
 | Negative binomial (NB1) | ✅ | linear variance `Var = μ(1+φ)`; matches gllvm `negative.binomial1` (same `φ`) |
 | Beta | ✅ | precision `φ` (matches gllvm) |
-| Ordinal (cumulative logit) | ✅ | common ordered cutpoints |
+| Ordinal (cumulative) | ✅ | logit + probit links (`link=ProbitLink()` matches gllvm's default cumulative-probit); `P(y≤c)=F(τ_c−η)` convention verified == gllvm; common ordered cutpoints (species-specific cutpoints still a gap) |
 | Gamma | ✅ | shape `α` |
 | Delta-lognormal | ✅ | first two-part family; shared 2-block Laplace substrate |
 | Delta-Gamma | ✅ | occurrence Bernoulli × positive Gamma (log-link mean) on the substrate |
@@ -42,7 +43,7 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 | Spatial (Matérn / exponential) | ✅ Gaussian | `spatial_cov`, via the `Σ_phy` input |
 | Structured dependence × non-Gaussian | ✅ phylo · 🔨 spatial-latent / animal | phylogenetic GLM landed (`fit_phylo_glm`, augmented-state joint Laplace); SPDE / Matérn spatial latent field (`fit_spde_latent_gllvm`) for the non-Gaussian GLLVM |
 | Random slopes `(1 + x \| g)` | 🔨 | formula front-end (c) |
-| Per-species / grouped dispersion (`disp.group`) | ✅ NB · 🔨 others | `fit_nb_gllvm_grouped(Y; K, group)` gives each species (or group) its own `r`; reduces exactly to the shared-`r` fit at `G=1`. **gllvm's default is per-species** dispersion, so for parity route Julia through a grouped fitter with `group = 1:p` (or set gllvm `disp.formula = ~1` for the shared model) |
+| Per-species / grouped dispersion (`disp.group`) | ✅ all 5 dispersion families | `fit_{nb,beta,gamma,nb1,tweedie}_gllvm_grouped(Y; K, group)` give each species (or group) its own dispersion; reduces exactly to the shared fit at `G=1`. **gllvm's default is per-species** dispersion, so for parity route Julia through a grouped fitter with `group = 1:p` (or set gllvm `disp.formula = ~1` for the shared model) |
 | Random row effects (`row.eff = "random"`) | ⬜ | only fixed row effects so far (`fit_roweffect_gllvm`) |
 | Correlated LVs (`lvCor`: corAR1 / corExp / corCS) | ⬜ · ✅ spatial/phylo substrates | iid LVs by default; SPDE (`spde_latent`) and phylo (`phylo_glm`) substrates exist but not via an `lvCor` formula interface |
 
