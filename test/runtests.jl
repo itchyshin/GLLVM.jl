@@ -59,6 +59,7 @@ using GLLVM
     include("test_spde_fit.jl")
     include("test_spde_latent.jl")
     include("test_spde_latent_postfit.jl")
+    include("test_phylo_glm.jl")
     include("test_twopart_substrate.jl")
     include("test_delta_fit.jl")
     include("test_delta_postfit.jl")
