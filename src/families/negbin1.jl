@@ -13,8 +13,10 @@
 # package's Fisher-scoring-Laplace convention (W = me²·I_μ, expected info ⇒ SPD).
 # As φ → 0 (r → ∞) the score → (y−μ)/μ and I_μ → 1/μ, recovering Poisson.
 #
-# NB1 is an extension BEYOND R's gllvm (whose `negative.binomial` is NB2); it gives
-# users the linear-variance overdispersion model when NB2's quadratic tail is wrong.
+# NB1 matches R gllvm's `negative.binomial1` family (its `negative.binomial` is the
+# NB2 with quadratic variance); it gives users the linear-variance overdispersion
+# model when NB2's quadratic tail is wrong. gllvm parameterises NB1 as Var=μ+μ·φ
+# with the SAME φ as here, so the dispersion maps 1:1 across the R↔Julia bridge.
 
 # Marker — only the dispersion φ (Var = μ(1+φ)) is carried.
 struct NB1

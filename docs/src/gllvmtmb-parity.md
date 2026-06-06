@@ -16,8 +16,9 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 | Gaussian | ✅ | closed-form marginal |
 | Binomial (Bernoulli / counts) | ✅ | logit / probit / cloglog |
 | Poisson | ✅ | log link |
-| Negative binomial | ✅ | dispersion `r` jointly estimated |
-| Beta | ✅ | precision `φ` |
+| Negative binomial (NB2) | ✅ | size `r` jointly estimated; `Var = μ + μ²/r`. **gllvm uses dispersion `φ = 1/r`** (`Var = μ + μ²φ`) — see the bridge map below |
+| Negative binomial (NB1) | ✅ | linear variance `Var = μ(1+φ)`; matches gllvm `negative.binomial1` (same `φ`) |
+| Beta | ✅ | precision `φ` (matches gllvm) |
 | Ordinal (cumulative logit) | ✅ | common ordered cutpoints |
 | Gamma | ✅ | shape `α` |
 | Delta-lognormal | ✅ | first two-part family; shared 2-block Laplace substrate |
@@ -41,6 +42,9 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 | Spatial (Matérn / exponential) | ✅ Gaussian | `spatial_cov`, via the `Σ_phy` input |
 | Structured dependence × non-Gaussian | ✅ phylo · 🔨 spatial-latent / animal | phylogenetic GLM landed (`fit_phylo_glm`, augmented-state joint Laplace); SPDE / Matérn spatial latent field (`fit_spde_latent_gllvm`) for the non-Gaussian GLLVM |
 | Random slopes `(1 + x \| g)` | 🔨 | formula front-end (c) |
+| Per-species / grouped dispersion (`disp.group`) | ✅ NB · 🔨 others | `fit_nb_gllvm_grouped(Y; K, group)` gives each species (or group) its own `r`; reduces exactly to the shared-`r` fit at `G=1`. **gllvm's default is per-species** dispersion, so for parity route Julia through a grouped fitter with `group = 1:p` (or set gllvm `disp.formula = ~1` for the shared model) |
+| Random row effects (`row.eff = "random"`) | ⬜ | only fixed row effects so far (`fit_roweffect_gllvm`) |
+| Correlated LVs (`lvCor`: corAR1 / corExp / corCS) | ⬜ · ✅ spatial/phylo substrates | iid LVs by default; SPDE (`spde_latent`) and phylo (`phylo_glm`) substrates exist but not via an `lvCor` formula interface |
 
 ## Post-fit & inference
 
@@ -71,6 +75,31 @@ phylogenetic gradient benchmarked to p = 10,000. The non-Gaussian and
 phylogenetic fitters use finite-difference outer gradients (the sparse-Cholesky /
 CHOLMOD marginals are not generic-AD-friendly); the VA estimator adds analytic
 inner and envelope-theorem outer gradients for further fit-time gains.
+
+## R bridge: parameterization map (JuliaConnectoR)
+
+The longer-term goal is for R `gllvmTMB` to call GLLVM.jl as its compute engine
+via JuliaConnectoR (the `drmTMB` ↔ `DRM.jl` pattern). For results to agree, the
+bridge must reconcile a few **convention differences** — the underlying models are
+the same, but the parameter scales/structures differ. These are translation rules
+for the bridge, not bugs on either side.
+
+| Quantity | gllvm (R) | GLLVM.jl | Bridge rule |
+|----------|-----------|----------|-------------|
+| NB2 dispersion | `φ` (dispersion), `Var = μ + μ²φ`; larger `φ` ⇒ more overdispersion | `r` (size), `Var = μ + μ²/r` | **`r = 1/φ`** (invert in both directions). Also propagates to ZINB / Hurdle-NB / grouped-NB |
+| NB1 dispersion | `φ`, `Var = μ + μφ` | `φ`, `Var = μ(1+φ)` | identity (maps 1:1) |
+| Gamma dispersion | `φ` = **shape**, `Var = μ²/φ` | `α` = **shape**, `Var = μ²/α` | relabel `α ↔ φ` (no inversion) |
+| Beta precision | `φ`, `Var = μ(1-μ)/(1+φ)` | `φ` (same) | identity |
+| Tweedie | power `ν`, `Var = φ·μ^ν`, default start `ν = 1.1` | power `p`, `Var = φ·μ^p`, default start `p_init = 1.5` | identity; set `p_init = 1.1` to reproduce gllvm's optimiser path |
+| Gaussian dispersion | per-species SD `φ_j` | single shared `σ` (profiled) | needs a per-species-variance Gaussian fit for exact parity |
+| Dispersion **structure** | per-species by default (`disp.formula = NULL`) | shared scalar by default; per-species via the grouped fitters | route Julia through `fit_*_gllvm_grouped(Y; K, group = 1:p)`, **or** set gllvm `disp.formula = ~1` |
+| Estimation method | default `method = "VA"` | default Laplace; VA available via `fit_*_gllvm_va` | pin matching methods; VA and LA differ in finite samples |
+
+Outstanding parity capabilities that gllvm has and GLLVM.jl does not yet:
+**random row effects** (`row.eff = "random"`), **structured row effects**
+(`corAR1` / `corExp` / `corCS`), **correlated LVs** (`lvCor`), and the
+`beta.binomial` / `ZNIB` families. (GLLVM.jl is *ahead* on the phylogenetic and
+SPDE-spatial engines, which gllvm lacks.)
 
 ## Honest gaps
 
