@@ -130,4 +130,27 @@ using GLLVM, Test, Random, Distributions
         @test isapprox(f0.loglik, fO.loglik; atol = 2e-2)      # reparam-invariant
         @test isapprox(f0.βc, fO.βc .+ cc; atol = 1.5e-1)      # β^c shifted by −c
     end
+
+    # ---- offset on the remaining two-part fitters --------------------------
+    # Marginal-level absorption (machine precision) + each fitter accepts offset.
+    @testset "remaining two-part fitter offsets" begin
+        Random.seed!(717)
+        pp, K, nn = 3, 1, 40
+        βz = 0.3 .* randn(pp); βc = 0.2 .* randn(pp)
+        Λc = 0.3 .* randn(pp, K)
+        Y = Float64.([rand() < inv(1 + exp(-βz[t])) ? rand(1:6) : 0 for t in 1:pp, s in 1:nn])
+        cc = 0.4 .* randn(pp); O = repeat(cc, 1, nn)
+
+        # Constant offsetc ≡ shifting β^c (hurdle-Poisson marginal), machine precision.
+        ℓ_off = GLLVM.hurdle_poisson_marginal_loglik_laplace(Y, Λc, βz, βc; offsetc = O)
+        ℓ_sh  = GLLVM.hurdle_poisson_marginal_loglik_laplace(Y, Λc, βz, βc .+ cc)
+        @test isapprox(ℓ_off, ℓ_sh; atol = 1e-8)
+
+        # Each remaining two-part fitter accepts `offset` and runs.
+        @test isfinite(fit_hurdle_poisson_gllvm(Y; K = K, offset = O, iterations = 40).loglik)
+        @test isfinite(fit_hurdle_nb_gllvm(Y; K = K, offset = O, iterations = 40).loglik)
+        @test isfinite(fit_delta_lognormal_gllvm(Y; K = K, offset = O, iterations = 40).loglik)
+        @test isfinite(fit_zip_gllvm(Y; K = K, offset = O, iterations = 40).loglik)
+        @test isfinite(fit_zinb_gllvm(Y; K = K, offset = O, iterations = 40).loglik)
+    end
 end

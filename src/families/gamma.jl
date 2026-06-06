@@ -64,6 +64,7 @@ SVD of row-centred log-Y as loadings + `logα₀ = log(2.0)`.
 """
 function fit_gamma_gllvm(Y::AbstractMatrix; K::Integer,
         link::Link = LogLink(), mask = nothing, offset = nothing,
+        gradient::Symbol = :finite,
         β_init = nothing, Λ_init = nothing, α_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
@@ -105,8 +106,16 @@ function fit_gamma_gllvm(Y::AbstractMatrix; K::Integer,
         return isfinite(v) ? v : 1e12
     end
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
-    res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
-                         autodiff = :finite)
+    opts = Optim.Options(g_tol = g_tol, iterations = iterations)
+    res = if gradient === :analytic && msk === nothing && offset === nothing
+        ag = θ -> begin
+            β = θ[1:p]; Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K); av = exp(θ[p + rr + 1])
+            try -gamma_laplace_grad(Yc, Λ, β, av) catch; nothing end
+        end
+        _optimize_with_analytic(negll, ag, θ0, ls, opts)
+    else
+        Optim.optimize(negll, θ0, ls, opts; autodiff = :finite)
+    end
     θ̂ = Optim.minimizer(res)
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
