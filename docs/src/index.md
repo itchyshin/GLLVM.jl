@@ -65,11 +65,18 @@ After fitting, the usual report-ready quantities are:
 
 !!! tip "What works today"
     - One-part fits through `fit_gllvm`: Gaussian, Binomial, Poisson,
-      NegativeBinomial, Beta, Ordinal, and Gamma.
-    - Dedicated two-part fitters: Delta-lognormal, Hurdle-Poisson, and
-      Hurdle-NB.
-    - Still planned: formula syntax, structured non-Gaussian dependence,
-      zero-inflated families, and non-Gaussian confidence intervals.
+      NegativeBinomial, Beta, Ordinal, Gamma, Exponential, and Tweedie.
+    - Two-part / mixture fitters: Delta-lognormal, Delta-Gamma, Hurdle-Poisson,
+      Hurdle-NB, beta-hurdle, ordered-beta, ZIP, ZINB, and ZIB.
+    - A variational (VA / ELBO) estimator alongside Laplace, with VA-based SEs;
+      the ordination trio (unconstrained / concurrent / constrained-RRR);
+      species-specific covariates, fourth-corner, row effects, and quadratic
+      response.
+    - Structured latent fields: SPDE / Matérn spatial (with kriging) and
+      phylogenetic, including a phylogenetic GLM fit (`fit_phylo_glm`) for
+      non-Gaussian families.
+    - The `@formula` front-end, and non-Gaussian confidence intervals (Wald /
+      profile / bootstrap) via `confint(fit, Y; method=…)`.
 
 ## Relation To gllvmTMB
 

@@ -14,13 +14,16 @@ goes beyond standard `gllvm`.
 - [x] Gaussian (closed-form marginal)
 - [x] Poisson
 - [x] Negative binomial (NB2, dispersion `r`)
+- [x] Negative binomial type-1 (NB1, linear variance `Var = μ(1+φ)`; `fit_nb1_gllvm`)
 - [x] Binomial / Bernoulli
 - [x] Beta (precision `φ`)
 - [x] Gamma (shape `α`)
 - [x] Exponential — likelihood verified; **LV recovery is a known limitation**, see below
 - [x] Ordinal (cumulative logit / proportional odds)
-- [x] ZIP, ZINB (zero-inflated)
+- [x] Tweedie (compound Poisson–Gamma 1<p<2; `fit_tweedie_gllvm`)
+- [x] ZIP, ZINB, ZIB (zero-inflated Poisson / NB2 / Binomial; `fit_zib_gllvm`)
 - [x] Hurdle-Poisson, Hurdle-NB
+- [x] Beta-hurdle (`fit_beta_hurdle_gllvm`), ordered-beta (`fit_ordered_beta_gllvm`)
 - [x] Delta-Gamma, Delta-lognormal (two-part / "delta")
 
 ### Links
@@ -43,6 +46,9 @@ goes beyond standard `gllvm`.
 - [x] Confidence intervals: Wald (FD-Hessian), profile (LRT inversion), parametric bootstrap
 - [x] Derived-quantity CIs
 - [x] Phylogenetic models (sparse precision, contrasts, edge-incidence, relaxed clock, branch RE) — *beyond* `gllvm`
+- [x] **Phylogenetic GLM for non-Gaussian families** — `fit_phylo_glm` / `PhyloGLMFit`:
+      a per-species phylogenetic random intercept (Poisson / NB / Binomial) via an
+      augmented-state joint Laplace over the sparse phylogenetic precision (issue #61)
 
 ## Gap to `gllvm`/`gllvmTMB` (⬜ not yet)
 
@@ -64,8 +70,8 @@ Ordered roughly by real-world impact.
 - [x] **User-facing layer** — `coef_table` (Wald inference table), `ordination` (site/species
       scores + principal rotation), `select_lv` (AIC/BIC latent-dimension selection), and an
       end-to-end docs tutorial.
-- [ ] **Row (community) effects** — per-site intercepts, fixed or random.
-- [ ] **Quadratic-response GLLVM** (species optima/tolerances).
+- [x] **Row (community) effects** — per-site intercepts (`fit_roweffect_gllvm`; see above).
+- [x] **Quadratic-response GLLVM** (species optima/tolerances; `fit_quadratic_gllvm`).
 - [x] **Ordination trio** — unconstrained (`num.lv`), **concurrent** (`num.lv.c`,
       `fit_concurrent_gllvm`: `z_s ~ N(B'x_s, I)`), and **constrained/RRR** (`num.RR`,
       `fit_rrr_gllvm`: deterministic `z_s = B'x_s`, a reduced-rank GLM with no integral).

@@ -2,6 +2,19 @@
 
 All notable changes to GLLVM.jl are documented here.
 
+## Unreleased
+
+- **Phylogenetic GLM** (`fit_phylo_glm` / `PhyloGLMFit`) — a per-species
+  phylogenetic random intercept for the non-Gaussian families (Poisson / NB /
+  Binomial, with a dispersion parameter for the dispersion families) via an
+  augmented-state joint Laplace over the sparse phylogenetic precision — the
+  internal fast phylogenetic-Poisson path (issue #61).
+- **Zero-inflated binomial (ZIB)** (`fit_zib_gllvm` / `ZIBFit`) — structural-zero
+  × Binomial two-part family, with Wald / profile / parametric-bootstrap
+  confidence intervals.
+- **Negative-binomial type-1 (NB1)** (`fit_nb1_gllvm`) — linear variance
+  `Var = μ(1+φ)`, alongside the existing NB2 (`Var = μ + μ²/r`).
+
 ## v0.2.0 — Full GLM family, VA, covariates, ordination
 
 A large expansion from the v0.1.0 **Gaussian-only** pilot to a broad,
@@ -103,9 +116,10 @@ analytic-vs-finite-difference gradient checks), validated on Linux/macOS/Windows
 - Exponential LV recovery is weakly identified (CV = 1 swamps the SVD warm start); the
   test verifies machinery, not recovery.
 - Wald Hessians are finite-difference (analytic per-family Hessians would speed CIs).
-- Still open vs gllvm: Delaunay-of-points meshing, full VA/EVA inference beyond Wald
-  SEs, beta-hurdle, missing-data (NA) handling, and an internal fast
-  phylogenetic-Poisson path (issue #61).
+- Still open vs gllvm: full VA/EVA inference beyond Wald SEs. (Delaunay-of-points
+  meshing, beta-hurdle, missing-data (NA) handling, and the internal fast
+  phylogenetic-Poisson path of issue #61 have since landed — see the Unreleased
+  section above.)
 
 ## v0.1.0
 

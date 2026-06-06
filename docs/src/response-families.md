@@ -62,18 +62,27 @@ link is `LogLink()`. For `Beta` and `Ordinal` the default is `LogitLink()`.
 | `Ordinal()` | ✅ available | cumulative logit | Laplace | `C−1` cutpoints `τ` | ordered categories `1:C`; common cutpoints, no species intercept |
 | `Gamma()` | ✅ available | log | Laplace | shape `α` (Var = μ²/α) | positive continuous; `α` jointly estimated |
 | `Exponential()` | ✅ available | log | Laplace | — | positive continuous, `Var = μ²` (Gamma with α=1) |
+| Tweedie | ✅ available | log | Laplace | dispersion `φ`, power `p` (1<p<2) | compound Poisson–Gamma; biomass / abundance with true zeros; `fit_tweedie_gllvm` |
+| Ordered-beta | ✅ available | logit | Laplace | precision `φ`, cutpoints `c₀<c₁` | proportions / cover with point masses at 0 and 1; `fit_ordered_beta_gllvm` |
 | Delta-lognormal | ✅ available | logit × identity(log) | two-part Laplace | log-SD `σ` | occurrence × positive lognormal; `fit_delta_lognormal_gllvm` |
 | Delta-Gamma | ✅ available | logit × log | two-part Laplace | shape `α` | occurrence × positive Gamma; `fit_delta_gamma_gllvm` |
+| Beta-hurdle | ✅ available | logit × logit | two-part Laplace | precision `φ` | occurrence × positive Beta; `fit_beta_hurdle_gllvm` |
 | Hurdle-Poisson | ✅ available | logit × log | two-part Laplace | — | occurrence × zero-truncated Poisson; `fit_hurdle_poisson_gllvm` |
 | Hurdle-NB | ✅ available | logit × log | two-part Laplace | dispersion `r` | occurrence × zero-truncated NB2; `fit_hurdle_nb_gllvm` |
 | ZIP | ✅ available | logit × log | two-part Laplace | — | zero-inflated Poisson; `fit_zip_gllvm` |
 | ZINB | ✅ available | logit × log | two-part Laplace | dispersion `r` | zero-inflated NB2; `fit_zinb_gllvm` |
+| ZIB | ✅ available | logit × logit | two-part Laplace | — | zero-inflated Binomial; `fit_zib_gllvm` |
 
 The single-block GLM families above are reached through the unified `fit_gllvm`
 entry; the two-part families currently have dedicated `fit_<family>_gllvm`
-drivers (their parameters — `σ`, `α`, `r` — are estimated, so they do not share
-a single `Distributions` marker yet). Calling `fit_gllvm` with an unimplemented
-family raises a clear error listing what is currently available.
+drivers (their parameters — `σ`, `α`, `r`, `φ` — are estimated, so they do not
+share a single `Distributions` marker yet). Calling `fit_gllvm` with an
+unimplemented family raises a clear error listing what is currently available.
+
+**Phylogenetic GLM.** For a per-species phylogenetic random intercept under a
+non-Gaussian family, `fit_phylo_glm(Y, phy; family = …)` fits the augmented-state
+joint Laplace marginal (Poisson / NB / Binomial, with a dispersion parameter for
+the dispersion families) over the sparse phylogenetic precision.
 
 ## Family details
 
