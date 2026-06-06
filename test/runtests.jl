@@ -44,6 +44,7 @@ using GLLVM
     include("test_laplace_grad.jl")
     include("test_nb_fit.jl")
     include("test_nb1.jl")
+    include("test_grouped_dispersion.jl")
     include("test_beta_fit.jl")
     include("test_gamma_fit.jl")
     include("test_tweedie.jl")
