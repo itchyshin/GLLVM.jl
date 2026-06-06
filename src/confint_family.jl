@@ -907,7 +907,8 @@ function _family_ci(fit::OrdinalFit, Y::AbstractMatrix;
         Λ = unpack_lambda(θv[1:rr], p, K)
         τ = θv[(rr + 1):(rr + C - 1)]
         v = try
-            -ordinal_marginal_loglik_laplace(Y, Λ, τ; maxiter = newton_maxiter, tol = newton_tol)
+            -ordinal_marginal_loglik_laplace(Y, Λ, τ; link = fit.link,
+                                             maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
         end
@@ -920,7 +921,7 @@ function _family_ci(fit::OrdinalFit, Y::AbstractMatrix;
             for t in 1:p
                 u = rand(rng); cum = 0.0; cat = C
                 for c in 1:C
-                    cum += _ord_prob(c, η[t], fit.τ)
+                    cum += _ord_prob(c, η[t], fit.τ, fit.link)
                     if u <= cum
                         cat = c; break
                     end
@@ -931,7 +932,7 @@ function _family_ci(fit::OrdinalFit, Y::AbstractMatrix;
         return Yb
     end
     refit = function (Yb)
-        fb = try fit_ordinal_gllvm(Yb; K = K) catch; return nothing end
+        fb = try fit_ordinal_gllvm(Yb; K = K, link = fit.link) catch; return nothing end
         fb.C == C || return nothing                 # category-count mismatch ⇒ drop replicate
         return vcat(pack_lambda(fb.Λ), fb.τ)
     end
