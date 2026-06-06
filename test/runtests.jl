@@ -72,6 +72,7 @@ using GLLVM
     include("test_hurdle_nb.jl")
     include("test_delta_gamma.jl")
     include("test_beta_hurdle.jl")
+    include("test_beta_binomial.jl")
     include("test_zero_inflated.jl")
     include("test_missing_data.jl")
     include("test_offset.jl")
