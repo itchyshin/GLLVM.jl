@@ -140,6 +140,14 @@ end
 _loadings(fit::QuadraticFit) = fit.Λ
 _loglik(fit::QuadraticFit)   = fit.loglik
 
+# Free params: β (p) + reduced linear loadings Λ + quadratic coefficients D (p×K,
+# full — the quadratic term breaks the rotational symmetry, so D is not reduced)
+# + a dispersion (where the family has one).
+function _nparams(fit::QuadraticFit)
+    p, K = size(fit.Λ)
+    return p + (p * K - div(K * (K - 1), 2)) + p * K + (isnan(fit.dispersion) ? 0 : 1)
+end
+
 """
     getLV(fit::QuadraticFit, Y; rotate=true) -> n×K matrix
 

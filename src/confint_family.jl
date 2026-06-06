@@ -28,7 +28,8 @@ using Distributions: Normal, Chisq, quantile
 using Random: AbstractRNG, MersenneTwister, randn
 
 # Families handled by this layer (single latent block, optional scalar dispersion).
-const _FamilyFit = Union{PoissonFit, BinomialFit, NBFit, BetaFit, GammaFit, ExponentialFit}
+const _FamilyFit = Union{PoissonFit, BinomialFit, NBFit, NB1Fit, BetaFit, GammaFit, ExponentialFit,
+                         TweedieFit}
 
 # Two-part families ([βz; βc; pack_lambda(Λc); (log-dispersion)] layout).
 const _TwoPartFit = Union{DeltaLogNormalFit, DeltaGammaFit, HurdlePoissonFit,
@@ -151,6 +152,31 @@ function _family_ci(fit::NBFit, Y::AbstractMatrix;
     return _FamilyCI(θ, nll, names, kinds, simulate, refit)
 end
 
+# --- Negative binomial type-1 (NB1, linear variance Var = μ(1+φ)) -----------
+function _family_ci(fit::NB1Fit, Y::AbstractMatrix;
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); link = fit.link
+    θ = vcat(fit.β, pack_lambda(fit.Λ), log(fit.φ))
+    nll = function (θv)
+        β = θv[1:p]; Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K); φ = exp(θv[p + rr + 1])
+        v = try
+            -nb1_marginal_loglik_laplace(Y, Λ, β, φ; link = link, maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    simulate = rng -> _glm_simulate_counts(rng, fit.β, fit.Λ, link, n,
+                                           (rg, μ) -> (m = max(μ, 1e-12); NegativeBinomial(m / fit.φ, 1 / (1 + fit.φ))))
+    refit = function (Yb)
+        fb = try fit_nb1_gllvm(Yb; K = K, link = link) catch; return nothing end
+        return vcat(fb.β, pack_lambda(fb.Λ), log(fb.φ))
+    end
+    names = vcat(_glm_lin_names(p, K), "phi")
+    kinds = vcat(fill(:linear, length(θ) - 1), :log)
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+end
+
 # --- Beta ------------------------------------------------------------------
 function _family_ci(fit::BetaFit, Y::AbstractMatrix;
                     objective::Symbol = :laplace,
@@ -221,6 +247,64 @@ function _family_ci(fit::GammaFit, Y::AbstractMatrix;
         return vcat(fb.β, pack_lambda(fb.Λ), log(fb.α))
     end
     names = vcat(_glm_lin_names(p, K), "alpha")
+    kinds = vcat(fill(:linear, length(θ) - 1), :log)
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+end
+
+# Compound Poisson–Gamma draw from a Tweedie (1 < p < 2) with mean μ, dispersion
+# φ: N ~ Poisson(λ), λ = μ^{2-p}/(φ(2-p)); Y = Σᵢ Gammaᵢ(shape=(2-p)/(p-1),
+# scale=φ(p-1)μ^{p-1}); N = 0 ⇒ exact zero (Dunn & Smyth 2005). No dedicated
+# Tweedie sampler ships with the family pieces, so the bootstrap draws here.
+function _rand_tweedie(rng::AbstractRNG, μ, φ, p)
+    μ = max(float(μ), 1e-12)
+    λ = μ^(2.0 - p) / (φ * (2.0 - p))
+    N = rand(rng, Poisson(λ))
+    N == 0 && return 0.0
+    shape = (2.0 - p) / (p - 1.0)
+    scale = φ * (p - 1.0) * μ^(p - 1.0)
+    s = 0.0
+    @inbounds for _ in 1:N
+        s += rand(rng, Gamma(shape, scale))
+    end
+    return s
+end
+
+# --- Tweedie (compound Poisson–Gamma, power p ∈ (1,2) fixed at the fit) ------
+# The fitter jointly estimates φ and the power p, but the CI layer profiles only
+# the dispersion φ here (one log-scale term, like NB's r / Gamma's α); the power
+# is held fixed at its fitted value `fit.p` throughout the Hessian / profile /
+# bootstrap, so the working vector is [β; pack_lambda(Λ); log φ].
+function _family_ci(fit::TweedieFit, Y::AbstractMatrix;
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); link = fit.link
+    pw = fit.p
+    θ = vcat(fit.β, pack_lambda(fit.Λ), log(fit.φ))
+    nll = function (θv)
+        β = θv[1:p]; Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K); φ = exp(θv[p + rr + 1])
+        v = try
+            -tweedie_marginal_loglik_laplace(Y, Λ, β, φ, pw; link = link,
+                                             maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    simulate = function (rng)
+        Yb = Matrix{Float64}(undef, p, n); φ = fit.φ
+        @inbounds for s in 1:n
+            η = fit.β .+ fit.Λ * randn(rng, K)
+            for t in 1:p
+                μ = max(linkinv(link, _clamp_eta(η[t])), 1e-12)
+                Yb[t, s] = _rand_tweedie(rng, μ, φ, pw)
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try fit_tweedie_gllvm(Yb; K = K, link = link) catch; return nothing end
+        return vcat(fb.β, pack_lambda(fb.Λ), log(fb.φ))
+    end
+    names = vcat(_glm_lin_names(p, K), "phi")
     kinds = vcat(fill(:linear, length(θ) - 1), :log)
     return _FamilyCI(θ, nll, names, kinds, simulate, refit)
 end
@@ -1139,15 +1223,16 @@ end
             newton_maxiter = 100, newton_tol = 1e-9) -> NamedTuple
 
 Confidence intervals for a non-Gaussian family GLLVM fit — the scalar-μ GLM
-families (`PoissonFit`, `BinomialFit`, `NBFit`, `BetaFit`, `GammaFit`) and the
-two-part families (`DeltaLogNormalFit`, `DeltaGammaFit`, `HurdlePoissonFit`,
+families (`PoissonFit`, `BinomialFit`, `NBFit`, `BetaFit`, `GammaFit`,
+`TweedieFit`) and the two-part families (`DeltaLogNormalFit`, `DeltaGammaFit`, `HurdlePoissonFit`,
 `HurdleNBFit`, `ZIPFit`, `ZINBFit`, `ZIBFit`). `Y` is the same response matrix
 passed to the fitter; it is needed to reconstruct the marginal likelihood.
 
 Term names are `beta[t]` / `Lambda[i,k]` (+ a dispersion `r`/`phi`/`alpha`) for
 the GLM families, and `betaz[t]` (occurrence / zero-inflation logits) / `betac[t]`
 (positive / count intercepts) / `Lambda[i,k]` (+ `sigma`/`alpha`/`r`) for the
-two-part families.
+two-part families. For `TweedieFit` the dispersion term is `phi`; the power
+`p ∈ (1,2)` is held fixed at its fitted value, so only `phi` is profiled.
 
 `method` selects the inference:
 

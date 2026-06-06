@@ -146,6 +146,20 @@ function predict(fit::RRRFit, X::AbstractMatrix{<:Real}; type::Symbol = :respons
     return linkinv.(Ref(fit.link), _clamp_eta.(η))
 end
 
+# Post-fit accessors (mirror the covered covariate analogue GllvmCovFit in
+# src/postfit.jl): `_loglik`/`_nparams` unlock the generic `aic`/`bic`. The
+# response-scale `fitted(fit, X)` is already served by the generic fallback
+# `fitted(fit, data; …) = predict(fit, data; type=:response, …)` (RRR's `predict`
+# takes only `X`, the latent being deterministic). (No `residuals`: like
+# GllvmCovFit, no family-generic Dunn–Smyth residual is provided for this type.)
+_loglik(fit::RRRFit) = fit.loglik
+
+# Free parameters: β (p) + Λ (modulo K(K−1)/2 rotational df) + vec(B) (q·K) + dispersion?
+function _nparams(fit::RRRFit)
+    p, K = size(fit.Λ); q = size(fit.B, 1)
+    return p + (p * K - div(K * (K - 1), 2)) + q * K + (isnan(fit.dispersion) ? 0 : 1)
+end
+
 """
     fit_rrr_gllvm(Y; family=Poisson(), X, K, link=nothing, N=nothing, …) -> RRRFit
 

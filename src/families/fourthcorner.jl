@@ -111,6 +111,26 @@ function predict(fit::FourthCornerFit, Y::AbstractMatrix{<:Real},
     return linkinv.(Ref(fit.link), _clamp_eta.(η))
 end
 
+# Post-fit accessors (mirror the covered covariate analogue GllvmCovFit in
+# src/postfit.jl): `_loglik`/`_nparams` unlock the generic `aic`/`bic`, and
+# `fitted` is the response-scale conditional prediction. (No `residuals`: like
+# GllvmCovFit, no family-generic Dunn–Smyth residual is provided for this type.)
+_loglik(fit::FourthCornerFit) = fit.loglik
+
+# Free parameters: β (p) + vec(C) (q·r) + Λ (modulo K(K−1)/2 rotational df) + dispersion?
+function _nparams(fit::FourthCornerFit)
+    p, K = size(fit.Λ); q, r = size(fit.C)
+    return p + q * r + (p * K - div(K * (K - 1), 2)) + (isnan(fit.dispersion) ? 0 : 1)
+end
+
+"""
+    fitted(fit::FourthCornerFit, Y, Xenv, TR; N=nothing) -> p×n matrix of fitted means.
+"""
+fitted(fit::FourthCornerFit, Y::AbstractMatrix{<:Real},
+       Xenv::AbstractMatrix{<:Real}, TR::AbstractMatrix{<:Real};
+       N::Union{Nothing, AbstractMatrix} = nothing) =
+    predict(fit, Y, Xenv, TR; type = :response, N = N)
+
 """
     fit_fourthcorner_gllvm(Y; family, Xenv, TR, K, link=nothing, N=nothing, …) -> FourthCornerFit
 

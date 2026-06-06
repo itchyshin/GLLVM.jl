@@ -51,6 +51,7 @@ using GLLVM
     include("test_ordinal_fit.jl")
     include("test_fit_gllvm.jl")
     include("test_postfit.jl")
+    include("test_postfit_zib_tweedie.jl")
     include("test_ordination.jl")
     include("test_model_selection.jl")
     include("test_structured_cov.jl")

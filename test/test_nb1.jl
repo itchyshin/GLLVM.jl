@@ -77,5 +77,23 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra, ForwardDiff
         # rotation/sign-invariant loadings Gram + intercept recovery.
         @test cor(vec(fit.Λ * fit.Λ'), vec(Λ_true * Λ_true')) > 0.3
         @test cor(fit.β, β_true) > 0.5
+
+        # ---- post-fit API (mirrors NBFit) ---------------------------------
+        @test size(getLV(fit, Y)) == (n, K)
+        P = predict(fit, Y; type = :response)
+        @test size(P) == (p, n) && all(P .> 0)
+        R = residuals(fit, Y; rng = MersenneTwister(1))
+        @test size(R) == (p, n) && all(isfinite, R)
+        @test isfinite(aic(fit)) && isfinite(bic(fit, n))
+
+        # ---- Wald CI via the unified confint layer ------------------------
+        ci = confint(fit, Y; method = :wald)
+        @test length(ci.term) == p + GLLVM.rr_theta_len(p, K) + 1   # β + Λ + φ
+        @test any(t -> t == "phi", ci.term)
+        for i in eachindex(ci.term)
+            if isfinite(ci.lower[i]) && isfinite(ci.upper[i])
+                @test ci.lower[i] ≤ ci.estimate[i] ≤ ci.upper[i]
+            end
+        end
     end
 end

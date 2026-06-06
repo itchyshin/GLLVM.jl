@@ -57,6 +57,14 @@ end
 _loadings(fit::RowEffectFit) = fit.Λ
 _loglik(fit::RowEffectFit)   = fit.loglik
 
+# Free params: β (p) + free row effects ρ_2..ρ_n (length(ρ)−1; ρ_1 ≡ 0 reference)
+# + reduced loadings Λ + a dispersion (where the family has one).
+function _nparams(fit::RowEffectFit)
+    p, K = size(fit.Λ)
+    nfree = max(length(fit.ρ) - 1, 0)
+    return p + nfree + (p * K - div(K * (K - 1), 2)) + (isnan(fit.dispersion) ? 0 : 1)
+end
+
 """
     getLV(fit::RowEffectFit, Y; rotate=true, N=nothing) -> n×K matrix
 
