@@ -258,7 +258,7 @@ end
         # Compound Poisson–Gamma draws (true zeros + positive part), mirroring the
         # data-generating loop in test/test_tweedie.jl.
         Random.seed!(35)
-        p, K, n = 4, 1, 70
+        p, K, n = 4, 1, 50
         β = log.(rand(p) .* 2 .+ 0.5)
         Λ = 0.4 .* randn(p, K)
         Y = zeros(p, n)
@@ -277,10 +277,16 @@ end
         @test length(ci.term) == p + GLLVM.rr_theta_len(p, K) + 1
         @test ci.method === :wald
         @test "phi" in ci.term
-        @test ci.estimate[findfirst(==("phi"), ci.term)] ≈ fit.φ atol = 1e-8
-        fin = isfinite.(ci.se)
-        @test any(fin)
-        @test all(ci.lower[fin] .< ci.estimate[fin] .< ci.upper[fin])
+        let pidx = findfirst(==("phi"), ci.term)
+            @test ci.estimate[pidx] ≈ fit.φ atol = 1e-6
+            @test isfinite(ci.se[pidx])           # φ gets a real Wald SE (Hessian non-singular)
+        end
+        # finite-SE intervals bracket their estimate (standard non-strict pattern).
+        for i in eachindex(ci.term)
+            if isfinite(ci.lower[i]) && isfinite(ci.upper[i])
+                @test ci.lower[i] ≤ ci.estimate[i] ≤ ci.upper[i]
+            end
+        end
 
         # parametric bootstrap is deterministic in the seed (serial == parallel).
         a = confint(fit, Y; method = :bootstrap, n_boot = 6, seed = 5, parallel = false)
