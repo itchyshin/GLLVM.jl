@@ -30,7 +30,8 @@ include("families/links.jl")
 include("families/laplace.jl")           # generic family-dispatched Laplace marginal core
 include("families/binomial.jl")          # Binomial family pieces + fit (Phase 3)
 include("families/poisson.jl")           # Poisson family pieces (Phase 3)
-include("families/negbin.jl")            # Negative-binomial family pieces (Phase 3)
+include("families/negbin.jl")            # Negative-binomial (NB2) family pieces (Phase 3)
+include("families/negbin1.jl")           # Negative-binomial type-1 (NB1, linear variance)
 include("families/beta.jl")              # Beta family pieces (Phase 3)
 include("families/ordinal.jl")           # Ordinal (cumulative-logit) family pieces (Phase 3)
 include("families/gamma.jl")             # Gamma (positive continuous) family pieces (Phase 3)
@@ -105,6 +106,7 @@ export spatial_cov, relatedness_cov,
        poisson_laplace_grad, binomial_laplace_grad, nb_laplace_grad,
        gamma_laplace_grad, beta_laplace_grad,
        fit_nb_gllvm, NBFit, fit_beta_gllvm, BetaFit,
+       fit_nb1_gllvm, NB1Fit, nb1_marginal_loglik_laplace,
        Ordinal, fit_ordinal_gllvm, OrdinalFit, fit_gamma_gllvm, GammaFit,
        fit_exponential_gllvm, ExponentialFit, exponential_marginal_loglik_laplace,
        fit_tweedie_gllvm, TweedieFit, tweedie_marginal_loglik_laplace, tweedie_logpdf,
