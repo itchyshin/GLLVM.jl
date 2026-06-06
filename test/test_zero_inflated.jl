@@ -1,6 +1,6 @@
 using GLLVM, Test, Random, Distributions, Statistics
 
-@testset "Zero-inflated families (ZIP / ZINB)" begin
+@testset "Zero-inflated families (ZIP / ZINB / ZIB)" begin
     @testset "ZIP: Λ = 0 reduces to independent ZIP loglik (exact)" begin
         Random.seed!(170)
         p, K, n = 6, 2, 60
@@ -121,5 +121,66 @@ using GLLVM, Test, Random, Distributions, Statistics
         # bound, not βc. See ROADMAP ("ZINB multimodality").
         @test cor(vec(fit.Λc * fit.Λc'), vec(Λc_true * Λc_true')) > 0.35
         @test 0.15 * r_true < fit.r < 6 * r_true
+    end
+
+    @testset "ZIB: Λ = 0 reduction + π → 0 tends to the Binomial marginal" begin
+        Random.seed!(175)
+        p, K, n, Ntr = 6, 2, 60, 8
+        βz = 0.3 .* randn(p) .- 0.4
+        βc = 0.3 .* randn(p) .- 0.2              # success-prob logits
+        π = inv.(1 .+ exp.(-βz)); μ = inv.(1 .+ exp.(-βc))
+        Y = zeros(Int, p, n)
+        for t in 1:p, s in 1:n
+            Y[t, s] = rand() < π[t] ? 0 : rand(Binomial(Ntr, μ[t]))
+        end
+
+        # Λc = 0 ⇒ exact independent ZIB loglik (the Laplace integral is trivial).
+        ll = GLLVM.zib_marginal_loglik_laplace(Y, zeros(p, K), βz, βc, Ntr)
+        ref = 0.0
+        for t in 1:p, s in 1:n
+            p0 = (1 - μ[t])^Ntr
+            ref += Y[t, s] == 0 ? log(π[t] + (1 - π[t]) * p0) :
+                                  log1p(-π[t]) + logpdf(Binomial(Ntr, μ[t]), Y[t, s])
+        end
+        @test ll ≈ ref atol = 1e-8
+
+        # β^z → −∞ (π ≈ 0) ⇒ the plain Binomial marginal at the same (Λc, βc, N).
+        Λc = reshape(0.4 .* randn(p), p, 1)
+        Y2 = Matrix{Int}(undef, p, n)
+        for s in 1:n
+            ηc = βc .+ Λc * randn(1)
+            for t in 1:p
+                Y2[t, s] = rand(Binomial(Ntr, inv(1 + exp(-ηc[t]))))
+            end
+        end
+        βz_low = fill(-30.0, p)
+        ll_zib = GLLVM.zib_marginal_loglik_laplace(Y2, Λc, βz_low, βc, Ntr)
+        ll_bin = GLLVM.marginal_loglik_laplace(Binomial(), Y2, fill(Ntr, p, n),
+                                               Λc, βc, LogitLink())
+        @test ll_zib ≈ ll_bin atol = 1e-4
+    end
+
+    @testset "fit_zib_gllvm runs + recovers loading structure" begin
+        Random.seed!(176)
+        p, K, n, Ntr = 8, 2, 400, 10
+        βz_true = 0.4 .* randn(p) .- 0.8
+        βc_true = 0.3 .* randn(p)
+        Λc_true = 0.5 .* randn(p, K)
+        π = inv.(1 .+ exp.(-βz_true))
+        Z = randn(K, n)
+        ηc = βc_true .+ Λc_true * Z
+        Y = zeros(Int, p, n)
+        for t in 1:p, s in 1:n
+            μ = inv(1 + exp(-ηc[t, s]))
+            Y[t, s] = rand() < π[t] ? 0 : rand(Binomial(Ntr, μ))
+        end
+
+        fit = fit_zib_gllvm(Y; K = K, N = Ntr)
+        @test fit isa ZIBFit
+        @test isfinite(fit.loglik)
+        @test fit.N == Ntr
+        @test length(fit.βz) == p && size(fit.Λc) == (p, K)
+        # Rotation/sign-invariant loadings Gram (βc shares the ZINB multimodality).
+        @test cor(vec(fit.Λc * fit.Λc'), vec(Λc_true * Λc_true')) > 0.3
     end
 end
