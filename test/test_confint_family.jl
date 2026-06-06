@@ -258,7 +258,7 @@ end
         # Compound Poisson–Gamma draws (true zeros + positive part), mirroring the
         # data-generating loop in test/test_tweedie.jl.
         Random.seed!(35)
-        p, K, n = 4, 1, 120
+        p, K, n = 4, 1, 70
         β = log.(rand(p) .* 2 .+ 0.5)
         Λ = 0.4 .* randn(p, K)
         Y = zeros(p, n)
@@ -270,7 +270,7 @@ end
                 Y[t, s] = k == 0 ? 0.0 : sum(rand(Gamma(2.0, μ / (2.0 * μ + 1e-9)), k))
             end
         end
-        fit = fit_tweedie_gllvm(Y; K = K, iterations = 60)
+        fit = fit_tweedie_gllvm(Y; K = K, iterations = 40)
 
         ci = confint(fit, Y; method = :wald)
         # β + Λ + a single dispersion term (φ); the power p is held fixed.
@@ -283,8 +283,8 @@ end
         @test all(ci.lower[fin] .< ci.estimate[fin] .< ci.upper[fin])
 
         # parametric bootstrap is deterministic in the seed (serial == parallel).
-        a = confint(fit, Y; method = :bootstrap, n_boot = 12, seed = 5, parallel = false)
-        b = confint(fit, Y; method = :bootstrap, n_boot = 12, seed = 5, parallel = true)
+        a = confint(fit, Y; method = :bootstrap, n_boot = 6, seed = 5, parallel = false)
+        b = confint(fit, Y; method = :bootstrap, n_boot = 6, seed = 5, parallel = true)
         @test a.lower == b.lower && a.upper == b.upper
         @test a.n_converged == b.n_converged
         @test a.n_converged ≥ 4

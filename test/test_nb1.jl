@@ -86,7 +86,24 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra, ForwardDiff
         @test size(R) == (p, n) && all(isfinite, R)
         @test isfinite(aic(fit)) && isfinite(bic(fit, n))
 
-        # ---- Wald CI via the unified confint layer ------------------------
+    end
+
+    @testset "NB1 Wald CI via the unified confint layer" begin
+        # Tiny dedicated fit: the Wald Hessian is a finite-difference over the
+        # (Fisher-sum) NB1 marginal, so keep p/K/n small for CI speed.
+        Random.seed!(404)
+        p, K, n, φ_true = 3, 1, 40, 0.8
+        β_true = 0.3 .* randn(p) .+ 1.0
+        Λ_true = 0.4 .* randn(p, K)
+        Y = Matrix{Int}(undef, p, n)
+        for s in 1:n
+            η = β_true .+ Λ_true * randn(K)
+            for t in 1:p
+                μ = exp(η[t])
+                Y[t, s] = rand(NegativeBinomial(μ / φ_true, 1 / (1 + φ_true)))
+            end
+        end
+        fit = fit_nb1_gllvm(Y; K = K, iterations = 60)
         ci = confint(fit, Y; method = :wald)
         @test length(ci.term) == p + GLLVM.rr_theta_len(p, K) + 1   # β + Λ + φ
         @test any(t -> t == "phi", ci.term)
