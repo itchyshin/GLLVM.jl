@@ -189,6 +189,37 @@ end
         @test a.n_converged ≥ 6
     end
 
+    @testset "Two-part: ZIB Wald + bootstrap (zero-inflated binomial)" begin
+        Random.seed!(36)
+        p, K, n, Ntr = 4, 1, 160, 8
+        βz = 0.3 .* randn(p) .- 0.6; βc = 0.3 .* randn(p)
+        Λc = 0.4 .* randn(p, K)
+        Y = zeros(Int, p, n)
+        for s in 1:n
+            ηc = βc .+ Λc * randn(K)
+            for t in 1:p
+                μ = inv(1 + exp(-ηc[t]))
+                Y[t, s] = rand() < inv(1 + exp(-βz[t])) ? 0 : rand(Binomial(Ntr, μ))
+            end
+        end
+        fit = fit_zib_gllvm(Y; K = K, N = Ntr)
+
+        ci = confint(fit, Y; method = :wald)
+        @test length(ci.term) == 2p + GLLVM.rr_theta_len(p, K)   # βz + βc + Λc (no dispersion)
+        @test ci.method == :wald
+        for i in eachindex(ci.term)
+            if isfinite(ci.lower[i]) && isfinite(ci.upper[i])
+                @test ci.lower[i] ≤ ci.estimate[i] ≤ ci.upper[i]
+            end
+        end
+
+        # parametric bootstrap is deterministic in the seed (serial == parallel).
+        a = confint(fit, Y; method = :bootstrap, n_boot = 20, seed = 5, parallel = false)
+        b = confint(fit, Y; method = :bootstrap, n_boot = 20, seed = 5, parallel = true)
+        @test a.lower == b.lower && a.upper == b.upper
+        @test a.n_converged ≥ 6
+    end
+
     @testset "Ordinal Wald + bootstrap (τ in natural scale)" begin
         Random.seed!(34)
         p, K, n, C = 4, 1, 220, 4

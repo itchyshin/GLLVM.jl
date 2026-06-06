@@ -32,7 +32,7 @@ const _FamilyFit = Union{PoissonFit, BinomialFit, NBFit, BetaFit, GammaFit, Expo
 
 # Two-part families ([βz; βc; pack_lambda(Λc); (log-dispersion)] layout).
 const _TwoPartFit = Union{DeltaLogNormalFit, DeltaGammaFit, HurdlePoissonFit,
-                          HurdleNBFit, ZIPFit, ZINBFit, BetaHurdleFit}
+                          HurdleNBFit, ZIPFit, ZINBFit, ZIBFit, BetaHurdleFit}
 
 # Everything the unified confint(fit, Y; method=…) entry accepts.
 const _CIFit = Union{_FamilyFit, _TwoPartFit, OrdinalFit, GllvmCovFit, OrderedBetaFit,
@@ -777,7 +777,38 @@ function _family_ci(fit::ZINBFit, Y::AbstractMatrix;
     return _FamilyCI(θ, nll, names, vcat(fill(:linear, length(θ) - 1), :log), sim, refit)
 end
 
-# --- Ordinal (cumulative logit) --------------------------------------------
+# --- Zero-inflated binomial ------------------------------------------------
+function _family_ci(fit::ZIBFit, Y::AbstractMatrix;
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λc); n = size(Y, 2); rr = rr_theta_len(p, K); Ntr = fit.N
+    θ = vcat(fit.βz, fit.βc, pack_lambda(fit.Λc))
+    nll = function (θv)
+        βz = θv[1:p]; βc = θv[(p + 1):(2p)]
+        Λc = unpack_lambda(θv[(2p + 1):(2p + rr)], p, K)
+        v = try
+            -zib_marginal_loglik_laplace(Y, Λc, βz, βc, Ntr; maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    sim = function (rng)
+        Yb = zeros(Int, p, n)
+        @inbounds for s in 1:n
+            ηc = fit.βc .+ fit.Λc * randn(rng, K)
+            for t in 1:p
+                π = inv(1 + exp(-fit.βz[t])); μ = inv(1 + exp(-ηc[t]))
+                Yb[t, s] = rand(rng) < π ? 0 : rand(rng, Binomial(Ntr, μ))
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try fit_zib_gllvm(Yb; K = K, N = Ntr) catch; return nothing end
+        return vcat(fb.βz, fb.βc, pack_lambda(fb.Λc))
+    end
+    return _FamilyCI(θ, nll, _twopart_lin_names(p, K), fill(:linear, length(θ)), sim, refit)
+end
 # Working vector [pack_lambda(Λ); τ] in the NATURAL cutpoint parameterisation
 # (the fitter optimises ψ-increments, but the MLE τ̂ is strictly ordered, so the
 # Wald Hessian / profile / bootstrap all run directly in τ-space — the
@@ -1110,8 +1141,8 @@ end
 Confidence intervals for a non-Gaussian family GLLVM fit — the scalar-μ GLM
 families (`PoissonFit`, `BinomialFit`, `NBFit`, `BetaFit`, `GammaFit`) and the
 two-part families (`DeltaLogNormalFit`, `DeltaGammaFit`, `HurdlePoissonFit`,
-`HurdleNBFit`, `ZIPFit`, `ZINBFit`). `Y` is the same response matrix passed to
-the fitter; it is needed to reconstruct the marginal likelihood.
+`HurdleNBFit`, `ZIPFit`, `ZINBFit`, `ZIBFit`). `Y` is the same response matrix
+passed to the fitter; it is needed to reconstruct the marginal likelihood.
 
 Term names are `beta[t]` / `Lambda[i,k]` (+ a dispersion `r`/`phi`/`alpha`) for
 the GLM families, and `betaz[t]` (occurrence / zero-inflation logits) / `betac[t]`
