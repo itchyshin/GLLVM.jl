@@ -915,3 +915,158 @@ function fit_zinb_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     return ZINBFit(βz, βc, Λc, r, -Optim.minimum(res),
                    Optim.converged(res), Optim.iterations(res))
 end
+
+# ---------------------------------------------------------------------------
+# Zero-inflated binomial (ZIB) — structural zero × Binomial(N, μ) count, with
+# μ = logistic(η^c) and a shared scalar number of trials N. π → 0 ⇒ plain
+# Binomial; N = 1 is the zero-inflated Bernoulli. Mirrors the ZINB substrate:
+# the count-zero score magnitude rμ/(r+μ) is replaced by Nμ, and the NB2 count
+# info μr/(r+μ) by the binomial-logit info Nμ(1−μ).
+# ---------------------------------------------------------------------------
+
+# Count-part expected information E[(∂logf/∂η^c)²] for the zero-inflated binomial
+# (N trials, μ = success prob). As π → 0 this → Nμ(1−μ), the binomial-logit info.
+function _zi_Icc_binom(π, μ, N)
+    p0 = (one(μ) - μ)^N
+    P0 = π + (one(π) - π) * p0
+    Ibin = N * μ * (one(μ) - μ)              # = Nμ(1−μ), the binomial-logit info
+    c = (N * μ)^2
+    Icc = (one(π) - π) * (Ibin - π * p0 * c / P0)
+    return max(Icc, 1e-12)
+end
+
+"""
+    ZIB(N)
+
+Marker for the zero-inflated binomial family: structural zero prob
+`π = logistic(η^z)` mixed with a `Binomial(N, μ)` count, success probability
+`μ = logistic(η^c)`, shared number of trials `N`. `π → 0 ⇒` plain Binomial;
+`N = 1` is the zero-inflated Bernoulli.
+"""
+struct ZIB
+    N::Int
+end
+
+function _tp_pieces(f::ZIB, y, ηz, ηc)
+    π = inv(one(ηz) + exp(-ηz))
+    μ = inv(one(ηc) + exp(-ηc))              # logit link for the count part
+    N = f.N
+    Wz = π * (one(π) - π)
+    Wcc = _zi_Icc_binom(π, μ, N)
+    if y > 0
+        sc = y - N * μ
+        logf = log1p(-π) + logpdf(Binomial(N, μ), Int(y))
+        return (-π, sc, Wz, Wcc, logf)
+    else
+        p0 = (one(μ) - μ)^N
+        P0 = π + (one(π) - π) * p0
+        g = (one(π) - π) * p0 / P0           # posterior P(binomial-zero | y=0)
+        sz = π * (one(π) - π) * (one(π) - p0) / P0
+        return (sz, -g * N * μ, Wz, Wcc, log(P0))
+    end
+end
+
+"""
+    zib_marginal_loglik_laplace(Y, Λc, βz, βc, N; Λz=nothing, kwargs...) -> Float64
+
+Two-part Laplace log-marginal for a zero-inflated binomial GLLVM (`N` trials).
+`Y` is p×n with counts in `0:N`. `Λc = 0` ⇒ exact independent ZIB loglik;
+`β^z → −∞` ⇒ the plain Binomial marginal.
+"""
+function zib_marginal_loglik_laplace(Y::AbstractMatrix, Λc::AbstractMatrix,
+        βz::AbstractVector, βc::AbstractVector, N::Integer;
+        Λz::Union{Nothing, AbstractMatrix} = nothing, kwargs...)
+    p, K = size(Λc)
+    Λz_ = Λz === nothing ? zeros(p, K) : Λz
+    return twopart_marginal_loglik_laplace(ZIB(Int(N)), Y, Λz_, Λc, βz, βc; kwargs...)
+end
+
+"""
+    ZIBFit
+
+Result of [`fit_zib_gllvm`](@ref): structural-zero logits `βz`, count success-logit
+intercepts `βc`, count loadings `Λc`, the shared number of trials `N`, `loglik`,
+`converged`, `iterations`.
+"""
+struct ZIBFit
+    βz::Vector{Float64}
+    βc::Vector{Float64}
+    Λc::Matrix{Float64}
+    N::Int
+    loglik::Float64
+    converged::Bool
+    iterations::Int
+end
+
+function Base.show(io::IO, f::ZIBFit)
+    p, K = size(f.Λc)
+    print(io, "ZIBFit(p=", p, ", K=", K, ", N=", f.N,
+          ", loglik=", round(f.loglik; sigdigits = 7),
+          f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+# Warm start for the zero-inflated binomial fit: success-logit intercept from the
+# positive-part success fraction, structural-zero logit from the excess-zero share
+# (over the binomial-zero rate), SVD loadings of the logit residuals.
+function _zib_warmstart(Y::AbstractMatrix, N::Integer, K::Integer)
+    p, n = size(Y)
+    βz0 = Vector{Float64}(undef, p); βc0 = Vector{Float64}(undef, p)
+    _logit(x) = (xx = clamp(x, 1e-3, 1 - 1e-3); log(xx / (1 - xx)))
+    @inbounds for t in 1:p
+        propzero = count(==(0), view(Y, t, :)) / n
+        s = 0.0; c = 0
+        for j in 1:n
+            if Y[t, j] > 0
+                s += Y[t, j] / N; c += 1
+            end
+        end
+        μ̂ = c == 0 ? 1.0 / N : clamp(s / c, 1e-3, 1 - 1e-3)
+        βc0[t] = _logit(μ̂)
+        excess = clamp(propzero - (1 - μ̂)^N, 1e-3, 0.8)
+        βz0[t] = log(excess / (1 - excess))
+    end
+    Zc = [Y[t, j] > 0 ? _logit(Y[t, j] / N) - βc0[t] : 0.0 for t in 1:p, j in 1:n]
+    F = svd(Zc); kk = min(K, length(F.S))
+    Λc0 = zeros(p, K)
+    @inbounds for j in 1:kk
+        Λc0[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
+    end
+    return βz0, βc0, Λc0
+end
+
+"""
+    fit_zib_gllvm(Y; K, N, …) -> ZIBFit
+
+Fit a zero-inflated binomial GLLVM by L-BFGS over `[βz; βc; vec(Λc)]` (Λz=0),
+with a shared number of trials `N`. `Y` p×n with counts in `0:N`. Finite-difference
+gradient; warm start from the excess-zero share + positive-part success logits +
+SVD loadings.
+"""
+function fit_zib_gllvm(Y::AbstractMatrix{<:Real}; K::Integer, N::Integer,
+        offset = nothing,
+        g_tol::Real = 1e-5, iterations::Integer = 500,
+        newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    p, n = size(Y)
+    rr = rr_theta_len(p, K)
+    βz0, βc0, Λc0 = _zib_warmstart(Y, N, K)
+    θ0 = vcat(βz0, βc0, pack_lambda(Λc0))
+    function negll(θ)
+        βz = θ[1:p]; βc = θ[(p + 1):(2p)]
+        Λc = unpack_lambda(θ[(2p + 1):(2p + rr)], p, K)
+        v = try
+            -zib_marginal_loglik_laplace(Y, Λc, βz, βc, N; offsetc = offset,
+                                         maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
+    res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
+                         autodiff = :finite)
+    θ̂ = Optim.minimizer(res)
+    βz = θ̂[1:p]; βc = θ̂[(p + 1):(2p)]
+    Λc = unpack_lambda(θ̂[(2p + 1):(2p + rr)], p, K)
+    return ZIBFit(βz, βc, Λc, Int(N), -Optim.minimum(res),
+                  Optim.converged(res), Optim.iterations(res))
+end
