@@ -60,6 +60,7 @@ include("families/variational_dgamma.jl") # VA/ELBO marginal — Delta-Gamma two
 # (src/spde.jl) and the family Laplace pieces above.
 include("spde_latent.jl")
 include("spde_latent_postfit.jl")
+include("phylo_glm.jl")                   # phylogenetic GLLVM for non-Gaussian families (issue #61, working fit)
 
 # Post-fit API (ordination, predict, residuals, summary)
 include("postfit.jl")
@@ -98,6 +99,7 @@ export spatial_cov, relatedness_cov,
        node_grad, node_dσ_phy_only, NodePerSpecies, build_node_perspecies,
        grad_node_perspecies, node_blups,
        fit_phylo_gaussian, PhyloGaussianFit,
+       phylo_glm_marginal_loglik, fit_phylo_glm, PhyloGLMFit,
        LogitLink, ProbitLink, CLogLogLink, IdentityLink, LogLink,
        fit_binomial_gllvm, BinomialFit, fit_poisson_gllvm, PoissonFit,
        poisson_laplace_grad, binomial_laplace_grad, nb_laplace_grad,
