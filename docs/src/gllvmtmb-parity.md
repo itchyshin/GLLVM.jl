@@ -23,9 +23,11 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 | Delta-lognormal | ✅ | first two-part family; shared 2-block Laplace substrate |
 | Delta-Gamma | ✅ | occurrence Bernoulli × positive Gamma (log-link mean) on the substrate |
 | Hurdle (Poisson / NB) | ✅ | occurrence Bernoulli × zero-truncated Poisson / NB2 |
-| Zero-inflated (ZIP / ZINB) | ✅ | structural zero × Poisson / NB2; zero-inflation intercept-only (Λ_z = 0) so the coupled-zero cross-term drops out |
+| Zero-inflated (ZIP / ZINB / ZIB) | ✅ | structural zero × Poisson / NB2 / Binomial; zero-inflation intercept-only (Λ_z = 0) so the coupled-zero cross-term drops out |
+| Ordered-beta | ✅ | proportions / cover with point masses at 0 and 1; `fit_ordered_beta_gllvm` |
+| Beta-hurdle | ✅ | occurrence Bernoulli × positive Beta; `fit_beta_hurdle_gllvm` |
 | Exponential | ✅ | positive continuous, `Var = μ²` (Gamma with shape α=1) |
-| Tweedie | ⬜ | planned (compound Poisson–Gamma) |
+| Tweedie | ✅ | compound Poisson–Gamma (1<p<2); `fit_tweedie_gllvm`, Dunn–Smyth density series |
 
 ## Model structure
 
@@ -37,7 +39,7 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 | Phylogenetic random effect | ✅ ⚡ | fast **O(p)** sparse path, benchmarked to p = 10⁴ |
 | Animal model (relatedness / GRM) | ✅ Gaussian | `relatedness_cov`, via the `Σ_phy` input |
 | Spatial (Matérn / exponential) | ✅ Gaussian | `spatial_cov`, via the `Σ_phy` input |
-| Structured dependence × non-Gaussian | 🔨 | joint-Laplace substrate building (b) |
+| Structured dependence × non-Gaussian | ✅ phylo · 🔨 spatial-latent / animal | phylogenetic GLM landed (`fit_phylo_glm`, augmented-state joint Laplace); SPDE / Matérn spatial latent field (`fit_spde_latent_gllvm`) for the non-Gaussian GLLVM |
 | Random slopes `(1 + x \| g)` | 🔨 | formula front-end (c) |
 
 ## Post-fit & inference
@@ -65,28 +67,30 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 
 ⚡ ~340× per-fit median speedup over R `gllvmTMB` on the Gaussian + phylogenetic
 path (with machine-precision agreement on estimates and likelihoods), and an O(p)
-phylogenetic gradient benchmarked to p = 10,000. The non-Gaussian fitters are
-moving from finite-difference to analytic / forward-mode AD gradients for further
-fit-time gains.
+phylogenetic gradient benchmarked to p = 10,000. The non-Gaussian and
+phylogenetic fitters use finite-difference outer gradients (the sparse-Cholesky /
+CHOLMOD marginals are not generic-AD-friendly); the VA estimator adds analytic
+inner and envelope-theorem outer gradients for further fit-time gains.
 
 ## Honest gaps
 
-What's **done**: every response family except Tweedie; fixed-effect covariates
-(`Xβ`) for the non-Gaussian families (`fit_gllvm_cov`); and confidence intervals
-(Wald / profile / parametric bootstrap) for every family.
+What's **done**: every response family — including Tweedie, ordered-beta,
+beta-hurdle, and ZIB; fixed-effect covariates (`Xβ`) and species-specific
+coefficients for the non-Gaussian families; the VA estimator; the ordination
+trio; the SPDE spatial latent field and the phylogenetic GLM; and confidence
+intervals (Wald / profile / parametric bootstrap) for every family.
 
 The remaining gaps are each scoped by an execution-ready spec in
 `docs/superpowers/specs/` (design + slice plan + verifiable goals), so they can be
 built *with* validation rather than shipped unverified:
 
-- **Structured dependence (phylo / animal / spatial) × non-Gaussian** — a joint /
-  nested-Laplace substrate (a species random effect `u ~ N(0, σ²Σ)` shared across
-  sites). Spec: `2026-05-31-nongaussian-structured-dependence-design.md`. Verdict:
-  dense-`S_u`, moderate-`p` v1 is ~2 weeks; the scalable large-`p` determinant is a
-  research-flavoured follow-on.
-- **Tweedie family** — compound Poisson–Gamma (`Var = φμ^p`); reuses the scalar-μ
-  Laplace core, the only hard part is the density series. Spec:
-  `2026-06-01-tweedie-family-design.md`. Verdict: `p`-fixed is a ~2–3 day slice.
+- **Structured dependence × non-Gaussian (animal / spatial extensions)** — the
+  phylogenetic GLM has landed (`fit_phylo_glm`, an augmented-state joint Laplace),
+  and the SPDE / Matérn spatial latent field is wired into the non-Gaussian GLLVM
+  (`fit_spde_latent_gllvm`). The remaining work is the general dense-`S_u`
+  species random effect `u ~ N(0, σ²Σ)` shared across sites and the scalable
+  large-`p` determinant. Spec:
+  `2026-05-31-nongaussian-structured-dependence-design.md`.
 - **`@formula` front-end** — **v1 landed**: `gllvm(@formula(y ~ 1 + covariates), Y,
   data; family, K)` for continuous fixed effects over wide data routes to the
   engine (StatsModels + Tables added). Still deferred (design spec'd in

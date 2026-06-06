@@ -169,6 +169,12 @@ end
 _loadings(fit::OrderedBetaFit) = fit.Λ
 _loglik(fit::OrderedBetaFit)   = fit.loglik
 
+# Free params: β (p) + reduced loadings Λ + cutpoints (c0, c1) + Beta precision φ.
+function _nparams(fit::OrderedBetaFit)
+    p, K = size(fit.Λ)
+    return p + (p * K - div(K * (K - 1), 2)) + 3       # β + Λ + c0 + c1 + φ
+end
+
 """
     getLV(fit::OrderedBetaFit, Y; rotate=true) -> n×K matrix
 

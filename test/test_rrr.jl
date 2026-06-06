@@ -65,5 +65,15 @@ using GLLVM, Test, Random, Distributions, Statistics
         μhat = predict(fit, X; type = :response)
         @test size(μhat) == (p, n)
         @test all(isfinite, μhat)
+
+        # model-selection criteria (β + Λ + vec(B); Poisson has no dispersion)
+        @test GLLVM._nparams(fit) == p + (p * K - div(K * (K - 1), 2)) + q * K
+        @test isfinite(aic(fit))
+        @test isfinite(bic(fit, n))
+        # fitted(fit, X) resolves via the generic predict(::, X; type=:response) fallback
+        ftd = fitted(fit, X)
+        @test size(ftd) == (p, n)
+        @test all(isfinite, ftd)
+        @test ftd ≈ μhat
     end
 end

@@ -157,3 +157,7 @@ function _nparams(fit::SPDELatentFit)
     return p + rr_theta_len(p, K) + 2 + ndisp
 end
 _loglik(fit::SPDELatentFit) = fit.loglik
+
+# Loadings accessor so the generic `getLoadings` / `ordination` (rotation via the
+# SVD of Λ) work for the SPDE-latent model.
+_loadings(fit::SPDELatentFit) = fit.Λ

@@ -76,5 +76,14 @@ end
         μhat = predict(fit, Y, X; type = :response)
         @test size(μhat) == (p, n)
         @test all(isfinite, μhat)
+
+        # model-selection criteria (β + vec(B) + Λ; Poisson has no dispersion)
+        @test GLLVM._nparams(fit) == p + p * q + (p * K - div(K * (K - 1), 2))
+        @test isfinite(aic(fit))
+        @test isfinite(bic(fit, n))
+        ftd = fitted(fit, Y, X)
+        @test size(ftd) == (p, n)
+        @test all(isfinite, ftd)
+        @test ftd ≈ μhat
     end
 end

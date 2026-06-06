@@ -3,15 +3,17 @@
 [![Build Status](https://github.com/itchyshin/GLLVM.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/itchyshin/GLLVM.jl/actions/workflows/CI.yml)
 [![Coverage](https://codecov.io/gh/itchyshin/GLLVM.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/itchyshin/GLLVM.jl)
 
-Fast Gaussian Generalised Linear Latent Variable Models (GLLVMs) in Julia.
+Fast Generalised Linear Latent Variable Models (GLLVMs) in Julia, across the
+full GLM response-family set.
 
-> **Pilot release (v0.1.0)**. API may change before v1.0.
+> API may change before v1.0.
 
 ## Why
 
-GLLVMs decompose a multivariate Gaussian response into a low-rank latent
-factor structure plus optional fixed effects, observation-level random
-effects, and phylogenetic random effects:
+GLLVMs decompose a multivariate response into a low-rank latent factor
+structure plus optional fixed effects, observation-level random effects, and
+phylogenetic / spatial random effects. The Gaussian case has a closed-form
+marginal:
 
 ```
 y[t, s] = X[t, s, :]'β + Λ_B η_B[s][t] + ε[t, s]
@@ -82,29 +84,35 @@ with sparse random-effect design matrices. `GLLVM.jl` solves a
 ## Features
 
 - Closed-form Gaussian marginal log-likelihood (no Laplace approximation)
-- Fixed effects (X β)
-- Latent factor block (Λ_B, K-dimensional)
-- Observation-level latent factors (Λ_W)
-- Per-trait diagonal random effects (σ²_B, σ²_W)
-- Phylogenetic random effects (`phylo_latent`, `phylo_unique`) with user-supplied Σ_phy
-- Wald / profile / bootstrap CIs
-- Reverse-mode AD (via Enzyme.jl / ReverseDiff.jl)
+- Full GLM response families via a Laplace marginal: Poisson, negative binomial
+  (NB2), Binomial / Bernoulli, Beta, Gamma, Exponential, Ordinal, Tweedie
+- Two-part / mixture families: Delta-lognormal, Delta-Gamma, Hurdle-Poisson,
+  Hurdle-NB, beta-hurdle, ordered-beta, ZIP, ZINB, ZIB (zero-inflated binomial)
+- Variational (VA / ELBO) estimator alongside Laplace, with VA-based SEs
+- Ordination trio: unconstrained, concurrent (`num.lv.c`), constrained / RRR (`num.RR`)
+- Fixed effects (X β), species-specific covariates, fourth-corner
+  trait–environment interactions, fixed community row effects, quadratic response
+- Phylogenetic random effects (with user-supplied Σ_phy) — and a phylogenetic
+  GLM fit (`fit_phylo_glm`) for non-Gaussian families via an augmented-state
+  joint Laplace
+- SPDE / Matérn spatial latent field, with kriging prediction
+- Offsets, missing-data (NA) masks, Dunn–Smyth residuals, AIC / BIC,
+  `predict` / `getLV` / `ordination`, and an `@formula` front-end
+- Wald / profile / bootstrap CIs across the GLM and two-part families
 - PPCA closed-form initialisation
 - Structure-aware Cholesky (Woodbury for Λ Λ' + diag)
 - EM-FA solver as an alternative to LBFGS
 
-## Limitations (in this release)
-
-- Gaussian family only (binomial, Poisson, etc. planned)
-- No spatial / SPDE random effects
-- No animal model (covariates × phylo_unique)
+The non-Gaussian and phylogenetic paths use finite-difference outer gradients
+(the sparse-Cholesky / CHOLMOD marginals are not generic-AD-friendly); the VA
+estimator adds analytic inner and envelope-theorem outer gradients.
 
 ## Citation
 
 If you use `GLLVM.jl` in published work, please cite:
 
-> Nakagawa, S. (2026). GLLVM.jl: Fast Gaussian Generalised Linear Latent
-> Variable Models in Julia. <https://github.com/itchyshin/GLLVM.jl>
+> Nakagawa, S. (2026). GLLVM.jl: Generalised Linear Latent Variable Models in
+> Julia. <https://github.com/itchyshin/GLLVM.jl>
 
 ## License
 

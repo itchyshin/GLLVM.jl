@@ -104,6 +104,25 @@ function predict(fit::GllvmSpeciesCovFit, Y::AbstractMatrix{<:Real}, X::Abstract
     return linkinv.(Ref(fit.link), _clamp_eta.(η))
 end
 
+# Post-fit accessors (mirror the covered covariate analogue GllvmCovFit in
+# src/postfit.jl): `_loglik`/`_nparams` unlock the generic `aic`/`bic`, and
+# `fitted` is the response-scale conditional prediction. (No `residuals`: like
+# GllvmCovFit, no family-generic Dunn–Smyth residual is provided for this type.)
+_loglik(fit::GllvmSpeciesCovFit) = fit.loglik
+
+# Free parameters: β (p) + vec(B) (p·q) + Λ (modulo K(K−1)/2 rotational df) + dispersion?
+function _nparams(fit::GllvmSpeciesCovFit)
+    p, K = size(fit.Λ); q = size(fit.B, 2)
+    return p + p * q + (p * K - div(K * (K - 1), 2)) + (isnan(fit.dispersion) ? 0 : 1)
+end
+
+"""
+    fitted(fit::GllvmSpeciesCovFit, Y, X; N=nothing) -> p×n matrix of fitted means.
+"""
+fitted(fit::GllvmSpeciesCovFit, Y::AbstractMatrix{<:Real}, X::AbstractArray{<:Real, 3};
+       N::Union{Nothing, AbstractMatrix} = nothing) =
+    predict(fit, Y, X; type = :response, N = N)
+
 """
     fit_gllvm_speciescov(Y; family, X, K, link=nothing, N=nothing, …) -> GllvmSpeciesCovFit
 

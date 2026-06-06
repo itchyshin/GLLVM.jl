@@ -91,6 +91,37 @@ end
 _glm_logpdf(f::TweedieED, μ, n, y) = tweedie_logpdf(y, μ, f.φ, f.p)
 
 """
+    tweedie_cdf(y, μ, φ, p) -> Float64
+
+Tweedie (compound Poisson–Gamma, `1 < p < 2`) CDF `P(Y ≤ y)` for `y ≥ 0`: the exact
+atom `P(Y = 0) = exp(−μ^{2−p}/(φ(2−p)))` plus, for `y > 0`, the integral of the
+positive continuous density (`exp(tweedie_logpdf)`) over `(0, y]` by composite
+Simpson quadrature. Used by the Dunn–Smyth residual.
+"""
+function tweedie_cdf(y::Real, μ::Real, φ::Real, p::Real)
+    y = float(y); μ = float(μ); φ = float(φ); p = float(p)
+    F0 = exp(tweedie_logpdf(0.0, μ, φ, p))
+    y <= 0 && return F0
+    return clamp(F0 + _tweedie_cdf_pos(y, μ, φ, p), 0.0, 1.0)
+end
+
+# Integral of the positive-part Tweedie density over (0, y] by composite Simpson's
+# rule (the density is smooth and bounded on (0, y]; the `m`-point grid is ample for
+# the residual PIT). The 0 endpoint is finite (the density → 0 there) but evaluated
+# at a tiny ε to avoid log(0).
+function _tweedie_cdf_pos(y::Float64, μ::Float64, φ::Float64, p::Float64)
+    m = 200                                   # even → m+1 grid points
+    h = y / m
+    ε = 1e-12 * y
+    f(t) = exp(tweedie_logpdf(max(t, ε), μ, φ, p))
+    s = f(0.0) + f(y)
+    @inbounds for i in 1:(m - 1)
+        s += (isodd(i) ? 4.0 : 2.0) * f(i * h)
+    end
+    return s * h / 3.0
+end
+
+"""
     tweedie_marginal_loglik_laplace(Y, Λ, β, φ, p; link=LogLink(), kwargs...) -> Float64
 
 Total Laplace log-marginal over the `n` sites (columns) of a Tweedie GLLVM with

@@ -61,6 +61,41 @@ function simulate(fit::BinomialFit, n::Integer;
     return Y
 end
 
+# One Tweedie (compound Poisson–Gamma, 1 < p < 2) draw at mean μ, dispersion φ,
+# power p: N ~ Poisson(λ), λ = μ^{2−p}/(φ(2−p)); y = 0 if N = 0, else
+# y ~ Gamma(N·α, scale = φ(p−1)μ^{p−1}), α = (2−p)/(p−1).
+function _tweedie_sample(μ::Real, φ::Real, p::Real, rng::AbstractRNG)
+    μ = max(float(μ), 1e-12); φ = float(φ); p = float(p)
+    λ = μ^(2.0 - p) / (φ * (2.0 - p))
+    N = rand(rng, Poisson(λ))
+    N == 0 && return 0.0
+    α = (2.0 - p) / (p - 1.0)
+    scale = φ * (p - 1.0) * μ^(p - 1.0)
+    return rand(rng, Gamma(N * α, scale))
+end
+
+"""
+    simulate(fit::TweedieFit, n; rng=Random.default_rng()) -> p×n matrix
+
+Simulate a fresh response matrix from a fitted Tweedie GLLVM (compound Poisson–
+Gamma, power `1 < p < 2`): a new latent `z_s ~ N(0, I_K)` per site, `η = β + Λ z`,
+`μ = linkinv(link, η)`, and each response drawn from the compound Poisson–Gamma at
+`(μ, φ, p)` — a point mass at `0` plus a positive continuous part. Pass a fixed
+`rng` to reproduce.
+"""
+function simulate(fit::TweedieFit, n::Integer; rng::AbstractRNG = default_rng())
+    p, K = size(fit.Λ)
+    Y = Matrix{Float64}(undef, p, n)
+    @inbounds for s in 1:n
+        η = fit.β .+ fit.Λ * randn(rng, K)
+        for t in 1:p
+            μ = linkinv(fit.link, _clamp_eta(η[t]))
+            Y[t, s] = _tweedie_sample(μ, fit.φ, fit.p, rng)
+        end
+    end
+    return Y
+end
+
 """
     simulate(fit::GllvmCovFit, X; N=nothing, rng=Random.default_rng()) -> p×n matrix
 

@@ -254,6 +254,55 @@ end
         @test bo.n_converged ≥ 5
     end
 
+    @testset "Tweedie Wald + bootstrap (phi on natural scale, power fixed)" begin
+        # Compound Poisson–Gamma draws (true zeros + positive part), mirroring the
+        # data-generating loop in test/test_tweedie.jl.
+        Random.seed!(35)
+        p, K, n = 4, 1, 50
+        β = log.(rand(p) .* 2 .+ 0.5)
+        Λ = 0.4 .* randn(p, K)
+        Y = zeros(p, n)
+        for s in 1:n
+            z = randn(K)
+            for t in 1:p
+                μ = exp(β[t] + dot(Λ[t, :], z))
+                k = rand(Poisson(μ))
+                Y[t, s] = k == 0 ? 0.0 : sum(rand(Gamma(2.0, μ / (2.0 * μ + 1e-9)), k))
+            end
+        end
+        fit = fit_tweedie_gllvm(Y; K = K, iterations = 40)
+
+        ci = confint(fit, Y; method = :wald)
+        # β + Λ + a single dispersion term (φ); the power p is held fixed.
+        @test length(ci.term) == p + GLLVM.rr_theta_len(p, K) + 1
+        @test ci.method === :wald
+        @test "phi" in ci.term
+        let pidx = findfirst(==("phi"), ci.term)
+            @test ci.estimate[pidx] ≈ fit.φ atol = 1e-6
+            @test isfinite(ci.se[pidx])           # φ gets a real Wald SE (Hessian non-singular)
+        end
+        # finite-SE intervals bracket their estimate (standard non-strict pattern).
+        for i in eachindex(ci.term)
+            if isfinite(ci.lower[i]) && isfinite(ci.upper[i])
+                @test ci.lower[i] ≤ ci.estimate[i] ≤ ci.upper[i]
+            end
+        end
+
+        # Parametric bootstrap produces a sensible CI. (Serial-vs-parallel BITWISE
+        # determinism is a framework property already asserted by the ZIP/ZIB
+        # bootstrap tests; we don't re-assert exact equality here because Tweedie's
+        # heavy marginal — Simpson quadrature over the compound density, threaded
+        # BLAS — yields non-bitwise-identical reductions across execution contexts.)
+        bo = confint(fit, Y; method = :bootstrap, n_boot = 8, seed = 5)
+        @test bo.method === :bootstrap
+        @test bo.n_converged ≥ 4
+        for i in eachindex(bo.term)
+            if isfinite(bo.lower[i]) && isfinite(bo.upper[i])
+                @test bo.lower[i] ≤ bo.upper[i]
+            end
+        end
+    end
+
     @testset "VA-based standard errors" begin
         Y, _, _ = _sim_poisson(4, 1, 140; seed = 41)
         fit = fit_poisson_gllvm_va(Y; K = 1)

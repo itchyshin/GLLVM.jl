@@ -25,8 +25,8 @@ marginal likelihood. The call returns a `NamedTuple` with `term`, `estimate`,
 
 Supported fits: the GLM families (`PoissonFit`, `BinomialFit`, `NBFit`,
 `BetaFit`, `GammaFit`) and the two-part families (`DeltaLogNormalFit`,
-`DeltaGammaFit`, `HurdlePoissonFit`, `HurdleNBFit`, `ZIPFit`, `ZINBFit`), and
-ordinal (`OrdinalFit`).
+`DeltaGammaFit`, `BetaHurdleFit`, `HurdlePoissonFit`, `HurdleNBFit`, `ZIPFit`,
+`ZINBFit`, `ZIBFit`), and ordinal (`OrdinalFit`).
 
 ### Term names
 

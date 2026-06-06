@@ -142,6 +142,25 @@ function predict(fit::ConstrainedOrdinationFit, Y::AbstractMatrix{<:Real}, X::Ab
     return linkinv.(Ref(fit.link), _clamp_eta.(η))
 end
 
+# Post-fit accessors (mirror the covered covariate analogue GllvmCovFit in
+# src/postfit.jl): `_loglik`/`_nparams` unlock the generic `aic`/`bic`, and
+# `fitted` is the response-scale conditional prediction. (No `residuals`: like
+# GllvmCovFit, no family-generic Dunn–Smyth residual is provided for this type.)
+_loglik(fit::ConstrainedOrdinationFit) = fit.loglik
+
+# Free parameters: β (p) + Λ (modulo K(K−1)/2 rotational df) + vec(B) (q·K) + dispersion?
+function _nparams(fit::ConstrainedOrdinationFit)
+    p, K = size(fit.Λ); q = size(fit.B, 1)
+    return p + (p * K - div(K * (K - 1), 2)) + q * K + (isnan(fit.dispersion) ? 0 : 1)
+end
+
+"""
+    fitted(fit::ConstrainedOrdinationFit, Y, X; N=nothing) -> p×n matrix of fitted means.
+"""
+fitted(fit::ConstrainedOrdinationFit, Y::AbstractMatrix{<:Real}, X::AbstractMatrix{<:Real};
+       N::Union{Nothing, AbstractMatrix} = nothing) =
+    predict(fit, Y, X; type = :response, N = N)
+
 """
     fit_constrained_gllvm(Y; family, X, K, link=nothing, N=nothing, …) -> ConstrainedOrdinationFit
 

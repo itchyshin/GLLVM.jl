@@ -1,233 +1,334 @@
-# Tutorial: fit, read, ordinate, select, predict
+# Tutorial
 
-This is the guided tour: take a species-by-site count matrix, fit a GLLVM,
-read off the estimates, draw an ordination, choose the latent dimension,
-predict, run residual diagnostics, and pick an estimator. Every code block is
-static — copy it into a REPL with GLLVM.jl installed to follow along.
-
-## What a GLLVM is
-
-A **Generalised Linear Latent Variable Model** treats a multivariate response
-matrix `Y` — typically *species × sites* (rows = responses, columns = sampling
-units) — as driven by a handful of unobserved **latent factors**. Each site has
-a low-dimensional latent score `z` (the "ordination" coordinate); each species
-has a **loading** vector that says how strongly it responds to each factor. The
-factors stand in for unmeasured environmental gradients and the residual
-co-occurrence structure among species.
-
-The mean of each entry is
-
-```
-g(μ[j,i]) = β[j] + Λ[j,:] · z[i]
-```
-
-a per-species intercept `β` plus a loading-weighted latent score, passed through
-a link `g`. GLLVM.jl fits the **Gaussian** family in closed form and a wide range
-of **non-Gaussian** families (counts, proportions, ordered categories,
-zero-inflated/hurdle/delta) through a Laplace or variational marginal — fast
-enough to scale to large species counts.
-
-## 1. Get a response matrix
-
-`Y` is `p × n` — `p` species (rows) by `n` sites (columns). For counts it is an
-integer matrix. Here we simulate a two-factor Poisson GLLVM:
+A practical, copy-pasteable walkthrough of the modern GLLVM.jl workflow: fit a
+community matrix under any of the response families, read off the ordination and
+estimates, build confidence intervals, add covariate / trait / row-effect
+structure, and reach the structured-latent extensions (spatial SPDE fields,
+phylogenetic GLLVMs). Every code block is static — copy it into a REPL with
+GLLVM.jl installed to follow along. The data convention throughout is
+**`Y` is `p × n`**: `p` species (rows) by `n` sites (columns).
 
 ```julia
-using GLLVM, Random
-
-Random.seed!(2026)
-p, n, K = 12, 150, 2          # 12 species, 150 sites, 2 latent factors
-
-Λ_true = 0.7 .* randn(p, K)   # species loadings
-β_true = randn(p)             # species intercepts (log scale)
-Z      = randn(K, n)          # latent site scores
-
-η = β_true .+ Λ_true * Z      # p×n linear predictor (log link)
-Y = [rand(Poisson(exp(η[j, i]))) for j in 1:p, i in 1:n]   # p×n counts
+using GLLVM, Distributions, Random
 ```
 
-In practice you would load your own community matrix (e.g. from a CSV with
-species as rows, sites as columns) instead of simulating.
+## 1. Core families
 
-## 2. Fit the model
-
-The family-specific driver is the most direct entry point:
+The most direct entry is the **unified** `fit_gllvm`, which dispatches on a
+`Distributions.jl` family marker (the GLM.jl convention) and forwards `K` and any
+family-specific keywords to the underlying fitter:
 
 ```julia
-fit = fit_poisson_gllvm(Y; K = 2)
+fit = fit_gllvm(Y; family = Poisson(), K = 2)   # counts, log link, Laplace marginal
 ```
 
-Equivalently, the **unified entry point** dispatches on a `Distributions.jl`
-family marker:
+`fit_gllvm` dispatches `Normal()`, `Poisson()`, `Binomial()`,
+`NegativeBinomial()`, `Beta()`, `Gamma()`, `Exponential()`, and `Ordinal()`.
+Each is equivalently reachable through its **family-specific driver**, which is
+where the family-specific keyword arguments live:
 
 ```julia
-fit = fit_gllvm(Y; family = Poisson(), K = 2)
+fp = fit_poisson_gllvm(Y; K = 2)                       # Poisson (counts)
+fn = fit_nb_gllvm(Y; K = 2)                            # NB2: Var = μ + μ²/r
+fb = fit_binomial_gllvm(Y; K = 2, N = N)               # Binomial, N = trial counts
+fβ = fit_beta_gllvm(Yp; K = 2)                         # Beta, proportions in (0,1)
+fg = fit_gamma_gllvm(Yc; K = 2)                        # Gamma, positive continuous
+fe = fit_exponential_gllvm(Yc; K = 2)                  # Exponential (no dispersion)
+fo = fit_ordinal_gllvm(Yo; K = 2)                      # ordered categories 1:C
 ```
 
-Both return the same `PoissonFit`. The unified `fit_gllvm` supports
-`Normal`, `Poisson`, `NegativeBinomial`, `Binomial`, `Beta`, `Gamma`,
-`Exponential`, and `Ordinal`; the two-part families — ZIP, ZINB, hurdle-Poisson,
-hurdle-NB, delta-lognormal, delta-Gamma — have dedicated `fit_<family>_gllvm`
-drivers (see [Response families](/response-families)). Displaying the fit prints
-a summary with the family, dimensions, log-likelihood, AIC, and convergence:
+`fit_binomial_gllvm` takes `N` (a `p×n` integer matrix of trial counts; default
+all-ones = Bernoulli). The default links are the canonical ones — `LogLink()`
+for counts / positive continuous, `LogitLink()` for Binomial / Beta / Ordinal —
+and can be overridden with `link = ...` (`LogitLink`, `ProbitLink`,
+`CLogLogLink`, `LogLink`, `IdentityLink`).
+
+Two negative-binomial variances are available. The default `fit_nb_gllvm` is
+**NB2** (quadratic, `Var = μ + μ²/r`); `fit_nb1_gllvm` is **NB1** (linear,
+`Var = μ(1 + φ)`, quasi-Poisson-like) for communities whose overdispersion grows
+proportionally with the mean:
 
 ```julia
-fit          # rich REPL summary
+f2 = fit_nb_gllvm(Y;  K = 2)    # NB2, dispersion r
+f1 = fit_nb1_gllvm(Y; K = 2)    # NB1, dispersion φ; Var = μ(1+φ)
 ```
 
-## 3. Read the estimates
-
-`coef_table` is the regression-style summary: one row per parameter, with the
-point estimate, standard error, Wald `z`, p-value, and a confidence interval.
+For biomass / abundance with exact zeros and continuous positives, **Tweedie**
+(compound Poisson–Gamma, `1 < p < 2`) fits the power mean–variance model
+directly, estimating both the dispersion `φ` and the power `p`:
 
 ```julia
-ct = coef_table(fit, Y)        # intercepts β and loadings Λ with SE, z, p, CI
+ft = fit_tweedie_gllvm(Y; K = 2)    # Tweedie; fitted φ and power p
+ft.φ, ft.p
 ```
 
-The standard errors and CIs here are **Wald** intervals from the observed
-information (the Hessian at the optimum) — one matrix solve, cheap and accurate
-when the log-likelihood is locally quadratic. For parameters near a boundary or
-when you want a likelihood-respecting interval, request a profile or parametric
-bootstrap CI instead:
+Displaying any fit prints a summary (family, dimensions, log-likelihood, AIC,
+convergence):
 
 ```julia
-ci_profile   = confint(fit, Y; method = :profile)     # LRT inversion
-ci_bootstrap = confint(fit, Y; method = :bootstrap)   # parametric bootstrap
+fp            # rich REPL summary
 ```
 
-Profile CIs invert the likelihood-ratio test (exact up to the bracketing
-tolerance); bootstrap CIs resample from the fitted model and make no quadratic
-assumption. Both cost much more than Wald — use them to spot-check the terms
-that matter.
+## 2. Zero-inflated and two-part families
 
-## 4. Ordinate
-
-`ordination` packages the latent geometry into a single named tuple:
+When zeros are *more* frequent than the count family predicts, use a
+zero-inflated or hurdle/delta model. These carry **two** linear predictors — an
+occurrence/zero part (`βz`) and a positive/count part (`βc`, with loadings `Λc`)
+— so they have dedicated drivers rather than going through `fit_gllvm`:
 
 ```julia
-o = ordination(fit, Y)
-o.sites       # n×K site scores  (the ordination point cloud)
-o.species     # p×K species loadings (the ordination "arrows")
-o.rotation    # K×K canonical rotation shared by sites and species
+# Zero-inflated (a structural-zero mixture)
+fzip  = fit_zip_gllvm(Y;  K = 2)              # zero-inflated Poisson
+fzinb = fit_zinb_gllvm(Y; K = 2)             # zero-inflated NB2 (dispersion r)
+fzib  = fit_zib_gllvm(Y;  K = 2, N = 10)     # zero-inflated Binomial — N trials (Int)
+
+# Hurdle (Bernoulli occurrence × zero-truncated positive count)
+fhp = fit_hurdle_poisson_gllvm(Y; K = 2)
+fhn = fit_hurdle_nb_gllvm(Y;      K = 2)
+
+# Delta / two-part continuous (occurrence × positive continuous)
+fdl = fit_delta_lognormal_gllvm(Yc; K = 2)   # Bernoulli × lognormal
+fdg = fit_delta_gamma_gllvm(Yc;     K = 2)   # Bernoulli × Gamma
+fbh = fit_beta_hurdle_gllvm(Yp;     K = 2)   # Bernoulli × Beta (point mass at 0)
 ```
 
-`o.sites` are the per-site latent scores you would scatter-plot as points;
-`o.species` are the loadings you would draw as labelled arrows. Together they
-make the **model-based ordination biplot** — species pointing the same way
-co-occur along that latent gradient. Because latent factors are identified only
-up to rotation, `ordination` returns a canonical (principal-axis, sign-fixed)
-orientation by default so the picture is reproducible; pass `rotate = false` for
-the raw fitted loadings.
+`fit_zib_gllvm` needs the number of trials `N` as a scalar `Int` (a shared trial
+count for all entries). The two-part fits expose `βz` (occurrence/zero logits),
+`βc` (positive-part intercepts), `Λc` (positive-part loadings), and the relevant
+dispersion (`r` for ZINB / hurdle-NB, `σ` for delta-lognormal, `α` for
+delta-Gamma).
+
+## 3. Ordination and post-fit
+
+All single- and two-part fits share one post-fit API. The headline ecology
+summary is `ordination`, which returns the site/species coordinates in the shared
+latent space as a named tuple:
 
 ```julia
-using Plots                                  # not a GLLVM.jl dependency
-scatter(o.sites[:, 1], o.sites[:, 2]; label = "sites", alpha = 0.4)
-for j in 1:size(o.species, 1)
-    plot!([0, o.species[j, 1]], [0, o.species[j, 2]]; arrow = true, label = "")
-end
+o = ordination(fp, Y)        # Y must match the matrix passed to the fitter
+o.sites                       # n×K site scores (the ordination point cloud)
+o.species                     # p×K species loadings (the "arrows")
+o.rotation                    # K×K canonical (principal-axis) rotation
 ```
 
-## 5. Choose the latent dimension
-
-How many factors? `select_lv` sweeps `K = 1:Kmax`, fits each, and reports the
-information criteria so you can pick the elbow:
+The two coordinate sets are also available directly:
 
 ```julia
-sel = select_lv(Y; family = Poisson(), Kmax = 3)
-
-sel.K          # the K values that fitted successfully
-sel.loglik     # maximised log-likelihood per K
-sel.aic        # AIC per K
-sel.bic        # BIC per K   (uses size(Y,2) sites)
-sel.best_k     # K minimising the criterion (BIC by default)
-sel.best       # the fitted model at best_k
+getLV(fp, Y)                  # n×K conditional latent scores (site ordination)
+getLoadings(fp)               # p×K species loadings, canonically rotated
+getLoadings(fp; rotate = false)   # raw fitted Λ
+rotation(fp)                  # the canonical K×K rotation alone
 ```
 
-Lower AIC/BIC is better. BIC penalises extra factors more heavily, so it tends
-to pick a smaller `K` than AIC. Use `criterion = :aic` to switch. `sel.best` is
-a ready-to-use fit at the selected dimension.
+Latent factors are identified only up to a `K×K` orthogonal rotation, so
+`getLV` / `getLoadings` / `ordination` apply a canonical principal-axis,
+sign-fixed rotation by default (`rotate = false` returns the raw fitted
+orientation).
 
-## 6. Predict and run diagnostics
-
-Fitted values come from `predict`, on either the link or the response scale:
+Fitted values come from `predict`, on the link or the response scale; `fitted` is
+the response-scale shorthand:
 
 ```julia
-η̂ = predict(fit, Y; type = :link)        # linear predictor β + Λz
-μ̂ = predict(fit, Y; type = :response)    # expected counts (link applied)
+predict(fp, Y; type = :link)        # linear predictor η = β + Λẑ
+predict(fp, Y; type = :response)    # μ = linkinv(η) (e.g. exp(η) for counts)
+fitted(fp, Y)                       # == predict(fp, Y; type = :response)
 ```
 
 The standard goodness-of-fit check is the **Dunn–Smyth** randomized quantile
-residual, which is approximately `N(0, 1)` under a correct model and comparable
-across families:
+residual — approximately `N(0,1)` under a correct model and comparable across
+families (a normal Q–Q plot is the usual diagnostic):
 
 ```julia
-r  = residuals(fit, Y)                    # Dunn–Smyth (default)
-rp = residuals(fit, Y; type = :pearson)   # Pearson, for comparison
+residuals(fp, Y)                    # Dunn–Smyth (default)
+residuals(fp, Y; type = :pearson)   # Pearson, for comparison
 ```
 
-For discrete families the Dunn–Smyth randomization draws on an RNG; pass a
-seeded `rng` to reproduce. A normal Q–Q plot of `r` is the usual diagnostic —
-systematic curvature flags the wrong family or too few factors.
+For discrete families the Dunn–Smyth randomization draws on an RNG; pass a seeded
+`rng` (e.g. `residuals(fp, Y; rng = MersenneTwister(1))`) to reproduce.
 
-Information criteria are also available directly off a single fit:
+Information criteria come off a single fit; `bic` needs the site count passed
+explicitly (the fit does not store the data):
 
 ```julia
-aic(fit)                # 2k − 2·logLik
-bic(fit, size(Y, 2))    # k·log(n_sites) − 2·logLik  (pass n_sites explicitly)
+aic(fp)                # 2k − 2·logLik
+bic(fp, size(Y, 2))    # k·log(n_sites) − 2·logLik
 ```
 
-`k` is the free-parameter count, with loadings counted modulo the `K(K−1)/2`
-rotational degrees of freedom.
-
-## 7. Laplace vs variational (VA)
-
-The non-Gaussian fitters approximate the latent integral two ways. The
-**Laplace** approximation is the default — a second-order expansion at the
-conditional mode, fast and accurate for the common families. The
-**variational approximation (VA)** instead optimizes an evidence lower bound
-(ELBO) on the marginal likelihood. VA is steadier when the Laplace curvature is
-unreliable — heavy dispersion or shape parameters, e.g. delta-Gamma or strongly
-overdispersed counts — but it is slower and is therefore opt-in. For Poisson the
-VA driver is a drop-in alternative:
+To choose `K`, `select_lv` sweeps `K = 1:Kmax`, fits each, and reports the
+criteria:
 
 ```julia
-fit_va = fit_poisson_gllvm_va(Y; K = 2)   # ELBO-based; slower, steadier
+sel = select_lv(Y; family = Poisson(), Kmax = 3)
+sel.aic; sel.bic; sel.best_k; sel.best     # sel.best is the fitted model at best_k
 ```
 
-Reach for VA when a Laplace fit looks unstable (a degenerate Hessian, implausible
-dispersion estimates); otherwise the default Laplace path is the right starting
-point.
+Lower AIC/BIC is better; BIC penalises extra factors more and tends to pick a
+smaller `K`. Use `criterion = :aic` to switch.
 
-## 8. Covariates and traits
-
-Real surveys come with site environment and species traits. GLLVM.jl exposes
-several fixed-effect front ends, all taking the same `family` keyword:
+Finally, `simulate` draws a fresh response matrix from a fitted model (useful for
+posterior-predictive checks):
 
 ```julia
-# Shared environmental slope γ across species (X is p×n×q covariate array)
-fit_gllvm_cov(Y; family = Poisson(), X = X, K = 2)
+Ysim = simulate(fp, size(Y, 2))                 # p×n new draw
+Ysim = simulate(fb, size(Y, 2); N = N)          # Binomial needs N
+```
 
-# Species-specific environmental responses B (one slope per species)
-fit_gllvm_speciescov(Y; family = Poisson(), X = X, K = 2)
+## 4. Inference
 
-# Fourth-corner: trait × environment interaction
-fit_fourthcorner_gllvm(Y; family = Poisson(), X = X, TR = TR, K = 2)
+The non-Gaussian family fits share one confidence-interval entry,
+`confint(fit, Y; method = ...)`, with three flavours:
 
-# Community row effects (per-site sampling intensity / total abundance)
-fit_roweffect_gllvm(Y; family = Poisson(), K = 2)
+```julia
+confint(fp, Y; method = :wald)                              # observed-information Wald
+confint(fp, Y; method = :profile, parm = "beta[1]")         # LRT-inversion profile
+confint(fp, Y; method = :bootstrap, n_boot = 500, parallel = true)  # parametric bootstrap
+```
+
+Wald is one finite-difference-Hessian solve (cheapest, locally quadratic);
+profile inverts the likelihood-ratio test (respects skew); bootstrap resamples
+from the fitted model (no quadratic assumption, but slowest). `parm` subsets
+terms by name (`"beta[1]"`, `"Lambda[2,1]"`, `"r"`) or by group (`"beta"`,
+`"Lambda"`); `N = N` supplies Binomial trial counts.
+
+All three methods accept the scalar-μ GLM families (`PoissonFit`, `BinomialFit`,
+`NBFit`, `BetaFit`, `GammaFit`, `ExponentialFit`), the two-part families
+(`ZIPFit`, `ZINBFit`, `ZIBFit`, the hurdle/delta fits), and `OrdinalFit`,
+`GllvmCovFit`, `RowEffectFit`. (The Gaussian `GllvmFit` uses the separate
+`confint` / `profile_ci` / `bootstrap_ci` interface — see
+[Confidence intervals](/confidence-intervals).)
+
+For the headline regression-style summary, `coef_table` wraps the Wald entry and
+adds the `z` statistic and two-sided p-value:
+
+```julia
+coef_table(fp, Y)                       # term, estimate, std_error, z, pvalue, lower, upper
+coef_table(fp, Y; parm = "beta", level = 0.90)
+```
+
+Any extra keywords flow through to `confint`, so `X = X` (covariate fits) and
+`N = N` (Binomial) work unchanged.
+
+## 5. Covariates and structure
+
+Real surveys carry site environment and species traits. GLLVM.jl exposes several
+fixed-effect front ends, all taking the same `family` marker. The `(p, n, q)`
+covariate array `X` follows the engine contract `X[t, s, k]` = covariate `k` for
+species `t` at site `s`:
+
+```julia
+# Shared environmental slope γ (one coefficient per covariate, all species)
+fit_gllvm_cov(Y; family = Poisson(), X = X, K = 2).γ
+
+# Species-specific slopes B (one row per species)
+fit_gllvm_speciescov(Y; family = Poisson(), X = X, K = 2).B
+
+# Community row effects ρ_s (per-site intercepts; ρ[1] ≡ 0 reference)
+fit_roweffect_gllvm(Y; family = Poisson(), K = 2).ρ
+```
+
+The **fourth-corner** model structures the species × environment interaction
+through measured traits — `Xenv` is the `n×q` site-by-covariate matrix, `TR` the
+`p×r` species-by-trait matrix, and the fitted `q×r` coefficient matrix `C`
+couples them (far fewer parameters than free per-species slopes):
+
+```julia
+fit_fourthcorner_gllvm(Y; family = Poisson(), Xenv = Xenv, TR = TR, K = 2).C
+```
+
+For **constrained ordination**, the latent axes are driven by site covariates.
+`fit_constrained_gllvm` (= `fit_concurrent_gllvm`, gllvm's `num.lv.c`) keeps a
+residual random effect, `z_s ~ N(B' x_s, I_K)`; `fit_rrr_gllvm` (gllvm's
+`num.RR`, reduced-rank regression) makes the axes a deterministic `z_s = B' x_s`
+(no residual integral). Both take a 2-D `n×q` site-covariate matrix `X`:
+
+```julia
+fc = fit_constrained_gllvm(Y; family = Poisson(), X = X, K = 2)
+fr = fit_rrr_gllvm(Y;         family = Poisson(), X = X, K = 2)
+fr.B               # q×K constrained ordination axes (environment → latent)
+fr.Λ               # p×K species loadings on those axes
+getLV(fr, X)       # n×K deterministic site scores z_s = B' x_s
 ```
 
 For a familiar R-`gllvmTMB`-style interface, the `@formula` front end maps a
-formula plus a site-level data table onto the engine:
+formula plus a site-level data table onto the engine (v1: an intercept +
+continuous main effects; dispatches to `fit_gaussian_gllvm` for `Normal()` and
+`fit_gllvm_cov` otherwise):
 
 ```julia
 gllvm(@formula(y ~ 1 + temp + depth), Y, site_data; family = Poisson(), K = 2)
 ```
 
-The formula front end (v1) handles an intercept plus continuous main effects;
-see [Structured dependence](/structured-dependence) for phylogenetic and
-correlated-effect structures.
+## 6. Structured latent fields
+
+The latent variables can themselves be given spatial or phylogenetic structure.
+
+### Spatial SPDE fields
+
+`fit_spde_latent_gllvm` makes the `K` latent variables **spatially smooth**
+Matérn-GMRF fields over a triangular mesh (gllvm's `corLV = "spatial"`). Build a
+mesh from the site coordinates with `spde_mesh_delaunay` (or `spde_mesh_grid`),
+then fit with the observation locations `locs` (`M×2`):
+
+```julia
+nodes, tris = spde_mesh_delaunay(locs)          # mesh from site coordinates
+fs = fit_spde_latent_gllvm(Y, nodes, tris, locs; family = Poisson(), K = 1)
+fs.κ, fs.τ                                       # fitted Matérn range / precision params
+```
+
+The headline capability is **kriging** to new, unobserved locations:
+`predict_spatial` finds the field mode from the training data, then interpolates
+the fitted Matérn field to `new_locs`:
+
+```julia
+μ_new = predict_spatial(fs, Y, locs, new_locs; type = :response)   # p×M′
+```
+
+### Phylogenetic GLLVM
+
+`fit_phylo_glm` fits a per-species phylogenetic random intercept correlated
+across species by a tree, via an augmented-state joint Laplace over the sparse
+phylogenetic precision. Build the augmented tree from a Newick string with
+`augmented_phy` (its leaf order must match the rows of `Y`, and
+`p == phy.n_leaves`):
+
+```julia
+phy = augmented_phy("((A:0.1,B:0.2):0.3,C:0.5);")   # p = phy.n_leaves
+fph = fit_phylo_glm(Y, phy; family = Poisson())      # Y is p×n
+fph.σ²_phy                                            # estimated phylogenetic variance
+```
+
+`family` accepts the usual markers (`Poisson()`, `NegativeBinomial()`,
+`Binomial()`, …); supply `N` for Binomial. As `σ²_phy → 0` the fit reduces to the
+independent-family marginal.
+
+## 7. Choosing a family
+
+Match the family to the response support and its mean–variance behaviour:
+
+- **Counts.** Start with `Poisson()`. If the data are overdispersed (variance
+  grows faster than the mean), move to `NegativeBinomial()` — NB2
+  (`fit_nb_gllvm`, `Var = μ + μ²/r`) for quadratic overdispersion, NB1
+  (`fit_nb1_gllvm`, `Var = μ(1+φ)`) when it grows linearly.
+- **Excess zeros.** If zeros are more common than the count family predicts,
+  use a zero-inflated model (`fit_zip_gllvm`, `fit_zinb_gllvm`) for a structural-
+  zero mixture, or a hurdle model (`fit_hurdle_poisson_gllvm`,
+  `fit_hurdle_nb_gllvm`) when presence and abundance are governed by distinct
+  processes.
+- **Presence/absence and trials.** `Binomial()` (with `N` trials; `N ≡ 1` is
+  Bernoulli for presence/absence).
+- **Proportions in (0,1).** `Beta()`. If there are point masses at 0 (or at 0 and
+  1), use `fit_beta_hurdle_gllvm` (zero) or `fit_ordered_beta_gllvm` (zeros and
+  ones).
+- **Positive continuous (biomass, size).** `Gamma()` (or `Exponential()` with no
+  dispersion). With exact zeros mixed in, use a delta model
+  (`fit_delta_gamma_gllvm`, `fit_delta_lognormal_gllvm`) or `fit_tweedie_gllvm`
+  (which estimates the power `p` and handles the zeros in one model).
+- **Ordered categories.** `Ordinal()` (proportional-odds cumulative logit).
+
+When a Laplace fit looks unstable (a degenerate Hessian, implausible dispersion),
+the variational (`fit_*_gllvm_va`) drivers optimise an ELBO instead — slower but
+steadier; see [Response families](/response-families).
 
 See also: [Get started](/quickstart) · [Working with a fit](/working-with-a-fit) ·
-[Response families](/response-families) · [Confidence intervals](/confidence-intervals) ·
-[Reference](/api).
+[Response families](/response-families) · [Structured dependence](/structured-dependence) ·
+[Confidence intervals](/confidence-intervals) · [Reference](/api).

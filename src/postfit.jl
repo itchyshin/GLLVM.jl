@@ -452,6 +452,84 @@ function Base.show(io::IO, ::MIME"text/plain", fit::NBFit)
 end
 
 # ---------------------------------------------------------------------------
+# NB1 (negative binomial type-1, linear variance Var = μ(1+φ)) post-fit methods —
+# a mirror of NBFit with the mean-dependent size r = μ/φ, constant prob 1/(1+φ).
+# ---------------------------------------------------------------------------
+
+_loadings(fit::NB1Fit) = fit.Λ
+_loglik(fit::NB1Fit)   = fit.loglik
+
+function _nparams(fit::NB1Fit)
+    p, K = size(fit.Λ)
+    return p + (p * K - div(K * (K - 1), 2)) + 1       # β + Λ + dispersion φ
+end
+
+function getLV(fit::NB1Fit, Y::AbstractMatrix{<:Integer};
+               N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
+               rotate::Bool = true)
+    p, n = size(Y)
+    Nm = N === nothing ? fill(1, p, n) : N
+    K = size(fit.Λ, 2)
+    fam = NB1(fit.φ)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        Z[:, s] = _laplace_mode(fam, view(Y, :, s), view(Nm, :, s), fit.Λ, fit.β, fit.link)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
+end
+
+function predict(fit::NB1Fit, Y::AbstractMatrix{<:Integer};
+                 type::Symbol = :response,
+                 N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing)
+    type in (:link, :response) ||
+        throw(ArgumentError("type must be :link or :response; got :$type"))
+    Z = getLV(fit, Y; N = N, rotate = false)
+    η = fit.β .+ fit.Λ * Z'
+    type === :link && return η
+    return linkinv.(Ref(fit.link), η)
+end
+
+"""
+    residuals(fit::NB1Fit, Y; type=:dunnsmyth, rng=Random.default_rng()) -> p×n matrix
+
+Conditional residuals for an NB1 fit. `:dunnsmyth` returns Dunn–Smyth randomized
+quantile residuals under `NegativeBinomial(μ/φ, 1/(1+φ))`; `:pearson` returns
+`(Y − μ) / √(μ(1+φ))`.
+"""
+function residuals(fit::NB1Fit, Y::AbstractMatrix{<:Integer};
+                   type::Symbol = :dunnsmyth,
+                   rng::AbstractRNG = Random.default_rng())
+    type in (:dunnsmyth, :pearson) ||
+        throw(ArgumentError("type must be :dunnsmyth or :pearson; got :$type"))
+    p, n = size(Y)
+    φ = fit.φ
+    μ = predict(fit, Y; type = :response)
+    if type === :pearson
+        return (Y .- μ) ./ sqrt.(μ .* (1 + φ))
+    end
+    R = Matrix{Float64}(undef, p, n)
+    @inbounds for s in 1:n, t in 1:p
+        d = NegativeBinomial(μ[t, s] / φ, 1 / (1 + φ))
+        Flo = cdf(d, Y[t, s] - 1)
+        Fhi = cdf(d, Y[t, s])
+        u = Flo + (Fhi - Flo) * rand(rng)
+        R[t, s] = quantile(Normal(), clamp(u, 1e-12, 1 - 1e-12))
+    end
+    return R
+end
+
+function Base.show(io::IO, ::MIME"text/plain", fit::NB1Fit)
+    p, K = size(fit.Λ)
+    println(io, "Negative-binomial type-1 (NB1) GLLVM fit")
+    println(io, "  responses p = ", p, ", latent factors K = ", K,
+            ", link = ", nameof(typeof(fit.link)), ", dispersion φ = ", round(fit.φ; sigdigits = 4))
+    println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
+            ", AIC = ", round(aic(fit); sigdigits = 7))
+    print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
+end
+
+# ---------------------------------------------------------------------------
 # Beta post-fit methods (proportions in (0,1); mean μ = logistic(η), precision
 # φ — Var = μ(1−μ)/(1+φ) — via the logit link). Responses are continuous, so the
 # Dunn–Smyth residual reduces to the (deterministic) PIT, as in the Gaussian case.
@@ -1274,6 +1352,186 @@ function Base.show(io::IO, ::MIME"text/plain", fit::ZINBFit)
     println(io, "Zero-inflated NB GLLVM fit (two-part)")
     println(io, "  responses p = ", p, ", latent factors K = ", K,
             ", dispersion r = ", round(fit.r; sigdigits = 4))
+    println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
+            ", AIC = ", round(aic(fit); sigdigits = 7))
+    print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
+end
+
+# ---------------------------------------------------------------------------
+# Zero-inflated binomial post-fit (ZIB: structural zero × Binomial(N, μ) count,
+# μ = logistic(η^c), N trials fixed — no dispersion). Mirrors ZINB, swapping the
+# NB2 count for Binomial(N, μ). Unconditional mean is (1−π)·N·μ.
+# ---------------------------------------------------------------------------
+
+_loadings(fit::ZIBFit) = fit.Λc
+_loglik(fit::ZIBFit)   = fit.loglik
+
+function _nparams(fit::ZIBFit)
+    p, K = size(fit.Λc)
+    return 2p + (p * K - div(K * (K - 1), 2))        # βz + βc + Λc (N fixed, no dispersion)
+end
+
+function getLV(fit::ZIBFit, Y::AbstractMatrix{<:Real}; rotate::Bool = true)
+    p, n = size(Y); K = size(fit.Λc, 2)
+    Λz = zeros(p, K)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        Z[:, s] = _twopart_mode(ZIB(fit.N), view(Y, :, s), Λz, fit.Λc, fit.βz, fit.βc)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λc) : Zt
+end
+
+"""
+    predict(fit::ZIBFit, Y; type=:response) -> p×n matrix
+
+`:link` = count success-logit predictor `η^c`; `:zeroinfl` = structural-zero
+probability `π = logistic(β^z)`; `:mean` = the binomial mean `N·μ`
+(`μ = logistic(η^c)`); `:response` = unconditional mean `(1−π)·N·μ`.
+"""
+function predict(fit::ZIBFit, Y::AbstractMatrix{<:Real}; type::Symbol = :response)
+    type in (:response, :zeroinfl, :mean, :link) ||
+        throw(ArgumentError("type must be :response, :zeroinfl, :mean, or :link; got :$type"))
+    p, n = size(Y)
+    Z = getLV(fit, Y; rotate = false)
+    ηc = fit.βc .+ fit.Λc * Z'
+    type === :link && return ηc
+    π = inv.(1 .+ exp.(-fit.βz))
+    type === :zeroinfl && return repeat(π, 1, n)
+    μ = inv.(1 .+ exp.(-ηc))                          # logit link for the count part
+    type === :mean && return fit.N .* μ
+    return (1 .- π) .* (fit.N .* μ)
+end
+
+"""
+    residuals(fit::ZIBFit, Y; rng=Random.default_rng()) -> p×n matrix
+
+Dunn–Smyth randomized quantile residuals under the zero-inflated CDF
+`F(k) = π + (1−π)·F_Binomial(N,μ)(k)`.
+"""
+function residuals(fit::ZIBFit, Y::AbstractMatrix{<:Real};
+                   rng::AbstractRNG = Random.default_rng())
+    p, n = size(Y)
+    Z = getLV(fit, Y; rotate = false)
+    ηc = fit.βc .+ fit.Λc * Z'
+    π = inv.(1 .+ exp.(-fit.βz))
+    R = Matrix{Float64}(undef, p, n)
+    @inbounds for s in 1:n, t in 1:p
+        πt = π[t]; y = Int(Y[t, s])
+        μ = inv(1 + exp(-ηc[t, s]))
+        d = Binomial(fit.N, μ)
+        if y == 0
+            lo = 0.0
+            hi = πt + (1 - πt) * cdf(d, 0)
+        else
+            lo = πt + (1 - πt) * cdf(d, y - 1)
+            hi = πt + (1 - πt) * cdf(d, y)
+        end
+        u = lo + (hi - lo) * rand(rng)
+        R[t, s] = quantile(Normal(), clamp(u, 1e-12, 1 - 1e-12))
+    end
+    return R
+end
+
+function Base.show(io::IO, ::MIME"text/plain", fit::ZIBFit)
+    p, K = size(fit.Λc)
+    println(io, "Zero-inflated binomial GLLVM fit (two-part)")
+    println(io, "  responses p = ", p, ", latent factors K = ", K, ", trials N = ", fit.N)
+    println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
+            ", AIC = ", round(aic(fit); sigdigits = 7))
+    print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
+end
+
+# ---------------------------------------------------------------------------
+# Tweedie post-fit (compound Poisson–Gamma, power 1 < p < 2; mean μ = exp(η),
+# dispersion φ, Var = φ μ^p; point mass at 0 plus a positive continuous part).
+# Scalar-μ family, mirroring Gamma; the Tweedie CDF is mixed (atom at 0 + density
+# for y>0), so the Dunn–Smyth residual randomises the jump at 0 and is the
+# deterministic PIT on the positive part.
+# ---------------------------------------------------------------------------
+
+_loadings(fit::TweedieFit) = fit.Λ
+_loglik(fit::TweedieFit)   = fit.loglik
+
+function _nparams(fit::TweedieFit)
+    p, K = size(fit.Λ)
+    return p + (p * K - div(K * (K - 1), 2)) + 2       # β + Λ + dispersion φ + power p
+end
+
+"""
+    getLV(fit::TweedieFit, Y; rotate=true) -> n×K matrix
+
+Conditional latent-variable scores for a Tweedie fit: the per-site Laplace mode
+`ẑₛ` (computed at the fitted dispersion `φ` and power `p`). `Y` is the p×n matrix
+of non-negative reals; `rotate=true` applies the canonical [`rotation`](@ref).
+"""
+function getLV(fit::TweedieFit, Y::AbstractMatrix{<:Real}; rotate::Bool = true)
+    p, n = size(Y)
+    K = size(fit.Λ, 2)
+    fam = TweedieED(fit.φ, fit.p)
+    ones_p = ones(Int, p)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        Z[:, s] = _laplace_mode(fam, view(Y, :, s), ones_p, fit.Λ, fit.β, fit.link)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
+end
+
+"""
+    predict(fit::TweedieFit, Y; type=:response) -> p×n matrix
+
+In-sample fitted values at the Laplace mode: `type=:link` returns `η = β + Λ ẑ`;
+`type=:response` the inverse-link fitted means `linkinv(link, η) = exp(η)`
+(non-negative reals).
+"""
+function predict(fit::TweedieFit, Y::AbstractMatrix{<:Real}; type::Symbol = :response)
+    type in (:link, :response) ||
+        throw(ArgumentError("type must be :link or :response; got :$type"))
+    Z = getLV(fit, Y; rotate = false)
+    η = fit.β .+ fit.Λ * Z'
+    type === :link && return η
+    return linkinv.(Ref(fit.link), _clamp_eta.(η))
+end
+
+"""
+    residuals(fit::TweedieFit, Y; type=:dunnsmyth, rng=Random.default_rng()) -> p×n matrix
+
+Conditional residuals for a Tweedie fit. The Tweedie CDF has an atom at `0` plus a
+continuous positive part, so the `:dunnsmyth` randomized quantile residual draws
+`u` uniform on `[0, F(0)]` at `y=0` and is the deterministic PIT `Φ⁻¹(F(y))` for
+`y>0` — ≈ N(0,1) under a correct model (pass a fixed `rng` to reproduce). `:pearson`
+returns `(Y − μ) / √(φ μ^p)`.
+"""
+function residuals(fit::TweedieFit, Y::AbstractMatrix{<:Real};
+                   type::Symbol = :dunnsmyth, rng::AbstractRNG = Random.default_rng())
+    type in (:dunnsmyth, :pearson) ||
+        throw(ArgumentError("type must be :dunnsmyth or :pearson; got :$type"))
+    p, n = size(Y)
+    φ = fit.φ; pw = fit.p
+    μ = predict(fit, Y; type = :response)
+    if type === :pearson
+        return (Y .- μ) ./ sqrt.(φ .* μ .^ pw)
+    end
+    R = Matrix{Float64}(undef, p, n)
+    @inbounds for s in 1:n, t in 1:p
+        if Y[t, s] <= 0
+            F0 = exp(tweedie_logpdf(0.0, μ[t, s], φ, pw))   # P(Y = 0) (the atom)
+            u = F0 * rand(rng)
+        else
+            u = tweedie_cdf(float(Y[t, s]), μ[t, s], φ, pw) # atom + positive-part CDF
+        end
+        R[t, s] = quantile(Normal(), clamp(u, 1e-12, 1 - 1e-12))
+    end
+    return R
+end
+
+function Base.show(io::IO, ::MIME"text/plain", fit::TweedieFit)
+    p, K = size(fit.Λ)
+    println(io, "Tweedie GLLVM fit")
+    println(io, "  responses p = ", p, ", latent factors K = ", K,
+            ", link = ", nameof(typeof(fit.link)),
+            ", φ = ", round(fit.φ; sigdigits = 4), ", power = ", round(fit.p; sigdigits = 4))
     println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
             ", AIC = ", round(aic(fit); sigdigits = 7))
     print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
