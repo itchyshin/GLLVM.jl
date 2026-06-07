@@ -29,7 +29,7 @@ using Random: AbstractRNG, MersenneTwister, randn
 
 # Families handled by this layer (single latent block, optional scalar dispersion).
 const _FamilyFit = Union{PoissonFit, BinomialFit, NBFit, NB1Fit, BetaFit, GammaFit, ExponentialFit,
-                         TweedieFit}
+                         TweedieFit, BetaBinomialFit, RowRandomFit}
 
 # Two-part families ([βz; βc; pack_lambda(Λc); (log-dispersion)] layout).
 const _TwoPartFit = Union{DeltaLogNormalFit, DeltaGammaFit, HurdlePoissonFit,
@@ -338,6 +338,108 @@ function _family_ci(fit::ExponentialFit, Y::AbstractMatrix;
         return vcat(fb.β, pack_lambda(fb.Λ))
     end
     return _FamilyCI(θ, nll, _glm_lin_names(p, K), fill(:linear, length(θ)), simulate, refit)
+end
+
+# --- Beta-binomial (overdispersed binomial; one Beta-precision φ) -----------
+# Working vector [β; pack_lambda(Λ); log φ] — the NB/Beta scalar-dispersion
+# template. Like the Binomial CIs, the trial counts N are NOT stored in the fit,
+# so they are taken as data through the `N` kwarg (default all-ones / Bernoulli-
+# overdispersed) and threaded through the marginal, the bootstrap draw, and the
+# refit exactly as families/binomial.jl threads them.
+function _family_ci(fit::BetaBinomialFit, Y::AbstractMatrix;
+                    N::Union{Nothing, AbstractMatrix} = nothing,
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); link = fit.link
+    Nm = N === nothing ? fill(1, p, n) : Matrix{Int}(N)
+    θ = vcat(fit.β, pack_lambda(fit.Λ), log(fit.φ))
+    nll = function (θv)
+        β = θv[1:p]; Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K); φ = exp(θv[p + rr + 1])
+        v = try
+            -betabinomial_marginal_loglik_laplace(Y, Nm, Λ, β, φ; link = link,
+                                                  maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    simulate = function (rng)
+        Yb = Matrix{Int}(undef, p, n); φ = fit.φ
+        @inbounds for s in 1:n
+            η = fit.β .+ fit.Λ * randn(rng, K)
+            for t in 1:p
+                μ = clamp(linkinv(link, _clamp_eta(η[t])), 1e-12, 1 - 1e-12)
+                # beta-binomial draw: success prob ~ Beta(μφ, (1−μ)φ), then Binomial(N, ·).
+                pdraw = clamp(rand(rng, Beta(μ * φ, (1 - μ) * φ)), 1e-12, 1 - 1e-12)
+                Yb[t, s] = rand(rng, Binomial(Nm[t, s], pdraw))
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try fit_beta_binomial_gllvm(Yb; K = K, link = link, N = Nm) catch; return nothing end
+        return vcat(fb.β, pack_lambda(fb.Λ), log(fb.φ))
+    end
+    names = vcat(_glm_lin_names(p, K), "phi")
+    kinds = vcat(fill(:linear, length(θ) - 1), :log)
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+end
+
+# --- Random row effect (per-site random intercept σ_row, + family dispersion) ---
+# Working vector [β; pack_lambda(Λ); log σ_row; (log-dispersion)] — `σ_row` is the
+# row-effect SD on the log scale (it stays ≥ 0), and the underlying family's
+# dispersion (NB `r` / Beta `φ` / Gamma `α`) is the optional trailing log-scale
+# term, exactly as the fitter lays it out. The marginal is the augmented
+# (K+1)-latent reparameterisation `Λ̃ = [Λ | σ_row·𝟙_p]`; the bootstrap draws
+# z_s ~ N(0,I_K) and ρ_s ~ N(0, σ_row²) then the per-family response.
+function _family_ci(fit::RowRandomFit, Y::AbstractMatrix;
+                    N::Union{Nothing, AbstractMatrix} = nothing,
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K)
+    lk = fit.link; fam0 = fit.family; hasd = _cov_has_disp(fam0)
+    Nm = N === nothing ? fill(1, p, n) : N
+    θ = hasd ? vcat(fit.β, pack_lambda(fit.Λ), log(fit.σ_row), log(fit.dispersion)) :
+               vcat(fit.β, pack_lambda(fit.Λ), log(fit.σ_row))
+    nll = function (θv)
+        β = θv[1:p]; Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+        σ_row = exp(θv[p + rr + 1])
+        disp = hasd ? exp(θv[p + rr + 2]) : NaN
+        fam = _cov_family(fam0, disp)
+        v = try
+            -row_random_marginal_loglik_laplace(fam, Y, Nm, Λ, β, σ_row; link = lk,
+                                                maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    simulate = function (rng)
+        Yb = Matrix{Float64}(undef, p, n); fam = _cov_family(fam0, fit.dispersion)
+        @inbounds for s in 1:n
+            ρ = fit.σ_row * randn(rng)                       # per-site random intercept
+            η = fit.β .+ ρ .+ fit.Λ * randn(rng, K)
+            for t in 1:p
+                μ = linkinv(lk, _clamp_eta(η[t]))
+                Yb[t, s] = _cov_sample(fam, μ, Nm[t, s], rng)
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try
+            fit_row_random_gllvm(Yb; family = fam0, K = K, link = lk,
+                                 N = fam0 isa Binomial ? Nm : nothing)
+        catch
+            return nothing
+        end
+        return hasd ? vcat(fb.β, pack_lambda(fb.Λ), log(fb.σ_row), log(fb.dispersion)) :
+                      vcat(fb.β, pack_lambda(fb.Λ), log(fb.σ_row))
+    end
+    names = vcat(_glm_lin_names(p, K), "sigma_row")
+    kinds = vcat(fill(:linear, p + rr), :log)
+    if hasd
+        push!(names, _cov_dispname(fam0)); push!(kinds, :log)
+    end
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
 end
 
 # Count-family simulation (Poisson / NB share the loop; `make` builds the
@@ -1225,12 +1327,17 @@ end
 
 Confidence intervals for a non-Gaussian family GLLVM fit — the scalar-μ GLM
 families (`PoissonFit`, `BinomialFit`, `NBFit`, `BetaFit`, `GammaFit`,
-`TweedieFit`) and the two-part families (`DeltaLogNormalFit`, `DeltaGammaFit`, `HurdlePoissonFit`,
+`TweedieFit`, `BetaBinomialFit`), the random-row-effect fit (`RowRandomFit`,
+which adds a `sigma_row` term plus the underlying family's dispersion), and the
+two-part families (`DeltaLogNormalFit`, `DeltaGammaFit`, `HurdlePoissonFit`,
 `HurdleNBFit`, `ZIPFit`, `ZINBFit`, `ZIBFit`). `Y` is the same response matrix
-passed to the fitter; it is needed to reconstruct the marginal likelihood.
+passed to the fitter; it is needed to reconstruct the marginal likelihood. For
+`BinomialFit` / `BetaBinomialFit` (and a `Binomial`-family `RowRandomFit`) supply
+the trial counts via `N` (default all-ones).
 
 Term names are `beta[t]` / `Lambda[i,k]` (+ a dispersion `r`/`phi`/`alpha`) for
-the GLM families, and `betaz[t]` (occurrence / zero-inflation logits) / `betac[t]`
+the GLM families, `... + phi` for `BetaBinomialFit` (the Beta precision) and
+`... + sigma_row (+ r/phi/alpha)` for `RowRandomFit`, and `betaz[t]` (occurrence / zero-inflation logits) / `betac[t]`
 (positive / count intercepts) / `Lambda[i,k]` (+ `sigma`/`alpha`/`r`) for the
 two-part families. For `TweedieFit` the dispersion term is `phi`; the power
 `p ∈ (1,2)` is held fixed at its fitted value, so only `phi` is profiled.
