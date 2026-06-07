@@ -104,6 +104,15 @@ function Base.show(io::IO, f::NBGroupedFit)
           f.converged ? "" : ", NOT CONVERGED", ")")
 end
 
+_loadings(fit::NBGroupedFit) = fit.Λ
+_loglik(fit::NBGroupedFit)   = fit.loglik
+
+# Free params: β (p) + reduced loadings Λ + one dispersion per group (G).
+function _nparams(fit::NBGroupedFit)
+    p, K = size(fit.Λ)
+    return p + rr_theta_len(p, K) + length(fit.r_group)   # β + Λ + G dispersions r
+end
+
 """
     fit_nb_gllvm_grouped(Y; K, group, link=LogLink(), mask=nothing, offset=nothing, …) -> NBGroupedFit
 
@@ -269,6 +278,15 @@ function Base.show(io::IO, f::BetaGroupedFit)
           f.converged ? "" : ", NOT CONVERGED", ")")
 end
 
+_loadings(fit::BetaGroupedFit) = fit.Λ
+_loglik(fit::BetaGroupedFit)   = fit.loglik
+
+# Free params: β (p) + reduced loadings Λ + one precision per group (G).
+function _nparams(fit::BetaGroupedFit)
+    p, K = size(fit.Λ)
+    return p + rr_theta_len(p, K) + length(fit.φ)   # β + Λ + G precisions φ
+end
+
 """
     fit_beta_gllvm_grouped(Y; K, group, link=LogitLink(), mask=nothing, offset=nothing, …) -> BetaGroupedFit
 
@@ -432,6 +450,15 @@ function Base.show(io::IO, f::GammaGroupedFit)
           ", link=", nameof(typeof(f.link)),
           ", loglik=", round(f.loglik; sigdigits = 7),
           f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+_loadings(fit::GammaGroupedFit) = fit.Λ
+_loglik(fit::GammaGroupedFit)   = fit.loglik
+
+# Free params: β (p) + reduced loadings Λ + one shape per group (G).
+function _nparams(fit::GammaGroupedFit)
+    p, K = size(fit.Λ)
+    return p + rr_theta_len(p, K) + length(fit.α)   # β + Λ + G shapes α
 end
 
 """
@@ -600,6 +627,15 @@ function Base.show(io::IO, f::NB1GroupedFit)
           ", link=", nameof(typeof(f.link)),
           ", loglik=", round(f.loglik; sigdigits = 7),
           f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+_loadings(fit::NB1GroupedFit) = fit.Λ
+_loglik(fit::NB1GroupedFit)   = fit.loglik
+
+# Free params: β (p) + reduced loadings Λ + one dispersion per group (G).
+function _nparams(fit::NB1GroupedFit)
+    p, K = size(fit.Λ)
+    return p + rr_theta_len(p, K) + length(fit.φ)   # β + Λ + G dispersions φ
 end
 
 """
@@ -772,6 +808,16 @@ function Base.show(io::IO, f::TweedieGroupedFit)
           ", link=", nameof(typeof(f.link)),
           ", loglik=", round(f.loglik; sigdigits = 7),
           f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+_loadings(fit::TweedieGroupedFit) = fit.Λ
+_loglik(fit::TweedieGroupedFit)   = fit.loglik
+
+# Free params: β (p) + reduced loadings Λ + one dispersion per group (G) + the
+# single SHARED power.
+function _nparams(fit::TweedieGroupedFit)
+    p, K = size(fit.Λ)
+    return p + rr_theta_len(p, K) + length(fit.φ) + 1   # β + Λ + G dispersions φ + power
 end
 
 """
