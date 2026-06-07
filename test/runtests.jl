@@ -42,6 +42,7 @@ using GLLVM
     include("test_binomial_fit.jl")
     include("test_poisson_fit.jl")
     include("test_laplace_grad.jl")
+    include("test_laplace_alloc_equiv.jl")
     include("test_nb_fit.jl")
     include("test_nb1.jl")
     include("test_grouped_dispersion.jl")
