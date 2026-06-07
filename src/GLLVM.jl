@@ -69,6 +69,7 @@ include("phylo_glm.jl")                   # phylogenetic GLLVM for non-Gaussian 
 
 # Post-fit API (ordination, predict, residuals, summary)
 include("postfit.jl")
+include("families/com_poisson.jl")        # Conway–Maxwell–Poisson (under/overdispersed counts) — beyond gllvmTMB
 include("ordination.jl")                  # ordination output (site scores + species loadings, canonical rotation)
 include("model_selection.jl")             # select_lv: latent-dimension selection by AIC/BIC
 include("simulate_fit.jl")               # simulate(fit, …) for the non-Gaussian families
@@ -98,6 +99,8 @@ export spatial_cov, relatedness_cov,
        confint_speciescov, confint_fourthcorner, confint_rrr, confint_constrained,
        fit_gaussian_gllvm, GllvmModel, GllvmFit,
        fit_gaussian_pervar_gllvm, GaussianPerVarFit, gaussian_pervar_marginal_loglik,
+       fit_compoisson_gllvm, COMPoisson, COMPoissonFit, compoisson_marginal_loglik_laplace,
+       compoisson_logpdf, compoisson_logz,
        confint, profile_ci, bootstrap_ci,
        ppca_init, em_fa,
        sigma_y_site, communality, correlation, phylo_signal,
