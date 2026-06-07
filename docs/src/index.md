@@ -65,13 +65,18 @@ After fitting, the usual report-ready quantities are:
 
 !!! tip "What works today"
     - One-part fits through `fit_gllvm`: Gaussian, Binomial, Poisson,
-      NegativeBinomial, Beta, Ordinal, Gamma, Exponential, and Tweedie.
+      NegativeBinomial, Beta, Ordinal (logit or probit), Gamma, Exponential, and
+      Tweedie — plus dedicated drivers for NB1 (`fit_nb1_gllvm`), beta-binomial
+      (`fit_beta_binomial_gllvm`), and a heteroscedastic / per-species-variance
+      Gaussian (`fit_gaussian_pervar_gllvm`).
+    - Per-species / grouped dispersion (gllvm's `disp.group`) for NB2, NB1, Beta,
+      Gamma, and Tweedie via the `_grouped` drivers.
     - Two-part / mixture fitters: Delta-lognormal, Delta-Gamma, Hurdle-Poisson,
       Hurdle-NB, beta-hurdle, ordered-beta, ZIP, ZINB, and ZIB.
     - A variational (VA / ELBO) estimator alongside Laplace, with VA-based SEs;
       the ordination trio (unconstrained / concurrent / constrained-RRR);
-      species-specific covariates, fourth-corner, row effects, and quadratic
-      response.
+      species-specific covariates, fourth-corner, fixed and random row effects,
+      and quadratic response.
     - Structured latent fields: SPDE / Matérn spatial (with kriging) and
       phylogenetic, including a phylogenetic GLM fit (`fit_phylo_glm`) for
       non-Gaussian families.

@@ -41,7 +41,20 @@ fo = fit_ordinal_gllvm(Yo; K = 2)                      # ordered categories 1:C
 all-ones = Bernoulli). The default links are the canonical ones — `LogLink()`
 for counts / positive continuous, `LogitLink()` for Binomial / Beta / Ordinal —
 and can be overridden with `link = ...` (`LogitLink`, `ProbitLink`,
-`CLogLogLink`, `LogLink`, `IdentityLink`).
+`CLogLogLink`, `LogLink`, `IdentityLink`). For ordered categories the cumulative
+link can be switched to probit: `fit_ordinal_gllvm(Yo; K = 2, link = ProbitLink())`.
+
+For binomial counts that are **over-dispersed** relative to `Binomial(N, μ)`,
+`fit_beta_binomial_gllvm` lets the per-trial success probability itself vary
+(`p ~ Beta(μφ, (1−μ)φ)`), jointly estimating the Beta precision `φ`:
+
+```julia
+fbb = fit_beta_binomial_gllvm(Yb; K = 2, N = N)   # overdispersed binomial; fbb.φ
+```
+
+`N` is a `p×n` matrix of trial counts (default all-ones); as `φ → ∞` the family
+reduces to `Binomial(N, μ)`. Links: `LogitLink()` (default), `ProbitLink()`,
+`CLogLogLink()`.
 
 Two negative-binomial variances are available. The default `fit_nb_gllvm` is
 **NB2** (quadratic, `Var = μ + μ²/r`); `fit_nb1_gllvm` is **NB1** (linear,
@@ -60,6 +73,29 @@ directly, estimating both the dispersion `φ` and the power `p`:
 ```julia
 ft = fit_tweedie_gllvm(Y; K = 2)    # Tweedie; fitted φ and power p
 ft.φ, ft.p
+```
+
+By default each dispersion family carries **one shared** dispersion across all
+species. To let it vary by species (or by groups of species — gllvm's
+`disp.group`), use the matching `_grouped` driver with a length-`p` `group` vector
+of integer group ids (default `1:p`, i.e. a separate dispersion per species). With
+a single group these match the shared-dispersion fit:
+
+```julia
+fit_nb_gllvm_grouped(Y;  K = 2, group = group)   # NB2 r per group (group required)
+fit_nb1_gllvm_grouped(Y; K = 2)                  # NB1 φ, default per-species
+fit_beta_gllvm_grouped(Yp;    K = 2)             # Beta precision φ per species
+fit_gamma_gllvm_grouped(Yc;   K = 2)             # Gamma shape α per species
+fit_tweedie_gllvm_grouped(Y;  K = 2)             # Tweedie φ per species (shared power p)
+```
+
+For continuous Gaussian data with **unequal residual variance across species**
+(heteroscedastic; gllvm's default), `fit_gaussian_pervar_gllvm` estimates a
+separate variance per species instead of the single shared `σ_eps` of
+`fit_gaussian_gllvm`:
+
+```julia
+fpv = fit_gaussian_pervar_gllvm(Y; K = 2)   # per-species residual variances
 ```
 
 Displaying any fit prints a summary (family, dimensions, log-likelihood, AIC,
@@ -224,6 +260,16 @@ fit_gllvm_speciescov(Y; family = Poisson(), X = X, K = 2).B
 
 # Community row effects ρ_s (per-site intercepts; ρ[1] ≡ 0 reference)
 fit_roweffect_gllvm(Y; family = Poisson(), K = 2).ρ
+```
+
+Row effects can instead be treated as **random** (gllvm's `row.eff = "random"`),
+`ρ_s ~ N(0, σ_row²)`, which shrinks the per-site intercepts and estimates a single
+row-effect SD rather than `n − 1` free intercepts:
+
+```julia
+fr = fit_row_random_gllvm(Y; family = Poisson(), K = 2)
+fr.σ_row              # estimated row-effect SD
+row_effects(fr, Y)    # per-site row-effect BLUPs ρ̂_s
 ```
 
 The **fourth-corner** model structures the species × environment interaction
