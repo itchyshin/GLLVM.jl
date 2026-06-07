@@ -85,13 +85,19 @@ with sparse random-effect design matrices. `GLLVM.jl` solves a
 
 - Closed-form Gaussian marginal log-likelihood (no Laplace approximation)
 - Full GLM response families via a Laplace marginal: Poisson, negative binomial
-  (NB2), Binomial / Bernoulli, Beta, Gamma, Exponential, Ordinal, Tweedie
+  (NB2 and NB1, linear variance), Binomial / Bernoulli, beta-binomial
+  (overdispersed binomial), Beta, Gamma, Exponential, Ordinal (logit or probit),
+  Tweedie
+- Heteroscedastic Gaussian with per-species variance (`fit_gaussian_pervar_gllvm`)
+- Per-species / grouped dispersion (`disp.group`) for NB2, NB1, Beta, Gamma, and
+  Tweedie via the `_grouped` drivers
 - Two-part / mixture families: Delta-lognormal, Delta-Gamma, Hurdle-Poisson,
   Hurdle-NB, beta-hurdle, ordered-beta, ZIP, ZINB, ZIB (zero-inflated binomial)
 - Variational (VA / ELBO) estimator alongside Laplace, with VA-based SEs
 - Ordination trio: unconstrained, concurrent (`num.lv.c`), constrained / RRR (`num.RR`)
 - Fixed effects (X β), species-specific covariates, fourth-corner
-  trait–environment interactions, fixed community row effects, quadratic response
+  trait–environment interactions, fixed and random community row effects,
+  quadratic response
 - Phylogenetic random effects (with user-supplied Σ_phy) — and a phylogenetic
   GLM fit (`fit_phylo_glm`) for non-Gaussian families via an augmented-state
   joint Laplace
