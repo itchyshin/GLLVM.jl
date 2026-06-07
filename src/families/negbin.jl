@@ -106,13 +106,15 @@ function fit_nb_gllvm(Y::AbstractMatrix; K::Integer,
     logr0 = r_init === nothing ? log(10.0) : log(float(r_init))
 
     θ0 = vcat(β0, pack_lambda(Λ0), logr0)
+    N1 = ones(Int, size(Yc))                     # unit trials, hoisted out of the per-eval closure
     function negll(θ)
         β = θ[1:p]
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
         r = exp(θ[p + rr + 1])
         v = try
-            -nb_marginal_loglik_laplace(Yc, Λ, β, r; mask = msk, offset = offset,
-                                        maxiter = newton_maxiter, tol = newton_tol)
+            -marginal_loglik_laplace(NegativeBinomial(float(r), 0.5), Yc, N1, Λ, β, link;
+                                     mask = msk, offset = offset,
+                                     maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
         end

@@ -34,10 +34,11 @@ function _optimize_with_analytic(negll, analytic_grad, θ0, ls, opts)
         gg = analytic_grad(θ)
         if gg === nothing || !all(isfinite, gg)
             hh = 1e-6
+            θp = copy(θ); θm = copy(θ)            # reused across indices (no per-i copy)
             @inbounds for i in eachindex(θ)
-                θp = copy(θ); θp[i] += hh
-                θm = copy(θ); θm[i] -= hh
+                θp[i] += hh; θm[i] -= hh
                 G[i] = (negll(θp) - negll(θm)) / (2hh)
+                θp[i] = θ[i]; θm[i] = θ[i]        # restore in place
             end
         else
             G .= gg
