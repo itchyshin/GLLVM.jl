@@ -110,12 +110,13 @@ function fit_poisson_gllvm(Y::AbstractMatrix; K::Integer,
     end
 
     θ0 = vcat(β0, pack_lambda(Λ0))
+    N1 = ones(Int, size(Yc))                     # unit trials, hoisted out of the per-eval closure
     function negll(θ)
         β = θ[1:p]
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
         v = try
-            -poisson_marginal_loglik_laplace(Yc, Λ, β, link; mask = msk, offset = offset,
-                                             maxiter = newton_maxiter, tol = newton_tol)
+            -marginal_loglik_laplace(Poisson(), Yc, N1, Λ, β, link; mask = msk, offset = offset,
+                                     maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
         end
