@@ -29,15 +29,41 @@ function _twopart_mode(family, y::AbstractVector,
     z = zeros(K)
     sz = Vector{Float64}(undef, p); sc = Vector{Float64}(undef, p)
     Wz = Vector{Float64}(undef, p); Wc = Vector{Float64}(undef, p)
+    # Per-call buffers, reused across Newton iterations. Each is written in place
+    # with the SAME broadcast / BLAS expression as the allocating version, so the
+    # computed values and FP-operation order are bit-identical.
+    Λzz = Vector{Float64}(undef, p)    # Λz*z (occurrence linear-predictor contribution)
+    Λcz = Vector{Float64}(undef, p)    # Λc*z (positive-part linear-predictor contribution)
+    ηz  = Vector{Float64}(undef, p)    # clamped occurrence predictor
+    ηc  = Vector{Float64}(undef, p)    # clamped positive-part predictor
+    WzΛz = Matrix{Float64}(undef, p, K)  # Wz .* Λz
+    WcΛc = Matrix{Float64}(undef, p, K)  # Wc .* Λc
+    Amat = Matrix{Float64}(undef, K, K)  # Λz'(Wz.*Λz) (+ Λc'(Wc.*Λc) and + I in place)
+    Atmp = Matrix{Float64}(undef, K, K)  # Λc'(Wc.*Λc) temp before accumulation
+    g  = Vector{Float64}(undef, K)     # rhs Λz'sz + Λc'sc − z
+    gc = Vector{Float64}(undef, K)     # Λc'sc temp before accumulation
     for _ in 1:maxiter
-        ηz = _clamp_eta.(βz .+ offz .+ Λz * z)
-        ηc = _clamp_eta.(βc .+ offc .+ Λc * z)
+        mul!(Λzz, Λz, z)
+        mul!(Λcz, Λc, z)
+        ηz .= _clamp_eta.(βz .+ offz .+ Λzz)
+        ηc .= _clamp_eta.(βc .+ offc .+ Λcz)
         @inbounds for t in 1:p
             s_z, s_c, W_z, W_c, _ = _tp_pieces(family, y[t], ηz[t], ηc[t])
             sz[t] = s_z; sc[t] = s_c; Wz[t] = W_z; Wc[t] = W_c
         end
-        A = Symmetric(Λz' * (Wz .* Λz) + Λc' * (Wc .* Λc) + I)
-        Δ = _safe_solve(A, Λz' * sz .+ Λc' * sc .- z)
+        WzΛz .= Wz .* Λz                       # = Wz .* Λz (p×K)
+        WcΛc .= Wc .* Λc                       # = Wc .* Λc (p×K)
+        mul!(Amat, Λz', WzΛz)                  # = Λz' * (Wz .* Λz)
+        mul!(Atmp, Λc', WcΛc)                  # = Λc' * (Wc .* Λc)
+        Amat .+= Atmp                          # = Λz'(Wz.*Λz) + Λc'(Wc.*Λc)
+        @inbounds for d in 1:K
+            Amat[d, d] += 1.0                  # + I (adds 1.0 to each diagonal entry)
+        end
+        A = Symmetric(Amat)
+        mul!(g, Λz', sz)                        # = Λz' * sz
+        mul!(gc, Λc', sc)                       # = Λc' * sc
+        g .= g .+ gc .- z                       # rhs = Λz'sz + Λc'sc − z
+        Δ = _safe_solve(A, g)
         (Δ === nothing || !all(isfinite, Δ)) && break
         z = z .+ Δ
         maximum(abs, Δ) < tol && break
@@ -61,6 +87,7 @@ function twopart_loglik_site(family, y::AbstractVector,
     p = size(Λc, 1)
     offz = offsetz === nothing ? false : offsetz
     offc = offsetc === nothing ? false : offsetc
+    K = size(Λc, 2)
     ẑ = _twopart_mode(family, y, Λz, Λc, βz, βc;
                       offsetz = offsetz, offsetc = offsetc, maxiter = maxiter, tol = tol)
     ηz = _clamp_eta.(βz .+ offz .+ Λz * ẑ)
@@ -71,7 +98,17 @@ function twopart_loglik_site(family, y::AbstractVector,
         _, _, W_z, W_c, logf = _tp_pieces(family, y[t], ηz[t], ηc[t])
         Wz[t] = W_z; Wc[t] = W_c; ℓ += logf
     end
-    A = Symmetric(Λz' * (Wz .* Λz) + Λc' * (Wc .* Λc) + I)
+    # Per-call buffers (written in place with the SAME broadcast / BLAS expressions
+    # as before ⇒ bit-identical values and FP-operation order).
+    WzΛz = Wz .* Λz                           # = Wz .* Λz (p×K)
+    WcΛc = Wc .* Λc                           # = Wc .* Λc (p×K)
+    Amat = Λz' * WzΛz                          # = Λz' * (Wz .* Λz) (K×K)
+    Atmp = Λc' * WcΛc                          # = Λc' * (Wc .* Λc) (K×K)
+    Amat .+= Atmp                              # = Λz'(Wz.*Λz) + Λc'(Wc.*Λc)
+    @inbounds for d in 1:K
+        Amat[d, d] += 1.0                      # + I (adds 1.0 to each diagonal entry)
+    end
+    A = Symmetric(Amat)
     return ℓ - 0.5 * dot(ẑ, ẑ) - 0.5 * logdet(A)
 end
 
