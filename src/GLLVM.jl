@@ -51,6 +51,7 @@ include("families/quadratic.jl")          # quadratic-response GLLVM (species op
 include("families/ordered_beta.jl")       # ordered-beta family (proportions with point masses at 0 and 1)
 include("families/fourthcorner.jl")       # fourth-corner trait–environment interaction for the Laplace families
 include("families/row_effects.jl")        # community row effects (per-site intercepts) for the Laplace families
+include("families/row_random.jl")          # random row effects (ρ_s ~ N(0,σ_row²), gllvmTMB row.eff="random")
 include("families/variational.jl")       # Gaussian-variational (VA/ELBO) marginal — Poisson (increment 1) + GH helper
 include("families/variational_binomial.jl") # VA/ELBO marginal — Binomial/Bernoulli (Gauss–Hermite)
 include("families/variational_negbin.jl") # VA/ELBO marginal — Negative Binomial (Gauss–Hermite)
@@ -134,6 +135,7 @@ export spatial_cov, relatedness_cov,
        fit_gllvm_speciescov, GllvmSpeciesCovFit,
        fit_fourthcorner_gllvm, FourthCornerFit,
        fit_roweffect_gllvm, RowEffectFit,
+       fit_row_random_gllvm, RowRandomFit, row_random_marginal_loglik_laplace, row_effects,
        fit_constrained_gllvm, ConstrainedOrdinationFit, constrained_marginal_loglik_laplace,
        fit_concurrent_gllvm, ConcurrentOrdinationFit,
        fit_rrr_gllvm, RRRFit, rrr_marginal_loglik,

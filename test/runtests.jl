@@ -85,6 +85,7 @@ using GLLVM
     include("test_species_covariates.jl")
     include("test_fourthcorner.jl")
     include("test_row_effects.jl")
+    include("test_row_random.jl")
     include("test_constrained_ordination.jl")
     include("test_rrr.jl")
     include("test_quadratic.jl")
