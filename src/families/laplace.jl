@@ -37,21 +37,42 @@ end
 function _laplace_mode(family, y::AbstractVector, n::AbstractVector,
         Λ::AbstractMatrix, β::AbstractVector, link::Link;
         mask = nothing, offset = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
+    p = size(Λ, 1)
     K = size(Λ, 2)
     off = offset === nothing ? false : offset    # additive identity ⇒ no-offset path unchanged
     z = zeros(K)
+    # Per-call buffers, reused across Newton iterations. Each is written in place
+    # with the SAME broadcast / BLAS expression as the allocating version, so the
+    # computed values and FP-operation order are bit-identical.
+    Λz = Vector{Float64}(undef, p)     # Λ*z (linear-predictor contribution)
+    η  = Vector{Float64}(undef, p)     # clamped linear predictor
+    μ  = Vector{Float64}(undef, p)     # clamped mean
+    me = Vector{Float64}(undef, p)     # dμ/dη
+    s  = Vector{Float64}(undef, p)     # Fisher score wrt η
+    W  = Vector{Float64}(undef, p)     # Fisher weight wrt η
+    WΛ = Matrix{Float64}(undef, p, K)  # W .* Λ
+    Amat = Matrix{Float64}(undef, K, K)  # Λ'WΛ (then + I added in place)
+    g  = Vector{Float64}(undef, K)     # rhs Λ's − z
     for _ in 1:maxiter
-        η  = _clamp_eta.(β .+ off .+ Λ * z)
-        μ  = _clamp_mu.(Ref(family), linkinv.(Ref(link), η))
-        me = mu_eta.(Ref(link), η)
-        s  = _glm_score.(Ref(family), μ, n, me, y)
-        W  = _glm_weight.(Ref(family), μ, n, me)
+        mul!(Λz, Λ, z)
+        η  .= _clamp_eta.(β .+ off .+ Λz)
+        μ  .= _clamp_mu.(Ref(family), linkinv.(Ref(link), η))
+        me .= mu_eta.(Ref(link), η)
+        s  .= _glm_score.(Ref(family), μ, n, me, y)
+        W  .= _glm_weight.(Ref(family), μ, n, me)
         if mask !== nothing
-            s = ifelse.(mask, s, 0.0)        # masked ⇒ no contribution (NaN safe)
-            W = ifelse.(mask, W, 0.0)
+            s .= ifelse.(mask, s, 0.0)        # masked ⇒ no contribution (NaN safe)
+            W .= ifelse.(mask, W, 0.0)
         end
-        A  = Symmetric(Λ' * (W .* Λ) + I)
-        Δ  = _safe_solve(A, Λ' * s .- z)
+        WΛ .= W .* Λ                          # = W .* Λ (p×K)
+        mul!(Amat, Λ', WΛ)                     # = Λ' * (W .* Λ)
+        @inbounds for d in 1:K
+            Amat[d, d] += 1.0                 # + I (adds 1.0 to each diagonal entry)
+        end
+        A  = Symmetric(Amat)
+        mul!(g, Λ', s)                         # = Λ' * s
+        g .= g .- z                           # rhs = Λ's − z
+        Δ  = _safe_solve(A, g)
         (Δ === nothing || !all(isfinite, Δ)) && break   # singular A ⇒ stop at current ẑ
         z  = z .+ Δ
         maximum(abs, Δ) < tol && break
@@ -74,17 +95,26 @@ function laplace_loglik_site(family, y::AbstractVector, n::AbstractVector,
         Λ::AbstractMatrix, β::AbstractVector, link::Link;
         mask = nothing, offset = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
     p = size(Λ, 1)
+    K = size(Λ, 2)
     off = offset === nothing ? false : offset
     z  = _laplace_mode(family, y, n, Λ, β, link;
                        mask = mask, offset = offset, maxiter = maxiter, tol = tol)
-    η  = _clamp_eta.(β .+ off .+ Λ * z)
-    μ  = _clamp_mu.(Ref(family), linkinv.(Ref(link), η))
-    me = mu_eta.(Ref(link), η)
-    W  = _glm_weight.(Ref(family), μ, n, me)
+    # Per-call buffers (written in place with the SAME broadcast / BLAS expressions
+    # as before ⇒ bit-identical values and FP-operation order).
+    Λz = Λ * z                                # Λ*z (one-shot; result reused below)
+    η  = _clamp_eta.(β .+ off .+ Λz)          # clamped linear predictor
+    μ  = _clamp_mu.(Ref(family), linkinv.(Ref(link), η))  # clamped mean
+    me = mu_eta.(Ref(link), η)                # dμ/dη
+    W  = _glm_weight.(Ref(family), μ, n, me)  # Fisher weight wrt η
     if mask !== nothing
         W = ifelse.(mask, W, 0.0)
     end
-    A  = Symmetric(Λ' * (W .* Λ) + I)
+    WΛ = W .* Λ                               # = W .* Λ (p×K)
+    Amat = Λ' * WΛ                            # = Λ' * (W .* Λ) (K×K)
+    @inbounds for d in 1:K
+        Amat[d, d] += 1.0                     # + I (adds 1.0 to each diagonal entry)
+    end
+    A  = Symmetric(Amat)
     ℓ = 0.0
     @inbounds for t in 1:p
         (mask === nothing || mask[t]) || continue
