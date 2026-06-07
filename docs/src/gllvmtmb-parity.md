@@ -44,8 +44,7 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 | Structured dependence × non-Gaussian | ✅ phylo · 🔨 spatial-latent / animal | phylogenetic GLM landed (`fit_phylo_glm`, augmented-state joint Laplace); SPDE / Matérn spatial latent field (`fit_spde_latent_gllvm`) for the non-Gaussian GLLVM |
 | Random slopes `(1 + x \| g)` | 🔨 | formula front-end (c) |
 | Per-species / grouped dispersion (`disp.group`) | ✅ all 5 dispersion families | `fit_{nb,beta,gamma,nb1,tweedie}_gllvm_grouped(Y; K, group)` give each species (or group) its own dispersion; reduces exactly to the shared fit at `G=1`. **gllvm's default is per-species** dispersion, so for parity route Julia through a grouped fitter with `group = 1:p` (or set gllvm `disp.formula = ~1` for the shared model) |
-| Random row effects (`row.eff = "random"`) | ⬜ | only fixed row effects so far (`fit_roweffect_gllvm`) |
-| Correlated LVs (`lvCor`: corAR1 / corExp / corCS) | ⬜ · ✅ spatial/phylo substrates | iid LVs by default; SPDE (`spde_latent`) and phylo (`phylo_glm`) substrates exist but not via an `lvCor` formula interface |
+| Row effects (fixed **and random**) | ✅ | fixed per-site intercepts (`fit_roweffect_gllvm`) **and** random `ρ_s ~ N(0, σ_row²)` (`fit_row_random_gllvm`, gllvmTMB `row.eff="random"`); `σ_row→0` reduces exactly to no-row-effect |
 
 ## Post-fit & inference
 
@@ -96,11 +95,21 @@ for the bridge, not bugs on either side.
 | Dispersion **structure** | per-species by default (`disp.formula = NULL`) | shared scalar by default; per-species via the grouped fitters | route Julia through `fit_*_gllvm_grouped(Y; K, group = 1:p)`, **or** set gllvm `disp.formula = ~1` |
 | Estimation method | default `method = "VA"` | default Laplace; VA available via `fit_*_gllvm_va` | pin matching methods; VA and LA differ in finite samples |
 
-Outstanding parity capabilities that gllvm has and GLLVM.jl does not yet:
-**random row effects** (`row.eff = "random"`), **structured row effects**
-(`corAR1` / `corExp` / `corCS`), **correlated LVs** (`lvCor`), and the
-`beta.binomial` / `ZNIB` families. (GLLVM.jl is *ahead* on the phylogenetic and
-SPDE-spatial engines, which gllvm lacks.)
+**gllvmTMB parity is essentially complete** for the bridge: every response family
+(including `beta.binomial`), per-species dispersion for all five dispersion
+families, ordinal logit + probit, and fixed **and random** row effects
+(`fit_row_random_gllvm`) are implemented. The remaining differences are scope, not
+gaps:
+
+- **`ZNIB`** (zero-and-N-inflated binomial) — deferred: the gllvm TMB template's
+  `case ZNIB` appears to fall through (missing `break;`) into beta-binomial, so its
+  likelihood needs upstream confirmation before building to it.
+- **corAR1 / corExp / corCS structured row effects, and `lvCor` correlated latent
+  variables** — these are `gllvm` features, **not in gllvmTMB**, so they are out of
+  scope for this bridge. (GLLVM.jl does carry more general SPDE/Matérn-spatial and
+  phylogenetic substrates, which gllvm/gllvmTMB lack.)
+- **Ordinal species-specific cutpoints** — a minor remaining option (GLLVM.jl uses
+  common ordered cutpoints).
 
 ## Honest gaps
 
