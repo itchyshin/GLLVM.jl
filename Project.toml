@@ -1,7 +1,7 @@
 name = "GLLVM"
 uuid = "2dc8e01c-4f48-4476-aaae-e919b4a30df7"
 authors = ["Shinichi Nakagawa <itchyshin@gmail.com>"]
-version = "0.2.0"
+version = "0.3.0"
 
 [deps]
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
