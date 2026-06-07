@@ -12,6 +12,7 @@ include("em_fa.jl")                      # alternative EM solver
 include("profile.jl")                    # σ_eps profile-out (used by fit)
 include("fit.jl")
 include("simulate.jl")
+include("families/gaussian_pervar.jl")   # Gaussian with per-species variance (gllvmTMB heteroscedastic default)
 include("structured_cov.jl")             # spatial_cov, relatedness_cov builders
 include("spde.jl")                        # SPDE / Matérn-GMRF FEM spatial field (shared-ready with DRM.jl)
 include("spde_mesh.jl")                   # SPDE grid auto-mesher
@@ -96,6 +97,7 @@ export spatial_cov, relatedness_cov,
        confint_spde_latent,
        confint_speciescov, confint_fourthcorner, confint_rrr, confint_constrained,
        fit_gaussian_gllvm, GllvmModel, GllvmFit,
+       fit_gaussian_pervar_gllvm, GaussianPerVarFit, gaussian_pervar_marginal_loglik,
        confint, profile_ci, bootstrap_ci,
        ppca_init, em_fa,
        sigma_y_site, communality, correlation, phylo_signal,

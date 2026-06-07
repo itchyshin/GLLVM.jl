@@ -54,6 +54,7 @@ using GLLVM
     include("test_ordinal_fit.jl")
     include("test_ordinal_probit.jl")
     include("test_fit_gllvm.jl")
+    include("test_gaussian_pervar.jl")
     include("test_postfit.jl")
     include("test_postfit_zib_tweedie.jl")
     include("test_ordination.jl")
