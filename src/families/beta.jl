@@ -73,12 +73,14 @@ end
 Fit a Beta GLLVM by L-BFGS over `[β; vec(Λ); log φ]` on the Laplace marginal
 (`beta_marginal_loglik_laplace`), jointly estimating the precision `φ`
 (`Var = μ(1−μ)/(1+φ)`). `Y` is a p×n matrix of proportions in (0,1); `K` the latent
-dimension. Finite-difference gradient; warm start = empirical logit-mean intercepts +
+dimension. The default analytic Laplace gradient is used on the plain
+no-mask/no-offset path, with an internal finite-difference fallback; masked or
+offset fits use finite differences. Warm start = empirical logit-mean intercepts +
 an SVD loadings init + a moderate `φ₀`.
 """
 function fit_beta_gllvm(Y::AbstractMatrix; K::Integer,
         link::Link = LogitLink(), mask = nothing, offset = nothing,
-        gradient::Symbol = :finite,
+        gradient::Symbol = :analytic,
         β_init = nothing, Λ_init = nothing, φ_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)

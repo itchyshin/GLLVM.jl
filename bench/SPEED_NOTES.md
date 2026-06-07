@@ -30,17 +30,16 @@ These are pure plumbing: land them, confirm `MB alloc` drops and `Δloglik = 0`.
 
 ## 2. Analytic-gradient default decision
 
-The GLM fitters take `gradient::Symbol = :finite`; `:analytic` is implemented for
-Poisson / NB / Binomial / Gamma / Beta (`src/laplace_grad.jl` + the per-family
-`*_laplace_grad`). Finite differences cost ≈ `2·nθ` marginal evaluations per
-optimiser step (`nθ = p + p·K − triangular + dispersion`); the analytic adjoint
-costs ≈ **1** marginal-eval-equivalent per step (one mode solve + one reverse
-pass), so the gap widens with `p` and `K`.
+Poisson / NB / Binomial / Beta now default to `gradient = :analytic` on the
+plain no-mask/no-offset path, falling back internally to finite differences when
+the analytic gradient is unavailable. Gamma remains `gradient = :finite`: the
+2026-06-07 runtime gate found order-of-magnitude analytic speedups for the other
+four GLM families with `|ΔlogLik| ≈ 1e-11`, but Gamma missed the `≤1e-6`
+accuracy gate on benchmark-like cells.
 
-**Action:** `speed_bench.jl` times `:finite` vs `:analytic` side by side and
-prints `Δloglik`. If `:analytic` is consistently faster and `Δloglik` stays at
-noise level across the grid, **flip the package default to `:analytic`**. It is
-opt-in today only out of caution; the benchmark is the evidence to flip it.
+`speed_bench.jl` still times `:finite` vs `:analytic` side by side and prints
+`Δloglik`; use it to re-open the Gamma default decision after the Gamma analytic
+gradient is stabilised.
 
 ## 3. Exact-preserving algorithmic roadmap
 
