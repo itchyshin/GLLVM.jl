@@ -14,6 +14,31 @@ All notable changes to GLLVM.jl are documented here.
   confidence intervals.
 - **Negative-binomial type-1 (NB1)** (`fit_nb1_gllvm`) — linear variance
   `Var = μ(1+φ)`, alongside the existing NB2 (`Var = μ + μ²/r`).
+- **Beta-binomial** (`fit_beta_binomial_gllvm` / `BetaBinomialFit`) — overdispersed
+  binomial `BetaBinomial(N, μφ, (1−μ)φ)`, matching gllvm family 15 (`φ→∞ ⇒ Binomial`).
+- **Conway–Maxwell–Poisson** (`fit_compoisson_gllvm` / `COMPoissonFit`) — counts with
+  **under- or over-dispersion** (`ν>1`/`ν<1`; `ν=1 ⇒ Poisson`), a family beyond gllvmTMB.
+- **Per-species / grouped dispersion** (`disp.group`) for all five dispersion
+  families — `fit_{nb,beta,gamma,nb1,tweedie}_gllvm_grouped(Y; K, group)`; reduces
+  exactly to the shared-dispersion fit at one group. Matches gllvm's per-species default.
+- **Gaussian per-species (heteroscedastic) variance** (`fit_gaussian_pervar_gllvm`)
+  — `Var_j = φ_j²`, gllvm's Gaussian default; reuses the low-rank Woodbury Cholesky.
+- **Ordinal cumulative-probit link** (`fit_ordinal_gllvm(...; link=ProbitLink())`)
+  alongside logit (gllvm's default ordinal); convention verified `P(y≤c)=F(τ_c−η)`.
+- **Random row effects** (`fit_row_random_gllvm` / `RowRandomFit`) — per-site
+  `ρ_s ~ N(0, σ_row²)` integrated out (gllvm `row.eff="random"`), alongside the
+  existing fixed row effects.
+- **Unified `fit_gllvm` dispatch** — `row_eff` / `disp_group` / `pervar` / `num_lv`
+  keywords route to the right fitter (the call target for the JuliaConnectoR bridge).
+- **Confidence intervals** extended to ZIB, beta-binomial, and random-row fits;
+  **aic/bic** for all the new fit types.
+- **JuliaConnectoR R-bridge scaffold** (`r/gllvmtmb_julia.R`, `r/parity_check.R`)
+  mapping gllvmTMB-style calls to GLLVM.jl with the documented parameterization
+  conversions (NB `r=1/φ`, …) + an R-vs-Julia parity harness.
+- **Performance** — strictly bit-exact allocation reductions in the Laplace and
+  two-part mode-finders and the Poisson/NB fit objective (no result change; the
+  suite's machine-precision anchors are the guard); a `bench/` speed harness and
+  a literature-backed speed roadmap (`bench/SPEED_NOTES.md`).
 
 ## v0.2.0 — Full GLM family, VA, covariates, ordination
 

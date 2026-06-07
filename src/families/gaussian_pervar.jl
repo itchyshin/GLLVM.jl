@@ -129,6 +129,15 @@ function Base.show(io::IO, fit::GaussianPerVarFit)
           ", iterations=", fit.iterations, ")")
 end
 
+_loadings(fit::GaussianPerVarFit) = fit.Λ
+_loglik(fit::GaussianPerVarFit)   = fit.loglik
+
+# Free params: β (p) + reduced loadings Λ + one residual variance per species (p).
+function _nparams(fit::GaussianPerVarFit)
+    p, K = size(fit.Λ)
+    return p + rr_theta_len(p, K) + p   # β + Λ + p per-species variances φ²
+end
+
 """
     fit_gaussian_pervar_gllvm(Y; K, X=nothing, g_tol=1e-5, iterations=1000)
         -> GaussianPerVarFit
