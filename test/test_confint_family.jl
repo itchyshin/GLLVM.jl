@@ -354,4 +354,88 @@ end
         ford = fit_ordinal_gllvm(Yo; K = 1)
         @test_throws ArgumentError confint(ford, Yo; method = :wald, objective = :va)
     end
+
+    @testset "Beta-binomial Wald + bootstrap (phi on natural scale, N as data)" begin
+        Random.seed!(45)
+        p, K, n, Ntr, φ_true = 4, 1, 60, 8, 6.0
+        β = 0.3 .* randn(p) .- 0.2
+        Λ = 0.4 .* randn(p, K)
+        Y = Matrix{Int}(undef, p, n)
+        for s in 1:n
+            η = β .+ Λ * randn(K)
+            for t in 1:p
+                μ = clamp(inv(1 + exp(-η[t])), 1e-12, 1 - 1e-12)
+                pdraw = clamp(rand(Beta(μ * φ_true, (1 - μ) * φ_true)), 1e-12, 1 - 1e-12)
+                Y[t, s] = rand(Binomial(Ntr, pdraw))
+            end
+        end
+        N = fill(Ntr, p, n)
+        fit = fit_beta_binomial_gllvm(Y; K = K, N = N, iterations = 40)
+
+        # N is taken as data through the `N` kwarg (it is not stored in the fit).
+        ci = confint(fit, Y; method = :wald, N = N)
+        # β + Λ + a single dispersion term (φ).
+        @test length(ci.term) == p + GLLVM.rr_theta_len(p, K) + 1
+        @test ci.method === :wald
+        @test "phi" in ci.term
+        let pidx = findfirst(==("phi"), ci.term)
+            @test ci.estimate[pidx] ≈ fit.φ atol = 1e-6
+        end
+        for i in eachindex(ci.term)
+            if isfinite(ci.lower[i]) && isfinite(ci.upper[i])
+                @test ci.lower[i] ≤ ci.estimate[i] ≤ ci.upper[i]
+            end
+        end
+
+        # Parametric bootstrap produces a sensible CI (no serial==parallel assertion).
+        bo = confint(fit, Y; method = :bootstrap, n_boot = 8, seed = 5, N = N)
+        @test bo.method === :bootstrap
+        @test bo.n_converged ≥ 4
+        for i in eachindex(bo.term)
+            if isfinite(bo.lower[i]) && isfinite(bo.upper[i])
+                @test bo.lower[i] ≤ bo.upper[i]
+            end
+        end
+    end
+
+    @testset "Random row effect Wald + bootstrap (sigma_row + family dispersion)" begin
+        Random.seed!(46)
+        p, K, n, σ_true = 4, 1, 60, 0.6
+        β = 0.4 .* randn(p) .+ 1.0
+        Λ = 0.4 .* randn(p, K)
+        Y = Matrix{Int}(undef, p, n)            # NB family: carries a dispersion r
+        for s in 1:n
+            ρ = σ_true * randn()
+            η = β .+ ρ .+ Λ * randn(K)
+            for t in 1:p
+                μ = exp(η[t]); r = 5.0
+                Y[t, s] = rand(NegativeBinomial(r, r / (r + μ)))
+            end
+        end
+        fit = fit_row_random_gllvm(Y; family = NegativeBinomial(), K = K, iterations = 40)
+
+        # Working vector [β; pack_lambda(Λ); log σ_row; log r] ⇒ β + Λ + sigma_row + r.
+        ci = confint(fit, Y; method = :wald)
+        @test length(ci.term) == p + GLLVM.rr_theta_len(p, K) + 2
+        @test ci.method === :wald
+        @test "sigma_row" in ci.term && "r" in ci.term
+        let sidx = findfirst(==("sigma_row"), ci.term)
+            @test ci.estimate[sidx] ≈ fit.σ_row atol = 1e-6
+        end
+        for i in eachindex(ci.term)
+            if isfinite(ci.lower[i]) && isfinite(ci.upper[i])
+                @test ci.lower[i] ≤ ci.estimate[i] ≤ ci.upper[i]
+            end
+        end
+
+        # Parametric bootstrap produces a sensible CI (no serial==parallel assertion).
+        bo = confint(fit, Y; method = :bootstrap, n_boot = 8, seed = 5)
+        @test bo.method === :bootstrap
+        @test bo.n_converged ≥ 4
+        for i in eachindex(bo.term)
+            if isfinite(bo.lower[i]) && isfinite(bo.upper[i])
+                @test bo.lower[i] ≤ bo.upper[i]
+            end
+        end
+    end
 end
