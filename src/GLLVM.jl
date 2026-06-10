@@ -67,6 +67,13 @@ include("families/mixed.jl")
 # touch confint_bootstrap.jl's Gaussian `_bootstrap_simulate!`.
 include("simulate.jl")
 
+# Derived-quantity bootstrap CIs for the non-Gaussian one-part + mixed fits.
+# Included AFTER simulate.jl (it replays the family-dispatched `simulate(fit, n)`)
+# and AFTER families/mixed.jl (it calls the latent-scale `correlation`/
+# `communality` extractors for every fit type). Additive: the ::GllvmFit
+# bootstrap_ci_derived in confint_derived.jl is unchanged.
+include("confint_derived_bootstrap_families.jl")
+
 # Formula / DataFrame front-end (A4): @formula + Tables.jl sugar over the
 # matrix fitters. Included last so every fitter + fit struct it dispatches to
 # already exists.
