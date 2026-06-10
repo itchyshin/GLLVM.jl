@@ -2,6 +2,8 @@ module GLLVM
 
 using LinearAlgebra, Distributions, Optim, ForwardDiff, Random, SparseArrays, Statistics
 using SpecialFunctions: digamma, trigamma, polygamma, loggamma, besselk, gamma
+import StatsModels, Tables
+using StatsModels: @formula
 
 # Core
 include("packing.jl")
@@ -65,6 +67,11 @@ include("families/mixed.jl")
 # touch confint_bootstrap.jl's Gaussian `_bootstrap_simulate!`.
 include("simulate.jl")
 
+# Formula / DataFrame front-end (A4): @formula + Tables.jl sugar over the
+# matrix fitters. Included last so every fitter + fit struct it dispatches to
+# already exists.
+include("formula.jl")
+
 # Public API
 export spatial_cov, relatedness_cov,
        fit_gaussian_gllvm, GllvmModel, GllvmFit,
@@ -88,6 +95,7 @@ export spatial_cov, relatedness_cov,
        fit_mixed_gllvm, MixedFamilyFit,
        simulate,
        getLV, getLoadings, rotation,
-       predict, fitted, residuals, aic, bic
+       predict, fitted, residuals, aic, bic,
+       gllvm, GllvmFormulaFit, @formula
 
 end # module GLLVM
