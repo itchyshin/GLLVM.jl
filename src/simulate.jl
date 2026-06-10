@@ -91,6 +91,13 @@ function _draw_y(rng::AbstractRNG, ::BetaBinomial, μ, n_ts, dispersion)
     return Float64(rand(rng, Binomial(Int(n_ts), p)))
 end
 
+# Student-t (families/studentt.jl): identity link ⇒ location μ = η; scale σ =
+# dispersion; degrees of freedom ν carried in the family marker. (y − μ)/σ ~ t_ν,
+# so the draw is μ + σ · t, t ~ TDist(ν) — the exact sampling inverse of the
+# location–scale t `_glm_logpdf`.
+_draw_y(rng::AbstractRNG, f::StudentTFamily, μ, n_ts, dispersion) =
+    μ + dispersion * rand(rng, TDist(f.ν))
+
 # ---------------------------------------------------------------------------
 # Core params-in DGP. Returns Y::Matrix{Float64} (p×n).
 #
@@ -324,14 +331,14 @@ function simulate(fit::MixedFamilyFit, n::Integer;
 end
 
 """
-    simulate(fit::Union{PoissonFit,BinomialFit,NBFit,NB1Fit,GammaFit,BetaFit,BetaBinomialFit,LognormalFit}, n;
+    simulate(fit::Union{PoissonFit,BinomialFit,NBFit,NB1Fit,GammaFit,BetaFit,BetaBinomialFit,LognormalFit,StudentTFit}, n;
              N=nothing, rng=Random.default_rng(), seed=nothing)
 
 Simulate `n` fresh sites from a fitted single-family GLLVM. The family marker,
 scalar dispersion, and link are taken from the fit (`_fit_family`,
 `_fit_dispersion`, `fit.link`); intercepts and loadings from `fit.β` / `fit.Λ`.
 """
-function simulate(fit::Union{PoissonFit, BinomialFit, NBFit, NB1Fit, GammaFit, BetaFit, BetaBinomialFit, LognormalFit},
+function simulate(fit::Union{PoissonFit, BinomialFit, NBFit, NB1Fit, GammaFit, BetaFit, BetaBinomialFit, LognormalFit, StudentTFit},
         n::Integer; N = nothing,
         rng::AbstractRNG = Random.default_rng(), seed = nothing)
     n ≥ 1 || throw(ArgumentError("n must be ≥ 1; got $n"))
