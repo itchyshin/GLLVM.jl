@@ -74,6 +74,22 @@ function _link_residual_one(::Poisson, ::LogLink, μ̂::Real, dispersion)
     return (isfinite(μ̂) && μ̂ > 0) ? log1p(1 / μ̂) : 0.0
 end
 
+# Zero-truncated Poisson-log: truncation-adjusted lognormal-Poisson residual. The
+# Poisson log(1 + 1/μ̂) is the delta-method Var(log y) ≈ Var(y)/E(y)²; under
+# zero-truncation E(y) = μ_tr = μ̂/(1−e^{-μ̂}) and Var(y) = μ_tr(1+μ̂−μ_tr)
+# (Johnson, Kemp & Kotz 2005, §4.10; Cohen 1960), so
+#   σ²_d = log1p( Var(y)/E(y)² ) = log1p( (1 + μ̂ − μ_tr)/μ_tr ).
+# Here `μ̂` is the UNTRUNCATED rate exp(η̄) (NOT the response-scale truncated mean),
+# because the variance is parameterised by the rate. As μ̂ → ∞ (e^{-μ̂} → 0,
+# μ_tr → μ̂) this reduces to the Poisson branch log1p(1/μ̂). (Nakagawa &
+# Schielzeth 2010 delta method; the GLLVM.jl-only truncated analogue of the
+# gllvmTMB Poisson fid — gllvmTMB ships no zero-truncated-Poisson family.)
+function _link_residual_one(::ZeroTruncatedPoisson, ::LogLink, μ̂::Real, dispersion)
+    (isfinite(μ̂) && μ̂ > 0) || return 0.0
+    μtr = μ̂ / (-expm1(-μ̂))
+    return log1p((1 + μ̂ - μtr) / μtr)
+end
+
 # Binomial: constant per link (μ̂ / dispersion unused).
 _link_residual_one(::Binomial, link::Link, μ̂::Real, dispersion) =
     _binomial_link_residual(link)
@@ -142,6 +158,7 @@ function _trait_mean_fitted(fit::BinomialFit, Y::AbstractMatrix; N = nothing)
 end
 
 # Scalar dispersion accessor per fit type (the family nuisance parameter).
+_fit_dispersion(::TruncPoissonFit) = nothing
 _fit_dispersion(::PoissonFit)  = nothing
 _fit_dispersion(::BinomialFit) = nothing
 _fit_dispersion(fit::NBFit)    = fit.r
@@ -152,6 +169,7 @@ _fit_dispersion(fit::LognormalFit) = fit.σ
 _fit_dispersion(::OrdinalFit)  = nothing
 
 # Family marker per fit type (for dispatching `_link_residual_one`).
+_fit_family(::TruncPoissonFit) = ZeroTruncatedPoisson()
 _fit_family(::PoissonFit)  = Poisson()
 _fit_family(::BinomialFit) = Binomial()
 _fit_family(fit::NBFit)    = NegativeBinomial(fit.r, 0.5)
@@ -261,4 +279,26 @@ end
 function link_residual(fit::LognormalFit, Y::AbstractMatrix)
     p = size(fit.Λ, 1)
     return fill(Float64(fit.σ^2), p)
+end
+
+# Zero-truncated Poisson: σ²_d = log1p((1+μ̂−μ̂_tr)/μ̂_tr) is μ̂-dependent and is
+# parameterised by the UNTRUNCATED rate μ̂ = mean_s exp(η). TruncPoissonFit has no
+# postfit `predict`, so per site the Laplace mode ẑ_s under the truncated-Poisson
+# family is found, η = β + Λẑ is formed, and the untruncated rate exp(η) is
+# averaged across sites (the same conditional-mode convention as the Poisson/NB1
+# from-fit means). `_link_residual_one` then applies the truncation correction.
+function link_residual(fit::TruncPoissonFit, Y::AbstractMatrix)
+    p, n = size(Y)
+    fam = _fit_family(fit)
+    Nm = ones(Int, p, n)
+    μacc = zeros(Float64, p)
+    @inbounds for s in 1:n
+        ẑ = _laplace_mode(fam, view(Y, :, s), view(Nm, :, s), fit.Λ, fit.β, fit.link)
+        η = fit.β .+ fit.Λ * ẑ
+        for t in 1:p
+            μacc[t] += linkinv(fit.link, _clamp_eta(η[t]))
+        end
+    end
+    μ̂ = μacc ./ n
+    return [Float64(_link_residual_one(fam, fit.link, μ̂[t], nothing)) for t in 1:p]
 end
