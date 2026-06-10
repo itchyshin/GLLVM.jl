@@ -38,6 +38,11 @@ include("families/fit_gllvm.jl")         # unified fit_gllvm(Y; family) dispatch
 # Post-fit API (ordination, predict, residuals, summary)
 include("postfit.jl")
 
+# Cross-family latent-scale link-implicit residual table (needs the family fit
+# structs + predict from postfit.jl; used by the non-Gaussian extractors in
+# confint_derived.jl below).
+include("link_residual.jl")
+
 # Confidence intervals
 include("confint.jl")                    # Wald
 include("confint_families.jl")           # Wald for non-Gaussian one-part families
@@ -50,7 +55,7 @@ export spatial_cov, relatedness_cov,
        fit_gaussian_gllvm, GllvmModel, GllvmFit,
        confint, profile_ci, bootstrap_ci,
        ppca_init, em_fa,
-       sigma_y_site, communality, correlation, phylo_signal,
+       sigma_y_site, communality, correlation, phylo_signal, link_residual,
        augmented_phy, gaussian_marginal_loglik_sparse_phy,
        node_grad, node_dσ_phy_only, NodePerSpecies, build_node_perspecies,
        grad_node_perspecies, node_blups,

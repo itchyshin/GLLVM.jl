@@ -978,3 +978,130 @@ function profile_ci_derived(fit::GllvmFit, derived_fn::Function;
     return (lower = lower, upper = upper,
             estimate = g_hat, method = method)
 end
+
+# ===========================================================================
+# Latent-scale cross-family extractors for the non-Gaussian one-part fits.
+#
+# These are ADDITIVE methods of `sigma_y_site`, `communality`, and
+# `correlation` for `PoissonFit`, `BinomialFit`, `NBFit`, `BetaFit`,
+# `GammaFit`, and `OrdinalFit`. The Gaussian `correlation(::GllvmFit)` above is
+# left UNCHANGED.
+#
+# For a non-Gaussian family the loadings ΛΛᵀ live on the LINK (latent) scale, so
+# we put each trait on a common latent scale by adding a per-family link-implicit
+# residual variance σ²_d (see src/link_residual.jl) to the diagonal:
+#
+#     Σ_latent = Λ Λᵀ + diag(σ²_d)
+#     correlation = D^{-1/2} Σ_latent D^{-1/2},   D = diag(Σ_latent)
+#     communality = diag(Λ Λᵀ) / diag(Σ_latent)
+#
+# This mirrors gllvmTMB's `extract_Sigma(..., link_residual = "auto")` (there is
+# no `unique()` Ψ component in these single-tier non-Gaussian fits, so Ψ = 0 and
+# Σ_latent = ΛΛᵀ + diag(σ²_d) exactly). The construction is ROTATION-INVARIANT
+# (ΛΛᵀ is) and family-agnostic on the latent scale. The fits do not store the
+# data, so the response matrix `Y` (and trial counts `N` for Binomial) must be
+# passed — exactly the matrix the fit was computed on.
+# ===========================================================================
+
+# Union of the one-part non-Gaussian fit types that share the ΛΛᵀ + diag(σ²_d)
+# latent-scale construction. (Ordinal and Binomial are listed in their own method
+# signatures below because they take/forward different keyword args.)
+const _NonGaussianLatentFit = Union{PoissonFit, NBFit, BetaFit, GammaFit}
+
+# Assemble the symmetric latent-scale Σ = ΛΛᵀ + diag(σ²_d) from a loadings matrix
+# and a per-trait residual vector.
+function _latent_sigma(Λ::AbstractMatrix, σ²_d::AbstractVector)
+    A = Λ * Λ'
+    @inbounds for t in eachindex(σ²_d)
+        A[t, t] += σ²_d[t]
+    end
+    return (A + A') ./ 2
+end
+
+# Standardise a covariance to a correlation: R[i,j] = Σ[i,j]/√(Σ[i,i]Σ[j,j]).
+function _latent_correlation(Σ::AbstractMatrix)
+    p = size(Σ, 1)
+    R = similar(Σ, Float64)
+    @inbounds for j in 1:p, i in 1:p
+        R[i, j] = Σ[i, j] / sqrt(Σ[i, i] * Σ[j, j])
+    end
+    return R
+end
+
+"""
+    sigma_y_site(fit, Y; N=nothing) -> Matrix
+
+Latent-scale trait covariance `Σ_latent = Λ Λᵀ + diag(σ²_d)` for a fitted
+non-Gaussian GLLVM (`PoissonFit`, `BinomialFit`, `NBFit`, `BetaFit`, `GammaFit`,
+`OrdinalFit`). The loadings `Λ Λᵀ` are on the LINK scale; the per-trait
+link-implicit residual `σ²_d` (see [`link_residual`](@ref)) puts all traits on a
+common latent scale. `Y` is the response matrix the fit was computed on; `N`
+(Binomial only) the trial counts. The construction is rotation-invariant and
+matches gllvmTMB `extract_Sigma(..., link_residual = "auto")` with no `unique()`
+component (Ψ = 0).
+"""
+function sigma_y_site(fit::_NonGaussianLatentFit, Y::AbstractMatrix)
+    return _latent_sigma(fit.Λ, link_residual(fit, Y))
+end
+function sigma_y_site(fit::BinomialFit, Y::AbstractMatrix;
+                      N::Union{Nothing, AbstractMatrix} = nothing)
+    return _latent_sigma(fit.Λ, link_residual(fit, Y; N = N))
+end
+function sigma_y_site(fit::OrdinalFit, Y::AbstractMatrix)
+    return _latent_sigma(fit.Λ, link_residual(fit, Y))
+end
+
+"""
+    communality(fit, Y; N=nothing) -> Vector
+
+Per-trait communality `c²[t] = (Λ Λᵀ)[t,t] / Σ_latent[t,t]` on the latent scale
+for a fitted non-Gaussian GLLVM — the share of the latent-scale trait variance
+carried by the shared loadings, with `Σ_latent = Λ Λᵀ + diag(σ²_d)` (see
+[`sigma_y_site`](@ref)). Values are in [0, 1]. `Y` is the response matrix the fit
+was computed on; `N` (Binomial only) the trial counts.
+"""
+function communality(fit::_NonGaussianLatentFit, Y::AbstractMatrix)
+    Λ = fit.Λ
+    ΛΛt = Λ * Λ'
+    Σ = sigma_y_site(fit, Y)
+    return [ΛΛt[t, t] / Σ[t, t] for t in 1:size(Λ, 1)]
+end
+function communality(fit::BinomialFit, Y::AbstractMatrix;
+                     N::Union{Nothing, AbstractMatrix} = nothing)
+    Λ = fit.Λ
+    ΛΛt = Λ * Λ'
+    Σ = sigma_y_site(fit, Y; N = N)
+    return [ΛΛt[t, t] / Σ[t, t] for t in 1:size(Λ, 1)]
+end
+function communality(fit::OrdinalFit, Y::AbstractMatrix)
+    Λ = fit.Λ
+    ΛΛt = Λ * Λ'
+    Σ = sigma_y_site(fit, Y)
+    return [ΛΛt[t, t] / Σ[t, t] for t in 1:size(Λ, 1)]
+end
+
+"""
+    correlation(fit, Y; N=nothing) -> Matrix
+
+Latent-scale cross-trait correlation `R = D^{-1/2} Σ_latent D^{-1/2}` for a
+fitted non-Gaussian GLLVM, with `Σ_latent = Λ Λᵀ + diag(σ²_d)` (see
+[`sigma_y_site`](@ref)). Diagonal entries are exactly 1.0; off-diagonals are in
+[-1, 1] and driven by the shared loadings on the common latent (link) scale. The
+construction is rotation-invariant and family-agnostic (matches gllvmTMB
+`link_residual = "auto"`). `Y` is the response matrix the fit was computed on;
+`N` (Binomial only) the trial counts.
+
+This is the non-Gaussian twin of [`correlation(::GllvmFit)`](@ref); for the
+Gaussian family the response and latent scales coincide (σ²_d = 0, the residual
+is the Gaussian σ²_eps), so no `Y` argument is needed there.
+"""
+function correlation(fit::_NonGaussianLatentFit, Y::AbstractMatrix)
+    return _latent_correlation(sigma_y_site(fit, Y))
+end
+function correlation(fit::BinomialFit, Y::AbstractMatrix;
+                     N::Union{Nothing, AbstractMatrix} = nothing)
+    return _latent_correlation(sigma_y_site(fit, Y; N = N))
+end
+function correlation(fit::OrdinalFit, Y::AbstractMatrix)
+    return _latent_correlation(sigma_y_site(fit, Y))
+end
