@@ -67,6 +67,11 @@ include("families/mixed.jl")
 # touch confint_bootstrap.jl's Gaussian `_bootstrap_simulate!`.
 include("simulate.jl")
 
+# Fit diagnostics (A6): randomized-quantile residuals + check_fit. Included after
+# every fit struct + getLV/predict/_loadings (postfit.jl) and MixedFamilyFit
+# (families/mixed.jl) so all dispatch targets exist. Additive — new file only.
+include("diagnostics.jl")
+
 # Formula / DataFrame front-end (A4): @formula + Tables.jl sugar over the
 # matrix fitters. Included last so every fitter + fit struct it dispatches to
 # already exists.
@@ -96,6 +101,7 @@ export spatial_cov, relatedness_cov,
        simulate,
        getLV, getLoadings, rotation,
        predict, fitted, residuals, aic, bic,
+       quantile_residuals, check_fit, FitCheck,
        gllvm, GllvmFormulaFit, @formula
 
 end # module GLLVM
