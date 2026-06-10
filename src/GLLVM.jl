@@ -11,7 +11,6 @@ include("ppca_init.jl")                  # used by fit (warm-start)
 include("em_fa.jl")                      # alternative EM solver
 include("profile.jl")                    # σ_eps profile-out (used by fit)
 include("fit.jl")
-include("simulate.jl")
 include("structured_cov.jl")             # spatial_cov, relatedness_cov builders
 include("structured_schur.jl")           # internal Schur/SLQ substrate for structured non-Gaussian Laplace
 
@@ -59,6 +58,13 @@ include("confint_derived.jl")            # derived quantities (Σ_y, communality
 # served here, where those helpers are already defined.)
 include("families/mixed.jl")
 
+# Family-dispatched data-generating process. Included LAST among the family /
+# fit machinery so its from-fit overloads see every fit struct (MixedFamilyFit,
+# PoissonFit, …, OrdinalFit) and its reused helpers (linkinv/default_link,
+# _clamp_eta, _ord_prob, _fit_family/_fit_dispersion). Additive: it does not
+# touch confint_bootstrap.jl's Gaussian `_bootstrap_simulate!`.
+include("simulate.jl")
+
 # Public API
 export spatial_cov, relatedness_cov,
        fit_gaussian_gllvm, GllvmModel, GllvmFit,
@@ -80,6 +86,7 @@ export spatial_cov, relatedness_cov,
        fit_hurdle_nb_gllvm, HurdleNBFit,
        hurdle_nb_marginal_loglik_laplace, fit_gllvm,
        fit_mixed_gllvm, MixedFamilyFit,
+       simulate,
        getLV, getLoadings, rotation,
        predict, fitted, residuals, aic, bic
 
