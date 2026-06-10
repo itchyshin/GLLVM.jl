@@ -81,6 +81,16 @@ end
 _draw_y(rng::AbstractRNG, ::LogNormal, μ, n_ts, dispersion) =
     μ * exp(dispersion * randn(rng))
 
+# Beta-Binomial (families/betabinomial.jl): _glm_logpdf is the mean-parameterised
+# BetaBinomial(N, μφ, (1−μ)φ), φ the dispersion. Drawn hierarchically as the exact
+# sampling inverse: p ~ Beta(μφ, (1−μ)φ), then y ~ Binomial(N, p) (equivalent to
+# Distributions' BetaBinomial(N, μφ, (1−μ)φ)). `n_ts` is the number of trials N.
+function _draw_y(rng::AbstractRNG, ::BetaBinomial, μ, n_ts, dispersion)
+    φ = dispersion
+    p = rand(rng, Beta(μ * φ, (1 - μ) * φ))
+    return Float64(rand(rng, Binomial(Int(n_ts), p)))
+end
+
 # ---------------------------------------------------------------------------
 # Core params-in DGP. Returns Y::Matrix{Float64} (p×n).
 #
@@ -314,14 +324,14 @@ function simulate(fit::MixedFamilyFit, n::Integer;
 end
 
 """
-    simulate(fit::Union{PoissonFit,BinomialFit,NBFit,NB1Fit,GammaFit,BetaFit,LognormalFit}, n;
+    simulate(fit::Union{PoissonFit,BinomialFit,NBFit,NB1Fit,GammaFit,BetaFit,BetaBinomialFit,LognormalFit}, n;
              N=nothing, rng=Random.default_rng(), seed=nothing)
 
 Simulate `n` fresh sites from a fitted single-family GLLVM. The family marker,
 scalar dispersion, and link are taken from the fit (`_fit_family`,
 `_fit_dispersion`, `fit.link`); intercepts and loadings from `fit.β` / `fit.Λ`.
 """
-function simulate(fit::Union{PoissonFit, BinomialFit, NBFit, NB1Fit, GammaFit, BetaFit, LognormalFit},
+function simulate(fit::Union{PoissonFit, BinomialFit, NBFit, NB1Fit, GammaFit, BetaFit, BetaBinomialFit, LognormalFit},
         n::Integer; N = nothing,
         rng::AbstractRNG = Random.default_rng(), seed = nothing)
     n ≥ 1 || throw(ArgumentError("n must be ≥ 1; got $n"))

@@ -116,6 +116,18 @@ function _link_residual_one(::Beta, ::LogitLink, μ̂::Real, dispersion::Real)
     return trigamma(a) + trigamma(b)
 end
 
+# Beta-Binomial-logit: π²/3 + trigamma(μ̂φ) + trigamma((1−μ̂)φ). The binomial-logit
+# baseline π²/3 (Nakagawa & Schielzeth 2010) plus the Beta(a,b) overdispersion
+# residual trigamma(a) + trigamma(b), a = μ̂φ, b = (1−μ̂)φ (Smithson & Verkuilen
+# 2006). extract-sigma.R fid 8 (lines 235–256). Same μ̂ clamp as the Beta branch.
+function _link_residual_one(::BetaBinomial, ::LogitLink, μ̂::Real, dispersion::Real)
+    μc = _clamp_mu_prop(μ̂)
+    φ = dispersion
+    a = max(μc * φ, 1e-12)
+    b = max((1 - μc) * φ, 1e-12)
+    return π^2 / 3 + trigamma(a) + trigamma(b)
+end
+
 # Ordinal cumulative-logit: standard-logistic latent residual variance π²/3.
 _link_residual_one(::Ordinal, ::LogitLink, μ̂::Real, dispersion) = π^2 / 3
 
@@ -148,6 +160,7 @@ _fit_dispersion(fit::NBFit)    = fit.r
 _fit_dispersion(fit::NB1Fit)   = fit.φ
 _fit_dispersion(fit::GammaFit) = fit.α
 _fit_dispersion(fit::BetaFit)  = fit.φ
+_fit_dispersion(fit::BetaBinomialFit) = fit.φ
 _fit_dispersion(fit::LognormalFit) = fit.σ
 _fit_dispersion(::OrdinalFit)  = nothing
 
@@ -158,6 +171,7 @@ _fit_family(fit::NBFit)    = NegativeBinomial(fit.r, 0.5)
 _fit_family(fit::NB1Fit)   = NB1(fit.φ)
 _fit_family(fit::GammaFit) = Gamma(fit.α, 1.0)
 _fit_family(fit::BetaFit)  = Beta(fit.φ, 1.0)
+_fit_family(fit::BetaBinomialFit) = _betabinomial_marker(fit.φ)
 _fit_family(fit::LognormalFit) = LogNormal()
 _fit_family(::OrdinalFit)  = Ordinal()
 
@@ -261,4 +275,29 @@ end
 function link_residual(fit::LognormalFit, Y::AbstractMatrix)
     p = size(fit.Λ, 1)
     return fill(Float64(fit.σ^2), p)
+end
+
+# Beta-Binomial: σ²_d = π²/3 + trigamma(μ̂φ) + trigamma((1−μ̂)φ) is μ̂-dependent.
+# BetaBinomialFit has no postfit `predict` method (those live in PR #89's scope),
+# so the per-trait conditional fitted PROBABILITY μ̂ is computed inline from the
+# fit's own parameters (mirrors the NB1 branch above): per site find the Laplace
+# mode ẑ_s under the Beta-Binomial family, form η = β + Λẑ, μ = logistic(η), and
+# average across sites (gllvmTMB extract-sigma.R fid 8 uses mean(plogis(eta))).
+# `N` (trial counts) is needed for the mode solve; default all-ones.
+function link_residual(fit::BetaBinomialFit, Y::AbstractMatrix;
+                       N::Union{Nothing, AbstractMatrix} = nothing)
+    p, n = size(Y)
+    fam = _fit_family(fit)
+    Nm = N === nothing ? ones(Int, p, n) : Int.(N)
+    μacc = zeros(Float64, p)
+    @inbounds for s in 1:n
+        ẑ = _laplace_mode(fam, view(Y, :, s), view(Nm, :, s), fit.Λ, fit.β, fit.link)
+        η = fit.β .+ fit.Λ * ẑ
+        for t in 1:p
+            μacc[t] += linkinv(fit.link, _clamp_eta(η[t]))
+        end
+    end
+    μ̂ = μacc ./ n
+    φ = fit.φ
+    return [Float64(_link_residual_one(fam, fit.link, μ̂[t], φ)) for t in 1:p]
 end
