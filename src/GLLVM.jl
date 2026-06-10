@@ -40,6 +40,7 @@ include("postfit.jl")
 
 # Confidence intervals
 include("confint.jl")                    # Wald
+include("confint_families.jl")           # Wald for non-Gaussian one-part families
 include("confint_profile.jl")            # profile likelihood
 include("confint_bootstrap.jl")          # parametric bootstrap
 include("confint_derived.jl")            # derived quantities (Σ_y, communality, ...)
