@@ -86,6 +86,12 @@ include("confint_derived_bootstrap_families.jl")
 # already exists.
 include("formula.jl")
 
+# R -> Julia bridge (bridge_fit): plain-data entry point exposing ALL families
+# (Gaussian + non-Gaussian one-part + mixed) to R via JuliaCall. Included LAST,
+# after every fitter, extractor, simulate, and bootstrap_ci_derived, so all of
+# its dispatch targets already exist. Additive: new file only.
+include("bridge.jl")
+
 # Public API
 export spatial_cov, relatedness_cov,
        fit_gaussian_gllvm, GllvmModel, GllvmFit,
@@ -113,6 +119,7 @@ export spatial_cov, relatedness_cov,
        getLV, getLoadings, rotation,
        predict, fitted, residuals, aic, bic,
        quantile_residuals, check_fit, FitCheck,
-       gllvm, GllvmFormulaFit, @formula
+       gllvm, GllvmFormulaFit, @formula,
+       bridge_fit
 
 end # module GLLVM
