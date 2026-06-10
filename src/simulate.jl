@@ -110,6 +110,20 @@ function _draw_y(rng::AbstractRNG, ::ZeroTruncatedPoisson, μ, n_ts, dispersion)
     return Float64(y)
 end
 
+# Zero-truncated NB2 (families/truncnb.jl): _glm_logpdf is the NB2 logpdf
+# (NegativeBinomial(r, r/(r+μ))) minus log(1 − P₀) over y ≥ 1, r the dispersion
+# (Var = μ + μ²/r). Draw NB2 by rejection, resampling until the count is ≥ 1 (the
+# exact sampling inverse of the zero-truncated law).
+function _draw_y(rng::AbstractRNG, ::TruncNB, μ, n_ts, dispersion)
+    r = dispersion
+    d = NegativeBinomial(r, r / (r + μ))
+    y = rand(rng, d)
+    while y < 1
+        y = rand(rng, d)
+    end
+    return Float64(y)
+end
+
 # ---------------------------------------------------------------------------
 # Core params-in DGP. Returns Y::Matrix{Float64} (p×n).
 #
@@ -343,14 +357,14 @@ function simulate(fit::MixedFamilyFit, n::Integer;
 end
 
 """
-    simulate(fit::Union{PoissonFit,BinomialFit,NBFit,NB1Fit,GammaFit,BetaFit,BetaBinomialFit,LognormalFit,StudentTFit,TruncPoissonFit}, n;
+    simulate(fit::Union{PoissonFit,BinomialFit,NBFit,NB1Fit,GammaFit,BetaFit,BetaBinomialFit,LognormalFit,StudentTFit,TruncPoissonFit,TruncNBFit}, n;
              N=nothing, rng=Random.default_rng(), seed=nothing)
 
 Simulate `n` fresh sites from a fitted single-family GLLVM. The family marker,
 scalar dispersion, and link are taken from the fit (`_fit_family`,
 `_fit_dispersion`, `fit.link`); intercepts and loadings from `fit.β` / `fit.Λ`.
 """
-function simulate(fit::Union{PoissonFit, BinomialFit, NBFit, NB1Fit, GammaFit, BetaFit, BetaBinomialFit, LognormalFit, StudentTFit, TruncPoissonFit},
+function simulate(fit::Union{PoissonFit, BinomialFit, NBFit, NB1Fit, GammaFit, BetaFit, BetaBinomialFit, LognormalFit, StudentTFit, TruncPoissonFit, TruncNBFit},
         n::Integer; N = nothing,
         rng::AbstractRNG = Random.default_rng(), seed = nothing)
     n ≥ 1 || throw(ArgumentError("n must be ≥ 1; got $n"))

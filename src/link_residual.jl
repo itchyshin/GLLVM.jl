@@ -90,6 +90,27 @@ function _link_residual_one(::ZeroTruncatedPoisson, ::LogLink, μ̂::Real, dispe
     return log1p((1 + μ̂ - μtr) / μtr)
 end
 
+# Zero-truncated NB2-log: truncation-adjusted delta-method (lognormal-NB) residual,
+# the truncated analogue of the NB2 log-residual. The delta method gives
+# σ²_d = log(1 + Var(y)/E(y)²); under zero-truncation E(y) = μ_tr = μ̂/(1−P₀) and
+# Var(y) = (μ̂ + μ̂²/r + μ̂²)/(1−P₀) − μ_tr² (Johnson, Kemp & Kotz 2005, §5.8.3;
+# Cohen 1960), with P₀ = (r/(r+μ̂))^r, so
+#   Var(y)/E(y)² = (μ̂ + μ̂²/r + μ̂²)(1−P₀)/μ̂² − 1   ⇒   σ²_d = log1p(that).
+# Here `μ̂` is the UNTRUNCATED rate exp(η̄) (the variance is parameterised by the
+# rate), and `dispersion` is the NB2 r. Limits: as r → ∞ (P₀ → e^{-μ̂}) this
+# reduces to the zero-truncated-Poisson branch log1p((1+μ̂−μ_tr)/μ_tr); as μ̂ → ∞
+# (P₀ → 0) to the untruncated NB2 delta residual log1p(1/μ̂ + 1/r). GLLVM.jl carries
+# the NB2 trigamma(r) residual for the UNtruncated family, but trigamma has no
+# clean truncated analogue, so the delta-method form is used here (the same
+# lognormal-style choice NB1 uses; Nakagawa & Schielzeth 2010 delta method). This
+# is a GLLVM.jl-only truncated analogue — gllvmTMB ships no zero-truncated-NB family.
+function _link_residual_one(::TruncNB, ::LogLink, μ̂::Real, dispersion::Real)
+    (isfinite(μ̂) && μ̂ > 0) || return 0.0
+    r = max(dispersion, 1e-12)
+    P0 = (r / (r + μ̂))^r
+    return log1p((μ̂ + μ̂^2 / r + μ̂^2) * (1 - P0) / μ̂^2 - 1)
+end
+
 # Binomial: constant per link (μ̂ / dispersion unused).
 _link_residual_one(::Binomial, link::Link, μ̂::Real, dispersion) =
     _binomial_link_residual(link)
@@ -184,6 +205,7 @@ end
 
 # Scalar dispersion accessor per fit type (the family nuisance parameter).
 _fit_dispersion(::TruncPoissonFit) = nothing
+_fit_dispersion(fit::TruncNBFit) = fit.r
 _fit_dispersion(::PoissonFit)  = nothing
 _fit_dispersion(::BinomialFit) = nothing
 _fit_dispersion(fit::NBFit)    = fit.r
@@ -197,6 +219,7 @@ _fit_dispersion(::OrdinalFit)  = nothing
 
 # Family marker per fit type (for dispatching `_link_residual_one`).
 _fit_family(::TruncPoissonFit) = ZeroTruncatedPoisson()
+_fit_family(fit::TruncNBFit) = TruncNB(fit.r)
 _fit_family(::PoissonFit)  = Poisson()
 _fit_family(::BinomialFit) = Binomial()
 _fit_family(fit::NBFit)    = NegativeBinomial(fit.r, 0.5)
@@ -351,6 +374,27 @@ function link_residual(fit::TruncPoissonFit, Y::AbstractMatrix)
     end
     μ̂ = μacc ./ n
     return [Float64(_link_residual_one(fam, fit.link, μ̂[t], nothing)) for t in 1:p]
+end
+
+# Zero-truncated NB2: σ²_d = log1p((μ̂+μ̂²/r+μ̂²)(1−P₀)/μ̂² − 1) is μ̂-dependent,
+# parameterised by the UNTRUNCATED rate μ̂ = mean_s exp(η) and dispersion r.
+# TruncNBFit has no postfit `predict`, so per site the Laplace mode ẑ_s is found
+# (under the TruncNB family) and the untruncated rate exp(η) averaged.
+function link_residual(fit::TruncNBFit, Y::AbstractMatrix)
+    p, n = size(Y)
+    fam = _fit_family(fit)
+    Nm = ones(Int, p, n)
+    μacc = zeros(Float64, p)
+    @inbounds for s in 1:n
+        ẑ = _laplace_mode(fam, view(Y, :, s), view(Nm, :, s), fit.Λ, fit.β, fit.link)
+        η = fit.β .+ fit.Λ * ẑ
+        for t in 1:p
+            μacc[t] += linkinv(fit.link, _clamp_eta(η[t]))
+        end
+    end
+    μ̂ = μacc ./ n
+    r = fit.r
+    return [Float64(_link_residual_one(fam, fit.link, μ̂[t], r)) for t in 1:p]
 end
 
 # Student-t: σ²_d = σ²·ν/(ν−2) is μ̂-free (identity link), so no per-site mode solve is
