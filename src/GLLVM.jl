@@ -35,6 +35,7 @@ include("families/beta.jl")              # Beta family pieces (Phase 3)
 include("families/ordinal.jl")           # Ordinal (cumulative-logit) family pieces (Phase 3)
 include("families/gamma.jl")             # Gamma (positive continuous) family pieces (Phase 3)
 include("families/lognormal.jl")         # Standalone Lognormal family (reuses Gaussian on log scale)
+include("families/studentt.jl")          # Student-t (heavy-tailed continuous, fixed ν) family pieces
 include("families/twopart.jl")           # Two-part substrate + Delta-lognormal (Phase 3)
 include("families/fit_gllvm.jl")         # unified fit_gllvm(Y; family) dispatcher
 
@@ -107,6 +108,7 @@ export spatial_cov, relatedness_cov,
        fit_nb_gllvm, NBFit, fit_beta_gllvm, BetaFit,
        NB1, fit_nb1_gllvm, NB1Fit, nb1_marginal_loglik_laplace,
        fit_lognormal_gllvm, LognormalFit, lognormal_marginal_loglik,
+       StudentTFamily, fit_studentt_gllvm, StudentTFit, studentt_marginal_loglik_laplace,
        Ordinal, fit_ordinal_gllvm, OrdinalFit, fit_gamma_gllvm, GammaFit,
        fit_delta_lognormal_gllvm, DeltaLogNormalFit,
        delta_lognormal_marginal_loglik_laplace,

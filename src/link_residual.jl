@@ -107,6 +107,19 @@ _link_residual_one(::LogNormal, ::LogLink, μ̂::Real, dispersion::Real) =
 _link_residual_one(::Gamma, ::LogLink, μ̂::Real, dispersion::Real) =
     trigamma(max(dispersion, 1e-12))
 
+# Student-t (identity): σ²_d = σ²·ν/(ν−2) for ν > 2, the EXACT marginal variance of
+# the scaled-t residual y − η = σ·t_ν (Var(t_ν) = ν/(ν−2); Johnson, Kotz &
+# Balakrishnan 1995, Continuous Univariate Distributions vol. 2, ch. 28). The
+# identity link puts this directly on the latent scale (μ̂ unused). For ν ≤ 2 the
+# t has no finite variance, so there is no finite latent-scale residual variance;
+# we return `Inf` to flag that (callers should treat a heavy-tailed ν ≤ 2 fit's
+# latent-scale Σ as undefined rather than silently zero/clamped). `dispersion` is σ.
+function _link_residual_one(f::StudentTFamily, ::IdentityLink, μ̂::Real, dispersion::Real)
+    ν = f.ν
+    ν > 2 || return Inf
+    return dispersion^2 * ν / (ν - 2)
+end
+
 # Beta-logit: trigamma(μ̂φ) + trigamma((1−μ̂)φ). extract-sigma.R 216–233.
 function _link_residual_one(::Beta, ::LogitLink, μ̂::Real, dispersion::Real)
     μc = _clamp_mu_prop(μ̂)
@@ -149,6 +162,7 @@ _fit_dispersion(fit::NB1Fit)   = fit.φ
 _fit_dispersion(fit::GammaFit) = fit.α
 _fit_dispersion(fit::BetaFit)  = fit.φ
 _fit_dispersion(fit::LognormalFit) = fit.σ
+_fit_dispersion(fit::StudentTFit) = fit.σ
 _fit_dispersion(::OrdinalFit)  = nothing
 
 # Family marker per fit type (for dispatching `_link_residual_one`).
@@ -159,6 +173,7 @@ _fit_family(fit::NB1Fit)   = NB1(fit.φ)
 _fit_family(fit::GammaFit) = Gamma(fit.α, 1.0)
 _fit_family(fit::BetaFit)  = Beta(fit.φ, 1.0)
 _fit_family(fit::LognormalFit) = LogNormal()
+_fit_family(fit::StudentTFit) = StudentTFamily(fit.ν, fit.σ)
 _fit_family(::OrdinalFit)  = Ordinal()
 
 # ---------------------------------------------------------------------------
@@ -261,4 +276,13 @@ end
 function link_residual(fit::LognormalFit, Y::AbstractMatrix)
     p = size(fit.Λ, 1)
     return fill(Float64(fit.σ^2), p)
+end
+
+# Student-t: σ²_d = σ²·ν/(ν−2) is μ̂-free (identity link), so no per-site mode solve
+# is needed. Documented at `_link_residual_one(::StudentTFamily, …)` above (Inf when
+# ν ≤ 2, where the t has no finite variance).
+function link_residual(fit::StudentTFit, Y::AbstractMatrix)
+    p = size(fit.Λ, 1)
+    v = _link_residual_one(StudentTFamily(fit.ν, fit.σ), fit.link, 0.0, fit.σ)
+    return fill(Float64(v), p)
 end
