@@ -341,7 +341,8 @@ function confint(fit::OrdinalFit;
     end
     θ̂ = vcat(pack_lambda(fit.Λ), ψ)
     nll = θ -> -ordinal_marginal_loglik_laplace(
-        Y, unpack_lambda(θ[1:rr], p, K), _unpack_cutpoints(θ[(rr + 1):(rr + C - 1)]))
+        Y, unpack_lambda(θ[1:rr], p, K), _unpack_cutpoints(θ[(rr + 1):(rr + C - 1)]),
+        fit.link)
 
     terms = String[]
     kinds = Symbol[]

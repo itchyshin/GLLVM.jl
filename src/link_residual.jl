@@ -33,10 +33,12 @@
 #     model: a standard logistic latent residual has variance π²/3).
 #
 # NOTE ON ORDINAL: gllvmTMB ships an ordinal_*probit* family (latent residual = 1
-# by the standard-normal threshold construction). GLLVM.jl's `OrdinalFit` is the
-# cumulative-*logit* model (`default_link(::Ordinal) == LogitLink()`), whose
-# latent residual is standard-logistic with variance π²/3. Both are exact (no
-# delta-method approximation); they differ only by the link's latent scale.
+# by the standard-normal threshold construction). GLLVM.jl's `OrdinalFit` supports
+# BOTH links: the cumulative-*logit* model (`LogitLink()`, the default), whose
+# latent residual is standard-logistic with variance π²/3, and the cumulative-
+# *probit* model (`ProbitLink()`, matching gllvmTMB), whose standard-normal latent
+# residual is exactly 1. Both are exact (no delta-method approximation); they
+# differ only by the link's latent scale.
 
 # ---------------------------------------------------------------------------
 # Binomial link → constant σ²_d (μ̂-free). Confirmed: extract-sigma.R lines
@@ -160,6 +162,11 @@ end
 # Ordinal cumulative-logit: standard-logistic latent residual variance π²/3.
 _link_residual_one(::Ordinal, ::LogitLink, μ̂::Real, dispersion) = π^2 / 3
 
+# Ordinal cumulative-probit: standard-NORMAL threshold latent residual ⇒ σ²_d = 1
+# (the variance of the standard-normal latent in the threshold construction). This
+# matches gllvmTMB's ordinal-probit `fid`, whose latent residual is exactly 1.
+_link_residual_one(::Ordinal, ::ProbitLink, μ̂::Real, dispersion) = 1.0
+
 # ---------------------------------------------------------------------------
 # Per-trait mean fitted mean μ̂ (response scale), one entry per trait.
 #
@@ -275,9 +282,10 @@ end
 
 function link_residual(fit::OrdinalFit, Y::AbstractMatrix)
     p = size(fit.Λ, 1)
-    # Cumulative-logit threshold residual: π²/3, μ̂-free (no species intercept,
-    # latent η has zero mean by construction).
-    return fill(π^2 / 3, p)
+    # Cumulative threshold residual, μ̂-free (no species intercept, latent η has
+    # zero mean by construction): π²/3 for the logit link (standard-logistic
+    # latent), 1 for the probit link (standard-normal latent).
+    return fill(Float64(_link_residual_one(Ordinal(), fit.link, 0.0, nothing)), p)
 end
 
 # NB1: σ²_d = log1p((1+φ)/μ̂_t) is μ̂-dependent. NB1Fit has no postfit `predict`

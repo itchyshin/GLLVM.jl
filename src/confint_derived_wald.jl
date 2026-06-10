@@ -497,8 +497,9 @@ function communality_wald_ci(fit::BinomialFit, t::Integer;
 end
 
 # ---------------------------------------------------------------------------
-# Ordinal: packed θ = [pack_lambda(Λ); ψ]; σ²_d = π²/3 (constant). NLL reused
-# verbatim from confint(::OrdinalFit).
+# Ordinal: packed θ = [pack_lambda(Λ); ψ]; σ²_d is the link's threshold latent
+# residual (π²/3 for logit, 1 for probit). NLL reused verbatim from
+# confint(::OrdinalFit).
 # ---------------------------------------------------------------------------
 
 function _ordinal_wald_pieces(fit::OrdinalFit, Y::AbstractMatrix)
@@ -513,8 +514,9 @@ function _ordinal_wald_pieces(fit::OrdinalFit, Y::AbstractMatrix)
     end
     θ̂ = vcat(pack_lambda(fit.Λ), ψ)
     nll = θ -> -ordinal_marginal_loglik_laplace(
-        Y, unpack_lambda(θ[1:rr], p, K), _unpack_cutpoints(θ[(rr + 1):(rr + C - 1)]))
-    c = fill(π^2 / 3, p)
+        Y, unpack_lambda(θ[1:rr], p, K), _unpack_cutpoints(θ[(rr + 1):(rr + C - 1)]),
+        fit.link)
+    c = fill(Float64(_link_residual_one(Ordinal(), fit.link, 0.0, nothing)), p)
     Λ_of = θ -> unpack_lambda(θ[1:rr], p, K)
     return θ̂, nll, Λ_of, c
 end

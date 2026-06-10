@@ -1,9 +1,14 @@
-# Ordinal (ordered categorical, C levels) — proportional-odds cumulative-logit
-# GLLVM. y ∈ {1,…,C}; latent η = (Λ z)_t with z ~ N(0, I_K); common ordered
-# cutpoints τ₁<…<τ_{C-1} (shared across species) absorb the category levels, so
-# there is no separate species intercept. Cumulative model (McCullagh 1980):
-#   P(y ≤ c | z) = logistic(τ_c − η),
-#   P(y = c | z) = logistic(τ_c − η) − logistic(τ_{c-1} − η),   τ₀ = −∞, τ_C = +∞.
+# Ordinal (ordered categorical, C levels) — proportional-odds cumulative GLLVM.
+# y ∈ {1,…,C}; latent η = (Λ z)_t with z ~ N(0, I_K); common ordered cutpoints
+# τ₁<…<τ_{C-1} (shared across species) absorb the category levels, so there is no
+# separate species intercept. Cumulative model (McCullagh 1980), with link CDF F:
+#   P(y ≤ c | z) = F(τ_c − η),
+#   P(y = c | z) = F(τ_c − η) − F(τ_{c-1} − η),   τ₀ = −∞, τ_C = +∞.
+# F = logistic gives the cumulative-LOGIT (proportional-odds) model; F = Φ (the
+# standard-normal CDF) gives the cumulative-PROBIT model (R's gllvmTMB ordinal).
+# The cutpoint construction, score, weight, and Laplace normalisation are link-
+# AGNOSTIC: only F and its density f = F′ change with the link, so the logit and
+# probit paths share every routine below via the `link::Link` argument.
 #
 # The "mean" here is a vector of category probabilities, so this family does NOT
 # use the scalar-μ generic Laplace core (families/laplace.jl). It carries its own
@@ -11,51 +16,61 @@
 # log p(y_s) ≈ ℓ(ẑ) − ½ẑ'ẑ − ½ logdet(Λ'WΛ + I). Per observation, wrt η:
 #   score(η) = (f(τ_{c-1}−η) − f(τ_c−η)) / P(y=c)
 #   W(η)     = Σ_{k=1}^{C} (f(τ_{k-1}−η) − f(τ_k−η))² / P(y=k)    (Fisher info ≥ 0)
-# with f = logistic·(1−logistic) the logistic density. `_clamp_eta`/`_safe_solve`
-# are reused from families/laplace.jl.
+# with f the link density (logistic·(1−logistic) for logit, φ for probit).
+# `_clamp_eta`/`_safe_solve` are reused from families/laplace.jl.
 
 """
     Ordinal
 
-Family marker for the ordered-categorical (proportional-odds cumulative-logit)
-GLLVM. `Distributions` has no ordinal type, so GLLVM defines its own. Categories
-are coded `1:C`; the number of levels `C` is inferred from the data (`maximum(Y)`)
-by the fitter, and equals `length(τ) + 1` in the marginal.
+Family marker for the ordered-categorical (proportional-odds cumulative) GLLVM.
+`Distributions` has no ordinal type, so GLLVM defines its own. Categories are
+coded `1:C`; the number of levels `C` is inferred from the data (`maximum(Y)`)
+by the fitter, and equals `length(τ) + 1` in the marginal. The link selects the
+cumulative model: `LogitLink()` (default, proportional-odds cumulative-logit) or
+`ProbitLink()` (cumulative-probit, matching R's gllvmTMB ordinal).
 """
 struct Ordinal end
 
 default_link(::Ordinal) = LogitLink()
 
+# Link CDF F and its density f = F′, threaded through every ordinal routine.
+# (No-link methods keep the original cumulative-LOGIT behaviour byte-for-byte, so
+# every existing logit caller is unchanged.) The argument plays the role of
+# (τ_c − η); for the logistic it is η-clamped exactly as before.
 _ord_F(x) = inv(one(x) + exp(-_clamp_eta(x)))            # logistic CDF (η-clamped)
 _ord_f(x) = (Fx = _ord_F(x); Fx * (one(Fx) - Fx))        # logistic density
+_ord_F(::LogitLink, x)  = _ord_F(x)
+_ord_f(::LogitLink, x)  = _ord_f(x)
+_ord_F(::ProbitLink, x) = cdf(Normal(), x)               # Φ (standard-normal CDF)
+_ord_f(::ProbitLink, x) = pdf(Normal(), x)               # φ = Φ′ (standard-normal density)
 
 # P(y = c) at linear predictor η with ordered cutpoints τ (length C−1).
-@inline function _ord_prob(c::Integer, η, τ::AbstractVector)
+@inline function _ord_prob(c::Integer, η, τ::AbstractVector, link::Link = LogitLink())
     C = length(τ) + 1
-    Fhi = c == C ? one(η) : _ord_F(τ[c] - η)
-    Flo = c == 1 ? zero(η) : _ord_F(τ[c - 1] - η)
+    Fhi = c == C ? one(η) : _ord_F(link, τ[c] - η)
+    Flo = c == 1 ? zero(η) : _ord_F(link, τ[c - 1] - η)
     return Fhi - Flo
 end
 
 # Score ∂logP(y=c)/∂η and Fisher weight Σ_k (∂P_k/∂η)²/P_k at η.
-function _ord_score_weight(c::Integer, η, τ::AbstractVector)
+function _ord_score_weight(c::Integer, η, τ::AbstractVector, link::Link = LogitLink())
     C = length(τ) + 1
-    fhi = c == C ? zero(η) : _ord_f(τ[c] - η)
-    flo = c == 1 ? zero(η) : _ord_f(τ[c - 1] - η)
-    score = (flo - fhi) / max(_ord_prob(c, η, τ), 1e-12)
+    fhi = c == C ? zero(η) : _ord_f(link, τ[c] - η)
+    flo = c == 1 ? zero(η) : _ord_f(link, τ[c - 1] - η)
+    score = (flo - fhi) / max(_ord_prob(c, η, τ, link), 1e-12)
     W = zero(η)
     @inbounds for k in 1:C
-        fk_hi = k == C ? zero(η) : _ord_f(τ[k] - η)
-        fk_lo = k == 1 ? zero(η) : _ord_f(τ[k - 1] - η)
+        fk_hi = k == C ? zero(η) : _ord_f(link, τ[k] - η)
+        fk_lo = k == 1 ? zero(η) : _ord_f(link, τ[k - 1] - η)
         dP = fk_lo - fk_hi
-        W += dP^2 / max(_ord_prob(k, η, τ), 1e-12)
+        W += dP^2 / max(_ord_prob(k, η, τ, link), 1e-12)
     end
     return score, W
 end
 
 # Per-site Laplace mode ẑ (Fisher-scoring Newton); η = Λ z (no intercept).
-function _ordinal_laplace_mode(y::AbstractVector, Λ::AbstractMatrix, τ::AbstractVector;
-        maxiter::Integer = 100, tol::Real = 1e-9)
+function _ordinal_laplace_mode(y::AbstractVector, Λ::AbstractMatrix, τ::AbstractVector,
+        link::Link = LogitLink(); maxiter::Integer = 100, tol::Real = 1e-9)
     p, K = size(Λ)
     T = promote_type(eltype(Λ), eltype(τ))
     z = zeros(T, K)
@@ -64,7 +79,7 @@ function _ordinal_laplace_mode(y::AbstractVector, Λ::AbstractMatrix, τ::Abstra
     for _ in 1:maxiter
         η = _clamp_eta.(Λ * z)
         @inbounds for t in 1:p
-            st, wt = _ord_score_weight(Int(y[t]), η[t], τ)
+            st, wt = _ord_score_weight(Int(y[t]), η[t], τ, link)
             s[t] = st; W[t] = wt
         end
         A = Symmetric(Λ' * (W .* Λ) + I)
@@ -77,23 +92,24 @@ function _ordinal_laplace_mode(y::AbstractVector, Λ::AbstractMatrix, τ::Abstra
 end
 
 """
-    ordinal_loglik_site(y, Λ, τ; maxiter=100, tol=1e-9) -> Float64
+    ordinal_loglik_site(y, Λ, τ, link=LogitLink(); maxiter=100, tol=1e-9) -> Float64
 
-Laplace log-marginal for one site of a cumulative-logit ordinal GLLVM:
+Laplace log-marginal for one site of a cumulative-link ordinal GLLVM:
 `ℓ(ẑ) − ½ẑ'ẑ − ½logdet(Λ'WΛ + I)`. `y` length-p ordinal responses (`1:C`),
-`Λ` p×K, `τ` the `C−1` ordered cutpoints.
+`Λ` p×K, `τ` the `C−1` ordered cutpoints, `link` the cumulative link
+(`LogitLink()` ⇒ proportional-odds; `ProbitLink()` ⇒ cumulative-probit).
 """
-function ordinal_loglik_site(y::AbstractVector, Λ::AbstractMatrix, τ::AbstractVector;
-        maxiter::Integer = 100, tol::Real = 1e-9)
+function ordinal_loglik_site(y::AbstractVector, Λ::AbstractMatrix, τ::AbstractVector,
+        link::Link = LogitLink(); maxiter::Integer = 100, tol::Real = 1e-9)
     p = size(Λ, 1)
-    z = _ordinal_laplace_mode(y, Λ, τ; maxiter = maxiter, tol = tol)
+    z = _ordinal_laplace_mode(y, Λ, τ, link; maxiter = maxiter, tol = tol)
     η = _clamp_eta.(Λ * z)
     T = promote_type(eltype(Λ), eltype(τ), eltype(z))
     W = Vector{T}(undef, p)
     ℓ = zero(T)
     @inbounds for t in 1:p
-        ℓ += log(max(_ord_prob(Int(y[t]), η[t], τ), 1e-12))
-        _, wt = _ord_score_weight(Int(y[t]), η[t], τ)
+        ℓ += log(max(_ord_prob(Int(y[t]), η[t], τ, link), 1e-12))
+        _, wt = _ord_score_weight(Int(y[t]), η[t], τ, link)
         W[t] = wt
     end
     A = Symmetric(Λ' * (W .* Λ) + I)
@@ -101,25 +117,26 @@ function ordinal_loglik_site(y::AbstractVector, Λ::AbstractMatrix, τ::Abstract
 end
 
 """
-    ordinal_marginal_loglik_laplace(Y, Λ, τ; kwargs...) -> Float64
+    ordinal_marginal_loglik_laplace(Y, Λ, τ, link=LogitLink(); kwargs...) -> Float64
 
 Total Laplace log-marginal over the `n` sites (columns) of a proportional-odds
-cumulative-logit ordinal GLLVM. `Y` is the p×n matrix of ordinal responses coded
-`1:C`; `Λ` p×K; `τ` the `C−1` ordered cutpoints (shared across species). With
-`Λ = 0` (η ≡ 0) the latent variable drops out and this reduces to the exact
-independent cumulative-logit log-likelihood.
+cumulative-link ordinal GLLVM. `Y` is the p×n matrix of ordinal responses coded
+`1:C`; `Λ` p×K; `τ` the `C−1` ordered cutpoints (shared across species); `link`
+the cumulative link (`LogitLink()` ⇒ cumulative-logit, default; `ProbitLink()` ⇒
+cumulative-probit). With `Λ = 0` (η ≡ 0) the latent variable drops out and this
+reduces to the exact independent cumulative-link log-likelihood.
 """
 function ordinal_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix,
-        τ::AbstractVector; kwargs...)
+        τ::AbstractVector, link::Link = LogitLink(); kwargs...)
     acc = zero(promote_type(eltype(Λ), eltype(τ)))
     @inbounds for s in axes(Y, 2)
-        acc += ordinal_loglik_site(view(Y, :, s), Λ, τ; kwargs...)
+        acc += ordinal_loglik_site(view(Y, :, s), Λ, τ, link; kwargs...)
     end
     return acc
 end
 
 function _ordinal_laplace_qF(y::AbstractVector, θ::AbstractVector,
-        z::AbstractVector, p::Int, K::Int)
+        z::AbstractVector, p::Int, K::Int, link::Link)
     rr = rr_theta_len(p, K)
     Λ = unpack_lambda(θ[1:rr], p, K)
     τ = _unpack_cutpoints(θ[(rr + 1):end])
@@ -128,8 +145,8 @@ function _ordinal_laplace_qF(y::AbstractVector, θ::AbstractVector,
     ℓ = zero(promote_type(eltype(θ), eltype(z)))
     s = similar(η)
     @inbounds for t in 1:p
-        ℓ += log(max(_ord_prob(Int(y[t]), η[t], τ), 1e-12))
-        st, wt = _ord_score_weight(Int(y[t]), η[t], τ)
+        ℓ += log(max(_ord_prob(Int(y[t]), η[t], τ, link), 1e-12))
+        st, wt = _ord_score_weight(Int(y[t]), η[t], τ, link)
         s[t] = st
         W[t] = wt
     end
@@ -140,22 +157,24 @@ function _ordinal_laplace_qF(y::AbstractVector, θ::AbstractVector,
 end
 
 function _ordinal_site_implicit_value_grad(y::AbstractVector,
-        θ::AbstractVector, p::Int, K::Int; maxiter::Integer = 100, tol::Real = 1e-9)
+        θ::AbstractVector, p::Int, K::Int, link::Link = LogitLink();
+        maxiter::Integer = 100, tol::Real = 1e-9)
     rr = rr_theta_len(p, K)
     Λ = unpack_lambda(θ[1:rr], p, K)
     τ = _unpack_cutpoints(θ[(rr + 1):end])
-    z = _ordinal_laplace_mode(y, Λ, τ; maxiter = maxiter, tol = tol)
+    z = _ordinal_laplace_mode(y, Λ, τ, link; maxiter = maxiter, tol = tol)
     x0 = vcat(z, θ)
-    qF = x -> _ordinal_laplace_qF(y, x[(K + 1):end], x[1:K], p, K)
+    qF = x -> _ordinal_laplace_qF(y, x[(K + 1):end], x[1:K], p, K, link)
     return _implicit_site_gradient(qF, x0, K)
 end
 
 function ordinal_marginal_loglik_laplace_implicit_value_grad(
-        Y::AbstractMatrix, θ::AbstractVector, p::Int, K::Int; kwargs...)
+        Y::AbstractMatrix, θ::AbstractVector, p::Int, K::Int,
+        link::Link = LogitLink(); kwargs...)
     value = zero(eltype(θ))
     grad = zeros(eltype(θ), length(θ))
     @inbounds for s in axes(Y, 2)
-        v, g = _ordinal_site_implicit_value_grad(view(Y, :, s), θ, p, K; kwargs...)
+        v, g = _ordinal_site_implicit_value_grad(view(Y, :, s), θ, p, K, link; kwargs...)
         value += v
         grad .+= g
     end
@@ -192,6 +211,11 @@ function Base.show(io::IO, f::OrdinalFit)
           f.converged ? "" : ", NOT CONVERGED", ")")
 end
 
+# Ordinal cumulative-model name for the chosen link (display only).
+_ordinal_link_name(::LogitLink)  = "cumulative logit"
+_ordinal_link_name(::ProbitLink) = "cumulative probit"
+_ordinal_link_name(link::Link)   = "cumulative " * lowercase(string(nameof(typeof(link))))
+
 # Ordered cutpoints from unconstrained ψ: τ₁ = ψ₁, τ_c = τ_{c-1} + exp(ψ_c).
 function _unpack_cutpoints(ψ::AbstractVector)
     m = length(ψ)
@@ -206,14 +230,16 @@ end
 """
     fit_ordinal_gllvm(Y; K, link=LogitLink(), …) -> OrdinalFit
 
-Fit a proportional-odds cumulative-logit ordinal GLLVM by L-BFGS over
+Fit a proportional-odds cumulative-link ordinal GLLVM by L-BFGS over
 `[vec(Λ); ψ]`, where the `C−1` ordered cutpoints are the unconstrained increments
 `τ₁ = ψ₁, τ_c = τ_{c-1} + exp(ψ_c)` (so ordering holds for free) and the marginal
-is [`ordinal_marginal_loglik_laplace`](@ref). `Y` is a p×n matrix of ordinal
+is [`ordinal_marginal_loglik_laplace`](@ref). `link` selects the cumulative model:
+`LogitLink()` (default, proportional-odds cumulative-logit) or `ProbitLink()`
+(cumulative-probit, matching R's gllvmTMB ordinal). `Y` is a p×n matrix of ordinal
 responses coded `1:C` (`C = maximum(Y)`). The L-BFGS gradient uses an implicit
 dense-Laplace gradient that avoids differentiating through the inner
 Fisher-scoring iterations; warm start = empirical cumulative-proportion cutpoints
-and a normal-scores SVD loadings init.
+(mapped through the chosen link) and a normal-scores SVD loadings init.
 """
 function fit_ordinal_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
         link::Link = LogitLink(), Λ_init = nothing,
@@ -239,14 +265,14 @@ function fit_ordinal_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
         collect(float.(Λ_init))
     end
 
-    # Cutpoint warm start: τ_c = logit(empirical P(y ≤ c)); to ψ increments.
+    # Cutpoint warm start: τ_c = linkfun(empirical P(y ≤ c)) — logit for the logit
+    # link, Φ⁻¹ for the probit link — then to ψ increments.
     counts = zeros(Int, C)
     @inbounds for v in Y
         counts[Int(v)] += 1
     end
     cum = cumsum(counts ./ sum(counts))
-    τ0 = [log(clamp(cum[c], 1e-3, 1 - 1e-3) / (1 - clamp(cum[c], 1e-3, 1 - 1e-3)))
-          for c in 1:(C - 1)]
+    τ0 = [linkfun(link, clamp(cum[c], 1e-3, 1 - 1e-3)) for c in 1:(C - 1)]
     ψ0 = similar(τ0)
     ψ0[1] = τ0[1]
     @inbounds for c in 2:(C - 1)
@@ -255,7 +281,7 @@ function fit_ordinal_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
 
     θ0 = vcat(pack_lambda(Λ0), ψ0)
     value_grad(θ) = ordinal_marginal_loglik_laplace_implicit_value_grad(
-        Y, θ, p, K; maxiter = newton_maxiter, tol = newton_tol)
+        Y, θ, p, K, link; maxiter = newton_maxiter, tol = newton_tol)
     negll_fg!(F, G, θ) = _penalized_negloglik_fg!(F, G, value_grad, θ)
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
     res = Optim.optimize(Optim.only_fg!(negll_fg!), θ0, ls,

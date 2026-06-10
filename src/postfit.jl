@@ -563,7 +563,7 @@ function getLV(fit::OrdinalFit, Y::AbstractMatrix{<:Integer}; rotate::Bool = tru
     K = size(fit.Λ, 2)
     Z = Matrix{Float64}(undef, K, n)
     @inbounds for s in 1:n
-        Z[:, s] = _ordinal_laplace_mode(view(Y, :, s), fit.Λ, fit.τ)
+        Z[:, s] = _ordinal_laplace_mode(view(Y, :, s), fit.Λ, fit.τ, fit.link)
     end
     Zt = permutedims(Z)
     return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
@@ -587,7 +587,7 @@ function predict(fit::OrdinalFit, Y::AbstractMatrix{<:Integer}; type::Symbol = :
     if type === :prob
         P = Array{Float64, 3}(undef, p, n, C)
         @inbounds for s in 1:n, t in 1:p, c in 1:C
-            P[t, s, c] = _ord_prob(c, η[t, s], fit.τ)
+            P[t, s, c] = _ord_prob(c, η[t, s], fit.τ, fit.link)
         end
         return P
     end
@@ -595,7 +595,7 @@ function predict(fit::OrdinalFit, Y::AbstractMatrix{<:Integer}; type::Symbol = :
     @inbounds for s in 1:n, t in 1:p
         best = 1; bestp = -1.0
         for c in 1:C
-            pc = _ord_prob(c, η[t, s], fit.τ)
+            pc = _ord_prob(c, η[t, s], fit.τ, fit.link)
             pc > bestp && (bestp = pc; best = c)
         end
         M[t, s] = best
@@ -621,8 +621,8 @@ function residuals(fit::OrdinalFit, Y::AbstractMatrix{<:Integer};
     R = Matrix{Float64}(undef, p, n)
     @inbounds for s in 1:n, t in 1:p
         c = Int(Y[t, s])
-        Fhi = c >= C ? 1.0 : _ord_F(fit.τ[c] - η[t, s])
-        Flo = c <= 1 ? 0.0 : _ord_F(fit.τ[c - 1] - η[t, s])
+        Fhi = c >= C ? 1.0 : _ord_F(fit.link, fit.τ[c] - η[t, s])
+        Flo = c <= 1 ? 0.0 : _ord_F(fit.link, fit.τ[c - 1] - η[t, s])
         u = Flo + (Fhi - Flo) * rand(rng)
         R[t, s] = quantile(Normal(), clamp(u, 1e-12, 1 - 1e-12))
     end
@@ -631,7 +631,7 @@ end
 
 function Base.show(io::IO, ::MIME"text/plain", fit::OrdinalFit)
     p, K = size(fit.Λ)
-    println(io, "Ordinal GLLVM fit (cumulative logit)")
+    println(io, "Ordinal GLLVM fit (", _ordinal_link_name(fit.link), ")")
     println(io, "  responses p = ", p, ", latent factors K = ", K, ", categories C = ", fit.C)
     println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
             ", AIC = ", round(aic(fit); sigdigits = 7))

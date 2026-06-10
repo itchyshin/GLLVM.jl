@@ -135,12 +135,13 @@ function _simulate_core(rng::AbstractRNG, families::AbstractVector,
         fam = families[t]
         link = links[t]
         if fam isa Ordinal
-            # No intercept; cutpoints τ in the dispersion slot.
+            # No intercept; cutpoints τ in the dispersion slot. The link selects
+            # the cumulative model (logit vs probit) for the inverse-CDF draw.
             τ = dispersion[t]
             C = length(τ) + 1
             for s in 1:n
                 η = Lz[t, s] + (Xβ === nothing ? 0.0 : Xβ[t, s])
-                Y[t, s] = _draw_ordinal(rng, _clamp_eta(η), τ, C)
+                Y[t, s] = _draw_ordinal(rng, _clamp_eta(η), τ, C, link)
             end
         else
             for s in 1:n
@@ -153,13 +154,16 @@ function _simulate_core(rng::AbstractRNG, families::AbstractVector,
     return Y
 end
 
-# Ordinal category draw by inverse-CDF over `_ord_prob(c, η, τ)` (cumulative-logit
-# probabilities at η with cutpoints τ; C = length(τ)+1 categories coded 1:C).
-function _draw_ordinal(rng::AbstractRNG, η, τ::AbstractVector, C::Integer)
+# Ordinal category draw by inverse-CDF over `_ord_prob(c, η, τ, link)` (cumulative
+# probabilities at η with cutpoints τ; C = length(τ)+1 categories coded 1:C). The
+# `link` selects the cumulative model: LogitLink() (default) ⇒ cumulative-logit,
+# ProbitLink() ⇒ cumulative-probit (normal-CDF cutpoints).
+function _draw_ordinal(rng::AbstractRNG, η, τ::AbstractVector, C::Integer,
+        link::Link = LogitLink())
     u = rand(rng)
     acc = 0.0
     @inbounds for c in 1:(C - 1)
-        acc += _ord_prob(c, η, τ)
+        acc += _ord_prob(c, η, τ, link)
         u ≤ acc && return Float64(c)
     end
     return Float64(C)
@@ -294,11 +298,13 @@ end
     simulate(::Ordinal, τ, Λ, n; link=LogitLink(), rng=Random.default_rng(),
              seed=nothing, X=nothing) -> Matrix{Float64}
 
-Ordinal (proportional-odds cumulative-logit) DGP. There is NO intercept — the
+Ordinal (proportional-odds cumulative-link) DGP. There is NO intercept — the
 shared ordered cutpoints `τ` (length `C−1`) carry the category levels — so the
 linear predictor is `η_{ts} = (Λ z_s)_t` and each `y_{ts} ∈ {1,…,C}` is drawn by
-inverse-CDF over `P(y = c | η) = _ord_prob(c, η, τ)`. `Λ` is `p × K`; `p` is read
-from `size(Λ, 1)`. Returns an integer-valued `Float64` `p × n` matrix.
+inverse-CDF over `P(y = c | η) = _ord_prob(c, η, τ, link)`. `link` selects the
+cumulative model: `LogitLink()` (default, cumulative-logit) or `ProbitLink()`
+(cumulative-probit, with normal-CDF cutpoints). `Λ` is `p × K`; `p` is read from
+`size(Λ, 1)`. Returns an integer-valued `Float64` `p × n` matrix.
 """
 function simulate(::Ordinal, τ::AbstractVector, Λ::AbstractMatrix, n::Integer;
         link::Link = LogitLink(), rng::AbstractRNG = Random.default_rng(),

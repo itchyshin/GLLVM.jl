@@ -117,8 +117,9 @@ function _pit(fit::GammaFit, Y::AbstractMatrix{<:Real}; kwargs...)
     return U
 end
 
-# Ordinal: discrete ordered categories, randomised PIT under the fitted
-# cumulative-logit at the Laplace mode (η = Λẑ). Mirrors residuals(::OrdinalFit).
+# Ordinal: discrete ordered categories, randomised PIT under the fitted cumulative
+# model at the Laplace mode (η = Λẑ). Mirrors residuals(::OrdinalFit); the link
+# selects logit vs probit cutpoint CDF.
 function _pit(fit::OrdinalFit, Y::AbstractMatrix{<:Integer};
               rng::AbstractRNG = Random.default_rng(), kwargs...)
     p, n = size(Y); C = fit.C
@@ -127,8 +128,8 @@ function _pit(fit::OrdinalFit, Y::AbstractMatrix{<:Integer};
     U = Matrix{Float64}(undef, p, n)
     @inbounds for s in 1:n, t in 1:p
         c = Int(Y[t, s])
-        Fhi = c >= C ? 1.0 : _ord_F(fit.τ[c] - η[t, s])
-        Flo = c <= 1 ? 0.0 : _ord_F(fit.τ[c - 1] - η[t, s])
+        Fhi = c >= C ? 1.0 : _ord_F(fit.link, fit.τ[c] - η[t, s])
+        Flo = c <= 1 ? 0.0 : _ord_F(fit.link, fit.τ[c - 1] - η[t, s])
         U[t, s] = Flo + (Fhi - Flo) * rand(rng)
     end
     return U
