@@ -28,6 +28,7 @@ include("families/links.jl")
 include("families/laplace.jl")           # generic family-dispatched Laplace marginal core
 include("families/binomial.jl")          # Binomial family pieces + fit (Phase 3)
 include("families/poisson.jl")           # Poisson family pieces (Phase 3)
+include("families/truncpoisson.jl")      # Zero-truncated (positive) Poisson family pieces
 include("families/structured_poisson.jl") # internal structured Poisson Laplace prototype
 include("families/negbin.jl")            # Negative-binomial (NB2) family pieces (Phase 3)
 include("families/nb1.jl")               # Negative-binomial type 1 (linear variance) family pieces
@@ -106,6 +107,8 @@ export spatial_cov, relatedness_cov,
        fit_phylo_gaussian, PhyloGaussianFit,
        LogitLink, ProbitLink, CLogLogLink, IdentityLink, LogLink,
        fit_binomial_gllvm, BinomialFit, fit_poisson_gllvm, PoissonFit,
+       ZeroTruncatedPoisson, fit_truncpoisson_gllvm, TruncPoissonFit,
+       truncpoisson_marginal_loglik_laplace,
        fit_nb_gllvm, NBFit, fit_beta_gllvm, BetaFit,
        fit_betabinomial_gllvm, BetaBinomialFit,
        betabinomial_marginal_loglik_laplace,

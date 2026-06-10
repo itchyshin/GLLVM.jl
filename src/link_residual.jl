@@ -74,6 +74,22 @@ function _link_residual_one(::Poisson, ::LogLink, μ̂::Real, dispersion)
     return (isfinite(μ̂) && μ̂ > 0) ? log1p(1 / μ̂) : 0.0
 end
 
+# Zero-truncated Poisson-log: truncation-adjusted lognormal-Poisson residual. The
+# Poisson log(1 + 1/μ̂) is the delta-method Var(log y) ≈ Var(y)/E(y)²; under
+# zero-truncation E(y) = μ_tr = μ̂/(1−e^{-μ̂}) and Var(y) = μ_tr(1+μ̂−μ_tr)
+# (Johnson, Kemp & Kotz 2005, §4.10; Cohen 1960), so
+#   σ²_d = log1p( Var(y)/E(y)² ) = log1p( (1 + μ̂ − μ_tr)/μ_tr ).
+# Here `μ̂` is the UNTRUNCATED rate exp(η̄) (NOT the response-scale truncated mean),
+# because the variance is parameterised by the rate. As μ̂ → ∞ (e^{-μ̂} → 0,
+# μ_tr → μ̂) this reduces to the Poisson branch log1p(1/μ̂). (Nakagawa &
+# Schielzeth 2010 delta method; the GLLVM.jl-only truncated analogue of the
+# gllvmTMB Poisson fid — gllvmTMB ships no zero-truncated-Poisson family.)
+function _link_residual_one(::ZeroTruncatedPoisson, ::LogLink, μ̂::Real, dispersion)
+    (isfinite(μ̂) && μ̂ > 0) || return 0.0
+    μtr = μ̂ / (-expm1(-μ̂))
+    return log1p((1 + μ̂ - μtr) / μtr)
+end
+
 # Binomial: constant per link (μ̂ / dispersion unused).
 _link_residual_one(::Binomial, link::Link, μ̂::Real, dispersion) =
     _binomial_link_residual(link)
@@ -167,6 +183,7 @@ function _trait_mean_fitted(fit::BinomialFit, Y::AbstractMatrix; N = nothing)
 end
 
 # Scalar dispersion accessor per fit type (the family nuisance parameter).
+_fit_dispersion(::TruncPoissonFit) = nothing
 _fit_dispersion(::PoissonFit)  = nothing
 _fit_dispersion(::BinomialFit) = nothing
 _fit_dispersion(fit::NBFit)    = fit.r
@@ -179,6 +196,7 @@ _fit_dispersion(fit::StudentTFit) = fit.σ
 _fit_dispersion(::OrdinalFit)  = nothing
 
 # Family marker per fit type (for dispatching `_link_residual_one`).
+_fit_family(::TruncPoissonFit) = ZeroTruncatedPoisson()
 _fit_family(::PoissonFit)  = Poisson()
 _fit_family(::BinomialFit) = Binomial()
 _fit_family(fit::NBFit)    = NegativeBinomial(fit.r, 0.5)
@@ -295,9 +313,8 @@ end
 # Beta-Binomial: σ²_d = π²/3 + trigamma(μ̂φ) + trigamma((1−μ̂)φ) is μ̂-dependent.
 # BetaBinomialFit has no postfit `predict` method (those live in PR #89's scope),
 # so the per-trait conditional fitted PROBABILITY μ̂ is computed inline from the
-# fit's own parameters (mirrors the NB1 branch above): per site find the Laplace
-# mode ẑ_s under the Beta-Binomial family, form η = β + Λẑ, μ = logistic(η), and
-# average across sites (gllvmTMB extract-sigma.R fid 8 uses mean(plogis(eta))).
+# fit's own parameters (per site find the Laplace mode ẑ_s under the Beta-Binomial
+# family, form η = β + Λẑ, μ = logistic(η), and average across sites).
 # `N` (trial counts) is needed for the mode solve; default all-ones.
 function link_residual(fit::BetaBinomialFit, Y::AbstractMatrix;
                        N::Union{Nothing, AbstractMatrix} = nothing)
@@ -317,9 +334,27 @@ function link_residual(fit::BetaBinomialFit, Y::AbstractMatrix;
     return [Float64(_link_residual_one(fam, fit.link, μ̂[t], φ)) for t in 1:p]
 end
 
-# Student-t: σ²_d = σ²·ν/(ν−2) is μ̂-free (identity link), so no per-site mode solve
-# is needed. Documented at `_link_residual_one(::StudentTFamily, …)` above (Inf when
-# ν ≤ 2, where the t has no finite variance).
+# Zero-truncated Poisson: σ²_d = log1p((1+μ̂−μ̂_tr)/μ̂_tr) is μ̂-dependent, parameterised
+# by the UNTRUNCATED rate μ̂ = mean_s exp(η). TruncPoissonFit has no postfit `predict`,
+# so per site the Laplace mode ẑ_s is found and the untruncated rate exp(η) averaged.
+function link_residual(fit::TruncPoissonFit, Y::AbstractMatrix)
+    p, n = size(Y)
+    fam = _fit_family(fit)
+    Nm = ones(Int, p, n)
+    μacc = zeros(Float64, p)
+    @inbounds for s in 1:n
+        ẑ = _laplace_mode(fam, view(Y, :, s), view(Nm, :, s), fit.Λ, fit.β, fit.link)
+        η = fit.β .+ fit.Λ * ẑ
+        for t in 1:p
+            μacc[t] += linkinv(fit.link, _clamp_eta(η[t]))
+        end
+    end
+    μ̂ = μacc ./ n
+    return [Float64(_link_residual_one(fam, fit.link, μ̂[t], nothing)) for t in 1:p]
+end
+
+# Student-t: σ²_d = σ²·ν/(ν−2) is μ̂-free (identity link), so no per-site mode solve is
+# needed (Inf when ν ≤ 2, where the t has no finite variance).
 function link_residual(fit::StudentTFit, Y::AbstractMatrix)
     p = size(fit.Λ, 1)
     v = _link_residual_one(StudentTFamily(fit.ν, fit.σ), fit.link, 0.0, fit.σ)
