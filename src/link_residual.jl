@@ -82,6 +82,26 @@ _link_residual_one(::Binomial, link::Link, μ̂::Real, dispersion) =
 _link_residual_one(::NegativeBinomial, ::LogLink, μ̂::Real, dispersion::Real) =
     trigamma(max(dispersion, 1e-12))
 
+# NB1-log: delta-method/lognormal residual log(1 + (1+φ)/μ̂), φ the LINEAR-variance
+# dispersion (Var = μ(1+φ)). extract-sigma.R 330–350 (gllvmTMB fid 15, nbinom1).
+# NB1's Poisson–Gamma representation has shape μ/φ (μ-dependent), so the NB2
+# trigamma(r) identity does NOT carry over; the delta method
+# Var(log y) ≈ Var(y)/E(y)² = μ(1+φ)/μ² = (1+φ)/μ is used in stable log1p form.
+# As φ → 0 this reduces to the Poisson branch log1p(1/μ̂).
+# (Nakagawa & Schielzeth 2010 delta method; Hilbe 2011 NB1 variance.)
+function _link_residual_one(::NB1, ::LogLink, μ̂::Real, dispersion::Real)
+    return (isfinite(μ̂) && μ̂ > 0) ? log1p((1 + dispersion) / μ̂) : 0.0
+end
+
+# Lognormal-log: σ²_d = σ² (the log-scale residual variance). For a STANDALONE
+# lognormal family the latent (log) scale residual is exactly σ², so this is the
+# diagonal added to ΛΛᵀ to form the latent-scale Σ. (gllvmTMB's extract-sigma.R
+# fid 3 reports 0 because there σ_eps is carried in a SEPARATE slot; here the
+# standalone family folds it into σ²_d so a lognormal trait is comparable to
+# other non-Gaussian traits on the latent scale.) `dispersion` IS σ.
+_link_residual_one(::LogNormal, ::LogLink, μ̂::Real, dispersion::Real) =
+    dispersion^2
+
 # Gamma-log: trigamma(shape). extract-sigma.R 182–183 (nu_hat = 1/σ², the shape).
 # GLLVM.jl carries the shape α directly (Var = μ²/α), so dispersion == α.
 _link_residual_one(::Gamma, ::LogLink, μ̂::Real, dispersion::Real) =
@@ -125,16 +145,20 @@ end
 _fit_dispersion(::PoissonFit)  = nothing
 _fit_dispersion(::BinomialFit) = nothing
 _fit_dispersion(fit::NBFit)    = fit.r
+_fit_dispersion(fit::NB1Fit)   = fit.φ
 _fit_dispersion(fit::GammaFit) = fit.α
 _fit_dispersion(fit::BetaFit)  = fit.φ
+_fit_dispersion(fit::LognormalFit) = fit.σ
 _fit_dispersion(::OrdinalFit)  = nothing
 
 # Family marker per fit type (for dispatching `_link_residual_one`).
 _fit_family(::PoissonFit)  = Poisson()
 _fit_family(::BinomialFit) = Binomial()
 _fit_family(fit::NBFit)    = NegativeBinomial(fit.r, 0.5)
+_fit_family(fit::NB1Fit)   = NB1(fit.φ)
 _fit_family(fit::GammaFit) = Gamma(fit.α, 1.0)
 _fit_family(fit::BetaFit)  = Beta(fit.φ, 1.0)
+_fit_family(fit::LognormalFit) = LogNormal()
 _fit_family(::OrdinalFit)  = Ordinal()
 
 # ---------------------------------------------------------------------------
@@ -207,4 +231,34 @@ function link_residual(fit::OrdinalFit, Y::AbstractMatrix)
     # Cumulative-logit threshold residual: π²/3, μ̂-free (no species intercept,
     # latent η has zero mean by construction).
     return fill(π^2 / 3, p)
+end
+
+# NB1: σ²_d = log1p((1+φ)/μ̂_t) is μ̂-dependent. NB1Fit has no postfit `predict`
+# method, so the per-trait conditional fitted mean is computed inline from the
+# fit's own parameters: per site find the Laplace mode ẑ_s under the NB1 family,
+# form η = β + Λẑ, μ = exp(η), and average across sites (matches gllvmTMB's
+# per-trait mean(exp(eta)) and the Poisson/NB conditional-mode convention).
+function link_residual(fit::NB1Fit, Y::AbstractMatrix)
+    p, n = size(Y)
+    fam = _fit_family(fit)
+    Nm = ones(Int, p, n)
+    μacc = zeros(Float64, p)
+    @inbounds for s in 1:n
+        ẑ = _laplace_mode(fam, view(Y, :, s), view(Nm, :, s), fit.Λ, fit.β, fit.link)
+        η = fit.β .+ fit.Λ * ẑ
+        for t in 1:p
+            μacc[t] += linkinv(fit.link, _clamp_eta(η[t]))
+        end
+    end
+    μ̂ = μacc ./ n
+    φ = fit.φ
+    return [Float64(_link_residual_one(fam, fit.link, μ̂[t], φ)) for t in 1:p]
+end
+
+# Lognormal: σ²_d = σ² is μ̂-free (the log-scale residual variance), so no per-site
+# mode solve is needed. extract-sigma.R fid 3 vs the standalone-family choice is
+# documented at `_link_residual_one(::LogNormal, …)` above.
+function link_residual(fit::LognormalFit, Y::AbstractMatrix)
+    p = size(fit.Λ, 1)
+    return fill(Float64(fit.σ^2), p)
 end

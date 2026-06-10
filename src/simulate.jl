@@ -66,6 +66,21 @@ end
 _draw_y(rng::AbstractRNG, ::Normal, μ, n_ts, dispersion) =
     μ + dispersion * randn(rng)
 
+# NB1 (linear variance, families/nb1.jl): Var = μ(1+φ), φ the dispersion. NB1's
+# NB(size, prob) representation is size r = μ/φ, prob p = 1/(1+φ) (so
+# Var = μ + μ²/r = μ(1+φ)). As φ → 0 the variance → μ (Poisson limit).
+function _draw_y(rng::AbstractRNG, ::NB1, μ, n_ts, dispersion)
+    φ = dispersion
+    r = μ / φ
+    p = 1 / (1 + φ)
+    return Float64(rand(rng, NegativeBinomial(r, p)))
+end
+
+# Lognormal (families/lognormal.jl): log(y) ~ Normal(η, σ²), σ = dispersion. With
+# the log link μ = exp(η), so the draw exp(η + σ·ε) = μ·exp(σ·ε), ε ~ N(0,1).
+_draw_y(rng::AbstractRNG, ::LogNormal, μ, n_ts, dispersion) =
+    μ * exp(dispersion * randn(rng))
+
 # ---------------------------------------------------------------------------
 # Core params-in DGP. Returns Y::Matrix{Float64} (p×n).
 #
@@ -299,14 +314,14 @@ function simulate(fit::MixedFamilyFit, n::Integer;
 end
 
 """
-    simulate(fit::Union{PoissonFit,BinomialFit,NBFit,GammaFit,BetaFit}, n;
+    simulate(fit::Union{PoissonFit,BinomialFit,NBFit,NB1Fit,GammaFit,BetaFit,LognormalFit}, n;
              N=nothing, rng=Random.default_rng(), seed=nothing)
 
 Simulate `n` fresh sites from a fitted single-family GLLVM. The family marker,
 scalar dispersion, and link are taken from the fit (`_fit_family`,
 `_fit_dispersion`, `fit.link`); intercepts and loadings from `fit.β` / `fit.Λ`.
 """
-function simulate(fit::Union{PoissonFit, BinomialFit, NBFit, GammaFit, BetaFit},
+function simulate(fit::Union{PoissonFit, BinomialFit, NBFit, NB1Fit, GammaFit, BetaFit, LognormalFit},
         n::Integer; N = nothing,
         rng::AbstractRNG = Random.default_rng(), seed = nothing)
     n ≥ 1 || throw(ArgumentError("n must be ≥ 1; got $n"))
