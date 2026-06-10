@@ -50,6 +50,15 @@ include("confint_profile.jl")            # profile likelihood
 include("confint_bootstrap.jl")          # parametric bootstrap
 include("confint_derived.jl")            # derived quantities (Σ_y, communality, ...)
 
+# Mixed-family GLLVM (A2b): one shared latent block, per-trait response family.
+# Included AFTER confint_derived.jl so the per-trait σ²_d assembler and the
+# MixedFamilyFit extractors see the family-agnostic kernels _latent_sigma /
+# _latent_correlation / _safe_ratio (defined there); also after postfit.jl so
+# getLV/predict generics exist. (Deviates from the design's L44 placement; the
+# stated reason — "extractor sees _latent_sigma/_latent_correlation" — is better
+# served here, where those helpers are already defined.)
+include("families/mixed.jl")
+
 # Public API
 export spatial_cov, relatedness_cov,
        fit_gaussian_gllvm, GllvmModel, GllvmFit,
@@ -70,6 +79,7 @@ export spatial_cov, relatedness_cov,
        hurdle_poisson_marginal_loglik_laplace,
        fit_hurdle_nb_gllvm, HurdleNBFit,
        hurdle_nb_marginal_loglik_laplace, fit_gllvm,
+       fit_mixed_gllvm, MixedFamilyFit,
        getLV, getLoadings, rotation,
        predict, fitted, residuals, aic, bic
 

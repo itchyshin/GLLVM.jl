@@ -293,4 +293,29 @@ end
             @test maximum(abs.(g_cache .- g_ref)) ≤ 1e-7
         end
     end
+
+    # Mixed-family (A2b): direct ForwardDiff gradient of the packed mixed
+    # marginal vs central differences — the v1 correctness gate for
+    # fit_mixed_gllvm (which uses this direct FD gradient).
+    @testset "mixed-family gradient (direct ForwardDiff vs FD)" begin
+        mixed_families = [Poisson(), NegativeBinomial(), Binomial(), Beta()]
+        mixed_links = [LogLink(), LogLink(), LogitLink(), LogitLink()]
+        disp_index, n_disp = GLLVM._mixed_family_layout(mixed_families)
+        N_mixed = fill(5, p, n)
+        Y_mixed = Matrix{Float64}(undef, p, n)
+        Y_mixed[1, :] = float.(Y_poisson[1, :])
+        Y_mixed[2, :] = float.(Y_nb[2, :])
+        Y_mixed[3, :] = float.(Y_binomial[3, :])
+        Y_mixed[4, :] = Y_beta[4, :]
+        theta_mixed = vcat(beta_log, theta_lambda0, log(8.0), log(6.0))
+        fams_bare = collect(Any, mixed_families)
+        objective = theta -> -GLLVM._mixed_marginal_loglik_packed(
+            theta, Y_mixed, N_mixed, p, K, fams_bare, mixed_links, disp_index;
+            tol = 1e-12)
+        gad = ForwardDiff.gradient(objective, theta_mixed)
+        gfd = central_difference_gradient(objective, theta_mixed)
+        @test all(isfinite, gad)
+        @test all(isfinite, gfd)
+        @test maximum(abs.(gad .- gfd)) ≤ 1e-6
+    end
 end

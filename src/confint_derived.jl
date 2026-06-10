@@ -1018,12 +1018,21 @@ function _latent_sigma(Λ::AbstractMatrix, σ²_d::AbstractVector)
     return (A + A') ./ 2
 end
 
-# Standardise a covariance to a correlation: R[i,j] = Σ[i,j]/√(Σ[i,i]Σ[j,j]).
+# Safe ratio with an explicit-NaN denominator floor (A2a hardening): returns
+# `num/den` for `den > 0`, else `NaN`. Used by the latent-scale correlation and
+# communality so a degenerate Σ_tt ≤ 0 (non-PD assembled covariance) yields an
+# explicit NaN rather than a silent Inf/NaN from a division. Behaviour-preserving
+# for all valid PSD inputs (Σ_tt > 0 returns the exact same value).
+_safe_ratio(num::Real, den::Real) = den > 0 ? num / den : NaN
+
+# Standardise a covariance to a correlation: R[i,j] = Σ[i,j]/√(Σ[i,i]Σ[j,j]),
+# with the A2a denominator floor — any Σ_tt ≤ 0 makes the affected row/column NaN.
 function _latent_correlation(Σ::AbstractMatrix)
     p = size(Σ, 1)
     R = similar(Σ, Float64)
     @inbounds for j in 1:p, i in 1:p
-        R[i, j] = Σ[i, j] / sqrt(Σ[i, i] * Σ[j, j])
+        d = Σ[i, i] * Σ[j, j]
+        R[i, j] = (Σ[i, i] > 0 && Σ[j, j] > 0) ? Σ[i, j] / sqrt(d) : NaN
     end
     return R
 end
@@ -1064,20 +1073,20 @@ function communality(fit::_NonGaussianLatentFit, Y::AbstractMatrix)
     Λ = fit.Λ
     ΛΛt = Λ * Λ'
     Σ = sigma_y_site(fit, Y)
-    return [ΛΛt[t, t] / Σ[t, t] for t in 1:size(Λ, 1)]
+    return [_safe_ratio(ΛΛt[t, t], Σ[t, t]) for t in 1:size(Λ, 1)]
 end
 function communality(fit::BinomialFit, Y::AbstractMatrix;
                      N::Union{Nothing, AbstractMatrix} = nothing)
     Λ = fit.Λ
     ΛΛt = Λ * Λ'
     Σ = sigma_y_site(fit, Y; N = N)
-    return [ΛΛt[t, t] / Σ[t, t] for t in 1:size(Λ, 1)]
+    return [_safe_ratio(ΛΛt[t, t], Σ[t, t]) for t in 1:size(Λ, 1)]
 end
 function communality(fit::OrdinalFit, Y::AbstractMatrix)
     Λ = fit.Λ
     ΛΛt = Λ * Λ'
     Σ = sigma_y_site(fit, Y)
-    return [ΛΛt[t, t] / Σ[t, t] for t in 1:size(Λ, 1)]
+    return [_safe_ratio(ΛΛt[t, t], Σ[t, t]) for t in 1:size(Λ, 1)]
 end
 
 """
