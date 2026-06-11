@@ -87,6 +87,11 @@ include("diagnostics.jl")
 # bootstrap_ci_derived in confint_derived.jl is unchanged.
 include("confint_derived_bootstrap_families.jl")
 
+# Parametric bootstrap CIs (percentile) for the non-Gaussian one-part fits:
+# simulate → refit → percentile, mirroring confint_bootstrap.jl + the family
+# fitters. After confint_families.jl, simulate.jl, and the derived-bootstrap sibling.
+include("confint_bootstrap_families.jl")
+
 # Transformed-scale Wald CIs for derived quantities (Fisher-z correlation, logit
 # communality / ICC / H²): one-Hessian cost, matching the bootstrap to MC error for
 # interior-valued bounded quantities. Additive; depends on confint_derived.jl
@@ -148,7 +153,7 @@ export spatial_cov, relatedness_cov,
        fit_mixed_gllvm, MixedFamilyFit,
        simulate,
        getLV, getLoadings, rotation,
-       predict, fitted, residuals, aic, bic, lrt, anova,
+       predict, fitted, residuals, aic, bic, lrt, anova, bootstrap_ci_families,
        quantile_residuals, check_fit, FitCheck,
        gllvm, GllvmFormulaFit, @formula,
        bridge_fit
