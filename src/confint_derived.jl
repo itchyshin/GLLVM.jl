@@ -66,7 +66,7 @@ end
 #    log_σ_B[p]; log_σ_W[p]      (if has_diag)
 #    θ_rr_B (pack_lambda Λ_B)
 #    θ_rr_W (pack_lambda Λ_W)     (if K_W > 0)
-#    log_σ_phy[p]                (if has_phy_unique)
+#    σ_phy[p] (natural, signed)  (if has_phy_unique)
 #    θ_rr_phy (pack_lambda Λ_phy)(if K_phy > 0)]
 #
 # Returned tuple uses raw-scale (positive) variance / SD components, like
@@ -121,9 +121,15 @@ function _derived_unpack(θ::AbstractVector, spec::NamedTuple)
 
     σ_phy = nothing
     if has_phy_unique
-        log_σ_phy = θ[(cursor + 1):(cursor + p)]
+        # σ_phy uses an IDENTITY (signed) link and is packed on the NATURAL scale by
+        # the Gaussian phylo fitter (fit.jl: `push!(legacy_pieces, σ_phy_hat)`, NOT
+        # log(σ_phy_hat)). It is a signed loading-like quantity (hcat'd with Λ_phy and
+        # squared in the H² numerator), so it must NOT be exp()'d here: an exp would
+        # both over-transform it (yielding exp(σ_phy), the issue-#92 H²≈6.5 bug) and
+        # destroy the sign the squaring step needs. σ_eps/σ²_B/σ²_W above ARE log-packed,
+        # hence their exp; σ_phy is the lone natural-scale component in θ_packed.
+        σ_phy = θ[(cursor + 1):(cursor + p)]
         cursor += p
-        σ_phy = exp.(log_σ_phy)
     end
 
     Λ_phy = nothing

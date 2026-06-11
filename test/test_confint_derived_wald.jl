@@ -143,21 +143,45 @@ end
         @test t_test !== nothing
         ci = GLLVM.phylo_signal_wald_ci(fit2, t_test; y = y2, Σ_phy = Σ_phy)
         @test ci.transform === :logit
-        # KNOWN BUG (tracked; phylo_signal_wald_ci is therefore NOT exported).
-        # `_derived_unpack` reconstructs the phylo-unique σ_phy from θ_packed on a
-        # different scale than the public `phylo_signal` extractor: the packed point
-        # estimate comes out exp-scaled (here ≈6.5 vs the true ≈0.73), so the logit
-        # transform sees an out-of-range value and the CI returns method=:failed.
-        # The correlation/communality transformed-Wald paths above are unaffected
-        # (they never touch the phylo block). Marked @test_broken so a future fix
-        # that reconciles the σ_phy scale (without regressing the shared profile-CI
-        # path that also uses `_derived_unpack`) surfaces here.
-        @test_broken ci.method === :transformed_wald
-        @test_broken isapprox(ci.estimate, h2_vec[t_test]; rtol = 1e-8)
-        @test_broken isfinite(ci.lower) && isfinite(ci.upper)
-        @test_broken ci.lower < ci.upper
-        @test_broken 0.0 ≤ ci.lower ≤ ci.upper ≤ 1.0
-        @test_broken ci.lower ≤ ci.estimate ≤ ci.upper
+        # FIXED (issue #92): `_derived_unpack` was reconstructing the phylo-unique
+        # σ_phy as exp(θ_slot), but the Gaussian phylo fitter packs σ_phy on the
+        # NATURAL (signed, identity-link) scale — so the exp over-transformed it
+        # (H²≈6.5, out of range) and destroyed its sign. Removing the exp reconciles
+        # the packed numerator with the public `phylo_signal` extractor; σ_y-site and
+        # the shared profile-CI path are unaffected (they never read u.σ_phy). The CI
+        # now returns method :transformed_wald with bounds in [0, 1].
+        @test ci.method === :transformed_wald
+        @test isapprox(ci.estimate, h2_vec[t_test]; rtol = 1e-8)
+        @test isfinite(ci.lower) && isfinite(ci.upper)
+        @test ci.lower < ci.upper
+        @test 0.0 ≤ ci.lower ≤ ci.upper ≤ 1.0
+        @test ci.lower ≤ ci.estimate ≤ ci.upper
+
+        # Regression guard (issue #92): the PACKED phylo-signal numerator must equal
+        # the PUBLIC phylo_signal(fit; Σ_phy)[t] to rtol 1e-8 — has_phy_unique path.
+        spec2 = GLLVM._derived_spec(fit2)
+        for t in 1:p2
+            isfinite(h2_vec[t]) || continue
+            hp = GLLVM._phylo_signal_packed(fit2.pars.θ_packed, spec2, t;
+                                            diag_Σphy = diag(Σ_phy))
+            @test isapprox(hp, h2_vec[t]; rtol = 1e-8)
+        end
+
+        # Same packed≡public equivalence on the K_phy>0 (phylo-loadings) path: refit
+        # the same data with a phylogenetic latent column instead of per-trait σ_phy.
+        # Λ_phy is unpacked via unpack_lambda (never exp'd), so this path was already
+        # correct; the guard pins it across both phylo parameterisations.
+        fit3 = fit_gaussian_gllvm(y2; K = 1, K_phy = 1, Σ_phy = Σ_phy)
+        if fit3.converged
+            h3 = GLLVM.phylo_signal(fit3; Σ_phy = Σ_phy)
+            spec3 = GLLVM._derived_spec(fit3)
+            for t in 1:p2
+                isfinite(h3[t]) || continue
+                hp3 = GLLVM._phylo_signal_packed(fit3.pars.θ_packed, spec3, t;
+                                                 diag_Σphy = diag(Σ_phy))
+                @test isapprox(hp3, h3[t]; rtol = 1e-8)
+            end
+        end
     end
 
 end
