@@ -14,6 +14,7 @@ include("ppca_init.jl")                  # used by fit (warm-start)
 include("em_fa.jl")                      # alternative EM solver
 include("profile.jl")                    # σ_eps profile-out (used by fit)
 include("fit.jl")
+include("fit_random_effects.jl")         # RE fitters — Gaussian random row effect (SP1.1)
 include("structured_cov.jl")             # spatial_cov, relatedness_cov builders
 include("structured_schur.jl")           # internal Schur/SLQ substrate for structured non-Gaussian Laplace
 
@@ -128,6 +129,7 @@ include("bridge.jl")
 # Public API
 export spatial_cov, relatedness_cov,
        REBlock, re_intercept, re_block,
+       fit_gaussian_row_re, GaussianRowREFit,
        fit_gaussian_gllvm, GllvmModel, GllvmFit,
        confint, profile_ci, bootstrap_ci,
        transformed_wald_ci_derived, correlation_wald_ci, communality_wald_ci,
