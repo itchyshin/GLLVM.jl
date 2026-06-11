@@ -8,6 +8,7 @@ using StatsModels: @formula
 # Core
 include("packing.jl")
 include("random_effects.jl")            # RE-block descriptor + variance-component packing (SP1.0)
+include("covariance_types.jl")          # trait-covariance taxonomy: latent/dep/indep + specific (SP1.5)
 include("lowrank_cholesky.jl")          # used by likelihood
 include("likelihood.jl")
 include("ppca_init.jl")                  # used by fit (warm-start)
@@ -130,6 +131,7 @@ include("bridge.jl")
 # Public API
 export spatial_cov, relatedness_cov,
        REBlock, re_intercept, re_block,
+       LatentCov, latent, indep, dep, trait_cov, cov_nloadings, cov_nspecific,
        fit_gaussian_row_re, GaussianRowREFit,
        gaussian_reml_loglik, fit_gaussian_reml, GaussianREMLFit,
        fit_poisson_row_re, PoissonRowREFit,

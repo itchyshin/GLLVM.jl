@@ -8,6 +8,7 @@ end
 include("test_likelihood.jl")
 include("test_packing.jl")
 include("test_random_effects.jl")
+include("test_covariance_types.jl")
 include("test_fit_random_effects.jl")
 include("test_grouped_re.jl")
 include("test_fit.jl")
