@@ -528,3 +528,72 @@ function fit_gaussian_grouped_re(y::AbstractMatrix, grouping::AbstractVector; K:
     return GaussianGroupedREFit(unpack_lambda(th[1:rr], p, K), exp(th[rr + 1]), exp(th[rr + 2]),
                                 L, -Optim.minimum(res), Optim.converged(res), Optim.iterations(res))
 end
+
+# ---------------------------------------------------------------------------
+# Poisson observation-level random effect (OLRE) = the Poisson `specific=TRUE`:
+# per-trait overdispersion ψ_t (the estimated specific variance s_t in ψ = s + d).
+# Built by the augmented-DIAGONAL trick: η[t,i] = β_t + (Λz_i)_t + √ψ_t·u_{t,i} with
+# (z_i,u_i) ~ N(0,I_{K+p}), i.e. Λ_aug = [Λ | diag(√ψ)] (p×(K+p)) on the SAME
+# family-generic Laplace marginal (AD-clean — probed). The latent grows K→K+p; the
+# u-block is diagonal but the generic marginal treats it densely (fine at moderate p).
+# ---------------------------------------------------------------------------
+
+"""
+    PoissonOLREFit
+
+Result of [`fit_poisson_olre`](@ref): `β`, `Λ` (p×K), the per-trait OLRE variances `ψ`
+(length p — the specific `s_t` overdispersion), `link`, `loglik`, `converged`, `iterations`.
+"""
+struct PoissonOLREFit
+    β::Vector{Float64}
+    Λ::Matrix{Float64}
+    ψ::Vector{Float64}
+    link::Link
+    loglik::Float64
+    converged::Bool
+    iterations::Int
+end
+
+function Base.show(io::IO, f::PoissonOLREFit)
+    p, K = size(f.Λ)
+    print(io, "PoissonOLREFit(p=", p, ", K=", K, ", mean ψ=", round(sum(f.ψ) / p; sigdigits = 4),
+          ", loglik=", round(f.loglik; sigdigits = 7), f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+"""
+    fit_poisson_olre(Y; K, link=LogLink(), ψ_init=0.3, …) -> PoissonOLREFit
+
+Fit a Poisson GLLVM with a per-trait observation-level random effect (overdispersion),
+i.e. the Poisson `specific=TRUE`: jointly estimate `[β; vec(Λ); log ψ_1…log ψ_p]` on the
+dense Laplace marginal via the augmented-diagonal `Λ_aug = [Λ | diag(√ψ)]`. Direct
+ForwardDiff gradient; MoreThuente line search. `ψ_t` is the estimated specific residual
+`s_t` (the `ψ = s + d` decomposition); total latent-scale residual is `ψ_t + ln(1+1/μ̂_t)`.
+"""
+function fit_poisson_olre(Y::AbstractMatrix{<:Integer}; K::Integer,
+        link::Link = LogLink(), ψ_init::Real = 0.3,
+        g_tol::Real = 1e-5, iterations::Integer = 500)
+    p, n = size(Y)
+    K ≥ 1 || throw(ArgumentError("K must be ≥ 1; got $K"))
+    rr = rr_theta_len(p, K)
+    Zemp = [linkfun(link, max(Y[t, i] + 0.5, 1e-4)) for t in 1:p, i in 1:n]
+    β0 = vec(sum(Zemp; dims = 2)) ./ n
+    Zc = Zemp .- β0; F = svd(Zc); kk = min(K, length(F.S))
+    Λ0 = zeros(p, K)
+    @inbounds for j in 1:kk
+        Λ0[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
+    end
+    θ0 = vcat(β0, pack_lambda(Λ0), fill(log(float(ψ_init)), p))
+    nll = θ -> begin
+        β = θ[1:p]
+        Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+        ψ = exp.(θ[(p + rr + 1):(p + rr + p)])
+        Λ_aug = hcat(Λ, Matrix(Diagonal(sqrt.(ψ))))
+        return -poisson_marginal_loglik_laplace(Y, Λ_aug, β, link)
+    end
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.MoreThuente())
+    res = Optim.optimize(nll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations); autodiff = :forward)
+    th = Optim.minimizer(res)
+    return PoissonOLREFit(th[1:p], unpack_lambda(th[(p + 1):(p + rr)], p, K),
+                          exp.(th[(p + rr + 1):(p + rr + p)]), link,
+                          -Optim.minimum(res), Optim.converged(res), Optim.iterations(res))
+end

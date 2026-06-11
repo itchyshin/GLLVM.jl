@@ -254,3 +254,45 @@ end
         @test maximum(abs.(gad .- gfd)) ≤ 1e-6
     end
 end
+
+@testset "Poisson OLRE — specific s_t (SP1.5)" begin
+    @testset "FD-gradient of the OLRE nll ≤ 1e-6" begin
+        Random.seed!(17003)
+        p, K, n = 4, 1, 60
+        βt = log.([4.0, 4.0, 3.0, 5.0]); Λt = 0.3 .* randn(p, K)
+        η = βt .+ Λt * randn(K, n) .+ sqrt.([0.3, 0.2, 0.4, 0.3]) .* randn(p, n)
+        Y = [rand(Poisson(exp(clamp(η[t, i], -10, 10)))) for t in 1:p, i in 1:n]
+        rr = GLLVM.rr_theta_len(p, K)
+        nll = θ -> -GLLVM.poisson_marginal_loglik_laplace(Y,
+            hcat(GLLVM.unpack_lambda(θ[(p + 1):(p + rr)], p, K),
+                 Matrix(Diagonal(sqrt.(exp.(θ[(p + rr + 1):(p + rr + p)]))))),
+            θ[1:p])
+        θ = vcat(βt, GLLVM.pack_lambda(Λt), fill(log(0.3), p))
+        gad = ForwardDiff.gradient(nll, θ); h = 1e-6; gfd = similar(θ)
+        for i in eachindex(θ)
+            s = h * max(1.0, abs(θ[i])); tp = copy(θ); tp[i] += s; tm = copy(θ); tm[i] -= s
+            gfd[i] = (nll(tp) - nll(tm)) / (2s)
+        end
+        @test all(isfinite, gad)
+        @test maximum(abs.(gad .- gfd)) ≤ 1e-6
+    end
+
+    @testset "recovers the per-trait OLRE pattern; shrinks when absent" begin
+        Random.seed!(17001)
+        p, K, n = 4, 1, 1000
+        βt = log.([4.0, 5.0, 3.0, 6.0]); Λt = 0.3 .* randn(p, K)
+        ψt = [0.5, 0.12, 0.45, 0.15]                    # traits 1,3 high; 2,4 low
+        η = βt .+ Λt * randn(K, n) .+ sqrt.(ψt) .* randn(p, n)
+        Y = [rand(Poisson(exp(clamp(η[t, i], -10, 10)))) for t in 1:p, i in 1:n]
+        fit = fit_poisson_olre(Y; K = K)
+        @test fit.converged
+        @test all(fit.ψ .> 0)
+        @test (fit.ψ[1] + fit.ψ[3]) / 2 > (fit.ψ[2] + fit.ψ[4]) / 2   # high-ψ traits estimated higher
+        # no OLRE present ⇒ ψ shrinks toward 0
+        Random.seed!(17002)
+        η0 = βt .+ Λt * randn(K, n)
+        Y0 = [rand(Poisson(exp(clamp(η0[t, i], -10, 10)))) for t in 1:p, i in 1:n]
+        fit0 = fit_poisson_olre(Y0; K = K, ψ_init = 0.3)
+        @test maximum(fit0.ψ) < 0.3
+    end
+end
