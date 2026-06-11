@@ -14,6 +14,7 @@ include("ppca_init.jl")                  # used by fit (warm-start)
 include("em_fa.jl")                      # alternative EM solver
 include("profile.jl")                    # σ_eps profile-out (used by fit)
 include("fit.jl")
+include("reml.jl")                        # REML for the Gaussian path (restricted ML)
 include("structured_cov.jl")             # spatial_cov, relatedness_cov builders
 include("structured_schur.jl")           # internal Schur/SLQ substrate for structured non-Gaussian Laplace
 
@@ -130,6 +131,7 @@ include("bridge.jl")
 export spatial_cov, relatedness_cov,
        REBlock, re_intercept, re_block,
        fit_gaussian_row_re, GaussianRowREFit,
+       gaussian_reml_loglik, fit_gaussian_reml, GaussianREMLFit,
        fit_poisson_row_re, PoissonRowREFit,
        fit_binomial_row_re, BinomialRowREFit, fit_nb_row_re, NBRowREFit,
        fit_beta_row_re, BetaRowREFit, fit_gamma_row_re, GammaRowREFit,
