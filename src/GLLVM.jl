@@ -58,6 +58,7 @@ include("link_residual.jl")
 # Confidence intervals
 include("confint.jl")                    # Wald
 include("confint_families.jl")           # Wald for non-Gaussian one-part families
+include("confint_families_newfam.jl")    # Wald for ZIBinom + GenPoisson (uses _nongaussian_wald_ci above)
 include("confint_profile.jl")            # profile likelihood
 include("confint_bootstrap.jl")          # parametric bootstrap
 include("confint_derived.jl")            # derived quantities (Σ_y, communality, ...)
@@ -110,6 +111,7 @@ include("anova.jl")
 # Post-fit predict/fitted/getLV for the newer one-part families (additive methods on
 # the postfit.jl generics; after postfit.jl, link_residual.jl, and the family structs).
 include("postfit_families.jl")
+include("postfit_families_newfam.jl")    # predict/fitted/getLV for ZIBinom + GenPoisson + COMPoisson
 
 # Formula / DataFrame front-end (A4): @formula + Tables.jl sugar over the
 # matrix fitters. Included last so every fitter + fit struct it dispatches to

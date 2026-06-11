@@ -37,6 +37,15 @@ _nparams(fit::ZIPFit)         = _anova_beta_lambda_np(fit) + 1        # + π
 _loglik(fit::ZINBFit)         = fit.loglik
 _nparams(fit::ZINBFit)        = _anova_beta_lambda_np(fit) + 2        # + r, π
 
+_loglik(fit::ZIBinomFit)      = fit.loglik
+_nparams(fit::ZIBinomFit)     = _anova_beta_lambda_np(fit) + 1        # + π
+
+_loglik(fit::GenPoissonFit)   = fit.loglik
+_nparams(fit::GenPoissonFit)  = _anova_beta_lambda_np(fit) + 1        # + α
+
+_loglik(fit::CMPoissonFit)    = fit.loglik
+_nparams(fit::CMPoissonFit)   = _anova_beta_lambda_np(fit) + 1        # + ν
+
 # ---------------------------------------------------------------------------
 
 """
