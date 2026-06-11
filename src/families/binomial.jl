@@ -84,7 +84,7 @@ dense-Laplace gradient and a per-site latent-mode cache. Non-canonical links
 fall back to the generic implicit gradient. Warm start: empirical link-scale
 intercepts + an SVD (PPCA-style) loadings init.
 """
-function fit_binomial_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
+function fit_binomial_gllvm(Y::AbstractMatrix{<:Union{Missing, Integer}}; K::Integer,
         link::Link = LogitLink(),
         N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
         β_init = nothing, Λ_init = nothing,
@@ -95,10 +95,26 @@ function fit_binomial_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
     size(Nm) == (p, n) || throw(DimensionMismatch("N must be $(p)×$(n)"))
     rr = rr_theta_len(p, K)
 
-    # warm start: empirical link-scale intercepts + SVD (PPCA-like) loadings
-    Zemp = [linkfun(link, clamp((Y[t, i] + 0.5) / (Nm[t, i] + 1), 1e-4, 1 - 1e-4))
-            for t in 1:p, i in 1:n]
-    β0 = β_init === nothing ? vec(sum(Zemp; dims = 2)) ./ n : collect(float.(β_init))
+    # NA-aware warm start: per-trait observed-cell empirical-logit intercepts; missing
+    # cells mean-filled for the SVD init ONLY (the fit is FIML over observed cells,
+    # issue #27). Byte-equivalent on a dense Y (guards statically false).
+    Zemp = Matrix{Float64}(undef, p, n)
+    β0r = Vector{Float64}(undef, p)
+    @inbounds for t in 1:p
+        acc = 0.0; cnt = 0
+        for i in 1:n
+            if !ismissing(Y[t, i])
+                v = linkfun(link, clamp((Y[t, i] + 0.5) / (Nm[t, i] + 1), 1e-4, 1 - 1e-4))
+                Zemp[t, i] = v; acc += v; cnt += 1
+            end
+        end
+        m = cnt == 0 ? linkfun(link, 0.5) : acc / cnt
+        β0r[t] = m
+        for i in 1:n
+            ismissing(Y[t, i]) && (Zemp[t, i] = m)
+        end
+    end
+    β0 = β_init === nothing ? β0r : collect(float.(β_init))
     Λ0 = if Λ_init === nothing
         Zc = Zemp .- β0
         F = svd(Zc)

@@ -78,7 +78,7 @@ gradient: observation derivatives are taken only with respect to `(η, log φ)`,
 then the packed gradient is assembled analytically. Warm start = empirical
 logit-mean intercepts + an SVD loadings init + a moderate `φ₀`.
 """
-function fit_beta_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
+function fit_beta_gllvm(Y::AbstractMatrix{<:Union{Missing, Real}}; K::Integer,
         link::Link = LogitLink(),
         β_init = nothing, Λ_init = nothing, φ_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
@@ -86,8 +86,26 @@ function fit_beta_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     p, n = size(Y)
     rr = rr_theta_len(p, K)
 
-    Zemp = [linkfun(link, clamp(float(Y[t, i]), 1e-6, 1 - 1e-6)) for t in 1:p, i in 1:n]
-    β0 = β_init === nothing ? vec(sum(Zemp; dims = 2)) ./ n : collect(float.(β_init))
+    # NA-aware warm start: per-trait observed-cell logit intercepts; missing cells
+    # mean-filled for the SVD init ONLY (FIML estimator, issue #27). Byte-equivalent
+    # on a dense Y.
+    Zemp = Matrix{Float64}(undef, p, n)
+    β0r = Vector{Float64}(undef, p)
+    @inbounds for t in 1:p
+        acc = 0.0; cnt = 0
+        for i in 1:n
+            if !ismissing(Y[t, i])
+                v = linkfun(link, clamp(float(Y[t, i]), 1e-6, 1 - 1e-6))
+                Zemp[t, i] = v; acc += v; cnt += 1
+            end
+        end
+        m = cnt == 0 ? linkfun(link, 0.5) : acc / cnt
+        β0r[t] = m
+        for i in 1:n
+            ismissing(Y[t, i]) && (Zemp[t, i] = m)
+        end
+    end
+    β0 = β_init === nothing ? β0r : collect(float.(β_init))
     Λ0 = if Λ_init === nothing
         Zc = Zemp .- β0
         F = svd(Zc)

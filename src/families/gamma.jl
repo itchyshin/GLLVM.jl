@@ -66,7 +66,7 @@ equation, while the Gamma log-link observation derivatives are closed form.
 Warm start = log row-means as intercepts + SVD of row-centred log-Y as loadings
 and `logα₀ = log(2.0)`.
 """
-function fit_gamma_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
+function fit_gamma_gllvm(Y::AbstractMatrix{<:Union{Missing, Real}}; K::Integer,
         link::Link = LogLink(),
         β_init = nothing, Λ_init = nothing, α_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
@@ -74,8 +74,25 @@ function fit_gamma_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     p, n = size(Y)
     rr = rr_theta_len(p, K)
 
-    Zemp = log.(max.(Y, 1e-6))
-    β0 = β_init === nothing ? vec(sum(Zemp; dims = 2)) ./ n : collect(float.(β_init))
+    # NA-aware warm start: per-trait observed-cell log-mean intercepts; missing cells
+    # mean-filled for the SVD init ONLY (FIML estimator, issue #27). Byte-equivalent
+    # on a dense Y.
+    Zemp = Matrix{Float64}(undef, p, n)
+    β0r = Vector{Float64}(undef, p)
+    @inbounds for t in 1:p
+        acc = 0.0; cnt = 0
+        for i in 1:n
+            if !ismissing(Y[t, i])
+                v = log(max(float(Y[t, i]), 1e-6)); Zemp[t, i] = v; acc += v; cnt += 1
+            end
+        end
+        m = cnt == 0 ? 0.0 : acc / cnt
+        β0r[t] = m
+        for i in 1:n
+            ismissing(Y[t, i]) && (Zemp[t, i] = m)
+        end
+    end
+    β0 = β_init === nothing ? β0r : collect(float.(β_init))
     Λ0 = if Λ_init === nothing
         Zc = Zemp .- β0
         F = svd(Zc)
