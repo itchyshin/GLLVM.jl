@@ -157,4 +157,28 @@ using Distributions: MvNormal
         @test maximum(abs.(rfit.pars.β .- βt)) < 0.4
         @test mfit.converged && isfinite(mfit.logLik)   # ML phylo+X path still works
     end
+
+    @testset "phylo REML profile-NLL gradient is AD-clean (FD ≤ 1e-6)" begin
+        Random.seed!(32003)
+        p, K_B, K_phy, n, q = 4, 1, 1, 40, 2
+        Λ_B = 0.6 .* randn(p, K_B); Λ_phy = 0.3 .* randn(p, K_phy); σ_eps = 0.5; βt = randn(q)
+        T = randn(p, p); Σ_phy = T * T' + 0.5I
+        X = randn(p, n, q)
+        A = Λ_B * Λ_B' + σ_eps^2 * I; B = (Λ_phy * Λ_phy') .* Σ_phy
+        Σf = kron(I(n), A) + kron(ones(n, n), B)
+        μ = [sum(X[t, s, k] * βt[k] for k in 1:q) for t in 1:p, s in 1:n]
+        y = reshape(rand(MvNormal(vec(μ), Symmetric(Matrix(Σf)))), p, n)
+        spec = (p = p, q = q, K_B = K_B, K_W = 0, has_diag = false,
+                K_phy = K_phy, has_phy_unique = false)
+        f = par -> GLLVM.gaussian_profile_nll(par, y; spec = spec, X = X,
+                                              Σ_phy = Σ_phy, profile_beta = true, reml = true)
+        par0 = vcat(GLLVM.pack_lambda(Λ_B ./ σ_eps), GLLVM.pack_lambda(Λ_phy ./ σ_eps))
+        gad = ForwardDiff.gradient(f, par0); h = 1e-6; gfd = similar(par0)
+        for i in eachindex(par0)
+            s = h * max(1.0, abs(par0[i])); tp = copy(par0); tp[i] += s; tm = copy(par0); tm[i] -= s
+            gfd[i] = (f(tp) - f(tm)) / (2s)
+        end
+        @test all(isfinite, gad)
+        @test maximum(abs.(gad .- gfd)) ≤ 1e-6
+    end
 end
