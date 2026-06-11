@@ -311,15 +311,21 @@ function link_residual(fit::OrdinalFit, Y::AbstractMatrix)
     return fill(Float64(_link_residual_one(Ordinal(), fit.link, 0.0, nothing)), p)
 end
 
-# NB1: σ²_d = log1p((1+φ)/μ̂_t) is μ̂-dependent. NB1Fit has no postfit `predict`
-# method, so the per-trait conditional fitted mean is computed inline from the
-# fit's own parameters: per site find the Laplace mode ẑ_s under the NB1 family,
-# form η = β + Λẑ, μ = exp(η), and average across sites (matches gllvmTMB's
-# per-trait mean(exp(eta)) and the Poisson/NB conditional-mode convention).
-function link_residual(fit::NB1Fit, Y::AbstractMatrix)
+# ---------------------------------------------------------------------------
+# Shared μ̂-mean for the μ̂-dependent residuals below. Several families (NB1,
+# Beta-Binomial, zero-truncated Poisson/NB, zero-inflated Poisson) carry a
+# μ̂-dependent σ²_d but no postfit `predict`, so the per-trait conditional fitted
+# mean is computed inline from the fit's own parameters: per site solve the Laplace
+# mode ẑ_s under the fit's family, form η = β + Λẑ, and average linkinv(η) across
+# sites (matches gllvmTMB's per-trait mean(linkinv(eta)) conditional-mode
+# convention). Extracted so each family method below stays a short, distinct call —
+# no shared multi-line body for a 3-way merge to mis-align.
+# ---------------------------------------------------------------------------
+function _link_residual_meanfit(fit, Y::AbstractMatrix;
+                                N::Union{Nothing, AbstractMatrix} = nothing)
     p, n = size(Y)
     fam = _fit_family(fit)
-    Nm = ones(Int, p, n)
+    Nm = N === nothing ? ones(Int, p, n) : Int.(N)
     μacc = zeros(Float64, p)
     @inbounds for s in 1:n
         ẑ = _laplace_mode(fam, view(Y, :, s), view(Nm, :, s), fit.Λ, fit.β, fit.link)
@@ -328,9 +334,18 @@ function link_residual(fit::NB1Fit, Y::AbstractMatrix)
             μacc[t] += linkinv(fit.link, _clamp_eta(η[t]))
         end
     end
-    μ̂ = μacc ./ n
-    φ = fit.φ
-    return [Float64(_link_residual_one(fam, fit.link, μ̂[t], φ)) for t in 1:p]
+    return μacc ./ n
+end
+
+# NB1: σ²_d = log1p((1+φ)/μ̂_t) is μ̂-dependent. NB1Fit has no postfit `predict`
+# method, so the per-trait conditional fitted mean is computed inline from the
+# fit's own parameters: per site find the Laplace mode ẑ_s under the NB1 family,
+# form η = β + Λẑ, μ = exp(η), and average across sites (matches gllvmTMB's
+# per-trait mean(exp(eta)) and the Poisson/NB conditional-mode convention).
+function link_residual(fit::NB1Fit, Y::AbstractMatrix)
+    fam = _fit_family(fit)
+    μ̂ = _link_residual_meanfit(fit, Y)
+    return [Float64(_link_residual_one(fam, fit.link, μ̂[t], fit.φ)) for t in eachindex(μ̂)]
 end
 
 # Lognormal: σ²_d = σ² is μ̂-free (the log-scale residual variance), so no per-site
@@ -349,39 +364,18 @@ end
 # `N` (trial counts) is needed for the mode solve; default all-ones.
 function link_residual(fit::BetaBinomialFit, Y::AbstractMatrix;
                        N::Union{Nothing, AbstractMatrix} = nothing)
-    p, n = size(Y)
     fam = _fit_family(fit)
-    Nm = N === nothing ? ones(Int, p, n) : Int.(N)
-    μacc = zeros(Float64, p)
-    @inbounds for s in 1:n
-        ẑ = _laplace_mode(fam, view(Y, :, s), view(Nm, :, s), fit.Λ, fit.β, fit.link)
-        η = fit.β .+ fit.Λ * ẑ
-        for t in 1:p
-            μacc[t] += linkinv(fit.link, _clamp_eta(η[t]))
-        end
-    end
-    μ̂ = μacc ./ n
-    φ = fit.φ
-    return [Float64(_link_residual_one(fam, fit.link, μ̂[t], φ)) for t in 1:p]
+    μ̂ = _link_residual_meanfit(fit, Y; N = N)
+    return [Float64(_link_residual_one(fam, fit.link, μ̂[t], fit.φ)) for t in eachindex(μ̂)]
 end
 
 # Zero-truncated Poisson: σ²_d = log1p((1+μ̂−μ̂_tr)/μ̂_tr) is μ̂-dependent, parameterised
 # by the UNTRUNCATED rate μ̂ = mean_s exp(η). TruncPoissonFit has no postfit `predict`,
 # so per site the Laplace mode ẑ_s is found and the untruncated rate exp(η) averaged.
 function link_residual(fit::TruncPoissonFit, Y::AbstractMatrix)
-    p, n = size(Y)
     fam = _fit_family(fit)
-    Nm = ones(Int, p, n)
-    μacc = zeros(Float64, p)
-    @inbounds for s in 1:n
-        ẑ = _laplace_mode(fam, view(Y, :, s), view(Nm, :, s), fit.Λ, fit.β, fit.link)
-        η = fit.β .+ fit.Λ * ẑ
-        for t in 1:p
-            μacc[t] += linkinv(fit.link, _clamp_eta(η[t]))
-        end
-    end
-    μ̂ = μacc ./ n
-    return [Float64(_link_residual_one(fam, fit.link, μ̂[t], nothing)) for t in 1:p]
+    μ̂ = _link_residual_meanfit(fit, Y)
+    return [Float64(_link_residual_one(fam, fit.link, μ̂[t], nothing)) for t in eachindex(μ̂)]
 end
 
 # Zero-truncated NB2: σ²_d = log1p((μ̂+μ̂²/r+μ̂²)(1−P₀)/μ̂² − 1) is μ̂-dependent,
@@ -389,20 +383,9 @@ end
 # TruncNBFit has no postfit `predict`, so per site the Laplace mode ẑ_s is found
 # (under the TruncNB family) and the untruncated rate exp(η) averaged.
 function link_residual(fit::TruncNBFit, Y::AbstractMatrix)
-    p, n = size(Y)
     fam = _fit_family(fit)
-    Nm = ones(Int, p, n)
-    μacc = zeros(Float64, p)
-    @inbounds for s in 1:n
-        ẑ = _laplace_mode(fam, view(Y, :, s), view(Nm, :, s), fit.Λ, fit.β, fit.link)
-        η = fit.β .+ fit.Λ * ẑ
-        for t in 1:p
-            μacc[t] += linkinv(fit.link, _clamp_eta(η[t]))
-        end
-    end
-    μ̂ = μacc ./ n
-    r = fit.r
-    return [Float64(_link_residual_one(fam, fit.link, μ̂[t], r)) for t in 1:p]
+    μ̂ = _link_residual_meanfit(fit, Y)
+    return [Float64(_link_residual_one(fam, fit.link, μ̂[t], fit.r)) for t in eachindex(μ̂)]
 end
 
 # Student-t: σ²_d = σ²·ν/(ν−2) is μ̂-free (identity link), so no per-site mode solve is
