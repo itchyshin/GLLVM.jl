@@ -184,6 +184,77 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics, Distributions
     end
 
     # ---------------------------------------------------------------------
+    # Universal coverage: every remaining Laplace-path family now accepts NAs. For each
+    # we check (a) complete-data equivalence — a missing-typed Y with no NAs reproduces
+    # the dense fit (loglik + β to ~machine precision), and (b) an actual ~15%-missing
+    # fit returns a finite loglik (the widened path fits, no crash).
+    # ---------------------------------------------------------------------
+    @testset "universal non-Gaussian NA: equivalence + finite NA fit" begin
+        p, K, n = 4, 1, 200
+        Random.seed!(7500)
+        β = log.([4.0, 5.0, 3.0, 4.0]); Λ = 0.3 .* randn(p, K)
+        # Integer count families with no trial counts (marker, fit closure).
+        intcases = [
+            ("NB1",          () -> simulate(GLLVM.NB1(8.0), β, Λ, n; dispersion = 8.0, seed = 75001), Y -> fit_nb1_gllvm(Y; K = K)),
+            ("TruncPoisson", () -> simulate(GLLVM.ZeroTruncatedPoisson(), β, Λ, n; seed = 75002),     Y -> fit_truncpoisson_gllvm(Y; K = K)),
+            ("TruncNB",      () -> simulate(GLLVM.TruncNB(8.0), β, Λ, n; dispersion = 8.0, seed = 75003), Y -> fit_truncnb_gllvm(Y; K = K)),
+            ("GenPoisson",   () -> simulate(GLLVM.GenPoisson(0.1), β, Λ, n; dispersion = 0.1, seed = 75004), Y -> fit_genpoisson_gllvm(Y; K = K)),
+            ("ZINB",         () -> simulate(GLLVM.ZINB(8.0, 0.3), β, Λ, n; seed = 75005),              Y -> fit_zinb_gllvm(Y; K = K)),
+        ]
+        for (name, gen, fitfn) in intcases
+            Yd = round.(Int, gen())
+            Ym0 = Matrix{Union{Missing, Int}}(Yd)
+            fd = fitfn(Yd); fm = fitfn(Ym0)
+            @test fm.loglik ≈ fd.loglik atol = 1e-5            # equivalence
+            @test maximum(abs.(fm.β .- fd.β)) < 1e-4
+            rng = MersenneTwister(7500); Ym = Matrix{Union{Missing, Int}}(Yd)
+            @inbounds for t in 1:p, s in 1:n
+                rand(rng) < 0.15 && (Ym[t, s] = missing)
+            end
+            @test isfinite(fitfn(Ym).loglik)                   # fits with real NAs
+        end
+
+        # COM-Poisson (truncated-sum normaliser ⇒ slow): small-n equivalence only.
+        let
+            Random.seed!(7510); Λ = 0.25 .* randn(4, 1)
+            Yd = round.(Int, simulate(GLLVM.CMPoisson(1.3), log.([4.0, 5.0, 3.0, 4.0]), Λ, 80;
+                                      dispersion = 1.3, seed = 75101))
+            Ym0 = Matrix{Union{Missing, Int}}(Yd)
+            fd = fit_compoisson_gllvm(Yd; K = 1); fm = fit_compoisson_gllvm(Ym0; K = 1)
+            @test fm.loglik ≈ fd.loglik atol = 1e-4
+        end
+
+        # Student-t (identity link, Float64 responses).
+        let
+            Random.seed!(7520); Λ = 0.4 .* randn(5, 1)
+            Yd = simulate(GLLVM.StudentTFamily(5.0, 0.8), [1.0, 2.0, -1.0, 0.5, 0.0], Λ, 400;
+                          dispersion = 0.8, seed = 75201)
+            Ym0 = Matrix{Union{Missing, Float64}}(Yd)
+            fd = fit_studentt_gllvm(Yd; K = 1, nu = 5.0); fm = fit_studentt_gllvm(Ym0; K = 1, nu = 5.0)
+            @test fm.loglik ≈ fd.loglik atol = 1e-5
+            @test maximum(abs.(fm.β .- fd.β)) < 1e-4
+            rng = MersenneTwister(7520); Ym = Matrix{Union{Missing, Float64}}(Yd)
+            for t in 1:5, s in 1:400; rand(rng) < 0.15 && (Ym[t, s] = missing); end
+            @test isfinite(fit_studentt_gllvm(Ym; K = 1, nu = 5.0).loglik)
+        end
+
+        # Beta-Binomial + ZIBinom (logit, need trial counts N).
+        let
+            Random.seed!(7530); p2, n2, Ntr = 4, 400, 10; Λ = 0.3 .* randn(p2, 1)
+            Nm = fill(Ntr, p2, n2); βb = [-0.3, 0.4, 0.0, 0.3]
+            Ybb = round.(Int, simulate(GLLVM._betabinomial_marker(6.0), βb, Λ, n2; dispersion = 6.0, N = Nm, seed = 75301))
+            Ybb0 = Matrix{Union{Missing, Int}}(Ybb)
+            fd = fit_betabinomial_gllvm(Ybb; K = 1, N = Nm); fm = fit_betabinomial_gllvm(Ybb0; K = 1, N = Nm)
+            @test fm.loglik ≈ fd.loglik atol = 1e-5
+            Yzb = round.(Int, simulate(GLLVM.ZIBinom(0.3), βb, Λ, n2; dispersion = 0.3, N = Nm, seed = 75302))
+            Yzb0 = Matrix{Union{Missing, Int}}(Yzb)
+            gd = fit_zibinom_gllvm(Yzb; K = 1, N = Nm); gm = fit_zibinom_gllvm(Yzb0; K = 1, N = Nm)
+            @test gm.loglik ≈ gd.loglik atol = 1e-5
+            @test gm.π ≈ gd.π atol = 1e-6
+        end
+    end
+
+    # ---------------------------------------------------------------------
     # Edge cases must not crash: a fully-missing site (its marginal = ∫N(z;0,I) = 1,
     # mode = 0, A = I) and a fully-missing trait (its β/Λ row is unidentified — it must
     # not crash; the observed traits stay finite).

@@ -143,7 +143,7 @@ with per-observation `(η, α)` derivatives supplied by ForwardDiff through the
 closed-form `_glm_logpdf`. Warm start = empirical log-mean intercepts + an SVD
 loadings init + a mild over-dispersion `α₀`.
 """
-function fit_genpoisson_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
+function fit_genpoisson_gllvm(Y::AbstractMatrix{<:Union{Missing, Integer}}; K::Integer,
         link::Link = LogLink(),
         β_init = nothing, Λ_init = nothing, α_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
@@ -151,8 +151,24 @@ function fit_genpoisson_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
     p, n = size(Y)
     rr = rr_theta_len(p, K)
 
-    Zemp = [linkfun(link, max(Y[t, i] + 0.5, 1e-4)) for t in 1:p, i in 1:n]
-    β0 = β_init === nothing ? vec(sum(Zemp; dims = 2)) ./ n : collect(float.(β_init))
+    # NA-aware warm start: per-trait observed-cell log-mean intercepts; missing cells
+    # mean-filled for the SVD init ONLY (FIML estimator, issue #27). Byte-equivalent on dense Y.
+    Zemp = Matrix{Float64}(undef, p, n)
+    β0r = Vector{Float64}(undef, p)
+    @inbounds for t in 1:p
+        acc = 0.0; cnt = 0
+        for i in 1:n
+            if !ismissing(Y[t, i])
+                v = linkfun(link, max(Y[t, i] + 0.5, 1e-4)); Zemp[t, i] = v; acc += v; cnt += 1
+            end
+        end
+        m = cnt == 0 ? linkfun(link, 0.5) : acc / cnt
+        β0r[t] = m
+        for i in 1:n
+            ismissing(Y[t, i]) && (Zemp[t, i] = m)
+        end
+    end
+    β0 = β_init === nothing ? β0r : collect(float.(β_init))
     Λ0 = if Λ_init === nothing
         Zc = Zemp .- β0
         F = svd(Zc)

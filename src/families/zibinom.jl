@@ -174,7 +174,7 @@ closed-form `_glm_logpdf`. Warm start = empirical logit intercepts over the POSI
 cells (so structural zeros do not deflate the success probability) + an SVD loadings
 init + a `π₀` from the excess-zero fraction.
 """
-function fit_zibinom_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
+function fit_zibinom_gllvm(Y::AbstractMatrix{<:Union{Missing, Integer}}; K::Integer,
         link::Link = LogitLink(),
         N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
         β_init = nothing, Λ_init = nothing, π_init = nothing,
@@ -184,6 +184,7 @@ function fit_zibinom_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
     Nm = N === nothing ? fill(1, p, n) : N
     size(Nm) == (p, n) || throw(DimensionMismatch("N must be $(p)×$(n)"))
     rr = rr_theta_len(p, K)
+    nobs = count(!ismissing, Y)
 
     # warm start: per-trait empirical logit over POSITIVE cells (so structural zeros
     # do not deflate the success probability); fall back to all cells if a trait is
@@ -191,17 +192,18 @@ function fit_zibinom_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
     β0 = if β_init === nothing
         b = Vector{Float64}(undef, p)
         @inbounds for t in 1:p
-            sprop = 0.0; c = 0
+            sprop = 0.0; cpos = 0; syall = 0.0; snall = 0.0; call = 0
             for j in 1:n
+                ismissing(Y[t, j]) && continue
+                call += 1; syall += Y[t, j]; snall += Nm[t, j]
                 if Y[t, j] > 0
-                    sprop += Y[t, j] / Nm[t, j]; c += 1
+                    sprop += Y[t, j] / Nm[t, j]; cpos += 1
                 end
             end
-            phat = if c == 0
-                clamp((sum(Y[t, j] for j in 1:n) + 0.5) /
-                      (sum(Nm[t, j] for j in 1:n) + 1), 1e-4, 1 - 1e-4)
+            phat = if cpos == 0
+                clamp((syall + 0.5) / (snall + 1), 1e-4, 1 - 1e-4)
             else
-                clamp(sprop / c, 1e-4, 1 - 1e-4)
+                clamp(sprop / cpos, 1e-4, 1 - 1e-4)
             end
             b[t] = linkfun(link, phat)
         end
@@ -209,8 +211,19 @@ function fit_zibinom_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
     else
         collect(float.(β_init))
     end
-    Zemp = [linkfun(link, clamp((Y[t, i] + 0.5) / (Nm[t, i] + 1), 1e-4, 1 - 1e-4))
-            for t in 1:p, i in 1:n]
+    Zemp = Matrix{Float64}(undef, p, n)
+    @inbounds for t in 1:p
+        acc = 0.0; cnt = 0
+        for i in 1:n
+            if !ismissing(Y[t, i])
+                Zemp[t, i] = linkfun(link, clamp((Y[t, i] + 0.5) / (Nm[t, i] + 1), 1e-4, 1 - 1e-4)); acc += Zemp[t, i]; cnt += 1
+            end
+        end
+        m = cnt == 0 ? linkfun(link, 0.5) : acc / cnt
+        for i in 1:n
+            ismissing(Y[t, i]) && (Zemp[t, i] = m)
+        end
+    end
     Λ0 = if Λ_init === nothing
         Zc = Zemp .- β0
         F = svd(Zc)
@@ -226,7 +239,7 @@ function fit_zibinom_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
     # π₀ from the overall excess-zero fraction: observed P(y=0) minus the Binomial zero
     # mass (1−p̄)^N̄ at the warm-start probabilities, clamped to a sensible interior.
     π0 = if π_init === nothing
-        zfrac = count(==(0), Y) / (p * n)
+        zfrac = count(x -> !ismissing(x) && x == 0, Y) / max(nobs, 1)
         binom0 = 0.0
         @inbounds for t in 1:p
             pbar = linkinv(link, _clamp_eta(β0[t]))

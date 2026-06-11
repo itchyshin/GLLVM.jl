@@ -132,7 +132,7 @@ intercepts + an SVD loadings init + a robust scale `σ₀` from the residual MAD
 Estimating `nu` jointly is a follow-up (it requires a second auxiliary, which the
 scalar-aux path does not support); pass `nu` to change the fixed tail weight.
 """
-function fit_studentt_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
+function fit_studentt_gllvm(Y::AbstractMatrix{<:Union{Missing, Real}}; K::Integer,
         nu::Real = 4.0, link::Link = IdentityLink(),
         β_init = nothing, Λ_init = nothing, σ_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
@@ -141,8 +141,24 @@ function fit_studentt_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     nu > 0 || throw(ArgumentError("Student-t degrees of freedom nu must be > 0; got $nu"))
     rr = rr_theta_len(p, K)
 
-    Zemp = float.(Y)                                   # identity link ⇒ Z = Y
-    β0 = β_init === nothing ? vec(sum(Zemp; dims = 2)) ./ n : collect(float.(β_init))
+    # NA-aware warm start (identity link): per-trait observed-cell mean intercepts;
+    # missing cells mean-filled for the SVD init ONLY (FIML estimator, issue #27).
+    Zemp = Matrix{Float64}(undef, p, n)
+    β0r = Vector{Float64}(undef, p)
+    @inbounds for t in 1:p
+        acc = 0.0; cnt = 0
+        for i in 1:n
+            if !ismissing(Y[t, i])
+                v = float(Y[t, i]); Zemp[t, i] = v; acc += v; cnt += 1
+            end
+        end
+        m = cnt == 0 ? 0.0 : acc / cnt
+        β0r[t] = m
+        for i in 1:n
+            ismissing(Y[t, i]) && (Zemp[t, i] = m)
+        end
+    end
+    β0 = β_init === nothing ? β0r : collect(float.(β_init))
     Λ0 = if Λ_init === nothing
         Zc = Zemp .- β0
         F = svd(Zc)
