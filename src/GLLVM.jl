@@ -31,6 +31,7 @@ include("families/poisson.jl")           # Poisson family pieces (Phase 3)
 include("families/truncpoisson.jl")      # Zero-truncated (positive) Poisson family pieces
 include("families/structured_poisson.jl") # internal structured Poisson Laplace prototype
 include("families/negbin.jl")            # Negative-binomial (NB2) family pieces (Phase 3)
+include("families/truncnb.jl")           # Zero-truncated negative-binomial (NB2) family pieces (reuses negbin NB2 logpdf)
 include("families/nb1.jl")               # Negative-binomial type 1 (linear variance) family pieces
 include("families/beta.jl")              # Beta family pieces (Phase 3)
 include("families/betabinomial.jl")      # Beta-Binomial (overdispersed binomial) family pieces
@@ -109,6 +110,7 @@ export spatial_cov, relatedness_cov,
        fit_binomial_gllvm, BinomialFit, fit_poisson_gllvm, PoissonFit,
        ZeroTruncatedPoisson, fit_truncpoisson_gllvm, TruncPoissonFit,
        truncpoisson_marginal_loglik_laplace,
+       TruncNB, fit_truncnb_gllvm, TruncNBFit, truncnb_marginal_loglik_laplace,
        fit_nb_gllvm, NBFit, fit_beta_gllvm, BetaFit,
        fit_betabinomial_gllvm, BetaBinomialFit,
        betabinomial_marginal_loglik_laplace,
