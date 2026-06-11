@@ -87,6 +87,13 @@ include("diagnostics.jl")
 # bootstrap_ci_derived in confint_derived.jl is unchanged.
 include("confint_derived_bootstrap_families.jl")
 
+# Transformed-scale Wald CIs for derived quantities (Fisher-z correlation, logit
+# communality / ICC / H²): one-Hessian cost, matching the bootstrap to MC error for
+# interior-valued bounded quantities. Additive; depends on confint_derived.jl
+# (`_derived_unpack`, `_sigma_y_site_from_unpacked`) and confint.jl
+# (`_confint_reconstruct_nll`), both included above.
+include("confint_derived_wald.jl")
+
 # Formula / DataFrame front-end (A4): @formula + Tables.jl sugar over the
 # matrix fitters. Included last so every fitter + fit struct it dispatches to
 # already exists.
@@ -102,6 +109,7 @@ include("bridge.jl")
 export spatial_cov, relatedness_cov,
        fit_gaussian_gllvm, GllvmModel, GllvmFit,
        confint, profile_ci, bootstrap_ci,
+       transformed_wald_ci_derived, correlation_wald_ci, communality_wald_ci,
        ppca_init, em_fa,
        sigma_y_site, communality, correlation, phylo_signal, link_residual,
        augmented_phy, gaussian_marginal_loglik_sparse_phy,
