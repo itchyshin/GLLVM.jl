@@ -94,6 +94,11 @@ include("confint_derived_bootstrap_families.jl")
 # (`_confint_reconstruct_nll`), both included above.
 include("confint_derived_wald.jl")
 
+# Nested-model likelihood-ratio tests (anova / lrt) + the _loglik/_nparams accessors
+# for the extended one-part families (so aic/bic cover them too). After postfit.jl
+# (whose _loglik/_nparams it extends) and all family fit structs.
+include("anova.jl")
+
 # Formula / DataFrame front-end (A4): @formula + Tables.jl sugar over the
 # matrix fitters. Included last so every fitter + fit struct it dispatches to
 # already exists.
@@ -139,7 +144,7 @@ export spatial_cov, relatedness_cov,
        fit_mixed_gllvm, MixedFamilyFit,
        simulate,
        getLV, getLoadings, rotation,
-       predict, fitted, residuals, aic, bic,
+       predict, fitted, residuals, aic, bic, lrt, anova,
        quantile_residuals, check_fit, FitCheck,
        gllvm, GllvmFormulaFit, @formula,
        bridge_fit
