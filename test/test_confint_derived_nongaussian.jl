@@ -231,4 +231,29 @@ _brackets(ci) = isfinite(ci.lower) && isfinite(ci.upper) &&
         @test isapprox(ciw.upper, cib.upper; atol = 0.12)
     end
 
+    # -----------------------------------------------------------------------
+    # NA-aware derived bootstrap (#93): on a missing-typed Y the derived bootstrap
+    # re-imposes the original missingness pattern on every replicate, so each refit
+    # sees the same information loss (FIML parametric bootstrap). The masked-refit
+    # path must run end-to-end and return a finite, ordered correlation CI. (On a
+    # dense Y any_miss is false ⇒ byte-identical to the complete-data bootstrap.)
+    # -----------------------------------------------------------------------
+    @testset "NA-aware derived bootstrap (#93)" begin
+        Random.seed!(9301)
+        p, K, n = 4, 1, 200
+        β = log.([5.0, 4.0, 6.0, 5.0]); Λ = 0.35 .* randn(p, K)
+        Y = round.(Int, simulate(Poisson(), β, Λ, n; seed = 9302))
+        Ym = Matrix{Union{Missing, Int}}(Y)
+        Random.seed!(9303)
+        for idx in eachindex(Ym)
+            rand() < 0.12 && (Ym[idx] = missing)
+        end
+        fit = fit_poisson_gllvm(Ym; K = K)
+        ci = GLLVM.correlation_boot_ci(fit, 1, 2; Y = Ym, n_boot = 40, seed = 1)
+        @test ci.n_converged ≥ 20                    # masked refits converge
+        @test isfinite(ci.lower) && isfinite(ci.upper)
+        @test ci.lower ≤ ci.estimate ≤ ci.upper
+        @test -1 ≤ ci.lower ≤ ci.upper ≤ 1
+    end
+
 end

@@ -171,12 +171,17 @@ function bootstrap_ci_derived(fit::_BootstrapFamilyFit, derived_fn::Function;
 
     est = Float64(derived_fn(fit, Y))
 
+    # NA-aware derived bootstrap (#93): re-impose the original missingness pattern on
+    # every replicate so each refit reflects the same information loss (FIML parametric
+    # bootstrap). Dense Y ⇒ any_miss false ⇒ identical to the complete-data bootstrap.
+    miss = ismissing.(Y); any_miss = any(miss)
     # Binomial's simulate/refit thread the trial counts N; the others take no N.
     simulate_b = fit isa BinomialFit ? (b -> simulate(fit, n; N = N, seed = seed + b)) :
                                        (b -> simulate(fit, n; seed = seed + b))
     refit_b = fit isa BinomialFit ? (Y_b -> _boot_refit(fit, Y_b, N)) :
                                     (Y_b -> _boot_refit(fit, Y_b))
-    coerce_b = Y_b -> _boot_coerce_response(fit, Y_b)
+    coerce_b = Y_b -> (Yc = _boot_coerce_response(fit, Y_b);
+                       any_miss ? ifelse.(miss, missing, Yc) : Yc)
 
     return _bootstrap_ci_derived_core(est, n_boot, level,
                                       simulate_b, coerce_b, refit_b, derived_fn;
@@ -213,8 +218,12 @@ function bootstrap_ci_derived(fit::MixedFamilyFit, derived_fn::Function;
 
     est = Float64(derived_fn(fit, Y))
 
+    # NA-aware derived bootstrap (#93): re-impose the original missingness pattern on
+    # every replicate (FIML parametric bootstrap). Dense Y ⇒ no-op.
+    miss = ismissing.(Y); any_miss = any(miss)
     simulate_b = b -> simulate(fit, n; N = N, seed = seed + b)
-    coerce_b = Y_b -> _boot_coerce_response(fit, Y_b)
+    coerce_b = Y_b -> (Yc = _boot_coerce_response(fit, Y_b);
+                       any_miss ? ifelse.(miss, missing, Yc) : Yc)
     refit_b = Y_b -> fit_mixed_gllvm(Y_b; families = fit.families,
                                      links = fit.links, K = K, N = N)
 
