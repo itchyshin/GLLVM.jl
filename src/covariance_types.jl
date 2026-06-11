@@ -53,9 +53,10 @@ indep() = LatentCov(:indep, 0, true)
 """
     dep() -> LatentCov
 
-A dependent (full, unstructured) component — a free p×p SPD covariance. Equivalent to
-`latent` at full rank K = p; `specific` is moot (the full matrix already has every
-variance). Realisation is a later slice (plan SP1.5 Phase 4).
+A dependent (full, unstructured) component — a free p×p SPD covariance `ΛΛᵀ` with `Λ` the
+full p×p (lower-triangular Cholesky) factor. Equivalent to `latent` at full rank K = p;
+`specific` is moot (the full matrix already has every variance). `cov_nloadings` is
+`p(p+1)/2`. Use only for small p (cost is O(p²) parameters).
 """
 dep() = LatentCov(:dep, 0, false)
 
@@ -65,7 +66,9 @@ dep() = LatentCov(:dep, 0, false)
 Number of free reduced-rank loading parameters (lower-triangular `Λ` packing) the
 component contributes for `p` traits: `rr_theta_len(p, K)` for `latent`, else 0.
 """
-cov_nloadings(c::LatentCov, p::Integer) = c.kind === :latent ? rr_theta_len(p, c.K) : 0
+cov_nloadings(c::LatentCov, p::Integer) =
+    c.kind === :latent ? rr_theta_len(p, c.K) :
+    c.kind === :dep    ? rr_theta_len(p, p) : 0      # dep = full p×p lower-Cholesky
 
 """
     cov_nspecific(c::LatentCov, p) -> Int
@@ -102,7 +105,9 @@ function trait_cov(c::LatentCov, Λ::AbstractMatrix, s::AbstractVector)
         return Σ
     elseif c.kind === :indep
         return Matrix(Diagonal(s))
-    else # :dep
-        throw(ArgumentError("trait_cov: :dep (full unstructured) is a later slice (SP1.5 Phase 4)"))
+    else # :dep — full unstructured = full-rank ΛΛᵀ (Λ is the p×p Cholesky factor; s moot)
+        size(Λ, 2) == size(Λ, 1) || throw(DimensionMismatch(
+            "trait_cov(:dep): Λ must be the full p×p factor (got $(size(Λ))); dep is full-rank"))
+        return Λ * Λ'
     end
 end

@@ -37,7 +37,10 @@ using GLLVM, Test, LinearAlgebra, Random, ForwardDiff
         Random.seed!(50502)
         p = 4; s = abs.(randn(p)) .+ 0.1
         @test trait_cov(indep(), randn(p, 1), s) ≈ Diagonal(s)   # Λ ignored
-        @test_throws ArgumentError trait_cov(dep(), randn(p, 1), s)
+        Lp = randn(p, p)                                          # dep = full-rank ΛΛᵀ
+        @test trait_cov(dep(), Lp, s) ≈ Lp * Lp'
+        @test cov_nloadings(dep(), p) == GLLVM.rr_theta_len(p, p)
+        @test_throws DimensionMismatch trait_cov(dep(), randn(p, 1), s)   # needs full p×p
     end
 
     @testset "AD-friendly" begin
