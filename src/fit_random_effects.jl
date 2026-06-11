@@ -77,3 +77,84 @@ function fit_gaussian_row_re(y::AbstractMatrix; K::Integer,
     return GaussianRowREFit(Λ̂, σ_epŝ, σ_roŵ, -Optim.minimum(res),
                             Optim.converged(res), Optim.iterations(res))
 end
+
+# ---------------------------------------------------------------------------
+# Non-Gaussian per-site random row effect via the SAME augmented-constant-column
+# trick on the family-generic dense Laplace marginal. The (K+1)-th latent loading
+# is σ_row·1ₚ, so the per-site mode/A/logdet absorb it with no core change; the
+# gradient is a direct ForwardDiff straight through the marginal value (the
+# mixed-family pattern; AD-clean — verified). Poisson here proves the pattern;
+# other families follow the identical recipe (warm start + dispersion aside).
+# ---------------------------------------------------------------------------
+
+"""
+    PoissonRowREFit
+
+Result of [`fit_poisson_row_re`](@ref): intercepts `β` (length p), loadings `Λ`
+(p×K), the per-site random row-effect SD `σ_row`, the `link`, the maximised Laplace
+`loglik`, the optimiser `converged` flag, and `iterations`.
+"""
+struct PoissonRowREFit
+    β::Vector{Float64}
+    Λ::Matrix{Float64}
+    σ_row::Float64
+    link::Link
+    loglik::Float64
+    converged::Bool
+    iterations::Int
+end
+
+function Base.show(io::IO, f::PoissonRowREFit)
+    p, K = size(f.Λ)
+    print(io, "PoissonRowREFit(p=", p, ", K=", K,
+          ", σ_row=", round(f.σ_row; sigdigits = 4), ", link=", nameof(typeof(f.link)),
+          ", loglik=", round(f.loglik; sigdigits = 7),
+          f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+"""
+    fit_poisson_row_re(Y; K, link=LogLink(), σ_row_init=0.3, …) -> PoissonRowREFit
+
+Fit a Poisson GLLVM with a per-site random ROW effect by L-BFGS over
+`[β; vec(Λ); log σ_row]` on the dense Laplace marginal, augmenting Λ with the
+constant column `σ_row·1ₚ` (so r_i ~ N(0, σ_row²) enters η[t,i] for every trait).
+`Y` is a p×n count matrix; `K` the latent dimension. Gradient = direct ForwardDiff
+through `poisson_marginal_loglik_laplace`; MoreThuente line search. Warm start =
+empirical log-mean intercepts + an SVD loadings init + a small `σ_row`.
+"""
+function fit_poisson_row_re(Y::AbstractMatrix{<:Integer}; K::Integer,
+        link::Link = LogLink(), σ_row_init::Real = 0.3,
+        g_tol::Real = 1e-5, iterations::Integer = 500)
+    p, n = size(Y)
+    K ≥ 1 || throw(ArgumentError("K must be ≥ 1; got $K"))
+    rr = rr_theta_len(p, K)
+
+    Zemp = [linkfun(link, max(Y[t, i] + 0.5, 1e-4)) for t in 1:p, i in 1:n]
+    β0 = vec(sum(Zemp; dims = 2)) ./ n
+    Zc = Zemp .- β0
+    F = svd(Zc); kk = min(K, length(F.S))
+    Λ0 = zeros(p, K)
+    @inbounds for j in 1:kk
+        Λ0[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
+    end
+    θ0 = vcat(β0, pack_lambda(Λ0), log(float(σ_row_init)))
+
+    ones_p = ones(p)
+    nll = θ -> begin
+        β     = θ[1:p]
+        Λ     = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+        σ_row = exp(θ[p + rr + 1])
+        return -poisson_marginal_loglik_laplace(Y, hcat(Λ, σ_row .* ones_p), β, link)
+    end
+
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.MoreThuente())
+    res = Optim.optimize(nll, θ0, ls,
+                         Optim.Options(g_tol = g_tol, iterations = iterations);
+                         autodiff = :forward)
+    θ̂     = Optim.minimizer(res)
+    β̂     = θ̂[1:p]
+    Λ̂     = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
+    σ_roŵ = exp(θ̂[p + rr + 1])
+    return PoissonRowREFit(β̂, Λ̂, σ_roŵ, link, -Optim.minimum(res),
+                           Optim.converged(res), Optim.iterations(res))
+end

@@ -1,4 +1,5 @@
 using GLLVM, Test, Random, LinearAlgebra, Statistics, ForwardDiff
+using Distributions: Poisson
 
 # SP1.1: Gaussian per-site random ROW effect via the augmented-constant-column trick
 # (Σ_y += σ_row²·1ₚ1ₚᵀ), reusing the closed-form marginal unchanged.
@@ -48,6 +49,58 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics, ForwardDiff
             hcat(GLLVM.unpack_lambda(θ[1:rr], p, K), exp(θ[rr + 2]) .* ones_p),
             exp(θ[rr + 1]))
         θ = vcat(GLLVM.pack_lambda(Λ0), log(σ), log(0.5))
+        gad = ForwardDiff.gradient(nll, θ)
+        h = 1e-6
+        gfd = similar(θ)
+        for i in eachindex(θ)
+            s = h * max(1.0, abs(θ[i]))
+            tp = copy(θ); tp[i] += s
+            tm = copy(θ); tm[i] -= s
+            gfd[i] = (nll(tp) - nll(tm)) / (2s)
+        end
+        @test all(isfinite, gad)
+        @test maximum(abs.(gad .- gfd)) ≤ 1e-6
+    end
+end
+
+@testset "Poisson random row effect fit (SP1.1 non-Gaussian)" begin
+
+    @testset "recovery (σ_row, β, ΛΛ')" begin
+        Random.seed!(12001)
+        p, K, n = 5, 1, 800
+        βt = log.([4.0, 5.0, 3.0, 6.0, 4.0]); Λt = 0.4 .* randn(p, K)
+        σ_row = 0.5
+        η = βt .+ Λt * randn(K, n) .+ (σ_row .* randn(n))'
+        Y = [rand(Poisson(exp(clamp(η[t, i], -10, 10)))) for t in 1:p, i in 1:n]
+        fit = fit_poisson_row_re(Y; K = K)
+        @test fit.converged
+        @test isapprox(fit.σ_row, σ_row; atol = 0.2)
+        @test maximum(abs.(fit.β .- βt)) < 0.35
+        @test cor(vec(fit.Λ * fit.Λ'), vec(Λt * Λt')) > 0.6
+    end
+
+    @testset "no row effect ⇒ σ_row shrinks" begin
+        Random.seed!(12002)
+        p, K, n = 4, 1, 600
+        βt = log.([4.0, 5.0, 3.0, 4.0]); Λt = 0.4 .* randn(p, K)
+        η = βt .+ Λt * randn(K, n)
+        Y = [rand(Poisson(exp(clamp(η[t, i], -10, 10)))) for t in 1:p, i in 1:n]
+        fit = fit_poisson_row_re(Y; K = K, σ_row_init = 0.3)
+        @test fit.σ_row < 0.25
+    end
+
+    @testset "FD-gradient of the row-effect nll ≤ 1e-6" begin
+        Random.seed!(12003)
+        p, K, n = 4, 1, 80
+        βt = log.([4.0, 4.0, 3.0, 5.0]); Λt = 0.3 .* randn(p, K)
+        η = βt .+ Λt * randn(K, n) .+ (0.5 .* randn(n))'
+        Y = [rand(Poisson(exp(clamp(η[t, i], -10, 10)))) for t in 1:p, i in 1:n]
+        rr = GLLVM.rr_theta_len(p, K)
+        ones_p = ones(p)
+        nll = θ -> -GLLVM.poisson_marginal_loglik_laplace(Y,
+            hcat(GLLVM.unpack_lambda(θ[(p + 1):(p + rr)], p, K), exp(θ[p + rr + 1]) .* ones_p),
+            θ[1:p])
+        θ = vcat(βt, GLLVM.pack_lambda(Λt), log(0.5))
         gad = ForwardDiff.gradient(nll, θ)
         h = 1e-6
         gfd = similar(θ)

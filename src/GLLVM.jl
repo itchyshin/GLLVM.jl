@@ -14,7 +14,6 @@ include("ppca_init.jl")                  # used by fit (warm-start)
 include("em_fa.jl")                      # alternative EM solver
 include("profile.jl")                    # σ_eps profile-out (used by fit)
 include("fit.jl")
-include("fit_random_effects.jl")         # RE fitters — Gaussian random row effect (SP1.1)
 include("structured_cov.jl")             # spatial_cov, relatedness_cov builders
 include("structured_schur.jl")           # internal Schur/SLQ substrate for structured non-Gaussian Laplace
 
@@ -48,6 +47,7 @@ include("families/lognormal.jl")         # Standalone Lognormal family (reuses G
 include("families/studentt.jl")          # Student-t (heavy-tailed continuous, fixed ν) family pieces
 include("families/twopart.jl")           # Two-part substrate + Delta-lognormal (Phase 3)
 include("families/fit_gllvm.jl")         # unified fit_gllvm(Y; family) dispatcher
+include("fit_random_effects.jl")         # RE fitters — Gaussian + Poisson random row effect (SP1.1)
 
 # Post-fit API (ordination, predict, residuals, summary)
 include("postfit.jl")
@@ -130,6 +130,7 @@ include("bridge.jl")
 export spatial_cov, relatedness_cov,
        REBlock, re_intercept, re_block,
        fit_gaussian_row_re, GaussianRowREFit,
+       fit_poisson_row_re, PoissonRowREFit,
        fit_gaussian_gllvm, GllvmModel, GllvmFit,
        confint, profile_ci, bootstrap_ci,
        transformed_wald_ci_derived, correlation_wald_ci, communality_wald_ci,
