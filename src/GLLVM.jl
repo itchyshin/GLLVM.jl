@@ -111,6 +111,7 @@ include("confint_derived_wald.jl")
 # for the extended one-part families (so aic/bic cover them too). After postfit.jl
 # (whose _loglik/_nparams it extends) and all family fit structs.
 include("anova.jl")
+include("boundary_inference.jl")         # χ̄² boundary LRT for variance components (DRM cross-pollination)
 
 # Post-fit predict/fitted/getLV for the newer one-part families (additive methods on
 # the postfit.jl generics; after postfit.jl, link_residual.jl, and the family structs).
@@ -179,6 +180,7 @@ export spatial_cov, relatedness_cov,
        getLV, getLoadings, rotation,
        predict, fitted, residuals, aic, bic, lrt, anova, bootstrap_ci_families,
        quantile_residuals, check_fit, FitCheck,
+       chibar2_pvalue, variance_lrt,
        gllvm, GllvmFormulaFit, @formula,
        bridge_fit
 
