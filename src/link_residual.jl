@@ -92,6 +92,22 @@ function _link_residual_one(::ZeroTruncatedPoisson, ::LogLink, μ̂::Real, dispe
     return log1p((1 + μ̂ - μtr) / μtr)
 end
 
+# Zero-inflated Poisson-log: zero-inflation-adjusted lognormal-Poisson residual.
+# The Poisson log(1 + 1/μ̂) is the delta-method Var(log y) ≈ Var(y)/E(y)²; for the
+# ZIP mixture π·δ₀ + (1−π)·Poisson(μ̂), E(y) = (1−π)μ̂ and Var(y) = (1−π)μ̂(1+π μ̂)
+# (the standard ZIP moments; Lambert 1992, Technometrics 34, 1–14), so
+#   σ²_d = log1p( Var(y)/E(y)² ) = log1p( (1 + π μ̂) / ((1−π) μ̂) ).
+# Here `μ̂` is the COUNT rate exp(η̄) (NOT the marginal mean (1−π)μ̂), because the
+# variance is parameterised by the rate, and `dispersion` IS π. As π → 0 this
+# reduces to the plain-Poisson branch log1p(1/μ̂). (Nakagawa & Schielzeth 2010
+# delta method; the GLLVM.jl-only zero-inflated analogue of the gllvmTMB Poisson
+# fid — gllvmTMB ships no zero-inflated-Poisson family.)
+function _link_residual_one(::ZIP, ::LogLink, μ̂::Real, dispersion::Real)
+    (isfinite(μ̂) && μ̂ > 0) || return 0.0
+    π = clamp(dispersion, 0.0, 1 - 1e-12)
+    return log1p((1 + π * μ̂) / ((1 - π) * μ̂))
+end
+
 # Zero-truncated NB2-log: truncation-adjusted delta-method (lognormal-NB) residual,
 # the truncated analogue of the NB2 log-residual. The delta method gives
 # σ²_d = log(1 + Var(y)/E(y)²); under zero-truncation E(y) = μ_tr = μ̂/(1−P₀) and
@@ -213,6 +229,7 @@ end
 # Scalar dispersion accessor per fit type (the family nuisance parameter).
 _fit_dispersion(::TruncPoissonFit) = nothing
 _fit_dispersion(fit::TruncNBFit) = fit.r
+_fit_dispersion(fit::ZIPFit)   = fit.π
 _fit_dispersion(::PoissonFit)  = nothing
 _fit_dispersion(::BinomialFit) = nothing
 _fit_dispersion(fit::NBFit)    = fit.r
@@ -227,6 +244,7 @@ _fit_dispersion(::OrdinalFit)  = nothing
 # Family marker per fit type (for dispatching `_link_residual_one`).
 _fit_family(::TruncPoissonFit) = ZeroTruncatedPoisson()
 _fit_family(fit::TruncNBFit) = TruncNB(fit.r)
+_fit_family(fit::ZIPFit)   = ZIP(fit.π)
 _fit_family(::PoissonFit)  = Poisson()
 _fit_family(::BinomialFit) = Binomial()
 _fit_family(fit::NBFit)    = NegativeBinomial(fit.r, 0.5)
@@ -386,6 +404,16 @@ function link_residual(fit::TruncNBFit, Y::AbstractMatrix)
     fam = _fit_family(fit)
     μ̂ = _link_residual_meanfit(fit, Y)
     return [Float64(_link_residual_one(fam, fit.link, μ̂[t], fit.r)) for t in eachindex(μ̂)]
+end
+
+# Zero-inflated Poisson: σ²_d = log1p((1+π μ̂)/((1−π)μ̂)) is μ̂-dependent, parameterised
+# by the COUNT rate μ̂ = mean_s exp(η) (NOT the marginal mean). ZIPFit has no postfit
+# `predict`, so the count rate is averaged over per-site Laplace modes; the dispersion
+# passed to `_link_residual_one` is the fitted π.
+function link_residual(fit::ZIPFit, Y::AbstractMatrix)
+    fam = _fit_family(fit)
+    μ̂ = _link_residual_meanfit(fit, Y)
+    return [Float64(_link_residual_one(fam, fit.link, μ̂[t], fit.π)) for t in eachindex(μ̂)]
 end
 
 # Student-t: σ²_d = σ²·ν/(ν−2) is μ̂-free (identity link), so no per-site mode solve is

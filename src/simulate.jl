@@ -110,6 +110,15 @@ function _draw_y(rng::AbstractRNG, ::ZeroTruncatedPoisson, μ, n_ts, dispersion)
     return Float64(y)
 end
 
+# Zero-inflated Poisson (families/zip.jl): _glm_logpdf mixes a structural-zero mass
+# π with Poisson(μ). The exact sampling inverse of π·δ₀ + (1−π)·Poisson(μ): with
+# probability π emit a structural zero, otherwise draw Poisson(μ) (which may itself
+# be 0 — a sampling zero). `dispersion` IS the zero-inflation probability π.
+function _draw_y(rng::AbstractRNG, ::ZIP, μ, n_ts, dispersion)
+    π = dispersion
+    return rand(rng) < π ? 0.0 : Float64(rand(rng, Poisson(μ)))
+end
+
 # Zero-truncated NB2 (families/truncnb.jl): _glm_logpdf is the NB2 logpdf
 # (NegativeBinomial(r, r/(r+μ))) minus log(1 − P₀) over y ≥ 1, r the dispersion
 # (Var = μ + μ²/r). Draw NB2 by rejection, resampling until the count is ≥ 1 (the
@@ -363,14 +372,14 @@ function simulate(fit::MixedFamilyFit, n::Integer;
 end
 
 """
-    simulate(fit::Union{PoissonFit,BinomialFit,NBFit,NB1Fit,GammaFit,BetaFit,BetaBinomialFit,LognormalFit,StudentTFit,TruncPoissonFit,TruncNBFit}, n;
+    simulate(fit::Union{PoissonFit,BinomialFit,NBFit,NB1Fit,GammaFit,BetaFit,BetaBinomialFit,LognormalFit,StudentTFit,TruncPoissonFit,TruncNBFit,ZIPFit}, n;
              N=nothing, rng=Random.default_rng(), seed=nothing)
 
 Simulate `n` fresh sites from a fitted single-family GLLVM. The family marker,
 scalar dispersion, and link are taken from the fit (`_fit_family`,
 `_fit_dispersion`, `fit.link`); intercepts and loadings from `fit.β` / `fit.Λ`.
 """
-function simulate(fit::Union{PoissonFit, BinomialFit, NBFit, NB1Fit, GammaFit, BetaFit, BetaBinomialFit, LognormalFit, StudentTFit, TruncPoissonFit, TruncNBFit},
+function simulate(fit::Union{PoissonFit, BinomialFit, NBFit, NB1Fit, GammaFit, BetaFit, BetaBinomialFit, LognormalFit, StudentTFit, TruncPoissonFit, TruncNBFit, ZIPFit},
         n::Integer; N = nothing,
         rng::AbstractRNG = Random.default_rng(), seed = nothing)
     n ≥ 1 || throw(ArgumentError("n must be ≥ 1; got $n"))
