@@ -1,5 +1,5 @@
 using GLLVM, Test, Random, LinearAlgebra, Statistics, ForwardDiff
-using Distributions: Poisson, Binomial, NegativeBinomial
+using Distributions: Poisson, Binomial, NegativeBinomial, Beta, Gamma
 
 # SP1.1: Gaussian per-site random ROW effect via the augmented-constant-column trick
 # (Σ_y += σ_row²·1ₚ1ₚᵀ), reusing the closed-form marginal unchanged.
@@ -175,6 +175,76 @@ end
             hcat(GLLVM.unpack_lambda(θ[(p + 1):(p + rr)], p, K), exp(θ[p + rr + 2]) .* ones_p),
             θ[1:p], exp(θ[p + rr + 1]))
         θ = vcat(βt, GLLVM.pack_lambda(Λt), log(8.0), log(0.5))
+        gad = ForwardDiff.gradient(nll, θ); h = 1e-6; gfd = similar(θ)
+        for i in eachindex(θ)
+            s = h * max(1.0, abs(θ[i])); tp = copy(θ); tp[i] += s; tm = copy(θ); tm[i] -= s
+            gfd[i] = (nll(tp) - nll(tm)) / (2s)
+        end
+        @test all(isfinite, gad)
+        @test maximum(abs.(gad .- gfd)) ≤ 1e-6
+    end
+end
+
+@testset "Beta random row effect fit (SP1.1)" begin
+    @testset "recovery (σ_row, φ)" begin
+        Random.seed!(15001)
+        p, K, n = 5, 1, 800; φtrue = 12.0; σ_row = 0.5
+        βt = [0.2, -0.4, 0.3, -0.2, 0.1]; Λt = 0.5 .* randn(p, K)
+        η = βt .+ Λt * randn(K, n) .+ (σ_row .* randn(n))'
+        μ = 1 ./ (1 .+ exp.(-clamp.(η, -12, 12)))
+        Y = [clamp(rand(Beta(μ[t, i] * φtrue, (1 - μ[t, i]) * φtrue)), 1e-5, 1 - 1e-5) for t in 1:p, i in 1:n]
+        fit = fit_beta_row_re(Y; K = K)
+        @test fit.converged
+        @test isfinite(fit.loglik)
+        @test isapprox(fit.σ_row, σ_row; atol = 0.3)
+        @test fit.φ > 2.0
+    end
+    @testset "FD-gradient ≤ 1e-6" begin
+        Random.seed!(15002)
+        p, K, n = 4, 1, 70; φtrue = 12.0
+        βt = [0.1, -0.2, 0.2, 0.0]; Λt = 0.4 .* randn(p, K)
+        η = βt .+ Λt * randn(K, n) .+ (0.4 .* randn(n))'
+        μ = 1 ./ (1 .+ exp.(-clamp.(η, -12, 12)))
+        Y = [clamp(rand(Beta(μ[t, i] * φtrue, (1 - μ[t, i]) * φtrue)), 1e-5, 1 - 1e-5) for t in 1:p, i in 1:n]
+        rr = GLLVM.rr_theta_len(p, K); ones_p = ones(p)
+        nll = θ -> -GLLVM.beta_marginal_loglik_laplace(Y,
+            hcat(GLLVM.unpack_lambda(θ[(p + 1):(p + rr)], p, K), exp(θ[p + rr + 2]) .* ones_p),
+            θ[1:p], exp(θ[p + rr + 1]))
+        θ = vcat(βt, GLLVM.pack_lambda(Λt), log(φtrue), log(0.4))
+        gad = ForwardDiff.gradient(nll, θ); h = 1e-6; gfd = similar(θ)
+        for i in eachindex(θ)
+            s = h * max(1.0, abs(θ[i])); tp = copy(θ); tp[i] += s; tm = copy(θ); tm[i] -= s
+            gfd[i] = (nll(tp) - nll(tm)) / (2s)
+        end
+        @test all(isfinite, gad)
+        @test maximum(abs.(gad .- gfd)) ≤ 1e-6
+    end
+end
+
+@testset "Gamma random row effect fit (SP1.1)" begin
+    @testset "recovery (σ_row, α)" begin
+        Random.seed!(16001)
+        p, K, n = 5, 1, 800; αtrue = 4.0; σ_row = 0.5
+        βt = log.([2.0, 3.0, 1.5, 2.5, 2.0]); Λt = 0.4 .* randn(p, K)
+        η = βt .+ Λt * randn(K, n) .+ (σ_row .* randn(n))'
+        Y = [rand(Gamma(αtrue, exp(clamp(η[t, i], -10, 10)) / αtrue)) for t in 1:p, i in 1:n]
+        fit = fit_gamma_row_re(Y; K = K)
+        @test fit.converged
+        @test isfinite(fit.loglik)
+        @test isapprox(fit.σ_row, σ_row; atol = 0.3)
+        @test fit.α > 1.0
+    end
+    @testset "FD-gradient ≤ 1e-6" begin
+        Random.seed!(16002)
+        p, K, n = 4, 1, 70; αtrue = 4.0
+        βt = log.([2.0, 2.5, 1.5, 3.0]); Λt = 0.3 .* randn(p, K)
+        η = βt .+ Λt * randn(K, n) .+ (0.4 .* randn(n))'
+        Y = [rand(Gamma(αtrue, exp(clamp(η[t, i], -10, 10)) / αtrue)) for t in 1:p, i in 1:n]
+        rr = GLLVM.rr_theta_len(p, K); ones_p = ones(p)
+        nll = θ -> -GLLVM.gamma_marginal_loglik_laplace(Y,
+            hcat(GLLVM.unpack_lambda(θ[(p + 1):(p + rr)], p, K), exp(θ[p + rr + 2]) .* ones_p),
+            θ[1:p], exp(θ[p + rr + 1]))
+        θ = vcat(βt, GLLVM.pack_lambda(Λt), log(αtrue), log(0.4))
         gad = ForwardDiff.gradient(nll, θ); h = 1e-6; gfd = similar(θ)
         for i in eachindex(θ)
             s = h * max(1.0, abs(θ[i])); tp = copy(θ); tp[i] += s; tm = copy(θ); tm[i] -= s

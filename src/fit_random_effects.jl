@@ -283,3 +283,124 @@ function fit_nb_row_re(Y::AbstractMatrix{<:Integer}; K::Integer,
                       exp(th[p + rr + 1]), exp(th[p + rr + 2]), link,
                       -Optim.minimum(res), Optim.converged(res), Optim.iterations(res))
 end
+
+# ---------------------------------------------------------------------------
+# Beta + Gamma per-site random row effects — same augmented column + a
+# log-dispersion (φ for Beta, α for Gamma) on the scalar-aux Laplace marginal.
+# ---------------------------------------------------------------------------
+
+"""
+    BetaRowREFit
+
+[`fit_beta_row_re`](@ref) result: `β`, `Λ` (p×K), dispersion `φ`, row SD `σ_row`,
+`link`, `loglik`, `converged`, `iterations`.
+"""
+struct BetaRowREFit
+    β::Vector{Float64}
+    Λ::Matrix{Float64}
+    φ::Float64
+    σ_row::Float64
+    link::Link
+    loglik::Float64
+    converged::Bool
+    iterations::Int
+end
+
+function Base.show(io::IO, f::BetaRowREFit)
+    p, K = size(f.Λ)
+    print(io, "BetaRowREFit(p=", p, ", K=", K, ", φ=", round(f.φ; sigdigits = 4),
+          ", σ_row=", round(f.σ_row; sigdigits = 4),
+          ", loglik=", round(f.loglik; sigdigits = 7), f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+"""
+    fit_beta_row_re(Y; K, link=LogitLink(), φ_init=10.0, σ_row_init=0.3, …) -> BetaRowREFit
+
+Beta GLLVM (responses in (0,1)) with a per-site random ROW effect, jointly estimating
+the dispersion `φ` and `σ_row` via the augmented column on the Laplace marginal.
+"""
+function fit_beta_row_re(Y::AbstractMatrix{<:Real}; K::Integer,
+        link::Link = LogitLink(), φ_init::Real = 10.0, σ_row_init::Real = 0.3,
+        g_tol::Real = 1e-5, iterations::Integer = 500)
+    p, n = size(Y)
+    K ≥ 1 || throw(ArgumentError("K must be ≥ 1; got $K"))
+    rr = rr_theta_len(p, K)
+    Zemp = [linkfun(link, clamp(float(Y[t, i]), 1e-6, 1 - 1e-6)) for t in 1:p, i in 1:n]
+    β0 = vec(sum(Zemp; dims = 2)) ./ n
+    Zc = Zemp .- β0; F = svd(Zc); kk = min(K, length(F.S))
+    Λ0 = zeros(p, K)
+    @inbounds for j in 1:kk
+        Λ0[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
+    end
+    θ0 = vcat(β0, pack_lambda(Λ0), log(float(φ_init)), log(float(σ_row_init)))
+    ones_p = ones(p)
+    nll = θ -> begin
+        β = θ[1:p]; Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+        φ = exp(θ[p + rr + 1]); σ_row = exp(θ[p + rr + 2])
+        return -beta_marginal_loglik_laplace(Y, hcat(Λ, σ_row .* ones_p), β, φ; link = link)
+    end
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.MoreThuente())
+    res = Optim.optimize(nll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations); autodiff = :forward)
+    th = Optim.minimizer(res)
+    return BetaRowREFit(th[1:p], unpack_lambda(th[(p + 1):(p + rr)], p, K),
+                        exp(th[p + rr + 1]), exp(th[p + rr + 2]), link,
+                        -Optim.minimum(res), Optim.converged(res), Optim.iterations(res))
+end
+
+"""
+    GammaRowREFit
+
+[`fit_gamma_row_re`](@ref) result: `β`, `Λ` (p×K), shape `α`, row SD `σ_row`,
+`link`, `loglik`, `converged`, `iterations`.
+"""
+struct GammaRowREFit
+    β::Vector{Float64}
+    Λ::Matrix{Float64}
+    α::Float64
+    σ_row::Float64
+    link::Link
+    loglik::Float64
+    converged::Bool
+    iterations::Int
+end
+
+function Base.show(io::IO, f::GammaRowREFit)
+    p, K = size(f.Λ)
+    print(io, "GammaRowREFit(p=", p, ", K=", K, ", α=", round(f.α; sigdigits = 4),
+          ", σ_row=", round(f.σ_row; sigdigits = 4),
+          ", loglik=", round(f.loglik; sigdigits = 7), f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+"""
+    fit_gamma_row_re(Y; K, link=LogLink(), α_init=2.0, σ_row_init=0.3, …) -> GammaRowREFit
+
+Gamma GLLVM (responses > 0) with a per-site random ROW effect, jointly estimating the
+shape `α` and `σ_row` via the augmented column on the Laplace marginal.
+"""
+function fit_gamma_row_re(Y::AbstractMatrix{<:Real}; K::Integer,
+        link::Link = LogLink(), α_init::Real = 2.0, σ_row_init::Real = 0.3,
+        g_tol::Real = 1e-5, iterations::Integer = 500)
+    p, n = size(Y)
+    K ≥ 1 || throw(ArgumentError("K must be ≥ 1; got $K"))
+    rr = rr_theta_len(p, K)
+    Zemp = [log(max(float(Y[t, i]), 1e-6)) for t in 1:p, i in 1:n]
+    β0 = vec(sum(Zemp; dims = 2)) ./ n
+    Zc = Zemp .- β0; F = svd(Zc); kk = min(K, length(F.S))
+    Λ0 = zeros(p, K)
+    @inbounds for j in 1:kk
+        Λ0[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
+    end
+    θ0 = vcat(β0, pack_lambda(Λ0), log(float(α_init)), log(float(σ_row_init)))
+    ones_p = ones(p)
+    nll = θ -> begin
+        β = θ[1:p]; Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+        α = exp(θ[p + rr + 1]); σ_row = exp(θ[p + rr + 2])
+        return -gamma_marginal_loglik_laplace(Y, hcat(Λ, σ_row .* ones_p), β, α; link = link)
+    end
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.MoreThuente())
+    res = Optim.optimize(nll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations); autodiff = :forward)
+    th = Optim.minimizer(res)
+    return GammaRowREFit(th[1:p], unpack_lambda(th[(p + 1):(p + rr)], p, K),
+                         exp(th[p + rr + 1]), exp(th[p + rr + 2]), link,
+                         -Optim.minimum(res), Optim.converged(res), Optim.iterations(res))
+end
