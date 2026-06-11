@@ -99,6 +99,10 @@ include("confint_derived_wald.jl")
 # (whose _loglik/_nparams it extends) and all family fit structs.
 include("anova.jl")
 
+# Post-fit predict/fitted/getLV for the newer one-part families (additive methods on
+# the postfit.jl generics; after postfit.jl, link_residual.jl, and the family structs).
+include("postfit_families.jl")
+
 # Formula / DataFrame front-end (A4): @formula + Tables.jl sugar over the
 # matrix fitters. Included last so every fitter + fit struct it dispatches to
 # already exists.
