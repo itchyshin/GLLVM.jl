@@ -128,6 +128,15 @@ function _draw_y(rng::AbstractRNG, f::ZINB, μ, n_ts, dispersion)
     return rand(rng) < f.π ? 0.0 : Float64(rand(rng, NegativeBinomial(f.r, f.r / (f.r + μ))))
 end
 
+# Zero-inflated Binomial (families/zibinom.jl): the sampling inverse of
+# π·δ₀ + (1−π)·Binomial(N, p). With probability π emit a structural zero, otherwise
+# draw Binomial(N, p) (which may itself be 0). `n_ts` is the trial count N; `μ` is the
+# success probability p; `dispersion` IS the zero-inflation probability π.
+function _draw_y(rng::AbstractRNG, ::ZIBinom, μ, n_ts, dispersion)
+    π = dispersion
+    return rand(rng) < π ? 0.0 : Float64(rand(rng, Binomial(Int(n_ts), μ)))
+end
+
 # Zero-truncated NB2 (families/truncnb.jl): _glm_logpdf is the NB2 logpdf
 # (NegativeBinomial(r, r/(r+μ))) minus log(1 − P₀) over y ≥ 1, r the dispersion
 # (Var = μ + μ²/r). Draw NB2 by rejection, resampling until the count is ≥ 1 (the
@@ -381,14 +390,14 @@ function simulate(fit::MixedFamilyFit, n::Integer;
 end
 
 """
-    simulate(fit::Union{PoissonFit,BinomialFit,NBFit,NB1Fit,GammaFit,BetaFit,BetaBinomialFit,LognormalFit,StudentTFit,TruncPoissonFit,TruncNBFit,ZIPFit,ZINBFit}, n;
+    simulate(fit::Union{PoissonFit,BinomialFit,NBFit,NB1Fit,GammaFit,BetaFit,BetaBinomialFit,LognormalFit,StudentTFit,TruncPoissonFit,TruncNBFit,ZIPFit,ZINBFit,ZIBinomFit}, n;
              N=nothing, rng=Random.default_rng(), seed=nothing)
 
 Simulate `n` fresh sites from a fitted single-family GLLVM. The family marker,
 scalar dispersion, and link are taken from the fit (`_fit_family`,
 `_fit_dispersion`, `fit.link`); intercepts and loadings from `fit.β` / `fit.Λ`.
 """
-function simulate(fit::Union{PoissonFit, BinomialFit, NBFit, NB1Fit, GammaFit, BetaFit, BetaBinomialFit, LognormalFit, StudentTFit, TruncPoissonFit, TruncNBFit, ZIPFit, ZINBFit},
+function simulate(fit::Union{PoissonFit, BinomialFit, NBFit, NB1Fit, GammaFit, BetaFit, BetaBinomialFit, LognormalFit, StudentTFit, TruncPoissonFit, TruncNBFit, ZIPFit, ZINBFit, ZIBinomFit},
         n::Integer; N = nothing,
         rng::AbstractRNG = Random.default_rng(), seed = nothing)
     n ≥ 1 || throw(ArgumentError("n must be ≥ 1; got $n"))

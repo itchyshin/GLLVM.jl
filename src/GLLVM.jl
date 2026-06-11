@@ -34,6 +34,7 @@ include("families/negbin.jl")            # Negative-binomial (NB2) family pieces
 include("families/truncnb.jl")           # Zero-truncated negative-binomial (NB2) family pieces (reuses negbin NB2 logpdf)
 include("families/zip.jl")               # Zero-inflated Poisson (ZIP) family pieces
 include("families/zinb.jl")              # Zero-inflated negative-binomial (ZINB) family pieces
+include("families/zibinom.jl")           # Zero-inflated Binomial (ZIBinom) family pieces
 include("families/nb1.jl")               # Negative-binomial type 1 (linear variance) family pieces
 include("families/beta.jl")              # Beta family pieces (Phase 3)
 include("families/betabinomial.jl")      # Beta-Binomial (overdispersed binomial) family pieces
@@ -137,6 +138,7 @@ export spatial_cov, relatedness_cov,
        TruncNB, fit_truncnb_gllvm, TruncNBFit, truncnb_marginal_loglik_laplace,
        ZIP, fit_zip_gllvm, ZIPFit, zip_marginal_loglik_laplace,
        ZINB, fit_zinb_gllvm, ZINBFit, zinb_marginal_loglik_laplace,
+       ZIBinom, fit_zibinom_gllvm, ZIBinomFit, zibinom_marginal_loglik_laplace,
        fit_nb_gllvm, NBFit, fit_beta_gllvm, BetaFit,
        fit_betabinomial_gllvm, BetaBinomialFit,
        betabinomial_marginal_loglik_laplace,

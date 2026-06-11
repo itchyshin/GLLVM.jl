@@ -152,6 +152,14 @@ end
 _link_residual_one(::Binomial, link::Link, μ̂::Real, dispersion) =
     _binomial_link_residual(link)
 
+# Zero-inflated Binomial: keep the binomial threshold-model latent residual (μ̂-free
+# constant per link — π²/3 logit, 1 probit, π²/6 cloglog), matching ::Binomial and
+# the cumulative-logit ::Ordinal (McCullagh 1980). The zero-inflation does not change
+# the latent threshold scale; a ZI delta-method adjustment would mix conventions (it
+# would not reduce to π²/3 as π→0), so the constant is the convention-consistent choice.
+_link_residual_one(::ZIBinom, link::Link, μ̂::Real, dispersion) =
+    _binomial_link_residual(link)
+
 # NB2-log: trigamma(r), r the Var = μ + μ²/r dispersion. extract-sigma.R 188–191.
 _link_residual_one(::NegativeBinomial, ::LogLink, μ̂::Real, dispersion::Real) =
     trigamma(max(dispersion, 1e-12))
@@ -250,6 +258,7 @@ _fit_dispersion(::TruncPoissonFit) = nothing
 _fit_dispersion(fit::TruncNBFit) = fit.r
 _fit_dispersion(fit::ZIPFit)   = fit.π
 _fit_dispersion(fit::ZINBFit)  = fit.π
+_fit_dispersion(fit::ZIBinomFit) = fit.π
 _fit_dispersion(::PoissonFit)  = nothing
 _fit_dispersion(::BinomialFit) = nothing
 _fit_dispersion(fit::NBFit)    = fit.r
@@ -266,6 +275,7 @@ _fit_family(::TruncPoissonFit) = ZeroTruncatedPoisson()
 _fit_family(fit::TruncNBFit) = TruncNB(fit.r)
 _fit_family(fit::ZIPFit)   = ZIP(fit.π)
 _fit_family(fit::ZINBFit)  = ZINB(fit.r, fit.π)
+_fit_family(fit::ZIBinomFit) = ZIBinom(fit.π)
 _fit_family(::PoissonFit)  = Poisson()
 _fit_family(::BinomialFit) = Binomial()
 _fit_family(fit::NBFit)    = NegativeBinomial(fit.r, 0.5)
@@ -340,6 +350,14 @@ function link_residual(fit::BinomialFit, Y::AbstractMatrix;
     # Binomial σ²_d is μ̂-free, so we don't need the fitted mean; one value per trait.
     v = _binomial_link_residual(link)
     return fill(Float64(v), p)
+end
+
+# Zero-inflated Binomial: μ̂-free constant binomial threshold residual (see the
+# ::ZIBinom _link_residual_one note above); one value per trait, like BinomialFit.
+function link_residual(fit::ZIBinomFit, Y::AbstractMatrix;
+                       N::Union{Nothing, AbstractMatrix} = nothing)
+    p = size(fit.Λ, 1)
+    return fill(Float64(_binomial_link_residual(fit.link)), p)
 end
 
 function link_residual(fit::OrdinalFit, Y::AbstractMatrix)
