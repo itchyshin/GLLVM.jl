@@ -151,11 +151,15 @@ function _mixed_laplace_mode(families::AbstractVector, links::AbstractVector,
     for _ in 1:maxiter
         η = Λ * z
         @inbounds for t in 1:p
-            ηt = _clamp_eta(β[t] + η[t])
-            μt = _clamp_mu(families[t], linkinv(links[t], ηt))
-            met = mu_eta(links[t], ηt)
-            s[t] = _glm_score(families[t], μt, n[t], met, y[t])
-            W[t] = _glm_weight(families[t], μt, n[t], met)
+            if ismissing(y[t])                  # NA-aware FIML: drop the missing cell
+                s[t] = zero(T); W[t] = zero(T)  # 0 score/weight ⇒ leaves A SPD, off the mode
+            else
+                ηt = _clamp_eta(β[t] + η[t])
+                μt = _clamp_mu(families[t], linkinv(links[t], ηt))
+                met = mu_eta(links[t], ηt)
+                s[t] = _glm_score(families[t], μt, n[t], met, y[t])
+                W[t] = _glm_weight(families[t], μt, n[t], met)
+            end
         end
         A = Symmetric(Λ' * (W .* Λ) + I)
         Δ = _safe_solve(A, Λ' * s .- z)
@@ -178,11 +182,15 @@ function _mixed_loglik_site(families::AbstractVector, links::AbstractVector,
     W = Vector{T}(undef, p)
     ℓ = zero(T)
     @inbounds for t in 1:p
-        ηt = _clamp_eta(β[t] + η[t])
-        μt = _clamp_mu(families[t], linkinv(links[t], ηt))
-        met = mu_eta(links[t], ηt)
-        W[t] = _glm_weight(families[t], μt, n[t], met)
-        ℓ += _glm_logpdf(families[t], μt, n[t], y[t])
+        if ismissing(y[t])                      # NA-aware FIML: drop the missing cell
+            W[t] = zero(T)                      # 0 weight (off A); skipped in the ℓ sum
+        else
+            ηt = _clamp_eta(β[t] + η[t])
+            μt = _clamp_mu(families[t], linkinv(links[t], ηt))
+            met = mu_eta(links[t], ηt)
+            W[t] = _glm_weight(families[t], μt, n[t], met)
+            ℓ += _glm_logpdf(families[t], μt, n[t], y[t])
+        end
     end
     A = Symmetric(Λ' * (W .* Λ) + I)
     return ℓ - 0.5 * dot(z, z) - 0.5 * logdet(A)
@@ -272,7 +280,25 @@ end
 # Per-trait link-scale pseudodata row, lifting each single-family fitter's Zemp
 # line. Returns a length-n Float64 row on trait t's link scale.
 function _mixed_pseudo_link_row(fam::Normal, link::Link, y::AbstractVector, n::AbstractVector)
-    return [linkfun(link, float(y[i])) for i in eachindex(y)]            # identity
+    # NA-aware warm start (issue #27, slice 1): observed-cell identity pseudodata; a
+    # missing cell is filled with the row's observed mean for the shared SVD init ONLY
+    # (the FIML objective itself drops missing cells — see _mixed_loglik_site). On a
+    # dense row cnt == length(y) ⇒ the fill loop is a no-op ⇒ byte-identical to the
+    # old comprehension. (Only the Normal method is widened — all-Normal NA-Gaussian;
+    # mixed non-Gaussian NA is a separate slice.)
+    row = Vector{Float64}(undef, length(y))
+    acc = 0.0; cnt = 0
+    @inbounds for i in eachindex(y)
+        if !ismissing(y[i])
+            row[i] = linkfun(link, float(y[i]))            # identity
+            acc += row[i]; cnt += 1
+        end
+    end
+    m = cnt == 0 ? 0.0 : acc / cnt
+    @inbounds for i in eachindex(y)
+        ismissing(y[i]) && (row[i] = m)
+    end
+    return row
 end
 function _mixed_pseudo_link_row(fam::Union{Poisson, NegativeBinomial}, link::Link,
         y::AbstractVector, n::AbstractVector)

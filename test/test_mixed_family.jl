@@ -218,4 +218,92 @@ end
         R = correlation(fit, Y; N = N)
         _check_correlation(R, p)
     end
+
+    # -----------------------------------------------------------------------
+    # (e) NA-aware FIML on the mixed path (issue #27 slice 1). With all-Normal
+    #     families this IS exact Gaussian FIML: the Normal working weight 1/σ² is
+    #     constant in z, so the Laplace approximation is exact, and dropping a
+    #     missing cell (0 score, 0 weight, skipped in ℓ) is algebraically identical
+    #     to running on the observed submatrices ⇒ the per-site marginal equals the
+    #     textbook N(y_obs; β_obs, Λ_obs Λ_obsᵀ + diag(σ²_obs)).
+    # -----------------------------------------------------------------------
+    @testset "(e) NA-aware FIML (all-Normal == observed-submatrix Gaussian FIML)" begin
+        # (e1) Complete-data equivalence: a missing-typed Y with NO NAs reproduces the
+        # dense all-Normal marginal == gaussian_marginal_loglik (guards are no-ops).
+        Random.seed!(525252)
+        p, n, K = 4, 60, 2
+        Λ = [i >= j ? (0.5 * randn()) : 0.0 for i in 1:p, j in 1:K]
+        β = 0.3 .* randn(p)
+        σ = 0.7
+        Y = β .+ Λ * randn(K, n) .+ σ .* randn(p, n)
+        families = [Normal() for _ in 1:p]
+        links = [IdentityLink() for _ in 1:p]
+        fams_t = [Normal(0.0, σ) for _ in 1:p]
+        N = ones(Int, p, n)
+        Ym0 = Matrix{Union{Missing, Float64}}(Y)              # missing-typed, no NAs
+        ll_dense = GLLVM.mixed_marginal_loglik_laplace(fams_t, links, Y,   N, Λ, β)
+        ll_na0   = GLLVM.mixed_marginal_loglik_laplace(fams_t, links, Ym0, N, Λ, β)
+        @test isapprox(ll_na0, ll_dense; atol = 1e-9)
+        @test isapprox(ll_na0, GLLVM.gaussian_marginal_loglik(Y .- β, Λ, σ);
+                       rtol = 1e-9, atol = 1e-7)
+        fit_d = fit_mixed_gllvm(Y;   families = families, K = K)
+        fit_m = fit_mixed_gllvm(Ym0; families = families, K = K)
+        @test isapprox(fit_m.loglik, fit_d.loglik; atol = 1e-6)
+        @test maximum(abs.(fit_m.β .- fit_d.β)) < 1e-5
+        @test maximum(abs.(fit_m.Λ .- fit_d.Λ)) < 1e-5
+
+        # (e2) NA marginal == hand-rolled observed-submatrix Gaussian FIML, with
+        # DISTINCT per-trait σ_t so every masked site is genuinely its own submatrix.
+        σvec = [0.5, 0.8, 0.6, 0.9]
+        famsσ = [Normal(0.0, σvec[t]) for t in 1:p]
+        Ym = Matrix{Union{Missing, Float64}}(Y)
+        Ym[1, 1] = missing; Ym[4, 1] = missing               # site 1 drops traits 1,4
+        Ym[2, 5] = missing                                   # scattered single drops
+        Ym[3, 8] = missing
+        ll_mix = GLLVM.mixed_marginal_loglik_laplace(famsσ, links, Ym, N, Λ, β)
+        ref = 0.0
+        for s in 1:n
+            obs = [t for t in 1:p if !ismissing(Ym[t, s])]
+            Λo = Λ[obs, :]
+            Σo = Λo * Λo' + Diagonal(σvec[obs] .^ 2)
+            ro = Float64[Ym[t, s] - β[t] for t in obs]
+            ref += -0.5 * (length(obs) * log(2π) + logdet(Σo) + ro' * (Σo \ ro))
+        end
+        @test isapprox(ll_mix, ref; atol = 1e-8)
+
+        # (e3) NA recovery (~15% missing): the FIML fit recovers the complete-data fit.
+        Random.seed!(636363)
+        p3, n3, K3 = 6, 800, 2
+        Λ3 = [i >= j ? (0.5 * randn()) : 0.0 for i in 1:p3, j in 1:K3]
+        β3 = 0.3 .* randn(p3)
+        Y3 = β3 .+ Λ3 * randn(K3, n3) .+ 0.7 .* randn(p3, n3)
+        fams3 = [Normal() for _ in 1:p3]
+        fit_full = fit_mixed_gllvm(Y3; families = fams3, K = K3)
+        Y3m = Matrix{Union{Missing, Float64}}(Y3)
+        rng = MersenneTwister(6364)
+        for idx in eachindex(Y3m)
+            rand(rng) < 0.15 && (Y3m[idx] = missing)
+        end
+        fit_na = fit_mixed_gllvm(Y3m; families = fams3, K = K3)
+        @test fit_na.converged
+        @test isfinite(fit_na.loglik)
+        @test maximum(abs.(fit_na.β .- fit_full.β)) < 0.3
+        @test cor(vec(fit_na.Λ * fit_na.Λ'), vec(fit_full.Λ * fit_full.Λ')) > 0.8
+        _check_correlation(correlation(fit_na, Y3m), p3)
+
+        # (e4) Edge cases: a fully-missing site (marginal = 0, mode = 0, A = I) and a
+        # fully-missing trait must not crash; the observed traits stay finite.
+        Random.seed!(747474)
+        p4, n4, K4 = 5, 120, 1
+        Λ4 = reshape(0.4 .* randn(p4), p4, K4)
+        β4 = 0.2 .* randn(p4)
+        Y4 = β4 .+ Λ4 * randn(K4, n4) .+ 0.6 .* randn(p4, n4)
+        Y4m = Matrix{Union{Missing, Float64}}(Y4)
+        Y4m[:, 1] .= missing                                 # fully-missing site
+        Y4m[2, :] .= missing                                 # fully-missing trait
+        fit4 = fit_mixed_gllvm(Y4m; families = [Normal() for _ in 1:p4], K = K4)
+        @test isfinite(fit4.loglik)
+        @test all(isfinite, fit4.β[[1, 3, 4, 5]])
+        @test size(fit4.Λ) == (p4, K4)
+    end
 end
