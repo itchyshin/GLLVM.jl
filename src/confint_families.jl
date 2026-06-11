@@ -102,6 +102,17 @@ function _nongaussian_wald_ci(θ̂::AbstractVector, nll,
                 push!(lower_out, NaN)
                 push!(upper_out, NaN)
             end
+        elseif kind === :logit
+            # probability on the logit scale: estimate = logistic(θ̂),
+            # CI = logistic(θ̂ ± z·SE) (monotone ⇒ bounds stay ordered in (0,1)).
+            push!(estimate_out, _prob_from_logit(θi))
+            if isfinite(sei)
+                push!(lower_out, _prob_from_logit(θi - z * sei))
+                push!(upper_out, _prob_from_logit(θi + z * sei))
+            else
+                push!(lower_out, NaN)
+                push!(upper_out, NaN)
+            end
         else
             push!(estimate_out, θi)
             if isfinite(sei)
@@ -355,5 +366,215 @@ function confint(fit::OrdinalFit;
         # ψ₁ = τ₁ is unconstrained (linear); ψ_{c≥2} = log Δτ_c (positive ⇒ exp).
         push!(kinds, c == 1 ? :linear : :log_sd)
     end
+    return _nongaussian_wald_ci(θ̂, nll, terms, kinds; level = level, parm = parm)
+end
+
+# ---------------------------------------------------------------------------
+# NB1 (β, Λ, log dispersion φ; linear-variance NB).
+# ---------------------------------------------------------------------------
+
+"""
+    confint(fit::NB1Fit; Y, level=0.95, parm=nothing) -> NamedTuple
+
+Wald CIs (observed information) for a fitted NB1 (linear-variance NB) GLLVM. `Y` is
+the p×n count matrix. β and Λ are linear; the dispersion `φ` is parameterised
+internally on the log scale, so `"phi"` is reported on the raw (positive) scale via
+`exp(log φ ± z·SE)`.
+"""
+function confint(fit::NB1Fit;
+                 Y::Union{Nothing, AbstractMatrix} = nothing,
+                 level::Real = 0.95,
+                 parm::Union{Nothing, AbstractString, Symbol, AbstractVector} = nothing)
+    Y === nothing && throw(ArgumentError(
+        "confint(::NB1Fit) requires the data matrix `Y` (the same matrix passed to fit_nb1_gllvm)"))
+    p, K = size(fit.Λ)
+    rr = rr_theta_len(p, K)
+    θ̂ = vcat(fit.β, pack_lambda(fit.Λ), log(fit.φ))
+    link = fit.link
+    nll = θ -> -nb1_marginal_loglik_laplace(
+        Y, unpack_lambda(θ[(p + 1):(p + rr)], p, K), θ[1:p],
+        _positive_from_log(θ[p + rr + 1]); link = link)
+    terms, kinds = _confint_beta_lambda_terms(p, K)
+    push!(terms, "phi"); push!(kinds, :log_sd)
+    return _nongaussian_wald_ci(θ̂, nll, terms, kinds; level = level, parm = parm)
+end
+
+# ---------------------------------------------------------------------------
+# Beta-Binomial (β, Λ, log precision φ; needs trial counts N).
+# ---------------------------------------------------------------------------
+
+"""
+    confint(fit::BetaBinomialFit; Y, N=nothing, level=0.95, parm=nothing) -> NamedTuple
+
+Wald CIs (observed information) for a fitted Beta-Binomial GLLVM. `Y` is the p×n
+success-count matrix; `N` the trial counts (default all-ones) — pass the same `N`
+used in `fit_betabinomial_gllvm`. β and Λ are linear; the precision `φ` is
+parameterised internally on the log scale, reported via `exp(log φ ± z·SE)`.
+"""
+function confint(fit::BetaBinomialFit;
+                 Y::Union{Nothing, AbstractMatrix} = nothing,
+                 N::Union{Nothing, AbstractMatrix} = nothing,
+                 level::Real = 0.95,
+                 parm::Union{Nothing, AbstractString, Symbol, AbstractVector} = nothing)
+    Y === nothing && throw(ArgumentError(
+        "confint(::BetaBinomialFit) requires the data matrix `Y` (the same matrix passed to fit_betabinomial_gllvm)"))
+    p, K = size(fit.Λ)
+    rr = rr_theta_len(p, K)
+    Nm = N === nothing ? fill(1, p, size(Y, 2)) : N
+    size(Nm) == size(Y) || throw(DimensionMismatch("N must match size(Y) = $(size(Y))"))
+    θ̂ = vcat(fit.β, pack_lambda(fit.Λ), log(fit.φ))
+    link = fit.link
+    nll = θ -> -betabinomial_marginal_loglik_laplace(
+        Y, Nm, unpack_lambda(θ[(p + 1):(p + rr)], p, K), θ[1:p],
+        _positive_from_log(θ[p + rr + 1]); link = link)
+    terms, kinds = _confint_beta_lambda_terms(p, K)
+    push!(terms, "phi"); push!(kinds, :log_sd)
+    return _nongaussian_wald_ci(θ̂, nll, terms, kinds; level = level, parm = parm)
+end
+
+# ---------------------------------------------------------------------------
+# Student-t (β, Λ, log scale σ; ν held fixed at the fitted value).
+# ---------------------------------------------------------------------------
+
+"""
+    confint(fit::StudentTFit; Y, level=0.95, parm=nothing) -> NamedTuple
+
+Wald CIs (observed information) for a fitted Student-t GLLVM. `Y` is the p×n response
+matrix. β and Λ are linear; the scale `σ` is parameterised internally on the log
+scale, reported via `exp(log σ ± z·SE)`. The degrees of freedom `ν` are held fixed at
+the fitted value (the fitter does not estimate ν), so the interval conditions on `ν`.
+"""
+function confint(fit::StudentTFit;
+                 Y::Union{Nothing, AbstractMatrix} = nothing,
+                 level::Real = 0.95,
+                 parm::Union{Nothing, AbstractString, Symbol, AbstractVector} = nothing)
+    Y === nothing && throw(ArgumentError(
+        "confint(::StudentTFit) requires the data matrix `Y` (the same matrix passed to fit_studentt_gllvm)"))
+    p, K = size(fit.Λ)
+    rr = rr_theta_len(p, K)
+    θ̂ = vcat(fit.β, pack_lambda(fit.Λ), log(fit.σ))
+    link = fit.link
+    ν = fit.ν
+    nll = θ -> -studentt_marginal_loglik_laplace(
+        Y, unpack_lambda(θ[(p + 1):(p + rr)], p, K), θ[1:p],
+        _positive_from_log(θ[p + rr + 1]); ν = ν, link = link)
+    terms, kinds = _confint_beta_lambda_terms(p, K)
+    push!(terms, "sigma"); push!(kinds, :log_sd)
+    return _nongaussian_wald_ci(θ̂, nll, terms, kinds; level = level, parm = parm)
+end
+
+# ---------------------------------------------------------------------------
+# Zero-truncated Poisson (β, Λ only).
+# ---------------------------------------------------------------------------
+
+"""
+    confint(fit::TruncPoissonFit; Y, level=0.95, parm=nothing) -> NamedTuple
+
+Wald CIs (observed information) for a fitted zero-truncated Poisson GLLVM. `Y` is the
+p×n matrix of positive counts. β and Λ are reported on the native (linear) scale.
+"""
+function confint(fit::TruncPoissonFit;
+                 Y::Union{Nothing, AbstractMatrix} = nothing,
+                 level::Real = 0.95,
+                 parm::Union{Nothing, AbstractString, Symbol, AbstractVector} = nothing)
+    Y === nothing && throw(ArgumentError(
+        "confint(::TruncPoissonFit) requires the data matrix `Y` (the same matrix passed to fit_truncpoisson_gllvm)"))
+    p, K = size(fit.Λ)
+    rr = rr_theta_len(p, K)
+    θ̂ = vcat(fit.β, pack_lambda(fit.Λ))
+    link = fit.link
+    nll = θ -> -truncpoisson_marginal_loglik_laplace(
+        Y, unpack_lambda(θ[(p + 1):(p + rr)], p, K), θ[1:p], link)
+    terms, kinds = _confint_beta_lambda_terms(p, K)
+    return _nongaussian_wald_ci(θ̂, nll, terms, kinds; level = level, parm = parm)
+end
+
+# ---------------------------------------------------------------------------
+# Zero-truncated NB2 (β, Λ, log dispersion r).
+# ---------------------------------------------------------------------------
+
+"""
+    confint(fit::TruncNBFit; Y, level=0.95, parm=nothing) -> NamedTuple
+
+Wald CIs (observed information) for a fitted zero-truncated NB2 GLLVM. `Y` is the p×n
+matrix of positive counts. β and Λ are linear; the dispersion `r` is parameterised
+internally on the log scale, reported via `exp(log r ± z·SE)`.
+"""
+function confint(fit::TruncNBFit;
+                 Y::Union{Nothing, AbstractMatrix} = nothing,
+                 level::Real = 0.95,
+                 parm::Union{Nothing, AbstractString, Symbol, AbstractVector} = nothing)
+    Y === nothing && throw(ArgumentError(
+        "confint(::TruncNBFit) requires the data matrix `Y` (the same matrix passed to fit_truncnb_gllvm)"))
+    p, K = size(fit.Λ)
+    rr = rr_theta_len(p, K)
+    θ̂ = vcat(fit.β, pack_lambda(fit.Λ), log(fit.r))
+    link = fit.link
+    nll = θ -> -truncnb_marginal_loglik_laplace(
+        Y, unpack_lambda(θ[(p + 1):(p + rr)], p, K), θ[1:p],
+        _positive_from_log(θ[p + rr + 1]); link = link)
+    terms, kinds = _confint_beta_lambda_terms(p, K)
+    push!(terms, "r"); push!(kinds, :log_sd)
+    return _nongaussian_wald_ci(θ̂, nll, terms, kinds; level = level, parm = parm)
+end
+
+# ---------------------------------------------------------------------------
+# Zero-inflated Poisson (β, Λ, logit π).
+# ---------------------------------------------------------------------------
+
+"""
+    confint(fit::ZIPFit; Y, level=0.95, parm=nothing) -> NamedTuple
+
+Wald CIs (observed information) for a fitted zero-inflated Poisson GLLVM. `Y` is the
+p×n count matrix. β and Λ are linear; the zero-inflation probability `π` is
+parameterised internally on the logit scale, so `"pi"` is reported on the (0,1) scale
+via `logistic(logit π ± z·SE)`.
+"""
+function confint(fit::ZIPFit;
+                 Y::Union{Nothing, AbstractMatrix} = nothing,
+                 level::Real = 0.95,
+                 parm::Union{Nothing, AbstractString, Symbol, AbstractVector} = nothing)
+    Y === nothing && throw(ArgumentError(
+        "confint(::ZIPFit) requires the data matrix `Y` (the same matrix passed to fit_zip_gllvm)"))
+    p, K = size(fit.Λ)
+    rr = rr_theta_len(p, K)
+    θ̂ = vcat(fit.β, pack_lambda(fit.Λ), log(fit.π / (1 - fit.π)))
+    link = fit.link
+    nll = θ -> -zip_marginal_loglik_laplace(
+        Y, unpack_lambda(θ[(p + 1):(p + rr)], p, K), θ[1:p],
+        _prob_from_logit(θ[p + rr + 1]); link = link)
+    terms, kinds = _confint_beta_lambda_terms(p, K)
+    push!(terms, "pi"); push!(kinds, :logit)
+    return _nongaussian_wald_ci(θ̂, nll, terms, kinds; level = level, parm = parm)
+end
+
+# ---------------------------------------------------------------------------
+# Zero-inflated NB2 (β, Λ, log dispersion r, logit π).
+# ---------------------------------------------------------------------------
+
+"""
+    confint(fit::ZINBFit; Y, level=0.95, parm=nothing) -> NamedTuple
+
+Wald CIs (observed information) for a fitted zero-inflated NB2 GLLVM. `Y` is the p×n
+count matrix. β and Λ are linear; the dispersion `r` is parameterised internally on
+the log scale (reported via `exp`), and the zero-inflation probability `π` on the
+logit scale (reported on (0,1) via `logistic`).
+"""
+function confint(fit::ZINBFit;
+                 Y::Union{Nothing, AbstractMatrix} = nothing,
+                 level::Real = 0.95,
+                 parm::Union{Nothing, AbstractString, Symbol, AbstractVector} = nothing)
+    Y === nothing && throw(ArgumentError(
+        "confint(::ZINBFit) requires the data matrix `Y` (the same matrix passed to fit_zinb_gllvm)"))
+    p, K = size(fit.Λ)
+    rr = rr_theta_len(p, K)
+    θ̂ = vcat(fit.β, pack_lambda(fit.Λ), log(fit.r), log(fit.π / (1 - fit.π)))
+    link = fit.link
+    nll = θ -> -zinb_marginal_loglik_laplace(
+        Y, unpack_lambda(θ[(p + 1):(p + rr)], p, K), θ[1:p],
+        _positive_from_log(θ[p + rr + 1]), _prob_from_logit(θ[p + rr + 2]); link = link)
+    terms, kinds = _confint_beta_lambda_terms(p, K)
+    push!(terms, "r"); push!(kinds, :log_sd)
+    push!(terms, "pi"); push!(kinds, :logit)
     return _nongaussian_wald_ci(θ̂, nll, terms, kinds; level = level, parm = parm)
 end
