@@ -569,11 +569,36 @@ dense Laplace marginal via the augmented-diagonal `Λ_aug = [Λ | diag(√ψ)]`.
 ForwardDiff gradient; MoreThuente line search. `ψ_t` is the estimated specific residual
 `s_t` (the `ψ = s + d` decomposition); total latent-scale residual is `ψ_t + ln(1+1/μ̂_t)`.
 """
+# Pure detection (no logging): traits clearly underdispersed relative to Poisson. A
+# Poisson(+latent+OLRE) marginal ALWAYS has var ≥ mean (latent + OLRE only ADD variance),
+# so a trait whose sample dispersion var/mean sits well below 1 cannot be fit by the OLRE
+# (ψ ≥ 0). Threshold = a ~3σ Poisson test: var/mean has SE ≈ √(2/(n−1)) under Poisson, so
+# flag only `var/mean < 1 − 3·√(2/(n−1))` — avoids false positives from sampling noise and
+# auto-relaxes at small n (where underdispersion isn't reliably detectable).
+function _olre_underdispersed_traits(Y::AbstractMatrix{<:Integer}, p::Integer, n::Integer)
+    thr = 1.0 - 3.0 * sqrt(2.0 / max(n - 1, 1))
+    under = Int[]
+    @inbounds for t in 1:p
+        m = sum(@view Y[t, :]) / n
+        m > 0 || continue
+        v = sum(abs2, float.(@view Y[t, :]) .- m) / (n - 1)
+        v < thr * m && push!(under, t)
+    end
+    return under
+end
+
 function fit_poisson_olre(Y::AbstractMatrix{<:Integer}; K::Integer,
         link::Link = LogLink(), ψ_init::Real = 0.3,
         g_tol::Real = 1e-5, iterations::Integer = 500)
     p, n = size(Y)
     K ≥ 1 || throw(ArgumentError("K must be ≥ 1; got $K"))
+    # Underdispersion guard: the OLRE (ψ ≥ 0) can only ADD overdispersion, so it cannot fit
+    # underdispersed counts (var < mean) — ψ collapses to ~0 and the model is misspecified.
+    under = _olre_underdispersed_traits(Y, p, n)
+    isempty(under) || @warn string(
+        "fit_poisson_olre: trait(s) ", under, " are underdispersed (sample variance < mean); ",
+        "the Poisson OLRE (ψ ≥ 0) only ADDS overdispersion and CANNOT fit underdispersion ",
+        "(ψ → 0). Use CMPoisson or GenPoisson — both span under- and over-dispersion.")
     rr = rr_theta_len(p, K)
     Zemp = [linkfun(link, max(Y[t, i] + 0.5, 1e-4)) for t in 1:p, i in 1:n]
     β0 = vec(sum(Zemp; dims = 2)) ./ n

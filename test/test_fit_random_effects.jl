@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra, Statistics, ForwardDiff
+using GLLVM, Test, Random, LinearAlgebra, Statistics, ForwardDiff, Logging
 using Distributions: Poisson, Binomial, NegativeBinomial, Beta, Gamma
 
 # SP1.1: Gaussian per-site random ROW effect via the augmented-constant-column trick
@@ -295,4 +295,32 @@ end
         fit0 = fit_poisson_olre(Y0; K = K, ψ_init = 0.3)
         @test maximum(fit0.ψ) < 0.3
     end
+end
+
+@testset "fit_gllvm(family=Poisson, specific=true) routes to the OLRE (SP1.5)" begin
+    Random.seed!(17004)
+    p, K, n = 4, 1, 200
+    βt = log.([4.0, 5.0, 3.0, 4.0]); Λt = 0.3 .* randn(p, K)
+    η = βt .+ Λt * randn(K, n) .+ sqrt.([0.3, 0.2, 0.4, 0.3]) .* randn(p, n)
+    Y = [rand(Poisson(exp(clamp(η[t, i], -10, 10)))) for t in 1:p, i in 1:n]
+    f = fit_gllvm(Y; family = Poisson(), K = K, specific = true)
+    @test f isa PoissonOLREFit
+    @test all(f.ψ .> 0)
+    f0 = fit_gllvm(Y; family = Poisson(), K = K)              # specific=false ⇒ plain Poisson
+    @test f0 isa PoissonFit
+end
+
+@testset "Poisson OLRE underdispersion guard (SP1.5)" begin
+    Random.seed!(17005)
+    p, n = 4, 300
+    Y_under = [rand(Binomial(20, 0.5)) for t in 1:p, i in 1:n]   # Binomial ⇒ var≈5 < mean≈10
+    Y_pois  = [rand(Poisson(15.0))     for t in 1:p, i in 1:n]   # Poisson ⇒ var ≈ mean
+    @test length(GLLVM._olre_underdispersed_traits(Y_under, p, n)) == p   # all flagged
+    @test isempty(GLLVM._olre_underdispersed_traits(Y_pois, p, n))        # none flagged
+    # the fitter emits the underdispersion warning on underdispersed counts
+    tl = Test.TestLogger(min_level = Logging.Warn)
+    Logging.with_logger(tl) do
+        fit_poisson_olre(Y_under; K = 1, iterations = 30)
+    end
+    @test any(r -> r.level >= Logging.Warn && occursin("underdispersed", r.message), tl.logs)
 end

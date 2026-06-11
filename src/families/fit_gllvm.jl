@@ -33,7 +33,10 @@ fit_gllvm(Y::AbstractMatrix; family = Normal(), kwargs...) = _fit_gllvm(family, 
 
 _fit_gllvm(::Normal,   Y::AbstractMatrix; kwargs...) = fit_gaussian_gllvm(Y; kwargs...)
 _fit_gllvm(::Binomial, Y::AbstractMatrix; kwargs...) = fit_binomial_gllvm(Y; kwargs...)
-_fit_gllvm(::Poisson,  Y::AbstractMatrix; kwargs...) = fit_poisson_gllvm(Y; kwargs...)
+# `specific=true` for Poisson routes to the OLRE (per-trait overdispersion s_t); the only
+# non-Gaussian family where `specific` is a separate estimable parameter (SP1.5 taxonomy).
+_fit_gllvm(::Poisson, Y::AbstractMatrix; specific::Bool = false, kwargs...) =
+    specific ? fit_poisson_olre(Y; kwargs...) : fit_poisson_gllvm(Y; kwargs...)
 _fit_gllvm(::NegativeBinomial, Y::AbstractMatrix; kwargs...) = fit_nb_gllvm(Y; kwargs...)
 _fit_gllvm(::Beta,     Y::AbstractMatrix; kwargs...) = fit_beta_gllvm(Y; kwargs...)
 _fit_gllvm(::BetaBinomial, Y::AbstractMatrix; kwargs...) = fit_betabinomial_gllvm(Y; kwargs...)
