@@ -57,7 +57,8 @@ function gaussian_profile_nll(params::AbstractVector, y::AbstractMatrix;
                               spec::NamedTuple,
                               X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
                               Σ_phy::Union{Nothing, AbstractMatrix} = nothing,
-                              profile_beta::Bool = true)
+                              profile_beta::Bool = true,
+                              reml::Bool = false)
     p = spec.p
     q = spec.q
     K_B = spec.K_B
@@ -70,6 +71,14 @@ function gaussian_profile_nll(params::AbstractVector, y::AbstractMatrix;
     # β profiling is only supported on the non-phy site-stacked path.
     # For phy, β stays in the parameter vector (still no σ_eps axis).
     do_profile_beta = profile_beta && !has_phy && q > 0
+
+    # REML (Gaussian) profiles β out and adjusts the criterion by the fixed-effect
+    # information − it requires the β-profiling path. Phylo REML (cross-site GLS) is a
+    # documented follow-on.
+    reml && has_phy && throw(ArgumentError(
+        "REML on the phylogenetic Gaussian path is not yet supported (fit with reml=false)"))
+    reml && !do_profile_beta && throw(ArgumentError(
+        "reml=true requires β profiling (needs X with q>0, non-phylo)"))
 
     n = size(y, 2)
     size(y, 1) == p ||
@@ -261,17 +270,31 @@ function gaussian_profile_nll(params::AbstractVector, y::AbstractMatrix;
             quad = sum(resid .* Ainv_r)
         end
 
-        # Profile σ²_eps from Q̃; build profile NLL.
+        # Profile σ²_eps from Q̃; build profile NLL (ML, or REML with the
+        # fixed-effect df correction np→np−q and the −½logdet(M) information term;
+        # M = Σ_s X_s'Ã⁻¹X_s from the β-profiling path above).
         np = n * p
         Tq = promote_type(typeof(quad), Td)
-        σ²_eps_hat = quad / np
-
-        nll = convert(Tq, 0.5) * (
-            np * log(convert(Tq, 2π))
-            + np
-            + np * log(σ²_eps_hat)
-            + n * logdet_A_tilde
-        )
+        if reml
+            np_eff = np - q
+            σ²_eps_hat = quad / np_eff
+            logdet_M = logdet(cholesky(Symmetric(M)))
+            nll = convert(Tq, 0.5) * (
+                np_eff * log(convert(Tq, 2π))
+                + np_eff
+                + np_eff * log(σ²_eps_hat)
+                + n * logdet_A_tilde
+                + logdet_M
+            )
+        else
+            σ²_eps_hat = quad / np
+            nll = convert(Tq, 0.5) * (
+                np * log(convert(Tq, 2π))
+                + np
+                + np * log(σ²_eps_hat)
+                + n * logdet_A_tilde
+            )
+        end
 
         return nll
     else
@@ -374,7 +397,8 @@ function profile_recover(params::AbstractVector, y::AbstractMatrix;
                          spec::NamedTuple,
                          X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
                          Σ_phy::Union{Nothing, AbstractMatrix} = nothing,
-                         profile_beta::Bool = true)
+                         profile_beta::Bool = true,
+                         reml::Bool = false)
     p = spec.p
     q = spec.q
     K_B = spec.K_B
@@ -384,6 +408,8 @@ function profile_recover(params::AbstractVector, y::AbstractMatrix;
     has_phy_unique = hasproperty(spec, :has_phy_unique) ? spec.has_phy_unique : false
     has_phy = (K_phy > 0) || has_phy_unique
     do_profile_beta = profile_beta && !has_phy && q > 0
+    reml && (has_phy || !do_profile_beta) && throw(ArgumentError(
+        "REML recovery requires the non-phylo β-profiling path (X with q>0)"))
 
     rr_B = rr_theta_len(p, K_B)
     rr_W = K_W > 0 ? rr_theta_len(p, K_W) : 0
@@ -501,15 +527,21 @@ function profile_recover(params::AbstractVector, y::AbstractMatrix;
         end
 
         np = n * p
-        σ²_eps_hat = quad / np
+        np_eff = reml ? (np - q) : np                  # REML df correction
+        σ²_eps_hat = quad / np_eff
         σ_eps_hat = sqrt(σ²_eps_hat)
         # Recover unscaled loadings/variances
         Λ_B_hat = σ_eps_hat .* L_B
         Λ_W_hat = K_W > 0 ? (σ_eps_hat .* L_W) : nothing
         σ²_B_hat = has_diag ? (exp.(2 .* log_τ_B) .* σ²_eps_hat) : nothing
         σ²_W_hat = has_diag ? (exp.(2 .* log_τ_W) .* σ²_eps_hat) : nothing
-        # Profile NLL → logLik
-        ll = -0.5 * (np * log(2π) + np + np * log(σ²_eps_hat) + n * logdet_A_tilde)
+        # Profile criterion → logLik (REML adds the −½logdet(M) information term)
+        ll = if reml
+            -0.5 * (np_eff * log(2π) + np_eff + np_eff * log(σ²_eps_hat) +
+                    n * logdet_A_tilde + logdet(cholesky(Symmetric(M))))
+        else
+            -0.5 * (np * log(2π) + np + np * log(σ²_eps_hat) + n * logdet_A_tilde)
+        end
         return (logLik = ll, σ_eps = σ_eps_hat, β = β_out,
                 Λ_B = Λ_B_hat, Λ_W = Λ_W_hat,
                 σ²_B = σ²_B_hat, σ²_W = σ²_W_hat,

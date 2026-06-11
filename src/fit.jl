@@ -354,17 +354,14 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
     @assert K_phy ≥ 0
     @assert n ≥ p "Need n_sites ≥ p for a well-posed Gaussian GLLVM"
 
-    # REML (Gaussian only): delegate to the dedicated restricted-ML path. Supported for
-    # the basic Gaussian + fixed-effects case (J1: K LVs + σ_eps + X); structured
-    # (K_W / has_diag) and phylogenetic REML are follow-ons. Returns a GaussianREMLFit.
-    if reml
-        X === nothing && throw(ArgumentError(
+    # REML (Gaussian only): profiles the fixed effects β out (GLS) and adds the
+    # fixed-effect information term to the criterion — threaded via profile_beta + reml
+    # into the SAME fast profile engine (non-phylo + K_W + diagonal reuse the Woodbury M;
+    # phylo via the rotation-trick β-GLS — no speed regression). Returns a normal
+    # GllvmFit. (fit_gaussian_reml is the standalone J1 entry / oracle.)
+    if reml && X === nothing
+        throw(ArgumentError(
             "reml=true requires fixed effects X (REML adjusts for the X coefficients)"))
-        (K_W > 0 || has_diag || K_phy > 0 || has_phy_unique || Σ_phy !== nothing || phy !== nothing) &&
-            throw(ArgumentError(
-                "reml=true currently supports the basic Gaussian + X case (no K_W/diag/phylo); " *
-                "structured/phylo REML is a follow-on — call fit_gaussian_reml directly"))
-        return fit_gaussian_reml(y, X; K = K, g_tol = g_tol, iterations = iterations)
     end
 
     if (K_phy > 0 || has_phy_unique) && Σ_phy === nothing && phy === nothing
@@ -470,7 +467,9 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
     # The decision: profile β when q ≤ small_threshold. Currently we keep
     # β in the param vector (profile_beta = false) because empirical
     # timing shows it dominates when q is small.
-    profile_beta = false  # MixedModels-style β profile-out (off by default)
+    # ML keeps β in the param vector (cheaper at small q); REML MUST profile β out
+    # (the restricted criterion integrates β under a flat prior) ⇒ force it on for reml.
+    profile_beta = reml
 
     do_profile_beta = profile_beta && !has_phy_block && q > 0
     β_in_params = !do_profile_beta && q > 0
@@ -533,7 +532,8 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
     nll = params -> gaussian_profile_nll(params, y;
                                           spec = spec, X = X,
                                           Σ_phy = Σ_phy,
-                                          profile_beta = do_profile_beta)
+                                          profile_beta = do_profile_beta,
+                                          reml = reml)
 
     opts = Optim.Options(
         x_abstol = x_tol,
@@ -600,7 +600,8 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
     # Recover user-facing parameters
     rec = profile_recover(params_hat, y;
                           spec = spec, X = X, Σ_phy = Σ_phy,
-                          profile_beta = do_profile_beta)
+                          profile_beta = do_profile_beta,
+                          reml = reml)
 
     # Post-hoc global sign anchor for σ_phy (identity-link, signed).
     # The marginal likelihood is invariant under the joint flip

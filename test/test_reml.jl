@@ -74,21 +74,27 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics, ForwardDiff
         @test cor(vec(rfit.Λ * rfit.Λ'), vec(Λt * Λt')) > 0.8
     end
 
-    @testset "fit_gaussian_gllvm(reml=true) delegates to the REML path" begin
+    @testset "fit_gaussian_gllvm(reml=true) profile engine matches the standalone oracle" begin
         Random.seed!(31005)
-        p, K, n, q = 5, 1, 80, 2
+        p, K, n, q = 5, 1, 90, 2
         Λt = 0.6 .* randn(p, K); σt = 0.5; βt = randn(q)
         X = randn(p, n, q)
         Y = Matrix{Float64}(undef, p, n)
         for s in 1:n
             Y[:, s] = [sum(X[t, s, k] * βt[k] for k in 1:q) for t in 1:p] .+ Λt * randn(K) .+ σt .* randn(p)
         end
-        f1 = fit_gaussian_gllvm(Y; K = K, X = X, reml = true)
-        f2 = fit_gaussian_reml(Y, X; K = K)
-        @test f1 isa GaussianREMLFit
-        @test isapprox(f1.σ_eps, f2.σ_eps; rtol = 1e-6)
-        @test isapprox(f1.reml_loglik, f2.reml_loglik; rtol = 1e-6)
-        @test_throws ArgumentError fit_gaussian_gllvm(Y; K = K, reml = true)                    # no X
-        @test_throws ArgumentError fit_gaussian_gllvm(Y; K = K, X = X, reml = true, has_diag = true)
+        f1 = fit_gaussian_gllvm(Y; K = K, X = X, reml = true)   # fast profile-engine REML → GllvmFit
+        f2 = fit_gaussian_reml(Y, X; K = K)                      # verified standalone REML (oracle)
+        @test f1 isa GllvmFit
+        @test isapprox(f1.pars.σ_eps, f2.σ_eps; rtol = 1e-4)
+        @test isapprox(f1.logLik, f2.reml_loglik; rtol = 1e-4)   # same REML criterion (proven identical)
+        @test maximum(abs.(f1.pars.β .- f2.β)) < 1e-3
+        @test cor(vec(f1.pars.Λ * f1.pars.Λ'), vec(f2.Λ * f2.Λ')) > 0.999
+        # no fixed effects ⇒ clear error
+        @test_throws ArgumentError fit_gaussian_gllvm(Y; K = K, reml = true)
+        # structured non-phylo (between/within diagonal) is now supported under REML
+        fd = fit_gaussian_gllvm(Y; K = K, X = X, reml = true, has_diag = true)
+        @test fd isa GllvmFit
+        @test isfinite(fd.logLik)
     end
 end
