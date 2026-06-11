@@ -158,3 +158,128 @@ function fit_poisson_row_re(Y::AbstractMatrix{<:Integer}; K::Integer,
     return PoissonRowREFit(β̂, Λ̂, σ_roŵ, link, -Optim.minimum(res),
                            Optim.converged(res), Optim.iterations(res))
 end
+
+# ---------------------------------------------------------------------------
+# Binomial + Negative-Binomial per-site random row effects — same augmented
+# column on each family's Laplace marginal (AD-clean, probed). Binomial threads
+# trial counts N; NB carries a log-dispersion r alongside log σ_row.
+# ---------------------------------------------------------------------------
+
+"""
+    BinomialRowREFit
+
+Result of [`fit_binomial_row_re`](@ref): `β`, `Λ` (p×K), the per-site row-effect SD
+`σ_row`, the `link`, `loglik`, `converged`, `iterations`.
+"""
+struct BinomialRowREFit
+    β::Vector{Float64}
+    Λ::Matrix{Float64}
+    σ_row::Float64
+    link::Link
+    loglik::Float64
+    converged::Bool
+    iterations::Int
+end
+
+function Base.show(io::IO, f::BinomialRowREFit)
+    p, K = size(f.Λ)
+    print(io, "BinomialRowREFit(p=", p, ", K=", K, ", σ_row=", round(f.σ_row; sigdigits = 4),
+          ", link=", nameof(typeof(f.link)), ", loglik=", round(f.loglik; sigdigits = 7),
+          f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+"""
+    fit_binomial_row_re(Y; K, N=nothing, link=LogitLink(), σ_row_init=0.3, …) -> BinomialRowREFit
+
+Binomial GLLVM with a per-site random ROW effect (augmented column σ_row·1ₚ on the
+Laplace marginal). `Y` is p×n; `N` the trial counts (default all-ones = Bernoulli);
+direct ForwardDiff gradient; MoreThuente line search.
+"""
+function fit_binomial_row_re(Y::AbstractMatrix{<:Integer}; K::Integer,
+        N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
+        link::Link = LogitLink(), σ_row_init::Real = 0.3,
+        g_tol::Real = 1e-5, iterations::Integer = 500)
+    p, n = size(Y)
+    K ≥ 1 || throw(ArgumentError("K must be ≥ 1; got $K"))
+    Nm = N === nothing ? fill(1, p, n) : N
+    size(Nm) == (p, n) || throw(DimensionMismatch("N must be $(p)×$(n)"))
+    rr = rr_theta_len(p, K)
+    Zemp = [linkfun(link, clamp((Y[t, i] + 0.5) / (Nm[t, i] + 1), 1e-4, 1 - 1e-4)) for t in 1:p, i in 1:n]
+    β0 = vec(sum(Zemp; dims = 2)) ./ n
+    Zc = Zemp .- β0; F = svd(Zc); kk = min(K, length(F.S))
+    Λ0 = zeros(p, K)
+    @inbounds for j in 1:kk
+        Λ0[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
+    end
+    θ0 = vcat(β0, pack_lambda(Λ0), log(float(σ_row_init)))
+    ones_p = ones(p)
+    nll = θ -> begin
+        β = θ[1:p]; Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K); σ_row = exp(θ[p + rr + 1])
+        return -binomial_marginal_loglik_laplace(Y, Nm, hcat(Λ, σ_row .* ones_p), β, link)
+    end
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.MoreThuente())
+    res = Optim.optimize(nll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations); autodiff = :forward)
+    th = Optim.minimizer(res)
+    return BinomialRowREFit(th[1:p], unpack_lambda(th[(p + 1):(p + rr)], p, K), exp(th[p + rr + 1]),
+                            link, -Optim.minimum(res), Optim.converged(res), Optim.iterations(res))
+end
+
+"""
+    NBRowREFit
+
+Result of [`fit_nb_row_re`](@ref): `β`, `Λ` (p×K), NB2 dispersion `r`, the per-site
+row-effect SD `σ_row`, the `link`, `loglik`, `converged`, `iterations`.
+"""
+struct NBRowREFit
+    β::Vector{Float64}
+    Λ::Matrix{Float64}
+    r::Float64
+    σ_row::Float64
+    link::Link
+    loglik::Float64
+    converged::Bool
+    iterations::Int
+end
+
+function Base.show(io::IO, f::NBRowREFit)
+    p, K = size(f.Λ)
+    print(io, "NBRowREFit(p=", p, ", K=", K, ", r=", round(f.r; sigdigits = 4),
+          ", σ_row=", round(f.σ_row; sigdigits = 4),
+          ", loglik=", round(f.loglik; sigdigits = 7),
+          f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+"""
+    fit_nb_row_re(Y; K, link=LogLink(), r_init=10.0, σ_row_init=0.3, …) -> NBRowREFit
+
+Negative-binomial (NB2) GLLVM with a per-site random ROW effect, jointly estimating
+the dispersion `r` and `σ_row` via the augmented column on the Laplace marginal
+(direct ForwardDiff; MoreThuente line search).
+"""
+function fit_nb_row_re(Y::AbstractMatrix{<:Integer}; K::Integer,
+        link::Link = LogLink(), r_init::Real = 10.0, σ_row_init::Real = 0.3,
+        g_tol::Real = 1e-5, iterations::Integer = 500)
+    p, n = size(Y)
+    K ≥ 1 || throw(ArgumentError("K must be ≥ 1; got $K"))
+    rr = rr_theta_len(p, K)
+    Zemp = [linkfun(link, max(Y[t, i] + 0.5, 1e-4)) for t in 1:p, i in 1:n]
+    β0 = vec(sum(Zemp; dims = 2)) ./ n
+    Zc = Zemp .- β0; F = svd(Zc); kk = min(K, length(F.S))
+    Λ0 = zeros(p, K)
+    @inbounds for j in 1:kk
+        Λ0[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
+    end
+    θ0 = vcat(β0, pack_lambda(Λ0), log(float(r_init)), log(float(σ_row_init)))
+    ones_p = ones(p)
+    nll = θ -> begin
+        β = θ[1:p]; Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+        r = exp(θ[p + rr + 1]); σ_row = exp(θ[p + rr + 2])
+        return -nb_marginal_loglik_laplace(Y, hcat(Λ, σ_row .* ones_p), β, r; link = link)
+    end
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.MoreThuente())
+    res = Optim.optimize(nll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations); autodiff = :forward)
+    th = Optim.minimizer(res)
+    return NBRowREFit(th[1:p], unpack_lambda(th[(p + 1):(p + rr)], p, K),
+                      exp(th[p + rr + 1]), exp(th[p + rr + 2]), link,
+                      -Optim.minimum(res), Optim.converged(res), Optim.iterations(res))
+end
