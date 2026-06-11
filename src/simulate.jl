@@ -163,6 +163,31 @@ function _draw_y(rng::AbstractRNG, ::GenPoisson, μ, n_ts, dispersion)
     return Float64(ub)
 end
 
+# Conway-Maxwell-Poisson (families/compoisson.jl), rate parameterisation λ = exp(η):
+# truncated inverse-CDF over the unnormalised weights w_j = exp(j·logλ − ν·logΓ(j+1)),
+# normalised over the truncated range. `μ` is the rate λ; `dispersion`/`f.ν` is the
+# dispersion ν (ν>1 under-, ν<1 over-dispersion). Truncation pads for ν<1's heavier
+# tail and is capped for safety. Matches the family logpdf's normalisation in spirit.
+function _draw_y(rng::AbstractRNG, f::CMPoisson, μ, n_ts, dispersion)
+    ν = f.ν
+    λ = max(μ, 1e-12)
+    logλ = log(λ)
+    J = min(20000, max(50, ceil(Int, (λ + 15 * sqrt(λ) + 20) / min(ν, 1.0))))
+    w = Vector{Float64}(undef, J + 1)
+    tot = 0.0
+    @inbounds for j in 0:J
+        w[j + 1] = exp(j * logλ - ν * loggamma(j + 1.0))
+        tot += w[j + 1]
+    end
+    u = rand(rng) * tot
+    acc = 0.0
+    @inbounds for j in 0:J
+        acc += w[j + 1]
+        u ≤ acc && return Float64(j)
+    end
+    return Float64(J)
+end
+
 # Zero-truncated NB2 (families/truncnb.jl): _glm_logpdf is the NB2 logpdf
 # (NegativeBinomial(r, r/(r+μ))) minus log(1 − P₀) over y ≥ 1, r the dispersion
 # (Var = μ + μ²/r). Draw NB2 by rejection, resampling until the count is ≥ 1 (the
@@ -416,14 +441,14 @@ function simulate(fit::MixedFamilyFit, n::Integer;
 end
 
 """
-    simulate(fit::Union{PoissonFit,BinomialFit,NBFit,NB1Fit,GammaFit,BetaFit,BetaBinomialFit,LognormalFit,StudentTFit,TruncPoissonFit,TruncNBFit,ZIPFit,ZINBFit,ZIBinomFit,GenPoissonFit}, n;
+    simulate(fit::Union{PoissonFit,BinomialFit,NBFit,NB1Fit,GammaFit,BetaFit,BetaBinomialFit,LognormalFit,StudentTFit,TruncPoissonFit,TruncNBFit,ZIPFit,ZINBFit,ZIBinomFit,GenPoissonFit,CMPoissonFit}, n;
              N=nothing, rng=Random.default_rng(), seed=nothing)
 
 Simulate `n` fresh sites from a fitted single-family GLLVM. The family marker,
 scalar dispersion, and link are taken from the fit (`_fit_family`,
 `_fit_dispersion`, `fit.link`); intercepts and loadings from `fit.β` / `fit.Λ`.
 """
-function simulate(fit::Union{PoissonFit, BinomialFit, NBFit, NB1Fit, GammaFit, BetaFit, BetaBinomialFit, LognormalFit, StudentTFit, TruncPoissonFit, TruncNBFit, ZIPFit, ZINBFit, ZIBinomFit, GenPoissonFit},
+function simulate(fit::Union{PoissonFit, BinomialFit, NBFit, NB1Fit, GammaFit, BetaFit, BetaBinomialFit, LognormalFit, StudentTFit, TruncPoissonFit, TruncNBFit, ZIPFit, ZINBFit, ZIBinomFit, GenPoissonFit, CMPoissonFit},
         n::Integer; N = nothing,
         rng::AbstractRNG = Random.default_rng(), seed = nothing)
     n ≥ 1 || throw(ArgumentError("n must be ≥ 1; got $n"))
