@@ -404,3 +404,127 @@ function fit_gamma_row_re(Y::AbstractMatrix{<:Real}; K::Integer,
                          exp(th[p + rr + 1]), exp(th[p + rr + 2]), link,
                          -Optim.minimum(res), Optim.converged(res), Optim.iterations(res))
 end
+
+# ---------------------------------------------------------------------------
+# Grouped Gaussian random intercept (SP1.2): r_g ~ N(0, σ_u²) shared by all sites
+# in group g ⇒ cross-site correlation WITHIN a group. The marginal over the stacked
+# y has covariance Σ = kron(I_n, A) + kron(G, B), A = ΛΛ' + σ_eps²I, B = σ_u²·1ₚ1ₚᵀ,
+# G[i,j] = 1{g(i)=g(j)}. Groups are independent, so ℓ = Σ_g ℓ_g where each group block
+# is I_{n_g}⊗A + J_{n_g}⊗B — solved by the SAME rotation trick as the phylo path:
+#   y_g'Σ_g⁻¹y_g = n_g·m_g'(A+n_g B)⁻¹m_g + tr(Y_gc'A⁻¹Y_gc),
+#   logdet Σ_g   = logdet(A+n_g B) + (n_g−1)logdet(A).
+# B is rank-1 ⇒ (A+n_g B)⁻¹ and logdet(A+n_g B) come from ONE chol(A) via
+# Sherman-Morrison + the matrix-determinant lemma (v = 1ₚ):
+#   (A+n_g σ_u² vv')⁻¹m = A⁻¹m − [n_g σ_u² (v'A⁻¹m)/(1+n_g σ_u² v'A⁻¹v)]·A⁻¹v,
+#   logdet(A+n_g σ_u² vv') = logdet(A) + log(1 + n_g σ_u² v'A⁻¹v).
+# Cost O(p³ + L·p²). Singleton groups (n_g=1) reduce to the per-site row effect.
+# ---------------------------------------------------------------------------
+
+function _grouped_intercept_loglik(y::AbstractMatrix, group_idx::Vector{Vector{Int}},
+        Λ_B::AbstractMatrix, σ_eps::Real, σ_u::Real)
+    p, n = size(y)
+    T = promote_type(eltype(y), eltype(Λ_B), typeof(σ_eps), typeof(σ_u))
+    σ² = σ_eps^2; σu² = σ_u^2
+    K = size(Λ_B, 2)
+    # Woodbury form of A = ΛΛ' + σ²I — factor the well-conditioned K×K core, NOT the
+    # p×p A, so it stays robust as σ_eps → 0 (a direct chol(A) goes singular there):
+    #   A⁻¹V = (V − Λ(σ²I+Λ'Λ)⁻¹Λ'V)/σ²,  logdet A = (p−K)logσ² + logdet(σ²I+Λ'Λ).
+    Kc = Λ_B' * Λ_B
+    @inbounds for k in 1:K
+        Kc[k, k] += σ²
+    end
+    cKc = cholesky(Symmetric(Kc))
+    logdetA = (p - K) * log(σ²) + logdet(cKc)
+    Ainv = V -> (V .- Λ_B * (cKc \ (Λ_B' * V))) ./ σ²
+    onep = ones(T, p)
+    Ainv_1 = Ainv(onep)
+    vAv = dot(onep, Ainv_1)
+    twopi = convert(T, 2π)
+    ll = zero(T)
+    for idx in group_idx
+        ng = length(idx)
+        Yg = y[:, idx]                                   # p × ng
+        mg = vec(sum(Yg, dims = 2)) ./ ng
+        Ygc = Yg .- reshape(mg, p, 1)
+        quad_centered = sum(Ygc .* Ainv(Ygc))            # tr(Y_gc'A⁻¹Y_gc)
+        Ainv_mg = Ainv(mg)
+        smcoef = (ng * σu²) / (1 + ng * σu² * vAv)
+        AnB_inv_mg = Ainv_mg .- (smcoef * dot(onep, Ainv_mg)) .* Ainv_1
+        quad_mean = ng * dot(mg, AnB_inv_mg)
+        logdet_g = ng * logdetA + log(1 + ng * σu² * vAv)
+        ll += -convert(T, 0.5) * (ng * p * log(twopi) + logdet_g + quad_mean + quad_centered)
+    end
+    return ll
+end
+
+"""
+    gaussian_grouped_intercept_loglik(y, grouping, Λ_B, σ_eps, σ_u) -> Real
+
+Marginal log-likelihood of a Gaussian GLLVM with a grouped random intercept: a shared
+effect r_g ~ N(0, σ_u²) for every site in group g (cross-site correlation within a
+group). `y` is p×n; `grouping` a length-n vector assigning each site to a group. Solved
+per group by the rotation trick + a rank-1 Sherman-Morrison on one shared chol(ΛΛ'+σ²I).
+"""
+function gaussian_grouped_intercept_loglik(y::AbstractMatrix, grouping::AbstractVector,
+        Λ_B::AbstractMatrix, σ_eps::Real, σ_u::Real)
+    codes, _ = _code_grouping(grouping)
+    L = maximum(codes)
+    group_idx = [findall(==(g), codes) for g in 1:L]
+    return _grouped_intercept_loglik(y, group_idx, Λ_B, σ_eps, σ_u)
+end
+
+"""
+    GaussianGroupedREFit
+
+Result of [`fit_gaussian_grouped_re`](@ref): loadings `Λ` (p×K), residual SD `σ_eps`,
+grouped random-intercept SD `σ_u`, the number of groups `nlevels`, the maximised
+`loglik`, `converged`, `iterations`.
+"""
+struct GaussianGroupedREFit
+    Λ::Matrix{Float64}
+    σ_eps::Float64
+    σ_u::Float64
+    nlevels::Int
+    loglik::Float64
+    converged::Bool
+    iterations::Int
+end
+
+function Base.show(io::IO, f::GaussianGroupedREFit)
+    p, K = size(f.Λ)
+    print(io, "GaussianGroupedREFit(p=", p, ", K=", K, ", nlevels=", f.nlevels,
+          ", σ_eps=", round(f.σ_eps; sigdigits = 4), ", σ_u=", round(f.σ_u; sigdigits = 4),
+          ", loglik=", round(f.loglik; sigdigits = 7),
+          f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+"""
+    fit_gaussian_grouped_re(y, grouping; K, σ_u_init=0.3, …) -> GaussianGroupedREFit
+
+Fit a Gaussian GLLVM with a grouped random intercept (`(1|grouping)`) by L-BFGS over
+`[vec(Λ); log σ_eps; log σ_u]` on the per-group rotation-trick marginal. `grouping` is a
+length-n vector of group labels (any type; coded by first appearance). Warm start = PPCA
++ a small `σ_u`; MoreThuente line search; direct ForwardDiff gradient.
+"""
+function fit_gaussian_grouped_re(y::AbstractMatrix, grouping::AbstractVector; K::Integer,
+        σ_u_init::Real = 0.3, g_tol::Real = 1e-6, iterations::Integer = 500)
+    p, n = size(y)
+    length(grouping) == n || throw(DimensionMismatch("grouping length must be n=$n"))
+    K ≥ 1 || throw(ArgumentError("K must be ≥ 1; got $K"))
+    codes, _ = _code_grouping(grouping)
+    L = maximum(codes)
+    group_idx = [findall(==(g), codes) for g in 1:L]
+    rr = rr_theta_len(p, K)
+    yf = Matrix{Float64}(y)
+    Λ0, σ0 = ppca_init(yf, K)
+    θ0 = vcat(pack_lambda(Λ0), log(σ0), log(float(σ_u_init)))
+    nll = θ -> -_grouped_intercept_loglik(yf, group_idx,
+        unpack_lambda(θ[1:rr], p, K), exp(θ[rr + 1]), exp(θ[rr + 2]))
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.MoreThuente())
+    res = Optim.optimize(nll, θ0, ls,
+                         Optim.Options(g_tol = g_tol, iterations = iterations);
+                         autodiff = :forward)
+    th = Optim.minimizer(res)
+    return GaussianGroupedREFit(unpack_lambda(th[1:rr], p, K), exp(th[rr + 1]), exp(th[rr + 2]),
+                                L, -Optim.minimum(res), Optim.converged(res), Optim.iterations(res))
+end
