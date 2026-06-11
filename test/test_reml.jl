@@ -1,4 +1,5 @@
 using GLLVM, Test, Random, LinearAlgebra, Statistics, ForwardDiff
+using Distributions: MvNormal
 
 # REML for the Gaussian GLLVM. The load-bearing check is that gaussian_reml_loglik
 # equals the standard REML formula computed independently from a DENSE Σ_y.
@@ -96,5 +97,64 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics, ForwardDiff
         fd = fit_gaussian_gllvm(Y; K = K, X = X, reml = true, has_diag = true)
         @test fd isa GllvmFit
         @test isfinite(fd.logLik)
+    end
+
+    @testset "Phylo REML (fast rotation-trick GLS) matches a dense phylo REML oracle" begin
+        Random.seed!(32001)
+        p, K_B, K_phy, n, q = 5, 1, 1, 70, 2
+        Λ_B = reshape([0.6, 0.5, 0.4, -0.3, 0.2], p, K_B)
+        Λ_phy = reshape([0.4, 0.3, 0.2, -0.1, 0.1], p, K_phy)
+        σ_eps = 0.5; βt = [0.8, -0.5]
+        T_phy = randn(p, p); Σ_phy = T_phy * T_phy' + 0.5 * I
+        X = randn(p, n, q)
+        # simulate phylo Gaussian with fixed effects Xβ
+        A = Λ_B * Λ_B' + σ_eps^2 * I
+        B = (Λ_phy * Λ_phy') .* Σ_phy
+        Σ_full = kron(I(n), A) + kron(ones(n, n), B)
+        μ = [sum(X[t, s, k] * βt[k] for k in 1:q) for t in 1:p, s in 1:n]
+        y = reshape(rand(MvNormal(vec(μ), Symmetric(Matrix(Σ_full)))), p, n)
+
+        fit = fit_gaussian_gllvm(y; K = K_B, K_phy = K_phy, Σ_phy = Σ_phy, X = X, reml = true)
+        @test fit isa GllvmFit
+        @test isfinite(fit.logLik)
+
+        # dense phylo REML oracle at the fitted params (same REML constant as the
+        # verified non-phylo standalone): −½[(np−q)log2π + log|Σ| + log|X'Σ⁻¹X| + r'Σ⁻¹r]
+        Af = fit.pars.Λ * fit.pars.Λ' + fit.pars.σ_eps^2 * I
+        Bf = (fit.pars.Λ_phy * fit.pars.Λ_phy') .* Σ_phy
+        Σf = kron(I(n), Af) + kron(ones(n, n), Bf)
+        cΣ = cholesky(Symmetric(Matrix(Σf)))
+        Xs = zeros(p * n, q)
+        for s in 1:n, t in 1:p
+            Xs[(s - 1) * p + t, :] = X[t, s, :]
+        end
+        yv = vec(y)
+        Md = Xs' * (cΣ \ Xs)
+        βd = Md \ (Xs' * (cΣ \ yv))
+        r = yv - Xs * βd
+        quad = dot(r, cΣ \ r)
+        ll_dense = -0.5 * ((p * n - q) * log(2π) + logdet(cΣ) + logdet(Md) + quad)
+        @test isapprox(fit.logLik, ll_dense; rtol = 1e-5)
+        @test maximum(abs.(fit.pars.β .- βd)) < 1e-4
+    end
+
+    @testset "Phylo REML runs + ML phylo unchanged" begin
+        Random.seed!(32002)
+        p, K_B, K_phy, n, q = 4, 1, 1, 120, 2
+        Λ_B = reshape([0.6, 0.5, -0.3, 0.2], p, K_B)
+        Λ_phy = reshape([0.4, 0.2, -0.1, 0.1], p, K_phy)
+        σ_eps = 0.5; βt = [0.5, -0.4]
+        T_phy = randn(p, p); Σ_phy = T_phy * T_phy' + 0.5 * I
+        X = randn(p, n, q)
+        A = Λ_B * Λ_B' + σ_eps^2 * I; B = (Λ_phy * Λ_phy') .* Σ_phy
+        Σ_full = kron(I(n), A) + kron(ones(n, n), B)
+        μ = [sum(X[t, s, k] * βt[k] for k in 1:q) for t in 1:p, s in 1:n]
+        y = reshape(rand(MvNormal(vec(μ), Symmetric(Matrix(Σ_full)))), p, n)
+        rfit = fit_gaussian_gllvm(y; K = K_B, K_phy = K_phy, Σ_phy = Σ_phy, X = X, reml = true)
+        mfit = fit_gaussian_gllvm(y; K = K_B, K_phy = K_phy, Σ_phy = Σ_phy, X = X)  # ML, β in params
+        @test rfit.converged
+        @test isapprox(rfit.pars.σ_eps, σ_eps; atol = 0.2)
+        @test maximum(abs.(rfit.pars.β .- βt)) < 0.4
+        @test mfit.converged && isfinite(mfit.logLik)   # ML phylo+X path still works
     end
 end

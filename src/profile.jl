@@ -72,13 +72,12 @@ function gaussian_profile_nll(params::AbstractVector, y::AbstractMatrix;
     # For phy, β stays in the parameter vector (still no σ_eps axis).
     do_profile_beta = profile_beta && !has_phy && q > 0
 
-    # REML (Gaussian) profiles β out and adjusts the criterion by the fixed-effect
-    # information − it requires the β-profiling path. Phylo REML (cross-site GLS) is a
-    # documented follow-on.
-    reml && has_phy && throw(ArgumentError(
-        "REML on the phylogenetic Gaussian path is not yet supported (fit with reml=false)"))
-    reml && !do_profile_beta && throw(ArgumentError(
-        "reml=true requires β profiling (needs X with q>0, non-phylo)"))
+    # REML profiles β out (flat-prior integration) and adds the fixed-effect information
+    # term. Non-phylo uses the Woodbury M; phylo uses the rotation-trick GLS — both reuse
+    # the ML factorisations, no speed regression. Either way β leaves the param vector.
+    do_phylo_reml = reml && has_phy && q > 0
+    reml && !(do_profile_beta || do_phylo_reml) && throw(ArgumentError(
+        "reml=true requires fixed effects X (q>0) to profile β out"))
 
     n = size(y, 2)
     size(y, 1) == p ||
@@ -89,7 +88,7 @@ function gaussian_profile_nll(params::AbstractVector, y::AbstractMatrix;
     rr_phy = K_phy > 0 ? rr_theta_len(p, K_phy) : 0
     diag_count = has_diag ? 2 * p : 0
     phy_diag_count = has_phy_unique ? p : 0
-    q_in_params = do_profile_beta ? 0 : q
+    q_in_params = (do_profile_beta || do_phylo_reml) ? 0 : q
     n_expected = q_in_params + diag_count + rr_B + rr_W + phy_diag_count + rr_phy
     length(params) == n_expected || throw(ArgumentError(
         "params length ($(length(params))) must equal $n_expected " *
@@ -101,7 +100,7 @@ function gaussian_profile_nll(params::AbstractVector, y::AbstractMatrix;
     end
 
     cursor = 0
-    β = if do_profile_beta
+    β = if do_profile_beta || do_phylo_reml
         nothing  # computed below from GLS
     elseif q > 0
         X === nothing && throw(ArgumentError("spec.q = $q > 0 requires X"))
@@ -314,6 +313,59 @@ function gaussian_profile_nll(params::AbstractVector, y::AbstractMatrix;
         end
         B_tilde = (L_phy_aug * L_phy_aug') .* Σ_phy
 
+        if do_phylo_reml
+            # ----- REML on the phylo path: profile β out by GLS over
+            #   Σ̃ = I_n ⊗ Ã + J_n ⊗ B̃, reusing the SAME rotation-trick Choleskys (no
+            # dense np×np solve — keeps the phylo speed). The bilinear form is
+            #   a'Σ̃⁻¹b = n·m_a'(Ã+nB̃)⁻¹m_b + tr(a_c'Ã⁻¹b_c)   (m = row-mean, _c = centered).
+            cA_sym = cholesky(Symmetric((A_tilde + A_tilde') ./ 2))
+            AnB = A_tilde .+ n .* B_tilde
+            cAnB = cholesky(Symmetric((AnB + AnB') ./ 2))
+            logdet_total = logdet(cAnB) + (n - 1) * logdet(cA_sym)
+
+            Tphy = promote_type(Td, eltype(X), eltype(y))
+            m_y = vec(sum(y, dims = 2)) ./ n
+            Yc = y .- reshape(m_y, p, 1)
+            AnB_inv_my = cAnB \ m_y
+            Ainv_Yc = cA_sym \ Yc
+
+            m_X = Matrix{Tphy}(undef, p, q)
+            Xc = Array{Tphy}(undef, p, n, q)
+            AnB_inv_mX = Matrix{Tphy}(undef, p, q)
+            Ainv_Xc = Array{Tphy}(undef, p, n, q)
+            vv = Vector{Tphy}(undef, q)
+            for j in 1:q
+                Xj = @view X[:, :, j]
+                mXj = vec(sum(Xj, dims = 2)) ./ n
+                Xjc = Xj .- reshape(mXj, p, 1)
+                m_X[:, j] = mXj
+                Xc[:, :, j] = Xjc
+                AnB_inv_mX[:, j] = cAnB \ mXj
+                Ainv_Xc[:, :, j] = cA_sym \ Xjc
+                vv[j] = n * dot(mXj, AnB_inv_my) + sum(Xjc .* Ainv_Yc)
+            end
+            M = Matrix{Tphy}(undef, q, q)
+            for j in 1:q
+                for k in j:q
+                    M[j, k] = n * dot(@view(m_X[:, j]), @view(AnB_inv_mX[:, k])) +
+                              sum(@view(Xc[:, :, j]) .* @view(Ainv_Xc[:, :, k]))
+                    k > j && (M[k, j] = M[j, k])
+                end
+            end
+            β_hat = M \ vv
+            quad_y = n * dot(m_y, AnB_inv_my) + sum(Yc .* Ainv_Yc)
+            quad = quad_y - dot(β_hat, vv)
+
+            np = n * p
+            np_eff = np - q
+            Tq = promote_type(typeof(quad), Td)
+            σ²_eps_hat = quad / np_eff
+            logdet_M = logdet(cholesky(Symmetric(M)))
+            return convert(Tq, 0.5) * (
+                np_eff * log(convert(Tq, 2π)) + np_eff + np_eff * log(σ²_eps_hat)
+                + logdet_total + logdet_M)
+        end
+
         # Residuals
         if X === nothing
             resid = y
@@ -408,16 +460,17 @@ function profile_recover(params::AbstractVector, y::AbstractMatrix;
     has_phy_unique = hasproperty(spec, :has_phy_unique) ? spec.has_phy_unique : false
     has_phy = (K_phy > 0) || has_phy_unique
     do_profile_beta = profile_beta && !has_phy && q > 0
-    reml && (has_phy || !do_profile_beta) && throw(ArgumentError(
-        "REML recovery requires the non-phylo β-profiling path (X with q>0)"))
+    do_phylo_reml = reml && has_phy && q > 0
+    reml && !(do_profile_beta || do_phylo_reml) && throw(ArgumentError(
+        "REML recovery requires β profiling (fixed effects X with q>0)"))
 
     rr_B = rr_theta_len(p, K_B)
     rr_W = K_W > 0 ? rr_theta_len(p, K_W) : 0
     rr_phy = K_phy > 0 ? rr_theta_len(p, K_phy) : 0
 
     cursor = 0
-    if do_profile_beta
-        # β placeholder; computed below.
+    if do_profile_beta || do_phylo_reml
+        # β placeholder; computed below (GLS).
         β_in = nothing
     elseif q > 0
         β_in = collect(params[(cursor + 1):(cursor + q)])
@@ -560,6 +613,57 @@ function profile_recover(params::AbstractVector, y::AbstractMatrix;
             reshape(ρ_phy, p, 1)
         end
         B_tilde = (L_phy_aug * L_phy_aug') .* Σ_phy
+
+        if do_phylo_reml
+            # REML on the phylo path — GLS-profile β via the rotation trick (matches
+            # gaussian_profile_nll); reuses cA_sym/cAnB; σ² gets the np→np−q correction.
+            cA_sym = cholesky(Symmetric((A_tilde + A_tilde') ./ 2))
+            AnB = A_tilde .+ n .* B_tilde
+            cAnB = cholesky(Symmetric((AnB + AnB') ./ 2))
+            logdet_total = logdet(cAnB) + (n - 1) * logdet(cA_sym)
+            m_y = vec(sum(y, dims = 2)) ./ n
+            Yc = y .- reshape(m_y, p, 1)
+            AnB_inv_my = cAnB \ m_y
+            Ainv_Yc = cA_sym \ Yc
+            m_X = Matrix{Float64}(undef, p, q)
+            Xc = Array{Float64}(undef, p, n, q)
+            AnB_inv_mX = Matrix{Float64}(undef, p, q)
+            Ainv_Xc = Array{Float64}(undef, p, n, q)
+            vv = Vector{Float64}(undef, q)
+            for j in 1:q
+                Xj = @view X[:, :, j]
+                mXj = vec(sum(Xj, dims = 2)) ./ n
+                Xjc = Xj .- reshape(mXj, p, 1)
+                m_X[:, j] = mXj; Xc[:, :, j] = Xjc
+                AnB_inv_mX[:, j] = cAnB \ mXj
+                Ainv_Xc[:, :, j] = cA_sym \ Xjc
+                vv[j] = n * dot(mXj, AnB_inv_my) + sum(Xjc .* Ainv_Yc)
+            end
+            M = Matrix{Float64}(undef, q, q)
+            for j in 1:q, k in j:q
+                M[j, k] = n * dot(@view(m_X[:, j]), @view(AnB_inv_mX[:, k])) +
+                          sum(@view(Xc[:, :, j]) .* @view(Ainv_Xc[:, :, k]))
+                k > j && (M[k, j] = M[j, k])
+            end
+            β_hat = M \ vv
+            quad_y = n * dot(m_y, AnB_inv_my) + sum(Yc .* Ainv_Yc)
+            quad = quad_y - dot(β_hat, vv)
+            np = n * p; np_eff = np - q
+            σ²_eps_hat = quad / np_eff
+            σ_eps_hat = sqrt(σ²_eps_hat)
+            Λ_B_hat = σ_eps_hat .* L_B
+            Λ_W_hat = K_W > 0 ? (σ_eps_hat .* L_W) : nothing
+            σ²_B_hat = has_diag ? (exp.(2 .* log_τ_B) .* σ²_eps_hat) : nothing
+            σ²_W_hat = has_diag ? (exp.(2 .* log_τ_W) .* σ²_eps_hat) : nothing
+            Λ_phy_hat = K_phy > 0 ? (σ_eps_hat .* L_phy) : nothing
+            σ_phy_hat = has_phy_unique ? (σ_eps_hat .* ρ_phy) : nothing
+            ll = -0.5 * (np_eff * log(2π) + np_eff + np_eff * log(σ²_eps_hat) +
+                         logdet_total + logdet(cholesky(Symmetric(M))))
+            return (logLik = ll, σ_eps = σ_eps_hat, β = collect(β_hat),
+                    Λ_B = Λ_B_hat, Λ_W = Λ_W_hat,
+                    σ²_B = σ²_B_hat, σ²_W = σ²_W_hat,
+                    Λ_phy = Λ_phy_hat, σ_phy = σ_phy_hat)
+        end
 
         if X === nothing
             resid = y

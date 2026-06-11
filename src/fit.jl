@@ -472,7 +472,10 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
     profile_beta = reml
 
     do_profile_beta = profile_beta && !has_phy_block && q > 0
-    β_in_params = !do_profile_beta && q > 0
+    # REML profiles β out on BOTH paths (non-phylo Woodbury GLS via do_profile_beta;
+    # phylo rotation-trick GLS inside the profile engine), so β leaves the param vector
+    # whenever REML is on with fixed effects.
+    β_in_params = !do_profile_beta && q > 0 && !(reml && has_phy_block)
 
     β₀ = if q > 0
         if isnothing(β_init)
