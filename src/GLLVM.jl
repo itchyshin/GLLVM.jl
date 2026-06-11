@@ -7,6 +7,7 @@ using StatsModels: @formula
 
 # Core
 include("packing.jl")
+include("random_effects.jl")            # RE-block descriptor + variance-component packing (SP1.0)
 include("lowrank_cholesky.jl")          # used by likelihood
 include("likelihood.jl")
 include("ppca_init.jl")                  # used by fit (warm-start)
@@ -126,6 +127,7 @@ include("bridge.jl")
 
 # Public API
 export spatial_cov, relatedness_cov,
+       REBlock, re_intercept, re_block,
        fit_gaussian_gllvm, GllvmModel, GllvmFit,
        confint, profile_ci, bootstrap_ci,
        transformed_wald_ci_derived, correlation_wald_ci, communality_wald_ci,

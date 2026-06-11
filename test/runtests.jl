@@ -7,6 +7,7 @@ end
 
 include("test_likelihood.jl")
 include("test_packing.jl")
+include("test_random_effects.jl")
 include("test_fit.jl")
 include("test_fixed_effects.jl")
 include("test_W_and_diag.jl")
