@@ -108,6 +108,25 @@ function _link_residual_one(::ZIP, ::LogLink, μ̂::Real, dispersion::Real)
     return log1p((1 + π * μ̂) / ((1 - π) * μ̂))
 end
 
+# Zero-inflated NB2-log: zero-inflation + overdispersion-adjusted lognormal residual.
+# The delta method gives σ²_d = log(1 + Var(y)/E(y)²); for the ZINB mixture
+# π·δ₀ + (1−π)·NB2(μ̂, r), E(y) = (1−π)μ̂ and Var(y) = (1−π)(μ̂ + μ̂²/r + μ̂²) − (1−π)²μ̂²
+# (the standard ZINB moments; Greene 1994), so
+#   Var(y)/E(y)² = (1/μ̂ + 1/r + 1)/(1−π) − 1   ⇒   σ²_d = log1p(that).
+# Here `μ̂` is the COUNT rate exp(η̄) (NOT the marginal mean (1−π)μ̂), because the
+# variance is parameterised by the rate; r and π are read from the family marker `f`.
+# As r → ∞ this reduces to the ZIP branch log1p((1+π μ̂)/((1−π)μ̂)); as π → 0 to the
+# NB2 delta residual log1p(1/μ̂ + 1/r). (NB2 carries trigamma(r) for the un-inflated
+# family, but trigamma has no clean zero-inflated analogue, so the delta-method form
+# is used here — the same choice TruncNB makes; Nakagawa & Schielzeth 2010 delta
+# method. GLLVM.jl-only: gllvmTMB ships no zero-inflated-NB family.)
+function _link_residual_one(f::ZINB, ::LogLink, μ̂::Real, dispersion)
+    (isfinite(μ̂) && μ̂ > 0) || return 0.0
+    r = f.r
+    π = clamp(f.π, 0.0, 1 - 1e-12)
+    return log1p((1 / μ̂ + 1 / r + 1) / (1 - π) - 1)
+end
+
 # Zero-truncated NB2-log: truncation-adjusted delta-method (lognormal-NB) residual,
 # the truncated analogue of the NB2 log-residual. The delta method gives
 # σ²_d = log(1 + Var(y)/E(y)²); under zero-truncation E(y) = μ_tr = μ̂/(1−P₀) and
@@ -230,6 +249,7 @@ end
 _fit_dispersion(::TruncPoissonFit) = nothing
 _fit_dispersion(fit::TruncNBFit) = fit.r
 _fit_dispersion(fit::ZIPFit)   = fit.π
+_fit_dispersion(fit::ZINBFit)  = fit.π
 _fit_dispersion(::PoissonFit)  = nothing
 _fit_dispersion(::BinomialFit) = nothing
 _fit_dispersion(fit::NBFit)    = fit.r
@@ -245,6 +265,7 @@ _fit_dispersion(::OrdinalFit)  = nothing
 _fit_family(::TruncPoissonFit) = ZeroTruncatedPoisson()
 _fit_family(fit::TruncNBFit) = TruncNB(fit.r)
 _fit_family(fit::ZIPFit)   = ZIP(fit.π)
+_fit_family(fit::ZINBFit)  = ZINB(fit.r, fit.π)
 _fit_family(::PoissonFit)  = Poisson()
 _fit_family(::BinomialFit) = Binomial()
 _fit_family(fit::NBFit)    = NegativeBinomial(fit.r, 0.5)
@@ -414,6 +435,16 @@ function link_residual(fit::ZIPFit, Y::AbstractMatrix)
     fam = _fit_family(fit)
     μ̂ = _link_residual_meanfit(fit, Y)
     return [Float64(_link_residual_one(fam, fit.link, μ̂[t], fit.π)) for t in eachindex(μ̂)]
+end
+
+# Zero-inflated NB2: σ²_d = log1p((1/μ̂+1/r+1)/(1−π) − 1) is μ̂-dependent, parameterised
+# by the COUNT rate μ̂ = mean_s exp(η); r and π are read from the fit's family marker
+# (so the dispersion argument is unused). ZINBFit has no postfit `predict`, so the
+# count rate is averaged over per-site Laplace modes.
+function link_residual(fit::ZINBFit, Y::AbstractMatrix)
+    fam = _fit_family(fit)
+    μ̂ = _link_residual_meanfit(fit, Y)
+    return [Float64(_link_residual_one(fam, fit.link, μ̂[t], nothing)) for t in eachindex(μ̂)]
 end
 
 # Student-t: σ²_d = σ²·ν/(ν−2) is μ̂-free (identity link), so no per-site mode solve is
