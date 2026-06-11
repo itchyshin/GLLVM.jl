@@ -223,6 +223,13 @@ function bootstrap_ci_families(fit::_BootCIFamilyFit,
     nboot ≥ 1 || throw(ArgumentError("nboot must be ≥ 1; got $nboot"))
     n = size(Y, 2)
 
+    # NA-aware bootstrap (issue #27): if the data carry missing cells, re-impose the
+    # SAME missingness pattern on every parametric replicate so each refit reflects the
+    # same information loss (FIML parametric bootstrap). On a dense Y `miss` is all-false
+    # ⇒ this is byte-identical to the complete-data bootstrap.
+    miss = ismissing.(Y)
+    any_miss = any(miss)
+
     terms, kinds, θ̂ = _bootci_terms_kinds_theta(fit)
     n_par = length(θ̂)
 
@@ -237,6 +244,7 @@ function bootstrap_ci_families(fit::_BootCIFamilyFit,
     for b in 1:nboot
         try
             Y_b = _bootci_coerce_response(fit, simulate_b(b))
+            any_miss && (Y_b = ifelse.(miss, missing, Y_b))
             fit_b = _bootci_refit(fit, Y_b, N)
             θ_b = _bootci_refit_theta(fit_b)
             if length(θ_b) == n_par && all(isfinite, θ_b)

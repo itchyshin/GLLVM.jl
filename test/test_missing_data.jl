@@ -272,4 +272,84 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics, Distributions
         @test all(isfinite, fit_na.β[[1, 3, 4, 5]])   # observed traits' intercepts finite
         @test size(fit_na.Λ) == (p, K)
     end
+
+    # ---------------------------------------------------------------------
+    # NA through the inference surface (issue #27 slice 3). confint needs no code
+    # change: its nll closure calls the NA-aware marginal and ForwardDiff.hessian
+    # differentiates only wrt θ, so the Hessian is the FIML observed information over
+    # observed cells. predict/getLV thread NA Y to the NA-aware _laplace_mode;
+    # bootstrap_ci_families re-imposes the observed missingness pattern on each
+    # parametric replicate. Complete-data equivalence (NA-typed-no-NA ≡ dense) is the
+    # regression gate; finite NA results are the capability check.
+    # ---------------------------------------------------------------------
+    @testset "NA through inference (confint / predict / getLV / bootstrap)" begin
+        Random.seed!(8200)
+        p, K, n = 5, 1, 250
+        β = log.([4.0, 5.0, 3.0, 6.0, 4.0]); Λ = 0.35 .* randn(p, K)
+
+        # ----- Poisson (canonical path, Integer responses) -----
+        Y  = round.(Int, simulate(Poisson(), β, Λ, n; seed = 82001))
+        Ym = Matrix{Union{Missing, Int}}(Y)
+        Random.seed!(82002)
+        @inbounds for idx in eachindex(Ym)
+            rand() < 0.12 && (Ym[idx] = missing)
+        end
+        fit_na = fit_poisson_gllvm(Ym; K = K)
+
+        # confint accepts NA; SEs finite + pd; bounds ordered
+        ci = confint(fit_na; Y = Ym)
+        @test ci.pd_hessian
+        @test all(isfinite, ci.se)
+        @test all(ci.lower .<= ci.estimate) && all(ci.estimate .<= ci.upper)
+
+        # complete-data equivalence: NA-typed-no-NA confint ≡ dense confint
+        Yd0 = Matrix{Union{Missing, Int}}(Y)
+        ci_dense = confint(fit_poisson_gllvm(Y;   K = K); Y = Y)
+        ci_na0   = confint(fit_poisson_gllvm(Yd0; K = K); Y = Yd0)
+        @test maximum(abs.(ci_na0.se .- ci_dense.se)) < 1e-3
+
+        # predict / getLV accept NA; finite everywhere; response means positive
+        Z = getLV(fit_na, Ym)
+        @test size(Z) == (n, K)
+        @test all(isfinite, Z)
+        μ̂ = predict(fit_na, Ym; type = :response)
+        @test size(μ̂) == (p, n)
+        @test all(isfinite, μ̂) && all(μ̂ .> 0)
+        # predict complete-data equivalence (NA-typed-no-NA ≡ dense)
+        μd  = predict(fit_poisson_gllvm(Y;   K = K), Y;   type = :response)
+        μd0 = predict(fit_poisson_gllvm(Yd0; K = K), Yd0; type = :response)
+        @test maximum(abs.(μd0 .- μd)) < 1e-3
+
+        # bootstrap re-imposes the missingness mask on each parametric replicate
+        bs = bootstrap_ci_families(fit_na, Ym; nboot = 40, seed = 7)
+        @test bs.n_converged ≥ 20
+        @test all(bs.lower .<= bs.estimate) && all(bs.estimate .<= bs.upper)
+
+        # ----- NB2 (scalar-aux path, Integer + a log-dispersion term) -----
+        r = 8.0
+        Yn  = round.(Int, simulate(NegativeBinomial(r, 0.5), β, Λ, n; dispersion = r, seed = 82010))
+        Ynm = Matrix{Union{Missing, Int}}(Yn)
+        Random.seed!(82011)
+        @inbounds for idx in eachindex(Ynm)
+            rand() < 0.12 && (Ynm[idx] = missing)
+        end
+        fitn = fit_nb_gllvm(Ynm; K = K)
+        cin = confint(fitn; Y = Ynm)
+        @test cin.pd_hessian
+        @test all(isfinite, cin.se)
+        @test all(isfinite, predict(fitn, Ynm; type = :response))
+
+        # ----- Gamma (scalar-aux path, Real responses ⇒ exercises the <:Real widening) -----
+        α = 4.0
+        Yg  = simulate(Gamma(α, 1.0), β, Λ, n; dispersion = α, seed = 82020)
+        Ygm = Matrix{Union{Missing, Float64}}(Yg)
+        Random.seed!(82021)
+        @inbounds for idx in eachindex(Ygm)
+            rand() < 0.12 && (Ygm[idx] = missing)
+        end
+        fitg = fit_gamma_gllvm(Ygm; K = K)
+        @test all(isfinite, getLV(fitg, Ygm))
+        μg = predict(fitg, Ygm; type = :response)
+        @test all(isfinite, μg) && all(μg .> 0)
+    end
 end

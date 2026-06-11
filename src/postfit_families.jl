@@ -60,7 +60,7 @@ Conditional latent-variable scores for an NB1 fit: the per-site Laplace mode `�
 `rotate=true` applies the canonical [`rotation`](@ref). (`N` is accepted for
 signature symmetry and ignored.)
 """
-function getLV(fit::NB1Fit, Y::AbstractMatrix{<:Integer};
+function getLV(fit::NB1Fit, Y::AbstractMatrix{<:Union{Missing, Integer}};
                N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
                rotate::Bool = true)
     p, n = size(Y)
@@ -81,7 +81,7 @@ end
 In-sample fitted values at the Laplace mode: `type=:link` returns `η = β + Λ ẑ`;
 `type=:response` the inverse-link fitted means `linkinv(link, η) = exp(η)`.
 """
-function predict(fit::NB1Fit, Y::AbstractMatrix{<:Integer};
+function predict(fit::NB1Fit, Y::AbstractMatrix{<:Union{Missing, Integer}};
                  type::Symbol = :response,
                  N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing)
     type in (:link, :response) ||
@@ -159,7 +159,7 @@ matrix; `N` the trial counts (default all-ones, i.e. Bernoulli, where the
 Beta-Binomial is unidentified from Binomial). `rotate=true` applies the canonical
 [`rotation`](@ref).
 """
-function getLV(fit::BetaBinomialFit, Y::AbstractMatrix{<:Integer};
+function getLV(fit::BetaBinomialFit, Y::AbstractMatrix{<:Union{Missing, Integer}};
                N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
                rotate::Bool = true)
     p, n = size(Y)
@@ -183,7 +183,7 @@ logistic(η)` (in (0,1)). As with the Binomial predict, this is the per-trial
 mean probability `μ`; the expected count is `N·μ`. `N` is the trial counts used
 for the per-site mode solve (default all-ones).
 """
-function predict(fit::BetaBinomialFit, Y::AbstractMatrix{<:Integer};
+function predict(fit::BetaBinomialFit, Y::AbstractMatrix{<:Union{Missing, Integer}};
                  type::Symbol = :response,
                  N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing)
     type in (:link, :response) ||
@@ -207,7 +207,7 @@ Conditional latent-variable scores for a Student-t fit: the per-site Laplace mod
 `ẑₛ` (computed at the fitted scale `σ` and fixed degrees of freedom `ν`). `Y` is
 the p×n response matrix; `rotate=true` applies the canonical [`rotation`](@ref).
 """
-function getLV(fit::StudentTFit, Y::AbstractMatrix{<:Real}; rotate::Bool = true)
+function getLV(fit::StudentTFit, Y::AbstractMatrix{<:Union{Missing, Real}}; rotate::Bool = true)
     p, n = size(Y)
     K = size(fit.Λ, 2)
     fam = _fit_family(fit)
@@ -228,7 +228,7 @@ predictor `η = β + Λ ẑ`; `type=:response` the inverse-link fitted location
 `linkinv(link, η) = η` (identity link, so both types coincide, as in the Gaussian
 family).
 """
-function predict(fit::StudentTFit, Y::AbstractMatrix{<:Real}; type::Symbol = :response)
+function predict(fit::StudentTFit, Y::AbstractMatrix{<:Union{Missing, Real}}; type::Symbol = :response)
     type in (:link, :response) ||
         throw(ArgumentError("type must be :link or :response; got :$type"))
     Z = getLV(fit, Y; rotate = false)
@@ -251,7 +251,7 @@ Laplace mode `ẑₛ`. `Y` is the p×n integer count matrix (entries `≥ 1`);
 `rotate=true` applies the canonical [`rotation`](@ref). (`N` is accepted for
 signature symmetry and ignored.)
 """
-function getLV(fit::TruncPoissonFit, Y::AbstractMatrix{<:Integer};
+function getLV(fit::TruncPoissonFit, Y::AbstractMatrix{<:Union{Missing, Integer}};
                N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
                rotate::Bool = true)
     p, n = size(Y)
@@ -274,7 +274,7 @@ In-sample fitted values at the Laplace mode: `type=:link` returns `η = β + Λ 
 `μ = exp(η)` (`≥ 1`) — the response-scale mean of the positive-count law, not the
 untruncated rate `exp(η)`.
 """
-function predict(fit::TruncPoissonFit, Y::AbstractMatrix{<:Integer};
+function predict(fit::TruncPoissonFit, Y::AbstractMatrix{<:Union{Missing, Integer}};
                  type::Symbol = :response,
                  N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing)
     type in (:link, :response) ||
@@ -300,7 +300,7 @@ Laplace mode `ẑₛ` (computed at the fitted dispersion `r`). `Y` is the p×n i
 count matrix (entries `≥ 1`); `rotate=true` applies the canonical
 [`rotation`](@ref). (`N` is accepted for signature symmetry and ignored.)
 """
-function getLV(fit::TruncNBFit, Y::AbstractMatrix{<:Integer};
+function getLV(fit::TruncNBFit, Y::AbstractMatrix{<:Union{Missing, Integer}};
                N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
                rotate::Bool = true)
     p, n = size(Y)
@@ -323,7 +323,7 @@ In-sample fitted values at the Laplace mode: `type=:link` returns `η = β + Λ 
 and `P₀ = (r/(r+μ))^r` (`≥ 1`) — the response-scale mean of the positive-count
 law, not the untruncated rate `exp(η)`.
 """
-function predict(fit::TruncNBFit, Y::AbstractMatrix{<:Integer};
+function predict(fit::TruncNBFit, Y::AbstractMatrix{<:Union{Missing, Integer}};
                  type::Symbol = :response,
                  N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing)
     type in (:link, :response) ||
@@ -350,7 +350,7 @@ Laplace mode `ẑₛ` (computed at the fitted zero-inflation `π`). `Y` is the p
 integer count matrix; `rotate=true` applies the canonical [`rotation`](@ref).
 (`N` is accepted for signature symmetry and ignored.)
 """
-function getLV(fit::ZIPFit, Y::AbstractMatrix{<:Integer};
+function getLV(fit::ZIPFit, Y::AbstractMatrix{<:Union{Missing, Integer}};
                N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
                rotate::Bool = true)
     p, n = size(Y)
@@ -373,7 +373,7 @@ predictor `η = β + Λ ẑ`; `type=:response` the marginal mean `(1 − π)·ex
 mixture `π·δ₀ + (1 − π)·Poisson(μ)` has mean `(1 − π)μ`), not the bare count rate
 `exp(η)`.
 """
-function predict(fit::ZIPFit, Y::AbstractMatrix{<:Integer};
+function predict(fit::ZIPFit, Y::AbstractMatrix{<:Union{Missing, Integer}};
                  type::Symbol = :response,
                  N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing)
     type in (:link, :response) ||
@@ -397,7 +397,7 @@ Laplace mode `ẑₛ` (computed at the fitted dispersion `r` and zero-inflation 
 `Y` is the p×n integer count matrix; `rotate=true` applies the canonical
 [`rotation`](@ref). (`N` is accepted for signature symmetry and ignored.)
 """
-function getLV(fit::ZINBFit, Y::AbstractMatrix{<:Integer};
+function getLV(fit::ZINBFit, Y::AbstractMatrix{<:Union{Missing, Integer}};
                N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
                rotate::Bool = true)
     p, n = size(Y)
@@ -420,7 +420,7 @@ predictor `η = β + Λ ẑ`; `type=:response` the marginal mean `(1 − π)·ex
 mixture `π·δ₀ + (1 − π)·NB2(μ, r)` has mean `(1 − π)μ`), not the bare count rate
 `exp(η)`.
 """
-function predict(fit::ZINBFit, Y::AbstractMatrix{<:Integer};
+function predict(fit::ZINBFit, Y::AbstractMatrix{<:Union{Missing, Integer}};
                  type::Symbol = :response,
                  N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing)
     type in (:link, :response) ||

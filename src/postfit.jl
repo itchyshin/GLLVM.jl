@@ -95,7 +95,7 @@ Fisher-scoring solve of the marginal). `Y` is the p×n integer response matrix;
 `N` the trial counts (default all-ones, i.e. Bernoulli). `rotate=true` applies
 the canonical [`rotation`](@ref).
 """
-function getLV(fit::BinomialFit, Y::AbstractMatrix{<:Integer};
+function getLV(fit::BinomialFit, Y::AbstractMatrix{<:Union{Missing, Integer}};
                N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
                rotate::Bool = true)
     p, n = size(Y)
@@ -135,7 +135,7 @@ In-sample fitted values at the Laplace conditional mode `ẑ` (see [`getLV`](@re
 `type=:link` returns `η = β + Λ ẑ`; `type=:response` returns the inverse-link
 fitted probabilities `linkinv(link, η)`.
 """
-function predict(fit::BinomialFit, Y::AbstractMatrix{<:Integer};
+function predict(fit::BinomialFit, Y::AbstractMatrix{<:Union{Missing, Integer}};
                  type::Symbol = :response,
                  N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing)
     type in (:link, :response) ||
@@ -289,7 +289,7 @@ Conditional latent-variable scores for a Poisson fit: the per-site Laplace mode
 `ẑₛ`. `Y` is the p×n integer count matrix; `rotate=true` applies the canonical
 [`rotation`](@ref). (`N` is accepted for signature symmetry and ignored.)
 """
-function getLV(fit::PoissonFit, Y::AbstractMatrix{<:Integer};
+function getLV(fit::PoissonFit, Y::AbstractMatrix{<:Union{Missing, Integer}};
                N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
                rotate::Bool = true)
     p, n = size(Y)
@@ -309,7 +309,7 @@ end
 In-sample fitted values at the Laplace mode: `type=:link` returns `η = β + Λ ẑ`;
 `type=:response` the inverse-link fitted rates `linkinv(link, η) = exp(η)`.
 """
-function predict(fit::PoissonFit, Y::AbstractMatrix{<:Integer};
+function predict(fit::PoissonFit, Y::AbstractMatrix{<:Union{Missing, Integer}};
                  type::Symbol = :response,
                  N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing)
     type in (:link, :response) ||
@@ -379,7 +379,7 @@ Conditional latent-variable scores for a negative-binomial fit: the per-site
 Laplace mode `ẑₛ` (computed at the fitted dispersion `r`). `rotate=true` applies
 the canonical [`rotation`](@ref).
 """
-function getLV(fit::NBFit, Y::AbstractMatrix{<:Integer};
+function getLV(fit::NBFit, Y::AbstractMatrix{<:Union{Missing, Integer}};
                N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
                rotate::Bool = true)
     p, n = size(Y)
@@ -400,7 +400,7 @@ end
 In-sample fitted values at the Laplace mode: `type=:link` returns `η = β + Λ ẑ`;
 `type=:response` the inverse-link fitted means `linkinv(link, η) = exp(η)`.
 """
-function predict(fit::NBFit, Y::AbstractMatrix{<:Integer};
+function predict(fit::NBFit, Y::AbstractMatrix{<:Union{Missing, Integer}};
                  type::Symbol = :response,
                  N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing)
     type in (:link, :response) ||
@@ -472,7 +472,7 @@ Conditional latent-variable scores for a Beta fit: the per-site Laplace mode `�
 (computed at the fitted precision `φ`). `Y` is the p×n matrix of proportions in
 (0,1); `rotate=true` applies the canonical [`rotation`](@ref).
 """
-function getLV(fit::BetaFit, Y::AbstractMatrix{<:Real}; rotate::Bool = true)
+function getLV(fit::BetaFit, Y::AbstractMatrix{<:Union{Missing, Real}}; rotate::Bool = true)
     p, n = size(Y)
     K = size(fit.Λ, 2)
     fam = Beta(fit.φ, 1.0)
@@ -492,7 +492,7 @@ In-sample fitted values at the Laplace mode: `type=:link` returns `η = β + Λ 
 `type=:response` the inverse-link fitted means `linkinv(link, η) = logistic(η)`
 (proportions in (0,1)).
 """
-function predict(fit::BetaFit, Y::AbstractMatrix{<:Real}; type::Symbol = :response)
+function predict(fit::BetaFit, Y::AbstractMatrix{<:Union{Missing, Real}}; type::Symbol = :response)
     type in (:link, :response) ||
         throw(ArgumentError("type must be :link or :response; got :$type"))
     Z = getLV(fit, Y; rotate = false)
@@ -659,7 +659,7 @@ Conditional latent-variable scores for a Gamma fit: the per-site Laplace mode `�
 (computed at the fitted shape `α`). `Y` is the p×n matrix of positive reals;
 `rotate=true` applies the canonical [`rotation`](@ref).
 """
-function getLV(fit::GammaFit, Y::AbstractMatrix{<:Real}; rotate::Bool = true)
+function getLV(fit::GammaFit, Y::AbstractMatrix{<:Union{Missing, Real}}; rotate::Bool = true)
     p, n = size(Y)
     K = size(fit.Λ, 2)
     fam = Gamma(fit.α, 1.0)
@@ -678,7 +678,7 @@ end
 In-sample fitted values at the Laplace mode: `type=:link` returns `η = β + Λ ẑ`;
 `type=:response` the inverse-link fitted means `linkinv(link, η) = exp(η)` (positive reals).
 """
-function predict(fit::GammaFit, Y::AbstractMatrix{<:Real}; type::Symbol = :response)
+function predict(fit::GammaFit, Y::AbstractMatrix{<:Union{Missing, Real}}; type::Symbol = :response)
     type in (:link, :response) ||
         throw(ArgumentError("type must be :link or :response; got :$type"))
     Z = getLV(fit, Y; rotate = false)
