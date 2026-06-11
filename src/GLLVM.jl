@@ -36,6 +36,7 @@ include("families/zip.jl")               # Zero-inflated Poisson (ZIP) family pi
 include("families/zinb.jl")              # Zero-inflated negative-binomial (ZINB) family pieces
 include("families/zibinom.jl")           # Zero-inflated Binomial (ZIBinom) family pieces
 include("families/nb1.jl")               # Negative-binomial type 1 (linear variance) family pieces
+include("families/genpoisson.jl")        # Generalized Poisson (GP-1) family pieces (over/under-dispersion)
 include("families/beta.jl")              # Beta family pieces (Phase 3)
 include("families/betabinomial.jl")      # Beta-Binomial (overdispersed binomial) family pieces
 include("families/ordinal.jl")           # Ordinal (cumulative-logit) family pieces (Phase 3)
@@ -143,6 +144,7 @@ export spatial_cov, relatedness_cov,
        fit_betabinomial_gllvm, BetaBinomialFit,
        betabinomial_marginal_loglik_laplace,
        NB1, fit_nb1_gllvm, NB1Fit, nb1_marginal_loglik_laplace,
+       GenPoisson, fit_genpoisson_gllvm, GenPoissonFit, genpoisson_marginal_loglik_laplace,
        fit_lognormal_gllvm, LognormalFit, lognormal_marginal_loglik,
        StudentTFamily, fit_studentt_gllvm, StudentTFit, studentt_marginal_loglik_laplace,
        Ordinal, fit_ordinal_gllvm, OrdinalFit, fit_gamma_gllvm, GammaFit,

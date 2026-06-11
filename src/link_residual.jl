@@ -175,6 +175,15 @@ function _link_residual_one(::NB1, ::LogLink, μ̂::Real, dispersion::Real)
     return (isfinite(μ̂) && μ̂ > 0) ? log1p((1 + dispersion) / μ̂) : 0.0
 end
 
+# Generalized Poisson (GP-1, mean-parameterised; Var = μ(1+αμ)²): delta-method latent
+# residual σ²_d = log1p(Var/E²) = log1p((1+αμ̂)²/μ̂), with μ̂ the rate exp(η̄). `dispersion`
+# is the GP dispersion α (can be negative for under-dispersion; the square keeps the
+# argument ≥ 0). As α → 0 this reduces to the Poisson branch log1p(1/μ̂).
+function _link_residual_one(::GenPoisson, ::LogLink, μ̂::Real, dispersion::Real)
+    (isfinite(μ̂) && μ̂ > 0) || return 0.0
+    return log1p((1 + dispersion * μ̂)^2 / μ̂)
+end
+
 # Lognormal-log: σ²_d = σ² (the log-scale residual variance). For a STANDALONE
 # lognormal family the latent (log) scale residual is exactly σ², so this is the
 # diagonal added to ΛΛᵀ to form the latent-scale Σ. (gllvmTMB's extract-sigma.R
@@ -259,6 +268,7 @@ _fit_dispersion(fit::TruncNBFit) = fit.r
 _fit_dispersion(fit::ZIPFit)   = fit.π
 _fit_dispersion(fit::ZINBFit)  = fit.π
 _fit_dispersion(fit::ZIBinomFit) = fit.π
+_fit_dispersion(fit::GenPoissonFit) = fit.α
 _fit_dispersion(::PoissonFit)  = nothing
 _fit_dispersion(::BinomialFit) = nothing
 _fit_dispersion(fit::NBFit)    = fit.r
@@ -276,6 +286,7 @@ _fit_family(fit::TruncNBFit) = TruncNB(fit.r)
 _fit_family(fit::ZIPFit)   = ZIP(fit.π)
 _fit_family(fit::ZINBFit)  = ZINB(fit.r, fit.π)
 _fit_family(fit::ZIBinomFit) = ZIBinom(fit.π)
+_fit_family(fit::GenPoissonFit) = GenPoisson(fit.α)
 _fit_family(::PoissonFit)  = Poisson()
 _fit_family(::BinomialFit) = Binomial()
 _fit_family(fit::NBFit)    = NegativeBinomial(fit.r, 0.5)
@@ -403,6 +414,14 @@ function link_residual(fit::NB1Fit, Y::AbstractMatrix)
     fam = _fit_family(fit)
     μ̂ = _link_residual_meanfit(fit, Y)
     return [Float64(_link_residual_one(fam, fit.link, μ̂[t], fit.φ)) for t in eachindex(μ̂)]
+end
+
+# Generalized Poisson: σ²_d = log1p((1+αμ̂)²/μ̂) is μ̂-dependent (μ̂ the rate exp(η̄)).
+# GenPoissonFit has no postfit `predict`, so the rate is averaged over per-site modes.
+function link_residual(fit::GenPoissonFit, Y::AbstractMatrix)
+    fam = _fit_family(fit)
+    μ̂ = _link_residual_meanfit(fit, Y)
+    return [Float64(_link_residual_one(fam, fit.link, μ̂[t], fit.α)) for t in eachindex(μ̂)]
 end
 
 # Lognormal: σ²_d = σ² is μ̂-free (the log-scale residual variance), so no per-site
