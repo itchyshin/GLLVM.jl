@@ -65,8 +65,20 @@ function _laplace_mode!(z::AbstractVector, family, y::AbstractVector, n::Abstrac
         η  = _clamp_eta.(β .+ Λ * z)
         μ  = _clamp_mu.(Ref(family), linkinv.(Ref(link), η))
         me = mu_eta.(Ref(link), η)
-        s  = _glm_score.(Ref(family), μ, n, me, y)
-        W  = _glm_weight.(Ref(family), μ, n, me)
+        # NA-aware (missing-data FIML): a missing response cell drops from this site —
+        # 0 score, 0 working weight (so it leaves A = Λ'WΛ + I, which stays SPD). For a
+        # dense (non-Missing) Y the ismissing guard is statically false and elided, so
+        # this is byte-equivalent to the broadcast it replaces.
+        s  = similar(η)
+        W  = similar(η)
+        @inbounds for t in eachindex(y)
+            if ismissing(y[t])
+                s[t] = zero(eltype(s)); W[t] = zero(eltype(W))
+            else
+                s[t] = _glm_score(family, μ[t], n[t], me[t], y[t])
+                W[t] = _glm_weight(family, μ[t], n[t], me[t])
+            end
+        end
         A  = Symmetric(Λ' * (W .* Λ) + I)
         Δ  = _safe_solve(A, Λ' * s .- z)
         (Δ === nothing || !all(isfinite, Δ)) && break   # singular A ⇒ stop at current ẑ
@@ -92,10 +104,14 @@ function _laplace_mode!(z::AbstractVector, family, y::AbstractVector, n::Abstrac
         mul!(η, Λ, z)
         @inbounds for t in 1:p
             η[t] = _clamp_eta(β[t] + η[t])
-            μ[t] = _clamp_mu(family, linkinv(link, η[t]))
-            me[t] = mu_eta(link, η[t])
-            s[t] = _glm_score(family, μ[t], n[t], me[t], y[t])
-            W[t] = _glm_weight(family, μ[t], n[t], me[t])
+            if ismissing(y[t])                       # NA-aware FIML: drop missing cell
+                s[t] = zero(eltype(s)); W[t] = zero(eltype(W))
+            else
+                μ[t] = _clamp_mu(family, linkinv(link, η[t]))
+                me[t] = mu_eta(link, η[t])
+                s[t] = _glm_score(family, μ[t], n[t], me[t], y[t])
+                W[t] = _glm_weight(family, μ[t], n[t], me[t])
+            end
         end
 
         fill!(A, zero(eltype(A)))
@@ -163,11 +179,15 @@ function laplace_loglik_site(family, y::AbstractVector, n::AbstractVector,
     η  = _clamp_eta.(β .+ Λ * z)
     μ  = _clamp_mu.(Ref(family), linkinv.(Ref(link), η))
     me = mu_eta.(Ref(link), η)
-    W  = _glm_weight.(Ref(family), μ, n, me)
+    # NA-aware FIML: missing cells contribute 0 weight and drop from the ℓ sum.
+    W  = similar(η)
+    @inbounds for t in 1:p
+        W[t] = ismissing(y[t]) ? zero(eltype(W)) : _glm_weight(family, μ[t], n[t], me[t])
+    end
     A  = Symmetric(Λ' * (W .* Λ) + I)
     ℓ = zero(eltype(A))
     @inbounds for t in 1:p
-        ℓ += _glm_logpdf(family, μ[t], n[t], y[t])
+        ismissing(y[t]) || (ℓ += _glm_logpdf(family, μ[t], n[t], y[t]))
     end
     return ℓ - 0.5 * dot(z, z) - 0.5 * logdet(A)
 end
@@ -296,11 +316,21 @@ function _canonical_laplace_site_implicit_value_grad_parts(family,
     η  = _clamp_eta.(β .+ Λ * z)
     μ  = _clamp_mu.(Ref(family), linkinv.(Ref(link), η))
     me = mu_eta.(Ref(link), η)
-    s  = _glm_score.(Ref(family), μ, n, me, y)
-    W  = _glm_weight.(Ref(family), μ, n, me)
-    Wη = similar(W)
+    # NA-aware FIML: a missing cell gets s=W=Wη=0 and is skipped in ℓ; downstream a[t]
+    # and every grad term carry a factor of a[t]/W[t]/s[t], so missing cells vanish.
+    s  = similar(η)
+    W  = similar(η)
+    Wη = similar(η)
     @inbounds for t in 1:p
-        Wη[t] = _canonical_weight_eta_derivative(family, μ[t], n[t], W[t])
+        if ismissing(y[t])
+            s[t]  = zero(eltype(s))
+            W[t]  = zero(eltype(W))
+            Wη[t] = zero(eltype(Wη))
+        else
+            s[t]  = _glm_score(family, μ[t], n[t], me[t], y[t])
+            W[t]  = _glm_weight(family, μ[t], n[t], me[t])
+            Wη[t] = _canonical_weight_eta_derivative(family, μ[t], n[t], W[t])
+        end
     end
 
     A = Symmetric(Λ' * (W .* Λ) + I)
@@ -311,7 +341,7 @@ function _canonical_laplace_site_implicit_value_grad_parts(family,
     ℓ = zero(eltype(A))
     h = similar(W)
     @inbounds for t in 1:p
-        ℓ += _glm_logpdf(family, μ[t], n[t], y[t])
+        ismissing(y[t]) || (ℓ += _glm_logpdf(family, μ[t], n[t], y[t]))
         h[t] = dot(view(Λ, t, :), view(ΛM, t, :))
     end
     value = ℓ - 0.5 * dot(z, z) - 0.5 * logdet(C)

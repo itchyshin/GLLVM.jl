@@ -56,7 +56,7 @@ loadings `Λ`. For the canonical log link, the L-BFGS gradient uses a hand-coded
 implicit dense-Laplace gradient and a per-site latent-mode cache; warm start =
 empirical log-mean intercepts + an SVD (PPCA-style) loadings init.
 """
-function fit_poisson_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
+function fit_poisson_gllvm(Y::AbstractMatrix{<:Union{Missing, Integer}}; K::Integer,
         link::Link = LogLink(),
         β_init = nothing, Λ_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
@@ -64,9 +64,29 @@ function fit_poisson_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
     p, n = size(Y)
     rr = rr_theta_len(p, K)
 
-    # warm start: empirical log-scale intercepts + SVD (PPCA-like) loadings
-    Zemp = [linkfun(link, max(Y[t, i] + 0.5, 1e-4)) for t in 1:p, i in 1:n]
-    β0 = β_init === nothing ? vec(sum(Zemp; dims = 2)) ./ n : collect(float.(β_init))
+    # warm start: empirical log-scale intercepts + SVD (PPCA-like) loadings. NA-aware —
+    # each per-trait stat is over that trait's OBSERVED cells; missing cells are filled
+    # with the trait observed-mean for the SVD init ONLY. The fit itself is FIML on the
+    # real observed data (issue #27: no imputation in the estimator). A dense Matrix{Int}
+    # has no missing cells, so the guards are statically false and this matches the old
+    # warm start exactly.
+    Zemp = Matrix{Float64}(undef, p, n)
+    β0raw = Vector{Float64}(undef, p)
+    @inbounds for t in 1:p
+        acc = 0.0; cnt = 0
+        for i in 1:n
+            if !ismissing(Y[t, i])
+                v = linkfun(link, max(Y[t, i] + 0.5, 1e-4))
+                Zemp[t, i] = v; acc += v; cnt += 1
+            end
+        end
+        m = cnt == 0 ? linkfun(link, 0.5) : acc / cnt
+        β0raw[t] = m
+        for i in 1:n
+            ismissing(Y[t, i]) && (Zemp[t, i] = m)
+        end
+    end
+    β0 = β_init === nothing ? β0raw : collect(float.(β_init))
     Λ0 = if Λ_init === nothing
         Zc = Zemp .- β0
         F = svd(Zc)
