@@ -219,12 +219,24 @@ function _scalar_laplace_qF(family_fromθ, y::AbstractVector, n::AbstractVector,
     η  = _clamp_eta.(β .+ Λ * z)
     μ  = _clamp_mu.(Ref(family), linkinv.(Ref(link), η))
     me = mu_eta.(Ref(link), η)
-    s  = _glm_score.(Ref(family), μ, n, me, y)
-    W  = _glm_weight.(Ref(family), μ, n, me)
+    # NA-aware FIML (generic implicit path → all non-Gaussian families): a missing cell
+    # contributes 0 score/weight (drops from A and F = Λ's − z) and is skipped in ℓ. qF
+    # is then independent of the missing cell, so the implicit-function gradient is
+    # automatically correct. Byte-equivalent on dense Y (guard statically false).
+    s  = similar(η)
+    W  = similar(η)
+    @inbounds for t in 1:p
+        if ismissing(y[t])
+            s[t] = zero(eltype(s)); W[t] = zero(eltype(W))
+        else
+            s[t] = _glm_score(family, μ[t], n[t], me[t], y[t])
+            W[t] = _glm_weight(family, μ[t], n[t], me[t])
+        end
+    end
     A  = Symmetric(Λ' * (W .* Λ) + I)
     ℓ = zero(eltype(A))
     @inbounds for t in 1:p
-        ℓ += _glm_logpdf(family, μ[t], n[t], y[t])
+        ismissing(y[t]) || (ℓ += _glm_logpdf(family, μ[t], n[t], y[t]))
     end
     q = ℓ - 0.5 * dot(z, z) - 0.5 * logdet(A)
     F = Λ' * s .- z

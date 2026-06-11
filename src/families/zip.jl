@@ -143,32 +143,51 @@ closed-form `_glm_logpdf`. Warm start = empirical log-mean count intercepts (ove
 the POSITIVE cells, to discount inflated zeros) + an SVD loadings init + a `π₀`
 from the excess-zero fraction.
 """
-function fit_zip_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
+function fit_zip_gllvm(Y::AbstractMatrix{<:Union{Missing, Integer}}; K::Integer,
         link::Link = LogLink(),
         β_init = nothing, Λ_init = nothing, π_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
     rr = rr_theta_len(p, K)
+    nobs = count(!ismissing, Y)
 
-    # warm start: per-trait log-mean over POSITIVE cells (so structural zeros do
-    # not deflate the rate); fall back to all cells if a trait is all-zero.
+    # warm start (NA-aware): per-trait log-mean over POSITIVE OBSERVED cells (structural
+    # zeros and missing cells do not deflate the rate); SVD init on observed link
+    # residuals with missing cells mean-filled for the init ONLY; π₀ from the observed
+    # excess-zero fraction. The fit itself is FIML over observed cells (issue #27). On a
+    # dense (non-Missing) Y the guards are statically false ⇒ identical to the old start.
     β0 = if β_init === nothing
         b = Vector{Float64}(undef, p)
         @inbounds for t in 1:p
-            s = 0.0; c = 0
+            spos = 0.0; cpos = 0; sall = 0.0; call = 0
             for j in 1:n
-                if Y[t, j] > 0
-                    s += Y[t, j]; c += 1
+                ismissing(Y[t, j]) && continue
+                yj = Y[t, j]; sall += yj; call += 1
+                if yj > 0
+                    spos += yj; cpos += 1
                 end
             end
-            b[t] = c == 0 ? log(max(sum(view(Y, t, :)) / n, 1e-4)) : log(max(s / c, 1e-4))
+            b[t] = cpos == 0 ? log(max(call == 0 ? 1e-4 : sall / call, 1e-4)) :
+                               log(max(spos / cpos, 1e-4))
         end
         b
     else
         collect(float.(β_init))
     end
-    Zemp = [linkfun(link, max(Y[t, i] + 0.5, 1e-4)) for t in 1:p, i in 1:n]
+    Zemp = Matrix{Float64}(undef, p, n)
+    @inbounds for t in 1:p
+        acc = 0.0; cnt = 0
+        for i in 1:n
+            if !ismissing(Y[t, i])
+                Zemp[t, i] = linkfun(link, max(Y[t, i] + 0.5, 1e-4)); acc += Zemp[t, i]; cnt += 1
+            end
+        end
+        m = cnt == 0 ? linkfun(link, 0.5) : acc / cnt
+        for i in 1:n
+            ismissing(Y[t, i]) && (Zemp[t, i] = m)
+        end
+    end
     Λ0 = if Λ_init === nothing
         Zc = Zemp .- (sum(Zemp; dims = 2) ./ n)
         F = svd(Zc)
@@ -181,10 +200,10 @@ function fit_zip_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
     else
         collect(float.(Λ_init))
     end
-    # π₀ from the overall excess-zero fraction: observed P(y=0) minus the Poisson
+    # π₀ from the OBSERVED excess-zero fraction: observed P(y=0) minus the Poisson
     # zero mass e^{−μ̄} at the warm-start rates, clamped to a sensible interior.
     π0 = if π_init === nothing
-        zfrac = count(==(0), Y) / (p * n)
+        zfrac = count(x -> !ismissing(x) && x == 0, Y) / max(nobs, 1)
         pois0 = sum(exp(-exp(β0[t])) for t in 1:p) / p
         clamp((zfrac - pois0) / max(1 - pois0, 1e-3), 0.05, 0.6)
     else

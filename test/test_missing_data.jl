@@ -58,6 +58,36 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics, Distributions
     end
 
     # ---------------------------------------------------------------------
+    # ZIP via the GENERIC IMPLICIT path (verifies the implicit-path NA guard, not just
+    # the canonical Poisson path): complete-data equivalence + NA-recovery.
+    # ---------------------------------------------------------------------
+    @testset "ZIP (implicit path): equivalence + NA-recovery" begin
+        Random.seed!(7201)
+        p, K, n = 5, 1, 500
+        β = log.([4.0, 5.0, 3.0, 4.0, 5.0]); Λ = 0.4 .* randn(p, K)
+        Y = round.(Int, simulate(GLLVM.ZIP(0.3), β, Λ, n; dispersion = 0.3, seed = 72011))
+        Ym0 = Matrix{Union{Missing, Int}}(Y)            # missing-typed, no NAs
+
+        @test GLLVM.zip_marginal_loglik_laplace(Ym0, Λ, β, 0.3) ≈
+              GLLVM.zip_marginal_loglik_laplace(Y, Λ, β, 0.3) atol = 1e-8
+        fit_d = fit_zip_gllvm(Y;   K = K)
+        fit_m = fit_zip_gllvm(Ym0; K = K)
+        @test fit_m.loglik ≈ fit_d.loglik atol = 1e-6
+        @test fit_m.π ≈ fit_d.π atol = 1e-6
+        @test maximum(abs.(fit_m.β .- fit_d.β)) < 1e-5
+
+        rng = MersenneTwister(72012)
+        Ym = Matrix{Union{Missing, Int}}(Y)
+        @inbounds for t in 1:p, s in 1:n
+            rand(rng) < 0.15 && (Ym[t, s] = missing)
+        end
+        @test count(ismissing, Ym) > 0
+        fit_na = fit_zip_gllvm(Ym; K = K)
+        @test maximum(abs.(fit_na.β .- fit_d.β)) < 0.4
+        @test 0 < fit_na.π < 1
+    end
+
+    # ---------------------------------------------------------------------
     # Edge cases must not crash: a fully-missing site (its marginal = ∫N(z;0,I) = 1,
     # mode = 0, A = I) and a fully-missing trait (its β/Λ row is unidentified — it must
     # not crash; the observed traits stay finite).
