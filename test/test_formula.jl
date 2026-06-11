@@ -161,4 +161,26 @@ using GLLVM, Test, DataFrames, Distributions, Random, LinearAlgebra
         @test_throws ArgumentError gllvm(wide_g; responses = resp_syms, K = K,
             N = ones(Int, p, n))
     end
+
+    @testset "REML through the formula front-end (Gaussian + covariate)" begin
+        Random.seed!(31999)
+        x = randn(n); β_true = 1.3
+        Yx = (β_true .* x') .+ Λtrue * Ztrue .+ 0.4 .* randn(p, n)
+        dfx = DataFrame()
+        for t in 1:p
+            dfx[!, Symbol("y", t)] = Yx[t, :]
+        end
+        dfx.temp = x
+        ff = gllvm(dfx; responses = resp_syms, K = K,
+                   formula = @formula(0 ~ 0 + temp), reml = true)
+        # parity with the explicit matrix REML call: reml flows through kwargs...
+        Xarr = Array{Float64, 3}(undef, p, n, 1)
+        for s in 1:n, t in 1:p
+            Xarr[t, s, 1] = x[s]
+        end
+        fm = fit_gaussian_gllvm(Yx; K = K, X = Xarr, reml = true)
+        @test ff.fit isa GllvmFit
+        @test ff.fit.logLik ≈ fm.logLik atol = 1e-8
+        @test ff.fit.pars.β ≈ fm.pars.β atol = 1e-6
+    end
 end
