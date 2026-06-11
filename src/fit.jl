@@ -346,12 +346,26 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
                             x_tol = 1e-8,
                             f_tol = 1e-10,
                             g_tol = 1e-6,
-                            iterations = 500)
+                            iterations = 500,
+                            reml::Bool = false)
     p, n = size(y)
     @assert K ≥ 1
     @assert K_W ≥ 0
     @assert K_phy ≥ 0
     @assert n ≥ p "Need n_sites ≥ p for a well-posed Gaussian GLLVM"
+
+    # REML (Gaussian only): delegate to the dedicated restricted-ML path. Supported for
+    # the basic Gaussian + fixed-effects case (J1: K LVs + σ_eps + X); structured
+    # (K_W / has_diag) and phylogenetic REML are follow-ons. Returns a GaussianREMLFit.
+    if reml
+        X === nothing && throw(ArgumentError(
+            "reml=true requires fixed effects X (REML adjusts for the X coefficients)"))
+        (K_W > 0 || has_diag || K_phy > 0 || has_phy_unique || Σ_phy !== nothing || phy !== nothing) &&
+            throw(ArgumentError(
+                "reml=true currently supports the basic Gaussian + X case (no K_W/diag/phylo); " *
+                "structured/phylo REML is a follow-on — call fit_gaussian_reml directly"))
+        return fit_gaussian_reml(y, X; K = K, g_tol = g_tol, iterations = iterations)
+    end
 
     if (K_phy > 0 || has_phy_unique) && Σ_phy === nothing && phy === nothing
         throw(ArgumentError(
