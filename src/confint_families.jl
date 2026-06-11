@@ -17,14 +17,16 @@
 #   :linear  → estimate as-is, CI = θ̂ ± z·SE          (β, Λ entries, first ordinal
 #              cutpoint ψ₁)
 #   :log_sd  → estimate = exp(θ̂), CI = exp(θ̂ ± z·SE)  (log dispersion r / precision
-#              φ / shape α; ordinal cutpoint *increments* ψ_{c≥2} stored as logs)
+#              φ / shape α / scale σ; ordinal cutpoint *increments* ψ_{c≥2} stored as logs)
+#   :logit   → estimate = logistic(θ̂), CI = logistic(θ̂ ± z·SE)  (zero-inflation
+#              probability π of ZIP / ZINB; monotone ⇒ bounds stay ordered in (0,1))
 #
 # Non-PD Hessian handling mirrors src/confint.jl: a failed Hessian or
 # non-positive variance ⇒ NaN bounds with `pd_hessian = false`.
 
 # Shared Wald-CI core for the one-part non-Gaussian fitters. `θ̂` is the packed
 # MLE, `nll` the pure-value negative log-likelihood, `terms`/`kinds` the
-# per-parameter names and back-transform tags (one of :linear, :log_sd). `parm`
+# per-parameter names and back-transform tags (one of :linear, :log_sd, :logit). `parm`
 # uses the same selector semantics as src/confint.jl via
 # `_confint_select_indices`.
 function _nongaussian_wald_ci(θ̂::AbstractVector, nll,

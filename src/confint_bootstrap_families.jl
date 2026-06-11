@@ -177,7 +177,8 @@ Returns a NamedTuple with fields (the Wald five, plus bootstrap diagnostics):
   - `n_converged::Int`             — bootstrap fits that converged
   - `n_valid::Int`                 — replicates with a finite parameter vector
   - `replicates::Matrix{Float64}`  — `nboot × n_par` matrix of bootstrap θ̂_b
-                                     (`NaN` rows for failed / non-converged refits)
+                                     (`NaN` rows only for refits that errored or
+                                     returned a non-finite / wrong-length vector)
 
 Scale convention (matches `confint(::<FitType>)`): β and Λ entries are `:linear`;
 the dispersion `r` (NB2 / trunc-NB / ZINB), the precision `phi` (Beta / NB1 /
@@ -192,10 +193,12 @@ same selector semantics as `confint` (a `String`, `Symbol`, or `Vector{String}`;
 see [`confint`](@ref)).
 
 `nboot` defaults to 200 (modest); publication-grade is 500–2000. Cost is
-`nboot ×` per-fit time. A refit that errors out, fails to converge, or yields a
-non-finite parameter is recorded as a `NaN` row and excluded from the percentile;
-a parameter with fewer than 10 valid replicates returns `NaN` bounds (mirroring
-`bootstrap_ci(::GllvmFit)` and `bootstrap_ci_derived`).
+`nboot ×` per-fit time. A refit that errors out or yields a non-finite /
+wrong-length parameter vector is recorded as a `NaN` row and excluded from the
+percentile; a non-converged-but-finite refit IS included (convergence is recorded
+only as the `n_converged` diagnostic, not used to filter — matching the sibling
+bootstrap files). A parameter with fewer than 10 valid replicates returns `NaN`
+bounds (mirroring `bootstrap_ci(::GllvmFit)` and `bootstrap_ci_derived`).
 
 # Example
 
