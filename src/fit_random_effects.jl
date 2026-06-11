@@ -622,3 +622,104 @@ function fit_poisson_olre(Y::AbstractMatrix{<:Integer}; K::Integer,
                           exp.(th[(p + rr + 1):(p + rr + p)]), link,
                           -Optim.minimum(res), Optim.converged(res), Optim.iterations(res))
 end
+
+# ---------------------------------------------------------------------------
+# Structured grouped random intercept: a level effect u ~ N(0, Σ_u) on a grouping
+# factor, with ANY L×L group covariance Σ_u = σ_u²·C — C = I (iid), a relatedness/
+# pedigree matrix A (animal model), a phylogenetic Σ_phy, or a spatial/temporal kernel
+# (build C with structured_cov.jl). Marginal = I_n⊗A + W Σ_u Wᵀ (W = group-indicator ⊗
+# 1ₚ), a rank-L Woodbury on the per-site A = ΛΛᵀ+σ²I: core M_w = Σ_u⁻¹ + diag(n_g·vAv),
+# vAv = 1ₚ'A⁻¹1ₚ. Reduces to _grouped_intercept_loglik when C = I. AD-clean.
+# ---------------------------------------------------------------------------
+
+function _structured_grouped_loglik(y::AbstractMatrix, group_idx::Vector{Vector{Int}},
+        Λ_B::AbstractMatrix, σ_eps::Real, Σ_u::AbstractMatrix)
+    p = size(y, 1); K = size(Λ_B, 2); L = length(group_idx)
+    T = promote_type(eltype(y), eltype(Λ_B), typeof(σ_eps^2), eltype(Σ_u))
+    σ² = convert(T, σ_eps^2)
+    Kc = Λ_B' * Λ_B
+    @inbounds for k in 1:K
+        Kc[k, k] += σ²
+    end
+    cKc = cholesky(Symmetric(Kc))
+    logdetA = (p - K) * log(σ²) + logdet(cKc)               # robust as σ→0
+    Ainv = V -> (V .- Λ_B * (cKc \ (Λ_B' * V))) ./ σ²
+    onep = ones(T, p)
+    Ainv_1 = Ainv(onep)
+    vAv = dot(onep, Ainv_1)                                  # 1ₚ'A⁻¹1ₚ
+    n_total = 0
+    quad_base = zero(T)
+    s = zeros(T, L)
+    ng = zeros(T, L)
+    for (g, idx) in enumerate(group_idx)
+        ng[g] = length(idx); n_total += length(idx)
+        Yg = Matrix{T}(@view y[:, idx])
+        quad_base += sum(Yg .* Ainv(Yg))                    # Σ_{i∈g} y_i'A⁻¹y_i
+        s[g] = dot(Ainv_1, vec(sum(Yg, dims = 2)))          # Σ_{i∈g} 1ₚ'A⁻¹y_i
+    end
+    cSu = cholesky(Symmetric(Matrix{T}(Σ_u)))
+    Su_inv = cSu \ Matrix{T}(I, L, L)
+    Mw = Su_inv + Diagonal(ng .* vAv)                       # Woodbury core (L×L)
+    cMw = cholesky(Symmetric(Mw))
+    quad = quad_base - dot(s, cMw \ s)
+    np = p * n_total
+    logdet_full = n_total * logdetA + logdet(cSu) + logdet(cMw)
+    return -convert(T, 0.5) * (np * log(convert(T, 2π)) + logdet_full + quad)
+end
+
+"""
+    GaussianStructuredREFit
+
+Result of [`fit_gaussian_structured_re`](@ref): loadings `Λ` (p×K), residual SD `σ_eps`,
+the structured group-effect SD `σ_u` (the scale on the fixed correlation `C`), the number
+of groups `nlevels`, the maximised `loglik`, `converged`, `iterations`.
+"""
+struct GaussianStructuredREFit
+    Λ::Matrix{Float64}
+    σ_eps::Float64
+    σ_u::Float64
+    nlevels::Int
+    loglik::Float64
+    converged::Bool
+    iterations::Int
+end
+
+function Base.show(io::IO, f::GaussianStructuredREFit)
+    p, K = size(f.Λ)
+    print(io, "GaussianStructuredREFit(p=", p, ", K=", K, ", nlevels=", f.nlevels,
+          ", σ_eps=", round(f.σ_eps; sigdigits = 4), ", σ_u=", round(f.σ_u; sigdigits = 4),
+          ", loglik=", round(f.loglik; sigdigits = 7), f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+"""
+    fit_gaussian_structured_re(y, grouping, C; K, σ_u_init=0.3, …) -> GaussianStructuredREFit
+
+Fit a Gaussian GLLVM with a STRUCTURED grouped random intercept — a level effect
+`u ~ N(0, σ_u²·C)` on `grouping`, where `C` is the FIXED `L×L` correlation among the L
+groups (`C = I` for iid; a relatedness matrix for the animal model; `Σ_phy` for phylo; a
+spatial/temporal kernel from `structured_cov.jl`). Optimises `[vec(Λ); log σ_eps; log σ_u]`
+on the rank-L Woodbury marginal (direct ForwardDiff; MoreThuente). `grouping` is length-n
+(group labels); `C` must be `L×L` ordered by first-appearance of the group labels.
+"""
+function fit_gaussian_structured_re(y::AbstractMatrix, grouping::AbstractVector,
+        C::AbstractMatrix; K::Integer, σ_u_init::Real = 0.3,
+        g_tol::Real = 1e-6, iterations::Integer = 500)
+    p, n = size(y)
+    length(grouping) == n || throw(DimensionMismatch("grouping length must be n=$n"))
+    K ≥ 1 || throw(ArgumentError("K must be ≥ 1; got $K"))
+    codes, _ = _code_grouping(grouping)
+    L = maximum(codes)
+    size(C) == (L, L) || throw(DimensionMismatch("C must be L×L = $(L)×$(L) (one row/col per group)"))
+    group_idx = [findall(==(g), codes) for g in 1:L]
+    rr = rr_theta_len(p, K)
+    yf = Matrix{Float64}(y); Cf = Matrix{Float64}(C)
+    Λ0, σ0 = ppca_init(yf, K)
+    θ0 = vcat(pack_lambda(Λ0), log(σ0), log(float(σ_u_init)))
+    nll = θ -> -_structured_grouped_loglik(yf, group_idx, unpack_lambda(θ[1:rr], p, K),
+                                           exp(θ[rr + 1]), (exp(θ[rr + 2])^2) .* Cf)
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.MoreThuente())
+    res = Optim.optimize(nll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations); autodiff = :forward)
+    th = Optim.minimizer(res)
+    return GaussianStructuredREFit(unpack_lambda(th[1:rr], p, K), exp(th[rr + 1]), exp(th[rr + 2]),
+                                   L, -Optim.minimum(res), Optim.converged(res), Optim.iterations(res))
+end
