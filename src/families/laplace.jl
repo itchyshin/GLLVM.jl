@@ -592,6 +592,12 @@ function _scalar_aux_laplace_site_implicit_value_grad_parts(family, family_from_
     Wη = Vector{T}(undef, p)
     Waux = Vector{T}(undef, p)
     @inbounds for t in 1:p
+        if ismissing(y[t])                       # NA-aware FIML: drop missing cell
+            s[t] = zero(T); W[t] = zero(T)
+            sη[t] = zero(T); saux[t] = zero(T)
+            Wη[t] = zero(T); Waux[t] = zero(T)
+            continue                             # 0 contribution to ℓ, qaux, A, Fz, grad
+        end
         ℓt, st, Wt, qauxt, sηt, sauxt, Wηt, Wauxt =
             _obs_lsw_aux_derivatives(family, family_from_aux, link, y[t], n[t], η[t], aux)
         ℓ += ℓt
