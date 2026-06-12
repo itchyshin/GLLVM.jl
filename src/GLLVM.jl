@@ -79,6 +79,7 @@ include("families/com_poisson.jl")        # Conway–Maxwell–Poisson (under/ov
 include("ordination.jl")                  # ordination output (site scores + species loadings, canonical rotation)
 include("model_selection.jl")             # select_lv: latent-dimension selection by AIC/BIC
 include("simulate_fit.jl")               # simulate(fit, …) for the non-Gaussian families
+include("ordination_uncertainty.jl")      # per-site latent-score uncertainty (conditional bootstrap of scores)
 
 # Confidence intervals
 include("confint.jl")                    # Wald
@@ -175,7 +176,7 @@ export spatial_cov, relatedness_cov,
        fit_binomial_gllvm_va, fit_nb_gllvm_va,
        gamma_marginal_loglik_va, fit_gamma_gllvm_va,
        exponential_marginal_loglik_va, fit_exponential_gllvm_va,
-       getLV, getLoadings, rotation, ordination, ordiplot, predict_spatial,
+       getLV, getLoadings, rotation, ordination, ordiplot, ordination_uncertainty, predict_spatial,
        coef_table, GllvmCoefTable, select_lv, LVSelection,
        predict, fitted, residuals, aic, bic, simulate,
        bridge_fit
