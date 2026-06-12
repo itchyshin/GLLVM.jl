@@ -273,7 +273,13 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N, X,
                               options = options)
     elseif key == "binomial"
         Yi = round.(Int, Yf)
-        Ni = N === nothing ? fill(1, p, n) : round.(Int, Matrix(N))
+        Ni = if N === nothing
+            fill(1, p, n)                       # Bernoulli default
+        elseif N isa Number
+            fill(round(Int, N), p, n)           # scalar trials count (broadcast)
+        else
+            round.(Int, Matrix(N))              # per-cell trials matrix
+        end
         fit = fit_binomial_gllvm(Yi; K = K, N = Ni)
         return _bridge_return(fit, Yi, key, "binomial_rr", traits, units;
                               alpha = fit.β, dispersion = fill(NaN, p),
