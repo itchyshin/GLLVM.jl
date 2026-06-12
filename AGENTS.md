@@ -9,8 +9,9 @@ Generalised Linear Latent Variable Model, built as a digital twin of R's
 - Status: v0.1.0 pilot — Gaussian only. 32 commits, 25 source files,
   18 wired tests (9 orphan tests remain unwired; see Phase 1.2).
 - Headline result: ~340× per-fit median speedup over R/`gllvmTMB` on
-  Gaussian fits, with log-likelihoods and point estimates matching R to
-  machine precision.
+  **single-σ² Gaussian** fits (the closed-form σ²_eps-profile path), with
+  log-likelihoods and point estimates matching R to machine precision on that
+  grid. R's per-species Gaussian default is not yet benchmarked head-to-head.
 - Phylogenetic representations: sparse (CHOLMOD), contrasts, edge-incidence;
   all return identical log-likelihoods to machine precision.
 - Next milestone: **Phase 1 capability completion → v0.2.0** (O(p) gradient,

@@ -13,8 +13,8 @@ Notable changes to GLLVM.jl. Style mirrors `gllvmTMB`'s NEWS: status labels
 ### Engine
 - **IN:** O(p) node-frame phylogenetic gradient; type-stable recursion kernels
   (function barrier + parametric state); Aqua + JET quality gates wired green.
-- **PLANNED:** an at-scale phylogenetic fitter `fit_phylo_gaussian` over the
-  O(p) gradient. (#5)
+- **IN:** single-trait (univariate) phylogenetic Gaussian fitter
+  `fit_phylo_gaussian`, built on the O(p) node-frame gradient. (#5)
 
 ### Quality & infrastructure
 - **IN:** `Pkg.test()` adopted as the full-suite command; Aqua (package
@@ -31,5 +31,6 @@ Notable changes to GLLVM.jl. Style mirrors `gllvmTMB`'s NEWS: status labels
 - **IN:** Wald / profile-likelihood / parametric-bootstrap confidence
   intervals, including derived quantities (Σ_y entries, communality,
   cross-trait correlation, phylogenetic signal).
-- **IN:** ~340× median per-fit speedup over R `gllvmTMB` on the Gaussian
-  benchmark grid, reproducing estimates and likelihoods to machine precision.
+- **IN:** ~340× median per-fit speedup over R `gllvmTMB` on the **single-σ²
+  Gaussian** benchmark grid, reproducing estimates and likelihoods to machine
+  precision on that grid (R's per-species Gaussian default is not yet measured).
