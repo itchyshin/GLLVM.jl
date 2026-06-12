@@ -82,6 +82,7 @@ include("confint_derived.jl")            # derived quantities (Σ_y, communality
 include("confint_family.jl")             # Wald / profile / bootstrap CIs for non-Gaussian families
 include("summary_table.jl")              # coef_table: tidy Wald inference table
 include("formula.jl")                    # @formula front-end (v1: fixed effects → engine)
+include("bridge.jl")                      # R→Julia bridge_fit (JuliaCall flat contract); LAST
 
 # Ordination naming: the implemented z_s ~ N(B'x_s, I) model (covariate-informed LV
 # mean PLUS residual) is gllvm's *concurrent* ordination (num.lv.c). Expose the
@@ -155,6 +156,7 @@ export spatial_cov, relatedness_cov,
        gamma_marginal_loglik_va, fit_gamma_gllvm_va,
        getLV, getLoadings, rotation, ordination, ordiplot, predict_spatial,
        coef_table, GllvmCoefTable, select_lv, LVSelection,
-       predict, fitted, residuals, aic, bic, simulate
+       predict, fitted, residuals, aic, bic, simulate,
+       bridge_fit
 
 end # module GLLVM
