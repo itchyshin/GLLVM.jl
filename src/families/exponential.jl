@@ -49,22 +49,31 @@ function Base.show(io::IO, f::ExponentialFit)
 end
 
 """
-    fit_exponential_gllvm(Y; K, link=LogLink(), …) -> ExponentialFit
+    fit_exponential_gllvm(Y; K, link=LogLink(), mask=nothing, offset=nothing, …) -> ExponentialFit
 
 Fit an Exponential GLLVM by L-BFGS over `[β; vec(Λ)]` on the Laplace marginal
 (`exponential_marginal_loglik_laplace`). `Y` is a p×n matrix of positive reals;
 `K` the latent dimension. Finite-difference gradient; warm start = log row-means
 as intercepts + SVD of row-centred log-Y as loadings.
+
+Missing data: pass a `mask` (p×n Bool, `false` = unobserved) or `missing` entries
+in `Y`; masked cells are dropped from the marginal and the warm start, so the fit
+depends only on the observed cells (gllvm-style NA handling).
 """
-function fit_exponential_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
-        link::Link = LogLink(),
+function fit_exponential_gllvm(Y::AbstractMatrix; K::Integer,
+        link::Link = LogLink(), mask = nothing, offset = nothing,
         β_init = nothing, Λ_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
     rr = rr_theta_len(p, K)
 
-    Zemp = log.(max.(Y, 1e-6))
+    msk = _resolve_obs_mask(mask, Y)                  # NA handling
+    Yc  = _sanitize_missing(Y, 1.0)                   # positive placeholder
+
+    Zemp = log.(max.(Yc, 1e-6))
+    offset === nothing || (Zemp .-= offset)           # offset (η = β + offset + Λz)
+    _mask_warmstart!(Zemp, msk)
     β0 = β_init === nothing ? vec(sum(Zemp; dims = 2)) ./ n : collect(float.(β_init))
     Λ0 = if Λ_init === nothing
         Zc = Zemp .- β0
@@ -84,7 +93,8 @@ function fit_exponential_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         β = θ[1:p]
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
         v = try
-            -exponential_marginal_loglik_laplace(Y, Λ, β; link = link,
+            -exponential_marginal_loglik_laplace(Yc, Λ, β; link = link, mask = msk,
+                                                 offset = offset,
                                                  maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
