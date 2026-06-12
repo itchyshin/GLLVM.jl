@@ -139,9 +139,21 @@ function bridge_fit(; y,
                     options = Dict{String,Any}())
     K = Int(d)
     K >= 1 || throw(ArgumentError("d must be a positive integer"))
-    X === nothing || throw(ArgumentError(
-        "bridge_fit: fixed-effect covariates X are not yet wired in this bridge " *
-        "build; a documented follow-up"))
+    # Fixed-effect covariates X (a p×n×q array) are wired for the Gaussian family
+    # only: fit_gaussian_gllvm carries the full mean structure (per-trait intercept
+    # dummies + covariates) in X and returns the length-q β. Non-Gaussian and
+    # mixed-family X remain a documented follow-up — reject loudly rather than
+    # silently dropping the covariates.
+    if X !== nothing
+        if family isa AbstractVector
+            throw(ArgumentError(
+                "bridge_fit: fixed-effect covariates X are not yet wired for the " *
+                "mixed-family path; a documented follow-up"))
+        end
+        _bridge_family_key(String(family)) == "gaussian" || throw(ArgumentError(
+            "bridge_fit: fixed-effect covariates X are wired for family=\"gaussian\" " *
+            "only; non-Gaussian X is a documented follow-up"))
+    end
     # Mixed-family: a vector of per-trait family strings ⇒ one shared latent block,
     # a TRUE cross-distribution VCV (the headline). A length-1 vector or an all-same
     # vector still routes here (the mixed fitter handles the degenerate one-family
@@ -151,19 +163,59 @@ function bridge_fit(; y,
                                  trait_names, unit_names, options)
     end
     return _bridge_fit_onepart(y, _bridge_family_key(String(family)), K, N,
-                               trait_names, unit_names, options)
+                               trait_names, unit_names, options; X = X)
 end
 
 # --- one-part dispatch -----------------------------------------------------
 
 function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
-                             trait_names, unit_names, options)
+                             trait_names, unit_names, options; X = nothing)
     Yf = Matrix{Float64}(y)
     p, n = size(Yf)
     traits = _bridge_names(trait_names, p, "trait")
     units = _bridge_names(unit_names, n, "unit")
 
+    # X is gated to family=="gaussian" at the bridge_fit entry point; defend the
+    # invariant here too so a future direct caller can't slip covariates past a
+    # non-Gaussian fitter that would silently ignore them.
+    X === nothing || key == "gaussian" ||
+        throw(ArgumentError("bridge_fit: X is only wired for family=\"gaussian\""))
+
     if key == "gaussian"
+        if X !== nothing
+            # Fixed-effect covariate path. The caller's X (p×n×q) already carries the
+            # FULL mean structure — per-trait intercept dummies AND covariates — so we
+            # do NOT pre-centre Y; fit_gaussian_gllvm estimates β jointly with Λ̂/σ̂.
+            # `alpha` is the per-trait fitted mean (mean over sites of Xₜₛ·β̂), the
+            # natural per-trait intercept summary when the mean is covariate-driven.
+            Xarr = Array{Float64,3}(X)
+            size(Xarr, 1) == p && size(Xarr, 2) == n || throw(ArgumentError(
+                "bridge_fit: X must be p×n×q ($(p)×$(n)×q); got $(size(Xarr))"))
+            q = size(Xarr, 3)
+            fit = fit_gaussian_gllvm(Yf; K = K, X = Xarr)
+            β = collect(Float64, fit.pars.β)
+            alpha = zeros(Float64, p)
+            @inbounds for t in 1:p
+                acc = 0.0
+                for s in 1:n, k in 1:q
+                    acc += Xarr[t, s, k] * β[k]
+                end
+                alpha[t] = acc / n
+            end
+            Sigma = Matrix{Float64}(sigma_y_site(fit))
+            corr  = Matrix{Float64}(correlation(fit))
+            comm  = Vector{Float64}(communality(fit))
+            scores = _bridge_scores(() -> getLV(fit, Yf; X = Xarr, rotate = true))
+            df = q + _bridge_rr_df(p, K) + 1
+            return _bridge_assemble(fit, "gaussian", "gaussian_x_rr", traits, units;
+                alpha = alpha, dispersion = fill(NaN, p), sigma_eps = fit.pars.σ_eps,
+                link = fill("IdentityLink", p), Sigma = Sigma, corr = corr, comm = comm,
+                scores = scores, df = df, loglik = fit.logLik,
+                converged = fit.converged, iterations = fit.n_iter,
+                note = "fixed-effect covariate fit: X carries the full mean structure " *
+                       "(per-trait intercepts + covariates); alpha is the per-trait " *
+                       "fitted mean.")
+        end
         reml = _bridge_truthy(_bridge_get(options, "reml", false))
         if reml
             # Restricted ML: per-trait intercepts enter as the GLS fixed effects X
