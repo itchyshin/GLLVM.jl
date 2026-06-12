@@ -103,6 +103,7 @@ using GLLVM
     include("test_variational_gamma.jl")
     include("test_variational_beta.jl")
     include("test_variational_dgamma.jl")
+    include("test_variational_exponential.jl")
     include("test_va_vs_laplace.jl")
     include("test_random_slopes.jl")
     include("test_twolevel.jl")
