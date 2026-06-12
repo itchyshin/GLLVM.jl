@@ -73,4 +73,26 @@ using GLLVM, Test, Random, Statistics, LinearAlgebra
         # Loose homogeneity: spread of φ̂² should not be wild.
         @test (maximum(fit.φ²) / minimum(fit.φ²)) ≤ 12.0
     end
+
+    # ---------------------------------------------------------------------
+    # 4. EM-FA fast path (default) reaches the SAME ML optimum as L-BFGS.
+    # ---------------------------------------------------------------------
+    @testset "EM-FA fast path matches L-BFGS optimum" begin
+        Random.seed!(42)
+        p, K, n = 10, 2, 200
+        Λ_true = 0.8 .* randn(p, K)
+        φ_true = 0.3 .+ 0.9 .* rand(p)
+        Y = Λ_true * randn(K, n) .+ (φ_true .* randn(p, n))
+
+        f_em = GLLVM.fit_gaussian_pervar_gllvm(Y; K = K, method = :em)
+        f_lb = GLLVM.fit_gaussian_pervar_gllvm(Y; K = K, method = :lbfgs)
+
+        # Same ML log-likelihood (the EM path is not an approximation).
+        @test isapprox(f_em.loglik, f_lb.loglik; atol = 1e-4)
+        # Marginal per-species variance diag(ΛΛ' + Ψ) is rotation-invariant and
+        # identified — it must agree even though the Λ rotation differs.
+        @test isapprox(vec(sum(abs2, f_em.Λ; dims = 2)) .+ f_em.φ²,
+                       vec(sum(abs2, f_lb.Λ; dims = 2)) .+ f_lb.φ²; rtol = 1e-3)
+        @test f_em.iterations ≥ 1
+    end
 end
