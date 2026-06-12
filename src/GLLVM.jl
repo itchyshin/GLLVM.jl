@@ -84,6 +84,7 @@ include("confint_derived.jl")            # derived quantities (Σ_y, communality
 # family fit structs + predict) and confint_derived.jl (the Gaussian generics it
 # adds methods to). Additive: the ::GllvmFit methods are unchanged.
 include("link_residual.jl")
+include("boundary_inference.jl")         # χ̄² boundary LRT + boundary-aware profile CI for variance components
 include("confint_family.jl")             # Wald / profile / bootstrap CIs for non-Gaussian families
 include("summary_table.jl")              # coef_table: tidy Wald inference table
 include("formula.jl")                    # @formula front-end (v1: fixed effects → engine)
@@ -110,6 +111,7 @@ export spatial_cov, relatedness_cov,
        confint, profile_ci, bootstrap_ci,
        ppca_init, em_fa,
        sigma_y_site, communality, correlation, phylo_signal, link_residual,
+       chibar2_pvalue, variance_lrt, profile_ci_variance,
        augmented_phy, gaussian_marginal_loglik_sparse_phy,
        node_grad, node_dσ_phy_only, NodePerSpecies, build_node_perspecies,
        grad_node_perspecies, node_blups,
