@@ -64,6 +64,7 @@ include("families/variational_negbin.jl") # VA/ELBO marginal — Negative Binomi
 include("families/variational_gamma.jl") # VA/ELBO marginal — Gamma (closed form)
 include("families/variational_beta.jl")  # VA/ELBO marginal — Beta (Gauss–Hermite)
 include("families/variational_dgamma.jl") # VA/ELBO marginal — Delta-Gamma two-part (closed form)
+include("families/variational_exponential.jl") # VA/ELBO marginal — Exponential (closed form, Gamma α=1)
 
 # SPDE/Matérn-GMRF field as a latent variable inside a non-Gaussian GLLVM
 # (joint Laplace over the spatial GMRF). Depends on the SPDE FEM machinery
@@ -173,6 +174,7 @@ export spatial_cov, relatedness_cov,
        binomial_marginal_loglik_va, nb_marginal_loglik_va,
        fit_binomial_gllvm_va, fit_nb_gllvm_va,
        gamma_marginal_loglik_va, fit_gamma_gllvm_va,
+       exponential_marginal_loglik_va, fit_exponential_gllvm_va,
        getLV, getLoadings, rotation, ordination, ordiplot, predict_spatial,
        coef_table, GllvmCoefTable, select_lv, LVSelection,
        predict, fitted, residuals, aic, bic, simulate,
