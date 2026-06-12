@@ -56,6 +56,7 @@ include("families/ordered_beta.jl")       # ordered-beta family (proportions wit
 include("families/fourthcorner.jl")       # fourth-corner trait–environment interaction for the Laplace families
 include("families/row_effects.jl")        # community row effects (per-site intercepts) for the Laplace families
 include("families/row_random.jl")          # random row effects (ρ_s ~ N(0,σ_row²), gllvmTMB row.eff="random")
+include("families/random_slopes.jl")       # non-Gaussian grouped random slopes (Poisson; per-group Laplace super-site)
 include("families/variational.jl")       # Gaussian-variational (VA/ELBO) marginal — Poisson (increment 1) + GH helper
 include("families/variational_binomial.jl") # VA/ELBO marginal — Binomial/Bernoulli (Gauss–Hermite)
 include("families/variational_negbin.jl") # VA/ELBO marginal — Negative Binomial (Gauss–Hermite)
@@ -111,6 +112,7 @@ export spatial_cov, relatedness_cov,
        fit_gaussian_gllvm, GllvmModel, GllvmFit,
        gaussian_reml_loglik, fit_gaussian_reml, GaussianREMLFit,
        fit_gaussian_random_slope, GaussianRandomSlopeFit, gaussian_grouped_intercept_loglik,
+       fit_poisson_random_slope, PoissonRandomSlopeFit, random_slope_marginal_loglik_laplace,
        fit_gaussian_pervar_gllvm, GaussianPerVarFit, gaussian_pervar_marginal_loglik,
        fit_compoisson_gllvm, COMPoisson, COMPoissonFit, compoisson_marginal_loglik_laplace,
        compoisson_logpdf, compoisson_logz,
