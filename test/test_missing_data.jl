@@ -99,5 +99,51 @@ using GLLVM, Test, LinearAlgebra, Random
         fc1 = fit_binomial_gllvm(Yco; K = 1, N = Ntr, mask = msk2, iterations = 30)
         fc2 = fit_binomial_gllvm(Ycm; K = 1, N = Ntr, iterations = 30)
         @test isapprox(fc1.loglik, fc2.loglik; atol = 1e-7)
+
+        # Exponential (positive, no dispersion)
+        Ye  = 0.2 .+ randexp(pp, nn)
+        Yem = Matrix{Union{Missing, Float64}}(Ye); for I in miss; Yem[I] = missing; end
+        fe1 = fit_exponential_gllvm(Ye;  K = 1, mask = msk2, iterations = 30)
+        fe2 = fit_exponential_gllvm(Yem; K = 1, iterations = 30)
+        @test isapprox(fe1.loglik, fe2.loglik; atol = 1e-7)
+    end
+
+    # ---- Exponential: complete-data equivalence + NA invariance ------------
+    @testset "Exponential NA-FIML" begin
+        Random.seed!(321)
+        pe, ne = 5, 9
+        Λe = randn(pe, 1) .* 0.4
+        βe = randn(pe) .* 0.3
+        Ye = 0.1 .+ randexp(pe, ne)
+
+        # (1) complete-data equivalence: no mask == an all-true mask (marginal).
+        ℓ_full = GLLVM.exponential_marginal_loglik_laplace(Ye, Λe, βe)
+        ℓ_mask = GLLVM.exponential_marginal_loglik_laplace(Ye, Λe, βe; mask = trues(pe, ne))
+        @test isapprox(ℓ_full, ℓ_mask; atol = 1e-10)
+
+        # complete-data equivalence at the fit level: default call == all-true mask.
+        feA = fit_exponential_gllvm(Ye; K = 1, iterations = 40)
+        feB = fit_exponential_gllvm(Ye; K = 1, mask = trues(pe, ne), iterations = 40)
+        @test isapprox(feA.loglik, feB.loglik; atol = 1e-10)
+        @test isapprox(feA.β, feB.β; atol = 1e-10)
+        @test isapprox(vec(feA.Λ), vec(feB.Λ); atol = 1e-10)
+
+        # (2) a finite NA fit: a few masked cells, marginal invariant to garbage.
+        mske = trues(pe, ne)
+        for (t, s) in [(1, 4), (3, 2), (5, 7), (2, 9)]
+            mske[t, s] = false
+        end
+        Yeg = copy(Ye); for I in findall(.!mske); Yeg[I] = 9999.0; end
+        ℓ_a = GLLVM.exponential_marginal_loglik_laplace(Ye,  Λe, βe; mask = mske)
+        ℓ_b = GLLVM.exponential_marginal_loglik_laplace(Yeg, Λe, βe; mask = mske)
+        @test isapprox(ℓ_a, ℓ_b; atol = 1e-10)
+        @test ℓ_a != ℓ_full
+
+        feM = fit_exponential_gllvm(Ye; K = 1, mask = mske, iterations = 40)
+        @test isfinite(feM.loglik)
+        feG = fit_exponential_gllvm(Yeg; K = 1, mask = mske, iterations = 40)
+        @test isapprox(feM.loglik, feG.loglik; atol = 1e-8)
+        @test isapprox(feM.β, feG.β; atol = 1e-7)
+        @test isapprox(vec(feM.Λ), vec(feG.Λ); atol = 1e-7)
     end
 end
