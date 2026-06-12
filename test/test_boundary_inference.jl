@@ -1,5 +1,5 @@
 using GLLVM, Test, Random, LinearAlgebra
-using Distributions: Chisq, ccdf
+using Distributions: Chisq, ccdf, quantile
 
 # χ̄² boundary LRT for variance components (DRM cross-pollination).
 
@@ -54,4 +54,21 @@ using Distributions: Chisq, ccdf
         # null LRT real spread; that's precisely why honest boundary CIs/tests matter.)
         @test t.LRT > t0.LRT
     end
+end
+
+@testset "profile_ci_variance (boundary-aware profile CI)" begin
+    # synthetic quadratic profile ℓ(v) = ℓ_max − ½(v−v̂)²/s²  ⇒  CI = v̂ ± √(χ²₁(level))·s
+    v̂, s, ℓ_max = 2.0, 0.5, -100.0
+    refit = v -> ℓ_max - 0.5 * (v - v̂)^2 / s^2
+    ci = profile_ci_variance(refit, v̂, ℓ_max; level = 0.95)
+    z = sqrt(quantile(Chisq(1), 0.95))
+    @test isapprox(ci.lower, v̂ - z * s; atol = 1e-3)
+    @test isapprox(ci.upper, v̂ + z * s; atol = 1e-3)
+    @test !ci.at_boundary
+    # a near-0, weakly-identified variance (wide flat profile) ⇒ lower clamps at 0
+    refit2 = v -> ℓ_max - 0.5 * (v - 0.05)^2 / 4.0
+    ci2 = profile_ci_variance(refit2, 0.05, ℓ_max; level = 0.95)
+    @test ci2.lower == 0.0
+    @test ci2.at_boundary
+    @test ci2.upper > 0.05
 end

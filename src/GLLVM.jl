@@ -180,7 +180,7 @@ export spatial_cov, relatedness_cov,
        getLV, getLoadings, rotation,
        predict, fitted, residuals, aic, bic, lrt, anova, bootstrap_ci_families,
        quantile_residuals, check_fit, FitCheck,
-       chibar2_pvalue, variance_lrt,
+       chibar2_pvalue, variance_lrt, profile_ci_variance,
        gllvm, GllvmFormulaFit, @formula,
        bridge_fit
 

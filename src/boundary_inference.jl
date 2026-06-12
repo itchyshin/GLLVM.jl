@@ -48,3 +48,46 @@ function variance_lrt(ℓ_full::Real, ℓ_reduced::Real; n_boundary::Integer = 1
     LRT = 2 * (float(ℓ_full) - float(ℓ_reduced))
     return (LRT = LRT, pvalue = chibar2_pvalue(LRT, n_boundary), n_boundary = n_boundary)
 end
+
+# Bisection for a root of g on [a,b] assuming g(a), g(b) bracket it (opposite signs).
+function _bisect_root(g, a::Real, b::Real, tol::Real, maxit::Integer)
+    fa = g(a)
+    for _ in 1:maxit
+        m = (a + b) / 2
+        fm = g(m)
+        (abs(fm) < tol || (b - a) < tol) && return m
+        if sign(fm) == sign(fa)
+            a = m; fa = fm
+        else
+            b = m
+        end
+    end
+    return (a + b) / 2
+end
+
+"""
+    profile_ci_variance(refit_at, v̂, ℓ_max; level=0.95, lower=0.0, …) -> NamedTuple
+
+Profile-likelihood CI for a variance component at the boundary of `[0, ∞)`. `refit_at(v)`
+returns the maximised profile log-likelihood with the variance FIXED at `v` (the other
+parameters re-optimised); `v̂` is the MLE, `ℓ_max` the full maximised log-likelihood. Inverts
+`2(ℓ_max − ℓ_profile(v)) = χ²₁(level)` by bracket-then-bisect, **clamping the lower edge at
+`lower` (0)** — when the profile at the boundary is still within the threshold (a poorly-
+identified / near-0 variance), the CI lower bound IS the boundary and `at_boundary=true` (the
+honest "this variance is consistent with 0" result, paired with [`chibar2_pvalue`](@ref)).
+Returns `(lower, upper, level, at_boundary)`.
+"""
+function profile_ci_variance(refit_at::Function, v̂::Real, ℓ_max::Real;
+        level::Real = 0.95, lower::Real = 0.0, upper_factor::Real = 50.0,
+        tol::Real = 1e-4, maxit::Integer = 80)
+    thr = quantile(Chisq(1), level) / 2
+    target = ℓ_max - thr
+    g = v -> refit_at(v) - target                 # > 0 inside the CI, < 0 outside
+    lo = g(lower) ≥ 0 ? float(lower) : _bisect_root(g, lower, v̂, tol, maxit)
+    hi_hi = v̂ > 0 ? v̂ * upper_factor : float(upper_factor)
+    while g(hi_hi) > 0 && hi_hi < 1e8
+        hi_hi *= 2
+    end
+    hi = _bisect_root(g, v̂, hi_hi, tol, maxit)
+    return (lower = lo, upper = hi, level = level, at_boundary = (lo == float(lower)))
+end
