@@ -11,6 +11,7 @@ include("ppca_init.jl")                  # used by fit (warm-start)
 include("em_fa.jl")                      # alternative EM solver
 include("profile.jl")                    # σ_eps profile-out (used by fit)
 include("fit.jl")
+include("reml.jl")                       # REML for the Gaussian path (restricted ML)
 include("simulate.jl")
 include("families/gaussian_pervar.jl")   # Gaussian with per-species variance (gllvmTMB heteroscedastic default)
 include("structured_cov.jl")             # spatial_cov, relatedness_cov builders
@@ -105,6 +106,7 @@ export spatial_cov, relatedness_cov,
        confint_spde_latent,
        confint_speciescov, confint_fourthcorner, confint_rrr, confint_constrained,
        fit_gaussian_gllvm, GllvmModel, GllvmFit,
+       gaussian_reml_loglik, fit_gaussian_reml, GaussianREMLFit,
        fit_gaussian_pervar_gllvm, GaussianPerVarFit, gaussian_pervar_marginal_loglik,
        fit_compoisson_gllvm, COMPoisson, COMPoissonFit, compoisson_marginal_loglik_laplace,
        compoisson_logpdf, compoisson_logz,

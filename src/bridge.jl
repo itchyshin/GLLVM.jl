@@ -65,6 +65,14 @@ function _bridge_get(options, key::AbstractString, default)
     return default
 end
 
+# Truthy coercion for bridge option flags coming from R/JuliaCall, where a logical
+# may arrive as Bool `true`, integer `1`, or the string "true"/"TRUE".
+_bridge_truthy(v::Bool) = v
+_bridge_truthy(v::Real) = v != 0
+_bridge_truthy(v::AbstractString) = lowercase(strip(v)) in ("true", "t", "1", "yes")
+_bridge_truthy(::Nothing) = false
+_bridge_truthy(v) = false
+
 function _bridge_family_key(family::AbstractString)
     key = lowercase(strip(family))
     key in ("gaussian", "normal")                                   && return "gaussian"
@@ -148,6 +156,37 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
     units = _bridge_names(unit_names, n, "unit")
 
     if key == "gaussian"
+        reml = _bridge_truthy(_bridge_get(options, "reml", false))
+        if reml
+            # Restricted ML: per-trait intercepts enter as the GLS fixed effects X
+            # (q = p, Xₜₛₜ = 1), so the trait means are REML-adjusted rather than
+            # pre-centred. The fitted Λ̂/σ̂ are wrapped in a GllvmFit so the SAME
+            # Gaussian extractors build the flat contract; the GLS β̂ is the alpha.
+            Xrt = zeros(Float64, p, n, p)
+            @inbounds for t in 1:p, s in 1:n
+                Xrt[t, s, t] = 1.0
+            end
+            rfit = fit_gaussian_reml(Yf, Xrt; K = K)
+            alpha = collect(Float64, rfit.β)
+            fit = GllvmFit(GllvmModel(p, K),
+                (σ_eps = rfit.σ_eps, Λ = rfit.Λ, β = nothing,
+                 Λ_W = nothing, σ²_B = nothing, σ²_W = nothing,
+                 Λ_phy = nothing, σ_phy = nothing, θ_packed = Float64[]),
+                rfit.reml_loglik, rfit.iterations, rfit.converged, nothing, NaN)
+            Yc = Yf .- alpha
+            Sigma = Matrix{Float64}(sigma_y_site(fit))
+            corr  = Matrix{Float64}(correlation(fit))
+            comm  = Vector{Float64}(communality(fit))
+            scores = _bridge_scores(() -> getLV(fit, Yc; rotate = true))
+            df = p + _bridge_rr_df(p, K) + 1
+            return _bridge_assemble(fit, "gaussian", "gaussian_reml_rr", traits, units;
+                alpha = alpha, dispersion = fill(NaN, p), sigma_eps = rfit.σ_eps,
+                link = fill("IdentityLink", p), Sigma = Sigma, corr = corr, comm = comm,
+                scores = scores, df = df, loglik = rfit.reml_loglik,
+                converged = rfit.converged, iterations = rfit.iterations,
+                note = "REML fit (restricted ML): loglik is the REML criterion, " *
+                       "not directly comparable to ML loglik; alpha are GLS trait means.")
+        end
         alpha = vec(Statistics.mean(Yf; dims = 2))
         Yc = Yf .- alpha
         fit = fit_gaussian_gllvm(Yc; K = K)
