@@ -79,6 +79,11 @@ include("confint.jl")                    # Wald
 include("confint_profile.jl")            # profile likelihood
 include("confint_bootstrap.jl")          # parametric bootstrap
 include("confint_derived.jl")            # derived quantities (Σ_y, communality, ...)
+# Cross-family latent-scale link-implicit residual table + non-Gaussian
+# sigma_y_site/communality/correlation extractors. After postfit.jl (needs the
+# family fit structs + predict) and confint_derived.jl (the Gaussian generics it
+# adds methods to). Additive: the ::GllvmFit methods are unchanged.
+include("link_residual.jl")
 include("confint_family.jl")             # Wald / profile / bootstrap CIs for non-Gaussian families
 include("summary_table.jl")              # coef_table: tidy Wald inference table
 include("formula.jl")                    # @formula front-end (v1: fixed effects → engine)
@@ -104,7 +109,7 @@ export spatial_cov, relatedness_cov,
        compoisson_logpdf, compoisson_logz,
        confint, profile_ci, bootstrap_ci,
        ppca_init, em_fa,
-       sigma_y_site, communality, correlation, phylo_signal,
+       sigma_y_site, communality, correlation, phylo_signal, link_residual,
        augmented_phy, gaussian_marginal_loglik_sparse_phy,
        node_grad, node_dσ_phy_only, NodePerSpecies, build_node_perspecies,
        grad_node_perspecies, node_blups,
