@@ -85,6 +85,7 @@ include("confint_derived.jl")            # derived quantities (Σ_y, communality
 # family fit structs + predict) and confint_derived.jl (the Gaussian generics it
 # adds methods to). Additive: the ::GllvmFit methods are unchanged.
 include("link_residual.jl")
+include("families/mixed.jl")             # mixed-family GLLVM (cross-family VCV): fit_mixed_gllvm + MixedFamilyFit. AFTER link_residual + the family fitters so all dispatch targets exist.
 include("boundary_inference.jl")         # χ̄² boundary LRT + boundary-aware profile CI for variance components
 include("confint_family.jl")             # Wald / profile / bootstrap CIs for non-Gaussian families
 include("summary_table.jl")              # coef_table: tidy Wald inference table
@@ -120,6 +121,7 @@ export spatial_cov, relatedness_cov,
        fit_phylo_gaussian, PhyloGaussianFit,
        phylo_glm_marginal_loglik, fit_phylo_glm, PhyloGLMFit,
        LogitLink, ProbitLink, CLogLogLink, IdentityLink, LogLink,
+       fit_mixed_gllvm, MixedFamilyFit, mixed_marginal_loglik_laplace,
        fit_binomial_gllvm, BinomialFit, fit_poisson_gllvm, PoissonFit,
        poisson_laplace_grad, binomial_laplace_grad, nb_laplace_grad,
        gamma_laplace_grad, beta_laplace_grad,

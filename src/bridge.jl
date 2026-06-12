@@ -38,8 +38,11 @@
 # latent-scale Sigma/correlation/communality use the package extractors; for the
 # non-Gaussian fits they use the self-contained shared-block (Lambda*Lambda') form,
 # pending the salvage of the link-residual table + non-Gaussian extractors (then the
-# cross-family correlation gains its distribution-specific residual). Mixed-family,
-# lognormal, fixed-effect X, and bootstrap CIs are documented follow-ups.
+# cross-family correlation gains its distribution-specific residual). A `family`
+# VECTOR routes to the MIXED-family path (fit_mixed_gllvm): one shared latent block
+# across distinct response families, with the cross-distribution latent-scale
+# `correlation` as the headline. Lognormal, fixed-effect X, and bootstrap CIs are
+# documented follow-ups.
 #
 # ADDITIVE: this file + an include/export line in GLLVM.jl. It edits no fitter or
 # extractor; it is included LAST so every dispatch target already exists.
@@ -136,12 +139,17 @@ function bridge_fit(; y,
                     options = Dict{String,Any}())
     K = Int(d)
     K >= 1 || throw(ArgumentError("d must be a positive integer"))
-    family isa AbstractVector && throw(ArgumentError(
-        "bridge_fit: mixed-family models (a vector of family strings) are not yet " *
-        "supported on this engine build; fit one family at a time"))
     X === nothing || throw(ArgumentError(
         "bridge_fit: fixed-effect covariates X are not yet wired in this bridge " *
         "build; a documented follow-up"))
+    # Mixed-family: a vector of per-trait family strings ⇒ one shared latent block,
+    # a TRUE cross-distribution VCV (the headline). A length-1 vector or an all-same
+    # vector still routes here (the mixed fitter handles the degenerate one-family
+    # case); the cross-family `correlation` is the contract's headline field.
+    if family isa AbstractVector
+        return _bridge_fit_mixed(y, collect(String, String.(family)), K, N,
+                                 trait_names, unit_names, options)
+    end
     return _bridge_fit_onepart(y, _bridge_family_key(String(family)), K, N,
                                trait_names, unit_names, options)
 end
@@ -257,6 +265,89 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
             df = (fit.C - 1) + _bridge_rr_df(p, K), scores = scores)
     end
     throw(ArgumentError("bridge_fit: unhandled family key \"$key\""))  # unreachable
+end
+
+# --- mixed-family dispatch (the cross-distribution VCV headline) -----------
+
+# Map a bridge family string to the `Distributions` marker `fit_mixed_gllvm`
+# dispatches on. v1 supports the SIX families the mixed fitter supports
+# (gaussian/poisson/binomial/negbinomial/gamma/beta); ordinal and nb1 (no mixed
+# kernels yet) are documented follow-ups, rejected here with a clear message.
+function _bridge_mixed_family_marker(family::AbstractString)
+    key = _bridge_family_key(family)
+    key == "gaussian"    && return Normal()
+    key == "poisson"     && return Poisson()
+    key == "binomial"    && return Binomial()
+    key == "negbinomial" && return NegativeBinomial(10.0, 0.5)
+    key == "gamma"       && return Gamma(2.0, 1.0)
+    key == "beta"        && return Beta(10.0, 1.0)
+    throw(ArgumentError(
+        "bridge_fit (mixed): family \"$family\" is not yet supported per-trait in a " *
+        "mixed-family fit; v1 supports gaussian, poisson, binomial, negbinomial, " *
+        "gamma, beta. Ordinal and nb1 are documented follow-ups."))
+end
+
+# Mixed-family bridge: per-trait families share one latent block Λ; the flat
+# contract's `correlation` is the TRUE cross-distribution latent-scale correlation.
+# Per-trait response coercion: count families (poisson/binomial/negbinomial) round
+# to integer-valued Float64 (the family logpdf takes Int(y)); continuous families
+# (gaussian/gamma/beta) pass through as Float64.
+function _bridge_fit_mixed(y, family_strs::AbstractVector, K::Integer, N,
+                           trait_names, unit_names, options)
+    Yf = Matrix{Float64}(y)
+    p, n = size(Yf)
+    length(family_strs) == p || throw(ArgumentError(
+        "bridge_fit (mixed): family vector length $(length(family_strs)) must equal " *
+        "the number of traits (rows of y) = $p"))
+    traits = _bridge_names(trait_names, p, "trait")
+    units = _bridge_names(unit_names, n, "unit")
+
+    keys_norm = [_bridge_family_key(f) for f in family_strs]
+    families = [_bridge_mixed_family_marker(f) for f in family_strs]
+    links = Link[default_link(fam) for fam in families]
+
+    # Per-trait response matrix: round count rows to integers (in Float64), leave
+    # continuous rows untouched. The mixed marginal reads each row by its family.
+    Ymix = copy(Yf)
+    is_count = (k -> k in ("poisson", "binomial", "negbinomial"))
+    @inbounds for t in 1:p
+        if is_count(keys_norm[t])
+            for s in 1:n
+                Ymix[t, s] = float(round(Int, Yf[t, s]))
+            end
+        end
+    end
+
+    # Binomial trial counts (p×n; defaults to 1). Only the Binomial rows read N.
+    Nm = N === nothing ? fill(1, p, n) :
+         (N isa Number ? fill(round(Int, N), p, n) : round.(Int, Matrix(N)))
+
+    fit = fit_mixed_gllvm(Ymix; families = families, links = links, K = K, N = Nm)
+
+    Sigma = Matrix{Float64}(sigma_y_site(fit, Ymix; N = Nm))
+    corr  = Matrix{Float64}(correlation(fit, Ymix; N = Nm))
+    comm  = Vector{Float64}(communality(fit, Ymix; N = Nm))
+    scores = _bridge_scores(() -> getLV(fit, Ymix; N = Nm, rotate = true))
+
+    # alpha is the per-trait link-scale intercept; dispersion is per-trait (NaN
+    # where the family carries none — already the MixedFamilyFit convention).
+    alpha = collect(Float64, fit.β)
+    dispersion = collect(Float64, fit.dispersion)
+    link_names = [_bridge_link_name(links[t]) for t in 1:p]
+
+    # Free-parameter count: p intercepts + reduced-rank loadings + n_disp dispersions.
+    df = p + _bridge_rr_df(p, K) + fit.n_disp
+    fams_tag = join(keys_norm, "+")
+
+    return _bridge_assemble(fit, fams_tag, "mixed_rr", traits, units;
+        alpha = alpha, dispersion = dispersion, sigma_eps = NaN,
+        link = link_names, Sigma = Sigma, corr = corr, comm = comm,
+        scores = scores, df = df, loglik = fit.loglik,
+        converged = fit.converged, iterations = fit.iterations,
+        loadings = Matrix{Float64}(fit.Λ * _svd_rotation(fit.Λ)),  # canonical SVD-rotated p×K loadings
+        note = "mixed-family GLLVM: one shared latent block across distinct response " *
+               "families; `correlation` is the cross-distribution latent-scale " *
+               "correlation. `families` is the per-trait family vector.")
 end
 
 # Non-Gaussian assembler: REAL latent-scale derived quantities via the salvaged
