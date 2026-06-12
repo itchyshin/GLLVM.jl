@@ -163,77 +163,87 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
             converged = fit.converged, iterations = fit.n_iter, note = "")
     end
 
-    # Non-Gaussian: fit, then build derived quantities from the shared block.
-    note_ng = "non-Gaussian Sigma/correlation use the shared block Lambda*Lambda' " *
-              "only (no link-residual term yet); communality is 1. Cross-family " *
-              "correlation precision arrives with the link-residual salvage."
+    # Non-Gaussian: fit, then build the latent-scale derived quantities. The six
+    # families with link-residual extractors on main (poisson/binomial/negbinomial/
+    # beta/gamma/ordinal) get the real cross-family Sigma/correlation/communality;
+    # NB1 (no extractor yet) falls back to the shared block via _bridge_assemble_ng.
     if key == "poisson"
         Yi = round.(Int, Yf)
         fit = fit_poisson_gllvm(Yi; K = K)
         scores = _bridge_scores(() -> getLV(fit, Yi; rotate = true))
-        return _bridge_assemble_ng(fit, "poisson", "poisson_rr", traits, units, p, K;
+        return _bridge_assemble_ng(fit, "poisson", "poisson_rr", traits, units, p, K, Yi, nothing;
             alpha = fit.β, dispersion = fill(NaN, p), df = p + _bridge_rr_df(p, K),
-            scores = scores, note = note_ng)
+            scores = scores)
     elseif key == "binomial"
         Yi = round.(Int, Yf)
         Ni = N === nothing ? fill(1, p, n) :
              (N isa Number ? fill(round(Int, N), p, n) : round.(Int, Matrix(N)))
         fit = fit_binomial_gllvm(Yi; K = K, N = Ni)
         scores = _bridge_scores(() -> getLV(fit, Yi; N = Ni, rotate = true))
-        return _bridge_assemble_ng(fit, "binomial", "binomial_rr", traits, units, p, K;
+        return _bridge_assemble_ng(fit, "binomial", "binomial_rr", traits, units, p, K, Yi, Ni;
             alpha = fit.β, dispersion = fill(NaN, p), df = p + _bridge_rr_df(p, K),
-            scores = scores, note = note_ng)
+            scores = scores)
     elseif key == "negbinomial"
         Yi = round.(Int, Yf)
         fit = fit_nb_gllvm(Yi; K = K)
         scores = _bridge_scores(() -> getLV(fit, Yi; rotate = true))
-        return _bridge_assemble_ng(fit, "negbinomial", "negbinomial_rr", traits, units, p, K;
+        return _bridge_assemble_ng(fit, "negbinomial", "negbinomial_rr", traits, units, p, K, Yi, nothing;
             alpha = fit.β, dispersion = fill(fit.r, p), df = p + _bridge_rr_df(p, K) + 1,
-            scores = scores, note = note_ng)
+            scores = scores)
     elseif key == "nb1"
         Yi = round.(Int, Yf)
         fit = fit_nb1_gllvm(Yi; K = K)
         scores = _bridge_scores(() -> getLV(fit, Yi; rotate = true))
-        return _bridge_assemble_ng(fit, "nb1", "nb1_rr", traits, units, p, K;
+        return _bridge_assemble_ng(fit, "nb1", "nb1_rr", traits, units, p, K, Yi, nothing;
             alpha = fit.β, dispersion = fill(fit.φ, p), df = p + _bridge_rr_df(p, K) + 1,
-            scores = scores, note = note_ng)
+            scores = scores)
     elseif key == "beta"
         fit = fit_beta_gllvm(Yf; K = K)
         scores = _bridge_scores(() -> getLV(fit, Yf; rotate = true))
-        return _bridge_assemble_ng(fit, "beta", "beta_rr", traits, units, p, K;
+        return _bridge_assemble_ng(fit, "beta", "beta_rr", traits, units, p, K, Yf, nothing;
             alpha = fit.β, dispersion = fill(fit.φ, p), df = p + _bridge_rr_df(p, K) + 1,
-            scores = scores, note = note_ng)
+            scores = scores)
     elseif key == "gamma"
         fit = fit_gamma_gllvm(Yf; K = K)
         scores = _bridge_scores(() -> getLV(fit, Yf; rotate = true))
-        return _bridge_assemble_ng(fit, "gamma", "gamma_rr", traits, units, p, K;
+        return _bridge_assemble_ng(fit, "gamma", "gamma_rr", traits, units, p, K, Yf, nothing;
             alpha = fit.β, dispersion = fill(fit.α, p), df = p + _bridge_rr_df(p, K) + 1,
-            scores = scores, note = note_ng)
+            scores = scores)
     elseif key == "ordinal"
         Yi = round.(Int, Yf)
         fit = fit_ordinal_gllvm(Yi; K = K)
         scores = _bridge_scores(() -> getLV(fit, Yi; rotate = true))
-        return _bridge_assemble_ng(fit, "ordinal", "ordinal_rr", traits, units, p, K;
+        return _bridge_assemble_ng(fit, "ordinal", "ordinal_rr", traits, units, p, K, Yi, nothing;
             alpha = fill(NaN, p), dispersion = fill(NaN, p),
-            df = (fit.C - 1) + _bridge_rr_df(p, K), scores = scores, note = note_ng)
+            df = (fit.C - 1) + _bridge_rr_df(p, K), scores = scores)
     end
     throw(ArgumentError("bridge_fit: unhandled family key \"$key\""))  # unreachable
 end
 
-# Non-Gaussian assembler: shared-block (Lambda*Lambda') derived quantities.
-function _bridge_assemble_ng(fit, family, model, traits, units, p, K;
-                             alpha, dispersion, df, scores, note)
-    Λ = _bridge_loadings(fit)
-    Sigma = Λ * Λ'
-    Sigma = (Sigma + Sigma') ./ 2
-    corr = _bridge_corr_from_sigma(Sigma)
-    comm = ones(Float64, p)
+# Non-Gaussian assembler: REAL latent-scale derived quantities via the salvaged
+# link-residual extractors (sigma_y_site/correlation/communality, ΛΛᵀ + diag(d_t)).
+# Falls back to the shared block ΛΛᵀ ONLY when a family has no extractor on this
+# engine (narrow MethodError catch — e.g. NB1); other errors propagate.
+function _bridge_assemble_ng(fit, family, model, traits, units, p, K, Ydata, N;
+                             alpha, dispersion, df, scores)
+    Sigma, corr, comm, note = try
+        S  = N === nothing ? sigma_y_site(fit, Ydata)  : sigma_y_site(fit, Ydata; N = N)
+        C  = N === nothing ? correlation(fit, Ydata)   : correlation(fit, Ydata; N = N)
+        cm = N === nothing ? communality(fit, Ydata)   : communality(fit, Ydata; N = N)
+        (Matrix{Float64}(S), Matrix{Float64}(C), Vector{Float64}(cm), "")
+    catch e
+        e isa MethodError || rethrow()
+        Λ = _bridge_loadings(fit)
+        Σ = Λ * Λ'; Σ = (Σ + Σ') ./ 2
+        (Σ, _bridge_corr_from_sigma(Σ), ones(Float64, p),
+         "$(family) has no link-residual extractor on this engine yet; " *
+         "Sigma/correlation use the shared block Lambda*Lambda' only (communality 1).")
+    end
     return _bridge_assemble(fit, family, model, traits, units;
         alpha = alpha, dispersion = dispersion, sigma_eps = NaN,
         link = fill(_bridge_link_name(fit.link), p), Sigma = Sigma, corr = corr,
         comm = comm, scores = scores, df = df, loglik = fit.loglik,
-        converged = fit.converged, iterations = fit.iterations, note = note,
-        loadings = Λ)
+        converged = fit.converged, iterations = fit.iterations, note = note)
 end
 
 # Shared flat-NamedTuple builder.
