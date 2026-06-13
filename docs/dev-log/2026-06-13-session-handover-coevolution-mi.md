@@ -17,14 +17,15 @@ mirror). **gllvmTMB CRAN work is on a separate branch — see the end.**
 | `fit_gaussian_mi_phylo` | `src/missing_predictor_phylo.jl` | 9/9 | **species-level phylo missing predictor (the high-value Phase 3)** |
 | mi() covariate model `Z` | `test/test_missing_predictor_z.jl` | 6/6 | `x ~ N(μ_x + Zγ, σ_x²)`; `Z=nothing` ≡ old fit to 1e-8 |
 | `fit_coevolution_gaussian` | `src/coevolution_kronecker.jl` | 5/5 | **faithful Kronecker coevolution — RECOVERS Γ to \|cor\|>0.9** (closes the gap) |
-| non-Gaussian mi (Poisson) | `src/missing_predictor_poisson.jl` | 3/3 | **the hardest mi() phase (5a)** — augmented (z,x) Laplace; 3 oracles incl. 2-D Gauss–Hermite |
+| `fit_coevolution_blockna` | `src/coevolution_blockna.jl` | 4/4 · 6/6 slow | **block-NA coevolution** (host/partner each measure own traits); M exact; recovery scales with association |
+| non-Gaussian mi (Poisson+Binomial) | `src/missing_predictor_poisson.jl` | 6/6 | **the hardest mi() phase (5a)** — augmented (z,x) Laplace; 3 oracles/family incl. 2-D Gauss–Hermite |
 
-**59 tests fast · 61 with `GLLVM_SLOW_TESTS=1`.** The mi() axis now spans Gaussian
-site-level (2a) + `Z` covariate-model + phylo (3) + non-Gaussian Poisson (5a). All six test files coexist
-green; module loads clean (additive: 6 src includes + 6 exports + 6 test
-includes). The full `julia test/runtests.jl` regression run was launched at
-session end (it buffers output to the final outer testset) — its result is the
-last GLLVM.jl gate; the focused per-slice runs above are all green.
+**~66 tests fast · 70 with `GLLVM_SLOW_TESTS=1`**, all coexisting green. The
+**coevolution frontier is complete** (kernel · extract_Gamma · Hadamard contrast ·
+faithful complete-data Kronecker · block-NA); the **mi() axis** spans Gaussian
+site-level (2a) · `Z` covariate-model · phylo (3) · non-Gaussian Poisson+Binomial
+(5a). Module loads clean (additive includes/exports). Base `runtests.jl` was
+**3479 pass / 0 fail**; the new slices verified individually + in combined runs.
 
 ## Verification highlights
 
