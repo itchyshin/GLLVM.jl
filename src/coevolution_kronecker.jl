@@ -55,7 +55,7 @@ end
 Fit the matrix-normal cross-lineage coevolution model
 `Y (T × n) ~ MN(0, Λ Λᵀ + σ² I, K_star)` by maximum likelihood, where `Y` is
 `T × n` (stacked traits × stacked species, host block first), `K_star` is the
-`n × n` species cross-kernel from [`make_cross_kernel`](@ref), and `Λ` is the
+`n × n` species cross-kernel from `make_cross_kernel`, and `Λ` is the
 `T × d` trait loadings. Recovers the coevolution estimand
 `Γ = (Λ Λᵀ)[1:T_H, (T_H+1):T]` faithfully (the trait⊗species identifiability the
 Hadamard fit lacks).

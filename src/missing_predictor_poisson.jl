@@ -178,7 +178,7 @@ Fit a non-Gaussian GLLVM (canonical family: `Poisson()`+`LogLink` or
 `Binomial()`+`LogitLink`) with one site-level continuous predictor `x` (length
 `n`, entries may be `missing`/`NaN`), where the missing `x_s` are integrated out
 by full-information ML (the augmented (z,x) Laplace of
-[`marginal_loglik_laplace_xs`](@ref)). `Y` is `p × n`; `N` is the `p × n`
+`marginal_loglik_laplace_xs`). `Y` is `p × n`; `N` is the `p × n`
 trial-count matrix for Binomial (`ones` for Poisson). The predictor enters with a
 single broadcast slope `b_x` and predictor model `x ~ N(μ_x, σ_x²)`.
 

@@ -35,7 +35,7 @@ association matrix. `rho ∈ [-1, 1]` is the bridge strength: larger `|rho|` put
 more covariance in the off-diagonal host–partner block. The returned matrix is
 correlation-scaled (unit diagonal), symmetric, and positive semidefinite, with
 the host block first and the partner block second — ready to pass as `Σ_phy` to
-[`fit_gaussian_gllvm`](@ref).
+`fit_gaussian_gllvm`.
 
 `A_H` and `A_P` must be symmetric, positive semidefinite, and have unit
 diagonal. `eps` is a positive numerical floor used when taking symmetric square
@@ -45,7 +45,7 @@ This mirrors `gllvmTMB::make_cross_kernel` so the R and Julia twins build the
 identical `K*`.
 
 # Examples
-```jldoctest
+```julia
 julia> A_H = [1.0 0.3 0.1; 0.3 1.0 0.2; 0.1 0.2 1.0];
 
 julia> A_P = [1.0 0.25; 0.25 1.0];
