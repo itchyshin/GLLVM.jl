@@ -44,4 +44,4 @@ to ±∞ (complete separation). `fit_binomial_gllvm` clamps the linear predictor
 for numerical safety, but a non-convergence flag or an extreme intercept is a
 sign to inspect that response.
 
-See also: [Get started](/quickstart) · [Response families](/response-families) · [Reference](/api).
+See also: [Get started](quickstart.md) · [Response families](response-families.md) · [Reference](api.md).

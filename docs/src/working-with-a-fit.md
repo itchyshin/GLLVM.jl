@@ -1,8 +1,11 @@
 # Working with a fitted model
 
-Once you have a fit from `fit_gaussian_gllvm` or `fit_gllvm(Y; family=…)`, GLLVM.jl
-gives you the standard post-fit toolkit — ordination, predictions, residual
-diagnostics, and model-selection criteria — for both Gaussian and binary fits.
+Once you have a fit from `fit_gaussian_gllvm`, `fit_gllvm(Y; family=…)`, or a
+two-part fitter, GLLVM.jl gives you the standard post-fit toolkit: ordination,
+predictions, residual diagnostics, and model-selection criteria. The current
+coverage is broadest for Gaussian and the one-part Laplace families; two-part
+fitters expose the same core summaries where the response-scale target is
+defined.
 
 ```julia
 using GLLVM, Random
@@ -81,9 +84,11 @@ log-likelihood, AIC, and convergence:
 fit        # rich summary in the REPL
 ```
 
-## Binary fits
+## Non-Gaussian fits
 
-Everything above works for a binary fit — pass the integer response matrix:
+The same pattern works for the one-part non-Gaussian families. For example, a
+binary fit takes an integer response matrix and returns Laplace-mode scores,
+fitted probabilities, residuals, and information criteria:
 
 ```julia
 fitb = fit_gllvm(Yb; family = Binomial(), K = 2)
@@ -92,4 +97,8 @@ predict(fitb, Yb)               # fitted probabilities
 residuals(fitb, Yb)             # Dunn–Smyth (set rng to reproduce)
 ```
 
-See also: [Get started](/quickstart) · [Response families](/response-families) · [Reference](/api).
+The same entry point dispatches to Poisson, NegativeBinomial, Beta, Ordinal,
+and Gamma fitters; see [Response families](response-families.md) for the current
+family boundary.
+
+See also: [Get started](quickstart.md) · [Response families](response-families.md) · [Reference](api.md).

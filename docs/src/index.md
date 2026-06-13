@@ -1,37 +1,7 @@
----
-layout: home
+# GLLVM.jl
 
-hero:
-  name: "GLLVM.jl"
-  text: "Latent-variable models for multivariate ecology"
-  tagline: "Ordination, trait correlation, and phylogenetic signal for multivariate species data — the gllvmTMB engine, rebuilt in Julia, ~340× faster."
-  actions:
-    - theme: brand
-      text: Get started
-      link: /quickstart
-    - theme: alt
-      text: Reference
-      link: /api
-    - theme: alt
-      text: View on GitHub
-      link: https://github.com/itchyshin/GLLVM.jl
-
-features:
-  - title: "~340× faster than gllvmTMB"
-    details: "The same Gaussian GLLVM class, the same estimates and log-likelihoods to machine precision — a closed-form marginal, a PPCA warm-start, and L-BFGS reach convergence in seconds, not minutes."
-  - title: "Ordination & shared structure"
-    details: "Latent factors give a model-based ordination of sites and responses. Read off the among-response covariance Σ_y, per-response communalities, and cross-trait correlations directly from the fit."
-  - title: "Phylogenetic signal, O(p)"
-    details: "An exact phylogenetic gradient that scales linearly in the number of species — one evaluation at p = 10,000 in 0.77 ms, where dense phylogenetic GLLVMs cap near p ≈ 500."
-  - title: "Rigorous inference"
-    details: "Wald, profile-likelihood, and parametric-bootstrap intervals — including derived quantities: Σ_y entries, communality, cross-trait correlation, and phylogenetic signal H²."
----
-
-!!! note "Status — what works today"
-    **Gaussian, Binomial, Poisson, NegativeBinomial, Beta, Ordinal, and Gamma
-    responses are implemented** (v0.1.0 → v0.2.0+). Hurdle / zero-inflated / delta
-    families are planned; see the [Roadmap](/roadmap) and
-    [Response families](/response-families).
+Fast Generalised Linear Latent Variable Models in Julia for multivariate
+response matrices.
 
 ## Install
 
@@ -40,75 +10,87 @@ using Pkg
 Pkg.add(url = "https://github.com/itchyshin/GLLVM.jl")
 ```
 
-GLLVM.jl is not yet in the General registry, so install from the URL above
-(`Pkg.add("GLLVM")` will not resolve). Julia 1.10 or later.
+GLLVM.jl is not yet in the General registry, so `Pkg.add("GLLVM")` will not
+resolve. Use Julia 1.10 or later.
 
-A quick taste — simulate a small multivariate dataset and fit a 2-factor model:
+## Fit your first model
+
+Most analyses start with the same scientific question:
+
+> Which responses vary together, and how much variation is shared rather than
+> response-specific?
+
+For continuous multivariate data, the Gaussian path is the smallest complete
+example:
 
 ```julia
 using GLLVM, Random
+
 Random.seed!(1)
-n, p, K = 80, 5, 2                          # sites, responses, latent factors
+n, p, K = 80, 5, 2                         # sites, responses, latent axes
 Λ = 0.7 .* randn(p, K)
-Y = Λ * randn(K, n) .+ 0.5 .* randn(p, n)   # p × n responses
+Y = Λ * randn(K, n) .+ 0.5 .* randn(p, n)  # p × n response matrix
 
 fit = fit_gaussian_gllvm(Y; K = K)
-communality(fit)   # 5-element vector: shared-variance fraction per response, each in [0,1]
-correlation(fit)   # 5×5 cross-response correlation matrix, entries in [-1,1]
+communality(fit)   # shared-variance fraction per response
+correlation(fit)   # model-implied cross-response correlation matrix
 ```
-
-## Which responses vary together — and how much is shared?
 
 ![Model-implied cross-response correlations from a simulated two-factor GLLVM fit](assets/correlation_heatmap.png)
 
-The heatmap is illustrative: a two-factor Gaussian GLLVM fitted to simulated data
-built from two response blocks. The off-diagonal structure is exactly what
-`correlation(fit)` reads off — responses that share a latent factor correlate,
-the rest do not.
+The heatmap is a simulated two-factor Gaussian fit. The off-diagonal structure
+is what `correlation(fit)` reports: responses that share a latent axis correlate,
+and responses with no shared axis stay near zero.
 
-GLLVM.jl fits **multivariate models for data where each site, individual, or
-species carries several responses** — multi-species abundance, multi-trait
-morphometrics, multi-assay panels — and answers the question behind ordination:
-*which responses covary, and how much of that variation is shared across
-responses versus response-specific?* It is a from-scratch Julia port of the
-Gaussian + phylogenetic part of R's
-[`gllvmTMB`](https://itchyshin.github.io/gllvmTMB/), reproducing its estimates
-and likelihoods to machine precision while fitting markedly faster (see the
-[Comparison](/comparison)).
+## What The Fit Gives You
 
-| Quantity | Julia extractor | Reads as |
-|----------|-----------------|----------|
-| `Σ_y` — among-response covariance | `sigma_y_site(fit)` | how responses covary overall |
-| `ΛΛᵀ` — shared (latent) part | `communality(fit)` | variation shared across responses |
-| cross-trait correlation | `correlation(fit)` | which responses move together |
-| phylogenetic signal `H²` | `phylo_signal(fit)` | variation explained by shared ancestry |
+After fitting, the usual report-ready quantities are:
 
-## Start here
+- `sigma_y_site(fit)` for the among-response covariance `Σ_y`;
+- `communality(fit)` for the shared-variance fraction per response;
+- `correlation(fit)` for model-implied cross-response correlations;
+- `phylo_signal(fit)` for the phylogenetic share of trait variation;
+- `getLV(fit, Y)` and `getLoadings(fit)` for ordination scores and loadings.
 
-| If you want to… | Go to |
-|------------------|-------|
-| Fit your first model | [Get started](/quickstart) |
-| See the math behind the model | [Model](/model) |
-| See the O(p) speed story | [Benchmarks](/benchmarks) |
-| Look up a function | [Reference](/api) |
+## Start Here
+
+- First Gaussian fit: [Quick start](quickstart.md).
+- Model equation and estimands: [Model](model.md).
+- Ordination, predictions, residuals, AIC, and BIC:
+  [Working with a fit](working-with-a-fit.md).
+- Response-family choice: [Response families](response-families.md).
+- R twin comparison: [Capability parity](gllvmtmb-parity.md).
+
+## Current Status
+
+!!! tip "What works today"
+    - One-part fits through `fit_gllvm`: Gaussian, Binomial, Poisson,
+      NegativeBinomial, Beta, Ordinal, and Gamma.
+    - Dedicated two-part fitters: Delta-lognormal, Hurdle-Poisson, and
+      Hurdle-NB.
+    - Still planned: formula syntax, structured non-Gaussian dependence,
+      zero-inflated families, and non-Gaussian confidence intervals.
+
+## Relation To gllvmTMB
+
+R `gllvmTMB` remains the reference model surface and the richer applied article
+set. GLLVM.jl is the Julia companion: matrix-first today, formula syntax later,
+with the same core estimands and a stronger performance path for large Gaussian
+and phylogenetic fits. See [Comparison vs gllvmTMB](comparison.md) and
+[Benchmarks](benchmarks.md) for the validated Gaussian + phylogenetic benchmark
+grid.
 
 ## Citing
 
-GLLVM.jl does not yet have its own software citation — one will be added at the
-first tagged release. For now, please cite the methods it builds on: Hadfield &
-Nakagawa (2010, *J. Evol. Biol.*) for the sparse phylogenetic precision; Tipping
-& Bishop (1999, *JRSS-B*) for the probabilistic-PCA initialiser; and Bates et
-al. (2015, *J. Stat. Soft.*) for the profile-out / sparse mixed-model machinery.
-The edge-incidence phylogenetic representation follows Bolker's `phylog.rmd`.
+GLLVM.jl does not yet have its own software citation. For now, cite the methods
+it builds on: Hadfield & Nakagawa (2010, *J. Evol. Biol.*) for the sparse
+phylogenetic precision; Tipping & Bishop (1999, *JRSS-B*) for the
+probabilistic-PCA initialiser; and Bates et al. (2015, *J. Stat. Soft.*) for
+the profile-out and sparse mixed-model machinery. The edge-incidence
+phylogenetic representation follows Bolker's `phylog.rmd`.
 
-## Getting help
+## Getting Help
 
-- **Questions & bugs** — open an issue on [GitHub](https://github.com/itchyshin/GLLVM.jl/issues).
-- **Function help** — in the Julia REPL, type `?` then a name, e.g. `?fit_gaussian_gllvm`.
-- **What's planned** — see the [Roadmap](/roadmap).
-
-## Related packages
-
-- [`gllvmTMB`](https://itchyshin.github.io/gllvmTMB/) — the R package GLLVM.jl ports.
-- `drmTMB` — sibling R package for distributional regression.
-- `DRM.jl` — the Julia counterpart of `drmTMB` (in development).
+- Questions and bugs: open an issue on [GitHub](https://github.com/itchyshin/GLLVM.jl/issues).
+- Function help: in the Julia REPL, type `?` then a name, for example `?fit_gaussian_gllvm`.
+- Planned work: see the [Roadmap](roadmap.md).

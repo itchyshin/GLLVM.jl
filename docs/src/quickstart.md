@@ -1,11 +1,22 @@
 # Quick start
 
-This page walks through one end-to-end fit: simulate a Gaussian GLLVM,
-fit it with `fit_gaussian_gllvm`, inspect the recovered parameters, build
-three flavours of confidence interval, and visualise the recovered
-`Σ_y` against the truth.
+The first question is the same one used in the gllvmTMB examples:
 
-## 1. Simulate a fixture
+> Which responses vary together, and how much variation is shared rather than
+> response-specific?
+
+This page answers that question for one small Gaussian GLLVM. It simulates a
+response matrix, fits `fit_gaussian_gllvm`, inspects the recovered covariance,
+builds three confidence intervals, and visualises the recovered `Σ_y` against
+the truth.
+
+!!! tip "Scope"
+    This is the smallest complete path: continuous responses, one observational
+    level, no fixed effects, no phylogeny, and no formula front-end. Use it to
+    learn the fit object and extractor names before moving to non-Gaussian or
+    structured models.
+
+## 1. Simulate data
 
 ```julia
 using GLLVM, Random, LinearAlgebra
@@ -23,7 +34,7 @@ K         = 2                  # rank of the latent factor block
 # Latent factor scores per site (n_sites × K)
 η = randn(n_sites, K)
 
-# Response matrix y (n_species × n_sites) — closed-form GLLVM with no X
+# Response matrix y (n_species × n_sites): species or traits by sites
 y = Λ_true * η' .+ σ_eps .* randn(n_species, n_sites)
 ```
 
@@ -57,8 +68,8 @@ only up to rotation in the Gaussian model.
 Three CI flavours share a common interface:
 
 ```julia
-ci_wald      = confint(fit)                                # Wald via observed information
-ci_profile   = profile_ci(fit, "sigma_eps")                # likelihood-profile CI
+ci_wald      = confint(fit; y = y)                         # Wald via observed information
+ci_profile   = profile_ci(fit, "sigma_eps"; y = y)         # likelihood-profile CI
 ci_bootstrap = bootstrap_ci(fit; y = y, n_boot = 200)      # parametric bootstrap
 ```
 

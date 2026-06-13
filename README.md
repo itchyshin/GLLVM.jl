@@ -3,43 +3,45 @@
 [![Build Status](https://github.com/itchyshin/GLLVM.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/itchyshin/GLLVM.jl/actions/workflows/CI.yml)
 [![Coverage](https://codecov.io/gh/itchyshin/GLLVM.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/itchyshin/GLLVM.jl)
 
-Fast Gaussian Generalised Linear Latent Variable Models (GLLVMs) in Julia.
+Fast Generalised Linear Latent Variable Models (GLLVMs) in Julia.
 
 > **Pilot release (v0.1.0)**. API may change before v1.0.
 
 ## Why
 
-GLLVMs decompose a multivariate Gaussian response into a low-rank latent
-factor structure plus optional fixed effects, observation-level random
-effects, and phylogenetic random effects:
+GLLVMs decompose a multivariate response into a low-rank latent factor
+structure plus optional fixed effects, observation-level random effects, and
+phylogenetic random effects. For the Gaussian path, the basic model is:
 
 ```
-y[t, s] = X[t, s, :]'β + Λ_B η_B[s][t] + ε[t, s]
+y_i = X_i β + Λ_B η_B[i] + ε_i
 ```
 
 with η_B i.i.d. standard Gaussian, ε i.i.d. Gaussian with variance σ_eps².
 
-`GLLVM.jl` exploits the closed-form Gaussian marginal:
+`GLLVM.jl` exploits the closed-form Gaussian marginal where it is available:
 
 ```
-y_s ~ N(X_s β, Λ_B Λ_B' + diag(d_total))
+y_i ~ N(X_i β, Λ_B Λ_B' + diag(d_total))
 ```
 
 — solving directly via SVD (PPCA closed form) when possible, otherwise
-warm-starting LBFGS with the PPCA initialisation. Per-iteration cost is
+warm-starting L-BFGS with the PPCA initialisation. Per-iteration cost is
 O(p K² + K³) via the Woodbury identity (instead of O(p³) for generic
-Cholesky). The result is a fit that is often **10-100× faster** than
-the R `gllvmTMB` engine on the same problem, with identical answers
-(matched to 1e-7 in log-likelihood and 1e-5 in Σ_y across our benchmark
-grid).
+Cholesky). On the validated **single-σ² Gaussian** benchmark grid, the Julia
+engine reproduces R `gllvmTMB` estimates and log-likelihoods to machine
+precision while fitting much faster. R's per-species Gaussian default and the
+phylogenetic path are not yet benchmarked head-to-head against R.
+
+Non-Gaussian families use a Laplace approximation to the latent integral.
 
 ## Quick start
 
 ```julia
-using Pkg; Pkg.add("GLLVM")
+using Pkg; Pkg.add(url = "https://github.com/itchyshin/GLLVM.jl")
 using GLLVM
 
-# Simulate a Gaussian GLLVM fixture
+# Simulate Gaussian multivariate data
 using Random
 Random.seed!(0)
 p, K, n = 20, 2, 200
@@ -75,37 +77,42 @@ with sparse random-effect design matrices. `GLLVM.jl` solves a
 *different* model class — reduced-rank latent factors. Use:
 
 | Model | Engine |
-|-------|--------|
+|:------|:-------|
 | `(1 | site)` random intercept, no latent factors | MixedModels.jl |
 | GLLVM with K ≥ 1 latent factors | GLLVM.jl |
 
 ## Features
 
 - Closed-form Gaussian marginal log-likelihood (no Laplace approximation)
-- Fixed effects (X β)
+- Laplace one-part families: Binomial, Poisson, NegativeBinomial, Beta,
+  Ordinal, and Gamma
+- Dedicated two-part fitters: Delta-lognormal, Hurdle-Poisson, and Hurdle-NB
+- Fixed effects (X β) on the Gaussian path
 - Latent factor block (Λ_B, K-dimensional)
 - Observation-level latent factors (Λ_W)
 - Per-trait diagonal random effects (σ²_B, σ²_W)
 - Phylogenetic random effects (`phylo_latent`, `phylo_unique`) with dense
   `Σ_phy`, plus sparse Brownian-tree single-axis fits via `phy=...`
-- Wald / profile / bootstrap CIs
-- Reverse-mode AD (via Enzyme.jl / ReverseDiff.jl)
+- Wald / profile / bootstrap CIs for the Gaussian path
 - PPCA closed-form initialisation
 - Structure-aware Cholesky (Woodbury for Λ Λ' + diag)
 - EM-FA solver as an alternative to LBFGS
 
 ## Limitations (in this release)
 
-- Gaussian family only (binomial, Poisson, etc. planned)
-- No spatial / SPDE random effects
-- No animal model (covariates × phylo_unique)
+- No `@formula` / `traits(...)` front-end yet; use matrix-level fitters.
+- Non-Gaussian confidence intervals and covariance-scale derived summaries are
+  not yet wired.
+- Structured non-Gaussian dependence (phylogenetic, animal, spatial) remains in
+  design/build.
+- Zero-inflated families and Delta-Gamma are planned.
 
 ## Citation
 
 If you use `GLLVM.jl` in published work, please cite:
 
-> Nakagawa, S. (2026). GLLVM.jl: Fast Gaussian Generalised Linear Latent
-> Variable Models in Julia. <https://github.com/itchyshin/GLLVM.jl>
+> Nakagawa, S. (2026). GLLVM.jl: Fast Generalised Linear Latent Variable
+> Models in Julia. <https://github.com/itchyshin/GLLVM.jl>
 
 ## License
 

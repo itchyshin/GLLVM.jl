@@ -11,10 +11,11 @@ GitHub:
 ## Phase → release map
 
 | Release | Theme | Highlights |
-|---------|-------|-----------|
-| **v0.2.0** | Gaussian complete | O(p) phylogenetic fitter, `predict`/`residuals`/`summary`, this docs site |
-| **v0.3.0** | Binary + first tutorials | `Family` abstraction + Binomial (first non-Gaussian), the `gllvm()` `@formula` front-end, gllvmTMB-mirroring tutorials |
-| **v1.0** | Full digital twin | all families, full extractor / ordination / diagnostic parity, ~16 tutorials, the R bridge (`engine = "julia"`) |
+|:--------|:------|:----------|
+| **v0.2.0** | Gaussian complete | O(p) phylogenetic fitter, post-fit tools, this docs site |
+| **v0.3.0** | Non-Gaussian catch-up | one-part Laplace families, first two-part fitters, analytic-gradient hardening |
+| **v0.4.0** | Interface catch-up | `@formula` front-end, wide/long parity, gllvmTMB-mirroring tutorials |
+| **v1.0** | Full digital twin | extractor / ordination / diagnostic parity, structured non-Gaussian dependence, the R bridge (`engine = "julia"`) |
 
 ## What works today
 
@@ -22,11 +23,19 @@ GitHub:
 - An **O(p)** phylogenetic gradient — exact, linear-in-species scaling.
 - Wald / profile-likelihood / parametric-bootstrap confidence intervals,
   including derived quantities (Σ_y, communality, phylogenetic signal).
+- One-part Laplace families through `fit_gllvm`: Binomial, Poisson,
+  NegativeBinomial, Beta, Ordinal, and Gamma.
+- Dedicated two-part fitters for Delta-lognormal, Hurdle-Poisson, and
+  Hurdle-NB.
 
 ## What's planned
 
-- **Families** beyond Gaussian — binary first, then Poisson, negative
-  binomial, ordinal, beta, hurdle / zero-inflated — via a Laplace marginal.
+- **Non-Gaussian inference** — confidence intervals and derived covariance
+  summaries beyond the Gaussian path.
+- **Structured non-Gaussian dependence** — phylogenetic, animal, and spatial
+  covariance in the Laplace path.
+- **Zero-inflated and additional two-part families** — ZIP/ZINB and
+  Delta-Gamma after the current two-part substrate hardens.
 - **Same-as-R model syntax**: `gllvm(@formula(traits(...) ~ … + phylo(...)), data; family = …)`.
 - **The R bridge** — run a `gllvmTMB` model through the Julia engine
   (`engine = "julia"`).

@@ -1,40 +1,51 @@
 # Model
 
-The Gaussian GLLVM that this package implements decomposes the response
-of species `s` (a length-`p` vector across the `p` species at site `s`)
-into a fixed linear predictor plus a sequence of latent contributions:
+This page defines the Gaussian model behind `fit_gaussian_gllvm`. If you are
+fitting the first example, the practical target is the same as in
+[Quick start](quickstart.md): estimate the response covariance `Σ_y`, then read
+communality, correlation, and phylogenetic signal from that covariance.
+
+!!! tip "Scope"
+    The equations below describe the Gaussian marginal engine. Non-Gaussian
+    families use a Laplace approximation and are documented in
+    [Response families](response-families.md).
+
+For site or individual `i`, let `y_i` be the length-`p` response vector across
+the `p` species, traits, or outcomes. The Gaussian GLLVM decomposes `y_i` into a
+fixed linear predictor plus a sequence of latent contributions:
 
 ```math
-y_s \;=\; X_s\,\beta \;+\; \Lambda_B\,\eta_B[s] \;+\; \Lambda_W\,\eta_W[:, s] \;+\; s_B[:, s] \;+\; s_W[:, s] \;+\; s_{\text{phy}} \;+\; \varepsilon[:, s].
+y_i \;=\; X_i\,\beta \;+\; \Lambda_B\,\eta_B[i] \;+\; \Lambda_W\,\eta_W[:, i] \;+\; s_B[:, i] \;+\; s_W[:, i] \;+\; s_{\text{phy}} \;+\; \varepsilon[:, i].
 ```
 
-Each term is independent across sites (except where the phylogenetic
-covariance ties species together) and Gaussian. The latent factors and
-random effects are integrated out *analytically*, producing a closed-form
-marginal log-likelihood whose optimisation is the engine's main loop.
+Each term is independent across sites or individuals, except where a
+phylogenetic covariance ties responses together, and Gaussian. The latent
+variables and random effects are integrated out *analytically*, producing a
+closed-form marginal log-likelihood whose optimisation is the engine's main
+loop.
 
 ## Terms
 
-**Fixed effects** `X_s β` — the standard linear predictor for trait or
-intercept effects per species. `X_s` is the per-site design matrix
-constructed by the caller (or by the R-side fixture generator); `β` is
-estimated by ML jointly with the variance components.
+**Fixed effects** `X_i β` — the standard linear predictor for trait or
+intercept effects per response. `X_i` is the per-site design matrix supplied to
+the matrix-level fit; `β` is estimated by ML jointly with the variance
+components.
 
-**Latent factor block** `Λ_B η_B[s]` — the rank-`K` ordination axes
+**Latent factor block** `Λ_B η_B[i]` — the rank-`K` ordination axes
 shared across species. `Λ_B` is a `p × K` loading matrix and
-`η_B[s] ∼ N(0, I_K)` is the latent gradient at site `s`. Marginal
+`η_B[i] ∼ N(0, I_K)` is the latent gradient at site `i`. Marginal
 contribution to `Σ_y_site`: `Λ_B Λ_B'`.
 
-**Unit-obs latent factor block** `Λ_W η_W[:, s]` — the per-site version
+**Unit-obs latent factor block** `Λ_W η_W[:, i]` — the per-site version
 of the latent block, used when the model has a `latent(0 + trait |
 site_species)` term. Loading matrix shape and packing are identical to
 `Λ_B`; the marginal contribution to `Σ_y_site` is also `Λ_W Λ_W'`.
 
-**Site-tier diagonal random effects** `s_B[:, s] ∼ N(0, diag(σ²_B))` —
+**Site-tier diagonal random effects** `s_B[:, i] ∼ N(0, diag(σ²_B))` —
 per-species independent random effects at the site tier. The marginal
 contribution to `Σ_y_site` is `diag(σ²_B)`.
 
-**Unit-obs diagonal random effects** `s_W[:, s] ∼ N(0, diag(σ²_W))` —
+**Unit-obs diagonal random effects** `s_W[:, i] ∼ N(0, diag(σ²_W))` —
 the per-site version, contributing `diag(σ²_W)` to `Σ_y_site`.
 
 **Phylogenetic component** `s_phy ∼ N(0, σ²_phy · Σ_phy)` — species are
@@ -43,17 +54,17 @@ marginal contribution at a single site is `σ²_phy · Σ_phy`. Across the
 full data the structure becomes block-diagonal in site and dense across
 species via `Σ_phy`.
 
-**Observation noise** `ε[:, s] ∼ N(0, σ²_eps I_p)` — the iid residual
+**Observation noise** `ε[:, i] ∼ N(0, σ²_eps I_p)` — the iid residual
 term.
 
 ## Closed-form Gaussian marginal
 
 Integrating out `η_B`, `η_W`, `s_B`, `s_W` and (where present) the
-phylogenetic random effect yields a Gaussian marginal in `y_s` with
-mean `X_s β` and covariance
+phylogenetic random effect yields a Gaussian marginal in `y_i` with
+mean `X_i β` and covariance
 
 ```math
-y_s \sim \mathcal{N}\!\left(X_s\,\beta,\; \Lambda_B\,\Lambda_B^\top + \mathrm{diag}(d_{\text{total}})\right),
+y_i \sim \mathcal{N}\!\left(X_i\,\beta,\; \Lambda_B\,\Lambda_B^\top + \mathrm{diag}(d_{\text{total}})\right),
 ```
 
 where `d_total = σ²_B + σ²_W + σ²_eps` collects every diagonal
@@ -93,7 +104,7 @@ in `K`-space — the marginal covariance `Λ_B Λ_B'` is invariant under
 `Λ_B → Λ_B Q` for any orthogonal `Q`. The engine uses the standard
 lower-triangular packing (matching the R-side `gllvmTMB::rr_theta_len(p,
 K)`) as the identifying constraint at the optimum. The latent scores
-`η_B[s]` are not estimated; they are integrated out.
+`η_B[i]` are not estimated; they are integrated out.
 
 The phylogenetic variance `σ²_phy` is identified separately from
 `σ²_eps` only when the phylogenetic correlation structure differs
