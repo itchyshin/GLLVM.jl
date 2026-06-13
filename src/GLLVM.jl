@@ -19,6 +19,7 @@ include("simulate.jl")
 include("families/gaussian_pervar.jl")   # Gaussian with per-species variance (gllvmTMB heteroscedastic default)
 include("structured_cov.jl")             # spatial_cov, relatedness_cov builders
 include("cross_kernel.jl")               # make_cross_kernel: cross-lineage coevolution kernel K* (PGLLVM two-lineage, C0)
+include("extract_gamma.jl")              # extract_Gamma: cross-lineage coevolution estimand Γ = Λ_phy Λ_phyᵀ block
 include("spde.jl")                        # SPDE / Matérn-GMRF FEM spatial field (shared-ready with DRM.jl)
 include("spde_mesh.jl")                   # SPDE grid auto-mesher
 include("spde_delaunay.jl")               # SPDE Delaunay triangulation (Bowyer–Watson)
@@ -106,7 +107,7 @@ const fit_concurrent_gllvm = fit_constrained_gllvm
 const ConcurrentOrdinationFit = ConstrainedOrdinationFit
 
 # Public API
-export make_cross_kernel,
+export make_cross_kernel, extract_Gamma,
        spatial_cov, relatedness_cov,
        spde_fem, spde_precision, spde_projector, matern_correlation,
        spde_mesh_grid, spde_mesh_delaunay,
