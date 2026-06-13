@@ -17,8 +17,10 @@ mirror). **gllvmTMB CRAN work is on a separate branch — see the end.**
 | `fit_gaussian_mi_phylo` | `src/missing_predictor_phylo.jl` | 9/9 | **species-level phylo missing predictor (the high-value Phase 3)** |
 | mi() covariate model `Z` | `test/test_missing_predictor_z.jl` | 6/6 | `x ~ N(μ_x + Zγ, σ_x²)`; `Z=nothing` ≡ old fit to 1e-8 |
 | `fit_coevolution_gaussian` | `src/coevolution_kronecker.jl` | 5/5 | **faithful Kronecker coevolution — RECOVERS Γ to \|cor\|>0.9** (closes the gap) |
+| non-Gaussian mi (Poisson) | `src/missing_predictor_poisson.jl` | 3/3 | **the hardest mi() phase (5a)** — augmented (z,x) Laplace; 3 oracles incl. 2-D Gauss–Hermite |
 
-**56 tests fast · 58 with `GLLVM_SLOW_TESTS=1`.** All six test files coexist
+**59 tests fast · 61 with `GLLVM_SLOW_TESTS=1`.** The mi() axis now spans Gaussian
+site-level (2a) + `Z` covariate-model + phylo (3) + non-Gaussian Poisson (5a). All six test files coexist
 green; module loads clean (additive: 6 src includes + 6 exports + 6 test
 includes). The full `julia test/runtests.jl` regression run was launched at
 session end (it buffers output to the final outer testset) — its result is the
