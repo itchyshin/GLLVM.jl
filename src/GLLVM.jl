@@ -113,7 +113,7 @@ const ConcurrentOrdinationFit = ConstrainedOrdinationFit
 
 # Public API
 export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevolution_blockna,
-       fit_gaussian_mi_fiml, fit_gaussian_mi_phylo,
+       fit_gaussian_mi_fiml, fit_gaussian_mi_phylo, fit_gllvm_mi,
        spatial_cov, relatedness_cov,
        spde_fem, spde_precision, spde_projector, matern_correlation,
        spde_mesh_grid, spde_mesh_delaunay,

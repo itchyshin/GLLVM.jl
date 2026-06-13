@@ -153,3 +153,80 @@ function marginal_loglik_laplace_xs(family, Y::AbstractMatrix, N::AbstractMatrix
     end
     return acc
 end
+
+_mi_canonical_link(::Poisson) = LogLink()
+_mi_canonical_link(::Binomial) = LogitLink()
+
+function _mi_init_lambda(family, Y, N, β0, K)
+    p, n = size(Y)
+    Z = Matrix{Float64}(undef, p, n)
+    if family isa Poisson
+        @. Z = log(Y + 0.5) - β0
+    else
+        @. Z = log((Y + 0.5) / (N - Y + 0.5)) - β0
+    end
+    C = Symmetric((Z * Z') ./ n)
+    E = eigen(C)
+    idx = sortperm(E.values, rev = true)[1:K]
+    return E.vectors[:, idx] .* sqrt.(max.(E.values[idx], 1e-2))'
+end
+
+"""
+    fit_gllvm_mi(family, Y, x; K, N=nothing, link=canonical, ...) -> NamedTuple
+
+Fit a non-Gaussian GLLVM (canonical family: `Poisson()`+`LogLink` or
+`Binomial()`+`LogitLink`) with one site-level continuous predictor `x` (length
+`n`, entries may be `missing`/`NaN`), where the missing `x_s` are integrated out
+by full-information ML (the augmented (z,x) Laplace of
+[`marginal_loglik_laplace_xs`](@ref)). `Y` is `p × n`; `N` is the `p × n`
+trial-count matrix for Binomial (`ones` for Poisson). The predictor enters with a
+single broadcast slope `b_x` and predictor model `x ~ N(μ_x, σ_x²)`.
+
+Returns a NamedTuple with `β`, `Λ` (`p × K`), `b_x`, `μ_x`, `σ_x`, `logLik`,
+`converged`, `n_missing`. Optimised with L-BFGS over the AD-clean marginal.
+"""
+function fit_gllvm_mi(family, Y::AbstractMatrix, x::AbstractVector; K::Integer,
+                      N::Union{Nothing,AbstractMatrix} = nothing,
+                      link = _mi_canonical_link(family),
+                      g_tol::Real = 1e-8, iterations::Integer = 1000)
+    p, n = size(Y)
+    length(x) == n || throw(ArgumentError("length(x) = $(length(x)) must equal n = $n."))
+    K ≥ 1 || throw(ArgumentError("K must be ≥ 1."))
+    _xs_supported(family, link) || throw(ArgumentError(
+        "fit_gllvm_mi: canonical families only (Poisson()+LogLink, Binomial()+LogitLink)."))
+    Nm = N === nothing ? ones(Int, p, n) : N
+
+    isobs = [!(ismissing(xi) || (xi isa Real && isnan(xi))) for xi in x]
+    any(isobs) || throw(ArgumentError("x has no observed values."))
+    xo = Float64[Float64(x[i]) for i in findall(isobs)]
+    μ_x0 = Statistics.mean(xo)
+    σ_x0 = max(Statistics.std(xo), 1e-2)
+
+    rowmean = vec(sum(Y, dims = 2)) ./ n
+    β0 = family isa Poisson ? log.(max.(rowmean, 0.5)) :
+         log.((rowmean .+ 0.5) ./ (vec(sum(Nm, dims = 2)) ./ n .- rowmean .+ 0.5))
+    Λ0 = _mi_init_lambda(family, Y, Nm, β0, K)
+
+    θ0 = vcat(β0, vec(Λ0), 0.0, μ_x0, log(σ_x0^2))
+    function negll(θ)
+        β = θ[1:p]
+        Λ = reshape(θ[(p + 1):(p + p * K)], p, K)
+        bx = θ[p + p * K + 1]
+        mx = θ[p + p * K + 2]
+        sx2 = exp(θ[p + p * K + 3])
+        return -marginal_loglik_laplace_xs(family, Y, Nm, Λ, β, link;
+                                           x = x, b_x = bx, μ_x = mx, σ_x2 = sx2)
+    end
+    res = Optim.optimize(negll, θ0, Optim.LBFGS(),
+                         Optim.Options(g_tol = g_tol, iterations = iterations);
+                         autodiff = :forward)
+    θ = Optim.minimizer(res)
+    β = θ[1:p]
+    Λ = reshape(θ[(p + 1):(p + p * K)], p, K)
+    b_x = θ[p + p * K + 1]
+    μ_x = θ[p + p * K + 2]
+    σ_x = exp(0.5 * θ[p + p * K + 3])
+    return (β = β, Λ = Λ, b_x = b_x, μ_x = μ_x, σ_x = σ_x,
+            logLik = -Optim.minimum(res), converged = Optim.converged(res),
+            n_missing = count(!, isobs))
+end
