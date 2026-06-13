@@ -146,27 +146,50 @@ function confint(fit::BinomialFit; y::AbstractMatrix, N = nothing,
     return _wald_ci_from_nll(θ̂, nll, terms, kinds; level = level, parm = parm)
 end
 
-"""
-    confint(fit::NBFit; y, level=0.95, parm=nothing)
-
-Wald CIs for a Negative-Binomial GLLVM fit. As for [`confint(::PoissonFit)`](@ref),
-plus the dispersion `r`: its packed parameter is `log r`, so the `r` interval is
-reported on the natural (positive) scale via the `:log_sd` back-transform.
-"""
-function confint(fit::NBFit; y::AbstractMatrix, level::Real = 0.95, parm = nothing)
-    0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
-    p, K = size(fit.Λ)
+# Shared construction for one-part dispersion families (NB, Beta, Gamma): the
+# packed θ is [β; pack_lambda(Λ); log(dispersion)]; the family `marginal(y, Λ, β,
+# disp; link)` takes the natural (positive) dispersion; and the dispersion CI is
+# reported on the natural scale via the `:log_sd` back-transform.
+function _wald_ci_dispersion_family(β::AbstractVector, Λ::AbstractMatrix, disp::Real,
+                                    marginal, disp_term::String, link, y;
+                                    level::Real = 0.95, parm = nothing)
+    p, K = size(Λ)
     rr   = rr_theta_len(p, K)
-    θ̂    = vcat(fit.β, pack_lambda(fit.Λ), log(fit.r))
-    terms = vcat(["beta[$t]" for t in 1:p], ["lambda[$i]" for i in 1:rr], ["r"])
+    θ̂    = vcat(β, pack_lambda(Λ), log(disp))
+    terms = vcat(["beta[$t]" for t in 1:p], ["lambda[$i]" for i in 1:rr], [disp_term])
     kinds = vcat(fill(:identity, p + rr), [:log_sd])
-    nll = θ -> -nb_marginal_loglik_laplace(
-        y, unpack_lambda(θ[(p + 1):(p + rr)], p, K), θ[1:p],
-        exp(θ[p + rr + 1]); link = fit.link)
+    nll = θ -> -marginal(y, unpack_lambda(θ[(p + 1):(p + rr)], p, K), θ[1:p],
+                         exp(θ[p + rr + 1]); link = link)
     if parm === :beta || parm == "beta"
         parm = ["beta[$t]" for t in 1:p]
     elseif parm === :lambda || parm == "lambda"
         parm = ["lambda[$i]" for i in 1:rr]
     end
     return _wald_ci_from_nll(θ̂, nll, terms, kinds; level = level, parm = parm)
+end
+
+"""
+    confint(fit::NBFit;    y, level=0.95, parm=nothing)
+    confint(fit::BetaFit;  y, level=0.95, parm=nothing)
+    confint(fit::GammaFit; y, level=0.95, parm=nothing)
+
+Wald CIs for the one-part dispersion families, as for [`confint(::PoissonFit)`](@ref).
+The extra dispersion parameter (NB `r`, Beta precision `phi`, Gamma shape `alpha`) is
+stored on the log scale, so its interval is reported on the natural (positive) scale
+via the `:log_sd` back-transform.
+"""
+function confint(fit::NBFit; y::AbstractMatrix, level::Real = 0.95, parm = nothing)
+    0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
+    return _wald_ci_dispersion_family(fit.β, fit.Λ, fit.r, nb_marginal_loglik_laplace,
+                                      "r", fit.link, y; level = level, parm = parm)
+end
+function confint(fit::BetaFit; y::AbstractMatrix, level::Real = 0.95, parm = nothing)
+    0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
+    return _wald_ci_dispersion_family(fit.β, fit.Λ, fit.φ, beta_marginal_loglik_laplace,
+                                      "phi", fit.link, y; level = level, parm = parm)
+end
+function confint(fit::GammaFit; y::AbstractMatrix, level::Real = 0.95, parm = nothing)
+    0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
+    return _wald_ci_dispersion_family(fit.β, fit.Λ, fit.α, gamma_marginal_loglik_laplace,
+                                      "alpha", fit.link, y; level = level, parm = parm)
 end

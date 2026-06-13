@@ -130,3 +130,79 @@ end
     se_fd = sqrt.(diag(inv(Symmetric((H .+ H') ./ 2))))
     @test maximum(abs.(ci.se .- se_fd)) < 5e-3
 end
+
+@testset "Beta Wald CIs (precision on log scale)" begin
+    Random.seed!(20260616)
+    p, K, n = 5, 2, 300
+    Λ_true = randn(p, K) .* 0.4
+    for i in 1:K, k in 1:K
+        i < k && (Λ_true[i, k] = 0.0)
+    end
+    β_true = randn(p) .* 0.3
+    φ_true = 12.0
+    ηs = randn(K, n)
+    μ  = 1.0 ./ (1.0 .+ exp.(-clamp.(Λ_true * ηs .+ β_true, -30, 30)))
+    Y  = [rand(Beta(μ[t, s] * φ_true, (1 - μ[t, s]) * φ_true)) for t in 1:p, s in 1:n]
+
+    fit = GLLVM.fit_beta_gllvm(Y; K = K)
+    @test fit.converged
+    rr = GLLVM.rr_theta_len(p, K)
+    ci = GLLVM.confint(fit; y = Y)
+    @test length(ci.term) == p + rr + 1
+    @test ci.term[end] == "phi"
+    @test ci.pd_hessian
+    @test all(ci.lower .< ci.estimate .< ci.upper)
+    @test ci.estimate[end] ≈ fit.φ
+    @test ci.lower[end] > 0
+
+    nll(θ) = -GLLVM.beta_marginal_loglik_laplace(
+        Y, GLLVM.unpack_lambda(θ[(p + 1):(p + rr)], p, K), θ[1:p],
+        exp(θ[p + rr + 1]); link = fit.link)
+    θ̂ = vcat(fit.β, GLLVM.pack_lambda(fit.Λ), log(fit.φ))
+    np = length(θ̂); h = 1e-4; H = zeros(np, np)
+    for i in 1:np, j in i:np
+        a = copy(θ̂); a[i]+=h; a[j]+=h; b = copy(θ̂); b[i]+=h; b[j]-=h
+        c = copy(θ̂); c[i]-=h; c[j]+=h; d = copy(θ̂); d[i]-=h; d[j]-=h
+        H[i, j] = (nll(a)-nll(b)-nll(c)+nll(d))/(4h*h); H[j, i] = H[i, j]
+    end
+    se_fd = sqrt.(diag(inv(Symmetric((H .+ H') ./ 2))))
+    @test maximum(abs.(ci.se .- se_fd)) < 5e-3
+end
+
+@testset "Gamma Wald CIs (shape on log scale)" begin
+    Random.seed!(20260617)
+    p, K, n = 5, 2, 300
+    Λ_true = randn(p, K) .* 0.3
+    for i in 1:K, k in 1:K
+        i < k && (Λ_true[i, k] = 0.0)
+    end
+    β_true = randn(p) .* 0.2 .+ 0.5
+    α_true = 8.0
+    ηs = randn(K, n)
+    μ  = exp.(clamp.(Λ_true * ηs .+ β_true, -30, 30))
+    Y  = [rand(Gamma(α_true, μ[t, s] / α_true)) for t in 1:p, s in 1:n]   # mean μ
+
+    fit = GLLVM.fit_gamma_gllvm(Y; K = K)
+    @test fit.converged
+    rr = GLLVM.rr_theta_len(p, K)
+    ci = GLLVM.confint(fit; y = Y)
+    @test length(ci.term) == p + rr + 1
+    @test ci.term[end] == "alpha"
+    @test ci.pd_hessian
+    @test all(ci.lower .< ci.estimate .< ci.upper)
+    @test ci.estimate[end] ≈ fit.α
+    @test ci.lower[end] > 0
+
+    nll(θ) = -GLLVM.gamma_marginal_loglik_laplace(
+        Y, GLLVM.unpack_lambda(θ[(p + 1):(p + rr)], p, K), θ[1:p],
+        exp(θ[p + rr + 1]); link = fit.link)
+    θ̂ = vcat(fit.β, GLLVM.pack_lambda(fit.Λ), log(fit.α))
+    np = length(θ̂); h = 1e-4; H = zeros(np, np)
+    for i in 1:np, j in i:np
+        a = copy(θ̂); a[i]+=h; a[j]+=h; b = copy(θ̂); b[i]+=h; b[j]-=h
+        c = copy(θ̂); c[i]-=h; c[j]+=h; d = copy(θ̂); d[i]-=h; d[j]-=h
+        H[i, j] = (nll(a)-nll(b)-nll(c)+nll(d))/(4h*h); H[j, i] = H[i, j]
+    end
+    se_fd = sqrt.(diag(inv(Symmetric((H .+ H') ./ 2))))
+    @test maximum(abs.(ci.se .- se_fd)) < 5e-3
+end
