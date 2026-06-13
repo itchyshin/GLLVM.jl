@@ -50,4 +50,12 @@ include("test_delta_fit.jl")
 include("test_delta_postfit.jl")
 include("test_hurdle_poisson.jl")
 include("test_hurdle_nb.jl")
+
+# Phylogenetic / structured suites wired 2026-06-13 — previously orphaned, each
+# verified green standalone (see docs/dev-log/2026-06-13-orphan-test-triage).
+include("test_edge_incidence.jl")
+include("test_phylo_contrasts.jl")
+include("test_phylo_branch_re.jl")
+include("test_relaxed_clock.jl")
+
 include("test_quality.jl")
