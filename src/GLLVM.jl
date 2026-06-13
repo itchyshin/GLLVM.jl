@@ -53,6 +53,7 @@ include("families/beta_hurdle.jl")       # Beta-hurdle (Bernoulli × Beta) two-p
 include("families/beta_binomial.jl")     # Beta-binomial (overdispersed binomial) — gllvm family 15
 include("families/fit_gllvm.jl")         # unified fit_gllvm(Y; family) dispatcher
 include("laplace_grad.jl")               # exact (AD + implicit-step) Poisson Laplace gradient (issue #65)
+include("missing_predictor_poisson.jl")  # non-Gaussian missing predictor (mi Phase 5a): Poisson augmented-Laplace FIML
 include("families/covariates.jl")        # fixed-effect covariates (Xβ) for the Laplace families
 include("families/species_covariates.jl") # species-specific covariate coefficients (XB) for the Laplace families
 include("families/constrained_ordination.jl") # constrained ordination (RRR of latent vars on env predictors)

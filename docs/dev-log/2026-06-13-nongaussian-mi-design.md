@@ -1,10 +1,15 @@
 # Non-Gaussian missing predictor — augmented-Laplace design (mi() Phase 5a)
 
-**Status:** design + verification plan (2026-06-13), mapped by workflow
-`wf_6e20ce7c-9d1`. **NOT implemented** — this is the hardest mi() phase (subtle
-Laplace normalisation + an identifiability caveat); deferred for maintainer
-greenlight per the design doc's "factors last". The Gaussian + phylo missing
-predictors (Phase 2a/2-Z/3) ARE shipped on `coevolution-kernel`.
+**Status: IMPLEMENTED + VERIFIED (2026-06-13), Poisson-log slice.**
+`marginal_loglik_laplace_xs` / `laplace_loglik_site_xs` /
+`_poisson_mode_xs` in `src/missing_predictor_poisson.jl`;
+`test/test_missing_predictor_poisson.jl` **3/3** against three independent
+oracles: (1) complete-data equivalence (offset-absorption + x-prior, pins the
+normalisation), (2) **2-D Gauss–Hermite quadrature** of the missing-site integral
+(pins the augmented Laplace value), (3) **AD vs central-FD ≤1e-6** (the implicit
+differentiable-mode-step on the (K+1) system is exact). The derivation + plan
+below proved correct. Follow-ons: other families (Binomial via the same dispatch),
+the hand-coded (K+1) adjoint (perf), and an exported fitter. Original plan:
 
 > **Correction to the workflow spec:** the synthesis agent confused two checkouts
 > and claimed "no covariate/offset infrastructure here." Verified false for this
