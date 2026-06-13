@@ -68,6 +68,7 @@ using GLLVM
     include("test_extract_gamma.jl")
     include("test_cross_kernel_fit.jl")
     include("test_coevolution_kronecker.jl")
+    include("test_coevolution_blockna.jl")
     include("test_spde.jl")
     include("test_spde_mesh.jl")
     include("test_spde_delaunay.jl")

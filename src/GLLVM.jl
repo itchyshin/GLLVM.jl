@@ -23,6 +23,7 @@ include("structured_cov.jl")             # spatial_cov, relatedness_cov builders
 include("cross_kernel.jl")               # make_cross_kernel: cross-lineage coevolution kernel K* (PGLLVM two-lineage, C0)
 include("extract_gamma.jl")              # extract_Gamma: cross-lineage coevolution estimand Γ = Λ_phy Λ_phyᵀ block
 include("coevolution_kronecker.jl")      # fit_coevolution_gaussian: faithful matrix-normal coevolution (Kronecker), recovers Γ
+include("coevolution_blockna.jl")        # fit_coevolution_blockna: block-NA coevolution (host/partner each measure own traits)
 include("spde.jl")                        # SPDE / Matérn-GMRF FEM spatial field (shared-ready with DRM.jl)
 include("spde_mesh.jl")                   # SPDE grid auto-mesher
 include("spde_delaunay.jl")               # SPDE Delaunay triangulation (Bowyer–Watson)
@@ -111,7 +112,7 @@ const fit_concurrent_gllvm = fit_constrained_gllvm
 const ConcurrentOrdinationFit = ConstrainedOrdinationFit
 
 # Public API
-export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian,
+export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevolution_blockna,
        fit_gaussian_mi_fiml, fit_gaussian_mi_phylo,
        spatial_cov, relatedness_cov,
        spde_fem, spde_precision, spde_projector, matern_correlation,

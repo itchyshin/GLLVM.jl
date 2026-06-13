@@ -76,12 +76,26 @@ applies directly once the fit exposes `Λ_phy = Λ`).
 3. **Null contrast:** K*_null = blockdiag(A_H, A_P) fits strictly worse.
 4. **AD-clean:** ForwardDiff vs central FD ≤1e-6.
 
+## Block-NA — IMPLEMENTED (2026-06-13)
+
+`fit_coevolution_blockna` (`src/coevolution_blockna.jl`, exported) handles the
+realistic structure where host species measure only host traits and partner
+species only partner traits. The observed `d = [vec(Y_HH); vec(Y_PP)]` is jointly
+Gaussian with the 2×2 block-of-Kroneckers `M = [A_H⊗Σ_HH, K_HP⊗Γ; ·, A_P⊗Σ_PP]`
+(M verified == the selection of observed cells from the full `K*⊗Σ_T`, to 0); fit
+by a direct cholesky of M. `test_coevolution_blockna.jl` 4/4 fast · 6/6 slow.
+**Identifiability caveat (real, not a defect):** Γ is seen only through the single
+cross-block `K_HP⊗Γ` — one shared W = one replicate (Boettiger 2012), so recovery
+is weaker than the complete-data fit and **improves with association strength**
+(probed median |cor| 0.50 at ρ=0.5/n=20 → 0.96 at ρ=0.9/n=60). Tests assert the
+robust facts: M-correctness, the cross-block-necessary logLik contrast, AD-clean,
+and recovery-scales-with-association (gated). A Schur/Woodbury fast path (vs the
+direct O(dim³) cholesky) is a perf follow-on.
+
 ## Scope / deferred
 
-- **Complete data only** (every species has every trait). The faithful R model
-  also handles **block-NA** (host species lack partner traits) — that breaks the
-  clean Kronecker eigentrick (per-species observed-trait subsets ⇒ a per-species
-  Woodbury). Deferred as a follow-on, exactly as the Gaussian block-NA path is.
+- **Complete data** (fit_coevolution_gaussian) and **block-NA**
+  (fit_coevolution_blockna) both shipped.
 - **Replication** (multiple individuals/sites per species) adds an `I_rep ⊗`
   block — a later extension; one-obs-per-species is the smallest faithful slice.
 - Per-trait uniqueness Ψ (vs a single σ²) is a small generalisation.
