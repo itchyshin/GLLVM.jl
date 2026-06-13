@@ -18,6 +18,7 @@ include("twolevel.jl")                    # Gaussian two-level (between/within-i
 include("simulate.jl")
 include("families/gaussian_pervar.jl")   # Gaussian with per-species variance (gllvmTMB heteroscedastic default)
 include("missing_predictor_fiml.jl")     # fit_gaussian_mi_fiml: closed-form FIML for a missing site-level predictor (mi() axis)
+include("missing_predictor_phylo.jl")    # fit_gaussian_mi_phylo: phylo missing-predictor FIML (mi() axis, Phase 3)
 include("structured_cov.jl")             # spatial_cov, relatedness_cov builders
 include("cross_kernel.jl")               # make_cross_kernel: cross-lineage coevolution kernel K* (PGLLVM two-lineage, C0)
 include("extract_gamma.jl")              # extract_Gamma: cross-lineage coevolution estimand Γ = Λ_phy Λ_phyᵀ block
@@ -109,7 +110,7 @@ const ConcurrentOrdinationFit = ConstrainedOrdinationFit
 
 # Public API
 export make_cross_kernel, extract_Gamma,
-       fit_gaussian_mi_fiml,
+       fit_gaussian_mi_fiml, fit_gaussian_mi_phylo,
        spatial_cov, relatedness_cov,
        spde_fem, spde_precision, spde_projector, matern_correlation,
        spde_mesh_grid, spde_mesh_delaunay,

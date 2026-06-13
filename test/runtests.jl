@@ -86,6 +86,7 @@ using GLLVM
     include("test_zero_inflated.jl")
     include("test_missing_data.jl")
     include("test_missing_predictor_fiml.jl")
+    include("test_missing_predictor_phylo.jl")
     include("test_offset.jl")
     include("test_confint_family.jl")
     include("test_summary_table.jl")

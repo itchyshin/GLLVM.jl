@@ -55,7 +55,26 @@ kernel serves both (rank K observed, K+1 missing) — ForwardDiff-clean.
   missing predictors (design Phase 3, the high-value evolutionary feature)**
   need the Laplace augmented-latent path — separate tracks.
 
+## Phase 3 — phylo missing predictors (DONE)
+
+`fit_gaussian_mi_phylo(y, x, A; K)` — a **species-level** predictor `x` (length
+`p`, may be `missing`) with a phylo prior `x ~ N(α 1, σ_x² A)`, slope `b_x`,
+global intercept: `y[t,s] = a + b_x x_t + Λ η_s + ε_s`. Missing `x_t` integrated
+out in closed form; borrows phylo information across related species. The
+marginal reduces to the engine's `I_n⊗Σ_R + J_n⊗(b_x² Ṽ)` form (Ṽ = the embedded
+conditional phylo covariance) plus the `x_obs` prior — **validated against a
+brute-force joint Gaussian to 3.6e-15**.
+
+`src/missing_predictor_phylo.jl`, exported. `test_missing_predictor_phylo.jl`
+**9/9**: complete-data equivalence with `fit_gaussian_gllvm`, b_x recovery,
+missing-species fit + phylo-borrowing EBLUPs (`E[x_t|Y,x_obs]`), AD-clean
+(≤1e-6). TDD caught a real identifiability bug (a per-species intercept confounds
+with the per-species predictor ⇒ b_x unidentified) — fixed to a **global
+intercept**, which is the correct model (the predictor + phylo explain the
+species means).
+
 ## Next
 
-Phylo missing predictors (Phase 3: `x_species ~ N(α, σ_x² A)`) is the
-high-value evolutionary extension; then the `mi(x)` formula token + `Z`.
+Remaining mi() extensions: the `mi(x)` formula token + `Z` covariate-model
+regressors (small), and non-Gaussian / discrete missing predictors (Laplace
+augmented-latent, deferred).
