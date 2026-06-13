@@ -146,4 +146,46 @@ using GLLVM, Test, LinearAlgebra, Random
         @test isapprox(feM.β, feG.β; atol = 1e-7)
         @test isapprox(vec(feM.Λ), vec(feG.Λ); atol = 1e-7)
     end
+
+    # ---- Ordinal: NA-FIML mask honoured (completes the response-family grid) ----
+    @testset "Ordinal NA-FIML" begin
+        Random.seed!(20260613)
+        po, no, Ko = 6, 40, 2
+        Λo = randn(po, Ko) .* 0.4
+        for a in 1:Ko, b in 1:Ko
+            a < b && (Λo[a, b] = 0.0)
+        end
+        τo = [-1.2, 0.0, 1.2]
+        Mo = Λo * randn(Ko, no)
+        Fo(x) = 1 / (1 + exp(-x))
+        drw(η, τ, u) = (for c in 1:length(τ); u <= Fo(τ[c] - η) && return c; end; length(τ) + 1)
+        Yo = [drw(Mo[t, s], τo, rand()) for t in 1:po, s in 1:no]
+        Λe = randn(po, Ko) .* 0.3
+        τe = [-1.0, 0.0, 1.0]
+
+        misso = [(1, 2), (3, 5), (4, 8), (2, 1), (5, 3)]
+        msko = trues(po, no); for (t, s) in misso; msko[t, s] = false; end
+        Yog = copy(Yo); for (t, s) in misso; Yog[t, s] = 9999; end
+
+        # complete-data equivalence: no mask == an all-true mask (marginal)
+        @test isapprox(GLLVM.ordinal_marginal_loglik_laplace(Yo, Λe, τe),
+                       GLLVM.ordinal_marginal_loglik_laplace(Yo, Λe, τe; mask = trues(po, no));
+                       atol = 1e-10)
+        # marginal invariant to garbage in masked cells; mask is active
+        ℓo = GLLVM.ordinal_marginal_loglik_laplace(Yo, Λe, τe; mask = msko)
+        @test isapprox(ℓo, GLLVM.ordinal_marginal_loglik_laplace(Yog, Λe, τe; mask = msko); atol = 1e-10)
+        @test ℓo != GLLVM.ordinal_marginal_loglik_laplace(Yo, Λe, τe)
+        # a fully-masked site contributes exactly 0
+        mc = trues(po, 2); mc[:, 2] .= false
+        @test isapprox(GLLVM.ordinal_marginal_loglik_laplace(Yo[:, 1:2], Λe, τe; mask = mc),
+                       GLLVM.ordinal_loglik_site(view(Yo, :, 1), Λe, τe, GLLVM.LogitLink());
+                       atol = 1e-10)
+        # the FIT is invariant to masked-cell values (sentinel-invariance)
+        foA = fit_ordinal_gllvm(Yo;  K = Ko, mask = msko, iterations = 80)
+        foB = fit_ordinal_gllvm(Yog; K = Ko, mask = msko, iterations = 80)
+        @test foA.converged
+        @test isapprox(foA.loglik, foB.loglik; atol = 1e-7)
+        @test isapprox(vec(foA.Λ), vec(foB.Λ); atol = 1e-6)
+        @test isapprox(foA.τ, foB.τ; atol = 1e-6)
+    end
 end

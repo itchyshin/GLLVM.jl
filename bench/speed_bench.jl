@@ -217,7 +217,7 @@ function bench_glm_family!(sz, fam, mkfit)
     ll_finite = NaN
     finite_secs = NaN
     fit_fd = nothing
-    # --- finite (the current default) ---
+    # --- finite reference ---
     try
         s, m, fit = timed_median(mkfit(:finite))
         fit_fd = fit
@@ -228,7 +228,7 @@ function bench_glm_family!(sz, fam, mkfit)
         push_row!(sz, fam, ":finite", NaN, NaN, NaN;
                   note = "NOTE failed: $(_errsummary(err))")
     end
-    # --- analytic (opt-in today) ---
+    # --- analytic candidate/current default, depending on family ---
     try
         s, m, fit = timed_median(mkfit(:analytic))
         dll = isnan(ll_finite) ? NaN : _loglik(fit) - ll_finite
@@ -329,9 +329,9 @@ function main()
     Compare each family's :finite vs :analytic rows:
       * speedup column = how much faster the analytic-gradient fit is;
       * Δloglik column = accuracy gap (want ~0, i.e. same optimum).
-    If :analytic is consistently faster AND Δloglik stays at noise level, flip
-    the package default from `gradient = :finite` to `:analytic`. See
-    bench/SPEED_NOTES.md for the broader speed roadmap.
+    If :analytic is consistently faster AND Δloglik stays at noise level, it is
+    safe to make that family's default `gradient = :analytic`. See
+    bench/SPEED_NOTES.md for the current default decision and broader speed roadmap.
     """)
 end
 

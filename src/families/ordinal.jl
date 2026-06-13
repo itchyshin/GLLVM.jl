@@ -68,7 +68,7 @@ end
 
 # Per-site Laplace mode ẑ (Fisher-scoring Newton); η = Λ z (no intercept).
 function _ordinal_laplace_mode(y::AbstractVector, Λ::AbstractMatrix, τ::AbstractVector,
-        link::Link = LogitLink(); maxiter::Integer = 100, tol::Real = 1e-9)
+        link::Link = LogitLink(); mask = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
     p, K = size(Λ)
     z = zeros(K)
     s = Vector{Float64}(undef, p)
@@ -76,8 +76,12 @@ function _ordinal_laplace_mode(y::AbstractVector, Λ::AbstractMatrix, τ::Abstra
     for _ in 1:maxiter
         η = _clamp_eta.(Λ * z)
         @inbounds for t in 1:p
-            st, wt = _ord_score_weight(Int(y[t]), η[t], τ, link)
-            s[t] = st; W[t] = wt
+            if mask !== nothing && !mask[t]
+                s[t] = 0.0; W[t] = 0.0          # masked (missing) ⇒ no contribution
+            else
+                st, wt = _ord_score_weight(Int(y[t]), η[t], τ, link)
+                s[t] = st; W[t] = wt
+            end
         end
         A = Symmetric(Λ' * (W .* Λ) + I)
         Δ = _safe_solve(A, Λ' * s .- z)
@@ -96,16 +100,20 @@ Laplace log-marginal for one site of a cumulative-logit ordinal GLLVM:
 `Λ` p×K, `τ` the `C−1` ordered cutpoints.
 """
 function ordinal_loglik_site(y::AbstractVector, Λ::AbstractMatrix, τ::AbstractVector,
-        link::Link = LogitLink(); maxiter::Integer = 100, tol::Real = 1e-9)
+        link::Link = LogitLink(); mask = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
     p = size(Λ, 1)
-    z = _ordinal_laplace_mode(y, Λ, τ, link; maxiter = maxiter, tol = tol)
+    z = _ordinal_laplace_mode(y, Λ, τ, link; mask = mask, maxiter = maxiter, tol = tol)
     η = _clamp_eta.(Λ * z)
     W = Vector{Float64}(undef, p)
     ℓ = 0.0
     @inbounds for t in 1:p
-        ℓ += log(max(_ord_prob(Int(y[t]), η[t], τ, link), 1e-12))
-        _, wt = _ord_score_weight(Int(y[t]), η[t], τ, link)
-        W[t] = wt
+        if mask !== nothing && !mask[t]
+            W[t] = 0.0                          # masked ⇒ dropped from logdet, no logpdf
+        else
+            ℓ += log(max(_ord_prob(Int(y[t]), η[t], τ, link), 1e-12))
+            _, wt = _ord_score_weight(Int(y[t]), η[t], τ, link)
+            W[t] = wt
+        end
     end
     A = Symmetric(Λ' * (W .* Λ) + I)
     return ℓ - 0.5 * dot(z, z) - 0.5 * logdet(A)
@@ -122,10 +130,11 @@ selects the cumulative-link CDF `F` (`LogitLink()` default, `ProbitLink()`). Wit
 independent cumulative-link log-likelihood `Σ log(F(τ_c) − F(τ_{c−1}))`.
 """
 function ordinal_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix,
-        τ::AbstractVector; link::Link = LogitLink(), kwargs...)
+        τ::AbstractVector; link::Link = LogitLink(), mask = nothing, kwargs...)
     acc = 0.0
     @inbounds for s in axes(Y, 2)
-        acc += ordinal_loglik_site(view(Y, :, s), Λ, τ, link; kwargs...)
+        mcol = mask === nothing ? nothing : view(mask, :, s)
+        acc += ordinal_loglik_site(view(Y, :, s), Λ, τ, link; mask = mcol, kwargs...)
     end
     return acc
 end
@@ -183,16 +192,24 @@ responses coded `1:C` (`C = maximum(Y)`). Finite-difference gradient; warm start
 empirical cumulative-proportion cutpoints + a normal-scores SVD loadings init.
 """
 function fit_ordinal_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
-        link::Link = LogitLink(), Λ_init = nothing,
+        link::Link = LogitLink(), Λ_init = nothing, mask = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
-    C = Int(maximum(Y))
-    C ≥ 2 || throw(ArgumentError("ordinal response needs ≥ 2 categories; got maximum(Y) = $C"))
+    obs = mask === nothing ? trues(p, n) : mask
+    # Category count and warm starts use OBSERVED cells only, so a masked cell's
+    # (arbitrary) value never leaks into the fit.
+    C = 0
+    @inbounds for i in eachindex(Y)
+        obs[i] && (C = max(C, Int(Y[i])))
+    end
+    C ≥ 2 || throw(ArgumentError("ordinal response needs ≥ 2 observed categories; got $C"))
     rr = rr_theta_len(p, K)
+    # Sanitise masked cells to a valid category for the warm starts only.
+    Ys = mask === nothing ? Y : [obs[t, i] ? Int(Y[t, i]) : 1 for t in 1:p, i in 1:n]
 
     # Loadings warm start: SVD of a row-centred normal-scores latent proxy.
-    Zproxy = [quantile(Normal(), clamp((Y[t, i] - 0.5) / C, 1e-3, 1 - 1e-3))
+    Zproxy = [quantile(Normal(), clamp((Ys[t, i] - 0.5) / C, 1e-3, 1 - 1e-3))
               for t in 1:p, i in 1:n]
     Λ0 = if Λ_init === nothing
         Zc = Zproxy .- (sum(Zproxy; dims = 2) ./ n)
@@ -208,8 +225,8 @@ function fit_ordinal_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
 
     # Cutpoint warm start: τ_c = logit(empirical P(y ≤ c)); to ψ increments.
     counts = zeros(Int, C)
-    @inbounds for v in Y
-        counts[Int(v)] += 1
+    @inbounds for i in eachindex(Ys)
+        obs[i] && (counts[Int(Ys[i])] += 1)
     end
     cum = cumsum(counts ./ sum(counts))
     τ0 = [log(clamp(cum[c], 1e-3, 1 - 1e-3) / (1 - clamp(cum[c], 1e-3, 1 - 1e-3)))
@@ -225,7 +242,7 @@ function fit_ordinal_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
         Λ = unpack_lambda(θ[1:rr], p, K)
         τ = _unpack_cutpoints(θ[(rr + 1):(rr + C - 1)])
         v = try
-            -ordinal_marginal_loglik_laplace(Y, Λ, τ; link = link,
+            -ordinal_marginal_loglik_laplace(Y, Λ, τ; link = link, mask = mask,
                                              maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12

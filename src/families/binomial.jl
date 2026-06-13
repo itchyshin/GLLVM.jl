@@ -79,15 +79,15 @@ matrix (responses × sites); `N` the matching trial counts (default all-ones,
 i.e. Bernoulli / binary). `K` is the latent dimension. Optimises the intercepts
 `β` and loadings `Λ`.
 
-The L-BFGS gradient is finite-difference: the Laplace inner mode-finder is not
-forward-AD-friendly, so this keeps the first driver simple and robust (an
-envelope-theorem analytic gradient is the planned optimisation). Warm start:
-empirical link-scale intercepts + an SVD (PPCA-style) loadings init.
+The default analytic Laplace gradient is used on the plain no-mask/no-offset
+path, with an internal finite-difference fallback; masked or offset fits use
+finite differences. Warm start: empirical link-scale intercepts + an SVD
+(PPCA-style) loadings init.
 """
 function fit_binomial_gllvm(Y::AbstractMatrix; K::Integer,
         link::Link = LogitLink(),
         N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing, mask = nothing,
-        offset = nothing, gradient::Symbol = :finite,
+        offset = nothing, gradient::Symbol = :analytic,
         β_init = nothing, Λ_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)

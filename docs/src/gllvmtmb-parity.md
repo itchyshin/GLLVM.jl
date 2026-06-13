@@ -71,10 +71,13 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 
 ⚡ ~340× per-fit median speedup over R `gllvmTMB` on the Gaussian + phylogenetic
 path (with machine-precision agreement on estimates and likelihoods), and an O(p)
-phylogenetic gradient benchmarked to p = 10,000. The non-Gaussian and
-phylogenetic fitters use finite-difference outer gradients (the sparse-Cholesky /
-CHOLMOD marginals are not generic-AD-friendly); the VA estimator adds analytic
-inner and envelope-theorem outer gradients for further fit-time gains.
+phylogenetic gradient benchmarked to p = 10,000. Poisson, NB2, Binomial, and
+Beta use analytic Laplace outer gradients by default on plain no-mask/no-offset
+fits, with finite-difference fallback; Gamma and the remaining finite-difference
+Laplace paths stay conservative until their analytic gradients clear the runtime
+accuracy gate. The sparse-Cholesky / CHOLMOD marginals are not generic-AD-friendly;
+the VA estimator adds analytic inner and envelope-theorem outer gradients for
+further fit-time gains.
 
 ## R bridge: parameterization map (JuliaConnectoR)
 

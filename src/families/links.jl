@@ -8,10 +8,15 @@
 # the link types below — Distributions provides the distributions, not the links.
 
 abstract type Link end
+"""Logit link: `g(μ) = log(μ / (1 - μ))`, inverse `g⁻¹(η) = 1 / (1 + exp(-η))`. Canonical link for `Binomial` and `Beta`."""
 struct LogitLink    <: Link end
+"""Probit link: `g(μ) = Φ⁻¹(μ)`, inverse `g⁻¹(η) = Φ(η)` (standard-normal CDF)."""
 struct ProbitLink   <: Link end
+"""Complementary log-log link: `g(μ) = log(-log(1 - μ))`, inverse `g⁻¹(η) = 1 - exp(-exp(η))`."""
 struct CLogLogLink  <: Link end
+"""Identity link: `g(μ) = μ`. Canonical link for `Normal`."""
 struct IdentityLink <: Link end
+"""Log link: `g(μ) = log(μ)`, inverse `g⁻¹(η) = exp(η)`. Canonical link for `Poisson`, `Gamma`, and `NegativeBinomial`."""
 struct LogLink      <: Link end
 
 """

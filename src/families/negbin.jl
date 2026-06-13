@@ -59,7 +59,9 @@ end
 Fit a negative-binomial (NB2) GLLVM by L-BFGS over `[β; vec(Λ); log r]` on the
 Laplace marginal (`nb_marginal_loglik_laplace`), jointly estimating the dispersion
 `r`. `Y` is a p×n integer count matrix (may contain `missing`); `K` the latent
-dimension. Finite-difference gradient; warm start = empirical log-mean intercepts +
+dimension. The default analytic Laplace gradient is used on the plain
+no-mask/no-offset path, with an internal finite-difference fallback; masked or
+offset fits use finite differences. Warm start = empirical log-mean intercepts +
 an SVD loadings init + a moderate `r₀`.
 
 Missing data: pass a `mask` (p×n Bool, `false` = unobserved) or `missing` entries in
@@ -68,7 +70,7 @@ depends only on the observed cells.
 """
 function fit_nb_gllvm(Y::AbstractMatrix; K::Integer,
         link::Link = LogLink(), mask = nothing, offset = nothing,
-        gradient::Symbol = :finite,
+        gradient::Symbol = :analytic,
         β_init = nothing, Λ_init = nothing, r_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)

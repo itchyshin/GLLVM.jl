@@ -17,7 +17,13 @@ include("fit_random_effects.jl")         # Gaussian grouped random slopes (rando
 include("twolevel.jl")                    # Gaussian two-level (between/within-individual) reduced-rank decomposition
 include("simulate.jl")
 include("families/gaussian_pervar.jl")   # Gaussian with per-species variance (gllvmTMB heteroscedastic default)
+include("missing_predictor_fiml.jl")     # fit_gaussian_mi_fiml: closed-form FIML for a missing site-level predictor (mi() axis)
+include("missing_predictor_phylo.jl")    # fit_gaussian_mi_phylo: phylo missing-predictor FIML (mi() axis, Phase 3)
 include("structured_cov.jl")             # spatial_cov, relatedness_cov builders
+include("cross_kernel.jl")               # make_cross_kernel: cross-lineage coevolution kernel K* (PGLLVM two-lineage, C0)
+include("extract_gamma.jl")              # extract_Gamma: cross-lineage coevolution estimand Γ = Λ_phy Λ_phyᵀ block
+include("coevolution_kronecker.jl")      # fit_coevolution_gaussian: faithful matrix-normal coevolution (Kronecker), recovers Γ
+include("coevolution_blockna.jl")        # fit_coevolution_blockna: block-NA coevolution (host/partner each measure own traits)
 include("spde.jl")                        # SPDE / Matérn-GMRF FEM spatial field (shared-ready with DRM.jl)
 include("spde_mesh.jl")                   # SPDE grid auto-mesher
 include("spde_delaunay.jl")               # SPDE Delaunay triangulation (Bowyer–Watson)
@@ -48,6 +54,7 @@ include("families/beta_hurdle.jl")       # Beta-hurdle (Bernoulli × Beta) two-p
 include("families/beta_binomial.jl")     # Beta-binomial (overdispersed binomial) — gllvm family 15
 include("families/fit_gllvm.jl")         # unified fit_gllvm(Y; family) dispatcher
 include("laplace_grad.jl")               # exact (AD + implicit-step) Poisson Laplace gradient (issue #65)
+include("missing_predictor_poisson.jl")  # non-Gaussian missing predictor (mi Phase 5a): Poisson augmented-Laplace FIML
 include("families/covariates.jl")        # fixed-effect covariates (Xβ) for the Laplace families
 include("families/species_covariates.jl") # species-specific covariate coefficients (XB) for the Laplace families
 include("families/constrained_ordination.jl") # constrained ordination (RRR of latent vars on env predictors)
@@ -105,7 +112,9 @@ const fit_concurrent_gllvm = fit_constrained_gllvm
 const ConcurrentOrdinationFit = ConstrainedOrdinationFit
 
 # Public API
-export spatial_cov, relatedness_cov,
+export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevolution_blockna,
+       fit_gaussian_mi_fiml, fit_gaussian_mi_phylo, fit_gllvm_mi,
+       spatial_cov, relatedness_cov,
        spde_fem, spde_precision, spde_projector, matern_correlation,
        spde_mesh_grid, spde_mesh_delaunay,
        spde_gaussian_marginal_loglik, fit_spde_gaussian, SPDEGaussianFit,
