@@ -43,14 +43,12 @@ suite must stay green. Branch off the latest `main`; one concern per commit.
 ```
 julia --project=. bench/speed_bench.jl
 ```
-Times each GLM fitter `gradient=:finite` vs `:analytic` and prints the **logLik
-delta**. If `:analytic` is faster across the grid AND the deltas are ≤1e-6, flip
-the default to `:analytic` in `fit_poisson_gllvm`, `fit_nb_gllvm`,
-`fit_binomial_gllvm`, `fit_gamma_gllvm`, `fit_beta_gllvm` (analytic path is in
-`src/laplace_grad.jl`, gated to no-mask/no-offset with a finite-difference
-fallback). Then `Pkg.test()` → if green, commit. ≈ `2·nparams → 1`
-marginal-evaluations per L-BFGS step; kept opt-in only because the cloud session
-could not measure it.
+Measured 2026-06-07. `:analytic` is faster and likelihood-stable for Poisson,
+NB2, Binomial, and Beta, so those four fitters now default to `:analytic` on the
+plain no-mask/no-offset path (with finite-difference fallback). Gamma missed the
+`≤1e-6` logLik-delta gate on benchmark-like cells and remains
+`gradient = :finite` until its analytic route is stabilised. ≈ `2·nparams → 1`
+marginal-evaluations per L-BFGS step for the four defaulted families.
 
 ### P2 — Validate the R↔Julia bridge (proves the parity claim end-to-end)
 Fix the `## VERIFY:` spots in `r/gllvmtmb_julia.R` (JuliaConnectoR access to

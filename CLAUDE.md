@@ -4,11 +4,11 @@ This file orients AI coding agents (Claude Code, Codex, etc.) to the GLLVM.jl re
 
 ## What this package is
 
-GLLVM.jl is a Julia implementation of the **Gaussian + phylogenetic** Generalised Linear Latent Variable Model (GLLVM) class. It is a from-scratch port of the Gaussian subset of R's `gllvmTMB`, prioritising fitting speed at moderate-to-large p (species count) and rigorous inference. Headline result: ~340× per-fit median speedup over R/`gllvmTMB` while reproducing point estimates and likelihoods to machine precision.
+GLLVM.jl is a Julia implementation of the Generalised Linear Latent Variable Model (GLLVM) class across the **full GLM response-family set**, plus phylogenetic and spatial (SPDE/Matérn) random-effect structures. It is a from-scratch reimplementation of R's `gllvm`/`gllvmTMB`, prioritising fitting speed at moderate-to-large p (species count) and rigorous inference. Headline result on the Gaussian path: ~340× per-fit median speedup over R/`gllvmTMB` while reproducing point estimates and likelihoods to machine precision.
 
-**Status**: v0.1.0 pilot — **Gaussian only**. Non-Gaussian families (Poisson, binomial, ordinal, negative binomial, beta, hurdle/zero-inflated) are **not yet implemented**. Expanding to the full GLM family is the next planned stage; see "Planned next" below.
+**Status**: v0.3.0 — **gllvmTMB parity and beyond**. The Gaussian path uses the closed-form marginal; the non-Gaussian families use a shared Laplace-approximated marginal (with a Gaussian-variational/ELBO alternative for several). Implemented families: Gaussian (incl. per-species variance), Poisson, NB2, NB1, Binomial/Bernoulli, beta-binomial, Beta, Gamma, Exponential, Ordinal (logit/probit), Tweedie, Conway–Maxwell–Poisson, and the two-part/zero families (Delta-lognormal, Delta-Gamma, Hurdle-Poisson, Hurdle-NB, beta-hurdle, ordered-beta, ZIP, ZINB, ZIB). Plus per-species/grouped dispersion, fixed/species-specific covariates, fourth-corner, fixed and random row effects, quadratic response, the ordination trio (unconstrained / concurrent `num.lv.c` / constrained `num.RR`), a phylogenetic GLM, and an SPDE/Matérn spatial latent field. See `ROADMAP.md` for the live capability checklist and `CHANGELOG.md` for the release history.
 
-**Size**: 32 commits, 25 source files, 14 test files, 256 passing tests as of v0.1.0.
+**Size**: 78 commits, 77 source files, 108 test files as of v0.3.0; CI green across Julia 1.10 + stable on Linux/macOS/Windows.
 
 ## Working with this repo
 
@@ -30,6 +30,8 @@ GLLVM.jl is a Julia implementation of the **Gaussian + phylogenetic** Generalise
 - **Honest reporting**: if a result is mixed or negative, say so plainly. Don't oversell.
 
 ### Source layout (src/)
+
+The listing below covers the main groups; it is representative, not exhaustive (77 source files). The non-Gaussian families live under `src/families/`.
 
 Core engine:
 - `GLLVM.jl` — module + includes
@@ -59,18 +61,32 @@ Confidence intervals:
 - `confint_bootstrap.jl` — parametric bootstrap
 - `confint_derived.jl` — profile + bootstrap CIs for derived quantities (Σ_y entries, communality c², cross-trait correlation, phylogenetic signal H²)
 - `confint_derived_wald.jl` — transformed-scale Wald (Fisher-z for [−1,1] correlations, logit for [0,1] communality / ICC / H²); matches the bootstrap to within MC error at one-Hessian cost for interior-valued bounded quantities
+- `confint_family.jl` — Wald / profile / bootstrap CIs for the non-Gaussian families
+
+Non-Gaussian families (`src/families/`):
+- `links.jl` — link functions (Identity, Log, Logit, Probit, CLogLog)
+- `laplace.jl` — generic family-dispatched Laplace marginal core, shared across families (the `<family>_marginal_loglik_laplace` pattern)
+- per-family pieces + fitters: `poisson.jl`, `negbin.jl`/`negbin1.jl`, `binomial.jl`, `beta.jl`, `gamma.jl`, `exponential.jl`, `ordinal.jl`, `tweedie.jl`, `com_poisson.jl`, `beta_binomial.jl`; two-part/zero families in `twopart.jl`, `beta_hurdle.jl`, `ordered_beta.jl`
+- `grouped_dispersion.jl` — per-species / grouped dispersion (`disp.group`)
+- model-structure add-ons: `covariates.jl`, `species_covariates.jl`, `fourthcorner.jl`, `row_effects.jl`, `row_random.jl`, `constrained_ordination.jl`, `rrr.jl`, `quadratic.jl`
+- `variational*.jl` — Gaussian-variational (VA/ELBO) marginal alternative for several families
+- `fit_gllvm.jl` — unified `fit_gllvm(Y; family)` dispatcher; the top-level `gllvm()` API wraps it
+
+Spatial / non-Gaussian phylo:
+- `spde.jl`, `spde_mesh.jl`, `spde_delaunay.jl`, `spde_fit.jl`, `spde_latent*.jl` — SPDE / Matérn-GMRF FEM spatial field, as a fitted model and as a latent variable inside a non-Gaussian GLLVM
+- `phylo_glm.jl` — phylogenetic GLLVM for non-Gaussian families (augmented-state joint Laplace)
+
+Post-fit & front-end:
+- `postfit.jl`, `ordination.jl`, `model_selection.jl`, `summary_table.jl`, `simulate_fit.jl`, `formula.jl` — `predict`/`fitted`/`residuals`/`aic`/`bic`, ordination output, `select_lv`, `coef_table`, family-aware simulation, and the `@formula` front-end
 
 ## Planned next
 
-The maintainer has indicated this package should expand from **Gaussian-only** to the **full GLM family**: Poisson, binomial, ordinal, negative-binomial, beta, then hurdle / zero-inflated / delta families. That expansion will require:
+The full GLM-family expansion from the v0.1.0 Gaussian pilot is **done** (see `ROADMAP.md` for the live checklist and any remaining gaps to R `gllvm`/`gllvmTMB`). The Laplace marginal core is a single family-dispatched function (`src/families/laplace.jl`), each family adds `<family>_marginal_loglik_laplace` pieces and a `fit_<family>_gllvm` driver, and everything is reachable through the unified `fit_gllvm` / `gllvm()` API — study that pattern before adding a family.
 
-- Link function infrastructure (`logit`, `log`, `probit`, `cloglog`, …). The current Gaussian path uses identity, so no link layer exists yet.
-- **Laplace approximation** for the marginal likelihood. Gaussian + identity admits a closed-form marginal; non-conjugate families do not, so a Laplace step is unavoidable.
-- Dispersion parameters where relevant (NB shape `r`; beta precision `φ`).
-- A non-Gaussian-aware init (PPCA assumes Gaussian; either generalise or accept a slower init).
-- Updated ADEMP simulation cells covering each new family.
-
-Before starting that expansion, **study the design pattern** the Gaussian path follows: the marginal log-likelihood is a single function (`gaussian_marginal_loglik`), and `fit_gaussian_gllvm` is a thin driver. The non-Gaussian path likely wants `<family>_marginal_loglik_laplace` and `fit_<family>_gllvm` mirrors, with shared packing / Cholesky / init helpers.
+Current direction:
+- **Julia General registration** (v0.3.0; first registration is a manual merge — see the registration notes).
+- Performance: the maintainer-approved Takahashi O(p) selected-inverse swap for the sparse phylo gradient (`sparse_phy_grad.jl`, `takahashi_selinv.jl`).
+- Keep extending parity / inference coverage as tracked in `ROADMAP.md`.
 
 ## Hard boundaries
 

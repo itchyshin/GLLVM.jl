@@ -139,10 +139,12 @@ using GLLVM, Test, Random, LinearAlgebra
         Random.seed!(77)
         pp, KK, nn = 4, 1, 40
         Yf = rand(0:5, pp, nn)
-        f_fd = fit_poisson_gllvm(Yf; K = KK, iterations = 300)
+        f_fd = fit_poisson_gllvm(Yf; K = KK, gradient = :finite, iterations = 300)
         f_an = fit_poisson_gllvm(Yf; K = KK, gradient = :analytic, iterations = 300)
+        f_default = fit_poisson_gllvm(Yf; K = KK, iterations = 300)
         @test isfinite(f_an.loglik)
         @test isapprox(f_fd.loglik, f_an.loglik; atol = 1e-3)
+        @test isapprox(f_default.loglik, f_an.loglik; atol = 1e-8)
         @test isapprox(f_fd.β, f_an.β; atol = 5e-2)
     end
 
@@ -153,23 +155,31 @@ using GLLVM, Test, Random, LinearAlgebra
 
         Nb = fill(6, pp, nn)
         Yb = [rand(0:6) for t in 1:pp, s in 1:nn]
-        b_fd = fit_binomial_gllvm(Yb; K = KK, N = Nb, iterations = 300)
+        b_fd = fit_binomial_gllvm(Yb; K = KK, N = Nb, gradient = :finite, iterations = 300)
         b_an = fit_binomial_gllvm(Yb; K = KK, N = Nb, gradient = :analytic, iterations = 300)
+        b_default = fit_binomial_gllvm(Yb; K = KK, N = Nb, iterations = 300)
         @test isapprox(b_fd.loglik, b_an.loglik; atol = 1e-3)
+        @test isapprox(b_default.loglik, b_an.loglik; atol = 1e-8)
 
         Yn = rand(0:8, pp, nn)
-        n_fd = fit_nb_gllvm(Yn; K = KK, iterations = 300)
+        n_fd = fit_nb_gllvm(Yn; K = KK, gradient = :finite, iterations = 300)
         n_an = fit_nb_gllvm(Yn; K = KK, gradient = :analytic, iterations = 300)
+        n_default = fit_nb_gllvm(Yn; K = KK, iterations = 300)
         @test isapprox(n_fd.loglik, n_an.loglik; atol = 2e-2)
+        @test isapprox(n_default.loglik, n_an.loglik; atol = 1e-8)
 
         Yg = 0.5 .+ 2 .* rand(pp, nn)
         g_fd = fit_gamma_gllvm(Yg; K = KK, iterations = 300)
         g_an = fit_gamma_gllvm(Yg; K = KK, gradient = :analytic, iterations = 300)
+        g_default = fit_gamma_gllvm(Yg; K = KK, iterations = 300)
         @test isapprox(g_fd.loglik, g_an.loglik; atol = 2e-2)
+        @test isapprox(g_default.loglik, g_fd.loglik; atol = 1e-8)
 
         Ybe = clamp.(rand(pp, nn), 0.02, 0.98)
-        be_fd = fit_beta_gllvm(Ybe; K = KK, iterations = 300)
+        be_fd = fit_beta_gllvm(Ybe; K = KK, gradient = :finite, iterations = 300)
         be_an = fit_beta_gllvm(Ybe; K = KK, gradient = :analytic, iterations = 300)
+        be_default = fit_beta_gllvm(Ybe; K = KK, iterations = 300)
         @test isapprox(be_fd.loglik, be_an.loglik; atol = 2e-2)
+        @test isapprox(be_default.loglik, be_an.loglik; atol = 1e-8)
     end
 end
