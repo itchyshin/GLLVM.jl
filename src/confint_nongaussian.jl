@@ -193,3 +193,36 @@ function confint(fit::GammaFit; y::AbstractMatrix, level::Real = 0.95, parm = no
     return _wald_ci_dispersion_family(fit.β, fit.Λ, fit.α, gamma_marginal_loglik_laplace,
                                       "alpha", fit.link, y; level = level, parm = parm)
 end
+
+"""
+    confint(fit::OrdinalFit; y, level=0.95, parm=nothing)
+
+Wald CIs for a proportional-odds cumulative-logit ordinal GLLVM fit, from the
+observed-information Hessian (the ForwardDiff Hessian of the Laplace marginal).
+`y` is the same `p×n` matrix of ordinal responses (coded `1:C`) passed to
+[`fit_ordinal_gllvm`](@ref). Unlike the other families there is **no species
+intercept**: the parameters are the packed loadings `lambda[i]` and the `C−1`
+ordered cutpoints `tau[c]`, both identity-scale (the cutpoints are reported on
+their natural ordered scale, as in R's `clm`/`polr`). `parm` selects a subset by
+name/regex; the group selectors `"lambda"` and `"tau"` pick the whole block.
+
+Returns a named tuple `(term, estimate, lower, upper, se, pd_hessian)`, as for
+[`confint(::PoissonFit)`](@ref).
+"""
+function confint(fit::OrdinalFit; y::AbstractMatrix, level::Real = 0.95, parm = nothing)
+    0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
+    p, K = size(fit.Λ)
+    rr   = rr_theta_len(p, K)
+    nτ   = length(fit.τ)
+    θ̂    = vcat(pack_lambda(fit.Λ), fit.τ)
+    terms = vcat(["lambda[$i]" for i in 1:rr], ["tau[$c]" for c in 1:nτ])
+    kinds = fill(:identity, length(terms))
+    nll = θ -> -ordinal_marginal_loglik_laplace(
+        y, unpack_lambda(θ[1:rr], p, K), θ[(rr + 1):(rr + nτ)])
+    if parm === :lambda || parm == "lambda"
+        parm = ["lambda[$i]" for i in 1:rr]
+    elseif parm === :tau || parm == "tau"
+        parm = ["tau[$c]" for c in 1:nτ]
+    end
+    return _wald_ci_from_nll(θ̂, nll, terms, kinds; level = level, parm = parm)
+end
