@@ -35,6 +35,9 @@ function _sim_squarem_safety(p, seed; K_B = 1, n = 200,
     return y, Σ_phy
 end
 
+if get(ENV, "GLLVM_SLOW_TESTS", "0") != "1"
+    @info "test_em_squarem_safety skipped — set GLLVM_SLOW_TESTS=1 to run (~38 min; p=500 EM fits)"
+else
 @testset "SQUAREM inferior-basin safety check (plain-EM polish + fallback)" begin
 
     TOL    = 1e-9
@@ -104,4 +107,5 @@ end
                                     safety_check = false)
         @test !off.fallback_used
     end
+end
 end

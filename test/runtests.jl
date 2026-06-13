@@ -57,5 +57,6 @@ include("test_edge_incidence.jl")
 include("test_phylo_contrasts.jl")
 include("test_phylo_branch_re.jl")
 include("test_relaxed_clock.jl")
+include("test_em_squarem_safety.jl")  # self-gated: skips unless GLLVM_SLOW_TESTS=1
 
 include("test_quality.jl")
