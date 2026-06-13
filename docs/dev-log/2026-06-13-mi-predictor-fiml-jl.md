@@ -73,8 +73,18 @@ with the per-species predictor ⇒ b_x unidentified) — fixed to a **global
 intercept**, which is the correct model (the predictor + phylo explain the
 species means).
 
+## Covariate-model regressors Z (DONE)
+
+`fit_gaussian_mi_fiml` now takes an optional `Z` (`n × q` auxiliary site
+predictors) so the imputation model is `x ~ N(μ_x + Z·γ, σ_x²)` — the design's
+"explicit covariate model", better than a bare intercept. `Z = nothing`
+reproduces the intercept-only fit byte-for-byte. `test_missing_predictor_z.jl`
+6/6 (recovers γ; `Z=nothing` ≡ old fit to 1e-8; EBLUP uses Z). A backward-compat
+7-arg `_mi_fiml_nll` keeps the existing suite unchanged (9/9).
+
 ## Next
 
-Remaining mi() extensions: the `mi(x)` formula token + `Z` covariate-model
-regressors (small), and non-Gaussian / discrete missing predictors (Laplace
-augmented-latent, deferred).
+Remaining mi() extensions: the `mi(x)` formula token (deferred — the @formula
+front-end is a minimal v1, function terms not yet wired), `Z` for the phylo
+driver, and non-Gaussian / discrete missing predictors (Laplace augmented-latent,
+deferred).
