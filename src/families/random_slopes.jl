@@ -63,7 +63,7 @@ Total Laplace log-marginal over the groups of a non-Gaussian GLLVM with grouped 
 slopes `(Z | g)`: per-group `b_g ~ N(0, Σ_b)` entering `η_{ts} = β_t + (Λ z_s)_t +
 Z[s,:]·b_{g(s)}`. `Lb` is the lower-Cholesky factor of `Σ_b = Lb·Lbᵀ`; `Z` is the `n×q`
 site design (col 1 conventionally all-ones for the random intercept); `group_idx` is a
-vector of the site-index vectors per group (e.g. from [`_code_grouping`](@ref)).
+vector of the site-index vectors per group (e.g. from `_code_grouping`).
 
 Each group is integrated as ONE Laplace super-site of `n_g·p` responses at the augmented
 loadings (the `b_g = L_b c_g` whitening), so it is a thin sum over the family-generic
