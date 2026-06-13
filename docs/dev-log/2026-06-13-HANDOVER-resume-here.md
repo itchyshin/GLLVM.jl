@@ -25,14 +25,14 @@ authorized the push, overriding the no-push rule):
 **STILL HELD (need a separate maintainer go-ahead):** CRAN submission and the
 Julia General registry PR (public/irreversible).
 
-**Small open TODO (my doc cleanup for PR #99 — not yet done):** in
-`src/cross_kernel.jl` change the `jldoctest` block (lines ~48-59) to a plain
-` ```julia ` block (the repo has no `DocTestSetup`, so `make_cross_kernel` is
-undefined in the doctest's `Main`); and neutralise the 4 new `@ref`s to undocumented
-new functions (`src/{cross_kernel,extract_gamma,coevolution_kronecker,missing_predictor_poisson}.jl`)
-→ plain code style. That removes THIS branch's contribution to the Documenter
-failure; the pre-existing `_code_grouping` dead link is the maintainer's to fix
-(it's red on `main` independently). Net: cosmetic docstring edits, no code change.
+**Doc cleanup for PR #99 — DONE (`8f9d6ec`).** The `jldoctest` in
+`src/cross_kernel.jl` → plain ` ```julia `, and the 4 new `@ref`s neutralised to
+code style. This branch no longer contributes to the Documenter failure (module
+loads clean). **If the Documenter check is still red, it's the PRE-EXISTING
+`_code_grouping` dead `@ref`** (in `src/families/random_slopes.jl`, surfaced via
+`docs/src/api.md` `@autodocs`) — red on `main`@`9406e22` independently of this
+branch, and NOT present in this branch's copy of the file. That one is the
+maintainer's to fix on `integration`/`main`.
 
 ## TL;DR
 
