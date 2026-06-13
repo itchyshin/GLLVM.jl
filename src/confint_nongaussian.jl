@@ -119,3 +119,29 @@ function confint(fit::PoissonFit; y::AbstractMatrix, level::Real = 0.95, parm = 
     end
     return _wald_ci_from_nll(θ̂, nll, terms, kinds; level = level, parm = parm)
 end
+
+"""
+    confint(fit::BinomialFit; y, N=nothing, level=0.95, parm=nothing)
+
+Wald CIs for a Binomial GLLVM fit, as for [`confint(::PoissonFit)`](@ref). `y` is
+the `p×n` response matrix and `N` the trials matrix (defaults to all-ones, i.e.
+Bernoulli/binary data). Same observed-information construction.
+"""
+function confint(fit::BinomialFit; y::AbstractMatrix, N = nothing,
+                 level::Real = 0.95, parm = nothing)
+    0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
+    p, K = size(fit.Λ)
+    rr   = rr_theta_len(p, K)
+    Nm   = N === nothing ? fill(1, size(y)) : N
+    θ̂    = vcat(fit.β, pack_lambda(fit.Λ))
+    terms = vcat(["beta[$t]" for t in 1:p], ["lambda[$i]" for i in 1:rr])
+    kinds = fill(:identity, length(terms))
+    nll = θ -> -binomial_marginal_loglik_laplace(
+        y, Nm, unpack_lambda(θ[(p + 1):(p + rr)], p, K), θ[1:p], fit.link)
+    if parm === :beta || parm == "beta"
+        parm = ["beta[$t]" for t in 1:p]
+    elseif parm === :lambda || parm == "lambda"
+        parm = ["lambda[$i]" for i in 1:rr]
+    end
+    return _wald_ci_from_nll(θ̂, nll, terms, kinds; level = level, parm = parm)
+end
