@@ -2,57 +2,75 @@
 
 A fresh thread reads **this file + the repo state** and continues cleanly.
 Nothing is lost by restarting. Two packages were advanced to feature-complete,
-verified, deployment-ready states on local branches; **nothing is pushed** (the
-maintainer's no-push rule held throughout).
+verified states and **pushed**, with PRs open and **both CI checks green** (see
+the status block below). The remaining "finish" steps (merge, tag, registry,
+CRAN submit) are maintainer-gated.
 
-## UPDATE (2026-06-13, post-push — deployment authorized by the maintainer)
+## UPDATE (2026-06-13, post-push — both PRs CI-GREEN)
 
-The branches below are now **PUSHED** with PRs open (the maintainer explicitly
-authorized the push, overriding the no-push rule):
+Both branches are **PUSHED** with PRs open, and **both CI checks now pass**:
 
-- **GLLVM.jl** `coevolution-kernel` → `origin`; **PR #99** (base `integration`):
-  https://github.com/itchyshin/GLLVM.jl/pull/99
-  CI: the **Documenter** check FAILED — but it was **already red on `main`
-  (9406e22)** before this branch (a pre-existing dead `@ref` to `_code_grouping`
-  in `src/families/random_slopes.jl:66`, surfaced in `docs/src/api.md`'s
-  `@autodocs`). This branch ALSO adds one new doctest issue to fix (see TODO).
-  GLLVM.jl PRs don't run the Julia test suite on CI — the local 3479/0 +
-  per-slice greens are the gate.
+- **GLLVM.jl** `coevolution-kernel` → `origin` @ `9a80025`; **PR #99** (base
+  `integration`): https://github.com/itchyshin/GLLVM.jl/pull/99
+  CI: **Documenter PASS ✅** + **documenter/deploy PASS ✅** (preview built).
 - **gllvmTMB** `cran-bridge-docs` → `origin`; **PR #487** (base `main`):
   https://github.com/itchyshin/gllvmTMB/pull/487
-  CI: **ubuntu-latest R-CMD-check PASSED** ✅.
+  CI: **ubuntu-latest R-CMD-check PASS ✅**.
 
-**STILL HELD (need a separate maintainer go-ahead):** CRAN submission and the
-Julia General registry PR (public/irreversible).
+GLLVM.jl PRs don't run the Julia test suite on CI — the local 3479/0 +
+per-slice greens remain the gate for the engine.
 
-**Doc cleanup for PR #99 — DONE (`8f9d6ec`).** The `jldoctest` in
-`src/cross_kernel.jl` → plain ` ```julia `, and the 4 new `@ref`s neutralised to
-code style. This branch no longer contributes to the Documenter failure (module
-loads clean). **If the Documenter check is still red, it's the PRE-EXISTING
-`_code_grouping` dead `@ref`** (in `src/families/random_slopes.jl`, surfaced via
-`docs/src/api.md` `@autodocs`) — red on `main`@`9406e22` independently of this
-branch, and NOT present in this branch's copy of the file. That one is the
-maintainer's to fix on `integration`/`main`.
+**STILL HELD (need a separate maintainer go-ahead):** merge/tag, the Julia
+General registry PR, and the gllvmTMB CRAN submission (all public/irreversible).
+
+### Documenter failure — true root cause (the earlier diagnosis here was WRONG)
+
+The earlier note in this doc claimed the Documenter failure was "pre-existing on
+`main` (9406e22)" and "just a jldoctest". **Both claims were false.** The build
+broke on **two dead `@ref` links**, BOTH introduced by feature commits bundled
+into this branch (NOT on `main` — `random_slopes.jl` / `mixed.jl` don't exist
+there), each surfaced on `api.md` via `@autodocs`:
+
+1. `[`_code_grouping`](@ref)` in `src/families/random_slopes.jl:66` — ref to a
+   private, undocumented helper. Fixed in `5413c3a` (demoted to a code span).
+2. `[`link_residual`](@ref)` `(family_t, …)` ` in `src/families/mixed.jl:569` — an
+   `@ref` jammed against an adjacent code span (ambiguous + non-rewritable),
+   leaving a literal `./@ref` href VitePress rejects. Fixed in `9a80025`.
+
+Method that finally worked: verify with a **local `julia --project=docs
+docs/make.jl` build** (the oracle) reaching "build complete, 0 dead links"
+BEFORE pushing; CI then confirmed green. (The first push guessed from CI logs
+and failed — don't do that.) The docs env now has a `docs/Manifest.toml` +
+`node_modules` locally, so rebuilds are fast: re-run that command to re-verify.
+
+**Optional doc hygiene (non-blocking, `warnonly=true` — NOT needed for green):**
+docstrings for the 5 exported link structs (`LogitLink`…`LogLink`,
+`src/families/links.jl:11-15`) and `constrained_marginal_loglik_laplace`
+(`src/families/constrained_ordination.jl:52`); and dedupe the `@docs` block for
+`spatial_cov` / `relatedness_cov` (`docs/src/structured-dependence.md:132-135`)
+that `api.md`'s `@autodocs` already renders. (A static audit also flagged
+`NodePerSpecies` as undocumented — a FALSE positive; it renders fine, 7× in the
+generated `api.md`.)
 
 ## TL;DR
 
 - **GLLVM.jl** (Julia): cross-lineage coevolution ("PGLLVM two lineages") and the
   missing-predictor `mi()` axis were implemented end-to-end and verified.
-  Branch `coevolution-kernel`, **21 commits**, tree clean, unpushed.
+  Branch `coevolution-kernel` @ `9a80025`, **pushed**, PR #99 CI green.
 - **gllvmTMB** (R): the two CRAN gating items (PDF-manual Unicode + invalid DOIs)
-  were fixed and verified. Branch `cran-bridge-docs`, **6 commits**, tree clean,
-  unpushed. CRAN submit-ready bar the maintainer's final `--as-cran` + submit.
-- The remaining work to literally "finish" is **maintainer-gated** (push, merge,
-  tag, Julia-registry, CRAN submit) — an agent cannot do it under the no-push rule.
+  were fixed and verified. Branch `cran-bridge-docs`, **pushed**, PR #487 CI
+  green. CRAN submit-ready bar the maintainer's final `--as-cran` + submit.
+- The remaining work to literally "finish" is **maintainer-gated** (merge, tag,
+  Julia-registry, CRAN submit).
 
 ## Exact state (verified from the repos)
 
 ### GLLVM.jl
 | | |
 |---|---|
-| Work branch / worktree | `coevolution-kernel` @ `9deecad` — `/Users/z3437171/Dropbox/Github Local/GLLVM.jl-coevolution` |
+| Work branch / worktree | `coevolution-kernel` @ `9a80025` — `/Users/z3437171/Dropbox/Github Local/GLLVM.jl-coevolution` |
 | Based on | `consolidation-candidate` @ `8690e8f` (tracks `origin/integration`; the PR #95 trunk) |
-| Ahead by | 21 commits, **unpushed**, tree clean |
+| State | **pushed** to `origin/coevolution-kernel`; PR #99 CI green; tree clean |
 | Main checkout | `/Users/z3437171/Dropbox/Github Local/GLLVM.jl` on `codex/non-gaussian-fitter-gradients` @ `6d8e158`; `main` = `9406e22` |
 | Julia binary | `~/.juliaup/bin/julia` (not on PATH) |
 | Run a focused test | `~/.juliaup/bin/julia --project=<worktree> <worktree>/test/test_X.jl` |
