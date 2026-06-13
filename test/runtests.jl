@@ -95,6 +95,7 @@ using GLLVM
     include("test_constrained_ordination.jl")
     include("test_rrr.jl")
     include("test_quadratic.jl")
+    include("test_ordination_uncertainty.jl")
     include("test_structural_confint.jl")
     include("test_ordered_beta.jl")
     include("test_variational.jl")
@@ -103,6 +104,10 @@ using GLLVM
     include("test_variational_gamma.jl")
     include("test_variational_beta.jl")
     include("test_variational_dgamma.jl")
+    include("test_variational_exponential.jl")
     include("test_va_vs_laplace.jl")
+    include("test_random_slopes.jl")
+    include("test_twolevel.jl")
+    include("test_random_slopes_poisson.jl")
     include("test_quality.jl")
 end

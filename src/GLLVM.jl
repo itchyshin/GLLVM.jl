@@ -11,6 +11,10 @@ include("ppca_init.jl")                  # used by fit (warm-start)
 include("em_fa.jl")                      # alternative EM solver
 include("profile.jl")                    # σ_eps profile-out (used by fit)
 include("fit.jl")
+include("reml.jl")                       # REML for the Gaussian path (restricted ML)
+include("random_effects.jl")             # RE foundation — grouping-factor coding
+include("fit_random_effects.jl")         # Gaussian grouped random slopes (random regression)
+include("twolevel.jl")                    # Gaussian two-level (between/within-individual) reduced-rank decomposition
 include("simulate.jl")
 include("families/gaussian_pervar.jl")   # Gaussian with per-species variance (gllvmTMB heteroscedastic default)
 include("structured_cov.jl")             # spatial_cov, relatedness_cov builders
@@ -53,12 +57,14 @@ include("families/ordered_beta.jl")       # ordered-beta family (proportions wit
 include("families/fourthcorner.jl")       # fourth-corner trait–environment interaction for the Laplace families
 include("families/row_effects.jl")        # community row effects (per-site intercepts) for the Laplace families
 include("families/row_random.jl")          # random row effects (ρ_s ~ N(0,σ_row²), gllvmTMB row.eff="random")
+include("families/random_slopes.jl")       # non-Gaussian grouped random slopes (Poisson; per-group Laplace super-site)
 include("families/variational.jl")       # Gaussian-variational (VA/ELBO) marginal — Poisson (increment 1) + GH helper
 include("families/variational_binomial.jl") # VA/ELBO marginal — Binomial/Bernoulli (Gauss–Hermite)
 include("families/variational_negbin.jl") # VA/ELBO marginal — Negative Binomial (Gauss–Hermite)
 include("families/variational_gamma.jl") # VA/ELBO marginal — Gamma (closed form)
 include("families/variational_beta.jl")  # VA/ELBO marginal — Beta (Gauss–Hermite)
 include("families/variational_dgamma.jl") # VA/ELBO marginal — Delta-Gamma two-part (closed form)
+include("families/variational_exponential.jl") # VA/ELBO marginal — Exponential (closed form, Gamma α=1)
 
 # SPDE/Matérn-GMRF field as a latent variable inside a non-Gaussian GLLVM
 # (joint Laplace over the spatial GMRF). Depends on the SPDE FEM machinery
@@ -73,15 +79,24 @@ include("families/com_poisson.jl")        # Conway–Maxwell–Poisson (under/ov
 include("ordination.jl")                  # ordination output (site scores + species loadings, canonical rotation)
 include("model_selection.jl")             # select_lv: latent-dimension selection by AIC/BIC
 include("simulate_fit.jl")               # simulate(fit, …) for the non-Gaussian families
+include("ordination_uncertainty.jl")      # per-site latent-score uncertainty (conditional bootstrap of scores)
 
 # Confidence intervals
 include("confint.jl")                    # Wald
 include("confint_profile.jl")            # profile likelihood
 include("confint_bootstrap.jl")          # parametric bootstrap
 include("confint_derived.jl")            # derived quantities (Σ_y, communality, ...)
+# Cross-family latent-scale link-implicit residual table + non-Gaussian
+# sigma_y_site/communality/correlation extractors. After postfit.jl (needs the
+# family fit structs + predict) and confint_derived.jl (the Gaussian generics it
+# adds methods to). Additive: the ::GllvmFit methods are unchanged.
+include("link_residual.jl")
+include("families/mixed.jl")             # mixed-family GLLVM (cross-family VCV): fit_mixed_gllvm + MixedFamilyFit. AFTER link_residual + the family fitters so all dispatch targets exist.
+include("boundary_inference.jl")         # χ̄² boundary LRT + boundary-aware profile CI for variance components
 include("confint_family.jl")             # Wald / profile / bootstrap CIs for non-Gaussian families
 include("summary_table.jl")              # coef_table: tidy Wald inference table
 include("formula.jl")                    # @formula front-end (v1: fixed effects → engine)
+include("bridge.jl")                      # R→Julia bridge_fit (JuliaCall flat contract); LAST
 
 # Ordination naming: the implemented z_s ~ N(B'x_s, I) model (covariate-informed LV
 # mean PLUS residual) is gllvm's *concurrent* ordination (num.lv.c). Expose the
@@ -98,18 +113,25 @@ export spatial_cov, relatedness_cov,
        confint_spde_latent,
        confint_speciescov, confint_fourthcorner, confint_rrr, confint_constrained,
        fit_gaussian_gllvm, GllvmModel, GllvmFit,
+       gaussian_reml_loglik, fit_gaussian_reml, GaussianREMLFit,
+       fit_gaussian_random_slope, GaussianRandomSlopeFit, gaussian_grouped_intercept_loglik,
+       fit_twolevel_gaussian, TwoLevelFit, twolevel_marginal_loglik,
+       repeatability, communality_B, communality_W, correlation_B, correlation_W,
+       fit_poisson_random_slope, PoissonRandomSlopeFit, random_slope_marginal_loglik_laplace,
        fit_gaussian_pervar_gllvm, GaussianPerVarFit, gaussian_pervar_marginal_loglik,
        fit_compoisson_gllvm, COMPoisson, COMPoissonFit, compoisson_marginal_loglik_laplace,
        compoisson_logpdf, compoisson_logz,
        confint, profile_ci, bootstrap_ci,
        ppca_init, em_fa,
-       sigma_y_site, communality, correlation, phylo_signal,
+       sigma_y_site, communality, correlation, phylo_signal, link_residual,
+       chibar2_pvalue, variance_lrt, profile_ci_variance,
        augmented_phy, gaussian_marginal_loglik_sparse_phy,
        node_grad, node_dσ_phy_only, NodePerSpecies, build_node_perspecies,
        grad_node_perspecies, node_blups,
        fit_phylo_gaussian, PhyloGaussianFit,
        phylo_glm_marginal_loglik, fit_phylo_glm, PhyloGLMFit,
        LogitLink, ProbitLink, CLogLogLink, IdentityLink, LogLink,
+       fit_mixed_gllvm, MixedFamilyFit, mixed_marginal_loglik_laplace,
        fit_binomial_gllvm, BinomialFit, fit_poisson_gllvm, PoissonFit,
        poisson_laplace_grad, binomial_laplace_grad, nb_laplace_grad,
        gamma_laplace_grad, beta_laplace_grad,
@@ -153,8 +175,10 @@ export spatial_cov, relatedness_cov,
        binomial_marginal_loglik_va, nb_marginal_loglik_va,
        fit_binomial_gllvm_va, fit_nb_gllvm_va,
        gamma_marginal_loglik_va, fit_gamma_gllvm_va,
-       getLV, getLoadings, rotation, ordination, ordiplot, predict_spatial,
+       exponential_marginal_loglik_va, fit_exponential_gllvm_va,
+       getLV, getLoadings, rotation, ordination, ordiplot, ordination_uncertainty, predict_spatial,
        coef_table, GllvmCoefTable, select_lv, LVSelection,
-       predict, fitted, residuals, aic, bic, simulate
+       predict, fitted, residuals, aic, bic, simulate,
+       bridge_fit
 
 end # module GLLVM
