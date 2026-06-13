@@ -46,9 +46,15 @@ function _build_offset_constrained(Λ::AbstractMatrix, B::AbstractMatrix, X::Abs
     return Λ * (B' * X')
 end
 
-# Reduced-rank constrained-ordination marginal: the offset-augmented Laplace
-# marginal with offset O = Λ B' X'. Identical to the unconstrained marginal when
-# B = 0 (then O = 0).
+"""
+    constrained_marginal_loglik_laplace(family, Y, N, Λ, β, B, X, link; kwargs...) -> Float64
+
+Laplace log-marginal for a constrained ordination (reduced-rank regression): the
+offset-augmented marginal with site-covariate offset `O = Λ Bᵀ Xᵀ`, where `B`
+(q×K) regresses the K latent axes onto the `q` covariates in `X` (n×q). Reduces
+exactly to the unconstrained marginal when `B = 0` (then `O = 0`). Maximised by
+[`fit_constrained_gllvm`](@ref).
+"""
 function constrained_marginal_loglik_laplace(family, Y::AbstractMatrix, N::AbstractMatrix,
         Λ::AbstractMatrix, β::AbstractVector, B::AbstractMatrix, X::AbstractMatrix,
         link::Link; kwargs...)
