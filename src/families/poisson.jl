@@ -52,9 +52,10 @@ end
 Fit a Poisson GLLVM by L-BFGS on the Laplace marginal log-likelihood
 (`poisson_marginal_loglik_laplace`). `Y` is a p×n integer count matrix
 (responses × sites) that may contain `missing` (gllvm-style NA); `K` the latent
-dimension. Optimises intercepts `β` and loadings `Λ`. Finite-difference gradient
-(the Laplace inner mode-finder is not forward-AD-friendly); warm start = empirical
-log-mean intercepts + an SVD (PPCA-style) loadings init.
+dimension. Optimises intercepts `β` and loadings `Λ`. The default analytic
+Laplace gradient is used on the plain no-mask/no-offset path, with an internal
+finite-difference fallback; masked or offset fits use finite differences. Warm
+start = empirical log-mean intercepts + an SVD (PPCA-style) loadings init.
 
 Missing data: pass a `mask` (p×n Bool, `false` = unobserved) or simply include
 `missing` entries in `Y` — either way the masked cells are dropped from the
@@ -67,7 +68,7 @@ estimates the offset-free intercept.
 """
 function fit_poisson_gllvm(Y::AbstractMatrix; K::Integer,
         link::Link = LogLink(), mask = nothing, offset = nothing,
-        gradient::Symbol = :finite,
+        gradient::Symbol = :analytic,
         β_init = nothing, Λ_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
@@ -124,10 +125,10 @@ function fit_poisson_gllvm(Y::AbstractMatrix; K::Integer,
     end
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
     opts = Optim.Options(g_tol = g_tol, iterations = iterations)
-    # Opt-in exact gradient (issue #65): the implicit-step ForwardDiff gradient,
-    # valid for the plain Poisson marginal (no mask/offset). Default :finite keeps
-    # the existing behaviour. A finite-difference fallback covers any θ where the
-    # analytic gradient is non-finite (e.g. a pathological line-search probe).
+    # Exact gradient (issue #65): the implicit-step ForwardDiff gradient, valid
+    # for the plain Poisson marginal (no mask/offset). A finite-difference
+    # fallback covers any θ where the analytic gradient is non-finite (e.g. a
+    # pathological line-search probe).
     res = if gradient === :analytic && msk === nothing && offset === nothing
         function g!(G, θ)
             β = θ[1:p]; Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)

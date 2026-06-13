@@ -109,9 +109,11 @@ with sparse random-effect design matrices. `GLLVM.jl` solves a
 - Structure-aware Cholesky (Woodbury for Λ Λ' + diag)
 - EM-FA solver as an alternative to LBFGS
 
-The non-Gaussian and phylogenetic paths use finite-difference outer gradients
-(the sparse-Cholesky / CHOLMOD marginals are not generic-AD-friendly); the VA
-estimator adds analytic inner and envelope-theorem outer gradients.
+Poisson, NB2, Binomial, and Beta use analytic Laplace outer gradients by default
+on plain no-mask/no-offset fits, with finite-difference fallback. Gamma and the
+remaining sparse-Cholesky / CHOLMOD paths stay conservative until their analytic
+gradients clear the same runtime accuracy gate; the VA estimator adds analytic
+inner and envelope-theorem outer gradients.
 
 ## Citation
 
