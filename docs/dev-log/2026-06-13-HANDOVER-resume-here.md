@@ -5,6 +5,35 @@ Nothing is lost by restarting. Two packages were advanced to feature-complete,
 verified, deployment-ready states on local branches; **nothing is pushed** (the
 maintainer's no-push rule held throughout).
 
+## UPDATE (2026-06-13, post-push — deployment authorized by the maintainer)
+
+The branches below are now **PUSHED** with PRs open (the maintainer explicitly
+authorized the push, overriding the no-push rule):
+
+- **GLLVM.jl** `coevolution-kernel` → `origin`; **PR #99** (base `integration`):
+  https://github.com/itchyshin/GLLVM.jl/pull/99
+  CI: the **Documenter** check FAILED — but it was **already red on `main`
+  (9406e22)** before this branch (a pre-existing dead `@ref` to `_code_grouping`
+  in `src/families/random_slopes.jl:66`, surfaced in `docs/src/api.md`'s
+  `@autodocs`). This branch ALSO adds one new doctest issue to fix (see TODO).
+  GLLVM.jl PRs don't run the Julia test suite on CI — the local 3479/0 +
+  per-slice greens are the gate.
+- **gllvmTMB** `cran-bridge-docs` → `origin`; **PR #487** (base `main`):
+  https://github.com/itchyshin/gllvmTMB/pull/487
+  CI: **ubuntu-latest R-CMD-check PASSED** ✅.
+
+**STILL HELD (need a separate maintainer go-ahead):** CRAN submission and the
+Julia General registry PR (public/irreversible).
+
+**Small open TODO (my doc cleanup for PR #99 — not yet done):** in
+`src/cross_kernel.jl` change the `jldoctest` block (lines ~48-59) to a plain
+` ```julia ` block (the repo has no `DocTestSetup`, so `make_cross_kernel` is
+undefined in the doctest's `Main`); and neutralise the 4 new `@ref`s to undocumented
+new functions (`src/{cross_kernel,extract_gamma,coevolution_kronecker,missing_predictor_poisson}.jl`)
+→ plain code style. That removes THIS branch's contribution to the Documenter
+failure; the pre-existing `_code_grouping` dead link is the maintainer's to fix
+(it's red on `main` independently). Net: cosmetic docstring edits, no code change.
+
 ## TL;DR
 
 - **GLLVM.jl** (Julia): cross-lineage coevolution ("PGLLVM two lineages") and the
