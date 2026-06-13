@@ -1,6 +1,13 @@
 # Faithful coevolution recovery — the Kronecker (matrix-normal) fitter
 
-**Status:** design + implementation plan (2026-06-13). Addresses the gap flagged
+**Status: IMPLEMENTED + VERIFIED (2026-06-13).** `fit_coevolution_gaussian`
+(`src/coevolution_kronecker.jl`, exported); `test_coevolution_kronecker.jl`
+**5/5** — marginal closed-form == brute-force MN density (1e-7), **planted-Γ
+recovery |cor(Γ̂,Γ_true)| > 0.9** (the faithful recovery the Hadamard form
+lacked), null contrast, AD-clean (≤1e-6). The eigentrick marginal was validated
+vs brute-force to 1.1e-14 before implementing. Original design plan follows.
+
+**Original status:** design + implementation plan (2026-06-13). Addresses the gap flagged
 in `2026-06-13-coevolution-mirror-jl.md`: the shipped Hadamard cross-kernel fit
 proves K\* is necessary (logLik contrast) but **cannot recover Γ tightly** from a
 single dataset (probe |cor(Γ̂,Γ_true)| ≈ 0.05–0.31). The R twin recovers Γ to
