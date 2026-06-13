@@ -101,8 +101,11 @@ with sparse random-effect design matrices. `GLLVM.jl` solves a
 ## Limitations (in this release)
 
 - No `@formula` / `traits(...)` front-end yet; use matrix-level fitters.
-- Non-Gaussian confidence intervals and covariance-scale derived summaries are
-  not yet wired.
+- Non-Gaussian confidence intervals are available via Wald (observed
+  information) and profile likelihood for all six one-part families
+  (Binomial, Poisson, Negative Binomial, Beta, Gamma, Ordinal); parametric
+  bootstrap CIs and non-Gaussian covariance-scale derived summaries remain in
+  progress.
 - Structured non-Gaussian dependence (phylogenetic, animal, spatial) remains in
   design/build.
 - Zero-inflated families and Delta-Gamma are planned.

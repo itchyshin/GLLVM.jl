@@ -6,8 +6,11 @@ Generalised Linear Latent Variable Model, built as a digital twin of R's
 
 ## Project identity
 
-- Status: v0.1.0 pilot — Gaussian only. 32 commits, 25 source files,
-  18 wired tests (9 orphan tests remain unwired; see Phase 1.2).
+- Status: development beyond the Gaussian pilot — Gaussian plus six
+  dense-Laplace non-Gaussian families (Binomial, Poisson, Negative Binomial,
+  Beta, Gamma, Ordinal), each with Wald + profile-likelihood CIs. Use
+  `git rev-parse --short HEAD`, `git status`, and the test suite for live
+  counts rather than a static snapshot.
 - Headline result: ~340× per-fit median speedup over R/`gllvmTMB` on
   **single-σ² Gaussian** fits (the closed-form σ²_eps-profile path), with
   log-likelihoods and point estimates matching R to machine precision on that
