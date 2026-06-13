@@ -145,3 +145,28 @@ function confint(fit::BinomialFit; y::AbstractMatrix, N = nothing,
     end
     return _wald_ci_from_nll(θ̂, nll, terms, kinds; level = level, parm = parm)
 end
+
+"""
+    confint(fit::NBFit; y, level=0.95, parm=nothing)
+
+Wald CIs for a Negative-Binomial GLLVM fit. As for [`confint(::PoissonFit)`](@ref),
+plus the dispersion `r`: its packed parameter is `log r`, so the `r` interval is
+reported on the natural (positive) scale via the `:log_sd` back-transform.
+"""
+function confint(fit::NBFit; y::AbstractMatrix, level::Real = 0.95, parm = nothing)
+    0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
+    p, K = size(fit.Λ)
+    rr   = rr_theta_len(p, K)
+    θ̂    = vcat(fit.β, pack_lambda(fit.Λ), log(fit.r))
+    terms = vcat(["beta[$t]" for t in 1:p], ["lambda[$i]" for i in 1:rr], ["r"])
+    kinds = vcat(fill(:identity, p + rr), [:log_sd])
+    nll = θ -> -nb_marginal_loglik_laplace(
+        y, unpack_lambda(θ[(p + 1):(p + rr)], p, K), θ[1:p],
+        exp(θ[p + rr + 1]); link = fit.link)
+    if parm === :beta || parm == "beta"
+        parm = ["beta[$t]" for t in 1:p]
+    elseif parm === :lambda || parm == "lambda"
+        parm = ["lambda[$i]" for i in 1:rr]
+    end
+    return _wald_ci_from_nll(θ̂, nll, terms, kinds; level = level, parm = parm)
+end
