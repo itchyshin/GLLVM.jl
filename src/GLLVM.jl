@@ -43,6 +43,7 @@ include("confint.jl")                    # Wald
 include("confint_profile.jl")            # profile likelihood
 include("confint_bootstrap.jl")          # parametric bootstrap
 include("confint_derived.jl")            # derived quantities (Σ_y, communality, ...)
+include("confint_nongaussian.jl")        # Wald CIs for non-Gaussian Laplace fits
 
 # Public API
 export spatial_cov, relatedness_cov,
