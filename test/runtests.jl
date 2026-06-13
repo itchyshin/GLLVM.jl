@@ -64,6 +64,7 @@ using GLLVM
     include("test_ordination.jl")
     include("test_model_selection.jl")
     include("test_structured_cov.jl")
+    include("test_cross_kernel.jl")
     include("test_spde.jl")
     include("test_spde_mesh.jl")
     include("test_spde_delaunay.jl")
