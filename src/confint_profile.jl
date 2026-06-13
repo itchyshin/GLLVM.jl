@@ -576,3 +576,112 @@ end
 function profile_ci(fit::GllvmFit, parm::Symbol; kwargs...)
     return profile_ci(fit, String(parm); kwargs...)
 end
+
+# ---------------------------------------------------------------------------
+# Generic profile-likelihood CI engine for non-Gaussian (Laplace) family fits.
+#
+# These mirror profile_ci(::GllvmFit) but take the packed MLE `θ̂` and a θ->NLL
+# closure directly (rather than a Gaussian-specific NLL), so the per-family
+# methods in confint_nongaussian.jl share one engine. The inversion (deviance =
+# χ²₁ cutoff, bracket-then-bisect) reuses `_profile_bisect_side` above.
+# ---------------------------------------------------------------------------
+
+# Constrained refit: maximise the marginal log-lik over θ_{-i} with θ_i fixed at
+# `c`. Returns (ll_profile, success, θ_red_opt). Generalises
+# `_profile_refit_with_fixed` to an arbitrary NLL closure; the insertion of `c`
+# at index i is AD-transparent, so Optim's forward-mode autodiff works through it.
+function _profile_refit_generic(nll, θ̂::AbstractVector, i::Integer, c::Real,
+                                warm::AbstractVector;
+                                x_tol::Real = 1e-6, f_tol::Real = 1e-8,
+                                g_tol::Real = 1e-4, iterations::Integer = 200)
+    N = length(θ̂)
+    1 ≤ i ≤ N || throw(ArgumentError("param_index $i out of range 1:$N"))
+    θ_red0 = collect(Float64, warm)
+    c_float = float(c)
+    function _full_from_red(θ_red)
+        T = promote_type(eltype(θ_red), typeof(c_float))
+        θ_full = Vector{T}(undef, N)
+        @inbounds for j in 1:(i - 1)
+            θ_full[j] = θ_red[j]
+        end
+        θ_full[i] = c_float
+        @inbounds for j in (i + 1):N
+            θ_full[j] = θ_red[j - 1]
+        end
+        return θ_full
+    end
+    nll_red = θ_red -> nll(_full_from_red(θ_red))
+    opts = Optim.Options(x_abstol = x_tol, f_reltol = f_tol, g_tol = g_tol,
+                         iterations = iterations, show_trace = false)
+    res = try
+        Optim.optimize(nll_red, θ_red0, Optim.LBFGS(), opts; autodiff = :forward)
+    catch
+        return (NaN, false, θ_red0)
+    end
+    nll_min = Optim.minimum(res)
+    isfinite(nll_min) || return (NaN, false, θ_red0)
+    return (-nll_min, true, Optim.minimizer(res))
+end
+
+# Profile-likelihood CI for packed parameter `i`, from a θ->NLL closure and the
+# maximised log-lik `ll_full`. `kinds[i] === :log_sd` reports the bound on the
+# natural (positive) scale via `exp`. Returns (lower, upper, method) as for
+# profile_ci(::GllvmFit).
+function _profile_ci_from_nll(θ̂::AbstractVector, nll, ll_full::Real,
+                              kinds::Vector{Symbol}, i::Integer;
+                              level::Real = 0.95, grid_extent::Real = 5,
+                              max_expand::Integer = 20, max_bisect::Integer = 30)
+    N = length(θ̂)
+    1 ≤ i ≤ N || throw(ArgumentError("param_index $i out of range 1:$N"))
+    length(kinds) == N || throw(ArgumentError(
+        "kinds length ($(length(kinds))) does not match n_par ($N)"))
+    cutoff = quantile(Chisq(1), level)
+    θ̂_i = float(θ̂[i])
+
+    # Wald SE seed from the observed-information Hessian (same H as the Wald CI).
+    se_i = NaN
+    try
+        H = ForwardDiff.hessian(nll, θ̂)
+        if all(isfinite, H)
+            v = diag(inv((H .+ H') ./ 2))[i]
+            (isfinite(v) && v > 0) && (se_i = sqrt(v))
+        end
+    catch
+        se_i = NaN
+    end
+    (isnan(se_i) || se_i ≤ 0) && (se_i = max(abs(θ̂_i) / 2, 0.1))
+
+    warm_lower = vcat(θ̂[1:(i - 1)], θ̂[(i + 1):N])
+    warm_upper = copy(warm_lower)
+    function deviance_lower(c)
+        ll_c, ok, red = _profile_refit_generic(nll, θ̂, i, c, warm_lower)
+        ok || return NaN
+        warm_lower = red
+        return 2.0 * (ll_full - ll_c)
+    end
+    function deviance_upper(c)
+        ll_c, ok, red = _profile_refit_generic(nll, θ̂, i, c, warm_upper)
+        ok || return NaN
+        warm_upper = red
+        return 2.0 * (ll_full - ll_c)
+    end
+
+    step_init = max(grid_extent * se_i / max_expand, 1e-3)
+    lower = _profile_bisect_side(deviance_lower, θ̂_i, -step_init, cutoff;
+                                 max_expand = max_expand, max_bisect = max_bisect)
+    upper = _profile_bisect_side(deviance_upper, θ̂_i, step_init, cutoff;
+                                 max_expand = max_expand, max_bisect = max_bisect)
+
+    if kinds[i] === :log_sd
+        lower = isnan(lower) ? NaN : exp(lower)
+        upper = isnan(upper) ? NaN : exp(upper)
+    end
+    method = if isnan(lower) && isnan(upper)
+        :failed
+    elseif isnan(lower) || isnan(upper)
+        :partial
+    else
+        :profile
+    end
+    return (lower = lower, upper = upper, method = method)
+end

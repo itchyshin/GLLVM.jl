@@ -226,3 +226,111 @@ function confint(fit::OrdinalFit; y::AbstractMatrix, level::Real = 0.95, parm = 
     end
     return _wald_ci_from_nll(θ̂, nll, terms, kinds; level = level, parm = parm)
 end
+
+# ---------------------------------------------------------------------------
+# Profile-likelihood CIs for the non-Gaussian families (LRT inversion). These
+# reuse the same packed θ̂ / NLL / kinds as the Wald methods above and dispatch
+# to the generic `_profile_ci_from_nll` engine in confint_profile.jl.
+# ---------------------------------------------------------------------------
+
+# Resolve a profile-CI parameter selector to a packed index. Accepts an Integer
+# (used as-is) or an exact term name (String/Symbol) matched against `terms`.
+# Profile CIs are per-parameter, so there are no group selectors.
+function _profile_resolve_index(param, terms::Vector{String})
+    param isa Integer && return Int(param)
+    name = String(param)
+    idx = findfirst(==(name), terms)
+    idx === nothing && throw(ArgumentError(
+        "profile_ci: parameter \"$name\" not found. Use an index or one of: " *
+        join(terms, ", ")))
+    return idx
+end
+
+"""
+    profile_ci(fit::PoissonFit, param; y, level=0.95, grid_extent=5,
+               max_expand=20, max_bisect=30) -> (lower, upper, method)
+
+Profile-likelihood CI (LRT inversion) for one parameter of a non-Gaussian GLLVM
+fit — the family analogue of [`profile_ci(::GllvmFit)`](@ref). `param` is a packed
+index or an exact term name from [`confint`](@ref) (`"beta[t]"`, `"lambda[i]"`,
+the dispersion `"r"`/`"phi"`/`"alpha"`, or Ordinal `"tau[c]"`). The deviance
+`2(ℓ̂ - ℓ_profile(c))` is inverted at the χ²₁ cutoff by bracket-then-bisect;
+dispersion bounds are returned on the natural (positive) scale. `method` is
+`:profile` (both sides bracketed), `:partial` (one side), or `:failed`.
+
+Methods exist for `PoissonFit`, `BinomialFit`, `NBFit`, `BetaFit`, `GammaFit`,
+and `OrdinalFit`. Each constrained refit re-optimises the remaining parameters,
+so a profile CI costs many fits — use [`confint`](@ref) (one Hessian) for routine
+SEs and `profile_ci` for asymmetric or near-boundary parameters.
+"""
+function profile_ci(fit::PoissonFit, param; y::AbstractMatrix, level::Real = 0.95,
+                    grid_extent::Real = 5, max_expand::Integer = 20, max_bisect::Integer = 30)
+    p, K = size(fit.Λ); rr = rr_theta_len(p, K)
+    θ̂ = vcat(fit.β, pack_lambda(fit.Λ))
+    terms = vcat(["beta[$t]" for t in 1:p], ["lambda[$i]" for i in 1:rr])
+    kinds = fill(:identity, length(terms))
+    nll = θ -> -poisson_marginal_loglik_laplace(
+        y, unpack_lambda(θ[(p + 1):(p + rr)], p, K), θ[1:p], fit.link)
+    idx = _profile_resolve_index(param, terms)
+    return _profile_ci_from_nll(θ̂, nll, fit.loglik, kinds, idx; level = level,
+        grid_extent = grid_extent, max_expand = max_expand, max_bisect = max_bisect)
+end
+
+function profile_ci(fit::BinomialFit, param; y::AbstractMatrix, N = nothing,
+                    level::Real = 0.95, grid_extent::Real = 5,
+                    max_expand::Integer = 20, max_bisect::Integer = 30)
+    p, K = size(fit.Λ); rr = rr_theta_len(p, K)
+    Nm = N === nothing ? fill(1, size(y)) : N
+    θ̂ = vcat(fit.β, pack_lambda(fit.Λ))
+    terms = vcat(["beta[$t]" for t in 1:p], ["lambda[$i]" for i in 1:rr])
+    kinds = fill(:identity, length(terms))
+    nll = θ -> -binomial_marginal_loglik_laplace(
+        y, Nm, unpack_lambda(θ[(p + 1):(p + rr)], p, K), θ[1:p], fit.link)
+    idx = _profile_resolve_index(param, terms)
+    return _profile_ci_from_nll(θ̂, nll, fit.loglik, kinds, idx; level = level,
+        grid_extent = grid_extent, max_expand = max_expand, max_bisect = max_bisect)
+end
+
+# Shared construction for the one-part dispersion families (NB, Beta, Gamma):
+# packed θ̂ = [β; pack_lambda(Λ); log(dispersion)]; the dispersion bound is
+# reported on the natural scale (kind :log_sd), exactly as the Wald path.
+function _profile_ci_dispersion_family(β::AbstractVector, Λ::AbstractMatrix, disp::Real,
+                                       marginal, disp_term::String, link, y, ll_full::Real,
+                                       param; level::Real = 0.95, grid_extent::Real = 5,
+                                       max_expand::Integer = 20, max_bisect::Integer = 30)
+    p, K = size(Λ); rr = rr_theta_len(p, K)
+    θ̂ = vcat(β, pack_lambda(Λ), log(disp))
+    terms = vcat(["beta[$t]" for t in 1:p], ["lambda[$i]" for i in 1:rr], [disp_term])
+    kinds = vcat(fill(:identity, p + rr), [:log_sd])
+    nll = θ -> -marginal(y, unpack_lambda(θ[(p + 1):(p + rr)], p, K), θ[1:p],
+                         exp(θ[p + rr + 1]); link = link)
+    idx = _profile_resolve_index(param, terms)
+    return _profile_ci_from_nll(θ̂, nll, ll_full, kinds, idx; level = level,
+        grid_extent = grid_extent, max_expand = max_expand, max_bisect = max_bisect)
+end
+
+function profile_ci(fit::NBFit, param; y::AbstractMatrix, kwargs...)
+    return _profile_ci_dispersion_family(fit.β, fit.Λ, fit.r, nb_marginal_loglik_laplace,
+        "r", fit.link, y, fit.loglik, param; kwargs...)
+end
+function profile_ci(fit::BetaFit, param; y::AbstractMatrix, kwargs...)
+    return _profile_ci_dispersion_family(fit.β, fit.Λ, fit.φ, beta_marginal_loglik_laplace,
+        "phi", fit.link, y, fit.loglik, param; kwargs...)
+end
+function profile_ci(fit::GammaFit, param; y::AbstractMatrix, kwargs...)
+    return _profile_ci_dispersion_family(fit.β, fit.Λ, fit.α, gamma_marginal_loglik_laplace,
+        "alpha", fit.link, y, fit.loglik, param; kwargs...)
+end
+
+function profile_ci(fit::OrdinalFit, param; y::AbstractMatrix, level::Real = 0.95,
+                    grid_extent::Real = 5, max_expand::Integer = 20, max_bisect::Integer = 30)
+    p, K = size(fit.Λ); rr = rr_theta_len(p, K); nτ = length(fit.τ)
+    θ̂ = vcat(pack_lambda(fit.Λ), fit.τ)
+    terms = vcat(["lambda[$i]" for i in 1:rr], ["tau[$c]" for c in 1:nτ])
+    kinds = fill(:identity, length(terms))
+    nll = θ -> -ordinal_marginal_loglik_laplace(
+        y, unpack_lambda(θ[1:rr], p, K), θ[(rr + 1):(rr + nτ)])
+    idx = _profile_resolve_index(param, terms)
+    return _profile_ci_from_nll(θ̂, nll, fit.loglik, kinds, idx; level = level,
+        grid_extent = grid_extent, max_expand = max_expand, max_bisect = max_bisect)
+end
