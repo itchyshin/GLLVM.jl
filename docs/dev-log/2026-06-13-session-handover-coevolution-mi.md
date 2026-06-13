@@ -1,10 +1,10 @@
 # Session handover — coevolution + mi() axes (2026-06-13)
 
 **Branch:** `coevolution-kernel` (worktree `GLLVM.jl-coevolution`) off
-`consolidation-candidate` (`8690e8f`). **8 commits, unpushed** (no-push rule
+`consolidation-candidate` (`8690e8f`). **10 commits, unpushed** (no-push rule
 held). Tree clean. The maintainer asked to finish the twin pair, "coevolution
 first, then mi() etc.", and to follow the recorded order (R reference → Julia
-mirror).
+mirror). **gllvmTMB CRAN work is on a separate branch — see the end.**
 
 ## What landed (all TDD, all green)
 
@@ -15,10 +15,13 @@ mirror).
 | cross-kernel fit/null | `test/test_cross_kernel_fit.jl` | 7/7 | K* beats the block-diagonal null by a wide logLik margin |
 | `fit_gaussian_mi_fiml` | `src/missing_predictor_fiml.jl` | 9/9 · 11/11 slow | site-level missing predictor, closed-form FIML; beats complete-case under MAR |
 | `fit_gaussian_mi_phylo` | `src/missing_predictor_phylo.jl` | 9/9 | **species-level phylo missing predictor (the high-value Phase 3)** |
+| mi() covariate model `Z` | `test/test_missing_predictor_z.jl` | 6/6 | `x ~ N(μ_x + Zγ, σ_x²)`; `Z=nothing` ≡ old fit to 1e-8 |
 
-**45 tests fast · 47 with `GLLVM_SLOW_TESTS=1`.** All five test files coexist
-green; module loads clean (additive: 5 src includes + 5 exports + 5 test
-includes). Full `Pkg.test()` (~25 min) is your terminal-side gate.
+**51 tests fast · 53 with `GLLVM_SLOW_TESTS=1`.** All six test files coexist
+green; module loads clean (additive: 6 src includes + 6 exports + 6 test
+includes). The full `julia test/runtests.jl` regression run was launched at
+session end (it buffers output to the final outer testset) — its result is the
+last GLLVM.jl gate; the focused per-slice runs above are all green.
 
 ## Verification highlights
 
@@ -46,15 +49,28 @@ Julia mirror IS the recorded next step. (Evidence-first rehydration caught this.
    >0.9) needs a new Kronecker trait⊗species phylo fitter + a block-NA Σ_phy
    path. Substantial — flagged, NOT built autonomously. (See
    `2026-06-13-coevolution-mirror-jl.md`.)
-3. **gllvmTMB CRAN** (`cran-bridge-docs` worktree): the #486 PDF-manual Unicode
-   blocker is **verified clear** (R CMD Rd2pdf builds the 145-page manual, no
-   Unicode errors). Remaining: 2 invalid DOIs + 3 `\doi{}`-URL notes (the
-   bioRxiv DOI `10.1101/2025.12.20.695312` needs your confirmation — likely your
-   own preprint; I won't fabricate a DOI).
+3. **gllvmTMB CRAN** (`cran-bridge-docs` worktree, commit `c1dfb3e`): **both
+   gating items now fixed.** PDF-manual Unicode cleared (`93640b7`, R CMD Rd2pdf
+   builds the 145-page manual clean). DOI notes fixed + verified vs doi.org /
+   CrossRef: bioRxiv DOI → `10.64898/2025.12.20.695312` (the old `10.1101` prefix
+   404s); the Felsenstein (2005) reference corrected to *Phil. Trans. R. Soc. B*
+   360:1427–1434 / `10.1098/rstb.2005.1669` (the cited `Genetics 169:925–942 /
+   10.1534/...` is the wrong journal + a non-resolving DOI — **please sanity-check
+   this citation correction**); 3 `\url{doi.org}` → `\doi{}`. Submit-ready bar a
+   final `--as-cran` re-run, the pre-existing NEWS.md note (your call), and your
+   submission. cran-comments.md updated.
+
+## gllvmTMB CRAN — submit-ready
+
+`cran-bridge-docs` is `0 errors`, `1 environmental warning`, `New submission` +
+the tolerated NEWS.md note. The two earlier blockers (Unicode, DOIs) are both
+cleared on-branch and verified. Your remaining steps: final `--as-cran`, decide
+the NEWS reorg-vs-accept, and submit.
 
 ## Recommended next slices (autonomous-ready)
 
-- mi() polish: `mi(x)` formula token + `Z` covariate-model regressors (small).
+- mi() polish: `mi(x)` formula token (deferred — @formula front-end is v1) + `Z`
+  for the phylo driver. (Site-level `Z` is DONE.)
 - Non-Gaussian / discrete missing predictors (Laplace augmented-latent track).
 - The Kronecker coevolution engine (needs your scoping first).
 
