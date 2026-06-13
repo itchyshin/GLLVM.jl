@@ -566,7 +566,7 @@ _mixed_trait_residual(::Normal, ::IdentityLink, μ̂, σ::Real) = Float64(σ)^2
 
 Per-trait link-implicit residual variance σ²_d (length `p`) for a mixed fit —
 the diagonal added to `ΛΛᵀ` to put all traits on a common latent scale. Each
-GLM trait calls the scalar [`link_residual`](@ref)`(family_t, link_t, μ̂_t, disp_t)`;
+GLM trait calls the scalar `link_residual(family_t, link_t, μ̂_t, disp_t)`;
 a Normal trait contributes its per-trait variance σ_t².
 """
 function link_residual(fit::MixedFamilyFit, Y::AbstractMatrix;
