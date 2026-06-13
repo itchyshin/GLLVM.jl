@@ -16,8 +16,9 @@ mirror). **gllvmTMB CRAN work is on a separate branch — see the end.**
 | `fit_gaussian_mi_fiml` | `src/missing_predictor_fiml.jl` | 9/9 · 11/11 slow | site-level missing predictor, closed-form FIML; beats complete-case under MAR |
 | `fit_gaussian_mi_phylo` | `src/missing_predictor_phylo.jl` | 9/9 | **species-level phylo missing predictor (the high-value Phase 3)** |
 | mi() covariate model `Z` | `test/test_missing_predictor_z.jl` | 6/6 | `x ~ N(μ_x + Zγ, σ_x²)`; `Z=nothing` ≡ old fit to 1e-8 |
+| `fit_coevolution_gaussian` | `src/coevolution_kronecker.jl` | 5/5 | **faithful Kronecker coevolution — RECOVERS Γ to \|cor\|>0.9** (closes the gap) |
 
-**51 tests fast · 53 with `GLLVM_SLOW_TESTS=1`.** All six test files coexist
+**56 tests fast · 58 with `GLLVM_SLOW_TESTS=1`.** All six test files coexist
 green; module loads clean (additive: 6 src includes + 6 exports + 6 test
 includes). The full `julia test/runtests.jl` regression run was launched at
 session end (it buffers output to the final outer testset) — its result is the
@@ -41,14 +42,15 @@ Julia mirror IS the recorded next step. (Evidence-first rehydration caught this.
 
 ## Decisions / gaps awaiting you
 
-1. **Push `coevolution-kernel`?** 8 clean commits, local-only.
-2. **Coevolution faithful recovery needs a Kronecker engine.** GLLVM.jl's phylo
-   marginal is the Hadamard single-realisation form `B = (Λ_phy Λ_phyᵀ).*Σ_phy`,
-   not R's trait⊗species Kronecker — so one dataset identifies Λ_phy only weakly
-   (probe |cor(Γ̂,Γ_true)| ≈ 0.05–0.31). A faithful Γ-recovery gate (matching R's
-   >0.9) needs a new Kronecker trait⊗species phylo fitter + a block-NA Σ_phy
-   path. Substantial — flagged, NOT built autonomously. (See
-   `2026-06-13-coevolution-mirror-jl.md`.)
+1. **Push `coevolution-kernel`?** 13 clean commits, local-only.
+2. **Coevolution faithful recovery — DONE (no longer just a flag).** The Hadamard
+   marginal `B = (Λ_phy Λ_phyᵀ).*Σ_phy` recovers Γ only weakly (probe ≈
+   0.05–0.31), so I built the faithful path: `fit_coevolution_gaussian` — a
+   standalone Kronecker matrix-normal fitter `Y ~ MN(0, ΛΛᵀ+σ²I, K*)` that
+   **recovers Γ to |cor|>0.9**, matching R. Math validated to 1.1e-14; 5/5 tests.
+   Complete-data only; **block-NA Σ_phy + replication still deferred** (the hard
+   part). See `2026-06-13-coevolution-kronecker-design.md`. Your call whether to
+   keep both (Hadamard fit = "K* necessary"; Kronecker = "Γ recovered") or fold.
 3. **gllvmTMB CRAN** (`cran-bridge-docs` worktree, commit `c1dfb3e`): **both
    gating items now fixed.** PDF-manual Unicode cleared (`93640b7`, R CMD Rd2pdf
    builds the 145-page manual clean). DOI notes fixed + verified vs doi.org /
