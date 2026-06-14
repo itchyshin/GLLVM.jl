@@ -147,10 +147,14 @@ X = reshape(repeat(temp', p), p, n, 1)            # X[t,s,1] = temp[s]
 fit = fit_gllvm_speciescov(Y; family = Poisson(), X = X, K = 2)
 fit.B            # p×1 matrix of per-species environmental slopes
 ```
+
+Missing data: pass a `mask` (p×n Bool, `false` = unobserved) or simply include
+`missing` entries in `Y` — either way the masked cells are dropped from the
+marginal *and* from the warm start, so the fit depends only on the observed cells.
 """
-function fit_gllvm_speciescov(Y::AbstractMatrix{<:Real}; family, X::AbstractArray{<:Real, 3},
+function fit_gllvm_speciescov(Y::AbstractMatrix; family, X::AbstractArray{<:Real, 3},
         K::Integer, link::Union{Nothing, Link} = nothing,
-        N::Union{Nothing, AbstractMatrix} = nothing,
+        N::Union{Nothing, AbstractMatrix} = nothing, mask = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
@@ -162,9 +166,14 @@ function fit_gllvm_speciescov(Y::AbstractMatrix{<:Real}; family, X::AbstractArra
     Nm = N === nothing ? fill(1, p, n) : N
     has_disp = _cov_has_disp(family)
 
+    # NA handling: derive the observation mask and a sanitized response matrix.
+    msk = _resolve_obs_mask(mask, Y)
+    Yc = _sanitize_missing(Y, _cov_placeholder(family))
+
     # Warm start: link-scale row means for β, zero species-specific slopes, SVD
     # loadings — identical machinery to fit_gllvm_cov.
-    Zemp = _cov_zemp(family, Y, Nm, lk)
+    Zemp = _cov_zemp(family, Yc, Nm, lk)
+    _mask_warmstart!(Zemp, msk)
     β0 = vec(sum(Zemp; dims = 2)) ./ n
     Zc = Zemp .- β0
     F = svd(Zc); kk = min(K, length(F.S))
@@ -183,8 +192,8 @@ function fit_gllvm_speciescov(Y::AbstractMatrix{<:Real}; family, X::AbstractArra
         fam = _cov_family(family, disp)
         O = _build_offset_species(X, B)
         v = try
-            -_marginal_loglik_offset(fam, Y, Nm, Λ, β, O, lk;
-                                     maxiter = newton_maxiter, tol = newton_tol)
+            -_marginal_loglik_offset(fam, Yc, Nm, Λ, β, O, lk;
+                                     mask = msk, maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
         end

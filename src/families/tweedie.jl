@@ -122,18 +122,22 @@ function _tweedie_cdf_pos(y::Float64, μ::Float64, φ::Float64, p::Float64)
 end
 
 """
-    tweedie_marginal_loglik_laplace(Y, Λ, β, φ, p; link=LogLink(), kwargs...) -> Float64
+    tweedie_marginal_loglik_laplace(Y, Λ, β, φ, p; mask=nothing, link=LogLink(), kwargs...) -> Float64
 
 Total Laplace log-marginal over the `n` sites (columns) of a Tweedie GLLVM with
 dispersion `φ` and power `p ∈ (1,2)` — responses `Y ≥ 0` with a point mass at 0,
 mean `μ = exp(η)` (log link), `Var = φ μ^p`. A thin wrapper over the
 family-generic `marginal_loglik_laplace` with the `TweedieED(φ, p)` marker.
+
+`mask` (p×n Bool, or `nothing`) marks observed cells — masked (missing) responses
+are dropped per site from the marginal (gllvm-style NA handling), so the value is
+invariant to whatever placeholder sits in the masked cells of `Y`.
 """
 tweedie_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVector,
-        φ::Real, p::Real; link::Link = LogLink(), maxiter::Integer = 100,
+        φ::Real, p::Real; mask = nothing, link::Link = LogLink(), maxiter::Integer = 100,
         tol::Real = 1e-9) =
     marginal_loglik_laplace(TweedieED(float(φ), float(p)), Y, ones(Int, size(Y)),
-                            Λ, β, link; maxiter = maxiter, tol = tol)
+                            Λ, β, link; mask = mask, maxiter = maxiter, tol = tol)
 
 # ---------------------------------------------------------------------------
 # Fit driver.
@@ -178,16 +182,27 @@ marginal (`tweedie_marginal_loglik_laplace`), jointly estimating the dispersion
 at 0 allowed); `K` the latent dimension. Finite-difference gradient; warm start =
 log row-means of `max(Y, 1e-6)` as intercepts + SVD of row-centred log-Y as
 loadings + `logφ₀ = log(φ_init)`, `ξ₀ = logit(p_init − 1)`.
+
+Missing data: pass a `mask` (p×n Bool, `false` = unobserved) or simply include
+`missing` entries in `Y` — either way the masked cells are dropped from the
+marginal *and* from the warm start, so the fit depends only on the observed cells
+(it is invariant to whatever sits in the masked positions).
 """
-function fit_tweedie_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
-        link::Link = LogLink(), φ_init::Real = 1.0, p_init::Real = 1.5,
+function fit_tweedie_gllvm(Y::AbstractMatrix; K::Integer,
+        link::Link = LogLink(), φ_init::Real = 1.0, p_init::Real = 1.5, mask = nothing,
         β_init = nothing, Λ_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p_sp, n = size(Y)
     rr = rr_theta_len(p_sp, K)
 
-    Zemp = log.(max.(Y, 1e-6))
+    # NA handling: derive the observation mask (explicit `mask`, else from `missing`)
+    # and a sanitized response matrix with a safe placeholder (0) in the masked cells.
+    msk = _resolve_obs_mask(mask, Y)
+    Yc = float.(_sanitize_missing(Y, 0))
+
+    Zemp = log.(max.(Yc, 1e-6))
+    _mask_warmstart!(Zemp, msk)
     β0 = β_init === nothing ? vec(sum(Zemp; dims = 2)) ./ n : collect(float.(β_init))
     Λ0 = if Λ_init === nothing
         Zc = Zemp .- β0
@@ -212,8 +227,8 @@ function fit_tweedie_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         ξ = θ[p_sp + rr + 2]
         pw = 1.0 + 1.0 / (1.0 + exp(-ξ))
         v = try
-            -tweedie_marginal_loglik_laplace(Y, Λ, β, φ, pw;
-                                             link = link,
+            -tweedie_marginal_loglik_laplace(Yc, Λ, β, φ, pw;
+                                             mask = msk, link = link,
                                              maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12

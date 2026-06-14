@@ -136,10 +136,14 @@ empirical link-scale means for `β`, zeros for the free row effects, and an SVD
 fit = fit_roweffect_gllvm(Y; family = Poisson(), K = 2)
 fit.ρ            # estimated per-site intercepts (ρ[1] == 0 reference)
 ```
+
+Missing data: pass a `mask` (p×n Bool, `false` = unobserved) or simply include
+`missing` entries in `Y` — either way the masked cells are dropped from the
+marginal *and* from the warm start, so the fit depends only on the observed cells.
 """
-function fit_roweffect_gllvm(Y::AbstractMatrix{<:Real}; family,
+function fit_roweffect_gllvm(Y::AbstractMatrix; family,
         K::Integer, link::Union{Nothing, Link} = nothing,
-        N::Union{Nothing, AbstractMatrix} = nothing,
+        N::Union{Nothing, AbstractMatrix} = nothing, mask = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
@@ -150,8 +154,13 @@ function fit_roweffect_gllvm(Y::AbstractMatrix{<:Real}; family,
     Nm = N === nothing ? fill(1, p, n) : N
     has_disp = _cov_has_disp(family)
 
+    # NA handling: derive the observation mask and a sanitized response matrix.
+    msk = _resolve_obs_mask(mask, Y)
+    Yc = _sanitize_missing(Y, _cov_placeholder(family))
+
     # warm start: per-species link-scale row means for β, zeros for ρfree, SVD for Λ
-    Zemp = _cov_zemp(family, Y, Nm, lk)
+    Zemp = _cov_zemp(family, Yc, Nm, lk)
+    _mask_warmstart!(Zemp, msk)
     β0 = vec(sum(Zemp; dims = 2)) ./ n
     Zc = Zemp .- β0
     F = svd(Zc); kk = min(K, length(F.S))
@@ -171,8 +180,8 @@ function fit_roweffect_gllvm(Y::AbstractMatrix{<:Real}; family,
         ρ = vcat(zero(eltype(ρfree)), ρfree)
         O = _build_offset_row(ρ, p)
         v = try
-            -_marginal_loglik_offset(fam, Y, Nm, Λ, β, O, lk;
-                                     maxiter = newton_maxiter, tol = newton_tol)
+            -_marginal_loglik_offset(fam, Yc, Nm, Λ, β, O, lk;
+                                     mask = msk, maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
         end

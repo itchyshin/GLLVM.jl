@@ -92,9 +92,12 @@ function _cmp_score_weight(y, η, ν)
 end
 
 # Inner Laplace mode-finder for one site (Newton on the negative second
-# derivative). Mirrors `_beta_binomial_mode` / `_ordered_beta_mode`.
+# derivative). Mirrors `_beta_binomial_mode` / `_ordered_beta_mode`. `mask`
+# (length-p Bool, or `nothing` = all observed) drops missing responses: a masked
+# entry contributes zero score and zero Fisher weight, so it neither pulls the
+# mode nor enters the Hessian (mirrors `_laplace_mode` in families/laplace.jl).
 function _compoisson_mode(y::AbstractVector, Λ::AbstractMatrix, β::AbstractVector,
-        ν::Real; maxiter::Integer = 100, tol::Real = 1e-9)
+        ν::Real; mask = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
     p, K = size(Λ)
     z = zeros(K)
     for _ in 1:maxiter
@@ -102,6 +105,10 @@ function _compoisson_mode(y::AbstractVector, Λ::AbstractMatrix, β::AbstractVec
         s = Vector{Float64}(undef, p)
         W = Vector{Float64}(undef, p)
         @inbounds for t in 1:p
+            if mask !== nothing && !mask[t]
+                s[t] = 0.0; W[t] = 0.0           # masked ⇒ no contribution
+                continue
+            end
             st, Wt = _cmp_score_weight(y[t], η[t], ν)
             s[t] = st
             W[t] = Wt
@@ -117,14 +124,20 @@ end
 
 # Per-site Laplace log-marginal:
 #   log p(y_s) ≈ ℓ(ẑ) − ½ẑ'ẑ − ½logdet(Λ'WΛ + I).
+# `mask` drops the masked entries from the score/weight (via `_compoisson_mode`)
+# and from the conditional log-density sum.
 function _compoisson_loglik_site(y::AbstractVector, Λ::AbstractMatrix,
-        β::AbstractVector, ν::Real; maxiter::Integer = 100, tol::Real = 1e-9)
+        β::AbstractVector, ν::Real; mask = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
     p, K = size(Λ)
-    z = _compoisson_mode(y, Λ, β, ν; maxiter = maxiter, tol = tol)
+    z = _compoisson_mode(y, Λ, β, ν; mask = mask, maxiter = maxiter, tol = tol)
     η = β .+ Λ * z
     ℓ = 0.0
     W = Vector{Float64}(undef, p)
     @inbounds for t in 1:p
+        if mask !== nothing && !mask[t]
+            W[t] = 0.0                           # masked ⇒ no Hessian weight, no logpdf
+            continue
+        end
         ℓ += compoisson_logpdf(y[t], η[t], ν)
         _, Wt = _cmp_score_weight(y[t], η[t], ν)
         W[t] = Wt
@@ -134,7 +147,7 @@ function _compoisson_loglik_site(y::AbstractVector, Λ::AbstractMatrix,
 end
 
 """
-    compoisson_marginal_loglik_laplace(Y, Λ, β, ν; link=LogLink(), maxiter=100, tol=1e-9) -> Float64
+    compoisson_marginal_loglik_laplace(Y, Λ, β, ν; mask=nothing, link=LogLink(), maxiter=100, tol=1e-9) -> Float64
 
 Total Laplace log-marginal over the `n` sites (columns) of a Conway–Maxwell–Poisson
 GLLVM with dispersion `ν` (rate parameterisation, log link `λ = exp(η)`). `Y` is the
@@ -142,17 +155,23 @@ p×n integer count matrix; `Λ` p×K loadings; `β` length-p intercepts. Runs it
 per-site Laplace (single latent η). At `Λ = 0` this reduces exactly to the sum of
 the independent CMP `logp`; at `ν = 1` it equals the Poisson marginal (the anchor).
 
+`mask` (p×n Bool, or `nothing`) marks observed cells — masked (missing) responses
+are dropped per site from the score, the Hessian weight, and the log-density sum,
+so the marginal is over the observed entries only (the value is invariant to
+whatever placeholder sits in the masked cells of `Y`).
+
 The `link` keyword is accepted for interface symmetry with the other count
 families but is fixed to the log link on the rate (`λ = exp(η)`); a non-log link is
 not meaningful in the rate form.
 """
 function compoisson_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix,
-        β::AbstractVector, ν::Real; link::Link = LogLink(),
+        β::AbstractVector, ν::Real; mask = nothing, link::Link = LogLink(),
         maxiter::Integer = 100, tol::Real = 1e-9)
     acc = 0.0
     @inbounds for i in axes(Y, 2)
+        mi = mask === nothing ? nothing : view(mask, :, i)
         acc += _compoisson_loglik_site(view(Y, :, i), Λ, β, ν;
-                                       maxiter = maxiter, tol = tol)
+                                       mask = mi, maxiter = maxiter, tol = tol)
     end
     return acc
 end
@@ -250,18 +269,30 @@ intercepts (`log` of per-species `(mean + 0.5)`) + an SVD (PPCA-style) loadings
 init + `ν₀ = ν_init` (default 1, i.e. Poisson).
 
 The log link on the rate is fixed; `link` is accepted for interface symmetry.
+
+Missing data: pass a `mask` (p×n Bool, `false` = unobserved) or simply include
+`missing` entries in `Y` — either way the masked cells are dropped from the
+marginal *and* from the warm start, so the fit depends only on the observed cells
+(it is invariant to whatever sits in the masked positions).
 """
-function fit_compoisson_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
-        link::Link = LogLink(), ν_init::Real = 1.0,
+function fit_compoisson_gllvm(Y::AbstractMatrix; K::Integer,
+        link::Link = LogLink(), ν_init::Real = 1.0, mask = nothing,
         β_init = nothing, Λ_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
     rr = rr_theta_len(p, K)
 
+    # NA handling: derive the observation mask (explicit `mask`, else from `missing`)
+    # and a sanitized count matrix with a safe placeholder (0) in the masked cells.
+    msk = _resolve_obs_mask(mask, Y)
+    Yc = Integer.(_sanitize_missing(Y, 0))
+
     # warm start: empirical log-rate intercepts (log of per-species (mean+0.5)) +
-    # SVD (PPCA-like) loadings.
-    Zemp = [log(max(float(Y[t, i]) + 0.5, 1e-4)) for t in 1:p, i in 1:n]
+    # SVD (PPCA-like) loadings. Masked cells are overwritten with their row's
+    # observed mean so neither the intercept nor the SVD sees the placeholder.
+    Zemp = [log(max(float(Yc[t, i]) + 0.5, 1e-4)) for t in 1:p, i in 1:n]
+    _mask_warmstart!(Zemp, msk)
     β0 = β_init === nothing ? vec(sum(Zemp; dims = 2)) ./ n : collect(float.(β_init))
     Λ0 = if Λ_init === nothing
         Zc = Zemp .- β0
@@ -283,7 +314,7 @@ function fit_compoisson_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
         ν = exp(θ[p + rr + 1])
         v = try
-            -compoisson_marginal_loglik_laplace(Y, Λ, β, ν; link = link,
+            -compoisson_marginal_loglik_laplace(Yc, Λ, β, ν; mask = msk, link = link,
                                                 maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12

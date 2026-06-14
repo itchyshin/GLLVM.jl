@@ -55,6 +55,7 @@ include("families/beta_binomial.jl")     # Beta-binomial (overdispersed binomial
 include("families/fit_gllvm.jl")         # unified fit_gllvm(Y; family) dispatcher
 include("laplace_grad.jl")               # exact (AD + implicit-step) Poisson Laplace gradient (issue #65)
 include("missing_predictor_poisson.jl")  # non-Gaussian missing predictor (mi Phase 5a): Poisson augmented-Laplace FIML
+include("missing_predictor_multi.jl")    # multiple missing predictors, jointly integrated (mi() vector axis, Track T3)
 include("families/covariates.jl")        # fixed-effect covariates (Xβ) for the Laplace families
 include("families/species_covariates.jl") # species-specific covariate coefficients (XB) for the Laplace families
 include("families/constrained_ordination.jl") # constrained ordination (RRR of latent vars on env predictors)
@@ -79,6 +80,7 @@ include("families/variational_exponential.jl") # VA/ELBO marginal — Exponentia
 include("spde_latent.jl")
 include("spde_latent_postfit.jl")
 include("phylo_glm.jl")                   # phylogenetic GLLVM for non-Gaussian families (issue #61, working fit)
+include("coevolution_glm.jl")             # cross-family (non-Gaussian) cross-lineage coevolution (Track T4): K* through a dense Laplace
 
 # Post-fit API (ordination, predict, residuals, summary)
 include("postfit.jl")
@@ -113,7 +115,7 @@ const ConcurrentOrdinationFit = ConstrainedOrdinationFit
 
 # Public API
 export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevolution_blockna,
-       fit_gaussian_mi_fiml, fit_gaussian_mi_phylo, fit_gllvm_mi,
+       fit_gaussian_mi_fiml, fit_gaussian_mi_phylo, fit_gllvm_mi, fit_gllvm_mi_multi,
        spatial_cov, relatedness_cov,
        spde_fem, spde_precision, spde_projector, matern_correlation,
        spde_mesh_grid, spde_mesh_delaunay,
@@ -139,6 +141,8 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        grad_node_perspecies, node_blups,
        fit_phylo_gaussian, PhyloGaussianFit,
        phylo_glm_marginal_loglik, fit_phylo_glm, PhyloGLMFit,
+       coevolution_glm_marginal_loglik, fit_coevolution_glm, CoevolutionGLMFit,
+       coevolution_gamma,
        LogitLink, ProbitLink, CLogLogLink, IdentityLink, LogLink,
        fit_mixed_gllvm, MixedFamilyFit, mixed_marginal_loglik_laplace,
        fit_binomial_gllvm, BinomialFit, fit_poisson_gllvm, PoissonFit,
