@@ -50,44 +50,60 @@ end
 
 # Differentiable per-site Poisson Laplace marginal (log link), via the implicit step.
 # `β`, `Λ` may carry ForwardDiff duals; the mode is computed on their primal values.
-function _poisson_site_diffable(y::AbstractVector, Λ::AbstractMatrix, β::AbstractVector)
+# `mask` (length-p Bool, or `nothing` = all observed) drops unobserved responses:
+# a masked cell adds zero score and zero Fisher weight (so it neither moves the mode
+# nor enters the log-det Hessian A) and is skipped in the log-pmf sum — exactly the
+# masking semantics of the core (src/families/laplace.jl), so the analytic gradient
+# matches the masked marginal.
+function _poisson_site_diffable(y::AbstractVector, Λ::AbstractMatrix, β::AbstractVector;
+                                mask = nothing)
     p = size(Λ, 1)
     # Concrete mode from the primal parameters (no dual leakage).
     Λv = ForwardDiff.value.(Λ); βv = ForwardDiff.value.(β)
-    ẑ = _laplace_mode(Poisson(), y, ones(Int, p), Λv, βv, LogLink())
+    ẑ = _laplace_mode(Poisson(), y, ones(Int, p), Λv, βv, LogLink(); mask = mask)
 
     # One differentiable Newton step from ẑ ⇒ z ≈ ẑ with the correct dz/dθ.
     η = _clamp_eta.(β .+ Λ * ẑ)
     μ = exp.(η)                       # log link
     s = y .- μ                        # Poisson/log score wrt η
-    A = Λ' * (μ .* Λ) + I             # plain Matrix (AD-safe generic solve/logdet)
+    W = μ                             # Fisher weight wrt η
+    if mask !== nothing
+        s = ifelse.(mask, s, zero(eltype(s)))
+        W = ifelse.(mask, W, zero(eltype(W)))
+    end
+    A = Λ' * (W .* Λ) + I             # plain Matrix (AD-safe generic solve/logdet)
     z = ẑ .+ (A \ (Λ' * s .- ẑ))
 
     # Marginal evaluated at the differentiable mode.
     ηz = _clamp_eta.(β .+ Λ * z)
     μz = exp.(ηz)
-    Az = Λ' * (μz .* Λ) + I
+    Wz = mask === nothing ? μz : ifelse.(mask, μz, zero(eltype(μz)))
+    Az = Λ' * (Wz .* Λ) + I
     ℓ = zero(eltype(z))
     @inbounds for t in 1:p
+        (mask === nothing || mask[t]) || continue
         ℓ += _pois_logpmf(μz[t], y[t])
     end
     return ℓ - 0.5 * dot(z, z) - 0.5 * logdet(Az)
 end
 
 """
-    poisson_laplace_grad(Y, Λ, β) -> Vector
+    poisson_laplace_grad(Y, Λ, β; mask=nothing) -> Vector
 
 Exact gradient of the total Poisson Laplace marginal log-likelihood
 ([`poisson_marginal_loglik_laplace`](@ref)) with respect to the packed parameter
 vector `θ = [β; pack_lambda(Λ)]`, computed by ForwardDiff through the
 implicit-function "one Newton step at the optimum" construction (see file header).
 
-`Y` is the p×n count matrix, `Λ` p×K loadings, `β` length-p intercepts. The result
-matches a finite-difference gradient of the marginal to ~AD precision, at a fraction
+`Y` is the p×n count matrix, `Λ` p×K loadings, `β` length-p intercepts. `mask`
+(p×n Bool, or `nothing` = all observed) drops unobserved responses per site, so the
+gradient is of the masked marginal over the observed cells only. The result matches a
+finite-difference gradient of the (masked) marginal to ~AD precision, at a fraction
 of the cost — the basis for replacing the finite-difference gradient in the fitter
 (issue #65). Standalone for now; not yet used by `fit_poisson_gllvm`.
 """
-function poisson_laplace_grad(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVector)
+function poisson_laplace_grad(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVector;
+                              mask = nothing)
     p, K = size(Λ)
     rr = rr_theta_len(p, K)
     θ̂ = vcat(float.(β), pack_lambda(Λ))
@@ -96,7 +112,8 @@ function poisson_laplace_grad(Y::AbstractMatrix, Λ::AbstractMatrix, β::Abstrac
         L = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
         acc = zero(eltype(θ))
         @inbounds for s in axes(Y, 2)
-            acc += _poisson_site_diffable(view(Y, :, s), L, b)
+            mi = mask === nothing ? nothing : view(mask, :, s)
+            acc += _poisson_site_diffable(view(Y, :, s), L, b; mask = mi)
         end
         return acc
     end
@@ -289,40 +306,52 @@ end
 # constant in θ ⇒ zero gradient, so it is dropped). μ = logistic(η).
 _binom_logker(μ, n, y) = y * log(μ) + (n - y) * log(one(μ) - μ)
 
+# `mask` (length-p Bool, or `nothing` = all observed) drops unobserved responses,
+# matching the core's masking (zero score, zero weight, skipped log-pmf).
 function _binomial_site_diffable(y::AbstractVector, nt::AbstractVector,
-                                 Λ::AbstractMatrix, β::AbstractVector)
+                                 Λ::AbstractMatrix, β::AbstractVector; mask = nothing)
     p = size(Λ, 1)
     Λv = ForwardDiff.value.(Λ); βv = ForwardDiff.value.(β)
-    ẑ = _laplace_mode(Binomial(), y, nt, Λv, βv, LogitLink())
+    ẑ = _laplace_mode(Binomial(), y, nt, Λv, βv, LogitLink(); mask = mask)
 
     η = _clamp_eta.(β .+ Λ * ẑ)
     μ = 1 ./ (1 .+ exp.(-η))            # logistic
     s = y .- nt .* μ                    # logit-link score (y − nμ)
     W = nt .* μ .* (1 .- μ)             # logit-link weight (nμ(1−μ))
+    if mask !== nothing
+        s = ifelse.(mask, s, zero(eltype(s)))
+        W = ifelse.(mask, W, zero(eltype(W)))
+    end
     A = Λ' * (W .* Λ) + I
     z = ẑ .+ (A \ (Λ' * s .- ẑ))
 
     ηz = _clamp_eta.(β .+ Λ * z)
     μz = 1 ./ (1 .+ exp.(-ηz))
     Wz = nt .* μz .* (1 .- μz)
+    if mask !== nothing
+        Wz = ifelse.(mask, Wz, zero(eltype(Wz)))
+    end
     Az = Λ' * (Wz .* Λ) + I
     ℓ = zero(eltype(z))
     @inbounds for t in 1:p
+        (mask === nothing || mask[t]) || continue
         ℓ += _binom_logker(μz[t], nt[t], y[t])
     end
     return ℓ - 0.5 * dot(z, z) - 0.5 * logdet(Az)
 end
 
 """
-    binomial_laplace_grad(Y, N, Λ, β) -> Vector
+    binomial_laplace_grad(Y, N, Λ, β; mask=nothing) -> Vector
 
 Exact gradient of the total Binomial (logit-link) Laplace marginal wrt
 `θ = [β; pack_lambda(Λ)]`, via the same ForwardDiff + implicit-step construction as
-[`poisson_laplace_grad`](@ref). `N` is the p×n trial-count matrix. Standalone +
+[`poisson_laplace_grad`](@ref). `N` is the p×n trial-count matrix. `mask` (p×n Bool,
+or `nothing` = all observed) drops unobserved responses per site, so the gradient is
+of the masked marginal over the observed cells only. Standalone +
 finite-difference-verified; not yet wired into `fit_binomial_gllvm`.
 """
 function binomial_laplace_grad(Y::AbstractMatrix, N::AbstractMatrix,
-                               Λ::AbstractMatrix, β::AbstractVector)
+                               Λ::AbstractMatrix, β::AbstractVector; mask = nothing)
     p, K = size(Λ)
     rr = rr_theta_len(p, K)
     θ̂ = vcat(float.(β), pack_lambda(Λ))
@@ -331,7 +360,8 @@ function binomial_laplace_grad(Y::AbstractMatrix, N::AbstractMatrix,
         L = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
         acc = zero(eltype(θ))
         @inbounds for s in axes(Y, 2)
-            acc += _binomial_site_diffable(view(Y, :, s), view(N, :, s), L, b)
+            mi = mask === nothing ? nothing : view(mask, :, s)
+            acc += _binomial_site_diffable(view(Y, :, s), view(N, :, s), L, b; mask = mi)
         end
         return acc
     end
