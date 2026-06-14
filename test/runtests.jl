@@ -89,6 +89,7 @@ using GLLVM
     include("test_zero_inflated.jl")
     include("test_missing_data.jl")
     include("test_missing_response.jl")
+    include("test_missing_response_extra.jl")
     include("test_missing_predictor_fiml.jl")
     include("test_missing_predictor_phylo.jl")
     include("test_missing_predictor_z.jl")
