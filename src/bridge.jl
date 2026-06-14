@@ -105,6 +105,23 @@ function _bridge_family_key(family::AbstractString)
         "gaussian, poisson, binomial, negbinomial (nbinom2), nb1, beta, gamma, ordinal"))
 end
 
+# One-part NON-Gaussian families `fit_gllvm_cov` fits with covariates X (it has a
+# `_cov_*` kernel for each). Ordinal and NB1 are absent — no covariate kernel yet.
+const _BRIDGE_X_FAMILIES = ("poisson", "binomial", "negbinomial", "beta", "gamma")
+
+# Map a bridge family key to the `Distributions` marker `fit_gllvm_cov` dispatches
+# on (the dispersion field is re-estimated, so the init values here are irrelevant).
+function _bridge_cov_marker(key::AbstractString)
+    key == "poisson"     && return Poisson()
+    key == "binomial"    && return Binomial()
+    key == "negbinomial" && return NegativeBinomial(10.0, 0.5)
+    key == "beta"        && return Beta(10.0, 1.0)
+    key == "gamma"       && return Gamma(2.0, 1.0)
+    throw(ArgumentError(
+        "bridge_fit: family key \"$key\" has no covariate (X) fitter; " *
+        "X is supported for " * join(_BRIDGE_X_FAMILIES, ", ")))
+end
+
 _bridge_rr_df(p::Integer, K::Integer) = p * K - div(K * (K - 1), 2)
 _bridge_link_name(link::Link) = String(nameof(typeof(link)))
 
@@ -277,19 +294,22 @@ function bridge_fit(; y,
     K = Int(d)
     K >= 1 || throw(ArgumentError("d must be a positive integer"))
     # Fixed-effect covariates X (a p×n×q array) are wired for the Gaussian family
-    # only: fit_gaussian_gllvm carries the full mean structure (per-trait intercept
-    # dummies + covariates) in X and returns the length-q β. Non-Gaussian and
-    # mixed-family X remain a documented follow-up — reject loudly rather than
-    # silently dropping the covariates.
+    # and the one-part NON-Gaussian families that `fit_gllvm_cov` fits (poisson,
+    # binomial, negbinomial, beta, gamma): fit_gaussian_gllvm / fit_gllvm_cov carry
+    # the covariate mean structure η = β + Xγ (+ Λz) and return the coefficients.
+    # Ordinal and NB1 (no covariate kernel) and the mixed-family path remain a
+    # documented follow-up — reject loudly rather than silently dropping X.
     if X !== nothing
         if family isa AbstractVector
             throw(ArgumentError(
                 "bridge_fit: fixed-effect covariates X are not yet wired for the " *
                 "mixed-family path; a documented follow-up"))
         end
-        _bridge_family_key(String(family)) == "gaussian" || throw(ArgumentError(
-            "bridge_fit: fixed-effect covariates X are wired for family=\"gaussian\" " *
-            "only; non-Gaussian X is a documented follow-up"))
+        key = _bridge_family_key(String(family))
+        (key == "gaussian" || key in _BRIDGE_X_FAMILIES) || throw(ArgumentError(
+            "bridge_fit: fixed-effect covariates X are wired for family ∈ {gaussian, " *
+            join(_BRIDGE_X_FAMILIES, ", ") * "}; family=\"$(family)\" has no covariate " *
+            "fitter (ordinal/nb1 are a documented follow-up)"))
     end
     # Mixed-family: a vector of per-trait family strings ⇒ one shared latent block,
     # a TRUE cross-distribution VCV (the headline). A length-1 vector or an all-same
@@ -320,11 +340,18 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
     ci_nboot  = _bridge_ci_nboot(options)
     ci_seed   = _bridge_ci_seed(options)
 
-    # X is gated to family=="gaussian" at the bridge_fit entry point; defend the
-    # invariant here too so a future direct caller can't slip covariates past a
-    # non-Gaussian fitter that would silently ignore them.
-    X === nothing || key == "gaussian" ||
-        throw(ArgumentError("bridge_fit: X is only wired for family=\"gaussian\""))
+    # X (a p×n×q covariate array) routes to the covariate fitters: the Gaussian
+    # branch below handles key=="gaussian"; every other one-part family with a
+    # covariate kernel (_BRIDGE_X_FAMILIES) routes to fit_gllvm_cov. Defend the
+    # invariant here too so a future DIRECT caller can't slip X past a family with
+    # no covariate fitter (ordinal/nb1) and have it silently dropped.
+    if X !== nothing && key != "gaussian"
+        key in _BRIDGE_X_FAMILIES ||
+            throw(ArgumentError("bridge_fit: X is not wired for family=\"$key\"; " *
+                "supported families with covariates are gaussian, " *
+                join(_BRIDGE_X_FAMILIES, ", ")))
+        return _bridge_fit_onepart_cov(Yf, key, K, N, traits, units, X)
+    end
 
     if key == "gaussian"
         if X !== nothing
@@ -492,6 +519,75 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
             df = (fit.C - 1) + _bridge_rr_df(p, K), scores = scores, ci = ci)
     end
     throw(ArgumentError("bridge_fit: unhandled family key \"$key\""))  # unreachable
+end
+
+# --- one-part NON-Gaussian covariate dispatch (fit_gllvm_cov) ---------------
+#
+# Route the one-part non-Gaussian families that carry a covariate kernel
+# (_BRIDGE_X_FAMILIES) through `fit_gllvm_cov`, whose linear predictor is
+# η_{ts} = β_t + Σ_k X[t,s,k]·γ_k + (Λ z_s)_t. The flat contract MIRRORS the
+# Gaussian-X return (loadings, alpha, dispersion, Sigma/correlation/communality,
+# scores, df, …) and ADDS two coefficient arrays the R side reads to fill the
+# covariate coefficient table:
+#
+#   beta_cov :: Vector{Float64}  — per-trait intercepts β (length p)
+#   gamma    :: Vector{Float64}  — shared covariate coefficients γ (length q)
+#
+# `alpha` mirrors β (the per-trait intercept on the link scale) so the existing
+# intercept field stays meaningful. Σ_y/correlation/communality use the shared
+# block ΛΛᵀ (GllvmCovFit has no link-residual extractor yet — same honest fallback
+# as NB1 in _bridge_assemble_ng). CI routing through the bridge is not yet wired
+# for covariate fits (native confint(fit, Y; X=…) needs X + a different signature);
+# a documented follow-up.
+function _bridge_fit_onepart_cov(Yf::AbstractMatrix{Float64}, key::AbstractString,
+                                 K::Integer, N, traits, units, X)
+    p, n = size(Yf)
+    Xarr = Array{Float64,3}(X)
+    size(Xarr, 1) == p && size(Xarr, 2) == n || throw(ArgumentError(
+        "bridge_fit: X must be p×n×q ($(p)×$(n)×q); got $(size(Xarr))"))
+    q = size(Xarr, 3)
+    marker = _bridge_cov_marker(key)
+
+    # Per-family response coercion + Binomial trial counts (mirror the no-X path):
+    # the count families round to integer-valued Float64; continuous pass through.
+    is_count = key in ("poisson", "binomial", "negbinomial")
+    Ydata = is_count ? Float64.(round.(Int, Yf)) : Yf
+    Nm = key == "binomial" ?
+         (N === nothing ? fill(1, p, n) :
+          (N isa Number ? fill(round(Int, N), p, n) : round.(Int, Matrix(N)))) :
+         nothing
+
+    fit = Nm === nothing ? fit_gllvm_cov(Ydata; family = marker, X = Xarr, K = K) :
+                           fit_gllvm_cov(Ydata; family = marker, X = Xarr, K = K, N = Nm)
+
+    β   = collect(Float64, fit.β)
+    γ   = collect(Float64, fit.γ)
+    L   = Matrix{Float64}(getLoadings(fit; rotate = true))
+    disp = fill(Float64(fit.dispersion), p)   # NaN where the family has none
+
+    scores = _bridge_scores(() -> getLV(fit, Ydata, Xarr; rotate = true,
+                                        N = (Nm === nothing ? nothing : Nm)))
+
+    # Shared-block latent-scale derived quantities (no link-residual extractor for
+    # GllvmCovFit yet): Σ = ΛΛᵀ, correlation from Σ, communality = 1.
+    Λr = L
+    Σ  = Λr * Λr'; Σ = (Σ + Σ') ./ 2
+    corr = _bridge_corr_from_sigma(Σ)
+    comm = ones(Float64, p)
+
+    df = p + q + _bridge_rr_df(p, K) + (isnan(fit.dispersion) ? 0 : 1)
+    base = _bridge_assemble(fit, key, "$(key)_x_rr", traits, units;
+        alpha = β, dispersion = disp, sigma_eps = NaN,
+        link = fill(_bridge_link_name(fit.link), p), Sigma = Σ, corr = corr,
+        comm = comm, scores = scores, df = df, loglik = fit.loglik,
+        converged = fit.converged, iterations = fit.iterations,
+        loadings = L, note =
+            "fixed-effect covariate fit (non-Gaussian): eta = beta + X*gamma + " *
+            "Lambda*z. beta_cov = per-trait intercepts, gamma = shared covariate " *
+            "coefficients. Sigma/correlation use the shared block Lambda*Lambda' " *
+            "(communality 1); CIs are not routed for covariate fits yet.",
+        ci = nothing)
+    return merge(base, (beta_cov = β, gamma = γ))
 end
 
 # --- mixed-family dispatch (the cross-distribution VCV headline) -----------
