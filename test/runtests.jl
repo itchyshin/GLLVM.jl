@@ -93,6 +93,7 @@ using GLLVM
     include("test_missing_predictor_z.jl")
     include("test_missing_predictor_poisson.jl")
     include("test_missing_predictor_dispersion.jl")
+    include("test_missing_predictor_multi.jl")
     include("test_mi_fitter.jl")
     include("test_offset.jl")
     include("test_confint_family.jl")
