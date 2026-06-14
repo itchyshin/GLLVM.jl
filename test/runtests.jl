@@ -124,5 +124,6 @@ using GLLVM
     include("test_random_slopes.jl")
     include("test_twolevel.jl")
     include("test_random_slopes_poisson.jl")
+    include("test_bridge_ci.jl")
     include("test_quality.jl")
 end
