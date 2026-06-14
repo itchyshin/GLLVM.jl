@@ -80,6 +80,7 @@ include("families/variational_exponential.jl") # VA/ELBO marginal — Exponentia
 include("spde_latent.jl")
 include("spde_latent_postfit.jl")
 include("phylo_glm.jl")                   # phylogenetic GLLVM for non-Gaussian families (issue #61, working fit)
+include("coevolution_glm.jl")             # cross-family (non-Gaussian) cross-lineage coevolution (Track T4): K* through a dense Laplace
 
 # Post-fit API (ordination, predict, residuals, summary)
 include("postfit.jl")
@@ -140,6 +141,8 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        grad_node_perspecies, node_blups,
        fit_phylo_gaussian, PhyloGaussianFit,
        phylo_glm_marginal_loglik, fit_phylo_glm, PhyloGLMFit,
+       coevolution_glm_marginal_loglik, fit_coevolution_glm, CoevolutionGLMFit,
+       coevolution_gamma,
        LogitLink, ProbitLink, CLogLogLink, IdentityLink, LogLink,
        fit_mixed_gllvm, MixedFamilyFit, mixed_marginal_loglik_laplace,
        fit_binomial_gllvm, BinomialFit, fit_poisson_gllvm, PoissonFit,
