@@ -1,5 +1,44 @@
 # Check Log
 
+## 2026-06-15 - R-first handoff and roadmap sync
+
+### Scope
+
+Reframed the historical Codex handoff and roadmap so they no longer read as a
+current release or bridge-completion claim.
+
+- `docs/dev-log/CODEX_HANDOFF.md` now starts with a 2026-06-15 note: the current
+  finish sequence is R-first, native `gllvmTMB` is the oracle, and broad
+  engine-side rows still require R-side admission, bridge parity, docs, issue
+  evidence, and Rose audit.
+- The old TL;DR phrase "full gllvmTMB parity and beyond" was narrowed to
+  "broad engine-side parity candidate".
+- `docs/src/roadmap.md` now uses the same R-first sequencing, conservative
+  release map, and Gaussian-only REML / exact-Gaussian AI-REML boundary.
+
+No engine code, bridge code, tests, or benchmarks changed.
+
+### Checks Run
+
+```sh
+rg -n "full gllvmTMB parity|full parity|AI-REML|REML|R-first|engine-side parity candidate" docs/dev-log/CODEX_HANDOFF.md docs/src/roadmap.md
+```
+
+Result: expected hits only. "Full parity" appears only in a warning not to read
+the historical handoff as a current release claim. REML/AI-REML hits are
+boundary wording only.
+
+```sh
+git diff --check
+```
+
+Result: clean.
+
+### Rose Boundary
+
+PASS WITH NOTES. This is documentation governance only. It does not add a new
+engine capability or R bridge row.
+
 ## 2026-06-15 - Ordinal-Probit Bridge Mask Key
 
 ### Scope

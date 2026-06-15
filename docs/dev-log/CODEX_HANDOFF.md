@@ -1,8 +1,22 @@
 # GLLVM.jl — Handover Report for Codex
 
+## Current Note (2026-06-15)
+
+This report is historical context from an engine-first handoff. The current
+finish sequence is **R-first**: native `gllvmTMB` functionality and the R user
+workflow define the oracle; `GLLVM.jl` mirrors admitted rows, supplies parity
+evidence, and accelerates them only after point estimates, logLik/objective,
+CI or CI-status, docs, tests, issue rows, and Rose audit agree.
+
+Do not read "full parity" below as a release claim. Treat those rows as
+engine-side implemented/planned claims that still need R-side admission,
+bridge parity, documentation, and issue-led evidence. REML remains Gaussian-only;
+HSquared-style AI-REML is future design input for exact Gaussian cells, not a
+name for non-Gaussian Laplace acceleration.
+
 ## 0. TL;DR
-A cloud-agent session (with **no Julia/R runtime**) brought GLLVM.jl to **full
-gllvmTMB parity and beyond**, all CI-green on `main`. Everything that needs a
+A cloud-agent session (with **no Julia/R runtime**) brought GLLVM.jl to a broad
+engine-side parity candidate, all CI-green on `main`. Everything that needs a
 **runtime to measure or numerically validate** was deliberately left for a local
 agent with a Julia + R toolchain (Codex). Your job: run the bench, decide the
 gradient default, validate the R↔Julia bridge, land the exact algorithmic
