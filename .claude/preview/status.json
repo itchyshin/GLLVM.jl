@@ -1,9 +1,9 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T15:08:30.624Z",
+  "generated_at": "2026-06-15T15:56:18.773Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "R-first sequencing remains active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as parity and acceleration target. Latest cleanup resolves Rose's stale Gamma-gradient maintainer-doc blocker: CLAUDE.md now matches the benchmark/check-log evidence that Gamma defaults to the analytic Laplace-gradient path, with finite-difference fallback for unsupported masked/offset cells. The latest R bridge governance slice remains gllvm_julia_capabilities() at gllvmTMB c0f14c8: no-Julia bridge tests pass 141 with 14 expected skips, live package-level bridge tests pass 340/340, and pkgdown::check_pkgdown() is green. REML stays Gaussian-only; AI-REML stays a future exact-Gaussian acceleration idea, not a non-Gaussian/Laplace label.",
+  "current_work": "R-first sequencing remains active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as the parity/acceleration target. Latest slice: a cross-repo bridge capability drift guard is committed locally. GLLVM.jl-integration now exposes GLLVM.bridge_capabilities() at 8afda81, with core test/runtests.jl green (3891 pass, 3 broken, 0 failed) and targeted bridge capability tests 9/9. gllvmTMB engine-julia now records nb1 and mixed-family vectors as explicit planned R debt at 18e0803; no-Julia bridge tests pass 146 with 15 expected skips, live bridge tests pass 353/353, and pkgdown::check_pkgdown() is green. REML stays Gaussian-only; AI-REML stays a future exact-Gaussian acceleration idea, not a non-Gaussian/Laplace label.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
     {
@@ -13,7 +13,7 @@
     },
     {
       "label": "Slices visible",
-      "value": "57",
+      "value": "58",
       "status": "partial"
     },
     {
@@ -38,16 +38,16 @@
     {
       "name": "GLLVM.jl integration",
       "branch": "codex/high-rate-poisson-safeguard",
-      "head": "f75376c",
+      "head": "8afda81",
       "dirty": false,
-      "note": "Paired runtime engine checkout for current gllvmTMB bridge evidence. X-aware bridge, Gaussian mean_coef, bridge_fit(mask=...), ordinal_probit ProbitLink, binomial N-matrix cbind transport, fixed-effect tidy() rows, conditional simulate() rows, cached glance() rows, in-sample augment() rows, and the R capability-ledger tests are validated here; latest live gllvmTMB bridge tests against this checkout pass 340/340."
+      "note": "Paired runtime engine checkout for current gllvmTMB bridge evidence. Adds GLLVM.bridge_capabilities() for R drift guards; X-aware bridge, Gaussian mean_coef, bridge_fit(mask=...), ordinal_probit ProbitLink, binomial N-matrix cbind transport, fixed-effect tidy() rows, conditional simulate() rows, cached glance() rows, in-sample augment() rows, and live gllvmTMB bridge tests pass 353/353. Core test/runtests.jl passes 3891 with 3 broken."
     },
     {
       "name": "gllvmTMB",
       "branch": "engine-julia",
-      "head": "c0f14c8",
+      "head": "18e0803",
       "dirty": false,
-      "note": "engine-julia has local R-first bridge slices committed through gllvm_julia_capabilities(). Current green bridge evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration; NEWS/check-log/README explicitly warn that stale/dashboard GLLVM.jl checkouts may reject newer payloads."
+      "note": "engine-julia has local R-first bridge slices committed through the capability drift guard. gllvm_julia_capabilities() now marks nb1 and mixed-family vector as planned R debt while enforcing that R-admitted TRUE rows are supported by GLLVM.bridge_capabilities(). Current green bridge evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration."
     },
     {
       "name": "drmTMB",
@@ -574,6 +574,10 @@
   "activity": [
     {
       "time": "now",
+      "html": "<b>Hopper/Rose bridge drift guard green.</b> <code>GLLVM.bridge_capabilities()</code> now exposes the Julia bridge surface as a flat JuliaCall-safe ledger, and <code>gllvm_julia_capabilities()</code> now makes <code>nb1</code> plus mixed-family vectors explicit <code>planned</code> R debt rather than invisible drift. Julia targeted test passed <code>9/9</code>; GLLVM core suite passed <code>3891</code> with <code>3</code> broken and <code>0</code> failed; no-Julia bridge tests passed <code>146</code> with <code>15</code> expected skips; live bridge tests passed <code>353/353</code>; <code>pkgdown::check_pkgdown()</code> is green. NB1 and mixed-family are still rejected before JuliaCall on the R side."
+    },
+    {
+      "time": "now",
       "html": "<b>Rose Gamma-status blocker cleared.</b> <code>CLAUDE.md</code> no longer says Gamma is on the old direct ForwardDiff fitter path; it now matches the check-log evidence that Gamma defaults to the analytic Laplace-gradient route with finite-difference fallback for unsupported masked/offset cells. This is documentation cleanup only, not a new speed or capability claim."
     },
     {
@@ -720,22 +724,26 @@
   "inflight": [
     {
       "owner": "Ada",
-      "text": "R-first sequencing remains active; latest R bridge governance slice is gllvm_julia_capabilities(), and the stale Gamma maintainer-doc blocker is now cleared locally."
+      "text": "R-first sequencing remains active. Latest committed slice closes the hidden NB1/mixed-family bridge drift gap by making Julia-only rows explicit planned R debt."
     },
     {
       "owner": "Hopper",
-      "text": "Next R-first bridge surface: either route mixed-family vectors through R with labels/parity/status rows, or add the automated cross-repo drift CI comparing this ledger to GLLVM.jl."
+      "text": "Next R-first bridge surface: choose between admitting NB1 through R with dispersion labels/parity/CI-status, or routing mixed-family vectors with stable metadata and labels. Do not flip either from planned without tests."
     },
     {
       "owner": "Gauss/Karpinski",
-      "text": "Julia work follows R targets: catch up the dashboard GLLVM.jl branch to the validated integration bridge payloads, then accelerate exact Gaussian/validated Laplace rows with point-estimate and CI/status gates."
+      "text": "Julia work follows the R target: keep GLLVM.bridge_capabilities() in sync with bridge_fit guards, then resume exact speedups only with point-estimate and CI/status evidence."
     },
     {
       "owner": "Rose",
-      "text": "No current REML/AI-REML wording blocker: REML stays Gaussian-only; AI-REML stays exact-Gaussian-only future wording. Release/tag remains hold until issue ledger, docs, CI, bridge parity, and main branch agree."
+      "text": "Release/tag remains hold. REML is Gaussian-only; AI-REML is exact-Gaussian-only future language. Non-Gaussian/Laplace speedups need observed-information/implicit-gradient wording instead."
     }
   ],
   "evidence": [
+    {
+      "status": "covered",
+      "text": "Hopper/Rose: bridge drift guard committed locally. GLLVM.jl-integration 8afda81 exposes bridge_capabilities(); gllvmTMB 18e0803 marks nb1 and mixed-family vector as planned R debt and live-checks R-admitted rows as a subset of Julia support. Evidence: GLLVM targeted 9/9, GLLVM core 3891 pass / 3 broken / 0 failed, R no-Julia bridge 146 pass / 15 skip, R live bridge 353/353, pkgdown check green."
+    },
     {
       "status": "covered",
       "text": "Rose: GLLVM.jl maintainer-doc stale Gamma wording fixed locally. CLAUDE.md now says Gamma defaults to the analytic Laplace-gradient path after the finite-vs-analytic benchmark gate, with finite-difference fallback for unsupported masked/offset cells. Stale scan confirms REML/AI-REML hits are boundary wording or historical check-log entries. No engine code changed."

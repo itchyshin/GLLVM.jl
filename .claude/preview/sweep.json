@@ -1,6 +1,6 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T15:08:30.624Z",
+  "generated_at": "2026-06-15T15:56:18.773Z",
   "status_vocabulary": [
     "covered",
     "partial",
@@ -39,10 +39,10 @@
     },
     {
       "capability": "NB1",
-      "engine": "planned",
+      "engine": "covered",
       "bridge": "planned",
-      "inference": "planned",
-      "evidence": "No covered claim until implemented and recovery-tested."
+      "inference": "partial",
+      "evidence": "GLLVM.jl bridge surface reports NB1 one-part no-X support through bridge_capabilities(); gllvmTMB deliberately still rejects nbinom1 and now marks it as planned R debt until family mapping, dispersion labels, parity, and CI/status rows are validated."
     },
     {
       "capability": "Beta",
@@ -103,9 +103,9 @@
     {
       "capability": "Fixed-effect covariates X",
       "engine": "partial",
-      "bridge": "planned",
+      "bridge": "partial",
       "inference": "partial",
-      "evidence": "Current gllvmTMB bridge deliberately rejects X to match minimal GLLVM.bridge_fit; integration X route needs parity before promotion."
+      "evidence": "R bridge admits complete balanced one-part X rows for Gaussian, Poisson, Binomial, NB2, Beta, and Gamma against GLLVM.jl-integration. X+mask, ordinal X, NB1 X, mixed-family X, and non-Gaussian X CIs remain unsupported gates."
     },
     {
       "capability": "Response missingness",
@@ -130,10 +130,10 @@
     },
     {
       "capability": "Per-response family dispatch",
-      "engine": "planned",
+      "engine": "partial",
       "bridge": "planned",
       "inference": "planned",
-      "evidence": "GLLVM #98 / DRM #280 first-class gate."
+      "evidence": "GLLVM.jl bridge surface reports a mixed-family vector route for no-X/no-mask fits; gllvmTMB deliberately rejects family lists and marks mixed-family vector as planned until metadata, labels, parity, and CI/status rows are routed."
     },
     {
       "capability": "Cross-family latent correlation",
