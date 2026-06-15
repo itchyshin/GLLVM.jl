@@ -6054,6 +6054,40 @@ PASS WITH NOTES. The matrix now reflects current R bridge evidence without
 claiming full bridge coverage. Remaining rows still need issue-led R tests,
 docs, and parity evidence before promotion.
 
+## 2026-06-15 - Mission-control R-first X evidence refresh
+
+### Scope
+
+Refreshed the JSON-backed mission-control board after the `gllvmTMB` R-side
+fixed-effect-X evidence slice.
+
+Changes:
+
+- `.claude/preview/status.json` now records the R-first sequencing decision,
+  `gllvmTMB` head `e91921a`, `GLLVM.jl-integration` head `6056071`, and live
+  bridge evidence `416/416`.
+- `.claude/preview/sweep.json` now records Binomial, NB2, Gamma, and aggregate
+  fixed-effect-X public formula-vs-direct bridge evidence while keeping
+  non-Gaussian X CIs, X+mask, `newdata`, NB1-X, ordinal-X, mixed-family-X, and
+  native TMB-vs-Julia parity as unsupported gates.
+
+### Checks Run
+
+```sh
+jq empty .claude/preview/status.json
+jq empty .claude/preview/sweep.json
+git diff --check
+curl -fsS http://127.0.0.1:8770/status.json | jq -r '.current_work'
+```
+
+Result: JSON valid, whitespace clean, and the live board endpoint returned the
+updated R-first `e91921a` / `416/416` status.
+
+### Rose Verdict
+
+PASS WITH NOTES. The dashboard reflects the current R bridge evidence without
+promoting native TMB parity or non-Gaussian X inference claims.
+
 ## 2026-06-03 - Augmented Phylogenetic Poisson Laplace Prototype
 
 ### Scope

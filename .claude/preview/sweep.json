@@ -1,6 +1,6 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T16:22:49.191Z",
+  "generated_at": "2026-06-15T16:35:24.000Z",
   "status_vocabulary": [
     "covered",
     "partial",
@@ -28,14 +28,14 @@
       "engine": "covered",
       "bridge": "partial",
       "inference": "partial",
-      "evidence": "Minimal no-X bridge_fit route tested. gllvmTMB now transports binomial cbind(successes, failures) as Julia Y plus N for complete and missing-response no-X reduced-rank bridge rows; live bridge tests pass 277/277 against GLLVM.jl-integration. Broader R/TMB parity, mixed-family cbind, X+mask, and masked interval endpoints remain gates."
+      "evidence": "Minimal no-X bridge_fit route tested. gllvmTMB transports binomial cbind(successes, failures) as Julia Y plus N for complete and missing-response no-X reduced-rank bridge rows, and the fixed-effect-X binomial formula path now matches direct gllvm_julia_fit() dispatch. Live bridge tests pass 416/416 against GLLVM.jl-integration. Broader R/TMB parity, mixed-family cbind, X+mask, and masked interval endpoints remain gates."
     },
     {
       "capability": "Negative binomial NB2",
       "engine": "covered",
       "bridge": "partial",
       "inference": "partial",
-      "evidence": "Minimal no-X bridge_fit route tested and R maps nbinom2 to negbinomial; dispersion transform parity remains a gate."
+      "evidence": "Minimal no-X bridge_fit route tested and R maps nbinom2 to negbinomial. Fixed-effect-X nbinom2 formula dispatch now matches direct gllvm_julia_fit() with finite positive dispersion. Native TMB-vs-Julia parity, X+mask, and non-Gaussian X CIs remain gates."
     },
     {
       "capability": "NB1",
@@ -56,7 +56,7 @@
       "engine": "covered",
       "bridge": "partial",
       "inference": "partial",
-      "evidence": "Minimal no-X bridge_fit route tested; #96 mode-finder safeguards fixed locally; Gamma now defaults analytic after quick/medium finite-vs-analytic benchmarks with |delta logLik| <= 1.9e-12 and full Pkg.test green."
+      "evidence": "Minimal no-X bridge_fit route tested; #96 mode-finder safeguards fixed locally; Gamma now defaults analytic after quick/medium finite-vs-analytic benchmarks with |delta logLik| <= 1.9e-12 and full Pkg.test green. Fixed-effect-X Gamma formula dispatch now matches direct gllvm_julia_fit(); Gamma X CIs and native TMB parity remain queued."
     },
     {
       "capability": "Ordinal",
@@ -105,7 +105,7 @@
       "engine": "partial",
       "bridge": "partial",
       "inference": "partial",
-      "evidence": "R bridge admits complete balanced one-part X rows for Gaussian, Poisson, Binomial, NB2, Beta, and Gamma against GLLVM.jl-integration. X+mask, ordinal X, NB1 X, mixed-family X, and non-Gaussian X CIs remain unsupported gates."
+      "evidence": "R bridge admits complete balanced one-part X rows for Gaussian, Poisson, Binomial, NB2, Beta, and Gamma against GLLVM.jl-integration. Public formula-vs-direct dispatch evidence is now live for all admitted X families; latest bridge suite passes 416/416. X+mask, ordinal X, NB1 X, mixed-family X, non-Gaussian X CIs, newdata, and native TMB-vs-Julia parity remain unsupported gates."
     },
     {
       "capability": "Response missingness",
