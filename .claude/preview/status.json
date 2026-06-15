@@ -1,9 +1,9 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T11:02:13.000Z",
+  "generated_at": "2026-06-15T11:19:07.000Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "Phase 4 runtime gap fill is green locally on GLLVM.jl-integration: #91 high-rate Poisson divergence fixed, Gamma now defaults to analytic gradients after finite-vs-analytic benchmark gates, #92 phylo-signal Wald CI scale fix is wired into the main suite, the verified phylo-unique sparse-phylo node-gradient shortcut is wired, duplicate-method test warnings are cleaned, and #94 now has both a unique-content audit and a seven-successor issue draft bank. Latest full Pkg.test passed at 3869/1 broken. gllvmTMB live julia-bridge tests pass 53/53 and the R-side NEWS/check-log match that evidence. Hopper's next safe implementation slice is X admission for complete, balanced, one-part bridge models, with response-missing masks kept as an explicit guard until bridge_fit mask semantics are specified.",
+  "current_work": "Priority shifted to R-first completion: gllvmTMB is now the functional reference surface, and GLLVM.jl follows as a parity and acceleration target. Latest local bridge slice admits fixed-effect X for complete balanced one-part Gaussian, Poisson, Binomial, NB2, Beta, and Gamma engine=\"julia\" fits; missing-response masks remain an explicit fail-loud guard. Evidence: gllvmTMB live julia-bridge tests passed 64/64, devtools::test(filter=\"julia-bridge\") passed 64/64 in 41.0s, and paired GLLVM.jl test_bridge_x.jl passed 50/50. Next work should prioritise gllvmTMB user-facing functionality, status guards, docs, and tests first; Julia engine work then targets those proven R cells.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
     {
@@ -31,23 +31,23 @@
     {
       "name": "GLLVM.jl local board worktree",
       "branch": "codex/non-gaussian-fitter-gradients",
-      "head": "3989486 + status refresh pending",
+      "head": "c684965 + R-first status refresh pending",
       "dirty": false,
       "note": "Dashboard/ledger branch, ahead of remote by local commits. Exact self-SHA changes when this status refresh is committed."
     },
     {
       "name": "GLLVM.jl integration",
       "branch": "codex/high-rate-poisson-safeguard",
-      "head": "659f3d2",
+      "head": "355cef3",
       "dirty": false,
-      "note": "#91 safeguard, Gamma analytic default, docs-link cleanup, JuliaConnectoR smoke repair, #92 phylo-signal Wald CI scale fix, Rose status-drift cleanup, phylo-unique sparse node-gradient shortcut, duplicate-test-warning cleanup, #94 content audit, and #94 seven-successor issue drafts committed locally; latest Pkg.test passed 3869/1 broken."
+      "note": "Runtime fixes plus #94 successor bank are committed; docs now sync the gllvmTMB bridge-X surface and record REML as Gaussian-only with AI-REML as later exact-Gaussian scouting. Latest full Pkg.test evidence remains 3869/1 broken; bridge-X engine test passed 50/50."
     },
     {
       "name": "gllvmTMB",
       "branch": "engine-julia",
-      "head": "e2e7356",
+      "head": "ad9912a",
       "dirty": false,
-      "note": "engine-julia clean, ahead of remote; bridge-contract shrink, stale CI-oracle repair, and NEWS/check-log evidence sync committed locally; live julia-bridge test passed 53/53 against GLLVM.jl-integration."
+      "note": "engine-julia clean, ahead of remote; bridge X admission committed locally. Live julia-bridge test_file passed 64/64 and devtools::test(filter=\"julia-bridge\") passed 64/64 in 41.0s against GLLVM.jl-integration."
     },
     {
       "name": "drmTMB",
@@ -574,6 +574,14 @@
   "activity": [
     {
       "time": "now",
+      "html": "<b>Hopper bridge-X slice green.</b> <code>gllvmTMB</code> now admits fixed-effect <code>X</code> for complete balanced one-part Gaussian/Poisson/Binomial/NB2/Beta/Gamma Julia-engine fits; response-missing masks still fail loudly. Live bridge tests passed <code>64/64</code>; paired <code>GLLVM.jl test_bridge_x.jl</code> passed <code>50/50</code>."
+    },
+    {
+      "time": "now",
+      "html": "<b>Ada priority update.</b> Roadmap is now R-first: complete <code>gllvmTMB</code> functionality, status guards, docs, and tests first; <code>GLLVM.jl</code> follows as the parity and acceleration target. REML remains Gaussian-only; HSquared-style AI-REML is later exact-Gaussian scouting, not a non-Gaussian Laplace claim."
+    },
+    {
+      "time": "now",
       "html": "<b>Rose/Shannon #94 successor bank committed.</b> Seven durable successor issue drafts are banked locally for GenPoisson, Student-t, true lognormal, standalone truncation, ANOVA/LRT, check-fit diagnostics, and structured Schur/Poisson. Benchmark-script notes route to existing #65/#61 instead of a duplicate issue."
     },
     {
@@ -640,22 +648,30 @@
   "inflight": [
     {
       "owner": "Ada",
-      "text": "#91, #92, Gamma default, docs-link cleanup, and bridge smoke repairs are locally banked; next highest-risk gate is PR/issue reconciliation plus canonical R bridge parity."
+      "text": "New sequencing: finish gllvmTMB user-facing functionality first, with explicit bridge status guards; GLLVM.jl then targets the proven R cells for parity and acceleration."
     },
     {
       "owner": "Hopper",
-      "text": "Next bridge slice: admit X for complete balanced one-part bridge models and add an explicit missing-response mask guard; do not admit masks until bridge_fit mask/nobs/CI semantics are specified."
+      "text": "Bridge-X admission is locally banked; next R-first bridge slice should be missing-response mask guard/spec or post-fit method coverage, not Julia engine breadth for its own sake."
     },
     {
       "owner": "Gauss/Karpinski",
-      "text": "Phylo-unique sparse node-gradient shortcut and duplicate-test-helper cleanup are banked; next engine slice is general Λ_phy/mixed augmented Takahashi design or reverse-mode Laplace adjoint scoping."
+      "text": "Julia speed work stays queued behind R reference cells; REML language is Gaussian-only, and HSquared AI-REML is later exact-Gaussian scouting only."
     },
     {
       "owner": "Rose",
-      "text": "#94 local audit and seven-successor draft bank are committed; remote issue creation, #94 comment/closure, and #95/runtime-stack promotion still require maintainer decision."
+      "text": "Audit focus shifts to R-side capability/status truth first: no bridge or speed claim unless R functionality, CI/status, docs, tests, and Julia parity target agree."
     }
   ],
   "evidence": [
+    {
+      "status": "partial",
+      "text": "Ada/Rose: roadmap priority changed to R-first completion. gllvmTMB is the functional reference surface; GLLVM.jl follows as parity/acceleration target. REML remains Gaussian-only; AI-REML is later exact-Gaussian scouting."
+    },
+    {
+      "status": "covered",
+      "text": "Hopper: gllvmTMB bridge-X admission committed locally at ad9912a; test_file test-julia-bridge passed 64/64, devtools::test(filter=\"julia-bridge\") passed 64/64 in 41.0s, paired GLLVM.jl test_bridge_x passed 50/50."
+    },
     {
       "status": "partial",
       "text": "Rose/Shannon: #94 successor issue bank committed locally at GLLVM.jl-integration 659f3d2; seven durable issue drafts exist, benchmark-script notes are routed to existing #65/#61, and no GitHub remote mutation was performed."
