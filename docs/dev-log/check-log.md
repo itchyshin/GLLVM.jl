@@ -6230,6 +6230,73 @@ Results:
 - GitHub lane check: PR #59 remains the separate draft
   `claude/package-work-catchup-mQiZM` lane; no PR or issue was modified.
 
+## 2026-06-15 - Board sync after R-first CI-status and claim cleanup
+
+### Scope
+
+Synced the mission-control board after two local commits:
+
+- `gllvmTMB` `ca9c4f8` adds row-named `ci_status` attributes to successful
+  `confint.gllvmTMB_julia()` matrices.
+- `GLLVM.jl-integration` `f9d6ade` narrows bridge capability claim vocabulary:
+  current `GLLVM.bridge_capabilities()` rows are `partial`, not blanket
+  `supported`.
+
+Changes:
+
+- `.claude/preview/status.json` now records the R-first operating rule, current
+  `gllvmTMB` and integration SHAs, validation counts, active blockers, and
+  current work.
+- `.claude/preview/sweep.json` now marks Profile CIs as `partial` rather than
+  `planned`, adds `Julia bridge confint matrix ci_status`, and adds
+  `Bridge claim/status vocabulary`.
+
+### Checks Run
+
+```sh
+jq empty .claude/preview/status.json .claude/preview/sweep.json
+```
+
+Result: clean.
+
+```sh
+curl -fsS --max-time 2 http://127.0.0.1:8770/status.json | jq -r '.generated_at, (.repos[] | select(.name=="gllvmTMB") | .head), (.repos[] | select(.name=="GLLVM.jl integration") | .head)'
+```
+
+Result:
+
+```text
+2026-06-15T20:32:00.000Z
+ca9c4f8
+f9d6ade
+```
+
+```sh
+curl -fsS --max-time 2 http://127.0.0.1:8770/sweep.json | jq -r '.generated_at, (.rows[] | select(.capability=="Profile CIs") | [.bridge,.evidence] | @tsv)'
+```
+
+Result: Profile CIs bridge status is `partial`, with evidence pointing to
+`gllvmTMB` `ca9c4f8` and live bridge `552/552`.
+
+In-app browser verification:
+
+- page URL: `http://127.0.0.1:8770/`
+- page title: `Finishing the twin - GLLVM.jl + gllvmTMB`
+- visible current work includes the R-first operating rule, `ca9c4f8`, and
+  `f9d6ade`.
+
+```sh
+git diff --check -- .claude/preview/status.json .claude/preview/sweep.json
+```
+
+Result: clean.
+
+### Rose Verdict
+
+PASS WITH NOTES. The board no longer hides the R-first pivot and no longer shows
+Profile CIs as merely planned. The board is a status/evidence sync only; it does
+not promote a new model capability or release claim.
+
 ## 2026-06-15 - Capability matrix current R-bridge sync
 
 ### Scope

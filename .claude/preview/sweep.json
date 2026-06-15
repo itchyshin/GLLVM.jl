@@ -1,6 +1,6 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T20:02:00.000Z",
+  "generated_at": "2026-06-15T20:32:00.000Z",
   "status_vocabulary": [
     "covered",
     "partial",
@@ -196,21 +196,35 @@
       "engine": "partial",
       "bridge": "partial",
       "inference": "partial",
-      "evidence": "Minimal bridge tests check native Julia Wald CI equality and gllvmTMB confint surface for Gaussian; wider family/status coverage still needed."
+      "evidence": "Minimal bridge tests check native Julia Wald CI equality and gllvmTMB confint surface for Gaussian; successful Julia bridge confint matrices now carry row-named ci_status attributes. Wider family/status coverage still needed."
     },
     {
       "capability": "Profile CIs",
       "engine": "partial",
-      "bridge": "planned",
+      "bridge": "partial",
       "inference": "partial",
-      "evidence": "Gaussian profile CIs now route through confint.gllvmTMB_julia and live julia-bridge tests pass against GLLVM.jl-integration; wider family/status coverage and profile visuals remain gates."
+      "evidence": "Gaussian profile CIs route through confint.gllvmTMB_julia and successful matrices now carry row-named ci_status attributes after gllvmTMB ca9c4f8; live julia-bridge tests pass 552/552 against GLLVM.jl-integration. Wider family/status coverage, profile visuals, and calibration remain gates."
     },
     {
       "capability": "Bootstrap CIs",
       "engine": "partial",
       "bridge": "partial",
       "inference": "partial",
-      "evidence": "Calibration claims need coverage study."
+      "evidence": "Gaussian bootstrap route is available through confint.gllvmTMB_julia and successful matrices now carry ci_status metadata. Calibration claims still need coverage study; wider family/status coverage remains gated."
+    },
+    {
+      "capability": "Julia bridge confint matrix ci_status",
+      "engine": "partial",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "gllvmTMB ca9c4f8 attaches row-named ci_status attributes to successful confint.gllvmTMB_julia() matrices after parm filtering for cached and refit paths. Evidence: no-Julia bridge 228 pass / 18 expected skips; live bridge 552/552; full devtools::test() 2998 pass / 724 skips / 0 failures. Interval numerics unchanged; no coverage calibration claim."
+    },
+    {
+      "capability": "Bridge claim/status vocabulary",
+      "engine": "partial",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "GLLVM.jl-integration f9d6ade changes bridge_capabilities() status from supported to partial and removes blanket full-parity wording from README/CLAUDE/CHANGELOG/docs. Evidence: Julia bridge ledger 20/20, live gllvmTMB bridge 552/552, temporary developed-env Documenter build completed with known warnings."
     },
     {
       "capability": "Derived phylo-signal Wald CI",
@@ -231,7 +245,7 @@
       "engine": "partial",
       "bridge": "partial",
       "inference": "partial",
-      "evidence": "R-first post-fit bridge surface now includes coef(), tidy(), glance(), augment(), summary(), print(summary()), predict(), fitted(), residuals(), simulate(), nobs(), ordination extractors, ordiplot(), and plot(type=\"ordination\") for current in-sample bridge payloads. Conditional in-sample simulate() is routed for gaussian, poisson, binomial, NB2, NB1, Beta, Gamma, and narrow trait-aligned mixed-family objects; live bridge tests pass 519/519 against GLLVM.jl-integration after method-ledger expansion. Still unsupported: newdata prediction/augmentation, link-scale augment rows, fixed-effects-only augment rows, covariance/CI/diagnostic payloads in glance, unconditional/bootstrap-grade simulation, masked-response simulation, ordinal simulation/probability payloads, tidy SE/CI columns, tidy random parameters/cutpoints, vcov payloads, broader plots, and richer diagnostic residuals."
+      "evidence": "R-first post-fit bridge surface now includes coef(), tidy(), glance(), augment(), summary(), print(summary()), predict(), fitted(), residuals(), simulate(), nobs(), ordination extractors, ordiplot(), and plot(type=\"ordination\") for current in-sample bridge payloads. Conditional in-sample simulate() is routed for gaussian, poisson, binomial, NB2, NB1, Beta, Gamma, and narrow trait-aligned mixed-family objects; live bridge tests pass 552/552 against GLLVM.jl-integration after method-ledger expansion. Still unsupported: newdata prediction/augmentation, link-scale augment rows, fixed-effects-only augment rows, covariance/CI/diagnostic payloads in glance, unconditional/bootstrap-grade simulation, masked-response simulation, ordinal simulation/probability payloads, tidy SE/CI columns, tidy random parameters/cutpoints, vcov payloads, broader plots, and richer diagnostic residuals."
     },
     {
       "capability": "Exact implicit gradients",
