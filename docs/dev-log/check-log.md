@@ -6021,6 +6021,39 @@ Results:
 - GitHub lane check: PR #59 remains the separate draft
   `claude/package-work-catchup-mQiZM` lane; no PR or issue was modified.
 
+## 2026-06-15 - Capability matrix current R-bridge sync
+
+### Scope
+
+Updated the dashboard-side capability/bridge matrix so it follows the R-first
+plan and the current paired `gllvmTMB` evidence.
+
+Changes:
+
+- Marked this checkout as the dashboard checkout, not the current paired bridge
+  runtime; current R bridge evidence targets `GLLVM.jl-integration`.
+- Updated the `gllvmTMB` live bridge evidence row to `394/394`, including drift
+  guard, fixed-effect-X rows, missing-response masks, Gaussian CI transport,
+  NB1 no-X admission, and NB1 post-fit methods.
+- Promoted NB1 from `planned` to `covered` engine / `partial` R bridge with the
+  exact no-X, complete-data tested boundary.
+- Marked response missingness, prediction/fitted, and residual rows as partial
+  where live R bridge routes exist, while keeping unsupported cells explicit.
+
+### Checks Run
+
+```sh
+git diff --check
+```
+
+Result: clean.
+
+### Rose Verdict
+
+PASS WITH NOTES. The matrix now reflects current R bridge evidence without
+claiming full bridge coverage. Remaining rows still need issue-led R tests,
+docs, and parity evidence before promotion.
+
 ## 2026-06-03 - Augmented Phylogenetic Poisson Laplace Prototype
 
 ### Scope

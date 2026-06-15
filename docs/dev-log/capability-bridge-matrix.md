@@ -15,16 +15,17 @@ ledger, and Rose verdict agree.
   fix, #96 Laplace mode-finder safeguard, and Gamma analytic-gradient default.
   These are local branch facts only until the PR/issue ledger is reconciled on
   GitHub.
-- The local `GLLVM.jl` checkout exposes a deliberately narrow
-  `GLLVM.bridge_fit` for no-covariate one-part families. Earlier local tests
-  passed `test/test_bridge_fit.jl` 175/175. Bridge support is still `partial`,
-  not `covered`, because fixed-effect `X`, mixed families, missing-response
-  masks, broader CI routing, and full live `gllvmTMB` statistical parity remain
-  open.
-- The `gllvmTMB` `engine-julia` branch live bridge tests now pass 53/53 against
-  current `GLLVM.jl-integration`, including Gaussian Wald/profile/bootstrap
-  CI transport. That validates bridge mechanics for the tested cells; it does
-  not validate all family/structure parity rows.
+- The local dashboard `GLLVM.jl` checkout is not the current paired bridge
+  runtime. Current R bridge evidence targets `GLLVM.jl-integration` at the head
+  shown on the dashboard, where `GLLVM.bridge_capabilities()` exposes the
+  tested bridge surface. Do not infer bridge capability from stale files in this
+  dashboard worktree.
+- The `gllvmTMB` `engine-julia` branch live bridge tests now pass 394/394
+  against current `GLLVM.jl-integration`, including the bridge capability drift
+  guard, fixed-effect-X rows, missing-response-mask rows, Gaussian
+  Wald/profile/bootstrap CI transport, NB1 no-X admission, and NB1 post-fit
+  methods. That validates bridge mechanics for the tested cells; it does not
+  validate all family/structure parity rows.
 - Non-Gaussian CI wording has had a first cleanup pass, but the matrix remains
   `partial` for non-Gaussian inference overall until docs, issue evidence,
   visual diagnostics, and R bridge parity all agree.
@@ -49,7 +50,7 @@ ledger, and Rose verdict agree.
 | Poisson | covered | partial | partial | GLLVM #91 | Minimal no-X `bridge_fit` route and Wald CI parity tested; high-rate divergence fixed locally on `GLLVM.jl-integration`, but GitHub issue/PR reconciliation and broader R parity remain open. |
 | Binomial | covered | partial | partial | bridge parity | Minimal no-X `bridge_fit` route tested; CI labels and R roundtrip need evidence. |
 | Negative binomial NB2 | covered | partial | partial | bridge parity | Minimal no-X `bridge_fit` route tested; dispersion transform and observed-Hessian parity must stay explicit. |
-| NB1 | planned | planned | planned | new issue | No public covered claim. |
+| NB1 | covered | partial | partial | bridge parity | `GLLVM.jl-integration` exposes a no-X `bridge_fit(family="nb1")` row; `gllvmTMB` admits complete-data no-X NB1 fits with formula-vs-direct logLik equality, Wald `phi` CI smoke, and post-fit predict/fitted/residuals/augment/simulate coverage. NB1 X, masks, masked simulations, profile/bootstrap CIs, native TMB parity, and mixed-family NB1 remain queued. |
 | Beta | covered | partial | partial | bridge parity | Minimal no-X `bridge_fit` route tested; precision transform and CI route need parity evidence. |
 | Gamma | covered | partial | partial | gradient default gate | Minimal no-X `bridge_fit` route tested; #96 mode-finder safeguards fixed locally; Gamma now defaults to analytic gradients locally after quick/medium benchmark gates with logLik deltas <= 1.9e-12 and full `Pkg.test()` green. |
 | Ordinal | partial | partial | partial | bridge/API row | Minimal no-X `bridge_fit` route tested; cutpoint, prediction, and label route need bridge tests. |
@@ -76,7 +77,7 @@ ledger, and Rose verdict agree.
 
 | Capability | Julia engine | R bridge | Inference | Priority issue/gate | Evidence boundary |
 | --- | --- | --- | --- | --- | --- |
-| Response missingness | partial | planned | partial | GLLVM #27 | Mask data term only; all-true mask equals complete logLik exactly. |
+| Response missingness | partial | partial | partial | GLLVM #27 | Mask data term only; all-true mask equals complete logLik exactly. R bridge coverage is admitted only for no-X non-Gaussian rows live-tested against `GLLVM.jl-integration`; Gaussian/NB1 masks, X+mask, masked simulations, and masked CI refits remain unsupported. |
 | Predictor missingness | partial | planned | partial | GLLVM #27 | Explicit `mi()` design only; no mean-imputation shortcut. |
 | Mixed missingness | planned | planned | planned | new issue | Define interaction or reject deliberately. |
 | Unbalanced tables | partial | planned | partial | bridge issue | Preserve table shape and labels through R route. |
@@ -90,8 +91,8 @@ ledger, and Rose verdict agree.
 | Bootstrap CIs | partial | partial | partial | coverage issue | Calibration claims require coverage study. |
 | Derived CIs | partial | planned | partial | bridge/docs issue | #92 phylo-signal transformed-Wald scale/export/test gap is fixed locally and wired into the full suite; R bridge exposure and public docs remain open. |
 | AIC/BIC/logLik | covered | partial | covered | bridge method issue | Minimal bridge returns AIC/BIC/logLik and tests logLik parity; R object methods need roundtrip tests. |
-| Prediction/fitted | partial | planned | partial | bridge method issue | Prediction labels and newdata route need tests. |
-| Residuals | partial | planned | partial | bridge method issue | Dunn-Smyth/Pearson support must be family-specific. |
+| Prediction/fitted | partial | partial | partial | bridge method issue | In-sample prediction/fitted rows are routed for current one-part bridge payloads, including NB1 no-X and selected X rows. `newdata`, ordinal probabilities, mixed-family row-wise links, and broader structures remain queued. |
+| Residuals | partial | partial | partial | bridge method issue | Response residual and augment rows are routed for current in-sample bridge payloads, including masked-row status where admitted. Dunn-Smyth/Pearson support and ordinal probabilities remain family-specific future work. |
 | Summary/coef/vcov | partial | planned | partial | bridge method issue | Flat payload and stable labels required. |
 
 ## Speed And Algorithm Rows
