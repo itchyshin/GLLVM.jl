@@ -28,7 +28,7 @@
       "engine": "covered",
       "bridge": "partial",
       "inference": "partial",
-      "evidence": "Minimal no-X bridge_fit route tested; cbind binomial and broader R parity remain gates."
+      "evidence": "Minimal no-X bridge_fit route tested. gllvmTMB now transports binomial cbind(successes, failures) as Julia Y plus N for complete and missing-response no-X reduced-rank bridge rows; live bridge tests pass 277/277 against GLLVM.jl-integration. Broader R/TMB parity, mixed-family cbind, X+mask, and masked interval endpoints remain gates."
     },
     {
       "capability": "Negative binomial NB2",
@@ -110,9 +110,9 @@
     {
       "capability": "Response missingness",
       "engine": "partial",
-      "bridge": "planned",
+      "bridge": "partial",
       "inference": "partial",
-      "evidence": "Mask semantics must be engine+bridge verified."
+      "evidence": "No-X response masks are engine+bridge verified for Poisson, Bernoulli Binomial, cbind Binomial, NB2, Beta, Gamma, and Ordinal-probit against GLLVM.jl-integration. Gaussian masks, X+mask, mixed missingness, and masked CI endpoints remain unsupported gates."
     },
     {
       "capability": "Predictor missingness",
