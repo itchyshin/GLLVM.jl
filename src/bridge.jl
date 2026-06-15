@@ -49,8 +49,9 @@
 #   ci_upper       :: Vector{Float64} — upper CI bounds
 #   ci_note        :: String          — caveats (empty unless CIs were skipped)
 #
-# v1 scope: the 8 one-part families main provides a fitter for (gaussian, poisson,
-# binomial, negbinomial/nb2, nb1, beta, gamma, ordinal). For the Gaussian fit the
+# v1 scope: the one-part families main provides a fitter for (gaussian,
+# poisson, binomial, negbinomial/nb2, nb1, beta, gamma, ordinal,
+# ordinal_probit). For the Gaussian fit the
 # latent-scale Sigma/correlation/communality use the package extractors; for the
 # non-Gaussian fits they use the self-contained shared-block (Lambda*Lambda') form,
 # pending the salvage of the link-residual table + non-Gaussian extractors (then the
@@ -60,7 +61,7 @@
 # `correlation` as the headline. Lognormal is a documented follow-up; fixed-effect
 # X is wired (Gaussian); confidence intervals (Wald / profile / bootstrap) route
 # through `options["ci_method"]` for the one-part families (Gaussian, Poisson,
-# Binomial, NB2, NB1, Beta, Gamma, Ordinal) — the mixed-family and REML paths
+# Binomial, NB2, NB1, Beta, Gamma, Ordinal/Ordinal-probit) — the mixed-family and REML paths
 # skip-with-note since their fits have no native confint engine yet.
 #
 # ADDITIVE: this file + an include/export line in GLLVM.jl. It edits no fitter or
@@ -105,9 +106,10 @@ function _bridge_family_key(family::AbstractString)
     key in ("beta",)                                                && return "beta"
     key in ("gamma",)                                               && return "gamma"
     key in ("ordinal", "ordered")                                   && return "ordinal"
+    key in ("ordinal_probit", "ordered_probit")                     && return "ordinal_probit"
     throw(ArgumentError(
         "bridge_fit: unsupported family \"$family\"; this engine build supports " *
-        "gaussian, poisson, binomial, negbinomial (nbinom2), nb1, beta, gamma, ordinal"))
+        "gaussian, poisson, binomial, negbinomial (nbinom2), nb1, beta, gamma, ordinal, ordinal_probit"))
 end
 
 # One-part NON-Gaussian families `fit_gllvm_cov` fits with covariates X (it has a
@@ -334,7 +336,10 @@ end
 
 # --- one-part dispatch -----------------------------------------------------
 
-const _BRIDGE_MASK_FAMILIES = ("poisson", "binomial", "negbinomial", "beta", "gamma", "ordinal")
+const _BRIDGE_MASK_FAMILIES = (
+    "poisson", "binomial", "negbinomial", "beta", "gamma", "ordinal",
+    "ordinal_probit",
+)
 
 function _bridge_mask(mask, p::Integer, n::Integer)
     mask === nothing && return nothing
@@ -545,13 +550,16 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
         return _bridge_assemble_ng(fit, "gamma", "gamma_rr", traits, units, p, K, Yf, nothing;
             alpha = fit.β, dispersion = fill(fit.α, p), df = p + _bridge_rr_df(p, K) + 1,
             scores = scores, ci = ci, mask = M)
-    elseif key == "ordinal"
+    elseif key in ("ordinal", "ordinal_probit")
         Yi = round.(Int, Yf)
-        fit = fit_ordinal_gllvm(Yi; K = K, mask = M)
+        link = key == "ordinal_probit" ? ProbitLink() : LogitLink()
+        fit = fit_ordinal_gllvm(Yi; K = K, link = link, mask = M)
         scores = _bridge_scores(() -> getLV(fit, Yi; rotate = true, mask = M))
         ci = ci_method == "none" ? nothing :
              _bridge_compute_ci_ng(fit, Float64.(Yi), nothing, ci_method, ci_level, ci_nboot, ci_seed)
-        return _bridge_assemble_ng(fit, "ordinal", "ordinal_rr", traits, units, p, K, Yi, nothing;
+        family_out = key == "ordinal_probit" ? "ordinal_probit" : "ordinal"
+        model_out = key == "ordinal_probit" ? "ordinal_probit_rr" : "ordinal_rr"
+        return _bridge_assemble_ng(fit, family_out, model_out, traits, units, p, K, Yi, nothing;
             alpha = fill(NaN, p), dispersion = fill(NaN, p),
             df = (fit.C - 1) + _bridge_rr_df(p, K), scores = scores, ci = ci, mask = M)
     end

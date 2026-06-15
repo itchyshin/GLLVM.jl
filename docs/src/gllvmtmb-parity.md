@@ -101,18 +101,20 @@ not bugs on either side.
 Engine-side parity is broader than the current R bridge admission surface. The
 current `gllvmTMB(..., engine = "julia")` bridge admits complete, balanced,
 one-part reduced-rank models for Gaussian, Poisson, Binomial, NB2, Beta, Gamma,
-and Ordinal no-X fits. Fixed-effect covariates (`X`) are admitted for complete,
-balanced one-part Gaussian, Poisson, Binomial, NB2, Beta, and Gamma fits.
+and Ordinal-probit no-X fits. Fixed-effect covariates (`X`) are admitted for
+complete, balanced one-part Gaussian, Poisson, Binomial, NB2, Beta, and Gamma fits.
 For Gaussian covariate fits the bridge returns `mean_coef`, the full coefficient
 vector for the supplied `X` array, so the R side can reconstruct in-sample
 fitted values without guessing from the per-trait mean summary.
 Initial response-missing masks are admitted only for no-X one-part
 non-Gaussian bridge fits through an explicit `mask` (`true = observed`);
-the R bridge currently live-tests the Poisson route end to end. Gaussian
-response masks, X+mask fits, masked CI/profile/bootstrap refits, mixed-family
-bridge metadata, ordinal covariate fits, structured covariance terms, and
-user-selectable Julia-side optimizer controls remain explicit bridge follow-ups,
-not silently supported cells.
+the R bridge live-tests Poisson, Bernoulli Binomial, NB2, Beta, Gamma, and
+Ordinal-probit routes end to end. Ordinal-probit is fit/nobs/mask/link-tested;
+prediction and residual methods remain blocked until the bridge carries
+cutpoint/probability payloads. Gaussian response masks, X+mask fits, masked
+CI/profile/bootstrap refits, mixed-family bridge metadata, ordinal covariate
+fits, structured covariance terms, and user-selectable Julia-side optimizer
+controls remain explicit bridge follow-ups, not silently supported cells.
 
 REML is a Gaussian-only bridge/engine claim in this project. HSquared's very fast
 AI-REML work is useful design input for exact Gaussian variance-component cells,

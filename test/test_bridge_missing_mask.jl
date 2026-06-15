@@ -43,6 +43,27 @@ using Random
         @test br_alltrue.loadings == br_nomask.loadings
     end
 
+    @testset "ordinal_probit mask uses the probit ordinal bridge" begin
+        Yo = [1 2 3 1 2 3 1 2 3 1 2 3
+              2 3 1 2 3 1 2 3 1 2 3 1
+              3 1 2 3 1 2 3 1 2 3 1 2]
+        mo = trues(size(Yo))
+        mo[1, 4] = false
+        mo[3, 9] = false
+        Yog = copy(Yo)
+        Yog[.!mo] .= 1
+
+        br = bridge_fit(; y = Float64.(Yog), family = "ordinal_probit", d = K, mask = mo)
+        direct = fit_ordinal_gllvm(Yog; K = K, link = ProbitLink(), mask = mo)
+
+        @test br.family == "ordinal_probit"
+        @test br.model == "ordinal_probit_rr"
+        @test all(==("ProbitLink"), br.link)
+        @test br.nobs == count(mo)
+        @test isapprox(br.loglik, direct.loglik; atol = 1e-8, rtol = 0)
+        @test isapprox(br.loadings, getLoadings(direct; rotate = true); atol = 1e-8, rtol = 0)
+    end
+
     @testset "unsupported masked bridge cells fail loudly" begin
         X = randn(p, n, 1)
         @test_throws ArgumentError bridge_fit(; y = Y, family = "poisson", d = K,

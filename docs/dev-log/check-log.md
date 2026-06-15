@@ -1,5 +1,47 @@
 # Check Log
 
+## 2026-06-15 - Ordinal-Probit Bridge Mask Key
+
+### Scope
+
+Added a distinct `ordinal_probit` bridge family key so the R
+`gllvmTMB::ordinal_probit()` constructor routes to cumulative-probit ordinal
+GLLVM fits instead of the cumulative-logit `ordinal` default.
+
+- `bridge_fit(...; family = "ordinal_probit", mask = M)` now calls
+  `fit_ordinal_gllvm(..., link = ProbitLink(), mask = M)`;
+- bare `family = "ordinal"` remains cumulative-logit;
+- masked no-X one-part family evidence now covers Poisson, Bernoulli Binomial,
+  NB2, Beta, Gamma, and Ordinal-probit from the R bridge.
+
+### Checks Run
+
+```sh
+~/.juliaup/bin/julia --project=. test/test_bridge_missing_mask.jl
+```
+
+Result: `23/23 pass` in `16.8s`.
+
+```sh
+~/.juliaup/bin/julia --project=. test/test_bridge_ci.jl
+```
+
+Result: `66/66 pass` in `46.2s`.
+
+Paired live R bridge:
+
+```sh
+GLLVM_JL_PATH="/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration" Rscript -e 'options(gllvmTMB.julia_home="/Users/z3437171/.juliaup/bin"); devtools::test(filter="julia-bridge")'
+```
+
+Result: `232/232 pass` in `50.9s`.
+
+### Rose Boundary
+
+PASS WITH NOTES. This proves the bridge family key, probit-link routing, and
+R-live masked no-X family matrix. It does not add masked CI refits, X+mask,
+Gaussian masks, or ordinal prediction/residual payloads.
+
 ## 2026-06-15 - Bridge Missing-Response Mask Hook
 
 ### Scope
