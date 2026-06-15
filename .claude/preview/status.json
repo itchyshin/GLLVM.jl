@@ -1,9 +1,9 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T11:19:07.000Z",
+  "generated_at": "2026-06-15T11:28:29.000Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "Priority shifted to R-first completion: gllvmTMB is now the functional reference surface, and GLLVM.jl follows as a parity and acceleration target. Latest local bridge slice admits fixed-effect X for complete balanced one-part Gaussian, Poisson, Binomial, NB2, Beta, and Gamma engine=\"julia\" fits; missing-response masks remain an explicit fail-loud guard. Evidence: gllvmTMB live julia-bridge tests passed 64/64, devtools::test(filter=\"julia-bridge\") passed 64/64 in 41.0s, and paired GLLVM.jl test_bridge_x.jl passed 50/50. Next work should prioritise gllvmTMB user-facing functionality, status guards, docs, and tests first; Julia engine work then targets those proven R cells.",
+  "current_work": "R-first sequencing is active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as parity and acceleration target. Latest local gllvmTMB work admits fixed-effect X for complete balanced one-part Gaussian/Poisson/Binomial/NB2/Beta/Gamma engine=\"julia\" fits, keeps missing-response masks as an explicit guard, and adds coef()/summary() post-fit inspection for gllvmTMB_julia objects. Evidence: bridge test_file passed 77/77, devtools::test(filter=\"julia-bridge\") passed 77/77 in 46.4s, and paired GLLVM.jl test_bridge_x.jl passed 50/50. Next R-first slices: predict/residual contracts, missing-response bridge spec/guard-to-mask plan, and issue-led capability rows before more Julia engine breadth.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
     {
@@ -31,7 +31,7 @@
     {
       "name": "GLLVM.jl local board worktree",
       "branch": "codex/non-gaussian-fitter-gradients",
-      "head": "c684965 + R-first status refresh pending",
+      "head": "ebcfb9f + postfit status refresh pending",
       "dirty": false,
       "note": "Dashboard/ledger branch, ahead of remote by local commits. Exact self-SHA changes when this status refresh is committed."
     },
@@ -45,9 +45,9 @@
     {
       "name": "gllvmTMB",
       "branch": "engine-julia",
-      "head": "ad9912a",
+      "head": "c912a8e",
       "dirty": false,
-      "note": "engine-julia clean, ahead of remote; bridge X admission committed locally. Live julia-bridge test_file passed 64/64 and devtools::test(filter=\"julia-bridge\") passed 64/64 in 41.0s against GLLVM.jl-integration."
+      "note": "engine-julia clean, ahead of remote; bridge X admission and post-fit coef/summary methods committed locally. Live julia-bridge test_file passed 77/77 and devtools::test(filter=\"julia-bridge\") passed 77/77 in 46.4s against GLLVM.jl-integration."
     },
     {
       "name": "drmTMB",
@@ -574,6 +574,10 @@
   "activity": [
     {
       "time": "now",
+      "html": "<b>Pat/Hopper post-fit slice green.</b> <code>gllvmTMB_julia</code> now has <code>coef()</code>, <code>summary()</code>, and printable summaries for fitted Julia-engine objects. Pure-R synthetic-object tests and live Julia bridge tests passed <code>77/77</code>."
+    },
+    {
+      "time": "now",
       "html": "<b>Hopper bridge-X slice green.</b> <code>gllvmTMB</code> now admits fixed-effect <code>X</code> for complete balanced one-part Gaussian/Poisson/Binomial/NB2/Beta/Gamma Julia-engine fits; response-missing masks still fail loudly. Live bridge tests passed <code>64/64</code>; paired <code>GLLVM.jl test_bridge_x.jl</code> passed <code>50/50</code>."
     },
     {
@@ -639,20 +643,16 @@
     {
       "time": "now",
       "html": "<b>Rose audit.</b> No publish/tag signoff: dashboard and public docs must not imply main, registry, CRAN, or bridge completion."
-    },
-    {
-      "time": "now",
-      "html": "<b>Grace/Shannon truth snapshot.</b> GLLVM #95 is green but draft; #94 is divergent/non-mergeable; gllvmTMB f046d0f is local-only with no remote CI."
     }
   ],
   "inflight": [
     {
       "owner": "Ada",
-      "text": "New sequencing: finish gllvmTMB user-facing functionality first, with explicit bridge status guards; GLLVM.jl then targets the proven R cells for parity and acceleration."
+      "text": "R-first sequencing is now reflected on the board; latest banked R slices are Julia bridge X admission and gllvmTMB_julia coef/summary methods."
     },
     {
       "owner": "Hopper",
-      "text": "Bridge-X admission is locally banked; next R-first bridge slice should be missing-response mask guard/spec or post-fit method coverage, not Julia engine breadth for its own sake."
+      "text": "Next R-first bridge surface: define predict()/residuals() fitted-value contract or specify missing-response mask admission; avoid new Julia breadth until R target semantics are crisp."
     },
     {
       "owner": "Gauss/Karpinski",
@@ -660,10 +660,14 @@
     },
     {
       "owner": "Rose",
-      "text": "Audit focus shifts to R-side capability/status truth first: no bridge or speed claim unless R functionality, CI/status, docs, tests, and Julia parity target agree."
+      "text": "Bridge claims currently covered for X admission and coef/summary only; predict/residuals, missing masks, mixed-family metadata, and non-Gaussian X CIs remain partial/queued."
     }
   ],
   "evidence": [
+    {
+      "status": "covered",
+      "text": "Pat/Hopper: gllvmTMB Julia-engine post-fit methods committed locally at c912a8e; coef()/summary()/print(summary()) tested on synthetic and live bridge objects; test_file passed 77/77 and devtools::test(filter=\"julia-bridge\") passed 77/77 in 46.4s."
+    },
     {
       "status": "partial",
       "text": "Ada/Rose: roadmap priority changed to R-first completion. gllvmTMB is the functional reference surface; GLLVM.jl follows as parity/acceleration target. REML remains Gaussian-only; AI-REML is later exact-Gaussian scouting."
