@@ -472,14 +472,16 @@ end
 
 function getLV(fit::NB1Fit, Y::AbstractMatrix{<:Integer};
                N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
-               rotate::Bool = true)
+               rotate::Bool = true, mask = nothing)
     p, n = size(Y)
     Nm = N === nothing ? fill(1, p, n) : N
     K = size(fit.Λ, 2)
     fam = NB1(fit.φ)
     Z = Matrix{Float64}(undef, K, n)
     @inbounds for s in 1:n
-        Z[:, s] = _laplace_mode(fam, view(Y, :, s), view(Nm, :, s), fit.Λ, fit.β, fit.link)
+        mi = mask === nothing ? nothing : view(mask, :, s)
+        Z[:, s] = _laplace_mode(fam, view(Y, :, s), view(Nm, :, s), fit.Λ,
+                                fit.β, fit.link; mask = mi)
     end
     Zt = permutedims(Z)
     return rotate ? Zt * _svd_rotation(fit.Λ) : Zt

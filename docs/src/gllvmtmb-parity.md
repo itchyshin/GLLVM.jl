@@ -114,20 +114,26 @@ vector for the supplied `X` array, so the R side can reconstruct in-sample
 fitted values without guessing from the per-trait mean summary.
 Initial response-missing masks are admitted only for no-X one-part non-Gaussian
 bridge fits through an explicit `mask` (`true = observed`); the R bridge
-live-tests Poisson, Bernoulli Binomial, NB2, Beta, Gamma, and Ordinal-probit
-routes end to end. NB1 and Gaussian response masks remain explicit follow-ups.
+live-tests Poisson, Bernoulli Binomial, NB2, NB1, Beta, Gamma, and
+Ordinal-probit routes end to end. Gaussian response masks remain an explicit
+follow-up.
 Ordinal-probit is fit/nobs/mask/link-tested; prediction and residual methods
 remain blocked until the bridge carries cutpoint/probability payloads. NB1
 post-fit prediction, residual, augmentation, and conditional simulation are
-routed only for complete-data no-X fits. X+mask fits, masked CI/profile/bootstrap
-refits, mixed-family R bridge admission, ordinal covariate fits, structured
-covariance terms, and user-selectable Julia-side optimizer controls remain
-explicit bridge follow-ups, not silently supported cells. The Julia-side
-mixed-family `bridge_fit` route now returns row-aligned per-trait `families`
-labels and per-trait `link` labels, with CI requests reported as an explicit
-empty CI-status payload. The R bridge still rejects mixed-family Julia-engine
-fits until the native `gllvmTMB` selector oracle, point/logLik parity, labels,
-and CI-status rows are all validated together.
+routed for complete-data no-X fits and for masked fits where the fitted means are
+available; masked simulation and masked CI/profile/bootstrap refits remain
+rejected with explicit CI-status messages. X+mask fits, ordinal covariate fits,
+structured covariance terms, and user-selectable Julia-side optimizer controls
+remain explicit bridge follow-ups, not silently supported cells.
+
+The mixed-family R bridge is partial, not planned and not complete: complete
+balanced trait-aligned no-X/no-mask/no-CI Julia-engine point fits are admitted
+for Gaussian, Poisson, Binomial, NB2, Beta, and Gamma components. The bridge
+stores row-aligned per-trait `families` and `link` labels, validates the native
+`gllvmTMB` selector oracle, checks direct-wrapper logLik equality, and routes
+current in-sample post-fit methods with unavailable-CI status. Mixed-family X,
+masks, cbind/weights, REML, ordinal/NB1/two-part components, and CI endpoints
+remain rejected deliberately.
 
 REML is a Gaussian-only bridge/engine claim in this project. HSquared's very fast
 AI-REML work is useful design input for exact Gaussian variance-component cells,
@@ -178,7 +184,7 @@ be built *with* validation rather than shipped unverified:
   headline random slopes `(1 + x | g)` (which need the new RE engine substrate).
 - **R bridge (`engine = "julia"`)** — in progress through the R package bridge.
   Complete-data one-part fits, selected fixed-effect-X rows, selected
-  missing-response-mask rows, Gaussian CI transport, and NB1 no-X post-fit
-  methods are admitted only where live R tests cover them. Mixed-family
-  metadata, NB1-X, masked CIs, ordinal probability payloads, structured
+  missing-response-mask rows including NB1, Gaussian CI transport, and NB1
+  post-fit methods are admitted only where live R tests cover them. Mixed-family
+  point-fit metadata, NB1-X, masked CIs, ordinal probability payloads, structured
   dependence, and broader post-fit methods remain bridge follow-ups.

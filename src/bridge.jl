@@ -349,7 +349,7 @@ end
 # --- one-part dispatch -----------------------------------------------------
 
 const _BRIDGE_MASK_FAMILIES = (
-    "poisson", "binomial", "negbinomial", "beta", "gamma", "ordinal",
+    "poisson", "binomial", "negbinomial", "nb1", "beta", "gamma", "ordinal",
     "ordinal_probit",
 )
 
@@ -587,13 +587,13 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
             scores = scores, ci = ci, mask = M)
     elseif key == "nb1"
         Yi = round.(Int, Yf)
-        fit = fit_nb1_gllvm(Yi; K = K)
-        scores = _bridge_scores(() -> getLV(fit, Yi; rotate = true))
+        fit = fit_nb1_gllvm(Yi; K = K, mask = M)
+        scores = _bridge_scores(() -> getLV(fit, Yi; rotate = true, mask = M))
         ci = ci_method == "none" ? nothing :
              _bridge_compute_ci_ng(fit, Float64.(Yi), nothing, ci_method, ci_level, ci_nboot, ci_seed)
         return _bridge_assemble_ng(fit, "nb1", "nb1_rr", traits, units, p, K, Yi, nothing;
             alpha = fit.β, dispersion = fill(fit.φ, p), df = p + _bridge_rr_df(p, K) + 1,
-            scores = scores, ci = ci)
+            scores = scores, ci = ci, mask = M)
     elseif key == "beta"
         fit = fit_beta_gllvm(Yf; K = K, mask = M)
         scores = _bridge_scores(() -> getLV(fit, Yf; rotate = true, mask = M))

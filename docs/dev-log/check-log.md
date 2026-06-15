@@ -1272,3 +1272,81 @@ PASS WITH NOTES. The stale blanket parity wording is removed from the visible
 Julia surfaces touched here, and the R bridge live test accepts the partial-status
 metadata. This slice changes claim metadata only; it does not promote a new
 family, CI route, or bridge admission cell.
+
+## 2026-06-15 - NB1 missing-response bridge mask admission
+
+### Scope
+
+Extended the paired Julia bridge route so NB1 (`nb1`) no-X reduced-rank point
+fits can accept the same observed-cell mask already used by the R-first
+`gllvmTMB` missing-response bridge. This is an incremental bridge admission:
+masked cells are excluded from the NB1 likelihood and score reconstruction, but
+masked CI/profile/bootstrap refits, NB1 fixed-effect-X fits, Gaussian masks, and
+mixed-family masks remain separate unsupported cells.
+
+Changes:
+
+- Added `nb1` to `_BRIDGE_MASK_FAMILIES`.
+- Passed `mask = M` into `fit_nb1_gllvm()` and NB1 bridge assembly.
+- Added `mask` support to `getLV(::NB1Fit, ...)` so bridge scores ignore
+  masked-cell sentinels.
+- Added NB1 native-vs-bridge parity and sentinel-invariance tests.
+- Updated `docs/src/gllvmtmb-parity.md` and `docs/src/roadmap.md` to reflect the
+  R-first bridge ledger, complete balanced mixed-family point-fit row, and the
+  remaining unsupported cells.
+
+### Checks Run
+
+```sh
+~/.juliaup/bin/julia --project=. --startup-file=no test/test_bridge_capabilities.jl
+```
+
+Result: `20/20 pass`.
+
+```sh
+~/.juliaup/bin/julia --project=. --startup-file=no test/test_bridge_missing_mask.jl
+```
+
+Result: `34/34 pass`.
+
+```sh
+GLLVM_JL_PATH="/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration" Rscript -e 'options(gllvmTMB.julia_home="/Users/z3437171/.juliaup/bin"); devtools::test(filter="julia-bridge")'
+```
+
+Result in `/Users/z3437171/Dropbox/Github Local/gllvmTMB`: `FAIL 0 | WARN 0 |
+SKIP 0 | PASS 571` in `70.7s`.
+
+```sh
+~/.juliaup/bin/julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: `3931 pass / 3 broken / 0 fail` in `31m06.6s`. Direct core run reported
+`Aqua not in this environment` and `JET not in this environment`; run
+`Pkg.test()` for the full quality battery.
+
+```sh
+tmp=$(mktemp -d); JULIA_PROJECT="$tmp" ~/.juliaup/bin/julia --startup-file=no -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.add(["Documenter", "DocumenterVitepress"]); include("docs/make.jl")'
+```
+
+Result: exit code 0. Residual warnings were the known pre-existing absolute
+local links, optional Vitepress assets, npm audit warnings, and chunk-size
+warning; Vitepress rendered successfully.
+
+```sh
+rg -n "R bridge still rejects mixed-family|mixed-family R bridge admission|do not admit family lists|NB1.*missing-response.*remain|NB1 covariate\s*or missing-response|missing-response masks are wired only for poisson, binomial, negbinomial, beta|17b2154|6056071|f1894bc" README.md CLAUDE.md CHANGELOG.md docs/src src test -S
+```
+
+Result: no matches.
+
+```sh
+git diff --check
+```
+
+Result: clean.
+
+### Rose Verdict
+
+PASS WITH NOTES. NB1 masked point fits and masked score reconstruction are now
+covered for the bridge, with live R-Julia evidence. Masked CIs/simulations,
+NB1-X, Gaussian masks, and mixed-family masks remain deliberate unsupported
+cells.

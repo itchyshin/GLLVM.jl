@@ -48,8 +48,12 @@ future design input for exact Gaussian cells, not non-Gaussian Laplace.
 - **Zero-inflated and additional two-part families** — ZIP/ZINB and Delta-Gamma
   after the current two-part substrate hardens.
 - **Same-as-R model syntax**: `gllvm(@formula(traits(...) ~ ... + phylo(...)), data; family = ...)`.
-- **The R bridge** — reconcile the live `gllvmTMB` JuliaCall route with the
-  tested minimal Julia `bridge_fit`, then widen deliberately to fixed-effect
-  `X`, missingness, mixed families, and post-fit methods.
+- **The R bridge** — keep the live `gllvmTMB` JuliaCall route as the admission
+  oracle, then widen deliberately from the current partial rows: fixed-effect
+  `X` for selected one-part families, response masks for selected no-X
+  non-Gaussian families, complete balanced mixed-family no-X/no-mask/no-CI point
+  fits, and in-sample post-fit methods. Remaining bridge work is X+mask,
+  mixed-family X/masks/CIs, ordinal prediction payloads, newdata, richer
+  diagnostics, and parity evidence for every promoted row.
 
 This roadmap evolves; issue #11 is always current.

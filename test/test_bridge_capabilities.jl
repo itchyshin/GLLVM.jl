@@ -49,6 +49,7 @@ using GLLVM
         "poisson",
         "binomial",
         "negbinomial",
+        "nb1",
         "beta",
         "gamma",
         "ordinal",
