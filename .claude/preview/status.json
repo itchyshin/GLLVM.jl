@@ -1,9 +1,9 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T18:19:12.000Z",
+  "generated_at": "2026-06-15T18:29:22.000Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "R-first sequencing remains active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as the parity/acceleration target. Latest banked slice: gllvmTMB cdb7256 adds native mixed-family public confint() rho evidence and forwards link_residual through the non-profile rho dispatcher. Evidence: stage37 mixed-family 40/40, targeted confint/correlation gate 40 pass / 39 expected heavy skips, full devtools::test() 2950 pass / 722 skips / 0 failures / 3 pre-existing warnings, pkgdown check green. The previous gllvmTMB d22d0de narrow mixed-family engine=\"julia\" bridge admission remains banked with live bridge 496/496. Boundary: native Fisher-z/Wald rho intervals only; no calibrated coverage, mixed-family profile/bootstrap rho promotion, Julia mixed-family CI endpoints, mixed X/masks/cbind/weights, REML, or broad native-TMB-vs-Julia equivalence. REML remains Gaussian-only.",
+  "current_work": "R-first sequencing is now the explicit operating rule: complete the gllvmTMB user surface first, then make GLLVM.jl match and accelerate those exact targets. Latest banked slice: gllvmTMB d9e26d3 adds heavy-gated native mixed-family public confint() profile/bootstrap route evidence, after cdb7256 added Fisher-z/Wald public rho evidence and link_residual forwarding. Evidence: heavy mixed-family correlation gate 56 pass / 0 skips / 0 failures / 0 warnings, default mixed-family correlation gate 0 pass / 8 expected heavy skips, full devtools::test() 2950 pass / 724 skips / 0 failures / 3 pre-existing warnings, pkgdown check green. The previous gllvmTMB d22d0de narrow mixed-family engine=\"julia\" bridge admission remains banked with live bridge 496/496. Boundary: native rho route evidence only; no calibrated coverage, no richer matrix-level CI-status payload yet, no Julia mixed-family CI endpoints, no mixed X/masks/cbind/weights route, no broad native-TMB-vs-Julia equivalence. REML remains Gaussian-only; HSquared-style AI-REML is later exact-Gaussian scouting, not non-Gaussian/Laplace wording.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
     {
@@ -31,7 +31,7 @@
     {
       "name": "GLLVM.jl local board worktree",
       "branch": "codex/non-gaussian-fitter-gradients",
-      "head": "b0c77dd",
+      "head": "1ae7667",
       "dirty": false,
       "note": "Dashboard/ledger branch. Not the current paired runtime engine for X/CI bridge evidence: this worktree still rejects fixed-effect covariate X in src/bridge.jl. Use GLLVM.jl-integration for the current bridge tests until branches are reconciled."
     },
@@ -45,9 +45,9 @@
     {
       "name": "gllvmTMB",
       "branch": "engine-julia",
-      "head": "cdb7256",
+      "head": "d9e26d3",
       "dirty": false,
-      "note": "engine-julia has local R-first bridge slices committed through NB1 no-X admission, NB1 post-fit methods, public fixed-effect-X evidence for Binomial/NB2/Gamma, NB2/Beta/Gamma conditional simulate() support, the native mixed-family selector oracle, narrow mixed-family Julia bridge admission, and native mixed-family confint() rho evidence. gllvm_julia_capabilities() marks NB1 and trait-aligned mixed-family no-X/no-mask/no-CI rows as partial/admitted and enforces that R-admitted TRUE rows are supported by GLLVM.bridge_capabilities(). Current green bridge evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration and passes 496/496; the latest native R full suite passes 2950 with 722 skips, 0 failures, and 3 pre-existing warnings."
+      "note": "engine-julia has local R-first bridge slices committed through NB1 no-X admission, NB1 post-fit methods, public fixed-effect-X evidence for Binomial/NB2/Gamma, NB2/Beta/Gamma conditional simulate() support, the native mixed-family selector oracle, narrow mixed-family Julia bridge admission, and native mixed-family confint() rho route evidence through Fisher-z/Wald/profile/bootstrap. gllvm_julia_capabilities() marks NB1 and trait-aligned mixed-family no-X/no-mask/no-CI rows as partial/admitted and enforces that R-admitted TRUE rows are supported by GLLVM.bridge_capabilities(). Current green bridge evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration and passes 496/496; the latest native R full suite passes 2950 with 724 skips, 0 failures, and 3 pre-existing warnings."
     },
     {
       "name": "drmTMB",
@@ -592,7 +592,7 @@
   "activity": [
     {
       "time": "now",
-      "html": "<b>Fisher/Hopper/Rose native mixed-family <code>confint()</code> rho route green.</b> <code>confint(fit, parm=\"rho:unit:1,2\")</code> now has public-route evidence on the Stage 37 mixed-family oracle, and the non-profile rho dispatcher forwards <code>link_residual=\"auto\"</code> / <code>\"none\"</code> to <code>extract_correlations()</code>. Evidence: Stage 37 <code>40/40</code>; targeted confint/correlation gate <code>40</code> pass / <code>39</code> expected heavy skips; full <code>devtools::test()</code> <code>2950</code> pass / <code>722</code> skips / <code>0</code> failures / <code>3</code> pre-existing warnings; <code>pkgdown::check_pkgdown()</code> green. Boundary: native Fisher-z/Wald rho intervals only; no calibrated coverage, mixed-family profile/bootstrap rho promotion, or Julia mixed-family CI endpoints."
+      "html": "<b>Fisher/Hopper/Rose native mixed-family <code>confint()</code> rho route green.</b> <code>confint(fit, parm=\"rho:unit:1,2\")</code> now has public-route evidence on the Stage 37 mixed-family oracle for Fisher-z/Wald plus heavy-gated profile/bootstrap routing. The non-profile rho dispatcher forwards <code>link_residual=\"auto\"</code> / <code>\"none\"</code> to <code>extract_correlations()</code>. Evidence: heavy mixed-family correlation gate <code>56</code> pass / <code>0</code> skips / <code>0</code> failures / <code>0</code> warnings; default gate <code>0</code> pass / <code>8</code> expected heavy skips; full <code>devtools::test()</code> <code>2950</code> pass / <code>724</code> skips / <code>0</code> failures / <code>3</code> pre-existing warnings; <code>pkgdown::check_pkgdown()</code> green. Boundary: native route evidence only; no calibrated coverage, no richer CI-status matrix payload yet, and no Julia mixed-family CI endpoints."
     },
     {
       "time": "now",
@@ -778,7 +778,7 @@
   "inflight": [
     {
       "owner": "Ada",
-      "text": "R-first sequencing remains active. Native mixed-family selector metadata, narrow Julia mixed-family bridge admission, and native public confint() rho evidence are banked through gllvmTMB cdb7256. The immediate next gate is R-side mixed-family inference breadth, issue-led capability ledger cleanup, and bridge CI-status hardening before any Julia CI endpoint admission."
+      "text": "R-first sequencing is now explicit. Native mixed-family selector metadata, narrow Julia mixed-family bridge admission, and native public confint() rho route evidence are banked through gllvmTMB d9e26d3. The immediate next gate is R-side CI-status hardening, capability-led gllvmTMB functionality cleanup, and issue ledger updates before any Julia CI endpoint admission."
     },
     {
       "owner": "Rose",
@@ -794,13 +794,13 @@
     },
     {
       "owner": "Fisher",
-      "text": "Every admitted route needs point/logLik evidence plus CI or CI-status evidence. REML stays Gaussian-only; non-Gaussian uses ML/Laplace language."
+      "text": "Every admitted route needs point/logLik evidence plus CI or CI-status evidence. REML stays Gaussian-only; non-Gaussian uses ML/Laplace/profile/bootstrap language. HSquared-style AI-REML is later exact-Gaussian scouting only."
     }
   ],
   "evidence": [
     {
       "status": "partial",
-      "text": "Fisher/Hopper/Rose: native mixed-family confint rho evidence committed locally at gllvmTMB cdb7256. confint(fit, parm=\"rho:<tier>:i,j\") forwards link_residual to extract_correlations() for non-profile methods, and Stage 37 now checks finite bounded Fisher-z/Wald rho intervals through the public confint() route. Evidence: stage37-mixed-family 40/40, targeted confint/correlation gate 40 pass / 39 expected heavy skips, full devtools::test() 2950 pass / 722 skips / 0 failures / 3 pre-existing warnings, pkgdown check green, git diff --check clean. Boundary: native non-profile rho intervals only; profile/bootstrap promotion, calibrated coverage, and Julia mixed-family CI endpoints remain future slices."
+      "text": "Fisher/Hopper/Rose: native mixed-family confint rho route evidence committed locally through gllvmTMB d9e26d3. confint(fit, parm=\"rho:<tier>:i,j\") forwards link_residual to extract_correlations() for non-profile methods, Stage 37 checks finite bounded Fisher-z/Wald rho intervals through the public confint() route, and heavy-gated tests now cover public profile/bootstrap routing on the three-family oracle. Evidence: heavy mixed-family correlation gate 56 pass / 0 skips / 0 failures / 0 warnings, default mixed-family correlation gate 0 pass / 8 expected heavy skips, full devtools::test() 2950 pass / 724 skips / 0 failures / 3 pre-existing warnings, pkgdown check green, git diff --check clean. Boundary: route evidence only; calibrated coverage, richer boundary-partial CI-status payloads, and Julia mixed-family CI endpoints remain future slices."
     },
     {
       "status": "partial",
