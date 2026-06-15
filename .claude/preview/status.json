@@ -1,9 +1,9 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T20:02:00.000Z",
+  "generated_at": "2026-06-15T21:15:00.000Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "R-first sequencing is now the explicit operating rule: complete the gllvmTMB user surface first, then make GLLVM.jl match and accelerate those exact targets. Latest banked slice: gllvmTMB e575d08 preserves row-level ci_status in plot(type=\"integration\"), plot(type=\"communality\"), plot_correlations(), and existing ci_status rows passed through plot_Sigma_table(). Evidence: targeted plot gate 493 pass / 0 fail / 0 warn; full devtools::test() 2976 pass / 724 skips / 0 failures / 3 pre-existing warnings; pkgdown check green; staged diff whitespace clean. Previous gllvmTMB 9789b1f exposes ci_status in extractor tables, and 4bc4e65 standardizes derived confint() matrix ci_status attributes. Boundary: plot data payload/reporting status only; visual encoding, rendered figure review, calibrated coverage, unconditional phylogenetic bootstrap, and Julia bridge CI endpoint parity remain later targets. REML remains Gaussian-only; HSquared-style AI-REML is later exact-Gaussian scouting, not non-Gaussian/Laplace wording.",
+  "current_work": "R-first sequencing is now the explicit operating rule: complete the gllvmTMB user surface first, then make GLLVM.jl match and accelerate those exact targets. Latest banked slice: gllvmTMB 5272d7e expands gllvm_julia_capabilities() from a fit/X/mask ledger into a method-aware R bridge contract: no-X Wald/profile/bootstrap CI admission and in-sample post-fit method rows for coef, fit statistics, summary, prediction, residuals, simulation, and ordination. Paired metadata is banked at GLLVM.jl-integration 78f8916 so the live guard checks every admitted R logical column against GLLVM.bridge_capabilities(). Evidence: R no-Julia bridge gate 219 pass / 18 expected skips; live R-Julia bridge gate 519/519; full devtools::test() 2989 pass / 724 skips / 0 failures / 3 pre-existing external warnings; pkgdown check green; Julia metadata test 19/19. Boundary: contract and drift guard only, not new fitters, estimates, CI numerics, or speed. REML remains Gaussian-only; HSquared-style AI-REML is later exact-Gaussian scouting, not non-Gaussian/Laplace wording.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
     {
@@ -13,7 +13,7 @@
     },
     {
       "label": "Slices visible",
-      "value": "61",
+      "value": "62",
       "status": "partial"
     },
     {
@@ -31,23 +31,23 @@
     {
       "name": "GLLVM.jl local board worktree",
       "branch": "codex/non-gaussian-fitter-gradients",
-      "head": "e6ea6b9",
+      "head": "a0022ef",
       "dirty": false,
-      "note": "Dashboard/ledger branch. Not the current paired runtime engine for X/CI bridge evidence: this worktree still rejects fixed-effect covariate X in src/bridge.jl. Use GLLVM.jl-integration for the current bridge tests until branches are reconciled."
+      "note": "Dashboard/ledger branch. Not the current paired runtime engine for X/CI bridge evidence: this worktree still rejects fixed-effect covariate X in src/bridge.jl. Use GLLVM.jl-integration for current bridge tests until branches are reconciled. This head is the pre-sync board source SHA; the board commit itself may be one local commit ahead."
     },
     {
       "name": "GLLVM.jl integration",
       "branch": "codex/high-rate-poisson-safeguard",
-      "head": "21f6662",
+      "head": "78f8916",
       "dirty": false,
-      "note": "Paired runtime engine checkout for current gllvmTMB bridge evidence. Adds GLLVM.bridge_capabilities() for R drift guards; X-aware bridge, Gaussian mean_coef, bridge_fit(mask=...), ordinal_probit ProbitLink, binomial N-matrix cbind transport, fixed-effect tidy() rows, conditional simulate() rows, cached glance() rows, in-sample augment() rows, NB1 no-X bridge support, and mixed-family bridge payload labels. Current targeted mixed-label tests pass 18/18 plus capabilities 9/9; current live gllvmTMB bridge regression is 496/496."
+      "note": "Paired runtime engine checkout for current gllvmTMB bridge evidence. Adds GLLVM.bridge_capabilities() for R drift guards; X-aware bridge, Gaussian mean_coef, bridge_fit(mask=...), ordinal_probit ProbitLink, binomial N-matrix cbind transport, fixed-effect tidy() rows, conditional simulate() rows, cached glance() rows, in-sample augment() rows, NB1 no-X bridge support, mixed-family bridge payload labels, and method-level capability metadata. Current method metadata test passes 19/19; current live gllvmTMB bridge regression is 519/519."
     },
     {
       "name": "gllvmTMB",
       "branch": "engine-julia",
-      "head": "e575d08",
+      "head": "5272d7e",
       "dirty": false,
-      "note": "engine-julia has local R-first bridge/inference/plot slices committed through NB1 no-X admission, NB1 post-fit methods, public fixed-effect-X evidence for Binomial/NB2/Gamma, NB2/Beta/Gamma conditional simulate() support, native mixed-family selector oracle, narrow mixed-family Julia bridge admission, native mixed-family confint() rho route evidence, derived confint ci_status semantics, visible extractor table ci_status for repeatability/communality/phylogenetic signal, and plot/report ci_status payload propagation. Current native R full suite passes 2976 with 724 skips, 0 failures, and 3 pre-existing warnings. Current green bridge evidence still uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration and passes 496/496; Julia CI endpoint parity remains queued."
+      "note": "engine-julia has local R-first bridge/inference/plot slices committed through NB1 no-X admission, NB1 post-fit methods, public fixed-effect-X evidence for Binomial/NB2/Gamma, NB2/Beta/Gamma conditional simulate() support, native mixed-family selector oracle, narrow mixed-family Julia bridge admission, native mixed-family confint() rho route evidence, derived confint ci_status semantics, visible extractor table ci_status for repeatability/communality/phylogenetic signal, plot/report ci_status payload propagation, and method-aware Julia bridge capability rows. Current native R full suite passes 2989 with 724 skips, 0 failures, and 3 pre-existing warnings. Current green bridge evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration and passes 519/519; Julia CI endpoint parity remains queued."
     },
     {
       "name": "drmTMB",
@@ -339,7 +339,7 @@
         {
           "name": "Gate-vs-engine guard for gllvmTMB #488",
           "status": "partial",
-          "evidence": "R gate narrowed to current GLLVM.bridge_fit and now exposes gllvm_julia_capabilities() as a tested R-side admission ledger. Bridge family, X, mask, masked-CI status, cbind-binomial transport, post-fit rows, simulation rows, ledger, and narrow mixed-family admission are live-tested against GLLVM.jl-integration (496/496). Automated cross-repo drift CI remains queued."
+          "evidence": "R gate narrowed to current GLLVM.bridge_fit and now exposes gllvm_julia_capabilities() as a method-aware R-side admission ledger. Bridge family, X, mask, masked-CI status, cbind-binomial transport, no-X CI rows, post-fit rows, simulation rows, and narrow mixed-family admission are live-tested against GLLVM.jl-integration (519/519). Automated cross-repo drift CI remains queued."
         },
         {
           "name": "Wording freeze: default GLLVM.jl fitting path only",
@@ -354,7 +354,7 @@
         {
           "name": "Post-fit methods through bridge",
           "status": "partial",
-          "evidence": "coef()/tidy()/glance()/augment()/summary()/predict()/fitted()/residuals()/simulate()/nobs() plus extract_ordination()/getLoadings()/getLV()/rotate_loadings()/ordiplot()/plot(type=\"ordination\") are live-tested for current in-sample bridge payloads, including fixed-effect tidy rows, cached glance fit statistics, in-sample augment row diagnostics, conditional gaussian/poisson/binomial/NB2/NB1/Beta/Gamma simulation, NB1 no-X post-fit routes, and row-family-aware prediction/residual/augment/simulate for narrow trait-aligned mixed-family objects (496/496 against GLLVM.jl-integration). tidy() deliberately excludes loadings, SEs, CIs, random parameters, and cutpoints until covariance/parameter-class payloads are routed. glance() is fit statistics only. augment() is response-scale/default-conditional/in-sample only. simulate() is conditional only, not unconditional/bootstrap-grade. vcov() fails with an explicit not-yet-routed status. newdata prediction/augmentation, link-scale augment rows, ordinal probabilities, covariance payloads, broader plot types, masked-response simulation, and richer diagnostic residuals remain queued."
+          "evidence": "coef()/tidy()/glance()/augment()/summary()/predict()/fitted()/residuals()/simulate()/nobs() plus extract_ordination()/getLoadings()/getLV()/rotate_loadings()/ordiplot()/plot(type=\"ordination\") are live-tested for current in-sample bridge payloads, including fixed-effect tidy rows, cached glance fit statistics, in-sample augment row diagnostics, conditional gaussian/poisson/binomial/NB2/NB1/Beta/Gamma simulation, NB1 no-X post-fit routes, and row-family-aware prediction/residual/augment/simulate for narrow trait-aligned mixed-family objects (519/519 against GLLVM.jl-integration after method-ledger expansion). tidy() deliberately excludes loadings, SEs, CIs, random parameters, and cutpoints until covariance/parameter-class payloads are routed. glance() is fit statistics only. augment() is response-scale/default-conditional/in-sample only. simulate() is conditional only, not unconditional/bootstrap-grade. vcov() fails with an explicit not-yet-routed status. newdata prediction/augmentation, link-scale augment rows, ordinal probabilities, covariance payloads, broader plot types, masked-response simulation, and richer diagnostic residuals remain queued."
         }
       ]
     },
@@ -592,6 +592,10 @@
   "activity": [
     {
       "time": "now",
+      "html": "<b>Hopper/Rose method-aware bridge ledger green.</b> <code>gllvm_julia_capabilities()</code> now separates fit admission from no-X CI and in-sample post-fit method rows, and the live guard checks every admitted logical R column against <code>GLLVM.bridge_capabilities()</code>. Evidence: no-Julia bridge <code>219</code> pass / <code>18</code> expected skips; live bridge <code>519/519</code>; paired Julia metadata <code>19/19</code>; full <code>devtools::test()</code> <code>2989</code> pass / <code>724</code> skips / <code>0</code> failures / <code>3</code> pre-existing external warnings; <code>pkgdown::check_pkgdown()</code> green. Boundary: contract and drift guard only, not new fitters, estimates, CI numerics, or speed."
+    },
+    {
+      "time": "now",
       "html": "<b>Florence/Fisher/Hopper/Rose plot CI-status propagation green.</b> <code>plot(type=\"integration\")</code>, <code>plot(type=\"communality\")</code>, and <code>plot_correlations()</code> now keep row-level <code>ci_status</code> in <code>gllvmTMB_data</code>; <code>plot_Sigma_table()</code> preserves an existing <code>ci_status</code> column from report-ready rows. Evidence: targeted plot gate <code>493</code> pass / <code>0</code> fail / <code>0</code> warn; full <code>devtools::test()</code> <code>2976</code> pass / <code>724</code> skips / <code>0</code> failures / <code>3</code> pre-existing warnings; <code>pkgdown::check_pkgdown()</code> green. Boundary: plot geometry is unchanged; status payloads are for audit/reporting, not calibrated coverage or Julia endpoint parity."
     },
     {
@@ -786,7 +790,7 @@
   "inflight": [
     {
       "owner": "Ada",
-      "text": "R-first sequencing is now explicit. Native mixed-family selector metadata, narrow Julia mixed-family bridge admission, public rho route evidence, derived confint CI-status semantics, extractor table ci_status, and plot/report ci_status payloads are banked through gllvmTMB e575d08. The immediate next gate is the method-aware bridge gate-vs-engine drift guard before any new Julia CI endpoint admission."
+      "text": "R-first sequencing is explicit. Method-aware bridge capability ledger is now banked through gllvmTMB 5272d7e and GLLVM.jl-integration 78f8916. Next gate: use this ledger to drive R-side missing-response, mixed-family, post-fit, and CI parity issues, then mirror or accelerate in Julia only after the R targets are clear."
     },
     {
       "owner": "Rose",
@@ -806,6 +810,10 @@
     }
   ],
   "evidence": [
+    {
+      "status": "partial",
+      "text": "Hopper/Rose: method-aware Julia bridge capability ledger committed locally at gllvmTMB 5272d7e and paired GLLVM.jl-integration 78f8916. gllvm_julia_capabilities() now separates fit admission from no-X CI and in-sample post-fit method rows, and the live drift guard compares every admitted R logical column against GLLVM.bridge_capabilities(). Evidence: GLLVM metadata smoke printed 10 capability rows, GLLVM capability test 19/19, no-Julia bridge 219 pass / 18 expected skips, live bridge 519/519, full devtools::test() 2989 pass / 724 skips / 0 failures / 3 pre-existing warnings, pkgdown check green. Boundary: contract/metadata only; no new estimates, likelihoods, CI numerics, REML, or speed claim."
+    },
     {
       "status": "partial",
       "text": "Florence/Fisher/Hopper/Rose: plot CI-status propagation committed locally at gllvmTMB e575d08. plot(type=\"integration\"), plot(type=\"communality\"), and plot_correlations() now carry row-level ci_status in gllvmTMB_data; plot_Sigma_table() preserves supplied ci_status rows. Evidence: targeted plot gate passed 493 with 0 skips/failures/warnings; full devtools::test() passed 2976 with 724 skips, 0 failures, and 3 pre-existing warnings; pkgdown check green; staged whitespace check clean. Boundary: plot/report payload propagation only; captions do not enumerate every status, no vdiffr/rendered visual gate, no calibrated coverage, and Julia bridge endpoint parity remains queued."

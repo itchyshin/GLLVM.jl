@@ -1,5 +1,61 @@
 # Check Log
 
+## 2026-06-15 - Board sync after method-aware bridge capability ledger
+
+### Scope
+
+Refreshed the mission-control board and sweep matrix after the R-first
+`gllvmTMB` method-aware Julia bridge capability ledger slice.
+
+- `.claude/preview/status.json` now records `gllvmTMB` head `5272d7e` and
+  paired `GLLVM.jl-integration` head `78f8916`.
+- Current work now says the operating rule is R-first: complete the `gllvmTMB`
+  user surface first, then make `GLLVM.jl` match and accelerate those targets.
+- Activity and evidence rows now summarize the method-aware bridge ledger:
+  no-X CI admission, in-sample post-fit method rows, and drift checks against
+  `GLLVM.bridge_capabilities()`.
+- `.claude/preview/sweep.json` now includes a
+  `Method-aware Julia bridge capability ledger` row marked `partial`, with an
+  explicit contract-only boundary.
+- The in-flight Ada row now points to using the ledger to drive the next
+  R-side missing-response, mixed-family, post-fit, and CI parity slices.
+
+No Julia engine code, R bridge code, or package tests changed in this
+repository.
+
+### Checks Run
+
+```sh
+jq empty .claude/preview/status.json .claude/preview/sweep.json
+git diff --check -- .claude/preview/status.json .claude/preview/sweep.json
+```
+
+Result: both clean.
+
+```sh
+curl -fsS http://127.0.0.1:8770/status.json | jq -r '.generated_at, (.repos[] | select(.name=="gllvmTMB") | .head), .activity[0].html, .evidence[0].text'
+```
+
+Result: `2026-06-15T21:15:00.000Z`, `5272d7e`, and the first
+activity/evidence rows describe the method-aware bridge capability ledger.
+
+```sh
+curl -fsS http://127.0.0.1:8770/sweep.json | jq -r '.rows[] | select(.capability=="Method-aware Julia bridge capability ledger") | [.engine,.bridge,.inference,.evidence] | @tsv'
+```
+
+Result: row status is `partial / partial / partial`, with evidence for
+`gllvmTMB 5272d7e`, `GLLVM.jl-integration 78f8916`, no-Julia bridge
+`219` pass / `18` expected skips, live bridge `519/519`, full R suite
+`2989` pass / `724` skips / `0` failures / `3` pre-existing warnings, and
+green pkgdown plus Julia metadata checks.
+
+### Rose Boundary
+
+PASS WITH NOTES. The board now reflects the R-first contract slice without
+claiming new fitters, estimates, likelihoods, CI numerics, REML support, or
+speed. REML remains Gaussian-only; HSquared-style AI-REML remains later
+exact-Gaussian scouting only.
+
 ## 2026-06-15 - Board sync after gllvmTMB plot CI-status propagation
 
 ### Scope

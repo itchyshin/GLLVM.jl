@@ -231,7 +231,7 @@
       "engine": "partial",
       "bridge": "partial",
       "inference": "partial",
-      "evidence": "R-first post-fit bridge surface now includes coef(), tidy(), glance(), augment(), summary(), print(summary()), predict(), fitted(), residuals(), simulate(), nobs(), ordination extractors, ordiplot(), and plot(type=\"ordination\") for current in-sample bridge payloads. Conditional in-sample simulate() is routed for gaussian, poisson, binomial, NB2, NB1, Beta, Gamma, and narrow trait-aligned mixed-family objects; live bridge tests pass 496/496 against GLLVM.jl-integration. Still unsupported: newdata prediction/augmentation, link-scale augment rows, fixed-effects-only augment rows, covariance/CI/diagnostic payloads in glance, unconditional/bootstrap-grade simulation, masked-response simulation, ordinal simulation/probability payloads, tidy SE/CI columns, tidy random parameters/cutpoints, vcov payloads, broader plots, and richer diagnostic residuals."
+      "evidence": "R-first post-fit bridge surface now includes coef(), tidy(), glance(), augment(), summary(), print(summary()), predict(), fitted(), residuals(), simulate(), nobs(), ordination extractors, ordiplot(), and plot(type=\"ordination\") for current in-sample bridge payloads. Conditional in-sample simulate() is routed for gaussian, poisson, binomial, NB2, NB1, Beta, Gamma, and narrow trait-aligned mixed-family objects; live bridge tests pass 519/519 against GLLVM.jl-integration after method-ledger expansion. Still unsupported: newdata prediction/augmentation, link-scale augment rows, fixed-effects-only augment rows, covariance/CI/diagnostic payloads in glance, unconditional/bootstrap-grade simulation, masked-response simulation, ordinal simulation/probability payloads, tidy SE/CI columns, tidy random parameters/cutpoints, vcov payloads, broader plots, and richer diagnostic residuals."
     },
     {
       "capability": "Exact implicit gradients",
@@ -260,6 +260,13 @@
       "bridge": "partial",
       "inference": "partial",
       "evidence": "gllvmTMB e575d08 keeps row-level ci_status in plot(type=\"integration\"), plot(type=\"communality\"), and plot_correlations() gllvmTMB_data, and preserves supplied ci_status in plot_Sigma_table() report-ready rows. Targeted plot gate passed 493/493; full devtools::test() passed 2976 with 724 skips, 0 failures, and 3 pre-existing warnings; pkgdown check green. Visual encoding, rendered article review, calibrated coverage, and Julia bridge CI endpoint parity remain queued."
+    },
+    {
+      "capability": "Method-aware Julia bridge capability ledger",
+      "engine": "partial",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "gllvmTMB 5272d7e expands gllvm_julia_capabilities() with no-X CI and in-sample post-fit method rows; GLLVM.jl-integration 78f8916 exposes matching bridge_capabilities() metadata. No-Julia bridge gate passed 219 with 18 expected skips; live bridge passed 519/519; full devtools::test() passed 2989 with 724 skips, 0 failures, and 3 pre-existing external warnings; pkgdown and Julia metadata test are green. Contract/metadata only; no new fitters, CI numerics, REML, or speed claim."
     }
   ]
 }
