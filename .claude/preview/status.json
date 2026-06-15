@@ -1,9 +1,9 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T12:41:08.822Z",
+  "generated_at": "2026-06-15T13:06:11.000Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "R-first sequencing is active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as parity and acceleration target. Latest R-side slice wires plot(type=\"ordination\") for gllvmTMB_julia as a narrow ggplot route over cached scores/loadings; bridge tests passed 125/125 against the paired GLLVM.jl-integration checkout. Rose target-checkout guard is active: X/mean_coef/CI bridge evidence currently targets /Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration, while the dashboard worktree /Users/z3437171/Dropbox/Github Local/GLLVM.jl still rejects X payloads and must not be treated as green for those claims.",
+  "current_work": "R-first sequencing is active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as parity and acceleration target. Latest slice admits the first missing-response bridge route: one-part no-X non-Gaussian observed-cell masks, R-live-tested end-to-end for Poisson with masked residual rows marked status=\"masked\". GLLVM.jl-integration now has the paired bridge_fit(mask=...) hook and mask-aware score/link-residual summaries. Rose boundary: Gaussian masks, X+mask fits, masked CI/profile/bootstrap refits, and per-family R parity beyond Poisson remain separate gates.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
     {
@@ -31,23 +31,23 @@
     {
       "name": "GLLVM.jl local board worktree",
       "branch": "codex/non-gaussian-fitter-gradients",
-      "head": "96385ab + status-cleanup pending",
+      "head": "7b1557b + status-refresh pending",
       "dirty": true,
       "note": "Dashboard/ledger branch. Not the current paired runtime engine for X/CI bridge evidence: this worktree still rejects fixed-effect covariate X in src/bridge.jl. Use GLLVM.jl-integration for the current bridge tests until branches are reconciled."
     },
     {
       "name": "GLLVM.jl integration",
       "branch": "codex/high-rate-poisson-safeguard",
-      "head": "a0e6848",
-      "dirty": false,
-      "note": "Paired runtime engine checkout for current gllvmTMB bridge evidence. X-aware bridge and Gaussian mean_coef payload are committed here; latest bridge tests against this checkout pass 125/125 from gllvmTMB."
+      "head": "a0e6848 + mask-hook pending",
+      "dirty": true,
+      "note": "Paired runtime engine checkout for current gllvmTMB bridge evidence. X-aware bridge, Gaussian mean_coef, and the new bridge_fit(mask=...) hook are validated here; latest live gllvmTMB bridge tests against this checkout pass 150/150."
     },
     {
       "name": "gllvmTMB",
       "branch": "engine-julia",
-      "head": "da2b5a6",
-      "dirty": false,
-      "note": "engine-julia clean and ahead of remote by local commits through the paired-checkout guard. Current green bridge evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration; NEWS/check-log explicitly warn that stale/dashboard GLLVM.jl checkouts may reject X/CI payloads."
+      "head": "da2b5a6 + response-mask pending",
+      "dirty": true,
+      "note": "engine-julia has local response-mask bridge changes pending commit. Current green bridge evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration; NEWS/check-log explicitly warn that stale/dashboard GLLVM.jl checkouts may reject newer payloads."
     },
     {
       "name": "drmTMB",
@@ -169,7 +169,7 @@
       "key": "P0",
       "name": "Rehydrate, merge gates, and current truth",
       "status": "partial",
-      "done": 1,
+      "done": 2,
       "total": 4,
       "open": true,
       "slices": [
@@ -350,13 +350,13 @@
       "slices": [
         {
           "name": "Response-missing masks: mask data term only",
-          "status": "queued",
-          "evidence": "Complete-data all-true mask must equal current logLik exactly."
+          "status": "partial",
+          "evidence": "GLLVM.bridge_fit(mask=...) now normalizes all-true masks to the complete-data path and passes sentinel-invariance/native parity tests for Poisson; broader family bridge rows remain queued."
         },
         {
           "name": "R bridge missing response",
-          "status": "queued",
-          "evidence": "Wide/long shape preservation and true=observed mask required."
+          "status": "partial",
+          "evidence": "gllvmTMB missing=miss_control(response=\"include\") now routes a true=observed mask to Julia for one-part no-X non-Gaussian fits; Poisson is live-tested end-to-end, with masked residuals marked status=\"masked\"."
         },
         {
           "name": "Predictor-missing FIML/MI matrix",
@@ -574,6 +574,10 @@
   "activity": [
     {
       "time": "now",
+      "html": "<b>Hopper/Gauss response-mask bridge slice green.</b> <code>gllvmTMB(..., engine = \"julia\", missing = miss_control(response = \"include\"))</code> now routes an observed-cell mask to <code>GLLVM.bridge_fit(mask=...)</code> for one-part no-X non-Gaussian fits. Poisson is live-tested end-to-end; masked residual rows report <code>status=\"masked\"</code>. GLLVM mask hook tests passed <code>17/17</code>; gllvmTMB live bridge tests passed <code>150/150</code>; default no-Julia mode passed <code>79</code> with <code>10</code> skips."
+    },
+    {
+      "time": "now",
       "html": "<b>Florence/Hopper ggplot ordination slice green.</b> <code>plot(type = \"ordination\")</code> now works for <code>gllvmTMB_julia</code> as a narrow ggplot route over cached scores/loadings. Unsupported plot types and standardized arrows fail explicitly. Live bridge tests passed <code>125/125</code> against <code>GLLVM.jl-integration</code>."
     },
     {
@@ -676,11 +680,11 @@
   "inflight": [
     {
       "owner": "Ada",
-      "text": "R-first sequencing is active; latest banked slices close cached Julia bridge ordination/nobs/ordiplot/ggplot-ordination access on the gllvmTMB surface."
+      "text": "R-first sequencing is active; latest banked slice admits the first missing-response bridge route on the gllvmTMB surface, with Poisson live-tested and wider masked CI/family parity still queued."
     },
     {
       "owner": "Hopper",
-      "text": "Next R-first bridge surface: define and implement the GLLVM.bridge_fit observed-mask contract, then admit gllvmTMB missing-response masks against that target."
+      "text": "Next R-first bridge surface: add per-family masked R parity rows beyond Poisson, then decide masked CI-status/refit transport."
     },
     {
       "owner": "Gauss/Karpinski",
@@ -692,6 +696,10 @@
     }
   ],
   "evidence": [
+    {
+      "status": "partial",
+      "text": "Hopper/Gauss: response-mask bridge slice pending commit; GLLVM.jl-integration test_bridge_missing_mask passed 17/17, bridge_x passed 52/52, bridge_ci passed 66/66, missing_data passed 34/34 with Distributions loaded, postfit blocks passed, confint_family passed 122/122; gllvmTMB live bridge test_file and devtools::test(filter=\"julia-bridge\") both passed 150/150 against GLLVM.jl-integration. Poisson is the R-live-tested masked route; Gaussian/X/masked-CI remain unsupported."
+    },
     {
       "status": "covered",
       "text": "Rose: gllvmTMB paired-checkout guard committed locally at da2b5a6; NEWS/check-log now distinguish GLLVM.jl-integration runtime evidence from the dashboard GLLVM.jl worktree."
