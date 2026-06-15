@@ -8,6 +8,12 @@ GitHub:
 
 ➡️ **[GLLVM.jl roadmap (issue #11)](https://github.com/itchyshin/GLLVM.jl/issues/11)**
 
+Current sequencing is R-first. Native `gllvmTMB` functionality and the R user
+workflow define the oracle; `GLLVM.jl` mirrors admitted rows, supplies parity
+evidence, and accelerates them after point estimates, logLik/objective, CI or
+CI-status, docs, tests, and Rose audit agree. REML is Gaussian-only; AI-REML is
+future design input for exact Gaussian cells, not non-Gaussian Laplace.
+
 ## Phase → release map
 
 | Release | Theme | Highlights |

@@ -1,9 +1,9 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T16:45:24.000Z",
+  "generated_at": "2026-06-15T17:18:42.000Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "R-first sequencing remains active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as the parity/acceleration target. Latest slice: conditional in-sample simulate() now covers NB2, Beta, and Gamma Julia-engine bridge objects at gllvmTMB 17b2154, using fitted means plus row-aligned dispersion payloads. Evidence: no-Julia bridge tests pass 175 with 17 expected skips; live bridge tests pass 439/439 against GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration; REML remains Gaussian-only.",
+  "current_work": "R-first sequencing remains active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as the parity/acceleration target. Latest slice: native mixed-family selector oracle hardened at gllvmTMB 4474e8b, so named mixed-family lists now match selector levels by name and preserve row-level family/link metadata for later Julia parity. Evidence: focused Stage 37 passed 33/33; full devtools::test() passed 2912 with 721 expected skips and 3 pre-existing warnings; live bridge tests still pass 439/439 against GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration; pkgdown check is green. REML remains Gaussian-only.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
     {
@@ -31,7 +31,7 @@
     {
       "name": "GLLVM.jl local board worktree",
       "branch": "codex/non-gaussian-fitter-gradients",
-      "head": "a0b1a41",
+      "head": "f1894bc",
       "dirty": false,
       "note": "Dashboard/ledger branch. Not the current paired runtime engine for X/CI bridge evidence: this worktree still rejects fixed-effect covariate X in src/bridge.jl. Use GLLVM.jl-integration for the current bridge tests until branches are reconciled."
     },
@@ -45,9 +45,9 @@
     {
       "name": "gllvmTMB",
       "branch": "engine-julia",
-      "head": "17b2154",
+      "head": "4474e8b",
       "dirty": false,
-      "note": "engine-julia has local R-first bridge slices committed through NB1 no-X admission, NB1 post-fit methods, public fixed-effect-X evidence for Binomial/NB2/Gamma, and NB2/Beta/Gamma conditional simulate() support. gllvm_julia_capabilities() marks NB1 as partial/admitted for no-X complete-data reduced-rank fits, keeps mixed-family vector as planned R debt, and enforces that R-admitted TRUE rows are supported by GLLVM.bridge_capabilities(). Current green bridge evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration and passes 439/439."
+      "note": "engine-julia has local R-first bridge slices committed through NB1 no-X admission, NB1 post-fit methods, public fixed-effect-X evidence for Binomial/NB2/Gamma, NB2/Beta/Gamma conditional simulate() support, and the native mixed-family selector oracle. gllvm_julia_capabilities() marks NB1 as partial/admitted for no-X complete-data reduced-rank fits, keeps mixed-family Julia bridge vectors as planned R debt, and enforces that R-admitted TRUE rows are supported by GLLVM.bridge_capabilities(). Current green bridge evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration and passes 439/439."
     },
     {
       "name": "drmTMB",
@@ -396,15 +396,15 @@
     {
       "key": "P7",
       "name": "Mixed and cross-family models",
-      "status": "queued",
-      "done": 0,
+      "status": "active",
+      "done": 1,
       "total": 6,
       "open": false,
       "slices": [
         {
           "name": "Native per-response family dispatch",
-          "status": "queued",
-          "evidence": "Homogeneous vector must equal single-family fit exactly."
+          "status": "partial",
+          "evidence": "Native gllvmTMB named-list selector oracle is hardened at 4474e8b: selector levels map by name, family/link ids are row-aligned, and prediction/simulation preserve family-valid output. Julia mixed-vector payload labels and R-Julia parity remain queued."
         },
         {
           "name": "Gaussian plus Poisson first mixed slice",
@@ -592,6 +592,10 @@
   "activity": [
     {
       "time": "now",
+      "html": "<b>Hopper/Fisher/Rose native mixed-family oracle green.</b> Native <code>gllvmTMB</code> mixed-family selector handling now matches named family lists to selector levels by name, preserves row-level family/link metadata, rejects mismatched selectors explicitly, and keeps prediction/simulation family-valid. Evidence: Stage 37 passed <code>33/33</code>; mixed-family + bootstrap filter passed <code>33</code> with <code>7</code> expected skips; full <code>devtools::test()</code> passed <code>2912</code> with <code>721</code> skips and <code>3</code> pre-existing warnings; live bridge tests still passed <code>439/439</code>; <code>pkgdown::check_pkgdown()</code> is green. Boundary: this is the native R/TMB oracle, not mixed-family Julia bridge admission yet."
+    },
+    {
+      "time": "now",
       "html": "<b>Hopper/Fisher dispersion simulate slice green.</b> <code>simulate.gllvmTMB_julia()</code> now supports conditional in-sample NB2, Beta, and Gamma draws from cached fitted means plus row-aligned dispersion payloads: NB2 uses <code>rnbinom(mu, size=r)</code>, Beta uses <code>rbeta(mu*phi, (1-mu)*phi)</code>, and Gamma uses <code>rgamma(shape=alpha, scale=mu/alpha)</code>. Evidence: no-Julia bridge tests passed <code>175</code> with <code>17</code> expected skips; live bridge tests passed <code>439/439</code>; <code>pkgdown::check_pkgdown()</code> is green. Boundary: conditional/in-sample only, not bootstrap or posterior predictive simulation."
     },
     {
@@ -604,7 +608,7 @@
     },
     {
       "time": "now",
-      "html": "<b>Hopper/Fisher NB1 post-fit slice green.</b> Complete-data no-X <code>nbinom1()</code> Julia-engine fits now route <code>predict()</code>, <code>fitted()</code>, <code>residuals()</code>, <code>augment()</code>, and conditional in-sample <code>simulate()</code>. NB1 simulation uses <code>Var = mu * (1 + phi)</code> via <code>rnbinom(mu = mu, size = mu / phi)</code> and rejects missing/non-positive dispersion payloads. No-Julia bridge tests passed <code>163</code> with <code>16</code> expected skips; live bridge tests passed <code>394/394</code>; <code>pkgdown::check_pkgdown()</code> is green."
+      "html": "<b>Hopper/Fisher NB1 post-fit slice green.</b> Complete-data no-X <code>nbinom1()</code> Julia-engine fits now route <code>predict()</code>, <code>fitted()</code>, <code>residuals()</code>, <code>augment()</code>, and conditional in-sample <code>simulate()</code>. NB1 simulation uses <code>Var = mu * (1 + phi)</code> via <code>rnbinom(mu = mu, size = mu / phi)</code> and rejects missing/non-positive dispersion payloads. That slice's live bridge evidence is superseded by the current <code>439/439</code> bridge suite; <code>pkgdown::check_pkgdown()</code> was green."
     },
     {
       "time": "now",
@@ -762,7 +766,7 @@
   "inflight": [
     {
       "owner": "Ada",
-      "text": "R-first sequencing remains active. The immediate next bridge candidates are R-side mixed-family no-X/no-mask metadata or NB1 follow-up admission boundaries; Julia engine work should target explicit R bridge gaps."
+      "text": "R-first sequencing remains active. Native mixed-family selector metadata is now the R oracle; the immediate Julia follow-up is mixed-vector bridge payload labels and parity tests, with R bridge admission only after point/logLik and CI-status gates."
     },
     {
       "owner": "Rose",
@@ -784,6 +788,10 @@
   "evidence": [
     {
       "status": "partial",
+      "text": "Hopper/Fisher/Rose: native mixed-family selector oracle committed locally at gllvmTMB 4474e8b. Named family lists now match selector levels by name, partially named or mismatched lists fail explicitly, and fit objects preserve family_selector metadata with row-level family/link ids. Evidence: stage37-mixed-family passed 33/33; stage37 plus m1-8 mixed-family filter passed 33 with 7 expected skips; no-Julia bridge tests passed 175 with 17 expected skips; full devtools::test() passed 2912 with 721 skips and 3 pre-existing warnings; live bridge tests passed 439/439 against GLLVM.jl-integration; pkgdown check green. Boundary: native R/TMB oracle only; mixed-family Julia bridge admission, CI-status routing, and cross-engine parity remain queued."
+    },
+    {
+      "status": "partial",
       "text": "Hopper/Fisher/Rose: NB2/Beta/Gamma conditional simulate committed locally at gllvmTMB 17b2154. simulate.gllvmTMB_julia() now draws NB2 via rnbinom(mu, size=r), Beta via rbeta(mu*phi, (1-mu)*phi), and Gamma via rgamma(shape=alpha, scale=mu/alpha), with synthetic and live bridge tests. Evidence: no-Julia bridge 175 pass / 17 skip, live bridge 439/439 against GLLVM.jl-integration, pkgdown check green. Boundary: conditional in-sample simulation only; no masked simulation, newdata, mixed-family simulation, bootstrap, posterior predictive, or calibration claim."
     },
     {
@@ -792,7 +800,7 @@
     },
     {
       "status": "partial",
-      "text": "Hopper/Fisher/Rose: NB1 post-fit methods committed locally at gllvmTMB 174d3a0. The admitted complete-data no-X NB1 route now has response-scale predict/fitted, residuals, augment rows, and reproducible conditional simulate() with the NB1 linear variance law. Evidence: no-Julia bridge 163 pass / 16 skip, live bridge 394/394 against GLLVM.jl-integration, pkgdown check green. Boundary: NB1 X, masks, masked simulations, profile/bootstrap CIs, native TMB parity, and mixed-family NB1 remain future slices."
+      "text": "Hopper/Fisher/Rose: NB1 post-fit methods committed locally at gllvmTMB 174d3a0. The admitted complete-data no-X NB1 route now has response-scale predict/fitted, residuals, augment rows, and reproducible conditional simulate() with the NB1 linear variance law. Evidence from that slice is superseded by the current live bridge 439/439 against GLLVM.jl-integration; pkgdown check was green. Boundary: NB1 X, masks, masked simulations, profile/bootstrap CIs, native TMB parity, and mixed-family NB1 remain future slices."
     },
     {
       "status": "partial",

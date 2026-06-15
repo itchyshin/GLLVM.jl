@@ -8,6 +8,11 @@ called `covered` only when the Julia engine, R bridge, point estimates,
 objective/logLik, CI or CI-status, tests, docs, visuals where relevant, issue
 ledger, and Rose verdict agree.
 
+Current sequencing is **R-first**. Native `gllvmTMB` functionality and the R
+user workflow define the oracle; `GLLVM.jl` then mirrors admitted rows, supplies
+parity evidence, and becomes the acceleration path. Do not promote a Julia-only
+engine feature as a user-facing bridge capability until the R matrix admits it.
+
 ## Current Branch Cautions
 
 - The local `GLLVM.jl-integration` runtime branch has green local evidence for
@@ -20,12 +25,18 @@ ledger, and Rose verdict agree.
   shown on the dashboard, where `GLLVM.bridge_capabilities()` exposes the
   tested bridge surface. Do not infer bridge capability from stale files in this
   dashboard worktree.
-- The `gllvmTMB` `engine-julia` branch live bridge tests now pass 394/394
+- The `gllvmTMB` `engine-julia` branch has a native mixed-family selector
+  oracle hardened at 4474e8b: named family lists match selector levels by name,
+  row-level family/link ids are retained, and malformed selector names fail
+  explicitly. This gives `GLLVM.jl` a clean mixed-family target; it does not
+  admit mixed-family `engine = "julia"` yet.
+- The `gllvmTMB` `engine-julia` branch live bridge tests now pass 439/439
   against current `GLLVM.jl-integration`, including the bridge capability drift
   guard, fixed-effect-X rows, missing-response-mask rows, Gaussian
   Wald/profile/bootstrap CI transport, NB1 no-X admission, and NB1 post-fit
-  methods. That validates bridge mechanics for the tested cells; it does not
-  validate all family/structure parity rows.
+  methods plus complete-data NB2/Beta/Gamma conditional simulation rows. That
+  validates bridge mechanics for the tested cells; it does not validate all
+  family/structure parity rows.
 - Non-Gaussian CI wording has had a first cleanup pass, but the matrix remains
   `partial` for non-Gaussian inference overall until docs, issue evidence,
   visual diagnostics, and R bridge parity all agree.
@@ -64,9 +75,10 @@ ledger, and Rose verdict agree.
 | Capability | Julia engine | R bridge | Inference | Priority issue/gate | Evidence boundary |
 | --- | --- | --- | --- | --- | --- |
 | Latent factors/loadings | covered | partial | partial | R parity | Minimal bridge tests rotated-loading parity to direct Julia fits; R Procrustes parity still needed. |
-| Fixed-effect covariates `X` | partial | partial | partial | gllvmTMB #488 | Integration reports broader support; current local docs are stale. |
+| Fixed-effect covariates `X` | partial | partial | partial | gllvmTMB #488 | Live bridge evidence covers Gaussian, Poisson, Binomial, NB2, Beta, and Gamma formula-vs-direct dispatch. NB1 X, ordinal X, X + missing-response masks, and mixed-family X remain rejected. |
 | Row effects / random intercepts | partial | partial | partial | family audit | Must be family-by-family, not blanket. |
 | Random slopes | planned | planned | planned | new issue | Start with Gaussian, then non-Gaussian batches. |
+| Mixed-family response vectors | partial | planned | planned | mixed-family bridge issue | Native `gllvmTMB` selector oracle is hardened for named lists and row-aligned family/link metadata. Julia mixed-vector payload labels, R bridge admission, CI-status routing, and R-Julia parity remain queued. |
 | Phylogenetic dependence | partial | partial | partial | GLLVM #61 | Representation equality exists and #92 phylo-signal transformed-Wald scale/export/test path is fixed locally; O(p) sparse-gradient wiring and R bridge exposure remain gates. |
 | Animal / relmat | partial | planned | partial | structure issue | Name alignment and PSD/PD tests required. |
 | Spatial / SPDE | experimental | planned | planned | GLLVM #62 | Field visuals and CI status required before promotion. |
@@ -91,7 +103,7 @@ ledger, and Rose verdict agree.
 | Bootstrap CIs | partial | partial | partial | coverage issue | Calibration claims require coverage study. |
 | Derived CIs | partial | planned | partial | bridge/docs issue | #92 phylo-signal transformed-Wald scale/export/test gap is fixed locally and wired into the full suite; R bridge exposure and public docs remain open. |
 | AIC/BIC/logLik | covered | partial | covered | bridge method issue | Minimal bridge returns AIC/BIC/logLik and tests logLik parity; R object methods need roundtrip tests. |
-| Prediction/fitted | partial | partial | partial | bridge method issue | In-sample prediction/fitted rows are routed for current one-part bridge payloads, including NB1 no-X and selected X rows. `newdata`, ordinal probabilities, mixed-family row-wise links, and broader structures remain queued. |
+| Prediction/fitted | partial | partial | partial | bridge method issue | In-sample prediction/fitted rows are routed for current one-part bridge payloads, including NB1 no-X and selected X rows. `newdata`, ordinal probabilities, mixed-family row-wise links, and broader structures remain queued. Native `gllvmTMB` mixed-family prediction is the next R-first oracle target before Julia bridge admission. |
 | Residuals | partial | partial | partial | bridge method issue | Response residual and augment rows are routed for current in-sample bridge payloads, including masked-row status where admitted. Dunn-Smyth/Pearson support and ordinal probabilities remain family-specific future work. |
 | Summary/coef/vcov | partial | planned | partial | bridge method issue | Flat payload and stable labels required. |
 

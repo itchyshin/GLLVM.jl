@@ -1,5 +1,65 @@
 # Check Log
 
+## 2026-06-15 - R-first board sync after native mixed-family oracle
+
+### Scope
+
+Refreshed the mission-control board and capability matrix after the
+`gllvmTMB` native mixed-family selector oracle slice.
+
+- `.claude/preview/status.json` now records `gllvmTMB` head `4474e8b` and makes
+  the latest work row the native R/TMB mixed-family selector oracle, not the
+  older dispersion-simulation bridge row.
+- Phase P7 is now `active` with the first slice marked `partial`: native
+  `gllvmTMB` named-list selector metadata is hardened, but Julia mixed-vector
+  payload labels, R bridge admission, CI-status routing, and cross-engine parity
+  remain queued.
+- `docs/dev-log/capability-bridge-matrix.md` now has a mixed-family response
+  vector row with the same R-first boundary.
+- `docs/src/roadmap.md` keeps the R-first sequencing and the Gaussian-only REML
+  / exact-Gaussian AI-REML boundary.
+
+No engine code, R bridge code, or tests changed in this repository.
+
+### Checks Run
+
+```sh
+jq empty .claude/preview/status.json
+git diff --check
+```
+
+Result: both clean.
+
+```sh
+curl -fsS http://127.0.0.1:8770/status.json | jq -r '.repos[] | select(.name=="gllvmTMB") | .head'
+```
+
+Result: `4474e8b`.
+
+```sh
+curl -fsS http://127.0.0.1:8770/status.json | jq -r '.activity[0].html' | sed 's/<[^>]*>//g'
+```
+
+Result: first activity row is the native mixed-family oracle green row, with
+Stage 37 `33/33`, full `devtools::test()` `2912` pass / `721` skip / `3`
+pre-existing warnings, live bridge `439/439`, and pkgdown green evidence.
+
+Stale-wording scan:
+
+```sh
+rg -n "17b2154|394/394|full gllvmTMB parity|full parity|AI-REML|REML|mixed-family selector|4474e8b" .claude/preview/status.json docs/dev-log/capability-bridge-matrix.md docs/src/roadmap.md
+```
+
+Result: expected hits only. `17b2154` remains as historical evidence for the
+older dispersion-simulation row; current repo head and current work point to
+`4474e8b`. REML/AI-REML hits are boundary wording only.
+
+### Rose Boundary
+
+PASS WITH NOTES. The board now reflects the R-first oracle slice without
+promoting mixed-family Julia bridge admission. The next implementation gate is
+Julia mixed-vector payload labels and parity against the native R oracle.
+
 ## 2026-06-15 - Gamma Gradient Status Wording Cleanup
 
 ### Scope
