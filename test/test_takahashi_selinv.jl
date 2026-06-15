@@ -12,7 +12,8 @@ using GLLVM, Test, Random, LinearAlgebra, SparseArrays
 # Test matrices: the tree-augmented precision `Q_cond` for trees of size
 # p ∈ {50, 200, 500} (after adding a small ridge to render strictly PD —
 # the bare `Q_topology` is rank-deficient by one, the constant-shift direction).
-include(joinpath(@__DIR__, "..", "src", "takahashi_selinv.jl"))
+# Use the package-loaded implementations directly. Self-including the source
+# file into Main creates duplicate-method warnings in the full suite.
 
 const _rbt = GLLVM.random_balanced_tree
 
@@ -32,7 +33,7 @@ end
         Random.seed!(p)
         Q, _ = tree_precision(p)
         ch = cholesky(Symmetric(Q))
-        Z = takahashi_selinv(ch)
+        Z = GLLVM.takahashi_selinv(ch)
         Qdense = Matrix(Q)
         Qinv = inv(Qdense)
         # Compare every NONZERO of Z (= every entry in the L+Lᵀ pattern,
@@ -54,7 +55,7 @@ end
         Random.seed!(p)
         Q, _ = tree_precision(p)
         ch = cholesky(Symmetric(Q))
-        d_tak = takahashi_diag(ch)
+        d_tak = GLLVM.takahashi_diag(ch)
         d_dense = diag(inv(Matrix(Q)))
         err = maximum(abs.(d_tak .- d_dense))
         @test err < 1e-10
@@ -68,7 +69,7 @@ end
         A = [10.0 -1.0 0.0 0.0; -1.0 5.0 -2.0 0.0; 0.0 -2.0 4.0 -1.0; 0.0 0.0 -1.0 3.0]
         S = sparse(A)
         ch = cholesky(Symmetric(S))
-        Z = takahashi_selinv(ch)
+        Z = GLLVM.takahashi_selinv(ch)
         Ainv = inv(A)
         err = 0.0
         for j in 1:4
@@ -91,7 +92,7 @@ end
         Random.seed!(50)
         Q, phy = tree_precision(50)
         ch = cholesky(Symmetric(Q))
-        Z = takahashi_selinv(ch)
+        Z = GLLVM.takahashi_selinv(ch)
         Qinv = inv(Matrix(Q))
         # Find any out-of-pattern entry with substantial value:
         worst_out_of_pattern = 0.0

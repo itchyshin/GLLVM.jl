@@ -34,7 +34,7 @@ function _sim_gaussian(p, n, K; seed = 11)
     return η .+ 0.4 .* randn(rng, p, n)
 end
 
-function _sim_poisson(p, n, K; seed = 12)
+function _sim_poisson_bridge_ci(p, n, K; seed = 12)
     _, _, _, η = _bridge_ci_latent(p, n, K, seed)
     rng = Random.MersenneTwister(seed + 1000)
     Y = Matrix{Int}(undef, p, n)
@@ -142,7 +142,7 @@ end
 @testset "bridge CI routing" begin
     # -- BACKWARD COMPAT: ci_method="none" (default) is byte-identical ----------
     @testset "backward-compat (none == default)" begin
-        Y = _sim_poisson(4, 50, 1; seed = 21)
+        Y = _sim_poisson_bridge_ci(4, 50, 1; seed = 21)
         base = bridge_fit(; y = Float64.(Y), family = "poisson", d = 1)
         none = bridge_fit(; y = Float64.(Y), family = "poisson", d = 1,
                           options = Dict("ci_method" => "none"))
@@ -171,7 +171,7 @@ end
         @test d < 1e-8
 
         # Poisson
-        Yp = _sim_poisson(4, 60, 1; seed = 23)
+        Yp = _sim_poisson_bridge_ci(4, 60, 1; seed = 23)
         pf = GLLVM.fit_poisson_gllvm(Yp; K = 1)
         natp = GLLVM.confint(pf, Float64.(Yp); method = :wald, level = 0.95)
         brp = bridge_fit(; y = Float64.(Yp), family = "poisson", d = 1,
@@ -235,7 +235,7 @@ end
     # -- PARITY: profile (Poisson + Gaussian) -----------------------------------
     @testset "profile parity vs native" begin
         # Poisson: native vector profile
-        Yp = _sim_poisson(3, 60, 1; seed = 31)
+        Yp = _sim_poisson_bridge_ci(3, 60, 1; seed = 31)
         pf = GLLVM.fit_poisson_gllvm(Yp; K = 1)
         natp = GLLVM.confint(pf, Float64.(Yp); method = :profile, level = 0.95)
         brp = bridge_fit(; y = Float64.(Yp), family = "poisson", d = 1,
@@ -273,7 +273,7 @@ end
     @testset "bootstrap parity vs native (fixed seed)" begin
         nb = 40
         # Poisson
-        Yp = _sim_poisson(3, 50, 1; seed = 41)
+        Yp = _sim_poisson_bridge_ci(3, 50, 1; seed = 41)
         pf = GLLVM.fit_poisson_gllvm(Yp; K = 1)
         natp = GLLVM.confint(pf, Float64.(Yp); method = :bootstrap, level = 0.95,
                              n_boot = nb, seed = 7)
@@ -301,7 +301,7 @@ end
 
     # -- FLAT CONTRACT: CI fields are JuliaCall-convertible primitives -----------
     @testset "flat CI contract" begin
-        Yp = _sim_poisson(3, 50, 1; seed = 51)
+        Yp = _sim_poisson_bridge_ci(3, 50, 1; seed = 51)
         br = bridge_fit(; y = Float64.(Yp), family = "poisson", d = 1,
                         options = Dict("ci_method" => "wald"))
         @test br.ci_method isa String
@@ -323,7 +323,7 @@ end
 
     # -- Unsupported method errors loudly ---------------------------------------
     @testset "unsupported ci_method errors" begin
-        Yp = _sim_poisson(3, 40, 1; seed = 61)
+        Yp = _sim_poisson_bridge_ci(3, 40, 1; seed = 61)
         @test_throws ArgumentError bridge_fit(; y = Float64.(Yp), family = "poisson",
             d = 1, options = Dict("ci_method" => "garbage"))
     end

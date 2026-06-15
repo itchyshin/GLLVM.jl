@@ -1,5 +1,53 @@
 # Check Log
 
+## 2026-06-15 - Test Warning Hygiene
+
+### Scope
+
+Removed duplicate-method warnings from the core and full package test logs:
+
+- `test/test_takahashi_selinv.jl` now uses the package-loaded
+  `GLLVM.takahashi_selinv` and `GLLVM.takahashi_diag` implementations instead
+  of self-including `src/takahashi_selinv.jl` into `Main`;
+- `test/test_bridge_ci.jl` renamed its local Poisson simulator helper to avoid
+  overwriting the helper in `test/test_confint_family.jl` during full-suite
+  execution.
+
+No production source changed in this slice.
+
+### Checks Run
+
+```sh
+~/.juliaup/bin/julia --project=. test/test_takahashi_selinv.jl
+```
+
+Result: 8/8 passed in 0.4s, with no duplicate-method warning.
+
+```sh
+~/.juliaup/bin/julia --project=. test/test_bridge_ci.jl
+```
+
+Result: 66/66 passed in 45.4s.
+
+```sh
+~/.juliaup/bin/julia --project=. test/runtests.jl
+```
+
+Result: 3857 passed, 3 broken, 3860 total in 30m48.0s. The previous
+`takahashi_selinv.jl` and `_sim_poisson` overwrite warnings did not reappear.
+
+```sh
+~/.juliaup/bin/julia --project=. -e 'using Pkg; Pkg.test()'
+```
+
+Result: 3869 passed, 1 broken, 3870 total in 35m12.0s. The duplicate-method
+warnings did not reappear under Pkg's temporary test environment.
+
+### Rose Boundary
+
+PASS. This is test-harness hygiene only. It reduces warning noise and does not
+change model behavior, likelihoods, fitters, bridge payloads, or public API.
+
 ## 2026-06-15 - Sparse Phylo Node-Gradient Shortcut
 
 ### Scope
