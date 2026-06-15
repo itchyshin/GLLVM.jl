@@ -124,3 +124,143 @@ and the mobile top is screenshot-verified. Remaining notes: full `Pkg.test()`
 was not run for this docs-only hotfix, pre-existing article-link warnings remain
 outside the homepage hotfix, and the live site updates only after the Documenter
 deployment workflow completes.
+
+## 2026-06-14 - High-rate Poisson mode safeguard (#91)
+
+### Scope
+
+Fixed the integration-branch reproduction of GLLVM.jl #91, where the default
+analytic-gradient `fit_poisson_gllvm` path could accept a runaway first step for
+a high-rate `K = 2` Poisson fit. The root cause was the shared dense-Laplace
+inner mode solve: full Fisher-scoring steps could lower the conditional
+log-posterior by many orders of magnitude, making the warm-start marginal and
+the analytic Poisson gradient invalid.
+
+`src/families/laplace.jl` now keeps full Newton steps near the mode, but uses
+step-halving against the conditional log-posterior for the cheap scalar families
+where this safeguard is needed (`Poisson`, `Binomial`, `NegativeBinomial`,
+`Beta`, `Gamma`, `Exponential`). Heavier bespoke families keep the previous
+full-step path to avoid turning their expensive log-density calls into an inner
+line search. A one-time restart from `z = 0` remains available when a solve
+returns non-finite values.
+
+`test/test_poisson_fit.jl` now carries the high-rate #91 fixture and checks:
+
+1. the fitted intercepts stay on the empirical log-mean scale;
+2. the fitted log-likelihood is finite and the optimizer converges;
+3. the analytic Poisson Laplace gradient matches a central finite-difference
+   gradient on the same high-rate warm start.
+
+### Checks Run
+
+Before the fix, on `/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration`
+at `65a1f10`, the reconstructed #91 fixture produced:
+
+```text
+kind = :allZ_col
+analytic_converged = true
+analytic_beta6 = -1.3725979588255058e6
+fd_beta6 = 3.5848998478056116
+beta06 = 2.046028486073364
+analytic_maxabs = 1.3726000048539918e6
+```
+
+After the fix:
+
+```text
+kind = :allZ_col
+converged = true
+beta6 = 1.8845273881056652
+beta06 = 2.046028486073364
+maxabs = 0.16150109796769874
+loglik = -9573.527202270865
+
+kind = :interleaved_site
+converged = true
+beta6 = 1.9494694468357439
+beta06 = 2.1177137251431333
+maxabs = 0.16824427830738942
+
+kind = :global_seed_interleaved
+converged = true
+beta6 = 1.9931572688527104
+beta06 = 2.1386437132753118
+maxabs = 0.1454864444226014
+```
+
+High-rate warm-start gradient check after the fix:
+
+```text
+marg0 = -10049.149835755072
+grad analytic norm = 456.8484012361648
+finite norm = 456.8484007642873
+diff norm = 2.2149188558598164e-6
+maxabsdiff = 1.0488242692119343e-6
+```
+
+Focused tests:
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_poisson_fit.jl
+```
+
+Result: `12/12 pass`.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_poisson_laplace.jl
+```
+
+Result: `4/4 pass`.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_laplace_grad.jl
+```
+
+Result: `26/26 pass`.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_missing_response.jl
+```
+
+Result: `23/23 pass`; masked analytic-vs-FD max differences remained
+`5.42e-8` for Poisson and `2.41e-8` for Binomial.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no -e 'using GLLVM, Test, Distributions, LinearAlgebra, Random; include("test/test_laplace_alloc_equiv.jl")'
+```
+
+Result: `7/7 pass`.
+
+Affected scalar-family fit tests:
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_binomial_fit.jl
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_nb_fit.jl
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_beta_fit.jl
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_gamma_fit.jl
+```
+
+Results: Binomial `8/8`, NB `7/7`, Beta `7/7`, Gamma `7/7` pass.
+
+Affected scalar-family marginal tests:
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_beta_laplace.jl
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_gamma_laplace.jl
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_negbin_laplace.jl
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_binomial_laplace.jl
+```
+
+Results: Beta `2/2`, Gamma `2/2`, NB `2/2`, Binomial `9/9` pass.
+
+`test/test_missing_response_extra.jl` was started twice and interrupted after
+several minutes both times. The interrupt stack was inside long finite-difference
+fits for Tweedie / row-effect wrappers, not in the new Poisson safeguard branch.
+Full `test/runtests.jl` and `Pkg.test()` remain the next gates before PR.
+
+### Rose Verdict
+
+PASS WITH NOTES. #91 is reproduced on the integration branch and fixed with a
+fit-level regression plus a gradient-vs-FD gate. The safeguard is intentionally
+scoped to cheap scalar families to avoid slowing bespoke heavy likelihoods.
+Remaining blocker: full-suite validation has not yet been run after this patch.
