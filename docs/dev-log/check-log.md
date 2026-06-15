@@ -1,5 +1,55 @@
 # Check Log
 
+## 2026-06-14 - Capability Matrix Runtime Evidence Sync
+
+### Scope
+
+Synced `docs/dev-log/capability-bridge-matrix.md` with the latest local runtime
+evidence from the active GLLVM/gllvmTMB finish-gap branches:
+
+- #91 high-rate Poisson divergence is fixed locally on `GLLVM.jl-integration`,
+  but still needs PR/issue reconciliation before public closure;
+- #92 phylo-signal transformed-Wald scale/export/test path is fixed locally and
+  wired into the full suite;
+- #96 Laplace mode-finder safeguard remains a local branch fact until merged;
+- Gamma now defaults to analytic gradients locally after finite-vs-analytic
+  benchmark gates and full `Pkg.test()`;
+- `gllvmTMB` `engine-julia` live bridge tests now pass 53/53 for the tested
+  bridge cells, including Gaussian CI transport;
+- broader bridge, missingness, mixed-family, visual, and issue-led gates remain
+  `partial` or queued.
+
+No engine code, R bridge code, tests, or dashboard runtime files changed in
+this slice.
+
+### Checks Run
+
+In-app browser smoke check:
+
+```text
+http://127.0.0.1:8770/
+```
+
+Result: page title `Finishing the twin - GLLVM.jl + gllvmTMB`; rendered board
+contains the current evidence strings `3869`, `53/53`, and `phylo_signal`/#92.
+
+Tree-state checks:
+
+```sh
+git status --short --branch
+```
+
+Result before this ledger edit: dashboard repo clean and ahead of origin by
+three local commits; `GLLVM.jl-integration` clean on
+`codex/high-rate-poisson-safeguard`; `gllvmTMB` clean on `engine-julia`.
+
+### Rose Boundary
+
+PASS WITH NOTES. This narrows stale matrix wording but does not promote any
+row to release-ready. GitHub issues and PRs are still untouched, `GLLVM.jl#95`
+remains maintainer-gated, `GLLVM.jl#94` remains conflicting/superseded pending
+audit, and R `{gllvm}` statistical parity remains partial.
+
 ## 2026-06-14 - Fix #96 Laplace Mode-Finder Safeguards
 
 ### Scope

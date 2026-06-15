@@ -10,16 +10,24 @@ ledger, and Rose verdict agree.
 
 ## Current Branch Cautions
 
-- The local `GLLVM.jl` checkout now exposes a deliberately narrow
-  `GLLVM.bridge_fit` for no-covariate one-part families. It passed
-  `test/test_bridge_fit.jl` 175/175 on 2026-06-14. Bridge support is still
-  `partial`, not `covered`, because fixed-effect `X`, mixed families,
-  missing-response masks, broader CI routing, and live `gllvmTMB` R roundtrips
-  remain open.
-- Non-Gaussian CI wording is inconsistent across public docs: some files state
-  six one-part families have Wald/profile CIs, while other docs still call
-  non-Gaussian inference planned. Keep the matrix at `partial` for
-  non-Gaussian inference overall until docs, tests, and issue evidence align.
+- The local `GLLVM.jl-integration` runtime branch has green local evidence for
+  the #91 high-rate Poisson safeguard, #92 phylo-signal transformed-Wald scale
+  fix, #96 Laplace mode-finder safeguard, and Gamma analytic-gradient default.
+  These are local branch facts only until the PR/issue ledger is reconciled on
+  GitHub.
+- The local `GLLVM.jl` checkout exposes a deliberately narrow
+  `GLLVM.bridge_fit` for no-covariate one-part families. Earlier local tests
+  passed `test/test_bridge_fit.jl` 175/175. Bridge support is still `partial`,
+  not `covered`, because fixed-effect `X`, mixed families, missing-response
+  masks, broader CI routing, and full live `gllvmTMB` statistical parity remain
+  open.
+- The `gllvmTMB` `engine-julia` branch live bridge tests now pass 53/53 against
+  current `GLLVM.jl-integration`, including Gaussian Wald/profile/bootstrap
+  CI transport. That validates bridge mechanics for the tested cells; it does
+  not validate all family/structure parity rows.
+- Non-Gaussian CI wording has had a first cleanup pass, but the matrix remains
+  `partial` for non-Gaussian inference overall until docs, issue evidence,
+  visual diagnostics, and R bridge parity all agree.
 - Preview figures under `.claude/preview/florence*` are experimental evidence,
   not public capability status.
 
@@ -38,12 +46,12 @@ ledger, and Rose verdict agree.
 | Capability | Julia engine | R bridge | Inference | Priority issue/gate | Evidence boundary |
 | --- | --- | --- | --- | --- | --- |
 | Gaussian | covered | partial | covered | gllvmTMB bridge parity | Minimal no-X `bridge_fit` route tested; live R roundtrip and X/missingness remain open. |
-| Poisson | covered | partial | partial | GLLVM #91 | Minimal no-X `bridge_fit` route and Wald CI parity tested; high-rate divergence blocks broad promotion. |
+| Poisson | covered | partial | partial | GLLVM #91 | Minimal no-X `bridge_fit` route and Wald CI parity tested; high-rate divergence fixed locally on `GLLVM.jl-integration`, but GitHub issue/PR reconciliation and broader R parity remain open. |
 | Binomial | covered | partial | partial | bridge parity | Minimal no-X `bridge_fit` route tested; CI labels and R roundtrip need evidence. |
 | Negative binomial NB2 | covered | partial | partial | bridge parity | Minimal no-X `bridge_fit` route tested; dispersion transform and observed-Hessian parity must stay explicit. |
 | NB1 | planned | planned | planned | new issue | No public covered claim. |
 | Beta | covered | partial | partial | bridge parity | Minimal no-X `bridge_fit` route tested; precision transform and CI route need parity evidence. |
-| Gamma | covered | partial | partial | gradient default gate | Minimal no-X `bridge_fit` route tested; #96 mode-finder safeguards fixed locally; analytic default still blocked until benchmark/logLik deltas are <= 1e-6. |
+| Gamma | covered | partial | partial | gradient default gate | Minimal no-X `bridge_fit` route tested; #96 mode-finder safeguards fixed locally; Gamma now defaults to analytic gradients locally after quick/medium benchmark gates with logLik deltas <= 1.9e-12 and full `Pkg.test()` green. |
 | Ordinal | partial | partial | partial | bridge/API row | Minimal no-X `bridge_fit` route tested; cutpoint, prediction, and label route need bridge tests. |
 | COM-Poisson | experimental | planned | planned | family issue | Keep experimental until recovery and R route exist. |
 | Tweedie | planned | planned | planned | family issue | Roadmap only. |
@@ -58,7 +66,7 @@ ledger, and Rose verdict agree.
 | Fixed-effect covariates `X` | partial | partial | partial | gllvmTMB #488 | Integration reports broader support; current local docs are stale. |
 | Row effects / random intercepts | partial | partial | partial | family audit | Must be family-by-family, not blanket. |
 | Random slopes | planned | planned | planned | new issue | Start with Gaussian, then non-Gaussian batches. |
-| Phylogenetic dependence | partial | partial | partial | GLLVM #61 | Representation equality exists and #92 phylo-signal transformed-Wald scale is fixed locally; O(p) wiring and R bridge remain gates. |
+| Phylogenetic dependence | partial | partial | partial | GLLVM #61 | Representation equality exists and #92 phylo-signal transformed-Wald scale/export/test path is fixed locally; O(p) sparse-gradient wiring and R bridge exposure remain gates. |
 | Animal / relmat | partial | planned | partial | structure issue | Name alignment and PSD/PD tests required. |
 | Spatial / SPDE | experimental | planned | planned | GLLVM #62 | Field visuals and CI status required before promotion. |
 | Kernel / NNGP / Matern | planned | planned | planned | DRM #270 / GLLVM #62 | Fixed-kernel first; NNGP/Matern remain roadmap. |
@@ -78,9 +86,9 @@ ledger, and Rose verdict agree.
 | Capability | Julia engine | R bridge | Inference | Priority issue/gate | Evidence boundary |
 | --- | --- | --- | --- | --- | --- |
 | Wald CIs | partial | partial | partial | CI status issue | Minimal bridge tests Poisson Wald CI parity; unsafe Hessian blocks Wald inference, not the fit object. |
-| Profile CIs | partial | partial | partial | profile visual issue | Promoted targets need profile curves, not endpoints only. |
+| Profile CIs | partial | partial | partial | profile visual issue | Gaussian profile CI transport is live-tested through `confint.gllvmTMB_julia`; promoted broader targets still need family/structure status rows and profile curves, not endpoints only. |
 | Bootstrap CIs | partial | partial | partial | coverage issue | Calibration claims require coverage study. |
-| Derived CIs | partial | planned | partial | bridge/docs issue | #92 phylo-signal transformed-Wald scale/export/test gap is fixed locally; R bridge exposure and public docs remain open. |
+| Derived CIs | partial | planned | partial | bridge/docs issue | #92 phylo-signal transformed-Wald scale/export/test gap is fixed locally and wired into the full suite; R bridge exposure and public docs remain open. |
 | AIC/BIC/logLik | covered | partial | covered | bridge method issue | Minimal bridge returns AIC/BIC/logLik and tests logLik parity; R object methods need roundtrip tests. |
 | Prediction/fitted | partial | planned | partial | bridge method issue | Prediction labels and newdata route need tests. |
 | Residuals | partial | planned | partial | bridge method issue | Dunn-Smyth/Pearson support must be family-specific. |
@@ -90,7 +98,7 @@ ledger, and Rose verdict agree.
 
 | Capability | Julia engine | R bridge | Inference | Priority issue/gate | Evidence boundary |
 | --- | --- | --- | --- | --- | --- |
-| Analytic Laplace gradients | experimental | unsupported | partial | GLLVM #65 | Default flip only when faster and logLik delta <= 1e-6. |
+| Analytic Laplace gradients | partial | unsupported | partial | GLLVM #65 | Gamma default is flipped locally after finite-vs-analytic speed/logLik gates; other family defaults remain finite until their benchmark grids pass the same rule. |
 | Exact implicit Laplace adjoint | planned | unsupported | planned | new issue | FD gradient parity <= 1e-6 before replacing finite differences. |
 | Takahashi selected inverse | experimental | unsupported | planned | GLLVM #61 | Wire O(p) only where equality to reference is verified. |
 | Observed-information / Fisher scoring | planned | unsupported | planned | new issue | Use HSquared AI-REML as design inspiration only; do not call non-Gaussian Laplace AI-REML. |
