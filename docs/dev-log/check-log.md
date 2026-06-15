@@ -1,5 +1,65 @@
 # Check Log
 
+## 2026-06-15 - Mixed-family bridge per-trait payload labels
+
+### Scope
+
+Fixed the Julia-side mixed-family bridge payload so the flat `families` field is
+row-aligned with the input family vector instead of repeating the joined model
+tag.
+
+- `bridge_fit(; family = ["gaussian", "poisson", "binomial"])` still returns
+  `family = "gaussian+poisson+binomial"` as the compact model tag.
+- The same payload now returns `families = ["gaussian", "poisson", "binomial"]`
+  and per-trait `link = ["IdentityLink", "LogLink", "LogitLink"]`.
+- `_bridge_assemble` now accepts an optional per-trait `families` vector and
+  rejects malformed lengths.
+- `test/test_bridge_mixed.jl` locks the successful payload shape, the mixed CI
+  unavailable-status payload, and the length-mismatch failure path.
+- `docs/src/gllvmtmb-parity.md` now records the exact boundary: Julia mixed
+  metadata is fixed; R bridge admission and parity remain queued.
+
+### Checks Run
+
+```sh
+~/.juliaup/bin/julia --project=. --startup-file=no test/test_bridge_mixed.jl
+```
+
+Result: `18/18 pass` in `5.7s`.
+
+```sh
+~/.juliaup/bin/julia --project=. --startup-file=no test/test_bridge_capabilities.jl
+```
+
+Result: `9/9 pass` in `0.1s`.
+
+```sh
+~/.juliaup/bin/julia --project=. --startup-file=no -e 'using GLLVM; Y = [0.2 0.4 -0.1 0.3 0.5 -0.2 0.1 0.6; 1 3 2 4 1 2 5 3; 0 1 1 0 1 0 1 1]; br = bridge_fit(; y=Y, family=["gaussian","poisson","binomial"], d=1); println(join(br.families, ",")); brci = bridge_fit(; y=Y, family=["gaussian","poisson","binomial"], d=1, options=Dict("ci_method"=>"wald")); println(brci.ci_method); println(length(brci.ci_param_names));'
+```
+
+Result:
+
+```text
+gaussian,poisson,binomial
+wald
+0
+```
+
+Paired live R bridge regression:
+
+```sh
+GLLVM_JL_PATH="/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration" Rscript -e 'options(gllvmTMB.julia_home="/Users/z3437171/.juliaup/bin"); devtools::test(filter="julia-bridge")'
+```
+
+Result in `/Users/z3437171/Dropbox/Github Local/gllvmTMB`: `FAIL 0 | WARN 0 |
+SKIP 0 | PASS 439` in `65.2s`.
+
+### Rose Boundary
+
+PASS WITH NOTES. Julia mixed-family bridge metadata is now correctly row-aligned,
+but `gllvmTMB` still rejects mixed-family `engine = "julia"` fits until
+point/logLik parity, labels, and CI-status rows are validated together.
+
 ## 2026-06-15 - R-first handoff and roadmap sync
 
 ### Scope

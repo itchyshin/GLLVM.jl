@@ -120,9 +120,14 @@ Ordinal-probit is fit/nobs/mask/link-tested; prediction and residual methods
 remain blocked until the bridge carries cutpoint/probability payloads. NB1
 post-fit prediction, residual, augmentation, and conditional simulation are
 routed only for complete-data no-X fits. X+mask fits, masked CI/profile/bootstrap
-refits, mixed-family bridge metadata, ordinal covariate fits, structured
+refits, mixed-family R bridge admission, ordinal covariate fits, structured
 covariance terms, and user-selectable Julia-side optimizer controls remain
-explicit bridge follow-ups, not silently supported cells.
+explicit bridge follow-ups, not silently supported cells. The Julia-side
+mixed-family `bridge_fit` route now returns row-aligned per-trait `families`
+labels and per-trait `link` labels, with CI requests reported as an explicit
+empty CI-status payload. The R bridge still rejects mixed-family Julia-engine
+fits until the native `gllvmTMB` selector oracle, point/logLik parity, labels,
+and CI-status rows are all validated together.
 
 REML is a Gaussian-only bridge/engine claim in this project. HSquared's very fast
 AI-REML work is useful design input for exact Gaussian variance-component cells,

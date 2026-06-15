@@ -767,6 +767,7 @@ function _bridge_fit_mixed(y, family_strs::AbstractVector, K::Integer, N,
         scores = scores, df = df, loglik = fit.loglik,
         converged = fit.converged, iterations = fit.iterations,
         loadings = Matrix{Float64}(fit.Λ * _svd_rotation(fit.Λ)),  # canonical SVD-rotated p×K loadings
+        families = keys_norm,
         note = "mixed-family GLLVM: one shared latent block across distinct response " *
                "families; `correlation` is the cross-distribution latent-scale " *
                "correlation. `families` is the per-trait family vector.", ci = ci)
@@ -807,16 +808,21 @@ function _bridge_assemble(fit, family::AbstractString, model::AbstractString,
                           traits, units;
                           alpha, dispersion, sigma_eps, link, Sigma, corr, comm,
                           scores, df, loglik, converged, iterations, note,
-                          loadings = nothing, ci = nothing, nobs = nothing)
+                          loadings = nothing, families = nothing, ci = nothing,
+                          nobs = nothing)
     p = length(traits)
     n = length(units)
     L = loadings === nothing ? _bridge_loadings(fit) : loadings
     K = size(L, 2)
     ll = Float64(loglik)
     nobs_val = nobs === nothing ? p * n : Int(nobs)
+    family_vec = families === nothing ? fill(family, p) : Vector{String}(families)
+    length(family_vec) == p || throw(ArgumentError(
+        "bridge_fit: per-trait families length $(length(family_vec)) must equal " *
+        "the number of traits $p"))
     base = (
         family       = family,
-        families     = fill(family, p),
+        families     = family_vec,
         model        = model,
         d            = K,
         n_traits     = p,
