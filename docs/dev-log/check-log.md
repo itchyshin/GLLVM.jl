@@ -1,5 +1,391 @@
 # Check Log
 
+## 2026-06-14 - Fix #96 Laplace Mode-Finder Safeguards
+
+### Scope
+
+Hardened the shared non-Gaussian Laplace mode finder in
+`src/families/laplace.jl`:
+
+- added a conditional log-posterior objective for the inner latent mode;
+- added backtracking step-halving when a large Fisher-scoring step would lower
+  that objective;
+- kept the full Fisher/Newton step when the step is already in-basin;
+- added a one-shot zero restart when the linear solve is non-finite or the
+  Cholesky factorization fails;
+- routed the non-workspace helper through the workspace implementation so the
+  safeguard logic has one source of truth.
+
+Added `test/test_laplace_mode_safeguards.jl` and wired it into
+`test/runtests.jl`. The regression fixture proves that the old full step would
+lower the conditional objective on a deterministic hard Poisson cell, while the
+guarded one-step update does not.
+
+### Checks Run
+
+Focused safeguard test:
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. test/test_laplace_mode_safeguards.jl
+```
+
+Result:
+
+```text
+Laplace mode safeguards | 5/5 pass
+```
+
+Adjacent Laplace and gradient tests:
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. test/test_poisson_laplace.jl
+/Users/z3437171/.juliaup/bin/julia --project=. test/test_gamma_laplace.jl
+/Users/z3437171/.juliaup/bin/julia --project=. test/test_beta_laplace.jl
+/Users/z3437171/.juliaup/bin/julia --project=. test/test_family_forwarddiff_gradients.jl
+```
+
+Results:
+
+```text
+Poisson Laplace marginal | 4/4 pass
+Gamma Laplace marginal   | 2/2 pass
+Beta Laplace marginal    | 2/2 pass
+non-Gaussian fitter objectives: AD/implicit gradients | 92/92 pass
+```
+
+Adjacent fitter/post-fit tests:
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. test/test_poisson_fit.jl
+/Users/z3437171/.juliaup/bin/julia --project=. test/test_gamma_fit.jl
+/Users/z3437171/.juliaup/bin/julia --project=. test/test_beta_fit.jl
+/Users/z3437171/.juliaup/bin/julia --project=. test/test_postfit.jl
+```
+
+Results:
+
+```text
+fit_poisson_gllvm - recovery | 7/7 pass
+fit_gamma_gllvm              | 7/7 pass
+fit_beta_gllvm               | 7/7 pass
+post-fit testsets            | 1092/1092 pass
+```
+
+Core suite:
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. test/runtests.jl
+```
+
+Result: exit code 0. The new `Laplace mode safeguards` testset passed 5/5
+inside the suite. Existing broken placeholders in sparse phy / contrasts and
+existing duplicate-include warnings remained unchanged.
+
+Full package test:
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. -e 'using Pkg; Pkg.test()'
+```
+
+Result: `Testing GLLVM tests passed`; quality battery `12/12` pass. Existing
+duplicate-include warnings from phylo/edge test internals remained unchanged.
+
+Documenter build:
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=docs docs/make.jl
+```
+
+Result: exit code 0. Known local warnings remain: deployment auto-detection is
+skipped outside CI, optional Vitepress assets/package files are substituted or
+missing, and npm audit reports 4 vulnerabilities in the local docs toolchain.
+
+Whitespace:
+
+```sh
+git diff --check
+```
+
+Result: clean.
+
+### Rose Boundary
+
+PASS WITH NOTES. The #96 local code/test gate is satisfied, but GitHub issue
+#96 is still open and should be reconciled in the eventual PR. This does not
+authorize the Gamma analytic-gradient default flip; that still needs benchmark
+and logLik-delta evidence.
+
+## 2026-06-14 - Public Status Wording Cleanup
+
+### Scope
+
+Cleaned up public status drift identified by Rose after the minimal bridge and
+#92 slices:
+
+- `docs/src/gllvmtmb-parity.md` no longer says non-Gaussian CIs are unwired or
+  uses the old deferred bridge wording;
+- `docs/src/index.md` now names one-part Laplace CI routes and the minimal
+  Julia-side `bridge_fit` as partial, not complete;
+- `docs/src/roadmap.md` moves bridge work into the interface/bridge catch-up
+  lane and keeps full bridge coverage for v1.0;
+- `docs/src/changelog.md` records the partial bridge state and the local #92
+  scale fix.
+
+### Checks Run
+
+Stale-wording scan: `rg` over `docs/src`, `docs/dev-log`, `README.md`, and
+`.claude/preview` for the old bridge, non-Gaussian-CI, and #92 blocker phrases.
+Result: no stale bridge/non-Gaussian-CI/#92 hits. Remaining `not yet wired`
+matches are for the structured Schur substrate, which is still true.
+
+Documenter build:
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=docs docs/make.jl
+```
+
+Result: exit code 0. Known local warnings remain: deployment auto-detection is
+skipped outside CI, optional Vitepress assets/package files are substituted or
+missing, and npm audit reports 4 vulnerabilities in the local docs toolchain.
+
+### Rose Boundary
+
+PASS WITH NOTES. The specific stale public status statements are fixed. This
+does not close the broader public-doc audit: issue comments, root changelog
+policy, full bridge articles, and release/tag wording remain blocked.
+
+## 2026-06-14 - Fix #92 Phylo-Signal Transformed-Wald Scale
+
+### Scope
+
+Fixed the diagnosed `phylo_signal_wald_ci` scale bug for the `has_phy_unique`
+path. The packed Gaussian parameter vector stores `sigma_phy[*]` on the signed
+identity scale, but `_derived_unpack` was still treating the block as
+`log_sigma_phy` and exponentiating it. That made packed phylogenetic signal
+values disagree with the public `phylo_signal` accessor and could push `H²`
+outside `[0, 1]`.
+
+Implementation:
+
+- changed `_derived_unpack` so `sigma_phy[*]` is unpacked on the identity scale;
+- included `confint_derived_wald.jl` in the module and exported
+  `phylo_signal_wald_ci`;
+- wired `test/test_confint_derived_wald.jl` into the main test suite;
+- added a regression check that `_phylo_signal_packed(fit.pars.θ_packed, ...)`
+  matches `phylo_signal(fit; Σ_phy)` to `rtol = 1e-8` across all traits in the
+  phylo fixture.
+
+### Checks Run
+
+Focused transformed-Wald test:
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. test/test_confint_derived_wald.jl
+```
+
+Result:
+
+```text
+transformed-Wald CIs for derived bounded quantities | 102/102 pass
+```
+
+Adjacent derived-CI regression tests:
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. test/test_confint_derived.jl
+/Users/z3437171/.juliaup/bin/julia --project=. test/test_profile_derived_fix.jl
+/Users/z3437171/.juliaup/bin/julia --project=. test/test_confint.jl
+```
+
+Results:
+
+```text
+derived-quantity CIs                 | 48/48 pass
+profile_ci_derived fix on phylo cell | 20/20 pass
+confint                              | 14/14 pass
+```
+
+Core suite:
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. test/runtests.jl
+```
+
+Result: exit code 0. The newly wired transformed-Wald block passed inside the
+suite:
+
+```text
+transformed-Wald CIs for derived bounded quantities | 102/102 pass
+```
+
+Full package suite:
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+transformed-Wald CIs for derived bounded quantities | 102/102 pass
+bridge_fit minimal no-X contract                    | 175/175 pass
+quality                                             | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Known non-failing noise retained from the existing suite: duplicate-include
+warnings in Takahashi/sparse/edge phylo tests and broken placeholders in the
+direct core environment. They are not introduced by this scale fix.
+
+### Rose Boundary
+
+PASS WITH NOTES. The local #92 engine bug is fixed and covered by focused,
+adjacent, core, and full-package tests. GitHub issue #92 has not been updated or
+closed, public docs/changelog status still need a broader Rose pass, and this
+does not imply release/tag readiness.
+
+## 2026-06-14 - Minimal `bridge_fit` No-X Contract
+
+### Scope
+
+Added the first current-branch `GLLVM.bridge_fit` route for the R-Julia bridge
+contract. This is deliberately narrow:
+
+- supported no-covariate one-part families: Gaussian, Poisson, Binomial, NB2,
+  Beta, Gamma, and Ordinal;
+- unsupported cells fail before fitting: fixed-effect `X`, mixed-family
+  vectors, NB1, and unknown CI methods;
+- the returned payload uses ASCII keys, primitive arrays, strings, numbers, and
+  booleans only;
+- `ci_method = "wald"` is routed through native `confint`; `profile` is reported
+  as unsupported through the minimal bridge; `bootstrap` is routed only for the
+  Gaussian fit and otherwise reports unsupported status.
+
+This does not repair the `gllvmTMB` branch, prove live JuliaCall/R roundtrip,
+or widen bridge support to X, missing-response masks, mixed families, or
+post-fit S3 methods.
+
+### Checks Run
+
+Focused bridge test:
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. test/test_bridge_fit.jl
+```
+
+Result:
+
+```text
+Test Summary:                    | Pass  Total   Time
+bridge_fit minimal no-X contract |  175    175  25.5s
+```
+
+Core suite:
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. test/runtests.jl
+```
+
+Result: exit code 0. The bridge test passed inside the core suite:
+
+```text
+bridge_fit minimal no-X contract | 175/175 pass
+```
+
+Full package suite:
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. -e 'using Pkg; Pkg.test()'
+```
+
+Result:
+
+```text
+bridge_fit minimal no-X contract | 175/175 pass
+quality                            | 12/12 pass
+Testing GLLVM tests passed
+```
+
+Known non-failing noise retained from the existing suite: duplicate-include
+warnings in Takahashi/sparse/edge phylo tests and broken placeholders in the
+direct core environment. They are not introduced by this bridge slice.
+
+### Rose Boundary
+
+PASS WITH NOTES. The branch now has a tested minimal `bridge_fit` entrypoint
+under both the core suite and full `Pkg.test()`. Keep bridge status at
+`partial`: live `gllvmTMB` roundtrip, X support, missing-response masks,
+mixed-family metadata, profile/bootstrap CI routing, and post-fit methods
+remain open.
+
+## 2026-06-14 - Mission-Control Dashboard And Capability Matrix
+
+### Scope
+
+Implemented the first governance slice of the full-finish roadmap:
+
+- converted the local mission-control board under `.claude/preview/` from
+  hard-coded completion prose to JSON-backed state;
+- added `status.json`, `sweep.json`, and `version.txt`;
+- added a truth snapshot, roadmap, issue action map, and capability/bridge matrix under
+  `docs/dev-log/`.
+
+No likelihood, optimizer, bridge runtime, exported API, or package behavior was
+changed.
+
+### Checks Run
+
+JSON validation:
+
+```sh
+python3 -m json.tool .claude/preview/status.json >/tmp/gllvm-status.json.pretty
+python3 -m json.tool .claude/preview/sweep.json >/tmp/gllvm-sweep.json.pretty
+wc -l /tmp/gllvm-status.json.pretty /tmp/gllvm-sweep.json.pretty
+```
+
+Result:
+
+```text
+656 /tmp/gllvm-status.json.pretty
+251 /tmp/gllvm-sweep.json.pretty
+907 total
+```
+
+Static server check:
+
+```sh
+curl -I --max-time 2 http://127.0.0.1:8770/
+curl -fsS --max-time 2 http://127.0.0.1:8770/version.txt
+curl -fsS --max-time 2 http://127.0.0.1:8770/status.json | python3 -m json.tool >/tmp/gllvm-served-status.json.pretty
+wc -l /tmp/gllvm-served-status.json.pretty
+```
+
+Result: HTTP 200 from `SimpleHTTP/0.6 Python/3.9.6`; served `version.txt`
+matched `2026-06-14-gllvm-finish-001`; served `status.json` parsed
+successfully with 656 pretty-printed lines.
+
+In-app browser check:
+
+```text
+http://127.0.0.1:8770/?build=2026-06-14-gllvm-finish-001
+```
+
+Result: rendered the JSON-backed board with metrics `Active phase 1-3`,
+`Slices visible 56`, `Release verdict hold`, and activity rows for the Hopper,
+Rose, and Grace/Shannon audit findings. No stale-board warning was shown.
+
+Full Julia tests are not applicable to this docs/dashboard-only slice.
+
+### Rose Boundary
+
+PASS WITH NOTES. At the time of this dashboard-only slice, the board represented
+work as `covered`, `partial`, `experimental`, `planned`, or `unsupported`, and
+it marked release/tag work as blocked. Then-current remaining notes: live
+GitHub issue mutation was not done, engine robustness fixes were not started,
+`GLLVM.bridge_fit` was not yet exposed on the local branch, and the gllvmTMB
+bridge branch was not repaired yet. The later 2026-06-14 minimal bridge slice
+resolved the local `bridge_fit` exposure gap only.
+
 ## 2026-06-05 - Pure-J1 CI Fast Paths And Parity Scaffold Probe
 
 ### Scope

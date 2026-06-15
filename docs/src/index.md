@@ -68,8 +68,13 @@ After fitting, the usual report-ready quantities are:
       NegativeBinomial, Beta, Ordinal, and Gamma.
     - Dedicated two-part fitters: Delta-lognormal, Hurdle-Poisson, and
       Hurdle-NB.
+    - Wald/profile confidence-interval routes for the one-part Laplace
+      families; R-parity and bridge exposure are still being audited.
+    - Minimal Julia-side `bridge_fit` for no-covariate one-part families; live
+      `gllvmTMB` roundtrip support remains partial.
     - Still planned: formula syntax, structured non-Gaussian dependence,
-      zero-inflated families, and non-Gaussian confidence intervals.
+      zero-inflated families, mixed-family bridge support, and missingness
+      bridge support.
 
 ## Relation To gllvmTMB
 

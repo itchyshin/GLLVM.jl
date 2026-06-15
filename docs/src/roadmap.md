@@ -14,8 +14,8 @@ GitHub:
 |:--------|:------|:----------|
 | **v0.2.0** | Gaussian complete | O(p) phylogenetic fitter, post-fit tools, this docs site |
 | **v0.3.0** | Non-Gaussian catch-up | one-part Laplace families, first two-part fitters, analytic-gradient hardening |
-| **v0.4.0** | Interface catch-up | `@formula` front-end, wide/long parity, gllvmTMB-mirroring tutorials |
-| **v1.0** | Full digital twin | extractor / ordination / diagnostic parity, structured non-Gaussian dependence, the R bridge (`engine = "julia"`) |
+| **v0.4.0** | Interface and bridge catch-up | `@formula` front-end, wide/long parity, gllvmTMB-mirroring tutorials, live `gllvmTMB` bridge gates |
+| **v1.0** | Full digital twin | extractor / ordination / diagnostic parity, structured non-Gaussian dependence, complete R bridge coverage for supported models |
 
 ## What works today
 
@@ -25,19 +25,23 @@ GitHub:
   including derived quantities (Σ_y, communality, phylogenetic signal).
 - One-part Laplace families through `fit_gllvm`: Binomial, Poisson,
   NegativeBinomial, Beta, Ordinal, and Gamma.
+- Wald/profile confidence-interval routes for the one-part Laplace families;
+  parity and bridge exposure are still being audited.
 - Dedicated two-part fitters for Delta-lognormal, Hurdle-Poisson, and
   Hurdle-NB.
+- Minimal Julia-side `bridge_fit` for no-covariate one-part families.
 
 ## What's planned
 
-- **Non-Gaussian inference** — confidence intervals and derived covariance
-  summaries beyond the Gaussian path.
+- **Non-Gaussian inference hardening** — R-parity evidence, derived covariance
+  summaries, and bridge exposure beyond the current one-part CI routes.
 - **Structured non-Gaussian dependence** — phylogenetic, animal, and spatial
   covariance in the Laplace path.
 - **Zero-inflated and additional two-part families** — ZIP/ZINB and
   Delta-Gamma after the current two-part substrate hardens.
 - **Same-as-R model syntax**: `gllvm(@formula(traits(...) ~ … + phylo(...)), data; family = …)`.
-- **The R bridge** — run a `gllvmTMB` model through the Julia engine
-  (`engine = "julia"`).
+- **The R bridge** — reconcile the live `gllvmTMB` JuliaCall route with the
+  tested minimal Julia `bridge_fit`, then widen deliberately to fixed-effect
+  `X`, missingness, mixed families, and post-fit methods.
 
 This roadmap evolves; issue #11 is always current.

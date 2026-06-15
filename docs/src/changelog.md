@@ -9,12 +9,26 @@ Notable changes to GLLVM.jl. Style mirrors `gllvmTMB`'s NEWS: status labels
 - **IN:** pkgdown-style documentation site (DocumenterVitepress) — dropdown
   navbar, full-text search, light/dark mode; homepage mirrors `gllvmTMB`'s with
   a Julia flavour. (#4)
+- **PARTIAL:** public status pages now distinguish the minimal Julia-side
+  `bridge_fit` route from the still-open live `gllvmTMB` bridge, fixed-effect
+  `X`, missingness, mixed-family, and post-fit-method gates.
 
 ### Engine
 - **IN:** O(p) node-frame phylogenetic gradient; type-stable recursion kernels
   (function barrier + parametric state); Aqua + JET quality gates wired green.
 - **IN:** single-trait (univariate) phylogenetic Gaussian fitter
   `fit_phylo_gaussian`, built on the O(p) node-frame gradient. (#5)
+- **IN:** `phylo_signal_wald_ci` scale fix for signed identity-scale
+  `sigma_phy`; packed phylogenetic signal now matches `phylo_signal(fit;
+  Σ_phy)` and is in the main test suite. (#92)
+- **IN:** Laplace mode-finder safeguards: large Fisher-scoring steps are
+  backtracked against the conditional mode objective, near-mode full steps are
+  preserved, and non-finite/factorization failures restart once from zero.
+  This fixes the local #96 engine blocker but does not by itself flip any
+  gradient default.
+- **PARTIAL:** minimal `bridge_fit` entrypoint for no-covariate one-part
+  families; unsupported bridge cells reject deliberately. Live R roundtrip is
+  still a bridge slice, not a release claim.
 
 ### Quality & infrastructure
 - **IN:** `Pkg.test()` adopted as the full-suite command; Aqua (package

@@ -48,7 +48,7 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 | `residuals` (Dunn–Smyth + Pearson) | ✅ | implemented one-part families; two-part residuals are dedicated |
 | `aic` / `bic` / `show` | ✅ | implemented fit objects |
 | Σ_y / communality / correlation / phylo signal H² | ✅ Gaussian | report-ready extractors |
-| Confidence intervals (Wald / profile / bootstrap) | ✅ Gaussian · ⬜ non-Gaussian | a genuine gap |
+| Confidence intervals (Wald / profile / bootstrap) | ✅ Gaussian · 🔨 non-Gaussian | Wald/profile routes exist for one-part Laplace families; R-parity, derived CIs, and bridge exposure remain partial |
 | Ordination biplot | ✅ | |
 
 ## Interface
@@ -72,9 +72,14 @@ fit-time gains.
 
 ## Honest gaps
 
-- **Confidence intervals for non-Gaussian families** — not yet wired.
+- **Non-Gaussian inference status** — Wald/profile routes are implemented for
+  the one-part Laplace families, but R-parity evidence, derived-CI coverage, and
+  bridge exposure are still partial.
 - **Structured dependence (phylo / animal / spatial) with non-Gaussian responses** — in design/build.
 - **`@formula` interface and random slopes** — in build.
 - **Unified `fit_gllvm` dispatch for two-part families** — not wired yet; use the dedicated fitters.
 - **Zero-inflated, Tweedie, and exponential families** — planned.
-- **R bridge (`engine = "julia"`)** — deferred (post-v1.0).
+- **R bridge (`engine = "julia"`)** — minimal Julia-side `bridge_fit` exists
+  for no-covariate one-part families; the live `gllvmTMB` JuliaCall route,
+  fixed-effect `X`, missingness, mixed families, and post-fit methods remain
+  partial.

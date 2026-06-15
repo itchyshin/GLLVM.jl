@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Finishing the twin - GLLVM.jl + gllvmTMB</title>
+<style>
+  :root{
+    --bg:#faf9f5;--ink:#20201e;--muted:#696964;--hint:#999890;--card:#fff;
+    --band:#f0eee8;--line:#dfddd5;--ok:#2f6b34;--okbg:#e6f1e6;
+    --run:#9a6a16;--runbg:#f4ead6;--info:#2f5e9f;--infobg:#e7eefc;
+    --bad:#9a3a3a;--badbg:#f4e0dd;--todo:#77736b;--shadow:0 1px 2px rgba(0,0,0,.04);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;line-height:1.45}
+  main{max-width:1180px;margin:0 auto;padding:28px 26px 38px}
+  h1{font-size:24px;line-height:1.15;margin:0;font-weight:650}
+  h2{font-size:15px;margin:24px 0 10px}
+  h3{font-size:14px;margin:0}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:rgba(0,0,0,.04);padding:1px 4px;border-radius:4px}
+  a{color:var(--info);text-decoration:none} a:hover{text-decoration:underline}
+  .top{display:flex;gap:18px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}
+  .sub{color:var(--muted);font-size:13.5px;max-width:890px;margin-top:8px}
+  .live{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:12px;white-space:nowrap}
+  .dot{width:8px;height:8px;border-radius:50%;background:#47a35b;animation:pulse 1.6s infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .warn{display:none;margin-top:16px;border:1px solid #ddb2aa;background:var(--badbg);color:#67302d;border-radius:10px;padding:10px 13px;font-size:13px}
+  .warn.show{display:block}
+  .banner{margin-top:14px;border:1px solid #bcd0f4;background:var(--infobg);color:#243a5c;border-radius:10px;padding:10px 13px;font-size:13px}
+  .banner b{color:#173154}
+  .metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:16px}
+  .metric,.card,.phase,.agent,.repo{background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow)}
+  .metric{padding:13px 14px}.metric .label{font-size:11.5px;color:var(--muted)}.metric .value{font-size:25px;font-weight:650;margin-top:2px}
+  .grid{display:grid;grid-template-columns:1.45fr .95fr;gap:18px;margin-top:4px}
+  .repo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  .repo{padding:11px 12px;font-size:12.5px}.repo .name{font-weight:650;font-size:13.5px}.repo .meta{color:var(--muted);margin-top:4px}.repo.dirty{border-color:#ddb2aa;background:#fff8f7}
+  .phase{margin-bottom:10px;overflow:hidden}
+  .phase-head{display:grid;grid-template-columns:64px 1fr auto auto 18px;gap:10px;align-items:center;padding:12px 14px;cursor:pointer}
+  .phase-head:hover{background:#f6f4ef}.phase-k{font-size:12px;color:var(--muted)}.phase-n{font-weight:620}.phase-count{font-size:12px;color:var(--muted)}
+  .badge{display:inline-flex;align-items:center;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:620}
+  .covered,.verified{background:var(--okbg);color:var(--ok)}.active,.partial{background:var(--runbg);color:var(--run)}
+  .planned,.queued,.experimental{background:var(--band);color:var(--todo)}.blocked,.unsupported{background:var(--badbg);color:var(--bad)}
+  .phase-body{display:none;padding:0 14px 12px}.phase.open .phase-body{display:block}
+  .slice{display:grid;grid-template-columns:18px 1fr auto;gap:8px;align-items:start;border-top:1px solid var(--band);padding:7px 0;font-size:13px}
+  .slice small{display:block;color:var(--muted);margin-top:2px}.sig{font-weight:700}.sig.covered,.sig.verified{color:var(--ok)}.sig.active,.sig.partial{color:var(--run)}.sig.blocked,.sig.unsupported{color:var(--bad)}.sig.planned,.sig.queued,.sig.experimental{color:var(--hint)}
+  .feed,.evidence,.matrix{background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);padding:6px 13px}
+  .row{display:grid;grid-template-columns:58px 1fr;gap:9px;border-bottom:1px solid var(--band);padding:8px 0;font-size:13px}.row:last-child{border-bottom:0}.row .time{font-size:11px;color:var(--hint)}
+  .agents{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.agent{display:flex;align-items:center;gap:10px;padding:10px 11px}.avatar{width:28px;height:28px;border-radius:50%;color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:0 0 28px}.agent .name{font-weight:620;font-size:13px}.agent .role{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.agent .state{margin-left:auto;font-size:10.5px}
+  .matrix-row{display:grid;grid-template-columns:1.1fr .75fr .75fr .75fr .85fr;gap:8px;border-bottom:1px solid var(--band);padding:8px 0;font-size:12.5px}.matrix-row:last-child{border-bottom:0}.matrix-head{font-weight:650;color:var(--muted)}
+  footer{margin-top:18px;color:var(--hint);font-size:11.5px}
+  @media(max-width:900px){.metrics,.repo-grid,.agents{grid-template-columns:repeat(2,minmax(0,1fr))}.grid{grid-template-columns:1fr}.phase-head{grid-template-columns:54px 1fr auto}.phase-count{display:none}}
+  @media(max-width:560px){main{padding:20px 14px}.metrics,.repo-grid,.agents{grid-template-columns:1fr}.matrix-row{grid-template-columns:1fr}.matrix-head{display:none}}
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <div>
+      <h1 id="title">Finishing the twin - GLLVM.jl + gllvmTMB</h1>
+      <div class="sub" id="mission">Loading mission control...</div>
+    </div>
+    <div class="live"><span class="dot"></span><span id="liveText">loading</span></div>
+  </div>
+  <div class="warn" id="staleWarn"></div>
+  <div class="banner" id="currentWork"></div>
+  <section class="metrics" id="metrics"></section>
+
+  <h2>Repo Truth</h2>
+  <section class="repo-grid" id="repos"></section>
+
+  <section class="grid">
+    <div>
+      <h2>Roadmap - Click A Phase</h2>
+      <div id="roadmap"></div>
+    </div>
+    <div>
+      <h2>Activity - Newest First</h2>
+      <div class="feed" id="activity"></div>
+      <h2>In Flight Now</h2>
+      <div class="feed" id="inflight"></div>
+    </div>
+  </section>
+
+  <h2>The Team</h2>
+  <section class="agents" id="agents"></section>
+
+  <h2>Capability Sweep</h2>
+  <section class="matrix" id="matrix"></section>
+
+  <h2>Verification Evidence</h2>
+  <section class="evidence" id="evidence"></section>
+
+  <footer id="footer"></footer>
+</main>
+<script>
+const BUILD = "2026-06-14-gllvm-finish-001";
+const statusIcon = {covered:"+", verified:"+", active:"*", partial:"~", experimental:"~", planned:"o", queued:"o", blocked:"!", unsupported:"x"};
+function esc(x){return String(x == null ? "" : x).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
+function link(label,url){return url ? `<a href="${esc(url)}" target="_blank" rel="noreferrer">${esc(label)}</a>` : esc(label);}
+function badge(s){return `<span class="badge ${esc(s)}">${esc(s)}</span>`;}
+function renderRows(node, rows, leftKey="time"){
+  node.innerHTML = rows.map(r => `<div class="row"><div class="time">${esc(r[leftKey] || "")}</div><div>${r.html || esc(r.text || "")}</div></div>`).join("");
+}
+function renderStatus(data, sweep){
+  document.title = data.title;
+  document.getElementById("title").textContent = data.title;
+  document.getElementById("mission").innerHTML = esc(data.mission);
+  document.getElementById("currentWork").innerHTML = `<b>Current work:</b> ${esc(data.current_work)}`;
+  document.getElementById("liveText").textContent = `live data - ${new Date(data.generated_at).toLocaleString()}`;
+  document.getElementById("metrics").innerHTML = data.metrics.map(m => `<div class="metric"><div class="label">${esc(m.label)}</div><div class="value ${esc(m.status || "")}">${esc(m.value)}</div></div>`).join("");
+  document.getElementById("repos").innerHTML = data.repos.map(r => `<div class="repo ${r.dirty ? "dirty" : ""}"><div class="name">${esc(r.name)} ${r.dirty ? badge("dirty") : badge("clean")}</div><div class="meta">branch: <code>${esc(r.branch)}</code></div><div class="meta">head: <code>${esc(r.head)}</code></div><div class="meta">${esc(r.note)}</div></div>`).join("");
+  document.getElementById("roadmap").innerHTML = data.phases.map((p, i) => {
+    const open = p.open ? " open" : "";
+    const slices = p.slices.map(s => `<div class="slice"><span class="sig ${esc(s.status)}">${esc(statusIcon[s.status] || "o")}</span><div>${esc(s.name)}<small>${esc(s.evidence || "No evidence linked yet")}</small></div><div>${badge(s.status)}</div></div>`).join("");
+    return `<div class="phase${open}" data-phase="${i}"><div class="phase-head"><span class="phase-k">${esc(p.key)}</span><span class="phase-n">${esc(p.name)}</span><span class="phase-count">${esc(p.done)} / ${esc(p.total)}</span>${badge(p.status)}<span class="chev">${p.open ? "v" : ">"}</span></div><div class="phase-body">${slices}</div></div>`;
+  }).join("");
+  document.querySelectorAll(".phase-head").forEach(h => h.addEventListener("click", () => {
+    const p = h.parentElement; p.classList.toggle("open"); h.querySelector(".chev").textContent = p.classList.contains("open") ? "v" : ">";
+  }));
+  renderRows(document.getElementById("activity"), data.activity);
+  renderRows(document.getElementById("inflight"), data.inflight, "owner");
+  document.getElementById("agents").innerHTML = data.agents.map(a => `<div class="agent"><div class="avatar" style="background:${esc(a.color)}">${esc(a.initials)}</div><div><div class="name">${esc(a.name)}</div><div class="role">${esc(a.role)}</div></div><div class="state">${badge(a.state)}</div></div>`).join("");
+  const matrixRows = (sweep.rows || []).slice(0, 24);
+  document.getElementById("matrix").innerHTML = `<div class="matrix-row matrix-head"><div>Capability</div><div>Engine</div><div>Bridge</div><div>Inference</div><div>Evidence</div></div>` + matrixRows.map(r => `<div class="matrix-row"><div>${esc(r.capability)}</div><div>${badge(r.engine)}</div><div>${badge(r.bridge)}</div><div>${badge(r.inference)}</div><div>${esc(r.evidence)}</div></div>`).join("");
+  renderRows(document.getElementById("evidence"), data.evidence, "status");
+  document.getElementById("footer").textContent = `${data.footer} - build ${BUILD}`;
+}
+async function load(){
+  const [status, sweep, version] = await Promise.all([
+    fetch("status.json?ts=" + Date.now()).then(r => r.json()),
+    fetch("sweep.json?ts=" + Date.now()).then(r => r.json()),
+    fetch("version.txt?ts=" + Date.now()).then(r => r.text()).catch(() => "")
+  ]);
+  const versionText = version.trim();
+  const warn = document.getElementById("staleWarn");
+  if (versionText !== BUILD || status.build !== BUILD) {
+    warn.classList.add("show");
+    warn.textContent = `Stale-board warning: HTML build ${BUILD}, version.txt ${versionText || "missing"}, status.json ${status.build || "missing"}. Refresh/rebuild before trusting this page.`;
+  } else {
+    warn.classList.remove("show");
+  }
+  renderStatus(status, sweep);
+}
+load().catch(err => {
+  document.getElementById("staleWarn").classList.add("show");
+  document.getElementById("staleWarn").textContent = "Mission-control data failed to load: " + err.message;
+});
+setInterval(load, 15000);
+</script>
+</body>
+</html>

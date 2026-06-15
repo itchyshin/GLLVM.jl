@@ -138,6 +138,15 @@ end
         @test fit2.converged
 
         h2_vec = GLLVM.phylo_signal(fit2; Σ_phy = Σ_phy)
+        spec2 = GLLVM._derived_spec(fit2)
+        θ̂2 = fit2.pars.θ_packed
+        diag_Σphy = diag(Σ_phy)
+        for t in 1:p2
+            @test isapprox(
+                GLLVM._phylo_signal_packed(θ̂2, spec2, t; diag_Σphy = diag_Σphy),
+                h2_vec[t];
+                rtol = 1e-8, atol = 1e-10)
+        end
         # Test a trait whose point estimate is interior (not on a boundary).
         t_test = findfirst(h -> isfinite(h) && 0.02 < h < 0.98, h2_vec)
         @test t_test !== nothing

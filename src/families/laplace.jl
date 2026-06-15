@@ -54,6 +54,42 @@ function _LaplaceModeWorkspace(::Type{T}, p::Int, K::Int) where {T}
     )
 end
 
+function _laplace_mode_logpost!(family, y::AbstractVector, n::AbstractVector,
+        Λ::AbstractMatrix, β::AbstractVector, link::Link, z::AbstractVector,
+        η::AbstractVector, μ::AbstractVector)
+    p = size(Λ, 1)
+    mul!(η, Λ, z)
+    q = -0.5 * dot(z, z)
+    @inbounds for t in 1:p
+        η[t] = _clamp_eta(β[t] + η[t])
+        μ[t] = _clamp_mu(family, linkinv(link, η[t]))
+        q += _glm_logpdf(family, μ[t], n[t], y[t])
+    end
+    return q
+end
+
+function _laplace_accept_backtracking_step!(z::AbstractVector, Δ::AbstractVector,
+        q0, family, y::AbstractVector, n::AbstractVector, Λ::AbstractMatrix,
+        β::AbstractVector, link::Link, work::_LaplaceModeWorkspace;
+        max_halves::Integer = 30)
+    step = one(eltype(Δ))
+    half = step / 2
+    @inbounds for _ in 1:max_halves
+        for k in eachindex(z, Δ)
+            z[k] += step * Δ[k]
+        end
+        q1 = _laplace_mode_logpost!(family, y, n, Λ, β, link, z, work.η, work.μ)
+        if isfinite(q1) && q1 >= q0
+            return step, true
+        end
+        for k in eachindex(z, Δ)
+            z[k] -= step * Δ[k]
+        end
+        step *= half
+    end
+    return step, false
+end
+
 # In-place inner Laplace mode-finder (Fisher-scoring Newton). Starts from the
 # contents of `z` and overwrites it with the conditional mode ẑ. This is used by
 # cached fitter paths so neighbouring Optim probes do not repeatedly cold-start
@@ -61,19 +97,10 @@ end
 function _laplace_mode!(z::AbstractVector, family, y::AbstractVector, n::AbstractVector,
         Λ::AbstractMatrix, β::AbstractVector, link::Link;
         maxiter::Integer = 100, tol::Real = 1e-9)
-    for _ in 1:maxiter
-        η  = _clamp_eta.(β .+ Λ * z)
-        μ  = _clamp_mu.(Ref(family), linkinv.(Ref(link), η))
-        me = mu_eta.(Ref(link), η)
-        s  = _glm_score.(Ref(family), μ, n, me, y)
-        W  = _glm_weight.(Ref(family), μ, n, me)
-        A  = Symmetric(Λ' * (W .* Λ) + I)
-        Δ  = _safe_solve(A, Λ' * s .- z)
-        (Δ === nothing || !all(isfinite, Δ)) && break   # singular A ⇒ stop at current ẑ
-        z .+= Δ
-        maximum(abs, Δ) < tol && break
-    end
-    return z
+    T = promote_type(eltype(z), eltype(Λ), eltype(β))
+    work = _LaplaceModeWorkspace(T, size(Λ, 1), size(Λ, 2))
+    return _laplace_mode!(z, family, y, n, Λ, β, link, work;
+                          maxiter = maxiter, tol = tol)
 end
 
 function _laplace_mode!(z::AbstractVector, family, y::AbstractVector, n::AbstractVector,
@@ -88,6 +115,7 @@ function _laplace_mode!(z::AbstractVector, family, y::AbstractVector, n::Abstrac
     A = work.A
     rhs = work.rhs
     Δ = work.Δ
+    restarted = false
     for _ in 1:maxiter
         mul!(η, Λ, z)
         @inbounds for t in 1:p
@@ -123,13 +151,40 @@ function _laplace_mode!(z::AbstractVector, family, y::AbstractVector, n::Abstrac
         C = try
             cholesky(Symmetric(A))
         catch
+            if !restarted
+                fill!(z, zero(eltype(z)))
+                restarted = true
+                continue
+            end
             break
         end
         copyto!(Δ, rhs)
         ldiv!(C, Δ)
-        all(isfinite, Δ) || break
-        z .+= Δ
-        maximum(abs, Δ) < tol && break
+        if !all(isfinite, Δ)
+            if !restarted
+                fill!(z, zero(eltype(z)))
+                restarted = true
+                continue
+            end
+            break
+        end
+
+        step_norm = norm(Δ)
+        in_basin = step_norm <= 1e-3 * (1 + norm(z))
+        step_taken = one(eltype(Δ))
+        if in_basin
+            z .+= Δ
+        else
+            q0 = _laplace_mode_logpost!(family, y, n, Λ, β, link, z, η, μ)
+            if isfinite(q0)
+                step_taken, accepted = _laplace_accept_backtracking_step!(
+                    z, Δ, q0, family, y, n, Λ, β, link, work)
+                accepted || break
+            else
+                z .+= Δ
+            end
+        end
+        step_taken * maximum(abs, Δ) < tol && break
     end
     return z
 end

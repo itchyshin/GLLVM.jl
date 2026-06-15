@@ -43,7 +43,9 @@ include("confint.jl")                    # Wald
 include("confint_profile.jl")            # profile likelihood
 include("confint_bootstrap.jl")          # parametric bootstrap
 include("confint_derived.jl")            # derived quantities (Σ_y, communality, ...)
+include("confint_derived_wald.jl")       # transformed-Wald CIs for derived bounded quantities
 include("confint_nongaussian.jl")        # Wald CIs for non-Gaussian Laplace fits
+include("bridge.jl")                     # flat R->Julia bridge_fit contract
 
 # Public API
 export spatial_cov, relatedness_cov,
@@ -51,6 +53,7 @@ export spatial_cov, relatedness_cov,
        confint, profile_ci, bootstrap_ci,
        ppca_init, em_fa,
        sigma_y_site, communality, correlation, phylo_signal,
+       phylo_signal_wald_ci,
        augmented_phy, gaussian_marginal_loglik_sparse_phy,
        node_grad, node_dσ_phy_only, NodePerSpecies, build_node_perspecies,
        grad_node_perspecies, node_blups,
@@ -66,6 +69,7 @@ export spatial_cov, relatedness_cov,
        fit_hurdle_nb_gllvm, HurdleNBFit,
        hurdle_nb_marginal_loglik_laplace, fit_gllvm,
        getLV, getLoadings, rotation,
-       predict, fitted, residuals, aic, bic
+       predict, fitted, residuals, aic, bic,
+       bridge_fit
 
 end # module GLLVM

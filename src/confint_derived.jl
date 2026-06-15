@@ -66,7 +66,7 @@ end
 #    log_σ_B[p]; log_σ_W[p]      (if has_diag)
 #    θ_rr_B (pack_lambda Λ_B)
 #    θ_rr_W (pack_lambda Λ_W)     (if K_W > 0)
-#    log_σ_phy[p]                (if has_phy_unique)
+#    σ_phy[p]                    (if has_phy_unique; identity link)
 #    θ_rr_phy (pack_lambda Λ_phy)(if K_phy > 0)]
 #
 # Returned tuple uses raw-scale (positive) variance / SD components, like
@@ -121,9 +121,8 @@ function _derived_unpack(θ::AbstractVector, spec::NamedTuple)
 
     σ_phy = nothing
     if has_phy_unique
-        log_σ_phy = θ[(cursor + 1):(cursor + p)]
+        σ_phy = θ[(cursor + 1):(cursor + p)]
         cursor += p
-        σ_phy = exp.(log_σ_phy)
     end
 
     Λ_phy = nothing
