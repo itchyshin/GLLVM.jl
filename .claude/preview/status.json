@@ -1,9 +1,9 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T08:51:44.000Z",
+  "generated_at": "2026-06-15T08:57:21.000Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "Phase 4 runtime gap fill is green locally on GLLVM.jl-integration: #91 high-rate Poisson divergence fixed, Gamma now defaults to analytic gradients after finite-vs-analytic benchmark gates, #92 phylo-signal Wald CI scale fix is wired into the main suite, the verified phylo-unique sparse-phylo node-gradient shortcut is wired, and duplicate-method test warnings are cleaned. Latest full Pkg.test passed at 3869/1 broken. gllvmTMB live julia-bridge tests pass 53/53 and the R-side NEWS/check-log match that evidence. Next gates are #95/#94 branch reconciliation, canonical R bridge parity, missingness bridge, and broader structural speedups.",
+  "current_work": "Phase 4 runtime gap fill is green locally on GLLVM.jl-integration: #91 high-rate Poisson divergence fixed, Gamma now defaults to analytic gradients after finite-vs-analytic benchmark gates, #92 phylo-signal Wald CI scale fix is wired into the main suite, the verified phylo-unique sparse-phylo node-gradient shortcut is wired, duplicate-method test warnings are cleaned, and #94 has a local unique-content audit. Latest full Pkg.test passed at 3869/1 broken. gllvmTMB live julia-bridge tests pass 53/53 and the R-side NEWS/check-log match that evidence. Next gates are #95 maintainer merge decision, #94 successor issues before closure, canonical R bridge parity, missingness bridge, and broader structural speedups.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
     {
@@ -38,9 +38,9 @@
     {
       "name": "GLLVM.jl integration",
       "branch": "codex/high-rate-poisson-safeguard",
-      "head": "d3d8129",
+      "head": "862f081",
       "dirty": false,
-      "note": "#91 safeguard, Gamma analytic default, docs-link cleanup, JuliaConnectoR smoke repair, #92 phylo-signal Wald CI scale fix, Rose status-drift cleanup, phylo-unique sparse node-gradient shortcut, and duplicate-test-warning cleanup committed locally; latest Pkg.test passed 3869/1 broken."
+      "note": "#91 safeguard, Gamma analytic default, docs-link cleanup, JuliaConnectoR smoke repair, #92 phylo-signal Wald CI scale fix, Rose status-drift cleanup, phylo-unique sparse node-gradient shortcut, duplicate-test-warning cleanup, and #94 content audit committed locally; latest Pkg.test passed 3869/1 broken."
     },
     {
       "name": "gllvmTMB",
@@ -185,8 +185,8 @@
         },
         {
           "name": "Audit GLLVM #94 unique content before closure",
-          "status": "planned",
-          "evidence": "Needs unique-content ledger for genpoisson, studentt, truncnb, truncpoisson, anova.jl, diagnostics.jl."
+          "status": "partial",
+          "evidence": "Local audit at docs/dev-log/2026-06-15-pr94-unique-content-audit.md: #94 is draft/conflicting; 124 paths absent from integration, 50 present-different, 2 byte-identical. Do not merge; create successor issues before closure."
         },
         {
           "name": "Repair gllvmTMB bridge branch from current origin/main",
@@ -574,6 +574,10 @@
   "activity": [
     {
       "time": "now",
+      "html": "<b>Shannon/Rose #94 audit banked.</b> Draft/conflicting #94 was classified against local integration: <code>124</code> paths absent, <code>50</code> present-different, <code>2</code> byte-identical. Verdict: do not merge; create successor issues for unique candidates before closure."
+    },
+    {
+      "time": "now",
       "html": "<b>Grace/Rose test-log hygiene green.</b> Takahashi tests now use module-loaded functions and bridge-CI Poisson helpers have unique names; core suite passed <code>3857/3 broken</code> and full <code>Pkg.test()</code> passed <code>3869/1 broken</code> with the duplicate-method warnings gone."
     },
     {
@@ -644,10 +648,14 @@
     },
     {
       "owner": "Rose",
-      "text": "Next audit slice: #95/#94 public branch reconciliation, canonical R parity wording, and preview figure claims."
+      "text": "#94 local audit is banked; next audit slice is successor issue/comment drafting, #95 maintainer merge decision, canonical R parity wording, and preview figure claims."
     }
   ],
   "evidence": [
+    {
+      "status": "partial",
+      "text": "Shannon/Rose: #94 unique-content audit banked locally; verdict is do not merge, preserve candidate work through successor issues for GenPoisson, Student-t, true lognormal, standalone truncation, ANOVA/LRT, diagnostics, structured Schur/Poisson, and benchmark rebuilds."
+    },
     {
       "status": "covered",
       "text": "Grace/Rose: duplicate-method test warnings removed; test_takahashi_selinv 8/8, test_bridge_ci 66/66, core suite 3857/3 broken, and full Pkg.test 3869/1 broken ran without the previous overwrite warnings."
