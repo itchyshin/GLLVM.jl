@@ -1,6 +1,6 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T06:40:00.000Z",
+  "generated_at": "2026-06-15T14:58:01.246Z",
   "status_vocabulary": [
     "covered",
     "partial",
@@ -231,7 +231,7 @@
       "engine": "partial",
       "bridge": "partial",
       "inference": "partial",
-      "evidence": "R-first post-fit bridge surface now includes coef(), tidy(), glance(), summary(), print(summary()), predict(), fitted(), residuals(), simulate(), nobs(), ordination extractors, ordiplot(), and plot(type=\"ordination\") for current in-sample one-part bridge payloads. Latest glance slice is cached fit statistics only and live bridge tests pass 311/311 against GLLVM.jl-integration. Still unsupported: covariance/CI/diagnostic payloads in glance, unconditional/bootstrap-grade simulation, masked-response simulation, NB2/Beta/Gamma/Ordinal simulation, tidy SE/CI columns, tidy random parameters/cutpoints, vcov payloads, newdata prediction, ordinal probability payloads, broader plots, and richer diagnostic residuals."
+      "evidence": "R-first post-fit bridge surface now includes coef(), tidy(), glance(), augment(), summary(), print(summary()), predict(), fitted(), residuals(), simulate(), nobs(), ordination extractors, ordiplot(), and plot(type=\"ordination\") for current in-sample one-part bridge payloads. Latest augment slice is response-scale/default-conditional/in-sample row diagnostics only and live bridge tests pass 331/331 against GLLVM.jl-integration. Still unsupported: newdata prediction/augmentation, link-scale augment rows, fixed-effects-only augment rows, covariance/CI/diagnostic payloads in glance, unconditional/bootstrap-grade simulation, masked-response simulation, NB2/Beta/Gamma/Ordinal simulation, tidy SE/CI columns, tidy random parameters/cutpoints, vcov payloads, ordinal probability payloads, broader plots, and richer diagnostic residuals."
     },
     {
       "capability": "Exact implicit gradients",

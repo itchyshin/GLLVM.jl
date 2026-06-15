@@ -1,9 +1,9 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T14:39:59.000Z",
+  "generated_at": "2026-06-15T14:58:01.246Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "R-first sequencing is active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as parity and acceleration target. Latest slice banks glance.gllvmTMB_julia() as a one-row cached fit-statistics table for R users. Live package-level bridge tests pass 311/311 against GLLVM.jl-integration; default no-Julia bridge tests pass 116 with 14 expected skips. Rose boundary: no full-capability, all-family, bridge-complete, non-Gaussian REML, or AI-REML-for-Laplace claims. glance() is not covariance, CI, diagnostic, or simulation calibration; REML stays Gaussian-only; AI-REML is a later exact-Gaussian candidate, not a non-Gaussian/Laplace label.",
+  "current_work": "R-first sequencing is active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as parity and acceleration target. Latest slice banks augment.gllvmTMB_julia() as a narrow in-sample response-scale row diagnostic table for R users. No-Julia bridge tests pass 132 with 14 expected skips; live package-level bridge tests pass 331/331 against GLLVM.jl-integration. Rose boundary: no full-capability, all-family, bridge-complete, non-Gaussian REML, or AI-REML-for-Laplace claims. augment() is not newdata support, not link-scale or fixed-effects-only augmentation, not ordinal probability output, and not influence/CI/diagnostic calibration; REML stays Gaussian-only; AI-REML is a later exact-Gaussian candidate, not a non-Gaussian/Laplace label.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
     {
@@ -40,14 +40,14 @@
       "branch": "codex/high-rate-poisson-safeguard",
       "head": "f75376c",
       "dirty": false,
-      "note": "Paired runtime engine checkout for current gllvmTMB bridge evidence. X-aware bridge, Gaussian mean_coef, bridge_fit(mask=...), ordinal_probit ProbitLink, binomial N-matrix cbind transport, fixed-effect tidy() rows, conditional simulate() rows, and cached glance() rows are validated here; latest live gllvmTMB bridge tests against this checkout pass 311/311."
+      "note": "Paired runtime engine checkout for current gllvmTMB bridge evidence. X-aware bridge, Gaussian mean_coef, bridge_fit(mask=...), ordinal_probit ProbitLink, binomial N-matrix cbind transport, fixed-effect tidy() rows, conditional simulate() rows, cached glance() rows, and in-sample augment() rows are validated here; latest live gllvmTMB bridge tests against this checkout pass 331/331."
     },
     {
       "name": "gllvmTMB",
       "branch": "engine-julia",
-      "head": "4750513",
+      "head": "01a9a7e",
       "dirty": false,
-      "note": "engine-julia has local R-first bridge slices committed through glance.gllvmTMB_julia(). Current green bridge evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration; NEWS/check-log/README explicitly warn that stale/dashboard GLLVM.jl checkouts may reject newer payloads."
+      "note": "engine-julia has local R-first bridge slices committed through augment.gllvmTMB_julia(). Current green bridge evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration; NEWS/check-log/README explicitly warn that stale/dashboard GLLVM.jl checkouts may reject newer payloads."
     },
     {
       "name": "drmTMB",
@@ -336,7 +336,7 @@
         {
           "name": "Post-fit methods through bridge",
           "status": "partial",
-          "evidence": "coef()/tidy()/glance()/summary()/predict()/fitted()/residuals()/simulate()/nobs() plus extract_ordination()/getLoadings()/getLV()/rotate_loadings()/ordiplot()/plot(type=\"ordination\") are live-tested for current in-sample one-part bridge payloads, including fixed-effect tidy rows, cached glance fit statistics, and conditional gaussian/poisson/binomial simulation (311/311 against GLLVM.jl-integration). tidy() deliberately excludes loadings, SEs, CIs, random parameters, and cutpoints until covariance/parameter-class payloads are routed. glance() is fit statistics only. simulate() is conditional only, not unconditional/bootstrap-grade. vcov() fails with an explicit not-yet-routed status. newdata prediction, ordinal probabilities, covariance payloads, broader plot types, and richer diagnostic residuals remain queued."
+          "evidence": "coef()/tidy()/glance()/augment()/summary()/predict()/fitted()/residuals()/simulate()/nobs() plus extract_ordination()/getLoadings()/getLV()/rotate_loadings()/ordiplot()/plot(type=\"ordination\") are live-tested for current in-sample one-part bridge payloads, including fixed-effect tidy rows, cached glance fit statistics, in-sample augment row diagnostics, and conditional gaussian/poisson/binomial simulation (331/331 against GLLVM.jl-integration). tidy() deliberately excludes loadings, SEs, CIs, random parameters, and cutpoints until covariance/parameter-class payloads are routed. glance() is fit statistics only. augment() is response-scale/default-conditional/in-sample only. simulate() is conditional only, not unconditional/bootstrap-grade. vcov() fails with an explicit not-yet-routed status. newdata prediction/augmentation, link-scale augment rows, ordinal probabilities, covariance payloads, broader plot types, and richer diagnostic residuals remain queued."
         }
       ]
     },
@@ -574,6 +574,10 @@
   "activity": [
     {
       "time": "now",
+      "html": "<b>Hopper/Rose augment bridge slice green.</b> <code>gllvmTMB_julia</code> now has <code>generics::augment()</code> as an in-sample response-scale row diagnostic table with identifiers plus <code>.observed</code>, <code>.fitted</code>, <code>.resid</code>, and <code>.status</code>. It preserves masked rows and rejects <code>newdata</code>, <code>type=\"link\"</code>, non-default <code>re_form</code>, and ordinal prediction payloads explicitly. No-Julia bridge tests passed <code>132</code> with <code>14</code> expected skips; live package-level bridge tests passed <code>331/331</code> against <code>GLLVM.jl-integration</code>."
+    },
+    {
+      "time": "now",
       "html": "<b>Hopper/Pat glance bridge slice green.</b> <code>gllvmTMB_julia</code> now has <code>generics::glance()</code> as a one-row cached fit-statistics table: logLik, AIC, BIC, df, nobs, convergence, iterations, engine, family, and model. It does not imply covariance, CI, diagnostic, or simulation-calibration payloads. No-Julia bridge tests passed <code>116</code> with <code>14</code> expected skips; live package-level bridge tests passed <code>311/311</code> against <code>GLLVM.jl-integration</code>."
     },
     {
@@ -708,11 +712,11 @@
   "inflight": [
     {
       "owner": "Ada",
-      "text": "R-first sequencing is active; latest committed slice banks glance.gllvmTMB_julia() as a one-row cached fit-statistics method."
+      "text": "R-first sequencing is active; latest committed slice banks augment.gllvmTMB_julia() as a narrow in-sample row diagnostic method."
     },
     {
       "owner": "Hopper",
-      "text": "Next R-first bridge surface: improve explicit CI-status/covariance payload rows or add the next fail-loud user method boundary before Julia-only engine breadth."
+      "text": "Next R-first bridge surface: bridge gate-vs-engine guard or explicit covariance/CI-status payload rows before more Julia-only engine breadth."
     },
     {
       "owner": "Gauss/Karpinski",
@@ -720,10 +724,14 @@
     },
     {
       "owner": "Rose",
-      "text": "No broad wording: no full capability, no all-families support, no non-Gaussian REML, and no AI-REML wording outside exact Gaussian variance-component cells."
+      "text": "Queued blocker: GLLVM.jl maintainer docs still need the Gamma analytic-gradient note reconciled with the benchmark/check-log evidence. REML stays Gaussian-only; AI-REML stays exact-Gaussian-only future wording."
     }
   ],
   "evidence": [
+    {
+      "status": "partial",
+      "text": "Hopper/Rose: augment.gllvmTMB_julia() committed locally at gllvmTMB 01a9a7e. generics::augment() now returns in-sample response-scale row diagnostics with .observed, .fitted, .resid, and .status; masked rows keep status=\"masked\" with NA observed/residual values. air format passed; devtools::document() completed with pre-existing unrelated roxygen warnings; git diff --check passed; no-Julia devtools::test(filter=\"julia-bridge\") passed 132 with 14 skips; live devtools::test(filter=\"julia-bridge\") passed 331/331 against GLLVM.jl-integration. This is not newdata, link-scale, fixed-effects-only, ordinal-probability, influence, CI, or diagnostic-calibration support."
+    },
     {
       "status": "partial",
       "text": "Hopper/Pat: glance.gllvmTMB_julia() committed locally at gllvmTMB 4750513. generics::glance() now returns one row of cached fit statistics: logLik, AIC, BIC, df, nobs, converged, iterations, engine, family, model. air format passed; no-Julia devtools::test(filter=\"julia-bridge\") passed 116 with 14 skips; live devtools::test(filter=\"julia-bridge\") passed 311/311 against GLLVM.jl-integration. This is not a covariance, CI, diagnostic, or simulation-calibration payload."
