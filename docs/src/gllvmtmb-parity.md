@@ -103,6 +103,10 @@ current `gllvmTMB(..., engine = "julia")` bridge admits complete, balanced,
 one-part reduced-rank models for Gaussian, Poisson, Binomial, NB2, Beta, Gamma,
 and Ordinal-probit no-X fits. Fixed-effect covariates (`X`) are admitted for
 complete, balanced one-part Gaussian, Poisson, Binomial, NB2, Beta, and Gamma fits.
+`GLLVM.bridge_capabilities()` exposes the current Julia bridge surface as a flat,
+JuliaCall-friendly ledger so the R side can enforce a one-way drift guard: every
+R-admitted row must be supported by Julia, while Julia-only rows must remain
+explicitly planned or rejected in `gllvmTMB`.
 For Gaussian covariate fits the bridge returns `mean_coef`, the full coefficient
 vector for the supplied `X` array, so the R side can reconstruct in-sample
 fitted values without guessing from the per-trait mean summary.

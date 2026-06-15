@@ -946,3 +946,71 @@ PASS WITH NOTES. This is a payload-only bridge change, not a likelihood change.
 It closes the R-side Gaussian-X in-sample prediction gap when paired with the
 matching `gllvmTMB` consumer; `newdata` prediction and ordinal probabilities
 remain separate bridge payloads.
+
+## 2026-06-15 - Bridge capability reporter for R drift guard
+
+### Scope
+
+Added `GLLVM.bridge_capabilities()` as a flat, JuliaCall-friendly reporter for
+the current `bridge_fit` surface. The helper does not change fitting behavior;
+it lets `gllvmTMB` enforce a one-way bridge-drift contract: every R-admitted
+row must be supported by the paired Julia checkout, while Julia-only rows must
+be explicitly planned or rejected on the R side.
+
+Changes:
+
+- `src/bridge.jl` now defines `_BRIDGE_ONEPART_FAMILIES` and the exported
+  `bridge_capabilities()` ledger.
+- `src/GLLVM.jl` exports `bridge_capabilities`.
+- `test/test_bridge_capabilities.jl` locks the reported rows, including NB1 as
+  a Julia one-part no-X route and the mixed-family vector route as no-X only.
+- `docs/src/gllvmtmb-parity.md` records the R drift-guard contract.
+
+### Checks Run
+
+```sh
+~/.juliaup/bin/julia --project=. test/test_bridge_capabilities.jl
+```
+
+Result: `9/9 pass` in `0.1s`.
+
+```sh
+~/.juliaup/bin/julia --project=. test/runtests.jl
+```
+
+Result: `3891 pass, 3 broken, 0 failed, 0 errored` in `30m39.8s`.
+
+```sh
+~/.juliaup/bin/julia --project=docs docs/make.jl
+```
+
+Result: failed before rendering because `Documenter` was not installed in the
+docs environment.
+
+```sh
+~/.juliaup/bin/julia --project=docs -e 'using Pkg; Pkg.instantiate()'
+```
+
+Result: failed with `expected package GLLVM [2dc8e01c] to be registered`.
+No docs source error was reached.
+
+```sh
+GLLVM_JL_PATH="/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration" Rscript -e 'options(gllvmTMB.julia_home="/Users/z3437171/.juliaup/bin"); devtools::test(filter="julia-bridge")'
+```
+
+Result in `/Users/z3437171/Dropbox/Github Local/gllvmTMB`: `FAIL 0 | WARN 0 |
+SKIP 0 | PASS 353` in `61.6s`, including the new live R subset guard against
+`GLLVM.bridge_capabilities()`.
+
+```sh
+git diff --check
+```
+
+Result: clean.
+
+### Rose Verdict
+
+PASS WITH NOTES. The capability reporter is metadata-only and live-consumed by
+the R bridge drift test. The local Documenter build remains blocked by the
+pre-existing docs-environment registration issue, so no rendered-docs claim is
+made for this slice.

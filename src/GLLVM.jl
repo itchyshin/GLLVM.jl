@@ -195,6 +195,6 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        getLV, getLoadings, rotation, ordination, ordiplot, ordination_uncertainty, predict_spatial,
        coef_table, GllvmCoefTable, select_lv, LVSelection,
        predict, fitted, residuals, aic, bic, simulate,
-       bridge_fit
+       bridge_fit, bridge_capabilities
 
 end # module GLLVM

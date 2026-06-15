@@ -112,6 +112,18 @@ function _bridge_family_key(family::AbstractString)
         "gaussian, poisson, binomial, negbinomial (nbinom2), nb1, beta, gamma, ordinal, ordinal_probit"))
 end
 
+const _BRIDGE_ONEPART_FAMILIES = (
+    "gaussian",
+    "poisson",
+    "binomial",
+    "negbinomial",
+    "nb1",
+    "beta",
+    "gamma",
+    "ordinal",
+    "ordinal_probit",
+)
+
 # One-part NON-Gaussian families `fit_gllvm_cov` fits with covariates X (it has a
 # `_cov_*` kernel for each). Ordinal and NB1 are absent — no covariate kernel yet.
 const _BRIDGE_X_FAMILIES = ("poisson", "binomial", "negbinomial", "beta", "gamma")
@@ -340,6 +352,36 @@ const _BRIDGE_MASK_FAMILIES = (
     "poisson", "binomial", "negbinomial", "beta", "gamma", "ordinal",
     "ordinal_probit",
 )
+
+"""
+    bridge_capabilities()
+
+Return the flat capability surface currently exposed by `bridge_fit`.
+
+The result is a JuliaCall-friendly `NamedTuple` of vectors. It reports the
+Julia bridge surface only; R-side admission gates may be narrower until
+metadata, labels, parity rows, and confidence-interval status rows are
+validated in `gllvmTMB`.
+"""
+function bridge_capabilities()
+    onepart = collect(_BRIDGE_ONEPART_FAMILIES)
+    family = vcat(onepart, ["mixed-family vector"])
+    x_families = Set(vcat(["gaussian"], collect(_BRIDGE_X_FAMILIES)))
+    mask_families = Set(_BRIDGE_MASK_FAMILIES)
+
+    return (
+        family = family,
+        fit_no_x = vcat(fill(true, length(onepart)), [true]),
+        fixed_effect_X = vcat([f in x_families for f in onepart], [false]),
+        missing_response = vcat([f in mask_families for f in onepart], [false]),
+        cbind_binomial = [f == "binomial" for f in family],
+        status = vcat(fill("supported", length(onepart)), ["supported"]),
+        notes = vcat(
+            ["one-part reduced-rank bridge family" for _ in onepart],
+            ["mixed-family vector route; no X, mask, or CI routing"],
+        ),
+    )
+end
 
 function _bridge_mask(mask, p::Integer, n::Integer)
     mask === nothing && return nothing
