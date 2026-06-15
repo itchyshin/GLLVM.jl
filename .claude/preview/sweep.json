@@ -1,6 +1,6 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T15:56:18.773Z",
+  "generated_at": "2026-06-15T16:09:17.644Z",
   "status_vocabulary": [
     "covered",
     "partial",
@@ -40,9 +40,9 @@
     {
       "capability": "NB1",
       "engine": "covered",
-      "bridge": "planned",
+      "bridge": "partial",
       "inference": "partial",
-      "evidence": "GLLVM.jl bridge surface reports NB1 one-part no-X support through bridge_capabilities(); gllvmTMB deliberately still rejects nbinom1 and now marks it as planned R debt until family mapping, dispersion labels, parity, and CI/status rows are validated."
+      "evidence": "GLLVM.jl bridge surface reports NB1 one-part no-X support through bridge_capabilities(); gllvmTMB now admits nbinom1()/nb1 complete balanced no-X reduced-rank fits through engine=\"julia\", with formula-vs-direct logLik equality and a Wald phi CI smoke test. NB1 fixed-effect-X, missing-response-mask, profile/bootstrap, native-TMB parity, and mixed-family cells remain queued and fail deliberately."
     },
     {
       "capability": "Beta",
@@ -133,7 +133,7 @@
       "engine": "partial",
       "bridge": "planned",
       "inference": "planned",
-      "evidence": "GLLVM.jl bridge surface reports a mixed-family vector route for no-X/no-mask fits; gllvmTMB deliberately rejects family lists and marks mixed-family vector as planned until metadata, labels, parity, and CI/status rows are routed."
+      "evidence": "GLLVM.jl bridge surface reports a mixed-family vector route for no-X/no-mask fits; gllvmTMB deliberately rejects family lists and marks mixed-family vector as planned until metadata, labels, parity, and CI/status rows are routed. NB1 is no longer hidden in this planned bucket: it has a separate partial no-X R bridge row."
     },
     {
       "capability": "Cross-family latent correlation",
