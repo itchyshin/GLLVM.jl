@@ -1,9 +1,9 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T08:57:21.000Z",
+  "generated_at": "2026-06-15T11:02:13.000Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "Phase 4 runtime gap fill is green locally on GLLVM.jl-integration: #91 high-rate Poisson divergence fixed, Gamma now defaults to analytic gradients after finite-vs-analytic benchmark gates, #92 phylo-signal Wald CI scale fix is wired into the main suite, the verified phylo-unique sparse-phylo node-gradient shortcut is wired, duplicate-method test warnings are cleaned, and #94 has a local unique-content audit. Latest full Pkg.test passed at 3869/1 broken. gllvmTMB live julia-bridge tests pass 53/53 and the R-side NEWS/check-log match that evidence. Next gates are #95 maintainer merge decision, #94 successor issues before closure, canonical R bridge parity, missingness bridge, and broader structural speedups.",
+  "current_work": "Phase 4 runtime gap fill is green locally on GLLVM.jl-integration: #91 high-rate Poisson divergence fixed, Gamma now defaults to analytic gradients after finite-vs-analytic benchmark gates, #92 phylo-signal Wald CI scale fix is wired into the main suite, the verified phylo-unique sparse-phylo node-gradient shortcut is wired, duplicate-method test warnings are cleaned, and #94 now has both a unique-content audit and a seven-successor issue draft bank. Latest full Pkg.test passed at 3869/1 broken. gllvmTMB live julia-bridge tests pass 53/53 and the R-side NEWS/check-log match that evidence. Hopper's next safe implementation slice is X admission for complete, balanced, one-part bridge models, with response-missing masks kept as an explicit guard until bridge_fit mask semantics are specified.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
     {
@@ -31,16 +31,16 @@
     {
       "name": "GLLVM.jl local board worktree",
       "branch": "codex/non-gaussian-fitter-gradients",
-      "head": "b742cb6 + board refresh",
+      "head": "3989486 + status refresh pending",
       "dirty": false,
       "note": "Dashboard/ledger branch, ahead of remote by local commits. Exact self-SHA changes when this status refresh is committed."
     },
     {
       "name": "GLLVM.jl integration",
       "branch": "codex/high-rate-poisson-safeguard",
-      "head": "862f081",
+      "head": "659f3d2",
       "dirty": false,
-      "note": "#91 safeguard, Gamma analytic default, docs-link cleanup, JuliaConnectoR smoke repair, #92 phylo-signal Wald CI scale fix, Rose status-drift cleanup, phylo-unique sparse node-gradient shortcut, duplicate-test-warning cleanup, and #94 content audit committed locally; latest Pkg.test passed 3869/1 broken."
+      "note": "#91 safeguard, Gamma analytic default, docs-link cleanup, JuliaConnectoR smoke repair, #92 phylo-signal Wald CI scale fix, Rose status-drift cleanup, phylo-unique sparse node-gradient shortcut, duplicate-test-warning cleanup, #94 content audit, and #94 seven-successor issue drafts committed locally; latest Pkg.test passed 3869/1 broken."
     },
     {
       "name": "gllvmTMB",
@@ -574,6 +574,10 @@
   "activity": [
     {
       "time": "now",
+      "html": "<b>Rose/Shannon #94 successor bank committed.</b> Seven durable successor issue drafts are banked locally for GenPoisson, Student-t, true lognormal, standalone truncation, ANOVA/LRT, check-fit diagnostics, and structured Schur/Poisson. Benchmark-script notes route to existing #65/#61 instead of a duplicate issue."
+    },
+    {
+      "time": "now",
       "html": "<b>Shannon/Rose #94 audit banked.</b> Draft/conflicting #94 was classified against local integration: <code>124</code> paths absent, <code>50</code> present-different, <code>2</code> byte-identical. Verdict: do not merge; create successor issues for unique candidates before closure."
     },
     {
@@ -640,7 +644,7 @@
     },
     {
       "owner": "Hopper",
-      "text": "Next bridge slice: add automated gate-vs-engine drift check, then widen X/missingness deliberately with parity tests."
+      "text": "Next bridge slice: admit X for complete balanced one-part bridge models and add an explicit missing-response mask guard; do not admit masks until bridge_fit mask/nobs/CI semantics are specified."
     },
     {
       "owner": "Gauss/Karpinski",
@@ -648,13 +652,17 @@
     },
     {
       "owner": "Rose",
-      "text": "#94 local audit is banked; next audit slice is successor issue/comment drafting, #95 maintainer merge decision, canonical R parity wording, and preview figure claims."
+      "text": "#94 local audit and seven-successor draft bank are committed; remote issue creation, #94 comment/closure, and #95/runtime-stack promotion still require maintainer decision."
     }
   ],
   "evidence": [
     {
       "status": "partial",
-      "text": "Shannon/Rose: #94 unique-content audit banked locally; verdict is do not merge, preserve candidate work through successor issues for GenPoisson, Student-t, true lognormal, standalone truncation, ANOVA/LRT, diagnostics, structured Schur/Poisson, and benchmark rebuilds."
+      "text": "Rose/Shannon: #94 successor issue bank committed locally at GLLVM.jl-integration 659f3d2; seven durable issue drafts exist, benchmark-script notes are routed to existing #65/#61, and no GitHub remote mutation was performed."
+    },
+    {
+      "status": "partial",
+      "text": "Shannon/Rose: #94 unique-content audit banked locally; verdict is do not merge, preserve candidate work through successor issues for GenPoisson, Student-t, true lognormal, standalone truncation, ANOVA/LRT, check-fit diagnostics, and structured Schur/Poisson."
     },
     {
       "status": "covered",
