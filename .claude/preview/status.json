@@ -1,9 +1,9 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T06:40:00.000Z",
+  "generated_at": "2026-06-15T07:35:00.000Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "Phase 4 runtime gap fill is green locally on GLLVM.jl-integration: #91 high-rate Poisson divergence fixed, Gamma now defaults to analytic gradients after finite-vs-analytic benchmark gates, #92 phylo-signal Wald CI scale fix is wired into the main suite, full Pkg.test passed at 3869/1 broken, and Vitepress hard dead-links are fixed in a no-deploy docs build. gllvmTMB live julia-bridge tests now pass 53/53 against the current integration engine. Next gates are PR/issue reconciliation, canonical R bridge parity, missingness bridge, and structural speedups.",
+  "current_work": "Phase 4 runtime gap fill is green locally on GLLVM.jl-integration: #91 high-rate Poisson divergence fixed, Gamma now defaults to analytic gradients after finite-vs-analytic benchmark gates, #92 phylo-signal Wald CI scale fix is wired into the main suite, full Pkg.test passed at 3869/1 broken, and Vitepress hard dead-links are fixed in a no-deploy docs build. Rose status-drift cleanup is now committed on integration. gllvmTMB live julia-bridge tests pass 53/53 and the R-side NEWS/check-log now match that evidence. Next gates are PR/issue reconciliation, canonical R bridge parity, missingness bridge, and structural speedups.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
     {
@@ -31,23 +31,23 @@
     {
       "name": "GLLVM.jl local board worktree",
       "branch": "codex/non-gaussian-fitter-gradients",
-      "head": "6d8e158",
-      "dirty": true,
-      "note": "Untracked .claude/ and bench/results/; this is not the clean integration branch."
+      "head": "b742cb6 + board refresh",
+      "dirty": false,
+      "note": "Dashboard/ledger branch, ahead of remote by local commits. Exact self-SHA changes when this status refresh is committed."
     },
     {
       "name": "GLLVM.jl integration",
       "branch": "codex/high-rate-poisson-safeguard",
-      "head": "06e7c08",
+      "head": "387604c",
       "dirty": false,
-      "note": "#91 safeguard, Gamma analytic default, docs-link cleanup, JuliaConnectoR smoke repair, and #92 phylo-signal Wald CI scale fix committed locally; Pkg.test passed 3869/1 broken after #92."
+      "note": "#91 safeguard, Gamma analytic default, docs-link cleanup, JuliaConnectoR smoke repair, #92 phylo-signal Wald CI scale fix, and Rose status-drift cleanup committed locally; Pkg.test passed 3869/1 broken after #92."
     },
     {
       "name": "gllvmTMB",
       "branch": "engine-julia",
-      "head": "19264a5",
+      "head": "e2e7356",
       "dirty": false,
-      "note": "engine-julia clean, ahead of remote; bridge-contract shrink plus stale CI-oracle repair committed locally; live julia-bridge test passed 53/53 against GLLVM.jl-integration."
+      "note": "engine-julia clean, ahead of remote; bridge-contract shrink, stale CI-oracle repair, and NEWS/check-log evidence sync committed locally; live julia-bridge test passed 53/53 against GLLVM.jl-integration."
     },
     {
       "name": "drmTMB",
@@ -636,7 +636,7 @@
     },
     {
       "owner": "Rose",
-      "text": "Next audit slice: stale public docs on non-Gaussian CIs, changelog, and preview figure claims."
+      "text": "Next audit slice: #95/#94 public branch reconciliation, canonical R parity wording, and preview figure claims."
     }
   ],
   "evidence": [
@@ -686,7 +686,7 @@
     },
     {
       "status": "partial",
-      "text": "Rose/Pat: public status docs cleaned for non-Gaussian CI and bridge wording; Documenter build passed, broader issue-led docs audit remains open."
+      "text": "Rose/Pat: public status docs cleaned for non-Gaussian CI, bridge wording, Gamma default, tag gating, and current gllvmTMB CI transport; broader issue-led docs audit remains open."
     },
     {
       "status": "blocked",
