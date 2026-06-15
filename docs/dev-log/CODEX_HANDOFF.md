@@ -6,7 +6,7 @@ gllvmTMB parity and beyond**, all CI-green on `main`. Everything that needs a
 **runtime to measure or numerically validate** was deliberately left for a local
 agent with a Julia + R toolchain (Codex). Your job: run the bench, decide the
 gradient default, validate the R↔Julia bridge, land the exact algorithmic
-speedups, and tag a release.
+speedups, and prepare the release ledger for maintainer signoff.
 
 **Accuracy bar (non-negotiable):** every change must be anchored by an
 exact-equality or gradient-vs-finite-difference test, and the full `Pkg.test()`
@@ -72,10 +72,12 @@ GLLVM.jl to Laplace).
   AD-entangled (ForwardDiff Duals flow through the marginal), so it needs a runtime
   to confirm AD-compatibility + bit-exactness.
 
-### P4 — Tag a release
-The `CHANGELOG.md` Unreleased section is ready; bump `Project.toml` to v0.3.0 and
-tag. (Note: do NOT register to the General registry yet — the maintainer wants it
-kept unpublished while testing.)
+### P4 — Release/tag signoff ledger
+`Project.toml` and `CHANGELOG.md` now carry the v0.3.0 capstone state, but the
+tag is **not automatic**. Do not tag, register, or imply publication until main
+CI, docs, GitHub issues, the R bridge parity ledger, and Rose's public-claim
+audit agree. The maintainer decides whether and when to tag; keep General
+registry submission separate from package-health evidence.
 
 ## 3. Do NOT redo
 The bit-exact Laplace/two-part mode-finder buffer reuse and the Poisson/NB

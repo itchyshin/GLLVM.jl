@@ -1,5 +1,44 @@
 # Check Log
 
+## 2026-06-14 - Rose Status Drift Cleanup
+
+### Scope
+
+Cleaned public/status drift found by the Rose audit after the runtime-gap fixes:
+
+- `AGENTS.md` no longer describes the integration tree as the old v0.1
+  Gaussian-only pilot;
+- `README.md` now states that Gamma joins Poisson, NB2, Binomial, and Beta in
+  the analytic-gradient default set for no-mask/no-offset fits;
+- `docs/dev-log/CODEX_HANDOFF.md` now treats v0.3.0 tagging as a
+  maintainer-gated release-ledger decision, not an automatic next command.
+
+No source code, tests, Project version, or R bridge code changed in this slice.
+
+### Checks Run
+
+Stale wording scan:
+
+```sh
+rg -n "v0\\.1\\.0 pilot|Gaussian only|Gamma and the|bump `Project.toml` to v0\\.3\\.0 and|tag a release" AGENTS.md README.md docs/dev-log/CODEX_HANDOFF.md
+```
+
+Result: no matches.
+
+Whitespace:
+
+```sh
+git diff --check
+```
+
+Result: clean.
+
+### Rose Boundary
+
+PASS WITH NOTES. This is a wording/ledger cleanup only. It does not merge
+`GLLVM.jl#95`, close `GLLVM.jl#94`, update remote issues #91/#92/#96, validate
+the R `{gllvm}` statistical parity gate, or authorize a tag.
+
 ## 2026-06-07 - Analytic Gradient Defaults
 
 ### Scope

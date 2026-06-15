@@ -6,16 +6,19 @@ Generalised Linear Latent Variable Model, built as a digital twin of R's
 
 ## Project identity
 
-- Status: v0.1.0 pilot — Gaussian only. 32 commits, 25 source files,
-  18 wired tests (9 orphan tests remain unwired; see Phase 1.2).
+- Status: v0.3.0 development / integration tree — broad Gaussian, non-Gaussian,
+  missing-data, structural-dependence, and bridge capability is present, but
+  release/tag signoff remains gated by the issue ledger, R bridge parity, docs,
+  and Rose audit.
 - Headline result: ~340× per-fit median speedup over R/`gllvmTMB` on
   Gaussian fits, with log-likelihoods and point estimates matching R to
   machine precision.
 - Phylogenetic representations: sparse (CHOLMOD), contrasts, edge-incidence;
   all return identical log-likelihoods to machine precision.
-- Next milestone: **Phase 1 capability completion → v0.2.0** (O(p) gradient,
-  Takahashi selected-inverse, predict/residuals/summary/print, RCall.jl
-  parity scaffold, minimal Documenter shell).
+- Next milestone: finish-gap hardening for the R-Julia twin: reconcile #95/#94,
+  keep runtime fixes (#91/#92/#96 and gradient defaults) accuracy-anchored, wire
+  verified O(p) sparse-phylo gradients, validate the R bridge, and keep the
+  public capability matrix honest.
 - Reference design: `~/.claude/plans/users-z3437171-downloads-gllvm-jl-rocke-mighty-sundae.md`
   is the canonical roadmap.
 
@@ -94,12 +97,11 @@ Full responsibility detail lives in §2 of the reference plan.
   at p=2000).
 - **Phase 1.0 — RCall.jl parity scaffold (DRAFT, committed).** Isolated
   `test/parity/`; R call shape pending live-R validation.
-- **Phase 1.3 — quality battery + perf (in progress).** Aqua + JET wired
-  always-on (green). JET-flagged type-instabilities fixed: function barrier in
-  `takahashi_selinv.jl` + parametric `NodePerSpecies{TF}`; the O(p) recursion
-  kernels are JET-clean (one residual `sparse(::FactorComponent)` Union is
-  stdlib-boundary, not gated). Still next: Takahashi O(p) selected-inverse swap
-  into `sparse_phy_grad.jl` + BenchmarkTools sweep + Allocs check.
+- **Phase 4 runtime gap fill (local, 2026-06-14).** #91 high-rate Poisson
+  divergence, #92 phylo-signal Wald scale, #96 Laplace mode-finder safeguard,
+  and the Gamma analytic-gradient default are fixed on the local integration
+  branch with full `Pkg.test()` green. Still next: PR/issue reconciliation,
+  bridge statistical parity, and the guarded O(p) sparse-phylo gradient wiring.
 
 Update this snapshot after every after-task report.
 
@@ -108,9 +110,8 @@ Update this snapshot after every after-task report.
 Before any user-facing change reaches `main`, Rose runs a narrow audit:
 README, CLAUDE.md, AGENTS.md, docs, and CHANGELOG are scanned against the
 engine for stale claims, broken refs, and unsupported assertions. The
-`rose-pre-publish-audit` skill drives this. Currently Phase 0/1 may skip
-it for routine commits; it becomes mandatory at v0.2.0 tag and for every
-release thereafter.
+`rose-pre-publish-audit` skill drives this. It is mandatory before any
+release/tag, registry action, or public capability promotion.
 
 ## Merge authority
 
