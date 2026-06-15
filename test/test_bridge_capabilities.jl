@@ -74,7 +74,9 @@ using GLLVM
     @test caps.family[caps.postfit_residuals] == caps.family[caps.postfit_predict]
     @test caps.family[caps.postfit_simulate] == caps.family[caps.postfit_predict]
     @test caps.family[caps.postfit_ordination] == caps.family
-    @test all(==("supported"), caps.status)
+    @test all(==("partial"), caps.status)
+    @test all(note -> occursin("narrower than full R-user parity", note),
+        caps.notes[1:(end - 1)])
     @test occursin("mixed-family", caps.notes[end])
     @test occursin("no X", caps.notes[end])
 end

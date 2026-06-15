@@ -1196,3 +1196,79 @@ Result: clean.
 PASS WITH NOTES. The docs now support the R-first plan and avoid treating the
 larger Julia engine surface as an R bridge promise. This does not add new bridge
 functionality; `gllvmTMB` tests remain the source of truth for admitted R rows.
+
+## 2026-06-15 - R-first bridge claim wording cleanup
+
+### Scope
+
+Applied Rose's R-first corrective pass after the maintainer asked to complete the
+`gllvmTMB` user surface before promoting broader Julia claims.
+
+Changes:
+
+- `README.md`, `CLAUDE.md`, and `CHANGELOG.md` now say broad/status-tracked
+  coverage instead of full parity or "parity and beyond".
+- `docs/src/changelog.md` and `docs/src/gllvmtmb-parity.md` now separate native
+  Julia routes from public R bridge parity.
+- `GLLVM.bridge_capabilities()` now reports `status = "partial"` for current
+  bridge rows and explains that no-X CI columns are native route metadata, not a
+  full R-user parity claim.
+- `test/test_bridge_capabilities.jl` now locks that partial-status vocabulary.
+
+### Checks Run
+
+```sh
+rg -n "full GLM|gllvmTMB parity|parity and beyond|surpassed|full Wald|status = \"supported\"|must be supported" README.md CLAUDE.md CHANGELOG.md src/bridge.jl test/test_bridge_capabilities.jl docs/src -S
+```
+
+Result: one remaining scoped caveat in `docs/src/gllvmtmb-parity.md`:
+"additional gllvm/gllvmTMB parity rows that are not all public through the R
+bridge yet".
+
+```sh
+~/.juliaup/bin/julia --project=. --startup-file=no test/test_bridge_capabilities.jl
+```
+
+Result: `20/20 pass`.
+
+```sh
+GLLVM_JL_PATH="/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration" /usr/local/bin/Rscript -e 'options(gllvmTMB.julia_home="/Users/z3437171/.juliaup/bin"); devtools::test(filter="julia-bridge")'
+```
+
+Result in `/Users/z3437171/Dropbox/Github Local/gllvmTMB`: `FAIL 0 | WARN 0 |
+SKIP 0 | PASS 552` in `68.0s`.
+
+```sh
+~/.juliaup/bin/julia --project=docs --startup-file=no docs/make.jl
+```
+
+Result: failed before rendering because `Documenter` is not installed in the
+local docs environment.
+
+```sh
+~/.juliaup/bin/julia --project=docs --startup-file=no -e 'using Pkg; Pkg.instantiate()'
+```
+
+Result: failed because the docs environment expects unregistered package
+`GLLVM [2dc8e01c]`.
+
+```sh
+tmp=$(mktemp -d); JULIA_PROJECT="$tmp" ~/.juliaup/bin/julia --startup-file=no -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.add(["Documenter", "DocumenterVitepress"]); include("docs/make.jl")'
+```
+
+Result: exit code 0. Residual warnings were the known pre-existing absolute
+local links, optional Vitepress assets, npm audit warnings, and chunk-size
+warning; Vitepress rendered successfully.
+
+```sh
+git diff --check
+```
+
+Result: clean.
+
+### Rose Verdict
+
+PASS WITH NOTES. The stale blanket parity wording is removed from the visible
+Julia surfaces touched here, and the R bridge live test accepts the partial-status
+metadata. This slice changes claim metadata only; it does not promote a new
+family, CI route, or bridge admission cell.

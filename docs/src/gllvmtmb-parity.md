@@ -107,8 +107,8 @@ Gamma fits. NB1 fixed-effect covariates remain a documented follow-up because
 the Julia bridge has no NB1 covariate kernel yet.
 `GLLVM.bridge_capabilities()` exposes the current Julia bridge surface as a flat,
 JuliaCall-friendly ledger so the R side can enforce a one-way drift guard: every
-R-admitted row must be supported by Julia, while Julia-only rows must remain
-explicitly planned or rejected in `gllvmTMB`.
+R-admitted row must have a Julia route with explicit status metadata, while
+Julia-only rows must remain explicitly planned or rejected in `gllvmTMB`.
 For Gaussian covariate fits the bridge returns `mean_coef`, the full coefficient
 vector for the supplied `X` array, so the R side can reconstruct in-sample
 fitted values without guessing from the per-trait mean summary.

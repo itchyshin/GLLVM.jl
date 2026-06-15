@@ -363,8 +363,9 @@ Julia bridge surface only; R-side admission gates may be narrower until
 metadata, labels, parity rows, and confidence-interval status rows are
 validated in `gllvmTMB`.
 
-The `ci_no_x_*` columns are scoped to complete one-part no-covariate fits; they
-do not imply mixed-family, masked-response, or non-Gaussian-X intervals.
+The `ci_no_x_*` columns report that a native route exists for complete one-part
+no-covariate fits; they do not imply mixed-family, masked-response, non-Gaussian-X,
+or R-bridge parity coverage. Use `status` and `notes` for public claim wording.
 """
 function bridge_capabilities()
     onepart = collect(_BRIDGE_ONEPART_FAMILIES)
@@ -389,9 +390,12 @@ function bridge_capabilities()
         postfit_residuals = vcat([f in postfit_families for f in onepart], [true]),
         postfit_simulate = vcat([f in postfit_families for f in onepart], [true]),
         postfit_ordination = vcat(fill(true, length(onepart)), [true]),
-        status = vcat(fill("supported", length(onepart)), ["supported"]),
+        status = vcat(fill("partial", length(onepart)), ["partial"]),
         notes = vcat(
-            ["one-part reduced-rank bridge family" for _ in onepart],
+            [
+                "one-part reduced-rank bridge family; route support is narrower than full R-user parity"
+                for _ in onepart
+            ],
             ["mixed-family vector route; no X, mask, or CI routing"],
         ),
     )
