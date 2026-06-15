@@ -1,12 +1,9 @@
 using GLLVM, Test, Random, LinearAlgebra, ForwardDiff, SparseArrays
 using GLLVM: AugmentedPhy
 
-# The analytic-gradient sparse phylo path lives in a new src file that is not
-# wired into the GLLVM module (per the PERF++ hard constraint: never touch
-# src/GLLVM.jl on this branch). Pull it in directly. `using GLLVM` supplies the
-# package functions it compares against (gaussian_marginal_loglik, the sparse
-# value, packing helpers, tree builders).
-include(joinpath(@__DIR__, "..", "src", "sparse_phy_grad.jl"))
+# The analytic-gradient sparse phylo path is wired into the GLLVM module. Do not
+# self-include the source file here: doing so splits internal phylo types from
+# the package instance and can hide integration bugs.
 
 const _gml   = GLLVM.gaussian_marginal_loglik
 const _rbt   = GLLVM.random_balanced_tree
@@ -25,6 +22,25 @@ function _gphy(phy)
         lp[t] = phy.root_index < l ? l - 1 : l
     end
     return inv(Symmetric(Qc))[lp, lp]
+end
+
+function _balanced_newick(leaves::Vector{String}, bl::Float64)
+    length(leaves) == 1 && return leaves[1] * ":" * string(bl)
+    mid = cld(length(leaves), 2)
+    L = _balanced_newick(leaves[1:mid], bl)
+    R = _balanced_newick(leaves[mid+1:end], bl)
+    return "(" * L * "," * R * "):" * string(bl)
+end
+balanced_newick(p::Int; bl::Float64 = 0.1) =
+    _balanced_newick(["t$i" for i in 1:p], bl) * ";"
+
+function caterpillar_newick(p::Int; bl::Float64 = 0.1)
+    p >= 2 || error("caterpillar needs p ≥ 2")
+    s = "(t1:$bl,t2:$bl):$bl"
+    for i in 3:p
+        s = "($s,t$i:$bl):$bl"
+    end
+    return s * ";"
 end
 
 # Dense marginal log-lik as a function of the natural parameters, packed into a
@@ -53,8 +69,8 @@ end
         p = phy.n_leaves
         Λ_B = randn(p, 2); Λ_phy = reshape(randn(p), p, 1); σ_phy = abs.(randn(p)) .+ 0.2
         y = randn(p, 24)
-        st = build_sparse_phy_state(y, Λ_B, 0.6; Λ_phy = Λ_phy, σ_phy = σ_phy, phy = phy, σ²_phy = 0.7)
-        @test sparse_phy_value(st) ≈
+        st = GLLVM.build_sparse_phy_state(y, Λ_B, 0.6; Λ_phy = Λ_phy, σ_phy = σ_phy, phy = phy, σ²_phy = 0.7)
+        @test GLLVM.sparse_phy_value(st) ≈
               _smlsp(y, Λ_B, 0.6; Λ_phy = Λ_phy, σ_phy = σ_phy, phy = phy, σ²_phy = 0.7) rtol = 1e-9
     end
 
@@ -70,9 +86,9 @@ end
         σ_eps = 0.5; σ²_phy = 0.8
         y = randn(p, n)
 
-        st = build_sparse_phy_state(y, Λ_B, σ_eps; Λ_phy = Λ_phy, σ_phy = σ_phy,
+        st = GLLVM.build_sparse_phy_state(y, Λ_B, σ_eps; Λ_phy = Λ_phy, σ_phy = σ_phy,
                                     phy = phy, σ²_phy = σ²_phy)
-        g = sparse_phy_grad(st)
+        g = GLLVM.sparse_phy_grad(st)
 
         f = _dense_packed(y, Gphy, p, K_B, 1, true)
         par0 = vcat(vec(Λ_B), σ_eps^2, σ²_phy, vec(Λ_phy), σ_phy)
@@ -103,8 +119,8 @@ end
         Λ_B = 0.6 .* randn(p, K_B); Λ_phy = reshape(0.5 .* randn(p), p, 1)
         σ_eps = 0.5; σ²_phy = 0.9
         y = randn(p, n)
-        st = build_sparse_phy_state(y, Λ_B, σ_eps; Λ_phy = Λ_phy, phy = phy, σ²_phy = σ²_phy)
-        g = sparse_phy_grad(st)
+        st = GLLVM.build_sparse_phy_state(y, Λ_B, σ_eps; Λ_phy = Λ_phy, phy = phy, σ²_phy = σ²_phy)
+        g = GLLVM.sparse_phy_grad(st)
         f = _dense_packed(y, Gphy, p, K_B, 1, false)
         par0 = vcat(vec(Λ_B), σ_eps^2, σ²_phy, vec(Λ_phy))
         gfd = ForwardDiff.gradient(f, par0)
@@ -129,8 +145,8 @@ end
         Λ_B = reshape(0.6 .* randn(p), p, K_B); σ_phy = abs.(randn(p)) .+ 0.3
         σ_eps = 0.4; σ²_phy = 1.2
         y = randn(p, n)
-        st = build_sparse_phy_state(y, Λ_B, σ_eps; σ_phy = σ_phy, phy = phy, σ²_phy = σ²_phy)
-        g = sparse_phy_grad(st)
+        st = GLLVM.build_sparse_phy_state(y, Λ_B, σ_eps; σ_phy = σ_phy, phy = phy, σ²_phy = σ²_phy)
+        g = GLLVM.sparse_phy_grad(st)
         f = _dense_packed(y, Gphy, p, K_B, 0, true)
         par0 = vcat(vec(Λ_B), σ_eps^2, σ²_phy, σ_phy)
         gfd = ForwardDiff.gradient(f, par0)
@@ -145,6 +161,38 @@ end
         @test abs(g.dσ²_phy - gs2p) / max(1.0, abs(gs2p)) < 1e-6
         @test relmax(g.dσ_phy, gsp) < 1e-6
         @test g.dΛ_phy === nothing
+    end
+
+    @testset "node shortcut matches leaf-block reference ($(shape), p=$(p))" for shape in (:balanced, :caterpillar),
+                                                                                p in (8, 16, 32)
+        Random.seed!(900 + p + (shape === :balanced ? 0 : 1))
+        nw = shape === :balanced ? balanced_newick(p; bl = 0.1) :
+                                   caterpillar_newick(p; bl = 0.1)
+        phy = _aug(nw)
+        K_B = 2; n = p + 5
+        Λ_B = 0.6 .* randn(p, K_B)
+        σ_phy = abs.(randn(p)) .+ 0.3
+        σ_eps = 0.5; σ²_phy = 0.9
+        y = randn(p, n)
+        st = GLLVM.build_sparse_phy_state(y, Λ_B, σ_eps; σ_phy = σ_phy,
+                                           phy = phy, σ²_phy = σ²_phy)
+        g_short = GLLVM.sparse_phy_grad(st)
+        g_ref = GLLVM._sparse_phy_grad_leafblock(st)
+
+        relmax(a, b) = maximum(abs.(vec(a) .- vec(b))) / max(1.0, maximum(abs.(vec(b))))
+        @test relmax(g_short.dΛ_B, g_ref.dΛ_B) < 1e-8
+        @test abs(g_short.dσ²_eps - g_ref.dσ²_eps) / max(1.0, abs(g_ref.dσ²_eps)) < 1e-8
+        @test abs(g_short.dσ²_phy - g_ref.dσ²_phy) / max(1.0, abs(g_ref.dσ²_phy)) < 1e-8
+        @test g_short.dΛ_phy === nothing
+        @test g_short.dσ_phy isa Vector{Float64}
+        @test relmax(g_short.dσ_phy, g_ref.dσ_phy) < 1e-8
+
+        g_no_eps = GLLVM.sparse_phy_grad(st; want_σ²_eps = false)
+        @test g_no_eps.dσ²_eps == 0.0
+        @test relmax(g_no_eps.dΛ_B, g_ref.dΛ_B) < 1e-8
+        @test abs(g_no_eps.dσ²_phy - g_ref.dσ²_phy) / max(1.0, abs(g_ref.dσ²_phy)) < 1e-8
+        @test g_no_eps.dΛ_phy === nothing
+        @test relmax(g_no_eps.dσ_phy, g_ref.dσ_phy) < 1e-8
     end
 
     # ---- GATE 2: end-to-end LBFGS driven by the analytic gradient.
@@ -178,14 +226,14 @@ end
         end
         function sparse_fg!(F, Grad, par)
             Λ, σe, s2p = unpack(par)
-            st = build_sparse_phy_state(y, Λ, σe; Λ_phy = Λ_phy, phy = phy, σ²_phy = s2p)
+            st = GLLVM.build_sparse_phy_state(y, Λ, σe; Λ_phy = Λ_phy, phy = phy, σ²_phy = s2p)
             if Grad !== nothing
-                g = sparse_phy_grad(st)
+                g = GLLVM.sparse_phy_grad(st)
                 Grad[1:rrB] .= -GLLVM.pack_lambda(g.dΛ_B)
                 Grad[rrB+1] = -(g.dσ²_eps * 2 * σe^2)   # σ²_eps = exp(2 logσe)
                 Grad[rrB+2] = -(g.dσ²_phy * s2p)         # σ²_phy = exp(logσ²_phy)
             end
-            F !== nothing && return -sparse_phy_value(st)
+            F !== nothing && return -GLLVM.sparse_phy_value(st)
             return nothing
         end
 
@@ -268,14 +316,14 @@ end
             LB = GLLVM.unpack_lambda((@view par[1:rrB]), p, K_B)
             σe = exp(par[rrB+1])
             LP = GLLVM.unpack_lambda((@view par[rrB+2:rrB+1+rrP]), p, K_phy)
-            st = build_sparse_phy_state(y, LB, σe; Λ_phy = LP, phy = phy, σ²_phy = 1.0)
+            st = GLLVM.build_sparse_phy_state(y, LB, σe; Λ_phy = LP, phy = phy, σ²_phy = 1.0)
             if Grad !== nothing
-                g = sparse_phy_grad(st)
+                g = GLLVM.sparse_phy_grad(st)
                 Grad[1:rrB] .= -GLLVM.pack_lambda(g.dΛ_B)
                 Grad[rrB+1] = -(g.dσ²_eps * 2 * σe^2)
                 Grad[rrB+2:rrB+1+rrP] .= -GLLVM.pack_lambda(g.dΛ_phy)
             end
-            F !== nothing && return -sparse_phy_value(st)
+            F !== nothing && return -GLLVM.sparse_phy_value(st)
             return nothing
         end
         opts = Optim.Options(g_tol = 1e-8, f_reltol = 1e-12, x_abstol = 1e-10,

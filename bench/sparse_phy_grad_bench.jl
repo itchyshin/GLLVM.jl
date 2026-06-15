@@ -1,53 +1,33 @@
-# Benchmark: ONE gradient evaluation via the hand-coded analytic sparse phylo
-# path vs ONE gradient evaluation of the DENSE marginal log-likelihood through
-# ForwardDiff, at p ∈ {100, 500, 1000, 5000}. Run with:
+# Benchmark: sparse phylo analytic gradient routes.
 #
-#     julia --project=bench bench/sparse_phy_grad_bench.jl
+# Run with:
 #
-# Reports per-eval wall-clock for both, the speedup, and the log–log scaling
-# slope of each. Headline claim under test: the analytic sparse gradient is
-# dramatically faster than dense-ForwardDiff at large p, and scales far better.
+#     julia --project=. bench/sparse_phy_grad_bench.jl
 #
-# Honest caveat (see src/sparse_phy_grad.jl): the tree-coupled derivative terms
-# (σ²_phy, σ²_eps, Λ_phy/σ_phy) need the leaf-block of the augmented inverse, a
-# SELECTED INVERSE we currently compute exactly via batched CHOLMOD solves at
-# O(p²) cost. So the analytic gradient is NOT yet O(p) — its slope is expected
-# nearer 2 — but it is still hugely faster than dense-ForwardDiff (whose cost is
-# O(p³) per directional derivative × O(pK) parameters). The Takahashi / tree
-# belief-propagation selected inverse that would restore O(p) is the explicit
-# PERF follow-up; `leaf_block_inv` is isolated for that swap. The dense path is
-# only run up to a cutoff (its p³ Cholesky × pK params becomes intractable).
+# This benchmark times the public `GLLVM.sparse_phy_grad` wrapper on the
+# verified phylo-unique node shortcut and compares it with the preserved exact
+# leaf-block reference (`GLLVM._sparse_phy_grad_leafblock`). For small sizes it
+# also times dense ForwardDiff over the same natural parameters.
+#
+# Boundary:
+# * phylo-unique (`K_aug == 1`, no `Λ_phy`, with `σ_phy`) should use the O(p)
+#   node route and match the leaf-block reference to numerical tolerance.
+# * general augmented shapes remain on the exact O(p²) leaf-block fallback.
 
-using BenchmarkTools
 using Random
 using LinearAlgebra
-using SparseArrays
 using GLLVM
-using GLLVM: AugmentedPhy
 
-# Sparse analytic gradient code is intentionally NOT wired into the GLLVM module
-# on this branch (PERF++ hard constraint). Pull it in directly.
-include(joinpath(@__DIR__, "..", "src", "sparse_phy_grad.jl"))
-
-# ForwardDiff is a transitive dep of GLLVM but not a direct bench dep, and the
-# PERF++ constraint forbids editing Project.toml — reach it through GLLVM.
 const ForwardDiff = GLLVM.ForwardDiff
 const _gml = GLLVM.gaussian_marginal_loglik
 const _rbt = GLLVM.random_balanced_tree
-const _rrlen = GLLVM.rr_theta_len
-const _unpack = GLLVM.unpack_lambda
 
-const PS = [100, 500, 1000, 5000]
-const DENSE_CUTOFF = 500       # dense-ForwardDiff gradient run only for p ≤ this
-                               # (its O(p³)×O(pK) cost is intractable beyond)
+const PS = [100, 300, 600]
+const DENSE_CUTOFF = 100
 const K_B = 2
 const N_SITES = 20
 const SEED = 0
-# NOTE: large p has an O(p²) selected-inverse step (and O(p²) memory), so the
-# timing loop below takes a single sample there to bound wall-clock and RAM.
 
-# Build the fixed leaf covariance G_phy = S Q_cond⁻¹ S' (dense; only feasible
-# for the dense-path comparison sizes). For sparse-only sizes we skip it.
 function gphy_dense(phy)
     p = phy.n_leaves
     keep = filter(i -> i != phy.root_index, 1:phy.n_total)
@@ -60,91 +40,103 @@ function gphy_dense(phy)
     return inv(Symmetric(Qc))[lp, lp]
 end
 
-# One analytic sparse gradient eval: build state + grad (this is what the
-# optimiser calls each iteration). σ²_eps is included (the heaviest term) so the
-# timing is an upper bound for the fit's per-iteration gradient.
-function analytic_grad_once(y, Λ_B, σ_eps, Λ_phy, phy, σ²_phy)
-    st = build_sparse_phy_state(y, Λ_B, σ_eps; Λ_phy = Λ_phy, phy = phy, σ²_phy = σ²_phy)
-    sparse_phy_grad(st; want_σ²_eps = true)
+function shortcut_grad_once(y, Λ_B, σ_eps, σ_phy, phy, σ²_phy)
+    st = GLLVM.build_sparse_phy_state(y, Λ_B, σ_eps;
+                                      σ_phy = σ_phy, phy = phy, σ²_phy = σ²_phy)
+    GLLVM.sparse_phy_grad(st; want_σ²_eps = true)
 end
 
-# One dense ForwardDiff gradient eval over the same natural parameters.
-function dense_grad_once(y, Gphy, p, K_B, Λ_phy_fixed, par0)
+function leafblock_grad_once(y, Λ_B, σ_eps, σ_phy, phy, σ²_phy)
+    st = GLLVM.build_sparse_phy_state(y, Λ_B, σ_eps;
+                                      σ_phy = σ_phy, phy = phy, σ²_phy = σ²_phy)
+    GLLVM._sparse_phy_grad_leafblock(st; want_σ²_eps = true)
+end
+
+function dense_grad_once(y, Gphy, p, K_B, par0)
     f = function (par)
         cur = 0
         LB = reshape(par[cur+1:cur+p*K_B], p, K_B); cur += p * K_B
         s2e = par[cur+1]; cur += 1
         s2p = par[cur+1]; cur += 1
-        _gml(y, LB, sqrt(s2e); Λ_phy = Λ_phy_fixed, Σ_phy = s2p .* Gphy)
+        σ_phy = par[cur+1:cur+p]
+        _gml(y, LB, sqrt(s2e); σ_phy = σ_phy, Σ_phy = s2p .* Gphy)
     end
     ForwardDiff.gradient(f, par0)
 end
 
-println(rpad("p", 8), rpad("analytic (ms)", 16), rpad("dense-FD (ms)", 16),
-        rpad("speedup", 12), rpad("n_aug", 10))
-println("-"^62)
+function relmax(a, b)
+    maximum(abs.(vec(a) .- vec(b))) / max(1.0, maximum(abs.(vec(b))))
+end
+
+function median_seconds(f; samples::Int = 5)
+    times = Float64[]
+    sizehint!(times, samples)
+    for _ in 1:samples
+        GC.gc()
+        t0 = time_ns()
+        f()
+        push!(times, (time_ns() - t0) / 1e9)
+    end
+    sort!(times)
+    return times[cld(samples, 2)]
+end
+
+println(rpad("p", 8), rpad("shortcut ms", 14), rpad("leafblock ms", 14),
+        rpad("speedup", 10), rpad("dense-FD ms", 14), rpad("max rel err", 12))
+println("-"^74)
 
 ps_done = Int[]
-t_analytic = Float64[]
-t_dense = Float64[]
-dense_ps = Int[]
+t_short = Float64[]
+t_leaf = Float64[]
 
 for p in PS
     Random.seed!(SEED)
     phy = _rbt(p; branch_length = 0.1)
     Λ_B = randn(p, K_B)
-    Λ_phy = reshape(randn(p), p, 1)
+    σ_phy = abs.(randn(p)) .+ 0.3
     σ_eps = 0.5
     σ²_phy = 0.8
     y = randn(p, N_SITES)
 
-    # warmup + time analytic. Use a small-vs-large branch on the BenchmarkTools
-    # config (the macro keyword args must be literals, so we branch explicitly).
-    analytic_grad_once(y, Λ_B, σ_eps, Λ_phy, phy, σ²_phy)
-    ta = if p >= 1000
-        @belapsed analytic_grad_once($y, $Λ_B, $σ_eps, $Λ_phy, $phy, $σ²_phy) samples = 1 evals = 1 seconds = 120
-    else
-        @belapsed analytic_grad_once($y, $Λ_B, $σ_eps, $Λ_phy, $phy, $σ²_phy) samples = 5 evals = 1 seconds = 20
-    end
+    g_short = shortcut_grad_once(y, Λ_B, σ_eps, σ_phy, phy, σ²_phy)
+    g_ref = leafblock_grad_once(y, Λ_B, σ_eps, σ_phy, phy, σ²_phy)
+    max_err = maximum((
+        relmax(g_short.dΛ_B, g_ref.dΛ_B),
+        abs(g_short.dσ²_eps - g_ref.dσ²_eps) / max(1.0, abs(g_ref.dσ²_eps)),
+        abs(g_short.dσ²_phy - g_ref.dσ²_phy) / max(1.0, abs(g_ref.dσ²_phy)),
+        relmax(g_short.dσ_phy, g_ref.dσ_phy),
+    ))
+
+    ts = median_seconds(() -> shortcut_grad_once(y, Λ_B, σ_eps, σ_phy, phy, σ²_phy))
+    tl = median_seconds(() -> leafblock_grad_once(y, Λ_B, σ_eps, σ_phy, phy, σ²_phy))
 
     td = NaN
     if p <= DENSE_CUTOFF
         Gphy = gphy_dense(phy)
-        par0 = vcat(vec(Λ_B), σ_eps^2, σ²_phy)
-        dense_grad_once(y, Gphy, p, K_B, Λ_phy, par0)   # warmup
-        td = @belapsed dense_grad_once($y, $Gphy, $p, $K_B, $Λ_phy, $par0) samples = 3 evals = 1 seconds = 30
-        push!(dense_ps, p); push!(t_dense, td)
+        par0 = vcat(vec(Λ_B), σ_eps^2, σ²_phy, σ_phy)
+        dense_grad_once(y, Gphy, p, K_B, par0)
+        td = median_seconds(() -> dense_grad_once(y, Gphy, p, K_B, par0); samples = 3)
     end
 
-    push!(ps_done, p); push!(t_analytic, ta)
-    n_aug = phy.n_total - 1
-    speed = isnan(td) ? "—" : string(round(td / ta, digits = 1), "×")
+    push!(ps_done, p)
+    push!(t_short, ts)
+    push!(t_leaf, tl)
+
     println(rpad(string(p), 8),
-            rpad(string(round(ta * 1e3, digits = 3)), 16),
-            rpad(isnan(td) ? "skipped (>cutoff)" : string(round(td * 1e3, digits = 3)), 16),
-            rpad(speed, 12),
-            rpad(string(n_aug), 10))
+            rpad(string(round(ts * 1e3, digits = 3)), 14),
+            rpad(string(round(tl * 1e3, digits = 3)), 14),
+            rpad(string(round(tl / ts, digits = 2), "x"), 10),
+            rpad(isnan(td) ? "skipped" : string(round(td * 1e3, digits = 3)), 14),
+            rpad(string(round(max_err, sigdigits = 3)), 12))
 end
 
-# Scaling slopes (log–log linear fit between consecutive points).
 function slopes(ps, ts)
-    s = Float64[]
-    for i in 2:length(ps)
-        push!(s, (log(ts[i]) - log(ts[i-1])) / (log(ps[i]) - log(ps[i-1])))
-    end
-    s
+    [((log(ts[i]) - log(ts[i-1])) / (log(ps[i]) - log(ps[i-1]))) for i in 2:length(ps)]
 end
 
 println()
-println("analytic log–log slopes (consecutive p): ",
-        round.(slopes(ps_done, t_analytic), digits = 3))
-if length(dense_ps) >= 2
-    println("dense-FD log–log slopes (consecutive p): ",
-            round.(slopes(dense_ps, t_dense), digits = 3))
-end
+println("shortcut log-log slopes: ", round.(slopes(ps_done, t_short), digits = 3))
+println("leafblock log-log slopes: ", round.(slopes(ps_done, t_leaf), digits = 3))
 println()
-println("Interpretation: dense-ForwardDiff slope ≈ 4 (p³ Cholesky × O(pK) params).")
-println("Analytic slope ≈ 2 reflects the O(p²) selected-inverse term; the O(p)")
-println("Takahashi follow-up would bring it to ≈ 1. Even at the O(p²) stage the")
-println("analytic path is orders of magnitude faster than dense-ForwardDiff and")
-println("the gap widens with p.")
+println("Interpretation: the phylo-unique public wrapper uses the verified node")
+println("shortcut. Other augmented shapes still use the exact leaf-block fallback.")

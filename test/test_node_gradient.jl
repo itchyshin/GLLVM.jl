@@ -148,9 +148,9 @@ end
         @info "node_grad FD max-abs diffs ($shape, p=$p)" dΛ_B = maximum(abs.(g.dΛ_B .- gLB)) dσ²_eps = abs(g.dσ²_eps - gs2e) dσ²_phy = abs(g.dσ²_phy - gs2p) dσ_phy = maximum(abs.(g.dσ_phy .- gsp))
     end
 
-    # ---- GATE 2: node_grad ≡ engine sparse_phy_grad to machine precision.
-    @testset "node_grad ≡ sparse_phy_grad ($(shape), p=$(p))" for shape in (:balanced, :caterpillar),
-                                                                   p in (8, 16, 32)
+    # ---- GATE 2: node_grad ≡ the preserved leaf-block reference to machine precision.
+    @testset "node_grad ≡ leaf-block reference ($(shape), p=$(p))" for shape in (:balanced, :caterpillar),
+                                                                         p in (8, 16, 32)
         Random.seed!(500 + p + (shape === :balanced ? 0 : 1))
         nw = shape === :balanced ? balanced_newick(p; bl = 0.1) :
                                    caterpillar_newick(p; bl = 0.1)
@@ -163,7 +163,7 @@ end
 
         st = GLLVM.build_sparse_phy_state(y, Λ_B, σ_eps; σ_phy = σ_phy,
                                     phy = phy, σ²_phy = σ²_phy)
-        ge = GLLVM.sparse_phy_grad(st)
+        ge = GLLVM._sparse_phy_grad_leafblock(st)
         gn = node_grad(st)
 
         @test relmax(gn.dΛ_B, ge.dΛ_B) < 1e-8
@@ -171,7 +171,7 @@ end
         @test abs(gn.dσ²_phy - ge.dσ²_phy) / max(1.0, abs(ge.dσ²_phy)) < 1e-8
         @test relmax(gn.dσ_phy, ge.dσ_phy) < 1e-8
 
-        @info "node ≡ engine max-rel ($shape, p=$p)" dΛ_B = relmax(gn.dΛ_B, ge.dΛ_B) dσ²_eps = abs(gn.dσ²_eps - ge.dσ²_eps) / max(1.0, abs(ge.dσ²_eps)) dσ²_phy = abs(gn.dσ²_phy - ge.dσ²_phy) / max(1.0, abs(ge.dσ²_phy)) dσ_phy = relmax(gn.dσ_phy, ge.dσ_phy)
+        @info "node ≡ leaf-block max-rel ($shape, p=$p)" dΛ_B = relmax(gn.dΛ_B, ge.dΛ_B) dσ²_eps = abs(gn.dσ²_eps - ge.dσ²_eps) / max(1.0, abs(ge.dσ²_eps)) dσ²_phy = abs(gn.dσ²_phy - ge.dσ²_phy) / max(1.0, abs(ge.dσ²_phy)) dσ_phy = relmax(gn.dσ_phy, ge.dσ_phy)
     end
 
     # ---- GATE 3: matched single-trait per-species node grad vs central FD.

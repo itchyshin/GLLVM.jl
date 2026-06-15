@@ -52,31 +52,24 @@
 #
 # COST / SCALING (reported honestly by bench/sparse_phy_grad_bench.jl)
 # --------------------------------------------------------------------
-# * ∂ℓ/∂Λ_B : O(p·K_B) — K_B+K_aug sparse solves + low-rank algebra.
-# * ∂ℓ/∂σ²_phy, ∂ℓ/∂σ²_eps, ∂ℓ/∂Λ_phy, ∂ℓ/∂σ_phy : these need the dense
-#   (K_aug·p) × (K_aug·p) leaf-leaf block of M_sad⁻¹ (= cross-leaf entries
-#   of the augmented inverse). On a tree-augmented Q_eff, the L+Lᵀ pattern
-#   of the Cholesky factor covers only the K_aug × K_aug same-leaf coupling
-#   block (K_aug²·p in-pattern entries) — the cross-leaf entries are DENSE
-#   and ARE NOT in pattern. Takahashi (1973) / Erisman–Tinney (1975) gives
-#   the in-pattern entries in O(K_aug·p), but the dense cross-leaf entries
-#   still need a batched CHOLMOD solve `chol_Q_eff \ E_leaf` (cost O(p²);
-#   memory O(p²)) plus the rank-K_B Woodbury correction.
-#   `leaf_block_inv` is therefore O(K_aug²·p² + K_aug²·K_B·p²) overall —
-#   asymptotically O(p²), not O(p). The Takahashi utility IS used here to
-#   pre-compute X_G once in the state and to drive the EM E-step's
-#   `diag(V_φ)` extraction (`src/em_phylo.jl`); the gradient itself stays
-#   at the empirical slope ≈ 2 we already had. This is reported HONESTLY:
-#   the explicit Takahashi follow-up named in the PERF brief CANNOT
-#   asymptotically improve the gradient's scaling, because (i) the dense
-#   p × p `Cleaf · Σ_phy_leaf` Hadamard and (ii) the dense cross-leaf
-#   entries of M_sad⁻¹ are both inherently O(p²). The constant-factor
-#   wins of the new `leaf_block_inv` (one CHOLMOD batched solve instead
-#   of two via `_MsadM` against E_leaf, plus dense BLAS3 for the Woodbury
-#   correction) are documented in the bench output.
+# `sparse_phy_grad` is now a small dispatcher:
 #
-# This file is self-contained: it `include`s the sources it needs and does NOT
-# modify src/GLLVM.jl or any existing file.
+# * phylo-unique (`K_aug == 1`, no `Λ_phy`, with per-trait `σ_phy`):
+#   routes to `node_grad(st)`, whose trace terms use Takahashi node diagonals
+#   and rank-K_B Woodbury corrections. This is the verified O(p) route.
+#
+# * all other augmented shapes (`Λ_phy`, mixed `Λ_phy + σ_phy`, or K_aug > 1):
+#   routes to `_sparse_phy_grad_leafblock(st)`, the exact O(p²) fallback below.
+#   Those derivatives need the dense (K_aug·p) × (K_aug·p) leaf-leaf block of
+#   M_sad⁻¹ (= cross-leaf entries of the augmented inverse). On a tree-augmented
+#   Q_eff, the L+Lᵀ pattern covers the same-leaf axis-coupling block, but not
+#   the dense cross-leaf entries. Takahashi selected inverse alone therefore
+#   cannot make the general leaf-block fallback O(p).
+#
+# This boundary is intentional: the public wrapper takes the O(p) shortcut only
+# where the independent node-frame tests prove equality to dense ForwardDiff and
+# to the preserved leaf-block reference. Unsupported shapes remain on the exact
+# reference path rather than taking an unverified shortcut.
 
 using SparseArrays
 using LinearAlgebra
@@ -309,19 +302,13 @@ _trAinv(st::SparsePhyState) = sum(st.d_inv) - tr(st.chol_cap \ (st.DinvΛB' * st
 #
 # Notes on Takahashi (1973) / Erisman–Tinney (1975):
 # ---------------------------------------------------
-# A genuinely linear `O(K_aug · p)` selected inverse of `Q_eff` IS available
-# (see `src/takahashi_selinv.jl`), but its sparsity coverage is restricted
-# to the `L + Lᵀ` pattern. On a tree-augmented `Q_eff` that pattern includes
-# the K_aug × K_aug same-leaf axis-coupling block (K_aug²·p in-pattern
-# leaf-leaf entries) but does NOT cover the CROSS-leaf entries of
-# `Q_eff⁻¹`, which are dense and non-zero in general (we verified this
-# empirically at p = 20: max out-of-pattern `|Q_eff⁻¹[leaf, leaf]|` ≈ 0.26).
-# Reconstructing those cross-leaf entries needs the same batched solve we
-# already do — so the Takahashi swap cannot lower the asymptotic cost of
-# `leaf_block_inv` for the FULL dense leaf-leaf block. The Takahashi utility
-# is therefore used elsewhere (`takahashi_diag` in the EM E-step) and
-# documented here as inapplicable to the gradient's dense-block dependency.
-# This is REPORTED HONESTLY: the analytic gradient stays at O(p²) overall.
+# A genuinely linear `O(K_aug · p)` selected inverse of `Q_eff` is available
+# (see `src/takahashi_selinv.jl`), but its sparsity coverage is restricted to
+# the `L + Lᵀ` pattern. That is enough for the phylo-unique node shortcut in
+# `node_grad(st)`, where only node diagonals and same-leaf trace pieces are
+# needed. It is not enough for this general fallback, which needs the full
+# dense leaf-row × leaf-column block and therefore keeps the exact batched
+# solve. This is the boundary between the O(p) shortcut and the O(p²) reference.
 # ---------------------------------------------------------------------------
 function _leaf_unit_columns(st::SparsePhyState)
     cols = Vector{Int}(undef, st.K_aug * st.p)
@@ -393,6 +380,20 @@ end
 # `dΛ_phy`/`dσ_phy` are `nothing` when the corresponding block is absent.
 # ---------------------------------------------------------------------------
 function sparse_phy_grad(st::SparsePhyState; want_σ²_eps::Bool = true)
+    # Verified O(p) route: phylo-unique only. Other augmented shapes need the
+    # dense leaf-block reference below.
+    if st.K_aug == 1 && st.K_phy == 0 && st.has_unique
+        g = node_grad(st)
+        return (; dΛ_B = g.dΛ_B,
+                 dσ²_eps = want_σ²_eps ? g.dσ²_eps : 0.0,
+                 dσ²_phy = g.dσ²_phy,
+                 dΛ_phy = nothing,
+                 dσ_phy = g.dσ_phy)
+    end
+    return _sparse_phy_grad_leafblock(st; want_σ²_eps = want_σ²_eps)
+end
+
+function _sparse_phy_grad_leafblock(st::SparsePhyState; want_σ²_eps::Bool = true)
     p, n, K_B = st.p, st.n, st.K_B
     cc = _Cinv(st, st.m)                 # C⁻¹ m
     Ainv_Yc = _AinvM(st, st.Y_c)         # p × n

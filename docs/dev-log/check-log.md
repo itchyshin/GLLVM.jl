@@ -1,5 +1,72 @@
 # Check Log
 
+## 2026-06-15 - Sparse Phylo Node-Gradient Shortcut
+
+### Scope
+
+Wired the verified node-frame O(p) gradient into the public sparse phylo
+gradient dispatcher for the phylo-unique shape only:
+
+- `K_aug == 1`
+- `K_phy == 0`
+- `has_unique == true`
+
+All other augmented sparse-phylo gradient shapes still route through the exact
+leaf-block fallback (`_sparse_phy_grad_leafblock`). The fallback remains the
+reference for `Λ_phy` and mixed augmented shapes because those derivatives need
+the dense leaf-row x leaf-column block.
+
+### Checks Run
+
+```sh
+~/.juliaup/bin/julia --project=. test/test_node_gradient.jl
+```
+
+Result: 58/58 passed in 9.7s. The node route was checked against dense
+ForwardDiff and the preserved leaf-block reference on balanced and caterpillar
+trees. Max relative node-vs-leaf-block error for the `σ_phy` block was
+`1.015e-13`; scalar/global blocks were zero or machine precision.
+
+```sh
+~/.juliaup/bin/julia --project=. test/test_sparse_phy_grad.jl
+```
+
+Result: 101/101 passed in 7m12.1s. The end-to-end sparse/dense value
+consistency gate reported `8.731e-11` logLik difference at the sparse optimum;
+the warm-start comparison to `fit_gaussian_gllvm` had `Δll_warm = 2.092e-5`.
+
+```sh
+~/.juliaup/bin/julia --project=. bench/sparse_phy_grad_bench.jl
+```
+
+Result:
+
+| p | shortcut ms | leafblock ms | speedup | dense-FD ms | max rel err |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 100 | 0.344 | 1.027 | 2.99x | 198.884 | 8.76e-15 |
+| 300 | 1.117 | 3.670 | 3.29x | skipped | 2.28e-14 |
+| 600 | 1.114 | 24.030 | 21.58x | skipped | 7.11e-15 |
+
+```sh
+~/.juliaup/bin/julia --project=. test/runtests.jl
+```
+
+Result: 3857 passed, 3 broken, 3860 total in 30m48.2s.
+
+```sh
+~/.juliaup/bin/julia --project=. -e 'using Pkg; Pkg.test()'
+```
+
+Result: 3869 passed, 1 broken, 3870 total in 35m36.2s.
+
+### Rose Boundary
+
+PASS WITH NOTES. This closes the verified phylo-unique node-gradient wiring
+slice only. It does not claim O(p) for `Λ_phy`, mixed augmented phylo effects,
+or any non-Gaussian Laplace adjoint route. The full package gate passed, but the
+suite still emits pre-existing duplicate-include/helper overwrite warnings that
+should be cleaned in a separate hygiene slice.
+
 ## 2026-06-14 - JuliaConnectoR R gllvm Parity Smoke
 
 ### Scope
