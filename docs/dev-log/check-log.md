@@ -1,5 +1,45 @@
 # Check Log
 
+## 2026-06-14 - JuliaConnectoR R gllvm Parity Smoke
+
+### Scope
+
+Closed the first R `{gllvm}` vs GLLVM.jl JuliaConnectoR parity smoke gap:
+
+- `gllvm_jl_init()` now accepts `jl_path` and defaults to `GLLVM_JL_PATH`,
+  activating the local Julia project before importing `GLLVM`;
+- the standalone fallback in `r/gllvmtmb_julia.R` mirrors the same activation
+  path;
+- `r/parity_check.R` scales R `{gllvm}` `params$theta` by `params$sigma.lv`
+  before Procrustes-aligned loading comparison.
+
+The previous apparent Poisson mismatch was harness drift: Julia could import a
+stale/default-environment `GLLVM`, and the R loadings were compared before the
+latent-variable scale was applied.
+
+### Checks Run
+
+```sh
+JULIA_BINDIR=/Users/z3437171/.julia/juliaup/julia-1.10.0+0.aarch64.apple.darwin14/bin \
+GLLVM_JL_PATH="/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration" \
+Rscript -e 'source("r/gllvmtmb_julia.R"); source("r/parity_check.R"); gllvm_jl_init(jl_path=Sys.getenv("GLLVM_JL_PATH")); set.seed(1); y <- matrix(rpois(30*4,3), nrow=30); res <- compare_gllvm(y, family="poisson", num.lv=1, method="LA", row.eff="none"); stopifnot(res$diffs$logLik < 1e-6, res$diffs$beta["abs"] < 1e-5, res$diffs$loadings["abs"] < 1e-5)'
+```
+
+Result: exit code 0.
+
+```text
+logLik absolute diff: 2.086e-11
+beta max abs diff:   1.760e-07
+loadings max abs:    6.559e-07
+```
+
+### Rose Boundary
+
+PASS WITH NOTES. This is one live Poisson `method="LA"` no-row-effect parity
+smoke. It proves the scaffold can hit the same likelihood target when the local
+project is activated and R loadings are scale-mapped. It does not prove full
+family, dispersion, covariate, missingness, R-bridge, or CI parity.
+
 ## 2026-06-14 - Rose Status Drift Cleanup
 
 ### Scope

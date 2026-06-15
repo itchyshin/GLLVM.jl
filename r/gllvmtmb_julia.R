@@ -56,8 +56,20 @@ if (!exists(".gllvm", mode = "function")) {
 
 # Fallback module handle if gllvmjl.R was not sourced (keeps this file usable alone).
 if (!exists(".gllvm_env")) .gllvm_env <- new.env(parent = emptyenv())
+if (!exists(".jl_string", mode = "function")) {
+  .jl_string <- function(x) {
+    x <- normalizePath(x, winslash = "/", mustWork = TRUE)
+    paste0("\"", gsub('(["\\\\])', "\\\\\\1", x), "\"")
+  }
+}
 if (!exists("gllvm_jl_init", mode = "function")) {
-  gllvm_jl_init <- function() {
+  gllvm_jl_init <- function(jl_path = Sys.getenv("GLLVM_JL_PATH", "")) {
+    if (!identical(jl_path, "")) {
+      jl_path <- normalizePath(jl_path, winslash = "/", mustWork = TRUE)
+      juliaEval(sprintf("import Pkg; Pkg.activate(%s); using GLLVM, Distributions",
+                        .jl_string(jl_path)))
+      .gllvm_env$jl_path <- jl_path
+    }
     .gllvm_env$GLLVM <- juliaImport("GLLVM")
     juliaEval("using Distributions")
     invisible(TRUE)

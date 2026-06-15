@@ -8,6 +8,14 @@ Branch: `codex/high-rate-poisson-safeguard`
 Validate and repair the older R `JuliaConnectoR` bridge scaffold enough to run a
 live R -> Julia -> R smoke check, without promoting an unsupported parity claim.
 
+## Follow-Up Status
+
+This report records the first transport repair and its then-failing parity row.
+Follow-up slice `2026-06-14-juliaconnector-parity-smoke.md` fixed the harness
+activation/loading-scale issues and passed the Poisson `method="LA"` no-row-effect
+parity smoke (`|ΔlogLik| = 2.086e-11`, beta max abs `1.760e-07`, loading max abs
+`6.559e-07`). Keep this file as historical evidence, not current parity status.
+
 ## Files Changed
 
 - `r/gllvmjl.R`

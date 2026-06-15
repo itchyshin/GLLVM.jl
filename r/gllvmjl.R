@@ -27,8 +27,19 @@ library(JuliaConnectoR)
 
 .gllvm_env <- new.env(parent = emptyenv())
 
+.jl_string <- function(x) {
+  x <- normalizePath(x, winslash = "/", mustWork = TRUE)
+  paste0("\"", gsub('(["\\\\])', "\\\\\\1", x), "\"")
+}
+
 #' Import GLLVM.jl into the session (call once).
-gllvm_jl_init <- function() {
+gllvm_jl_init <- function(jl_path = Sys.getenv("GLLVM_JL_PATH", "")) {
+  if (!identical(jl_path, "")) {
+    jl_path <- normalizePath(jl_path, winslash = "/", mustWork = TRUE)
+    juliaEval(sprintf("import Pkg; Pkg.activate(%s); using GLLVM, Distributions",
+                      .jl_string(jl_path)))
+    .gllvm_env$jl_path <- jl_path
+  }
   .gllvm_env$GLLVM <- juliaImport("GLLVM")
   juliaEval("using Distributions")
   invisible(TRUE)

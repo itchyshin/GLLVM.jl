@@ -7,13 +7,15 @@ looks like `gllvm::gllvm(...)` — same family strings, `num.lv`, `row.eff`,
 in **gllvm parameter conventions** (e.g. NB dispersion as `phi = 1/r`). This mirrors
 the `drmTMB` ↔ `DRM.jl` pattern.
 
-> **Status: SCAFFOLD, TRANSPORT SMOKE-TESTED.** The JuliaConnectoR path now starts
-> Julia, loads `GLLVM` + `Distributions`, constructs family markers, and extracts
-> scalar/vector fields that JuliaConnectoR may already have converted to R values.
-> **Full numerical parity is not yet validated.** A live Poisson `method="LA"`
-> smoke check on 2026-06-14 executed end-to-end but still differed from R `{gllvm}`
-> (`|ΔlogLik| = 0.619`, max beta diff `0.0486`, Procrustes loading diff `2.86`).
-> Treat `parity_check.R` as an active diagnostic harness, not proof of parity.
+> **Status: SCAFFOLD, ONE PARITY SMOKE GREEN.** The JuliaConnectoR path starts
+> Julia, activates the local `GLLVM.jl` project when `GLLVM_JL_PATH` or `jl_path`
+> is supplied, loads `GLLVM` + `Distributions`, constructs family markers, and
+> extracts scalar/vector fields that JuliaConnectoR may already have converted to
+> R values. A live Poisson `method="LA"` no-row-effect smoke check on 2026-06-14
+> matched R `{gllvm}` to tight tolerances (`|ΔlogLik| = 2.09e-11`, max beta diff
+> `1.76e-7`, Procrustes loading diff `6.56e-7`) after scaling R `{gllvm}` loadings
+> by `sigma.lv`. **Full numerical parity is still open** for other families,
+> dispersion structures, covariates, missingness, and CI payloads.
 
 ## Files
 
@@ -42,12 +44,16 @@ the `drmTMB` ↔ `DRM.jl` pattern.
    ```r
    Sys.setenv(JULIA_BINDIR = "/path/to/julia/bin")   # e.g. ~/.juliaup/bin
    ```
+4. **Point R at this checkout** when validating local code:
+   ```r
+   Sys.setenv(GLLVM_JL_PATH = "/path/to/GLLVM.jl")
+   ```
 
 ## Calling `gllvm_julia`
 
 ```r
 source("r/gllvmtmb_julia.R")     # also sources r/gllvmjl.R for the accessors
-gllvm_jl_init()                  # imports GLLVM into the Julia session (once)
+gllvm_jl_init()                  # activates GLLVM_JL_PATH when set; imports once
 
 # y is n x p: SITES in rows, SPECIES in columns (the gllvm orientation).
 set.seed(1)
@@ -136,7 +142,9 @@ res <- compare_gllvm(y, family = "poisson", num.lv = 2, method = "LA")
 `compare_gllvm()` reports max abs / relative differences. Loadings are identifiable
 only up to rotation/sign, so they are **Procrustes-aligned** before differencing.
 Live 2026-06-14 smoke result (`family = "poisson"`, `num.lv = 1`, `method = "LA"`,
-`disp.formula = ~1`, 30 sites x 4 species): the bridge executed and returned finite
-Julia estimates, but R `{gllvm}` parity failed (`|ΔlogLik| = 0.619`, max beta diff
-`0.0486`, Procrustes-aligned loading diff `2.86`). Keep this row as `partial` until
-the likelihood target, starts, centering, and parameterization are reconciled.
+30 sites x 4 species): after activating the local Julia project via
+`GLLVM_JL_PATH` and scaling R `{gllvm}` loadings by `sigma.lv`, the smoke passes
+the tight parity gate (`|ΔlogLik| = 2.09e-11`, max beta diff `1.76e-7`,
+Procrustes-aligned loading diff `6.56e-7`). Earlier same-day failed numbers
+(`|ΔlogLik| = 0.619`, max beta diff `0.0486`) were traced to harness activation
+and loading-scale drift.

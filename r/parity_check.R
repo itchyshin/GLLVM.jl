@@ -41,10 +41,21 @@
 # Extract gllvm-side pieces in a normalized shape: list(logLik, beta, loadings, disp).
 # gllvm stores beta0 (species intercepts) and theta (loadings, p x num.lv). Dispersion
 # is in $params$phi (NB/beta/gamma/tweedie). gllvm y is n x p, loadings are p x K.
+.gllvm_scaled_loadings <- function(fit, theta) {
+  if (is.null(theta)) return(NULL)
+  theta <- as.matrix(theta)
+  sigma_lv <- tryCatch(as.numeric(fit$params$sigma.lv), error = function(e) NULL)
+  if (is.null(sigma_lv) || length(sigma_lv) < ncol(theta)) return(theta)
+  scales <- tail(sigma_lv, ncol(theta))
+  if (!all(is.finite(scales))) return(theta)
+  sweep(theta, 2L, scales, `*`)
+}
+
 .extract_gllvm <- function(fit) {
   ll  <- tryCatch(as.numeric(logLik(fit)), error = function(e) NA_real_)
   b0  <- tryCatch(as.numeric(fit$params$beta0), error = function(e) NA_real_)
   th  <- tryCatch(as.matrix(fit$params$theta), error = function(e) NULL)   # p x num.lv
+  th  <- .gllvm_scaled_loadings(fit, th)
   phi <- tryCatch(as.numeric(fit$params$phi),  error = function(e) NA_real_)
   list(logLik = ll, beta = b0, loadings = th, disp = phi)
 }
