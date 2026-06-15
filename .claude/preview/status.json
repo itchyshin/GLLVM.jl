@@ -1,9 +1,9 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T17:18:42.000Z",
+  "generated_at": "2026-06-15T17:56:40.000Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "R-first sequencing remains active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as the parity/acceleration target. Latest paired slice: after the native mixed-family selector oracle at gllvmTMB 4474e8b, GLLVM.jl-integration 21f6662 now preserves row-aligned mixed-family bridge labels: family stays the joined model tag, while families is the per-trait vector. Evidence: Julia bridge_mixed passed 18/18, bridge_capabilities passed 9/9, direct smoke prints gaussian,poisson,binomial, and live gllvmTMB bridge regression remains 439/439. R bridge mixed-family admission remains queued. REML remains Gaussian-only.",
+  "current_work": "R-first sequencing remains active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as the parity/acceleration target. Latest banked slice: gllvmTMB d22d0de now partially admits complete balanced trait-aligned mixed-family engine=\"julia\" fits after the native selector oracle and GLLVM.jl-integration mixed-label payload landed. Evidence: no-Julia bridge 206 pass / 18 expected skips, live bridge 496/496 against GLLVM.jl-integration, native mixed-family oracle 33/33, full devtools::test() 2943 pass / 722 skips / 0 failures / 3 pre-existing warnings, pkgdown check green. Boundary: no mixed X, masks, cbind/weights, CI endpoints, REML, ordinal/NB1/delta/hurdle/two-part mixed Julia route, or broad native-TMB-vs-Julia equivalence. REML remains Gaussian-only.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
     {
@@ -18,7 +18,7 @@
     },
     {
       "label": "Blocked claims",
-      "value": "3",
+      "value": "2",
       "status": "partial"
     },
     {
@@ -45,9 +45,9 @@
     {
       "name": "gllvmTMB",
       "branch": "engine-julia",
-      "head": "4474e8b",
+      "head": "d22d0de",
       "dirty": false,
-      "note": "engine-julia has local R-first bridge slices committed through NB1 no-X admission, NB1 post-fit methods, public fixed-effect-X evidence for Binomial/NB2/Gamma, NB2/Beta/Gamma conditional simulate() support, and the native mixed-family selector oracle. gllvm_julia_capabilities() marks NB1 as partial/admitted for no-X complete-data reduced-rank fits, keeps mixed-family Julia bridge vectors as planned R debt, and enforces that R-admitted TRUE rows are supported by GLLVM.bridge_capabilities(). Current green bridge evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration and passes 439/439."
+      "note": "engine-julia has local R-first bridge slices committed through NB1 no-X admission, NB1 post-fit methods, public fixed-effect-X evidence for Binomial/NB2/Gamma, NB2/Beta/Gamma conditional simulate() support, the native mixed-family selector oracle, and narrow mixed-family Julia bridge admission. gllvm_julia_capabilities() marks NB1 and trait-aligned mixed-family no-X/no-mask/no-CI rows as partial/admitted and enforces that R-admitted TRUE rows are supported by GLLVM.bridge_capabilities(). Current green bridge evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration and passes 496/496."
     },
     {
       "name": "drmTMB",
@@ -334,12 +334,12 @@
         {
           "name": "Flat ASCII-safe bridge payload",
           "status": "partial",
-          "evidence": "Minimal NamedTuple payload uses ASCII keys and primitive arrays; gllvmTMB live test now covers field access and names for the no-X route. Mixed-family metadata remains open."
+          "evidence": "Minimal NamedTuple payload uses ASCII keys and primitive arrays; gllvmTMB live test covers field access and names for no-X one-part routes, and mixed-family bridge objects now preserve selector, family_by_trait, per-trait families, and link metadata."
         },
         {
           "name": "Gate-vs-engine guard for gllvmTMB #488",
           "status": "partial",
-          "evidence": "R gate narrowed to current GLLVM.bridge_fit and now exposes gllvm_julia_capabilities() as a tested R-side admission ledger. Bridge family, X, mask, masked-CI status, cbind-binomial transport, post-fit rows, simulation rows, and the ledger are live-tested against GLLVM.jl-integration (439/439). Automated cross-repo drift CI and mixed-family R routing are still queued."
+          "evidence": "R gate narrowed to current GLLVM.bridge_fit and now exposes gllvm_julia_capabilities() as a tested R-side admission ledger. Bridge family, X, mask, masked-CI status, cbind-binomial transport, post-fit rows, simulation rows, ledger, and narrow mixed-family admission are live-tested against GLLVM.jl-integration (496/496). Automated cross-repo drift CI remains queued."
         },
         {
           "name": "Wording freeze: default GLLVM.jl fitting path only",
@@ -354,7 +354,7 @@
         {
           "name": "Post-fit methods through bridge",
           "status": "partial",
-          "evidence": "coef()/tidy()/glance()/augment()/summary()/predict()/fitted()/residuals()/simulate()/nobs() plus extract_ordination()/getLoadings()/getLV()/rotate_loadings()/ordiplot()/plot(type=\"ordination\") are live-tested for current in-sample one-part bridge payloads, including fixed-effect tidy rows, cached glance fit statistics, in-sample augment row diagnostics, conditional gaussian/poisson/binomial/NB2/NB1/Beta/Gamma simulation, and NB1 no-X post-fit routes (439/439 against GLLVM.jl-integration). tidy() deliberately excludes loadings, SEs, CIs, random parameters, and cutpoints until covariance/parameter-class payloads are routed. glance() is fit statistics only. augment() is response-scale/default-conditional/in-sample only. simulate() is conditional only, not unconditional/bootstrap-grade. vcov() fails with an explicit not-yet-routed status. newdata prediction/augmentation, link-scale augment rows, ordinal probabilities, covariance payloads, broader plot types, mixed-family simulation, masked-response simulation, and richer diagnostic residuals remain queued."
+          "evidence": "coef()/tidy()/glance()/augment()/summary()/predict()/fitted()/residuals()/simulate()/nobs() plus extract_ordination()/getLoadings()/getLV()/rotate_loadings()/ordiplot()/plot(type=\"ordination\") are live-tested for current in-sample bridge payloads, including fixed-effect tidy rows, cached glance fit statistics, in-sample augment row diagnostics, conditional gaussian/poisson/binomial/NB2/NB1/Beta/Gamma simulation, NB1 no-X post-fit routes, and row-family-aware prediction/residual/augment/simulate for narrow trait-aligned mixed-family objects (496/496 against GLLVM.jl-integration). tidy() deliberately excludes loadings, SEs, CIs, random parameters, and cutpoints until covariance/parameter-class payloads are routed. glance() is fit statistics only. augment() is response-scale/default-conditional/in-sample only. simulate() is conditional only, not unconditional/bootstrap-grade. vcov() fails with an explicit not-yet-routed status. newdata prediction/augmentation, link-scale augment rows, ordinal probabilities, covariance payloads, broader plot types, masked-response simulation, and richer diagnostic residuals remain queued."
         }
       ]
     },
@@ -404,7 +404,7 @@
         {
           "name": "Native per-response family dispatch",
           "status": "partial",
-          "evidence": "Native gllvmTMB named-list selector oracle is hardened at 4474e8b, and GLLVM.jl-integration 21f6662 now returns row-aligned mixed bridge families/link labels. R bridge admission, point/logLik parity, and CI-status validation remain queued."
+          "evidence": "Native gllvmTMB named-list selector oracle is hardened, GLLVM.jl-integration 21f6662 returns row-aligned mixed bridge families/link labels, and gllvmTMB d22d0de now admits complete balanced trait-aligned no-X/no-mask/no-CI mixed-family Julia fits. Live public-dispatch test compares gllvmTMB(..., engine=\"julia\") to direct gllvm_julia_fit() on the resolved per-trait family vector. Mixed X, masks, cbind/weights, CI endpoints, REML, ordinal/NB1/delta/hurdle/two-part mixed routes, and broad native-TMB-vs-Julia equivalence remain queued."
         },
         {
           "name": "Gaussian plus Poisson first mixed slice",
@@ -590,6 +590,10 @@
     }
   ],
   "activity": [
+    {
+      "time": "now",
+      "html": "<b>Hopper/Fisher/Rose mixed-family Julia bridge admission green.</b> <code>gllvmTMB(..., engine=\"julia\")</code> now admits the narrow complete balanced trait-aligned no-X/no-mask/no-CI mixed-family route for Gaussian, Poisson, Binomial, NB2, Beta, and Gamma components. The R selector resolves named <code>family = list(...)</code> entries by selector level, preserves <code>family_selector</code> and <code>family_by_trait</code>, and makes prediction, residuals, augmentation, and simulation row-family-aware. Evidence: no-Julia bridge <code>206</code> pass / <code>18</code> expected skips; live bridge <code>496/496</code>; native mixed oracle <code>33/33</code>; full <code>devtools::test()</code> <code>2943</code> pass / <code>722</code> skips / <code>0</code> failures / <code>3</code> pre-existing warnings; <code>pkgdown::check_pkgdown()</code> green. Boundary: no mixed X, masks, cbind/weights, CI endpoints, REML, ordinal/NB1/delta/hurdle/two-part mixed Julia route, or broad native-TMB-vs-Julia equivalence."
+    },
     {
       "time": "now",
       "html": "<b>Hopper/Rose Julia mixed-label bridge slice green.</b> <code>GLLVM.bridge_fit(family=[...])</code> now keeps <code>family</code> as the compact joined tag while returning row-aligned <code>families</code> and <code>link</code> vectors for mixed-family fits. Evidence: <code>test_bridge_mixed.jl</code> passed <code>18/18</code>; bridge capabilities passed <code>9/9</code>; direct smoke printed <code>gaussian,poisson,binomial</code>; live <code>gllvmTMB</code> bridge regression stayed <code>439/439</code>. Boundary: <code>gllvmTMB</code> still rejects mixed-family <code>engine=\"julia\"</code> until point/logLik parity and CI-status rows are validated."

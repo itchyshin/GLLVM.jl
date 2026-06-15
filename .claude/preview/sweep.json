@@ -1,6 +1,6 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T16:45:24.000Z",
+  "generated_at": "2026-06-15T17:56:40.000Z",
   "status_vocabulary": [
     "covered",
     "partial",
@@ -105,7 +105,7 @@
       "engine": "partial",
       "bridge": "partial",
       "inference": "partial",
-      "evidence": "R bridge admits complete balanced one-part X rows for Gaussian, Poisson, Binomial, NB2, Beta, and Gamma against GLLVM.jl-integration. Public formula-vs-direct dispatch evidence is now live for all admitted X families; latest bridge suite passes 416/416. X+mask, ordinal X, NB1 X, mixed-family X, non-Gaussian X CIs, newdata, and native TMB-vs-Julia parity remain unsupported gates."
+      "evidence": "R bridge admits complete balanced one-part X rows for Gaussian, Poisson, Binomial, NB2, Beta, and Gamma against GLLVM.jl-integration. Public formula-vs-direct dispatch evidence is live for all admitted X families; latest mixed-family bridge suite passes 496/496. X+mask, ordinal X, NB1 X, mixed-family X, non-Gaussian X CIs, newdata, and native TMB-vs-Julia parity remain unsupported gates."
     },
     {
       "capability": "Response missingness",
@@ -117,7 +117,7 @@
     {
       "capability": "Predictor missingness",
       "engine": "partial",
-      "bridge": "planned",
+      "bridge": "partial",
       "inference": "partial",
       "evidence": "Explicit mi() design only; no imputation shortcut."
     },
@@ -131,9 +131,9 @@
     {
       "capability": "Per-response family dispatch",
       "engine": "partial",
-      "bridge": "planned",
-      "inference": "planned",
-      "evidence": "GLLVM.jl bridge surface reports a mixed-family vector route for no-X/no-mask fits; gllvmTMB deliberately rejects family lists and marks mixed-family vector as planned until metadata, labels, parity, and CI/status rows are routed. NB1 is no longer hidden in this planned bucket: it has a separate partial no-X R bridge row."
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "GLLVM.jl bridge surface reports a mixed-family vector route for no-X/no-mask fits; gllvmTMB d22d0de admits the narrow complete balanced trait-aligned no-X/no-mask/no-CI mixed-family Julia route after selector metadata, per-trait labels, direct-wrapper logLik equality, row-family-aware post-fit methods, and method-specific unavailable-CI statuses were validated. NB1 is not admitted inside mixed-family vectors yet; it remains a separate partial no-X one-part R bridge row."
     },
     {
       "capability": "Cross-family latent correlation",
@@ -231,7 +231,7 @@
       "engine": "partial",
       "bridge": "partial",
       "inference": "partial",
-      "evidence": "R-first post-fit bridge surface now includes coef(), tidy(), glance(), augment(), summary(), print(summary()), predict(), fitted(), residuals(), simulate(), nobs(), ordination extractors, ordiplot(), and plot(type=\"ordination\") for current in-sample one-part bridge payloads. Conditional in-sample simulate() is routed for gaussian, poisson, binomial, NB2, NB1, Beta, and Gamma; live bridge tests pass 439/439 against GLLVM.jl-integration. Still unsupported: newdata prediction/augmentation, link-scale augment rows, fixed-effects-only augment rows, covariance/CI/diagnostic payloads in glance, unconditional/bootstrap-grade simulation, masked-response simulation, mixed-family simulation, ordinal simulation/probability payloads, tidy SE/CI columns, tidy random parameters/cutpoints, vcov payloads, broader plots, and richer diagnostic residuals."
+      "evidence": "R-first post-fit bridge surface now includes coef(), tidy(), glance(), augment(), summary(), print(summary()), predict(), fitted(), residuals(), simulate(), nobs(), ordination extractors, ordiplot(), and plot(type=\"ordination\") for current in-sample bridge payloads. Conditional in-sample simulate() is routed for gaussian, poisson, binomial, NB2, NB1, Beta, Gamma, and narrow trait-aligned mixed-family objects; live bridge tests pass 496/496 against GLLVM.jl-integration. Still unsupported: newdata prediction/augmentation, link-scale augment rows, fixed-effects-only augment rows, covariance/CI/diagnostic payloads in glance, unconditional/bootstrap-grade simulation, masked-response simulation, ordinal simulation/probability payloads, tidy SE/CI columns, tidy random parameters/cutpoints, vcov payloads, broader plots, and richer diagnostic residuals."
     },
     {
       "capability": "Exact implicit gradients",
