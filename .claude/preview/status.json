@@ -1,6 +1,6 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T12:39:48.481Z",
+  "generated_at": "2026-06-15T12:41:08.822Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
   "current_work": "R-first sequencing is active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as parity and acceleration target. Latest R-side slice wires plot(type=\"ordination\") for gllvmTMB_julia as a narrow ggplot route over cached scores/loadings; bridge tests passed 125/125 against the paired GLLVM.jl-integration checkout. Rose target-checkout guard is active: X/mean_coef/CI bridge evidence currently targets /Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration, while the dashboard worktree /Users/z3437171/Dropbox/Github Local/GLLVM.jl still rejects X payloads and must not be treated as green for those claims.",
@@ -31,7 +31,7 @@
     {
       "name": "GLLVM.jl local board worktree",
       "branch": "codex/non-gaussian-fitter-gradients",
-      "head": "84c0547 + paired-checkout/status refresh pending",
+      "head": "96385ab + status-cleanup pending",
       "dirty": true,
       "note": "Dashboard/ledger branch. Not the current paired runtime engine for X/CI bridge evidence: this worktree still rejects fixed-effect covariate X in src/bridge.jl. Use GLLVM.jl-integration for the current bridge tests until branches are reconciled."
     },
@@ -45,9 +45,9 @@
     {
       "name": "gllvmTMB",
       "branch": "engine-julia",
-      "head": "3389c36 + paired-checkout guard pending",
-      "dirty": true,
-      "note": "engine-julia has local R-first bridge commits through ggplot ordination. Current green evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration; NEWS/check-log guard pending commit clarifies that stale/dashboard GLLVM.jl checkouts may reject X/CI payloads."
+      "head": "da2b5a6",
+      "dirty": false,
+      "note": "engine-julia clean and ahead of remote by local commits through the paired-checkout guard. Current green bridge evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration; NEWS/check-log explicitly warn that stale/dashboard GLLVM.jl checkouts may reject X/CI payloads."
     },
     {
       "name": "drmTMB",
@@ -692,6 +692,10 @@
     }
   ],
   "evidence": [
+    {
+      "status": "covered",
+      "text": "Rose: gllvmTMB paired-checkout guard committed locally at da2b5a6; NEWS/check-log now distinguish GLLVM.jl-integration runtime evidence from the dashboard GLLVM.jl worktree."
+    },
     {
       "status": "covered",
       "text": "Florence/Hopper: gllvmTMB Julia-engine ggplot ordination route committed locally at 3389c36; test_file passed 125/125 and devtools::test(filter=\"julia-bridge\") passed 125/125 in 47.7s against GLLVM.jl-integration."
