@@ -132,11 +132,9 @@ Result: `3761 pass, 1 broken, 0 failed, 0 errored` in `35m51.7s`.
 
 `julia --project=docs docs/make.jl` did not run in the local docs environment
 because `docs/Project.toml` expects registered package `GLLVM`. A no-deploy temp
-docs build (`Pkg.develop(path=pwd())`, `Documenter`, `DocumenterVitepress`,
-`makedocs(build="/tmp/gllvm-docs-build", source="docs/src")`) reached Vitepress
-but failed on pre-existing dead local links (`./quickstart`, `./model`,
-`./benchmarks`, `./comparison`, and related extensionless links). This is a
-docs-cleanup follow-up, not a #91 numerical regression.
+docs build initially reached Vitepress but failed on pre-existing dead local
+links; those links were fixed in the follow-up
+`2026-06-14-vitepress-dead-links.md` slice, where the no-deploy build passed.
 
 ## R-Parity Verdict
 
@@ -156,10 +154,11 @@ PASS WITH NOTES. The #91 failure is reproduced, fixed, and guarded by a
 fit-scale regression plus analytic-vs-FD gradient evidence; full core and
 `Pkg.test()` gates now pass locally. Remaining notes: R parity was not run
 because this is not bridge-facing, duplicate-helper warning noise remains in the
-test harness, and the docs build is blocked by pre-existing Vitepress dead links.
+test harness, and direct `--project=docs` local builds still need a docs
+environment strategy for unregistered `GLLVM`.
 
 ## Next Command
 
 ```sh
-rg -n "\\]\\((\\./)?(quickstart|model|benchmarks|comparison|working-with-a-fit|response-families|gllvmtmb-parity|roadmap|api|pitfalls|covariance-correlation)(#|\\))" docs/src
+rg -n "\\]\\(/(quickstart|model|benchmarks|comparison|working-with-a-fit|response-families|gllvmtmb-parity|roadmap|api|pitfalls|covariance-correlation|confidence-intervals|structured-dependence)" docs/src
 ```

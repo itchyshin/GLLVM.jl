@@ -304,3 +304,24 @@ using `Pkg.develop(path=pwd())` reached Vitepress but failed on pre-existing
 dead local links (`./quickstart`, `./model`, `./benchmarks`, `./comparison`, and
 related extensionless page links). This is a docs-cleanup follow-up, not part of
 the #91 numerical change.
+
+### 2026-06-14 — Vitepress dead-link cleanup
+
+Normalised the remaining relative page links in `docs/src/{index,quickstart,
+comparison,gllvmtmb-parity}.md` to the existing absolute Vitepress route style.
+This removed the hard Vitepress dead-link failure found during local no-deploy
+docs validation.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --startup-file=no -e 'using Pkg; Pkg.activate(; temp=true); Pkg.develop(PackageSpec(path=pwd())); Pkg.add(["Documenter", "DocumenterVitepress"]); using Documenter, DocumenterVitepress, GLLVM; makedocs(; source="docs/src", build="/tmp/gllvm-docs-build", warnonly=true, ...)'
+```
+
+Result: passed; Vitepress built the site successfully in `4.66s`.
+
+Remaining warnings: Documenter still warns on absolute local links (`/quickstart`,
+`/api`, etc.) and DocumenterVitepress reports missing optional Vitepress assets /
+`docs/package.json`. These are pre-existing warning-level documentation
+infrastructure items, not hard build failures after this cleanup.
+
+Rose verdict: PASS WITH NOTES. Hard dead-link blocker removed; warning-level
+docs infrastructure cleanup remains.

@@ -35,7 +35,7 @@ fit = fit_gaussian_gllvm(y; K = K)
 
 `fit_gaussian_gllvm` returns a `GllvmFit` object. The Gaussian path is
 fit at the marginal log-likelihood maximum via the closed-form
-integration described in the [Model](model.md) page. For models without
+integration described in the [Model](/model) page. For models without
 diagonal random effects or phylogeny the PPCA warm start lands on the
 optimum directly, so L-BFGS typically reports convergence after 0–1
 iterations.
@@ -76,7 +76,7 @@ maximum(abs, Σ_hat .- Σ_true)        # largest per-cell discrepancy — should
 ```
 
 Per-cell agreement at the relative Frobenius scale is `< 1e-3` on the benchmark
-grid (see [Benchmarks](benchmarks.md)).
+grid (see [Benchmarks](/benchmarks)).
 
 To visualise it, with Plots.jl installed separately (`Pkg.add("Plots")` — it is
 not a GLLVM.jl dependency):

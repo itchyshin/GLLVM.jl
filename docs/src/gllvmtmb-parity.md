@@ -5,7 +5,7 @@ at moderate-to-large species counts while reproducing point estimates and
 likelihoods to machine precision on the shared Gaussian + phylogenetic path. This
 page is the live **catch-up scoreboard** — where GLLVM.jl stands against the
 `gllvmTMB` feature set. For *speed* comparisons see
-[Comparison](comparison.md) and [Benchmarks](benchmarks.md).
+[Comparison](/comparison) and [Benchmarks](/benchmarks).
 
 Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advantage.
 
