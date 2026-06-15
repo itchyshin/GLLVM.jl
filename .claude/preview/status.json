@@ -1,9 +1,9 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T07:35:00.000Z",
+  "generated_at": "2026-06-15T07:40:33.000Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "Phase 4 runtime gap fill is green locally on GLLVM.jl-integration: #91 high-rate Poisson divergence fixed, Gamma now defaults to analytic gradients after finite-vs-analytic benchmark gates, #92 phylo-signal Wald CI scale fix is wired into the main suite, full Pkg.test passed at 3869/1 broken, and Vitepress hard dead-links are fixed in a no-deploy docs build. Rose status-drift cleanup is now committed on integration. gllvmTMB live julia-bridge tests pass 53/53 and the R-side NEWS/check-log now match that evidence. Next gates are PR/issue reconciliation, canonical R bridge parity, missingness bridge, and structural speedups.",
+  "current_work": "Phase 4 runtime gap fill is green locally on GLLVM.jl-integration: #91 high-rate Poisson divergence fixed, Gamma now defaults to analytic gradients after finite-vs-analytic benchmark gates, #92 phylo-signal Wald CI scale fix is wired into the main suite, and the verified phylo-unique sparse-phylo node-gradient shortcut is wired with full Pkg.test passed at 3869/1 broken. gllvmTMB live julia-bridge tests pass 53/53 and the R-side NEWS/check-log now match that evidence. Next gates are #95/#94 branch reconciliation, canonical R bridge parity, missingness bridge, duplicate-test-helper hygiene, and broader structural speedups.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
     {
@@ -38,9 +38,9 @@
     {
       "name": "GLLVM.jl integration",
       "branch": "codex/high-rate-poisson-safeguard",
-      "head": "387604c",
+      "head": "85efde2",
       "dirty": false,
-      "note": "#91 safeguard, Gamma analytic default, docs-link cleanup, JuliaConnectoR smoke repair, #92 phylo-signal Wald CI scale fix, and Rose status-drift cleanup committed locally; Pkg.test passed 3869/1 broken after #92."
+      "note": "#91 safeguard, Gamma analytic default, docs-link cleanup, JuliaConnectoR smoke repair, #92 phylo-signal Wald CI scale fix, Rose status-drift cleanup, and phylo-unique sparse node-gradient shortcut committed locally; Pkg.test passed 3869/1 broken after the shortcut."
     },
     {
       "name": "gllvmTMB",
@@ -343,8 +343,8 @@
     {
       "key": "P6",
       "name": "Missing values and incomplete data",
-      "status": "queued",
-      "done": 0,
+      "status": "partial",
+      "done": 1,
       "total": 6,
       "open": false,
       "slices": [
@@ -465,8 +465,8 @@
         },
         {
           "name": "Takahashi/node-gradient route",
-          "status": "queued",
-          "evidence": "Wire O(p) only where equality is verified."
+          "status": "partial",
+          "evidence": "Phylo-unique K_aug=1/K_phy=0/has_unique route now uses node_grad; node vs leaf-block max rel error <= 1.015e-13, bench speedup 2.99-21.58x, full Pkg.test 3869/1 broken. Λ_phy and mixed augmented shapes still use exact leaf-block fallback."
         },
         {
           "name": "Animal/relmat K/Q backend",
@@ -493,8 +493,8 @@
     {
       "key": "P10",
       "name": "Speedups with robust inference",
-      "status": "queued",
-      "done": 0,
+      "status": "partial",
+      "done": 1,
       "total": 6,
       "open": false,
       "slices": [
@@ -505,8 +505,8 @@
         },
         {
           "name": "Selected inverse/Takahashi",
-          "status": "queued",
-          "evidence": "Gradient equality plus speed table."
+          "status": "partial",
+          "evidence": "Phylo-unique selected-diagonal/node shortcut has equality plus speed table; general selected-inverse/Takahashi route remains planned for unsupported augmented shapes."
         },
         {
           "name": "Observed-information Newton/Fisher scoring",
@@ -574,6 +574,10 @@
   "activity": [
     {
       "time": "now",
+      "html": "<b>Gauss/Karpinski sparse-phylo shortcut green.</b> Verified phylo-unique <code>sparse_phy_grad</code> now routes through <code>node_grad</code>; node-vs-leaf-block max relative error is at most <code>1.015e-13</code>, benchmark speedup is <code>2.99-21.58x</code>, and full <code>Pkg.test()</code> passed <code>3869/1 broken</code>."
+    },
+    {
+      "time": "now",
       "html": "<b>Karpinski/Gauss Gamma default green.</b> <code>fit_gamma_gllvm</code> now defaults to analytic gradients; quick + medium benchmark cells show about 9.7-14.3x speedups with <code>|delta logLik| <= 1.9e-12</code>; latest full <code>Pkg.test()</code> passed 3869/1 broken after the #92 wiring."
     },
     {
@@ -632,7 +636,7 @@
     },
     {
       "owner": "Gauss/Karpinski",
-      "text": "Next engine slice: Takahashi/node-gradient sparse-phylo wiring and speed+CI benchmark protocol."
+      "text": "Phylo-unique sparse node-gradient shortcut is banked; next engine slice is duplicate-test-helper cleanup plus general Λ_phy/mixed augmented Takahashi design or reverse-mode Laplace adjoint scoping."
     },
     {
       "owner": "Rose",
@@ -640,6 +644,10 @@
     }
   ],
   "evidence": [
+    {
+      "status": "covered",
+      "text": "Gauss/Karpinski: phylo-unique sparse-phylo gradient now uses node_grad under a guarded dispatcher; test_node_gradient 58/58, test_sparse_phy_grad 101/101, core suite 3857/3 broken, full Pkg.test 3869/1 broken, benchmark speedup 2.99-21.58x with max rel err <= 2.28e-14."
+    },
     {
       "status": "covered",
       "text": "Karpinski/Gauss: Gamma analytic default benchmark gate passed: 8x40x1 10.09x, 12x60x1 9.68x, 20x100x2 14.27x; all delta logLik values around 1e-12 or smaller."
