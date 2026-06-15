@@ -1,9 +1,9 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T14:11:36.000Z",
+  "generated_at": "2026-06-15T14:24:38.000Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "R-first sequencing is active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as parity and acceleration target. Latest slice banks the public status-ledger cleanup: README now has an explicit partial R-Julia bridge row, the current-boundaries section names the paired-checkout and CI/CI-status gates, and the ASReml/AI-REML design note now says AI-REML is a later exact-Gaussian REML candidate only, not non-Gaussian Laplace wording. The previous cbind-binomial transport slice remains banked at 277/277 live bridge tests against GLLVM.jl-integration. Rose boundary: no full-capability, all-family, bridge-complete, non-Gaussian REML, or AI-REML-for-Laplace claims.",
+  "current_work": "R-first sequencing is active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as parity and acceleration target. Latest slice banks tidy.gllvmTMB_julia() for fixed-effect bridge rows only, with explicit unsupported boundaries for random-parameter tidy output and conf.int=TRUE. Live package-level bridge tests pass 283/283 against GLLVM.jl-integration; default no-Julia bridge tests pass 97 with 14 expected skips. Rose boundary: no full-capability, all-family, bridge-complete, non-Gaussian REML, or AI-REML-for-Laplace claims. REML stays Gaussian-only; AI-REML is a later exact-Gaussian candidate, not a non-Gaussian/Laplace label.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
     {
@@ -40,14 +40,14 @@
       "branch": "codex/high-rate-poisson-safeguard",
       "head": "f75376c",
       "dirty": false,
-      "note": "Paired runtime engine checkout for current gllvmTMB bridge evidence. X-aware bridge, Gaussian mean_coef, bridge_fit(mask=...), ordinal_probit ProbitLink, and binomial N-matrix cbind transport are validated here; latest live gllvmTMB bridge tests against this checkout pass 277/277."
+      "note": "Paired runtime engine checkout for current gllvmTMB bridge evidence. X-aware bridge, Gaussian mean_coef, bridge_fit(mask=...), ordinal_probit ProbitLink, binomial N-matrix cbind transport, and fixed-effect tidy() bridge rows are validated here; latest live gllvmTMB bridge tests against this checkout pass 283/283."
     },
     {
       "name": "gllvmTMB",
       "branch": "engine-julia",
-      "head": "f3414c7",
+      "head": "c11d42a",
       "dirty": false,
-      "note": "engine-julia has local R-first bridge slices committed through the public bridge/REML status ledger. Current green bridge evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration; NEWS/check-log/README explicitly warn that stale/dashboard GLLVM.jl checkouts may reject newer payloads."
+      "note": "engine-julia has local R-first bridge slices committed through tidy.gllvmTMB_julia(). Current green bridge evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration; NEWS/check-log/README explicitly warn that stale/dashboard GLLVM.jl checkouts may reject newer payloads."
     },
     {
       "name": "drmTMB",
@@ -336,7 +336,7 @@
         {
           "name": "Post-fit methods through bridge",
           "status": "partial",
-          "evidence": "coef()/summary()/predict()/fitted()/residuals()/nobs() plus extract_ordination()/getLoadings()/getLV()/rotate_loadings()/ordiplot()/plot(type=\"ordination\") are live-tested for current in-sample one-part bridge payloads, including Gaussian-X via mean_coef (125/125 against GLLVM.jl-integration). vcov() now fails with an explicit not-yet-routed status. newdata prediction, ordinal probabilities, covariance payloads, broader plot types, and richer diagnostic residuals remain queued."
+          "evidence": "coef()/tidy()/summary()/predict()/fitted()/residuals()/nobs() plus extract_ordination()/getLoadings()/getLV()/rotate_loadings()/ordiplot()/plot(type=\"ordination\") are live-tested for current in-sample one-part bridge payloads, including fixed-effect tidy rows (283/283 against GLLVM.jl-integration). tidy() deliberately excludes loadings, SEs, CIs, random parameters, and cutpoints until covariance/parameter-class payloads are routed. vcov() fails with an explicit not-yet-routed status. newdata prediction, ordinal probabilities, covariance payloads, broader plot types, and richer diagnostic residuals remain queued."
         }
       ]
     },
@@ -574,6 +574,10 @@
   "activity": [
     {
       "time": "now",
+      "html": "<b>Hopper/Pat tidy bridge slice green.</b> <code>gllvmTMB_julia</code> now has <code>generics::tidy()</code> for fixed-effect coefficient rows from the cached bridge table. Unsupported <code>effects = \"ran_pars\"</code>, <code>effects = \"cutpoint\"</code>, and <code>conf.int = TRUE</code> fail explicitly instead of implying hidden SE/CI support. No-Julia bridge tests passed <code>97</code> with <code>14</code> expected skips; live package-level bridge tests passed <code>283/283</code> against <code>GLLVM.jl-integration</code>."
+    },
+    {
+      "time": "now",
       "html": "<b>Rose/Ada R-first status ledger green.</b> README now exposes <code>engine = \"julia\"</code> as a partial paired-checkout bridge, not a TMB replacement; current boundaries now require payload, label, objective/logLik, CI or CI-status, and failure-message agreement. The ASReml/AI-REML design note now says AI-REML is a later exact-Gaussian REML candidate only, not non-Gaussian Laplace wording. Stale-claim scan found expected boundary rows only; no-Julia bridge tests passed <code>91</code> with <code>14</code> skips."
     },
     {
@@ -696,11 +700,11 @@
   "inflight": [
     {
       "owner": "Ada",
-      "text": "R-first sequencing is active; latest committed slice banks the README/AI-REML status-ledger cleanup on top of cbind-binomial transport."
+      "text": "R-first sequencing is active; latest committed slice banks tidy.gllvmTMB_julia() as a limited fixed-effect method with explicit unsupported boundaries."
     },
     {
       "owner": "Hopper",
-      "text": "Next R-first bridge surface: freeze the bridge/capability status ledger, then continue post-fit methods, explicit CI-status rows, and missingness surfaces before Julia-only engine breadth."
+      "text": "Next R-first bridge surface: decide fail-loud versus real simulate.gllvmTMB_julia(), then continue explicit CI-status rows and missingness surfaces before Julia-only engine breadth."
     },
     {
       "owner": "Gauss/Karpinski",
@@ -712,6 +716,10 @@
     }
   ],
   "evidence": [
+    {
+      "status": "partial",
+      "text": "Hopper/Pat: tidy.gllvmTMB_julia() committed locally at gllvmTMB c11d42a. generics::tidy() now returns fixed-effect bridge rows with term, estimate, and component; loadings stay in coef()/ordination extractors; conf.int=TRUE and non-fixed effects fail explicitly. air format passed; no-Julia devtools::test(filter=\"julia-bridge\") passed 97 with 14 skips; live devtools::test(filter=\"julia-bridge\") passed 283/283 against GLLVM.jl-integration."
+    },
     {
       "status": "partial",
       "text": "Rose/Ada: R-first bridge and REML status ledger committed locally at gllvmTMB f3414c7. README now labels engine=\"julia\" as a partial paired-checkout bridge; ASReml/AI-REML note is updated for the landed Gaussian-only REML pilot and blocks AI-REML-for-Laplace wording. Stale-claim scan found expected boundary rows only; no-Julia devtools::test(filter=\"julia-bridge\") passed 91 with 14 skips."

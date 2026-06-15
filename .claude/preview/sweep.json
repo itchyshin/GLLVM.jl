@@ -229,9 +229,9 @@
     {
       "capability": "predict/fitted/residuals/summary",
       "engine": "partial",
-      "bridge": "planned",
+      "bridge": "partial",
       "inference": "partial",
-      "evidence": "Post-fit bridge methods are P5."
+      "evidence": "R-first post-fit bridge surface now includes coef(), tidy(), summary(), print(summary()), predict(), fitted(), residuals(), nobs(), ordination extractors, ordiplot(), and plot(type=\"ordination\") for current in-sample one-part bridge payloads. Latest tidy slice is fixed-effect rows only and live bridge tests pass 283/283 against GLLVM.jl-integration. Still unsupported: tidy SE/CI columns, tidy random parameters/cutpoints, vcov payloads, newdata prediction, ordinal probability payloads, broader plots, and richer diagnostic residuals."
     },
     {
       "capability": "Exact implicit gradients",
