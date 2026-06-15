@@ -1,5 +1,35 @@
 # Check Log
 
+## 2026-06-15 - Gamma Gradient Status Wording Cleanup
+
+### Scope
+
+Updated `CLAUDE.md` so the maintainer-facing status block no longer says Gamma
+is still on the old direct ForwardDiff fitter path. The line now matches the
+existing runtime evidence: Gamma defaults to the analytic Laplace-gradient path
+after the finite-vs-analytic benchmark gate, while masked/offset cells retain
+their fallback route.
+
+No engine code, tests, benchmark scripts, or public user docs changed in this
+slice.
+
+### Checks Run
+
+Stale-wording scan:
+
+```sh
+rg -n "Gamma|ForwardDiff|analytic gradient|gradient = :analytic|REML|AI-REML|non-Gaussian REML" CLAUDE.md AGENTS.md docs/dev-log/check-log.md README.md docs/src .claude/preview/status.json
+```
+
+Result: the only pre-edit stale hit was the `CLAUDE.md` Gamma direct-ForwardDiff
+status sentence; REML/AI-REML hits remain boundary wording that keeps REML
+Gaussian-only and AI-REML scoped to future exact-Gaussian acceleration.
+
+### Rose Boundary
+
+PASS WITH NOTES. This is claim cleanup only. It does not add a new speed claim,
+new fit cell, or release-ready status.
+
 ## 2026-06-14 - Capability Matrix Runtime Evidence Sync
 
 ### Scope

@@ -17,9 +17,9 @@ non-Gaussian fitters: Binomial, Poisson, Negative Binomial, Beta, Gamma, and
 Ordinal. Binomial-logit and Poisson-log use hand-coded implicit dense-Laplace
 gradients plus per-site latent-mode caches; Negative Binomial and Beta use a
 scalar-auxiliary implicit gradient over `(η, log dispersion)`; Ordinal uses the
-generic implicit cumulative-logit gradient. Gamma currently stays on direct
-ForwardDiff through the dense Laplace objective until its inner mode convergence
-is hardened.
+generic implicit cumulative-logit gradient; Gamma now defaults to the analytic
+Laplace-gradient path after the finite-vs-analytic benchmark gate, with the
+finite-difference fallback retained for unsupported masked/offset cells.
 Two-part families and large-p non-Gaussian structured dependence are the next
 algorithm tracks; see "Planned next" below.
 

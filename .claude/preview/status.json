@@ -1,9 +1,9 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T15:06:36.647Z",
+  "generated_at": "2026-06-15T15:08:30.624Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "R-first sequencing is active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as parity and acceleration target. Latest slice banks gllvm_julia_capabilities() as the R-side Julia bridge admission ledger before JuliaCall setup. No-Julia bridge tests pass 141 with 14 expected skips; live package-level bridge tests pass 340/340 against GLLVM.jl-integration; pkgdown::check_pkgdown() is green after adding a dedicated Julia bridge reference section. Rose boundary: no full-capability, all-family, bridge-complete, non-Gaussian REML, or AI-REML-for-Laplace claims. Mixed-family remains planned on the R surface even though the paired Julia bridge has an engine route, because R metadata, labels, parity, and CI/status rows are not validated yet.",
+  "current_work": "R-first sequencing remains active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as parity and acceleration target. Latest cleanup resolves Rose's stale Gamma-gradient maintainer-doc blocker: CLAUDE.md now matches the benchmark/check-log evidence that Gamma defaults to the analytic Laplace-gradient path, with finite-difference fallback for unsupported masked/offset cells. The latest R bridge governance slice remains gllvm_julia_capabilities() at gllvmTMB c0f14c8: no-Julia bridge tests pass 141 with 14 expected skips, live package-level bridge tests pass 340/340, and pkgdown::check_pkgdown() is green. REML stays Gaussian-only; AI-REML stays a future exact-Gaussian acceleration idea, not a non-Gaussian/Laplace label.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
     {
@@ -574,6 +574,10 @@
   "activity": [
     {
       "time": "now",
+      "html": "<b>Rose Gamma-status blocker cleared.</b> <code>CLAUDE.md</code> no longer says Gamma is on the old direct ForwardDiff fitter path; it now matches the check-log evidence that Gamma defaults to the analytic Laplace-gradient route with finite-difference fallback for unsupported masked/offset cells. This is documentation cleanup only, not a new speed or capability claim."
+    },
+    {
+      "time": "now",
       "html": "<b>Hopper/Rose capability ledger slice green.</b> <code>gllvm_julia_capabilities()</code> now exposes the R-side Julia bridge admission table before JuliaCall setup: no-X fits, fixed-effect-X rows, missing-response masks, cbind-binomial transport, and the planned mixed-family vector row. No-Julia bridge tests passed <code>141</code> with <code>14</code> expected skips; live package-level bridge tests passed <code>340/340</code>; <code>pkgdown::check_pkgdown()</code> reports no problems after the new Julia bridge reference section."
     },
     {
@@ -716,7 +720,7 @@
   "inflight": [
     {
       "owner": "Ada",
-      "text": "R-first sequencing is active; latest committed slice banks gllvm_julia_capabilities() as the R-side bridge admission ledger."
+      "text": "R-first sequencing remains active; latest R bridge governance slice is gllvm_julia_capabilities(), and the stale Gamma maintainer-doc blocker is now cleared locally."
     },
     {
       "owner": "Hopper",
@@ -728,10 +732,14 @@
     },
     {
       "owner": "Rose",
-      "text": "Queued blocker: GLLVM.jl maintainer docs still need the Gamma analytic-gradient note reconciled with the benchmark/check-log evidence. REML stays Gaussian-only; AI-REML stays exact-Gaussian-only future wording."
+      "text": "No current REML/AI-REML wording blocker: REML stays Gaussian-only; AI-REML stays exact-Gaussian-only future wording. Release/tag remains hold until issue ledger, docs, CI, bridge parity, and main branch agree."
     }
   ],
   "evidence": [
+    {
+      "status": "covered",
+      "text": "Rose: GLLVM.jl maintainer-doc stale Gamma wording fixed locally. CLAUDE.md now says Gamma defaults to the analytic Laplace-gradient path after the finite-vs-analytic benchmark gate, with finite-difference fallback for unsupported masked/offset cells. Stale scan confirms REML/AI-REML hits are boundary wording or historical check-log entries. No engine code changed."
+    },
     {
       "status": "partial",
       "text": "Hopper/Rose: gllvm_julia_capabilities() committed locally at gllvmTMB c0f14c8. The table is tied to R bridge constants for fit_no_x, fixed_effect_X, missing_response, and cbind_binomial, and it records mixed-family vectors as planned because R-side metadata/labels/parity/CI-status are not validated. devtools::document() completed with pre-existing unrelated roxygen warnings; no-Julia devtools::test(filter=\"julia-bridge\") passed 141 with 14 skips; live devtools::test(filter=\"julia-bridge\") passed 340/340 against GLLVM.jl-integration; pkgdown::check_pkgdown() is green after adding a Julia bridge reference section."
