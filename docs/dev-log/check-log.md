@@ -807,3 +807,36 @@ Result: `3869 pass, 1 broken, 0 failed, 0 errored` in `36m18.1s`.
 
 PASS. The scale bug is fixed on the current branch, the orphan test is now part
 of the main suite, and the full package gate passed.
+
+## 2026-06-15 - Gaussian-X bridge mean coefficient payload
+
+### Scope
+
+Added the flat `mean_coef::Vector{Float64}` payload field to
+`GLLVM.bridge_fit(...; family = "gaussian", X = X)`. The existing Gaussian-X
+fields are preserved; the new field exposes the full mean coefficient vector
+needed by the R bridge to reconstruct in-sample fitted values for the supplied
+`X` design.
+
+Changes:
+
+- `src/bridge.jl` now merges `mean_coef = fit.pars.β` onto the Gaussian-X bridge
+  payload.
+- `test/test_bridge_x.jl` now checks that `mean_coef` is a `Vector{Float64}` and
+  equals the native Gaussian fit coefficient vector exactly.
+- `docs/src/gllvmtmb-parity.md` records the payload contract.
+
+### Checks Run
+
+```sh
+~/.juliaup/bin/julia --project=. test/test_bridge_x.jl
+```
+
+Result: `52/52 pass` in `17.4s`.
+
+### Rose Verdict
+
+PASS WITH NOTES. This is a payload-only bridge change, not a likelihood change.
+It closes the R-side Gaussian-X in-sample prediction gap when paired with the
+matching `gllvmTMB` consumer; `newdata` prediction and ordinal probabilities
+remain separate bridge payloads.

@@ -2,7 +2,8 @@
 # bridge_fit(...; X=...) must route to the native `fit_gllvm_cov` and return the
 # covariate coefficients (per-trait intercepts + shared γ) in flat,
 # JuliaCall-convertible arrays that EQUAL the direct `fit_gllvm_cov` fit (the
-# oracle) to ~1e-8. The Gaussian-X path and the no-X path must stay unchanged.
+# oracle) to ~1e-8. The Gaussian-X path must preserve existing fields while
+# exposing the full mean coefficient payload needed by the R bridge.
 #
 # Gates encoded here:
 #   1. PARITY  — bridge-X coefficients == native fit_gllvm_cov coefficients (~1e-8)
@@ -10,8 +11,8 @@
 #                fit_gllvm_cov supports).
 #   2. FLAT CONTRACT — the new coef fields (alpha, beta_cov, gamma, dispersion,
 #                loadings, …) are primitive Float64 arrays.
-#   3. REGRESSION (Gaussian-X) — bridge_fit gaussian + X output is byte-identical
-#                to the pre-change behaviour (rebuilt here from the public pieces).
+#   3. GAUSSIAN-X — bridge_fit gaussian + X preserves existing fields and returns
+#                the full mean coefficient vector needed by the R bridge.
 #   4. UNSUPPORTED — families fit_gllvm_cov can't fit with X (ordinal, nb1) and
 #                mixed-family X reject loudly with an ArgumentError.
 
@@ -127,8 +128,8 @@ end
         @test occursin("covariate", lowercase(br.note))
     end
 
-    # -- REGRESSION: Gaussian-X path is unchanged --------------------------------
-    @testset "Gaussian-X path unchanged" begin
+    # -- GAUSSIAN-X: existing fields plus full mean coefficient vector -----------
+    @testset "Gaussian-X mean coefficient payload" begin
         Random.seed!(303)
         p, n, q, K = 4, 50, 2, 1
         Xg = randn(p, n, q)
@@ -147,6 +148,8 @@ end
             alpha[t] = acc / n
         end
         @test br.model == "gaussian_x_rr"
+        @test br.mean_coef isa Vector{Float64}
+        @test br.mean_coef ≈ β atol = 0
         @test _bx_nan_eq(br.alpha, alpha)
         @test isapprox(br.loglik, fit.logLik; atol = 0)
         @test br.sigma_eps == fit.pars.σ_eps

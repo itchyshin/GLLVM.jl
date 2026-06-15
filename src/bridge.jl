@@ -33,6 +33,11 @@
 #   link         :: Vector{String}    — per-trait link name
 #   note         :: String            — caveats for the R side
 #
+# Optional coefficient keys:
+#   mean_coef    :: Vector{Float64}   — Gaussian-X full mean coefficient vector
+#   beta_cov     :: Vector{Float64}   — non-Gaussian-X per-trait intercepts
+#   gamma        :: Vector{Float64}   — non-Gaussian-X shared covariate slopes
+#
 # Optional CI keys (present ONLY when `options["ci_method"]` ∈ {"wald","profile",
 # "bootstrap"}; absent for the default "none", so the no-CI contract above is
 # byte-identical to before):
@@ -382,7 +387,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
             ci = ci_method == "none" ? nothing :
                  _bridge_compute_ci_gaussian(fit, Yf, ci_method, ci_level, ci_nboot,
                                              ci_seed; X = Xarr)
-            return _bridge_assemble(fit, "gaussian", "gaussian_x_rr", traits, units;
+            base = _bridge_assemble(fit, "gaussian", "gaussian_x_rr", traits, units;
                 alpha = alpha, dispersion = fill(NaN, p), sigma_eps = fit.pars.σ_eps,
                 link = fill("IdentityLink", p), Sigma = Sigma, corr = corr, comm = comm,
                 scores = scores, df = df, loglik = fit.logLik,
@@ -390,6 +395,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                 note = "fixed-effect covariate fit: X carries the full mean structure " *
                        "(per-trait intercepts + covariates); alpha is the per-trait " *
                        "fitted mean.", ci = ci)
+            return merge(base, (mean_coef = β,))
         end
         reml = _bridge_truthy(_bridge_get(options, "reml", false))
         if reml

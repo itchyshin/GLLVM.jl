@@ -103,6 +103,9 @@ current `gllvmTMB(..., engine = "julia")` bridge admits complete, balanced,
 one-part reduced-rank models for Gaussian, Poisson, Binomial, NB2, Beta, Gamma,
 and Ordinal no-X fits. Fixed-effect covariates (`X`) are admitted for complete,
 balanced one-part Gaussian, Poisson, Binomial, NB2, Beta, and Gamma fits.
+For Gaussian covariate fits the bridge returns `mean_coef`, the full coefficient
+vector for the supplied `X` array, so the R side can reconstruct in-sample
+fitted values without guessing from the per-trait mean summary.
 Response-missing masks, mixed-family bridge metadata, ordinal covariate fits,
 structured covariance terms, and user-selectable Julia-side optimizer controls
 remain explicit bridge follow-ups, not silently supported cells.
