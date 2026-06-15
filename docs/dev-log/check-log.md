@@ -1,5 +1,42 @@
 # Check Log
 
+## 2026-06-15 - PR #94 Unique-Content Audit
+
+### Scope
+
+Audited draft/conflicting `GLLVM.jl#94` before closure or supersession.
+
+Live state at audit time:
+
+- `#94` open draft, conflicting, `a1-nongaussian-ci` at `09fc846`
+- `#95` open draft, mergeable, `integration` at `65a1f10`
+- local integration audit head: `d3d8129`
+
+### Checks Run
+
+```sh
+gh pr view 94 --repo itchyshin/GLLVM.jl --json number,title,state,isDraft,mergeable,headRefName,baseRefName,headRefOid,baseRefOid,updatedAt,url
+gh pr view 95 --repo itchyshin/GLLVM.jl --json number,title,state,isDraft,mergeable,headRefName,baseRefName,headRefOid,baseRefOid,updatedAt,url
+git fetch origin pull/94/head:refs/remotes/origin/pr-94 pull/95/head:refs/remotes/origin/pr-95 main integration
+```
+
+Blob classification of `origin/main...origin/pr-94` paths against current local
+integration:
+
+| class | count |
+| --- | ---: |
+| absent from integration | 124 |
+| present but different from local integration | 50 |
+| byte-identical to local integration | 2 |
+
+### Rose Boundary
+
+PARTIAL BUT ACTIONABLE. Do not merge `#94`. Treat it as an archive to mine into
+successor issues for Generalized Poisson, Student-t, standalone lognormal,
+standalone zero-truncated count families, ANOVA/LRT, diagnostics, structured
+Schur/Poisson prototypes, and stale benchmark rebuilds. Close only after those
+successor issues/comments exist.
+
 ## 2026-06-15 - Test Warning Hygiene
 
 ### Scope
