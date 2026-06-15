@@ -1,9 +1,9 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T12:26:41.296Z",
+  "generated_at": "2026-06-15T12:39:48.481Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "R-first sequencing is active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as parity and acceleration target. Latest R-side slices expose cached Julia bridge ordination through extract_ordination(), getLoadings(), getLV(), rotate_loadings(), and ordiplot(), add nobs(), and give vcov() an explicit not-yet-routed status instead of a fake covariance matrix. Evidence: gllvmTMB live bridge test_file passed 119/119, and devtools::test(filter=\"julia-bridge\") passed 119/119 in 43.1s against GLLVM.jl-integration. Next R-first slices: missing-response bridge mask contract, ordinal probability payloads, newdata prediction, covariance/SE payloads, and issue-led capability rows before more Julia engine breadth.",
+  "current_work": "R-first sequencing is active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as parity and acceleration target. Latest R-side slice wires plot(type=\"ordination\") for gllvmTMB_julia as a narrow ggplot route over cached scores/loadings; bridge tests passed 125/125 against the paired GLLVM.jl-integration checkout. Rose target-checkout guard is active: X/mean_coef/CI bridge evidence currently targets /Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration, while the dashboard worktree /Users/z3437171/Dropbox/Github Local/GLLVM.jl still rejects X payloads and must not be treated as green for those claims.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
     {
@@ -31,23 +31,23 @@
     {
       "name": "GLLVM.jl local board worktree",
       "branch": "codex/non-gaussian-fitter-gradients",
-      "head": "f5924ec + ordiplot/status refresh pending",
+      "head": "84c0547 + paired-checkout/status refresh pending",
       "dirty": true,
-      "note": "Dashboard/ledger branch, ahead of remote by local commits. Exact self-SHA changes when this status refresh is committed."
+      "note": "Dashboard/ledger branch. Not the current paired runtime engine for X/CI bridge evidence: this worktree still rejects fixed-effect covariate X in src/bridge.jl. Use GLLVM.jl-integration for the current bridge tests until branches are reconciled."
     },
     {
       "name": "GLLVM.jl integration",
       "branch": "codex/high-rate-poisson-safeguard",
       "head": "a0e6848",
       "dirty": false,
-      "note": "Runtime fixes, #94 successor bank, bridge-X docs, and Gaussian-X mean_coef payload are committed. REML remains Gaussian-only with AI-REML as later exact-Gaussian scouting. Latest full Pkg.test evidence remains 3869/1 broken; bridge-X engine test passed 52/52."
+      "note": "Paired runtime engine checkout for current gllvmTMB bridge evidence. X-aware bridge and Gaussian mean_coef payload are committed here; latest bridge tests against this checkout pass 125/125 from gllvmTMB."
     },
     {
       "name": "gllvmTMB",
       "branch": "engine-julia",
-      "head": "c078702",
-      "dirty": false,
-      "note": "engine-julia clean and ahead of remote by local commits; R-first bridge surface now includes X admission, coef/summary, in-sample predict/fitted/residuals, nobs(), ordination accessors, ordiplot(), direct missing-response guard, and Gaussian-X mean_coef prediction. Live julia-bridge test_file passed 119/119 and devtools::test(filter=\"julia-bridge\") passed 119/119 in 43.1s against GLLVM.jl-integration."
+      "head": "3389c36 + paired-checkout guard pending",
+      "dirty": true,
+      "note": "engine-julia has local R-first bridge commits through ggplot ordination. Current green evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration; NEWS/check-log guard pending commit clarifies that stale/dashboard GLLVM.jl checkouts may reject X/CI payloads."
     },
     {
       "name": "drmTMB",
@@ -336,7 +336,7 @@
         {
           "name": "Post-fit methods through bridge",
           "status": "partial",
-          "evidence": "coef()/summary()/predict()/fitted()/residuals()/nobs() plus extract_ordination()/getLoadings()/getLV()/rotate_loadings()/ordiplot() are live-tested for current in-sample one-part bridge payloads, including Gaussian-X via mean_coef (119/119). vcov() now fails with an explicit not-yet-routed status. newdata prediction, ordinal probabilities, covariance payloads, richer ggplot diagnostics, and richer diagnostic residuals remain queued."
+          "evidence": "coef()/summary()/predict()/fitted()/residuals()/nobs() plus extract_ordination()/getLoadings()/getLV()/rotate_loadings()/ordiplot()/plot(type=\"ordination\") are live-tested for current in-sample one-part bridge payloads, including Gaussian-X via mean_coef (125/125 against GLLVM.jl-integration). vcov() now fails with an explicit not-yet-routed status. newdata prediction, ordinal probabilities, covariance payloads, broader plot types, and richer diagnostic residuals remain queued."
         }
       ]
     },
@@ -574,6 +574,14 @@
   "activity": [
     {
       "time": "now",
+      "html": "<b>Florence/Hopper ggplot ordination slice green.</b> <code>plot(type = \"ordination\")</code> now works for <code>gllvmTMB_julia</code> as a narrow ggplot route over cached scores/loadings. Unsupported plot types and standardized arrows fail explicitly. Live bridge tests passed <code>125/125</code> against <code>GLLVM.jl-integration</code>."
+    },
+    {
+      "time": "now",
+      "html": "<b>Rose target-checkout blocker caught and narrowed.</b> Current X/<code>mean_coef</code>/CI bridge evidence is against <code>GLLVM.jl-integration</code>, not the dashboard <code>GLLVM.jl</code> worktree, whose <code>bridge_fit</code> still rejects <code>X</code>. NEWS/check-log/board now carry this guard."
+    },
+    {
+      "time": "now",
       "html": "<b>Florence/Hopper ordiplot slice green.</b> <code>gllvmTMB_julia</code> now dispatches through <code>ordiplot()</code> using cached bridge scores/loadings; canonical <code>level = \"unit\"</code> no longer triggers the deprecated <code>\"B\"</code> warning. Live bridge tests passed <code>119/119</code>."
     },
     {
@@ -668,7 +676,7 @@
   "inflight": [
     {
       "owner": "Ada",
-      "text": "R-first sequencing is active; latest banked slices close cached Julia bridge ordination/nobs/ordiplot access on the gllvmTMB surface."
+      "text": "R-first sequencing is active; latest banked slices close cached Julia bridge ordination/nobs/ordiplot/ggplot-ordination access on the gllvmTMB surface."
     },
     {
       "owner": "Hopper",
@@ -676,14 +684,22 @@
     },
     {
       "owner": "Gauss/Karpinski",
-      "text": "Julia speed work stays queued behind R reference cells; REML language is Gaussian-only, and HSquared AI-REML is later exact-Gaussian scouting only."
+      "text": "Julia branch reconciliation is now a visible guard: GLLVM.jl-integration is the paired runtime for X/CI bridge evidence; the dashboard GLLVM.jl worktree must catch up before broad green claims."
     },
     {
       "owner": "Rose",
-      "text": "Bridge claims now cover current in-sample post-fit methods including Gaussian-X, ordination accessors, and the simple ordiplot visual helper. Actual missing masks, mixed-family metadata, covariance matrices, newdata, ordinal probabilities, richer ggplot diagnostics, and non-Gaussian X CIs remain partial/queued."
+      "text": "Target-checkout drift guard is active. Do not cite X/mean_coef/Gaussian profile/bootstrap evidence as proven on the dashboard GLLVM.jl worktree until branch reconciliation or rerun evidence exists."
     }
   ],
   "evidence": [
+    {
+      "status": "covered",
+      "text": "Florence/Hopper: gllvmTMB Julia-engine ggplot ordination route committed locally at 3389c36; test_file passed 125/125 and devtools::test(filter=\"julia-bridge\") passed 125/125 in 47.7s against GLLVM.jl-integration."
+    },
+    {
+      "status": "partial",
+      "text": "Rose: paired-checkout guard added after audit. GLLVM.jl-integration a0e6848 supports current X/mean_coef bridge tests; dashboard GLLVM.jl 84c0547 still rejects fixed-effect covariate X and is not evidence for those claims."
+    },
     {
       "status": "covered",
       "text": "Florence/Hopper: gllvmTMB Julia-engine ordiplot dispatch committed locally at c078702; ordiplot() is tested on synthetic bridge scores/loadings and the canonical-level warning is fixed; live test_file passed 119/119 and devtools::test(filter=\"julia-bridge\") passed 119/119 in 43.1s."
