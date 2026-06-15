@@ -1,6 +1,6 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T16:09:17.644Z",
+  "generated_at": "2026-06-15T16:22:49.191Z",
   "status_vocabulary": [
     "covered",
     "partial",
@@ -42,7 +42,7 @@
       "engine": "covered",
       "bridge": "partial",
       "inference": "partial",
-      "evidence": "GLLVM.jl bridge surface reports NB1 one-part no-X support through bridge_capabilities(); gllvmTMB now admits nbinom1()/nb1 complete balanced no-X reduced-rank fits through engine=\"julia\", with formula-vs-direct logLik equality and a Wald phi CI smoke test. NB1 fixed-effect-X, missing-response-mask, profile/bootstrap, native-TMB parity, and mixed-family cells remain queued and fail deliberately."
+      "evidence": "GLLVM.jl bridge surface reports NB1 one-part no-X support through bridge_capabilities(); gllvmTMB admits nbinom1()/nb1 complete balanced no-X reduced-rank fits through engine=\"julia\", with formula-vs-direct logLik equality, a Wald phi CI smoke test, and post-fit predict/fitted/residuals/augment/simulate coverage. NB1 fixed-effect-X, missing-response-mask, masked simulation, profile/bootstrap, native-TMB parity, and mixed-family cells remain queued and fail deliberately."
     },
     {
       "capability": "Beta",

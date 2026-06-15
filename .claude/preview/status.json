@@ -1,9 +1,9 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T16:09:17.644Z",
+  "generated_at": "2026-06-15T16:22:49.191Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "R-first sequencing remains active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as the parity/acceleration target. Latest slice: NB1 no-X fits are now admitted through gllvmTMB engine=\"julia\" at 8cc29a6, with explicit fail-fast rejection for NB1 fixed-effect-X and missing-response-mask cells. The paired runtime engine remains GLLVM.jl-integration 8afda81. Evidence: no-Julia bridge tests pass 151 with 16 expected skips, live bridge tests pass 370/370 against GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration, pkgdown::check_pkgdown() is green, and REML remains Gaussian-only.",
+  "current_work": "R-first sequencing remains active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as the parity/acceleration target. Latest slice: NB1 complete-data no-X fits now have post-fit prediction, fitted values, residuals, augment rows, and conditional in-sample simulate() through gllvmTMB engine=\"julia\" at 174d3a0. Evidence: no-Julia bridge tests pass 163 with 16 expected skips, live bridge tests pass 394/394 against GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration, pkgdown::check_pkgdown() is green, and REML remains Gaussian-only.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
     {
@@ -13,7 +13,7 @@
     },
     {
       "label": "Slices visible",
-      "value": "59",
+      "value": "60",
       "status": "partial"
     },
     {
@@ -45,9 +45,9 @@
     {
       "name": "gllvmTMB",
       "branch": "engine-julia",
-      "head": "8cc29a6",
+      "head": "174d3a0",
       "dirty": false,
-      "note": "engine-julia has local R-first bridge slices committed through NB1 no-X admission. gllvm_julia_capabilities() now marks NB1 as partial/admitted for no-X complete-data reduced-rank fits, keeps mixed-family vector as planned R debt, and enforces that R-admitted TRUE rows are supported by GLLVM.bridge_capabilities(). Current green bridge evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration."
+      "note": "engine-julia has local R-first bridge slices committed through NB1 no-X admission plus NB1 post-fit methods. gllvm_julia_capabilities() marks NB1 as partial/admitted for no-X complete-data reduced-rank fits, keeps mixed-family vector as planned R debt, and enforces that R-admitted TRUE rows are supported by GLLVM.bridge_capabilities(). Current green bridge evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration."
     },
     {
       "name": "drmTMB",
@@ -304,8 +304,8 @@
       "key": "P5",
       "name": "R-Julia bridge contract and gate drift",
       "status": "active",
-      "done": 2,
-      "total": 7,
+      "done": 3,
+      "total": 8,
       "open": true,
       "slices": [
         {
@@ -318,6 +318,12 @@
           "status": "partial",
           "owner": "Hopper/Fisher",
           "note": "R admits nbinom1()/nb1 complete-data no-X fits with live logLik equality and Wald phi CI smoke; NB1 X/mask/profile/bootstrap/native parity remain queued."
+        },
+        {
+          "name": "NB1 post-fit methods",
+          "status": "partial",
+          "owner": "Hopper/Fisher",
+          "note": "R routes predict/fitted/residuals/augment/simulate for admitted complete-data no-X NB1 fits; NB1 X/masks/profile/bootstrap/native parity remain queued."
         },
         {
           "name": "Flat ASCII-safe bridge payload",
@@ -580,6 +586,10 @@
   "activity": [
     {
       "time": "now",
+      "html": "<b>Hopper/Fisher NB1 post-fit slice green.</b> Complete-data no-X <code>nbinom1()</code> Julia-engine fits now route <code>predict()</code>, <code>fitted()</code>, <code>residuals()</code>, <code>augment()</code>, and conditional in-sample <code>simulate()</code>. NB1 simulation uses <code>Var = mu * (1 + phi)</code> via <code>rnbinom(mu = mu, size = mu / phi)</code> and rejects missing/non-positive dispersion payloads. No-Julia bridge tests passed <code>163</code> with <code>16</code> expected skips; live bridge tests passed <code>394/394</code>; <code>pkgdown::check_pkgdown()</code> is green."
+    },
+    {
+      "time": "now",
       "html": "<b>Hopper/Fisher NB1 bridge slice green.</b> <code>nbinom1()</code> now routes through <code>engine=\"julia\"</code> for complete balanced no-X reduced-rank fits. The R bridge maps NB1 to <code>GLLVM.bridge_fit(family=\"nb1\")</code>, keeps NB1 fixed-effect-X and missing-response-mask cells rejected before JuliaCall, and live-tests direct logLik equality plus a Wald CI <code>phi</code> row. No-Julia bridge tests passed <code>151</code> with <code>16</code> expected skips; live bridge tests passed <code>370/370</code>; <code>pkgdown::check_pkgdown()</code> is green."
     },
     {
@@ -734,26 +744,30 @@
   "inflight": [
     {
       "owner": "Ada",
-      "text": "R-first sequencing is now explicit policy: complete gllvmTMB user-facing routes before promoting Julia-only capability claims. Julia becomes the target validator and accelerator."
-    },
-    {
-      "owner": "Hopper",
-      "text": "Next bridge choices: extend admitted R cells one narrow slice at a time, likely NB1 native-TMB parity/profile-bootstrap evidence or mixed-family metadata/labels. Unsupported cells must keep precise fail-fast messages."
-    },
-    {
-      "owner": "Fisher",
-      "text": "For every admitted R route, pair point estimates and logLik with CI or CI-status evidence. REML remains Gaussian-only; non-Gaussian inference uses ML/Laplace language."
-    },
-    {
-      "owner": "Gauss/Karpinski",
-      "text": "Julia-side speed work resumes only after R target rows are stable, and every speed claim must report point-estimate, logLik, gradient, and CI/status preservation."
+      "text": "R-first sequencing remains active. The immediate next bridge candidate is public X-evidence for already-admitted Binomial, NB2, and Gamma, after Rose ledger/doc reconciliation."
     },
     {
       "owner": "Rose",
-      "text": "Release/tag remains hold. AI-REML is an exact-Gaussian future idea learned from HSquared, not a label for non-Gaussian Laplace or cross-family routes."
+      "text": "Blocking release/tag language until current bridge truth is reconciled across the board repo, GLLVM.jl-integration parity docs, and gllvmTMB NEWS/check-log. Legacy full-capability handoffs are historical, not current proof."
+    },
+    {
+      "owner": "Hopper",
+      "text": "Preserve fail-fast boundaries: NB1 X/masks, mixed-family lists, masked CIs, ordinal predictions, and non-rr covariance terms remain explicit unsupported cells."
+    },
+    {
+      "owner": "Gauss/Karpinski",
+      "text": "Julia bridge supports X for Gaussian, Poisson, Binomial, NB2, Beta, and Gamma; no-X NB1 only; masks for non-Gaussian families except NB1. R admissions must stay subsetted to that ledger."
+    },
+    {
+      "owner": "Fisher",
+      "text": "Every admitted route needs point/logLik evidence plus CI or CI-status evidence. REML stays Gaussian-only; non-Gaussian uses ML/Laplace language."
     }
   ],
   "evidence": [
+    {
+      "status": "partial",
+      "text": "Hopper/Fisher/Rose: NB1 post-fit methods committed locally at gllvmTMB 174d3a0. The admitted complete-data no-X NB1 route now has response-scale predict/fitted, residuals, augment rows, and reproducible conditional simulate() with the NB1 linear variance law. Evidence: no-Julia bridge 163 pass / 16 skip, live bridge 394/394 against GLLVM.jl-integration, pkgdown check green. Boundary: NB1 X, masks, masked simulations, profile/bootstrap CIs, native TMB parity, and mixed-family NB1 remain future slices."
+    },
     {
       "status": "partial",
       "text": "Hopper/Fisher/Rose: NB1 no-X bridge admission committed locally at gllvmTMB 8cc29a6. R family mapping now accepts nbinom1()/nbinom1/nb1, passes complete-data no-X fits to GLLVM.bridge_fit(family=\"nb1\"), rejects NB1 X and missing-mask cells before JuliaCall, and verifies formula-vs-direct logLik equality plus Wald CI phi rows in live tests. Evidence: no-Julia bridge 151 pass / 16 skip, live bridge 370/370 against GLLVM.jl-integration, pkgdown check green. Boundary: NB1 with covariates, missing responses, profile/bootstrap CIs, native gllvmTMB parity, and mixed-family NB1 remain future slices."
