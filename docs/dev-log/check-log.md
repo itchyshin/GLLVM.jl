@@ -6088,6 +6088,41 @@ updated R-first `e91921a` / `416/416` status.
 PASS WITH NOTES. The dashboard reflects the current R bridge evidence without
 promoting native TMB parity or non-Gaussian X inference claims.
 
+## 2026-06-15 - Mission-control dispersion simulate refresh
+
+### Scope
+
+Refreshed the JSON-backed mission-control board after the `gllvmTMB`
+NB2/Beta/Gamma conditional simulation slice.
+
+Changes:
+
+- `.claude/preview/status.json` now records `gllvmTMB` head `17b2154` and live
+  bridge evidence `439/439`.
+- `.claude/preview/sweep.json` now removes the stale unsupported marker for
+  NB2/Beta/Gamma simulation and records the conditional in-sample draw rules.
+- The board keeps masked simulation, `newdata`, mixed-family simulation,
+  bootstrap/posterior-predictive use, and simulation calibration as future
+  gates.
+
+### Checks Run
+
+```sh
+jq empty .claude/preview/status.json
+jq empty .claude/preview/sweep.json
+git diff --check
+curl -fsS http://127.0.0.1:8770/status.json | jq -r '.current_work'
+```
+
+Result: JSON valid, whitespace clean, and the live board endpoint returned the
+updated `17b2154` / `439/439` status.
+
+### Rose Verdict
+
+PASS WITH NOTES. The board now reflects the new conditional simulation support
+without promoting bootstrap, posterior predictive, or calibrated simulation
+claims.
+
 ## 2026-06-03 - Augmented Phylogenetic Poisson Laplace Prototype
 
 ### Scope

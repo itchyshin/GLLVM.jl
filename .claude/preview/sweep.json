@@ -1,6 +1,6 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T16:35:24.000Z",
+  "generated_at": "2026-06-15T16:45:24.000Z",
   "status_vocabulary": [
     "covered",
     "partial",
@@ -35,7 +35,7 @@
       "engine": "covered",
       "bridge": "partial",
       "inference": "partial",
-      "evidence": "Minimal no-X bridge_fit route tested and R maps nbinom2 to negbinomial. Fixed-effect-X nbinom2 formula dispatch now matches direct gllvm_julia_fit() with finite positive dispersion. Native TMB-vs-Julia parity, X+mask, and non-Gaussian X CIs remain gates."
+      "evidence": "Minimal no-X bridge_fit route tested and R maps nbinom2 to negbinomial. Fixed-effect-X nbinom2 formula dispatch now matches direct gllvm_julia_fit() with finite positive dispersion. Conditional in-sample simulate() is routed via rnbinom(mu, size=r). Native TMB-vs-Julia parity, X+mask, non-Gaussian X CIs, and simulation calibration remain gates."
     },
     {
       "capability": "NB1",
@@ -49,14 +49,14 @@
       "engine": "covered",
       "bridge": "partial",
       "inference": "partial",
-      "evidence": "Minimal no-X bridge_fit route tested; precision transform and live R parity remain gates."
+      "evidence": "Minimal no-X bridge_fit route tested; precision transform and live R parity remain gates. Conditional in-sample simulate() is routed via rbeta(mu*phi, (1-mu)*phi) for current bridge objects."
     },
     {
       "capability": "Gamma",
       "engine": "covered",
       "bridge": "partial",
       "inference": "partial",
-      "evidence": "Minimal no-X bridge_fit route tested; #96 mode-finder safeguards fixed locally; Gamma now defaults analytic after quick/medium finite-vs-analytic benchmarks with |delta logLik| <= 1.9e-12 and full Pkg.test green. Fixed-effect-X Gamma formula dispatch now matches direct gllvm_julia_fit(); Gamma X CIs and native TMB parity remain queued."
+      "evidence": "Minimal no-X bridge_fit route tested; #96 mode-finder safeguards fixed locally; Gamma now defaults analytic after quick/medium finite-vs-analytic benchmarks with |delta logLik| <= 1.9e-12 and full Pkg.test green. Fixed-effect-X Gamma formula dispatch now matches direct gllvm_julia_fit(); conditional in-sample simulate() is routed via rgamma(shape=alpha, scale=mu/alpha). Gamma X CIs and native TMB parity remain queued."
     },
     {
       "capability": "Ordinal",
@@ -231,7 +231,7 @@
       "engine": "partial",
       "bridge": "partial",
       "inference": "partial",
-      "evidence": "R-first post-fit bridge surface now includes coef(), tidy(), glance(), augment(), summary(), print(summary()), predict(), fitted(), residuals(), simulate(), nobs(), ordination extractors, ordiplot(), and plot(type=\"ordination\") for current in-sample one-part bridge payloads. Latest augment slice is response-scale/default-conditional/in-sample row diagnostics only and live bridge tests pass 331/331 against GLLVM.jl-integration. Still unsupported: newdata prediction/augmentation, link-scale augment rows, fixed-effects-only augment rows, covariance/CI/diagnostic payloads in glance, unconditional/bootstrap-grade simulation, masked-response simulation, NB2/Beta/Gamma/Ordinal simulation, tidy SE/CI columns, tidy random parameters/cutpoints, vcov payloads, ordinal probability payloads, broader plots, and richer diagnostic residuals."
+      "evidence": "R-first post-fit bridge surface now includes coef(), tidy(), glance(), augment(), summary(), print(summary()), predict(), fitted(), residuals(), simulate(), nobs(), ordination extractors, ordiplot(), and plot(type=\"ordination\") for current in-sample one-part bridge payloads. Conditional in-sample simulate() is routed for gaussian, poisson, binomial, NB2, NB1, Beta, and Gamma; live bridge tests pass 439/439 against GLLVM.jl-integration. Still unsupported: newdata prediction/augmentation, link-scale augment rows, fixed-effects-only augment rows, covariance/CI/diagnostic payloads in glance, unconditional/bootstrap-grade simulation, masked-response simulation, mixed-family simulation, ordinal simulation/probability payloads, tidy SE/CI columns, tidy random parameters/cutpoints, vcov payloads, broader plots, and richer diagnostic residuals."
     },
     {
       "capability": "Exact implicit gradients",
