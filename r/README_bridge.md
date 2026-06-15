@@ -7,12 +7,13 @@ looks like `gllvm::gllvm(...)` — same family strings, `num.lv`, `row.eff`,
 in **gllvm parameter conventions** (e.g. NB dispersion as `phi = 1/r`). This mirrors
 the `drmTMB` ↔ `DRM.jl` pattern.
 
-> **Status: SCAFFOLD, NOT YET EXECUTED.** `gllvmtmb_julia.R` and `parity_check.R`
-> were written without an R or Julia runtime. Every JuliaConnectoR idiom and field
-> access must be verified in a live R + Julia session. **Full numerical parity must
-> be validated by running `parity_check.R`** (needs both R `{gllvm}` and a Julia with
-> GLLVM.jl). Search for `## VERIFY:` comments in `gllvmtmb_julia.R` for the spots most
-> likely to need a small adjustment.
+> **Status: SCAFFOLD, TRANSPORT SMOKE-TESTED.** The JuliaConnectoR path now starts
+> Julia, loads `GLLVM` + `Distributions`, constructs family markers, and extracts
+> scalar/vector fields that JuliaConnectoR may already have converted to R values.
+> **Full numerical parity is not yet validated.** A live Poisson `method="LA"`
+> smoke check on 2026-06-14 executed end-to-end but still differed from R `{gllvm}`
+> (`|ΔlogLik| = 0.619`, max beta diff `0.0486`, Procrustes loading diff `2.86`).
+> Treat `parity_check.R` as an active diagnostic harness, not proof of parity.
 
 ## Files
 
@@ -134,5 +135,8 @@ res <- compare_gllvm(y, family = "poisson", num.lv = 2, method = "LA")
 
 `compare_gllvm()` reports max abs / relative differences. Loadings are identifiable
 only up to rotation/sign, so they are **Procrustes-aligned** before differencing.
-**The numbers in this README and the harness are illustrative — real parity must be
-confirmed by running `parity_check.R` in a live R + Julia environment.**
+Live 2026-06-14 smoke result (`family = "poisson"`, `num.lv = 1`, `method = "LA"`,
+`disp.formula = ~1`, 30 sites x 4 species): the bridge executed and returned finite
+Julia estimates, but R `{gllvm}` parity failed (`|ΔlogLik| = 0.619`, max beta diff
+`0.0486`, Procrustes-aligned loading diff `2.86`). Keep this row as `partial` until
+the likelihood target, starts, centering, and parameterization are reconciled.

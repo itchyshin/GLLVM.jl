@@ -399,3 +399,41 @@ Result: `3761 pass, 1 broken, 0 failed, 0 errored` in `35m09.1s`.
 PASS WITH NOTES. Benchmark gate and full package tests passed after the default
 change. Remaining note: R bridge parity was not rerun because the likelihood
 target and bridge payload shape are unchanged.
+
+## 2026-06-14 - JuliaConnectoR Bridge Smoke Repair
+
+### Scope
+
+Repaired the older `r/gllvmjl.R` / `r/gllvmtmb_julia.R` JuliaConnectoR scaffold
+enough for a live transport smoke check:
+
+- `gllvm_jl_init()` now loads `Distributions`, so family marker constructors such
+  as `Distributions.Poisson()` are available.
+- Added `.jl_value()` to tolerate JuliaConnectoR fields that are already
+  converted to R values, avoiding double-`juliaGet()` failures on `β`, `loglik`,
+  coefficient tables, and Unicode dispersion fields.
+- Construct family markers through `Distributions.<Family>()`, not through the
+  `GLLVM` module handle.
+- Updated bridge README/status prose from "not executed" to
+  "transport smoke-tested; parity open."
+
+### Checks Run
+
+```sh
+JULIA_BINDIR="/Users/z3437171/.julia/juliaup/julia-1.10.0+0.aarch64.apple.darwin14/bin" \
+JULIA_PROJECT="/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration" \
+Rscript -e 'source("r/gllvmtmb_julia.R"); source("r/parity_check.R"); gllvm_jl_init(); set.seed(11); y <- matrix(rpois(30*4, 3), nrow=30); rownames(y) <- as.character(seq_len(nrow(y))); colnames(y) <- paste0("sp", seq_len(ncol(y))); res <- compare_gllvm(y, family="poisson", num.lv=1, method="LA", disp.formula=~1, iterations=80L); stopifnot(is.finite(res$julia_fit$logLik), all(is.finite(res$julia_fit$coefficients))); print(res$diffs)'
+```
+
+Result: command exited `0`; Julia transport returned finite `logLik` and
+coefficients.
+
+Parity result: **not passed**. R `{gllvm}` vs GLLVM.jl on the smoke cell:
+`|ΔlogLik| = 0.6194035`, max beta diff `0.04862639`, Procrustes-aligned loading
+diff `2.862522`.
+
+### Rose Verdict
+
+PARTIAL. Transport defects are fixed and documented, but the end-to-end R
+`gllvm` parity claim remains open. Next slice should reconcile likelihood target,
+starts, centering, and parameterization before promoting this bridge path.

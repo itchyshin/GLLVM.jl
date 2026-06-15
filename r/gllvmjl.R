@@ -6,9 +6,10 @@
 # (coef_table, getLV, getLoadings, ordiplot, predict, residuals), which
 # JuliaConnectoR converts cleanly to R objects.
 #
-# STATUS: scaffold. It was written without an R or Julia runtime available, so it
-# has NOT been executed — verify in a real R + Julia environment before relying on
-# it. Mirroring the proven DRM.jl bridge (once available) may simplify parts.
+# STATUS: scaffold. The transport path has been smoke-tested in a live
+# R + JuliaConnectoR session (2026-06-14): Julia starts, `GLLVM`/`Distributions`
+# load, fits return finite values, and already-converted fields are handled.
+# Numerical parity with R `{gllvm}` is still open; see `r/README_bridge.md`.
 #
 # Setup (once):
 #   install.packages("JuliaConnectoR")
@@ -29,12 +30,17 @@ library(JuliaConnectoR)
 #' Import GLLVM.jl into the session (call once).
 gllvm_jl_init <- function() {
   .gllvm_env$GLLVM <- juliaImport("GLLVM")
+  juliaEval("using Distributions")
   invisible(TRUE)
 }
 
 .gllvm <- function() {
   if (is.null(.gllvm_env$GLLVM)) gllvm_jl_init()
   .gllvm_env$GLLVM
+}
+
+.jl_value <- function(x) {
+  if (inherits(x, "JuliaProxy")) juliaGet(x) else x
 }
 
 # Map an R family string to the Julia fitter. method = "laplace" (default) or "va"
@@ -73,13 +79,13 @@ gllvm_fit <- function(Y, family = "poisson", K = 2L, method = "laplace", N = NUL
 gllvm_coeftable <- function(fit, Y) {
   G <- .gllvm(); ct <- G$coef_table(fit, as.matrix(Y))
   data.frame(
-    term      = as.character(juliaGet(ct$term)),
-    estimate  = as.numeric(juliaGet(ct$estimate)),
-    std.error = as.numeric(juliaGet(ct$std_error)),
-    z         = as.numeric(juliaGet(ct$z)),
-    p.value   = as.numeric(juliaGet(ct$pvalue)),
-    lower     = as.numeric(juliaGet(ct$lower)),
-    upper     = as.numeric(juliaGet(ct$upper)),
+    term      = as.character(.jl_value(ct$term)),
+    estimate  = as.numeric(.jl_value(ct$estimate)),
+    std.error = as.numeric(.jl_value(ct$std_error)),
+    z         = as.numeric(.jl_value(ct$z)),
+    p.value   = as.numeric(.jl_value(ct$pvalue)),
+    lower     = as.numeric(.jl_value(ct$lower)),
+    upper     = as.numeric(.jl_value(ct$upper)),
     stringsAsFactors = FALSE
   )
 }
@@ -94,11 +100,11 @@ gllvm_getLoadings <- function(fit) as.matrix(.gllvm()$getLoadings(fit))
 gllvm_ordiplot <- function(fit, Y, biplot = TRUE, rotate = TRUE) {
   o <- .gllvm()$ordiplot(fit, as.matrix(Y), biplot = biplot, rotate = rotate)
   list(
-    sites          = as.matrix(juliaGet(o$sites)),
-    species        = as.matrix(juliaGet(o$species)),
-    axis_prop      = as.numeric(juliaGet(o$axis_prop)),
-    site_labels    = as.character(juliaGet(o$site_labels)),
-    species_labels = as.character(juliaGet(o$species_labels))
+    sites          = as.matrix(.jl_value(o$sites)),
+    species        = as.matrix(.jl_value(o$species)),
+    axis_prop      = as.numeric(.jl_value(o$axis_prop)),
+    site_labels    = as.character(.jl_value(o$site_labels)),
+    species_labels = as.character(.jl_value(o$species_labels))
   )
 }
 
