@@ -1,9 +1,9 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T13:32:00.000Z",
+  "generated_at": "2026-06-15T13:46:53.000Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "R-first sequencing is active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as parity and acceleration target. Latest slice banks the no-X missing-response family matrix: Poisson, Bernoulli Binomial, NB2, Beta, Gamma, and Ordinal-probit now have live R bridge rows against GLLVM.jl-integration. Ordinal-probit uses a distinct ProbitLink bridge key, not the cumulative-logit ordinal default. Rose boundary: this is R->Julia mask transport and sentinel-invariance evidence, not R/TMB-vs-Julia parity; Gaussian masks, X+mask fits, masked CI/profile/bootstrap refits, cbind binomial, and ordinal prediction/residual payloads remain separate gates.",
+  "current_work": "R-first sequencing is active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as parity and acceleration target. Latest slice banks the R-side masked-CI status boundary: masked Julia-engine point fits carry ci_unavailable_masked_response, and confint() fails before any masked refit attempt with method-specific statuses such as wald/profile/bootstrap_unavailable_masked_response. The no-X missing-response family matrix remains live-tested for Poisson, Bernoulli Binomial, NB2, Beta, Gamma, and Ordinal-probit against GLLVM.jl-integration. Rose boundary: this is R-side unsupported-CI status/error handling plus R->Julia mask transport evidence, not masked interval support and not R/TMB-vs-Julia parity; Gaussian masks, X+mask fits, cbind binomial, actual masked CI endpoints, and ordinal probability payloads remain separate gates.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
     {
@@ -45,9 +45,9 @@
     {
       "name": "gllvmTMB",
       "branch": "engine-julia",
-      "head": "e7515a6",
+      "head": "a73568a",
       "dirty": false,
-      "note": "engine-julia has local masked-family bridge matrix changes committed locally. Current green bridge evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration; NEWS/check-log explicitly warn that stale/dashboard GLLVM.jl checkouts may reject newer payloads."
+      "note": "engine-julia has local masked-family bridge matrix and masked-CI status-boundary changes committed locally. Current green bridge evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration; NEWS/check-log explicitly warn that stale/dashboard GLLVM.jl checkouts may reject newer payloads."
     },
     {
       "name": "drmTMB",
@@ -331,7 +331,7 @@
         {
           "name": "Bridge CI surface",
           "status": "partial",
-          "evidence": "Wald, Gaussian profile, and bootstrap CI routes are live-tested through confint.gllvmTMB_julia; wider family/status coverage remains queued."
+          "evidence": "Wald, Gaussian profile, and bootstrap CI routes are live-tested through confint.gllvmTMB_julia for supported non-masked cells. Masked objects now fail at the R S3 boundary with method-specific unavailable statuses; actual masked interval endpoints remain queued."
         },
         {
           "name": "Post-fit methods through bridge",
@@ -356,7 +356,7 @@
         {
           "name": "R bridge missing response",
           "status": "partial",
-          "evidence": "gllvmTMB missing=miss_control(response=\"include\") now routes true=observed masks for no-X one-part Poisson, Bernoulli Binomial, NB2, Beta, Gamma, and Ordinal-probit fits; live bridge tests pass 232/232. Ordinal prediction/residual payloads remain queued."
+          "evidence": "gllvmTMB missing=miss_control(response=\"include\") now routes true=observed masks for no-X one-part Poisson, Bernoulli Binomial, NB2, Beta, Gamma, and Ordinal-probit fits; live bridge tests pass 259/259 after adding masked-CI status and ordinal residual guards. Ordinal prediction/residual payloads remain queued."
         },
         {
           "name": "Predictor-missing FIML/MI matrix",
@@ -574,6 +574,10 @@
   "activity": [
     {
       "time": "now",
+      "html": "<b>Hopper/Rose masked-CI status boundary green.</b> Masked <code>gllvmTMB_julia</code> point fits now carry <code>ci_unavailable_masked_response</code>, and <code>confint()</code> fails before any masked refit attempt with method-specific <code>wald/profile/bootstrap_unavailable_masked_response</code> statuses. This is R-side unsupported-CI status handling, not interval support. No-Julia bridge tests passed <code>87</code> with <code>12</code> skips; live bridge file and package-level filtered gate both passed <code>259/259</code> against <code>GLLVM.jl-integration</code>."
+    },
+    {
+      "time": "now",
       "html": "<b>Hopper/Rose masked-family matrix green.</b> <code>gllvmTMB(..., engine = \"julia\", missing = miss_control(response = \"include\"))</code> now has live no-X masked rows for Poisson, Bernoulli Binomial, NB2, Beta, Gamma, and Ordinal-probit against <code>GLLVM.jl-integration</code>. <code>ordinal_probit()</code> maps to a distinct <code>ProbitLink</code> bridge key. GLLVM mask tests passed <code>23/23</code>; GLLVM bridge CI regression passed <code>66/66</code>; gllvmTMB live bridge tests passed <code>232/232</code>; default no-Julia mode passed <code>80</code> with <code>12</code> skips."
     },
     {
@@ -684,11 +688,11 @@
   "inflight": [
     {
       "owner": "Ada",
-      "text": "R-first sequencing is active; latest committed slice banks the no-X masked family matrix on the gllvmTMB surface, with live rows for Poisson, Bernoulli Binomial, NB2, Beta, Gamma, and Ordinal-probit."
+      "text": "R-first sequencing is active; latest committed slice banks the R-side masked-CI status boundary on top of the no-X masked family matrix."
     },
     {
       "owner": "Hopper",
-      "text": "Next R-first bridge surface: masked CI-status/refit transport and public weighted/cbind binomial decision; keep R/TMB-vs-Julia parity separate from transport evidence."
+      "text": "Next R-first bridge surface: actual masked interval endpoints or an explicit decision to keep them unavailable; then public weighted/cbind binomial mask policy."
     },
     {
       "owner": "Gauss/Karpinski",
@@ -700,6 +704,10 @@
     }
   ],
   "evidence": [
+    {
+      "status": "partial",
+      "text": "Hopper/Rose: R-side masked-CI status boundary committed locally at gllvmTMB a73568a. Masked point fits carry ci_unavailable_masked_response; confint() reports method-specific wald/profile/bootstrap_unavailable_masked_response before cached CIs or refits can bypass the mask. No-Julia devtools::test(filter=\"julia-bridge\") passed 87 with 12 skips; live test_file and live devtools::test(filter=\"julia-bridge\") both passed 259/259 against GLLVM.jl-integration. This is not masked interval support."
+    },
     {
       "status": "partial",
       "text": "Hopper/Rose: masked family matrix committed locally at gllvmTMB e7515a6 and GLLVM.jl-integration f75376c; GLLVM.jl-integration test_bridge_missing_mask passed 23/23 and test_bridge_ci passed 66/66; gllvmTMB test_file and devtools::test(filter=\"julia-bridge\") both passed 232/232 against GLLVM.jl-integration; default no-Julia mode passed 80 with 12 skips. Covered transport rows: Poisson, Bernoulli Binomial, NB2, Beta, Gamma, Ordinal-probit. Still unsupported: Gaussian masks, X+mask, masked CI/profile/bootstrap, cbind binomial, ordinal prediction/residual payloads, and R/TMB-vs-Julia parity."
