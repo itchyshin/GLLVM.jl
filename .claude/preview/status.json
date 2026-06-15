@@ -1,9 +1,9 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T07:40:33.000Z",
+  "generated_at": "2026-06-15T08:51:44.000Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "Phase 4 runtime gap fill is green locally on GLLVM.jl-integration: #91 high-rate Poisson divergence fixed, Gamma now defaults to analytic gradients after finite-vs-analytic benchmark gates, #92 phylo-signal Wald CI scale fix is wired into the main suite, and the verified phylo-unique sparse-phylo node-gradient shortcut is wired with full Pkg.test passed at 3869/1 broken. gllvmTMB live julia-bridge tests pass 53/53 and the R-side NEWS/check-log now match that evidence. Next gates are #95/#94 branch reconciliation, canonical R bridge parity, missingness bridge, duplicate-test-helper hygiene, and broader structural speedups.",
+  "current_work": "Phase 4 runtime gap fill is green locally on GLLVM.jl-integration: #91 high-rate Poisson divergence fixed, Gamma now defaults to analytic gradients after finite-vs-analytic benchmark gates, #92 phylo-signal Wald CI scale fix is wired into the main suite, the verified phylo-unique sparse-phylo node-gradient shortcut is wired, and duplicate-method test warnings are cleaned. Latest full Pkg.test passed at 3869/1 broken. gllvmTMB live julia-bridge tests pass 53/53 and the R-side NEWS/check-log match that evidence. Next gates are #95/#94 branch reconciliation, canonical R bridge parity, missingness bridge, and broader structural speedups.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
     {
@@ -38,9 +38,9 @@
     {
       "name": "GLLVM.jl integration",
       "branch": "codex/high-rate-poisson-safeguard",
-      "head": "85efde2",
+      "head": "d3d8129",
       "dirty": false,
-      "note": "#91 safeguard, Gamma analytic default, docs-link cleanup, JuliaConnectoR smoke repair, #92 phylo-signal Wald CI scale fix, Rose status-drift cleanup, and phylo-unique sparse node-gradient shortcut committed locally; Pkg.test passed 3869/1 broken after the shortcut."
+      "note": "#91 safeguard, Gamma analytic default, docs-link cleanup, JuliaConnectoR smoke repair, #92 phylo-signal Wald CI scale fix, Rose status-drift cleanup, phylo-unique sparse node-gradient shortcut, and duplicate-test-warning cleanup committed locally; latest Pkg.test passed 3869/1 broken."
     },
     {
       "name": "gllvmTMB",
@@ -574,6 +574,10 @@
   "activity": [
     {
       "time": "now",
+      "html": "<b>Grace/Rose test-log hygiene green.</b> Takahashi tests now use module-loaded functions and bridge-CI Poisson helpers have unique names; core suite passed <code>3857/3 broken</code> and full <code>Pkg.test()</code> passed <code>3869/1 broken</code> with the duplicate-method warnings gone."
+    },
+    {
+      "time": "now",
       "html": "<b>Gauss/Karpinski sparse-phylo shortcut green.</b> Verified phylo-unique <code>sparse_phy_grad</code> now routes through <code>node_grad</code>; node-vs-leaf-block max relative error is at most <code>1.015e-13</code>, benchmark speedup is <code>2.99-21.58x</code>, and full <code>Pkg.test()</code> passed <code>3869/1 broken</code>."
     },
     {
@@ -636,7 +640,7 @@
     },
     {
       "owner": "Gauss/Karpinski",
-      "text": "Phylo-unique sparse node-gradient shortcut is banked; next engine slice is duplicate-test-helper cleanup plus general Λ_phy/mixed augmented Takahashi design or reverse-mode Laplace adjoint scoping."
+      "text": "Phylo-unique sparse node-gradient shortcut and duplicate-test-helper cleanup are banked; next engine slice is general Λ_phy/mixed augmented Takahashi design or reverse-mode Laplace adjoint scoping."
     },
     {
       "owner": "Rose",
@@ -644,6 +648,10 @@
     }
   ],
   "evidence": [
+    {
+      "status": "covered",
+      "text": "Grace/Rose: duplicate-method test warnings removed; test_takahashi_selinv 8/8, test_bridge_ci 66/66, core suite 3857/3 broken, and full Pkg.test 3869/1 broken ran without the previous overwrite warnings."
+    },
     {
       "status": "covered",
       "text": "Gauss/Karpinski: phylo-unique sparse-phylo gradient now uses node_grad under a guarded dispatcher; test_node_gradient 58/58, test_sparse_phy_grad 101/101, core suite 3857/3 broken, full Pkg.test 3869/1 broken, benchmark speedup 2.99-21.58x with max rel err <= 2.28e-14."
