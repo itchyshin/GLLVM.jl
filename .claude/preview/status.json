@@ -1,9 +1,9 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T11:47:00.000Z",
+  "generated_at": "2026-06-15T11:51:29.000Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "R-first sequencing is active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as parity and acceleration target. Latest local gllvmTMB work now covers fixed-effect X admission plus gllvmTMB_julia coef()/summary()/predict()/fitted()/residuals() for current in-sample one-part bridge payloads. Evidence: bridge test_file passed 98/98, devtools::test(filter=\"julia-bridge\") passed 98/98 in 41.6s, and paired GLLVM.jl test_bridge_x.jl passed 50/50. Next R-first slices: missing-response bridge spec/guard-to-mask plan, richer prediction payloads for Gaussian-X/ordinal/newdata, vcov/uncertainty status, and issue-led capability rows before more Julia engine breadth.",
+  "current_work": "R-first sequencing is active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as parity and acceleration target. Latest local gllvmTMB work now covers fixed-effect X admission, gllvmTMB_julia coef()/summary()/predict()/fitted()/residuals() for current in-sample one-part bridge payloads, and a direct-wrapper NA-response guard. Evidence: bridge test_file passed 99/99, devtools::test(filter=\"julia-bridge\") passed 99/99 in 42.3s, and paired GLLVM.jl test_bridge_x.jl passed 50/50. Next R-first slices: missing-response bridge mask contract in GLLVM.bridge_fit, richer prediction payloads for Gaussian-X/ordinal/newdata, vcov/uncertainty status, and issue-led capability rows before more Julia engine breadth.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
     {
@@ -45,9 +45,9 @@
     {
       "name": "gllvmTMB",
       "branch": "engine-julia",
-      "head": "b2d126f",
+      "head": "5bd7bb0",
       "dirty": false,
-      "note": "engine-julia clean and ahead of remote by local commits; bridge X admission, coef/summary methods, and in-sample predict/fitted/residuals are committed locally. Live julia-bridge test_file passed 98/98 and devtools::test(filter=\"julia-bridge\") passed 98/98 in 41.6s against GLLVM.jl-integration."
+      "note": "engine-julia clean and ahead of remote by local commits; bridge X admission, coef/summary methods, in-sample predict/fitted/residuals, and the direct missing-response guard are committed locally. Live julia-bridge test_file passed 99/99 and devtools::test(filter=\"julia-bridge\") passed 99/99 in 42.3s against GLLVM.jl-integration."
     },
     {
       "name": "drmTMB",
@@ -574,6 +574,10 @@
   "activity": [
     {
       "time": "now",
+      "html": "<b>Hopper/Rose missing-response guard green.</b> Direct <code>gllvm_julia_fit()</code> calls with <code>NA</code> responses now fail before JuliaCall until <code>GLLVM.bridge_fit</code> accepts an observed-response mask. Live bridge tests passed <code>99/99</code>."
+    },
+    {
+      "time": "now",
       "html": "<b>Hopper/Pat predict-residual slice green.</b> <code>gllvmTMB_julia</code> now has in-sample <code>predict()</code>, <code>fitted()</code>, and simple response <code>residuals()</code> for current one-part bridge payloads. Unsupported <code>newdata</code>, ordinal probabilities, and Gaussian-X full-mean prediction fail loudly. Live bridge tests passed <code>98/98</code>."
     },
     {
@@ -656,7 +660,7 @@
     },
     {
       "owner": "Hopper",
-      "text": "Next R-first bridge surface: missing-response mask admission and richer prediction payloads for Gaussian-X, ordinal probabilities, and newdata."
+      "text": "Next R-first bridge surface: define and implement the GLLVM.bridge_fit observed-mask contract, then admit gllvmTMB missing-response masks against that target."
     },
     {
       "owner": "Gauss/Karpinski",
@@ -664,10 +668,14 @@
     },
     {
       "owner": "Rose",
-      "text": "Bridge claims now cover current in-sample post-fit methods only; missing masks, mixed-family metadata, vcov, newdata, ordinal probabilities, and non-Gaussian X CIs remain partial/queued."
+      "text": "Bridge claims now cover current in-sample post-fit methods and direct NA-response rejection only; actual missing masks, mixed-family metadata, vcov, newdata, ordinal probabilities, and non-Gaussian X CIs remain partial/queued."
     }
   ],
   "evidence": [
+    {
+      "status": "covered",
+      "text": "Hopper/Rose: direct gllvm_julia_fit() missing-response guard committed locally at 5bd7bb0; test_file passed 99/99 and devtools::test(filter=\"julia-bridge\") passed 99/99 in 42.3s. This is not mask support; it is a fail-fast pre-JuliaCall guard."
+    },
     {
       "status": "covered",
       "text": "Hopper/Pat: gllvmTMB Julia-engine predict/fitted/residuals slice committed locally at b2d126f; test_file passed 98/98 and devtools::test(filter=\"julia-bridge\") passed 98/98 in 41.6s. Scope is in-sample one-part bridge payloads; unsupported prediction cells fail explicitly."
