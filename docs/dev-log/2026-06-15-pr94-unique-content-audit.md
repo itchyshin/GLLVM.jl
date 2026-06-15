@@ -25,7 +25,8 @@ Reference branch:
 Local integration audit head:
 
 - branch: `codex/high-rate-poisson-safeguard`
-- head at audit time: `d3d8129`
+- head at initial audit time: `d3d8129`
+- successor-issue review head before remote mutation: `862f081`
 
 ## Method
 

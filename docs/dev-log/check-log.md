@@ -1,5 +1,48 @@
 # Check Log
 
+## 2026-06-15 - PR #94 Successor Issue Drafts
+
+### Scope
+
+Converted the `GLLVM.jl#94` unique-content audit into a local successor-issue
+draft bank without mutating GitHub remotely.
+
+The draft bank now contains seven durable successor records:
+
+1. Generalized Poisson family.
+2. Student-t one-part family.
+3. True one-part lognormal family.
+4. Standalone zero-truncated Poisson/NB.
+5. ANOVA/LRT model-comparison API.
+6. Unified check-fit diagnostics, calibration, and plots.
+7. Structured Schur / structured Poisson prototype.
+
+Stale #94 benchmark-script notes are routed to existing benchmark/runtime
+issues (`#65` and `#61`) rather than duplicated as a new issue.
+
+### Checks Run
+
+```sh
+gh issue list --repo itchyshin/GLLVM.jl --state open --limit 100 --json number,title,labels,updatedAt,url
+gh issue list --repo itchyshin/gllvmTMB --state open --limit 100 --json number,title,labels,updatedAt,url
+gh pr view 94 --repo itchyshin/GLLVM.jl --json number,title,state,isDraft,mergeable,headRefName,baseRefName,headRefOid,baseRefOid,updatedAt,url
+gh pr view 95 --repo itchyshin/GLLVM.jl --json number,title,state,isDraft,mergeable,headRefName,baseRefName,headRefOid,baseRefOid,updatedAt,url
+git log --oneline 65a1f10..HEAD --reverse
+```
+
+Live PR state at drafting time:
+
+- `#94` open draft, conflicting, `a1-nongaussian-ci` at `09fc846`.
+- `#95` open draft, mergeable, `integration` at `65a1f10`.
+- local runtime stack head before this draft slice: `862f081`.
+
+### Rose Boundary
+
+PASS WITH NOTES. Do not close `#94` yet. Close only after the seven durable
+successor records exist and the benchmark-script notes are routed into existing
+benchmark issues. No GitHub issue, PR comment, closure, or push was performed in
+this slice.
+
 ## 2026-06-15 - PR #94 Unique-Content Audit
 
 ### Scope
