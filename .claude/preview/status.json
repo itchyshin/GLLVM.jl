@@ -1,9 +1,9 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T11:59:16.000Z",
+  "generated_at": "2026-06-15T12:19:11.804Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "R-first sequencing is active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as parity and acceleration target. Latest paired work adds a GLLVM.bridge_fit Gaussian-X mean_coef payload and consumes it from gllvmTMB, so in-sample Gaussian-X predict()/fitted()/residuals() now work alongside non-Gaussian X post-fit methods; direct NA-response inputs still fail before JuliaCall. Evidence: GLLVM test_bridge_x.jl passed 52/52, gllvmTMB bridge test_file passed 102/102, and devtools::test(filter=\"julia-bridge\") passed 102/102 in 42.6s. Next R-first slices: missing-response bridge mask contract, ordinal probability payloads, newdata prediction, vcov/uncertainty status, and issue-led capability rows before more Julia engine breadth.",
+  "current_work": "R-first sequencing is active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as parity and acceleration target. Latest R-side slice exposes cached Julia bridge ordination through extract_ordination(), getLoadings(), getLV(), and rotate_loadings(), adds nobs(), and gives vcov() an explicit not-yet-routed status instead of a fake covariance matrix. Evidence: gllvmTMB live bridge test_file passed 115/115, and devtools::test(filter=\"julia-bridge\") passed 115/115 in 45.0s against GLLVM.jl-integration. Next R-first slices: missing-response bridge mask contract, ordinal probability payloads, newdata prediction, covariance/SE payloads, and issue-led capability rows before more Julia engine breadth.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
     {
@@ -31,7 +31,7 @@
     {
       "name": "GLLVM.jl local board worktree",
       "branch": "codex/non-gaussian-fitter-gradients",
-      "head": "7f87e6b + predict/residual status refresh pending",
+      "head": "d71eb1d + ordination/status refresh pending",
       "dirty": true,
       "note": "Dashboard/ledger branch, ahead of remote by local commits. Exact self-SHA changes when this status refresh is committed."
     },
@@ -45,9 +45,9 @@
     {
       "name": "gllvmTMB",
       "branch": "engine-julia",
-      "head": "017a1f1",
+      "head": "308ad46",
       "dirty": false,
-      "note": "engine-julia clean and ahead of remote by local commits; bridge X admission, coef/summary methods, in-sample predict/fitted/residuals, direct missing-response guard, and Gaussian-X mean_coef prediction are committed locally. Live julia-bridge test_file passed 102/102 and devtools::test(filter=\"julia-bridge\") passed 102/102 in 42.6s against GLLVM.jl-integration."
+      "note": "engine-julia clean and ahead of remote by local commits; R-first bridge surface now includes X admission, coef/summary, in-sample predict/fitted/residuals, nobs(), ordination accessors, direct missing-response guard, and Gaussian-X mean_coef prediction. Live julia-bridge test_file passed 115/115 and devtools::test(filter=\"julia-bridge\") passed 115/115 in 45.0s against GLLVM.jl-integration."
     },
     {
       "name": "drmTMB",
@@ -336,7 +336,7 @@
         {
           "name": "Post-fit methods through bridge",
           "status": "partial",
-          "evidence": "coef()/summary()/predict()/fitted()/residuals() are live-tested for current in-sample one-part bridge payloads, including Gaussian-X via mean_coef (102/102). vcov(), newdata prediction, ordinal probabilities, and richer diagnostic residuals remain queued."
+          "evidence": "coef()/summary()/predict()/fitted()/residuals()/nobs() plus extract_ordination()/getLoadings()/getLV()/rotate_loadings() are live-tested for current in-sample one-part bridge payloads, including Gaussian-X via mean_coef (115/115). vcov() now fails with an explicit not-yet-routed status. newdata prediction, ordinal probabilities, covariance payloads, and richer diagnostic residuals remain queued."
         }
       ]
     },
@@ -574,6 +574,10 @@
   "activity": [
     {
       "time": "now",
+      "html": "<b>Hopper/Rose ordination extractor slice green.</b> <code>gllvmTMB_julia</code> now routes cached bridge <code>scores</code>/<code>loadings</code> through <code>extract_ordination()</code>, <code>getLoadings()</code>, <code>getLV()</code>, and <code>rotate_loadings()</code>; <code>nobs()</code> is registered and <code>vcov()</code> reports an explicit not-yet-routed status. Live bridge tests passed <code>115/115</code>."
+    },
+    {
+      "time": "now",
       "html": "<b>Hopper/Gauss Gaussian-X prediction green.</b> <code>GLLVM.bridge_fit</code> now returns <code>mean_coef</code> for Gaussian covariate fits, and <code>gllvmTMB_julia</code> consumes it for in-sample prediction/residual reconstruction. GLLVM <code>test_bridge_x.jl</code> passed <code>52/52</code>; gllvmTMB live bridge tests passed <code>102/102</code>."
     },
     {
@@ -660,7 +664,7 @@
   "inflight": [
     {
       "owner": "Ada",
-      "text": "R-first sequencing is active; latest banked paired slice closes Gaussian-X in-sample prediction through the GLLVM mean_coef payload and gllvmTMB consumer."
+      "text": "R-first sequencing is active; latest banked slice closes cached Julia bridge ordination/nobs access on the gllvmTMB surface."
     },
     {
       "owner": "Hopper",
@@ -672,10 +676,14 @@
     },
     {
       "owner": "Rose",
-      "text": "Bridge claims now cover current in-sample post-fit methods including Gaussian-X, and direct NA-response rejection only; actual missing masks, mixed-family metadata, vcov, newdata, ordinal probabilities, and non-Gaussian X CIs remain partial/queued."
+      "text": "Bridge claims now cover current in-sample post-fit methods including Gaussian-X and ordination accessors. Actual missing masks, mixed-family metadata, covariance matrices, newdata, ordinal probabilities, and non-Gaussian X CIs remain partial/queued."
     }
   ],
   "evidence": [
+    {
+      "status": "covered",
+      "text": "Hopper/Rose: gllvmTMB Julia-engine ordination/nobs slice committed locally at 308ad46; extract_ordination(), getLoadings(), getLV(), rotate_loadings(), nobs(), and explicit vcov() status are tested on synthetic bridge objects; live test_file passed 115/115 and devtools::test(filter=\"julia-bridge\") passed 115/115 in 45.0s."
+    },
     {
       "status": "covered",
       "text": "Hopper/Gauss: Gaussian-X bridge mean_coef payload committed locally at GLLVM.jl-integration a0e6848 and consumed by gllvmTMB 017a1f1; GLLVM test_bridge_x.jl passed 52/52, gllvmTMB test_file passed 102/102, and devtools::test(filter=\"julia-bridge\") passed 102/102 in 42.6s."
