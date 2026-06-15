@@ -105,7 +105,7 @@
       "engine": "partial",
       "bridge": "partial",
       "inference": "partial",
-      "evidence": "R bridge admits complete balanced one-part X rows for Gaussian, Poisson, Binomial, NB2, Beta, and Gamma against GLLVM.jl-integration. Public formula-vs-direct dispatch evidence is live for all admitted X families; latest mixed-family bridge suite passes 496/496. X+mask, ordinal X, NB1 X, mixed-family X, non-Gaussian X CIs, newdata, and native TMB-vs-Julia parity remain unsupported gates."
+      "evidence": "R bridge admits complete balanced one-part X rows for Gaussian, Poisson, Binomial, NB2, Beta, and Gamma against GLLVM.jl-integration. Public formula-vs-direct dispatch evidence is live for all admitted X families; non-Gaussian X interval endpoints remain unavailable but now have method-specific CI-status evidence. Latest live bridge suite passes 599/599. X+mask, ordinal X, NB1 X, mixed-family X, newdata, and native TMB-vs-Julia parity remain unsupported gates."
     },
     {
       "capability": "Response missingness",
@@ -245,7 +245,7 @@
       "engine": "partial",
       "bridge": "partial",
       "inference": "partial",
-      "evidence": "R-first post-fit bridge surface now includes coef(), tidy(), glance(), augment(), summary(), print(summary()), predict(), fitted(), residuals(), simulate(), nobs(), ordination extractors, ordiplot(), and plot(type=\"ordination\") for current in-sample bridge payloads. Conditional in-sample simulate() is routed for gaussian, poisson, binomial, NB2, NB1, Beta, Gamma, and narrow trait-aligned mixed-family objects; live bridge tests pass 552/552 against GLLVM.jl-integration after method-ledger expansion. Still unsupported: newdata prediction/augmentation, link-scale augment rows, fixed-effects-only augment rows, covariance/CI/diagnostic payloads in glance, unconditional/bootstrap-grade simulation, masked-response simulation, ordinal simulation/probability payloads, tidy SE/CI columns, tidy random parameters/cutpoints, vcov payloads, broader plots, and richer diagnostic residuals."
+      "evidence": "R-first post-fit bridge surface now includes coef(), tidy(), glance(), augment(), summary(), print(summary()), predict(), fitted(), residuals(), simulate(), nobs(), ordination extractors, ordiplot(), and plot(type=\"ordination\") for current in-sample bridge payloads. Conditional in-sample simulate() is routed for gaussian, poisson, binomial, NB2, NB1, Beta, Gamma, and narrow trait-aligned mixed-family objects; non-Gaussian fixed-effect-X point fits cache unsupported-CI status; live bridge tests pass 599/599 against GLLVM.jl-integration. Still unsupported: newdata prediction/augmentation, link-scale augment rows, fixed-effects-only augment rows, covariance/CI/diagnostic payloads in glance, unconditional/bootstrap-grade simulation, masked-response simulation, ordinal simulation/probability payloads, tidy SE/CI columns, tidy random parameters/cutpoints, vcov payloads, broader plots, and richer diagnostic residuals."
     },
     {
       "capability": "Exact implicit gradients",
