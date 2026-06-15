@@ -1,9 +1,9 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T11:28:29.000Z",
+  "generated_at": "2026-06-15T11:47:00.000Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "R-first sequencing is active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as parity and acceleration target. Latest local gllvmTMB work admits fixed-effect X for complete balanced one-part Gaussian/Poisson/Binomial/NB2/Beta/Gamma engine=\"julia\" fits, keeps missing-response masks as an explicit guard, and adds coef()/summary() post-fit inspection for gllvmTMB_julia objects. Evidence: bridge test_file passed 77/77, devtools::test(filter=\"julia-bridge\") passed 77/77 in 46.4s, and paired GLLVM.jl test_bridge_x.jl passed 50/50. Next R-first slices: predict/residual contracts, missing-response bridge spec/guard-to-mask plan, and issue-led capability rows before more Julia engine breadth.",
+  "current_work": "R-first sequencing is active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as parity and acceleration target. Latest local gllvmTMB work now covers fixed-effect X admission plus gllvmTMB_julia coef()/summary()/predict()/fitted()/residuals() for current in-sample one-part bridge payloads. Evidence: bridge test_file passed 98/98, devtools::test(filter=\"julia-bridge\") passed 98/98 in 41.6s, and paired GLLVM.jl test_bridge_x.jl passed 50/50. Next R-first slices: missing-response bridge spec/guard-to-mask plan, richer prediction payloads for Gaussian-X/ordinal/newdata, vcov/uncertainty status, and issue-led capability rows before more Julia engine breadth.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
     {
@@ -31,8 +31,8 @@
     {
       "name": "GLLVM.jl local board worktree",
       "branch": "codex/non-gaussian-fitter-gradients",
-      "head": "ebcfb9f + postfit status refresh pending",
-      "dirty": false,
+      "head": "7f87e6b + predict/residual status refresh pending",
+      "dirty": true,
       "note": "Dashboard/ledger branch, ahead of remote by local commits. Exact self-SHA changes when this status refresh is committed."
     },
     {
@@ -45,9 +45,9 @@
     {
       "name": "gllvmTMB",
       "branch": "engine-julia",
-      "head": "c912a8e",
+      "head": "b2d126f",
       "dirty": false,
-      "note": "engine-julia clean, ahead of remote; bridge X admission and post-fit coef/summary methods committed locally. Live julia-bridge test_file passed 77/77 and devtools::test(filter=\"julia-bridge\") passed 77/77 in 46.4s against GLLVM.jl-integration."
+      "note": "engine-julia clean and ahead of remote by local commits; bridge X admission, coef/summary methods, and in-sample predict/fitted/residuals are committed locally. Live julia-bridge test_file passed 98/98 and devtools::test(filter=\"julia-bridge\") passed 98/98 in 41.6s against GLLVM.jl-integration."
     },
     {
       "name": "drmTMB",
@@ -335,8 +335,8 @@
         },
         {
           "name": "Post-fit methods through bridge",
-          "status": "queued",
-          "evidence": "summary/predict/residuals/coef/vcov/logLik/AIC/BIC need matrix rows."
+          "status": "partial",
+          "evidence": "coef()/summary()/predict()/fitted()/residuals() are live-tested for current in-sample one-part bridge payloads (98/98). vcov(), newdata prediction, ordinal probabilities, Gaussian-X full-mean prediction, and richer diagnostic residuals remain queued."
         }
       ]
     },
@@ -574,6 +574,10 @@
   "activity": [
     {
       "time": "now",
+      "html": "<b>Hopper/Pat predict-residual slice green.</b> <code>gllvmTMB_julia</code> now has in-sample <code>predict()</code>, <code>fitted()</code>, and simple response <code>residuals()</code> for current one-part bridge payloads. Unsupported <code>newdata</code>, ordinal probabilities, and Gaussian-X full-mean prediction fail loudly. Live bridge tests passed <code>98/98</code>."
+    },
+    {
+      "time": "now",
       "html": "<b>Pat/Hopper post-fit slice green.</b> <code>gllvmTMB_julia</code> now has <code>coef()</code>, <code>summary()</code>, and printable summaries for fitted Julia-engine objects. Pure-R synthetic-object tests and live Julia bridge tests passed <code>77/77</code>."
     },
     {
@@ -648,11 +652,11 @@
   "inflight": [
     {
       "owner": "Ada",
-      "text": "R-first sequencing is now reflected on the board; latest banked R slices are Julia bridge X admission and gllvmTMB_julia coef/summary methods."
+      "text": "R-first sequencing is active; latest banked R slices are Julia bridge X admission plus gllvmTMB_julia coef/summary/predict/fitted/residuals methods."
     },
     {
       "owner": "Hopper",
-      "text": "Next R-first bridge surface: define predict()/residuals() fitted-value contract or specify missing-response mask admission; avoid new Julia breadth until R target semantics are crisp."
+      "text": "Next R-first bridge surface: missing-response mask admission and richer prediction payloads for Gaussian-X, ordinal probabilities, and newdata."
     },
     {
       "owner": "Gauss/Karpinski",
@@ -660,10 +664,14 @@
     },
     {
       "owner": "Rose",
-      "text": "Bridge claims currently covered for X admission and coef/summary only; predict/residuals, missing masks, mixed-family metadata, and non-Gaussian X CIs remain partial/queued."
+      "text": "Bridge claims now cover current in-sample post-fit methods only; missing masks, mixed-family metadata, vcov, newdata, ordinal probabilities, and non-Gaussian X CIs remain partial/queued."
     }
   ],
   "evidence": [
+    {
+      "status": "covered",
+      "text": "Hopper/Pat: gllvmTMB Julia-engine predict/fitted/residuals slice committed locally at b2d126f; test_file passed 98/98 and devtools::test(filter=\"julia-bridge\") passed 98/98 in 41.6s. Scope is in-sample one-part bridge payloads; unsupported prediction cells fail explicitly."
+    },
     {
       "status": "covered",
       "text": "Pat/Hopper: gllvmTMB Julia-engine post-fit methods committed locally at c912a8e; coef()/summary()/print(summary()) tested on synthetic and live bridge objects; test_file passed 77/77 and devtools::test(filter=\"julia-bridge\") passed 77/77 in 46.4s."
