@@ -1,9 +1,9 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T18:44:01.000Z",
+  "generated_at": "2026-06-15T19:03:29.000Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "R-first sequencing is now the explicit operating rule: complete the gllvmTMB user surface first, then make GLLVM.jl match and accelerate those exact targets. Latest banked slice: gllvmTMB a765c02 adds native rho CI-status semantics: extract_correlations() returns ci_status, and confint(fit, parm=\"rho:<tier>:i,j\") attaches a row-named ci_status attribute while preserving the two-column matrix shape. Evidence: manual boundary probe reports [NA, 0.999] with ci_status=\"profile_boundary\"; targeted default gate 17 pass / 18 expected heavy skips / 0 failures; Stage 37 40/40; heavy mixed-family correlation gate 64/64; full devtools::test() 2951 pass / 724 skips / 0 failures / 3 pre-existing warnings; pkgdown check green. The previous gllvmTMB d22d0de narrow mixed-family engine=\"julia\" bridge admission remains banked with live bridge 496/496. Boundary: native status semantics only; no calibrated coverage, no Julia mixed-family CI endpoints, no mixed X/masks/cbind/weights route, no broad native-TMB-vs-Julia equivalence. REML remains Gaussian-only; HSquared-style AI-REML is later exact-Gaussian scouting, not non-Gaussian/Laplace wording.",
+  "current_work": "R-first sequencing is now the explicit operating rule: complete the gllvmTMB user surface first, then make GLLVM.jl match and accelerate those exact targets. Latest banked slice: gllvmTMB 4bc4e65 standardizes native derived confint CI-status semantics: confint() matrices for icc, phylo_signal, communality, rho, and proportion carry a row-named ci_status attribute while preserving the standard two-column matrix shape; extract_correlations() keeps its ci_status column. Evidence: helper probe maps one-sided profile to profile_boundary, failed profile to profile_failed, and unavailable Wald endpoints to wald_unavailable; heavy derived/profile gate 121/121; default targeted gate 0 pass / 50 expected heavy skips / 0 failures; full devtools::test() 2951 pass / 724 skips / 0 failures / 3 pre-existing warnings; pkgdown check green. Previous gllvmTMB d22d0de narrow mixed-family engine=\"julia\" bridge admission remains banked with live bridge 496/496. Boundary: status metadata only; no calibrated coverage, no changed interval numerics, no Julia mixed-family CI endpoints, no mixed X/masks/cbind/weights route, no broad native-TMB-vs-Julia equivalence. REML remains Gaussian-only; HSquared-style AI-REML is later exact-Gaussian scouting, not non-Gaussian/Laplace wording.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
     {
@@ -45,9 +45,9 @@
     {
       "name": "gllvmTMB",
       "branch": "engine-julia",
-      "head": "a765c02",
+      "head": "4bc4e65",
       "dirty": false,
-      "note": "engine-julia has local R-first bridge slices committed through NB1 no-X admission, NB1 post-fit methods, public fixed-effect-X evidence for Binomial/NB2/Gamma, NB2/Beta/Gamma conditional simulate() support, the native mixed-family selector oracle, narrow mixed-family Julia bridge admission, native mixed-family confint() rho route evidence through Fisher-z/Wald/profile/bootstrap, and explicit native rho ci_status semantics. gllvm_julia_capabilities() marks NB1 and trait-aligned mixed-family no-X/no-mask/no-CI rows as partial/admitted and enforces that R-admitted TRUE rows are supported by GLLVM.bridge_capabilities(). Current green bridge evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration and passes 496/496; the latest native R full suite passes 2951 with 724 skips, 0 failures, and 3 pre-existing warnings."
+      "note": "engine-julia has local R-first bridge slices committed through NB1 no-X admission, NB1 post-fit methods, public fixed-effect-X evidence for Binomial/NB2/Gamma, NB2/Beta/Gamma conditional simulate() support, the native mixed-family selector oracle, narrow mixed-family Julia bridge admission, native mixed-family confint() rho route evidence through Fisher-z/Wald/profile/bootstrap, and explicit native derived confint ci_status semantics for icc, phylo_signal, communality, rho, and proportion. gllvm_julia_capabilities() marks NB1 and trait-aligned mixed-family no-X/no-mask/no-CI rows as partial/admitted and enforces that R-admitted TRUE rows are supported by GLLVM.bridge_capabilities(). Current green bridge evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration and passes 496/496; the latest native R full suite passes 2951 with 724 skips, 0 failures, and 3 pre-existing warnings."
     },
     {
       "name": "drmTMB",
@@ -349,7 +349,7 @@
         {
           "name": "Bridge CI surface",
           "status": "partial",
-          "evidence": "Wald, Gaussian profile, and bootstrap CI routes are live-tested through confint.gllvmTMB_julia for supported non-masked cells. Masked objects, including masked cbind-binomial cells, fail at the R S3 boundary with method-specific unavailable statuses; actual masked interval endpoints remain queued."
+          "evidence": "Wald, Gaussian profile, and bootstrap CI routes are live-tested through confint.gllvmTMB_julia for supported non-masked cells. Native R derived confint matrices now share row-named ci_status semantics for icc, phylo_signal, communality, rho, and proportion; these are the R targets Julia CI payloads must match later. Masked objects, including masked cbind-binomial cells, fail at the R S3 boundary with method-specific unavailable statuses; actual masked and mixed-family Julia interval endpoints remain queued."
         },
         {
           "name": "Post-fit methods through bridge",
@@ -592,7 +592,7 @@
   "activity": [
     {
       "time": "now",
-      "html": "<b>Fisher/Hopper/Rose native rho <code>ci_status</code> slice green.</b> <code>extract_correlations()</code> now returns a <code>ci_status</code> column, and <code>confint(fit, parm=\"rho:&lt;tier&gt;:i,j\")</code> attaches a row-named <code>ci_status</code> attribute while preserving the standard two-column matrix. Boundary-partial profile intervals are now explicit: the mixed-family probe returns <code>[NA, 0.999]</code> with <code>ci_status=\"profile_boundary\"</code>. Evidence: targeted default gate <code>17</code> pass / <code>18</code> expected heavy skips; Stage 37 <code>40/40</code>; heavy mixed-family correlation gate <code>64/64</code>; full <code>devtools::test()</code> <code>2951</code> pass / <code>724</code> skips / <code>0</code> failures / <code>3</code> pre-existing warnings; <code>pkgdown::check_pkgdown()</code> green. Boundary: status semantics only; no calibrated coverage or Julia mixed-family CI endpoints."
+      "html": "<b>Fisher/Hopper/Rose derived <code>confint()</code> status contract green.</b> Native R derived interval matrices for <code>icc</code>, <code>phylo_signal</code>, <code>communality</code>, <code>rho</code>, and <code>proportion</code> now carry row-named <code>ci_status</code> attributes while preserving the standard two-column matrix shape; <code>extract_correlations()</code> keeps its <code>ci_status</code> column. Evidence: helper probe classifies <code>profile_boundary</code>, <code>profile_failed</code>, and <code>wald_unavailable</code>; heavy derived/profile gate <code>121/121</code>; default gate <code>0</code> pass / <code>50</code> expected heavy skips; full <code>devtools::test()</code> <code>2951</code> pass / <code>724</code> skips / <code>0</code> failures / <code>3</code> pre-existing warnings; <code>pkgdown::check_pkgdown()</code> green. Boundary: status metadata only; no changed interval numerics, calibrated coverage, or Julia mixed-family CI endpoints."
     },
     {
       "time": "now",
@@ -778,7 +778,7 @@
   "inflight": [
     {
       "owner": "Ada",
-      "text": "R-first sequencing is now explicit. Native mixed-family selector metadata, narrow Julia mixed-family bridge admission, public rho route evidence, and native rho CI-status semantics are banked through gllvmTMB a765c02. The immediate next gate is deciding whether to standardize derived-quantity CI statuses across non-rho routes, then capability-led gllvmTMB functionality cleanup before any Julia CI endpoint admission."
+      "text": "R-first sequencing is now explicit. Native mixed-family selector metadata, narrow Julia mixed-family bridge admission, public rho route evidence, and derived confint CI-status semantics are banked through gllvmTMB 4bc4e65. The immediate next gates are visual/table display of ci_status, then capability-led gllvmTMB functionality cleanup before any Julia CI endpoint admission."
     },
     {
       "owner": "Rose",
@@ -800,7 +800,7 @@
   "evidence": [
     {
       "status": "partial",
-      "text": "Fisher/Hopper/Rose: native rho CI-status semantics committed locally at gllvmTMB a765c02. extract_correlations() now returns ci_status, and confint(fit, parm=\"rho:<tier>:i,j\") attaches a row-named ci_status attribute without changing the two-column matrix shape. Manual probe confirmed [NA, 0.999] maps to profile_boundary; targeted default gate passed 17 with 18 expected heavy skips; Stage 37 passed 40/40; heavy mixed-family correlation gate passed 64/64; full devtools::test() passed 2951 with 724 skips, 0 failures, and 3 pre-existing warnings; pkgdown check green; git diff --check clean. Boundary: status semantics only; calibrated coverage, broader derived-status standardization, visual handling, and Julia mixed-family CI endpoints remain future slices."
+      "text": "Fisher/Hopper/Rose: derived confint CI-status contract committed locally at gllvmTMB 4bc4e65. confint() matrices for icc, phylo_signal, communality, rho, and proportion now carry row-named ci_status attributes without changing the two-column matrix shape; extract_correlations() keeps its ci_status column. Helper probe confirmed profile_boundary/profile_failed/wald_unavailable classification; heavy derived/profile gate passed 121/121; default targeted gate passed with 50 expected heavy skips; full devtools::test() passed 2951 with 724 skips, 0 failures, and 3 pre-existing warnings; pkgdown check green; git diff --check clean. Boundary: status metadata only; calibrated coverage, visual handling, changed interval numerics, and Julia mixed-family CI endpoints remain future slices."
     },
     {
       "status": "partial",
