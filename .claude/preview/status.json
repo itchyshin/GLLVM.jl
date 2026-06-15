@@ -1,9 +1,9 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T11:51:29.000Z",
+  "generated_at": "2026-06-15T11:59:16.000Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "R-first sequencing is active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as parity and acceleration target. Latest local gllvmTMB work now covers fixed-effect X admission, gllvmTMB_julia coef()/summary()/predict()/fitted()/residuals() for current in-sample one-part bridge payloads, and a direct-wrapper NA-response guard. Evidence: bridge test_file passed 99/99, devtools::test(filter=\"julia-bridge\") passed 99/99 in 42.3s, and paired GLLVM.jl test_bridge_x.jl passed 50/50. Next R-first slices: missing-response bridge mask contract in GLLVM.bridge_fit, richer prediction payloads for Gaussian-X/ordinal/newdata, vcov/uncertainty status, and issue-led capability rows before more Julia engine breadth.",
+  "current_work": "R-first sequencing is active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as parity and acceleration target. Latest paired work adds a GLLVM.bridge_fit Gaussian-X mean_coef payload and consumes it from gllvmTMB, so in-sample Gaussian-X predict()/fitted()/residuals() now work alongside non-Gaussian X post-fit methods; direct NA-response inputs still fail before JuliaCall. Evidence: GLLVM test_bridge_x.jl passed 52/52, gllvmTMB bridge test_file passed 102/102, and devtools::test(filter=\"julia-bridge\") passed 102/102 in 42.6s. Next R-first slices: missing-response bridge mask contract, ordinal probability payloads, newdata prediction, vcov/uncertainty status, and issue-led capability rows before more Julia engine breadth.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
     {
@@ -38,16 +38,16 @@
     {
       "name": "GLLVM.jl integration",
       "branch": "codex/high-rate-poisson-safeguard",
-      "head": "355cef3",
+      "head": "a0e6848",
       "dirty": false,
-      "note": "Runtime fixes plus #94 successor bank are committed; docs now sync the gllvmTMB bridge-X surface and record REML as Gaussian-only with AI-REML as later exact-Gaussian scouting. Latest full Pkg.test evidence remains 3869/1 broken; bridge-X engine test passed 50/50."
+      "note": "Runtime fixes, #94 successor bank, bridge-X docs, and Gaussian-X mean_coef payload are committed. REML remains Gaussian-only with AI-REML as later exact-Gaussian scouting. Latest full Pkg.test evidence remains 3869/1 broken; bridge-X engine test passed 52/52."
     },
     {
       "name": "gllvmTMB",
       "branch": "engine-julia",
-      "head": "5bd7bb0",
+      "head": "017a1f1",
       "dirty": false,
-      "note": "engine-julia clean and ahead of remote by local commits; bridge X admission, coef/summary methods, in-sample predict/fitted/residuals, and the direct missing-response guard are committed locally. Live julia-bridge test_file passed 99/99 and devtools::test(filter=\"julia-bridge\") passed 99/99 in 42.3s against GLLVM.jl-integration."
+      "note": "engine-julia clean and ahead of remote by local commits; bridge X admission, coef/summary methods, in-sample predict/fitted/residuals, direct missing-response guard, and Gaussian-X mean_coef prediction are committed locally. Live julia-bridge test_file passed 102/102 and devtools::test(filter=\"julia-bridge\") passed 102/102 in 42.6s against GLLVM.jl-integration."
     },
     {
       "name": "drmTMB",
@@ -256,7 +256,7 @@
         {
           "name": "Capability rows for families, structures, data complications, inference",
           "status": "partial",
-          "evidence": "Drafted in docs/dev-log/capability-bridge-matrix.md and sweep.json; bridge_fit no-X rows updated after test evidence."
+          "evidence": "Drafted in docs/dev-log/capability-bridge-matrix.md and sweep.json; bridge_fit no-X and X rows updated after test evidence."
         },
         {
           "name": "Matrix columns for engine, bridge, estimates, objective, CIs, parity, ADEMP, visual, article",
@@ -336,7 +336,7 @@
         {
           "name": "Post-fit methods through bridge",
           "status": "partial",
-          "evidence": "coef()/summary()/predict()/fitted()/residuals() are live-tested for current in-sample one-part bridge payloads (98/98). vcov(), newdata prediction, ordinal probabilities, Gaussian-X full-mean prediction, and richer diagnostic residuals remain queued."
+          "evidence": "coef()/summary()/predict()/fitted()/residuals() are live-tested for current in-sample one-part bridge payloads, including Gaussian-X via mean_coef (102/102). vcov(), newdata prediction, ordinal probabilities, and richer diagnostic residuals remain queued."
         }
       ]
     },
@@ -574,6 +574,10 @@
   "activity": [
     {
       "time": "now",
+      "html": "<b>Hopper/Gauss Gaussian-X prediction green.</b> <code>GLLVM.bridge_fit</code> now returns <code>mean_coef</code> for Gaussian covariate fits, and <code>gllvmTMB_julia</code> consumes it for in-sample prediction/residual reconstruction. GLLVM <code>test_bridge_x.jl</code> passed <code>52/52</code>; gllvmTMB live bridge tests passed <code>102/102</code>."
+    },
+    {
+      "time": "now",
       "html": "<b>Hopper/Rose missing-response guard green.</b> Direct <code>gllvm_julia_fit()</code> calls with <code>NA</code> responses now fail before JuliaCall until <code>GLLVM.bridge_fit</code> accepts an observed-response mask. Live bridge tests passed <code>99/99</code>."
     },
     {
@@ -656,7 +660,7 @@
   "inflight": [
     {
       "owner": "Ada",
-      "text": "R-first sequencing is active; latest banked R slices are Julia bridge X admission plus gllvmTMB_julia coef/summary/predict/fitted/residuals methods."
+      "text": "R-first sequencing is active; latest banked paired slice closes Gaussian-X in-sample prediction through the GLLVM mean_coef payload and gllvmTMB consumer."
     },
     {
       "owner": "Hopper",
@@ -668,10 +672,14 @@
     },
     {
       "owner": "Rose",
-      "text": "Bridge claims now cover current in-sample post-fit methods and direct NA-response rejection only; actual missing masks, mixed-family metadata, vcov, newdata, ordinal probabilities, and non-Gaussian X CIs remain partial/queued."
+      "text": "Bridge claims now cover current in-sample post-fit methods including Gaussian-X, and direct NA-response rejection only; actual missing masks, mixed-family metadata, vcov, newdata, ordinal probabilities, and non-Gaussian X CIs remain partial/queued."
     }
   ],
   "evidence": [
+    {
+      "status": "covered",
+      "text": "Hopper/Gauss: Gaussian-X bridge mean_coef payload committed locally at GLLVM.jl-integration a0e6848 and consumed by gllvmTMB 017a1f1; GLLVM test_bridge_x.jl passed 52/52, gllvmTMB test_file passed 102/102, and devtools::test(filter=\"julia-bridge\") passed 102/102 in 42.6s."
+    },
     {
       "status": "covered",
       "text": "Hopper/Rose: direct gllvm_julia_fit() missing-response guard committed locally at 5bd7bb0; test_file passed 99/99 and devtools::test(filter=\"julia-bridge\") passed 99/99 in 42.3s. This is not mask support; it is a fail-fast pre-JuliaCall guard."
