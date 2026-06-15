@@ -1,9 +1,9 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T14:04:55.000Z",
+  "generated_at": "2026-06-15T14:11:36.000Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "R-first sequencing is active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as parity and acceleration target. Latest slice banks R-side cbind(successes, failures) binomial trial transport for complete and missing-response no-X reduced-rank bridge rows: successes become Y, successes + failures become the Julia binomial N matrix, malformed cbind rows fail before JuliaCall, and masked cbind cells carry the existing ci_unavailable_masked_response boundary. Live bridge tests against GLLVM.jl-integration pass 277/277. Rose boundary: this is R-side cbind transport plus direct Julia-bridge equivalence, not R/TMB-vs-Julia statistical parity, not masked interval support, and not mixed-family/covariate-masked cbind support.",
+  "current_work": "R-first sequencing is active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as parity and acceleration target. Latest slice banks the public status-ledger cleanup: README now has an explicit partial R-Julia bridge row, the current-boundaries section names the paired-checkout and CI/CI-status gates, and the ASReml/AI-REML design note now says AI-REML is a later exact-Gaussian REML candidate only, not non-Gaussian Laplace wording. The previous cbind-binomial transport slice remains banked at 277/277 live bridge tests against GLLVM.jl-integration. Rose boundary: no full-capability, all-family, bridge-complete, non-Gaussian REML, or AI-REML-for-Laplace claims.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
     {
@@ -45,9 +45,9 @@
     {
       "name": "gllvmTMB",
       "branch": "engine-julia",
-      "head": "7703cb3",
+      "head": "f3414c7",
       "dirty": false,
-      "note": "engine-julia has local R-first bridge slices committed through cbind binomial trial transport. Current green bridge evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration; NEWS/check-log explicitly warn that stale/dashboard GLLVM.jl checkouts may reject newer payloads."
+      "note": "engine-julia has local R-first bridge slices committed through the public bridge/REML status ledger. Current green bridge evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration; NEWS/check-log/README explicitly warn that stale/dashboard GLLVM.jl checkouts may reject newer payloads."
     },
     {
       "name": "drmTMB",
@@ -574,6 +574,10 @@
   "activity": [
     {
       "time": "now",
+      "html": "<b>Rose/Ada R-first status ledger green.</b> README now exposes <code>engine = \"julia\"</code> as a partial paired-checkout bridge, not a TMB replacement; current boundaries now require payload, label, objective/logLik, CI or CI-status, and failure-message agreement. The ASReml/AI-REML design note now says AI-REML is a later exact-Gaussian REML candidate only, not non-Gaussian Laplace wording. Stale-claim scan found expected boundary rows only; no-Julia bridge tests passed <code>91</code> with <code>14</code> skips."
+    },
+    {
+      "time": "now",
       "html": "<b>Hopper/Rose cbind-binomial bridge green.</b> <code>gllvmTMB(..., engine = \"julia\")</code> now transports binomial <code>cbind(successes, failures)</code> as Julia <code>Y</code> plus trial matrix <code>N</code>, including missing-response masks when either component is missing. Malformed negative/non-finite/zero-trial rows fail before JuliaCall. No-Julia bridge tests passed <code>91</code> with <code>14</code> skips; live bridge file and package-level filtered gate both passed <code>277/277</code> against <code>GLLVM.jl-integration</code>. This is R-side transport, not R/TMB statistical parity or masked interval support."
     },
     {
@@ -692,7 +696,7 @@
   "inflight": [
     {
       "owner": "Ada",
-      "text": "R-first sequencing is active; latest committed slice banks cbind-binomial trial transport on top of the no-X masked family matrix and masked-CI status boundary."
+      "text": "R-first sequencing is active; latest committed slice banks the README/AI-REML status-ledger cleanup on top of cbind-binomial transport."
     },
     {
       "owner": "Hopper",
@@ -708,6 +712,10 @@
     }
   ],
   "evidence": [
+    {
+      "status": "partial",
+      "text": "Rose/Ada: R-first bridge and REML status ledger committed locally at gllvmTMB f3414c7. README now labels engine=\"julia\" as a partial paired-checkout bridge; ASReml/AI-REML note is updated for the landed Gaussian-only REML pilot and blocks AI-REML-for-Laplace wording. Stale-claim scan found expected boundary rows only; no-Julia devtools::test(filter=\"julia-bridge\") passed 91 with 14 skips."
+    },
     {
       "status": "partial",
       "text": "Hopper/Rose: cbind-binomial bridge transport committed locally at gllvmTMB 7703cb3. R cbind(successes, failures) now maps to Julia Y plus binomial N for complete and missing-response no-X reduced-rank bridge rows; malformed rows fail before JuliaCall. No-Julia devtools::test(filter=\"julia-bridge\") passed 91 with 14 skips; live test_file and live devtools::test(filter=\"julia-bridge\") both passed 277/277 against GLLVM.jl-integration. This is not R/TMB statistical parity and not masked interval support."
