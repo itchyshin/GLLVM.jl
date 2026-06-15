@@ -231,7 +231,7 @@
       "engine": "partial",
       "bridge": "partial",
       "inference": "partial",
-      "evidence": "R-first post-fit bridge surface now includes coef(), tidy(), summary(), print(summary()), predict(), fitted(), residuals(), simulate(), nobs(), ordination extractors, ordiplot(), and plot(type=\"ordination\") for current in-sample one-part bridge payloads. Latest simulate slice is conditional gaussian/poisson/binomial only and live bridge tests pass 301/301 against GLLVM.jl-integration. Still unsupported: unconditional/bootstrap-grade simulation, masked-response simulation, NB2/Beta/Gamma/Ordinal simulation, tidy SE/CI columns, tidy random parameters/cutpoints, vcov payloads, newdata prediction, ordinal probability payloads, broader plots, and richer diagnostic residuals."
+      "evidence": "R-first post-fit bridge surface now includes coef(), tidy(), glance(), summary(), print(summary()), predict(), fitted(), residuals(), simulate(), nobs(), ordination extractors, ordiplot(), and plot(type=\"ordination\") for current in-sample one-part bridge payloads. Latest glance slice is cached fit statistics only and live bridge tests pass 311/311 against GLLVM.jl-integration. Still unsupported: covariance/CI/diagnostic payloads in glance, unconditional/bootstrap-grade simulation, masked-response simulation, NB2/Beta/Gamma/Ordinal simulation, tidy SE/CI columns, tidy random parameters/cutpoints, vcov payloads, newdata prediction, ordinal probability payloads, broader plots, and richer diagnostic residuals."
     },
     {
       "capability": "Exact implicit gradients",
