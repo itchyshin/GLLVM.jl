@@ -264,3 +264,43 @@ PASS WITH NOTES. #91 is reproduced on the integration branch and fixed with a
 fit-level regression plus a gradient-vs-FD gate. The safeguard is intentionally
 scoped to cheap scalar families to avoid slowing bespoke heavy likelihoods.
 Remaining blocker: full-suite validation has not yet been run after this patch.
+
+### 2026-06-14 — #91 full-suite validation and self-contained CI test import
+
+`test/test_confint_family.jl` failed when run directly because the Tweedie
+bootstrap test used `dot` without importing `LinearAlgebra`. Added the explicit
+test-file import; no package source changed in this cleanup.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. test/test_confint_family.jl
+```
+
+Result: `122/122 pass` in `4m08.6s`.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. test/runtests.jl
+```
+
+Result: `3749 pass, 3 broken, 0 failed, 0 errored` in `30m42.6s`.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. -e 'using Pkg; Pkg.test()'
+```
+
+Result: `3761 pass, 1 broken, 0 failed, 0 errored` in `35m51.7s`.
+
+Noted quality noise: the `Pkg.test()` sandbox still prints duplicate-method
+warnings from repeated local helper definitions (`takahashi_selinv.jl` include
+warnings and `_sim_poisson` in `test_confint_family.jl` / `test_bridge_ci.jl`).
+They did not fail the gate, but should be cleaned in a later test-hygiene slice.
+
+Rose verdict: PASS WITH NOTES. The #91 safeguard branch is full-suite green on
+Julia 1.10; remaining notes are R parity not run (not bridge-facing) and
+pre-existing duplicate-helper warning noise in the test harness.
+
+Docs build note: `julia --project=docs docs/make.jl` is blocked locally because
+`docs/Project.toml` expects registered package `GLLVM`. A no-deploy temp build
+using `Pkg.develop(path=pwd())` reached Vitepress but failed on pre-existing
+dead local links (`./quickstart`, `./model`, `./benchmarks`, `./comparison`, and
+related extensionless page links). This is a docs-cleanup follow-up, not part of
+the #91 numerical change.

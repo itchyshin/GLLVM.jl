@@ -10,6 +10,7 @@ while still reporting optimizer convergence.
 
 - `src/families/laplace.jl`
 - `test/test_poisson_fit.jl`
+- `test/test_confint_family.jl`
 - `docs/dev-log/check-log.md`
 
 ## What Changed
@@ -27,6 +28,11 @@ for cheap scalar families (`Poisson`, `Binomial`, `NegativeBinomial`, `Beta`,
 The new Poisson regression fixture reconstructs the #91 high-rate cell and
 checks both fitted intercept scale and analytic-gradient correctness against a
 central finite-difference gradient.
+
+During the full-suite validation pass, `test/test_confint_family.jl` also needed
+a test-hygiene cleanup: the Tweedie bootstrap fixture used `dot` directly, so the
+file now imports `LinearAlgebra` rather than depending on another test file or
+runner-level import to make direct execution pass.
 
 ## Reproduction Evidence
 
@@ -104,33 +110,56 @@ Results: Binomial `8/8`, NB `7/7`, Beta `7/7`, Gamma `7/7` pass.
 
 Results: Beta `2/2`, Gamma `2/2`, NB `2/2`, Binomial `9/9` pass.
 
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. test/test_confint_family.jl
+```
+
+Result: `122/122 pass` in `4m08.6s`.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. test/runtests.jl
+```
+
+Result: `3749 pass, 3 broken, 0 failed, 0 errored` in `30m42.6s`.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. -e 'using Pkg; Pkg.test()'
+```
+
+Result: `3761 pass, 1 broken, 0 failed, 0 errored` in `35m51.7s`.
+
 ## Not Run / Interrupted
 
-`test/test_missing_response_extra.jl` was started twice and interrupted after
-several minutes. The interrupt stack was in long finite-difference fits for
-Tweedie / row-effect wrappers, not the new safeguarded scalar-family branch.
-
-Full `test/runtests.jl`, full `Pkg.test()`, and Documenter were not run for this
-integration-branch patch yet.
+`julia --project=docs docs/make.jl` did not run in the local docs environment
+because `docs/Project.toml` expects registered package `GLLVM`. A no-deploy temp
+docs build (`Pkg.develop(path=pwd())`, `Documenter`, `DocumenterVitepress`,
+`makedocs(build="/tmp/gllvm-docs-build", source="docs/src")`) reached Vitepress
+but failed on pre-existing dead local links (`./quickstart`, `./model`,
+`./benchmarks`, `./comparison`, and related extensionless links). This is a
+docs-cleanup follow-up, not a #91 numerical regression.
 
 ## R-Parity Verdict
 
-Not run. This is a Julia-engine numerical safeguard; R bridge parity is not
-changed directly.
+Not run. This is a Julia-engine numerical safeguard and a test import cleanup; R
+bridge parity is not changed directly.
 
 ## JET / Allocs / Aqua Verdict
 
-Not run. `test/test_laplace_alloc_equiv.jl` passed, but the full quality battery
-is still pending.
+`Pkg.test()` passed, including the package quality battery available in the
+sandbox. The run still printed pre-existing duplicate-method warning noise from
+repeated helper/include definitions (`takahashi_selinv.jl` and `_sim_poisson`),
+but no quality gate failed.
 
 ## Rose Verdict
 
 PASS WITH NOTES. The #91 failure is reproduced, fixed, and guarded by a
-fit-scale regression plus analytic-vs-FD gradient evidence. This is not release
-ready until full-suite and quality gates pass.
+fit-scale regression plus analytic-vs-FD gradient evidence; full core and
+`Pkg.test()` gates now pass locally. Remaining notes: R parity was not run
+because this is not bridge-facing, duplicate-helper warning noise remains in the
+test harness, and the docs build is blocked by pre-existing Vitepress dead links.
 
 ## Next Command
 
 ```sh
-/Users/z3437171/.juliaup/bin/julia --project=. test/runtests.jl
+rg -n "\\]\\((\\./)?(quickstart|model|benchmarks|comparison|working-with-a-fit|response-families|gllvmtmb-parity|roadmap|api|pitfalls|covariance-correlation)(#|\\))" docs/src
 ```
