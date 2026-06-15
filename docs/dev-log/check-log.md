@@ -1014,3 +1014,42 @@ PASS WITH NOTES. The capability reporter is metadata-only and live-consumed by
 the R bridge drift test. The local Documenter build remains blocked by the
 pre-existing docs-environment registration issue, so no rendered-docs claim is
 made for this slice.
+
+## 2026-06-15 - Bridge documentation current-surface sync
+
+### Scope
+
+Reconciled Julia-side bridge documentation with the R-first plan and the current
+`gllvmTMB(..., engine = "julia")` surface.
+
+Changes:
+
+- `docs/src/gllvmtmb-parity.md` now records NB1 no-X bridge admission, the
+  still-open NB1-X and NB1/Gaussian-mask rows, and the NB1 complete-data no-X
+  post-fit boundary.
+- The same page now separates broad engine capabilities from narrower R bridge
+  claims so engine rows do not automatically become R-user promises.
+- `r/README_bridge.md` now labels the `r/` directory as a legacy direct
+  `gllvm_julia()` scaffold, not the current `gllvmTMB` bridge admission surface.
+- `r/gllvmtmb_julia.R` roxygen now points readers away from the legacy scaffold
+  for current fixed-effect-X bridge support.
+
+### Checks Run
+
+```sh
+~/.juliaup/bin/julia --project=. test/test_bridge_capabilities.jl
+```
+
+Result: `9/9 pass` in `0.2s`.
+
+```sh
+git diff --check
+```
+
+Result: clean.
+
+### Rose Verdict
+
+PASS WITH NOTES. The docs now support the R-first plan and avoid treating the
+larger Julia engine surface as an R bridge promise. This does not add new bridge
+functionality; `gllvmTMB` tests remain the source of truth for admitted R rows.

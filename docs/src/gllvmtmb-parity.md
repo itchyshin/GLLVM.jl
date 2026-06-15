@@ -100,9 +100,11 @@ not bugs on either side.
 
 Engine-side parity is broader than the current R bridge admission surface. The
 current `gllvmTMB(..., engine = "julia")` bridge admits complete, balanced,
-one-part reduced-rank models for Gaussian, Poisson, Binomial, NB2, Beta, Gamma,
-and Ordinal-probit no-X fits. Fixed-effect covariates (`X`) are admitted for
-complete, balanced one-part Gaussian, Poisson, Binomial, NB2, Beta, and Gamma fits.
+one-part reduced-rank models for Gaussian, Poisson, Binomial, NB2, NB1, Beta,
+Gamma, and Ordinal-probit no-X fits. Fixed-effect covariates (`X`) are admitted
+for complete, balanced one-part Gaussian, Poisson, Binomial, NB2, Beta, and
+Gamma fits. NB1 fixed-effect covariates remain a documented follow-up because
+the Julia bridge has no NB1 covariate kernel yet.
 `GLLVM.bridge_capabilities()` exposes the current Julia bridge surface as a flat,
 JuliaCall-friendly ledger so the R side can enforce a one-way drift guard: every
 R-admitted row must be supported by Julia, while Julia-only rows must remain
@@ -110,15 +112,17 @@ explicitly planned or rejected in `gllvmTMB`.
 For Gaussian covariate fits the bridge returns `mean_coef`, the full coefficient
 vector for the supplied `X` array, so the R side can reconstruct in-sample
 fitted values without guessing from the per-trait mean summary.
-Initial response-missing masks are admitted only for no-X one-part
-non-Gaussian bridge fits through an explicit `mask` (`true = observed`);
-the R bridge live-tests Poisson, Bernoulli Binomial, NB2, Beta, Gamma, and
-Ordinal-probit routes end to end. Ordinal-probit is fit/nobs/mask/link-tested;
-prediction and residual methods remain blocked until the bridge carries
-cutpoint/probability payloads. Gaussian response masks, X+mask fits, masked
-CI/profile/bootstrap refits, mixed-family bridge metadata, ordinal covariate
-fits, structured covariance terms, and user-selectable Julia-side optimizer
-controls remain explicit bridge follow-ups, not silently supported cells.
+Initial response-missing masks are admitted only for no-X one-part non-Gaussian
+bridge fits through an explicit `mask` (`true = observed`); the R bridge
+live-tests Poisson, Bernoulli Binomial, NB2, Beta, Gamma, and Ordinal-probit
+routes end to end. NB1 and Gaussian response masks remain explicit follow-ups.
+Ordinal-probit is fit/nobs/mask/link-tested; prediction and residual methods
+remain blocked until the bridge carries cutpoint/probability payloads. NB1
+post-fit prediction, residual, augmentation, and conditional simulation are
+routed only for complete-data no-X fits. X+mask fits, masked CI/profile/bootstrap
+refits, mixed-family bridge metadata, ordinal covariate fits, structured
+covariance terms, and user-selectable Julia-side optimizer controls remain
+explicit bridge follow-ups, not silently supported cells.
 
 REML is a Gaussian-only bridge/engine claim in this project. HSquared's very fast
 AI-REML work is useful design input for exact Gaussian variance-component cells,
@@ -142,15 +146,17 @@ public through the R bridge yet:
 
 ## Honest gaps
 
-What's **done**: every response family — including Tweedie, ordered-beta,
-beta-hurdle, and ZIB; fixed-effect covariates (`Xβ`) and species-specific
-coefficients for the non-Gaussian families; the VA estimator; the ordination
-trio; the SPDE spatial latent field and the phylogenetic GLM; and confidence
-intervals (Wald / profile / parametric bootstrap) for every family.
+The rows above describe engine capabilities and the narrower R bridge admission
+surface separately. Engine-side work now covers the major response-family rows,
+fixed-effect covariates for the GLM families, the VA estimator, ordination
+extractors, SPDE / Matérn spatial latent fields, phylogenetic GLMs, and
+confidence-interval machinery. Those are not automatically public
+`gllvmTMB(..., engine = "julia")` claims: each bridge row still needs its own
+R-side admission, parity test, CI-status handling, and documentation.
 
 The remaining gaps are each scoped by an execution-ready spec in
-`docs/superpowers/specs/` (design + slice plan + verifiable goals), so they can be
-built *with* validation rather than shipped unverified:
+`docs/superpowers/specs/` (design + slice plan + verifiable goals), so they can
+be built *with* validation rather than shipped unverified:
 
 - **Structured dependence × non-Gaussian (animal / spatial extensions)** — the
   phylogenetic GLM has landed (`fit_phylo_glm`, an augmented-state joint Laplace),
@@ -165,5 +171,9 @@ built *with* validation rather than shipped unverified:
   `2026-05-31-formula-frontend-random-slopes-design.md`): long-format data, the
   `traits()`/`phylo()`/`latent()` custom terms, categorical covariates, and the
   headline random slopes `(1 + x | g)` (which need the new RE engine substrate).
-- **R bridge (`engine = "julia"`)** — deferred (post-v1.0); depends on the
-  `@formula` front-end.
+- **R bridge (`engine = "julia"`)** — in progress through the R package bridge.
+  Complete-data one-part fits, selected fixed-effect-X rows, selected
+  missing-response-mask rows, Gaussian CI transport, and NB1 no-X post-fit
+  methods are admitted only where live R tests cover them. Mixed-family
+  metadata, NB1-X, masked CIs, ordinal probability payloads, structured
+  dependence, and broader post-fit methods remain bridge follow-ups.

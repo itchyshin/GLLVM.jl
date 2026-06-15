@@ -183,9 +183,10 @@ if (!exists(".jl_value", mode = "function")) {
 #' @param y          n x p response matrix (SITES in rows, SPECIES in columns) —
 #'                   the gllvm orientation. Transposed to p x n for GLLVM.jl.
 #' @param X          (reserved) site covariate matrix/data.frame. NOT YET wired
-#'                   through this bridge — passing a non-NULL X errors. (GLLVM.jl
-#'                   has fit_gllvm_cov / @formula, but the conversion of an X design
-#'                   into Julia's p x n x q array needs a live-session check.)
+#'                   through this legacy direct `gllvm_julia()` scaffold —
+#'                   passing a non-NULL X errors. The current `gllvmTMB(...,
+#'                   engine = "julia")` bridge has its own capability ledger and
+#'                   admits a tested subset of `X` models through `GLLVM.bridge_fit`.
 #' @param family     gllvm family string; one of names(.family_map).
 #' @param num.lv     number of latent variables (gllvm name; -> Julia `K`).
 #' @param row.eff    "none" (default), "fixed", or "random".
