@@ -1,6 +1,6 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T20:32:00.000Z",
+  "generated_at": "2026-06-15T21:16:00.000Z",
   "status_vocabulary": [
     "covered",
     "partial",
@@ -42,7 +42,7 @@
       "engine": "covered",
       "bridge": "partial",
       "inference": "partial",
-      "evidence": "GLLVM.jl bridge surface reports NB1 one-part no-X support through bridge_capabilities(); gllvmTMB admits nbinom1()/nb1 complete balanced no-X reduced-rank fits through engine=\"julia\", with formula-vs-direct logLik equality, a Wald phi CI smoke test, and post-fit predict/fitted/residuals/augment/simulate coverage. NB1 fixed-effect-X, missing-response-mask, masked simulation, profile/bootstrap, native-TMB parity, and mixed-family cells remain queued and fail deliberately."
+      "evidence": "GLLVM.jl bridge surface reports NB1 one-part no-X support and now admits NB1 no-X response masks through bridge_capabilities(); gllvmTMB admits nbinom1()/nb1 complete and missing-response no-X reduced-rank point fits through engine=\"julia\". Evidence: formula-vs-direct logLik equality, Wald phi CI smoke on complete data, mask parity/sentinel invariance, in-sample predict/fitted/residuals/augment for masked point fits, live bridge 571/571. NB1 fixed-effect-X, masked simulation, profile/bootstrap, native-TMB parity, and mixed-family cells remain queued and fail deliberately."
     },
     {
       "capability": "Beta",
@@ -112,7 +112,7 @@
       "engine": "partial",
       "bridge": "partial",
       "inference": "partial",
-      "evidence": "No-X response masks are engine+bridge verified for Poisson, Bernoulli Binomial, cbind Binomial, NB2, Beta, Gamma, and Ordinal-probit against GLLVM.jl-integration. Gaussian masks, X+mask, mixed missingness, and masked CI endpoints remain unsupported gates."
+      "evidence": "No-X response masks are engine+bridge verified for Poisson, Bernoulli Binomial, cbind Binomial, NB2, NB1, Beta, Gamma, and Ordinal-probit against GLLVM.jl-integration. Latest evidence: GLLVM mask gate 34/34 and live gllvmTMB bridge 571/571. Gaussian masks, X+mask, mixed missingness, masked simulation, and masked CI endpoints remain unsupported gates."
     },
     {
       "capability": "Predictor missingness",

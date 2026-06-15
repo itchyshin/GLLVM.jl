@@ -1,9 +1,9 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T20:32:00.000Z",
+  "generated_at": "2026-06-15T21:16:00.000Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "R-first sequencing is the operating rule: complete the gllvmTMB user surface first, then make GLLVM.jl match and accelerate those exact targets. Latest banked R slice: gllvmTMB ca9c4f8 makes successful confint.gllvmTMB_julia() matrices carry row-named ci_status attributes after parm filtering; no-Julia bridge gate 228 pass / 18 expected skips, live R-Julia bridge gate 552/552, full devtools::test() 2998 pass / 724 skips / 0 failures / 3 pre-existing external warnings, pkgdown check green. Paired Rose cleanup: GLLVM.jl-integration f9d6ade removes blanket full-parity wording and changes GLLVM.bridge_capabilities() status from supported to partial; Julia ledger test 20/20, live gllvmTMB bridge 552/552, temporary developed-env Documenter build completed with known residual warnings. Boundary: claim/status and CI-status metadata only, not new fitters, CI calibration, REML, or speed. REML remains Gaussian-only; HSquared-style AI-REML is later exact-Gaussian scouting, never non-Gaussian/Laplace wording.",
+  "current_work": "R-first sequencing is the operating rule: complete the gllvmTMB user surface first, then make GLLVM.jl match and accelerate those exact targets. Latest banked slice: NB1 missing-response masks are admitted for no-X reduced-rank engine=\"julia\" point fits. Paired commits: GLLVM.jl-integration 5fabcb1 routes NB1 masks through fit_nb1_gllvm() and masked score reconstruction; gllvmTMB 4fd1ed7 admits nbinom1() masked public fits and keeps masked CIs/simulations plus NB1-X rejected. Evidence: Julia bridge ledger 20/20, Julia mask gate 34/34, live R-Julia bridge 571/571, GLLVM core 3931 pass / 3 broken / 0 fail, full gllvmTMB devtools::test() 2997 pass / 724 skips / 0 failures / 3 pre-existing warnings, temporary developed-env Documenter build completed with known residual warnings. Boundary: point fit and in-sample post-fit only; no masked CI/profile/bootstrap, masked simulation, NB1-X, Gaussian masks, mixed-family masks, REML, or speed claim. REML remains Gaussian-only; HSquared-style AI-REML is later exact-Gaussian scouting, never non-Gaussian/Laplace wording.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
     {
@@ -31,23 +31,23 @@
     {
       "name": "GLLVM.jl local board worktree",
       "branch": "codex/non-gaussian-fitter-gradients",
-      "head": "7226cc9",
+      "head": "20512db",
       "dirty": false,
       "note": "Dashboard/ledger branch. This JSON records the source SHA before the current board-sync commit; run git rev-parse for the exact local board commit. Use GLLVM.jl-integration for current bridge tests until branches are reconciled."
     },
     {
       "name": "GLLVM.jl integration",
       "branch": "codex/high-rate-poisson-safeguard",
-      "head": "f9d6ade",
+      "head": "5fabcb1",
       "dirty": false,
-      "note": "Paired runtime engine checkout for current gllvmTMB bridge evidence. Latest Rose cleanup narrows public claims: bridge_capabilities() reports partial status rather than supported, and docs distinguish native routes from R-user parity. Evidence: Julia bridge ledger 20/20, live gllvmTMB bridge 552/552, temporary developed-env Documenter build completed with known residual warnings."
+      "note": "Paired runtime engine checkout for current gllvmTMB bridge evidence. Latest NB1 mask slice routes mask-aware NB1 bridge point fits and masked score reconstruction. Evidence: Julia bridge ledger 20/20, mask gate 34/34, GLLVM core 3931 pass / 3 broken / 0 fail, live gllvmTMB bridge 571/571, temporary developed-env Documenter build completed with known residual warnings."
     },
     {
       "name": "gllvmTMB",
       "branch": "engine-julia",
-      "head": "ca9c4f8",
+      "head": "4fd1ed7",
       "dirty": false,
-      "note": "engine-julia has local R-first bridge/inference/plot slices committed through NB1 no-X admission, method-aware bridge capability rows, and successful Julia bridge confint() ci_status attributes. Current green evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration: no-Julia bridge 228 pass / 18 expected skips, live bridge 552/552, full devtools::test() 2998 pass / 724 skips / 0 failures / 3 pre-existing warnings, pkgdown check green. Julia CI endpoint parity and broader bridge cells remain queued."
+      "note": "engine-julia has local R-first bridge/inference/plot slices committed through NB1 missing-response mask admission. Current green evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration: no-Julia bridge 227 pass / 18 expected skips, live bridge 571/571, full devtools::test() 2997 pass / 724 skips / 0 failures / 3 pre-existing warnings. Julia CI endpoint parity and broader bridge cells remain queued."
     },
     {
       "name": "drmTMB",
@@ -317,13 +317,13 @@
           "name": "NB1 no-X bridge admission",
           "status": "partial",
           "owner": "Hopper/Fisher",
-          "note": "R admits nbinom1()/nb1 complete-data no-X fits with live logLik equality and Wald phi CI smoke; NB1 X/mask/profile/bootstrap/native parity remain queued."
+          "note": "R admits nbinom1()/nb1 complete-data no-X fits with live logLik equality and Wald phi CI smoke; NB1 missing-response masks are now admitted for no-X point fits; NB1 X/profile/bootstrap/native parity remain queued."
         },
         {
           "name": "NB1 post-fit methods",
           "status": "partial",
           "owner": "Hopper/Fisher",
-          "note": "R routes predict/fitted/residuals/augment/simulate for admitted complete-data no-X NB1 fits; NB1 X/masks/profile/bootstrap/native parity remain queued."
+          "note": "R routes predict/fitted/residuals/augment for admitted NB1 no-X fits, including masked rows via cached fitted means. Conditional simulate() remains complete-data only; NB1 X/profile/bootstrap/native parity remain queued."
         },
         {
           "name": "Fixed-effect-X public evidence rows",
@@ -339,7 +339,7 @@
         {
           "name": "Gate-vs-engine guard for gllvmTMB #488",
           "status": "partial",
-          "evidence": "R gate narrowed to current GLLVM.bridge_fit and now exposes gllvm_julia_capabilities() as a method-aware R-side admission ledger. Bridge family, X, mask, masked-CI status, cbind-binomial transport, no-X CI rows, post-fit rows, simulation rows, and narrow mixed-family admission are live-tested against GLLVM.jl-integration (519/519). Automated cross-repo drift CI remains queued."
+          "evidence": "R gate narrowed to current GLLVM.bridge_fit and now exposes gllvm_julia_capabilities() as a method-aware R-side admission ledger. Bridge family, X, mask, masked-CI status, cbind-binomial transport, no-X CI rows, post-fit rows, simulation rows, and narrow mixed-family admission are live-tested against GLLVM.jl-integration (571/571). Automated cross-repo drift CI remains queued."
         },
         {
           "name": "Wording freeze: default GLLVM.jl fitting path only",
@@ -354,7 +354,7 @@
         {
           "name": "Post-fit methods through bridge",
           "status": "partial",
-          "evidence": "coef()/tidy()/glance()/augment()/summary()/predict()/fitted()/residuals()/simulate()/nobs() plus extract_ordination()/getLoadings()/getLV()/rotate_loadings()/ordiplot()/plot(type=\"ordination\") are live-tested for current in-sample bridge payloads, including fixed-effect tidy rows, cached glance fit statistics, in-sample augment row diagnostics, conditional gaussian/poisson/binomial/NB2/NB1/Beta/Gamma simulation, NB1 no-X post-fit routes, and row-family-aware prediction/residual/augment/simulate for narrow trait-aligned mixed-family objects (519/519 against GLLVM.jl-integration after method-ledger expansion). tidy() deliberately excludes loadings, SEs, CIs, random parameters, and cutpoints until covariance/parameter-class payloads are routed. glance() is fit statistics only. augment() is response-scale/default-conditional/in-sample only. simulate() is conditional only, not unconditional/bootstrap-grade. vcov() fails with an explicit not-yet-routed status. newdata prediction/augmentation, link-scale augment rows, ordinal probabilities, covariance payloads, broader plot types, masked-response simulation, and richer diagnostic residuals remain queued."
+          "evidence": "coef()/tidy()/glance()/augment()/summary()/predict()/fitted()/residuals()/simulate()/nobs() plus extract_ordination()/getLoadings()/getLV()/rotate_loadings()/ordiplot()/plot(type=\"ordination\") are live-tested for current in-sample bridge payloads, including fixed-effect tidy rows, cached glance fit statistics, in-sample augment row diagnostics, conditional gaussian/poisson/binomial/NB2/NB1/Beta/Gamma simulation, NB1 masked fitted/residual/augment rows, and row-family-aware prediction/residual/augment/simulate for narrow trait-aligned mixed-family objects (571/571 against GLLVM.jl-integration). tidy() deliberately excludes loadings, SEs, CIs, random parameters, and cutpoints until covariance/parameter-class payloads are routed. glance() is fit statistics only. augment() is response-scale/default-conditional/in-sample only. simulate() is conditional complete-data only for NB1 and still rejects masked responses. vcov() fails with an explicit not-yet-routed status. newdata prediction/augmentation, link-scale augment rows, ordinal probabilities, covariance payloads, broader plot types, masked-response simulation, and richer diagnostic residuals remain queued."
         }
       ]
     },
@@ -369,12 +369,12 @@
         {
           "name": "Response-missing masks: mask data term only",
           "status": "partial",
-          "evidence": "GLLVM.bridge_fit(mask=...) normalizes all-true masks to the complete-data path, passes Poisson native parity/sentinel tests, and now has an ordinal_probit ProbitLink bridge key matching native fit_ordinal_gllvm(..., link=ProbitLink())."
+          "evidence": "GLLVM.bridge_fit(mask=...) normalizes all-true masks to the complete-data path and now covers Poisson, Bernoulli Binomial, NB2, NB1, Beta, Gamma, and ordinal-probit no-X bridge masks. NB1 native-vs-bridge parity and sentinel invariance pass in test_bridge_missing_mask.jl; Gaussian/X/mixed masks and masked CIs remain unsupported."
         },
         {
           "name": "R bridge missing response",
           "status": "partial",
-          "evidence": "gllvmTMB missing=miss_control(response=\"include\") now routes true=observed masks for no-X one-part Poisson, Bernoulli Binomial, cbind Binomial, NB2, Beta, Gamma, and Ordinal-probit fits; live bridge tests pass 277/277 after adding cbind trial transport, masked-CI status, malformed-cbind guards, and ordinal residual guards. Ordinal prediction/residual payloads remain queued."
+          "evidence": "gllvmTMB missing=miss_control(response=\"include\") now routes true=observed masks for no-X one-part Poisson, Bernoulli Binomial, cbind Binomial, NB2, NB1, Beta, Gamma, and Ordinal-probit fits; live bridge tests pass 571/571 after NB1 mask admission. Ordinal prediction/residual payloads, masked simulation, masked CIs, Gaussian masks, and X+mask remain queued."
         },
         {
           "name": "Predictor-missing FIML/MI matrix",
@@ -592,6 +592,10 @@
   "activity": [
     {
       "time": "now",
+      "html": "<b>Hopper/Gauss/Rose NB1 mask bridge green.</b> <code>gllvmTMB(..., family = nbinom1(), engine = \"julia\", missing = miss_control(response = \"include\"))</code> now reaches the paired Julia NB1 mask route for no-X point fits. Evidence: GLLVM bridge ledger <code>20/20</code>, mask gate <code>34/34</code>, live R-Julia bridge <code>571/571</code>, GLLVM core <code>3931</code> pass / <code>3</code> broken / <code>0</code> fail, full gllvmTMB suite <code>2997</code> pass / <code>724</code> skips / <code>0</code> fail. Boundary: masked CIs/simulations, NB1-X, Gaussian masks, and mixed-family masks remain unsupported."
+    },
+    {
+      "time": "now",
       "html": "<b>Rose/Hopper R-first claim cleanup green.</b> <code>GLLVM.bridge_capabilities()</code> now reports current bridge rows as <code>partial</code>, and README/CLAUDE/CHANGELOG/docs wording no longer says blanket full parity or parity-and-beyond. Evidence: Julia bridge ledger <code>20/20</code>; live <code>gllvmTMB</code> bridge <code>552/552</code>; temporary developed-env Documenter build completed with known residual warnings. Boundary: claim/status metadata only; no new fit, CI endpoint, calibration, or speed claim."
     },
     {
@@ -798,7 +802,7 @@
   "inflight": [
     {
       "owner": "Ada",
-      "text": "R-first sequencing is explicit. Latest banked slices: gllvmTMB ca9c4f8 adds ci_status to successful Julia bridge confint matrices; GLLVM.jl-integration f9d6ade narrows public claims and marks bridge rows partial. Next gate: choose the next R-side feature slice from the issue ledger, then mirror in Julia only after the R contract is clear."
+      "text": "R-first sequencing is explicit. Latest banked slices: gllvmTMB 4fd1ed7 admits NB1 missing-response masks for no-X point fits; GLLVM.jl-integration 5fabcb1 provides the paired mask-aware NB1 bridge route. Next gate: harden unsupported-cell CI-status contracts before broadening another positive admission row."
     },
     {
       "owner": "Rose",
@@ -806,7 +810,7 @@
     },
     {
       "owner": "Hopper",
-      "text": "Preserve fail-fast boundaries: NB1 X/masks, X+mask, mixed-family CI endpoints, ordinal predictions, masked CIs, and non-rr covariance terms remain explicit unsupported cells."
+      "text": "Preserve fail-fast boundaries: NB1 X, X+mask, mixed-family CI endpoints/masks, ordinal predictions, masked CIs, masked simulations, and non-rr covariance terms remain explicit unsupported cells."
     },
     {
       "owner": "Gauss/Karpinski",
@@ -818,6 +822,10 @@
     }
   ],
   "evidence": [
+    {
+      "status": "partial",
+      "text": "Hopper/Gauss/Rose: NB1 missing-response masks committed locally at GLLVM.jl-integration 5fabcb1 and gllvmTMB 4fd1ed7. The paired bridge passes mask-aware NB1 point fits and score reconstruction; R admits nbinom1() missing-response no-X fits through engine=\"julia\". Evidence: GLLVM bridge ledger 20/20, mask gate 34/34, live R-Julia bridge 571/571, GLLVM core 3931 pass / 3 broken / 0 fail, gllvmTMB full suite 2997 pass / 724 skips / 0 failures / 3 pre-existing warnings, temporary Documenter build green with known warnings. Boundary: point fit and in-sample post-fit only; masked CIs/simulations, NB1-X, Gaussian masks, and mixed-family masks remain unsupported."
+    },
     {
       "status": "partial",
       "text": "Rose/Hopper: R-first bridge claim cleanup committed locally at GLLVM.jl-integration f9d6ade. README/CLAUDE/CHANGELOG/docs no longer claim blanket full parity; bridge_capabilities() reports partial rows and explains no-X CI route scope. Evidence: stale-claim scan leaves only the intended caveat, Julia bridge ledger 20/20, live gllvmTMB bridge 552/552, temporary developed-env Documenter build completed with known warnings, git diff --check clean. Boundary: claim/status metadata only."
