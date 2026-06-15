@@ -1,6 +1,6 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T17:56:40.000Z",
+  "generated_at": "2026-06-15T20:02:00.000Z",
   "status_vocabulary": [
     "covered",
     "partial",
@@ -253,6 +253,13 @@
       "bridge": "unsupported",
       "inference": "planned",
       "evidence": "Use boundary language; not AI-REML for non-Gaussian Laplace."
+    },
+    {
+      "capability": "Plot/report CI-status payloads",
+      "engine": "partial",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "gllvmTMB e575d08 keeps row-level ci_status in plot(type=\"integration\"), plot(type=\"communality\"), and plot_correlations() gllvmTMB_data, and preserves supplied ci_status in plot_Sigma_table() report-ready rows. Targeted plot gate passed 493/493; full devtools::test() passed 2976 with 724 skips, 0 failures, and 3 pre-existing warnings; pkgdown check green. Visual encoding, rendered article review, calibrated coverage, and Julia bridge CI endpoint parity remain queued."
     }
   ]
 }

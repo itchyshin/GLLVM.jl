@@ -1,5 +1,53 @@
 # Check Log
 
+## 2026-06-15 - Board sync after gllvmTMB plot CI-status propagation
+
+### Scope
+
+Refreshed the mission-control board and sweep matrix after the `gllvmTMB`
+R-first plot/report CI-status propagation slice.
+
+- `.claude/preview/status.json` now records the local board worktree head
+  `e6ea6b9` and `gllvmTMB` head `e575d08`.
+- Current work now describes `gllvmTMB` plot/report `ci_status` payload
+  propagation as the latest banked slice.
+- `.claude/preview/sweep.json` now includes a `Plot/report CI-status payloads`
+  row marked `partial`, with explicit visual-encoding, rendered-review,
+  calibrated-coverage, and Julia endpoint-parity boundaries.
+- In-flight work now points to the method-aware bridge gate-vs-engine drift guard
+  as the next R-first contract slice.
+
+No Julia engine code, R bridge code, or tests changed in this repository.
+
+### Checks Run
+
+```sh
+jq empty .claude/preview/status.json .claude/preview/sweep.json
+git diff --check -- .claude/preview/status.json .claude/preview/sweep.json
+```
+
+Result: both clean.
+
+```sh
+curl -fsS http://127.0.0.1:8770/status.json | jq -r '.generated_at, (.repos[] | select(.name=="GLLVM.jl local board worktree") | .head), (.repos[] | select(.name=="gllvmTMB") | .head), .activity[0].html, .evidence[0].text'
+```
+
+Result: `2026-06-15T20:02:00.000Z`, `e6ea6b9`, `e575d08`, and the first
+activity/evidence rows describe the plot CI-status propagation slice.
+
+```sh
+curl -fsS http://127.0.0.1:8770/sweep.json | jq -r '.generated_at, (.rows[] | select(.capability=="Plot/report CI-status payloads") | [.engine,.bridge,.inference,.evidence] | @tsv)'
+```
+
+Result: generated at `2026-06-15T20:02:00.000Z`; row status is
+`partial / partial / partial` with the `gllvmTMB e575d08` evidence boundary.
+
+### Rose Boundary
+
+PASS WITH NOTES. Board truth now includes the R plot/report status slice without
+claiming rendered visual QA, coverage calibration, or Julia bridge CI endpoint
+parity.
+
 ## 2026-06-15 - Board sync after mixed-family Julia label fix
 
 ### Scope
