@@ -437,3 +437,59 @@ diff `2.862522`.
 PARTIAL. Transport defects are fixed and documented, but the end-to-end R
 `gllvm` parity claim remains open. Next slice should reconcile likelihood target,
 starts, centering, and parameterization before promoting this bridge path.
+
+## 2026-06-14 - Phylo-signal Wald CI Scale Fix (#92)
+
+### Scope
+
+Ported the narrow fix for GLLVM.jl #92 from the stale `a1-nongaussian-ci` branch
+onto the current integration branch. The Gaussian phylo fitter packs the
+phylo-unique `σ_phy` block on the natural signed scale, but `_derived_unpack`
+was exponentiating it. That over-transformed the `phylo_signal_wald_ci` numerator
+and could push H² outside `[0, 1]`.
+
+Changes:
+
+- `_derived_unpack` now reads `σ_phy` directly on the natural signed scale.
+- `confint_derived_wald.jl` is included by the package and the transformed-Wald
+  derived CI helpers are exported.
+- `test_confint_derived_wald.jl` now guards packed-vs-public `phylo_signal`
+  equality for both `has_phy_unique` and `K_phy > 0` paths.
+- `test_confint_derived_wald.jl` is wired into `test/runtests.jl`.
+
+### Checks Run
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. test/test_confint_derived_wald.jl
+```
+
+Result: `108/108 pass` in `21.3s`.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. test/test_confint_derived.jl
+```
+
+Result: `45/45 pass` in `13.5s`.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. test/test_profile_derived_fix.jl
+```
+
+Result: `20/20 pass` in `10.1s`.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. test/test_confint_profile.jl
+```
+
+Result: `4/4 pass` in `21.4s`.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. -e 'using Pkg; Pkg.test()'
+```
+
+Result: `3869 pass, 1 broken, 0 failed, 0 errored` in `36m18.1s`.
+
+### Rose Verdict
+
+PASS. The scale bug is fixed on the current branch, the orphan test is now part
+of the main suite, and the full package gate passed.

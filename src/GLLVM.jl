@@ -95,6 +95,7 @@ include("confint.jl")                    # Wald
 include("confint_profile.jl")            # profile likelihood
 include("confint_bootstrap.jl")          # parametric bootstrap
 include("confint_derived.jl")            # derived quantities (Σ_y, communality, ...)
+include("confint_derived_wald.jl")       # transformed-Wald CIs for bounded derived quantities
 # Cross-family latent-scale link-implicit residual table + non-Gaussian
 # sigma_y_site/communality/correlation extractors. After postfit.jl (needs the
 # family fit structs + predict) and confint_derived.jl (the Gaussian generics it
@@ -133,6 +134,8 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        fit_compoisson_gllvm, COMPoisson, COMPoissonFit, compoisson_marginal_loglik_laplace,
        compoisson_logpdf, compoisson_logz,
        confint, profile_ci, bootstrap_ci,
+       transformed_wald_ci_derived, correlation_wald_ci, communality_wald_ci,
+       icc_wald_ci, phylo_signal_wald_ci,
        ppca_init, em_fa,
        sigma_y_site, communality, correlation, phylo_signal, link_residual,
        chibar2_pvalue, variance_lrt, profile_ci_variance,

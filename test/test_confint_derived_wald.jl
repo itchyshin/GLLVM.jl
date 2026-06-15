@@ -150,6 +150,30 @@ end
         @test 0.0 ≤ ci.lower
         @test ci.upper ≤ 1.0
         @test ci.lower ≤ ci.estimate ≤ ci.upper
+
+        # Regression guard (issue #92): packed phylo-signal H² must equal the
+        # public phylo_signal(fit; Σ_phy)[t]. This is the has_phy_unique path,
+        # where σ_phy is packed on the natural signed scale.
+        spec2 = GLLVM._derived_spec(fit2)
+        for t in 1:p2
+            isfinite(h2_vec[t]) || continue
+            hp = GLLVM._phylo_signal_packed(fit2.pars.θ_packed, spec2, t;
+                                            diag_Σphy = diag(Σ_phy))
+            @test isapprox(hp, h2_vec[t]; rtol = 1e-8)
+        end
+
+        # Same packed≡public guard for the K_phy > 0 low-rank phylo-loading path.
+        fit3 = fit_gaussian_gllvm(y2; K = 1, K_phy = 1, Σ_phy = Σ_phy)
+        if fit3.converged
+            h3 = GLLVM.phylo_signal(fit3; Σ_phy = Σ_phy)
+            spec3 = GLLVM._derived_spec(fit3)
+            for t in 1:p2
+                isfinite(h3[t]) || continue
+                hp3 = GLLVM._phylo_signal_packed(fit3.pars.θ_packed, spec3, t;
+                                                 diag_Σphy = diag(Σ_phy))
+                @test isapprox(hp3, h3[t]; rtol = 1e-8)
+            end
+        end
     end
 
 end

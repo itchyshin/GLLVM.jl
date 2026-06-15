@@ -66,7 +66,7 @@ end
 #    log_σ_B[p]; log_σ_W[p]      (if has_diag)
 #    θ_rr_B (pack_lambda Λ_B)
 #    θ_rr_W (pack_lambda Λ_W)     (if K_W > 0)
-#    log_σ_phy[p]                (if has_phy_unique)
+#    σ_phy[p] (natural, signed)  (if has_phy_unique)
 #    θ_rr_phy (pack_lambda Λ_phy)(if K_phy > 0)]
 #
 # Returned tuple uses raw-scale (positive) variance / SD components, like
@@ -121,9 +121,13 @@ function _derived_unpack(θ::AbstractVector, spec::NamedTuple)
 
     σ_phy = nothing
     if has_phy_unique
-        log_σ_phy = θ[(cursor + 1):(cursor + p)]
+        # σ_phy uses an identity (signed) link and is packed on the natural scale
+        # by the Gaussian phylo fitter. It is a loading-like quantity (hcat'd with
+        # Λ_phy and squared in H²), so exponentiating it here over-transforms the
+        # phylo-signal numerator and destroys the sign. σ_eps/σ²_B/σ²_W above are
+        # log-packed; σ_phy is the natural-scale exception in θ_packed.
+        σ_phy = θ[(cursor + 1):(cursor + p)]
         cursor += p
-        σ_phy = exp.(log_σ_phy)
     end
 
     Λ_phy = nothing
@@ -956,4 +960,3 @@ function profile_ci_derived(fit::GllvmFit, derived_fn::Function;
     return (lower = lower, upper = upper,
             estimate = g_hat, method = method)
 end
-

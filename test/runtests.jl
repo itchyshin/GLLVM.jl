@@ -26,6 +26,7 @@ using GLLVM
     include("test_profile_rootfind.jl")
     include("test_confint_bootstrap.jl")
     include("test_confint_derived.jl")
+    include("test_confint_derived_wald.jl")
     include("test_profile_derived_fix.jl")
     include("test_takahashi_selinv.jl")
     include("test_em_louis.jl")
