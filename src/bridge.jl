@@ -362,12 +362,16 @@ The result is a JuliaCall-friendly `NamedTuple` of vectors. It reports the
 Julia bridge surface only; R-side admission gates may be narrower until
 metadata, labels, parity rows, and confidence-interval status rows are
 validated in `gllvmTMB`.
+
+The `ci_no_x_*` columns are scoped to complete one-part no-covariate fits; they
+do not imply mixed-family, masked-response, or non-Gaussian-X intervals.
 """
 function bridge_capabilities()
     onepart = collect(_BRIDGE_ONEPART_FAMILIES)
     family = vcat(onepart, ["mixed-family vector"])
     x_families = Set(vcat(["gaussian"], collect(_BRIDGE_X_FAMILIES)))
     mask_families = Set(_BRIDGE_MASK_FAMILIES)
+    postfit_families = Set(filter(f -> !(f in ("ordinal", "ordinal_probit")), onepart))
 
     return (
         family = family,
@@ -375,6 +379,16 @@ function bridge_capabilities()
         fixed_effect_X = vcat([f in x_families for f in onepart], [false]),
         missing_response = vcat([f in mask_families for f in onepart], [false]),
         cbind_binomial = [f == "binomial" for f in family],
+        ci_no_x_wald = vcat(fill(true, length(onepart)), [false]),
+        ci_no_x_profile = vcat(fill(true, length(onepart)), [false]),
+        ci_no_x_bootstrap = vcat(fill(true, length(onepart)), [false]),
+        postfit_coef = vcat(fill(true, length(onepart)), [true]),
+        postfit_fit_stats = vcat(fill(true, length(onepart)), [true]),
+        postfit_summary = vcat(fill(true, length(onepart)), [true]),
+        postfit_predict = vcat([f in postfit_families for f in onepart], [true]),
+        postfit_residuals = vcat([f in postfit_families for f in onepart], [true]),
+        postfit_simulate = vcat([f in postfit_families for f in onepart], [true]),
+        postfit_ordination = vcat(fill(true, length(onepart)), [true]),
         status = vcat(fill("supported", length(onepart)), ["supported"]),
         notes = vcat(
             ["one-part reduced-rank bridge family" for _ in onepart],

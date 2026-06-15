@@ -10,6 +10,16 @@ using GLLVM
         :fixed_effect_X,
         :missing_response,
         :cbind_binomial,
+        :ci_no_x_wald,
+        :ci_no_x_profile,
+        :ci_no_x_bootstrap,
+        :postfit_coef,
+        :postfit_fit_stats,
+        :postfit_summary,
+        :postfit_predict,
+        :postfit_residuals,
+        :postfit_simulate,
+        :postfit_ordination,
         :status,
         :notes,
     )
@@ -45,6 +55,25 @@ using GLLVM
         "ordinal_probit",
     ]
     @test caps.family[caps.cbind_binomial] == ["binomial"]
+    @test caps.family[caps.ci_no_x_wald] == caps.family[1:(end - 1)]
+    @test caps.family[caps.ci_no_x_profile] == caps.family[1:(end - 1)]
+    @test caps.family[caps.ci_no_x_bootstrap] == caps.family[1:(end - 1)]
+    @test caps.family[caps.postfit_coef] == caps.family
+    @test caps.family[caps.postfit_fit_stats] == caps.family
+    @test caps.family[caps.postfit_summary] == caps.family
+    @test caps.family[caps.postfit_predict] == [
+        "gaussian",
+        "poisson",
+        "binomial",
+        "negbinomial",
+        "nb1",
+        "beta",
+        "gamma",
+        "mixed-family vector",
+    ]
+    @test caps.family[caps.postfit_residuals] == caps.family[caps.postfit_predict]
+    @test caps.family[caps.postfit_simulate] == caps.family[caps.postfit_predict]
+    @test caps.family[caps.postfit_ordination] == caps.family
     @test all(==("supported"), caps.status)
     @test occursin("mixed-family", caps.notes[end])
     @test occursin("no X", caps.notes[end])

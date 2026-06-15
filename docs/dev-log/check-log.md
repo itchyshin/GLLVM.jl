@@ -1,5 +1,49 @@
 # Check Log
 
+## 2026-06-15 - Bridge method capability metadata
+
+### Scope
+
+Expanded `GLLVM.bridge_capabilities()` with method-level metadata needed by the
+R-first `gllvmTMB` bridge ledger.
+
+- Added no-X CI capability columns for Wald, profile, and bootstrap routes.
+- Added in-sample post-fit method columns for coefficient payloads, fit
+  statistics, summary, prediction, residuals, simulation, and ordination.
+- Kept the existing fitters, likelihoods, REML behavior, optimizer behavior, and
+  CI implementations unchanged.
+- Documented that `ci_no_x_*` columns are scoped to complete one-part
+  no-covariate fits only.
+
+### Checks Run
+
+```sh
+~/.juliaup/bin/julia --project=. -e 'using GLLVM; caps=GLLVM.bridge_capabilities(); @assert :ci_no_x_wald in propertynames(caps); @assert :postfit_predict in propertynames(caps); println(length(caps.family), " capability rows")'
+```
+
+Result: `10 capability rows`.
+
+```sh
+~/.juliaup/bin/julia --project=. --startup-file=no test/test_bridge_capabilities.jl
+```
+
+Result: `19/19 pass` in `0.2s`.
+
+Paired live R bridge regression:
+
+```sh
+GLLVM_JL_PATH="/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration" Rscript -e 'options(gllvmTMB.julia_home="/Users/z3437171/.juliaup/bin"); devtools::test(filter="julia-bridge")'
+```
+
+Result in `/Users/z3437171/Dropbox/Github Local/gllvmTMB`: `FAIL 0 | WARN 0 |
+SKIP 0 | PASS 519` in `68.9s`.
+
+### Rose Boundary
+
+PASS WITH NOTES. This is metadata for R-side drift prevention, not new engine
+support. REML remains Gaussian-only; AI-REML remains a later exact-Gaussian
+speed idea only.
+
 ## 2026-06-15 - Mixed-family bridge per-trait payload labels
 
 ### Scope
