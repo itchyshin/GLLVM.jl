@@ -13,6 +13,12 @@
 #
 # (Uses the root project; the same way `bench/grad_speedup.jl` loads GLLVM.)
 #
+# Runtime knobs for quick decision runs:
+#
+#     GLLVM_SPEED_BENCH_GRID=quick GLLVM_SPEED_BENCH_REPS=1 \
+#     GLLVM_SPEED_BENCH_ITERS=80 GLLVM_SPEED_BENCH_PROFILE_CI=0 \
+#       julia --project=. bench/speed_bench.jl
+#
 # WHAT IT MEASURES
 # ----------------
 #   * Base timing only — `@elapsed`-style via `Base.@timed` for wall-clock AND
@@ -47,7 +53,8 @@ using GLLVM, Random, Statistics, Printf
 # Timing helpers (Base only)
 # ----------------------------------------------------------------------------
 
-const REPS = 3   # timed reps per fit (median reported). Keep modest: a full
+const REPS = parse(Int, get(ENV, "GLLVM_SPEED_BENCH_REPS", "3"))
+                 # timed reps per fit (median reported). Keep modest: a full
                  # sweep should be a few minutes, not an hour.
 
 """
@@ -261,10 +268,24 @@ end
 
 # (p = species, n = sites, K = latent dims). Modest sizes keep the full run to
 # a few minutes; bump these once you trust the script.
-const GRID = [(20, 100, 2), (50, 200, 2), (100, 300, 2)]
+function _grid_from_env()
+    spec = get(ENV, "GLLVM_SPEED_BENCH_GRID", "")
+    isempty(spec) && return [(20, 100, 2), (50, 200, 2), (100, 300, 2)]
+    lowercase(spec) == "quick" && return [(8, 40, 1), (12, 60, 1)]
+    out = Tuple{Int,Int,Int}[]
+    for cell in split(spec, ';')
+        parts = parse.(Int, split(strip(cell), ','))
+        length(parts) == 3 || error("GLLVM_SPEED_BENCH_GRID cells must be p,n,K")
+        push!(out, (parts[1], parts[2], parts[3]))
+    end
+    return out
+end
+
+const GRID = _grid_from_env()
 
 # Cap optimiser iterations so a single fit can't run away on a hard cell.
-const ITERS = 300
+const ITERS = parse(Int, get(ENV, "GLLVM_SPEED_BENCH_ITERS", "300"))
+const PROFILE_CI = get(ENV, "GLLVM_SPEED_BENCH_PROFILE_CI", "1") != "0"
 
 function main()
     println("GLLVM.jl speed benchmark — Base timing, no BenchmarkTools")
@@ -286,26 +307,31 @@ function main()
         end
 
         # --- Poisson ---
+        @info "  Poisson finite vs analytic"
         Yp = sim_poisson(p, n, K)
         fit_p = bench_glm_family!(sz, "Poisson",
             g -> () -> fit_poisson_gllvm(Yp; K = K, gradient = g, iterations = ITERS))
 
         # --- Negative Binomial ---
+        @info "  NB finite vs analytic"
         Yn = sim_nb(p, n, K)
         fit_n = bench_glm_family!(sz, "NB",
             g -> () -> fit_nb_gllvm(Yn; K = K, gradient = g, iterations = ITERS))
 
         # --- Binomial ---
+        @info "  Binomial finite vs analytic"
         Yb, Nb = sim_binomial(p, n, K)
         fit_b = bench_glm_family!(sz, "Binomial",
             g -> () -> fit_binomial_gllvm(Yb; K = K, N = Nb, gradient = g, iterations = ITERS))
 
         # --- Beta ---
+        @info "  Beta finite vs analytic"
         Ybe = sim_beta(p, n, K)
         bench_glm_family!(sz, "Beta",
             g -> () -> fit_beta_gllvm(Ybe; K = K, gradient = g, iterations = ITERS))
 
         # --- Gamma ---
+        @info "  Gamma finite vs analytic"
         Yga = sim_gamma(p, n, K)
         bench_glm_family!(sz, "Gamma",
             g -> () -> fit_gamma_gllvm(Yga; K = K, gradient = g, iterations = ITERS))
@@ -313,7 +339,7 @@ function main()
         # --- one profile CI per count family, at the smallest size only ---
         # (Profile CI re-fits per bracket point — the slow path. One cell is
         # enough to time it.)
-        if (p, n, K) == first(GRID)
+        if PROFILE_CI && (p, n, K) == first(GRID)
             bench_profile_ci!(sz, "Poisson", fit_p, Yp)
             bench_profile_ci!(sz, "NB",       fit_n, Yn)
             bench_profile_ci!(sz, "Binomial", fit_b, Yb; N = Nb)

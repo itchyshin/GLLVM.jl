@@ -30,16 +30,16 @@ These are pure plumbing: land them, confirm `MB alloc` drops and `Δloglik = 0`.
 
 ## 2. Analytic-gradient default decision
 
-Poisson / NB / Binomial / Beta now default to `gradient = :analytic` on the
-plain no-mask/no-offset path, falling back internally to finite differences when
-the analytic gradient is unavailable. Gamma remains `gradient = :finite`: the
-2026-06-07 runtime gate found order-of-magnitude analytic speedups for the other
-four GLM families with `|ΔlogLik| ≈ 1e-11`, but Gamma missed the `≤1e-6`
-accuracy gate on benchmark-like cells.
+Poisson / NB / Binomial / Beta / Gamma now default to `gradient = :analytic` on
+the plain no-mask/no-offset path, falling back internally to finite differences
+when the analytic gradient is unavailable. The 2026-06-14 runtime gate re-opened
+the Gamma decision after the high-rate Poisson mode safeguard and found
+order-of-magnitude Gamma speedups with `|ΔlogLik| ≈ 1e-12` on both quick and
+medium benchmark cells.
 
 `speed_bench.jl` still times `:finite` vs `:analytic` side by side and prints
-`Δloglik`; use it to re-open the Gamma default decision after the Gamma analytic
-gradient is stabilised.
+`Δloglik`; use it to audit future analytic-gradient changes before changing
+defaults.
 
 ## 3. Exact-preserving algorithmic roadmap
 

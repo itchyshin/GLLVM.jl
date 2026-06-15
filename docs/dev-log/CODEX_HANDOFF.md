@@ -43,12 +43,13 @@ suite must stay green. Branch off the latest `main`; one concern per commit.
 ```
 julia --project=. bench/speed_bench.jl
 ```
-Measured 2026-06-07. `:analytic` is faster and likelihood-stable for Poisson,
-NB2, Binomial, and Beta, so those four fitters now default to `:analytic` on the
-plain no-mask/no-offset path (with finite-difference fallback). Gamma missed the
-`≤1e-6` logLik-delta gate on benchmark-like cells and remains
-`gradient = :finite` until its analytic route is stabilised. ≈ `2·nparams → 1`
-marginal-evaluations per L-BFGS step for the four defaulted families.
+Measured 2026-06-07, then re-opened on 2026-06-14 after the high-rate Poisson
+Laplace-mode safeguard. `:analytic` is now faster and likelihood-stable for
+Poisson, NB2, Binomial, Beta, and Gamma on the no-mask/no-offset path, so all
+five one-part GLM fitters default to `:analytic` with finite-difference fallback.
+The 2026-06-14 Gamma gate showed `|ΔlogLik| ≈ 1e-12` and about 10-14x speedups
+on quick and medium benchmark cells. ≈ `2·nparams → 1` marginal-evaluations per
+L-BFGS step for the defaulted families.
 
 ### P2 — Validate the R↔Julia bridge (proves the parity claim end-to-end)
 Fix the `## VERIFY:` spots in `r/gllvmtmb_julia.R` (JuliaConnectoR access to

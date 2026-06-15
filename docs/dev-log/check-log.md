@@ -5,9 +5,10 @@
 ### Scope
 
 Runtime-gated the dormant analytic Laplace gradients. Poisson, NB2, Binomial,
-and Beta now default to `gradient = :analytic` on the plain no-mask/no-offset
-path, preserving the existing finite-difference fallback. Gamma remains
-`gradient = :finite` because the benchmark gate found accuracy failures.
+and Beta defaulted to `gradient = :analytic` on the plain no-mask/no-offset path,
+preserving the existing finite-difference fallback. At that time Gamma was left
+finite because the benchmark gate found accuracy failures; the Gamma decision is
+superseded by the 2026-06-14 entry below.
 
 ### Benchmark Evidence
 
@@ -64,9 +65,9 @@ intended Gamma `gradient::Symbol = :finite` when searched separately.
 
 ### Rose Verdict
 
-PASS WITH NOTES. The default flip is restricted to the four families that cleared
-the measured speed/accuracy gate; Gamma is explicitly left finite. Remaining
-notes: Gamma analytic gradients need a separate stability fix, and
+PASS WITH NOTES. The 2026-06-07 default flip was restricted to the four families
+that cleared the measured speed/accuracy gate. This Gamma caveat is superseded
+by the 2026-06-14 entry below. Remaining note from this historical run:
 `bench/speed_bench.jl` should stream fitter rows or make profile-CI optional.
 
 ## 2026-06-03 - Homepage Mobile Publication
@@ -325,3 +326,76 @@ infrastructure items, not hard build failures after this cleanup.
 
 Rose verdict: PASS WITH NOTES. Hard dead-link blocker removed; warning-level
 docs infrastructure cleanup remains.
+
+## 2026-06-14 - Gamma Analytic Gradient Default
+
+### Scope
+
+Re-opened the Gamma analytic-gradient default after the high-rate Poisson
+Laplace-mode safeguard. Gamma now joins Poisson, NB2, Binomial, and Beta in
+defaulting to `gradient = :analytic` on the plain no-mask/no-offset path, with
+the existing finite-difference fallback retained for masked or offset fits.
+
+### Benchmark Evidence
+
+The full original `bench/speed_bench.jl` grid was interrupted after roughly 13
+minutes while still in the first grid cell, so the benchmark harness was updated
+with opt-in runtime knobs (`GLLVM_SPEED_BENCH_GRID`, `GLLVM_SPEED_BENCH_REPS`,
+`GLLVM_SPEED_BENCH_ITERS`, `GLLVM_SPEED_BENCH_PROFILE_CI`) and per-family
+progress logging. Default full-run behaviour is unchanged.
+
+Quick decision grid:
+
+```sh
+GLLVM_SPEED_BENCH_GRID=quick GLLVM_SPEED_BENCH_REPS=1 GLLVM_SPEED_BENCH_ITERS=80 GLLVM_SPEED_BENCH_PROFILE_CI=0 \
+  /Users/z3437171/.juliaup/bin/julia --project=. bench/speed_bench.jl
+```
+
+Gamma results:
+
+| size | finite s | analytic s | speedup | delta logLik |
+| --- | ---: | ---: | ---: | ---: |
+| 8x40x1 | 0.2573 | 0.0255 | 10.09x | 2.842e-14 |
+| 12x60x1 | 0.6706 | 0.0693 | 9.68x | 2.842e-13 |
+
+Medium confirmation cell:
+
+```sh
+GLLVM_SPEED_BENCH_GRID=20,100,2 GLLVM_SPEED_BENCH_REPS=1 GLLVM_SPEED_BENCH_ITERS=120 GLLVM_SPEED_BENCH_PROFILE_CI=0 \
+  /Users/z3437171/.juliaup/bin/julia --project=. bench/speed_bench.jl
+```
+
+Gamma result: finite `10.8304s`, analytic `0.7590s`, speedup `14.27x`,
+`delta logLik = -1.819e-12`.
+
+### Checks Run
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. test/test_gamma_fit.jl
+```
+
+Result: `7/7 pass` in `10.7s`.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. test/test_gamma_laplace.jl
+```
+
+Result: `2/2 pass` in `2.2s`.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. test/test_laplace_grad.jl
+```
+
+Result: `26/26 pass` in `31.5s`.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. -e 'using Pkg; Pkg.test()'
+```
+
+Result: `3761 pass, 1 broken, 0 failed, 0 errored` in `35m09.1s`.
+
+### Rose Verdict
+
+PASS WITH NOTES. Benchmark gate and full package tests passed after the default
+change. Remaining note: R bridge parity was not rerun because the likelihood
+target and bridge payload shape are unchanged.
