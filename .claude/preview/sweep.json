@@ -1,42 +1,258 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-14T18:13:18-06:00",
-  "status_vocabulary": ["covered", "partial", "experimental", "planned", "unsupported"],
+  "generated_at": "2026-06-15T04:49:53.104Z",
+  "status_vocabulary": [
+    "covered",
+    "partial",
+    "experimental",
+    "planned",
+    "unsupported"
+  ],
   "rows": [
-    {"capability": "Gaussian family", "engine": "covered", "bridge": "partial", "inference": "covered", "evidence": "Minimal no-X bridge_fit route and gllvmTMB R dispatch-to-direct-Julia roundtrip tested; X/missingness and TMB statistical parity still open."},
-    {"capability": "Poisson family", "engine": "partial", "bridge": "partial", "inference": "partial", "evidence": "Minimal no-X bridge_fit route and gllvmTMB no-X live dispatch tested. #91 high-rate divergence is reproduced and locally fixed on integration with fit-scale + analytic-vs-FD regression; full-suite gate pending before covered promotion."},
-    {"capability": "Binomial family", "engine": "covered", "bridge": "partial", "inference": "partial", "evidence": "Minimal no-X bridge_fit route tested; cbind binomial and broader R parity remain gates."},
-    {"capability": "Negative binomial NB2", "engine": "covered", "bridge": "partial", "inference": "partial", "evidence": "Minimal no-X bridge_fit route tested and R maps nbinom2 to negbinomial; dispersion transform parity remains a gate."},
-    {"capability": "NB1", "engine": "planned", "bridge": "planned", "inference": "planned", "evidence": "No covered claim until implemented and recovery-tested."},
-    {"capability": "Beta", "engine": "covered", "bridge": "partial", "inference": "partial", "evidence": "Minimal no-X bridge_fit route tested; precision transform and live R parity remain gates."},
-    {"capability": "Gamma", "engine": "covered", "bridge": "partial", "inference": "partial", "evidence": "Minimal no-X bridge_fit route tested; #96 mode-finder safeguards fixed locally; analytic gradient default still blocked by benchmark/logLik-delta recheck."},
-    {"capability": "Ordinal", "engine": "partial", "bridge": "partial", "inference": "partial", "evidence": "Minimal no-X bridge_fit route tested; cutpoint, prediction, and R label route remain gates."},
-    {"capability": "COM-Poisson", "engine": "experimental", "bridge": "planned", "inference": "planned", "evidence": "Keep as experimental until parity/recovery gates are recorded."},
-    {"capability": "Tweedie", "engine": "planned", "bridge": "planned", "inference": "planned", "evidence": "Roadmap only."},
-    {"capability": "Exponential", "engine": "planned", "bridge": "planned", "inference": "planned", "evidence": "Gamma subcase but no separate public row yet."},
-    {"capability": "Two-part and hurdle families", "engine": "partial", "bridge": "planned", "inference": "partial", "evidence": "Dedicated fitters exist in some branches; unified bridge route missing."},
-    {"capability": "Latent factors and loadings", "engine": "covered", "bridge": "partial", "inference": "partial", "evidence": "Minimal bridge test checks rotated loading parity to direct Julia fits; R Procrustes parity still needed."},
-    {"capability": "Fixed-effect covariates X", "engine": "partial", "bridge": "planned", "inference": "partial", "evidence": "Current gllvmTMB bridge deliberately rejects X to match minimal GLLVM.bridge_fit; integration X route needs parity before promotion."},
-    {"capability": "Response missingness", "engine": "partial", "bridge": "planned", "inference": "partial", "evidence": "Mask semantics must be engine+bridge verified."},
-    {"capability": "Predictor missingness", "engine": "partial", "bridge": "planned", "inference": "partial", "evidence": "Explicit mi() design only; no imputation shortcut."},
-    {"capability": "Mixed missingness", "engine": "planned", "bridge": "planned", "inference": "planned", "evidence": "Define or deliberately reject."},
-    {"capability": "Per-response family dispatch", "engine": "planned", "bridge": "planned", "inference": "planned", "evidence": "GLLVM #98 / DRM #280 first-class gate."},
-    {"capability": "Cross-family latent correlation", "engine": "experimental", "bridge": "planned", "inference": "planned", "evidence": "Do not confuse with residual rho12."},
-    {"capability": "Random intercepts", "engine": "partial", "bridge": "partial", "inference": "partial", "evidence": "Family-by-family audit required."},
-    {"capability": "Random slopes", "engine": "planned", "bridge": "planned", "inference": "planned", "evidence": "No blanket support claim."},
-    {"capability": "Phylogenetic dependence", "engine": "partial", "bridge": "partial", "inference": "partial", "evidence": "#92 phylo-signal transformed-Wald scale fixed locally; sparse-gradient wiring and R bridge remain gates."},
-    {"capability": "Animal/relmat", "engine": "partial", "bridge": "planned", "inference": "partial", "evidence": "Name alignment and PSD tests required."},
-    {"capability": "Spatial/SPDE", "engine": "experimental", "bridge": "planned", "inference": "planned", "evidence": "Do not promote without field visual and CI status."},
-    {"capability": "Kernel/NNGP/Matern", "engine": "planned", "bridge": "planned", "inference": "planned", "evidence": "Fixed kernel first; NNGP/Matern roadmap only."},
-    {"capability": "Coevolution/cross-kernel", "engine": "experimental", "bridge": "planned", "inference": "planned", "evidence": "Use gllvmTMB #361 C0-C5 gates."},
-    {"capability": "Wald CIs", "engine": "partial", "bridge": "partial", "inference": "partial", "evidence": "Minimal bridge tests check native Julia Wald CI equality and gllvmTMB confint surface for Gaussian; wider family/status coverage still needed."},
-    {"capability": "Profile CIs", "engine": "partial", "bridge": "planned", "inference": "partial", "evidence": "gllvmTMB bridge now errors on unsupported Julia profile CI status; profile visuals required before promotion."},
-    {"capability": "Bootstrap CIs", "engine": "partial", "bridge": "partial", "inference": "partial", "evidence": "Calibration claims need coverage study."},
-    {"capability": "Derived phylo-signal Wald CI", "engine": "covered", "bridge": "planned", "inference": "partial", "evidence": "#92 scale/export/test gap fixed locally; R bridge exposure and public docs still pending."},
-    {"capability": "AIC/BIC/logLik", "engine": "covered", "bridge": "partial", "inference": "covered", "evidence": "Minimal bridge returns AIC/BIC/logLik; gllvmTMB test checks dispatch vs direct Julia logLik, while TMB statistical parity remains open."},
-    {"capability": "predict/fitted/residuals/summary", "engine": "partial", "bridge": "planned", "inference": "partial", "evidence": "Post-fit bridge methods are P5."},
-    {"capability": "Exact implicit gradients", "engine": "experimental", "bridge": "unsupported", "inference": "planned", "evidence": "Speed slice; FD <= 1e-6 required before default."},
-    {"capability": "Takahashi/selected inverse", "engine": "experimental", "bridge": "unsupported", "inference": "planned", "evidence": "Wire O(p) only where verified."},
-    {"capability": "AI-REML-inspired acceleration", "engine": "planned", "bridge": "unsupported", "inference": "planned", "evidence": "Use boundary language; not AI-REML for non-Gaussian Laplace."}
+    {
+      "capability": "Gaussian family",
+      "engine": "covered",
+      "bridge": "partial",
+      "inference": "covered",
+      "evidence": "Minimal no-X bridge_fit route and gllvmTMB R dispatch-to-direct-Julia roundtrip tested; X/missingness and TMB statistical parity still open."
+    },
+    {
+      "capability": "Poisson family",
+      "engine": "covered",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "Minimal no-X bridge_fit route and gllvmTMB no-X live dispatch tested. #91 high-rate divergence fixed on integration with fit-scale + analytic-vs-FD regression; full Pkg.test passed after follow-up changes."
+    },
+    {
+      "capability": "Binomial family",
+      "engine": "covered",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "Minimal no-X bridge_fit route tested; cbind binomial and broader R parity remain gates."
+    },
+    {
+      "capability": "Negative binomial NB2",
+      "engine": "covered",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "Minimal no-X bridge_fit route tested and R maps nbinom2 to negbinomial; dispersion transform parity remains a gate."
+    },
+    {
+      "capability": "NB1",
+      "engine": "planned",
+      "bridge": "planned",
+      "inference": "planned",
+      "evidence": "No covered claim until implemented and recovery-tested."
+    },
+    {
+      "capability": "Beta",
+      "engine": "covered",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "Minimal no-X bridge_fit route tested; precision transform and live R parity remain gates."
+    },
+    {
+      "capability": "Gamma",
+      "engine": "covered",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "Minimal no-X bridge_fit route tested; #96 mode-finder safeguards fixed locally; Gamma now defaults analytic after quick/medium finite-vs-analytic benchmarks with |delta logLik| <= 1.9e-12 and full Pkg.test green."
+    },
+    {
+      "capability": "Ordinal",
+      "engine": "partial",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "Minimal no-X bridge_fit route tested; cutpoint, prediction, and R label route remain gates."
+    },
+    {
+      "capability": "COM-Poisson",
+      "engine": "experimental",
+      "bridge": "planned",
+      "inference": "planned",
+      "evidence": "Keep as experimental until parity/recovery gates are recorded."
+    },
+    {
+      "capability": "Tweedie",
+      "engine": "planned",
+      "bridge": "planned",
+      "inference": "planned",
+      "evidence": "Roadmap only."
+    },
+    {
+      "capability": "Exponential",
+      "engine": "planned",
+      "bridge": "planned",
+      "inference": "planned",
+      "evidence": "Gamma subcase but no separate public row yet."
+    },
+    {
+      "capability": "Two-part and hurdle families",
+      "engine": "partial",
+      "bridge": "planned",
+      "inference": "partial",
+      "evidence": "Dedicated fitters exist in some branches; unified bridge route missing."
+    },
+    {
+      "capability": "Latent factors and loadings",
+      "engine": "covered",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "Minimal bridge test checks rotated loading parity to direct Julia fits; R Procrustes parity still needed."
+    },
+    {
+      "capability": "Fixed-effect covariates X",
+      "engine": "partial",
+      "bridge": "planned",
+      "inference": "partial",
+      "evidence": "Current gllvmTMB bridge deliberately rejects X to match minimal GLLVM.bridge_fit; integration X route needs parity before promotion."
+    },
+    {
+      "capability": "Response missingness",
+      "engine": "partial",
+      "bridge": "planned",
+      "inference": "partial",
+      "evidence": "Mask semantics must be engine+bridge verified."
+    },
+    {
+      "capability": "Predictor missingness",
+      "engine": "partial",
+      "bridge": "planned",
+      "inference": "partial",
+      "evidence": "Explicit mi() design only; no imputation shortcut."
+    },
+    {
+      "capability": "Mixed missingness",
+      "engine": "planned",
+      "bridge": "planned",
+      "inference": "planned",
+      "evidence": "Define or deliberately reject."
+    },
+    {
+      "capability": "Per-response family dispatch",
+      "engine": "planned",
+      "bridge": "planned",
+      "inference": "planned",
+      "evidence": "GLLVM #98 / DRM #280 first-class gate."
+    },
+    {
+      "capability": "Cross-family latent correlation",
+      "engine": "experimental",
+      "bridge": "planned",
+      "inference": "planned",
+      "evidence": "Do not confuse with residual rho12."
+    },
+    {
+      "capability": "Random intercepts",
+      "engine": "partial",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "Family-by-family audit required."
+    },
+    {
+      "capability": "Random slopes",
+      "engine": "planned",
+      "bridge": "planned",
+      "inference": "planned",
+      "evidence": "No blanket support claim."
+    },
+    {
+      "capability": "Phylogenetic dependence",
+      "engine": "partial",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "#92 phylo-signal transformed-Wald scale fixed locally; sparse-gradient wiring and R bridge remain gates."
+    },
+    {
+      "capability": "Animal/relmat",
+      "engine": "partial",
+      "bridge": "planned",
+      "inference": "partial",
+      "evidence": "Name alignment and PSD tests required."
+    },
+    {
+      "capability": "Spatial/SPDE",
+      "engine": "experimental",
+      "bridge": "planned",
+      "inference": "planned",
+      "evidence": "Do not promote without field visual and CI status."
+    },
+    {
+      "capability": "Kernel/NNGP/Matern",
+      "engine": "planned",
+      "bridge": "planned",
+      "inference": "planned",
+      "evidence": "Fixed kernel first; NNGP/Matern roadmap only."
+    },
+    {
+      "capability": "Coevolution/cross-kernel",
+      "engine": "experimental",
+      "bridge": "planned",
+      "inference": "planned",
+      "evidence": "Use gllvmTMB #361 C0-C5 gates."
+    },
+    {
+      "capability": "Wald CIs",
+      "engine": "partial",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "Minimal bridge tests check native Julia Wald CI equality and gllvmTMB confint surface for Gaussian; wider family/status coverage still needed."
+    },
+    {
+      "capability": "Profile CIs",
+      "engine": "partial",
+      "bridge": "planned",
+      "inference": "partial",
+      "evidence": "gllvmTMB bridge now errors on unsupported Julia profile CI status; profile visuals required before promotion."
+    },
+    {
+      "capability": "Bootstrap CIs",
+      "engine": "partial",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "Calibration claims need coverage study."
+    },
+    {
+      "capability": "Derived phylo-signal Wald CI",
+      "engine": "covered",
+      "bridge": "planned",
+      "inference": "partial",
+      "evidence": "#92 scale/export/test gap fixed locally; R bridge exposure and public docs still pending."
+    },
+    {
+      "capability": "AIC/BIC/logLik",
+      "engine": "covered",
+      "bridge": "partial",
+      "inference": "covered",
+      "evidence": "Minimal bridge returns AIC/BIC/logLik; gllvmTMB test checks dispatch vs direct Julia logLik, while TMB statistical parity remains open."
+    },
+    {
+      "capability": "predict/fitted/residuals/summary",
+      "engine": "partial",
+      "bridge": "planned",
+      "inference": "partial",
+      "evidence": "Post-fit bridge methods are P5."
+    },
+    {
+      "capability": "Exact implicit gradients",
+      "engine": "experimental",
+      "bridge": "unsupported",
+      "inference": "planned",
+      "evidence": "Speed slice; FD <= 1e-6 required before default."
+    },
+    {
+      "capability": "Takahashi/selected inverse",
+      "engine": "experimental",
+      "bridge": "unsupported",
+      "inference": "planned",
+      "evidence": "Wire O(p) only where verified."
+    },
+    {
+      "capability": "AI-REML-inspired acceleration",
+      "engine": "planned",
+      "bridge": "unsupported",
+      "inference": "planned",
+      "evidence": "Use boundary language; not AI-REML for non-Gaussian Laplace."
+    }
   ]
 }

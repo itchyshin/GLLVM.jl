@@ -1,38 +1,168 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-14T18:13:18-06:00",
+  "generated_at": "2026-06-15T04:49:28.300Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "Phase 4/5 gap fill is active: gllvmTMB now matches the current minimal no-X GLLVM.bridge_fit contract (live bridge test 49/0), #96 and #92 are locally fixed in the board worktree, and #91 is reproduced + locally fixed on GLLVM.jl-integration branch codex/high-rate-poisson-safeguard with focused tests green. X, mixed families, missingness bridge, R/TMB statistical parity, Gamma default benchmarking, and full-suite gates remain queued.",
+  "current_work": "Phase 4 runtime gap fill is green locally on GLLVM.jl-integration: #91 high-rate Poisson divergence fixed, Gamma now defaults to analytic gradients after finite-vs-analytic benchmark gates, full Pkg.test passed after both changes, and Vitepress hard dead-links are fixed in a no-deploy docs build. Next gates are PR/issue reconciliation, R bridge parity, missingness bridge, and structural speedups.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
-    {"label": "Active phase", "value": "5", "status": "active"},
-    {"label": "Slices visible", "value": "57", "status": "partial"},
-    {"label": "Blocked claims", "value": "4", "status": "blocked"},
-    {"label": "Release verdict", "value": "hold", "status": "unsupported"}
+    {
+      "label": "Active phase",
+      "value": "5",
+      "status": "active"
+    },
+    {
+      "label": "Slices visible",
+      "value": "57",
+      "status": "partial"
+    },
+    {
+      "label": "Blocked claims",
+      "value": "3",
+      "status": "partial"
+    },
+    {
+      "label": "Release verdict",
+      "value": "hold",
+      "status": "unsupported"
+    }
   ],
   "repos": [
-    {"name": "GLLVM.jl local board worktree", "branch": "codex/non-gaussian-fitter-gradients", "head": "6d8e158", "dirty": true, "note": "Untracked .claude/ and bench/results/; this is not the clean integration branch."},
-    {"name": "GLLVM.jl integration", "branch": "codex/high-rate-poisson-safeguard", "head": "65a1f10", "dirty": true, "note": "#91 high-rate Poisson safeguard patch applied locally; focused Poisson/Laplace/gradient/missing-mask tests pass; full suite pending."},
-    {"name": "gllvmTMB", "branch": "engine-julia", "head": "f046d0f", "dirty": true, "note": "Ahead of remote by 4 plus local bridge-contract shrink; live julia-bridge test passed 49/0; unpushed and not full parity."},
-    {"name": "drmTMB", "branch": "detached HEAD", "head": "b4a4d7be", "dirty": true, "note": "Dirty user-owned Phase 18/bridge/simulation work; read-only cross-check source."},
-    {"name": "DRM.jl", "branch": "shannon/ayumi-integration", "head": "23d8f79", "dirty": true, "note": "Dirty finish-audit files; source of bridge-drift and profile-CI lessons."},
-    {"name": "hsquared", "branch": "main", "head": "3666363", "dirty": false, "note": "Clean R twin; capability-matrix and AI-REML boundary pattern."},
-    {"name": "HSquared.jl", "branch": "codex/phase5-marker-region-data", "head": "2317133", "dirty": true, "note": "Dirty marker-region slice; use as validation-status pattern, not as GLLVM algorithm claim."}
+    {
+      "name": "GLLVM.jl local board worktree",
+      "branch": "codex/non-gaussian-fitter-gradients",
+      "head": "6d8e158",
+      "dirty": true,
+      "note": "Untracked .claude/ and bench/results/; this is not the clean integration branch."
+    },
+    {
+      "name": "GLLVM.jl integration",
+      "branch": "codex/high-rate-poisson-safeguard",
+      "head": "a208b28",
+      "dirty": false,
+      "note": "#91 safeguard + Gamma analytic default + docs-link cleanup committed locally; Pkg.test passed 3761/1 broken after Gamma flip."
+    },
+    {
+      "name": "gllvmTMB",
+      "branch": "engine-julia",
+      "head": "139f907",
+      "dirty": false,
+      "note": "engine-julia clean, ahead of remote; bridge-contract shrink committed locally; live julia-bridge test passed 49/49."
+    },
+    {
+      "name": "drmTMB",
+      "branch": "detached HEAD",
+      "head": "b4a4d7be",
+      "dirty": true,
+      "note": "Dirty user-owned Phase 18/bridge/simulation work; read-only cross-check source."
+    },
+    {
+      "name": "DRM.jl",
+      "branch": "shannon/ayumi-integration",
+      "head": "23d8f79",
+      "dirty": true,
+      "note": "Dirty finish-audit files; source of bridge-drift and profile-CI lessons."
+    },
+    {
+      "name": "hsquared",
+      "branch": "main",
+      "head": "3666363",
+      "dirty": false,
+      "note": "Clean R twin; capability-matrix and AI-REML boundary pattern."
+    },
+    {
+      "name": "HSquared.jl",
+      "branch": "codex/phase5-marker-region-data",
+      "head": "2317133",
+      "dirty": true,
+      "note": "Dirty marker-region slice; use as validation-status pattern, not as GLLVM algorithm claim."
+    }
   ],
   "agents": [
-    {"name": "Ada", "initials": "Ad", "role": "orchestration and phase sequencing", "state": "active", "color": "#5b6fa8"},
-    {"name": "Rose", "initials": "Ro", "role": "claim-vs-evidence audit", "state": "active", "color": "#b15b72"},
-    {"name": "Grace", "initials": "Gr", "role": "CI, docs, release gates", "state": "active", "color": "#4f7f52"},
-    {"name": "Shannon", "initials": "Sh", "role": "branches, PR stacks, issue ledger", "state": "active", "color": "#7a6b9b"},
-    {"name": "Hopper", "initials": "Ho", "role": "R-Julia bridge parity", "state": "active", "color": "#3d7f89"},
-    {"name": "Gauss", "initials": "Ga", "role": "sparse math and likelihood engine", "state": "queued", "color": "#4d75a8"},
-    {"name": "Karpinski", "initials": "Ka", "role": "Julia performance and AD", "state": "queued", "color": "#47907e"},
-    {"name": "Fisher", "initials": "Fi", "role": "CIs, identifiability, calibration", "state": "queued", "color": "#a37955"},
-    {"name": "Curie", "initials": "Cu", "role": "ADEMP and recovery tests", "state": "queued", "color": "#bf7a36"},
-    {"name": "Florence", "initials": "Fl", "role": "figures and diagnostic visuals", "state": "queued", "color": "#b25b91"},
-    {"name": "Pat", "initials": "Pa", "role": "applied-user workflow", "state": "queued", "color": "#7c9868"},
-    {"name": "Jason", "initials": "Ja", "role": "DRM/HSquared scout", "state": "queued", "color": "#8a7d4b"}
+    {
+      "name": "Ada",
+      "initials": "Ad",
+      "role": "orchestration and phase sequencing",
+      "state": "active",
+      "color": "#5b6fa8"
+    },
+    {
+      "name": "Rose",
+      "initials": "Ro",
+      "role": "claim-vs-evidence audit",
+      "state": "active",
+      "color": "#b15b72"
+    },
+    {
+      "name": "Grace",
+      "initials": "Gr",
+      "role": "CI, docs, release gates",
+      "state": "active",
+      "color": "#4f7f52"
+    },
+    {
+      "name": "Shannon",
+      "initials": "Sh",
+      "role": "branches, PR stacks, issue ledger",
+      "state": "active",
+      "color": "#7a6b9b"
+    },
+    {
+      "name": "Hopper",
+      "initials": "Ho",
+      "role": "R-Julia bridge parity",
+      "state": "active",
+      "color": "#3d7f89"
+    },
+    {
+      "name": "Gauss",
+      "initials": "Ga",
+      "role": "sparse math and likelihood engine",
+      "state": "queued",
+      "color": "#4d75a8"
+    },
+    {
+      "name": "Karpinski",
+      "initials": "Ka",
+      "role": "Julia performance and AD",
+      "state": "queued",
+      "color": "#47907e"
+    },
+    {
+      "name": "Fisher",
+      "initials": "Fi",
+      "role": "CIs, identifiability, calibration",
+      "state": "queued",
+      "color": "#a37955"
+    },
+    {
+      "name": "Curie",
+      "initials": "Cu",
+      "role": "ADEMP and recovery tests",
+      "state": "queued",
+      "color": "#bf7a36"
+    },
+    {
+      "name": "Florence",
+      "initials": "Fl",
+      "role": "figures and diagnostic visuals",
+      "state": "queued",
+      "color": "#b25b91"
+    },
+    {
+      "name": "Pat",
+      "initials": "Pa",
+      "role": "applied-user workflow",
+      "state": "queued",
+      "color": "#7c9868"
+    },
+    {
+      "name": "Jason",
+      "initials": "Ja",
+      "role": "DRM/HSquared scout",
+      "state": "queued",
+      "color": "#8a7d4b"
+    }
   ],
   "phases": [
     {
@@ -43,10 +173,26 @@
       "total": 4,
       "open": true,
       "slices": [
-        {"name": "Confirm repo state across GLLVM.jl, integration, gllvmTMB, DRM/drmTMB, HSquared/hsquared", "status": "partial", "evidence": "Local git state plus Grace/Shannon GitHub snapshot captured; issue mutation still queued."},
-        {"name": "Land or hold GLLVM #95", "status": "planned", "evidence": "Maintainer-gated; do not merge from this board slice."},
-        {"name": "Audit GLLVM #94 unique content before closure", "status": "planned", "evidence": "Needs unique-content ledger for genpoisson, studentt, truncnb, truncpoisson, anova.jl, diagnostics.jl."},
-        {"name": "Repair gllvmTMB bridge branch from current origin/main", "status": "partial", "evidence": "Bridge contract shrink applied locally on engine-julia; full branch repair/cherry-pick hygiene remains maintainer-gated."}
+        {
+          "name": "Confirm repo state across GLLVM.jl, integration, gllvmTMB, DRM/drmTMB, HSquared/hsquared",
+          "status": "partial",
+          "evidence": "Local git state plus Grace/Shannon GitHub snapshot captured; issue mutation still queued."
+        },
+        {
+          "name": "Land or hold GLLVM #95",
+          "status": "planned",
+          "evidence": "Maintainer-gated; do not merge from this board slice."
+        },
+        {
+          "name": "Audit GLLVM #94 unique content before closure",
+          "status": "planned",
+          "evidence": "Needs unique-content ledger for genpoisson, studentt, truncnb, truncpoisson, anova.jl, diagnostics.jl."
+        },
+        {
+          "name": "Repair gllvmTMB bridge branch from current origin/main",
+          "status": "partial",
+          "evidence": "Bridge contract shrink applied locally on engine-julia; full branch repair/cherry-pick hygiene remains maintainer-gated."
+        }
       ]
     },
     {
@@ -57,9 +203,21 @@
       "total": 3,
       "open": true,
       "slices": [
-        {"name": "Convert board to JSON-backed status", "status": "covered", "evidence": ".claude/preview/index.html fetches status.json, sweep.json, and version.txt."},
-        {"name": "Add dashboard fields for phases, agents, repos, blockers, evidence", "status": "covered", "evidence": "Rendered from status.json and sweep.json in the in-app browser."},
-        {"name": "Version guard", "status": "covered", "evidence": "HTML BUILD matches version.txt and status.json build."}
+        {
+          "name": "Convert board to JSON-backed status",
+          "status": "covered",
+          "evidence": ".claude/preview/index.html fetches status.json, sweep.json, and version.txt."
+        },
+        {
+          "name": "Add dashboard fields for phases, agents, repos, blockers, evidence",
+          "status": "covered",
+          "evidence": "Rendered from status.json and sweep.json in the in-app browser."
+        },
+        {
+          "name": "Version guard",
+          "status": "covered",
+          "evidence": "HTML BUILD matches version.txt and status.json build."
+        }
       ]
     },
     {
@@ -70,9 +228,21 @@
       "total": 3,
       "open": false,
       "slices": [
-        {"name": "Create master issue map", "status": "partial", "evidence": "Local issue action map written at docs/dev-log/2026-06-14-issue-action-map.md; no GitHub mutation yet."},
-        {"name": "Apply capability issue template", "status": "queued", "evidence": "Template drafted in roadmap docs; live issue updates pending approval/work slice."},
-        {"name": "Close stale issues only with successors", "status": "queued", "evidence": "No stale issue closed yet."}
+        {
+          "name": "Create master issue map",
+          "status": "partial",
+          "evidence": "Local issue action map written at docs/dev-log/2026-06-14-issue-action-map.md; no GitHub mutation yet."
+        },
+        {
+          "name": "Apply capability issue template",
+          "status": "queued",
+          "evidence": "Template drafted in roadmap docs; live issue updates pending approval/work slice."
+        },
+        {
+          "name": "Close stale issues only with successors",
+          "status": "queued",
+          "evidence": "No stale issue closed yet."
+        }
       ]
     },
     {
@@ -83,23 +253,51 @@
       "total": 3,
       "open": true,
       "slices": [
-        {"name": "Capability rows for families, structures, data complications, inference", "status": "partial", "evidence": "Drafted in docs/dev-log/capability-bridge-matrix.md and sweep.json; bridge_fit no-X rows updated after test evidence."},
-        {"name": "Matrix columns for engine, bridge, estimates, objective, CIs, parity, ADEMP, visual, article", "status": "active", "evidence": "Drafted; needs second pass after live issue refresh."},
-        {"name": "Public status vocabulary", "status": "covered", "evidence": "covered, partial, experimental, planned, unsupported used in JSON and docs."}
+        {
+          "name": "Capability rows for families, structures, data complications, inference",
+          "status": "partial",
+          "evidence": "Drafted in docs/dev-log/capability-bridge-matrix.md and sweep.json; bridge_fit no-X rows updated after test evidence."
+        },
+        {
+          "name": "Matrix columns for engine, bridge, estimates, objective, CIs, parity, ADEMP, visual, article",
+          "status": "active",
+          "evidence": "Drafted; needs second pass after live issue refresh."
+        },
+        {
+          "name": "Public status vocabulary",
+          "status": "covered",
+          "evidence": "covered, partial, experimental, planned, unsupported used in JSON and docs."
+        }
       ]
     },
     {
       "key": "P4",
       "name": "Core robustness before breadth",
-      "status": "queued",
-      "done": 1,
+      "status": "covered",
+      "done": 4,
       "total": 4,
-      "open": false,
+      "open": true,
       "slices": [
-        {"name": "Fix #96 Laplace mode-finder safeguard", "status": "covered", "evidence": "Backtracking/near-mode full-step/zero-restart safeguards implemented; new test_laplace_mode_safeguards 5/5, core suite, and full Pkg.test green. Issue/PR reconciliation still open."},
-        {"name": "Fix #91 high-rate Poisson beta divergence", "status": "partial", "evidence": "Reproduced on integration analytic path; local branch codex/high-rate-poisson-safeguard keeps beta6 on empirical scale and adds analytic-vs-FD regression; full runtests/Pkg.test still pending."},
-        {"name": "Fix #92 phylo-signal CI scale/export/test gap", "status": "covered", "evidence": "_derived_unpack now respects identity-scale sigma_phy; phylo_signal_wald_ci exported; transformed-Wald test 102/102, core suite, and full Pkg.test green."},
-        {"name": "Gamma analytic gradient recheck", "status": "queued", "evidence": "Do not flip Gamma default unless logLik delta <= 1e-6."}
+        {
+          "name": "Fix #96 Laplace mode-finder safeguard",
+          "status": "covered",
+          "evidence": "Backtracking/near-mode full-step/zero-restart safeguards implemented; new test_laplace_mode_safeguards 5/5, core suite, and full Pkg.test green. Issue/PR reconciliation still open."
+        },
+        {
+          "name": "Fix #91 high-rate Poisson beta divergence",
+          "status": "covered",
+          "evidence": "Reproduced on integration analytic path; branch codex/high-rate-poisson-safeguard keeps beta6 on empirical scale, adds analytic-vs-FD regression, and full Pkg.test passed 3761/1 broken after follow-up changes."
+        },
+        {
+          "name": "Fix #92 phylo-signal CI scale/export/test gap",
+          "status": "covered",
+          "evidence": "_derived_unpack now respects identity-scale sigma_phy; phylo_signal_wald_ci exported; transformed-Wald test 102/102, core suite, and full Pkg.test green."
+        },
+        {
+          "name": "Gamma analytic gradient recheck",
+          "status": "covered",
+          "evidence": "Gamma default flipped to analytic after quick + medium benchmark cells showed ~9.7-14.3x speedups and |delta logLik| <= 1.9e-12; Pkg.test passed after the flip."
+        }
       ]
     },
     {
@@ -110,12 +308,36 @@
       "total": 6,
       "open": true,
       "slices": [
-        {"name": "Bring bridge_fit into the current GLLVM surface", "status": "covered", "evidence": "src/bridge.jl exported bridge_fit; test/test_bridge_fit.jl passed 175/175 for Gaussian, Poisson, Binomial, NB2, Beta, Gamma, and Ordinal no-X fits."},
-        {"name": "Flat ASCII-safe bridge payload", "status": "partial", "evidence": "Minimal NamedTuple payload uses ASCII keys and primitive arrays; gllvmTMB live test now covers field access and names for the no-X route. Mixed-family metadata remains open."},
-        {"name": "Gate-vs-engine guard for gllvmTMB #488", "status": "partial", "evidence": "R gate narrowed to current GLLVM.bridge_fit and live julia-bridge test passed 49/0; automated cross-repo drift CI is still queued."},
-        {"name": "Wording freeze: default GLLVM.jl fitting path only", "status": "covered", "evidence": "Bridge wording avoids engine_control or selectable Julia-algorithm claims."},
-        {"name": "Bridge CI surface", "status": "partial", "evidence": "Wald CI route and unsupported CI-status errors are tested; profile/bootstrap bridge promotion remains queued."},
-        {"name": "Post-fit methods through bridge", "status": "queued", "evidence": "summary/predict/residuals/coef/vcov/logLik/AIC/BIC need matrix rows."}
+        {
+          "name": "Bring bridge_fit into the current GLLVM surface",
+          "status": "covered",
+          "evidence": "src/bridge.jl exported bridge_fit; test/test_bridge_fit.jl passed 175/175 for Gaussian, Poisson, Binomial, NB2, Beta, Gamma, and Ordinal no-X fits."
+        },
+        {
+          "name": "Flat ASCII-safe bridge payload",
+          "status": "partial",
+          "evidence": "Minimal NamedTuple payload uses ASCII keys and primitive arrays; gllvmTMB live test now covers field access and names for the no-X route. Mixed-family metadata remains open."
+        },
+        {
+          "name": "Gate-vs-engine guard for gllvmTMB #488",
+          "status": "partial",
+          "evidence": "R gate narrowed to current GLLVM.bridge_fit and live julia-bridge test passed 49/0; automated cross-repo drift CI is still queued."
+        },
+        {
+          "name": "Wording freeze: default GLLVM.jl fitting path only",
+          "status": "covered",
+          "evidence": "Bridge wording avoids engine_control or selectable Julia-algorithm claims."
+        },
+        {
+          "name": "Bridge CI surface",
+          "status": "partial",
+          "evidence": "Wald CI route and unsupported CI-status errors are tested; profile/bootstrap bridge promotion remains queued."
+        },
+        {
+          "name": "Post-fit methods through bridge",
+          "status": "queued",
+          "evidence": "summary/predict/residuals/coef/vcov/logLik/AIC/BIC need matrix rows."
+        }
       ]
     },
     {
@@ -126,11 +348,31 @@
       "total": 6,
       "open": false,
       "slices": [
-        {"name": "Response-missing masks: mask data term only", "status": "queued", "evidence": "Complete-data all-true mask must equal current logLik exactly."},
-        {"name": "R bridge missing response", "status": "queued", "evidence": "Wide/long shape preservation and true=observed mask required."},
-        {"name": "Predictor-missing FIML/MI matrix", "status": "queued", "evidence": "No mean-imputation shortcut."},
-        {"name": "Mixed missingness definition", "status": "queued", "evidence": "Deliberate rejection if unsupported."},
-        {"name": "Missingness diagnostics and visuals", "status": "queued", "evidence": "Heatmap, observed counts, warning summary, article."}
+        {
+          "name": "Response-missing masks: mask data term only",
+          "status": "queued",
+          "evidence": "Complete-data all-true mask must equal current logLik exactly."
+        },
+        {
+          "name": "R bridge missing response",
+          "status": "queued",
+          "evidence": "Wide/long shape preservation and true=observed mask required."
+        },
+        {
+          "name": "Predictor-missing FIML/MI matrix",
+          "status": "queued",
+          "evidence": "No mean-imputation shortcut."
+        },
+        {
+          "name": "Mixed missingness definition",
+          "status": "queued",
+          "evidence": "Deliberate rejection if unsupported."
+        },
+        {
+          "name": "Missingness diagnostics and visuals",
+          "status": "queued",
+          "evidence": "Heatmap, observed counts, warning summary, article."
+        }
       ]
     },
     {
@@ -141,12 +383,36 @@
       "total": 6,
       "open": false,
       "slices": [
-        {"name": "Native per-response family dispatch", "status": "queued", "evidence": "Homogeneous vector must equal single-family fit exactly."},
-        {"name": "Gaussian plus Poisson first mixed slice", "status": "queued", "evidence": "Shared latent correlation recovery required."},
-        {"name": "Tier-2 NB2, Beta, Gamma", "status": "queued", "evidence": "Then Binomial and Ordinal as separate gates."},
-        {"name": "Cross-family latent correlation target", "status": "queued", "evidence": "Must distinguish latent correlation from residual rho12."},
-        {"name": "Bridge metadata for per-column families", "status": "queued", "evidence": "confint refit must not guess labels."},
-        {"name": "Mixed-family article and profile visual", "status": "queued", "evidence": "Latent-correlation profile curve needed."}
+        {
+          "name": "Native per-response family dispatch",
+          "status": "queued",
+          "evidence": "Homogeneous vector must equal single-family fit exactly."
+        },
+        {
+          "name": "Gaussian plus Poisson first mixed slice",
+          "status": "queued",
+          "evidence": "Shared latent correlation recovery required."
+        },
+        {
+          "name": "Tier-2 NB2, Beta, Gamma",
+          "status": "queued",
+          "evidence": "Then Binomial and Ordinal as separate gates."
+        },
+        {
+          "name": "Cross-family latent correlation target",
+          "status": "queued",
+          "evidence": "Must distinguish latent correlation from residual rho12."
+        },
+        {
+          "name": "Bridge metadata for per-column families",
+          "status": "queued",
+          "evidence": "confint refit must not guess labels."
+        },
+        {
+          "name": "Mixed-family article and profile visual",
+          "status": "queued",
+          "evidence": "Latent-correlation profile curve needed."
+        }
       ]
     },
     {
@@ -157,11 +423,31 @@
       "total": 5,
       "open": false,
       "slices": [
-        {"name": "Audit current support", "status": "queued", "evidence": "Separate Gaussian, Poisson, intercepts, slopes."},
-        {"name": "Non-Gaussian random slopes by family", "status": "queued", "evidence": "NB2, Binomial, Beta, Gamma, Ordinal if identifiable."},
-        {"name": "Structured random slopes", "status": "queued", "evidence": "phylo, animal/relmat, spatial, kernel."},
-        {"name": "CI and diagnostics", "status": "queued", "evidence": "SD/correlation intervals and boundary statuses."},
-        {"name": "Random-slope visuals", "status": "queued", "evidence": "Slope distribution, correlation, failure heatmap."}
+        {
+          "name": "Audit current support",
+          "status": "queued",
+          "evidence": "Separate Gaussian, Poisson, intercepts, slopes."
+        },
+        {
+          "name": "Non-Gaussian random slopes by family",
+          "status": "queued",
+          "evidence": "NB2, Binomial, Beta, Gamma, Ordinal if identifiable."
+        },
+        {
+          "name": "Structured random slopes",
+          "status": "queued",
+          "evidence": "phylo, animal/relmat, spatial, kernel."
+        },
+        {
+          "name": "CI and diagnostics",
+          "status": "queued",
+          "evidence": "SD/correlation intervals and boundary statuses."
+        },
+        {
+          "name": "Random-slope visuals",
+          "status": "queued",
+          "evidence": "Slope distribution, correlation, failure heatmap."
+        }
       ]
     },
     {
@@ -172,12 +458,36 @@
       "total": 6,
       "open": false,
       "slices": [
-        {"name": "Phylo representation parity", "status": "queued", "evidence": "dense/sparse/contrasts/edge-incidence equality."},
-        {"name": "Takahashi/node-gradient route", "status": "queued", "evidence": "Wire O(p) only where equality is verified."},
-        {"name": "Animal/relmat K/Q backend", "status": "queued", "evidence": "Label alignment and PSD/PD checks."},
-        {"name": "Spatial/SPDE", "status": "queued", "evidence": "Bridge route, prediction, CI status, field visual."},
-        {"name": "Kernel/NNGP/Matern", "status": "queued", "evidence": "Fixed kernel first; NNGP/Matern stay roadmap until implemented."},
-        {"name": "Coevolution/cross-kernel", "status": "queued", "evidence": "Follow C0-C5 serialized gates from gllvmTMB #361."}
+        {
+          "name": "Phylo representation parity",
+          "status": "queued",
+          "evidence": "dense/sparse/contrasts/edge-incidence equality."
+        },
+        {
+          "name": "Takahashi/node-gradient route",
+          "status": "queued",
+          "evidence": "Wire O(p) only where equality is verified."
+        },
+        {
+          "name": "Animal/relmat K/Q backend",
+          "status": "queued",
+          "evidence": "Label alignment and PSD/PD checks."
+        },
+        {
+          "name": "Spatial/SPDE",
+          "status": "queued",
+          "evidence": "Bridge route, prediction, CI status, field visual."
+        },
+        {
+          "name": "Kernel/NNGP/Matern",
+          "status": "queued",
+          "evidence": "Fixed kernel first; NNGP/Matern stay roadmap until implemented."
+        },
+        {
+          "name": "Coevolution/cross-kernel",
+          "status": "queued",
+          "evidence": "Follow C0-C5 serialized gates from gllvmTMB #361."
+        }
       ]
     },
     {
@@ -188,12 +498,36 @@
       "total": 6,
       "open": false,
       "slices": [
-        {"name": "Exact implicit Laplace gradients", "status": "queued", "evidence": "FD <= 1e-6 across families and structures."},
-        {"name": "Selected inverse/Takahashi", "status": "queued", "evidence": "Gradient equality plus speed table."},
-        {"name": "Observed-information Newton/Fisher scoring", "status": "queued", "evidence": "AI-REML inspiration only; objective, estimates, CIs match baseline."},
-        {"name": "Profile-CI acceleration", "status": "queued", "evidence": "Endpoint solver matches baseline profile."},
-        {"name": "Bootstrap/profile batching", "status": "queued", "evidence": "Separate cold/warm/marshalling/kernel/reconstruction time."},
-        {"name": "Allocation and AD cleanup", "status": "queued", "evidence": "JET/Allocs gates for hot paths."}
+        {
+          "name": "Exact implicit Laplace gradients",
+          "status": "queued",
+          "evidence": "FD <= 1e-6 across families and structures."
+        },
+        {
+          "name": "Selected inverse/Takahashi",
+          "status": "queued",
+          "evidence": "Gradient equality plus speed table."
+        },
+        {
+          "name": "Observed-information Newton/Fisher scoring",
+          "status": "queued",
+          "evidence": "AI-REML inspiration only; objective, estimates, CIs match baseline."
+        },
+        {
+          "name": "Profile-CI acceleration",
+          "status": "queued",
+          "evidence": "Endpoint solver matches baseline profile."
+        },
+        {
+          "name": "Bootstrap/profile batching",
+          "status": "queued",
+          "evidence": "Separate cold/warm/marshalling/kernel/reconstruction time."
+        },
+        {
+          "name": "Allocation and AD cleanup",
+          "status": "queued",
+          "evidence": "JET/Allocs gates for hot paths."
+        }
       ]
     },
     {
@@ -204,48 +538,163 @@
       "total": 21,
       "open": false,
       "slices": [
-        {"name": "Articles walkthrough together", "status": "queued", "evidence": "Pat/Darwin/Fisher/Hopper/Florence/Rose review passes."},
-        {"name": "Visual aids", "status": "queued", "evidence": "Capability heatmap, missingness, parity, profiles, structure, recovery, runtime."},
-        {"name": "Cross-team visits", "status": "partial", "evidence": "DRM/HSquared lessons imported into roadmap; issue comments still queued."},
-        {"name": "ADEMP, parity, comparator gates", "status": "queued", "evidence": "StableRNG and ADEMP blocks required before big sims."},
-        {"name": "Big simulation and power program", "status": "queued", "evidence": "Only after small parity/recovery gates pass."},
-        {"name": "Release", "status": "blocked", "evidence": "Hold until package health, bridge claims, docs, dashboard, and issue ledger agree."}
+        {
+          "name": "Articles walkthrough together",
+          "status": "queued",
+          "evidence": "Pat/Darwin/Fisher/Hopper/Florence/Rose review passes."
+        },
+        {
+          "name": "Visual aids",
+          "status": "queued",
+          "evidence": "Capability heatmap, missingness, parity, profiles, structure, recovery, runtime."
+        },
+        {
+          "name": "Cross-team visits",
+          "status": "partial",
+          "evidence": "DRM/HSquared lessons imported into roadmap; issue comments still queued."
+        },
+        {
+          "name": "ADEMP, parity, comparator gates",
+          "status": "queued",
+          "evidence": "StableRNG and ADEMP blocks required before big sims."
+        },
+        {
+          "name": "Big simulation and power program",
+          "status": "queued",
+          "evidence": "Only after small parity/recovery gates pass."
+        },
+        {
+          "name": "Release",
+          "status": "blocked",
+          "evidence": "Hold until package health, bridge claims, docs, dashboard, and issue ledger agree."
+        }
       ]
     }
   ],
   "activity": [
-    {"time": "now", "html": "<b>Gauss/Karpinski #96 local fix green.</b> Shared Laplace mode finder now backtracks large uphill Fisher steps, keeps full near-mode steps, and zero-restarts after non-finite solves; new safeguard test 5/5 and full <code>Pkg.test()</code> passed."},
-    {"time": "now", "html": "<b>Hopper/Rose gllvmTMB gate shrink green.</b> R now rejects X, mixed families, NB1/lognormal, missing latent blocks, and unsupported CI payloads before pretending the Julia bridge can fit them; live <code>julia-bridge</code> test passed 49/0."},
-    {"time": "now", "html": "<b>Hopper bridge slice green.</b> <code>bridge_fit</code> is exported on this branch for no-X one-part families; focused test, core suite, and full <code>Pkg.test()</code> passed."},
-    {"time": "now", "html": "<b>Fisher/Noether #92 fix green.</b> Packed phylo signal now matches public <code>phylo_signal</code>; transformed-Wald test 102/102 and full <code>Pkg.test()</code> passed."},
-    {"time": "now", "html": "<b>Rose public-doc cleanup.</b> Non-Gaussian CI and R-bridge status pages now say partial instead of stale planned/deferred wording; Documenter build passed."},
-    {"time": "now", "html": "<b>Mission-control implementation started.</b> Board now reads status.json, sweep.json, and version.txt instead of hard-coded completion prose."},
-    {"time": "now", "html": "<b>Hopper bridge audit.</b> Initial blocker was real: the branch lacked <code>GLLVM.bridge_fit</code>. First narrow no-X route is now implemented; X, mixed families, missingness, and gllvmTMB roundtrip remain open."},
-    {"time": "now", "html": "<b>Rose audit.</b> No publish/tag signoff: dashboard and public docs must not imply main, registry, CRAN, or bridge completion."},
-    {"time": "now", "html": "<b>Grace/Shannon truth snapshot.</b> GLLVM #95 is green but draft; #94 is divergent/non-mergeable; gllvmTMB f046d0f is local-only with no remote CI."},
-    {"time": "now", "html": "<b>#91 reproduced + locally fixed on integration.</b> High-rate Poisson beta6 now stays on empirical scale; focused tests pass, full-suite gate pending."},
-    {"time": "earlier", "html": "<b>Truth warning added.</b> Local board worktree is dirty/untracked and separate from integration repair branch."},
-    {"time": "now", "html": "<b>Issue action map added.</b> GitHub updates are staged as controlled issue comments/edits rather than broad remote mutation."},
-    {"time": "now", "html": "<b>Sidecar reviewers closed.</b> Grace/Shannon, Hopper, and Rose findings are now folded into dashboard and docs."},
-    {"time": "today", "html": "<b>Imported cross-team lessons.</b> DRM contributes bridge-drift/profile-CI discipline; HSquared contributes validation-status and AI-REML boundary discipline."}
+    {
+      "time": "now",
+      "html": "<b>Karpinski/Gauss Gamma default green.</b> <code>fit_gamma_gllvm</code> now defaults to analytic gradients; quick + medium benchmark cells show about 9.7-14.3x speedups with <code>|delta logLik| <= 1.9e-12</code>; full <code>Pkg.test()</code> passed 3761/1 broken."
+    },
+    {
+      "time": "now",
+      "html": "<b>Gauss #91 integration fix green.</b> High-rate Poisson beta divergence is guarded by a fit-scale regression and analytic-vs-FD check; full <code>test/runtests.jl</code> and <code>Pkg.test()</code> passed locally."
+    },
+    {
+      "time": "now",
+      "html": "<b>Grace docs gate improved.</b> Vitepress hard dead-link failure removed by normalising relative page links; no-deploy docs build reached successful Vitepress render, with warning-level docs-infra cleanup still open."
+    },
+    {
+      "time": "now",
+      "html": "<b>Gauss/Karpinski #96 local fix green.</b> Shared Laplace mode finder now backtracks large uphill Fisher steps, keeps full near-mode steps, and zero-restarts after non-finite solves; new safeguard test 5/5 and full <code>Pkg.test()</code> passed."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper/Rose gllvmTMB gate shrink green.</b> R now rejects X, mixed families, NB1/lognormal, missing latent blocks, and unsupported CI payloads before pretending the Julia bridge can fit them; live <code>julia-bridge</code> test passed 49/0."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper bridge slice green.</b> <code>bridge_fit</code> is exported on this branch for no-X one-part families; focused test, core suite, and full <code>Pkg.test()</code> passed."
+    },
+    {
+      "time": "now",
+      "html": "<b>Fisher/Noether #92 fix green.</b> Packed phylo signal now matches public <code>phylo_signal</code>; transformed-Wald test 102/102 and full <code>Pkg.test()</code> passed."
+    },
+    {
+      "time": "now",
+      "html": "<b>Rose public-doc cleanup.</b> Non-Gaussian CI and R-bridge status pages now say partial instead of stale planned/deferred wording; Documenter build passed."
+    },
+    {
+      "time": "now",
+      "html": "<b>Mission-control implementation started.</b> Board now reads status.json, sweep.json, and version.txt instead of hard-coded completion prose."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper bridge audit.</b> Initial blocker was real: the branch lacked <code>GLLVM.bridge_fit</code>. First narrow no-X route is now implemented; X, mixed families, missingness, and gllvmTMB roundtrip remain open."
+    },
+    {
+      "time": "now",
+      "html": "<b>Rose audit.</b> No publish/tag signoff: dashboard and public docs must not imply main, registry, CRAN, or bridge completion."
+    },
+    {
+      "time": "now",
+      "html": "<b>Grace/Shannon truth snapshot.</b> GLLVM #95 is green but draft; #94 is divergent/non-mergeable; gllvmTMB f046d0f is local-only with no remote CI."
+    }
   ],
   "inflight": [
-    {"owner": "Ada", "text": "First bridge slice is locally banked; move to the next highest-risk gate without widening bridge claims."},
-    {"owner": "Hopper", "text": "Next bridge slice: add automated gate-vs-engine drift check, then widen X/missingness deliberately with parity tests."},
-    {"owner": "Gauss/Karpinski", "text": "Current engine slice: #91 integration repair needs full runtests/Pkg.test gate, then issue/PR reconciliation."},
-    {"owner": "Rose", "text": "Next audit slice: stale public docs on non-Gaussian CIs, changelog, and preview figure claims."}
+    {
+      "owner": "Ada",
+      "text": "First bridge slice is locally banked; move to the next highest-risk gate without widening bridge claims."
+    },
+    {
+      "owner": "Hopper",
+      "text": "Next bridge slice: add automated gate-vs-engine drift check, then widen X/missingness deliberately with parity tests."
+    },
+    {
+      "owner": "Gauss/Karpinski",
+      "text": "Current engine slice: #91 integration repair needs full runtests/Pkg.test gate, then issue/PR reconciliation."
+    },
+    {
+      "owner": "Rose",
+      "text": "Next audit slice: stale public docs on non-Gaussian CIs, changelog, and preview figure claims."
+    }
   ],
   "evidence": [
-    {"status": "partial", "text": "Local git state checked for GLLVM.jl, GLLVM.jl-integration, gllvmTMB, drmTMB, DRM.jl, hsquared, HSquared.jl."},
-    {"status": "covered", "text": "Dashboard data source split into status.json and sweep.json with build guard in version.txt."},
-    {"status": "partial", "text": "Capability/bridge matrix drafted locally and updated for the tested no-X bridge_fit route; live GitHub issue updates and engine fixes are not complete."},
-    {"status": "partial", "text": "Issue action map drafted locally; GitHub comments/edits still require a controlled remote update slice."},
-    {"status": "covered", "text": "Hopper: bridge_fit is exported and passed focused test 175/175, core test/runtests.jl, and full Pkg.test() for the minimal no-X one-part contract."},
-    {"status": "covered", "text": "Hopper/Rose: gllvmTMB R bridge narrowed to the current GLLVM.bridge_fit contract; live devtools::test(filter = \"julia-bridge\") passed 49/0."},
-    {"status": "covered", "text": "Gauss/Karpinski: #96 Laplace mode-finder safeguards fixed locally; new safeguard test 5/5, core suite, and full Pkg.test() passed."},
-    {"status": "covered", "text": "Fisher/Noether: #92 phylo_signal_wald_ci scale bug fixed; transformed-Wald test 102/102, adjacent CI tests, core suite, and full Pkg.test() passed."},
-    {"status": "partial", "text": "Rose/Pat: public status docs cleaned for non-Gaussian CI and bridge wording; Documenter build passed, broader issue-led docs audit remains open."},
-    {"status": "blocked", "text": "Rose: no publish/tag messaging until main, version, changelog, CI, docs, bridge, and issue ledgers agree."},
-    {"status": "blocked", "text": "Release/tag/CRAN/registry claims remain blocked until Rose audit, docs, issue ledger, CI, and bridge evidence agree."}
+    {
+      "status": "covered",
+      "text": "Karpinski/Gauss: Gamma analytic default benchmark gate passed: 8x40x1 10.09x, 12x60x1 9.68x, 20x100x2 14.27x; all delta logLik values around 1e-12 or smaller."
+    },
+    {
+      "status": "covered",
+      "text": "Grace: post-Gamma full Pkg.test passed 3761 pass, 1 broken, 0 fail/error in 35m09.1s."
+    },
+    {
+      "status": "covered",
+      "text": "Grace: no-deploy DocumenterVitepress build passed after docs page-link cleanup; remaining docs warnings are warning-level infrastructure items."
+    },
+    {
+      "status": "partial",
+      "text": "Local git state checked for GLLVM.jl, GLLVM.jl-integration, gllvmTMB, drmTMB, DRM.jl, hsquared, HSquared.jl."
+    },
+    {
+      "status": "covered",
+      "text": "Dashboard data source split into status.json and sweep.json with build guard in version.txt."
+    },
+    {
+      "status": "partial",
+      "text": "Capability/bridge matrix drafted locally and updated for the tested no-X bridge_fit route; live GitHub issue updates and engine fixes are not complete."
+    },
+    {
+      "status": "partial",
+      "text": "Issue action map drafted locally; GitHub comments/edits still require a controlled remote update slice."
+    },
+    {
+      "status": "covered",
+      "text": "Hopper: bridge_fit is exported and passed focused test 175/175, core test/runtests.jl, and full Pkg.test() for the minimal no-X one-part contract."
+    },
+    {
+      "status": "covered",
+      "text": "Hopper/Rose: gllvmTMB R bridge narrowed to the current GLLVM.bridge_fit contract; live devtools::test(filter = \"julia-bridge\") passed 49/0."
+    },
+    {
+      "status": "covered",
+      "text": "Gauss/Karpinski: #96 Laplace mode-finder safeguards fixed locally; new safeguard test 5/5, core suite, and full Pkg.test() passed."
+    },
+    {
+      "status": "covered",
+      "text": "Fisher/Noether: #92 phylo_signal_wald_ci scale bug fixed; transformed-Wald test 102/102, adjacent CI tests, core suite, and full Pkg.test() passed."
+    },
+    {
+      "status": "partial",
+      "text": "Rose/Pat: public status docs cleaned for non-Gaussian CI and bridge wording; Documenter build passed, broader issue-led docs audit remains open."
+    },
+    {
+      "status": "blocked",
+      "text": "Rose: no publish/tag messaging until main, version, changelog, CI, docs, bridge, and issue ledgers agree."
+    },
+    {
+      "status": "blocked",
+      "text": "Release/tag/CRAN/registry claims remain blocked until Rose audit, docs, issue ledger, CI, and bridge evidence agree."
+    }
   ]
 }
