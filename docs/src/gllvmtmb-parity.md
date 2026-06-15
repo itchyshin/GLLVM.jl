@@ -106,9 +106,13 @@ balanced one-part Gaussian, Poisson, Binomial, NB2, Beta, and Gamma fits.
 For Gaussian covariate fits the bridge returns `mean_coef`, the full coefficient
 vector for the supplied `X` array, so the R side can reconstruct in-sample
 fitted values without guessing from the per-trait mean summary.
-Response-missing masks, mixed-family bridge metadata, ordinal covariate fits,
-structured covariance terms, and user-selectable Julia-side optimizer controls
-remain explicit bridge follow-ups, not silently supported cells.
+Initial response-missing masks are admitted only for no-X one-part
+non-Gaussian bridge fits through an explicit `mask` (`true = observed`);
+the R bridge currently live-tests the Poisson route end to end. Gaussian
+response masks, X+mask fits, masked CI/profile/bootstrap refits, mixed-family
+bridge metadata, ordinal covariate fits, structured covariance terms, and
+user-selectable Julia-side optimizer controls remain explicit bridge follow-ups,
+not silently supported cells.
 
 REML is a Gaussian-only bridge/engine claim in this project. HSquared's very fast
 AI-REML work is useful design input for exact Gaussian variance-component cells,

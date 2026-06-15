@@ -97,13 +97,15 @@ the canonical [`rotation`](@ref).
 """
 function getLV(fit::BinomialFit, Y::AbstractMatrix{<:Integer};
                N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
-               rotate::Bool = true)
+               rotate::Bool = true, mask = nothing)
     p, n = size(Y)
     Nm = N === nothing ? fill(1, p, n) : N
     K = size(fit.Λ, 2)
     Z = Matrix{Float64}(undef, K, n)
     @inbounds for s in 1:n
-        Z[:, s] = _laplace_mode(view(Y, :, s), view(Nm, :, s), fit.Λ, fit.β, fit.link)
+        mi = mask === nothing ? nothing : view(mask, :, s)
+        Z[:, s] = _laplace_mode(view(Y, :, s), view(Nm, :, s), fit.Λ, fit.β, fit.link;
+                                mask = mi)
     end
     Zt = permutedims(Z)                 # n×K
     return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
@@ -291,13 +293,15 @@ Conditional latent-variable scores for a Poisson fit: the per-site Laplace mode
 """
 function getLV(fit::PoissonFit, Y::AbstractMatrix{<:Integer};
                N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
-               rotate::Bool = true)
+               rotate::Bool = true, mask = nothing)
     p, n = size(Y)
     Nm = N === nothing ? fill(1, p, n) : N
     K = size(fit.Λ, 2)
     Z = Matrix{Float64}(undef, K, n)
     @inbounds for s in 1:n
-        Z[:, s] = _laplace_mode(Poisson(), view(Y, :, s), view(Nm, :, s), fit.Λ, fit.β, fit.link)
+        mi = mask === nothing ? nothing : view(mask, :, s)
+        Z[:, s] = _laplace_mode(Poisson(), view(Y, :, s), view(Nm, :, s), fit.Λ,
+                                fit.β, fit.link; mask = mi)
     end
     Zt = permutedims(Z)
     return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
@@ -381,14 +385,16 @@ the canonical [`rotation`](@ref).
 """
 function getLV(fit::NBFit, Y::AbstractMatrix{<:Integer};
                N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
-               rotate::Bool = true)
+               rotate::Bool = true, mask = nothing)
     p, n = size(Y)
     Nm = N === nothing ? fill(1, p, n) : N
     K = size(fit.Λ, 2)
     fam = NegativeBinomial(fit.r, 0.5)
     Z = Matrix{Float64}(undef, K, n)
     @inbounds for s in 1:n
-        Z[:, s] = _laplace_mode(fam, view(Y, :, s), view(Nm, :, s), fit.Λ, fit.β, fit.link)
+        mi = mask === nothing ? nothing : view(mask, :, s)
+        Z[:, s] = _laplace_mode(fam, view(Y, :, s), view(Nm, :, s), fit.Λ,
+                                fit.β, fit.link; mask = mi)
     end
     Zt = permutedims(Z)
     return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
@@ -550,14 +556,16 @@ Conditional latent-variable scores for a Beta fit: the per-site Laplace mode `�
 (computed at the fitted precision `φ`). `Y` is the p×n matrix of proportions in
 (0,1); `rotate=true` applies the canonical [`rotation`](@ref).
 """
-function getLV(fit::BetaFit, Y::AbstractMatrix{<:Real}; rotate::Bool = true)
+function getLV(fit::BetaFit, Y::AbstractMatrix{<:Real}; rotate::Bool = true, mask = nothing)
     p, n = size(Y)
     K = size(fit.Λ, 2)
     fam = Beta(fit.φ, 1.0)
     ones_p = ones(Int, p)
     Z = Matrix{Float64}(undef, K, n)
     @inbounds for s in 1:n
-        Z[:, s] = _laplace_mode(fam, view(Y, :, s), ones_p, fit.Λ, fit.β, fit.link)
+        mi = mask === nothing ? nothing : view(mask, :, s)
+        Z[:, s] = _laplace_mode(fam, view(Y, :, s), ones_p, fit.Λ, fit.β, fit.link;
+                                mask = mi)
     end
     Zt = permutedims(Z)
     return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
@@ -636,12 +644,14 @@ Conditional latent-variable scores for an ordinal fit: the per-site Laplace mode
 `ẑₛ` (at the fitted cutpoints). `Y` is the p×n matrix of ordinal responses (`1:C`);
 `rotate=true` applies the canonical [`rotation`](@ref).
 """
-function getLV(fit::OrdinalFit, Y::AbstractMatrix{<:Integer}; rotate::Bool = true)
+function getLV(fit::OrdinalFit, Y::AbstractMatrix{<:Integer}; rotate::Bool = true, mask = nothing)
     p, n = size(Y)
     K = size(fit.Λ, 2)
     Z = Matrix{Float64}(undef, K, n)
     @inbounds for s in 1:n
-        Z[:, s] = _ordinal_laplace_mode(view(Y, :, s), fit.Λ, fit.τ, fit.link)
+        mi = mask === nothing ? nothing : view(mask, :, s)
+        Z[:, s] = _ordinal_laplace_mode(view(Y, :, s), fit.Λ, fit.τ, fit.link;
+                                        mask = mi)
     end
     Zt = permutedims(Z)
     return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
@@ -737,14 +747,16 @@ Conditional latent-variable scores for a Gamma fit: the per-site Laplace mode `�
 (computed at the fitted shape `α`). `Y` is the p×n matrix of positive reals;
 `rotate=true` applies the canonical [`rotation`](@ref).
 """
-function getLV(fit::GammaFit, Y::AbstractMatrix{<:Real}; rotate::Bool = true)
+function getLV(fit::GammaFit, Y::AbstractMatrix{<:Real}; rotate::Bool = true, mask = nothing)
     p, n = size(Y)
     K = size(fit.Λ, 2)
     fam = Gamma(fit.α, 1.0)
     ones_p = ones(Int, p)
     Z = Matrix{Float64}(undef, K, n)
     @inbounds for s in 1:n
-        Z[:, s] = _laplace_mode(fam, view(Y, :, s), ones_p, fit.Λ, fit.β, fit.link)
+        mi = mask === nothing ? nothing : view(mask, :, s)
+        Z[:, s] = _laplace_mode(fam, view(Y, :, s), ones_p, fit.Λ, fit.β, fit.link;
+                                mask = mi)
     end
     Zt = permutedims(Z)
     return rotate ? Zt * _svd_rotation(fit.Λ) : Zt

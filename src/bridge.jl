@@ -26,7 +26,7 @@
 #   loglik       :: Float64
 #   aic, bic     :: Float64
 #   df           :: Int               — free-parameter count for AIC
-#   nobs         :: Int               — p*n
+#   nobs         :: Int               — observed cells (p*n for complete data)
 #   converged    :: Bool
 #   iterations   :: Int
 #   message      :: String
@@ -293,6 +293,7 @@ function bridge_fit(; y,
                     d::Integer = 1,
                     N = nothing,
                     X = nothing,
+                    mask = nothing,
                     trait_names = nothing,
                     unit_names = nothing,
                     options = Dict{String,Any}())
@@ -321,21 +322,38 @@ function bridge_fit(; y,
     # vector still routes here (the mixed fitter handles the degenerate one-family
     # case); the cross-family `correlation` is the contract's headline field.
     if family isa AbstractVector
+        mask === nothing || throw(ArgumentError(
+            "bridge_fit: missing-response masks are not yet wired for the " *
+            "mixed-family path; use a one-part non-Gaussian family or engine='tmb'."))
         return _bridge_fit_mixed(y, collect(String, String.(family)), K, N,
                                  trait_names, unit_names, options)
     end
     return _bridge_fit_onepart(y, _bridge_family_key(String(family)), K, N,
-                               trait_names, unit_names, options; X = X)
+                               trait_names, unit_names, options; X = X, mask = mask)
 end
 
 # --- one-part dispatch -----------------------------------------------------
 
+const _BRIDGE_MASK_FAMILIES = ("poisson", "binomial", "negbinomial", "beta", "gamma", "ordinal")
+
+function _bridge_mask(mask, p::Integer, n::Integer)
+    mask === nothing && return nothing
+    M = Matrix{Bool}(mask)
+    size(M) == (p, n) || throw(ArgumentError(
+        "bridge_fit: mask must be p×n ($(p)×$(n)); got $(size(M))"))
+    all(M) && return nothing
+    any(M) || throw(ArgumentError(
+        "bridge_fit: mask has no observed cells; at least one response must be observed"))
+    return M
+end
+
 function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
-                             trait_names, unit_names, options; X = nothing)
+                             trait_names, unit_names, options; X = nothing, mask = nothing)
     Yf = Matrix{Float64}(y)
     p, n = size(Yf)
     traits = _bridge_names(trait_names, p, "trait")
     units = _bridge_names(unit_names, n, "unit")
+    M = _bridge_mask(mask, p, n)
 
     # CI routing options (validated up-front so a bad ci_method errors before the
     # — potentially expensive — fit runs). ci_method="none" ⇒ ci stays nothing ⇒
@@ -344,6 +362,19 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
     ci_level  = _bridge_ci_level(options)
     ci_nboot  = _bridge_ci_nboot(options)
     ci_seed   = _bridge_ci_seed(options)
+
+    if M !== nothing
+        key in _BRIDGE_MASK_FAMILIES || throw(ArgumentError(
+            "bridge_fit: missing-response masks are wired for " *
+            join(_BRIDGE_MASK_FAMILIES, ", ") *
+            "; family=\"$key\" is not yet supported"))
+        X === nothing || throw(ArgumentError(
+            "bridge_fit: missing-response masks with fixed-effect covariates X " *
+            "are not wired yet; use a complete response table or engine='tmb'."))
+        ci_method == "none" || throw(ArgumentError(
+            "bridge_fit: confidence intervals for masked response fits are not " *
+            "routed yet; use ci_method=\"none\" or engine='tmb'."))
+    end
 
     # X (a p×n×q covariate array) routes to the covariate fitters: the Gaussian
     # branch below handles key=="gaussian"; every other one-part family with a
@@ -462,33 +493,33 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
     # is in _CIFit even though its latent-scale extractor is not yet present).
     if key == "poisson"
         Yi = round.(Int, Yf)
-        fit = fit_poisson_gllvm(Yi; K = K)
-        scores = _bridge_scores(() -> getLV(fit, Yi; rotate = true))
+        fit = fit_poisson_gllvm(Yi; K = K, mask = M)
+        scores = _bridge_scores(() -> getLV(fit, Yi; rotate = true, mask = M))
         ci = ci_method == "none" ? nothing :
              _bridge_compute_ci_ng(fit, Float64.(Yi), nothing, ci_method, ci_level, ci_nboot, ci_seed)
         return _bridge_assemble_ng(fit, "poisson", "poisson_rr", traits, units, p, K, Yi, nothing;
             alpha = fit.β, dispersion = fill(NaN, p), df = p + _bridge_rr_df(p, K),
-            scores = scores, ci = ci)
+            scores = scores, ci = ci, mask = M)
     elseif key == "binomial"
         Yi = round.(Int, Yf)
         Ni = N === nothing ? fill(1, p, n) :
              (N isa Number ? fill(round(Int, N), p, n) : round.(Int, Matrix(N)))
-        fit = fit_binomial_gllvm(Yi; K = K, N = Ni)
-        scores = _bridge_scores(() -> getLV(fit, Yi; N = Ni, rotate = true))
+        fit = fit_binomial_gllvm(Yi; K = K, N = Ni, mask = M)
+        scores = _bridge_scores(() -> getLV(fit, Yi; N = Ni, rotate = true, mask = M))
         ci = ci_method == "none" ? nothing :
              _bridge_compute_ci_ng(fit, Float64.(Yi), Ni, ci_method, ci_level, ci_nboot, ci_seed)
         return _bridge_assemble_ng(fit, "binomial", "binomial_rr", traits, units, p, K, Yi, Ni;
             alpha = fit.β, dispersion = fill(NaN, p), df = p + _bridge_rr_df(p, K),
-            scores = scores, ci = ci)
+            scores = scores, ci = ci, mask = M)
     elseif key == "negbinomial"
         Yi = round.(Int, Yf)
-        fit = fit_nb_gllvm(Yi; K = K)
-        scores = _bridge_scores(() -> getLV(fit, Yi; rotate = true))
+        fit = fit_nb_gllvm(Yi; K = K, mask = M)
+        scores = _bridge_scores(() -> getLV(fit, Yi; rotate = true, mask = M))
         ci = ci_method == "none" ? nothing :
              _bridge_compute_ci_ng(fit, Float64.(Yi), nothing, ci_method, ci_level, ci_nboot, ci_seed)
         return _bridge_assemble_ng(fit, "negbinomial", "negbinomial_rr", traits, units, p, K, Yi, nothing;
             alpha = fit.β, dispersion = fill(fit.r, p), df = p + _bridge_rr_df(p, K) + 1,
-            scores = scores, ci = ci)
+            scores = scores, ci = ci, mask = M)
     elseif key == "nb1"
         Yi = round.(Int, Yf)
         fit = fit_nb1_gllvm(Yi; K = K)
@@ -499,30 +530,30 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
             alpha = fit.β, dispersion = fill(fit.φ, p), df = p + _bridge_rr_df(p, K) + 1,
             scores = scores, ci = ci)
     elseif key == "beta"
-        fit = fit_beta_gllvm(Yf; K = K)
-        scores = _bridge_scores(() -> getLV(fit, Yf; rotate = true))
+        fit = fit_beta_gllvm(Yf; K = K, mask = M)
+        scores = _bridge_scores(() -> getLV(fit, Yf; rotate = true, mask = M))
         ci = ci_method == "none" ? nothing :
              _bridge_compute_ci_ng(fit, Yf, nothing, ci_method, ci_level, ci_nboot, ci_seed)
         return _bridge_assemble_ng(fit, "beta", "beta_rr", traits, units, p, K, Yf, nothing;
             alpha = fit.β, dispersion = fill(fit.φ, p), df = p + _bridge_rr_df(p, K) + 1,
-            scores = scores, ci = ci)
+            scores = scores, ci = ci, mask = M)
     elseif key == "gamma"
-        fit = fit_gamma_gllvm(Yf; K = K)
-        scores = _bridge_scores(() -> getLV(fit, Yf; rotate = true))
+        fit = fit_gamma_gllvm(Yf; K = K, mask = M)
+        scores = _bridge_scores(() -> getLV(fit, Yf; rotate = true, mask = M))
         ci = ci_method == "none" ? nothing :
              _bridge_compute_ci_ng(fit, Yf, nothing, ci_method, ci_level, ci_nboot, ci_seed)
         return _bridge_assemble_ng(fit, "gamma", "gamma_rr", traits, units, p, K, Yf, nothing;
             alpha = fit.β, dispersion = fill(fit.α, p), df = p + _bridge_rr_df(p, K) + 1,
-            scores = scores, ci = ci)
+            scores = scores, ci = ci, mask = M)
     elseif key == "ordinal"
         Yi = round.(Int, Yf)
-        fit = fit_ordinal_gllvm(Yi; K = K)
-        scores = _bridge_scores(() -> getLV(fit, Yi; rotate = true))
+        fit = fit_ordinal_gllvm(Yi; K = K, mask = M)
+        scores = _bridge_scores(() -> getLV(fit, Yi; rotate = true, mask = M))
         ci = ci_method == "none" ? nothing :
              _bridge_compute_ci_ng(fit, Float64.(Yi), nothing, ci_method, ci_level, ci_nboot, ci_seed)
         return _bridge_assemble_ng(fit, "ordinal", "ordinal_rr", traits, units, p, K, Yi, nothing;
             alpha = fill(NaN, p), dispersion = fill(NaN, p),
-            df = (fit.C - 1) + _bridge_rr_df(p, K), scores = scores, ci = ci)
+            df = (fit.C - 1) + _bridge_rr_df(p, K), scores = scores, ci = ci, mask = M)
     end
     throw(ArgumentError("bridge_fit: unhandled family key \"$key\""))  # unreachable
 end
@@ -696,11 +727,11 @@ end
 # Falls back to the shared block ΛΛᵀ ONLY when a family has no extractor on this
 # engine (narrow MethodError catch — e.g. NB1); other errors propagate.
 function _bridge_assemble_ng(fit, family, model, traits, units, p, K, Ydata, N;
-                             alpha, dispersion, df, scores, ci = nothing)
+                             alpha, dispersion, df, scores, ci = nothing, mask = nothing)
     Sigma, corr, comm, note = try
-        S  = N === nothing ? sigma_y_site(fit, Ydata)  : sigma_y_site(fit, Ydata; N = N)
-        C  = N === nothing ? correlation(fit, Ydata)   : correlation(fit, Ydata; N = N)
-        cm = N === nothing ? communality(fit, Ydata)   : communality(fit, Ydata; N = N)
+        S  = N === nothing ? sigma_y_site(fit, Ydata; mask = mask)  : sigma_y_site(fit, Ydata; N = N, mask = mask)
+        C  = N === nothing ? correlation(fit, Ydata; mask = mask)   : correlation(fit, Ydata; N = N, mask = mask)
+        cm = N === nothing ? communality(fit, Ydata; mask = mask)   : communality(fit, Ydata; N = N, mask = mask)
         (Matrix{Float64}(S), Matrix{Float64}(C), Vector{Float64}(cm), "")
     catch e
         e isa MethodError || rethrow()
@@ -714,7 +745,8 @@ function _bridge_assemble_ng(fit, family, model, traits, units, p, K, Ydata, N;
         alpha = alpha, dispersion = dispersion, sigma_eps = NaN,
         link = fill(_bridge_link_name(fit.link), p), Sigma = Sigma, corr = corr,
         comm = comm, scores = scores, df = df, loglik = fit.loglik,
-        converged = fit.converged, iterations = fit.iterations, note = note, ci = ci)
+        converged = fit.converged, iterations = fit.iterations, note = note, ci = ci,
+        nobs = mask === nothing ? nothing : count(mask))
 end
 
 # Shared flat-NamedTuple builder. `ci` (when non-nothing) is a flat CI payload
@@ -725,13 +757,13 @@ function _bridge_assemble(fit, family::AbstractString, model::AbstractString,
                           traits, units;
                           alpha, dispersion, sigma_eps, link, Sigma, corr, comm,
                           scores, df, loglik, converged, iterations, note,
-                          loadings = nothing, ci = nothing)
+                          loadings = nothing, ci = nothing, nobs = nothing)
     p = length(traits)
     n = length(units)
     L = loadings === nothing ? _bridge_loadings(fit) : loadings
     K = size(L, 2)
     ll = Float64(loglik)
-    nobs = p * n
+    nobs_val = nobs === nothing ? p * n : Int(nobs)
     base = (
         family       = family,
         families     = fill(family, p),
@@ -753,7 +785,7 @@ function _bridge_assemble(fit, family::AbstractString, model::AbstractString,
         aic          = 2 * df - 2 * ll,
         bic          = df * log(n) - 2 * ll,
         df           = df,
-        nobs         = nobs,
+        nobs         = nobs_val,
         converged    = converged,
         iterations   = iterations,
         message      = converged ? "converged" : "not converged",

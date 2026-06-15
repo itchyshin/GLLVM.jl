@@ -1,5 +1,69 @@
 # Check Log
 
+## 2026-06-15 - Bridge Missing-Response Mask Hook
+
+### Scope
+
+Added the minimal Julia transport hook needed by the R-first
+`gllvmTMB(..., engine = "julia", missing = miss_control(response = "include"))`
+slice:
+
+- `bridge_fit(...; mask = M)` now accepts a `p x n` observed-cell mask
+  (`true = observed`) for one-part no-X non-Gaussian families;
+- all-true masks normalize to the complete-data bridge path;
+- Gaussian masks, X+mask, mixed-family masks, and masked CI requests fail
+  before fitting;
+- bridge latent scores and latent-scale summaries call the mask-aware
+  post-fit/link-residual paths so sentinel placeholders do not influence
+  predictions or correlations.
+
+### Checks Run
+
+```sh
+~/.juliaup/bin/julia --project=. test/test_bridge_missing_mask.jl
+```
+
+Result: `17/17 pass` in `15.5s`.
+
+```sh
+~/.juliaup/bin/julia --project=. test/test_bridge_x.jl
+```
+
+Result: `52/52 pass` in `18.9s`.
+
+```sh
+~/.juliaup/bin/julia --project=. test/test_bridge_ci.jl
+```
+
+Result: `66/66 pass` in `46.1s`.
+
+```sh
+~/.juliaup/bin/julia --project=. -e 'using Test, GLLVM, Distributions; include("test/test_missing_data.jl")'
+```
+
+Result: `34/34 pass` in `12.5s`. The direct file form needs
+`Distributions` loaded because the standalone test file assumes the full
+`test/runtests.jl` include context.
+
+```sh
+~/.juliaup/bin/julia --project=. test/test_postfit.jl
+```
+
+Result: post-fit family blocks passed (`96/96`, `9/9`, `10/10`, `8/8`,
+`163/163`, `160/160`, `215/215`, `215/215`, `216/216`).
+
+```sh
+~/.juliaup/bin/julia --project=. test/test_confint_family.jl
+```
+
+Result: `122/122 pass` in `4m15.5s`.
+
+### Rose Boundary
+
+PASS WITH NOTES. This is a bridge transport and post-fit correctness hook, not
+full missing-data release readiness. Masked CI refits, X+mask, Gaussian masks,
+and per-family R-side parity rows remain separate gates.
+
 ## 2026-06-15 - gllvmTMB Bridge X Admission Status Sync
 
 ### Scope
