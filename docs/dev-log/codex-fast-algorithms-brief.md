@@ -62,6 +62,9 @@ current user-facing bottleneck.
 
 - Verify any AD/analytic gradient matches the finite-difference gradient to ≤ 1e-6
   on a small case.
+- Keep REML language Gaussian-only. HSquared-style AI-REML is a later scouting
+  target for exact Gaussian variance-component cells; do not describe
+  non-Gaussian Laplace acceleration as REML/AI-REML.
 - Keep every family's recovery test **and** the full suite green — **no tolerance
   widening**.
 - Benchmark before/after and report the per-fit speedup.

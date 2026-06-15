@@ -1,5 +1,45 @@
 # Check Log
 
+## 2026-06-15 - gllvmTMB Bridge X Admission Status Sync
+
+### Scope
+
+Synced `docs/src/gllvmtmb-parity.md` with the current R-side
+`gllvmTMB(..., engine = "julia")` bridge surface:
+
+- complete, balanced one-part no-X reduced-rank bridge fits are admitted for
+  Gaussian, Poisson, Binomial, NB2, Beta, Gamma, and Ordinal;
+- fixed-effect `X` is admitted for complete, balanced one-part Gaussian,
+  Poisson, Binomial, NB2, Beta, and Gamma bridge fits;
+- response-missing masks, mixed-family bridge metadata, ordinal covariate fits,
+  structured terms, and user-selectable Julia optimizer controls remain explicit
+  follow-ups;
+- REML wording is Gaussian-only, and HSquared-style AI-REML is recorded as a
+  later exact-Gaussian scouting target, not non-Gaussian Laplace terminology.
+
+Also updated `docs/dev-log/codex-fast-algorithms-brief.md` with the same REML /
+AI-REML boundary.
+
+### Checks Run
+
+```sh
+~/.juliaup/bin/julia --project=. test/test_bridge_x.jl
+```
+
+Result: 50/50 passed in 18.0s.
+
+```sh
+git diff --check
+```
+
+Result: clean.
+
+### Rose Boundary
+
+PASS WITH NOTES. This is a documentation/status-sync slice only. It does not
+claim new Julia engine behavior beyond the already-tested `bridge_fit(...; X=...)`
+contract, and it does not claim non-Gaussian REML or AI-REML.
+
 ## 2026-06-15 - PR #94 Successor Issue Drafts
 
 ### Scope

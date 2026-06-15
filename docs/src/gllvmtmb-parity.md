@@ -79,13 +79,13 @@ accuracy gate. The sparse-Cholesky / CHOLMOD marginals are not generic-AD-friend
 the VA estimator adds analytic inner and envelope-theorem outer gradients for
 further fit-time gains.
 
-## R bridge: parameterization map (JuliaConnectoR)
+## R bridge: parameterization map
 
-The longer-term goal is for R `gllvmTMB` to call GLLVM.jl as its compute engine
-via JuliaConnectoR (the `drmTMB` ↔ `DRM.jl` pattern). For results to agree, the
-bridge must reconcile a few **convention differences** — the underlying models are
-the same, but the parameter scales/structures differ. These are translation rules
-for the bridge, not bugs on either side.
+R `gllvmTMB` can call GLLVM.jl as its default Julia fitting path through the
+R-side bridge. For results to agree, the bridge must reconcile a few
+**convention differences** — the underlying models are the same, but the
+parameter scales/structures differ. These are translation rules for the bridge,
+not bugs on either side.
 
 | Quantity | gllvm (R) | GLLVM.jl | Bridge rule |
 |----------|-----------|----------|-------------|
@@ -98,11 +98,24 @@ for the bridge, not bugs on either side.
 | Dispersion **structure** | per-species by default (`disp.formula = NULL`) | shared scalar by default; per-species via the grouped fitters | route Julia through `fit_*_gllvm_grouped(Y; K, group = 1:p)`, **or** set gllvm `disp.formula = ~1` |
 | Estimation method | default `method = "VA"` | default Laplace; VA available via `fit_*_gllvm_va` | pin matching methods; VA and LA differ in finite samples |
 
-**gllvmTMB parity is essentially complete** for the bridge: every response family
-(including `beta.binomial`), per-species dispersion for all five dispersion
-families, ordinal logit + probit, and fixed **and random** row effects
-(`fit_row_random_gllvm`) are implemented. The remaining differences are scope, not
-gaps:
+Engine-side parity is broader than the current R bridge admission surface. The
+current `gllvmTMB(..., engine = "julia")` bridge admits complete, balanced,
+one-part reduced-rank models for Gaussian, Poisson, Binomial, NB2, Beta, Gamma,
+and Ordinal no-X fits. Fixed-effect covariates (`X`) are admitted for complete,
+balanced one-part Gaussian, Poisson, Binomial, NB2, Beta, and Gamma fits.
+Response-missing masks, mixed-family bridge metadata, ordinal covariate fits,
+structured covariance terms, and user-selectable Julia-side optimizer controls
+remain explicit bridge follow-ups, not silently supported cells.
+
+REML is a Gaussian-only bridge/engine claim in this project. HSquared's very fast
+AI-REML work is useful design input for exact Gaussian variance-component cells,
+but it is not terminology to use for non-Gaussian Laplace GLLVMs. Non-Gaussian
+speedups should be described as observed-information, Fisher/natural-gradient,
+reverse-mode, or implicit-Laplace-adjoint work, each gated by reference-gradient,
+point-estimate, and CI/status evidence.
+
+The engine still carries additional gllvm/gllvmTMB parity rows that are not all
+public through the R bridge yet:
 
 - **`ZNIB`** (zero-and-N-inflated binomial) — deferred: the gllvm TMB template's
   `case ZNIB` appears to fall through (missing `break;`) into beta-binomial, so its
