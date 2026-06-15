@@ -1,5 +1,50 @@
 # Check Log
 
+## 2026-06-15 - Board sync after mixed-family Julia label fix
+
+### Scope
+
+Refreshed the mission-control board after the paired Julia follow-up to the
+native `gllvmTMB` mixed-family selector oracle.
+
+- `.claude/preview/status.json` now records `GLLVM.jl-integration` head
+  `21f6662`.
+- Current work now describes the paired sequence: `gllvmTMB` native selector
+  oracle at `4474e8b`, then Julia mixed-family bridge label fix at `21f6662`.
+- P7 remains `partial`: native R selector metadata and Julia payload labels are
+  fixed, while R bridge admission, point/logLik parity, and CI-status validation
+  remain queued.
+- The next in-flight gate is R-side mixed-family Julia admission only after
+  point/logLik parity and CI-status evidence.
+
+### Checks Run
+
+```sh
+jq empty .claude/preview/status.json
+git diff --check
+```
+
+Result: both clean.
+
+```sh
+curl -fsS http://127.0.0.1:8770/status.json | jq -r '.repos[] | select(.name=="GLLVM.jl integration") | .head'
+```
+
+Result: `21f6662`.
+
+```sh
+curl -fsS http://127.0.0.1:8770/status.json | jq -r '.activity[0].html' | sed 's/<[^>]*>//g'
+```
+
+Result: first activity row is the Julia mixed-label bridge slice, with
+`test_bridge_mixed.jl` `18/18`, capabilities `9/9`, direct smoke
+`gaussian,poisson,binomial`, and live bridge regression `439/439`.
+
+### Rose Boundary
+
+PASS WITH NOTES. Board truth now includes the Julia label fix without promoting
+mixed-family `engine = "julia"` admission on the R side.
+
 ## 2026-06-15 - R-first board sync after native mixed-family oracle
 
 ### Scope

@@ -3,7 +3,7 @@
   "generated_at": "2026-06-15T17:18:42.000Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "R-first sequencing remains active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as the parity/acceleration target. Latest slice: native mixed-family selector oracle hardened at gllvmTMB 4474e8b, so named mixed-family lists now match selector levels by name and preserve row-level family/link metadata for later Julia parity. Evidence: focused Stage 37 passed 33/33; full devtools::test() passed 2912 with 721 expected skips and 3 pre-existing warnings; live bridge tests still pass 439/439 against GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration; pkgdown check is green. REML remains Gaussian-only.",
+  "current_work": "R-first sequencing remains active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as the parity/acceleration target. Latest paired slice: after the native mixed-family selector oracle at gllvmTMB 4474e8b, GLLVM.jl-integration 21f6662 now preserves row-aligned mixed-family bridge labels: family stays the joined model tag, while families is the per-trait vector. Evidence: Julia bridge_mixed passed 18/18, bridge_capabilities passed 9/9, direct smoke prints gaussian,poisson,binomial, and live gllvmTMB bridge regression remains 439/439. R bridge mixed-family admission remains queued. REML remains Gaussian-only.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
     {
@@ -38,9 +38,9 @@
     {
       "name": "GLLVM.jl integration",
       "branch": "codex/high-rate-poisson-safeguard",
-      "head": "6056071",
+      "head": "21f6662",
       "dirty": false,
-      "note": "Paired runtime engine checkout for current gllvmTMB bridge evidence. Adds GLLVM.bridge_capabilities() for R drift guards; X-aware bridge, Gaussian mean_coef, bridge_fit(mask=...), ordinal_probit ProbitLink, binomial N-matrix cbind transport, fixed-effect tidy() rows, conditional simulate() rows, cached glance() rows, in-sample augment() rows, NB1 no-X bridge support, and current bridge docs consumed by gllvmTMB. Core test/runtests.jl passed 3891 with 3 broken before the docs-only sync."
+      "note": "Paired runtime engine checkout for current gllvmTMB bridge evidence. Adds GLLVM.bridge_capabilities() for R drift guards; X-aware bridge, Gaussian mean_coef, bridge_fit(mask=...), ordinal_probit ProbitLink, binomial N-matrix cbind transport, fixed-effect tidy() rows, conditional simulate() rows, cached glance() rows, in-sample augment() rows, NB1 no-X bridge support, and mixed-family bridge payload labels. Current targeted mixed-label tests pass 18/18 plus capabilities 9/9; live gllvmTMB bridge regression remains 439/439."
     },
     {
       "name": "gllvmTMB",
@@ -404,7 +404,7 @@
         {
           "name": "Native per-response family dispatch",
           "status": "partial",
-          "evidence": "Native gllvmTMB named-list selector oracle is hardened at 4474e8b: selector levels map by name, family/link ids are row-aligned, and prediction/simulation preserve family-valid output. Julia mixed-vector payload labels and R-Julia parity remain queued."
+          "evidence": "Native gllvmTMB named-list selector oracle is hardened at 4474e8b, and GLLVM.jl-integration 21f6662 now returns row-aligned mixed bridge families/link labels. R bridge admission, point/logLik parity, and CI-status validation remain queued."
         },
         {
           "name": "Gaussian plus Poisson first mixed slice",
@@ -592,6 +592,10 @@
   "activity": [
     {
       "time": "now",
+      "html": "<b>Hopper/Rose Julia mixed-label bridge slice green.</b> <code>GLLVM.bridge_fit(family=[...])</code> now keeps <code>family</code> as the compact joined tag while returning row-aligned <code>families</code> and <code>link</code> vectors for mixed-family fits. Evidence: <code>test_bridge_mixed.jl</code> passed <code>18/18</code>; bridge capabilities passed <code>9/9</code>; direct smoke printed <code>gaussian,poisson,binomial</code>; live <code>gllvmTMB</code> bridge regression stayed <code>439/439</code>. Boundary: <code>gllvmTMB</code> still rejects mixed-family <code>engine=\"julia\"</code> until point/logLik parity and CI-status rows are validated."
+    },
+    {
+      "time": "now",
       "html": "<b>Hopper/Fisher/Rose native mixed-family oracle green.</b> Native <code>gllvmTMB</code> mixed-family selector handling now matches named family lists to selector levels by name, preserves row-level family/link metadata, rejects mismatched selectors explicitly, and keeps prediction/simulation family-valid. Evidence: Stage 37 passed <code>33/33</code>; mixed-family + bootstrap filter passed <code>33</code> with <code>7</code> expected skips; full <code>devtools::test()</code> passed <code>2912</code> with <code>721</code> skips and <code>3</code> pre-existing warnings; live bridge tests still passed <code>439/439</code>; <code>pkgdown::check_pkgdown()</code> is green. Boundary: this is the native R/TMB oracle, not mixed-family Julia bridge admission yet."
     },
     {
@@ -766,7 +770,7 @@
   "inflight": [
     {
       "owner": "Ada",
-      "text": "R-first sequencing remains active. Native mixed-family selector metadata is now the R oracle; the immediate Julia follow-up is mixed-vector bridge payload labels and parity tests, with R bridge admission only after point/logLik and CI-status gates."
+      "text": "R-first sequencing remains active. Native mixed-family selector metadata is the R oracle and Julia mixed-vector payload labels are fixed; the immediate next gate is R-side admission only after point/logLik parity and CI-status evidence."
     },
     {
       "owner": "Rose",
@@ -786,6 +790,10 @@
     }
   ],
   "evidence": [
+    {
+      "status": "partial",
+      "text": "Hopper/Rose: Julia mixed-family bridge labels committed locally at GLLVM.jl-integration 21f6662. The flat payload now returns family as the joined tag and families as the row-aligned per-trait vector, with a length guard and explicit empty CI-status payload for mixed CI requests. Evidence: test_bridge_mixed passed 18/18, test_bridge_capabilities passed 9/9, direct smoke printed gaussian,poisson,binomial / wald / 0, and live gllvmTMB bridge regression passed 439/439. Boundary: R bridge mixed-family admission, point/logLik parity, and CI endpoints/status promotion remain queued."
+    },
     {
       "status": "partial",
       "text": "Hopper/Fisher/Rose: native mixed-family selector oracle committed locally at gllvmTMB 4474e8b. Named family lists now match selector levels by name, partially named or mismatched lists fail explicitly, and fit objects preserve family_selector metadata with row-level family/link ids. Evidence: stage37-mixed-family passed 33/33; stage37 plus m1-8 mixed-family filter passed 33 with 7 expected skips; no-Julia bridge tests passed 175 with 17 expected skips; full devtools::test() passed 2912 with 721 skips and 3 pre-existing warnings; live bridge tests passed 439/439 against GLLVM.jl-integration; pkgdown check green. Boundary: native R/TMB oracle only; mixed-family Julia bridge admission, CI-status routing, and cross-engine parity remain queued."
