@@ -1,9 +1,9 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T14:58:01.246Z",
+  "generated_at": "2026-06-15T15:06:36.647Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "R-first sequencing is active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as parity and acceleration target. Latest slice banks augment.gllvmTMB_julia() as a narrow in-sample response-scale row diagnostic table for R users. No-Julia bridge tests pass 132 with 14 expected skips; live package-level bridge tests pass 331/331 against GLLVM.jl-integration. Rose boundary: no full-capability, all-family, bridge-complete, non-Gaussian REML, or AI-REML-for-Laplace claims. augment() is not newdata support, not link-scale or fixed-effects-only augmentation, not ordinal probability output, and not influence/CI/diagnostic calibration; REML stays Gaussian-only; AI-REML is a later exact-Gaussian candidate, not a non-Gaussian/Laplace label.",
+  "current_work": "R-first sequencing is active: gllvmTMB is the functional reference surface, and GLLVM.jl follows as parity and acceleration target. Latest slice banks gllvm_julia_capabilities() as the R-side Julia bridge admission ledger before JuliaCall setup. No-Julia bridge tests pass 141 with 14 expected skips; live package-level bridge tests pass 340/340 against GLLVM.jl-integration; pkgdown::check_pkgdown() is green after adding a dedicated Julia bridge reference section. Rose boundary: no full-capability, all-family, bridge-complete, non-Gaussian REML, or AI-REML-for-Laplace claims. Mixed-family remains planned on the R surface even though the paired Julia bridge has an engine route, because R metadata, labels, parity, and CI/status rows are not validated yet.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
     {
@@ -40,14 +40,14 @@
       "branch": "codex/high-rate-poisson-safeguard",
       "head": "f75376c",
       "dirty": false,
-      "note": "Paired runtime engine checkout for current gllvmTMB bridge evidence. X-aware bridge, Gaussian mean_coef, bridge_fit(mask=...), ordinal_probit ProbitLink, binomial N-matrix cbind transport, fixed-effect tidy() rows, conditional simulate() rows, cached glance() rows, and in-sample augment() rows are validated here; latest live gllvmTMB bridge tests against this checkout pass 331/331."
+      "note": "Paired runtime engine checkout for current gllvmTMB bridge evidence. X-aware bridge, Gaussian mean_coef, bridge_fit(mask=...), ordinal_probit ProbitLink, binomial N-matrix cbind transport, fixed-effect tidy() rows, conditional simulate() rows, cached glance() rows, in-sample augment() rows, and the R capability-ledger tests are validated here; latest live gllvmTMB bridge tests against this checkout pass 340/340."
     },
     {
       "name": "gllvmTMB",
       "branch": "engine-julia",
-      "head": "01a9a7e",
+      "head": "c0f14c8",
       "dirty": false,
-      "note": "engine-julia has local R-first bridge slices committed through augment.gllvmTMB_julia(). Current green bridge evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration; NEWS/check-log/README explicitly warn that stale/dashboard GLLVM.jl checkouts may reject newer payloads."
+      "note": "engine-julia has local R-first bridge slices committed through gllvm_julia_capabilities(). Current green bridge evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration; NEWS/check-log/README explicitly warn that stale/dashboard GLLVM.jl checkouts may reject newer payloads."
     },
     {
       "name": "drmTMB",
@@ -321,7 +321,7 @@
         {
           "name": "Gate-vs-engine guard for gllvmTMB #488",
           "status": "partial",
-          "evidence": "R gate narrowed to current GLLVM.bridge_fit; bridge family, X, mask, masked-CI status, and cbind-binomial transport rows are live-tested against GLLVM.jl-integration. Automated cross-repo drift CI is still queued."
+          "evidence": "R gate narrowed to current GLLVM.bridge_fit and now exposes gllvm_julia_capabilities() as a tested R-side admission ledger. Bridge family, X, mask, masked-CI status, cbind-binomial transport, post-fit rows, and the ledger are live-tested against GLLVM.jl-integration (340/340). Automated cross-repo drift CI and mixed-family R routing are still queued."
         },
         {
           "name": "Wording freeze: default GLLVM.jl fitting path only",
@@ -574,6 +574,10 @@
   "activity": [
     {
       "time": "now",
+      "html": "<b>Hopper/Rose capability ledger slice green.</b> <code>gllvm_julia_capabilities()</code> now exposes the R-side Julia bridge admission table before JuliaCall setup: no-X fits, fixed-effect-X rows, missing-response masks, cbind-binomial transport, and the planned mixed-family vector row. No-Julia bridge tests passed <code>141</code> with <code>14</code> expected skips; live package-level bridge tests passed <code>340/340</code>; <code>pkgdown::check_pkgdown()</code> reports no problems after the new Julia bridge reference section."
+    },
+    {
+      "time": "now",
       "html": "<b>Hopper/Rose augment bridge slice green.</b> <code>gllvmTMB_julia</code> now has <code>generics::augment()</code> as an in-sample response-scale row diagnostic table with identifiers plus <code>.observed</code>, <code>.fitted</code>, <code>.resid</code>, and <code>.status</code>. It preserves masked rows and rejects <code>newdata</code>, <code>type=\"link\"</code>, non-default <code>re_form</code>, and ordinal prediction payloads explicitly. No-Julia bridge tests passed <code>132</code> with <code>14</code> expected skips; live package-level bridge tests passed <code>331/331</code> against <code>GLLVM.jl-integration</code>."
     },
     {
@@ -712,11 +716,11 @@
   "inflight": [
     {
       "owner": "Ada",
-      "text": "R-first sequencing is active; latest committed slice banks augment.gllvmTMB_julia() as a narrow in-sample row diagnostic method."
+      "text": "R-first sequencing is active; latest committed slice banks gllvm_julia_capabilities() as the R-side bridge admission ledger."
     },
     {
       "owner": "Hopper",
-      "text": "Next R-first bridge surface: bridge gate-vs-engine guard or explicit covariance/CI-status payload rows before more Julia-only engine breadth."
+      "text": "Next R-first bridge surface: either route mixed-family vectors through R with labels/parity/status rows, or add the automated cross-repo drift CI comparing this ledger to GLLVM.jl."
     },
     {
       "owner": "Gauss/Karpinski",
@@ -728,6 +732,10 @@
     }
   ],
   "evidence": [
+    {
+      "status": "partial",
+      "text": "Hopper/Rose: gllvm_julia_capabilities() committed locally at gllvmTMB c0f14c8. The table is tied to R bridge constants for fit_no_x, fixed_effect_X, missing_response, and cbind_binomial, and it records mixed-family vectors as planned because R-side metadata/labels/parity/CI-status are not validated. devtools::document() completed with pre-existing unrelated roxygen warnings; no-Julia devtools::test(filter=\"julia-bridge\") passed 141 with 14 skips; live devtools::test(filter=\"julia-bridge\") passed 340/340 against GLLVM.jl-integration; pkgdown::check_pkgdown() is green after adding a Julia bridge reference section."
+    },
     {
       "status": "partial",
       "text": "Hopper/Rose: augment.gllvmTMB_julia() committed locally at gllvmTMB 01a9a7e. generics::augment() now returns in-sample response-scale row diagnostics with .observed, .fitted, .resid, and .status; masked rows keep status=\"masked\" with NA observed/residual values. air format passed; devtools::document() completed with pre-existing unrelated roxygen warnings; git diff --check passed; no-Julia devtools::test(filter=\"julia-bridge\") passed 132 with 14 skips; live devtools::test(filter=\"julia-bridge\") passed 331/331 against GLLVM.jl-integration. This is not newdata, link-scale, fixed-effects-only, ordinal-probability, influence, CI, or diagnostic-calibration support."
