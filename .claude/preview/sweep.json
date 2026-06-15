@@ -1,6 +1,6 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T04:49:53.104Z",
+  "generated_at": "2026-06-15T06:40:00.000Z",
   "status_vocabulary": [
     "covered",
     "partial",
@@ -203,7 +203,7 @@
       "engine": "partial",
       "bridge": "planned",
       "inference": "partial",
-      "evidence": "gllvmTMB bridge now errors on unsupported Julia profile CI status; profile visuals required before promotion."
+      "evidence": "Gaussian profile CIs now route through confint.gllvmTMB_julia and live julia-bridge tests pass against GLLVM.jl-integration; wider family/status coverage and profile visuals remain gates."
     },
     {
       "capability": "Bootstrap CIs",
@@ -217,7 +217,7 @@
       "engine": "covered",
       "bridge": "planned",
       "inference": "partial",
-      "evidence": "#92 scale/export/test gap fixed locally; R bridge exposure and public docs still pending."
+      "evidence": "#92 scale/export/test gap fixed locally and wired into Pkg.test; R bridge exposure and public docs still pending."
     },
     {
       "capability": "AIC/BIC/logLik",

@@ -1,9 +1,9 @@
 {
   "build": "2026-06-14-gllvm-finish-001",
-  "generated_at": "2026-06-15T04:49:28.300Z",
+  "generated_at": "2026-06-15T06:40:00.000Z",
   "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
   "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
-  "current_work": "Phase 4 runtime gap fill is green locally on GLLVM.jl-integration: #91 high-rate Poisson divergence fixed, Gamma now defaults to analytic gradients after finite-vs-analytic benchmark gates, full Pkg.test passed after both changes, and Vitepress hard dead-links are fixed in a no-deploy docs build. Next gates are PR/issue reconciliation, R bridge parity, missingness bridge, and structural speedups.",
+  "current_work": "Phase 4 runtime gap fill is green locally on GLLVM.jl-integration: #91 high-rate Poisson divergence fixed, Gamma now defaults to analytic gradients after finite-vs-analytic benchmark gates, #92 phylo-signal Wald CI scale fix is wired into the main suite, full Pkg.test passed at 3869/1 broken, and Vitepress hard dead-links are fixed in a no-deploy docs build. gllvmTMB live julia-bridge tests now pass 53/53 against the current integration engine. Next gates are PR/issue reconciliation, canonical R bridge parity, missingness bridge, and structural speedups.",
   "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
   "metrics": [
     {
@@ -38,16 +38,16 @@
     {
       "name": "GLLVM.jl integration",
       "branch": "codex/high-rate-poisson-safeguard",
-      "head": "a208b28",
+      "head": "06e7c08",
       "dirty": false,
-      "note": "#91 safeguard + Gamma analytic default + docs-link cleanup committed locally; Pkg.test passed 3761/1 broken after Gamma flip."
+      "note": "#91 safeguard, Gamma analytic default, docs-link cleanup, JuliaConnectoR smoke repair, and #92 phylo-signal Wald CI scale fix committed locally; Pkg.test passed 3869/1 broken after #92."
     },
     {
       "name": "gllvmTMB",
       "branch": "engine-julia",
-      "head": "139f907",
+      "head": "19264a5",
       "dirty": false,
-      "note": "engine-julia clean, ahead of remote; bridge-contract shrink committed locally; live julia-bridge test passed 49/49."
+      "note": "engine-julia clean, ahead of remote; bridge-contract shrink plus stale CI-oracle repair committed locally; live julia-bridge test passed 53/53 against GLLVM.jl-integration."
     },
     {
       "name": "drmTMB",
@@ -286,12 +286,12 @@
         {
           "name": "Fix #91 high-rate Poisson beta divergence",
           "status": "covered",
-          "evidence": "Reproduced on integration analytic path; branch codex/high-rate-poisson-safeguard keeps beta6 on empirical scale, adds analytic-vs-FD regression, and full Pkg.test passed 3761/1 broken after follow-up changes."
+          "evidence": "Reproduced on integration analytic path; branch codex/high-rate-poisson-safeguard keeps beta6 on empirical scale, adds analytic-vs-FD regression, and latest full Pkg.test passed 3869/1 broken after follow-up changes."
         },
         {
           "name": "Fix #92 phylo-signal CI scale/export/test gap",
           "status": "covered",
-          "evidence": "_derived_unpack now respects identity-scale sigma_phy; phylo_signal_wald_ci exported; transformed-Wald test 102/102, core suite, and full Pkg.test green."
+          "evidence": "_derived_unpack now respects identity-scale sigma_phy; phylo_signal_wald_ci exported; transformed-Wald test 108/108, adjacent derived/profile CI tests, and full Pkg.test 3869/1 broken green."
         },
         {
           "name": "Gamma analytic gradient recheck",
@@ -321,7 +321,7 @@
         {
           "name": "Gate-vs-engine guard for gllvmTMB #488",
           "status": "partial",
-          "evidence": "R gate narrowed to current GLLVM.bridge_fit and live julia-bridge test passed 49/0; automated cross-repo drift CI is still queued."
+          "evidence": "R gate narrowed to current GLLVM.bridge_fit and live julia-bridge test passed 53/53; automated cross-repo drift CI is still queued."
         },
         {
           "name": "Wording freeze: default GLLVM.jl fitting path only",
@@ -331,7 +331,7 @@
         {
           "name": "Bridge CI surface",
           "status": "partial",
-          "evidence": "Wald CI route and unsupported CI-status errors are tested; profile/bootstrap bridge promotion remains queued."
+          "evidence": "Wald, Gaussian profile, and bootstrap CI routes are live-tested through confint.gllvmTMB_julia; wider family/status coverage remains queued."
         },
         {
           "name": "Post-fit methods through bridge",
@@ -574,7 +574,7 @@
   "activity": [
     {
       "time": "now",
-      "html": "<b>Karpinski/Gauss Gamma default green.</b> <code>fit_gamma_gllvm</code> now defaults to analytic gradients; quick + medium benchmark cells show about 9.7-14.3x speedups with <code>|delta logLik| <= 1.9e-12</code>; full <code>Pkg.test()</code> passed 3761/1 broken."
+      "html": "<b>Karpinski/Gauss Gamma default green.</b> <code>fit_gamma_gllvm</code> now defaults to analytic gradients; quick + medium benchmark cells show about 9.7-14.3x speedups with <code>|delta logLik| <= 1.9e-12</code>; latest full <code>Pkg.test()</code> passed 3869/1 broken after the #92 wiring."
     },
     {
       "time": "now",
@@ -590,7 +590,7 @@
     },
     {
       "time": "now",
-      "html": "<b>Hopper/Rose gllvmTMB gate shrink green.</b> R now rejects X, mixed families, NB1/lognormal, missing latent blocks, and unsupported CI payloads before pretending the Julia bridge can fit them; live <code>julia-bridge</code> test passed 49/0."
+      "html": "<b>Hopper/Rose gllvmTMB bridge gate green.</b> R now rejects unsupported cells before pretending the Julia bridge can fit them; stale Gaussian CI oracle corrected for centered data; live <code>julia-bridge</code> test passed 53/53 against GLLVM.jl-integration."
     },
     {
       "time": "now",
@@ -598,7 +598,7 @@
     },
     {
       "time": "now",
-      "html": "<b>Fisher/Noether #92 fix green.</b> Packed phylo signal now matches public <code>phylo_signal</code>; transformed-Wald test 102/102 and full <code>Pkg.test()</code> passed."
+      "html": "<b>Fisher/Noether #92 fix green.</b> Packed phylo signal now matches public <code>phylo_signal</code> on both unique and low-rank phylo paths; transformed-Wald test 108/108 and full <code>Pkg.test()</code> passed 3869/1 broken."
     },
     {
       "time": "now",
@@ -624,7 +624,7 @@
   "inflight": [
     {
       "owner": "Ada",
-      "text": "First bridge slice is locally banked; move to the next highest-risk gate without widening bridge claims."
+      "text": "#91, #92, Gamma default, docs-link cleanup, and bridge smoke repairs are locally banked; next highest-risk gate is PR/issue reconciliation plus canonical R bridge parity."
     },
     {
       "owner": "Hopper",
@@ -632,7 +632,7 @@
     },
     {
       "owner": "Gauss/Karpinski",
-      "text": "Current engine slice: #91 integration repair needs full runtests/Pkg.test gate, then issue/PR reconciliation."
+      "text": "Next engine slice: Takahashi/node-gradient sparse-phylo wiring and speed+CI benchmark protocol."
     },
     {
       "owner": "Rose",
@@ -674,7 +674,7 @@
     },
     {
       "status": "covered",
-      "text": "Hopper/Rose: gllvmTMB R bridge narrowed to the current GLLVM.bridge_fit contract; live devtools::test(filter = \"julia-bridge\") passed 49/0."
+      "text": "Hopper/Rose: gllvmTMB R bridge narrowed to the current GLLVM.bridge_fit contract; live julia-bridge test passed 53/53 against GLLVM.jl-integration."
     },
     {
       "status": "covered",
@@ -682,7 +682,7 @@
     },
     {
       "status": "covered",
-      "text": "Fisher/Noether: #92 phylo_signal_wald_ci scale bug fixed; transformed-Wald test 102/102, adjacent CI tests, core suite, and full Pkg.test() passed."
+      "text": "Fisher/Noether: #92 phylo_signal_wald_ci scale bug fixed; transformed-Wald 108/108, adjacent derived/profile CI tests green, and full Pkg.test() passed 3869/1 broken."
     },
     {
       "status": "partial",
