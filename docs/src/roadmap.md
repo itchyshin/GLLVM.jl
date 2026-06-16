@@ -21,7 +21,7 @@ future design input for exact Gaussian cells, not non-Gaussian Laplace.
 | **v0.2.0** | Gaussian complete | O(p) phylogenetic fitter, post-fit tools, this docs site |
 | **v0.3.0** | Non-Gaussian catch-up | one-part Laplace families, first two-part fitters, analytic-gradient hardening |
 | **v0.4.0** | Interface and bridge catch-up | `@formula` front-end, wide/long parity, gllvmTMB-mirroring tutorials, live `gllvmTMB` bridge gates |
-| **v1.0** | Full digital twin | extractor / ordination / diagnostic parity, structured non-Gaussian dependence, complete R bridge coverage for supported models |
+| **v1.0** | Digital-twin milestone | extractor / ordination / diagnostic parity, structured non-Gaussian dependence, expanded R bridge coverage for supported models |
 
 ## What works today
 
