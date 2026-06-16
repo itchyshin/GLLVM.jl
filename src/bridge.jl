@@ -66,11 +66,13 @@
 # `correlation` as the headline. Lognormal is a documented follow-up; fixed-effect
 # X is wired (Gaussian); confidence intervals (Wald / profile / bootstrap) route
 # through `options["ci_method"]` for scalar-CI one-part families (Gaussian,
-# Poisson, Binomial). NB2, NB1, Beta, and Gamma default to per-trait grouped
-# dispersion for R-twin parity, and ordinal/ordinal_probit default to per-trait
-# cutpoints; both nuisance-parameter routes currently reject CI routing loudly
-# until matching CI engines land. Mixed-family and REML paths skip-with-note
-# since their fits have no native confint engine yet.
+# Poisson, Binomial). NB2, NB1, and Beta default to per-trait grouped
+# dispersion for R-twin parity. Gamma uses the same grouped engine with one
+# shared group, matching current native gllvmTMB's scalar-CV Gamma oracle until
+# a native per-trait Gamma expansion lands. Ordinal/ordinal_probit default to
+# per-trait cutpoints; these nuisance-parameter routes currently reject CI
+# routing loudly until matching CI engines land. Mixed-family and REML paths
+# skip-with-note since their fits have no native confint engine yet.
 #
 # ADDITIVE: this file + an include/export line in GLLVM.jl. It edits no fitter or
 # extractor; it is included LAST so every dispatch target already exists.
@@ -450,8 +452,10 @@ function bridge_capabilities()
         status = vcat(fill("partial", length(onepart)), ["partial"]),
         notes = vcat(
             [
-                f in _BRIDGE_GROUPED_DISPERSION_FAMILIES ?
+                f in ("negbinomial", "nb1", "beta") ?
                     "one-part reduced-rank bridge family; default no-X route uses per-trait grouped dispersion; CI routing is a follow-up" :
+                f == "gamma" ?
+                    "one-part reduced-rank bridge family; default no-X route uses shared Gamma grouped dispersion to match current native scalar-CV Gamma; per-trait Gamma is a native-expansion follow-up; CI routing is a follow-up" :
                 f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES ?
                     "one-part reduced-rank bridge family; default no-X route uses per-trait ordinal cutpoints; CI routing is a follow-up" :
                     "one-part reduced-rank bridge family; route support is narrower than full R-user parity"
@@ -674,7 +678,11 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
         return merge(base, disp)
     elseif key == "gamma"
         _bridge_ci_guard_grouped_dispersion(key, ci_method)
-        fit = fit_gamma_gllvm_grouped(Yf; K = K, group = collect(1:p), mask = M)
+        # Native gllvmTMB ordinary Gamma currently has one scalar sigma_eps/CV for
+        # all Gamma traits. Use a single grouped-Gamma shape here for R-oracle
+        # parity; the per-trait grouped Gamma engine remains available for a later
+        # native per-trait Gamma expansion.
+        fit = fit_gamma_gllvm_grouped(Yf; K = K, group = fill(1, p), mask = M)
         disp = _bridge_dispersion_payload(fit.α, fit.group, "alpha",
             "Var = mu^2 / alpha",
             "gllvmTMB sigma = 1 / sqrt(alpha)")

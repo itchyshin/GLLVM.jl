@@ -35,6 +35,7 @@ using GLLVM
             parameter = "alpha",
             engine = "mu^2 / alpha",
             public = "1 / sqrt(alpha)",
+            grouping = :shared,
         ),
     )
 
@@ -43,10 +44,13 @@ using GLLVM
             Y = case.y
             p = size(Y, 1)
             br = bridge_fit(; y = Y, family = case.family, d = K)
+            expected_group_id = haskey(case, :grouping) && case.grouping == :shared ?
+                fill(1, p) : collect(1:p)
+            expected_n_group = length(unique(expected_group_id))
 
-            @test br.df == p + GLLVM.rr_theta_len(p, K) + p
-            @test br.dispersion_group_id == collect(1:p)
-            @test length(br.dispersion_group) == p
+            @test br.df == p + GLLVM.rr_theta_len(p, K) + expected_n_group
+            @test br.dispersion_group_id == expected_group_id
+            @test length(br.dispersion_group) == expected_n_group
             @test br.dispersion == br.dispersion_group[br.dispersion_group_id]
             @test br.dispersion_parameter == case.parameter
             @test occursin(case.engine, br.dispersion_engine_scale)

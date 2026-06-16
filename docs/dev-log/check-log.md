@@ -1,5 +1,61 @@
 # Check Log
 
+## 2026-06-16 - Gamma shared bridge route
+
+### Scope
+
+Changed the Julia bridge default for `family = "gamma"` from per-trait grouped
+Gamma (`group = 1:p`) to one shared grouped-Gamma shape (`group = fill(1, p)`).
+This matches current native `gllvmTMB` ordinary Gamma, where one scalar
+`sigma_eps` coefficient of variation is shared across Gamma traits.
+
+- `src/bridge.jl` still uses `fit_gamma_gllvm_grouped()`; only the group
+  assignment changes.
+- The per-trait grouped Gamma engine remains available for a later native
+  per-trait Gamma expansion.
+- `test/test_bridge_grouped_dispersion.jl` now expects Gamma `df =
+  p + rr_df + 1` and `dispersion_group_id = fill(1, p)`, while NB2/NB1/Beta
+  remain per-trait grouped.
+
+### Checks Run
+
+```sh
+julia --project=. test/test_bridge_grouped_dispersion.jl
+```
+
+Result: `49/49 pass`.
+
+```sh
+julia --project=. test/test_bridge_capabilities.jl
+```
+
+Result: `34/34 pass`.
+
+Paired R bridge check from
+`/Users/z3437171/Dropbox/Github Local/gllvmTMB`:
+
+```sh
+GLLVM_JL_PATH='/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration' JULIA_HOME='/Users/z3437171/.juliaup/bin' Rscript --vanilla -e 'devtools::test(filter = "julia-bridge", reporter = "summary")'
+```
+
+Result: completed cleanly. The paired R test reports Gamma small-fixture
+native-vs-Julia point parity: Julia `logLik = 17.595906505513`, native TMB
+`logLik = 17.595906784863`, `df = 5` in both engines, and public Gamma
+`sigma` matching native `sigma_eps` to about `6e-10`.
+
+```sh
+git diff --check
+```
+
+Result: clean.
+
+### Rose Boundary
+
+PASS WITH NOTES. This is current-oracle Gamma point parity for one small complete
+balanced reduced-rank bridge fixture. It does not implement native per-trait
+Gamma CV/shape, Gamma CIs, masks, fixed-effect covariates, structured terms, or
+speed claims.
+
 ## 2026-06-16 - NB1 tiny-phi Fisher boundary fix
 
 ### Scope
