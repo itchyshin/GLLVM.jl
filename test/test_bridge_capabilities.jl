@@ -60,8 +60,6 @@ using GLLVM
         "gaussian",
         "poisson",
         "binomial",
-        "ordinal",
-        "ordinal_probit",
     ]
     @test caps.family[caps.ci_no_x_wald] == ci_routed
     @test caps.family[caps.ci_no_x_profile] == ci_routed
@@ -90,9 +88,13 @@ using GLLVM
     @test caps.family[caps.postfit_ordination] == caps.family
     @test all(==("partial"), caps.status)
     grouped = Set(["negbinomial", "nb1", "beta", "gamma"])
+    pertrait_ordinal = Set(["ordinal", "ordinal_probit"])
     for (fam, note) in zip(caps.family[1:(end - 1)], caps.notes[1:(end - 1)])
         if fam in grouped
             @test occursin("grouped dispersion", note)
+            @test occursin("CI routing is a follow-up", note)
+        elseif fam in pertrait_ordinal
+            @test occursin("per-trait ordinal cutpoints", note)
             @test occursin("CI routing is a follow-up", note)
         else
             @test occursin("narrower than full R-user parity", note)

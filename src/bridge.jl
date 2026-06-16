@@ -66,10 +66,11 @@
 # `correlation` as the headline. Lognormal is a documented follow-up; fixed-effect
 # X is wired (Gaussian); confidence intervals (Wald / profile / bootstrap) route
 # through `options["ci_method"]` for scalar-CI one-part families (Gaussian,
-# Poisson, Binomial, Ordinal/Ordinal-probit). NB2, NB1, Beta, and Gamma default
-# to per-trait grouped dispersion for R-twin parity and currently reject CI
-# routing loudly until grouped-fit CI engines land. Mixed-family and REML paths
-# skip-with-note since their fits have no native confint engine yet.
+# Poisson, Binomial). NB2, NB1, Beta, and Gamma default to per-trait grouped
+# dispersion for R-twin parity, and ordinal/ordinal_probit default to per-trait
+# cutpoints; both nuisance-parameter routes currently reject CI routing loudly
+# until matching CI engines land. Mixed-family and REML paths skip-with-note
+# since their fits have no native confint engine yet.
 #
 # ADDITIVE: this file + an include/export line in GLLVM.jl. It edits no fitter or
 # extractor; it is included LAST so every dispatch target already exists.
@@ -361,6 +362,7 @@ const _BRIDGE_MASK_FAMILIES = (
 )
 
 const _BRIDGE_GROUPED_DISPERSION_FAMILIES = ("negbinomial", "nb1", "beta", "gamma")
+const _BRIDGE_PERTRAIT_ORDINAL_FAMILIES = ("ordinal", "ordinal_probit")
 
 function _bridge_ci_guard_grouped_dispersion(key::AbstractString, ci_method::AbstractString)
     ci_method == "none" && return nothing
@@ -368,6 +370,14 @@ function _bridge_ci_guard_grouped_dispersion(key::AbstractString, ci_method::Abs
         "bridge_fit: confidence intervals for per-trait grouped-dispersion " *
         "$key fits are not routed yet; use ci_method=\"none\" or a scalar-" *
         "dispersion comparator fit."))
+end
+
+function _bridge_ci_guard_pertrait_ordinal(key::AbstractString, ci_method::AbstractString)
+    ci_method == "none" && return nothing
+    throw(ArgumentError(
+        "bridge_fit: confidence intervals for per-trait ordinal-cutpoint " *
+        "$key fits are not routed yet; use ci_method=\"none\" or the shared-" *
+        "cutpoint OrdinalFit directly as a Julia-side comparator."))
 end
 
 function _bridge_dispersion_payload(group_values::AbstractVector,
@@ -424,9 +434,12 @@ function bridge_capabilities()
         fixed_effect_X = vcat([f in x_families for f in onepart], [false]),
         missing_response = vcat([f in mask_families for f in onepart], [false]),
         cbind_binomial = [f == "binomial" for f in family],
-        ci_no_x_wald = vcat([!(f in _BRIDGE_GROUPED_DISPERSION_FAMILIES) for f in onepart], [false]),
-        ci_no_x_profile = vcat([!(f in _BRIDGE_GROUPED_DISPERSION_FAMILIES) for f in onepart], [false]),
-        ci_no_x_bootstrap = vcat([!(f in _BRIDGE_GROUPED_DISPERSION_FAMILIES) for f in onepart], [false]),
+        ci_no_x_wald = vcat([!(f in _BRIDGE_GROUPED_DISPERSION_FAMILIES) &&
+                              !(f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES) for f in onepart], [false]),
+        ci_no_x_profile = vcat([!(f in _BRIDGE_GROUPED_DISPERSION_FAMILIES) &&
+                                !(f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES) for f in onepart], [false]),
+        ci_no_x_bootstrap = vcat([!(f in _BRIDGE_GROUPED_DISPERSION_FAMILIES) &&
+                                  !(f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES) for f in onepart], [false]),
         postfit_coef = vcat(fill(true, length(onepart)), [true]),
         postfit_fit_stats = vcat(fill(true, length(onepart)), [true]),
         postfit_summary = vcat(fill(true, length(onepart)), [true]),
@@ -439,6 +452,8 @@ function bridge_capabilities()
             [
                 f in _BRIDGE_GROUPED_DISPERSION_FAMILIES ?
                     "one-part reduced-rank bridge family; default no-X route uses per-trait grouped dispersion; CI routing is a follow-up" :
+                f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES ?
+                    "one-part reduced-rank bridge family; default no-X route uses per-trait ordinal cutpoints; CI routing is a follow-up" :
                     "one-part reduced-rank bridge family; route support is narrower than full R-user parity"
                 for f in onepart
             ],
@@ -671,22 +686,21 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
     elseif key in ("ordinal", "ordinal_probit")
         Yi = round.(Int, Yf)
         link = key == "ordinal_probit" ? ProbitLink() : LogitLink()
-        fit = fit_ordinal_gllvm(Yi; K = K, link = link, mask = M)
+        _bridge_ci_guard_pertrait_ordinal(key, ci_method)
+        fit = fit_ordinal_gllvm_pertrait(Yi; K = K, link = link, mask = M)
         scores = _bridge_scores(() -> getLV(fit, Yi; rotate = true, mask = M))
-        ci = ci_method == "none" ? nothing :
-             _bridge_compute_ci_ng(fit, Float64.(Yi), nothing, ci_method, ci_level, ci_nboot, ci_seed)
         family_out = key == "ordinal_probit" ? "ordinal_probit" : "ordinal"
         model_out = key == "ordinal_probit" ? "ordinal_probit_rr" : "ordinal_rr"
         base = _bridge_assemble_ng(fit, family_out, model_out, traits, units, p, K, Yi, nothing;
             alpha = fill(NaN, p), dispersion = fill(NaN, p),
-            df = (fit.C - 1) + _bridge_rr_df(p, K), scores = scores, ci = ci, mask = M)
-        # Ordinal-only FLAT extras (ASCII keys, primitive arrays): the C-1 ordered
-        # cutpoints τ and the category count C, so the R side can form the per-
-        # category probabilities P(y=c) = F(τ_c − η) − F(τ_{c-1} − η) from the
-        # cached scores/loadings (no separate intercept — the cutpoints carry the
-        # category levels). These are the ONLY ordinal-specific payload fields.
-        return merge(base, (cutpoints = collect(Float64, fit.τ),
-                            n_categories = Int(fit.C)))
+            df = _bridge_rr_df(p, K) + sum(fit.C .- 1), scores = scores, ci = nothing, mask = M)
+        # Ordinal-only FLAT extras (ASCII keys, primitive arrays): per-trait
+        # ordered cutpoints (NaN-padded after each trait's final threshold) and
+        # per-trait category counts. This is the native gllvmTMB parity shape.
+        return merge(base, (cutpoints = Matrix{Float64}(fit.τ),
+                            n_categories = Vector{Int}(fit.C),
+                            cutpoint_mode = "per_trait",
+                            cutpoint_link = _bridge_link_name(fit.link)))
     end
     throw(ArgumentError("bridge_fit: unhandled family key \"$key\""))  # unreachable
 end

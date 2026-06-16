@@ -1461,3 +1461,95 @@ structure for the four promoted dispersion families, and CI status is explicit
 rather than silently inherited from the former shared-scalar path. Remaining
 follow-ups are grouped-dispersion CI engines, R-side payload consumption/parity
 rows, and full `Pkg.test()` / Documenter checks before PR promotion.
+
+## 2026-06-16 - Bridge per-trait ordinal cutpoints
+
+### Scope
+
+Changed the Julia bridge ordinal and ordinal-probit no-X default from shared
+cutpoints to per-trait cutpoints. This matches the native `gllvmTMB` ordinal
+shape for point payloads while preserving `fit_ordinal_gllvm()` as the
+shared-cutpoint Julia comparator and the current shared-cutpoint CI route.
+
+Changes:
+
+- Added `OrdinalPerTraitFit` and `fit_ordinal_gllvm_pertrait()` with one
+  ordered cutpoint vector per trait.
+- Stored per-trait cutpoints as a `p x max(C_t - 1)` matrix padded with `NaN`
+  after each trait's last threshold, plus per-trait category counts `C`.
+- Added post-fit, residual, latent-scale extractor, and display methods for
+  `OrdinalPerTraitFit`.
+- Routed `bridge_fit(; family = "ordinal")` and
+  `bridge_fit(; family = "ordinal_probit")` through the per-trait fitter.
+- Added bridge payload fields `cutpoints`, `n_categories`, `cutpoint_mode =
+  "per_trait"`, and `cutpoint_link`.
+- Changed `GLLVM.bridge_capabilities()` so ordinal and ordinal-probit no-X CI
+  columns report `false` until a per-trait ordinal CI engine lands.
+- Updated bridge CI tests so ordinal CI requests fail loudly instead of silently
+  using the old shared-cutpoint confidence-interval route.
+- Updated parity and response-family docs to separate shared-cutpoint Julia
+  support from per-trait R-bridge parity support.
+
+### Checks Run
+
+```sh
+julia --project=. test/test_ordinal_pertrait.jl
+```
+
+Result: direct per-trait ordinal tests `96/96 pass`; bridge ordinal payload
+tests `15/15 pass`.
+
+```sh
+julia --project=. -e 'include("test/test_bridge_capabilities.jl"); include("test/test_bridge_ci.jl"); include("test/test_bridge_missing_mask.jl")'
+```
+
+Result: capabilities `34/34 pass`; bridge CI `64/64 pass`; bridge
+missing-response mask `37/37 pass`.
+
+```sh
+julia --project=. -e 'include("test/test_ordinal_laplace.jl"); include("test/test_ordinal_fit.jl"); include("test/test_ordinal_probit.jl"); include("test/test_postfit.jl")'
+```
+
+Result: ordinal Laplace `2/2 pass`; shared ordinal fit `9/9 pass`; ordinal
+cumulative-link `10/10 pass`; post-fit blocks all passed, including ordinal
+post-fit `216/216 pass`.
+
+Final focused rerun:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_ordinal_pertrait.jl"); include("test/test_bridge_capabilities.jl"); include("test/test_bridge_ci.jl"); include("test/test_bridge_missing_mask.jl")'
+```
+
+Result: direct per-trait ordinal `96/96 pass`; bridge ordinal payload `15/15
+pass`; bridge capabilities `34/34 pass`; bridge CI `64/64 pass`; bridge
+missing-response mask `37/37 pass`.
+
+```sh
+rg -n "species-specific cutpoints still a gap|common ordered cutpoints \(species-specific|ordinal.*CI endpoints.*✅|CI routes.*Ordinal|Ordinal/Ordinal-probit\).*CI|full ordinal parity|complete ordinal" src docs/src README.md test -g '!docs/node_modules/**'
+```
+
+Result: no hits.
+
+```sh
+git diff --check
+```
+
+Result: clean before the dev-log / after-task report was added.
+
+### Deliberately Not Run
+
+- Full `test/runtests.jl` and `Pkg.test()` were not rerun for this ordinal-only
+  slice. The grouped-dispersion slice immediately before this one had a green
+  direct core suite, and this slice reran the ordinal, bridge capability, bridge
+  CI, bridge mask, and post-fit blocks touched by the change.
+- Documenter was not rebuilt for this ordinal slice.
+- The paired R bridge was not updated in this commit. The R side still needs to
+  decode the new per-trait ordinal payload and mark ordinal CI support as
+  unavailable before advertising this row.
+
+### Rose Verdict
+
+PASS WITH NOTES. Julia now has a per-trait ordinal point route for the R bridge,
+and the bridge no longer overclaims ordinal CI support. The remaining follow-up
+is R-side payload/capability synchronization plus a later per-trait ordinal CI
+engine.

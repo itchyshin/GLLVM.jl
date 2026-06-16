@@ -160,6 +160,7 @@ _fit_dispersion(fit::NBFit)    = fit.r
 _fit_dispersion(fit::GammaFit) = fit.α
 _fit_dispersion(fit::BetaFit)  = fit.φ
 _fit_dispersion(::OrdinalFit)  = nothing
+_fit_dispersion(::OrdinalPerTraitFit) = nothing
 
 # Family marker per fit type (for dispatching `_link_residual_one`).
 _fit_family(::PoissonFit)  = Poisson()
@@ -168,6 +169,7 @@ _fit_family(fit::NBFit)    = NegativeBinomial(fit.r, 0.5)
 _fit_family(fit::GammaFit) = Gamma(fit.α, 1.0)
 _fit_family(fit::BetaFit)  = Beta(fit.φ, 1.0)
 _fit_family(::OrdinalFit)  = Ordinal()
+_fit_family(::OrdinalPerTraitFit) = Ordinal()
 
 # ---------------------------------------------------------------------------
 # Public API: link_residual.
@@ -240,6 +242,10 @@ function link_residual(fit::OrdinalFit, Y::AbstractMatrix; mask = nothing)
     # Cumulative threshold residual, μ̂-free (no species intercept, latent η has
     # zero mean by construction): π²/3 for the logit link (standard-logistic
     # latent), 1 for the probit link (standard-normal latent).
+    return fill(Float64(_link_residual_one(Ordinal(), fit.link, 0.0, nothing)), p)
+end
+function link_residual(fit::OrdinalPerTraitFit, Y::AbstractMatrix; mask = nothing)
+    p = size(fit.Λ, 1)
     return fill(Float64(_link_residual_one(Ordinal(), fit.link, 0.0, nothing)), p)
 end
 
@@ -323,6 +329,9 @@ end
 function sigma_y_site(fit::OrdinalFit, Y::AbstractMatrix; mask = nothing)
     return _latent_sigma(fit.Λ, link_residual(fit, Y; mask = mask))
 end
+function sigma_y_site(fit::OrdinalPerTraitFit, Y::AbstractMatrix; mask = nothing)
+    return _latent_sigma(fit.Λ, link_residual(fit, Y; mask = mask))
+end
 
 """
     communality(fit, Y; N=nothing) -> Vector
@@ -352,6 +361,12 @@ function communality(fit::OrdinalFit, Y::AbstractMatrix; mask = nothing)
     Σ = sigma_y_site(fit, Y; mask = mask)
     return [_safe_ratio(ΛΛt[t, t], Σ[t, t]) for t in 1:size(Λ, 1)]
 end
+function communality(fit::OrdinalPerTraitFit, Y::AbstractMatrix; mask = nothing)
+    Λ = fit.Λ
+    ΛΛt = Λ * Λ'
+    Σ = sigma_y_site(fit, Y; mask = mask)
+    return [_safe_ratio(ΛΛt[t, t], Σ[t, t]) for t in 1:size(Λ, 1)]
+end
 
 """
     correlation(fit, Y; N=nothing) -> Matrix
@@ -376,5 +391,8 @@ function correlation(fit::BinomialFit, Y::AbstractMatrix;
     return _latent_correlation(sigma_y_site(fit, Y; N = N, mask = mask))
 end
 function correlation(fit::OrdinalFit, Y::AbstractMatrix; mask = nothing)
+    return _latent_correlation(sigma_y_site(fit, Y; mask = mask))
+end
+function correlation(fit::OrdinalPerTraitFit, Y::AbstractMatrix; mask = nothing)
     return _latent_correlation(sigma_y_site(fit, Y; mask = mask))
 end

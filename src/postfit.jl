@@ -633,10 +633,16 @@ end
 
 _loadings(fit::OrdinalFit) = fit.Λ
 _loglik(fit::OrdinalFit)   = fit.loglik
+_loadings(fit::OrdinalPerTraitFit) = fit.Λ
+_loglik(fit::OrdinalPerTraitFit)   = fit.loglik
 
 function _nparams(fit::OrdinalFit)
     p, K = size(fit.Λ)
     return (p * K - div(K * (K - 1), 2)) + (fit.C - 1)   # Λ + (C−1) cutpoints, no β
+end
+function _nparams(fit::OrdinalPerTraitFit)
+    p, K = size(fit.Λ)
+    return (p * K - div(K * (K - 1), 2)) + sum(fit.C .- 1)
 end
 
 """
@@ -654,6 +660,19 @@ function getLV(fit::OrdinalFit, Y::AbstractMatrix{<:Integer}; rotate::Bool = tru
         mi = mask === nothing ? nothing : view(mask, :, s)
         Z[:, s] = _ordinal_laplace_mode(view(Y, :, s), fit.Λ, fit.τ, fit.link;
                                         mask = mi)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
+end
+function getLV(fit::OrdinalPerTraitFit, Y::AbstractMatrix{<:Integer};
+               rotate::Bool = true, mask = nothing)
+    p, n = size(Y)
+    K = size(fit.Λ, 2)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        mi = mask === nothing ? nothing : view(mask, :, s)
+        Z[:, s] = _ordinal_laplace_mode_pertrait(view(Y, :, s), fit.Λ, fit.τ,
+                                                 fit.C, fit.link; mask = mi)
     end
     Zt = permutedims(Z)
     return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
@@ -692,6 +711,38 @@ function predict(fit::OrdinalFit, Y::AbstractMatrix{<:Integer}; type::Symbol = :
     end
     return M
 end
+function predict(fit::OrdinalPerTraitFit, Y::AbstractMatrix{<:Integer};
+                 type::Symbol = :class)
+    type in (:link, :prob, :class, :response) ||
+        throw(ArgumentError("type must be :link, :prob, :class, or :response; got :$type"))
+    p, n = size(Y)
+    Cmax = maximum(fit.C)
+    Z = getLV(fit, Y; rotate = false)
+    η = fit.Λ * Z'
+    type === :link && return η
+    if type === :prob
+        P = zeros(Float64, p, n, Cmax)
+        @inbounds for s in 1:n, t in 1:p
+            τt = _trait_cutpoints(fit.τ, fit.C, t)
+            for c in 1:fit.C[t]
+                P[t, s, c] = _ord_prob(c, η[t, s], τt, fit.link)
+            end
+        end
+        return P
+    end
+    M = Matrix{Int}(undef, p, n)
+    @inbounds for s in 1:n, t in 1:p
+        τt = _trait_cutpoints(fit.τ, fit.C, t)
+        best = 1
+        bestp = -1.0
+        for c in 1:fit.C[t]
+            pc = _ord_prob(c, η[t, s], τt, fit.link)
+            pc > bestp && (bestp = pc; best = c)
+        end
+        M[t, s] = best
+    end
+    return M
+end
 
 """
     residuals(fit::OrdinalFit, Y; type=:dunnsmyth, rng=Random.default_rng()) -> p×n matrix
@@ -718,11 +769,38 @@ function residuals(fit::OrdinalFit, Y::AbstractMatrix{<:Integer};
     end
     return R
 end
+function residuals(fit::OrdinalPerTraitFit, Y::AbstractMatrix{<:Integer};
+                   type::Symbol = :dunnsmyth, rng::AbstractRNG = Random.default_rng())
+    type === :dunnsmyth ||
+        throw(ArgumentError("ordinal residuals support type=:dunnsmyth only; got :$type"))
+    p, n = size(Y)
+    Z = getLV(fit, Y; rotate = false)
+    η = fit.Λ * Z'
+    R = Matrix{Float64}(undef, p, n)
+    @inbounds for s in 1:n, t in 1:p
+        τt = _trait_cutpoints(fit.τ, fit.C, t)
+        c = Int(Y[t, s])
+        Fhi = c >= fit.C[t] ? 1.0 : _ord_F(τt[c] - η[t, s], fit.link)
+        Flo = c <= 1 ? 0.0 : _ord_F(τt[c - 1] - η[t, s], fit.link)
+        u = Flo + (Fhi - Flo) * rand(rng)
+        R[t, s] = quantile(Normal(), clamp(u, 1e-12, 1 - 1e-12))
+    end
+    return R
+end
 
 function Base.show(io::IO, ::MIME"text/plain", fit::OrdinalFit)
     p, K = size(fit.Λ)
     println(io, "Ordinal GLLVM fit (cumulative logit)")
     println(io, "  responses p = ", p, ", latent factors K = ", K, ", categories C = ", fit.C)
+    println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
+            ", AIC = ", round(aic(fit); sigdigits = 7))
+    print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
+end
+function Base.show(io::IO, ::MIME"text/plain", fit::OrdinalPerTraitFit)
+    p, K = size(fit.Λ)
+    println(io, "Ordinal GLLVM fit (per-trait cutpoints)")
+    println(io, "  responses p = ", p, ", latent factors K = ", K,
+            ", categories C = ", fit.C)
     println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
             ", AIC = ", round(aic(fit); sigdigits = 7))
     print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")

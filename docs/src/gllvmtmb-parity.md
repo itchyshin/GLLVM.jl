@@ -20,7 +20,7 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 | Negative binomial (NB2) | ✅ | size `r` jointly estimated; `Var = μ + μ²/r`. **gllvm uses dispersion `φ = 1/r`** (`Var = μ + μ²φ`) — see the bridge map below |
 | Negative binomial (NB1) | ✅ | linear variance `Var = μ(1+φ)`; matches gllvm `negative.binomial1` (same `φ`) |
 | Beta | ✅ | precision `φ` (matches gllvm) |
-| Ordinal (cumulative) | ✅ | logit + probit links (`link=ProbitLink()` matches gllvm's default cumulative-probit); `P(y≤c)=F(τ_c−η)` convention verified == gllvm; common ordered cutpoints (species-specific cutpoints still a gap) |
+| Ordinal (cumulative) | ✅ | logit + probit links (`link=ProbitLink()` matches gllvm's default cumulative-probit); `P(y≤c)=F(τ_c−η)` convention verified == gllvm; `fit_ordinal_gllvm()` keeps the shared-cutpoint Julia route, while `fit_ordinal_gllvm_pertrait()` and the R bridge use trait-specific cutpoints for native `gllvmTMB` parity |
 | Gamma | ✅ | shape `α` |
 | Delta-lognormal | ✅ | first two-part family; shared 2-block Laplace substrate |
 | Delta-Gamma | ✅ | occurrence Bernoulli × positive Gamma (log-link mean) on the substrate |
@@ -56,7 +56,7 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 | `simulate` (parametric draw from a fit) | ✅ non-Gaussian | `simulate(fit, n)` / `simulate(fit, X)` for the GLM + covariate fits |
 | `aic` / `bic` / `show` | ✅ | all families |
 | Σ_y / communality / correlation / phylo signal H² | ✅ Gaussian | report-ready extractors |
-| Confidence intervals (Wald / profile / bootstrap) | ✅ scalar-dispersion routes · 🔨 grouped dispersion | Gaussian, scalar-dispersion GLM families, the two-part families, and ordinal via `confint(fit, Y; method=…)`; grouped-dispersion CI endpoints are a follow-up; bootstrap is thread-parallel |
+| Confidence intervals (Wald / profile / bootstrap) | ✅ scalar-dispersion routes · 🔨 grouped dispersion / per-trait ordinal | Gaussian, scalar-dispersion GLM families, the two-part families, and shared-cutpoint ordinal via `confint(fit, Y; method=…)`; grouped-dispersion and per-trait ordinal-cutpoint CI endpoints are follow-ups; bootstrap is thread-parallel |
 | Ordination biplot | ✅ | |
 
 ## Interface
@@ -105,7 +105,12 @@ Gamma, and Ordinal-probit no-X fits. For NB2, NB1, Beta, and Gamma, the Julia
 bridge default now routes through per-trait grouped-dispersion fitters
 (`group = 1:p`) so the point-fit nuisance structure matches native
 `gllvmTMB`/`gllvm`; grouped-dispersion CI endpoints remain explicit
-unavailable-status rows until grouped-fit CI engines land. Fixed-effect
+unavailable-status rows until grouped-fit CI engines land. Ordinal and
+ordinal-probit bridge rows now use per-trait cutpoints by default and return
+`cutpoints` as a NaN-padded trait x threshold matrix plus per-trait
+`n_categories`, `cutpoint_mode = "per_trait"`, and `cutpoint_link`; per-trait
+ordinal CI endpoints remain unavailable-status rows until a per-trait cutpoint
+CI engine lands. Fixed-effect
 covariates (`X`) are admitted for complete, balanced one-part Gaussian, Poisson,
 Binomial, NB2, Beta, and Gamma fits. NB1 fixed-effect covariates remain a
 documented follow-up because the Julia bridge has no NB1 covariate kernel yet.
@@ -122,8 +127,8 @@ live-tests Poisson, Bernoulli Binomial, NB2, NB1, Beta, Gamma, and
 Ordinal-probit routes end to end. Gaussian response masks remain an explicit
 follow-up.
 Ordinal-probit is fit/nobs/mask/link-tested, and the Julia payload carries
-cutpoints plus category counts so R-side prediction can be gated explicitly by
-the paired `gllvmTMB` branch. NB1 post-fit prediction, residual, augmentation,
+per-trait cutpoints plus category counts so R-side prediction can be gated
+explicitly by the paired `gllvmTMB` branch. NB1 post-fit prediction, residual, augmentation,
 and conditional simulation are routed for complete-data no-X fits and for masked
 fits where the fitted means are available; masked simulation and masked
 CI/profile/bootstrap refits remain rejected with explicit CI-status messages.
@@ -157,8 +162,9 @@ public through the R bridge yet:
   variables** — these are `gllvm` features, **not in gllvmTMB**, so they are out of
   scope for this bridge. (GLLVM.jl does carry more general SPDE/Matérn-spatial and
   phylogenetic substrates, which gllvm/gllvmTMB lack.)
-- **Ordinal species-specific cutpoints** — a minor remaining option (GLLVM.jl uses
-  common ordered cutpoints).
+- **Per-trait nuisance-parameter intervals** — grouped-dispersion and per-trait
+  ordinal-cutpoint point payloads are now routed; CI endpoints remain follow-up
+  work.
 
 ## Honest gaps
 

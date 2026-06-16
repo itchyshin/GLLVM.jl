@@ -139,6 +139,80 @@ function ordinal_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix,
     return acc
 end
 
+# Per-trait cutpoint variant. Native gllvmTMB estimates cutpoints separately for
+# each ordinal response; the shared-cutpoint fitter above is kept for Julia-side
+# experiments and backward compatibility.
+@inline function _trait_cutpoints(τ::AbstractMatrix, C::AbstractVector{<:Integer}, t::Integer)
+    return view(τ, t, 1:(C[t] - 1))
+end
+
+function _ordinal_laplace_mode_pertrait(y::AbstractVector, Λ::AbstractMatrix,
+        τ::AbstractMatrix, C::AbstractVector{<:Integer}, link::Link = LogitLink();
+        mask = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
+    p, K = size(Λ)
+    z = zeros(K)
+    s = Vector{Float64}(undef, p)
+    W = Vector{Float64}(undef, p)
+    for _ in 1:maxiter
+        η = _clamp_eta.(Λ * z)
+        @inbounds for t in 1:p
+            if mask !== nothing && !mask[t]
+                s[t] = 0.0
+                W[t] = 0.0
+            else
+                τt = _trait_cutpoints(τ, C, t)
+                st, wt = _ord_score_weight(Int(y[t]), η[t], τt, link)
+                s[t] = st
+                W[t] = wt
+            end
+        end
+        A = Symmetric(Λ' * (W .* Λ) + I)
+        Δ = _safe_solve(A, Λ' * s .- z)
+        (Δ === nothing || !all(isfinite, Δ)) && break
+        z = z .+ Δ
+        maximum(abs, Δ) < tol && break
+    end
+    return z
+end
+
+function ordinal_loglik_site_pertrait(y::AbstractVector, Λ::AbstractMatrix,
+        τ::AbstractMatrix, C::AbstractVector{<:Integer}, link::Link = LogitLink();
+        mask = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
+    p = size(Λ, 1)
+    z = _ordinal_laplace_mode_pertrait(y, Λ, τ, C, link;
+                                       mask = mask, maxiter = maxiter, tol = tol)
+    η = _clamp_eta.(Λ * z)
+    W = Vector{Float64}(undef, p)
+    ℓ = 0.0
+    @inbounds for t in 1:p
+        if mask !== nothing && !mask[t]
+            W[t] = 0.0
+        else
+            τt = _trait_cutpoints(τ, C, t)
+            c = Int(y[t])
+            1 <= c <= C[t] || throw(ArgumentError(
+                "ordinal response category $c is outside 1:$(C[t]) for trait $t"))
+            ℓ += log(max(_ord_prob(c, η[t], τt, link), 1e-12))
+            _, wt = _ord_score_weight(c, η[t], τt, link)
+            W[t] = wt
+        end
+    end
+    A = Symmetric(Λ' * (W .* Λ) + I)
+    return ℓ - 0.5 * dot(z, z) - 0.5 * logdet(A)
+end
+
+function ordinal_marginal_loglik_laplace_pertrait(Y::AbstractMatrix,
+        Λ::AbstractMatrix, τ::AbstractMatrix, C::AbstractVector{<:Integer};
+        link::Link = LogitLink(), mask = nothing, kwargs...)
+    acc = 0.0
+    @inbounds for s in axes(Y, 2)
+        mcol = mask === nothing ? nothing : view(mask, :, s)
+        acc += ordinal_loglik_site_pertrait(view(Y, :, s), Λ, τ, C, link;
+                                            mask = mcol, kwargs...)
+    end
+    return acc
+end
+
 # ---------------------------------------------------------------------------
 # Fit driver (Ordinal family slice 2).
 # ---------------------------------------------------------------------------
@@ -155,6 +229,24 @@ struct OrdinalFit
     Λ::Matrix{Float64}
     τ::Vector{Float64}
     C::Int
+    link::Link
+    loglik::Float64
+    converged::Bool
+    iterations::Int
+end
+
+"""
+    OrdinalPerTraitFit
+
+Ordinal GLLVM fit with trait-specific ordered cutpoints. `τ` is a
+`p × max(C_t - 1)` matrix padded with `NaN` after each trait's last cutpoint, and
+`C` is the per-trait category count. This is the native `gllvmTMB` parity shape
+used by the R bridge; [`OrdinalFit`](@ref) remains the shared-cutpoint shape.
+"""
+struct OrdinalPerTraitFit
+    Λ::Matrix{Float64}
+    τ::Matrix{Float64}
+    C::Vector{Int}
     link::Link
     loglik::Float64
     converged::Bool
@@ -178,6 +270,46 @@ function _unpack_cutpoints(ψ::AbstractVector)
         τ[c] = τ[c - 1] + exp(ψ[c])
     end
     return τ
+end
+
+function _unpack_cutpoints_pertrait(ψ::AbstractVector, C::AbstractVector{<:Integer})
+    p = length(C)
+    Cmax = maximum(C)
+    τ = fill(NaN, p, Cmax - 1)
+    pos = 1
+    @inbounds for t in 1:p
+        m = C[t] - 1
+        τ[t, 1] = ψ[pos]
+        for c in 2:m
+            τ[t, c] = τ[t, c - 1] + exp(ψ[pos + c - 1])
+        end
+        pos += m
+    end
+    return τ
+end
+
+function _pack_initial_cutpoints_pertrait(Y::AbstractMatrix, obs::AbstractMatrix,
+                                          C::AbstractVector{<:Integer})
+    p = size(Y, 1)
+    pieces = Vector{Float64}[]
+    @inbounds for t in 1:p
+        counts = zeros(Int, C[t])
+        for i in axes(Y, 2)
+            obs[t, i] && (counts[Int(Y[t, i])] += 1)
+        end
+        total = sum(counts)
+        total > 0 || throw(ArgumentError("ordinal response trait $t has no observed cells"))
+        cum = cumsum(counts ./ total)
+        τ0 = [log(clamp(cum[c], 1e-3, 1 - 1e-3) /
+                  (1 - clamp(cum[c], 1e-3, 1 - 1e-3))) for c in 1:(C[t] - 1)]
+        ψ0 = similar(τ0)
+        ψ0[1] = τ0[1]
+        for c in 2:(C[t] - 1)
+            ψ0[c] = log(max(τ0[c] - τ0[c - 1], 1e-3))
+        end
+        push!(pieces, ψ0)
+    end
+    return reduce(vcat, pieces)
 end
 
 """
@@ -257,4 +389,65 @@ function fit_ordinal_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
     τ̂ = _unpack_cutpoints(θ̂[(rr + 1):(rr + C - 1)])
     return OrdinalFit(Λ̂, τ̂, C, link, -Optim.minimum(res),
                       Optim.converged(res), Optim.iterations(res))
+end
+
+"""
+    fit_ordinal_gllvm_pertrait(Y; K, link=LogitLink(), …) -> OrdinalPerTraitFit
+
+Fit a cumulative ordinal GLLVM with one ordered cutpoint vector per trait. The
+cutpoint contribution to the degrees of freedom is `sum(C_t - 1)`, matching the
+native `gllvmTMB` ordinal bridge target. The shared-cutpoint
+[`fit_ordinal_gllvm`](@ref) is preserved for experiments and old tests.
+"""
+function fit_ordinal_gllvm_pertrait(Y::AbstractMatrix{<:Integer}; K::Integer,
+        link::Link = LogitLink(), Λ_init = nothing, mask = nothing,
+        g_tol::Real = 1e-5, iterations::Integer = 500,
+        newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    p, n = size(Y)
+    obs = mask === nothing ? trues(p, n) : mask
+    C = zeros(Int, p)
+    @inbounds for t in 1:p, i in 1:n
+        obs[t, i] && (C[t] = max(C[t], Int(Y[t, i])))
+    end
+    all(>=(2), C) || throw(ArgumentError(
+        "ordinal response needs >= 2 observed categories for every trait; got $C"))
+    rr = rr_theta_len(p, K)
+    Ys = mask === nothing ? Y : [obs[t, i] ? Int(Y[t, i]) : 1 for t in 1:p, i in 1:n]
+
+    Zproxy = [quantile(Normal(), clamp((Ys[t, i] - 0.5) / C[t], 1e-3, 1 - 1e-3))
+              for t in 1:p, i in 1:n]
+    Λ0 = if Λ_init === nothing
+        Zc = Zproxy .- (sum(Zproxy; dims = 2) ./ n)
+        F = svd(Zc); kk = min(K, length(F.S))
+        L = zeros(p, K)
+        @inbounds for j in 1:kk
+            L[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
+        end
+        L
+    else
+        collect(float.(Λ_init))
+    end
+
+    ψ0 = _pack_initial_cutpoints_pertrait(Ys, obs, C)
+    θ0 = vcat(pack_lambda(Λ0), ψ0)
+    ncut = sum(C .- 1)
+    function negll(θ)
+        Λ = unpack_lambda(θ[1:rr], p, K)
+        τ = _unpack_cutpoints_pertrait(θ[(rr + 1):(rr + ncut)], C)
+        v = try
+            -ordinal_marginal_loglik_laplace_pertrait(Y, Λ, τ, C;
+                link = link, mask = mask, maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
+    res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
+                         autodiff = :finite)
+    θ̂ = Optim.minimizer(res)
+    Λ̂ = unpack_lambda(θ̂[1:rr], p, K)
+    τ̂ = _unpack_cutpoints_pertrait(θ̂[(rr + 1):(rr + ncut)], C)
+    return OrdinalPerTraitFit(Λ̂, τ̂, C, link, -Optim.minimum(res),
+                              Optim.converged(res), Optim.iterations(res))
 end

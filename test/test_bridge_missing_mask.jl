@@ -75,12 +75,14 @@ using Random
         Yog[.!mo] .= 1
 
         br = bridge_fit(; y = Float64.(Yog), family = "ordinal_probit", d = K, mask = mo)
-        direct = fit_ordinal_gllvm(Yog; K = K, link = ProbitLink(), mask = mo)
+        direct = fit_ordinal_gllvm_pertrait(Yog; K = K, link = ProbitLink(), mask = mo)
 
         @test br.family == "ordinal_probit"
         @test br.model == "ordinal_probit_rr"
         @test all(==("ProbitLink"), br.link)
         @test br.nobs == count(mo)
+        @test br.cutpoint_mode == "per_trait"
+        @test br.n_categories == direct.C
         @test isapprox(br.loglik, direct.loglik; atol = 1e-8, rtol = 0)
         @test isapprox(br.loadings, getLoadings(direct; rotate = true); atol = 1e-8, rtol = 0)
     end

@@ -191,19 +191,14 @@ end
                              natb.term, natb.lower, natb.upper)
         @test db < 1e-8
 
-        # Dispersion-family bridge rows now use per-trait grouped dispersion by
-        # default. Their CI endpoints are deliberately gated until grouped-fit CI
-        # engines land; see test_bridge_grouped_dispersion.jl for that status.
-
-        # Ordinal
+        # Dispersion-family and ordinal bridge rows now use per-trait nuisance
+        # parameters by default. Their CI endpoints are deliberately gated until
+        # grouped-fit / per-trait-cutpoint CI engines land.
         Yo = _sim_ordinal(3, 70, 1, 3; seed = 28)
-        of = GLLVM.fit_ordinal_gllvm(Yo; K = 1)
-        nato = GLLVM.confint(of, Float64.(Yo); method = :wald, level = 0.95)
-        bro = bridge_fit(; y = Float64.(Yo), family = "ordinal", d = 1,
-                         options = Dict("ci_method" => "wald"))
-        dorr = _ci_max_absdiff(bro.ci_param_names, bro.ci_lower, bro.ci_upper,
-                               nato.term, nato.lower, nato.upper)
-        @test dorr < 1e-8
+        @test_throws ArgumentError bridge_fit(; y = Float64.(Yo), family = "ordinal",
+                                              d = 1, options = Dict("ci_method" => "wald"))
+        @test_throws ArgumentError bridge_fit(; y = Float64.(Yo), family = "ordinal_probit",
+                                              d = 1, options = Dict("ci_method" => "wald"))
     end
 
     # -- PARITY: profile (Poisson + Gaussian) -----------------------------------
