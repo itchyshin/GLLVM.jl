@@ -1,5 +1,67 @@
 # Check Log
 
+## 2026-06-16 - NB1 tiny-phi Fisher boundary fix
+
+### Scope
+
+Fixed a numerical instability in the NB1 Fisher-information helper near the
+Poisson boundary. `_nb1_fisher_mu(mu, phi)` previously evaluated the exact
+trigamma-difference expression down to `phi ~= 1e-9`, where cancellation made
+the expected information collapse to `1e-12` or spike far above the Poisson
+limit. The grouped NB1 reduced-rank bridge then over-rewarded boundary fits.
+
+- `src/families/negbin1.jl` now uses the Poisson-limit information
+  `1 / (mu * (1 + phi))` for `phi <= 1e-6`.
+- `test/test_nb1.jl` adds a boundary regression test for `phi = 1e-8` and
+  `1e-9`, plus a near-boundary guard at `1e-5`.
+- No NB1 parameterisation changed: the scale remains
+  `Var(y) = mu * (1 + phi)`.
+
+### Checks Run
+
+```sh
+julia --project=. test/test_nb1.jl
+```
+
+Result: `34/34 pass`.
+
+```sh
+julia --project=. test/test_bridge_grouped_dispersion.jl
+```
+
+Result: `49/49 pass`.
+
+```sh
+julia --project=. test/test_grouped_dispersion_tweedie_nb1.jl
+```
+
+Result: `15/15 pass`.
+
+Paired R bridge check from
+`/Users/z3437171/Dropbox/Github Local/gllvmTMB`:
+
+```sh
+GLLVM_JL_PATH='/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration' JULIA_HOME='/Users/z3437171/.juliaup/bin' Rscript --vanilla -e 'devtools::test(filter = "julia-bridge", reporter = "summary")'
+```
+
+Result: completed cleanly. The NB1 reduced-rank small fixture now reports
+native `logLik = -52.4618425767`, Julia `logLik = -52.4619219625`, `df = 6`
+for both, and delta `-7.9386e-05`. Evaluating Julia at the native fitted
+parameters gives `-52.4618425607`, matching native TMB to about `1.6e-08`.
+
+```sh
+git diff --check
+```
+
+Result: clean.
+
+### Rose Boundary
+
+PASS WITH NOTES. This fixes a Julia NB1 boundary numerical bug and supports the
+small-fixture reduced-rank bridge parity row. It does not promote broad NB1
+simulation recovery, NB1 confidence intervals, masks, fixed-effect covariates,
+or structured terms.
+
 ## 2026-06-16 - Bridge no-latent NB1 admission
 
 ### Scope
