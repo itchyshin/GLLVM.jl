@@ -64,4 +64,20 @@ using GLLVM
             @test occursin("grouped-dispersion", sprint(showerror, err))
         end
     end
+
+    @testset "no-latent grouped-dispersion bridge rows" begin
+        Y = cases[2].y
+        p = size(Y, 1)
+        br = bridge_fit(; y = Y, family = "nb1", d = 0)
+
+        @test br.df == 2p
+        @test size(br.loadings) == (p, 0)
+        @test br.dispersion_group_id == collect(1:p)
+        @test br.dispersion == br.dispersion_group[br.dispersion_group_id]
+        @test br.dispersion_parameter == "phi"
+        @test occursin("mu * (1 + phi)", br.dispersion_engine_scale)
+        @test br.converged
+        @test isfinite(br.loglik)
+        @test_throws ArgumentError bridge_fit(; y = Y, family = "nb1", d = -1)
+    end
 end

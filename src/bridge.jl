@@ -320,7 +320,7 @@ function bridge_fit(; y,
                     unit_names = nothing,
                     options = Dict{String,Any}())
     K = Int(d)
-    K >= 1 || throw(ArgumentError("d must be a positive integer"))
+    K >= 0 || throw(ArgumentError("d must be a non-negative integer"))
     # Fixed-effect covariates X (a p×n×q array) are wired for the Gaussian family
     # and the one-part NON-Gaussian families that `fit_gllvm_cov` fits (poisson,
     # binomial, negbinomial, beta, gamma): fit_gaussian_gllvm / fit_gllvm_cov carry

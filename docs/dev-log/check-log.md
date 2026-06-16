@@ -1,5 +1,79 @@
 # Check Log
 
+## 2026-06-16 - Bridge no-latent NB1 admission
+
+### Scope
+
+Relaxed the Julia `bridge_fit()` latent-rank gate from positive `d` to
+non-negative `d`, allowing the R bridge to request no-latent (`d = 0`) rows.
+The immediate verified row is grouped NB1 with no latent variables: two trait
+intercepts plus two per-trait NB1 `phi` values, no loading parameters.
+
+- `src/bridge.jl` now rejects only `d < 0`.
+- `test/test_bridge_grouped_dispersion.jl` adds a no-latent NB1 bridge row and
+  keeps the negative-rank rejection locked.
+- No family likelihood, parameterisation, optimiser, or CI route changed.
+
+### Checks Run
+
+```sh
+gh pr list --state open --json number,title,headRefName,baseRefName,updatedAt,isDraft --limit 20
+```
+
+Result: two older draft PRs visible (`#95` integration, `#94`
+`a1-nongaussian-ci`); no active PR on this local branch.
+
+```sh
+git log --all --oneline --since="6 hours ago" -- src/bridge.jl test/test_bridge_grouped_dispersion.jl docs/dev-log/check-log.md docs/dev-log/after-task | head -120
+```
+
+Result: current local bridge commits only (`2a07745`, `5cb7ea5`).
+
+```sh
+julia --project='.' -e 'using GLLVM; Y=[1 3 2 4 5 2 3 6 4 7 5 8; 2 1 4 3 5 6 7 4 8 6 9 7]; fit=GLLVM.fit_nb1_gllvm_grouped(Y; K=0, group=collect(1:size(Y,1)), iterations=200); println(fit); println(GLLVM._nparams(fit)); println(size(GLLVM._loadings(fit))); println(fit.loglik); println(fit.converged)'
+```
+
+Result: `NB1GroupedFit(p=2, K=0, G=2, ...)`, `_nparams = 4`,
+`size(Lambda) = (2, 0)`, finite log-likelihood, `converged = true`.
+
+```sh
+julia --project=. test/test_bridge_grouped_dispersion.jl
+```
+
+Result: `49/49 pass`.
+
+```sh
+rg -n "d must be a positive integer|d must be a non-negative integer|d = 0|K = 0|no-latent|full parity|complete bridge|CRAN-ready" src/bridge.jl test/test_bridge_grouped_dispersion.jl docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-16-bridge-no-latent-nb1.md
+```
+
+Result: expected no-latent / `d = 0` hits, the new non-negative error string in
+`src/bridge.jl`, and historical negative-scope wording only.
+
+```sh
+git diff --check
+```
+
+Result: clean.
+
+Paired live R bridge fixture after this Julia edit:
+
+```sh
+GLLVM_JL_PATH='/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration' JULIA_HOME='/Users/z3437171/.juliaup/bin' Rscript --vanilla - <<'RS'
+# fitted gllvmTMB(value ~ 0 + trait, family = nbinom1()) through
+# engine = "julia" and engine = "tmb"; compared logLik, df, and phi.
+RS
+```
+
+Result in `/Users/z3437171/Dropbox/Github Local/gllvmTMB`: Julia and native TMB
+both reported `logLik = -53.17549`, `df = 4`; `delta = 4.253763e-08`;
+maximum absolute NB1 `phi` difference was `5.42191e-05`.
+
+### Rose Boundary
+
+PASS WITH NOTES. This admits no-latent bridge rows at the Julia transport layer
+and verifies grouped NB1. It does not promote reduced-rank NB1 parity, grouped
+CI endpoints, masks, mixed-family rows, or structured terms.
+
 ## 2026-06-15 - Bridge method capability metadata
 
 ### Scope
