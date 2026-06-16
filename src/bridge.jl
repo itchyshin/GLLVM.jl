@@ -236,15 +236,16 @@ function _bridge_ci_from_native(method::AbstractString, level::Real, ci;
     )
 end
 
-# Non-Gaussian one-part families (PoissonFit/BinomialFit/.../OrdinalFit): the
-# unified confint(fit, Y; method, level, N, n_boot, seed) covers all three
+# Non-Gaussian one-part families (PoissonFit/BinomialFit/...): the
+# unified confint(fit, Y; method, level, N, mask, n_boot, seed) covers all three
 # methods, so route every method through it directly.
 function _bridge_compute_ci_ng(fit, Ydata, N, method::AbstractString,
-                               level::Real, nboot::Integer, seed::Integer)
+                               level::Real, nboot::Integer, seed::Integer;
+                               mask = nothing)
     method == "none" && return _bridge_ci_payload("none", level, "")
     msym = method == "wald" ? :wald : (method == "profile" ? :profile : :bootstrap)
     ci = confint(fit, Ydata; method = msym, level = level, N = N,
-                 n_boot = nboot, seed = seed)
+                 mask = mask, n_boot = nboot, seed = seed)
     return _bridge_ci_from_native(method, level, ci)
 end
 
@@ -366,6 +367,9 @@ const _BRIDGE_MASK_FAMILIES = (
 
 const _BRIDGE_GROUPED_DISPERSION_FAMILIES = ("negbinomial", "nb1", "beta", "gamma")
 const _BRIDGE_PERTRAIT_ORDINAL_FAMILIES = ("ordinal", "ordinal_probit")
+const _BRIDGE_MASK_CI_FAMILIES = (
+    "poisson", "binomial", "negbinomial", "nb1", "beta", "gamma",
+)
 
 function _bridge_ci_guard_pertrait_ordinal(key::AbstractString, ci_method::AbstractString)
     ci_method == "none" && return nothing
@@ -408,14 +412,17 @@ metadata, labels, parity rows, and confidence-interval status rows are
 validated in `gllvmTMB`.
 
 The `ci_no_x_*` columns report that a native route exists for complete one-part
-no-covariate fits; they do not imply mixed-family, masked-response, non-Gaussian-X,
-or R-bridge parity coverage. Use `status` and `notes` for public claim wording.
+no-covariate fits. The `ci_mask_*` columns are narrower: no-covariate one-part
+response-mask fits whose masked likelihood can also drive Wald/profile/bootstrap
+intervals. Neither CI group implies mixed-family, non-Gaussian-X, or R-bridge
+parity coverage. Use `status` and `notes` for public claim wording.
 """
 function bridge_capabilities()
     onepart = collect(_BRIDGE_ONEPART_FAMILIES)
     family = vcat(onepart, ["mixed-family vector"])
     x_families = Set(vcat(["gaussian"], collect(_BRIDGE_X_FAMILIES)))
     mask_families = Set(_BRIDGE_MASK_FAMILIES)
+    mask_ci_families = Set(_BRIDGE_MASK_CI_FAMILIES)
     # Scalar-mean post-fit (residuals = y − μ, parametric simulate) excludes the
     # ordinal families (no scalar response mean). predict() IS wired for ordinal
     # via the cutpoints payload (type "prob"/"class"), so it uses every one-part
@@ -432,6 +439,9 @@ function bridge_capabilities()
         ci_no_x_wald = vcat([!(f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES) for f in onepart], [false]),
         ci_no_x_profile = vcat([!(f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES) for f in onepart], [false]),
         ci_no_x_bootstrap = vcat([!(f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES) for f in onepart], [false]),
+        ci_mask_wald = vcat([f in mask_ci_families for f in onepart], [false]),
+        ci_mask_profile = vcat([f in mask_ci_families for f in onepart], [false]),
+        ci_mask_bootstrap = vcat([f in mask_ci_families for f in onepart], [false]),
         postfit_coef = vcat(fill(true, length(onepart)), [true]),
         postfit_fit_stats = vcat(fill(true, length(onepart)), [true]),
         postfit_summary = vcat(fill(true, length(onepart)), [true]),
@@ -443,11 +453,13 @@ function bridge_capabilities()
         notes = vcat(
             [
                 f in ("negbinomial", "nb1", "beta") ?
-                    "one-part reduced-rank bridge family; default no-X route uses per-trait grouped dispersion; no-X Wald/profile/bootstrap CI payloads are routed" :
+                    "one-part reduced-rank bridge family; default no-X route uses per-trait grouped dispersion; no-X and masked no-X Wald/profile/bootstrap CI payloads are routed" :
                 f == "gamma" ?
-                    "one-part reduced-rank bridge family; default no-X route uses shared Gamma grouped dispersion to match current native scalar-CV Gamma; no-X Wald/profile/bootstrap CI payloads are routed; per-trait Gamma is a native-expansion follow-up" :
+                    "one-part reduced-rank bridge family; default no-X route uses shared Gamma grouped dispersion to match current native scalar-CV Gamma; no-X and masked no-X Wald/profile/bootstrap CI payloads are routed; per-trait Gamma is a native-expansion follow-up" :
                 f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES ?
                     "one-part reduced-rank bridge family; default no-X route uses per-trait ordinal cutpoints; CI routing is a follow-up" :
+                f in _BRIDGE_MASK_CI_FAMILIES ?
+                    "one-part reduced-rank bridge family; no-X and masked no-X Wald/profile/bootstrap CI payloads are routed; route support is narrower than full R-user parity" :
                     "one-part reduced-rank bridge family; route support is narrower than full R-user parity"
                 for f in onepart
             ],
@@ -491,9 +503,6 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
         X === nothing || throw(ArgumentError(
             "bridge_fit: missing-response masks with fixed-effect covariates X " *
             "are not wired yet; use a complete response table or engine='tmb'."))
-        ci_method == "none" || throw(ArgumentError(
-            "bridge_fit: confidence intervals for masked response fits are not " *
-            "routed yet; use ci_method=\"none\" or engine='tmb'."))
     end
 
     # X (a p×n×q covariate array) routes to the covariate fitters: the Gaussian
@@ -616,7 +625,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
         fit = fit_poisson_gllvm(Yi; K = K, mask = M)
         scores = _bridge_scores(() -> getLV(fit, Yi; rotate = true, mask = M))
         ci = ci_method == "none" ? nothing :
-             _bridge_compute_ci_ng(fit, Float64.(Yi), nothing, ci_method, ci_level, ci_nboot, ci_seed)
+             _bridge_compute_ci_ng(fit, Float64.(Yi), nothing, ci_method, ci_level, ci_nboot, ci_seed; mask = M)
         return _bridge_assemble_ng(fit, "poisson", "poisson_rr", traits, units, p, K, Yi, nothing;
             alpha = fit.β, dispersion = fill(NaN, p), df = p + _bridge_rr_df(p, K),
             scores = scores, ci = ci, mask = M)
@@ -627,7 +636,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
         fit = fit_binomial_gllvm(Yi; K = K, N = Ni, mask = M)
         scores = _bridge_scores(() -> getLV(fit, Yi; N = Ni, rotate = true, mask = M))
         ci = ci_method == "none" ? nothing :
-             _bridge_compute_ci_ng(fit, Float64.(Yi), Ni, ci_method, ci_level, ci_nboot, ci_seed)
+             _bridge_compute_ci_ng(fit, Float64.(Yi), Ni, ci_method, ci_level, ci_nboot, ci_seed; mask = M)
         return _bridge_assemble_ng(fit, "binomial", "binomial_rr", traits, units, p, K, Yi, Ni;
             alpha = fit.β, dispersion = fill(NaN, p), df = p + _bridge_rr_df(p, K),
             scores = scores, ci = ci, mask = M)
@@ -639,7 +648,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
             "gllvm phi = 1 / r; gllvmTMB sigma = 1 / sqrt(r)")
         scores = _bridge_scores(() -> getLV(fit, Yi; rotate = true, mask = M))
         ci = ci_method == "none" ? nothing :
-             _bridge_compute_ci_ng(fit, Float64.(Yi), nothing, ci_method, ci_level, ci_nboot, ci_seed)
+             _bridge_compute_ci_ng(fit, Float64.(Yi), nothing, ci_method, ci_level, ci_nboot, ci_seed; mask = M)
         base = _bridge_assemble_ng(fit, "negbinomial", "negbinomial_rr", traits, units, p, K, Yi, nothing;
             alpha = fit.β, dispersion = _bridge_expand_dispersion(disp), df = _bridge_group_df(p, K, disp),
             scores = scores, ci = ci, mask = M)
@@ -652,7 +661,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
             "identity on the NB1 overdispersion scale")
         scores = _bridge_scores(() -> getLV(fit, Yi; rotate = true, mask = M))
         ci = ci_method == "none" ? nothing :
-             _bridge_compute_ci_ng(fit, Float64.(Yi), nothing, ci_method, ci_level, ci_nboot, ci_seed)
+             _bridge_compute_ci_ng(fit, Float64.(Yi), nothing, ci_method, ci_level, ci_nboot, ci_seed; mask = M)
         base = _bridge_assemble_ng(fit, "nb1", "nb1_rr", traits, units, p, K, Yi, nothing;
             alpha = fit.β, dispersion = _bridge_expand_dispersion(disp), df = _bridge_group_df(p, K, disp),
             scores = scores, ci = ci, mask = M)
@@ -664,7 +673,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
             "gllvmTMB sigma = 1 / sqrt(phi)")
         scores = _bridge_scores(() -> getLV(fit, Yf; rotate = true, mask = M))
         ci = ci_method == "none" ? nothing :
-             _bridge_compute_ci_ng(fit, Yf, nothing, ci_method, ci_level, ci_nboot, ci_seed)
+             _bridge_compute_ci_ng(fit, Yf, nothing, ci_method, ci_level, ci_nboot, ci_seed; mask = M)
         base = _bridge_assemble_ng(fit, "beta", "beta_rr", traits, units, p, K, Yf, nothing;
             alpha = fit.β, dispersion = _bridge_expand_dispersion(disp), df = _bridge_group_df(p, K, disp),
             scores = scores, ci = ci, mask = M)
@@ -680,7 +689,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
             "gllvmTMB sigma = 1 / sqrt(alpha)")
         scores = _bridge_scores(() -> getLV(fit, Yf; rotate = true, mask = M))
         ci = ci_method == "none" ? nothing :
-             _bridge_compute_ci_ng(fit, Yf, nothing, ci_method, ci_level, ci_nboot, ci_seed)
+             _bridge_compute_ci_ng(fit, Yf, nothing, ci_method, ci_level, ci_nboot, ci_seed; mask = M)
         base = _bridge_assemble_ng(fit, "gamma", "gamma_rr", traits, units, p, K, Yf, nothing;
             alpha = fit.β, dispersion = _bridge_expand_dispersion(disp), df = _bridge_group_df(p, K, disp),
             scores = scores, ci = ci, mask = M)

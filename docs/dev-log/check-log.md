@@ -1,5 +1,72 @@
 # Check Log
 
+## 2026-06-16 - Masked no-X CI bridge endpoints
+
+### Scope
+
+Admitted response-mask no-X Wald/profile/bootstrap CI payloads for the one-part
+non-Gaussian bridge rows whose likelihoods already route masks: Poisson,
+Bernoulli binomial, NB2 grouped, NB1 grouped, Beta grouped, and Gamma grouped.
+
+- `confint(fit, Y; ...)` now accepts `mask` for scalar and grouped one-part
+  non-Gaussian fit types and passes it to the likelihood closure and bootstrap
+  refits.
+- `bridge_fit()` now passes the observed-cell mask into the non-Gaussian CI
+  route instead of stopping for all masked CIs.
+- `bridge_capabilities()` now separates `missing_response` from
+  `ci_mask_wald` / `ci_mask_profile` / `ci_mask_bootstrap`.
+- Per-trait ordinal CIs, Gaussian masks, mixed-family masks, X+mask, variational
+  masked CIs, and X-row CIs remain gated.
+
+### Checks Run
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_missing_mask.jl
+```
+
+Result: `83/83` pass. This includes masked Wald routing across Poisson,
+Binomial, NB2, NB1, Beta, and Gamma; masked profile/bootstrap smoke for Poisson;
+and sentinel-invariance checks for masked Poisson CIs.
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_capabilities.jl
+```
+
+Result: `37/37` pass after adding the `ci_mask_*` capability columns.
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_ci.jl
+```
+
+Result: `64/64` pass; complete-response CI routing was unchanged by the new
+mask keyword.
+
+Paired live R bridge check from
+`/Users/z3437171/Dropbox/Github Local/gllvmTMB`:
+
+```sh
+GLLVM_JL_PATH='/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration' Rscript --vanilla -e 'devtools::test(filter = "julia-bridge", reporter = "summary")'
+```
+
+Result: completed cleanly with `0` failures after the R admission patch.
+
+```sh
+git diff --check
+```
+
+Result: clean.
+
+### Not Run
+
+- Full `Pkg.test()` / `test/runtests.jl`.
+- Documenter build.
+
+### Rose Boundary
+
+PASS WITH NOTES. This admits masked no-X CI endpoints for named one-part
+non-Gaussian rows only. It does not claim CI calibration, broad R/TMB parity,
+ordinal intervals, mixed-family intervals, X-row intervals, or structured terms.
+
 ## 2026-06-16 - Grouped-dispersion `getLV()` bridge scores
 
 ### Scope

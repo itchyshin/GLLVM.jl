@@ -32,6 +32,17 @@ using Random
         @test isapprox(br_garbage.alpha, br.alpha; atol = 1e-8, rtol = 0)
         @test isapprox(br_garbage.loadings, br.loadings; atol = 1e-8, rtol = 0)
         @test isapprox(br_garbage.scores, br.scores; atol = 1e-8, rtol = 0)
+
+        br_ci = bridge_fit(; y = Ysane, family = "poisson", d = K, mask = mask,
+                           options = Dict("ci_method" => "wald"))
+        br_ci_garbage = bridge_fit(; y = Ygarbage, family = "poisson", d = K,
+                                   mask = mask, options = Dict("ci_method" => "wald"))
+        @test br_ci.ci_method == "wald"
+        @test br_ci.ci_param_names == br_ci_garbage.ci_param_names
+        @test isapprox(br_ci.ci_estimate, br_ci_garbage.ci_estimate; atol = 1e-8, rtol = 0)
+        @test isapprox(br_ci.ci_lower, br_ci_garbage.ci_lower; atol = 1e-8, rtol = 0)
+        @test isapprox(br_ci.ci_upper, br_ci_garbage.ci_upper; atol = 1e-8, rtol = 0)
+        @test all(isfinite, br_ci.ci_estimate)
     end
 
     @testset "all-true mask is the complete-data bridge path" begin
@@ -64,6 +75,54 @@ using Random
         @test br_garbage.scores == br.scores
     end
 
+    @testset "masked no-X CIs route for all admitted one-part non-Gaussian rows" begin
+        mask_small = trues(2, 10)
+        mask_small[1, 3] = false
+        mask_small[2, 8] = false
+        cases = [
+            ("poisson", [1 2 0 3 1 4 2 0 1 3; 2 1 3 0 2 1 4 2 3 1], nothing),
+            ("binomial", [1 0 1 1 0 1 0 1 1 0; 0 1 1 0 1 0 1 1 0 1], fill(1, 2, 10)),
+            ("negbinomial", [2 3 1 4 2 5 3 1 2 4; 1 2 4 2 3 1 5 3 2 1], nothing),
+            ("nb1", [2 3 1 4 2 5 3 1 2 4; 1 2 4 2 3 1 5 3 2 1], nothing),
+            ("beta", [0.20 0.35 0.40 0.55 0.65 0.72 0.30 0.45 0.58 0.80;
+                      0.75 0.62 0.50 0.38 0.28 0.18 0.85 0.70 0.55 0.42], nothing),
+            ("gamma", [1.2 1.5 2.0 2.4 1.8 2.8 3.1 1.7 2.2 2.6;
+                       2.1 2.4 1.6 1.9 2.7 3.2 2.5 1.4 2.0 2.9], nothing),
+        ]
+        for (family, Ycase, Ncase) in cases
+            if Ncase === nothing
+                br = bridge_fit(; y = Float64.(Ycase), family = family, d = 0,
+                                mask = mask_small,
+                                options = Dict("ci_method" => "wald"))
+            else
+                br = bridge_fit(; y = Float64.(Ycase), family = family, d = 0,
+                                N = Ncase, mask = mask_small,
+                                options = Dict("ci_method" => "wald"))
+            end
+            @test br.ci_method == "wald"
+            @test br.nobs == count(mask_small)
+            @test length(br.ci_param_names) == length(br.ci_estimate)
+            @test length(br.ci_lower) == length(br.ci_estimate)
+            @test length(br.ci_upper) == length(br.ci_estimate)
+            @test all(isfinite, br.ci_estimate)
+        end
+
+        Yp = Float64.([1 2 1 3 2 4 1 2 3 1; 2 1 3 2 1 2 4 1 2 3])
+        br_profile = bridge_fit(; y = Yp, family = "poisson", d = 0,
+                                mask = mask_small,
+                                options = Dict("ci_method" => "profile"))
+        @test br_profile.ci_method == "profile"
+        @test length(br_profile.ci_param_names) == 2
+
+        br_boot = bridge_fit(; y = Yp, family = "poisson", d = 0,
+                             mask = mask_small,
+                             options = Dict("ci_method" => "bootstrap",
+                                            "ci_nboot" => 6,
+                                            "ci_seed" => 42))
+        @test br_boot.ci_method == "bootstrap"
+        @test length(br_boot.ci_param_names) == 2
+    end
+
     @testset "ordinal_probit mask uses the probit ordinal bridge" begin
         Yo = [1 2 3 1 2 3 1 2 3 1 2 3
               2 3 1 2 3 1 2 3 1 2 3 1
@@ -93,7 +152,7 @@ using Random
                                               mask = mask, X = X)
         @test_throws ArgumentError bridge_fit(; y = randn(p, n), family = "gaussian",
                                               d = K, mask = mask)
-        @test_throws ArgumentError bridge_fit(; y = Y, family = "poisson", d = K,
+        @test_throws ArgumentError bridge_fit(; y = Y, family = "ordinal", d = K,
                                               mask = mask,
                                               options = Dict("ci_method" => "wald"))
         @test_throws ArgumentError bridge_fit(; y = Y, family = ["poisson", "binomial"],
