@@ -59,16 +59,40 @@ using GLLVM
             @test occursin(case.public, br.dispersion_public_scale)
             @test !(:ci_method in keys(br))
 
-            err = try
-                bridge_fit(; y = Y, family = case.family, d = K,
-                           options = Dict("ci_method" => "wald"))
-                nothing
-            catch e
-                e
+            br_ci = bridge_fit(; y = Y, family = case.family, d = K,
+                               options = Dict("ci_method" => "wald"))
+            @test br_ci.ci_method == "wald"
+            @test br_ci.ci_level == 0.95
+            @test length(br_ci.ci_param_names) == length(br_ci.ci_estimate)
+            @test length(br_ci.ci_lower) == length(br_ci.ci_upper)
+            @test length(br_ci.ci_param_names) == length(br_ci.ci_lower)
+            @test all(isfinite, br_ci.ci_estimate)
+            @test any(startswith(name, "$(case.parameter)[")
+                      for name in br_ci.ci_param_names)
+            for g in 1:expected_n_group
+                j = findfirst(==("$(case.parameter)[$g]"), br_ci.ci_param_names)
+                @test j !== nothing
+                @test br_ci.ci_estimate[j] ≈ br_ci.dispersion_group[g]
             end
-            @test err isa ArgumentError
-            @test occursin("grouped-dispersion", sprint(showerror, err))
         end
+    end
+
+    @testset "grouped-dispersion profile and bootstrap smoke" begin
+        Y = [0.8 1.0 1.4 1.7 2.2 2.6 3.0 3.4 3.9 4.3
+             4.2 3.7 3.2 2.8 2.4 2.0 1.6 1.3 1.1 0.9]
+
+        prof = bridge_fit(; y = Y, family = "gamma", d = 0,
+                          options = Dict("ci_method" => "profile"))
+        @test prof.ci_method == "profile"
+        @test "alpha[1]" in prof.ci_param_names
+        @test length(prof.ci_param_names) == length(prof.ci_lower)
+
+        boot = bridge_fit(; y = Y, family = "gamma", d = 0,
+                          options = Dict("ci_method" => "bootstrap",
+                                         "ci_nboot" => 12, "ci_seed" => 9101))
+        @test boot.ci_method == "bootstrap"
+        @test "alpha[1]" in boot.ci_param_names
+        @test length(boot.ci_param_names) == length(boot.ci_upper)
     end
 
     @testset "grouped-dispersion getLV methods" begin

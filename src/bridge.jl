@@ -66,13 +66,14 @@
 # `correlation` as the headline. Lognormal is a documented follow-up; fixed-effect
 # X is wired (Gaussian); confidence intervals (Wald / profile / bootstrap) route
 # through `options["ci_method"]` for scalar-CI one-part families (Gaussian,
-# Poisson, Binomial). NB2, NB1, and Beta default to per-trait grouped
+# Poisson, Binomial) and grouped-dispersion NB2/NB1/Beta/Gamma rows. NB2, NB1,
+# and Beta default to per-trait grouped
 # dispersion for R-twin parity. Gamma uses the same grouped engine with one
 # shared group, matching current native gllvmTMB's scalar-CV Gamma oracle until
 # a native per-trait Gamma expansion lands. Ordinal/ordinal_probit default to
-# per-trait cutpoints; these nuisance-parameter routes currently reject CI
-# routing loudly until matching CI engines land. Mixed-family and REML paths
-# skip-with-note since their fits have no native confint engine yet.
+# per-trait cutpoints; these cutpoint routes currently reject CI routing loudly
+# until matching CI engines land. Mixed-family and REML paths skip-with-note
+# since their fits have no native confint engine yet.
 #
 # ADDITIVE: this file + an include/export line in GLLVM.jl. It edits no fitter or
 # extractor; it is included LAST so every dispatch target already exists.
@@ -366,14 +367,6 @@ const _BRIDGE_MASK_FAMILIES = (
 const _BRIDGE_GROUPED_DISPERSION_FAMILIES = ("negbinomial", "nb1", "beta", "gamma")
 const _BRIDGE_PERTRAIT_ORDINAL_FAMILIES = ("ordinal", "ordinal_probit")
 
-function _bridge_ci_guard_grouped_dispersion(key::AbstractString, ci_method::AbstractString)
-    ci_method == "none" && return nothing
-    throw(ArgumentError(
-        "bridge_fit: confidence intervals for per-trait grouped-dispersion " *
-        "$key fits are not routed yet; use ci_method=\"none\" or a scalar-" *
-        "dispersion comparator fit."))
-end
-
 function _bridge_ci_guard_pertrait_ordinal(key::AbstractString, ci_method::AbstractString)
     ci_method == "none" && return nothing
     throw(ArgumentError(
@@ -436,12 +429,9 @@ function bridge_capabilities()
         fixed_effect_X = vcat([f in x_families for f in onepart], [false]),
         missing_response = vcat([f in mask_families for f in onepart], [false]),
         cbind_binomial = [f == "binomial" for f in family],
-        ci_no_x_wald = vcat([!(f in _BRIDGE_GROUPED_DISPERSION_FAMILIES) &&
-                              !(f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES) for f in onepart], [false]),
-        ci_no_x_profile = vcat([!(f in _BRIDGE_GROUPED_DISPERSION_FAMILIES) &&
-                                !(f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES) for f in onepart], [false]),
-        ci_no_x_bootstrap = vcat([!(f in _BRIDGE_GROUPED_DISPERSION_FAMILIES) &&
-                                  !(f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES) for f in onepart], [false]),
+        ci_no_x_wald = vcat([!(f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES) for f in onepart], [false]),
+        ci_no_x_profile = vcat([!(f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES) for f in onepart], [false]),
+        ci_no_x_bootstrap = vcat([!(f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES) for f in onepart], [false]),
         postfit_coef = vcat(fill(true, length(onepart)), [true]),
         postfit_fit_stats = vcat(fill(true, length(onepart)), [true]),
         postfit_summary = vcat(fill(true, length(onepart)), [true]),
@@ -453,9 +443,9 @@ function bridge_capabilities()
         notes = vcat(
             [
                 f in ("negbinomial", "nb1", "beta") ?
-                    "one-part reduced-rank bridge family; default no-X route uses per-trait grouped dispersion; CI routing is a follow-up" :
+                    "one-part reduced-rank bridge family; default no-X route uses per-trait grouped dispersion; no-X Wald/profile/bootstrap CI payloads are routed" :
                 f == "gamma" ?
-                    "one-part reduced-rank bridge family; default no-X route uses shared Gamma grouped dispersion to match current native scalar-CV Gamma; per-trait Gamma is a native-expansion follow-up; CI routing is a follow-up" :
+                    "one-part reduced-rank bridge family; default no-X route uses shared Gamma grouped dispersion to match current native scalar-CV Gamma; no-X Wald/profile/bootstrap CI payloads are routed; per-trait Gamma is a native-expansion follow-up" :
                 f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES ?
                     "one-part reduced-rank bridge family; default no-X route uses per-trait ordinal cutpoints; CI routing is a follow-up" :
                     "one-part reduced-rank bridge family; route support is narrower than full R-user parity"
@@ -642,42 +632,44 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
             alpha = fit.β, dispersion = fill(NaN, p), df = p + _bridge_rr_df(p, K),
             scores = scores, ci = ci, mask = M)
     elseif key == "negbinomial"
-        _bridge_ci_guard_grouped_dispersion(key, ci_method)
         Yi = round.(Int, Yf)
         fit = fit_nb_gllvm_grouped(Yi; K = K, group = collect(1:p), mask = M)
         disp = _bridge_dispersion_payload(fit.r_group, fit.group, "r",
             "Var = mu + mu^2 / r",
             "gllvm phi = 1 / r; gllvmTMB sigma = 1 / sqrt(r)")
         scores = _bridge_scores(() -> getLV(fit, Yi; rotate = true, mask = M))
+        ci = ci_method == "none" ? nothing :
+             _bridge_compute_ci_ng(fit, Float64.(Yi), nothing, ci_method, ci_level, ci_nboot, ci_seed)
         base = _bridge_assemble_ng(fit, "negbinomial", "negbinomial_rr", traits, units, p, K, Yi, nothing;
             alpha = fit.β, dispersion = _bridge_expand_dispersion(disp), df = _bridge_group_df(p, K, disp),
-            scores = scores, ci = nothing, mask = M)
+            scores = scores, ci = ci, mask = M)
         return merge(base, disp)
     elseif key == "nb1"
-        _bridge_ci_guard_grouped_dispersion(key, ci_method)
         Yi = round.(Int, Yf)
         fit = fit_nb1_gllvm_grouped(Yi; K = K, group = collect(1:p), mask = M)
         disp = _bridge_dispersion_payload(fit.φ, fit.group, "phi",
             "Var = mu * (1 + phi)",
             "identity on the NB1 overdispersion scale")
         scores = _bridge_scores(() -> getLV(fit, Yi; rotate = true, mask = M))
+        ci = ci_method == "none" ? nothing :
+             _bridge_compute_ci_ng(fit, Float64.(Yi), nothing, ci_method, ci_level, ci_nboot, ci_seed)
         base = _bridge_assemble_ng(fit, "nb1", "nb1_rr", traits, units, p, K, Yi, nothing;
             alpha = fit.β, dispersion = _bridge_expand_dispersion(disp), df = _bridge_group_df(p, K, disp),
-            scores = scores, ci = nothing, mask = M)
+            scores = scores, ci = ci, mask = M)
         return merge(base, disp)
     elseif key == "beta"
-        _bridge_ci_guard_grouped_dispersion(key, ci_method)
         fit = fit_beta_gllvm_grouped(Yf; K = K, group = collect(1:p), mask = M)
         disp = _bridge_dispersion_payload(fit.φ, fit.group, "phi",
             "Var = mu * (1 - mu) / (1 + phi)",
             "gllvmTMB sigma = 1 / sqrt(phi)")
         scores = _bridge_scores(() -> getLV(fit, Yf; rotate = true, mask = M))
+        ci = ci_method == "none" ? nothing :
+             _bridge_compute_ci_ng(fit, Yf, nothing, ci_method, ci_level, ci_nboot, ci_seed)
         base = _bridge_assemble_ng(fit, "beta", "beta_rr", traits, units, p, K, Yf, nothing;
             alpha = fit.β, dispersion = _bridge_expand_dispersion(disp), df = _bridge_group_df(p, K, disp),
-            scores = scores, ci = nothing, mask = M)
+            scores = scores, ci = ci, mask = M)
         return merge(base, disp)
     elseif key == "gamma"
-        _bridge_ci_guard_grouped_dispersion(key, ci_method)
         # Native gllvmTMB ordinary Gamma currently has one scalar sigma_eps/CV for
         # all Gamma traits. Use a single grouped-Gamma shape here for R-oracle
         # parity; the per-trait grouped Gamma engine remains available for a later
@@ -687,9 +679,11 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
             "Var = mu^2 / alpha",
             "gllvmTMB sigma = 1 / sqrt(alpha)")
         scores = _bridge_scores(() -> getLV(fit, Yf; rotate = true, mask = M))
+        ci = ci_method == "none" ? nothing :
+             _bridge_compute_ci_ng(fit, Yf, nothing, ci_method, ci_level, ci_nboot, ci_seed)
         base = _bridge_assemble_ng(fit, "gamma", "gamma_rr", traits, units, p, K, Yf, nothing;
             alpha = fit.β, dispersion = _bridge_expand_dispersion(disp), df = _bridge_group_df(p, K, disp),
-            scores = scores, ci = nothing, mask = M)
+            scores = scores, ci = ci, mask = M)
         return merge(base, disp)
     elseif key in ("ordinal", "ordinal_probit")
         Yi = round.(Int, Yf)

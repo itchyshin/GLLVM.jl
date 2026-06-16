@@ -1819,3 +1819,65 @@ PASS WITH NOTES. Julia now has a per-trait ordinal point route for the R bridge,
 and the bridge no longer overclaims ordinal CI support. The remaining follow-up
 is R-side payload/capability synchronization plus a later per-trait ordinal CI
 engine.
+
+## 2026-06-16 — grouped-dispersion CI bridge endpoints
+
+Branch: `codex/julia-per-trait-dispersion`
+
+Purpose: promote the paired `gllvmTMB engine = "julia"` no-X NB2/NB1/Beta/Gamma
+grouped-dispersion rows from point-fit-only to routed Wald/profile/bootstrap CI
+payloads, while keeping per-trait ordinal cutpoint CIs gated.
+
+### Changes
+
+- Added grouped-dispersion adapters to the generic non-Gaussian
+  `confint(fit, Y; method = ...)` layer for `NBGroupedFit`, `NB1GroupedFit`,
+  `BetaGroupedFit`, and `GammaGroupedFit`.
+- Routed `bridge_fit(..., options = Dict("ci_method" => ...))` through those
+  adapters for NB2, NB1, Beta, and Gamma no-X bridge rows.
+- Kept default `ci_method = "none"` payloads byte-lean: grouped fits still omit
+  `ci_*` fields unless a CI method is explicitly requested.
+- Updated `bridge_capabilities()` and bridge docs so grouped-dispersion
+  Wald/profile/bootstrap rows are admitted and per-trait ordinal CI rows remain
+  follow-ups.
+
+### Checks Run
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_grouped_dispersion.jl
+```
+
+Result: `121/121` pass, including grouped Wald payload checks and a small
+Gamma no-latent profile/bootstrap smoke.
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_capabilities.jl
+```
+
+First run failed because the test expectation still listed scalar CI rows only.
+After updating the expected ledger, rerun result: `34/34` pass.
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_ci.jl
+```
+
+Result: `64/64` pass; the existing scalar-family bridge CI parity and status
+suite stayed green.
+
+### Deliberately Not Run
+
+- Full `Pkg.test()` / `test/runtests.jl` was not run for this narrow engine
+  slice. The touched surface is the grouped bridge CI route plus capability
+  metadata; the targeted bridge grouped, capability, and CI suites were run.
+- Documenter was not rebuilt locally. The edited docs are source Markdown only.
+- The paired R bridge was not updated in this Julia commit. That is the next
+  lane and must widen the R-side CI gate, tests, NEWS, validation register, and
+  dashboard together.
+
+### Claim Boundary
+
+IN: no-X grouped-dispersion NB2, NB1, Beta, and shared-Gamma bridge payloads can
+return Wald/profile/bootstrap CI fields when explicitly requested. PARTIAL:
+fixed-effect-X, masked, mixed-family, REML, and per-trait ordinal CI routes
+remain gated. PLANNED: broader calibration and speed evidence belong in the
+R/Julia simulation-comparator programme, not this endpoint-routing slice.

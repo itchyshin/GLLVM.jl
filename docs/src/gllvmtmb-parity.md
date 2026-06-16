@@ -56,7 +56,7 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 | `simulate` (parametric draw from a fit) | ✅ non-Gaussian | `simulate(fit, n)` / `simulate(fit, X)` for the GLM + covariate fits |
 | `aic` / `bic` / `show` | ✅ | all families |
 | Σ_y / communality / correlation / phylo signal H² | ✅ Gaussian | report-ready extractors |
-| Confidence intervals (Wald / profile / bootstrap) | ✅ scalar-dispersion routes · 🔨 grouped dispersion / per-trait ordinal | Gaussian, scalar-dispersion GLM families, the two-part families, and shared-cutpoint ordinal via `confint(fit, Y; method=…)`; grouped-dispersion and per-trait ordinal-cutpoint CI endpoints are follow-ups; bootstrap is thread-parallel |
+| Confidence intervals (Wald / profile / bootstrap) | ✅ scalar/grouped dispersion · 🔨 per-trait ordinal | Gaussian, scalar-dispersion GLM families, grouped-dispersion NB2/NB1/Beta/Gamma, the two-part families, and shared-cutpoint ordinal via `confint(fit, Y; method=…)`; per-trait ordinal-cutpoint CI endpoints are follow-ups; bootstrap is thread-parallel |
 | Ordination biplot | ✅ | |
 
 ## Interface
@@ -104,8 +104,8 @@ one-part reduced-rank models for Gaussian, Poisson, Binomial, NB2, NB1, Beta,
 Gamma, and Ordinal-probit no-X fits. For NB2, NB1, Beta, and Gamma, the Julia
 bridge default now routes through per-trait grouped-dispersion fitters
 (`group = 1:p`) so the point-fit nuisance structure matches native
-`gllvmTMB`/`gllvm`; grouped-dispersion CI endpoints remain explicit
-unavailable-status rows until grouped-fit CI engines land. Ordinal and
+`gllvmTMB`/`gllvm`; grouped-dispersion Wald/profile/bootstrap CI payloads are
+routed through the same no-X bridge contract. Ordinal and
 ordinal-probit bridge rows now use per-trait cutpoints by default and return
 `cutpoints` as a NaN-padded trait x threshold matrix plus per-trait
 `n_categories`, `cutpoint_mode = "per_trait"`, and `cutpoint_link`; per-trait

@@ -60,6 +60,10 @@ using GLLVM
         "gaussian",
         "poisson",
         "binomial",
+        "negbinomial",
+        "nb1",
+        "beta",
+        "gamma",
     ]
     @test caps.family[caps.ci_no_x_wald] == ci_routed
     @test caps.family[caps.ci_no_x_profile] == ci_routed
@@ -92,7 +96,7 @@ using GLLVM
     for (fam, note) in zip(caps.family[1:(end - 1)], caps.notes[1:(end - 1)])
         if fam in grouped
             @test occursin("grouped dispersion", note)
-            @test occursin("CI routing is a follow-up", note)
+            @test occursin("Wald/profile/bootstrap CI payloads are routed", note)
         elseif fam in pertrait_ordinal
             @test occursin("per-trait ordinal cutpoints", note)
             @test occursin("CI routing is a follow-up", note)

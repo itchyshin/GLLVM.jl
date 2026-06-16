@@ -82,7 +82,8 @@ After fitting, the usual report-ready quantities are:
       non-Gaussian families.
     - The `@formula` front-end, and non-Gaussian confidence intervals (Wald /
       profile / bootstrap) via `confint(fit, Y; method=…)` for scalar-dispersion
-      routes; grouped-dispersion CIs remain a bridge-status follow-up.
+      and grouped-dispersion NB2/NB1/Beta/Gamma routes; per-trait ordinal
+      cutpoint CIs remain a bridge-status follow-up.
 
 ## Relation To gllvmTMB
 

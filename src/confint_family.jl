@@ -36,8 +36,10 @@ const _TwoPartFit = Union{DeltaLogNormalFit, DeltaGammaFit, HurdlePoissonFit,
                           HurdleNBFit, ZIPFit, ZINBFit, ZIBFit, BetaHurdleFit}
 
 # Everything the unified confint(fit, Y; method=…) entry accepts.
-const _CIFit = Union{_FamilyFit, _TwoPartFit, OrdinalFit, GllvmCovFit, OrderedBetaFit,
-                     QuadraticFit, RowEffectFit}
+const _GroupedDispersionFit = Union{NBGroupedFit, NB1GroupedFit, BetaGroupedFit, GammaGroupedFit}
+
+const _CIFit = Union{_FamilyFit, _TwoPartFit, _GroupedDispersionFit, OrdinalFit,
+                     GllvmCovFit, OrderedBetaFit, QuadraticFit, RowEffectFit}
 
 # ---------------------------------------------------------------------------
 # Per-family adapter. Bundles everything the generic routines need:
@@ -248,6 +250,174 @@ function _family_ci(fit::GammaFit, Y::AbstractMatrix;
     end
     names = vcat(_glm_lin_names(p, K), "alpha")
     kinds = vcat(fill(:linear, length(θ) - 1), :log)
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+end
+
+# --- Grouped / per-trait dispersion bridge families -----------------------
+_grouped_dispersion_names(p::Integer, K::Integer, parameter::AbstractString, G::Integer) =
+    vcat(_glm_lin_names(p, K), ["$(parameter)[$g]" for g in 1:G])
+
+function _family_ci(fit::NBGroupedFit, Y::AbstractMatrix;
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K)
+    link = fit.link; group = collect(Int, fit.group); G = length(fit.r_group)
+    Yi = round.(Int, Y)
+    θ = vcat(fit.β, pack_lambda(fit.Λ), log.(fit.r_group))
+    nll = function (θv)
+        β = θv[1:p]
+        Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+        rg = exp.(θv[(p + rr + 1):(p + rr + G)])
+        rvec = [rg[group[t]] for t in 1:p]
+        v = try
+            -nb_grouped_marginal_loglik_laplace(Yi, Λ, β, rvec; link = link,
+                                                maxiter = newton_maxiter,
+                                                tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    simulate = function (rng)
+        Yb = Matrix{Int}(undef, p, n)
+        @inbounds for s in 1:n
+            η = fit.β .+ fit.Λ * randn(rng, K)
+            for t in 1:p
+                μ = max(linkinv(link, _clamp_eta(η[t])), 1e-12)
+                r = fit.r_group[group[t]]
+                Yb[t, s] = rand(rng, NegativeBinomial(r, r / (r + μ)))
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try fit_nb_gllvm_grouped(Yb; K = K, group = group, link = link) catch; return nothing end
+        return vcat(fb.β, pack_lambda(fb.Λ), log.(fb.r_group))
+    end
+    names = _grouped_dispersion_names(p, K, "r", G)
+    kinds = vcat(fill(:linear, p + rr), fill(:log, G))
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+end
+
+function _family_ci(fit::NB1GroupedFit, Y::AbstractMatrix;
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K)
+    link = fit.link; group = collect(Int, fit.group); G = length(fit.φ)
+    Yi = round.(Int, Y)
+    θ = vcat(fit.β, pack_lambda(fit.Λ), log.(fit.φ))
+    nll = function (θv)
+        β = θv[1:p]
+        Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+        φg = exp.(θv[(p + rr + 1):(p + rr + G)])
+        φvec = [φg[group[t]] for t in 1:p]
+        v = try
+            -nb1_grouped_marginal_loglik_laplace(Yi, Λ, β, φvec; link = link,
+                                                 maxiter = newton_maxiter,
+                                                 tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    simulate = function (rng)
+        Yb = Matrix{Int}(undef, p, n)
+        @inbounds for s in 1:n
+            η = fit.β .+ fit.Λ * randn(rng, K)
+            for t in 1:p
+                μ = max(linkinv(link, _clamp_eta(η[t])), 1e-12)
+                φ = fit.φ[group[t]]
+                Yb[t, s] = rand(rng, NegativeBinomial(μ / φ, 1 / (1 + φ)))
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try fit_nb1_gllvm_grouped(Yb; K = K, group = group, link = link) catch; return nothing end
+        return vcat(fb.β, pack_lambda(fb.Λ), log.(fb.φ))
+    end
+    names = _grouped_dispersion_names(p, K, "phi", G)
+    kinds = vcat(fill(:linear, p + rr), fill(:log, G))
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+end
+
+function _family_ci(fit::BetaGroupedFit, Y::AbstractMatrix;
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K)
+    link = fit.link; group = collect(Int, fit.group); G = length(fit.φ)
+    Yf = clamp.(Float64.(Y), 1e-6, 1 - 1e-6)
+    θ = vcat(fit.β, pack_lambda(fit.Λ), log.(fit.φ))
+    nll = function (θv)
+        β = θv[1:p]
+        Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+        φg = exp.(θv[(p + rr + 1):(p + rr + G)])
+        φvec = [φg[group[t]] for t in 1:p]
+        v = try
+            -beta_grouped_marginal_loglik_laplace(Yf, Λ, β, φvec; link = link,
+                                                  maxiter = newton_maxiter,
+                                                  tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    simulate = function (rng)
+        Yb = Matrix{Float64}(undef, p, n)
+        @inbounds for s in 1:n
+            η = fit.β .+ fit.Λ * randn(rng, K)
+            for t in 1:p
+                μ = clamp(linkinv(link, _clamp_eta(η[t])), 1e-6, 1 - 1e-6)
+                φ = fit.φ[group[t]]
+                Yb[t, s] = clamp(rand(rng, Beta(μ * φ, (1 - μ) * φ)), 1e-6, 1 - 1e-6)
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try fit_beta_gllvm_grouped(Yb; K = K, group = group, link = link) catch; return nothing end
+        return vcat(fb.β, pack_lambda(fb.Λ), log.(fb.φ))
+    end
+    names = _grouped_dispersion_names(p, K, "phi", G)
+    kinds = vcat(fill(:linear, p + rr), fill(:log, G))
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+end
+
+function _family_ci(fit::GammaGroupedFit, Y::AbstractMatrix;
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K)
+    link = fit.link; group = collect(Int, fit.group); G = length(fit.α)
+    Yf = max.(Float64.(Y), 1e-9)
+    θ = vcat(fit.β, pack_lambda(fit.Λ), log.(fit.α))
+    nll = function (θv)
+        β = θv[1:p]
+        Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+        αg = exp.(θv[(p + rr + 1):(p + rr + G)])
+        αvec = [αg[group[t]] for t in 1:p]
+        v = try
+            -gamma_grouped_marginal_loglik_laplace(Yf, Λ, β, αvec; link = link,
+                                                   maxiter = newton_maxiter,
+                                                   tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    simulate = function (rng)
+        Yb = Matrix{Float64}(undef, p, n)
+        @inbounds for s in 1:n
+            η = fit.β .+ fit.Λ * randn(rng, K)
+            for t in 1:p
+                μ = max(linkinv(link, _clamp_eta(η[t])), 1e-12)
+                α = fit.α[group[t]]
+                Yb[t, s] = rand(rng, Gamma(α, μ / α))
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try fit_gamma_gllvm_grouped(Yb; K = K, group = group, link = link) catch; return nothing end
+        return vcat(fb.β, pack_lambda(fb.Λ), log.(fb.α))
+    end
+    names = _grouped_dispersion_names(p, K, "alpha", G)
+    kinds = vcat(fill(:linear, p + rr), fill(:log, G))
     return _FamilyCI(θ, nll, names, kinds, simulate, refit)
 end
 
