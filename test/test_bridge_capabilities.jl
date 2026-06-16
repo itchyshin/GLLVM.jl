@@ -56,9 +56,16 @@ using GLLVM
         "ordinal_probit",
     ]
     @test caps.family[caps.cbind_binomial] == ["binomial"]
-    @test caps.family[caps.ci_no_x_wald] == caps.family[1:(end - 1)]
-    @test caps.family[caps.ci_no_x_profile] == caps.family[1:(end - 1)]
-    @test caps.family[caps.ci_no_x_bootstrap] == caps.family[1:(end - 1)]
+    ci_routed = [
+        "gaussian",
+        "poisson",
+        "binomial",
+        "ordinal",
+        "ordinal_probit",
+    ]
+    @test caps.family[caps.ci_no_x_wald] == ci_routed
+    @test caps.family[caps.ci_no_x_profile] == ci_routed
+    @test caps.family[caps.ci_no_x_bootstrap] == ci_routed
     @test caps.family[caps.postfit_coef] == caps.family
     @test caps.family[caps.postfit_fit_stats] == caps.family
     @test caps.family[caps.postfit_summary] == caps.family
@@ -82,8 +89,15 @@ using GLLVM
     @test caps.family[caps.postfit_simulate] == scalar_mean_postfit
     @test caps.family[caps.postfit_ordination] == caps.family
     @test all(==("partial"), caps.status)
-    @test all(note -> occursin("narrower than full R-user parity", note),
-        caps.notes[1:(end - 1)])
+    grouped = Set(["negbinomial", "nb1", "beta", "gamma"])
+    for (fam, note) in zip(caps.family[1:(end - 1)], caps.notes[1:(end - 1)])
+        if fam in grouped
+            @test occursin("grouped dispersion", note)
+            @test occursin("CI routing is a follow-up", note)
+        else
+            @test occursin("narrower than full R-user parity", note)
+        end
+    end
     @test occursin("mixed-family", caps.notes[end])
     @test occursin("no X", caps.notes[end])
 end

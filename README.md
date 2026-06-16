@@ -104,8 +104,8 @@ with sparse random-effect design matrices. `GLLVM.jl` solves a
 - SPDE / Matérn spatial latent field, with kriging prediction
 - Offsets, missing-data (NA) masks, Dunn–Smyth residuals, AIC / BIC,
   `predict` / `getLV` / `ordination`, and an `@formula` front-end
-- Wald / profile / bootstrap CI routes across the GLM and two-part families,
-  with public bridge status tracked row-by-row before promotion
+- Wald / profile / bootstrap CI routes across scalar-dispersion GLM and two-part
+  families; grouped-dispersion bridge CIs remain status-gated before promotion
 - PPCA closed-form initialisation
 - Structure-aware Cholesky (Woodbury for Λ Λ' + diag)
 - EM-FA solver as an alternative to LBFGS

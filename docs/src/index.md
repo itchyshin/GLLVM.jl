@@ -81,7 +81,8 @@ After fitting, the usual report-ready quantities are:
       phylogenetic, including a phylogenetic GLM fit (`fit_phylo_glm`) for
       non-Gaussian families.
     - The `@formula` front-end, and non-Gaussian confidence intervals (Wald /
-      profile / bootstrap) via `confint(fit, Y; method=…)`.
+      profile / bootstrap) via `confint(fit, Y; method=…)` for scalar-dispersion
+      routes; grouped-dispersion CIs remain a bridge-status follow-up.
 
 ## Relation To gllvmTMB
 

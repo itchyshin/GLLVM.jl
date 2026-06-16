@@ -1350,3 +1350,114 @@ PASS WITH NOTES. NB1 masked point fits and masked score reconstruction are now
 covered for the bridge, with live R-Julia evidence. Masked CIs/simulations,
 NB1-X, Gaussian masks, and mixed-family masks remain deliberate unsupported
 cells.
+
+## 2026-06-16 - Bridge grouped-dispersion default
+
+### Scope
+
+Changed the Julia bridge no-X default for NB2, NB1, Beta, and Gamma from the
+shared-scalar fitters to the existing per-trait grouped-dispersion fitters
+(`group = 1:p`). This aligns the bridge point-fit nuisance structure with native
+`gllvmTMB` / `gllvm` default dispersion rather than weakening the R oracle.
+Grouped-dispersion CI endpoints are deliberately not routed yet; requesting
+`ci_method != "none"` for these four bridge rows now fails loudly with a
+grouped-dispersion status message.
+
+Changes:
+
+- Added grouped-dispersion payload fields to `bridge_fit()`: `dispersion_group`,
+  `dispersion_group_id`, `dispersion_parameter`, `dispersion_engine_scale`, and
+  `dispersion_public_scale`.
+- Updated NB2/NB1/Beta/Gamma no-X bridge branches to call
+  `fit_nb_gllvm_grouped()`, `fit_nb1_gllvm_grouped()`,
+  `fit_beta_gllvm_grouped()`, and `fit_gamma_gllvm_grouped()`.
+- Changed `GLLVM.bridge_capabilities()` CI columns so grouped-dispersion rows
+  report `false` until grouped-fit CI engines land.
+- Updated the bridge capability, CI, and missing-mask tests to match the new
+  grouped default.
+- Narrowed README / Documenter wording so public status separates scalar-CI
+  routes from grouped-dispersion CI follow-up.
+
+### Checks Run
+
+```sh
+julia --project=. -e 'include("test/test_bridge_grouped_dispersion.jl")'
+```
+
+Result: `40/40 pass`.
+
+```sh
+julia --project=. -e 'include("test/test_bridge_capabilities.jl")'
+```
+
+Result: `32/32 pass`.
+
+```sh
+julia --project=. -e 'include("test/test_bridge_missing_mask.jl")'
+```
+
+Result: `35/35 pass`.
+
+```sh
+julia --project=. -e 'include("test/test_bridge_ci.jl")'
+```
+
+Result: `63/63 pass`.
+
+Final reruns after the docs/status wording edits:
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_bridge_grouped_dispersion.jl"); include("test/test_bridge_capabilities.jl")'
+```
+
+Result: grouped dispersion `40/40 pass`; capabilities `32/32 pass`.
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_bridge_missing_mask.jl")'
+```
+
+Result: `35/35 pass`.
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_bridge_ci.jl")'
+```
+
+Result: `63/63 pass`.
+
+```sh
+GLLVM_JL_PATH="/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration" Rscript -e 'options(gllvmTMB.julia_home="/Users/z3437171/.juliaup/bin"); devtools::test(filter="julia-bridge")'
+```
+
+Result in `/Users/z3437171/Dropbox/Github Local/gllvmTMB` on branch
+`codex/julia-per-trait-dispersion-spec`: `FAIL 0 | WARN 0 | SKIP 0 | PASS 21`
+in `22.8s`. This is a narrow smoke check, not full R-side grouped-dispersion
+parity promotion.
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: `3981 pass / 3 broken / 0 fail` in `31m57.5s`. Direct core run reported
+`Aqua not in this environment` and `JET not in this environment`; run
+`Pkg.test()` for the full quality battery.
+
+```sh
+rg -n "bridge_fit|bridge_capabilities|confidence intervals|CI routes|NB2|NB1|Beta|Gamma|grouped dispersion|per-species / grouped" README.md docs/src docs/dev-log src test -g '!docs/node_modules/**'
+```
+
+Result: relevant hits reviewed. Public docs were narrowed where grouped-
+dispersion CI status could be mistaken for completed endpoints.
+
+```sh
+git diff --check
+```
+
+Result: clean.
+
+### Rose Verdict
+
+PASS WITH NOTES. Point-fit routing now matches the R oracle's per-trait nuisance
+structure for the four promoted dispersion families, and CI status is explicit
+rather than silently inherited from the former shared-scalar path. Remaining
+follow-ups are grouped-dispersion CI engines, R-side payload consumption/parity
+rows, and full `Pkg.test()` / Documenter checks before PR promotion.

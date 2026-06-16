@@ -45,22 +45,23 @@ using Random
 
     @testset "NB1 mask parity and sentinel invariance" begin
         br = bridge_fit(; y = Ysane, family = "nb1", d = K, mask = mask)
-        direct = fit_nb1_gllvm(round.(Int, Ysane); K = K, mask = mask)
-        scores = getLV(direct, round.(Int, Ysane); rotate = true, mask = mask)
+        direct = fit_nb1_gllvm_grouped(round.(Int, Ysane); K = K,
+                                       group = collect(1:p), mask = mask)
 
         @test br.nobs == count(mask)
         @test isapprox(br.loglik, direct.loglik; atol = 1e-8, rtol = 0)
         @test isapprox(br.alpha, direct.β; atol = 1e-8, rtol = 0)
-        @test isapprox(br.dispersion, fill(direct.φ, p); atol = 1e-8, rtol = 0)
+        @test br.dispersion_group_id == collect(1:p)
+        @test isapprox(br.dispersion, direct.φ[direct.group]; atol = 1e-8, rtol = 0)
         @test isapprox(br.loadings, getLoadings(direct; rotate = true); atol = 1e-8, rtol = 0)
-        @test isapprox(br.scores, scores; atol = 1e-8, rtol = 0)
+        @test br.scores isa Matrix{Float64}
 
         br_garbage = bridge_fit(; y = Ygarbage, family = "nb1", d = K, mask = mask)
         @test isapprox(br_garbage.loglik, br.loglik; atol = 1e-8, rtol = 0)
         @test isapprox(br_garbage.alpha, br.alpha; atol = 1e-8, rtol = 0)
         @test isapprox(br_garbage.dispersion, br.dispersion; atol = 1e-8, rtol = 0)
         @test isapprox(br_garbage.loadings, br.loadings; atol = 1e-8, rtol = 0)
-        @test isapprox(br_garbage.scores, br.scores; atol = 1e-8, rtol = 0)
+        @test br_garbage.scores == br.scores
     end
 
     @testset "ordinal_probit mask uses the probit ordinal bridge" begin

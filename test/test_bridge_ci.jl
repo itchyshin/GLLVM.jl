@@ -191,35 +191,9 @@ end
                              natb.term, natb.lower, natb.upper)
         @test db < 1e-8
 
-        # Negative Binomial
-        Yn = _sim_nb(4, 60, 1; seed = 25)
-        nf = GLLVM.fit_nb_gllvm(Yn; K = 1)
-        natn = GLLVM.confint(nf, Float64.(Yn); method = :wald, level = 0.95)
-        brn = bridge_fit(; y = Float64.(Yn), family = "negbinomial", d = 1,
-                         options = Dict("ci_method" => "wald"))
-        dn = _ci_max_absdiff(brn.ci_param_names, brn.ci_lower, brn.ci_upper,
-                             natn.term, natn.lower, natn.upper)
-        @test dn < 1e-8
-
-        # Beta
-        Ybe = _sim_beta(4, 60, 1; seed = 26)
-        bef = GLLVM.fit_beta_gllvm(Ybe; K = 1)
-        natbe = GLLVM.confint(bef, Ybe; method = :wald, level = 0.95)
-        brbe = bridge_fit(; y = Ybe, family = "beta", d = 1,
-                          options = Dict("ci_method" => "wald"))
-        dbe = _ci_max_absdiff(brbe.ci_param_names, brbe.ci_lower, brbe.ci_upper,
-                              natbe.term, natbe.lower, natbe.upper)
-        @test dbe < 1e-8
-
-        # Gamma
-        Yga = _sim_gamma(4, 60, 1; seed = 27)
-        gaf = GLLVM.fit_gamma_gllvm(Yga; K = 1)
-        natga = GLLVM.confint(gaf, Yga; method = :wald, level = 0.95)
-        brga = bridge_fit(; y = Yga, family = "gamma", d = 1,
-                          options = Dict("ci_method" => "wald"))
-        dga = _ci_max_absdiff(brga.ci_param_names, brga.ci_lower, brga.ci_upper,
-                              natga.term, natga.lower, natga.upper)
-        @test dga < 1e-8
+        # Dispersion-family bridge rows now use per-trait grouped dispersion by
+        # default. Their CI endpoints are deliberately gated until grouped-fit CI
+        # engines land; see test_bridge_grouped_dispersion.jl for that status.
 
         # Ordinal
         Yo = _sim_ordinal(3, 70, 1, 3; seed = 28)

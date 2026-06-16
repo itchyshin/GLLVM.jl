@@ -56,7 +56,7 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 | `simulate` (parametric draw from a fit) | ✅ non-Gaussian | `simulate(fit, n)` / `simulate(fit, X)` for the GLM + covariate fits |
 | `aic` / `bic` / `show` | ✅ | all families |
 | Σ_y / communality / correlation / phylo signal H² | ✅ Gaussian | report-ready extractors |
-| Confidence intervals (Wald / profile / bootstrap) | ✅ all families | Gaussian, the GLM families, the two-part families, and ordinal via `confint(fit, Y; method=…)`; bootstrap is thread-parallel |
+| Confidence intervals (Wald / profile / bootstrap) | ✅ scalar-dispersion routes · 🔨 grouped dispersion | Gaussian, scalar-dispersion GLM families, the two-part families, and ordinal via `confint(fit, Y; method=…)`; grouped-dispersion CI endpoints are a follow-up; bootstrap is thread-parallel |
 | Ordination biplot | ✅ | |
 
 ## Interface
@@ -101,10 +101,14 @@ not bugs on either side.
 Engine-side parity is broader than the current R bridge admission surface. The
 current `gllvmTMB(..., engine = "julia")` bridge admits complete, balanced,
 one-part reduced-rank models for Gaussian, Poisson, Binomial, NB2, NB1, Beta,
-Gamma, and Ordinal-probit no-X fits. Fixed-effect covariates (`X`) are admitted
-for complete, balanced one-part Gaussian, Poisson, Binomial, NB2, Beta, and
-Gamma fits. NB1 fixed-effect covariates remain a documented follow-up because
-the Julia bridge has no NB1 covariate kernel yet.
+Gamma, and Ordinal-probit no-X fits. For NB2, NB1, Beta, and Gamma, the Julia
+bridge default now routes through per-trait grouped-dispersion fitters
+(`group = 1:p`) so the point-fit nuisance structure matches native
+`gllvmTMB`/`gllvm`; grouped-dispersion CI endpoints remain explicit
+unavailable-status rows until grouped-fit CI engines land. Fixed-effect
+covariates (`X`) are admitted for complete, balanced one-part Gaussian, Poisson,
+Binomial, NB2, Beta, and Gamma fits. NB1 fixed-effect covariates remain a
+documented follow-up because the Julia bridge has no NB1 covariate kernel yet.
 `GLLVM.bridge_capabilities()` exposes the current Julia bridge surface as a flat,
 JuliaCall-friendly ledger so the R side can enforce a one-way drift guard: every
 R-admitted row must have a Julia route with explicit status metadata, while
@@ -117,14 +121,15 @@ bridge fits through an explicit `mask` (`true = observed`); the R bridge
 live-tests Poisson, Bernoulli Binomial, NB2, NB1, Beta, Gamma, and
 Ordinal-probit routes end to end. Gaussian response masks remain an explicit
 follow-up.
-Ordinal-probit is fit/nobs/mask/link-tested; prediction and residual methods
-remain blocked until the bridge carries cutpoint/probability payloads. NB1
-post-fit prediction, residual, augmentation, and conditional simulation are
-routed for complete-data no-X fits and for masked fits where the fitted means are
-available; masked simulation and masked CI/profile/bootstrap refits remain
-rejected with explicit CI-status messages. X+mask fits, ordinal covariate fits,
-structured covariance terms, and user-selectable Julia-side optimizer controls
-remain explicit bridge follow-ups, not silently supported cells.
+Ordinal-probit is fit/nobs/mask/link-tested, and the Julia payload carries
+cutpoints plus category counts so R-side prediction can be gated explicitly by
+the paired `gllvmTMB` branch. NB1 post-fit prediction, residual, augmentation,
+and conditional simulation are routed for complete-data no-X fits and for masked
+fits where the fitted means are available; masked simulation and masked
+CI/profile/bootstrap refits remain rejected with explicit CI-status messages.
+X+mask fits, ordinal covariate fits, structured covariance terms, and
+user-selectable Julia-side optimizer controls remain explicit bridge follow-ups,
+not silently supported cells.
 
 The mixed-family R bridge is partial, not planned and not complete: complete
 balanced trait-aligned no-X/no-mask/no-CI Julia-engine point fits are admitted
@@ -184,7 +189,7 @@ be built *with* validation rather than shipped unverified:
   headline random slopes `(1 + x | g)` (which need the new RE engine substrate).
 - **R bridge (`engine = "julia"`)** — in progress through the R package bridge.
   Complete-data one-part fits, selected fixed-effect-X rows, selected
-  missing-response-mask rows including NB1, Gaussian CI transport, and NB1
+  missing-response-mask rows including NB1, scalar-CI transport, and NB1
   post-fit methods are admitted only where live R tests cover them. Mixed-family
-  point-fit metadata, NB1-X, masked CIs, ordinal probability payloads, structured
-  dependence, and broader post-fit methods remain bridge follow-ups.
+  point-fit metadata, grouped-dispersion CI endpoints, NB1-X, masked CIs,
+  structured dependence, and broader post-fit methods remain bridge follow-ups.
