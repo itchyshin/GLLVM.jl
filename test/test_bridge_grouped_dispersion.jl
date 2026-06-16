@@ -48,6 +48,8 @@ using GLLVM
                 fill(1, p) : collect(1:p)
             expected_n_group = length(unique(expected_group_id))
 
+            @test size(br.scores) == (size(Y, 2), K)
+            @test all(isfinite, br.scores)
             @test br.df == p + GLLVM.rr_theta_len(p, K) + expected_n_group
             @test br.dispersion_group_id == expected_group_id
             @test length(br.dispersion_group) == expected_n_group
@@ -66,6 +68,36 @@ using GLLVM
             end
             @test err isa ArgumentError
             @test occursin("grouped-dispersion", sprint(showerror, err))
+        end
+    end
+
+    @testset "grouped-dispersion getLV methods" begin
+        for case in cases
+            Y = case.y
+            p, n = size(Y)
+            mask = trues(p, n)
+            mask[1, 2] = false
+            fit, Yobs = if case.family == "negbinomial"
+                Yi = round.(Int, Y)
+                (fit_nb_gllvm_grouped(Yi; K = K, group = collect(1:p)), Yi)
+            elseif case.family == "nb1"
+                Yi = round.(Int, Y)
+                (fit_nb1_gllvm_grouped(Yi; K = K, group = collect(1:p)), Yi)
+            elseif case.family == "beta"
+                (fit_beta_gllvm_grouped(Y; K = K, group = collect(1:p)), Y)
+            else
+                (fit_gamma_gllvm_grouped(Y; K = K, group = fill(1, p)), Y)
+            end
+
+            Z = getLV(fit, Yobs; rotate = true)
+            Zraw = getLV(fit, Yobs; rotate = false)
+            Zmask = getLV(fit, Yobs; rotate = true, mask = mask)
+            @test size(Z) == (n, K)
+            @test size(Zraw) == (n, K)
+            @test size(Zmask) == (n, K)
+            @test all(isfinite, Z)
+            @test all(isfinite, Zraw)
+            @test all(isfinite, Zmask)
         end
     end
 

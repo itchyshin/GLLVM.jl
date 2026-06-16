@@ -1,5 +1,79 @@
 # Check Log
 
+## 2026-06-16 - Grouped-dispersion `getLV()` bridge scores
+
+### Scope
+
+Added conditional latent-score extraction for the grouped-dispersion fit types
+used by the R bridge: `NBGroupedFit`, `NB1GroupedFit`, `BetaGroupedFit`, and
+`GammaGroupedFit`.
+
+- `src/families/grouped_dispersion.jl` now has a shared grouped Laplace-mode
+  helper and `getLV()` methods for NB2, NB1, Beta, and Gamma grouped fits.
+- `bridge_fit()` already called `getLV()` for those rows; before this slice the
+  missing methods made `_bridge_scores()` degrade to a `0 x 0` score payload.
+  After this slice, grouped bridge rows return finite `n x K` scores.
+- No grouped likelihood, optimizer, parameterisation, dispersion scale, CI
+  route, or Gamma shared-group policy changed.
+
+### Checks Run
+
+```sh
+julia --project=. -e 'using GLLVM; ... grouped bridge/getLV probe ...'
+```
+
+Result before the fix: direct grouped `getLV()` calls failed with
+`MethodError: no method matching getLV(::NBGroupedFit, ...)` and analogous
+errors for NB1, Beta, and Gamma; `bridge_fit()` returned `size(scores) = (0, 0)`.
+
+```sh
+julia --project=. test/test_bridge_grouped_dispersion.jl
+```
+
+Result: `81/81 pass`. The test now checks finite `bridge_fit().scores` for
+NB2, NB1, Beta, and Gamma grouped rows and direct finite `getLV()` outputs with
+and without a mask.
+
+```sh
+julia --project=. test/test_bridge_capabilities.jl
+```
+
+Result: `34/34 pass`.
+
+```sh
+julia --project=. -e 'using GLLVM; Y=[1 3 2 4 5 2 3 6 4 7; 2 1 4 3 5 6 7 4 8 6]; br=bridge_fit(; y=Float64.(Y), family="nb1", d=1); println(size(br.scores)); println(all(isfinite, br.scores)); println(size(br.loadings));'
+```
+
+Result: `(10, 1)`, `true`, `(2, 1)`.
+
+```sh
+julia --project=. test/test_bridge_missing_mask.jl
+```
+
+Result: `37/37 pass`.
+
+Paired live R bridge check from
+`/Users/z3437171/Dropbox/Github Local/gllvmTMB`:
+
+```sh
+Rscript --vanilla -e 'options(gllvmTMB.GLLVM.jl.path = "/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration"); devtools::test(filter = "julia-bridge", reporter = "summary")'
+```
+
+Result: completed cleanly with 0 failures.
+
+```sh
+git diff --check
+```
+
+Result: clean.
+
+### Rose Boundary
+
+PASS WITH NOTES. This admits grouped conditional score payloads for R-side
+post-fit reconstruction. It does not add grouped-dispersion CI endpoints,
+simulation, extractor parity, newdata prediction, structured terms, or broad
+native-vs-Julia validation beyond the existing fixture evidence.
+
 ## 2026-06-16 - Gamma shared bridge route
 
 ### Scope
