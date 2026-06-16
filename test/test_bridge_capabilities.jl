@@ -62,7 +62,13 @@ using GLLVM
     @test caps.family[caps.postfit_coef] == caps.family
     @test caps.family[caps.postfit_fit_stats] == caps.family
     @test caps.family[caps.postfit_summary] == caps.family
-    @test caps.family[caps.postfit_predict] == [
+    # predict() now covers EVERY family: ordinal/ordinal_probit predict via the
+    # cutpoints payload (per-category probabilities / modal class), so postfit_predict
+    # is the full family list.
+    @test caps.family[caps.postfit_predict] == caps.family
+    # Scalar-mean post-fit (residuals = y - mu, parametric simulate) still EXCLUDES
+    # the ordinal families, which have no scalar response mean on the payload.
+    scalar_mean_postfit = [
         "gaussian",
         "poisson",
         "binomial",
@@ -72,8 +78,8 @@ using GLLVM
         "gamma",
         "mixed-family vector",
     ]
-    @test caps.family[caps.postfit_residuals] == caps.family[caps.postfit_predict]
-    @test caps.family[caps.postfit_simulate] == caps.family[caps.postfit_predict]
+    @test caps.family[caps.postfit_residuals] == scalar_mean_postfit
+    @test caps.family[caps.postfit_simulate] == scalar_mean_postfit
     @test caps.family[caps.postfit_ordination] == caps.family
     @test all(==("partial"), caps.status)
     @test all(note -> occursin("narrower than full R-user parity", note),

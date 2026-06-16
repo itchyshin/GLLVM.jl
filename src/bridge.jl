@@ -372,7 +372,12 @@ function bridge_capabilities()
     family = vcat(onepart, ["mixed-family vector"])
     x_families = Set(vcat(["gaussian"], collect(_BRIDGE_X_FAMILIES)))
     mask_families = Set(_BRIDGE_MASK_FAMILIES)
+    # Scalar-mean post-fit (residuals = y − μ, parametric simulate) excludes the
+    # ordinal families (no scalar response mean). predict() IS wired for ordinal
+    # via the cutpoints payload (type "prob"/"class"), so it uses every one-part
+    # family.
     postfit_families = Set(filter(f -> !(f in ("ordinal", "ordinal_probit")), onepart))
+    predict_families = Set(onepart)
 
     return (
         family = family,
@@ -386,7 +391,7 @@ function bridge_capabilities()
         postfit_coef = vcat(fill(true, length(onepart)), [true]),
         postfit_fit_stats = vcat(fill(true, length(onepart)), [true]),
         postfit_summary = vcat(fill(true, length(onepart)), [true]),
-        postfit_predict = vcat([f in postfit_families for f in onepart], [true]),
+        postfit_predict = vcat([f in predict_families for f in onepart], [true]),
         postfit_residuals = vcat([f in postfit_families for f in onepart], [true]),
         postfit_simulate = vcat([f in postfit_families for f in onepart], [true]),
         postfit_ordination = vcat(fill(true, length(onepart)), [true]),
@@ -619,9 +624,16 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
              _bridge_compute_ci_ng(fit, Float64.(Yi), nothing, ci_method, ci_level, ci_nboot, ci_seed)
         family_out = key == "ordinal_probit" ? "ordinal_probit" : "ordinal"
         model_out = key == "ordinal_probit" ? "ordinal_probit_rr" : "ordinal_rr"
-        return _bridge_assemble_ng(fit, family_out, model_out, traits, units, p, K, Yi, nothing;
+        base = _bridge_assemble_ng(fit, family_out, model_out, traits, units, p, K, Yi, nothing;
             alpha = fill(NaN, p), dispersion = fill(NaN, p),
             df = (fit.C - 1) + _bridge_rr_df(p, K), scores = scores, ci = ci, mask = M)
+        # Ordinal-only FLAT extras (ASCII keys, primitive arrays): the C-1 ordered
+        # cutpoints τ and the category count C, so the R side can form the per-
+        # category probabilities P(y=c) = F(τ_c − η) − F(τ_{c-1} − η) from the
+        # cached scores/loadings (no separate intercept — the cutpoints carry the
+        # category levels). These are the ONLY ordinal-specific payload fields.
+        return merge(base, (cutpoints = collect(Float64, fit.τ),
+                            n_categories = Int(fit.C)))
     end
     throw(ArgumentError("bridge_fit: unhandled family key \"$key\""))  # unreachable
 end
