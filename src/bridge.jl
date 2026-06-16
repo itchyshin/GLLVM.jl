@@ -249,6 +249,16 @@ function _bridge_compute_ci_ng(fit, Ydata, N, method::AbstractString,
     return _bridge_ci_from_native(method, level, ci)
 end
 
+function _bridge_compute_ci_cov(fit::GllvmCovFit, Ydata, N, X,
+                                method::AbstractString, level::Real,
+                                nboot::Integer, seed::Integer)
+    method == "none" && return _bridge_ci_payload("none", level, "")
+    msym = method == "wald" ? :wald : (method == "profile" ? :profile : :bootstrap)
+    ci = confint(fit, Ydata; method = msym, level = level, N = N, X = X,
+                 n_boot = nboot, seed = seed)
+    return _bridge_ci_from_native(method, level, ci)
+end
+
 # Gaussian fit (GllvmFit): the three native engines have distinct signatures, so
 # normalise each to a (term, estimate, lower, upper) table.
 #   - wald      → confint(fit; y, level)
@@ -414,8 +424,9 @@ validated in `gllvmTMB`.
 The `ci_no_x_*` columns report that a native route exists for complete one-part
 no-covariate fits. The `ci_mask_*` columns are narrower: no-covariate one-part
 response-mask fits whose masked likelihood can also drive Wald/profile/bootstrap
-intervals. Neither CI group implies mixed-family, non-Gaussian-X, or R-bridge
-parity coverage. Use `status` and `notes` for public claim wording.
+intervals. The `ci_x_*` columns are complete-response one-part fixed-effect-X
+fits. None of the CI groups imply mixed-family or R-bridge parity coverage. Use
+`status` and `notes` for public claim wording.
 """
 function bridge_capabilities()
     onepart = collect(_BRIDGE_ONEPART_FAMILIES)
@@ -442,6 +453,9 @@ function bridge_capabilities()
         ci_mask_wald = vcat([f in mask_ci_families for f in onepart], [false]),
         ci_mask_profile = vcat([f in mask_ci_families for f in onepart], [false]),
         ci_mask_bootstrap = vcat([f in mask_ci_families for f in onepart], [false]),
+        ci_x_wald = vcat([f in x_families for f in onepart], [false]),
+        ci_x_profile = vcat([f in x_families for f in onepart], [false]),
+        ci_x_bootstrap = vcat([f in x_families for f in onepart], [false]),
         postfit_coef = vcat(fill(true, length(onepart)), [true]),
         postfit_fit_stats = vcat(fill(true, length(onepart)), [true]),
         postfit_summary = vcat(fill(true, length(onepart)), [true]),
@@ -452,14 +466,16 @@ function bridge_capabilities()
         status = vcat(fill("partial", length(onepart)), ["partial"]),
         notes = vcat(
             [
-                f in ("negbinomial", "nb1", "beta") ?
-                    "one-part reduced-rank bridge family; default no-X route uses per-trait grouped dispersion; no-X and masked no-X Wald/profile/bootstrap CI payloads are routed" :
+                f in ("negbinomial", "beta") ?
+                    "one-part reduced-rank bridge family; default no-X route uses per-trait grouped dispersion; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed" :
+                f == "nb1" ?
+                    "one-part reduced-rank bridge family; default no-X route uses per-trait grouped dispersion; no-X and masked no-X Wald/profile/bootstrap CI payloads are routed; fixed-effect-X remains a follow-up" :
                 f == "gamma" ?
-                    "one-part reduced-rank bridge family; default no-X route uses shared Gamma grouped dispersion to match current native scalar-CV Gamma; no-X and masked no-X Wald/profile/bootstrap CI payloads are routed; per-trait Gamma is a native-expansion follow-up" :
+                    "one-part reduced-rank bridge family; default no-X route uses shared Gamma grouped dispersion to match current native scalar-CV Gamma; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; per-trait Gamma is a native-expansion follow-up" :
                 f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES ?
                     "one-part reduced-rank bridge family; default no-X route uses per-trait ordinal cutpoints; CI routing is a follow-up" :
                 f in _BRIDGE_MASK_CI_FAMILIES ?
-                    "one-part reduced-rank bridge family; no-X and masked no-X Wald/profile/bootstrap CI payloads are routed; route support is narrower than full R-user parity" :
+                    "one-part reduced-rank bridge family; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; route support is narrower than full R-user parity" :
                     "one-part reduced-rank bridge family; route support is narrower than full R-user parity"
                 for f in onepart
             ],
@@ -515,7 +531,8 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
             throw(ArgumentError("bridge_fit: X is not wired for family=\"$key\"; " *
                 "supported families with covariates are gaussian, " *
                 join(_BRIDGE_X_FAMILIES, ", ")))
-        return _bridge_fit_onepart_cov(Yf, key, K, N, traits, units, X)
+        return _bridge_fit_onepart_cov(Yf, key, K, N, traits, units, X,
+                                       ci_method, ci_level, ci_nboot, ci_seed)
     end
 
     if key == "gaussian"
@@ -731,11 +748,13 @@ end
 # `alpha` mirrors β (the per-trait intercept on the link scale) so the existing
 # intercept field stays meaningful. Σ_y/correlation/communality use the shared
 # block ΛΛᵀ (GllvmCovFit has no link-residual extractor yet — same honest fallback
-# as NB1 in _bridge_assemble_ng). CI routing through the bridge is not yet wired
-# for covariate fits (native confint(fit, Y; X=…) needs X + a different signature);
-# a documented follow-up.
+# as NB1 in _bridge_assemble_ng). CI routing uses native
+# confint(fit, Y; X=…, N=…) and returns the same flat bridge CI payload contract
+# as no-X fits.
 function _bridge_fit_onepart_cov(Yf::AbstractMatrix{Float64}, key::AbstractString,
-                                 K::Integer, N, traits, units, X)
+                                 K::Integer, N, traits, units, X,
+                                 ci_method::AbstractString, ci_level::Real,
+                                 ci_nboot::Integer, ci_seed::Integer)
     p, n = size(Yf)
     Xarr = Array{Float64,3}(X)
     size(Xarr, 1) == p && size(Xarr, 2) == n || throw(ArgumentError(
@@ -762,6 +781,9 @@ function _bridge_fit_onepart_cov(Yf::AbstractMatrix{Float64}, key::AbstractStrin
 
     scores = _bridge_scores(() -> getLV(fit, Ydata, Xarr; rotate = true,
                                         N = (Nm === nothing ? nothing : Nm)))
+    ci = ci_method == "none" ? nothing :
+         _bridge_compute_ci_cov(fit, Ydata, Nm, Xarr, ci_method, ci_level,
+                                ci_nboot, ci_seed)
 
     # Shared-block latent-scale derived quantities (no link-residual extractor for
     # GllvmCovFit yet): Σ = ΛΛᵀ, correlation from Σ, communality = 1.
@@ -780,8 +802,8 @@ function _bridge_fit_onepart_cov(Yf::AbstractMatrix{Float64}, key::AbstractStrin
             "fixed-effect covariate fit (non-Gaussian): eta = beta + X*gamma + " *
             "Lambda*z. beta_cov = per-trait intercepts, gamma = shared covariate " *
             "coefficients. Sigma/correlation use the shared block Lambda*Lambda' " *
-            "(communality 1); CIs are not routed for covariate fits yet.",
-        ci = nothing)
+            "(communality 1).",
+        ci = ci)
     return merge(base, (beta_cov = β, gamma = γ))
 end
 

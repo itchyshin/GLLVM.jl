@@ -16,6 +16,9 @@ using GLLVM
         :ci_mask_wald,
         :ci_mask_profile,
         :ci_mask_bootstrap,
+        :ci_x_wald,
+        :ci_x_profile,
+        :ci_x_bootstrap,
         :postfit_coef,
         :postfit_fit_stats,
         :postfit_summary,
@@ -82,6 +85,17 @@ using GLLVM
     @test caps.family[caps.ci_mask_wald] == mask_ci_routed
     @test caps.family[caps.ci_mask_profile] == mask_ci_routed
     @test caps.family[caps.ci_mask_bootstrap] == mask_ci_routed
+    x_ci_routed = [
+        "gaussian",
+        "poisson",
+        "binomial",
+        "negbinomial",
+        "beta",
+        "gamma",
+    ]
+    @test caps.family[caps.ci_x_wald] == x_ci_routed
+    @test caps.family[caps.ci_x_profile] == x_ci_routed
+    @test caps.family[caps.ci_x_bootstrap] == x_ci_routed
     @test caps.family[caps.postfit_coef] == caps.family
     @test caps.family[caps.postfit_fit_stats] == caps.family
     @test caps.family[caps.postfit_summary] == caps.family

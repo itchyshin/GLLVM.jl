@@ -38,6 +38,19 @@ _bx_nan_eq(a::AbstractArray, b::AbstractArray) =
     size(a) == size(b) && all(_bx_nan_eq(x, y) for (x, y) in zip(a, b))
 _bx_nan_eq(a, b) = a == b
 
+function _bx_ci_max_absdiff(n1, lo1, hi1, n2, lo2, hi2)
+    @test n1 == n2
+    d = 0.0
+    for i in eachindex(n1)
+        for (x, y) in ((lo1[i], lo2[i]), (hi1[i], hi2[i]))
+            (isnan(x) && isnan(y)) && continue
+            @test !(isnan(x) ⊻ isnan(y))
+            isnan(x) || (d = max(d, abs(x - y)))
+        end
+    end
+    return d
+end
+
 # Simulate one-part responses with a covariate-driven mean (η = β + Xγ + Λz).
 function _bx_sim(family_marker, p, n, K, q; seed = 7, Ntrial = 1)
     rng = Random.MersenneTwister(seed)
@@ -107,6 +120,71 @@ end
                 end
             end
         end
+    end
+
+    # -- CI ROUTING: bridge-X CI payloads == native confint oracles -------------
+    @testset "X-row CI payloads" begin
+        cases = [
+            ("poisson",     Poisson(),          (p = 4, n = 70, K = 1, q = 1), nothing),
+            ("binomial",    Binomial(),         (p = 4, n = 70, K = 1, q = 1), 6),
+            ("negbinomial", NegativeBinomial(), (p = 3, n = 70, K = 1, q = 1), nothing),
+            ("beta",        Beta(),             (p = 3, n = 70, K = 1, q = 1), nothing),
+            ("gamma",       Gamma(),            (p = 3, n = 70, K = 1, q = 1), nothing),
+        ]
+        for (key, marker, dims, Ntrial) in cases
+            @testset "$key Wald" begin
+                Y, X = _bx_sim(marker, dims.p, dims.n, dims.K, dims.q;
+                               seed = 520 + dims.p, Ntrial = Ntrial === nothing ? 1 : Ntrial)
+                Nm = key == "binomial" ? fill(Ntrial, dims.p, dims.n) : nothing
+                oracle = Nm === nothing ?
+                    GLLVM.fit_gllvm_cov(Y; family = marker, X = X, K = dims.K) :
+                    GLLVM.fit_gllvm_cov(Y; family = marker, X = X, K = dims.K, N = Nm)
+                nat = GLLVM.confint(oracle, Y; method = :wald, X = X, N = Nm)
+                br = bridge_fit(; y = Y, family = key, d = dims.K, N = Nm, X = X,
+                                options = Dict("ci_method" => "wald"))
+                @test br.ci_method == "wald"
+                @test br.ci_level == 0.95
+                @test any(==("gamma[1]"), br.ci_param_names)
+                d = _bx_ci_max_absdiff(br.ci_param_names, br.ci_lower, br.ci_upper,
+                                       nat.term, nat.lower, nat.upper)
+                @test d < 1e-8
+            end
+        end
+
+        # Gaussian-X uses the Gaussian CI engines, which have a distinct
+        # signature from the GllvmCovFit non-Gaussian path.
+        Random.seed!(707)
+        p, n, q, K = 3, 40, 1, 1
+        Xg = randn(p, n, q)
+        Yg = randn(p, n)
+        gf = GLLVM.fit_gaussian_gllvm(Yg; K = K, X = Xg)
+        natg = GLLVM.confint(gf; y = Yg, X = Xg, level = 0.95)
+        brg = bridge_fit(; y = Yg, family = "gaussian", d = K, X = Xg,
+                         options = Dict("ci_method" => "wald"))
+        dg = _bx_ci_max_absdiff(brg.ci_param_names, brg.ci_lower, brg.ci_upper,
+                                natg.term, natg.lower, natg.upper)
+        @test dg < 1e-8
+
+        # Profile/bootstrap are routed through the same native covariate CI
+        # engines; use a tiny K=0 Poisson-X fixture to keep this test quick.
+        Yp, Xp = _bx_sim(Poisson(), 2, 24, 0, 1; seed = 808)
+        pf = GLLVM.fit_gllvm_cov(Yp; family = Poisson(), X = Xp, K = 0)
+        nat_profile = GLLVM.confint(pf, Yp; method = :profile, X = Xp)
+        br_profile = bridge_fit(; y = Yp, family = "poisson", d = 0, X = Xp,
+                                options = Dict("ci_method" => "profile"))
+        @test br_profile.ci_method == "profile"
+        dp = _bx_ci_max_absdiff(br_profile.ci_param_names, br_profile.ci_lower,
+                                br_profile.ci_upper, nat_profile.term,
+                                nat_profile.lower, nat_profile.upper)
+        @test dp < 1e-6
+
+        br_boot = bridge_fit(; y = Yp, family = "poisson", d = 0, X = Xp,
+                             options = Dict("ci_method" => "bootstrap",
+                                            "ci_nboot" => 6,
+                                            "ci_seed" => 41))
+        @test br_boot.ci_method == "bootstrap"
+        @test any(==("gamma[1]"), br_boot.ci_param_names)
+        @test length(br_boot.ci_param_names) == length(br_boot.ci_estimate)
     end
 
     # -- FLAT CONTRACT: the coef fields are JuliaCall-convertible primitives ------

@@ -1,5 +1,66 @@
 # Check Log
 
+## 2026-06-16 - Fixed-effect-X CI bridge endpoints
+
+### Scope
+
+Admitted complete-response fixed-effect-X Wald/profile/bootstrap CI payloads for
+the bridge rows whose native fitters already route `X`: Gaussian, Poisson,
+Bernoulli binomial, NB2, Beta, and Gamma.
+
+- Added `_bridge_compute_ci_cov()` so `GllvmCovFit` bridge rows call native
+  `confint(fit, Y; X = X, N = N, method = ...)` and return the existing flat
+  CI payload contract.
+- Threaded `ci_method`, `ci_level`, `ci_nboot`, and `ci_seed` through
+  `_bridge_fit_onepart_cov()`.
+- Added `ci_x_wald`, `ci_x_profile`, and `ci_x_bootstrap` capability columns.
+  These are true only for Gaussian, Poisson, Binomial, NB2, Beta, and Gamma.
+- Kept NB1-X, ordinal-X, ordinal-probit-X, mixed-family-X, and masks with
+  fixed-effect X gated.
+
+### Checks Run
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_capabilities.jl
+```
+
+Result: `40/40` pass.
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_ci.jl
+```
+
+Result: `64/64` pass.
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_x.jl
+```
+
+Result: `169/169` pass, including fixed-effect-X Wald parity against native
+`confint()` for Poisson, Bernoulli binomial, NB2, Beta, Gamma, and Gaussian,
+plus small Poisson-X profile parity and bootstrap smoke.
+
+### Deliberately Not Run
+
+- Full `Pkg.test()` / `test/runtests.jl` was not run for this narrow bridge
+  endpoint slice. The touched surface is `src/bridge.jl` plus the fixed-X,
+  capability, and bridge-CI tests, which were run directly.
+- Documenter was not rebuilt locally.
+- The paired R bridge admission is a separate commit in `gllvmTMB`; this Julia
+  entry records only the engine-side endpoint route.
+
+### Claim Boundary
+
+IN: complete-response fixed-effect-X bridge CI payloads for Gaussian, Poisson,
+Bernoulli binomial, NB2, Beta, and shared-Gamma rows.
+
+PARTIAL: this is endpoint-routing parity against native GLLVM.jl CI engines,
+not broad native `gllvmTMB` parity, coverage calibration, or speed evidence.
+
+PLANNED/GATED: NB1-X CIs, ordinal-X CIs, mixed-family-X CIs, masks combined
+with fixed-effect X, structured-dependence bridge rows, and per-trait Gamma
+expansion remain follow-ups.
+
 ## 2026-06-16 - Masked no-X CI bridge endpoints
 
 ### Scope
