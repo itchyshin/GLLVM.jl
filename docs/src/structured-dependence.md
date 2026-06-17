@@ -129,10 +129,7 @@ positive-definiteness when two locations are identical or very close.
 
 ## Function reference
 
-```@docs
-spatial_cov
-relatedness_cov
-```
+See [`spatial_cov`](@ref) and [`relatedness_cov`](@ref) for the full signatures.
 
 ---
 

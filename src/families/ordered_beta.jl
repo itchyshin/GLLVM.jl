@@ -76,9 +76,12 @@ function _ob_score_weight(y, η, c0, c1, φ)
 end
 
 # Inner Laplace mode-finder for one site (Newton on the negative second
-# derivative). Mirrors `_laplace_mode` from families/laplace.jl.
+# derivative). Mirrors `_laplace_mode` from families/laplace.jl. `mask` (length-p
+# Bool, or `nothing` = all observed) drops missing responses: a masked entry
+# contributes zero score and zero Fisher weight, so it neither pulls the mode nor
+# enters the Hessian.
 function _ordered_beta_mode(y::AbstractVector, Λ::AbstractMatrix, β::AbstractVector,
-        c0::Real, c1::Real, φ::Real; maxiter::Integer = 100, tol::Real = 1e-9)
+        c0::Real, c1::Real, φ::Real; mask = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
     p, K = size(Λ)
     z = zeros(K)
     for _ in 1:maxiter
@@ -86,6 +89,10 @@ function _ordered_beta_mode(y::AbstractVector, Λ::AbstractMatrix, β::AbstractV
         s = Vector{Float64}(undef, p)
         W = Vector{Float64}(undef, p)
         @inbounds for t in 1:p
+            if mask !== nothing && !mask[t]
+                s[t] = 0.0; W[t] = 0.0           # masked ⇒ no contribution
+                continue
+            end
             st, Wt = _ob_score_weight(y[t], η[t], c0, c1, φ)
             s[t] = st
             W[t] = Wt
@@ -101,15 +108,21 @@ end
 
 # Per-site Laplace log-marginal:
 #   log p(y_s) ≈ ℓ(ẑ) − ½ẑ'ẑ − ½logdet(Λ'WΛ + I).
+# `mask` drops the masked entries from the score/weight (via `_ordered_beta_mode`)
+# and from the conditional log-density sum.
 function _ordered_beta_loglik_site(y::AbstractVector, Λ::AbstractMatrix,
         β::AbstractVector, c0::Real, c1::Real, φ::Real;
-        maxiter::Integer = 100, tol::Real = 1e-9)
+        mask = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
     p, K = size(Λ)
-    z = _ordered_beta_mode(y, Λ, β, c0, c1, φ; maxiter = maxiter, tol = tol)
+    z = _ordered_beta_mode(y, Λ, β, c0, c1, φ; mask = mask, maxiter = maxiter, tol = tol)
     η = β .+ Λ * z
     ℓ = 0.0
     W = Vector{Float64}(undef, p)
     @inbounds for t in 1:p
+        if mask !== nothing && !mask[t]
+            W[t] = 0.0                           # masked ⇒ no Hessian weight, no logpdf
+            continue
+        end
         ℓ += ordered_beta_logp(y[t], η[t], c0, c1, φ)
         _, Wt = _ob_score_weight(y[t], η[t], c0, c1, φ)
         W[t] = Wt
@@ -119,21 +132,27 @@ function _ordered_beta_loglik_site(y::AbstractVector, Λ::AbstractMatrix,
 end
 
 """
-    ordered_beta_marginal_loglik_laplace(Y, Λ, β, c0, c1, φ; maxiter=100, tol=1e-9) -> Float64
+    ordered_beta_marginal_loglik_laplace(Y, Λ, β, c0, c1, φ; mask=nothing, maxiter=100, tol=1e-9) -> Float64
 
 Total Laplace log-marginal over the `n` sites (columns) of an ordered-beta GLLVM.
 `Y` is a p×n matrix of responses in `[0,1]` (with exact 0s and 1s allowed); `Λ`
 p×K loadings; `β` length-p intercepts; `c0 < c1` the ordered cutpoints; `φ` the
 Beta precision. Runs its own per-site Laplace (identity-on-η link). At `Λ = 0`
 this reduces exactly to the sum of the independent ordered-beta `logp`.
+
+`mask` (p×n Bool, or `nothing`) marks observed cells — masked (missing) responses
+are dropped per site from the score, the Hessian weight, and the log-density sum,
+so the marginal is over the observed entries only (invariant to the masked-cell
+placeholder).
 """
 function ordered_beta_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix,
         β::AbstractVector, c0::Real, c1::Real, φ::Real;
-        maxiter::Integer = 100, tol::Real = 1e-9)
+        mask = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
     acc = 0.0
     @inbounds for i in axes(Y, 2)
+        mi = mask === nothing ? nothing : view(mask, :, i)
         acc += _ordered_beta_loglik_site(view(Y, :, i), Λ, β, c0, c1, φ;
-                                         maxiter = maxiter, tol = tol)
+                                         mask = mi, maxiter = maxiter, tol = tol)
     end
     return acc
 end
@@ -232,18 +251,29 @@ precision `φ`. `Y` is a p×n matrix of responses in `[0,1]`; `K` the latent
 dimension. The optimiser θ = `[β(p); pack_lambda(Λ)(rr); c0; Δ; log φ]`. Finite-
 difference gradient; warm start = empirical logit-mean intercepts (interior
 values only) + an SVD loadings init + a moderate `φ₀`, mirroring `fit_beta_gllvm`.
+
+Missing data: pass a `mask` (p×n Bool, `false` = unobserved) or simply include
+`missing` entries in `Y` — either way the masked cells are dropped from the
+marginal *and* from the warm start, so the fit depends only on the observed cells
+(it is invariant to whatever sits in the masked positions).
 """
-function fit_ordered_beta_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
-        c0_init::Real = -1.0, c1_init::Real = 1.0,
+function fit_ordered_beta_gllvm(Y::AbstractMatrix; K::Integer,
+        c0_init::Real = -1.0, c1_init::Real = 1.0, mask = nothing,
         β_init = nothing, Λ_init = nothing, φ_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
     rr = rr_theta_len(p, K)
 
+    # NA handling: derive the observation mask (explicit `mask`, else from `missing`)
+    # and a sanitized response matrix with an in-(0,1) placeholder in masked cells.
+    msk = _resolve_obs_mask(mask, Y)
+    Yc = _sanitize_missing(Y, 0.5)
+
     # warm start: empirical logit-mean over interior values (fall back to clamp).
-    Zemp = [log(clamp(float(Y[t, i]), 1e-3, 1 - 1e-3) /
-                (1 - clamp(float(Y[t, i]), 1e-3, 1 - 1e-3))) for t in 1:p, i in 1:n]
+    Zemp = [log(clamp(float(Yc[t, i]), 1e-3, 1 - 1e-3) /
+                (1 - clamp(float(Yc[t, i]), 1e-3, 1 - 1e-3))) for t in 1:p, i in 1:n]
+    _mask_warmstart!(Zemp, msk)
     β0 = β_init === nothing ? vec(sum(Zemp; dims = 2)) ./ n : collect(float.(β_init))
     Λ0 = if Λ_init === nothing
         Zc = Zemp .- β0
@@ -269,8 +299,8 @@ function fit_ordered_beta_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         c1 = c0 + exp(θ[p + rr + 2])
         φ  = exp(θ[p + rr + 3])
         v = try
-            -ordered_beta_marginal_loglik_laplace(Y, Λ, β, c0, c1, φ;
-                                                  maxiter = newton_maxiter, tol = newton_tol)
+            -ordered_beta_marginal_loglik_laplace(Yc, Λ, β, c0, c1, φ;
+                                                  mask = msk, maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
         end

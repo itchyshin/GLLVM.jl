@@ -99,5 +99,93 @@ using GLLVM, Test, LinearAlgebra, Random
         fc1 = fit_binomial_gllvm(Yco; K = 1, N = Ntr, mask = msk2, iterations = 30)
         fc2 = fit_binomial_gllvm(Ycm; K = 1, N = Ntr, iterations = 30)
         @test isapprox(fc1.loglik, fc2.loglik; atol = 1e-7)
+
+        # Exponential (positive, no dispersion)
+        Ye  = 0.2 .+ randexp(pp, nn)
+        Yem = Matrix{Union{Missing, Float64}}(Ye); for I in miss; Yem[I] = missing; end
+        fe1 = fit_exponential_gllvm(Ye;  K = 1, mask = msk2, iterations = 30)
+        fe2 = fit_exponential_gllvm(Yem; K = 1, iterations = 30)
+        @test isapprox(fe1.loglik, fe2.loglik; atol = 1e-7)
+    end
+
+    # ---- Exponential: complete-data equivalence + NA invariance ------------
+    @testset "Exponential NA-FIML" begin
+        Random.seed!(321)
+        pe, ne = 5, 9
+        Λe = randn(pe, 1) .* 0.4
+        βe = randn(pe) .* 0.3
+        Ye = 0.1 .+ randexp(pe, ne)
+
+        # (1) complete-data equivalence: no mask == an all-true mask (marginal).
+        ℓ_full = GLLVM.exponential_marginal_loglik_laplace(Ye, Λe, βe)
+        ℓ_mask = GLLVM.exponential_marginal_loglik_laplace(Ye, Λe, βe; mask = trues(pe, ne))
+        @test isapprox(ℓ_full, ℓ_mask; atol = 1e-10)
+
+        # complete-data equivalence at the fit level: default call == all-true mask.
+        feA = fit_exponential_gllvm(Ye; K = 1, iterations = 40)
+        feB = fit_exponential_gllvm(Ye; K = 1, mask = trues(pe, ne), iterations = 40)
+        @test isapprox(feA.loglik, feB.loglik; atol = 1e-10)
+        @test isapprox(feA.β, feB.β; atol = 1e-10)
+        @test isapprox(vec(feA.Λ), vec(feB.Λ); atol = 1e-10)
+
+        # (2) a finite NA fit: a few masked cells, marginal invariant to garbage.
+        mske = trues(pe, ne)
+        for (t, s) in [(1, 4), (3, 2), (5, 7), (2, 9)]
+            mske[t, s] = false
+        end
+        Yeg = copy(Ye); for I in findall(.!mske); Yeg[I] = 9999.0; end
+        ℓ_a = GLLVM.exponential_marginal_loglik_laplace(Ye,  Λe, βe; mask = mske)
+        ℓ_b = GLLVM.exponential_marginal_loglik_laplace(Yeg, Λe, βe; mask = mske)
+        @test isapprox(ℓ_a, ℓ_b; atol = 1e-10)
+        @test ℓ_a != ℓ_full
+
+        feM = fit_exponential_gllvm(Ye; K = 1, mask = mske, iterations = 40)
+        @test isfinite(feM.loglik)
+        feG = fit_exponential_gllvm(Yeg; K = 1, mask = mske, iterations = 40)
+        @test isapprox(feM.loglik, feG.loglik; atol = 1e-8)
+        @test isapprox(feM.β, feG.β; atol = 1e-7)
+        @test isapprox(vec(feM.Λ), vec(feG.Λ); atol = 1e-7)
+    end
+
+    # ---- Ordinal: NA-FIML mask honoured (completes the response-family grid) ----
+    @testset "Ordinal NA-FIML" begin
+        Random.seed!(20260613)
+        po, no, Ko = 6, 40, 2
+        Λo = randn(po, Ko) .* 0.4
+        for a in 1:Ko, b in 1:Ko
+            a < b && (Λo[a, b] = 0.0)
+        end
+        τo = [-1.2, 0.0, 1.2]
+        Mo = Λo * randn(Ko, no)
+        Fo(x) = 1 / (1 + exp(-x))
+        drw(η, τ, u) = (for c in 1:length(τ); u <= Fo(τ[c] - η) && return c; end; length(τ) + 1)
+        Yo = [drw(Mo[t, s], τo, rand()) for t in 1:po, s in 1:no]
+        Λe = randn(po, Ko) .* 0.3
+        τe = [-1.0, 0.0, 1.0]
+
+        misso = [(1, 2), (3, 5), (4, 8), (2, 1), (5, 3)]
+        msko = trues(po, no); for (t, s) in misso; msko[t, s] = false; end
+        Yog = copy(Yo); for (t, s) in misso; Yog[t, s] = 9999; end
+
+        # complete-data equivalence: no mask == an all-true mask (marginal)
+        @test isapprox(GLLVM.ordinal_marginal_loglik_laplace(Yo, Λe, τe),
+                       GLLVM.ordinal_marginal_loglik_laplace(Yo, Λe, τe; mask = trues(po, no));
+                       atol = 1e-10)
+        # marginal invariant to garbage in masked cells; mask is active
+        ℓo = GLLVM.ordinal_marginal_loglik_laplace(Yo, Λe, τe; mask = msko)
+        @test isapprox(ℓo, GLLVM.ordinal_marginal_loglik_laplace(Yog, Λe, τe; mask = msko); atol = 1e-10)
+        @test ℓo != GLLVM.ordinal_marginal_loglik_laplace(Yo, Λe, τe)
+        # a fully-masked site contributes exactly 0
+        mc = trues(po, 2); mc[:, 2] .= false
+        @test isapprox(GLLVM.ordinal_marginal_loglik_laplace(Yo[:, 1:2], Λe, τe; mask = mc),
+                       GLLVM.ordinal_loglik_site(view(Yo, :, 1), Λe, τe, GLLVM.LogitLink());
+                       atol = 1e-10)
+        # the FIT is invariant to masked-cell values (sentinel-invariance)
+        foA = fit_ordinal_gllvm(Yo;  K = Ko, mask = msko, iterations = 80)
+        foB = fit_ordinal_gllvm(Yog; K = Ko, mask = msko, iterations = 80)
+        @test foA.converged
+        @test isapprox(foA.loglik, foB.loglik; atol = 1e-7)
+        @test isapprox(vec(foA.Λ), vec(foB.Λ); atol = 1e-6)
+        @test isapprox(foA.τ, foB.τ; atol = 1e-6)
     end
 end

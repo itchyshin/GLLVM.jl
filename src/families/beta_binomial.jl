@@ -69,9 +69,11 @@ function _bb_score_weight(y, η, N, φ; link::Link = LogitLink())
 end
 
 # Inner Laplace mode-finder for one site (Newton on the negative second
-# derivative). Mirrors `_ordered_beta_mode`.
+# derivative). Mirrors `_ordered_beta_mode`. `mask` (length-p Bool, or `nothing` =
+# all observed) drops missing responses: a masked entry contributes zero score and
+# zero Fisher weight, so it neither pulls the mode nor enters the Hessian.
 function _beta_binomial_mode(y::AbstractVector, N::AbstractVector, Λ::AbstractMatrix,
-        β::AbstractVector, φ::Real; link::Link = LogitLink(),
+        β::AbstractVector, φ::Real; link::Link = LogitLink(), mask = nothing,
         maxiter::Integer = 100, tol::Real = 1e-9)
     p, K = size(Λ)
     z = zeros(K)
@@ -80,6 +82,10 @@ function _beta_binomial_mode(y::AbstractVector, N::AbstractVector, Λ::AbstractM
         s = Vector{Float64}(undef, p)
         W = Vector{Float64}(undef, p)
         @inbounds for t in 1:p
+            if mask !== nothing && !mask[t]
+                s[t] = 0.0; W[t] = 0.0           # masked ⇒ no contribution
+                continue
+            end
             st, Wt = _bb_score_weight(y[t], η[t], N[t], φ; link = link)
             s[t] = st
             W[t] = Wt
@@ -95,15 +101,21 @@ end
 
 # Per-site Laplace log-marginal:
 #   log p(y_s) ≈ ℓ(ẑ) − ½ẑ'ẑ − ½logdet(Λ'WΛ + I).
+# `mask` drops the masked entries from the score/weight (via `_beta_binomial_mode`)
+# and from the conditional log-density sum.
 function _beta_binomial_loglik_site(y::AbstractVector, N::AbstractVector,
         Λ::AbstractMatrix, β::AbstractVector, φ::Real; link::Link = LogitLink(),
-        maxiter::Integer = 100, tol::Real = 1e-9)
+        mask = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
     p, K = size(Λ)
-    z = _beta_binomial_mode(y, N, Λ, β, φ; link = link, maxiter = maxiter, tol = tol)
+    z = _beta_binomial_mode(y, N, Λ, β, φ; link = link, mask = mask, maxiter = maxiter, tol = tol)
     η = β .+ Λ * z
     ℓ = 0.0
     W = Vector{Float64}(undef, p)
     @inbounds for t in 1:p
+        if mask !== nothing && !mask[t]
+            W[t] = 0.0                           # masked ⇒ no Hessian weight, no logpdf
+            continue
+        end
         ℓ += betabinomial_logp(y[t], η[t], N[t], φ; link = link)
         _, Wt = _bb_score_weight(y[t], η[t], N[t], φ; link = link)
         W[t] = Wt
@@ -113,7 +125,7 @@ function _beta_binomial_loglik_site(y::AbstractVector, N::AbstractVector,
 end
 
 """
-    betabinomial_marginal_loglik_laplace(Y, N, Λ, β, φ; link=LogitLink(), maxiter=100, tol=1e-9) -> Float64
+    betabinomial_marginal_loglik_laplace(Y, N, Λ, β, φ; mask=nothing, link=LogitLink(), maxiter=100, tol=1e-9) -> Float64
 
 Total Laplace log-marginal over the `n` sites (columns) of a beta-binomial GLLVM.
 `Y` is a p×n matrix of integer successes; `N` the matching p×n trial counts; `Λ`
@@ -121,14 +133,20 @@ p×K loadings; `β` length-p intercepts; `φ` the Beta precision (shape-sum). Ru
 its own per-site Laplace (single latent η, gllvm parameterisation `a=μφ, b=(1−μ)φ`,
 `μ = linkinv(link, η)`). At `Λ = 0` this reduces exactly to the sum of the
 independent beta-binomial `logp`. As `φ → ∞` it approaches the Binomial marginal.
+
+`mask` (p×n Bool, or `nothing`) marks observed cells — masked (missing) responses
+are dropped per site from the score, the Hessian weight, and the log-density sum,
+so the marginal is over the observed entries only (invariant to the masked-cell
+placeholder).
 """
 function betabinomial_marginal_loglik_laplace(Y::AbstractMatrix, N::AbstractMatrix,
-        Λ::AbstractMatrix, β::AbstractVector, φ::Real; link::Link = LogitLink(),
+        Λ::AbstractMatrix, β::AbstractVector, φ::Real; mask = nothing, link::Link = LogitLink(),
         maxiter::Integer = 100, tol::Real = 1e-9)
     acc = 0.0
     @inbounds for i in axes(Y, 2)
+        mi = mask === nothing ? nothing : view(mask, :, i)
         acc += _beta_binomial_loglik_site(view(Y, :, i), view(N, :, i), Λ, β, φ;
-                                          link = link, maxiter = maxiter, tol = tol)
+                                          link = link, mask = mi, maxiter = maxiter, tol = tol)
     end
     return acc
 end
@@ -229,10 +247,15 @@ Finite-difference gradient (the Laplace inner mode-finder is not forward-AD-frie
 Warm start = empirical link-mean intercepts (logit of `(y+0.5)/(N+1)` row means) +
 an SVD (PPCA-style) loadings init + a moderate `φ₀`, mirroring `fit_binomial_gllvm`
 and `fit_ordered_beta_gllvm`.
+
+Missing data: pass a `mask` (p×n Bool, `false` = unobserved) or simply include
+`missing` entries in `Y` — either way the masked cells are dropped from the
+marginal *and* from the warm start, so the fit depends only on the observed cells
+(it is invariant to whatever sits in the masked positions).
 """
-function fit_beta_binomial_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
+function fit_beta_binomial_gllvm(Y::AbstractMatrix; K::Integer,
         N::Union{Nothing, AbstractMatrix{<:Real}} = nothing,
-        link::Link = LogitLink(),
+        link::Link = LogitLink(), mask = nothing,
         β_init = nothing, Λ_init = nothing, φ_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
@@ -241,9 +264,15 @@ function fit_beta_binomial_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     size(Nm) == (p, n) || throw(DimensionMismatch("N must be $(p)×$(n)"))
     rr = rr_theta_len(p, K)
 
+    # NA handling: derive the observation mask (explicit `mask`, else from `missing`)
+    # and a sanitized success matrix with a safe placeholder (0) in masked cells.
+    msk = _resolve_obs_mask(mask, Y)
+    Yc = Integer.(_sanitize_missing(Y, 0))
+
     # warm start: empirical link-scale intercepts + SVD (PPCA-like) loadings.
-    Zemp = [linkfun(link, clamp((float(Y[t, i]) + 0.5) / (float(Nm[t, i]) + 1),
+    Zemp = [linkfun(link, clamp((float(Yc[t, i]) + 0.5) / (float(Nm[t, i]) + 1),
                                 1e-4, 1 - 1e-4)) for t in 1:p, i in 1:n]
+    _mask_warmstart!(Zemp, msk)
     β0 = β_init === nothing ? vec(sum(Zemp; dims = 2)) ./ n : collect(float.(β_init))
     Λ0 = if Λ_init === nothing
         Zc = Zemp .- β0
@@ -265,7 +294,7 @@ function fit_beta_binomial_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
         φ = exp(θ[p + rr + 1])
         v = try
-            -betabinomial_marginal_loglik_laplace(Y, Nm, Λ, β, φ; link = link,
+            -betabinomial_marginal_loglik_laplace(Yc, Nm, Λ, β, φ; mask = msk, link = link,
                                                   maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12

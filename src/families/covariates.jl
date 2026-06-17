@@ -26,7 +26,7 @@
 
 function _laplace_mode_off(family, y::AbstractVector, n::AbstractVector,
         Λ::AbstractMatrix, η0::AbstractVector, link::Link;
-        maxiter::Integer = 100, tol::Real = 1e-9)
+        mask = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
     K = size(Λ, 2)
     z = zeros(K)
     for _ in 1:maxiter
@@ -35,6 +35,10 @@ function _laplace_mode_off(family, y::AbstractVector, n::AbstractVector,
         me = mu_eta.(Ref(link), η)
         s  = _glm_score.(Ref(family), μ, n, me, y)
         W  = _glm_weight.(Ref(family), μ, n, me)
+        if mask !== nothing
+            s = ifelse.(mask, s, 0.0)            # masked ⇒ no contribution
+            W = ifelse.(mask, W, 0.0)
+        end
         A  = Symmetric(Λ' * (W .* Λ) + I)
         Δ  = _safe_solve(A, Λ' * s .- z)
         (Δ === nothing || !all(isfinite, Δ)) && break
@@ -46,29 +50,37 @@ end
 
 function _laplace_site_off(family, y::AbstractVector, n::AbstractVector,
         Λ::AbstractMatrix, η0::AbstractVector, link::Link;
-        maxiter::Integer = 100, tol::Real = 1e-9)
+        mask = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
     p = size(Λ, 1)
-    z  = _laplace_mode_off(family, y, n, Λ, η0, link; maxiter = maxiter, tol = tol)
+    z  = _laplace_mode_off(family, y, n, Λ, η0, link; mask = mask, maxiter = maxiter, tol = tol)
     η  = _clamp_eta.(η0 .+ Λ * z)
     μ  = _clamp_mu.(Ref(family), linkinv.(Ref(link), η))
     me = mu_eta.(Ref(link), η)
     W  = _glm_weight.(Ref(family), μ, n, me)
+    if mask !== nothing
+        W = ifelse.(mask, W, 0.0)
+    end
     A  = Symmetric(Λ' * (W .* Λ) + I)
     ℓ = 0.0
     @inbounds for t in 1:p
+        (mask === nothing || mask[t]) || continue
         ℓ += _glm_logpdf(family, μ[t], n[t], y[t])
     end
     return ℓ - 0.5 * dot(z, z) - 0.5 * logdet(A)
 end
 
 # Total Laplace log-marginal with an additive per-(t,s) offset matrix `O` (p×n):
-# η0_s = β + O[:, s].
+# η0_s = β + O[:, s]. `mask` (p×n Bool, or `nothing`) drops missing responses per
+# site (gllvm-style NA handling), mirroring `marginal_loglik_laplace`.
 function _marginal_loglik_offset(family, Y::AbstractMatrix, N::AbstractMatrix,
-        Λ::AbstractMatrix, β::AbstractVector, O::AbstractMatrix, link::Link; kwargs...)
+        Λ::AbstractMatrix, β::AbstractVector, O::AbstractMatrix, link::Link;
+        mask = nothing, kwargs...)
     acc = 0.0
     @inbounds for s in axes(Y, 2)
         η0 = β .+ view(O, :, s)
-        acc += _laplace_site_off(family, view(Y, :, s), view(N, :, s), Λ, η0, link; kwargs...)
+        mi = mask === nothing ? nothing : view(mask, :, s)
+        acc += _laplace_site_off(family, view(Y, :, s), view(N, :, s), Λ, η0, link;
+                                 mask = mi, kwargs...)
     end
     return acc
 end
@@ -127,6 +139,13 @@ function _cov_sample(f::Beta, μ, nt, rng)
 end
 _cov_sample(f::Gamma, μ, nt, rng)           = rand(rng, Gamma(f.α, max(μ, 1e-12) / f.α))
 _cov_sample(::Exponential, μ, nt, rng)      = rand(rng, Exponential(max(μ, 1e-12)))
+
+# Domain-safe placeholder for masked (missing) Y cells, per family. The masked
+# cells are dropped from every likelihood contribution and overwritten in the warm
+# start (`_mask_warmstart!`), so the placeholder only has to keep the score/weight
+# broadcast in-domain (the values there are computed then zeroed).
+_cov_placeholder(::Beta) = 0.5                       # in (0,1)
+_cov_placeholder(f)      = 0.0                        # counts / Gamma (Zemp uses max(·,ε))
 
 # Link-scale latent proxy for the warm start (per family).
 function _cov_zemp(family, Y::AbstractMatrix, N::AbstractMatrix, link::Link)
@@ -190,10 +209,14 @@ X = reshape(repeat(temp', p), p, n, 1)            # X[t,s,1] = temp[s]
 fit = fit_gllvm_cov(Y; family = Poisson(), X = X, K = 2)
 fit.γ            # estimated environmental coefficient(s)
 ```
+
+Missing data: pass a `mask` (p×n Bool, `false` = unobserved) or simply include
+`missing` entries in `Y` — either way the masked cells are dropped from the
+marginal *and* from the warm start, so the fit depends only on the observed cells.
 """
-function fit_gllvm_cov(Y::AbstractMatrix{<:Real}; family, X::AbstractArray{<:Real, 3},
+function fit_gllvm_cov(Y::AbstractMatrix; family, X::AbstractArray{<:Real, 3},
         K::Integer, link::Union{Nothing, Link} = nothing,
-        N::Union{Nothing, AbstractMatrix} = nothing,
+        N::Union{Nothing, AbstractMatrix} = nothing, mask = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
@@ -205,7 +228,12 @@ function fit_gllvm_cov(Y::AbstractMatrix{<:Real}; family, X::AbstractArray{<:Rea
     Nm = N === nothing ? fill(1, p, n) : N
     has_disp = _cov_has_disp(family)
 
-    Zemp = _cov_zemp(family, Y, Nm, lk)
+    # NA handling: derive the observation mask and a sanitized response matrix.
+    msk = _resolve_obs_mask(mask, Y)
+    Yc = _sanitize_missing(Y, _cov_placeholder(family))
+
+    Zemp = _cov_zemp(family, Yc, Nm, lk)
+    _mask_warmstart!(Zemp, msk)
     β0 = vec(sum(Zemp; dims = 2)) ./ n
     Zc = Zemp .- β0
     F = svd(Zc); kk = min(K, length(F.S))
@@ -224,8 +252,8 @@ function fit_gllvm_cov(Y::AbstractMatrix{<:Real}; family, X::AbstractArray{<:Rea
         fam = _cov_family(family, disp)
         O = _build_offset(X, γ)
         v = try
-            -_marginal_loglik_offset(fam, Y, Nm, Λ, β, O, lk;
-                                     maxiter = newton_maxiter, tol = newton_tol)
+            -_marginal_loglik_offset(fam, Yc, Nm, Λ, β, O, lk;
+                                     mask = msk, maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
         end

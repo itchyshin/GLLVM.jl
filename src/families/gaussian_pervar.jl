@@ -158,7 +158,9 @@ The shared-σ `fit_gaussian_gllvm` is untouched; this is a parallel variant.
 function fit_gaussian_pervar_gllvm(Y::AbstractMatrix;
                                    K::Integer,
                                    X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                                   method::Symbol = :em,
                                    g_tol::Real = 1e-5,
+                                   em_tol::Real = 1e-8,
                                    iterations::Integer = 1000)
     p, n = size(Y)
     @assert K ≥ 1
@@ -190,6 +192,26 @@ function fit_gaussian_pervar_gllvm(Y::AbstractMatrix;
     logφ²_0 = log.(φ²_0)
 
     params0 = vcat(θ_Λ0, logφ²_0)
+
+    # Fast path: closed-form EM for factor analysis (Rubin & Thayer 1982, `em_fa`)
+    # on the IDENTICAL Λ Λ' + diag(φ²) model. No inner AD — reaches the same ML
+    # optimum 1–2 orders of magnitude faster than the L-BFGS + ForwardDiff path.
+    # Requires the FA regime K < p and no fixed effects; otherwise fall through to
+    # L-BFGS. The per-species intercept is the profiled column means (β = μ0), so
+    # EM runs on the centred residual `Yc`.
+    if method === :em && K < p && X === nothing
+        Λ_em, φ²_em, ll_em, nit_em, conv_em =
+            em_fa(Yc, K; λ_init = Λ0, ψ_init = φ²_0, tol = em_tol,
+                  max_iter = max(Int(iterations), 2000))
+        return GaussianPerVarFit(
+            collect(Float64, μ0),
+            Matrix{Float64}(Λ_em),
+            collect(Float64, φ²_em),
+            Float64(ll_em),
+            conv_em,
+            nit_em,
+        )
+    end
 
     # Objective: profile the per-species intercept as the residual column means,
     # then evaluate the per-species marginal NLL on the centred residual.
