@@ -15,6 +15,7 @@ distribution used as a marker (the GLM.jl convention):
 - `Ordinal()`  → [`fit_ordinal_gllvm`](@ref) — Laplace marginal (ordered categories)
 - `Gamma()`    → [`fit_gamma_gllvm`](@ref) — Laplace marginal (positive continuous)
 - `Exponential()` → [`fit_exponential_gllvm`](@ref) — Laplace marginal
+- `GeneralizedPoisson1(α)` → [`fit_gp1_gllvm`](@ref) — Laplace marginal (GP-1 counts, signed dispersion)
 
 `K` is the latent dimension; the gllvm-style alias `num_lv` is accepted as a synonym
 for `K` (gllvm uses `num.lv`). Family-specific keyword arguments (`link`, `N`,
@@ -131,11 +132,12 @@ _fit_gllvm(::Beta,     Y::AbstractMatrix; kwargs...) = fit_beta_gllvm(Y; kwargs.
 _fit_gllvm(::Ordinal,  Y::AbstractMatrix; kwargs...) = fit_ordinal_gllvm(Y; kwargs...)
 _fit_gllvm(::Gamma,    Y::AbstractMatrix; kwargs...) = fit_gamma_gllvm(Y; kwargs...)
 _fit_gllvm(::Exponential, Y::AbstractMatrix; kwargs...) = fit_exponential_gllvm(Y; kwargs...)
+_fit_gllvm(::GeneralizedPoisson1, Y::AbstractMatrix; kwargs...) = fit_gp1_gllvm(Y; kwargs...)
 
 # Clear error for families not yet implemented (hurdle, zero-inflated, …).
 _fit_gllvm(family, Y::AbstractMatrix; kwargs...) = throw(ArgumentError(
     "fit_gllvm: family $(nameof(typeof(family))) is not implemented yet " *
-    "(available: Normal, Binomial, Poisson, NegativeBinomial, Beta, Ordinal, Gamma, Exponential)"))
+    "(available: Normal, Binomial, Poisson, NegativeBinomial, Beta, Ordinal, Gamma, Exponential, GeneralizedPoisson1)"))
 
 # --- grouped-dispersion routing keyed on the family marker. ------------------
 _fit_gllvm_grouped(::NegativeBinomial, Y::AbstractMatrix; kwargs...) =

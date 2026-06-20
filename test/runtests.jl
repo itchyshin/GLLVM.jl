@@ -47,6 +47,7 @@ using GLLVM
     include("test_laplace_alloc_equiv.jl")
     include("test_nb_fit.jl")
     include("test_nb1.jl")
+    include("test_gp1_laplace.jl")
     include("test_grouped_dispersion.jl")
     include("test_grouped_dispersion_beta_gamma.jl")
     include("test_grouped_dispersion_tweedie_nb1.jl")
