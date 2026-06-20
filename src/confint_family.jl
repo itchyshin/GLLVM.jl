@@ -28,7 +28,7 @@ using Distributions: Normal, Chisq, quantile
 using Random: AbstractRNG, MersenneTwister, randn
 
 # Families handled by this layer (single latent block, optional scalar dispersion).
-const _FamilyFit = Union{PoissonFit, BinomialFit, NBFit, NB1Fit, BetaFit, GammaFit, ExponentialFit,
+const _FamilyFit = Union{PoissonFit, BinomialFit, NBFit, NB1Fit, GP1Fit, BetaFit, GammaFit, ExponentialFit,
                          TweedieFit, BetaBinomialFit, RowRandomFit}
 
 # Two-part families ([βz; βc; pack_lambda(Λc); (log-dispersion)] layout).
@@ -198,6 +198,43 @@ function _family_ci(fit::NB1Fit, Y::AbstractMatrix;
     end
     names = vcat(_glm_lin_names(p, K), "phi")
     kinds = vcat(fill(:linear, length(θ) - 1), :log)
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+end
+
+# --- Generalized Poisson type-1 (GP-1, Var = μ(1+α μ)², signed dispersion α) ----
+function _family_ci(fit::GP1Fit, Y::AbstractMatrix;
+                    mask = nothing,
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); link = fit.link
+    M = _ci_mask(mask, Y)
+    θ = vcat(fit.β, pack_lambda(fit.Λ), fit.α)            # α packed RAW (signed, not log)
+    nll = function (θv)
+        β = θv[1:p]; Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K); α = θv[p + rr + 1]
+        v = try
+            -gp1_marginal_loglik_laplace(Y, Λ, β, α; link = link, mask = M,
+                                         maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    simulate = function (rng)
+        fam = GeneralizedPoisson1(fit.α)
+        Yb = Matrix{Int}(undef, p, n)
+        @inbounds for s in 1:n
+            η = fit.β .+ fit.Λ * randn(rng, K)
+            for t in 1:p
+                Yb[t, s] = _rand_gp1(rng, fam, linkinv(link, _clamp_eta(η[t])))
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try fit_gp1_gllvm(Yb; K = K, link = link, mask = M) catch; return nothing end
+        return vcat(fb.β, pack_lambda(fb.Λ), fb.α)
+    end
+    names = vcat(_glm_lin_names(p, K), "alpha")
+    kinds = fill(:linear, length(θ))                      # α is raw/linear, not log
     return _FamilyCI(θ, nll, names, kinds, simulate, refit)
 end
 

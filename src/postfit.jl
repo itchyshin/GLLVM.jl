@@ -538,6 +538,85 @@ function Base.show(io::IO, ::MIME"text/plain", fit::NB1Fit)
 end
 
 # ---------------------------------------------------------------------------
+# GP-1 (generalized Poisson type-1, Var = μ(1+α μ)², signed dispersion α) post-fit
+# methods — mirror the NB1 block; Dunn–Smyth uses the summed GP-1 CDF (_gp1_cdf).
+# ---------------------------------------------------------------------------
+
+_loadings(fit::GP1Fit) = fit.Λ
+_loglik(fit::GP1Fit)   = fit.loglik
+
+function _nparams(fit::GP1Fit)
+    p, K = size(fit.Λ)
+    return p + (p * K - div(K * (K - 1), 2)) + 1       # β + Λ + dispersion α
+end
+
+function getLV(fit::GP1Fit, Y::AbstractMatrix{<:Integer};
+               N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
+               rotate::Bool = true, mask = nothing)
+    p, n = size(Y)
+    Nm = N === nothing ? fill(1, p, n) : N
+    K = size(fit.Λ, 2)
+    fam = GeneralizedPoisson1(fit.α)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        mi = mask === nothing ? nothing : view(mask, :, s)
+        Z[:, s] = _laplace_mode(fam, view(Y, :, s), view(Nm, :, s), fit.Λ,
+                                fit.β, fit.link; mask = mi)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
+end
+
+function predict(fit::GP1Fit, Y::AbstractMatrix{<:Integer};
+                 type::Symbol = :response,
+                 N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing)
+    type in (:link, :response) ||
+        throw(ArgumentError("type must be :link or :response; got :$type"))
+    Z = getLV(fit, Y; N = N, rotate = false)
+    η = fit.β .+ fit.Λ * Z'
+    type === :link && return η
+    return linkinv.(Ref(fit.link), η)
+end
+
+"""
+    residuals(fit::GP1Fit, Y; type=:dunnsmyth, rng=Random.default_rng()) -> p×n matrix
+
+Conditional residuals for a GP-1 fit. `:dunnsmyth` returns Dunn–Smyth randomized
+quantile residuals under the fitted GP-1 pmf (CDF summed from the family log-pmf);
+`:pearson` returns `(Y − μ) / √(μ(1+α μ)²)`.
+"""
+function residuals(fit::GP1Fit, Y::AbstractMatrix{<:Integer};
+                   type::Symbol = :dunnsmyth,
+                   rng::AbstractRNG = Random.default_rng())
+    type in (:dunnsmyth, :pearson) ||
+        throw(ArgumentError("type must be :dunnsmyth or :pearson; got :$type"))
+    p, n = size(Y)
+    fam = GeneralizedPoisson1(fit.α)
+    μ = predict(fit, Y; type = :response)
+    if type === :pearson
+        return (Y .- μ) ./ sqrt.(μ .* (1 .+ fit.α .* μ) .^ 2)
+    end
+    R = Matrix{Float64}(undef, p, n)
+    @inbounds for s in 1:n, t in 1:p
+        Flo = _gp1_cdf(fam, μ[t, s], Y[t, s] - 1)
+        Fhi = _gp1_cdf(fam, μ[t, s], Y[t, s])
+        u = Flo + (Fhi - Flo) * rand(rng)
+        R[t, s] = quantile(Normal(), clamp(u, 1e-12, 1 - 1e-12))
+    end
+    return R
+end
+
+function Base.show(io::IO, ::MIME"text/plain", fit::GP1Fit)
+    p, K = size(fit.Λ)
+    println(io, "Generalized-Poisson type-1 (GP-1) GLLVM fit")
+    println(io, "  responses p = ", p, ", latent factors K = ", K,
+            ", link = ", nameof(typeof(fit.link)), ", dispersion α = ", round(fit.α; sigdigits = 4))
+    println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
+            ", AIC = ", round(aic(fit); sigdigits = 7))
+    print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
+end
+
+# ---------------------------------------------------------------------------
 # Beta post-fit methods (proportions in (0,1); mean μ = logistic(η), precision
 # φ — Var = μ(1−μ)/(1+φ) — via the logit link). Responses are continuous, so the
 # Dunn–Smyth residual reduces to the (deterministic) PIT, as in the Gaussian case.
