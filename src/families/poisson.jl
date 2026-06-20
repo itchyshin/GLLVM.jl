@@ -125,15 +125,18 @@ function fit_poisson_gllvm(Y::AbstractMatrix; K::Integer,
     end
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
     opts = Optim.Options(g_tol = g_tol, iterations = iterations)
-    # Exact gradient (issue #65): the implicit-step ForwardDiff gradient, valid
-    # for the plain Poisson marginal (no mask/offset). A finite-difference
-    # fallback covers any θ where the analytic gradient is non-finite (e.g. a
-    # pathological line-search probe).
-    res = if gradient === :analytic && msk === nothing && offset === nothing
+    # Exact gradient (issue #65): the implicit-step ForwardDiff gradient. Valid
+    # for the plain Poisson marginal and the masked marginal — the mask is passed
+    # through (masked-cell score/weight are zeroed, matching the masked objective;
+    # FD-verified in test/test_missing_response.jl). The offset path still uses the
+    # finite-difference gradient (the analytic gradient does not carry an offset).
+    # A finite-difference fallback also covers any θ where the analytic gradient is
+    # non-finite (e.g. a pathological line-search probe).
+    res = if gradient === :analytic && offset === nothing
         function g!(G, θ)
             β = θ[1:p]; Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
             gg = try
-                poisson_laplace_grad(Yc, Λ, β)
+                poisson_laplace_grad(Yc, Λ, β; mask = msk)
             catch
                 nothing
             end

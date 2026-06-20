@@ -183,3 +183,38 @@ using GLLVM, Test, Random, LinearAlgebra
         @test isapprox(be_default.loglik, be_an.loglik; atol = 1e-8)
     end
 end
+
+# ---- Masked fits use the analytic gradient and match the finite-difference fit ----
+# The Poisson/Binomial analytic gradients accept a response mask (masked-cell score
+# and Fisher weight zeroed; FD-verified to 1e-6 in test_missing_response.jl). The
+# fitter now passes the mask through and uses the analytic gradient by default for
+# masked fits (offset still forces the FD path). This testset gates that the masked
+# analytic fit equals the masked finite-difference fit, and that the default masked
+# fit is the analytic one.
+@testset "Masked analytic-gradient fits (issue #65)" begin
+    Random.seed!(1234)
+    pp, KK, nn = 4, 1, 40
+
+    # Poisson, masked
+    Yp = rand(0:5, pp, nn)
+    maskp = trues(pp, nn)
+    maskp[1, 1] = false; maskp[2, 5] = false; maskp[3, 10] = false; maskp[pp, nn] = false
+    p_fd = fit_poisson_gllvm(Yp; K = KK, mask = maskp, gradient = :finite, iterations = 300)
+    p_an = fit_poisson_gllvm(Yp; K = KK, mask = maskp, gradient = :analytic, iterations = 300)
+    p_default = fit_poisson_gllvm(Yp; K = KK, mask = maskp, iterations = 300)
+    @test isfinite(p_an.loglik)
+    @test isapprox(p_fd.loglik, p_an.loglik; atol = 1e-3)
+    @test isapprox(p_default.loglik, p_an.loglik; atol = 1e-8)   # default is analytic for masked
+
+    # Binomial, masked
+    Nb = fill(6, pp, nn)
+    Yb = [rand(0:6) for t in 1:pp, s in 1:nn]
+    maskb = trues(pp, nn)
+    maskb[1, 2] = false; maskb[3, 7] = false; maskb[pp, nn - 1] = false
+    b_fd = fit_binomial_gllvm(Yb; K = KK, N = Nb, mask = maskb, gradient = :finite, iterations = 300)
+    b_an = fit_binomial_gllvm(Yb; K = KK, N = Nb, mask = maskb, gradient = :analytic, iterations = 300)
+    b_default = fit_binomial_gllvm(Yb; K = KK, N = Nb, mask = maskb, iterations = 300)
+    @test isfinite(b_an.loglik)
+    @test isapprox(b_fd.loglik, b_an.loglik; atol = 1e-3)
+    @test isapprox(b_default.loglik, b_an.loglik; atol = 1e-8)
+end
