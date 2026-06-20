@@ -70,6 +70,6 @@ export spatial_cov, relatedness_cov,
        hurdle_nb_marginal_loglik_laplace, fit_gllvm,
        getLV, getLoadings, rotation,
        predict, fitted, residuals, aic, bic,
-       bridge_fit
+       bridge_fit, bridge_capabilities
 
 end # module GLLVM

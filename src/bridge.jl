@@ -300,3 +300,104 @@ function bridge_fit(; y,
                              ci_nboot, ci_seed, key)
     return ci === nothing ? base : merge(base, ci)
 end
+
+"""
+    bridge_capabilities()
+
+Return the HONEST flat capability surface of this branch's `bridge_fit`.
+
+The result is a JuliaCall-safe `NamedTuple` of equal-length vectors, one row per
+local bridge family, using the SAME key names as the integration bridge's
+`bridge_capabilities()` so the two surfaces are directly comparable. The VALUES,
+however, are the *local* truth: this is the narrow no-covariate one-part bridge,
+so several columns that the integration engine advertises as `true` are `false`
+here. Each value below is justified by a specific line of `bridge_fit` /
+`_bridge_compute_ci` in this same file, or by the underlying engine source.
+
+Rows: the 7 local families from `_BRIDGE_FAMILIES`
+(`gaussian, poisson, binomial, negbinomial, beta, gamma, ordinal`). The
+integration surface adds a trailing `"mixed-family vector"` row; we OMIT it,
+because `bridge_fit` *rejects* mixed-family vectors outright
+(`family isa AbstractVector` throws), so there is no honest local row to report
+for it — there is no partial mixed-family capability to advertise.
+
+Honest per-column rationale (local truth):
+
+  * `fit_no_x`        — `true` (all 7). Every family routes through
+    `_bridge_fit_family`; the bridge has no covariate path at all.
+  * `fixed_effect_X`  — `false` (all 7). `bridge_fit` throws on any non-`nothing`
+    `X` before fitting.
+  * `missing_response`— `false` (all 7). `bridge_fit` has NO `mask` argument and
+    no missing-cell handling; there is no way to admit a response mask.
+  * `cbind_binomial`  — `true` for `binomial` only. Only the binomial path builds
+    a trial matrix via `_bridge_trial_matrix`; every other family ignores `N`.
+  * `ci_no_x_wald`    — `true` (all 7). `_bridge_compute_ci` routes `wald` through
+    `_bridge_wald_ci` → `confint(fit; ...)`, and the engine provides a real
+    `confint` for every one of the 7 fit types, INCLUDING `OrdinalFit`. (This is
+    a deliberate divergence from the integration table, which marks ordinal Wald
+    `false`; locally the route is verified `status = "ok"`.)
+  * `ci_no_x_profile` — `false` (all 7). `_bridge_compute_ci` returns an
+    `unsupported` empty payload for `profile` regardless of family; no profile
+    CI is ever routed through this branch's bridge.
+  * `ci_no_x_bootstrap` — `true` for `gaussian` ONLY. `_bridge_compute_ci` routes
+    `bootstrap` only when `fit isa GllvmFit`; every non-Gaussian family returns an
+    `unsupported` empty payload.
+  * `ci_mask_*`       — `false` (all 7). No masks exist on this branch.
+  * `ci_x_*`          — `false` (all 7). No covariate path exists on this branch.
+  * `postfit_coef`, `postfit_fit_stats`, `postfit_summary`, `postfit_ordination`
+    — `true` (all 7). The assembled bridge payload always carries loadings/alpha,
+    loglik/aic/bic/df/nobs, the full summary NamedTuple, and `scores` (ordination
+    via `_bridge_scores`/`getLV`).
+  * `postfit_predict`, `postfit_residuals` — `true` (all 7). The engine ships
+    `predict`/`residuals` methods for every one of the 7 fit types.
+  * `postfit_simulate` — `false` (all 7). The engine has NO post-fit response
+    simulator: `src/simulate.jl` is a placeholder and no `simulate(fit, ...)`
+    method exists for any family. (This too diverges from the integration table,
+    which advertises `simulate` for non-ordinal families.)
+
+`status` is `"partial"` for every family. `notes` is a short honest per-family
+string. The column key set is byte-comparable with the integration surface; only
+the trailing mixed-family row is omitted and the values reflect local reality.
+"""
+function bridge_capabilities()
+    fams = collect(_BRIDGE_FAMILIES)
+    nf = length(fams)
+    is_binom = [f == "binomial" for f in fams]
+    is_gauss = [f == "gaussian" for f in fams]
+    falses_ = fill(false, nf)
+    trues_ = fill(true, nf)
+    return (
+        family = fams,
+        fit_no_x = trues_,
+        fixed_effect_X = falses_,
+        missing_response = falses_,
+        cbind_binomial = is_binom,
+        ci_no_x_wald = trues_,
+        ci_no_x_profile = falses_,
+        ci_no_x_bootstrap = copy(is_gauss),
+        ci_mask_wald = falses_,
+        ci_mask_profile = falses_,
+        ci_mask_bootstrap = falses_,
+        ci_x_wald = falses_,
+        ci_x_profile = falses_,
+        ci_x_bootstrap = falses_,
+        postfit_coef = trues_,
+        postfit_fit_stats = trues_,
+        postfit_summary = trues_,
+        postfit_predict = trues_,
+        postfit_residuals = trues_,
+        postfit_simulate = falses_,
+        postfit_ordination = trues_,
+        status = fill("partial", nf),
+        notes = [
+            f == "gaussian" ?
+                "no-X one-part bridge family; Wald and bootstrap CI payloads are routed; profile CI is not routed on this branch" :
+            f == "binomial" ?
+                "no-X one-part bridge family; accepts N (cbind) trials; Wald CI is routed; profile/bootstrap are not routed on this branch" :
+            f == "ordinal" ?
+                "no-X one-part bridge family; Wald CI is routed (native OrdinalFit confint); profile/bootstrap are not routed; no scalar-mean simulate" :
+                "no-X one-part bridge family; Wald CI is routed; profile/bootstrap are not routed on this branch"
+            for f in fams
+        ],
+    )
+end
