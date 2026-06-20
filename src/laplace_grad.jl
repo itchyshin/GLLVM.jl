@@ -1,5 +1,5 @@
-# Analytic (exact) gradient of the Poisson Laplace marginal — a faster replacement
-# for the finite-difference gradient used by the non-Gaussian fitters.
+# Analytic (exact) gradient of the Poisson Laplace marginal — now the default
+# gradient of the non-Gaussian fitters, replacing the finite-difference gradient.
 #
 # The per-site Laplace marginal is  L_s = ℓ(ẑ) − ½ẑ'ẑ − ½ logdet A(ẑ),  with
 # A = Λ'WΛ + I and ẑ the conditional mode solving g(z) = Λ's(z) − z = 0. A naive
@@ -16,10 +16,14 @@
 # cost of one Newton solve plus one AD pass, versus the ~2·nθ marginal evaluations a
 # finite-difference gradient needs.
 #
-# This is the analytic-gradient lever from issue #65, Poisson first. It is a
-# standalone, finite-difference-verified function — NOT yet wired into the fitter —
-# so a regression cannot reach production fits. Generalising to the other families
-# needs only an AD-friendly log-pmf/pdf per family (the score/weight are arithmetic).
+# This is the analytic-gradient lever from issue #65 (Poisson first, then NB / Gamma
+# / Beta / Binomial below). Each gradient is finite-difference-verified and is now the
+# DEFAULT gradient of its production fitter (`gradient = :analytic` in `fit_*_gllvm`),
+# with a central finite-difference fallback for any θ where the analytic value is
+# non-finite, and an automatic fall-back to `autodiff = :finite` when a response mask
+# or offset is present. The analytic-vs-finite-difference agreement of the fitted
+# optimum is gated by `test/test_laplace_grad.jl`. Each family needs only an
+# AD-friendly log-pmf/pdf (the score/weight are arithmetic).
 
 # AD-friendly Poisson log-pmf (avoids Distributions' logpdf(::Poisson, ::Int) under a
 # Dual mean). The lgamma(y+1) term is a constant in θ.
@@ -99,8 +103,8 @@ implicit-function "one Newton step at the optimum" construction (see file header
 (p×n Bool, or `nothing` = all observed) drops unobserved responses per site, so the
 gradient is of the masked marginal over the observed cells only. The result matches a
 finite-difference gradient of the (masked) marginal to ~AD precision, at a fraction
-of the cost — the basis for replacing the finite-difference gradient in the fitter
-(issue #65). Standalone for now; not yet used by `fit_poisson_gllvm`.
+of the cost (issue #65). This is the default gradient of `fit_poisson_gllvm`
+(`gradient = :analytic`); a masked or offset fit falls back to `autodiff = :finite`.
 """
 function poisson_laplace_grad(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVector;
                               mask = nothing)
@@ -159,8 +163,9 @@ end
 Exact gradient of the total negative-binomial (NB2, log link) Laplace marginal wrt
 `θ = [β; pack_lambda(Λ); log r]` — including the dispersion direction — via the same
 ForwardDiff + implicit-step construction as [`poisson_laplace_grad`](@ref). This is the
-dispersion-family generalisation (r carried in θ as `log r`). Standalone +
-finite-difference-verified; not yet wired into `fit_nb_gllvm`.
+dispersion-family generalisation (r carried in θ as `log r`).
+Finite-difference-verified; the default gradient of `fit_nb_gllvm`
+(`gradient = :analytic`), including the dispersion direction.
 """
 function nb_laplace_grad(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVector, r::Real)
     p, K = size(Λ)
@@ -211,7 +216,7 @@ end
 Exact gradient of the total Gamma (log link, shape `α`) Laplace marginal wrt
 `θ = [β; pack_lambda(Λ); log α]`, via the ForwardDiff + implicit-step construction
 (observed weight `αy/μ` in the implicit step, Fisher weight `α` in the log-det).
-Standalone + finite-difference-verified; not yet wired into `fit_gamma_gllvm`.
+Finite-difference-verified; the default gradient of `fit_gamma_gllvm` (`gradient = :analytic`).
 """
 function gamma_laplace_grad(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVector, α::Real)
     p, K = size(Λ)
@@ -282,7 +287,7 @@ end
 Exact gradient of the total Beta (logit link, precision `φ`) Laplace marginal wrt
 `θ = [β; pack_lambda(Λ); log φ]`, via the ForwardDiff + implicit-step construction,
 with the observed-Hessian weight obtained from an AD-derivative of the score.
-Standalone + finite-difference-verified; not yet wired into `fit_beta_gllvm`.
+Finite-difference-verified; the default gradient of `fit_beta_gllvm` (`gradient = :analytic`).
 """
 function beta_laplace_grad(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVector, φ::Real)
     p, K = size(Λ)
@@ -347,8 +352,9 @@ Exact gradient of the total Binomial (logit-link) Laplace marginal wrt
 `θ = [β; pack_lambda(Λ)]`, via the same ForwardDiff + implicit-step construction as
 [`poisson_laplace_grad`](@ref). `N` is the p×n trial-count matrix. `mask` (p×n Bool,
 or `nothing` = all observed) drops unobserved responses per site, so the gradient is
-of the masked marginal over the observed cells only. Standalone +
-finite-difference-verified; not yet wired into `fit_binomial_gllvm`.
+of the masked marginal over the observed cells only.
+Finite-difference-verified; the default gradient of `fit_binomial_gllvm`
+(`gradient = :analytic`); a masked fit falls back to `autodiff = :finite`.
 """
 function binomial_laplace_grad(Y::AbstractMatrix, N::AbstractMatrix,
                                Λ::AbstractMatrix, β::AbstractVector; mask = nothing)
