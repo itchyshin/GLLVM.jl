@@ -123,10 +123,10 @@ function fit_beta_gllvm(Y::AbstractMatrix; K::Integer,
     end
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
     opts = Optim.Options(g_tol = g_tol, iterations = iterations)
-    res = if gradient === :analytic && msk === nothing && offset === nothing
+    res = if gradient === :analytic && offset === nothing
         ag = θ -> begin
             β = θ[1:p]; Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K); fv = exp(θ[p + rr + 1])
-            try -beta_laplace_grad(Yc, Λ, β, fv) catch; nothing end
+            try -beta_laplace_grad(Yc, Λ, β, fv; mask = msk) catch; nothing end
         end
         _optimize_with_analytic(negll, ag, θ0, ls, opts)
     else
