@@ -51,6 +51,53 @@ function _nb_grouped_loglik_site(fams::AbstractVector, y::AbstractVector, n::Abs
     return ℓ - 0.5 * dot(z, z) - 0.5 * logdet(A)
 end
 
+function _grouped_laplace_mode(fams::AbstractVector, y::AbstractVector,
+        n::AbstractVector, Λ::AbstractMatrix, β::AbstractVector, link::Link;
+        mask = nothing, offset = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
+    p, K = size(Λ)
+    length(fams) == p || throw(ArgumentError("length(fams)=$(length(fams)) must equal p=$p"))
+    length(y) == p || throw(ArgumentError("length(y)=$(length(y)) must equal p=$p"))
+    length(n) == p || throw(ArgumentError("length(n)=$(length(n)) must equal p=$p"))
+    K == 0 && return zeros(Float64, 0)
+    off = offset === nothing ? false : offset
+    z = zeros(K)
+    @inbounds for _ in 1:maxiter
+        η  = _clamp_eta.(β .+ off .+ Λ * z)
+        μ  = _clamp_mu.(fams, linkinv.(Ref(link), η))
+        me = mu_eta.(Ref(link), η)
+        s  = _glm_score.(fams, μ, n, me, y)
+        W  = _glm_weight.(fams, μ, n, me)
+        if mask !== nothing
+            s = ifelse.(mask, s, 0.0)
+            W = ifelse.(mask, W, 0.0)
+        end
+        A  = Symmetric(Λ' * (W .* Λ) + I)
+        Δ  = _safe_solve(A, Λ' * s .- z)
+        (Δ === nothing || !all(isfinite, Δ)) && break
+        z  = z .+ Δ
+        maximum(abs, Δ) < tol && break
+    end
+    return z
+end
+
+function _grouped_getLV(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVector,
+        link::Link, fams::AbstractVector; N = nothing, rotate::Bool = true,
+        mask = nothing)
+    p, n = size(Y)
+    length(fams) == p || throw(ArgumentError("length(fams)=$(length(fams)) must equal p=$p"))
+    Nm = N === nothing ? ones(Int, p, n) : N
+    size(Nm) == (p, n) || throw(ArgumentError("N must have size $(p)×$(n); got $(size(Nm))"))
+    K = size(Λ, 2)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        mi = mask === nothing ? nothing : view(mask, :, s)
+        Z[:, s] = _grouped_laplace_mode(fams, view(Y, :, s), view(Nm, :, s),
+                                        Λ, β, link; mask = mi)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(Λ) : Zt
+end
+
 """
     nb_grouped_marginal_loglik_laplace(Y, Λ, β, rvec; link=LogLink(), mask=nothing,
                                        offset=nothing, kwargs...) -> Float64
@@ -111,6 +158,23 @@ _loglik(fit::NBGroupedFit)   = fit.loglik
 function _nparams(fit::NBGroupedFit)
     p, K = size(fit.Λ)
     return p + rr_theta_len(p, K) + length(fit.r_group)   # β + Λ + G dispersions r
+end
+
+"""
+    getLV(fit::NBGroupedFit, Y; N=nothing, rotate=true, mask=nothing) -> n×K matrix
+
+Conditional latent-variable scores for a grouped-dispersion NB2 fit, using the
+per-trait dispersion `r_group[group[t]]` in the same Laplace mode equations as
+the grouped likelihood.
+"""
+function getLV(fit::NBGroupedFit, Y::AbstractMatrix{<:Integer};
+               N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
+               rotate::Bool = true, mask = nothing)
+    p = size(Y, 1)
+    rvec = [fit.r_group[fit.group[t]] for t in 1:p]
+    fams = [NegativeBinomial(float(rvec[t]), 0.5) for t in 1:p]
+    return _grouped_getLV(Y, fit.Λ, fit.β, fit.link, fams;
+                          N = N, rotate = rotate, mask = mask)
 end
 
 """
@@ -288,6 +352,22 @@ function _nparams(fit::BetaGroupedFit)
 end
 
 """
+    getLV(fit::BetaGroupedFit, Y; rotate=true, mask=nothing) -> n×K matrix
+
+Conditional latent-variable scores for a grouped-precision Beta fit, using the
+per-trait precision `φ[group[t]]` in the same Laplace mode equations as the
+grouped likelihood.
+"""
+function getLV(fit::BetaGroupedFit, Y::AbstractMatrix{<:Real};
+               rotate::Bool = true, mask = nothing)
+    p = size(Y, 1)
+    φvec = [fit.φ[fit.group[t]] for t in 1:p]
+    fams = [Beta(float(φvec[t]), 1.0) for t in 1:p]
+    return _grouped_getLV(Y, fit.Λ, fit.β, fit.link, fams;
+                          rotate = rotate, mask = mask)
+end
+
+"""
     fit_beta_gllvm_grouped(Y; K, group, link=LogitLink(), mask=nothing, offset=nothing, …) -> BetaGroupedFit
 
 Fit a Beta GLLVM with grouped / species-specific precision (gllvm's `disp.group`):
@@ -459,6 +539,22 @@ _loglik(fit::GammaGroupedFit)   = fit.loglik
 function _nparams(fit::GammaGroupedFit)
     p, K = size(fit.Λ)
     return p + rr_theta_len(p, K) + length(fit.α)   # β + Λ + G shapes α
+end
+
+"""
+    getLV(fit::GammaGroupedFit, Y; rotate=true, mask=nothing) -> n×K matrix
+
+Conditional latent-variable scores for a grouped-shape Gamma fit, using the
+per-trait shape `α[group[t]]` in the same Laplace mode equations as the grouped
+likelihood.
+"""
+function getLV(fit::GammaGroupedFit, Y::AbstractMatrix{<:Real};
+               rotate::Bool = true, mask = nothing)
+    p = size(Y, 1)
+    αvec = [fit.α[fit.group[t]] for t in 1:p]
+    fams = [Gamma(float(αvec[t]), 1.0) for t in 1:p]
+    return _grouped_getLV(Y, fit.Λ, fit.β, fit.link, fams;
+                          rotate = rotate, mask = mask)
 end
 
 """
@@ -636,6 +732,23 @@ _loglik(fit::NB1GroupedFit)   = fit.loglik
 function _nparams(fit::NB1GroupedFit)
     p, K = size(fit.Λ)
     return p + rr_theta_len(p, K) + length(fit.φ)   # β + Λ + G dispersions φ
+end
+
+"""
+    getLV(fit::NB1GroupedFit, Y; N=nothing, rotate=true, mask=nothing) -> n×K matrix
+
+Conditional latent-variable scores for a grouped-dispersion NB1 fit, using the
+per-trait linear-variance dispersion `φ[group[t]]` in the same Laplace mode
+equations as the grouped likelihood.
+"""
+function getLV(fit::NB1GroupedFit, Y::AbstractMatrix{<:Integer};
+               N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
+               rotate::Bool = true, mask = nothing)
+    p = size(Y, 1)
+    φvec = [fit.φ[fit.group[t]] for t in 1:p]
+    fams = [NB1(float(φvec[t])) for t in 1:p]
+    return _grouped_getLV(Y, fit.Λ, fit.β, fit.link, fams;
+                          N = N, rotate = rotate, mask = mask)
 end
 
 """

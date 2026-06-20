@@ -59,12 +59,13 @@ end
 Fit a Gamma GLLVM by L-BFGS over `[β; vec(Λ); log α]` on the Laplace marginal
 (`gamma_marginal_loglik_laplace`), jointly estimating the shape `α`
 (`Var = μ²/α`). `Y` is a p×n matrix of positive reals; `K` the latent
-dimension. Finite-difference gradient; warm start = log row-means as intercepts +
-SVD of row-centred log-Y as loadings + `logα₀ = log(2.0)`.
+dimension. Analytic gradient on the no-mask/no-offset path with finite-difference
+fallback; warm start = log row-means as intercepts + SVD of row-centred log-Y as
+loadings + `logα₀ = log(2.0)`.
 """
 function fit_gamma_gllvm(Y::AbstractMatrix; K::Integer,
         link::Link = LogLink(), mask = nothing, offset = nothing,
-        gradient::Symbol = :finite,
+        gradient::Symbol = :analytic,
         β_init = nothing, Λ_init = nothing, α_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)

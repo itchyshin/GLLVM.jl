@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
 
 # Helper: simulate a Poisson GLLVM dataset (p×n integer counts).
 function _sim_poisson(p, K, n; seed = 11)

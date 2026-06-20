@@ -3,8 +3,8 @@
 [![Build Status](https://github.com/itchyshin/GLLVM.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/itchyshin/GLLVM.jl/actions/workflows/CI.yml)
 [![Coverage](https://codecov.io/gh/itchyshin/GLLVM.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/itchyshin/GLLVM.jl)
 
-Fast Generalised Linear Latent Variable Models (GLLVMs) in Julia, across the
-full GLM response-family set.
+Fast Generalised Linear Latent Variable Models (GLLVMs) in Julia, with a broad,
+status-tracked GLM response-family surface.
 
 > API may change before v1.0.
 
@@ -84,7 +84,7 @@ with sparse random-effect design matrices. `GLLVM.jl` solves a
 ## Features
 
 - Closed-form Gaussian marginal log-likelihood (no Laplace approximation)
-- Full GLM response families via a Laplace marginal: Poisson, negative binomial
+- One-part GLM response families via a Laplace marginal: Poisson, negative binomial
   (NB2 and NB1, linear variance), Binomial / Bernoulli, beta-binomial
   (overdispersed binomial), Beta, Gamma, Exponential, Ordinal (logit or probit),
   Tweedie
@@ -104,13 +104,14 @@ with sparse random-effect design matrices. `GLLVM.jl` solves a
 - SPDE / Matérn spatial latent field, with kriging prediction
 - Offsets, missing-data (NA) masks, Dunn–Smyth residuals, AIC / BIC,
   `predict` / `getLV` / `ordination`, and an `@formula` front-end
-- Wald / profile / bootstrap CIs across the GLM and two-part families
+- Wald / profile / bootstrap CI routes across scalar-dispersion GLM and two-part
+  families; grouped-dispersion bridge CIs remain status-gated before promotion
 - PPCA closed-form initialisation
 - Structure-aware Cholesky (Woodbury for Λ Λ' + diag)
 - EM-FA solver as an alternative to LBFGS
 
-Poisson, NB2, Binomial, and Beta use analytic Laplace outer gradients by default
-on plain no-mask/no-offset fits, with finite-difference fallback. Gamma and the
+Poisson, NB2, Binomial, Beta, and Gamma use analytic Laplace outer gradients by
+default on plain no-mask/no-offset fits, with finite-difference fallback. The
 remaining sparse-Cholesky / CHOLMOD paths stay conservative until their analytic
 gradients clear the same runtime accuracy gate; the VA estimator adds analytic
 inner and envelope-theorem outer gradients.

@@ -1,6 +1,6 @@
 # Comparison: R, GLLVM.jl, MixedModels.jl
 
-The benchmark study (see [Benchmarks](benchmarks.md)) runs three engines
+The benchmark study (see [Benchmarks](/benchmarks)) runs three engines
 on each cell to put GLLVM.jl's speed numbers in context against the
 state-of-the-art Julia LMM port. The third engine is
 [MixedModels.jl](https://github.com/JuliaStats/MixedModels.jl), the

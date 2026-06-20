@@ -11,10 +11,11 @@
 # *front door* + the parameterization conversions documented in
 # docs/src/gllvmtmb-parity.md ("R bridge: parameterization map").
 #
-# STATUS: SCAFFOLD — authored WITHOUT an R or Julia runtime, so it has NOT been
-# executed. Every JuliaConnectoR idiom and every field access must be verified in a
-# live R + Julia session (see r/README_bridge.md "Verification checklist"). Where a
-# JuliaConnectoR idiom is uncertain it is flagged with a `## VERIFY:` comment.
+# STATUS: SCAFFOLD — transport smoke-tested in a live R + JuliaConnectoR session
+# on 2026-06-14. Julia startup, `GLLVM`/`Distributions` loading, family marker
+# construction, and already-converted field access now work for a small Poisson
+# LA check. Full numerical parity with R `{gllvm}` is still open; see
+# r/README_bridge.md and r/parity_check.R for the current diagnostic row.
 #
 # ---------------------------------------------------------------------------------
 # IMPORTANT API NOTES (verified against src/ at authoring time)
@@ -38,9 +39,10 @@
 #     GaussianPerVarFit$<phi-squared> (per-species variances).
 #     Grouped variants are VECTORS: NBGroupedFit$r_group, BetaGroupedFit$phi,
 #     GammaGroupedFit$alpha, NB1GroupedFit$phi, TweedieGroupedFit$phi.
-#   ## VERIFY: JuliaConnectoR field names for the Unicode/struct fields below
-#   (e.g. GaussianPerVarFit's variance vector is named with a Unicode "phi^2" in
-#   Julia source; access it via juliaGet()/$ and adjust the name if needed).
+#   JuliaConnectoR may return Unicode fields either as JuliaProxy objects or as
+#   already-converted R values; `.jl_value()` handles both. Scalar β / φ / α
+#   access is smoke-tested. GaussianPerVarFit's Unicode variance vector (`φ²`)
+#   still needs a dedicated live pervar check.
 # ---------------------------------------------------------------------------------
 
 library(JuliaConnectoR)
@@ -54,11 +56,32 @@ if (!exists(".gllvm", mode = "function")) {
 
 # Fallback module handle if gllvmjl.R was not sourced (keeps this file usable alone).
 if (!exists(".gllvm_env")) .gllvm_env <- new.env(parent = emptyenv())
+if (!exists(".jl_string", mode = "function")) {
+  .jl_string <- function(x) {
+    x <- normalizePath(x, winslash = "/", mustWork = TRUE)
+    paste0("\"", gsub('(["\\\\])', "\\\\\\1", x), "\"")
+  }
+}
 if (!exists("gllvm_jl_init", mode = "function")) {
-  gllvm_jl_init <- function() { .gllvm_env$GLLVM <- juliaImport("GLLVM"); invisible(TRUE) }
+  gllvm_jl_init <- function(jl_path = Sys.getenv("GLLVM_JL_PATH", "")) {
+    if (!identical(jl_path, "")) {
+      jl_path <- normalizePath(jl_path, winslash = "/", mustWork = TRUE)
+      juliaEval(sprintf("import Pkg; Pkg.activate(%s); using GLLVM, Distributions",
+                        .jl_string(jl_path)))
+      .gllvm_env$jl_path <- jl_path
+    }
+    .gllvm_env$GLLVM <- juliaImport("GLLVM")
+    juliaEval("using Distributions")
+    invisible(TRUE)
+  }
 }
 if (!exists(".gllvm", mode = "function")) {
   .gllvm <- function() { if (is.null(.gllvm_env$GLLVM)) gllvm_jl_init(); .gllvm_env$GLLVM }
+}
+if (!exists(".jl_value", mode = "function")) {
+  .jl_value <- function(x) {
+    if (inherits(x, "JuliaProxy")) juliaGet(x) else x
+  }
 }
 
 # ---------------------------------------------------------------------------------
@@ -113,36 +136,36 @@ if (!exists(".gllvm", mode = "function")) {
     # NB2: gllvm phi (Var = mu + mu^2 * phi); Julia r (size, Var = mu + mu^2/r).
     # Bridge rule: phi = 1 / r  (also applies to ZINB / Hurdle-NB / grouped-NB).
     nb2 = {
-      r <- if (grouped) as.numeric(juliaGet(julia_fit$r_group)) else as.numeric(julia_fit$r)
+      r <- if (grouped) as.numeric(.jl_value(julia_fit$r_group)) else as.numeric(.jl_value(julia_fit$r))
       list(name = "phi", value = 1 / r)                       # r = 1/phi  <=>  phi = 1/r
     },
     # NB1: gllvm phi (Var = mu + mu*phi); Julia phi (Var = mu*(1+phi)). Identity map.
     nb1 = {
-      v <- if (grouped) as.numeric(juliaGet(julia_fit[["φ"]])) else as.numeric(julia_fit[["φ"]])
+      v <- if (grouped) as.numeric(.jl_value(julia_fit[["φ"]])) else as.numeric(.jl_value(julia_fit[["φ"]]))
       list(name = "phi", value = v)                           # identity (maps 1:1)
     },
     # Gamma: gllvm phi == SHAPE (Var = mu^2/phi); Julia alpha == shape (Var = mu^2/alpha).
     # Relabel only, no inversion.
     gamma = {
-      a <- if (grouped) as.numeric(juliaGet(julia_fit[["α"]])) else as.numeric(julia_fit[["α"]])
+      a <- if (grouped) as.numeric(.jl_value(julia_fit[["α"]])) else as.numeric(.jl_value(julia_fit[["α"]]))
       list(name = "phi", value = a)                           # relabel alpha -> phi
     },
     # Beta: precision phi identical in both. Identity.
     beta = {
-      v <- if (grouped) as.numeric(juliaGet(julia_fit[["φ"]])) else as.numeric(julia_fit[["φ"]])
+      v <- if (grouped) as.numeric(.jl_value(julia_fit[["φ"]])) else as.numeric(.jl_value(julia_fit[["φ"]]))
       list(name = "phi", value = v)                           # identity
     },
     # Tweedie: power and phi both identity; we also surface the power.
     tweedie = {
-      list(name = "phi", value = as.numeric(julia_fit[["φ"]]),
-           power = as.numeric(julia_fit$p))                    # identity (set p_init=1.1 to match gllvm path)
+      list(name = "phi", value = as.numeric(.jl_value(julia_fit[["φ"]])),
+           power = as.numeric(.jl_value(julia_fit$p)))         # identity (set p_init=1.1 to match gllvm path)
     },
     # Gaussian per-species SD: gllvm reports per-species phi_j (SD). GLLVM.jl pervar
     # fit stores per-species VARIANCES; gllvm convention is SD, so sqrt them.
     gaussian_sd = {
       ## VERIFY: field name for the per-species variance vector on GaussianPerVarFit
       ## (Julia source names it with a Unicode "phi-squared"). Access + sqrt -> SD.
-      v2 <- tryCatch(as.numeric(juliaGet(julia_fit[["φ²"]])), error = function(e) NA_real_)
+      v2 <- tryCatch(as.numeric(.jl_value(julia_fit[["φ²"]])), error = function(e) NA_real_)
       list(name = "phi", value = sqrt(v2))                    # gllvm reports SD
     },
     # No dispersion parameter (Poisson, Binomial, Exponential, Ordinal).
@@ -160,9 +183,10 @@ if (!exists(".gllvm", mode = "function")) {
 #' @param y          n x p response matrix (SITES in rows, SPECIES in columns) —
 #'                   the gllvm orientation. Transposed to p x n for GLLVM.jl.
 #' @param X          (reserved) site covariate matrix/data.frame. NOT YET wired
-#'                   through this bridge — passing a non-NULL X errors. (GLLVM.jl
-#'                   has fit_gllvm_cov / @formula, but the conversion of an X design
-#'                   into Julia's p x n x q array needs a live-session check.)
+#'                   through this legacy direct `gllvm_julia()` scaffold —
+#'                   passing a non-NULL X errors. The current `gllvmTMB(...,
+#'                   engine = "julia")` bridge has its own capability ledger and
+#'                   admits a tested subset of `X` models through `GLLVM.bridge_fit`.
 #' @param family     gllvm family string; one of names(.family_map).
 #' @param num.lv     number of latent variables (gllvm name; -> Julia `K`).
 #' @param row.eff    "none" (default), "fixed", or "random".
@@ -243,8 +267,8 @@ gllvm_julia <- function(y, X = NULL, family = "negative.binomial", num.lv = 2L,
   loadings <- tryCatch(as.matrix(G$getLoadings(fit, rotate = TRUE)),
                        error = function(e) NULL)
   lvs <- tryCatch(.bridge_getLV(G, fit, Y, Nt), error = function(e) NULL)
-  beta <- tryCatch(as.numeric(juliaGet(fit$β)), error = function(e) NA_real_) # fit.β intercepts
-  ll  <- tryCatch(as.numeric(juliaGet(fit$loglik)), error = function(e) NA_real_)
+  beta <- tryCatch(as.numeric(.jl_value(fit$β)), error = function(e) NA_real_) # fit.β intercepts
+  ll  <- tryCatch(as.numeric(.jl_value(fit$loglik)), error = function(e) NA_real_)
 
   structure(list(
     call        = match.call(),
@@ -267,14 +291,14 @@ gllvm_julia <- function(y, X = NULL, family = "negative.binomial", num.lv = 2L,
 # Build the Distributions.jl family marker. Most are zero-arg constructors; the
 # bridge's NB2 fitter estimates r internally, so a marker with a placeholder is fine.
 .jl_family_marker <- function(G, julia_name, family) {
-  ctor <- G[[julia_name]]
-  if (is.null(ctor))
-    stop(sprintf("Julia constructor %s() not found for family '%s'", julia_name, family))
-  # NegativeBinomial()/Binomial()/Beta()/Gamma() have well-defined zero/one-arg forms
-  # in Distributions; the GLLVM.jl fitters only read the dispersion field they need.
-  ## VERIFY: that the zero-arg constructor exists for each (Distributions.Beta()
-  ## and Gamma() default to (1,1); GLLVM.jl re-estimates the dispersion regardless).
-  ctor()
+  expr <- sprintf("Distributions.%s()", julia_name)
+  tryCatch(
+    juliaEval(expr),
+    error = function(e) {
+      stop(sprintf("Julia constructor %s failed for family '%s': %s",
+                   expr, family, conditionMessage(e)), call. = FALSE)
+    }
+  )
 }
 
 # Accessor for site scores: signature differs across fit types (some take N).
@@ -378,13 +402,13 @@ gllvm_julia_coeftable <- function(fit) {
   Y  <- if (inherits(fit, "gllvm_julia")) fit$y else stop("pass a gllvm_julia object")
   ct <- G$coef_table(jf, Y)
   data.frame(
-    term      = as.character(juliaGet(ct$term)),
-    estimate  = as.numeric(juliaGet(ct$estimate)),
-    std.error = as.numeric(juliaGet(ct$std_error)),
-    z         = as.numeric(juliaGet(ct$z)),
-    p.value   = as.numeric(juliaGet(ct$pvalue)),
-    lower     = as.numeric(juliaGet(ct$lower)),
-    upper     = as.numeric(juliaGet(ct$upper)),
+    term      = as.character(.jl_value(ct$term)),
+    estimate  = as.numeric(.jl_value(ct$estimate)),
+    std.error = as.numeric(.jl_value(ct$std_error)),
+    z         = as.numeric(.jl_value(ct$z)),
+    p.value   = as.numeric(.jl_value(ct$pvalue)),
+    lower     = as.numeric(.jl_value(ct$lower)),
+    upper     = as.numeric(.jl_value(ct$upper)),
     stringsAsFactors = FALSE
   )
 }

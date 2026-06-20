@@ -116,17 +116,41 @@ _link_residual_one(::Ordinal, ::ProbitLink, μ̂::Real, dispersion) = 1.0
 # trait. Ordinal predict returns the modal CLASS, not a response-scale mean, so
 # its μ̂ is unused by `_link_residual_one(::Ordinal, …)`.
 # ---------------------------------------------------------------------------
-function _trait_mean_fitted(fit::Union{PoissonFit, NBFit}, Y::AbstractMatrix)
-    μ = predict(fit, Y; type = :response)            # p×n response-scale means
-    return vec(Statistics.mean(μ; dims = 2))
+function _masked_trait_mean(μ::AbstractMatrix, mask)
+    mask === nothing && return vec(Statistics.mean(μ; dims = 2))
+    p, n = size(μ)
+    out = zeros(Float64, p)
+    @inbounds for t in 1:p
+        cnt = 0
+        acc = 0.0
+        for s in 1:n
+            mask[t, s] || continue
+            cnt += 1
+            acc += μ[t, s]
+        end
+        out[t] = cnt == 0 ? 0.0 : acc / cnt
+    end
+    return out
 end
-function _trait_mean_fitted(fit::Union{BetaFit, GammaFit}, Y::AbstractMatrix)
-    μ = predict(fit, Y; type = :response)
-    return vec(Statistics.mean(μ; dims = 2))
+
+function _trait_mean_fitted(fit::Union{PoissonFit, NBFit}, Y::AbstractMatrix; mask = nothing)
+    Z = getLV(fit, Y; rotate = false, mask = mask)
+    η = fit.β .+ fit.Λ * Z'
+    μ = linkinv.(Ref(fit.link), η)
+    return _masked_trait_mean(μ, mask)
 end
-function _trait_mean_fitted(fit::BinomialFit, Y::AbstractMatrix; N = nothing)
-    μ = predict(fit, Y; type = :response, N = N)
-    return vec(Statistics.mean(μ; dims = 2))
+function _trait_mean_fitted(fit::Union{BetaFit, GammaFit}, Y::AbstractMatrix; mask = nothing)
+    Z = getLV(fit, Y; rotate = false, mask = mask)
+    η = fit.β .+ fit.Λ * Z'
+    μ = linkinv.(Ref(fit.link), η)
+    return _masked_trait_mean(μ, mask)
+end
+function _trait_mean_fitted(fit::BinomialFit, Y::AbstractMatrix; N = nothing, mask = nothing)
+    Nm = N === nothing ? fill(1, size(Y)...) : N
+    Z = getLV(fit, Y; N = Nm, rotate = false, mask = mask)
+    η = fit.β .+ fit.Λ * Z'
+    μ = linkinv.(Ref(fit.link), η)
+    return _masked_trait_mean(μ, mask)
 end
 
 # Scalar dispersion accessor per fit type (the family nuisance parameter).
@@ -136,6 +160,7 @@ _fit_dispersion(fit::NBFit)    = fit.r
 _fit_dispersion(fit::GammaFit) = fit.α
 _fit_dispersion(fit::BetaFit)  = fit.φ
 _fit_dispersion(::OrdinalFit)  = nothing
+_fit_dispersion(::OrdinalPerTraitFit) = nothing
 
 # Family marker per fit type (for dispatching `_link_residual_one`).
 _fit_family(::PoissonFit)  = Poisson()
@@ -144,6 +169,7 @@ _fit_family(fit::NBFit)    = NegativeBinomial(fit.r, 0.5)
 _fit_family(fit::GammaFit) = Gamma(fit.α, 1.0)
 _fit_family(fit::BetaFit)  = Beta(fit.φ, 1.0)
 _fit_family(::OrdinalFit)  = Ordinal()
+_fit_family(::OrdinalPerTraitFit) = Ordinal()
 
 # ---------------------------------------------------------------------------
 # Public API: link_residual.
@@ -193,16 +219,17 @@ Returns the vector added to `diag(ΛΛᵀ)` to form the latent-scale
 `Σ_latent = ΛΛᵀ + diag(σ²_d)` (see [`sigma_y_site`](@ref)). Rotation-invariant
 and family-agnostic on the latent scale (matches gllvmTMB `link_residual="auto"`).
 """
-function link_residual(fit::Union{PoissonFit, NBFit, BetaFit, GammaFit}, Y::AbstractMatrix)
+function link_residual(fit::Union{PoissonFit, NBFit, BetaFit, GammaFit}, Y::AbstractMatrix;
+                       mask = nothing)
     link = fit.link
     fam  = _fit_family(fit)
     disp = _fit_dispersion(fit)
-    μ̂    = _trait_mean_fitted(fit, Y)
+    μ̂    = _trait_mean_fitted(fit, Y; mask = mask)
     return [Float64(_link_residual_one(fam, link, μ̂[t], disp)) for t in eachindex(μ̂)]
 end
 
 function link_residual(fit::BinomialFit, Y::AbstractMatrix;
-                       N::Union{Nothing, AbstractMatrix} = nothing)
+                       N::Union{Nothing, AbstractMatrix} = nothing, mask = nothing)
     link = fit.link
     p = size(fit.Λ, 1)
     # Binomial σ²_d is μ̂-free, so we don't need the fitted mean; one value per trait.
@@ -210,11 +237,15 @@ function link_residual(fit::BinomialFit, Y::AbstractMatrix;
     return fill(Float64(v), p)
 end
 
-function link_residual(fit::OrdinalFit, Y::AbstractMatrix)
+function link_residual(fit::OrdinalFit, Y::AbstractMatrix; mask = nothing)
     p = size(fit.Λ, 1)
     # Cumulative threshold residual, μ̂-free (no species intercept, latent η has
     # zero mean by construction): π²/3 for the logit link (standard-logistic
     # latent), 1 for the probit link (standard-normal latent).
+    return fill(Float64(_link_residual_one(Ordinal(), fit.link, 0.0, nothing)), p)
+end
+function link_residual(fit::OrdinalPerTraitFit, Y::AbstractMatrix; mask = nothing)
+    p = size(fit.Λ, 1)
     return fill(Float64(_link_residual_one(Ordinal(), fit.link, 0.0, nothing)), p)
 end
 
@@ -288,15 +319,18 @@ common latent scale. `Y` is the response matrix the fit was computed on; `N`
 matches gllvmTMB `extract_Sigma(..., link_residual = "auto")` with no `unique()`
 component (Ψ = 0).
 """
-function sigma_y_site(fit::_NonGaussianLatentFit, Y::AbstractMatrix)
-    return _latent_sigma(fit.Λ, link_residual(fit, Y))
+function sigma_y_site(fit::_NonGaussianLatentFit, Y::AbstractMatrix; mask = nothing)
+    return _latent_sigma(fit.Λ, link_residual(fit, Y; mask = mask))
 end
 function sigma_y_site(fit::BinomialFit, Y::AbstractMatrix;
-                      N::Union{Nothing, AbstractMatrix} = nothing)
-    return _latent_sigma(fit.Λ, link_residual(fit, Y; N = N))
+                      N::Union{Nothing, AbstractMatrix} = nothing, mask = nothing)
+    return _latent_sigma(fit.Λ, link_residual(fit, Y; N = N, mask = mask))
 end
-function sigma_y_site(fit::OrdinalFit, Y::AbstractMatrix)
-    return _latent_sigma(fit.Λ, link_residual(fit, Y))
+function sigma_y_site(fit::OrdinalFit, Y::AbstractMatrix; mask = nothing)
+    return _latent_sigma(fit.Λ, link_residual(fit, Y; mask = mask))
+end
+function sigma_y_site(fit::OrdinalPerTraitFit, Y::AbstractMatrix; mask = nothing)
+    return _latent_sigma(fit.Λ, link_residual(fit, Y; mask = mask))
 end
 
 """
@@ -308,23 +342,29 @@ carried by the shared loadings, with `Σ_latent = Λ Λᵀ + diag(σ²_d)` (see
 [`sigma_y_site`](@ref)). Values are in [0, 1]. `Y` is the response matrix the fit
 was computed on; `N` (Binomial only) the trial counts.
 """
-function communality(fit::_NonGaussianLatentFit, Y::AbstractMatrix)
+function communality(fit::_NonGaussianLatentFit, Y::AbstractMatrix; mask = nothing)
     Λ = fit.Λ
     ΛΛt = Λ * Λ'
-    Σ = sigma_y_site(fit, Y)
+    Σ = sigma_y_site(fit, Y; mask = mask)
     return [_safe_ratio(ΛΛt[t, t], Σ[t, t]) for t in 1:size(Λ, 1)]
 end
 function communality(fit::BinomialFit, Y::AbstractMatrix;
-                     N::Union{Nothing, AbstractMatrix} = nothing)
+                     N::Union{Nothing, AbstractMatrix} = nothing, mask = nothing)
     Λ = fit.Λ
     ΛΛt = Λ * Λ'
-    Σ = sigma_y_site(fit, Y; N = N)
+    Σ = sigma_y_site(fit, Y; N = N, mask = mask)
     return [_safe_ratio(ΛΛt[t, t], Σ[t, t]) for t in 1:size(Λ, 1)]
 end
-function communality(fit::OrdinalFit, Y::AbstractMatrix)
+function communality(fit::OrdinalFit, Y::AbstractMatrix; mask = nothing)
     Λ = fit.Λ
     ΛΛt = Λ * Λ'
-    Σ = sigma_y_site(fit, Y)
+    Σ = sigma_y_site(fit, Y; mask = mask)
+    return [_safe_ratio(ΛΛt[t, t], Σ[t, t]) for t in 1:size(Λ, 1)]
+end
+function communality(fit::OrdinalPerTraitFit, Y::AbstractMatrix; mask = nothing)
+    Λ = fit.Λ
+    ΛΛt = Λ * Λ'
+    Σ = sigma_y_site(fit, Y; mask = mask)
     return [_safe_ratio(ΛΛt[t, t], Σ[t, t]) for t in 1:size(Λ, 1)]
 end
 
@@ -343,13 +383,16 @@ This is the non-Gaussian twin of [`correlation(::GllvmFit)`](@ref); for the
 Gaussian family the response and latent scales coincide (σ²_d = 0, the residual
 is the Gaussian σ²_eps), so no `Y` argument is needed there.
 """
-function correlation(fit::_NonGaussianLatentFit, Y::AbstractMatrix)
-    return _latent_correlation(sigma_y_site(fit, Y))
+function correlation(fit::_NonGaussianLatentFit, Y::AbstractMatrix; mask = nothing)
+    return _latent_correlation(sigma_y_site(fit, Y; mask = mask))
 end
 function correlation(fit::BinomialFit, Y::AbstractMatrix;
-                     N::Union{Nothing, AbstractMatrix} = nothing)
-    return _latent_correlation(sigma_y_site(fit, Y; N = N))
+                     N::Union{Nothing, AbstractMatrix} = nothing, mask = nothing)
+    return _latent_correlation(sigma_y_site(fit, Y; N = N, mask = mask))
 end
-function correlation(fit::OrdinalFit, Y::AbstractMatrix)
-    return _latent_correlation(sigma_y_site(fit, Y))
+function correlation(fit::OrdinalFit, Y::AbstractMatrix; mask = nothing)
+    return _latent_correlation(sigma_y_site(fit, Y; mask = mask))
+end
+function correlation(fit::OrdinalPerTraitFit, Y::AbstractMatrix; mask = nothing)
+    return _latent_correlation(sigma_y_site(fit, Y; mask = mask))
 end

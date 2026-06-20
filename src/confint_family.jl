@@ -36,8 +36,10 @@ const _TwoPartFit = Union{DeltaLogNormalFit, DeltaGammaFit, HurdlePoissonFit,
                           HurdleNBFit, ZIPFit, ZINBFit, ZIBFit, BetaHurdleFit}
 
 # Everything the unified confint(fit, Y; method=…) entry accepts.
-const _CIFit = Union{_FamilyFit, _TwoPartFit, OrdinalFit, GllvmCovFit, OrderedBetaFit,
-                     QuadraticFit, RowEffectFit}
+const _GroupedDispersionFit = Union{NBGroupedFit, NB1GroupedFit, BetaGroupedFit, GammaGroupedFit}
+
+const _CIFit = Union{_FamilyFit, _TwoPartFit, _GroupedDispersionFit, OrdinalFit,
+                     GllvmCovFit, OrderedBetaFit, QuadraticFit, RowEffectFit}
 
 # ---------------------------------------------------------------------------
 # Per-family adapter. Bundles everything the generic routines need:
@@ -61,18 +63,31 @@ end
 _glm_lin_names(p::Integer, K::Integer) =
     vcat(["beta[$t]" for t in 1:p], _confint_lambda_term_names("Lambda", p, K))
 
+function _ci_mask(mask, Y::AbstractMatrix)
+    mask === nothing && return nothing
+    M = Matrix{Bool}(mask)
+    size(M) == size(Y) || throw(ArgumentError(
+        "confint mask must have size $(size(Y)); got $(size(M))"))
+    all(M) && return nothing
+    any(M) || throw(ArgumentError("confint mask has no observed cells"))
+    return M
+end
+
 # --- Poisson ---------------------------------------------------------------
 function _family_ci(fit::PoissonFit, Y::AbstractMatrix;
+                    mask = nothing,
                     objective::Symbol = :laplace,
                     newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
     p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); link = fit.link
+    M = _ci_mask(mask, Y)
     θ = vcat(fit.β, pack_lambda(fit.Λ))
     nll = function (θv)
         β = θv[1:p]; Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K)
         v = try
             objective === :va ?
                 -poisson_marginal_loglik_va(Y, Λ, β; maxiter = newton_maxiter, tol = newton_tol) :
-                -poisson_marginal_loglik_laplace(Y, Λ, β, link; maxiter = newton_maxiter, tol = newton_tol)
+                -poisson_marginal_loglik_laplace(Y, Λ, β, link; mask = M,
+                                                 maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
         end
@@ -81,7 +96,7 @@ function _family_ci(fit::PoissonFit, Y::AbstractMatrix;
     simulate = rng -> _glm_simulate_counts(rng, fit.β, fit.Λ, link, n,
                                            (r, μ) -> Poisson(max(μ, 1e-12)))
     refit = function (Yb)
-        fb = try fit_poisson_gllvm(Yb; K = K, link = link) catch; return nothing end
+        fb = try fit_poisson_gllvm(Yb; K = K, link = link, mask = M) catch; return nothing end
         return vcat(fb.β, pack_lambda(fb.Λ))
     end
     return _FamilyCI(θ, nll, _glm_lin_names(p, K), fill(:linear, length(θ)), simulate, refit)
@@ -90,17 +105,20 @@ end
 # --- Binomial --------------------------------------------------------------
 function _family_ci(fit::BinomialFit, Y::AbstractMatrix;
                     N::Union{Nothing, AbstractMatrix} = nothing,
+                    mask = nothing,
                     objective::Symbol = :laplace,
                     newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
     p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); link = fit.link
     Nm = N === nothing ? fill(1, p, n) : Matrix{Int}(N)
+    M = _ci_mask(mask, Y)
     θ = vcat(fit.β, pack_lambda(fit.Λ))
     nll = function (θv)
         β = θv[1:p]; Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K)
         v = try
             objective === :va ?
                 -binomial_marginal_loglik_va(Y, Nm, Λ, β; maxiter = newton_maxiter, tol = newton_tol) :
-                -binomial_marginal_loglik_laplace(Y, Nm, Λ, β, link; maxiter = newton_maxiter, tol = newton_tol)
+                -binomial_marginal_loglik_laplace(Y, Nm, Λ, β, link; mask = M,
+                                                  maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
         end
@@ -118,7 +136,7 @@ function _family_ci(fit::BinomialFit, Y::AbstractMatrix;
         return Yb
     end
     refit = function (Yb)
-        fb = try fit_binomial_gllvm(Yb; K = K, link = link, N = Nm) catch; return nothing end
+        fb = try fit_binomial_gllvm(Yb; K = K, link = link, N = Nm, mask = M) catch; return nothing end
         return vcat(fb.β, pack_lambda(fb.Λ))
     end
     return _FamilyCI(θ, nll, _glm_lin_names(p, K), fill(:linear, length(θ)), simulate, refit)
@@ -126,16 +144,19 @@ end
 
 # --- Negative binomial -----------------------------------------------------
 function _family_ci(fit::NBFit, Y::AbstractMatrix;
+                    mask = nothing,
                     objective::Symbol = :laplace,
                     newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
     p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); link = fit.link
+    M = _ci_mask(mask, Y)
     θ = vcat(fit.β, pack_lambda(fit.Λ), log(fit.r))
     nll = function (θv)
         β = θv[1:p]; Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K); r = exp(θv[p + rr + 1])
         v = try
             objective === :va ?
                 -nb_marginal_loglik_va(Y, Λ, β, r; maxiter = newton_maxiter, tol = newton_tol) :
-                -nb_marginal_loglik_laplace(Y, Λ, β, r; link = link, maxiter = newton_maxiter, tol = newton_tol)
+                -nb_marginal_loglik_laplace(Y, Λ, β, r; link = link, mask = M,
+                                            maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
         end
@@ -144,7 +165,7 @@ function _family_ci(fit::NBFit, Y::AbstractMatrix;
     simulate = rng -> _glm_simulate_counts(rng, fit.β, fit.Λ, link, n,
                                            (rg, μ) -> (m = max(μ, 1e-12); NegativeBinomial(fit.r, fit.r / (fit.r + m))))
     refit = function (Yb)
-        fb = try fit_nb_gllvm(Yb; K = K, link = link) catch; return nothing end
+        fb = try fit_nb_gllvm(Yb; K = K, link = link, mask = M) catch; return nothing end
         return vcat(fb.β, pack_lambda(fb.Λ), log(fb.r))
     end
     names = vcat(_glm_lin_names(p, K), "r")
@@ -154,13 +175,16 @@ end
 
 # --- Negative binomial type-1 (NB1, linear variance Var = μ(1+φ)) -----------
 function _family_ci(fit::NB1Fit, Y::AbstractMatrix;
+                    mask = nothing,
                     newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
     p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); link = fit.link
+    M = _ci_mask(mask, Y)
     θ = vcat(fit.β, pack_lambda(fit.Λ), log(fit.φ))
     nll = function (θv)
         β = θv[1:p]; Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K); φ = exp(θv[p + rr + 1])
         v = try
-            -nb1_marginal_loglik_laplace(Y, Λ, β, φ; link = link, maxiter = newton_maxiter, tol = newton_tol)
+            -nb1_marginal_loglik_laplace(Y, Λ, β, φ; link = link, mask = M,
+                                         maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
         end
@@ -169,7 +193,7 @@ function _family_ci(fit::NB1Fit, Y::AbstractMatrix;
     simulate = rng -> _glm_simulate_counts(rng, fit.β, fit.Λ, link, n,
                                            (rg, μ) -> (m = max(μ, 1e-12); NegativeBinomial(m / fit.φ, 1 / (1 + fit.φ))))
     refit = function (Yb)
-        fb = try fit_nb1_gllvm(Yb; K = K, link = link) catch; return nothing end
+        fb = try fit_nb1_gllvm(Yb; K = K, link = link, mask = M) catch; return nothing end
         return vcat(fb.β, pack_lambda(fb.Λ), log(fb.φ))
     end
     names = vcat(_glm_lin_names(p, K), "phi")
@@ -179,16 +203,19 @@ end
 
 # --- Beta ------------------------------------------------------------------
 function _family_ci(fit::BetaFit, Y::AbstractMatrix;
+                    mask = nothing,
                     objective::Symbol = :laplace,
                     newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
     p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); link = fit.link
+    M = _ci_mask(mask, Y)
     θ = vcat(fit.β, pack_lambda(fit.Λ), log(fit.φ))
     nll = function (θv)
         β = θv[1:p]; Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K); φ = exp(θv[p + rr + 1])
         v = try
             objective === :va ?
                 -beta_marginal_loglik_va(Y, Λ, β, φ; maxiter = newton_maxiter, tol = newton_tol) :
-                -beta_marginal_loglik_laplace(Y, Λ, β, φ; link = link, maxiter = newton_maxiter, tol = newton_tol)
+                -beta_marginal_loglik_laplace(Y, Λ, β, φ; link = link, mask = M,
+                                              maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
         end
@@ -206,7 +233,7 @@ function _family_ci(fit::BetaFit, Y::AbstractMatrix;
         return Yb
     end
     refit = function (Yb)
-        fb = try fit_beta_gllvm(Yb; K = K, link = link) catch; return nothing end
+        fb = try fit_beta_gllvm(Yb; K = K, link = link, mask = M) catch; return nothing end
         return vcat(fb.β, pack_lambda(fb.Λ), log(fb.φ))
     end
     names = vcat(_glm_lin_names(p, K), "phi")
@@ -216,16 +243,19 @@ end
 
 # --- Gamma -----------------------------------------------------------------
 function _family_ci(fit::GammaFit, Y::AbstractMatrix;
+                    mask = nothing,
                     objective::Symbol = :laplace,
                     newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
     p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); link = fit.link
+    M = _ci_mask(mask, Y)
     θ = vcat(fit.β, pack_lambda(fit.Λ), log(fit.α))
     nll = function (θv)
         β = θv[1:p]; Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K); α = exp(θv[p + rr + 1])
         v = try
             objective === :va ?
                 -gamma_marginal_loglik_va(Y, Λ, β, α; maxiter = newton_maxiter, tol = newton_tol) :
-                -gamma_marginal_loglik_laplace(Y, Λ, β, α; link = link, maxiter = newton_maxiter, tol = newton_tol)
+                -gamma_marginal_loglik_laplace(Y, Λ, β, α; link = link, mask = M,
+                                               maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
         end
@@ -243,11 +273,191 @@ function _family_ci(fit::GammaFit, Y::AbstractMatrix;
         return Yb
     end
     refit = function (Yb)
-        fb = try fit_gamma_gllvm(Yb; K = K, link = link) catch; return nothing end
+        fb = try fit_gamma_gllvm(Yb; K = K, link = link, mask = M) catch; return nothing end
         return vcat(fb.β, pack_lambda(fb.Λ), log(fb.α))
     end
     names = vcat(_glm_lin_names(p, K), "alpha")
     kinds = vcat(fill(:linear, length(θ) - 1), :log)
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+end
+
+# --- Grouped / per-trait dispersion bridge families -----------------------
+_grouped_dispersion_names(p::Integer, K::Integer, parameter::AbstractString, G::Integer) =
+    vcat(_glm_lin_names(p, K), ["$(parameter)[$g]" for g in 1:G])
+
+function _family_ci(fit::NBGroupedFit, Y::AbstractMatrix;
+                    mask = nothing,
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K)
+    link = fit.link; group = collect(Int, fit.group); G = length(fit.r_group)
+    Yi = round.(Int, Y)
+    M = _ci_mask(mask, Y)
+    θ = vcat(fit.β, pack_lambda(fit.Λ), log.(fit.r_group))
+    nll = function (θv)
+        β = θv[1:p]
+        Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+        rg = exp.(θv[(p + rr + 1):(p + rr + G)])
+        rvec = [rg[group[t]] for t in 1:p]
+        v = try
+            -nb_grouped_marginal_loglik_laplace(Yi, Λ, β, rvec; link = link,
+                                                mask = M,
+                                                maxiter = newton_maxiter,
+                                                tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    simulate = function (rng)
+        Yb = Matrix{Int}(undef, p, n)
+        @inbounds for s in 1:n
+            η = fit.β .+ fit.Λ * randn(rng, K)
+            for t in 1:p
+                μ = max(linkinv(link, _clamp_eta(η[t])), 1e-12)
+                r = fit.r_group[group[t]]
+                Yb[t, s] = rand(rng, NegativeBinomial(r, r / (r + μ)))
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try fit_nb_gllvm_grouped(Yb; K = K, group = group, link = link, mask = M) catch; return nothing end
+        return vcat(fb.β, pack_lambda(fb.Λ), log.(fb.r_group))
+    end
+    names = _grouped_dispersion_names(p, K, "r", G)
+    kinds = vcat(fill(:linear, p + rr), fill(:log, G))
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+end
+
+function _family_ci(fit::NB1GroupedFit, Y::AbstractMatrix;
+                    mask = nothing,
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K)
+    link = fit.link; group = collect(Int, fit.group); G = length(fit.φ)
+    Yi = round.(Int, Y)
+    M = _ci_mask(mask, Y)
+    θ = vcat(fit.β, pack_lambda(fit.Λ), log.(fit.φ))
+    nll = function (θv)
+        β = θv[1:p]
+        Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+        φg = exp.(θv[(p + rr + 1):(p + rr + G)])
+        φvec = [φg[group[t]] for t in 1:p]
+        v = try
+            -nb1_grouped_marginal_loglik_laplace(Yi, Λ, β, φvec; link = link,
+                                                 mask = M,
+                                                 maxiter = newton_maxiter,
+                                                 tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    simulate = function (rng)
+        Yb = Matrix{Int}(undef, p, n)
+        @inbounds for s in 1:n
+            η = fit.β .+ fit.Λ * randn(rng, K)
+            for t in 1:p
+                μ = max(linkinv(link, _clamp_eta(η[t])), 1e-12)
+                φ = fit.φ[group[t]]
+                Yb[t, s] = rand(rng, NegativeBinomial(μ / φ, 1 / (1 + φ)))
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try fit_nb1_gllvm_grouped(Yb; K = K, group = group, link = link, mask = M) catch; return nothing end
+        return vcat(fb.β, pack_lambda(fb.Λ), log.(fb.φ))
+    end
+    names = _grouped_dispersion_names(p, K, "phi", G)
+    kinds = vcat(fill(:linear, p + rr), fill(:log, G))
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+end
+
+function _family_ci(fit::BetaGroupedFit, Y::AbstractMatrix;
+                    mask = nothing,
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K)
+    link = fit.link; group = collect(Int, fit.group); G = length(fit.φ)
+    Yf = clamp.(Float64.(Y), 1e-6, 1 - 1e-6)
+    M = _ci_mask(mask, Y)
+    θ = vcat(fit.β, pack_lambda(fit.Λ), log.(fit.φ))
+    nll = function (θv)
+        β = θv[1:p]
+        Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+        φg = exp.(θv[(p + rr + 1):(p + rr + G)])
+        φvec = [φg[group[t]] for t in 1:p]
+        v = try
+            -beta_grouped_marginal_loglik_laplace(Yf, Λ, β, φvec; link = link,
+                                                  mask = M,
+                                                  maxiter = newton_maxiter,
+                                                  tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    simulate = function (rng)
+        Yb = Matrix{Float64}(undef, p, n)
+        @inbounds for s in 1:n
+            η = fit.β .+ fit.Λ * randn(rng, K)
+            for t in 1:p
+                μ = clamp(linkinv(link, _clamp_eta(η[t])), 1e-6, 1 - 1e-6)
+                φ = fit.φ[group[t]]
+                Yb[t, s] = clamp(rand(rng, Beta(μ * φ, (1 - μ) * φ)), 1e-6, 1 - 1e-6)
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try fit_beta_gllvm_grouped(Yb; K = K, group = group, link = link, mask = M) catch; return nothing end
+        return vcat(fb.β, pack_lambda(fb.Λ), log.(fb.φ))
+    end
+    names = _grouped_dispersion_names(p, K, "phi", G)
+    kinds = vcat(fill(:linear, p + rr), fill(:log, G))
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+end
+
+function _family_ci(fit::GammaGroupedFit, Y::AbstractMatrix;
+                    mask = nothing,
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K)
+    link = fit.link; group = collect(Int, fit.group); G = length(fit.α)
+    Yf = max.(Float64.(Y), 1e-9)
+    M = _ci_mask(mask, Y)
+    θ = vcat(fit.β, pack_lambda(fit.Λ), log.(fit.α))
+    nll = function (θv)
+        β = θv[1:p]
+        Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+        αg = exp.(θv[(p + rr + 1):(p + rr + G)])
+        αvec = [αg[group[t]] for t in 1:p]
+        v = try
+            -gamma_grouped_marginal_loglik_laplace(Yf, Λ, β, αvec; link = link,
+                                                   mask = M,
+                                                   maxiter = newton_maxiter,
+                                                   tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    simulate = function (rng)
+        Yb = Matrix{Float64}(undef, p, n)
+        @inbounds for s in 1:n
+            η = fit.β .+ fit.Λ * randn(rng, K)
+            for t in 1:p
+                μ = max(linkinv(link, _clamp_eta(η[t])), 1e-12)
+                α = fit.α[group[t]]
+                Yb[t, s] = rand(rng, Gamma(α, μ / α))
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try fit_gamma_gllvm_grouped(Yb; K = K, group = group, link = link, mask = M) catch; return nothing end
+        return vcat(fb.β, pack_lambda(fb.Λ), log.(fb.α))
+    end
+    names = _grouped_dispersion_names(p, K, "alpha", G)
+    kinds = vcat(fill(:linear, p + rr), fill(:log, G))
     return _FamilyCI(θ, nll, names, kinds, simulate, refit)
 end
 
@@ -1322,6 +1532,7 @@ end
 # ---------------------------------------------------------------------------
 """
     confint(fit, Y; method = :wald, level = 0.95, parm = nothing, N = nothing,
+            mask = nothing,
             n_boot = 200, seed = 0, parallel = false, objective = :laplace,
             newton_maxiter = 100, newton_tol = 1e-9) -> NamedTuple
 
@@ -1333,7 +1544,9 @@ two-part families (`DeltaLogNormalFit`, `DeltaGammaFit`, `HurdlePoissonFit`,
 `HurdleNBFit`, `ZIPFit`, `ZINBFit`, `ZIBFit`). `Y` is the same response matrix
 passed to the fitter; it is needed to reconstruct the marginal likelihood. For
 `BinomialFit` / `BetaBinomialFit` (and a `Binomial`-family `RowRandomFit`) supply
-the trial counts via `N` (default all-ones).
+the trial counts via `N` (default all-ones). For response-mask fits, pass the
+same Boolean `mask` matrix used by the fitter; masked cells are ignored by the
+likelihood and by bootstrap refits.
 
 Term names are `beta[t]` / `Lambda[i,k]` (+ a dispersion `r`/`phi`/`alpha`) for
 the GLM families, `... + phi` for `BetaBinomialFit` (the Beta precision) and
@@ -1373,7 +1586,8 @@ Binomial trial counts (default all-ones / Bernoulli).
 fit types). `:va` instead uses the negative variational (ELBO) marginal and is
 available only for the scalar-μ GLM families (`PoissonFit`, `NBFit`,
 `BinomialFit`, `BetaFit`, `GammaFit`) with `method = :wald`; combine it with a VA
-fit (e.g. `fit_poisson_gllvm_va`) for VA-consistent standard errors.
+fit (e.g. `fit_poisson_gllvm_va`) for VA-consistent standard errors. Masked
+confidence intervals currently require `objective = :laplace`.
 
 ```julia
 fit = fit_poisson_gllvm(Y; K = 2)
@@ -1388,6 +1602,7 @@ function confint(fit::_CIFit, Y::AbstractMatrix;
                  parm = nothing,
                  N::Union{Nothing, AbstractMatrix} = nothing,
                  X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                 mask = nothing,
                  n_boot::Integer = 200,
                  seed::Integer = 0,
                  parallel::Bool = false,
@@ -1403,7 +1618,11 @@ function confint(fit::_CIFit, Y::AbstractMatrix;
     if objective === :va && method !== :wald
         throw(ArgumentError("objective=:va currently supports method=:wald only"))
     end
+    if objective === :va && mask !== nothing
+        throw(ArgumentError("objective=:va is not routed for masked confidence intervals; use objective=:laplace"))
+    end
     ad = _family_ci(fit, Y; N = N, X = X, objective = objective,
+                    mask = mask,
                     newton_maxiter = newton_maxiter, newton_tol = newton_tol)
     sel = _family_select(parm, ad.names)
     isempty(sel) && throw(ArgumentError("parm selector matched no parameters"))

@@ -1,18 +1,23 @@
-# GLLVM.jl R bridge — `gllvm_julia()` (the `engine = "julia"` path)
+# GLLVM.jl legacy R bridge scaffold — `gllvm_julia()`
 
-A **gllvmTMB-style R front door** to the fast Julia engine. You call something that
-looks like `gllvm::gllvm(...)` — same family strings, `num.lv`, `row.eff`,
-`disp.formula` — and the bridge runs the fit in GLLVM.jl via
-[JuliaConnectoR](https://github.com/stefan-m-lenz/JuliaConnectoR), then returns a list
-in **gllvm parameter conventions** (e.g. NB dispersion as `phi = 1/r`). This mirrors
-the `drmTMB` ↔ `DRM.jl` pattern.
+This directory contains a historical **gllvm-style direct R scaffold** for
+low-level parity smoke checks. It is not the current `gllvmTMB(...,
+engine = "julia")` admission surface; the current R package bridge is guarded
+by `GLLVM.bridge_capabilities()` and lives in `gllvmTMB`. You call something
+that looks like `gllvm::gllvm(...)` — same family strings, `num.lv`, `row.eff`,
+`disp.formula` — and the scaffold runs the fit in GLLVM.jl via
+[JuliaConnectoR](https://github.com/stefan-m-lenz/JuliaConnectoR), then returns
+a list in **gllvm parameter conventions** (e.g. NB dispersion as `phi = 1/r`).
 
-> **Status: SCAFFOLD, NOT YET EXECUTED.** `gllvmtmb_julia.R` and `parity_check.R`
-> were written without an R or Julia runtime. Every JuliaConnectoR idiom and field
-> access must be verified in a live R + Julia session. **Full numerical parity must
-> be validated by running `parity_check.R`** (needs both R `{gllvm}` and a Julia with
-> GLLVM.jl). Search for `## VERIFY:` comments in `gllvmtmb_julia.R` for the spots most
-> likely to need a small adjustment.
+> **Status: SCAFFOLD, ONE PARITY SMOKE GREEN.** The JuliaConnectoR path starts
+> Julia, activates the local `GLLVM.jl` project when `GLLVM_JL_PATH` or `jl_path`
+> is supplied, loads `GLLVM` + `Distributions`, constructs family markers, and
+> extracts scalar/vector fields that JuliaConnectoR may already have converted to
+> R values. A live Poisson `method="LA"` no-row-effect smoke check on 2026-06-14
+> matched R `{gllvm}` to tight tolerances (`|ΔlogLik| = 2.09e-11`, max beta diff
+> `1.76e-7`, Procrustes loading diff `6.56e-7`) after scaling R `{gllvm}` loadings
+> by `sigma.lv`. **Full numerical parity is still open** for other families,
+> dispersion structures, covariates, missingness, and CI payloads.
 
 ## Files
 
@@ -41,12 +46,16 @@ the `drmTMB` ↔ `DRM.jl` pattern.
    ```r
    Sys.setenv(JULIA_BINDIR = "/path/to/julia/bin")   # e.g. ~/.juliaup/bin
    ```
+4. **Point R at this checkout** when validating local code:
+   ```r
+   Sys.setenv(GLLVM_JL_PATH = "/path/to/GLLVM.jl")
+   ```
 
 ## Calling `gllvm_julia`
 
 ```r
 source("r/gllvmtmb_julia.R")     # also sources r/gllvmjl.R for the accessors
-gllvm_jl_init()                  # imports GLLVM into the Julia session (once)
+gllvm_jl_init()                  # activates GLLVM_JL_PATH when set; imports once
 
 # y is n x p: SITES in rows, SPECIES in columns (the gllvm orientation).
 set.seed(1)
@@ -112,7 +121,13 @@ methods** on both sides (`compare_gllvm(..., method=)` passes the same string to
 VA fitters in GLLVM.jl exist for **poisson, negative.binomial, binomial, beta, gamma**
 only, and only for the plain (shared-dispersion, no-row-effect) case.
 
-## Known-unsupported combos (the bridge `stop()`s clearly)
+## Known-unsupported combos in this legacy direct scaffold
+
+This `r/` directory is a historical direct `gllvm_julia()` scaffold for parity
+smoke tests. It is not the current `gllvmTMB(..., engine = "julia")` admission
+surface. The current R package bridge is guarded by `GLLVM.bridge_capabilities()`
+and admits a subset of fixed-effect `X` models through `gllvmTMB`; keep this
+scaffold conservative unless it is deliberately rewired to that same contract.
 
 - **Site covariates `X`** — not yet wired through `gllvm_julia` (the engine *has*
   `fit_gllvm_cov` / `@formula`, but converting an R design matrix into Julia's
@@ -134,5 +149,10 @@ res <- compare_gllvm(y, family = "poisson", num.lv = 2, method = "LA")
 
 `compare_gllvm()` reports max abs / relative differences. Loadings are identifiable
 only up to rotation/sign, so they are **Procrustes-aligned** before differencing.
-**The numbers in this README and the harness are illustrative — real parity must be
-confirmed by running `parity_check.R` in a live R + Julia environment.**
+Live 2026-06-14 smoke result (`family = "poisson"`, `num.lv = 1`, `method = "LA"`,
+30 sites x 4 species): after activating the local Julia project via
+`GLLVM_JL_PATH` and scaling R `{gllvm}` loadings by `sigma.lv`, the smoke passes
+the tight parity gate (`|ΔlogLik| = 2.09e-11`, max beta diff `1.76e-7`,
+Procrustes-aligned loading diff `6.56e-7`). Earlier same-day failed numbers
+(`|ΔlogLik| = 0.619`, max beta diff `0.0486`) were traced to harness activation
+and loading-scale drift.

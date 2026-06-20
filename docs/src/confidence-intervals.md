@@ -26,7 +26,10 @@ marginal likelihood. The call returns a `NamedTuple` with `term`, `estimate`,
 Supported fits: the GLM families (`PoissonFit`, `BinomialFit`, `NBFit`,
 `NB1Fit`, `BetaFit`, `GammaFit`) and the two-part families (`DeltaLogNormalFit`,
 `DeltaGammaFit`, `BetaHurdleFit`, `HurdlePoissonFit`, `HurdleNBFit`, `ZIPFit`,
-`ZINBFit`, `ZIBFit`), and ordinal (`OrdinalFit`).
+`ZINBFit`, `ZIBFit`), and shared-cutpoint ordinal (`OrdinalFit`).
+Grouped-dispersion fits and per-trait ordinal cutpoint fits currently report
+point payloads through the bridge, but their CI endpoints are deliberate
+follow-ups.
 
 ### Term names
 
@@ -34,7 +37,7 @@ Supported fits: the GLM families (`PoissonFit`, `BinomialFit`, `NBFit`,
 |--------------|-------|
 | GLM families | `beta[t]`, `Lambda[i,k]`, and a dispersion `r` / `phi` / `alpha` |
 | Two-part families | `betaz[t]` (occurrence / zero-inflation logits), `betac[t]` (value / count intercepts), `Lambda[i,k]`, and `sigma` / `alpha` / `r` |
-| Ordinal | `Lambda[i,k]`, `tau[c]` (cutpoints) |
+| Ordinal (`OrdinalFit`, shared cutpoints) | `Lambda[i,k]`, `tau[c]` (cutpoints) |
 
 Dispersion parameters are estimated on the log scale internally; their interval
 **bounds are reported on the natural (positive) scale**.

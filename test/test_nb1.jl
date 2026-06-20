@@ -57,6 +57,15 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra, ForwardDiff
         end
     end
 
+    @testset "tiny φ Fisher information uses the Poisson-limit branch" begin
+        for φ in (1e-8, 1e-9), μ in (2.0, 5.0, 10.0)
+            @test GLLVM._nb1_fisher_mu(μ, φ) ≈ inv(μ * (1 + φ)) rtol = 1e-12
+        end
+        for μ in (2.0, 5.0, 10.0)
+            @test GLLVM._nb1_fisher_mu(μ, 1e-5) ≈ inv(μ * (1 + 1e-5)) rtol = 3e-6
+        end
+    end
+
     @testset "fit_nb1_gllvm runs + recovers structure" begin
         Random.seed!(403)
         p, K, n, φ_true = 6, 2, 150, 0.8

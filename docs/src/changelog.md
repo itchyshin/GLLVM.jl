@@ -32,7 +32,7 @@ A large expansion from the v0.1.0 Gaussian-only pilot to a broad, gllvmTMB-class
 package; every numerical addition is gated by deterministic tests.
 
 ### Response families
-- **IN:** full GLM family set via a Laplace marginal — Poisson, negative binomial
+- **IN:** broad one-part GLM family set via a Laplace marginal — Poisson, negative binomial
   (NB2), Binomial / Bernoulli, Beta, Gamma, Exponential, Ordinal, and Tweedie
   (compound Poisson–Gamma, `fit_tweedie_gllvm`).
 - **IN:** two-part / mixture families — Delta-lognormal, Delta-Gamma,
@@ -45,9 +45,10 @@ package; every numerical addition is gated by deterministic tests.
   (`fit_*_gllvm_va`), with analytic inner gradients and envelope-theorem outer
   gradients for the Gauss–Hermite families, and **VA-based standard errors**
   (`confint(...; objective=:va)`).
-- **IN:** confidence intervals — Wald, profile likelihood, and parametric
+- **IN:** confidence-interval routes — Wald, profile likelihood, and parametric
   bootstrap — for the GLM and two-part families via `confint(fit, Y; method=…)`,
-  plus a tidy `coef_table`; faster profile CIs (false-position on `√D`).
+  plus a tidy `coef_table`; public bridge promotion remains status-tracked by
+  family/structure. Faster profile CIs use false-position on `√D`.
 
 ### Structure, covariates, ordination
 - **IN:** environmental covariates — shared-`γ` (`fit_gllvm_cov`) and

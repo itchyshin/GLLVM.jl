@@ -169,11 +169,11 @@ using GLLVM, Test, Random, LinearAlgebra
         @test isapprox(n_default.loglik, n_an.loglik; atol = 1e-8)
 
         Yg = 0.5 .+ 2 .* rand(pp, nn)
-        g_fd = fit_gamma_gllvm(Yg; K = KK, iterations = 300)
+        g_fd = fit_gamma_gllvm(Yg; K = KK, gradient = :finite, iterations = 300)
         g_an = fit_gamma_gllvm(Yg; K = KK, gradient = :analytic, iterations = 300)
         g_default = fit_gamma_gllvm(Yg; K = KK, iterations = 300)
         @test isapprox(g_fd.loglik, g_an.loglik; atol = 2e-2)
-        @test isapprox(g_default.loglik, g_fd.loglik; atol = 1e-8)
+        @test isapprox(g_default.loglik, g_an.loglik; atol = 1e-8)
 
         Ybe = clamp.(rand(pp, nn), 0.02, 0.98)
         be_fd = fit_beta_gllvm(Ybe; K = KK, gradient = :finite, iterations = 300)

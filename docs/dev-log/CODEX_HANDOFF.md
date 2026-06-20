@@ -1,12 +1,26 @@
 # GLLVM.jl — Handover Report for Codex
 
+## Current Note (2026-06-15)
+
+This report is historical context from an engine-first handoff. The current
+finish sequence is **R-first**: native `gllvmTMB` functionality and the R user
+workflow define the oracle; `GLLVM.jl` mirrors admitted rows, supplies parity
+evidence, and accelerates them only after point estimates, logLik/objective,
+CI or CI-status, docs, tests, issue rows, and Rose audit agree.
+
+Do not read "full parity" below as a release claim. Treat those rows as
+engine-side implemented/planned claims that still need R-side admission,
+bridge parity, documentation, and issue-led evidence. REML remains Gaussian-only;
+HSquared-style AI-REML is future design input for exact Gaussian cells, not a
+name for non-Gaussian Laplace acceleration.
+
 ## 0. TL;DR
-A cloud-agent session (with **no Julia/R runtime**) brought GLLVM.jl to **full
-gllvmTMB parity and beyond**, all CI-green on `main`. Everything that needs a
+A cloud-agent session (with **no Julia/R runtime**) brought GLLVM.jl to a broad
+engine-side parity candidate, all CI-green on `main`. Everything that needs a
 **runtime to measure or numerically validate** was deliberately left for a local
 agent with a Julia + R toolchain (Codex). Your job: run the bench, decide the
 gradient default, validate the R↔Julia bridge, land the exact algorithmic
-speedups, and tag a release.
+speedups, and prepare the release ledger for maintainer signoff.
 
 **Accuracy bar (non-negotiable):** every change must be anchored by an
 exact-equality or gradient-vs-finite-difference test, and the full `Pkg.test()`
@@ -43,12 +57,13 @@ suite must stay green. Branch off the latest `main`; one concern per commit.
 ```
 julia --project=. bench/speed_bench.jl
 ```
-Measured 2026-06-07. `:analytic` is faster and likelihood-stable for Poisson,
-NB2, Binomial, and Beta, so those four fitters now default to `:analytic` on the
-plain no-mask/no-offset path (with finite-difference fallback). Gamma missed the
-`≤1e-6` logLik-delta gate on benchmark-like cells and remains
-`gradient = :finite` until its analytic route is stabilised. ≈ `2·nparams → 1`
-marginal-evaluations per L-BFGS step for the four defaulted families.
+Measured 2026-06-07, then re-opened on 2026-06-14 after the high-rate Poisson
+Laplace-mode safeguard. `:analytic` is now faster and likelihood-stable for
+Poisson, NB2, Binomial, Beta, and Gamma on the no-mask/no-offset path, so all
+five one-part GLM fitters default to `:analytic` with finite-difference fallback.
+The 2026-06-14 Gamma gate showed `|ΔlogLik| ≈ 1e-12` and about 10-14x speedups
+on quick and medium benchmark cells. ≈ `2·nparams → 1` marginal-evaluations per
+L-BFGS step for the defaulted families.
 
 ### P2 — Validate the R↔Julia bridge (proves the parity claim end-to-end)
 Fix the `## VERIFY:` spots in `r/gllvmtmb_julia.R` (JuliaConnectoR access to
@@ -71,10 +86,12 @@ GLLVM.jl to Laplace).
   AD-entangled (ForwardDiff Duals flow through the marginal), so it needs a runtime
   to confirm AD-compatibility + bit-exactness.
 
-### P4 — Tag a release
-The `CHANGELOG.md` Unreleased section is ready; bump `Project.toml` to v0.3.0 and
-tag. (Note: do NOT register to the General registry yet — the maintainer wants it
-kept unpublished while testing.)
+### P4 — Release/tag signoff ledger
+`Project.toml` and `CHANGELOG.md` now carry the v0.3.0 capstone state, but the
+tag is **not automatic**. Do not tag, register, or imply publication until main
+CI, docs, GitHub issues, the R bridge parity ledger, and Rose's public-claim
+audit agree. The maintainer decides whether and when to tag; keep General
+registry submission separate from package-health evidence.
 
 ## 3. Do NOT redo
 The bit-exact Laplace/two-part mode-finder buffer reuse and the Poisson/NB

@@ -4,17 +4,18 @@ All notable changes to GLLVM.jl are documented here.
 
 ## Unreleased
 
-## v0.3.0 — gllvmTMB parity & beyond (2026-06-07)
+## v0.3.0 — broad gllvmTMB-targeted capability build-out (2026-06-07)
 
-Caught up with (and surpassed) the R `gllvm` / `gllvmTMB` engine: every response
-family, per-species dispersion across all five dispersion families plus Gaussian
+Expanded toward R `gllvm` / `gllvmTMB` coverage with a broad response-family
+surface, per-species dispersion across all five dispersion families plus Gaussian
 per-species variance, ordinal logit + probit, fixed **and random** row effects, a
-unified `fit_gllvm` dispatch, and full Wald/profile/bootstrap CIs + aic/bic — plus
-capabilities beyond gllvmTMB (Conway–Maxwell–Poisson, phylogenetic-GLM and
-SPDE-spatial engines), a JuliaConnectoR R-bridge scaffold, and strictly bit-exact
-performance work. Every numerical addition is gated by deterministic tests
-(machine-precision `Λ=0`/limit reductions, gradient-vs-finite-difference checks),
-validated on Linux/macOS/Windows.
+unified `fit_gllvm` dispatch, Wald/profile/bootstrap CI routes + aic/bic, plus
+capabilities that are outside the current R bridge surface (Conway–Maxwell–Poisson,
+phylogenetic-GLM and SPDE-spatial engines), a JuliaConnectoR R-bridge scaffold,
+and strictly bit-exact performance work. Public parity is row-scoped through the
+capability/bridge matrix; every promoted numerical addition is gated by
+deterministic tests (machine-precision `Λ=0`/limit reductions,
+gradient-vs-finite-difference checks), validated on Linux/macOS/Windows.
 
 - **Phylogenetic GLM** (`fit_phylo_glm` / `PhyloGLMFit`) — a per-species
   phylogenetic random intercept for the non-Gaussian families (Poisson / NB /

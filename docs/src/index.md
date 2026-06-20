@@ -54,12 +54,12 @@ After fitting, the usual report-ready quantities are:
 
 ## Start Here
 
-- First Gaussian fit: [Quick start](quickstart.md).
-- Model equation and estimands: [Model](model.md).
+- First Gaussian fit: [Quick start](/quickstart).
+- Model equation and estimands: [Model](/model).
 - Ordination, predictions, residuals, AIC, and BIC:
-  [Working with a fit](working-with-a-fit.md).
-- Response-family choice: [Response families](response-families.md).
-- R twin comparison: [Capability parity](gllvmtmb-parity.md).
+  [Working with a fit](/working-with-a-fit).
+- Response-family choice: [Response families](/response-families).
+- R twin comparison: [Capability parity](/gllvmtmb-parity).
 
 ## Current Status
 
@@ -81,15 +81,17 @@ After fitting, the usual report-ready quantities are:
       phylogenetic, including a phylogenetic GLM fit (`fit_phylo_glm`) for
       non-Gaussian families.
     - The `@formula` front-end, and non-Gaussian confidence intervals (Wald /
-      profile / bootstrap) via `confint(fit, Y; method=…)`.
+      profile / bootstrap) via `confint(fit, Y; method=…)` for scalar-dispersion
+      and grouped-dispersion NB2/NB1/Beta/Gamma routes; per-trait ordinal
+      cutpoint CIs remain a bridge-status follow-up.
 
 ## Relation To gllvmTMB
 
 R `gllvmTMB` remains the reference model surface and the richer applied article
 set. GLLVM.jl is the Julia companion: matrix-first today, formula syntax later,
 with the same core estimands and a stronger performance path for large Gaussian
-and phylogenetic fits. See [Comparison vs gllvmTMB](comparison.md) and
-[Benchmarks](benchmarks.md) for the validated Gaussian + phylogenetic benchmark
+and phylogenetic fits. See [Comparison vs gllvmTMB](/comparison) and
+[Benchmarks](/benchmarks) for the validated Gaussian + phylogenetic benchmark
 grid.
 
 ## Citing
@@ -105,4 +107,4 @@ phylogenetic representation follows Bolker's `phylog.rmd`.
 
 - Questions and bugs: open an issue on [GitHub](https://github.com/itchyshin/GLLVM.jl/issues).
 - Function help: in the Julia REPL, type `?` then a name, for example `?fit_gaussian_gllvm`.
-- Planned work: see the [Roadmap](roadmap.md).
+- Planned work: see the [Roadmap](/roadmap).

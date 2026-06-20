@@ -62,7 +62,7 @@ supports `LogitLink()` (default), `ProbitLink()`, and `CLogLogLink()`.
 | `NegativeBinomial()` | ✅ available | log | Laplace | dispersion `r` (Var = μ + μ²/r) | overdispersed counts; `r` jointly estimated |
 | NB1 | ✅ available | log | Laplace | dispersion `φ` (Var = μ(1+φ)) | linear-variance (quasi-Poisson-like) overdispersed counts; `fit_nb1_gllvm` |
 | `Beta()` | ✅ available | logit | Laplace | precision `φ` (Var = μ(1−μ)/(1+φ)) | proportions in (0,1); `φ` jointly estimated |
-| `Ordinal()` | ✅ available | cumulative logit / probit | Laplace | `C−1` cutpoints `τ` | ordered categories `1:C`; common cutpoints, no species intercept |
+| `Ordinal()` | ✅ available | cumulative logit / probit | Laplace | cutpoints `τ` | ordered categories `1:C`; `fit_ordinal_gllvm()` uses shared cutpoints, `fit_ordinal_gllvm_pertrait()` uses trait-specific cutpoints for R-bridge parity |
 | `Gamma()` | ✅ available | log | Laplace | shape `α` (Var = μ²/α) | positive continuous; `α` jointly estimated |
 | `Exponential()` | ✅ available | log | Laplace | — | positive continuous, `Var = μ²` (Gamma with α=1) |
 | Tweedie | ✅ available | log | Laplace | dispersion `φ`, power `p` (1<p<2) | compound Poisson–Gamma; biomass / abundance with true zeros; `fit_tweedie_gllvm` |
@@ -160,6 +160,12 @@ cutpoints `τ` shared across species. There is no species intercept — the
 cutpoints carry the category levels. The fitted cutpoints are available as
 `fit.τ`. The cumulative link is `LogitLink()` by default; pass
 `link = ProbitLink()` for a cumulative-probit (ordered-probit) model.
+
+For native `gllvmTMB` bridge parity, use `fit_ordinal_gllvm_pertrait()`: it
+estimates one ordered cutpoint vector per trait and stores a NaN-padded
+`p × max(C_t - 1)` cutpoint matrix plus per-trait category counts `fit.C`. The
+shared-cutpoint `fit_ordinal_gllvm()` route remains available as a Julia-side
+comparator and keeps the existing shared-cutpoint CI engine.
 
 ### Gamma — `Gamma()`
 

@@ -29,6 +29,12 @@ end
 #   P₀ = p^r,  P_y = P_{y−1}·(1−p)·(y−1+r)/y,   until the tail mass is negligible.
 # Returns max(I_μ, 1e-12) so the working weight is strictly positive (SPD).
 function _nb1_fisher_mu(μ::Real, φ::Real)
+    # For tiny φ, NB1 is in the Poisson-limit regime. The exact expression
+    # below subtracts nearly equal trigamma terms and divides by φ^2, which is
+    # numerically unstable even though the limit is well behaved.
+    if φ <= 1e-6
+        return max(inv(μ * (1 + φ)), 1e-12)
+    end
     r = μ / φ
     q = φ / (1 + φ)                      # 1 − p, the NB "failure" probability
     tr_r = trigamma(r)

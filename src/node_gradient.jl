@@ -109,7 +109,7 @@ end
 
 # Internal: same-leaf entries of M_sad⁻¹ (K_aug=1 ⇒ a length-p vector).
 function _same_leaf_Msad_inv_diag(st::SparsePhyState)
-    SI = takahashi_selinv(st.chol_Q_eff)              # on-pattern Q_eff⁻¹ (diag in-pattern)
+    Qeff_diag = takahashi_diag(st.chol_Q_eff)         # on-pattern Q_eff⁻¹ diagonal
     p = st.p; K_B = st.K_B
     leafrows = [st.leaf_pos[t] for t in 1:p]
     XGleaf = st.X_G[leafrows, :]
@@ -117,7 +117,7 @@ function _same_leaf_Msad_inv_diag(st::SparsePhyState)
     SL = Vector{Float64}(undef, p)
     @inbounds for t in 1:p
         l = st.leaf_pos[t]
-        SL[t] = SI[l, l] + st.α * dot(@view(XGleaf[t, :]), @view(WR[:, t]))
+        SL[t] = Qeff_diag[l] + st.α * dot(@view(XGleaf[t, :]), @view(WR[:, t]))
     end
     return SL
 end

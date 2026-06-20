@@ -29,6 +29,26 @@ catch
     nothing
 end
 
+_laplace_mode_should_backtrack(family) = false
+_laplace_mode_should_backtrack(family::Union{
+    Poisson, Binomial, NegativeBinomial, Beta, Gamma, Exponential,
+}) = true
+
+function _laplace_mode_logpost(family, y::AbstractVector, n::AbstractVector,
+        Λ::AbstractMatrix, β::AbstractVector, link::Link, z::AbstractVector;
+        mask = nothing, offset = nothing)
+    p = size(Λ, 1)
+    off = offset === nothing ? false : offset
+    η = _clamp_eta.(β .+ off .+ Λ * z)
+    μ = _clamp_mu.(Ref(family), linkinv.(Ref(link), η))
+    q = -0.5 * dot(z, z)
+    @inbounds for t in 1:p
+        (mask === nothing || mask[t]) || continue
+        q += _glm_logpdf(family, μ[t], n[t], y[t])
+    end
+    return q
+end
+
 # Inner Laplace mode-finder (Fisher-scoring Newton). Returns the conditional mode
 # ẑ (length K) for one site. Shared across families and by getLV (src/postfit.jl).
 # `mask` (length-p Bool, or `nothing` = all observed) drops missing responses: a
@@ -53,6 +73,7 @@ function _laplace_mode(family, y::AbstractVector, n::AbstractVector,
     WΛ = Matrix{Float64}(undef, p, K)  # W .* Λ
     Amat = Matrix{Float64}(undef, K, K)  # Λ'WΛ (then + I added in place)
     g  = Vector{Float64}(undef, K)     # rhs Λ's − z
+    restarted = false
     for _ in 1:maxiter
         mul!(Λz, Λ, z)
         η  .= _clamp_eta.(β .+ off .+ Λz)
@@ -73,9 +94,44 @@ function _laplace_mode(family, y::AbstractVector, n::AbstractVector,
         mul!(g, Λ', s)                         # = Λ' * s
         g .= g .- z                           # rhs = Λ's − z
         Δ  = _safe_solve(A, g)
-        (Δ === nothing || !all(isfinite, Δ)) && break   # singular A ⇒ stop at current ẑ
-        z  = z .+ Δ
-        maximum(abs, Δ) < tol && break
+        if Δ === nothing || !all(isfinite, Δ)
+            if !restarted
+                fill!(z, 0.0)
+                restarted = true
+                continue
+            end
+            break
+        end
+
+        step_taken = 1.0
+        if norm(Δ) <= 1e-3 * (1 + norm(z))
+            z = z .+ Δ
+        elseif !_laplace_mode_should_backtrack(family)
+            z = z .+ Δ
+        else
+            q0 = _laplace_mode_logpost(family, y, n, Λ, β, link, z;
+                                       mask = mask, offset = offset)
+            if isfinite(q0)
+                accepted = false
+                step = 1.0
+                @inbounds for _half in 1:30
+                    ztrial = z .+ step .* Δ
+                    q1 = _laplace_mode_logpost(family, y, n, Λ, β, link, ztrial;
+                                               mask = mask, offset = offset)
+                    if isfinite(q1) && q1 >= q0
+                        z = ztrial
+                        step_taken = step
+                        accepted = true
+                        break
+                    end
+                    step *= 0.5
+                end
+                accepted || break
+            else
+                z = z .+ Δ
+            end
+        end
+        step_taken * maximum(abs, Δ) < tol && break
     end
     return z
 end
