@@ -132,11 +132,12 @@ end
 _nb_logker(μ, r, y) = loggamma(r + y) - loggamma(r) +
                       r * log(r) - (r + y) * log(r + μ) + y * log(μ)
 
-function _nb_site_diffable(y::AbstractVector, Λ::AbstractMatrix, β::AbstractVector, logr)
+function _nb_site_diffable(y::AbstractVector, Λ::AbstractMatrix, β::AbstractVector, logr;
+                           mask = nothing)
     p = size(Λ, 1)
     r = exp(logr)
     Λv = ForwardDiff.value.(Λ); βv = ForwardDiff.value.(β); rv = ForwardDiff.value(r)
-    ẑ = _laplace_mode(NegativeBinomial(rv, 0.5), y, ones(Int, p), Λv, βv, LogLink())
+    ẑ = _laplace_mode(NegativeBinomial(rv, 0.5), y, ones(Int, p), Λv, βv, LogLink(); mask = mask)
 
     η = _clamp_eta.(β .+ Λ * ẑ); μ = exp.(η)
     s = (y .- μ) ./ (1 .+ μ ./ r)             # NB2/log score (= r(y−μ)/(r+μ))
@@ -144,14 +145,22 @@ function _nb_site_diffable(y::AbstractVector, Λ::AbstractMatrix, β::AbstractVe
     # W_obs = −∂s/∂η = μr(r+y)/(r+μ)², not the Fisher weight. (For canonical links
     # the two coincide, which is why Poisson/Binomial work with the Fisher weight.)
     Wobs = μ .* r .* (r .+ y) ./ (r .+ μ) .^ 2
+    if mask !== nothing                       # masked cell: zero score + weights, skip log-pmf
+        s = ifelse.(mask, s, zero(eltype(s)))
+        Wobs = ifelse.(mask, Wobs, zero(eltype(Wobs)))
+    end
     Aobs = Λ' * (Wobs .* Λ) + I
     z = ẑ .+ (Aobs \ (Λ' * s .- ẑ))
 
     ηz = _clamp_eta.(β .+ Λ * z); μz = exp.(ηz)
     Wz = μz ./ (1 .+ μz ./ r)                 # Fisher weight — matches the marginal's logdet
+    if mask !== nothing
+        Wz = ifelse.(mask, Wz, zero(eltype(Wz)))
+    end
     Az = Λ' * (Wz .* Λ) + I
     ℓ = zero(eltype(z))
     @inbounds for t in 1:p
+        (mask === nothing || mask[t]) || continue
         ℓ += _nb_logker(μz[t], r, y[t])
     end
     return ℓ - 0.5 * dot(z, z) - 0.5 * logdet(Az)
@@ -167,7 +176,8 @@ dispersion-family generalisation (r carried in θ as `log r`).
 Finite-difference-verified; the default gradient of `fit_nb_gllvm`
 (`gradient = :analytic`), including the dispersion direction.
 """
-function nb_laplace_grad(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVector, r::Real)
+function nb_laplace_grad(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVector, r::Real;
+                         mask = nothing)
     p, K = size(Λ)
     rr = rr_theta_len(p, K)
     θ̂ = vcat(float.(β), pack_lambda(Λ), log(float(r)))
@@ -177,7 +187,8 @@ function nb_laplace_grad(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVect
         logr = θ[p + rr + 1]
         acc = zero(eltype(θ))
         @inbounds for s in axes(Y, 2)
-            acc += _nb_site_diffable(view(Y, :, s), L, b, logr)
+            mi = mask === nothing ? nothing : view(mask, :, s)
+            acc += _nb_site_diffable(view(Y, :, s), L, b, logr; mask = mi)
         end
         return acc
     end
@@ -189,22 +200,30 @@ end
 # s = α(y−μ)/μ; Fisher weight = α (constant); observed weight −∂s/∂η = αy/μ.
 _gamma_logker(μ, α, y) = (α - 1) * log(y) - y * α / μ - α * log(μ) + α * log(α) - loggamma(α)
 
-function _gamma_site_diffable(y::AbstractVector, Λ::AbstractMatrix, β::AbstractVector, logα)
+function _gamma_site_diffable(y::AbstractVector, Λ::AbstractMatrix, β::AbstractVector, logα;
+                              mask = nothing)
     p = size(Λ, 1)
     α = exp(logα)
     Λv = ForwardDiff.value.(Λ); βv = ForwardDiff.value.(β); αv = ForwardDiff.value(α)
-    ẑ = _laplace_mode(Gamma(αv, 1.0), y, ones(Int, p), Λv, βv, LogLink())
+    ẑ = _laplace_mode(Gamma(αv, 1.0), y, ones(Int, p), Λv, βv, LogLink(); mask = mask)
 
     η = _clamp_eta.(β .+ Λ * ẑ); μ = exp.(η)
     s = α .* (y .- μ) ./ μ                    # Gamma/log score
     Wobs = α .* y ./ μ                        # observed weight −∂s/∂η (non-canonical)
+    if mask !== nothing                       # masked cell: zero score + weights, skip log-pmf
+        s = ifelse.(mask, s, zero(eltype(s)))
+        Wobs = ifelse.(mask, Wobs, zero(eltype(Wobs)))
+    end
     Aobs = Λ' * (Wobs .* Λ) + I
     z = ẑ .+ (Aobs \ (Λ' * s .- ẑ))
 
     ηz = _clamp_eta.(β .+ Λ * z); μz = exp.(ηz)
-    Az = α .* (Λ' * Λ) + I                    # Fisher weight = α (constant) ⇒ logdet term
+    # Fisher weight = α (constant) per observed cell ⇒ logdet term; masked cells drop.
+    Wf = mask === nothing ? fill(α, p) : ifelse.(mask, α, zero(α))
+    Az = Λ' * (Wf .* Λ) + I
     ℓ = zero(eltype(z))
     @inbounds for t in 1:p
+        (mask === nothing || mask[t]) || continue
         ℓ += _gamma_logker(μz[t], α, y[t])
     end
     return ℓ - 0.5 * dot(z, z) - 0.5 * logdet(Az)
@@ -218,7 +237,8 @@ Exact gradient of the total Gamma (log link, shape `α`) Laplace marginal wrt
 (observed weight `αy/μ` in the implicit step, Fisher weight `α` in the log-det).
 Finite-difference-verified; the default gradient of `fit_gamma_gllvm` (`gradient = :analytic`).
 """
-function gamma_laplace_grad(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVector, α::Real)
+function gamma_laplace_grad(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVector, α::Real;
+                            mask = nothing)
     p, K = size(Λ)
     rr = rr_theta_len(p, K)
     θ̂ = vcat(float.(β), pack_lambda(Λ), log(float(α)))
@@ -228,7 +248,8 @@ function gamma_laplace_grad(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractV
         logα = θ[p + rr + 1]
         acc = zero(eltype(θ))
         @inbounds for s in axes(Y, 2)
-            acc += _gamma_site_diffable(view(Y, :, s), L, b, logα)
+            mi = mask === nothing ? nothing : view(mask, :, s)
+            acc += _gamma_site_diffable(view(Y, :, s), L, b, logα; mask = mi)
         end
         return acc
     end
@@ -250,15 +271,19 @@ end
 _beta_logker(μ, φ, y) = (μ * φ - 1) * log(y) + ((1 - μ) * φ - 1) * log1p(-y) -
                         (loggamma(μ * φ) + loggamma((1 - μ) * φ) - loggamma(φ))
 
-function _beta_site_diffable(y::AbstractVector, Λ::AbstractMatrix, β::AbstractVector, logφ)
+function _beta_site_diffable(y::AbstractVector, Λ::AbstractMatrix, β::AbstractVector, logφ;
+                             mask = nothing)
     p = size(Λ, 1)
     φ = exp(logφ)
     Λv = ForwardDiff.value.(Λ); βv = ForwardDiff.value.(β); φv = ForwardDiff.value(φ)
-    ẑ = _laplace_mode(Beta(φv, 1.0), y, ones(Int, p), Λv, βv, LogitLink())
+    ẑ = _laplace_mode(Beta(φv, 1.0), y, ones(Int, p), Λv, βv, LogitLink(); mask = mask)
 
     # Concrete observed-Hessian weights via AD-derivative of the scalar score.
     ηc = _clamp_eta.(βv .+ Λv * ẑ)
     Wobs = [-ForwardDiff.derivative(η_ -> _beta_score_scalar(η_, φv, y[t]), ηc[t]) for t in 1:p]
+    if mask !== nothing                           # masked cell: zero weights + score, skip log-pmf
+        Wobs = ifelse.(mask, Wobs, zero(eltype(Wobs)))
+    end
     Aobs = Λv' * (Wobs .* Λv) + I                 # concrete (correct since bracket≈0 at ẑ)
 
     # Differentiable score at ẑ.
@@ -267,15 +292,22 @@ function _beta_site_diffable(y::AbstractVector, Λ::AbstractMatrix, β::Abstract
     ystar = log.(y) .- log1p.(-y)
     μstar = digamma.(μ .* φ) .- digamma.((1 .- μ) .* φ)
     s = φ .* (ystar .- μstar) .* me
+    if mask !== nothing
+        s = ifelse.(mask, s, zero(eltype(s)))
+    end
     z = ẑ .+ (Aobs \ (Λ' * s .- ẑ))
 
     ηz = _clamp_eta.(β .+ Λ * z); μz = 1 ./ (1 .+ exp.(-ηz))
     mez = μz .* (1 .- μz)
     νz = trigamma.(μz .* φ) .+ trigamma.((1 .- μz) .* φ)
     WFz = φ .^ 2 .* νz .* mez .^ 2                 # Fisher weight ⇒ logdet
+    if mask !== nothing
+        WFz = ifelse.(mask, WFz, zero(eltype(WFz)))
+    end
     Az = Λ' * (WFz .* Λ) + I
     ℓ = zero(eltype(z))
     @inbounds for t in 1:p
+        (mask === nothing || mask[t]) || continue
         ℓ += _beta_logker(μz[t], φ, y[t])
     end
     return ℓ - 0.5 * dot(z, z) - 0.5 * logdet(Az)
@@ -289,7 +321,8 @@ Exact gradient of the total Beta (logit link, precision `φ`) Laplace marginal w
 with the observed-Hessian weight obtained from an AD-derivative of the score.
 Finite-difference-verified; the default gradient of `fit_beta_gllvm` (`gradient = :analytic`).
 """
-function beta_laplace_grad(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVector, φ::Real)
+function beta_laplace_grad(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVector, φ::Real;
+                           mask = nothing)
     p, K = size(Λ)
     rr = rr_theta_len(p, K)
     θ̂ = vcat(float.(β), pack_lambda(Λ), log(float(φ)))
@@ -299,7 +332,8 @@ function beta_laplace_grad(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVe
         logφ = θ[p + rr + 1]
         acc = zero(eltype(θ))
         @inbounds for s in axes(Y, 2)
-            acc += _beta_site_diffable(view(Y, :, s), L, b, logφ)
+            mi = mask === nothing ? nothing : view(mask, :, s)
+            acc += _beta_site_diffable(view(Y, :, s), L, b, logφ; mask = mi)
         end
         return acc
     end
