@@ -50,6 +50,7 @@ include("families/ordinal.jl")           # Ordinal (cumulative-logit) family pie
 include("families/gamma.jl")             # Gamma (positive continuous) family pieces (Phase 3)
 include("families/tweedie.jl")           # Tweedie (compound Poisson–Gamma, 1<p<2) — biomass/abundance with zeros
 include("families/exponential.jl")       # Exponential (positive continuous, no dispersion) — Gamma(α=1)
+include("families/studentt.jl")          # Student-t (heavy-tailed continuous, fixed ν) family pieces
 include("families/twopart.jl")           # Two-part substrate + Delta-lognormal / Delta-Gamma / Hurdle (Phase 3)
 include("families/beta_hurdle.jl")       # Beta-hurdle (Bernoulli × Beta) two-part family
 include("families/beta_binomial.jl")     # Beta-binomial (overdispersed binomial) — gllvm family 15
@@ -160,6 +161,7 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        fit_gamma_gllvm_grouped, GammaGroupedFit, gamma_grouped_marginal_loglik_laplace,
        fit_nb1_gllvm_grouped, NB1GroupedFit, nb1_grouped_marginal_loglik_laplace,
        fit_tweedie_gllvm_grouped, TweedieGroupedFit, tweedie_grouped_marginal_loglik_laplace,
+       StudentTFamily, fit_studentt_gllvm, StudentTFit, studentt_marginal_loglik_laplace,
        Ordinal, fit_ordinal_gllvm, OrdinalFit,
        fit_ordinal_gllvm_pertrait, OrdinalPerTraitFit,
        fit_gamma_gllvm, GammaFit,
