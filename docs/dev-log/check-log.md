@@ -2009,3 +2009,68 @@ return Wald/profile/bootstrap CI fields when explicitly requested. PARTIAL:
 fixed-effect-X, masked, mixed-family, REML, and per-trait ordinal CI routes
 remain gated. PLANNED: broader calibration and speed evidence belong in the
 R/Julia simulation-comparator programme, not this endpoint-routing slice.
+
+## 2026-06-22 — Student-t PR #113 ForwardDiff Laplace buffer fix
+
+Branch: `codex/studentt-ci-113` (local scratch worktree based on
+`origin/claude/studentt-105-20260620`, PR #113 head `bba112a`).
+
+Purpose: diagnose and locally fix the GitHub Actions failure on draft PR #113,
+where all OS CI jobs errored in `test/test_studentt.jl` because
+`_laplace_mode()` allocated `Float64` Newton buffers and then tried to store
+ForwardDiff dual-valued `Λ * z`, `η`, `μ`, score, weight, and Hessian entries.
+
+### Changes
+
+- Updated `src/families/laplace.jl` so `_laplace_mode()` promotes its per-call
+  work buffers from the response, trial, loading, intercept, and offset element
+  types instead of hard-coding `Float64`.
+- Replaced masked zero and identity additions with `zero(T)` / `one(T)`.
+- No likelihood equation, optimiser, tolerance, or Student-t test threshold was
+  changed.
+
+### Checks Run
+
+```sh
+julia --project=. -e 'using Pkg; Pkg.instantiate()'
+```
+
+Result: clean. The scratch worktree had not instantiated the Julia project;
+`Project.toml` and `Manifest.toml` remained unchanged afterwards.
+
+```sh
+julia --project=. test/test_studentt.jl
+```
+
+Result: `Student-t (heavy-tailed continuous, fixed ν)` **17/17 pass**.
+The marginal ForwardDiff-vs-central-FD max relative error was
+`6.4151837495491755e-9`, below the `1e-6` gate.
+
+```sh
+julia --project=. test/runtests.jl
+```
+
+Result: manually interrupted after the Student-t section had passed and while
+the suite was in the unrelated zero-inflated optimisation block
+(`test/test_zero_inflated.jl`). This is **not** counted as a full-suite pass.
+
+```sh
+julia --project=. -e 'include("test/test_studentt.jl"); include("test/test_missing_predictor_poisson.jl"); include("test/test_beta_laplace.jl"); include("test/test_gamma_laplace.jl")'
+```
+
+Result: Student-t `17/17`, missing-predictor Poisson `3/3`,
+missing-predictor Binomial `3/3`, Beta Laplace `2/2`, Gamma Laplace `2/2` pass.
+
+### Deliberately Not Run
+
+- Full `Pkg.test()` was not run locally.
+- The full `test/runtests.jl` was started but not completed; it was too slow for
+  this CI-root-cause slice and was interrupted after passing through Student-t.
+- No push was made to PR #113. GLLVM.jl requires maintainer approval before
+  pushing.
+
+### Rose Verdict
+
+PASS WITH NOTES for a local patch candidate. The exact #113 CI blocker is fixed
+by making the generic Laplace mode buffers AD-compatible. Broader CI still needs
+to run on GitHub after the maintainer approves pushing the patch.
