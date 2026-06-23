@@ -1290,24 +1290,31 @@ function _family_ci(fit::OrdinalFit, Y::AbstractMatrix;
 end
 
 # --- Covariate fit (GllvmCovFit: β + Xγ + Λz) ------------------------------
-# Working vector [β; γ; pack_lambda(Λ); (log-dispersion)]. Requires the (p,n,q)
-# design `X` (and Binomial trial counts `N`) via confint(...; X=…, N=…).
+# Working vector [β; γ_free; pack_lambda(Λ); (log-dispersion)]. Fixed-zero γ
+# entries are structural constraints, not free Hessian/profile/bootstrap terms.
+# Requires the full (p,n,q) design `X` (and Binomial trial counts `N`) via
+# confint(...; X=…, N=…); the free-column slice is reconstructed from fit.γ_fixed.
 function _family_ci(fit::GllvmCovFit, Y::AbstractMatrix;
                     X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
                     N::Union{Nothing, AbstractMatrix} = nothing,
                     newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
     X === nothing && throw(ArgumentError("confint on a GllvmCovFit needs the design `X` (the same array passed to fit_gllvm_cov): confint(fit, Y; method=…, X=X)"))
-    p, K = size(fit.Λ); n = size(Y, 2); q = length(fit.γ); rr = rr_theta_len(p, K)
+    p, K = size(fit.Λ); n = size(Y, 2); q_full = length(fit.γ); rr = rr_theta_len(p, K)
+    length(fit.γ_fixed) == q_full || throw(ArgumentError(
+        "fit.γ_fixed length ($(length(fit.γ_fixed))) must equal length(fit.γ) = $q_full"))
+    Xfit, γ_free_idx = _slice_fixed_X(X, fit.γ_fixed)
+    q = length(γ_free_idx)
     lk = fit.link; has_disp = !isnan(fit.dispersion)
     Nm = N === nothing ? fill(1, p, n) : N
-    θ = has_disp ? vcat(fit.β, fit.γ, pack_lambda(fit.Λ), log(fit.dispersion)) :
-                   vcat(fit.β, fit.γ, pack_lambda(fit.Λ))
+    γ_free = fit.γ[γ_free_idx]
+    θ = has_disp ? vcat(fit.β, γ_free, pack_lambda(fit.Λ), log(fit.dispersion)) :
+                   vcat(fit.β, γ_free, pack_lambda(fit.Λ))
     nll = function (θv)
         β = θv[1:p]; γ = θv[(p + 1):(p + q)]
         Λ = unpack_lambda(θv[(p + q + 1):(p + q + rr)], p, K)
         disp = has_disp ? exp(θv[p + q + rr + 1]) : NaN
         fam = _cov_family(fit.family, disp)
-        O = _build_offset(X, γ)
+        O = _build_offset(Xfit, γ)
         v = try
             -_marginal_loglik_offset(fam, Y, Nm, Λ, β, O, lk; maxiter = newton_maxiter, tol = newton_tol)
         catch
@@ -1330,14 +1337,16 @@ function _family_ci(fit::GllvmCovFit, Y::AbstractMatrix;
     refit = function (Yb)
         fb = try
             fit_gllvm_cov(Yb; family = fit.family, X = X, K = K, link = lk,
-                          N = fit.family isa Binomial ? Nm : nothing)
+                          N = fit.family isa Binomial ? Nm : nothing,
+                          γ_fixed = fit.γ_fixed)
         catch
             return nothing
         end
-        return has_disp ? vcat(fb.β, fb.γ, pack_lambda(fb.Λ), log(fb.dispersion)) :
-                          vcat(fb.β, fb.γ, pack_lambda(fb.Λ))
+        fb_γ_free = fb.γ[γ_free_idx]
+        return has_disp ? vcat(fb.β, fb_γ_free, pack_lambda(fb.Λ), log(fb.dispersion)) :
+                          vcat(fb.β, fb_γ_free, pack_lambda(fb.Λ))
     end
-    names = vcat(["beta[$t]" for t in 1:p], ["gamma[$k]" for k in 1:q],
+    names = vcat(["beta[$t]" for t in 1:p], ["gamma[$k]" for k in γ_free_idx],
                  _confint_lambda_term_names("Lambda", p, K))
     kinds = fill(:linear, length(names))
     if has_disp

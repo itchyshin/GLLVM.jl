@@ -95,7 +95,8 @@ with sparse random-effect design matrices. `GLLVM.jl` solves a
   Hurdle-NB, beta-hurdle, ordered-beta, ZIP, ZINB, ZIB (zero-inflated binomial)
 - Variational (VA / ELBO) estimator alongside Laplace, with VA-based SEs
 - Ordination trio: unconstrained, concurrent (`num.lv.c`), constrained / RRR (`num.RR`)
-- Fixed effects (X β), species-specific covariates, fourth-corner
+- Fixed effects (X β), including fixed-zero coefficient masks for shared
+  Gaussian and non-Gaussian covariates; species-specific covariates, fourth-corner
   trait–environment interactions, fixed and random community row effects,
   quadratic response
 - Phylogenetic random effects (with user-supplied Σ_phy) — and a phylogenetic

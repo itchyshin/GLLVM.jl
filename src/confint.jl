@@ -61,12 +61,14 @@ function _confint_all_term_names(fit::GllvmFit)
     has_diag = model.has_diag
     K_phy    = model.K_phy
     has_phy_unique = model.has_phy_unique
-    q = fit.pars.β === nothing ? 0 : length(fit.pars.β)
+    q_full = fit.pars.β === nothing ? 0 : length(fit.pars.β)
+    β_fixed = _pars_fixed_mask(fit.pars, :β_fixed, q_full)
+    β_free = _free_coeff_indices(β_fixed)
 
     terms = String[]
     kinds = Symbol[]
 
-    for j in 1:q
+    for j in β_free
         push!(terms, "beta[$j]")
         push!(kinds, :linear)
     end
@@ -151,6 +153,9 @@ function _confint_select_indices_one(selector::String, terms::Vector{String})
     if selector in ("sigma_B", "sigma_W", "sigma_phy")
         return findall(t -> startswith(t, "$(selector)["), terms)
     end
+    if selector == "beta"
+        return findall(t -> startswith(t, "beta["), terms)
+    end
 
     throw(ArgumentError(
         "Could not resolve parm selector \"$selector\" against term names. " *
@@ -186,11 +191,14 @@ function _confint_reconstruct_nll(fit::GllvmFit, y::AbstractMatrix,
                                   X::Union{Nothing, AbstractArray{<:Real, 3}},
                                   Σ_phy::Union{Nothing, AbstractMatrix})
     model = fit.model
-    q = fit.pars.β === nothing ? 0 : length(fit.pars.β)
-    spec = (q = q, p = model.p, K_B = model.K, K_W = model.K_W,
+    q_full = fit.pars.β === nothing ? 0 : length(fit.pars.β)
+    β_fixed = _pars_fixed_mask(fit.pars, :β_fixed, q_full)
+    β_free = _free_coeff_indices(β_fixed)
+    X_free = X === nothing ? nothing : Array{Float64,3}(X[:, :, β_free])
+    spec = (q = length(β_free), p = model.p, K_B = model.K, K_W = model.K_W,
             has_diag = model.has_diag, K_phy = model.K_phy,
             has_phy_unique = model.has_phy_unique)
-    return θ -> gaussian_nll_packed(θ, y; spec = spec, X = X, Σ_phy = Σ_phy)
+    return θ -> gaussian_nll_packed(θ, y; spec = spec, X = X_free, Σ_phy = Σ_phy)
 end
 
 """
@@ -338,4 +346,3 @@ function confint(fit::GllvmFit;
             se = se_out,
             pd_hessian = pd)
 end
-

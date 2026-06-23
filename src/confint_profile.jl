@@ -76,12 +76,14 @@ function _profile_all_term_names(fit::GllvmFit)
     has_diag = model.has_diag
     K_phy    = model.K_phy
     has_phy_unique = model.has_phy_unique
-    q = fit.pars.β === nothing ? 0 : length(fit.pars.β)
+    q_full = fit.pars.β === nothing ? 0 : length(fit.pars.β)
+    β_fixed = _pars_fixed_mask(fit.pars, :β_fixed, q_full)
+    β_free = _free_coeff_indices(β_fixed)
 
     terms = String[]
     kinds = Symbol[]
 
-    for j in 1:q
+    for j in β_free
         push!(terms, "beta[$j]")
         push!(kinds, :linear)
     end
@@ -155,10 +157,19 @@ end
 # Build the spec NamedTuple used by gaussian_nll_packed.
 function _profile_spec(fit::GllvmFit)
     model = fit.model
-    q = fit.pars.β === nothing ? 0 : length(fit.pars.β)
-    return (q = q, p = model.p, K_B = model.K, K_W = model.K_W,
+    q_full = fit.pars.β === nothing ? 0 : length(fit.pars.β)
+    β_fixed = _pars_fixed_mask(fit.pars, :β_fixed, q_full)
+    return (q = count(!, β_fixed), p = model.p, K_B = model.K, K_W = model.K_W,
             has_diag = model.has_diag, K_phy = model.K_phy,
             has_phy_unique = model.has_phy_unique)
+end
+
+function _profile_free_X(fit::GllvmFit, X::Union{Nothing, AbstractArray{<:Real, 3}})
+    X === nothing && return nothing
+    q_full = fit.pars.β === nothing ? 0 : length(fit.pars.β)
+    β_fixed = _pars_fixed_mask(fit.pars, :β_fixed, q_full)
+    β_free = _free_coeff_indices(β_fixed)
+    return Array{Float64,3}(X[:, :, β_free])
 end
 
 # Wald SE at θ̂_i via the observed information matrix. Returns NaN if
@@ -169,7 +180,8 @@ function _profile_wald_se(fit::GllvmFit, i::Integer,
                           Σ_phy::Union{Nothing, AbstractMatrix})
     spec = _profile_spec(fit)
     θ̂ = fit.pars.θ_packed
-    nll = θ -> gaussian_nll_packed(θ, y; spec = spec, X = X, Σ_phy = Σ_phy)
+    X_free = _profile_free_X(fit, X)
+    nll = θ -> gaussian_nll_packed(θ, y; spec = spec, X = X_free, Σ_phy = Σ_phy)
     H = try
         ForwardDiff.hessian(nll, θ̂)
     catch
@@ -207,6 +219,7 @@ function _profile_refit_with_fixed(fit::GllvmFit, i::Integer, c::Real,
                                    g_tol::Real = 1e-4,
                                    iterations::Integer = 200)
     spec = _profile_spec(fit)
+    X_free = _profile_free_X(fit, X)
     θ̂ = fit.pars.θ_packed
     N = length(θ̂)
     1 ≤ i ≤ N || throw(ArgumentError("param_index $i out of range 1:$N"))
@@ -234,7 +247,7 @@ function _profile_refit_with_fixed(fit::GllvmFit, i::Integer, c::Real,
 
     c_float = float(c)
     nll_red = θ_red -> gaussian_nll_packed(_full_from_red(θ_red, c_float), y;
-                                           spec = spec, X = X, Σ_phy = Σ_phy)
+                                           spec = spec, X = X_free, Σ_phy = Σ_phy)
 
     opts = Optim.Options(
         x_abstol = x_tol,
@@ -484,4 +497,3 @@ end
 function profile_ci(fit::GllvmFit, parm::Symbol; kwargs...)
     return profile_ci(fit, String(parm); kwargs...)
 end
-

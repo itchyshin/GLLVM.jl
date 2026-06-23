@@ -51,6 +51,9 @@ package; every numerical addition is gated by deterministic tests.
   family/structure. Faster profile CIs use false-position on `√D`.
 
 ### Structure, covariates, ordination
+- **IN:** fixed-zero shared covariate coefficients for Gaussian (`β_fixed`) and
+  non-Gaussian (`γ_fixed`) fixed-effect-X fits, plus bridge status fields for
+  `gllvmTMB`'s `Xcoef_fixed` contract.
 - **IN:** environmental covariates — shared-`γ` (`fit_gllvm_cov`) and
   species-specific `B` (`fit_gllvm_speciescov`); fourth-corner trait–environment
   interactions (`fit_fourthcorner_gllvm`); fixed community row effects

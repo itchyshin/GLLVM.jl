@@ -64,7 +64,7 @@ end
                        σ_eps_init=1.0, λ_init=nothing, λ_W_init=nothing,
                        λ_phy_init=nothing,
                        σ²_B_init=0.1, σ²_W_init=0.1, σ_phy_init=0.1,
-                       β_init=nothing, x_tol=1e-8, f_tol=1e-10,
+                       β_init=nothing, β_fixed=nothing, x_tol=1e-8, f_tol=1e-10,
                        g_tol=1e-6, iterations=500) -> GllvmFit
 
 L-BFGS minimisation of the closed-form Gaussian marginal NLL via
@@ -90,11 +90,14 @@ Optional extensions:
 Optional fixed effects:
 - `X::AbstractArray{<:Real, 3}` of shape `(p, n_sites, q)`.
 - `β_init::AbstractVector` of length q (defaults to `zeros(q)`).
+- `β_fixed` optionally fixes selected coefficients to zero; pass a Bool vector
+  of length q, an integer index vector, or a Dict index=>0.
 
 The fit's `pars` NamedTuple always contains
-`(σ_eps, Λ, β, Λ_W, σ²_B, σ²_W, Λ_phy, σ_phy, θ_packed)` where
-`Λ_W`, `σ²_B`, `σ²_W`, `Λ_phy`, `σ_phy` are `nothing` when the
-corresponding flag is off.
+`(σ_eps, Λ, β, β_fixed, Λ_W, σ²_B, σ²_W, Λ_phy, σ_phy, θ_packed)` where
+`β_fixed` is a Bool vector, `β` is expanded to the full coefficient length
+with fixed entries set to zero, and `Λ_W`, `σ²_B`, `σ²_W`, `Λ_phy`, `σ_phy`
+are `nothing` when the corresponding flag is off.
 """
 function fit_gaussian_gllvm(y::AbstractMatrix;
                             K::Integer,
@@ -112,6 +115,7 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
                             σ²_W_init = 0.1,
                             σ_phy_init = 0.1,
                             β_init = nothing,
+                            β_fixed = nothing,
                             x_tol = 1e-8,
                             f_tol = 1e-10,
                             g_tol = 1e-6,
@@ -132,14 +136,25 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
                 "Σ_phy must be p × p; got $(size(Σ_phy)) for p = $p"))
     end
 
-    # Validate X dims if present
+    # Validate X dims if present, then drop fixed-zero columns for the optimiser.
+    q_full = 0
     q = 0
+    β_fixed_mask = Bool[]
+    X_fit = X
     if X !== nothing
         size(X, 1) == p ||
             throw(ArgumentError("X first dim ($(size(X,1))) must equal p ($p)"))
         size(X, 2) == n ||
             throw(ArgumentError("X second dim ($(size(X,2))) must equal n_sites ($n)"))
-        q = size(X, 3)
+        q_full = size(X, 3)
+        β_fixed_mask = _fixed_zero_mask(β_fixed, q_full, "β_fixed")
+        X_fit, _ = _slice_fixed_X(X, β_fixed_mask)
+        q = size(X_fit, 3)
+        β_init = _fixed_init_free(β_init, β_fixed_mask, "β_init")
+    else
+        if !(β_fixed === nothing || (β_fixed isa AbstractVector && isempty(β_fixed)))
+            throw(ArgumentError("β_fixed requires X"))
+        end
     end
 
     has_phy_block = (K_phy > 0) || has_phy_unique
@@ -175,13 +190,13 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
     if use_ppca_init
         # Build "residuals" y_resid for the PPCA: subtract X β̂_OLS if X
         # is provided, else use y directly.
-        if X !== nothing && q > 0 && isnothing(β_init)
+        if X_fit !== nothing && q > 0 && isnothing(β_init)
             # OLS: stack the columns. r_s = y_s - X_s β; minimise sum_s ||r_s||² over β.
             # Build M (q × q) and v (q vec): M = Σ_s X_s' X_s, v = Σ_s X_s' y_s
             M_ols = zeros(Float64, q, q)
             v_ols = zeros(Float64, q)
             for s in 1:n
-                Xs = @view X[:, s, :]
+                Xs = @view X_fit[:, s, :]
                 M_ols .+= Xs' * Xs
                 v_ols .+= Xs' * @view(y[:, s])
             end
@@ -190,7 +205,7 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
             @inbounds for s in 1:n, t in 1:p
                 μ = 0.0
                 for k in 1:q
-                    μ += X[t, s, k] * β_ols[k]
+                    μ += X_fit[t, s, k] * β_ols[k]
                 end
                 y_resid[t, s] = y[t, s] - μ
             end
@@ -275,7 +290,7 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
     end
 
     nll = params -> gaussian_profile_nll(params, y;
-                                          spec = spec, X = X,
+                                          spec = spec, X = X_fit,
                                           Σ_phy = Σ_phy,
                                           profile_beta = do_profile_beta)
 
@@ -343,8 +358,13 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
 
     # Recover user-facing parameters
     rec = profile_recover(params_hat, y;
-                          spec = spec, X = X, Σ_phy = Σ_phy,
+                          spec = spec, X = X_fit, Σ_phy = Σ_phy,
                           profile_beta = do_profile_beta)
+    β_full = if X !== nothing
+        _expand_fixed_zero(rec.β, β_fixed_mask)
+    else
+        rec.β
+    end
 
     # Post-hoc global sign anchor for σ_phy (identity-link, signed).
     # The marginal likelihood is invariant under the joint flip
@@ -395,7 +415,8 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
                    Int(K_phy), has_phy_unique),
         (σ_eps = rec.σ_eps,
          Λ = rec.Λ_B,
-         β = rec.β,
+         β = β_full,
+         β_fixed = collect(Bool, β_fixed_mask),
          Λ_W = rec.Λ_W,
          σ²_B = rec.σ²_B,
          σ²_W = rec.σ²_W,

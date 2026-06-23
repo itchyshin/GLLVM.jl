@@ -57,10 +57,12 @@ function _bootstrap_term_names(fit::GllvmFit)
     K_phy    = model.K_phy
     has_phy_unique = model.has_phy_unique
     q = fit.pars.β === nothing ? 0 : length(fit.pars.β)
+    β_fixed = _pars_fixed_mask(fit.pars, :β_fixed, q)
+    β_free = _free_coeff_indices(β_fixed)
 
     terms = String[]
 
-    for j in 1:q
+    for j in β_free
         push!(terms, "beta[$j]")
     end
 
@@ -278,6 +280,7 @@ function bootstrap_ci(fit::GllvmFit;
     has_phy_block = (K_phy > 0) || has_phy_unique
 
     q = fit.pars.β === nothing ? 0 : length(fit.pars.β)
+    β_fixed = _pars_fixed_mask(fit.pars, :β_fixed, q)
 
     # ----- Determine n_sites
     n = if n_sites !== nothing
@@ -371,7 +374,8 @@ function bootstrap_ci(fit::GllvmFit;
                                        K_phy = K_phy,
                                        has_phy_unique = has_phy_unique,
                                        Σ_phy = Σ_phy,
-                                       X = X)
+                                       X = X,
+                                       β_fixed = β_fixed)
             θ_b = fit_b.pars.θ_packed
             if length(θ_b) == n_params
                 replicates[b, :] = θ_b

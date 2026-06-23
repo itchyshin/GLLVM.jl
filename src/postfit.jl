@@ -215,7 +215,13 @@ _loglik(fit::BinomialFit) = fit.loglik
 function _nparams(fit::GllvmFit)
     m = fit.model
     p = m.p
-    q = fit.pars.β === nothing ? 0 : length(fit.pars.β)
+    q = if fit.pars.β === nothing
+        0
+    elseif haskey(fit.pars, :β_fixed)
+        count(!, fit.pars.β_fixed)
+    else
+        length(fit.pars.β)
+    end
     k = q + 1                                          # fixed effects + σ_eps
     k += p * m.K - div(m.K * (m.K - 1), 2)            # Λ_B
     m.K_W > 0        && (k += p * m.K_W - div(m.K_W * (m.K_W - 1), 2))
@@ -1717,7 +1723,7 @@ _loadings(fit::GllvmCovFit) = fit.Λ
 _loglik(fit::GllvmCovFit)   = fit.loglik
 
 function _nparams(fit::GllvmCovFit)
-    p, K = size(fit.Λ); q = length(fit.γ)
+    p, K = size(fit.Λ); q = count(!, fit.γ_fixed)
     return p + q + (p * K - div(K * (K - 1), 2)) + (isnan(fit.dispersion) ? 0 : 1)
 end
 
