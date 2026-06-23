@@ -80,6 +80,34 @@ end
         @test abs(fit.γ[1]) < 0.2                        # near zero: no spurious effect
     end
 
+    @testset "γ_fixed zero constraint equals dropping the design column" begin
+        Random.seed!(1831)
+        p, K, n = 5, 1, 90
+        x1 = randn(n); x2 = randn(n)
+        X = zeros(p, n, 2)
+        X[:, :, 1] .= reshape(x1, 1, n)
+        X[:, :, 2] .= reshape(x2, 1, n)
+        Xdrop = X[:, :, 1:1]
+        β_true = 0.2 .* randn(p)
+        Λ_true = 0.3 .* randn(p, K)
+        Z = randn(K, n)
+        η = β_true .+ 0.5 .* reshape(x1, 1, n) .+ Λ_true * Z
+        Y = [rand(Poisson(exp(clamp(η[t, s], -6, 4)))) for t in 1:p, s in 1:n]
+
+        fit_fixed = fit_gllvm_cov(Y; family = Poisson(), X = X, K = K,
+                                  γ_fixed = [false, true])
+        fit_drop = fit_gllvm_cov(Y; family = Poisson(), X = Xdrop, K = K)
+
+        @test fit_fixed.γ[2] == 0.0
+        @test fit_fixed.γ_fixed == [false, true]
+        @test fit_fixed.γ[1] ≈ fit_drop.γ[1] atol = 1e-8
+        @test fit_fixed.loglik ≈ fit_drop.loglik atol = 1e-8
+        @test GLLVM.aic(fit_fixed) ≈ GLLVM.aic(fit_drop) atol = 1e-8
+
+        ci = confint(fit_fixed, Y; method = :wald, X = X, parm = "gamma")
+        @test ci.term == ["gamma[1]"]
+    end
+
     @testset "covariate post-fit + confidence intervals" begin
         Random.seed!(184)
         p, K, n = 6, 1, 200

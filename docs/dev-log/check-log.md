@@ -1,5 +1,108 @@
 # Check Log
 
+## 2026-06-22 - Fixed-zero shared X coefficients
+
+### Scope
+
+Added Julia-side fixed-zero coefficient masks for the R-side `Xcoef_fixed`
+contract that landed in `gllvmTMB` PR #536.
+
+- `fit_gaussian_gllvm(..., β_fixed = ...)` now optimises only free shared
+  Gaussian covariate coefficients, expands `pars.β` back to the full design
+  length, and stores `pars.β_fixed`.
+- `fit_gllvm_cov(..., γ_fixed = ...)` does the same for non-Gaussian one-part
+  shared covariate coefficients and stores `fit.γ_fixed`.
+- The bridge accepts `options["coef_fixed"]` / `xcoef_fixed` / `beta_fixed` /
+  `gamma_fixed`, passes the mask to the native fitter, returns full coefficient
+  vectors with constrained entries equal to zero, and reports
+  `mean_coef_status` or `gamma_status`.
+- Wald/profile/bootstrap CI term lists and refits omit fixed coefficients from
+  the estimated parameter vector while preserving original coefficient indices
+  in names such as `beta[1]`, `gamma[3]`.
+- AIC/BIC degrees of freedom count free coefficients, not fixed-zero entries.
+
+### Checks Run
+
+```sh
+julia --project=. --startup-file=no -e 'using GLLVM; println("loaded")'
+```
+
+Result: package loaded cleanly after the new helper include.
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_fixed_effects.jl"); include("test/test_covariates.jl"); include("test/test_bridge_x.jl")'
+```
+
+Result: `fixed effects 18/18`, `Non-Gaussian covariates (Xβ) 30/30`, and
+`bridge fixed-effect X 179/179` pass.
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_confint_bootstrap.jl")'
+```
+
+Result: `parametric bootstrap CI 9/9` pass.
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: `GLLVM.jl 4495 pass, 3 broken, 4498 total` in 31m04.9s before the final
+docstring/unused-local cleanup.
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result: `GLLVM.jl 4507 pass, 1 broken, 4508 total`; `GLLVM tests passed` in
+36m15.0s.
+
+```sh
+julia --project=docs --startup-file=no -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate(); include("docs/make.jl")'
+```
+
+Result: local DocumenterVitepress build completed. It emitted existing local-link
+warnings for absolute-style documentation links, npm audit warnings from the
+Vitepress toolchain, and skipped deployment outside CI; no build failure.
+
+```sh
+julia --project=docs --startup-file=no docs/make.jl
+```
+
+Result: rerun after the changelog edit completed with the same known
+DocumenterVitepress/local-link/npm warnings and no build failure.
+
+```sh
+git diff --check
+```
+
+Result: clean.
+
+```sh
+rg -n "selects variables|automatic deletion|guarantees convergence|proves identifiability|validated item selection|separation solved|nonzero constraint|non-zero constraint|general constraint" README.md docs/src src test
+```
+
+Result: no matches.
+
+### Deliberately Not Run
+
+- Cross-repository live R-to-Julia bridge tests were not rerun here; the paired
+  R-side `Xcoef_fixed` implementation and merge were validated in `gllvmTMB`
+  PR #536. This Julia PR supplies the engine/bridge endpoint used by that
+  contract.
+
+### Claim Boundary
+
+IN: zero-only fixed shared coefficients for complete fixed-effect-X Gaussian and
+non-Gaussian one-part fits already supported by the Julia fixed-X bridge.
+
+PARTIAL: this is not a general linear-constraint system and does not estimate
+nonzero fixed values. Julia receives positional masks; the R package owns
+formula-name to position translation.
+
+PLANNED/GATED: fixed coefficients combined with X+mask routes, NB1-X,
+mixed-family-X, ordinal-X, and structural-covariance-X bridge rows remain
+separate follow-ups.
+
 ## 2026-06-16 - Fixed-effect-X CI bridge endpoints
 
 ### Scope

@@ -233,6 +233,35 @@ end
         @test br.sigma_eps == fit.pars.σ_eps
     end
 
+    @testset "coef_fixed bridge option fixes Gaussian β / non-Gaussian γ to zero" begin
+        Random.seed!(333)
+        p, n, K = 4, 55, 1
+        x1 = randn(n); x2 = randn(n)
+        X = _bridge_x_design([x1, x2], p)
+        Yg = randn(p, n) .+ 0.6 .* reshape(x1, 1, n)
+
+        brg = bridge_fit(; y = Yg, family = "gaussian", d = K, X = X,
+                         options = Dict("coef_fixed" => [false, true]))
+        brg_drop = bridge_fit(; y = Yg, family = "gaussian", d = K,
+                              X = X[:, :, 1:1])
+        @test brg.mean_coef[2] == 0.0
+        @test brg.mean_coef_status == ["estimated", "fixed"]
+        @test brg.mean_coef[1] ≈ brg_drop.mean_coef[1] atol = 1e-10
+        @test brg.loglik ≈ brg_drop.loglik atol = 1e-10
+        @test brg.df == brg_drop.df
+
+        Yp = [rand(Poisson(exp(clamp(0.2 + 0.5 * x1[s], -5, 4)))) for t in 1:p, s in 1:n]
+        brp = bridge_fit(; y = Float64.(Yp), family = "poisson", d = K, X = X,
+                         options = Dict("coef_fixed" => [false, true]))
+        brp_drop = bridge_fit(; y = Float64.(Yp), family = "poisson", d = K,
+                              X = X[:, :, 1:1])
+        @test brp.gamma[2] == 0.0
+        @test brp.gamma_status == ["estimated", "fixed"]
+        @test brp.gamma[1] ≈ brp_drop.gamma[1] atol = 1e-8
+        @test brp.loglik ≈ brp_drop.loglik atol = 1e-8
+        @test brp.df == brp_drop.df
+    end
+
     # -- UNSUPPORTED X combos reject loudly --------------------------------------
     @testset "unsupported X combos error" begin
         # ordinal: fit_gllvm_cov has no ordinal kernel

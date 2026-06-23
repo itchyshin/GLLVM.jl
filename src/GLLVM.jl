@@ -10,6 +10,7 @@ include("likelihood.jl")
 include("ppca_init.jl")                  # used by fit (warm-start)
 include("em_fa.jl")                      # alternative EM solver
 include("profile.jl")                    # σ_eps profile-out (used by fit)
+include("fixed_coefficients.jl")         # zero masks for fixed-effect coefficients
 include("fit.jl")
 include("reml.jl")                       # REML for the Gaussian path (restricted ML)
 include("random_effects.jl")             # RE foundation — grouping-factor coding

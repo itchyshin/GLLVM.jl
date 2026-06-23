@@ -40,8 +40,10 @@
 #
 # Optional coefficient keys:
 #   mean_coef    :: Vector{Float64}   — Gaussian-X full mean coefficient vector
+#   mean_coef_status :: Vector{String} — "estimated"/"fixed" for mean_coef
 #   beta_cov     :: Vector{Float64}   — non-Gaussian-X per-trait intercepts
 #   gamma        :: Vector{Float64}   — non-Gaussian-X shared covariate slopes
+#   gamma_status :: Vector{String}    — "estimated"/"fixed" for gamma
 #
 # Optional CI keys (present ONLY when `options["ci_method"]` ∈ {"wald","profile",
 # "bootstrap"}; absent for the default "none", so the no-CI contract above is
@@ -106,6 +108,14 @@ _bridge_truthy(v::Real) = v != 0
 _bridge_truthy(v::AbstractString) = lowercase(strip(v)) in ("true", "t", "1", "yes")
 _bridge_truthy(::Nothing) = false
 _bridge_truthy(v) = false
+
+function _bridge_coef_fixed(options, q::Integer, label::AbstractString)
+    raw = _bridge_get(options, "coef_fixed", nothing)
+    raw === nothing && (raw = _bridge_get(options, "xcoef_fixed", nothing))
+    raw === nothing && (raw = _bridge_get(options, "beta_fixed", nothing))
+    raw === nothing && (raw = _bridge_get(options, "gamma_fixed", nothing))
+    return _fixed_zero_mask(raw, q, label)
+end
 
 function _bridge_family_key(family::AbstractString)
     key = lowercase(strip(family))
@@ -532,7 +542,8 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                 "supported families with covariates are gaussian, " *
                 join(_BRIDGE_X_FAMILIES, ", ")))
         return _bridge_fit_onepart_cov(Yf, key, K, N, traits, units, X,
-                                       ci_method, ci_level, ci_nboot, ci_seed)
+                                       ci_method, ci_level, ci_nboot, ci_seed,
+                                       options)
     end
 
     if key == "gaussian"
@@ -546,7 +557,8 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
             size(Xarr, 1) == p && size(Xarr, 2) == n || throw(ArgumentError(
                 "bridge_fit: X must be p×n×q ($(p)×$(n)×q); got $(size(Xarr))"))
             q = size(Xarr, 3)
-            fit = fit_gaussian_gllvm(Yf; K = K, X = Xarr)
+            coef_fixed = _bridge_coef_fixed(options, q, "coef_fixed")
+            fit = fit_gaussian_gllvm(Yf; K = K, X = Xarr, β_fixed = coef_fixed)
             β = collect(Float64, fit.pars.β)
             alpha = zeros(Float64, p)
             @inbounds for t in 1:p
@@ -560,7 +572,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
             corr  = Matrix{Float64}(correlation(fit))
             comm  = Vector{Float64}(communality(fit))
             scores = _bridge_scores(() -> getLV(fit, Yf; X = Xarr, rotate = true))
-            df = q + _bridge_rr_df(p, K) + 1
+            df = count(!, coef_fixed) + _bridge_rr_df(p, K) + 1
             ci = ci_method == "none" ? nothing :
                  _bridge_compute_ci_gaussian(fit, Yf, ci_method, ci_level, ci_nboot,
                                              ci_seed; X = Xarr)
@@ -571,8 +583,9 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                 converged = fit.converged, iterations = fit.n_iter,
                 note = "fixed-effect covariate fit: X carries the full mean structure " *
                        "(per-trait intercepts + covariates); alpha is the per-trait " *
-                       "fitted mean.", ci = ci)
-            return merge(base, (mean_coef = β,))
+                       "fitted mean. coef_fixed entries, if any, are fixed at zero.", ci = ci)
+            return merge(base, (mean_coef = β,
+                                mean_coef_status = _fixed_status(coef_fixed)))
         end
         reml = _bridge_truthy(_bridge_get(options, "reml", false))
         if reml
@@ -754,13 +767,14 @@ end
 function _bridge_fit_onepart_cov(Yf::AbstractMatrix{Float64}, key::AbstractString,
                                  K::Integer, N, traits, units, X,
                                  ci_method::AbstractString, ci_level::Real,
-                                 ci_nboot::Integer, ci_seed::Integer)
+                                 ci_nboot::Integer, ci_seed::Integer, options)
     p, n = size(Yf)
     Xarr = Array{Float64,3}(X)
     size(Xarr, 1) == p && size(Xarr, 2) == n || throw(ArgumentError(
         "bridge_fit: X must be p×n×q ($(p)×$(n)×q); got $(size(Xarr))"))
     q = size(Xarr, 3)
     marker = _bridge_cov_marker(key)
+    coef_fixed = _bridge_coef_fixed(options, q, "coef_fixed")
 
     # Per-family response coercion + Binomial trial counts (mirror the no-X path):
     # the count families round to integer-valued Float64; continuous pass through.
@@ -771,8 +785,10 @@ function _bridge_fit_onepart_cov(Yf::AbstractMatrix{Float64}, key::AbstractStrin
           (N isa Number ? fill(round(Int, N), p, n) : round.(Int, Matrix(N)))) :
          nothing
 
-    fit = Nm === nothing ? fit_gllvm_cov(Ydata; family = marker, X = Xarr, K = K) :
-                           fit_gllvm_cov(Ydata; family = marker, X = Xarr, K = K, N = Nm)
+    fit = Nm === nothing ?
+          fit_gllvm_cov(Ydata; family = marker, X = Xarr, K = K, γ_fixed = coef_fixed) :
+          fit_gllvm_cov(Ydata; family = marker, X = Xarr, K = K, N = Nm,
+                        γ_fixed = coef_fixed)
 
     β   = collect(Float64, fit.β)
     γ   = collect(Float64, fit.γ)
@@ -792,7 +808,7 @@ function _bridge_fit_onepart_cov(Yf::AbstractMatrix{Float64}, key::AbstractStrin
     corr = _bridge_corr_from_sigma(Σ)
     comm = ones(Float64, p)
 
-    df = p + q + _bridge_rr_df(p, K) + (isnan(fit.dispersion) ? 0 : 1)
+    df = p + count(!, coef_fixed) + _bridge_rr_df(p, K) + (isnan(fit.dispersion) ? 0 : 1)
     base = _bridge_assemble(fit, key, "$(key)_x_rr", traits, units;
         alpha = β, dispersion = disp, sigma_eps = NaN,
         link = fill(_bridge_link_name(fit.link), p), Sigma = Σ, corr = corr,
@@ -801,10 +817,11 @@ function _bridge_fit_onepart_cov(Yf::AbstractMatrix{Float64}, key::AbstractStrin
         loadings = L, note =
             "fixed-effect covariate fit (non-Gaussian): eta = beta + X*gamma + " *
             "Lambda*z. beta_cov = per-trait intercepts, gamma = shared covariate " *
-            "coefficients. Sigma/correlation use the shared block Lambda*Lambda' " *
+            "coefficients. coef_fixed entries, if any, are fixed at zero. " *
+            "Sigma/correlation use the shared block Lambda*Lambda' " *
             "(communality 1).",
         ci = ci)
-    return merge(base, (beta_cov = β, gamma = γ))
+    return merge(base, (beta_cov = β, gamma = γ, gamma_status = _fixed_status(coef_fixed)))
 end
 
 # --- mixed-family dispatch (the cross-distribution VCV headline) -----------
