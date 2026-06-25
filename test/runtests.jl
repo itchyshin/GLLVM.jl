@@ -14,6 +14,7 @@ using GLLVM
     include("test_packing.jl")
     include("test_fit.jl")
     include("test_fixed_effects.jl")
+    include("test_lv_predictor.jl")
     include("test_W_and_diag.jl")
     include("test_phy.jl")
     include("test_signed_sigma_phy.jl")

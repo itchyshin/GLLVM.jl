@@ -402,6 +402,8 @@ function profile_ci(fit::GllvmFit, param_index::Integer;
                     X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
                     Σ_phy::Union{Nothing, AbstractMatrix} = nothing)
     0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
+    _has_lv_predictor(fit) && throw(ArgumentError(
+        "profile_ci for fit_gaussian_gllvm(...; X_lv=...) is not admitted in the C1 predictor-informed latent-score path; use extract_lv_effects for point estimates"))
     y === nothing && throw(ArgumentError(
         "profile_ci requires the data matrix `y` (the same matrix passed to fit_gaussian_gllvm)"))
 

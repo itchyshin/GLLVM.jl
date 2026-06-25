@@ -401,3 +401,82 @@ function gaussian_nll_packed(params::AbstractVector, y::AbstractMatrix;
                               Λ_W = Λ_W, σ²_B = σ²_B, σ²_W = σ²_W,
                               Λ_phy = Λ_phy, σ_phy = σ_phy, Σ_phy = Σ_phy)
 end
+
+# Predictor-informed latent-score mean, Design-73 / gllvmTMB C1 analogue:
+#
+#   z_total[s, :] = X_lv[s, :] * alpha_lv + z_innovation[s, :]
+#   y[:, s]       = X[:, s, :] * β + Λ_B * z_total[s, :] + ε[:, s]
+#
+# Marginally this is an ordinary Gaussian GLLVM with the same covariance and a
+# constrained fixed mean term `Λ_B * alpha_lv' * X_lv[s, :]`. The alpha
+# coefficients are rotation-dependent; the product `B_lv = Λ_B * alpha_lv'` is
+# the rotation-stable trait-effect estimand.
+function _lv_score_mean(X_lv::AbstractMatrix, alpha_lv::AbstractMatrix)
+    size(X_lv, 2) == size(alpha_lv, 1) ||
+        throw(ArgumentError(
+            "X_lv second dim ($(size(X_lv, 2))) must equal alpha_lv rows ($(size(alpha_lv, 1)))"))
+    return X_lv * alpha_lv
+end
+
+function _lv_mean_eta(Λ_B::AbstractMatrix, X_lv::AbstractMatrix,
+                      alpha_lv::AbstractMatrix)
+    return Λ_B * _lv_score_mean(X_lv, alpha_lv)'
+end
+
+"""
+    gaussian_lv_nll_packed(params, y, p, K; X=nothing, q=0,
+                           X_lv, q_lv) -> Real
+
+Explicit Gaussian negative log-likelihood for the C1 predictor-informed
+unit-tier latent-score model. Parameter layout:
+
+- `params[1:q]` = ordinary fixed-effect coefficients `β` when `q > 0`;
+- next `q_lv * K` entries = `alpha_lv`, reshaped as `q_lv × K`;
+- next entry = `log σ_eps`;
+- remaining entries = packed unit-tier loadings `Λ_B`.
+
+This path deliberately does **not** use the profiled-`σ_eps` objective: the
+latent-score predictor mean enters as `Λ_B * alpha_lv' * X_lv[s, :]`, so a
+separate profile derivation is required before it can join the fast profiled
+Gaussian route.
+"""
+function gaussian_lv_nll_packed(params::AbstractVector, y::AbstractMatrix,
+                                p::Integer, K::Integer;
+                                X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                                q::Integer = 0,
+                                X_lv::AbstractMatrix,
+                                q_lv::Integer)
+    size(y, 1) == p ||
+        throw(ArgumentError("y first dim ($(size(y, 1))) must equal p ($p)"))
+    n = size(y, 2)
+    size(X_lv, 1) == n ||
+        throw(ArgumentError("X_lv first dim ($(size(X_lv, 1))) must equal n_sites ($n)"))
+    size(X_lv, 2) == q_lv ||
+        throw(ArgumentError("X_lv second dim ($(size(X_lv, 2))) must equal q_lv ($q_lv)"))
+    if X === nothing
+        q == 0 || throw(ArgumentError("q must be 0 when X is nothing"))
+        β = nothing
+    else
+        q == size(X, 3) ||
+            throw(ArgumentError("q ($q) must equal size(X, 3) ($(size(X, 3)))"))
+        β = @view params[1:q]
+    end
+
+    rr_B = rr_theta_len(p, K)
+    n_expected = q + q_lv * K + 1 + rr_B
+    length(params) == n_expected || throw(ArgumentError(
+        "params length ($(length(params))) must equal $n_expected " *
+        "(q=$q + alpha_lv=$(q_lv * K) + 1 + rr_B=$rr_B)"))
+
+    cursor = q
+    alpha_vec = @view params[(cursor + 1):(cursor + q_lv * K)]
+    alpha_lv = reshape(alpha_vec, q_lv, K)
+    cursor += q_lv * K
+    log_σ = params[cursor + 1]
+    cursor += 1
+    θ_rr = @view params[(cursor + 1):(cursor + rr_B)]
+
+    Λ = unpack_lambda(θ_rr, p, K)
+    y_adj = y .- _lv_mean_eta(Λ, X_lv, alpha_lv)
+    return -gaussian_marginal_loglik(y_adj, Λ, exp(log_σ); X = X, β = β)
+end
