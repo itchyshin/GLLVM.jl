@@ -64,6 +64,7 @@ end
 
 _has_lv_predictor(fit::GllvmFit) =
     haskey(fit.pars, :alpha_lv) && fit.pars.alpha_lv !== nothing
+_has_lv_predictor(fit::BinomialFit) = fit.alpha_lv !== nothing
 
 function _lv_score_mean_for_fit(fit::GllvmFit, y::AbstractMatrix,
                                 X_lv::Union{Nothing, AbstractMatrix})
@@ -79,6 +80,23 @@ function _lv_score_mean_for_fit(fit::GllvmFit, y::AbstractMatrix,
         throw(ArgumentError(
             "X_lv second dim ($(size(X_lv, 2))) must equal fitted alpha_lv rows ($(size(fit.pars.alpha_lv, 1)))"))
     return _lv_score_mean(X_lv, fit.pars.alpha_lv)
+end
+
+function _lv_score_mean_for_fit(fit::BinomialFit, y::AbstractMatrix,
+                                X_lv::Union{Nothing, AbstractMatrix})
+    _, n = size(y)
+    K = size(fit.Λ, 2)
+    if !_has_lv_predictor(fit)
+        return zeros(Float64, n, K)
+    end
+    X_lv === nothing && throw(ArgumentError(
+        "this fit used X_lv; provide the same X_lv to getLV, predict, fitted, or residuals"))
+    size(X_lv, 1) == n ||
+        throw(ArgumentError("X_lv first dim ($(size(X_lv, 1))) must equal n_sites ($n)"))
+    size(X_lv, 2) == size(fit.alpha_lv, 1) ||
+        throw(ArgumentError(
+            "X_lv second dim ($(size(X_lv, 2))) must equal fitted alpha_lv rows ($(size(fit.alpha_lv, 1)))"))
+    return _lv_score_mean(X_lv, fit.alpha_lv)
 end
 
 """
@@ -121,27 +139,43 @@ function getLV(fit::GllvmFit, y::AbstractMatrix;
 end
 
 """
-    getLV(fit::BinomialFit, Y; N=nothing, rotate=true) -> n×K matrix
+    getLV(fit::BinomialFit, Y; N=nothing, X_lv=nothing,
+          component=:total, rotate=true) -> n×K matrix
 
 Conditional latent-variable scores: the per-site Laplace mode `ẑₛ` (the inner
 Fisher-scoring solve of the marginal). `Y` is the p×n integer response matrix;
-`N` the trial counts (default all-ones, i.e. Bernoulli). `rotate=true` applies
-the canonical [`rotation`](@ref).
+`N` the trial counts (default all-ones, i.e. Bernoulli).
+
+For fits with `X_lv`, `component` chooses which latent-score layer to return:
+`:mean` is `X_lv * alpha_lv`, `:innovation` is the zero-mean Laplace mode, and
+`:total` is their sum. `rotate=true` applies the canonical [`rotation`](@ref)
+to whichever component is returned.
 """
 function getLV(fit::BinomialFit, Y::AbstractMatrix{<:Integer};
                N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
+               X_lv::Union{Nothing, AbstractMatrix} = nothing,
+               component::Symbol = :total,
                rotate::Bool = true, mask = nothing)
+    component in (:total, :innovation, :mean) ||
+        throw(ArgumentError("component must be :total, :innovation, or :mean; got :$component"))
     p, n = size(Y)
     Nm = N === nothing ? fill(1, p, n) : N
     K = size(fit.Λ, 2)
+    Zmean = _lv_score_mean_for_fit(fit, Y, X_lv)
+    if component === :mean
+        return rotate ? Zmean * _svd_rotation(fit.Λ) : Zmean
+    end
+    lv_offset = _has_lv_predictor(fit) ? fit.Λ * Zmean' : nothing
     Z = Matrix{Float64}(undef, K, n)
     @inbounds for s in 1:n
         mi = mask === nothing ? nothing : view(mask, :, s)
+        oi = lv_offset === nothing ? nothing : view(lv_offset, :, s)
         Z[:, s] = _laplace_mode(view(Y, :, s), view(Nm, :, s), fit.Λ, fit.β, fit.link;
-                                mask = mi)
+                                mask = mi, offset = oi)
     end
     Zt = permutedims(Z)                 # n×K
-    return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
+    Zout = component === :innovation ? Zt : Zmean .+ Zt
+    return rotate ? Zout * _svd_rotation(fit.Λ) : Zout
 end
 
 """
@@ -165,7 +199,7 @@ function predict(fit::GllvmFit, y::AbstractMatrix;
 end
 
 """
-    predict(fit::BinomialFit, Y; type=:response, N=nothing) -> p×n matrix
+    predict(fit::BinomialFit, Y; type=:response, N=nothing, X_lv=nothing) -> p×n matrix
 
 In-sample fitted values at the Laplace conditional mode `ẑ` (see [`getLV`](@ref)):
 `type=:link` returns `η = β + Λ ẑ`; `type=:response` returns the inverse-link
@@ -173,10 +207,12 @@ fitted probabilities `linkinv(link, η)`.
 """
 function predict(fit::BinomialFit, Y::AbstractMatrix{<:Integer};
                  type::Symbol = :response,
-                 N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing)
+                 N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
+                 X_lv::Union{Nothing, AbstractMatrix} = nothing)
     type in (:link, :response) ||
         throw(ArgumentError("type must be :link or :response; got :$type"))
-    Z = getLV(fit, Y; N = N, rotate = false)         # n×K
+    Z = getLV(fit, Y; N = N, X_lv = X_lv, component = :total,
+              rotate = false)                       # n×K
     η = fit.β .+ fit.Λ * Z'                           # p×n
     type === :link && return η
     return linkinv.(Ref(fit.link), η)
@@ -208,10 +244,11 @@ function residuals(fit::GllvmFit, y::AbstractMatrix;
 end
 
 """
-    extract_lv_effects(fit::GllvmFit; type=:trait_effect)
+    extract_lv_effects(fit; type=:trait_effect)
 
-Extract predictor-informed latent-score effects from a Gaussian
-`fit_gaussian_gllvm(...; X_lv=...)` fit.
+Extract predictor-informed latent-score effects from a
+`fit_gaussian_gllvm(...; X_lv=...)` or
+`fit_binomial_gllvm(...; X_lv=...)` fit.
 
 - `type=:trait_effect` returns the rotation-stable `p × q_lv` matrix
   `B_lv = Λ * alpha_lv'`, the effect of each `X_lv` predictor on each trait's
@@ -220,7 +257,7 @@ Extract predictor-informed latent-score effects from a Gaussian
   coefficients are latent-axis and rotation dependent, so they are diagnostic
   rather than the primary estimand.
 
-This C1 implementation is point-estimate only; interval calibration and
+This C1 implementation is point-estimate only; interval calibration and broader
 non-Gaussian / structured-source extensions remain separate validation gates.
 """
 function extract_lv_effects(fit::GllvmFit; type::Symbol = :trait_effect)
@@ -234,6 +271,17 @@ end
 
 lv_effects(fit::GllvmFit; kwargs...) = extract_lv_effects(fit; kwargs...)
 
+function extract_lv_effects(fit::BinomialFit; type::Symbol = :trait_effect)
+    _has_lv_predictor(fit) || throw(ArgumentError(
+        "extract_lv_effects requires a fit from fit_binomial_gllvm(...; X_lv=...)"))
+    type in (:trait_effect, :axis_effect) ||
+        throw(ArgumentError("type must be :trait_effect or :axis_effect; got :$type"))
+    type === :axis_effect && return copy(fit.alpha_lv)
+    return fit.Λ * fit.alpha_lv'
+end
+
+lv_effects(fit::BinomialFit; kwargs...) = extract_lv_effects(fit; kwargs...)
+
 """
     residuals(fit::BinomialFit, Y; type=:dunnsmyth, N=nothing, rng=Random.default_rng())
         -> p×n matrix
@@ -246,12 +294,13 @@ reproducibility). `:pearson` returns `(Y − Nμ) / √(Nμ(1−μ))`.
 function residuals(fit::BinomialFit, Y::AbstractMatrix{<:Integer};
                    type::Symbol = :dunnsmyth,
                    N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
+                   X_lv::Union{Nothing, AbstractMatrix} = nothing,
                    rng::AbstractRNG = Random.default_rng())
     type in (:dunnsmyth, :pearson) ||
         throw(ArgumentError("type must be :dunnsmyth or :pearson; got :$type"))
     p, n = size(Y)
     Nm = N === nothing ? fill(1, p, n) : N
-    μ = predict(fit, Y; type = :response, N = N)
+    μ = predict(fit, Y; type = :response, N = N, X_lv = X_lv)
     if type === :pearson
         return (Y .- Nm .* μ) ./ sqrt.(Nm .* μ .* (1 .- μ))
     end
@@ -296,7 +345,9 @@ end
 
 function _nparams(fit::BinomialFit)
     p, K = size(fit.Λ)
-    return p + (p * K - div(K * (K - 1), 2))           # β intercepts + Λ
+    k = p + (p * K - div(K * (K - 1), 2))              # β intercepts + Λ
+    _has_lv_predictor(fit) && (k += length(fit.alpha_lv))
+    return k
 end
 
 """

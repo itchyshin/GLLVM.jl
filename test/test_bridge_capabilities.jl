@@ -35,6 +35,8 @@ using GLLVM
         "gaussian",
         "poisson",
         "binomial",
+        "binomial_probit",
+        "binomial_cloglog",
         "negbinomial",
         "nb1",
         "beta",
@@ -52,10 +54,17 @@ using GLLVM
         "beta",
         "gamma",
     ]
-    @test caps.family[caps.predictor_informed_lv] == ["gaussian"]
+    @test caps.family[caps.predictor_informed_lv] == [
+        "gaussian",
+        "binomial",
+        "binomial_probit",
+        "binomial_cloglog",
+    ]
     @test caps.family[caps.missing_response] == [
         "poisson",
         "binomial",
+        "binomial_probit",
+        "binomial_cloglog",
         "negbinomial",
         "nb1",
         "beta",
@@ -63,11 +72,17 @@ using GLLVM
         "ordinal",
         "ordinal_probit",
     ]
-    @test caps.family[caps.cbind_binomial] == ["binomial"]
+    @test caps.family[caps.cbind_binomial] == [
+        "binomial",
+        "binomial_probit",
+        "binomial_cloglog",
+    ]
     ci_routed = [
         "gaussian",
         "poisson",
         "binomial",
+        "binomial_probit",
+        "binomial_cloglog",
         "negbinomial",
         "nb1",
         "beta",
@@ -79,6 +94,8 @@ using GLLVM
     mask_ci_routed = [
         "poisson",
         "binomial",
+        "binomial_probit",
+        "binomial_cloglog",
         "negbinomial",
         "nb1",
         "beta",
@@ -111,6 +128,8 @@ using GLLVM
         "gaussian",
         "poisson",
         "binomial",
+        "binomial_probit",
+        "binomial_cloglog",
         "negbinomial",
         "nb1",
         "beta",

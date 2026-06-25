@@ -73,7 +73,8 @@
 # across distinct response families, with the cross-distribution latent-scale
 # `correlation` as the headline. Lognormal is a documented follow-up; fixed-effect
 # X is wired (Gaussian); predictor-informed latent-score X_lv is wired for the
-# ordinary complete-response Gaussian bridge as a point-estimate-only C1 route.
+# ordinary complete-response Gaussian bridge and complete-response binomial
+# logit/probit/cloglog bridge rows as point-estimate-only C1 routes.
 # Confidence intervals (Wald / profile / bootstrap) route
 # through `options["ci_method"]` for scalar-CI one-part families (Gaussian,
 # Poisson, Binomial) and grouped-dispersion NB2/NB1/Beta/Gamma rows. NB2, NB1,
@@ -129,7 +130,9 @@ function _bridge_family_key(family::AbstractString)
     key = lowercase(strip(family))
     key in ("gaussian", "normal")                                   && return "gaussian"
     key in ("poisson",)                                             && return "poisson"
-    key in ("binomial", "bernoulli")                                && return "binomial"
+    key in ("binomial", "bernoulli", "binomial_logit", "bernoulli_logit") && return "binomial"
+    key in ("binomial_probit", "bernoulli_probit")                  && return "binomial_probit"
+    key in ("binomial_cloglog", "bernoulli_cloglog")                && return "binomial_cloglog"
     key in ("negbinomial", "negative_binomial", "nbinom2", "nb2", "negbin") && return "negbinomial"
     key in ("nb1", "nbinom1")                                       && return "nb1"
     key in ("beta",)                                                && return "beta"
@@ -138,13 +141,16 @@ function _bridge_family_key(family::AbstractString)
     key in ("ordinal_probit", "ordered_probit")                     && return "ordinal_probit"
     throw(ArgumentError(
         "bridge_fit: unsupported family \"$family\"; this engine build supports " *
-        "gaussian, poisson, binomial, negbinomial (nbinom2), nb1, beta, gamma, ordinal, ordinal_probit"))
+        "gaussian, poisson, binomial, binomial_probit, binomial_cloglog, " *
+        "negbinomial (nbinom2), nb1, beta, gamma, ordinal, ordinal_probit"))
 end
 
 const _BRIDGE_ONEPART_FAMILIES = (
     "gaussian",
     "poisson",
     "binomial",
+    "binomial_probit",
+    "binomial_cloglog",
     "negbinomial",
     "nb1",
     "beta",
@@ -152,6 +158,9 @@ const _BRIDGE_ONEPART_FAMILIES = (
     "ordinal",
     "ordinal_probit",
 )
+
+const _BRIDGE_BINOMIAL_FAMILIES = ("binomial", "binomial_probit", "binomial_cloglog")
+const _BRIDGE_BINOMIAL_XLV_FAMILIES = _BRIDGE_BINOMIAL_FAMILIES
 
 # One-part NON-Gaussian families `fit_gllvm_cov` fits with covariates X (it has a
 # `_cov_*` kernel for each). Ordinal and NB1 are absent — no covariate kernel yet.
@@ -172,6 +181,10 @@ end
 
 _bridge_rr_df(p::Integer, K::Integer) = p * K - div(K * (K - 1), 2)
 _bridge_link_name(link::Link) = String(nameof(typeof(link)))
+_bridge_binomial_link(key::AbstractString) =
+    key == "binomial_probit" ? ProbitLink() :
+    key == "binomial_cloglog" ? CLogLogLink() :
+    LogitLink()
 
 function _bridge_corr_from_sigma(Σ::AbstractMatrix)
     p = size(Σ, 1)
@@ -373,19 +386,22 @@ function bridge_fit(; y,
                 "fitter (ordinal/nb1 are a documented follow-up)"))
     end
     # Predictor-informed latent-score covariates are narrower than ordinary
-    # fixed-effect X in this bridge slice: complete Gaussian point estimates only.
-    # The native Gaussian fitter can be widened later, but the bridge contract
-    # should not silently imply non-Gaussian or mixed-family parity.
+    # fixed-effect X in this bridge slice: complete Gaussian and binomial
+    # logit/probit/cloglog point estimates only. The native fitters can be
+    # widened later, but the bridge contract should not silently imply broader
+    # non-Gaussian or mixed-family parity.
     if X_lv !== nothing
         if family isa AbstractVector
             throw(ArgumentError(
                 "bridge_fit: predictor-informed latent-score covariates X_lv " *
-                "are not yet wired for the mixed-family path; use family=\"gaussian\"."))
+                "are not yet wired for the mixed-family path; use a one-part " *
+                "gaussian or binomial family."))
         end
         key = _bridge_family_key(String(family))
-        key == "gaussian" || throw(ArgumentError(
+        (key == "gaussian" || key in _BRIDGE_BINOMIAL_XLV_FAMILIES) || throw(ArgumentError(
             "bridge_fit: predictor-informed latent-score covariates X_lv are " *
-            "currently wired only for family=\"gaussian\"; family=\"$(family)\" " *
+            "currently wired only for family=\"gaussian\", \"binomial\", " *
+            "\"binomial_probit\", or \"binomial_cloglog\"; family=\"$(family)\" " *
             "is a separate validation gate."))
         X === nothing || throw(ArgumentError(
             "bridge_fit: simultaneous fixed-effect X and latent-score X_lv is " *
@@ -412,14 +428,15 @@ end
 # --- one-part dispatch -----------------------------------------------------
 
 const _BRIDGE_MASK_FAMILIES = (
-    "poisson", "binomial", "negbinomial", "nb1", "beta", "gamma", "ordinal",
-    "ordinal_probit",
+    "poisson", "binomial", "binomial_probit", "binomial_cloglog",
+    "negbinomial", "nb1", "beta", "gamma", "ordinal", "ordinal_probit",
 )
 
 const _BRIDGE_GROUPED_DISPERSION_FAMILIES = ("negbinomial", "nb1", "beta", "gamma")
 const _BRIDGE_PERTRAIT_ORDINAL_FAMILIES = ("ordinal", "ordinal_probit")
 const _BRIDGE_MASK_CI_FAMILIES = (
-    "poisson", "binomial", "negbinomial", "nb1", "beta", "gamma",
+    "poisson", "binomial", "binomial_probit", "binomial_cloglog",
+    "negbinomial", "nb1", "beta", "gamma",
 )
 
 function _bridge_ci_guard_pertrait_ordinal(key::AbstractString, ci_method::AbstractString)
@@ -466,16 +483,17 @@ The `ci_no_x_*` columns report that a native route exists for complete one-part
 no-covariate fits. The `ci_mask_*` columns are narrower: no-covariate one-part
 response-mask fits whose masked likelihood can also drive Wald/profile/bootstrap
 intervals. The `ci_x_*` columns are complete-response one-part fixed-effect-X
-fits. `predictor_informed_lv` marks the point-estimate-only Gaussian X_lv bridge
-route; it does not imply confidence intervals or non-Gaussian parity. None of
-the CI groups imply mixed-family or R-bridge parity coverage. Use `status` and
-`notes` for public claim wording.
+fits. `predictor_informed_lv` marks the point-estimate-only Gaussian and
+binomial logit/probit/cloglog X_lv bridge routes; it does not imply confidence
+intervals or broader non-Gaussian parity. None of the CI groups imply
+mixed-family or R-bridge parity coverage. Use `status` and `notes` for public
+claim wording.
 """
 function bridge_capabilities()
     onepart = collect(_BRIDGE_ONEPART_FAMILIES)
     family = vcat(onepart, ["mixed-family vector"])
     x_families = Set(vcat(["gaussian"], collect(_BRIDGE_X_FAMILIES)))
-    xlv_families = Set(["gaussian"])
+    xlv_families = Set(vcat(["gaussian"], collect(_BRIDGE_BINOMIAL_XLV_FAMILIES)))
     mask_families = Set(_BRIDGE_MASK_FAMILIES)
     mask_ci_families = Set(_BRIDGE_MASK_CI_FAMILIES)
     # Scalar-mean post-fit (residuals = y − μ, parametric simulate) excludes the
@@ -491,7 +509,7 @@ function bridge_capabilities()
         fixed_effect_X = vcat([f in x_families for f in onepart], [false]),
         predictor_informed_lv = vcat([f in xlv_families for f in onepart], [false]),
         missing_response = vcat([f in mask_families for f in onepart], [false]),
-        cbind_binomial = [f == "binomial" for f in family],
+        cbind_binomial = [f in _BRIDGE_BINOMIAL_FAMILIES for f in family],
         ci_no_x_wald = vcat([!(f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES) for f in onepart], [false]),
         ci_no_x_profile = vcat([!(f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES) for f in onepart], [false]),
         ci_no_x_bootstrap = vcat([!(f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES) for f in onepart], [false]),
@@ -519,10 +537,14 @@ function bridge_capabilities()
                     "one-part reduced-rank bridge family; default no-X route uses shared Gamma grouped dispersion to match current native scalar-CV Gamma; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; per-trait Gamma is a native-expansion follow-up" :
                 f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES ?
                     "one-part reduced-rank bridge family; default no-X route uses per-trait ordinal cutpoints; CI routing is a follow-up" :
+                f == "binomial" ?
+                    "one-part reduced-rank bridge family; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; point-estimate predictor-informed latent-score X_lv is wired for complete-response rows; X_lv CIs remain follow-ups; route support is narrower than full R-user parity" :
+                f in _BRIDGE_BINOMIAL_XLV_FAMILIES ?
+                    "one-part reduced-rank bridge family; no-X and masked no-X Wald/profile/bootstrap CI payloads are routed; point-estimate predictor-informed latent-score X_lv is wired for complete-response rows; X_lv CIs remain follow-ups; route support is narrower than full R-user parity" :
                 f in _BRIDGE_MASK_CI_FAMILIES ?
                     "one-part reduced-rank bridge family; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; route support is narrower than full R-user parity" :
                 f == "gaussian" ?
-                    "one-part reduced-rank bridge family; fixed-effect-X and point-estimate predictor-informed latent-score X_lv routes are wired; X_lv CIs and non-Gaussian X_lv remain follow-ups; route support is narrower than full R-user parity" :
+                    "one-part reduced-rank bridge family; fixed-effect-X and point-estimate predictor-informed latent-score X_lv routes are wired; X_lv CIs and non-Gaussian non-binomial X_lv remain follow-ups; route support is narrower than full R-user parity" :
                     "one-part reduced-rank bridge family; route support is narrower than full R-user parity"
                 for f in onepart
             ],
@@ -570,8 +592,9 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
     end
 
     if X_lv !== nothing
-        key == "gaussian" || throw(ArgumentError(
-            "bridge_fit: X_lv is currently wired only for family=\"gaussian\"."))
+        (key == "gaussian" || key in _BRIDGE_BINOMIAL_XLV_FAMILIES) || throw(ArgumentError(
+            "bridge_fit: X_lv is currently wired only for family=\"gaussian\", " *
+            "\"binomial\", \"binomial_probit\", or \"binomial_cloglog\"."))
         X === nothing || throw(ArgumentError(
             "bridge_fit: simultaneous fixed-effect X and latent-score X_lv is " *
             "not admitted in the bridge yet; fit one mean route at a time."))
@@ -633,8 +656,8 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                        "scores_mean = X_lv*alpha_lv, scores_innovation are the " *
                        "posterior zero-mean score deviations, and lv_effects = " *
                        "Lambda*alpha_lv' is the rotation-stable trait-effect matrix. " *
-                       "Confidence intervals and non-Gaussian X_lv routes remain " *
-                       "separate validation gates.",
+                       "Confidence intervals and non-binomial non-Gaussian " *
+                       "X_lv routes remain separate validation gates.",
                 ci = nothing)
             return merge(base, (lv_effects = Matrix{Float64}(extract_lv_effects(fit)),
                                 alpha_lv = Matrix{Float64}(fit.pars.alpha_lv),
@@ -753,15 +776,52 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
         return _bridge_assemble_ng(fit, "poisson", "poisson_rr", traits, units, p, K, Yi, nothing;
             alpha = fit.β, dispersion = fill(NaN, p), df = p + _bridge_rr_df(p, K),
             scores = scores, ci = ci, mask = M)
-    elseif key == "binomial"
+    elseif key in _BRIDGE_BINOMIAL_FAMILIES
         Yi = round.(Int, Yf)
         Ni = N === nothing ? fill(1, p, n) :
              (N isa Number ? fill(round(Int, N), p, n) : round.(Int, Matrix(N)))
-        fit = fit_binomial_gllvm(Yi; K = K, N = Ni, mask = M)
+        link = _bridge_binomial_link(key)
+        if X_lv !== nothing
+            Xlv = Matrix{Float64}(X_lv)
+            size(Xlv, 1) == n || throw(ArgumentError(
+                "bridge_fit: X_lv must be n×q_lv ($(n)×q_lv); got $(size(Xlv))"))
+            size(Xlv, 2) > 0 || throw(ArgumentError(
+                "bridge_fit: X_lv must have at least one predictor column"))
+            fit = fit_binomial_gllvm(Yi; K = K, N = Ni, link = link, X_lv = Xlv)
+            scores_total = Matrix{Float64}(
+                getLV(fit, Yi; N = Ni, X_lv = Xlv, component = :total,
+                      rotate = true))
+            scores_mean = Matrix{Float64}(
+                getLV(fit, Yi; N = Ni, X_lv = Xlv, component = :mean,
+                      rotate = true))
+            scores_innovation = Matrix{Float64}(
+                getLV(fit, Yi; N = Ni, X_lv = Xlv, component = :innovation,
+                      rotate = true))
+            base = _bridge_assemble_ng(fit, key, "$(key)_xlv_rr", traits, units,
+                p, K, Yi, Ni;
+                alpha = fit.β, dispersion = fill(NaN, p),
+                df = _nparams(fit), scores = scores_total, ci = nothing,
+                mask = nothing)
+            xlv_note = "predictor-informed latent-score fit (binomial C1): " *
+                       "scores are total latent scores, scores_mean = " *
+                       "X_lv*alpha_lv, scores_innovation are the posterior " *
+                       "zero-mean Laplace score modes, and lv_effects = " *
+                       "Lambda*alpha_lv' is the rotation-stable trait-effect " *
+                       "matrix. Confidence intervals, response masks, and " *
+                       "broader non-Gaussian X_lv routes remain separate " *
+                       "validation gates."
+            return merge(base, (note = isempty(base.note) ? xlv_note :
+                                      string(base.note, " ", xlv_note),
+                                lv_effects = Matrix{Float64}(extract_lv_effects(fit)),
+                                alpha_lv = Matrix{Float64}(fit.alpha_lv),
+                                scores_mean = scores_mean,
+                                scores_innovation = scores_innovation))
+        end
+        fit = fit_binomial_gllvm(Yi; K = K, N = Ni, link = link, mask = M)
         scores = _bridge_scores(() -> getLV(fit, Yi; N = Ni, rotate = true, mask = M))
         ci = ci_method == "none" ? nothing :
              _bridge_compute_ci_ng(fit, Float64.(Yi), Ni, ci_method, ci_level, ci_nboot, ci_seed; mask = M)
-        return _bridge_assemble_ng(fit, "binomial", "binomial_rr", traits, units, p, K, Yi, Ni;
+        return _bridge_assemble_ng(fit, key, "$(key)_rr", traits, units, p, K, Yi, Ni;
             alpha = fit.β, dispersion = fill(NaN, p), df = p + _bridge_rr_df(p, K),
             scores = scores, ci = ci, mask = M)
     elseif key == "negbinomial"

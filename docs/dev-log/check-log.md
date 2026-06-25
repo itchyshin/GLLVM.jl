@@ -1,5 +1,109 @@
 # Check Log
 
+## 2026-06-25 - Binomial X_lv bridge endpoint
+
+### Scope
+
+Extended the predictor-informed latent-score route from Gaussian-only bridge
+rows to complete-response binomial logit/probit/cloglog point rows, without
+claiming interval, response-mask, fixed-effect `X` + `X_lv`, mixed-family, or
+broader non-Gaussian parity.
+
+- Added `fit_binomial_gllvm(...; X_lv = X_lv, alpha_lv_init = ...)` with
+  packed objective
+  `eta = beta + Lambda * (X_lv * alpha_lv + z_innovation)'`.
+- Added `binomial_lv_nll_packed()` and verified it equals the existing offset
+  Laplace core when the parameter-dependent offset is supplied explicitly.
+- Retained `alpha_lv` and `theta_packed` on `BinomialFit` for X_lv fits while
+  preserving the old six-argument constructor for existing callers.
+- Extended `getLV()` for `BinomialFit` with
+  `component = :mean/:innovation/:total`, plus `predict()`, `residuals()`,
+  `simulate()`, `extract_lv_effects()`, and `lv_effects()` support for
+  binomial X_lv fits.
+- Added explicit `bridge_fit()` family keys `binomial_probit` and
+  `binomial_cloglog` alongside the existing logit `binomial` route.
+- Added bridge payload fields for binary X_lv rows: `lv_effects`,
+  `alpha_lv`, `scores_mean`, and `scores_innovation`; `scores` remains the
+  total rotated latent score.
+- Kept `confint()` and bridge `ci_method != "none"` rejected for binomial X_lv
+  fits until the expanded observed-information/profile/bootstrap layouts are
+  admitted.
+- Corrected the binomial fitter so the logit-only analytic Laplace gradient is
+  used only for `LogitLink()` no-offset fits; probit/cloglog and X_lv use finite
+  differences.
+- Updated `bridge_capabilities()` and Documenter prose to report Gaussian plus
+  binomial logit/probit/cloglog X_lv point rows as partial, not broad parity.
+
+### Checks Run
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.instantiate()'
+```
+
+Result: dependencies instantiated in the fresh worktree; no `Project.toml` or
+`Manifest.toml` diff remained.
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_lv_predictor.jl
+```
+
+Result: `bridge predictor-informed latent-score X_lv 94/94` pass.
+
+```sh
+julia --project=. --startup-file=no test/test_binomial_fit.jl
+```
+
+Result: `fit_binomial_gllvm — recovery 8/8` pass.
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_capabilities.jl
+```
+
+Result: `bridge capabilities ledger 44/44` pass.
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_ci.jl
+```
+
+Result: `bridge CI routing 64/64` pass.
+
+```sh
+julia --project=. --startup-file=no test/test_simulate.jl
+```
+
+Result: `simulate(fit) 5/5` pass.
+
+```sh
+julia --project=. --startup-file=no test/test_postfit.jl
+```
+
+Result: `post-fit` sections passed: ordination core 96/96, predict/fitted 9/9,
+residuals 10/10, AIC/BIC/show 8/8, Poisson 163/163, NB 160/160, Beta 215/215,
+Gamma 215/215, Ordinal 216/216.
+
+```sh
+git diff --check
+```
+
+Result: clean.
+
+```sh
+rg -n "Gaussian-only|Gaussian only|non-Gaussian X_lv|complete-response ordinary Gaussian|X_lv.*Gaussian-only|Gaussian X_lv" src test docs/src docs/dev-log/after-task/2026-06-25-bridge-binomial-xlv.md docs/dev-log/check-log.md README.md CHANGELOG.md
+```
+
+Result: remaining matches are historical log/report entries, REML
+Gaussian-only boundaries, the native Gaussian fitter's own docstring, the
+Gaussian-specific bridge test name, and guarded "non-binomial non-Gaussian"
+wording.
+
+### Not Run
+
+- Full `Pkg.test()` not run yet in this slice.
+- Documenter build not run yet.
+- No push or PR opened because GLLVM.jl PR #113 is still open as a draft and
+  overlaps `docs/dev-log/check-log.md`, `src/GLLVM.jl`, `src/families/laplace.jl`,
+  and `test/runtests.jl`.
+
 ## 2026-06-25 - Gaussian X_lv bridge endpoint
 
 ### Scope
