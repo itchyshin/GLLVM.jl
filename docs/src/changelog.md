@@ -54,9 +54,11 @@ package; every numerical addition is gated by deterministic tests.
 - **PARTIAL:** predictor-informed latent-score means for the ordinary Gaussian
   unit-tier path (`fit_gaussian_gllvm(...; X_lv=...)`), with `getLV(...;
   component=:mean/:innovation/:total)` and `extract_lv_effects()` point
-  estimates for the rotation-stable `B_lv = Λ * alpha_lv'`. Confidence
-  intervals, non-Gaussian families, W-tier, phylogenetic/source-specific
-  extensions, and R-bridge promotion remain gated.
+  estimates for the rotation-stable `B_lv = Λ * alpha_lv'`. The `bridge_fit`
+  endpoint now exposes this Gaussian point-estimate route as `X_lv` with
+  `lv_effects`, `scores_mean`, and `scores_innovation`; confidence intervals,
+  non-Gaussian families, W-tier, phylogenetic/source-specific extensions, and
+  R-package row promotion remain gated.
 - **IN:** fixed-zero shared covariate coefficients for Gaussian (`β_fixed`) and
   non-Gaussian (`γ_fixed`) fixed-effect-X fits, plus bridge status fields for
   `gllvmTMB`'s `Xcoef_fixed` contract.
