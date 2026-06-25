@@ -96,13 +96,52 @@ Gaussian-only boundaries, the native Gaussian fitter's own docstring, the
 Gaussian-specific bridge test name, and guarded "non-binomial non-Gaussian"
 wording.
 
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result: first full-suite run failed after `4595` pass, `0` fail, `1` error,
+and `1` broken in `46m20.7s`. The failing route was the pre-existing
+masked no-X CI bridge test for admitted one-part non-Gaussian rows:
+`test/test_bridge_missing_mask.jl` called the binomial fitter with `K = 0`,
+and the first X_lv implementation had accidentally required positive `K` for
+all binomial fits.
+
+Fix applied: allow `K >= 0` for ordinary/no-latent binomial fits, while keeping
+`X_lv` restricted to positive latent dimension `K > 0`.
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_missing_mask.jl
+```
+
+Result: `masked missing-response bridge 83/83` pass after the `K = 0` guard
+fix.
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_lv_predictor.jl
+julia --project=. --startup-file=no test/test_binomial_fit.jl
+julia --project=. --startup-file=no test/test_bridge_ci.jl
+```
+
+Result after the guard fix: `bridge predictor-informed latent-score X_lv 94/94`,
+`fit_binomial_gllvm - recovery 8/8`, and `bridge CI routing 64/64` pass.
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result: rerun started after the guard fix, reached the late VA-vs-Laplace
+blocks, then was interrupted at Shinichi's stop request before completion.
+No Julia test process remained running after interruption.
+
 ### Not Run
 
-- Full `Pkg.test()` not run yet in this slice.
+- Full `Pkg.test()` has not completed green after the guard fix.
 - Documenter build not run yet.
-- No push or PR opened because GLLVM.jl PR #113 is still open as a draft and
-  overlaps `docs/dev-log/check-log.md`, `src/GLLVM.jl`, `src/families/laplace.jl`,
-  and `test/runtests.jl`.
+- No PR opened because GLLVM.jl PR #113 is still open as a draft and overlaps
+  `docs/dev-log/check-log.md`, `src/GLLVM.jl`, `src/families/laplace.jl`, and
+  `test/runtests.jl`. The branch was pushed as a backup under
+  `codex/binomial-xlv-20260625`.
 
 ## 2026-06-25 - Gaussian X_lv bridge endpoint
 

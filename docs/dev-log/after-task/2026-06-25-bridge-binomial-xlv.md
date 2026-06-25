@@ -120,6 +120,42 @@ Gaussian-only boundaries, the native Gaussian fitter's own docstring, the
 Gaussian-specific bridge test name, and guarded "non-binomial non-Gaussian"
 wording.
 
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result: first full-suite run failed after `4595` pass, `0` fail, `1` error,
+and `1` broken in `46m20.7s`. The failure exposed an unintended regression:
+the initial binomial X_lv guard required positive `K` for all binomial fits,
+which blocked the existing no-latent `K = 0` masked-CI bridge route in
+`test/test_bridge_missing_mask.jl`.
+
+Fix applied: ordinary binomial fits now allow `K >= 0`; only X_lv fits require
+positive latent dimension `K > 0`.
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_missing_mask.jl
+```
+
+Result: `masked missing-response bridge 83/83` pass after the guard fix.
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_lv_predictor.jl
+julia --project=. --startup-file=no test/test_binomial_fit.jl
+julia --project=. --startup-file=no test/test_bridge_ci.jl
+```
+
+Result after the guard fix: `bridge predictor-informed latent-score X_lv 94/94`,
+`fit_binomial_gllvm - recovery 8/8`, and `bridge CI routing 64/64` pass.
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result: rerun started after the guard fix, reached the late VA-vs-Laplace
+blocks, then was interrupted at Shinichi's stop request before completion.
+No Julia test process remained running after interruption.
+
 ## 6. Tests of the Tests
 
 - The packed-objective test compares `binomial_lv_nll_packed()` to the existing
@@ -153,7 +189,8 @@ wording.
 - Current GLLVM.jl PR state before this branch: draft PR #113
   (`claude/studentt-105-20260620`) was open, merge-dirty, and overlaps
   `docs/dev-log/check-log.md`, `src/GLLVM.jl`, `src/families/laplace.jl`, and
-  `test/runtests.jl`. This branch was kept local; no competing PR was opened.
+  `test/runtests.jl`. This branch was pushed as a backup, but no competing PR
+  was opened.
 - Prose updates keep the scope as Gaussian plus binomial logit/probit/cloglog
   point estimates only.
 - REML / AI-REML wording was not introduced.
@@ -166,13 +203,20 @@ wording.
   the optimizer on a flat ridge. The test fixture was replaced with stochastic
   multi-trial data carrying real latent innovation variation, which identified
   the loading scale and produced converged fits for all three links.
+- Full `Pkg.test()` exposed that the first guard for binary X_lv was too broad:
+  it rejected `K = 0` for existing no-latent binomial bridge/CI routes. The
+  correction keeps `K = 0` legal for no-X/no-latent fits and requires positive
+  `K` only when `X_lv` is supplied.
 - The fresh worktree initially lacked instantiated Julia dependencies. Running
   `Pkg.instantiate()` fixed the local environment and left no dependency-file
   changes.
 
 ## 10. Known Residuals
 
-- No full `Pkg.test()` or Documenter build has been run for this local branch.
+- Full `Pkg.test()` has not completed green after the guard fix. The first run
+  exposed and then fixed the `K = 0` regression above; the rerun was interrupted
+  at the maintainer stop request.
+- Documenter build has not been run for this local branch.
 - The R package still gates `engine = "julia"` X_lv to Gaussian; a follow-up
   `gllvmTMB` PR must map binomial logit/probit/cloglog links to the new Julia
   bridge keys and test the R object contract.

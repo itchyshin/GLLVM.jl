@@ -170,7 +170,7 @@ function fit_binomial_gllvm(Y::AbstractMatrix; K::Integer,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
-    K > 0 || throw(ArgumentError("K must be positive for fit_binomial_gllvm"))
+    K >= 0 || throw(ArgumentError("K must be non-negative for fit_binomial_gllvm"))
     Nm = N === nothing ? fill(1, p, n) : N
     size(Nm) == (p, n) || throw(DimensionMismatch("N must be $(p)×$(n)"))
     rr = rr_theta_len(p, K)
@@ -178,6 +178,7 @@ function fit_binomial_gllvm(Y::AbstractMatrix; K::Integer,
     q_lv = 0
     X_lv_fit = nothing
     if X_lv !== nothing
+        K > 0 || throw(ArgumentError("X_lv requires a positive latent dimension K"))
         size(X_lv, 1) == n ||
             throw(ArgumentError("X_lv first dim ($(size(X_lv, 1))) must equal n_sites ($n)"))
         q_lv = size(X_lv, 2)
