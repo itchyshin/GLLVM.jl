@@ -1,5 +1,134 @@
 # Check Log
 
+## 2026-06-25 - Gaussian X_lv bridge endpoint
+
+### Scope
+
+Exposed the native ordinary Gaussian predictor-informed latent-score path through
+the Julia bridge, without widening the public claim beyond point estimates.
+
+- Added `X_lv` to `bridge_fit()` for complete-response `family = "gaussian"`
+  fits only.
+- Preserved the existing Gaussian bridge convention by centering responses by
+  trait means, returning those means as `alpha`, and fitting
+  `fit_gaussian_gllvm(Yc; X_lv = X_lv)` on the centred matrix.
+- Added flat JuliaCall payload fields for the R side:
+  `lv_effects = Lambda * alpha_lv'`, raw `alpha_lv`, `scores_mean`, and
+  `scores_innovation`. The existing `scores` field remains the total rotated
+  latent score.
+- Added `predictor_informed_lv` to `bridge_capabilities()` so this route is not
+  conflated with ordinary fixed-effect `X`.
+- Rejected simultaneous `X` + `X_lv`, masks + `X_lv`, mixed-family `X_lv`,
+  non-Gaussian `X_lv`, `d = 0`, and `ci_method != "none"` with explicit errors.
+- Updated the parity/changelog/roadmap docs to describe this as a Gaussian
+  point-estimate endpoint only; R-package row promotion remains gated.
+
+### Checks Run
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.instantiate()'
+```
+
+Result: dependencies instantiated after a fresh worktree initially could not
+precompile `GLLVM` because `Distributions` was absent from the local depot. This
+left no `Project.toml` / `Manifest.toml` changes.
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_lv_predictor.jl
+```
+
+Result: `bridge predictor-informed latent-score X_lv 19/19` pass.
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_capabilities.jl
+```
+
+Result: `bridge capabilities ledger 42/42` pass.
+
+```sh
+julia --project=. --startup-file=no test/test_lv_predictor.jl
+```
+
+Result: `predictor-informed latent-score mean 24/24` pass.
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_x.jl
+```
+
+Result: `bridge fixed-effect X (non-Gaussian one-part families) 179/179` pass.
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_ci.jl
+```
+
+Result: `bridge CI routing 64/64` pass.
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_missing_mask.jl
+```
+
+Result: `bridge missing-response mask 83/83` pass.
+
+```sh
+julia --project=docs --startup-file=no -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate(); include("docs/make.jl")'
+```
+
+Result: local DocumenterVitepress build completed. It emitted the existing
+absolute-style local-link warnings, npm audit warnings from the Vitepress
+toolchain, and skipped deployment outside CI; no build failure.
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: `GLLVM.jl 4540 pass, 3 broken, 4543 total` in `43m39.1s`.
+The run reported that Aqua and JET were not in the direct project environment
+and should be covered by `Pkg.test()`.
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result: `GLLVM.jl 4552 pass, 1 broken, 4553 total`; `GLLVM tests passed` in
+`46m58.8s`.
+
+```sh
+git diff --check
+```
+
+Result: clean before the dev-log edits.
+
+```sh
+rg -n "predictor-informed latent-score|X_lv|lv_effects|scores_mean|scores_innovation|non-Gaussian X_lv|full R-user parity|R-bridge promotion|R-package row promotion" src test docs/src README.md CHANGELOG.md
+```
+
+Result: matches were the intended bridge guards, payload tests, capability note,
+and claim-boundary docs. No broad R-Julia parity or non-Gaussian `X_lv` claim was
+found.
+
+### Deliberately Not Run
+
+- No live R-side `gllvmTMB` bridge test was run in this Julia PR. The paired R
+  admission should be a separate `gllvmTMB` slice after this endpoint is merged
+  and available to the R bridge.
+- No binary/non-Gaussian `X_lv` Julia bridge route was attempted. Native
+  constrained-ordination machinery is related, but it is not this flat bridge
+  contract and needs a separate recovery/parity design.
+
+### Claim Boundary
+
+IN: complete-response ordinary Gaussian `bridge_fit(...; family = "gaussian",
+X_lv = X_lv)` point estimates with total scores, score mean/innovation
+decomposition, raw `alpha_lv`, and rotation-stable `lv_effects`.
+
+PARTIAL: this is an endpoint contract against the native Gaussian
+`fit_gaussian_gllvm(...; X_lv=...)` oracle. It is not yet an R-package row
+promotion, interval route, or missing-response route.
+
+PLANNED/GATED: non-Gaussian `X_lv` bridge rows, binary/probit bridge parity,
+simultaneous `X` + `X_lv`, masks + `X_lv`, and confidence intervals remain
+separate validation gates.
+
 ## 2026-06-22 - Fixed-zero shared X coefficients
 
 ### Scope

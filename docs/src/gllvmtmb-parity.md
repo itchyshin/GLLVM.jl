@@ -125,6 +125,13 @@ passes a fixed-zero coefficient mask through `options["coef_fixed"]`, the bridge
 returns the full coefficient vector with constrained entries equal to zero plus
 `mean_coef_status` (Gaussian) or `gamma_status` (non-Gaussian) so the R package
 can print fixed rows without treating them as estimated parameters.
+Predictor-informed latent-score covariates (`X_lv`) are admitted only for
+complete-response ordinary Gaussian point fits: the bridge centres responses by
+trait means, returns those means as `alpha`, returns total latent scores in
+`scores`, and adds `scores_mean`, `scores_innovation`, `alpha_lv`, and
+rotation-stable `lv_effects = Lambda * alpha_lv'`. X_lv confidence intervals,
+missing-response masks, simultaneous fixed-effect `X`, mixed-family fits, and
+non-Gaussian rows remain deliberate follow-ups rather than inferred parity.
 Initial response-missing masks are admitted only for no-X one-part non-Gaussian
 bridge fits through an explicit `mask` (`true = observed`); the R bridge
 live-tests Poisson, Bernoulli Binomial, NB2, NB1, Beta, Gamma, and
