@@ -61,10 +61,12 @@ end
 """
     fit_gaussian_gllvm(y; K, K_W=0, has_diag=false, K_phy=0,
                        has_phy_unique=false, Σ_phy=nothing, X=nothing,
+                       X_lv=nothing,
                        σ_eps_init=1.0, λ_init=nothing, λ_W_init=nothing,
                        λ_phy_init=nothing,
                        σ²_B_init=0.1, σ²_W_init=0.1, σ_phy_init=0.1,
-                       β_init=nothing, β_fixed=nothing, x_tol=1e-8, f_tol=1e-10,
+                       β_init=nothing, β_fixed=nothing, alpha_lv_init=nothing,
+                       x_tol=1e-8, f_tol=1e-10,
                        g_tol=1e-6, iterations=500) -> GllvmFit
 
 L-BFGS minimisation of the closed-form Gaussian marginal NLL via
@@ -93,11 +95,23 @@ Optional fixed effects:
 - `β_fixed` optionally fixes selected coefficients to zero; pass a Bool vector
   of length q, an integer index vector, or a Dict index=>0.
 
+Optional predictor-informed latent-score mean (C1, ordinary Gaussian unit tier):
+- `X_lv::AbstractMatrix` of shape `(n_sites, q_lv)` adds
+  `z_total[s, :] = X_lv[s, :] * alpha_lv + z_innovation[s, :]` before the
+  unit-tier loadings `Λ` enter the linear predictor.
+- `alpha_lv_init::AbstractMatrix` of shape `(q_lv, K)` optionally seeds those
+  latent-score predictor coefficients. The fitted `pars.alpha_lv` is
+  rotation-dependent; `extract_lv_effects(fit)` returns the rotation-stable
+  trait-effect matrix `Λ * alpha_lv'`.
+- This C1 path is Gaussian-only and rejects W-tier, diagonal random-effect, and
+  phylogenetic blocks until their separate profile/interval derivations land.
+
 The fit's `pars` NamedTuple always contains
-`(σ_eps, Λ, β, β_fixed, Λ_W, σ²_B, σ²_W, Λ_phy, σ_phy, θ_packed)` where
+`(σ_eps, Λ, β, β_fixed, alpha_lv, Λ_W, σ²_B, σ²_W, Λ_phy, σ_phy, θ_packed)` where
 `β_fixed` is a Bool vector, `β` is expanded to the full coefficient length
-with fixed entries set to zero, and `Λ_W`, `σ²_B`, `σ²_W`, `Λ_phy`, `σ_phy`
-are `nothing` when the corresponding flag is off.
+with fixed entries set to zero, `alpha_lv` is a `q_lv × K` matrix or `nothing`,
+and `Λ_W`, `σ²_B`, `σ²_W`, `Λ_phy`, `σ_phy` are `nothing` when the
+corresponding flag is off.
 """
 function fit_gaussian_gllvm(y::AbstractMatrix;
                             K::Integer,
@@ -107,6 +121,7 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
                             has_phy_unique::Bool = false,
                             Σ_phy::Union{Nothing, AbstractMatrix} = nothing,
                             X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                            X_lv::Union{Nothing, AbstractMatrix} = nothing,
                             σ_eps_init = 1.0,
                             λ_init = nothing,
                             λ_W_init = nothing,
@@ -116,6 +131,7 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
                             σ_phy_init = 0.1,
                             β_init = nothing,
                             β_fixed = nothing,
+                            alpha_lv_init = nothing,
                             x_tol = 1e-8,
                             f_tol = 1e-10,
                             g_tol = 1e-6,
@@ -155,6 +171,34 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
         if !(β_fixed === nothing || (β_fixed isa AbstractVector && isempty(β_fixed)))
             throw(ArgumentError("β_fixed requires X"))
         end
+    end
+
+    q_lv = 0
+    X_lv_fit = X_lv
+    if X_lv !== nothing
+        K_W == 0 || throw(ArgumentError(
+            "X_lv predictor-informed latent scores are C1 ordinary unit-tier only; K_W > 0 is not yet supported"))
+        !has_diag || throw(ArgumentError(
+            "X_lv predictor-informed latent scores are C1 ordinary unit-tier only; has_diag = true is not yet supported"))
+        K_phy == 0 || throw(ArgumentError(
+            "X_lv predictor-informed latent scores are C1 ordinary unit-tier only; K_phy > 0 is not yet supported"))
+        !has_phy_unique || throw(ArgumentError(
+            "X_lv predictor-informed latent scores are C1 ordinary unit-tier only; has_phy_unique = true is not yet supported"))
+        size(X_lv, 1) == n ||
+            throw(ArgumentError("X_lv first dim ($(size(X_lv, 1))) must equal n_sites ($n)"))
+        q_lv = size(X_lv, 2)
+        q_lv > 0 || throw(ArgumentError("X_lv must have at least one predictor column"))
+        X_lv_fit = Matrix{Float64}(X_lv)
+        if alpha_lv_init !== nothing
+            size(alpha_lv_init, 1) == q_lv ||
+                throw(ArgumentError(
+                    "alpha_lv_init first dim ($(size(alpha_lv_init, 1))) must equal size(X_lv, 2) ($q_lv)"))
+            size(alpha_lv_init, 2) == K ||
+                throw(ArgumentError(
+                    "alpha_lv_init second dim ($(size(alpha_lv_init, 2))) must equal K ($K)"))
+        end
+    elseif alpha_lv_init !== nothing
+        throw(ArgumentError("alpha_lv_init requires X_lv"))
     end
 
     has_phy_block = (K_phy > 0) || has_phy_unique
@@ -261,6 +305,76 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
         end
     else
         Float64[]
+    end
+
+    # C1 predictor-informed latent-score path. We use an explicit Gaussian
+    # likelihood instead of the profiled-σ_eps objective because the mean term
+    # Λ * alpha_lv' * X_lv depends jointly on Λ and alpha_lv. A separate profile
+    # derivation can move this branch onto the fast path later.
+    if X_lv_fit !== nothing
+        alpha₀ = if alpha_lv_init === nothing
+            zeros(Float64, q_lv, K)
+        else
+            Matrix{Float64}(alpha_lv_init)
+        end
+        params₀ = vcat(β₀, vec(alpha₀), [log(σ_e₀)], θ_B₀)
+        nll = params -> gaussian_lv_nll_packed(params, y, Int(p), Int(K);
+                                               X = X_fit, q = q,
+                                               X_lv = X_lv_fit, q_lv = q_lv)
+
+        opts = Optim.Options(
+            x_abstol = x_tol,
+            f_reltol = f_tol,
+            g_tol    = g_tol,
+            iterations = iterations,
+            show_trace = false,
+        )
+
+        t0 = time()
+        res = Optim.optimize(nll, params₀, Optim.LBFGS(), opts; autodiff = :forward)
+        t1 = time()
+        params_hat = Optim.minimizer(res)
+
+        cursor = 0
+        β_hat_free = if q > 0
+            b = collect(params_hat[(cursor + 1):(cursor + q)])
+            cursor += q
+            b
+        else
+            Float64[]
+        end
+        alpha_hat = reshape(collect(params_hat[(cursor + 1):(cursor + q_lv * K)]),
+                            q_lv, K)
+        cursor += q_lv * K
+        σ_eps_hat = exp(params_hat[cursor + 1])
+        cursor += 1
+        Λ_hat = unpack_lambda(@view(params_hat[(cursor + 1):end]), p, K)
+        β_full = X !== nothing ? _expand_fixed_zero(β_hat_free, β_fixed_mask) : β_hat_free
+
+        # Keep the explicit packed vector for reproducibility. Interval engines
+        # reject alpha_lv fits until the matching observed-information layout is
+        # admitted.
+        θ_packed_lv = collect(Float64, params_hat)
+
+        return GllvmFit(
+            GllvmModel(Int(p), Int(K), 0, false, 0, false),
+            (σ_eps = σ_eps_hat,
+             Λ = Λ_hat,
+             β = β_full,
+             β_fixed = collect(Bool, β_fixed_mask),
+             alpha_lv = alpha_hat,
+             Λ_W = nothing,
+             σ²_B = nothing,
+             σ²_W = nothing,
+             Λ_phy = nothing,
+             σ_phy = nothing,
+             θ_packed = θ_packed_lv),
+            -Optim.minimum(res),
+            Optim.iterations(res),
+            Optim.converged(res),
+            res,
+            t1 - t0,
+        )
     end
 
     # τ_B, τ_W on log-SD scale: log_τ = 0.5 * log(σ²_init / σ²_eps_init)
@@ -417,6 +531,7 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
          Λ = rec.Λ_B,
          β = β_full,
          β_fixed = collect(Bool, β_fixed_mask),
+         alpha_lv = nothing,
          Λ_W = rec.Λ_W,
          σ²_B = rec.σ²_B,
          σ²_W = rec.σ²_W,

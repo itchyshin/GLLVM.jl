@@ -197,7 +197,8 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        fit_binomial_gllvm_va, fit_nb_gllvm_va,
        gamma_marginal_loglik_va, fit_gamma_gllvm_va,
        exponential_marginal_loglik_va, fit_exponential_gllvm_va,
-       getLV, getLoadings, rotation, ordination, ordiplot, ordination_uncertainty, predict_spatial,
+       getLV, getLoadings, rotation, ordination, ordiplot, ordination_uncertainty,
+       extract_lv_effects, lv_effects, predict_spatial,
        coef_table, GllvmCoefTable, select_lv, LVSelection,
        predict, fitted, residuals, aic, bic, simulate,
        bridge_fit, bridge_capabilities

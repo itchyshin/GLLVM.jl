@@ -2112,3 +2112,87 @@ return Wald/profile/bootstrap CI fields when explicitly requested. PARTIAL:
 fixed-effect-X, masked, mixed-family, REML, and per-trait ordinal CI routes
 remain gated. PLANNED: broader calibration and speed evidence belong in the
 R/Julia simulation-comparator programme, not this endpoint-routing slice.
+
+## 2026-06-25 — predictor-informed latent-score C1
+
+Branch: `codex/lv-predictor-c1-20260625`
+
+Purpose: add the Julia-side ordinary Gaussian unit-tier analogue of the R
+`gllvmTMB` Design 73 C1 surface, without broad parity, interval, or
+non-Gaussian claims.
+
+### Changes
+
+- Added `gaussian_lv_nll_packed`, an explicit Gaussian likelihood for
+  `z_total[s, :] = X_lv[s, :] * alpha_lv + z_innovation[s, :]`.
+- Added `fit_gaussian_gllvm(...; X_lv = X_lv, alpha_lv_init = ...)` for the
+  ordinary Gaussian unit-tier path only.
+- Added `getLV(...; component = :mean/:innovation/:total, X_lv = X_lv)`.
+- Added `extract_lv_effects()` / `lv_effects()` for the rotation-stable
+  trait-effect matrix `B_lv = Lambda * alpha_lv'`.
+- Guarded Wald/profile/bootstrap intervals for `X_lv` fits; this C1 slice is
+  point-estimate only.
+- Updated model docs, changelog, tests, and the after-task report.
+
+### Checks Run
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_lv_predictor.jl
+```
+
+Result: `24/24` pass.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no -e 'include("test/test_fixed_effects.jl"); include("test/test_postfit.jl")'
+```
+
+Result: fixed effects `18/18` pass; post-fit ordination core `96/96`,
+predict/fitted `9/9`, residuals `10/10`, AIC/BIC `8/8`, Poisson `163/163`,
+NB `160/160`, Beta `215/215`, Gamma `215/215`, Ordinal `216/216`.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no -e 'include("test/test_confint.jl"); include("test/test_confint_profile.jl"); include("test/test_confint_bootstrap.jl")'
+```
+
+Result: Wald CI `14/14`, profile CI `4/4`, bootstrap CI `9/9`.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no -e 'using Pkg; Pkg.instantiate()'
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: full local test suite passed with `4519` pass, `3` broken, `4522`
+total in `31m25.4s`. The run reported that Aqua and JET are not available in
+this direct `test/runtests.jl` environment and should be run through
+`Pkg.test()` for the full battery.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result: package test suite passed with `4531` pass, `1` broken, `4532` total
+in `36m58.2s`. This run used the temporary `Pkg.test()` environment with Aqua
+and JET available.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=docs --startup-file=no docs/make.jl
+```
+
+Result: Documenter/VitePress build completed. The run reported pre-existing
+invalid-local-link warnings for the docs navigation (for example `/quickstart`,
+`/response-families`, and `/api`) and npm audit warnings from the VitePress
+dependency tree; neither was introduced by this slice.
+
+### Deliberately Not Run
+
+- No push or PR was opened: `gllvmTMB` PR #558 is open and green, GLLVM.jl draft
+  PR #113 is open, and this repo requires explicit maintainer instruction
+  before pushing.
+
+### Claim Boundary
+
+IN: ordinary Gaussian unit-tier predictor-informed latent-score point estimates.
+PARTIAL: score algebra and post-fit extraction are tested, but recovery,
+coverage, and bridge promotion are not admitted. OUT: W-tier, diagonal random
+effects, phylogenetic/source-specific blocks, non-Gaussian families, REML, and
+interval calibration.
