@@ -108,6 +108,9 @@ function _family_ci(fit::BinomialFit, Y::AbstractMatrix;
                     mask = nothing,
                     objective::Symbol = :laplace,
                     newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    fit.alpha_lv === nothing || throw(ArgumentError(
+        "confint for fit_binomial_gllvm(...; X_lv=...) is not admitted yet; " *
+        "use extract_lv_effects for point estimates"))
     p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); link = fit.link
     Nm = N === nothing ? fill(1, p, n) : Matrix{Int}(N)
     M = _ci_mask(mask, Y)

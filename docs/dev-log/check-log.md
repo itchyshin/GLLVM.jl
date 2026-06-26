@@ -72,6 +72,182 @@ IN: PR #113 is locally resolved against current main and passes the full Julia
 package test suite plus local Documenter. OUT: no new R bridge claim, no broad
 R-Julia parity claim, and no interval/coverage claim for Student-t or `X_lv`.
 
+## 2026-06-25 - Binomial X_lv bridge endpoint
+
+### Scope
+
+Extended the predictor-informed latent-score route from Gaussian-only bridge
+rows to complete-response binomial logit/probit/cloglog point rows, without
+claiming interval, response-mask, fixed-effect `X` + `X_lv`, mixed-family, or
+broader non-Gaussian parity.
+
+- Added `fit_binomial_gllvm(...; X_lv = X_lv, alpha_lv_init = ...)` with
+  packed objective
+  `eta = beta + Lambda * (X_lv * alpha_lv + z_innovation)'`.
+- Added `binomial_lv_nll_packed()` and verified it equals the existing offset
+  Laplace core when the parameter-dependent offset is supplied explicitly.
+- Retained `alpha_lv` and `theta_packed` on `BinomialFit` for X_lv fits while
+  preserving the old six-argument constructor for existing callers.
+- Extended `getLV()` for `BinomialFit` with
+  `component = :mean/:innovation/:total`, plus `predict()`, `residuals()`,
+  `simulate()`, `extract_lv_effects()`, and `lv_effects()` support for
+  binomial X_lv fits.
+- Added explicit `bridge_fit()` family keys `binomial_probit` and
+  `binomial_cloglog` alongside the existing logit `binomial` route.
+- Added bridge payload fields for binary X_lv rows: `lv_effects`,
+  `alpha_lv`, `scores_mean`, and `scores_innovation`; `scores` remains the
+  total rotated latent score.
+- Kept `confint()` and bridge `ci_method != "none"` rejected for binomial X_lv
+  fits until the expanded observed-information/profile/bootstrap layouts are
+  admitted.
+- Corrected the binomial fitter so the logit-only analytic Laplace gradient is
+  used only for `LogitLink()` no-offset fits; probit/cloglog and X_lv use finite
+  differences.
+- Updated `bridge_capabilities()` and Documenter prose to report Gaussian plus
+  binomial logit/probit/cloglog X_lv point rows as partial, not broad parity.
+
+### Checks Run
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.instantiate()'
+```
+
+Result: dependencies instantiated in the fresh worktree; no `Project.toml` or
+`Manifest.toml` diff remained.
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_lv_predictor.jl
+```
+
+Result: `bridge predictor-informed latent-score X_lv 94/94` pass.
+
+```sh
+julia --project=. --startup-file=no test/test_binomial_fit.jl
+```
+
+Result: `fit_binomial_gllvm — recovery 8/8` pass.
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_capabilities.jl
+```
+
+Result: `bridge capabilities ledger 44/44` pass.
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_ci.jl
+```
+
+Result: `bridge CI routing 64/64` pass.
+
+```sh
+julia --project=. --startup-file=no test/test_simulate.jl
+```
+
+Result: `simulate(fit) 5/5` pass.
+
+```sh
+julia --project=. --startup-file=no test/test_postfit.jl
+```
+
+Result: `post-fit` sections passed: ordination core 96/96, predict/fitted 9/9,
+residuals 10/10, AIC/BIC/show 8/8, Poisson 163/163, NB 160/160, Beta 215/215,
+Gamma 215/215, Ordinal 216/216.
+
+```sh
+git diff --check
+```
+
+Result: clean.
+
+```sh
+rg -n "Gaussian-only|Gaussian only|non-Gaussian X_lv|complete-response ordinary Gaussian|X_lv.*Gaussian-only|Gaussian X_lv" src test docs/src docs/dev-log/after-task/2026-06-25-bridge-binomial-xlv.md docs/dev-log/check-log.md README.md CHANGELOG.md
+```
+
+Result: remaining matches are historical log/report entries, REML
+Gaussian-only boundaries, the native Gaussian fitter's own docstring, the
+Gaussian-specific bridge test name, and guarded "non-binomial non-Gaussian"
+wording.
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result: first full-suite run failed after `4595` pass, `0` fail, `1` error,
+and `1` broken in `46m20.7s`. The failing route was the pre-existing
+masked no-X CI bridge test for admitted one-part non-Gaussian rows:
+`test/test_bridge_missing_mask.jl` called the binomial fitter with `K = 0`,
+and the first X_lv implementation had accidentally required positive `K` for
+all binomial fits.
+
+Fix applied: allow `K >= 0` for ordinary/no-latent binomial fits, while keeping
+`X_lv` restricted to positive latent dimension `K > 0`.
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_missing_mask.jl
+```
+
+Result: `masked missing-response bridge 83/83` pass after the `K = 0` guard
+fix.
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_lv_predictor.jl
+julia --project=. --startup-file=no test/test_binomial_fit.jl
+julia --project=. --startup-file=no test/test_bridge_ci.jl
+```
+
+Result after the guard fix: `bridge predictor-informed latent-score X_lv 94/94`,
+`fit_binomial_gllvm - recovery 8/8`, and `bridge CI routing 64/64` pass.
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result after the guard fix: full package test suite passed with `4629` pass,
+`1` broken, `4630` total in `47m36.9s`.
+
+```sh
+julia --project=docs --startup-file=no -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate(); include("docs/make.jl")'
+```
+
+Result: local DocumenterVitepress build completed with exit code 0. The run
+reported the known absolute-style local-link warnings, npm audit warnings from
+the Vitepress toolchain, a Vitepress chunk-size warning, and skipped deployment
+outside CI.
+
+### Queue State
+
+- The branch was originally held because GLLVM.jl PR #113 was open as a draft
+  and overlapped `docs/dev-log/check-log.md`, `src/GLLVM.jl`,
+  `src/families/laplace.jl`, and `test/runtests.jl`.
+- After PR #113 merged as `23938290585f43411f340bcdeedfbb9d1c7af7bd`, this
+  branch was refreshed against `origin/main` before opening its own PR.
+
+### Post-#113 Refresh Checks
+
+```sh
+julia --project=. --startup-file=no test/test_studentt.jl
+```
+
+Result after merging `origin/main`: `Student-t (heavy-tailed continuous, fixed
+nu)` 17/17 pass.
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_bridge_lv_predictor.jl"); include("test/test_binomial_fit.jl"); include("test/test_simulate.jl"); include("test/test_bridge_capabilities.jl"); include("test/test_bridge_ci.jl")'
+```
+
+Result after merging `origin/main`: bridge predictor-informed latent-score
+`X_lv` 94/94, binomial recovery 8/8, simulate 5/5, bridge capabilities 44/44,
+and bridge CI routing 64/64 pass.
+
+```sh
+julia --project=docs --startup-file=no -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate(); include("docs/make.jl")'
+```
+
+Result after merging `origin/main`: local DocumenterVitepress build completed
+with exit code 0. The run reported the known absolute-style local-link
+warnings, npm audit warnings from the Vitepress toolchain, a Vitepress
+chunk-size warning, and skipped deployment outside CI.
+
 ## 2026-06-25 - Gaussian X_lv bridge endpoint
 
 ### Scope

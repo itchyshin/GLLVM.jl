@@ -26,14 +26,17 @@ shared across species. `Λ_B` is a `p × K` loading matrix and
 contribution to `Σ_y_site`: `Λ_B Λ_B'`.
 
 **Predictor-informed latent-score mean** `Λ_B (X_lv[s] α_lv)` — a C1
-ordinary-Gaussian unit-tier extension matching the current R `gllvmTMB`
-Design 73 surface. With `fit_gaussian_gllvm(...; X_lv = X_lv)`, the site score
-is decomposed as `η_B[s] = X_lv[s] α_lv + z_s`, where `z_s ∼ N(0, I_K)`.
+ordinary unit-tier extension matching the current R `gllvmTMB` Design 73
+surface for Gaussian and complete-response binomial logit/probit/cloglog point
+fits. With `fit_gaussian_gllvm(...; X_lv = X_lv)` or
+`fit_binomial_gllvm(...; X_lv = X_lv)`, the site score is decomposed as
+`η_B[s] = X_lv[s] α_lv + z_s`, where `z_s ∼ N(0, I_K)`.
 The raw `α_lv` coefficients depend on the latent-axis orientation; the
 rotation-stable trait-effect matrix is `B_lv = Λ_B α_lv'`, returned by
 `extract_lv_effects(fit)`. This path is point-estimate only: confidence
-intervals, non-Gaussian families, W-tier, and phylogenetic/source-specific
-extensions remain separate validation gates.
+intervals, response masks, fixed-effect `X` plus `X_lv`, other non-Gaussian
+families, W-tier, and phylogenetic/source-specific extensions remain separate
+validation gates.
 
 **Unit-obs latent factor block** `Λ_W η_W[:, s]` — the per-site version
 of the latent block, used when the model has a `latent(0 + trait |

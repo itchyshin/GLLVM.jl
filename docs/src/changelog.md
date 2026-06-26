@@ -51,14 +51,17 @@ package; every numerical addition is gated by deterministic tests.
   family/structure. Faster profile CIs use false-position on `√D`.
 
 ### Structure, covariates, ordination
-- **PARTIAL:** predictor-informed latent-score means for the ordinary Gaussian
-  unit-tier path (`fit_gaussian_gllvm(...; X_lv=...)`), with `getLV(...;
-  component=:mean/:innovation/:total)` and `extract_lv_effects()` point
+- **PARTIAL:** predictor-informed latent-score means for the ordinary unit-tier
+  path, with `fit_gaussian_gllvm(...; X_lv=...)` and
+  `fit_binomial_gllvm(...; X_lv=...)` for complete-response binomial
+  logit/probit/cloglog point fits. `getLV(...;
+  component=:mean/:innovation/:total)` and `extract_lv_effects()` report point
   estimates for the rotation-stable `B_lv = Λ * alpha_lv'`. The `bridge_fit`
-  endpoint now exposes this Gaussian point-estimate route as `X_lv` with
-  `lv_effects`, `scores_mean`, and `scores_innovation`; confidence intervals,
-  non-Gaussian families, W-tier, phylogenetic/source-specific extensions, and
-  R-package row promotion remain gated.
+  endpoint exposes these point-estimate routes as `X_lv` with `lv_effects`,
+  `scores_mean`, and `scores_innovation`; confidence intervals, response masks,
+  simultaneous fixed-effect `X`, other non-Gaussian families, W-tier,
+  phylogenetic/source-specific extensions, and R-package row promotion remain
+  gated.
 - **IN:** fixed-zero shared covariate coefficients for Gaussian (`β_fixed`) and
   non-Gaussian (`γ_fixed`) fixed-effect-X fits, plus bridge status fields for
   `gllvmTMB`'s `Xcoef_fixed` contract.
