@@ -51,6 +51,17 @@ package; every numerical addition is gated by deterministic tests.
   family/structure. Faster profile CIs use false-position on `√D`.
 
 ### Structure, covariates, ordination
+- **PARTIAL:** predictor-informed latent-score means for the ordinary Gaussian
+  unit-tier path (`fit_gaussian_gllvm(...; X_lv=...)`), with `getLV(...;
+  component=:mean/:innovation/:total)` and `extract_lv_effects()` point
+  estimates for the rotation-stable `B_lv = Λ * alpha_lv'`. The `bridge_fit`
+  endpoint now exposes this Gaussian point-estimate route as `X_lv` with
+  `lv_effects`, `scores_mean`, and `scores_innovation`; confidence intervals,
+  non-Gaussian families, W-tier, phylogenetic/source-specific extensions, and
+  R-package row promotion remain gated.
+- **IN:** fixed-zero shared covariate coefficients for Gaussian (`β_fixed`) and
+  non-Gaussian (`γ_fixed`) fixed-effect-X fits, plus bridge status fields for
+  `gllvmTMB`'s `Xcoef_fixed` contract.
 - **IN:** environmental covariates — shared-`γ` (`fit_gllvm_cov`) and
   species-specific `B` (`fit_gllvm_speciescov`); fourth-corner trait–environment
   interactions (`fit_fourthcorner_gllvm`); fixed community row effects

@@ -37,8 +37,9 @@ future design input for exact Gaussian cells, not non-Gaussian Laplace.
   status rows while parity and bridge exposure are audited.
 - Dedicated two-part fitters for Delta-lognormal, Hurdle-Poisson, and
   Hurdle-NB.
-- Minimal Julia-side `bridge_fit` for no-covariate one-part families and selected
-  fixed-effect-X / missing-response rows tested by the paired `gllvmTMB` branch.
+- Minimal Julia-side `bridge_fit` for no-covariate one-part families, selected
+  fixed-effect-X / missing-response rows, and complete Gaussian point-estimate
+  `X_lv` rows tested by the paired `gllvmTMB` branch.
 
 ## What's planned
 

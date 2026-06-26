@@ -40,8 +40,16 @@
 #
 # Optional coefficient keys:
 #   mean_coef    :: Vector{Float64}   — Gaussian-X full mean coefficient vector
+#   mean_coef_status :: Vector{String} — "estimated"/"fixed" for mean_coef
 #   beta_cov     :: Vector{Float64}   — non-Gaussian-X per-trait intercepts
 #   gamma        :: Vector{Float64}   — non-Gaussian-X shared covariate slopes
+#   gamma_status :: Vector{String}    — "estimated"/"fixed" for gamma
+#
+# Optional predictor-informed latent-score keys:
+#   lv_effects        :: Matrix{Float64} — Gaussian-X_lv trait effects Λ*alpha_lv'
+#   alpha_lv          :: Matrix{Float64} — raw q_lv x d latent-axis coefficients
+#   scores_mean       :: Matrix{Float64} — n x d rotated score mean X_lv*alpha_lv
+#   scores_innovation :: Matrix{Float64} — n x d rotated posterior innovation scores
 #
 # Optional CI keys (present ONLY when `options["ci_method"]` ∈ {"wald","profile",
 # "bootstrap"}; absent for the default "none", so the no-CI contract above is
@@ -64,7 +72,9 @@
 # VECTOR routes to the MIXED-family path (fit_mixed_gllvm): one shared latent block
 # across distinct response families, with the cross-distribution latent-scale
 # `correlation` as the headline. Lognormal is a documented follow-up; fixed-effect
-# X is wired (Gaussian); confidence intervals (Wald / profile / bootstrap) route
+# X is wired (Gaussian); predictor-informed latent-score X_lv is wired for the
+# ordinary complete-response Gaussian bridge as a point-estimate-only C1 route.
+# Confidence intervals (Wald / profile / bootstrap) route
 # through `options["ci_method"]` for scalar-CI one-part families (Gaussian,
 # Poisson, Binomial) and grouped-dispersion NB2/NB1/Beta/Gamma rows. NB2, NB1,
 # and Beta default to per-trait grouped
@@ -106,6 +116,14 @@ _bridge_truthy(v::Real) = v != 0
 _bridge_truthy(v::AbstractString) = lowercase(strip(v)) in ("true", "t", "1", "yes")
 _bridge_truthy(::Nothing) = false
 _bridge_truthy(v) = false
+
+function _bridge_coef_fixed(options, q::Integer, label::AbstractString)
+    raw = _bridge_get(options, "coef_fixed", nothing)
+    raw === nothing && (raw = _bridge_get(options, "xcoef_fixed", nothing))
+    raw === nothing && (raw = _bridge_get(options, "beta_fixed", nothing))
+    raw === nothing && (raw = _bridge_get(options, "gamma_fixed", nothing))
+    return _fixed_zero_mask(raw, q, label)
+end
 
 function _bridge_family_key(family::AbstractString)
     key = lowercase(strip(family))
@@ -305,7 +323,7 @@ end
 # --- public entry point ----------------------------------------------------
 
 """
-    bridge_fit(; y, family, d=1, N=nothing, X=nothing,
+    bridge_fit(; y, family, d=1, N=nothing, X=nothing, X_lv=nothing,
                trait_names=nothing, unit_names=nothing, options=Dict())
 
 Plain-data R->Julia bridge (JuliaCall transport). Fits a one-part GLLVM for the
@@ -329,6 +347,7 @@ function bridge_fit(; y,
                     d::Integer = 1,
                     N = nothing,
                     X = nothing,
+                    X_lv = nothing,
                     mask = nothing,
                     trait_names = nothing,
                     unit_names = nothing,
@@ -351,7 +370,26 @@ function bridge_fit(; y,
         (key == "gaussian" || key in _BRIDGE_X_FAMILIES) || throw(ArgumentError(
             "bridge_fit: fixed-effect covariates X are wired for family ∈ {gaussian, " *
             join(_BRIDGE_X_FAMILIES, ", ") * "}; family=\"$(family)\" has no covariate " *
-            "fitter (ordinal/nb1 are a documented follow-up)"))
+                "fitter (ordinal/nb1 are a documented follow-up)"))
+    end
+    # Predictor-informed latent-score covariates are narrower than ordinary
+    # fixed-effect X in this bridge slice: complete Gaussian point estimates only.
+    # The native Gaussian fitter can be widened later, but the bridge contract
+    # should not silently imply non-Gaussian or mixed-family parity.
+    if X_lv !== nothing
+        if family isa AbstractVector
+            throw(ArgumentError(
+                "bridge_fit: predictor-informed latent-score covariates X_lv " *
+                "are not yet wired for the mixed-family path; use family=\"gaussian\"."))
+        end
+        key = _bridge_family_key(String(family))
+        key == "gaussian" || throw(ArgumentError(
+            "bridge_fit: predictor-informed latent-score covariates X_lv are " *
+            "currently wired only for family=\"gaussian\"; family=\"$(family)\" " *
+            "is a separate validation gate."))
+        X === nothing || throw(ArgumentError(
+            "bridge_fit: simultaneous fixed-effect X and latent-score X_lv is " *
+            "not admitted in the bridge yet; fit one mean route at a time."))
     end
     # Mixed-family: a vector of per-trait family strings ⇒ one shared latent block,
     # a TRUE cross-distribution VCV (the headline). A length-1 vector or an all-same
@@ -361,11 +399,14 @@ function bridge_fit(; y,
         mask === nothing || throw(ArgumentError(
             "bridge_fit: missing-response masks are not yet wired for the " *
             "mixed-family path; use a one-part non-Gaussian family or engine='tmb'."))
+        X_lv === nothing || throw(ArgumentError(
+            "bridge_fit: X_lv is not wired for the mixed-family path."))
         return _bridge_fit_mixed(y, collect(String, String.(family)), K, N,
                                  trait_names, unit_names, options)
     end
     return _bridge_fit_onepart(y, _bridge_family_key(String(family)), K, N,
-                               trait_names, unit_names, options; X = X, mask = mask)
+                               trait_names, unit_names, options;
+                               X = X, X_lv = X_lv, mask = mask)
 end
 
 # --- one-part dispatch -----------------------------------------------------
@@ -425,13 +466,16 @@ The `ci_no_x_*` columns report that a native route exists for complete one-part
 no-covariate fits. The `ci_mask_*` columns are narrower: no-covariate one-part
 response-mask fits whose masked likelihood can also drive Wald/profile/bootstrap
 intervals. The `ci_x_*` columns are complete-response one-part fixed-effect-X
-fits. None of the CI groups imply mixed-family or R-bridge parity coverage. Use
-`status` and `notes` for public claim wording.
+fits. `predictor_informed_lv` marks the point-estimate-only Gaussian X_lv bridge
+route; it does not imply confidence intervals or non-Gaussian parity. None of
+the CI groups imply mixed-family or R-bridge parity coverage. Use `status` and
+`notes` for public claim wording.
 """
 function bridge_capabilities()
     onepart = collect(_BRIDGE_ONEPART_FAMILIES)
     family = vcat(onepart, ["mixed-family vector"])
     x_families = Set(vcat(["gaussian"], collect(_BRIDGE_X_FAMILIES)))
+    xlv_families = Set(["gaussian"])
     mask_families = Set(_BRIDGE_MASK_FAMILIES)
     mask_ci_families = Set(_BRIDGE_MASK_CI_FAMILIES)
     # Scalar-mean post-fit (residuals = y − μ, parametric simulate) excludes the
@@ -445,6 +489,7 @@ function bridge_capabilities()
         family = family,
         fit_no_x = vcat(fill(true, length(onepart)), [true]),
         fixed_effect_X = vcat([f in x_families for f in onepart], [false]),
+        predictor_informed_lv = vcat([f in xlv_families for f in onepart], [false]),
         missing_response = vcat([f in mask_families for f in onepart], [false]),
         cbind_binomial = [f == "binomial" for f in family],
         ci_no_x_wald = vcat([!(f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES) for f in onepart], [false]),
@@ -476,6 +521,8 @@ function bridge_capabilities()
                     "one-part reduced-rank bridge family; default no-X route uses per-trait ordinal cutpoints; CI routing is a follow-up" :
                 f in _BRIDGE_MASK_CI_FAMILIES ?
                     "one-part reduced-rank bridge family; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; route support is narrower than full R-user parity" :
+                f == "gaussian" ?
+                    "one-part reduced-rank bridge family; fixed-effect-X and point-estimate predictor-informed latent-score X_lv routes are wired; X_lv CIs and non-Gaussian X_lv remain follow-ups; route support is narrower than full R-user parity" :
                     "one-part reduced-rank bridge family; route support is narrower than full R-user parity"
                 for f in onepart
             ],
@@ -496,7 +543,8 @@ function _bridge_mask(mask, p::Integer, n::Integer)
 end
 
 function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
-                             trait_names, unit_names, options; X = nothing, mask = nothing)
+                             trait_names, unit_names, options;
+                             X = nothing, X_lv = nothing, mask = nothing)
     Yf = Matrix{Float64}(y)
     p, n = size(Yf)
     traits = _bridge_names(trait_names, p, "trait")
@@ -521,6 +569,22 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
             "are not wired yet; use a complete response table or engine='tmb'."))
     end
 
+    if X_lv !== nothing
+        key == "gaussian" || throw(ArgumentError(
+            "bridge_fit: X_lv is currently wired only for family=\"gaussian\"."))
+        X === nothing || throw(ArgumentError(
+            "bridge_fit: simultaneous fixed-effect X and latent-score X_lv is " *
+            "not admitted in the bridge yet; fit one mean route at a time."))
+        M === nothing || throw(ArgumentError(
+            "bridge_fit: missing-response masks with X_lv are not wired yet; " *
+            "use a complete response table or engine='tmb'."))
+        K > 0 || throw(ArgumentError(
+            "bridge_fit: X_lv requires a positive latent dimension d."))
+        ci_method == "none" || throw(ArgumentError(
+            "bridge_fit: confidence intervals for X_lv fits are not admitted " *
+            "yet; use ci_method=\"none\" and lv_effects point estimates."))
+    end
+
     # X (a p×n×q covariate array) routes to the covariate fitters: the Gaussian
     # branch below handles key=="gaussian"; every other one-part family with a
     # covariate kernel (_BRIDGE_X_FAMILIES) routes to fit_gllvm_cov. Defend the
@@ -532,10 +596,51 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                 "supported families with covariates are gaussian, " *
                 join(_BRIDGE_X_FAMILIES, ", ")))
         return _bridge_fit_onepart_cov(Yf, key, K, N, traits, units, X,
-                                       ci_method, ci_level, ci_nboot, ci_seed)
+                                       ci_method, ci_level, ci_nboot, ci_seed,
+                                       options)
     end
 
     if key == "gaussian"
+        if X_lv !== nothing
+            Xlv = Matrix{Float64}(X_lv)
+            size(Xlv, 1) == n || throw(ArgumentError(
+                "bridge_fit: X_lv must be n×q_lv ($(n)×q_lv); got $(size(Xlv))"))
+            size(Xlv, 2) > 0 || throw(ArgumentError(
+                "bridge_fit: X_lv must have at least one predictor column"))
+
+            # Preserve the no-X Gaussian bridge convention: trait means live in
+            # alpha, while the latent-score predictor fit sees centred responses.
+            alpha = vec(Statistics.mean(Yf; dims = 2))
+            Yc = Yf .- alpha
+            fit = fit_gaussian_gllvm(Yc; K = K, X_lv = Xlv)
+            Sigma = Matrix{Float64}(sigma_y_site(fit))
+            corr  = Matrix{Float64}(correlation(fit))
+            comm  = Vector{Float64}(communality(fit))
+            scores_total = Matrix{Float64}(
+                getLV(fit, Yc; X_lv = Xlv, component = :total, rotate = true))
+            scores_mean = Matrix{Float64}(
+                getLV(fit, Yc; X_lv = Xlv, component = :mean, rotate = true))
+            scores_innovation = Matrix{Float64}(
+                getLV(fit, Yc; X_lv = Xlv, component = :innovation, rotate = true))
+            df = p + _nparams(fit)
+            base = _bridge_assemble(fit, "gaussian", "gaussian_xlv_rr", traits, units;
+                alpha = alpha, dispersion = fill(NaN, p), sigma_eps = fit.pars.σ_eps,
+                link = fill("IdentityLink", p), Sigma = Sigma, corr = corr, comm = comm,
+                scores = scores_total, df = df, loglik = fit.logLik,
+                converged = fit.converged, iterations = fit.n_iter,
+                note = "predictor-informed latent-score fit (Gaussian C1): alpha " *
+                       "are pre-fit trait means, scores are total latent scores, " *
+                       "scores_mean = X_lv*alpha_lv, scores_innovation are the " *
+                       "posterior zero-mean score deviations, and lv_effects = " *
+                       "Lambda*alpha_lv' is the rotation-stable trait-effect matrix. " *
+                       "Confidence intervals and non-Gaussian X_lv routes remain " *
+                       "separate validation gates.",
+                ci = nothing)
+            return merge(base, (lv_effects = Matrix{Float64}(extract_lv_effects(fit)),
+                                alpha_lv = Matrix{Float64}(fit.pars.alpha_lv),
+                                scores_mean = scores_mean,
+                                scores_innovation = scores_innovation))
+        end
         if X !== nothing
             # Fixed-effect covariate path. The caller's X (p×n×q) already carries the
             # FULL mean structure — per-trait intercept dummies AND covariates — so we
@@ -546,7 +651,8 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
             size(Xarr, 1) == p && size(Xarr, 2) == n || throw(ArgumentError(
                 "bridge_fit: X must be p×n×q ($(p)×$(n)×q); got $(size(Xarr))"))
             q = size(Xarr, 3)
-            fit = fit_gaussian_gllvm(Yf; K = K, X = Xarr)
+            coef_fixed = _bridge_coef_fixed(options, q, "coef_fixed")
+            fit = fit_gaussian_gllvm(Yf; K = K, X = Xarr, β_fixed = coef_fixed)
             β = collect(Float64, fit.pars.β)
             alpha = zeros(Float64, p)
             @inbounds for t in 1:p
@@ -560,7 +666,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
             corr  = Matrix{Float64}(correlation(fit))
             comm  = Vector{Float64}(communality(fit))
             scores = _bridge_scores(() -> getLV(fit, Yf; X = Xarr, rotate = true))
-            df = q + _bridge_rr_df(p, K) + 1
+            df = count(!, coef_fixed) + _bridge_rr_df(p, K) + 1
             ci = ci_method == "none" ? nothing :
                  _bridge_compute_ci_gaussian(fit, Yf, ci_method, ci_level, ci_nboot,
                                              ci_seed; X = Xarr)
@@ -571,8 +677,9 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                 converged = fit.converged, iterations = fit.n_iter,
                 note = "fixed-effect covariate fit: X carries the full mean structure " *
                        "(per-trait intercepts + covariates); alpha is the per-trait " *
-                       "fitted mean.", ci = ci)
-            return merge(base, (mean_coef = β,))
+                       "fitted mean. coef_fixed entries, if any, are fixed at zero.", ci = ci)
+            return merge(base, (mean_coef = β,
+                                mean_coef_status = _fixed_status(coef_fixed)))
         end
         reml = _bridge_truthy(_bridge_get(options, "reml", false))
         if reml
@@ -754,13 +861,14 @@ end
 function _bridge_fit_onepart_cov(Yf::AbstractMatrix{Float64}, key::AbstractString,
                                  K::Integer, N, traits, units, X,
                                  ci_method::AbstractString, ci_level::Real,
-                                 ci_nboot::Integer, ci_seed::Integer)
+                                 ci_nboot::Integer, ci_seed::Integer, options)
     p, n = size(Yf)
     Xarr = Array{Float64,3}(X)
     size(Xarr, 1) == p && size(Xarr, 2) == n || throw(ArgumentError(
         "bridge_fit: X must be p×n×q ($(p)×$(n)×q); got $(size(Xarr))"))
     q = size(Xarr, 3)
     marker = _bridge_cov_marker(key)
+    coef_fixed = _bridge_coef_fixed(options, q, "coef_fixed")
 
     # Per-family response coercion + Binomial trial counts (mirror the no-X path):
     # the count families round to integer-valued Float64; continuous pass through.
@@ -771,8 +879,10 @@ function _bridge_fit_onepart_cov(Yf::AbstractMatrix{Float64}, key::AbstractStrin
           (N isa Number ? fill(round(Int, N), p, n) : round.(Int, Matrix(N)))) :
          nothing
 
-    fit = Nm === nothing ? fit_gllvm_cov(Ydata; family = marker, X = Xarr, K = K) :
-                           fit_gllvm_cov(Ydata; family = marker, X = Xarr, K = K, N = Nm)
+    fit = Nm === nothing ?
+          fit_gllvm_cov(Ydata; family = marker, X = Xarr, K = K, γ_fixed = coef_fixed) :
+          fit_gllvm_cov(Ydata; family = marker, X = Xarr, K = K, N = Nm,
+                        γ_fixed = coef_fixed)
 
     β   = collect(Float64, fit.β)
     γ   = collect(Float64, fit.γ)
@@ -792,7 +902,7 @@ function _bridge_fit_onepart_cov(Yf::AbstractMatrix{Float64}, key::AbstractStrin
     corr = _bridge_corr_from_sigma(Σ)
     comm = ones(Float64, p)
 
-    df = p + q + _bridge_rr_df(p, K) + (isnan(fit.dispersion) ? 0 : 1)
+    df = p + count(!, coef_fixed) + _bridge_rr_df(p, K) + (isnan(fit.dispersion) ? 0 : 1)
     base = _bridge_assemble(fit, key, "$(key)_x_rr", traits, units;
         alpha = β, dispersion = disp, sigma_eps = NaN,
         link = fill(_bridge_link_name(fit.link), p), Sigma = Σ, corr = corr,
@@ -801,10 +911,11 @@ function _bridge_fit_onepart_cov(Yf::AbstractMatrix{Float64}, key::AbstractStrin
         loadings = L, note =
             "fixed-effect covariate fit (non-Gaussian): eta = beta + X*gamma + " *
             "Lambda*z. beta_cov = per-trait intercepts, gamma = shared covariate " *
-            "coefficients. Sigma/correlation use the shared block Lambda*Lambda' " *
+            "coefficients. coef_fixed entries, if any, are fixed at zero. " *
+            "Sigma/correlation use the shared block Lambda*Lambda' " *
             "(communality 1).",
         ci = ci)
-    return merge(base, (beta_cov = β, gamma = γ))
+    return merge(base, (beta_cov = β, gamma = γ, gamma_status = _fixed_status(coef_fixed)))
 end
 
 # --- mixed-family dispatch (the cross-distribution VCV headline) -----------

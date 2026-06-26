@@ -57,4 +57,31 @@ using GLLVM, Test, Random, LinearAlgebra
         @test all(isfinite, g)
         @test length(g) == q + 1 + GLLVM.rr_theta_len(p, K)
     end
+
+    @testset "β_fixed zero constraint equals dropping the design column" begin
+        Random.seed!(4)
+        p, K, n = 4, 1, 90
+        x1 = randn(n)
+        x2 = randn(n)
+        X = zeros(p, n, 2)
+        X[:, :, 1] .= reshape(x1, 1, n)
+        X[:, :, 2] .= reshape(x2, 1, n)
+        Xdrop = X[:, :, 1:1]
+        Λ_true = reshape([0.5, -0.4, 0.3, 0.2], p, K)
+        η = randn(K, n)
+        y = Λ_true * η .+ 0.7 .* reshape(x1, 1, n) .+ 0.4 .* randn(p, n)
+
+        fit_fixed = fit_gaussian_gllvm(y; K = K, X = X, β_fixed = [false, true])
+        fit_drop = fit_gaussian_gllvm(y; K = K, X = Xdrop)
+
+        @test fit_fixed.converged
+        @test fit_fixed.pars.β[2] == 0.0
+        @test fit_fixed.pars.β_fixed == [false, true]
+        @test fit_fixed.pars.β[1] ≈ fit_drop.pars.β[1] atol = 1e-10
+        @test fit_fixed.logLik ≈ fit_drop.logLik atol = 1e-10
+        @test GLLVM.aic(fit_fixed) ≈ GLLVM.aic(fit_drop) atol = 1e-10
+
+        ci = confint(fit_fixed; y = y, X = X, parm = "beta")
+        @test ci.term == ["beta[1]"]
+    end
 end

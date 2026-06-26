@@ -1,5 +1,309 @@
 # Check Log
 
+## 2026-06-26 - PR #113 main-merge resolution
+
+### Scope
+
+Resolved draft PR #113 (`claude/studentt-105-20260620`) against current
+`origin/main` so the Student-t branch can return to a mergeable, CI-testable
+state before the R/Julia `X_lv` bridge lane opens its own Julia PR.
+
+- Ran the merge in `/private/tmp/gllvmjl-studentt-ci-113` from local branch
+  `codex/studentt-ci-113`.
+- The only content conflict was `docs/dev-log/check-log.md`; both the
+  Student-t ForwardDiff buffer-fix entry and the later predictor-informed
+  latent-score entries were kept.
+- `src/GLLVM.jl`, `test/runtests.jl`, and the other mainline code/test/doc
+  changes merged automatically.
+- No Student-t likelihood equation, optimiser tolerance, family contract, or
+  public capability claim was changed in this merge-resolution slice.
+
+### Checks Run
+
+```sh
+gh pr list --repo itchyshin/GLLVM.jl --state open --json number,title,headRefName,isDraft,mergeStateStatus,url,updatedAt
+git log --all --oneline --since="6 hours ago" -- docs/dev-log/check-log.md docs/dev-log/after-task src/GLLVM.jl test/runtests.jl
+```
+
+Result: only PR #113 was open in GLLVM.jl and it was still draft/dirty before
+the merge-resolution push. No recent same-file activity appeared in the
+6-hour log check.
+
+```sh
+rg -n '<<<<<<<|=======|>>>>>>>' docs/dev-log/check-log.md
+```
+
+Result: no conflict markers remained.
+
+```sh
+julia --project=. --startup-file=no test/test_studentt.jl
+```
+
+Result: `Student-t (heavy-tailed continuous, fixed nu)` 17/17 pass. The
+marginal ForwardDiff-vs-central-FD max relative error was
+`6.4151837495491755e-9`.
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result: full package test suite passed with `4569` pass, `1` broken, `4570`
+total in `38m56.8s`.
+
+```sh
+julia --project=docs --startup-file=no -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate(); include("docs/make.jl")'
+```
+
+Result: local DocumenterVitepress build completed with exit code 0. The run
+reported the known local-link warnings for absolute-style links, npm audit
+warnings from the Vitepress toolchain, a Vitepress chunk-size warning, and
+skipped deployment outside CI.
+
+### Deliberately Not Run
+
+- No R/gllvmTMB checks were run from this GLLVM.jl worktree.
+- No binary `X_lv` Julia PR was opened in this slice; PR #113 must first be
+  pushed and rechecked on GitHub so the one-open-PR queue is not widened.
+- No validation or parity row was promoted from this merge-resolution evidence.
+
+### Claim Boundary
+
+IN: PR #113 is locally resolved against current main and passes the full Julia
+package test suite plus local Documenter. OUT: no new R bridge claim, no broad
+R-Julia parity claim, and no interval/coverage claim for Student-t or `X_lv`.
+
+## 2026-06-25 - Gaussian X_lv bridge endpoint
+
+### Scope
+
+Exposed the native ordinary Gaussian predictor-informed latent-score path through
+the Julia bridge, without widening the public claim beyond point estimates.
+
+- Added `X_lv` to `bridge_fit()` for complete-response `family = "gaussian"`
+  fits only.
+- Preserved the existing Gaussian bridge convention by centering responses by
+  trait means, returning those means as `alpha`, and fitting
+  `fit_gaussian_gllvm(Yc; X_lv = X_lv)` on the centred matrix.
+- Added flat JuliaCall payload fields for the R side:
+  `lv_effects = Lambda * alpha_lv'`, raw `alpha_lv`, `scores_mean`, and
+  `scores_innovation`. The existing `scores` field remains the total rotated
+  latent score.
+- Added `predictor_informed_lv` to `bridge_capabilities()` so this route is not
+  conflated with ordinary fixed-effect `X`.
+- Rejected simultaneous `X` + `X_lv`, masks + `X_lv`, mixed-family `X_lv`,
+  non-Gaussian `X_lv`, `d = 0`, and `ci_method != "none"` with explicit errors.
+- Updated the parity/changelog/roadmap docs to describe this as a Gaussian
+  point-estimate endpoint only; R-package row promotion remains gated.
+
+### Checks Run
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.instantiate()'
+```
+
+Result: dependencies instantiated after a fresh worktree initially could not
+precompile `GLLVM` because `Distributions` was absent from the local depot. This
+left no `Project.toml` / `Manifest.toml` changes.
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_lv_predictor.jl
+```
+
+Result: `bridge predictor-informed latent-score X_lv 19/19` pass.
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_capabilities.jl
+```
+
+Result: `bridge capabilities ledger 42/42` pass.
+
+```sh
+julia --project=. --startup-file=no test/test_lv_predictor.jl
+```
+
+Result: `predictor-informed latent-score mean 24/24` pass.
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_x.jl
+```
+
+Result: `bridge fixed-effect X (non-Gaussian one-part families) 179/179` pass.
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_ci.jl
+```
+
+Result: `bridge CI routing 64/64` pass.
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_missing_mask.jl
+```
+
+Result: `bridge missing-response mask 83/83` pass.
+
+```sh
+julia --project=docs --startup-file=no -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate(); include("docs/make.jl")'
+```
+
+Result: local DocumenterVitepress build completed. It emitted the existing
+absolute-style local-link warnings, npm audit warnings from the Vitepress
+toolchain, and skipped deployment outside CI; no build failure.
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: `GLLVM.jl 4540 pass, 3 broken, 4543 total` in `43m39.1s`.
+The run reported that Aqua and JET were not in the direct project environment
+and should be covered by `Pkg.test()`.
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result: `GLLVM.jl 4552 pass, 1 broken, 4553 total`; `GLLVM tests passed` in
+`46m58.8s`.
+
+```sh
+git diff --check
+```
+
+Result: clean before the dev-log edits.
+
+```sh
+rg -n "predictor-informed latent-score|X_lv|lv_effects|scores_mean|scores_innovation|non-Gaussian X_lv|full R-user parity|R-bridge promotion|R-package row promotion" src test docs/src README.md CHANGELOG.md
+```
+
+Result: matches were the intended bridge guards, payload tests, capability note,
+and claim-boundary docs. No broad R-Julia parity or non-Gaussian `X_lv` claim was
+found.
+
+### Deliberately Not Run
+
+- No live R-side `gllvmTMB` bridge test was run in this Julia PR. The paired R
+  admission should be a separate `gllvmTMB` slice after this endpoint is merged
+  and available to the R bridge.
+- No binary/non-Gaussian `X_lv` Julia bridge route was attempted. Native
+  constrained-ordination machinery is related, but it is not this flat bridge
+  contract and needs a separate recovery/parity design.
+
+### Claim Boundary
+
+IN: complete-response ordinary Gaussian `bridge_fit(...; family = "gaussian",
+X_lv = X_lv)` point estimates with total scores, score mean/innovation
+decomposition, raw `alpha_lv`, and rotation-stable `lv_effects`.
+
+PARTIAL: this is an endpoint contract against the native Gaussian
+`fit_gaussian_gllvm(...; X_lv=...)` oracle. It is not yet an R-package row
+promotion, interval route, or missing-response route.
+
+PLANNED/GATED: non-Gaussian `X_lv` bridge rows, binary/probit bridge parity,
+simultaneous `X` + `X_lv`, masks + `X_lv`, and confidence intervals remain
+separate validation gates.
+
+## 2026-06-22 - Fixed-zero shared X coefficients
+
+### Scope
+
+Added Julia-side fixed-zero coefficient masks for the R-side `Xcoef_fixed`
+contract that landed in `gllvmTMB` PR #536.
+
+- `fit_gaussian_gllvm(..., β_fixed = ...)` now optimises only free shared
+  Gaussian covariate coefficients, expands `pars.β` back to the full design
+  length, and stores `pars.β_fixed`.
+- `fit_gllvm_cov(..., γ_fixed = ...)` does the same for non-Gaussian one-part
+  shared covariate coefficients and stores `fit.γ_fixed`.
+- The bridge accepts `options["coef_fixed"]` / `xcoef_fixed` / `beta_fixed` /
+  `gamma_fixed`, passes the mask to the native fitter, returns full coefficient
+  vectors with constrained entries equal to zero, and reports
+  `mean_coef_status` or `gamma_status`.
+- Wald/profile/bootstrap CI term lists and refits omit fixed coefficients from
+  the estimated parameter vector while preserving original coefficient indices
+  in names such as `beta[1]`, `gamma[3]`.
+- AIC/BIC degrees of freedom count free coefficients, not fixed-zero entries.
+
+### Checks Run
+
+```sh
+julia --project=. --startup-file=no -e 'using GLLVM; println("loaded")'
+```
+
+Result: package loaded cleanly after the new helper include.
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_fixed_effects.jl"); include("test/test_covariates.jl"); include("test/test_bridge_x.jl")'
+```
+
+Result: `fixed effects 18/18`, `Non-Gaussian covariates (Xβ) 30/30`, and
+`bridge fixed-effect X 179/179` pass.
+
+```sh
+julia --project=. --startup-file=no -e 'include("test/test_confint_bootstrap.jl")'
+```
+
+Result: `parametric bootstrap CI 9/9` pass.
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: `GLLVM.jl 4495 pass, 3 broken, 4498 total` in 31m04.9s before the final
+docstring/unused-local cleanup.
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result: `GLLVM.jl 4507 pass, 1 broken, 4508 total`; `GLLVM tests passed` in
+36m15.0s.
+
+```sh
+julia --project=docs --startup-file=no -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate(); include("docs/make.jl")'
+```
+
+Result: local DocumenterVitepress build completed. It emitted existing local-link
+warnings for absolute-style documentation links, npm audit warnings from the
+Vitepress toolchain, and skipped deployment outside CI; no build failure.
+
+```sh
+julia --project=docs --startup-file=no docs/make.jl
+```
+
+Result: rerun after the changelog edit completed with the same known
+DocumenterVitepress/local-link/npm warnings and no build failure.
+
+```sh
+git diff --check
+```
+
+Result: clean.
+
+```sh
+rg -n "selects variables|automatic deletion|guarantees convergence|proves identifiability|validated item selection|separation solved|nonzero constraint|non-zero constraint|general constraint" README.md docs/src src test
+```
+
+Result: no matches.
+
+### Deliberately Not Run
+
+- Cross-repository live R-to-Julia bridge tests were not rerun here; the paired
+  R-side `Xcoef_fixed` implementation and merge were validated in `gllvmTMB`
+  PR #536. This Julia PR supplies the engine/bridge endpoint used by that
+  contract.
+
+### Claim Boundary
+
+IN: zero-only fixed shared coefficients for complete fixed-effect-X Gaussian and
+non-Gaussian one-part fits already supported by the Julia fixed-X bridge.
+
+PARTIAL: this is not a general linear-constraint system and does not estimate
+nonzero fixed values. Julia receives positional masks; the R package owns
+formula-name to position translation.
+
+PLANNED/GATED: fixed coefficients combined with X+mask routes, NB1-X,
+mixed-family-X, ordinal-X, and structural-covariance-X bridge rows remain
+separate follow-ups.
+
 ## 2026-06-16 - Fixed-effect-X CI bridge endpoints
 
 ### Scope
@@ -2074,3 +2378,87 @@ missing-predictor Binomial `3/3`, Beta Laplace `2/2`, Gamma Laplace `2/2` pass.
 PASS WITH NOTES for a local patch candidate. The exact #113 CI blocker is fixed
 by making the generic Laplace mode buffers AD-compatible. Broader CI still needs
 to run on GitHub after the maintainer approves pushing the patch.
+
+## 2026-06-25 — predictor-informed latent-score C1
+
+Branch: `codex/lv-predictor-c1-20260625`
+
+Purpose: add the Julia-side ordinary Gaussian unit-tier analogue of the R
+`gllvmTMB` Design 73 C1 surface, without broad parity, interval, or
+non-Gaussian claims.
+
+### Changes
+
+- Added `gaussian_lv_nll_packed`, an explicit Gaussian likelihood for
+  `z_total[s, :] = X_lv[s, :] * alpha_lv + z_innovation[s, :]`.
+- Added `fit_gaussian_gllvm(...; X_lv = X_lv, alpha_lv_init = ...)` for the
+  ordinary Gaussian unit-tier path only.
+- Added `getLV(...; component = :mean/:innovation/:total, X_lv = X_lv)`.
+- Added `extract_lv_effects()` / `lv_effects()` for the rotation-stable
+  trait-effect matrix `B_lv = Lambda * alpha_lv'`.
+- Guarded Wald/profile/bootstrap intervals for `X_lv` fits; this C1 slice is
+  point-estimate only.
+- Updated model docs, changelog, tests, and the after-task report.
+
+### Checks Run
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_lv_predictor.jl
+```
+
+Result: `24/24` pass.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no -e 'include("test/test_fixed_effects.jl"); include("test/test_postfit.jl")'
+```
+
+Result: fixed effects `18/18` pass; post-fit ordination core `96/96`,
+predict/fitted `9/9`, residuals `10/10`, AIC/BIC `8/8`, Poisson `163/163`,
+NB `160/160`, Beta `215/215`, Gamma `215/215`, Ordinal `216/216`.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no -e 'include("test/test_confint.jl"); include("test/test_confint_profile.jl"); include("test/test_confint_bootstrap.jl")'
+```
+
+Result: Wald CI `14/14`, profile CI `4/4`, bootstrap CI `9/9`.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no -e 'using Pkg; Pkg.instantiate()'
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/runtests.jl
+```
+
+Result: full local test suite passed with `4519` pass, `3` broken, `4522`
+total in `31m25.4s`. The run reported that Aqua and JET are not available in
+this direct `test/runtests.jl` environment and should be run through
+`Pkg.test()` for the full battery.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result: package test suite passed with `4531` pass, `1` broken, `4532` total
+in `36m58.2s`. This run used the temporary `Pkg.test()` environment with Aqua
+and JET available.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=docs --startup-file=no docs/make.jl
+```
+
+Result: Documenter/VitePress build completed. The run reported pre-existing
+invalid-local-link warnings for the docs navigation (for example `/quickstart`,
+`/response-families`, and `/api`) and npm audit warnings from the VitePress
+dependency tree; neither was introduced by this slice.
+
+### Deliberately Not Run
+
+- No push or PR was opened: `gllvmTMB` PR #558 is open and green, GLLVM.jl draft
+  PR #113 is open, and this repo requires explicit maintainer instruction
+  before pushing.
+
+### Claim Boundary
+
+IN: ordinary Gaussian unit-tier predictor-informed latent-score point estimates.
+PARTIAL: score algebra and post-fit extraction are tested, but recovery,
+coverage, and bridge promotion are not admitted. OUT: W-tier, diagonal random
+effects, phylogenetic/source-specific blocks, non-Gaussian families, REML, and
+interval calibration.

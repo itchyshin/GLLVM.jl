@@ -36,7 +36,7 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 | Capability | GLLVM.jl | Notes |
 |-----------|:---:|-------|
 | Latent-variable ordination (loadings) | ✅ | any `K`; canonical SVD rotation |
-| Fixed-effect covariates (`Xβ`) | ✅ Gaussian · ✅ non-Gaussian (GLM families) | `fit_gllvm_cov(Y; family, X, K)` adds an `Xβ` offset to the Laplace path (Poisson/NB/Binomial/Beta/Gamma); shared coefficients over the `(p,n,q)` design |
+| Fixed-effect covariates (`Xβ`) | ✅ Gaussian · ✅ non-Gaussian (GLM families) | `fit_gllvm_cov(Y; family, X, K)` adds an `Xβ` offset to the Laplace path (Poisson/NB/Binomial/Beta/Gamma); shared coefficients over the `(p,n,q)` design. Gaussian `β_fixed` and non-Gaussian `γ_fixed` zero masks are supported for fixed-zero coefficient constraints. |
 | Between / within (multilevel) | ✅ Gaussian | `K_W` + per-trait diagonal |
 | Phylogenetic random effect | ✅ ⚡ | fast **O(p)** sparse path, benchmarked to p = 10⁴ |
 | Animal model (relatedness / GRM) | ✅ Gaussian | `relatedness_cov`, via the `Σ_phy` input |
@@ -120,7 +120,18 @@ R-admitted row must have a Julia route with explicit status metadata, while
 Julia-only rows must remain explicitly planned or rejected in `gllvmTMB`.
 For Gaussian covariate fits the bridge returns `mean_coef`, the full coefficient
 vector for the supplied `X` array, so the R side can reconstruct in-sample
-fitted values without guessing from the per-trait mean summary.
+fitted values without guessing from the per-trait mean summary. When the R side
+passes a fixed-zero coefficient mask through `options["coef_fixed"]`, the bridge
+returns the full coefficient vector with constrained entries equal to zero plus
+`mean_coef_status` (Gaussian) or `gamma_status` (non-Gaussian) so the R package
+can print fixed rows without treating them as estimated parameters.
+Predictor-informed latent-score covariates (`X_lv`) are admitted only for
+complete-response ordinary Gaussian point fits: the bridge centres responses by
+trait means, returns those means as `alpha`, returns total latent scores in
+`scores`, and adds `scores_mean`, `scores_innovation`, `alpha_lv`, and
+rotation-stable `lv_effects = Lambda * alpha_lv'`. X_lv confidence intervals,
+missing-response masks, simultaneous fixed-effect `X`, mixed-family fits, and
+non-Gaussian rows remain deliberate follow-ups rather than inferred parity.
 Initial response-missing masks are admitted only for no-X one-part non-Gaussian
 bridge fits through an explicit `mask` (`true = observed`); the R bridge
 live-tests Poisson, Bernoulli Binomial, NB2, NB1, Beta, Gamma, and

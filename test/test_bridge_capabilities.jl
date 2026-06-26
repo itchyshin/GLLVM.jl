@@ -8,6 +8,7 @@ using GLLVM
         :family,
         :fit_no_x,
         :fixed_effect_X,
+        :predictor_informed_lv,
         :missing_response,
         :cbind_binomial,
         :ci_no_x_wald,
@@ -51,6 +52,7 @@ using GLLVM
         "beta",
         "gamma",
     ]
+    @test caps.family[caps.predictor_informed_lv] == ["gaussian"]
     @test caps.family[caps.missing_response] == [
         "poisson",
         "binomial",
@@ -131,6 +133,7 @@ using GLLVM
         else
             @test occursin("narrower than full R-user parity", note)
         end
+        fam == "gaussian" && @test occursin("predictor-informed latent-score", note)
     end
     @test occursin("mixed-family", caps.notes[end])
     @test occursin("no X", caps.notes[end])

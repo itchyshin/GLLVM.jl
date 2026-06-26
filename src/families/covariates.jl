@@ -166,14 +166,16 @@ end
 
 Result of [`fit_gllvm_cov`](@ref): a GLLVM fit with fixed-effect covariates. Fields:
 `family` (the Distributions marker), per-species intercepts `β` (length p), shared
-covariate coefficients `γ` (length q), loadings `Λ` (p×K), `dispersion` (`r`/`φ`/`α`,
-or `NaN` when the family has none), `link`, the maximised Laplace `loglik`,
-`converged`, and `iterations`.
+covariate coefficients `γ` (length q, including fixed-zero entries), `γ_fixed`
+(Bool vector marking fixed-zero entries), loadings `Λ` (p×K), `dispersion`
+(`r`/`φ`/`α`, or `NaN` when the family has none), `link`, the maximised Laplace
+`loglik`, `converged`, and `iterations`.
 """
 struct GllvmCovFit
     family::Distribution
     β::Vector{Float64}
     γ::Vector{Float64}
+    γ_fixed::Vector{Bool}
     Λ::Matrix{Float64}
     dispersion::Float64
     link::Link
@@ -185,12 +187,13 @@ end
 function Base.show(io::IO, f::GllvmCovFit)
     p, K = size(f.Λ); q = length(f.γ)
     print(io, "GllvmCovFit(", nameof(typeof(f.family)), ", p=", p, ", q=", q, ", K=", K)
+    any(f.γ_fixed) && print(io, ", fixed γ=", count(f.γ_fixed))
     isnan(f.dispersion) || print(io, ", disp=", round(f.dispersion; sigdigits = 4))
     print(io, ", loglik=", round(f.loglik; sigdigits = 7), f.converged ? "" : ", NOT CONVERGED", ")")
 end
 
 """
-    fit_gllvm_cov(Y; family, X, K, link=nothing, N=nothing, …) -> GllvmCovFit
+    fit_gllvm_cov(Y; family, X, K, link=nothing, N=nothing, γ_fixed=nothing, …) -> GllvmCovFit
 
 Fit a non-Gaussian GLLVM **with fixed-effect covariates** by L-BFGS over
 `[β; γ; vec(Λ); (log-dispersion)]` on the offset-augmented Laplace marginal, where
@@ -202,6 +205,8 @@ where present, is jointly estimated). `X` is the `(p, n, q)` covariate array (sa
 contract as the Gaussian engine); `γ` (length q) are coefficients shared across
 species (encode species-specific responses by block-expanding `X`). `Y` is `p × n`;
 `N` supplies Binomial trial counts (default all-ones). Finite-difference gradient.
+`γ_fixed` optionally fixes selected covariate coefficients to zero; pass a Bool
+vector of length `size(X, 3)`, an integer index vector, or a Dict index=>0.
 
 ```julia
 # Poisson abundance with one site covariate, shared coefficient:
@@ -217,12 +222,16 @@ marginal *and* from the warm start, so the fit depends only on the observed cell
 function fit_gllvm_cov(Y::AbstractMatrix; family, X::AbstractArray{<:Real, 3},
         K::Integer, link::Union{Nothing, Link} = nothing,
         N::Union{Nothing, AbstractMatrix} = nothing, mask = nothing,
+        γ_fixed = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
     size(X, 1) == p && size(X, 2) == n ||
         throw(DimensionMismatch("X must be (p, n, q) = ($p, $n, q); got $(size(X))"))
-    q = size(X, 3)
+    q_full = size(X, 3)
+    γ_fixed_mask = _fixed_zero_mask(γ_fixed, q_full, "γ_fixed")
+    X_fit, _ = _slice_fixed_X(X, γ_fixed_mask)
+    q = size(X_fit, 3)
     rr = rr_theta_len(p, K)
     lk = link === nothing ? _cov_default_link(family) : link
     Nm = N === nothing ? fill(1, p, n) : N
@@ -250,7 +259,7 @@ function fit_gllvm_cov(Y::AbstractMatrix; family, X::AbstractArray{<:Real, 3},
         Λ = unpack_lambda(θ[(p + q + 1):(p + q + rr)], p, K)
         disp = has_disp ? exp(θ[p + q + rr + 1]) : NaN
         fam = _cov_family(family, disp)
-        O = _build_offset(X, γ)
+        O = _build_offset(X_fit, γ)
         v = try
             -_marginal_loglik_offset(fam, Yc, Nm, Λ, β, O, lk;
                                      mask = msk, maxiter = newton_maxiter, tol = newton_tol)
@@ -264,9 +273,10 @@ function fit_gllvm_cov(Y::AbstractMatrix; family, X::AbstractArray{<:Real, 3},
                          autodiff = :finite)
     θ̂ = Optim.minimizer(res)
     β̂ = θ̂[1:p]
-    γ̂ = θ̂[(p + 1):(p + q)]
+    γ̂_free = θ̂[(p + 1):(p + q)]
+    γ̂ = collect(Float64, _expand_fixed_zero(γ̂_free, γ_fixed_mask))
     Λ̂ = unpack_lambda(θ̂[(p + q + 1):(p + q + rr)], p, K)
     disp̂ = has_disp ? exp(θ̂[p + q + rr + 1]) : NaN
-    return GllvmCovFit(family, β̂, γ̂, Λ̂, disp̂, lk, -Optim.minimum(res),
+    return GllvmCovFit(family, β̂, γ̂, collect(Bool, γ_fixed_mask), Λ̂, disp̂, lk, -Optim.minimum(res),
                        Optim.converged(res), Optim.iterations(res))
 end
