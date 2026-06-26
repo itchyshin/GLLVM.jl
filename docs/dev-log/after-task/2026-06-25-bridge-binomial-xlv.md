@@ -152,9 +152,17 @@ Result after the guard fix: `bridge predictor-informed latent-score X_lv 94/94`,
 julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
 ```
 
-Result: rerun started after the guard fix, reached the late VA-vs-Laplace
-blocks, then was interrupted at Shinichi's stop request before completion.
-No Julia test process remained running after interruption.
+Result after the guard fix: full package test suite passed with `4629` pass,
+`1` broken, `4630` total in `47m36.9s`.
+
+```sh
+julia --project=docs --startup-file=no -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate(); include("docs/make.jl")'
+```
+
+Result: local DocumenterVitepress build completed with exit code 0. The run
+reported the known absolute-style local-link warnings, npm audit warnings from
+the Vitepress toolchain, a Vitepress chunk-size warning, and skipped deployment
+outside CI.
 
 ## 6. Tests of the Tests
 
@@ -213,10 +221,6 @@ No Julia test process remained running after interruption.
 
 ## 10. Known Residuals
 
-- Full `Pkg.test()` has not completed green after the guard fix. The first run
-  exposed and then fixed the `K = 0` regression above; the rerun was interrupted
-  at the maintainer stop request.
-- Documenter build has not been run for this local branch.
 - The R package still gates `engine = "julia"` X_lv to Gaussian; a follow-up
   `gllvmTMB` PR must map binomial logit/probit/cloglog links to the new Julia
   bridge keys and test the R object contract.

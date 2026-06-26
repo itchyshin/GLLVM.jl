@@ -130,14 +130,20 @@ Result after the guard fix: `bridge predictor-informed latent-score X_lv 94/94`,
 julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
 ```
 
-Result: rerun started after the guard fix, reached the late VA-vs-Laplace
-blocks, then was interrupted at Shinichi's stop request before completion.
-No Julia test process remained running after interruption.
+Result after the guard fix: full package test suite passed with `4629` pass,
+`1` broken, `4630` total in `47m36.9s`.
 
-### Not Run
+```sh
+julia --project=docs --startup-file=no -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate(); include("docs/make.jl")'
+```
 
-- Full `Pkg.test()` has not completed green after the guard fix.
-- Documenter build not run yet.
+Result: local DocumenterVitepress build completed with exit code 0. The run
+reported the known absolute-style local-link warnings, npm audit warnings from
+the Vitepress toolchain, a Vitepress chunk-size warning, and skipped deployment
+outside CI.
+
+### Queue State
+
 - No PR opened because GLLVM.jl PR #113 is still open as a draft and overlaps
   `docs/dev-log/check-log.md`, `src/GLLVM.jl`, `src/families/laplace.jl`, and
   `test/runtests.jl`. The branch was pushed as a backup under
