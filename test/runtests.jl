@@ -56,6 +56,7 @@ using GLLVM
     include("test_gamma_fit.jl")
     include("test_tweedie.jl")
     include("test_exponential.jl")
+    include("test_studentt.jl")
     include("test_ordinal_fit.jl")
     include("test_ordinal_pertrait.jl")
     include("test_ordinal_probit.jl")

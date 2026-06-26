@@ -199,6 +199,10 @@ outside CI.
   `docs/dev-log/check-log.md`, `src/GLLVM.jl`, `src/families/laplace.jl`, and
   `test/runtests.jl`. This branch was pushed as a backup, but no competing PR
   was opened.
+- After PR #113 merged as `23938290585f43411f340bcdeedfbb9d1c7af7bd`, this
+  branch was refreshed against `origin/main`. Post-refresh targeted checks
+  passed for Student-t, binary `X_lv`, binomial recovery, simulation, bridge
+  capabilities, bridge CI routing, and local Documenter.
 - Prose updates keep the scope as Gaussian plus binomial logit/probit/cloglog
   point estimates only.
 - REML / AI-REML wording was not introduced.
@@ -227,8 +231,6 @@ outside CI.
 - Response masks, simultaneous fixed-effect `X` + `X_lv`, mixed-family rows,
   intervals, and non-binomial non-Gaussian X_lv routes remain deliberately
   blocked.
-- The open draft Student-t PR #113 must be settled or rebased before opening a
-  clean PR for this branch under the one-open-PR discipline.
 
 ## 11. Team Learning
 

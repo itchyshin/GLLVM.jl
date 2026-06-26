@@ -60,19 +60,21 @@ function _laplace_mode(family, y::AbstractVector, n::AbstractVector,
     p = size(Λ, 1)
     K = size(Λ, 2)
     off = offset === nothing ? false : offset    # additive identity ⇒ no-offset path unchanged
-    z = zeros(K)
+    T = promote_type(Base.nonmissingtype(eltype(y)), eltype(n), eltype(Λ), eltype(β))
+    offset === nothing || (T = promote_type(T, Base.nonmissingtype(eltype(offset))))
+    z = zeros(T, K)
     # Per-call buffers, reused across Newton iterations. Each is written in place
     # with the SAME broadcast / BLAS expression as the allocating version, so the
     # computed values and FP-operation order are bit-identical.
-    Λz = Vector{Float64}(undef, p)     # Λ*z (linear-predictor contribution)
-    η  = Vector{Float64}(undef, p)     # clamped linear predictor
-    μ  = Vector{Float64}(undef, p)     # clamped mean
-    me = Vector{Float64}(undef, p)     # dμ/dη
-    s  = Vector{Float64}(undef, p)     # Fisher score wrt η
-    W  = Vector{Float64}(undef, p)     # Fisher weight wrt η
-    WΛ = Matrix{Float64}(undef, p, K)  # W .* Λ
-    Amat = Matrix{Float64}(undef, K, K)  # Λ'WΛ (then + I added in place)
-    g  = Vector{Float64}(undef, K)     # rhs Λ's − z
+    Λz = Vector{T}(undef, p)       # Λ*z (linear-predictor contribution)
+    η  = Vector{T}(undef, p)       # clamped linear predictor
+    μ  = Vector{T}(undef, p)       # clamped mean
+    me = Vector{T}(undef, p)       # dμ/dη
+    s  = Vector{T}(undef, p)       # Fisher score wrt η
+    W  = Vector{T}(undef, p)       # Fisher weight wrt η
+    WΛ = Matrix{T}(undef, p, K)    # W .* Λ
+    Amat = Matrix{T}(undef, K, K)  # Λ'WΛ (then + I added in place)
+    g  = Vector{T}(undef, K)       # rhs Λ's − z
     restarted = false
     for _ in 1:maxiter
         mul!(Λz, Λ, z)
@@ -82,13 +84,13 @@ function _laplace_mode(family, y::AbstractVector, n::AbstractVector,
         s  .= _glm_score.(Ref(family), μ, n, me, y)
         W  .= _glm_weight.(Ref(family), μ, n, me)
         if mask !== nothing
-            s .= ifelse.(mask, s, 0.0)        # masked ⇒ no contribution (NaN safe)
-            W .= ifelse.(mask, W, 0.0)
+            s .= ifelse.(mask, s, zero(T))        # masked ⇒ no contribution (NaN safe)
+            W .= ifelse.(mask, W, zero(T))
         end
         WΛ .= W .* Λ                          # = W .* Λ (p×K)
         mul!(Amat, Λ', WΛ)                     # = Λ' * (W .* Λ)
         @inbounds for d in 1:K
-            Amat[d, d] += 1.0                 # + I (adds 1.0 to each diagonal entry)
+            Amat[d, d] += one(T)              # + I (adds 1 to each diagonal entry)
         end
         A  = Symmetric(Amat)
         mul!(g, Λ', s)                         # = Λ' * s
@@ -96,7 +98,7 @@ function _laplace_mode(family, y::AbstractVector, n::AbstractVector,
         Δ  = _safe_solve(A, g)
         if Δ === nothing || !all(isfinite, Δ)
             if !restarted
-                fill!(z, 0.0)
+                fill!(z, zero(T))
                 restarted = true
                 continue
             end
