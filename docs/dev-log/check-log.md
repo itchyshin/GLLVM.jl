@@ -1,5 +1,77 @@
 # Check Log
 
+## 2026-06-26 - PR #113 main-merge resolution
+
+### Scope
+
+Resolved draft PR #113 (`claude/studentt-105-20260620`) against current
+`origin/main` so the Student-t branch can return to a mergeable, CI-testable
+state before the R/Julia `X_lv` bridge lane opens its own Julia PR.
+
+- Ran the merge in `/private/tmp/gllvmjl-studentt-ci-113` from local branch
+  `codex/studentt-ci-113`.
+- The only content conflict was `docs/dev-log/check-log.md`; both the
+  Student-t ForwardDiff buffer-fix entry and the later predictor-informed
+  latent-score entries were kept.
+- `src/GLLVM.jl`, `test/runtests.jl`, and the other mainline code/test/doc
+  changes merged automatically.
+- No Student-t likelihood equation, optimiser tolerance, family contract, or
+  public capability claim was changed in this merge-resolution slice.
+
+### Checks Run
+
+```sh
+gh pr list --repo itchyshin/GLLVM.jl --state open --json number,title,headRefName,isDraft,mergeStateStatus,url,updatedAt
+git log --all --oneline --since="6 hours ago" -- docs/dev-log/check-log.md docs/dev-log/after-task src/GLLVM.jl test/runtests.jl
+```
+
+Result: only PR #113 was open in GLLVM.jl and it was still draft/dirty before
+the merge-resolution push. No recent same-file activity appeared in the
+6-hour log check.
+
+```sh
+rg -n '<<<<<<<|=======|>>>>>>>' docs/dev-log/check-log.md
+```
+
+Result: no conflict markers remained.
+
+```sh
+julia --project=. --startup-file=no test/test_studentt.jl
+```
+
+Result: `Student-t (heavy-tailed continuous, fixed nu)` 17/17 pass. The
+marginal ForwardDiff-vs-central-FD max relative error was
+`6.4151837495491755e-9`.
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result: full package test suite passed with `4569` pass, `1` broken, `4570`
+total in `38m56.8s`.
+
+```sh
+julia --project=docs --startup-file=no -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate(); include("docs/make.jl")'
+```
+
+Result: local DocumenterVitepress build completed with exit code 0. The run
+reported the known local-link warnings for absolute-style links, npm audit
+warnings from the Vitepress toolchain, a Vitepress chunk-size warning, and
+skipped deployment outside CI.
+
+### Deliberately Not Run
+
+- No R/gllvmTMB checks were run from this GLLVM.jl worktree.
+- No binary `X_lv` Julia PR was opened in this slice; PR #113 must first be
+  pushed and rechecked on GitHub so the one-open-PR queue is not widened.
+- No validation or parity row was promoted from this merge-resolution evidence.
+
+### Claim Boundary
+
+IN: PR #113 is locally resolved against current main and passes the full Julia
+package test suite plus local Documenter. OUT: no new R bridge claim, no broad
+R-Julia parity claim, and no interval/coverage claim for Student-t or `X_lv`.
+
 ## 2026-06-25 - Gaussian X_lv bridge endpoint
 
 ### Scope
@@ -2241,6 +2313,71 @@ return Wald/profile/bootstrap CI fields when explicitly requested. PARTIAL:
 fixed-effect-X, masked, mixed-family, REML, and per-trait ordinal CI routes
 remain gated. PLANNED: broader calibration and speed evidence belong in the
 R/Julia simulation-comparator programme, not this endpoint-routing slice.
+
+## 2026-06-22 — Student-t PR #113 ForwardDiff Laplace buffer fix
+
+Branch: `codex/studentt-ci-113` (local scratch worktree based on
+`origin/claude/studentt-105-20260620`, PR #113 head `bba112a`).
+
+Purpose: diagnose and locally fix the GitHub Actions failure on draft PR #113,
+where all OS CI jobs errored in `test/test_studentt.jl` because
+`_laplace_mode()` allocated `Float64` Newton buffers and then tried to store
+ForwardDiff dual-valued `Λ * z`, `η`, `μ`, score, weight, and Hessian entries.
+
+### Changes
+
+- Updated `src/families/laplace.jl` so `_laplace_mode()` promotes its per-call
+  work buffers from the response, trial, loading, intercept, and offset element
+  types instead of hard-coding `Float64`.
+- Replaced masked zero and identity additions with `zero(T)` / `one(T)`.
+- No likelihood equation, optimiser, tolerance, or Student-t test threshold was
+  changed.
+
+### Checks Run
+
+```sh
+julia --project=. -e 'using Pkg; Pkg.instantiate()'
+```
+
+Result: clean. The scratch worktree had not instantiated the Julia project;
+`Project.toml` and `Manifest.toml` remained unchanged afterwards.
+
+```sh
+julia --project=. test/test_studentt.jl
+```
+
+Result: `Student-t (heavy-tailed continuous, fixed ν)` **17/17 pass**.
+The marginal ForwardDiff-vs-central-FD max relative error was
+`6.4151837495491755e-9`, below the `1e-6` gate.
+
+```sh
+julia --project=. test/runtests.jl
+```
+
+Result: manually interrupted after the Student-t section had passed and while
+the suite was in the unrelated zero-inflated optimisation block
+(`test/test_zero_inflated.jl`). This is **not** counted as a full-suite pass.
+
+```sh
+julia --project=. -e 'include("test/test_studentt.jl"); include("test/test_missing_predictor_poisson.jl"); include("test/test_beta_laplace.jl"); include("test/test_gamma_laplace.jl")'
+```
+
+Result: Student-t `17/17`, missing-predictor Poisson `3/3`,
+missing-predictor Binomial `3/3`, Beta Laplace `2/2`, Gamma Laplace `2/2` pass.
+
+### Deliberately Not Run
+
+- Full `Pkg.test()` was not run locally.
+- The full `test/runtests.jl` was started but not completed; it was too slow for
+  this CI-root-cause slice and was interrupted after passing through Student-t.
+- No push was made to PR #113. GLLVM.jl requires maintainer approval before
+  pushing.
+
+### Rose Verdict
+
+PASS WITH NOTES for a local patch candidate. The exact #113 CI blocker is fixed
+by making the generic Laplace mode buffers AD-compatible. Broader CI still needs
+to run on GitHub after the maintainer approves pushing the patch.
 
 ## 2026-06-25 — predictor-informed latent-score C1
 

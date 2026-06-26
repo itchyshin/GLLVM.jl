@@ -61,6 +61,28 @@ function simulate(fit::BinomialFit, n::Integer;
     return Y
 end
 
+"""
+    simulate(fit::StudentTFit, n; rng=Random.default_rng()) -> p×n matrix
+
+Simulate from a fitted Student-t GLLVM (heavy-tailed continuous, fixed `ν`,
+identity link): a new latent `z_s ~ N(0, I_K)` per site, `η = β + Λ z`, location
+`μ = η` (identity link), and each response drawn as `μ + σ · t`, `t ~ TDist(ν)` —
+the exact sampling inverse of the location–scale t density. Pass a fixed `rng` to
+reproduce.
+"""
+function simulate(fit::StudentTFit, n::Integer; rng::AbstractRNG = default_rng())
+    p, K = size(fit.Λ)
+    Y = Matrix{Float64}(undef, p, n)
+    @inbounds for s in 1:n
+        η = fit.β .+ fit.Λ * randn(rng, K)
+        for t in 1:p
+            μ = linkinv(fit.link, _clamp_eta(η[t]))
+            Y[t, s] = μ + fit.σ * rand(rng, TDist(fit.ν))
+        end
+    end
+    return Y
+end
+
 # One Tweedie (compound Poisson–Gamma, 1 < p < 2) draw at mean μ, dispersion φ,
 # power p: N ~ Poisson(λ), λ = μ^{2−p}/(φ(2−p)); y = 0 if N = 0, else
 # y ~ Gamma(N·α, scale = φ(p−1)μ^{p−1}), α = (2−p)/(p−1).
