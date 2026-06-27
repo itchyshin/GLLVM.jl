@@ -98,7 +98,9 @@ factor analysis — is **post-v1.0**, task #26.)
   objective; bootstrap now simulates φ + refits the phylo block; `test_phylo_xlv.jl` 15/15).
 - **Phase 3 — recovery/coverage gate. SMOKE PASSED** (`bench/phylo_xlv_coverage.jl`): 40/40 converged,
   coverage **0.975** (nominal 0.95), NULL-A (α=0/phylo>0) `max|B_lv|=0.083` & CI covers 0, NULL-B
-  (phylo=0/α≠0) `B_lv cor=1.0`. **Correction to the design:** Model A is orthogonal-axes (X_lv on
+  (phylo=0/α≠0) `B_lv cor=1.0`. **Multi-cell smoke** (30 reps/cell): K=1,n=200 → 0.940; K=1,n=60 →
+  0.927; K=2,n=200 → 0.973; 90/90 converged — calibrated across the design's K × n dimensions.
+  **Correction to the design:** Model A is orthogonal-axes (X_lv on
   sites, Σ_phy on traits), so it needs **coverage + the two nulls only — NOT the phylo-collinear arm**
   (that's a Model B confound). **REMAINING = the full DRAC campaign:** sweep λ∈{0,0.5,1} ×
   n_species∈{~20,~200} × K∈{1,2}, ≥500 reps/cell (one seed per SLURM array task), vec(B_lv)

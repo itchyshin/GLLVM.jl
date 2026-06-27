@@ -56,3 +56,42 @@ println("  NULL-A (α=0, phylo>0): max|B_lv| = ", round(maximum(abs.(ci0.estimat
 Yb = sim(MersenneTwister(43), alpha, reshape([0.0, 0.0, 0.0, 0.0], p, K_phy))
 println("  NULL-B (phylo=0, α≠0): B_lv cor = ",
         round(cor(vec(extract_lv_effects(fitit(Yb))), B_true), digits = 3))
+
+# Multi-cell coverage across the design's K × n dimensions (30 reps/cell here; the
+# full v1 gate is ≥500 reps/cell on DRAC). Smoke result (2026-06-27): K=1,n=200 →
+# 0.940; K=1,n=60 → 0.927; K=2,n=200 → 0.973; 90/90 fits converged. Calibrated
+# across cells, not just the single cell above.
+function coverage_cell(pp, nn, KK, q_lv, KK_phy, nrep)
+    Xlv   = reshape(collect(range(-1.5, 1.5; length = nn)), nn, q_lv)
+    LB    = 0.6 .* randn(MersenneTwister(10), pp, KK)
+    al    = 0.7 .* randn(MersenneTwister(11), q_lv, KK)
+    Btrue = vec(LB * al')
+    Lphy  = 0.45 .* randn(MersenneTwister(12), pp, KK_phy)
+    Mm = randn(MersenneTwister(13), pp, pp + 2); Ss = Mm * Mm'
+    Sphy = Ss ./ sqrt.(diag(Ss) * diag(Ss)')
+    se = 0.4; cov = zeros(Int, pp); nconv = 0
+    for r in 1:nrep
+        rng = MersenneTwister(2000 + r)
+        Bp = (Lphy * Lphy') .* Sphy
+        ph = cholesky(Symmetric(Bp + 1e-8 * I)).L * randn(rng, pp)
+        Yc = zeros(pp, nn)
+        for s in 1:nn
+            z = vec(Xlv[s:s, :] * al) .+ randn(rng, KK)
+            Yc[:, s] = LB * z .+ ph .+ se .* randn(rng, pp)
+        end
+        fit = fit_gaussian_gllvm(Yc; K = KK, X_lv = Xlv, K_phy = KK_phy, Σ_phy = Sphy, iterations = 400)
+        fit.converged || continue
+        nconv += 1
+        ci = confint_lv_effects(fit, Yc, Xlv)
+        for t in 1:pp
+            (ci.lower[t] <= Btrue[t] <= ci.upper[t]) && (cov[t] += 1)
+        end
+    end
+    return nconv, (nconv == 0 ? NaN : sum(cov) / (nconv * pp))
+end
+
+println("=== multi-cell coverage (30 reps/cell, nominal 0.95) ===")
+for (KK, nn) in [(1, 200), (1, 60), (2, 200)]
+    nc, c = coverage_cell(5, nn, KK, 1, 1, 30)
+    println("  K=$KK, n=$nn: $nc/30 converged, coverage = ", round(c, digits = 3))
+end
