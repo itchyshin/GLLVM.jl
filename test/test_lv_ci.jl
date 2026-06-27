@@ -197,6 +197,39 @@ using LinearAlgebra
         end
     end
 
+    @testset "q_lv = 2 (multi-predictor latent score)" begin
+        Random.seed!(2468)
+        p2, n2, ql = 5, 220, 2
+        xa = collect(range(-1.2, 1.2; length = n2))
+        xb = collect(range(-1.0, 1.0; length = n2)) .^ 2 .- 0.4   # quadratic ⟂ linear
+        X2 = hcat(xa, xb)                                          # n × 2
+        Λ2 = reshape([0.6, -0.45, 0.35, 0.25, -0.2], p2, 1)
+        a2 = reshape([0.7, -0.4], ql, 1)                          # q_lv × K = 2 × 1
+        B2 = Λ2 * a2'                                             # p × 2
+        β2 = log.([6.0, 4, 8, 5, 7])
+        zt2 = vec(X2 * a2) .+ randn(n2)                          # X2(n×2)·a2(2×1) = n-score mean
+        η = β2 .+ Λ2 * reshape(zt2, 1, n2)
+        Y2 = [rand(Poisson(exp(η[t, s]))) for t in 1:p2, s in 1:n2]
+        fit = fit_poisson_gllvm(Y2; K = 1, X_lv = X2, β_init = β2, Λ_init = Λ2,
+                                alpha_lv_init = a2, iterations = 200, g_tol = 1e-6)
+        # Wald — 10 entries of vec(B_lv) (column-major over p×q_lv)
+        ci = confint_lv_effects(fit, Y2, X2)
+        @test ci.term == ["B_lv[$t,$c]" for c in 1:ql for t in 1:p2]
+        @test ci.estimate ≈ vec(extract_lv_effects(fit)) atol = 1e-10
+        @test ci.pd_hessian
+        @test all(ci.lower .< ci.estimate .< ci.upper)
+        @test cor(ci.estimate, vec(B2)) > 0.9
+        # bootstrap — exercises the q_lv>1 vec→matrix paths
+        cb = confint_lv_effects(fit, Y2, X2; method = :bootstrap, n_boot = 25, seed = 9)
+        @test cb.term == ci.term
+        @test cb.n_converged >= 12 && all(cb.lower .< cb.upper)
+        # bridge round-trip: CI fields reshape to p × q_lv matching lv_effects
+        br = bridge_fit(; y = Float64.(Y2), family = "poisson", d = 1, X_lv = X2,
+                        options = Dict("ci_method" => "wald"))
+        @test size(br.lv_effects_lower) == (p2, ql)
+        @test all(br.lv_effects_lower .< br.lv_effects .< br.lv_effects_upper)
+    end
+
     @testset "argument guards" begin
         Random.seed!(4606)
         β = log.([6.0, 4.0, 8.0, 5.0, 7.0])
