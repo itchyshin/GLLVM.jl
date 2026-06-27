@@ -99,6 +99,30 @@ using LinearAlgebra
         @test_throws ArgumentError confint_lv_effects(fit_gaussian_gllvm(Yg; K = K), Yg, X_lv)
     end
 
+    @testset "K = 2 (rotation-invariant B_lv)" begin
+        Random.seed!(909)
+        p2, n2 = 6, 240
+        X2 = reshape(collect(range(-1.2, 1.2; length = n2)), n2, 1)
+        Lam2 = [0.7 0.3; -0.5 0.4; 0.4 -0.3; 0.3 0.5; -0.25 0.2; 0.2 -0.4]
+        a2 = reshape([0.7, -0.5], 1, 2)
+        B2 = vec(Lam2 * a2')
+        beta2 = log.([6.0, 4.0, 8.0, 5.0, 7.0, 4.5])
+        Z = zeros(2, n2)
+        for j in 1:n2
+            Z[:, j] = vec(X2[j, :] .* vec(a2)) .+ randn(2)
+        end
+        eta = beta2 .+ Lam2 * Z
+        Y2 = [rand(Poisson(exp(eta[t, j]))) for t in 1:p2, j in 1:n2]
+        fit = fit_poisson_gllvm(Y2; K = 2, X_lv = X2, iterations = 400, g_tol = 1e-6)
+        ci = confint_lv_effects(fit, Y2, X2)
+        @test ci.term == ["B_lv[$t,1]" for t in 1:p2]
+        @test ci.pd_hessian
+        @test ci.estimate ≈ vec(extract_lv_effects(fit)) atol = 1e-10
+        @test all(ci.lower .< ci.estimate .< ci.upper)
+        @test all(isfinite, ci.se) && all(>(0), ci.se)
+        @test cor(ci.estimate, B2) > 0.9   # recovers the rotation-stable truth
+    end
+
     @testset "argument guards" begin
         Random.seed!(4606)
         β = log.([6.0, 4.0, 8.0, 5.0, 7.0])

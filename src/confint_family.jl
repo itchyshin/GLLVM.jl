@@ -1876,7 +1876,9 @@ function confint_lv_effects(fit::Union{PoissonFit, BinomialFit, NBFit, GammaFit,
     fit.alpha_lv === nothing && throw(ArgumentError(
         "confint_lv_effects requires an X_lv fit (fit_*_gllvm(...; X_lv=...)); this fit has none"))
     p, K = size(fit.Λ)
-    K == 1 || throw(ArgumentError("confint_lv_effects is admitted for K = 1 only; got K = $K"))
+    # B_lv = Λ·α' is invariant under the K×K orthogonal rotation Λ→ΛQ, α→αQ, so
+    # the interval is well-posed for any K (not just K = 1).
+    K >= 1 || throw(ArgumentError("confint_lv_effects requires K >= 1; got K = $K"))
     q_lv = size(X_lv, 2)
     size(X_lv, 1) == size(Y, 2) || throw(ArgumentError(
         "X_lv must have one row per site: got $(size(X_lv, 1)), need $(size(Y, 2))"))
@@ -1901,7 +1903,9 @@ function confint_lv_effects(fit::GllvmFit, Y::AbstractMatrix, X_lv::AbstractMatr
     fit.pars.alpha_lv === nothing && throw(ArgumentError(
         "confint_lv_effects requires a Gaussian X_lv fit (fit_gaussian_gllvm(...; X_lv=...)); this fit has none"))
     p, K = size(fit.pars.Λ)
-    K == 1 || throw(ArgumentError("confint_lv_effects is admitted for K = 1 only; got K = $K"))
+    # B_lv = Λ·α' is invariant under the K×K orthogonal rotation Λ→ΛQ, α→αQ, so
+    # the interval is well-posed for any K (not just K = 1).
+    K >= 1 || throw(ArgumentError("confint_lv_effects requires K >= 1; got K = $K"))
     q_lv = size(X_lv, 2)
     size(X_lv, 1) == size(Y, 2) || throw(ArgumentError(
         "X_lv must have one row per site: got $(size(X_lv, 1)), need $(size(Y, 2))"))
