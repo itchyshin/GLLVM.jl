@@ -21,7 +21,7 @@ structure / `pd_hessian`, never SE magnitude — which is why it survived.
 |---|---|---|---|
 | `claude/fd-hessian-wald-fix-20260627` | **main** | `c7db1ae` | the `2f0→2*f0` fix + `test_fd_hessian.jl` (pins the Hessian to a known analytic value) |
 | `claude/xlv-recovery-20260627` | Beta tip | `47acce4` | correctly-specified multi-seed recovery bench + checkpoint (8 routes + n-scaling) |
-| `claude/xlv-wald-ci-20260627` | Beta tip | `3a8995e`,`e2a6620`,`fcf4925`,`fb47e37`,`a4d1b96`,`2bda27a` | `confint_lv_effects` (all 6 families, native + **bridge** `ci_method="wald"`) + coverage + **K>1** |
+| `claude/xlv-wald-ci-20260627` | Beta tip | `3a8995e`…`5eabd6e` (8 commits) | `confint_lv_effects` (all 6 families, native + **bridge**) — **Wald + bootstrap** CIs, K≥1, recovery + coverage |
 
 ### gllvmTMB (R)
 | branch | base | commit | content |
@@ -45,9 +45,9 @@ Prior held pile (unchanged): GLLVM.jl #118 (Poisson, open), NB2/Gamma/Beta Julia
 
 ## 4. The X_lv Wald-CI subsystem is now complete on the Julia side
 
-All six families × K=1 and K>1 × native (`confint_lv_effects`) and bridge
-(`ci_method="wald"` → `lv_effects_lower/upper/se`) × recovery and coverage
-validated. Plus the package-wide Wald-SE repair.
+All six families × K=1 and K>1 × native (`confint_lv_effects`, **Wald and
+bootstrap**) and bridge (`ci_method="wald"` → `lv_effects_lower/upper/se`) ×
+recovery and coverage validated. Plus the package-wide Wald-SE repair.
 
 ## 5. 🔴 Needs maintainer
 
@@ -62,8 +62,9 @@ validated. Plus the package-wide Wald-SE repair.
 
 - **R reads the bridge CI fields** (the last R↔Julia CI link) — needs a working R
   env; depends on the bridge wiring + #118 merging.
-- **Profile / bootstrap CIs for `X_lv`** — incremental; Wald is already
-  coverage-calibrated, so low marginal value. Bounded if wanted.
+- **Profile-likelihood CIs for `X_lv`** — Wald and bootstrap are both done and
+  coverage-calibrated; profile for the derived product `B_lv` needs a constrained
+  re-optimisation (harder, low marginal value).
 - **Mixed-family `X_lv`; structured sources (phylo/animal/spatial/kernel) ×
   `X_lv`** — substantial NEW modeling (the X_lv fitters currently reject these
   combinations); each its own recovery/coverage gate. Warrant a design decision.
