@@ -106,8 +106,8 @@ factor analysis — is **post-v1.0**, task #26.)
 - **Phase 4 — R `lv=~x` grammar.** Does NOT exist on the R side. Admit on `phylo_latent` (and plain
   `latent`) via `rewrite_canonical_aliases()` (`R/brms-sugar.R`) with a **FAIL-LOUD gate** — an unknown
   `lv=` currently falls to `cs$extra` and is **SILENTLY DROPPED** (the Sokal anti-pattern). Keep STRICTLY
-  separate from the augmented-LHS reaction-norm grammar (`1+x|sp`). Extractor contract + create the
-  missing **Design 73** doc (the Julia comments already reference it).
+  separate from the augmented-LHS reaction-norm grammar (`1+x|sp`). Extractor contract. **Design 73
+  spec now WRITTEN** (`docs/design/73-predictor-informed-latent-scores.md`) — implement against it.
 - Then: open the Model A PR (HIGH-RISK → maintainer sign-off), and decide D5/D6/D7 (default: extend all
   three CIs; BM/Pagel-λ kernel first; Gaussian-only v1). Non-Gaussian phylo X_lv = separate later gate.
 
