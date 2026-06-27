@@ -4,6 +4,27 @@ All notable changes to GLLVM.jl are documented here.
 
 ## Unreleased
 
+### Fixed
+- **Every non-Gaussian Wald confidence-interval standard error was silently
+  corrupted.** The observed-information finite-difference Hessian (`_fd_hessian`,
+  backing `confint(fit, Y; method=:wald)` / `_family_wald` for Poisson / Binomial /
+  NB / Beta / Gamma / Tweedie / two-part / SPDE-latent / structural CIs) wrote the
+  Float32 literal `2f0` (== `2.0f0`) where `2 * f0` was intended, dropping the
+  cached centre term so the diagonal exploded and `inv(H)` collapsed to SEs ~1e-6.
+  Off-diagonals, the profile/bootstrap routes, and the Gaussian path were
+  unaffected. Pinned by `test/test_fd_hessian.jl`.
+
+### Added
+- **`confint_lv_effects(fit, Y, X_lv; method = :wald | :bootstrap)`** — Wald
+  (delta-method) and parametric-bootstrap confidence intervals for the
+  predictor-informed latent-score trait-effect matrix `B_lv = Λ·α'`, for Gaussian
+  and the five GLM families (Poisson / Binomial logit·probit·cloglog / NB2 / Gamma /
+  Beta), `K ≥ 1` (`B_lv` is rotation-invariant). The bridge exposes them via
+  `bridge_fit(...; X_lv, options = Dict("ci_method" => "wald"))`, which returns
+  `lv_effects_lower` / `lv_effects_upper` / `lv_effects_se`. K = 1 interval
+  coverage 0.915–0.955 across all eight routes; K = 2 recovery + coverage validated
+  for Poisson. R-side reading of these CI fields is not yet wired.
+
 ## v0.3.0 — broad gllvmTMB-targeted capability build-out (2026-06-07)
 
 Expanded toward R `gllvm` / `gllvmTMB` coverage with a broad response-family
