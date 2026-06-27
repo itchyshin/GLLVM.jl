@@ -71,5 +71,18 @@ using Statistics
         @test ci.method == :wald
         @test all(isfinite, ci.se)
         @test all(ci.lower .< ci.estimate .< ci.upper)
+
+        # The full trio extends under phylo: profile reuses the augmented objective;
+        # bootstrap simulates φ + refits the phylo structure.
+        cp = confint_lv_effects(fit, Y, X_lv; method = :profile)
+        @test cp.method == :profile
+        @test all(isfinite, cp.lower) && all(isfinite, cp.upper)
+        @test all(cp.lower .< cp.estimate .< cp.upper)
+
+        cb = confint_lv_effects(fit, Y, X_lv; method = :bootstrap, n_boot = 30, seed = 7)
+        @test cb.method == :bootstrap
+        @test cb.n_converged >= 15
+        @test all(isfinite, cb.lower) && all(isfinite, cb.upper)
+        @test all(cb.lower .< cb.upper)
     end
 end

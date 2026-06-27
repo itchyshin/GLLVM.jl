@@ -79,7 +79,7 @@ identifiability hazard**. Estimand `B_lv = Λ_B·α'` (rotation-stable). Reuses 
 phylo marginal verbatim. (Model B — the latent score itself evolves on the tree, = phylogenetic
 factor analysis — is **post-v1.0**, task #26.)
 
-**DONE (commit `a06bf17`, tested `test/test_phylo_xlv.jl` 8/8):**
+**DONE (tested `test/test_phylo_xlv.jl` 15/15 — Phase 1 engine + Phase 2 FULL CI trio under phylo):**
 - `likelihood.jl`: `gaussian_lv_nll_packed` unpacks a phylo block (σ_phy/Λ_phy, same order as the
   non-X_lv J3 path) and threads it into `gaussian_marginal_loglik` (the J3 branch already existed).
 - `fit.jl`: lifted the X_lv+phylo rejections; extended init + NLL call + post-fit unpacking (Λ_B
@@ -94,9 +94,8 @@ factor analysis — is **post-v1.0**, task #26.)
   Recovery cor 0.999; Wald CI finite + brackets.
 
 **NEXT (the remaining Model A phases):**
-- **Phase 2b — profile + bootstrap CI under phylo.** `confint_lv_effects(::GllvmFit)` profile path
-  reuses the same nll (already carries phylo now); **bootstrap** (`_lv_bootstrap`) refits via
-  `fit_gaussian_gllvm` and must thread `K_phy/has_phy_unique/Σ_phy` through the refit. Test both.
+- ~~Phase 2b — profile + bootstrap CI under phylo~~ **DONE** (profile reuses the augmented
+  objective; bootstrap now simulates φ + refits the phylo block; `test_phylo_xlv.jl` 15/15).
 - **Phase 3 — recovery/coverage GATE (the design's hard bar).** Must prove the predictor MEAN and
   the phylo COVARIANCE are *separable*: a **phylo-COLLINEAR X_lv arm** (X_lv simulated as a Brownian
   trait on the same tree) + **two nulls** (true α=0/phylo>0 → α̂≈0, B_lv covers 0; true phylo=0/α≠0 →

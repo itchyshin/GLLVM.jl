@@ -2085,8 +2085,28 @@ end
 function _lv_boot_fns(fit::GllvmFit, Y, X_lv, N)
     p, K = size(fit.pars.Λ); n = size(Y, 2)
     Λ = fit.pars.Λ; Zmean = X_lv * fit.pars.alpha_lv; σ = fit.pars.σ_eps  # n×K score mean (α_lv is q_lv×K)
-    return (rng -> Λ * (Zmean .+ randn(rng, n, K))' .+ σ .* randn(rng, p, n),
-            Yb -> (try fit_gaussian_gllvm(Yb; K = K, X_lv = X_lv) catch; nothing end))
+    # Model A: simulate + refit must carry the phylo block. φ ~ N(0, B) is the
+    # shared species random effect (B = (Λ_phy_aug Λ_phy_aug') .* Σ_phy); the refit
+    # must re-estimate the same phylo structure. No-phylo fits → all nothing/0 → unchanged.
+    Λ_phy = fit.pars.Λ_phy; σ_phy = fit.pars.σ_phy
+    Σ_phy = hasproperty(fit.pars, :Σ_phy) ? fit.pars.Σ_phy : nothing
+    K_phy = Λ_phy === nothing ? 0 : size(Λ_phy, 2)
+    has_phy_unique = σ_phy !== nothing
+    L_phy = if Σ_phy !== nothing && (Λ_phy !== nothing || σ_phy !== nothing)
+        aug = (Λ_phy !== nothing && σ_phy !== nothing) ? hcat(Λ_phy, σ_phy) :
+              (Λ_phy !== nothing ? Λ_phy : reshape(σ_phy, p, 1))
+        cholesky(Symmetric((aug * aug') .* Σ_phy + 1e-10 * I)).L
+    else
+        nothing
+    end
+    simfn = function (rng)
+        φ = L_phy === nothing ? zeros(p) : L_phy * randn(rng, p)
+        Λ * (Zmean .+ randn(rng, n, K))' .+ φ .+ σ .* randn(rng, p, n)
+    end
+    refitfn = Yb -> (try fit_gaussian_gllvm(Yb; K = K, X_lv = X_lv, K_phy = K_phy,
+                                            has_phy_unique = has_phy_unique, Σ_phy = Σ_phy)
+                     catch; nothing end)
+    return (simfn, refitfn)
 end
 
 function _lv_bootstrap(fit, Y, X_lv, N, q_lv::Integer, level::Real,
