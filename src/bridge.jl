@@ -358,6 +358,19 @@ Confidence intervals are routed through `options` (all optional):
   - `"ci_nboot"` — bootstrap replicates (default `200`).
   - `"ci_seed"`  — bootstrap RNG seed (default `0`; fixed → reproducible).
 """
+# Delta-method Wald CI fields for predictor-informed latent-score effects,
+# reshaped from confint_lv_effects' vec(B_lv) order to the p×q_lv layout that
+# matches `lv_effects`. Merged into the X_lv bridge rows when ci_method=="wald".
+function _bridge_lv_ci_fields(ci, q_lv::Integer)
+    p = length(ci.estimate) ÷ q_lv
+    return (lv_effects_lower = reshape(collect(Float64, ci.lower), p, q_lv),
+            lv_effects_upper = reshape(collect(Float64, ci.upper), p, q_lv),
+            lv_effects_se = reshape(collect(Float64, ci.se), p, q_lv),
+            lv_effects_ci_level = float(ci.level),
+            lv_effects_ci_method = "wald",
+            lv_effects_ci_pd = ci.pd_hessian)
+end
+
 function bridge_fit(; y,
                     family,
                     d::Integer = 1,
@@ -611,9 +624,9 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
             "use a complete response table or engine='tmb'."))
         K > 0 || throw(ArgumentError(
             "bridge_fit: X_lv requires a positive latent dimension d."))
-        ci_method == "none" || throw(ArgumentError(
-            "bridge_fit: confidence intervals for X_lv fits are not admitted " *
-            "yet; use ci_method=\"none\" and lv_effects point estimates."))
+        ci_method in ("none", "wald") || throw(ArgumentError(
+            "bridge_fit: only ci_method=\"wald\" (delta-method Wald on B_lv) is " *
+            "admitted for X_lv fits; profile/bootstrap remain gated."))
     end
 
     # X (a p×n×q covariate array) routes to the covariate fitters: the Gaussian
@@ -644,6 +657,9 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
             alpha = vec(Statistics.mean(Yf; dims = 2))
             Yc = Yf .- alpha
             fit = fit_gaussian_gllvm(Yc; K = K, X_lv = Xlv)
+            ci_extra = ci_method == "wald" ?
+                _bridge_lv_ci_fields(confint_lv_effects(fit, Yc, Xlv; level = ci_level),
+                                     size(Xlv, 2)) : NamedTuple()
             Sigma = Matrix{Float64}(sigma_y_site(fit))
             corr  = Matrix{Float64}(correlation(fit))
             comm  = Vector{Float64}(communality(fit))
@@ -664,13 +680,14 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                        "scores_mean = X_lv*alpha_lv, scores_innovation are the " *
                        "posterior zero-mean score deviations, and lv_effects = " *
                        "Lambda*alpha_lv' is the rotation-stable trait-effect matrix. " *
-                       "Confidence intervals and non-binomial non-Gaussian " *
-                       "X_lv routes remain separate validation gates.",
+                       "Confidence intervals on B_lv are available via " *
+                       "ci_method=\"wald\" (delta method); profile/bootstrap and " *
+                       "broader non-Gaussian X_lv routes remain separate gates.",
                 ci = nothing)
             return merge(base, (lv_effects = Matrix{Float64}(extract_lv_effects(fit)),
                                 alpha_lv = Matrix{Float64}(fit.pars.alpha_lv),
                                 scores_mean = scores_mean,
-                                scores_innovation = scores_innovation))
+                                scores_innovation = scores_innovation), ci_extra)
         end
         if X !== nothing
             # Fixed-effect covariate path. The caller's X (p×n×q) already carries the
@@ -784,6 +801,9 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
             size(Xlv, 2) > 0 || throw(ArgumentError(
                 "bridge_fit: X_lv must have at least one predictor column"))
             fit = fit_poisson_gllvm(Yi; K = K, X_lv = Xlv)
+            ci_extra = ci_method == "wald" ?
+                _bridge_lv_ci_fields(confint_lv_effects(fit, Yi, Xlv; level = ci_level),
+                                     size(Xlv, 2)) : NamedTuple()
             scores_total = Matrix{Float64}(
                 getLV(fit, Yi; X_lv = Xlv, component = :total, rotate = true))
             scores_mean = Matrix{Float64}(
@@ -800,7 +820,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                        "X_lv*alpha_lv, scores_innovation are the posterior " *
                        "zero-mean Laplace score modes, and lv_effects = " *
                        "Lambda*alpha_lv' is the rotation-stable trait-effect " *
-                       "matrix. Confidence intervals, response masks, and " *
+                       "matrix. Wald confidence intervals on B_lv are available via ci_method=\"wald\"; profile/bootstrap,response masks, and " *
                        "broader non-Gaussian X_lv routes remain separate " *
                        "validation gates."
             return merge(base, (note = isempty(base.note) ? xlv_note :
@@ -808,7 +828,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                                 lv_effects = Matrix{Float64}(extract_lv_effects(fit)),
                                 alpha_lv = Matrix{Float64}(fit.alpha_lv),
                                 scores_mean = scores_mean,
-                                scores_innovation = scores_innovation))
+                                scores_innovation = scores_innovation), ci_extra)
         end
         fit = fit_poisson_gllvm(Yi; K = K, mask = M)
         scores = _bridge_scores(() -> getLV(fit, Yi; rotate = true, mask = M))
@@ -829,6 +849,9 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
             size(Xlv, 2) > 0 || throw(ArgumentError(
                 "bridge_fit: X_lv must have at least one predictor column"))
             fit = fit_binomial_gllvm(Yi; K = K, N = Ni, link = link, X_lv = Xlv)
+            ci_extra = ci_method == "wald" ?
+                _bridge_lv_ci_fields(confint_lv_effects(fit, Yi, Xlv; N = Ni, level = ci_level),
+                                     size(Xlv, 2)) : NamedTuple()
             scores_total = Matrix{Float64}(
                 getLV(fit, Yi; N = Ni, X_lv = Xlv, component = :total,
                       rotate = true))
@@ -848,7 +871,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                        "X_lv*alpha_lv, scores_innovation are the posterior " *
                        "zero-mean Laplace score modes, and lv_effects = " *
                        "Lambda*alpha_lv' is the rotation-stable trait-effect " *
-                       "matrix. Confidence intervals, response masks, and " *
+                       "matrix. Wald confidence intervals on B_lv are available via ci_method=\"wald\"; profile/bootstrap,response masks, and " *
                        "broader non-Gaussian X_lv routes remain separate " *
                        "validation gates."
             return merge(base, (note = isempty(base.note) ? xlv_note :
@@ -856,7 +879,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                                 lv_effects = Matrix{Float64}(extract_lv_effects(fit)),
                                 alpha_lv = Matrix{Float64}(fit.alpha_lv),
                                 scores_mean = scores_mean,
-                                scores_innovation = scores_innovation))
+                                scores_innovation = scores_innovation), ci_extra)
         end
         fit = fit_binomial_gllvm(Yi; K = K, N = Ni, link = link, mask = M)
         scores = _bridge_scores(() -> getLV(fit, Yi; N = Ni, rotate = true, mask = M))
@@ -876,6 +899,9 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
             # X_lv route uses the shared-dispersion NB2 fitter (not the per-trait
             # grouped route) — a narrow point-estimate predictor-informed slice.
             fit = fit_nb_gllvm(Yi; K = K, X_lv = Xlv)
+            ci_extra = ci_method == "wald" ?
+                _bridge_lv_ci_fields(confint_lv_effects(fit, Yi, Xlv; level = ci_level),
+                                     size(Xlv, 2)) : NamedTuple()
             scores_total = Matrix{Float64}(
                 getLV(fit, Yi; X_lv = Xlv, component = :total, rotate = true))
             scores_mean = Matrix{Float64}(
@@ -892,7 +918,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                        "scores_innovation are the posterior zero-mean Laplace score " *
                        "modes, and lv_effects = Lambda*alpha_lv' is the " *
                        "rotation-stable trait-effect matrix; the shared NB2 " *
-                       "dispersion r is jointly estimated. Confidence intervals, " *
+                       "dispersion r is jointly estimated. Wald confidence intervals on B_lv are available via ci_method=\"wald\"; profile/bootstrap," *
                        "response masks, grouped dispersion, and broader non-Gaussian " *
                        "X_lv routes remain separate validation gates."
             return merge(base, (note = isempty(base.note) ? xlv_note :
@@ -900,7 +926,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                                 lv_effects = Matrix{Float64}(extract_lv_effects(fit)),
                                 alpha_lv = Matrix{Float64}(fit.alpha_lv),
                                 scores_mean = scores_mean,
-                                scores_innovation = scores_innovation))
+                                scores_innovation = scores_innovation), ci_extra)
         end
         fit = fit_nb_gllvm_grouped(Yi; K = K, group = collect(1:p), mask = M)
         disp = _bridge_dispersion_payload(fit.r_group, fit.group, "r",
@@ -936,6 +962,9 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
             # X_lv route uses the shared-precision Beta fitter (not the per-trait
             # grouped route) — a narrow point-estimate slice.
             fit = fit_beta_gllvm(Yf; K = K, X_lv = Xlv)
+            ci_extra = ci_method == "wald" ?
+                _bridge_lv_ci_fields(confint_lv_effects(fit, Yf, Xlv; level = ci_level),
+                                     size(Xlv, 2)) : NamedTuple()
             scores_total = Matrix{Float64}(
                 getLV(fit, Yf; X_lv = Xlv, component = :total, rotate = true))
             scores_mean = Matrix{Float64}(
@@ -952,7 +981,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                        "scores_innovation are the posterior zero-mean Laplace score " *
                        "modes, and lv_effects = Lambda*alpha_lv' is the " *
                        "rotation-stable trait-effect matrix; the shared precision " *
-                       "phi is jointly estimated. Confidence intervals, response " *
+                       "phi is jointly estimated. Wald confidence intervals on B_lv are available via ci_method=\"wald\"; profile/bootstrap,response " *
                        "masks, per-trait precision, and broader non-Gaussian X_lv " *
                        "routes remain separate validation gates."
             return merge(base, (note = isempty(base.note) ? xlv_note :
@@ -960,7 +989,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                                 lv_effects = Matrix{Float64}(extract_lv_effects(fit)),
                                 alpha_lv = Matrix{Float64}(fit.alpha_lv),
                                 scores_mean = scores_mean,
-                                scores_innovation = scores_innovation))
+                                scores_innovation = scores_innovation), ci_extra)
         end
         fit = fit_beta_gllvm_grouped(Yf; K = K, group = collect(1:p), mask = M)
         disp = _bridge_dispersion_payload(fit.φ, fit.group, "phi",
@@ -983,6 +1012,9 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
             # X_lv route uses the shared-shape Gamma fitter (consistent with the
             # no-X shared-shape bridge route) — a narrow point-estimate slice.
             fit = fit_gamma_gllvm(Yf; K = K, X_lv = Xlv)
+            ci_extra = ci_method == "wald" ?
+                _bridge_lv_ci_fields(confint_lv_effects(fit, Yf, Xlv; level = ci_level),
+                                     size(Xlv, 2)) : NamedTuple()
             scores_total = Matrix{Float64}(
                 getLV(fit, Yf; X_lv = Xlv, component = :total, rotate = true))
             scores_mean = Matrix{Float64}(
@@ -999,7 +1031,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                        "scores_innovation are the posterior zero-mean Laplace score " *
                        "modes, and lv_effects = Lambda*alpha_lv' is the " *
                        "rotation-stable trait-effect matrix; the shared shape alpha " *
-                       "is jointly estimated. Confidence intervals, response masks, " *
+                       "is jointly estimated. Wald confidence intervals on B_lv are available via ci_method=\"wald\"; profile/bootstrap,response masks, " *
                        "and broader non-Gaussian X_lv routes remain separate " *
                        "validation gates."
             return merge(base, (note = isempty(base.note) ? xlv_note :
@@ -1007,7 +1039,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                                 lv_effects = Matrix{Float64}(extract_lv_effects(fit)),
                                 alpha_lv = Matrix{Float64}(fit.alpha_lv),
                                 scores_mean = scores_mean,
-                                scores_innovation = scores_innovation))
+                                scores_innovation = scores_innovation), ci_extra)
         end
         # Native gllvmTMB ordinary Gamma currently has one scalar sigma_eps/CV for
         # all Gamma traits. Use a single grouped-Gamma shape here for R-oracle

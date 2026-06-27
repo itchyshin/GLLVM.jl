@@ -121,9 +121,13 @@ using Distributions
             @test size(br.alpha_lv) == size(alpha_true)
             @test br.scores ≈ br.scores_mean .+ br.scores_innovation atol = 1e-10
             @test occursin("binomial C1", br.note)
-            @test_throws ArgumentError bridge_fit(
+            br_ci = bridge_fit(
                 ; y = Float64.(Y), family = family_key, d = 1, N = N, X_lv = X_lv,
                 options = Dict("ci_method" => "wald"))
+            @test size(br_ci.lv_effects_lower) == size(br_ci.lv_effects)
+            @test br_ci.lv_effects_ci_pd
+            @test all(br_ci.lv_effects_lower .< br_ci.lv_effects .< br_ci.lv_effects_upper)
+            @test all(br_ci.lv_effects_se .> 0)
             M = trues(size(Y))
             M[1, 1] = false
             @test_throws ArgumentError bridge_fit(
@@ -195,9 +199,12 @@ using Distributions
         @test size(br.alpha_lv) == size(alpha_lv)
         @test br.scores ≈ br.scores_mean .+ br.scores_innovation atol = 1e-10
         @test occursin("Poisson C1", br.note)
-        @test_throws ArgumentError bridge_fit(
+        br_ci = bridge_fit(
             ; y = Float64.(Y), family = "poisson", d = 1, X_lv = X_lv,
             options = Dict("ci_method" => "wald"))
+        @test size(br_ci.lv_effects_lower) == size(br_ci.lv_effects)
+        @test br_ci.lv_effects_ci_pd
+        @test all(br_ci.lv_effects_lower .< br_ci.lv_effects .< br_ci.lv_effects_upper)
         M = trues(size(Y))
         M[1, 1] = false
         @test_throws ArgumentError bridge_fit(
@@ -270,9 +277,12 @@ using Distributions
         @test size(br.alpha_lv) == size(alpha_lv)
         @test br.scores ≈ br.scores_mean .+ br.scores_innovation atol = 1e-10
         @test occursin("NB2 C1", br.note)
-        @test_throws ArgumentError bridge_fit(
+        br_ci = bridge_fit(
             ; y = Float64.(Y), family = "negbinomial", d = 1, X_lv = X_lv,
             options = Dict("ci_method" => "wald"))
+        @test size(br_ci.lv_effects_lower) == size(br_ci.lv_effects)
+        @test br_ci.lv_effects_ci_pd
+        @test all(br_ci.lv_effects_lower .< br_ci.lv_effects .< br_ci.lv_effects_upper)
         M = trues(size(Y))
         M[1, 1] = false
         @test_throws ArgumentError bridge_fit(
@@ -344,9 +354,12 @@ using Distributions
         @test size(br.alpha_lv) == size(alpha_lv)
         @test br.scores ≈ br.scores_mean .+ br.scores_innovation atol = 1e-10
         @test occursin("Gamma C1", br.note)
-        @test_throws ArgumentError bridge_fit(
+        br_ci = bridge_fit(
             ; y = Y, family = "gamma", d = 1, X_lv = X_lv,
             options = Dict("ci_method" => "wald"))
+        @test size(br_ci.lv_effects_lower) == size(br_ci.lv_effects)
+        @test br_ci.lv_effects_ci_pd
+        @test all(br_ci.lv_effects_lower .< br_ci.lv_effects .< br_ci.lv_effects_upper)
         M = trues(size(Y))
         M[1, 1] = false
         @test_throws ArgumentError bridge_fit(
@@ -416,9 +429,12 @@ using Distributions
         @test size(br.alpha_lv) == size(alpha_lv)
         @test br.scores ≈ br.scores_mean .+ br.scores_innovation atol = 1e-10
         @test occursin("Beta C1", br.note)
-        @test_throws ArgumentError bridge_fit(
+        br_ci = bridge_fit(
             ; y = Y, family = "beta", d = 1, X_lv = X_lv,
             options = Dict("ci_method" => "wald"))
+        @test size(br_ci.lv_effects_lower) == size(br_ci.lv_effects)
+        @test br_ci.lv_effects_ci_pd
+        @test all(br_ci.lv_effects_lower .< br_ci.lv_effects .< br_ci.lv_effects_upper)
         M = trues(size(Y))
         M[1, 1] = false
         @test_throws ArgumentError bridge_fit(
@@ -434,9 +450,9 @@ using Distributions
                                               X_lv = X_lv)
         @test_throws ArgumentError bridge_fit(; y = Y, family = "gaussian", d = 1,
                                               X_lv = X_lv, X = X)
-        @test_throws ArgumentError bridge_fit(; y = Y, family = "gaussian", d = 1,
-                                              X_lv = X_lv,
-                                              options = Dict("ci_method" => "wald"))
+        # ci_method="wald" is now ADMITTED for X_lv (delta-method Wald on B_lv).
+        @test haskey(bridge_fit(; y = Y, family = "gaussian", d = 1, X_lv = X_lv,
+                                options = Dict("ci_method" => "wald")), :lv_effects_lower)
         @test_throws ArgumentError bridge_fit(; y = Y, family = "gaussian", d = 1,
                                               X_lv = randn(44, 1))
         @test_throws ArgumentError bridge_fit(; y = Y[1:2, :],
