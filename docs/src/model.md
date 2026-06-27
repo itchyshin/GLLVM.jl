@@ -27,9 +27,10 @@ contribution to `Σ_y_site`: `Λ_B Λ_B'`.
 
 **Predictor-informed latent-score mean** `Λ_B (X_lv[s] α_lv)` — a C1
 ordinary unit-tier extension matching the current R `gllvmTMB` Design 73
-surface for Gaussian, Poisson (log link), and complete-response binomial
-logit/probit/cloglog point fits. With `fit_gaussian_gllvm(...; X_lv = X_lv)`,
-`fit_poisson_gllvm(...; X_lv = X_lv)`, or `fit_binomial_gllvm(...; X_lv = X_lv)`,
+surface for Gaussian, Poisson (log link), shared-dispersion NB2, and
+complete-response binomial logit/probit/cloglog point fits. With
+`fit_gaussian_gllvm(...; X_lv = X_lv)`, `fit_poisson_gllvm(...; X_lv = X_lv)`,
+`fit_nb_gllvm(...; X_lv = X_lv)`, or `fit_binomial_gllvm(...; X_lv = X_lv)`,
 the site score is decomposed as
 `η_B[s] = X_lv[s] α_lv + z_s`, where `z_s ∼ N(0, I_K)`.
 The raw `α_lv` coefficients depend on the latent-axis orientation; the
