@@ -163,7 +163,7 @@ const _BRIDGE_BINOMIAL_FAMILIES = ("binomial", "binomial_probit", "binomial_clog
 const _BRIDGE_BINOMIAL_XLV_FAMILIES = _BRIDGE_BINOMIAL_FAMILIES
 # Families with a point-estimate predictor-informed latent-score (X_lv) bridge
 # route: ordinary Gaussian, Poisson (log link), and binomial logit/probit/cloglog.
-const _BRIDGE_XLV_FAMILIES = ("gaussian", "poisson", "negbinomial", _BRIDGE_BINOMIAL_FAMILIES...)
+const _BRIDGE_XLV_FAMILIES = ("gaussian", "poisson", "negbinomial", "gamma", _BRIDGE_BINOMIAL_FAMILIES...)
 
 # One-part NON-Gaussian families `fit_gllvm_cov` fits with covariates X (it has a
 # `_cov_*` kernel for each). Ordinal and NB1 are absent — no covariate kernel yet.
@@ -539,7 +539,7 @@ function bridge_capabilities()
                 f == "nb1" ?
                     "one-part reduced-rank bridge family; default no-X route uses per-trait grouped dispersion; no-X and masked no-X Wald/profile/bootstrap CI payloads are routed; fixed-effect-X remains a follow-up" :
                 f == "gamma" ?
-                    "one-part reduced-rank bridge family; default no-X route uses shared Gamma grouped dispersion to match current native scalar-CV Gamma; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; per-trait Gamma is a native-expansion follow-up" :
+                    "one-part reduced-rank bridge family; default no-X route uses shared Gamma grouped dispersion to match current native scalar-CV Gamma; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; point-estimate predictor-informed latent-score X_lv via the shared-shape fitter is wired; X_lv CIs remain follow-ups; per-trait Gamma is a native-expansion follow-up" :
                 f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES ?
                     "one-part reduced-rank bridge family; default no-X route uses per-trait ordinal cutpoints; CI routing is a follow-up" :
                 f == "poisson" ?
@@ -939,6 +939,41 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
             scores = scores, ci = ci, mask = M)
         return merge(base, disp)
     elseif key == "gamma"
+        if X_lv !== nothing
+            Xlv = Matrix{Float64}(X_lv)
+            size(Xlv, 1) == n || throw(ArgumentError(
+                "bridge_fit: X_lv must be n×q_lv ($(n)×q_lv); got $(size(Xlv))"))
+            size(Xlv, 2) > 0 || throw(ArgumentError(
+                "bridge_fit: X_lv must have at least one predictor column"))
+            # X_lv route uses the shared-shape Gamma fitter (consistent with the
+            # no-X shared-shape bridge route) — a narrow point-estimate slice.
+            fit = fit_gamma_gllvm(Yf; K = K, X_lv = Xlv)
+            scores_total = Matrix{Float64}(
+                getLV(fit, Yf; X_lv = Xlv, component = :total, rotate = true))
+            scores_mean = Matrix{Float64}(
+                getLV(fit, Yf; X_lv = Xlv, component = :mean, rotate = true))
+            scores_innovation = Matrix{Float64}(
+                getLV(fit, Yf; X_lv = Xlv, component = :innovation, rotate = true))
+            base = _bridge_assemble_ng(fit, "gamma", "gamma_xlv_rr",
+                traits, units, p, K, Yf, nothing;
+                alpha = fit.β, dispersion = fill(fit.α, p),
+                df = _nparams(fit), scores = scores_total, ci = nothing,
+                mask = nothing)
+            xlv_note = "predictor-informed latent-score fit (Gamma C1): scores are " *
+                       "total latent scores, scores_mean = X_lv*alpha_lv, " *
+                       "scores_innovation are the posterior zero-mean Laplace score " *
+                       "modes, and lv_effects = Lambda*alpha_lv' is the " *
+                       "rotation-stable trait-effect matrix; the shared shape alpha " *
+                       "is jointly estimated. Confidence intervals, response masks, " *
+                       "and broader non-Gaussian X_lv routes remain separate " *
+                       "validation gates."
+            return merge(base, (note = isempty(base.note) ? xlv_note :
+                                      string(base.note, " ", xlv_note),
+                                lv_effects = Matrix{Float64}(extract_lv_effects(fit)),
+                                alpha_lv = Matrix{Float64}(fit.alpha_lv),
+                                scores_mean = scores_mean,
+                                scores_innovation = scores_innovation))
+        end
         # Native gllvmTMB ordinary Gamma currently has one scalar sigma_eps/CV for
         # all Gamma traits. Use a single grouped-Gamma shape here for R-oracle
         # parity; the per-trait grouped Gamma engine remains available for a later

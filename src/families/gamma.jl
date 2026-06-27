@@ -43,14 +43,66 @@ struct GammaFit
     loglik::Float64
     converged::Bool
     iterations::Int
+    alpha_lv::Union{Nothing, Matrix{Float64}}
+    theta_packed::Vector{Float64}
 end
+
+GammaFit(β::Vector{Float64}, Λ::Matrix{Float64}, α::Float64, link::Link,
+         loglik::Float64, converged::Bool, iterations::Int) =
+    GammaFit(β, Λ, α, link, loglik, converged, iterations, nothing, Float64[])
 
 function Base.show(io::IO, f::GammaFit)
     p, K = size(f.Λ)
     print(io, "GammaFit(p=", p, ", K=", K, ", α=", round(f.α; sigdigits = 4),
           ", link=", nameof(typeof(f.link)),
+          f.alpha_lv === nothing ? "" : ", X_lv=true",
           ", loglik=", round(f.loglik; sigdigits = 7),
           f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+"""
+    gamma_lv_nll_packed(params, Y, p, K, link; X_lv, q_lv, kwargs...) -> Real
+
+Negative Laplace log-likelihood for the predictor-informed latent-score Gamma
+model. Parameter layout: `params[1:p]` = β; next `q_lv*K` = `alpha_lv`; next
+`rr` = packed loadings `Λ`; last entry = `log α` (shape). The predictor mean
+enters the Laplace core as the offset `Λ * alpha_lv' * X_lv[s]`.
+"""
+function gamma_lv_nll_packed(params::AbstractVector, Y::AbstractMatrix,
+        p::Integer, K::Integer, link::Link;
+        X_lv::AbstractMatrix, q_lv::Integer,
+        mask = nothing, offset = nothing,
+        maxiter::Integer = 100, tol::Real = 1e-9)
+    size(Y, 1) == p ||
+        throw(ArgumentError("Y first dim ($(size(Y, 1))) must equal p ($p)"))
+    n = size(Y, 2)
+    size(X_lv, 1) == n ||
+        throw(ArgumentError("X_lv first dim ($(size(X_lv, 1))) must equal n_sites ($n)"))
+    size(X_lv, 2) == q_lv ||
+        throw(ArgumentError("X_lv second dim ($(size(X_lv, 2))) must equal q_lv ($q_lv)"))
+    q_lv > 0 || throw(ArgumentError("q_lv must be positive"))
+
+    rr = rr_theta_len(p, K)
+    n_expected = p + q_lv * K + rr + 1
+    length(params) == n_expected || throw(ArgumentError(
+        "params length ($(length(params))) must equal $n_expected " *
+        "(p=$p + alpha_lv=$(q_lv * K) + rr=$rr + log_alpha=1)"))
+
+    cursor = 0
+    β = @view params[(cursor + 1):(cursor + p)]
+    cursor += p
+    alpha_vec = @view params[(cursor + 1):(cursor + q_lv * K)]
+    alpha_lv = reshape(alpha_vec, q_lv, K)
+    cursor += q_lv * K
+    θ_rr = @view params[(cursor + 1):(cursor + rr)]
+    Λ = unpack_lambda(θ_rr, p, K)
+    cursor += rr
+    α = exp(params[cursor + 1])
+
+    lv_offset = _lv_mean_eta(Λ, X_lv, alpha_lv)
+    off = offset === nothing ? lv_offset : offset .+ lv_offset
+    return -gamma_marginal_loglik_laplace(Y, Λ, β, α; mask = mask, offset = off,
+                                          maxiter = maxiter, tol = tol)
 end
 
 """
@@ -67,10 +119,36 @@ function fit_gamma_gllvm(Y::AbstractMatrix; K::Integer,
         link::Link = LogLink(), mask = nothing, offset = nothing,
         gradient::Symbol = :analytic,
         β_init = nothing, Λ_init = nothing, α_init = nothing,
+        X_lv::Union{Nothing, AbstractMatrix} = nothing,
+        alpha_lv_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
     rr = rr_theta_len(p, K)
+
+    # Predictor-informed latent-score mean (Design 73 / gllvmTMB C1): X_lv (n×q_lv)
+    # activates joint estimation of alpha_lv with the shared shape α, via the
+    # parameter-dependent offset Λ * alpha_lv' * X_lv[s]. Point-estimate only.
+    q_lv = 0
+    X_lv_fit = nothing
+    if X_lv !== nothing
+        K > 0 || throw(ArgumentError("X_lv requires a positive latent dimension K"))
+        size(X_lv, 1) == n ||
+            throw(ArgumentError("X_lv first dim ($(size(X_lv, 1))) must equal n_sites ($n)"))
+        q_lv = size(X_lv, 2)
+        q_lv > 0 || throw(ArgumentError("X_lv must have at least one predictor column"))
+        X_lv_fit = Matrix{Float64}(X_lv)
+        if alpha_lv_init !== nothing
+            size(alpha_lv_init, 1) == q_lv ||
+                throw(ArgumentError(
+                    "alpha_lv_init first dim ($(size(alpha_lv_init, 1))) must equal size(X_lv, 2) ($q_lv)"))
+            size(alpha_lv_init, 2) == K ||
+                throw(ArgumentError(
+                    "alpha_lv_init second dim ($(size(alpha_lv_init, 2))) must equal K ($K)"))
+        end
+    elseif alpha_lv_init !== nothing
+        throw(ArgumentError("alpha_lv_init requires X_lv"))
+    end
 
     msk = _resolve_obs_mask(mask, Y)                  # NA handling
     Yc  = _sanitize_missing(Y, 1.0)                   # positive placeholder
@@ -79,8 +157,8 @@ function fit_gamma_gllvm(Y::AbstractMatrix; K::Integer,
     offset === nothing || (Zemp .-= offset)           # offset (η = β + offset + Λz)
     _mask_warmstart!(Zemp, msk)
     β0 = β_init === nothing ? vec(sum(Zemp; dims = 2)) ./ n : collect(float.(β_init))
+    Zc = Zemp .- β0
     Λ0 = if Λ_init === nothing
-        Zc = Zemp .- β0
         F = svd(Zc)
         kk = min(K, length(F.S))
         L = zeros(p, K)
@@ -92,6 +170,21 @@ function fit_gamma_gllvm(Y::AbstractMatrix; K::Integer,
         collect(float.(Λ_init))
     end
     logα0 = α_init === nothing ? log(2.0) : log(float(α_init))
+
+    # alpha_lv warm start: least-squares regression of the initial PPCA scores on X_lv.
+    alpha0 = if X_lv_fit === nothing
+        nothing
+    elseif alpha_lv_init === nothing
+        F = svd(Zc)
+        kk = min(K, length(F.S))
+        scores0 = zeros(Float64, n, K)
+        @inbounds for j in 1:kk
+            scores0[:, j] = sqrt(n) .* F.V[:, j]
+        end
+        X_lv_fit \ scores0
+    else
+        Matrix{Float64}(alpha_lv_init)
+    end
 
     θ0 = vcat(β0, pack_lambda(Λ0), logα0)
     function negll(θ)
@@ -108,7 +201,21 @@ function fit_gamma_gllvm(Y::AbstractMatrix; K::Integer,
     end
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
     opts = Optim.Options(g_tol = g_tol, iterations = iterations)
-    res = if gradient === :analytic && offset === nothing
+    res = if X_lv_fit !== nothing
+        θ0_lv = vcat(β0, vec(alpha0), pack_lambda(Λ0), logα0)
+        negll_lv = θ -> begin
+            v = try
+                gamma_lv_nll_packed(θ, Yc, p, K, link;
+                                    X_lv = X_lv_fit, q_lv = q_lv,
+                                    mask = msk, offset = offset,
+                                    maxiter = newton_maxiter, tol = newton_tol)
+            catch
+                return 1e12
+            end
+            return isfinite(v) ? v : 1e12
+        end
+        Optim.optimize(negll_lv, θ0_lv, ls, opts; autodiff = :finite)
+    elseif gradient === :analytic && offset === nothing
         ag = θ -> begin
             β = θ[1:p]; Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K); av = exp(θ[p + rr + 1])
             try -gamma_laplace_grad(Yc, Λ, β, av; mask = msk) catch; nothing end
@@ -118,9 +225,23 @@ function fit_gamma_gllvm(Y::AbstractMatrix; K::Integer,
         Optim.optimize(negll, θ0, ls, opts; autodiff = :finite)
     end
     θ̂ = Optim.minimizer(res)
-    β̂ = θ̂[1:p]
-    Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
-    α̂ = exp(θ̂[p + rr + 1])
-    return GammaFit(β̂, Λ̂, α̂, link, -Optim.minimum(res),
-                   Optim.converged(res), Optim.iterations(res))
+    if X_lv_fit !== nothing
+        cursor = 0
+        β̂ = collect(θ̂[(cursor + 1):(cursor + p)])
+        cursor += p
+        alpha_hat = reshape(collect(θ̂[(cursor + 1):(cursor + q_lv * K)]), q_lv, K)
+        cursor += q_lv * K
+        Λ̂ = unpack_lambda(@view(θ̂[(cursor + 1):(cursor + rr)]), p, K)
+        cursor += rr
+        α̂ = exp(θ̂[cursor + 1])
+        return GammaFit(β̂, Λ̂, α̂, link, -Optim.minimum(res),
+                       Optim.converged(res), Optim.iterations(res),
+                       alpha_hat, collect(Float64, θ̂))
+    else
+        β̂ = θ̂[1:p]
+        Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
+        α̂ = exp(θ̂[p + rr + 1])
+        return GammaFit(β̂, Λ̂, α̂, link, -Optim.minimum(res),
+                       Optim.converged(res), Optim.iterations(res))
+    end
 end

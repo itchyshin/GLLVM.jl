@@ -282,6 +282,77 @@ using Distributions
             X = randn(size(Y, 1), size(Y, 2), 1))
     end
 
+    @testset "Gamma X_lv packed objective matches offset Laplace core" begin
+        p, n, K, q_lv = 3, 9, 1, 1
+        X_lv = reshape(collect(range(-0.8, 0.8; length = n)), n, q_lv)
+        β = [0.5, 1.0, 0.7]
+        Λ = reshape([0.4, -0.3, 0.2], p, K)
+        alpha_lv = reshape([0.6], q_lv, K)
+        α = 5.0
+        Y = [0.5 + 0.3 * mod(t + 2s, 5) for t in 1:p, s in 1:n]
+        params = vcat(β, vec(alpha_lv), GLLVM.pack_lambda(Λ), log(α))
+        lv_offset = GLLVM._lv_mean_eta(Λ, X_lv, alpha_lv)
+        nll_xlv = GLLVM.gamma_lv_nll_packed(
+            params, Y, p, K, LogLink(); X_lv = X_lv, q_lv = q_lv)
+        nll_offset = -GLLVM.gamma_marginal_loglik_laplace(Y, Λ, β, α; offset = lv_offset)
+        @test nll_xlv ≈ nll_offset atol = 1e-10
+    end
+
+    @testset "Gamma X_lv native and bridge route" begin
+        Random.seed!(707)
+        p, n, K, q_lv = 5, 160, 1, 1
+        X_lv = reshape(collect(range(-1.1, 1.1; length = n)), n, q_lv)
+        β = log.([2.0, 1.5, 3.0, 2.5, 1.8])
+        Λ = reshape([0.4, -0.3, 0.25, 0.2, -0.15], p, K)
+        alpha_lv = reshape([0.6], q_lv, K)
+        α_true = 6.0
+        z_innov = randn(n)
+        z_total = vec(X_lv * alpha_lv) .+ z_innov
+        η = β .+ Λ * reshape(z_total, 1, n)
+        Y = [rand(Gamma(α_true, exp(η[t, s]) / α_true)) for t in 1:p, s in 1:n]
+
+        fit = fit_gamma_gllvm(Y; K = 1, X_lv = X_lv,
+            β_init = β, Λ_init = Λ, alpha_lv_init = alpha_lv, α_init = α_true,
+            iterations = 200, g_tol = 1e-5)
+
+        @test fit.converged
+        @test isfinite(fit.loglik)
+        @test fit.α > 0
+        @test size(fit.alpha_lv) == size(alpha_lv)
+        @test extract_lv_effects(fit) ≈ fit.Λ * fit.alpha_lv' atol = 1e-10
+        @test extract_lv_effects(fit; type = :axis_effect) ≈ fit.alpha_lv atol = 1e-10
+        @test cor(vec(extract_lv_effects(fit)), vec(Λ * alpha_lv')) > 0.9
+
+        Zmean = getLV(fit, Y; X_lv = X_lv, component = :mean, rotate = false)
+        Zinnovation = getLV(fit, Y; X_lv = X_lv, component = :innovation,
+                            rotate = false)
+        Ztotal = getLV(fit, Y; X_lv = X_lv, component = :total, rotate = false)
+        @test Zmean ≈ X_lv * fit.alpha_lv atol = 1e-10
+        @test Ztotal ≈ Zmean .+ Zinnovation atol = 1e-10
+        @test_throws ArgumentError getLV(fit, Y)
+        @test all(isfinite, predict(fit, Y; X_lv = X_lv))
+        @test_throws ArgumentError simulate(fit, size(Y, 2))
+        Ysim = simulate(fit, size(Y, 2); X_lv = X_lv, rng = MersenneTwister(9))
+        @test size(Ysim) == size(Y)
+        @test all(Ysim .> 0)
+        @test_throws ArgumentError confint(fit, Y)
+
+        br = bridge_fit(; y = Y, family = "gamma", d = 1, X_lv = X_lv)
+        @test br.family == "gamma"
+        @test br.model == "gamma_xlv_rr"
+        @test size(br.lv_effects) == (size(Y, 1), size(X_lv, 2))
+        @test size(br.alpha_lv) == size(alpha_lv)
+        @test br.scores ≈ br.scores_mean .+ br.scores_innovation atol = 1e-10
+        @test occursin("Gamma C1", br.note)
+        @test_throws ArgumentError bridge_fit(
+            ; y = Y, family = "gamma", d = 1, X_lv = X_lv,
+            options = Dict("ci_method" => "wald"))
+        M = trues(size(Y))
+        M[1, 1] = false
+        @test_throws ArgumentError bridge_fit(
+            ; y = Y, family = "gamma", d = 1, X_lv = X_lv, mask = M)
+    end
+
     @testset "X_lv bridge unsupported combinations fail loudly" begin
         Y = randn(4, 45)
         X_lv = randn(45, 1)

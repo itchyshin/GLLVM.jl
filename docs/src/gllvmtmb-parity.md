@@ -127,15 +127,15 @@ returns the full coefficient vector with constrained entries equal to zero plus
 can print fixed rows without treating them as estimated parameters.
 Predictor-informed latent-score covariates (`X_lv`) are admitted only for
 complete-response ordinary Gaussian, Poisson (log link), shared-dispersion NB2,
-and binomial logit/probit/cloglog point fits. The Gaussian bridge centres
-responses by trait means and returns those means as `alpha`; the Poisson, NB2,
-and binomial bridges keep per-trait link-scale intercepts in `alpha` (the NB2
-`X_lv` route uses the shared-dispersion fitter, not the per-trait grouped
-route). These routes return total latent scores in `scores` and add
+shared-shape Gamma, and binomial logit/probit/cloglog point fits. The Gaussian
+bridge centres responses by trait means and returns those means as `alpha`; the
+Poisson, NB2, Gamma, and binomial bridges keep per-trait link-scale intercepts
+in `alpha` (the NB2 and Gamma `X_lv` routes use the shared-dispersion/shape
+fitter, not the per-trait grouped route). These routes return total latent scores in `scores` and add
 `scores_mean`, `scores_innovation`, `alpha_lv`, and rotation-stable
 `lv_effects = Lambda * alpha_lv'`. X_lv confidence intervals, response masks,
 simultaneous fixed-effect `X`, mixed-family fits, grouped-dispersion `X_lv`, and
-the remaining non-Gaussian families (Gamma, Beta, ordinal, two-part) remain
+the remaining non-Gaussian families (Beta, ordinal, two-part) remain
 deliberate follow-ups rather than inferred parity.
 Initial response-missing masks are admitted only for no-X one-part non-Gaussian
 bridge fits through an explicit `mask` (`true = observed`); the R bridge
