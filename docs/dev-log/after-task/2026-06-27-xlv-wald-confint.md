@@ -15,7 +15,13 @@ families with an `X_lv` fit (Poisson, Binomial, NB2, Gamma, Beta).
 ## 2. Implemented
 
 - `confint_lv_effects(fit, Y, X_lv; N=nothing, level=0.95)` (exported) — Wald
-  intervals for the rotation-/sign-stable trait-effect matrix `B_lv = Λ·α'`.
+  intervals for the rotation-/sign-stable trait-effect matrix `B_lv = Λ·α'`, for
+  all six `X_lv` families: **Gaussian** plus Poisson, Binomial, NB2, Gamma, Beta.
+  Gaussian uses the **exact ForwardDiff Hessian** of `gaussian_lv_nll_packed`
+  (closed-form marginal); the GLM families use the finite-difference observed
+  information (the post-Hessian delta method is shared via `_lv_wald_from_hessian`).
+  Gaussian's packed layout differs (`[α_lv; log σ; Λ]`, no β) so it has its own
+  `_lv_effects_from_packed_gaussian` extractor.
   Reuses the observed-information covariance `Σ = inv(H)` of the packed MLE
   (`fit.theta_packed`, finite-difference Hessian of `*_lv_nll_packed`) and pushes
   it through the **delta method** onto `B_lv`: `Cov(B_lv) = J Σ Jᵀ`, with

@@ -90,6 +90,15 @@ using LinearAlgebra
         _check(confint_lv_effects(fit, Y, X_lv), fit)
     end
 
+    @testset "Gaussian (closed-form, exact ForwardDiff Hessian)" begin
+        Random.seed!(4606)
+        zt = vec(X_lv * alpha) .+ randn(n)
+        Yg = Λ * reshape(zt, 1, n) .+ 0.3 .* randn(p, n)   # centred: no β; B_lv = Λ·α
+        fit = fit_gaussian_gllvm(Yg; K = K, X_lv = X_lv, iterations = 300)
+        _check(confint_lv_effects(fit, Yg, X_lv), fit)
+        @test_throws ArgumentError confint_lv_effects(fit_gaussian_gllvm(Yg; K = K), Yg, X_lv)
+    end
+
     @testset "argument guards" begin
         Random.seed!(4606)
         β = log.([6.0, 4.0, 8.0, 5.0, 7.0])

@@ -1795,21 +1795,16 @@ function _fd_jacobian(g::Function, x::AbstractVector)
     return J
 end
 
-# Shared Wald + delta-method core over the p·q_lv entries of vec(B_lv)
-# (column-major: entry (t, c) at index t + (c−1)·p).
-function _lv_effect_wald(nll::Function, θ::AbstractVector, p::Integer, K::Integer,
-                         q_lv::Integer, level::Real)
-    x = collect(Float64, θ)
-    safenll = function (v)
-        val = try nll(v) catch; return 1e12 end
-        return isfinite(val) ? val : 1e12
-    end
-    H = _fd_hessian(safenll, x)
+# Shared post-Hessian delta-method core over the p·q_lv entries of vec(B_lv)
+# (column-major: entry (t, c) at index t + (c−1)·p). `extractor(θ, p, K, q_lv)`
+# maps the packed vector to vec(B_lv) (the layout differs Gaussian vs GLM).
+function _lv_wald_from_hessian(H::AbstractMatrix, x::AbstractVector, p::Integer,
+                               K::Integer, q_lv::Integer, level::Real, extractor)
     Σ = all(isfinite, H) ? (try inv(Symmetric((H .+ H') ./ 2)) catch; nothing end) : nothing
-    b̂ = _lv_effects_from_packed(x, p, K, q_lv)
+    b̂ = extractor(x, p, K, q_lv)
     nb = length(b̂); se = fill(NaN, nb); pd = Σ !== nothing
     if pd
-        J = _fd_jacobian(t -> _lv_effects_from_packed(t, p, K, q_lv), x)
+        J = _fd_jacobian(t -> extractor(t, p, K, q_lv), x)
         C = J * Σ * J'
         @inbounds for i in 1:nb
             v = C[i, i]
@@ -1822,6 +1817,28 @@ function _lv_effect_wald(nll::Function, θ::AbstractVector, p::Integer, K::Integ
     hi = [isfinite(se[i]) ? b̂[i] + z * se[i] : NaN for i in 1:nb]
     return (term = term, estimate = b̂, lower = lo, upper = hi, se = se,
             level = level, method = :wald, pd_hessian = pd)
+end
+
+# GLM families: finite-difference observed-information Hessian of the packed
+# objective (the Laplace marginal is not AD-friendly through its inner solve).
+function _lv_effect_wald(nll::Function, θ::AbstractVector, p::Integer, K::Integer,
+                         q_lv::Integer, level::Real)
+    x = collect(Float64, θ)
+    safenll = function (v)
+        val = try nll(v) catch; return 1e12 end
+        return isfinite(val) ? val : 1e12
+    end
+    return _lv_wald_from_hessian(_fd_hessian(safenll, x), x, p, K, q_lv, level,
+                                 _lv_effects_from_packed)
+end
+
+# Gaussian packed layout is [β(q); vec(α_lv); log σ; pack_lambda(Λ)] — α_lv FIRST,
+# then a scalar log σ, then Λ; no per-trait β for the centred unit-tier X_lv fit.
+function _lv_effects_from_packed_gaussian(θ::AbstractVector, p::Integer, K::Integer, q_lv::Integer)
+    rr = rr_theta_len(p, K)
+    a  = reshape(θ[1:(q_lv * K)], q_lv, K)
+    Λ  = unpack_lambda(θ[(q_lv * K + 2):(q_lv * K + 1 + rr)], p, K)   # skip log σ
+    return vec(Λ * a')
 end
 
 # Per-family packed-objective closure for the observed-information Hessian.
@@ -1867,4 +1884,39 @@ function confint_lv_effects(fit::Union{PoissonFit, BinomialFit, NBFit, GammaFit,
         "X_lv has $(q_lv) column(s) but the fit carries α_lv of size $(size(fit.alpha_lv))"))
     nll = _lv_packed_nll(fit, Y, X_lv, q_lv, N)
     return _lv_effect_wald(nll, fit.theta_packed, p, K, q_lv, level)
+end
+
+"""
+    confint_lv_effects(fit::GllvmFit, Y, X_lv; level=0.95) -> NamedTuple
+
+Wald intervals for `B_lv = Λ·α'` of a Gaussian `X_lv` fit
+(`fit_gaussian_gllvm(...; X_lv=...)`). The Gaussian marginal is closed-form, so
+the observed information is the **exact ForwardDiff Hessian** of
+`gaussian_lv_nll_packed` at the packed MLE (no finite differencing). `K = 1`,
+complete responses, single unit-tier latent block, no fixed-effect `X`.
+"""
+function confint_lv_effects(fit::GllvmFit, Y::AbstractMatrix, X_lv::AbstractMatrix;
+                            N::Union{Nothing, AbstractMatrix} = nothing, level::Real = 0.95)
+    0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
+    fit.pars.alpha_lv === nothing && throw(ArgumentError(
+        "confint_lv_effects requires a Gaussian X_lv fit (fit_gaussian_gllvm(...; X_lv=...)); this fit has none"))
+    p, K = size(fit.pars.Λ)
+    K == 1 || throw(ArgumentError("confint_lv_effects is admitted for K = 1 only; got K = $K"))
+    q_lv = size(X_lv, 2)
+    size(X_lv, 1) == size(Y, 2) || throw(ArgumentError(
+        "X_lv must have one row per site: got $(size(X_lv, 1)), need $(size(Y, 2))"))
+    size(fit.pars.alpha_lv) == (q_lv, K) || throw(ArgumentError(
+        "X_lv has $(q_lv) column(s) but the fit carries α_lv of size $(size(fit.pars.alpha_lv))"))
+    x = collect(Float64, fit.pars.θ_packed)
+    nll = θv -> gaussian_lv_nll_packed(θv, Y, p, K; X_lv = X_lv, q_lv = q_lv)
+    H = try
+        ForwardDiff.hessian(nll, x)
+    catch
+        safenll = function (v)
+            val = try nll(v) catch; return 1e12 end
+            return isfinite(val) ? val : 1e12
+        end
+        _fd_hessian(safenll, x)
+    end
+    return _lv_wald_from_hessian(H, x, p, K, q_lv, level, _lv_effects_from_packed_gaussian)
 end
