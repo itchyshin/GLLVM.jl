@@ -50,9 +50,26 @@ affected — `B_lv` recovery uses the deterministic `X_lv` mean part — which i
 recovery looked clean while only coverage flagged it. Lesson: in Julia array
 comprehensions, hoist any RNG-consuming setup out of the loop body.
 
+## K = 2 tier expansion — n = 240, p = 6, S = 60, level = 0.95
+
+`B_lv = Λ·α'` is invariant under the K×K rotation `Λ→ΛQ, α→αQ`, so it is
+identified for any K and the delta-method CI carries over. Coverage at K = 2
+(q_lv = 1), all eight routes, 60/60 converged and 60/60 PD each:
+
+| route | gaussian | bin_logit | bin_probit | bin_cloglog | poisson | negbin | gamma | beta |
+|---|---|---|---|---|---|---|---|---|
+| coverage | 0.964 | 0.947 | 0.933 | 0.956 | 0.961 | 0.944 | 0.950 | 0.925 |
+
+All near nominal — the tier expansion holds family-wide. (The same `gen_poisson`
+comprehension-hoisting artefact recurred in the K=2 sweep — Poisson read 0.611
+until `eta` was hoisted out of the loop, then 0.961; the engine was never
+affected, exactly as at K=1.)
+
 ## Scope
 
-`K = 1`, `q_lv = 1`, complete responses, single ordinary latent block, Wald only
-(no profile/bootstrap for `X_lv` yet), Gaussian CI path separate. Each remains its
-own gate. No capability row promoted on this evidence — input to the maintainer's
-decision.
+`q_lv = 1`, complete responses, single ordinary latent block, Wald only
+(no profile/bootstrap for `X_lv` yet). `K = 1` and `K = 2` are both validated
+(recovery + coverage); larger K is admitted by the same K-generic delta method.
+Each other extension (masks, `X`+`X_lv`, mixed-family, structured sources) remains
+its own gate. No capability row promoted on this evidence — input to the
+maintainer's decision.
