@@ -135,6 +135,78 @@ using Distributions
         end
     end
 
+    @testset "Poisson X_lv packed objective matches offset Laplace core" begin
+        p, n, K, q_lv = 3, 9, 1, 1
+        X_lv = reshape(collect(range(-0.8, 0.8; length = n)), n, q_lv)
+        β = [0.4, 0.9, 0.6]
+        Λ = reshape([0.45, -0.3, 0.2], p, K)
+        alpha_lv = reshape([0.6], q_lv, K)
+        Y = [mod(t + 2s, 6) for t in 1:p, s in 1:n]
+        params = vcat(β, vec(alpha_lv), GLLVM.pack_lambda(Λ))
+        lv_offset = GLLVM._lv_mean_eta(Λ, X_lv, alpha_lv)
+        nll_xlv = GLLVM.poisson_lv_nll_packed(
+            params, Y, p, K, LogLink(); X_lv = X_lv, q_lv = q_lv)
+        nll_offset = -GLLVM.poisson_marginal_loglik_laplace(
+            Y, Λ, β, LogLink(); offset = lv_offset)
+        @test nll_xlv ≈ nll_offset atol = 1e-10
+    end
+
+    @testset "Poisson X_lv native and bridge route" begin
+        Random.seed!(909)
+        p, n, K, q_lv = 5, 160, 1, 1
+        X_lv = reshape(collect(range(-1.1, 1.1; length = n)), n, q_lv)
+        β = log.([6.0, 4.0, 8.0, 5.0, 7.0])
+        Λ = reshape([0.5, -0.4, 0.3, 0.25, -0.2], p, K)
+        alpha_lv = reshape([0.6], q_lv, K)
+        z_innov = randn(n)
+        z_total = vec(X_lv * alpha_lv) .+ z_innov
+        η = β .+ Λ * reshape(z_total, 1, n)
+        Y = [rand(Poisson(exp(η[t, s]))) for t in 1:p, s in 1:n]
+
+        fit = fit_poisson_gllvm(Y; K = 1, X_lv = X_lv,
+            β_init = β, Λ_init = Λ, alpha_lv_init = alpha_lv,
+            iterations = 150, g_tol = 1e-5)
+
+        @test fit.converged
+        @test isfinite(fit.loglik)
+        @test size(fit.alpha_lv) == size(alpha_lv)
+        @test extract_lv_effects(fit) ≈ fit.Λ * fit.alpha_lv' atol = 1e-10
+        @test extract_lv_effects(fit; type = :axis_effect) ≈ fit.alpha_lv atol = 1e-10
+        @test cor(vec(extract_lv_effects(fit)), vec(Λ * alpha_lv')) > 0.95
+
+        Zmean = getLV(fit, Y; X_lv = X_lv, component = :mean, rotate = false)
+        Zinnovation = getLV(fit, Y; X_lv = X_lv, component = :innovation,
+                            rotate = false)
+        Ztotal = getLV(fit, Y; X_lv = X_lv, component = :total, rotate = false)
+        @test Zmean ≈ X_lv * fit.alpha_lv atol = 1e-10
+        @test Ztotal ≈ Zmean .+ Zinnovation atol = 1e-10
+        @test_throws ArgumentError getLV(fit, Y)
+        @test all(isfinite, predict(fit, Y; X_lv = X_lv))
+        @test_throws ArgumentError simulate(fit, size(Y, 2))
+        Ysim = simulate(fit, size(Y, 2); X_lv = X_lv, rng = MersenneTwister(7))
+        @test size(Ysim) == size(Y)
+        @test all(Ysim .>= 0)
+        @test_throws ArgumentError confint(fit, Y)
+
+        br = bridge_fit(; y = Float64.(Y), family = "poisson", d = 1, X_lv = X_lv)
+        @test br.family == "poisson"
+        @test br.model == "poisson_xlv_rr"
+        @test size(br.lv_effects) == (size(Y, 1), size(X_lv, 2))
+        @test size(br.alpha_lv) == size(alpha_lv)
+        @test br.scores ≈ br.scores_mean .+ br.scores_innovation atol = 1e-10
+        @test occursin("Poisson C1", br.note)
+        @test_throws ArgumentError bridge_fit(
+            ; y = Float64.(Y), family = "poisson", d = 1, X_lv = X_lv,
+            options = Dict("ci_method" => "wald"))
+        M = trues(size(Y))
+        M[1, 1] = false
+        @test_throws ArgumentError bridge_fit(
+            ; y = Float64.(Y), family = "poisson", d = 1, X_lv = X_lv, mask = M)
+        @test_throws ArgumentError bridge_fit(
+            ; y = Float64.(Y), family = "poisson", d = 1, X_lv = X_lv,
+            X = randn(size(Y, 1), size(Y, 2), 1))
+    end
+
     @testset "X_lv bridge unsupported combinations fail loudly" begin
         Y = randn(4, 45)
         X_lv = randn(45, 1)
@@ -149,8 +221,6 @@ using Distributions
                                               options = Dict("ci_method" => "wald"))
         @test_throws ArgumentError bridge_fit(; y = Y, family = "gaussian", d = 1,
                                               X_lv = randn(44, 1))
-        @test_throws ArgumentError bridge_fit(; y = abs.(Y), family = "poisson",
-                                              d = 1, X_lv = X_lv)
         @test_throws ArgumentError bridge_fit(; y = Y[1:2, :],
                                               family = ["gaussian", "poisson"],
                                               d = 1, X_lv = X_lv)

@@ -56,6 +56,7 @@ using GLLVM
     ]
     @test caps.family[caps.predictor_informed_lv] == [
         "gaussian",
+        "poisson",
         "binomial",
         "binomial_probit",
         "binomial_cloglog",

@@ -2638,3 +2638,51 @@ PARTIAL: score algebra and post-fit extraction are tested, but recovery,
 coverage, and bridge promotion are not admitted. OUT: W-tier, diagonal random
 effects, phylogenetic/source-specific blocks, non-Gaussian families, REML, and
 interval calibration.
+
+## 2026-06-26 -- Bridge Poisson predictor-informed latent-score (Claude; Codex on leave)
+
+Extended the `X_lv` predictor-informed latent-score route from Gaussian +
+binomial to Poisson (log link), point-estimate only, mirroring the merged
+binomial slice. Branch `claude/poisson-xlv-20260626` off `origin/main`
+(`925cd7a`). Files: `src/families/poisson.jl`, `src/postfit.jl`,
+`src/simulate_fit.jl`, `src/bridge.jl`, `src/confint_family.jl`,
+`src/link_residual.jl`, `test/test_bridge_lv_predictor.jl`,
+`test/test_bridge_capabilities.jl`,
+`docs/src/{changelog,gllvmtmb-parity,model}.md`.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_bridge_lv_predictor.jl
+```
+
+Result: `bridge predictor-informed latent-score X_lv 117/117` pass (new Poisson
+packed-objective + native/bridge testsets; the former `poisson ... fails loudly`
+assertion is now a passing route).
+
+```sh
+# targeted regression set: capabilities, poisson_fit, simulate, postfit, bridge_ci
+```
+
+Result: all pass; no regression from the `_trait_mean_fitted` split, post-fit
+changes, the `simulate` method, or the confint guard.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result: PASS; `GLLVM.jl 4669 pass, 1 broken, 4670 total, 44m35.9s` (the
+pre-existing 1 broken is unchanged; +40 tests over the `4629 pass` baseline).
+
+### Deliberately Not Run
+
+- No self-merge: this is a likelihood/family change (high-risk); the PR opens
+  for maintainer review.
+- No R-side `gllvmTMB` change: Poisson `X_lv` bridge admission is a paired
+  follow-up slice.
+
+### Claim Boundary
+
+IN: complete-response Poisson (log link) `X_lv` point fits through the default
+bridge and `fit_poisson_gllvm(...; X_lv=...)`, with
+`lv_effects = Lambda*alpha_lv'`, score decomposition, and a CRAN-safe recovery
+gate. OUT/gated: `X_lv` CIs, response masks, `X` + `X_lv`, mixed-family,
+NB/Gamma/Beta/ordinal `X_lv`, broad R-Julia parity, and REML.
