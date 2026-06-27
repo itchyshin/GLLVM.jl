@@ -47,10 +47,10 @@ analysis. Without it, `confint_lv_effects` returns NaN / absurd SEs.
 
 ## 5. Known Residuals / Next Gates
 
-- **Coverage is not yet validated** — these are sound point + SE estimates, but
-  whether the 95% interval covers `B_lv` at 95% needs a coverage study (reuses
-  `bench/lv_recovery.jl` + `confint_lv_effects`). That is the immediate next step
-  and the second half of the recovery/coverage gate.
+- **Coverage validated** (`bench/lv_coverage.jl`,
+  `docs/dev-log/recovery-checkpoints/2026-06-27-xlv-wald-coverage.md`): all seven
+  GLM routes cover `B_lv` at 0.915–0.955 (nominal 0.95), 80/80 PD, `meanSE ≈
+  empSD`. The recovery/coverage gate is met for the K=1 GLM `X_lv` path.
 - Wald only (no profile/bootstrap for `X_lv` yet); `K = 1`, complete responses,
   single ordinary latent block, no `X` + `X_lv`, no masks, no mixed-family, no
   structured sources. Each its own gate.
