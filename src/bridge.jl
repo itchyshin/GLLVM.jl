@@ -163,7 +163,7 @@ const _BRIDGE_BINOMIAL_FAMILIES = ("binomial", "binomial_probit", "binomial_clog
 const _BRIDGE_BINOMIAL_XLV_FAMILIES = _BRIDGE_BINOMIAL_FAMILIES
 # Families with a point-estimate predictor-informed latent-score (X_lv) bridge
 # route: ordinary Gaussian, Poisson (log link), and binomial logit/probit/cloglog.
-const _BRIDGE_XLV_FAMILIES = ("gaussian", "poisson", "negbinomial", "gamma", _BRIDGE_BINOMIAL_FAMILIES...)
+const _BRIDGE_XLV_FAMILIES = ("gaussian", "poisson", "negbinomial", "gamma", "beta", _BRIDGE_BINOMIAL_FAMILIES...)
 
 # One-part NON-Gaussian families `fit_gllvm_cov` fits with covariates X (it has a
 # `_cov_*` kernel for each). Ordinal and NB1 are absent — no covariate kernel yet.
@@ -535,7 +535,7 @@ function bridge_capabilities()
                 f == "negbinomial" ?
                     "one-part reduced-rank bridge family; default no-X route uses per-trait grouped dispersion; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; point-estimate predictor-informed latent-score X_lv via the shared-dispersion fitter is wired; X_lv CIs remain follow-ups" :
                 f == "beta" ?
-                    "one-part reduced-rank bridge family; default no-X route uses per-trait grouped dispersion; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed" :
+                    "one-part reduced-rank bridge family; default no-X route uses per-trait grouped dispersion; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; point-estimate predictor-informed latent-score X_lv via the shared-precision fitter is wired; X_lv CIs remain follow-ups" :
                 f == "nb1" ?
                     "one-part reduced-rank bridge family; default no-X route uses per-trait grouped dispersion; no-X and masked no-X Wald/profile/bootstrap CI payloads are routed; fixed-effect-X remains a follow-up" :
                 f == "gamma" ?
@@ -927,6 +927,41 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
             scores = scores, ci = ci, mask = M)
         return merge(base, disp)
     elseif key == "beta"
+        if X_lv !== nothing
+            Xlv = Matrix{Float64}(X_lv)
+            size(Xlv, 1) == n || throw(ArgumentError(
+                "bridge_fit: X_lv must be n×q_lv ($(n)×q_lv); got $(size(Xlv))"))
+            size(Xlv, 2) > 0 || throw(ArgumentError(
+                "bridge_fit: X_lv must have at least one predictor column"))
+            # X_lv route uses the shared-precision Beta fitter (not the per-trait
+            # grouped route) — a narrow point-estimate slice.
+            fit = fit_beta_gllvm(Yf; K = K, X_lv = Xlv)
+            scores_total = Matrix{Float64}(
+                getLV(fit, Yf; X_lv = Xlv, component = :total, rotate = true))
+            scores_mean = Matrix{Float64}(
+                getLV(fit, Yf; X_lv = Xlv, component = :mean, rotate = true))
+            scores_innovation = Matrix{Float64}(
+                getLV(fit, Yf; X_lv = Xlv, component = :innovation, rotate = true))
+            base = _bridge_assemble_ng(fit, "beta", "beta_xlv_rr",
+                traits, units, p, K, Yf, nothing;
+                alpha = fit.β, dispersion = fill(fit.φ, p),
+                df = _nparams(fit), scores = scores_total, ci = nothing,
+                mask = nothing)
+            xlv_note = "predictor-informed latent-score fit (Beta C1): scores are " *
+                       "total latent scores, scores_mean = X_lv*alpha_lv, " *
+                       "scores_innovation are the posterior zero-mean Laplace score " *
+                       "modes, and lv_effects = Lambda*alpha_lv' is the " *
+                       "rotation-stable trait-effect matrix; the shared precision " *
+                       "phi is jointly estimated. Confidence intervals, response " *
+                       "masks, per-trait precision, and broader non-Gaussian X_lv " *
+                       "routes remain separate validation gates."
+            return merge(base, (note = isempty(base.note) ? xlv_note :
+                                      string(base.note, " ", xlv_note),
+                                lv_effects = Matrix{Float64}(extract_lv_effects(fit)),
+                                alpha_lv = Matrix{Float64}(fit.alpha_lv),
+                                scores_mean = scores_mean,
+                                scores_innovation = scores_innovation))
+        end
         fit = fit_beta_gllvm_grouped(Yf; K = K, group = collect(1:p), mask = M)
         disp = _bridge_dispersion_payload(fit.φ, fit.group, "phi",
             "Var = mu * (1 - mu) / (1 + phi)",
