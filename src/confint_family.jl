@@ -79,8 +79,9 @@ function _family_ci(fit::PoissonFit, Y::AbstractMatrix;
                     objective::Symbol = :laplace,
                     newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
     fit.alpha_lv === nothing || throw(ArgumentError(
-        "confint for fit_poisson_gllvm(...; X_lv=...) is not admitted yet; " *
-        "use extract_lv_effects for point estimates"))
+        "confint for fit_poisson_gllvm(...; X_lv=...) is not carried by confint(fit, Y); " *
+        "use confint_lv_effects(fit, Y, X_lv) for Wald intervals on B_lv, " *
+        "or extract_lv_effects(fit) for point estimates"))
     p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); link = fit.link
     M = _ci_mask(mask, Y)
     θ = vcat(fit.β, pack_lambda(fit.Λ))
@@ -112,8 +113,9 @@ function _family_ci(fit::BinomialFit, Y::AbstractMatrix;
                     objective::Symbol = :laplace,
                     newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
     fit.alpha_lv === nothing || throw(ArgumentError(
-        "confint for fit_binomial_gllvm(...; X_lv=...) is not admitted yet; " *
-        "use extract_lv_effects for point estimates"))
+        "confint for fit_binomial_gllvm(...; X_lv=...) is not carried by confint(fit, Y); " *
+        "use confint_lv_effects(fit, Y, X_lv) for Wald intervals on B_lv, " *
+        "or extract_lv_effects(fit) for point estimates"))
     p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); link = fit.link
     Nm = N === nothing ? fill(1, p, n) : Matrix{Int}(N)
     M = _ci_mask(mask, Y)
@@ -154,8 +156,9 @@ function _family_ci(fit::NBFit, Y::AbstractMatrix;
                     objective::Symbol = :laplace,
                     newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
     fit.alpha_lv === nothing || throw(ArgumentError(
-        "confint for fit_nb_gllvm(...; X_lv=...) is not admitted yet; " *
-        "use extract_lv_effects for point estimates"))
+        "confint for fit_nb_gllvm(...; X_lv=...) is not carried by confint(fit, Y); " *
+        "use confint_lv_effects(fit, Y, X_lv) for Wald intervals on B_lv, " *
+        "or extract_lv_effects(fit) for point estimates"))
     p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); link = fit.link
     M = _ci_mask(mask, Y)
     θ = vcat(fit.β, pack_lambda(fit.Λ), log(fit.r))
@@ -253,8 +256,9 @@ function _family_ci(fit::BetaFit, Y::AbstractMatrix;
                     objective::Symbol = :laplace,
                     newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
     fit.alpha_lv === nothing || throw(ArgumentError(
-        "confint for fit_beta_gllvm(...; X_lv=...) is not admitted yet; " *
-        "use extract_lv_effects for point estimates"))
+        "confint for fit_beta_gllvm(...; X_lv=...) is not carried by confint(fit, Y); " *
+        "use confint_lv_effects(fit, Y, X_lv) for Wald intervals on B_lv, " *
+        "or extract_lv_effects(fit) for point estimates"))
     p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); link = fit.link
     M = _ci_mask(mask, Y)
     θ = vcat(fit.β, pack_lambda(fit.Λ), log(fit.φ))
@@ -296,8 +300,9 @@ function _family_ci(fit::GammaFit, Y::AbstractMatrix;
                     objective::Symbol = :laplace,
                     newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
     fit.alpha_lv === nothing || throw(ArgumentError(
-        "confint for fit_gamma_gllvm(...; X_lv=...) is not admitted yet; " *
-        "use extract_lv_effects for point estimates"))
+        "confint for fit_gamma_gllvm(...; X_lv=...) is not carried by confint(fit, Y); " *
+        "use confint_lv_effects(fit, Y, X_lv) for Wald intervals on B_lv, " *
+        "or extract_lv_effects(fit) for point estimates"))
     p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); link = fit.link
     M = _ci_mask(mask, Y)
     θ = vcat(fit.β, pack_lambda(fit.Λ), log(fit.α))
@@ -1752,4 +1757,114 @@ function confint_spde_latent(fit::SPDELatentFit, Y::AbstractMatrix, locs::Abstra
     sel = _family_select(parm, ad.names)
     isempty(sel) && throw(ArgumentError("parm selector matched no parameters"))
     return _family_wald(ad, sel, level)
+end
+
+# ---------------------------------------------------------------------------
+# Wald CIs for the predictor-informed latent-score trait effects B_lv = Λ·α'.
+#
+# The X_lv fitters (fit_*_gllvm(...; X_lv=...)) carry the packed working vector
+# θ = [β; vec(α_lv); pack_lambda(Λ); (log-dispersion)] in `fit.theta_packed`,
+# with objective `*_lv_nll_packed`. The user-facing estimand is the rotation-/
+# sign-stable B_lv = Λ·α' — a DERIVED quantity, not a raw θ entry — so this entry
+# takes the observed-information covariance Σ = inv(H) of θ̂ (finite-difference
+# Hessian, as everywhere else in this file) and pushes it through the delta
+# method onto B_lv: J = ∂vec(B_lv)/∂θ (finite difference of a cheap algebraic
+# map), Cov(B_lv) = J Σ Jᵀ. For K = 1 (the only admitted X_lv tier) B_lv is fully
+# sign-identified, so the interval is rotation-invariant. Bootstrap / profile and
+# the no-X_lv families are out of scope here.
+# ---------------------------------------------------------------------------
+
+# vec(B_lv) = vec(Λ(θ)·α_lv(θ)ᵀ) from the packed X_lv working vector.
+function _lv_effects_from_packed(θ::AbstractVector, p::Integer, K::Integer, q_lv::Integer)
+    rr = rr_theta_len(p, K)
+    a  = reshape(θ[(p + 1):(p + q_lv * K)], q_lv, K)
+    Λ  = unpack_lambda(θ[(p + q_lv * K + 1):(p + q_lv * K + rr)], p, K)
+    return vec(Λ * a')
+end
+
+# Forward/central finite-difference Jacobian of a cheap vector map g: ℝᵐ → ℝⁿ.
+function _fd_jacobian(g::Function, x::AbstractVector)
+    f0 = g(x); m = length(x); nout = length(f0)
+    J = Matrix{Float64}(undef, nout, m)
+    @inbounds for j in 1:m
+        h = eps()^(1 / 3) * max(abs(x[j]), 1.0)
+        xp = copy(x); xp[j] += h
+        xm = copy(x); xm[j] -= h
+        J[:, j] = (g(xp) .- g(xm)) ./ (2h)
+    end
+    return J
+end
+
+# Shared Wald + delta-method core over the p·q_lv entries of vec(B_lv)
+# (column-major: entry (t, c) at index t + (c−1)·p).
+function _lv_effect_wald(nll::Function, θ::AbstractVector, p::Integer, K::Integer,
+                         q_lv::Integer, level::Real)
+    x = collect(Float64, θ)
+    safenll = function (v)
+        val = try nll(v) catch; return 1e12 end
+        return isfinite(val) ? val : 1e12
+    end
+    H = _fd_hessian(safenll, x)
+    Σ = all(isfinite, H) ? (try inv(Symmetric((H .+ H') ./ 2)) catch; nothing end) : nothing
+    b̂ = _lv_effects_from_packed(x, p, K, q_lv)
+    nb = length(b̂); se = fill(NaN, nb); pd = Σ !== nothing
+    if pd
+        J = _fd_jacobian(t -> _lv_effects_from_packed(t, p, K, q_lv), x)
+        C = J * Σ * J'
+        @inbounds for i in 1:nb
+            v = C[i, i]
+            (isfinite(v) && v > 0) && (se[i] = sqrt(v))
+        end
+    end
+    z = quantile(Normal(), 0.5 + level / 2)
+    term = ["B_lv[$t,$c]" for c in 1:q_lv for t in 1:p]
+    lo = [isfinite(se[i]) ? b̂[i] - z * se[i] : NaN for i in 1:nb]
+    hi = [isfinite(se[i]) ? b̂[i] + z * se[i] : NaN for i in 1:nb]
+    return (term = term, estimate = b̂, lower = lo, upper = hi, se = se,
+            level = level, method = :wald, pd_hessian = pd)
+end
+
+# Per-family packed-objective closure for the observed-information Hessian.
+_lv_packed_nll(fit::PoissonFit, Y, X_lv, q_lv, N) =
+    θ -> poisson_lv_nll_packed(θ, Y, size(fit.Λ, 1), size(fit.Λ, 2), fit.link; X_lv = X_lv, q_lv = q_lv)
+function _lv_packed_nll(fit::BinomialFit, Y, X_lv, q_lv, N)
+    Nm = N === nothing ? fill(1, size(Y, 1), size(Y, 2)) : Matrix{Int}(N)
+    return θ -> binomial_lv_nll_packed(θ, Y, Nm, size(fit.Λ, 1), size(fit.Λ, 2), fit.link;
+                                       X_lv = X_lv, q_lv = q_lv)
+end
+_lv_packed_nll(fit::NBFit, Y, X_lv, q_lv, N) =
+    θ -> nb_lv_nll_packed(θ, Y, size(fit.Λ, 1), size(fit.Λ, 2), fit.link; X_lv = X_lv, q_lv = q_lv)
+_lv_packed_nll(fit::GammaFit, Y, X_lv, q_lv, N) =
+    θ -> gamma_lv_nll_packed(θ, Y, size(fit.Λ, 1), size(fit.Λ, 2), fit.link; X_lv = X_lv, q_lv = q_lv)
+_lv_packed_nll(fit::BetaFit, Y, X_lv, q_lv, N) =
+    θ -> beta_lv_nll_packed(θ, Y, size(fit.Λ, 1), size(fit.Λ, 2), fit.link; X_lv = X_lv, q_lv = q_lv)
+
+"""
+    confint_lv_effects(fit, Y, X_lv; N=nothing, level=0.95) -> NamedTuple
+
+Wald confidence intervals for the predictor-informed latent-score trait-effect
+matrix `B_lv = Λ·α'` of an `X_lv` fit (`fit_*_gllvm(...; X_lv=...)` for Poisson,
+Binomial, NB2, Gamma, or Beta). `Y` and `X_lv` must match the fit; `N` is the
+binomial trial-count matrix. SEs come from the observed-information covariance of
+the packed MLE pushed through the delta method onto `B_lv`, returning
+`(term, estimate, lower, upper, se, level, method, pd_hessian)` over the `p·q_lv`
+entries of `vec(B_lv)`. Admitted for `K = 1`, complete responses, single ordinary
+latent block; every other structure (masks, `X` + `X_lv`, mixed-family, W-tier,
+phylo/animal/spatial/kernel sources, K > 1) stays gated.
+"""
+function confint_lv_effects(fit::Union{PoissonFit, BinomialFit, NBFit, GammaFit, BetaFit},
+                            Y::AbstractMatrix, X_lv::AbstractMatrix;
+                            N::Union{Nothing, AbstractMatrix} = nothing, level::Real = 0.95)
+    0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
+    fit.alpha_lv === nothing && throw(ArgumentError(
+        "confint_lv_effects requires an X_lv fit (fit_*_gllvm(...; X_lv=...)); this fit has none"))
+    p, K = size(fit.Λ)
+    K == 1 || throw(ArgumentError("confint_lv_effects is admitted for K = 1 only; got K = $K"))
+    q_lv = size(X_lv, 2)
+    size(X_lv, 1) == size(Y, 2) || throw(ArgumentError(
+        "X_lv must have one row per site: got $(size(X_lv, 1)), need $(size(Y, 2))"))
+    size(fit.alpha_lv) == (q_lv, K) || throw(ArgumentError(
+        "X_lv has $(q_lv) column(s) but the fit carries α_lv of size $(size(fit.alpha_lv))"))
+    nll = _lv_packed_nll(fit, Y, X_lv, q_lv, N)
+    return _lv_effect_wald(nll, fit.theta_packed, p, K, q_lv, level)
 end

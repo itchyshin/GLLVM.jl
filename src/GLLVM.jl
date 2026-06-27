@@ -127,6 +127,7 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        spde_latent_marginal_loglik, fit_spde_latent_gllvm, SPDELatentFit,
        confint_spde_latent,
        confint_speciescov, confint_fourthcorner, confint_rrr, confint_constrained,
+       confint_lv_effects,
        fit_gaussian_gllvm, GllvmModel, GllvmFit,
        gaussian_reml_loglik, fit_gaussian_reml, GaussianREMLFit,
        fit_gaussian_random_slope, GaussianRandomSlopeFit, gaussian_grouped_intercept_loglik,
