@@ -90,6 +90,13 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
+- **`latent(lv = ~ x)` X_lv CI build-out (in flight, 2026-06-27).** `main` @ `88f898b`
+  carries #118 (Poisson X_lv), #119 (the `2f0` package-wide Wald-SE repair), #120
+  (NB2 X_lv); #121 (Gamma X_lv) open. Held local/unpushed: Beta X_lv, X_lv recovery
+  bench, and the full X_lv CI subsystem (`confint_lv_effects` — Wald + bootstrap, 6
+  families, K≥1, native + bridge; `test_lv_ci` 106/106) plus the R-side admissions and
+  the R CI reader (one major schema blocker for the maintainer). `START HERE:`
+  `docs/dev-log/handover/2026-06-27-claude-handover.md`.
 - **Phase 0 — Team and memory scaffolding (complete, 2026-05-30).** PR #1.
 - **Phase 1.1 — O(p) node-frame gradient (complete, CI green cross-platform,
   2026-05-30).** PR #2; `src/node_gradient.jl` (+ wired `sparse_phy_grad.jl`);
