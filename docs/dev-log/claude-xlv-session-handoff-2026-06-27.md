@@ -38,7 +38,7 @@ Prior held pile (unchanged): GLLVM.jl #118 (Poisson, open), NB2/Gamma/Beta Julia
   64/64 — all green with the fix; existing non-Gaussian Wald SE `3e-6 → ~0.05`.
 - **Recovery (point):** all 8 K=1 routes recover `B_lv` essentially unbiased
   (mean bias ≤0.004), n=160/320/640 sweep → RMSE ~1/√n, bias→0.
-- **Coverage (interval):** all 8 K=1 routes 0.915–0.965 (80/80 PD).
+- **Coverage (interval):** all 8 K=1 routes 0.915–0.955 (80/80 PD); K=2 sweep 0.925–0.964.
 - **K>1 (tier expansion):** `B_lv=Λα'` rotation-invariant → guard relaxed to K≥1;
   K=2 validated (recovery + coverage ~0.94 per family).
 - **Tests:** `test_lv_ci` 73/73; `test_bridge_lv_predictor` 207/207.

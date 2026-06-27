@@ -613,9 +613,8 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
 
     if X_lv !== nothing
         key in _BRIDGE_XLV_FAMILIES || throw(ArgumentError(
-            "bridge_fit: X_lv is currently wired only for family=\"gaussian\", " *
-            "\"poisson\", \"binomial\", \"binomial_probit\", or " *
-            "\"binomial_cloglog\"."))
+            "bridge_fit: X_lv is wired only for family in " *
+            "$(join(_BRIDGE_XLV_FAMILIES, ", "))."))
         X === nothing || throw(ArgumentError(
             "bridge_fit: simultaneous fixed-effect X and latent-score X_lv is " *
             "not admitted in the bridge yet; fit one mean route at a time."))
@@ -820,7 +819,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                        "X_lv*alpha_lv, scores_innovation are the posterior " *
                        "zero-mean Laplace score modes, and lv_effects = " *
                        "Lambda*alpha_lv' is the rotation-stable trait-effect " *
-                       "matrix. Wald confidence intervals on B_lv are available via ci_method=\"wald\"; profile/bootstrap,response masks, and " *
+                       "matrix. Wald confidence intervals on B_lv are available via ci_method=\"wald\"; profile/bootstrap, response masks, and " *
                        "broader non-Gaussian X_lv routes remain separate " *
                        "validation gates."
             return merge(base, (note = isempty(base.note) ? xlv_note :
@@ -871,7 +870,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                        "X_lv*alpha_lv, scores_innovation are the posterior " *
                        "zero-mean Laplace score modes, and lv_effects = " *
                        "Lambda*alpha_lv' is the rotation-stable trait-effect " *
-                       "matrix. Wald confidence intervals on B_lv are available via ci_method=\"wald\"; profile/bootstrap,response masks, and " *
+                       "matrix. Wald confidence intervals on B_lv are available via ci_method=\"wald\"; profile/bootstrap, response masks, and " *
                        "broader non-Gaussian X_lv routes remain separate " *
                        "validation gates."
             return merge(base, (note = isempty(base.note) ? xlv_note :
@@ -981,7 +980,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                        "scores_innovation are the posterior zero-mean Laplace score " *
                        "modes, and lv_effects = Lambda*alpha_lv' is the " *
                        "rotation-stable trait-effect matrix; the shared precision " *
-                       "phi is jointly estimated. Wald confidence intervals on B_lv are available via ci_method=\"wald\"; profile/bootstrap,response " *
+                       "phi is jointly estimated. Wald confidence intervals on B_lv are available via ci_method=\"wald\"; profile/bootstrap, response " *
                        "masks, per-trait precision, and broader non-Gaussian X_lv " *
                        "routes remain separate validation gates."
             return merge(base, (note = isempty(base.note) ? xlv_note :
@@ -1031,7 +1030,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                        "scores_innovation are the posterior zero-mean Laplace score " *
                        "modes, and lv_effects = Lambda*alpha_lv' is the " *
                        "rotation-stable trait-effect matrix; the shared shape alpha " *
-                       "is jointly estimated. Wald confidence intervals on B_lv are available via ci_method=\"wald\"; profile/bootstrap,response masks, " *
+                       "is jointly estimated. Wald confidence intervals on B_lv are available via ci_method=\"wald\"; profile/bootstrap, response masks, " *
                        "and broader non-Gaussian X_lv routes remain separate " *
                        "validation gates."
             return merge(base, (note = isempty(base.note) ? xlv_note :
