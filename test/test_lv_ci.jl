@@ -230,6 +230,32 @@ using LinearAlgebra
         @test all(br.lv_effects_lower .< br.lv_effects .< br.lv_effects_upper)
     end
 
+    @testset "bridge ci == native, level, gate rejection" begin
+        Random.seed!(3690)
+        β = log.([6.0, 4, 8, 5, 7])
+        η = β .+ Λ * reshape(ztot(Random.default_rng()), 1, n)
+        Y = [rand(Poisson(exp(η[t, s]))) for t in 1:p, s in 1:n]
+        # identical defaults on both sides so the bridge's internal fit and this
+        # native fit are the same deterministic optimum.
+        fit = fit_poisson_gllvm(Y; K = K, X_lv = X_lv)
+        ci = confint_lv_effects(fit, Y, X_lv)
+        br = bridge_fit(; y = Float64.(Y), family = "poisson", d = 1, X_lv = X_lv,
+                        options = Dict("ci_method" => "wald"))
+        @test vec(br.lv_effects_lower) ≈ ci.lower atol = 1e-6
+        @test vec(br.lv_effects_upper) ≈ ci.upper atol = 1e-6
+        @test vec(br.lv_effects_se) ≈ ci.se atol = 1e-6
+        @test br.lv_effects_ci_method == "wald" && br.lv_effects_ci_pd
+        # non-default level: 90% interval is strictly narrower than 95%
+        ci90 = confint_lv_effects(fit, Y, X_lv; level = 0.90)
+        @test ci90.level == 0.90
+        @test all((ci90.upper .- ci90.lower) .< (ci.upper .- ci.lower))
+        # bridge admits only ci_method="wald" for X_lv
+        @test_throws ArgumentError bridge_fit(; y = Float64.(Y), family = "poisson",
+            d = 1, X_lv = X_lv, options = Dict("ci_method" => "profile"))
+        @test_throws ArgumentError bridge_fit(; y = Float64.(Y), family = "poisson",
+            d = 1, X_lv = X_lv, options = Dict("ci_method" => "bootstrap"))
+    end
+
     @testset "argument guards" begin
         Random.seed!(4606)
         β = log.([6.0, 4.0, 8.0, 5.0, 7.0])
