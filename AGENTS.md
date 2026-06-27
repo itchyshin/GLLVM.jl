@@ -90,6 +90,13 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
+- **`latent(lv=~x)` CI trio DONE + phylo Model A in build (2026-06-27).** `main` @ `0e99c04`:
+  all six X_lv bridge routes + the `2f0` Wald-SE fix + the full **Wald/profile/bootstrap CI
+  trio** for `B_lv` (#116–#126). The headline **phylo × X_lv = Model A** (predictor scores under
+  phylogenetic trait-covariance) is engine + Wald CI DONE on `claude/phylo-xlv-modelA-20260627`
+  (`a06bf17`, `test_phylo_xlv.jl` 8/8; J3-rotation-trick correctness pinned to 7e-15); remaining:
+  profile/bootstrap CI, the recovery/coverage gate (collinear arm + two nulls), R `lv=~x` grammar.
+  R env is now LIVE on the Mac. `START HERE:` `docs/dev-log/handover/2026-06-27-claude-handover-2.md`.
 - **Phase 0 — Team and memory scaffolding (complete, 2026-05-30).** PR #1.
 - **Phase 1.1 — O(p) node-frame gradient (complete, CI green cross-platform,
   2026-05-30).** PR #2; `src/node_gradient.jl` (+ wired `sparse_phy_grad.jl`);
