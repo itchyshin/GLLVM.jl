@@ -1376,7 +1376,9 @@ function _fd_hessian(f, x::AbstractVector)
     @inbounds for i in 1:m
         xp = copy(x); xp[i] += h[i]
         xm = copy(x); xm[i] -= h[i]
-        H[i, i] = (f(xp) - 2f0 + f(xm)) / h[i]^2
+        # NB `2 * f0`, not `2f0`: the latter lexes as the Float32 literal 2.0f0,
+        # dropping the central term and corrupting every observed-information SE.
+        H[i, i] = (f(xp) - 2 * f0 + f(xm)) / h[i]^2
     end
     @inbounds for i in 1:m, j in (i + 1):m
         xpp = copy(x); xpp[i] += h[i]; xpp[j] += h[j]

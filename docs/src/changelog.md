@@ -5,6 +5,18 @@ Notable changes to GLLVM.jl. Style mirrors `gllvmTMB`'s NEWS: status labels
 
 ## GLLVM.jl (development version)
 
+### Fixed
+- **FIX:** every non-Gaussian **Wald** standard error was wrong. The
+  observed-information finite-difference Hessian (`_fd_hessian`, backing
+  `confint(fit, Y; method=:wald)` and `_family_wald` for Poisson / Binomial / NB /
+  Beta / Gamma / Tweedie / two-part / SPDE-latent / structural CIs) wrote `2f0` —
+  which Julia lexes as the Float32 literal `2.0f0`, not `2 * f0` — so the diagonal
+  second difference dropped the centre value and exploded with the objective's
+  large constant, collapsing `inv(H)` to standard errors ~1e-6. Off-diagonals and
+  the profile/bootstrap routes were unaffected. Added `test/test_fd_hessian.jl`
+  pinning the Hessian to a known analytic value (the existing CI tests only
+  checked structure / `pd_hessian`, never SE magnitude, so the bug was invisible).
+
 ### Engine
 - **IN:** phylogenetic GLM (`fit_phylo_glm` / `PhyloGLMFit`) — a per-species
   phylogenetic random intercept for the non-Gaussian families (Poisson / NB /
