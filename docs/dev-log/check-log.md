@@ -2746,3 +2746,24 @@ IN: complete-response Gamma (log link) `X_lv` point fits via the shared-shape
 `fit_gamma_gllvm(...; X_lv=...)` and the `gamma_xlv_rr` bridge route. OUT/gated:
 `X_lv` CIs, masks, `X` + `X_lv`, mixed-family, per-trait-shape `X_lv`,
 Beta/ordinal/NB1 `X_lv`, broad R-Julia parity, and REML.
+
+## 2026-06-26 -- Bridge Beta predictor-informed latent-score (Claude; Codex on leave)
+
+Extended the `X_lv` route to Beta (logit link, proportions in (0,1)), point-only,
+mirroring Gamma with precision `φ`. Branch `claude/beta-xlv-20260626`, stacked on
+Gamma -> NB2 -> Poisson (PR #118). Files: `src/families/beta.jl`, `postfit.jl`,
+`simulate_fit.jl`, `bridge.jl`, `confint_family.jl`, `link_residual.jl`,
+`test/test_bridge_lv_predictor.jl`, `test/test_bridge_capabilities.jl`,
+`docs/src/{changelog,gllvmtmb-parity,model}.md`.
+
+`test_bridge_lv_predictor.jl`: 190/190 pass (Beta packed + native/bridge; first
+run). Targeted regression (capabilities, beta_fit, simulate, postfit,
+bridge_ci): all pass. `Pkg.test()`: PASS (`4742 pass, 1 broken, 44m25.1s`).
+
+### Claim Boundary
+
+IN: complete-response Beta (logit link) `X_lv` point fits via the
+shared-precision `fit_beta_gllvm(...; X_lv=...)` and the `beta_xlv_rr` bridge
+route. OUT/gated: `X_lv` CIs, masks, `X` + `X_lv`, mixed-family,
+per-trait-precision `X_lv`, ordinal/two-part/NB1 `X_lv`, broad R-Julia parity,
+and REML.

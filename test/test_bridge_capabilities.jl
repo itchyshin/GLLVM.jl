@@ -61,6 +61,7 @@ using GLLVM
         "binomial_probit",
         "binomial_cloglog",
         "negbinomial",
+        "beta",
         "gamma",
     ]
     @test caps.family[caps.missing_response] == [
