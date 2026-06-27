@@ -72,10 +72,19 @@ models** (see `intake/2026-06-27-phylo-xlv-design.md`):
 
 Animal / spatial / kernel × `X_lv` follow the Model A pattern after phylo.
 
-## 6. R grammar (TO IMPLEMENT — Phase 4, HIGH-RISK)
+## 6. R grammar
 
-`latent(..., lv = ~ x)` (and `phylo_latent(..., lv = ~ x)`) does **not** exist on the R side
-yet. Required:
+**Status: the ordinary case IS wired** (verified 2026-06-27). `latent(..., lv = ~ x)` for ordinary
+unit-tier **Gaussian + binomial** (logit/probit/cloglog) is implemented: `R/lv-predictor.R`
+materialises X_lv; `R/brms-sugar.R::.abort_unsupported_lv_keyword` fail-loudly guards `lv` on
+non-ordinary covstructs ("`lv` is reserved for ordinary `latent` only … remove until LV-07 moves");
+`parse-multi-formula.R` captures the arg; `test-lv-parser-guard.R` covers the preflight (malformed
+formulas, invalid predictor columns, unsupported regimes). The held R branches extend the X_lv
+*families* (NB2/Gamma/Beta) on `engine = "julia"`.
+
+**Remaining (the phylo extension):** lift `.abort_unsupported_lv_keyword` for `phylo_latent`
+(validation row LV-07) and wire `phylo_latent(..., lv = ~ x)` to the phylo×X_lv route once the engine
+Model A + the bridge phylo plumbing land. Requirements for that wiring:
 - Admit `lv` as a one-sided predictor formula on `latent()` / `phylo_latent()`; enforce inside
   `rewrite_canonical_aliases()` (`R/brms-sugar.R`), NOT the never-evaluated constructor. Validate
   one-sided, build `model.matrix` against `data`, attach as a STRUCTURED marker

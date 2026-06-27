@@ -103,11 +103,18 @@ factor analysis — is **post-v1.0**, task #26.)
   (that's a Model B confound). **REMAINING = the full DRAC campaign:** sweep λ∈{0,0.5,1} ×
   n_species∈{~20,~200} × K∈{1,2}, ≥500 reps/cell (one seed per SLURM array task), vec(B_lv)
   bias/coverage + phylo-signal coverage. The bench is the seed.
-- **Phase 4 — R `lv=~x` grammar.** Does NOT exist on the R side. Admit on `phylo_latent` (and plain
-  `latent`) via `rewrite_canonical_aliases()` (`R/brms-sugar.R`) with a **FAIL-LOUD gate** — an unknown
-  `lv=` currently falls to `cs$extra` and is **SILENTLY DROPPED** (the Sokal anti-pattern). Keep STRICTLY
-  separate from the augmented-LHS reaction-norm grammar (`1+x|sp`). Extractor contract. **Design 73
-  spec now WRITTEN** (`docs/design/73-predictor-informed-latent-scores.md`) — implement against it.
+- **Phase 4 — R `lv=~x` grammar. ★ CORRECTION (verified 2026-06-27): it ALREADY EXISTS for the
+  ordinary case.** The design-workflow's "doesn't exist on the R side" claim was WRONG.
+  `latent(..., lv = ~ x)` is wired for ordinary unit-tier **Gaussian + binomial** (logit/probit/cloglog):
+  `R/lv-predictor.R` materialises X_lv; `R/brms-sugar.R::.abort_unsupported_lv_keyword` (~2104) already
+  FAIL-LOUDLY guards `lv` on non-ordinary covstructs ("Design 73 C1 … only Gaussian and pure binomial …
+  admitted; remove `lv` until LV-07 moves"); `parse-multi-formula.R` captures it; `test-lv-parser-guard.R`
+  covers preflight (malformed lv, invalid columns, unsupported regimes). The held R branches extend the
+  X_lv *families* (NB2/Gamma/Beta) on `engine="julia"`. **So the only REMAINING R grammar work for the
+  headline is the PHYLO extension:** lift `.abort_unsupported_lv_keyword` for `phylo_latent` (validation
+  row LV-07) and wire `phylo_latent(..., lv = ~ x)` to the phylo×X_lv route — AFTER the engine Model A +
+  the bridge phylo plumbing land. Keep STRICTLY separate from the augmented-LHS reaction-norm grammar
+  (`1+x|sp`). Design 73 spec WRITTEN (`docs/design/73-predictor-informed-latent-scores.md`).
 - Then: open the Model A PR (HIGH-RISK → maintainer sign-off), and decide D5/D6/D7 (default: extend all
   three CIs; BM/Pagel-λ kernel first; Gaussian-only v1). Non-Gaussian phylo X_lv = separate later gate.
 
