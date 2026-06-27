@@ -146,7 +146,20 @@ function _masked_trait_mean(μ::AbstractMatrix, mask)
     return out
 end
 
-function _trait_mean_fitted(fit::Union{PoissonFit, NBFit}, Y::AbstractMatrix; mask = nothing)
+function _trait_mean_fitted(fit::PoissonFit, Y::AbstractMatrix; mask = nothing)
+    if _has_lv_predictor(fit)
+        # An X_lv fit cannot reconstruct per-site latent scores without X_lv (which
+        # this latent-scale Σ extractor does not carry). The marginal per-trait mean
+        # count is a consistent estimate of the Poisson rate for the link-implicit
+        # residual scaling; the X_lv-route Σ is a point-estimate report only.
+        return _masked_trait_mean(Float64.(Y), mask)
+    end
+    Z = getLV(fit, Y; rotate = false, mask = mask)
+    η = fit.β .+ fit.Λ * Z'
+    μ = linkinv.(Ref(fit.link), η)
+    return _masked_trait_mean(μ, mask)
+end
+function _trait_mean_fitted(fit::NBFit, Y::AbstractMatrix; mask = nothing)
     Z = getLV(fit, Y; rotate = false, mask = mask)
     η = fit.β .+ fit.Λ * Z'
     μ = linkinv.(Ref(fit.link), η)

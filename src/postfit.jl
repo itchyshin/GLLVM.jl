@@ -65,6 +65,7 @@ end
 _has_lv_predictor(fit::GllvmFit) =
     haskey(fit.pars, :alpha_lv) && fit.pars.alpha_lv !== nothing
 _has_lv_predictor(fit::BinomialFit) = fit.alpha_lv !== nothing
+_has_lv_predictor(fit::PoissonFit) = fit.alpha_lv !== nothing
 
 function _lv_score_mean_for_fit(fit::GllvmFit, y::AbstractMatrix,
                                 X_lv::Union{Nothing, AbstractMatrix})
@@ -83,6 +84,23 @@ function _lv_score_mean_for_fit(fit::GllvmFit, y::AbstractMatrix,
 end
 
 function _lv_score_mean_for_fit(fit::BinomialFit, y::AbstractMatrix,
+                                X_lv::Union{Nothing, AbstractMatrix})
+    _, n = size(y)
+    K = size(fit.Λ, 2)
+    if !_has_lv_predictor(fit)
+        return zeros(Float64, n, K)
+    end
+    X_lv === nothing && throw(ArgumentError(
+        "this fit used X_lv; provide the same X_lv to getLV, predict, fitted, or residuals"))
+    size(X_lv, 1) == n ||
+        throw(ArgumentError("X_lv first dim ($(size(X_lv, 1))) must equal n_sites ($n)"))
+    size(X_lv, 2) == size(fit.alpha_lv, 1) ||
+        throw(ArgumentError(
+            "X_lv second dim ($(size(X_lv, 2))) must equal fitted alpha_lv rows ($(size(fit.alpha_lv, 1)))"))
+    return _lv_score_mean(X_lv, fit.alpha_lv)
+end
+
+function _lv_score_mean_for_fit(fit::PoissonFit, y::AbstractMatrix,
                                 X_lv::Union{Nothing, AbstractMatrix})
     _, n = size(y)
     K = size(fit.Λ, 2)
@@ -282,6 +300,17 @@ end
 
 lv_effects(fit::BinomialFit; kwargs...) = extract_lv_effects(fit; kwargs...)
 
+function extract_lv_effects(fit::PoissonFit; type::Symbol = :trait_effect)
+    _has_lv_predictor(fit) || throw(ArgumentError(
+        "extract_lv_effects requires a fit from fit_poisson_gllvm(...; X_lv=...)"))
+    type in (:trait_effect, :axis_effect) ||
+        throw(ArgumentError("type must be :trait_effect or :axis_effect; got :$type"))
+    type === :axis_effect && return copy(fit.alpha_lv)
+    return fit.Λ * fit.alpha_lv'
+end
+
+lv_effects(fit::PoissonFit; kwargs...) = extract_lv_effects(fit; kwargs...)
+
 """
     residuals(fit::BinomialFit, Y; type=:dunnsmyth, N=nothing, rng=Random.default_rng())
         -> p×n matrix
@@ -401,44 +430,64 @@ _loglik(fit::PoissonFit)   = fit.loglik
 
 function _nparams(fit::PoissonFit)
     p, K = size(fit.Λ)
-    return p + (p * K - div(K * (K - 1), 2))           # β intercepts + Λ
+    k = p + (p * K - div(K * (K - 1), 2))              # β intercepts + Λ
+    _has_lv_predictor(fit) && (k += length(fit.alpha_lv))
+    return k
 end
 
 """
-    getLV(fit::PoissonFit, Y; N=nothing, rotate=true) -> n×K matrix
+    getLV(fit::PoissonFit, Y; N=nothing, X_lv=nothing,
+          component=:total, rotate=true) -> n×K matrix
 
 Conditional latent-variable scores for a Poisson fit: the per-site Laplace mode
 `ẑₛ`. `Y` is the p×n integer count matrix; `rotate=true` applies the canonical
 [`rotation`](@ref). (`N` is accepted for signature symmetry and ignored.)
+
+For fits with `X_lv`, `component` chooses which latent-score layer to return:
+`:mean` is `X_lv * alpha_lv`, `:innovation` is the zero-mean Laplace mode, and
+`:total` is their sum.
 """
 function getLV(fit::PoissonFit, Y::AbstractMatrix{<:Integer};
                N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
+               X_lv::Union{Nothing, AbstractMatrix} = nothing,
+               component::Symbol = :total,
                rotate::Bool = true, mask = nothing)
+    component in (:total, :innovation, :mean) ||
+        throw(ArgumentError("component must be :total, :innovation, or :mean; got :$component"))
     p, n = size(Y)
     Nm = N === nothing ? fill(1, p, n) : N
     K = size(fit.Λ, 2)
+    Zmean = _lv_score_mean_for_fit(fit, Y, X_lv)
+    if component === :mean
+        return rotate ? Zmean * _svd_rotation(fit.Λ) : Zmean
+    end
+    lv_offset = _has_lv_predictor(fit) ? fit.Λ * Zmean' : nothing
     Z = Matrix{Float64}(undef, K, n)
     @inbounds for s in 1:n
         mi = mask === nothing ? nothing : view(mask, :, s)
+        oi = lv_offset === nothing ? nothing : view(lv_offset, :, s)
         Z[:, s] = _laplace_mode(Poisson(), view(Y, :, s), view(Nm, :, s), fit.Λ,
-                                fit.β, fit.link; mask = mi)
+                                fit.β, fit.link; mask = mi, offset = oi)
     end
     Zt = permutedims(Z)
-    return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
+    Zout = component === :innovation ? Zt : Zmean .+ Zt
+    return rotate ? Zout * _svd_rotation(fit.Λ) : Zout
 end
 
 """
-    predict(fit::PoissonFit, Y; type=:response, N=nothing) -> p×n matrix
+    predict(fit::PoissonFit, Y; type=:response, N=nothing, X_lv=nothing) -> p×n matrix
 
 In-sample fitted values at the Laplace mode: `type=:link` returns `η = β + Λ ẑ`;
-`type=:response` the inverse-link fitted rates `linkinv(link, η) = exp(η)`.
+`type=:response` the inverse-link fitted rates `linkinv(link, η) = exp(η)`. For
+fits that used `X_lv`, pass the same predictor matrix.
 """
 function predict(fit::PoissonFit, Y::AbstractMatrix{<:Integer};
                  type::Symbol = :response,
-                 N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing)
+                 N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
+                 X_lv::Union{Nothing, AbstractMatrix} = nothing)
     type in (:link, :response) ||
         throw(ArgumentError("type must be :link or :response; got :$type"))
-    Z = getLV(fit, Y; N = N, rotate = false)
+    Z = getLV(fit, Y; N = N, X_lv = X_lv, component = :total, rotate = false)
     η = fit.β .+ fit.Λ * Z'
     type === :link && return η
     return linkinv.(Ref(fit.link), η)
@@ -454,11 +503,12 @@ randomized quantile residuals — `Φ⁻¹(u)`, `u` uniform on `[F(y−1), F(y)]
 """
 function residuals(fit::PoissonFit, Y::AbstractMatrix{<:Integer};
                    type::Symbol = :dunnsmyth,
+                   X_lv::Union{Nothing, AbstractMatrix} = nothing,
                    rng::AbstractRNG = Random.default_rng())
     type in (:dunnsmyth, :pearson) ||
         throw(ArgumentError("type must be :dunnsmyth or :pearson; got :$type"))
     p, n = size(Y)
-    μ = predict(fit, Y; type = :response)
+    μ = predict(fit, Y; type = :response, X_lv = X_lv)
     if type === :pearson
         return (Y .- μ) ./ sqrt.(μ)
     end

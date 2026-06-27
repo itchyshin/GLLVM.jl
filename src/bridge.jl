@@ -161,6 +161,9 @@ const _BRIDGE_ONEPART_FAMILIES = (
 
 const _BRIDGE_BINOMIAL_FAMILIES = ("binomial", "binomial_probit", "binomial_cloglog")
 const _BRIDGE_BINOMIAL_XLV_FAMILIES = _BRIDGE_BINOMIAL_FAMILIES
+# Families with a point-estimate predictor-informed latent-score (X_lv) bridge
+# route: ordinary Gaussian, Poisson (log link), and binomial logit/probit/cloglog.
+const _BRIDGE_XLV_FAMILIES = ("gaussian", "poisson", _BRIDGE_BINOMIAL_FAMILIES...)
 
 # One-part NON-Gaussian families `fit_gllvm_cov` fits with covariates X (it has a
 # `_cov_*` kernel for each). Ordinal and NB1 are absent — no covariate kernel yet.
@@ -398,11 +401,11 @@ function bridge_fit(; y,
                 "gaussian or binomial family."))
         end
         key = _bridge_family_key(String(family))
-        (key == "gaussian" || key in _BRIDGE_BINOMIAL_XLV_FAMILIES) || throw(ArgumentError(
+        key in _BRIDGE_XLV_FAMILIES || throw(ArgumentError(
             "bridge_fit: predictor-informed latent-score covariates X_lv are " *
-            "currently wired only for family=\"gaussian\", \"binomial\", " *
-            "\"binomial_probit\", or \"binomial_cloglog\"; family=\"$(family)\" " *
-            "is a separate validation gate."))
+            "currently wired only for family=\"gaussian\", \"poisson\", " *
+            "\"binomial\", \"binomial_probit\", or \"binomial_cloglog\"; " *
+            "family=\"$(family)\" is a separate validation gate."))
         X === nothing || throw(ArgumentError(
             "bridge_fit: simultaneous fixed-effect X and latent-score X_lv is " *
             "not admitted in the bridge yet; fit one mean route at a time."))
@@ -493,7 +496,7 @@ function bridge_capabilities()
     onepart = collect(_BRIDGE_ONEPART_FAMILIES)
     family = vcat(onepart, ["mixed-family vector"])
     x_families = Set(vcat(["gaussian"], collect(_BRIDGE_X_FAMILIES)))
-    xlv_families = Set(vcat(["gaussian"], collect(_BRIDGE_BINOMIAL_XLV_FAMILIES)))
+    xlv_families = Set(collect(_BRIDGE_XLV_FAMILIES))
     mask_families = Set(_BRIDGE_MASK_FAMILIES)
     mask_ci_families = Set(_BRIDGE_MASK_CI_FAMILIES)
     # Scalar-mean post-fit (residuals = y − μ, parametric simulate) excludes the
@@ -537,6 +540,8 @@ function bridge_capabilities()
                     "one-part reduced-rank bridge family; default no-X route uses shared Gamma grouped dispersion to match current native scalar-CV Gamma; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; per-trait Gamma is a native-expansion follow-up" :
                 f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES ?
                     "one-part reduced-rank bridge family; default no-X route uses per-trait ordinal cutpoints; CI routing is a follow-up" :
+                f == "poisson" ?
+                    "one-part reduced-rank bridge family; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; point-estimate predictor-informed latent-score X_lv is wired for complete-response rows; X_lv CIs remain follow-ups; route support is narrower than full R-user parity" :
                 f == "binomial" ?
                     "one-part reduced-rank bridge family; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; point-estimate predictor-informed latent-score X_lv is wired for complete-response rows; X_lv CIs remain follow-ups; route support is narrower than full R-user parity" :
                 f in _BRIDGE_BINOMIAL_XLV_FAMILIES ?
@@ -592,9 +597,10 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
     end
 
     if X_lv !== nothing
-        (key == "gaussian" || key in _BRIDGE_BINOMIAL_XLV_FAMILIES) || throw(ArgumentError(
+        key in _BRIDGE_XLV_FAMILIES || throw(ArgumentError(
             "bridge_fit: X_lv is currently wired only for family=\"gaussian\", " *
-            "\"binomial\", \"binomial_probit\", or \"binomial_cloglog\"."))
+            "\"poisson\", \"binomial\", \"binomial_probit\", or " *
+            "\"binomial_cloglog\"."))
         X === nothing || throw(ArgumentError(
             "bridge_fit: simultaneous fixed-effect X and latent-score X_lv is " *
             "not admitted in the bridge yet; fit one mean route at a time."))
@@ -769,6 +775,39 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
     # is in _CIFit even though its latent-scale extractor is not yet present).
     if key == "poisson"
         Yi = round.(Int, Yf)
+        if X_lv !== nothing
+            Xlv = Matrix{Float64}(X_lv)
+            size(Xlv, 1) == n || throw(ArgumentError(
+                "bridge_fit: X_lv must be n×q_lv ($(n)×q_lv); got $(size(Xlv))"))
+            size(Xlv, 2) > 0 || throw(ArgumentError(
+                "bridge_fit: X_lv must have at least one predictor column"))
+            fit = fit_poisson_gllvm(Yi; K = K, X_lv = Xlv)
+            scores_total = Matrix{Float64}(
+                getLV(fit, Yi; X_lv = Xlv, component = :total, rotate = true))
+            scores_mean = Matrix{Float64}(
+                getLV(fit, Yi; X_lv = Xlv, component = :mean, rotate = true))
+            scores_innovation = Matrix{Float64}(
+                getLV(fit, Yi; X_lv = Xlv, component = :innovation, rotate = true))
+            base = _bridge_assemble_ng(fit, "poisson", "poisson_xlv_rr", traits, units,
+                p, K, Yi, nothing;
+                alpha = fit.β, dispersion = fill(NaN, p),
+                df = _nparams(fit), scores = scores_total, ci = nothing,
+                mask = nothing)
+            xlv_note = "predictor-informed latent-score fit (Poisson C1): " *
+                       "scores are total latent scores, scores_mean = " *
+                       "X_lv*alpha_lv, scores_innovation are the posterior " *
+                       "zero-mean Laplace score modes, and lv_effects = " *
+                       "Lambda*alpha_lv' is the rotation-stable trait-effect " *
+                       "matrix. Confidence intervals, response masks, and " *
+                       "broader non-Gaussian X_lv routes remain separate " *
+                       "validation gates."
+            return merge(base, (note = isempty(base.note) ? xlv_note :
+                                      string(base.note, " ", xlv_note),
+                                lv_effects = Matrix{Float64}(extract_lv_effects(fit)),
+                                alpha_lv = Matrix{Float64}(fit.alpha_lv),
+                                scores_mean = scores_mean,
+                                scores_innovation = scores_innovation))
+        end
         fit = fit_poisson_gllvm(Yi; K = K, mask = M)
         scores = _bridge_scores(() -> getLV(fit, Yi; rotate = true, mask = M))
         ci = ci_method == "none" ? nothing :
