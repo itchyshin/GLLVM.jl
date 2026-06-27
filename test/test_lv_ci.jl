@@ -141,6 +141,62 @@ using LinearAlgebra
         @test_throws ArgumentError confint_lv_effects(fit, Y, X_lv; method = :profile)
     end
 
+    @testset "bootstrap covers all families (+ Gaussian K=2 guards the transpose)" begin
+        # Gaussian K=2, q_lv=1: the score mean is X_lv*alpha (q_lv x K = 1 x 2). A
+        # transpose (alpha') would DimensionMismatch on every replicate -> n_converged=0.
+        Random.seed!(7777)
+        Lam2 = [0.6 0.3; -0.45 0.35; 0.4 -0.3; 0.3 0.4; -0.25 0.2]
+        a2 = reshape([0.7, -0.4], 1, 2)
+        Zg = zeros(2, n)
+        for j in 1:n
+            Zg[:, j] = vec(X_lv[j, :] .* vec(a2)) .+ randn(2)
+        end
+        Yg2 = Lam2 * Zg .+ 0.3 .* randn(p, n)
+        fg2 = fit_gaussian_gllvm(Yg2; K = 2, X_lv = X_lv, iterations = 300)
+        cbg = confint_lv_effects(fg2, Yg2, X_lv; method = :bootstrap, n_boot = 40, seed = 3)
+        @test cbg.method == :bootstrap
+        @test cbg.n_converged >= 25                    # == 0 under the transpose bug
+        @test all(isfinite, cbg.lower) && all(isfinite, cbg.upper)
+        @test all(cbg.lower .< cbg.upper)
+
+        boot_ok(cb) = cb.method == :bootstrap && cb.n_converged >= 10 &&
+                      all(isfinite, cb.lower) && all(cb.lower .< cb.upper)
+        @testset "binomial" begin
+            Random.seed!(11); β = [-0.6, -0.25, 0.05, 0.35, 0.65]
+            η = β .+ Λ * reshape(ztot(Random.default_rng()), 1, n)
+            μ = clamp.(GLLVM.linkinv.(Ref(LogitLink()), η), 1e-4, 1 - 1e-4); N = fill(40, p, n)
+            Y = [rand(Binomial(N[t, s], μ[t, s])) for t in 1:p, s in 1:n]
+            f = fit_binomial_gllvm(Y; K = 1, N = N, link = LogitLink(), X_lv = X_lv,
+                                   β_init = β, Λ_init = Λ, alpha_lv_init = alpha, iterations = 120)
+            @test boot_ok(confint_lv_effects(f, Y, X_lv; N = N, method = :bootstrap, n_boot = 20, seed = 5))
+        end
+        @testset "nb2" begin
+            Random.seed!(12); β = log.([6.0, 4, 8, 5, 7])
+            η = β .+ Λ * reshape(ztot(Random.default_rng()), 1, n)
+            Y = [rand(NegativeBinomial(10.0, 10.0 / (10.0 + exp(η[t, s])))) for t in 1:p, s in 1:n]
+            f = fit_nb_gllvm(Y; K = 1, X_lv = X_lv, β_init = β, Λ_init = Λ,
+                             alpha_lv_init = alpha, r_init = 10.0, iterations = 150)
+            @test boot_ok(confint_lv_effects(f, Y, X_lv; method = :bootstrap, n_boot = 20, seed = 6))
+        end
+        @testset "gamma" begin
+            Random.seed!(13); β = log.([2.0, 1.5, 3, 2.5, 1.8])
+            η = β .+ Λ * reshape(ztot(Random.default_rng()), 1, n)
+            Y = [rand(Gamma(6.0, exp(η[t, s]) / 6.0)) for t in 1:p, s in 1:n]
+            f = fit_gamma_gllvm(Y; K = 1, X_lv = X_lv, β_init = β, Λ_init = Λ,
+                                alpha_lv_init = alpha, α_init = 6.0, iterations = 150)
+            @test boot_ok(confint_lv_effects(f, Y, X_lv; method = :bootstrap, n_boot = 20, seed = 7))
+        end
+        @testset "beta" begin
+            Random.seed!(14); β = [0.3, -0.5, 0.6, -0.2, 0.4]
+            η = β .+ Λ * reshape(ztot(Random.default_rng()), 1, n)
+            μ = 1.0 ./ (1.0 .+ exp.(-η))
+            Y = [rand(Beta(μ[t, s] * 15, (1 - μ[t, s]) * 15)) for t in 1:p, s in 1:n]
+            f = fit_beta_gllvm(Y; K = 1, X_lv = X_lv, β_init = β, Λ_init = Λ,
+                               alpha_lv_init = alpha, φ_init = 15.0, iterations = 150)
+            @test boot_ok(confint_lv_effects(f, Y, X_lv; method = :bootstrap, n_boot = 20, seed = 8))
+        end
+    end
+
     @testset "argument guards" begin
         Random.seed!(4606)
         β = log.([6.0, 4.0, 8.0, 5.0, 7.0])

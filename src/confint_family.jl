@@ -1769,9 +1769,9 @@ end
 # takes the observed-information covariance Σ = inv(H) of θ̂ (finite-difference
 # Hessian, as everywhere else in this file) and pushes it through the delta
 # method onto B_lv: J = ∂vec(B_lv)/∂θ (finite difference of a cheap algebraic
-# map), Cov(B_lv) = J Σ Jᵀ. For K = 1 (the only admitted X_lv tier) B_lv is fully
-# sign-identified, so the interval is rotation-invariant. Bootstrap / profile and
-# the no-X_lv families are out of scope here.
+# map), Cov(B_lv) = J Σ Jᵀ. B_lv is rotation-invariant for ANY K (Λ→ΛQ, α→αQ
+# leaves Λα' fixed), so the interval is well-posed at K ≥ 1; at K = 1 it is also
+# sign-identified. The bootstrap path is below; profile is out of scope here.
 # ---------------------------------------------------------------------------
 
 # vec(B_lv) = vec(Λ(θ)·α_lv(θ)ᵀ) from the packed X_lv working vector.
@@ -1865,9 +1865,11 @@ Binomial, NB2, Gamma, or Beta). `Y` and `X_lv` must match the fit; `N` is the
 binomial trial-count matrix. SEs come from the observed-information covariance of
 the packed MLE pushed through the delta method onto `B_lv`, returning
 `(term, estimate, lower, upper, se, level, method, pd_hessian)` over the `p·q_lv`
-entries of `vec(B_lv)`. Admitted for `K = 1`, complete responses, single ordinary
-latent block; every other structure (masks, `X` + `X_lv`, mixed-family, W-tier,
-phylo/animal/spatial/kernel sources, K > 1) stays gated.
+entries of `vec(B_lv)`. `method = :wald` (delta method) or `:bootstrap`
+(percentiles of `B_lv`). Admitted for `K ≥ 1` (`B_lv` is rotation-invariant),
+complete responses, single ordinary latent block; every other structure (masks,
+`X` + `X_lv`, mixed-family, W-tier, phylo/animal/spatial/kernel sources) stays
+gated.
 """
 function confint_lv_effects(fit::Union{PoissonFit, BinomialFit, NBFit, GammaFit, BetaFit},
                             Y::AbstractMatrix, X_lv::AbstractMatrix;
@@ -1899,8 +1901,9 @@ end
 Wald intervals for `B_lv = Λ·α'` of a Gaussian `X_lv` fit
 (`fit_gaussian_gllvm(...; X_lv=...)`). The Gaussian marginal is closed-form, so
 the observed information is the **exact ForwardDiff Hessian** of
-`gaussian_lv_nll_packed` at the packed MLE (no finite differencing). `K = 1`,
-complete responses, single unit-tier latent block, no fixed-effect `X`.
+`gaussian_lv_nll_packed` at the packed MLE (no finite differencing). `method =
+:wald` or `:bootstrap`. `K ≥ 1` (`B_lv` rotation-invariant), complete responses,
+single unit-tier latent block, no fixed-effect `X`.
 """
 function confint_lv_effects(fit::GllvmFit, Y::AbstractMatrix, X_lv::AbstractMatrix;
                             N::Union{Nothing, AbstractMatrix} = nothing, level::Real = 0.95,
@@ -1908,6 +1911,8 @@ function confint_lv_effects(fit::GllvmFit, Y::AbstractMatrix, X_lv::AbstractMatr
     0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
     fit.pars.alpha_lv === nothing && throw(ArgumentError(
         "confint_lv_effects requires a Gaussian X_lv fit (fit_gaussian_gllvm(...; X_lv=...)); this fit has none"))
+    isempty(fit.pars.β) || throw(ArgumentError(
+        "confint_lv_effects supports X_lv-only Gaussian fits (no fixed-effect X); got q = $(length(fit.pars.β))"))
     p, K = size(fit.pars.Λ)
     # B_lv = Λ·α' is invariant under the K×K orthogonal rotation Λ→ΛQ, α→αQ, so
     # the interval is well-posed for any K (not just K = 1).
@@ -1958,18 +1963,18 @@ function _lv_boot_fns(fit::NBFit, Y, X_lv, N)
             Yb -> (try fit_nb_gllvm(Yb; K = K, link = link, X_lv = X_lv) catch; nothing end))
 end
 function _lv_boot_fns(fit::GammaFit, Y, X_lv, N)
-    K = size(fit.Λ, 2); n = size(Y, 2)
+    K = size(fit.Λ, 2); n = size(Y, 2); link = fit.link
     return (rng -> simulate(fit, n; X_lv = X_lv, rng = rng),
-            Yb -> (try fit_gamma_gllvm(Yb; K = K, X_lv = X_lv) catch; nothing end))
+            Yb -> (try fit_gamma_gllvm(Yb; K = K, link = link, X_lv = X_lv) catch; nothing end))
 end
 function _lv_boot_fns(fit::BetaFit, Y, X_lv, N)
-    K = size(fit.Λ, 2); n = size(Y, 2)
+    K = size(fit.Λ, 2); n = size(Y, 2); link = fit.link
     return (rng -> simulate(fit, n; X_lv = X_lv, rng = rng),
-            Yb -> (try fit_beta_gllvm(Yb; K = K, X_lv = X_lv) catch; nothing end))
+            Yb -> (try fit_beta_gllvm(Yb; K = K, link = link, X_lv = X_lv) catch; nothing end))
 end
 function _lv_boot_fns(fit::GllvmFit, Y, X_lv, N)
     p, K = size(fit.pars.Λ); n = size(Y, 2)
-    Λ = fit.pars.Λ; Zmean = X_lv * fit.pars.alpha_lv'; σ = fit.pars.σ_eps  # n×K
+    Λ = fit.pars.Λ; Zmean = X_lv * fit.pars.alpha_lv; σ = fit.pars.σ_eps  # n×K score mean (α_lv is q_lv×K)
     return (rng -> Λ * (Zmean .+ randn(rng, n, K))' .+ σ .* randn(rng, p, n),
             Yb -> (try fit_gaussian_gllvm(Yb; K = K, X_lv = X_lv) catch; nothing end))
 end
