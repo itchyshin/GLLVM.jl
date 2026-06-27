@@ -31,6 +31,11 @@ function fit_binom(Y, X_lv, N, link); fit_binomial_gllvm(Y; K = K, N = N, link =
 function fit_nb(Y, X_lv, N); fit_nb_gllvm(Y; K = K, X_lv = X_lv, iterations = 300, g_tol = 1e-6); end
 function fit_gam(Y, X_lv, N); fit_gamma_gllvm(Y; K = K, X_lv = X_lv, iterations = 300, g_tol = 1e-6); end
 function fit_bet(Y, X_lv, N); fit_beta_gllvm(Y; K = K, X_lv = X_lv, iterations = 300, g_tol = 1e-6); end
+function fit_gauss(Y, X_lv, N); fit_gaussian_gllvm(Y; K = K, X_lv = X_lv, iterations = 300); end
+function gen_gaussian(rng, n, X_lv)
+    zt = vec(X_lv .* ALPHA) .+ randn(rng, n)              # eta ONCE (shared z_s)
+    return (LAMBDA * reshape(zt, 1, n) .+ 0.3 .* randn(rng, P, n), nothing)
+end
 
 function gen_binomial(rng, n, X_lv, link)
     eta = eta_matrix([-0.6, -0.25, 0.05, 0.35, 0.65], n, X_lv, rng)
@@ -58,6 +63,7 @@ function gen_beta(rng, n, X_lv)
 end
 
 routes = [
+    ("gaussian",         (r,n,x)->gen_gaussian(r,n,x),                fit_gauss),
     ("binomial_logit",   (r,n,x)->gen_binomial(r,n,x,LogitLink()),   (Y,x,N)->fit_binom(Y,x,N,LogitLink())),
     ("binomial_probit",  (r,n,x)->gen_binomial(r,n,x,ProbitLink()),  (Y,x,N)->fit_binom(Y,x,N,ProbitLink())),
     ("binomial_cloglog", (r,n,x)->gen_binomial(r,n,x,CLogLogLink()), (Y,x,N)->fit_binom(Y,x,N,CLogLogLink())),

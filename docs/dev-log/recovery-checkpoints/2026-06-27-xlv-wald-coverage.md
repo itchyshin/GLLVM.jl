@@ -11,13 +11,15 @@ The second half of the recovery/coverage gate: do the 95% Wald intervals from
 `confint_lv_effects` actually cover the true `B_lv = Λ·α'` at the nominal rate?
 Same correctly-specified unit-innovation model as the recovery study; each dataset
 is fit **natively with the default warm start** (no truth inits) and the interval
-is checked for containment of every true `B_lv[t]`. Gaussian is omitted (its X_lv
-CI path is separate and unbuilt).
+is checked for containment of every true `B_lv[t]`. Gaussian uses the exact
+ForwardDiff Hessian of its closed-form marginal; the GLM families use the
+finite-difference observed information.
 
 ## Results — n = 200, S = 80, level = 0.95
 
 | route             | fits  | PD    | coverage | mean width | per-trait coverage      |
 |-------------------|-------|-------|----------|-----------|--------------------------|
+| gaussian          | 80/80 | 80/80 | 0.917    | 0.161     | 0.91 0.91 0.93 0.90 0.94 |
 | binomial_logit    | 80/80 | 80/80 | 0.917    | 0.165     | 0.94 0.89 0.91 0.93 0.93 |
 | binomial_probit   | 80/80 | 80/80 | 0.940    | 0.152     | 0.95 0.94 0.95 0.95 0.91 |
 | binomial_cloglog  | 80/80 | 80/80 | 0.915    | 0.153     | 0.91 0.94 0.93 0.89 0.91 |
@@ -28,7 +30,7 @@ CI path is separate and unbuilt).
 
 ## Reading
 
-- **All seven routes are well-calibrated** — empirical coverage 0.915–0.955
+- **All eight routes are well-calibrated** — empirical coverage 0.915–0.955
   against the 0.95 nominal, every fit PD, no fit failures. The slight
   conservatism-to-nominal spread (a few routes at ~0.92) is the expected finite-n
   Wald behaviour at n = 200; a direct SE check (`empSD ≈ meanSE`, bias ≈ 0)
