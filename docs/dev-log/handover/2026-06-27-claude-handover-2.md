@@ -96,11 +96,13 @@ factor analysis — is **post-v1.0**, task #26.)
 **NEXT (the remaining Model A phases):**
 - ~~Phase 2b — profile + bootstrap CI under phylo~~ **DONE** (profile reuses the augmented
   objective; bootstrap now simulates φ + refits the phylo block; `test_phylo_xlv.jl` 15/15).
-- **Phase 3 — recovery/coverage GATE (the design's hard bar).** Must prove the predictor MEAN and
-  the phylo COVARIANCE are *separable*: a **phylo-COLLINEAR X_lv arm** (X_lv simulated as a Brownian
-  trait on the same tree) + **two nulls** (true α=0/phylo>0 → α̂≈0, B_lv covers 0; true phylo=0/α≠0 →
-  phylo≈0, B_lv unbiased). Sweep λ∈{0,0.5,1}, n_species∈{~20,~200}, K∈{1,2}, ≥500 reps, vec(B_lv)
-  bias/coverage via Frobenius/Procrustes + phylo-signal coverage. **DRAC-able** (one seed per array task).
+- **Phase 3 — recovery/coverage gate. SMOKE PASSED** (`bench/phylo_xlv_coverage.jl`): 40/40 converged,
+  coverage **0.975** (nominal 0.95), NULL-A (α=0/phylo>0) `max|B_lv|=0.083` & CI covers 0, NULL-B
+  (phylo=0/α≠0) `B_lv cor=1.0`. **Correction to the design:** Model A is orthogonal-axes (X_lv on
+  sites, Σ_phy on traits), so it needs **coverage + the two nulls only — NOT the phylo-collinear arm**
+  (that's a Model B confound). **REMAINING = the full DRAC campaign:** sweep λ∈{0,0.5,1} ×
+  n_species∈{~20,~200} × K∈{1,2}, ≥500 reps/cell (one seed per SLURM array task), vec(B_lv)
+  bias/coverage + phylo-signal coverage. The bench is the seed.
 - **Phase 4 — R `lv=~x` grammar.** Does NOT exist on the R side. Admit on `phylo_latent` (and plain
   `latent`) via `rewrite_canonical_aliases()` (`R/brms-sugar.R`) with a **FAIL-LOUD gate** — an unknown
   `lv=` currently falls to `cs$extra` and is **SILENTLY DROPPED** (the Sokal anti-pattern). Keep STRICTLY
