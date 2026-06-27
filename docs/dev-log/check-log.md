@@ -2686,3 +2686,43 @@ bridge and `fit_poisson_gllvm(...; X_lv=...)`, with
 `lv_effects = Lambda*alpha_lv'`, score decomposition, and a CRAN-safe recovery
 gate. OUT/gated: `X_lv` CIs, response masks, `X` + `X_lv`, mixed-family,
 NB/Gamma/Beta/ordinal `X_lv`, broad R-Julia parity, and REML.
+
+## 2026-06-26 -- Bridge NB2 predictor-informed latent-score (Claude; Codex on leave)
+
+Extended the `X_lv` route from Gaussian/Poisson/binomial to negative-binomial
+(NB2, log link), point-estimate only, mirroring the Poisson slice with the extra
+shared dispersion `r`. Branch `claude/nbinom2-xlv-20260626`, **stacked on** the
+Poisson branch (`claude/poisson-xlv-20260626`, PR #118) because the `X_lv` bridge
+gate `_BRIDGE_XLV_FAMILIES` is introduced there. Files: `src/families/negbin.jl`,
+`src/postfit.jl`, `src/simulate_fit.jl`, `src/bridge.jl`,
+`src/confint_family.jl`, `src/link_residual.jl`,
+`test/test_bridge_lv_predictor.jl`, `test/test_bridge_capabilities.jl`,
+`docs/src/{changelog,gllvmtmb-parity,model}.md`.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_bridge_lv_predictor.jl
+```
+
+Result: `bridge predictor-informed latent-score X_lv 142/142` pass (new NB2
+packed-objective + native/bridge testsets; first run, no errors).
+
+```sh
+# targeted regression: capabilities, nb_fit, simulate, postfit, bridge_ci
+```
+
+Result: all pass; no regression.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+```
+
+Result: PASS; `GLLVM.jl 4694 pass, 1 broken, 4695 total, 44m28.9s` (+25 tests; pre-existing 1 broken unchanged).
+
+### Claim Boundary
+
+IN: complete-response NB2 (log link) `X_lv` point fits via the shared-dispersion
+`fit_nb_gllvm(...; X_lv=...)` and the `negbinomial_xlv_rr` bridge route, with
+`lv_effects = Lambda*alpha_lv'`, score decomposition, and a CRAN-safe recovery
+gate. OUT/gated: `X_lv` CIs, response masks, `X` + `X_lv`, mixed-family,
+**grouped-dispersion `X_lv`**, NB1/Gamma/Beta/ordinal `X_lv`, broad R-Julia
+parity, and REML.

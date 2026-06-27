@@ -53,9 +53,10 @@ package; every numerical addition is gated by deterministic tests.
 ### Structure, covariates, ordination
 - **PARTIAL:** predictor-informed latent-score means for the ordinary unit-tier
   path, with `fit_gaussian_gllvm(...; X_lv=...)`,
-  `fit_poisson_gllvm(...; X_lv=...)`, and `fit_binomial_gllvm(...; X_lv=...)`
-  for complete-response Gaussian, Poisson (log link), and binomial
-  logit/probit/cloglog point fits. `getLV(...;
+  `fit_poisson_gllvm(...; X_lv=...)`, `fit_nb_gllvm(...; X_lv=...)`, and
+  `fit_binomial_gllvm(...; X_lv=...)` for complete-response Gaussian, Poisson
+  (log link), shared-dispersion NB2, and binomial logit/probit/cloglog point
+  fits. `getLV(...;
   component=:mean/:innovation/:total)` and `extract_lv_effects()` report point
   estimates for the rotation-stable `B_lv = Λ * alpha_lv'`. The `bridge_fit`
   endpoint exposes these point-estimate routes as `X_lv` with `lv_effects`,

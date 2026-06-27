@@ -153,6 +153,9 @@ function _family_ci(fit::NBFit, Y::AbstractMatrix;
                     mask = nothing,
                     objective::Symbol = :laplace,
                     newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    fit.alpha_lv === nothing || throw(ArgumentError(
+        "confint for fit_nb_gllvm(...; X_lv=...) is not admitted yet; " *
+        "use extract_lv_effects for point estimates"))
     p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); link = fit.link
     M = _ci_mask(mask, Y)
     θ = vcat(fit.β, pack_lambda(fit.Λ), log(fit.r))

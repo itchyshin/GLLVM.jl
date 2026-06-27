@@ -66,6 +66,7 @@ _has_lv_predictor(fit::GllvmFit) =
     haskey(fit.pars, :alpha_lv) && fit.pars.alpha_lv !== nothing
 _has_lv_predictor(fit::BinomialFit) = fit.alpha_lv !== nothing
 _has_lv_predictor(fit::PoissonFit) = fit.alpha_lv !== nothing
+_has_lv_predictor(fit::NBFit) = fit.alpha_lv !== nothing
 
 function _lv_score_mean_for_fit(fit::GllvmFit, y::AbstractMatrix,
                                 X_lv::Union{Nothing, AbstractMatrix})
@@ -100,7 +101,7 @@ function _lv_score_mean_for_fit(fit::BinomialFit, y::AbstractMatrix,
     return _lv_score_mean(X_lv, fit.alpha_lv)
 end
 
-function _lv_score_mean_for_fit(fit::PoissonFit, y::AbstractMatrix,
+function _lv_score_mean_for_fit(fit::Union{PoissonFit, NBFit}, y::AbstractMatrix,
                                 X_lv::Union{Nothing, AbstractMatrix})
     _, n = size(y)
     K = size(fit.Λ, 2)
@@ -310,6 +311,17 @@ function extract_lv_effects(fit::PoissonFit; type::Symbol = :trait_effect)
 end
 
 lv_effects(fit::PoissonFit; kwargs...) = extract_lv_effects(fit; kwargs...)
+
+function extract_lv_effects(fit::NBFit; type::Symbol = :trait_effect)
+    _has_lv_predictor(fit) || throw(ArgumentError(
+        "extract_lv_effects requires a fit from fit_nb_gllvm(...; X_lv=...)"))
+    type in (:trait_effect, :axis_effect) ||
+        throw(ArgumentError("type must be :trait_effect or :axis_effect; got :$type"))
+    type === :axis_effect && return copy(fit.alpha_lv)
+    return fit.Λ * fit.alpha_lv'
+end
+
+lv_effects(fit::NBFit; kwargs...) = extract_lv_effects(fit; kwargs...)
 
 """
     residuals(fit::BinomialFit, Y; type=:dunnsmyth, N=nothing, rng=Random.default_rng())
@@ -543,31 +555,47 @@ _loglik(fit::NBFit)   = fit.loglik
 
 function _nparams(fit::NBFit)
     p, K = size(fit.Λ)
-    return p + (p * K - div(K * (K - 1), 2)) + 1       # β + Λ + dispersion r
+    k = p + (p * K - div(K * (K - 1), 2)) + 1          # β + Λ + dispersion r
+    _has_lv_predictor(fit) && (k += length(fit.alpha_lv))
+    return k
 end
 
 """
-    getLV(fit::NBFit, Y; N=nothing, rotate=true) -> n×K matrix
+    getLV(fit::NBFit, Y; N=nothing, X_lv=nothing,
+          component=:total, rotate=true) -> n×K matrix
 
 Conditional latent-variable scores for a negative-binomial fit: the per-site
 Laplace mode `ẑₛ` (computed at the fitted dispersion `r`). `rotate=true` applies
-the canonical [`rotation`](@ref).
+the canonical [`rotation`](@ref). For fits with `X_lv`, `component` chooses the
+layer: `:mean` is `X_lv * alpha_lv`, `:innovation` the zero-mean Laplace mode,
+`:total` their sum.
 """
 function getLV(fit::NBFit, Y::AbstractMatrix{<:Integer};
                N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
+               X_lv::Union{Nothing, AbstractMatrix} = nothing,
+               component::Symbol = :total,
                rotate::Bool = true, mask = nothing)
+    component in (:total, :innovation, :mean) ||
+        throw(ArgumentError("component must be :total, :innovation, or :mean; got :$component"))
     p, n = size(Y)
     Nm = N === nothing ? fill(1, p, n) : N
     K = size(fit.Λ, 2)
     fam = NegativeBinomial(fit.r, 0.5)
+    Zmean = _lv_score_mean_for_fit(fit, Y, X_lv)
+    if component === :mean
+        return rotate ? Zmean * _svd_rotation(fit.Λ) : Zmean
+    end
+    lv_offset = _has_lv_predictor(fit) ? fit.Λ * Zmean' : nothing
     Z = Matrix{Float64}(undef, K, n)
     @inbounds for s in 1:n
         mi = mask === nothing ? nothing : view(mask, :, s)
+        oi = lv_offset === nothing ? nothing : view(lv_offset, :, s)
         Z[:, s] = _laplace_mode(fam, view(Y, :, s), view(Nm, :, s), fit.Λ,
-                                fit.β, fit.link; mask = mi)
+                                fit.β, fit.link; mask = mi, offset = oi)
     end
     Zt = permutedims(Z)
-    return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
+    Zout = component === :innovation ? Zt : Zmean .+ Zt
+    return rotate ? Zout * _svd_rotation(fit.Λ) : Zout
 end
 
 """
@@ -578,10 +606,11 @@ In-sample fitted values at the Laplace mode: `type=:link` returns `η = β + Λ 
 """
 function predict(fit::NBFit, Y::AbstractMatrix{<:Integer};
                  type::Symbol = :response,
-                 N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing)
+                 N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
+                 X_lv::Union{Nothing, AbstractMatrix} = nothing)
     type in (:link, :response) ||
         throw(ArgumentError("type must be :link or :response; got :$type"))
-    Z = getLV(fit, Y; N = N, rotate = false)
+    Z = getLV(fit, Y; N = N, X_lv = X_lv, component = :total, rotate = false)
     η = fit.β .+ fit.Λ * Z'
     type === :link && return η
     return linkinv.(Ref(fit.link), η)
@@ -597,12 +626,13 @@ randomized quantile residuals — `Φ⁻¹(u)`, `u` uniform on `[F(y−1), F(y)]
 """
 function residuals(fit::NBFit, Y::AbstractMatrix{<:Integer};
                    type::Symbol = :dunnsmyth,
+                   X_lv::Union{Nothing, AbstractMatrix} = nothing,
                    rng::AbstractRNG = Random.default_rng())
     type in (:dunnsmyth, :pearson) ||
         throw(ArgumentError("type must be :dunnsmyth or :pearson; got :$type"))
     p, n = size(Y)
     r = fit.r
-    μ = predict(fit, Y; type = :response)
+    μ = predict(fit, Y; type = :response, X_lv = X_lv)
     if type === :pearson
         return (Y .- μ) ./ sqrt.(μ .+ μ .^ 2 ./ r)
     end
