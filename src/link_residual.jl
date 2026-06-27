@@ -170,7 +170,18 @@ function _trait_mean_fitted(fit::NBFit, Y::AbstractMatrix; mask = nothing)
     μ = linkinv.(Ref(fit.link), η)
     return _masked_trait_mean(μ, mask)
 end
-function _trait_mean_fitted(fit::Union{BetaFit, GammaFit}, Y::AbstractMatrix; mask = nothing)
+function _trait_mean_fitted(fit::GammaFit, Y::AbstractMatrix; mask = nothing)
+    if _has_lv_predictor(fit)
+        # X_lv fit: per-site scores need X_lv (absent here); the marginal per-trait
+        # mean response is a consistent Gamma rate estimate for the link residual.
+        return _masked_trait_mean(Float64.(Y), mask)
+    end
+    Z = getLV(fit, Y; rotate = false, mask = mask)
+    η = fit.β .+ fit.Λ * Z'
+    μ = linkinv.(Ref(fit.link), η)
+    return _masked_trait_mean(μ, mask)
+end
+function _trait_mean_fitted(fit::BetaFit, Y::AbstractMatrix; mask = nothing)
     Z = getLV(fit, Y; rotate = false, mask = mask)
     η = fit.β .+ fit.Λ * Z'
     μ = linkinv.(Ref(fit.link), η)

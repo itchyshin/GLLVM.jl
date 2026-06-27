@@ -67,6 +67,7 @@ _has_lv_predictor(fit::GllvmFit) =
 _has_lv_predictor(fit::BinomialFit) = fit.alpha_lv !== nothing
 _has_lv_predictor(fit::PoissonFit) = fit.alpha_lv !== nothing
 _has_lv_predictor(fit::NBFit) = fit.alpha_lv !== nothing
+_has_lv_predictor(fit::GammaFit) = fit.alpha_lv !== nothing
 
 function _lv_score_mean_for_fit(fit::GllvmFit, y::AbstractMatrix,
                                 X_lv::Union{Nothing, AbstractMatrix})
@@ -101,7 +102,7 @@ function _lv_score_mean_for_fit(fit::BinomialFit, y::AbstractMatrix,
     return _lv_score_mean(X_lv, fit.alpha_lv)
 end
 
-function _lv_score_mean_for_fit(fit::Union{PoissonFit, NBFit}, y::AbstractMatrix,
+function _lv_score_mean_for_fit(fit::Union{PoissonFit, NBFit, GammaFit}, y::AbstractMatrix,
                                 X_lv::Union{Nothing, AbstractMatrix})
     _, n = size(y)
     K = size(fit.Λ, 2)
@@ -322,6 +323,17 @@ function extract_lv_effects(fit::NBFit; type::Symbol = :trait_effect)
 end
 
 lv_effects(fit::NBFit; kwargs...) = extract_lv_effects(fit; kwargs...)
+
+function extract_lv_effects(fit::GammaFit; type::Symbol = :trait_effect)
+    _has_lv_predictor(fit) || throw(ArgumentError(
+        "extract_lv_effects requires a fit from fit_gamma_gllvm(...; X_lv=...)"))
+    type in (:trait_effect, :axis_effect) ||
+        throw(ArgumentError("type must be :trait_effect or :axis_effect; got :$type"))
+    type === :axis_effect && return copy(fit.alpha_lv)
+    return fit.Λ * fit.alpha_lv'
+end
+
+lv_effects(fit::GammaFit; kwargs...) = extract_lv_effects(fit; kwargs...)
 
 """
     residuals(fit::BinomialFit, Y; type=:dunnsmyth, N=nothing, rng=Random.default_rng())
@@ -1096,7 +1108,9 @@ _loglik(fit::GammaFit)   = fit.loglik
 
 function _nparams(fit::GammaFit)
     p, K = size(fit.Λ)
-    return p + (p * K - div(K * (K - 1), 2)) + 1       # β + Λ + shape α
+    k = p + (p * K - div(K * (K - 1), 2)) + 1          # β + Λ + shape α
+    _has_lv_predictor(fit) && (k += length(fit.alpha_lv))
+    return k
 end
 
 """
@@ -1106,19 +1120,31 @@ Conditional latent-variable scores for a Gamma fit: the per-site Laplace mode `�
 (computed at the fitted shape `α`). `Y` is the p×n matrix of positive reals;
 `rotate=true` applies the canonical [`rotation`](@ref).
 """
-function getLV(fit::GammaFit, Y::AbstractMatrix{<:Real}; rotate::Bool = true, mask = nothing)
+function getLV(fit::GammaFit, Y::AbstractMatrix{<:Real};
+               X_lv::Union{Nothing, AbstractMatrix} = nothing,
+               component::Symbol = :total,
+               rotate::Bool = true, mask = nothing)
+    component in (:total, :innovation, :mean) ||
+        throw(ArgumentError("component must be :total, :innovation, or :mean; got :$component"))
     p, n = size(Y)
     K = size(fit.Λ, 2)
     fam = Gamma(fit.α, 1.0)
     ones_p = ones(Int, p)
+    Zmean = _lv_score_mean_for_fit(fit, Y, X_lv)
+    if component === :mean
+        return rotate ? Zmean * _svd_rotation(fit.Λ) : Zmean
+    end
+    lv_offset = _has_lv_predictor(fit) ? fit.Λ * Zmean' : nothing
     Z = Matrix{Float64}(undef, K, n)
     @inbounds for s in 1:n
         mi = mask === nothing ? nothing : view(mask, :, s)
+        oi = lv_offset === nothing ? nothing : view(lv_offset, :, s)
         Z[:, s] = _laplace_mode(fam, view(Y, :, s), ones_p, fit.Λ, fit.β, fit.link;
-                                mask = mi)
+                                mask = mi, offset = oi)
     end
     Zt = permutedims(Z)
-    return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
+    Zout = component === :innovation ? Zt : Zmean .+ Zt
+    return rotate ? Zout * _svd_rotation(fit.Λ) : Zout
 end
 
 """
@@ -1127,10 +1153,11 @@ end
 In-sample fitted values at the Laplace mode: `type=:link` returns `η = β + Λ ẑ`;
 `type=:response` the inverse-link fitted means `linkinv(link, η) = exp(η)` (positive reals).
 """
-function predict(fit::GammaFit, Y::AbstractMatrix{<:Real}; type::Symbol = :response)
+function predict(fit::GammaFit, Y::AbstractMatrix{<:Real}; type::Symbol = :response,
+                 X_lv::Union{Nothing, AbstractMatrix} = nothing)
     type in (:link, :response) ||
         throw(ArgumentError("type must be :link or :response; got :$type"))
-    Z = getLV(fit, Y; rotate = false)
+    Z = getLV(fit, Y; X_lv = X_lv, component = :total, rotate = false)
     η = fit.β .+ fit.Λ * Z'
     type === :link && return η
     return linkinv.(Ref(fit.link), η)
@@ -1144,12 +1171,13 @@ Conditional residuals for a Gamma fit. The Gamma CDF is continuous, so the
 `Φ⁻¹(F(y))` under `Gamma(α, μ/α)` — ≈ N(0,1) under a correct model — exactly as
 in the Gaussian and Beta cases. `:pearson` returns `(Y − μ) / √(μ²/α)`.
 """
-function residuals(fit::GammaFit, Y::AbstractMatrix{<:Real}; type::Symbol = :dunnsmyth)
+function residuals(fit::GammaFit, Y::AbstractMatrix{<:Real}; type::Symbol = :dunnsmyth,
+                   X_lv::Union{Nothing, AbstractMatrix} = nothing)
     type in (:dunnsmyth, :pearson) ||
         throw(ArgumentError("type must be :dunnsmyth or :pearson; got :$type"))
     p, n = size(Y)
     α = fit.α
-    μ = predict(fit, Y; type = :response)
+    μ = predict(fit, Y; type = :response, X_lv = X_lv)
     if type === :pearson
         return (Y .- μ) ./ sqrt.(μ .^ 2 ./ α)
     end
