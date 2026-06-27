@@ -1856,6 +1856,93 @@ _lv_packed_nll(fit::GammaFit, Y, X_lv, q_lv, N) =
 _lv_packed_nll(fit::BetaFit, Y, X_lv, q_lv, N) =
     θ -> beta_lv_nll_packed(θ, Y, size(fit.Λ, 1), size(fit.Λ, 2), fit.link; X_lv = X_lv, q_lv = q_lv)
 
+# Profile-likelihood CIs for each entry of vec(B_lv). For entry `idx` the profile
+# deviance D(c) = 2[ℓ_constrained(B_lv[idx]=c) − ℓ̂] is inverted against the χ²₁
+# cutoff: CI = {c : D(c) ≤ qchisq(level, 1)}. The constraint B_lv[idx]=c is imposed
+# by an escalating quadratic penalty and ALL OTHER parameters are RE-MAXIMISED at
+# each c — a genuine profile, NOT the nuisance-fixed "estimated likelihood" (ELR)
+# shortcut, which under-covers when the target correlates with the nuisances.
+# `wald_se` (from a prior Wald pass) sets the per-entry stepping scale. `ad=true`
+# (Gaussian, AD-friendly objective) uses LBFGS; GLM Laplace objectives are not
+# AD-friendly through the inner solve, so `ad=false` uses derivative-free
+# NelderMead. NOTE: χ²₁ is the interior asymptotic reference; the boundary
+# chi-bar-square correction (variance→0, |ρ|→1, loading→0) is a separate,
+# not-yet-implemented refinement.
+function _lv_effect_profile(nll::Function, x̂::AbstractVector, p::Integer, K::Integer,
+                            q_lv::Integer, level::Real, extractor, wald_se::AbstractVector;
+                            ad::Bool = false, maxstep::Integer = 40)
+    x  = collect(Float64, x̂)
+    b̂  = extractor(x, p, K, q_lv)
+    nb = length(b̂)
+    ℓ0 = nll(x)
+    cutoff = quantile(Chisq(1), level)
+    term = ["B_lv[$t,$c]" for c in 1:q_lv for t in 1:p]
+    lo = fill(NaN, nb); hi = fill(NaN, nb)
+
+    # Constrained re-optimisation at B_lv[idx] = c → unpenalised deviance 2(ℓc − ℓ̂).
+    constrained_dev = function (idx, c)
+        g = θ -> extractor(θ, p, K, q_lv)[idx]
+        θc = copy(x)
+        for w in (1e2, 1e3, 1e4, 1e5, 1e6)
+            obj = function (θ)
+                val = try nll(θ) catch; return 1e12 end
+                isfinite(val) || return 1e12
+                return val + 0.5 * w * (g(θ) - c)^2
+            end
+            res = try
+                if ad
+                    Optim.optimize(obj, θc, Optim.LBFGS(),
+                                   Optim.Options(g_tol = 1e-8, iterations = 1000);
+                                   autodiff = :forward)
+                else
+                    # GLM Laplace objective is not AD-friendly through the inner
+                    # solve, so use derivative-free NelderMead. This re-optimises
+                    # the marginal at every grid point and is EXPENSIVE — GLM
+                    # profile is best reserved for small problems or a few entries;
+                    # Wald and bootstrap are the practical GLM defaults.
+                    Optim.optimize(obj, θc, Optim.NelderMead(),
+                                   Optim.Options(iterations = 3000))
+                end
+            catch
+                nothing
+            end
+            res === nothing && break
+            θc = Optim.minimizer(res)
+        end
+        return 2 * (nll(θc) - ℓ0)
+    end
+
+    # Step out in SE units to bracket the D = cutoff crossing on side `dir` (±1),
+    # then bisect. Returns NaN if the profile does not close within `maxstep`.
+    crossing = function (idx, dir, s)
+        c0 = b̂[idx]; clo = c0; chi = NaN
+        for k in 1:maxstep
+            c = c0 + dir * s * k
+            D = constrained_dev(idx, c)
+            if isfinite(D) && D >= cutoff
+                chi = c; clo = c0 + dir * s * (k - 1); break
+            end
+        end
+        isnan(chi) && return NaN
+        for _ in 1:40
+            cm = (clo + chi) / 2
+            Dm = constrained_dev(idx, cm)
+            (isfinite(Dm) && Dm >= cutoff) ? (chi = cm) : (clo = cm)
+            abs(chi - clo) < 1e-6 * max(1.0, abs(c0)) && break
+        end
+        return (clo + chi) / 2
+    end
+
+    for idx in 1:nb
+        s = (isfinite(wald_se[idx]) && wald_se[idx] > 0) ? wald_se[idx] :
+            max(0.1, 0.1 * abs(b̂[idx]))
+        lo[idx] = crossing(idx, -1, s)
+        hi[idx] = crossing(idx, +1, s)
+    end
+    return (term = term, estimate = b̂, lower = lo, upper = hi, se = fill(NaN, nb),
+            level = level, method = :profile, pd_hessian = true)
+end
+
 """
     confint_lv_effects(fit, Y, X_lv; N=nothing, level=0.95) -> NamedTuple
 
@@ -1865,8 +1952,10 @@ Binomial, NB2, Gamma, or Beta). `Y` and `X_lv` must match the fit; `N` is the
 binomial trial-count matrix. SEs come from the observed-information covariance of
 the packed MLE pushed through the delta method onto `B_lv`, returning
 `(term, estimate, lower, upper, se, level, method, pd_hessian)` over the `p·q_lv`
-entries of `vec(B_lv)`. `method = :wald` (delta method) or `:bootstrap`
-(percentiles of `B_lv`). Admitted for `K ≥ 1` (`B_lv` is rotation-invariant),
+entries of `vec(B_lv)`. `method = :wald` (delta method), `:profile` (invert the
+likelihood-ratio statistic by constrained refit — asymmetry- and
+boundary-respecting; `se` is `NaN` since the interval need not be symmetric), or
+`:bootstrap` (percentiles of `B_lv`). Admitted for `K ≥ 1` (`B_lv` is rotation-invariant),
 complete responses, single ordinary latent block; every other structure (masks,
 `X` + `X_lv`, mixed-family, W-tier, phylo/animal/spatial/kernel sources) stays
 gated.
@@ -1887,11 +1976,16 @@ function confint_lv_effects(fit::Union{PoissonFit, BinomialFit, NBFit, GammaFit,
         "X_lv must have one row per site: got $(size(X_lv, 1)), need $(size(Y, 2))"))
     size(fit.alpha_lv) == (q_lv, K) || throw(ArgumentError(
         "X_lv has $(q_lv) column(s) but the fit carries α_lv of size $(size(fit.alpha_lv))"))
-    method in (:wald, :bootstrap) ||
-        throw(ArgumentError("method must be :wald or :bootstrap; got :$method"))
+    method in (:wald, :bootstrap, :profile) ||
+        throw(ArgumentError("method must be :wald, :bootstrap, or :profile; got :$method"))
     method === :bootstrap &&
         return _lv_bootstrap(fit, Y, X_lv, N, q_lv, level, n_boot, seed)
     nll = _lv_packed_nll(fit, Y, X_lv, q_lv, N)
+    if method === :profile
+        wse = _lv_effect_wald(nll, fit.theta_packed, p, K, q_lv, level).se
+        return _lv_effect_profile(nll, fit.theta_packed, p, K, q_lv, level,
+                                  _lv_effects_from_packed, wse; ad = false)
+    end
     return _lv_effect_wald(nll, fit.theta_packed, p, K, q_lv, level)
 end
 
@@ -1902,7 +1996,9 @@ Wald intervals for `B_lv = Λ·α'` of a Gaussian `X_lv` fit
 (`fit_gaussian_gllvm(...; X_lv=...)`). The Gaussian marginal is closed-form, so
 the observed information is the **exact ForwardDiff Hessian** of
 `gaussian_lv_nll_packed` at the packed MLE (no finite differencing). `method =
-:wald` or `:bootstrap`. `K ≥ 1` (`B_lv` rotation-invariant), complete responses,
+:wald`, `:profile` (LR inversion via constrained refit; the Gaussian objective is
+AD-friendly so the constrained refits use LBFGS), or `:bootstrap`. `K ≥ 1`
+(`B_lv` rotation-invariant), complete responses,
 single unit-tier latent block, no fixed-effect `X`.
 """
 function confint_lv_effects(fit::GllvmFit, Y::AbstractMatrix, X_lv::AbstractMatrix;
@@ -1922,8 +2018,8 @@ function confint_lv_effects(fit::GllvmFit, Y::AbstractMatrix, X_lv::AbstractMatr
         "X_lv must have one row per site: got $(size(X_lv, 1)), need $(size(Y, 2))"))
     size(fit.pars.alpha_lv) == (q_lv, K) || throw(ArgumentError(
         "X_lv has $(q_lv) column(s) but the fit carries α_lv of size $(size(fit.pars.alpha_lv))"))
-    method in (:wald, :bootstrap) ||
-        throw(ArgumentError("method must be :wald or :bootstrap; got :$method"))
+    method in (:wald, :bootstrap, :profile) ||
+        throw(ArgumentError("method must be :wald, :bootstrap, or :profile; got :$method"))
     method === :bootstrap &&
         return _lv_bootstrap(fit, Y, X_lv, N, q_lv, level, n_boot, seed)
     x = collect(Float64, fit.pars.θ_packed)
@@ -1936,6 +2032,11 @@ function confint_lv_effects(fit::GllvmFit, Y::AbstractMatrix, X_lv::AbstractMatr
             return isfinite(val) ? val : 1e12
         end
         _fd_hessian(safenll, x)
+    end
+    if method === :profile
+        wse = _lv_wald_from_hessian(H, x, p, K, q_lv, level, _lv_effects_from_packed_gaussian).se
+        return _lv_effect_profile(nll, x, p, K, q_lv, level,
+                                  _lv_effects_from_packed_gaussian, wse; ad = true)
     end
     return _lv_wald_from_hessian(H, x, p, K, q_lv, level, _lv_effects_from_packed_gaussian)
 end
