@@ -138,7 +138,9 @@ using LinearAlgebra
         @test all(isfinite, cb.lower) && all(isfinite, cb.upper)
         @test all(cb.lower .< cb.upper)
         @test all(cb.lower .<= cb.estimate .<= cb.upper)   # point est near boot centre
-        @test_throws ArgumentError confint_lv_effects(fit, Y, X_lv; method = :profile)
+        # :profile is now implemented (its own testset below); only an unknown
+        # method should throw.
+        @test_throws ArgumentError confint_lv_effects(fit, Y, X_lv; method = :nope)
     end
 
     @testset "bootstrap covers all families (+ Gaussian K=2 guards the transpose)" begin
@@ -267,5 +269,50 @@ using LinearAlgebra
         @test_throws ArgumentError confint_lv_effects(plain, Y, X_lv)            # no α_lv
         @test_throws ArgumentError confint_lv_effects(xfit, Y, X_lv; level = 1.0) # bad level
         @test_throws ArgumentError confint_lv_effects(xfit, Y, X_lv[1:(n - 1), :]) # row mismatch
+    end
+
+    @testset "profile method (Gaussian)" begin
+        # Gaussian objective is AD-friendly → fast LBFGS constrained refits.
+        Random.seed!(9090)
+        zg = ztot(Random.default_rng())
+        Yg = Λ * reshape(zg, 1, n) .+ 0.5 .* randn(p, n)
+        fg = fit_gaussian_gllvm(Yg; K = K, X_lv = X_lv, iterations = 300)
+        cwald = confint_lv_effects(fg, Yg, X_lv)                    # wald
+        cprof = confint_lv_effects(fg, Yg, X_lv; method = :profile)
+        @test cprof.method == :profile
+        @test cprof.term == ["B_lv[$t,1]" for t in 1:p]
+        @test cprof.level == 0.95
+        @test cprof.estimate ≈ cwald.estimate atol = 1e-10         # same point estimate
+        @test all(isnan, cprof.se)                                 # profile: no single se
+        @test all(isfinite, cprof.lower) && all(isfinite, cprof.upper)
+        @test all(cprof.lower .< cprof.estimate .< cprof.upper)    # brackets the MLE
+        # profile ≈ wald widths in the well-identified interior (tracks mild
+        # asymmetry rather than being forced symmetric).
+        @test maximum(abs.((cprof.upper .- cprof.lower) .- (cwald.upper .- cwald.lower)) ./
+                      (cwald.upper .- cwald.lower)) < 0.25
+    end
+
+    # GLM profile uses derivative-free NelderMead over the Laplace marginal and is
+    # expensive (~1 min even for a tiny problem), so it is opt-in to keep CI fast.
+    # Set GLLVM_SLOW_TESTS=true to run it. The fast Gaussian test above guards the
+    # algorithm; this guards the GLM (Poisson) code path end to end.
+    if get(ENV, "GLLVM_SLOW_TESTS", "false") == "true"
+        @testset "profile method (Poisson, opt-in slow)" begin
+            Random.seed!(4101)
+            ps, ns = 3, 80
+            Xs = reshape(collect(range(-1.2, 1.2; length = ns)), ns, 1)
+            Ls = reshape([0.6, -0.45, 0.35], ps, 1)
+            as = reshape([0.7], 1, 1)
+            zs = vec(Xs * as) .+ randn(ns)
+            βs = log.([6.0, 4.0, 8.0])
+            ηs = βs .+ Ls * reshape(zs, 1, ns)
+            Ys = [rand(Poisson(exp(ηs[t, s]))) for t in 1:ps, s in 1:ns]
+            fs = fit_poisson_gllvm(Ys; K = 1, X_lv = Xs, β_init = βs, Λ_init = Ls,
+                                   alpha_lv_init = as, iterations = 200, g_tol = 1e-6)
+            cpr = confint_lv_effects(fs, Ys, Xs; method = :profile)
+            @test cpr.method == :profile
+            @test all(isfinite, cpr.lower) && all(isfinite, cpr.upper)
+            @test all(cpr.lower .< cpr.estimate .< cpr.upper)
+        end
     end
 end
