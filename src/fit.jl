@@ -180,10 +180,11 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
             "X_lv predictor-informed latent scores are C1 ordinary unit-tier only; K_W > 0 is not yet supported"))
         !has_diag || throw(ArgumentError(
             "X_lv predictor-informed latent scores are C1 ordinary unit-tier only; has_diag = true is not yet supported"))
-        K_phy == 0 || throw(ArgumentError(
-            "X_lv predictor-informed latent scores are C1 ordinary unit-tier only; K_phy > 0 is not yet supported"))
-        !has_phy_unique || throw(ArgumentError(
-            "X_lv predictor-informed latent scores are C1 ordinary unit-tier only; has_phy_unique = true is not yet supported"))
+        # Model A: a phylo trait-covariance block (K_phy > 0 and/or has_phy_unique)
+        # composes with the X_lv score mean on orthogonal axes — admitted for the
+        # Gaussian path. It requires the species covariance Σ_phy.
+        (!((K_phy > 0) || has_phy_unique) || Σ_phy !== nothing) || throw(ArgumentError(
+            "X_lv with a phylo block (K_phy > 0 or has_phy_unique) requires Σ_phy"))
         size(X_lv, 1) == n ||
             throw(ArgumentError("X_lv first dim ($(size(X_lv, 1))) must equal n_sites ($n)"))
         q_lv = size(X_lv, 2)
@@ -317,10 +318,29 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
         else
             Matrix{Float64}(alpha_lv_init)
         end
-        params₀ = vcat(β₀, vec(alpha₀), [log(σ_e₀)], θ_B₀)
-        nll = params -> gaussian_lv_nll_packed(params, y, Int(p), Int(K);
-                                               X = X_fit, q = q,
-                                               X_lv = X_lv_fit, q_lv = q_lv)
+        # Model A phylo block init (same packed order as gaussian_lv_nll_packed:
+        # σ_phy then θ_rr_phy, appended after Λ_B).
+        σ_phy₀ = has_phy_unique ? fill(Float64(σ_phy_init), p) : Float64[]
+        θ_phy₀ = K_phy > 0 ? init_theta_rr(p, K_phy) : Float64[]
+        params₀ = vcat(β₀, vec(alpha₀), [log(σ_e₀)], θ_B₀, σ_phy₀, θ_phy₀)
+        # The explicit (non-profiled) objective carries a free log σ_eps (required
+        # because the mean Λ·alpha_lv'·X_lv couples Λ and alpha_lv). With a phylo
+        # block the J3 marginal Cholesky can fail when the line search drives
+        # σ_eps → 0; return a large finite value there so LBFGS backtracks instead
+        # of crashing. AD-safe: a zero-derivative Dual at the rejected point.
+        nll = function (params)
+            return try
+                gaussian_lv_nll_packed(params, y, Int(p), Int(K);
+                                       X = X_fit, q = q,
+                                       X_lv = X_lv_fit, q_lv = q_lv,
+                                       K_phy = Int(K_phy),
+                                       has_phy_unique = has_phy_unique,
+                                       Σ_phy = Σ_phy)
+            catch err
+                err isa PosDefException || rethrow(err)
+                convert(eltype(params), 1e10)
+            end
+        end
 
         opts = Optim.Options(
             x_abstol = x_tol,
@@ -348,7 +368,22 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
         cursor += q_lv * K
         σ_eps_hat = exp(params_hat[cursor + 1])
         cursor += 1
-        Λ_hat = unpack_lambda(@view(params_hat[(cursor + 1):end]), p, K)
+        Λ_hat = unpack_lambda(@view(params_hat[(cursor + 1):(cursor + rr_B)]), p, K)
+        cursor += rr_B
+        # Model A phylo block (same packed order as gaussian_lv_nll_packed).
+        σ_phy_hat = if has_phy_unique
+            v = collect(params_hat[(cursor + 1):(cursor + p)]); cursor += p; v
+        else
+            nothing
+        end
+        Λ_phy_hat = if K_phy > 0
+            rr_phy = rr_theta_len(p, K_phy)
+            lp = unpack_lambda(@view(params_hat[(cursor + 1):(cursor + rr_phy)]), p, K_phy)
+            cursor += rr_phy
+            lp
+        else
+            nothing
+        end
         β_full = X !== nothing ? _expand_fixed_zero(β_hat_free, β_fixed_mask) : β_hat_free
 
         # Keep the explicit packed vector for reproducibility. Interval engines
@@ -357,7 +392,7 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
         θ_packed_lv = collect(Float64, params_hat)
 
         return GllvmFit(
-            GllvmModel(Int(p), Int(K), 0, false, 0, false),
+            GllvmModel(Int(p), Int(K), 0, false, Int(K_phy), has_phy_unique),
             (σ_eps = σ_eps_hat,
              Λ = Λ_hat,
              β = β_full,
@@ -366,8 +401,9 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
              Λ_W = nothing,
              σ²_B = nothing,
              σ²_W = nothing,
-             Λ_phy = nothing,
-             σ_phy = nothing,
+             Λ_phy = Λ_phy_hat,
+             σ_phy = σ_phy_hat,
+             Σ_phy = Σ_phy,
              θ_packed = θ_packed_lv),
             -Optim.minimum(res),
             Optim.iterations(res),

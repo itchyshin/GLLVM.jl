@@ -2023,7 +2023,16 @@ function confint_lv_effects(fit::GllvmFit, Y::AbstractMatrix, X_lv::AbstractMatr
     method === :bootstrap &&
         return _lv_bootstrap(fit, Y, X_lv, N, q_lv, level, n_boot, seed)
     x = collect(Float64, fit.pars.θ_packed)
-    nll = θv -> gaussian_lv_nll_packed(θv, Y, p, K; X_lv = X_lv, q_lv = q_lv)
+    # Model A: carry any phylo block so the observed-information Hessian is built
+    # on the SAME augmented objective the fit used. The B_lv extractor is unchanged
+    # (the phylo tail is appended after Λ_B), and the delta method correctly uses
+    # only the α/Λ block of Σ = inv(H), inflated by the phylo params being estimated.
+    K_phy = fit.model.K_phy
+    has_phy_unique = fit.model.has_phy_unique
+    Σ_phy = hasproperty(fit.pars, :Σ_phy) ? fit.pars.Σ_phy : nothing
+    nll = θv -> gaussian_lv_nll_packed(θv, Y, p, K; X_lv = X_lv, q_lv = q_lv,
+                                       K_phy = K_phy, has_phy_unique = has_phy_unique,
+                                       Σ_phy = Σ_phy)
     H = try
         ForwardDiff.hessian(nll, x)
     catch

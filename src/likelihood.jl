@@ -445,7 +445,10 @@ function gaussian_lv_nll_packed(params::AbstractVector, y::AbstractMatrix,
                                 X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
                                 q::Integer = 0,
                                 X_lv::AbstractMatrix,
-                                q_lv::Integer)
+                                q_lv::Integer,
+                                K_phy::Integer = 0,
+                                has_phy_unique::Bool = false,
+                                Σ_phy::Union{Nothing, AbstractMatrix} = nothing)
     size(y, 1) == p ||
         throw(ArgumentError("y first dim ($(size(y, 1))) must equal p ($p)"))
     n = size(y, 2)
@@ -463,10 +466,12 @@ function gaussian_lv_nll_packed(params::AbstractVector, y::AbstractMatrix,
     end
 
     rr_B = rr_theta_len(p, K)
-    n_expected = q + q_lv * K + 1 + rr_B
+    rr_phy = K_phy > 0 ? rr_theta_len(p, K_phy) : 0
+    n_phy = (has_phy_unique ? p : 0) + rr_phy
+    n_expected = q + q_lv * K + 1 + rr_B + n_phy
     length(params) == n_expected || throw(ArgumentError(
         "params length ($(length(params))) must equal $n_expected " *
-        "(q=$q + alpha_lv=$(q_lv * K) + 1 + rr_B=$rr_B)"))
+        "(q=$q + alpha_lv=$(q_lv * K) + 1 + rr_B=$rr_B + phylo=$n_phy)"))
 
     cursor = q
     alpha_vec = @view params[(cursor + 1):(cursor + q_lv * K)]
@@ -475,8 +480,29 @@ function gaussian_lv_nll_packed(params::AbstractVector, y::AbstractMatrix,
     log_σ = params[cursor + 1]
     cursor += 1
     θ_rr = @view params[(cursor + 1):(cursor + rr_B)]
+    cursor += rr_B
+
+    # Model A phylo block: trait-axis phylo composed with the X_lv score mean
+    # (orthogonal axes). Same packed order as the non-X_lv J3 path (l. 380-396):
+    # σ_phy (p, signed identity-link) then θ_rr_phy. The J3 marginal fires on the
+    # X_lv residual y_adj, which is correct because the rotation trick's internal
+    # site-mean is of the residual (the X_lv mean is already subtracted).
+    if has_phy_unique
+        σ_phy = @view params[(cursor + 1):(cursor + p)]
+        cursor += p
+    else
+        σ_phy = nothing
+    end
+    if K_phy > 0
+        θ_rr_phy = @view params[(cursor + 1):(cursor + rr_phy)]
+        cursor += rr_phy
+        Λ_phy = unpack_lambda(θ_rr_phy, p, K_phy)
+    else
+        Λ_phy = nothing
+    end
 
     Λ = unpack_lambda(θ_rr, p, K)
     y_adj = y .- _lv_mean_eta(Λ, X_lv, alpha_lv)
-    return -gaussian_marginal_loglik(y_adj, Λ, exp(log_σ); X = X, β = β)
+    return -gaussian_marginal_loglik(y_adj, Λ, exp(log_σ); X = X, β = β,
+                                     Λ_phy = Λ_phy, σ_phy = σ_phy, Σ_phy = Σ_phy)
 end
