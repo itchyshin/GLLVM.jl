@@ -1871,7 +1871,8 @@ phylo/animal/spatial/kernel sources, K > 1) stays gated.
 """
 function confint_lv_effects(fit::Union{PoissonFit, BinomialFit, NBFit, GammaFit, BetaFit},
                             Y::AbstractMatrix, X_lv::AbstractMatrix;
-                            N::Union{Nothing, AbstractMatrix} = nothing, level::Real = 0.95)
+                            N::Union{Nothing, AbstractMatrix} = nothing, level::Real = 0.95,
+                            method::Symbol = :wald, n_boot::Integer = 200, seed::Integer = 0)
     0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
     fit.alpha_lv === nothing && throw(ArgumentError(
         "confint_lv_effects requires an X_lv fit (fit_*_gllvm(...; X_lv=...)); this fit has none"))
@@ -1884,6 +1885,10 @@ function confint_lv_effects(fit::Union{PoissonFit, BinomialFit, NBFit, GammaFit,
         "X_lv must have one row per site: got $(size(X_lv, 1)), need $(size(Y, 2))"))
     size(fit.alpha_lv) == (q_lv, K) || throw(ArgumentError(
         "X_lv has $(q_lv) column(s) but the fit carries α_lv of size $(size(fit.alpha_lv))"))
+    method in (:wald, :bootstrap) ||
+        throw(ArgumentError("method must be :wald or :bootstrap; got :$method"))
+    method === :bootstrap &&
+        return _lv_bootstrap(fit, Y, X_lv, N, q_lv, level, n_boot, seed)
     nll = _lv_packed_nll(fit, Y, X_lv, q_lv, N)
     return _lv_effect_wald(nll, fit.theta_packed, p, K, q_lv, level)
 end
@@ -1898,7 +1903,8 @@ the observed information is the **exact ForwardDiff Hessian** of
 complete responses, single unit-tier latent block, no fixed-effect `X`.
 """
 function confint_lv_effects(fit::GllvmFit, Y::AbstractMatrix, X_lv::AbstractMatrix;
-                            N::Union{Nothing, AbstractMatrix} = nothing, level::Real = 0.95)
+                            N::Union{Nothing, AbstractMatrix} = nothing, level::Real = 0.95,
+                            method::Symbol = :wald, n_boot::Integer = 200, seed::Integer = 0)
     0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
     fit.pars.alpha_lv === nothing && throw(ArgumentError(
         "confint_lv_effects requires a Gaussian X_lv fit (fit_gaussian_gllvm(...; X_lv=...)); this fit has none"))
@@ -1911,6 +1917,10 @@ function confint_lv_effects(fit::GllvmFit, Y::AbstractMatrix, X_lv::AbstractMatr
         "X_lv must have one row per site: got $(size(X_lv, 1)), need $(size(Y, 2))"))
     size(fit.pars.alpha_lv) == (q_lv, K) || throw(ArgumentError(
         "X_lv has $(q_lv) column(s) but the fit carries α_lv of size $(size(fit.pars.alpha_lv))"))
+    method in (:wald, :bootstrap) ||
+        throw(ArgumentError("method must be :wald or :bootstrap; got :$method"))
+    method === :bootstrap &&
+        return _lv_bootstrap(fit, Y, X_lv, N, q_lv, level, n_boot, seed)
     x = collect(Float64, fit.pars.θ_packed)
     nll = θv -> gaussian_lv_nll_packed(θv, Y, p, K; X_lv = X_lv, q_lv = q_lv)
     H = try
@@ -1923,4 +1933,73 @@ function confint_lv_effects(fit::GllvmFit, Y::AbstractMatrix, X_lv::AbstractMatr
         _fd_hessian(safenll, x)
     end
     return _lv_wald_from_hessian(H, x, p, K, q_lv, level, _lv_effects_from_packed_gaussian)
+end
+
+# ---------------------------------------------------------------------------
+# Parametric bootstrap for B_lv. Percentiles of the DERIVED B_lv = Λ·α' across
+# refits of simulate(fit; X_lv) draws — a useful complement to Wald because B_lv
+# is a product of parameters whose finite-sample distribution can be skewed. Per
+# family: (simfn(rng) -> Y^b, refitfn(Y^b) -> fit^b or nothing).
+# ---------------------------------------------------------------------------
+function _lv_boot_fns(fit::PoissonFit, Y, X_lv, N)
+    K = size(fit.Λ, 2); n = size(Y, 2); link = fit.link
+    return (rng -> simulate(fit, n; X_lv = X_lv, rng = rng),
+            Yb -> (try fit_poisson_gllvm(Yb; K = K, link = link, X_lv = X_lv) catch; nothing end))
+end
+function _lv_boot_fns(fit::BinomialFit, Y, X_lv, N)
+    K = size(fit.Λ, 2); n = size(Y, 2); link = fit.link
+    Nm = N === nothing ? fill(1, size(Y, 1), n) : Matrix{Int}(N)
+    return (rng -> simulate(fit, n; N = Nm, X_lv = X_lv, rng = rng),
+            Yb -> (try fit_binomial_gllvm(Yb; K = K, N = Nm, link = link, X_lv = X_lv) catch; nothing end))
+end
+function _lv_boot_fns(fit::NBFit, Y, X_lv, N)
+    K = size(fit.Λ, 2); n = size(Y, 2); link = fit.link
+    return (rng -> simulate(fit, n; X_lv = X_lv, rng = rng),
+            Yb -> (try fit_nb_gllvm(Yb; K = K, link = link, X_lv = X_lv) catch; nothing end))
+end
+function _lv_boot_fns(fit::GammaFit, Y, X_lv, N)
+    K = size(fit.Λ, 2); n = size(Y, 2)
+    return (rng -> simulate(fit, n; X_lv = X_lv, rng = rng),
+            Yb -> (try fit_gamma_gllvm(Yb; K = K, X_lv = X_lv) catch; nothing end))
+end
+function _lv_boot_fns(fit::BetaFit, Y, X_lv, N)
+    K = size(fit.Λ, 2); n = size(Y, 2)
+    return (rng -> simulate(fit, n; X_lv = X_lv, rng = rng),
+            Yb -> (try fit_beta_gllvm(Yb; K = K, X_lv = X_lv) catch; nothing end))
+end
+function _lv_boot_fns(fit::GllvmFit, Y, X_lv, N)
+    p, K = size(fit.pars.Λ); n = size(Y, 2)
+    Λ = fit.pars.Λ; Zmean = X_lv * fit.pars.alpha_lv'; σ = fit.pars.σ_eps  # n×K
+    return (rng -> Λ * (Zmean .+ randn(rng, n, K))' .+ σ .* randn(rng, p, n),
+            Yb -> (try fit_gaussian_gllvm(Yb; K = K, X_lv = X_lv) catch; nothing end))
+end
+
+function _lv_bootstrap(fit, Y, X_lv, N, q_lv::Integer, level::Real,
+                       n_boot::Integer, seed::Integer)
+    simfn, refitfn = _lv_boot_fns(fit, Y, X_lv, N)
+    b̂ = vec(extract_lv_effects(fit)); nb = length(b̂); p = nb ÷ q_lv
+    reps = Vector{Vector{Float64}}()
+    for b in 1:n_boot
+        rng = MersenneTwister(seed + b)
+        Bb = try
+            fb = refitfn(simfn(rng))
+            fb === nothing ? nothing : vec(extract_lv_effects(fb))
+        catch
+            nothing
+        end
+        (Bb === nothing || length(Bb) != nb || any(!isfinite, Bb)) && continue
+        c = cor(Bb, b̂)            # B_lv is sign-/rotation-stable; align defensively
+        push!(reps, c < 0 ? -Bb : Bb)
+    end
+    nconv = length(reps); a = (1 - level) / 2
+    lo = fill(NaN, nb); hi = fill(NaN, nb)
+    if nconv >= 10
+        M = reduce(hcat, reps)    # nb × nconv
+        @inbounds for i in 1:nb
+            lo[i] = quantile(view(M, i, :), a); hi[i] = quantile(view(M, i, :), 1 - a)
+        end
+    end
+    term = ["B_lv[$t,$c]" for c in 1:q_lv for t in 1:p]
+    return (term = term, estimate = b̂, lower = lo, upper = hi,
+            level = level, method = :bootstrap, n_converged = nconv)
 end

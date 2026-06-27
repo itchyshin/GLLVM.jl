@@ -123,6 +123,24 @@ using LinearAlgebra
         @test cor(ci.estimate, B2) > 0.9   # recovers the rotation-stable truth
     end
 
+    @testset "bootstrap method (Poisson)" begin
+        Random.seed!(5151)
+        β = log.([6.0, 4.0, 8.0, 5.0, 7.0])
+        η = β .+ Λ * reshape(ztot(Random.default_rng()), 1, n)
+        Y = [rand(Poisson(exp(η[t, s]))) for t in 1:p, s in 1:n]
+        fit = fit_poisson_gllvm(Y; K = K, X_lv = X_lv, β_init = β, Λ_init = Λ,
+                                alpha_lv_init = alpha, iterations = 150, g_tol = 1e-6)
+        cb = confint_lv_effects(fit, Y, X_lv; method = :bootstrap, n_boot = 50, seed = 1)
+        @test cb.method == :bootstrap
+        @test cb.term == ["B_lv[$t,1]" for t in 1:p]
+        @test cb.n_converged >= 35
+        @test cb.estimate ≈ vec(extract_lv_effects(fit)) atol = 1e-10
+        @test all(isfinite, cb.lower) && all(isfinite, cb.upper)
+        @test all(cb.lower .< cb.upper)
+        @test all(cb.lower .<= cb.estimate .<= cb.upper)   # point est near boot centre
+        @test_throws ArgumentError confint_lv_effects(fit, Y, X_lv; method = :profile)
+    end
+
     @testset "argument guards" begin
         Random.seed!(4606)
         β = log.([6.0, 4.0, 8.0, 5.0, 7.0])
