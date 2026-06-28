@@ -2832,3 +2832,71 @@ IN for this slice: stale test/doc/comment alignment for draft Model A; local
 targeted tests green. OUT/gated: any public claim that phylo `X_lv` intervals are
 calibrated, any `gllvmTMB` R-side `phylo_latent(..., lv=~x)` grammar claim, full
 CI health for PR #127, and the >=500 reps/cell DRAC campaign.
+
+## 2026-06-28 -- Phylo Model A DRAC launcher scaffold (Codex)
+
+Worked on local branch `codex/phylo-xlv-drac-launcher-20260628` from the clean
+worktree `/private/tmp/gllvmjl-phylo-xlv`, based on the current draft PR #127
+Model A state. This slice adds an sbatch-array-ready harness for the full
+phylo `X_lv` DRAC campaign; it does not launch DRAC jobs or add coverage
+evidence.
+
+State and lane checks:
+
+```sh
+git status --short --branch
+gh pr list --repo itchyshin/GLLVM.jl --state open --json number,headRefName,title,mergeStateStatus,isDraft
+git log --all --oneline --since='6 hours ago' --decorate
+git switch -c codex/phylo-xlv-drac-launcher-20260628
+```
+
+Observed: one open draft PR, #127 (`claude/phylo-xlv-modelA-20260627`), and no
+recent conflicting commits in the last six hours. The worktree was clean before
+branching.
+
+Files added:
+
+- `bench/phylo_xlv_drac_task.jl`: writes the full parameter grid and runs one
+  seed/task. The grid defaults to Pagel λ `{0, 0.5, 1}` × `n_species` `{20, 200}`
+  × `K` `{1, 2}` × 500 reps/cell, plus `null_alpha0` and `null_phylo0`. Output is
+  long-format CSV, one row per target/method, with fit convergence, usable CI
+  denominator, coverage, bias, RMSE, and error status.
+- `bench/phylo_xlv_drac_summarise.jl`: aggregates per-task CSVs into a markdown
+  table with mean task coverage, MCSE, entry coverage, usable-entry counts, and
+  CI status.
+- `bench/phylo_xlv_drac_submit.sh`: writes params, session metadata, and an
+  sbatch array file; default mode is write-only and `--submit` is required before
+  calling `sbatch`.
+
+Validation:
+
+```sh
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. bench/phylo_xlv_drac_task.jl --write-params /tmp/phylo_xlv_params_tiny.csv --reps 2 --lambdas 0,0.5 --n-species 4,5 --n-sites 20 --K 1,2 --scenarios main,null_alpha0,null_phylo0
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_xlv_params_tiny.csv --outdir /tmp/phylo_xlv_results_tiny --task-id 1 --dry-run
+bash -n bench/phylo_xlv_drac_submit.sh
+PHYLO_XLV_REPS=1 PHYLO_XLV_LAMBDAS=0 PHYLO_XLV_N_SPECIES=4 PHYLO_XLV_N_SITES=20 PHYLO_XLV_K=1 PHYLO_XLV_SCENARIOS=main,null_phylo0 PHYLO_XLV_TIME=0-00:15 PHYLO_XLV_MEM=2G PHYLO_XLV_THROTTLE=4 bench/phylo_xlv_drac_submit.sh --out /tmp/phylo_xlv_submit_probe
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. bench/phylo_xlv_drac_task.jl --help
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_xlv_submit_probe/meta/phylo_xlv_params.csv --outdir /tmp/phylo_xlv_results_submit_probe --task-id 1 --methods wald --iterations 80 --force
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_xlv_submit_probe/meta/phylo_xlv_params.csv --outdir /tmp/phylo_xlv_results_submit_probe --task-id 2 --methods wald --iterations 80 --force
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. bench/phylo_xlv_drac_summarise.jl --results /tmp/phylo_xlv_results_submit_probe
+```
+
+Results: tiny parameter generation wrote 40 rows; write-only submit probe wrote
+2 rows plus sbatch/session metadata; task help printed; two tiny local task runs
+completed (`main` and `null_phylo0`, p=4, n_sites=20, K=1, 80 optimiser
+iterations); the summariser read 4 result rows and reported usable `B_lv` Wald
+coverage rows. The tiny `phylo_signal` transformed-Wald rows had zero usable
+intervals because the fitted H² was on the boundary; that is recorded as
+`partial_or_failed`, not hidden.
+
+Not run: full `Pkg.test()`, GitHub CI, DRAC `sbatch`, profile/bootstrap methods,
+or any ≥500 reps/cell production campaign. Totoro/DRAC was not available
+non-interactively from this Mac session.
+
+### Claim Boundary
+
+IN: launcher/summariser plumbing for the DRAC coverage campaign and local toy
+smokes of its file formats. PARTIAL: production sizing, `seff` right-sizing,
+profile/bootstrap cost calibration, and phylogenetic-signal boundary behavior
+still need DRAC evidence. OUT: any calibrated coverage claim for Model A, any R
+`phylo_latent(..., lv=~x)` exposure, and any non-Gaussian phylo `X_lv` claim.
