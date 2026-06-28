@@ -103,8 +103,12 @@ Optional predictor-informed latent-score mean (C1, ordinary Gaussian unit tier):
   latent-score predictor coefficients. The fitted `pars.alpha_lv` is
   rotation-dependent; `extract_lv_effects(fit)` returns the rotation-stable
   trait-effect matrix `Λ * alpha_lv'`.
-- This C1 path is Gaussian-only and rejects W-tier, diagonal random-effect, and
-  phylogenetic blocks until their separate profile/interval derivations land.
+- This C1 path is Gaussian-only. It admits Model A phylogenetic trait-covariance
+  blocks (`K_phy > 0` and/or `has_phy_unique`) when `Σ_phy` is supplied, and
+  rejects W-tier and diagonal random-effect blocks. Fits that combine fixed
+  effects `X` with `X_lv` are point-estimate only for now:
+  `confint_lv_effects` currently rejects them until a separate interval
+  derivation lands.
 
 The fit's `pars` NamedTuple always contains
 `(σ_eps, Λ, β, β_fixed, alpha_lv, Λ_W, σ²_B, σ²_W, Λ_phy, σ_phy, θ_packed)` where
@@ -177,9 +181,9 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
     X_lv_fit = X_lv
     if X_lv !== nothing
         K_W == 0 || throw(ArgumentError(
-            "X_lv predictor-informed latent scores are C1 ordinary unit-tier only; K_W > 0 is not yet supported"))
+            "X_lv predictor-informed latent scores do not yet support K_W > 0"))
         !has_diag || throw(ArgumentError(
-            "X_lv predictor-informed latent scores are C1 ordinary unit-tier only; has_diag = true is not yet supported"))
+            "X_lv predictor-informed latent scores do not yet support has_diag = true"))
         # Model A: a phylo trait-covariance block (K_phy > 0 and/or has_phy_unique)
         # composes with the X_lv score mean on orthogonal axes — admitted for the
         # Gaussian path. It requires the species covariance Σ_phy.

@@ -2123,8 +2123,9 @@ function _lv_bootstrap(fit, Y, X_lv, N, q_lv::Integer, level::Real,
             nothing
         end
         (Bb === nothing || length(Bb) != nb || any(!isfinite, Bb)) && continue
-        c = cor(Bb, b̂)            # B_lv is sign-/rotation-stable; align defensively
-        push!(reps, c < 0 ? -Bb : Bb)
+        # B_lv = Lambda * alpha' is already rotation/sign stable; flipping
+        # bootstrap replicates would hide failed refits instead of diagnosing them.
+        push!(reps, Bb)
     end
     nconv = length(reps); a = (1 - level) / 2
     lo = fill(NaN, nb); hi = fill(NaN, nb)

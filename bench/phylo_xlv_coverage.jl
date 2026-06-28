@@ -1,6 +1,6 @@
 # Phase 3 recovery/coverage harness for phylo × X_lv Model A. This is a SMOKE
 # (40 reps, one cell) — the full v1 gate is the DRAC campaign: sweep
-# λ/OU ∈ {0,0.5,1} × n_species ∈ {~20,~200} × K ∈ {1,2}, ≥500 reps per cell,
+# Pagel λ ∈ {0,0.5,1} × n_species ∈ {~20,~200} × K ∈ {1,2}, ≥500 reps per cell,
 # one seed per SLURM array task. Model A has orthogonal axes (X_lv on sites, Σ_phy
 # on traits) → no mean-vs-covariance confound, so the bar is B_lv coverage + the
 # two nulls (the phylo-collinear arm is a Model B concern). B_lv = Λ_B·α' is
@@ -8,8 +8,8 @@
 #
 # Smoke result (2026-06-27, seed bank 1000+): 40/40 converged, per-entry coverage
 # [0.98,0.98,0.98,0.98] (overall 0.975, nominal 0.95); NULL-A max|B_lv|=0.083 &
-# CI covers 0; NULL-B B_lv cor=1.0. The intervals are calibrated and the predictor
-# and phylogeny do not interfere.
+# CI covers 0; NULL-B B_lv cor=1.0. This is smoke evidence only; interval
+# calibration waits for the full DRAC campaign.
 
 using GLLVM, Random, LinearAlgebra, Distributions, Statistics
 
@@ -59,8 +59,8 @@ println("  NULL-B (phylo=0, α≠0): B_lv cor = ",
 
 # Multi-cell coverage across the design's K × n dimensions (30 reps/cell here; the
 # full v1 gate is ≥500 reps/cell on DRAC). Smoke result (2026-06-27): K=1,n=200 →
-# 0.940; K=1,n=60 → 0.927; K=2,n=200 → 0.973; 90/90 fits converged. Calibrated
-# across cells, not just the single cell above.
+# 0.940; K=1,n=60 → 0.927; K=2,n=200 → 0.973; 90/90 fits converged. These
+# cells check routing and rough finite-interval behavior, not calibration.
 function coverage_cell(pp, nn, KK, q_lv, KK_phy, nrep)
     Xlv   = reshape(collect(range(-1.5, 1.5; length = nn)), nn, q_lv)
     LB    = 0.6 .* randn(MersenneTwister(10), pp, KK)

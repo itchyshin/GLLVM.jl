@@ -2767,3 +2767,68 @@ shared-precision `fit_beta_gllvm(...; X_lv=...)` and the `beta_xlv_rr` bridge
 route. OUT/gated: `X_lv` CIs, masks, `X` + `X_lv`, mixed-family,
 per-trait-precision `X_lv`, ordinal/two-part/NB1 `X_lv`, broad R-Julia parity,
 and REML.
+
+## 2026-06-28 -- Phylo Model A PR #127 pre-merge fixes (Codex)
+
+Worked on draft PR #127 branch `claude/phylo-xlv-modelA-20260627` from the clean
+worktree `/private/tmp/gllvmjl-phylo-xlv`. This local slice fixes the stale
+ordinary-C1 rejection test now that Model A admits `X_lv + phylo`, removes the
+defensive bootstrap sign flip for the already sign-stable `B_lv` target, and
+downgrades coverage-smoke wording from "calibrated" to "smoke evidence only".
+
+State checks:
+
+```sh
+git status --short --branch
+git fetch origin
+git log -1 --format='%h %s' origin/main
+git log -1 --format='%h %s' claude/phylo-xlv-modelA-20260627
+gh pr view 127 --repo itchyshin/GLLVM.jl --json number,title,state,isDraft,mergeStateStatus,headRefName,headRefOid,url,statusCheckRollup
+gh pr list --state open --repo itchyshin/GLLVM.jl --json number,title,headRefName,isDraft,mergeStateStatus,url,updatedAt
+git log --all --oneline --since="6 hours ago"
+```
+
+Observed: `origin/main` at `0e99c04`; PR #127 branch at `b87a522`; PR #127 open,
+draft, `UNSTABLE`. Documenter was green; the CI matrix failed from one stale
+`test_lv_predictor.jl` expectation that still required `X_lv + K_phy + Σ_phy` to
+throw.
+
+Validation:
+
+```sh
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. test/test_phylo_xlv.jl
+```
+
+Result before edits: PASS, `phylo × X_lv (Model A) 15/15`.
+
+```sh
+gh run view 28320518721 --repo itchyshin/GLLVM.jl --job 83901557388 --log | rg -n -C 8 "Test Failed|Expression:|Evaluated:|Failed|fail|ERROR: LoadError|Some tests"
+```
+
+Result: CI failure isolated to
+`test/test_lv_predictor.jl:63`: expected `fit_gaussian_gllvm(...; X_lv, K_phy=1,
+Σ_phy=I(4))` to throw `ArgumentError`; no exception was thrown, matching the new
+Model A admission.
+
+```sh
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. test/test_lv_predictor.jl
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. test/test_phylo_xlv.jl
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. test/test_lv_ci.jl
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. test/runtests.jl
+```
+
+Results after edits: `test_lv_predictor.jl` PASS `27/27`; `test_phylo_xlv.jl`
+PASS `15/15`; `test_lv_ci.jl` PASS `114/114`; core `test/runtests.jl` PASS
+`4863 pass, 3 broken, 4866 total`, `45m16.3s`.
+
+Not run: full `Pkg.test()` / Aqua / JET and CI rerun because this branch is
+high-risk/draft and the repo rule says not to push GLLVM.jl without explicit
+maintainer instruction. No DRAC coverage was launched; the
+`bench/phylo_xlv_coverage.jl` file remains a smoke harness only.
+
+### Claim Boundary
+
+IN for this slice: stale test/doc/comment alignment for draft Model A; local
+targeted tests green. OUT/gated: any public claim that phylo `X_lv` intervals are
+calibrated, any `gllvmTMB` R-side `phylo_latent(..., lv=~x)` grammar claim, full
+CI health for PR #127, and the >=500 reps/cell DRAC campaign.
