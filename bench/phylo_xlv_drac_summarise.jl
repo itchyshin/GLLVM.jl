@@ -68,6 +68,7 @@ end
 
 parse_float(s::AbstractString) = isempty(s) ? NaN : try parse(Float64, s) catch; NaN end
 parse_int(s::AbstractString) = isempty(s) ? 0 : try parse(Int, s) catch; 0 end
+parse_optional_int(s::AbstractString) = isempty(s) ? nothing : try parse(Int, s) catch; nothing end
 parse_bool(s::AbstractString) = lowercase(s) == "true"
 
 function key_for(row)
@@ -102,14 +103,19 @@ function fmt(x; digits = 3)
     return isfinite(x) ? @sprintf("%.*f", digits, x) : "NA"
 end
 
+function fmt_optional_int(x::Union{Nothing, Integer})
+    x === nothing && return "NA"
+    return string(x)
+end
+
 function summarise(rows)
     groups = Dict{Tuple, Vector{Dict{String, String}}}()
     for row in rows
         push!(get!(groups, key_for(row), Dict{String, String}[]), row)
     end
 
-    println("| scenario | lambda | p | n_sites | K | target | method | tasks | fit ok | usable entries | mean coverage (MCSE) | entry coverage | RMSE mean | fit sec mean | CI sec mean | CI status |")
-    println("|---|---:|---:|---:|---:|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---|")
+    println("| scenario | lambda | p | n_sites | K | target | method | tasks | fit ok | usable entries | mean coverage (MCSE) | entry coverage | RMSE mean | fit sec mean | CI sec mean | bootstrap ok | CI status |")
+    println("|---|---:|---:|---:|---:|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|")
     for key in sort(collect(keys(groups)))
         rs = groups[key]
         n_tasks = length(rs)
@@ -126,13 +132,16 @@ function summarise(rows)
         fit_seconds_mean = isempty(filter(isfinite, fit_seconds)) ? NaN : mean(filter(isfinite, fit_seconds))
         ci_seconds = [parse_float(get(r, "ci_seconds", "")) for r in rs]
         ci_seconds_mean = isempty(filter(isfinite, ci_seconds)) ? NaN : mean(filter(isfinite, ci_seconds))
+        boot_counts = [x for x in (parse_optional_int(get(r, "bootstrap_converged", "")) for r in rs) if x !== nothing]
+        boot_total = isempty(boot_counts) ? nothing : sum(boot_counts)
         statuses = sort(unique(get(r, "ci_status", "") for r in rs))
         scenario, lambda, p, n_sites, K, target, method = key
-        @printf("| %s | %s | %s | %s | %s | %s | %s | %d | %d | %d | %s (%s) | %s | %s | %s | %s | %s |\n",
+        @printf("| %s | %s | %s | %s | %s | %s | %s | %d | %d | %d | %s (%s) | %s | %s | %s | %s | %s | %s |\n",
                 scenario, lambda, p, n_sites, K, target, method,
                 n_tasks, fit_ok, usable, fmt(cov_mean), fmt(cov_mcse),
                 fmt(entry_cov), fmt(rmse_mean), fmt(fit_seconds_mean),
-                fmt(ci_seconds_mean), join(statuses, ";"))
+                fmt(ci_seconds_mean), fmt_optional_int(boot_total),
+                join(statuses, ";"))
     end
 end
 

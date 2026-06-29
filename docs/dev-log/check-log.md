@@ -5309,3 +5309,36 @@ of the current jobs completes, fails, or times out.
 
 IN: three timing canaries are live/pending and the duplicate cap-80 job was
 cancelled before start. OUT: any new coverage claim.
+
+## 2026-06-29 16:58 MDT - Codex DRAC summariser bootstrap denominator
+
+### Commands
+
+```sh
+rg -n "bootstrap_converged|RESULT_FIELDS|ci_status|result_rows|b_lv_row|phylo_signal_row|fit_row" bench/phylo_xlv_drac_task.jl
+rm -rf /tmp/phylo_xlv_summariser_bootstrap_probe /tmp/phylo_xlv_summariser_wald_probe && mkdir -p /tmp/phylo_xlv_summariser_bootstrap_probe/results /tmp/phylo_xlv_summariser_wald_probe/results && header='task_id,scenario,pagel_lambda,n_species,n_sites,K,q_lv,K_phy,rep,seed,level,target,method,fit_converged,fit_iterations,fit_seconds,ci_seconds,ci_status,total,usable,covered,coverage,bias_mean,bias_rmse,estimate_mean,truth_mean,max_abs_estimate,max_abs_truth,pd_hessian,bootstrap_converged,error' && printf '%s\n1,main,0.5,80,80,2,1,1,1,123,0.95,B_lv,bootstrap,true,12,10.5,30.25,ok,80,80,76,0.95,0.01,0.2,0.3,0.29,1.1,1.0,true,27,\n' "$header" > /tmp/phylo_xlv_summariser_bootstrap_probe/results/result_000001.csv && printf '%s\n1,main,0.5,80,80,2,1,1,1,123,0.95,B_lv,wald,true,12,10.5,3.25,ok,80,80,76,0.95,0.01,0.2,0.3,0.29,1.1,1.0,true,,\n' "$header" > /tmp/phylo_xlv_summariser_wald_probe/results/result_000001.csv && export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. bench/phylo_xlv_drac_summarise.jl --results /tmp/phylo_xlv_summariser_bootstrap_probe/results && julia --project=. bench/phylo_xlv_drac_summarise.jl --results /tmp/phylo_xlv_summariser_wald_probe/results
+Rscript /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-29-phylo-xlv-summariser-bootstrap-denominator.md
+git diff --check
+```
+
+### Result
+
+Added `bootstrap ok` to `bench/phylo_xlv_drac_summarise.jl`. The column sums
+non-empty `bootstrap_converged` values within each group and prints `NA` for
+non-bootstrap or older result rows with a blank field.
+
+Temporary result probes passed:
+
+- bootstrap probe with `bootstrap_converged=27` printed `bootstrap ok = 27`;
+- Wald probe with blank `bootstrap_converged` printed `bootstrap ok = NA`.
+
+### Decision
+
+Leave the task runner/result schema unchanged. The runner already writes the
+needed numerator; the requested `n_boot` denominator remains in
+`meta/session.txt`.
+
+### Claim Boundary
+
+IN: result summaries now expose the bootstrap converged-refit count. OUT: no
+new interval method, no coverage claim, and no production launch.
