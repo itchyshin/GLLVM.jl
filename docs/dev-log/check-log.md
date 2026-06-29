@@ -3774,3 +3774,39 @@ At the same poll, Rorqual p=200 K=2 job `14901949_1` was still running at about
 IN: one large-cell Nibi K=2 timing canary is queued and the redundant Rorqual
 p=100 K=2 pending job was cancelled. OUT: no p=200 K=2 result exists yet and no
 production coverage array has launched.
+
+## 2026-06-29 08:12 MDT - Codex large K=2 timing split
+
+### Commands
+
+```sh
+ssh -o BatchMode=yes rorqual 'squeue -j 14901949 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; sacct -j 14901949 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P | tail -n 30; cat /project/6098264/snakagaw/phylo_xlv/pilot-large-k2-iter80-4h-20260629-061114/results/result_000001.csv 2>/dev/null || true; tail -n 80 /project/6098264/snakagaw/phylo_xlv/pilot-large-k2-iter80-4h-20260629-061114/logs/phylo_xlv-14901949-1.err 2>/dev/null || true; seff 14901949 2>/dev/null || true'
+ssh -o BatchMode=yes nibi 'squeue -j 16923927 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; sacct -j 16923927 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P | tail -n 30; sstat -j 16923927.batch --format=JobID,AveCPU,AveRSS,MaxRSS -P 2>/dev/null || true; tail -n 280 /project/6098264/snakagaw/phylo_xlv/pilot-large-k2-nibi-iter80-4h-20260629-073300/logs/phylo_xlv-16923927-1.out 2>/dev/null || true; cat /project/6098264/snakagaw/phylo_xlv/pilot-large-k2-nibi-iter80-4h-20260629-073300/results/result_000001.csv 2>/dev/null || true'
+```
+
+### Result
+
+Rorqual job `14901949_1` completed just under its 4-hour cap with scheduler
+exit `0:0` (`03:59:54` wall time, `02:47:26` CPU used, 69.79% CPU efficiency,
+2.15 GB max RAM). The large-cell `n_species=200`, `n_sites=200`, `K=2`,
+`iterations=80` fit converged in 47 iterations with `fit_seconds=2006.25`.
+It wrote usable `B_lv` Wald rows (`usable=200/200`, one-rep entry coverage
+`0.865`, `pd_hessian=true`, `bias_rmse=0.0696`). The phylo-signal transformed
+Wald row was still unusable (`ci_status=partial_or_failed`, `usable=0/200`,
+`pd_hessian=false`).
+
+Nibi job `16923927_1` was still running at `00:38:03` wall time on node `c481`.
+Its heartbeat is more informative than the Rorqual run: the p=200 K=2 fit
+converged in 47 iterations after `1394.49` seconds and entered `B_lv` Wald CI at
+`2026-06-29T13:59:27Z`. At the last poll it was still inside the `B_lv` CI step,
+with `AveCPU=00:37:33`, `AveRSS=1415020K`, and `MaxRSS=2243344K`.
+
+### Claim Boundary
+
+IN: valid p=200 K=2 Model A fits can converge and produce B_lv Wald rows under
+the current harness; Rorqual can finish one seed under a 4-hour cap, and Nibi
+finishes the fit portion in about 23 minutes. PARTIAL: p=200 K=2 interval timing
+is not yet solved because Nibi is still in the B_lv CI step, and phylo-signal CI
+rows remain unusable in these one-seed canaries. OUT: no >=500 reps/cell
+production coverage array has launched, and these one-seed rows are not coverage
+evidence.
