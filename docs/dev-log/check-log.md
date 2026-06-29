@@ -5438,3 +5438,53 @@ for requested bootstrap settings if they finish before another launch.
 IN: future DRAC result rows and summaries carry bootstrap request metadata.
 OUT: no change to active jobs, no new interval method, no coverage calibration,
 and no production launch.
+
+## 2026-06-29 17:10 MDT - Codex bootstrap metadata sync and live poll
+
+### Commands
+
+```sh
+rsync -av bench/phylo_xlv_drac_task.jl bench/phylo_xlv_drac_summarise.jl nibi:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/
+rsync -av bench/phylo_xlv_drac_task.jl bench/phylo_xlv_drac_summarise.jl rorqual:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/
+rsync -av bench/phylo_xlv_drac_task.jl bench/phylo_xlv_drac_summarise.jl narval:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/
+ssh -o BatchMode=yes nibi 'grep -n "n_boot\|boot n\|bootstrap_iterations" /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/phylo_xlv_drac_task.jl /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/phylo_xlv_drac_summarise.jl | head -30'
+ssh -o BatchMode=yes rorqual 'grep -n "n_boot\|boot n\|bootstrap_iterations" /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/phylo_xlv_drac_task.jl /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/phylo_xlv_drac_summarise.jl | head -30'
+ssh -o BatchMode=yes narval 'grep -n "n_boot\|boot n\|bootstrap_iterations" /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/phylo_xlv_drac_task.jl /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/phylo_xlv_drac_summarise.jl | head -30'
+ssh -o BatchMode=yes narval 'squeue -j 64365792 -o "%.18i %.9P %.32j %.8T %.10M %.6D %R"; sacct -j 64365792 --format=JobID,JobName,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P 2>/dev/null || true; find /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30iter120-narval-lambda05-rep1-20260629-1643/results -maxdepth 1 -name "result_*.csv" 2>/dev/null | wc -l; tail -n 30 /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30iter120-narval-lambda05-rep1-20260629-1643/logs/phylo_xlv-64365792-1.out 2>/dev/null || true'
+ssh -o BatchMode=yes nibi 'squeue -j 16951694 -o "%.18i %.9P %.32j %.8T %.10M %.6D %R"; find /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30-nibi-lambda05-rep1-20260629-1606/results -maxdepth 1 -name "result_*.csv" 2>/dev/null | wc -l; tail -n 12 /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30-nibi-lambda05-rep1-20260629-1606/logs/phylo_xlv-16951694-1.out 2>/dev/null || true'
+ssh -o BatchMode=yes rorqual 'squeue -j 14929297 -o "%.18i %.9P %.32j %.8T %.10M %.6D %R"; find /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-rorqual-lambda05-cirescue-rep1-nboot30-20260629-1525/results -maxdepth 1 -name "result_*.csv" 2>/dev/null | wc -l; tail -n 12 /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-rorqual-lambda05-cirescue-rep1-nboot30-20260629-1525/logs/phylo_xlv-14929297-1.out 2>/dev/null || true'
+python3 -m json.tool /tmp/gllvm-dashboard/status.json >/tmp/gllvm-dashboard/status.validate.json
+```
+
+### Result
+
+Synced the future-result metadata runner/summariser to Nibi, Rorqual, and
+Narval. Grep on all three remote copies confirmed:
+
+- `RESULT_FIELDS` include `n_boot` and `bootstrap_iterations`;
+- summaries include `boot n`, `boot iter cap`, and `bootstrap ok`.
+
+Latest canary state:
+
+- Nibi `16951694_1`: running at `00:59:45`, still in uncapped bootstrap,
+  `0` result files.
+- Narval `64365792_1`: running at `00:14:52`, still in capped bootstrap,
+  `0` result files. Fit converged in `128` iterations / `148.61s`.
+- Rorqual `14929297_1`: running at `01:43:31`, still in profile,
+  `0` result files.
+
+Dashboard `/tmp/gllvm-dashboard` was updated to `r133`; JSON validation passed.
+The dashboard also records that gllvmTMB PR #571 has merged at `4b8b3d3` and
+post-merge main R-CMD-check is running.
+
+### Decision
+
+Do not launch more jobs. Wait for one of the three timing canaries to complete
+or time out; future launches from the synced project copies will carry
+bootstrap request metadata in their result rows.
+
+### Claim Boundary
+
+IN: future DRAC outputs are more self-describing, and the three interval-rescue
+canaries are still live. OUT: no bootstrap/profile result yet, no production
+coverage, no phylo-signal coverage, and no public R phylo exposure.
