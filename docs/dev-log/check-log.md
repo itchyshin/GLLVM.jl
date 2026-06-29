@@ -3653,3 +3653,41 @@ job `14901949_1` was still running at about 3:00 elapsed with stale
 
 IN: a single midpoint K=2 sizing canary is queued. OUT: no production coverage
 array has launched; no K=2 timing result exists yet.
+
+## 2026-06-29 07:18 MDT - Codex Nibi midpoint K=2 canary
+
+### Commands
+
+```sh
+rsync -az --delete --exclude='.git' --exclude='.julia' --exclude='docs/build' --exclude='node_modules' ./ nibi:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/
+ssh -o BatchMode=yes nibi 'bash -s' <<'REMOTE'
+# Manually wrote one-row params and sbatch files for:
+# scenario=main, pagel_lambda=0, n_species=100, n_sites=100, K=2,
+# q_lv=1, K_phy=1, rep=1, seed=21321132, iterations=80.
+# The sbatch script runs Pkg.instantiate() on the compute node before the task.
+REMOTE
+ssh -o BatchMode=yes nibi 'squeue -j 16923204 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; sacct -j 16923204 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem -P | tail -n 20'
+```
+
+### Result
+
+Staged the local GLLVM.jl tree to Nibi at
+`/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac` with `.git`, `.julia`,
+`docs/build`, and `node_modules` excluded. Submitted one Nibi midpoint canary
+job `16923204` under
+`/project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-iter80-3h-20260629-071900`.
+The job uses source label `2936ac2-rsync-no-git`, `n_species=100`,
+`n_sites=100`, `K=2`, `iterations=80`, `time=3h`, `mem=8G`, and runs
+`Pkg.instantiate()` on the compute node before calling
+`bench/phylo_xlv_drac_task.jl`.
+
+At first poll, Nibi job `16923204_[1%1]` was pending with reason `Priority`.
+At the next poll it had started on node `c487` with 17 seconds elapsed, 3
+seconds AveCPU, and about 555 MB MaxRSS. Rorqual p=200 K=2 job `14901949_1` was
+still running at about 3:06 elapsed with stale `AveCPU=02:09:20`; Rorqual p=100
+K=2 canary `14906861_[1%1]` was still pending with reason `ReqNodeNotAvail`.
+
+### Claim Boundary
+
+IN: one cross-cluster Nibi canary is staged and queued. OUT: no Nibi result,
+cross-cluster timing comparison, or production coverage claim exists yet.
