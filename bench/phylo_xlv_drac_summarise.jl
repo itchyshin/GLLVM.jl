@@ -6,6 +6,7 @@
 #
 # Usage:
 #   julia --project=. bench/phylo_xlv_drac_summarise.jl --results /project/.../results
+#   julia --project=. bench/phylo_xlv_drac_summarise.jl --results /project/.../results --include-partial
 
 using Printf
 using Statistics
@@ -16,6 +17,8 @@ function arg_value(args::Vector{String}, key::String, default::Union{Nothing, St
     i == length(args) && error("missing value after $key")
     return args[i + 1]
 end
+
+has_flag(args::Vector{String}, key::String) = any(==(key), args)
 
 function split_csv_line(line::String)
     cells = String[]
@@ -83,8 +86,12 @@ function key_for(row)
     )
 end
 
-function collect_rows(result_dir::String)
+function collect_rows(result_dir::String; include_partial::Bool = false)
     files = sort(filter(f -> occursin(r"^result_\d+\.csv$", basename(f)), readdir(result_dir; join = true)))
+    if include_partial
+        partials = sort(filter(f -> occursin(r"^partial_result_\d+\.csv$", basename(f)), readdir(result_dir; join = true)))
+        append!(files, partials)
+    end
     rows = Dict{String, String}[]
     for f in files
         append!(rows, read_result_file(f))
@@ -156,13 +163,15 @@ end
 
 function main(args = ARGS)
     if any(==("--help"), args) || isempty(args)
-        println("phylo_xlv_drac_summarise.jl --results DIR")
+        println("phylo_xlv_drac_summarise.jl --results DIR [--include-partial]")
         return
     end
     result_dir = arg_value(args, "--results", nothing)
     result_dir === nothing && throw(ArgumentError("--results DIR is required"))
-    rows = collect_rows(result_dir)
+    include_partial = has_flag(args, "--include-partial")
+    rows = collect_rows(result_dir; include_partial = include_partial)
     println("read $(length(rows)) result rows from $result_dir")
+    include_partial && println("included partial_result_*.csv rows")
     summarise(rows)
 end
 

@@ -155,6 +155,20 @@ function write_csv(path::String, fields::Vector{String}, rows)
     end
 end
 
+function partial_result_path(result_path::String)
+    return joinpath(dirname(result_path), "partial_" * basename(result_path))
+end
+
+function write_partial_csv(result_path::String, fields::Vector{String}, rows)
+    write_csv(partial_result_path(result_path), fields, rows)
+end
+
+function write_final_csv(result_path::String, fields::Vector{String}, rows)
+    write_csv(result_path, fields, rows)
+    partial = partial_result_path(result_path)
+    isfile(partial) && rm(partial; force = true)
+end
+
 function read_params(path::String)
     lines = readlines(path)
     isempty(lines) && throw(ArgumentError("empty parameter file: $path"))
@@ -468,7 +482,7 @@ function run_task(row::Dict{String, String}; outdir::String, methods, level::Rea
             fit_iterations = 0, fit_seconds = fit_seconds,
             ci_status = "fit_error", error = sprint(showerror, err),
         ))
-        write_csv(result_path, RESULT_FIELDS, rows)
+        write_final_csv(result_path, RESULT_FIELDS, rows)
         progress("task $task_id wrote fit_error result to $result_path")
         return
     end
@@ -480,7 +494,7 @@ function run_task(row::Dict{String, String}; outdir::String, methods, level::Rea
             fit_iterations = fit_iterations(fit), fit_seconds = fit_seconds,
             ci_status = "not_converged",
         ))
-        write_csv(result_path, RESULT_FIELDS, rows)
+        write_final_csv(result_path, RESULT_FIELDS, rows)
         progress("task $task_id wrote not_converged result to $result_path")
         return
     end
@@ -492,7 +506,7 @@ function run_task(row::Dict{String, String}; outdir::String, methods, level::Rea
             fit_iterations = fit_iterations(fit), fit_seconds = fit_seconds,
             ci_status = "fit_only",
         ))
-        write_csv(result_path, RESULT_FIELDS, rows)
+        write_final_csv(result_path, RESULT_FIELDS, rows)
         progress("task $task_id wrote fit_only result to $result_path")
         return
     end
@@ -518,6 +532,8 @@ function run_task(row::Dict{String, String}; outdir::String, methods, level::Rea
                     error = sprint(showerror, err),
                 ))
             end
+            write_partial_csv(result_path, RESULT_FIELDS, rows)
+            progress("task $task_id wrote partial result to $(partial_result_path(result_path))")
         end
     else
         progress("task $task_id B_lv CI skipped by --targets")
@@ -541,11 +557,13 @@ function run_task(row::Dict{String, String}; outdir::String, methods, level::Rea
                 error = sprint(showerror, err),
             ))
         end
+        write_partial_csv(result_path, RESULT_FIELDS, rows)
+        progress("task $task_id wrote partial result to $(partial_result_path(result_path))")
     else
         progress("task $task_id phylo_signal CI skipped by --targets")
     end
 
-    write_csv(result_path, RESULT_FIELDS, rows)
+    write_final_csv(result_path, RESULT_FIELDS, rows)
     progress("task $task_id wrote $result_path")
 end
 

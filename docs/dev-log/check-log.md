@@ -5553,3 +5553,52 @@ main in `gllvmTMB`; DRAC reachability has been refreshed; three phylo interval
 canaries are alive and past fitting. OUT: no phylo bootstrap/profile result
 yet, no phylo production coverage, no phylo-signal coverage, no source-specific
 R grammar exposure, and no mixed-family claim.
+
+## 2026-06-29 17:32 MDT - Codex partial-result checkpointing for long CI canaries
+
+### Commands
+
+```sh
+julia --project=. bench/phylo_xlv_drac_task.jl --help
+julia --project=. bench/phylo_xlv_drac_summarise.jl --help
+tmp=$(mktemp -d); header='task_id,scenario,pagel_lambda,n_species,n_sites,K,q_lv,K_phy,rep,seed,level,n_boot,bootstrap_iterations,target,method,fit_converged,fit_iterations,fit_seconds,ci_seconds,ci_status,total,usable,covered,coverage,bias_mean,bias_rmse,estimate_mean,truth_mean,max_abs_estimate,max_abs_truth,pd_hessian,bootstrap_converged,error'; printf '%s\n1,main,0.5,80,80,2,1,1,1,1,0.95,5,20,B_lv,wald,true,10,1,2,ok,80,80,76,0.95,0,0.1,0,0,1,1,true,,\n' "$header" > "$tmp/result_000001.csv"; printf '%s\n2,main,0.5,80,80,2,1,1,2,2,0.95,5,20,B_lv,bootstrap,true,10,1,3,ok,80,80,74,0.925,0,0.1,0,0,1,1,,4,\n' "$header" > "$tmp/partial_result_000002.csv"; julia --project=. bench/phylo_xlv_drac_summarise.jl --results "$tmp"; julia --project=. bench/phylo_xlv_drac_summarise.jl --results "$tmp" --include-partial
+tmp=$(mktemp -d); julia --project=. bench/phylo_xlv_drac_task.jl --write-params "$tmp/params.csv" --reps 1 --lambdas 0 --n-species 6 --n-sites 6 --K 1 --scenarios main; julia --project=. bench/phylo_xlv_drac_task.jl --params "$tmp/params.csv" --outdir "$tmp/results" --methods wald --targets B_lv --iterations 80 --n-boot 3; find "$tmp/results" -maxdepth 1 -type f -printf '%f\n' 2>/dev/null || ls "$tmp/results"; julia --project=. bench/phylo_xlv_drac_summarise.jl --results "$tmp/results"
+git diff --check
+```
+
+### Result
+
+Added conservative partial-result checkpointing for future long CI canaries:
+
+- `bench/phylo_xlv_drac_task.jl` now writes
+  `partial_result_<task>.csv` after each completed B_lv method and after
+  phylo-signal CI work;
+- final `result_<task>.csv` writes still remove the partial file, preserving
+  the existing production result contract;
+- `bench/phylo_xlv_drac_summarise.jl` ignores partial files by default and
+  includes them only under the explicit `--include-partial` flag.
+
+Checks:
+
+- task runner help parsed;
+- summarizer help parsed and shows `--include-partial`;
+- synthetic fixture read `1` row by default and `2` rows with
+  `--include-partial`, printing `included partial_result_*.csv rows`;
+- a tiny real local task wrote a partial result after Wald, then wrote final
+  `result_000001.csv` and left only the final result file in the output
+  directory;
+- ordinary summarizer read the final tiny-task result row;
+- `git diff --check` passed.
+
+### Decision
+
+Keep partial rows explicit and opt-in. They are useful for diagnosing long
+profile/bootstrap jobs, but they should not be silently folded into production
+coverage summaries.
+
+### Claim Boundary
+
+IN: future long-running DRAC tasks can expose completed method rows without
+changing final result semantics. OUT: no current active job is changed, no
+partial row is production coverage by default, and no bootstrap/profile
+calibration claim is added.
