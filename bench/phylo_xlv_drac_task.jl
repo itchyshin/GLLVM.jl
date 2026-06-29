@@ -147,6 +147,10 @@ end
 
 function write_params(path::String; reps::Integer, lambdas, n_species, n_sites::Integer,
                       Ks, q_lv::Integer, K_phy::Integer, scenarios, seed0::Integer)
+    too_large = [p for p in n_species if p > n_sites]
+    if !isempty(too_large)
+        throw(ArgumentError("--n-sites ($n_sites) must be >= every --n-species value for this Gaussian coverage grid; invalid n_species=$(join(too_large, ","))"))
+    end
     rows = NamedTuple[]
     task_id = 0
     for scenario in scenarios

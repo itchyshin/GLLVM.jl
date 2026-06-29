@@ -149,7 +149,10 @@ mkdir -p "$out/julia_depot"
 
 if command -v module >/dev/null 2>&1; then
   module load StdEnv/2023 || true
-  module load julia || true
+  case "$julia_cmd" in
+    */*) ;;
+    *) module load julia || true ;;
+  esac
 fi
 
 export JULIA_DEPOT_PATH="$out/julia_depot:\${JULIA_DEPOT_PATH:-}"

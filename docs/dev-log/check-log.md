@@ -3092,6 +3092,25 @@ checkout, and the generated sbatch still created/prepended the output-local
 Julia depot. The `git` metadata commands in the submitter are now tolerant of
 staged source copies where `.git` is absent.
 
+Follow-up module-state hardening:
+
+```sh
+bash -n bench/phylo_xlv_drac_submit.sh
+export PATH="$HOME/.juliaup/bin:$PATH"; rm -rf /tmp/phylo_xlv_submit_absjulia_probe
+local_julia=$(command -v julia)
+PHYLO_XLV_REPS=1 PHYLO_XLV_LAMBDAS=0 PHYLO_XLV_N_SPECIES=20 PHYLO_XLV_N_SITES=30 PHYLO_XLV_K=1 PHYLO_XLV_SCENARIOS=main PHYLO_XLV_TIME=0-00:10 PHYLO_XLV_MEM=4G PHYLO_XLV_THROTTLE=2 PHYLO_XLV_JULIA="$local_julia" bench/phylo_xlv_drac_submit.sh --out /tmp/phylo_xlv_submit_absjulia_probe
+rg -n "module load julia|case|.juliaup|JULIA_DEPOT_PATH" /tmp/phylo_xlv_submit_absjulia_probe/meta/phylo_xlv_array.sbatch
+```
+
+Results: shell syntax passed. The absolute-Julia write-only probe wrote one
+task and generated a sbatch script containing a `case "<absolute julia>" in`
+guard, so production runs that pass an absolute `PHYLO_XLV_JULIA` path skip the
+default `module load julia` branch.
+This avoids mixing a version-specific executable path with a cluster default
+Julia module. The submitted Rorqual pilot below used the pre-fix generated
+sbatch file, so its stderr still contains a harmless Julia module reload
+message; subsequent generated jobs should not.
+
 Cluster connectivity check:
 
 ```sh
@@ -3115,3 +3134,191 @@ IN: generated SLURM scripts now create and prepend the output-local Julia
 depot; write-only full-shape pilot generation still works. PARTIAL: no live
 cluster submission or seff sizing yet. OUT: DRAC production coverage,
 remote CI green on PR #127, and R-side phylo `lv=~x` exposure.
+
+## 2026-06-28 -- phylo X_lv Rorqual one-rep sbatch pilot submitted (Codex)
+
+Worked from local branch `codex/phylo-xlv-drac-launcher-20260628` in
+`/private/tmp/gllvmjl-phylo-xlv` at local head `6be046c`. The source was
+staged to `/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac` on Rorqual.
+
+Coordination and state checks:
+
+```sh
+gh pr list --state open
+git log --all --oneline --since="6 hours ago" -- docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-28-phylo-xlv-drac-launcher.md
+git status --short --branch
+```
+
+Observed: draft GLLVM.jl PR #127 remained the only open PR. The recent same-file
+history was this branch's own launcher and dev-log work. Working tree was clean
+before recording the Rorqual pilot state.
+
+Cluster environment preparation:
+
+```sh
+ssh -o BatchMode=yes rorqual 'module load StdEnv/2023; module load julia/1.10.10; command -v julia'
+ssh -o BatchMode=yes rorqual 'set -euo pipefail; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023; module load julia/1.10.10; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; export JULIA_NUM_PRECOMPILE_TASKS=1; export JULIA_NUM_THREADS=1; julia --project=. -e "using Pkg; Pkg.precompile(); using GLLVM; println(\"GLLVM load ok\")"'
+```
+
+Results: `julia/1.10.10` resolved to
+`/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Core/julia/1.10.10/bin/julia`.
+Serial precompile completed and `using GLLVM` printed `GLLVM load ok`. A prior
+parallel login-node precompile attempt hit transient process/resource limits;
+the serial retry is the recorded usable environment state.
+
+Live one-rep pilot submission:
+
+```sh
+ssh -o BatchMode=yes rorqual 'bash -s' <<'REMOTE'
+set -euo pipefail
+root=/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac
+stamp=$(date +%Y%m%d-%H%M%S)
+out=/project/6098264/snakagaw/phylo_xlv/pilot-${stamp}
+mkdir -p /project/6098264/snakagaw/phylo_xlv
+cd "$root"
+module load StdEnv/2023
+module load julia/1.10.10
+export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}
+export PHYLO_XLV_ACCOUNT=def-snakagaw_cpu
+export PHYLO_XLV_REPS=1
+export PHYLO_XLV_LAMBDAS=0,0.5,1
+export PHYLO_XLV_N_SPECIES=20,200
+export PHYLO_XLV_N_SITES=30
+export PHYLO_XLV_K=1,2
+export PHYLO_XLV_SCENARIOS=main,null_alpha0,null_phylo0
+export PHYLO_XLV_TIME=0-00:30
+export PHYLO_XLV_MEM=8G
+export PHYLO_XLV_THROTTLE=14
+export PHYLO_XLV_JULIA=/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Core/julia/1.10.10/bin/julia
+bench/phylo_xlv_drac_submit.sh --out "$out" --submit
+echo "PILOT_OUT=$out"
+REMOTE
+```
+
+Results: the submitter wrote 28 tasks to
+`/project/6098264/snakagaw/phylo_xlv/pilot-20260628-235757/meta/phylo_xlv_params.csv`
+and submitted SLURM array job `14894938`. The generated session metadata
+recorded `julia version 1.10.10`; because the staged source intentionally
+excluded `.git`, it recorded `git_head=unknown`, `git_branch=unknown`, and
+`git_status_unavailable` without failing. The generated sbatch file uses the
+exact Julia 1.10.10 executable and prepends
+`/project/6098264/snakagaw/phylo_xlv/pilot-20260628-235757/julia_depot` to
+`JULIA_DEPOT_PATH`.
+
+Scheduler state:
+
+```sh
+ssh -o BatchMode=yes rorqual 'squeue -j 14894938 -o "%.18i %.9P %.30j %.8u %.2t %.10M %.6D %R"'
+ssh -o BatchMode=yes rorqual 'squeue --start -j 14894938'
+ssh -o BatchMode=yes rorqual 'scontrol show job 14894938 | sed -n "1,80p"'
+```
+
+Results: the array was accepted under account `def-snakagaw_cpu`, partition
+`cpubase_bycore_b1,cpubackfill`, with `--array=1-28%14`, `--time=0-00:30`,
+and `--mem=8G`. At the time of this entry it was still `PENDING` with reason
+`Priority`; no start estimate was available.
+
+Partial pilot progress while waiting for the last wave:
+
+```sh
+ssh -o BatchMode=yes rorqual 'find /project/6098264/snakagaw/phylo_xlv/pilot-20260628-235757/results -maxdepth 1 -type f -name "result_*.csv" | wc -l; sacct -j 14894938 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem -P | tail -n 40'
+ssh -o BatchMode=yes rorqual 'head -n 5 /project/6098264/snakagaw/phylo_xlv/pilot-20260628-235757/results/result_000001.csv; head -n 5 /project/6098264/snakagaw/phylo_xlv/pilot-20260628-235757/results/result_000002.csv'
+```
+
+Results: the first 20 tasks completed with `ExitCode=0:0` and wrote 20 result
+files. Recorded task elapsed times ranged from 12 seconds to 67 seconds, and
+`MaxRSS` stayed below 1 GB in the completed `batch` steps. Early result files
+had finite `B_lv` Wald rows; tiny-pilot phylogenetic-signal rows showed
+`partial_or_failed` boundary behavior for some cells, which is expected to be
+audited separately before any phylo-signal coverage claim. Tasks 21-28 were
+still pending with reason `Priority` when this partial-progress note was
+written.
+
+Final one-rep pilot closeout:
+
+```sh
+ssh -o BatchMode=yes rorqual 'find /project/6098264/snakagaw/phylo_xlv/pilot-20260628-235757/results -maxdepth 1 -type f -name "result_*.csv" | wc -l; find /project/6098264/snakagaw/phylo_xlv/pilot-20260628-235757/logs -maxdepth 1 -type f -name "*.err" -size +0c | wc -l; find /project/6098264/snakagaw/phylo_xlv/pilot-20260628-235757/logs -maxdepth 1 -type f -name "*.out" | wc -l'
+ssh -o BatchMode=yes rorqual 'sacct -j 14894938 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem -P'
+ssh -o BatchMode=yes rorqual 'seff 14894938'
+ssh -o BatchMode=yes rorqual 'set -euo pipefail; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023; module load julia/1.10.10; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; julia --project=. bench/phylo_xlv_drac_summarise.jl --results /project/6098264/snakagaw/phylo_xlv/pilot-20260628-235757/results'
+ssh -o BatchMode=yes rorqual 'grep -R "fit_error" -l /project/6098264/snakagaw/phylo_xlv/pilot-20260628-235757/results/result_*.csv | wc -l; grep -R "AssertionError: Need n_sites" -l /project/6098264/snakagaw/phylo_xlv/pilot-20260628-235757/results/result_*.csv | wc -l'
+ssh -o BatchMode=yes rorqual 'find /project/6098264/snakagaw/phylo_xlv/pilot-20260628-235757/logs -maxdepth 1 -type f -name "*.err" -size +0c -print0 | xargs -0 grep -L "julia/1.10.10 => julia/1.12.5" | wc -l'
+```
+
+Results: the array completed with 28 result files, 28 stdout logs, and 28
+nonempty stderr logs. `sacct` showed every array task `COMPLETED` with
+`ExitCode=0:0`; task elapsed times ranged from 11 seconds to 67 seconds, and
+completed task `MaxRSS` stayed below 1 GB. `seff 14894938` reported the final
+array element completed with 345.77 MB memory used out of 8 GB. The summariser
+read 42 result rows. Exactly 14 result files contained `fit_error`, and all 14
+were the expected pilot-design assertion `Need n_sites >= p for a well-posed
+Gaussian GLLVM`; this came from intentionally using `PHYLO_XLV_N_SITES=30`
+while also including `PHYLO_XLV_N_SPECIES=200`. All nonempty stderr files only
+contained the pre-fix Julia module reload message. This means the first pilot
+validated scheduler/result/log plumbing for the small-species cells and exposed
+an invalid pilot grid for large-species cells; it did not validate the large
+`n_species=200` regime.
+
+Fail-loud grid guard after the invalid pilot:
+
+```sh
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. bench/phylo_xlv_drac_task.jl --write-params /tmp/phylo_xlv_invalid_grid.csv --reps 1 --lambdas 0,0.5,1 --n-species 20,200 --n-sites 30 --K 1,2 --scenarios main,null_alpha0,null_phylo0
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. bench/phylo_xlv_drac_task.jl --write-params /tmp/phylo_xlv_valid_grid.csv --reps 1 --lambdas 0,0.5,1 --n-species 20,200 --n-sites 200 --K 1,2 --scenarios main,null_alpha0,null_phylo0
+wc -l /tmp/phylo_xlv_valid_grid.csv
+```
+
+Results: the invalid grid now fails during parameter writing with
+`ArgumentError: --n-sites (30) must be >= every --n-species value for this
+Gaussian coverage grid; invalid n_species=200`. The production-shaped one-rep
+grid with `n_sites=200` still writes 28 tasks and 29 CSV lines including the
+header.
+
+Corrected large-species pilot:
+
+```sh
+rsync -az --delete --exclude='.git/' --exclude='docs/build/' --exclude='docs/node_modules/' --exclude='docs/.vitepress/cache/' --exclude='.julia/' --exclude='*.ji' /private/tmp/gllvmjl-phylo-xlv/ rorqual:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/
+ssh -o BatchMode=yes rorqual 'bash -s' <<'REMOTE'
+set -euo pipefail
+root=/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac
+stamp=$(date +%Y%m%d-%H%M%S)
+out=/project/6098264/snakagaw/phylo_xlv/pilot-large-${stamp}
+mkdir -p /project/6098264/snakagaw/phylo_xlv
+cd "$root"
+module load StdEnv/2023
+module load julia/1.10.10
+export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}
+export PHYLO_XLV_ACCOUNT=def-snakagaw_cpu
+export PHYLO_XLV_REPS=1
+export PHYLO_XLV_LAMBDAS=0
+export PHYLO_XLV_N_SPECIES=200
+export PHYLO_XLV_N_SITES=200
+export PHYLO_XLV_K=1,2
+export PHYLO_XLV_SCENARIOS=main
+export PHYLO_XLV_TIME=0-02:00
+export PHYLO_XLV_MEM=16G
+export PHYLO_XLV_THROTTLE=2
+export PHYLO_XLV_JULIA=/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Core/julia/1.10.10/bin/julia
+bench/phylo_xlv_drac_submit.sh --out "$out" --submit
+echo "PILOT_LARGE_OUT=$out"
+REMOTE
+```
+
+Results so far: submitted job `14895097` with 2 valid large-species tasks under
+`/project/6098264/snakagaw/phylo_xlv/pilot-large-20260629-001132`. The
+generated sbatch contains the absolute-Julia `case` guard and no longer takes
+the default `module load julia` branch for this path. At the time of this entry
+both tasks were running at about 21 minutes, with `sstat` showing active CPU
+and `MaxRSS` below 1 GB. No result files had been written yet.
+
+Not run yet: final result aggregation for job `14895097`, `seff 14895097`, or
+the production 500 reps/cell campaign. The submitted pilots are still
+scheduler/plumbing and sizing evidence only.
+
+### Claim Boundary
+
+IN: Rorqual account/path/runtime are usable, serial Julia precompile/load passed,
+the small-species one-rep array cells completed and summarised, invalid
+large-species pilot grids now fail loud, and a corrected two-task large-species
+pilot is running. PARTIAL: large-species runtime/results/resource sizing are
+pending. OUT: production DRAC coverage, public phylo Model A coverage claims,
+PR #127 remote CI green on the local commits, and R-side phylo `lv=~x` exposure.
