@@ -24,7 +24,7 @@
 # central-difference one rather than ForwardDiff — consistent with how the
 # fitters themselves are optimised.
 
-using Distributions: Normal, Chisq, quantile
+using Distributions: Normal, Chisq, TDist, quantile
 using Random: AbstractRNG, MersenneTwister, randn
 
 # Families handled by this layer (single latent block, optional scalar dispersion).
@@ -1798,8 +1798,25 @@ end
 # Shared post-Hessian delta-method core over the p·q_lv entries of vec(B_lv)
 # (column-major: entry (t, c) at index t + (c−1)·p). `extractor(θ, p, K, q_lv)`
 # maps the packed vector to vec(B_lv) (the layout differs Gaussian vs GLM).
+function _lv_wald_t_unit_df(n_units::Integer, K::Integer)
+    return max(Int(n_units) - Int(K) - 1, 1)
+end
+
+function _lv_wald_critical(level::Real, method::Symbol, critical_df::Union{Nothing, Integer})
+    if method === :wald
+        return quantile(Normal(), 0.5 + level / 2)
+    elseif method === :wald_t_unit
+        critical_df === nothing &&
+            throw(ArgumentError("method=:wald_t_unit requires a unit-level degrees-of-freedom value"))
+        return quantile(TDist(max(Int(critical_df), 1)), 0.5 + level / 2)
+    end
+    throw(ArgumentError("unknown LV Wald method :$method"))
+end
+
 function _lv_wald_from_hessian(H::AbstractMatrix, x::AbstractVector, p::Integer,
-                               K::Integer, q_lv::Integer, level::Real, extractor)
+                               K::Integer, q_lv::Integer, level::Real, extractor;
+                               method::Symbol = :wald,
+                               critical_df::Union{Nothing, Integer} = nothing)
     Σ = all(isfinite, H) ? (try inv(Symmetric((H .+ H') ./ 2)) catch; nothing end) : nothing
     b̂ = extractor(x, p, K, q_lv)
     nb = length(b̂); se = fill(NaN, nb); pd = Σ !== nothing
@@ -1811,12 +1828,12 @@ function _lv_wald_from_hessian(H::AbstractMatrix, x::AbstractVector, p::Integer,
             (isfinite(v) && v > 0) && (se[i] = sqrt(v))
         end
     end
-    z = quantile(Normal(), 0.5 + level / 2)
+    crit = _lv_wald_critical(level, method, critical_df)
     term = ["B_lv[$t,$c]" for c in 1:q_lv for t in 1:p]
-    lo = [isfinite(se[i]) ? b̂[i] - z * se[i] : NaN for i in 1:nb]
-    hi = [isfinite(se[i]) ? b̂[i] + z * se[i] : NaN for i in 1:nb]
+    lo = [isfinite(se[i]) ? b̂[i] - crit * se[i] : NaN for i in 1:nb]
+    hi = [isfinite(se[i]) ? b̂[i] + crit * se[i] : NaN for i in 1:nb]
     return (term = term, estimate = b̂, lower = lo, upper = hi, se = se,
-            level = level, method = :wald, pd_hessian = pd)
+            level = level, method = method, pd_hessian = pd)
 end
 
 # GLM families: finite-difference observed-information Hessian of the packed
@@ -1996,9 +2013,10 @@ Wald intervals for `B_lv = Λ·α'` of a Gaussian `X_lv` fit
 (`fit_gaussian_gllvm(...; X_lv=...)`). The Gaussian marginal is closed-form, so
 the observed information is the **exact ForwardDiff Hessian** of
 `gaussian_lv_nll_packed` at the packed MLE (no finite differencing). `method =
-:wald`, `:profile` (LR inversion via constrained refit; the Gaussian objective is
-AD-friendly so the constrained refits use LBFGS), or `:bootstrap`. `K ≥ 1`
-(`B_lv` rotation-invariant), complete responses,
+:wald`, `:wald_t_unit` (same delta-method SE with a unit-df t critical,
+`df = max(n_sites - K - 1, 1)`), `:profile` (LR inversion via constrained refit;
+the Gaussian objective is AD-friendly so the constrained refits use LBFGS), or
+`:bootstrap`. `K ≥ 1` (`B_lv` rotation-invariant), complete responses,
 single unit-tier latent block, no fixed-effect `X`.
 """
 function confint_lv_effects(fit::GllvmFit, Y::AbstractMatrix, X_lv::AbstractMatrix;
@@ -2018,8 +2036,8 @@ function confint_lv_effects(fit::GllvmFit, Y::AbstractMatrix, X_lv::AbstractMatr
         "X_lv must have one row per site: got $(size(X_lv, 1)), need $(size(Y, 2))"))
     size(fit.pars.alpha_lv) == (q_lv, K) || throw(ArgumentError(
         "X_lv has $(q_lv) column(s) but the fit carries α_lv of size $(size(fit.pars.alpha_lv))"))
-    method in (:wald, :bootstrap, :profile) ||
-        throw(ArgumentError("method must be :wald, :bootstrap, or :profile; got :$method"))
+    method in (:wald, :wald_t_unit, :bootstrap, :profile) ||
+        throw(ArgumentError("method must be :wald, :wald_t_unit, :bootstrap, or :profile; got :$method"))
     method === :bootstrap &&
         return _lv_bootstrap(fit, Y, X_lv, N, q_lv, level, n_boot, seed)
     x = collect(Float64, fit.pars.θ_packed)
@@ -2047,7 +2065,9 @@ function confint_lv_effects(fit::GllvmFit, Y::AbstractMatrix, X_lv::AbstractMatr
         return _lv_effect_profile(nll, x, p, K, q_lv, level,
                                   _lv_effects_from_packed_gaussian, wse; ad = true)
     end
-    return _lv_wald_from_hessian(H, x, p, K, q_lv, level, _lv_effects_from_packed_gaussian)
+    df = method === :wald_t_unit ? _lv_wald_t_unit_df(size(X_lv, 1), K) : nothing
+    return _lv_wald_from_hessian(H, x, p, K, q_lv, level, _lv_effects_from_packed_gaussian;
+                                 method = method, critical_df = df)
 end
 
 # ---------------------------------------------------------------------------

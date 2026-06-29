@@ -62,8 +62,8 @@ function parse_methods(s::String)
     out = Symbol[]
     for x in parse_string_list(s)
         method = Symbol(x)
-        method in (:wald, :profile, :bootstrap) ||
-            throw(ArgumentError("--methods entries must be wald, profile, or bootstrap; got $x"))
+        method in (:wald, :wald_t_unit, :profile, :bootstrap) ||
+            throw(ArgumentError("--methods entries must be wald, wald_t_unit, profile, or bootstrap; got $x"))
         push!(out, method)
     end
     isempty(out) && throw(ArgumentError("--methods must name at least one method"))

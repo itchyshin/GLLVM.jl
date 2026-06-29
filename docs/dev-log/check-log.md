@@ -4801,3 +4801,227 @@ launcher, and λ=0 and λ=1 Wald rows looked acceptable in this small diagnostic
 PARTIAL: λ=0.5 Wald undercoverage blocks production coverage claims. OUT: no
 K=2 production coverage claim, no phylo-signal interval claim, no public full
 Model A claim, and no t-based claim because no t method is wired yet.
+
+## 2026-06-29 15:45 MDT - Codex Gaussian phylo B_lv t-comparator wiring
+
+### Commands
+
+```sh
+git status --short --branch
+rg -n "function _lv_wald_from_hessian|_lv_effect_wald|Normal|quantile|TDist|confint_lv_effects|method == :wald|method = :wald" src/confint_family.jl
+sed -n '1800,2095p' src/confint_family.jl
+sed -n '1,180p' bench/phylo_xlv_drac_task.jl
+sed -n '1,160p' bench/phylo_xlv_drac_submit.sh
+rg -n 'wald_t_unit|critical_df|qnorm|qt\(|interval_method|critical' dev/lv-wald-coverage.R tests/testthat/test-lv-wald-coverage-harness.R docs/dev-log/after-task/2026-06-28-lv-wald-t-comparator.md  # in /private/tmp/gllvmtmb-lv-t-coverage-20260628
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. test/test_lv_ci.jl
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. test/test_phylo_xlv.jl
+bash -n bench/phylo_xlv_drac_submit.sh
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. bench/phylo_xlv_drac_task.jl --write-params /tmp/phylo_xlv_t_params.csv --reps 1 --lambdas 0.5 --n-species 20 --n-sites 80 --K 2 --q-lv 1 --K-phy 1 --scenarios main --seed0 20260629 --force
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_xlv_t_params.csv --outdir /tmp/phylo_xlv_t_dry_results --task-id 1 --methods wald,wald_t_unit --targets none --iterations 1 --dry-run
+git diff --check
+ssh -o BatchMode=yes -o ConnectTimeout=10 rorqual 'hostname; pwd; command -v sbatch; command -v squeue'
+ssh -o BatchMode=yes -o ConnectTimeout=10 nibi 'hostname; command -v sbatch; command -v squeue'
+ssh -o BatchMode=yes -o ConnectTimeout=10 narval 'hostname; command -v sbatch; command -v squeue'
+ssh -o BatchMode=yes -o ConnectTimeout=10 fir 'hostname; command -v sbatch; command -v squeue'
+ssh -o BatchMode=yes -o ConnectTimeout=10 totoro 'hostname; command -v sbatch || true; command -v squeue || true'
+rsync -az --delete --exclude='.git/' --exclude='docs/build/' --exclude='docs/node_modules/' --exclude='docs/.vitepress/cache/' --exclude='.julia/' --exclude='*.ji' /private/tmp/gllvmjl-phylo-xlv/ rorqual:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/
+ssh -o BatchMode=yes rorqual '... remote --methods wald,wald_t_unit --targets none --dry-run ...'
+rsync -az --delete --exclude='.git/' --exclude='docs/build/' --exclude='docs/node_modules/' --exclude='docs/.vitepress/cache/' --exclude='.julia/' --exclude='*.ji' /private/tmp/gllvmjl-phylo-xlv/ nibi:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/
+rsync -az --delete --exclude='.git/' --exclude='docs/build/' --exclude='docs/node_modules/' --exclude='docs/.vitepress/cache/' --exclude='.julia/' --exclude='*.ji' /private/tmp/gllvmjl-phylo-xlv/ narval:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/
+```
+
+### Result
+
+Added a Gaussian-only `confint_lv_effects(...; method = :wald_t_unit)`
+comparator for `B_lv`:
+
+- `:wald_t_unit` uses the same observed-information delta-method SE as
+  `:wald`.
+- Only the critical value changes, using `TDist(df)` with
+  `df = max(n_sites - K - 1, 1)`, matching the R-side
+  `wald_t_unit` convention for ordinary native TMB Gaussian `B_lv` coverage.
+- The GLM `confint_lv_effects` method still rejects `:wald_t_unit`; this is a
+  Gaussian comparator only, not a non-Gaussian interval claim.
+- `bench/phylo_xlv_drac_task.jl` and `bench/phylo_xlv_drac_submit.sh` now accept
+  `wald_t_unit` in `PHYLO_XLV_METHODS`.
+
+Checks:
+
+- `test/test_lv_ci.jl`: `123/123` pass in `2m37.9s`.
+- `test/test_phylo_xlv.jl`: `19/19` pass in `57.3s`.
+- `bash -n bench/phylo_xlv_drac_submit.sh`: pass.
+- Local parameter writer and dry-run parser accepted `--methods
+  wald,wald_t_unit`.
+- Remote Rorqual dry-run parser accepted `--methods wald,wald_t_unit`.
+- `git diff --check`: pass.
+
+DRAC connectivity:
+
+- Rorqual, Nibi, and Narval are reachable with non-interactive SSH and have
+  `sbatch`/`squeue`.
+- Fir still fails non-interactive keyboard-interactive auth.
+- Totoro still fails publickey/password auth from this shell.
+
+### Live DRAC State
+
+The active comparator run is Nibi array `16950659`:
+
+- output directory:
+  `/project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-t-nibi-lambda05-rep10-20260629-1553`;
+- `scenario=main`, `lambda=0.5`, `n_species=n_sites=80`, `K=2`,
+  `q_lv=1`, `K_phy=1`;
+- `10` seeds, `targets=B_lv`, `methods=wald,wald_t_unit`;
+- `iterations=400`, `time=20m`, `mem=4G`, throttle `10`;
+- latest poll at this checkpoint: pending with reason `Priority`, `0` result
+  files.
+
+Superseded queue attempts were intentionally cancelled to avoid duplicate
+compute:
+
+- Rorqual `14932460`: pending duplicate, cancelled before results.
+- Nibi `16950453`: first duplicate started and was cancelled at 21s; wrote
+  `0` result files.
+- Narval `64362890`: pending duplicate, cancelled before results.
+
+### Decision
+
+Do not scale production yet. This t comparator is a bounded interval-rescue
+diagnostic for the known weak cell (`p=80,K=2,lambda=0.5`) where the 10-rep
+normal-Wald diagnostic had entry coverage `0.870`. Production remains gated on
+the comparator result and the same MCSE/failed-fit denominator discipline.
+
+### Claim Boundary
+
+IN: Gaussian phylo `B_lv` now has local method wiring for `wald_t_unit`, local
+tests covering ordinary and phylo Gaussian paths, and one live bounded DRAC
+diagnostic queued. PARTIAL: interval calibration remains unresolved until
+`>=500 reps/cell` evidence exists. OUT: no phylo-signal interval claim, no
+non-Gaussian t interval claim, no production Model A coverage claim, and no
+public R exposure claim.
+
+## 2026-06-29 16:00 MDT - Codex p80 K2 t-comparator result and profile-live checkpoint
+
+### Commands
+
+```sh
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. test/test_lv_ci.jl
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. test/test_phylo_xlv.jl
+git diff --check
+bash -n bench/phylo_xlv_drac_submit.sh
+ssh -o BatchMode=yes nibi 'squeue -j 16950659 -o "%.18i %.9P %.32j %.8T %.10M %.6D %R"; echo results=$(find /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-t-nibi-lambda05-rep10-20260629-1553/results -maxdepth 1 -name "result_*.csv" 2>/dev/null | wc -l); cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; julia --project=. bench/phylo_xlv_drac_summarise.jl --results /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-t-nibi-lambda05-rep10-20260629-1553/results 2>/dev/null || true; seff 16950659 2>/dev/null || true'
+ssh -o BatchMode=yes rorqual 'squeue -j 14929297 -o "%.18i %.9P %.32j %.8T %.10M %.6D %R"; echo results=$(find /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-rorqual-lambda05-cirescue-rep1-nboot30-20260629-1525/results -maxdepth 1 -name "result_*.csv" 2>/dev/null | wc -l); tail -n 100 /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-rorqual-lambda05-cirescue-rep1-nboot30-20260629-1525/logs/phylo_xlv-14929297-1.out 2>/dev/null || true; seff 14929297 2>/dev/null || true'
+```
+
+### Result
+
+Focused local checks after the `wald_t_unit` wiring:
+
+- `test/test_lv_ci.jl`: `123/123` pass in `2m44.5s`;
+- `test/test_phylo_xlv.jl`: `19/19` pass in `1m01.7s`;
+- `git diff --check`: pass;
+- `bash -n bench/phylo_xlv_drac_submit.sh`: pass.
+
+Nibi array `16950659` completed the p=80,K=2, λ=0.5 t-comparator diagnostic:
+
+- output directory:
+  `/project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-t-nibi-lambda05-rep10-20260629-1553`;
+- `10/10` result files, `20` result rows (`wald` + `wald_t_unit`);
+- representative `seff` for task `16950659_10`: completed with exit code `0`,
+  wall time `00:07:37`, CPU efficiency `98.25%`, memory `766.50 MB / 4 GB`.
+
+Summariser result:
+
+| method | tasks | fit ok | usable entries | mean coverage (MCSE) | entry coverage | RMSE mean | fit sec mean | CI sec mean | CI status |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| wald | 10 | 10 | 800 | 0.844 (0.058) | 0.844 | 0.093 | 177.633 | 119.286 | ok |
+| wald_t_unit | 10 | 10 | 800 | 0.845 (0.058) | 0.845 | 0.093 | 177.633 | 106.874 | ok |
+
+The t-unit critical value did not materially rescue the λ=0.5 undercoverage.
+
+Rorqual job `14929297` remains live as a one-seed profile/bootstrap canary:
+
+- output directory:
+  `/project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-rorqual-lambda05-cirescue-rep1-nboot30-20260629-1525`;
+- `p=80`, `K=2`, λ=0.5, `methods=wald,profile,bootstrap`, `n_boot=30`;
+- fit converged in `178` iterations / `230.94s`;
+- Wald CI ran from `21:30:11` to `21:32:55` UTC;
+- profile CI started at `21:32:55` UTC;
+- latest poll: still running in profile at `34m11s`, `0` result files;
+- walltime request is `3h`.
+
+Dashboard `/tmp/gllvm-dashboard` was updated to build `r119`.
+
+### Decision
+
+Do not promote `wald_t_unit` as a coverage fix for phylo Model A B_lv. It is
+wired and tested as a Gaussian comparator, but this diagnostic says it does not
+repair the known λ=0.5 p=80,K=2 undercoverage. Keep the profile/bootstrap canary
+running as the next interval-rescue evidence source.
+
+### Claim Boundary
+
+IN: `wald_t_unit` exists as a Gaussian-only comparator and has local focused
+tests; the Nibi λ=0.5 comparator result is negative. PARTIAL: profile/bootstrap
+rescue is still live and unreported. OUT: no production coverage launch, no
+public t-coverage claim, no phylo-signal claim, no non-Gaussian t claim.
+
+## 2026-06-29 15:58 MDT - Codex p80 K2 phylo B_lv t-comparator result
+
+### Commands
+
+```sh
+ssh -o BatchMode=yes nibi 'squeue -j 16950659 -o "%.18i %.9P %.32j %.8T %.10M %.6D %R"; sacct -j 16950659 --format=JobID,State,ExitCode,Elapsed,MaxRSS -P; seff 16950659 2>/dev/null || true'
+ssh -o BatchMode=yes nibi 'cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; julia --project=. bench/phylo_xlv_drac_summarise.jl --results /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-t-nibi-lambda05-rep10-20260629-1553/results'
+ssh -o BatchMode=yes rorqual 'squeue -j 14929297 -o "%.18i %.9P %.32j %.8T %.10M %.6D %R"; echo results=$(find /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-profile-rorqual-lambda05-rep1-20260629-1510/results -maxdepth 1 -name "result_*.csv" 2>/dev/null | wc -l)'
+python3 -m json.tool /tmp/gllvm-dashboard/status.json >/tmp/gllvm-dashboard/status.validate.json
+```
+
+### Result
+
+Nibi array `16950659` completed the weak-cell method comparator:
+
+- output directory:
+  `/project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-t-nibi-lambda05-rep10-20260629-1553`;
+- `scenario=main`, `lambda=0.5`, `n_species=80`, `n_sites=80`, `K=2`;
+- `10` seeds, `targets=B_lv`, `methods=wald,wald_t_unit`;
+- all `10/10` fits converged;
+- `800` usable `B_lv` entries per method;
+- scheduler state: completed with exit code `0`;
+- `seff 16950659`: wall time `00:07:37`, CPU efficiency `98.25%`,
+  memory `766.50 MB / 4 GB`.
+
+Summariser result:
+
+| target | method | tasks | fit ok | usable | mean coverage (MCSE) | entry coverage | RMSE mean | fit sec mean | CI sec mean | CI status |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| B_lv | wald | 10 | 10 | 800 | 0.844 (0.058) | 0.844 | 0.093 | 177.633 | 119.286 | ok |
+| B_lv | wald_t_unit | 10 | 10 | 800 | 0.845 (0.058) | 0.845 | 0.093 | 177.633 | 106.874 | ok |
+
+The t critical did not materially change coverage in this phylo weak cell
+because the unit-level df is `80 - 2 - 1 = 77`, close to the normal critical
+value. The result is useful negative diagnostic evidence: `wald_t_unit` is
+wired, cheap, and tested, but it is not an interval-rescue strategy for
+`p=80,K=2,lambda=0.5`.
+
+Rorqual array task `14929297_1` remains active as the one-seed
+profile/bootstrap rescue canary for the same weak cell. Latest poll at this
+entry: running after `33:41`, with `0` result files. No duplicate profile or
+bootstrap jobs were launched.
+
+The local mission-control widget was updated to `/tmp/gllvm-dashboard`
+version `r119`; JSON validation passed.
+
+### Decision
+
+Do not launch the `>=500 reps/cell` p=80,K=2 production grid with either normal
+Wald or unit-df t-Wald. Keep the existing Rorqual profile/bootstrap canary
+running; decide the next production inference method only after that canary
+finishes or hits a practical runtime boundary.
+
+### Claim Boundary
+
+IN: Gaussian phylo `B_lv` now has local `wald_t_unit` wiring, local tests, and a
+10-seed DRAC diagnostic. PARTIAL: p=80,K=2 computation is viable for B_lv, but
+lambda=0.5 coverage is not solved. OUT: no production coverage claim, no
+phylo-signal interval claim, no non-Gaussian t claim, and no R-side
+`phylo_latent(..., lv = ~ x)` exposure claim.

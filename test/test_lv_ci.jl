@@ -95,7 +95,19 @@ using LinearAlgebra
         zt = vec(X_lv * alpha) .+ randn(n)
         Yg = Λ * reshape(zt, 1, n) .+ 0.3 .* randn(p, n)   # centred: no β; B_lv = Λ·α
         fit = fit_gaussian_gllvm(Yg; K = K, X_lv = X_lv, iterations = 300)
-        _check(confint_lv_effects(fit, Yg, X_lv), fit)
+        cw = confint_lv_effects(fit, Yg, X_lv)
+        _check(cw, fit)
+        ct = confint_lv_effects(fit, Yg, X_lv; method = :wald_t_unit)
+        df = max(n - K - 1, 1)
+        tcrit = quantile(TDist(df), 0.975)
+        @test ct.method == :wald_t_unit
+        @test ct.term == cw.term
+        @test ct.level == cw.level
+        @test ct.pd_hessian == cw.pd_hessian
+        @test ct.estimate ≈ cw.estimate atol = 1e-10
+        @test ct.se ≈ cw.se atol = 1e-10
+        @test ct.upper .- ct.estimate ≈ tcrit .* ct.se rtol = 1e-6
+        @test all((ct.upper .- ct.lower) .> (cw.upper .- cw.lower))
         @test_throws ArgumentError confint_lv_effects(fit_gaussian_gllvm(Yg; K = K), Yg, X_lv)
     end
 
@@ -268,6 +280,7 @@ using LinearAlgebra
         plain = fit_poisson_gllvm(Y; K = K, iterations = 150)
         @test_throws ArgumentError confint_lv_effects(plain, Y, X_lv)            # no α_lv
         @test_throws ArgumentError confint_lv_effects(xfit, Y, X_lv; level = 1.0) # bad level
+        @test_throws ArgumentError confint_lv_effects(xfit, Y, X_lv; method = :wald_t_unit) # Gaussian-only comparator
         @test_throws ArgumentError confint_lv_effects(xfit, Y, X_lv[1:(n - 1), :]) # row mismatch
     end
 

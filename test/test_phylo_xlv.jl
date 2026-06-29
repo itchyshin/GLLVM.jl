@@ -71,6 +71,11 @@ using Statistics
         @test ci.method == :wald
         @test all(isfinite, ci.se)
         @test all(ci.lower .< ci.estimate .< ci.upper)
+        ct = confint_lv_effects(fit, Y, X_lv; method = :wald_t_unit)
+        @test ct.method == :wald_t_unit
+        @test ct.estimate ≈ ci.estimate atol = 1e-10
+        @test ct.se ≈ ci.se atol = 1e-10
+        @test all((ct.upper .- ct.lower) .> (ci.upper .- ci.lower))
 
         # The full trio extends under phylo: profile reuses the augmented objective;
         # bootstrap simulates φ + refits the phylo structure.
