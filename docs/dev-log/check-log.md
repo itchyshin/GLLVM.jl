@@ -2900,3 +2900,49 @@ smokes of its file formats. PARTIAL: production sizing, `seff` right-sizing,
 profile/bootstrap cost calibration, and phylogenetic-signal boundary behavior
 still need DRAC evidence. OUT: any calibrated coverage claim for Model A, any R
 `phylo_latent(..., lv=~x)` exposure, and any non-Gaussian phylo `X_lv` claim.
+
+## 2026-06-28 -- PR #127 CI failure diagnosis on current local branch (Codex)
+
+Worked from clean local branch `codex/phylo-xlv-drac-launcher-20260628` in
+`/private/tmp/gllvmjl-phylo-xlv`.
+
+State and lane checks:
+
+```sh
+git status --short --branch
+gh pr view 127 --repo itchyshin/GLLVM.jl --json number,title,headRefName,headRepositoryOwner,headRefOid,baseRefOid,mergeStateStatus,statusCheckRollup,url
+gh run view 28320518721 --repo itchyshin/GLLVM.jl --json databaseId,headSha,headBranch,status,conclusion,createdAt,updatedAt,name,jobs
+gh run view 28320518721 --repo itchyshin/GLLVM.jl --log-failed | rg -n "FAIL|ERROR|Test Failed|phylo|X_lv|test_lv|test_phylo|Stacktrace|Error" -C 3
+git log --oneline --decorate --graph --all --max-count=40 --branches='*phylo*'
+```
+
+Observed: PR #127 remote head is still `b87a522` and CI failed on that SHA.
+The failure is the old stale expectation in `test/test_lv_predictor.jl:63`:
+`fit_gaussian_gllvm(...; X_lv, K_phy = 1, Σ_phy = I(4))` was expected to throw,
+but Model A now admits that combination. The current local branch contains
+`bcf2680` (`test: fix phylo xlv premerge gates`) and `bf2c733`
+(`bench: add phylo xlv DRAC launcher scaffold`) on top of the remote head.
+
+Validation on the current local branch:
+
+```sh
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. test/test_lv_predictor.jl
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. test/test_phylo_xlv.jl
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. test/test_lv_ci.jl
+```
+
+Results: `test_lv_predictor.jl` PASS `27/27` in `14.0s`;
+`test_phylo_xlv.jl` PASS `15/15` in `52.8s`; `test_lv_ci.jl` PASS `114/114`
+in `2m34.1s`.
+
+Not run: full `Pkg.test()` / Aqua / JET, GitHub CI rerun, DRAC `sbatch`, or
+Documenter rebuild. The GLLVM.jl rule still says not to push without explicit
+maintainer instruction, so the local fix is queued but not pushed.
+
+### Claim Boundary
+
+IN: current local branch has the targeted fix for the failing PR #127 test and
+fresh local evidence for the predictor, phylo, and X_lv CI files. PARTIAL: remote
+PR #127 still shows failing CI until the maintainer authorizes pushing the local
+commits or otherwise updates the PR branch. OUT: any full-suite/3-OS green claim,
+any DRAC coverage claim, and any public R-side phylo `lv=~x` exposure.
