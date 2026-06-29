@@ -4741,3 +4741,63 @@ IN: p=80,K=2 all-target one-seed canary shows fast, clean B_lv Wald rows for
 λ=0.5 and λ=1. PARTIAL: this is a sizing and routing result only; it is not
 coverage evidence. OUT: no K=2 production claim, no phylo-signal interval
 claim, and no full Model A public claim.
+
+## 2026-06-29 15:20 MDT - Codex p80 K2 B_lv-only Wald diagnostic
+
+### Commands
+
+```sh
+gh pr list --state open
+git log --all --oneline --since="6 hours ago"
+ssh -o BatchMode=yes rorqual 'set -euo pipefail; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; out=/project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-rorqual-lambda0-05-1-rep10-20260629-1455; PHYLO_XLV_ACCOUNT=def-snakagaw_cpu PHYLO_XLV_DEPOT=/project/6098264/snakagaw/julia_depot PHYLO_XLV_JULIA="$(command -v julia)" PHYLO_XLV_REPS=10 PHYLO_XLV_LAMBDAS=0,0.5,1 PHYLO_XLV_N_SPECIES=80 PHYLO_XLV_N_SITES=80 PHYLO_XLV_K=2 PHYLO_XLV_SCENARIOS=main PHYLO_XLV_SEED0=52384100 PHYLO_XLV_TARGETS=B_lv PHYLO_XLV_METHODS=wald PHYLO_XLV_ITERATIONS=400 PHYLO_XLV_TIME=0-00:45 PHYLO_XLV_MEM=4G PHYLO_XLV_THROTTLE=10 bash bench/phylo_xlv_drac_submit.sh --out "$out" --submit; sed -n "1,90p" "$out/meta/session.txt"; head -n 40 "$out/meta/phylo_xlv_params.csv"'
+ssh -o BatchMode=yes rorqual 'squeue -j 14926656 -o "%.18i %.9P %.32j %.8T %.10M %.6D %R"; echo results=$(find /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-rorqual-lambda0-05-1-rep10-20260629-1455/results -maxdepth 1 -name "result_*.csv" | wc -l); cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; julia --project=. bench/phylo_xlv_drac_summarise.jl --results /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-rorqual-lambda0-05-1-rep10-20260629-1455/results'
+ssh -o BatchMode=yes rorqual 'squeue -j 14926656 -o "%.18i %.9P %.32j %.8T %.10M %.6D %R"; echo results=$(find /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-rorqual-lambda0-05-1-rep10-20260629-1455/results -maxdepth 1 -name "result_*.csv" | wc -l); cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; julia --project=. bench/phylo_xlv_drac_summarise.jl --results /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-rorqual-lambda0-05-1-rep10-20260629-1455/results; seff 14926656 2>/dev/null || true'
+rg -n "method|methods|wald|profile|bootstrap|t\b|quantile|Normal|ci" bench/phylo_xlv_drac_task.jl bench/phylo_xlv_drac_submit.sh bench/phylo_xlv_drac_summarise.jl src test docs -S
+```
+
+The broad `rg` command above was too noisy because it traversed
+`docs/node_modules`; the useful signal came from `bench/phylo_xlv_drac_task.jl`,
+where `parse_methods()` accepts only `wald`, `profile`, and `bootstrap`.
+There is not yet a t-based method wired into the DRAC task parser.
+
+### Result
+
+Submitted and completed Rorqual array `14926656`:
+
+- output directory
+  `/project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-rorqual-lambda0-05-1-rep10-20260629-1455`;
+- `scenario=main`, `n_species=80`, `n_sites=80`, `K=2`, `targets=B_lv`;
+- λ grid `{0, 0.5, 1}` with `10` reps per λ, `30` tasks total;
+- `methods=wald`, `iterations=400`, `time=45m`, `mem=4G`, throttle `10`;
+- final result files: `30/30`;
+- scheduler state: completed with exit code `0`;
+- representative `seff` for array task `14926656_30`: wall time `00:09:23`,
+  CPU efficiency `97.51%`, memory `1.05 GB / 4 GB`.
+
+Summariser result:
+
+| λ | tasks | fit ok | usable entries | mean coverage (MCSE) | entry coverage | RMSE mean | fit sec mean | CI sec mean | CI status |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| 0 | 10 | 10 | 800 | 0.945 (0.013) | 0.945 | 0.077 | 80.065 | 127.585 | ok |
+| 0.5 | 10 | 10 | 800 | 0.870 (0.037) | 0.870 | 0.097 | 199.906 | 118.577 | ok |
+| 1 | 10 | 10 | 800 | 0.972 (0.010) | 0.973 | 0.066 | 269.809 | 137.769 | ok |
+
+Dashboard `/tmp/gllvm-dashboard` was updated to build `r112` with this final
+diagnostic state.
+
+### Decision
+
+Do not launch `>=500 reps/cell` Wald production for p=80,K=2 yet. The reduced
+cell is computationally viable and all B_lv interval rows are usable, but Wald
+coverage undercovers materially at λ=0.5 in this 10-rep diagnostic. The next
+method step should be a bounded λ=0.5 interval-rescue diagnostic, using existing
+profile/bootstrap methods and/or a newly implemented t-style calibration
+comparator before production scaling.
+
+### Claim Boundary
+
+IN: p=80,K=2 is a viable compute boundary for B_lv diagnostics under the current
+launcher, and λ=0 and λ=1 Wald rows looked acceptable in this small diagnostic.
+PARTIAL: λ=0.5 Wald undercoverage blocks production coverage claims. OUT: no
+K=2 production coverage claim, no phylo-signal interval claim, no public full
+Model A claim, and no t-based claim because no t method is wired yet.
