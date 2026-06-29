@@ -5168,3 +5168,52 @@ IN: local harness support for bounded bootstrap-refit iteration canaries.
 PARTIAL: no capped bootstrap result exists yet. OUT: bootstrap coverage
 calibration, profile viability, production `>=500 reps/cell`, and public
 `gllvmTMB` phylo exposure.
+
+## 2026-06-29 16:47 MDT - Codex Narval capped-bootstrap canary launch
+
+### Commands
+
+```sh
+rsync -av --relative bench/phylo_xlv_drac_submit.sh bench/phylo_xlv_drac_task.jl src/confint_family.jl test/test_lv_ci.jl docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-29-phylo-xlv-bootstrap-iteration-cap.md docs/dev-log/recovery-checkpoints/2026-06-29-162800-codex-phylo-xlv-live-rescue.md nibi:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/
+rsync -av --relative bench/phylo_xlv_drac_submit.sh bench/phylo_xlv_drac_task.jl src/confint_family.jl test/test_lv_ci.jl docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-29-phylo-xlv-bootstrap-iteration-cap.md docs/dev-log/recovery-checkpoints/2026-06-29-162800-codex-phylo-xlv-live-rescue.md narval:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/
+ssh -o BatchMode=yes narval 'cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac && grep -R -n "bootstrap_iterations\|PHYLO_XLV_BOOT_ITERATIONS\|bootstrap_args" bench/phylo_xlv_drac_submit.sh bench/phylo_xlv_drac_task.jl src/confint_family.jl test/test_lv_ci.jl | head -n 80'
+ssh -o BatchMode=yes narval 'set -euo pipefail; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; out=/project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30iter120-narval-lambda05-rep1-20260629-1643; if [[ -e "$out" ]]; then echo "out exists: $out" >&2; exit 2; fi; PHYLO_XLV_ACCOUNT=def-snakagaw_cpu PHYLO_XLV_REPS=1 PHYLO_XLV_LAMBDAS=0.5 PHYLO_XLV_N_SPECIES=80 PHYLO_XLV_N_SITES=80 PHYLO_XLV_K=2 PHYLO_XLV_Q_LV=1 PHYLO_XLV_K_PHY=1 PHYLO_XLV_SCENARIOS=main PHYLO_XLV_SEED0=72434544 PHYLO_XLV_METHODS=bootstrap PHYLO_XLV_TARGETS=B_lv PHYLO_XLV_ITERATIONS=400 PHYLO_XLV_N_BOOT=30 PHYLO_XLV_BOOT_ITERATIONS=120 PHYLO_XLV_TIME=0-02:00 PHYLO_XLV_MEM=4G PHYLO_XLV_CPUS=1 PHYLO_XLV_THROTTLE=1 PHYLO_XLV_JULIA=/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Core/julia/1.10.10/bin/julia PHYLO_XLV_DEPOT=/project/6098264/snakagaw/julia_depot bench/phylo_xlv_drac_submit.sh --out "$out"; sed -n "1,90p" "$out/meta/session.txt"; sed -n "34,55p" "$out/meta/phylo_xlv_array.sbatch"; bash -n "$out/meta/phylo_xlv_array.sbatch"'
+ssh -o BatchMode=yes narval 'set -euo pipefail; out=/project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30iter120-narval-lambda05-rep1-20260629-1643; job=$(sbatch "$out/meta/phylo_xlv_array.sbatch"); echo "$job"; printf "code_sync_head=3b9b1e6\ncode_sync_source=/private/tmp/gllvmjl-phylo-xlv\nsubmit_result=%s\n" "$job" >> "$out/meta/session.txt"; tail -n 8 "$out/meta/session.txt"; squeue -u snakagaw -o "%.18i %.9P %.32j %.8T %.10M %.6D %R" | head -n 20'
+```
+
+### Result
+
+Synced bootstrap-refit cap commit `3b9b1e6` to the DRAC project copies used by
+Nibi and Narval. Nibi had the new files after the first sync; Narval required a
+direct sync because its `/project` copy was stale from Narval's view.
+
+Submitted Narval job `64365792`:
+
+- output directory:
+  `/project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30iter120-narval-lambda05-rep1-20260629-1643`;
+- shape: `scenario=main`, `lambda=0.5`, `n_species=80`, `n_sites=80`,
+  `K=2`, `q_lv=1`, `K_phy=1`;
+- target/method: `B_lv`, `bootstrap`;
+- bootstrap settings: `n_boot=30`, `bootstrap_iterations=120`;
+- runtime envelope: `time=0-02:00`, `mem=4G`, `cpus=1`;
+- session metadata records `code_sync_head=3b9b1e6`.
+
+Initial scheduler state: `PENDING`, job `64365792_[1%1]`.
+
+The mission-control JSON at `/tmp/gllvm-dashboard/status.json` was updated to
+served version `r129`. Browser automation could not refresh the in-app tab
+because the browser context disconnected twice; the local server verified
+`http://127.0.0.1:8770/version.txt` as `r129`.
+
+### Decision
+
+This is one capped-bootstrap timing canary, not a production fan-out. Do not
+launch more jobs until at least one of these returns: Nibi uncapped bootstrap
+`16951694`, Rorqual profile/bootstrap `14929297`, or Narval capped bootstrap
+`64365792`.
+
+### Claim Boundary
+
+IN: a bounded comparison canary is submitted on Narval. PARTIAL: no result file
+exists yet. OUT: bootstrap coverage calibration, production `>=500 reps/cell`,
+phylo-signal coverage, and public R exposure.
