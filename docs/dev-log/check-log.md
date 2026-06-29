@@ -4247,3 +4247,61 @@ coverage claim and the observed-information step took about 1h55m after fit
 convergence. OUT: no p=200, K=2 production run; at 500 reps/cell this timing is
 not a viable default production grid without narrowing the large-cell boundary
 or changing the interval strategy.
+
+## 2026-06-29 10:15 MDT - Codex K2 fallback sizing and Julia launcher pin
+
+### Commands
+
+```sh
+ssh -o BatchMode=yes narval 'squeue -j 64331208 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; tail -n 120 /project/6098264/snakagaw/phylo_xlv/pilot-midlarge-k2-narval-blv-iter80-3h-20260629-0939/logs/phylo_xlv-64331208-1.out 2>/dev/null || true; cat /project/6098264/snakagaw/phylo_xlv/pilot-midlarge-k2-narval-blv-iter80-3h-20260629-0939/results/result_000001.csv 2>/dev/null || true'
+rsync -az --delete --exclude='.git' --exclude='.julia' --exclude='docs/build' --exclude='docs/node_modules' --exclude='docs/.vitepress/cache' --exclude='*.ji' ./ nibi:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/
+ssh -o BatchMode=yes nibi 'set -euo pipefail; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; export PHYLO_XLV_ACCOUNT=def-snakagaw_cpu; export PHYLO_XLV_REPS=1; export PHYLO_XLV_LAMBDAS=0; export PHYLO_XLV_N_SPECIES=125; export PHYLO_XLV_N_SITES=125; export PHYLO_XLV_K=2; export PHYLO_XLV_SCENARIOS=main; export PHYLO_XLV_TARGETS=B_lv; export PHYLO_XLV_METHODS=wald; export PHYLO_XLV_ITERATIONS=80; export PHYLO_XLV_TIME=0-02:00; export PHYLO_XLV_MEM=8G; export PHYLO_XLV_THROTTLE=1; export PHYLO_XLV_DEPOT=/project/6098264/snakagaw/julia_depot; out=/project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-blv-iter80-2h-20260629-1008; bench/phylo_xlv_drac_submit.sh --out "$out" --submit; sed -n "1,80p" "$out/meta/session.txt"; sed -n "1,80p" "$out/meta/phylo_xlv_array.sbatch"'
+export PATH="$HOME/.juliaup/bin:$PATH"; bash -n bench/phylo_xlv_drac_submit.sh
+export PATH="$HOME/.juliaup/bin:$PATH"; d=$(mktemp -d); PHYLO_XLV_REPS=1 PHYLO_XLV_LAMBDAS=0 PHYLO_XLV_N_SPECIES=3 PHYLO_XLV_N_SITES=8 PHYLO_XLV_K=1 PHYLO_XLV_SCENARIOS=main PHYLO_XLV_TARGETS=none PHYLO_XLV_ITERATIONS=5 bench/phylo_xlv_drac_submit.sh --out "$d"; rg -n "julia_version|julia_depot|case|module load julia|\"/.*/julia\" --project|\"julia\" --project" "$d/meta/session.txt" "$d/meta/phylo_xlv_array.sbatch"
+ssh -o BatchMode=yes nibi 'squeue -j 16929004 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; tail -n 220 /project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-blv-iter80-2h-20260629-1008/logs/phylo_xlv-16929004-1.out 2>/dev/null || true; tail -n 120 /project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-blv-iter80-2h-20260629-1008/logs/phylo_xlv-16929004-1.err 2>/dev/null || true; cat /project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-blv-iter80-2h-20260629-1008/results/result_000001.csv 2>/dev/null || true'
+```
+
+### Result
+
+Narval p=150, K=2 B_lv-only job `64331208_1` is still live. The fit converged
+in `67` iterations after `1001.39s`; at the latest poll it was still inside the
+`B_lv` Wald interval step at about `41:58` wall time.
+
+Submitted one bounded fallback sizing probe on Nibi:
+
+- Nibi job `16929004`;
+- output directory
+  `/project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-blv-iter80-2h-20260629-1008`;
+- source synced from local head `a0e0f91` plus the then-uncommitted working tree;
+- `scenario=main`, `lambda=0`, `n_species=125`, `n_sites=125`, `K=2`,
+  `q_lv=1`, `K_phy=1`, one seed/task;
+- `--targets B_lv`, `--methods wald`, `iterations=80`, `time=2h`, `mem=8G`.
+
+At the latest poll, Nibi job `16929004_1` was running on node `c9` and had
+entered the fit step. This fallback job was generated before the launcher pin
+below, and its batch stderr shows the site module reloaded
+`julia/1.10.10 => julia/1.12.5`. Treat this as timing-bracket evidence only,
+not final production evidence.
+
+Patched `bench/phylo_xlv_drac_submit.sh` so an unset `PHYLO_XLV_JULIA` records
+the current `command -v julia` absolute executable instead of the bare word
+`julia`. The generated sbatch `case` guard then skips `module load julia` for an
+absolute path, preserving an intentionally loaded Julia module/version for
+future DRAC submissions.
+
+Validation:
+
+- `bash -n bench/phylo_xlv_drac_submit.sh` passed.
+- A write-only tiny submit probe wrote one task and generated an sbatch with
+  `case "/Users/z3437171/.juliaup/bin/julia" in` and
+  `"/Users/z3437171/.juliaup/bin/julia" --project=. bench/phylo_xlv_drac_task.jl`.
+- `/tmp/gllvm-dashboard` was updated through build `r69` with a compute-status
+  table and the two live sizing probes; JSON validation passed. The dashboard
+  files are outside this repository and are served live only.
+
+### Claim Boundary
+
+IN: launcher version pinning for future DRAC jobs and one p=125, K=2 B_lv-only
+fallback sizing probe. PARTIAL: p=150 and p=125 B_lv timings are still live and
+unresolved. OUT: no `>=500` reps/cell production coverage array, no p=125/p=150
+coverage claim, no phylo-signal coverage claim, and no public R grammar exposure.

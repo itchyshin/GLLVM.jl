@@ -79,7 +79,11 @@ time_limit="${PHYLO_XLV_TIME:-0-02:00}"
 mem="${PHYLO_XLV_MEM:-8G}"
 cpus="${PHYLO_XLV_CPUS:-1}"
 throttle="${PHYLO_XLV_THROTTLE:-100}"
-julia_cmd="${PHYLO_XLV_JULIA:-julia}"
+if [[ -n "${PHYLO_XLV_JULIA:-}" ]]; then
+  julia_cmd="$PHYLO_XLV_JULIA"
+else
+  julia_cmd="$(command -v julia 2>/dev/null || echo julia)"
+fi
 depot="${PHYLO_XLV_DEPOT:-}"
 account="${PHYLO_XLV_ACCOUNT:-}"
 
