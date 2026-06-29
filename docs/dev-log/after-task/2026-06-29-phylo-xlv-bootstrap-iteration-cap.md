@@ -34,6 +34,11 @@ uncapped Nibi bootstrap-only canary `16951694` is still running, and a duplicate
 Nibi canary `16951692` had just been cancelled. Launching another job before
 the active canary finishes would muddy the evidence ledger.
 
+Follow-up: after the harness commit was clean, one Narval capped comparison was
+kept as the single bounded canary: job `64365792`, `n_boot = 30`,
+`bootstrap_iterations = 120`. A later cap-80 duplicate, `64365831`, was
+cancelled before it started.
+
 The cap defaults to `nothing` rather than changing the bootstrap default. This
 keeps existing statistical behavior unchanged and makes cheaper refits an
 explicit DRAC-canary choice.
@@ -109,7 +114,8 @@ sbatch command only through the guarded bootstrap argument array.
   canaries.
 - Found: uncapped p=80,K=2 bootstrap is still running after the fit, so it is
   not a cheap immediate rescue.
-- Deferred: no capped canary result exists yet.
+- Deferred: Narval capped canary `64365792` is pending; no capped result exists
+  yet.
 
 ## 8. Consistency Audit
 
@@ -126,8 +132,13 @@ grammar or R bridge claim was changed.
 A duplicate bootstrap-only Nibi job, `16951692`, existed and was cancelled by
 the live rescue checkpoint before this report. The active job is `16951694`.
 The dashboard briefly showed the duplicate id; the board was corrected to the
-active job id. Totoro is available for staging/coordination, but DRAC remains
-the evidence source for these interval canaries.
+active job id.
+
+Later, two capped Narval bootstrap canaries briefly existed. The cap-120 job
+`64365792` was kept; the cap-80 job `64365831` was cancelled before start.
+Totoro is available to the maintainer for staging/coordination, but it still
+fails non-interactive SSH from this Codex shell, so DRAC remains the unattended
+evidence source for these interval canaries.
 
 ## 10. Known Residuals
 
@@ -135,8 +146,9 @@ the evidence source for these interval canaries.
   canary.
 - Rorqual `14929297` is still running the profile/bootstrap canary in the
   profile step.
-- The new cap has local tests and parser validation, but no capped DRAC result
-  yet.
+- Narval `64365792` is pending as the single capped bootstrap comparison
+  (`n_boot = 30`, `bootstrap_iterations = 120`), but no capped DRAC result
+  exists yet.
 - Full `Pkg.test()` was not rerun for this narrow harness change.
 
 ## 11. Team Learning

@@ -5169,6 +5169,65 @@ PARTIAL: no capped bootstrap result exists yet. OUT: bootstrap coverage
 calibration, profile viability, production `>=500 reps/cell`, and public
 `gllvmTMB` phylo exposure.
 
+## 2026-06-29 16:49 MDT - Codex Narval capped bootstrap canary reconciliation
+
+### Commands
+
+```sh
+rsync -az --delete --exclude='.git/' --exclude='docs/build/' --exclude='docs/node_modules/' --exclude='docs/.vitepress/cache/' --exclude='.julia/' --exclude='*.ji' /private/tmp/gllvmjl-phylo-xlv/ narval:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/
+ssh -o BatchMode=yes narval 'set -euo pipefail; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || module load julia >/dev/null 2>&1 || true; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; julia --project=. -e "using Pkg; Pkg.instantiate()"; julia --project=. bench/phylo_xlv_drac_task.jl --write-params /tmp/phylo_xlv_cap_probe_params.csv --reps 1 --lambdas 0.5 --n-species 20 --n-sites 20 --K 1 --q-lv 1 --K-phy 1 --scenarios main --seed0 20260629 --force; julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_xlv_cap_probe_params.csv --outdir /tmp/phylo_xlv_cap_probe_results --task-id 1 --methods bootstrap --targets none --iterations 1 --n-boot 2 --bootstrap-iterations 3 --dry-run'
+ssh -o BatchMode=yes narval 'set -euo pipefail; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || module load julia >/dev/null 2>&1 || true; out=/project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30cap80-narval-lambda05-rep1-20260629-1645; PHYLO_XLV_ACCOUNT=def-snakagaw_cpu PHYLO_XLV_DEPOT=/project/6098264/snakagaw/julia_depot PHYLO_XLV_JULIA="$(command -v julia)" PHYLO_XLV_REPS=1 PHYLO_XLV_LAMBDAS=0.5 PHYLO_XLV_N_SPECIES=80 PHYLO_XLV_N_SITES=80 PHYLO_XLV_K=2 PHYLO_XLV_Q_LV=1 PHYLO_XLV_K_PHY=1 PHYLO_XLV_SCENARIOS=main PHYLO_XLV_SEED0=72384100 PHYLO_XLV_TARGETS=B_lv PHYLO_XLV_METHODS=bootstrap PHYLO_XLV_N_BOOT=30 PHYLO_XLV_BOOT_ITERATIONS=80 PHYLO_XLV_ITERATIONS=400 PHYLO_XLV_TIME=0-03:00 PHYLO_XLV_MEM=4G PHYLO_XLV_THROTTLE=1 bash bench/phylo_xlv_drac_submit.sh --out "$out" --submit'
+ssh -o BatchMode=yes narval 'squeue -u snakagaw -o "%.18i %.9P %.32j %.8T %.10M %.6D %R"; scontrol show job 64365792 2>/dev/null || true; sed -n "1,80p" /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30iter120-narval-lambda05-rep1-20260629-1643/meta/session.txt; sed -n "1,120p" /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30iter120-narval-lambda05-rep1-20260629-1643/meta/phylo_xlv_array.sbatch'
+ssh -o BatchMode=yes narval 'scancel 64365831 || true; sleep 2; squeue -u snakagaw -o "%.18i %.9P %.32j %.8T %.10M %.6D %R"; sacct -j 64365792 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P 2>/dev/null || true; sacct -j 64365831 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P 2>/dev/null || true'
+ssh -o BatchMode=yes nibi 'squeue -j 16951694 -o "%.18i %.9P %.32j %.8T %.10M %.6D %R"; sacct -j 16951694 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P 2>/dev/null || true; echo results=$(find /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30-nibi-lambda05-rep1-20260629-1606/results -maxdepth 1 -name "result_*.csv" 2>/dev/null | wc -l)'
+ssh -o BatchMode=yes rorqual 'squeue -j 14929297 -o "%.18i %.9P %.32j %.8T %.10M %.6D %R"; sacct -j 14929297 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P 2>/dev/null || true; echo results=$(find /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-rorqual-lambda05-cirescue-rep1-nboot30-20260629-1525/results -maxdepth 1 -name "result_*.csv" 2>/dev/null | wc -l)'
+python3 -m json.tool /tmp/gllvm-dashboard/status.json >/tmp/gllvm-dashboard/status.validate.json
+```
+
+### Result
+
+Narval accepted the cap parser with the `/project` Julia depot. A cap-80
+canary submitted as `64365831`, but a concurrent/live Narval cap-120 canary
+`64365792` was already pending. To avoid duplicate capped bootstrap compute,
+cancelled `64365831` before it started:
+
+- `64365831_[1%1]`: `CANCELLED by 3143783`, elapsed `00:00:00`, `0` result
+  files.
+
+Kept Narval job `64365792` as the single capped bootstrap comparison:
+
+- output directory:
+  `/project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30iter120-narval-lambda05-rep1-20260629-1643`;
+- `scenario=main`, `lambda=0.5`, `n_species=80`, `n_sites=80`, `K=2`;
+- `targets=B_lv`, `methods=bootstrap`, `n_boot=30`;
+- `bootstrap_iterations=120`, `iterations=400`, `time=2h`, `mem=4G`;
+- `code_sync_head=3b9b1e6`, `depot=/project/6098264/snakagaw/julia_depot`;
+- latest poll: pending with reason `Priority`, `0` result files.
+
+Other live canaries at the same checkpoint:
+
+- Nibi `16951694_1`: running at `00:36:46`, uncapped bootstrap-only,
+  `0` result files.
+- Rorqual `14929297_1`: running at `01:20:31`, still in profile,
+  `0` result files.
+
+The local mission-control widget was updated to `/tmp/gllvm-dashboard` version
+`r130`; JSON validation passed.
+
+### Decision
+
+Use only one capped bootstrap comparison while the uncapped Nibi and profile
+Rorqual canaries run. Trillium remains an idle reserve. Fir and Totoro are not
+usable through non-interactive SSH from this Codex shell despite maintainer-side
+connectivity, so they are not evidence lanes yet.
+
+### Claim Boundary
+
+IN: one capped Narval bootstrap timing canary is pending, and duplicate capped
+compute was cancelled before start. PARTIAL: no capped bootstrap result exists
+yet. OUT: bootstrap coverage calibration, profile viability, production
+`>=500 reps/cell`, phylo-signal coverage, and public `gllvmTMB` phylo exposure.
+
 ## 2026-06-29 16:47 MDT - Codex Narval capped-bootstrap canary launch
 
 ### Commands
