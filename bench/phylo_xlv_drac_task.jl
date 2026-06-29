@@ -377,8 +377,14 @@ function phylo_signal_row(base, fit, Y, Sigma_phy, truth; level::Real)
     lower = fill(NaN, length(truth))
     upper = fill(NaN, length(truth))
     pd = true
+    cis = if isdefined(GLLVM, :_phylo_signal_wald_ci_all)
+        GLLVM._phylo_signal_wald_ci_all(fit; level = level, y = Y, Σ_phy = Sigma_phy)
+    else
+        [phylo_signal_wald_ci(fit, t; level = level, y = Y, Σ_phy = Sigma_phy)
+         for t in eachindex(truth)]
+    end
     for t in eachindex(truth)
-        ci = phylo_signal_wald_ci(fit, t; level = level, y = Y, Σ_phy = Sigma_phy)
+        ci = cis[t]
         lower[t] = ci.lower
         upper[t] = ci.upper
         pd = pd && ci.pd_hessian && ci.method == :transformed_wald

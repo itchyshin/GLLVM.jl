@@ -263,6 +263,66 @@ function transformed_wald_ci_derived(fit::GllvmFit, derived_fn_packed::Function;
             pd_hessian = true, method = :transformed_wald)
 end
 
+function _transformed_wald_ci_with_sigma(θ̂::AbstractVector, derived_fn_packed::Function,
+                                         Σ::Union{Nothing, AbstractMatrix}, pd::Bool;
+                                         transform::Symbol, level::Real)
+    h, back, (lo_bound, hi_bound) = _tw_link(transform)
+    g_hat = Float64(derived_fn_packed(θ̂))
+    failed = (; estimate = g_hat, lower = NaN, upper = NaN,
+              se_transformed = NaN, transform = transform,
+              pd_hessian = false, method = :failed)
+
+    if !isfinite(g_hat) || g_hat ≤ lo_bound || g_hat ≥ hi_bound
+        return failed
+    end
+    (Σ === nothing || !pd) && return merge(failed, (; pd_hessian = false))
+
+    hg = θ -> h(derived_fn_packed(θ))
+    grad = try
+        ForwardDiff.gradient(hg, θ̂)
+    catch
+        return merge(failed, (; pd_hessian = true))
+    end
+    (all(isfinite, grad)) || return merge(failed, (; pd_hessian = true))
+
+    var_h = dot(grad, Σ * grad)
+    if !isfinite(var_h) || var_h < 0
+        return merge(failed, (; pd_hessian = true))
+    end
+    se_h = sqrt(var_h)
+
+    z = quantile(Normal(), 0.5 + level / 2)
+    h_hat = h(g_hat)
+    return (; estimate = g_hat, lower = back(h_hat - z * se_h),
+            upper = back(h_hat + z * se_h), se_transformed = se_h,
+            transform = transform, pd_hessian = true,
+            method = :transformed_wald)
+end
+
+function _phylo_signal_wald_ci_all(fit::GllvmFit;
+                                   level::Real = 0.95,
+                                   y::Union{Nothing, AbstractMatrix} = nothing,
+                                   X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                                   Σ_phy::Union{Nothing, AbstractMatrix} = nothing)
+    0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
+    y === nothing && throw(ArgumentError(
+        "_phylo_signal_wald_ci_all requires the data matrix `y` " *
+        "(the same matrix passed to fit_gaussian_gllvm)"))
+    spec = _derived_spec(fit)
+    diag_Σphy = Σ_phy === nothing ? nothing : diag(Σ_phy)
+    θ̂ = fit.pars.θ_packed
+    h2 = phylo_signal(fit; Σ_phy = Σ_phy)
+    interior = any(h -> isfinite(h) && 0.0 < h < 1.0, h2)
+    Σ, pd = interior ? _tw_sigma_from_hessian(fit, y, X, Σ_phy) : (nothing, false)
+    out = Vector{NamedTuple}(undef, length(h2))
+    for t in eachindex(h2)
+        f = _make_phylo_signal_closure(spec, t; diag_Σphy = diag_Σphy)
+        out[t] = _transformed_wald_ci_with_sigma(θ̂, f, Σ, pd;
+                                                 transform = :logit, level = level)
+    end
+    return out
+end
+
 # ---------------------------------------------------------------------------
 # Thin convenience wrappers for the four built-in bounded quantities.
 # ---------------------------------------------------------------------------
