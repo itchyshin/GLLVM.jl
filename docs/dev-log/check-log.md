@@ -3691,3 +3691,45 @@ K=2 canary `14906861_[1%1]` was still pending with reason `ReqNodeNotAvail`.
 
 IN: one cross-cluster Nibi canary is staged and queued. OUT: no Nibi result,
 cross-cluster timing comparison, or production coverage claim exists yet.
+
+## 2026-06-29 07:29 MDT - Codex Nibi midpoint K=2 result
+
+### Commands
+
+```sh
+ssh -o BatchMode=yes nibi 'squeue -j 16923204 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; sacct -j 16923204 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem -P | tail -n 20; tail -n 160 /project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-iter80-3h-20260629-071900/logs/phylo_xlv-16923204-1.out; cat /project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-iter80-3h-20260629-071900/results/result_000001.csv'
+ssh -o BatchMode=yes nibi 'seff 16923204 2>/dev/null || true; sacct -j 16923204 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P'
+ssh -o BatchMode=yes rorqual 'squeue -j 14901949,14906861 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; sacct -j 14901949,14906861 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem -P | tail -n 30; sstat -j 14901949.batch --format=JobID,AveCPU,AveRSS,MaxRSS -P || true'
+```
+
+### Result
+
+Nibi job `16923204_1` completed with scheduler exit `0:0` in 9:02 wall time,
+used 8:20 CPU (`92.25%` efficiency), and used 2.18 GB max RAM. The heartbeat
+log shows compute-node package setup followed by task progress:
+
+- fit start at `2026-06-29T13:20:53Z`;
+- fit converged in 66 iterations after about 136.45 seconds;
+- B_lv Wald CI ran from `13:23:09Z` to `13:28:07Z`;
+- phylo-signal transformed-Wald CI ran from `13:28:07Z` to `13:28:11Z`;
+- result CSV written at `13:28:11Z`.
+
+Result row summary for this one-rep canary (`scenario=main`, `lambda=0`,
+`n_species=100`, `n_sites=100`, `K=2`, `q_lv=1`, `K_phy=1`, seed `21321132`):
+
+- `B_lv` Wald: `fit_converged=true`, `fit_iterations=66`, `usable=100/100`,
+  `covered=83/100`, one-rep entry coverage `0.83`, `pd_hessian=true`,
+  `bias_rmse=0.1074`.
+- `phylo_signal`: `fit_converged=true`, status `partial_or_failed`,
+  `usable=0/100`, `pd_hessian=false`.
+
+At the same poll, Rorqual p=200 K=2 job `14901949_1` was still running at
+3:16:23 elapsed with stale `AveCPU=02:09:20`; Rorqual p=100 K=2 canary
+`14906861_[1%1]` was still pending with reason `ReqNodeNotAvail`.
+
+### Claim Boundary
+
+IN: `n_species=100`, `n_sites=100`, `K=2` can converge and produce B_lv Wald
+interval rows on Nibi in a one-rep canary. OUT: this is not coverage evidence,
+does not validate phylo-signal intervals, and does not solve the p=200 K=2
+large-cell timing problem.
