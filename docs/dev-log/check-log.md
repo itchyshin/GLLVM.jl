@@ -4143,3 +4143,55 @@ phylo-signal interval is statistically unusable in this boundary cell (`0/200`
 usable entries), so phylo-signal coverage still cannot be claimed. OUT: no
 production coverage launch, no calibrated phylo-signal claim, and no resolution
 yet for the p=200, K=2 `B_lv` observed-information bottleneck.
+
+## 2026-06-29 09:53 MDT - Codex Rorqual batched phylo-signal confirmation
+
+### Commands
+
+```sh
+ssh -o BatchMode=yes rorqual 'squeue -j 14909918 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; tail -n 120 /project/6098264/snakagaw/phylo_xlv/pilot-large-k2-rorqual-phylo-target-batched-iter80-2h-20260629-0918/logs/phylo_xlv_h2b-14909918-1.out 2>/dev/null || true; cat /project/6098264/snakagaw/phylo_xlv/pilot-large-k2-rorqual-phylo-target-batched-iter80-2h-20260629-0918/results/result_000001.csv 2>/dev/null || true'
+ssh -o BatchMode=yes rorqual 'sacct -j 14909918 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P | tail -n 30; seff 14909918 2>/dev/null || true; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac-targettiming-batched 2>/dev/null || cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; julia --project=. bench/phylo_xlv_drac_summarise.jl --results /project/6098264/snakagaw/phylo_xlv/pilot-large-k2-rorqual-phylo-target-batched-iter80-2h-20260629-0918/results'
+ssh -o BatchMode=yes narval 'squeue -j 64331208 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; tail -n 120 /project/6098264/snakagaw/phylo_xlv/pilot-midlarge-k2-narval-blv-iter80-3h-20260629-0939/logs/phylo_xlv-64331208-1.out 2>/dev/null || true'
+ssh -o BatchMode=yes nibi 'squeue -j 16923927 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; tail -n 100 /project/6098264/snakagaw/phylo_xlv/pilot-large-k2-nibi-iter80-4h-20260629-073300/logs/phylo_xlv-16923927-1.out 2>/dev/null || true'
+```
+
+### Result
+
+Rorqual job `14909918_1` completed successfully and confirms the Nibi
+phylo-signal timing result:
+
+- scheduler state `COMPLETED`, exit code `0:0`;
+- elapsed `00:31:57`;
+- CPU efficiency `98.96%`;
+- memory `951.11 MB` of `8 GB`;
+- same cell and seed as Nibi job `16927325_1`:
+  `scenario=main`, `lambda=0`, `n_species=200`, `n_sites=200`, `K=2`,
+  seed `21371432`;
+- fit converged in `47` iterations;
+- fit seconds `1889.547`;
+- batched phylo-signal CI seconds `4.668`;
+- CI status `partial_or_failed`;
+- usable phylo-signal entries `0/200`;
+- `pd_hessian=false`;
+- summary RMSE `0.243`.
+
+The repeated p=200, K=2 phylo-signal-only result is deterministic to the
+reported precision: the point estimates are essentially zero while the mean
+truth is `0.164`, so the transformed-logit Wald interval is boundary-failed.
+The batched helper solved the per-trait Hessian timing issue, not the
+statistical boundary/identifiability issue.
+
+Other live state at this checkpoint:
+
+- Narval job `64331208_1` (`p=150`, `K=2`, `B_lv` only) fit converged in
+  `67` iterations after `1001.39s` and has entered `B_lv CI start method=wald`.
+- Old Nibi job `16923927_1` (`p=200`, `K=2`, all targets) is still in
+  `B_lv CI start method=wald` after fit convergence.
+
+### Claim Boundary
+
+IN: p=200, K=2 phylo-signal CI timing is now confirmed on two clusters at
+roughly 4.6 seconds after fit convergence. PARTIAL: p=200, K=2 phylo-signal
+coverage remains unusable (`0/200` usable) and therefore unclaimable. OUT:
+no production coverage array, no phylo-signal coverage claim, and no conclusion
+yet on whether `p=150`, `K=2` is a feasible `B_lv` large-cell boundary.
