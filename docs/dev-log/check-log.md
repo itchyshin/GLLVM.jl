@@ -3617,3 +3617,39 @@ The active Rorqual large K=2 diagnostic (`14901949_1`) was still running at
 IN: future DRAC tasks launched from this branch are inspectable by tailing their
 SLURM stdout. OUT: this heartbeat patch does not change the DGP, estimator,
 coverage target, or the still-running K=2 diagnostic.
+
+## 2026-06-29 07:13 MDT - Codex phylo X_lv midpoint K=2 canary
+
+### Commands
+
+```sh
+ssh -o BatchMode=yes rorqual 'bash -s' <<'REMOTE'
+# Manually wrote one-row params and sbatch files for:
+# scenario=main, pagel_lambda=0, n_species=100, n_sites=100, K=2,
+# q_lv=1, K_phy=1, rep=1, seed=21321132, iterations=80.
+# This avoided running the Julia parameter writer on the login node.
+REMOTE
+ssh -o BatchMode=yes rorqual 'squeue -j 14901949,14906861 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; sacct -j 14906861 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem -P | tail -n 20'
+ssh -o BatchMode=yes rorqual 'ps -p 1390438 -o pid,ppid,pgid,sid,etime,stat,wchan:24,comm,args || true'
+```
+
+### Result
+
+The normal submit helper was interrupted because its login-side
+`julia --write-params` call stayed silent and then left an orphaned Julia
+process in Lustre `cl_sync_io_wait` for the abandoned directory
+`pilot-mid-k2-iter80-2h-20260629-070902`. To keep compute on SLURM, Codex wrote
+a one-row parameter file and sbatch file directly under
+`/project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-manual-iter80-2h-20260629-071300`.
+
+Submitted midpoint K=2 canary job `14906861`:
+`n_species=100`, `n_sites=100`, `K=2`, `iterations=80`, `time=2h`, `mem=8G`,
+`methods=wald`, source `b3e164e-file-synced`. At the first poll it was pending
+as `14906861_[1%1]` with reason `ReqNodeNotAvail`. The p=200 K=2 diagnostic
+job `14901949_1` was still running at about 3:00 elapsed with stale
+`AveCPU=02:09:20`.
+
+### Claim Boundary
+
+IN: a single midpoint K=2 sizing canary is queued. OUT: no production coverage
+array has launched; no K=2 timing result exists yet.
