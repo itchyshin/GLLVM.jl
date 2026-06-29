@@ -87,6 +87,14 @@ fi
 depot="${PHYLO_XLV_DEPOT:-}"
 account="${PHYLO_XLV_ACCOUNT:-}"
 
+if [[ -n "$depot" ]]; then
+  if [[ -n "${JULIA_DEPOT_PATH:-}" ]]; then
+    export JULIA_DEPOT_PATH="$depot:${JULIA_DEPOT_PATH}"
+  else
+    export JULIA_DEPOT_PATH="$depot"
+  fi
+fi
+
 mkdir -p "$out/results" "$out/logs" "$out/meta"
 params="$out/meta/phylo_xlv_params.csv"
 job="$out/meta/phylo_xlv_array.sbatch"

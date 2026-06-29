@@ -4494,3 +4494,58 @@ IN: p=125,K=2,λ=0 phylo-signal timing is fast but unusable; p=125,K=2,λ=1
 needs more than 160 iterations for this seed. PARTIAL: λ=1 with the production
 iteration cap is pending. OUT: no phylo-signal coverage claim and no production
 coverage launch.
+
+## 2026-06-29 11:58 MDT - Codex cross-cluster K2 canary fan-out
+
+### Commands
+
+```sh
+gh pr list --state open
+git log --all --oneline --since="6 hours ago"
+ssh -o BatchMode=yes narval 'cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac && module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; julia --project=. -e "import Pkg; Pkg.instantiate(); Pkg.precompile()"'
+ssh -o BatchMode=yes rorqual 'cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac && module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; julia --project=. -e "import Pkg; Pkg.instantiate(); Pkg.precompile()"'
+bash -n bench/phylo_xlv_drac_submit.sh
+rsync -av bench/phylo_xlv_drac_submit.sh bench/phylo_xlv_drac_task.jl bench/phylo_xlv_drac_summarise.jl narval:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/
+rsync -av bench/phylo_xlv_drac_submit.sh bench/phylo_xlv_drac_task.jl bench/phylo_xlv_drac_summarise.jl rorqual:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/
+ssh -o BatchMode=yes rorqual 'cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac && module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; out=/project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-rorqual-lambda05-all-iter400-2h-20260629-1200; PHYLO_XLV_ACCOUNT=def-snakagaw_cpu PHYLO_XLV_DEPOT=/project/6098264/snakagaw/julia_depot PHYLO_XLV_JULIA="$(command -v julia)" PHYLO_XLV_REPS=1 PHYLO_XLV_LAMBDAS=0.5 PHYLO_XLV_N_SPECIES=125 PHYLO_XLV_N_SITES=125 PHYLO_XLV_K=2 PHYLO_XLV_SCENARIOS=main PHYLO_XLV_SEED0=21333708 PHYLO_XLV_TARGETS=all PHYLO_XLV_ITERATIONS=400 PHYLO_XLV_TIME=0-02:00 PHYLO_XLV_MEM=8G PHYLO_XLV_THROTTLE=1 bash bench/phylo_xlv_drac_submit.sh --out "$out" --submit'
+ssh -o BatchMode=yes narval 'cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac && module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; out=/project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-narval-lambda1-all-iter400-2h-20260629-1200; PHYLO_XLV_ACCOUNT=def-snakagaw_cpu PHYLO_XLV_DEPOT=/project/6098264/snakagaw/julia_depot PHYLO_XLV_JULIA="$(command -v julia)" PHYLO_XLV_REPS=1 PHYLO_XLV_LAMBDAS=1 PHYLO_XLV_N_SPECIES=125 PHYLO_XLV_N_SITES=125 PHYLO_XLV_K=2 PHYLO_XLV_SCENARIOS=main PHYLO_XLV_SEED0=21333709 PHYLO_XLV_TARGETS=all PHYLO_XLV_ITERATIONS=400 PHYLO_XLV_TIME=0-02:00 PHYLO_XLV_MEM=8G PHYLO_XLV_THROTTLE=1 bash bench/phylo_xlv_drac_submit.sh --out "$out" --submit'
+ssh -o BatchMode=yes nibi 'squeue -j 16933194 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; tail -n 120 /project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-lambda1-all-iter400-2h-20260629-1124/logs/phylo_xlv-16933194-1.out 2>/dev/null || true'
+ssh -o BatchMode=yes rorqual 'squeue -j 14916246 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; tail -n 120 /project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-rorqual-lambda05-all-iter400-2h-20260629-1200/logs/phylo_xlv-14916246-1.out 2>/dev/null || true'
+ssh -o BatchMode=yes narval 'squeue -j 64343216 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; tail -n 120 /project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-narval-lambda1-all-iter400-2h-20260629-1200/logs/phylo_xlv-64343216-1.out 2>/dev/null || true'
+```
+
+### Result
+
+Pre-edit coordination check still shows only the known draft GLLVM.jl PR #127.
+The cluster submit attempt exposed a launcher gap: `PHYLO_XLV_DEPOT` was used
+inside the generated `sbatch` script but not for the launcher's own lightweight
+parameter-writing step. On fresh Narval/Rorqual project depots, that step failed
+before `sbatch` with missing `Distributions`. `bench/phylo_xlv_drac_submit.sh`
+now exports `JULIA_DEPOT_PATH` from `PHYLO_XLV_DEPOT` before writing params and
+session metadata as well as inside the generated batch script. `bash -n` passed.
+
+Instantiated and precompiled the project on Narval and Rorqual under
+`/project/6098264/snakagaw/julia_depot`, synced the DRAC harness files, and
+submitted two one-task canaries:
+
+- Rorqual job `14916246`: p=125,K=2, λ=0.5, `targets=all`,
+  `iterations=400`, `time=2h`, `mem=8G`; latest poll showed pending with reason
+  `Priority`.
+- Narval job `64343216`: p=125,K=2, λ=1, `targets=all`, `iterations=400`,
+  `time=2h`, `mem=8G`; latest poll showed task `64343216_1` running on
+  `nc31109`, still in the fit step.
+- Existing Nibi job `16933194_1`: p=125,K=2, λ=1, `targets=all`,
+  `iterations=400`; latest poll showed it running on `c324`, still in the fit
+  step after about 26 minutes.
+
+Dashboard `/tmp/gllvm-dashboard` was updated to build `r80` with the live
+Nibi/Narval/Rorqual canary state.
+
+### Claim Boundary
+
+IN: cross-cluster canaries are now staged to test the p=125,K=2 large-cell
+boundary at λ=0.5 and λ=1 with production-like iteration caps. PARTIAL: the
+K=2 p=125 B_lv boundary is plausible from one seed but not yet production
+evidence, and phylo-signal remains unresolved. OUT: no >=500 reps/cell
+production coverage has launched; no public phylo-signal or full Model A
+coverage claim.
