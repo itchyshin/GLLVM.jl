@@ -4195,3 +4195,55 @@ roughly 4.6 seconds after fit convergence. PARTIAL: p=200, K=2 phylo-signal
 coverage remains unusable (`0/200` usable) and therefore unclaimable. OUT:
 no production coverage array, no phylo-signal coverage claim, and no conclusion
 yet on whether `p=150`, `K=2` is a feasible `B_lv` large-cell boundary.
+
+## 2026-06-29 09:58 MDT - Codex Nibi p200 K2 B_lv result
+
+### Commands
+
+```sh
+ssh -o BatchMode=yes nibi 'squeue -j 16923927 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; tail -n 120 /project/6098264/snakagaw/phylo_xlv/pilot-large-k2-nibi-iter80-4h-20260629-073300/logs/phylo_xlv-16923927-1.out 2>/dev/null || true; cat /project/6098264/snakagaw/phylo_xlv/pilot-large-k2-nibi-iter80-4h-20260629-073300/results/result_000001.csv 2>/dev/null || true'
+ssh -o BatchMode=yes nibi 'sacct -j 16923927 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P | tail -n 30; seff 16923927 2>/dev/null || true; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac 2>/dev/null || cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac-targettiming-batched; module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; julia --project=. bench/phylo_xlv_drac_summarise.jl --results /project/6098264/snakagaw/phylo_xlv/pilot-large-k2-nibi-iter80-4h-20260629-073300/results'
+```
+
+### Result
+
+Nibi job `16923927_1` completed successfully:
+
+- scheduler state `COMPLETED`, exit code `0:0`;
+- elapsed `02:18:45`;
+- CPU efficiency `99.15%`;
+- memory `2.14 GB` of `8 GB`;
+- source label `328e5e8-rsync-no-git`;
+- cell: `scenario=main`, `lambda=0`, `n_species=200`, `n_sites=200`,
+  `K=2`, `q_lv=1`, `K_phy=1`, seed `21371432`.
+
+Log timing:
+
+- fit start: `2026-06-29T13:36:12.953Z`;
+- fit done: `2026-06-29T13:59:27.443Z`;
+- fit seconds in result row: `1394.398`;
+- `B_lv CI start`: `2026-06-29T13:59:27.444Z`;
+- `B_lv CI done`: `2026-06-29T15:54:31.161Z`;
+- elapsed `B_lv` CI wall time from log timestamps: about `6904s`
+  (`1h55m04s`);
+- phylo-signal CI then took about `4.4s`.
+
+Result rows:
+
+- `B_lv` Wald: `usable=200/200`, `covered=173/200`, one-seed entry coverage
+  `0.865`, RMSE `0.070`, `pd_hessian=true`, status `ok`.
+- `phylo_signal` transformed-Wald: `usable=0/200`, status
+  `partial_or_failed`, RMSE `0.243`, `pd_hessian=false`.
+
+The current summariser read both rows but this older result schema predates the
+`ci_seconds` column, so the fit/CI timing above comes from the result row and
+stdout timestamps rather than the summary table.
+
+### Claim Boundary
+
+IN: p=200, K=2 `B_lv` Wald is technically computable and produces usable rows
+for this seed. PARTIAL: the one-seed entry coverage (`0.865`) is far below a
+coverage claim and the observed-information step took about 1h55m after fit
+convergence. OUT: no p=200, K=2 production run; at 500 reps/cell this timing is
+not a viable default production grid without narrowing the large-cell boundary
+or changing the interval strategy.
