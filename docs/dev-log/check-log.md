@@ -3861,3 +3861,51 @@ timing/evidence tasks without changing the Model A estimands. PARTIAL: the
 current large-cell Nibi canary still has unresolved B_lv interval wall time.
 OUT: this instrumentation is not coverage evidence and does not validate
 phylo-signal intervals.
+
+## 2026-06-29 08:52 MDT - Codex Nibi phylo-signal target diagnostic launch
+
+### Commands
+
+```sh
+ssh -o BatchMode=yes nibi 'squeue -j 16923927 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; sacct -j 16923927 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P | tail -n 40; tail -n 220 /project/6098264/snakagaw/phylo_xlv/pilot-large-k2-nibi-iter80-4h-20260629-073300/logs/phylo_xlv-16923927-1.out 2>/dev/null || true; cat /project/6098264/snakagaw/phylo_xlv/pilot-large-k2-nibi-iter80-4h-20260629-073300/results/result_000001.csv 2>/dev/null || true; seff 16923927 2>/dev/null || true'
+rsync -az --delete --exclude='.git' --exclude='.julia' --exclude='docs/build' --exclude='node_modules' ./ nibi:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac-targettiming/
+ssh -o BatchMode=yes nibi 'bash -s' <<'REMOTE'
+# Wrote one-row params and sbatch files for:
+# scenario=main, pagel_lambda=0, n_species=200, n_sites=200, K=2,
+# q_lv=1, K_phy=1, rep=1, seed=21371432, iterations=80,
+# source_head=b39b355-rsync-no-git, targets=phylo_signal,
+# time=2h, mem=8G.
+REMOTE
+ssh -o BatchMode=yes nibi 'squeue -j 16923927,16926545 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; sacct -j 16923927,16926545 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P | tail -n 80; tail -n 80 /project/6098264/snakagaw/phylo_xlv/pilot-large-k2-nibi-iter80-4h-20260629-073300/logs/phylo_xlv-16923927-1.out 2>/dev/null || true; cat /project/6098264/snakagaw/phylo_xlv/pilot-large-k2-nibi-iter80-4h-20260629-073300/results/result_000001.csv 2>/dev/null || true; tail -n 120 /project/6098264/snakagaw/phylo_xlv/pilot-large-k2-nibi-phylo-target-iter80-2h-20260629-0848/logs/phylo_xlv_h2-16926545-1.out 2>/dev/null || true; cat /project/6098264/snakagaw/phylo_xlv/pilot-large-k2-nibi-phylo-target-iter80-2h-20260629-0848/results/result_000001.csv 2>/dev/null || true'
+```
+
+### Result
+
+At the first poll, existing Nibi job `16923927_1` was still running at
+`01:11:20` and still inside the `B_lv` Wald CI step after the fit had converged
+in 47 iterations (`1394.49` seconds). No result CSV existed.
+
+Synced current local branch `b39b355` to a separate staged source tree,
+`/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac-targettiming/`, without
+overwriting the running job's old `328e5e8` source tree. Submitted one
+target-instrumented Nibi diagnostic:
+
+- job `16926545`;
+- output directory
+  `/project/6098264/snakagaw/phylo_xlv/pilot-large-k2-nibi-phylo-target-iter80-2h-20260629-0848`;
+- `scenario=main`, `lambda=0`, `n_species=200`, `n_sites=200`, `K=2`,
+  `q_lv=1`, `K_phy=1`, seed `21371432`;
+- `--targets phylo_signal`, `--methods wald`, `iterations=80`, `time=2h`,
+  `mem=8G`.
+
+At the post-submit poll, job `16926545_[1%1]` was pending with reason
+`Priority`. Existing job `16923927_1` was still running at `01:14:05`, still in
+the `B_lv` CI step, and still had no result CSV.
+
+### Claim Boundary
+
+IN: one bounded target-only diagnostic is queued to determine whether p=200,
+K=2 phylo-signal intervals are a separate timing blocker when `B_lv` is skipped.
+PARTIAL: no result from job `16926545` exists yet, and job `16923927` has not
+finished its `B_lv` CI. OUT: no production coverage launch and no new coverage
+claim.
