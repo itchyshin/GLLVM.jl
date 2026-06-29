@@ -3455,15 +3455,130 @@ Results so far: submitted job `14898092`, a one-task `n_species=200`,
 `n_sites=200`, `K=1`, `iterations=80`, 2-hour diagnostic. At recording time it
 was pending on priority with no result file.
 
-Not run yet: final inspection of job `14898092`, any longer successful
-`n_species=200` pilot, profile/bootstrap timing, or the production 500
-reps/cell campaign.
+Final inspection of job `14898092`:
+
+```sh
+ssh -o BatchMode=yes rorqual 'cat /project/6098264/snakagaw/phylo_xlv/pilot-large-iter80-2h-20260629-025000/results/result_000001.csv; seff 14898092'
+ssh -o BatchMode=yes rorqual 'set -euo pipefail; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023; module load julia/1.10.10; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; julia --project=. bench/phylo_xlv_drac_summarise.jl --results /project/6098264/snakagaw/phylo_xlv/pilot-large-iter80-2h-20260629-025000/results'
+```
+
+Results: job `14898092` completed in 1:03:55, used 1.82 GB out of 8 GB, and
+wrote a converged `K=1`, `n_species=200`, `n_sites=200`, `iterations=80` result.
+The fit converged in 21 iterations with `fit_seconds=627.64`; the `B_lv` Wald
+row had 200/200 usable entries and one-rep entry coverage 0.775. The
+phylo-signal transformed-Wald row again had zero usable intervals and
+`partial_or_failed` status.
+
+Depot override hardening:
+
+```sh
+bash -n bench/phylo_xlv_drac_submit.sh
+export PATH="$HOME/.juliaup/bin:$PATH"; rm -rf /tmp/phylo_xlv_depot_override_probe
+local_julia=$(command -v julia)
+PHYLO_XLV_REPS=1 PHYLO_XLV_LAMBDAS=0 PHYLO_XLV_N_SPECIES=20 PHYLO_XLV_N_SITES=20 PHYLO_XLV_K=1 PHYLO_XLV_SCENARIOS=main PHYLO_XLV_TIME=0-00:10 PHYLO_XLV_MEM=4G PHYLO_XLV_THROTTLE=1 PHYLO_XLV_JULIA="$local_julia" PHYLO_XLV_DEPOT=/project/example/julia_depot bench/phylo_xlv_drac_submit.sh --out /tmp/phylo_xlv_depot_override_probe
+rg -n "depot=|JULIA_DEPOT_PATH|julia_depot|case" /tmp/phylo_xlv_depot_override_probe/meta/session.txt /tmp/phylo_xlv_depot_override_probe/meta/phylo_xlv_array.sbatch
+```
+
+Results: shell syntax passed. The write-only probe recorded
+`depot=/project/example/julia_depot` in session metadata and generated a sbatch
+script that puts `/project/example/julia_depot` first in `JULIA_DEPOT_PATH`,
+preserves any inherited `JULIA_DEPOT_PATH`, and leaves the run-local
+`$out/julia_depot` last. This avoids forcing many array tasks into the same
+fresh, run-local first depot when a prewarmed project depot is available.
+
+Depot-first two-task large pilot:
+
+```sh
+rsync -az --delete --exclude='.git/' --exclude='docs/build/' --exclude='docs/node_modules/' --exclude='docs/.vitepress/cache/' --exclude='.julia/' --exclude='*.ji' /private/tmp/gllvmjl-phylo-xlv/ rorqual:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/
+ssh -o BatchMode=yes rorqual 'bash -s' <<'REMOTE'
+set -euo pipefail
+root=/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac
+cd "$root"
+module load StdEnv/2023
+module load julia/1.10.10
+export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}
+export PHYLO_XLV_ACCOUNT=def-snakagaw_cpu
+export PHYLO_XLV_DEPOT=/project/6098264/snakagaw/julia_depot
+export PHYLO_XLV_REPS=1
+export PHYLO_XLV_LAMBDAS=0
+export PHYLO_XLV_SCENARIOS=main
+export PHYLO_XLV_K=1,2
+export PHYLO_XLV_THROTTLE=2
+export PHYLO_XLV_MEM=8G
+export PHYLO_XLV_N_SPECIES=200
+export PHYLO_XLV_N_SITES=200
+export PHYLO_XLV_TIME=0-02:00
+export PHYLO_XLV_ITERATIONS=80
+export PHYLO_XLV_JULIA=/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Core/julia/1.10.10/bin/julia
+out=/project/6098264/snakagaw/phylo_xlv/pilot-large-iter80-depot-20260629-040334
+bench/phylo_xlv_drac_submit.sh --out "$out" --submit
+REMOTE
+```
+
+Result inspection:
+
+```sh
+ssh -o BatchMode=yes rorqual 'cat /project/6098264/snakagaw/phylo_xlv/pilot-large-iter80-depot-20260629-040334/results/result_000001.csv; seff 14899045_1; seff 14899045_2'
+ssh -o BatchMode=yes rorqual 'set -euo pipefail; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023; module load julia/1.10.10; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; julia --project=. bench/phylo_xlv_drac_summarise.jl --results /project/6098264/snakagaw/phylo_xlv/pilot-large-iter80-depot-20260629-040334/results'
+```
+
+Results: the generated sbatch used the prewarmed project depot first. Job
+`14899045_1` (`K=1`) completed in 1:15:33, used 2.00 GB, and reproduced the
+`B_lv` Wald result from the single-task run (`fit_iterations=21`,
+`fit_seconds=627.80`, 200/200 usable B_lv entries, one-rep entry coverage
+0.775). Job `14899045_2` (`K=2`) timed out at 2:00:04 with no result file,
+used 1.99 GB, and logged only the SLURM time-limit cancellation. The K=2 large
+cell remains the long pole.
+
+K=2 follow-up diagnostics:
+
+```sh
+ssh -o BatchMode=yes rorqual 'bash -s' <<'REMOTE'
+set -euo pipefail
+root=/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac
+cd "$root"
+module load StdEnv/2023
+module load julia/1.10.10
+export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}
+export PHYLO_XLV_ACCOUNT=def-snakagaw_cpu
+export PHYLO_XLV_DEPOT=/project/6098264/snakagaw/julia_depot
+export PHYLO_XLV_REPS=1
+export PHYLO_XLV_LAMBDAS=0
+export PHYLO_XLV_SCENARIOS=main
+export PHYLO_XLV_K=2
+export PHYLO_XLV_THROTTLE=1
+export PHYLO_XLV_MEM=8G
+export PHYLO_XLV_N_SPECIES=200
+export PHYLO_XLV_N_SITES=200
+export PHYLO_XLV_JULIA=/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Core/julia/1.10.10/bin/julia
+
+out1=/project/6098264/snakagaw/phylo_xlv/pilot-large-k2-iter5-20260629-061042
+export PHYLO_XLV_TIME=0-01:00
+export PHYLO_XLV_ITERATIONS=5
+bench/phylo_xlv_drac_submit.sh --out "$out1" --submit
+
+out2=/project/6098264/snakagaw/phylo_xlv/pilot-large-k2-iter80-4h-20260629-061114
+export PHYLO_XLV_TIME=0-04:00
+export PHYLO_XLV_ITERATIONS=80
+bench/phylo_xlv_drac_submit.sh --out "$out2" --submit
+REMOTE
+```
+
+Results so far: job `14901946` (`K=2`, `iterations=5`) completed in 4:45, used
+587.62 MB, and wrote a `not_converged` row after 5 iterations with
+`fit_seconds=272.47`. Job `14901949` (`K=2`, `iterations=80`, 4-hour cap) was
+still running at about 29 minutes with no result file and live `MaxRSS` below
+1 GB when this entry was written.
+
+Not run yet: final inspection of active K=2 job `14901949`, profile/bootstrap
+timing, or the production 500 reps/cell campaign.
 
 ### Claim Boundary
 
 IN: small-species Rorqual plumbing works; `n_species=100`, `n_sites=100`, `K=1`
-converged in the one-rep diagnostic; `n_species=200` can return a
-`not_converged` row when capped at 5 iterations. PARTIAL: valid
-`n_species=200`, `n_sites=200` convergence and interval timing remain active
-diagnostics. OUT: production DRAC coverage, public phylo Model A coverage
-claims, and R-side phylo `lv=~x` exposure.
+converged in the one-rep diagnostic; valid `n_species=200`, `n_sites=200`,
+`K=1`, `iterations=80` now completes with finite `B_lv` Wald output; `K=2`
+can return a `not_converged` row when capped at 5 iterations. PARTIAL: valid
+`n_species=200`, `n_sites=200`, `K=2` convergence and interval timing remain
+active diagnostics. OUT: production DRAC coverage, public phylo Model A
+coverage claims, and R-side phylo `lv=~x` exposure.

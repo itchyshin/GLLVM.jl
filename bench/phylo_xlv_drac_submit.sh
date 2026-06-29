@@ -30,6 +30,7 @@ Environment overrides:
   PHYLO_XLV_CPUS         cpus per task (default: 1)
   PHYLO_XLV_THROTTLE     array throttle (default: 100)
   PHYLO_XLV_JULIA        julia executable/module command target (default: julia)
+  PHYLO_XLV_DEPOT        optional first Julia depot path for compute jobs
 
 Default mode is write-only. Add --submit to call sbatch.
 USAGE
@@ -77,6 +78,7 @@ mem="${PHYLO_XLV_MEM:-8G}"
 cpus="${PHYLO_XLV_CPUS:-1}"
 throttle="${PHYLO_XLV_THROTTLE:-100}"
 julia_cmd="${PHYLO_XLV_JULIA:-julia}"
+depot="${PHYLO_XLV_DEPOT:-}"
 account="${PHYLO_XLV_ACCOUNT:-}"
 
 mkdir -p "$out/results" "$out/logs" "$out/meta"
@@ -107,6 +109,7 @@ cd "$repo_root"
   git status --short 2>/dev/null || echo "git_status_unavailable"
   echo "git_status_short_end"
   echo "julia_version=$("$julia_cmd" --version)"
+  echo "depot=$depot"
   echo "reps=$reps"
   echo "lambdas=$lambdas"
   echo "n_species=$n_species"
@@ -155,7 +158,17 @@ if command -v module >/dev/null 2>&1; then
   esac
 fi
 
-export JULIA_DEPOT_PATH="$out/julia_depot:\${JULIA_DEPOT_PATH:-}"
+if [[ -n "$depot" ]]; then
+  if [[ -n "\${JULIA_DEPOT_PATH:-}" ]]; then
+    export JULIA_DEPOT_PATH="$depot:\${JULIA_DEPOT_PATH}:$out/julia_depot"
+  else
+    export JULIA_DEPOT_PATH="$depot:$out/julia_depot"
+  fi
+elif [[ -n "\${JULIA_DEPOT_PATH:-}" ]]; then
+  export JULIA_DEPOT_PATH="\${JULIA_DEPOT_PATH}:$out/julia_depot"
+else
+  export JULIA_DEPOT_PATH="$out/julia_depot"
+fi
 export OMP_NUM_THREADS="\${SLURM_CPUS_PER_TASK:-$cpus}"
 export OPENBLAS_NUM_THREADS="\${SLURM_CPUS_PER_TASK:-$cpus}"
 

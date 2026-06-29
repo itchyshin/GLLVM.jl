@@ -187,15 +187,28 @@ Additional sizing diagnostics:
   `fit_seconds=40.52`, and wrote finite `B_lv` Wald rows. The phylogenetic
   signal transformed-Wald row remained `partial_or_failed` with zero usable
   intervals.
-- Job `14898092`: active follow-up diagnostic at recording time,
-  `n_species=200`, `n_sites=200`, `K=1`, `iterations=80`, 2-hour limit.
+- Job `14898092`: `n_species=200`, `n_sites=200`, `K=1`, `iterations=80`.
+  This completed in 1:03:55, converged in 21 fit iterations with
+  `fit_seconds=627.64`, and wrote finite `B_lv` Wald rows. The one-rep entry
+  coverage was 0.775, which is sizing output only, not coverage evidence.
+- The launcher now accepts `PHYLO_XLV_DEPOT`, allowing production pilots to put
+  a prewarmed project depot first and leave the run-local depot last. A local
+  write-only probe verified the generated `JULIA_DEPOT_PATH` order.
+- Job `14899045`: depot-first two-task large pilot with `n_species=200`,
+  `n_sites=200`, `K=1,2`, `iterations=80`. The `K=1` task completed in 1:15:33
+  and reproduced the finite `B_lv` Wald row; the `K=2` task timed out at the
+  2-hour limit with no result file.
+- Job `14901946`: `K=2`, `iterations=5`. This completed in 4:45 and wrote a
+  controlled `not_converged` row with `fit_seconds=272.47`.
+- Job `14901949`: active follow-up diagnostic at recording time,
+  `n_species=200`, `n_sites=200`, `K=2`, `iterations=80`, 4-hour limit.
 
 ## Not Run
 
 Full `Pkg.test()` rerun after launcher hardening, GitHub CI, profile/bootstrap
-methods, final result aggregation for active diagnostic `14898092`, any
-successful `n_species=200` convergence/interval pilot, and the >=500 reps/cell
-production campaign were not run. Fir and Totoro were not reachable
+methods, final result aggregation for active diagnostic `14901949`, any
+successful `n_species=200`, `K=2` convergence/interval pilot, and the >=500
+reps/cell production campaign were not run. Fir and Totoro were not reachable
 non-interactively from this session, but Rorqual BatchMode access was usable and
 accepted the pilot arrays.
 
@@ -203,8 +216,9 @@ accepted the pilot arrays.
 
 IN: DRAC launcher and summariser plumbing, local toy file-format smokes,
 Rorqual small-species pilot execution, fail-loud invalid-grid protection, and
-one-rep `n_species=100` convergence with finite `B_lv` Wald output. PARTIAL:
-valid `n_species=200` convergence/interval timing, profile/bootstrap cost
-calibration, production array sizing, `seff` right-sizing, and H² boundary
-behavior. OUT: calibrated Model A coverage, R-side
+one-rep `n_species=100` convergence plus `n_species=200`, `K=1` convergence
+with finite `B_lv` Wald output. PARTIAL: valid `n_species=200`, `K=2`
+convergence/interval timing, profile/bootstrap cost calibration, production
+array sizing, `seff` right-sizing, and H² boundary behavior. OUT: calibrated
+Model A coverage, R-side
 `phylo_latent(..., lv=~x)` exposure, non-Gaussian phylo `X_lv`, and Model B.
