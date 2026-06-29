@@ -4305,3 +4305,64 @@ IN: launcher version pinning for future DRAC jobs and one p=125, K=2 B_lv-only
 fallback sizing probe. PARTIAL: p=150 and p=125 B_lv timings are still live and
 unresolved. OUT: no `>=500` reps/cell production coverage array, no p=125/p=150
 coverage claim, no phylo-signal coverage claim, and no public R grammar exposure.
+
+## 2026-06-29 10:24 MDT - Codex p125 K2 fallback rerun
+
+### Commands
+
+```sh
+ssh -o BatchMode=yes nibi 'sacct -j 16929004 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P | tail -n 30; seff 16929004 2>/dev/null || true; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; julia --project=. bench/phylo_xlv_drac_summarise.jl --results /project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-blv-iter80-2h-20260629-1008/results'
+ssh -o BatchMode=yes nibi 'module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; command -v julia; julia --version; squeue -u $USER -o "%.18i %.9P %.30j %.8u %.10M %.6D %R" | head -n 20'
+rsync -az --delete --exclude='.git' --exclude='.julia' --exclude='docs/build' --exclude='docs/node_modules' --exclude='docs/.vitepress/cache' --exclude='*.ji' ./ nibi:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/
+ssh -o BatchMode=yes nibi 'set -euo pipefail; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; export PHYLO_XLV_JULIA="$(command -v julia)"; export PHYLO_XLV_ACCOUNT=def-snakagaw_cpu; export PHYLO_XLV_REPS=1; export PHYLO_XLV_LAMBDAS=0; export PHYLO_XLV_N_SPECIES=125; export PHYLO_XLV_N_SITES=125; export PHYLO_XLV_K=2; export PHYLO_XLV_SCENARIOS=main; export PHYLO_XLV_TARGETS=B_lv; export PHYLO_XLV_METHODS=wald; export PHYLO_XLV_ITERATIONS=160; export PHYLO_XLV_TIME=0-03:00; export PHYLO_XLV_MEM=8G; export PHYLO_XLV_THROTTLE=1; export PHYLO_XLV_DEPOT=/project/6098264/snakagaw/julia_depot; out=/project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-blv-iter160-3h-20260629-1024; bench/phylo_xlv_drac_submit.sh --out "$out" --submit; sed -n "1,90p" "$out/meta/session.txt"; sed -n "1,90p" "$out/meta/phylo_xlv_array.sbatch"'
+ssh -o BatchMode=yes nibi 'squeue -j 16929661 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; tail -n 120 /project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-blv-iter160-3h-20260629-1024/logs/phylo_xlv-16929661-1.out 2>/dev/null || true; tail -n 80 /project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-blv-iter160-3h-20260629-1024/logs/phylo_xlv-16929661-1.err 2>/dev/null || true; cat /project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-blv-iter160-3h-20260629-1024/results/result_000001.csv 2>/dev/null || true'
+ssh -o BatchMode=yes narval 'squeue -j 64331208 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; tail -n 220 /project/6098264/snakagaw/phylo_xlv/pilot-midlarge-k2-narval-blv-iter80-3h-20260629-0939/logs/phylo_xlv-64331208-1.out 2>/dev/null || true; cat /project/6098264/snakagaw/phylo_xlv/pilot-midlarge-k2-narval-blv-iter80-3h-20260629-0939/results/result_000001.csv 2>/dev/null || true'
+```
+
+### Result
+
+Nibi p=125, K=2 B_lv fallback job `16929004_1` completed with scheduler exit
+`0:0`, but the model fit did not converge:
+
+- elapsed `00:09:30`;
+- CPU efficiency `97.89%`;
+- memory `2.64 GB` of `8 GB`;
+- fit status row: `target=fit`, `method=none`, `fit_converged=false`,
+  `fit_iterations=80`, `fit_seconds=461.063`, `ci_status=not_converged`;
+- no `B_lv` CI row was written.
+
+This job remains timing-bracket evidence only because its generated sbatch was
+from the pre-pin script and stderr showed the site module reloaded
+`julia/1.10.10 => julia/1.12.5`.
+
+Verified the pinned Julia path on Nibi:
+
+- `command -v julia` after `module load julia/1.10.10`:
+  `/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Core/julia/1.10.10/bin/julia`;
+- `julia --version`: `julia version 1.10.10`.
+
+Submitted one corrected, still bounded rerun:
+
+- Nibi job `16929661`;
+- output directory
+  `/project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-blv-iter160-3h-20260629-1024`;
+- same cell: `scenario=main`, `lambda=0`, `n_species=125`, `n_sites=125`,
+  `K=2`, `q_lv=1`, `K_phy=1`, one seed/task;
+- `--targets B_lv`, `--methods wald`, `iterations=160`, `time=3h`, `mem=8G`;
+- generated sbatch uses absolute Julia 1.10.10:
+  `"/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Core/julia/1.10.10/bin/julia" --project=. ...`.
+
+Immediate queue state:
+
+- Nibi job `16929661_[1%1]` was pending with reason `Priority`.
+- Narval job `64331208_1` was still running at `50:25` wall time; its fit had
+  converged in `67` iterations after `1001.39s` and it remained inside the
+  `B_lv` Wald CI step.
+
+### Claim Boundary
+
+IN: p=125,K=2,iterations=80 is not sufficient for the tested seed, and the
+launcher pin works in a real Nibi submit. PARTIAL: corrected p=125,K=2,
+iterations=160 and p=150,K=2 B_lv timing remain live. OUT: no production
+coverage launch, no p=125/p=150 feasibility claim, and no calibrated coverage
+claim.
