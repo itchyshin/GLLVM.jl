@@ -5488,3 +5488,68 @@ bootstrap request metadata in their result rows.
 IN: future DRAC outputs are more self-describing, and the three interval-rescue
 canaries are still live. OUT: no bootstrap/profile result yet, no production
 coverage, no phylo-signal coverage, and no public R phylo exposure.
+
+## 2026-06-29 17:26 MDT - Codex post-merge CI and DRAC reachability poll
+
+### Commands
+
+```sh
+gh run view 28408515317 --repo itchyshin/gllvmTMB --json status,conclusion,jobs,url
+ssh -o BatchMode=yes nibi 'job=16951694; out=/project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30-nibi-lambda05-rep1-20260629-1606; squeue -j ${job} -o "%i %T %M %l %D %R" --noheader || true; find ${out}/results -maxdepth 1 -type f -name "result_*.csv" 2>/dev/null | wc -l; tail -n 8 ${out}/logs/phylo_xlv-16951694-1.out; tail -n 8 ${out}/logs/phylo_xlv-16951694-1.err'
+ssh -o BatchMode=yes narval 'job=64365792; out=/project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30iter120-narval-lambda05-rep1-20260629-1643; squeue -j ${job} -o "%i %T %M %l %D %R" --noheader || true; find ${out}/results -maxdepth 1 -type f -name "result_*.csv" 2>/dev/null | wc -l; tail -n 8 ${out}/logs/phylo_xlv-64365792-1.out; tail -n 8 ${out}/logs/phylo_xlv-64365792-1.err'
+ssh -o BatchMode=yes rorqual 'job=14929297; out=/project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-rorqual-lambda05-cirescue-rep1-nboot30-20260629-1525; squeue -j ${job} -o "%i %T %M %l %D %R" --noheader || true; find ${out}/results -maxdepth 1 -type f -name "result_*.csv" 2>/dev/null | wc -l; tail -n 8 ${out}/logs/phylo_xlv-14929297-1.out; tail -n 8 ${out}/logs/phylo_xlv-14929297-1.err'
+ssh -o BatchMode=yes fir 'hostname; date; squeue -u snakagaw --noheader | wc -l'
+ssh -o BatchMode=yes trillium 'hostname; date; squeue -u snakagaw --noheader | wc -l'
+ssh -o BatchMode=yes vulcan 'hostname; date; squeue -u snakagaw --noheader | wc -l'
+ssh -o BatchMode=yes tamia 'hostname; date; squeue -u snakagaw --noheader | wc -l'
+ssh -o BatchMode=yes totoro 'hostname; date; test -d /project/6098264/snakagaw/phylo_xlv && find /project/6098264/snakagaw/phylo_xlv -maxdepth 1 -type d -name "pilot-k2-p80-blv-*" | wc -l || true'
+ssh -o BatchMode=yes killarney 'hostname; date; squeue -u snakagaw --noheader | wc -l'
+jq . /tmp/gllvm-dashboard/status.json >/tmp/gllvm-dashboard/status.validate
+```
+
+### Result
+
+The gllvmTMB post-merge main R-CMD-check for PR #571 completed successfully:
+
+- run `28408515317`, status `completed`, conclusion `success`;
+- job `ubuntu-latest (release)` completed at `2026-06-29T23:20:00Z`;
+- `Run r-lib/actions/check-r-package@v2` completed successfully.
+
+Latest DRAC interval-rescue canary state:
+
+- Nibi `16951694_1`: running at `01:14:02`, still in bootstrap, `0` result
+  files. Fit converged in `192` iterations / `169.50s`; bootstrap started at
+  `2026-06-29T22:12:46Z`.
+- Narval `64365792_1`: running at `00:29:10`, still in capped bootstrap, `0`
+  result files. Fit converged in `128` iterations / `148.61s`; bootstrap
+  started at `2026-06-29T22:57:33Z`.
+- Rorqual `14929297_1`: running at `01:57:49`, still in profile, `0` result
+  files. Fit converged in `178` iterations / `230.94s`; Wald completed and
+  profile started at `2026-06-29T21:32:55Z`.
+
+Batch SSH reachability from this shell:
+
+- confirmed idle: Fir, Trillium, Vulcan, Tamia;
+- active canaries: Nibi, Narval, Rorqual;
+- Killarney probe did not return promptly and was stopped;
+- Totoro is network-reachable but not unattended-batch reachable from this
+  shell: public key authentication was rejected and password auth would be
+  interactive.
+
+Dashboard `/tmp/gllvm-dashboard` was updated to `r139`; JSON validation passed.
+
+### Decision
+
+Do not launch production coverage while all three interval-rescue canaries have
+no result row. Treat the Rorqual profile canary as an accumulating wall-time
+warning, not as evidence, until it either writes a CSV or times out. Keep Fir,
+Trillium, Vulcan, and Tamia as reserve capacity for the next bounded launch
+after the current canaries choose a viable method.
+
+### Claim Boundary
+
+IN: ordinary native-TMB Gaussian t-critical coverage is now merged and green on
+main in `gllvmTMB`; DRAC reachability has been refreshed; three phylo interval
+canaries are alive and past fitting. OUT: no phylo bootstrap/profile result
+yet, no phylo production coverage, no phylo-signal coverage, no source-specific
+R grammar exposure, and no mixed-family claim.
