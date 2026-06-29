@@ -4022,3 +4022,71 @@ p=200, K=2 target-only canaries queued. PARTIAL: no batched target result exists
 yet, and the B_lv Wald CI timing bottleneck remains unresolved. OUT: no
 production coverage launch, no calibrated coverage claim, and no public R
 grammar exposure.
+
+## 2026-06-29 09:31 MDT - Codex Narval mid-large B_lv sizing pilot
+
+### Commands
+
+```sh
+ssh -o BatchMode=yes totoro 'hostname; pwd; uptime'
+ssh -o BatchMode=yes fir 'hostname; squeue -u $USER -o "%.18i %.9P %.30j %.8u %.10M %.6D %R" 2>/dev/null | head -n 20; sinfo -h -o "%P %a %l %D %t" 2>/dev/null | head -n 20'
+ssh -o BatchMode=yes narval 'hostname; squeue -u $USER -o "%.18i %.9P %.30j %.8u %.10M %.6D %R" 2>/dev/null | head -n 20; sinfo -h -o "%P %a %l %D %t" 2>/dev/null | head -n 20'
+ssh -o BatchMode=yes trillium 'hostname; squeue -u $USER -o "%.18i %.9P %.30j %.8u %.10M %.6D %R" 2>/dev/null | head -n 20; sinfo -h -o "%P %a %l %D %t" 2>/dev/null | head -n 20'
+ssh -o BatchMode=yes vulcan 'hostname; squeue -u $USER -o "%.18i %.9P %.30j %.8u %.10M %.6D %R" 2>/dev/null | head -n 20; sinfo -h -o "%P %a %l %D %t" 2>/dev/null | head -n 20'
+ssh -o BatchMode=yes narval 'ls -ld /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac 2>/dev/null || true; ls -ld /project/6098264/snakagaw/julia_depot 2>/dev/null || true; squeue -u $USER -o "%.18i %.9P %.30j %.8u %.10M %.6D %R" | head -n 20'
+rsync -az --delete --exclude='.git' --exclude='.julia' --exclude='docs/build' --exclude='docs/node_modules' --exclude='docs/.vitepress/cache' --exclude='*.ji' ./ narval:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/
+ssh -o BatchMode=yes narval 'set -euo pipefail; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023; module load julia/1.10.10; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; export JULIA_NUM_PRECOMPILE_TASKS=1; export JULIA_NUM_THREADS=1; julia --project=. -e "using Pkg; Pkg.instantiate(); Pkg.precompile(); using GLLVM; println(\"GLLVM load ok\")"'
+ssh -o BatchMode=yes narval 'set -euo pipefail; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023; module load julia/1.10.10; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; export PHYLO_XLV_ACCOUNT=def-snakagaw_cpu; export PHYLO_XLV_REPS=1; export PHYLO_XLV_LAMBDAS=0; export PHYLO_XLV_N_SPECIES=150; export PHYLO_XLV_N_SITES=150; export PHYLO_XLV_K=2; export PHYLO_XLV_SCENARIOS=main; export PHYLO_XLV_TARGETS=B_lv; export PHYLO_XLV_METHODS=wald; export PHYLO_XLV_ITERATIONS=80; export PHYLO_XLV_TIME=0-03:00; export PHYLO_XLV_MEM=8G; export PHYLO_XLV_THROTTLE=1; export PHYLO_XLV_DEPOT=/project/6098264/snakagaw/julia_depot; out=/project/6098264/snakagaw/phylo_xlv/pilot-midlarge-k2-narval-blv-iter80-3h-20260629-0939; bench/phylo_xlv_drac_submit.sh --out "$out" --submit; sed -n "1,80p" "$out/meta/session.txt"; sed -n "1,80p" "$out/meta/phylo_xlv_array.sbatch"'
+ssh -o BatchMode=yes narval 'squeue -j 64331208 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; sacct -j 64331208 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P | tail -n 30'
+ssh -o BatchMode=yes nibi 'squeue -j 16923927,16927325 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; sacct -j 16923927,16927325 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P | tail -n 40'
+ssh -o BatchMode=yes rorqual 'squeue -j 14909918 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; sacct -j 14909918 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P | tail -n 30'
+```
+
+### Result
+
+Cluster placement inventory:
+
+- Nibi and Rorqual remain the active p=200, K=2 timing probes.
+- Narval is reachable, has `/project/6098264/snakagaw`, had no active user job
+  at the queue check, and Julia 1.10.10 loaded successfully after
+  `Pkg.instantiate()` / `Pkg.precompile()`.
+- Fir and Trillium are reachable. Fir already had one user job in queue/running;
+  Trillium showed idle Neptune/S4H capacity, but `/project/6098264/snakagaw`
+  was not verified there during this pass.
+- Vulcan responded to the login probe, but the quick project/Julia probe produced
+  no usable staging output, so no work was submitted there.
+- Totoro is configured in `~/.ssh/config` but rejected this session's
+  noninteractive SSH attempt with `Permission denied (publickey,password)`.
+
+The first Narval submit attempt failed before `sbatch` because the staged Julia
+depot lacked required packages (`Distributions` was the first missing package).
+After running `Pkg.instantiate()` and `Pkg.precompile()` on Narval,
+`using GLLVM` succeeded.
+
+Submitted one bounded sizing pilot:
+
+- Narval job `64331208`;
+- output directory
+  `/project/6098264/snakagaw/phylo_xlv/pilot-midlarge-k2-narval-blv-iter80-3h-20260629-0939`;
+- source staged from local head `1c774a2` without `.git`;
+- `scenario=main`, `lambda=0`, `n_species=150`, `n_sites=150`, `K=2`,
+  `q_lv=1`, `K_phy=1`, one seed/task;
+- `--targets B_lv`, `--methods wald`, `iterations=80`, `time=3h`, `mem=8G`.
+
+Immediate status:
+
+- Narval job `64331208_[1%1]` was pending with reason `Priority`.
+- Rorqual batched phylo-signal job `14909918_1` was running at `00:11:17` and
+  still in the fit step.
+- Nibi batched phylo-signal job `16927325_1` was running at `00:11:01` and still
+  in the fit step.
+- Nibi all-target p=200, K=2 job `16923927_1` was running at `01:55:41`, still
+  inside the `B_lv` Wald CI step after fit convergence.
+
+### Claim Boundary
+
+IN: one additional mid-large `B_lv` timing pilot (`p=150`, `K=2`) is queued on
+Narval to locate the feasible large-cell boundary. PARTIAL: p=200, K=2 B_lv and
+batched phylo-signal timing remain unresolved. OUT: no >=500 reps/cell
+production coverage array, no calibrated phylo coverage claim, and no public R
+grammar exposure.
