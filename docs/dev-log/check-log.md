@@ -4635,3 +4635,56 @@ B_lv Hessian time and unusable phylo-signal Hessians.
 IN: fit-only failure-rate diagnostics for p=125,K=2 λ in `{0.5,1}` are queued.
 OUT: this is not coverage production, does not estimate interval coverage, and
 does not support a public Model A claim.
+
+## 2026-06-29 14:29 MDT - Codex p125 K2 fit-only diagnostic result
+
+### Commands
+
+```sh
+ssh -o BatchMode=yes rorqual 'squeue -j 14918100 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; sacct -j 14918100 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P | tail -n 170; echo results=$(find /project/6098264/snakagaw/phylo_xlv/pilot-k2-fitonly-rorqual-lambda05-1-rep10-20260629-1258/results -maxdepth 1 -name "result_*.csv" | wc -l); cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; julia --project=. bench/phylo_xlv_drac_summarise.jl --results /project/6098264/snakagaw/phylo_xlv/pilot-k2-fitonly-rorqual-lambda05-1-rep10-20260629-1258/results 2>/dev/null || true'
+ssh -o BatchMode=yes rorqual 'seff 14918100 2>/dev/null || true; cd /project/6098264/snakagaw/phylo_xlv/pilot-k2-fitonly-rorqual-lambda05-1-rep10-20260629-1258/results; awk -F, "FNR==1{next} {key=\$3; n[key]++; if(\$14==\"true\") ok[key]++; status[key,\$18]++; sum[key]+=\$16; if(!(key in min) || \$16<min[key]) min[key]=\$16; if(\$16>max[key]) max[key]=\$16} END{for(k in n){printf \"lambda=%s tasks=%d fit_ok=%d mean_fit=%.3f min_fit=%.3f max_fit=%.3f\\n\", k,n[k],ok[k],sum[k]/n[k],min[k],max[k]; for(s in status){split(s,a,SUBSEP); if(a[1]==k) printf \"  status=%s count=%d\\n\", a[2], status[s]}}}" result_*.csv; echo not_converged_rows; awk -F, "FNR==1{next} \$18!=\"fit_only\" || \$14!=\"true\" {print FILENAME \": task=\"\$1\" lambda=\"\$3\" rep=\"\$9\" seed=\"\$10\" fit_converged=\"\$14\" iterations=\"\$15\" fit_seconds=\"\$16\" status=\"\$18}" result_*.csv'
+```
+
+### Result
+
+Rorqual array `14918100` completed all 20 fit-only rows. `seff` reports the
+array job completed with exit code `0`; the representative final task used
+`00:46:20` wall time, CPU efficiency `98.96%`, and memory `856.95 MB / 4 GB`.
+
+The summariser and header-aware aggregation gave:
+
+- λ=0.5: `10/10` fit ok, mean fit seconds `2040.328`, min `1481.212`,
+  max `2627.965`, all rows `ci_status=fit_only`.
+- λ=1: `8/10` fit ok, mean fit seconds `2245.286`, min `1510.174`,
+  max `2774.134`, with `8` `fit_only` rows and `2` `not_converged` rows.
+- Non-converged λ=1 rows:
+  - task `18`, rep `8`, seed `49476879`, `400` iterations,
+    fit seconds `2623.152`;
+  - task `20`, rep `10`, seed `51496899`, `400` iterations,
+    fit seconds `2763.200`.
+
+Dashboard `/tmp/gllvm-dashboard` was updated to build `r100`.
+
+### Decision
+
+Do not launch K=2 production coverage at p=125 under the current all-target
+design. The fit-only diagnostic says λ=0.5 fit convergence is good but slow,
+while λ=1 still has a `20%` non-convergence rate at the 400-iteration cap.
+Together with the all-target canaries, this separates the problems:
+
+- fit robustness is still a λ=1 issue;
+- B_lv Wald intervals are computationally expensive and showed poor one-seed
+  behavior in the λ=0.5 and λ=1 all-target canaries;
+- phylo-signal transformed-Wald intervals remain unusable at p=125,K=2
+  (`0/125` usable in the all-target canaries).
+
+Next Phase 3 action should be either a smaller/optimized K=2 design or CI-engine
+work before any `>=500 reps/cell` K=2 production array.
+
+### Claim Boundary
+
+IN: p=125,K=2 fit-only convergence denominator is now known for λ=0.5 and λ=1
+over 10 reps/cell. PARTIAL: p=125,K=2 can fit often enough to keep diagnosing,
+but λ=1 and interval reliability are not production-ready. OUT: no K=2
+production coverage claim, no phylo-signal coverage claim, and no public full
+Model A claim.
