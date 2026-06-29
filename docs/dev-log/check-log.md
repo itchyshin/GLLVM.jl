@@ -3954,3 +3954,71 @@ IN: one Rorqual backup and one Nibi target-only diagnostic are now in the queue
 or running for p=200, K=2 phylo-signal timing. PARTIAL: no target-only result
 exists yet, and old B_lv CI timing remains unresolved. OUT: no production
 coverage launch and no coverage claim.
+
+## 2026-06-29 09:20 MDT - Codex batched phylo-signal Wald helper
+
+### Commands
+
+```sh
+julia --project=. test/test_confint_derived_wald.jl
+d=$(mktemp -d); julia --project=. bench/phylo_xlv_drac_task.jl --write-params "$d/params.csv" --reps 1 --lambdas 0 --n-species 3 --n-sites 8 --K 1 --scenarios main; julia --project=. bench/phylo_xlv_drac_task.jl --params "$d/params.csv" --outdir "$d/results" --task-id 1 --targets phylo_signal --iterations 20 --force; julia --project=. bench/phylo_xlv_drac_summarise.jl --results "$d/results"; cat "$d/results/result_000001.csv"
+ssh -o BatchMode=yes nibi 'scancel 16926545 2>/dev/null || true; sleep 2; squeue -j 16923927,16926545 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; sacct -j 16926545 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P | tail -n 20'
+ssh -o BatchMode=yes rorqual 'scancel 14909542 2>/dev/null || true; squeue -j 14909542 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; sacct -j 14909542 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P | tail -n 20'
+rsync -az --delete --exclude='.git' --exclude='.julia' --exclude='docs/build' --exclude='node_modules' ./ nibi:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac-targettiming-batched/
+rsync -az --delete --exclude='.git' --exclude='.julia' --exclude='docs/build' --exclude='node_modules' ./ rorqual:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac-targettiming-batched/
+ssh -o BatchMode=yes nibi 'bash -s' <<'REMOTE'
+# Submitted source_head=451090c-rsync-no-git, targets=phylo_signal,
+# same p=200,K=2 one-row diagnostic, time=2h, mem=8G.
+REMOTE
+ssh -o BatchMode=yes rorqual 'bash -s' <<'REMOTE'
+# Submitted source_head=451090c-rsync-no-git, targets=phylo_signal,
+# same p=200,K=2 one-row diagnostic, time=2h, mem=8G.
+REMOTE
+ssh -o BatchMode=yes nibi 'squeue -j 16923927,16927325 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; sacct -j 16923927,16927325 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P | tail -n 80'
+ssh -o BatchMode=yes rorqual 'squeue -j 14909918 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; sacct -j 14909918 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P | tail -n 60'
+```
+
+### Result
+
+Added an internal `_phylo_signal_wald_ci_all()` helper in
+`src/confint_derived_wald.jl` that reuses one observed-information Hessian for
+all per-trait phylo-signal transformed-Wald CIs. `bench/phylo_xlv_drac_task.jl`
+now uses this helper when available, falling back to the public single-trait
+wrapper if needed. This does not change the estimand or public wrapper.
+
+Validation:
+
+- `test/test_confint_derived_wald.jl`: `115/115` pass in `22.9s`.
+- Tiny target-only bench smoke (`n_species=3`, `n_sites=8`, `K=1`,
+  `iterations=20`, `--targets phylo_signal`) converged in 12 iterations,
+  wrote `ci_seconds=2.829`, and summarised successfully.
+- `git diff --check`: clean.
+
+Cancelled the two old-source target-only jobs before they entered the
+per-trait Hessian loop:
+
+- Nibi job `16926545_1`: cancelled after `00:23:17`, with fit still in
+  progress; batch max RSS `1039036K`.
+- Rorqual job `14909542_1`: cancelled after `00:17:29`, with fit still in
+  progress.
+
+Synced commit `451090c` to separate batched staged trees and submitted
+replacement target-only diagnostics:
+
+- Nibi job `16927325`, output
+  `/project/6098264/snakagaw/phylo_xlv/pilot-large-k2-nibi-phylo-target-batched-iter80-2h-20260629-0918`,
+  pending with reason `Priority` at first poll.
+- Rorqual job `14909918`, output
+  `/project/6098264/snakagaw/phylo_xlv/pilot-large-k2-rorqual-phylo-target-batched-iter80-2h-20260629-0918`,
+  pending with reason `Priority` at first poll.
+
+The old all-target Nibi B_lv job `16923927_1` remains running and was still in
+the `B_lv` Wald CI step at `01:41:52`.
+
+### Claim Boundary
+
+IN: batched Hessian reuse for phylo-signal timing diagnostics and two replacement
+p=200, K=2 target-only canaries queued. PARTIAL: no batched target result exists
+yet, and the B_lv Wald CI timing bottleneck remains unresolved. OUT: no
+production coverage launch, no calibrated coverage claim, and no public R
+grammar exposure.
