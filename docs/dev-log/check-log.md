@@ -5660,3 +5660,58 @@ IN: future Nibi/Narval/Rorqual canaries can write opt-in partial rows, and the
 LV board now reflects PR #572 as active. OUT: no reserve-host production launch,
 no new production coverage, and no claim that idle but unstaged hosts are ready
 for unattended coverage arrays.
+
+## 2026-06-29 17:36 MDT - Codex Nibi bootstrap canary result
+
+### Commands
+
+```sh
+ssh -o BatchMode=yes nibi 'cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; julia --project=. bench/phylo_xlv_drac_summarise.jl --results /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30-nibi-lambda05-rep1-20260629-1606/results; seff 16951694 2>/dev/null || true; sacct -j 16951694 --format=JobID,JobName,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P 2>/dev/null || true'
+ssh -o BatchMode=yes nibi 'out=/project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30-nibi-lambda05-rep1-20260629-1606; cat ${out}/meta/session.txt; cat ${out}/results/result_000001.csv'
+jq . /tmp/gllvm-dashboard/status.json >/tmp/gllvm-dashboard/status.validate
+```
+
+### Result
+
+Nibi `16951694_1` completed the uncapped bootstrap-only p=80, K=2,
+lambda=0.5 weak-cell canary.
+
+Summary row:
+
+- target/method: `B_lv` / `bootstrap`;
+- tasks/fit ok: `1/1`;
+- usable entries: `80/80`;
+- one-seed entry coverage: `0.938`;
+- RMSE mean: `0.063`;
+- fit seconds: `169.403`;
+- CI seconds: `4843.745`;
+- bootstrap converged: `30/30`;
+- CI status: `ok`.
+
+Accounting:
+
+- scheduler state: `COMPLETED (exit code 0)`;
+- wall time: `01:23:48`;
+- CPU efficiency: `99.20%`;
+- memory: `465.55 MB` of `4G`.
+
+This canary used the older result schema, so the summary prints `boot n = NA`
+and the requested `n_boot=30` comes from the session metadata and the
+`bootstrap_converged=30` result field.
+
+Dashboard `/tmp/gllvm-dashboard` was updated to `r141`; JSON validation passed.
+
+### Decision
+
+Bootstrap is not dead for the weak p=80, K=2, lambda=0.5 B_lv cell, but the
+uncapped `n_boot=30` path costs about `81` CI minutes per task after fitting.
+Wait for the Narval capped-bootstrap canary before choosing whether to scale a
+bootstrap rescue, lower the refit cap, or keep bootstrap as a narrow diagnostic
+fallback.
+
+### Claim Boundary
+
+IN: one-seed bootstrap feasibility/timing result for the known weak cell. OUT:
+no production coverage, no MCSE-backed coverage claim, no phylo-signal result,
+and no evidence yet that bootstrap is affordable for the full lambda x p x K
+campaign.
