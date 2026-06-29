@@ -4601,3 +4601,37 @@ B_lv intervals can be computed for some seeds. PARTIAL: K=2 p=125 fit and B_lv
 CI reliability require a failure-rate diagnostic or CI-engine work. OUT: no
 production Model A DRAC coverage launch, no phylo-signal coverage claim, no
 public full Model A claim.
+
+## 2026-06-29 13:00 MDT - Codex p125 K2 fit-only diagnostic launch
+
+### Commands
+
+```sh
+gh pr list --state open
+git log --all --oneline --since="6 hours ago"
+ssh -o BatchMode=yes rorqual 'set -euo pipefail; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; out=/project/6098264/snakagaw/phylo_xlv/pilot-k2-fitonly-rorqual-lambda05-1-rep10-20260629-1258; PHYLO_XLV_ACCOUNT=def-snakagaw_cpu PHYLO_XLV_DEPOT=/project/6098264/snakagaw/julia_depot PHYLO_XLV_JULIA="$(command -v julia)" PHYLO_XLV_REPS=10 PHYLO_XLV_LAMBDAS=0.5,1 PHYLO_XLV_N_SPECIES=125 PHYLO_XLV_N_SITES=125 PHYLO_XLV_K=2 PHYLO_XLV_SCENARIOS=main PHYLO_XLV_SEED0=31333700 PHYLO_XLV_TARGETS=none PHYLO_XLV_ITERATIONS=400 PHYLO_XLV_TIME=0-01:20 PHYLO_XLV_MEM=4G PHYLO_XLV_THROTTLE=10 bash bench/phylo_xlv_drac_submit.sh --out "$out" --submit'
+ssh -o BatchMode=yes rorqual 'squeue -j 14918100 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; head -n 25 /project/6098264/snakagaw/phylo_xlv/pilot-k2-fitonly-rorqual-lambda05-1-rep10-20260629-1258/meta/phylo_xlv_params.csv'
+```
+
+### Result
+
+Submitted Rorqual array `14918100`:
+
+- output directory
+  `/project/6098264/snakagaw/phylo_xlv/pilot-k2-fitonly-rorqual-lambda05-1-rep10-20260629-1258`;
+- `scenario=main`, `n_species=125`, `n_sites=125`, `K=2`, `q_lv=1`,
+  `K_phy=1`;
+- λ grid `{0.5, 1}` with `10` reps per λ, `20` array tasks total;
+- `targets=none`, `iterations=400`, `time=1:20`, `mem=4G`, throttle `10`;
+- absolute Julia 1.10.10 and `/project/6098264/snakagaw/julia_depot`;
+- launch poll showed pending with reason `Priority`.
+
+This is a convergence/failure-rate diagnostic only. It deliberately avoids
+B_lv/phylo-signal CI because the previous all-target canaries showed expensive
+B_lv Hessian time and unusable phylo-signal Hessians.
+
+### Claim Boundary
+
+IN: fit-only failure-rate diagnostics for p=125,K=2 λ in `{0.5,1}` are queued.
+OUT: this is not coverage production, does not estimate interval coverage, and
+does not support a public Model A claim.
