@@ -4688,3 +4688,56 @@ over 10 reps/cell. PARTIAL: p=125,K=2 can fit often enough to keep diagnosing,
 but λ=1 and interval reliability are not production-ready. OUT: no K=2
 production coverage claim, no phylo-signal coverage claim, and no public full
 Model A claim.
+
+## 2026-06-29 14:50 MDT - Codex p80 K2 all-target canary result
+
+### Commands
+
+```sh
+gh pr list --state open
+git log --all --oneline --since="6 hours ago"
+ssh -o BatchMode=yes rorqual 'seff 14925925 2>/dev/null || true; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; julia --project=. bench/phylo_xlv_drac_summarise.jl --results /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-all-rorqual-lambda05-1-20260629-1432/results'
+ssh -o BatchMode=yes rorqual 'cd /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-all-rorqual-lambda05-1-20260629-1432/results; cat result_*.csv'
+```
+
+### Result
+
+Rorqual array `14925925` completed the smaller p=80,K=2 all-target canary:
+
+- output directory
+  `/project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-all-rorqual-lambda05-1-20260629-1432`;
+- `scenario=main`, `n_species=80`, `n_sites=80`, `K=2`, `targets=all`;
+- λ grid `{0.5, 1}` with one seed per λ;
+- `iterations=400`, `time=1h`, `mem=4G`, throttle `2`;
+- `seff` representative array task: completed with exit code `0`,
+  wall time `00:05:16`, CPU efficiency `97.15%`, memory
+  `1.07 GB / 4 GB`.
+
+Per-cell rows:
+
+- λ=0.5, seed `42384144`: fit converged in `182` iterations with fit seconds
+  `227.259`; B_lv Wald CI seconds `118.293`, usable entries `80/80`, entry
+  coverage `1.000`, RMSE `0.045`, `pd_hessian=true`; phylo-signal transformed
+  Wald CI seconds `4.846`, usable entries `0/80`, `ci_status=partial_or_failed`,
+  `pd_hessian=false`.
+- λ=1, seed `43384147`: fit converged in `134` iterations with fit seconds
+  `173.663`; B_lv Wald CI seconds `117.792`, usable entries `80/80`, entry
+  coverage `1.000`, RMSE `0.044`, `pd_hessian=true`; phylo-signal transformed
+  Wald CI seconds `5.229`, usable entries `0/80`, `ci_status=partial_or_failed`,
+  `pd_hessian=false`.
+
+Dashboard `/tmp/gllvm-dashboard` was already updated to build `r105` with this
+boundary: p=80,K=2 is a B_lv-only candidate, not a phylo-signal solution.
+
+### Decision
+
+Use p=80,K=2 as the next bounded B_lv diagnostic candidate before any
+production-scale run. Keep phylo-signal coverage split out and gated because it
+still has `0` usable interval entries in this smaller cell.
+
+### Claim Boundary
+
+IN: p=80,K=2 all-target one-seed canary shows fast, clean B_lv Wald rows for
+λ=0.5 and λ=1. PARTIAL: this is a sizing and routing result only; it is not
+coverage evidence. OUT: no K=2 production claim, no phylo-signal interval
+claim, and no full Model A public claim.
