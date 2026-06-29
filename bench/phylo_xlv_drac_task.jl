@@ -300,6 +300,11 @@ function fit_iterations(fit)
     return 0
 end
 
+function progress(message::AbstractString)
+    println("[", now(UTC), "Z] ", message)
+    flush(stdout)
+end
+
 function result_row(base; target, method, fit_converged, fit_iterations, fit_seconds,
                     ci_status, total = 0, usable = 0, covered = 0, coverage = NaN,
                     bias_mean = NaN, bias_rmse = NaN, estimate_mean = NaN,
@@ -381,9 +386,10 @@ function run_task(row::Dict{String, String}; outdir::String, methods, level::Rea
     seed = row_value(row, "seed", Int)
     result_path = joinpath(outdir, @sprintf("result_%06d.csv", task_id))
     if isfile(result_path) && !force && !dry_run
-        println("result exists, skipping: $result_path")
+        progress("result exists, skipping: $result_path")
         return
     end
+    progress("task $task_id start scenario=$scenario lambda=$lambda n_species=$p n_sites=$n_sites K=$K q_lv=$q_lv K_phy=$K_phy rep=$rep seed=$seed")
 
     Sigma_base = base_correlation(p)
     Sigma_phy = pagel_covariance(Sigma_base, lambda)
@@ -403,7 +409,9 @@ function run_task(row::Dict{String, String}; outdir::String, methods, level::Rea
         n_sites, K, q_lv, K_phy, rep, seed, level,
     )
     rows = NamedTuple[]
+    progress("task $task_id simulate start")
     Y = simulate_dataset(seed, X_lv, Sigma_phy, truth)
+    progress("task $task_id simulate done; fit start iterations=$iterations")
     fit = nothing
     fit_seconds = NaN
     try
@@ -411,31 +419,39 @@ function run_task(row::Dict{String, String}; outdir::String, methods, level::Rea
         fit = fit_gaussian_gllvm(Y; K = K, X_lv = X_lv, K_phy = K_phy,
                                  Σ_phy = Sigma_phy, iterations = iterations)
         fit_seconds = time() - t0
+        progress("task $task_id fit done converged=$(fit.converged) iterations=$(fit_iterations(fit)) seconds=$(@sprintf("%.2f", fit_seconds))")
     catch err
+        progress("task $task_id fit error: $(sprint(showerror, err))")
         push!(rows, result_row(base;
             target = "fit", method = "none", fit_converged = false,
             fit_iterations = 0, fit_seconds = fit_seconds,
             ci_status = "fit_error", error = sprint(showerror, err),
         ))
         write_csv(result_path, RESULT_FIELDS, rows)
+        progress("task $task_id wrote fit_error result to $result_path")
         return
     end
 
     if !fit.converged
+        progress("task $task_id not_converged; writing result")
         push!(rows, result_row(base;
             target = "fit", method = "none", fit_converged = false,
             fit_iterations = fit_iterations(fit), fit_seconds = fit_seconds,
             ci_status = "not_converged",
         ))
         write_csv(result_path, RESULT_FIELDS, rows)
+        progress("task $task_id wrote not_converged result to $result_path")
         return
     end
 
     for method in methods
+        progress("task $task_id B_lv CI start method=$method")
         try
             push!(rows, b_lv_row(base, method, fit, Y, X_lv, B_true;
                                  level = level, n_boot = n_boot))
+            progress("task $task_id B_lv CI done method=$method")
         catch err
+            progress("task $task_id B_lv CI error method=$method: $(sprint(showerror, err))")
             push!(rows, result_row(base;
                 target = "B_lv", method = String(method),
                 fit_converged = fit.converged, fit_iterations = fit_iterations(fit),
@@ -448,8 +464,11 @@ function run_task(row::Dict{String, String}; outdir::String, methods, level::Rea
     end
 
     try
+        progress("task $task_id phylo_signal CI start")
         push!(rows, phylo_signal_row(base, fit, Y, Sigma_phy, H2_true; level = level))
+        progress("task $task_id phylo_signal CI done")
     catch err
+        progress("task $task_id phylo_signal CI error: $(sprint(showerror, err))")
         push!(rows, result_row(base;
             target = "phylo_signal", method = "transformed_wald",
             fit_converged = fit.converged, fit_iterations = fit_iterations(fit),
@@ -461,7 +480,7 @@ function run_task(row::Dict{String, String}; outdir::String, methods, level::Rea
     end
 
     write_csv(result_path, RESULT_FIELDS, rows)
-    println("wrote $result_path")
+    progress("task $task_id wrote $result_path")
 end
 
 function main(args = ARGS)

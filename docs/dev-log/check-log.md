@@ -3582,3 +3582,38 @@ can return a `not_converged` row when capped at 5 iterations. PARTIAL: valid
 `n_species=200`, `n_sites=200`, `K=2` convergence and interval timing remain
 active diagnostics. OUT: production DRAC coverage, public phylo Model A
 coverage claims, and R-side phylo `lv=~x` exposure.
+
+## 2026-06-29 07:02 MDT - Codex phylo X_lv DRAC task heartbeat
+
+### Commands
+
+```sh
+gh pr list --state open --json number,headRefName,title,isDraft,mergeStateStatus
+git log --all --oneline --since='6 hours ago' -- docs/dev-log/check-log.md docs/dev-log/after-task docs/dev-log/recovery-checkpoints bench/phylo_xlv_drac_task.jl bench/phylo_xlv_drac_submit.sh bench/phylo_xlv_drac_summarise.jl
+export PATH="$HOME/.juliaup/bin:$PATH"
+julia --project=. bench/phylo_xlv_drac_task.jl --write-params /tmp/phylo_xlv_progress_params.csv --reps 1 --lambdas 0 --n-species 20 --n-sites 20 --K 1 --scenarios main
+julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_xlv_progress_params.csv --outdir /tmp/phylo_xlv_progress_results --task-id 1 --dry-run
+julia --project=. bench/phylo_xlv_drac_task.jl --write-params /tmp/phylo_xlv_progress_fit/params.csv --reps 1 --lambdas 0 --n-species 4 --n-sites 12 --K 1 --scenarios main
+julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_xlv_progress_fit/params.csv --outdir /tmp/phylo_xlv_progress_fit/results --task-id 1 --iterations 1
+ssh -o BatchMode=yes rorqual 'squeue -j 14901949 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; sstat -j 14901949.batch --format=JobID,AveCPU,AveRSS,MaxRSS -P || true'
+```
+
+### Result
+
+Pre-edit lane check saw only draft PR #127 and no recent shared-file edits except
+Codex's own depot-override commit. Added flushed UTC heartbeat messages around
+each DRAC task's start, simulation, fit, non-convergence, B_lv CI,
+phylo-signal CI, and result-write steps. The dry-run path printed the new
+task-start line. The tiny local one-iteration fit printed
+start/simulate/fit/not-converged/write heartbeats and wrote
+`/tmp/phylo_xlv_progress_fit/results/result_000001.csv`.
+
+The active Rorqual large K=2 diagnostic (`14901949_1`) was still running at
+2:50:15 elapsed with `AveCPU=02:09:20`, `AveRSS=1208992K`, and
+`MaxRSS=2249344K`; no production DRAC array was launched.
+
+### Claim Boundary
+
+IN: future DRAC tasks launched from this branch are inspectable by tailing their
+SLURM stdout. OUT: this heartbeat patch does not change the DGP, estimator,
+coverage target, or the still-running K=2 diagnostic.
