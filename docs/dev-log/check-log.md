@@ -4090,3 +4090,56 @@ Narval to locate the feasible large-cell boundary. PARTIAL: p=200, K=2 B_lv and
 batched phylo-signal timing remain unresolved. OUT: no >=500 reps/cell
 production coverage array, no calibrated phylo coverage claim, and no public R
 grammar exposure.
+
+## 2026-06-29 09:48 MDT - Codex Nibi batched phylo-signal result
+
+### Commands
+
+```sh
+ssh -o BatchMode=yes nibi 'squeue -j 16923927,16927325 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; echo OLD; tail -n 100 /project/6098264/snakagaw/phylo_xlv/pilot-large-k2-nibi-iter80-4h-20260629-073300/logs/phylo_xlv-16923927-1.out 2>/dev/null || true; cat /project/6098264/snakagaw/phylo_xlv/pilot-large-k2-nibi-iter80-4h-20260629-073300/results/result_000001.csv 2>/dev/null || true; echo BATCH; tail -n 100 /project/6098264/snakagaw/phylo_xlv/pilot-large-k2-nibi-phylo-target-batched-iter80-2h-20260629-0918/logs/phylo_xlv_h2b-16927325-1.out 2>/dev/null || true; cat /project/6098264/snakagaw/phylo_xlv/pilot-large-k2-nibi-phylo-target-batched-iter80-2h-20260629-0918/results/result_000001.csv 2>/dev/null || true'
+ssh -o BatchMode=yes nibi 'sacct -j 16927325 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P | tail -n 30; seff 16927325 2>/dev/null || true; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac-targettiming-batched 2>/dev/null || cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; julia --project=. bench/phylo_xlv_drac_summarise.jl --results /project/6098264/snakagaw/phylo_xlv/pilot-large-k2-nibi-phylo-target-batched-iter80-2h-20260629-0918/results'
+```
+
+### Result
+
+Nibi job `16927325_1` completed successfully:
+
+- scheduler state `COMPLETED`, exit code `0:0`;
+- elapsed `00:25:53`;
+- CPU efficiency `98.65%`;
+- memory `630.30 MB` of `8 GB`;
+- source label `451090c-rsync-no-git`;
+- cell: `scenario=main`, `lambda=0`, `n_species=200`, `n_sites=200`,
+  `K=2`, `q_lv=1`, `K_phy=1`, seed `21371432`;
+- target: `phylo_signal` only, transformed-Wald.
+
+Result row:
+
+- fit converged: `true`;
+- fit iterations: `47`;
+- fit seconds: `1521.952`;
+- phylo-signal CI seconds: `4.595`;
+- CI status: `partial_or_failed`;
+- usable phylo-signal entries: `0/200`;
+- phylo-signal RMSE: `0.243`;
+- `pd_hessian=false`;
+- mean estimate approximately `6.87e-7` versus mean truth `0.164`;
+- max estimate approximately `0.000137` versus max truth `0.733`.
+
+The summariser read one row and reported the same: `fit ok=1`, `usable
+entries=0`, `fit sec mean=1521.952`, `CI sec mean=4.595`,
+`CI status=partial_or_failed`.
+
+Old Nibi job `16923927_1` is still running and remains in `B_lv CI start
+method=wald` after the fit converged. Rorqual backup job `14909918_1` and
+Narval p=150 B_lv sizing job `64331208_1` were still in their fit steps at the
+same polling pass.
+
+### Claim Boundary
+
+IN: batched phylo-signal CI timing is no longer the p=200, K=2 wall-time
+blocker; after the fit, the CI took about 4.6 seconds. PARTIAL: the
+phylo-signal interval is statistically unusable in this boundary cell (`0/200`
+usable entries), so phylo-signal coverage still cannot be claimed. OUT: no
+production coverage launch, no calibrated phylo-signal claim, and no resolution
+yet for the p=200, K=2 `B_lv` observed-information bottleneck.
