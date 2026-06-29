@@ -3733,3 +3733,44 @@ IN: `n_species=100`, `n_sites=100`, `K=2` can converge and produce B_lv Wald
 interval rows on Nibi in a one-rep canary. OUT: this is not coverage evidence,
 does not validate phylo-signal intervals, and does not solve the p=200 K=2
 large-cell timing problem.
+
+## 2026-06-29 07:34 MDT - Codex large K=2 Nibi canary launch
+
+### Commands
+
+```sh
+ssh -o BatchMode=yes rorqual 'scancel 14906861 2>/dev/null || true; squeue -j 14901949,14906861 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; sacct -j 14906861 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem -P | tail -n 10'
+rsync -az --delete --exclude='.git' --exclude='.julia' --exclude='docs/build' --exclude='node_modules' ./ nibi:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/
+ssh -o BatchMode=yes nibi 'bash -s' <<'REMOTE'
+# Manually wrote one-row params and sbatch files for:
+# scenario=main, pagel_lambda=0, n_species=200, n_sites=200, K=2,
+# q_lv=1, K_phy=1, rep=1, seed=21371432, iterations=80.
+# The sbatch script runs Pkg.instantiate() on the compute node before the task.
+REMOTE
+ssh -o BatchMode=yes nibi 'squeue -j 16923927 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; sacct -j 16923927 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem -P | tail -n 20'
+ssh -o BatchMode=yes rorqual 'squeue -j 14901949,14906861 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; sacct -j 14901949,14906861 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem -P | tail -n 30; sstat -j 14901949.batch --format=JobID,AveCPU,AveRSS,MaxRSS -P || true'
+```
+
+### Result
+
+Cancelled redundant Rorqual p=100 K=2 canary `14906861`, which had not started
+and was superseded by the completed Nibi p=100 K=2 result. Refreshed the Nibi
+staged source tree from local commit `328e5e8` without `.git`.
+
+Submitted Nibi large-cell canary job `16923927` under
+`/project/6098264/snakagaw/phylo_xlv/pilot-large-k2-nibi-iter80-4h-20260629-073300`.
+The job uses source label `328e5e8-rsync-no-git`, `n_species=200`,
+`n_sites=200`, `K=2`, `iterations=80`, `time=4h`, `mem=8G`, and runs
+`Pkg.instantiate()` on the compute node before calling
+`bench/phylo_xlv_drac_task.jl`. At the first poll, job `16923927_[1%1]` was
+pending with reason `Priority`.
+
+At the same poll, Rorqual p=200 K=2 job `14901949_1` was still running at about
+3:22 elapsed with no stdout, no stderr, no result CSV, and `AveCPU` around
+2:09:30. Its result is still needed as a final comparison or timeout record.
+
+### Claim Boundary
+
+IN: one large-cell Nibi K=2 timing canary is queued and the redundant Rorqual
+p=100 K=2 pending job was cancelled. OUT: no p=200 K=2 result exists yet and no
+production coverage array has launched.
