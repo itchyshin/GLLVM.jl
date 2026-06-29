@@ -26,6 +26,7 @@ Environment overrides:
   PHYLO_XLV_LEVEL        CI level (default: 0.95)
   PHYLO_XLV_ITERATIONS   optimiser iterations (default: 400)
   PHYLO_XLV_N_BOOT       bootstrap reps when bootstrap is requested (default: 200)
+  PHYLO_XLV_BOOT_ITERATIONS bootstrap refit iterations; empty keeps fitter default
   PHYLO_XLV_TIME         SLURM time (default: 0-02:00)
   PHYLO_XLV_MEM          SLURM memory per task (default: 8G)
   PHYLO_XLV_CPUS         cpus per task (default: 1)
@@ -75,6 +76,7 @@ targets="${PHYLO_XLV_TARGETS:-B_lv,phylo_signal}"
 level="${PHYLO_XLV_LEVEL:-0.95}"
 iterations="${PHYLO_XLV_ITERATIONS:-400}"
 n_boot="${PHYLO_XLV_N_BOOT:-200}"
+boot_iterations="${PHYLO_XLV_BOOT_ITERATIONS:-}"
 time_limit="${PHYLO_XLV_TIME:-0-02:00}"
 mem="${PHYLO_XLV_MEM:-8G}"
 cpus="${PHYLO_XLV_CPUS:-1}"
@@ -135,6 +137,9 @@ cd "$repo_root"
   echo "methods=$methods"
   echo "targets=$targets"
   echo "level=$level"
+  echo "iterations=$iterations"
+  echo "n_boot=$n_boot"
+  echo "bootstrap_iterations=$boot_iterations"
 } > "$session"
 
 ntasks=$(( $(wc -l < "$params") - 1 ))
@@ -186,6 +191,10 @@ else
 fi
 export OMP_NUM_THREADS="\${SLURM_CPUS_PER_TASK:-$cpus}"
 export OPENBLAS_NUM_THREADS="\${SLURM_CPUS_PER_TASK:-$cpus}"
+bootstrap_args=()
+if [[ -n "$boot_iterations" ]]; then
+  bootstrap_args+=(--bootstrap-iterations "$boot_iterations")
+fi
 
 "$julia_cmd" --project=. bench/phylo_xlv_drac_task.jl \\
   --params "$params" \\
@@ -194,7 +203,8 @@ export OPENBLAS_NUM_THREADS="\${SLURM_CPUS_PER_TASK:-$cpus}"
   --targets "$targets" \\
   --level "$level" \\
   --iterations "$iterations" \\
-  --n-boot "$n_boot"
+  --n-boot "$n_boot" \\
+  "\${bootstrap_args[@]}"
 SBATCH
 
 echo "Wrote params: $params"

@@ -172,6 +172,16 @@ using LinearAlgebra
         @test cbg.n_converged >= 25                    # == 0 under the transpose bug
         @test all(isfinite, cbg.lower) && all(isfinite, cbg.upper)
         @test all(cbg.lower .< cbg.upper)
+        cbg_limited = confint_lv_effects(fg2, Yg2, X_lv; method = :bootstrap,
+                                         n_boot = 10, seed = 33,
+                                         bootstrap_iterations = 5)
+        @test cbg_limited.method == :bootstrap
+        @test cbg_limited.term == cbg.term
+        @test cbg_limited.n_converged <= 10
+        @test_throws ArgumentError confint_lv_effects(fg2, Yg2, X_lv;
+                                                      method = :bootstrap,
+                                                      n_boot = 2,
+                                                      bootstrap_iterations = 0)
 
         boot_ok(cb) = cb.method == :bootstrap && cb.n_converged >= 10 &&
                       all(isfinite, cb.lower) && all(cb.lower .< cb.upper)

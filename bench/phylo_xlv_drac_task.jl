@@ -343,10 +343,12 @@ function result_row(base; target, method, fit_converged, fit_iterations, fit_sec
     ))
 end
 
-function b_lv_row(base, method::Symbol, fit, Y, X_lv, truth; level::Real, n_boot::Integer)
+function b_lv_row(base, method::Symbol, fit, Y, X_lv, truth; level::Real, n_boot::Integer,
+                  bootstrap_iterations::Union{Nothing, Integer})
     t0 = time()
     ci = confint_lv_effects(fit, Y, X_lv; level = level, method = method,
-                            n_boot = n_boot, seed = base.seed + 71_111)
+                            n_boot = n_boot, seed = base.seed + 71_111,
+                            bootstrap_iterations = bootstrap_iterations)
     ci_seconds = time() - t0
     est = collect(Float64, ci.estimate)
     lo = collect(Float64, ci.lower)
@@ -408,7 +410,9 @@ function phylo_signal_row(base, fit, Y, Sigma_phy, truth; level::Real)
 end
 
 function run_task(row::Dict{String, String}; outdir::String, methods, level::Real,
-                  iterations::Integer, n_boot::Integer, targets, dry_run::Bool, force::Bool)
+                  iterations::Integer, n_boot::Integer,
+                  bootstrap_iterations::Union{Nothing, Integer},
+                  targets, dry_run::Bool, force::Bool)
     task_id = row_value(row, "task_id", Int)
     scenario = row_value(row, "scenario", String)
     lambda = row_value(row, "pagel_lambda", Float64)
@@ -497,7 +501,8 @@ function run_task(row::Dict{String, String}; outdir::String, methods, level::Rea
             tci = time()
             try
                 push!(rows, b_lv_row(base, method, fit, Y, X_lv, B_true;
-                                     level = level, n_boot = n_boot))
+                                     level = level, n_boot = n_boot,
+                                     bootstrap_iterations = bootstrap_iterations))
                 progress("task $task_id B_lv CI done method=$method")
             catch err
                 progress("task $task_id B_lv CI error method=$method: $(sprint(showerror, err))")
@@ -546,7 +551,7 @@ function main(args = ARGS)
     if has_flag(args, "--help") || isempty(args)
         println("phylo_xlv_drac_task.jl: --write-params FILE OR --params FILE --outdir DIR [--task-id N]")
         println("options: --reps 500 --lambdas 0,0.5,1 --n-species 20,200 --n-sites 200 --K 1,2 --q-lv 1 --K-phy 1")
-        println("         --scenarios main,null_alpha0,null_phylo0 --methods wald --targets B_lv,phylo_signal --iterations 400 --n-boot 200 --dry-run --force")
+        println("         --scenarios main,null_alpha0,null_phylo0 --methods wald --targets B_lv,phylo_signal --iterations 400 --n-boot 200 --bootstrap-iterations 200 --dry-run --force")
         return
     end
 
@@ -579,6 +584,10 @@ function main(args = ARGS)
         level = parse(Float64, arg_value(args, "--level", "0.95")),
         iterations = parse(Int, arg_value(args, "--iterations", "400")),
         n_boot = parse(Int, arg_value(args, "--n-boot", "200")),
+        bootstrap_iterations = begin
+            x = arg_value(args, "--bootstrap-iterations", "")
+            isempty(x) ? nothing : parse(Int, x)
+        end,
         targets = parse_targets(arg_value(args, "--targets", "B_lv,phylo_signal")),
         dry_run = has_flag(args, "--dry-run"),
         force = has_flag(args, "--force"),

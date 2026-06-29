@@ -1972,15 +1972,18 @@ the packed MLE pushed through the delta method onto `B_lv`, returning
 entries of `vec(B_lv)`. `method = :wald` (delta method), `:profile` (invert the
 likelihood-ratio statistic by constrained refit — asymmetry- and
 boundary-respecting; `se` is `NaN` since the interval need not be symmetric), or
-`:bootstrap` (percentiles of `B_lv`). Admitted for `K ≥ 1` (`B_lv` is rotation-invariant),
-complete responses, single ordinary latent block; every other structure (masks,
-`X` + `X_lv`, mixed-family, W-tier, phylo/animal/spatial/kernel sources) stays
-gated.
+`:bootstrap` (percentiles of `B_lv`). Bootstrap refits use each family's
+default optimiser iteration cap unless `bootstrap_iterations` is supplied.
+Admitted for `K ≥ 1` (`B_lv` is rotation-invariant), complete responses, single
+ordinary latent block; every other structure (masks, `X` + `X_lv`,
+mixed-family, W-tier, phylo/animal/spatial/kernel sources) stays gated.
 """
 function confint_lv_effects(fit::Union{PoissonFit, BinomialFit, NBFit, GammaFit, BetaFit},
                             Y::AbstractMatrix, X_lv::AbstractMatrix;
                             N::Union{Nothing, AbstractMatrix} = nothing, level::Real = 0.95,
-                            method::Symbol = :wald, n_boot::Integer = 200, seed::Integer = 0)
+                            method::Symbol = :wald, n_boot::Integer = 200,
+                            seed::Integer = 0,
+                            bootstrap_iterations::Union{Nothing, Integer} = nothing)
     0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
     fit.alpha_lv === nothing && throw(ArgumentError(
         "confint_lv_effects requires an X_lv fit (fit_*_gllvm(...; X_lv=...)); this fit has none"))
@@ -1996,7 +1999,8 @@ function confint_lv_effects(fit::Union{PoissonFit, BinomialFit, NBFit, GammaFit,
     method in (:wald, :bootstrap, :profile) ||
         throw(ArgumentError("method must be :wald, :bootstrap, or :profile; got :$method"))
     method === :bootstrap &&
-        return _lv_bootstrap(fit, Y, X_lv, N, q_lv, level, n_boot, seed)
+        return _lv_bootstrap(fit, Y, X_lv, N, q_lv, level, n_boot, seed;
+                             bootstrap_iterations = bootstrap_iterations)
     nll = _lv_packed_nll(fit, Y, X_lv, q_lv, N)
     if method === :profile
         wse = _lv_effect_wald(nll, fit.theta_packed, p, K, q_lv, level).se
@@ -2016,12 +2020,16 @@ the observed information is the **exact ForwardDiff Hessian** of
 :wald`, `:wald_t_unit` (same delta-method SE with a unit-df t critical,
 `df = max(n_sites - K - 1, 1)`), `:profile` (LR inversion via constrained refit;
 the Gaussian objective is AD-friendly so the constrained refits use LBFGS), or
-`:bootstrap`. `K ≥ 1` (`B_lv` rotation-invariant), complete responses,
-single unit-tier latent block, no fixed-effect `X`.
+`:bootstrap`. Bootstrap refits use the Gaussian fitter's default optimiser
+iteration cap unless `bootstrap_iterations` is supplied. `K ≥ 1` (`B_lv`
+rotation-invariant), complete responses, single unit-tier latent block, no
+fixed-effect `X`.
 """
 function confint_lv_effects(fit::GllvmFit, Y::AbstractMatrix, X_lv::AbstractMatrix;
                             N::Union{Nothing, AbstractMatrix} = nothing, level::Real = 0.95,
-                            method::Symbol = :wald, n_boot::Integer = 200, seed::Integer = 0)
+                            method::Symbol = :wald, n_boot::Integer = 200,
+                            seed::Integer = 0,
+                            bootstrap_iterations::Union{Nothing, Integer} = nothing)
     0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
     fit.pars.alpha_lv === nothing && throw(ArgumentError(
         "confint_lv_effects requires a Gaussian X_lv fit (fit_gaussian_gllvm(...; X_lv=...)); this fit has none"))
@@ -2039,7 +2047,8 @@ function confint_lv_effects(fit::GllvmFit, Y::AbstractMatrix, X_lv::AbstractMatr
     method in (:wald, :wald_t_unit, :bootstrap, :profile) ||
         throw(ArgumentError("method must be :wald, :wald_t_unit, :bootstrap, or :profile; got :$method"))
     method === :bootstrap &&
-        return _lv_bootstrap(fit, Y, X_lv, N, q_lv, level, n_boot, seed)
+        return _lv_bootstrap(fit, Y, X_lv, N, q_lv, level, n_boot, seed;
+                             bootstrap_iterations = bootstrap_iterations)
     x = collect(Float64, fit.pars.θ_packed)
     # Model A: carry any phylo block so the observed-information Hessian is built
     # on the SAME augmented objective the fit used. The B_lv extractor is unchanged
@@ -2076,34 +2085,58 @@ end
 # is a product of parameters whose finite-sample distribution can be skewed. Per
 # family: (simfn(rng) -> Y^b, refitfn(Y^b) -> fit^b or nothing).
 # ---------------------------------------------------------------------------
-function _lv_boot_fns(fit::PoissonFit, Y, X_lv, N)
-    K = size(fit.Λ, 2); n = size(Y, 2); link = fit.link
-    return (rng -> simulate(fit, n; X_lv = X_lv, rng = rng),
-            Yb -> (try fit_poisson_gllvm(Yb; K = K, link = link, X_lv = X_lv) catch; nothing end))
+function _lv_boot_kwargs(bootstrap_iterations::Union{Nothing, Integer})
+    bootstrap_iterations === nothing && return NamedTuple()
+    n = Int(bootstrap_iterations)
+    n > 0 || throw(ArgumentError("bootstrap_iterations must be positive; got $bootstrap_iterations"))
+    return (; iterations = n)
 end
-function _lv_boot_fns(fit::BinomialFit, Y, X_lv, N)
+
+function _lv_boot_fns(fit::PoissonFit, Y, X_lv, N,
+                      bootstrap_iterations::Union{Nothing, Integer})
+    K = size(fit.Λ, 2); n = size(Y, 2); link = fit.link
+    boot_kwargs = _lv_boot_kwargs(bootstrap_iterations)
+    return (rng -> simulate(fit, n; X_lv = X_lv, rng = rng),
+            Yb -> (try fit_poisson_gllvm(Yb; K = K, link = link, X_lv = X_lv,
+                                         boot_kwargs...) catch; nothing end))
+end
+function _lv_boot_fns(fit::BinomialFit, Y, X_lv, N,
+                      bootstrap_iterations::Union{Nothing, Integer})
     K = size(fit.Λ, 2); n = size(Y, 2); link = fit.link
     Nm = N === nothing ? fill(1, size(Y, 1), n) : Matrix{Int}(N)
+    boot_kwargs = _lv_boot_kwargs(bootstrap_iterations)
     return (rng -> simulate(fit, n; N = Nm, X_lv = X_lv, rng = rng),
-            Yb -> (try fit_binomial_gllvm(Yb; K = K, N = Nm, link = link, X_lv = X_lv) catch; nothing end))
+            Yb -> (try fit_binomial_gllvm(Yb; K = K, N = Nm, link = link, X_lv = X_lv,
+                                          boot_kwargs...) catch; nothing end))
 end
-function _lv_boot_fns(fit::NBFit, Y, X_lv, N)
+function _lv_boot_fns(fit::NBFit, Y, X_lv, N,
+                      bootstrap_iterations::Union{Nothing, Integer})
     K = size(fit.Λ, 2); n = size(Y, 2); link = fit.link
+    boot_kwargs = _lv_boot_kwargs(bootstrap_iterations)
     return (rng -> simulate(fit, n; X_lv = X_lv, rng = rng),
-            Yb -> (try fit_nb_gllvm(Yb; K = K, link = link, X_lv = X_lv) catch; nothing end))
+            Yb -> (try fit_nb_gllvm(Yb; K = K, link = link, X_lv = X_lv,
+                                    boot_kwargs...) catch; nothing end))
 end
-function _lv_boot_fns(fit::GammaFit, Y, X_lv, N)
+function _lv_boot_fns(fit::GammaFit, Y, X_lv, N,
+                      bootstrap_iterations::Union{Nothing, Integer})
     K = size(fit.Λ, 2); n = size(Y, 2); link = fit.link
+    boot_kwargs = _lv_boot_kwargs(bootstrap_iterations)
     return (rng -> simulate(fit, n; X_lv = X_lv, rng = rng),
-            Yb -> (try fit_gamma_gllvm(Yb; K = K, link = link, X_lv = X_lv) catch; nothing end))
+            Yb -> (try fit_gamma_gllvm(Yb; K = K, link = link, X_lv = X_lv,
+                                       boot_kwargs...) catch; nothing end))
 end
-function _lv_boot_fns(fit::BetaFit, Y, X_lv, N)
+function _lv_boot_fns(fit::BetaFit, Y, X_lv, N,
+                      bootstrap_iterations::Union{Nothing, Integer})
     K = size(fit.Λ, 2); n = size(Y, 2); link = fit.link
+    boot_kwargs = _lv_boot_kwargs(bootstrap_iterations)
     return (rng -> simulate(fit, n; X_lv = X_lv, rng = rng),
-            Yb -> (try fit_beta_gllvm(Yb; K = K, link = link, X_lv = X_lv) catch; nothing end))
+            Yb -> (try fit_beta_gllvm(Yb; K = K, link = link, X_lv = X_lv,
+                                      boot_kwargs...) catch; nothing end))
 end
-function _lv_boot_fns(fit::GllvmFit, Y, X_lv, N)
+function _lv_boot_fns(fit::GllvmFit, Y, X_lv, N,
+                      bootstrap_iterations::Union{Nothing, Integer})
     p, K = size(fit.pars.Λ); n = size(Y, 2)
+    boot_kwargs = _lv_boot_kwargs(bootstrap_iterations)
     Λ = fit.pars.Λ; Zmean = X_lv * fit.pars.alpha_lv; σ = fit.pars.σ_eps  # n×K score mean (α_lv is q_lv×K)
     # Model A: simulate + refit must carry the phylo block. φ ~ N(0, B) is the
     # shared species random effect (B = (Λ_phy_aug Λ_phy_aug') .* Σ_phy); the refit
@@ -2124,14 +2157,16 @@ function _lv_boot_fns(fit::GllvmFit, Y, X_lv, N)
         Λ * (Zmean .+ randn(rng, n, K))' .+ φ .+ σ .* randn(rng, p, n)
     end
     refitfn = Yb -> (try fit_gaussian_gllvm(Yb; K = K, X_lv = X_lv, K_phy = K_phy,
-                                            has_phy_unique = has_phy_unique, Σ_phy = Σ_phy)
+                                            has_phy_unique = has_phy_unique, Σ_phy = Σ_phy,
+                                            boot_kwargs...)
                      catch; nothing end)
     return (simfn, refitfn)
 end
 
 function _lv_bootstrap(fit, Y, X_lv, N, q_lv::Integer, level::Real,
-                       n_boot::Integer, seed::Integer)
-    simfn, refitfn = _lv_boot_fns(fit, Y, X_lv, N)
+                       n_boot::Integer, seed::Integer;
+                       bootstrap_iterations::Union{Nothing, Integer} = nothing)
+    simfn, refitfn = _lv_boot_fns(fit, Y, X_lv, N, bootstrap_iterations)
     b̂ = vec(extract_lv_effects(fit)); nb = length(b̂); p = nb ÷ q_lv
     reps = Vector{Vector{Float64}}()
     for b in 1:n_boot

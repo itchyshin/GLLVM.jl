@@ -5066,3 +5066,105 @@ IN: one bootstrap-only p=80,K=2,lambda=0.5 timing canary is queued on Nibi.
 PARTIAL: it may show whether bootstrap is computationally plausible. OUT:
 bootstrap coverage calibration, production `>=500 reps/cell`, phylo-signal
 coverage, non-Gaussian intervals, and public R exposure.
+
+## 2026-06-29 16:28 MDT - Codex bootstrap duplicate cleanup
+
+### Commands
+
+```sh
+ssh -o BatchMode=yes nibi 'squeue -u snakagaw -o "%.18i %.9P %.32j %.8T %.10M %.6D %R"; echo ---16951692---; sacct -j 16951692 --format=JobID,JobName,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P 2>/dev/null || true; echo ---16951694---; sacct -j 16951694 --format=JobID,JobName,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P 2>/dev/null || true'
+ssh -o BatchMode=yes nibi 'scancel 16951692 || true; sleep 2; squeue -u snakagaw -o "%.18i %.9P %.32j %.8T %.10M %.6D %R"; echo ---16951692---; sacct -j 16951692 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P 2>/dev/null || true; echo ---16951694---; sacct -j 16951694 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P 2>/dev/null || true'
+```
+
+### Result
+
+Two duplicate bootstrap-only p=80,K=2,λ=0.5 canaries were running on Nibi:
+
+- `16951694`, output directory already recorded in the 16:06 entry:
+  `/project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30-nibi-lambda05-rep1-20260629-1606`;
+- `16951692`, output directory:
+  `/project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap-nibi-lambda05-rep1-nboot30-20260629-1608`.
+
+To avoid duplicate compute, cancelled `16951692`. Accounting after cancellation:
+
+- `16951692_1`: `CANCELLED by 3143783` after `00:18:38`;
+- `16951692_1.batch`: `CANCELLED`, exit code `0:15`, memory `800056K`;
+- `16951694_1`: still running at `00:18:40`.
+
+Rorqual `14929297_1` remains live in the profile step of the one-seed
+profile/bootstrap canary. Dashboard `/tmp/gllvm-dashboard` was updated to build
+`r127`, with Nibi showing only active job `16951694`.
+
+### Decision
+
+Keep `16951694` as the single active bootstrap-only timing canary. Ignore
+`16951692` except as a cancelled duplicate with no result claim.
+
+### Claim Boundary
+
+IN: duplicate bootstrap compute was stopped and the active job id was clarified.
+OUT: no bootstrap result, no production coverage claim, no profile result.
+
+## 2026-06-29 16:35 MDT - Codex bootstrap-refit iteration cap harness
+
+### Commands
+
+```sh
+bash -n bench/phylo_xlv_drac_submit.sh
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. test/test_lv_ci.jl
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. test/test_phylo_xlv.jl
+git diff --check
+rm -rf /tmp/phylo_xlv_submit_dry_empty && PHYLO_XLV_REPS=1 PHYLO_XLV_LAMBDAS=0.5 PHYLO_XLV_N_SPECIES=20 PHYLO_XLV_N_SITES=20 PHYLO_XLV_K=1 PHYLO_XLV_SCENARIOS=main PHYLO_XLV_TARGETS=B_lv PHYLO_XLV_METHODS=bootstrap PHYLO_XLV_N_BOOT=2 bench/phylo_xlv_drac_submit.sh --out /tmp/phylo_xlv_submit_dry_empty && rg -n "bootstrap-iterations|bootstrap_args|--n-boot" /tmp/phylo_xlv_submit_dry_empty/meta/phylo_xlv_array.sbatch /tmp/phylo_xlv_submit_dry_empty/meta/session.txt
+rm -rf /tmp/phylo_xlv_submit_dry_5 && PHYLO_XLV_REPS=1 PHYLO_XLV_LAMBDAS=0.5 PHYLO_XLV_N_SPECIES=20 PHYLO_XLV_N_SITES=20 PHYLO_XLV_K=1 PHYLO_XLV_SCENARIOS=main PHYLO_XLV_TARGETS=B_lv PHYLO_XLV_METHODS=bootstrap PHYLO_XLV_N_BOOT=2 PHYLO_XLV_BOOT_ITERATIONS=5 bench/phylo_xlv_drac_submit.sh --out /tmp/phylo_xlv_submit_dry_5 && rg -n "bootstrap-iterations|bootstrap_args|--n-boot" /tmp/phylo_xlv_submit_dry_5/meta/phylo_xlv_array.sbatch /tmp/phylo_xlv_submit_dry_5/meta/session.txt
+bash -n /tmp/phylo_xlv_submit_dry_empty/meta/phylo_xlv_array.sbatch
+bash -n /tmp/phylo_xlv_submit_dry_5/meta/phylo_xlv_array.sbatch
+ssh -o BatchMode=yes nibi 'squeue -j 16951694 -o "%.18i %.9P %.32j %.8T %.10M %.6D %R"; sacct -j 16951694 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P 2>/dev/null || true; echo results=$(find /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30-nibi-lambda05-rep1-20260629-1606/results -maxdepth 1 -name "result_*.csv" 2>/dev/null | wc -l)'
+ssh -o BatchMode=yes rorqual 'squeue -j 14929297 -o "%.18i %.9P %.32j %.8T %.10M %.6D %R"; sacct -j 14929297 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P 2>/dev/null || true; echo results=$(find /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-rorqual-lambda05-cirescue-rep1-nboot30-20260629-1525/results -maxdepth 1 -name "result_*.csv" 2>/dev/null | wc -l)'
+```
+
+### Result
+
+Added an optional bootstrap-refit iteration cap:
+
+- `confint_lv_effects(...; method = :bootstrap, bootstrap_iterations = N)`
+  now passes `iterations = N` to each bootstrap refit;
+- `bootstrap_iterations = nothing` preserves the previous default fitter
+  behavior;
+- invalid non-positive values fail loudly before bootstrap refits;
+- `bench/phylo_xlv_drac_task.jl` accepts `--bootstrap-iterations`;
+- `bench/phylo_xlv_drac_submit.sh` accepts `PHYLO_XLV_BOOT_ITERATIONS`, writes
+  it to `meta/session.txt`, and passes it to the task runner.
+
+Checks:
+
+- `test/test_lv_ci.jl`: `127/127` pass in `2m56.3s`;
+- `test/test_phylo_xlv.jl`: `19/19` pass in `59.0s`;
+- `bash -n bench/phylo_xlv_drac_submit.sh`: pass;
+- `git diff --check`: pass;
+- submit-script dry-runs with `PHYLO_XLV_BOOT_ITERATIONS` unset and set to `5`
+  both generated one-task write-only jobs and syntax-clean sbatch files. The
+  unset generated script has `if [[ -n "" ]]`; the set generated script has
+  `if [[ -n "5" ]]`.
+
+Live-job status at this checkpoint:
+
+- Nibi `16951694_1`: running at `00:29:05`, still in bootstrap, `0` result
+  files. The initial fit converged in `192` iterations / `169.50s`.
+- Rorqual `14929297_1`: running at `01:12:52`, still in profile, `0` result
+  files. The fit and Wald CI completed; profile started at `21:32:55 UTC`.
+
+No capped bootstrap canary was launched from this edit, because the uncapped
+Nibi canary is still running and duplicate cleanup just happened.
+
+### Decision
+
+Keep the current active canaries running for now. Use the new
+`bootstrap_iterations` harness only for a later bounded canary if `16951694`
+times out or proves too slow. Do not launch production coverage.
+
+### Claim Boundary
+
+IN: local harness support for bounded bootstrap-refit iteration canaries.
+PARTIAL: no capped bootstrap result exists yet. OUT: bootstrap coverage
+calibration, profile viability, production `>=500 reps/cell`, and public
+`gllvmTMB` phylo exposure.
