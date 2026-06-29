@@ -3909,3 +3909,48 @@ K=2 phylo-signal intervals are a separate timing blocker when `B_lv` is skipped.
 PARTIAL: no result from job `16926545` exists yet, and job `16923927` has not
 finished its `B_lv` CI. OUT: no production coverage launch and no new coverage
 claim.
+
+## 2026-06-29 09:03 MDT - Codex Rorqual phylo-signal backup launch
+
+### Commands
+
+```sh
+ssh -o BatchMode=yes rorqual 'squeue -u snakagaw -o "%.18i %.9P %.30j %.8u %.10M %.6D %R" | head -n 30; find /project/6098264/snakagaw/phylo_xlv -maxdepth 3 -type f \( -name session.txt -o -name "*.sbatch" -o -name "result_000001.csv" \) -print | sort | tail -n 30'
+ssh -o BatchMode=yes rorqual 'sed -n "1,180p" /project/6098264/snakagaw/phylo_xlv/pilot-large-k2-iter80-4h-20260629-061114/meta/phylo_xlv_array.sbatch'
+rsync -az --delete --exclude='.git' --exclude='.julia' --exclude='docs/build' --exclude='node_modules' ./ rorqual:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac-targettiming/
+ssh -o BatchMode=yes rorqual 'bash -s' <<'REMOTE'
+# Wrote one-row params and sbatch files for:
+# scenario=main, pagel_lambda=0, n_species=200, n_sites=200, K=2,
+# q_lv=1, K_phy=1, rep=1, seed=21371432, iterations=80,
+# source_head=1e32dc9-rsync-no-git, targets=phylo_signal,
+# time=2h, mem=8G.
+REMOTE
+ssh -o BatchMode=yes rorqual 'squeue -j 14909542 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; sacct -j 14909542 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P | tail -n 40'
+ssh -o BatchMode=yes nibi 'squeue -j 16923927,16926545 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; sacct -j 16923927,16926545 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P | tail -n 80'
+```
+
+### Result
+
+Rorqual had no active jobs for user `snakagaw` at the queue check. Synced the
+current local branch to
+`/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac-targettiming/` and submitted
+one bounded backup diagnostic:
+
+- Rorqual job `14909542`;
+- output directory
+  `/project/6098264/snakagaw/phylo_xlv/pilot-large-k2-rorqual-phylo-target-iter80-2h-20260629-0900`;
+- `scenario=main`, `lambda=0`, `n_species=200`, `n_sites=200`, `K=2`,
+  seed `21371432`;
+- `--targets phylo_signal`, `iterations=80`, `time=2h`, `mem=8G`.
+
+At the immediate poll, Rorqual job `14909542_[1%1]` was pending with reason
+`Priority`. Nibi job `16926545_1` had started on node `c13` and was running at
+`00:03:56`. The older Nibi job `16923927_1` was still running at `01:20:51`,
+still inside its `B_lv` CI step.
+
+### Claim Boundary
+
+IN: one Rorqual backup and one Nibi target-only diagnostic are now in the queue
+or running for p=200, K=2 phylo-signal timing. PARTIAL: no target-only result
+exists yet, and old B_lv CI timing remains unresolved. OUT: no production
+coverage launch and no coverage claim.
