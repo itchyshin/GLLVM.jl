@@ -4366,3 +4366,70 @@ launcher pin works in a real Nibi submit. PARTIAL: corrected p=125,K=2,
 iterations=160 and p=150,K=2 B_lv timing remain live. OUT: no production
 coverage launch, no p=125/p=150 feasibility claim, and no calibrated coverage
 claim.
+
+## 2026-06-29 10:53 MDT - Codex p125/p150 K2 B_lv sizing results
+
+### Commands
+
+```sh
+ssh -o BatchMode=yes nibi 'seff 16929661 2>/dev/null || true; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; julia --project=. bench/phylo_xlv_drac_summarise.jl --results /project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-blv-iter160-3h-20260629-1024/results'
+ssh -o BatchMode=yes narval 'seff 64331208 2>/dev/null || true; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; julia --project=. bench/phylo_xlv_drac_summarise.jl --results /project/6098264/snakagaw/phylo_xlv/pilot-midlarge-k2-narval-blv-iter80-3h-20260629-0939/results'
+ssh -o BatchMode=yes nibi 'set -euo pipefail; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; export PHYLO_XLV_JULIA="$(command -v julia)"; export PHYLO_XLV_ACCOUNT=def-snakagaw_cpu; export PHYLO_XLV_REPS=1; export PHYLO_XLV_LAMBDAS=0; export PHYLO_XLV_N_SPECIES=125; export PHYLO_XLV_N_SITES=125; export PHYLO_XLV_K=2; export PHYLO_XLV_SCENARIOS=main; export PHYLO_XLV_TARGETS=phylo_signal; export PHYLO_XLV_METHODS=wald; export PHYLO_XLV_ITERATIONS=160; export PHYLO_XLV_TIME=0-01:00; export PHYLO_XLV_MEM=8G; export PHYLO_XLV_THROTTLE=1; export PHYLO_XLV_DEPOT=/project/6098264/snakagaw/julia_depot; out=/project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-phylo-target-iter160-1h-20260629-1056; bench/phylo_xlv_drac_submit.sh --out "$out" --submit; sed -n "1,90p" "$out/meta/session.txt"; sed -n "1,90p" "$out/meta/phylo_xlv_array.sbatch"'
+ssh -o BatchMode=yes nibi 'squeue -j 16931225 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; tail -n 120 /project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-phylo-target-iter160-1h-20260629-1056/logs/phylo_xlv-16931225-1.out 2>/dev/null || true; tail -n 80 /project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-phylo-target-iter160-1h-20260629-1056/logs/phylo_xlv-16931225-1.err 2>/dev/null || true; cat /project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-phylo-target-iter160-1h-20260629-1056/results/result_000001.csv 2>/dev/null || true'
+```
+
+### Result
+
+Nibi p=125, K=2 B_lv-only corrected fallback job `16929661_1` completed:
+
+- scheduler state `COMPLETED`, exit code `0:0`;
+- wall time `00:22:19`;
+- CPU efficiency `98.66%`;
+- memory `1.04 GB` of `8 GB`;
+- fit converged in `74` iterations;
+- fit seconds `392.680`;
+- B_lv Wald CI seconds `927.814`;
+- `ci_status=ok`, `pd_hessian=true`;
+- usable entries `125/125`;
+- one-seed entry coverage `0.984`;
+- RMSE `0.064`.
+
+Narval p=150, K=2 B_lv-only job `64331208_1` completed:
+
+- scheduler state `COMPLETED`, exit code `0:0`;
+- wall time `01:14:53`;
+- CPU efficiency `99.31%`;
+- memory `2.75 GB` of `8 GB`;
+- fit converged in `67` iterations;
+- fit seconds `1001.191`;
+- B_lv Wald CI seconds `3343.322`;
+- `ci_status=ok`, `pd_hessian=true`;
+- usable entries `150/150`;
+- one-seed entry coverage `0.993`;
+- RMSE `0.051`.
+
+Interpretation: p=150,K=2 is technically usable, but too expensive as a
+default production large-cell boundary. p=125,K=2 is a plausible production
+boundary for B_lv timing, subject to the phylo-signal target and multi-seed
+failure-rate checks.
+
+Submitted one p=125,K=2 phylo-signal-only canary from the pinned launcher:
+
+- Nibi job `16931225`;
+- output directory
+  `/project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-phylo-target-iter160-1h-20260629-1056`;
+- same cell: `scenario=main`, `lambda=0`, `n_species=125`, `n_sites=125`,
+  `K=2`, `q_lv=1`, `K_phy=1`, one seed/task;
+- `--targets phylo_signal`, `iterations=160`, `time=1h`, `mem=8G`;
+- generated sbatch uses absolute Julia 1.10.10.
+
+Immediate queue state: Nibi job `16931225_[1%1]` was pending with reason
+`Priority`.
+
+### Claim Boundary
+
+IN: p=125,K=2 B_lv intervals are technically viable for the tested seed and
+p=150,K=2 B_lv intervals are technically computable but expensive. PARTIAL:
+p=125,K=2 phylo-signal usability and multi-seed failure rates remain pending.
+OUT: no production coverage launch, no K=2 large-cell coverage claim, no
+phylo-signal coverage claim.
