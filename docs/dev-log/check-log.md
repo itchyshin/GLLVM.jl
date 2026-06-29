@@ -5276,3 +5276,36 @@ launch more jobs until at least one of these returns: Nibi uncapped bootstrap
 IN: a bounded comparison canary is submitted on Narval. PARTIAL: no result file
 exists yet. OUT: bootstrap coverage calibration, production `>=500 reps/cell`,
 phylo-signal coverage, and public R exposure.
+
+## 2026-06-29 16:55 MDT - Codex live canary stop point
+
+### Commands
+
+```sh
+ssh -o BatchMode=yes nibi 'squeue -j 16951694 -o "%.18i %.9P %.32j %.8T %.10M %.6D %R"; printf "results="; find /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30-nibi-lambda05-rep1-20260629-1606/results -maxdepth 1 -name "result_*.csv" 2>/dev/null | wc -l; tail -n 100 /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30-nibi-lambda05-rep1-20260629-1606/logs/phylo_xlv-16951694-1.out 2>/dev/null || true'
+ssh -o BatchMode=yes rorqual 'squeue -j 14929297 -o "%.18i %.9P %.32j %.8T %.10M %.6D %R"; printf "results="; find /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-rorqual-lambda05-cirescue-rep1-nboot30-20260629-1525/results -maxdepth 1 -name "result_*.csv" 2>/dev/null | wc -l; tail -n 100 /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-rorqual-lambda05-cirescue-rep1-nboot30-20260629-1525/logs/phylo_xlv-14929297-1.out 2>/dev/null || true'
+ssh -o BatchMode=yes narval 'squeue -j 64365792 -o "%.18i %.9P %.32j %.8T %.10M %.6D %R"; printf "results="; find /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30iter120-narval-lambda05-rep1-20260629-1643/results -maxdepth 1 -name "result_*.csv" 2>/dev/null | wc -l; tail -n 100 /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30iter120-narval-lambda05-rep1-20260629-1643/logs/phylo_xlv-64365792-1.out 2>/dev/null || true'
+curl -s http://127.0.0.1:8770/status.json | jq '{updated, compute_status: [.compute_status[] | select(.cluster=="Nibi" or .cluster=="Narval" or .cluster=="Rorqual")], active_tail: .active_jobs[-3:]}'
+```
+
+### Result
+
+Latest live state:
+
+- Nibi `16951694_1`: running at `00:40:03`, still in bootstrap, `0` result
+  files.
+- Rorqual `14929297_1`: running at `01:23:50`, still in profile, `0` result
+  files.
+- Narval `64365792_[1%1]`: pending with reason `Priority`, `0` result files.
+- Mission-control widget is served as `r130` with these live statuses.
+
+### Decision
+
+Stop fan-out here. The next action is to poll these three jobs and summarize
+whichever returns first. Do not launch another interval-rescue canary until one
+of the current jobs completes, fails, or times out.
+
+### Claim Boundary
+
+IN: three timing canaries are live/pending and the duplicate cap-80 job was
+cancelled before start. OUT: any new coverage claim.
