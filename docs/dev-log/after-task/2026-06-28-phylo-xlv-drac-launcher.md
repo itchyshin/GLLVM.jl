@@ -57,11 +57,33 @@ toy phylogenetic-signal transformed-Wald rows had no usable intervals because
 the fitted H² was on the boundary; the result is recorded as
 `partial_or_failed`.
 
+Follow-up hardening on the same branch made the generated sbatch script create
+and prepend an output-local Julia depot:
+
+```sh
+bash -n bench/phylo_xlv_drac_submit.sh
+export PATH="$HOME/.juliaup/bin:$PATH"; rm -rf /tmp/phylo_xlv_submit_goal_probe2
+PHYLO_XLV_REPS=1 PHYLO_XLV_LAMBDAS=0,0.5,1 PHYLO_XLV_N_SPECIES=20,200 PHYLO_XLV_N_SITES=30 PHYLO_XLV_K=1,2 PHYLO_XLV_SCENARIOS=main,null_alpha0,null_phylo0 PHYLO_XLV_TIME=0-00:30 PHYLO_XLV_MEM=8G PHYLO_XLV_THROTTLE=14 bench/phylo_xlv_drac_submit.sh --out /tmp/phylo_xlv_submit_goal_probe2
+rg -n "julia_depot|JULIA_DEPOT_PATH|mkdir -p|#SBATCH --array|--mem|--time" /tmp/phylo_xlv_submit_goal_probe2/meta/phylo_xlv_array.sbatch
+```
+
+The generated sbatch script now contains `mkdir -p "$out/julia_depot"` and
+prepends `$out/julia_depot` to `JULIA_DEPOT_PATH`, keeping the eventual DRAC
+run aligned with the `/project` depot rule when `--out` points to `/project`.
+The full-shape one-rep pilot still wrote 28 array tasks.
+
+The submitter metadata block was also hardened so `git_head`, `git_branch`,
+and `git status` fall back cleanly when the source is staged onto the cluster
+without a live `.git` directory. A one-task write-only probe still produced
+session metadata and a valid sbatch script after this change.
+
 ## Not Run
 
 Full `Pkg.test()`, GitHub CI, DRAC `sbatch`, profile/bootstrap methods, and the
 >=500 reps/cell production campaign were not run. Totoro/DRAC was not reachable
-non-interactively from this session.
+non-interactively from this session; a fresh BatchMode check on 2026-06-28 still
+failed at Fir Duo auth and Totoro auth, with no Fir ControlMaster socket
+present.
 
 ## Claim Boundary
 

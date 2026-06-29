@@ -3036,3 +3036,82 @@ that completes. PARTIAL: remote PR #127 CI remains red on old head `b87a522`
 until the local commits are pushed or the PR branch is updated. OUT: 3-OS CI
 green on the local commits, deployed docs on the local commits, DRAC coverage,
 and any R-side `phylo_latent(..., lv=~x)` exposure.
+
+## 2026-06-28 -- phylo X_lv DRAC launcher depot-path hardening (Codex)
+
+Worked from local branch `codex/phylo-xlv-drac-launcher-20260628` in
+`/private/tmp/gllvmjl-phylo-xlv` at local head `cffd4d5`, with one open draft
+GLLVM.jl PR (#127) still on the older remote head `b87a522`.
+
+Purpose: harden the generated SLURM script so array tasks force a durable
+output-local Julia depot ahead of any ambient `JULIA_DEPOT_PATH`. This keeps
+the DRAC run aligned with the runbook requirement that Julia depots live on
+`/project` or another explicit durable output path, not an accidental login or
+scratch default.
+
+Coordination and state checks:
+
+```sh
+gh pr list --repo itchyshin/GLLVM.jl --state open --json number,title,headRefName,isDraft,mergeStateStatus,url,updatedAt
+git log --all --oneline --since="6 hours ago" -- docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-28-phylo-xlv-drac-launcher.md bench/phylo_xlv_drac_submit.sh
+git status --short --branch
+```
+
+Observed: only draft PR #127 was open. The recent same-file history was this
+branch's own launcher/check-log work. Working tree was clean before the
+depot-path edit.
+
+Validation:
+
+```sh
+bash -n bench/phylo_xlv_drac_submit.sh
+export PATH="$HOME/.juliaup/bin:$PATH"; rm -rf /tmp/phylo_xlv_submit_goal_probe2
+PHYLO_XLV_REPS=1 PHYLO_XLV_LAMBDAS=0,0.5,1 PHYLO_XLV_N_SPECIES=20,200 PHYLO_XLV_N_SITES=30 PHYLO_XLV_K=1,2 PHYLO_XLV_SCENARIOS=main,null_alpha0,null_phylo0 PHYLO_XLV_TIME=0-00:30 PHYLO_XLV_MEM=8G PHYLO_XLV_THROTTLE=14 bench/phylo_xlv_drac_submit.sh --out /tmp/phylo_xlv_submit_goal_probe2
+rg -n "julia_depot|JULIA_DEPOT_PATH|mkdir -p|#SBATCH --array|--mem|--time" /tmp/phylo_xlv_submit_goal_probe2/meta/phylo_xlv_array.sbatch
+wc -l /tmp/phylo_xlv_submit_goal_probe2/meta/phylo_xlv_params.csv
+```
+
+Results: shell syntax passed. The write-only submit probe wrote 28 tasks for
+the one-rep full-shape pilot grid. The generated sbatch script now contains
+`mkdir -p "/tmp/phylo_xlv_submit_goal_probe2/julia_depot"` and
+`export JULIA_DEPOT_PATH="/tmp/phylo_xlv_submit_goal_probe2/julia_depot:${JULIA_DEPOT_PATH:-}"`.
+The parameter file had 29 lines including the header.
+
+Follow-up metadata hardening:
+
+```sh
+bash -n bench/phylo_xlv_drac_submit.sh
+export PATH="$HOME/.juliaup/bin:$PATH"; rm -rf /tmp/phylo_xlv_submit_goal_probe3
+PHYLO_XLV_REPS=1 PHYLO_XLV_LAMBDAS=0 PHYLO_XLV_N_SPECIES=20 PHYLO_XLV_N_SITES=30 PHYLO_XLV_K=1 PHYLO_XLV_SCENARIOS=main PHYLO_XLV_TIME=0-00:10 PHYLO_XLV_MEM=4G PHYLO_XLV_THROTTLE=2 bench/phylo_xlv_drac_submit.sh --out /tmp/phylo_xlv_submit_goal_probe3
+rg -n "git_head|git_branch|git_status|julia_depot|JULIA_DEPOT_PATH" /tmp/phylo_xlv_submit_goal_probe3/meta/session.txt /tmp/phylo_xlv_submit_goal_probe3/meta/phylo_xlv_array.sbatch
+```
+
+Results: shell syntax passed, the one-task write-only probe completed, session
+metadata recorded `git_head`, `git_branch`, and `git_status` in a normal git
+checkout, and the generated sbatch still created/prepended the output-local
+Julia depot. The `git` metadata commands in the submitter are now tolerant of
+staged source copies where `.git` is absent.
+
+Cluster connectivity check:
+
+```sh
+ssh -o BatchMode=yes -o ConnectTimeout=10 fir 'hostname; pwd; command -v sbatch || true; command -v squeue || true'
+ssh -o BatchMode=yes -o ConnectTimeout=10 totoro 'hostname; pwd; command -v sbatch || true; command -v squeue || true'
+ls -l /Users/z3437171/.ssh/cm-snakagaw@fir.alliancecan.ca:22 2>/dev/null || true
+```
+
+Results: `fir` failed non-interactively at Duo / keyboard-interactive auth,
+`totoro` failed auth, and no Fir ControlMaster socket was present. No `sbatch`
+submission was attempted.
+
+Not run: DRAC `sbatch`, `squeue`, `seff`, production coverage, local
+`Pkg.test()` rerun, or Documenter rebuild. The change is shell-launcher
+plumbing only; previous full local `Pkg.test()` and Documenter evidence still
+apply to the code state before this shell hardening.
+
+### Claim Boundary
+
+IN: generated SLURM scripts now create and prepend the output-local Julia
+depot; write-only full-shape pilot generation still works. PARTIAL: no live
+cluster submission or seff sizing yet. OUT: DRAC production coverage,
+remote CI green on PR #127, and R-side phylo `lv=~x` exposure.

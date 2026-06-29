@@ -101,10 +101,10 @@ cd "$repo_root"
   echo "created_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
   echo "host=$(hostname)"
   echo "repo_root=$repo_root"
-  echo "git_head=$(git rev-parse HEAD)"
-  echo "git_branch=$(git branch --show-current)"
+  echo "git_head=$(git rev-parse HEAD 2>/dev/null || echo unknown)"
+  echo "git_branch=$(git branch --show-current 2>/dev/null || echo unknown)"
   echo "git_status_short_begin"
-  git status --short
+  git status --short 2>/dev/null || echo "git_status_unavailable"
   echo "git_status_short_end"
   echo "julia_version=$("$julia_cmd" --version)"
   echo "reps=$reps"
@@ -145,12 +145,14 @@ cat >> "$job" <<SBATCH
 set -euo pipefail
 cd "$repo_root"
 
+mkdir -p "$out/julia_depot"
+
 if command -v module >/dev/null 2>&1; then
   module load StdEnv/2023 || true
   module load julia || true
 fi
 
-export JULIA_DEPOT_PATH="\${JULIA_DEPOT_PATH:-$out/julia_depot:}"
+export JULIA_DEPOT_PATH="$out/julia_depot:\${JULIA_DEPOT_PATH:-}"
 export OMP_NUM_THREADS="\${SLURM_CPUS_PER_TASK:-$cpus}"
 export OPENBLAS_NUM_THREADS="\${SLURM_CPUS_PER_TASK:-$cpus}"
 
