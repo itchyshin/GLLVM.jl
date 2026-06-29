@@ -5391,3 +5391,50 @@ IN: post-processing is ready to show bootstrap converged-refit counts when a
 result lands. PARTIAL: all three live canaries still have zero result files.
 OUT: bootstrap/profile coverage calibration, production coverage, and public R
 exposure.
+
+## 2026-06-29 17:06 MDT - Codex bootstrap request metadata in result rows
+
+### Commands
+
+```sh
+gh pr list --state open --limit 20 && git log --all --oneline --since='6 hours ago'
+git status --short --branch
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. bench/phylo_xlv_drac_task.jl --write-params /tmp/phylo_xlv_boot_meta_params.csv --reps 1 --lambdas 0.5 --n-species 4 --n-sites 20 --K 1 --q-lv 1 --K-phy 1 --scenarios main --seed0 20260629
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_xlv_boot_meta_params.csv --outdir /tmp/phylo_xlv_boot_meta_results --task-id 1 --methods bootstrap --targets none --iterations 1 --n-boot 7 --bootstrap-iterations 11 --force
+head -n 2 /tmp/phylo_xlv_boot_meta_results/result_000001.csv
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. bench/phylo_xlv_drac_summarise.jl --results /tmp/phylo_xlv_boot_meta_results
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. bench/phylo_xlv_drac_summarise.jl --results /tmp/phylo_xlv_summariser_boot_meta_probe/results
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. bench/phylo_xlv_drac_summarise.jl --results /tmp/phylo_xlv_summariser_old_schema_probe/results
+```
+
+### Result
+
+Added future result-row metadata for bootstrap request settings:
+
+- `bench/phylo_xlv_drac_task.jl` now writes `n_boot` and
+  `bootstrap_iterations` into `RESULT_FIELDS` and every future result row;
+- `bench/phylo_xlv_drac_summarise.jl` now reports `boot n`,
+  `boot iter cap`, and `bootstrap ok`.
+
+Checks:
+
+- tiny task-runner probe wrote a result header containing
+  `level,n_boot,bootstrap_iterations,target`;
+- the tiny result summary printed `boot n = 7`, `boot iter cap = 11`, and
+  `bootstrap ok = NA`;
+- a synthetic new-schema bootstrap row printed `boot n = 30`,
+  `boot iter cap = 120`, and `bootstrap ok = 27`;
+- a synthetic old-schema bootstrap row printed `boot n = NA`,
+  `boot iter cap = NA`, and `bootstrap ok = 27`.
+
+### Decision
+
+This is for future launches. The already-running Nibi, Narval, and Rorqual
+canaries keep their original result schema; use their `meta/session.txt` files
+for requested bootstrap settings if they finish before another launch.
+
+### Claim Boundary
+
+IN: future DRAC result rows and summaries carry bootstrap request metadata.
+OUT: no change to active jobs, no new interval method, no coverage calibration,
+and no production launch.

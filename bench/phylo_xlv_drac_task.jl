@@ -37,7 +37,8 @@ const PARAM_FIELDS = [
 ]
 const RESULT_FIELDS = [
     "task_id", "scenario", "pagel_lambda", "n_species", "n_sites",
-    "K", "q_lv", "K_phy", "rep", "seed", "level", "target", "method",
+    "K", "q_lv", "K_phy", "rep", "seed", "level", "n_boot",
+    "bootstrap_iterations", "target", "method",
     "fit_converged", "fit_iterations", "fit_seconds", "ci_seconds", "ci_status",
     "total", "usable", "covered", "coverage",
     "bias_mean", "bias_rmse", "estimate_mean", "truth_mean",
@@ -445,7 +446,8 @@ function run_task(row::Dict{String, String}; outdir::String, methods, level::Rea
 
     base = (;
         task_id, scenario, pagel_lambda = lambda, n_species = p,
-        n_sites, K, q_lv, K_phy, rep, seed, level,
+        n_sites, K, q_lv, K_phy, rep, seed, level, n_boot,
+        bootstrap_iterations,
     )
     rows = NamedTuple[]
     progress("task $task_id simulate start")
