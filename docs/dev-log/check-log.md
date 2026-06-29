@@ -3322,3 +3322,148 @@ large-species pilot grids now fail loud, and a corrected two-task large-species
 pilot is running. PARTIAL: large-species runtime/results/resource sizing are
 pending. OUT: production DRAC coverage, public phylo Model A coverage claims,
 PR #127 remote CI green on the local commits, and R-side phylo `lv=~x` exposure.
+
+## 2026-06-29 -- phylo X_lv Rorqual large-cell sizing diagnostics (Codex)
+
+Worked from local branch `codex/phylo-xlv-drac-launcher-20260628` in
+`/private/tmp/gllvmjl-phylo-xlv` at local head `31e4441`. The source staged on
+Rorqual was `/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac`.
+
+Coordination and state checks:
+
+```sh
+gh pr list --state open
+git log --all --oneline --since="6 hours ago" -- docs/dev-log/check-log.md docs/dev-log/after-task/2026-06-28-phylo-xlv-drac-launcher.md docs/dev-log/recovery-checkpoints bench/phylo_xlv_drac_task.jl bench/phylo_xlv_drac_submit.sh
+git status --short --branch
+```
+
+Observed: draft GLLVM.jl PR #127 remained the only open PR. The recent same-file
+history was this branch's own Rorqual pilot work. Working tree was clean before
+recording the large-cell sizing diagnostics.
+
+Large production-shaped pilot timeout:
+
+```sh
+ssh -o BatchMode=yes rorqual 'squeue -j 14895097 -o "%.18i %.9P %.30j %.8u %.2t %.10M %.6D %R"; find /project/6098264/snakagaw/phylo_xlv/pilot-large-20260629-001132/results -maxdepth 1 -type f -name "result_*.csv" | wc -l; sacct -j 14895097 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem -P | tail -n 20'
+ssh -o BatchMode=yes rorqual 'seff 14895097; for f in /project/6098264/snakagaw/phylo_xlv/pilot-large-20260629-001132/logs/*; do echo "==== $f ===="; tail -n 60 "$f"; done'
+```
+
+Results: corrected large-cell job `14895097` ran two valid cells
+(`n_species=200`, `n_sites=200`, `K=1,2`, `iterations=400`, Wald-only) and both
+timed out at about 2 hours with no result files. `sacct` reported `TIMEOUT`
+for both array tasks and `CANCELLED` batch steps. `seff 14895097` reported
+99.25% CPU efficiency and 2.16 GB memory used out of 16 GB for the final array
+element. The logs contained only SLURM time-limit cancellation messages and no
+model output. This is a runtime-sizing failure for the large production-shaped
+cell, not a memory failure and not coverage evidence.
+
+One-hour `iterations=80` large-cell diagnostic:
+
+```sh
+ssh -o BatchMode=yes rorqual 'squeue -j 14897066 -o "%.18i %.9P %.30j %.8u %.2t %.10M %.6D %R"; find /project/6098264/snakagaw/phylo_xlv/pilot-large-iter80-20260629-013037/results -maxdepth 1 -type f -name "result_*.csv" | wc -l; sacct -j 14897066 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem -P | tail -n 20'
+ssh -o BatchMode=yes rorqual 'seff 14897066; for f in /project/6098264/snakagaw/phylo_xlv/pilot-large-iter80-20260629-013037/logs/*; do echo "==== $f ===="; tail -n 60 "$f"; done'
+```
+
+Results: the one-task `n_species=200`, `n_sites=200`, `K=1`,
+`iterations=80` diagnostic also timed out at about 1 hour with no result file.
+`seff 14897066` reported 98.95% CPU efficiency and 2.13 GB memory used out of
+8 GB. The log contained only the SLURM time-limit cancellation message. This
+showed the earlier one-hour cap was too short even with the reduced iteration
+limit.
+
+Minimal large-cell and mid-size scaling diagnostics:
+
+```sh
+ssh -o BatchMode=yes rorqual 'bash -s' <<'REMOTE'
+set -euo pipefail
+root=/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac
+cd "$root"
+module load StdEnv/2023
+module load julia/1.10.10
+export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}
+export PHYLO_XLV_ACCOUNT=def-snakagaw_cpu
+export PHYLO_XLV_REPS=1
+export PHYLO_XLV_LAMBDAS=0
+export PHYLO_XLV_SCENARIOS=main
+export PHYLO_XLV_K=1
+export PHYLO_XLV_THROTTLE=1
+export PHYLO_XLV_MEM=8G
+export PHYLO_XLV_JULIA=/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Core/julia/1.10.10/bin/julia
+
+out1=/project/6098264/snakagaw/phylo_xlv/pilot-large-iter5-20260629-023824
+export PHYLO_XLV_N_SPECIES=200
+export PHYLO_XLV_N_SITES=200
+export PHYLO_XLV_TIME=0-01:00
+export PHYLO_XLV_ITERATIONS=5
+bench/phylo_xlv_drac_submit.sh --out "$out1" --submit
+
+out2=/project/6098264/snakagaw/phylo_xlv/pilot-mid-iter80-20260629-023840
+export PHYLO_XLV_N_SPECIES=100
+export PHYLO_XLV_N_SITES=100
+export PHYLO_XLV_TIME=0-01:00
+export PHYLO_XLV_ITERATIONS=80
+bench/phylo_xlv_drac_submit.sh --out "$out2" --submit
+REMOTE
+```
+
+Result inspection:
+
+```sh
+ssh -o BatchMode=yes rorqual 'cat /project/6098264/snakagaw/phylo_xlv/pilot-large-iter5-20260629-023824/results/result_000001.csv; cat /project/6098264/snakagaw/phylo_xlv/pilot-mid-iter80-20260629-023840/results/result_000001.csv'
+ssh -o BatchMode=yes rorqual 'seff 14898030; seff 14898031'
+ssh -o BatchMode=yes rorqual 'set -euo pipefail; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023; module load julia/1.10.10; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; julia --project=. bench/phylo_xlv_drac_summarise.jl --results /project/6098264/snakagaw/phylo_xlv/pilot-large-iter5-20260629-023824/results; julia --project=. bench/phylo_xlv_drac_summarise.jl --results /project/6098264/snakagaw/phylo_xlv/pilot-mid-iter80-20260629-023840/results'
+```
+
+Results: job `14898030` (`n_species=200`, `n_sites=200`, `K=1`,
+`iterations=5`) completed in 3:39, used 739.67 MB, and wrote a
+`not_converged` result after 5 iterations with `fit_seconds=204.19`. Job
+`14898031` (`n_species=100`, `n_sites=100`, `K=1`, `iterations=80`) completed
+in 3:06, used 1.03 GB, converged in 19 fit iterations with
+`fit_seconds=40.52`, and wrote finite `B_lv` Wald rows with 100/100 usable
+entries in this one-rep diagnostic. The phylo-signal row remained
+`partial_or_failed` with zero usable transformed-Wald intervals, consistent
+with the earlier boundary behavior.
+
+Follow-up active diagnostic:
+
+```sh
+ssh -o BatchMode=yes rorqual 'bash -s' <<'REMOTE'
+set -euo pipefail
+root=/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac
+cd "$root"
+module load StdEnv/2023
+module load julia/1.10.10
+export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}
+export PHYLO_XLV_ACCOUNT=def-snakagaw_cpu
+export PHYLO_XLV_REPS=1
+export PHYLO_XLV_LAMBDAS=0
+export PHYLO_XLV_SCENARIOS=main
+export PHYLO_XLV_K=1
+export PHYLO_XLV_THROTTLE=1
+export PHYLO_XLV_MEM=8G
+export PHYLO_XLV_N_SPECIES=200
+export PHYLO_XLV_N_SITES=200
+export PHYLO_XLV_TIME=0-02:00
+export PHYLO_XLV_ITERATIONS=80
+export PHYLO_XLV_JULIA=/cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Core/julia/1.10.10/bin/julia
+out=/project/6098264/snakagaw/phylo_xlv/pilot-large-iter80-2h-20260629-025000
+bench/phylo_xlv_drac_submit.sh --out "$out" --submit
+REMOTE
+```
+
+Results so far: submitted job `14898092`, a one-task `n_species=200`,
+`n_sites=200`, `K=1`, `iterations=80`, 2-hour diagnostic. At recording time it
+was pending on priority with no result file.
+
+Not run yet: final inspection of job `14898092`, any longer successful
+`n_species=200` pilot, profile/bootstrap timing, or the production 500
+reps/cell campaign.
+
+### Claim Boundary
+
+IN: small-species Rorqual plumbing works; `n_species=100`, `n_sites=100`, `K=1`
+converged in the one-rep diagnostic; `n_species=200` can return a
+`not_converged` row when capped at 5 iterations. PARTIAL: valid
+`n_species=200`, `n_sites=200` convergence and interval timing remain active
+diagnostics. OUT: production DRAC coverage, public phylo Model A coverage
+claims, and R-side phylo `lv=~x` exposure.

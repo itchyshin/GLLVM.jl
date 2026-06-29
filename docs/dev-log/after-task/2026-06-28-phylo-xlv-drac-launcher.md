@@ -169,19 +169,42 @@ Rorqual accepted this as job `14895097` with two valid large-species tasks. At
 recording time both tasks were running with active CPU, no result files yet,
 and live `sstat` memory below 1 GB.
 
+Later inspection showed that job `14895097` timed out at the 2-hour limit for
+both `n_species=200`, `n_sites=200`, `K=1,2`, `iterations=400` tasks, with no
+result files. `seff 14895097` reported high CPU efficiency and 2.16 GB memory
+used out of 16 GB, so the large-cell problem is runtime, not memory.
+
+Additional sizing diagnostics:
+
+- Job `14897066`: `n_species=200`, `n_sites=200`, `K=1`, `iterations=80`,
+  1-hour limit. This also timed out with no result file; `seff` reported high
+  CPU efficiency and 2.13 GB memory used out of 8 GB.
+- Job `14898030`: `n_species=200`, `n_sites=200`, `K=1`, `iterations=5`.
+  This completed in 3:39 and wrote a `not_converged` row after 5 iterations
+  with `fit_seconds=204.19`.
+- Job `14898031`: `n_species=100`, `n_sites=100`, `K=1`, `iterations=80`.
+  This completed in 3:06, converged in 19 fit iterations with
+  `fit_seconds=40.52`, and wrote finite `B_lv` Wald rows. The phylogenetic
+  signal transformed-Wald row remained `partial_or_failed` with zero usable
+  intervals.
+- Job `14898092`: active follow-up diagnostic at recording time,
+  `n_species=200`, `n_sites=200`, `K=1`, `iterations=80`, 2-hour limit.
+
 ## Not Run
 
 Full `Pkg.test()` rerun after launcher hardening, GitHub CI, profile/bootstrap
-methods, result aggregation for corrected large pilot `14895097`,
-`seff 14895097`, and the >=500 reps/cell production campaign were not run. Fir
-and Totoro were not reachable non-interactively from this session, but Rorqual
-BatchMode access was usable and accepted the pilot arrays.
+methods, final result aggregation for active diagnostic `14898092`, any
+successful `n_species=200` convergence/interval pilot, and the >=500 reps/cell
+production campaign were not run. Fir and Totoro were not reachable
+non-interactively from this session, but Rorqual BatchMode access was usable and
+accepted the pilot arrays.
 
 ## Claim Boundary
 
 IN: DRAC launcher and summariser plumbing, local toy file-format smokes,
-Rorqual small-species pilot execution, and fail-loud invalid-grid protection.
-PARTIAL: corrected large-species pilot runtime/results/resource sizing,
-profile/bootstrap cost calibration, production array sizing, `seff`
-right-sizing, and H² boundary behavior. OUT: calibrated Model A coverage, R-side
+Rorqual small-species pilot execution, fail-loud invalid-grid protection, and
+one-rep `n_species=100` convergence with finite `B_lv` Wald output. PARTIAL:
+valid `n_species=200` convergence/interval timing, profile/bootstrap cost
+calibration, production array sizing, `seff` right-sizing, and H² boundary
+behavior. OUT: calibrated Model A coverage, R-side
 `phylo_latent(..., lv=~x)` exposure, non-Gaussian phylo `X_lv`, and Model B.
