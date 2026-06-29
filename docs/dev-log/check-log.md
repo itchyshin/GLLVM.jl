@@ -5715,3 +5715,46 @@ IN: one-seed bootstrap feasibility/timing result for the known weak cell. OUT:
 no production coverage, no MCSE-backed coverage claim, no phylo-signal result,
 and no evidence yet that bootstrap is affordable for the full lambda x p x K
 campaign.
+
+## 2026-06-29 17:38 MDT - Codex PR #572 CI poll and live canary hold
+
+### Commands
+
+```sh
+ssh -o BatchMode=yes narval 'job=64365792; out=/project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30iter120-narval-lambda05-rep1-20260629-1643; squeue -j ${job} -o "%i %T %M %l %D %R" --noheader || true; find ${out}/results -maxdepth 1 -type f -name "result_*.csv" 2>/dev/null | wc -l; tail -n 10 ${out}/logs/phylo_xlv-64365792-1.out; seff ${job} 2>/dev/null || true'
+ssh -o BatchMode=yes rorqual 'job=14929297; out=/project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-rorqual-lambda05-cirescue-rep1-nboot30-20260629-1525; squeue -j ${job} -o "%i %T %M %l %D %R" --noheader || true; find ${out}/results -maxdepth 1 -type f -name "result_*.csv" 2>/dev/null | wc -l; tail -n 12 ${out}/logs/phylo_xlv-14929297-1.out; seff ${job} 2>/dev/null || true'
+gh run view 28409207166 --repo itchyshin/gllvmTMB --json status,conclusion,jobs,url
+gh run view 28409131403 --repo itchyshin/gllvmTMB --json status,conclusion,jobs,url
+jq . /tmp/gllvm-dashboard/status.json >/tmp/gllvm-dashboard/status.validate
+```
+
+### Result
+
+R-side state:
+
+- gllvmTMB PR #572 Ubuntu R-CMD-check run `28409207166` completed
+  successfully at `2026-06-29T23:34:40Z`;
+- pkgdown run `28409131403` from the #571 main merge is still in `Build site`.
+
+DRAC state:
+
+- Narval `64365792_1`: running at `00:43:13`, still in capped bootstrap,
+  `0` result files;
+- Rorqual `14929297_1`: running at `02:11:52`, still in profile,
+  `0` result files.
+
+Dashboard `/tmp/gllvm-dashboard` was updated to `r142`; JSON validation passed.
+
+### Decision
+
+Do not launch another bootstrap-cap diagnostic yet. Nibi has supplied the
+uncapped bootstrap feasibility point, and Narval is already the capped
+comparator for the same cell. Wait for Narval to finish or time out before
+choosing a new cap.
+
+### Claim Boundary
+
+IN: PR #572 has green Ubuntu CI, and the phylo bootstrap comparison is now a
+two-point live timing question: completed uncapped Nibi vs pending capped
+Narval. OUT: no PR #572 merge claim, no pkgdown completion claim, no phylo
+production coverage, and no conclusion about the capped bootstrap path yet.
