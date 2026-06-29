@@ -5342,3 +5342,52 @@ needed numerator; the requested `n_boot` denominator remains in
 
 IN: result summaries now expose the bootstrap converged-refit count. OUT: no
 new interval method, no coverage claim, and no production launch.
+
+## 2026-06-29 16:59 MDT - Codex summariser sync and live canary poll
+
+### Commands
+
+```sh
+rsync -av bench/phylo_xlv_drac_summarise.jl nibi:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/
+rsync -av bench/phylo_xlv_drac_summarise.jl rorqual:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/
+rsync -av bench/phylo_xlv_drac_summarise.jl narval:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/
+ssh -o BatchMode=yes nibi 'grep -n "bootstrap ok\|bootstrap_converged\|fmt_optional_int" /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/phylo_xlv_drac_summarise.jl | head -20'
+ssh -o BatchMode=yes rorqual 'grep -n "bootstrap ok\|bootstrap_converged\|fmt_optional_int" /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/phylo_xlv_drac_summarise.jl | head -20'
+ssh -o BatchMode=yes narval 'grep -n "bootstrap ok\|bootstrap_converged\|fmt_optional_int" /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/phylo_xlv_drac_summarise.jl | head -20'
+ssh -o BatchMode=yes nibi 'squeue -j 16951694 -o "%.18i %.9P %.32j %.8T %.10M %.6D %R"; sacct -j 16951694 --format=JobID,JobName,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P 2>/dev/null || true; find /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30-nibi-lambda05-rep1-20260629-1606/results -maxdepth 1 -name "result_*.csv" 2>/dev/null | wc -l; tail -n 30 /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30-nibi-lambda05-rep1-20260629-1606/logs/phylo_xlv-16951694-1.out 2>/dev/null || true'
+ssh -o BatchMode=yes rorqual 'squeue -j 14929297 -o "%.18i %.9P %.32j %.8T %.10M %.6D %R"; sacct -j 14929297 --format=JobID,JobName,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P 2>/dev/null || true; find /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-rorqual-lambda05-cirescue-rep1-nboot30-20260629-1525/results -maxdepth 1 -name "result_*.csv" 2>/dev/null | wc -l; tail -n 30 /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-rorqual-lambda05-cirescue-rep1-nboot30-20260629-1525/logs/phylo_xlv-14929297-1.out 2>/dev/null || true'
+ssh -o BatchMode=yes narval 'squeue -j 64365792 -o "%.18i %.9P %.32j %.8T %.10M %.6D %R"; sacct -j 64365792 --format=JobID,JobName,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P 2>/dev/null || true; find /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30iter120-narval-lambda05-rep1-20260629-1643/results -maxdepth 1 -name "result_*.csv" 2>/dev/null | wc -l; tail -n 30 /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30iter120-narval-lambda05-rep1-20260629-1643/logs/phylo_xlv-64365792-1.out 2>/dev/null || true'
+python3 -m json.tool /tmp/gllvm-dashboard/status.json >/tmp/gllvm-dashboard/status.validate.json
+```
+
+### Result
+
+Synced the `bootstrap ok` summariser to the three reachable DRAC project copies:
+Nibi, Rorqual, and Narval. Grep on each remote copy found the new
+`fmt_optional_int`, `bootstrap ok`, and `bootstrap_converged` lines.
+
+Latest canary state:
+
+- Nibi `16951694_1`: running at `00:48:23`, still in uncapped bootstrap,
+  `0` result files.
+- Narval `64365792_1`: running at `00:03:31`; fit converged in `128`
+  iterations / `148.61s`, then entered capped bootstrap with
+  `bootstrap_iterations=120`; `0` result files.
+- Rorqual `14929297_1`: running at `01:32:08`, still in profile,
+  `0` result files.
+
+Dashboard `/tmp/gllvm-dashboard` was updated to `r132`; JSON validation passed.
+
+### Decision
+
+Do not launch more jobs. Wait for one of the three timing canaries to write a
+result or hit its scheduler limit. Narval is now the primary capped-bootstrap
+comparison; Nibi remains the uncapped bootstrap comparison; Rorqual measures
+profile feasibility.
+
+### Claim Boundary
+
+IN: post-processing is ready to show bootstrap converged-refit counts when a
+result lands. PARTIAL: all three live canaries still have zero result files.
+OUT: bootstrap/profile coverage calibration, production coverage, and public R
+exposure.
