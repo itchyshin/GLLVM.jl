@@ -3810,3 +3810,54 @@ is not yet solved because Nibi is still in the B_lv CI step, and phylo-signal CI
 rows remain unusable in these one-seed canaries. OUT: no >=500 reps/cell
 production coverage array has launched, and these one-seed rows are not coverage
 evidence.
+
+## 2026-06-29 08:28 MDT - Codex phylo X_lv timing instrumentation
+
+### Commands
+
+```sh
+gh pr list --state open --json number,title,headRefName,url,isDraft
+git log --all --oneline --since='6 hours ago' -- docs/dev-log/check-log.md docs/dev-log/after-task docs/dev-log/recovery-checkpoints bench/phylo_xlv_drac_task.jl bench/phylo_xlv_drac_submit.sh bench/phylo_xlv_drac_summarise.jl src/confint_family.jl src/confint_derived_wald.jl
+julia --project=. bench/phylo_xlv_drac_task.jl --help
+bash -n bench/phylo_xlv_drac_submit.sh
+d=$(mktemp -d); julia --project=. bench/phylo_xlv_drac_task.jl --write-params "$d/params.csv" --reps 1 --lambdas 0 --n-species 3 --n-sites 3 --K 1 --scenarios main; julia --project=. bench/phylo_xlv_drac_task.jl --params "$d/params.csv" --outdir "$d/results" --task-id 1 --targets none --dry-run; julia --project=. bench/phylo_xlv_drac_task.jl --params "$d/params.csv" --outdir "$d/results" --task-id 1 --targets all --dry-run
+d=$(mktemp -d); julia --project=. bench/phylo_xlv_drac_task.jl --write-params "$d/params.csv" --reps 1 --lambdas 0 --n-species 3 --n-sites 8 --K 1 --scenarios main; julia --project=. bench/phylo_xlv_drac_task.jl --params "$d/params.csv" --outdir "$d/results" --task-id 1 --targets none --iterations 20 --force; julia --project=. bench/phylo_xlv_drac_summarise.jl --results "$d/results"; cat "$d/results/result_000001.csv"
+ssh -o BatchMode=yes nibi 'squeue -j 16923927 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; sacct -j 16923927 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P | tail -n 40; sstat -j 16923927.batch --format=JobID,AveCPU,AveRSS,MaxRSS -P 2>/dev/null || true; tail -n 80 /project/6098264/snakagaw/phylo_xlv/pilot-large-k2-nibi-iter80-4h-20260629-073300/logs/phylo_xlv-16923927-1.out 2>/dev/null || true; cat /project/6098264/snakagaw/phylo_xlv/pilot-large-k2-nibi-iter80-4h-20260629-073300/results/result_000001.csv 2>/dev/null || true; seff 16923927 2>/dev/null || true'
+```
+
+### Result
+
+Added bench-only instrumentation for Phase 3 DRAC steering:
+
+- `bench/phylo_xlv_drac_task.jl` now writes a `ci_seconds` result column.
+- The task runner accepts `--targets B_lv,phylo_signal`, `--targets B_lv`,
+  `--targets phylo_signal`, `--targets all`, and `--targets none`.
+- `--targets none` writes an explicit `target=fit`, `ci_status=fit_only`
+  result row after a converged fit.
+- `bench/phylo_xlv_drac_submit.sh` exposes the same control through
+  `PHYLO_XLV_TARGETS` and records it in session metadata.
+- `bench/phylo_xlv_drac_summarise.jl` now reports mean fit seconds and mean
+  CI seconds per grouped row while remaining compatible with older CSVs that
+  lack `ci_seconds`.
+
+Validation passed:
+
+- help text renders;
+- `bash -n bench/phylo_xlv_drac_submit.sh` passes;
+- tiny generated parameter files dry-run with `--targets none` and
+  `--targets all`;
+- a tiny actual `--targets none` task (`n_species=3`, `n_sites=8`, `K=1`,
+  `iterations=20`) converged in 12 iterations, wrote a `fit_only` row with the
+  new `ci_seconds` column, and summarised successfully.
+
+At the concurrent Nibi poll, large-cell job `16923927_1` remained in the
+`B_lv` Wald CI step at `00:50:54` wall time after its fit had already converged
+in `1394.49` seconds. No result CSV had been written yet.
+
+### Claim Boundary
+
+IN: the DRAC runner can now separate fit-only, B_lv-only, and phylo-signal-only
+timing/evidence tasks without changing the Model A estimands. PARTIAL: the
+current large-cell Nibi canary still has unresolved B_lv interval wall time.
+OUT: this instrumentation is not coverage evidence and does not validate
+phylo-signal intervals.

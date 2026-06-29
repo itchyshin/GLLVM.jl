@@ -108,8 +108,8 @@ function summarise(rows)
         push!(get!(groups, key_for(row), Dict{String, String}[]), row)
     end
 
-    println("| scenario | lambda | p | n_sites | K | target | method | tasks | fit ok | usable entries | mean coverage (MCSE) | entry coverage | RMSE mean | CI status |")
-    println("|---|---:|---:|---:|---:|---|---|---:|---:|---:|---:|---:|---:|---|")
+    println("| scenario | lambda | p | n_sites | K | target | method | tasks | fit ok | usable entries | mean coverage (MCSE) | entry coverage | RMSE mean | fit sec mean | CI sec mean | CI status |")
+    println("|---|---:|---:|---:|---:|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---|")
     for key in sort(collect(keys(groups)))
         rs = groups[key]
         n_tasks = length(rs)
@@ -122,12 +122,17 @@ function summarise(rows)
         entry_cov = usable == 0 ? NaN : covered / usable
         rmses = [parse_float(get(r, "bias_rmse", "")) for r in rs]
         rmse_mean = isempty(filter(isfinite, rmses)) ? NaN : mean(filter(isfinite, rmses))
+        fit_seconds = [parse_float(get(r, "fit_seconds", "")) for r in rs]
+        fit_seconds_mean = isempty(filter(isfinite, fit_seconds)) ? NaN : mean(filter(isfinite, fit_seconds))
+        ci_seconds = [parse_float(get(r, "ci_seconds", "")) for r in rs]
+        ci_seconds_mean = isempty(filter(isfinite, ci_seconds)) ? NaN : mean(filter(isfinite, ci_seconds))
         statuses = sort(unique(get(r, "ci_status", "") for r in rs))
         scenario, lambda, p, n_sites, K, target, method = key
-        @printf("| %s | %s | %s | %s | %s | %s | %s | %d | %d | %d | %s (%s) | %s | %s | %s |\n",
+        @printf("| %s | %s | %s | %s | %s | %s | %s | %d | %d | %d | %s (%s) | %s | %s | %s | %s | %s |\n",
                 scenario, lambda, p, n_sites, K, target, method,
                 n_tasks, fit_ok, usable, fmt(cov_mean), fmt(cov_mcse),
-                fmt(entry_cov), fmt(rmse_mean), join(statuses, ";"))
+                fmt(entry_cov), fmt(rmse_mean), fmt(fit_seconds_mean),
+                fmt(ci_seconds_mean), join(statuses, ";"))
     end
 end
 

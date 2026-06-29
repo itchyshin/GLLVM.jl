@@ -22,6 +22,7 @@ Environment overrides:
   PHYLO_XLV_SCENARIOS    comma list (default: main,null_alpha0,null_phylo0)
   PHYLO_XLV_SEED0        master seed offset (default: 20260628)
   PHYLO_XLV_METHODS      B_lv CI methods: wald or wald,profile,bootstrap (default: wald)
+  PHYLO_XLV_TARGETS      interval targets: B_lv,phylo_signal, all, or none (default: B_lv,phylo_signal)
   PHYLO_XLV_LEVEL        CI level (default: 0.95)
   PHYLO_XLV_ITERATIONS   optimiser iterations (default: 400)
   PHYLO_XLV_N_BOOT       bootstrap reps when bootstrap is requested (default: 200)
@@ -70,6 +71,7 @@ k_phy="${PHYLO_XLV_K_PHY:-1}"
 scenarios="${PHYLO_XLV_SCENARIOS:-main,null_alpha0,null_phylo0}"
 seed0="${PHYLO_XLV_SEED0:-20260628}"
 methods="${PHYLO_XLV_METHODS:-wald}"
+targets="${PHYLO_XLV_TARGETS:-B_lv,phylo_signal}"
 level="${PHYLO_XLV_LEVEL:-0.95}"
 iterations="${PHYLO_XLV_ITERATIONS:-400}"
 n_boot="${PHYLO_XLV_N_BOOT:-200}"
@@ -119,6 +121,7 @@ cd "$repo_root"
   echo "K_phy=$k_phy"
   echo "scenarios=$scenarios"
   echo "methods=$methods"
+  echo "targets=$targets"
   echo "level=$level"
 } > "$session"
 
@@ -176,6 +179,7 @@ export OPENBLAS_NUM_THREADS="\${SLURM_CPUS_PER_TASK:-$cpus}"
   --params "$params" \\
   --outdir "$out/results" \\
   --methods "$methods" \\
+  --targets "$targets" \\
   --level "$level" \\
   --iterations "$iterations" \\
   --n-boot "$n_boot"

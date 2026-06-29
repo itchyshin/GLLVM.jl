@@ -30,6 +30,7 @@ const DEFAULT_LAMBDAS = [0.0, 0.5, 1.0]
 const DEFAULT_N_SPECIES = [20, 200]
 const DEFAULT_KS = [1, 2]
 const DEFAULT_SCENARIOS = ["main", "null_alpha0", "null_phylo0"]
+const DEFAULT_TARGETS = ["B_lv", "phylo_signal"]
 const PARAM_FIELDS = [
     "task_id", "scenario", "pagel_lambda", "n_species", "n_sites",
     "K", "q_lv", "K_phy", "rep", "seed",
@@ -37,7 +38,7 @@ const PARAM_FIELDS = [
 const RESULT_FIELDS = [
     "task_id", "scenario", "pagel_lambda", "n_species", "n_sites",
     "K", "q_lv", "K_phy", "rep", "seed", "level", "target", "method",
-    "fit_converged", "fit_iterations", "fit_seconds", "ci_status",
+    "fit_converged", "fit_iterations", "fit_seconds", "ci_seconds", "ci_status",
     "total", "usable", "covered", "coverage",
     "bias_mean", "bias_rmse", "estimate_mean", "truth_mean",
     "max_abs_estimate", "max_abs_truth", "pd_hessian",
@@ -66,6 +67,29 @@ function parse_methods(s::String)
         push!(out, method)
     end
     isempty(out) && throw(ArgumentError("--methods must name at least one method"))
+    return out
+end
+
+function parse_targets(s::String)
+    xs = parse_string_list(s)
+    isempty(xs) && throw(ArgumentError("--targets must name at least one target, or none"))
+    if length(xs) == 1 && lowercase(xs[1]) in ("none", "fit")
+        return String[]
+    end
+    any(lowercase(x) == "all" for x in xs) && return copy(DEFAULT_TARGETS)
+
+    out = String[]
+    for x in xs
+        key = lowercase(x)
+        target = if key in ("b_lv", "blv", "lv")
+            "B_lv"
+        elseif key in ("phylo_signal", "h2", "phylo")
+            "phylo_signal"
+        else
+            throw(ArgumentError("--targets entries must be B_lv, phylo_signal, all, or none; got $x"))
+        end
+        target in out || push!(out, target)
+    end
     return out
 end
 
@@ -306,13 +330,13 @@ function progress(message::AbstractString)
 end
 
 function result_row(base; target, method, fit_converged, fit_iterations, fit_seconds,
-                    ci_status, total = 0, usable = 0, covered = 0, coverage = NaN,
+                    ci_seconds = NaN, ci_status, total = 0, usable = 0, covered = 0, coverage = NaN,
                     bias_mean = NaN, bias_rmse = NaN, estimate_mean = NaN,
                     truth_mean = NaN, max_abs_estimate = NaN, max_abs_truth = NaN,
                     pd_hessian = nothing, bootstrap_converged = nothing,
                     error = "")
     return merge(base, (;
-        target, method, fit_converged, fit_iterations, fit_seconds, ci_status,
+        target, method, fit_converged, fit_iterations, fit_seconds, ci_seconds, ci_status,
         total, usable, covered, coverage, bias_mean, bias_rmse,
         estimate_mean, truth_mean, max_abs_estimate, max_abs_truth,
         pd_hessian, bootstrap_converged, error,
@@ -320,8 +344,10 @@ function result_row(base; target, method, fit_converged, fit_iterations, fit_sec
 end
 
 function b_lv_row(base, method::Symbol, fit, Y, X_lv, truth; level::Real, n_boot::Integer)
+    t0 = time()
     ci = confint_lv_effects(fit, Y, X_lv; level = level, method = method,
                             n_boot = n_boot, seed = base.seed + 71_111)
+    ci_seconds = time() - t0
     est = collect(Float64, ci.estimate)
     lo = collect(Float64, ci.lower)
     hi = collect(Float64, ci.upper)
@@ -340,11 +366,13 @@ function b_lv_row(base, method::Symbol, fit, Y, X_lv, truth; level::Real, n_boot
         truth_mean = finite_mean(truth),
         max_abs_estimate = maximum(abs.(est)),
         max_abs_truth = maximum(abs.(truth)),
+        ci_seconds = ci_seconds,
         pd_hessian = pd, bootstrap_converged = nb,
     )
 end
 
 function phylo_signal_row(base, fit, Y, Sigma_phy, truth; level::Real)
+    t0 = time()
     est = phylo_signal(fit; Σ_phy = Sigma_phy)
     lower = fill(NaN, length(truth))
     upper = fill(NaN, length(truth))
@@ -368,12 +396,13 @@ function phylo_signal_row(base, fit, Y, Sigma_phy, truth; level::Real)
         truth_mean = finite_mean(truth),
         max_abs_estimate = maximum(abs.(est)),
         max_abs_truth = maximum(abs.(truth)),
+        ci_seconds = time() - t0,
         pd_hessian = pd,
     )
 end
 
 function run_task(row::Dict{String, String}; outdir::String, methods, level::Real,
-                  iterations::Integer, n_boot::Integer, dry_run::Bool, force::Bool)
+                  iterations::Integer, n_boot::Integer, targets, dry_run::Bool, force::Bool)
     task_id = row_value(row, "task_id", Int)
     scenario = row_value(row, "scenario", String)
     lambda = row_value(row, "pagel_lambda", Float64)
@@ -444,39 +473,63 @@ function run_task(row::Dict{String, String}; outdir::String, methods, level::Rea
         return
     end
 
-    for method in methods
-        progress("task $task_id B_lv CI start method=$method")
+    if isempty(targets)
+        progress("task $task_id fit-only target set; writing result")
+        push!(rows, result_row(base;
+            target = "fit", method = "none", fit_converged = true,
+            fit_iterations = fit_iterations(fit), fit_seconds = fit_seconds,
+            ci_status = "fit_only",
+        ))
+        write_csv(result_path, RESULT_FIELDS, rows)
+        progress("task $task_id wrote fit_only result to $result_path")
+        return
+    end
+
+    if "B_lv" in targets
+        for method in methods
+            progress("task $task_id B_lv CI start method=$method")
+            tci = time()
+            try
+                push!(rows, b_lv_row(base, method, fit, Y, X_lv, B_true;
+                                     level = level, n_boot = n_boot))
+                progress("task $task_id B_lv CI done method=$method")
+            catch err
+                progress("task $task_id B_lv CI error method=$method: $(sprint(showerror, err))")
+                push!(rows, result_row(base;
+                    target = "B_lv", method = String(method),
+                    fit_converged = fit.converged, fit_iterations = fit_iterations(fit),
+                    fit_seconds = fit_seconds, ci_seconds = time() - tci,
+                    ci_status = "ci_error",
+                    total = length(B_true), truth_mean = finite_mean(B_true),
+                    max_abs_truth = maximum(abs.(B_true)),
+                    error = sprint(showerror, err),
+                ))
+            end
+        end
+    else
+        progress("task $task_id B_lv CI skipped by --targets")
+    end
+
+    if "phylo_signal" in targets
+        progress("task $task_id phylo_signal CI start")
+        tci = time()
         try
-            push!(rows, b_lv_row(base, method, fit, Y, X_lv, B_true;
-                                 level = level, n_boot = n_boot))
-            progress("task $task_id B_lv CI done method=$method")
+            push!(rows, phylo_signal_row(base, fit, Y, Sigma_phy, H2_true; level = level))
+            progress("task $task_id phylo_signal CI done")
         catch err
-            progress("task $task_id B_lv CI error method=$method: $(sprint(showerror, err))")
+            progress("task $task_id phylo_signal CI error: $(sprint(showerror, err))")
             push!(rows, result_row(base;
-                target = "B_lv", method = String(method),
+                target = "phylo_signal", method = "transformed_wald",
                 fit_converged = fit.converged, fit_iterations = fit_iterations(fit),
-                fit_seconds = fit_seconds, ci_status = "ci_error",
-                total = length(B_true), truth_mean = finite_mean(B_true),
-                max_abs_truth = maximum(abs.(B_true)),
+                fit_seconds = fit_seconds, ci_seconds = time() - tci,
+                ci_status = "ci_error",
+                total = length(H2_true), truth_mean = finite_mean(H2_true),
+                max_abs_truth = maximum(abs.(H2_true)),
                 error = sprint(showerror, err),
             ))
         end
-    end
-
-    try
-        progress("task $task_id phylo_signal CI start")
-        push!(rows, phylo_signal_row(base, fit, Y, Sigma_phy, H2_true; level = level))
-        progress("task $task_id phylo_signal CI done")
-    catch err
-        progress("task $task_id phylo_signal CI error: $(sprint(showerror, err))")
-        push!(rows, result_row(base;
-            target = "phylo_signal", method = "transformed_wald",
-            fit_converged = fit.converged, fit_iterations = fit_iterations(fit),
-            fit_seconds = fit_seconds, ci_status = "ci_error",
-            total = length(H2_true), truth_mean = finite_mean(H2_true),
-            max_abs_truth = maximum(abs.(H2_true)),
-            error = sprint(showerror, err),
-        ))
+    else
+        progress("task $task_id phylo_signal CI skipped by --targets")
     end
 
     write_csv(result_path, RESULT_FIELDS, rows)
@@ -487,7 +540,7 @@ function main(args = ARGS)
     if has_flag(args, "--help") || isempty(args)
         println("phylo_xlv_drac_task.jl: --write-params FILE OR --params FILE --outdir DIR [--task-id N]")
         println("options: --reps 500 --lambdas 0,0.5,1 --n-species 20,200 --n-sites 200 --K 1,2 --q-lv 1 --K-phy 1")
-        println("         --scenarios main,null_alpha0,null_phylo0 --methods wald --iterations 400 --n-boot 200 --dry-run --force")
+        println("         --scenarios main,null_alpha0,null_phylo0 --methods wald --targets B_lv,phylo_signal --iterations 400 --n-boot 200 --dry-run --force")
         return
     end
 
@@ -520,6 +573,7 @@ function main(args = ARGS)
         level = parse(Float64, arg_value(args, "--level", "0.95")),
         iterations = parse(Int, arg_value(args, "--iterations", "400")),
         n_boot = parse(Int, arg_value(args, "--n-boot", "200")),
+        targets = parse_targets(arg_value(args, "--targets", "B_lv,phylo_signal")),
         dry_run = has_flag(args, "--dry-run"),
         force = has_flag(args, "--force"),
     )
