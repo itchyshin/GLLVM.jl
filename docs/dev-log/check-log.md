@@ -4549,3 +4549,55 @@ K=2 p=125 B_lv boundary is plausible from one seed but not yet production
 evidence, and phylo-signal remains unresolved. OUT: no >=500 reps/cell
 production coverage has launched; no public phylo-signal or full Model A
 coverage claim.
+
+## 2026-06-29 12:55 MDT - Codex p125 K2 all-target canary results
+
+### Commands
+
+```sh
+gh pr list --state open
+git log --all --oneline --since="6 hours ago"
+ssh -o BatchMode=yes nibi 'seff 16933194 2>/dev/null || true; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; julia --project=. bench/phylo_xlv_drac_summarise.jl --results /project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-lambda1-all-iter400-2h-20260629-1124/results'
+ssh -o BatchMode=yes narval 'seff 64343216 2>/dev/null || true; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; julia --project=. bench/phylo_xlv_drac_summarise.jl --results /project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-narval-lambda1-all-iter400-2h-20260629-1200/results'
+ssh -o BatchMode=yes rorqual 'seff 14916246 2>/dev/null || true; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; julia --project=. bench/phylo_xlv_drac_summarise.jl --results /project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-rorqual-lambda05-all-iter400-2h-20260629-1200/results'
+```
+
+### Result
+
+All three p=125,K=2 all-target canaries completed scheduler-wise.
+
+- Nibi `16933194_1`, λ=1, seed `21333707`: completed in `00:51:32`
+  with exit code `0`, but the fit did not converge after `400` iterations.
+  Fit seconds were `3064.500`; summariser row has `fit ok = 0`, usable entries
+  `0`, and `ci_status=not_converged`. `seff`: CPU efficiency `87.65%`,
+  memory `804.46 MB / 8 GB`.
+- Narval `64343216_1`, λ=1, seed `22406788`: completed in `00:48:45`,
+  CPU efficiency `99.28%`, memory `1.38 GB / 8 GB`. Fit converged in `245`
+  iterations with fit seconds `1678.541`. B_lv Wald CI seconds `1225.215`,
+  usable entries `125/125`, entry coverage `0.808`, RMSE `0.093`,
+  `pd_hessian=true`. Phylo-signal CI seconds `6.465`, but usable entries
+  `0/125`, `ci_status=partial_or_failed`, `pd_hessian=false`.
+- Rorqual `14916246_1`, λ=0.5, seed `22406787`: completed in `00:49:38`,
+  CPU efficiency `99.03%`, memory `1.02 GB / 8 GB`. Fit converged in `279`
+  iterations with fit seconds `1975.689`. B_lv Wald CI seconds `980.336`,
+  usable entries `125/125`, entry coverage `0.592`, RMSE `0.129`,
+  `pd_hessian=true`. Phylo-signal CI seconds `4.693`, but usable entries
+  `0/125`, `ci_status=partial_or_failed`, `pd_hessian=false`.
+
+Dashboard `/tmp/gllvm-dashboard` was updated to build `r86`.
+
+### Decision
+
+Do not launch the planned `>=500 reps/cell` production grid under the current
+K=2 large-cell settings. The p=125,K=2 boundary is now known to be too unstable
+for a production claim as specified: λ=1 has seed-level fit fragility, B_lv
+interval rows are technically computable but show weak one-seed behavior in two
+new cells, and phylo-signal rows are consistently unusable with non-PD Hessian.
+
+### Claim Boundary
+
+IN: launcher, dependency, and cross-cluster execution are working; p=125,K=2
+B_lv intervals can be computed for some seeds. PARTIAL: K=2 p=125 fit and B_lv
+CI reliability require a failure-rate diagnostic or CI-engine work. OUT: no
+production Model A DRAC coverage launch, no phylo-signal coverage claim, no
+public full Model A claim.
