@@ -5025,3 +5025,44 @@ IN: Gaussian phylo `B_lv` now has local `wald_t_unit` wiring, local tests, and a
 lambda=0.5 coverage is not solved. OUT: no production coverage claim, no
 phylo-signal interval claim, no non-Gaussian t claim, and no R-side
 `phylo_latent(..., lv = ~ x)` exposure claim.
+
+## 2026-06-29 16:06 MDT - Codex p80 K2 bootstrap-only rescue canary launch
+
+### Commands
+
+```sh
+rsync -az --delete --exclude='.git/' --exclude='docs/build/' --exclude='docs/node_modules/' --exclude='docs/.vitepress/cache/' --exclude='.julia/' --exclude='*.ji' /private/tmp/gllvmjl-phylo-xlv/ nibi:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/
+ssh -o BatchMode=yes nibi 'set -euo pipefail; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; out=/project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30-nibi-lambda05-rep1-20260629-1606; PHYLO_XLV_ACCOUNT=def-snakagaw_cpu PHYLO_XLV_DEPOT=/project/6098264/snakagaw/julia_depot PHYLO_XLV_JULIA="$(command -v julia)" PHYLO_XLV_REPS=1 PHYLO_XLV_LAMBDAS=0.5 PHYLO_XLV_N_SPECIES=80 PHYLO_XLV_N_SITES=80 PHYLO_XLV_K=2 PHYLO_XLV_Q_LV=1 PHYLO_XLV_K_PHY=1 PHYLO_XLV_SCENARIOS=main PHYLO_XLV_SEED0=62384100 PHYLO_XLV_TARGETS=B_lv PHYLO_XLV_METHODS=bootstrap PHYLO_XLV_N_BOOT=30 PHYLO_XLV_ITERATIONS=400 PHYLO_XLV_TIME=0-03:00 PHYLO_XLV_MEM=4G PHYLO_XLV_THROTTLE=1 bash bench/phylo_xlv_drac_submit.sh --out "$out" --submit'
+ssh -o BatchMode=yes nibi 'squeue -j 16951694 -o "%.18i %.9P %.32j %.8T %.10M %.6D %R"; echo results=$(find /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30-nibi-lambda05-rep1-20260629-1606/results -maxdepth 1 -name "result_*.csv" 2>/dev/null | wc -l)'
+```
+
+### Result
+
+Submitted Nibi array `16951694` as a one-task bootstrap-only timing canary:
+
+- output directory:
+  `/project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30-nibi-lambda05-rep1-20260629-1606`;
+- `scenario=main`, `lambda=0.5`, `n_species=80`, `n_sites=80`, `K=2`;
+- `targets=B_lv`, `methods=bootstrap`, `n_boot=30`;
+- `iterations=400`, `time=3h`, `mem=4G`, throttle `1`;
+- initial poll: pending with reason `Priority`, `0` result files.
+
+Rorqual profile/bootstrap canary `14929297_1` was also polled and remained
+running at `40:58` with `0` result files. No duplicate profile job was launched.
+
+The local mission-control widget was updated to `/tmp/gllvm-dashboard` version
+`r121`, with Nibi job id corrected to `16951694`.
+
+### Decision
+
+This is a runtime/feasibility canary, not coverage evidence. It was launched
+because the profile/bootstrap combined canary is still spending time in the
+profile step, while the task runner can test bootstrap separately through
+`PHYLO_XLV_N_BOOT`.
+
+### Claim Boundary
+
+IN: one bootstrap-only p=80,K=2,lambda=0.5 timing canary is queued on Nibi.
+PARTIAL: it may show whether bootstrap is computationally plausible. OUT:
+bootstrap coverage calibration, production `>=500 reps/cell`, phylo-signal
+coverage, non-Gaussian intervals, and public R exposure.
