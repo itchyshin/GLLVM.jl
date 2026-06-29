@@ -5602,3 +5602,61 @@ IN: future long-running DRAC tasks can expose completed method rows without
 changing final result semantics. OUT: no current active job is changed, no
 partial row is production coverage by default, and no bootstrap/profile
 calibration claim is added.
+
+## 2026-06-29 17:33 MDT - Codex partial-result sync and LV board refresh
+
+### Commands
+
+```sh
+rsync -av bench/phylo_xlv_drac_task.jl bench/phylo_xlv_drac_summarise.jl nibi:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/
+rsync -av bench/phylo_xlv_drac_task.jl bench/phylo_xlv_drac_summarise.jl narval:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/
+rsync -av bench/phylo_xlv_drac_task.jl bench/phylo_xlv_drac_summarise.jl rorqual:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/
+ssh -o BatchMode=yes nibi 'grep -n "partial_result\|include-partial" /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/phylo_xlv_drac_task.jl /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/phylo_xlv_drac_summarise.jl | head -20'
+ssh -o BatchMode=yes narval 'grep -n "partial_result\|include-partial" /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/phylo_xlv_drac_task.jl /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/phylo_xlv_drac_summarise.jl | head -20'
+ssh -o BatchMode=yes rorqual 'grep -n "partial_result\|include-partial" /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/phylo_xlv_drac_task.jl /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/phylo_xlv_drac_summarise.jl | head -20'
+for h in fir trillium vulcan tamia; do ssh -o BatchMode=yes "$h" 'printf "%s " $(hostname); test -d /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac && echo project=yes || echo project=no'; done
+ssh -o BatchMode=yes vulcan 'hostname; ls -ld /project /project/6098264 /project/6098264/snakagaw 2>&1; test -x /cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Core/julia/1.10.10/bin/julia && echo julia_abs=yes || echo julia_abs=no; squeue -u snakagaw --noheader | wc -l'
+ssh -o BatchMode=yes trillium 'hostname; ls -ld /project /project/6098264 /project/6098264/snakagaw 2>&1; test -x /cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Core/julia/1.10.10/bin/julia && echo julia_abs=yes || echo julia_abs=no; squeue -u snakagaw --noheader | wc -l'
+ssh -o BatchMode=yes tamia 'hostname; ls -ld /project /project/6098264 /project/6098264/snakagaw 2>&1; test -x /cvmfs/soft.computecanada.ca/easybuild/software/2023/x86-64-v3/Core/julia/1.10.10/bin/julia && echo julia_abs=yes || echo julia_abs=no; squeue -u snakagaw --noheader | wc -l'
+gh pr list --repo itchyshin/gllvmTMB --state open --json number,title,headRefName,isDraft,mergeable,reviewDecision,statusCheckRollup,url,updatedAt
+gh run view 28409207166 --repo itchyshin/gllvmTMB --json status,conclusion,jobs,url
+gh run view 28409131403 --repo itchyshin/gllvmTMB --json status,conclusion,jobs,url
+jq . /tmp/gllvm-dashboard/status.json >/tmp/gllvm-dashboard/status.validate
+```
+
+### Result
+
+Synced the partial-result runner/summariser update to the active project copies
+on Nibi, Narval, and Rorqual. Grep confirmed `partial_result` and
+`--include-partial` code on all three remote copies.
+
+Reserve-host check:
+
+- Fir, Trillium, Vulcan, and Tamia are reachable and idle, and the latter
+  three have the absolute Julia 1.10.10 binary available;
+- none has `/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac` present;
+- Trillium, Vulcan, and Tamia do not have `/project/6098264/snakagaw` mounted
+  or present under that path, so they require a cluster-local staging path and
+  account check before use.
+
+R-side state moved:
+
+- gllvmTMB PR #572 (`codex/lv-bernoulli-depth-20260628`) is open, mergeable,
+  and running Ubuntu R-CMD-check run `28409207166`;
+- pkgdown run `28409131403` from the #571 main merge is building the site.
+
+Dashboard `/tmp/gllvm-dashboard` was updated to `r140`; JSON validation passed.
+
+### Decision
+
+Use Nibi, Narval, and Rorqual for immediate follow-up canaries because their
+project copies and shared depot are already staged. Treat the other idle DRAC
+hosts as reserve capacity that needs explicit cluster-local staging before
+unattended submission.
+
+### Claim Boundary
+
+IN: future Nibi/Narval/Rorqual canaries can write opt-in partial rows, and the
+LV board now reflects PR #572 as active. OUT: no reserve-host production launch,
+no new production coverage, and no claim that idle but unstaged hosts are ready
+for unattended coverage arrays.
