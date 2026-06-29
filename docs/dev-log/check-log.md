@@ -2946,3 +2946,93 @@ fresh local evidence for the predictor, phylo, and X_lv CI files. PARTIAL: remot
 PR #127 still shows failing CI until the maintainer authorizes pushing the local
 commits or otherwise updates the PR branch. OUT: any full-suite/3-OS green claim,
 any DRAC coverage claim, and any public R-side phylo `lv=~x` exposure.
+
+## 2026-06-28 -- PR #127 local full-suite verification (Codex)
+
+Worked from clean local branch `codex/phylo-xlv-drac-launcher-20260628` in
+`/private/tmp/gllvmjl-phylo-xlv` at local head `33557ff`.
+
+State and lane checks:
+
+```sh
+git status --short --branch
+git log --all --oneline --since='6 hours ago'
+gh pr list --repo itchyshin/GLLVM.jl --state open --json number,title,headRefName,baseRefName,mergeStateStatus,statusCheckRollup,updatedAt,url
+git rev-parse --short HEAD
+```
+
+Observed: PR #127 remote head is still `b87a522` on
+`claude/phylo-xlv-modelA-20260627`; CI remains red on that remote head and
+Documenter remains green. The local branch is still not pushed because the
+project rule says no push without explicit maintainer instruction.
+
+Validation:
+
+```sh
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. -e 'using Pkg; Pkg.test()'
+```
+
+Result: PASS. Full `Pkg.test()` completed in `50m14.4s` with `4875` passing
+tests, `1` broken test, and `4876` total test outcomes.
+
+Notes while running: the suite was CPU-bound for the long quiet intervals; a
+macOS `sample` showed time in Julia/JIT/test execution rather than an idle
+hang. The full-suite result now strengthens the local PR #127 fix beyond the
+previous targeted `test_lv_predictor.jl`, `test_phylo_xlv.jl`, and
+`test_lv_ci.jl` evidence.
+
+Not run: GitHub CI rerun, Documenter rebuild on the local head, DRAC `sbatch`,
+or any >=500 reps/cell production coverage campaign.
+
+### Claim Boundary
+
+IN: local branch `33557ff` has targeted tests and full local `Pkg.test()` green.
+PARTIAL: PR #127 remote CI is still red until the local commits are pushed or
+the PR branch is otherwise updated. OUT: 3-OS CI green on the local commits,
+DRAC coverage, calibrated Model A interval coverage, and any R-side
+`phylo_latent(..., lv=~x)` exposure.
+
+## 2026-06-28 -- PR #127 local Documenter build (Codex)
+
+Worked from local branch `codex/phylo-xlv-drac-launcher-20260628` in
+`/private/tmp/gllvmjl-phylo-xlv`.
+
+Setup:
+
+```sh
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=docs -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
+```
+
+Plain `julia --project=docs docs/make.jl` initially failed before building
+because the docs project had no instantiated `Documenter` environment and
+`GLLVM` is not registered. Developing the current checkout into the docs
+environment resolved this without tracked source diffs; `docs/Manifest.toml`,
+`docs/node_modules`, and `docs/build` are ignored local artifacts.
+
+Validation:
+
+```sh
+export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=docs docs/make.jl
+```
+
+Result: PASS. Documenter completed and Vitepress reported `build complete in
+4.89s`. Deployment was skipped locally because Documenter could not auto-detect
+a deployment environment.
+
+Warnings observed: existing invalid local links using root-style paths such as
+`/quickstart`, `/response-families`, `/api`, `/benchmarks`, and related article
+links; missing optional `docs/src/assets/logo.png`, `favicon.ico`, and
+`docs/package.json`; Vitepress chunk-size and npm-audit warnings. These are
+pre-existing docs-site warnings and were not introduced by the phylo `X_lv`
+local verification slice.
+
+Not run: GitHub CI rerun, public Documenter deployment on the local head, DRAC
+`sbatch`, or any >=500 reps/cell production coverage campaign.
+
+### Claim Boundary
+
+IN: local branch has full local `Pkg.test()` green and a local Documenter build
+that completes. PARTIAL: remote PR #127 CI remains red on old head `b87a522`
+until the local commits are pushed or the PR branch is updated. OUT: 3-OS CI
+green on the local commits, deployed docs on the local commits, DRAC coverage,
+and any R-side `phylo_latent(..., lv=~x)` exposure.
