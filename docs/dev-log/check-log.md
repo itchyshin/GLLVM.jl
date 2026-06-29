@@ -4433,3 +4433,64 @@ p=150,K=2 B_lv intervals are technically computable but expensive. PARTIAL:
 p=125,K=2 phylo-signal usability and multi-seed failure rates remain pending.
 OUT: no production coverage launch, no K=2 large-cell coverage claim, no
 phylo-signal coverage claim.
+
+## 2026-06-29 11:24 MDT - Codex p125 K2 phylo-signal canaries
+
+### Commands
+
+```sh
+ssh -o BatchMode=yes nibi 'seff 16931225 2>/dev/null || true; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; julia --project=. bench/phylo_xlv_drac_summarise.jl --results /project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-phylo-target-iter160-1h-20260629-1056/results'
+ssh -o BatchMode=yes nibi 'set -euo pipefail; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; export PHYLO_XLV_JULIA="$(command -v julia)"; export PHYLO_XLV_ACCOUNT=def-snakagaw_cpu; export PHYLO_XLV_REPS=1; export PHYLO_XLV_LAMBDAS=1; export PHYLO_XLV_N_SPECIES=125; export PHYLO_XLV_N_SITES=125; export PHYLO_XLV_K=2; export PHYLO_XLV_SCENARIOS=main; export PHYLO_XLV_TARGETS=phylo_signal; export PHYLO_XLV_METHODS=wald; export PHYLO_XLV_ITERATIONS=160; export PHYLO_XLV_TIME=0-01:00; export PHYLO_XLV_MEM=8G; export PHYLO_XLV_THROTTLE=1; export PHYLO_XLV_DEPOT=/project/6098264/snakagaw/julia_depot; out=/project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-phylo-lambda1-iter160-1h-20260629-1103; bench/phylo_xlv_drac_submit.sh --out "$out" --submit; sed -n "1,90p" "$out/meta/session.txt"; sed -n "1,90p" "$out/meta/phylo_xlv_array.sbatch"'
+ssh -o BatchMode=yes nibi 'seff 16931955 2>/dev/null || true; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; julia --project=. bench/phylo_xlv_drac_summarise.jl --results /project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-phylo-lambda1-iter160-1h-20260629-1103/results'
+ssh -o BatchMode=yes nibi 'set -euo pipefail; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; export PHYLO_XLV_JULIA="$(command -v julia)"; export PHYLO_XLV_ACCOUNT=def-snakagaw_cpu; export PHYLO_XLV_REPS=1; export PHYLO_XLV_LAMBDAS=1; export PHYLO_XLV_N_SPECIES=125; export PHYLO_XLV_N_SITES=125; export PHYLO_XLV_K=2; export PHYLO_XLV_SCENARIOS=main; export PHYLO_XLV_TARGETS=all; export PHYLO_XLV_METHODS=wald; export PHYLO_XLV_ITERATIONS=400; export PHYLO_XLV_TIME=0-02:00; export PHYLO_XLV_MEM=8G; export PHYLO_XLV_THROTTLE=1; export PHYLO_XLV_DEPOT=/project/6098264/snakagaw/julia_depot; out=/project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-lambda1-all-iter400-2h-20260629-1124; bench/phylo_xlv_drac_submit.sh --out "$out" --submit; sed -n "1,90p" "$out/meta/session.txt"; sed -n "1,90p" "$out/meta/phylo_xlv_array.sbatch"'
+ssh -o BatchMode=yes nibi 'squeue -j 16933194 -o "%.18i %.9P %.30j %.8u %.10M %.6D %R"; tail -n 120 /project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-lambda1-all-iter400-2h-20260629-1124/logs/phylo_xlv-16933194-1.out 2>/dev/null || true; tail -n 80 /project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-lambda1-all-iter400-2h-20260629-1124/logs/phylo_xlv-16933194-1.err 2>/dev/null || true; cat /project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-lambda1-all-iter400-2h-20260629-1124/results/result_000001.csv 2>/dev/null || true'
+```
+
+### Result
+
+Nibi p=125, K=2, λ=0 phylo-signal canary `16931225_1` completed:
+
+- wall time `00:07:40`;
+- CPU efficiency `96.74%`;
+- memory `574.72 MB` of `8 GB`;
+- fit converged in `74` iterations;
+- fit seconds `433.548`;
+- phylo-signal CI seconds `5.207`;
+- `ci_status=partial_or_failed`;
+- usable entries `0/125`;
+- `pd_hessian=false`;
+- estimate mean `0.00018` versus truth mean `0.13314`.
+
+This says timing is solved for the p=125 λ=0 phylo-signal target, but statistical
+usability is still failed.
+
+Nibi p=125, K=2, λ=1 phylo-signal canary `16931955_1` completed scheduler-wise,
+but the fit did not converge:
+
+- wall time `00:14:05`;
+- CPU efficiency `98.22%`;
+- memory `823.77 MB` of `8 GB`;
+- `fit_converged=false`;
+- `fit_iterations=160`;
+- `fit_seconds=825.618`;
+- `ci_status=not_converged`;
+- no phylo-signal CI row was written.
+
+Submitted one stricter λ=1 canary matching the production iteration default:
+
+- Nibi job `16933194`;
+- output directory
+  `/project/6098264/snakagaw/phylo_xlv/pilot-mid-k2-nibi-lambda1-all-iter400-2h-20260629-1124`;
+- same p=125, K=2 cell with `lambda=1`;
+- `--targets all`, `iterations=400`, `time=2h`, `mem=8G`;
+- generated sbatch uses absolute Julia 1.10.10.
+
+Immediate queue state: Nibi job `16933194_[1%1]` was pending with reason
+`Priority`.
+
+### Claim Boundary
+
+IN: p=125,K=2,λ=0 phylo-signal timing is fast but unusable; p=125,K=2,λ=1
+needs more than 160 iterations for this seed. PARTIAL: λ=1 with the production
+iteration cap is pending. OUT: no phylo-signal coverage claim and no production
+coverage launch.
