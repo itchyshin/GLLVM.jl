@@ -5807,3 +5807,84 @@ weak p=80, K=2, lambda=0.5 cell. PARTIAL: bootstrap may rescue the weak cell,
 but evidence is one seed per cap regime and too weak for coverage claims. OUT:
 production coverage, phylo-signal interval coverage, public gllvmTMB grammar
 exposure, non-Gaussian phylo X_lv, and Model B.
+
+## 2026-06-30 03:51 MDT - Codex Narval capped-bootstrap 10-seed diagnostic launch
+
+### Commands
+
+```sh
+ssh -o BatchMode=yes narval 'bash -s' <<'REMOTE'
+set -euo pipefail
+root=/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac
+stamp=$(date +%Y%m%d-%H%M%S)
+out=/project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30iter120-narval-lambda05-rep10-${stamp}
+cd "$root"
+module load StdEnv/2023 >/dev/null 2>&1 || true
+module load julia/1.10.10 >/dev/null 2>&1 || true
+export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}
+export PHYLO_XLV_ACCOUNT=def-snakagaw_cpu
+export PHYLO_XLV_DEPOT=/project/6098264/snakagaw/julia_depot
+export PHYLO_XLV_JULIA="$(command -v julia)"
+export PHYLO_XLV_REPS=10
+export PHYLO_XLV_LAMBDAS=0.5
+export PHYLO_XLV_N_SPECIES=80
+export PHYLO_XLV_N_SITES=80
+export PHYLO_XLV_K=2
+export PHYLO_XLV_Q_LV=1
+export PHYLO_XLV_K_PHY=1
+export PHYLO_XLV_SCENARIOS=main
+export PHYLO_XLV_SEED0=202606300342
+export PHYLO_XLV_TARGETS=B_lv
+export PHYLO_XLV_METHODS=bootstrap
+export PHYLO_XLV_N_BOOT=30
+export PHYLO_XLV_BOOT_ITERATIONS=120
+export PHYLO_XLV_ITERATIONS=400
+export PHYLO_XLV_TIME=0-02:00
+export PHYLO_XLV_MEM=4G
+export PHYLO_XLV_THROTTLE=10
+bash bench/phylo_xlv_drac_submit.sh --out "$out" --submit
+echo "OUT=$out"
+REMOTE
+ssh -o BatchMode=yes narval 'squeue -j 64397790 -o "%.18i %.9P %.32j %.8T %.10M %.6D %R"; echo results=$(find /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30iter120-narval-lambda05-rep10-20260630-055048/results -maxdepth 1 -name "result_*.csv" 2>/dev/null | wc -l); head -n 40 /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30iter120-narval-lambda05-rep10-20260630-055048/meta/session.txt'
+```
+
+### Result
+
+Submitted Narval array `64397790` under `def-snakagaw_cpu`.
+
+Output directory:
+
+```text
+/project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30iter120-narval-lambda05-rep10-20260630-055048
+```
+
+Shape:
+
+- scenario: `main`;
+- lambda: `0.5`;
+- `n_species = n_sites = 80`;
+- `K = 2`, `q_lv = 1`, `K_phy = 1`;
+- target: `B_lv`;
+- method: `bootstrap`;
+- `n_boot = 30`;
+- `bootstrap_iterations = 120`;
+- `iterations = 400`;
+- tasks: `10`, throttle `10`;
+- walltime request: `2h`;
+- memory request: `4G`.
+
+Initial poll: `64397790_[1-10%10]` was pending on `cpubase_b` with reason
+`None`; result count was `0`.
+
+### Decision
+
+This is still a diagnostic, not production coverage. It is the next bounded
+step after the one-seed capped bootstrap canary because it gives an MCSE-bearing
+read on the weak cell without launching the full lambda x p x K grid.
+
+### Claim Boundary
+
+IN: 10-seed capped-bootstrap diagnostic launched for the known weak p=80, K=2,
+lambda=0.5 cell. OUT: production coverage, phylo-signal intervals,
+source-specific gllvmTMB grammar exposure, and any claim that bootstrap is
+calibrated before the array completes and is summarised.
