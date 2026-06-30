@@ -32,14 +32,15 @@ Gamma, shared-precision Beta, and complete-response binomial logit/probit/cloglo
 point fits. With `fit_gaussian_gllvm(...; X_lv = X_lv)`,
 `fit_poisson_gllvm(...; X_lv = X_lv)`, `fit_nb_gllvm(...; X_lv = X_lv)`,
 `fit_gamma_gllvm(...; X_lv = X_lv)`, `fit_beta_gllvm(...; X_lv = X_lv)`, or
-`fit_binomial_gllvm(...; X_lv = X_lv)`, the site score is decomposed as
+`fit_binomial_gllvm(...; X_lv = X_lv)`, the unit score is decomposed as
 `η_B[s] = X_lv[s] α_lv + z_s`, where `z_s ∼ N(0, I_K)`.
-The raw `α_lv` coefficients depend on the latent-axis orientation; the
-rotation-stable trait-effect matrix is `B_lv = Λ_B α_lv'`, returned by
-`extract_lv_effects(fit)`. This path is point-estimate only: confidence
-intervals, response masks, fixed-effect `X` plus `X_lv`, other non-Gaussian
-families, W-tier, and phylogenetic/source-specific extensions remain separate
-validation gates.
+The raw `α_lv` coefficients are the familiar constrained-ordination axis effects
+(CLV-style coefficients), but they depend on the latent-axis orientation. The
+rotation-stable induced trait-effect matrix is `B_lv = Λ_B α_lv'`, returned by
+`extract_lv_effects(fit)`. `confint_lv_effects()` targets this `B_lv` product
+only; it does not supply SEs for the raw axis-effect table. Response masks,
+fixed-effect `X` plus `X_lv`, other non-Gaussian families, W-tier, and
+phylogenetic/source-specific extensions remain separate validation gates.
 
 **Unit-obs latent factor block** `Λ_W η_W[:, s]` — the per-site version
 of the latent block, used when the model has a `latent(0 + trait |

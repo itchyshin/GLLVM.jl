@@ -6309,3 +6309,149 @@ about 38 if fixed Rorqual starts. This is below the user's 100-core cap and leav
 room for the drm team. Totoro uses Julia 1.12.6, so its rows are fast diagnostic
 evidence; cross-check against DRAC Julia 1.10 rows before using any result for a
 public capability claim.
+
+## 2026-06-30 12:18 MDT - Codex phylo bootstrap-basic aggregate and direct-slope closeout
+
+Closed the weak-cell `bootstrap_basic` race and ran the direct-slope comparator
+requested by the estimator sidecar. The outcome blocks the candidate route.
+
+Pre-edit lane and coordination checks:
+
+```sh
+sed -n '1,220p' /Users/z3437171/shinichi-brain/AGENTS.md
+sed -n '1,220p' /Users/z3437171/shinichi-brain/memory/00-INDEX.md
+sed -n '1,260p' /Users/z3437171/shinichi-brain/protocols/after-task.md
+git status --short --branch
+gh pr list --repo itchyshin/GLLVM.jl --state open --json number,title,headRefName,updatedAt,url,mergeStateStatus,isDraft
+git log --all --oneline --since="6 hours ago" -- AGENTS.md CLAUDE.md README.md ROADMAP.md CHANGELOG.md docs/design docs/src docs/dev-log/check-log.md docs/dev-log/after-task bench/phylo_xlv_drac_task.jl bench/phylo_xlv_drac_submit.sh bench/phylo_xlv_drac_summarise.jl
+```
+
+Results: branch `codex/phylo-xlv-drac-launcher-20260628` was clean before
+edits. The only open GLLVM.jl PR was draft #127
+(`claude/phylo-xlv-modelA-20260627`, merge state `UNSTABLE`). Recent touched-file
+commits were the local diagnostic commits on this branch.
+
+Job cleanup and final job state:
+
+```sh
+ssh -o BatchMode=yes nibi 'squeue -u "$USER" -j 16988973 -o "%.18i %.9P %.20j %.8T %.10M %.6D %R"'
+ssh -o BatchMode=yes narval 'squeue -u "$USER" -j 64435762,64442542 -o "%.18i %.9P %.20j %.8T %.10M %.6D %R"'
+ssh -o BatchMode=yes rorqual 'squeue -u "$USER" -j 14967239 -o "%.18i %.9P %.20j %.8T %.10M %.6D %R"'
+ssh -S /Users/z3437171/.ssh/cm/snakagaw@totoro.biology.ualberta.ca:22 -o ControlMaster=no -o BatchMode=yes totoro 'pgrep -af "phylo_xlv|direct_mean|direct-mean|bootstrap_basic" || true'
+ssh -o BatchMode=yes narval 'sacct -j 64435762 --format=JobID,JobName%30,State,Elapsed,ExitCode -P'
+ssh -o BatchMode=yes nibi 'sacct -j 16988973 --format=JobID,JobName%30,State,Elapsed,ExitCode -P'
+```
+
+Results: no active `bootstrap_basic` jobs remained on Narval, Nibi, or Rorqual.
+Totoro had no leftover diagnostic worker. Narval job `64435762` was cancelled
+before writing result rows. Nibi job `16988973` completed tasks 2, 4, 5, 9, and
+10; task 1 was cancelled. Rorqual fixed-source job `14967239` was cancelled
+after the route was already blocked. Trillium was available but deliberately not
+used because its compute/debug partitions reserve whole 192-core nodes, above the
+current shared-core cap.
+
+Valid `bootstrap_basic` evidence:
+
+```sh
+ssh -o BatchMode=yes nibi 'find /project/6098264/snakagaw/phylo_xlv/diagnostic-k2-p80-blv-bootstrap-basic-remaining10-nibi-20260630-164931/results -name "result_*.csv" -maxdepth 1 | sort'
+ssh -o BatchMode=yes narval 'find /project/6098264/snakagaw/phylo_xlv/diagnostic-k2-p80-blv-bootstrap-basic-detail367-narval-20260630-160111/results /project/6098264/snakagaw/phylo_xlv/diagnostic-k2-p80-blv-bootstrap-basic-task8-narval-20260630-155803/results -name "result_*.csv" -maxdepth 1 | sort'
+```
+
+Rows used:
+
+| task | source | covered/total | coverage | bootstrap_converged |
+| --- | --- | ---: | ---: | ---: |
+| 2 | Nibi | 77/80 | 0.9625 | 30 |
+| 3 | Narval | 41/80 | 0.5125 | 30 |
+| 4 | Nibi | 78/80 | 0.9750 | 30 |
+| 5 | Nibi | 76/80 | 0.9500 | 30 |
+| 6 | Narval | 60/80 | 0.7500 | 30 |
+| 7 | Narval | 80/80 | 1.0000 | 30 |
+| 8 | Narval | 25/80 | 0.3125 | 30 |
+| 9 | Nibi | 77/80 | 0.9625 | 30 |
+| 10 | Nibi | 77/80 | 0.9625 | 30 |
+
+Aggregate: `591/720 = 0.821`. Even if cancelled task 1 were perfect, the
+10-seed aggregate could only reach `671/800 = 0.839`, far below the 0.92
+working gate. Therefore `bootstrap_basic` is not an admissible interval-rescue
+route for the p=80, K=2, lambda=0.5 `B_lv` weak cell.
+
+Direct saturated-slope comparator:
+
+```sh
+ssh -o BatchMode=yes narval 'ls -1 /project/6098264/snakagaw/phylo_xlv/direct-mean-diagnostic-10seed-narval-20260630-174900/results | head'
+ssh -o BatchMode=yes narval 'head -n 3 /project/6098264/snakagaw/phylo_xlv/direct-mean-diagnostic-10seed-narval-20260630-174900/results/direct_result_000001.csv'
+ssh -o BatchMode=yes narval 'for f in /project/6098264/snakagaw/phylo_xlv/direct-mean-diagnostic-10seed-narval-20260630-174900/results/direct_result_*.csv; do tail -n 1 "$f"; done | awk -F, "{printf(\"task %s rep %s mle_slope %.3f ols_slope %.3f mle_rmse %.3f ols_rmse %.3f truth_mean %.3f\\n\",$1,$2,$7,$8,$9,$10,$15)}"'
+ssh -o BatchMode=yes narval 'for f in /project/6098264/snakagaw/phylo_xlv/direct-mean-diagnostic-10seed-narval-20260630-174900/results/direct_result_*.csv; do tail -n 1 "$f"; done | awk -F, "BEGIN{n=0; min=999; max=-999} {n++; sm+=$7; so+=$8; rm+=$9; ro+=$10; cm+=$11; co+=$12; if($7<min)min=$7; if($7>max)max=$7} END{printf(\"n=%d mle_slope_mean=%.6f ols_slope_mean=%.6f mle_rmse_mean=%.6f ols_rmse_mean=%.6f mle_corr_mean=%.6f ols_corr_mean=%.6f mle_slope_min=%.6f mle_slope_max=%.6f\\n\",n,sm/n,so/n,rm/n,ro/n,cm/n,co/n,min,max)}"'
+```
+
+Result path:
+`/project/6098264/snakagaw/phylo_xlv/direct-mean-diagnostic-10seed-narval-20260630-174900/results`.
+This was a Narval Julia 1.10.10 run using the same params/seed stream as the DRAC
+weak-cell rows. A prior Totoro Julia 1.12 run was ignored for seed-matched
+evidence because Julia's RNG stream produced different truth values.
+
+Per-task direct rows:
+
+```text
+task 1 rep 1 mle_slope 1.191 ols_slope 1.190 mle_rmse 0.077 ols_rmse 0.085 truth_mean -0.081
+task 2 rep 2 mle_slope 1.093 ols_slope 1.096 mle_rmse 0.046 ols_rmse 0.059 truth_mean -0.081
+task 3 rep 3 mle_slope 0.710 ols_slope 0.710 mle_rmse 0.091 ols_rmse 0.105 truth_mean -0.081
+task 4 rep 4 mle_slope 1.113 ols_slope 1.112 mle_rmse 0.044 ols_rmse 0.061 truth_mean -0.081
+task 5 rep 5 mle_slope 1.102 ols_slope 1.103 mle_rmse 0.056 ols_rmse 0.066 truth_mean -0.081
+task 6 rep 6 mle_slope 1.190 ols_slope 1.190 mle_rmse 0.112 ols_rmse 0.118 truth_mean -0.081
+task 7 rep 7 mle_slope 0.931 ols_slope 0.932 mle_rmse 0.035 ols_rmse 0.055 truth_mean -0.081
+task 8 rep 8 mle_slope 0.536 ols_slope 0.533 mle_rmse 0.156 ols_rmse 0.163 truth_mean -0.081
+task 9 rep 9 mle_slope 1.217 ols_slope 1.214 mle_rmse 0.082 ols_rmse 0.095 truth_mean -0.081
+task 10 rep 10 mle_slope 0.923 ols_slope 0.924 mle_rmse 0.037 ols_rmse 0.059 truth_mean -0.081
+```
+
+Aggregate direct comparator:
+`n=10`, `mle_slope_mean=1.000455`, `ols_slope_mean=1.000468`,
+`mle_rmse_mean=0.073659`, `ols_rmse_mean=0.086816`,
+`mle_corr_mean=0.983227`, `ols_corr_mean=0.970351`,
+`mle_slope_min=0.535950`, `mle_slope_max=1.216549`.
+
+Interpretation: the saturated direct `Y ~ X_lv` slope and the latent-product
+`B_lv` slope move together almost exactly, including the bad task 8. The weak
+cell is therefore a finite-sample realised-slope / interval-calibration problem,
+not a simple extraction artifact or bootstrap-refit convergence failure.
+
+Files updated for claim-boundary closeout:
+
+- `docs/design/73-predictor-informed-latent-scores.md`
+- `docs/src/changelog.md`
+- `docs/src/model.md`
+- `src/postfit.jl` (docstring only)
+- `AGENTS.md`
+- `docs/dev-log/check-log.md`
+- `docs/dev-log/after-task/2026-06-30-phylo-xlv-bootstrap-basic-aggregate.md`
+
+Claim boundary: IN: diagnostic evidence that `bootstrap_basic` fails the
+p=80, K=2, lambda=0.5 `B_lv` weak-cell gate and that direct slopes confirm the
+realised-data slope mechanism. OUT: no source-specific `gllvmTMB` `lv = ~ x`
+exposure, no public phylo Model A interval claim, no production sweep launch, no
+PR #127 push, and no non-Gaussian or Model B claim.
+
+Ayumi's 2026-06-30 GitHub issue comment raised a related scope boundary:
+classic GLLVM users usually expect the CLV/axis-effect table (`alpha_lv`) when
+asking for predictor effects on latent variables. The current SE/CI machinery is
+for the induced trait-scale product `B_lv = Lambda * alpha_lv'` only. That
+product can be read as a low-rank trait-slope surface: it has trait-wise entries,
+but they are constrained to pass through the fitted latent axes and therefore do
+not spend the full `p * q_lv` ordinary fixed-effect slope parameters. Raw
+axis-effect SEs remain unimplemented and would need a declared rotation or
+loading-constraint convention before public interpretation. I updated Design 73,
+the model docs, the changelog, and the `extract_lv_effects` docstring to make
+that boundary explicit. Public API default change (`axis_effect` as default,
+`trait_effect` explicit) remains a separate decision because existing internal
+calls rely on the default returning `B_lv`.
+
+Local hygiene checks after the documentation/docstring edits:
+
+```sh
+git diff --check
+julia --project=. -e 'using GLLVM; println("GLLVM load ok")'
+```
+
+Results: both passed; the Julia load printed `GLLVM load ok`.

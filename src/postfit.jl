@@ -275,11 +275,15 @@ Extract predictor-informed latent-score effects from a
   `B_lv = Λ * alpha_lv'`, the effect of each `X_lv` predictor on each trait's
   linear predictor.
 - `type=:axis_effect` returns the raw `q_lv × K` `alpha_lv` matrix. These
-  coefficients are latent-axis and rotation dependent, so they are diagnostic
-  rather than the primary estimand.
+  coefficients are the familiar constrained-ordination / CLV-style view, but
+  they are latent-axis and rotation dependent unless a loading constraint or
+  rotation convention is declared.
 
-This C1 implementation is point-estimate only; interval calibration and broader
-non-Gaussian / structured-source extensions remain separate validation gates.
+Uncertainty from `confint_lv_effects` targets only the induced trait-scale
+product `B_lv = Λ * alpha_lv'`. Axis-effect SEs are not currently returned;
+they need a declared rotation/constraint convention before they can be
+interpreted honestly. Broader non-Gaussian / structured-source extensions remain
+separate validation gates.
 """
 function extract_lv_effects(fit::GllvmFit; type::Symbol = :trait_effect)
     _has_lv_predictor(fit) || throw(ArgumentError(

@@ -1,39 +1,51 @@
 # Design 73 — Predictor-informed latent scores: `latent(..., lv = ~ x)`
 
-**Status (2026-06-27):** engine + CI trio shipped to `main` (#116–#126); the phylo Model A
-extension is on `claude/phylo-xlv-modelA-20260627` (engine + trio + coverage smoke); the R
-`lv = ~ x` formula grammar and the full DRAC coverage campaign are pending. This doc is the
-spec the Julia comments (`likelihood.jl:405`) reference.
+**Status (2026-06-30):** ordinary `X_lv` engine + CI trio shipped to `main`
+(#116-#126). The phylo Model A extension has local engine and CI plumbing on the
+draft PR branch, but its interval calibration is **blocked** by the p=80, K=2,
+lambda=0.5 `B_lv` weak cell. The R `lv = ~ x` source-specific formula grammar
+and any public phylo Model A capability promotion remain pending. This doc is
+the spec the Julia comments (`likelihood.jl:405`) reference.
 
 ## 1. The model
 
 Ordinary GLLVM latent scores are zero-mean innovations. `latent(..., lv = ~ x)` makes the
-score **predictor-informed** — its mean is a regression on unit-level covariates `x`:
+score **predictor-informed** — its mean is a regression on unit-level covariates `x`
+(GLLVM.jl often calls these rows "sites"; in `gllvmTMB` language they are units):
 
 ```
 z_total[s, :] = X_lv[s, :] · α_lv + z_innovation[s, :]      z_innovation ~ N(0, I_K)
 η[:, s]       = X[:, s, :] · β + Λ · z_total[s, :]
 ```
 
-`X_lv` is `n_sites × q_lv`; `α_lv` is `q_lv × K` (the score-coefficient matrix). Marginally
+`X_lv` is `n_units × q_lv`; `α_lv` is `q_lv × K` (the score-coefficient matrix). Marginally
 this is an ordinary GLLVM with the same covariance and a constrained fixed mean term
 `Λ · α_lv' · X_lv[s, :]`. This is **concurrent / constrained ordination** (van der Veen et al.)
 — equivalently a **reduced-rank regression** of the responses on `x` through the latent space.
 
-## 2. The estimand: `B_lv = Λ · α_lv'`
+## 2. Axis effects and induced trait effects
 
 `α_lv` and `Λ` are individually rotation- and sign-dependent (the K×K orthogonal indeterminacy
-`Λ → ΛQ, α_lv → α_lv Q`). **Their product `B_lv = Λ · α_lv'` (p × q_lv) is invariant** under
-that transformation for any `Q` and any `K`, and is THE inferential target — the trait-scale
-effect of each `x` predictor. `α_lv` alone is **diagnostic only** (`extract_lv_effects(type =
-"axis_effect")`). The sole residual symmetry is a joint sign flip, pinned by the global anchor.
+`Λ → ΛQ, α_lv → α_lv Q`). That gives two useful but different summaries:
+
+- **Axis effect / CLV view:** `α_lv` (`extract_lv_effects(type = "axis_effect")`) is the
+  familiar GLLVM-style answer: how a predictor moves units along LV1, LV2, and so on. This is
+  usually the first user-facing constrained-ordination view, but for `K > 1` it is tied to the
+  chosen loading orientation, rotation, sign convention, or explicit loading constraint.
+- **Induced trait effect:** `B_lv = Λ · α_lv'` (`extract_lv_effects(type = "trait_effect")`,
+  currently the default) is the trait-scale slope implied by the latent model. It is not a
+  separate per-trait fixed effect; it is the reduced-rank product of the loading matrix and
+  axis coefficients. Unlike `α_lv`, `B_lv` is invariant under `Λ → ΛQ, α_lv → α_lv Q` for any
+  orthogonal `Q`, so it is the current interval target.
 
 `B_lv` is admitted for **`K ≥ 1`** (rotation invariance), complete responses, a single ordinary
-latent block.
+latent block. Axis-effect SEs are **not** currently admitted; they need a declared
+rotation/constraint convention before their uncertainty can be interpreted honestly.
 
 ## 3. Confidence intervals — the trio (Wald / profile / bootstrap)
 
-All three target `vec(B_lv)` (`confint_lv_effects`):
+All three target `vec(B_lv)` (`confint_lv_effects`). They do **not** attach to the raw
+axis-effect table `α_lv`:
 - **Wald (delta method):** `Cov(B_lv) = J Σ Jᵀ`, `Σ = inv(H)`, `J = ∂vec(B_lv)/∂θ`. Gaussian
   uses an exact `ForwardDiff` Hessian; GLM families use the observed-information `_fd_hessian`
   (the Laplace marginal is not AD-friendly through the inner solve).
@@ -58,13 +70,16 @@ Gaussian + Poisson + Binomial (logit/probit/cloglog) + NB2 + Gamma + Beta. Exoti
 The headline extension: compose `X_lv` with structured latent dependence. **Two non-equivalent
 models** (see `intake/2026-06-27-phylo-xlv-design.md`):
 
-- **MODEL A (v1, chosen):** the predictor-informed score MEAN (site axis) composed with the
+- **MODEL A (v1, chosen):** the predictor-informed score MEAN (unit axis) composed with the
   existing **trait-axis phylogenetic trait-covariance** (`Σ_phy`, species axis). The axes are
   **orthogonal and additive** — no new identifiability hazard. Reuses the J3 closed-form phylo
   marginal verbatim (the rotation trick survives the `X_lv` residual mean shift — pinned to
-  7e-15 against a dense `vec(y) ~ N(μ, I_n⊗A + J_n⊗B)` Gaussian). The Gaussian CI trio extends
-  mechanically (same packed vector + Hessian; the `B_lv` extractor is unchanged). Gaussian-only
-  v1; non-Gaussian phylo `X_lv` is a separate later gate (new Laplace-core derivation).
+  7e-15 against a dense `vec(y) ~ N(μ, I_n⊗A + J_n⊗B)` Gaussian). The Gaussian CI trio can be
+  routed through the same packed vector + Hessian shape, and the `B_lv` extractor is unchanged,
+  but coverage is not yet calibrated: the p=80, K=2, lambda=0.5 `B_lv` weak cell under-covers
+  under Wald, t-Wald, percentile bootstrap, and the bench-only `bootstrap_basic` candidate.
+  Gaussian-only v1; non-Gaussian phylo `X_lv` is a separate later gate (new Laplace-core
+  derivation).
 - **MODEL B (post-v1.0):** the latent SCORE itself is phylo-correlated across tips
   (`z = X_lv·α + u, u ~ N(0, Σ_phy)`) — **phylogenetic factor analysis** at TMB speed. Native-TMB
   design-65 `kernel_latent` extension; carries a real mean-vs-covariance confound when `x` is
@@ -101,15 +116,31 @@ Model A + the bridge phylo plumbing land. Requirements for that wiring:
 
 ## 7. Validation (gate on everything)
 
-- **Recovery:** `B_lv` unbiased, RMSE ~1/√n. **Coverage:** ~nominal for the trio. Both done for
-  the bridge X_lv families (K=1/K=2) and as a smoke for phylo Model A (coverage 0.975 + two nulls).
-- **Phylo Model A gate (remaining):** full DRAC sweep λ×n_species×K × ≥500 reps + the two nulls
-  (Model A is orthogonal-axes → no phylo-collinear arm; that's a Model B concern). Seed:
-  `bench/phylo_xlv_coverage.jl`.
+- **Ordinary bridge `X_lv`:** `B_lv` recovery and CI coverage are covered for the bridge
+  X_lv families (K=1/K=2) by #116-#126.
+- **Phylo Model A point plumbing:** the engine admits the Gaussian direct/native Model A route,
+  and small smoke rows plus the two nulls exercise that path. These are plumbing checks only,
+  not a public coverage claim.
+- **Phylo Model A interval gate (blocked, 2026-06-30):** the p=80, K=2, lambda=0.5 `B_lv`
+  weak cell fails current interval calibration. The 10-seed capped percentile bootstrap
+  aggregate covered `675/800 = 0.844`; detailed rows showed the same miss side as Wald and
+  narrower bootstrap intervals. The bench-only `bootstrap_basic` candidate covered
+  `591/720 = 0.821` across 9 valid DRAC seeds; even a perfect cancelled task 1 would only reach
+  `671/800 = 0.839`. A saturated direct-mean comparator showed ordinary `Y ~ X_lv` slopes track
+  the fitted latent-product slopes almost exactly, including the bad task 8 (`0.536` vs `0.533`
+  of truth), so the block is finite-sample realised-slope/interval calibration rather than a
+  simple `B_lv` extractor artifact.
+- **Remaining gate:** do not launch or advertise the full λ×n_species×K production sweep until
+  the weak cell has a defensible interval target or an explicit blocked/public-boundary decision.
+  The existing seed harness remains `bench/phylo_xlv_coverage.jl`.
 
 ## 8. Honest scope
 
-Only `B_lv` is rotation-stable — keep it the inferential target, `α_lv` diagnostic. Under phylo,
-advertise `B_lv` at interpretation Level 2; demote the per-axis α / Λ-vs-Ψ split to Level 3
-(rank-fragile). Do not imply non-Gaussian or bridge parity from the Gaussian Model A slice. Keep
-capability promotion parked until the register/NEWS/article slice.
+Only `B_lv` is rotation-stable, so the current SE/CI work is for induced trait-scale slopes, not
+for the usual CLV/axis-effect table. Treat `α_lv` as the primary constrained-ordination display
+only after naming the rotation or loading-constraint convention, and do not report SEs for it yet.
+Under phylo, advertise no public `B_lv` interval coverage yet: point/CI plumbing is local, interval
+calibration is blocked for the weak cell, and `gllvmTMB` source-specific `lv = ~ x` grammar should
+continue to fail loudly. Demote the per-axis α / Λ-vs-Ψ split to Level 3 (rank-fragile). Do not
+imply non-Gaussian or bridge parity from the Gaussian Model A slice. Keep capability promotion
+parked until the register/NEWS/article slice.

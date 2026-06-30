@@ -70,11 +70,12 @@ package; every numerical addition is gated by deterministic tests.
   `fit_binomial_gllvm(...; X_lv=...)` for complete-response Gaussian, Poisson
   (log link), shared-dispersion NB2, shared-shape Gamma, shared-precision Beta,
   and binomial logit/probit/cloglog point fits. `getLV(...;
-  component=:mean/:innovation/:total)` and `extract_lv_effects()` report point
-  estimates for the rotation-stable `B_lv = Λ * alpha_lv'`. The `bridge_fit`
-  endpoint exposes these point-estimate routes as `X_lv` with `lv_effects`,
-  `scores_mean`, and `scores_innovation`; confidence intervals, response masks,
-  simultaneous fixed-effect `X`, other non-Gaussian families, W-tier,
+  component=:mean/:innovation/:total)` reports score decompositions, while
+  `extract_lv_effects()` reports the rotation-stable induced trait effect
+  `B_lv = Λ * alpha_lv'` by default and the rotation-dependent CLV-style
+  `alpha_lv` table with `type=:axis_effect`. `confint_lv_effects()` supplies
+  uncertainty for `B_lv`, not for `alpha_lv`. Response masks, simultaneous
+  fixed-effect `X`, raw axis-effect SEs, other non-Gaussian families, W-tier,
   phylogenetic/source-specific extensions, and R-package row promotion remain
   gated.
 - **IN:** fixed-zero shared covariate coefficients for Gaussian (`β_fixed`) and
