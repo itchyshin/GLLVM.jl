@@ -6255,3 +6255,57 @@ then showed `RUNNING` on node `nc31003`. A parallel detail-array job `64432317`
 was submitted for task IDs 3, 6, and 7 at
 `/project/6098264/snakagaw/phylo_xlv/diagnostic-k2-p80-blv-bootstrap-basic-detail367-narval-20260630-160111`;
 it initially showed `PENDING`.
+
+## 2026-06-30 11:01 MDT - Codex expanded bootstrap-basic race under core cap
+
+The maintainer asked Codex to parallelize aggressively while staying under the
+shared 100-core cap under the user's name. I expanded the weak-cell
+`bootstrap_basic` diagnostic from the original four detail reps to a full
+10-seed race, while keeping each Julia process to one compute core.
+
+Pre-edit lane check:
+
+```sh
+gh pr list --repo itchyshin/GLLVM.jl --state open --json number,title,headRefName,updatedAt,url,mergeStateStatus,isDraft
+git log --all --oneline --since="6 hours ago" -- bench/phylo_xlv_drac_task.jl bench/phylo_xlv_drac_submit.sh bench/phylo_xlv_drac_summarise.jl docs/dev-log/check-log.md docs/dev-log/after-task
+```
+
+Result: one open draft PR, #127, remote head
+`claude/phylo-xlv-modelA-20260627`, merge state `UNSTABLE`; recent touched-file
+commits are the local diagnostic commits on this branch.
+
+Additional launches and staging:
+
+```sh
+rsync -av narval:/project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30iter120-narval-lambda05-rep10-20260630-055048/meta/phylo_xlv_params.csv /tmp/phylo_xlv_params_20260630/phylo_xlv_params.csv
+ssh -o BatchMode=yes narval 'bash -s'   # job 64435762, task IDs 1,2,4,5,9,10
+ssh -o BatchMode=yes nibi 'bash -s'     # job 16988973, task IDs 1,2,4,5,9,10
+ssh -o BatchMode=yes rorqual 'bash -s'  # first job 14967092, later invalidated
+ssh -S /Users/z3437171/.ssh/cm/snakagaw@totoro.biology.ualberta.ca:22 -o BatchMode=yes totoro 'hostname; nproc; /home/snakagaw/.juliaup/bin/julia --version'
+rsync -az --delete --exclude='.git' --exclude='.julia' --exclude='tmp' /private/tmp/gllvmjl-phylo-xlv/ -e 'ssh -S /Users/z3437171/.ssh/cm/snakagaw@totoro.biology.ualberta.ca:22 -o BatchMode=yes' totoro:/home/snakagaw/codex/GLLVM.jl-phylo-xlv-totoro-20260630/
+ssh -S /Users/z3437171/.ssh/cm/snakagaw@totoro.biology.ualberta.ca:22 -o BatchMode=yes totoro 'cd /home/snakagaw/codex/GLLVM.jl-phylo-xlv-totoro-20260630 && export JULIA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 JULIA_DEPOT_PATH=/home/snakagaw/.julia:/home/snakagaw/codex/julia_depot && /home/snakagaw/.juliaup/bin/julia --project=. -e "using Pkg; Pkg.instantiate(); using GLLVM; println(\"totoro GLLVM load ok\")"'
+ssh -S /Users/z3437171/.ssh/cm/snakagaw@totoro.biology.ualberta.ca:22 -o BatchMode=yes totoro 'bash -s'  # local pids 1065793-1065851, task IDs 1-10
+ssh -S /Users/z3437171/.ssh/cm/snakagaw@totoro.biology.ualberta.ca:22 -o BatchMode=yes totoro 'taskset -pc 200-209 ...'  # pinned one task per core
+rsync -av src/ rorqual:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/src/
+ssh -o BatchMode=yes rorqual 'bash -s'  # fixed-source job 14967239, task IDs 1,2,4,5,9,10
+```
+
+Live state at the 11:01 MDT snapshot:
+
+- Narval valid source: jobs `64432230`, `64432317`, and `64435762`; 10 one-core
+  tasks running.
+- Nibi valid source: job `16988973`; six one-core tasks running.
+- Totoro local source: pids `1065793`-`1065851`; 10 local processes pinned to
+  cores 200-209 with `nice -n 5`, `JULIA_NUM_THREADS=1`,
+  `OMP_NUM_THREADS=1`, and `OPENBLAS_NUM_THREADS=1`.
+- Rorqual fixed source: job `14967239`; six one-core tasks queued.
+- Rorqual stale source: job `14967092` produced five `ci_error` result rows with
+  `MethodError: no method matching _lv_boot_fns(..., ::Int64)` because its
+  source checkout still had the old 4-argument `_lv_boot_fns` definitions. Those
+  rows are invalid and must not be used as evidence.
+
+Core cap: the valid LV work used about 32 cores at the 11:01 snapshot, rising to
+about 38 if fixed Rorqual starts. This is below the user's 100-core cap and leaves
+room for the drm team. Totoro uses Julia 1.12.6, so its rows are fast diagnostic
+evidence; cross-check against DRAC Julia 1.10 rows before using any result for a
+public capability claim.
