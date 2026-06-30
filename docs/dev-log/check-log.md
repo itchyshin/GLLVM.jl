@@ -6151,3 +6151,60 @@ narrower than Wald for reps 3, 6, 7, and 8; all detailed bootstrap rows had
 30/30 refit convergence. OUT: production coverage, bootstrap rescue, profile
 rescue, phylo-signal interval coverage, public `gllvmTMB` phylo grammar
 exposure, non-Gaussian phylo `X_lv`, and Model B.
+
+## 2026-06-30 09:51 MDT - Codex bench-only bootstrap-basic candidate
+
+Added a bench-only `bootstrap_basic` candidate to the phylo `X_lv` DRAC runner.
+This does not change the exported `confint_lv_effects()` API. The method reuses
+the existing internal parametric-bootstrap simulate/refit closures, including the
+`bootstrap_iterations` cap, and computes the basic interval
+`[2 * theta_hat - q_hi, 2 * theta_hat - q_lo]` for the derived
+`B_lv = Lambda * alpha_lv'` entries. The purpose is to test whether a
+bias-corrected bootstrap center can move away from the fitted-effect shrinkage
+seen in the p=80, K=2, lambda=0.5 weak cell.
+
+Pre-edit lane check:
+
+```sh
+gh pr list --repo itchyshin/GLLVM.jl --state open --json number,title,headRefName,updatedAt,url,mergeStateStatus,isDraft
+git log --all --oneline --since="6 hours ago" -- bench/phylo_xlv_drac_task.jl bench/phylo_xlv_drac_submit.sh docs/dev-log/check-log.md docs/dev-log/after-task
+```
+
+Result: one open draft PR, #127, remote head
+`claude/phylo-xlv-modelA-20260627`, merge state `UNSTABLE`; recent touched-file
+commits were the local diagnostic commits on this branch.
+
+Checks:
+
+```sh
+git diff --check
+bash -n bench/phylo_xlv_drac_submit.sh
+julia --project=. bench/phylo_xlv_drac_task.jl --write-params /tmp/phylo_xlv_basic_parse/params.csv --reps 1 --lambdas 0.5 --n-species 4 --n-sites 4 --K 1 --q-lv 1 --K-phy 1 --scenarios main --force
+julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_xlv_basic_parse/params.csv --outdir /tmp/phylo_xlv_basic_parse/results --task-id 1 --methods bootstrap_basic --targets none --iterations 1 --n-boot 10 --bootstrap-iterations 5 --dry-run
+PHYLO_XLV_REPS=1 PHYLO_XLV_LAMBDAS=0.5 PHYLO_XLV_N_SPECIES=4 PHYLO_XLV_N_SITES=4 PHYLO_XLV_K=1 PHYLO_XLV_Q_LV=1 PHYLO_XLV_K_PHY=1 PHYLO_XLV_SCENARIOS=main PHYLO_XLV_TARGETS=B_lv PHYLO_XLV_METHODS=bootstrap_basic PHYLO_XLV_N_BOOT=10 PHYLO_XLV_BOOT_ITERATIONS=5 bench/phylo_xlv_drac_submit.sh --out /tmp/phylo_xlv_basic_submit_probe
+rg -n "bootstrap_basic|bootstrap_iterations" /tmp/phylo_xlv_basic_submit_probe/meta/session.txt /tmp/phylo_xlv_basic_submit_probe/meta/phylo_xlv_array.sbatch
+bash -n /tmp/phylo_xlv_basic_submit_probe/meta/phylo_xlv_array.sbatch
+julia --project=. bench/phylo_xlv_drac_task.jl --write-params /tmp/phylo_xlv_basic_real/params.csv --reps 1 --lambdas 0.5 --n-species 4 --n-sites 8 --K 1 --q-lv 1 --K-phy 1 --scenarios main --force
+julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_xlv_basic_real/params.csv --outdir /tmp/phylo_xlv_basic_real/results --task-id 1 --methods bootstrap_basic --targets B_lv --iterations 120 --n-boot 10 --bootstrap-iterations 40 --force
+julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_xlv_basic_detail/params.csv --outdir /tmp/phylo_xlv_basic_detail/results --task-id 1 --methods bootstrap_basic --targets B_lv --iterations 120 --n-boot 10 --bootstrap-iterations 40 --write-details --force
+find /tmp/phylo_xlv_basic_detail/results -maxdepth 1 -type f -exec basename {} \; | sort
+```
+
+Results: all checks passed. The first tiny real run with n_sites=4 correctly
+wrote a `not_converged` row, so I reran with n_sites=8 and `iterations=120`.
+That converged in 25 iterations and wrote a `B_lv/bootstrap_basic` row with
+`bootstrap_converged=10`, finite bounds, and `ci_status=ok`. The write-details
+smoke wrote both `result_000001.csv` and
+`detail_result_000001_bootstrap_basic.csv`.
+
+Implementation files:
+
+- `bench/phylo_xlv_drac_task.jl`
+- `bench/phylo_xlv_drac_submit.sh`
+- `docs/dev-log/check-log.md`
+- `docs/dev-log/after-task/2026-06-30-phylo-xlv-bootstrap-basic-tooling.md`
+
+Claim boundary: IN: bench-only diagnostic tooling for one candidate interval
+center correction. OUT: no exported API change, no production coverage, no claim
+that `bootstrap_basic` rescues the weak cell, no PR #127 push, and no
+source-specific gllvmTMB grammar exposure.

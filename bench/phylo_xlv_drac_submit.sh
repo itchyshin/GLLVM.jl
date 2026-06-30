@@ -21,7 +21,7 @@ Environment overrides:
   PHYLO_XLV_K_PHY        phylogenetic loading rank (default: 1)
   PHYLO_XLV_SCENARIOS    comma list (default: main,null_alpha0,null_phylo0)
   PHYLO_XLV_SEED0        master seed offset (default: 20260628)
-  PHYLO_XLV_METHODS      B_lv CI methods: wald, wald_t_unit, profile, bootstrap (default: wald)
+  PHYLO_XLV_METHODS      B_lv CI methods: wald, wald_t_unit, profile, bootstrap, bootstrap_basic (default: wald)
   PHYLO_XLV_TARGETS      interval targets: B_lv,phylo_signal, all, or none (default: B_lv,phylo_signal)
   PHYLO_XLV_LEVEL        CI level (default: 0.95)
   PHYLO_XLV_ITERATIONS   optimiser iterations (default: 400)

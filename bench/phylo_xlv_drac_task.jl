@@ -70,8 +70,8 @@ function parse_methods(s::String)
     out = Symbol[]
     for x in parse_string_list(s)
         method = Symbol(x)
-        method in (:wald, :wald_t_unit, :profile, :bootstrap) ||
-            throw(ArgumentError("--methods entries must be wald, wald_t_unit, profile, or bootstrap; got $x"))
+        method in (:wald, :wald_t_unit, :profile, :bootstrap, :bootstrap_basic) ||
+            throw(ArgumentError("--methods entries must be wald, wald_t_unit, profile, bootstrap, or bootstrap_basic; got $x"))
         push!(out, method)
     end
     isempty(out) && throw(ArgumentError("--methods must name at least one method"))
@@ -407,9 +407,15 @@ function b_lv_row(base, method::Symbol, fit, Y, X_lv, truth; level::Real, n_boot
                   bootstrap_iterations::Union{Nothing, Integer},
                   detail_path::Union{Nothing, String} = nothing)
     t0 = time()
-    ci = confint_lv_effects(fit, Y, X_lv; level = level, method = method,
-                            n_boot = n_boot, seed = base.seed + 71_111,
-                            bootstrap_iterations = bootstrap_iterations)
+    ci = if method === :bootstrap_basic
+        b_lv_bootstrap_basic_ci(fit, Y, X_lv; level = level, n_boot = n_boot,
+                                seed = base.seed + 71_111,
+                                bootstrap_iterations = bootstrap_iterations)
+    else
+        confint_lv_effects(fit, Y, X_lv; level = level, method = method,
+                           n_boot = n_boot, seed = base.seed + 71_111,
+                           bootstrap_iterations = bootstrap_iterations)
+    end
     ci_seconds = time() - t0
     est = collect(Float64, ci.estimate)
     lo = collect(Float64, ci.lower)
@@ -433,6 +439,49 @@ function b_lv_row(base, method::Symbol, fit, Y, X_lv, truth; level::Real, n_boot
         ci_seconds = ci_seconds,
         pd_hessian = pd, bootstrap_converged = nb,
     )
+end
+
+function b_lv_bootstrap_basic_ci(fit, Y, X_lv; level::Real, n_boot::Integer,
+                                 seed::Integer,
+                                 bootstrap_iterations::Union{Nothing, Integer})
+    simfn, refitfn = GLLVM._lv_boot_fns(fit, Y, X_lv, nothing, bootstrap_iterations)
+    b_hat = vec(extract_lv_effects(fit))
+    nb = length(b_hat)
+    q_lv = size(X_lv, 2)
+    p = nb ÷ q_lv
+    reps = Vector{Vector{Float64}}()
+    for b in 1:n_boot
+        rng = MersenneTwister(seed + b)
+        Bb = try
+            fb = refitfn(simfn(rng))
+            fb === nothing ? nothing : vec(extract_lv_effects(fb))
+        catch
+            nothing
+        end
+        (Bb === nothing || length(Bb) != nb || any(!isfinite, Bb)) && continue
+        push!(reps, Bb)
+    end
+
+    nconv = length(reps)
+    a = (1 - level) / 2
+    lower = fill(NaN, nb)
+    upper = fill(NaN, nb)
+    if nconv >= 10
+        M = reduce(hcat, reps)
+        @inbounds for i in 1:nb
+            qlo = quantile(view(M, i, :), a)
+            qhi = quantile(view(M, i, :), 1 - a)
+            lower[i] = 2 * b_hat[i] - qhi
+            upper[i] = 2 * b_hat[i] - qlo
+            if lower[i] > upper[i]
+                lower[i], upper[i] = upper[i], lower[i]
+            end
+        end
+    end
+
+    term = ["B_lv[$t,$c]" for c in 1:q_lv for t in 1:p]
+    return (term = term, estimate = b_hat, lower = lower, upper = upper,
+            level = level, method = :bootstrap_basic, n_converged = nconv)
 end
 
 function phylo_signal_row(base, fit, Y, Sigma_phy, truth; level::Real)
