@@ -55,6 +55,7 @@ rg -n "bootstrap_basic|bootstrap_iterations" /tmp/phylo_xlv_basic_submit_probe/m
 bash -n /tmp/phylo_xlv_basic_submit_probe/meta/phylo_xlv_array.sbatch
 julia --project=. bench/phylo_xlv_drac_task.jl --write-params /tmp/phylo_xlv_basic_real/params.csv --reps 1 --lambdas 0.5 --n-species 4 --n-sites 8 --K 1 --q-lv 1 --K-phy 1 --scenarios main --force
 julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_xlv_basic_real/params.csv --outdir /tmp/phylo_xlv_basic_real/results --task-id 1 --methods bootstrap_basic --targets B_lv --iterations 120 --n-boot 10 --bootstrap-iterations 40 --force
+julia --project=. bench/phylo_xlv_drac_task.jl --write-params /tmp/phylo_xlv_basic_detail/params.csv --reps 1 --lambdas 0.5 --n-species 4 --n-sites 8 --K 1 --q-lv 1 --K-phy 1 --scenarios main --force
 julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_xlv_basic_detail/params.csv --outdir /tmp/phylo_xlv_basic_detail/results --task-id 1 --methods bootstrap_basic --targets B_lv --iterations 120 --n-boot 10 --bootstrap-iterations 40 --write-details --force
 find /tmp/phylo_xlv_basic_detail/results -maxdepth 1 -type f -exec basename {} \; | sort
 ```
@@ -62,6 +63,13 @@ find /tmp/phylo_xlv_basic_detail/results -maxdepth 1 -type f -exec basename {} \
 Results: all checks passed. The n_sites=8 real smoke converged, wrote a
 `B_lv/bootstrap_basic` result row with `bootstrap_converged=10`, and the detail
 smoke wrote `detail_result_000001_bootstrap_basic.csv`.
+
+Follow-up sidecar audit: the first committed transcript omitted the
+`--write-params` command for the detail-smoke params file. The command is listed
+above so the validation path is replayable. The audit also noted that
+`bootstrap_basic` should not report `ci_status = "ok"` when fewer than 10
+bootstrap refits converge; the runner now records
+`bootstrap_underconverged` with an explanatory error field in that case.
 
 ## Consistency Audit
 

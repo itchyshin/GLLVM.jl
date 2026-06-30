@@ -423,11 +423,18 @@ function b_lv_row(base, method::Symbol, fit, Y, X_lv, truth; level::Real, n_boot
     cov = coverage_summary(lo, hi, truth)
     pd = :pd_hessian in keys(ci) ? ci.pd_hessian : nothing
     nb = :n_converged in keys(ci) ? ci.n_converged : nothing
+    ci_status = if method === :bootstrap_basic && nb !== nothing && nb < 10
+        "bootstrap_underconverged"
+    else
+        "ok"
+    end
+    ci_error = ci_status == "bootstrap_underconverged" ?
+        "bootstrap_basic needs at least 10 converged refits for quantile intervals" : ""
     detail_path !== nothing && write_b_lv_detail_csv(detail_path, base, method, ci, truth)
     return result_row(base;
         target = "B_lv", method = String(method),
         fit_converged = fit.converged, fit_iterations = fit_iterations(fit),
-        fit_seconds = fit.cputime, ci_status = "ok",
+        fit_seconds = fit.cputime, ci_status = ci_status,
         total = cov.total, usable = cov.usable, covered = cov.covered,
         coverage = cov.coverage,
         bias_mean = finite_mean(est .- truth),
@@ -437,7 +444,7 @@ function b_lv_row(base, method::Symbol, fit, Y, X_lv, truth; level::Real, n_boot
         max_abs_estimate = maximum(abs.(est)),
         max_abs_truth = maximum(abs.(truth)),
         ci_seconds = ci_seconds,
-        pd_hessian = pd, bootstrap_converged = nb,
+        pd_hessian = pd, bootstrap_converged = nb, error = ci_error,
     )
 end
 

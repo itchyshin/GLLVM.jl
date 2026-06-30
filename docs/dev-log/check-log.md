@@ -6186,6 +6186,7 @@ rg -n "bootstrap_basic|bootstrap_iterations" /tmp/phylo_xlv_basic_submit_probe/m
 bash -n /tmp/phylo_xlv_basic_submit_probe/meta/phylo_xlv_array.sbatch
 julia --project=. bench/phylo_xlv_drac_task.jl --write-params /tmp/phylo_xlv_basic_real/params.csv --reps 1 --lambdas 0.5 --n-species 4 --n-sites 8 --K 1 --q-lv 1 --K-phy 1 --scenarios main --force
 julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_xlv_basic_real/params.csv --outdir /tmp/phylo_xlv_basic_real/results --task-id 1 --methods bootstrap_basic --targets B_lv --iterations 120 --n-boot 10 --bootstrap-iterations 40 --force
+julia --project=. bench/phylo_xlv_drac_task.jl --write-params /tmp/phylo_xlv_basic_detail/params.csv --reps 1 --lambdas 0.5 --n-species 4 --n-sites 8 --K 1 --q-lv 1 --K-phy 1 --scenarios main --force
 julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_xlv_basic_detail/params.csv --outdir /tmp/phylo_xlv_basic_detail/results --task-id 1 --methods bootstrap_basic --targets B_lv --iterations 120 --n-boot 10 --bootstrap-iterations 40 --write-details --force
 find /tmp/phylo_xlv_basic_detail/results -maxdepth 1 -type f -exec basename {} \; | sort
 ```
@@ -6208,3 +6209,49 @@ Claim boundary: IN: bench-only diagnostic tooling for one candidate interval
 center correction. OUT: no exported API change, no production coverage, no claim
 that `bootstrap_basic` rescues the weak cell, no PR #127 push, and no
 source-specific gllvmTMB grammar exposure.
+
+## 2026-06-30 09:59 MDT - Codex bootstrap-basic sidecar fix and Narval canary launch
+
+Read-only sidecar audit verdict: WARN, no fail-level formula or submitter
+blocker. Two fixes landed before trusting the canary:
+
+- `bootstrap_basic` now records `ci_status = "bootstrap_underconverged"` and an
+  explanatory `error` field when fewer than 10 bootstrap refits converge, rather
+  than emitting an `ok` row with all-NaN intervals.
+- The replay transcript above now includes the missing
+  `/tmp/phylo_xlv_basic_detail/params.csv` params-generation command.
+
+Cluster launch:
+
+```sh
+rsync -av bench/phylo_xlv_drac_task.jl bench/phylo_xlv_drac_submit.sh narval:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/
+ssh -o BatchMode=yes narval 'bash -s'  # custom sbatch for task 8, method bootstrap_basic, target B_lv, n_boot=30, bootstrap_iterations=120
+```
+
+Result before the local sidecar fix was synced: Slurm job `64432230` created at
+`/project/6098264/snakagaw/phylo_xlv/diagnostic-k2-p80-blv-bootstrap-basic-task8-narval-20260630-155803`,
+state `PENDING (Priority)`. The job reads
+`bench/phylo_xlv_drac_task.jl` from the Narval project checkout at execution
+time, so the next sync must happen before it starts or the job should be
+cancelled/relaunched.
+
+Validation and launch continuation:
+
+```sh
+git diff --check
+bash -n bench/phylo_xlv_drac_submit.sh
+rm -rf /tmp/phylo_xlv_basic_underconv && julia --project=. bench/phylo_xlv_drac_task.jl --write-params /tmp/phylo_xlv_basic_underconv/params.csv --reps 1 --lambdas 0.5 --n-species 4 --n-sites 8 --K 1 --q-lv 1 --K-phy 1 --scenarios main --force && julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_xlv_basic_underconv/params.csv --outdir /tmp/phylo_xlv_basic_underconv/results --task-id 1 --methods bootstrap_basic --targets B_lv --iterations 120 --n-boot 2 --bootstrap-iterations 40 --force && tail -n 1 /tmp/phylo_xlv_basic_underconv/results/result_000001.csv
+rsync -av bench/phylo_xlv_drac_task.jl bench/phylo_xlv_drac_submit.sh narval:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/
+ssh -o BatchMode=yes narval 'grep -n "bootstrap_underconverged" /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/phylo_xlv_drac_task.jl; squeue -j 64432230 -o "%.18i %.9P %.32j %.8T %.10M %.6D %R"'
+ssh -o BatchMode=yes narval 'bash -s'  # custom array sbatch for task IDs 3,6,7, method bootstrap_basic, target B_lv, n_boot=30, bootstrap_iterations=120
+```
+
+Results: `git diff --check` and `bash -n` passed. The under-convergence smoke
+fit converged, used `n_boot=2`, and wrote `ci_status=bootstrap_underconverged`,
+`usable=0`, `bootstrap_converged=2`, and the explanatory error text. The patched
+runner was synced to Narval before task-8 execution reached the Julia script;
+remote grep found `bootstrap_underconverged` in the project copy. Job `64432230`
+then showed `RUNNING` on node `nc31003`. A parallel detail-array job `64432317`
+was submitted for task IDs 3, 6, and 7 at
+`/project/6098264/snakagaw/phylo_xlv/diagnostic-k2-p80-blv-bootstrap-basic-detail367-narval-20260630-160111`;
+it initially showed `PENDING`.
