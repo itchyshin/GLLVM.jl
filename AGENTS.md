@@ -90,6 +90,18 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
+- **Codex restart handoff for Phylo Model A redesign (2026-06-30).**
+  The current LV arc is closed for ordinary `gllvmTMB` (`extract_lv_effects()`
+  axis-effect default and trait-effect intervals are on `main` via #581), and
+  GLLVM.jl PR #127 is closed/parked as blocked evidence. The next session should
+  start with a small Phylo Model A redesign plan, not with more same-route
+  bootstrap compute. The decisive weak cell is p=80, K=2, lambda=0.5 `B_lv`:
+  `bootstrap_basic` reached `591/720 = 0.821`, optimistic bound `671/800 =
+  0.839`, and the direct `Y ~ X_lv` comparator tracks the fitted
+  latent-product slope, including task 8 (`0.536` vs `0.533`). Keep
+  source-specific `lv` coverage unadvertised and R `phylo_latent(..., lv = ~ x)`
+  fail-loud until a redesigned target is chosen. `START HERE (Codex):`
+  `docs/dev-log/handover/2026-06-30-codex-handover.md`.
 - **`latent(lv=~x)` CI trio DONE; phylo Model A interval gate BLOCKED (2026-06-30).**
   `main` @ `0e99c04` has all six X_lv bridge routes + the `2f0` Wald-SE fix + the full
   **Wald/profile/bootstrap CI trio** for ordinary `B_lv` (#116-#126). The headline
