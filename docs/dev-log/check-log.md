@@ -6024,3 +6024,130 @@ IN: diagnostic tooling and a one-task detail rerun for the known weak p=80, K=2,
 lambda=0.5 `B_lv` cell. OUT: production coverage, any interval-method rescue
 claim, public `gllvmTMB` phylo grammar exposure, phylo-signal intervals,
 non-Gaussian phylo `X_lv`, and Model B.
+
+## 2026-06-30 06:52 MDT - Codex phylo weak-cell truth-start and task-8 detail diagnosis
+
+### Commands
+
+```sh
+bash -n bench/phylo_xlv_drac_submit.sh
+git diff --check
+rm -rf /tmp/phylo_xlv_truthinit_smoke && mkdir -p /tmp/phylo_xlv_truthinit_smoke/results && julia --project=. bench/phylo_xlv_drac_task.jl --write-params /tmp/phylo_xlv_truthinit_smoke/params.csv --reps 1 --lambdas 0.5 --n-species 4 --n-sites 4 --K 2 --q-lv 1 --K-phy 1 --scenarios main && julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_xlv_truthinit_smoke/params.csv --outdir /tmp/phylo_xlv_truthinit_smoke/results --task-id 1 --targets none --iterations 2 --truth-init --force
+rsync -av bench/phylo_xlv_drac_task.jl bench/phylo_xlv_drac_submit.sh narval:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/
+ssh narval '... submit generated truth-init job 64409162 ...'
+ssh narval 'scancel 64409162 || true; ... submit original-params truth-init job 64409200 ...'
+ssh narval "sacct -j 64409200 --format=JobID,JobName%24,State,Elapsed,MaxRSS,ExitCode -P"
+ssh narval "sacct -j 64403633 --format=JobID,JobName%24,State,Elapsed,MaxRSS,ExitCode -P"
+scp -q 'narval:/project/6098264/snakagaw/phylo_xlv/diagnostic-k2-p80-blv-truthinit-wald-task8-originalseed-narval-20260630-123400/results/*.csv' /tmp/phylo_xlv_truthinit_task8/
+scp -q 'narval:/project/6098264/snakagaw/phylo_xlv/diagnostic-k2-p80-blv-details-task8-narval-20260630-113900/results/*.csv' /tmp/phylo_xlv_detail_task8_final/
+python - <<'PY'
+# CSV-parser summaries of task-8 default Wald, truth-start Wald, and bootstrap detail.
+PY
+gh pr view 127 --json number,state,headRefName,headRefOid,isDraft,mergeStateStatus,statusCheckRollup,url,title,updatedAt
+```
+
+### Result
+
+Added an opt-in truth-start diagnostic path:
+
+- `bench/phylo_xlv_drac_task.jl` accepts `--truth-init`;
+- truth-start fits seed `lambda_B`, `alpha_lv`, `sigma_eps`, and `lambda_phy`
+  from the DGP truth used by the DRAC task runner;
+- `bench/phylo_xlv_drac_submit.sh` accepts `PHYLO_XLV_TRUTH_INIT=1` and records
+  `truth_init=1` in session metadata;
+- default runs and result/detail CSV schemas are unchanged.
+
+Local validation passed:
+
+- `bash -n bench/phylo_xlv_drac_submit.sh`;
+- `git diff --check`;
+- a tiny fit-only Julia smoke using `--truth-init` reached the fitter and wrote
+  a non-converged result as expected with only two optimiser iterations.
+
+The first submitted truth-start job (`64409162`) regenerated a lookalike task id
+8 with the wrong seed (`28381142`) and was cancelled. The corrected job
+`64409200` used the original parameter file and original catastrophic seed
+`202614420856`; it completed on Narval in `00:06:24` with `MaxRSS = 766M`.
+
+Task 8 truth-start Wald was indistinguishable from the default-start Wald fit:
+
+| fit | coverage | covered | miss sides | bias | RMSE | mean abs estimate shift vs default |
+|---|---:|---:|---|---:|---:|---:|
+| default Wald | 0.425 | 34/80 | 29 below, 17 above | 0.0360 | 0.1555 | reference |
+| truth-start Wald | 0.425 | 34/80 | 29 below, 17 above | 0.0361 | 0.1555 | 0.00009 |
+
+This rules out the main local-optimizer-basin explanation for the catastrophic
+seed.
+
+Task 8 bootstrap detail completed in job `64403633` after `01:11:19`
+(`MaxRSS = 1076280K`). The bootstrap result reproduced the original aggregate
+coverage and made the same miss-direction diagnosis sharper:
+
+| method | coverage | covered | miss sides | mean width | bootstrap refits |
+|---|---:|---:|---|---:|---:|
+| Wald | 0.425 | 34/80 | 29 below, 17 above | 0.2413 | NA |
+| bootstrap | 0.325 | 26/80 | 32 below, 22 above | 0.1924 | 30/30 |
+
+Miss-set comparison:
+
+- Wald missed 46 entries; bootstrap missed 54 entries.
+- The miss-set overlap was 45 entries (`Jaccard = 0.818`).
+- All 45 overlapping misses had the same miss side.
+- Bootstrap intervals were about `0.798x` the Wald width on average and
+  `0.793x` over overlapping missed entries.
+
+The parallel bootstrap-detail array for reps 3, 6, and 7 also completed:
+
+- job: `64407702`;
+- output directory:
+  `/project/6098264/snakagaw/phylo_xlv/diagnostic-k2-p80-blv-bootstrap-details-tasks3-6-7-narval-20260630-122000`;
+- elapsed: `01:16:51`, `01:17:26`, and `01:17:35`;
+- MaxRSS: `563-599 MB`;
+- all three bootstrap rows had `30/30` converged bootstrap refits.
+
+Per-seed comparison:
+
+| rep | method | coverage | miss sides | mean width | width ratio vs Wald |
+|---:|---|---:|---|---:|---:|
+| 3 | Wald | 0.900 (72/80) | 6 below, 2 above | 0.2464 | 1.000 |
+| 3 | bootstrap | 0.713 (57/80) | 13 below, 10 above | 0.1824 | 0.740 |
+| 6 | Wald | 0.825 (66/80) | 6 below, 8 above | 0.2771 | 1.000 |
+| 6 | bootstrap | 0.613 (49/80) | 13 below, 18 above | 0.2496 | 0.901 |
+| 7 | Wald | 1.000 (80/80) | 0 below, 0 above | 0.2802 | 1.000 |
+| 7 | bootstrap | 1.000 (80/80) | 0 below, 0 above | 0.2682 | 0.957 |
+| 8 | Wald | 0.425 (34/80) | 29 below, 17 above | 0.2413 | 1.000 |
+| 8 | bootstrap | 0.325 (26/80) | 32 below, 22 above | 0.1924 | 0.798 |
+
+Wald/bootstrap miss-overlap details:
+
+| rep | Wald misses | bootstrap misses | overlap | Jaccard | side agreement |
+|---:|---:|---:|---:|---:|---:|
+| 3 | 8 | 23 | 7 | 0.292 | 7/7 |
+| 6 | 14 | 31 | 14 | 0.452 | 14/14 |
+| 7 | 0 | 0 | 0 | 1.000 | 0/0 |
+| 8 | 46 | 54 | 45 | 0.818 | 45/45 |
+
+### Decision
+
+Task 8 is not a start-value failure. It is a finite-sample fitted-effect
+shrinkage failure for this weak p=80, K=2, lambda=0.5 cell. Percentile bootstrap
+inherits the same shrunken point estimate and narrows the intervals, so it makes
+coverage worse rather than rescuing the cell.
+
+The 3/6/7 details confirm this is not a one-row logging artifact: bootstrap
+reproduces the original aggregate weak rows for reps 3 and 6, leaves the clean
+rep 7 clean, and narrows intervals in all four detailed reps.
+
+Do not launch production phylo Model A coverage from the current interval
+machinery. Either record the weak-cell block honestly or design a narrower
+estimator/interval repair; do not expose `phylo_latent(..., lv = ~ x)` through
+`gllvmTMB` from this evidence.
+
+### Claim Boundary
+
+IN: mechanism diagnosis for p=80, K=2, lambda=0.5 `B_lv`: same MLE under truth
+starts for task 8; Wald/bootstrap miss overlap and side agreement; bootstrap
+narrower than Wald for reps 3, 6, 7, and 8; all detailed bootstrap rows had
+30/30 refit convergence. OUT: production coverage, bootstrap rescue, profile
+rescue, phylo-signal interval coverage, public `gllvmTMB` phylo grammar
+exposure, non-Gaussian phylo `X_lv`, and Model B.

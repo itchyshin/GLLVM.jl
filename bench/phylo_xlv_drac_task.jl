@@ -474,7 +474,8 @@ end
 function run_task(row::Dict{String, String}; outdir::String, methods, level::Real,
                   iterations::Integer, n_boot::Integer,
                   bootstrap_iterations::Union{Nothing, Integer},
-                  targets, dry_run::Bool, force::Bool, write_details::Bool)
+                  targets, dry_run::Bool, force::Bool, write_details::Bool,
+                  truth_init::Bool)
     task_id = row_value(row, "task_id", Int)
     scenario = row_value(row, "scenario", String)
     lambda = row_value(row, "pagel_lambda", Float64)
@@ -513,13 +514,20 @@ function run_task(row::Dict{String, String}; outdir::String, methods, level::Rea
     rows = NamedTuple[]
     progress("task $task_id simulate start")
     Y = simulate_dataset(seed, X_lv, Sigma_phy, truth)
-    progress("task $task_id simulate done; fit start iterations=$iterations")
+    progress("task $task_id simulate done; fit start iterations=$iterations truth_init=$truth_init")
     fit = nothing
     fit_seconds = NaN
     try
         t0 = time()
+        truth_fit_kwargs = truth_init ? (;
+            λ_init = truth.Lambda_B,
+            alpha_lv_init = truth.alpha,
+            σ_eps_init = truth.sigma_eps,
+            λ_phy_init = K_phy > 0 ? truth.Lambda_phy : nothing,
+        ) : NamedTuple()
         fit = fit_gaussian_gllvm(Y; K = K, X_lv = X_lv, K_phy = K_phy,
-                                 Σ_phy = Sigma_phy, iterations = iterations)
+                                 Σ_phy = Sigma_phy, iterations = iterations,
+                                 truth_fit_kwargs...)
         fit_seconds = time() - t0
         progress("task $task_id fit done converged=$(fit.converged) iterations=$(fit_iterations(fit)) seconds=$(@sprintf("%.2f", fit_seconds))")
     catch err
@@ -619,7 +627,7 @@ function main(args = ARGS)
     if has_flag(args, "--help") || isempty(args)
         println("phylo_xlv_drac_task.jl: --write-params FILE OR --params FILE --outdir DIR [--task-id N]")
         println("options: --reps 500 --lambdas 0,0.5,1 --n-species 20,200 --n-sites 200 --K 1,2 --q-lv 1 --K-phy 1")
-        println("         --scenarios main,null_alpha0,null_phylo0 --methods wald --targets B_lv,phylo_signal --iterations 400 --n-boot 200 --bootstrap-iterations 200 --write-details --dry-run --force")
+        println("         --scenarios main,null_alpha0,null_phylo0 --methods wald --targets B_lv,phylo_signal --iterations 400 --n-boot 200 --bootstrap-iterations 200 --write-details --truth-init --dry-run --force")
         return
     end
 
@@ -660,6 +668,7 @@ function main(args = ARGS)
         dry_run = has_flag(args, "--dry-run"),
         force = has_flag(args, "--force"),
         write_details = has_flag(args, "--write-details"),
+        truth_init = has_flag(args, "--truth-init"),
     )
 end
 
