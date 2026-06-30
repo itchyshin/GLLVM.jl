@@ -5888,3 +5888,52 @@ IN: 10-seed capped-bootstrap diagnostic launched for the known weak p=80, K=2,
 lambda=0.5 cell. OUT: production coverage, phylo-signal intervals,
 source-specific gllvmTMB grammar exposure, and any claim that bootstrap is
 calibrated before the array completes and is summarised.
+
+## 2026-06-30 05:12 MDT - Codex Narval capped-bootstrap 10-seed diagnostic result
+
+### Commands
+
+```sh
+ssh -o BatchMode=yes narval 'job=64397790; out=/project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30iter120-narval-lambda05-rep10-20260630-055048; squeue -j ${job} -o "%.18i %.9P %.32j %.8T %.10M %.6D %R" 2>/dev/null || true; find ${out}/results -maxdepth 1 -name "result_*.csv" 2>/dev/null | sort | wc -l; cd /project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac; module load StdEnv/2023 >/dev/null 2>&1 || true; module load julia/1.10.10 >/dev/null 2>&1 || true; export JULIA_DEPOT_PATH=/project/6098264/snakagaw/julia_depot:${JULIA_DEPOT_PATH:-}; julia --project=. bench/phylo_xlv_drac_summarise.jl --results ${out}/results 2>/dev/null || true'
+ssh -o BatchMode=yes narval 'job=64397790; out=/project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30iter120-narval-lambda05-rep10-20260630-055048; seff ${job} 2>/dev/null || true; sacct -j ${job} --format=JobID,JobName,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS -P 2>/dev/null || true; cat ${out}/meta/session.txt; head -n 5 ${out}/results/result_000001.csv'
+```
+
+### Result
+
+Narval array `64397790` completed all 10 capped-bootstrap weak-cell tasks with
+exit code `0`.
+
+Summary:
+
+| scenario | lambda | p | n_sites | K | target | method | tasks | fit ok | usable entries | mean coverage (MCSE) | entry coverage | RMSE mean | fit sec mean | CI sec mean | boot n | boot iter cap | bootstrap ok | CI status |
+|---|---:|---:|---:|---:|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| main | 0.5 | 80 | 80 | 2 | B_lv | bootstrap | 10 | 10 | 800 | 0.844 (0.071) | 0.844 | 0.074 | 228.594 | 4153.291 | 30 | 120 | 300 | ok |
+
+Resource state:
+
+- all 10 array tasks completed;
+- elapsed times ranged from `01:08:07` to `01:17:10`;
+- batch MaxRSS was about `0.53-0.82 GB` for completed tasks, well below the
+  `4G` request;
+- representative `seff` row for task 10: `01:11:01` wall, `99.20%` CPU
+  efficiency, `531.11 MB / 4G`.
+
+### Decision
+
+Capped bootstrap does not rescue the known weak p=80, K=2, lambda=0.5 `B_lv`
+coverage cell. Its 10-seed result (`0.844`, MCSE `0.071`) is materially the
+same as the earlier normal-Wald and t-Wald diagnostics (`0.844` and `0.845`).
+Do not scale production coverage with this interval method.
+
+The next safe move is diagnostic, not production: inspect whether the problem is
+the estimator/weak-cell bias, the covariance/SE mapping, or the DGP/target
+definition for this cell. Full-vector profile is already impractical in the
+current implementation because Rorqual `14929297` timed out in profile after
+3h with no result file.
+
+### Claim Boundary
+
+IN: negative 10-seed capped-bootstrap diagnostic for the weak p=80, K=2,
+lambda=0.5 `B_lv` cell. OUT: production coverage, any bootstrap rescue claim,
+phylo-signal interval coverage, public gllvmTMB phylo grammar exposure,
+non-Gaussian phylo X_lv, and Model B.
