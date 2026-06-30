@@ -5758,3 +5758,52 @@ IN: PR #572 has green Ubuntu CI, and the phylo bootstrap comparison is now a
 two-point live timing question: completed uncapped Nibi vs pending capped
 Narval. OUT: no PR #572 merge claim, no pkgdown completion claim, no phylo
 production coverage, and no conclusion about the capped bootstrap path yet.
+
+## 2026-06-30 03:42 MDT - Codex bootstrap/profile canary completion poll
+
+### Commands
+
+```sh
+ssh -o BatchMode=yes nibi 'squeue -j 16951694 -o "%.18i %.9P %.32j %.8T %.10M %.6D %R" 2>/dev/null || true; echo results=$(find /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30-nibi-lambda05-rep1-20260629-1606/results -maxdepth 1 -name "result_*.csv" 2>/dev/null | wc -l); tail -n 80 /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30-nibi-lambda05-rep1-20260629-1606/logs/phylo_xlv-16951694-1.out 2>/dev/null || true; cat /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30-nibi-lambda05-rep1-20260629-1606/results/result_000001.csv 2>/dev/null || true; seff 16951694 2>/dev/null || true'
+ssh -o BatchMode=yes narval 'squeue -j 64365792 -o "%.18i %.9P %.32j %.8T %.10M %.6D %R" 2>/dev/null || true; echo results=$(find /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30iter120-narval-lambda05-rep1-20260629-1643/results -maxdepth 1 -name "result_*.csv" 2>/dev/null | wc -l); tail -n 100 /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30iter120-narval-lambda05-rep1-20260629-1643/logs/phylo_xlv-64365792-1.out 2>/dev/null || true; cat /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30iter120-narval-lambda05-rep1-20260629-1643/results/result_000001.csv 2>/dev/null || true; seff 64365792 2>/dev/null || true'
+ssh -o BatchMode=yes rorqual 'squeue -j 14929297 -o "%.18i %.9P %.32j %.8T %.10M %.6D %R" 2>/dev/null || true; echo results=$(find /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-rorqual-lambda05-cirescue-rep1-nboot30-20260629-1525/results -maxdepth 1 -name "result_*.csv" 2>/dev/null | wc -l); tail -n 120 /project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-rorqual-lambda05-cirescue-rep1-nboot30-20260629-1525/logs/phylo_xlv-14929297-1.out 2>/dev/null || true; seff 14929297 2>/dev/null || true'
+```
+
+### Result
+
+The weak-cell p=80, K=2, lambda=0.5 interval-rescue canaries now have final
+states:
+
+- Nibi `16951694_1`, uncapped bootstrap-only, completed with exit code `0`.
+  One-seed `B_lv` bootstrap entry coverage was `0.9375`, RMSE `0.0629`,
+  fit time `169.4s`, CI time `4843.7s`, bootstrap converged `30/30`, wall time
+  `01:23:48`, memory `465.55 MB / 4 GB`.
+- Narval `64365792_1`, capped bootstrap-only with
+  `bootstrap_iterations = 120`, completed with exit code `0`. One-seed `B_lv`
+  bootstrap entry coverage was `1.0`, RMSE `0.0346`, fit time `148.5s`, CI time
+  `4055.2s`, bootstrap converged `30/30`, wall time `01:10:34`, memory
+  `875.61 MB / 4 GB`.
+- Rorqual `14929297_1`, `wald,profile,bootstrap` canary, timed out after
+  `03:00:20` with no result file. The log shows fit convergence in `230.94s`,
+  Wald completion, then profile started and did not finish before timeout.
+
+### Decision
+
+Bootstrap remains the only interval-rescue method with completed p=80, K=2,
+lambda=0.5 rows. The capped Narval canary was about 13 minutes faster than the
+uncapped Nibi canary, but both are still roughly 68-81 CI minutes for one
+task. Full-vector profile is computationally impractical in the current form
+for this weak cell.
+
+Do not launch production coverage yet. Next safe choices are either a small
+multi-seed capped-bootstrap diagnostic (for example 10 seeds at lambda=0.5) to
+estimate MCSE and runtime, or a narrower/profile-batching implementation before
+trying profile again.
+
+### Claim Boundary
+
+IN: one-seed bootstrap feasibility and profile timeout evidence for the known
+weak p=80, K=2, lambda=0.5 cell. PARTIAL: bootstrap may rescue the weak cell,
+but evidence is one seed per cap regime and too weak for coverage claims. OUT:
+production coverage, phylo-signal interval coverage, public gllvmTMB grammar
+exposure, non-Gaussian phylo X_lv, and Model B.
