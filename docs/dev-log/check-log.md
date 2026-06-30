@@ -5937,3 +5937,90 @@ IN: negative 10-seed capped-bootstrap diagnostic for the weak p=80, K=2,
 lambda=0.5 `B_lv` cell. OUT: production coverage, any bootstrap rescue claim,
 phylo-signal interval coverage, public gllvmTMB phylo grammar exposure,
 non-Gaussian phylo X_lv, and Model B.
+
+## 2026-06-30 05:39 MDT - Codex phylo weak-cell per-entry diagnostic tooling
+
+### Commands
+
+```sh
+ssh -o BatchMode=yes narval 'out=/project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30iter120-narval-lambda05-rep10-20260630-055048; awk '\''FNR==1 && NR!=1 {next} {print}'\'' ${out}/results/result_*.csv' > /tmp/phylo_xlv_bootstrap10_results.csv
+awk -F, 'NR==1{for(i=1;i<=NF;i++) h[$i]=i; printf "%4s %16s %8s %8s %8s %8s %8s %8s %8s\n", "rep", "seed", "cov", "covered", "bias", "rmse", "est_mu", "max_est", "ci_sec"; next} {printf "%4d %16s %8.3f %3d/%-3d %8.3f %8.3f %8.3f %8.3f %8.1f\n", $h["rep"], $h["seed"], $h["coverage"], $h["covered"], $h["usable"], $h["bias_mean"], $h["bias_rmse"], $h["estimate_mean"], $h["max_abs_estimate"], $h["ci_seconds"]}' /tmp/phylo_xlv_bootstrap10_results.csv | sort -k3,3n
+tmp=$(mktemp -d); export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. bench/phylo_xlv_drac_task.jl --write-params "$tmp/params.csv" --reps 1 --lambdas 0 --n-species 6 --n-sites 6 --K 1 --q-lv 1 --K-phy 1 --scenarios main --seed0 20260630 --force; julia --project=. bench/phylo_xlv_drac_task.jl --params "$tmp/params.csv" --outdir "$tmp/results" --methods wald --targets B_lv --iterations 80 --n-boot 3 --write-details; find "$tmp/results" -maxdepth 1 -type f -print | sort; sed -n '1,4p' "$tmp/results/result_000001.csv"; sed -n '1,8p' "$tmp/results/detail_result_000001_wald.csv"
+rm -rf /tmp/phylo_xlv_detail_submit_probe && export PATH="$HOME/.juliaup/bin:$PATH"; PHYLO_XLV_REPS=1 PHYLO_XLV_LAMBDAS=0.5 PHYLO_XLV_N_SPECIES=6 PHYLO_XLV_N_SITES=6 PHYLO_XLV_K=1 PHYLO_XLV_Q_LV=1 PHYLO_XLV_K_PHY=1 PHYLO_XLV_SCENARIOS=main PHYLO_XLV_TARGETS=B_lv PHYLO_XLV_METHODS=wald PHYLO_XLV_N_BOOT=3 PHYLO_XLV_WRITE_DETAILS=1 bench/phylo_xlv_drac_submit.sh --out /tmp/phylo_xlv_detail_submit_probe; rg -n "write_details|detail_args|--write-details" /tmp/phylo_xlv_detail_submit_probe/meta/session.txt /tmp/phylo_xlv_detail_submit_probe/meta/phylo_xlv_array.sbatch; bash -n /tmp/phylo_xlv_detail_submit_probe/meta/phylo_xlv_array.sbatch
+tmp=$(mktemp -d); export PATH="$HOME/.juliaup/bin:$PATH"; julia --project=. bench/phylo_xlv_drac_task.jl --write-params "$tmp/params.csv" --reps 1 --lambdas 0 --n-species 4 --n-sites 6 --K 1 --q-lv 1 --K-phy 1 --scenarios main --seed0 20260631 --force >/dev/null; julia --project=. bench/phylo_xlv_drac_task.jl --params "$tmp/params.csv" --outdir "$tmp/results" --methods wald --targets B_lv --iterations 60 --n-boot 3 >/tmp/phylo_xlv_no_detail_probe.log; find "$tmp/results" -maxdepth 1 -type f -printf '%f\n' 2>/dev/null || ls "$tmp/results"
+git diff --check
+rsync -av bench/phylo_xlv_drac_task.jl bench/phylo_xlv_drac_submit.sh narval:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/
+ssh -o BatchMode=yes narval '... write detail-task8.sbatch and sbatch it ...'
+ssh -o BatchMode=yes narval 'ls -td /project/6098264/snakagaw/phylo_xlv/diagnostic-k2-p80-blv-details-task8-narval-* 2>/dev/null | head -3; squeue -u $USER -o "%.18i %.9P %.32j %.8T %.10M %.6D %R" | head -20'
+```
+
+### Result
+
+The aggregate 10-seed capped-bootstrap rows are heterogeneous, not uniformly
+weak:
+
+| rep | seed | coverage | covered | bias | RMSE |
+|---:|---:|---:|---:|---:|---:|
+| 8 | 202614420856 | 0.325 | 26/80 | 0.036 | 0.156 |
+| 6 | 202612400836 | 0.613 | 49/80 | -0.018 | 0.112 |
+| 3 | 202609370806 | 0.713 | 57/80 | 0.023 | 0.091 |
+| 2/4/5/9/10 | mixed | 0.950-0.975 | 76-78/80 | mixed | 0.037-0.082 |
+| 1/7 | mixed | 0.988-1.000 | 79-80/80 | mixed | 0.035-0.077 |
+
+Implemented an opt-in per-entry detail stream:
+
+- `bench/phylo_xlv_drac_task.jl` accepts `--write-details`;
+- successful `B_lv` CI methods write `detail_result_<task>_<method>.csv`;
+- detail rows contain the entry index, term, estimate, lower, upper, truth,
+  covered flag, miss side, and interval width;
+- ordinary `result_<task>.csv` schema and default production summaries are
+  unchanged.
+
+Implemented submitter wiring:
+
+- `bench/phylo_xlv_drac_submit.sh` accepts `PHYLO_XLV_WRITE_DETAILS=1`;
+- generated session metadata records `write_details=1`;
+- generated sbatch scripts pass `--write-details` only for truthy values.
+
+Validation:
+
+- the tiny `--write-details` real task wrote both `result_000001.csv` and
+  `detail_result_000001_wald.csv`;
+- the default tiny task without `--write-details` wrote only
+  `result_000001.csv`;
+- the write-only submit probe wrote `detail_args` into the sbatch file and
+  `bash -n` passed;
+- the first submitter attempt used `${var,,}`, which failed under the local
+  Bash; it was replaced with a portable `case` pattern and retested;
+- `git diff --check` passed.
+
+Synced the updated runner/submitter to the Narval project copy and submitted
+one compute-node diagnostic:
+
+- job: `64403633`;
+- output directory:
+  `/project/6098264/snakagaw/phylo_xlv/diagnostic-k2-p80-blv-details-task8-narval-20260630-113900`;
+- source params:
+  `/project/6098264/snakagaw/phylo_xlv/pilot-k2-p80-blv-bootstrap30iter120-narval-lambda05-rep10-20260630-055048/meta/phylo_xlv_params.csv`;
+- task: `8`, the worst capped-bootstrap seed (`coverage = 0.325`);
+- target: `B_lv`;
+- methods: `wald,bootstrap`;
+- `n_boot = 30`, `bootstrap_iterations = 120`, `iterations = 400`;
+- `--write-details`;
+- initial state: running on Narval `cpubase_b` at poll time.
+
+### Decision
+
+The next evidence we need is per-entry, not another aggregate coverage number.
+Task 8 is the right first rerun because it is the catastrophic seed. Running
+both Wald and capped bootstrap on the same simulated dataset will show whether
+the two interval methods miss the same entries, whether misses concentrate in
+one loading/predictor block, and whether the truth is usually above or below
+the interval.
+
+### Claim Boundary
+
+IN: diagnostic tooling and a one-task detail rerun for the known weak p=80, K=2,
+lambda=0.5 `B_lv` cell. OUT: production coverage, any interval-method rescue
+claim, public `gllvmTMB` phylo grammar exposure, phylo-signal intervals,
+non-Gaussian phylo `X_lv`, and Model B.

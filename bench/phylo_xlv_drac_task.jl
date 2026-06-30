@@ -45,6 +45,13 @@ const RESULT_FIELDS = [
     "max_abs_estimate", "max_abs_truth", "pd_hessian",
     "bootstrap_converged", "error",
 ]
+const DETAIL_FIELDS = [
+    "task_id", "scenario", "pagel_lambda", "n_species", "n_sites",
+    "K", "q_lv", "K_phy", "rep", "seed", "level", "n_boot",
+    "bootstrap_iterations", "target", "method", "entry", "term",
+    "estimate", "lower", "upper", "truth", "covered", "miss_side",
+    "width", "error",
+]
 
 function arg_value(args::Vector{String}, key::String, default::Union{Nothing, String} = nothing)
     i = findfirst(==(key), args)
@@ -157,6 +164,12 @@ end
 
 function partial_result_path(result_path::String)
     return joinpath(dirname(result_path), "partial_" * basename(result_path))
+end
+
+function detail_result_path(result_path::String, method::Symbol)
+    stem = replace(splitext(basename(result_path))[1], "result_" => "detail_result_")
+    method_tag = replace(String(method), r"[^A-Za-z0-9_]" => "_")
+    return joinpath(dirname(result_path), "$(stem)_$(method_tag).csv")
 end
 
 function write_partial_csv(result_path::String, fields::Vector{String}, rows)
@@ -333,6 +346,18 @@ function coverage_summary(lower, upper, truth)
     return (; total, usable, covered, coverage)
 end
 
+function miss_side(lower::Real, upper::Real, truth::Real)
+    if !(isfinite(lower) && isfinite(upper) && isfinite(truth))
+        return "not_usable"
+    elseif lower <= truth <= upper
+        return "covered"
+    elseif truth < lower
+        return "below_lower"
+    else
+        return "above_upper"
+    end
+end
+
 function fit_iterations(fit)
     hasproperty(fit, :n_iter) && return fit.n_iter
     hasproperty(fit, :iterations) && return fit.iterations
@@ -358,8 +383,29 @@ function result_row(base; target, method, fit_converged, fit_iterations, fit_sec
     ))
 end
 
+function write_b_lv_detail_csv(path::String, base, method::Symbol, ci, truth)
+    est = collect(Float64, ci.estimate)
+    lo = collect(Float64, ci.lower)
+    hi = collect(Float64, ci.upper)
+    terms = :term in keys(ci) ? collect(ci.term) : ["B_lv[$i]" for i in eachindex(truth)]
+    rows = NamedTuple[]
+    for i in eachindex(truth)
+        side = miss_side(lo[i], hi[i], truth[i])
+        push!(rows, merge(base, (;
+            target = "B_lv", method = String(method), entry = i,
+            term = i <= length(terms) ? terms[i] : "B_lv[$i]",
+            estimate = est[i], lower = lo[i], upper = hi[i], truth = truth[i],
+            covered = side == "covered", miss_side = side,
+            width = isfinite(lo[i]) && isfinite(hi[i]) ? hi[i] - lo[i] : NaN,
+            error = "",
+        )))
+    end
+    write_csv(path, DETAIL_FIELDS, rows)
+end
+
 function b_lv_row(base, method::Symbol, fit, Y, X_lv, truth; level::Real, n_boot::Integer,
-                  bootstrap_iterations::Union{Nothing, Integer})
+                  bootstrap_iterations::Union{Nothing, Integer},
+                  detail_path::Union{Nothing, String} = nothing)
     t0 = time()
     ci = confint_lv_effects(fit, Y, X_lv; level = level, method = method,
                             n_boot = n_boot, seed = base.seed + 71_111,
@@ -371,6 +417,7 @@ function b_lv_row(base, method::Symbol, fit, Y, X_lv, truth; level::Real, n_boot
     cov = coverage_summary(lo, hi, truth)
     pd = :pd_hessian in keys(ci) ? ci.pd_hessian : nothing
     nb = :n_converged in keys(ci) ? ci.n_converged : nothing
+    detail_path !== nothing && write_b_lv_detail_csv(detail_path, base, method, ci, truth)
     return result_row(base;
         target = "B_lv", method = String(method),
         fit_converged = fit.converged, fit_iterations = fit_iterations(fit),
@@ -427,7 +474,7 @@ end
 function run_task(row::Dict{String, String}; outdir::String, methods, level::Real,
                   iterations::Integer, n_boot::Integer,
                   bootstrap_iterations::Union{Nothing, Integer},
-                  targets, dry_run::Bool, force::Bool)
+                  targets, dry_run::Bool, force::Bool, write_details::Bool)
     task_id = row_value(row, "task_id", Int)
     scenario = row_value(row, "scenario", String)
     lambda = row_value(row, "pagel_lambda", Float64)
@@ -518,7 +565,8 @@ function run_task(row::Dict{String, String}; outdir::String, methods, level::Rea
             try
                 push!(rows, b_lv_row(base, method, fit, Y, X_lv, B_true;
                                      level = level, n_boot = n_boot,
-                                     bootstrap_iterations = bootstrap_iterations))
+                                     bootstrap_iterations = bootstrap_iterations,
+                                     detail_path = write_details ? detail_result_path(result_path, method) : nothing))
                 progress("task $task_id B_lv CI done method=$method")
             catch err
                 progress("task $task_id B_lv CI error method=$method: $(sprint(showerror, err))")
@@ -571,7 +619,7 @@ function main(args = ARGS)
     if has_flag(args, "--help") || isempty(args)
         println("phylo_xlv_drac_task.jl: --write-params FILE OR --params FILE --outdir DIR [--task-id N]")
         println("options: --reps 500 --lambdas 0,0.5,1 --n-species 20,200 --n-sites 200 --K 1,2 --q-lv 1 --K-phy 1")
-        println("         --scenarios main,null_alpha0,null_phylo0 --methods wald --targets B_lv,phylo_signal --iterations 400 --n-boot 200 --bootstrap-iterations 200 --dry-run --force")
+        println("         --scenarios main,null_alpha0,null_phylo0 --methods wald --targets B_lv,phylo_signal --iterations 400 --n-boot 200 --bootstrap-iterations 200 --write-details --dry-run --force")
         return
     end
 
@@ -611,6 +659,7 @@ function main(args = ARGS)
         targets = parse_targets(arg_value(args, "--targets", "B_lv,phylo_signal")),
         dry_run = has_flag(args, "--dry-run"),
         force = has_flag(args, "--force"),
+        write_details = has_flag(args, "--write-details"),
     )
 end
 

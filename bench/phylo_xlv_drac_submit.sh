@@ -27,6 +27,7 @@ Environment overrides:
   PHYLO_XLV_ITERATIONS   optimiser iterations (default: 400)
   PHYLO_XLV_N_BOOT       bootstrap reps when bootstrap is requested (default: 200)
   PHYLO_XLV_BOOT_ITERATIONS bootstrap refit iterations; empty keeps fitter default
+  PHYLO_XLV_WRITE_DETAILS set to 1/true/yes to write per-entry B_lv diagnostic CSVs
   PHYLO_XLV_TIME         SLURM time (default: 0-02:00)
   PHYLO_XLV_MEM          SLURM memory per task (default: 8G)
   PHYLO_XLV_CPUS         cpus per task (default: 1)
@@ -77,6 +78,7 @@ level="${PHYLO_XLV_LEVEL:-0.95}"
 iterations="${PHYLO_XLV_ITERATIONS:-400}"
 n_boot="${PHYLO_XLV_N_BOOT:-200}"
 boot_iterations="${PHYLO_XLV_BOOT_ITERATIONS:-}"
+write_details="${PHYLO_XLV_WRITE_DETAILS:-}"
 time_limit="${PHYLO_XLV_TIME:-0-02:00}"
 mem="${PHYLO_XLV_MEM:-8G}"
 cpus="${PHYLO_XLV_CPUS:-1}"
@@ -140,6 +142,7 @@ cd "$repo_root"
   echo "iterations=$iterations"
   echo "n_boot=$n_boot"
   echo "bootstrap_iterations=$boot_iterations"
+  echo "write_details=$write_details"
 } > "$session"
 
 ntasks=$(( $(wc -l < "$params") - 1 ))
@@ -195,6 +198,12 @@ bootstrap_args=()
 if [[ -n "$boot_iterations" ]]; then
   bootstrap_args+=(--bootstrap-iterations "$boot_iterations")
 fi
+detail_args=()
+case "$write_details" in
+  1|true|TRUE|True|yes|YES|Yes|y|Y|on|ON|On)
+    detail_args+=(--write-details)
+    ;;
+esac
 
 "$julia_cmd" --project=. bench/phylo_xlv_drac_task.jl \\
   --params "$params" \\
@@ -204,7 +213,8 @@ fi
   --level "$level" \\
   --iterations "$iterations" \\
   --n-boot "$n_boot" \\
-  "\${bootstrap_args[@]}"
+  "\${bootstrap_args[@]}" \\
+  "\${detail_args[@]}"
 SBATCH
 
 echo "Wrote params: $params"
