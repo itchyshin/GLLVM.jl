@@ -1,5 +1,83 @@
 # Check Log
 
+## 2026-07-01 - Phylo Model A Gate 1 corrected optimizer-budget diagnostic
+
+### Scope
+
+Ran a local-only corrected Gate 1 diagnostic after the first Gate 1 run showed
+one fit non-convergence and profile underconvergence. This was not Gate 2, Gate
+3, Totoro, DRAC, source-specific R grammar, package API, likelihood change, or
+PR #127 reopen.
+
+### Design
+
+Same design and seeds as the Gate 1 run:
+
+- `p = 20`, `n_sites = 300`, `K = 1`, `q_lv = 1`, `K_phy = 1`,
+  `lambda = 1.0`, scenario `main`.
+- `20` replicates from `seed0 = 20260701`.
+- Five predeclared selected entries per replicate: `1, 3, 9, 11, 15`.
+- Target: eta-scale realized/design-conditional `B_eta_realized`.
+- Method: selected-entry one-df `profile_eta_realized` LR canary.
+
+Only the optimizer budget changed:
+
+- fit `iterations = 1000`;
+- profile truth refit `profile_opt_iterations = 1000`.
+
+### Checks Run
+
+```sh
+julia --project=. --startup-file=no
+```
+
+with `bench/phylo_xlv_drac_task.jl` included and `run_task(...)` called for
+all 20 rows using the corrected optimizer budget above.
+
+Result files were written under `/tmp/phylo_eta_gate1_corrected`.
+
+Reduction result:
+
+```text
+planned selected entries: 100
+recorded detail entries: 100
+fit convergence: 20/20
+profile status: 20/20 ok rows
+usable profile truth solves: 100/100
+covered/planned: 97/100 = 0.970
+MCSE: 0.0171
+Wilson 95% interval for selected-entry coverage: 0.9155 to 0.9897
+converged LR misses: task 7 entry 9, task 8 entry 9, task 11 entry 11
+```
+
+Entry summary:
+
+```text
+entry 1: 20/20 covered, max LR 0.928832
+entry 3: 20/20 covered, max LR 0.259662
+entry 9: 18/20 covered, max LR 6.88283
+entry 11: 19/20 covered, max LR 4.39707
+entry 15: 20/20 covered, max LR 0.234153
+```
+
+Quantitative note: under a nominal 95% selected-entry interval, zero misses out
+of 100 has probability `0.95^100 = 0.00592053`; observing at least 97/100
+included truths has probability `0.25783866` when the true coverage is 0.95.
+So the old zero-miss canary is much stricter than nominal-coverage behavior.
+
+### Verdict
+
+The original predeclared Gate 1 still FAILED because it required zero
+converged LR misses. The corrected optimizer-budget diagnostic shows that
+convergence/profile underconvergence is not the main blocker: with adequate
+iteration limits, all 100 profile truth solves are usable and selected-entry
+coverage is `97/100`.
+
+Next defensible decision: amend the Gate 1 rule from a zero-miss canary to an
+MCSE-aware selected-entry coverage diagnostic before any Gate 2/3 escalation.
+Do not launch Totoro/DRAC or expose source-specific `lv` from this diagnostic
+alone.
+
 ## 2026-07-01 - Phylo Model A Gate 1 local eta-realized diagnostic
 
 ### Scope

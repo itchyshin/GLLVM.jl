@@ -1,7 +1,7 @@
 # Phylo Model A next-target design, no compute
 
 Date: 2026-07-01
-Status: Gate 0 implemented locally; Gate 1 local diagnostic failed; Gate 2/3 held
+Status: Gate 0 implemented locally; Gate 1 strict no-miss gate failed; corrected local diagnostic is 97/100; Gate 2/3 held
 Scope: future non-v1 Gaussian phylo Model A only
 
 ## 2026-07-01 Gate 0 Update
@@ -65,6 +65,45 @@ entries and constrained profile convergence were not.
 Operational consequence: Gate 2 and Gate 3 remain held. No Totoro diagnostic
 fan-out, DRAC claim run, source-specific R grammar, package API widening, or PR
 #127 reopen follows from this evidence.
+
+### Corrected Gate 1 Optimizer-Budget Diagnostic
+
+A follow-up local diagnostic reran the same 20 seeds and same five selected
+entries with a larger optimizer budget:
+
+- fit `iterations = 1000`;
+- profile truth refit `profile_opt_iterations = 1000`.
+
+This resolved the fit/profile usability failures:
+
+```text
+planned selected entries: 100
+recorded detail entries: 100
+fit convergence: 20/20
+profile status: 20/20 ok rows
+usable profile truth solves: 100/100
+covered/planned: 97/100 = 0.970
+MCSE: 0.0171
+Wilson 95% interval for selected-entry coverage: 0.9155 to 0.9897
+converged LR misses: task 7 entry 9, task 8 entry 9, task 11 entry 11
+```
+
+The three misses persisted from the first run and are therefore real LR misses,
+not an optimizer-budget artifact. They are concentrated in the weak/near-zero
+entries: entry 9 covered `18/20`, entry 11 covered `19/20`, and entries 1, 3,
+and 15 each covered `20/20`.
+
+Quantitative interpretation: the old zero-miss rule is much stricter than a
+nominal 95 percent coverage diagnostic. Under true 95 percent selected-entry
+coverage, zero misses among 100 entries has probability `0.95^100 =
+0.00592053`, while observing at least `97/100` included truths has probability
+`0.25783866`. The corrected run is consistent with nominal selected-entry
+coverage, but it does not satisfy the predeclared no-miss canary.
+
+Operational consequence: Gate 2 and Gate 3 remain held until Shinichi approves
+an amended Gate 1 rule. The defensible amendment is not to drop weak entries or
+claim support; it is to replace the no-miss canary with an MCSE-aware
+selected-entry coverage gate and to require the corrected optimizer budget.
 
 ## Decision
 
@@ -272,6 +311,12 @@ Status on 2026-07-01: failed locally with `84/100` planned entries covered,
 one fit non-convergence, four profile-underconverged tasks, and three
 converged LR misses. This failure blocks Gate 2/3.
 
+Corrected optimizer-budget status on 2026-07-01: same seeds and entries with
+`iterations = 1000` and `profile_opt_iterations = 1000` produced `20/20` fit
+convergence, `100/100` usable profile solves, and `97/100` selected-entry
+coverage. This supports amending the Gate 1 rule, but it does not by itself
+authorize Gate 2/3 because the original no-miss rule failed.
+
 Gate 2 - weak-cell diagnostic:
 
 - task-8 entry-71 is included;
@@ -318,9 +363,10 @@ exposure. Passing Gate 1 or Gate 2 does not itself expose anything.
 
 ## Current Operating Rule
 
-No further compute follows from this note. Gate 0 target plumbing exists, but
-Gate 1 failed locally. The next legitimate task is not Gate 2/3 scale-up; it is
-either a statistical redesign of the profile constraint/target regime or an
-explicit decision to keep Phylo Model A source-specific `lv` parked. Totoro and
-DRAC remain idle for this arc until a new method decision and maintainer
-approval.
+No further compute follows from this note. Gate 0 target plumbing exists, and
+the corrected local Gate 1 diagnostic is promising at `97/100`, but the
+predeclared no-miss Gate 1 failed. The next legitimate task is not Gate 2/3
+scale-up; it is a maintainer decision on whether to amend Gate 1 to an
+MCSE-aware selected-entry coverage gate with the corrected optimizer budget, or
+to keep Phylo Model A source-specific `lv` parked. Totoro and DRAC remain idle
+for this arc until that decision.
