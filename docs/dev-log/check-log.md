@@ -1,5 +1,52 @@
 # Check Log
 
+## 2026-07-01 - LV arc closeout and next Phylo Model A target design
+
+### Scope
+
+Recorded the no-compute next-target design for a possible future non-v1 Phylo
+Gaussian Model A reopening. This is a planning slice only: no package API, no
+formula grammar, no likelihood change, no R exposure, no PR reopen, and no
+Totoro/DRAC compute.
+
+### Decision
+
+V1 remains parked. The next defensible future target is not the old
+population-`B_lv` route and not the observed-response saturated direct-slope
+shortcut. The recommended candidate is an eta-scale realized/design-conditional
+slope target:
+
+```text
+B_eta_realized(r) = ((Xc_r' Xc_r)^(-1) Xc_r' Etac_lv_r)'
+```
+
+where `Eta_lv_r` is the noiseless latent-mediated trait surface for replicate
+`r`. The target is finite-sample and conditional, so it cannot be described as
+population `B_lv` recovery.
+
+### Files Updated
+
+- `docs/dev-log/decisions/2026-07-01-phylo-model-a-next-target-no-compute.md`
+- `docs/dev-log/decisions/2026-07-01-phylo-model-a-structural-redesign-fork.md`
+- `docs/dev-log/check-log.md`
+- `docs/dev-log/after-task/2026-07-01-lv-arc-next-target-no-compute.md`
+
+### Checks Run
+
+```sh
+git diff --check -- docs/dev-log/decisions/2026-07-01-phylo-model-a-next-target-no-compute.md docs/dev-log/decisions/2026-07-01-phylo-model-a-structural-redesign-fork.md docs/dev-log/check-log.md docs/dev-log/after-task/2026-07-01-lv-arc-next-target-no-compute.md
+rg -n "B_eta_realized|no compute|Totoro|DRAC|source-specific.*support|partial support|ready to scale" docs/dev-log/decisions/2026-07-01-phylo-model-a-next-target-no-compute.md docs/dev-log/decisions/2026-07-01-phylo-model-a-structural-redesign-fork.md docs/dev-log/check-log.md docs/dev-log/after-task/2026-07-01-lv-arc-next-target-no-compute.md
+```
+
+Results: `git diff --check` returned no whitespace errors. The claim-audit
+scan found the new `B_eta_realized`/no-compute/Totoro/DRAC gate language and
+only expected negative guard text for source-specific support and partial
+support.
+
+Claim boundary: IN: ADEMP-style design, Williams self-audit, and future gate
+definition. OUT: no truth extractor, no unit test, no canary run, no compute,
+no source-specific `lv` exposure, and no non-Gaussian extension.
+
 ## 2026-07-01 - LV structural dependency truth lock
 
 ### Scope

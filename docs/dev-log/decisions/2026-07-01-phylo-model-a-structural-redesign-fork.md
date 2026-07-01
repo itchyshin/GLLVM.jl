@@ -27,6 +27,11 @@ a changed scientific claim and a fresh ADEMP gate.
 Current decision note:
 `docs/dev-log/decisions/2026-07-01-phylo-model-a-v1-retirement.md`.
 
+Next-target design note, planning only:
+`docs/dev-log/decisions/2026-07-01-phylo-model-a-next-target-no-compute.md`.
+It recommends an eta-scale realized/design-conditional target for any future
+non-v1 reopening and explicitly authorizes no compute.
+
 ## Interval Policy
 
 - `alpha_lv`: conditional axis/access-effect output only. Wald is acceptable
