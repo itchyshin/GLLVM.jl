@@ -1,5 +1,61 @@
 # Check Log
 
+## 2026-07-01 - Phylo Model A Gate 1 local eta-realized diagnostic
+
+### Scope
+
+Ran the predeclared local-only positive-control diagnostic for the bench-only
+`profile_eta_realized` route against `B_eta_realized`. This was Gate 1 only:
+no Totoro fan-out, no DRAC claim evidence, no source-specific R grammar, no
+package API, no likelihood change, and no PR #127 reopen.
+
+### Design
+
+- `p = 20`, `n_sites = 300`, `K = 1`, `q_lv = 1`, `K_phy = 1`,
+  `lambda = 1.0`, scenario `main`.
+- `20` replicates, seed stream from `seed0 = 20260701`.
+- Five predeclared selected entries per replicate: `1, 3, 9, 11, 15`.
+- Truth target: eta-scale realized/design-conditional `B_eta_realized`.
+- Method: selected-entry one-df `profile_eta_realized` LR canary.
+
+### Checks Run
+
+```sh
+julia --project=. --startup-file=no
+```
+
+with `bench/phylo_xlv_drac_task.jl` included and `run_task(...)` called for
+all 20 rows using `methods = [:profile_eta_realized]`,
+`profile_engine = :penalty`, `truth_init = true`, `iterations = 250`,
+`profile_opt_iterations = 120`, and `profile_bisect_iterations = 24`.
+
+Result files were written under `/tmp/phylo_eta_gate1_local`.
+
+Reduction result:
+
+```text
+planned selected entries: 100
+recorded detail entries: 95
+covered/planned: 84/100 = 0.840
+covered/recorded: 84/95 = 0.884
+covered/usable: 84/87 = 0.966
+fit non-convergence: task 3
+profile-underconverged tasks: 9, 12, 14, 20
+converged LR misses: task 7 entry 9, task 8 entry 9, task 11 entry 11
+not-usable detail rows: task 9 entry 9; task 12 entry 9; task 14 entries 1, 3, 9, 15; task 20 entries 9, 11
+```
+
+### Verdict
+
+Gate 1 FAILED. The predeclared gate required `20/20` fit convergence,
+`100/100` selected entries usable, and zero converged LR misses. This run had
+one full fit non-convergence, eight not-usable profile details, and three
+converged LR misses concentrated in the weak/near-zero entries.
+
+Gate 2 and Gate 3 remain held. Do not launch Totoro/DRAC for this arc from this
+evidence. Do not expose source-specific `phylo_latent(..., lv = ~ x)` or reopen
+PR #127.
+
 ## 2026-07-01 - Phylo Model A Gate 0 eta-realized target
 
 ### Scope

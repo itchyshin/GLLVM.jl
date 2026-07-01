@@ -1,7 +1,7 @@
 # Phylo Model A next-target design, no compute
 
 Date: 2026-07-01
-Status: Gate 0 implemented locally; no Gate 1/2/3 compute authorized
+Status: Gate 0 implemented locally; Gate 1 local diagnostic failed; Gate 2/3 held
 Scope: future non-v1 Gaussian phylo Model A only
 
 ## 2026-07-01 Gate 0 Update
@@ -27,6 +27,44 @@ This is not Gate 1, Gate 2, Gate 3, source-specific `lv` support, or an R
 grammar change. The broad `test/runtests.jl` sweep was interrupted after about
 31 minutes while still CPU-bound inside the unrelated zero-inflated/two-part
 test path, so the full-suite tally is not available from this slice.
+
+## 2026-07-01 Gate 1 Update
+
+Shinichi approved continuing from Gate 0 into the small local Gate 1
+positive-control diagnostic. The run stayed local and did not use Totoro or
+DRAC.
+
+Gate 1 design:
+
+- `p = 20`, `n_sites = 300`, `K = 1`, `q_lv = 1`, `K_phy = 1`,
+  `lambda = 1.0`, scenario `main`;
+- `20` replicates from `seed0 = 20260701`;
+- five predeclared entries per replicate: `1, 3, 9, 11, 15`;
+- target `B_eta_realized`;
+- method `profile_eta_realized`, truth-started, penalty profile engine.
+
+Gate 1 result:
+
+```text
+planned selected entries: 100
+recorded detail entries: 95
+covered/planned: 84/100 = 0.840
+covered/recorded: 84/95 = 0.884
+covered/usable: 84/87 = 0.966
+fit non-convergence: task 3
+profile-underconverged tasks: 9, 12, 14, 20
+converged LR misses: task 7 entry 9, task 8 entry 9, task 11 entry 11
+not-usable detail rows: task 9 entry 9; task 12 entry 9; task 14 entries 1, 3, 9, 15; task 20 entries 9, 11
+```
+
+Gate 1 therefore failed its own rule: `20/20` fits converged, `100/100`
+selected entries usable, and zero converged LR misses. The failure is
+informative because strong entries were mostly stable while weak/near-zero
+entries and constrained profile convergence were not.
+
+Operational consequence: Gate 2 and Gate 3 remain held. No Totoro diagnostic
+fan-out, DRAC claim run, source-specific R grammar, package API widening, or PR
+#127 reopen follows from this evidence.
 
 ## Decision
 
@@ -230,6 +268,10 @@ Gate 1 - positive-control diagnostic:
 - zero converged LR misses;
 - no mixed host denominators.
 
+Status on 2026-07-01: failed locally with `84/100` planned entries covered,
+one fit non-convergence, four profile-underconverged tasks, and three
+converged LR misses. This failure blocks Gate 2/3.
+
 Gate 2 - weak-cell diagnostic:
 
 - task-8 entry-71 is included;
@@ -268,14 +310,17 @@ exposure. Passing Gate 1 or Gate 2 does not itself expose anything.
 - Fisher: own the eta-scale realized target and profile-LR interpretation.
 - Curie: own Gate 1/2 selected-entry diagnostics after the Gate 0
   orientation/centering unit test.
-- Grace: keep compute idle; Totoro diagnostic only after Gate 1 sign-off, DRAC
-  only after Gate 2 and maintainer approval.
+- Grace: keep compute idle after the Gate 1 failure; Totoro/DRAC only return
+  after a new method decision and maintainer approval.
 - Rose: block "partial support" wording.
 - Boole/Hopper: stay on standby; no R grammar or bridge widening until evidence
   passes.
 
 ## Current Operating Rule
 
-No compute follows from this note. The next legitimate task is to review this
-target design, then, only if Shinichi approves, implement the truth extractor
-and its small unit test. Totoro and DRAC remain idle for this arc until then.
+No further compute follows from this note. Gate 0 target plumbing exists, but
+Gate 1 failed locally. The next legitimate task is not Gate 2/3 scale-up; it is
+either a statistical redesign of the profile constraint/target regime or an
+explicit decision to keep Phylo Model A source-specific `lv` parked. Totoro and
+DRAC remain idle for this arc until a new method decision and maintainer
+approval.
