@@ -1,5 +1,64 @@
 # Check Log
 
+## 2026-07-01 - Phylo Model A Gate 3 DRAC claim evidence queued
+
+### Scope
+
+Submitted the predeclared Gate 3 claim-evidence array on Nibi after the Gate 2
+Totoro diagnostic passed. This is a queued DRAC run, not completed claim
+evidence and not source-specific R grammar exposure.
+
+Remote source and result roots:
+
+```text
+source:  /scratch/snakagaw/GLLVM.jl-phylo-model-a-gate3
+results: /scratch/snakagaw/phylo_model_a_gate3_20260701-1122
+depot:   /scratch/snakagaw/julia_depot_gllvm_gate3
+```
+
+SLURM:
+
+```text
+job id: 17049809
+array: 1-500%100
+host: Nibi
+account: def-snakagaw_cpu
+state at submission: PENDING (Priority)
+time limit: 03:00:00
+cpus per task: 1
+memory per task: 8G
+Julia: 1.10.10
+```
+
+Design:
+
+```text
+target: B_eta_realized
+method: profile_eta_realized
+cell: p=80, n_sites=200, K=2, q_lv=1, K_phy=1, lambda=0.5, scenario=main
+replicates: 500
+seed0: 20260701
+selected entries: 14,41,71,8,44
+fit/profile optimizer budgets: 1000 / 1000
+truth_init: yes
+write_details: yes
+host denominator: DRAC/Nibi only
+```
+
+Checks:
+
+```sh
+module load julia/1.10.10
+julia --project=. -e 'using Pkg; Pkg.instantiate(); Pkg.precompile(); using GLLVM; println("GLLVM gate3 load ok")'
+bash bench/phylo_xlv_drac_submit.sh --out /scratch/snakagaw/phylo_model_a_gate3_20260701-1122
+bash bench/phylo_xlv_drac_submit.sh --out /scratch/snakagaw/phylo_model_a_gate3_20260701-1122 --submit
+scontrol show job 17049809
+```
+
+Verdict: Gate 3 is queued. Do not claim completion until the 500-task DRAC
+denominator is reduced with fit convergence, profile status, usable selected
+entries, coverage, MCSE, Wilson interval, and all misses listed.
+
 ## 2026-07-01 - Phylo Model A Gate 2 Totoro diagnostic passed
 
 ### Scope

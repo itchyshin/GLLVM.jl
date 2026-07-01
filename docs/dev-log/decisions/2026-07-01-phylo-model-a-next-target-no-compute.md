@@ -1,7 +1,7 @@
 # Phylo Model A next-target design, no compute
 
 Date: 2026-07-01
-Status: Gate 0 implemented locally; Gate 1 amended and passed as an MCSE-aware diagnostic; Gate 2 passed on Totoro diagnostic evidence; Gate 3 claim evidence pending
+Status: Gate 0 implemented locally; Gate 1 amended and passed as an MCSE-aware diagnostic; Gate 2 passed on Totoro diagnostic evidence; Gate 3 DRAC claim evidence queued
 Scope: future non-v1 Gaussian phylo Model A only
 
 ## 2026-07-01 Gate 0 Update
@@ -220,8 +220,60 @@ weak-cell evidence that the eta-scale realized/design-conditional
 `B_eta_realized` target behaves differently from the retired population-`B_lv`
 route. It is still diagnostic evidence only. It does not expose
 source-specific R grammar, reopen PR #127, or make a public package support
-claim. The only authorized next step is Gate 3 DRAC claim-evidence planning
-with seed-matched denominators and MCSE/Wilson reporting.
+claim.
+
+### Gate 3 DRAC Claim-Evidence Queue
+
+Gate 3 was submitted to Nibi after the Gate 2 pass, using a clean source
+archive from local commit `97082bd`.
+
+Remote source and result roots:
+
+```text
+source:  /scratch/snakagaw/GLLVM.jl-phylo-model-a-gate3
+results: /scratch/snakagaw/phylo_model_a_gate3_20260701-1122
+depot:   /scratch/snakagaw/julia_depot_gllvm_gate3
+```
+
+DRAC job:
+
+```text
+job id: 17049809
+array: 1-500%100
+host: Nibi
+account: def-snakagaw_cpu
+state at submission: PENDING (Priority)
+time limit: 03:00:00
+cpus per task: 1
+memory per task: 8G
+Julia: 1.10.10
+```
+
+Gate 3 design:
+
+```text
+family: Gaussian
+scenario: main
+target: B_eta_realized
+method: profile_eta_realized
+p: 80
+n_sites: 200
+K: 2
+q_lv: 1
+K_phy: 1
+lambda: 0.5
+replicates: 500
+seed0: 20260701
+selected entries: 14,41,71,8,44
+fit iterations: 1000
+profile_opt_iterations: 1000
+truth_init: yes
+write_details: yes
+```
+
+Gate 3 is queued claim evidence, not completed evidence. It must be reduced
+from DRAC-only result files; do not pool Totoro Gate 2 rows into the claim
+denominator.
 
 ## Decision
 
