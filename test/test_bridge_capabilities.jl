@@ -144,6 +144,26 @@ using GLLVM
     @test caps.family[caps.postfit_simulate] == scalar_mean_postfit
     @test caps.family[caps.postfit_ordination] == caps.family
     @test all(==("partial"), caps.status)
+    mixed_idx = findfirst(==("mixed-family vector"), caps.family)
+    @test mixed_idx !== nothing
+    @test caps.fit_no_x[mixed_idx]
+    @test !caps.fixed_effect_X[mixed_idx]
+    @test !caps.predictor_informed_lv[mixed_idx]
+    @test !caps.missing_response[mixed_idx]
+    @test !caps.ci_no_x_wald[mixed_idx]
+    @test !caps.ci_no_x_profile[mixed_idx]
+    @test !caps.ci_no_x_bootstrap[mixed_idx]
+    @test !caps.ci_mask_wald[mixed_idx]
+    @test !caps.ci_mask_profile[mixed_idx]
+    @test !caps.ci_mask_bootstrap[mixed_idx]
+    @test !caps.ci_x_wald[mixed_idx]
+    @test !caps.ci_x_profile[mixed_idx]
+    @test !caps.ci_x_bootstrap[mixed_idx]
+    @test caps.postfit_predict[mixed_idx]
+    @test caps.postfit_residuals[mixed_idx]
+    @test caps.postfit_simulate[mixed_idx]
+    @test occursin("no X", caps.notes[mixed_idx])
+    @test occursin("CI", caps.notes[mixed_idx])
     grouped = Set(["negbinomial", "nb1", "beta", "gamma"])
     pertrait_ordinal = Set(["ordinal", "ordinal_probit"])
     for (fam, note) in zip(caps.family[1:(end - 1)], caps.notes[1:(end - 1)])

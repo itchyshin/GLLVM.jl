@@ -1,5 +1,48 @@
 # Check Log
 
+## 2026-07-01 - LV structural dependency truth lock
+
+### Scope
+
+Synced the Julia bridge capability ledger with the R bridge truth-lock slice.
+This is not a modelling, likelihood, grammar, or compute change.
+
+### Implemented
+
+- Added explicit assertions for the `mixed-family vector` bridge row in
+  `test/test_bridge_capabilities.jl`.
+- Confirmed the row remains point/postfit only: `fit_no_x = true`; no fixed
+  `X`, no predictor-informed `X_lv`, no response mask, no CI routes; retained
+  predict/residual/simulate postfit payloads stay visible.
+- Updated this check log to keep the source-specific phylo `lv` v1 parking
+  wording current.
+
+### Checks Run
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_capabilities.jl
+julia --project=. --startup-file=no test/test_bridge_mixed.jl
+julia --project=. --startup-file=no test/test_bridge_x.jl
+julia --project=. --startup-file=no test/test_bridge_missing_mask.jl
+julia --project=. --startup-file=no test/test_bridge_ci.jl
+git diff --check -- test/test_bridge_capabilities.jl docs/dev-log/check-log.md
+```
+
+Results:
+
+```text
+bridge capabilities ledger: 63/63 pass
+bridge mixed-family payload metadata: 18/18 pass
+bridge fixed-effect X: 195/195 pass
+bridge missing-response mask: 83/83 pass
+bridge CI routing: 64/64 pass
+```
+
+Claim boundary: IN: bridge matrix truth assertions and v1 parking wording.
+OUT: no package API, no formula grammar, no likelihood change, no source-specific
+`lv` exposure, no CI claim for mixed-family vectors, no Totoro/DRAC compute, and
+no PR push/reopen.
+
 ## 2026-07-01 - Phylo Model A v1 retirement / parking recorded
 
 ### Scope
@@ -549,8 +592,8 @@ Recorded Shinichi's method decision for the next phylo Model A step:
 - `alpha_lv` may use Wald-style conditional output as the ordinary
   axis/access-effect view, but it is not the rotation-invariant phylo Model A
   claim;
-- source-specific phylo `lv` remains blocked until structural redesign,
-  narrower-regime ADEMP evidence, or explicit v1 retirement.
+- source-specific phylo `lv` is parked for v1; any future non-v1 route needs a
+  named replacement target and fresh ADEMP evidence before grammar exposure.
 
 ### Files Updated
 
