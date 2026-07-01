@@ -1,7 +1,7 @@
 # Phylo Model A next-target design, no compute
 
 Date: 2026-07-01
-Status: Gate 0 implemented locally; Gate 1 amended and passed as an MCSE-aware diagnostic; Gate 2 passed on Totoro diagnostic evidence; Gate 3 DRAC claim evidence queued
+Status: Gates 0-3 complete; Gate 3 DRAC claim evidence passed for the non-v1 B_eta_realized target
 Scope: future non-v1 Gaussian phylo Model A only
 
 ## 2026-07-01 Gate 0 Update
@@ -271,9 +271,61 @@ truth_init: yes
 write_details: yes
 ```
 
-Gate 3 is queued claim evidence, not completed evidence. It must be reduced
-from DRAC-only result files; do not pool Totoro Gate 2 rows into the claim
-denominator.
+### Gate 3 DRAC Claim-Evidence Result
+
+Gate 3 completed on Nibi with the predeclared DRAC-only denominator. Do not
+pool Totoro Gate 2 rows into these numbers.
+
+Final reducer:
+
+```text
+result files: 500
+detail files: 500
+fit convergence: 500/500
+profile status: 500/500 ok rows
+selected entries: 2500
+usable profile truth solves: 2500/2500
+covered/planned: 2495/2500 = 0.998000000
+task coverage mean: 0.998000000
+task coverage MCSE: 0.000890835
+Wilson 95 percent interval: 0.995326484 to 0.999145426
+LR misses: 5
+non-empty error logs: 0
+```
+
+Per-entry detail:
+
+```text
+entry 8:  500/500 covered, max LR 1.30738161784
+entry 14: 498/500 covered, max LR 4.31498848912
+entry 41: 497/500 covered, max LR 5.06137330611
+entry 44: 500/500 covered, max LR 0.803688155171
+entry 71: 500/500 covered, max LR 0.595386972622
+LR cutoff: 3.84145882069
+```
+
+Misses:
+
+```text
+task 124 entry 14 LR 3.99667410209 truth -0.0876639401679
+task 134 entry 41 LR 4.64533256499 truth  0.154599570045
+task 179 entry 41 LR 5.06137330611 truth  0.122797417305
+task 423 entry 41 LR 4.62997900325 truth  0.170278825295
+task 444 entry 14 LR 4.31498848912 truth -0.0670786076295
+```
+
+Runtime summary:
+
+```text
+fit seconds mean: 501.456925579, min 287.620323896, max 1739.997769120
+CI seconds mean: 1408.125484925, min 583.058674097, max 3389.787456990
+bias RMSE mean: 0.016440825, min 0.003134887, max 0.034325971
+```
+
+Gate 3 passes the amended MCSE-aware claim-evidence gate for the non-v1
+`B_eta_realized` target. This closes gates 0-3 for the evidence arc. It does
+not by itself expose source-specific R grammar, reopen PR #127, widen the
+package API, or turn old population-`B_lv` evidence positive.
 
 ## Decision
 
@@ -295,10 +347,10 @@ saturated `Y ~ X_lv` shortcut that already failed the strict direct-slope
 canary.
 
 The original version of this note was planning only. The later Gate 0, Gate 1,
-and Gate 2 sections above record the approved local/Totoro diagnostics that
-followed. The note still does not authorize package API widening, R grammar
-exposure, source-specific `lv` support, PR #127 reopening, or a public support
-claim.
+Gate 2, and Gate 3 sections above record the approved local/Totoro/DRAC
+diagnostics that followed. The note still does not authorize package API
+widening, R grammar exposure, source-specific `lv` support, PR #127 reopening,
+or a public support claim.
 
 ## Why This Target
 
