@@ -1,5 +1,994 @@
 # Check Log
 
+## 2026-07-01 - Phylo Model A v1 retirement / parking recorded
+
+### Scope
+
+Recorded the final planning closeout for the current phylo Model A arc. Public
+source-specific phylo `lv` is retired/parked for v1 under the current evidence.
+No package API, likelihood code, R grammar, PR state, or compute launcher was
+widened.
+
+### Decision
+
+Current v1 posture:
+
+- keep ordinary `latent(lv = ~ x)` support separate from phylo Model A;
+- keep `alpha_lv` as conditional axis/access-effect output; Wald is acceptable
+  for that display only;
+- keep rotation-stable `B_lv` as the old population target, now blocked for
+  public phylo Model A exposure;
+- keep `phylo_latent(..., lv = ~ x)` fail-loud;
+- keep PR #127 closed/parked;
+- do not run bootstrap/Wald/t-Wald/percentile/endpoint-profile or current
+  `profile_truth`/`profile_direct_slope` reruns for the failed route.
+
+### Evidence
+
+```text
+old weak cell bootstrap_basic:      591/720 = 0.821
+optimistic cancelled-task bound:    671/800 = 0.839
+task-8 entry-71 profile_truth LR:   9.99181181962 > 3.84145882069
+K=1 population profile gate:        98/100 selected entries truth-included
+K=1 direct-slope profile gate:      96/100 selected entries truth-included
+direct-slope max LR:                6.66143949118 > 3.84145882069
+focused package check:              25/25 passed in 1m05.6s
+Mission Control version:            r60
+Mission Control updated:            2026-06-30 23:30 MDT
+```
+
+Interpretation: the direct-slope aggregate is nominal-compatible at a small
+denominator, but it failed the predeclared strict no-miss canary. It is not
+partial support for source-specific phylo `lv`.
+
+### Files Updated
+
+- `docs/dev-log/decisions/2026-07-01-phylo-model-a-v1-retirement.md`
+- `docs/dev-log/decisions/2026-07-01-phylo-model-a-structural-redesign-fork.md`
+- `docs/dev-log/decisions/2026-07-01-phylo-model-a-structural-dependencies.md`
+- `docs/design/73-predictor-informed-latent-scores.md`
+- `docs/dev-log/check-log.md`
+- `docs/dev-log/after-task/2026-07-01-phylo-model-a-v1-retirement.md`
+- gllvmTMB dashboard: `docs/dev-log/dashboard/status.json`
+- gllvmTMB dashboard: `docs/dev-log/dashboard/sweep.json`
+
+### Checks Run
+
+```sh
+python3 -m json.tool /Users/z3437171/Dropbox/Github\ Local/gllvmTMB/docs/dev-log/dashboard/status.json >/dev/null
+python3 -m json.tool /Users/z3437171/Dropbox/Github\ Local/gllvmTMB/docs/dev-log/dashboard/sweep.json >/dev/null
+git diff --check -- docs/dev-log/decisions/2026-07-01-phylo-model-a-v1-retirement.md docs/dev-log/decisions/2026-07-01-phylo-model-a-structural-redesign-fork.md docs/dev-log/decisions/2026-07-01-phylo-model-a-structural-dependencies.md docs/design/73-predictor-informed-latent-scores.md
+git -C /Users/z3437171/Dropbox/Github\ Local/gllvmTMB diff --check -- docs/dev-log/dashboard/status.json docs/dev-log/dashboard/sweep.json
+rg -n "ready to scale|source-specific.*covered|phylo.*partial support|next step is v1 retirement|Choose v1 retirement|live choice is v1 retirement|production fan-out is running" docs/dev-log/decisions docs/design/73-predictor-informed-latent-scores.md docs/dev-log/check-log.md /Users/z3437171/Dropbox/Github\ Local/gllvmTMB/docs/dev-log/dashboard/status.json /Users/z3437171/Dropbox/Github\ Local/gllvmTMB/docs/dev-log/dashboard/sweep.json
+julia --project=. test/test_phylo_xlv.jl
+sh /Users/z3437171/Dropbox/Github\ Local/gllvmTMB/tools/start-mission-control.sh --background
+curl -s http://127.0.0.1:8770/version.txt
+curl -s http://127.0.0.1:8770/status.json | python3 -m json.tool | rg -n "23:30|v1 parking|retired/parked|96/100|blocked_no_active_compute|No active|no active|newly predeclared|PR #127"
+curl -s http://127.0.0.1:8770/sweep.json | python3 -m json.tool | rg -n "23:30|v1 parking|retired/parked|96/100|profile-LR|no compute|PR #127"
+```
+
+Results: JSON parsed, diff checks passed, stale-claim scan found only quoted
+command lines, guard phrases that say not to use "partial support", and
+no-active phrasing such as "no production fan-out is running". Focused phylo
+tests passed `25/25`, and Mission Control served `r60` with the `23:30 MDT` v1
+parking row after refresh.
+
+### Claim Boundary
+
+IN: v1 retirement/parking decision, no active compute, future ADEMP-only reopen
+gate. OUT: no public source-specific phylo `lv`, no bootstrap rescue, no PR #127
+reopen, no R grammar exposure, no package API change, and no claim that Model A
+interval coverage is solved.
+
+## 2026-07-01 - Phylo Model A direct-slope K1 20-replicate gate failed strict canary
+
+### Scope
+
+Ran the K = 1, p = 20, n_sites = 200 realized direct-slope diagnostic as the
+first promotion-style local wave after the five-seed and task-8 positives. This
+was local-only diagnostic compute; no source-specific R grammar, production
+compute, bootstrap, or public support claim changed.
+
+### Result
+
+```text
+output directory: /tmp/phylo_xlv_direct_slope_k1_20rep_20260701
+cell:             main, lambda 0.5, p 20, n_sites 200, K 1, q_lv 1, K_phy 1
+seed0:            20260702
+method:           profile_direct_slope
+entries:          1,5,10,15,20
+fit convergence:  20/20
+usable entries:   100/100
+truth included:   96/100
+entry coverage:   0.960
+coverage MCSE:    0.0196
+RMSE mean:        0.026
+mean fit seconds: 4.176
+mean CI seconds:  6.859
+max LR:           6.66143949118
+LR cutoff:        3.84145882069
+```
+
+Misses:
+
+| task | rep | seed | entry | term | estimate | direct-slope target | LR |
+| ---: | ---: | ---: | ---: | --- | ---: | ---: | ---: |
+| 7 | 7 | 27340929 | 5 | `B_lv[5,1]` | -0.141132756958 | -0.0896177522692 | 5.65080204201 |
+| 10 | 10 | 30370959 | 5 | `B_lv[5,1]` | -0.144284593088 | -0.0888739640536 | 6.66143949118 |
+| 16 | 16 | 36431019 | 5 | `B_lv[5,1]` | -0.139598210616 | -0.0894642329239 | 5.43956667108 |
+| 17 | 17 | 37441029 | 20 | `B_lv[20,1]` | -0.110154156887 | -0.0654424555058 | 5.62375223457 |
+
+Per-entry summary:
+
+```text
+entry 1:  20/20, max LR 1.04042, mean |target| 0.454468
+entry 5:  17/20, max LR 6.66144, mean |target| 0.144455
+entry 10: 20/20, max LR 2.80957, mean |target| 0.355322
+entry 15: 20/20, max LR 0.318758, mean |target| 0.524356
+entry 20: 19/20, max LR 5.62375, mean |target| 0.163322
+```
+
+Interpretation: aggregate coverage is compatible with a nominal 95% interval at
+this small denominator, but the predeclared strict no-miss promotion canary
+failed. The realized direct-slope route should not be promoted to public
+source-specific phylo `lv` support. The misses concentrate in weaker direct
+targets (entries 5 and 20), so any future path must explicitly revise the
+estimand/gate, for example by predeclaring a magnitude-qualified realized-slope
+target or by planning a larger nominal-coverage simulation with MCSE
+justification.
+
+### Commands
+
+```sh
+out=/tmp/phylo_xlv_direct_slope_k1_20rep_20260701
+julia --project=. bench/phylo_xlv_drac_task.jl --write-params "$out/meta/params.csv" --reps 20 --lambdas 0.5 --n-species 20 --n-sites 200 --K 1 --q-lv 1 --K-phy 1 --scenarios main --seed0 20260702
+seq 1 20 | xargs -I{} -P4 sh -c 'julia --project=. bench/phylo_xlv_drac_task.jl --params "$0/meta/params.csv" --outdir "$0/results" --task-id "$1" --methods profile_direct_slope --targets B_lv --b-lv-entries 1,5,10,15,20 --profile-opt-iterations 500 --iterations 400 --write-details --truth-init --force > "$0/logs/task_${1}.log" 2>&1' "$out" {}
+julia --project=. bench/phylo_xlv_drac_summarise.jl --results "$out/results"
+julia --project=. test/test_phylo_xlv.jl
+python3 -m json.tool /Users/z3437171/Dropbox/Github\ Local/gllvmTMB/docs/dev-log/dashboard/status.json >/dev/null
+python3 -m json.tool /Users/z3437171/Dropbox/Github\ Local/gllvmTMB/docs/dev-log/dashboard/sweep.json >/dev/null
+sh /Users/z3437171/Dropbox/Github\ Local/gllvmTMB/tools/start-mission-control.sh --background
+curl -s http://127.0.0.1:8770/status.json | python3 -m json.tool | rg -n "23:19|Direct-slope 20-rep gate|96/100|6.661|blocked_no_active_compute|newly predeclared"
+```
+
+Focused package check: `phylo x X_lv (Model A)` passed `25/25` in `1m05.7s`.
+Mission Control served `version.txt` as `r60` and the served status/sweep JSON
+shows the `Direct-slope 20-rep gate`, `96/100`, max LR `6.661`, and
+`blocked_no_active_compute` at `2026-06-30 23:19 MDT`.
+
+Next defensible options: retire public source-specific phylo `lv` for v1, or
+write a new ADEMP gate before any more compute. Do not run another same-route
+profile, bootstrap, Wald/t-Wald, or production fan-out.
+
+## 2026-07-01 - Phylo Model A realized direct-slope K1 and failed-row canaries
+
+### Scope
+
+Ran the next local diagnostic canaries for the redesigned
+realized/sampling-conditional target. This remains bench-only evidence: no
+source-specific R grammar, no production compute, no bootstrap, and no public
+support claim.
+
+### K1 Five-Seed Canary
+
+```text
+output directory: /tmp/phylo_xlv_direct_slope_k1_5seed
+cell:             main, lambda 0.5, p 20, n_sites 200, K 1, q_lv 1, K_phy 1
+method:           profile_direct_slope
+entries:          1,5,10,15,20
+fit convergence:  5/5
+usable entries:   25/25
+truth included:   25/25
+summary coverage: 1.000
+RMSE mean:        0.024
+mean fit seconds: 4.193
+mean CI seconds:  8.042
+max LR:           3.65953749216
+LR cutoff:        3.84145882069
+max-LR row:       task 3, rep 3, seed 23300889, entry 5, B_lv[5,1]
+```
+
+### Known Failed-Row Canary
+
+The old population-target `profile_truth` canary missed task 8 entry 71 with
+`LR = 9.99181181962 > 3.84145882069`. Under the changed realized direct-slope
+target, the same row now passes:
+
+```text
+output directory:     /tmp/phylo_xlv_direct_slope_task8_entry71_20260701
+cell:                 main, lambda 0.5, p 80, n_sites 80, K 2, q_lv 1, K_phy 1
+task/seed:            task 8, seed 202614420856
+method:               profile_direct_slope
+entry:                71, B_lv[71,1]
+fit converged:        true, 235 iterations
+estimate:             -0.212294346248
+direct-slope target:  -0.220447386197
+LR:                   0.00569099997301
+LR cutoff:            3.84145882069
+truth included:       true
+```
+
+Interpretation: the realized/sampling-conditional target has positive local
+canary evidence, including the row that failed the old population `B_lv` target.
+This keeps the redesign route alive. It does not validate population `B_lv`
+coverage, source-specific phylo `lv` grammar, or a production support claim.
+
+### Commands
+
+```sh
+rm -rf /tmp/phylo_xlv_direct_slope_k1_5seed
+julia --project=. bench/phylo_xlv_drac_task.jl --write-params /tmp/phylo_xlv_direct_slope_k1_5seed/meta/params.csv --reps 5 --lambdas 0.5 --n-species 20 --n-sites 200 --K 1 --q-lv 1 --K-phy 1 --scenarios main --seed0 20260702
+julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_xlv_direct_slope_k1_5seed/meta/params.csv --outdir /tmp/phylo_xlv_direct_slope_k1_5seed/results --task-id 1 --methods profile_direct_slope --targets B_lv --b-lv-entries 1,5,10,15,20 --profile-opt-iterations 500 --iterations 400 --write-details --truth-init --force
+julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_xlv_direct_slope_k1_5seed/meta/params.csv --outdir /tmp/phylo_xlv_direct_slope_k1_5seed/results --task-id 2 --methods profile_direct_slope --targets B_lv --b-lv-entries 1,5,10,15,20 --profile-opt-iterations 500 --iterations 400 --write-details --truth-init --force
+julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_xlv_direct_slope_k1_5seed/meta/params.csv --outdir /tmp/phylo_xlv_direct_slope_k1_5seed/results --task-id 3 --methods profile_direct_slope --targets B_lv --b-lv-entries 1,5,10,15,20 --profile-opt-iterations 500 --iterations 400 --write-details --truth-init --force
+julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_xlv_direct_slope_k1_5seed/meta/params.csv --outdir /tmp/phylo_xlv_direct_slope_k1_5seed/results --task-id 4 --methods profile_direct_slope --targets B_lv --b-lv-entries 1,5,10,15,20 --profile-opt-iterations 500 --iterations 400 --write-details --truth-init --force
+julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_xlv_direct_slope_k1_5seed/meta/params.csv --outdir /tmp/phylo_xlv_direct_slope_k1_5seed/results --task-id 5 --methods profile_direct_slope --targets B_lv --b-lv-entries 1,5,10,15,20 --profile-opt-iterations 500 --iterations 400 --write-details --truth-init --force
+julia --project=. bench/phylo_xlv_drac_summarise.jl --results /tmp/phylo_xlv_direct_slope_k1_5seed/results
+julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_xlv_params_20260630/phylo_xlv_params.csv --outdir /tmp/phylo_xlv_direct_slope_task8_entry71_20260701/results --task-id 8 --methods profile_direct_slope --targets B_lv --b-lv-entries 71 --profile-opt-iterations 500 --iterations 400 --write-details --truth-init --force
+julia --project=. bench/phylo_xlv_drac_summarise.jl --results /tmp/phylo_xlv_direct_slope_task8_entry71_20260701/results
+julia --project=. test/test_phylo_xlv.jl
+python3 -m json.tool /Users/z3437171/Dropbox/Github\ Local/gllvmTMB/docs/dev-log/dashboard/status.json >/dev/null
+python3 -m json.tool /Users/z3437171/Dropbox/Github\ Local/gllvmTMB/docs/dev-log/dashboard/sweep.json >/dev/null
+sh /Users/z3437171/Dropbox/Github\ Local/gllvmTMB/tools/start-mission-control.sh --background
+curl -s http://127.0.0.1:8770/status.json | python3 -m json.tool | rg -n "23:10|Direct-slope local canaries|25/25|0.00569|blocked_no_active_compute|No active LV compute|predeclared local"
+```
+
+Focused package check: `phylo x X_lv (Model A)` passed `25/25` in `1m05.9s`.
+Mission Control served `version.txt` as `r60` and the served status/sweep JSON
+shows `Direct-slope local canaries`, `25/25`, task-8 entry-71 LR `0.00569`, and
+`blocked_no_active_compute` at `2026-06-30 23:10 MDT`.
+
+Next defensible gate: a predeclared local diagnostic wave, either the K = 1
+20-replicate realized-target denominator or a small p = 80, K = 2 selected-row
+diagnostic including task 8 entry 71. Keep hosts/denominators separate.
+
+## 2026-07-01 - Phylo Model A realized direct-slope canary tooling
+
+### Scope
+
+Added a bench-only `profile_direct_slope` method for the changed
+realized/sampling-conditional target. This does not alter package APIs,
+likelihood code, source-specific R grammar, or production compute posture.
+
+### Contract
+
+For each replicate, compute the saturated direct target:
+
+```text
+D = [1  X_lv]
+Gamma_direct = coef(D \ Y')
+B_direct[t, c] = Gamma_direct[c + 1, t]
+```
+
+Then constrain selected fitted `B_lv` entries to `B_direct` and record the
+one-df LR truth-inclusion canary. Result rows use target label
+`B_lv_direct_slope` and method `profile_direct_slope`.
+
+### Smoke Result
+
+```text
+output directory:   /tmp/phylo_xlv_direct_slope_smoke
+cell:               main, lambda 0.5, p 5, n_sites 60, K 1, q_lv 1, K_phy 1
+entries:            2,4
+fit converged:      true, 25 iterations
+usable entries:     2/2
+truth included:     2/2
+LR values:          0.0895416648327, 1.60222512548
+LR cutoff:          3.84145882069
+target:             B_lv_direct_slope
+ci_status:          ok
+```
+
+Interpretation: the realized direct-slope canary can run end to end on a tiny
+local smoke. It is not coverage evidence, does not reopen the old population
+`B_lv` route, and does not expose source-specific phylo `lv`.
+
+### Files Updated
+
+- `bench/phylo_xlv_drac_task.jl`
+- `bench/phylo_xlv_drac_submit.sh`
+- `docs/dev-log/decisions/2026-07-01-phylo-model-a-realized-direct-slope-ademp.md`
+- `docs/dev-log/decisions/2026-07-01-phylo-model-a-structural-redesign-fork.md`
+- `docs/design/73-predictor-informed-latent-scores.md`
+- `docs/dev-log/check-log.md`
+- gllvmTMB dashboard: `docs/dev-log/dashboard/status.json`
+- gllvmTMB dashboard: `docs/dev-log/dashboard/sweep.json`
+
+### Checks Run
+
+```sh
+julia --project=. bench/phylo_xlv_drac_task.jl --help
+bash -n bench/phylo_xlv_drac_submit.sh
+git diff --check -- bench/phylo_xlv_drac_task.jl bench/phylo_xlv_drac_submit.sh
+rm -rf /tmp/phylo_xlv_direct_slope_smoke
+julia --project=. bench/phylo_xlv_drac_task.jl --write-params /tmp/phylo_xlv_direct_slope_smoke/meta/params.csv --reps 1 --lambdas 0.5 --n-species 5 --n-sites 60 --K 1 --q-lv 1 --K-phy 1 --scenarios main --seed0 20260702
+julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_xlv_direct_slope_smoke/meta/params.csv --outdir /tmp/phylo_xlv_direct_slope_smoke/results --task-id 1 --methods profile_direct_slope --targets B_lv --b-lv-entries 2,4 --profile-opt-iterations 80 --iterations 250 --write-details --truth-init --force
+julia --project=. bench/phylo_xlv_drac_summarise.jl --results /tmp/phylo_xlv_direct_slope_smoke/results
+julia --project=. test/test_phylo_xlv.jl
+python3 -m json.tool /Users/z3437171/Dropbox/Github\ Local/gllvmTMB/docs/dev-log/dashboard/status.json >/dev/null
+python3 -m json.tool /Users/z3437171/Dropbox/Github\ Local/gllvmTMB/docs/dev-log/dashboard/sweep.json >/dev/null
+sh /Users/z3437171/Dropbox/Github\ Local/gllvmTMB/tools/start-mission-control.sh --background
+curl -s http://127.0.0.1:8770/status.json | python3 -m json.tool | rg -n "22:54|profile_direct_slope|Direct-slope|blocked_no_active_compute|B_lv_direct_slope"
+curl -s http://127.0.0.1:8770/sweep.json | python3 -m json.tool | rg -n "22:54|profile_direct_slope|Direct-slope|B_lv_direct_slope"
+```
+
+Focused package check: `phylo x X_lv (Model A)` passed `25/25` in `1m03.7s`.
+Mission Control served `version.txt` as `r60` and the served JSON shows the
+`Direct-slope canary smoke`, `profile_direct_slope`, `B_lv_direct_slope`, and
+`blocked_no_active_compute` rows at `2026-06-30 22:54 MDT`.
+
+Claim boundary: IN: bench-only diagnostic method and tiny smoke. OUT: no
+source-specific phylo `lv` support, no population `B_lv` recovery claim, no
+bootstrap rescue, no production compute, and no grammar exposure.
+
+## 2026-07-01 - Phylo Model A structural fork locked
+
+### Scope
+
+Recorded the post-K1 decision fork for phylo Model A after Shinichi confirmed
+the method posture: no bootstrap rescue, profile only if it can be used as a
+small canary for a changed target, and `alpha_lv` is not the scientific evidence
+target.
+
+### Decision
+
+The old population-`B_lv` interval route is now closed as negative evidence:
+
+- p = 80, K = 2, lambda = 0.5 `bootstrap_basic`: `591/720 = 0.821`;
+- optimistic cancelled-task bound: `671/800 = 0.839`;
+- task-8 entry-71 `profile_truth`: `LR = 9.99181181962 > 3.84145882069`;
+- K = 1 diagnostic profile route: `20/20` fits, `100/100` usable entries,
+  `98/100` truth-included, with two converged misses.
+
+The only admissible futures are v1 retirement of public source-specific phylo
+`lv`, or a structural redesign with a genuinely changed target/regime and fresh
+ADEMP evidence. The plausible redesign candidate is realized/sampling-
+conditional and direct-slope-aligned, but that changes the claim from population
+`B_lv` recovery to a descriptive/conditional association.
+
+### Files Updated
+
+- `docs/dev-log/decisions/2026-07-01-phylo-model-a-structural-redesign-fork.md`
+- `docs/dev-log/decisions/2026-07-01-phylo-model-a-structural-dependencies.md`
+- `docs/design/73-predictor-informed-latent-scores.md`
+- `docs/dev-log/check-log.md`
+- gllvmTMB dashboard: `docs/dev-log/dashboard/status.json`
+- gllvmTMB dashboard: `docs/dev-log/dashboard/sweep.json`
+
+Claim boundary: IN: structural fork and operating rule. OUT: no new compute,
+no R grammar exposure, no PR reopen, no package API, no likelihood rewrite, and
+no source-specific phylo `lv` support claim.
+
+## 2026-07-01 - Phylo Model A K1 20-replicate profile gate failed
+
+### Scope
+
+Ran the predeclared local diagnostic-only K = 1 `profile_truth` gate after the
+5-seed scout looked promising:
+
+- `K = 1`, `q_lv = 1`, `n_species = 20`, `n_sites = 200`, lambda `0.5`;
+- 20 seeds from `--seed0 20260701`;
+- selected entries: `1,5,10,15,20`;
+- method: `profile_truth`;
+- no bootstrap, no endpoint CI fan-out, no grammar exposure, no production
+  compute.
+
+### Result
+
+```text
+output directory:            /tmp/phylo_model_a_k1_diag20_20260630_220930
+fits converged:              20/20
+selected entries usable:     100/100
+selected entries covered:    98/100
+mean task coverage (MCSE):   0.980 (0.014)
+entry coverage:              0.980
+LR range:                    2.65627995759e-05 to 5.14288022148
+LR cutoff:                   3.84145882069
+mean selected-entry LR:      0.630993528174
+fit sec mean:                3.954
+selected-entry CI sec mean:  5.616
+ci_status:                   ok
+```
+
+The two misses were real converged selected-entry canaries:
+
+```text
+task 15 rep 15 seed 35421008 entry 10 B_lv[10,1]:
+  estimate -0.461291546426, truth -0.355095269986, LR 4.94199940694
+
+task 19 rep 19 seed 39461048 entry 20 B_lv[20,1]:
+  estimate -0.234136406101, truth -0.171615120502, LR 5.14288022148
+```
+
+Interpretation: the K = 1 selected-entry profile route failed the 20-replicate
+stop rule. Do not scale this route to DRAC claim evidence. Do not revive
+bootstrap, Wald, t-Wald, percentile, `bootstrap_basic`, or endpoint-profile
+reruns. Source-specific phylo `lv` remains blocked for v1 unless Shinichi
+chooses a different structural estimand/regime with a fresh ADEMP gate.
+
+### Files Updated
+
+- `docs/dev-log/decisions/2026-07-01-phylo-model-a-narrowed-regime-gate.md`
+- `docs/dev-log/decisions/2026-07-01-phylo-model-a-structural-dependencies.md`
+- `docs/dev-log/check-log.md`
+- `docs/dev-log/after-task/2026-07-01-phylo-model-a-20rep-profile-gate.md`
+- gllvmTMB dashboard: `docs/dev-log/dashboard/status.json`
+- gllvmTMB dashboard: `docs/dev-log/dashboard/sweep.json`
+
+### Checks Run
+
+```sh
+julia --project=. bench/phylo_xlv_drac_task.jl --write-params /tmp/phylo_model_a_k1_diag20_20260630_220930/meta/params.csv --reps 20 --lambdas 0.5 --n-species 20 --n-sites 200 --K 1 --q-lv 1 --K-phy 1 --scenarios main --seed0 20260701
+julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_model_a_k1_diag20_20260630_220930/meta/params.csv --outdir /tmp/phylo_model_a_k1_diag20_20260630_220930/results --task-id 1 --methods profile_truth --targets B_lv --b-lv-entries 1,5,10,15,20 --profile-opt-iterations 500 --iterations 400 --write-details --truth-init --force
+# repeated for task-id 2:20 with the same selected-entry diagnostic settings
+julia --project=. bench/phylo_xlv_drac_summarise.jl --results /tmp/phylo_model_a_k1_diag20_20260630_220930/results
+```
+
+Claim boundary: IN: local diagnostic stop-rule evidence. OUT: no source-specific
+phylo `lv` support, no R grammar exposure, no production compute, no bootstrap
+rescue, no DRAC claim evidence, and no "partial support" language.
+
+Follow-up validation after the documentation and Mission Control refresh:
+
+```sh
+julia --project=. test/test_phylo_xlv.jl
+python3 -m json.tool /Users/z3437171/Dropbox/Github\ Local/gllvmTMB/docs/dev-log/dashboard/status.json >/dev/null
+python3 -m json.tool /Users/z3437171/Dropbox/Github\ Local/gllvmTMB/docs/dev-log/dashboard/sweep.json >/dev/null
+sh tools/start-mission-control.sh --background
+curl -s http://127.0.0.1:8770/status.json | python3 -m json.tool | rg -n "updated|K=1 profile gate|98/100|20/20|100/100|active|queued|blocked"
+curl -s http://127.0.0.1:8770/sweep.json | python3 -m json.tool | rg -n "updated|K=1 profile gate|98/100|20/20|100/100|active|queued|blocked"
+```
+
+Results: focused phylo Model A tests passed `25/25` in `1m06.0s`; JSON parsed;
+served Mission Control JSON updated to `2026-06-30 22:15 MDT`, with `active = 0`,
+`queued = 0`, `blocked = 5`, and the K = 1 profile gate marked blocked after
+`98/100` selected-entry truth inclusion.
+
+Follow-up closure: Design 73 and the council-final decision now carry the K = 1
+20-replicate gate failure directly, so the model spec no longer points from the
+failed p = 80, K = 2 weak cell to a same-route K = 1 profile scale-up. The only
+remaining admissible futures are structural redesign with a genuinely different
+target/regime and fresh evidence, or explicit v1 retirement of public
+source-specific phylo `lv`.
+
+## 2026-07-01 - Phylo Model A narrowed-regime K1 diagnostic wave
+
+### Scope
+
+Ran a local diagnostic-only `profile_truth` wave for a narrowed Gaussian Model A
+target:
+
+- `K = 1`, `q_lv = 1`, `n_species = 20`, `n_sites = 200`, lambda `0.5`;
+- five seeds: `21280868`, `22290878`, `23300888`, `24310898`, `25320908`;
+- selected entries: `1,5,10,15,20`;
+- method: `profile_truth`;
+- no bootstrap, no endpoint CI fan-out, no production compute.
+
+### Result
+
+The first one-seed scout fit converged in 112 iterations and included truth for
+4/4 usable entries; entry 5 was marked underconverged with
+`--profile-opt-iterations 160`. Retrying entry 5 only with
+`--profile-opt-iterations 500` converged and included truth:
+
+```text
+entry 1:  LR = 2.3052625172    < 3.84145882069
+entry 5:  LR = 0.0686506851789 < 3.84145882069  (retry)
+entry 10: LR = 0.309444810472  < 3.84145882069
+entry 15: LR = 0.16730512331   < 3.84145882069
+entry 20: LR = 2.54639208502   < 3.84145882069
+```
+
+The follow-up 5-seed wave used `--profile-opt-iterations 500` for all selected
+entries and repeated the pattern:
+
+```text
+fits converged:             5/5
+selected entries usable:    25/25
+selected entries covered:   25/25
+LR range:                   2.65627995759e-05 to 2.54639208502
+LR cutoff:                  3.84145882069
+mean selected-entry LR:     0.45583577218
+max-LR row:                 task 1, seed 21280868, entry 20, B_lv[20,1]
+```
+
+Historical interpretation before the 20-replicate gate: K = 1 was plausible
+enough to continue. Superseding result: the 20-replicate gate above found two
+converged truth-inclusion misses, so K = 1 same-route scaling is now stopped.
+
+### Files Updated
+
+- `docs/dev-log/decisions/2026-07-01-phylo-model-a-narrowed-regime-gate.md`
+- `docs/dev-log/decisions/2026-07-01-phylo-model-a-structural-dependencies.md`
+- `docs/dev-log/check-log.md`
+- `docs/dev-log/after-task/2026-07-01-phylo-model-a-narrowed-regime-scout.md`
+
+### Checks Run
+
+```sh
+julia --project=. bench/phylo_xlv_drac_task.jl --help
+julia --project=. bench/phylo_xlv_drac_task.jl --write-params /tmp/phylo_model_a_narrow_k1_profile_truth_20260701/meta/params.csv --reps 1 --lambdas 0.5 --n-species 20 --n-sites 200 --K 1 --q-lv 1 --K-phy 1 --scenarios main --seed0 20260701
+julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_model_a_narrow_k1_profile_truth_20260701/meta/params.csv --outdir /tmp/phylo_model_a_narrow_k1_profile_truth_20260701/results --task-id 1 --methods profile_truth --targets B_lv --b-lv-entries 1,5,10,15,20 --profile-opt-iterations 160 --iterations 400 --write-details --truth-init --force
+julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_model_a_narrow_k1_profile_truth_20260701/meta/params.csv --outdir /tmp/phylo_model_a_narrow_k1_profile_truth_20260701_entry5_retry/results --task-id 1 --methods profile_truth --targets B_lv --b-lv-entries 5 --profile-opt-iterations 500 --iterations 400 --write-details --truth-init --force
+julia --project=. bench/phylo_xlv_drac_summarise.jl --results /tmp/phylo_model_a_narrow_k1_profile_truth_20260701/results
+julia --project=. bench/phylo_xlv_drac_summarise.jl --results /tmp/phylo_model_a_narrow_k1_profile_truth_20260701_entry5_retry/results
+julia --project=. bench/phylo_xlv_drac_task.jl --write-params /tmp/phylo_model_a_k1_diag_wave_20260701_2158/meta/params.csv --reps 5 --lambdas 0.5 --n-species 20 --n-sites 200 --K 1 --q-lv 1 --K-phy 1 --scenarios main --seed0 20260701
+julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_model_a_k1_diag_wave_20260701_2158/meta/params.csv --outdir /tmp/phylo_model_a_k1_diag_wave_20260701_2158/results --task-id 1 --methods profile_truth --targets B_lv --b-lv-entries 1,5,10,15,20 --profile-opt-iterations 500 --iterations 400 --write-details --truth-init --force
+julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_model_a_k1_diag_wave_20260701_2158/meta/params.csv --outdir /tmp/phylo_model_a_k1_diag_wave_20260701_2158/results --task-id 2 --methods profile_truth --targets B_lv --b-lv-entries 1,5,10,15,20 --profile-opt-iterations 500 --iterations 400 --write-details --truth-init --force
+julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_model_a_k1_diag_wave_20260701_2158/meta/params.csv --outdir /tmp/phylo_model_a_k1_diag_wave_20260701_2158/results --task-id 3 --methods profile_truth --targets B_lv --b-lv-entries 1,5,10,15,20 --profile-opt-iterations 500 --iterations 400 --write-details --truth-init --force
+julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_model_a_k1_diag_wave_20260701_2158/meta/params.csv --outdir /tmp/phylo_model_a_k1_diag_wave_20260701_2158/results --task-id 4 --methods profile_truth --targets B_lv --b-lv-entries 1,5,10,15,20 --profile-opt-iterations 500 --iterations 400 --write-details --truth-init --force
+julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_model_a_k1_diag_wave_20260701_2158/meta/params.csv --outdir /tmp/phylo_model_a_k1_diag_wave_20260701_2158/results --task-id 5 --methods profile_truth --targets B_lv --b-lv-entries 1,5,10,15,20 --profile-opt-iterations 500 --iterations 400 --write-details --truth-init --force
+julia --project=. bench/phylo_xlv_drac_summarise.jl --results /tmp/phylo_model_a_k1_diag_wave_20260701_2158/results
+julia --project=. test/test_phylo_xlv.jl
+python3 -m json.tool /Users/z3437171/Dropbox/Github\ Local/gllvmTMB/docs/dev-log/dashboard/status.json >/dev/null
+python3 -m json.tool /Users/z3437171/Dropbox/Github\ Local/gllvmTMB/docs/dev-log/dashboard/sweep.json >/dev/null
+sh tools/start-mission-control.sh --background
+curl -s http://127.0.0.1:8770/status.json | python3 -m json.tool | rg -n "updated|Narrowed K=1|tiny K=1|active|queued|blocked|no bootstrap|ADEMP gate|source-specific"
+curl -s http://127.0.0.1:8770/sweep.json | python3 -m json.tool | rg -n "updated|Narrowed K=1|tiny K=1|active|queued|blocked|no bootstrap|ADEMP gate|source-specific"
+```
+
+Claim boundary: IN: local diagnostic and narrowed-regime ADEMP gate. OUT: no R
+grammar exposure, no source-specific phylo `lv` support, no coverage claim, no
+bootstrap, no production compute.
+
+Focused phylo Model A tests passed after the narrowed-regime documentation
+refresh: `25/25` in `1m03.9s`.
+
+Mission Control served JSON updated to `2026-06-30 21:54 MDT`, with the
+diagnostic K = 1 scout visible, `active = 0`, `queued = 0`, and `blocked = 5`.
+
+## 2026-07-01 - Phylo Model A structural dependency lock
+
+### Scope
+
+Recorded Shinichi's method decision for the next phylo Model A step:
+
+- no bootstrap rescue for the current phylo weak-cell route;
+- profile-LR remains useful only as a selected-entry truth-inclusion canary after
+  a new/narrowed estimand is named;
+- `alpha_lv` may use Wald-style conditional output as the ordinary
+  axis/access-effect view, but it is not the rotation-invariant phylo Model A
+  claim;
+- source-specific phylo `lv` remains blocked until structural redesign,
+  narrower-regime ADEMP evidence, or explicit v1 retirement.
+
+### Files Updated
+
+- `docs/dev-log/decisions/2026-07-01-phylo-model-a-structural-dependencies.md`
+- `docs/design/73-predictor-informed-latent-scores.md`
+- gllvmTMB dashboard: `docs/dev-log/dashboard/status.json`
+- gllvmTMB dashboard: `docs/dev-log/dashboard/sweep.json`
+
+### Checks Run
+
+```sh
+python3 -m json.tool /Users/z3437171/Dropbox/Github\ Local/gllvmTMB/docs/dev-log/dashboard/status.json >/dev/null
+python3 -m json.tool /Users/z3437171/Dropbox/Github\ Local/gllvmTMB/docs/dev-log/dashboard/sweep.json >/dev/null
+git diff --check -- docs/dev-log/decisions/2026-07-01-phylo-model-a-structural-dependencies.md docs/design/73-predictor-informed-latent-scores.md docs/dev-log/check-log.md
+git -C /Users/z3437171/Dropbox/Github\ Local/gllvmTMB diff --check -- docs/dev-log/dashboard/status.json docs/dev-log/dashboard/sweep.json
+rg -n "bootstrap is not the next route|no bootstrap rescue|profile-LR is only a selected-entry|alpha Wald|structural-dependencies|partial support|source-specific.*covered|ready to scale" docs/dev-log/decisions/2026-07-01-phylo-model-a-structural-dependencies.md docs/design/73-predictor-informed-latent-scores.md docs/dev-log/check-log.md /Users/z3437171/Dropbox/Github\ Local/gllvmTMB/docs/dev-log/dashboard/status.json /Users/z3437171/Dropbox/Github\ Local/gllvmTMB/docs/dev-log/dashboard/sweep.json
+sh tools/start-mission-control.sh --background
+curl -s http://127.0.0.1:8770/version.txt
+curl -s http://127.0.0.1:8770/status.json | python3 -m json.tool | rg -n "updated|no bootstrap rescue|profile-LR is only|alpha Wald|profile_truth|active|queued|blocked|partial support"
+curl -s http://127.0.0.1:8770/sweep.json | python3 -m json.tool | rg -n "updated|no bootstrap rescue|profile-LR is only|Alpha Wald|bootstrap is not the next route|active|queued|blocked"
+julia --project=. test/test_phylo_xlv.jl
+```
+
+Results: JSON parsed; `git diff --check` passed for GLLVM.jl docs and the
+gllvmTMB dashboard JSON; served `version.txt` stayed `r60`; served
+`status.json` and `sweep.json` showed `updated = 2026-06-30 21:41 MDT`,
+`active = 0`, `queued = 0`, `blocked = 5`, and the no-bootstrap/profile-canary
+method lock. Focused phylo Model A tests passed: `25/25` in `1m03.3s`. Browser
+automation against the in-app preview timed out during the read-only page check,
+but the tab remains on `http://127.0.0.1:8770/` and the served JSON backing the
+page is refreshed.
+
+Claim boundary: IN: structural/method decision and Mission Control wording.
+OUT: no package API, no likelihood change, no R grammar exposure, no new
+Totoro/DRAC compute, and no claim that phylo Model A is solved.
+
+## 2026-06-30 - Phylo Model A old-target retirement decision
+
+### Scope
+
+Updated the durable design record after the negative task-8 entry-71
+profile_truth canary. The old recommendation, "profile-LR calibrated `B_lv` is
+the next target", is no longer current. The current decision is:
+
+- do not expose source-specific phylo `lv` for v1 under the current
+  population-`B_lv` interval target;
+- do not launch more bootstrap, Wald/t-Wald, percentile, `bootstrap_basic`, or
+  endpoint-profile compute for the p = 80, K = 2, lambda = 0.5 weak cell;
+- superseded current boundary after the K = 1 gate failure: next work must be
+  structural redesign with a genuinely different target/regime and fresh
+  evidence, or explicit v1 retirement.
+
+### Files Updated
+
+- `docs/dev-log/decisions/2026-06-30-phylo-model-a-redesign-plan.md`
+- `docs/design/73-predictor-informed-latent-scores.md`
+- gllvmTMB dashboard: `docs/dev-log/dashboard/status.json`
+
+### Checks Run
+
+```sh
+python3 -m json.tool /Users/z3437171/Dropbox/Github\ Local/gllvmTMB/docs/dev-log/dashboard/status.json >/dev/null
+rg -n "profile-LR B_lv canary|next admissible step is a profile-LR|ready to scale|partial support|source-specific.*covered" docs/dev-log/decisions/2026-06-30-phylo-model-a-redesign-plan.md docs/design/73-predictor-informed-latent-scores.md /Users/z3437171/Dropbox/Github\ Local/gllvmTMB/docs/dev-log/dashboard/status.json
+git diff --check -- docs/dev-log/decisions/2026-06-30-phylo-model-a-redesign-plan.md docs/design/73-predictor-informed-latent-scores.md
+```
+
+Claim boundary: IN: old-target retirement decision and stale recommendation
+cleanup. OUT: no new compute, no public grammar exposure, no claim that a
+narrower regime is already validated.
+
+Follow-up within the same slice: added
+`docs/dev-log/decisions/2026-06-30-phylo-model-a-council-final.md` as the
+compact operating decision. It records Ada/Fisher/Curie/Grace/Rose roles, the
+reopen gate, and the "do not rerun" list. Design 73 and the earlier redesign
+plan now point to this final council note.
+
+## 2026-06-30 - Phylo Model A profile-truth canary result
+
+### Scope
+
+Added and exercised a bench-only `profile_truth` method for the phylo Model A
+runner. This method answers the canary question directly: for a known
+simulation truth, does the one-df profile likelihood-ratio statistic at the true
+`B_lv` value fall below the chi-square cutoff? It does not return endpoint CIs
+and it is not public API.
+
+This follows Shinichi's direction to avoid more bootstrap work, keep
+`alpha_lv` as the ordinary/default axis-effect side where Wald output is
+acceptable, and spend the inference gate on the rotation-invariant `B_lv`
+trait/loading effect.
+
+### Checks Run
+
+```sh
+julia --project=. bench/phylo_xlv_drac_task.jl --help
+bash -n bench/phylo_xlv_drac_submit.sh
+smoke_dir=/tmp/phylo_xlv_profile_truth_smoke
+julia --project=. bench/phylo_xlv_drac_task.jl --write-params "$smoke_dir/meta/params.csv" --reps 1 --lambdas 0.5 --n-species 5 --n-sites 60 --K 1 --q-lv 1 --K-phy 1 --scenarios main --seed0 20260701
+julia --project=. bench/phylo_xlv_drac_task.jl --params "$smoke_dir/meta/params.csv" --outdir "$smoke_dir/results" --task-id 1 --methods profile_truth --targets B_lv --b-lv-entries 2,4 --profile-opt-iterations 80 --iterations 250 --write-details --truth-init --force
+julia --project=. bench/phylo_xlv_drac_summarise.jl --results "$smoke_dir/results"
+julia --project=. test/test_phylo_xlv.jl
+git diff --check -- bench/phylo_xlv_drac_task.jl bench/phylo_xlv_drac_submit.sh
+```
+
+Results:
+
+- task help parsed and advertises `profile_truth`;
+- submitter syntax passed;
+- tiny smoke wrote `method = profile_truth`, two usable entries, entry coverage
+  `1.000`, and detail rows with explicit `lr_deviance` / `lr_cutoff` columns;
+- focused phylo Model A tests passed: `25/25` in `1m03.5s`;
+- `git diff --check` passed for the touched runner files.
+
+### Weak-Cell Local Diagnostic
+
+Narval login/status reads stalled, so I did not launch more DRAC work. I used
+the existing local copy of the seed-matched task-8 parameter row instead:
+
+```sh
+out=/tmp/phylo_xlv_profile_truth_task8_entry71_local_20260701
+julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_xlv_params_20260630/phylo_xlv_params.csv --outdir "$out/results" --task-id 8 --methods profile_truth --targets B_lv --b-lv-entries 71 --profile-opt-iterations 80 --iterations 400 --write-details --truth-init --force
+
+out=/tmp/phylo_xlv_profile_truth_task8_entry71_local_250_20260701
+julia --project=. bench/phylo_xlv_drac_task.jl --params /tmp/phylo_xlv_params_20260630/phylo_xlv_params.csv --outdir "$out/results" --task-id 8 --methods profile_truth --targets B_lv --b-lv-entries 71 --profile-opt-iterations 250 --iterations 400 --write-details --truth-init --force
+julia --project=. bench/phylo_xlv_drac_summarise.jl --results "$out/results"
+```
+
+Results:
+
+- The 80-iteration constrained truth solve did not converge and correctly wrote
+  `usable = 0`, `ci_status = profile_truth_underconverged`.
+- The 250-iteration constrained truth solve converged for the same task/entry:
+  `fit_converged = true`, `fit_iterations = 235`,
+  `fit_seconds = 125.1365`, `ci_seconds = 59.4776`,
+  `lr_deviance = 9.99181181962`, `lr_cutoff = 3.84145882069`,
+  `usable = 1`, `covered = 0`, `coverage = 0`, `ci_status = ok`.
+
+Interpretation: even the profile-LR truth-inclusion canary misses the known
+truth for the worst task-8 `B_lv[71,1]` entry. The next defensible decision is
+not more endpoint/profile/bootstrap compute. Superseding K = 1 evidence now
+rules out same-route narrowed scaling too; the remaining choices are structural
+redesign with a genuinely different target/regime, or v1 retirement of
+source-specific phylo `lv`.
+
+### Mission Control
+
+Updated the local gllvmTMB Mission Control JSON to show:
+
+- `0` active compute rows and `5` blocked rows;
+- local profile_truth miss: LR `9.9918 > 3.8415`;
+- no production fan-out;
+- no source-specific `lv` grammar exposure;
+- Ada/Fisher blocked on the next regime decision, Grace guarding compute, Rose
+  guarding wording.
+
+Validation:
+
+```sh
+python3 -m json.tool docs/dev-log/dashboard/status.json >/dev/null
+python3 -m json.tool docs/dev-log/dashboard/sweep.json >/dev/null
+git diff --check -- docs/dev-log/dashboard/status.json docs/dev-log/dashboard/sweep.json
+```
+
+Claim boundary: IN: bench-only profile_truth instrumentation and a local
+seed-matched negative diagnostic for task 8 entry 71. OUT: no public CI method,
+no R grammar exposure, no source-specific phylo support, no production coverage,
+and no claim that Narval job `64471433` finished.
+
+## 2026-06-30 - Phylo Model A profile-LR canary tooling
+
+### Scope
+
+Implemented the narrow operational path needed to test the redesigned phylo
+Model A profile-LR `B_lv` canary without rerunning a full p = 80 profile vector.
+This is tooling for a predeclared canary, not public source-specific `lv`
+support and not new production coverage evidence.
+
+- Added a private selected-entry route to the internal profile helper so
+  profile-LR canaries can invert only named entries of `vec(B_lv)`.
+- Added `--b-lv-entries all|1,5,9:12` to the phylo DRAC task runner and
+  `PHYLO_XLV_B_LV_ENTRIES` to the submitter.
+- Wrote selected-entry result provenance into `b_lv_entries` on result/detail
+  CSVs, while preserving original `vec(B_lv)` entry IDs in detail rows.
+- Warm-started each constrained profile solve from the nearest previous
+  constrained solution so selected-entry profiles do not cold-start every
+  bracket and bisection point.
+- Added bench-runner progress logging around each selected `B_lv` profile entry
+  so later canaries do not disappear inside one long profile call.
+- Kept the public `confint_lv_effects(...)` API unchanged; no R grammar,
+  source-specific `lv`, or likelihood parameterisation changed.
+
+### Checks Run
+
+```sh
+julia --project=. test/test_phylo_xlv.jl
+bash -n bench/phylo_xlv_drac_submit.sh
+julia --project=. bench/phylo_xlv_drac_task.jl --help
+smoke_dir=/tmp/phylo_xlv_profile_subset_smoke
+julia --project=. bench/phylo_xlv_drac_task.jl --write-params "$smoke_dir/meta/params.csv" --reps 1 --lambdas 0.5 --n-species 5 --n-sites 60 --K 1 --q-lv 1 --K-phy 1 --scenarios main
+julia --project=. bench/phylo_xlv_drac_task.jl --params "$smoke_dir/meta/params.csv" --outdir "$smoke_dir/results" --task-id 1 --methods profile --targets B_lv --b-lv-entries 2,4 --iterations 250 --write-details --truth-init --force
+julia --project=. bench/phylo_xlv_drac_summarise.jl --results /tmp/phylo_xlv_profile_subset_smoke/results
+git diff --check -- src/confint_family.jl bench/phylo_xlv_drac_task.jl bench/phylo_xlv_drac_submit.sh test/test_phylo_xlv.jl docs/dev-log/check-log.md
+```
+
+Results: `test/test_phylo_xlv.jl` passed `25/25` in `1m19.2s`. The tiny local
+profile smoke converged and wrote a `B_lv,profile` result row with
+`b_lv_entries = "2,4"`, `total = 2`, `usable = 2`, `covered = 2`, and
+`ci_status = ok`; the detail CSV preserved original entries `2` and `4`.
+The summariser read the selected-entry result as one profile task with two
+usable entries.
+
+After the warm-start profile improvement, `julia --project=.
+test/test_phylo_xlv.jl` passed again: `25/25` in `1m09.4s`.
+
+After the per-entry logging change, `julia --project=. test/test_phylo_xlv.jl`
+passed again: `25/25` in `1m03.9s`.
+
+I also reran a tiny bench-level selected-profile smoke after the logging change:
+
+```sh
+smoke_dir=/tmp/phylo_xlv_profile_logging_smoke
+julia --project=. bench/phylo_xlv_drac_task.jl --write-params "$smoke_dir/meta/params.csv" --reps 1 --lambdas 0.5 --n-species 5 --n-sites 60 --K 1 --q-lv 1 --K-phy 1 --scenarios main
+julia --project=. bench/phylo_xlv_drac_task.jl --params "$smoke_dir/meta/params.csv" --outdir "$smoke_dir/results" --task-id 1 --methods profile --targets B_lv --b-lv-entries 2,4 --iterations 250 --write-details --truth-init --force
+julia --project=. bench/phylo_xlv_drac_summarise.jl --results /tmp/phylo_xlv_profile_logging_smoke/results
+```
+
+Result: per-entry progress lines printed for entries `2` and `4`; the summary
+read one profile row, two usable entries, entry coverage `1.000`, and
+`ci_status = ok`. This smoke checks the runner logging/provenance path only.
+
+After the logged penalty route showed that entry `71` itself can run silently
+for many minutes, I added an opt-in exact Gaussian one-entry profile engine for
+bench canaries:
+
+```sh
+julia --project=. bench/phylo_xlv_drac_task.jl --help
+smoke_dir=/tmp/phylo_xlv_profile_exact_smoke
+julia --project=. bench/phylo_xlv_drac_task.jl --write-params "$smoke_dir/meta/params.csv" --reps 1 --lambdas 0.5 --n-species 5 --n-sites 60 --K 1 --q-lv 1 --K-phy 1 --scenarios main
+julia --project=. bench/phylo_xlv_drac_task.jl --params "$smoke_dir/meta/params.csv" --outdir "$smoke_dir/results" --task-id 1 --methods profile --targets B_lv --b-lv-entries 2,4 --profile-engine exact --iterations 250 --write-details --truth-init --force
+julia --project=. bench/phylo_xlv_drac_summarise.jl --results /tmp/phylo_xlv_profile_exact_smoke/results
+julia --project=. test/test_phylo_xlv.jl
+```
+
+Results: submitter syntax and task help passed; exact smoke wrote
+`method = profile_exact`, two usable entries, entry coverage `1.000`, and
+`ci_status = ok`; focused phylo tests passed again, `25/25` in `1m04.3s`.
+The exact smoke bounds matched the penalty smoke at the displayed precision
+needed for a canary, while per-entry solve time dropped from seconds-scale
+penalty solves to `2.66s` and `0.04s` for the two tiny entries after the shared
+Hessian setup. This is still diagnostic bench tooling, not public API.
+
+I then added a bounded exact-engine knob, `--profile-opt-iterations`, and
+side-level lower/upper progress logging. A capped exact smoke with the default
+`250` optimiser iterations per candidate passed locally and printed lower/upper
+done lines for both selected entries. Submitter syntax, task help, and
+`git diff --check` passed after this cap was added.
+
+I also started `julia --project=. test/runtests.jl`. It ran for about 40 minutes
+and was interrupted while inside an unrelated two-part `test_confint_family.jl`
+bootstrap/profile path, after earlier sparse, profile, Student-t, node-gradient,
+and masked-objective checks had emitted normal progress. Treat the core suite as
+not completed for this slice.
+
+### First Weak-Cell Canary Launch
+
+After Shinichi confirmed bootstrap should not be the next route, I launched one
+seed-matched Narval profile-LR canary for the catastrophic weak-cell row:
+
+```sh
+rsync -av src/confint_family.jl narval:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/src/confint_family.jl
+rsync -av bench/phylo_xlv_drac_task.jl narval:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/phylo_xlv_drac_task.jl
+rsync -av bench/phylo_xlv_drac_submit.sh narval:/project/6098264/snakagaw/GLLVM.jl-phylo-xlv-drac/bench/phylo_xlv_drac_submit.sh
+ssh -o BatchMode=yes narval '... dry-run task 8 --methods profile --targets B_lv --b-lv-entries 71,67,1,74 ...'
+ssh -o BatchMode=yes narval '... sbatch profile_selected_task8.sbatch ...'
+```
+
+Result: dry-run confirmed original task 8 (`seed = 202614420856`, p = 80,
+K = 2, lambda = 0.5, `B_lv` length 80). Narval job `64462844` was submitted as
+a one-core selected-entry profile canary for entries `71,67,1,74`; it moved from
+`PENDING (Priority)` to `RUNNING` on `nc11026` and fit in `143.57s`, then stayed
+inside the cold-start profile step with no result for about 22 minutes. I
+cancelled it and relaunched the identical canary after syncing the warm-started
+helper. Warm-start job `64463813` ran on Narval, fit with
+`converged = true`, `iterations = 116`, and `seconds = 141.01`, then entered
+`B_lv` profile inversion for entries `71,67,1,74`. It was still running at
+`00:46:00` elapsed with no result/detail CSV, so I canceled it at `00:46:38` as
+runtime/observability evidence rather than statistical evidence.
+
+I then synced the per-entry logging runner to Narval, verified the staged file
+contains `B_lv profile entry ... start/done` progress lines, and launched a
+narrower logged canary:
+
+- job: `64466208` (`phylo_xlv_p71`);
+- host: Narval / DRAC, same Julia `1.10.10` path;
+- task: original task 8, seed `202614420856`;
+- cell: p = 80, n_sites = 80, K = 2, lambda = 0.5;
+- method: `profile`;
+- target: `B_lv`;
+- entries: `71`;
+- bootstrap: none;
+- scope: one-core diagnostic canary, not production fan-out.
+
+At first poll, job `64466208` was running on `nc30402` and had entered the fit
+phase. Mission Control was refreshed and browser/curl-verified to show
+`1 active`, `0 queued`, and still `4 blocked` rows.
+
+Later poll: `64466208` fit with `converged = true`, `iterations = 116`,
+`seconds = 141.44`, then printed the synced logging line
+`B_lv profile entry 71 start (1/1)`. It was still running at `00:22:08` elapsed
+with no done line. I prepared the exact engine locally, but rsync to Narval then
+hit a transport timeout and Narval also reported a transient `/home/snakagaw`
+I/O warning. I therefore did not launch an exact Narval replacement yet; the
+current source-of-truth remote canary remains penalty job `64466208` until a
+later successful sync or its wall-time result.
+
+Follow-up: `scp` succeeded where `rsync` had timed out, and the Narval staged
+runner now contains the exact profile code. I canceled penalty job `64466208`
+at `00:32:04` elapsed with no result and launched exact job `64468504`
+(`phylo_xlv_e71`) for the same task 8, seed `202614420856`, entry `71`, no
+bootstrap, no production fan-out. Mission Control now shows the exact Narval
+canary as the active job.
+
+Final remote state for this turn: exact job `64468504` fit successfully
+(`converged = true`, `iterations = 116`, `seconds = 145.03`), entered exact
+profile for entry `71`, anchored on `alpha[1]`, and then hit the 30-minute
+SLURM time limit with no result/detail CSV. I prepared and attempted to launch a
+capped exact retry with `--profile-opt-iterations 120`, but the combined
+sync/submit command hung during Narval filesystem/transport instability and no
+new job id was confirmed. Mission Control was therefore corrected to
+`0 active`, `0 queued`, `5 blocked`: the next operation is to launch the capped
+exact retry only after Narval filesystem/transport health is confirmed.
+
+Continuation: Narval recovered enough to confirm `64468504` timed out. I added
+`--profile-maxstep` and `--profile-bisect-iterations` plus lower/upper bracket
+and bisection progress logging. Local progress-capped exact smoke passed with
+`--profile-opt-iterations 80 --profile-maxstep 12 --profile-bisect-iterations
+10`, summarising one `profile_exact` row with two usable entries and
+`ci_status = ok`. Focused phylo tests passed again, `25/25` in `1m06.1s`.
+I synced the staged Narval runner and launched capped exact job `64471433`
+for task 8, entry `71`, same seed `202614420856`, no bootstrap, no production
+fan-out. First poll confirmed it running on `nc11002`; later scheduler/log reads
+were intermittently blocked by Narval filesystem/transport latency. Mission
+Control now shows `1 active`, `0 queued`, `4 blocked`.
+
+Note: the first `rsync` attempt copied three files to the remote repo root. I
+immediately synced the files to their correct `src/` and `bench/` locations and
+removed only those accidental root-level copies before the dry-run/submission.
+A later attempt to sync the per-entry logging runner to Narval hit an rsync
+transport timeout while the remote path was slow; do not assume that staging
+checkout has the logging patch unless the later verified sync above is also
+present in the continuation context.
+
+## 2026-06-30 - Phylo Model A council and mission-control refresh
+
+### Scope
+
+Implemented the local Mission Control refresh for the phylogenetic LV arc
+council decision. This was a planning/dashboard slice only: no GLLVM.jl source,
+likelihood, R grammar, tests, PR, push, or compute route changed.
+
+Superseded note, 2026-07-01: the later local `profile_truth` canary for task 8
+entry 71 missed truth. The current policy is therefore no bootstrap rescue and
+profile-LR only as a selected-entry truth-inclusion canary after a new/narrowed
+target is named.
+
+- Refreshed the gllvmTMB local Mission Control dashboard source so the visible
+  widget records the phylo Model A council gate. At the time this pointed to a
+  Gaussian direct/native profile-LR canary for rotation-invariant `B_lv`; the
+  later canary failed and the structural-dependency lock now controls.
+- Kept `alpha_lv` as axis/access-effect output; later Mission Control wording
+  makes explicit that alpha Wald output is conditional on the fitted loading and
+  axis convention.
+- Marked same-route Wald, t-Wald, percentile bootstrap, and `bootstrap_basic`
+  reruns as retired for the p = 80, K = 2, lambda = 0.5 weak cell.
+- Recorded council roles: Ada chairs; Fisher owns interval target; Curie owns
+  the ADEMP-style gate; Grace owns host/provenance discipline; Rose owns claim
+  wording; Boole/Hopper stay at the fail-loud grammar guard.
+
+### Checks Run
+
+```sh
+python3 -m json.tool docs/dev-log/dashboard/status.json >/dev/null
+python3 -m json.tool docs/dev-log/dashboard/sweep.json >/dev/null
+sh tools/start-mission-control.sh --background
+curl -s http://127.0.0.1:8770/version.txt
+```
+
+Mission Control remains a local operating board, not public pkgdown or CRAN
+evidence. Metrics stayed unchanged at `17 covered, 3 partial, 0 ready, 0
+active, 0 queued, 4 blocked`; only the council decision and next-gate wording
+changed.
+
+## 2026-06-30 - Phylo Model A redesign plan
+
+### Scope
+
+Drafted a compact redesign plan for the blocked phylo Model A `X_lv` interval
+gate, starting from the p = 80, K = 2, lambda = 0.5 `B_lv` weak-cell evidence.
+This was a planning/docs slice only: no source, API, likelihood, test, or
+cluster-compute route changed.
+
+- Recorded what worked: dense-vs-J3 point agreement, targeted diagnostic
+  tooling, seed-matched DRAC rows, and the saturated direct-slope comparator.
+- Recorded what failed: Wald, t-Wald, percentile bootstrap, `bootstrap_basic`,
+  and truth-start as explanations/rescues for the weak cell.
+- Separated access/axis effect `alpha_lv` from induced trait/loading effect
+  `B_lv = Lambda * alpha_lv'`.
+- Proposed profile-LR calibrated Gaussian Model A `B_lv` as the next candidate
+  target, with source-specific `phylo_latent(..., lv = ~ x)` kept fail-loud
+  until the weak-cell gate is evidence-backed.
+
+### Checks Run
+
+```sh
+sed -n '1,260p' /Users/z3437171/shinichi-brain/AGENTS.md
+sed -n '1,240p' /Users/z3437171/shinichi-brain/memory/00-INDEX.md
+sed -n '1,320p' AGENTS.md
+sed -n '1,320p' docs/dev-log/handover/2026-06-30-codex-handover.md
+sed -n '1,320p' docs/design/73-predictor-informed-latent-scores.md
+sed -n '1,260p' docs/dev-log/after-task/2026-06-30-phylo-xlv-weak-cell-mechanism-diagnosis.md
+sed -n '1,260p' docs/dev-log/after-task/2026-06-30-phylo-xlv-bootstrap-basic-aggregate.md
+git status --short --branch
+git rev-parse --short HEAD
+gh run list --limit 3
+gh pr view 127 --repo itchyshin/GLLVM.jl --json number,state,title,headRefName,headRefOid,isDraft,mergeStateStatus,statusCheckRollup,url,updatedAt
+gh pr list --repo itchyshin/GLLVM.jl --state open --json number,title,headRefName,updatedAt,url,mergeStateStatus,isDraft
+git log --all --oneline --since="6 hours ago" -- AGENTS.md CLAUDE.md README.md ROADMAP.md CHANGELOG.md docs/design docs/src docs/dev-log/check-log.md docs/dev-log/after-task bench/phylo_xlv_drac_task.jl bench/phylo_xlv_drac_submit.sh bench/phylo_xlv_drac_summarise.jl
+```
+
+Result: checkout was clean at `e794575` on
+`codex/phylo-xlv-drac-launcher-20260628`; PR #127 was confirmed `CLOSED`,
+draft, and unstable on old head `b87a522`; no open GLLVM.jl PRs were present.
+The recent local same-file history showed the handoff commit and the weak-cell
+diagnostic closeout only.
+
+Final file-format and stale-wording checks are recorded in the matching
+after-task report.
+
 ## 2026-06-26 - PR #113 main-merge resolution
 
 ### Scope

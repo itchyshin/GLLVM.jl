@@ -1,11 +1,31 @@
-# Design 73 — Predictor-informed latent scores: `latent(..., lv = ~ x)`
+# Design 73 - Predictor-informed latent scores: `latent(..., lv = ~ x)`
 
 **Status (2026-06-30):** ordinary `X_lv` engine + CI trio shipped to `main`
 (#116-#126). The phylo Model A extension has local engine and CI plumbing on the
 draft PR branch, but its interval calibration is **blocked** by the p=80, K=2,
 lambda=0.5 `B_lv` weak cell. The R `lv = ~ x` source-specific formula grammar
-and any public phylo Model A capability promotion remain pending. This doc is
-the spec the Julia comments (`likelihood.jl:405`) reference.
+and any public phylo Model A capability promotion remain blocked/parked for v1. A later
+profile-LR truth-inclusion canary also missed the known truth for the worst
+task-8 entry (`LR = 9.9918 > 3.8415`). A later K = 1 positive-control attempt
+also failed its 20-replicate diagnostic gate (`98/100` selected entries covered,
+with two converged misses). The current Model A v1 interval target is therefore
+retired from public support pending structural redesign with a genuinely
+different target/regime, or explicit v1 retirement. This doc is the spec the
+Julia comments (`likelihood.jl:405`) reference. The current operating decision
+is recorded in
+`docs/dev-log/decisions/2026-06-30-phylo-model-a-council-final.md`; the
+current method/estimand dependency lock is
+`docs/dev-log/decisions/2026-07-01-phylo-model-a-structural-dependencies.md`.
+The v1 retirement/parking decision is recorded in
+`docs/dev-log/decisions/2026-07-01-phylo-model-a-v1-retirement.md`. The old
+fork remains useful background in
+`docs/dev-log/decisions/2026-07-01-phylo-model-a-structural-redesign-fork.md`:
+public source-specific phylo `lv` is retired from v1 unless Shinichi explicitly
+authorizes a genuinely changed realized/conditional target with a fresh ADEMP
+gate.
+The first concrete changed-target candidate is
+`docs/dev-log/decisions/2026-07-01-phylo-model-a-realized-direct-slope-ademp.md`.
+It is bench-only diagnostic tooling, not public support.
 
 ## 1. The model
 
@@ -32,11 +52,12 @@ this is an ordinary GLLVM with the same covariance and a constrained fixed mean 
   familiar GLLVM-style answer: how a predictor moves units along LV1, LV2, and so on. This is
   usually the first user-facing constrained-ordination view, but for `K > 1` it is tied to the
   chosen loading orientation, rotation, sign convention, or explicit loading constraint.
-- **Induced trait effect:** `B_lv = Λ · α_lv'` (`extract_lv_effects(type = "trait_effect")`,
-  currently the default) is the trait-scale slope implied by the latent model. It is not a
-  separate per-trait fixed effect; it is the reduced-rank product of the loading matrix and
-  axis coefficients. Unlike `α_lv`, `B_lv` is invariant under `Λ → ΛQ, α_lv → α_lv Q` for any
-  orthogonal `Q`, so it is the current interval target.
+- **Induced trait effect:** `B_lv = Λ · α_lv'` (`extract_lv_effects(type = "trait_effect")`)
+  is the trait-scale slope implied by the latent model. It is not a separate per-trait fixed
+  effect; it is the reduced-rank product of the loading matrix and axis coefficients. Unlike
+  `α_lv`, `B_lv` is invariant under `Λ → ΛQ, α_lv → α_lv Q` for any orthogonal `Q`, so it is
+  the current interval target. In the public gllvmTMB extractor, `axis_effect` is now the
+  ordinary default and `trait_effect` is requested explicitly.
 
 `B_lv` is admitted for **`K ≥ 1`** (rotation invariance), complete responses, a single ordinary
 latent block. Axis-effect SEs are **not** currently admitted; they need a declared
@@ -60,6 +81,15 @@ axis-effect table `α_lv`:
 The χ²₁ profile cutoff is the interior asymptotic reference; the **boundary chi-bar-square**
 correction (variance→0, |ρ|→1, loading→0) is a separate, deferred refinement.
 
+**Phylo Model A lock (2026-07-01):** do not use the full trio as a rescue for
+source-specific phylo `lv`. Bootstrap is retired for the current phylo weak-cell
+route, endpoint profile fan-out is retired for the old population-`B_lv` target
+after the `profile_truth` miss, and K = 1 same-route profile scaling is stopped
+after the 20-replicate diagnostic gate. If Model A is reopened, profile-LR is a
+selected-entry truth-inclusion canary only after a genuinely different target or
+regime is named. Wald output for `alpha_lv` is acceptable only as the ordinary
+conditional axis/access-effect view under the fitted loading convention.
+
 ## 4. Families
 
 Gaussian + Poisson + Binomial (logit/probit/cloglog) + NB2 + Gamma + Beta. Exotic families
@@ -70,7 +100,7 @@ Gaussian + Poisson + Binomial (logit/probit/cloglog) + NB2 + Gamma + Beta. Exoti
 The headline extension: compose `X_lv` with structured latent dependence. **Two non-equivalent
 models** (see `intake/2026-06-27-phylo-xlv-design.md`):
 
-- **MODEL A (v1, chosen):** the predictor-informed score MEAN (unit axis) composed with the
+- **MODEL A (local v1 candidate, now blocked):** the predictor-informed score MEAN (unit axis) composed with the
   existing **trait-axis phylogenetic trait-covariance** (`Σ_phy`, species axis). The axes are
   **orthogonal and additive** — no new identifiability hazard. Reuses the J3 closed-form phylo
   marginal verbatim (the rotation trick survives the `X_lv` residual mean shift — pinned to
@@ -97,9 +127,11 @@ non-ordinary covstructs ("`lv` is reserved for ordinary `latent` only … remove
 formulas, invalid predictor columns, unsupported regimes). The held R branches extend the X_lv
 *families* (NB2/Gamma/Beta) on `engine = "julia"`.
 
-**Remaining (the phylo extension):** lift `.abort_unsupported_lv_keyword` for `phylo_latent`
-(validation row LV-07) and wire `phylo_latent(..., lv = ~ x)` to the phylo×X_lv route once the engine
-Model A + the bridge phylo plumbing land. Requirements for that wiring:
+**Remaining (the phylo extension):** do **not** lift `.abort_unsupported_lv_keyword` for
+`phylo_latent` (validation row LV-07) under the current Model A population-`B_lv` interval
+target. Only revisit `phylo_latent(..., lv = ~ x)` after structural redesign with a
+genuinely different target/regime and fresh evidence, or explicit maintainer acceptance of
+v1 retirement boundaries. Requirements for any future wiring:
 - Admit `lv` as a one-sided predictor formula on `latent()` / `phylo_latent()`; enforce inside
   `rewrite_canonical_aliases()` (`R/brms-sugar.R`), NOT the never-evaluated constructor. Validate
   one-sided, build `model.matrix` against `data`, attach as a STRUCTURED marker
@@ -130,15 +162,44 @@ Model A + the bridge phylo plumbing land. Requirements for that wiring:
   the fitted latent-product slopes almost exactly, including the bad task 8 (`0.536` vs `0.533`
   of truth), so the block is finite-sample realised-slope/interval calibration rather than a
   simple `B_lv` extractor artifact.
-- **Remaining gate:** do not launch or advertise the full λ×n_species×K production sweep until
-  the weak cell has a defensible interval target or an explicit blocked/public-boundary decision.
-  The existing seed harness remains `bench/phylo_xlv_coverage.jl`.
+- **Profile-LR truth-inclusion canary (blocked, 2026-06-30):** a bench-only
+  `profile_truth` diagnostic constrained task-8 entry `B_lv[71,1]` to its known
+  simulation truth. With a 250-iteration constrained solve it converged and
+  missed truth: `LR = 9.99181181962` versus the one-df 95% cutoff
+  `3.84145882069`. Therefore endpoint profile fan-out is not an admissible next
+  rescue for the old target.
+- **K = 1 narrowed-regime profile gate (blocked, 2026-07-01):** a small
+  positive-control path first passed a 5-seed selected-entry diagnostic
+  (`25/25` truth-included), but the predeclared 20-replicate gate then failed:
+  `20/20` fits converged, `100/100` selected entries were usable, and `98/100`
+  included truth. The two misses were converged constrained solves, task 15
+  entry 10 (`LR = 4.94199940694`) and task 19 entry 20
+  (`LR = 5.14288022148`), both above the `3.84145882069` cutoff. Therefore K = 1
+  same-route profile scaling is stopped.
+- **Remaining gate:** do not launch or advertise the full λ x n_species x K production sweep.
+  The next admissible step is a structural target redesign with a genuinely
+  different estimand/regime and fresh ADEMP evidence in a future branch. For
+  v1, public source-specific phylo `lv` is retired/parked and the existing seed
+  harness remains local diagnostic tooling (`bench/phylo_xlv_coverage.jl`).
+- **Realized direct-slope canary tooling (diagnostic, 2026-07-01):** the bench
+  runner now has `profile_direct_slope`, which computes a saturated per-trait
+  `Y ~ X_lv` slope target from the realized replicate and checks selected-entry
+  LR inclusion against that descriptive target. A tiny local smoke passed `2/2`
+  selected entries for `B_lv_direct_slope`; a follow-up K = 1 five-seed
+  diagnostic passed `25/25` selected entries, and the old task-8 entry-71
+  population-target failure row passed under the changed target. The K = 1
+  20-replicate direct-slope diagnostic then returned `96/100` entry coverage
+  but fired the strict no-miss stop rule with four converged selected-entry
+  misses. This is mixed diagnostic evidence for the realized target, not proof
+  that source-specific phylo `lv` is supported.
 
 ## 8. Honest scope
 
-Only `B_lv` is rotation-stable, so the current SE/CI work is for induced trait-scale slopes, not
-for the usual CLV/axis-effect table. Treat `α_lv` as the primary constrained-ordination display
-only after naming the rotation or loading-constraint convention, and do not report SEs for it yet.
+Only `B_lv` is rotation-stable, so the current promotion gate is for induced
+trait-scale slopes, not for the usual CLV/axis-effect table. Treat `α_lv` as a
+conditional axis/access-effect display under the fitted loading convention;
+Wald output is acceptable for that display, but it is not the calibrated phylo
+Model A evidence target.
 Under phylo, advertise no public `B_lv` interval coverage yet: point/CI plumbing is local, interval
 calibration is blocked for the weak cell, and `gllvmTMB` source-specific `lv = ~ x` grammar should
 continue to fail loudly. Demote the per-axis α / Λ-vs-Ψ split to Level 3 (rank-fragile). Do not

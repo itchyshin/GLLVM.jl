@@ -21,8 +21,13 @@ Environment overrides:
   PHYLO_XLV_K_PHY        phylogenetic loading rank (default: 1)
   PHYLO_XLV_SCENARIOS    comma list (default: main,null_alpha0,null_phylo0)
   PHYLO_XLV_SEED0        master seed offset (default: 20260628)
-  PHYLO_XLV_METHODS      B_lv CI methods: wald, wald_t_unit, profile, bootstrap, bootstrap_basic (default: wald)
+  PHYLO_XLV_METHODS      B_lv CI methods: wald, wald_t_unit, profile, profile_truth, profile_direct_slope, bootstrap, bootstrap_basic (default: wald)
   PHYLO_XLV_TARGETS      interval targets: B_lv,phylo_signal, all, or none (default: B_lv,phylo_signal)
+  PHYLO_XLV_B_LV_ENTRIES B_lv vec() entries for canaries, e.g. all or 1,5,9:12 (default: all)
+  PHYLO_XLV_PROFILE_ENGINE profile inversion engine: penalty or exact (default: penalty)
+  PHYLO_XLV_PROFILE_OPT_ITERATIONS exact-profile optimiser iterations per candidate (default: 250)
+  PHYLO_XLV_PROFILE_MAXSTEP exact-profile bracket steps per side (default: 40)
+  PHYLO_XLV_PROFILE_BISECT_ITERATIONS exact-profile bisection iterations per side (default: 24)
   PHYLO_XLV_LEVEL        CI level (default: 0.95)
   PHYLO_XLV_ITERATIONS   optimiser iterations (default: 400)
   PHYLO_XLV_N_BOOT       bootstrap reps when bootstrap is requested (default: 200)
@@ -75,6 +80,11 @@ scenarios="${PHYLO_XLV_SCENARIOS:-main,null_alpha0,null_phylo0}"
 seed0="${PHYLO_XLV_SEED0:-20260628}"
 methods="${PHYLO_XLV_METHODS:-wald}"
 targets="${PHYLO_XLV_TARGETS:-B_lv,phylo_signal}"
+b_lv_entries="${PHYLO_XLV_B_LV_ENTRIES:-all}"
+profile_engine="${PHYLO_XLV_PROFILE_ENGINE:-penalty}"
+profile_opt_iterations="${PHYLO_XLV_PROFILE_OPT_ITERATIONS:-250}"
+profile_maxstep="${PHYLO_XLV_PROFILE_MAXSTEP:-40}"
+profile_bisect_iterations="${PHYLO_XLV_PROFILE_BISECT_ITERATIONS:-24}"
 level="${PHYLO_XLV_LEVEL:-0.95}"
 iterations="${PHYLO_XLV_ITERATIONS:-400}"
 n_boot="${PHYLO_XLV_N_BOOT:-200}"
@@ -140,6 +150,11 @@ cd "$repo_root"
   echo "scenarios=$scenarios"
   echo "methods=$methods"
   echo "targets=$targets"
+  echo "b_lv_entries=$b_lv_entries"
+  echo "profile_engine=$profile_engine"
+  echo "profile_opt_iterations=$profile_opt_iterations"
+  echo "profile_maxstep=$profile_maxstep"
+  echo "profile_bisect_iterations=$profile_bisect_iterations"
   echo "level=$level"
   echo "iterations=$iterations"
   echo "n_boot=$n_boot"
@@ -219,6 +234,11 @@ esac
   --outdir "$out/results" \\
   --methods "$methods" \\
   --targets "$targets" \\
+  --b-lv-entries "$b_lv_entries" \\
+  --profile-engine "$profile_engine" \\
+  --profile-opt-iterations "$profile_opt_iterations" \\
+  --profile-maxstep "$profile_maxstep" \\
+  --profile-bisect-iterations "$profile_bisect_iterations" \\
   --level "$level" \\
   --iterations "$iterations" \\
   --n-boot "$n_boot" \\

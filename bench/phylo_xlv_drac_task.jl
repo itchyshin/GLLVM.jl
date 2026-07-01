@@ -21,7 +21,10 @@
 
 using GLLVM
 using Dates
+using ForwardDiff
 using LinearAlgebra
+using Distributions
+using Optim
 using Printf
 using Random
 using Statistics
@@ -38,19 +41,19 @@ const PARAM_FIELDS = [
 const RESULT_FIELDS = [
     "task_id", "scenario", "pagel_lambda", "n_species", "n_sites",
     "K", "q_lv", "K_phy", "rep", "seed", "level", "n_boot",
-    "bootstrap_iterations", "target", "method",
+    "bootstrap_iterations", "b_lv_entries", "target", "method",
     "fit_converged", "fit_iterations", "fit_seconds", "ci_seconds", "ci_status",
     "total", "usable", "covered", "coverage",
     "bias_mean", "bias_rmse", "estimate_mean", "truth_mean",
-    "max_abs_estimate", "max_abs_truth", "pd_hessian",
+    "max_abs_estimate", "max_abs_truth", "lr_deviance", "lr_cutoff", "pd_hessian",
     "bootstrap_converged", "error",
 ]
 const DETAIL_FIELDS = [
     "task_id", "scenario", "pagel_lambda", "n_species", "n_sites",
     "K", "q_lv", "K_phy", "rep", "seed", "level", "n_boot",
-    "bootstrap_iterations", "target", "method", "entry", "term",
+    "bootstrap_iterations", "b_lv_entries", "target", "method", "entry", "term",
     "estimate", "lower", "upper", "truth", "covered", "miss_side",
-    "width", "error",
+    "width", "lr_deviance", "lr_cutoff", "error",
 ]
 
 function arg_value(args::Vector{String}, key::String, default::Union{Nothing, String} = nothing)
@@ -66,12 +69,42 @@ parse_int_list(s::String) = [parse(Int, strip(x)) for x in split(s, ",") if !ise
 parse_float_list(s::String) = [parse(Float64, strip(x)) for x in split(s, ",") if !isempty(strip(x))]
 parse_string_list(s::String) = [strip(x) for x in split(s, ",") if !isempty(strip(x))]
 
+function parse_b_lv_entries(s::String)
+    txt = strip(s)
+    (isempty(txt) || lowercase(txt) == "all") && return nothing
+    out = Int[]
+    for raw in split(txt, ",")
+        part = strip(raw)
+        isempty(part) && continue
+        sep = occursin(":", part) ? ":" : (occursin("-", part) ? "-" : "")
+        if isempty(sep)
+            push!(out, parse(Int, part))
+        else
+            bounds = split(part, sep)
+            length(bounds) == 2 ||
+                throw(ArgumentError("--b-lv-entries range must look like a:b or a-b; got $part"))
+            a = parse(Int, strip(bounds[1]))
+            b = parse(Int, strip(bounds[2]))
+            a <= b || throw(ArgumentError("--b-lv-entries range start must be <= end; got $part"))
+            append!(out, a:b)
+        end
+    end
+    isempty(out) && throw(ArgumentError("--b-lv-entries must be all or at least one 1-based entry"))
+    any(<(1), out) && throw(ArgumentError("--b-lv-entries are 1-based and must be positive"))
+    length(unique(out)) == length(out) ||
+        throw(ArgumentError("--b-lv-entries must not contain duplicates"))
+    return out
+end
+
+entry_selection_label(entries) = entries === nothing ? "all" : join(entries, ",")
+
 function parse_methods(s::String)
     out = Symbol[]
     for x in parse_string_list(s)
         method = Symbol(x)
-        method in (:wald, :wald_t_unit, :profile, :bootstrap, :bootstrap_basic) ||
-            throw(ArgumentError("--methods entries must be wald, wald_t_unit, profile, bootstrap, or bootstrap_basic; got $x"))
+        method in (:wald, :wald_t_unit, :profile, :profile_truth, :profile_direct_slope,
+                   :bootstrap, :bootstrap_basic) ||
+            throw(ArgumentError("--methods entries must be wald, wald_t_unit, profile, profile_truth, profile_direct_slope, bootstrap, or bootstrap_basic; got $x"))
         push!(out, method)
     end
     isempty(out) && throw(ArgumentError("--methods must name at least one method"))
@@ -99,6 +132,13 @@ function parse_targets(s::String)
         target in out || push!(out, target)
     end
     return out
+end
+
+function parse_profile_engine(s::String)
+    engine = Symbol(lowercase(strip(s)))
+    engine in (:penalty, :exact) ||
+        throw(ArgumentError("--profile-engine must be penalty or exact; got $s"))
+    return engine
 end
 
 function csv_cell(x)
@@ -346,6 +386,21 @@ function coverage_summary(lower, upper, truth)
     return (; total, usable, covered, coverage)
 end
 
+function lr_coverage_summary(lr_deviance, lr_cutoff)
+    total = length(lr_deviance)
+    usable = 0
+    covered = 0
+    for i in eachindex(lr_deviance)
+        D, cutoff = lr_deviance[i], lr_cutoff[i]
+        if isfinite(D) && isfinite(cutoff)
+            usable += 1
+            D <= cutoff && (covered += 1)
+        end
+    end
+    coverage = usable == 0 ? NaN : covered / usable
+    return (; total, usable, covered, coverage)
+end
+
 function miss_side(lower::Real, upper::Real, truth::Real)
     if !(isfinite(lower) && isfinite(upper) && isfinite(truth))
         return "not_usable"
@@ -373,76 +428,554 @@ function result_row(base; target, method, fit_converged, fit_iterations, fit_sec
                     ci_seconds = NaN, ci_status, total = 0, usable = 0, covered = 0, coverage = NaN,
                     bias_mean = NaN, bias_rmse = NaN, estimate_mean = NaN,
                     truth_mean = NaN, max_abs_estimate = NaN, max_abs_truth = NaN,
+                    lr_deviance = NaN, lr_cutoff = NaN,
                     pd_hessian = nothing, bootstrap_converged = nothing,
                     error = "")
     return merge(base, (;
         target, method, fit_converged, fit_iterations, fit_seconds, ci_seconds, ci_status,
         total, usable, covered, coverage, bias_mean, bias_rmse,
         estimate_mean, truth_mean, max_abs_estimate, max_abs_truth,
+        lr_deviance, lr_cutoff,
         pd_hessian, bootstrap_converged, error,
     ))
 end
 
-function write_b_lv_detail_csv(path::String, base, method::Symbol, ci, truth)
-    est = collect(Float64, ci.estimate)
-    lo = collect(Float64, ci.lower)
-    hi = collect(Float64, ci.upper)
-    terms = :term in keys(ci) ? collect(ci.term) : ["B_lv[$i]" for i in eachindex(truth)]
+function checked_b_lv_entries(entries::Union{Nothing, AbstractVector{Int}}, nb::Integer)
+    entries === nothing && return collect(1:nb)
+    idx = collect(Int, entries)
+    isempty(idx) && throw(ArgumentError("B_lv entry selection must not be empty"))
+    for i in idx
+        1 <= i <= nb || throw(ArgumentError("B_lv entry $i outside 1:$nb"))
+    end
+    length(unique(idx)) == length(idx) ||
+        throw(ArgumentError("B_lv entry selection must not contain duplicates"))
+    return idx
+end
+
+function write_b_lv_detail_csv(path::String, base, method::Symbol,
+                               entries::AbstractVector{Int}, terms,
+                               est::AbstractVector{Float64},
+                               lo::AbstractVector{Float64},
+                               hi::AbstractVector{Float64},
+                               truth::AbstractVector{Float64};
+                               target_label::AbstractString = "B_lv",
+                               lr_deviance::AbstractVector{Float64} = fill(NaN, length(entries)),
+                               lr_cutoff::AbstractVector{Float64} = fill(NaN, length(entries)),
+                               covered_override = nothing,
+                               miss_side_override = nothing)
     rows = NamedTuple[]
-    for i in eachindex(truth)
-        side = miss_side(lo[i], hi[i], truth[i])
+    for j in eachindex(entries)
+        side = miss_side(lo[j], hi[j], truth[j])
+        covered = covered_override === nothing ? side == "covered" : covered_override[j]
+        side_label = miss_side_override === nothing ? side : miss_side_override[j]
         push!(rows, merge(base, (;
-            target = "B_lv", method = String(method), entry = i,
-            term = i <= length(terms) ? terms[i] : "B_lv[$i]",
-            estimate = est[i], lower = lo[i], upper = hi[i], truth = truth[i],
-            covered = side == "covered", miss_side = side,
-            width = isfinite(lo[i]) && isfinite(hi[i]) ? hi[i] - lo[i] : NaN,
+            target = target_label, method = String(method), entry = entries[j],
+            term = j <= length(terms) ? terms[j] : "B_lv[$(entries[j])]",
+            estimate = est[j], lower = lo[j], upper = hi[j], truth = truth[j],
+            covered = covered, miss_side = side_label,
+            width = isfinite(lo[j]) && isfinite(hi[j]) ? hi[j] - lo[j] : NaN,
+            lr_deviance = lr_deviance[j], lr_cutoff = lr_cutoff[j],
             error = "",
         )))
     end
     write_csv(path, DETAIL_FIELDS, rows)
 end
 
+function b_lv_entry_coords(entry::Integer, p::Integer)
+    return ((entry - 1) % p + 1, (entry - 1) ÷ p + 1)
+end
+
+function lambda_packed_index(p::Integer, K::Integer, row::Integer, col::Integer)
+    row < col && return nothing
+    row == col && return col
+    return GLLVM._lower_index(p, K, row, col)
+end
+
+function gaussian_lv_nll_for_fit(fit, Y, X_lv)
+    p, K = size(fit.pars.Λ)
+    K_phy = fit.model.K_phy
+    has_phy_unique = fit.model.has_phy_unique
+    Σ_phy = hasproperty(fit.pars, :Σ_phy) ? fit.pars.Σ_phy : nothing
+    q_lv = size(X_lv, 2)
+    return θv -> GLLVM.gaussian_lv_nll_packed(θv, Y, p, K; X_lv = X_lv, q_lv = q_lv,
+                                              K_phy = K_phy,
+                                              has_phy_unique = has_phy_unique,
+                                              Σ_phy = Σ_phy)
+end
+
+function lv_profile_wald_se(nll, x::AbstractVector, p::Integer, K::Integer,
+                            q_lv::Integer, level::Real)
+    H = try
+        ForwardDiff.hessian(nll, x)
+    catch
+        safenll = function (v)
+            val = try nll(v) catch; return 1e12 end
+            return isfinite(val) ? val : 1e12
+        end
+        GLLVM._fd_hessian(safenll, x)
+    end
+    return GLLVM._lv_wald_from_hessian(H, x, p, K, q_lv, level,
+                                       GLLVM._lv_effects_from_packed_gaussian).se
+end
+
+function b_lv_profile_penalty_subset_ci(fit, Y, X_lv, entries::AbstractVector{Int};
+                                        level::Real, label::AbstractString = "")
+    p, K = size(fit.pars.Λ)
+    q_lv = size(X_lv, 2)
+    x = collect(Float64, fit.pars.θ_packed)
+    nll = gaussian_lv_nll_for_fit(fit, Y, X_lv)
+    wse = lv_profile_wald_se(nll, x, p, K, q_lv, level)
+    terms = String[]
+    estimates = Float64[]
+    lower = Float64[]
+    upper = Float64[]
+    prefix = isempty(label) ? "" : string(label, " ")
+    for (j, entry) in pairs(entries)
+        progress("$(prefix)B_lv profile entry $entry start ($j/$(length(entries)))")
+        t0 = time()
+        ci = GLLVM._lv_effect_profile(nll, x, p, K, q_lv, level,
+                                      GLLVM._lv_effects_from_packed_gaussian, wse;
+                                      ad = true, indices = [entry])
+        append!(terms, String.(ci.term))
+        append!(estimates, Float64.(ci.estimate))
+        append!(lower, Float64.(ci.lower))
+        append!(upper, Float64.(ci.upper))
+        progress("$(prefix)B_lv profile entry $entry done seconds=$(round(time() - t0; digits = 2)) lower=$(lower[end]) upper=$(upper[end])")
+    end
+    return (term = terms, estimate = estimates, lower = lower, upper = upper,
+            se = fill(NaN, length(entries)), level = level, method = :profile,
+            pd_hessian = true)
+end
+
+function b_lv_profile_exact_subset_ci(fit, Y, X_lv, entries::AbstractVector{Int};
+                                      level::Real, label::AbstractString = "",
+                                      opt_iterations::Integer = 250,
+                                      maxstep::Integer = 40,
+                                      bisect_iterations::Integer = 24)
+    p, K = size(fit.pars.Λ)
+    q_lv = size(X_lv, 2)
+    x = collect(Float64, fit.pars.θ_packed)
+    nll = gaussian_lv_nll_for_fit(fit, Y, X_lv)
+    wse = lv_profile_wald_se(nll, x, p, K, q_lv, level)
+    b_hat = GLLVM._lv_effects_from_packed_gaussian(x, p, K, q_lv)
+    cutoff = quantile(Chisq(1), level)
+    logσ_idx = q_lv * K + 1
+    lambda_offset = logσ_idx
+    prefix = isempty(label) ? "" : string(label, " ")
+
+    alpha_index(c, k) = (k - 1) * q_lv + c
+    lambda_index(row, col) = begin
+        li = lambda_packed_index(p, K, row, col)
+        li === nothing ? nothing : lambda_offset + li
+    end
+    alpha_value(θ, c, k) = θ[alpha_index(c, k)]
+    lambda_value(θ, row, col) = begin
+        li = lambda_index(row, col)
+        li === nothing ? zero(eltype(θ)) : θ[li]
+    end
+    drop_anchor(v, anchor) = [v[1:(anchor - 1)]; v[(anchor + 1):end]]
+
+    function choose_anchor(row, col)
+        α = reshape(x[1:(q_lv * K)], q_lv, K)
+        rr = GLLVM.rr_theta_len(p, K)
+        Λ = GLLVM.unpack_lambda(@view(x[(logσ_idx + 1):(logσ_idx + rr)]), p, K)
+        best = (kind = :none, k = 0, anchor = 0, score = 0.0)
+        for k in 1:min(K, row)
+            li = lambda_index(row, k)
+            if li !== nothing && abs(α[col, k]) > best.score
+                best = (kind = :lambda, k = k, anchor = li, score = abs(α[col, k]))
+            end
+            ai = alpha_index(col, k)
+            if abs(Λ[row, k]) > best.score
+                best = (kind = :alpha, k = k, anchor = ai, score = abs(Λ[row, k]))
+            end
+        end
+        best.kind === :none &&
+            throw(ArgumentError("could not choose an exact profile anchor for B_lv[$row,$col]"))
+        return best
+    end
+
+    function make_expand(row, col, target, anchor_info)
+        anchor = anchor_info.anchor
+        k_anchor = anchor_info.k
+        kind = anchor_info.kind
+        npar = length(x)
+        function expand(φ)
+            θ = Vector{eltype(φ)}(undef, npar)
+            anchor > 1 && copyto!(θ, 1, φ, 1, anchor - 1)
+            anchor < npar && copyto!(θ, anchor + 1, φ, anchor, npar - anchor)
+            θ[anchor] = zero(eltype(φ))
+            numerator = convert(eltype(φ), target)
+            for k in 1:min(K, row)
+                k == k_anchor && continue
+                numerator -= lambda_value(θ, row, k) * alpha_value(θ, col, k)
+            end
+            if kind === :lambda
+                θ[anchor] = numerator / alpha_value(θ, col, k_anchor)
+            else
+                θ[anchor] = numerator / lambda_value(θ, row, k_anchor)
+            end
+            return θ
+        end
+        return expand, drop_anchor(x, anchor)
+    end
+
+    function profile_one(entry)
+        row, col = b_lv_entry_coords(entry, p)
+        anchor_info = choose_anchor(row, col)
+        progress("$(prefix)B_lv exact profile entry $entry anchor=$(anchor_info.kind)[$(anchor_info.k)]")
+        c0 = b_hat[entry]
+        step = (isfinite(wse[entry]) && wse[entry] > 0) ? wse[entry] :
+               max(0.1, 0.1 * abs(c0))
+        base_expand, baseφ = make_expand(row, col, c0, anchor_info)
+        ℓ0 = nll(x)
+
+        function constrained_dev(c, startφ)
+            expand, _ = make_expand(row, col, c, anchor_info)
+            obj = function (φ)
+                θ = expand(φ)
+                val = try nll(θ) catch; return convert(eltype(φ), 1e12) end
+                return isfinite(val) ? val : convert(eltype(φ), 1e12)
+            end
+            res = Optim.optimize(obj, startφ, Optim.LBFGS(),
+                                 Optim.Options(g_tol = 1e-8,
+                                               iterations = opt_iterations);
+                                 autodiff = :forward)
+            φc = Optim.minimizer(res)
+            θc = expand(φc)
+            return 2 * (nll(θc) - ℓ0), φc
+        end
+
+        function crossing(dir, side::AbstractString)
+            clo = c0
+            chi = NaN
+            φlo = copy(baseφ)
+            φhi = copy(baseφ)
+            for k in 1:maxstep
+                c = c0 + dir * step * k
+                D, φc = constrained_dev(c, φlo)
+                progress("$(prefix)B_lv exact profile entry $entry $side bracket step=$k c=$c D=$D")
+                if isfinite(D) && D >= cutoff
+                    chi = c
+                    φhi = φc
+                    break
+                end
+                clo = c
+                φlo = φc
+            end
+            isnan(chi) && return NaN
+            for iter in 1:bisect_iterations
+                cm = (clo + chi) / 2
+                start = abs(cm - clo) <= abs(chi - cm) ? φlo : φhi
+                Dm, φm = constrained_dev(cm, start)
+                progress("$(prefix)B_lv exact profile entry $entry $side bisect iter=$iter c=$cm D=$Dm")
+                if isfinite(Dm) && Dm >= cutoff
+                    chi = cm
+                    φhi = φm
+                else
+                    clo = cm
+                    φlo = φm
+                end
+                abs(chi - clo) < 1e-6 * max(1.0, abs(c0)) && break
+            end
+            return (clo + chi) / 2
+        end
+
+        lo = crossing(-1, "lower")
+        progress("$(prefix)B_lv exact profile entry $entry lower done lower=$lo")
+        hi = crossing(+1, "upper")
+        progress("$(prefix)B_lv exact profile entry $entry upper done upper=$hi")
+        return (; term = "B_lv[$row,$col]", estimate = c0, lower = lo, upper = hi)
+    end
+
+    terms = String[]
+    estimates = Float64[]
+    lowers = Float64[]
+    uppers = Float64[]
+    for (j, entry) in pairs(entries)
+        progress("$(prefix)B_lv exact profile entry $entry start ($j/$(length(entries)))")
+        t0 = time()
+        ci = profile_one(entry)
+        push!(terms, ci.term)
+        push!(estimates, ci.estimate)
+        push!(lowers, ci.lower)
+        push!(uppers, ci.upper)
+        progress("$(prefix)B_lv exact profile entry $entry done seconds=$(round(time() - t0; digits = 2)) lower=$(ci.lower) upper=$(ci.upper)")
+    end
+    return (term = terms, estimate = estimates, lower = lowers, upper = uppers,
+            se = fill(NaN, length(entries)), level = level, method = :profile_exact,
+            pd_hessian = true)
+end
+
+function b_lv_profile_truth_subset_ci(fit, Y, X_lv, entries::AbstractVector{Int},
+                                      truth_values::AbstractVector{Float64};
+                                      level::Real, label::AbstractString = "",
+                                      opt_iterations::Integer = 250,
+                                      method_label::Symbol = :profile_truth)
+    length(entries) == length(truth_values) ||
+        throw(ArgumentError("profile truth entries and truth values must have the same length"))
+    p, K = size(fit.pars.Λ)
+    q_lv = size(X_lv, 2)
+    x = collect(Float64, fit.pars.θ_packed)
+    nll = gaussian_lv_nll_for_fit(fit, Y, X_lv)
+    b_hat = GLLVM._lv_effects_from_packed_gaussian(x, p, K, q_lv)
+    cutoff = quantile(Chisq(1), level)
+    logσ_idx = q_lv * K + 1
+    lambda_offset = logσ_idx
+    npar = length(x)
+    nll0 = nll(x)
+    prefix = isempty(label) ? "" : string(label, " ")
+
+    alpha_index(c, k) = (k - 1) * q_lv + c
+    lambda_index(row, col) = begin
+        li = lambda_packed_index(p, K, row, col)
+        li === nothing ? nothing : lambda_offset + li
+    end
+    alpha_value(theta, c, k) = theta[alpha_index(c, k)]
+    lambda_value(theta, row, col) = begin
+        li = lambda_index(row, col)
+        li === nothing ? zero(eltype(theta)) : theta[li]
+    end
+    drop_anchor(v, anchor) = [v[1:(anchor - 1)]; v[(anchor + 1):end]]
+
+    function choose_anchor(row, col)
+        alpha = reshape(x[1:(q_lv * K)], q_lv, K)
+        rr = GLLVM.rr_theta_len(p, K)
+        Lambda = GLLVM.unpack_lambda(@view(x[(logσ_idx + 1):(logσ_idx + rr)]), p, K)
+        best = (kind = :none, k = 0, anchor = 0, score = 0.0)
+        for k in 1:min(K, row)
+            li = lambda_index(row, k)
+            if li !== nothing && abs(alpha[col, k]) > best.score
+                best = (kind = :lambda, k = k, anchor = li, score = abs(alpha[col, k]))
+            end
+            ai = alpha_index(col, k)
+            if abs(Lambda[row, k]) > best.score
+                best = (kind = :alpha, k = k, anchor = ai, score = abs(Lambda[row, k]))
+            end
+        end
+        best.kind === :none &&
+            throw(ArgumentError("could not choose an exact profile anchor for B_lv[$row,$col]"))
+        return best
+    end
+
+    function make_expand(row, col, target, anchor_info)
+        anchor = anchor_info.anchor
+        k_anchor = anchor_info.k
+        kind = anchor_info.kind
+        function expand(phi)
+            theta = Vector{eltype(phi)}(undef, npar)
+            anchor > 1 && copyto!(theta, 1, phi, 1, anchor - 1)
+            anchor < npar && copyto!(theta, anchor + 1, phi, anchor, npar - anchor)
+            theta[anchor] = zero(eltype(phi))
+            numerator = convert(eltype(phi), target)
+            for k in 1:min(K, row)
+                k == k_anchor && continue
+                numerator -= lambda_value(theta, row, k) * alpha_value(theta, col, k)
+            end
+            if kind === :lambda
+                theta[anchor] = numerator / alpha_value(theta, col, k_anchor)
+            else
+                theta[anchor] = numerator / lambda_value(theta, row, k_anchor)
+            end
+            return theta
+        end
+        return expand, drop_anchor(x, anchor)
+    end
+
+    function constrained_deviance(row, col, target, anchor_info, start_phi)
+        expand, _ = make_expand(row, col, target, anchor_info)
+        obj = function (phi)
+            theta = expand(phi)
+            val = try nll(theta) catch; return convert(eltype(phi), 1e12) end
+            return isfinite(val) ? val : convert(eltype(phi), 1e12)
+        end
+        res = Optim.optimize(obj, start_phi, Optim.LBFGS(),
+                             Optim.Options(g_tol = 1e-8,
+                                           iterations = opt_iterations);
+                             autodiff = :forward)
+        ok = Optim.converged(res)
+        theta_hat = expand(Optim.minimizer(res))
+        val = try nll(theta_hat) catch; NaN end
+        D = ok && isfinite(val) ? 2 * (val - nll0) : NaN
+        return D, ok
+    end
+
+    terms = String[]
+    estimates = Float64[]
+    deviances = Float64[]
+    converged = Bool[]
+    for (j, entry) in pairs(entries)
+        row, col = b_lv_entry_coords(entry, p)
+        target = truth_values[j]
+        progress("$(prefix)B_lv profile truth entry $entry start ($j/$(length(entries))) target=$target")
+        t0 = time()
+        D = NaN
+        ok = false
+        try
+            anchor_info = choose_anchor(row, col)
+            _, start_phi = make_expand(row, col, b_hat[entry], anchor_info)
+            progress("$(prefix)B_lv profile truth entry $entry anchor=$(anchor_info.kind)[$(anchor_info.k)]")
+            if isfinite(target)
+                D, ok = constrained_deviance(row, col, target, anchor_info, start_phi)
+            end
+        catch err
+            progress("$(prefix)B_lv profile truth entry $entry error: $(sprint(showerror, err))")
+        end
+        push!(terms, "B_lv[$row,$col]")
+        push!(estimates, b_hat[entry])
+        push!(deviances, D)
+        push!(converged, ok)
+        covered = isfinite(D) && D <= cutoff
+        progress("$(prefix)B_lv profile truth entry $entry done seconds=$(round(time() - t0; digits = 2)) D=$D cutoff=$cutoff covered=$covered converged=$ok")
+    end
+
+    return (term = terms, estimate = estimates,
+            lower = fill(NaN, length(entries)), upper = fill(NaN, length(entries)),
+            se = fill(NaN, length(entries)), lr_deviance = deviances,
+            lr_cutoff = fill(cutoff, length(entries)), constrained_converged = converged,
+            level = level, method = method_label, pd_hessian = all(converged))
+end
+
+function direct_saturated_b_lv_target(Y::AbstractMatrix, X_lv::AbstractMatrix)
+    n = size(Y, 2)
+    size(X_lv, 1) == n ||
+        throw(ArgumentError("X_lv rows must match the number of sites in Y"))
+    q_lv = size(X_lv, 2)
+    design = hcat(ones(Float64, n), Matrix{Float64}(X_lv))
+    coefs = design \ transpose(Matrix{Float64}(Y))
+    slopes = transpose(coefs[2:(q_lv + 1), :])
+    return vec(Matrix(slopes))
+end
+
+function b_lv_profile_direct_slope_subset_ci(fit, Y, X_lv, entries::AbstractVector{Int};
+                                             level::Real, label::AbstractString = "",
+                                             opt_iterations::Integer = 250)
+    direct_truth = direct_saturated_b_lv_target(Y, X_lv)
+    truth_selected = collect(Float64, direct_truth[entries])
+    return b_lv_profile_truth_subset_ci(fit, Y, X_lv, entries, truth_selected;
+                                        level = level, label = label,
+                                        opt_iterations = opt_iterations,
+                                        method_label = :profile_direct_slope)
+end
+
+function b_lv_profile_subset_ci(fit, Y, X_lv, entries::AbstractVector{Int};
+                                level::Real, label::AbstractString = "",
+                                engine::Symbol = :penalty,
+                                profile_opt_iterations::Integer = 250,
+                                profile_maxstep::Integer = 40,
+                                profile_bisect_iterations::Integer = 24)
+    if engine === :penalty
+        return b_lv_profile_penalty_subset_ci(fit, Y, X_lv, entries;
+                                              level = level, label = label)
+    elseif engine === :exact
+        return b_lv_profile_exact_subset_ci(fit, Y, X_lv, entries;
+                                            level = level, label = label,
+                                            opt_iterations = profile_opt_iterations,
+                                            maxstep = profile_maxstep,
+                                            bisect_iterations = profile_bisect_iterations)
+    end
+    throw(ArgumentError("unknown profile engine: $engine"))
+end
+
 function b_lv_row(base, method::Symbol, fit, Y, X_lv, truth; level::Real, n_boot::Integer,
                   bootstrap_iterations::Union{Nothing, Integer},
-                  detail_path::Union{Nothing, String} = nothing)
+                  detail_path::Union{Nothing, String} = nothing,
+                  b_lv_entries::Union{Nothing, AbstractVector{Int}} = nothing,
+                  profile_engine::Symbol = :penalty,
+                  profile_opt_iterations::Integer = 250,
+                  profile_maxstep::Integer = 40,
+                  profile_bisect_iterations::Integer = 24)
+    selected_entries = checked_b_lv_entries(b_lv_entries, length(truth))
+    truth_selected = collect(Float64, truth[selected_entries])
+    profile_subset = method === :profile && b_lv_entries !== nothing
+    profile_truth_like = method in (:profile_truth, :profile_direct_slope)
     t0 = time()
     ci = if method === :bootstrap_basic
         b_lv_bootstrap_basic_ci(fit, Y, X_lv; level = level, n_boot = n_boot,
                                 seed = base.seed + 71_111,
                                 bootstrap_iterations = bootstrap_iterations)
+    elseif method === :profile_truth
+        b_lv_profile_truth_subset_ci(fit, Y, X_lv, selected_entries, truth_selected;
+                                     level = level, label = "task $(base.task_id)",
+                                     opt_iterations = profile_opt_iterations)
+    elseif method === :profile_direct_slope
+        b_lv_profile_direct_slope_subset_ci(fit, Y, X_lv, selected_entries;
+                                            level = level, label = "task $(base.task_id)",
+                                            opt_iterations = profile_opt_iterations)
+    elseif profile_subset
+        b_lv_profile_subset_ci(fit, Y, X_lv, selected_entries; level = level,
+                               label = "task $(base.task_id)",
+                               engine = profile_engine,
+                               profile_opt_iterations = profile_opt_iterations,
+                               profile_maxstep = profile_maxstep,
+                               profile_bisect_iterations = profile_bisect_iterations)
     else
         confint_lv_effects(fit, Y, X_lv; level = level, method = method,
                            n_boot = n_boot, seed = base.seed + 71_111,
                            bootstrap_iterations = bootstrap_iterations)
     end
     ci_seconds = time() - t0
-    est = collect(Float64, ci.estimate)
-    lo = collect(Float64, ci.lower)
-    hi = collect(Float64, ci.upper)
-    cov = coverage_summary(lo, hi, truth)
+    ci_idx = (profile_subset || profile_truth_like) ? collect(eachindex(selected_entries)) : selected_entries
+    est_all = collect(Float64, ci.estimate)
+    lo_all = collect(Float64, ci.lower)
+    hi_all = collect(Float64, ci.upper)
+    terms_all = :term in keys(ci) ? collect(ci.term) : ["B_lv[$i]" for i in eachindex(est_all)]
+    lr_all = :lr_deviance in keys(ci) ? collect(Float64, ci.lr_deviance) : fill(NaN, length(est_all))
+    cutoff_all = :lr_cutoff in keys(ci) ? collect(Float64, ci.lr_cutoff) : fill(NaN, length(est_all))
+    est = est_all[ci_idx]
+    lo = lo_all[ci_idx]
+    hi = hi_all[ci_idx]
+    terms = terms_all[ci_idx]
+    lr = lr_all[ci_idx]
+    cutoff = cutoff_all[ci_idx]
+    direct_truth_selected = method === :profile_direct_slope ?
+        collect(Float64, direct_saturated_b_lv_target(Y, X_lv)[selected_entries]) : truth_selected
+    truth_for_summary = method === :profile_direct_slope ? direct_truth_selected : truth_selected
+    cov = profile_truth_like ? lr_coverage_summary(lr, cutoff) : coverage_summary(lo, hi, truth_for_summary)
     pd = :pd_hessian in keys(ci) ? ci.pd_hessian : nothing
     nb = :n_converged in keys(ci) ? ci.n_converged : nothing
+    constrained_ok = :constrained_converged in keys(ci) ? all(ci.constrained_converged) : true
     ci_status = if method === :bootstrap_basic && nb !== nothing && nb < 10
         "bootstrap_underconverged"
+    elseif profile_truth_like && !constrained_ok
+        "profile_truth_underconverged"
     else
         "ok"
     end
-    ci_error = ci_status == "bootstrap_underconverged" ?
-        "bootstrap_basic needs at least 10 converged refits for quantile intervals" : ""
-    detail_path !== nothing && write_b_lv_detail_csv(detail_path, base, method, ci, truth)
+    ci_error = if ci_status == "bootstrap_underconverged"
+        "bootstrap_basic needs at least 10 converged refits for quantile intervals"
+    elseif ci_status == "profile_truth_underconverged"
+        "profile_truth needs converged constrained truth solves"
+    else
+        ""
+    end
+    method_label = :method in keys(ci) ? Symbol(ci.method) : method
+    truth_covered = [isfinite(lr[j]) && isfinite(cutoff[j]) && lr[j] <= cutoff[j] for j in eachindex(lr)]
+    truth_side = [truth_covered[j] ? "covered" :
+                  (isfinite(lr[j]) && isfinite(cutoff[j]) ? "outside_profile_truth" : "not_usable")
+                  for j in eachindex(lr)]
+    target_label = method_label === :profile_direct_slope ? "B_lv_direct_slope" : "B_lv"
+    detail_path !== nothing &&
+        write_b_lv_detail_csv(detail_path, base, method_label, selected_entries,
+                              terms, est, lo, hi, truth_for_summary;
+                              target_label = target_label,
+                              lr_deviance = lr, lr_cutoff = cutoff,
+                              covered_override = profile_truth_like ? truth_covered : nothing,
+                              miss_side_override = profile_truth_like ? truth_side : nothing)
     return result_row(base;
-        target = "B_lv", method = String(method),
+        target = target_label, method = String(method_label),
         fit_converged = fit.converged, fit_iterations = fit_iterations(fit),
         fit_seconds = fit.cputime, ci_status = ci_status,
         total = cov.total, usable = cov.usable, covered = cov.covered,
         coverage = cov.coverage,
-        bias_mean = finite_mean(est .- truth),
-        bias_rmse = finite_rmse(est, truth),
+        bias_mean = finite_mean(est .- truth_for_summary),
+        bias_rmse = finite_rmse(est, truth_for_summary),
         estimate_mean = finite_mean(est),
-        truth_mean = finite_mean(truth),
+        truth_mean = finite_mean(truth_for_summary),
         max_abs_estimate = maximum(abs.(est)),
-        max_abs_truth = maximum(abs.(truth)),
+        max_abs_truth = maximum(abs.(truth_for_summary)),
+        lr_deviance = finite_mean(lr),
+        lr_cutoff = finite_mean(cutoff),
         ci_seconds = ci_seconds,
         pd_hessian = pd, bootstrap_converged = nb, error = ci_error,
     )
@@ -531,7 +1064,12 @@ function run_task(row::Dict{String, String}; outdir::String, methods, level::Rea
                   iterations::Integer, n_boot::Integer,
                   bootstrap_iterations::Union{Nothing, Integer},
                   targets, dry_run::Bool, force::Bool, write_details::Bool,
-                  truth_init::Bool)
+                  truth_init::Bool,
+                  b_lv_entries::Union{Nothing, Vector{Int}},
+                  profile_engine::Symbol,
+                  profile_opt_iterations::Integer,
+                  profile_maxstep::Integer,
+                  profile_bisect_iterations::Integer)
     task_id = row_value(row, "task_id", Int)
     scenario = row_value(row, "scenario", String)
     lambda = row_value(row, "pagel_lambda", Float64)
@@ -565,7 +1103,7 @@ function run_task(row::Dict{String, String}; outdir::String, methods, level::Rea
     base = (;
         task_id, scenario, pagel_lambda = lambda, n_species = p,
         n_sites, K, q_lv, K_phy, rep, seed, level, n_boot,
-        bootstrap_iterations,
+        bootstrap_iterations, b_lv_entries = entry_selection_label(b_lv_entries),
     )
     rows = NamedTuple[]
     progress("task $task_id simulate start")
@@ -624,13 +1162,18 @@ function run_task(row::Dict{String, String}; outdir::String, methods, level::Rea
 
     if "B_lv" in targets
         for method in methods
-            progress("task $task_id B_lv CI start method=$method")
+            progress("task $task_id B_lv CI start method=$method entries=$(entry_selection_label(b_lv_entries))")
             tci = time()
             try
                 push!(rows, b_lv_row(base, method, fit, Y, X_lv, B_true;
                                      level = level, n_boot = n_boot,
                                      bootstrap_iterations = bootstrap_iterations,
-                                     detail_path = write_details ? detail_result_path(result_path, method) : nothing))
+                                     detail_path = write_details ? detail_result_path(result_path, method) : nothing,
+                                     b_lv_entries = b_lv_entries,
+                                     profile_engine = profile_engine,
+                                     profile_opt_iterations = profile_opt_iterations,
+                                     profile_maxstep = profile_maxstep,
+                                     profile_bisect_iterations = profile_bisect_iterations))
                 progress("task $task_id B_lv CI done method=$method")
             catch err
                 progress("task $task_id B_lv CI error method=$method: $(sprint(showerror, err))")
@@ -683,7 +1226,7 @@ function main(args = ARGS)
     if has_flag(args, "--help") || isempty(args)
         println("phylo_xlv_drac_task.jl: --write-params FILE OR --params FILE --outdir DIR [--task-id N]")
         println("options: --reps 500 --lambdas 0,0.5,1 --n-species 20,200 --n-sites 200 --K 1,2 --q-lv 1 --K-phy 1")
-        println("         --scenarios main,null_alpha0,null_phylo0 --methods wald --targets B_lv,phylo_signal --iterations 400 --n-boot 200 --bootstrap-iterations 200 --write-details --truth-init --dry-run --force")
+        println("         --scenarios main,null_alpha0,null_phylo0 --methods wald|profile|profile_truth|profile_direct_slope --targets B_lv,phylo_signal --b-lv-entries all|1,5,9:12 --profile-engine penalty|exact --profile-opt-iterations 250 --profile-maxstep 40 --profile-bisect-iterations 24 --iterations 400 --n-boot 200 --bootstrap-iterations 200 --write-details --truth-init --dry-run --force")
         return
     end
 
@@ -725,6 +1268,11 @@ function main(args = ARGS)
         force = has_flag(args, "--force"),
         write_details = has_flag(args, "--write-details"),
         truth_init = has_flag(args, "--truth-init"),
+        b_lv_entries = parse_b_lv_entries(arg_value(args, "--b-lv-entries", "all")),
+        profile_engine = parse_profile_engine(arg_value(args, "--profile-engine", "penalty")),
+        profile_opt_iterations = parse(Int, arg_value(args, "--profile-opt-iterations", "250")),
+        profile_maxstep = parse(Int, arg_value(args, "--profile-maxstep", "40")),
+        profile_bisect_iterations = parse(Int, arg_value(args, "--profile-bisect-iterations", "24")),
     )
 end
 
