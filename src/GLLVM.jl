@@ -87,6 +87,7 @@ include("coevolution_glm.jl")             # cross-family (non-Gaussian) cross-li
 
 # Post-fit API (ordination, predict, residuals, summary)
 include("postfit.jl")
+include("lv_targets.jl")                # internal eta-scale realised LV targets
 include("families/com_poisson.jl")        # Conway–Maxwell–Poisson (under/overdispersed counts) — beyond gllvmTMB
 include("ordination.jl")                  # ordination output (site scores + species loadings, canonical rotation)
 include("model_selection.jl")             # select_lv: latent-dimension selection by AIC/BIC

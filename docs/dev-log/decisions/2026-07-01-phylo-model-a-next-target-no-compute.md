@@ -1,8 +1,32 @@
 # Phylo Model A next-target design, no compute
 
 Date: 2026-07-01
-Status: design gate; no compute authorized
+Status: Gate 0 implemented locally; no Gate 1/2/3 compute authorized
 Scope: future non-v1 Gaussian phylo Model A only
+
+## 2026-07-01 Gate 0 Update
+
+Gate 0 is now implemented in the handover worktree. The internal helper
+`GLLVM._eta_realized_lv_effects(X_lv, Z_truth, Lambda)` computes the
+trait-by-predictor eta-scale realized target from the noiseless
+latent-mediated trait surface, and `bench/phylo_xlv_drac_task.jl` can run the
+bench-only `profile_eta_realized` selected-entry LR canary.
+
+Local checks were deliberately small:
+
+- `test/test_phylo_eta_realized.jl`: `7/7` passed, including centering,
+  orientation, observed-response separation, and malformed-input guards.
+- Bench include smoke: `bench-include-ok`, with `profile_eta_realized` listed
+  in command help.
+- Tiny local one-seed canary: `p=12`, `n_sites=50`, `K=1`, `lambda=1.0`,
+  entry `1`, truth-start, fit converged, constrained solve converged, and
+  `LR = 0.415558111946 < 3.84145882069`.
+- `git diff --check` passed for the Gate 0 code/test files.
+
+This is not Gate 1, Gate 2, Gate 3, source-specific `lv` support, or an R
+grammar change. The broad `test/runtests.jl` sweep was interrupted after about
+31 minutes while still CPU-bound inside the unrelated zero-inflated/two-part
+test path, so the full-suite tally is not available from this slice.
 
 ## Decision
 
@@ -191,12 +215,13 @@ coverage estimate.
 
 ## Minimal Evidence Gate
 
-Gate 0 - design complete:
+Gate 0 - design complete and locally implemented:
 
 - this note exists;
-- truth formula is implemented in a small extractor or bench helper;
-- one unit test checks orientation and centering against an independent dense
-  calculation.
+- truth formula is implemented in `src/lv_targets.jl` and wired to the bench
+  `profile_eta_realized` helper;
+- `test/test_phylo_eta_realized.jl` checks orientation and centering against an
+  independent dense calculation.
 
 Gate 1 - positive-control diagnostic:
 
@@ -231,7 +256,7 @@ exposure. Passing Gate 1 or Gate 2 does not itself expose anything.
 | 4. Methods | covered | Included and excluded methods are listed. |
 | 5. Performance measures | covered | Canary and aggregate measures are defined. |
 | 6. Software details | deferred | Must be recorded by the future runner; no compute here. |
-| 7. Code availability | deferred | Future helper/test paths must be recorded before Gate 1. |
+| 7. Code availability | Gate 0 covered | `src/lv_targets.jl`, `test/test_phylo_eta_realized.jl`, and the bench `profile_eta_realized` route are recorded; future Gate 1 run manifests still need exact paths/seeds. |
 | 8. Execution details | deferred | Host, Julia version, seeds, and paths belong to the future run manifest. |
 | 9. Worked example | not applicable yet | No public example until the target passes gates. |
 | 10. Results reporting | deferred | Future tables must include failures and host-separated denominators. |
@@ -241,9 +266,10 @@ exposure. Passing Gate 1 or Gate 2 does not itself expose anything.
 
 - Ada: hold v1 parking and prevent scope creep.
 - Fisher: own the eta-scale realized target and profile-LR interpretation.
-- Curie: own the ADEMP gate and future orientation/centering unit test.
-- Grace: keep compute idle; Totoro diagnostic only after Gate 0, DRAC only after
-  Gate 2 and maintainer approval.
+- Curie: own Gate 1/2 selected-entry diagnostics after the Gate 0
+  orientation/centering unit test.
+- Grace: keep compute idle; Totoro diagnostic only after Gate 1 sign-off, DRAC
+  only after Gate 2 and maintainer approval.
 - Rose: block "partial support" wording.
 - Boole/Hopper: stay on standby; no R grammar or bridge widening until evidence
   passes.

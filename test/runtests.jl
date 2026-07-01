@@ -138,6 +138,7 @@ using GLLVM
     include("test_bridge_x.jl")
     include("test_bridge_lv_predictor.jl")
     include("test_lv_ci.jl")
+    include("test_phylo_eta_realized.jl")
     include("test_bridge_missing_mask.jl")
     include("test_quality.jl")
 end

@@ -1,5 +1,52 @@
 # Check Log
 
+## 2026-07-01 - Phylo Model A Gate 0 eta-realized target
+
+### Scope
+
+Implemented the internal `B_eta_realized` truth target and bench-only
+`profile_eta_realized` LR canary route for a future non-v1 Phylo Gaussian Model
+A restart. This is Gate 0 only: no source-specific R grammar, no package API,
+no likelihood change, no PR reopen, no Totoro diagnostic, and no DRAC claim
+compute.
+
+### Implemented
+
+- Added `GLLVM._eta_realized_lv_effects(X_lv, Z_truth, Lambda)` for the
+  finite-sample eta-scale realized/design-conditional slope target.
+- Added a deterministic test for centering, orientation, observed-response
+  separation, and malformed input.
+- Wired `bench/phylo_xlv_drac_task.jl` to return latent-score truth from the
+  simulator and run `profile_eta_realized` against `B_eta_realized`.
+
+### Checks Run
+
+```sh
+julia --project=. --startup-file=no test/test_phylo_eta_realized.jl
+julia --project=. --startup-file=no -e 'include("bench/phylo_xlv_drac_task.jl"); println("bench-include-ok")'
+git diff --check -- src/lv_targets.jl src/GLLVM.jl test/test_phylo_eta_realized.jl test/runtests.jl bench/phylo_xlv_drac_task.jl
+rm -rf /tmp/phylo_eta_gate0_smoke /tmp/phylo_eta_gate0_params.csv
+julia --project=. --startup-file=no bench/phylo_xlv_drac_task.jl --write-params /tmp/phylo_eta_gate0_params.csv --reps 1 --lambdas 1.0 --n-species 12 --n-sites 50 --K 1 --q-lv 1 --K-phy 1 --scenarios main --seed0 20260701
+mkdir -p /tmp/phylo_eta_gate0_smoke
+julia --project=. --startup-file=no bench/phylo_xlv_drac_task.jl --params /tmp/phylo_eta_gate0_params.csv --outdir /tmp/phylo_eta_gate0_smoke --task-id 1 --methods profile_eta_realized --targets B_lv --b-lv-entries 1 --iterations 150 --profile-opt-iterations 80 --truth-init --write-details --force
+julia --project=. --startup-file=no test/runtests.jl
+```
+
+Results:
+
+```text
+phylo Model A eta-realized target: 7/7 pass
+bench include smoke: bench-include-ok; help lists profile_eta_realized
+git diff --check: no whitespace errors
+tiny local profile_eta_realized smoke: fit converged; constrained solve converged; LR = 0.415558111946 < 3.84145882069
+test/runtests.jl: interrupted after about 31 minutes while CPU-bound in the unrelated zero-inflated/two-part path at test/test_zero_inflated.jl; no full-suite tally recorded
+```
+
+Claim boundary: IN: Gate 0 truth helper, deterministic unit test, and
+bench-only local smoke. OUT: Gate 1/2/3, source-specific `phylo_latent(..., lv =
+~ x)` exposure, R grammar, package API widening, PR #127 reopen, bootstrap
+rescue, non-Gaussian extension, Totoro diagnostic, or DRAC claim evidence.
+
 ## 2026-07-01 - LV arc closeout and next Phylo Model A target design
 
 ### Scope

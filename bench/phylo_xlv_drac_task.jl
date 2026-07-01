@@ -6,7 +6,9 @@
 # DGP:   Y[:,s] = Lambda_B * (X_lv[s,:]' * alpha + e_s) + phi + eps_s,
 #       e_s ~ N(0, I_K), phi ~ N(0, (Lambda_phy Lambda_phy') .* Sigma_pagel),
 #       eps_s ~ N(0, sigma_eps^2 I_p).
-# Estimands: vec(B_lv) = vec(Lambda_B * alpha') and per-trait H2.
+# Estimands: vec(B_lv) = vec(Lambda_B * alpha'), the diagnostic
+#       B_eta_realized target from the noiseless latent-mediated surface, and
+#       per-trait H2.
 # Methods: fit_gaussian_gllvm(...; X_lv, K_phy, Sigma_phy), then
 #       confint_lv_effects for B_lv and transformed-Wald H2 CIs.
 # Performance: convergence, usable interval denominator, coverage, bias, RMSE,
@@ -102,9 +104,10 @@ function parse_methods(s::String)
     out = Symbol[]
     for x in parse_string_list(s)
         method = Symbol(x)
-        method in (:wald, :wald_t_unit, :profile, :profile_truth, :profile_direct_slope,
+        method in (:wald, :wald_t_unit, :profile, :profile_truth,
+                   :profile_direct_slope, :profile_eta_realized,
                    :bootstrap, :bootstrap_basic) ||
-            throw(ArgumentError("--methods entries must be wald, wald_t_unit, profile, profile_truth, profile_direct_slope, bootstrap, or bootstrap_basic; got $x"))
+            throw(ArgumentError("--methods entries must be wald, wald_t_unit, profile, profile_truth, profile_direct_slope, profile_eta_realized, bootstrap, or bootstrap_basic; got $x"))
         push!(out, method)
     end
     isempty(out) && throw(ArgumentError("--methods must name at least one method"))
@@ -332,8 +335,8 @@ function truth_parameters(p::Integer, K::Integer, q_lv::Integer, K_phy::Integer,
     return (; Lambda_B, alpha, Lambda_phy, sigma_eps)
 end
 
-function simulate_dataset(seed::Integer, X_lv::AbstractMatrix, Sigma_phy::AbstractMatrix,
-                          pars)
+function simulate_dataset_with_latent_truth(seed::Integer, X_lv::AbstractMatrix,
+                                            Sigma_phy::AbstractMatrix, pars)
     rng = MersenneTwister(seed)
     p, K = size(pars.Lambda_B)
     n = size(X_lv, 1)
@@ -344,10 +347,18 @@ function simulate_dataset(seed::Integer, X_lv::AbstractMatrix, Sigma_phy::Abstra
         cholesky(Symmetric(Bphy + 1e-10 * I)).L * randn(rng, p)
     end
     Y = zeros(Float64, p, n)
+    Z_truth = zeros(Float64, n, K)
     @inbounds for s in 1:n
         z = vec(X_lv[s:s, :] * pars.alpha) .+ randn(rng, K)
+        Z_truth[s, :] .= z
         Y[:, s] .= pars.Lambda_B * z .+ phi .+ pars.sigma_eps .* randn(rng, p)
     end
+    return Y, Z_truth
+end
+
+function simulate_dataset(seed::Integer, X_lv::AbstractMatrix, Sigma_phy::AbstractMatrix,
+                          pars)
+    Y, _ = simulate_dataset_with_latent_truth(seed, X_lv, Sigma_phy, pars)
     return Y
 end
 
@@ -847,6 +858,11 @@ function direct_saturated_b_lv_target(Y::AbstractMatrix, X_lv::AbstractMatrix)
     return vec(Matrix(slopes))
 end
 
+function eta_realized_b_lv_target(X_lv::AbstractMatrix, Z_truth::AbstractMatrix,
+                                  Lambda_B::AbstractMatrix)
+    return vec(GLLVM._eta_realized_lv_effects(X_lv, Z_truth, Lambda_B))
+end
+
 function b_lv_profile_direct_slope_subset_ci(fit, Y, X_lv, entries::AbstractVector{Int};
                                              level::Real, label::AbstractString = "",
                                              opt_iterations::Integer = 250)
@@ -856,6 +872,17 @@ function b_lv_profile_direct_slope_subset_ci(fit, Y, X_lv, entries::AbstractVect
                                         level = level, label = label,
                                         opt_iterations = opt_iterations,
                                         method_label = :profile_direct_slope)
+end
+
+function b_lv_profile_eta_realized_subset_ci(fit, Y, X_lv, entries::AbstractVector{Int},
+                                             eta_truth::AbstractVector{Float64};
+                                             level::Real, label::AbstractString = "",
+                                             opt_iterations::Integer = 250)
+    truth_selected = collect(Float64, eta_truth[entries])
+    return b_lv_profile_truth_subset_ci(fit, Y, X_lv, entries, truth_selected;
+                                        level = level, label = label,
+                                        opt_iterations = opt_iterations,
+                                        method_label = :profile_eta_realized)
 end
 
 function b_lv_profile_subset_ci(fit, Y, X_lv, entries::AbstractVector{Int};
@@ -881,6 +908,7 @@ function b_lv_row(base, method::Symbol, fit, Y, X_lv, truth; level::Real, n_boot
                   bootstrap_iterations::Union{Nothing, Integer},
                   detail_path::Union{Nothing, String} = nothing,
                   b_lv_entries::Union{Nothing, AbstractVector{Int}} = nothing,
+                  eta_realized_truth::Union{Nothing, AbstractVector{Float64}} = nothing,
                   profile_engine::Symbol = :penalty,
                   profile_opt_iterations::Integer = 250,
                   profile_maxstep::Integer = 40,
@@ -888,7 +916,7 @@ function b_lv_row(base, method::Symbol, fit, Y, X_lv, truth; level::Real, n_boot
     selected_entries = checked_b_lv_entries(b_lv_entries, length(truth))
     truth_selected = collect(Float64, truth[selected_entries])
     profile_subset = method === :profile && b_lv_entries !== nothing
-    profile_truth_like = method in (:profile_truth, :profile_direct_slope)
+    profile_truth_like = method in (:profile_truth, :profile_direct_slope, :profile_eta_realized)
     t0 = time()
     ci = if method === :bootstrap_basic
         b_lv_bootstrap_basic_ci(fit, Y, X_lv; level = level, n_boot = n_boot,
@@ -900,6 +928,13 @@ function b_lv_row(base, method::Symbol, fit, Y, X_lv, truth; level::Real, n_boot
                                      opt_iterations = profile_opt_iterations)
     elseif method === :profile_direct_slope
         b_lv_profile_direct_slope_subset_ci(fit, Y, X_lv, selected_entries;
+                                            level = level, label = "task $(base.task_id)",
+                                            opt_iterations = profile_opt_iterations)
+    elseif method === :profile_eta_realized
+        eta_realized_truth === nothing &&
+            throw(ArgumentError("profile_eta_realized requires eta_realized_truth"))
+        b_lv_profile_eta_realized_subset_ci(fit, Y, X_lv, selected_entries,
+                                            eta_realized_truth;
                                             level = level, label = "task $(base.task_id)",
                                             opt_iterations = profile_opt_iterations)
     elseif profile_subset
@@ -930,7 +965,15 @@ function b_lv_row(base, method::Symbol, fit, Y, X_lv, truth; level::Real, n_boot
     cutoff = cutoff_all[ci_idx]
     direct_truth_selected = method === :profile_direct_slope ?
         collect(Float64, direct_saturated_b_lv_target(Y, X_lv)[selected_entries]) : truth_selected
-    truth_for_summary = method === :profile_direct_slope ? direct_truth_selected : truth_selected
+    eta_truth_selected = method === :profile_eta_realized ?
+        collect(Float64, eta_realized_truth[selected_entries]) : truth_selected
+    truth_for_summary = if method === :profile_direct_slope
+        direct_truth_selected
+    elseif method === :profile_eta_realized
+        eta_truth_selected
+    else
+        truth_selected
+    end
     cov = profile_truth_like ? lr_coverage_summary(lr, cutoff) : coverage_summary(lo, hi, truth_for_summary)
     pd = :pd_hessian in keys(ci) ? ci.pd_hessian : nothing
     nb = :n_converged in keys(ci) ? ci.n_converged : nothing
@@ -954,7 +997,13 @@ function b_lv_row(base, method::Symbol, fit, Y, X_lv, truth; level::Real, n_boot
     truth_side = [truth_covered[j] ? "covered" :
                   (isfinite(lr[j]) && isfinite(cutoff[j]) ? "outside_profile_truth" : "not_usable")
                   for j in eachindex(lr)]
-    target_label = method_label === :profile_direct_slope ? "B_lv_direct_slope" : "B_lv"
+    target_label = if method_label === :profile_direct_slope
+        "B_lv_direct_slope"
+    elseif method_label === :profile_eta_realized
+        "B_eta_realized"
+    else
+        "B_lv"
+    end
     detail_path !== nothing &&
         write_b_lv_detail_csv(detail_path, base, method_label, selected_entries,
                               terms, est, lo, hi, truth_for_summary;
@@ -1107,7 +1156,8 @@ function run_task(row::Dict{String, String}; outdir::String, methods, level::Rea
     )
     rows = NamedTuple[]
     progress("task $task_id simulate start")
-    Y = simulate_dataset(seed, X_lv, Sigma_phy, truth)
+    Y, Z_truth = simulate_dataset_with_latent_truth(seed, X_lv, Sigma_phy, truth)
+    B_eta_realized = eta_realized_b_lv_target(X_lv, Z_truth, truth.Lambda_B)
     progress("task $task_id simulate done; fit start iterations=$iterations truth_init=$truth_init")
     fit = nothing
     fit_seconds = NaN
@@ -1170,6 +1220,7 @@ function run_task(row::Dict{String, String}; outdir::String, methods, level::Rea
                                      bootstrap_iterations = bootstrap_iterations,
                                      detail_path = write_details ? detail_result_path(result_path, method) : nothing,
                                      b_lv_entries = b_lv_entries,
+                                     eta_realized_truth = B_eta_realized,
                                      profile_engine = profile_engine,
                                      profile_opt_iterations = profile_opt_iterations,
                                      profile_maxstep = profile_maxstep,
@@ -1177,13 +1228,15 @@ function run_task(row::Dict{String, String}; outdir::String, methods, level::Rea
                 progress("task $task_id B_lv CI done method=$method")
             catch err
                 progress("task $task_id B_lv CI error method=$method: $(sprint(showerror, err))")
+                truth_for_error = method === :profile_eta_realized ? B_eta_realized : B_true
+                target_for_error = method === :profile_eta_realized ? "B_eta_realized" : "B_lv"
                 push!(rows, result_row(base;
-                    target = "B_lv", method = String(method),
+                    target = target_for_error, method = String(method),
                     fit_converged = fit.converged, fit_iterations = fit_iterations(fit),
                     fit_seconds = fit_seconds, ci_seconds = time() - tci,
                     ci_status = "ci_error",
-                    total = length(B_true), truth_mean = finite_mean(B_true),
-                    max_abs_truth = maximum(abs.(B_true)),
+                    total = length(truth_for_error), truth_mean = finite_mean(truth_for_error),
+                    max_abs_truth = maximum(abs.(truth_for_error)),
                     error = sprint(showerror, err),
                 ))
             end
@@ -1226,7 +1279,7 @@ function main(args = ARGS)
     if has_flag(args, "--help") || isempty(args)
         println("phylo_xlv_drac_task.jl: --write-params FILE OR --params FILE --outdir DIR [--task-id N]")
         println("options: --reps 500 --lambdas 0,0.5,1 --n-species 20,200 --n-sites 200 --K 1,2 --q-lv 1 --K-phy 1")
-        println("         --scenarios main,null_alpha0,null_phylo0 --methods wald|profile|profile_truth|profile_direct_slope --targets B_lv,phylo_signal --b-lv-entries all|1,5,9:12 --profile-engine penalty|exact --profile-opt-iterations 250 --profile-maxstep 40 --profile-bisect-iterations 24 --iterations 400 --n-boot 200 --bootstrap-iterations 200 --write-details --truth-init --dry-run --force")
+        println("         --scenarios main,null_alpha0,null_phylo0 --methods wald|profile|profile_truth|profile_direct_slope|profile_eta_realized --targets B_lv,phylo_signal --b-lv-entries all|1,5,9:12 --profile-engine penalty|exact --profile-opt-iterations 250 --profile-maxstep 40 --profile-bisect-iterations 24 --iterations 400 --n-boot 200 --bootstrap-iterations 200 --write-details --truth-init --dry-run --force")
         return
     end
 
