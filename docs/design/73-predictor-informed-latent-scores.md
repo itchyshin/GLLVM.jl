@@ -1,31 +1,22 @@
 # Design 73 - Predictor-informed latent scores: `latent(..., lv = ~ x)`
 
-**Status (2026-06-30):** ordinary `X_lv` engine + CI trio shipped to `main`
-(#116-#126). The phylo Model A extension has local engine and CI plumbing on the
-draft PR branch, but its interval calibration is **blocked** by the p=80, K=2,
-lambda=0.5 `B_lv` weak cell. The R `lv = ~ x` source-specific formula grammar
-and any public phylo Model A capability promotion remain blocked/parked for v1. A later
-profile-LR truth-inclusion canary also missed the known truth for the worst
-task-8 entry (`LR = 9.9918 > 3.8415`). A later K = 1 positive-control attempt
-also failed its 20-replicate diagnostic gate (`98/100` selected entries covered,
-with two converged misses). The current Model A v1 interval target is therefore
-retired from public support pending structural redesign with a genuinely
-different target/regime, or explicit v1 retirement. This doc is the spec the
-Julia comments (`likelihood.jl:405`) reference. The current operating decision
-is recorded in
-`docs/dev-log/decisions/2026-06-30-phylo-model-a-council-final.md`; the
-current method/estimand dependency lock is
-`docs/dev-log/decisions/2026-07-01-phylo-model-a-structural-dependencies.md`.
-The v1 retirement/parking decision is recorded in
-`docs/dev-log/decisions/2026-07-01-phylo-model-a-v1-retirement.md`. The old
-fork remains useful background in
-`docs/dev-log/decisions/2026-07-01-phylo-model-a-structural-redesign-fork.md`:
-public source-specific phylo `lv` is retired from v1 unless Shinichi explicitly
-authorizes a genuinely changed realized/conditional target with a fresh ADEMP
-gate.
-The first concrete changed-target candidate is
-`docs/dev-log/decisions/2026-07-01-phylo-model-a-realized-direct-slope-ademp.md`.
-It is bench-only diagnostic tooling, not public support.
+**Status (2026-07-01):** ordinary `X_lv` engine + CI trio shipped to `main`
+(#116-#126). The original phylo Model A population-`B_lv` interval target is
+retired/parked for v1 after the p=80, K=2, lambda=0.5 weak cell, the task-8
+profile miss, the K=1 `98/100` diagnostic, and the direct-slope strict-gate
+failure. A changed eta-scale realized/design-conditional target,
+`B_eta_realized`, later passed Gate 0-3, including DRAC Gate 3
+(`2495/2500 = 0.998000000`, MCSE `0.000890835`, Wilson 95 percent interval
+`0.995326484` to `0.999145426`). That is strong internal evidence for the
+changed target, not public source-specific `lv` support. The R
+`lv = ~ x` source-specific formula grammar, PR #127 reopening, public phylo
+Model A wording, and non-Gaussian/source-specific extensions remain blocked
+until Shinichi explicitly authorizes an exposure-design slice. This doc is the
+spec the Julia comments (`likelihood.jl:405`) reference. The compact evidence
+freeze is
+`docs/dev-log/decisions/2026-07-01-phylo-model-a-evidence-freeze-and-next-arc.md`;
+the detailed Gate 0-3 record is
+`docs/dev-log/decisions/2026-07-01-phylo-model-a-next-target-no-compute.md`.
 
 ## 1. The model
 

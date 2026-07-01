@@ -1,7 +1,7 @@
 # Phylo Model A structural dependencies after the weak-cell miss
 
 Date: 2026-07-01
-Status: 20-replicate narrowed-regime gate failed; structural decision required
+Status: post-Gate 3 evidence freeze; structural dependencies still gate exposure
 Scope: Gaussian direct/native phylo Model A, source-specific `lv = ~ x`
 
 See also:
@@ -14,6 +14,13 @@ realized/conditional target with fresh ADEMP evidence.
 Do not run bootstrap as the next uncertainty route for phylo Model A. The trio
 is useful for ordinary `X_lv`, but the phylo weak cell has already made the
 bootstrap/Wald/t-Wald/percentile family of reruns negative evidence.
+
+Post-freeze update: the changed eta-scale realized/design-conditional target
+`B_eta_realized` later passed Gate 3 DRAC claim evidence (`2495/2500 =
+0.998000000`). That closes the internal evidence arc for the changed target,
+but it does not alter the exposure dependency: source-specific R grammar,
+PR #127 reopening, public wording, and non-Gaussian extensions still require
+explicit maintainer authorization and separate structural gates.
 
 2026-07-01 update: source-specific phylo `lv` is retired/parked for v1 under
 the current evidence. The active v1 answer is no grammar exposure and no

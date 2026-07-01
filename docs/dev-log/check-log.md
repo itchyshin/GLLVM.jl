@@ -1,5 +1,46 @@
 # Check Log
 
+## 2026-07-01 - Phylo Model A post-Gate3 hardening
+
+### Scope
+
+Froze the Gate 0-3 evidence packet in a compact maintainer note and tightened
+current docs so Gate 3 reads as strong internal evidence for the changed
+`B_eta_realized` target, not public source-specific `lv` support.
+
+Files updated:
+
+- `docs/dev-log/decisions/2026-07-01-phylo-model-a-evidence-freeze-and-next-arc.md`
+- `docs/dev-log/decisions/2026-07-01-phylo-model-a-structural-dependencies.md`
+- `docs/design/73-predictor-informed-latent-scores.md`
+- `docs/dev-log/after-task/2026-07-01-phylo-model-a-post-gate3-hardening.md`
+
+Evidence retained:
+
+```text
+Gate 3 job: 17049809_[1-500%100]
+target: B_eta_realized
+method: profile_eta_realized
+covered/planned: 2495/2500 = 0.998000000
+MCSE: 0.000890835
+Wilson 95 percent interval: 0.995326484 to 0.999145426
+```
+
+Checks:
+
+```sh
+git diff --check -- docs/dev-log/decisions/2026-07-01-phylo-model-a-evidence-freeze-and-next-arc.md docs/dev-log/decisions/2026-07-01-phylo-model-a-structural-dependencies.md docs/design/73-predictor-informed-latent-scores.md docs/dev-log/check-log.md docs/dev-log/after-task/2026-07-01-phylo-model-a-post-gate3-hardening.md
+rg -n "B_eta_realized|2495/2500|0\\.998000000|explicitly authorizes|separate derivation and ADEMP" docs/dev-log/decisions/2026-07-01-phylo-model-a-evidence-freeze-and-next-arc.md docs/dev-log/decisions/2026-07-01-phylo-model-a-structural-dependencies.md docs/design/73-predictor-informed-latent-scores.md
+rg -n "Gate 3 running|active compute only|result files: 0/500|detail files: 0/500|1 active|ready to scale|source-specific phylo lv.*covered|non-Gaussian.*covered" docs/dev-log/decisions/2026-07-01-phylo-model-a-evidence-freeze-and-next-arc.md docs/dev-log/decisions/2026-07-01-phylo-model-a-structural-dependencies.md docs/design/73-predictor-informed-latent-scores.md
+```
+
+Still not claimed:
+
+- No `phylo_latent(..., lv = ~ x)` exposure.
+- No PR #127 reopen, package API widening, public source-specific support, or
+  non-Gaussian/source-specific extension.
+- No new compute.
+
 ## 2026-07-01 - Phylo Model A Gate 3 DRAC claim evidence passed
 
 ### Scope
