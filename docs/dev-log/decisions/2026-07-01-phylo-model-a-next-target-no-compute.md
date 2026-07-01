@@ -1,7 +1,7 @@
 # Phylo Model A next-target design, no compute
 
 Date: 2026-07-01
-Status: Gate 0 implemented locally; Gate 1 amended and passed as an MCSE-aware diagnostic; Gate 2 manifest locked; Gate 2/3 results pending
+Status: Gate 0 implemented locally; Gate 1 amended and passed as an MCSE-aware diagnostic; Gate 2 passed on Totoro diagnostic evidence; Gate 3 claim evidence pending
 Scope: future non-v1 Gaussian phylo Model A only
 
 ## 2026-07-01 Gate 0 Update
@@ -169,6 +169,60 @@ inclusion at least `0.92`, MCSE reported, all misses listed, and one host
 denominator only. Failure parks the arc again. Passing Gate 2 permits planning
 Gate 3 DRAC claim evidence, but does not expose source-specific R grammar.
 
+### Gate 2 Result
+
+Gate 2 ran as a Totoro-only diagnostic from clean source commit `41a4120`.
+The worktree-local code edits in `src/confint_family.jl` and
+`test/test_phylo_xlv.jl` were not part of this run.
+
+Remote result root:
+
+```text
+/home/snakagaw/hsq_work/phylo_model_a_gate2_20260701-160537
+```
+
+Final reducer:
+
+```text
+result files: 20
+detail files: 20
+fit convergence: 20/20
+profile status: 20/20 ok rows
+selected entries: 100
+usable profile truth solves: 100/100
+covered/planned: 100/100 = 1.000
+MCSE: 0.0000
+Wilson 95% interval: 0.9630 to 1.0000
+LR misses: 0
+max LR: 2.67333858328 at task 5 entry 14
+LR cutoff: 3.84145882069
+```
+
+Per-entry detail:
+
+```text
+entry 14: 20/20 covered, max LR 2.67333858328
+entry 41: 20/20 covered, max LR 2.26827350234
+entry 71: 20/20 covered, max LR 0.414283414571
+entry 8:  20/20 covered, max LR 0.47645991293
+entry 44: 20/20 covered, max LR 0.273812631152
+```
+
+Runtime summary:
+
+```text
+fit seconds mean: 467.59, min 298.46, max 664.29
+CI seconds mean: 1210.85, min 867.55, max 1921.61
+```
+
+Gate 2 therefore passes the amended diagnostic rule. This is the first
+weak-cell evidence that the eta-scale realized/design-conditional
+`B_eta_realized` target behaves differently from the retired population-`B_lv`
+route. It is still diagnostic evidence only. It does not expose
+source-specific R grammar, reopen PR #127, or make a public package support
+claim. The only authorized next step is Gate 3 DRAC claim-evidence planning
+with seed-matched denominators and MCSE/Wilson reporting.
+
 ## Decision
 
 The LV arc should not continue by rerunning the old population-`B_lv` route.
@@ -188,9 +242,11 @@ finite-sample and conditional. It is not the old population
 saturated `Y ~ X_lv` shortcut that already failed the strict direct-slope
 canary.
 
-This note is planning only. It does not authorize Totoro, DRAC, package API,
-R grammar exposure, source-specific `lv` support, PR #127 reopening, or any
-large compute.
+The original version of this note was planning only. The later Gate 0, Gate 1,
+and Gate 2 sections above record the approved local/Totoro diagnostics that
+followed. The note still does not authorize package API widening, R grammar
+exposure, source-specific `lv` support, PR #127 reopening, or a public support
+claim.
 
 ## Why This Target
 
