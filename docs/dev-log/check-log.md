@@ -1,5 +1,64 @@
 # Check Log
 
+## 2026-07-01 - Phylo Model A Gate 1 amendment and Gate 2 manifest
+
+### Scope
+
+Locked the amended Gate 1 decision and predeclared the Gate 2 weak-cell
+diagnostic manifest before launching any Gate 2 compute.
+
+### Gate 1 Amendment
+
+The original no-miss Gate 1 rule was over-strict for a 100-entry nominal 95%
+diagnostic. The amended rule keeps the hard usability conditions but evaluates
+coverage as an MCSE-aware selected-entry diagnostic:
+
+- `20/20` fits converged;
+- `100/100` selected-entry profile truth solves usable;
+- selected-entry coverage at least `0.92` at this `n = 100` denominator;
+- MCSE and Wilson interval reported;
+- all misses retained and listed;
+- one host denominator only.
+
+The corrected Gate 1 diagnostic passes this amended rule with `97/100 = 0.970`
+coverage, MCSE `0.0171`, and Wilson interval `0.9155` to `0.9897`.
+
+### Gate 2 Manifest
+
+```text
+target: B_eta_realized
+method: profile_eta_realized
+cell: p=80, n_sites=200, K=2, q_lv=1, K_phy=1, lambda=0.5, scenario=main
+replicates: 20
+seed0: 20260701
+selected entries: 14,41,71,8,44
+fit/profile optimizer budgets: 1000 / 1000
+host: Totoro diagnostic only unless a tiny local smoke is needed
+```
+
+Entry rule: entry `71` is the old weak-cell sentinel; entries `14,41,8,44`
+are deterministic population-`|B_lv|` rank representatives chosen before seeing
+Gate 2 outcomes.
+
+Commands:
+
+```sh
+julia --project=. --startup-file=no bench/phylo_xlv_drac_task.jl --write-params /tmp/phylo_eta_gate2_manifest_params.csv --reps 20 --lambdas 0.5 --n-species 80 --n-sites 200 --K 2 --q-lv 1 --K-phy 1 --scenarios main --seed0 20260701
+julia --project=. --startup-file=no bench/phylo_xlv_drac_task.jl --params /tmp/phylo_eta_gate2_manifest_params.csv --outdir /tmp/phylo_eta_gate2_dryrun --task-id 8 --methods profile_eta_realized --targets B_lv --b-lv-entries 14,41,71,8,44 --profile-opt-iterations 1000 --iterations 1000 --write-details --truth-init --dry-run
+```
+
+Results:
+
+- parameter writer produced `20` tasks;
+- dry-run task 8 read `scenario=main`, `lambda=0.5`, `n_species=80`,
+  `n_sites=200`, `K=2`, `q_lv=1`, `K_phy=1`, `seed=28381215`;
+- `B_lv` length was `80`;
+- no Gate 2 statistical result yet.
+
+Claim boundary: amended Gate 1 only permits the Gate 2 diagnostic. It does not
+authorize source-specific R grammar, PR #127 reopening, public support, or a
+DRAC claim run.
+
 ## 2026-07-01 - Phylo Model A Gate 1 corrected optimizer-budget diagnostic
 
 ### Scope

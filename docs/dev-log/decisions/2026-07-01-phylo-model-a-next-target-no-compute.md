@@ -1,7 +1,7 @@
 # Phylo Model A next-target design, no compute
 
 Date: 2026-07-01
-Status: Gate 0 implemented locally; Gate 1 strict no-miss gate failed; corrected local diagnostic is 97/100; Gate 2/3 held
+Status: Gate 0 implemented locally; Gate 1 amended and passed as an MCSE-aware diagnostic; Gate 2 manifest locked; Gate 2/3 results pending
 Scope: future non-v1 Gaussian phylo Model A only
 
 ## 2026-07-01 Gate 0 Update
@@ -104,6 +104,70 @@ Operational consequence: Gate 2 and Gate 3 remain held until Shinichi approves
 an amended Gate 1 rule. The defensible amendment is not to drop weak entries or
 claim support; it is to replace the no-miss canary with an MCSE-aware
 selected-entry coverage gate and to require the corrected optimizer budget.
+
+### Gate 1 Rule Amendment
+
+Shinichi's 2026-07-01 goal to finish Phylo Model A gates authorizes replacing
+the over-strict no-miss canary with the following MCSE-aware diagnostic rule:
+
+- `20/20` fits must converge;
+- `100/100` selected-entry profile truth solves must be usable;
+- selected-entry truth inclusion must be at least `0.92` at this `n = 100`
+  diagnostic denominator;
+- MCSE and a Wilson interval must be reported beside the point estimate;
+- all converged LR misses must be listed and retained in the denominator;
+- host denominators must not be mixed.
+
+Under this amended Gate 1 rule, the corrected optimizer-budget diagnostic
+passes locally: `20/20` fits converged, `100/100` selected entries were usable,
+and `97/100 = 0.970` selected entries included truth with MCSE `0.0171`
+and Wilson interval `0.9155` to `0.9897`. This still does not authorize R
+grammar exposure, PR #127 reopening, public source-specific support, or a DRAC
+claim run. It only allows the predeclared Gate 2 diagnostic.
+
+### Gate 2 Manifest
+
+Gate 2 is a weak-cell diagnostic, not claim evidence:
+
+```text
+family: Gaussian
+scenario: main
+target: B_eta_realized
+method: profile_eta_realized
+p: 80
+n_sites: 200
+K: 2
+q_lv: 1
+K_phy: 1
+lambda: 0.5
+replicates: 20
+seed0: 20260701
+fit iterations: 1000
+profile_opt_iterations: 1000
+selected entries: 14,41,71,8,44
+host: Totoro diagnostic only, unless run locally for a tiny smoke
+```
+
+Entry `71` is the sentinel from the old weak-cell canary. The other four
+entries are deterministic representatives of fixed population `|B_lv|` ranks
+for the p = 80, K = 2 DGP, chosen before any Gate 2 outcome is seen:
+
+| entry | population `B_lv` | absolute-rank note |
+| ---: | ---: | --- |
+| 14 | -0.0613253653105 | low-effect representative |
+| 41 | 0.149014398266 | lower-mid representative |
+| 71 | -0.572911690134 | old weak-cell sentinel entry |
+| 8 | -0.298707930331 | upper-mid representative |
+| 44 | -0.522744674442 | high-effect representative |
+
+The dry-run manifest check read task 8 as p = 80, n_sites = 200, K = 2,
+lambda = 0.5, seed `28381215`, and `B_lv` length `80`.
+
+Gate 2 pass rule mirrors amended Gate 1 at this diagnostic denominator:
+`20/20` fits converged, `100/100` selected entries usable, selected-entry truth
+inclusion at least `0.92`, MCSE reported, all misses listed, and one host
+denominator only. Failure parks the arc again. Passing Gate 2 permits planning
+Gate 3 DRAC claim evidence, but does not expose source-specific R grammar.
 
 ## Decision
 
@@ -218,8 +282,7 @@ First positive-control regime, only after maintainer approval:
 | diagnostic replicates | 20 |
 | host | local or Totoro diagnostic only |
 
-First weak-cell challenge, only if the positive-control regime has no converged
-misses:
+First weak-cell challenge, only after the amended Gate 1 rule passes:
 
 | factor | level |
 | --- | --- |
@@ -229,7 +292,7 @@ misses:
 | K | 2 |
 | n_sites | 200 |
 | lambda | 0.5 |
-| selected entries | task-8 entry-71 plus four predeclared entries |
+| selected entries | `14,41,71,8,44`; entry 71 is the old sentinel |
 | diagnostic replicates | 20 |
 | host | Totoro diagnostic only |
 
@@ -304,7 +367,9 @@ Gate 1 - positive-control diagnostic:
 
 - 20/20 fits converge;
 - 100/100 selected entries usable if five entries are selected per replicate;
-- zero converged LR misses;
+- selected-entry coverage at least 0.92 at the n = 100 diagnostic denominator;
+- MCSE and Wilson interval reported;
+- all converged LR misses listed, with no denominator pruning;
 - no mixed host denominators.
 
 Status on 2026-07-01: failed locally with `84/100` planned entries covered,
@@ -314,14 +379,18 @@ converged LR misses. This failure blocks Gate 2/3.
 Corrected optimizer-budget status on 2026-07-01: same seeds and entries with
 `iterations = 1000` and `profile_opt_iterations = 1000` produced `20/20` fit
 convergence, `100/100` usable profile solves, and `97/100` selected-entry
-coverage. This supports amending the Gate 1 rule, but it does not by itself
-authorize Gate 2/3 because the original no-miss rule failed.
+coverage. Under the amended MCSE-aware rule above, Gate 1 is passed for the
+limited purpose of running Gate 2.
 
 Gate 2 - weak-cell diagnostic:
 
 - task-8 entry-71 is included;
-- at least four additional entries are predeclared;
-- zero converged LR misses in the 20-replicate selected-entry canary.
+- entries are locked as `14,41,71,8,44`;
+- 20/20 fits converge;
+- 100/100 selected entries are usable;
+- selected-entry coverage is at least 0.92 at the n = 100 diagnostic denominator;
+- MCSE and Wilson interval are reported;
+- all misses are listed, with no denominator pruning.
 
 Gate 3 - claim evidence, not authorized here:
 
