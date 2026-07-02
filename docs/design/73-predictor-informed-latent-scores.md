@@ -33,7 +33,10 @@ The local S1 selected-entry route canary is recorded in
 `docs/dev-log/decisions/2026-07-02-phylo-poisson-structural-lv-s1-profile-canary.md`.
 Together these are private Julia plumbing and canary evidence only: no public
 fitter, bridge transport, R grammar, coverage calibration, or source-specific
-`lv` support follows from them.
+`lv` support follows from them. A second source/family S0 target, phylo x
+Binomial logit, is recorded in
+`docs/dev-log/decisions/2026-07-02-phylo-binomial-structural-lv-s0-target.md`;
+it is symbolic alignment only and has no S1 likelihood proof yet.
 This doc is the spec the Julia comments (`likelihood.jl:405`) reference. The
 compact evidence freeze is
 `docs/dev-log/decisions/2026-07-01-phylo-model-a-evidence-freeze-and-next-arc.md`;

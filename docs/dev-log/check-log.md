@@ -1,5 +1,53 @@
 # Check Log
 
+## 2026-07-02 - Phylo x Binomial structural LV S0 target
+
+Opened the second non-Gaussian structural-source LV target at S0 only:
+phylo x Binomial logit. This is symbolic alignment and gate planning; no
+likelihood proof, selected-entry canary, source-specific R grammar, bridge row,
+Totoro run, or DRAC run was added.
+
+Implemented:
+
+- new S0 target page
+  `docs/dev-log/decisions/2026-07-02-phylo-binomial-structural-lv-s0-target.md`;
+- `docs/dev-log/decisions/2026-07-02-nongaussian-structural-source-lv-gate0.md`
+  now links Binomial to that S0 page and keeps S1 blocked until
+  Binomial-specific reduction tests exist;
+- `docs/design/73-predictor-informed-latent-scores.md` now records phylo x
+  Binomial as symbolic S0 only, with no S1 likelihood proof.
+
+S0 target:
+
+```text
+family: Binomial(logit)
+source: augmented phylogeny
+target: B_eta_realized = slope_X(Lambda * Z_truth')
+trial matrix N: required design input, not an estimand
+status: not S1-ready
+```
+
+Required before S1:
+
+- `sigma_phy^2 -> 0` reduction to ordinary Binomial `X_lv`;
+- `Lambda = 0` reduction to `phylo_glm_marginal_loglik(Binomial())`;
+- dense/sparse phylo equality anchor;
+- `N` dimension/positivity and `0 <= Y <= N` guards;
+- only then a deterministic selected-entry `B_eta_realized` profile canary.
+
+Focused verification:
+
+```text
+julia --project=. --startup-file=no test/test_phylo_glm.jl
+Phylogenetic GLM (augmented-state joint Laplace): 6 passed, 0 failed, 0 errored, 3.6s
+```
+
+Claim boundary: IN: phylo x Binomial has an S0 target page and explicit S1
+requirements. OUT: no combined Binomial structural likelihood, no profile
+canary, no compute, no source-specific `lv` support, no bridge transport, no
+coverage calibration, and no inheritance from ordinary Binomial or phylo x
+Poisson evidence.
+
 ## 2026-07-02 - Structural-source LV matrix Ordinal sync
 
 Synced the structural-source Gate 0 truth matrix after the ordinary

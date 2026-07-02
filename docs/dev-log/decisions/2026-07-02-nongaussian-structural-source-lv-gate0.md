@@ -31,6 +31,12 @@ surface and show one deterministic `B_eta_realized` truth-inclusion route, but
 they do not expose a public fitter, bridge route, R grammar, coverage claim, or
 source-specific support wording.
 
+2026-07-02 update 2: the second source/family S0 page is now banked for
+phylo x Binomial logit in
+`docs/dev-log/decisions/2026-07-02-phylo-binomial-structural-lv-s0-target.md`.
+This is symbolic alignment only. It does not add a likelihood proof, canary,
+compute manifest, or support claim.
+
 ## Inputs
 
 - Ordinary one-part selected-entry profile canaries are local for Poisson,
@@ -62,7 +68,7 @@ source-specific support wording.
 | Family block | Ordinary selected-entry `B_lv` profile | Structural-source status |
 | --- | --- | --- |
 | Poisson | Gate 1 local canary complete. | Phylo x Poisson S0 target plus internal S1 likelihood proof and deterministic selected-entry profile canary with finite endpoints banked; S2/Totoro manifest is the next possible diagnostic gate. |
-| Binomial logit | Gate 1 local canary complete. | Gate 0 only; link-scale target and trial-size treatment must be declared. |
+| Binomial logit | Gate 1 local canary complete. | S0 target page banked; S1 still requires Binomial-specific reduction tests, trial-count guards, and a combined likelihood proof before any profile canary. |
 | NB2 | Gate 1 local canary complete with fitted-dispersion guard. | Gate 0 only; source/family page must name dispersion treatment and stop rules. |
 | Gamma | Gate 1 local canary complete with shape guard. | Gate 0 only; source/family page must name shape treatment and link-scale target. |
 | Beta | Gate 1 local canary complete with precision guard. | Gate 0 only; bounded response and precision treatment must be explicit. |
