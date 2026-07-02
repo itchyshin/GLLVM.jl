@@ -26,11 +26,15 @@ julia --project=. --startup-file=no test/runtests.jl
 
 pgrep -fl 'julia.*test/runtests|julia.*runtests' || true
 # clean, no output
+
+julia --project=. --startup-file=no test/test_va_vs_laplace.jl
+# VA vs Laplace comparison | 8 pass
 ```
 
 Claim boundary retained:
 
 - no broad quick-core or full `Pkg.test()` green claim from this run;
+- the file where the interrupt landed passed when isolated;
 - focused tests and the docs build remain the accepted evidence for the local
   slices.
 

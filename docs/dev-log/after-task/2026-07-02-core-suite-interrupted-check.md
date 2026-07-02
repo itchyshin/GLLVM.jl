@@ -52,13 +52,17 @@ julia --project=. --startup-file=no test/runtests.jl
 
 pgrep -fl 'julia.*test/runtests|julia.*runtests' || true
 # clean, no output
+
+julia --project=. --startup-file=no test/test_va_vs_laplace.jl
+# VA vs Laplace comparison | 8 pass
 ```
 
 ## Consistency Audit
 
-The interrupted broad suite is not green evidence. The current accepted evidence
-for tonight's changes remains the focused green tests and successful docs build
-recorded in the preceding after-task reports.
+The interrupted broad suite is not green evidence. The file where the interrupt
+landed passed when isolated, so no regression is inferred from that interruption.
+The current accepted evidence for tonight's changes remains the focused green
+tests and successful docs build recorded in the preceding after-task reports.
 
 ## GitHub Issue Maintenance
 
@@ -80,8 +84,8 @@ run with enough time budget.
 
 - No complete quick-core or full `Pkg.test()` pass is available after tonight's
   local commits.
-- The next broad validation should resume with `test/test_va_vs_laplace.jl` or a
-  fresh `test/runtests.jl` run when the time budget allows.
+- The next broad validation should be a fresh `test/runtests.jl` run with an
+  explicit long-run time budget.
 
 ## Known Limitations
 
@@ -90,10 +94,11 @@ This is a failed/interrupted check record only.
 ## Next Command
 
 ```sh
-cd /private/tmp/gllvmjl-phylo-xlv && julia --project=. --startup-file=no test/test_va_vs_laplace.jl
+cd /private/tmp/gllvmjl-phylo-xlv && julia --project=. --startup-file=no test/runtests.jl
 ```
 
 ## Rose Verdict
 
-Rose verdict: WARN - broad core-suite validation was attempted but interrupted;
-do not claim a green core suite from this run.
+Rose verdict: WARN - broad core-suite validation was attempted but interrupted.
+The focused VA-vs-Laplace file passed in isolation, but do not claim a green core
+suite from this run.
