@@ -1,5 +1,49 @@
 # Check Log
 
+## 2026-07-02 - Bridge CI docs boundary alignment
+
+### Scope
+
+Reconciled top-level docs with the current grouped-dispersion and ordinal CI
+bridge evidence. No source behavior changed.
+
+Files updated in this worktree:
+
+- `README.md`
+- `docs/src/roadmap.md`
+- `docs/src/confidence-intervals.md`
+- `docs/src/gllvmtmb-parity.md`
+- `test/test_bridge_ci.jl`
+- `docs/dev-log/after-task/2026-07-02-bridge-ci-doc-boundary-alignment.md`
+- `docs/dev-log/check-log.md`
+
+Checks:
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_grouped_dispersion.jl
+# bridge grouped dispersion default | 121 pass
+
+julia --project=. --startup-file=no test/test_bridge_ci.jl
+# bridge CI routing | 64 pass
+
+julia --project=docs --startup-file=no docs/make.jl
+# completed successfully; emitted pre-existing local-link warnings and npm audit warnings
+
+rg -n "Pkg\\.add\\(\\\"GLLVM\\\"\\)|Grouped-dispersion fits and per-trait ordinal cutpoint fits|grouped-dispersion bridge endpoints remain explicit unavailable|grouped-dispersion and per-trait ordinal-cutpoint point payloads|mixed-family R bridge is partial|every non-Gaussian family" README.md docs/src test
+# only the intentional docs homepage sentence remains:
+# docs/src/index.md: GLLVM.jl is not yet in the General registry, so `Pkg.add("GLLVM")` will not resolve.
+
+git diff --check -- README.md docs/src/roadmap.md docs/src/confidence-intervals.md docs/src/gllvmtmb-parity.md test/test_bridge_ci.jl
+# clean, no output
+```
+
+Claim boundary retained:
+
+- grouped NB2/NB1/Beta/Gamma CI endpoints are routed;
+- grouped Tweedie, per-trait ordinal, and mixed-family CI endpoints remain
+  follow-ups;
+- source-specific `lv` remains parked and no source-specific grammar is exposed.
+
 ## 2026-07-02 - Core suite interrupted check
 
 ### Scope

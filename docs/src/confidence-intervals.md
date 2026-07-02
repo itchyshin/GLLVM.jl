@@ -1,8 +1,8 @@
 # Confidence intervals
 
 GLLVM.jl provides three complementary interval methods — **Wald**, **profile
-likelihood**, and **parametric bootstrap** — for both the Gaussian engine and
-every non-Gaussian family.
+likelihood**, and **parametric bootstrap** — for the Gaussian engine and the
+admitted non-Gaussian CI rows.
 
 ## Non-Gaussian families — one entry point
 
@@ -24,18 +24,18 @@ marginal likelihood. The call returns a `NamedTuple` with `term`, `estimate`,
 `lower`, `upper`, and `method` (plus method-specific extras below).
 
 Supported fits: the GLM families (`PoissonFit`, `BinomialFit`, `NBFit`,
-`NB1Fit`, `BetaFit`, `GammaFit`) and the two-part families (`DeltaLogNormalFit`,
-`DeltaGammaFit`, `BetaHurdleFit`, `HurdlePoissonFit`, `HurdleNBFit`, `ZIPFit`,
-`ZINBFit`, `ZIBFit`), and shared-cutpoint ordinal (`OrdinalFit`).
-Grouped-dispersion fits and per-trait ordinal cutpoint fits currently report
-point payloads through the bridge, but their CI endpoints are deliberate
-follow-ups.
+`NB1Fit`, `BetaFit`, `GammaFit`), grouped-dispersion NB2/NB1/Beta/Gamma fits,
+the two-part families (`DeltaLogNormalFit`, `DeltaGammaFit`, `BetaHurdleFit`,
+`HurdlePoissonFit`, `HurdleNBFit`, `ZIPFit`, `ZINBFit`, `ZIBFit`), and
+shared-cutpoint ordinal (`OrdinalFit`). Grouped Tweedie and per-trait ordinal
+cutpoint CI endpoints are deliberate follow-ups.
 
 ### Term names
 
 | Family group | Names |
 |--------------|-------|
 | GLM families | `beta[t]`, `Lambda[i,k]`, and a dispersion `r` / `phi` / `alpha` |
+| Grouped NB2/NB1/Beta/Gamma | `beta[t]`, `Lambda[i,k]`, and group-level dispersion `r[g]` / `phi[g]` / `alpha[g]` |
 | Two-part families | `betaz[t]` (occurrence / zero-inflation logits), `betac[t]` (value / count intercepts), `Lambda[i,k]`, and `sigma` / `alpha` / `r` |
 | Ordinal (`OrdinalFit`, shared cutpoints) | `Lambda[i,k]`, `tau[c]` (cutpoints) |
 

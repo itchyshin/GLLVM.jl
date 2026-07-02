@@ -153,7 +153,7 @@ X+mask fits, ordinal covariate fits, structured covariance terms, and
 user-selectable Julia-side optimizer controls remain explicit bridge follow-ups,
 not silently supported cells.
 
-The mixed-family R bridge is partial, not planned and not complete: complete
+The mixed-family R bridge is guarded and intentionally limited: complete
 balanced trait-aligned no-X/no-mask/no-CI Julia-engine point fits are admitted
 for Gaussian, Poisson, Binomial, NB2, Beta, and Gamma components. The bridge
 stores row-aligned per-trait `families` and `link` labels, validates the native
@@ -179,9 +179,9 @@ public through the R bridge yet:
   variables** — these are `gllvm` features, **not in gllvmTMB**, so they are out of
   scope for this bridge. (GLLVM.jl does carry more general SPDE/Matérn-spatial and
   phylogenetic substrates, which gllvm/gllvmTMB lack.)
-- **Per-trait nuisance-parameter intervals** — grouped-dispersion and per-trait
-  ordinal-cutpoint point payloads are now routed; CI endpoints remain follow-up
-  work.
+- **Per-trait nuisance-parameter intervals** — grouped NB2/NB1/Beta/Gamma CIs
+  are routed; grouped Tweedie and per-trait ordinal-cutpoint CI endpoints remain
+  follow-up work.
 
 ## Honest gaps
 

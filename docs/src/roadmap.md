@@ -32,9 +32,10 @@ future design input for exact Gaussian cells, not non-Gaussian Laplace.
   the family/structure row has passed its local evidence gate.
 - One-part Laplace families through `fit_gllvm`: Binomial, Poisson,
   NegativeBinomial, Beta, Ordinal, and Gamma.
-- Wald/profile confidence-interval routes for scalar-dispersion one-part Laplace
-  families; grouped-dispersion bridge endpoints remain explicit unavailable
-  status rows while parity and bridge exposure are audited.
+- Wald/profile/bootstrap confidence-interval routes for scalar-dispersion
+  one-part Laplace families and grouped NB2/NB1/Beta/Gamma; grouped Tweedie and
+  per-trait ordinal endpoints remain explicit unavailable status rows while
+  parity and bridge exposure are audited.
 - Dedicated two-part fitters for Delta-lognormal, Hurdle-Poisson, and
   Hurdle-NB.
 - Minimal Julia-side `bridge_fit` for no-covariate one-part families, selected
