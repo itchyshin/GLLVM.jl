@@ -124,16 +124,21 @@ source-specific structural keywords and aliases ("`lv` is reserved for ordinary 
 formulas, invalid predictor columns, unsupported regimes). The held R branches extend the X_lv
 *families* (NB2/Gamma/Beta) on `engine = "julia"`.
 
-**Remaining (the phylo extension):** do **not** lift the source-specific `lv`
-guard for `phylo_latent` (validation row LV-07) under the current Model A
-population-`B_lv` interval target. Only revisit `phylo_latent(..., lv = ~ x)`
-after structural redesign with a genuinely different target/regime and fresh
-evidence, or explicit maintainer acceptance of v1 retirement boundaries.
-Requirements for any future wiring:
-- Admit `lv` as a one-sided predictor formula on `latent()` / `phylo_latent()`; enforce inside
-  `rewrite_canonical_aliases()` (`R/brms-sugar.R`), NOT the never-evaluated constructor. Validate
-  one-sided, build `model.matrix` against `data`, attach as a STRUCTURED marker
-  (`extra$.lv_formula` + materialized `extra$.X_lv`).
+**Remaining (future-only source-specific phylo reopening):** do **not** lift
+the source-specific `lv` guard for `phylo_latent` (validation row LV-07) under
+the current Model A population-`B_lv` interval target. Ordinary
+`latent(..., lv = ~ x)` remains the supported route; source-specific
+`phylo_latent(..., lv = ~ x)` remains guarded/fail-loud. Only revisit
+source-specific phylo `lv` after structural redesign with a genuinely different
+target/regime and fresh evidence, or explicit maintainer acceptance of v1
+retirement boundaries.
+Requirements for any future authorized wiring:
+- Deliberately extend the current ordinary `latent()` admission to the named
+  source-specific constructor only after the new gate is accepted; enforce
+  inside `rewrite_canonical_aliases()` (`R/brms-sugar.R`), NOT the
+  never-evaluated constructor. Validate one-sided, build `model.matrix` against
+  `data`, attach as a STRUCTURED marker (`extra$.lv_formula` + materialized
+  `extra$.X_lv`).
 - **FAIL-LOUD gate (mandatory).** `parse_covstruct_call()` captures unknown named args into
   `cs$extra` with no allow-list, and `fit-multi.R` silently drops unknown keys (the Sokal
   silent-collapse anti-pattern). An unrecognized/malformed `lv =` MUST error loudly (mirror

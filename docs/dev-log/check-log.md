@@ -1,5 +1,51 @@
 # Check Log
 
+## 2026-07-02 - Capability baseline review after LV closeout
+
+### Scope
+
+Started the seven-hour post-LV capability-baseline goal as a truth-sync slice:
+reviewed gllvmTMB Mission Control and older capability ledgers against the
+GLLVM.jl LV closeout docs, then tightened the GLLVM predictor-informed latent
+score design note so source-specific phylo `lv` future wiring cannot be read as
+current admission guidance.
+
+Files updated in this worktree:
+
+- `docs/design/73-predictor-informed-latent-scores.md`
+- `docs/dev-log/decisions/2026-07-02-capability-baseline-review.md`
+- `docs/dev-log/after-task/2026-07-02-capability-baseline-review.md`
+- `docs/dev-log/check-log.md`
+
+Claim boundary retained:
+
+- ordinary `latent(..., lv = ~ env)` remains the supported predictor-informed
+  LV route;
+- source-specific `phylo_latent(..., lv = ~ env)` remains guarded/fail-loud;
+- `B_eta_realized` Gate 0-3 evidence is internal and does not expose public
+  source-specific grammar;
+- mixed-family bridge support remains complete balanced point/postfit only.
+
+Checks:
+
+```sh
+git diff --check -- docs/design/73-predictor-informed-latent-scores.md docs/dev-log/decisions/2026-07-02-capability-baseline-review.md docs/dev-log/check-log.md docs/dev-log/after-task/2026-07-02-capability-baseline-review.md
+# passed, no output
+
+rg -n 'future-only source-specific|future authorized|guarded/fail-loud|ordinary `latent\(\.\.\., lv = ~ x\)`|source-specific `phylo_latent\(\.\.\., lv = ~ x\)`' docs/design/73-predictor-informed-latent-scores.md docs/dev-log/decisions/2026-07-02-capability-baseline-review.md docs/dev-log/after-task/2026-07-02-capability-baseline-review.md
+# found the tightened future-only wording and guarded/source-specific boundary
+
+rg -n 'ready to expose|active compute|source-specific.*covered|non-Gaussian.*inherits|mixed-family.*CI.*support|Admit `lv` as a one-sided predictor formula on `latent\(\)`' docs/design/73-predictor-informed-latent-scores.md docs/dev-log/decisions/2026-07-02-capability-baseline-review.md
+# no output
+
+python3 -m json.tool docs/dev-log/dashboard/status.json >/dev/null
+python3 -m json.tool docs/dev-log/dashboard/sweep.json >/dev/null
+curl -s http://127.0.0.1:8770/status.json | python3 -m json.tool >/dev/null
+curl -s http://127.0.0.1:8770/sweep.json | python3 -m json.tool >/dev/null
+curl -s http://127.0.0.1:8770/version.txt
+# r60
+```
+
 ## 2026-07-01 - Paired source-specific lv alias guard hardening
 
 ### Scope
