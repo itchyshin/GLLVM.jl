@@ -1,5 +1,43 @@
 # Check Log
 
+## 2026-07-02 - Source LV fail-loud guard verification
+
+### Scope
+
+Verified the specific source-grammar risk raised by Shinichi: `lv = ~ env` must
+not look accepted for `spatial_latent()`, `phylo_latent()`, `animal_latent()`,
+or `kernel_latent()` and then be silently dropped. No source behavior changed.
+The R twin was treated as read-only because its local worktree has broad
+unrelated dirt.
+
+Files updated in this worktree:
+
+- `docs/dev-log/after-task/2026-07-02-source-lv-fail-loud-guard-verification.md`
+- `docs/dev-log/check-log.md`
+
+Checks:
+
+```sh
+cd "/Users/z3437171/Dropbox/Github Local/gllvmTMB"
+git status --short
+# heavily dirty from unrelated local work; read-only for this slice
+
+rg -n 'source-specific|lv\s*=|lv =|GJL-GATE|silently|not.*wired|unsupported.*lv|fail-loud|latent.*lv' R/brms-sugar.R tests/testthat/test-canonical-keywords.R tests/testthat/test-ordinary-latent-random-regression.R R/animal-keyword.R R/kernel-keywords.R R/spde-keyword.R R/phylo-signal-ci.R
+# found the source-specific lv parser guard and the structural keyword test set
+
+Rscript -e 'pkgload::load_all(".", quiet = TRUE); testthat::test_file("tests/testthat/test-canonical-keywords.R")'
+# test-canonical-keywords.R | 82 pass, 0 fail, 3 skip
+# skips were INLA-not-installed spatial tests, unrelated to lv source guards
+```
+
+Claim boundary retained:
+
+- source-specific `lv = ~ env` fails loudly across phylo, spatial, animal, and
+  kernel structural keywords and legacy aliases;
+- structural random-slope syntax is a separate route, not predictor-informed
+  `lv` grammar;
+- no source-specific `lv`, package API, likelihood, PR state, or compute changed.
+
 ## 2026-07-02 - Bridge postfit boundary verification
 
 ### Scope
