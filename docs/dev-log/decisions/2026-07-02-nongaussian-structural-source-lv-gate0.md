@@ -1,7 +1,7 @@
 # Non-Gaussian Structural-Source LV Gate 0 Matrix
 
 Date: 2026-07-02
-Status: Gate 0 matrix; phylo x Poisson S0 target and internal S1 likelihood proof banked
+Status: Gate 0 matrix; phylo x Poisson S0 target, S1 likelihood proof, and private S1 selected-entry canary banked
 Scope: non-Gaussian LV after ordinary selected-entry profile canaries
 
 ## Decision
@@ -23,9 +23,12 @@ phylo x Poisson in
 `docs/dev-log/decisions/2026-07-02-phylo-poisson-structural-lv-s0-target.md`.
 The first internal S1 likelihood proof is now banked in
 `docs/dev-log/decisions/2026-07-02-phylo-poisson-structural-lv-s1-likelihood.md`.
-That proof reduction-tests the combined phylo + Poisson + `X_lv` likelihood
-surface, but it does not expose a fitter, selected-entry profile canary, bridge
-route, R grammar, or coverage claim.
+The first private S1 selected-entry canary is now banked in
+`docs/dev-log/decisions/2026-07-02-phylo-poisson-structural-lv-s1-profile-canary.md`.
+Together they reduction-test the combined phylo + Poisson + `X_lv` likelihood
+surface and show one deterministic `B_eta_realized` truth-inclusion route, but
+they do not expose a public fitter, bridge route, R grammar, coverage claim, or
+source-specific support wording.
 
 ## Inputs
 
@@ -48,7 +51,7 @@ route, R grammar, or coverage claim.
 
 | Source | Gate 0 truth | Next admissible target | Current boundary |
 | --- | --- | --- | --- |
-| Phylo | Best first source after ordinary, because Gaussian Model A internals and `Σ_phy` tests exist. | Phylo x Poisson now has an S0 target page and private S1 likelihood proof; next admissible target is a tiny selected-entry `B_eta_realized` profile-LR canary. | No public `phylo_latent(..., lv = ~ env)`, no old population-`B_lv` reruns, and no source-specific claim until the canary and later evidence gates exist. |
+| Phylo | Best first source after ordinary, because Gaussian Model A internals and `Σ_phy` tests exist. | Phylo x Poisson now has an S0 target page, private S1 likelihood proof, and private deterministic selected-entry `B_eta_realized` profile-LR canary; next admissible target is an S2/Totoro diagnostic manifest, only if authorized. | No public `phylo_latent(..., lv = ~ env)`, no old population-`B_lv` reruns, and no source-specific claim until later evidence gates and maintainer signoff exist. |
 | Spatial | Wait for the R/TMB `unique=` lane review and a separate Julia parity/join decision before any spatial-source inference claim. | Source covariance and SPDE support target must be explicit before a non-Gaussian LV canary. | Do not mix with the `unique=` lane or imply Julia parity. |
 | Animal | Follows phylo/relmat derivation discipline. | Declare whether the target is realized link-scale, trait-scale, or source-level random-slope association. | No inheritance from ordinary LV or Gaussian phylo evidence. |
 | Kernel | Requires dense/cross-kernel source derivation and a mean-vs-covariance confound audit. | Start only after source covariance, kernel overlap, and estimand orientation are written. | No source-specific `kernel_latent(..., lv = ~ env)` support. |
@@ -57,7 +60,7 @@ route, R grammar, or coverage claim.
 
 | Family block | Ordinary selected-entry `B_lv` profile | Structural-source status |
 | --- | --- | --- |
-| Poisson | Gate 1 local canary complete. | Phylo x Poisson S0 target plus internal S1 likelihood proof banked; selected-entry profile canary still pending. |
+| Poisson | Gate 1 local canary complete. | Phylo x Poisson S0 target plus internal S1 likelihood proof and deterministic selected-entry profile canary banked; S2/Totoro manifest is the next possible diagnostic gate. |
 | Binomial logit | Gate 1 local canary complete. | Gate 0 only; link-scale target and trial-size treatment must be declared. |
 | NB2 | Gate 1 local canary complete with fitted-dispersion guard. | Gate 0 only; source/family page must name dispersion treatment and stop rules. |
 | Gamma | Gate 1 local canary complete with shape guard. | Gate 0 only; source/family page must name shape treatment and link-scale target. |
@@ -72,8 +75,8 @@ route, R grammar, or coverage claim.
   rollback condition.
 - S1: run one tiny local finite-route canary with selected-entry profile-LR,
   finite endpoints, MLE bracketing, known truth inclusion, and no public claim.
-- S2: run a Totoro diagnostic only after S1 is green; keep host and denominator
-  separate from DRAC evidence.
+- S2: run a Totoro diagnostic only after S1 is green and a manifest is approved;
+  keep host and denominator separate from DRAC evidence.
 - S3: run DRAC seed-matched claim evidence only after S2 is stable and the
   denominator/MCSE rule is predeclared.
 - S4: expose R grammar or bridge/public wording only after explicit maintainer
@@ -102,6 +105,6 @@ is used as a rescue label rather than a secondary diagnostic layer.
 ## Rose Verdict
 
 Rose verdict: PASS WITH NOTES - this matrix is a safe Gate 0 boundary. Ordinary
-non-Gaussian profile route evidence is banked, but every structural-source
-family remains blocked until its own estimand page, local canary, and claim
-audit exist.
+non-Gaussian profile route evidence is banked, and phylo x Poisson has one
+private S1 selected-entry canary, but every public structural-source family
+claim remains blocked until later evidence gates and claim audit exist.

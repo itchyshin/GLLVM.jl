@@ -1,7 +1,7 @@
 # Phylo x Poisson Structural LV S0 Target
 
 Date: 2026-07-02
-Status: S0 target and symbolic alignment; internal S1 likelihood proof now added separately
+Status: S0 target and symbolic alignment; internal S1 likelihood proof and private selected-entry canary now added separately
 Scope: first non-Gaussian structural-source LV target after ordinary profile canaries
 
 ## Decision
@@ -16,9 +16,11 @@ repository started from the two neighbouring parts:
 The combined internal likelihood proof now exists in
 `src/phylo_poisson_xlv.jl` and is documented in
 `docs/dev-log/decisions/2026-07-02-phylo-poisson-structural-lv-s1-likelihood.md`.
-The current boundary is the still-pending selected-entry profile-LR canary. No
-Totoro diagnostic, DRAC run, R grammar exposure, bridge promotion, or public
-wording follows from the internal likelihood.
+The first private selected-entry `B_eta_realized` route canary is documented in
+`docs/dev-log/decisions/2026-07-02-phylo-poisson-structural-lv-s1-profile-canary.md`.
+The current boundary is S1 local route evidence only. No Totoro diagnostic,
+DRAC run, R grammar exposure, bridge promotion, or public wording follows from
+the internal likelihood or canary.
 
 ## Symbolic Model
 
@@ -92,8 +94,8 @@ orientation. It is not the profile-LR interval target.
 | selected entry | `profile_indices`-like S1 list | predeclared from `B_eta_realized` ranks | finite LR solve at truth | LR below chi-square(1) cutoff |
 
 Empty row audit: every symbol has a DGP and a recovery/check column. The
-remaining missing item is not symbolic; it is the selected-entry
-`B_eta_realized` profile-LR canary on top of the combined likelihood.
+selected-entry `B_eta_realized` profile-LR canary on top of the combined
+likelihood is now covered locally for one deterministic tiny S1 route cell.
 
 ## Implementation Boundary Before Selected-Entry Canary
 
@@ -113,7 +115,7 @@ augmented phylogenetic random effect. The minimal implementation proof includes:
 3. a tiny dense/sparse equality check for the phylo random-effect component -
    covered locally;
 4. one selected-entry `B_eta_realized` profile-LR canary after the point route
-   is stable - still pending.
+   is stable - covered locally as a deterministic positive-control route test.
 
 ## Candidate S1 Cell
 
@@ -123,12 +125,13 @@ The first local canary should stay tiny:
 family: Poisson(log)
 source: phylo random intercept through AugmentedPhy
 p: 6
-n_sites: 40-60
+n_sites: 28
 K: 1
 q_lv: 1
-sigma_phy^2: moderate, e.g. 0.3-0.6
-selected entries: 1-2 predeclared `B_eta_realized` entries
-pass rule: fit converged, endpoints finite, MLE bracketed, LR(truth) < 3.8415
+sigma_phy^2: 0.35 in the truth object, but not interpreted as source-variance recovery
+selected entries: one predeclared `B_eta_realized` entry
+pass rule: fit converged, finite LR at truth, constrained error < 1e-3,
+           LR(truth) < 3.8415
 ```
 
 This is local S1 route evidence only. Totoro S2 and DRAC S3 require a new
@@ -150,8 +153,8 @@ manifest with host-specific denominators and MCSE.
 - Ada: S0 is useful only if it blocks accidental implementation drift.
 - Fisher: profile-LR remains the first canary, but the estimand is
   `B_eta_realized`, not old population `B_lv`.
-- Curie: no selected-entry canary until reduction tests and dense/sparse checks
-  exist; those likelihood checks are now the S1 plumbing baseline.
+- Curie: the selected-entry canary now follows the reduction tests and
+  dense/sparse checks; it remains a deterministic route test, not coverage.
 - Gauss: combined Laplace dimension and optimizer warm starts are the numerical
   risk; keep the first cell tiny.
 - Boole/Hopper: R grammar and bridge remain parked.
@@ -163,5 +166,6 @@ manifest with host-specific denominators and MCSE.
 
 Rose verdict: PASS WITH NOTES - the phylo x Poisson target is symbolically
 aligned and is the right first structural-source target; the combined
-likelihood and reduction tests now exist as private S1 plumbing, but the
-selected-entry profile-LR canary and all public surfaces remain blocked.
+likelihood, reduction tests, and private deterministic selected-entry canary
+now exist as S1 plumbing, but all public surfaces and coverage claims remain
+blocked.

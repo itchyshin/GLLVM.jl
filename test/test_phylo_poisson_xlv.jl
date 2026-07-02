@@ -129,3 +129,55 @@ end
     @test_throws ArgumentError GLLVM._phylo_poisson_xlv_marginal_loglik(
         Y, beta, Lambda, alpha_lv, sigma2, phy, X_lv; link = IdentityLink())
 end
+
+@testset "Phylo x Poisson B_eta_realized selected-entry canary" begin
+    Random.seed!(725)
+    phy = GLLVM.augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
+    p = phy.n_leaves
+    n = 28
+    K = 1
+    q_lv = 1
+    X_lv = reshape(collect(range(-1.0, 1.0; length = n)), n, q_lv)
+    beta = log.([8.0, 7.5, 7.0, 6.5, 7.2, 6.8])
+    Lambda = reshape([0.22, -0.18, 0.20, -0.16, 0.14, -0.12], p, K)
+    alpha_lv = reshape([0.45], q_lv, K)
+    sigma2 = 0.35
+    epsilon = 0.08 .* randn(n, K)
+    Z_truth = X_lv * alpha_lv + epsilon
+    eta = beta .+ Lambda * transpose(Z_truth)
+    Y = max.(0, round.(Int, exp.(eta)))
+
+    # Deterministic positive-control counts keep the canary focused on
+    # selected-entry LR routing. This is not a source-variance recovery test.
+    fit = GLLVM._fit_phylo_poisson_xlv(
+        Y, phy; K = K, X_lv = X_lv,
+        beta_init = beta, Lambda_init = Lambda, alpha_lv_init = alpha_lv,
+        sigma2_phy_init = sigma2,
+        iterations = 250, g_tol = 1e-5,
+        newton_maxiter = 120, newton_tol = 1e-10)
+    @test fit.converged
+    @test isfinite(fit.loglik)
+    @test fit.sigma2_phy > 0
+
+    eta_target = vec(GLLVM._eta_realized_lv_effects(X_lv, Z_truth, Lambda))
+    prof = GLLVM._phylo_poisson_xlv_profile_eta_realized(
+        fit, Y, phy, X_lv, [1], eta_target;
+        level = 0.95, profile_iterations = 700,
+        newton_maxiter = 120, newton_tol = 1e-10)
+    @test prof.method == :profile_eta_realized
+    @test prof.term == ["B_eta_realized[1,1]"]
+    @test all(isnan, prof.se)
+    @test isfinite(prof.lr_deviance[1])
+    @test prof.lr_deviance[1] <= prof.lr_cutoff[1]
+    @test prof.constrained_error[1] < 1e-3
+    @test prof.covered == [true]
+
+    @test_throws ArgumentError GLLVM._phylo_poisson_xlv_profile_eta_realized(
+        fit, Y, phy, X_lv, Int[], eta_target)
+    @test_throws ArgumentError GLLVM._phylo_poisson_xlv_profile_eta_realized(
+        fit, Y, phy, X_lv, [1, 1], eta_target)
+    @test_throws ArgumentError GLLVM._phylo_poisson_xlv_profile_eta_realized(
+        fit, Y, phy, X_lv, [p + 1], eta_target)
+    @test_throws ArgumentError GLLVM._phylo_poisson_xlv_profile_eta_realized(
+        fit, Y, phy, X_lv, [1], eta_target[1:(end - 1)])
+end

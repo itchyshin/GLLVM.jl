@@ -1,7 +1,7 @@
 # Phylo x Poisson Structural LV S1 Likelihood
 
 Date: 2026-07-02
-Status: internal likelihood proof and reduction tests; no fitter, profile canary, bridge, or R grammar
+Status: internal likelihood proof and reduction tests; followed by private selected-entry canary; no public fitter, bridge, or R grammar
 Scope: first source/family S1 plumbing step after the phylo x Poisson S0 target page
 
 ## Decision
@@ -22,12 +22,18 @@ intentionally not exported. It exists to prove that the combined likelihood
 surface has the right neighbouring limits before any selected-entry
 `B_eta_realized` profile-LR canary is attempted.
 
+2026-07-02 follow-up: the next private S1 selected-entry canary is now recorded
+in
+`docs/dev-log/decisions/2026-07-02-phylo-poisson-structural-lv-s1-profile-canary.md`.
+This likelihood note remains the reduction-test anchor; the follow-up canary
+does not change the public boundary below.
+
 ## What This Opens
 
-This opens only the next local S1 step: a tiny selected-entry profile-LR canary
-against the realized/design-conditional eta-scale target. The canary still needs
-a point-route wrapper, an explicit selected-entry target function, finite
-endpoint checks, MLE bracketing, and known-truth inclusion.
+This opened only the next local S1 step: a tiny selected-entry profile-LR
+canary against the realized/design-conditional eta-scale target. That follow-up
+canary is now covered locally for one deterministic route cell; the next
+possible move is an S2/Totoro diagnostic manifest, not public exposure.
 
 ## What This Does Not Open
 

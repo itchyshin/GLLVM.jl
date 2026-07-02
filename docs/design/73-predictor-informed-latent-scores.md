@@ -28,9 +28,11 @@ The first source/family S0 target page is phylo x Poisson, recorded in
 `docs/dev-log/decisions/2026-07-02-phylo-poisson-structural-lv-s0-target.md`;
 the internal S1 combined likelihood proof is recorded in
 `docs/dev-log/decisions/2026-07-02-phylo-poisson-structural-lv-s1-likelihood.md`.
-That proof is reduction-tested plumbing only. It does not provide a fitter,
-selected-entry profile-LR canary, bridge transport, R grammar, or coverage
-claim.
+The local S1 selected-entry route canary is recorded in
+`docs/dev-log/decisions/2026-07-02-phylo-poisson-structural-lv-s1-profile-canary.md`.
+Together these are private Julia plumbing and canary evidence only: no public
+fitter, bridge transport, R grammar, coverage calibration, or source-specific
+`lv` support follows from them.
 This doc is the spec the Julia comments (`likelihood.jl:405`) reference. The
 compact evidence freeze is
 `docs/dev-log/decisions/2026-07-01-phylo-model-a-evidence-freeze-and-next-arc.md`;
@@ -210,8 +212,12 @@ Requirements for any future authorized wiring:
   site-score innovations and the augmented phylo random intercept for
   Poisson(log) with `X_lv`. It is reduction-tested against ordinary Poisson
   `X_lv`, phylo-only Poisson GLM at `Lambda = 0`, and a dense leaf-covariance
-  reference. This is plumbing for the next local selected-entry
-  `B_eta_realized` profile-LR canary, not public source-specific `lv` support.
+  reference. A private truth-startable point wrapper and selected-entry
+  penalty-profile route now cover one deterministic `B_eta_realized`
+  truth-inclusion canary (`test/test_phylo_poisson_xlv.jl`, 9/9 likelihood
+  anchors + 14/14 canary assertions). This is local S1 route evidence, not
+  public source-specific `lv` support, coverage calibration, bridge transport,
+  R grammar, or a production scaling path.
 - **Realized direct-slope canary tooling (diagnostic, 2026-07-01):** the bench
   runner now has `profile_direct_slope`, which computes a saturated per-trait
   `Y ~ X_lv` slope target from the realized replicate and checks selected-entry

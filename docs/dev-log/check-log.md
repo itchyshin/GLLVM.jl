@@ -1,5 +1,77 @@
 # Check Log
 
+## 2026-07-02 - Phylo x Poisson structural LV S1 profile canary
+
+Added the first private selected-entry `B_eta_realized` profile-LR canary on
+top of the phylo x Poisson x predictor-informed LV likelihood proof.
+
+Implemented:
+
+- private packing/unpacking, truth-started point fit, and selected-entry
+  penalty-profile helpers in `src/phylo_poisson_xlv.jl`;
+- deterministic positive-control `B_eta_realized[1,1]` route test in
+  `test/test_phylo_poisson_xlv.jl`;
+- durable decision note at
+  `docs/dev-log/decisions/2026-07-02-phylo-poisson-structural-lv-s1-profile-canary.md`;
+- S0/Gate0/Design 73 wording updated from the former pending state to
+  "private S1 route canary covered locally."
+
+Focused verification:
+
+```text
+julia --project=. --startup-file=no test/test_phylo_poisson_xlv.jl
+Phylo x Poisson predictor-informed LV S1 likelihood: 9 passed, 0 failed, 0 errored, 5.0s
+Phylo x Poisson B_eta_realized selected-entry canary: 14 passed, 0 failed, 0 errored, 3.4s
+
+julia --project=. --startup-file=no test/test_phylo_glm.jl
+Phylogenetic GLM (augmented-state joint Laplace): 6 passed, 0 failed, 0 errored, 3.8s
+
+julia --project=. --startup-file=no test/test_phylo_eta_realized.jl
+phylo Model A eta-realized target: 7 passed, 0 failed, 0 errored, 2.6s
+
+julia --project=. --startup-file=no -e 'using GLLVM; println("load-ok")'
+load-ok
+
+julia --project=. --startup-file=no -e 'using Pkg; println(haskey(Pkg.project().dependencies, "JET") ? "JET-present" : "JET-not-in-project")'
+JET-not-in-project
+```
+
+Audit and Mission Control refresh:
+
+```text
+git diff --check
+
+Rscript -e 'source("/Users/z3437171/Dropbox/Github Local/Shinichi/tools/check-after-task.R"); main_check_after_task("docs/dev-log/after-task/2026-07-02-phylo-poisson-structural-lv-s1-profile-canary.md")'
+after-task structure check passed
+
+Rscript -e 'source("/Users/z3437171/Dropbox/Github Local/Shinichi/tools/rose-pattern-scan.R"); main_rose_pattern_scan(".")'
+Rose pattern scan passed
+
+python3 -m json.tool docs/dev-log/dashboard/status.json >/dev/null
+python3 -m json.tool docs/dev-log/dashboard/sweep.json >/dev/null
+git diff --check -- docs/dev-log/dashboard/status.json docs/dev-log/dashboard/sweep.json
+
+sh tools/start-mission-control.sh --background
+GLLVM mission-control dashboard already available at http://127.0.0.1:8770/
+Synced dashboard files to /tmp/gllvm-dashboard
+Mirrored disposable live output to /private/tmp/gllvm-dashboard
+
+curl -s http://127.0.0.1:8770/status.json | python3 -m json.tool >/dev/null
+curl -s http://127.0.0.1:8770/sweep.json | python3 -m json.tool >/dev/null
+curl -s http://127.0.0.1:8770/version.txt
+r60
+```
+
+Browser preview at `http://127.0.0.1:8770/` confirmed "Phylo x Poisson
+structural LV S1", S1 route canary wording, `14/14`, "No public fitter", and
+no-active-compute guard text.
+
+Claim boundary: IN: one private deterministic selected-entry S1 route canary
+for phylo x Poisson `B_eta_realized`. OUT: no public fitter, no
+`confint_lv_effects` source-specific route, no R `phylo_latent(..., lv = ~ env)`
+grammar, no bridge transport, no Totoro/DRAC compute, no coverage calibration,
+no bootstrap rescue, and no spatial/animal/kernel or non-Poisson transfer.
+
 ## 2026-07-02 - Ordinary Beta LV profile Gate 1 extension
 
 Completed the ordinary one-part non-Gaussian selected-entry profile canary set by
@@ -9700,8 +9772,9 @@ x predictor-informed LV route:
 - joint Laplace over site-score innovations and augmented phylo random
   intercepts;
 - Poisson(log) only, no public fitter/export/R grammar/bridge route;
-- documentation boundary refreshed from "combined likelihood missing" to
-  "selected-entry `B_eta_realized` profile-LR canary pending."
+- documentation boundary refreshed from "combined likelihood missing" to the
+  then-current S1 route-gate boundary; that historical boundary is superseded
+  by the profile-canary closeout above.
 
 Files updated:
 
