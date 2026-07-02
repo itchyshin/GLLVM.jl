@@ -38,6 +38,22 @@ ordination biplot — sites as points, species as labeled vectors:
 *Simulated two-block data, two-factor Gaussian GLLVM. Species loading on the same
 latent factor point the same way; the grey cloud is the site scores `getLV(fit, y)`.*
 
+For supported one-part non-Gaussian fits, `ordination_uncertainty` gives per-site
+score intervals for that point cloud:
+
+```julia
+u = ordination_uncertainty(fitp, Yp; n_boot = 200)
+u.scores     # n×K reference site scores
+u.lower      # n×K lower score interval
+u.upper      # n×K upper score interval
+```
+
+This is a conditional bootstrap of the scores with the fitted parameters held
+fixed; it quantifies uncertainty in each site's latent score, not full
+refit-level parameter uncertainty. It is currently routed for the single-`Y`
+ordination fits with scalar response means: Poisson, NB2, Beta, Gamma,
+Exponential, and Binomial (with `N` when trial counts are needed).
+
 ## Predictions and fitted values
 
 ```julia

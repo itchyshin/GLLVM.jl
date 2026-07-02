@@ -1,5 +1,43 @@
 # Check Log
 
+## 2026-07-02 - Ordination uncertainty boundary
+
+### Scope
+
+Added user-facing docs for the tested `ordination_uncertainty` route while
+keeping its fixed-parameter conditional-bootstrap scope explicit. No source
+behavior changed.
+
+Files updated in this worktree:
+
+- `docs/src/working-with-a-fit.md`
+- `docs/dev-log/after-task/2026-07-02-ordination-uncertainty-boundary.md`
+- `docs/dev-log/check-log.md`
+
+Checks:
+
+```sh
+julia --project=. --startup-file=no test/test_ordination_uncertainty.jl
+# ordination types: run + recover structure | 16 pass
+# ordination_uncertainty: per-site score intervals | 20 pass
+
+julia --project=docs --startup-file=no docs/make.jl
+# completed successfully; emitted pre-existing local-link warnings and npm audit warnings
+
+rg -n 'ordination_uncertainty|conditional bootstrap|fitted parameters held fixed|full refit-level parameter uncertainty|Poisson, NB2, Beta, Gamma|score intervals' docs/src/working-with-a-fit.md docs/src/tutorial.md docs/src/gllvmtmb-parity.md README.md
+# only the new bounded working-with-a-fit wording appears
+
+git diff --check -- docs/src/working-with-a-fit.md
+# clean, no output
+```
+
+Claim boundary retained:
+
+- score uncertainty is conditional on fitted parameters;
+- no full refit-level parameter uncertainty is claimed;
+- supported route is limited to single-`Y` one-part non-Gaussian ordination fits
+  with scalar response means.
+
 ## 2026-07-02 - Structural confint boundary
 
 ### Scope
