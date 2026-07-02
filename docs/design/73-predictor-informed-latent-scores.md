@@ -26,8 +26,11 @@ The structural-source non-Gaussian LV Gate 0 matrix is recorded in
 `docs/dev-log/decisions/2026-07-02-nongaussian-structural-source-lv-gate0.md`.
 The first source/family S0 target page is phylo x Poisson, recorded in
 `docs/dev-log/decisions/2026-07-02-phylo-poisson-structural-lv-s0-target.md`;
-it is an estimand/alignment artifact only and blocks S1 until a combined
-phylo + Poisson + `X_lv` likelihood exists.
+the internal S1 combined likelihood proof is recorded in
+`docs/dev-log/decisions/2026-07-02-phylo-poisson-structural-lv-s1-likelihood.md`.
+That proof is reduction-tested plumbing only. It does not provide a fitter,
+selected-entry profile-LR canary, bridge transport, R grammar, or coverage
+claim.
 This doc is the spec the Julia comments (`likelihood.jl:405`) reference. The
 compact evidence freeze is
 `docs/dev-log/decisions/2026-07-01-phylo-model-a-evidence-freeze-and-next-arc.md`;
@@ -202,6 +205,13 @@ Requirements for any future authorized wiring:
   different estimand/regime and fresh ADEMP evidence in a future branch. For
   v1, public source-specific phylo `lv` is retired/parked and the existing seed
   harness remains local diagnostic tooling (`bench/phylo_xlv_coverage.jl`).
+- **Phylo x Poisson structural LV S1 likelihood proof (local, 2026-07-02):**
+  the internal `_phylo_poisson_xlv_marginal_loglik` route now jointly integrates
+  site-score innovations and the augmented phylo random intercept for
+  Poisson(log) with `X_lv`. It is reduction-tested against ordinary Poisson
+  `X_lv`, phylo-only Poisson GLM at `Lambda = 0`, and a dense leaf-covariance
+  reference. This is plumbing for the next local selected-entry
+  `B_eta_realized` profile-LR canary, not public source-specific `lv` support.
 - **Realized direct-slope canary tooling (diagnostic, 2026-07-01):** the bench
   runner now has `profile_direct_slope`, which computes a saturated per-trait
   `Y ~ X_lv` slope target from the realized replicate and checks selected-entry

@@ -1,7 +1,7 @@
 # Non-Gaussian Structural-Source LV Gate 0 Matrix
 
 Date: 2026-07-02
-Status: Gate 0 matrix; first source/family S0 target page banked for phylo x Poisson
+Status: Gate 0 matrix; phylo x Poisson S0 target and internal S1 likelihood proof banked
 Scope: non-Gaussian LV after ordinary selected-entry profile canaries
 
 ## Decision
@@ -21,8 +21,11 @@ run, or public wording follows from this matrix.
 2026-07-02 update: the first source/family S0 page is now banked for
 phylo x Poisson in
 `docs/dev-log/decisions/2026-07-02-phylo-poisson-structural-lv-s0-target.md`.
-It is an estimand and alignment page only. It does not open S1 because the
-combined phylo + Poisson + `X_lv` fitter is not implemented yet.
+The first internal S1 likelihood proof is now banked in
+`docs/dev-log/decisions/2026-07-02-phylo-poisson-structural-lv-s1-likelihood.md`.
+That proof reduction-tests the combined phylo + Poisson + `X_lv` likelihood
+surface, but it does not expose a fitter, selected-entry profile canary, bridge
+route, R grammar, or coverage claim.
 
 ## Inputs
 
@@ -45,7 +48,7 @@ combined phylo + Poisson + `X_lv` fitter is not implemented yet.
 
 | Source | Gate 0 truth | Next admissible target | Current boundary |
 | --- | --- | --- | --- |
-| Phylo | Best first source after ordinary, because Gaussian Model A internals and `Σ_phy` tests exist. | First S0 page banked for phylo x Poisson: link-scale realized/design-conditional `B_eta_realized` under an additive phylo random intercept plus predictor-informed latent score. | No public `phylo_latent(..., lv = ~ env)`, no old population-`B_lv` reruns, and no S1 until the combined Laplace fitter exists. |
+| Phylo | Best first source after ordinary, because Gaussian Model A internals and `Σ_phy` tests exist. | Phylo x Poisson now has an S0 target page and private S1 likelihood proof; next admissible target is a tiny selected-entry `B_eta_realized` profile-LR canary. | No public `phylo_latent(..., lv = ~ env)`, no old population-`B_lv` reruns, and no source-specific claim until the canary and later evidence gates exist. |
 | Spatial | Wait for the R/TMB `unique=` lane review and a separate Julia parity/join decision before any spatial-source inference claim. | Source covariance and SPDE support target must be explicit before a non-Gaussian LV canary. | Do not mix with the `unique=` lane or imply Julia parity. |
 | Animal | Follows phylo/relmat derivation discipline. | Declare whether the target is realized link-scale, trait-scale, or source-level random-slope association. | No inheritance from ordinary LV or Gaussian phylo evidence. |
 | Kernel | Requires dense/cross-kernel source derivation and a mean-vs-covariance confound audit. | Start only after source covariance, kernel overlap, and estimand orientation are written. | No source-specific `kernel_latent(..., lv = ~ env)` support. |
@@ -54,7 +57,7 @@ combined phylo + Poisson + `X_lv` fitter is not implemented yet.
 
 | Family block | Ordinary selected-entry `B_lv` profile | Structural-source status |
 | --- | --- | --- |
-| Poisson | Gate 1 local canary complete. | Phylo x Poisson S0 target page banked; implementation and S1 canary still blocked. |
+| Poisson | Gate 1 local canary complete. | Phylo x Poisson S0 target plus internal S1 likelihood proof banked; selected-entry profile canary still pending. |
 | Binomial logit | Gate 1 local canary complete. | Gate 0 only; link-scale target and trial-size treatment must be declared. |
 | NB2 | Gate 1 local canary complete with fitted-dispersion guard. | Gate 0 only; source/family page must name dispersion treatment and stop rules. |
 | Gamma | Gate 1 local canary complete with shape guard. | Gate 0 only; source/family page must name shape treatment and link-scale target. |

@@ -1,23 +1,24 @@
 # Phylo x Poisson Structural LV S0 Target
 
 Date: 2026-07-02
-Status: S0 target and symbolic alignment only; no implementation or compute
+Status: S0 target and symbolic alignment; internal S1 likelihood proof now added separately
 Scope: first non-Gaussian structural-source LV target after ordinary profile canaries
 
 ## Decision
 
-Use phylo x Poisson as the first structural-source non-Gaussian LV target, but
-do not open an S1 canary yet. The repository has the two neighbouring parts:
+Use phylo x Poisson as the first structural-source non-Gaussian LV target. The
+repository started from the two neighbouring parts:
 
 - ordinary Poisson `X_lv` selected-entry `B_lv` profile routing in
   `fit_poisson_gllvm(...; X_lv=...)` and `confint_lv_effects`;
 - a non-Gaussian phylo random-intercept Laplace route in `fit_phylo_glm`.
 
-It does **not** yet have the combined model that contains both a
-predictor-informed latent score and a phylogenetic source effect. S1 therefore
-requires implementation of a new combined Laplace objective before any finite
-route canary, Totoro diagnostic, DRAC run, R grammar exposure, bridge promotion,
-or public wording.
+The combined internal likelihood proof now exists in
+`src/phylo_poisson_xlv.jl` and is documented in
+`docs/dev-log/decisions/2026-07-02-phylo-poisson-structural-lv-s1-likelihood.md`.
+The current boundary is the still-pending selected-entry profile-LR canary. No
+Totoro diagnostic, DRAC run, R grammar exposure, bridge promotion, or public
+wording follows from the internal likelihood.
 
 ## Symbolic Model
 
@@ -90,10 +91,11 @@ orientation. It is not the profile-LR interval target.
 | `B_eta_realized` | selected-entry profile truth | slope of `Lambda * z_truth'` on centered `X_lv` | future `profile_eta_realized` analogue | p x q target matrix |
 | selected entry | `profile_indices`-like S1 list | predeclared from `B_eta_realized` ranks | finite LR solve at truth | LR below chi-square(1) cutoff |
 
-Empty row audit: every symbol has a DGP and a recovery/check column. The missing
-item is not symbolic; it is implementation of the combined likelihood.
+Empty row audit: every symbol has a DGP and a recovery/check column. The
+remaining missing item is not symbolic; it is the selected-entry
+`B_eta_realized` profile-LR canary on top of the combined likelihood.
 
-## Implementation Boundary Before S1
+## Implementation Boundary Before Selected-Entry Canary
 
 The existing routes are insufficient:
 
@@ -102,15 +104,16 @@ The existing routes are insufficient:
 - `fit_phylo_glm(...; family = Poisson())` integrates the augmented tree random
   intercept but has no low-rank site latent score or `X_lv`.
 
-S1 needs a new combined route whose marginal likelihood jointly accounts for
-the site-score latent variables and the augmented phylogenetic random effect.
-The minimal implementation proof should include:
+The S1 likelihood proof now has a private combined route whose marginal
+likelihood jointly accounts for the site-score latent variables and the
+augmented phylogenetic random effect. The minimal implementation proof includes:
 
-1. `sigma_phy^2 -> 0` reduction to ordinary Poisson `X_lv`;
-2. `Lambda = 0` or `K = 0` reduction to `fit_phylo_glm` Poisson;
-3. a tiny dense/sparse equality check for the phylo random-effect component;
+1. `sigma_phy^2 -> 0` reduction to ordinary Poisson `X_lv` - covered locally;
+2. `Lambda = 0` reduction to `phylo_glm_marginal_loglik(Poisson())` - covered locally;
+3. a tiny dense/sparse equality check for the phylo random-effect component -
+   covered locally;
 4. one selected-entry `B_eta_realized` profile-LR canary after the point route
-   is stable.
+   is stable - still pending.
 
 ## Candidate S1 Cell
 
@@ -147,7 +150,8 @@ manifest with host-specific denominators and MCSE.
 - Ada: S0 is useful only if it blocks accidental implementation drift.
 - Fisher: profile-LR remains the first canary, but the estimand is
   `B_eta_realized`, not old population `B_lv`.
-- Curie: no S1 until reduction tests and dense/sparse checks exist.
+- Curie: no selected-entry canary until reduction tests and dense/sparse checks
+  exist; those likelihood checks are now the S1 plumbing baseline.
 - Gauss: combined Laplace dimension and optimizer warm starts are the numerical
   risk; keep the first cell tiny.
 - Boole/Hopper: R grammar and bridge remain parked.
@@ -158,6 +162,6 @@ manifest with host-specific denominators and MCSE.
 ## Rose Verdict
 
 Rose verdict: PASS WITH NOTES - the phylo x Poisson target is symbolically
-aligned and is the right first structural-source target, but S1 remains blocked
-until the combined phylo + Poisson + `X_lv` likelihood and reduction tests are
-implemented.
+aligned and is the right first structural-source target; the combined
+likelihood and reduction tests now exist as private S1 plumbing, but the
+selected-entry profile-LR canary and all public surfaces remain blocked.

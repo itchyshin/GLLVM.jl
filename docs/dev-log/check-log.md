@@ -9689,3 +9689,85 @@ r60
 Browser preview check at `http://127.0.0.1:8770/` confirmed the visible board
 contains "Phylo x Poisson structural LV S0", the combined-likelihood blocker,
 and the no-source-specific-grammar/no-compute wording.
+
+## 2026-07-02 - Phylo x Poisson structural LV S1 likelihood proof
+
+Implemented the first private combined likelihood proof for the phylo x Poisson
+x predictor-informed LV route:
+
+- new internal `_phylo_poisson_xlv_marginal_loglik` in
+  `src/phylo_poisson_xlv.jl`;
+- joint Laplace over site-score innovations and augmented phylo random
+  intercepts;
+- Poisson(log) only, no public fitter/export/R grammar/bridge route;
+- documentation boundary refreshed from "combined likelihood missing" to
+  "selected-entry `B_eta_realized` profile-LR canary pending."
+
+Files updated:
+
+```text
+src/phylo_poisson_xlv.jl
+src/GLLVM.jl
+test/test_phylo_poisson_xlv.jl
+test/runtests.jl
+docs/dev-log/decisions/2026-07-02-phylo-poisson-structural-lv-s1-likelihood.md
+docs/dev-log/decisions/2026-07-02-phylo-poisson-structural-lv-s0-target.md
+docs/dev-log/decisions/2026-07-02-nongaussian-structural-source-lv-gate0.md
+docs/design/73-predictor-informed-latent-scores.md
+docs/dev-log/check-log.md
+docs/dev-log/after-task/2026-07-02-phylo-poisson-structural-lv-s1-likelihood.md
+```
+
+Focused verification:
+
+```text
+julia --project=. --startup-file=no test/test_phylo_poisson_xlv.jl
+Phylo x Poisson predictor-informed LV S1 likelihood: 9 passed, 0 failed, 0 errored, 4.8s
+
+julia --project=. --startup-file=no test/test_phylo_glm.jl
+Phylogenetic GLM (augmented-state joint Laplace): 6 passed, 0 failed, 0 errored, 3.8s
+
+julia --project=. --startup-file=no test/test_phylo_eta_realized.jl
+phylo Model A eta-realized target: 7 passed, 0 failed, 0 errored, 2.5s
+
+julia --project=. --startup-file=no -e 'using GLLVM; println("load-ok")'
+load-ok
+
+git diff --check
+```
+
+Attempted broader core run:
+
+```text
+julia --project=. --startup-file=no -e 'include("test/runtests.jl")'
+```
+
+Interrupted after a long active run in `test/test_zero_inflated.jl`; no failure
+output before termination, and not counted as a pass.
+
+JET was not run because `JET` is not installed in this project environment.
+Benchmarks/allocation checks are deferred because this dense joint Hessian is a
+tiny S1 proof surface, not a production scaling path.
+
+Mission Control refresh:
+
+```text
+python3 -m json.tool docs/dev-log/dashboard/status.json >/dev/null
+python3 -m json.tool docs/dev-log/dashboard/sweep.json >/dev/null
+git diff --check -- docs/dev-log/dashboard/status.json docs/dev-log/dashboard/sweep.json
+
+sh tools/start-mission-control.sh --background
+GLLVM mission-control dashboard already available at http://127.0.0.1:8770/
+Synced dashboard files to /tmp/gllvm-dashboard
+Mirrored disposable live output to /private/tmp/gllvm-dashboard
+
+curl -s http://127.0.0.1:8770/status.json | python3 -m json.tool >/dev/null
+curl -s http://127.0.0.1:8770/sweep.json | python3 -m json.tool >/dev/null
+curl -s http://127.0.0.1:8770/version.txt
+r60
+```
+
+Browser preview at `http://127.0.0.1:8770/` confirmed the visible board shows
+"Phylo x Poisson structural LV S1", "combined likelihood proof",
+"selected-entry B_eta_realized profile-LR canary", "No public fitter",
+"Totoro/DRAC compute", and `test_phylo_poisson_xlv.jl 9/9`.
