@@ -1,5 +1,53 @@
 # Check Log
 
+## 2026-07-02 - Bridge capability X_lv note sync
+
+### Scope
+
+Reconciled Julia bridge capability wording after the post-LV baseline review.
+The implementation and tests already expose complete-response one-part
+predictor-informed `X_lv` routes for Gaussian, Poisson, NB2, Beta, Gamma, and
+binomial logit/probit/cloglog; admitted `X_lv` rows route Wald `B_lv` CI
+payloads only. The stale bridge header and capability notes still read as if
+non-Gaussian non-binomial `X_lv` remained future work. This slice fixed that
+metadata drift and added a regression test.
+
+Files updated in this worktree:
+
+- `src/bridge.jl`
+- `test/test_bridge_capabilities.jl`
+- `docs/dev-log/decisions/2026-07-02-capability-baseline-review.md`
+- `docs/dev-log/after-task/2026-07-02-bridge-capability-xlv-note-sync.md`
+- `docs/dev-log/check-log.md`
+
+Claim boundary retained:
+
+- one-part ordinary `X_lv` is not source-specific `lv`;
+- Wald `B_lv` CI payloads are the admitted bridge `X_lv` CI route;
+- profile/bootstrap `X_lv` CIs remain gated;
+- mixed-family `X_lv`, response-mask `X_lv`, and source-specific `X_lv` remain
+  blocked;
+- no gllvmTMB R source, package API, likelihood, PR state, or compute changed.
+
+Checks:
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_capabilities.jl
+# bridge capabilities ledger | 105 pass
+
+julia --project=. --startup-file=no test/test_bridge_mixed.jl
+# bridge mixed-family payload metadata | 18 pass
+
+julia --project=. --startup-file=no test/test_bridge_ci.jl
+# bridge CI routing | 64 pass
+
+git diff --check -- src/bridge.jl test/test_bridge_capabilities.jl docs/dev-log/decisions/2026-07-02-capability-baseline-review.md docs/dev-log/check-log.md docs/dev-log/after-task/2026-07-02-bridge-capability-xlv-note-sync.md
+# passed, no output
+
+rg -n 'non-Gaussian non-binomial X_lv remain follow-ups|broader non-Gaussian X_lv routes remain separate|point-estimate-only Gaussian and binomial|Gaussian and binomial logit' src/bridge.jl docs/design/73-predictor-informed-latent-scores.md docs/dev-log/decisions/2026-07-02-capability-baseline-review.md
+# no output
+```
+
 ## 2026-07-02 - Capability baseline review after LV closeout
 
 ### Scope

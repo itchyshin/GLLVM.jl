@@ -1,7 +1,7 @@
 # Capability Baseline Review After LV Closeout
 
 Date: 2026-07-02
-Status: seven-hour capability-baseline goal, first truth-sync slice complete
+Status: seven-hour capability-baseline goal, truth-sync and bridge-note slices complete
 Scope: GLLVM.jl handover worktree plus gllvmTMB Mission Control and capability
 ledgers
 
@@ -19,6 +19,14 @@ The first safe improvement in this block is a wording repair in
 requirements now say "future-only source-specific reopening" and explicitly
 distinguish supported ordinary `latent(..., lv = ~ x)` from guarded
 source-specific `phylo_latent(..., lv = ~ x)`.
+
+The second safe improvement is a bridge capability-note repair in
+`src/bridge.jl`: the Julia bridge capability surface now says the same thing as
+the implementation and tests. Complete-response one-part `X_lv` point routes
+exist for Gaussian, Poisson, NB2, Beta, Gamma, and binomial
+logit/probit/cloglog; admitted `X_lv` rows route Wald `B_lv` CI payloads only;
+profile/bootstrap `X_lv` CIs, response-mask `X_lv`, mixed-family `X_lv`, and
+source-specific `X_lv` remain blocked.
 
 ## Sources Reviewed
 
@@ -52,13 +60,16 @@ source-specific `phylo_latent(..., lv = ~ x)`.
 
 ## Seven-Hour Work Order
 
-1. Finish this truth-sync slice and commit it locally.
+1. Finish this truth-sync slice and commit it locally. Done in local commit
+   `f829457`.
 2. Run a bridge-capability drift audit focused on `src/bridge.jl`,
    `test/test_bridge_*.jl`, gllvmTMB `R/julia-bridge.R`, and
-   `tests/testthat/test-julia-bridge.R`.
+   `tests/testthat/test-julia-bridge.R`. Done for the current mixed-family and
+   `X_lv` capability-note surface.
 3. If drift is found and the files are safe to touch, add or tighten one guard
-   test for unavailable mixed-family `X_lv`/CI status. If the only drift is
-   wording, keep the change as docs-only.
+   test for unavailable mixed-family `X_lv`/CI status. Done: the new
+   `test/test_bridge_capabilities.jl` assertions block stale non-Gaussian `X_lv`
+   follow-up wording in `bridge_capabilities()`.
 4. Validate with focused text scans, `git diff --check`, and dashboard JSON
    parsing. Do not launch Totoro/DRAC jobs and do not mix host denominators.
 5. Close with check-log, after-task report, local commit, and explicit remaining
@@ -76,7 +87,8 @@ source-specific `phylo_latent(..., lv = ~ x)`.
 
 ## Rose Verdict
 
-Rose verdict: PASS WITH NOTES - the first capability-baseline slice fixes a
-wording drift without changing behavior. Remaining notes are deliberate
-blockers: bridge drift still needs a focused audit, mixed-family intervals
-remain unavailable, and source-specific `lv` remains parked.
+Rose verdict: PASS WITH NOTES - the capability-baseline slices fixed two
+claim-boundary drifts without changing model behavior. Remaining notes are
+deliberate blockers: mixed-family intervals and `X_lv` remain unavailable,
+source-specific `lv` remains parked, and broader R-user parity still requires
+separate gate-specific evidence.

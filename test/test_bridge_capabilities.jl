@@ -64,6 +64,18 @@ using GLLVM
         "beta",
         "gamma",
     ]
+    for fam in caps.family[caps.predictor_informed_lv]
+        idx = findfirst(==(fam), caps.family)
+        @test idx !== nothing
+        @test occursin("predictor-informed latent-score X_lv", caps.notes[idx])
+        @test occursin("X_lv Wald B_lv CI payloads are routed", caps.notes[idx])
+        @test occursin("profile/bootstrap X_lv CIs", caps.notes[idx])
+        @test occursin("remain follow-ups", caps.notes[idx])
+    end
+    @test all(!occursin("non-Gaussian non-binomial X_lv remain follow-ups", note)
+              for note in caps.notes)
+    @test all(!occursin("broader non-Gaussian X_lv routes remain separate", note)
+              for note in caps.notes)
     @test caps.family[caps.missing_response] == [
         "poisson",
         "binomial",
