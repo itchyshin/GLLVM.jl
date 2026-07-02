@@ -1908,6 +1908,18 @@ _lv_packed_nll(fit::GammaFit, Y, X_lv, q_lv, N) =
 _lv_packed_nll(fit::BetaFit, Y, X_lv, q_lv, N) =
     θ -> beta_lv_nll_packed(θ, Y, size(fit.Λ, 1), size(fit.Λ, 2), fit.link; X_lv = X_lv, q_lv = q_lv)
 
+function _lv_effects_from_packed_ordinal(θ::AbstractVector, p::Integer, K::Integer,
+                                         q_lv::Integer)
+    rr = rr_theta_len(p, K)
+    a = reshape(θ[1:(q_lv * K)], q_lv, K)
+    Λ = unpack_lambda(θ[(q_lv * K + 1):(q_lv * K + rr)], p, K)
+    return vec(Λ * a')
+end
+
+_lv_packed_nll(fit::OrdinalFit, Y, X_lv, q_lv, N) =
+    θ -> ordinal_lv_nll_packed(θ, Y, size(fit.Λ, 1), size(fit.Λ, 2), fit.link, fit.C;
+                               X_lv = X_lv, q_lv = q_lv)
+
 # Profile-likelihood CIs for each entry of vec(B_lv). For entry `idx` the profile
 # deviance D(c) = 2[ℓ_constrained(B_lv[idx]=c) − ℓ̂] is inverted against the χ²₁
 # cutoff: CI = {c : D(c) ≤ qchisq(level, 1)}. The constraint B_lv[idx]=c is imposed
@@ -2064,8 +2076,10 @@ boundary-respecting; `se` is `NaN` since the interval need not be symmetric), or
 profiles every entry. Bootstrap refits use each family's default optimiser
 iteration cap unless `bootstrap_iterations` is supplied.
 Admitted for `K ≥ 1` (`B_lv` is rotation-invariant), complete responses, single
-ordinary latent block; every other structure (masks, `X` + `X_lv`,
-mixed-family, W-tier, phylo/animal/spatial/kernel sources) stays gated.
+ordinary latent block. Shared-cutpoint Julia-side `OrdinalFit` is admitted
+through its own method; per-trait ordinal bridge CIs stay gated. Every other
+structure (masks, `X` + `X_lv`, mixed-family, W-tier,
+phylo/animal/spatial/kernel sources) stays gated.
 """
 function confint_lv_effects(fit::Union{PoissonFit, BinomialFit, NBFit, GammaFit, BetaFit},
                             Y::AbstractMatrix, X_lv::AbstractMatrix;
@@ -2109,6 +2123,55 @@ function confint_lv_effects(fit::Union{PoissonFit, BinomialFit, NBFit, GammaFit,
                                   profile_max_bisect = profile_max_bisect)
     end
     return _lv_effect_wald(nll, fit.theta_packed, p, K, q_lv, level)
+end
+
+function confint_lv_effects(fit::OrdinalFit, Y::AbstractMatrix, X_lv::AbstractMatrix;
+                            N::Union{Nothing, AbstractMatrix} = nothing, level::Real = 0.95,
+                            method::Symbol = :wald, n_boot::Integer = 200,
+                            seed::Integer = 0,
+                            bootstrap_iterations::Union{Nothing, Integer} = nothing,
+                            profile_indices = nothing,
+                            profile_iterations::Union{Nothing, Integer} = nothing,
+                            profile_g_tol::Real = 1e-8,
+                            profile_max_expand::Union{Nothing, Integer} = nothing,
+                            profile_max_bisect::Integer = 40)
+    0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
+    fit.alpha_lv === nothing && throw(ArgumentError(
+        "confint_lv_effects requires an X_lv fit (fit_ordinal_gllvm(...; X_lv=...)); this fit has none"))
+    p, K = size(fit.Λ)
+    K >= 1 || throw(ArgumentError("confint_lv_effects requires K >= 1; got K = $K"))
+    q_lv = size(X_lv, 2)
+    size(X_lv, 1) == size(Y, 2) || throw(ArgumentError(
+        "X_lv must have one row per site: got $(size(X_lv, 1)), need $(size(Y, 2))"))
+    size(fit.alpha_lv) == (q_lv, K) || throw(ArgumentError(
+        "X_lv has $(q_lv) column(s) but the fit carries α_lv of size $(size(fit.alpha_lv))"))
+    method in (:wald, :bootstrap, :profile) ||
+        throw(ArgumentError("method must be :wald, :bootstrap, or :profile; got :$method"))
+    profile_indices === nothing || method === :profile ||
+        throw(ArgumentError("profile_indices is only supported with method=:profile"))
+    method === :bootstrap &&
+        return _lv_bootstrap(fit, Y, X_lv, N, q_lv, level, n_boot, seed;
+                             bootstrap_iterations = bootstrap_iterations)
+    nll = _lv_packed_nll(fit, Y, X_lv, q_lv, N)
+    x = collect(Float64, fit.theta_packed)
+    safenll = function (v)
+        val = try nll(v) catch; return 1e12 end
+        return isfinite(val) ? val : 1e12
+    end
+    H = _fd_hessian(safenll, x)
+    if method === :profile
+        wse = _lv_wald_from_hessian(H, x, p, K, q_lv, level,
+                                    _lv_effects_from_packed_ordinal).se
+        return _lv_effect_profile(nll, x, p, K, q_lv, level,
+                                  _lv_effects_from_packed_ordinal, wse; ad = false,
+                                  profile_indices = profile_indices,
+                                  profile_iterations = profile_iterations,
+                                  profile_g_tol = profile_g_tol,
+                                  profile_max_expand = profile_max_expand,
+                                  profile_max_bisect = profile_max_bisect)
+    end
+    return _lv_wald_from_hessian(H, x, p, K, q_lv, level,
+                                 _lv_effects_from_packed_ordinal)
 end
 
 """
@@ -2246,6 +2309,14 @@ function _lv_boot_fns(fit::BetaFit, Y, X_lv, N,
     return (rng -> simulate(fit, n; X_lv = X_lv, rng = rng),
             Yb -> (try fit_beta_gllvm(Yb; K = K, link = link, X_lv = X_lv,
                                       boot_kwargs...) catch; nothing end))
+end
+function _lv_boot_fns(fit::OrdinalFit, Y, X_lv, N,
+                      bootstrap_iterations::Union{Nothing, Integer})
+    K = size(fit.Λ, 2); n = size(Y, 2); link = fit.link
+    boot_kwargs = _lv_boot_kwargs(bootstrap_iterations)
+    return (rng -> simulate(fit, n; X_lv = X_lv, rng = rng),
+            Yb -> (try fit_ordinal_gllvm(Yb; K = K, link = link, X_lv = X_lv,
+                                         boot_kwargs...) catch; nothing end))
 end
 function _lv_boot_fns(fit::GllvmFit, Y, X_lv, N,
                       bootstrap_iterations::Union{Nothing, Integer})

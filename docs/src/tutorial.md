@@ -285,6 +285,15 @@ couples them (far fewer parameters than free per-species slopes):
 fit_fourthcorner_gllvm(Y; family = Poisson(), Xenv = Xenv, TR = TR, K = 2).C
 ```
 
+Predictor-informed latent-score means keep the latent axes random but shift
+their mean by site covariates. The rotation-stable effect is the trait-scale
+product `B_lv = Λ * alpha_lv'`:
+
+```julia
+fit_poisson_gllvm(Y; K = 1, X_lv = X_lv) |> extract_lv_effects
+fit_ordinal_gllvm(Yo; K = 1, X_lv = X_lv) |> extract_lv_effects
+```
+
 For **constrained ordination**, the latent axes are driven by site covariates.
 `fit_constrained_gllvm` (= `fit_concurrent_gllvm`, gllvm's `num.lv.c`) keeps a
 residual random effect, `z_s ~ N(B' x_s, I_K)`; `fit_rrr_gllvm` (gllvm's

@@ -167,6 +167,18 @@ estimates one ordered cutpoint vector per trait and stores a NaN-padded
 shared-cutpoint `fit_ordinal_gllvm()` route remains available as a Julia-side
 comparator and keeps the existing shared-cutpoint CI engine.
 
+The shared-cutpoint route also admits predictor-informed latent-score means:
+
+```julia
+fit_xlv = fit_ordinal_gllvm(Yo; K = 1, X_lv = X_lv)
+extract_lv_effects(fit_xlv)
+confint_lv_effects(fit_xlv, Yo, X_lv; method = :profile,
+                   profile_indices = [1])
+```
+
+Those intervals target the native Julia `B_lv = Λ * alpha_lv'` product. They do
+not promote per-trait ordinal bridge CI parity.
+
 ### Gamma — `Gamma()`
 
 For positive-continuous data with Var = μ²/α (constant coefficient of variation),

@@ -105,6 +105,10 @@ rotation-stable trait-effect matrix `B_lv = Lambda * alpha_lv'`. Wald,
 profile-likelihood, and bootstrap intervals are native Julia uncertainty
 routes for admitted ordinary `X_lv` fits; bootstrap remains a cost-bounded
 diagnostic complement rather than the default engine.
+The admitted ordinary set currently covers Gaussian, Poisson, Binomial, NB2,
+Gamma, Beta, and shared-cutpoint Ordinal fits. Per-trait ordinal bridge
+intervals, source-specific structural `X_lv`, mixed-family `X_lv`, and
+response-mask `X_lv` intervals remain separate gates.
 
 ```julia
 ci_all = confint_lv_effects(fit, Y, X_lv; method = :profile)

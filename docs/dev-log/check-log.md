@@ -1,5 +1,70 @@
 # Check Log
 
+## 2026-07-02 - Ordinary Ordinal LV profile Gate 1 extension
+
+Closed the ordinary one-part non-Gaussian selected-entry profile Gate 1 set by
+extending route evidence to shared-cutpoint Ordinal logit. This stays inside the
+same ordinary `X_lv` ADEMP gate:
+
+```text
+docs/dev-log/decisions/2026-07-02-nongaussian-ordinary-lv-profile-ademp.md
+```
+
+Implemented:
+
+- added shared-cutpoint Ordinal `X_lv` support to `fit_ordinal_gllvm`;
+- threaded the predictor-informed link-scale offset through the ordinal Laplace
+  mode and marginal likelihood;
+- added `extract_lv_effects`, `getLV(...; component=:mean/:innovation/:total)`,
+  `predict`, and `simulate` support for `OrdinalFit` with `X_lv`;
+- added `confint_lv_effects(fit::OrdinalFit, Y, X_lv; method=:wald/:profile/:bootstrap)`;
+- added an ordinary Ordinal logit selected-entry profile canary to
+  `test/test_lv_ci.jl`.
+
+Gate 1 local canary:
+
+```text
+p=2, n=60, K=1, q_lv=1, C=4
+cutpoints tau=[-1.1, 0.05, 1.25]
+Lambda=[0.50, -0.38]'
+alpha=[0.55]
+selected entry: B_lv[1,1] / vec(B_lv)[1]
+truth: 0.275
+fit: converged in 19 iterations
+estimate: 0.27757861344530577
+profile interval: [-0.4920852132652146, 1.1235356474682392]
+```
+
+Focused verification:
+
+```text
+julia --project=. --startup-file=no -e 'using GLLVM; println("load-ok")'
+load-ok
+
+julia --project=. --startup-file=no test/test_ordinal_fit.jl
+fit_ordinal_gllvm: 9 passed, 0 failed, 0 errored, 14.8s
+
+julia --project=. --startup-file=no test/test_lv_ci.jl
+X_lv Wald CIs - confint_lv_effects: 196 passed, 0 failed, 0 errored, 3m57.7s
+
+julia --project=. --startup-file=no test/test_ordinal_probit.jl
+Ordinal cumulative-link selection (logit default + probit): 10 passed, 0 failed, 0 errored, 3.7s
+
+julia --project=. --startup-file=no test/test_ordinal_pertrait.jl
+Ordinal per-trait cutpoints: 96 passed, 0 failed, 0 errored, 0.5s
+bridge ordinal payload uses per-trait cutpoints: 15 passed, 0 failed, 0 errored, 6.8s
+
+julia --project=. --startup-file=no test/test_confint_family.jl
+Non-Gaussian confidence intervals: 124 passed, 0 failed, 0 errored, 4m13.4s
+```
+
+Claim boundary: IN: native Julia ordinary shared-cutpoint Ordinal logit `X_lv`
+point fits and selected-entry `B_lv` profile route evidence. OUT: no
+per-trait ordinal bridge `X_lv`, no R bridge profile/bootstrap transport, no
+source-specific `lv = ~ env`, no structural/source Ordinal `X_lv`, no
+mixed-family `X_lv`, no masks or missing responses with `X_lv`, no coverage
+calibration, no `unique=` parity, and no Totoro/DRAC compute.
+
 ## 2026-07-02 - Phylo x Poisson structural LV S2 manifest
 
 Predeclared the next possible diagnostic step for the private phylo x Poisson x

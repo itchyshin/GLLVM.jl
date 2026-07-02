@@ -68,13 +68,14 @@ end
 
 # Per-site Laplace mode ẑ (Fisher-scoring Newton); η = Λ z (no intercept).
 function _ordinal_laplace_mode(y::AbstractVector, Λ::AbstractMatrix, τ::AbstractVector,
-        link::Link = LogitLink(); mask = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
+        link::Link = LogitLink(); mask = nothing, offset = nothing,
+        maxiter::Integer = 100, tol::Real = 1e-9)
     p, K = size(Λ)
     z = zeros(K)
     s = Vector{Float64}(undef, p)
     W = Vector{Float64}(undef, p)
     for _ in 1:maxiter
-        η = _clamp_eta.(Λ * z)
+        η = offset === nothing ? _clamp_eta.(Λ * z) : _clamp_eta.(Λ * z .+ offset)
         @inbounds for t in 1:p
             if mask !== nothing && !mask[t]
                 s[t] = 0.0; W[t] = 0.0          # masked (missing) ⇒ no contribution
@@ -100,10 +101,13 @@ Laplace log-marginal for one site of a cumulative-logit ordinal GLLVM:
 `Λ` p×K, `τ` the `C−1` ordered cutpoints.
 """
 function ordinal_loglik_site(y::AbstractVector, Λ::AbstractMatrix, τ::AbstractVector,
-        link::Link = LogitLink(); mask = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
+        link::Link = LogitLink(); mask = nothing, offset = nothing,
+        maxiter::Integer = 100, tol::Real = 1e-9)
     p = size(Λ, 1)
-    z = _ordinal_laplace_mode(y, Λ, τ, link; mask = mask, maxiter = maxiter, tol = tol)
-    η = _clamp_eta.(Λ * z)
+    z = _ordinal_laplace_mode(y, Λ, τ, link;
+                              mask = mask, offset = offset,
+                              maxiter = maxiter, tol = tol)
+    η = offset === nothing ? _clamp_eta.(Λ * z) : _clamp_eta.(Λ * z .+ offset)
     W = Vector{Float64}(undef, p)
     ℓ = 0.0
     @inbounds for t in 1:p
@@ -130,11 +134,14 @@ selects the cumulative-link CDF `F` (`LogitLink()` default, `ProbitLink()`). Wit
 independent cumulative-link log-likelihood `Σ log(F(τ_c) − F(τ_{c−1}))`.
 """
 function ordinal_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix,
-        τ::AbstractVector; link::Link = LogitLink(), mask = nothing, kwargs...)
+        τ::AbstractVector; link::Link = LogitLink(), mask = nothing,
+        offset = nothing, kwargs...)
     acc = 0.0
     @inbounds for s in axes(Y, 2)
         mcol = mask === nothing ? nothing : view(mask, :, s)
-        acc += ordinal_loglik_site(view(Y, :, s), Λ, τ, link; mask = mcol, kwargs...)
+        ocol = offset === nothing ? nothing : view(offset, :, s)
+        acc += ordinal_loglik_site(view(Y, :, s), Λ, τ, link;
+                                   mask = mcol, offset = ocol, kwargs...)
     end
     return acc
 end
@@ -222,8 +229,10 @@ end
 
 Result of [`fit_ordinal_gllvm`](@ref): loadings `Λ` (p×K), the `C−1` ordered
 cutpoints `τ`, the number of categories `C`, the `link`, the maximised Laplace
-`loglik`, the optimiser `converged` flag, and `iterations`. (No species intercept
-— the common cutpoints carry the category levels.)
+`loglik`, the optimiser `converged` flag, and `iterations`. Fits using `X_lv`
+also retain `alpha_lv`, the raw latent-axis coefficients for the
+predictor-informed score mean. There is no species intercept; the common
+cutpoints carry the category levels.
 """
 struct OrdinalFit
     Λ::Matrix{Float64}
@@ -233,7 +242,13 @@ struct OrdinalFit
     loglik::Float64
     converged::Bool
     iterations::Int
+    alpha_lv::Union{Nothing, Matrix{Float64}}
+    theta_packed::Vector{Float64}
 end
+
+OrdinalFit(Λ::Matrix{Float64}, τ::Vector{Float64}, C::Int, link::Link,
+           loglik::Float64, converged::Bool, iterations::Int) =
+    OrdinalFit(Λ, τ, C, link, loglik, converged, iterations, nothing, Float64[])
 
 """
     OrdinalPerTraitFit
@@ -257,6 +272,7 @@ function Base.show(io::IO, f::OrdinalFit)
     p, K = size(f.Λ)
     print(io, "OrdinalFit(p=", p, ", K=", K, ", C=", f.C,
           ", link=", nameof(typeof(f.link)),
+          f.alpha_lv === nothing ? "" : ", X_lv=true",
           ", loglik=", round(f.loglik; sigdigits = 7),
           f.converged ? "" : ", NOT CONVERGED", ")")
 end
@@ -313,18 +329,73 @@ function _pack_initial_cutpoints_pertrait(Y::AbstractMatrix, obs::AbstractMatrix
 end
 
 """
-    fit_ordinal_gllvm(Y; K, link=LogitLink(), …) -> OrdinalFit
+    ordinal_lv_nll_packed(params, Y, p, K, link, C; X_lv, q_lv, kwargs...) -> Real
+
+Negative Laplace log-likelihood for the predictor-informed latent-score ordinal
+model. Parameter layout:
+
+- first `q_lv * K` entries = `alpha_lv`, reshaped as `q_lv × K`;
+- next entries = packed reduced-rank loadings `Λ`;
+- final `C - 1` entries = unconstrained shared cutpoint increments.
+
+The conditional latent variable is the zero-mean innovation. The predictor mean
+enters the ordinal Laplace core as the parameter-dependent link-scale offset
+`Λ * alpha_lv' * X_lv[s, :]`.
+"""
+function ordinal_lv_nll_packed(params::AbstractVector, Y::AbstractMatrix,
+        p::Integer, K::Integer, link::Link, C::Integer;
+        X_lv::AbstractMatrix, q_lv::Integer,
+        mask = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
+    size(Y, 1) == p ||
+        throw(ArgumentError("Y first dim ($(size(Y, 1))) must equal p ($p)"))
+    n = size(Y, 2)
+    size(X_lv, 1) == n ||
+        throw(ArgumentError("X_lv first dim ($(size(X_lv, 1))) must equal n_sites ($n)"))
+    size(X_lv, 2) == q_lv ||
+        throw(ArgumentError("X_lv second dim ($(size(X_lv, 2))) must equal q_lv ($q_lv)"))
+    q_lv > 0 || throw(ArgumentError("q_lv must be positive"))
+
+    rr = rr_theta_len(p, K)
+    n_expected = q_lv * K + rr + C - 1
+    length(params) == n_expected || throw(ArgumentError(
+        "params length ($(length(params))) must equal $n_expected " *
+        "(alpha_lv=$(q_lv * K) + rr=$rr + cutpoints=$(C - 1))"))
+
+    cursor = 0
+    alpha_vec = @view params[(cursor + 1):(cursor + q_lv * K)]
+    alpha_lv = reshape(alpha_vec, q_lv, K)
+    cursor += q_lv * K
+    θ_rr = @view params[(cursor + 1):(cursor + rr)]
+    Λ = unpack_lambda(θ_rr, p, K)
+    cursor += rr
+    τ = _unpack_cutpoints(@view params[(cursor + 1):(cursor + C - 1)])
+
+    lv_offset = _lv_mean_eta(Λ, X_lv, alpha_lv)
+    return -ordinal_marginal_loglik_laplace(Y, Λ, τ;
+                                            link = link, mask = mask,
+                                            offset = lv_offset,
+                                            maxiter = maxiter, tol = tol)
+end
+
+"""
+    fit_ordinal_gllvm(Y; K, link=LogitLink(), X_lv=nothing, alpha_lv_init=nothing, …) -> OrdinalFit
 
 Fit a proportional-odds cumulative ordinal GLLVM by L-BFGS over
 `[vec(Λ); ψ]`, where the `C−1` ordered cutpoints are the unconstrained increments
 `τ₁ = ψ₁, τ_c = τ_{c-1} + exp(ψ_c)` (so ordering holds for free) and the marginal
 is [`ordinal_marginal_loglik_laplace`](@ref). `link` selects the cumulative-link
 CDF (`LogitLink()` default, `ProbitLink()`). `Y` is a p×n matrix of ordinal
-responses coded `1:C` (`C = maximum(Y)`). Finite-difference gradient; warm start =
-empirical cumulative-proportion cutpoints + a normal-scores SVD loadings init.
+responses coded `1:C` (`C = maximum(Y)`). With `X_lv`, the fitted latent-score
+mean is `X_lv * alpha_lv`, `alpha_lv_init` can seed that q×K coefficient matrix,
+and [`extract_lv_effects`](@ref) / [`confint_lv_effects`](@ref) target the
+rotation-stable `B_lv = Λ * alpha_lv'` product. Finite-difference gradient; warm
+start = empirical cumulative-proportion cutpoints + a normal-scores SVD loadings
+init.
 """
 function fit_ordinal_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
         link::Link = LogitLink(), Λ_init = nothing, mask = nothing,
+        X_lv::Union{Nothing, AbstractMatrix} = nothing,
+        alpha_lv_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
@@ -337,6 +408,26 @@ function fit_ordinal_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
     end
     C ≥ 2 || throw(ArgumentError("ordinal response needs ≥ 2 observed categories; got $C"))
     rr = rr_theta_len(p, K)
+    q_lv = 0
+    X_lv_fit = nothing
+    if X_lv !== nothing
+        K > 0 || throw(ArgumentError("X_lv requires a positive latent dimension K"))
+        size(X_lv, 1) == n ||
+            throw(ArgumentError("X_lv first dim ($(size(X_lv, 1))) must equal n_sites ($n)"))
+        q_lv = size(X_lv, 2)
+        q_lv > 0 || throw(ArgumentError("X_lv must have at least one predictor column"))
+        X_lv_fit = Matrix{Float64}(X_lv)
+        if alpha_lv_init !== nothing
+            size(alpha_lv_init, 1) == q_lv ||
+                throw(ArgumentError(
+                    "alpha_lv_init first dim ($(size(alpha_lv_init, 1))) must equal size(X_lv, 2) ($q_lv)"))
+            size(alpha_lv_init, 2) == K ||
+                throw(ArgumentError(
+                    "alpha_lv_init second dim ($(size(alpha_lv_init, 2))) must equal K ($K)"))
+        end
+    elseif alpha_lv_init !== nothing
+        throw(ArgumentError("alpha_lv_init requires X_lv"))
+    end
     # Sanitise masked cells to a valid category for the warm starts only.
     Ys = mask === nothing ? Y : [obs[t, i] ? Int(Y[t, i]) : 1 for t in 1:p, i in 1:n]
 
@@ -353,6 +444,20 @@ function fit_ordinal_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
         L
     else
         collect(float.(Λ_init))
+    end
+    Zc = Zproxy .- (sum(Zproxy; dims = 2) ./ n)
+    alpha0 = if X_lv_fit === nothing
+        nothing
+    elseif alpha_lv_init === nothing
+        F = svd(Zc)
+        kk = min(K, length(F.S))
+        scores0 = zeros(Float64, n, K)
+        @inbounds for j in 1:kk
+            scores0[:, j] = sqrt(n) .* F.V[:, j]
+        end
+        X_lv_fit \ scores0
+    else
+        Matrix{Float64}(alpha_lv_init)
     end
 
     # Cutpoint warm start: τ_c = logit(empirical P(y ≤ c)); to ψ increments.
@@ -382,13 +487,41 @@ function fit_ordinal_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
         return isfinite(v) ? v : 1e12
     end
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
-    res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
-                         autodiff = :finite)
+    opts = Optim.Options(g_tol = g_tol, iterations = iterations)
+    res = if X_lv_fit !== nothing
+        θ0_lv = vcat(vec(alpha0), pack_lambda(Λ0), ψ0)
+        negll_lv = θ -> begin
+            v = try
+                ordinal_lv_nll_packed(θ, Y, p, K, link, C;
+                                      X_lv = X_lv_fit, q_lv = q_lv,
+                                      mask = mask, maxiter = newton_maxiter,
+                                      tol = newton_tol)
+            catch
+                return 1e12
+            end
+            return isfinite(v) ? v : 1e12
+        end
+        Optim.optimize(negll_lv, θ0_lv, ls, opts; autodiff = :finite)
+    else
+        Optim.optimize(negll, θ0, ls, opts; autodiff = :finite)
+    end
     θ̂ = Optim.minimizer(res)
-    Λ̂ = unpack_lambda(θ̂[1:rr], p, K)
-    τ̂ = _unpack_cutpoints(θ̂[(rr + 1):(rr + C - 1)])
-    return OrdinalFit(Λ̂, τ̂, C, link, -Optim.minimum(res),
-                      Optim.converged(res), Optim.iterations(res))
+    if X_lv_fit !== nothing
+        cursor = 0
+        alpha_hat = reshape(collect(θ̂[(cursor + 1):(cursor + q_lv * K)]), q_lv, K)
+        cursor += q_lv * K
+        Λ̂ = unpack_lambda(@view(θ̂[(cursor + 1):(cursor + rr)]), p, K)
+        cursor += rr
+        τ̂ = _unpack_cutpoints(@view(θ̂[(cursor + 1):(cursor + C - 1)]))
+        return OrdinalFit(Λ̂, τ̂, C, link, -Optim.minimum(res),
+                          Optim.converged(res), Optim.iterations(res),
+                          alpha_hat, collect(Float64, θ̂))
+    else
+        Λ̂ = unpack_lambda(θ̂[1:rr], p, K)
+        τ̂ = _unpack_cutpoints(θ̂[(rr + 1):(rr + C - 1)])
+        return OrdinalFit(Λ̂, τ̂, C, link, -Optim.minimum(res),
+                          Optim.converged(res), Optim.iterations(res))
+    end
 end
 
 """

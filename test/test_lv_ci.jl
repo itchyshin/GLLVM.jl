@@ -523,6 +523,54 @@ using LinearAlgebra
         @test cpr.lower[1] <= Bc[idx[1]] <= cpr.upper[1]
     end
 
+    @testset "profile method (Ordinal logit selected-entry canary)" begin
+        # Sixth ordinary non-Gaussian Gate 1 canary: the Julia-side shared-
+        # cutpoint ordinal route has no intercept, so X_lv enters only through
+        # the latent-score mean and the estimand remains B_lv = Lambda * alpha'.
+        Random.seed!(20260744)
+        pc, nc, Kc, Cc = 2, 60, 1, 4
+        Xc = reshape(collect(range(-1.0, 1.0; length = nc)), nc, 1)
+        Lc = reshape([0.50, -0.38], pc, Kc)
+        ac = reshape([0.55], 1, Kc)
+        Bc = vec(Lc * ac')
+        τc = [-1.1, 0.05, 1.25]
+        zc = vec(Xc * ac) .+ randn(nc)
+        ηc = Lc * reshape(zc, 1, nc)
+        Yc = Matrix{Int}(undef, pc, nc)
+        for s in 1:nc, t in 1:pc
+            probs = [GLLVM._ord_prob(c, ηc[t, s], τc, LogitLink()) for c in 1:Cc]
+            Yc[t, s] = rand(Categorical(probs ./ sum(probs)))
+        end
+        @test all([all(vec(sum(Yc .== c; dims = 2)) .> 0) for c in 1:Cc])
+
+        fc = fit_ordinal_gllvm(Yc; K = Kc, X_lv = Xc, Λ_init = Lc,
+                               alpha_lv_init = ac, iterations = 500,
+                               g_tol = 1e-6)
+        @test fc.converged
+        @test fc.alpha_lv !== nothing
+        @test issorted(fc.τ)
+        @test extract_lv_effects(fc) == fc.Λ * fc.alpha_lv'
+        cwald = confint_lv_effects(fc, Yc, Xc)
+        @test cwald.method == :wald
+        @test cwald.term == ["B_lv[1,1]", "B_lv[2,1]"]
+        @test all(isfinite, cwald.se)
+        @test all(cwald.lower .< cwald.estimate .< cwald.upper)
+
+        idx = [1]
+        cpr = confint_lv_effects(fc, Yc, Xc; method = :profile,
+                                 profile_indices = idx,
+                                 profile_iterations = 220,
+                                 profile_max_expand = 8,
+                                 profile_max_bisect = 8)
+        @test cpr.method == :profile
+        @test cpr.term == ["B_lv[1,1]"]
+        @test cpr.estimate ≈ vec(extract_lv_effects(fc))[idx] atol = 1e-10
+        @test all(isnan, cpr.se)
+        @test all(isfinite, cpr.lower) && all(isfinite, cpr.upper)
+        @test all(cpr.lower .< cpr.estimate .< cpr.upper)
+        @test cpr.lower[1] <= Bc[idx[1]] <= cpr.upper[1]
+    end
+
     # GLM profile uses derivative-free NelderMead over the Laplace marginal and is
     # expensive (~1 min even for a tiny problem), so it is opt-in to keep CI fast.
     # Set GLLVM_SLOW_TESTS=true to run it. The fast Gaussian test above guards the

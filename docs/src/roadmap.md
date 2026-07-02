@@ -36,11 +36,15 @@ future design input for exact Gaussian cells, not non-Gaussian Laplace.
   one-part Laplace families and grouped NB2/NB1/Beta/Gamma; grouped Tweedie and
   per-trait ordinal endpoints remain explicit unavailable status rows while
   parity and bridge exposure are audited.
+- Native ordinary `X_lv` trait-effect inference for Gaussian, Poisson, NB2,
+  Binomial, Beta, Gamma, and shared-cutpoint Ordinal fits, including
+  selected-entry profile-likelihood canaries for `B_lv`.
 - Dedicated two-part fitters for Delta-lognormal, Hurdle-Poisson, and
   Hurdle-NB.
 - Minimal Julia-side `bridge_fit` for no-covariate one-part families, selected
-  fixed-effect-X / missing-response rows, and complete Gaussian point-estimate
-  `X_lv` rows tested by the paired `gllvmTMB` branch.
+  fixed-effect-X / missing-response rows, selected ordinary `X_lv` point rows
+  tested by paired `gllvmTMB` branches, and guarded mixed-family point/post-fit
+  rows.
 
 ## What's planned
 

@@ -69,6 +69,7 @@ _has_lv_predictor(fit::PoissonFit) = fit.alpha_lv !== nothing
 _has_lv_predictor(fit::NBFit) = fit.alpha_lv !== nothing
 _has_lv_predictor(fit::GammaFit) = fit.alpha_lv !== nothing
 _has_lv_predictor(fit::BetaFit) = fit.alpha_lv !== nothing
+_has_lv_predictor(fit::OrdinalFit) = fit.alpha_lv !== nothing
 
 function _lv_score_mean_for_fit(fit::GllvmFit, y::AbstractMatrix,
                                 X_lv::Union{Nothing, AbstractMatrix})
@@ -103,7 +104,8 @@ function _lv_score_mean_for_fit(fit::BinomialFit, y::AbstractMatrix,
     return _lv_score_mean(X_lv, fit.alpha_lv)
 end
 
-function _lv_score_mean_for_fit(fit::Union{PoissonFit, NBFit, GammaFit, BetaFit}, y::AbstractMatrix,
+function _lv_score_mean_for_fit(fit::Union{PoissonFit, NBFit, GammaFit, BetaFit, OrdinalFit},
+                                y::AbstractMatrix,
                                 X_lv::Union{Nothing, AbstractMatrix})
     _, n = size(y)
     K = size(fit.Λ, 2)
@@ -350,6 +352,17 @@ function extract_lv_effects(fit::BetaFit; type::Symbol = :trait_effect)
 end
 
 lv_effects(fit::BetaFit; kwargs...) = extract_lv_effects(fit; kwargs...)
+
+function extract_lv_effects(fit::OrdinalFit; type::Symbol = :trait_effect)
+    _has_lv_predictor(fit) || throw(ArgumentError(
+        "extract_lv_effects requires a fit from fit_ordinal_gllvm(...; X_lv=...)"))
+    type in (:trait_effect, :axis_effect) ||
+        throw(ArgumentError("type must be :trait_effect or :axis_effect; got :$type"))
+    type === :axis_effect && return copy(fit.alpha_lv)
+    return fit.Λ * fit.alpha_lv'
+end
+
+lv_effects(fit::OrdinalFit; kwargs...) = extract_lv_effects(fit; kwargs...)
 
 """
     residuals(fit::BinomialFit, Y; type=:dunnsmyth, N=nothing, rng=Random.default_rng())
@@ -961,7 +974,9 @@ _loglik(fit::OrdinalPerTraitFit)   = fit.loglik
 
 function _nparams(fit::OrdinalFit)
     p, K = size(fit.Λ)
-    return (p * K - div(K * (K - 1), 2)) + (fit.C - 1)   # Λ + (C−1) cutpoints, no β
+    k = (p * K - div(K * (K - 1), 2)) + (fit.C - 1)   # Λ + cutpoints, no β
+    _has_lv_predictor(fit) && (k += length(fit.alpha_lv))
+    return k
 end
 function _nparams(fit::OrdinalPerTraitFit)
     p, K = size(fit.Λ)
@@ -975,17 +990,29 @@ Conditional latent-variable scores for an ordinal fit: the per-site Laplace mode
 `ẑₛ` (at the fitted cutpoints). `Y` is the p×n matrix of ordinal responses (`1:C`);
 `rotate=true` applies the canonical [`rotation`](@ref).
 """
-function getLV(fit::OrdinalFit, Y::AbstractMatrix{<:Integer}; rotate::Bool = true, mask = nothing)
+function getLV(fit::OrdinalFit, Y::AbstractMatrix{<:Integer};
+               X_lv::Union{Nothing, AbstractMatrix} = nothing,
+               component::Symbol = :total,
+               rotate::Bool = true, mask = nothing)
+    component in (:total, :innovation, :mean) ||
+        throw(ArgumentError("component must be :total, :innovation, or :mean; got :$component"))
     p, n = size(Y)
     K = size(fit.Λ, 2)
+    Zmean = _lv_score_mean_for_fit(fit, Y, X_lv)
+    if component === :mean
+        return rotate ? Zmean * _svd_rotation(fit.Λ) : Zmean
+    end
+    lv_offset = _has_lv_predictor(fit) ? fit.Λ * Zmean' : nothing
     Z = Matrix{Float64}(undef, K, n)
     @inbounds for s in 1:n
         mi = mask === nothing ? nothing : view(mask, :, s)
+        oi = lv_offset === nothing ? nothing : view(lv_offset, :, s)
         Z[:, s] = _ordinal_laplace_mode(view(Y, :, s), fit.Λ, fit.τ, fit.link;
-                                        mask = mi)
+                                        mask = mi, offset = oi)
     end
     Zt = permutedims(Z)
-    return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
+    Zout = component === :innovation ? Zt : Zmean .+ Zt
+    return rotate ? Zout * _svd_rotation(fit.Λ) : Zout
 end
 function getLV(fit::OrdinalPerTraitFit, Y::AbstractMatrix{<:Integer};
                rotate::Bool = true, mask = nothing)
@@ -1009,11 +1036,13 @@ linear predictor `η` (p×n); `type=:prob` the category probabilities (p×n×C a
 summing to 1 over the last axis); `type=:class` / `:response` the modal category
 (p×n integer matrix).
 """
-function predict(fit::OrdinalFit, Y::AbstractMatrix{<:Integer}; type::Symbol = :class)
+function predict(fit::OrdinalFit, Y::AbstractMatrix{<:Integer};
+                 X_lv::Union{Nothing, AbstractMatrix} = nothing,
+                 type::Symbol = :class)
     type in (:link, :prob, :class, :response) ||
         throw(ArgumentError("type must be :link, :prob, :class, or :response; got :$type"))
     p, n = size(Y); C = fit.C
-    Z = getLV(fit, Y; rotate = false)
+    Z = getLV(fit, Y; X_lv = X_lv, rotate = false)
     η = fit.Λ * Z'                                   # p×n
     type === :link && return η
     if type === :prob

@@ -71,18 +71,20 @@ package; every numerical addition is gated by deterministic tests.
 - **PARTIAL:** predictor-informed latent-score means for the ordinary unit-tier
   path, with `fit_gaussian_gllvm(...; X_lv=...)`,
   `fit_poisson_gllvm(...; X_lv=...)`, `fit_nb_gllvm(...; X_lv=...)`,
-  `fit_gamma_gllvm(...; X_lv=...)`, `fit_beta_gllvm(...; X_lv=...)`, and
-  `fit_binomial_gllvm(...; X_lv=...)` for complete-response Gaussian, Poisson
+  `fit_gamma_gllvm(...; X_lv=...)`, `fit_beta_gllvm(...; X_lv=...)`,
+  `fit_binomial_gllvm(...; X_lv=...)`, and
+  `fit_ordinal_gllvm(...; X_lv=...)` for complete-response Gaussian, Poisson
   (log link), shared-dispersion NB2, shared-shape Gamma, shared-precision Beta,
-  and binomial logit/probit/cloglog point fits. `getLV(...;
+  binomial logit/probit/cloglog, and shared-cutpoint Ordinal logit point fits.
+  `getLV(...;
   component=:mean/:innovation/:total)` reports score decompositions, while
   `extract_lv_effects()` reports the rotation-stable induced trait effect
   `B_lv = Λ * alpha_lv'` by default and the rotation-dependent CLV-style
   `alpha_lv` table with `type=:axis_effect`. `confint_lv_effects()` supplies
   uncertainty for `B_lv`, not for `alpha_lv`. Response masks, simultaneous
-  fixed-effect `X`, raw axis-effect SEs, other non-Gaussian families, W-tier,
-  phylogenetic/source-specific extensions, and R-package row promotion remain
-  gated.
+  fixed-effect `X`, raw axis-effect SEs, per-trait ordinal bridge parity,
+  W-tier, phylogenetic/source-specific extensions, and R-package row promotion
+  remain gated.
 - **IN:** fixed-zero shared covariate coefficients for Gaussian (`β_fixed`) and
   non-Gaussian (`γ_fixed`) fixed-effect-X fits, plus bridge status fields for
   `gllvmTMB`'s `Xcoef_fixed` contract.

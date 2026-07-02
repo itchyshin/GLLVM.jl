@@ -125,22 +125,24 @@ passes a fixed-zero coefficient mask through `options["coef_fixed"]`, the bridge
 returns the full coefficient vector with constrained entries equal to zero plus
 `mean_coef_status` (Gaussian) or `gamma_status` (non-Gaussian) so the R package
 can print fixed rows without treating them as estimated parameters.
-Predictor-informed latent-score covariates (`X_lv`) are admitted only for
+Predictor-informed latent-score covariates (`X_lv`) are admitted for
 complete-response ordinary Gaussian, Poisson (log link), shared-dispersion NB2,
-shared-shape Gamma, shared-precision Beta, and binomial logit/probit/cloglog
-point fits. The Gaussian bridge centres responses by trait means and returns
-those means as `alpha`; the Poisson, NB2, Gamma, Beta, and binomial bridges keep
-per-trait link-scale intercepts in `alpha` (the NB2, Gamma, and Beta `X_lv`
-routes use the shared-dispersion/shape/precision fitter, not the per-trait
-grouped route). These routes return total latent scores in `scores` and add
-`scores_mean`, `scores_innovation`, `alpha_lv`, and rotation-stable
-`lv_effects = Lambda * alpha_lv'`. Native GLLVM.jl can compute uncertainty for
-the ordinary `B_lv` product, including selected-entry profile-likelihood
-canaries, but the R bridge still transports only the Wald `X_lv` payload.
-Response masks, simultaneous fixed-effect `X`, mixed-family fits,
-grouped-dispersion `X_lv`, bridge profile/bootstrap `X_lv` intervals, and the
-remaining non-Gaussian families (ordinal, two-part) remain deliberate follow-ups
-rather than inferred parity.
+shared-shape Gamma, shared-precision Beta, binomial logit/probit/cloglog, and
+native shared-cutpoint Ordinal logit point fits. The Gaussian bridge centres
+responses by trait means and returns those means as `alpha`; the Poisson, NB2,
+Gamma, Beta, and binomial bridges keep per-trait link-scale intercepts in
+`alpha` (the NB2, Gamma, and Beta `X_lv` routes use the
+shared-dispersion/shape/precision fitter, not the per-trait grouped route).
+Native shared-cutpoint Ordinal `X_lv` is Julia-side only for now; it does not
+promote the per-trait ordinal R bridge. These routes return total latent scores
+in `scores` and add `scores_mean`, `scores_innovation`, `alpha_lv`, and
+rotation-stable `lv_effects = Lambda * alpha_lv'`. Native GLLVM.jl can compute
+uncertainty for the ordinary `B_lv` product, including selected-entry
+profile-likelihood canaries, but the R bridge still transports only the Wald
+`X_lv` payload for promoted rows. Response masks, simultaneous fixed-effect `X`,
+mixed-family fits, grouped-dispersion `X_lv`, bridge profile/bootstrap `X_lv`
+intervals, per-trait ordinal `X_lv`, and two-part `X_lv` remain deliberate
+follow-ups rather than inferred parity.
 Initial response-missing masks are admitted only for no-X one-part non-Gaussian
 bridge fits through an explicit `mask` (`true = observed`); the R bridge
 live-tests Poisson, Bernoulli Binomial, NB2, NB1, Beta, Gamma, and
