@@ -1,5 +1,38 @@
 # Check Log
 
+## 2026-07-02 - Bridge missing-mask boundary verification
+
+### Scope
+
+Verified the response-missing mask bridge boundary after the LV and
+mixed-family truth locks. No source behavior changed.
+
+Files updated in this worktree:
+
+- `docs/dev-log/after-task/2026-07-02-bridge-missing-mask-boundary-verification.md`
+- `docs/dev-log/check-log.md`
+
+Checks:
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_missing_mask.jl
+# bridge missing-response mask | 83 pass
+
+sed -n '1,260p' test/test_bridge_missing_mask.jl
+# confirmed admitted one-part masked rows and fail-loud unsupported cells
+
+rg -n 'mask|missing|X_lv|mixed-family|ci_mask|ci_method|Gaussian|ordinal' src/bridge.jl test/test_bridge_missing_mask.jl test/test_bridge_capabilities.jl docs/src/gllvmtmb-parity.md docs/dev-log/decisions/2026-07-02-*
+# confirmed capability notes and decision docs keep mixed-family and X_lv masks blocked
+```
+
+Claim boundary retained:
+
+- one-part non-Gaussian response masks are admitted where tested;
+- masked no-X CIs route only through admitted one-part rows;
+- mixed-family masks, fixed-effect-X masks, Gaussian masks, `X_lv` masks, and
+  ordinal masked CIs remain blocked;
+- no source-specific `lv`, package API, likelihood, PR state, or compute changed.
+
 ## 2026-07-02 - Bridge CI status boundary verification
 
 ### Scope
