@@ -8145,3 +8145,29 @@ verification. JSON validation passed for both `status.json` and `sweep.json`;
 `version.txt` remained `r60` because no HTML/JS changed; browser preview at
 `http://127.0.0.1:8770/` showed the new "Structural LV truth matrix" Gate 0-2
 row and the no-API/no-compute guard.
+
+## 2026-07-02 - LV final closeout and next capability lane
+
+Wrote the final reconciliation packet:
+
+- `docs/dev-log/decisions/2026-07-02-lv-arc-final-closeout-and-next-capabilities.md`
+- `docs/dev-log/after-task/2026-07-02-lv-final-closeout-next-capabilities.md`
+
+This reconciles the two evidence ladders without changing claims:
+
+- Phylo Gaussian Model A is frozen through Gate 0-3 for the changed
+  `B_eta_realized` target only.
+- Structural-dependence LV guards and bridge truth are locally verified through
+  Gates 0-2.
+- Source-specific R grammar, PR #127 reopening, package API widening,
+  non-Gaussian/source-specific inheritance, mixed-family `X`/`X_lv`/masks/CIs,
+  and public support wording remain separate future goals.
+
+Recommended next goal:
+
+```text
+Finish the next GLLVM capability lane after LV closeout:
+ship one bounded capability slice with implementation, tests, docs, check-log,
+after-task report, and Rose claim audit, while keeping source-specific LV
+grammar parked.
+```
