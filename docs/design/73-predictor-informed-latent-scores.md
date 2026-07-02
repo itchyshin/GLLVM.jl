@@ -50,6 +50,14 @@ recorded in
 This adds only private Julia route evidence with fitted shared dispersion `r`:
 no public fitter, bridge transport, R grammar, coverage calibration, compute,
 or source-specific `lv` support follows from it.
+A fourth source/family target, phylo x Gamma log-link, is recorded in
+`docs/dev-log/decisions/2026-07-02-phylo-gamma-structural-lv-s0-target.md`;
+its internal S1 likelihood proof and one private selected-entry canary are
+recorded in
+`docs/dev-log/decisions/2026-07-02-phylo-gamma-structural-lv-s1-likelihood.md`.
+This adds only private Julia route evidence with fitted shared shape
+`alpha_shape`: no public fitter, bridge transport, R grammar, coverage
+calibration, compute, or source-specific `lv` support follows from it.
 This doc is the spec the Julia comments (`likelihood.jl:405`) reference. The
 compact evidence freeze is
 `docs/dev-log/decisions/2026-07-01-phylo-model-a-evidence-freeze-and-next-arc.md`;
@@ -266,6 +274,24 @@ Requirements for any future authorized wiring:
   + 25/25 canary assertions). This checks finite profile endpoints, MLE
   bracketing, truth inclusion, LR below cutoff, constrained error, and an
   interior `r` guard for one selected entry. In the cheap S1 cell, fitted
+  `sigma2_phy` may sit near the lower numerical boundary, so this is not
+  source-variance recovery evidence. This is local S1 route evidence, not
+  public source-specific `lv` support, coverage calibration, bridge transport,
+  R grammar, compute, or a production scaling path.
+- **Phylo x Gamma structural LV S1 likelihood proof (local, 2026-07-02):**
+  the internal `_phylo_gamma_xlv_marginal_loglik` route now jointly integrates
+  site-score innovations and the augmented phylo random intercept for
+  Gamma(log) with `X_lv`, while fitting the shared shape `alpha_shape` as a
+  nuisance in the private point wrapper. It is reduction-tested against
+  ordinary Gamma `X_lv`, phylo-only Gamma GLM at `Lambda = 0`, and a dense
+  leaf-covariance reference. It also guards finite strictly positive responses
+  and positive finite `alpha_shape`. A private truth-startable point wrapper
+  and selected-entry penalty-profile route cover one stochastic
+  `B_eta_realized` finite-endpoint canary
+  (`test/test_phylo_gamma_xlv.jl`, 12/12 likelihood anchors + 25/25 canary
+  assertions). This checks finite profile endpoints, MLE bracketing, truth
+  inclusion, LR below cutoff, constrained error, and an interior
+  `alpha_shape` guard for one selected entry. In the cheap S1 cell, fitted
   `sigma2_phy` may sit near the lower numerical boundary, so this is not
   source-variance recovery evidence. This is local S1 route evidence, not
   public source-specific `lv` support, coverage calibration, bridge transport,

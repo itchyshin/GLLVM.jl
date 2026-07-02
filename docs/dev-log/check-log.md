@@ -1,5 +1,64 @@
 # Check Log
 
+## 2026-07-02 - Phylo x Gamma structural LV S1 likelihood and canary
+
+Added the private phylo x Gamma(log) x predictor-informed LV S1 route. This is
+internal route evidence only: no public fitter, no R grammar, no bridge
+transport, no Totoro/DRAC compute, no coverage calibration, and no
+source-specific `lv` support were added.
+
+Implemented:
+
+- new private source file `src/phylo_gamma_xlv.jl`;
+- module include in `src/GLLVM.jl`;
+- new focused proof test `test/test_phylo_gamma_xlv.jl`;
+- new S0 and S1 decision notes
+  `docs/dev-log/decisions/2026-07-02-phylo-gamma-structural-lv-s0-target.md`
+  and
+  `docs/dev-log/decisions/2026-07-02-phylo-gamma-structural-lv-s1-likelihood.md`;
+- updated the structural-source Gate 0 matrix and Design 73 status text.
+
+S1 contract:
+
+```text
+family: Gamma(log)
+source: augmented phylogeny
+target: B_eta_realized = slope_X(Lambda * Z_truth')
+shape alpha_shape: fitted nuisance, loose interior guard required
+response Y: finite strictly positive continuous responses
+status: private S1 likelihood/profile canary banked
+```
+
+Verification:
+
+```text
+julia --project=. --startup-file=no test/test_phylo_gamma_xlv.jl
+Phylo x Gamma predictor-informed LV S1 likelihood: 12 passed, 0 failed, 0 errored, 5.5s
+Phylo x Gamma B_eta_realized selected-entry canary: 25 passed, 0 failed, 0 errored, 56.3s
+
+julia --project=. --startup-file=no test/test_phylo_poisson_xlv.jl
+Phylo x Poisson predictor-informed LV S1 likelihood: 9 passed, 0 failed, 0 errored, 5.1s
+Phylo x Poisson B_eta_realized selected-entry canary: 22 passed, 0 failed, 0 errored, 14.6s
+
+julia --project=. --startup-file=no test/test_phylo_binomial_xlv.jl
+Phylo x Binomial predictor-informed LV S1 likelihood: 14 passed, 0 failed, 0 errored, 6.9s
+Phylo x Binomial B_eta_realized selected-entry canary: 22 passed, 0 failed, 0 errored, 25.5s
+
+julia --project=. --startup-file=no test/test_phylo_nb_xlv.jl
+Phylo x NB2 predictor-informed LV S1 likelihood: 12 passed, 0 failed, 0 errored, 6.0s
+Phylo x NB2 B_eta_realized selected-entry canary: 25 passed, 0 failed, 0 errored, 24.9s
+```
+
+Claim boundary: IN: one private stochastic selected-entry S1 finite-endpoint
+route canary for phylo x Gamma `B_eta_realized`, with fitted shared shape
+`alpha_shape` kept interior, plus reduction tests against ordinary Gamma
+`X_lv`, phylo-only Gamma GLM, and dense leaf-covariance reference. OUT: no
+public fitter, no `confint_lv_effects` source route, no R
+`phylo_latent(..., lv = ~ env)` grammar, no bridge, no compute, no coverage
+calibration, no bootstrap rescue, no source-variance recovery claim, and no
+transfer to Beta, Ordinal, spatial, animal, kernel, mixed-family, missing/mask,
+or `unique=` parity.
+
 ## 2026-07-02 - Phylo x NB2 structural LV S1 likelihood and canary
 
 Added the private phylo x NB2(log) x predictor-informed LV S1 route. This is
