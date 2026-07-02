@@ -1,5 +1,36 @@
 # Check Log
 
+## 2026-07-02 - Core suite after gate budgeting
+
+### Scope
+
+Ran the full core test runner after bounding the ZIB family-CI smoke and the
+missing-response row-effect smoke. No source behavior changed in this slice.
+
+Files updated in this worktree:
+
+- `docs/dev-log/after-task/2026-07-02-core-suite-after-gate-budgeting.md`
+- `docs/dev-log/check-log.md`
+
+Checks:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+# Aqua not in this environment - run Pkg.test() for the full battery
+# JET not in this environment - run Pkg.test() for the type-stability gate
+# GLLVM.jl | 4951 pass | 3 broken | 4954 total | 45m28.3s
+
+pgrep -fl 'julia.*test/runtests|julia.*test_' || true
+# clean after run
+```
+
+Claim boundary retained:
+
+- the local core suite is green after the focused gate-budget fixes;
+- this is not a full `Pkg.test()` / Aqua / JET verdict;
+- no DRAC/Totoro production compute, source-specific `lv` exposure, likelihood
+  change, or R grammar widening occurred.
+
 ## 2026-07-02 - Missing response extra gate budget
 
 ### Scope
