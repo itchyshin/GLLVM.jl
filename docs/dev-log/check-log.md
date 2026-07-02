@@ -1,5 +1,39 @@
 # Check Log
 
+## 2026-07-02 - Core suite interrupted check
+
+### Scope
+
+Recorded the attempted consolidated quick core-suite check after the LV and
+postfit slices. No source behavior changed.
+
+Files updated in this worktree:
+
+- `docs/dev-log/after-task/2026-07-02-core-suite-interrupted-check.md`
+- `docs/dev-log/check-log.md`
+
+Checks:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+# interrupted after a long CPU-active run; not counted as passing
+# last explicit progress before interrupt:
+# masked-objective analytic vs FD
+#   maxdiff_poisson = 5.417778936589457e-8
+#   maxdiff_binomial = 2.4065222259395114e-8
+# interrupt landed in test/test_va_vs_laplace.jl:14
+# process exited with code 130 after a second interrupt
+
+pgrep -fl 'julia.*test/runtests|julia.*runtests' || true
+# clean, no output
+```
+
+Claim boundary retained:
+
+- no broad quick-core or full `Pkg.test()` green claim from this run;
+- focused tests and the docs build remain the accepted evidence for the local
+  slices.
+
 ## 2026-07-02 - Postfit prediction docs and SPDE standalone test
 
 ### Scope
