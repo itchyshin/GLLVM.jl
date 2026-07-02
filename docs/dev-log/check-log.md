@@ -1,5 +1,56 @@
 # Check Log
 
+## 2026-07-02 - Bridge postfit boundary verification
+
+### Scope
+
+Verified the postfit bridge capability surface after the LV boundary closeout.
+No source behavior changed. The current truth remains: native Julia postfit
+support is broader than the R-bridge retained-payload contract in some places,
+and the bridge ledger must be read as the R-facing capability boundary.
+
+Files updated in this worktree:
+
+- `docs/dev-log/after-task/2026-07-02-bridge-postfit-boundary-verification.md`
+- `docs/dev-log/check-log.md`
+
+Checks:
+
+```sh
+julia --project=. --startup-file=no test/test_postfit.jl
+# post-fit ordination core | 96 pass
+# post-fit predict/fitted | 9 pass
+# post-fit residuals | 10 pass
+# post-fit AIC/BIC + show | 8 pass
+# post-fit Poisson fits | 163 pass
+# post-fit NB fits | 160 pass
+# post-fit Beta fits | 215 pass
+# post-fit Gamma fits | 215 pass
+# post-fit Ordinal fits | 216 pass
+
+julia --project=. --startup-file=no test/test_simulate.jl
+# simulate(fit) | 5 pass
+
+julia --project=. --startup-file=no test/test_summary_table.jl
+# Summary / coefficient table | 14 pass
+
+julia --project=. --startup-file=no test/test_bridge_capabilities.jl
+# bridge capabilities ledger | 105 pass
+
+julia --project=. --startup-file=no test/test_bridge_mixed.jl
+# bridge mixed-family payload metadata | 18 pass
+```
+
+Claim boundary retained:
+
+- `postfit_predict` covers all bridge rows, including ordinal through retained
+  cutpoint/probability payloads;
+- `postfit_residuals` and `postfit_simulate` deliberately exclude ordinal bridge
+  rows because the retained bridge payload does not claim a scalar-mean residual
+  contract;
+- mixed-family remains complete balanced point/postfit only;
+- no source-specific `lv`, package API, likelihood, PR state, or compute changed.
+
 ## 2026-07-02 - LV profile selected entries
 
 ### Scope
