@@ -1,5 +1,60 @@
 # Check Log
 
+## 2026-07-02 - Ordinary NB2 LV profile Gate 1 extension
+
+Extended the ordinary non-Gaussian selected-entry profile route evidence from
+Poisson and Binomial logit to NB2, still inside the same Gate 0 ADEMP note:
+
+```text
+docs/dev-log/decisions/2026-07-02-nongaussian-ordinary-lv-profile-ademp.md
+```
+
+Exploratory pre-edit smoke:
+
+```text
+Initial p=2, n=60 NB2 selected-entry profile exceeded local canary scale after
+the point fit and was interrupted. Smaller p=2 cells returned finite endpoints,
+but fitted r moved to a large Poisson-like boundary value. The banked cell uses
+p=4, n=45, true r=1.5, fitted r about 1.73, estimate -0.06649728383230108,
+lower -0.37346403337998935, upper 0.054328496976474336, truth -0.0756 covered,
+and profile time about 15.63 seconds after compilation.
+```
+
+Gate 1 implementation:
+
+- added an ordinary NB2 `X_lv` selected-entry profile canary to
+  `test/test_lv_ci.jl`;
+- target remains `B_lv = Lambda * alpha_lv'`;
+- selected entry is `B_lv[1,1]` / `vec(B_lv)[1]`;
+- known DGP truth is `-0.0756`;
+- the canary includes a loose fitted-`r` guard to avoid a Poisson-boundary-only
+  proof.
+
+Focused verification:
+
+```text
+julia --project=. --startup-file=no test/test_lv_ci.jl
+X_lv Wald CIs - confint_lv_effects: 162 passed, 0 failed, 0 errored, 3m26.5s
+```
+
+Mission Control refresh:
+
+```text
+python3 -m json.tool docs/dev-log/dashboard/status.json >/dev/null
+python3 -m json.tool docs/dev-log/dashboard/sweep.json >/dev/null
+sh tools/start-mission-control.sh --background
+curl -s http://127.0.0.1:8770/status.json | python3 -m json.tool >/dev/null
+curl -s http://127.0.0.1:8770/sweep.json | python3 -m json.tool >/dev/null
+curl -s http://127.0.0.1:8770/version.txt
+r60
+```
+
+Claim boundary: IN: ordinary Poisson, Binomial logit, and NB2 selected-entry
+`B_lv` profile route evidence. OUT: no coverage calibration, no R bridge
+profile/bootstrap transport, no source-specific `lv = ~ env`, no
+source-specific structural/non-Gaussian inference, no mixed-family CI, no
+`unique=` parity, no Totoro/DRAC compute.
+
 ## 2026-07-02 - Full Pkg.test battery after LV gate fixes
 
 ### Scope

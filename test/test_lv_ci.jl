@@ -414,6 +414,42 @@ using LinearAlgebra
         @test cpr.lower[1] <= Bc[idx[1]] <= cpr.upper[1]
     end
 
+    @testset "profile method (NB2 selected-entry canary)" begin
+        # Third ordinary non-Gaussian Gate 1 canary: NB2 exercises the shared
+        # dispersion path. The cell is small enough for local tests but keeps
+        # fitted r away from the Poisson boundary.
+        Random.seed!(20260711)
+        pc, nc, Kc = 4, 45, 1
+        Xc = reshape(collect(range(-1.0, 1.0; length = nc)), nc, 1)
+        Lc = reshape([(-1)^i * 0.2 * (1 + 0.08i) for i in 1:pc], pc, Kc)
+        ac = reshape([0.35], 1, Kc)
+        Bc = vec(Lc * ac')
+        βc = log.([8.0, 6.0, 7.0, 5.0])
+        rc = 1.5
+        zc = vec(Xc * ac) .+ randn(nc)
+        ηc = βc .+ Lc * reshape(zc, 1, nc)
+        Yc = [rand(NegativeBinomial(rc, rc / (rc + exp(ηc[t, s]))))
+              for t in 1:pc, s in 1:nc]
+        fc = fit_nb_gllvm(Yc; K = Kc, X_lv = Xc, β_init = βc,
+                          Λ_init = Lc, alpha_lv_init = ac, r_init = rc,
+                          iterations = 160, g_tol = 1e-6)
+        @test fc.converged
+        @test 0.25 < fc.r < 10.0
+        idx = [1]
+        cpr = confint_lv_effects(fc, Yc, Xc; method = :profile,
+                                 profile_indices = idx,
+                                 profile_iterations = 160,
+                                 profile_max_expand = 10,
+                                 profile_max_bisect = 10)
+        @test cpr.method == :profile
+        @test cpr.term == ["B_lv[1,1]"]
+        @test cpr.estimate ≈ vec(extract_lv_effects(fc))[idx] atol = 1e-10
+        @test all(isnan, cpr.se)
+        @test all(isfinite, cpr.lower) && all(isfinite, cpr.upper)
+        @test all(cpr.lower .< cpr.estimate .< cpr.upper)
+        @test cpr.lower[1] <= Bc[idx[1]] <= cpr.upper[1]
+    end
+
     # GLM profile uses derivative-free NelderMead over the Laplace marginal and is
     # expensive (~1 min even for a tiny problem), so it is opt-in to keep CI fast.
     # Set GLLVM_SLOW_TESTS=true to run it. The fast Gaussian test above guards the
