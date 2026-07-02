@@ -8082,3 +8082,66 @@ julia --project=. -e 'using GLLVM; println("GLLVM load ok")'
 ```
 
 Results: both passed; the Julia load printed `GLLVM load ok`.
+
+## 2026-07-02 - Structural-dependence LV truth-matrix ultra-plan
+
+Created a plan-only truth-lock artifact for the next LV arc:
+
+- `docs/dev-log/decisions/2026-07-02-structural-dependence-lv-truth-matrix-ultraplan.md`
+- `docs/dev-log/after-task/2026-07-02-structural-lv-ultraplan.md`
+
+The plan separates ordinary `latent(..., lv = ~ env)`, source-specific
+`lv = ~ env`, structural random-slope syntax, and R<->Julia bridge matrix flags.
+It keeps source-specific `lv` fail-loud, mixed-family vectors point/postfit only,
+non-Gaussian source-specific LV behind a new derivation/ADEMP gate, and Totoro
+/ DRAC denominators separate. No code, API, likelihood, dashboard, or compute
+state changed in this slice.
+
+## 2026-07-02 - Structural-dependence LV truth matrix Gates 0-2
+
+Closed the evening truth-lock slice through Gate 2 and wrote:
+
+- `docs/dev-log/decisions/2026-07-02-structural-dependence-lv-gates-0-2-closeout.md`
+- `docs/dev-log/after-task/2026-07-02-structural-lv-gates-0-2.md`
+
+Focused local checks:
+
+```sh
+Rscript -e 'pkgload::load_all(".", quiet = TRUE); testthat::test_file("tests/testthat/test-canonical-keywords.R")'
+# 67 pass / 3 INLA skips
+
+Rscript -e 'pkgload::load_all(".", quiet = TRUE); testthat::test_file("tests/testthat/test-julia-bridge.R")'
+# 380 pass / 14 GLLVM.jl-path skips
+
+Rscript -e 'pkgload::load_all(".", quiet = TRUE); testthat::test_file("tests/testthat/test-ordinary-latent-random-regression.R")'
+# 23 pass / 7 CRAN skips
+
+Rscript -e 'pkgload::load_all(".", quiet = TRUE); testthat::test_file("tests/testthat/test-stage37-mixed-family.R")'
+# 6 pass
+
+julia --project=. --startup-file=no test/test_bridge_capabilities.jl
+# 63 pass
+
+julia --project=. --startup-file=no test/test_bridge_mixed.jl
+# 18 pass
+
+julia --project=. --startup-file=no test/test_bridge_x.jl
+# 195 pass
+
+julia --project=. --startup-file=no test/test_bridge_missing_mask.jl
+# 83 pass
+
+julia --project=. --startup-file=no test/test_bridge_ci.jl
+# 64 pass
+```
+
+Gate verdict: source-specific structural `lv = ~ env` is fail-loud; structural
+random-slope syntax is a separate evidence lane; R and Julia bridge truth
+reconciles with named drift; mixed-family vectors are point/postfit only; no
+compute, source-specific grammar, PR reopen, or API widening occurred.
+
+Mission Control was refreshed from the `gllvmTMB` worktree after Gate 0-2
+verification. JSON validation passed for both `status.json` and `sweep.json`;
+`version.txt` remained `r60` because no HTML/JS changed; browser preview at
+`http://127.0.0.1:8770/` showed the new "Structural LV truth matrix" Gate 0-2
+row and the no-API/no-compute guard.
