@@ -13,11 +13,12 @@ changed target, not public source-specific `lv` support. The R
 `lv = ~ x` source-specific formula grammar, PR #127 reopening, public phylo
 Model A wording, and non-Gaussian/source-specific extensions remain blocked
 until Shinichi explicitly authorizes a new gated slice. The paired `gllvmTMB`
-closeout guard now rejects source-specific `lv = ~ env` on structural latent
-keywords before desugaring can silently drop it; this is a fail-loud boundary,
-not support. Mixed-family LV remains point/postfit only, and non-Gaussian /
-source-specific structural LV starts a separate derivation and ADEMP arc. This
-doc is the spec the Julia comments (`likelihood.jl:405`) reference. The compact
+closeout guard now rejects source-specific `lv = ~ env` across phylo, spatial,
+animal, and kernel structural keywords and legacy aliases before desugaring can
+silently drop it; this is a fail-loud boundary, not support. Mixed-family LV
+remains point/postfit only, and non-Gaussian / source-specific structural LV
+starts a separate derivation and ADEMP arc. This doc is the spec the Julia
+comments (`likelihood.jl:405`) reference. The compact
 evidence freeze is
 `docs/dev-log/decisions/2026-07-01-phylo-model-a-evidence-freeze-and-next-arc.md`;
 the detailed Gate 0-3 record is
@@ -117,8 +118,8 @@ Animal / spatial / kernel × `X_lv` follow the Model A pattern after phylo.
 
 **Status: the ordinary case IS wired** (verified 2026-06-27). `latent(..., lv = ~ x)` for ordinary
 unit-tier **Gaussian + binomial** (logit/probit/cloglog) is implemented: `R/lv-predictor.R`
-materialises X_lv; `R/brms-sugar.R::.abort_unsupported_lv_keyword` fail-loudly guards `lv` on
-non-ordinary covstructs ("`lv` is reserved for ordinary `latent` only … remove until LV-07 moves");
+materialises X_lv; `R/brms-sugar.R::.abort_source_specific_lv` fail-loudly guards `lv` on
+source-specific structural keywords and aliases ("`lv` is reserved for ordinary `latent` only …");
 `parse-multi-formula.R` captures the arg; `test-lv-parser-guard.R` covers the preflight (malformed
 formulas, invalid predictor columns, unsupported regimes). The held R branches extend the X_lv
 *families* (NB2/Gamma/Beta) on `engine = "julia"`.

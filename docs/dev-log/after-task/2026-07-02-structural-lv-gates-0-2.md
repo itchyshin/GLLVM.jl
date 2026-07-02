@@ -11,9 +11,9 @@ truth changes.
 
 No code or API changed. The work produced a verified Gate 0-2 closeout note,
 updated check-log state, and refreshed Mission Control to show the verified
-guard/bridge truth. The source-specific `lv = ~ env` routes remain fail-loud;
-structural random-slope syntax remains a separate evidence lane; mixed-family
-bridge rows remain point/postfit only.
+guard/bridge truth. The source-specific `lv = ~ env` routes remain fail-loud
+across structural aliases; structural random-slope syntax remains a separate
+evidence lane; mixed-family bridge rows remain point/postfit only.
 
 ## Mathematical Contract
 
@@ -60,7 +60,7 @@ R:
 
 ```sh
 Rscript -e 'pkgload::load_all(".", quiet = TRUE); testthat::test_file("tests/testthat/test-canonical-keywords.R")'
-# 67 pass / 3 INLA skips
+# 82 pass / 3 INLA skips
 
 Rscript -e 'pkgload::load_all(".", quiet = TRUE); testthat::test_file("tests/testthat/test-julia-bridge.R")'
 # 380 pass / 14 GLLVM.jl-path skips

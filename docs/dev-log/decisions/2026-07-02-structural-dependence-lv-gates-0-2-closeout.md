@@ -16,10 +16,10 @@ code, or launch Totoro/DRAC compute.
 | Route | Current truth | Evidence | Public wording |
 | --- | --- | --- | --- |
 | Ordinary `latent(..., lv = ~ env)` | Covered ordinary score-mean grammar. | Existing `gllvmTMB` LV arc and PR #581 closeout. | Ordinary predictor-informed LV only. |
-| Source-specific `phylo_latent(..., lv = ~ env)` | Guarded/fail-loud. | `test-canonical-keywords.R` source-specific guard. | Not supported; parked/fail-loud. |
-| Source-specific `spatial_latent(..., lv = ~ env)` | Guarded/fail-loud. | `test-canonical-keywords.R` source-specific guard. | Not supported; parked/fail-loud. |
-| Source-specific `animal_latent(..., lv = ~ env)` | Guarded/fail-loud. | `test-canonical-keywords.R` source-specific guard. | Not supported; parked/fail-loud. |
-| Source-specific `kernel_latent(..., lv = ~ env)` | Guarded/fail-loud. | `test-canonical-keywords.R` source-specific guard. | Not supported; parked/fail-loud. |
+| Source-specific phylo structural `lv = ~ env` (`phylo_*()`, `phylo()`, `phylo_rr()`) | Guarded/fail-loud. | `test-canonical-keywords.R` expanded source guard plus all-keyword probe. | Not supported; parked/fail-loud. |
+| Source-specific spatial structural `lv = ~ env` (`spatial_*()`, `spatial()`, `spde()`) | Guarded/fail-loud. | `test-canonical-keywords.R` expanded source guard plus all-keyword probe. | Not supported; parked/fail-loud. |
+| Source-specific animal structural `lv = ~ env` (`animal_*()`) | Guarded/fail-loud. | `test-canonical-keywords.R` expanded source guard plus all-keyword probe. | Not supported; parked/fail-loud. |
+| Source-specific kernel structural `lv = ~ env` (`kernel_*()`) | Guarded/fail-loud. | `test-canonical-keywords.R` expanded source guard plus all-keyword probe. | Not supported; parked/fail-loud. |
 | Ordinary `latent(1 + env \| unit, d = K)` | Partial structural random-regression route. | `test-ordinary-latent-random-regression.R` plus RE-12 ledger. | Structural random slope, not `lv`. |
 | `phylo_latent(1 + env \| sp, d = 1)` | Covered for the validated R allowlist, separate from `lv`. | PHY-17 register row; `test-matrix-slope-phylo-latent.R`, `test-phylo-latent-slope-gaussian.R`. | Structural random slope only. |
 | `spatial_latent(1 + env \| site, d = K)` | Covered for the validated R allowlist, separate from `lv`. | SPA-09 register row; `test-matrix-slope-spatial-latent.R`, `test-spatial-latent-slope-gaussian.R`. | Structural random slope only. |
@@ -39,7 +39,7 @@ Verified locally:
 
 ```sh
 Rscript -e 'pkgload::load_all(".", quiet = TRUE); testthat::test_file("tests/testthat/test-canonical-keywords.R")'
-# 67 pass / 3 INLA skips
+# 82 pass / 3 INLA skips
 
 Rscript -e 'pkgload::load_all(".", quiet = TRUE); testthat::test_file("tests/testthat/test-julia-bridge.R")'
 # 380 pass / 14 GLLVM.jl-path skips

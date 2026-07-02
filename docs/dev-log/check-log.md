@@ -1,5 +1,40 @@
 # Check Log
 
+## 2026-07-01 - Paired source-specific lv alias guard hardening
+
+### Scope
+
+Synchronized the GLLVM.jl handover notes after the paired `gllvmTMB` guard was
+hardened from latent-mode wrappers to all source-specific structural aliases.
+No Julia source, likelihood, package API, PR state, or compute changed.
+
+Files updated in this worktree:
+
+- `docs/design/73-predictor-informed-latent-scores.md`
+- `docs/dev-log/decisions/2026-07-02-lv-arc-final-closeout-and-next-capabilities.md`
+- `docs/dev-log/decisions/2026-07-02-structural-dependence-lv-gates-0-2-closeout.md`
+- `docs/dev-log/after-task/2026-07-02-structural-lv-gates-0-2.md`
+- `docs/dev-log/after-task/2026-07-01-source-specific-lv-alias-guard-sync.md`
+
+Paired `gllvmTMB` guard evidence:
+
+```text
+source-specific lv = ~ env rejects:
+phylo scalar/unique/indep/latent/dep plus legacy phylo()/phylo_rr()/phylo_slope
+spatial scalar/unique/indep/latent/dep plus legacy spatial()/spde()
+animal scalar/unique/indep/latent/dep/slope
+kernel latent/unique/indep/dep
+focused test-canonical-keywords.R: 82 pass / 3 INLA skips
+all-keyword direct probe: all-source-lv-guarded
+```
+
+Still not claimed:
+
+- No source-specific `lv = ~ x` support for phylo, spatial, animal, or kernel.
+- No PR #127 reopen, package API widening, public source-specific support, or
+  non-Gaussian/source-specific extension.
+- No new Totoro/DRAC compute.
+
 ## 2026-07-01 - LV arc closeout source guard
 
 ### Scope

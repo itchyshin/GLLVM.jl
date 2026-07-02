@@ -17,9 +17,9 @@ What is finished:
 - Ordinary `gllvmTMB` LV extraction is covered through PR #581:
   `axis_effect` alpha output is the default conditional axis/access-effect
   view, and `trait_effect` `B_lv` output is explicit.
-- Source-specific `lv = ~ env` is fail-loud for structural latent keywords:
-  `phylo_latent()`, `spatial_latent()`, `animal_latent()`, `kernel_latent()`,
-  and latent-mode wrappers reject it instead of silently dropping it.
+- Source-specific `lv = ~ env` is fail-loud for phylo, spatial, animal, and
+  kernel structural keywords, including scalar/unique/indep/dep/latent forms
+  and legacy aliases such as `phylo_rr()` and `spde()`.
 - Phylo Gaussian Model A evidence is frozen through Gate 0-3 for the changed
   eta-scale realized/design-conditional target `B_eta_realized`.
 - Structural-dependence truth is locally verified through Gates 0-2:
@@ -120,8 +120,9 @@ future goals:
 
 - Public source-specific phylo `lv` grammar: blocked by maintainer
   authorization and exposure-design review.
-- Spatial/animal/kernel `lv = ~ env` support: blocked by source-specific
-  derivation, grammar design, and recovery evidence.
+- Spatial/animal/kernel `lv = ~ env` support, including scalar/unique/indep/dep
+  aliases: blocked by source-specific derivation, grammar design, and recovery
+  evidence.
 - Non-Gaussian source-specific LV: blocked by family-specific likelihood target,
   uncertainty derivation, and ADEMP evidence.
 - Mixed-family `X`/`X_lv`/masks/CIs: blocked by bridge parity and interval
