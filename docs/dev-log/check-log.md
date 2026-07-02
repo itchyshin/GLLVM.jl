@@ -1,5 +1,36 @@
 # Check Log
 
+## 2026-07-02 - Full Pkg.test battery after LV gate fixes
+
+### Scope
+
+Ran the full package test battery after the LV/post-LV gate-budget fixes and the
+green core-suite run. No source behavior changed in this slice.
+
+Files updated in this worktree:
+
+- `docs/dev-log/after-task/2026-07-02-full-pkgtest-after-lv-gates.md`
+- `docs/dev-log/check-log.md`
+
+Checks:
+
+```sh
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+# test env included Aqua v0.8.16 and JET v0.9.18
+# GLLVM.jl | 4963 pass | 1 broken | 4964 total | 50m07.1s
+# Testing GLLVM tests passed
+
+pgrep -fl 'julia.*Pkg.test|julia.*test/runtests|julia.*test_' || true
+# clean after run
+```
+
+Claim boundary retained:
+
+- full local `Pkg.test()` is green in this worktree;
+- source-specific `lv` remains parked/fail-loud;
+- no DRAC/Totoro production compute, PR push, R grammar widening, or likelihood
+  change occurred.
+
 ## 2026-07-02 - Core suite after gate budgeting
 
 ### Scope
