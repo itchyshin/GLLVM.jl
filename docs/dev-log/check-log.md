@@ -1,5 +1,41 @@
 # Check Log
 
+## 2026-07-02 - Bridge CI status boundary verification
+
+### Scope
+
+Verified that bridge confidence-interval requests either return routed payloads
+or fail/mark unavailable explicitly. No source behavior changed.
+
+Files updated in this worktree:
+
+- `docs/dev-log/after-task/2026-07-02-bridge-ci-status-boundary-verification.md`
+- `docs/dev-log/check-log.md`
+
+Checks:
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_ci.jl
+# bridge CI routing | 64 pass
+
+sed -n '260,330p' test/test_bridge_ci.jl
+# confirmed flat CI payload contract and unsupported ci_method error
+
+sed -n '1,80p' test/test_bridge_mixed.jl
+# confirmed mixed-family ci_method="wald" returns empty CI names with
+# ci_note containing "not routed"
+
+sed -n '260,286p' test/test_lv_ci.jl
+# confirmed bridge X_lv admits only ci_method="wald"; profile/bootstrap throw
+```
+
+Claim boundary retained:
+
+- per-trait ordinal bridge CIs remain not routed;
+- mixed-family CIs remain unavailable status, not support;
+- bridge `X_lv` admits Wald `B_lv` payloads only;
+- no source-specific `lv`, package API, likelihood, PR state, or compute changed.
+
 ## 2026-07-02 - Source LV fail-loud guard verification
 
 ### Scope
