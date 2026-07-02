@@ -1,5 +1,40 @@
 # Check Log
 
+## 2026-07-02 - Missing response boundary check
+
+### Scope
+
+Checked missing-response mask behavior after the bridge mask and docs boundary
+slices. No source behavior changed.
+
+Files updated in this worktree:
+
+- `docs/dev-log/after-task/2026-07-02-missing-response-boundary-check.md`
+- `docs/dev-log/check-log.md`
+
+Checks:
+
+```sh
+julia --project=. --startup-file=no test/test_missing_response_extra.jl
+# interrupted after a long quiet run; not counted as passing
+# interrupt stack landed in fit_roweffect_gllvm from test/test_missing_response_extra.jl:65
+
+pgrep -fl 'julia.*test_missing_response_extra|julia.*runtests|julia.*test_' || true
+# clean after interrupt
+
+julia --project=. --startup-file=no test/test_missing_response.jl
+# masked-objective analytic vs FD:
+#   maxdiff_poisson = 5.417778936589457e-8
+#   maxdiff_binomial = 2.4065222259395114e-8
+# Missing responses (NA in Y) - dense-Laplace mask | 23 pass
+```
+
+Claim boundary retained:
+
+- core dense-Laplace missing-response masks are green;
+- extra wrapper missing-response coverage is not green evidence tonight;
+- bridge missing-mask evidence remains the focused bridge test recorded earlier.
+
 ## 2026-07-02 - Unified API dispersion boundary
 
 ### Scope
