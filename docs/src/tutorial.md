@@ -201,8 +201,8 @@ sel.aic; sel.bic; sel.best_k; sel.best     # sel.best is the fitted model at bes
 Lower AIC/BIC is better; BIC penalises extra factors more and tends to pick a
 smaller `K`. Use `criterion = :aic` to switch.
 
-Finally, `simulate` draws a fresh response matrix from a fitted model (useful for
-posterior-predictive checks):
+Finally, `simulate` draws a fresh response matrix from scalar-mean GLM-style,
+Tweedie, and covariate fits (useful for posterior-predictive checks):
 
 ```julia
 Ysim = simulate(fp, size(Y, 2))                 # p×n new draw

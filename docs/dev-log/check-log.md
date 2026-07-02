@@ -1,5 +1,50 @@
 # Check Log
 
+## 2026-07-02 - ZIB/Tweedie postfit docs boundary
+
+### Scope
+
+Aligned response-family and parity docs with the tested ZIB/Tweedie post-fit
+surface and public `simulate` method boundary. No source behavior changed.
+
+Files updated in this worktree:
+
+- `docs/src/gllvmtmb-parity.md`
+- `docs/src/response-families.md`
+- `docs/src/tutorial.md`
+- `docs/dev-log/after-task/2026-07-02-zib-tweedie-postfit-doc-boundary.md`
+- `docs/dev-log/check-log.md`
+
+Checks:
+
+```sh
+julia --project=. --startup-file=no test/test_postfit_zib_tweedie.jl
+# ZIB post-fit (zero-inflated binomial) | 17 pass
+# Tweedie post-fit (compound Poisson-Gamma) | 20 pass
+
+julia --project=. --startup-file=no test/test_beta_hurdle.jl
+# beta-hurdle GLLVM | 53 pass
+
+julia --project=. --startup-file=no test/test_ordered_beta.jl
+# Ordered-beta family | 21 pass
+
+julia --project=docs --startup-file=no docs/make.jl
+# completed successfully; emitted pre-existing local-link warnings and npm audit warnings
+
+rg -n 'simulate\\(fit, n\\).*GLM \\+ covariate|✅ non-Gaussian \\| `simulate|from a fitted model \\(useful|fit_zib_gllvm\\(Y;.*K = 2\\)|fit_beta_hurdle_gllvm|fit_ordered_beta_gllvm|selected non-Gaussian|public `simulate` methods are not universal' docs/src README.md
+# only intentional current docs hits remain
+
+git diff --check -- docs/src/gllvmtmb-parity.md docs/src/tutorial.md docs/src/response-families.md
+# clean, no output
+```
+
+Claim boundary retained:
+
+- ZIB/Tweedie post-fit methods are backed by focused tests;
+- beta-hurdle and ordered-beta examples are backed by focused tests;
+- public `simulate` remains selected-row only, not universal for every
+  two-part fit.
+
 ## 2026-07-02 - Bridge CI docs boundary alignment
 
 ### Scope

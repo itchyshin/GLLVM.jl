@@ -53,7 +53,7 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 | `getLV` / `getLoadings` / `rotation` | ✅ | all families |
 | `predict` / `fitted` | ✅ | all families (ordinal adds `:prob` / `:class`) |
 | `residuals` (Dunn–Smyth + Pearson) | ✅ | all families |
-| `simulate` (parametric draw from a fit) | ✅ non-Gaussian | `simulate(fit, n)` / `simulate(fit, X)` for the GLM + covariate fits |
+| `simulate` (parametric draw from a fit) | ✅ selected non-Gaussian | `simulate(fit, n)` for scalar-mean GLM-style fits and Tweedie; `simulate(fit, X)` for covariate fits. Two-part bootstrap CIs use internal samplers, but public `simulate` methods are not universal. |
 | `aic` / `bic` / `show` | ✅ | all families |
 | Σ_y / communality / correlation / phylo signal H² | ✅ Gaussian | report-ready extractors |
 | Confidence intervals (Wald / profile / bootstrap) | ✅ scalar/grouped dispersion · 🔨 per-trait ordinal | Gaussian, scalar-dispersion GLM families, grouped-dispersion NB2/NB1/Beta/Gamma, the two-part families, and shared-cutpoint ordinal via `confint(fit, Y; method=…)`; per-trait ordinal-cutpoint CI endpoints are follow-ups; bootstrap is thread-parallel |

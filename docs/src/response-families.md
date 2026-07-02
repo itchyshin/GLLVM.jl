@@ -222,21 +222,24 @@ A heteroscedastic Gaussian GLLVM with a **separate residual variance per species
 `fit_gaussian_gllvm`. The per-species intercepts are profiled out analytically
 (column means), so only the per-species variances and the loadings are optimised.
 
-## Two-part families (occurrence/zero × value)
+## Two-part and mixture families (occurrence/zero × value)
 
-Two-part families model a response with a point mass at zero plus a distribution
-over the non-zero (or count) part. They share a single latent `z` that loads on
-the value part (`Λ_c`); the occurrence / zero-inflation part is a per-species
-intercept (`β_z`, i.e. `Λ_z = 0`). Each has a dedicated fitter returning a
-result with `βz`, `βc`, `Λc` (and a dispersion where relevant):
+Two-part and mixture families model a response with a point mass at zero (or at
+the boundary) plus a distribution over the non-zero, count, or continuous part.
+The hurdle, delta, and zero-inflated fits share a single latent `z` that loads on
+the value/count part (`Λ_c`); the occurrence / zero-inflation part is a
+per-species intercept (`β_z`, i.e. `Λ_z = 0`). Each has a dedicated fitter:
 
 ```julia
 fit = fit_delta_lognormal_gllvm(Y; K = 2)   # Y ≥ 0; positive part lognormal, log-SD σ
 fit = fit_delta_gamma_gllvm(Y;     K = 2)   # Y ≥ 0; positive part Gamma, shape α
+fit = fit_beta_hurdle_gllvm(Y;     K = 2)   # proportions; occurrence × positive Beta, precision φ
 fit = fit_hurdle_poisson_gllvm(Y;  K = 2)   # counts; occurrence × zero-truncated Poisson
 fit = fit_hurdle_nb_gllvm(Y;       K = 2)   # counts; occurrence × zero-truncated NB2, r
 fit = fit_zip_gllvm(Y;             K = 2)   # counts; structural zero × Poisson
 fit = fit_zinb_gllvm(Y;            K = 2)   # counts; structural zero × NB2, r
+fit = fit_zib_gllvm(Y;             K = 2, N = N)  # binomial counts; structural zero × Binomial(N, μ)
+fit = fit_ordered_beta_gllvm(Y;    K = 2)   # proportions with masses at 0 and 1
 ```
 
 **Hurdle vs zero-inflated.** A *hurdle* model treats every zero as a
