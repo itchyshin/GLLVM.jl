@@ -10,9 +10,12 @@ grammar exposure, or bridge promotion.
 
 No package code or API changed. The work added a Gate 0 decision matrix for
 non-Gaussian structural-source LV, refreshed Design 73 so it records the
-ordinary Poisson/Binomial logit/NB2/Gamma/Beta selected-entry profile canary
-set, updated the check-log, and refreshed Mission Control to show the new
-estimand-first boundary. The dashboard metrics were not changed.
+then-current ordinary Poisson/Binomial logit/NB2/Gamma/Beta selected-entry
+profile canary set, updated the check-log, and refreshed Mission Control to
+show the new estimand-first boundary. The dashboard metrics were not changed.
+A later same-day follow-up extends the ordinary canary set to shared-cutpoint
+Ordinal logit and updates the live Gate 0 matrix; that follow-up does not change
+the no-public-structural-source-support verdict here.
 
 ## Mathematical Contract
 

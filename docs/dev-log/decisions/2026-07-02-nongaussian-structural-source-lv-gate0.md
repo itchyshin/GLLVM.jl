@@ -1,17 +1,18 @@
 # Non-Gaussian Structural-Source LV Gate 0 Matrix
 
 Date: 2026-07-02
-Status: Gate 0 matrix; phylo x Poisson S0 target, S1 likelihood proof, and private S1 selected-entry canary banked
+Status: Gate 0 matrix; ordinary Gate 1 now includes Ordinal; phylo x Poisson S0 target, S1 likelihood proof, and private S1 selected-entry canary banked
 Scope: non-Gaussian LV after ordinary selected-entry profile canaries
 
 ## Decision
 
 Do not start source-specific non-Gaussian LV compute or grammar work from the
 ordinary non-Gaussian canaries alone. The ordinary Poisson, Binomial logit, NB2,
-Gamma, and Beta selected-entry `B_lv` profile-LR canaries prove that native
-GLLVM.jl can route finite selected-entry profile intervals in admitted ordinary
-one-part fits. They do not prove phylo, spatial, animal, kernel, mixed-family,
-mask, missing-response, R bridge, or `unique=` support.
+Gamma, Beta, and shared-cutpoint Ordinal logit selected-entry `B_lv` profile-LR
+canaries prove that native GLLVM.jl can route finite selected-entry profile
+intervals in admitted ordinary one-part fits. They do not prove phylo, spatial,
+animal, kernel, mixed-family, mask, missing-response, R bridge, or `unique=`
+support.
 
 The next structural-source step must be an estimand-first Gate 0 page for a
 single source/family combination. No source-specific `lv = ~ env`, PR #127
@@ -33,8 +34,8 @@ source-specific support wording.
 ## Inputs
 
 - Ordinary one-part selected-entry profile canaries are local for Poisson,
-  Binomial logit, NB2, Gamma, and Beta in `test/test_lv_ci.jl`; the focused file
-  passed `180/180` in 3m49.4s.
+  Binomial logit, NB2, Gamma, Beta, and shared-cutpoint Ordinal logit in
+  `test/test_lv_ci.jl`; the focused file passed `196/196` in 3m57.7s.
 - The retired phylo population-`B_lv` evidence remains negative:
   `bootstrap_basic` `591/720 = 0.821`, optimistic cancelled-task bound
   `671/800 = 0.839`, task-8 `profile_truth` LR `9.9918 > 3.8415`, K = 1
@@ -65,7 +66,8 @@ source-specific support wording.
 | NB2 | Gate 1 local canary complete with fitted-dispersion guard. | Gate 0 only; source/family page must name dispersion treatment and stop rules. |
 | Gamma | Gate 1 local canary complete with shape guard. | Gate 0 only; source/family page must name shape treatment and link-scale target. |
 | Beta | Gate 1 local canary complete with precision guard. | Gate 0 only; bounded response and precision treatment must be explicit. |
-| Ordinal / Tweedie / zero-inflated / hurdle / Student-t | Not admitted for ordinary `X_lv` canaries in this arc. | Blocked until separate family likelihood derivation and tests. |
+| Shared-cutpoint Ordinal logit | Gate 1 local canary complete with ordered-cutpoint guard and no per-trait intercept. | Gate 0 only; source/family page must name cutpoint treatment, link-scale target, and whether per-trait ordinal parity is in or out. |
+| Tweedie / zero-inflated / hurdle / Student-t | Not admitted for ordinary `X_lv` canaries in this arc. | Blocked until separate family likelihood derivation and tests. |
 | Mixed-family vectors | Point/postfit boundary only in the bridge ledger. | `X_lv`, masks, missing responses, and CIs remain blocked. |
 
 ## Gate Ladder
@@ -105,7 +107,7 @@ is used as a rescue label rather than a secondary diagnostic layer.
 ## Rose Verdict
 
 Rose verdict: PASS WITH NOTES - this matrix is a safe Gate 0 boundary. Ordinary
-non-Gaussian profile route evidence is banked, and phylo x Poisson has one
-private S1 selected-entry finite-endpoint canary, but every public
-structural-source family claim remains blocked until later evidence gates and
-claim audit exist.
+non-Gaussian profile route evidence is banked for Poisson, Binomial, NB2, Gamma,
+Beta, and shared-cutpoint Ordinal, and phylo x Poisson has one private S1
+selected-entry finite-endpoint canary, but every public structural-source family
+claim remains blocked until later evidence gates and claim audit exist.

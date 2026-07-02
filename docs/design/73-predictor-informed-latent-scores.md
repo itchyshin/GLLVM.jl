@@ -19,9 +19,10 @@ silently drop it; this is a fail-loud boundary, not support. Mixed-family LV
 remains point/postfit only, and non-Gaussian / source-specific structural LV
 starts a separate derivation and ADEMP arc. Ordinary one-part non-Gaussian
 selected-entry `B_lv` profile-LR route evidence is now local for Poisson,
-Binomial logit, NB2, Gamma, and Beta (`test/test_lv_ci.jl`, `180/180`, 3m49.4s);
-that is route evidence only, not coverage calibration, R bridge profile
-transport, mixed-family CI support, source-specific `lv`, or `unique=` parity.
+Binomial logit, NB2, Gamma, Beta, and shared-cutpoint Ordinal logit
+(`test/test_lv_ci.jl`, `196/196`, 3m57.7s); that is route evidence only, not
+coverage calibration, R bridge profile transport, per-trait ordinal bridge
+parity, mixed-family CI support, source-specific `lv`, or `unique=` parity.
 The structural-source non-Gaussian LV Gate 0 matrix is recorded in
 `docs/dev-log/decisions/2026-07-02-nongaussian-structural-source-lv-gate0.md`.
 The first source/family S0 target page is phylo x Poisson, recorded in
@@ -104,16 +105,17 @@ conditional axis/access-effect view under the fitted loading convention.
 
 ## 4. Families
 
-Gaussian + Poisson + Binomial (logit/probit/cloglog) + NB2 + Gamma + Beta. Exotic families
-(ordinal/Tweedie/ZI/hurdle/Student-t) for `X_lv` are post-v1.0.
+Gaussian + Poisson + Binomial (logit/probit/cloglog) + NB2 + Gamma + Beta +
+shared-cutpoint Ordinal logit. Exotic families (Tweedie/ZI/hurdle/Student-t)
+for `X_lv` are post-v1.0.
 
 For ordinary one-part `X_lv` fits, selected-entry `B_lv` profile-LR route
-canaries are local for Poisson, Binomial logit, NB2, Gamma, and Beta. These
-canaries prove finite endpoint routing and known-DGP truth inclusion for one
-selected entry per family. They do not provide coverage calibration and they do
-not transfer to source-specific phylo/spatial/animal/kernel LV, mixed-family
-vectors, bridge profile transport, missing/masked responses, or `unique=`
-parity.
+canaries are local for Poisson, Binomial logit, NB2, Gamma, Beta, and
+shared-cutpoint Ordinal logit. These canaries prove finite endpoint routing and
+known-DGP truth inclusion for one selected entry per family. They do not provide
+coverage calibration and they do not transfer to source-specific
+phylo/spatial/animal/kernel LV, mixed-family vectors, bridge profile transport,
+per-trait ordinal bridge parity, missing/masked responses, or `unique=` parity.
 
 ## 5. Structured sources × `X_lv` — phylogenetic (Model A)
 

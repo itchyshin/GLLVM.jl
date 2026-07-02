@@ -1,5 +1,48 @@
 # Check Log
 
+## 2026-07-02 - Structural-source LV matrix Ordinal sync
+
+Synced the structural-source Gate 0 truth matrix after the ordinary
+shared-cutpoint Ordinal `X_lv` profile canary landed. This is a documentation
+and verification slice only: no source-specific fitter, R grammar, bridge row,
+Totoro run, or DRAC run was launched.
+
+Updated:
+
+- `docs/design/73-predictor-informed-latent-scores.md` now names Poisson,
+  Binomial logit, NB2, Gamma, Beta, and shared-cutpoint Ordinal logit as the
+  ordinary selected-entry `B_lv` profile-LR route-evidence set
+  (`196/196`, 3m57.7s).
+- `docs/dev-log/decisions/2026-07-02-nongaussian-structural-source-lv-gate0.md`
+  moves shared-cutpoint Ordinal from "not admitted for ordinary `X_lv`" to
+  "ordinary Gate 1 complete; structural-source still Gate 0 only".
+- `docs/dev-log/decisions/2026-07-02-structural-dependence-lv-truth-matrix-ultraplan.md`
+  distinguishes native shared-cutpoint Ordinal route evidence from per-trait
+  ordinal R bridge parity.
+- `docs/dev-log/after-task/2026-07-02-nongaussian-structural-source-lv-gate0.md`
+  now points to this later same-day follow-up so the earlier report is not read
+  as the current family boundary.
+
+Focused verification:
+
+```text
+julia --project=. --startup-file=no test/test_phylo_poisson_xlv.jl
+Phylo x Poisson predictor-informed LV S1 likelihood: 9 passed, 0 failed, 0 errored, 4.7s
+Phylo x Poisson B_eta_realized selected-entry canary: 22 passed, 0 failed, 0 errored, 13.4s
+
+julia --project=. --startup-file=no bench/phylo_poisson_xlv_s2_manifest.jl --write-params /tmp/phylo_poisson_xlv_s2_manifest_params_rerun.csv --reps 20 --seed0 20260702 --selected-entries 1,2,5 --profile-iterations 700 --iterations 250
+julia --project=. --startup-file=no bench/phylo_poisson_xlv_s2_manifest.jl --params /tmp/phylo_poisson_xlv_s2_manifest_params_rerun.csv --task-id 1 --dry-run
+S2 dry-run task 1 / 20
+target=B_eta_realized; method=private _phylo_poisson_xlv_profile_eta_realized
+dry-run only: no model fit, no random draw, no Totoro/DRAC launch
+```
+
+Claim boundary: IN: current docs now align ordinary Gate 1 route evidence with
+the Ordinal extension and keep phylo x Poisson as the only structural-source
+S0/S1/S2-manifest lane. OUT: no compute launch, no public source-specific
+`lv`, no bridge profile/bootstrap transport, no per-trait ordinal bridge parity,
+no mixed-family `X_lv`, no coverage calibration, and no `unique=` Julia parity.
+
 ## 2026-07-02 - Ordinary Ordinal LV profile Gate 1 extension
 
 Closed the ordinary one-part non-Gaussian selected-entry profile Gate 1 set by
