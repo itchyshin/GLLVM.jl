@@ -2,7 +2,7 @@
 
 Once you have a fit from `fit_gaussian_gllvm` or `fit_gllvm(Y; family=…)`, GLLVM.jl
 gives you the standard post-fit toolkit — ordination, predictions, residual
-diagnostics, and model-selection criteria — for both Gaussian and binary fits.
+diagnostics, and model-selection criteria — for Gaussian and non-Gaussian fits.
 
 ```julia
 using GLLVM, Random
@@ -48,8 +48,10 @@ latent factor point the same way; the grey cloud is the site scores `getLV(fit, 
 
 For the Gaussian family the link is the identity, so `:link` and `:response`
 coincide. For a binary fit `:response` returns fitted probabilities in `[0, 1]`.
-There is no `newdata` yet — predictions are in-sample (that arrives with the
-covariate/formula front-end).
+Plain latent fits predict in-sample because the latent score is conditional on
+the observed response matrix. Covariate fits also support population-level
+new-site prediction from a supplied `X` design, with the latent at its prior
+mean, and spatial latent fits use `predict_spatial` for new locations.
 
 ## Residual diagnostics
 

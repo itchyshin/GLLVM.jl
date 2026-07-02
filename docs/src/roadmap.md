@@ -55,7 +55,8 @@ future design input for exact Gaussian cells, not non-Gaussian Laplace.
   `X` for selected one-part families, response masks for selected no-X
   non-Gaussian families, complete balanced mixed-family no-X/no-mask/no-CI point
   fits, and in-sample post-fit methods. Remaining bridge work is X+mask,
-  mixed-family X/masks/CIs, ordinal prediction payloads, newdata, richer
-  diagnostics, and parity evidence for every promoted row.
+  mixed-family X/masks/CIs, broader newdata contracts beyond the existing
+  fit-specific prediction routes, richer diagnostics, and parity evidence for
+  every promoted row.
 
 This roadmap evolves; issue #11 is always current.

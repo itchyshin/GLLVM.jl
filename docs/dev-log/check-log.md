@@ -1,5 +1,52 @@
 # Check Log
 
+## 2026-07-02 - Postfit prediction docs and SPDE standalone test
+
+### Scope
+
+Moved one slice beyond LV by tightening the user-facing postfit prediction
+boundary and fixing a focused standalone test import. No model, likelihood, or
+prediction semantics changed.
+
+Files updated in this worktree:
+
+- `docs/src/working-with-a-fit.md`
+- `docs/src/roadmap.md`
+- `test/test_spde_latent_postfit.jl`
+- `docs/dev-log/after-task/2026-07-02-postfit-prediction-docs-spde-test.md`
+- `docs/dev-log/check-log.md`
+
+Checks:
+
+```sh
+julia --project=. --startup-file=no test/test_covariates.jl
+# Non-Gaussian covariates (Xbeta) | 30 pass
+
+julia --project=. --startup-file=no test/test_spde_latent_postfit.jl
+# first run failed before the test import fix:
+# UndefVarError: `Poisson` not defined
+
+julia --project=. --startup-file=no test/test_spde_latent_postfit.jl
+# SPDE-latent postfit: getLV / predict / predict_spatial | 35 pass
+
+rg -n 'There is no [`]newdata[`] yet|ordinal prediction payloads|Gaussian and binary fits|both Gaussian and binary' docs/src README.md
+# clean, no output
+
+git diff --check -- docs/src/working-with-a-fit.md docs/src/roadmap.md test/test_spde_latent_postfit.jl
+# clean, no output
+
+julia --project=docs --startup-file=no docs/make.jl
+# completed successfully; emitted pre-existing local-link warnings and npm audit warnings
+```
+
+Claim boundary retained:
+
+- plain latent fits remain in-sample conditional prediction;
+- covariate fits support population-level new-site prediction from `X`;
+- spatial latent fits use `predict_spatial` for new locations;
+- no bridge row, source-specific `lv`, package API, likelihood, PR state, or
+  compute changed.
+
 ## 2026-07-02 - Bridge missing-mask boundary verification
 
 ### Scope
