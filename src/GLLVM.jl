@@ -85,6 +85,7 @@ include("spde_latent_postfit.jl")
 include("phylo_glm.jl")                   # phylogenetic GLLVM for non-Gaussian families (issue #61, working fit)
 include("phylo_poisson_xlv.jl")           # internal S1 proof: phylo + Poisson + predictor-informed LV
 include("phylo_binomial_xlv.jl")          # internal S1 proof: phylo + Binomial + predictor-informed LV
+include("phylo_nb_xlv.jl")                # internal S1 proof: phylo + NB2 + predictor-informed LV
 include("coevolution_glm.jl")             # cross-family (non-Gaussian) cross-lineage coevolution (Track T4): K* through a dense Laplace
 
 # Post-fit API (ordination, predict, residuals, summary)

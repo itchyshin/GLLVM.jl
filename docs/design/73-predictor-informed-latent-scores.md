@@ -42,6 +42,14 @@ recorded in
 This adds only private Julia route evidence: no public fitter, bridge
 transport, R grammar, coverage calibration, compute, or source-specific `lv`
 support follows from it.
+A third source/family target, phylo x NB2 log-link, is recorded in
+`docs/dev-log/decisions/2026-07-02-phylo-nb2-structural-lv-s0-target.md`;
+its internal S1 likelihood proof and one private selected-entry canary are
+recorded in
+`docs/dev-log/decisions/2026-07-02-phylo-nb2-structural-lv-s1-likelihood.md`.
+This adds only private Julia route evidence with fitted shared dispersion `r`:
+no public fitter, bridge transport, R grammar, coverage calibration, compute,
+or source-specific `lv` support follows from it.
 This doc is the spec the Julia comments (`likelihood.jl:405`) reference. The
 compact evidence freeze is
 `docs/dev-log/decisions/2026-07-01-phylo-model-a-evidence-freeze-and-next-arc.md`;
@@ -245,6 +253,23 @@ Requirements for any future authorized wiring:
   inclusion, and LR below cutoff for one selected entry. This is local S1 route
   evidence, not public source-specific `lv` support, coverage calibration,
   bridge transport, R grammar, compute, or a production scaling path.
+- **Phylo x NB2 structural LV S1 likelihood proof (local, 2026-07-02):**
+  the internal `_phylo_nb_xlv_marginal_loglik` route now jointly integrates
+  site-score innovations and the augmented phylo random intercept for NB2(log)
+  with `X_lv`, while fitting the shared dispersion `r` as a nuisance in the
+  private point wrapper. It is reduction-tested against ordinary NB2 `X_lv`,
+  phylo-only NB2 GLM at `Lambda = 0`, and a dense leaf-covariance reference. It
+  also guards finite integer-valued non-negative counts and positive finite
+  `r`. A private truth-startable point wrapper and selected-entry
+  penalty-profile route cover one deterministic `B_eta_realized`
+  finite-endpoint canary (`test/test_phylo_nb_xlv.jl`, 12/12 likelihood anchors
+  + 25/25 canary assertions). This checks finite profile endpoints, MLE
+  bracketing, truth inclusion, LR below cutoff, constrained error, and an
+  interior `r` guard for one selected entry. In the cheap S1 cell, fitted
+  `sigma2_phy` may sit near the lower numerical boundary, so this is not
+  source-variance recovery evidence. This is local S1 route evidence, not
+  public source-specific `lv` support, coverage calibration, bridge transport,
+  R grammar, compute, or a production scaling path.
 - **Realized direct-slope canary tooling (diagnostic, 2026-07-01):** the bench
   runner now has `profile_direct_slope`, which computes a saturated per-trait
   `Y ~ X_lv` slope target from the realized replicate and checks selected-entry

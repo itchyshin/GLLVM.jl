@@ -1,5 +1,52 @@
 # Check Log
 
+## 2026-07-02 - Phylo x NB2 structural LV S1 likelihood and canary
+
+Added the private phylo x NB2(log) x predictor-informed LV S1 route. This is
+internal route evidence only: no public fitter, no R grammar, no bridge
+transport, no Totoro/DRAC compute, no coverage calibration, and no
+source-specific `lv` support were added.
+
+Implemented:
+
+- new private source file `src/phylo_nb_xlv.jl`;
+- module include in `src/GLLVM.jl`;
+- new focused proof test `test/test_phylo_nb_xlv.jl`;
+- new S0 and S1 decision notes
+  `docs/dev-log/decisions/2026-07-02-phylo-nb2-structural-lv-s0-target.md`
+  and
+  `docs/dev-log/decisions/2026-07-02-phylo-nb2-structural-lv-s1-likelihood.md`;
+- updated the structural-source Gate 0 matrix and Design 73 status text.
+
+S1 contract:
+
+```text
+family: NB2(log)
+source: augmented phylogeny
+target: B_eta_realized = slope_X(Lambda * Z_truth')
+dispersion r: fitted nuisance, loose interior guard required
+response Y: finite integer-valued non-negative counts
+status: private S1 likelihood/profile canary banked
+```
+
+Verification:
+
+```text
+julia --project=. --startup-file=no test/test_phylo_nb_xlv.jl
+Phylo x NB2 predictor-informed LV S1 likelihood: 12 passed, 0 failed, 0 errored, 5.6s
+Phylo x NB2 B_eta_realized selected-entry canary: 25 passed, 0 failed, 0 errored, 19.0s
+```
+
+Claim boundary: IN: one private deterministic selected-entry S1
+finite-endpoint route canary for phylo x NB2 `B_eta_realized`, with fitted
+shared dispersion `r` kept interior, plus reduction tests against ordinary NB2
+`X_lv`, phylo-only NB2 GLM, and dense leaf-covariance reference. OUT: no public
+fitter, no `confint_lv_effects` source route, no R
+`phylo_latent(..., lv = ~ env)` grammar, no bridge, no compute, no coverage
+calibration, no bootstrap rescue, no source-variance recovery claim, and no
+transfer to Gamma, Beta, Ordinal, spatial, animal, kernel, mixed-family,
+missing/mask, or `unique=` parity.
+
 ## 2026-07-02 - Phylo x Binomial structural LV S1 likelihood and canary
 
 Added the private phylo x Binomial(logit) x predictor-informed LV S1 route.
