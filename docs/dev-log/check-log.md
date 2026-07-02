@@ -9584,6 +9584,10 @@ python3 -m json.tool docs/dev-log/dashboard/status.json >/dev/null
 python3 -m json.tool docs/dev-log/dashboard/sweep.json >/dev/null
 git diff --check
 git diff --check -- docs/dev-log/dashboard/status.json docs/dev-log/dashboard/sweep.json
+Rscript -e 'source("/Users/z3437171/Dropbox/Github Local/Shinichi/tools/check-after-task.R"); main_check_after_task("docs/dev-log/after-task/2026-07-02-phylo-poisson-structural-lv-s0-target.md")'
+after-task structure check passed
+Rscript -e 'source("/Users/z3437171/Dropbox/Github Local/Shinichi/tools/rose-pattern-scan.R"); main_rose_pattern_scan(".")'
+Rose pattern scan passed
 ```
 
 Mission Control refresh:
@@ -9613,3 +9617,75 @@ rg -n "partial support|ready to expose|inherits ordinary|inherits Gaussian|sourc
 Hits are expected guard wording only: no `unique=` parity, no bootstrap rescue,
 no "partial support", no inherited ordinary/Gaussian support, and no active
 compute.
+
+## 2026-07-02 - Phylo x Poisson structural LV S0 target
+
+Banked the first source/family S0 target page after the structural-source
+non-Gaussian Gate 0 matrix:
+
+- source/family: phylo x Poisson(log);
+- target: link-scale realized/design-conditional `B_eta_realized`, not old
+  population `B_lv` and not observed-response `Y ~ X_lv`;
+- symbolic model: predictor-informed site latent score plus additive
+  phylogenetic source intercept;
+- boundary: S1 remains blocked until a combined phylo + Poisson + `X_lv`
+  likelihood exists with reduction tests.
+
+Files updated:
+
+```text
+docs/design/73-predictor-informed-latent-scores.md
+docs/dev-log/decisions/2026-07-02-nongaussian-structural-source-lv-gate0.md
+docs/dev-log/decisions/2026-07-02-phylo-poisson-structural-lv-s0-target.md
+docs/dev-log/check-log.md
+docs/dev-log/after-task/2026-07-02-phylo-poisson-structural-lv-s0-target.md
+test/test_phylo_glm.jl
+```
+
+Test hygiene: `test/test_phylo_glm.jl` now imports `Distributions: Poisson` so
+the existing focused test passes when run in isolation.
+
+Focused verification:
+
+```text
+julia --project=. --startup-file=no test/test_phylo_glm.jl
+Phylogenetic GLM (augmented-state joint Laplace): 6 passed, 0 failed, 0 errored, 4.0s
+
+julia --project=. --startup-file=no test/test_phylo_eta_realized.jl
+phylo Model A eta-realized target: 7 passed, 0 failed, 0 errored, 2.5s
+
+python3 -m json.tool docs/dev-log/dashboard/status.json >/dev/null
+python3 -m json.tool docs/dev-log/dashboard/sweep.json >/dev/null
+git diff --check
+git diff --check -- docs/dev-log/dashboard/status.json docs/dev-log/dashboard/sweep.json
+```
+
+Claim scan:
+
+```text
+rg -n "partial support|ready to expose|inherits ordinary|inherits Gaussian|source-specific.*covered|active compute|grammar exposure|unique=.*parity|bootstrap rescue|mixed-family CI|ordinary Poisson plus phylo_glm equals support" docs/design/73-predictor-informed-latent-scores.md docs/dev-log/decisions/2026-07-02-nongaussian-structural-source-lv-gate0.md docs/dev-log/decisions/2026-07-02-phylo-poisson-structural-lv-s0-target.md
+```
+
+Hits are guard wording only. The S0 page explicitly says the existing ordinary
+Poisson `X_lv` route plus the existing `phylo_glm` route do not equal support.
+
+Mission Control source was refreshed in the gllvmTMB dashboard checkout with a
+guard row named "Phylo x Poisson structural LV S0"; metrics unchanged.
+
+Mission Control refresh:
+
+```text
+sh tools/start-mission-control.sh --background
+GLLVM mission-control dashboard already available at http://127.0.0.1:8770/
+Synced dashboard files to /tmp/gllvm-dashboard
+Mirrored disposable live output to /private/tmp/gllvm-dashboard
+
+curl -s http://127.0.0.1:8770/status.json | python3 -m json.tool >/dev/null
+curl -s http://127.0.0.1:8770/sweep.json | python3 -m json.tool >/dev/null
+curl -s http://127.0.0.1:8770/version.txt
+r60
+```
+
+Browser preview check at `http://127.0.0.1:8770/` confirmed the visible board
+contains "Phylo x Poisson structural LV S0", the combined-likelihood blocker,
+and the no-source-specific-grammar/no-compute wording.

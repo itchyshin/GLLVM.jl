@@ -1,7 +1,7 @@
 # Non-Gaussian Structural-Source LV Gate 0 Matrix
 
 Date: 2026-07-02
-Status: Gate 0 matrix only; no structural-source gate opened for implementation
+Status: Gate 0 matrix; first source/family S0 target page banked for phylo x Poisson
 Scope: non-Gaussian LV after ordinary selected-entry profile canaries
 
 ## Decision
@@ -17,6 +17,12 @@ The next structural-source step must be an estimand-first Gate 0 page for a
 single source/family combination. No source-specific `lv = ~ env`, PR #127
 reopen, package API widening, bridge promotion, Totoro diagnostic, DRAC claim
 run, or public wording follows from this matrix.
+
+2026-07-02 update: the first source/family S0 page is now banked for
+phylo x Poisson in
+`docs/dev-log/decisions/2026-07-02-phylo-poisson-structural-lv-s0-target.md`.
+It is an estimand and alignment page only. It does not open S1 because the
+combined phylo + Poisson + `X_lv` fitter is not implemented yet.
 
 ## Inputs
 
@@ -39,7 +45,7 @@ run, or public wording follows from this matrix.
 
 | Source | Gate 0 truth | Next admissible target | Current boundary |
 | --- | --- | --- | --- |
-| Phylo | Best first source after ordinary, because Gaussian Model A internals and `Σ_phy` tests exist. | One family/source page that declares the link-scale realized/design-conditional estimand, likely a non-Gaussian analogue of `B_eta_realized` rather than the retired population `B_lv`. | No public `phylo_latent(..., lv = ~ env)` and no old population-`B_lv` reruns. |
+| Phylo | Best first source after ordinary, because Gaussian Model A internals and `Σ_phy` tests exist. | First S0 page banked for phylo x Poisson: link-scale realized/design-conditional `B_eta_realized` under an additive phylo random intercept plus predictor-informed latent score. | No public `phylo_latent(..., lv = ~ env)`, no old population-`B_lv` reruns, and no S1 until the combined Laplace fitter exists. |
 | Spatial | Wait for the R/TMB `unique=` lane review and a separate Julia parity/join decision before any spatial-source inference claim. | Source covariance and SPDE support target must be explicit before a non-Gaussian LV canary. | Do not mix with the `unique=` lane or imply Julia parity. |
 | Animal | Follows phylo/relmat derivation discipline. | Declare whether the target is realized link-scale, trait-scale, or source-level random-slope association. | No inheritance from ordinary LV or Gaussian phylo evidence. |
 | Kernel | Requires dense/cross-kernel source derivation and a mean-vs-covariance confound audit. | Start only after source covariance, kernel overlap, and estimand orientation are written. | No source-specific `kernel_latent(..., lv = ~ env)` support. |
@@ -48,7 +54,7 @@ run, or public wording follows from this matrix.
 
 | Family block | Ordinary selected-entry `B_lv` profile | Structural-source status |
 | --- | --- | --- |
-| Poisson | Gate 1 local canary complete. | Gate 0 only; choose source/family estimand before any canary. |
+| Poisson | Gate 1 local canary complete. | Phylo x Poisson S0 target page banked; implementation and S1 canary still blocked. |
 | Binomial logit | Gate 1 local canary complete. | Gate 0 only; link-scale target and trial-size treatment must be declared. |
 | NB2 | Gate 1 local canary complete with fitted-dispersion guard. | Gate 0 only; source/family page must name dispersion treatment and stop rules. |
 | Gamma | Gate 1 local canary complete with shape guard. | Gate 0 only; source/family page must name shape treatment and link-scale target. |

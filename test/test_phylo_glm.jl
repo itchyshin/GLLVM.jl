@@ -1,4 +1,5 @@
 using GLLVM, Test, Random, LinearAlgebra, SparseArrays
+using Distributions: Poisson
 
 # Phylogenetic GLM (non-Gaussian) via the augmented-state joint Laplace (issue #61,
 # the working fit). Two machine-precision anchors, no runtime needed:

@@ -24,6 +24,10 @@ that is route evidence only, not coverage calibration, R bridge profile
 transport, mixed-family CI support, source-specific `lv`, or `unique=` parity.
 The structural-source non-Gaussian LV Gate 0 matrix is recorded in
 `docs/dev-log/decisions/2026-07-02-nongaussian-structural-source-lv-gate0.md`.
+The first source/family S0 target page is phylo x Poisson, recorded in
+`docs/dev-log/decisions/2026-07-02-phylo-poisson-structural-lv-s0-target.md`;
+it is an estimand/alignment artifact only and blocks S1 until a combined
+phylo + Poisson + `X_lv` likelihood exists.
 This doc is the spec the Julia comments (`likelihood.jl:405`) reference. The
 compact evidence freeze is
 `docs/dev-log/decisions/2026-07-01-phylo-model-a-evidence-freeze-and-next-arc.md`;
