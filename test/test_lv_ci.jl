@@ -347,6 +347,38 @@ using LinearAlgebra
                                                       profile_g_tol = Inf)
     end
 
+    @testset "profile method (Poisson selected-entry canary)" begin
+        # Gate 1 canary for ordinary non-Gaussian B_lv profile-LR: one selected
+        # Poisson entry, finite endpoints, and known DGP truth inside the interval.
+        # This is route evidence, not a coverage-calibration claim.
+        Random.seed!(20260702)
+        pc, nc, Kc = 2, 45, 1
+        Xc = reshape(collect(range(-1.0, 1.0; length = nc)), nc, 1)
+        Lc = reshape([0.55, -0.42], pc, Kc)
+        ac = reshape([0.65], 1, Kc)
+        Bc = vec(Lc * ac')
+        βc = log.([6.0, 4.5])
+        zc = vec(Xc * ac) .+ randn(nc)
+        ηc = βc .+ Lc * reshape(zc, 1, nc)
+        Yc = [rand(Poisson(exp(ηc[t, s]))) for t in 1:pc, s in 1:nc]
+        fc = fit_poisson_gllvm(Yc; K = Kc, X_lv = Xc, β_init = βc,
+                               Λ_init = Lc, alpha_lv_init = ac,
+                               iterations = 120, g_tol = 1e-6)
+        idx = [1]
+        cpr = confint_lv_effects(fc, Yc, Xc; method = :profile,
+                                 profile_indices = idx,
+                                 profile_iterations = 800,
+                                 profile_max_expand = 20,
+                                 profile_max_bisect = 24)
+        @test cpr.method == :profile
+        @test cpr.term == ["B_lv[1,1]"]
+        @test cpr.estimate ≈ vec(extract_lv_effects(fc))[idx] atol = 1e-10
+        @test all(isnan, cpr.se)
+        @test all(isfinite, cpr.lower) && all(isfinite, cpr.upper)
+        @test all(cpr.lower .< cpr.estimate .< cpr.upper)
+        @test cpr.lower[1] <= Bc[idx[1]] <= cpr.upper[1]
+    end
+
     # GLM profile uses derivative-free NelderMead over the Laplace marginal and is
     # expensive (~1 min even for a tiny problem), so it is opt-in to keep CI fast.
     # Set GLLVM_SLOW_TESTS=true to run it. The fast Gaussian test above guards the

@@ -9218,6 +9218,71 @@ Browser preview at `http://127.0.0.1:8770/` confirmed the visible board includes
 weak-cell `bootstrap_basic 591/720` block, the bridge profile boundary, and no
 active compute.
 
+## 2026-07-02 - Ordinary non-Gaussian LV profile Gate 0/1
+
+Started the next LV goal after the non-unique closeout: ordinary
+non-Gaussian selected-entry `B_lv` profile-LR first, with structural-source
+gates held until each source/family estimand is separately written, tested, and
+audited.
+
+Gate 0 source:
+
+```text
+docs/dev-log/decisions/2026-07-02-nongaussian-ordinary-lv-profile-ademp.md
+```
+
+Gate 1 implementation:
+
+- added a tiny ordinary Poisson `X_lv` selected-entry profile canary to
+  `test/test_lv_ci.jl`;
+- target is `B_lv = Lambda * alpha_lv'`;
+- selected entry is `B_lv[1,1]` / `vec(B_lv)[1]`;
+- known DGP truth is `0.3575`;
+- pass condition is route evidence only: finite profile endpoints, MLE inside
+  the interval, and the known truth inside the interval.
+
+Exploratory pre-edit smoke:
+
+```text
+julia --project=. --startup-file=no -
+Poisson selected-entry profile: 11.400565 seconds, finite endpoints,
+estimate 0.5047355959140866, lower 0.20380296967249809,
+upper 0.8164110166907896, truth 0.3575 covered.
+```
+
+Focused verification:
+
+```text
+julia --project=. --startup-file=no test/test_lv_ci.jl
+X_lv Wald CIs - confint_lv_effects: 146 passed, 0 failed, 0 errored, 3m02.2s
+```
+
+Mission Control refresh:
+
+```text
+python3 -m json.tool docs/dev-log/dashboard/status.json >/dev/null
+python3 -m json.tool docs/dev-log/dashboard/sweep.json >/dev/null
+sh tools/start-mission-control.sh --background
+GLLVM mission-control dashboard already available at http://127.0.0.1:8770/
+Synced dashboard files to /tmp/gllvm-dashboard
+Mirrored disposable live output to /private/tmp/gllvm-dashboard
+
+curl -s http://127.0.0.1:8770/status.json | python3 -m json.tool >/dev/null
+curl -s http://127.0.0.1:8770/sweep.json | python3 -m json.tool >/dev/null
+curl -s http://127.0.0.1:8770/version.txt
+r60
+
+curl -s http://127.0.0.1:8770/status.json | rg -n "Ordinary non-Gaussian LV profile|Gate 0/1|146/146|No LV compute|unique= lane"
+served status includes the new Ordinary non-Gaussian LV profile row, Gate 0/1
+wording, 146/146 test tally, and no-active-compute wording.
+```
+
+Claim boundary: IN: ordinary Poisson selected-entry `B_lv` profile route
+evidence and a Gate 0 ADEMP note. OUT: no coverage calibration, no R bridge
+profile/bootstrap transport, no source-specific `lv = ~ env`, no
+source-specific structural/non-Gaussian inference, no mixed-family CI, no
+`unique=` parity, no Totoro/DRAC compute.
+
 ## 2026-07-02 - Non-unique LV closeout and unique-lane join gate
 
 Closed the active goal boundary for the non-unique LV arc:
