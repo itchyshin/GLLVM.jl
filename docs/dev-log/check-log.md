@@ -1,5 +1,119 @@
 # Check Log
 
+## 2026-07-02 - Phylo x Poisson structural LV S2 manifest
+
+Predeclared the next possible diagnostic step for the private phylo x Poisson x
+predictor-informed LV route. This is a manifest/dry-run slice only: no model
+fit, no random draw, no Totoro launch, no DRAC launch, no R grammar exposure,
+no bridge transport, and no public support wording.
+
+Implemented:
+
+- new manifest-only helper `bench/phylo_poisson_xlv_s2_manifest.jl`;
+- durable ADEMP-style S2 plan at
+  `docs/dev-log/decisions/2026-07-02-phylo-poisson-structural-lv-s2-manifest.md`.
+
+S2 manifest:
+
+```text
+target: B_eta_realized
+method: private _phylo_poisson_xlv_profile_eta_realized
+family/source: Poisson(log) x augmented phylogeny
+cell: p=6, n_sites=28, K=1, q_lv=1, K_phy=1, sigma2_phy=0.35
+replicates: 20
+seed0: 20260702
+selected entries: 1,2,5
+fit/profile optimizer budgets: 250 / 700
+host: Totoro diagnostic only after explicit authorization
+denominator: 20 x 3 = 60 selected-entry profiles
+```
+
+Entry rule: entry `1` is the strongest positive loading, entry `2` is a
+negative loading, and entry `5` is a smaller positive loading in the S1/S2
+six-species cell. These entries were chosen before any S2 outcome was
+generated.
+
+Commands:
+
+```sh
+julia --project=. --startup-file=no bench/phylo_poisson_xlv_s2_manifest.jl --write-params /tmp/phylo_poisson_xlv_s2_manifest_params.csv --reps 20 --seed0 20260702 --selected-entries 1,2,5 --profile-iterations 700 --iterations 250
+julia --project=. --startup-file=no bench/phylo_poisson_xlv_s2_manifest.jl --params /tmp/phylo_poisson_xlv_s2_manifest_params.csv --task-id 1 --dry-run
+julia --project=. --startup-file=no bench/phylo_poisson_xlv_s2_manifest.jl --help
+```
+
+Results:
+
+```text
+wrote 20 S2 manifest tasks to /tmp/phylo_poisson_xlv_s2_manifest_params.csv
+S2 dry-run task 1 / 20
+family=poisson_log source=augmented_phylo host=Totoro-diagnostic-only
+seed=20260702 p=6 n_sites=28 K=1 q_lv=1
+sigma2_phy=0.35 alpha_lv=0.45 epsilon_sd=0.08
+Lambda=0.22;-0.18;0.20;-0.16;0.14;-0.12
+selected_entries=1;2;5 level=0.95
+future budgets: iterations=250 profile_iterations=700 newton=120/1e-10
+target=B_eta_realized; method=private _phylo_poisson_xlv_profile_eta_realized
+dry-run only: no model fit, no random draw, no Totoro/DRAC launch
+
+julia --project=. --startup-file=no bench/phylo_poisson_xlv_s2_manifest.jl --help
+help printed the manifest-only warning and default selected entries 1,2,5
+
+julia --project=. --startup-file=no test/test_phylo_poisson_xlv.jl
+Phylo x Poisson predictor-informed LV S1 likelihood: 9 passed, 0 failed, 0 errored, 4.8s
+Phylo x Poisson B_eta_realized selected-entry canary: 22 passed, 0 failed, 0 errored, 13.5s
+
+julia --project=. --startup-file=no test/test_phylo_glm.jl
+Phylogenetic GLM (augmented-state joint Laplace): 6 passed, 0 failed, 0 errored, 4.1s
+
+julia --project=. --startup-file=no test/test_phylo_eta_realized.jl
+phylo Model A eta-realized target: 7 passed, 0 failed, 0 errored, 2.5s
+
+julia --project=. --startup-file=no -e 'using GLLVM; println("load-ok")'
+load-ok
+
+git diff --check
+
+Rscript -e 'source("/Users/z3437171/Dropbox/Github Local/Shinichi/tools/check-after-task.R"); main_check_after_task("docs/dev-log/after-task/2026-07-02-phylo-poisson-structural-lv-s2-manifest.md")'
+after-task structure check passed
+
+Rscript -e 'source("/Users/z3437171/Dropbox/Github Local/Shinichi/tools/rose-pattern-scan.R"); main_rose_pattern_scan(".")'
+Rose pattern scan passed
+```
+
+Mission Control refresh:
+
+```text
+python3 -m json.tool docs/dev-log/dashboard/status.json >/dev/null
+python3 -m json.tool docs/dev-log/dashboard/sweep.json >/dev/null
+git diff --check -- docs/dev-log/dashboard/status.json docs/dev-log/dashboard/sweep.json
+
+sh tools/start-mission-control.sh --background
+GLLVM mission-control dashboard already available at http://127.0.0.1:8770/
+Synced dashboard files to /tmp/gllvm-dashboard
+Mirrored disposable live output to /private/tmp/gllvm-dashboard
+
+curl -s http://127.0.0.1:8770/status.json | python3 -m json.tool >/dev/null
+curl -s http://127.0.0.1:8770/sweep.json | python3 -m json.tool >/dev/null
+curl -s http://127.0.0.1:8770/version.txt
+r60
+```
+
+Browser preview at `http://127.0.0.1:8770/` confirmed
+`Phylo x Poisson structural LV S2 manifest`, selected entries `1,2,5`, the
+60-entry diagnostic denominator, no outcome-producing compute, no public
+fitter, and no Totoro/DRAC launch language.
+
+Diagnostic pass rule, if Shinichi later authorizes S2: `20/20` fits converge,
+`60/60` selected-entry profiles are usable with finite endpoints, at least
+`55/60` include the realized target, MCSE/Wilson interval are reported, all
+misses are retained, and repeated same-entry or source-variance-boundary
+patterns hold S3 planning.
+
+Claim boundary: IN: one predeclared S2 diagnostic manifest and local dry-run
+artifact. OUT: no outcome-producing compute, no coverage result, no source-
+specific `lv` support, no R grammar, no R bridge, no bootstrap rescue, no
+source transfer, and no denominator pooling across Totoro/DRAC.
+
 ## 2026-07-02 - Phylo x Poisson structural LV S1 profile canary
 
 Added the first private selected-entry `B_eta_realized` profile-LR
