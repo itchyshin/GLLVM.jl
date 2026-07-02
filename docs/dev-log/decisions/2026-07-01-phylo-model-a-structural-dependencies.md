@@ -1,7 +1,7 @@
 # Phylo Model A structural dependencies after the weak-cell miss
 
 Date: 2026-07-01
-Status: post-Gate 3 evidence freeze; structural dependencies still gate exposure
+Status: current LV arc closed; structural dependencies gate any future exposure
 Scope: Gaussian direct/native phylo Model A, source-specific `lv = ~ x`
 
 See also:
@@ -21,6 +21,12 @@ Post-freeze update: the changed eta-scale realized/design-conditional target
 but it does not alter the exposure dependency: source-specific R grammar,
 PR #127 reopening, public wording, and non-Gaussian extensions still require
 explicit maintainer authorization and separate structural gates.
+
+Closeout update: the current LV arc is now closed as a truth-lock. The paired
+`gllvmTMB` guard rejects source-specific `lv = ~ env` on structural latent
+keywords before desugaring can silently drop it. That guard keeps
+`phylo_latent`, `spatial_latent`, `animal_latent`, and `kernel_latent` in the
+fail-loud state; it is not source-specific LV support.
 
 2026-07-01 update: source-specific phylo `lv` is retired/parked for v1 under
 the current evidence. The active v1 answer is no grammar exposure and no
@@ -125,8 +131,10 @@ Before any exposure or production compute:
 
 ## Immediate Recommendation
 
-Use Wald for `alpha_lv` only as conditional axis/access-effect output. Do not
-use bootstrap for this phylo Model A arc. Do not rerun the same K = 1 profile
-route at larger scale. Use profile-LR only if a redesigned estimand or regime is
-predeclared in a future branch. For v1, source-specific phylo `lv` is now
-retired/parked and the point/diagnostic machinery stays local.
+Close the current LV arc. Use Wald for `alpha_lv` only as conditional
+axis/access-effect output. Do not use bootstrap for this phylo Model A arc. Do
+not rerun the same K = 1 profile route at larger scale. Use profile-LR only if a
+redesigned estimand or regime is predeclared in a future branch. For v1,
+source-specific phylo `lv` is retired/parked, source-specific `lv = ~ env`
+guards stay fail-loud across structural sources, mixed-family LV is point/postfit
+only, and non-Gaussian/source-specific structural LV starts a separate gated arc.

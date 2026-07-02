@@ -1,6 +1,7 @@
 # Design 73 - Predictor-informed latent scores: `latent(..., lv = ~ x)`
 
-**Status (2026-07-01):** ordinary `X_lv` engine + CI trio shipped to `main`
+**Status (2026-07-01):** the current LV arc is closed as operating truth.
+Ordinary `X_lv` engine + CI trio shipped to `main`
 (#116-#126). The original phylo Model A population-`B_lv` interval target is
 retired/parked for v1 after the p=80, K=2, lambda=0.5 weak cell, the task-8
 profile miss, the K=1 `98/100` diagnostic, and the direct-slope strict-gate
@@ -11,9 +12,13 @@ failure. A changed eta-scale realized/design-conditional target,
 changed target, not public source-specific `lv` support. The R
 `lv = ~ x` source-specific formula grammar, PR #127 reopening, public phylo
 Model A wording, and non-Gaussian/source-specific extensions remain blocked
-until Shinichi explicitly authorizes an exposure-design slice. This doc is the
-spec the Julia comments (`likelihood.jl:405`) reference. The compact evidence
-freeze is
+until Shinichi explicitly authorizes a new gated slice. The paired `gllvmTMB`
+closeout guard now rejects source-specific `lv = ~ env` on structural latent
+keywords before desugaring can silently drop it; this is a fail-loud boundary,
+not support. Mixed-family LV remains point/postfit only, and non-Gaussian /
+source-specific structural LV starts a separate derivation and ADEMP arc. This
+doc is the spec the Julia comments (`likelihood.jl:405`) reference. The compact
+evidence freeze is
 `docs/dev-log/decisions/2026-07-01-phylo-model-a-evidence-freeze-and-next-arc.md`;
 the detailed Gate 0-3 record is
 `docs/dev-log/decisions/2026-07-01-phylo-model-a-next-target-no-compute.md`.
@@ -118,11 +123,12 @@ non-ordinary covstructs ("`lv` is reserved for ordinary `latent` only … remove
 formulas, invalid predictor columns, unsupported regimes). The held R branches extend the X_lv
 *families* (NB2/Gamma/Beta) on `engine = "julia"`.
 
-**Remaining (the phylo extension):** do **not** lift `.abort_unsupported_lv_keyword` for
-`phylo_latent` (validation row LV-07) under the current Model A population-`B_lv` interval
-target. Only revisit `phylo_latent(..., lv = ~ x)` after structural redesign with a
-genuinely different target/regime and fresh evidence, or explicit maintainer acceptance of
-v1 retirement boundaries. Requirements for any future wiring:
+**Remaining (the phylo extension):** do **not** lift the source-specific `lv`
+guard for `phylo_latent` (validation row LV-07) under the current Model A
+population-`B_lv` interval target. Only revisit `phylo_latent(..., lv = ~ x)`
+after structural redesign with a genuinely different target/regime and fresh
+evidence, or explicit maintainer acceptance of v1 retirement boundaries.
+Requirements for any future wiring:
 - Admit `lv` as a one-sided predictor formula on `latent()` / `phylo_latent()`; enforce inside
   `rewrite_canonical_aliases()` (`R/brms-sugar.R`), NOT the never-evaluated constructor. Validate
   one-sided, build `model.matrix` against `data`, attach as a STRUCTURED marker

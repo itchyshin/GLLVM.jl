@@ -1,8 +1,26 @@
 # Phylo Model A evidence freeze and next arc
 
 Date: 2026-07-01
-Status: evidence frozen after Gate 3 pass; no exposure decision made
+Status: LV arc closed as truth-lock; evidence frozen after Gate 3 pass
 Scope: Phylo Gaussian Model A, source-specific `lv`, and downstream LV arc order
+
+## Closeout Decision
+
+The current LV arc is closed as operating truth:
+
+- ordinary `gllvmTMB` LV is covered through the merged `extract_lv_effects()`
+  axis-effect / trait-effect surface;
+- phylo Gaussian Model A Gate 0-3 evidence is frozen for the changed
+  `B_eta_realized` target only;
+- source-specific `phylo_latent(..., lv = ~ x)` remains fail-loud and no
+  source-specific R grammar is exposed;
+- mixed-family LV remains point/postfit only;
+- non-Gaussian and broader source-specific structural LV work starts a new
+  derivation and ADEMP arc, with no inheritance from this Gaussian Gate 3 pass.
+
+The paired `gllvmTMB` closeout guard now also rejects source-specific
+`lv = ~ env` on structural latent keywords before desugaring can silently drop
+it. This is a fail-loud boundary, not source-specific LV support.
 
 ## Frozen Evidence Packet
 
@@ -75,19 +93,16 @@ failure.
 - Rose: block "partial support" and any wording that makes Gate 3 sound like
   public source-specific support.
 
-## Next LV Arc Order
+## Next Gated Arc Order
 
-Do not start with new compute. The next half-day slice is guard and bridge
-truth:
+Do not start with new compute. The current LV arc is closed; any future work
+starts as a separate gated arc:
 
-1. Freeze this evidence packet and keep Mission Control current.
-2. Run the Rose/Ada claim audit over Design 73, Mission Control, check-log, and
-   after-task reports.
-3. Finish LV structural dependencies:
-   source guards, mixed-family point-only boundary, and R-Julia bridge matrix
-   truth.
-4. Only then design non-Gaussian or broader structural models as separate ADEMP
-   arcs.
+1. name the estimand and source/family boundary;
+2. write the derivation or bridge contract;
+3. add fail-loud guards before any syntax exposure;
+4. run a small selected-entry or parity canary;
+5. only then spend Totoro/DRAC compute under a predeclared denominator.
 
 For non-Gaussian/source-specific work, the first defensible product is not a
 claim. It is a target matrix:

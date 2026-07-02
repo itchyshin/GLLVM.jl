@@ -1,5 +1,45 @@
 # Check Log
 
+## 2026-07-01 - LV arc closeout source guard
+
+### Scope
+
+Closed the current LV arc as operating truth after adding the paired
+`gllvmTMB` source-specific `lv = ~ env` fail-loud guard.
+
+Files updated in this worktree:
+
+- `docs/dev-log/decisions/2026-07-01-phylo-model-a-evidence-freeze-and-next-arc.md`
+- `docs/dev-log/decisions/2026-07-01-phylo-model-a-structural-dependencies.md`
+- `docs/design/73-predictor-informed-latent-scores.md`
+- `docs/dev-log/after-task/2026-07-01-lv-arc-closeout-source-guard.md`
+
+Evidence retained:
+
+```text
+Gate 3 job: 17049809_[1-500%100]
+target: B_eta_realized
+method: profile_eta_realized
+covered/planned: 2495/2500 = 0.998000000
+MCSE: 0.000890835
+Wilson 95 percent interval: 0.995326484 to 0.999145426
+```
+
+Paired `gllvmTMB` guard evidence:
+
+```text
+source-specific lv = ~ env rejects:
+phylo_latent(), spatial_latent(), animal_latent(), kernel_latent(),
+phylo(..., mode = "latent"), spatial(..., mode = "latent")
+```
+
+Still not claimed:
+
+- No `phylo_latent(..., lv = ~ x)` exposure.
+- No PR #127 reopen, package API widening, public source-specific support, or
+  non-Gaussian/source-specific extension.
+- No new compute.
+
 ## 2026-07-01 - Phylo Model A post-Gate3 hardening
 
 ### Scope
