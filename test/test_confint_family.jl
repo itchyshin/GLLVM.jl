@@ -39,12 +39,22 @@ end
     @testset "Profile (Poisson)" begin
         Y, _, _ = _sim_poisson(4, 1, 120; seed = 22)
         fit = fit_poisson_gllvm(Y; K = 1)
-        ci = confint(fit, Y; method = :profile, parm = "beta[1]")
+        ci = confint(fit, Y; method = :profile, parm = "beta[1]",
+                     profile_iterations = 200,
+                     profile_g_tol = 1e-4,
+                     profile_max_expand = 20,
+                     profile_max_bisect = 30)
         @test ci.method === :profile
         @test ci.status[1] in (:profile, :partial)
         @test isfinite(ci.lower[1]) || isfinite(ci.upper[1])   # at least one side bracketed
         isfinite(ci.lower[1]) && @test ci.lower[1] < ci.estimate[1]
         isfinite(ci.upper[1]) && @test ci.estimate[1] < ci.upper[1]
+        @test_throws ArgumentError confint(fit, Y; method = :profile,
+                                           parm = "beta[1]",
+                                           profile_iterations = 0)
+        @test_throws ArgumentError confint(fit, Y; method = :profile,
+                                           parm = "beta[1]",
+                                           profile_g_tol = Inf)
 
         # when both sides bracket, the profile interval should be in the Wald ballpark
         if ci.status[1] === :profile

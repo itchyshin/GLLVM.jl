@@ -38,9 +38,11 @@ The raw `α_lv` coefficients are the familiar constrained-ordination axis effect
 (CLV-style coefficients), but they depend on the latent-axis orientation. The
 rotation-stable induced trait-effect matrix is `B_lv = Λ_B α_lv'`, returned by
 `extract_lv_effects(fit)`. `confint_lv_effects()` targets this `B_lv` product
-only; it does not supply SEs for the raw axis-effect table. Response masks,
-fixed-effect `X` plus `X_lv`, other non-Gaussian families, W-tier, and
-phylogenetic/source-specific extensions remain separate validation gates.
+only; it does not supply SEs for the raw axis-effect table. Profile-likelihood
+calls can be limited to selected entries with `profile_indices`, which index
+`vec(B_lv)` in column-major order. Response masks, fixed-effect `X` plus
+`X_lv`, other non-Gaussian families, W-tier, and phylogenetic/source-specific
+extensions remain separate validation gates.
 
 **Unit-obs latent factor block** `Λ_W η_W[:, s]` — the per-site version
 of the latent block, used when the model has a `latent(0 + trait |

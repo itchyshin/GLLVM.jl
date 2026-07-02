@@ -37,6 +37,37 @@ What is not finished, and must not be implied:
 - no mixed-family `X`, `X_lv`, masks, missing responses, or CIs;
 - no pooled Totoro/DRAC denominator.
 
+## Unique-lane join gate
+
+The concurrent `unique=` work is a separate R/TMB-first lane. This LV closeout
+does not implement or imply Julia parity for `*_latent(unique=)`, and it does
+not change the source-specific `lv = ~ env` fail-loud boundary.
+
+Join conditions before GLLVM.jl starts a Julia parity slice:
+
+1. the relevant gllvmTMB R/TMB `unique=` implementation is green in focused
+   parser, TMB/report, extractor, and regression tests;
+2. the package-side contract is explicit for the source under discussion:
+   `unique = TRUE` means `Lambda Lambda' + diag(psi)` and `unique = FALSE`
+   preserves the old low-rank-only route;
+3. compatibility aliases such as `*_unique()` are either preserved or their
+   lifecycle is explicitly documented in the R lane;
+4. if the current R slice is source-specific, do not generalise it to
+   phylo/animal/spatial/kernel parity until a cross-source API/docs consistency
+   slice has landed;
+5. Mission Control and the bridge capability ledger state whether the joined
+   Julia work is point/postfit only, Wald, profile, or unavailable; and
+6. Rose audits the wording so `unique=` parity is not confused with
+   source-specific `lv = ~ env` support or Phylo Model A public exposure.
+
+Default next action after the R lane is green:
+
+```text
+Open a separate Julia parity goal for *_latent(unique=) with source-specific
+tests, bridge truth updates, docs, check-log, and after-task report. Do not
+start from this non-unique LV closeout commit alone.
+```
+
 ## Evidence lock
 
 The negative route stays negative:

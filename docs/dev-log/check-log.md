@@ -9143,3 +9143,123 @@ rg -n "ready to scale|partial support|source-specific.*covered|source-specific.*
 
 Result: only guard-language hits in the LV closeout note; no active-compute or
 support-promotion hit in the checked current notes.
+
+## 2026-07-02 - Profile-first LV selected-entry hardening
+
+Implemented the profile-first native GLLVM.jl hardening slice:
+
+- `profile_ci()` now accepts bounded refit/profile controls:
+  `profile_iterations`, `profile_g_tol`, `profile_max_expand`, and
+  `profile_max_bisect`, with legacy defaults unchanged.
+- Non-Gaussian `confint(fit, Y; method = :profile)` routes the same profile
+  controls into constrained family refits.
+- `confint_lv_effects(...; method = :profile)` now accepts
+  `profile_indices` for selected entries of `vec(B_lv)` in column-major order,
+  and rejects `profile_indices` for non-profile methods instead of silently
+  ignoring them.
+- Docs/README/changelog now describe selected-entry native `B_lv`
+  profile-likelihood canaries and keep R bridge/source-specific/mixed-family
+  profile claims gated.
+- gllvmTMB Mission Control was refreshed without changing metrics: native
+  selected-entry profile is visible as a guarded GLLVM.jl row; no active compute,
+  no R grammar exposure, no R bridge X_lv profile/bootstrap transport, no
+  coverage-calibration claim.
+
+Focused checks:
+
+```text
+julia --project=. --startup-file=no -e 'using GLLVM; println("load-ok")'
+load-ok
+
+julia --project=. --startup-file=no test/test_confint_profile.jl
+profile CI: 8 passed, 0 failed, 0 errored, 21.6s
+
+julia --project=. --startup-file=no test/test_confint_family.jl
+Non-Gaussian confidence intervals: 124 passed, 0 failed, 0 errored, 4m30.5s
+
+julia --project=. --startup-file=no test/test_lv_ci.jl
+X_lv Wald CIs - confint_lv_effects: 139 passed, 0 failed, 0 errored, 2m51.6s
+
+julia --project=. --startup-file=no test/test_phylo_xlv.jl
+phylo x X_lv (Model A): 25 passed, 0 failed, 0 errored, 1m17.6s
+
+julia --project=. --startup-file=no test/test_bridge_capabilities.jl
+bridge capabilities ledger: 105 passed, 0 failed, 0 errored, 0.4s
+
+julia --project=. --startup-file=no test/test_bridge_ci.jl
+bridge CI routing: 64 passed, 0 failed, 0 errored, 31.7s
+
+julia --project=. --startup-file=no test/test_bridge_x.jl
+bridge fixed-effect X (non-Gaussian one-part families): 195 passed, 0 failed,
+0 errored, 36.1s
+
+julia --project=. --startup-file=no test/test_bridge_missing_mask.jl
+bridge missing-response mask: 83 passed, 0 failed, 0 errored, 26.6s
+
+julia --project=. --startup-file=no test/test_bridge_mixed.jl
+bridge mixed-family payload metadata: 18 passed, 0 failed, 0 errored, 6.4s
+
+julia --project=docs --startup-file=no docs/make.jl
+Documenter/Vitepress build completed; existing invalid-local-link warnings and
+npm audit warnings remained.
+
+julia --project=. -e 'using Pkg; Pkg.test()'
+GLLVM.jl: 4981 passed, 1 broken, 0 failed, 0 errored, 4982 total, 52m59.0s
+
+python3 -m json.tool docs/dev-log/dashboard/status.json >/dev/null
+python3 -m json.tool docs/dev-log/dashboard/sweep.json >/dev/null
+sh tools/start-mission-control.sh --background
+curl -s http://127.0.0.1:8770/version.txt
+r60
+```
+
+Browser preview at `http://127.0.0.1:8770/` confirmed the visible board includes
+`Native profile B_lv`, `Profile-first LV uncertainty`, `profile_indices`, the
+weak-cell `bootstrap_basic 591/720` block, the bridge profile boundary, and no
+active compute.
+
+## 2026-07-02 - Non-unique LV closeout and unique-lane join gate
+
+Closed the active goal boundary for the non-unique LV arc:
+
+- the current LV arc remains closed as a truth-lock;
+- native GLLVM.jl selected-entry `B_lv` profile work is the only new
+  implementation slice in this commit;
+- source-specific `lv = ~ env` remains fail-loud;
+- the concurrent `unique=` lane is recorded as R/TMB-first and separate; and
+- future Julia parity for `*_latent(unique=)` requires a separate join gate
+  after the relevant R contract is green.
+
+Durable join-gate source:
+
+```text
+docs/dev-log/decisions/2026-07-02-lv-arc-final-closeout-and-next-capabilities.md
+```
+
+Mission Control source was aligned to show `Unique lane boundary` in both
+`status.json` and `sweep.json`, without changing LV metrics.
+
+Fresh closeout verification:
+
+```text
+julia --project=. --startup-file=no test/test_confint_profile.jl
+profile CI: 8 passed, 0 failed, 0 errored, 22.5s
+
+julia --project=. --startup-file=no test/test_lv_ci.jl
+X_lv Wald CIs - confint_lv_effects: 139 passed, 0 failed, 0 errored, 3m02.2s
+
+julia --project=. --startup-file=no test/test_phylo_xlv.jl
+phylo x X_lv (Model A): 25 passed, 0 failed, 0 errored, 1m16.8s
+
+python3 -m json.tool docs/dev-log/dashboard/status.json >/dev/null
+python3 -m json.tool docs/dev-log/dashboard/sweep.json >/dev/null
+sh tools/start-mission-control.sh --background
+curl -s http://127.0.0.1:8770/status.json | python3 -m json.tool >/dev/null
+curl -s http://127.0.0.1:8770/sweep.json | python3 -m json.tool >/dev/null
+curl -s http://127.0.0.1:8770/version.txt
+r60
+```
+
+Claim scan result: current hits for `partial support`, source-specific support,
+R bridge profile transport, coverage calibration, and `unique=` parity are
+guard/negative wording only.

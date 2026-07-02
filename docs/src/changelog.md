@@ -18,6 +18,11 @@ Notable changes to GLLVM.jl. Style mirrors `gllvmTMB`'s NEWS: status labels
   checked structure / `pd_hessian`, never SE magnitude, so the bug was invisible).
 
 ### Engine
+- **IN:** profile-likelihood hardening for admitted LV-effect routes:
+  `profile_ci`, non-Gaussian `confint(...; method=:profile)`, and
+  `confint_lv_effects(...; method=:profile)` now expose bounded refit/profile
+  controls. `confint_lv_effects` also accepts `profile_indices` to profile
+  selected entries of `vec(B_lv)` without running the whole trait-effect matrix.
 - **IN:** phylogenetic GLM (`fit_phylo_glm` / `PhyloGLMFit`) — a per-species
   phylogenetic random intercept for the non-Gaussian families (Poisson / NB /
   Binomial) via an augmented-state joint Laplace over the sparse phylogenetic

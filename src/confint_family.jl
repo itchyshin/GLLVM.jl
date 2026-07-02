@@ -1476,7 +1476,9 @@ end
 # Constrained refit: minimise nll over θ_{-i} with θ_i fixed at c. Returns
 # (ℓ_profile, ok, θ_red_solution). Finite-difference gradient (nll is not
 # AD-friendly through the Laplace mode-finder).
-function _family_profile_refit(ad::_FamilyCI, i::Integer, c::Real, θ_red_warm::AbstractVector)
+function _family_profile_refit(ad::_FamilyCI, i::Integer, c::Real, θ_red_warm::AbstractVector;
+                               g_tol::Real = 1e-4,
+                               iterations::Integer = 200)
     m = length(ad.θ)
     cf = float(c)
     full = function (θr)
@@ -1489,7 +1491,7 @@ function _family_profile_refit(ad::_FamilyCI, i::Integer, c::Real, θ_red_warm::
     nll_red = θr -> ad.nll(full(θr))
     res = try
         Optim.optimize(nll_red, collect(Float64, θ_red_warm),
-                       Optim.LBFGS(), Optim.Options(g_tol = 1e-4, iterations = 200);
+                       Optim.LBFGS(), Optim.Options(g_tol = g_tol, iterations = iterations);
                        autodiff = :finite)
     catch
         return (NaN, false, collect(Float64, θ_red_warm))
@@ -1499,7 +1501,19 @@ function _family_profile_refit(ad::_FamilyCI, i::Integer, c::Real, θ_red_warm::
     return (-nmin, true, Optim.minimizer(res))
 end
 
-function _family_profile(ad::_FamilyCI, sel::Vector{Int}, level::Real)
+function _family_profile(ad::_FamilyCI, sel::Vector{Int}, level::Real;
+                         profile_iterations::Integer = 200,
+                         profile_g_tol::Real = 1e-4,
+                         profile_max_expand::Integer = 20,
+                         profile_max_bisect::Integer = 30)
+    profile_iterations > 0 ||
+        throw(ArgumentError("profile_iterations must be positive; got $profile_iterations"))
+    isfinite(profile_g_tol) && profile_g_tol > 0 ||
+        throw(ArgumentError("profile_g_tol must be positive and finite; got $profile_g_tol"))
+    profile_max_expand > 0 ||
+        throw(ArgumentError("profile_max_expand must be positive; got $profile_max_expand"))
+    profile_max_bisect > 0 ||
+        throw(ArgumentError("profile_max_bisect must be positive; got $profile_max_bisect"))
     m = length(ad.θ)
     cutoff = quantile(Chisq(1), level)
     ll_full = -ad.nll(ad.θ)
@@ -1522,18 +1536,26 @@ function _family_profile(ad::_FamilyCI, sel::Vector{Int}, level::Real)
         warm_lo = vcat(ad.θ[1:(i - 1)], ad.θ[(i + 1):m])
         warm_hi = copy(warm_lo)
         function dev_lo(c)
-            ll, ok, sol = _family_profile_refit(ad, i, c, warm_lo)
+            ll, ok, sol = _family_profile_refit(ad, i, c, warm_lo;
+                                                g_tol = profile_g_tol,
+                                                iterations = profile_iterations)
             ok ? (warm_lo = sol; 2.0 * (ll_full - ll)) : NaN
         end
         function dev_hi(c)
-            ll, ok, sol = _family_profile_refit(ad, i, c, warm_hi)
+            ll, ok, sol = _family_profile_refit(ad, i, c, warm_hi;
+                                                g_tol = profile_g_tol,
+                                                iterations = profile_iterations)
             ok ? (warm_hi = sol; 2.0 * (ll_full - ll)) : NaN
         end
         # Seed the first candidate near the Wald bound (θ̂ ± √cutoff·SE) so the
         # bracket is found in ~1 refit; false-position root-finding does the rest.
         step = max(sqrt(cutoff) * sei, 1e-3)
-        lower = _profile_bisect_side(dev_lo, θi, -step, cutoff)
-        upper = _profile_bisect_side(dev_hi, θi,  step, cutoff)
+        lower = _profile_bisect_side(dev_lo, θi, -step, cutoff;
+                                     max_expand = profile_max_expand,
+                                     max_bisect = profile_max_bisect)
+        upper = _profile_bisect_side(dev_hi, θi,  step, cutoff;
+                                     max_expand = profile_max_expand,
+                                     max_bisect = profile_max_bisect)
         if ad.kinds[i] === :log
             lower = isnan(lower) ? NaN : exp(lower)
             upper = isnan(upper) ? NaN : exp(upper)
@@ -1602,7 +1624,9 @@ end
     confint(fit, Y; method = :wald, level = 0.95, parm = nothing, N = nothing,
             mask = nothing,
             n_boot = 200, seed = 0, parallel = false, objective = :laplace,
-            newton_maxiter = 100, newton_tol = 1e-9) -> NamedTuple
+            newton_maxiter = 100, newton_tol = 1e-9,
+            profile_iterations = 200, profile_g_tol = 1e-4,
+            profile_max_expand = 20, profile_max_bisect = 30) -> NamedTuple
 
 Confidence intervals for a non-Gaussian family GLLVM fit — the scalar-μ GLM
 families (`PoissonFit`, `BinomialFit`, `NBFit`, `BetaFit`, `GammaFit`,
@@ -1632,7 +1656,10 @@ two-part families. For `TweedieFit` the dispersion term is `phi`; the power
   - `:profile`   — profile-likelihood intervals: invert `D(c)=2(ℓ̂−ℓ_p(c)) ~ χ²₁`
                    by bracket-then-bisection on each side (a constrained refit
                    per candidate). Returns an extra per-term `status` vector
-                   (`:profile` / `:partial` / `:failed`).
+                   (`:profile` / `:partial` / `:failed`). `profile_iterations`,
+                   `profile_g_tol`, `profile_max_expand`, and
+                   `profile_max_bisect` tune the constrained refits and
+                   bracketing budget without changing the default route.
   - `:bootstrap` — parametric bootstrap: simulate `n_boot` datasets from the
                    fitted model, refit each, take percentile bounds. Set
                    `parallel = true` to run replicates over `Threads.@threads`
@@ -1676,7 +1703,11 @@ function confint(fit::_CIFit, Y::AbstractMatrix;
                  parallel::Bool = false,
                  objective::Symbol = :laplace,
                  newton_maxiter::Integer = 100,
-                 newton_tol::Real = 1e-9)
+                 newton_tol::Real = 1e-9,
+                 profile_iterations::Integer = 200,
+                 profile_g_tol::Real = 1e-4,
+                 profile_max_expand::Integer = 20,
+                 profile_max_bisect::Integer = 30)
     0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
     objective in (:laplace, :va) ||
         throw(ArgumentError("objective must be :laplace or :va; got :$objective"))
@@ -1697,7 +1728,11 @@ function confint(fit::_CIFit, Y::AbstractMatrix;
     if method === :wald
         return _family_wald(ad, sel, level)
     elseif method === :profile
-        return _family_profile(ad, sel, level)
+        return _family_profile(ad, sel, level;
+                               profile_iterations = profile_iterations,
+                               profile_g_tol = profile_g_tol,
+                               profile_max_expand = profile_max_expand,
+                               profile_max_bisect = profile_max_bisect)
     elseif method === :bootstrap
         return _family_bootstrap(ad, sel, level, n_boot, seed, parallel)
     else
@@ -1771,7 +1806,7 @@ end
 # method onto B_lv: J = ∂vec(B_lv)/∂θ (finite difference of a cheap algebraic
 # map), Cov(B_lv) = J Σ Jᵀ. B_lv is rotation-invariant for ANY K (Λ→ΛQ, α→αQ
 # leaves Λα' fixed), so the interval is well-posed at K ≥ 1; at K = 1 it is also
-# sign-identified. The bootstrap path is below; profile is out of scope here.
+# sign-identified. Profile and bootstrap paths are below.
 # ---------------------------------------------------------------------------
 
 # vec(B_lv) = vec(Λ(θ)·α_lv(θ)ᵀ) from the packed X_lv working vector.
@@ -1899,16 +1934,39 @@ function _lv_profile_entry_indices(indices, nb::Integer)
     return idx
 end
 
+function _profile_positive_integer(name::AbstractString, value::Integer)
+    value > 0 || throw(ArgumentError("$name must be positive; got $value"))
+    return Int(value)
+end
+
+function _profile_positive_real(name::AbstractString, value::Real)
+    isfinite(value) && value > 0 ||
+        throw(ArgumentError("$name must be positive and finite; got $value"))
+    return float(value)
+end
+
 function _lv_effect_profile(nll::Function, x̂::AbstractVector, p::Integer, K::Integer,
                             q_lv::Integer, level::Real, extractor, wald_se::AbstractVector;
                             ad::Bool = false, maxstep::Integer = 40,
-                            indices = nothing)
+                            indices = nothing,
+                            profile_indices = nothing,
+                            profile_iterations::Union{Nothing, Integer} = nothing,
+                            profile_g_tol::Real = 1e-8,
+                            profile_max_expand::Union{Nothing, Integer} = nothing,
+                            profile_max_bisect::Integer = 40)
     x  = collect(Float64, x̂)
     b̂  = extractor(x, p, K, q_lv)
     nb = length(b̂)
     ℓ0 = nll(x)
     cutoff = quantile(Chisq(1), level)
-    profile_idx = _lv_profile_entry_indices(indices, nb)
+    selected = profile_indices === nothing ? indices : profile_indices
+    profile_idx = _lv_profile_entry_indices(selected, nb)
+    iterations_eff = profile_iterations === nothing ? (ad ? 1000 : 3000) :
+                     _profile_positive_integer("profile_iterations", profile_iterations)
+    profile_g_tol_eff = _profile_positive_real("profile_g_tol", profile_g_tol)
+    profile_max_expand_eff = _profile_positive_integer(
+        "profile_max_expand", profile_max_expand === nothing ? maxstep : profile_max_expand)
+    profile_max_bisect_eff = _profile_positive_integer("profile_max_bisect", profile_max_bisect)
     term_all = ["B_lv[$t,$c]" for c in 1:q_lv for t in 1:p]
     lo = fill(NaN, length(profile_idx)); hi = fill(NaN, length(profile_idx))
 
@@ -1925,7 +1983,8 @@ function _lv_effect_profile(nll::Function, x̂::AbstractVector, p::Integer, K::I
             res = try
                 if ad
                     Optim.optimize(obj, θc, Optim.LBFGS(),
-                                   Optim.Options(g_tol = 1e-8, iterations = 1000);
+                                   Optim.Options(g_tol = profile_g_tol_eff,
+                                                 iterations = iterations_eff);
                                    autodiff = :forward)
                 else
                     # GLM Laplace objective is not AD-friendly through the inner
@@ -1934,7 +1993,7 @@ function _lv_effect_profile(nll::Function, x̂::AbstractVector, p::Integer, K::I
                     # profile is best reserved for small problems or a few entries;
                     # Wald and bootstrap are the practical GLM defaults.
                     Optim.optimize(obj, θc, Optim.NelderMead(),
-                                   Optim.Options(iterations = 3000))
+                                   Optim.Options(iterations = iterations_eff))
                 end
             catch
                 nothing
@@ -1951,7 +2010,7 @@ function _lv_effect_profile(nll::Function, x̂::AbstractVector, p::Integer, K::I
         c0 = b̂[idx]; clo = c0; chi = NaN
         θlo = copy(x)
         θhi = copy(x)
-        for k in 1:maxstep
+        for k in 1:profile_max_expand_eff
             c = c0 + dir * s * k
             D, θc = constrained_dev(idx, c, θlo)
             if isfinite(D) && D >= cutoff
@@ -1961,7 +2020,7 @@ function _lv_effect_profile(nll::Function, x̂::AbstractVector, p::Integer, K::I
             θlo = θc
         end
         isnan(chi) && return NaN
-        for _ in 1:40
+        for _ in 1:profile_max_bisect_eff
             cm = (clo + chi) / 2
             start = abs(cm - clo) <= abs(chi - cm) ? θlo : θhi
             Dm, θm = constrained_dev(idx, cm, start)
@@ -2000,8 +2059,10 @@ the packed MLE pushed through the delta method onto `B_lv`, returning
 entries of `vec(B_lv)`. `method = :wald` (delta method), `:profile` (invert the
 likelihood-ratio statistic by constrained refit — asymmetry- and
 boundary-respecting; `se` is `NaN` since the interval need not be symmetric), or
-`:bootstrap` (percentiles of `B_lv`). Bootstrap refits use each family's
-default optimiser iteration cap unless `bootstrap_iterations` is supplied.
+`:bootstrap` (percentiles of `B_lv`). For `method = :profile`,
+`profile_indices` selects entries of `vec(B_lv)` in column-major order; `nothing`
+profiles every entry. Bootstrap refits use each family's default optimiser
+iteration cap unless `bootstrap_iterations` is supplied.
 Admitted for `K ≥ 1` (`B_lv` is rotation-invariant), complete responses, single
 ordinary latent block; every other structure (masks, `X` + `X_lv`,
 mixed-family, W-tier, phylo/animal/spatial/kernel sources) stays gated.
@@ -2011,7 +2072,12 @@ function confint_lv_effects(fit::Union{PoissonFit, BinomialFit, NBFit, GammaFit,
                             N::Union{Nothing, AbstractMatrix} = nothing, level::Real = 0.95,
                             method::Symbol = :wald, n_boot::Integer = 200,
                             seed::Integer = 0,
-                            bootstrap_iterations::Union{Nothing, Integer} = nothing)
+                            bootstrap_iterations::Union{Nothing, Integer} = nothing,
+                            profile_indices = nothing,
+                            profile_iterations::Union{Nothing, Integer} = nothing,
+                            profile_g_tol::Real = 1e-8,
+                            profile_max_expand::Union{Nothing, Integer} = nothing,
+                            profile_max_bisect::Integer = 40)
     0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
     fit.alpha_lv === nothing && throw(ArgumentError(
         "confint_lv_effects requires an X_lv fit (fit_*_gllvm(...; X_lv=...)); this fit has none"))
@@ -2026,6 +2092,8 @@ function confint_lv_effects(fit::Union{PoissonFit, BinomialFit, NBFit, GammaFit,
         "X_lv has $(q_lv) column(s) but the fit carries α_lv of size $(size(fit.alpha_lv))"))
     method in (:wald, :bootstrap, :profile) ||
         throw(ArgumentError("method must be :wald, :bootstrap, or :profile; got :$method"))
+    profile_indices === nothing || method === :profile ||
+        throw(ArgumentError("profile_indices is only supported with method=:profile"))
     method === :bootstrap &&
         return _lv_bootstrap(fit, Y, X_lv, N, q_lv, level, n_boot, seed;
                              bootstrap_iterations = bootstrap_iterations)
@@ -2033,7 +2101,12 @@ function confint_lv_effects(fit::Union{PoissonFit, BinomialFit, NBFit, GammaFit,
     if method === :profile
         wse = _lv_effect_wald(nll, fit.theta_packed, p, K, q_lv, level).se
         return _lv_effect_profile(nll, fit.theta_packed, p, K, q_lv, level,
-                                  _lv_effects_from_packed, wse; ad = false)
+                                  _lv_effects_from_packed, wse; ad = false,
+                                  profile_indices = profile_indices,
+                                  profile_iterations = profile_iterations,
+                                  profile_g_tol = profile_g_tol,
+                                  profile_max_expand = profile_max_expand,
+                                  profile_max_bisect = profile_max_bisect)
     end
     return _lv_effect_wald(nll, fit.theta_packed, p, K, q_lv, level)
 end
@@ -2048,16 +2121,22 @@ the observed information is the **exact ForwardDiff Hessian** of
 :wald`, `:wald_t_unit` (same delta-method SE with a unit-df t critical,
 `df = max(n_sites - K - 1, 1)`), `:profile` (LR inversion via constrained refit;
 the Gaussian objective is AD-friendly so the constrained refits use LBFGS), or
-`:bootstrap`. Bootstrap refits use the Gaussian fitter's default optimiser
-iteration cap unless `bootstrap_iterations` is supplied. `K ≥ 1` (`B_lv`
-rotation-invariant), complete responses, single unit-tier latent block, no
-fixed-effect `X`.
+`:bootstrap`. For `method = :profile`, `profile_indices` selects entries of
+`vec(B_lv)` in column-major order; `nothing` profiles every entry. Bootstrap
+refits use the Gaussian fitter's default optimiser iteration cap unless
+`bootstrap_iterations` is supplied. `K ≥ 1` (`B_lv` rotation-invariant),
+complete responses, single unit-tier latent block, no fixed-effect `X`.
 """
 function confint_lv_effects(fit::GllvmFit, Y::AbstractMatrix, X_lv::AbstractMatrix;
                             N::Union{Nothing, AbstractMatrix} = nothing, level::Real = 0.95,
                             method::Symbol = :wald, n_boot::Integer = 200,
                             seed::Integer = 0,
-                            bootstrap_iterations::Union{Nothing, Integer} = nothing)
+                            bootstrap_iterations::Union{Nothing, Integer} = nothing,
+                            profile_indices = nothing,
+                            profile_iterations::Union{Nothing, Integer} = nothing,
+                            profile_g_tol::Real = 1e-8,
+                            profile_max_expand::Union{Nothing, Integer} = nothing,
+                            profile_max_bisect::Integer = 40)
     0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
     fit.pars.alpha_lv === nothing && throw(ArgumentError(
         "confint_lv_effects requires a Gaussian X_lv fit (fit_gaussian_gllvm(...; X_lv=...)); this fit has none"))
@@ -2074,6 +2153,8 @@ function confint_lv_effects(fit::GllvmFit, Y::AbstractMatrix, X_lv::AbstractMatr
         "X_lv has $(q_lv) column(s) but the fit carries α_lv of size $(size(fit.pars.alpha_lv))"))
     method in (:wald, :wald_t_unit, :bootstrap, :profile) ||
         throw(ArgumentError("method must be :wald, :wald_t_unit, :bootstrap, or :profile; got :$method"))
+    profile_indices === nothing || method === :profile ||
+        throw(ArgumentError("profile_indices is only supported with method=:profile"))
     method === :bootstrap &&
         return _lv_bootstrap(fit, Y, X_lv, N, q_lv, level, n_boot, seed;
                              bootstrap_iterations = bootstrap_iterations)
@@ -2100,7 +2181,12 @@ function confint_lv_effects(fit::GllvmFit, Y::AbstractMatrix, X_lv::AbstractMatr
     if method === :profile
         wse = _lv_wald_from_hessian(H, x, p, K, q_lv, level, _lv_effects_from_packed_gaussian).se
         return _lv_effect_profile(nll, x, p, K, q_lv, level,
-                                  _lv_effects_from_packed_gaussian, wse; ad = true)
+                                  _lv_effects_from_packed_gaussian, wse; ad = true,
+                                  profile_indices = profile_indices,
+                                  profile_iterations = profile_iterations,
+                                  profile_g_tol = profile_g_tol,
+                                  profile_max_expand = profile_max_expand,
+                                  profile_max_bisect = profile_max_bisect)
     end
     df = method === :wald_t_unit ? _lv_wald_t_unit_df(size(X_lv, 1), K) : nothing
     return _lv_wald_from_hessian(H, x, p, K, q_lv, level, _lv_effects_from_packed_gaussian;

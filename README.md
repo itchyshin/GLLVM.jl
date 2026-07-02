@@ -109,6 +109,9 @@ with sparse random-effect design matrices. `GLLVM.jl` solves a
 - Wald / profile / bootstrap CI routes across scalar-dispersion GLM, grouped
   NB2/NB1/Beta/Gamma, and two-part families; grouped Tweedie, per-trait
   ordinal, and bridge-only edge rows remain status-gated before promotion
+- Predictor-informed latent-score effect CIs target `B_lv = Lambda * alpha_lv'`;
+  profile-likelihood calls can be limited to selected entries of `vec(B_lv)`
+  with `profile_indices`
 - PPCA closed-form initialisation
 - Structure-aware Cholesky (Woodbury for Λ Λ' + diag)
 - EM-FA solver as an alternative to LBFGS

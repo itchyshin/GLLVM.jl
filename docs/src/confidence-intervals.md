@@ -63,6 +63,9 @@ Inverts the likelihood-ratio test: the deviance `D(c) = 2(ℓ̂ − ℓ_p(c))` i
 side is located by **bracket-then-bisection**, re-optimising the other
 parameters at every candidate. Better coverage than Wald when the likelihood is
 asymmetric. Returns a per-term `status` (`:profile` / `:partial` / `:failed`).
+Use `profile_iterations`, `profile_g_tol`, `profile_max_expand`, and
+`profile_max_bisect` to tune the constrained-refit and bracketing budget when a
+profile canary needs tighter or cheaper refits.
 
 ### Parametric bootstrap — `method = :bootstrap`
 
@@ -94,5 +97,24 @@ bootstrap_ci(fit; y = y, n_boot = 500)    # parametric bootstrap
 
 and derived-quantity CIs (Σ_y entries, communality, correlation, phylogenetic
 signal H²) via [`confint_derived`-family helpers](/covariance-correlation).
+
+## Predictor-informed latent-score effects
+
+For fits with `X_lv`, `confint_lv_effects(fit, Y, X_lv)` targets the induced,
+rotation-stable trait-effect matrix `B_lv = Lambda * alpha_lv'`. Wald,
+profile-likelihood, and bootstrap intervals are native Julia uncertainty
+routes for admitted ordinary `X_lv` fits; bootstrap remains a cost-bounded
+diagnostic complement rather than the default engine.
+
+```julia
+ci_all = confint_lv_effects(fit, Y, X_lv; method = :profile)
+ci_some = confint_lv_effects(fit, Y, X_lv; method = :profile,
+                             profile_indices = [2, 4])
+```
+
+`profile_indices` selects entries of `vec(B_lv)` in column-major order, matching
+returned names such as `B_lv[2,1]` and `B_lv[4,1]`. It is intentionally only
+accepted with `method = :profile`; Wald/bootstrap calls return their full
+supported surface.
 
 See also: [Response families](/response-families) · [Working with a fit](/working-with-a-fit) · [Reference](/api).

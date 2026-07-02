@@ -313,6 +313,38 @@ using LinearAlgebra
         # asymmetry rather than being forced symmetric).
         @test maximum(abs.((cprof.upper .- cprof.lower) .- (cwald.upper .- cwald.lower)) ./
                       (cwald.upper .- cwald.lower)) < 0.25
+
+        selected = [2, 4]
+        csel = confint_lv_effects(fg, Yg, X_lv; method = :profile,
+                                  profile_indices = selected,
+                                  profile_iterations = 1000,
+                                  profile_g_tol = 1e-8,
+                                  profile_max_expand = 40,
+                                  profile_max_bisect = 40)
+        @test csel.method == :profile
+        @test csel.term == cprof.term[selected]
+        @test csel.estimate ≈ cprof.estimate[selected] atol = 1e-10
+        @test csel.lower ≈ cprof.lower[selected] atol = 1e-6
+        @test csel.upper ≈ cprof.upper[selected] atol = 1e-6
+        @test all(isnan, csel.se)
+        @test_throws ArgumentError confint_lv_effects(fg, Yg, X_lv;
+                                                      method = :profile,
+                                                      profile_indices = Int[])
+        @test_throws ArgumentError confint_lv_effects(fg, Yg, X_lv;
+                                                      method = :profile,
+                                                      profile_indices = [2, 2])
+        @test_throws ArgumentError confint_lv_effects(fg, Yg, X_lv;
+                                                      method = :profile,
+                                                      profile_indices = [0])
+        @test_throws ArgumentError confint_lv_effects(fg, Yg, X_lv;
+                                                      method = :wald,
+                                                      profile_indices = selected)
+        @test_throws ArgumentError confint_lv_effects(fg, Yg, X_lv;
+                                                      method = :profile,
+                                                      profile_iterations = 0)
+        @test_throws ArgumentError confint_lv_effects(fg, Yg, X_lv;
+                                                      method = :profile,
+                                                      profile_g_tol = Inf)
     end
 
     # GLM profile uses derivative-free NelderMead over the Laplace marginal and is

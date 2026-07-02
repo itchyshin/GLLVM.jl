@@ -85,21 +85,16 @@ using Statistics
         @test all(cp.lower .< cp.estimate .< cp.upper)
 
         selected = [2, 4]
-        x = collect(Float64, fit.pars.θ_packed)
-        nll = θv -> GLLVM.gaussian_lv_nll_packed(θv, Y, p, K;
-                X_lv = X_lv, q_lv = q_lv, K_phy = fit.model.K_phy,
-                has_phy_unique = fit.model.has_phy_unique, Σ_phy = fit.pars.Σ_phy)
-        cp_selected = GLLVM._lv_effect_profile(nll, x, p, K, q_lv, 0.95,
-            GLLVM._lv_effects_from_packed_gaussian, ci.se; ad = true,
-            indices = selected)
+        cp_selected = confint_lv_effects(fit, Y, X_lv; method = :profile,
+                                         profile_indices = selected)
         @test cp_selected.method == :profile
         @test cp_selected.term == cp.term[selected]
         @test cp_selected.estimate ≈ cp.estimate[selected] atol = 1e-10
         @test all(isfinite, cp_selected.lower) && all(isfinite, cp_selected.upper)
         @test all(cp_selected.lower .< cp_selected.estimate .< cp_selected.upper)
-        @test_throws ArgumentError GLLVM._lv_effect_profile(nll, x, p, K, q_lv, 0.95,
-            GLLVM._lv_effects_from_packed_gaussian, ci.se; ad = true,
-            indices = [0])
+        @test_throws ArgumentError confint_lv_effects(fit, Y, X_lv;
+                                                      method = :profile,
+                                                      profile_indices = [0])
 
         cb = confint_lv_effects(fit, Y, X_lv; method = :bootstrap, n_boot = 30, seed = 7)
         @test cb.method == :bootstrap

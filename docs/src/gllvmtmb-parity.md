@@ -134,10 +134,13 @@ per-trait link-scale intercepts in `alpha` (the NB2, Gamma, and Beta `X_lv`
 routes use the shared-dispersion/shape/precision fitter, not the per-trait
 grouped route). These routes return total latent scores in `scores` and add
 `scores_mean`, `scores_innovation`, `alpha_lv`, and rotation-stable
-`lv_effects = Lambda * alpha_lv'`. X_lv confidence intervals, response masks,
-simultaneous fixed-effect `X`, mixed-family fits, grouped-dispersion `X_lv`, and
-the remaining non-Gaussian families (ordinal, two-part) remain
-deliberate follow-ups rather than inferred parity.
+`lv_effects = Lambda * alpha_lv'`. Native GLLVM.jl can compute uncertainty for
+the ordinary `B_lv` product, including selected-entry profile-likelihood
+canaries, but the R bridge still transports only the Wald `X_lv` payload.
+Response masks, simultaneous fixed-effect `X`, mixed-family fits,
+grouped-dispersion `X_lv`, bridge profile/bootstrap `X_lv` intervals, and the
+remaining non-Gaussian families (ordinal, two-part) remain deliberate follow-ups
+rather than inferred parity.
 Initial response-missing masks are admitted only for no-X one-part non-Gaussian
 bridge fits through an explicit `mask` (`true = observed`); the R bridge
 live-tests Poisson, Bernoulli Binomial, NB2, NB1, Beta, Gamma, and
