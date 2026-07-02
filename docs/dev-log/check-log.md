@@ -9097,3 +9097,49 @@ ship one bounded capability slice with implementation, tests, docs, check-log,
 after-task report, and Rose claim audit, while keeping source-specific LV
 grammar parked.
 ```
+
+## 2026-07-02 - Post-LV capability cost-control boundary
+
+Resolved the remaining local worktree hygiene and recorded the next bounded
+post-LV capability boundary:
+
+- `bd8fad8 chore: remove redundant dev-log placeholders`
+- `docs/dev-log/decisions/2026-07-02-post-lv-capability-cost-control-boundary.md`
+- `docs/dev-log/after-task/2026-07-02-post-lv-capability-cost-control-boundary.md`
+
+Source audit:
+
+```sh
+git status --short --untracked-files=all
+# clean
+
+rg -n "function confint\\(fit::_CIFit|function _family_bootstrap|function _family_ci\\(fit::ZIBFit|bootstrap_iterations::Union|_lv_boot_kwargs|fit_zib_gllvm\\(" src/confint_family.jl src/families/twopart.jl test/test_confint_family.jl
+```
+
+Key hits:
+
+```text
+test/test_confint_family.jl:207:        fit = fit_zib_gllvm(Y; K = K, N = Ntr, iterations = 120)
+src/confint_family.jl:1234:function _family_ci(fit::ZIBFit, Y::AbstractMatrix;
+src/confint_family.jl:1260:        fb = try fit_zib_gllvm(Yb; K = K, N = Ntr) catch; return nothing end
+src/confint_family.jl:1552:function _family_bootstrap(ad::_FamilyCI, sel::Vector{Int}, level::Real,
+src/confint_family.jl:1667:function confint(fit::_CIFit, Y::AbstractMatrix;
+src/confint_family.jl:2014:                            bootstrap_iterations::Union{Nothing, Integer} = nothing)
+src/confint_family.jl:2060:                            bootstrap_iterations::Union{Nothing, Integer} = nothing)
+src/confint_family.jl:2116:function _lv_boot_kwargs(bootstrap_iterations::Union{Nothing, Integer})
+src/families/twopart.jl:1082:function fit_zib_gllvm(Y::AbstractMatrix{<:Real}; K::Integer, N::Integer,
+```
+
+Verdict: generic family `confint(fit, Y; method = :bootstrap)` still has no
+`bootstrap_iterations` keyword, while LV-effect bootstrap does. Copying that
+keyword into the generic family route would be public API widening, so it is a
+separate maintainer-approved capability slice, not an unreviewed cleanup patch.
+
+Claim audit:
+
+```sh
+rg -n "ready to scale|partial support|source-specific.*covered|source-specific.*ready|active compute|phylo_latent\\(.*lv|spatial_latent\\(.*lv" docs/dev-log/decisions/2026-07-02-lv-arc-final-closeout-and-next-capabilities.md docs/dev-log/after-task/2026-07-02-full-pkgtest-after-lv-gates.md docs/dev-log/after-task/2026-07-02-zib-family-ci-smoke-budget.md docs/dev-log/after-task/2026-07-02-missing-response-extra-gate-budget.md
+```
+
+Result: only guard-language hits in the LV closeout note; no active-compute or
+support-promotion hit in the checked current notes.
