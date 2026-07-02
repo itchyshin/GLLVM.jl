@@ -1,5 +1,78 @@
 # Check Log
 
+## 2026-07-02 - Family CI boundary check
+
+### Scope
+
+Checked the remaining confidence-interval surfaces after the LV/source/bridge
+guard slices. No source behavior changed.
+
+Files updated in this worktree:
+
+- `docs/dev-log/after-task/2026-07-02-family-ci-boundary-check.md`
+- `docs/dev-log/check-log.md`
+
+Checks:
+
+```sh
+julia --project=. --startup-file=no test/test_confint.jl
+# sigma_eps Wald CI:
+#   lower = 0.49844230096550035
+#   estimate = 0.5094852492967064
+#   upper = 0.5207728532432352
+#   truth = 0.5
+# confint | 14 pass
+
+julia --project=. --startup-file=no test/test_confint_profile.jl
+# sigma_eps profile CI clean fixture:
+#   lower = 0.4909447706071283
+#   upper = 0.5273737959170355
+#   truth = 0.5
+# profile CI | 4 pass
+
+julia --project=. --startup-file=no test/test_confint_bootstrap.jl
+# sigma_eps bootstrap CI on log scale:
+#   lower = -0.7169499509370375
+#   estimate = -0.6760615447661849
+#   upper = -0.6448565114098399
+#   truth = -0.6931471805599453
+# parametric bootstrap CI | 9 pass
+
+julia --project=. --startup-file=no test/test_confint_derived_wald.jl
+# transformed-Wald CIs for derived bounded quantities | 115 pass
+
+julia --project=. --startup-file=no test/test_confint_derived.jl
+# communality[1] bootstrap CI:
+#   lower = 0.773236130389509
+#   estimate = 0.8067721997108832
+#   upper = 0.8339152141803738
+#   truth = 0.8
+#   n_converged = 200
+#   n_valid = 200
+# derived-quantity CIs | 45 pass
+
+julia --project=. --startup-file=no test/test_confint_family.jl
+# interrupted after repeated long quiet run; not counted as passing
+# interrupt stack landed in ZIB bootstrap refit:
+#   test/test_confint_family.jl:18
+#   src/families/twopart.jl:1018 zib_marginal_loglik_laplace
+#   src/families/twopart.jl:1102 fit_zib_gllvm
+#   src/confint_family.jl:1260 ZIB refit
+#   src/confint_family.jl:1572 threaded bootstrap loop
+# allocations before interrupt: 1,505,014,869
+
+pgrep -fl 'julia.*test_confint_family|julia.*runtests|julia.*test_' || true
+# clean after interrupt
+```
+
+Claim boundary retained:
+
+- Gaussian Wald/profile/bootstrap and derived Gaussian/phylo transformed-Wald
+  CI surfaces are green in focused tests;
+- the broad non-Gaussian family CI bootstrap bundle is not green evidence
+  tonight because the ZIB bootstrap refit remains too slow for a focused gate;
+- no bootstrap result changes the parked phylo Model A weak-cell conclusion.
+
 ## 2026-07-02 - Missing response boundary check
 
 ### Scope
