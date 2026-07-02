@@ -1,15 +1,15 @@
 # Phylo x Binomial Structural LV S0 Target
 
 Date: 2026-07-02
-Status: S0 target and symbolic alignment only; no likelihood proof, no canary, no compute
+Status: S0 target and symbolic alignment; followed by internal S1 likelihood proof and one private selected-entry canary; no compute or public route
 Scope: second candidate non-Gaussian structural-source LV target after phylo x Poisson
 
 ## Decision
 
-Use phylo x Binomial logit as the next structural-source candidate only at S0.
-This page names the model, estimand, and required local anchors before any
-private likelihood, selected-entry profile canary, Totoro diagnostic, DRAC run,
-R grammar exposure, or bridge promotion.
+Use phylo x Binomial logit as the second structural-source candidate after
+phylo x Poisson. This page names the model, estimand, and required local
+anchors before any Totoro diagnostic, DRAC run, R grammar exposure, bridge
+promotion, or support claim.
 
 The repository has two neighbouring pieces:
 
@@ -18,10 +18,15 @@ The repository has two neighbouring pieces:
 - a generic non-Gaussian phylo random-intercept route in `fit_phylo_glm`, though
   the current dedicated phylo GLM reduction test is Poisson-only.
 
-Therefore phylo x Binomial is not S1-ready until a Binomial-specific structural
-likelihood proof is written and tested. The first proof must show that the
-combined likelihood reduces to ordinary Binomial `X_lv` as `sigma_phy^2 -> 0`,
-and to `phylo_glm_marginal_loglik(Binomial())` as `Lambda -> 0`.
+2026-07-02 follow-up: the Binomial-specific internal S1 likelihood proof and
+one private selected-entry canary are now recorded in
+`docs/dev-log/decisions/2026-07-02-phylo-binomial-structural-lv-s1-likelihood.md`.
+The proof shows that the combined likelihood reduces to ordinary Binomial
+`X_lv` as `sigma_phy^2 -> 0`, reduces to
+`phylo_glm_marginal_loglik(Binomial())` as `Lambda -> 0`, matches a dense
+leaf-covariance reference, and guards `N`/`Y` admissibility. This follow-up
+does not change the public boundary: no source-specific R grammar, bridge
+transport, compute, coverage calibration, or support claim is opened.
 
 ## Symbolic Model
 
@@ -81,7 +86,7 @@ orientation. It is not the profile-LR interval target.
 
 | Symbol in prose | Keyword / future route | DGP draw | Recovery extractor / check | Truth value |
 | --- | --- | --- | --- | --- |
-| `X_lv` | future `fit_phylo_binomial_xlv(...; X_lv=...)` | fixed centered or centerable `n x q_lv` design | stored design, rank check | exact matrix used in DGP |
+| `X_lv` | private S1 helper / possible future route | fixed centered or centerable `n x q_lv` design | stored design, rank check | exact matrix used in DGP |
 | `N` | future `N=...` trial matrix | fixed positive integer `p x n` matrix | dimension and positivity guard | exact matrix used in DGP |
 | `alpha_lv` | future `alpha_lv_init`, fitted `alpha_lv` | fixed `q_lv x K` matrix | diagnostic only | axis/access effect; no CI target |
 | `epsilon_s` | latent innovation block | iid `Normal(0, I_K)` per site | integrated by site-score Laplace block | realized `epsilon` saved for truth |
@@ -90,35 +95,35 @@ orientation. It is not the profile-LR interval target.
 | `u`, `a_t` | augmented phylo source block, `phy::AugmentedPhy` | `u ~ N(0, sigma_phy^2 Q_cond^{-1})`; `a = u[leaf_pos]` | fitted `sigma_phy^2`, source-effect diagnostics | nuisance/source intercept, not target |
 | `eta[t,s]` | combined logit predictor | `beta[t] + Lambda[t,:]'z_s + a_t` | future independent dense/sparse check | noiseless link-scale surface |
 | `Y[t,s]` | Binomial logit family | `Binomial(N[t,s], logistic(eta[t,s]))` | simulated response matrix | observed successes only |
-| `B_eta_realized` | selected-entry profile truth | slope of `Lambda * z_truth'` on centered `X_lv` | future `profile_eta_realized` analogue | p x q target matrix |
+| `B_eta_realized` | selected-entry profile truth | slope of `Lambda * z_truth'` on centered `X_lv` | private S1 `profile_eta_realized` analogue | p x q target matrix |
 | selected entry | `profile_indices`-like S1 list | predeclared from `B_eta_realized` ranks | finite LR solve at truth | LR below chi-square(1) cutoff |
 
-Empty row audit: every symbol has a DGP and a recovery/check column. No S1
-implementation exists yet.
+Empty row audit: every symbol has a DGP and a recovery/check column. The S1
+follow-up now implements these anchors privately for one tiny local canary.
 
-## Required S1 Anchors Before Any Canary
+## S1 Anchors
 
-The existing routes are insufficient:
+The existing neighbouring routes were insufficient:
 
 - `fit_binomial_gllvm(...; X_lv=..., N=...)` integrates site latent scores but
   has no phylogenetic source block.
 - `fit_phylo_glm(...; family = Binomial(), N=...)` is generic in the engine, but
-  the current dedicated phylo GLM proof is Poisson-only.
+  it is phylo-only and has no predictor-informed site-score block.
 
-Before a selected-entry profile canary is admissible, a private combined
-Binomial route must prove:
+The private combined Binomial route now proves:
 
 1. `sigma_phy^2 -> 0` reduction to ordinary Binomial `X_lv`;
 2. `Lambda = 0` reduction to `phylo_glm_marginal_loglik(Binomial())`;
 3. a tiny dense/sparse equality check for the phylo random-effect component;
-4. guards for trial-count dimensions, positive trials, and response successes
-   within `0:N`;
-5. one deterministic selected-entry `B_eta_realized` profile-LR canary only
-   after the point route is stable.
+4. guards for trial-count dimensions, positive and integer-valued trials, and
+   integer-valued response successes within `0:N`;
+5. one deterministic selected-entry `B_eta_realized` profile-LR canary with
+   finite endpoints, MLE bracketing, truth inclusion, constrained error below
+   `1e-3`, and LR below the one-df 95 percent cutoff.
 
-## Candidate S1 Cell
+## S1 Cell
 
-A later S1 canary should stay tiny:
+The banked S1 canary stays tiny:
 
 ```text
 family: Binomial(logit)
@@ -127,15 +132,15 @@ p: 6
 n_sites: 30
 K: 1
 q_lv: 1
-N[t,s]: constant 20 or a predeclared small matrix with no zero trials
-sigma_phy^2: around 0.25 to 0.35 in the truth object, but not interpreted as source-variance recovery
-selected entries: one or three predeclared `B_eta_realized` entries
+N[t,s]: constant 28
+sigma_phy^2: 0.30 in the truth-started canary, but not interpreted as source-variance recovery
+selected entries: one predeclared `B_eta_realized` entry
 pass rule: fit converged, finite lower/upper profile endpoints, lower < MLE < upper,
            lower <= truth <= upper, constrained error < 1e-3, LR(truth) < 3.8415
 ```
 
-This is not an authorization to implement or run the S1 cell. It is the smallest
-candidate design to use if the Binomial S1 likelihood proof is opened later.
+This is not an authorization to launch S2/Totoro, DRAC, bridge, or R grammar
+work. It is the smallest local route proof for the Binomial source/family cell.
 
 ## Exclusions
 
@@ -153,16 +158,17 @@ candidate design to use if the Binomial S1 likelihood proof is opened later.
 - Ada: S0 is useful only if it prevents Binomial from inheriting Poisson support.
 - Fisher: target link-scale `B_eta_realized`; response-probability slopes are a
   different estimand.
-- Curie: S1 must add Binomial-specific reduction tests before any canary.
-- Gauss: trial-count scaling and boundary probabilities are numerical risks.
+- Curie: S1 has Binomial-specific reduction tests and malformed `N`/`Y` guards.
+- Gauss: trial-count scaling and boundary probabilities remain numerical risks.
 - Boole/Hopper: R grammar and bridge remain parked.
-- Grace: no Totoro/DRAC until a local S1 proof exists and Shinichi authorizes a
+- Grace: no Totoro/DRAC until Shinichi authorizes a
   manifest.
-- Rose: block "ordinary Binomial plus phylo_glm equals support" language.
+- Rose: block "ordinary Binomial plus phylo_glm equals support" and block
+  "S1 proof equals public support" language.
 
 ## Rose Verdict
 
-Rose verdict: PASS WITH NOTES - phylo x Binomial is now symbolically aligned as
-an S0 target only. It is not S1-ready until Binomial-specific combined
-likelihood anchors and a private selected-entry canary are implemented and
-tested.
+Rose verdict: PASS WITH NOTES - phylo x Binomial is symbolically aligned and now
+has a private S1 likelihood/profile canary, but this remains internal route
+evidence only. No public fitter, bridge route, R grammar, compute, or coverage
+claim is opened.

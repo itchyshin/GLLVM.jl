@@ -1,11 +1,61 @@
 # Check Log
 
+## 2026-07-02 - Phylo x Binomial structural LV S1 likelihood and canary
+
+Added the private phylo x Binomial(logit) x predictor-informed LV S1 route.
+This is internal route evidence only: no public fitter, no R grammar, no bridge
+transport, no Totoro/DRAC compute, no coverage calibration, and no
+source-specific `lv` support were added.
+
+Implemented:
+
+- new private source file `src/phylo_binomial_xlv.jl`;
+- module include in `src/GLLVM.jl`;
+- new focused proof test `test/test_phylo_binomial_xlv.jl`;
+- new S1 decision note
+  `docs/dev-log/decisions/2026-07-02-phylo-binomial-structural-lv-s1-likelihood.md`;
+- updated the Binomial S0 target page, structural-source Gate 0 matrix, and
+  Design 73 status text.
+
+S1 contract:
+
+```text
+family: Binomial(logit)
+source: augmented phylogeny
+target: B_eta_realized = slope_X(Lambda * Z_truth')
+trial matrix N: required, positive, integer-valued, dimension-matched
+response Y: integer-valued successes with 0 <= Y <= N
+status: private S1 likelihood/profile canary banked
+```
+
+Verification:
+
+```text
+julia --project=. --startup-file=no test/test_phylo_binomial_xlv.jl
+Phylo x Binomial predictor-informed LV S1 likelihood: 14 passed, 0 failed, 0 errored, 6.2s
+Phylo x Binomial B_eta_realized selected-entry canary: 22 passed, 0 failed, 0 errored, 19.7s
+
+julia --project=. --startup-file=no test/test_phylo_poisson_xlv.jl
+Phylo x Poisson predictor-informed LV S1 likelihood: 9 passed, 0 failed, 0 errored, 4.7s
+Phylo x Poisson B_eta_realized selected-entry canary: 22 passed, 0 failed, 0 errored, 13.5s
+```
+
+Claim boundary: IN: one private deterministic selected-entry S1
+finite-endpoint route canary for phylo x Binomial `B_eta_realized`, plus
+reduction tests against ordinary Binomial `X_lv`, phylo-only Binomial GLM, and
+dense leaf-covariance reference. OUT: no public fitter, no `confint_lv_effects`
+source route, no R `phylo_latent(..., lv = ~ env)` grammar, no bridge, no
+compute, no coverage calibration, no bootstrap rescue, and no transfer to NB2,
+Gamma, Beta, Ordinal, spatial, animal, kernel, mixed-family, missing/mask, or
+`unique=` parity.
+
 ## 2026-07-02 - Phylo x Binomial structural LV S0 target
 
-Opened the second non-Gaussian structural-source LV target at S0 only:
-phylo x Binomial logit. This is symbolic alignment and gate planning; no
-likelihood proof, selected-entry canary, source-specific R grammar, bridge row,
-Totoro run, or DRAC run was added.
+Initial S0 entry, now superseded for implementation status by the S1 entry
+above. This opened the second non-Gaussian structural-source LV target:
+phylo x Binomial logit. The S0 slice was symbolic alignment and gate planning;
+it did not add a likelihood proof, selected-entry canary, source-specific R
+grammar, bridge row, Totoro run, or DRAC run.
 
 Implemented:
 
@@ -14,8 +64,8 @@ Implemented:
 - `docs/dev-log/decisions/2026-07-02-nongaussian-structural-source-lv-gate0.md`
   now links Binomial to that S0 page and keeps S1 blocked until
   Binomial-specific reduction tests exist;
-- `docs/design/73-predictor-informed-latent-scores.md` now records phylo x
-  Binomial as symbolic S0 only, with no S1 likelihood proof.
+- `docs/design/73-predictor-informed-latent-scores.md` recorded phylo x
+  Binomial as symbolic S0 only in this initial slice.
 
 S0 target:
 
@@ -24,10 +74,10 @@ family: Binomial(logit)
 source: augmented phylogeny
 target: B_eta_realized = slope_X(Lambda * Z_truth')
 trial matrix N: required design input, not an estimand
-status: not S1-ready
+initial status: awaiting S1 proof
 ```
 
-Required before S1:
+Initial S1 requirements, now satisfied by the later S1 entry above:
 
 - `sigma_phy^2 -> 0` reduction to ordinary Binomial `X_lv`;
 - `Lambda = 0` reduction to `phylo_glm_marginal_loglik(Binomial())`;
@@ -42,11 +92,11 @@ julia --project=. --startup-file=no test/test_phylo_glm.jl
 Phylogenetic GLM (augmented-state joint Laplace): 6 passed, 0 failed, 0 errored, 3.6s
 ```
 
-Claim boundary: IN: phylo x Binomial has an S0 target page and explicit S1
-requirements. OUT: no combined Binomial structural likelihood, no profile
-canary, no compute, no source-specific `lv` support, no bridge transport, no
-coverage calibration, and no inheritance from ordinary Binomial or phylo x
-Poisson evidence.
+Historical claim boundary for the initial S0 slice: IN: phylo x Binomial had
+an S0 target page and explicit S1 requirements. OUT at S0 time: combined
+Binomial structural likelihood and profile canary were absent; no compute, no
+source-specific `lv` support, no bridge transport, no coverage calibration, and
+no inheritance from ordinary Binomial or phylo x Poisson evidence followed.
 
 ## 2026-07-02 - Structural-source LV matrix Ordinal sync
 

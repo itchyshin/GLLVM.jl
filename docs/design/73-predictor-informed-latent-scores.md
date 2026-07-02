@@ -33,10 +33,15 @@ The local S1 selected-entry route canary is recorded in
 `docs/dev-log/decisions/2026-07-02-phylo-poisson-structural-lv-s1-profile-canary.md`.
 Together these are private Julia plumbing and canary evidence only: no public
 fitter, bridge transport, R grammar, coverage calibration, or source-specific
-`lv` support follows from them. A second source/family S0 target, phylo x
+`lv` support follows from them. A second source/family target, phylo x
 Binomial logit, is recorded in
 `docs/dev-log/decisions/2026-07-02-phylo-binomial-structural-lv-s0-target.md`;
-it is symbolic alignment only and has no S1 likelihood proof yet.
+its internal S1 likelihood proof and one private selected-entry canary are
+recorded in
+`docs/dev-log/decisions/2026-07-02-phylo-binomial-structural-lv-s1-likelihood.md`.
+This adds only private Julia route evidence: no public fitter, bridge
+transport, R grammar, coverage calibration, compute, or source-specific `lv`
+support follows from it.
 This doc is the spec the Julia comments (`likelihood.jl:405`) reference. The
 compact evidence freeze is
 `docs/dev-log/decisions/2026-07-01-phylo-model-a-evidence-freeze-and-next-arc.md`;
@@ -225,6 +230,21 @@ Requirements for any future authorized wiring:
   This is local S1 route evidence, not public source-specific `lv` support,
   coverage calibration, bridge transport, R grammar, or a production scaling
   path.
+- **Phylo x Binomial structural LV S1 likelihood proof (local, 2026-07-02):**
+  the internal `_phylo_binomial_xlv_marginal_loglik` route now jointly
+  integrates site-score innovations and the augmented phylo random intercept
+  for Binomial(logit) with `X_lv` and a required trial-count matrix `N`. It is
+  reduction-tested against ordinary Binomial logit `X_lv`, phylo-only Binomial
+  GLM at `Lambda = 0`, and a dense leaf-covariance reference. It also guards
+  trial-count dimensions, positive and integer-valued `N`, integer-valued
+  successes, and `0 <= Y <= N`. A private truth-startable point wrapper and
+  selected-entry penalty-profile route cover one deterministic
+  `B_eta_realized` finite-endpoint canary
+  (`test/test_phylo_binomial_xlv.jl`, 14/14 likelihood anchors + 22/22 canary
+  assertions). This checks finite profile endpoints, MLE bracketing, truth
+  inclusion, and LR below cutoff for one selected entry. This is local S1 route
+  evidence, not public source-specific `lv` support, coverage calibration,
+  bridge transport, R grammar, compute, or a production scaling path.
 - **Realized direct-slope canary tooling (diagnostic, 2026-07-01):** the bench
   runner now has `profile_direct_slope`, which computes a saturated per-trait
   `Y ~ X_lv` slope target from the realized replicate and checks selected-entry
