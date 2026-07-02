@@ -9543,3 +9543,73 @@ r60
 Claim scan result: current hits for `partial support`, source-specific support,
 R bridge profile transport, coverage calibration, and `unique=` parity are
 guard/negative wording only.
+
+## 2026-07-02 - Non-Gaussian structural-source LV Gate 0 matrix
+
+Banked the structural-source non-Gaussian LV Gate 0 matrix after the ordinary
+one-part selected-entry profile canary set completed. This is a planning and
+claim-boundary artifact only:
+
+- ordinary Poisson, Binomial logit, NB2, Gamma, and Beta selected-entry `B_lv`
+  profile-LR canaries remain local/native ordinary route evidence;
+- phylo/spatial/animal/kernel non-Gaussian LV must start with a source/family
+  target page before any local canary, Totoro diagnostic, DRAC claim evidence,
+  R grammar exposure, or bridge promotion;
+- no source-specific `lv = ~ env`, mixed-family CI, R bridge profile/bootstrap
+  transport, coverage calibration, or `unique=` parity was added.
+
+Files updated:
+
+```text
+docs/design/73-predictor-informed-latent-scores.md
+docs/dev-log/decisions/2026-07-02-nongaussian-structural-source-lv-gate0.md
+docs/dev-log/check-log.md
+docs/dev-log/after-task/2026-07-02-nongaussian-structural-source-lv-gate0.md
+```
+
+Mission Control source refreshed in the gllvmTMB dashboard checkout:
+
+```text
+docs/dev-log/dashboard/status.json
+docs/dev-log/dashboard/sweep.json
+```
+
+Focused verification:
+
+```text
+julia --project=. --startup-file=no test/test_phylo_xlv.jl
+phylo × X_lv (Model A): 25 passed, 0 failed, 0 errored, 1m06.7s
+
+python3 -m json.tool docs/dev-log/dashboard/status.json >/dev/null
+python3 -m json.tool docs/dev-log/dashboard/sweep.json >/dev/null
+git diff --check
+git diff --check -- docs/dev-log/dashboard/status.json docs/dev-log/dashboard/sweep.json
+```
+
+Mission Control refresh:
+
+```text
+sh tools/start-mission-control.sh --background
+GLLVM mission-control dashboard already available at http://127.0.0.1:8770/
+Synced dashboard files to /tmp/gllvm-dashboard
+Mirrored disposable live output to /private/tmp/gllvm-dashboard
+
+curl -s http://127.0.0.1:8770/status.json | python3 -m json.tool >/dev/null
+curl -s http://127.0.0.1:8770/sweep.json | python3 -m json.tool >/dev/null
+curl -s http://127.0.0.1:8770/version.txt
+r60
+```
+
+Browser preview check at `http://127.0.0.1:8770/` confirmed the visible board
+contains "Structural-source non-Gaussian LV Gate 0", ordinary Poisson/Binomial
+logit/NB2/Gamma/Beta route evidence wording, and no-active-compute wording.
+
+Claim scan:
+
+```text
+rg -n "partial support|ready to expose|inherits ordinary|inherits Gaussian|source-specific.*covered|active compute|grammar exposure|unique=.*parity|bootstrap rescue|mixed-family CI" docs/design/73-predictor-informed-latent-scores.md docs/dev-log/decisions/2026-07-02-nongaussian-structural-source-lv-gate0.md
+```
+
+Hits are expected guard wording only: no `unique=` parity, no bootstrap rescue,
+no "partial support", no inherited ordinary/Gaussian support, and no active
+compute.

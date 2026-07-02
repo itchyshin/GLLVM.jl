@@ -1,0 +1,98 @@
+# Non-Gaussian Structural-Source LV Gate 0 Matrix
+
+Date: 2026-07-02
+Status: Gate 0 matrix only; no structural-source gate opened for implementation
+Scope: non-Gaussian LV after ordinary selected-entry profile canaries
+
+## Decision
+
+Do not start source-specific non-Gaussian LV compute or grammar work from the
+ordinary non-Gaussian canaries alone. The ordinary Poisson, Binomial logit, NB2,
+Gamma, and Beta selected-entry `B_lv` profile-LR canaries prove that native
+GLLVM.jl can route finite selected-entry profile intervals in admitted ordinary
+one-part fits. They do not prove phylo, spatial, animal, kernel, mixed-family,
+mask, missing-response, R bridge, or `unique=` support.
+
+The next structural-source step must be an estimand-first Gate 0 page for a
+single source/family combination. No source-specific `lv = ~ env`, PR #127
+reopen, package API widening, bridge promotion, Totoro diagnostic, DRAC claim
+run, or public wording follows from this matrix.
+
+## Inputs
+
+- Ordinary one-part selected-entry profile canaries are local for Poisson,
+  Binomial logit, NB2, Gamma, and Beta in `test/test_lv_ci.jl`; the focused file
+  passed `180/180` in 3m49.4s.
+- The retired phylo population-`B_lv` evidence remains negative:
+  `bootstrap_basic` `591/720 = 0.821`, optimistic cancelled-task bound
+  `671/800 = 0.839`, task-8 `profile_truth` LR `9.9918 > 3.8415`, K = 1
+  population profile gate `98/100`, and `profile_direct_slope` `96/100`.
+- The Gaussian phylo `B_eta_realized` Gate 0-3 arc is internal evidence for a
+  changed eta-scale realized/design-conditional target only. It is not public
+  source-specific `lv` support and does not transfer to non-Gaussian families.
+- R-side source-specific `lv = ~ env` remains fail-loud for phylo, spatial,
+  animal, and kernel structural keywords and legacy aliases.
+- The concurrent `unique=` lane is R/TMB-first and separate. It does not block
+  this matrix, and this matrix does not start Julia `unique=` parity.
+
+## Structural Source Order
+
+| Source | Gate 0 truth | Next admissible target | Current boundary |
+| --- | --- | --- | --- |
+| Phylo | Best first source after ordinary, because Gaussian Model A internals and `Σ_phy` tests exist. | One family/source page that declares the link-scale realized/design-conditional estimand, likely a non-Gaussian analogue of `B_eta_realized` rather than the retired population `B_lv`. | No public `phylo_latent(..., lv = ~ env)` and no old population-`B_lv` reruns. |
+| Spatial | Wait for the R/TMB `unique=` lane review and a separate Julia parity/join decision before any spatial-source inference claim. | Source covariance and SPDE support target must be explicit before a non-Gaussian LV canary. | Do not mix with the `unique=` lane or imply Julia parity. |
+| Animal | Follows phylo/relmat derivation discipline. | Declare whether the target is realized link-scale, trait-scale, or source-level random-slope association. | No inheritance from ordinary LV or Gaussian phylo evidence. |
+| Kernel | Requires dense/cross-kernel source derivation and a mean-vs-covariance confound audit. | Start only after source covariance, kernel overlap, and estimand orientation are written. | No source-specific `kernel_latent(..., lv = ~ env)` support. |
+
+## Family Matrix
+
+| Family block | Ordinary selected-entry `B_lv` profile | Structural-source status |
+| --- | --- | --- |
+| Poisson | Gate 1 local canary complete. | Gate 0 only; choose source/family estimand before any canary. |
+| Binomial logit | Gate 1 local canary complete. | Gate 0 only; link-scale target and trial-size treatment must be declared. |
+| NB2 | Gate 1 local canary complete with fitted-dispersion guard. | Gate 0 only; source/family page must name dispersion treatment and stop rules. |
+| Gamma | Gate 1 local canary complete with shape guard. | Gate 0 only; source/family page must name shape treatment and link-scale target. |
+| Beta | Gate 1 local canary complete with precision guard. | Gate 0 only; bounded response and precision treatment must be explicit. |
+| Ordinal / Tweedie / zero-inflated / hurdle / Student-t | Not admitted for ordinary `X_lv` canaries in this arc. | Blocked until separate family likelihood derivation and tests. |
+| Mixed-family vectors | Point/postfit boundary only in the bridge ledger. | `X_lv`, masks, missing responses, and CIs remain blocked. |
+
+## Gate Ladder
+
+- S0: write one source/family target page with model, estimand, DGP,
+  constraints, pass/fail rule, stop rules, wording boundary, host plan, and
+  rollback condition.
+- S1: run one tiny local finite-route canary with selected-entry profile-LR,
+  finite endpoints, MLE bracketing, known truth inclusion, and no public claim.
+- S2: run a Totoro diagnostic only after S1 is green; keep host and denominator
+  separate from DRAC evidence.
+- S3: run DRAC seed-matched claim evidence only after S2 is stable and the
+  denominator/MCSE rule is predeclared.
+- S4: expose R grammar or bridge/public wording only after explicit maintainer
+  authorization and Rose wording audit.
+
+## Council Roles
+
+- Ada: hold the scope to Gate 0 until a single source/family target is approved.
+- Fisher: own the likelihood-ratio target and block bootstrap rescue language.
+- Curie: own S1/S2 canaries and the ADEMP denominator.
+- Gauss: own numerical feasibility and profile optimizer stop rules.
+- Boole: keep source-specific `lv = ~ env` grammar fail-loud.
+- Hopper: keep R bridge profile transport and Julia native routes separated.
+- Grace: keep Totoro diagnostic and DRAC claim denominators separate.
+- Rose: block "partial support", "inherits ordinary", "inherits Gaussian Gate 3",
+  and "ready to expose" wording.
+
+## Stop Rules
+
+Stop before compute if the target page cannot name the estimand, DGP, selected
+entries, host denominator, and rollback rule. Stop S1 if profile endpoints are
+non-finite, the MLE is not bracketed, the selected truth misses with a converged
+solve, or the fitter repeatedly underconverges. Stop interpretation if bootstrap
+is used as a rescue label rather than a secondary diagnostic layer.
+
+## Rose Verdict
+
+Rose verdict: PASS WITH NOTES - this matrix is a safe Gate 0 boundary. Ordinary
+non-Gaussian profile route evidence is banked, but every structural-source
+family remains blocked until its own estimand page, local canary, and claim
+audit exist.

@@ -1,6 +1,6 @@
 # Design 73 - Predictor-informed latent scores: `latent(..., lv = ~ x)`
 
-**Status (2026-07-01):** the current LV arc is closed as operating truth.
+**Status (2026-07-02):** the current LV arc is closed as operating truth.
 Ordinary `X_lv` engine + CI trio shipped to `main`
 (#116-#126). The original phylo Model A population-`B_lv` interval target is
 retired/parked for v1 after the p=80, K=2, lambda=0.5 weak cell, the task-8
@@ -17,9 +17,15 @@ closeout guard now rejects source-specific `lv = ~ env` across phylo, spatial,
 animal, and kernel structural keywords and legacy aliases before desugaring can
 silently drop it; this is a fail-loud boundary, not support. Mixed-family LV
 remains point/postfit only, and non-Gaussian / source-specific structural LV
-starts a separate derivation and ADEMP arc. This doc is the spec the Julia
-comments (`likelihood.jl:405`) reference. The compact
-evidence freeze is
+starts a separate derivation and ADEMP arc. Ordinary one-part non-Gaussian
+selected-entry `B_lv` profile-LR route evidence is now local for Poisson,
+Binomial logit, NB2, Gamma, and Beta (`test/test_lv_ci.jl`, `180/180`, 3m49.4s);
+that is route evidence only, not coverage calibration, R bridge profile
+transport, mixed-family CI support, source-specific `lv`, or `unique=` parity.
+The structural-source non-Gaussian LV Gate 0 matrix is recorded in
+`docs/dev-log/decisions/2026-07-02-nongaussian-structural-source-lv-gate0.md`.
+This doc is the spec the Julia comments (`likelihood.jl:405`) reference. The
+compact evidence freeze is
 `docs/dev-log/decisions/2026-07-01-phylo-model-a-evidence-freeze-and-next-arc.md`;
 the detailed Gate 0-3 record is
 `docs/dev-log/decisions/2026-07-01-phylo-model-a-next-target-no-compute.md`.
@@ -91,6 +97,14 @@ conditional axis/access-effect view under the fitted loading convention.
 
 Gaussian + Poisson + Binomial (logit/probit/cloglog) + NB2 + Gamma + Beta. Exotic families
 (ordinal/Tweedie/ZI/hurdle/Student-t) for `X_lv` are post-v1.0.
+
+For ordinary one-part `X_lv` fits, selected-entry `B_lv` profile-LR route
+canaries are local for Poisson, Binomial logit, NB2, Gamma, and Beta. These
+canaries prove finite endpoint routing and known-DGP truth inclusion for one
+selected entry per family. They do not provide coverage calibration and they do
+not transfer to source-specific phylo/spatial/animal/kernel LV, mixed-family
+vectors, bridge profile transport, missing/masked responses, or `unique=`
+parity.
 
 ## 5. Structured sources × `X_lv` — phylogenetic (Model A)
 
