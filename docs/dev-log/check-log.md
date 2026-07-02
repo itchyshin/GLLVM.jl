@@ -1,5 +1,42 @@
 # Check Log
 
+## 2026-07-02 - Bridge X boundary verification
+
+### Scope
+
+Verified the fixed-effect-X and ordinary predictor-informed `X_lv` bridge
+boundaries after the bridge capability note sync. No source behavior changed.
+The remaining R/Jl ledger difference is accepted: Julia exposes
+`predictor_informed_lv` in `bridge_capabilities()`, while the R bridge keeps a
+stable public schema and records the boundary in notes.
+
+Files updated in this worktree:
+
+- `docs/dev-log/after-task/2026-07-02-bridge-x-boundary-verification.md`
+- `docs/dev-log/check-log.md`
+
+Checks:
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_x.jl
+# bridge fixed-effect X (non-Gaussian one-part families) | 195 pass
+
+julia --project=. --startup-file=no test/test_bridge_lv_predictor.jl
+# bridge predictor-informed latent-score X_lv | 207 pass
+
+rg -n 'X_lv|fixed-effect X|mixed-family|mask|ci_x|predictor_informed_lv|source-specific|not wired|gated|follow-up' src/bridge.jl test/test_bridge_x.jl test/test_bridge_lv_predictor.jl test/test_bridge_capabilities.jl
+
+rg -n 'X_lv|fixed-effect X|mixed-family|mask|ci_x|predictor_informed_lv|GJL-GATE-MIXED|not routed|gated|follow-up' R/julia-bridge.R tests/testthat/test-julia-bridge.R
+```
+
+Claim boundary retained:
+
+- fixed-effect `X` rows and ordinary `X_lv` rows are separate bridge surfaces;
+- `X_lv` remains complete-response one-part only;
+- profile/bootstrap `X_lv`, response-mask `X_lv`, mixed-family `X_lv`, and
+  source-specific `X_lv` remain blocked;
+- no gllvmTMB R source, package API, likelihood, PR state, or compute changed.
+
 ## 2026-07-02 - Bridge capability X_lv note sync
 
 ### Scope
