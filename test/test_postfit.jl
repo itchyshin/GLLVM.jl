@@ -182,6 +182,9 @@ end
         @test GLLVM.bic(fit, n) ≈ k * log(n) - 2 * fit.logLik
         s = sprint(show, MIME("text/plain"), fit)
         @test occursin("Gaussian", s) && occursin("logLik", s) && occursin("AIC", s)
+        smry = summary(fit)
+        @test occursin("Gaussian GLLVM fit", smry) && occursin("p=$p", smry)
+        @test occursin("K=$K", smry) && occursin("logLik", smry)
     end
 
     @testset "param count + AIC/BIC (Binomial)" begin
@@ -196,6 +199,9 @@ end
         @test GLLVM.bic(fit, n) ≈ k * log(n) - 2 * fit.loglik
         s = sprint(show, MIME("text/plain"), fit)
         @test occursin("Binomial", s) && occursin("AIC", s)
+        smry = summary(fit)
+        @test occursin("Binomial GLLVM fit", smry) && occursin("p=$p", smry)
+        @test occursin("link=LogitLink", smry) && occursin("logLik", smry)
     end
 end
 
@@ -241,6 +247,9 @@ end
         @test GLLVM.bic(fit, n) ≈ k * log(n) - 2 * fit.loglik
         s = sprint(show, MIME("text/plain"), fit)
         @test occursin("Poisson", s) && occursin("AIC", s)
+        smry = summary(fit)
+        @test occursin("Poisson GLLVM fit", smry) && occursin("p=$p", smry)
+        @test occursin("link=LogLink", smry) && occursin("logLik", smry)
     end
 end
 
@@ -281,6 +290,9 @@ end
         @test GLLVM.aic(fit) ≈ 2k - 2 * fit.loglik
         s = sprint(show, MIME("text/plain"), fit)
         @test occursin("Negative-binomial", s) && occursin("AIC", s)
+        smry = summary(fit)
+        @test occursin("Negative-binomial GLLVM fit", smry)
+        @test occursin("r=", smry) && occursin("logLik", smry)
     end
 end
 
@@ -327,6 +339,9 @@ end
         @test GLLVM.bic(fit, n) ≈ k * log(n) - 2 * fit.loglik
         s = sprint(show, MIME("text/plain"), fit)
         @test occursin("Beta", s) && occursin("AIC", s)
+        smry = summary(fit)
+        @test occursin("Beta GLLVM fit", smry)
+        @test occursin("phi=", smry) && occursin("logLik", smry)
     end
 end
 
@@ -374,6 +389,9 @@ end
         @test GLLVM.bic(fit, n) ≈ k * log(n) - 2 * fit.loglik
         s = sprint(show, MIME("text/plain"), fit)
         @test occursin("Gamma", s) && occursin("AIC", s)
+        smry = summary(fit)
+        @test occursin("Gamma GLLVM fit", smry)
+        @test occursin("alpha=", smry) && occursin("logLik", smry)
     end
 end
 
@@ -422,5 +440,8 @@ end
         @test GLLVM.bic(fit, n) ≈ k * log(n) - 2 * fit.loglik
         s = sprint(show, MIME("text/plain"), fit)
         @test occursin("Ordinal", s) && occursin("AIC", s)
+        smry = summary(fit)
+        @test occursin("Ordinal GLLVM fit", smry)
+        @test occursin("C=$C", smry) && occursin("logLik", smry)
     end
 end

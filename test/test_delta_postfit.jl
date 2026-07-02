@@ -47,5 +47,8 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics, Distributions
         @test GLLVM.bic(fit, n) ≈ k * log(n) - 2 * fit.loglik
         s = sprint(show, MIME("text/plain"), fit)
         @test occursin("Delta-lognormal", s) && occursin("AIC", s)
+        smry = summary(fit)
+        @test occursin("Delta-lognormal GLLVM fit", smry)
+        @test occursin("sigma=", smry) && occursin("logLik", smry)
     end
 end

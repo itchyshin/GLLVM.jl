@@ -81,7 +81,8 @@ families) to choose a model. Displaying the fit shows family, dimensions, the
 log-likelihood, AIC, and convergence:
 
 ```julia
-fit        # rich summary in the REPL
+summary(fit)   # compact one-line summary
+fit            # rich summary in the REPL
 ```
 
 ## Non-Gaussian fits

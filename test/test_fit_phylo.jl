@@ -65,6 +65,12 @@ _balanced(p; bl = 0.1) = _bnw(["t$i" for i in 1:p], bl) * ";"
         fit3 = fit_phylo_gaussian(phy, ysim; profile_mu = false)
         @test fit3.negll ≈ fit.negll rtol = 1e-3
         @test fit3.μ ≈ fit.μ atol = 1e-2
+
+        smry = summary(fit)
+        @test occursin("PhyloGaussianFit", smry)
+        @test occursin("sigma2_phy", smry) && occursin("negll", smry)
+        shown = sprint(show, MIME("text/plain"), fit)
+        @test occursin("Phylogenetic Gaussian fit", shown) && occursin("negll", shown)
     end
 
     @testset "Newick-string convenience + larger tree converges" begin

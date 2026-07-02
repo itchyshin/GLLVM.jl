@@ -7715,3 +7715,69 @@ Results:
   parity claim was added.
 - GitHub lane check: PR #59 remains the separate draft
   `claude/package-work-catchup-mQiZM` lane; no PR or issue was modified.
+
+## 2026-07-02 — Fit Summary/Print Capability Closeout
+
+Goal: close the bounded post-fit display lane after LV closeout by adding
+explicit `summary(fit)` methods for existing fit objects while keeping
+source-specific `lv` grammar parked and avoiding likelihood/API widening.
+
+Changes:
+
+- Added compact `Base.summary` methods for Gaussian, phylogenetic Gaussian,
+  one-part non-Gaussian, and two-part GLLVM fit objects.
+- Added `text/plain` display for `PhyloGaussianFit` to match the existing rich
+  display contract for other fitted objects.
+- Updated post-fit documentation to show `summary(fit)` alongside rich REPL
+  display.
+
+Focused verification:
+
+```sh
+julia --project=. --startup-file=no -e 'using GLLVM; println(summary(PhyloGaussianFit(0.1, 1.2, 0.3, 4.5, true, 7)))'
+julia --project=. --startup-file=no test/test_postfit.jl
+julia --project=. --startup-file=no test/test_delta_postfit.jl
+julia --project=. --startup-file=no test/test_hurdle_poisson.jl
+julia --project=. --startup-file=no test/test_hurdle_nb.jl
+julia --project=. --startup-file=no test/test_fit_phylo.jl
+```
+
+Focused results:
+
+- Package load plus direct `PhyloGaussianFit` summary smoke passed.
+- `test_postfit.jl`: all emitted testsets passed, including the new compact
+  summary assertions for Gaussian and one-part families.
+- `test_delta_postfit.jl`: 215/215 pass.
+- `test_hurdle_poisson.jl`: 168/168 pass.
+- `test_hurdle_nb.jl`: 17/17 pass.
+- `test_fit_phylo.jl`: 16/16 pass.
+
+Full verification:
+
+```sh
+julia --project=. --startup-file=no test/runtests.jl
+julia --project=. --startup-file=no -e 'using Pkg; Pkg.test()'
+julia --project=docs --startup-file=no docs/make.jl
+git diff --check
+rg -n "source-specific|phylo_latent|lv\\s*=\\s*~|partial support|ready to scale|active compute|PR #127|Model A|B_lv|alpha_lv" src test docs/src docs/dev-log/check-log.md docs/dev-log/after-task --glob '!docs/build/**' --glob '!docs/node_modules/**'
+```
+
+Full results:
+
+- `test/runtests.jl`: exit code 0. The direct core environment retained known
+  broken placeholders only: sparse-phy precision, edge-incidence sparse phy,
+  Felsenstein contrasts, and two quality placeholders where Aqua/JET are only
+  available through `Pkg.test()`.
+- `Pkg.test()`: exit code 0; final quality block 12/12 pass and package test
+  printed `Testing GLLVM tests passed`.
+- `docs/make.jl`: exit code 0; local Documenter/Vitepress build completed.
+  Existing npm audit warnings were reported by the Vitepress dependency tree
+  but did not fail the documentation build.
+- `git diff --check`: clean.
+- Claim audit: only this check-log boundary text and an existing internal
+  likelihood comment matched the LV/Model-A guard terms. No source-specific
+  `lv` exposure, active compute claim, or new R parity claim was added.
+
+Claim boundary: this is display/post-fit plumbing only. It does not expose
+source-specific `lv`, change phylo Model A likelihoods, launch compute, or make
+new R parity claims.

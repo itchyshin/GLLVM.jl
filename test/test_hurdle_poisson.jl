@@ -80,5 +80,8 @@ end
         @test GLLVM.aic(fit) ≈ 2k - 2 * fit.loglik
         s = sprint(show, MIME("text/plain"), fit)
         @test occursin("Hurdle-Poisson", s)
+        smry = summary(fit)
+        @test occursin("Hurdle-Poisson GLLVM fit", smry)
+        @test occursin("p=$p", smry) && occursin("logLik", smry)
     end
 end

@@ -246,6 +246,35 @@ data.
 """
 bic(fit, n_sites::Integer) = _nparams(fit) * log(n_sites) - 2 * _loglik(fit)
 
+# Compact `summary(fit)` strings complement the richer text/plain REPL display.
+function _fit_summary_string(name::AbstractString, p::Integer, K::Integer,
+                             loglik::Real, converged::Bool; extras = ())
+    extra = isempty(extras) ? "" : ", " * join(extras, ", ")
+    status = converged ? "converged" : "not converged"
+    return string(name, " (p=", p, ", K=", K, extra,
+                  ", logLik=", round(loglik; sigdigits = 6), ", ", status, ")")
+end
+
+Base.summary(fit::GllvmFit) =
+    _fit_summary_string("Gaussian GLLVM fit", fit.model.p, fit.model.K,
+                        fit.logLik, fit.converged)
+
+Base.summary(fit::PhyloGaussianFit) =
+    string("PhyloGaussianFit (mu=", round(fit.μ; sigdigits = 5),
+           ", sigma2_phy=", round(fit.σ²_phy; sigdigits = 5),
+           ", sigma2_eps=", round(fit.σ²_eps; sigdigits = 5),
+           ", negll=", round(fit.negll; sigdigits = 6),
+           ", ", fit.converged ? "converged" : "not converged", ")")
+
+function Base.show(io::IO, ::MIME"text/plain", fit::PhyloGaussianFit)
+    println(io, "Phylogenetic Gaussian fit")
+    println(io, "  μ = ", round(fit.μ; sigdigits = 7),
+            ", σ²_phy = ", round(fit.σ²_phy; sigdigits = 7),
+            ", σ²_eps = ", round(fit.σ²_eps; sigdigits = 7))
+    println(io, "  negll = ", round(fit.negll; sigdigits = 7))
+    print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
+end
+
 # Rich REPL display (the idiomatic "summary").
 function Base.show(io::IO, ::MIME"text/plain", fit::GllvmFit)
     println(io, "Gaussian GLLVM fit")
@@ -263,6 +292,12 @@ function Base.show(io::IO, ::MIME"text/plain", fit::BinomialFit)
     println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
             ", AIC = ", round(aic(fit); sigdigits = 7))
     print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
+end
+
+Base.summary(fit::BinomialFit) = begin
+    p, K = size(fit.Λ)
+    _fit_summary_string("Binomial GLLVM fit", p, K, fit.loglik, fit.converged;
+                        extras = ("link=$(nameof(typeof(fit.link)))",))
 end
 
 Base.show(io::IO, fit::GllvmFit) =
@@ -359,6 +394,12 @@ function Base.show(io::IO, ::MIME"text/plain", fit::PoissonFit)
     print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
 end
 
+Base.summary(fit::PoissonFit) = begin
+    p, K = size(fit.Λ)
+    _fit_summary_string("Poisson GLLVM fit", p, K, fit.loglik, fit.converged;
+                        extras = ("link=$(nameof(typeof(fit.link)))",))
+end
+
 # ---------------------------------------------------------------------------
 # Negative-binomial post-fit methods (parallel to Poisson; counts with
 # dispersion r — Var = μ + μ²/r — via the log link).
@@ -451,6 +492,13 @@ function Base.show(io::IO, ::MIME"text/plain", fit::NBFit)
     print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
 end
 
+Base.summary(fit::NBFit) = begin
+    p, K = size(fit.Λ)
+    _fit_summary_string("Negative-binomial GLLVM fit", p, K, fit.loglik, fit.converged;
+                        extras = ("r=$(round(fit.r; sigdigits = 4))",
+                                  "link=$(nameof(typeof(fit.link)))"))
+end
+
 # ---------------------------------------------------------------------------
 # Beta post-fit methods (proportions in (0,1); mean μ = logistic(η), precision
 # φ — Var = μ(1−μ)/(1+φ) — via the logit link). Responses are continuous, so the
@@ -535,6 +583,13 @@ function Base.show(io::IO, ::MIME"text/plain", fit::BetaFit)
     println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
             ", AIC = ", round(aic(fit); sigdigits = 7))
     print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
+end
+
+Base.summary(fit::BetaFit) = begin
+    p, K = size(fit.Λ)
+    _fit_summary_string("Beta GLLVM fit", p, K, fit.loglik, fit.converged;
+                        extras = ("phi=$(round(fit.φ; sigdigits = 4))",
+                                  "link=$(nameof(typeof(fit.link)))"))
 end
 
 # ---------------------------------------------------------------------------
@@ -638,6 +693,12 @@ function Base.show(io::IO, ::MIME"text/plain", fit::OrdinalFit)
     print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
 end
 
+Base.summary(fit::OrdinalFit) = begin
+    p, K = size(fit.Λ)
+    _fit_summary_string("Ordinal GLLVM fit", p, K, fit.loglik, fit.converged;
+                        extras = ("C=$(fit.C)", "link=$(nameof(typeof(fit.link)))"))
+end
+
 # ---------------------------------------------------------------------------
 # Gamma post-fit methods (positive continuous; mean μ = exp(η), shape α —
 # Var = μ²/α — via the log link). Responses are continuous, so the Dunn–Smyth
@@ -721,6 +782,13 @@ function Base.show(io::IO, ::MIME"text/plain", fit::GammaFit)
     println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
             ", AIC = ", round(aic(fit); sigdigits = 7))
     print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
+end
+
+Base.summary(fit::GammaFit) = begin
+    p, K = size(fit.Λ)
+    _fit_summary_string("Gamma GLLVM fit", p, K, fit.loglik, fit.converged;
+                        extras = ("alpha=$(round(fit.α; sigdigits = 4))",
+                                  "link=$(nameof(typeof(fit.link)))"))
 end
 
 # ---------------------------------------------------------------------------
@@ -813,6 +881,12 @@ function Base.show(io::IO, ::MIME"text/plain", fit::DeltaLogNormalFit)
     print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
 end
 
+Base.summary(fit::DeltaLogNormalFit) = begin
+    p, K = size(fit.Λc)
+    _fit_summary_string("Delta-lognormal GLLVM fit", p, K, fit.loglik, fit.converged;
+                        extras = ("sigma=$(round(fit.σ; sigdigits = 4))",))
+end
+
 # ---------------------------------------------------------------------------
 # Hurdle-Poisson post-fit (occurrence Bernoulli × zero-truncated Poisson count).
 # ---------------------------------------------------------------------------
@@ -899,6 +973,11 @@ function Base.show(io::IO, ::MIME"text/plain", fit::HurdlePoissonFit)
     print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
 end
 
+Base.summary(fit::HurdlePoissonFit) = begin
+    p, K = size(fit.Λc)
+    _fit_summary_string("Hurdle-Poisson GLLVM fit", p, K, fit.loglik, fit.converged)
+end
+
 # ---------------------------------------------------------------------------
 # Hurdle-NB post-fit (occurrence Bernoulli × zero-truncated NB2 count).
 # ---------------------------------------------------------------------------
@@ -982,4 +1061,10 @@ function Base.show(io::IO, ::MIME"text/plain", fit::HurdleNBFit)
     println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
             ", AIC = ", round(aic(fit); sigdigits = 7))
     print(io,   "  converged = ", fit.converged, " (", fit.iterations, " iterations)")
+end
+
+Base.summary(fit::HurdleNBFit) = begin
+    p, K = size(fit.Λc)
+    _fit_summary_string("Hurdle-NB GLLVM fit", p, K, fit.loglik, fit.converged;
+                        extras = ("r=$(round(fit.r; sigdigits = 4))",))
 end
