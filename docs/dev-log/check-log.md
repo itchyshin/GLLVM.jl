@@ -1,5 +1,34 @@
 # Check Log
 
+## 2026-07-02 - Summary table boundary verification
+
+### Scope
+
+Verified the summary / coefficient-table post-fit surface. No source behavior
+changed.
+
+Files updated in this worktree:
+
+- `docs/dev-log/after-task/2026-07-02-summary-table-boundary-verification.md`
+- `docs/dev-log/check-log.md`
+
+Checks:
+
+```sh
+julia --project=. --startup-file=no test/test_summary_table.jl
+# Summary / coefficient table | 14 pass
+
+sed -n '1,220p' test/test_summary_table.jl
+sed -n '1,180p' src/summary_table.jl
+rg -n "coef_table|summary_table|coefficient table|Summary / coefficient|coef\\(|pvalue|p-value|std_error|z statistic|two-sided" README.md docs/src src test
+```
+
+Claim boundary retained:
+
+- `coef_table` is a Wald summary layer, not a separate inference route;
+- non-finite standard errors produce `NaN` `z` and `pvalue`;
+- selector forwarding such as `parm = "beta"` remains covered.
+
 ## 2026-07-02 - ZIB/Tweedie postfit docs boundary
 
 ### Scope
