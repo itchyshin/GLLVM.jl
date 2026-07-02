@@ -211,6 +211,18 @@ fit_tweedie_gllvm_grouped(Yc; K = 2)             # Tweedie dispersion φ per spe
 (`fit_nb_gllvm_grouped` requires an explicit `group`; the other four default to
 per-species.)
 
+The unified entry point routes the same grouped fits with gllvm-style keywords:
+
+```julia
+fit_gllvm(Yc; family = NegativeBinomial(), K = 2, disp_group = :species)
+fit_gllvm(Yp; family = Beta(), K = 2, disp_group = group)
+```
+
+`disp_group = :species` means one dispersion per species; an integer vector
+assigns species to shared dispersion groups. Grouped dispersion is a single
+specialised route: it is not combined with `row_eff` or Gaussian `pervar` in the
+same call, and unsupported families fail with an `ArgumentError`.
+
 ### Gaussian with per-species variance — `fit_gaussian_pervar_gllvm`
 
 ```julia

@@ -1,5 +1,40 @@
 # Check Log
 
+## 2026-07-02 - Unified API dispersion boundary
+
+### Scope
+
+Verified and documented the unified `fit_gllvm` grouped-dispersion route. No
+source behavior changed.
+
+Files updated in this worktree:
+
+- `docs/src/response-families.md`
+- `docs/dev-log/after-task/2026-07-02-unified-api-dispersion-boundary.md`
+- `docs/dev-log/check-log.md`
+
+Checks:
+
+```sh
+julia --project=. --startup-file=no test/test_unified_api.jl
+# fit_gllvm unified API - keyword routing | 22 pass
+
+julia --project=docs --startup-file=no docs/make.jl
+# completed successfully; emitted pre-existing local-link warnings and npm audit warnings
+
+rg -n 'disp_group = :species|Grouped dispersion is a single|unsupported families fail|row_eff|pervar|fit_gllvm\\(Yc; family = NegativeBinomial' docs/src/response-families.md docs/src/tutorial.md docs/src/gllvmtmb-parity.md README.md
+# new response-family docs plus existing related references
+
+git diff --check -- docs/src/response-families.md
+# clean, no output
+```
+
+Claim boundary retained:
+
+- `disp_group = :species` and explicit integer groups route to grouped fitters;
+- grouped dispersion is not combined with `row_eff` or Gaussian `pervar`;
+- unsupported families fail loudly.
+
 ## 2026-07-02 - Ordination uncertainty boundary
 
 ### Scope
