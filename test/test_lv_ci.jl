@@ -486,6 +486,43 @@ using LinearAlgebra
         @test cpr.lower[1] <= Bc[idx[1]] <= cpr.upper[1]
     end
 
+    @testset "profile method (Beta selected-entry canary)" begin
+        # Fifth ordinary non-Gaussian Gate 1 canary: Beta exercises the
+        # bounded-continuous one-part profile route with fitted precision away
+        # from both degenerate and nearly uniform limits.
+        Random.seed!(20260734)
+        pc, nc, Kc = 5, 50, 1
+        Xc = reshape(collect(range(-1.0, 1.0; length = nc)), nc, 1)
+        Lc = reshape([(-1)^i * 0.16 * (1 + 0.08i) for i in 1:pc], pc, Kc)
+        ac = reshape([0.35], 1, Kc)
+        Bc = vec(Lc * ac')
+        βc = [0.30, -0.20, 0.25, -0.15, 0.05]
+        φc = 12.0
+        zc = vec(Xc * ac) .+ randn(nc)
+        ηc = βc .+ Lc * reshape(zc, 1, nc)
+        μc = clamp.(1.0 ./ (1.0 .+ exp.(-ηc)), 1e-5, 1 - 1e-5)
+        Yc = [rand(Beta(μc[t, s] * φc, (1 - μc[t, s]) * φc))
+              for t in 1:pc, s in 1:nc]
+        fc = fit_beta_gllvm(Yc; K = Kc, X_lv = Xc, β_init = βc,
+                            Λ_init = Lc, alpha_lv_init = ac, φ_init = φc,
+                            iterations = 180, g_tol = 1e-6)
+        @test fc.converged
+        @test 2.0 < fc.φ < 50.0
+        idx = [1]
+        cpr = confint_lv_effects(fc, Yc, Xc; method = :profile,
+                                 profile_indices = idx,
+                                 profile_iterations = 180,
+                                 profile_max_expand = 10,
+                                 profile_max_bisect = 10)
+        @test cpr.method == :profile
+        @test cpr.term == ["B_lv[1,1]"]
+        @test cpr.estimate ≈ vec(extract_lv_effects(fc))[idx] atol = 1e-10
+        @test all(isnan, cpr.se)
+        @test all(isfinite, cpr.lower) && all(isfinite, cpr.upper)
+        @test all(cpr.lower .< cpr.estimate .< cpr.upper)
+        @test cpr.lower[1] <= Bc[idx[1]] <= cpr.upper[1]
+    end
+
     # GLM profile uses derivative-free NelderMead over the Laplace marginal and is
     # expensive (~1 min even for a tiny problem), so it is opt-in to keep CI fast.
     # Set GLLVM_SLOW_TESTS=true to run it. The fast Gaussian test above guards the

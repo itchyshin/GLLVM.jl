@@ -1,7 +1,7 @@
 # Ordinary non-Gaussian LV selected-entry profile ADEMP gate
 
 Date: 2026-07-02
-Status: Gate 0 written; local Gate 1 canaries added for Poisson, Binomial logit, NB2, and Gamma
+Status: Gate 0 written; local Gate 1 canaries added for Poisson, Binomial logit, NB2, Gamma, and Beta
 Scope: ordinary one-part non-Gaussian `X_lv` fits in GLLVM.jl only
 
 ## Decision
@@ -10,7 +10,7 @@ Start the non-Gaussian LV inference arc with ordinary one-part `X_lv` models,
 not source-specific structural models. The first defensible target is
 selected-entry profile-LR for the rotation-stable trait effect
 `B_lv = Lambda * alpha_lv'` in admitted ordinary non-Gaussian fits. The first
-local route canaries are Poisson, Binomial logit, NB2, and Gamma.
+local route canaries are Poisson, Binomial logit, NB2, Gamma, and Beta.
 
 This gate does not expose or imply:
 
@@ -111,6 +111,21 @@ selected profile entry = vec(B_lv)[1] = B_lv[1, 1]
 truth = -0.0756
 ```
 
+Beta Gate 1 local canary uses:
+
+```text
+p = 5 traits
+n = 50 sites
+K = 1 latent axis
+q_lv = 1 predictor
+beta = [0.30, -0.20, 0.25, -0.15, 0.05]
+Lambda = [-0.1728, 0.1856, -0.1984, 0.2112, -0.2240]'
+alpha = [0.35]
+Beta precision = 12.0
+selected profile entry = vec(B_lv)[1] = B_lv[1, 1]
+truth = -0.06048
+```
+
 Later diagnostic cells may vary `p`, `n`, `K`, signal strength, and selected
 entry position, but only after the local canary is green.
 
@@ -162,7 +177,7 @@ denominator and report coverage with Monte Carlo standard error
 ## Gate ladder
 
 - Gate 0: this ADEMP note plus public route identification.
-- Gate 1: local Poisson, Binomial logit, NB2, and Gamma selected-entry canaries in
+- Gate 1: local Poisson, Binomial logit, NB2, Gamma, and Beta selected-entry canaries in
   `test/test_lv_ci.jl`.
 - Gate 2: Totoro diagnostic only after Gate 1 is green, with host and
   denominator recorded separately from DRAC.
@@ -174,13 +189,13 @@ denominator and report coverage with Monte Carlo standard error
 | Item | Status | Evidence |
 | --- | --- | --- |
 | 1. Aims | covered | Aims section names primary and secondary aims. |
-| 2. DGP | covered | DGP math and Poisson/Binomial/NB2/Gamma Gate 1 constants are explicit. |
+| 2. DGP | covered | DGP math and Poisson/Binomial/NB2/Gamma/Beta Gate 1 constants are explicit. |
 | 3. Estimands | covered | `B_lv` and selected-entry LR target are defined. |
 | 4. Methods | covered | One-part fit and selected-entry profile route are named. |
 | 5. Performance | covered | Gate 1 pass/fail quantities and MCSE formula are named. |
 | 6. Software | pending | Exact command recorded in check-log after the test run. |
 | 7. Code availability | covered locally | Test lives in `test/test_lv_ci.jl`. |
-| 8. Reproducibility | covered locally | Fixed RNG seeds `20260702`, `20260703`, `20260711`, and `20260722` in the canaries. |
+| 8. Reproducibility | covered locally | Fixed RNG seeds `20260702`, `20260703`, `20260711`, `20260722`, and `20260734` in the canaries. |
 | 9. Applied example | not applicable | This is a method-route gate, not a data analysis. |
 | 10. Results | pending | Filled by check-log and after-task report after verification. |
 | 11. MCSE | covered for later gates | Formula and denominator rule are explicit. |
@@ -200,3 +215,5 @@ denominator and report coverage with Monte Carlo standard error
 - Curie: Gamma uses the same selected-entry route but needs its own positive
   continuous likelihood proof; the local canary includes a loose fitted-shape
   guard.
+- Fisher: Beta needs a bounded-response proof with precision carried through
+  the likelihood; the local canary includes a loose fitted-precision guard.
