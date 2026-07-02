@@ -1,5 +1,48 @@
 # Check Log
 
+## 2026-07-02 - ZIB family CI smoke budget
+
+### Scope
+
+Narrowed the zero-inflated-binomial bootstrap smoke inside the non-Gaussian
+family CI test so the full file is again usable as a focused gate. No package
+source behavior changed.
+
+Files updated in this worktree:
+
+- `test/test_confint_family.jl`
+- `docs/dev-log/after-task/2026-07-02-zib-family-ci-smoke-budget.md`
+- `docs/dev-log/check-log.md`
+
+Checks:
+
+```sh
+julia --project=. --startup-file=no -e 'using GLLVM, Random, Distributions; Random.seed!(36); p,K,n,Ntr=4,1,80,8; betaz=0.3 .* randn(p) .- 0.6; betac=0.3 .* randn(p); Lambdac=0.4 .* randn(p,K); Y=zeros(Int,p,n); for s in 1:n; etac=betac .+ Lambdac * randn(K); for t in 1:p; mu=inv(1+exp(-etac[t])); Y[t,s]=rand() < inv(1+exp(-betaz[t])) ? 0 : rand(Binomial(Ntr,mu)); end; end; fit=fit_zib_gllvm(Y; K=K, N=Ntr, iterations=120); @show fit.converged fit.iterations; @time a=confint(fit,Y;method=:bootstrap,n_boot=10,seed=5,parallel=false); @show a.n_converged all(isfinite,a.lower) all(isfinite,a.upper); @time b=confint(fit,Y;method=:bootstrap,n_boot=10,seed=5,parallel=true); @show b.n_converged a.lower==b.lower a.upper==b.upper'
+# fit.converged = true
+# fit.iterations = 13
+# serial n_boot=10: 5.644933 seconds, 44.07 M allocations, 2.363 GiB
+# a.n_converged = 10
+# all(isfinite, a.lower) = true
+# all(isfinite, a.upper) = true
+# parallel n_boot=10: 4.646354 seconds, 41.21 M allocations, 2.174 GiB
+# b.n_converged = 10
+# a.lower == b.lower = true
+# a.upper == b.upper = true
+
+julia --project=. --startup-file=no test/test_confint_family.jl
+# Non-Gaussian confidence intervals | 122 pass | 4m17.9s
+
+pgrep -fl 'julia.*test_confint_family|julia.*runtests|julia.*test_' || true
+# clean after run
+```
+
+Claim boundary retained:
+
+- ZIB bootstrap is still a smoke test, not a runtime benchmark or coverage
+  calibration claim;
+- the full non-Gaussian family CI file is now green locally;
+- this does not change the phylo Model A weak-cell no-bootstrap conclusion.
+
 ## 2026-07-02 - Family CI boundary check
 
 ### Scope

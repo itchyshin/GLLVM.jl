@@ -191,7 +191,9 @@ end
 
     @testset "Two-part: ZIB Wald + bootstrap (zero-inflated binomial)" begin
         Random.seed!(36)
-        p, K, n, Ntr = 4, 1, 160, 8
+        # ZIB bootstrap refits use finite-difference gradients through the
+        # two-part Laplace likelihood. Keep this as a smoke, not a runtime gate.
+        p, K, n, Ntr = 4, 1, 80, 8
         βz = 0.3 .* randn(p) .- 0.6; βc = 0.3 .* randn(p)
         Λc = 0.4 .* randn(p, K)
         Y = zeros(Int, p, n)
@@ -202,7 +204,7 @@ end
                 Y[t, s] = rand() < inv(1 + exp(-βz[t])) ? 0 : rand(Binomial(Ntr, μ))
             end
         end
-        fit = fit_zib_gllvm(Y; K = K, N = Ntr)
+        fit = fit_zib_gllvm(Y; K = K, N = Ntr, iterations = 120)
 
         ci = confint(fit, Y; method = :wald)
         @test length(ci.term) == 2p + GLLVM.rr_theta_len(p, K)   # βz + βc + Λc (no dispersion)
@@ -214,8 +216,8 @@ end
         end
 
         # parametric bootstrap is deterministic in the seed (serial == parallel).
-        a = confint(fit, Y; method = :bootstrap, n_boot = 20, seed = 5, parallel = false)
-        b = confint(fit, Y; method = :bootstrap, n_boot = 20, seed = 5, parallel = true)
+        a = confint(fit, Y; method = :bootstrap, n_boot = 10, seed = 5, parallel = false)
+        b = confint(fit, Y; method = :bootstrap, n_boot = 10, seed = 5, parallel = true)
         @test a.lower == b.lower && a.upper == b.upper
         @test a.n_converged ≥ 6
     end
