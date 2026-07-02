@@ -8,21 +8,23 @@ bridge, or public support claim.
 
 ## 2. Implemented
 
-Added a private truth-startable point wrapper and selected-entry penalty-profile
-helper on top of `_phylo_poisson_xlv_marginal_loglik`. The new canary fits a
-tiny deterministic Poisson(log) phylo x `X_lv` cell and checks that one
-predeclared `B_eta_realized` target is included by the one-df LR cutoff. This
-is route evidence only; it is not coverage calibration, a production fitter, a
-source-variance recovery result, or source-specific `lv` support.
+Added a private truth-startable point wrapper, selected-entry penalty-profile
+helper, and bracket-then-bisect endpoint inversion on top of
+`_phylo_poisson_xlv_marginal_loglik`. The canary fits a tiny deterministic
+Poisson(log) phylo x `X_lv` cell and checks that one predeclared
+`B_eta_realized` target has finite profile endpoints, brackets the MLE, and is
+included by the one-df LR cutoff. This is route evidence only; it is not
+coverage calibration, a production fitter, a source-variance recovery result,
+or source-specific `lv` support.
 
 Implemented claim: phylo x Poisson now has a private S1 selected-entry
-profile-LR route canary for one deterministic `B_eta_realized` target. It is
-not public source-specific `lv` support.
+profile-LR finite-endpoint canary for one deterministic `B_eta_realized`
+target. It is not public source-specific `lv` support.
 
 ## 3a. Decisions and Rejected Alternatives
 
-Decision: keep the route private and deterministic in S1, with profile-LR as
-the canary statistic and bootstrap out of scope.
+Decision: keep the route private and deterministic in S1, with profile-LR
+finite endpoints as the canary statistic and bootstrap out of scope.
 
 Rejected alternatives:
 
@@ -54,13 +56,15 @@ Z_truth        = X_lv * alpha_lv + epsilon
 ```
 
 The constrained refit pins one fitted `vec(Lambda * alpha_lv')[idx]` entry to
-the corresponding realized target entry and checks
-`2 * (nll_constrained - nll_mle) <= qchisq(0.95, 1)`.
+candidate values, inverts the one-dimensional profile by bracketing and
+bisection, and checks `2 * (nll_constrained - nll_mle) <= qchisq(0.95, 1)` at
+the realized target while also requiring `lower < estimate < upper` and
+`lower <= target <= upper`.
 
 ## 4. Files Touched
 
-- `src/phylo_poisson_xlv.jl` - private point wrapper, packing helpers, and
-  selected-entry penalty-profile helper.
+- `src/phylo_poisson_xlv.jl` - private point wrapper, packing helpers,
+  selected-entry penalty-profile helper, and endpoint inversion.
 - `test/test_phylo_poisson_xlv.jl` - deterministic selected-entry
   `B_eta_realized` canary and malformed-entry checks.
 - `docs/design/73-predictor-informed-latent-scores.md` - S1 status and boundary
@@ -87,7 +91,7 @@ External operating-board files refreshed in `gllvmTMB`:
 ```text
 julia --project=. --startup-file=no test/test_phylo_poisson_xlv.jl
 Phylo x Poisson predictor-informed LV S1 likelihood: 9 passed, 0 failed, 0 errored, 5.0s
-Phylo x Poisson B_eta_realized selected-entry canary: 14 passed, 0 failed, 0 errored, 3.4s
+Phylo x Poisson B_eta_realized selected-entry canary: 22 passed, 0 failed, 0 errored, 14.1s
 
 julia --project=. --startup-file=no test/test_phylo_glm.jl
 Phylogenetic GLM (augmented-state joint Laplace): 6 passed, 0 failed, 0 errored, 3.8s
@@ -133,14 +137,17 @@ R parity: N/A - no R grammar, bridge transport, or gllvmTMB parity surface.
 ## 6. Tests of the Tests
 
 Added `Phylo x Poisson B_eta_realized selected-entry canary`
-(`14/14` assertions) to `test/test_phylo_poisson_xlv.jl`.
+(`22/22` assertions) to `test/test_phylo_poisson_xlv.jl`.
 
 Tests-of-tests clauses:
 
 - The new test compares against a known DGP truth target.
 - It exercises the combined phylo + Poisson + `X_lv` route.
+- It now verifies finite endpoints, `lower < estimate < upper`, and
+  `lower <= target <= upper`.
 - It checks malformed selected-entry inputs for empty, duplicate,
-  out-of-range, and wrong truth-length cases.
+  out-of-range, wrong truth-length, invalid iteration, and invalid
+  endpoint-step cases.
 
 The existing likelihood testset remains the independent-anchor baseline:
 `sigma_phy^2 -> 0` reduces to ordinary Poisson `X_lv`, `Lambda = 0` reduces to
@@ -168,9 +175,9 @@ source-specific guard language is present in the current design and decision
 notes.
 
 Mission Control preview at `http://127.0.0.1:8770/` was refreshed and checked
-in the in-app browser. The visible board contains "Phylo x Poisson structural
-LV S1", S1 route canary wording, `14/14`, "No public fitter", and a no-active
-compute guard.
+in the in-app browser after endpoint strengthening. The visible board contains
+"Phylo x Poisson structural LV S1", finite-endpoint wording, `22/22`, "No
+public fitter", and a no-active-compute guard.
 
 ## 9. What Did Not Go Smoothly
 
@@ -209,6 +216,6 @@ julia --project=. --startup-file=no test/test_phylo_poisson_xlv.jl
 
 ## Rose Verdict
 
-Rose verdict: PASS WITH NOTES - private S1 selected-entry routing is covered
-for one deterministic phylo x Poisson cell, but every public, bridge, grammar,
-compute, and coverage claim remains blocked.
+Rose verdict: PASS WITH NOTES - private S1 selected-entry finite-endpoint
+routing is covered for one deterministic phylo x Poisson cell, but every
+public, bridge, grammar, compute, and coverage claim remains blocked.

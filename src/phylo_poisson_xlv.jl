@@ -316,13 +316,61 @@ function _phylo_poisson_xlv_profile_indices(indices, nb::Integer)
     return idx
 end
 
+function _phylo_poisson_xlv_constrained_refit(nll::Function, theta_start::AbstractVector,
+        p::Integer, K::Integer, q_lv::Integer, entry::Integer, target::Real;
+        profile_iterations::Integer, penalty_weights)
+    theta_c = collect(Float64, theta_start)
+    last_res = nothing
+    for weight in penalty_weights
+        obj = function (theta)
+            val = try nll(theta) catch; return 1e12 end
+            isfinite(val) || return 1e12
+            b = _phylo_poisson_xlv_effects_from_packed(theta, p, K, q_lv)[entry]
+            return val + 0.5 * weight * (b - target)^2
+        end
+        last_res = try
+            Optim.optimize(obj, theta_c, Optim.NelderMead(),
+                           Optim.Options(iterations = profile_iterations,
+                                         f_reltol = 1e-8, x_abstol = 1e-8))
+        catch
+            nothing
+        end
+        last_res === nothing && break
+        theta_c = Optim.minimizer(last_res)
+    end
+    val_c = try nll(theta_c) catch; NaN end
+    b_c = try
+        _phylo_poisson_xlv_effects_from_packed(theta_c, p, K, q_lv)[entry]
+    catch
+        NaN
+    end
+    return (nll = val_c, theta = collect(theta_c), effect = b_c,
+            constraint_error = abs(b_c - target),
+            converged = last_res !== nothing && Optim.converged(last_res))
+end
+
 function _phylo_poisson_xlv_profile_eta_realized(fit, Y::AbstractMatrix,
         phy::AugmentedPhy, X_lv::AbstractMatrix, entries::AbstractVector{Int},
         eta_realized_truth::AbstractVector{<:Real};
         level::Real = 0.95, profile_iterations::Integer = 600,
         penalty_weights = (1e2, 1e3, 1e4, 1e5, 1e6),
+        profile_endpoints::Bool = true,
+        endpoint_step::Union{Nothing, Real} = nothing,
+        profile_max_expand::Integer = 12,
+        profile_max_bisect::Integer = 18,
+        constraint_tol::Real = 1e-3,
         newton_maxiter::Integer = 80, newton_tol::Real = 1e-9)
     0 < level < 1 || throw(ArgumentError("level must be in (0,1); got $level"))
+    profile_iterations > 0 ||
+        throw(ArgumentError("profile_iterations must be positive; got $profile_iterations"))
+    profile_max_expand > 0 ||
+        throw(ArgumentError("profile_max_expand must be positive; got $profile_max_expand"))
+    profile_max_bisect > 0 ||
+        throw(ArgumentError("profile_max_bisect must be positive; got $profile_max_bisect"))
+    constraint_tol > 0 ||
+        throw(ArgumentError("constraint_tol must be positive; got $constraint_tol"))
+    endpoint_step !== nothing && (!(isfinite(endpoint_step)) || endpoint_step <= 0) &&
+        throw(ArgumentError("endpoint_step must be positive and finite; got $endpoint_step"))
     p, K = size(fit.Lambda)
     q_lv = size(X_lv, 2)
     nb = p * q_lv
@@ -344,29 +392,17 @@ function _phylo_poisson_xlv_profile_eta_realized(fit, Y::AbstractMatrix,
     deviances = Float64[]
     constraint_errors = Float64[]
     converged = Bool[]
+    lowers = Float64[]
+    uppers = Float64[]
+    endpoint_status = Symbol[]
     for entry in idx
         target = float(eta_realized_truth[entry])
-        theta_c = copy(theta0)
-        last_res = nothing
-        for weight in penalty_weights
-            obj = function (theta)
-                val = try nll(theta) catch; return 1e12 end
-                isfinite(val) || return 1e12
-                b = _phylo_poisson_xlv_effects_from_packed(theta, p, K, q_lv)[entry]
-                return val + 0.5 * weight * (b - target)^2
-            end
-            last_res = try
-                Optim.optimize(obj, theta_c, Optim.NelderMead(),
-                               Optim.Options(iterations = profile_iterations,
-                                             f_reltol = 1e-8, x_abstol = 1e-8))
-            catch
-                nothing
-            end
-            last_res === nothing && break
-            theta_c = Optim.minimizer(last_res)
-        end
-        val_c = try nll(theta_c) catch; NaN end
-        b_c = _phylo_poisson_xlv_effects_from_packed(theta_c, p, K, q_lv)[entry]
+        refit_truth = _phylo_poisson_xlv_constrained_refit(
+            nll, theta0, p, K, q_lv, entry, target;
+            profile_iterations = profile_iterations,
+            penalty_weights = penalty_weights)
+        val_c = refit_truth.nll
+        b_c = refit_truth.effect
         lr = isfinite(val_c) ? 2 * (val_c - nll0) : NaN
         row = ((entry - 1) % p) + 1
         col = ((entry - 1) ÷ p) + 1
@@ -374,17 +410,63 @@ function _phylo_poisson_xlv_profile_eta_realized(fit, Y::AbstractMatrix,
         push!(estimates, b_hat[entry])
         push!(targets, target)
         push!(deviances, lr)
-        push!(constraint_errors, abs(b_c - target))
-        push!(converged, last_res !== nothing && Optim.converged(last_res))
+        push!(constraint_errors, refit_truth.constraint_error)
+        push!(converged, refit_truth.converged)
+
+        if profile_endpoints
+            step = endpoint_step === nothing ?
+                max(abs(b_hat[entry] - target),
+                    0.05 * max(1.0, abs(b_hat[entry])), 0.02) :
+                float(endpoint_step)
+            theta_lower = copy(theta0)
+            theta_upper = copy(theta0)
+            function dev_at(c, start)
+                refit = _phylo_poisson_xlv_constrained_refit(
+                    nll, start, p, K, q_lv, entry, c;
+                    profile_iterations = profile_iterations,
+                    penalty_weights = penalty_weights)
+                ok = refit.converged && isfinite(refit.nll) &&
+                     refit.constraint_error <= constraint_tol
+                return ok ? 2 * (refit.nll - nll0) : NaN, refit.theta
+            end
+            function dev_lower(c)
+                D, theta_new = dev_at(c, theta_lower)
+                isfinite(D) && (theta_lower = theta_new)
+                return D
+            end
+            function dev_upper(c)
+                D, theta_new = dev_at(c, theta_upper)
+                isfinite(D) && (theta_upper = theta_new)
+                return D
+            end
+            lo = _profile_bisect_side(dev_lower, b_hat[entry], -step, cutoff;
+                                      max_expand = profile_max_expand,
+                                      max_bisect = profile_max_bisect)
+            hi = _profile_bisect_side(dev_upper, b_hat[entry], step, cutoff;
+                                      max_expand = profile_max_expand,
+                                      max_bisect = profile_max_bisect)
+            push!(lowers, lo)
+            push!(uppers, hi)
+            push!(endpoint_status, isnan(lo) && isnan(hi) ? :failed :
+                                   isnan(lo) || isnan(hi) ? :partial :
+                                   :profile)
+        else
+            push!(lowers, NaN)
+            push!(uppers, NaN)
+            push!(endpoint_status, :not_requested)
+        end
     end
 
     covered = [isfinite(lr) && lr <= cutoff for lr in deviances]
     return (term = terms, estimate = estimates, target = targets,
-            lower = fill(NaN, length(idx)), upper = fill(NaN, length(idx)),
+            lower = lowers, upper = uppers,
             se = fill(NaN, length(idx)), lr_deviance = deviances,
             lr_cutoff = fill(cutoff, length(idx)),
             constrained_error = constraint_errors,
             constrained_converged = converged, covered = covered,
+            endpoint_status = endpoint_status,
             level = level, method = :profile_eta_realized,
-            pd_hessian = all(converged))
+            pd_hessian = all(converged) &&
+                         all(s -> s === :profile || s === :not_requested,
+                             endpoint_status))
 end

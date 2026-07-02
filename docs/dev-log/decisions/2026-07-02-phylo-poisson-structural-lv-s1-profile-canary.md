@@ -8,13 +8,15 @@ Scope: first structural-source non-Gaussian LV profile canary after the private 
 
 Add a private selected-entry profile-LR canary for the phylo x Poisson x
 predictor-informed LV route. The canary uses the private combined likelihood
-from `src/phylo_poisson_xlv.jl`, a truth-started point wrapper, and a
-penalty-profile constrained refit at one predeclared `B_eta_realized` entry.
+from `src/phylo_poisson_xlv.jl`, a truth-started point wrapper, a
+penalty-profile constrained refit at one predeclared `B_eta_realized` entry,
+and bracket-then-bisect endpoint inversion for that selected entry.
 
 This is local route evidence only. It proves that the combined likelihood can
-support a finite selected-entry truth-LR check for a tiny positive-control cell.
-It does not prove coverage, production scaling, source-specific R grammar,
-bridge transport, or public phylo `lv` support.
+support finite selected-entry endpoints, MLE bracketing, and a truth-LR check
+for a tiny positive-control cell. It does not prove coverage, production
+scaling, source-specific R grammar, bridge transport, or public phylo `lv`
+support.
 
 ## Canary Contract
 
@@ -28,10 +30,13 @@ Z_truth        = X_lv * alpha_lv + epsilon
 The profile diagnostic constrains the fitted latent-product entry
 `vec(Lambda * alpha_lv')[idx]` to the realized target entry
 `vec(B_eta_realized)[idx]`, re-optimises all nuisance parameters under a
-quadratic penalty, and checks:
+quadratic penalty, inverts the selected-entry LR profile by bracketing and
+bisection, and checks:
 
 ```text
 LR = 2 * (nll_constrained - nll_mle) <= qchisq(0.95, 1)
+lower < B_hat < upper
+lower <= B_eta_realized_truth <= upper
 ```
 
 ## Local Evidence
@@ -39,13 +44,15 @@ LR = 2 * (nll_constrained - nll_mle) <= qchisq(0.95, 1)
 `test/test_phylo_poisson_xlv.jl` now has two testsets:
 
 - likelihood anchors: `9/9` passed;
-- selected-entry `B_eta_realized` canary: `14/14` passed.
+- selected-entry `B_eta_realized` canary: `22/22` passed.
 
 The canary is deliberately deterministic and tiny. It uses Poisson(log),
 `p = 6`, `n_sites = 28`, `K = 1`, `q_lv = 1`, truth-started optimisation, and
-one selected entry. Because the deterministic positive-control counts let
-species intercepts absorb most source-level mean variation, this is not a
-source-variance recovery claim.
+one selected entry. The selected endpoint interval is finite
+(`lower = -0.054245`, `estimate = 0.117347`, `target = 0.096248`,
+`upper = 0.337242`) and brackets both the MLE and the realized target. Because
+the deterministic positive-control counts let species intercepts absorb most
+source-level mean variation, this is not a source-variance recovery claim.
 
 ## What This Opens
 
@@ -65,7 +72,7 @@ failure categories, and MCSE/stop rules.
 
 ## Council Notes
 
-- Ada: S1 is now a local route proof, not a capability claim.
+- Ada: S1 is now a local finite-endpoint route proof, not a capability claim.
 - Fisher: LR is the canary statistic; bootstrap remains out of scope.
 - Curie: the next step, if authorised, is a small multi-replicate diagnostic
   with a denominator and failure taxonomy.
@@ -78,6 +85,6 @@ failure categories, and MCSE/stop rules.
 
 ## Rose Verdict
 
-Rose verdict: PASS WITH NOTES - local selected-entry S1 profile-LR routing is
-covered for a tiny positive-control phylo x Poisson cell, but every public,
-bridge, grammar, compute, and coverage claim remains blocked.
+Rose verdict: PASS WITH NOTES - local selected-entry S1 profile-LR routing with
+finite endpoints is covered for a tiny positive-control phylo x Poisson cell,
+but every public, bridge, grammar, compute, and coverage claim remains blocked.

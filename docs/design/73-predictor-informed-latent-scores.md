@@ -214,10 +214,12 @@ Requirements for any future authorized wiring:
   `X_lv`, phylo-only Poisson GLM at `Lambda = 0`, and a dense leaf-covariance
   reference. A private truth-startable point wrapper and selected-entry
   penalty-profile route now cover one deterministic `B_eta_realized`
-  truth-inclusion canary (`test/test_phylo_poisson_xlv.jl`, 9/9 likelihood
-  anchors + 14/14 canary assertions). This is local S1 route evidence, not
-  public source-specific `lv` support, coverage calibration, bridge transport,
-  R grammar, or a production scaling path.
+  finite-endpoint canary (`test/test_phylo_poisson_xlv.jl`, 9/9 likelihood
+  anchors + 22/22 canary assertions). This checks finite profile endpoints,
+  MLE bracketing, truth inclusion, and LR below cutoff for one selected entry.
+  This is local S1 route evidence, not public source-specific `lv` support,
+  coverage calibration, bridge transport, R grammar, or a production scaling
+  path.
 - **Realized direct-slope canary tooling (diagnostic, 2026-07-01):** the bench
   runner now has `profile_direct_slope`, which computes a saturated per-trait
   `Y ~ X_lv` slope target from the realized replicate and checks selected-entry

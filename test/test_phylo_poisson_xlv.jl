@@ -167,10 +167,16 @@ end
     @test prof.method == :profile_eta_realized
     @test prof.term == ["B_eta_realized[1,1]"]
     @test all(isnan, prof.se)
+    @test prof.endpoint_status == [:profile]
+    @test all(isfinite, prof.lower)
+    @test all(isfinite, prof.upper)
+    @test prof.lower[1] < prof.estimate[1] < prof.upper[1]
+    @test prof.lower[1] <= prof.target[1] <= prof.upper[1]
     @test isfinite(prof.lr_deviance[1])
     @test prof.lr_deviance[1] <= prof.lr_cutoff[1]
     @test prof.constrained_error[1] < 1e-3
     @test prof.covered == [true]
+    @test prof.pd_hessian
 
     @test_throws ArgumentError GLLVM._phylo_poisson_xlv_profile_eta_realized(
         fit, Y, phy, X_lv, Int[], eta_target)
@@ -180,4 +186,8 @@ end
         fit, Y, phy, X_lv, [p + 1], eta_target)
     @test_throws ArgumentError GLLVM._phylo_poisson_xlv_profile_eta_realized(
         fit, Y, phy, X_lv, [1], eta_target[1:(end - 1)])
+    @test_throws ArgumentError GLLVM._phylo_poisson_xlv_profile_eta_realized(
+        fit, Y, phy, X_lv, [1], eta_target; profile_iterations = 0)
+    @test_throws ArgumentError GLLVM._phylo_poisson_xlv_profile_eta_realized(
+        fit, Y, phy, X_lv, [1], eta_target; endpoint_step = -0.1)
 end

@@ -2,26 +2,27 @@
 
 ## 2026-07-02 - Phylo x Poisson structural LV S1 profile canary
 
-Added the first private selected-entry `B_eta_realized` profile-LR canary on
-top of the phylo x Poisson x predictor-informed LV likelihood proof.
+Added the first private selected-entry `B_eta_realized` profile-LR
+finite-endpoint canary on top of the phylo x Poisson x predictor-informed LV
+likelihood proof.
 
 Implemented:
 
-- private packing/unpacking, truth-started point fit, and selected-entry
-  penalty-profile helpers in `src/phylo_poisson_xlv.jl`;
-- deterministic positive-control `B_eta_realized[1,1]` route test in
-  `test/test_phylo_poisson_xlv.jl`;
+- private packing/unpacking, truth-started point fit, selected-entry
+  penalty-profile helpers, and endpoint inversion in `src/phylo_poisson_xlv.jl`;
+- deterministic positive-control `B_eta_realized[1,1]` finite-endpoint route
+  test in `test/test_phylo_poisson_xlv.jl`;
 - durable decision note at
   `docs/dev-log/decisions/2026-07-02-phylo-poisson-structural-lv-s1-profile-canary.md`;
 - S0/Gate0/Design 73 wording updated from the former pending state to
-  "private S1 route canary covered locally."
+  "private S1 finite-endpoint route canary covered locally."
 
 Focused verification:
 
 ```text
 julia --project=. --startup-file=no test/test_phylo_poisson_xlv.jl
-Phylo x Poisson predictor-informed LV S1 likelihood: 9 passed, 0 failed, 0 errored, 5.0s
-Phylo x Poisson B_eta_realized selected-entry canary: 14 passed, 0 failed, 0 errored, 3.4s
+Phylo x Poisson predictor-informed LV S1 likelihood: 9 passed, 0 failed, 0 errored, 4.8s
+Phylo x Poisson B_eta_realized selected-entry canary: 22 passed, 0 failed, 0 errored, 14.1s
 
 julia --project=. --startup-file=no test/test_phylo_glm.jl
 Phylogenetic GLM (augmented-state joint Laplace): 6 passed, 0 failed, 0 errored, 3.8s
@@ -63,11 +64,11 @@ r60
 ```
 
 Browser preview at `http://127.0.0.1:8770/` confirmed "Phylo x Poisson
-structural LV S1", S1 route canary wording, `14/14`, "No public fitter", and
+structural LV S1", finite-endpoint wording, `22/22`, "No public fitter", and
 no-active-compute guard text.
 
-Claim boundary: IN: one private deterministic selected-entry S1 route canary
-for phylo x Poisson `B_eta_realized`. OUT: no public fitter, no
+Claim boundary: IN: one private deterministic selected-entry S1 finite-endpoint
+route canary for phylo x Poisson `B_eta_realized`. OUT: no public fitter, no
 `confint_lv_effects` source-specific route, no R `phylo_latent(..., lv = ~ env)`
 grammar, no bridge transport, no Totoro/DRAC compute, no coverage calibration,
 no bootstrap rescue, and no spatial/animal/kernel or non-Poisson transfer.

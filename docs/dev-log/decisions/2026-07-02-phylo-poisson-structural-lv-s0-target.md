@@ -115,7 +115,8 @@ augmented phylogenetic random effect. The minimal implementation proof includes:
 3. a tiny dense/sparse equality check for the phylo random-effect component -
    covered locally;
 4. one selected-entry `B_eta_realized` profile-LR canary after the point route
-   is stable - covered locally as a deterministic positive-control route test.
+   is stable - covered locally as a deterministic positive-control route test
+   with finite endpoints, MLE bracketing, and truth inclusion.
 
 ## Candidate S1 Cell
 
@@ -130,8 +131,8 @@ K: 1
 q_lv: 1
 sigma_phy^2: 0.35 in the truth object, but not interpreted as source-variance recovery
 selected entries: one predeclared `B_eta_realized` entry
-pass rule: fit converged, finite LR at truth, constrained error < 1e-3,
-           LR(truth) < 3.8415
+pass rule: fit converged, finite lower/upper profile endpoints, lower < MLE < upper,
+           lower <= truth <= upper, constrained error < 1e-3, LR(truth) < 3.8415
 ```
 
 This is local S1 route evidence only. Totoro S2 and DRAC S3 require a new
@@ -166,6 +167,6 @@ manifest with host-specific denominators and MCSE.
 
 Rose verdict: PASS WITH NOTES - the phylo x Poisson target is symbolically
 aligned and is the right first structural-source target; the combined
-likelihood, reduction tests, and private deterministic selected-entry canary
-now exist as S1 plumbing, but all public surfaces and coverage claims remain
-blocked.
+likelihood, reduction tests, and private deterministic selected-entry
+finite-endpoint canary now exist as S1 plumbing, but all public surfaces and
+coverage claims remain blocked.
