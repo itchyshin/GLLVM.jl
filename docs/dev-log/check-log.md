@@ -1,5 +1,40 @@
 # Check Log
 
+## 2026-07-02 - Missing response extra gate budget
+
+### Scope
+
+Narrowed the row-effect subcase in the missing-response extra-entry-point test
+so the full file is a practical focused gate. No package source behavior
+changed.
+
+Files updated in this worktree:
+
+- `test/test_missing_response_extra.jl`
+- `docs/dev-log/after-task/2026-07-02-missing-response-extra-gate-budget.md`
+- `docs/dev-log/check-log.md`
+
+Checks:
+
+```sh
+julia --project=. --startup-file=no -e 'using GLLVM, Random, Distributions, LinearAlgebra, Statistics; Random.seed!(44); p,K,n,q=5,1,50,1; beta=log.([3.0,4.0,2.5,5.0,3.5]); Lambda=0.3 .* randn(p,K); eta=beta .+ Lambda * randn(K,n); Yfull=[rand(Poisson(exp(eta[t,s]))) for t in 1:p, s in 1:n]; mask=trues(p,n); for I in randperm(p*n)[1:round(Int,0.03*p*n)]; mask[I]=false; end; Ym=Matrix{Union{Missing,Int}}(Yfull); for I in findall(.!mask); Ym[I]=missing; end; @time fr_na=fit_roweffect_gllvm(Ym; family=Poisson(), K=K, iterations=160); @show fr_na.converged fr_na.iterations; @time fr_mask=fit_roweffect_gllvm(Yfull; family=Poisson(), K=K, mask=mask, iterations=160); @show fr_mask.converged fr_mask.iterations isapprox(fr_mask.loglik, fr_na.loglik; atol=1e-6) isapprox(fr_mask.β, fr_na.β; atol=1e-6)'
+# fr_na.converged = true
+# fr_na.iterations = 63
+# fr_mask.converged = true
+# fr_mask.iterations = 63
+# loglik and beta NA-vs-mask equality: true
+
+julia --project=. --startup-file=no test/test_missing_response_extra.jl
+# Missing responses (NA in Y) - extra entry points | 35 pass | 3m20.4s
+```
+
+Claim boundary retained:
+
+- extra missing-response entry points now have a green focused gate;
+- the row-effect check remains an equality smoke, not a performance benchmark;
+- no source-specific `lv` exposure, likelihood change, or production compute
+  changed.
+
 ## 2026-07-02 - ZIB family CI smoke budget
 
 ### Scope
