@@ -1,7 +1,7 @@
 # Ordinary non-Gaussian LV selected-entry profile ADEMP gate
 
 Date: 2026-07-02
-Status: Gate 0 written; local Gate 1 canary added for Poisson
+Status: Gate 0 written; local Gate 1 canaries added for Poisson and Binomial logit
 Scope: ordinary one-part non-Gaussian `X_lv` fits in GLLVM.jl only
 
 ## Decision
@@ -9,8 +9,8 @@ Scope: ordinary one-part non-Gaussian `X_lv` fits in GLLVM.jl only
 Start the non-Gaussian LV inference arc with ordinary one-part `X_lv` models,
 not source-specific structural models. The first defensible target is
 selected-entry profile-LR for the rotation-stable trait effect
-`B_lv = Lambda * alpha_lv'` in a Poisson `fit_poisson_gllvm(...; X_lv=...)`
-fit.
+`B_lv = Lambda * alpha_lv'` in admitted ordinary non-Gaussian fits. The first
+local route canaries are Poisson and Binomial logit.
 
 This gate does not expose or imply:
 
@@ -33,12 +33,12 @@ al. (2024) transparent simulation-reporting checklist.
 ### A - Aims
 
 Primary aim: determine whether the public ordinary non-Gaussian selected-entry
-profile route for `B_lv` can refit the constrained Poisson Laplace likelihood
-and return finite LR-inverted endpoints around a known DGP truth.
+profile route for `B_lv` can refit constrained one-part Laplace likelihoods and
+return finite LR-inverted endpoints around known DGP truths.
 
 Secondary aim: establish the smallest local evidence gate that justifies later
-Totoro diagnostics for ordinary Poisson `B_lv`, while keeping structural-source
-and bridge claims blocked.
+Totoro diagnostics for ordinary one-part non-Gaussian `B_lv`, while keeping
+structural-source and bridge claims blocked.
 
 ### D - Data-generating mechanism
 
@@ -52,7 +52,7 @@ eta[t, s] = beta[t] + Lambda[t, 1] * z_s
 Y[t, s] ~ Poisson(exp(eta[t, s]))
 ```
 
-Gate 1 local canary uses:
+Poisson Gate 1 local canary uses:
 
 ```text
 p = 2 traits
@@ -64,6 +64,21 @@ Lambda = [0.55, -0.42]'
 alpha = [0.65]
 selected profile entry = vec(B_lv)[1] = B_lv[1, 1]
 truth = 0.3575
+```
+
+Binomial logit Gate 1 local canary uses:
+
+```text
+p = 2 traits
+n = 60 sites
+K = 1 latent axis
+q_lv = 1 predictor
+N = 30 trials per cell
+beta = [-0.35, 0.25]
+Lambda = [0.45, -0.35]'
+alpha = [0.55]
+selected profile entry = vec(B_lv)[1] = B_lv[1, 1]
+truth = 0.2475
 ```
 
 Later diagnostic cells may vary `p`, `n`, `K`, signal strength, and selected
@@ -90,7 +105,7 @@ component and is not the interval target.
 
 Gate 1 method:
 
-- fit the ordinary Poisson `X_lv` model;
+- fit the ordinary one-part `X_lv` model;
 - call `confint_lv_effects(...; method = :profile, profile_indices = [1])`;
 - use bounded profile controls so this stays a local canary, not a compute
   campaign;
@@ -117,7 +132,8 @@ denominator and report coverage with Monte Carlo standard error
 ## Gate ladder
 
 - Gate 0: this ADEMP note plus public route identification.
-- Gate 1: one local Poisson selected-entry canary in `test/test_lv_ci.jl`.
+- Gate 1: local Poisson and Binomial logit selected-entry canaries in
+  `test/test_lv_ci.jl`.
 - Gate 2: Totoro diagnostic only after Gate 1 is green, with host and
   denominator recorded separately from DRAC.
 - Gate 3: DRAC claim evidence only after Gate 2 is stable, with seed-matched
@@ -128,9 +144,9 @@ denominator and report coverage with Monte Carlo standard error
 | Item | Status | Evidence |
 | --- | --- | --- |
 | 1. Aims | covered | Aims section names primary and secondary aims. |
-| 2. DGP | covered | DGP math and Gate 1 constants are explicit. |
+| 2. DGP | covered | DGP math and Poisson/Binomial Gate 1 constants are explicit. |
 | 3. Estimands | covered | `B_lv` and selected-entry LR target are defined. |
-| 4. Methods | covered | Poisson fit and profile route are named. |
+| 4. Methods | covered | One-part fit and selected-entry profile route are named. |
 | 5. Performance | covered | Gate 1 pass/fail quantities and MCSE formula are named. |
 | 6. Software | pending | Exact command recorded in check-log after the test run. |
 | 7. Code availability | covered locally | Test lives in `test/test_lv_ci.jl`. |
