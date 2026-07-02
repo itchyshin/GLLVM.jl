@@ -1,5 +1,46 @@
 # Check Log
 
+## 2026-07-02 - LV profile selected entries
+
+### Scope
+
+Closed the pre-existing dirty LV profile-selection work. `_lv_effect_profile()`
+now accepts internal selected-entry `indices`, validates them, returns the
+matching subset of `B_lv` profile intervals, and warm-starts constrained
+profile solves from nearby constrained optima. This is diagnostic/canary
+tooling only; no public `confint_lv_effects()` argument, source-specific
+grammar, package API, likelihood parameterisation, PR state, or compute changed.
+
+Files updated in this worktree:
+
+- `src/confint_family.jl`
+- `test/test_phylo_xlv.jl`
+- `docs/dev-log/after-task/2026-07-02-lv-profile-selected-entries.md`
+- `docs/dev-log/check-log.md`
+
+Checks:
+
+```sh
+julia --project=. --startup-file=no test/test_bridge_missing_mask.jl
+# bridge missing-response mask | 83 pass
+
+julia --project=. --startup-file=no test/test_phylo_xlv.jl
+# phylo × X_lv (Model A) | 25 pass
+
+julia --project=. --startup-file=no test/test_lv_ci.jl
+# X_lv Wald CIs — confint_lv_effects | 127 pass
+
+git diff --check -- src/confint_family.jl test/test_phylo_xlv.jl
+# passed, no output
+```
+
+Claim boundary retained:
+
+- selected-entry profile is internal diagnostic tooling;
+- old population-`B_lv` support remains parked under prior weak-cell evidence;
+- source-specific `phylo_latent(..., lv = ~ x)` remains fail-loud/parked;
+- no Totoro/DRAC compute launched.
+
 ## 2026-07-02 - Bridge X boundary verification
 
 ### Scope

@@ -1885,21 +1885,37 @@ _lv_packed_nll(fit::BetaFit, Y, X_lv, q_lv, N) =
 # NelderMead. NOTE: χ²₁ is the interior asymptotic reference; the boundary
 # chi-bar-square correction (variance→0, |ρ|→1, loading→0) is a separate,
 # not-yet-implemented refinement.
+function _lv_profile_entry_indices(indices, nb::Integer)
+    if indices === nothing
+        return collect(1:nb)
+    end
+    idx = collect(Int, indices)
+    isempty(idx) && throw(ArgumentError("profile indices must not be empty"))
+    for i in idx
+        1 <= i <= nb || throw(ArgumentError("profile index $i outside 1:$nb"))
+    end
+    length(unique(idx)) == length(idx) ||
+        throw(ArgumentError("profile indices must be unique"))
+    return idx
+end
+
 function _lv_effect_profile(nll::Function, x̂::AbstractVector, p::Integer, K::Integer,
                             q_lv::Integer, level::Real, extractor, wald_se::AbstractVector;
-                            ad::Bool = false, maxstep::Integer = 40)
+                            ad::Bool = false, maxstep::Integer = 40,
+                            indices = nothing)
     x  = collect(Float64, x̂)
     b̂  = extractor(x, p, K, q_lv)
     nb = length(b̂)
     ℓ0 = nll(x)
     cutoff = quantile(Chisq(1), level)
-    term = ["B_lv[$t,$c]" for c in 1:q_lv for t in 1:p]
-    lo = fill(NaN, nb); hi = fill(NaN, nb)
+    profile_idx = _lv_profile_entry_indices(indices, nb)
+    term_all = ["B_lv[$t,$c]" for c in 1:q_lv for t in 1:p]
+    lo = fill(NaN, length(profile_idx)); hi = fill(NaN, length(profile_idx))
 
     # Constrained re-optimisation at B_lv[idx] = c → unpenalised deviance 2(ℓc − ℓ̂).
-    constrained_dev = function (idx, c)
+    constrained_dev = function (idx, c, start)
         g = θ -> extractor(θ, p, K, q_lv)[idx]
-        θc = copy(x)
+        θc = copy(start)
         for w in (1e2, 1e3, 1e4, 1e5, 1e6)
             obj = function (θ)
                 val = try nll(θ) catch; return 1e12 end
@@ -1926,37 +1942,49 @@ function _lv_effect_profile(nll::Function, x̂::AbstractVector, p::Integer, K::I
             res === nothing && break
             θc = Optim.minimizer(res)
         end
-        return 2 * (nll(θc) - ℓ0)
+        return 2 * (nll(θc) - ℓ0), θc
     end
 
     # Step out in SE units to bracket the D = cutoff crossing on side `dir` (±1),
     # then bisect. Returns NaN if the profile does not close within `maxstep`.
     crossing = function (idx, dir, s)
         c0 = b̂[idx]; clo = c0; chi = NaN
+        θlo = copy(x)
+        θhi = copy(x)
         for k in 1:maxstep
             c = c0 + dir * s * k
-            D = constrained_dev(idx, c)
+            D, θc = constrained_dev(idx, c, θlo)
             if isfinite(D) && D >= cutoff
-                chi = c; clo = c0 + dir * s * (k - 1); break
+                chi = c; θhi = θc; break
             end
+            clo = c
+            θlo = θc
         end
         isnan(chi) && return NaN
         for _ in 1:40
             cm = (clo + chi) / 2
-            Dm = constrained_dev(idx, cm)
-            (isfinite(Dm) && Dm >= cutoff) ? (chi = cm) : (clo = cm)
+            start = abs(cm - clo) <= abs(chi - cm) ? θlo : θhi
+            Dm, θm = constrained_dev(idx, cm, start)
+            if isfinite(Dm) && Dm >= cutoff
+                chi = cm
+                θhi = θm
+            else
+                clo = cm
+                θlo = θm
+            end
             abs(chi - clo) < 1e-6 * max(1.0, abs(c0)) && break
         end
         return (clo + chi) / 2
     end
 
-    for idx in 1:nb
+    for (j, idx) in pairs(profile_idx)
         s = (isfinite(wald_se[idx]) && wald_se[idx] > 0) ? wald_se[idx] :
             max(0.1, 0.1 * abs(b̂[idx]))
-        lo[idx] = crossing(idx, -1, s)
-        hi[idx] = crossing(idx, +1, s)
+        lo[j] = crossing(idx, -1, s)
+        hi[j] = crossing(idx, +1, s)
     end
-    return (term = term, estimate = b̂, lower = lo, upper = hi, se = fill(NaN, nb),
+    return (term = term_all[profile_idx], estimate = b̂[profile_idx],
+            lower = lo, upper = hi, se = fill(NaN, length(profile_idx)),
             level = level, method = :profile, pd_hessian = true)
 end
 
