@@ -87,6 +87,7 @@ include("phylo_poisson_xlv.jl")           # internal S1 proof: phylo + Poisson +
 include("phylo_binomial_xlv.jl")          # internal S1 proof: phylo + Binomial + predictor-informed LV
 include("phylo_nb_xlv.jl")                # internal S1 proof: phylo + NB2 + predictor-informed LV
 include("phylo_gamma_xlv.jl")             # internal S1 proof: phylo + Gamma + predictor-informed LV
+include("phylo_beta_xlv.jl")              # internal S1 proof: phylo + Beta + predictor-informed LV
 include("coevolution_glm.jl")             # cross-family (non-Gaussian) cross-lineage coevolution (Track T4): K* through a dense Laplace
 
 # Post-fit API (ordination, predict, residuals, summary)

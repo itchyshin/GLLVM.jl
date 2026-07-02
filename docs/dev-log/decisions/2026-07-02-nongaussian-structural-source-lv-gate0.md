@@ -1,7 +1,7 @@
 # Non-Gaussian Structural-Source LV Gate 0 Matrix
 
 Date: 2026-07-02
-Status: Gate 0 matrix; ordinary Gate 1 now includes Ordinal; phylo x Poisson, Binomial, NB2, and Gamma internal S1 likelihood/profile canaries banked
+Status: Gate 0 matrix; ordinary Gate 1 now includes Ordinal; phylo x Poisson, Binomial, NB2, Gamma, and Beta internal S1 likelihood/profile canaries banked
 Scope: non-Gaussian LV after ordinary selected-entry profile canaries
 
 ## Decision
@@ -66,6 +66,17 @@ route with finite endpoints. They do not expose a public fitter, bridge route,
 R grammar, coverage claim, compute manifest, or source-specific support
 wording.
 
+2026-07-02 update 5: the fifth source/family S0 and S1 notes are now banked for
+phylo x Beta logit-link in
+`docs/dev-log/decisions/2026-07-02-phylo-beta-structural-lv-s0-target.md`
+and
+`docs/dev-log/decisions/2026-07-02-phylo-beta-structural-lv-s1-likelihood.md`.
+Together they reduction-test the combined phylo + Beta + `X_lv` surface, fit
+the shared Beta precision `phi` as a nuisance, guard finite strictly interior
+responses, and show one stochastic `B_eta_realized` truth-inclusion route with
+finite endpoints. They do not expose a public fitter, bridge route, R grammar,
+coverage claim, compute manifest, or source-specific support wording.
+
 ## Inputs
 
 - Ordinary one-part selected-entry profile canaries are local for Poisson,
@@ -87,7 +98,7 @@ wording.
 
 | Source | Gate 0 truth | Next admissible target | Current boundary |
 | --- | --- | --- | --- |
-| Phylo | Best first source after ordinary, because Gaussian Model A internals and `Σ_phy` tests exist. | Phylo x Poisson, Binomial, NB2, and Gamma now have S0 target pages, private S1 likelihood proofs, and private selected-entry `B_eta_realized` profile-LR canaries with finite endpoints and MLE/truth bracketing. The next admissible target is still a predeclared S2/Totoro diagnostic manifest for one chosen family, only if authorized. | No public `phylo_latent(..., lv = ~ env)`, no old population-`B_lv` reruns, and no source-specific claim until later evidence gates and maintainer signoff exist. |
+| Phylo | Best first source after ordinary, because Gaussian Model A internals and `Σ_phy` tests exist. | Phylo x Poisson, Binomial, NB2, Gamma, and Beta now have S0 target pages, private S1 likelihood proofs, and private selected-entry `B_eta_realized` profile-LR canaries with finite endpoints and MLE/truth bracketing. The next admissible target is still a predeclared S2/Totoro diagnostic manifest for one chosen family, only if authorized. | No public `phylo_latent(..., lv = ~ env)`, no old population-`B_lv` reruns, and no source-specific claim until later evidence gates and maintainer signoff exist. |
 | Spatial | Wait for the R/TMB `unique=` lane review and a separate Julia parity/join decision before any spatial-source inference claim. | Source covariance and SPDE support target must be explicit before a non-Gaussian LV canary. | Do not mix with the `unique=` lane or imply Julia parity. |
 | Animal | Follows phylo/relmat derivation discipline. | Declare whether the target is realized link-scale, trait-scale, or source-level random-slope association. | No inheritance from ordinary LV or Gaussian phylo evidence. |
 | Kernel | Requires dense/cross-kernel source derivation and a mean-vs-covariance confound audit. | Start only after source covariance, kernel overlap, and estimand orientation are written. | No source-specific `kernel_latent(..., lv = ~ env)` support. |
@@ -100,7 +111,7 @@ wording.
 | Binomial logit | Gate 1 local canary complete. | Phylo x Binomial S0 target plus internal S1 likelihood proof and deterministic selected-entry profile canary with finite endpoints banked; any S2/Totoro manifest remains separate and requires authorization. |
 | NB2 | Gate 1 local canary complete with fitted-dispersion guard. | Phylo x NB2 S0 target plus internal S1 likelihood proof and deterministic selected-entry profile canary with finite endpoints banked; source variance may sit near boundary in the cheap S1 route cell, so this is not source-variance recovery evidence. |
 | Gamma | Gate 1 local canary complete with shape guard. | Phylo x Gamma S0 target plus internal S1 likelihood proof and stochastic selected-entry profile canary with finite endpoints banked; source variance may sit near boundary in the cheap S1 route cell, so this is not source-variance recovery evidence. |
-| Beta | Gate 1 local canary complete with precision guard. | Gate 0 only; bounded response and precision treatment must be explicit. |
+| Beta | Gate 1 local canary complete with precision guard. | Phylo x Beta S0 target plus internal S1 likelihood proof and stochastic selected-entry profile canary with finite endpoints banked; source variance may sit near boundary in the cheap S1 route cell, so this is not source-variance recovery evidence. |
 | Shared-cutpoint Ordinal logit | Gate 1 local canary complete with ordered-cutpoint guard and no per-trait intercept. | Gate 0 only; source/family page must name cutpoint treatment, link-scale target, and whether per-trait ordinal parity is in or out. |
 | Tweedie / zero-inflated / hurdle / Student-t | Not admitted for ordinary `X_lv` canaries in this arc. | Blocked until separate family likelihood derivation and tests. |
 | Mixed-family vectors | Point/postfit boundary only in the bridge ledger. | `X_lv`, masks, missing responses, and CIs remain blocked. |
@@ -144,6 +155,6 @@ is used as a rescue label rather than a secondary diagnostic layer.
 Rose verdict: PASS WITH NOTES - this matrix is a safe Gate 0/S1 boundary.
 Ordinary non-Gaussian profile route evidence is banked for Poisson, Binomial,
 NB2, Gamma, Beta, and shared-cutpoint Ordinal, and phylo x Poisson, Binomial,
-NB2, and Gamma each have one private S1 selected-entry finite-endpoint canary,
-but every public structural-source family claim remains blocked until later
-evidence gates and claim audit exist.
+NB2, Gamma, and Beta each have one private S1 selected-entry finite-endpoint
+canary, but every public structural-source family claim remains blocked until
+later evidence gates and claim audit exist.
