@@ -1,5 +1,42 @@
 # Check Log
 
+## 2026-07-02 - Structural confint boundary
+
+### Scope
+
+Verified structural confidence-interval tables and corrected tutorial wording
+that overstated bootstrap availability. No source behavior changed.
+
+Files updated in this worktree:
+
+- `docs/src/tutorial.md`
+- `docs/dev-log/after-task/2026-07-02-structural-confint-boundary.md`
+- `docs/dev-log/check-log.md`
+
+Checks:
+
+```sh
+julia --project=. --startup-file=no test/test_structural_confint.jl
+# Structural-model inference tables | 45 pass
+
+julia --project=docs --startup-file=no docs/make.jl
+# completed successfully; emitted pre-existing local-link warnings and npm audit warnings
+
+rg -n 'All three methods accept.*RowEffectFit|GllvmCovFit`, `RowEffectFit|bootstrap route|dedicated Wald helpers|QuadraticFit.*RowEffectFit' docs/src/tutorial.md docs/src/confidence-intervals.md docs/src/gllvmtmb-parity.md
+# only the new structural boundary wording remains
+
+git diff --check -- docs/src/tutorial.md
+# clean, no output
+```
+
+Claim boundary retained:
+
+- `QuadraticFit` and `RowEffectFit` have Wald/profile intervals but no bootstrap
+  route;
+- species-covariate, fourth-corner, RRR, and constrained ordination use
+  dedicated Wald helpers because their designs are not stored in the fit object;
+- source-specific `lv` remains parked.
+
 ## 2026-07-02 - Summary table boundary verification
 
 ### Scope

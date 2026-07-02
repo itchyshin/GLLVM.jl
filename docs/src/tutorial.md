@@ -228,10 +228,14 @@ terms by name (`"beta[1]"`, `"Lambda[2,1]"`, `"r"`) or by group (`"beta"`,
 
 All three methods accept the scalar-μ GLM families (`PoissonFit`, `BinomialFit`,
 `NBFit`, `BetaFit`, `GammaFit`, `ExponentialFit`), the two-part families
-(`ZIPFit`, `ZINBFit`, `ZIBFit`, the hurdle/delta fits), and `OrdinalFit`,
-`GllvmCovFit`, `RowEffectFit`. (The Gaussian `GllvmFit` uses the separate
-`confint` / `profile_ci` / `bootstrap_ci` interface — see
-[Confidence intervals](/confidence-intervals).)
+(`ZIPFit`, `ZINBFit`, `ZIBFit`, the hurdle/delta fits), `OrdinalFit`, and
+`GllvmCovFit` when the fitted design is supplied as `X = X`. Structural rows are
+narrower: `QuadraticFit` and `RowEffectFit` have Wald/profile intervals but no
+bootstrap route, while species-covariate, fourth-corner, RRR, and constrained
+ordination fits use dedicated Wald helpers because their designs are not stored
+inside the fit object. (The Gaussian `GllvmFit` uses the separate `confint` /
+`profile_ci` / `bootstrap_ci` interface — see [Confidence
+intervals](/confidence-intervals).)
 
 For the headline regression-style summary, `coef_table` wraps the Wald entry and
 adds the `z` statistic and two-sided p-value:
