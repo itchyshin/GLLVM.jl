@@ -1,5 +1,57 @@
 # Check Log
 
+## 2026-07-02 - Ordinary Gamma LV profile Gate 1 extension
+
+Extended the ordinary non-Gaussian selected-entry profile route evidence from
+Poisson, Binomial logit, and NB2 to Gamma, still inside the same Gate 0 ADEMP
+note:
+
+```text
+docs/dev-log/decisions/2026-07-02-nongaussian-ordinary-lv-profile-ademp.md
+```
+
+Exploratory pre-edit smoke:
+
+```text
+Gamma p=4, n=45, true shape=2.5, fitted shape about 2.58, estimate
+-0.0344900584935828, lower -0.5223006611843493, upper 0.19461498978516073,
+truth -0.0756 covered, and profile time about 14.87 seconds after compilation.
+```
+
+Gate 1 implementation:
+
+- added an ordinary Gamma `X_lv` selected-entry profile canary to
+  `test/test_lv_ci.jl`;
+- target remains `B_lv = Lambda * alpha_lv'`;
+- selected entry is `B_lv[1,1]` / `vec(B_lv)[1]`;
+- known DGP truth is `-0.0756`;
+- the canary includes a loose fitted-shape guard.
+
+Focused verification:
+
+```text
+julia --project=. --startup-file=no test/test_lv_ci.jl
+X_lv Wald CIs - confint_lv_effects: 171 passed, 0 failed, 0 errored, 3m39.1s
+```
+
+Mission Control refresh:
+
+```text
+python3 -m json.tool docs/dev-log/dashboard/status.json >/dev/null
+python3 -m json.tool docs/dev-log/dashboard/sweep.json >/dev/null
+sh tools/start-mission-control.sh --background
+curl -s http://127.0.0.1:8770/status.json | python3 -m json.tool >/dev/null
+curl -s http://127.0.0.1:8770/sweep.json | python3 -m json.tool >/dev/null
+curl -s http://127.0.0.1:8770/version.txt
+r60
+```
+
+Claim boundary: IN: ordinary Poisson, Binomial logit, NB2, and Gamma
+selected-entry `B_lv` profile route evidence. OUT: no coverage calibration, no
+R bridge profile/bootstrap transport, no source-specific `lv = ~ env`, no
+source-specific structural/non-Gaussian inference, no mixed-family CI, no
+`unique=` parity, no Totoro/DRAC compute.
+
 ## 2026-07-02 - Ordinary NB2 LV profile Gate 1 extension
 
 Extended the ordinary non-Gaussian selected-entry profile route evidence from
