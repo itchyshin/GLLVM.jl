@@ -1,5 +1,89 @@
 # Check Log
 
+## 2026-07-03 - R + Julia v1.0 contract phase 0/1
+
+Goal: start the R + Julia v1.0 capability-contract arc by recording the
+current paired-repo truth, bridge asymmetries, source guards, and first matrix
+gates before any API, bridge, grammar, or compute widening.
+
+Changes:
+
+- Added `docs/dev-log/v1-contract/2026-07-03-r-julia-v1-contract-orientation.md`
+  with the current repo states, evidence sources, operating truth, phase
+  slices, immediate gates, and stop rules.
+- Added `docs/dev-log/v1-contract/r-julia-v1-capability-matrix.md` with
+  bridge, inference, formula/LV, structural-dependence, and family rows.
+- Added `docs/dev-log/v1-contract/2026-07-03-bridge-drift-gates.md` with the
+  expected R-vs-local-Julia drift rows and their gates/owners.
+- Added after-task report
+  `docs/dev-log/after-task/2026-07-03-r-julia-v1-contract-phase0.md`.
+
+Checks:
+
+```sh
+git status --short
+git branch --show-current
+git rev-parse --short HEAD
+```
+
+Result: current branch was `claude/jl-bridge-capabilities-20260619` at
+`b093dc16`, with pre-existing `AGENTS.md` and `CLAUDE.md` footer edits that
+this slice did not touch.
+
+```sh
+Rscript -e 'parse("R/julia-bridge.R"); source("R/julia-bridge.R"); caps <- gllvm_julia_capabilities(); print(caps[, c("family", "fit_no_x", "fixed_effect_X", "missing_response", "ci_no_x_wald", "ci_no_x_profile", "ci_no_x_bootstrap", "status")], row.names=FALSE); gates <- gllvm_julia_gate_registry(); cat("gates=", nrow(gates), "\n")'
+```
+
+Result: R-side capability parsing/source succeeded in the `gllvmTMB` checkout;
+the ledger printed 10 rows including `mixed-family vector`, and the registry
+reported 20 gates. The command was noisy because `parse()` printed the parsed
+expression, but it did not fail.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_bridge_capabilities.jl
+```
+
+Result: `bridge_capabilities honest local surface`: 60/60 pass in 13.1s.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_bridge_fit.jl
+```
+
+Result: `bridge_fit minimal no-X contract`: 175/175 pass in 21.8s.
+
+```sh
+Rscript -e 'pkgload::load_all(quiet = TRUE); testthat::test_file("tests/testthat/test-julia-bridge.R")'
+```
+
+Result: 380 pass / 14 expected live-`GLLVM.jl` path skips / 0 failed. A first
+bare `testthat::test_file()` attempt failed because the package had not been
+loaded; the corrected `pkgload::load_all()` command is the valid evidence.
+
+```sh
+Rscript -e 'pkgload::load_all(quiet = TRUE); testthat::test_file("tests/testthat/test-canonical-keywords.R")'
+```
+
+Result: 86 pass / 3 INLA skips / 0 failed.
+
+```sh
+git diff --check
+```
+
+Result: clean.
+
+```sh
+rg -n "bridge_capabilities|function bridge_fit|ci_no_x_profile|mixed-family|fixed_effect_X|missing_response|profile" src/bridge.jl test/test_bridge_capabilities.jl test/test_bridge_fit.jl docs/dev-log/capability-bridge-matrix.md docs/src/index.md docs/src/roadmap.md
+rg -n "gllvm_julia_capabilities|gllvm_julia_gate_registry|GJL-GATE|mixed-family|source-specific|lv\s*=\s*~|ci_no_x_profile|fixed_effect_X|missing_response|profile" R/julia-bridge.R tests/testthat/test-julia-bridge.R tests/testthat/test-canonical-keywords.R docs/design/61-capability-status.md docs/dev-log/dashboard/status.json
+```
+
+Result: expected contract hits only. The scans support the new packet's main
+boundary: local Julia `bridge_fit` is narrower than the current R-side bridge
+ledger, and source-specific structural `lv = ~ env` remains fail-loud.
+
+Claim boundary: this is documentation/evidence governance only. It adds no
+fitter, likelihood, bridge route, package API, source-specific `lv` grammar,
+Mission Control row, or compute run.
+
 ## 2026-06-15 - Board sync after method-aware bridge capability ledger
 
 ### Scope
