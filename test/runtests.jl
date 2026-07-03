@@ -83,6 +83,7 @@ using GLLVM
     include("test_spde_latent.jl")
     include("test_spde_latent_postfit.jl")
     include("test_phylo_glm.jl")
+    include("test_phylo_poisson_xlv.jl")
     include("test_twopart_substrate.jl")
     include("test_twopart_alloc_equiv.jl")
     include("test_delta_fit.jl")
@@ -138,6 +139,7 @@ using GLLVM
     include("test_bridge_x.jl")
     include("test_bridge_lv_predictor.jl")
     include("test_lv_ci.jl")
+    include("test_phylo_eta_realized.jl")
     include("test_bridge_missing_mask.jl")
     include("test_quality.jl")
 end

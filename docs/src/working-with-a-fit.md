@@ -2,7 +2,7 @@
 
 Once you have a fit from `fit_gaussian_gllvm` or `fit_gllvm(Y; family=…)`, GLLVM.jl
 gives you the standard post-fit toolkit — ordination, predictions, residual
-diagnostics, and model-selection criteria — for both Gaussian and binary fits.
+diagnostics, and model-selection criteria — for Gaussian and non-Gaussian fits.
 
 ```julia
 using GLLVM, Random
@@ -38,6 +38,22 @@ ordination biplot — sites as points, species as labeled vectors:
 *Simulated two-block data, two-factor Gaussian GLLVM. Species loading on the same
 latent factor point the same way; the grey cloud is the site scores `getLV(fit, y)`.*
 
+For supported one-part non-Gaussian fits, `ordination_uncertainty` gives per-site
+score intervals for that point cloud:
+
+```julia
+u = ordination_uncertainty(fitp, Yp; n_boot = 200)
+u.scores     # n×K reference site scores
+u.lower      # n×K lower score interval
+u.upper      # n×K upper score interval
+```
+
+This is a conditional bootstrap of the scores with the fitted parameters held
+fixed; it quantifies uncertainty in each site's latent score, not full
+refit-level parameter uncertainty. It is currently routed for the single-`Y`
+ordination fits with scalar response means: Poisson, NB2, Beta, Gamma,
+Exponential, and Binomial (with `N` when trial counts are needed).
+
 ## Predictions and fitted values
 
 ```julia
@@ -48,8 +64,10 @@ latent factor point the same way; the grey cloud is the site scores `getLV(fit, 
 
 For the Gaussian family the link is the identity, so `:link` and `:response`
 coincide. For a binary fit `:response` returns fitted probabilities in `[0, 1]`.
-There is no `newdata` yet — predictions are in-sample (that arrives with the
-covariate/formula front-end).
+Plain latent fits predict in-sample because the latent score is conditional on
+the observed response matrix. Covariate fits also support population-level
+new-site prediction from a supplied `X` design, with the latent at its prior
+mean, and spatial latent fits use `predict_spatial` for new locations.
 
 ## Residual diagnostics
 

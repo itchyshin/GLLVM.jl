@@ -64,6 +64,18 @@ using GLLVM
         "beta",
         "gamma",
     ]
+    for fam in caps.family[caps.predictor_informed_lv]
+        idx = findfirst(==(fam), caps.family)
+        @test idx !== nothing
+        @test occursin("predictor-informed latent-score X_lv", caps.notes[idx])
+        @test occursin("X_lv Wald B_lv CI payloads are routed", caps.notes[idx])
+        @test occursin("profile/bootstrap X_lv CIs", caps.notes[idx])
+        @test occursin("remain follow-ups", caps.notes[idx])
+    end
+    @test all(!occursin("non-Gaussian non-binomial X_lv remain follow-ups", note)
+              for note in caps.notes)
+    @test all(!occursin("broader non-Gaussian X_lv routes remain separate", note)
+              for note in caps.notes)
     @test caps.family[caps.missing_response] == [
         "poisson",
         "binomial",
@@ -144,6 +156,26 @@ using GLLVM
     @test caps.family[caps.postfit_simulate] == scalar_mean_postfit
     @test caps.family[caps.postfit_ordination] == caps.family
     @test all(==("partial"), caps.status)
+    mixed_idx = findfirst(==("mixed-family vector"), caps.family)
+    @test mixed_idx !== nothing
+    @test caps.fit_no_x[mixed_idx]
+    @test !caps.fixed_effect_X[mixed_idx]
+    @test !caps.predictor_informed_lv[mixed_idx]
+    @test !caps.missing_response[mixed_idx]
+    @test !caps.ci_no_x_wald[mixed_idx]
+    @test !caps.ci_no_x_profile[mixed_idx]
+    @test !caps.ci_no_x_bootstrap[mixed_idx]
+    @test !caps.ci_mask_wald[mixed_idx]
+    @test !caps.ci_mask_profile[mixed_idx]
+    @test !caps.ci_mask_bootstrap[mixed_idx]
+    @test !caps.ci_x_wald[mixed_idx]
+    @test !caps.ci_x_profile[mixed_idx]
+    @test !caps.ci_x_bootstrap[mixed_idx]
+    @test caps.postfit_predict[mixed_idx]
+    @test caps.postfit_residuals[mixed_idx]
+    @test caps.postfit_simulate[mixed_idx]
+    @test occursin("no X", caps.notes[mixed_idx])
+    @test occursin("CI", caps.notes[mixed_idx])
     grouped = Set(["negbinomial", "nb1", "beta", "gamma"])
     pertrait_ordinal = Set(["ordinal", "ordinal_probit"])
     for (fam, note) in zip(caps.family[1:(end - 1)], caps.notes[1:(end - 1)])

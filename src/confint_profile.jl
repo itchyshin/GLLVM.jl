@@ -361,7 +361,9 @@ end
 """
     profile_ci(fit::GllvmFit, param_index::Integer;
                level = 0.95, grid_extent = 5, max_expand = 20,
-               max_bisect = 30, y = nothing, X = nothing,
+               max_bisect = 30, profile_iterations = 200,
+               profile_g_tol = 1e-4, profile_max_expand = nothing,
+               profile_max_bisect = nothing, y = nothing, X = nothing,
                Σ_phy = nothing)
         -> NamedTuple{(:lower, :upper, :method)}
 
@@ -374,6 +376,11 @@ help for asymmetric likelihoods; the geometric expansion keeps the
 total number of refits at O(log) even at large `grid_extent`.
 
 `level` is the nominal coverage (default 0.95 → χ²_1 cutoff ≈ 3.841).
+
+`profile_iterations` and `profile_g_tol` control the constrained LBFGS refits.
+`profile_max_expand` and `profile_max_bisect` are aliases for the bracketing and
+root-finding caps; when omitted they use the legacy `max_expand` and
+`max_bisect` values.
 
 The data matrix `y` (the same `y` passed to `fit_gaussian_gllvm`) must
 be supplied so this function can reconstruct the NLL closure. `X` and
@@ -398,10 +405,24 @@ function profile_ci(fit::GllvmFit, param_index::Integer;
                     grid_extent::Real = 5,
                     max_expand::Integer = 20,
                     max_bisect::Integer = 30,
+                    profile_iterations::Integer = 200,
+                    profile_g_tol::Real = 1e-4,
+                    profile_max_expand::Union{Nothing, Integer} = nothing,
+                    profile_max_bisect::Union{Nothing, Integer} = nothing,
                     y::Union{Nothing, AbstractMatrix} = nothing,
                     X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
                     Σ_phy::Union{Nothing, AbstractMatrix} = nothing)
     0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
+    profile_iterations > 0 ||
+        throw(ArgumentError("profile_iterations must be positive; got $profile_iterations"))
+    isfinite(profile_g_tol) && profile_g_tol > 0 ||
+        throw(ArgumentError("profile_g_tol must be positive and finite; got $profile_g_tol"))
+    max_expand_eff = profile_max_expand === nothing ? max_expand : profile_max_expand
+    max_bisect_eff = profile_max_bisect === nothing ? max_bisect : profile_max_bisect
+    max_expand_eff > 0 ||
+        throw(ArgumentError("profile_max_expand/max_expand must be positive; got $max_expand_eff"))
+    max_bisect_eff > 0 ||
+        throw(ArgumentError("profile_max_bisect/max_bisect must be positive; got $max_bisect_eff"))
     _has_lv_predictor(fit) && throw(ArgumentError(
         "profile_ci for fit_gaussian_gllvm(...; X_lv=...) is not admitted in the C1 predictor-informed latent-score path; use extract_lv_effects for point estimates"))
     y === nothing && throw(ArgumentError(
@@ -431,7 +452,9 @@ function profile_ci(fit::GllvmFit, param_index::Integer;
     function deviance_lower(c)
         ll_c, ok, θ_red_new = _profile_refit_with_fixed(
             fit, param_index, c, y, X, Σ_phy;
-            θ_red_warm = θ_red_warm_lower)
+            θ_red_warm = θ_red_warm_lower,
+            g_tol = profile_g_tol,
+            iterations = profile_iterations)
         if ok
             # Update warm-start in the enclosing scope for the next call.
             θ_red_warm_lower = θ_red_new
@@ -443,7 +466,9 @@ function profile_ci(fit::GllvmFit, param_index::Integer;
     function deviance_upper(c)
         ll_c, ok, θ_red_new = _profile_refit_with_fixed(
             fit, param_index, c, y, X, Σ_phy;
-            θ_red_warm = θ_red_warm_upper)
+            θ_red_warm = θ_red_warm_upper,
+            g_tol = profile_g_tol,
+            iterations = profile_iterations)
         if ok
             θ_red_warm_upper = θ_red_new
             return 2.0 * (ll_full - ll_c)
@@ -458,11 +483,11 @@ function profile_ci(fit::GllvmFit, param_index::Integer;
     step_init = max(min(sqrt(cutoff), grid_extent) * se_i, 1e-3)
 
     lower = _profile_bisect_side(deviance_lower, θ̂_i, -step_init, cutoff;
-                                 max_expand = max_expand,
-                                 max_bisect = max_bisect)
+                                 max_expand = max_expand_eff,
+                                 max_bisect = max_bisect_eff)
     upper = _profile_bisect_side(deviance_upper, θ̂_i,  step_init, cutoff;
-                                 max_expand = max_expand,
-                                 max_bisect = max_bisect)
+                                 max_expand = max_expand_eff,
+                                 max_bisect = max_bisect_eff)
 
     # Raw-scale conversion for log-SD parameters (σ_eps etc.).
     _, kinds = _profile_all_term_names(fit)

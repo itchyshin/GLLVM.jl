@@ -53,7 +53,7 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 | `getLV` / `getLoadings` / `rotation` | ✅ | all families |
 | `predict` / `fitted` | ✅ | all families (ordinal adds `:prob` / `:class`) |
 | `residuals` (Dunn–Smyth + Pearson) | ✅ | all families |
-| `simulate` (parametric draw from a fit) | ✅ non-Gaussian | `simulate(fit, n)` / `simulate(fit, X)` for the GLM + covariate fits |
+| `simulate` (parametric draw from a fit) | ✅ selected non-Gaussian | `simulate(fit, n)` for scalar-mean GLM-style fits and Tweedie; `simulate(fit, X)` for covariate fits. Two-part bootstrap CIs use internal samplers, but public `simulate` methods are not universal. |
 | `aic` / `bic` / `show` | ✅ | all families |
 | Σ_y / communality / correlation / phylo signal H² | ✅ Gaussian | report-ready extractors |
 | Confidence intervals (Wald / profile / bootstrap) | ✅ scalar/grouped dispersion · 🔨 per-trait ordinal | Gaussian, scalar-dispersion GLM families, grouped-dispersion NB2/NB1/Beta/Gamma, the two-part families, and shared-cutpoint ordinal via `confint(fit, Y; method=…)`; per-trait ordinal-cutpoint CI endpoints are follow-ups; bootstrap is thread-parallel |
@@ -125,19 +125,24 @@ passes a fixed-zero coefficient mask through `options["coef_fixed"]`, the bridge
 returns the full coefficient vector with constrained entries equal to zero plus
 `mean_coef_status` (Gaussian) or `gamma_status` (non-Gaussian) so the R package
 can print fixed rows without treating them as estimated parameters.
-Predictor-informed latent-score covariates (`X_lv`) are admitted only for
+Predictor-informed latent-score covariates (`X_lv`) are admitted for
 complete-response ordinary Gaussian, Poisson (log link), shared-dispersion NB2,
-shared-shape Gamma, shared-precision Beta, and binomial logit/probit/cloglog
-point fits. The Gaussian bridge centres responses by trait means and returns
-those means as `alpha`; the Poisson, NB2, Gamma, Beta, and binomial bridges keep
-per-trait link-scale intercepts in `alpha` (the NB2, Gamma, and Beta `X_lv`
-routes use the shared-dispersion/shape/precision fitter, not the per-trait
-grouped route). These routes return total latent scores in `scores` and add
-`scores_mean`, `scores_innovation`, `alpha_lv`, and rotation-stable
-`lv_effects = Lambda * alpha_lv'`. X_lv confidence intervals, response masks,
-simultaneous fixed-effect `X`, mixed-family fits, grouped-dispersion `X_lv`, and
-the remaining non-Gaussian families (ordinal, two-part) remain
-deliberate follow-ups rather than inferred parity.
+shared-shape Gamma, shared-precision Beta, binomial logit/probit/cloglog, and
+native shared-cutpoint Ordinal logit point fits. The Gaussian bridge centres
+responses by trait means and returns those means as `alpha`; the Poisson, NB2,
+Gamma, Beta, and binomial bridges keep per-trait link-scale intercepts in
+`alpha` (the NB2, Gamma, and Beta `X_lv` routes use the
+shared-dispersion/shape/precision fitter, not the per-trait grouped route).
+Native shared-cutpoint Ordinal `X_lv` is Julia-side only for now; it does not
+promote the per-trait ordinal R bridge. These routes return total latent scores
+in `scores` and add `scores_mean`, `scores_innovation`, `alpha_lv`, and
+rotation-stable `lv_effects = Lambda * alpha_lv'`. Native GLLVM.jl can compute
+uncertainty for the ordinary `B_lv` product, including selected-entry
+profile-likelihood canaries, but the R bridge still transports only the Wald
+`X_lv` payload for promoted rows. Response masks, simultaneous fixed-effect `X`,
+mixed-family fits, grouped-dispersion `X_lv`, bridge profile/bootstrap `X_lv`
+intervals, per-trait ordinal `X_lv`, and two-part `X_lv` remain deliberate
+follow-ups rather than inferred parity.
 Initial response-missing masks are admitted only for no-X one-part non-Gaussian
 bridge fits through an explicit `mask` (`true = observed`); the R bridge
 live-tests Poisson, Bernoulli Binomial, NB2, NB1, Beta, Gamma, and
@@ -153,7 +158,7 @@ X+mask fits, ordinal covariate fits, structured covariance terms, and
 user-selectable Julia-side optimizer controls remain explicit bridge follow-ups,
 not silently supported cells.
 
-The mixed-family R bridge is partial, not planned and not complete: complete
+The mixed-family R bridge is guarded and intentionally limited: complete
 balanced trait-aligned no-X/no-mask/no-CI Julia-engine point fits are admitted
 for Gaussian, Poisson, Binomial, NB2, Beta, and Gamma components. The bridge
 stores row-aligned per-trait `families` and `link` labels, validates the native
@@ -179,9 +184,9 @@ public through the R bridge yet:
   variables** — these are `gllvm` features, **not in gllvmTMB**, so they are out of
   scope for this bridge. (GLLVM.jl does carry more general SPDE/Matérn-spatial and
   phylogenetic substrates, which gllvm/gllvmTMB lack.)
-- **Per-trait nuisance-parameter intervals** — grouped-dispersion and per-trait
-  ordinal-cutpoint point payloads are now routed; CI endpoints remain follow-up
-  work.
+- **Per-trait nuisance-parameter intervals** — grouped NB2/NB1/Beta/Gamma CIs
+  are routed; grouped Tweedie and per-trait ordinal-cutpoint CI endpoints remain
+  follow-up work.
 
 ## Honest gaps
 

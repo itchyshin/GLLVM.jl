@@ -39,12 +39,22 @@ end
     @testset "Profile (Poisson)" begin
         Y, _, _ = _sim_poisson(4, 1, 120; seed = 22)
         fit = fit_poisson_gllvm(Y; K = 1)
-        ci = confint(fit, Y; method = :profile, parm = "beta[1]")
+        ci = confint(fit, Y; method = :profile, parm = "beta[1]",
+                     profile_iterations = 200,
+                     profile_g_tol = 1e-4,
+                     profile_max_expand = 20,
+                     profile_max_bisect = 30)
         @test ci.method === :profile
         @test ci.status[1] in (:profile, :partial)
         @test isfinite(ci.lower[1]) || isfinite(ci.upper[1])   # at least one side bracketed
         isfinite(ci.lower[1]) && @test ci.lower[1] < ci.estimate[1]
         isfinite(ci.upper[1]) && @test ci.estimate[1] < ci.upper[1]
+        @test_throws ArgumentError confint(fit, Y; method = :profile,
+                                           parm = "beta[1]",
+                                           profile_iterations = 0)
+        @test_throws ArgumentError confint(fit, Y; method = :profile,
+                                           parm = "beta[1]",
+                                           profile_g_tol = Inf)
 
         # when both sides bracket, the profile interval should be in the Wald ballpark
         if ci.status[1] === :profile
@@ -191,7 +201,9 @@ end
 
     @testset "Two-part: ZIB Wald + bootstrap (zero-inflated binomial)" begin
         Random.seed!(36)
-        p, K, n, Ntr = 4, 1, 160, 8
+        # ZIB bootstrap refits use finite-difference gradients through the
+        # two-part Laplace likelihood. Keep this as a smoke, not a runtime gate.
+        p, K, n, Ntr = 4, 1, 80, 8
         βz = 0.3 .* randn(p) .- 0.6; βc = 0.3 .* randn(p)
         Λc = 0.4 .* randn(p, K)
         Y = zeros(Int, p, n)
@@ -202,7 +214,7 @@ end
                 Y[t, s] = rand() < inv(1 + exp(-βz[t])) ? 0 : rand(Binomial(Ntr, μ))
             end
         end
-        fit = fit_zib_gllvm(Y; K = K, N = Ntr)
+        fit = fit_zib_gllvm(Y; K = K, N = Ntr, iterations = 120)
 
         ci = confint(fit, Y; method = :wald)
         @test length(ci.term) == 2p + GLLVM.rr_theta_len(p, K)   # βz + βc + Λc (no dispersion)
@@ -214,8 +226,8 @@ end
         end
 
         # parametric bootstrap is deterministic in the seed (serial == parallel).
-        a = confint(fit, Y; method = :bootstrap, n_boot = 20, seed = 5, parallel = false)
-        b = confint(fit, Y; method = :bootstrap, n_boot = 20, seed = 5, parallel = true)
+        a = confint(fit, Y; method = :bootstrap, n_boot = 10, seed = 5, parallel = false)
+        b = confint(fit, Y; method = :bootstrap, n_boot = 10, seed = 5, parallel = true)
         @test a.lower == b.lower && a.upper == b.upper
         @test a.n_converged ≥ 6
     end

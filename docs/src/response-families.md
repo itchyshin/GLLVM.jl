@@ -167,6 +167,18 @@ estimates one ordered cutpoint vector per trait and stores a NaN-padded
 shared-cutpoint `fit_ordinal_gllvm()` route remains available as a Julia-side
 comparator and keeps the existing shared-cutpoint CI engine.
 
+The shared-cutpoint route also admits predictor-informed latent-score means:
+
+```julia
+fit_xlv = fit_ordinal_gllvm(Yo; K = 1, X_lv = X_lv)
+extract_lv_effects(fit_xlv)
+confint_lv_effects(fit_xlv, Yo, X_lv; method = :profile,
+                   profile_indices = [1])
+```
+
+Those intervals target the native Julia `B_lv = Λ * alpha_lv'` product. They do
+not promote per-trait ordinal bridge CI parity.
+
 ### Gamma — `Gamma()`
 
 For positive-continuous data with Var = μ²/α (constant coefficient of variation),
@@ -211,6 +223,18 @@ fit_tweedie_gllvm_grouped(Yc; K = 2)             # Tweedie dispersion φ per spe
 (`fit_nb_gllvm_grouped` requires an explicit `group`; the other four default to
 per-species.)
 
+The unified entry point routes the same grouped fits with gllvm-style keywords:
+
+```julia
+fit_gllvm(Yc; family = NegativeBinomial(), K = 2, disp_group = :species)
+fit_gllvm(Yp; family = Beta(), K = 2, disp_group = group)
+```
+
+`disp_group = :species` means one dispersion per species; an integer vector
+assigns species to shared dispersion groups. Grouped dispersion is a single
+specialised route: it is not combined with `row_eff` or Gaussian `pervar` in the
+same call, and unsupported families fail with an `ArgumentError`.
+
 ### Gaussian with per-species variance — `fit_gaussian_pervar_gllvm`
 
 ```julia
@@ -222,21 +246,24 @@ A heteroscedastic Gaussian GLLVM with a **separate residual variance per species
 `fit_gaussian_gllvm`. The per-species intercepts are profiled out analytically
 (column means), so only the per-species variances and the loadings are optimised.
 
-## Two-part families (occurrence/zero × value)
+## Two-part and mixture families (occurrence/zero × value)
 
-Two-part families model a response with a point mass at zero plus a distribution
-over the non-zero (or count) part. They share a single latent `z` that loads on
-the value part (`Λ_c`); the occurrence / zero-inflation part is a per-species
-intercept (`β_z`, i.e. `Λ_z = 0`). Each has a dedicated fitter returning a
-result with `βz`, `βc`, `Λc` (and a dispersion where relevant):
+Two-part and mixture families model a response with a point mass at zero (or at
+the boundary) plus a distribution over the non-zero, count, or continuous part.
+The hurdle, delta, and zero-inflated fits share a single latent `z` that loads on
+the value/count part (`Λ_c`); the occurrence / zero-inflation part is a
+per-species intercept (`β_z`, i.e. `Λ_z = 0`). Each has a dedicated fitter:
 
 ```julia
 fit = fit_delta_lognormal_gllvm(Y; K = 2)   # Y ≥ 0; positive part lognormal, log-SD σ
 fit = fit_delta_gamma_gllvm(Y;     K = 2)   # Y ≥ 0; positive part Gamma, shape α
+fit = fit_beta_hurdle_gllvm(Y;     K = 2)   # proportions; occurrence × positive Beta, precision φ
 fit = fit_hurdle_poisson_gllvm(Y;  K = 2)   # counts; occurrence × zero-truncated Poisson
 fit = fit_hurdle_nb_gllvm(Y;       K = 2)   # counts; occurrence × zero-truncated NB2, r
 fit = fit_zip_gllvm(Y;             K = 2)   # counts; structural zero × Poisson
 fit = fit_zinb_gllvm(Y;            K = 2)   # counts; structural zero × NB2, r
+fit = fit_zib_gllvm(Y;             K = 2, N = N)  # binomial counts; structural zero × Binomial(N, μ)
+fit = fit_ordered_beta_gllvm(Y;    K = 2)   # proportions with masses at 0 and 1
 ```
 
 **Hurdle vs zero-inflated.** A *hurdle* model treats every zero as a

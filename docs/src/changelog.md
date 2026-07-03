@@ -18,6 +18,11 @@ Notable changes to GLLVM.jl. Style mirrors `gllvmTMB`'s NEWS: status labels
   checked structure / `pd_hessian`, never SE magnitude, so the bug was invisible).
 
 ### Engine
+- **IN:** profile-likelihood hardening for admitted LV-effect routes:
+  `profile_ci`, non-Gaussian `confint(...; method=:profile)`, and
+  `confint_lv_effects(...; method=:profile)` now expose bounded refit/profile
+  controls. `confint_lv_effects` also accepts `profile_indices` to profile
+  selected entries of `vec(B_lv)` without running the whole trait-effect matrix.
 - **IN:** phylogenetic GLM (`fit_phylo_glm` / `PhyloGLMFit`) — a per-species
   phylogenetic random intercept for the non-Gaussian families (Poisson / NB /
   Binomial) via an augmented-state joint Laplace over the sparse phylogenetic
@@ -66,17 +71,20 @@ package; every numerical addition is gated by deterministic tests.
 - **PARTIAL:** predictor-informed latent-score means for the ordinary unit-tier
   path, with `fit_gaussian_gllvm(...; X_lv=...)`,
   `fit_poisson_gllvm(...; X_lv=...)`, `fit_nb_gllvm(...; X_lv=...)`,
-  `fit_gamma_gllvm(...; X_lv=...)`, `fit_beta_gllvm(...; X_lv=...)`, and
-  `fit_binomial_gllvm(...; X_lv=...)` for complete-response Gaussian, Poisson
+  `fit_gamma_gllvm(...; X_lv=...)`, `fit_beta_gllvm(...; X_lv=...)`,
+  `fit_binomial_gllvm(...; X_lv=...)`, and
+  `fit_ordinal_gllvm(...; X_lv=...)` for complete-response Gaussian, Poisson
   (log link), shared-dispersion NB2, shared-shape Gamma, shared-precision Beta,
-  and binomial logit/probit/cloglog point fits. `getLV(...;
-  component=:mean/:innovation/:total)` and `extract_lv_effects()` report point
-  estimates for the rotation-stable `B_lv = Λ * alpha_lv'`. The `bridge_fit`
-  endpoint exposes these point-estimate routes as `X_lv` with `lv_effects`,
-  `scores_mean`, and `scores_innovation`; confidence intervals, response masks,
-  simultaneous fixed-effect `X`, other non-Gaussian families, W-tier,
-  phylogenetic/source-specific extensions, and R-package row promotion remain
-  gated.
+  binomial logit/probit/cloglog, and shared-cutpoint Ordinal logit point fits.
+  `getLV(...;
+  component=:mean/:innovation/:total)` reports score decompositions, while
+  `extract_lv_effects()` reports the rotation-stable induced trait effect
+  `B_lv = Λ * alpha_lv'` by default and the rotation-dependent CLV-style
+  `alpha_lv` table with `type=:axis_effect`. `confint_lv_effects()` supplies
+  uncertainty for `B_lv`, not for `alpha_lv`. Response masks, simultaneous
+  fixed-effect `X`, raw axis-effect SEs, per-trait ordinal bridge parity,
+  W-tier, phylogenetic/source-specific extensions, and R-package row promotion
+  remain gated.
 - **IN:** fixed-zero shared covariate coefficients for Gaussian (`β_fixed`) and
   non-Gaussian (`γ_fixed`) fixed-effect-X fits, plus bridge status fields for
   `gllvmTMB`'s `Xcoef_fixed` contract.

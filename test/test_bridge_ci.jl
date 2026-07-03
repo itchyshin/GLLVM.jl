@@ -191,9 +191,10 @@ end
                              natb.term, natb.lower, natb.upper)
         @test db < 1e-8
 
-        # Dispersion-family and ordinal bridge rows now use per-trait nuisance
-        # parameters by default. Their CI endpoints are deliberately gated until
-        # grouped-fit / per-trait-cutpoint CI engines land.
+        # Ordinal bridge rows now use per-trait cutpoints by default. Their CI
+        # endpoints are deliberately gated until the per-trait-cutpoint CI engine
+        # lands. Grouped-dispersion CI routes are covered in
+        # test_bridge_grouped_dispersion.jl.
         Yo = _sim_ordinal(3, 70, 1, 3; seed = 28)
         @test_throws ArgumentError bridge_fit(; y = Float64.(Yo), family = "ordinal",
                                               d = 1, options = Dict("ci_method" => "wald"))

@@ -32,14 +32,19 @@ future design input for exact Gaussian cells, not non-Gaussian Laplace.
   the family/structure row has passed its local evidence gate.
 - One-part Laplace families through `fit_gllvm`: Binomial, Poisson,
   NegativeBinomial, Beta, Ordinal, and Gamma.
-- Wald/profile confidence-interval routes for scalar-dispersion one-part Laplace
-  families; grouped-dispersion bridge endpoints remain explicit unavailable
-  status rows while parity and bridge exposure are audited.
+- Wald/profile/bootstrap confidence-interval routes for scalar-dispersion
+  one-part Laplace families and grouped NB2/NB1/Beta/Gamma; grouped Tweedie and
+  per-trait ordinal endpoints remain explicit unavailable status rows while
+  parity and bridge exposure are audited.
+- Native ordinary `X_lv` trait-effect inference for Gaussian, Poisson, NB2,
+  Binomial, Beta, Gamma, and shared-cutpoint Ordinal fits, including
+  selected-entry profile-likelihood canaries for `B_lv`.
 - Dedicated two-part fitters for Delta-lognormal, Hurdle-Poisson, and
   Hurdle-NB.
 - Minimal Julia-side `bridge_fit` for no-covariate one-part families, selected
-  fixed-effect-X / missing-response rows, and complete Gaussian point-estimate
-  `X_lv` rows tested by the paired `gllvmTMB` branch.
+  fixed-effect-X / missing-response rows, selected ordinary `X_lv` point rows
+  tested by paired `gllvmTMB` branches, and guarded mixed-family point/post-fit
+  rows.
 
 ## What's planned
 
@@ -55,7 +60,8 @@ future design input for exact Gaussian cells, not non-Gaussian Laplace.
   `X` for selected one-part families, response masks for selected no-X
   non-Gaussian families, complete balanced mixed-family no-X/no-mask/no-CI point
   fits, and in-sample post-fit methods. Remaining bridge work is X+mask,
-  mixed-family X/masks/CIs, ordinal prediction payloads, newdata, richer
-  diagnostics, and parity evidence for every promoted row.
+  mixed-family X/masks/CIs, broader newdata contracts beyond the existing
+  fit-specific prediction routes, richer diagnostics, and parity evidence for
+  every promoted row.
 
 This roadmap evolves; issue #11 is always current.

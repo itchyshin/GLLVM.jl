@@ -1,4 +1,5 @@
 using GLLVM, Test, LinearAlgebra, SparseArrays, Random
+using Distributions: Poisson
 
 # Build a regular triangulated grid over [0, L]² (identical to test_spde_latent.jl).
 function _grid_mesh_pf(m, L)

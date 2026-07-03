@@ -151,6 +151,15 @@ end
         @test ci.upper ≤ 1.0
         @test ci.lower ≤ ci.estimate ≤ ci.upper
 
+        ci_all = GLLVM._phylo_signal_wald_ci_all(fit2; y = y2, Σ_phy = Σ_phy)
+        @test length(ci_all) == length(h2_vec)
+        @test ci_all[t_test].method === ci.method
+        @test ci_all[t_test].transform === ci.transform
+        @test ci_all[t_test].pd_hessian == ci.pd_hessian
+        @test isapprox(ci_all[t_test].estimate, ci.estimate; rtol = 1e-10)
+        @test isapprox(ci_all[t_test].lower, ci.lower; rtol = 1e-8, atol = 1e-8)
+        @test isapprox(ci_all[t_test].upper, ci.upper; rtol = 1e-8, atol = 1e-8)
+
         # Regression guard (issue #92): packed phylo-signal H² must equal the
         # public phylo_signal(fit; Σ_phy)[t]. This is the has_phy_unique path,
         # where σ_phy is packed on the natural signed scale.

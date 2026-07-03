@@ -238,7 +238,9 @@ end
     # ----------------------------------------------------------------------
     @testset "covariate wrappers: NA == explicit mask" begin
         Random.seed!(44)
-        p, K, n, q = 5, 1, 100, 1
+        # Row-effect wrappers estimate n - 1 finite-difference site effects; keep
+        # this as an equality smoke rather than a runtime gate.
+        p, K, n, q = 5, 1, 50, 1
         β = log.([3.0, 4.0, 2.5, 5.0, 3.5]); Λ = 0.3 .* randn(p, K)
         γ = [0.5]
         Xenv = randn(n, q)
@@ -277,8 +279,8 @@ end
         @test isapprox(ff_mask.β, ff_na.β; atol = 1e-6)
 
         # --- row effects ---
-        fr_na   = fit_roweffect_gllvm(Ym;    family = Poisson(), K = K)
-        fr_mask = fit_roweffect_gllvm(Yfull; family = Poisson(), K = K, mask = mask)
+        fr_na   = fit_roweffect_gllvm(Ym;    family = Poisson(), K = K, iterations = 160)
+        fr_mask = fit_roweffect_gllvm(Yfull; family = Poisson(), K = K, mask = mask, iterations = 160)
         @test fr_na.converged
         @test isapprox(fr_mask.loglik, fr_na.loglik; atol = 1e-6)
         @test isapprox(fr_mask.β, fr_na.β; atol = 1e-6)

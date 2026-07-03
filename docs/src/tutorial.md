@@ -201,8 +201,8 @@ sel.aic; sel.bic; sel.best_k; sel.best     # sel.best is the fitted model at bes
 Lower AIC/BIC is better; BIC penalises extra factors more and tends to pick a
 smaller `K`. Use `criterion = :aic` to switch.
 
-Finally, `simulate` draws a fresh response matrix from a fitted model (useful for
-posterior-predictive checks):
+Finally, `simulate` draws a fresh response matrix from scalar-mean GLM-style,
+Tweedie, and covariate fits (useful for posterior-predictive checks):
 
 ```julia
 Ysim = simulate(fp, size(Y, 2))                 # p×n new draw
@@ -228,10 +228,14 @@ terms by name (`"beta[1]"`, `"Lambda[2,1]"`, `"r"`) or by group (`"beta"`,
 
 All three methods accept the scalar-μ GLM families (`PoissonFit`, `BinomialFit`,
 `NBFit`, `BetaFit`, `GammaFit`, `ExponentialFit`), the two-part families
-(`ZIPFit`, `ZINBFit`, `ZIBFit`, the hurdle/delta fits), and `OrdinalFit`,
-`GllvmCovFit`, `RowEffectFit`. (The Gaussian `GllvmFit` uses the separate
-`confint` / `profile_ci` / `bootstrap_ci` interface — see
-[Confidence intervals](/confidence-intervals).)
+(`ZIPFit`, `ZINBFit`, `ZIBFit`, the hurdle/delta fits), `OrdinalFit`, and
+`GllvmCovFit` when the fitted design is supplied as `X = X`. Structural rows are
+narrower: `QuadraticFit` and `RowEffectFit` have Wald/profile intervals but no
+bootstrap route, while species-covariate, fourth-corner, RRR, and constrained
+ordination fits use dedicated Wald helpers because their designs are not stored
+inside the fit object. (The Gaussian `GllvmFit` uses the separate `confint` /
+`profile_ci` / `bootstrap_ci` interface — see [Confidence
+intervals](/confidence-intervals).)
 
 For the headline regression-style summary, `coef_table` wraps the Wald entry and
 adds the `z` statistic and two-sided p-value:
@@ -279,6 +283,15 @@ couples them (far fewer parameters than free per-species slopes):
 
 ```julia
 fit_fourthcorner_gllvm(Y; family = Poisson(), Xenv = Xenv, TR = TR, K = 2).C
+```
+
+Predictor-informed latent-score means keep the latent axes random but shift
+their mean by site covariates. The rotation-stable effect is the trait-scale
+product `B_lv = Λ * alpha_lv'`:
+
+```julia
+fit_poisson_gllvm(Y; K = 1, X_lv = X_lv) |> extract_lv_effects
+fit_ordinal_gllvm(Yo; K = 1, X_lv = X_lv) |> extract_lv_effects
 ```
 
 For **constrained ordination**, the latent axes are driven by site covariates.

@@ -72,9 +72,11 @@
 # VECTOR routes to the MIXED-family path (fit_mixed_gllvm): one shared latent block
 # across distinct response families, with the cross-distribution latent-scale
 # `correlation` as the headline. Lognormal is a documented follow-up; fixed-effect
-# X is wired (Gaussian); predictor-informed latent-score X_lv is wired for the
-# ordinary complete-response Gaussian bridge and complete-response binomial
-# logit/probit/cloglog bridge rows as point-estimate-only C1 routes.
+# X is wired (Gaussian plus the admitted one-part covariate kernels);
+# predictor-informed latent-score X_lv is wired for complete-response one-part
+# Gaussian, Poisson, NB2, Beta, Gamma, and binomial logit/probit/cloglog bridge
+# rows. Admitted X_lv rows route Wald B_lv CIs only; profile/bootstrap, masks,
+# mixed-family X_lv, and source-specific X_lv remain separate gates.
 # Confidence intervals (Wald / profile / bootstrap) route
 # through `options["ci_method"]` for scalar-CI one-part families (Gaussian,
 # Poisson, Binomial) and grouped-dispersion NB2/NB1/Beta/Gamma rows. NB2, NB1,
@@ -499,11 +501,13 @@ The `ci_no_x_*` columns report that a native route exists for complete one-part
 no-covariate fits. The `ci_mask_*` columns are narrower: no-covariate one-part
 response-mask fits whose masked likelihood can also drive Wald/profile/bootstrap
 intervals. The `ci_x_*` columns are complete-response one-part fixed-effect-X
-fits. `predictor_informed_lv` marks the point-estimate-only Gaussian and
-binomial logit/probit/cloglog X_lv bridge routes; it does not imply confidence
-intervals or broader non-Gaussian parity. None of the CI groups imply
-mixed-family or R-bridge parity coverage. Use `status` and `notes` for public
-claim wording.
+fits. `predictor_informed_lv` marks complete-response one-part X_lv bridge
+routes for Gaussian, Poisson, NB2, Beta, Gamma, and binomial
+logit/probit/cloglog. It does not imply source-specific X_lv, mixed-family X_lv,
+response-mask X_lv, or profile/bootstrap X_lv intervals; Wald B_lv CI payloads
+for admitted X_lv fits are routed by `bridge_fit` but intentionally have no
+separate capability column. None of the CI groups imply mixed-family or
+R-bridge parity coverage. Use `status` and `notes` for public claim wording.
 """
 function bridge_capabilities()
     onepart = collect(_BRIDGE_ONEPART_FAMILIES)
@@ -546,25 +550,25 @@ function bridge_capabilities()
         notes = vcat(
             [
                 f == "negbinomial" ?
-                    "one-part reduced-rank bridge family; default no-X route uses per-trait grouped dispersion; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; point-estimate predictor-informed latent-score X_lv via the shared-dispersion fitter is wired; X_lv CIs remain follow-ups" :
+                    "one-part reduced-rank bridge family; default no-X route uses per-trait grouped dispersion; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; predictor-informed latent-score X_lv via the shared-dispersion fitter is wired for complete-response point fits; X_lv Wald B_lv CI payloads are routed; profile/bootstrap X_lv CIs remain follow-ups" :
                 f == "beta" ?
-                    "one-part reduced-rank bridge family; default no-X route uses per-trait grouped dispersion; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; point-estimate predictor-informed latent-score X_lv via the shared-precision fitter is wired; X_lv CIs remain follow-ups" :
+                    "one-part reduced-rank bridge family; default no-X route uses per-trait grouped dispersion; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; predictor-informed latent-score X_lv via the shared-precision fitter is wired for complete-response point fits; X_lv Wald B_lv CI payloads are routed; profile/bootstrap X_lv CIs remain follow-ups" :
                 f == "nb1" ?
                     "one-part reduced-rank bridge family; default no-X route uses per-trait grouped dispersion; no-X and masked no-X Wald/profile/bootstrap CI payloads are routed; fixed-effect-X remains a follow-up" :
                 f == "gamma" ?
-                    "one-part reduced-rank bridge family; default no-X route uses shared Gamma grouped dispersion to match current native scalar-CV Gamma; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; point-estimate predictor-informed latent-score X_lv via the shared-shape fitter is wired; X_lv CIs remain follow-ups; per-trait Gamma is a native-expansion follow-up" :
+                    "one-part reduced-rank bridge family; default no-X route uses shared Gamma grouped dispersion to match current native scalar-CV Gamma; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; predictor-informed latent-score X_lv via the shared-shape fitter is wired for complete-response point fits; X_lv Wald B_lv CI payloads are routed; profile/bootstrap X_lv CIs remain follow-ups; per-trait Gamma is a native-expansion follow-up" :
                 f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES ?
                     "one-part reduced-rank bridge family; default no-X route uses per-trait ordinal cutpoints; CI routing is a follow-up" :
                 f == "poisson" ?
-                    "one-part reduced-rank bridge family; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; point-estimate predictor-informed latent-score X_lv is wired for complete-response rows; X_lv CIs remain follow-ups; route support is narrower than full R-user parity" :
+                    "one-part reduced-rank bridge family; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; predictor-informed latent-score X_lv is wired for complete-response point fits; X_lv Wald B_lv CI payloads are routed; profile/bootstrap X_lv CIs remain follow-ups; route support is narrower than full R-user parity" :
                 f == "binomial" ?
-                    "one-part reduced-rank bridge family; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; point-estimate predictor-informed latent-score X_lv is wired for complete-response rows; X_lv CIs remain follow-ups; route support is narrower than full R-user parity" :
+                    "one-part reduced-rank bridge family; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; predictor-informed latent-score X_lv is wired for complete-response point fits; X_lv Wald B_lv CI payloads are routed; profile/bootstrap X_lv CIs remain follow-ups; route support is narrower than full R-user parity" :
                 f in _BRIDGE_BINOMIAL_XLV_FAMILIES ?
-                    "one-part reduced-rank bridge family; no-X and masked no-X Wald/profile/bootstrap CI payloads are routed; point-estimate predictor-informed latent-score X_lv is wired for complete-response rows; X_lv CIs remain follow-ups; route support is narrower than full R-user parity" :
+                    "one-part reduced-rank bridge family; no-X and masked no-X Wald/profile/bootstrap CI payloads are routed; predictor-informed latent-score X_lv is wired for complete-response point fits; X_lv Wald B_lv CI payloads are routed; profile/bootstrap X_lv CIs remain follow-ups; route support is narrower than full R-user parity" :
                 f in _BRIDGE_MASK_CI_FAMILIES ?
                     "one-part reduced-rank bridge family; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; route support is narrower than full R-user parity" :
                 f == "gaussian" ?
-                    "one-part reduced-rank bridge family; fixed-effect-X and point-estimate predictor-informed latent-score X_lv routes are wired; X_lv CIs and non-Gaussian non-binomial X_lv remain follow-ups; route support is narrower than full R-user parity" :
+                    "one-part reduced-rank bridge family; fixed-effect-X and predictor-informed latent-score X_lv routes are wired for complete-response point fits; X_lv Wald B_lv CI payloads are routed; profile/bootstrap X_lv CIs, mixed-family X_lv, and source-specific X_lv remain follow-ups; route support is narrower than full R-user parity" :
                     "one-part reduced-rank bridge family; route support is narrower than full R-user parity"
                 for f in onepart
             ],
@@ -680,8 +684,9 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                        "posterior zero-mean score deviations, and lv_effects = " *
                        "Lambda*alpha_lv' is the rotation-stable trait-effect matrix. " *
                        "Confidence intervals on B_lv are available via " *
-                       "ci_method=\"wald\" (delta method); profile/bootstrap and " *
-                       "broader non-Gaussian X_lv routes remain separate gates.",
+                       "ci_method=\"wald\" (delta method); profile/bootstrap, " *
+                       "response masks, mixed-family X_lv, and source-specific " *
+                       "X_lv remain separate gates.",
                 ci = nothing)
             return merge(base, (lv_effects = Matrix{Float64}(extract_lv_effects(fit)),
                                 alpha_lv = Matrix{Float64}(fit.pars.alpha_lv),
@@ -819,9 +824,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                        "X_lv*alpha_lv, scores_innovation are the posterior " *
                        "zero-mean Laplace score modes, and lv_effects = " *
                        "Lambda*alpha_lv' is the rotation-stable trait-effect " *
-                       "matrix. Wald confidence intervals on B_lv are available via ci_method=\"wald\"; profile/bootstrap, response masks, and " *
-                       "broader non-Gaussian X_lv routes remain separate " *
-                       "validation gates."
+                       "matrix. Wald confidence intervals on B_lv are available via ci_method=\"wald\"; profile/bootstrap, response masks, mixed-family X_lv, and source-specific X_lv remain separate validation gates."
             return merge(base, (note = isempty(base.note) ? xlv_note :
                                       string(base.note, " ", xlv_note),
                                 lv_effects = Matrix{Float64}(extract_lv_effects(fit)),
@@ -870,9 +873,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                        "X_lv*alpha_lv, scores_innovation are the posterior " *
                        "zero-mean Laplace score modes, and lv_effects = " *
                        "Lambda*alpha_lv' is the rotation-stable trait-effect " *
-                       "matrix. Wald confidence intervals on B_lv are available via ci_method=\"wald\"; profile/bootstrap, response masks, and " *
-                       "broader non-Gaussian X_lv routes remain separate " *
-                       "validation gates."
+                       "matrix. Wald confidence intervals on B_lv are available via ci_method=\"wald\"; profile/bootstrap, response masks, mixed-family X_lv, and source-specific X_lv remain separate validation gates."
             return merge(base, (note = isempty(base.note) ? xlv_note :
                                       string(base.note, " ", xlv_note),
                                 lv_effects = Matrix{Float64}(extract_lv_effects(fit)),
@@ -917,9 +918,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                        "scores_innovation are the posterior zero-mean Laplace score " *
                        "modes, and lv_effects = Lambda*alpha_lv' is the " *
                        "rotation-stable trait-effect matrix; the shared NB2 " *
-                       "dispersion r is jointly estimated. Wald confidence intervals on B_lv are available via ci_method=\"wald\"; profile/bootstrap," *
-                       "response masks, grouped dispersion, and broader non-Gaussian " *
-                       "X_lv routes remain separate validation gates."
+                       "dispersion r is jointly estimated. Wald confidence intervals on B_lv are available via ci_method=\"wald\"; profile/bootstrap, response masks, grouped dispersion, mixed-family X_lv, and source-specific X_lv remain separate validation gates."
             return merge(base, (note = isempty(base.note) ? xlv_note :
                                       string(base.note, " ", xlv_note),
                                 lv_effects = Matrix{Float64}(extract_lv_effects(fit)),
@@ -980,9 +979,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                        "scores_innovation are the posterior zero-mean Laplace score " *
                        "modes, and lv_effects = Lambda*alpha_lv' is the " *
                        "rotation-stable trait-effect matrix; the shared precision " *
-                       "phi is jointly estimated. Wald confidence intervals on B_lv are available via ci_method=\"wald\"; profile/bootstrap, response " *
-                       "masks, per-trait precision, and broader non-Gaussian X_lv " *
-                       "routes remain separate validation gates."
+                       "phi is jointly estimated. Wald confidence intervals on B_lv are available via ci_method=\"wald\"; profile/bootstrap, response masks, per-trait precision, mixed-family X_lv, and source-specific X_lv remain separate validation gates."
             return merge(base, (note = isempty(base.note) ? xlv_note :
                                       string(base.note, " ", xlv_note),
                                 lv_effects = Matrix{Float64}(extract_lv_effects(fit)),
@@ -1030,9 +1027,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                        "scores_innovation are the posterior zero-mean Laplace score " *
                        "modes, and lv_effects = Lambda*alpha_lv' is the " *
                        "rotation-stable trait-effect matrix; the shared shape alpha " *
-                       "is jointly estimated. Wald confidence intervals on B_lv are available via ci_method=\"wald\"; profile/bootstrap, response masks, " *
-                       "and broader non-Gaussian X_lv routes remain separate " *
-                       "validation gates."
+                       "is jointly estimated. Wald confidence intervals on B_lv are available via ci_method=\"wald\"; profile/bootstrap, response masks, mixed-family X_lv, and source-specific X_lv remain separate validation gates."
             return merge(base, (note = isempty(base.note) ? xlv_note :
                                       string(base.note, " ", xlv_note),
                                 lv_effects = Matrix{Float64}(extract_lv_effects(fit)),

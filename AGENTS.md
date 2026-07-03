@@ -90,6 +90,36 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
+- **Codex restart handoff for Phylo Model A redesign (2026-06-30).**
+  The current LV arc is closed for ordinary `gllvmTMB` (`extract_lv_effects()`
+  axis-effect default and trait-effect intervals are on `main` via #581), and
+  GLLVM.jl PR #127 is closed/parked as blocked evidence. The next session should
+  start with a small Phylo Model A redesign plan, not with more same-route
+  bootstrap compute. The decisive weak cell is p=80, K=2, lambda=0.5 `B_lv`:
+  `bootstrap_basic` reached `591/720 = 0.821`, optimistic bound `671/800 =
+  0.839`, and the direct `Y ~ X_lv` comparator tracks the fitted
+  latent-product slope, including task 8 (`0.536` vs `0.533`). Keep
+  source-specific `lv` coverage unadvertised and R `phylo_latent(..., lv = ~ x)`
+  fail-loud until a redesigned target is chosen. `START HERE (Codex):`
+  `docs/dev-log/handover/2026-06-30-codex-handover.md`.
+- **`latent(lv=~x)` CI trio DONE; phylo Model A interval gate BLOCKED (2026-06-30).**
+  `main` @ `0e99c04` has all six X_lv bridge routes + the `2f0` Wald-SE fix + the full
+  **Wald/profile/bootstrap CI trio** for ordinary `B_lv` (#116-#126). The headline
+  **phylo x X_lv = Model A** (predictor scores under phylogenetic trait-covariance) has local
+  direct/native Gaussian engine and CI plumbing on `claude/phylo-xlv-modelA-20260627`, but
+  Codex diagnostics block public promotion: the p=80, K=2, lambda=0.5 `B_lv` weak cell
+  under-covers for Wald, t-Wald, percentile bootstrap, and the bench-only `bootstrap_basic`
+  candidate (`591/720 = 0.821` across 9 valid basic-bootstrap seeds; perfect cancelled task 1
+  would still only reach `671/800 = 0.839`). A direct `Y ~ X_lv` slope comparator tracks the
+  latent-product slope almost exactly, including the bad task 8 (`0.536` vs `0.533` of truth),
+  so this is an interval/regime boundary rather than a simple extractor artifact. Important
+  scope boundary: `confint_lv_effects` covers induced trait-scale `B_lv`; it does not provide
+  CLV/axis-effect SEs for raw `alpha_lv`. **Remaining live-toolchain work:** choose a defensible
+  interval target or record the weak-cell block; keep R `phylo_latent(..., lv = ~ x)` fail-loud
+  until then; do not push PR #127 or advertise source-specific `lv` coverage without maintainer
+  instruction. R env is LIVE on the Mac.
+  `START HERE (Codex):` `docs/dev-log/handover/2026-06-27-codex-handover.md` ·
+  `START HERE (Claude):` `docs/dev-log/handover/2026-06-27-claude-handover-2.md`.
 - **Phase 0 — Team and memory scaffolding (complete, 2026-05-30).** PR #1.
 - **Phase 1.1 — O(p) node-frame gradient (complete, CI green cross-platform,
   2026-05-30).** PR #2; `src/node_gradient.jl` (+ wired `sparse_phy_grad.jl`);

@@ -225,6 +225,41 @@ function simulate(fit::BetaFit, n::Integer;
 end
 
 """
+    simulate(fit::OrdinalFit, n; X_lv=nothing, rng=Random.default_rng()) -> p×n matrix
+
+Ordinal simulation from a shared-cutpoint cumulative-link fit. For fits that
+used `X_lv`, pass the matching n×q_lv predictor matrix; the simulator draws
+`z_total = X_lv * alpha_lv + z` with `z ~ N(0, I_K)`.
+"""
+function simulate(fit::OrdinalFit, n::Integer;
+                  X_lv::Union{Nothing, AbstractMatrix} = nothing,
+                  rng::AbstractRNG = default_rng())
+    p, K = size(fit.Λ)
+    Zmean = if fit.alpha_lv === nothing
+        zeros(Float64, n, K)
+    else
+        X_lv === nothing && throw(ArgumentError(
+            "this OrdinalFit used X_lv; pass the matching X_lv to simulate"))
+        size(X_lv, 1) == n ||
+            throw(ArgumentError("X_lv first dim ($(size(X_lv, 1))) must equal n ($n)"))
+        size(X_lv, 2) == size(fit.alpha_lv, 1) ||
+            throw(ArgumentError(
+                "X_lv second dim ($(size(X_lv, 2))) must equal fitted alpha_lv rows ($(size(fit.alpha_lv, 1)))"))
+        _lv_score_mean(X_lv, fit.alpha_lv)
+    end
+    Y = Matrix{Int}(undef, p, n)
+    @inbounds for s in 1:n
+        z_total = Zmean[s, :] .+ randn(rng, K)
+        η = fit.Λ * z_total
+        for t in 1:p
+            probs = [_ord_prob(c, η[t], fit.τ, fit.link) for c in 1:fit.C]
+            Y[t, s] = rand(rng, Categorical(probs ./ sum(probs)))
+        end
+    end
+    return Y
+end
+
+"""
     simulate(fit::StudentTFit, n; rng=Random.default_rng()) -> p×n matrix
 
 Simulate from a fitted Student-t GLLVM (heavy-tailed continuous, fixed `ν`,

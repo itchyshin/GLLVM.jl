@@ -38,7 +38,8 @@ grid).
 ## Quick start
 
 ```julia
-using Pkg; Pkg.add("GLLVM")
+using Pkg
+Pkg.add(url = "https://github.com/itchyshin/GLLVM.jl")
 using GLLVM
 
 # Simulate a Gaussian GLLVM fixture
@@ -103,10 +104,15 @@ with sparse random-effect design matrices. `GLLVM.jl` solves a
   GLM fit (`fit_phylo_glm`) for non-Gaussian families via an augmented-state
   joint Laplace
 - SPDE / Matérn spatial latent field, with kriging prediction
-- Offsets, missing-data (NA) masks, Dunn–Smyth residuals, AIC / BIC,
+- Offsets, response-missing masks for GLM Laplace rows, Dunn–Smyth residuals, AIC / BIC,
   `predict` / `getLV` / `ordination`, and an `@formula` front-end
-- Wald / profile / bootstrap CI routes across scalar-dispersion GLM and two-part
-  families; grouped-dispersion bridge CIs remain status-gated before promotion
+- Wald / profile / bootstrap CI routes across scalar-dispersion GLM, grouped
+  NB2/NB1/Beta/Gamma, and two-part families; grouped Tweedie, per-trait
+  ordinal, and bridge-only edge rows remain status-gated before promotion
+- Predictor-informed latent-score effect CIs target `B_lv = Lambda * alpha_lv'`
+  for admitted ordinary Gaussian, Poisson, NB2, Binomial, Beta, Gamma, and
+  shared-cutpoint Ordinal fits; profile-likelihood calls can be limited to
+  selected entries of `vec(B_lv)` with `profile_indices`
 - PPCA closed-form initialisation
 - Structure-aware Cholesky (Woodbury for Λ Λ' + diag)
 - EM-FA solver as an alternative to LBFGS

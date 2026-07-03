@@ -60,7 +60,12 @@ using GLLVM, Test, Random, LinearAlgebra, ForwardDiff
         X_lv = randn(40, 1)
         @test_throws ArgumentError fit_gaussian_gllvm(y; K = 1, X_lv = X_lv, K_W = 1)
         @test_throws ArgumentError fit_gaussian_gllvm(y; K = 1, X_lv = X_lv, has_diag = true)
-        @test_throws ArgumentError fit_gaussian_gllvm(y; K = 1, X_lv = X_lv, K_phy = 1,
-                                                      Σ_phy = I(4))
+        @test_throws ArgumentError fit_gaussian_gllvm(y; K = 1, X_lv = X_lv, K_phy = 1)
+
+        phy = fit_gaussian_gllvm(y; K = 1, X_lv = X_lv, K_phy = 1,
+                                 Σ_phy = Matrix(I, 4, 4), iterations = 20)
+        @test phy.pars.alpha_lv !== nothing
+        @test phy.pars.Λ_phy !== nothing
+        @test size(extract_lv_effects(phy)) == (4, 1)
     end
 end

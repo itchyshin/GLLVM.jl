@@ -19,10 +19,21 @@ using GLLVM, Test, Random, LinearAlgebra
         y = Λ_true * randn(K, n) + σ_true * randn(p, n)
         fit = fit_gaussian_gllvm(y; K = K)
         ci_prof = GLLVM.profile_ci(fit, "sigma_eps"; y = y)
+        ci_tuned = GLLVM.profile_ci(fit, "sigma_eps"; y = y,
+                                    profile_iterations = 200,
+                                    profile_g_tol = 1e-4,
+                                    profile_max_expand = 20,
+                                    profile_max_bisect = 30)
         # Both bounds should bracket the truth
         @test ci_prof.lower < σ_true < ci_prof.upper
+        @test ci_tuned.lower < σ_true < ci_tuned.upper
+        @test ci_tuned.method in (:profile, :partial)
         # Width should be sensible (not collapsed, not absurd)
         @test 0.01 < (ci_prof.upper - ci_prof.lower) < 1.0
+        @test_throws ArgumentError GLLVM.profile_ci(fit, "sigma_eps"; y = y,
+                                                    profile_iterations = 0)
+        @test_throws ArgumentError GLLVM.profile_ci(fit, "sigma_eps"; y = y,
+                                                    profile_g_tol = Inf)
         @info "σ_eps profile CI (clean fixture)" lower=ci_prof.lower upper=ci_prof.upper truth=σ_true method=ci_prof.method
     end
 

@@ -83,10 +83,17 @@ include("families/variational_exponential.jl") # VA/ELBO marginal — Exponentia
 include("spde_latent.jl")
 include("spde_latent_postfit.jl")
 include("phylo_glm.jl")                   # phylogenetic GLLVM for non-Gaussian families (issue #61, working fit)
+include("phylo_poisson_xlv.jl")           # internal S1 proof: phylo + Poisson + predictor-informed LV
+include("phylo_binomial_xlv.jl")          # internal S1 proof: phylo + Binomial + predictor-informed LV
+include("phylo_nb_xlv.jl")                # internal S1 proof: phylo + NB2 + predictor-informed LV
+include("phylo_gamma_xlv.jl")             # internal S1 proof: phylo + Gamma + predictor-informed LV
+include("phylo_beta_xlv.jl")              # internal S1 proof: phylo + Beta + predictor-informed LV
+include("phylo_ordinal_xlv.jl")           # internal S1 proof: phylo + shared-cutpoint Ordinal + predictor-informed LV
 include("coevolution_glm.jl")             # cross-family (non-Gaussian) cross-lineage coevolution (Track T4): K* through a dense Laplace
 
 # Post-fit API (ordination, predict, residuals, summary)
 include("postfit.jl")
+include("lv_targets.jl")                # internal eta-scale realised LV targets
 include("families/com_poisson.jl")        # Conway–Maxwell–Poisson (under/overdispersed counts) — beyond gllvmTMB
 include("ordination.jl")                  # ordination output (site scores + species loadings, canonical rotation)
 include("model_selection.jl")             # select_lv: latent-dimension selection by AIC/BIC

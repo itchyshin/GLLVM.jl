@@ -95,7 +95,19 @@ using LinearAlgebra
         zt = vec(X_lv * alpha) .+ randn(n)
         Yg = Λ * reshape(zt, 1, n) .+ 0.3 .* randn(p, n)   # centred: no β; B_lv = Λ·α
         fit = fit_gaussian_gllvm(Yg; K = K, X_lv = X_lv, iterations = 300)
-        _check(confint_lv_effects(fit, Yg, X_lv), fit)
+        cw = confint_lv_effects(fit, Yg, X_lv)
+        _check(cw, fit)
+        ct = confint_lv_effects(fit, Yg, X_lv; method = :wald_t_unit)
+        df = max(n - K - 1, 1)
+        tcrit = quantile(TDist(df), 0.975)
+        @test ct.method == :wald_t_unit
+        @test ct.term == cw.term
+        @test ct.level == cw.level
+        @test ct.pd_hessian == cw.pd_hessian
+        @test ct.estimate ≈ cw.estimate atol = 1e-10
+        @test ct.se ≈ cw.se atol = 1e-10
+        @test ct.upper .- ct.estimate ≈ tcrit .* ct.se rtol = 1e-6
+        @test all((ct.upper .- ct.lower) .> (cw.upper .- cw.lower))
         @test_throws ArgumentError confint_lv_effects(fit_gaussian_gllvm(Yg; K = K), Yg, X_lv)
     end
 
@@ -160,6 +172,16 @@ using LinearAlgebra
         @test cbg.n_converged >= 25                    # == 0 under the transpose bug
         @test all(isfinite, cbg.lower) && all(isfinite, cbg.upper)
         @test all(cbg.lower .< cbg.upper)
+        cbg_limited = confint_lv_effects(fg2, Yg2, X_lv; method = :bootstrap,
+                                         n_boot = 10, seed = 33,
+                                         bootstrap_iterations = 5)
+        @test cbg_limited.method == :bootstrap
+        @test cbg_limited.term == cbg.term
+        @test cbg_limited.n_converged <= 10
+        @test_throws ArgumentError confint_lv_effects(fg2, Yg2, X_lv;
+                                                      method = :bootstrap,
+                                                      n_boot = 2,
+                                                      bootstrap_iterations = 0)
 
         boot_ok(cb) = cb.method == :bootstrap && cb.n_converged >= 10 &&
                       all(isfinite, cb.lower) && all(cb.lower .< cb.upper)
@@ -268,6 +290,7 @@ using LinearAlgebra
         plain = fit_poisson_gllvm(Y; K = K, iterations = 150)
         @test_throws ArgumentError confint_lv_effects(plain, Y, X_lv)            # no α_lv
         @test_throws ArgumentError confint_lv_effects(xfit, Y, X_lv; level = 1.0) # bad level
+        @test_throws ArgumentError confint_lv_effects(xfit, Y, X_lv; method = :wald_t_unit) # Gaussian-only comparator
         @test_throws ArgumentError confint_lv_effects(xfit, Y, X_lv[1:(n - 1), :]) # row mismatch
     end
 
@@ -290,6 +313,262 @@ using LinearAlgebra
         # asymmetry rather than being forced symmetric).
         @test maximum(abs.((cprof.upper .- cprof.lower) .- (cwald.upper .- cwald.lower)) ./
                       (cwald.upper .- cwald.lower)) < 0.25
+
+        selected = [2, 4]
+        csel = confint_lv_effects(fg, Yg, X_lv; method = :profile,
+                                  profile_indices = selected,
+                                  profile_iterations = 1000,
+                                  profile_g_tol = 1e-8,
+                                  profile_max_expand = 40,
+                                  profile_max_bisect = 40)
+        @test csel.method == :profile
+        @test csel.term == cprof.term[selected]
+        @test csel.estimate ≈ cprof.estimate[selected] atol = 1e-10
+        @test csel.lower ≈ cprof.lower[selected] atol = 1e-6
+        @test csel.upper ≈ cprof.upper[selected] atol = 1e-6
+        @test all(isnan, csel.se)
+        @test_throws ArgumentError confint_lv_effects(fg, Yg, X_lv;
+                                                      method = :profile,
+                                                      profile_indices = Int[])
+        @test_throws ArgumentError confint_lv_effects(fg, Yg, X_lv;
+                                                      method = :profile,
+                                                      profile_indices = [2, 2])
+        @test_throws ArgumentError confint_lv_effects(fg, Yg, X_lv;
+                                                      method = :profile,
+                                                      profile_indices = [0])
+        @test_throws ArgumentError confint_lv_effects(fg, Yg, X_lv;
+                                                      method = :wald,
+                                                      profile_indices = selected)
+        @test_throws ArgumentError confint_lv_effects(fg, Yg, X_lv;
+                                                      method = :profile,
+                                                      profile_iterations = 0)
+        @test_throws ArgumentError confint_lv_effects(fg, Yg, X_lv;
+                                                      method = :profile,
+                                                      profile_g_tol = Inf)
+    end
+
+    @testset "profile method (Poisson selected-entry canary)" begin
+        # Gate 1 canary for ordinary non-Gaussian B_lv profile-LR: one selected
+        # Poisson entry, finite endpoints, and known DGP truth inside the interval.
+        # This is route evidence, not a coverage-calibration claim.
+        Random.seed!(20260702)
+        pc, nc, Kc = 2, 45, 1
+        Xc = reshape(collect(range(-1.0, 1.0; length = nc)), nc, 1)
+        Lc = reshape([0.55, -0.42], pc, Kc)
+        ac = reshape([0.65], 1, Kc)
+        Bc = vec(Lc * ac')
+        βc = log.([6.0, 4.5])
+        zc = vec(Xc * ac) .+ randn(nc)
+        ηc = βc .+ Lc * reshape(zc, 1, nc)
+        Yc = [rand(Poisson(exp(ηc[t, s]))) for t in 1:pc, s in 1:nc]
+        fc = fit_poisson_gllvm(Yc; K = Kc, X_lv = Xc, β_init = βc,
+                               Λ_init = Lc, alpha_lv_init = ac,
+                               iterations = 120, g_tol = 1e-6)
+        idx = [1]
+        cpr = confint_lv_effects(fc, Yc, Xc; method = :profile,
+                                 profile_indices = idx,
+                                 profile_iterations = 800,
+                                 profile_max_expand = 20,
+                                 profile_max_bisect = 24)
+        @test cpr.method == :profile
+        @test cpr.term == ["B_lv[1,1]"]
+        @test cpr.estimate ≈ vec(extract_lv_effects(fc))[idx] atol = 1e-10
+        @test all(isnan, cpr.se)
+        @test all(isfinite, cpr.lower) && all(isfinite, cpr.upper)
+        @test all(cpr.lower .< cpr.estimate .< cpr.upper)
+        @test cpr.lower[1] <= Bc[idx[1]] <= cpr.upper[1]
+    end
+
+    @testset "profile method (Binomial logit selected-entry canary)" begin
+        # Second ordinary non-Gaussian Gate 1 canary: Binomial logit shares the
+        # selected-entry profile contract while also threading trial counts.
+        Random.seed!(20260703)
+        pc, nc, Kc = 2, 60, 1
+        Xc = reshape(collect(range(-1.0, 1.0; length = nc)), nc, 1)
+        Lc = reshape([0.45, -0.35], pc, Kc)
+        ac = reshape([0.55], 1, Kc)
+        Bc = vec(Lc * ac')
+        βc = [-0.35, 0.25]
+        Nc = fill(30, pc, nc)
+        zc = vec(Xc * ac) .+ randn(nc)
+        ηc = βc .+ Lc * reshape(zc, 1, nc)
+        μc = 1.0 ./ (1.0 .+ exp.(-ηc))
+        Yc = [rand(Binomial(Nc[t, s], clamp(μc[t, s], 1e-4, 1 - 1e-4)))
+              for t in 1:pc, s in 1:nc]
+        fc = fit_binomial_gllvm(Yc; K = Kc, N = Nc, link = LogitLink(),
+                                X_lv = Xc, β_init = βc, Λ_init = Lc,
+                                alpha_lv_init = ac, iterations = 160,
+                                g_tol = 1e-6)
+        idx = [1]
+        cpr = confint_lv_effects(fc, Yc, Xc; N = Nc, method = :profile,
+                                 profile_indices = idx,
+                                 profile_iterations = 900,
+                                 profile_max_expand = 20,
+                                 profile_max_bisect = 24)
+        @test cpr.method == :profile
+        @test cpr.term == ["B_lv[1,1]"]
+        @test cpr.estimate ≈ vec(extract_lv_effects(fc))[idx] atol = 1e-10
+        @test all(isnan, cpr.se)
+        @test all(isfinite, cpr.lower) && all(isfinite, cpr.upper)
+        @test all(cpr.lower .< cpr.estimate .< cpr.upper)
+        @test cpr.lower[1] <= Bc[idx[1]] <= cpr.upper[1]
+    end
+
+    @testset "profile method (NB2 selected-entry canary)" begin
+        # Third ordinary non-Gaussian Gate 1 canary: NB2 exercises the shared
+        # dispersion path. The cell is small enough for local tests but keeps
+        # fitted r away from the Poisson boundary.
+        Random.seed!(20260711)
+        pc, nc, Kc = 4, 45, 1
+        Xc = reshape(collect(range(-1.0, 1.0; length = nc)), nc, 1)
+        Lc = reshape([(-1)^i * 0.2 * (1 + 0.08i) for i in 1:pc], pc, Kc)
+        ac = reshape([0.35], 1, Kc)
+        Bc = vec(Lc * ac')
+        βc = log.([8.0, 6.0, 7.0, 5.0])
+        rc = 1.5
+        zc = vec(Xc * ac) .+ randn(nc)
+        ηc = βc .+ Lc * reshape(zc, 1, nc)
+        Yc = [rand(NegativeBinomial(rc, rc / (rc + exp(ηc[t, s]))))
+              for t in 1:pc, s in 1:nc]
+        fc = fit_nb_gllvm(Yc; K = Kc, X_lv = Xc, β_init = βc,
+                          Λ_init = Lc, alpha_lv_init = ac, r_init = rc,
+                          iterations = 160, g_tol = 1e-6)
+        @test fc.converged
+        @test 0.25 < fc.r < 10.0
+        idx = [1]
+        cpr = confint_lv_effects(fc, Yc, Xc; method = :profile,
+                                 profile_indices = idx,
+                                 profile_iterations = 160,
+                                 profile_max_expand = 10,
+                                 profile_max_bisect = 10)
+        @test cpr.method == :profile
+        @test cpr.term == ["B_lv[1,1]"]
+        @test cpr.estimate ≈ vec(extract_lv_effects(fc))[idx] atol = 1e-10
+        @test all(isnan, cpr.se)
+        @test all(isfinite, cpr.lower) && all(isfinite, cpr.upper)
+        @test all(cpr.lower .< cpr.estimate .< cpr.upper)
+        @test cpr.lower[1] <= Bc[idx[1]] <= cpr.upper[1]
+    end
+
+    @testset "profile method (Gamma selected-entry canary)" begin
+        # Fourth ordinary non-Gaussian Gate 1 canary: Gamma exercises the
+        # positive continuous one-part profile route with a fitted shape away
+        # from a near-deterministic limit.
+        Random.seed!(20260722)
+        pc, nc, Kc = 4, 45, 1
+        Xc = reshape(collect(range(-1.0, 1.0; length = nc)), nc, 1)
+        Lc = reshape([(-1)^i * 0.20 * (1 + 0.08i) for i in 1:pc], pc, Kc)
+        ac = reshape([0.35], 1, Kc)
+        Bc = vec(Lc * ac')
+        βc = log.([3.0, 2.4, 2.7, 2.1])
+        αc = 2.5
+        zc = vec(Xc * ac) .+ randn(nc)
+        ηc = βc .+ Lc * reshape(zc, 1, nc)
+        Yc = [rand(Gamma(αc, exp(ηc[t, s]) / αc))
+              for t in 1:pc, s in 1:nc]
+        fc = fit_gamma_gllvm(Yc; K = Kc, X_lv = Xc, β_init = βc,
+                             Λ_init = Lc, alpha_lv_init = ac, α_init = αc,
+                             iterations = 160, g_tol = 1e-6)
+        @test fc.converged
+        @test 0.5 < fc.α < 10.0
+        idx = [1]
+        cpr = confint_lv_effects(fc, Yc, Xc; method = :profile,
+                                 profile_indices = idx,
+                                 profile_iterations = 160,
+                                 profile_max_expand = 10,
+                                 profile_max_bisect = 10)
+        @test cpr.method == :profile
+        @test cpr.term == ["B_lv[1,1]"]
+        @test cpr.estimate ≈ vec(extract_lv_effects(fc))[idx] atol = 1e-10
+        @test all(isnan, cpr.se)
+        @test all(isfinite, cpr.lower) && all(isfinite, cpr.upper)
+        @test all(cpr.lower .< cpr.estimate .< cpr.upper)
+        @test cpr.lower[1] <= Bc[idx[1]] <= cpr.upper[1]
+    end
+
+    @testset "profile method (Beta selected-entry canary)" begin
+        # Fifth ordinary non-Gaussian Gate 1 canary: Beta exercises the
+        # bounded-continuous one-part profile route with fitted precision away
+        # from both degenerate and nearly uniform limits.
+        Random.seed!(20260734)
+        pc, nc, Kc = 5, 50, 1
+        Xc = reshape(collect(range(-1.0, 1.0; length = nc)), nc, 1)
+        Lc = reshape([(-1)^i * 0.16 * (1 + 0.08i) for i in 1:pc], pc, Kc)
+        ac = reshape([0.35], 1, Kc)
+        Bc = vec(Lc * ac')
+        βc = [0.30, -0.20, 0.25, -0.15, 0.05]
+        φc = 12.0
+        zc = vec(Xc * ac) .+ randn(nc)
+        ηc = βc .+ Lc * reshape(zc, 1, nc)
+        μc = clamp.(1.0 ./ (1.0 .+ exp.(-ηc)), 1e-5, 1 - 1e-5)
+        Yc = [rand(Beta(μc[t, s] * φc, (1 - μc[t, s]) * φc))
+              for t in 1:pc, s in 1:nc]
+        fc = fit_beta_gllvm(Yc; K = Kc, X_lv = Xc, β_init = βc,
+                            Λ_init = Lc, alpha_lv_init = ac, φ_init = φc,
+                            iterations = 180, g_tol = 1e-6)
+        @test fc.converged
+        @test 2.0 < fc.φ < 50.0
+        idx = [1]
+        cpr = confint_lv_effects(fc, Yc, Xc; method = :profile,
+                                 profile_indices = idx,
+                                 profile_iterations = 180,
+                                 profile_max_expand = 10,
+                                 profile_max_bisect = 10)
+        @test cpr.method == :profile
+        @test cpr.term == ["B_lv[1,1]"]
+        @test cpr.estimate ≈ vec(extract_lv_effects(fc))[idx] atol = 1e-10
+        @test all(isnan, cpr.se)
+        @test all(isfinite, cpr.lower) && all(isfinite, cpr.upper)
+        @test all(cpr.lower .< cpr.estimate .< cpr.upper)
+        @test cpr.lower[1] <= Bc[idx[1]] <= cpr.upper[1]
+    end
+
+    @testset "profile method (Ordinal logit selected-entry canary)" begin
+        # Sixth ordinary non-Gaussian Gate 1 canary: the Julia-side shared-
+        # cutpoint ordinal route has no intercept, so X_lv enters only through
+        # the latent-score mean and the estimand remains B_lv = Lambda * alpha'.
+        Random.seed!(20260744)
+        pc, nc, Kc, Cc = 2, 60, 1, 4
+        Xc = reshape(collect(range(-1.0, 1.0; length = nc)), nc, 1)
+        Lc = reshape([0.50, -0.38], pc, Kc)
+        ac = reshape([0.55], 1, Kc)
+        Bc = vec(Lc * ac')
+        τc = [-1.1, 0.05, 1.25]
+        zc = vec(Xc * ac) .+ randn(nc)
+        ηc = Lc * reshape(zc, 1, nc)
+        Yc = Matrix{Int}(undef, pc, nc)
+        for s in 1:nc, t in 1:pc
+            probs = [GLLVM._ord_prob(c, ηc[t, s], τc, LogitLink()) for c in 1:Cc]
+            Yc[t, s] = rand(Categorical(probs ./ sum(probs)))
+        end
+        @test all([all(vec(sum(Yc .== c; dims = 2)) .> 0) for c in 1:Cc])
+
+        fc = fit_ordinal_gllvm(Yc; K = Kc, X_lv = Xc, Λ_init = Lc,
+                               alpha_lv_init = ac, iterations = 500,
+                               g_tol = 1e-6)
+        @test fc.converged
+        @test fc.alpha_lv !== nothing
+        @test issorted(fc.τ)
+        @test extract_lv_effects(fc) == fc.Λ * fc.alpha_lv'
+        cwald = confint_lv_effects(fc, Yc, Xc)
+        @test cwald.method == :wald
+        @test cwald.term == ["B_lv[1,1]", "B_lv[2,1]"]
+        @test all(isfinite, cwald.se)
+        @test all(cwald.lower .< cwald.estimate .< cwald.upper)
+
+        idx = [1]
+        cpr = confint_lv_effects(fc, Yc, Xc; method = :profile,
+                                 profile_indices = idx,
+                                 profile_iterations = 220,
+                                 profile_max_expand = 8,
+                                 profile_max_bisect = 8)
+        @test cpr.method == :profile
+        @test cpr.term == ["B_lv[1,1]"]
+        @test cpr.estimate ≈ vec(extract_lv_effects(fc))[idx] atol = 1e-10
+        @test all(isnan, cpr.se)
+        @test all(isfinite, cpr.lower) && all(isfinite, cpr.upper)
+        @test all(cpr.lower .< cpr.estimate .< cpr.upper)
+        @test cpr.lower[1] <= Bc[idx[1]] <= cpr.upper[1]
     end
 
     # GLM profile uses derivative-free NelderMead over the Laplace marginal and is
