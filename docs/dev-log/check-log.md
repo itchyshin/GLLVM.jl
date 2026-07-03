@@ -1,5 +1,40 @@
 # Check Log
 
+## 2026-07-03 - R + Julia v1.0 cbind binomial bridge row
+
+Goal: update the GLLVM.jl v1 contract packet after the paired R bridge routed
+ordinary binomial `cbind(successes, failures)` responses as success-count `Y`
+plus trial-count `N` matrices.
+
+Changes:
+
+- Updated `docs/dev-log/v1-contract/r-julia-v1-capability-matrix.md` so the
+  Binomial row records paired `gllvmTMB` commit `fa70b50d`.
+- Updated `docs/dev-log/v1-contract/2026-07-03-bridge-drift-gates.md` so the
+  R-side surface points at commit `fa70b50d`, the cbind drift row is marked
+  resolved for ordinary binomial cbind responses, and the current live drift
+  count is 61 registered rows / 0 unregistered rows / 0 cbind rows.
+- Added after-task report
+  `docs/dev-log/after-task/2026-07-03-r-julia-v1-cbind-binomial-bridge.md`.
+
+Checks:
+
+```sh
+GLLVM_JL_PATH='/Users/z3437171/Dropbox/Github Local/GLLVM.jl' JULIA_HOME='/Users/z3437171/.juliaup/bin' Rscript --vanilla -e 'pkgload::load_all(quiet = TRUE); testthat::test_file("tests/testthat/test-julia-bridge-live-capabilities.R")'
+Rscript --vanilla -e 'pkgload::load_all(quiet = TRUE); testthat::test_file("tests/testthat/test-julia-bridge.R")'
+git diff --check -- docs/dev-log/v1-contract/r-julia-v1-capability-matrix.md docs/dev-log/v1-contract/2026-07-03-bridge-drift-gates.md docs/dev-log/check-log.md docs/dev-log/after-task/2026-07-03-r-julia-v1-cbind-binomial-bridge.md
+rg -n "cbind.*still rejects|current.*62 registered|binomial cbind.*drift" docs/dev-log/v1-contract docs/dev-log/check-log.md
+```
+
+Result: paired R live drift test passed 12/12 with `drift_rows=61`,
+`unregistered=0`, and `cbind_rows=0`; paired R bridge file passed 410 with
+14 expected live-GLLVM-path skips; `git diff --check` was clean. The wording
+scan keeps historical 62-row mentions only in earlier same-day entries.
+
+Still not claimed: R/Julia parity completion, v1.0 completion, masks,
+fixed-effect X, mixed-family CIs, source-specific `lv`, `unique=` parity,
+coverage calibration, or Totoro/DRAC compute.
+
 ## 2026-07-03 - R + Julia v1.0 selected profile parm transport
 
 Goal: update the GLLVM.jl v1 contract packet after the paired R bridge gained

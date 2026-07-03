@@ -18,8 +18,15 @@ vectors, source-specific `lv`, and `unique=` parity remain gated.
 Third follow-up, 2026-07-03: paired `gllvmTMB` commit `96028892` routes named
 post-fit R `confint(..., method = "profile", parm = ...)` selections into the
 Julia bridge `ci_parm` option and adds mocked plus live JuliaCall checks. This
-hardens the selected-profile transport path, but the live drift count remains
-62 registered rows and zero unregistered rows.
+hardens the selected-profile transport path. At that step, the live drift count
+remained 62 registered rows and zero unregistered rows.
+
+Fourth follow-up, 2026-07-03: paired `gllvmTMB` commit `fa70b50d` routes
+ordinary binomial `cbind(successes, failures)` responses through the R Julia
+bridge as success-count `Y` plus trial-count `N` matrices. The live drift test
+now reports 61 registered rows, zero unregistered rows, and zero cbind drift
+rows. `GJL-GATE-CBIND-BINOMIAL` remains active for non-binomial cbind rows,
+invalid cbind counts, and cbind rows combined with separate weights.
 
 ## Purpose
 
@@ -33,7 +40,7 @@ v1.0 arc it is acceptable only when it is named, scoped, and gated.
 - R side: `gllvmTMB::gllvm_julia_capabilities()` from
   `/Users/z3437171/Dropbox/Github Local/gllvmTMB/R/julia-bridge.R`
   and the focused drift tests from the clean worktree
-  `/private/tmp/gllvmtmb-v1-contract-drift-20260703` at `96028892`.
+  `/private/tmp/gllvmtmb-v1-contract-drift-20260703` at `fa70b50d`.
 - Julia side: `GLLVM.bridge_capabilities()` from
   `/Users/z3437171/Dropbox/Github Local/GLLVM.jl/src/bridge.jl`
   on branch `claude/jl-bridge-capabilities-20260619` at `fc8af22c`.
@@ -59,7 +66,7 @@ v1.0 arc it is acceptable only when it is named, scoped, and gated.
 | No-X bootstrap CI | R broader than local Julia except Gaussian | `partial` / `guarded` | Fisher | R ledger can route selected rows; local Julia routes bootstrap only for Gaussian. Bootstrap remains secondary. |
 | Masked CI | R broader than local Julia | `partial` / `guarded` | `GJL-GATE-MASK-X-CI` | R no-X masked CI payloads are selected-row partial; local Julia has no masks. |
 | Fixed-effect-X CI | R broader than local Julia | `partial` / `guarded` | `GJL-GATE-X-CI` | R selected complete-response X CI rows are partial; local Julia has no X. |
-| `cbind` binomial / trial matrix | Local Julia broader than R | `guarded` | `GJL-GATE-CBIND-BINOMIAL` | Julia accepts trial matrix `N`; R bridge still rejects two-column `cbind(successes, failures)` marshaling. |
+| `cbind` binomial / trial matrix | resolved for ordinary binomial cbind rows | `partial` / gated edges | `GJL-GATE-CBIND-BINOMIAL` | R and local Julia both admit the tested ordinary cbind-as-trials row. The R gate remains for non-binomial cbind rows, invalid cbind counts, and cbind with separate weights. |
 | Ordinal Wald CI | Local Julia broader than R ledger | `guarded/partial` | Fisher | Local Julia reports Wald CI for `OrdinalFit`; R ledger keeps per-trait ordinal CI endpoints gated. Must not promote broad ordinal CI parity. |
 | Ordinal residuals | Local Julia broader than R ledger | `guarded` | `GJL-GATE-ORDINAL-RESIDUAL` | Local Julia capability says residuals exist for local fit objects; R bridge deliberately rejects ordinal response/Pearson residual semantics. |
 | Postfit simulate | R broader for non-ordinal retained payload rows; local Julia bridge says false | `partial` / branch drift | Grace + Hopper | R reconstructs conditional simulations from retained payloads for selected rows; local Julia `bridge_capabilities()` reports no post-fit response simulator. |
@@ -86,10 +93,12 @@ not try to make every boolean equal. It:
 
 The live-path follow-up in
 `tests/testthat/test-julia-bridge-live-capabilities.R` now asserts that the
-current local `GLLVM.bridge_capabilities()` surface produces 62 registered drift
-rows, including the NB1, ordinal-probit, mixed-family vector, binomial cbind,
-and ordinal CI rows. The old six no-X profile-CI drift rows are resolved for
-local non-ordinal no-X bridge rows. The same file also checks the R post-fit
-selected-profile `parm` transport against the local Julia bridge. Any future
-bridge widening that changes this surface must update the R gate registry, this
-matrix, or both before it can be treated as v1.0 parity evidence.
+current local `GLLVM.bridge_capabilities()` surface produces 61 registered drift
+rows, including the NB1, ordinal-probit, mixed-family vector, ordinal CI, mask,
+X, CI, and postfit simulation rows. The old six no-X profile-CI drift rows are
+resolved for local non-ordinal no-X bridge rows, and the old cbind-binomial
+drift row is resolved for ordinary binomial cbind responses. The same file also
+checks the R post-fit selected-profile `parm` transport against the local Julia
+bridge. Any future bridge widening that changes this surface must update the R
+gate registry, this matrix, or both before it can be treated as v1.0 parity
+evidence.

@@ -17,7 +17,7 @@ Status vocabulary:
 
 | Row | `gllvmTMB` R truth | `GLLVM.jl` truth | v1.0 contract | Evidence | Next gate |
 |---|---|---|---|---|---|
-| No-X one-part families | `partial`: R `engine = "julia"` ledger admits Gaussian, Poisson, Binomial, NB2, NB1, Beta, Gamma, Ordinal, Ordinal probit. | `partial`: local `bridge_fit` admits Gaussian, Poisson, Binomial, NB2, Beta, Gamma, Ordinal only. | `partial` until the same family set is reconciled or differences are named gates. | `R/julia-bridge.R`; `src/bridge.jl`; `tests/testthat/test-julia-bridge.R`; `tests/testthat/test-julia-bridge-live-capabilities.R` in gllvmTMB commit `73af9258`; `test/test_bridge_capabilities.jl`. | Hopper reconciles row-by-row drift, especially NB1 and ordinal-probit. |
+| No-X one-part families | `partial`: R `engine = "julia"` ledger admits Gaussian, Poisson, Binomial, NB2, NB1, Beta, Gamma, Ordinal, Ordinal probit. | `partial`: local `bridge_fit` admits Gaussian, Poisson, Binomial, NB2, Beta, Gamma, Ordinal only. | `partial` until the same family set is reconciled or differences are named gates. | `R/julia-bridge.R`; `src/bridge.jl`; `tests/testthat/test-julia-bridge.R`; `tests/testthat/test-julia-bridge-live-capabilities.R` in paired gllvmTMB commits `73af9258`, `96028892`, and `fa70b50d`; `test/test_bridge_capabilities.jl`. | Hopper reconciles row-by-row drift, especially NB1 and ordinal-probit. |
 | Fixed-effect `X` bridge | `partial`: admitted for complete one-part rows for selected families; mask+X and unsupported designs are gated. | `guarded`: local `bridge_fit` rejects any `X`. | `guarded/partial`: R-side route may remain ahead, but Julia local matrix must not advertise it. | `R/julia-bridge.R` gates `GJL-GATE-X-FAMILY`, `GJL-GATE-X-DESIGN`; `src/bridge.jl` rejects `X`. | Either merge branch-reconciled Julia support or keep explicit drift gate. |
 | Missing-response masks | `partial`: admitted for no-X point rows across selected families; mask+X remains gated. | `guarded`: local `bridge_fit` has no `mask` argument. | `guarded/partial`: no public broad mask parity. | `R/julia-bridge.R`; dashboard `LV structural dependencies`; `src/bridge.jl`. | Curie tests mask-only vs mask+X claims separately. |
 | Mixed-family vector | `point-only`: complete balanced Gaussian + Poisson + Binomial point/postfit only. | `guarded`: local `bridge_fit` rejects mixed-family vectors. | `point-only` in R, `guarded` in local Julia until branch reconciliation. | `R/julia-bridge.R`; `tests/testthat/test-julia-bridge.R`; `tests/testthat/test-julia-bridge-live-capabilities.R`; dashboard mixed blocker. | Keep `GJL-GATE-MIXED-COMPONENTS`; no CI, X, X_lv, mask, or missing-response claim. |
@@ -53,7 +53,7 @@ Status vocabulary:
 |---|---|---|---|---|
 | Gaussian | `partial` | `partial` | Admit no-X bridge and row-specific CI/status; keep Gaussian-only REML language. | Local Julia bridge routes Wald and Gaussian bootstrap; R ledger is broader. |
 | Poisson | `partial` | `partial` | Admit only tested one-part rows. | Structural-source phylo Poisson S2 runner remains private plumbing. |
-| Binomial | `partial` | `partial` | Admit only tested standard-link rows. | R cbind bridge remains gated even if Julia can accept `N`. |
+| Binomial | `partial` | `partial` | Admit only tested standard-link rows. | Paired R commit `fa70b50d` routes ordinary `cbind(successes, failures)` rows as success-count `Y` plus trial-count `N`; `GJL-GATE-CBIND-BINOMIAL` remains for non-binomial cbind rows, invalid counts, and cbind with separate weights. |
 | NB2 | `partial` | `partial` | Admit only tested one-part rows. | Dispersion scale must stay explicit. |
 | NB1 | `partial` | `planned/absent in local bridge` | R-side partial; local Julia contract must not claim it unless branch reconciliation lands. | Drift row required. |
 | Beta | `partial` | `partial` | Admit only tested one-part rows. | Precision scale must stay explicit. |
@@ -98,5 +98,10 @@ Before any row is promoted to `covered`, the implementing slice must provide:
 6. Done in paired `gllvmTMB` commit `96028892`: R post-fit
    `confint(..., method = "profile", parm = ...)` now forwards named
    parameters as Julia `ci_parm` selections, with focused mocked and live
-   JuliaCall tests. The live drift count remains 62 registered rows and zero
-   unregistered rows.
+   JuliaCall tests. At that step, the live drift count remained 62 registered
+   rows and zero unregistered rows.
+7. Done in paired `gllvmTMB` commit `fa70b50d`: R `engine = "julia"` now
+   marshals ordinary binomial `cbind(successes, failures)` responses as
+   success-count `Y` plus trial-count `N`. The paired live drift test now
+   reports 61 registered rows, zero unregistered rows, and zero cbind drift
+   rows.
