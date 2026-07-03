@@ -1,5 +1,42 @@
 # Check Log
 
+## 2026-07-03 - R + Julia v1.0 matrix supersession
+
+Goal: remove the last competing "governing matrix" wording from the old
+bridge-capability ledger so the dated v1.0 contract matrix is the operating
+truth.
+
+Changes:
+
+- Marked `docs/dev-log/capability-bridge-matrix.md` as a historical 2026-06-14
+  ledger superseded for the current v1.0 contract.
+- Pointed the old ledger to
+  `docs/dev-log/v1-contract/r-julia-v1-capability-matrix.md` and
+  `docs/dev-log/v1-contract/2026-07-03-bridge-drift-gates.md`.
+- Marked the old-matrix decision as done in the v1.0 matrix and orientation
+  packet.
+- Added after-task report
+  `docs/dev-log/after-task/2026-07-03-r-julia-v1-matrix-supersession.md`.
+
+Checks:
+
+```sh
+rg -n "governing matrix|GLLVM\\.jl-integration|439/439|68 registered|registered drift|R/Julia parity completion|v1\\.0 completion" docs/dev-log/capability-bridge-matrix.md docs/dev-log/v1-contract docs/dev-log/check-log.md docs/dev-log/after-task/2026-07-03-r-julia-v1-matrix-supersession.md
+git diff --check -- docs/dev-log/capability-bridge-matrix.md docs/dev-log/v1-contract/r-julia-v1-capability-matrix.md docs/dev-log/v1-contract/2026-07-03-r-julia-v1-contract-orientation.md docs/dev-log/check-log.md docs/dev-log/after-task/2026-07-03-r-julia-v1-matrix-supersession.md
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_bridge_capabilities.jl
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_bridge_fit.jl
+```
+
+Result: `git diff --check` was clean; `test_bridge_capabilities.jl` passed
+60/60; `test_bridge_fit.jl` passed 175/175. The wording scan had expected
+boundary hits only: the old `GLLVM.jl-integration` and `439/439` evidence is
+confined to historical or supersession context, and the old exact sentence
+`This is the governing matrix` no longer appears.
+
+Still not claimed: R/Julia parity completion, v1.0 completion, bridge
+widening, source-specific `lv` support, mixed-family CI/X/X_lv/mask support,
+`unique=` parity, or any Totoro/DRAC compute.
+
 ## 2026-07-03 - R + Julia v1.0 live drift follow-up
 
 Goal: update the GLLVM.jl v1.0 contract packet now that the paired `gllvmTMB`

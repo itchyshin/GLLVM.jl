@@ -85,7 +85,9 @@ Before any row is promoted to `covered`, the implementing slice must provide:
 2. Done in paired `gllvmTMB` commit `73af9258`: tightened the synthetic drift
    test and added `tests/testthat/test-julia-bridge-live-capabilities.R`, which
    asserts that live drift is named by `GJL-GATE-*` gates.
-3. Decide whether `docs/dev-log/capability-bridge-matrix.md` should be updated
-   in place or superseded by this dated matrix after a focused review.
+3. Done in the matrix-supersession slice: the historical
+   `docs/dev-log/capability-bridge-matrix.md` is superseded for the current
+   v1.0 contract by this dated matrix, with its old `GLLVM.jl-integration` and
+   `439/439` evidence retained as pre-v1 context only.
 4. Only after the contract is stable, scope the queued selected beta-zero
    twin-lane from prior issues, PRs, and design docs in both repos.

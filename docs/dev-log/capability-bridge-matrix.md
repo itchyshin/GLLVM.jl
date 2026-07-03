@@ -2,41 +2,60 @@
 
 Date: 2026-06-14
 
-This is the governing matrix for finishing the `GLLVM.jl` + `gllvmTMB` twin.
-It replaces broad "full capability" wording with auditable rows. A row can be
-called `covered` only when the Julia engine, R bridge, point estimates,
-objective/logLik, CI or CI-status, tests, docs, visuals where relevant, issue
-ledger, and Rose verdict agree.
+Status: historical ledger, superseded for the current v1.0 capability contract
+as of 2026-07-03.
+
+This file records the 2026-06-14 bridge-capability ledger. It is retained as
+historical context, but it is no longer the governing matrix for finishing the
+`GLLVM.jl` + `gllvmTMB` v1.0 contract. Use
+`docs/dev-log/v1-contract/r-julia-v1-capability-matrix.md` as the current
+capability matrix, and use
+`docs/dev-log/v1-contract/2026-07-03-bridge-drift-gates.md` as the current
+bridge-drift gate source.
+
+The current live contract evidence is:
+
+- paired `gllvmTMB` commit `f3148474` adds the focused live bridge-drift test;
+- paired `GLLVM.jl` commit `d8ca3874` records the live drift result in the
+  v1.0 matrix;
+- configured live mode found 68 registered drift rows and zero unregistered
+  rows.
+
+This is registered drift, not R/Julia parity completion, v1.0 completion, or
+new source-specific `lv` support. The historical rows below may mention the
+older `GLLVM.jl-integration` branch and `439/439` bridge evidence; read them as
+pre-v1 context only.
 
 Current sequencing is **R-first**. Native `gllvmTMB` functionality and the R
 user workflow define the oracle; `GLLVM.jl` then mirrors admitted rows, supplies
 parity evidence, and becomes the acceleration path. Do not promote a Julia-only
 engine feature as a user-facing bridge capability until the R matrix admits it.
 
-## Current Branch Cautions
+## Historical Branch Cautions
 
 - The local `GLLVM.jl-integration` runtime branch has green local evidence for
   the #91 high-rate Poisson safeguard, #92 phylo-signal transformed-Wald scale
   fix, #96 Laplace mode-finder safeguard, and Gamma analytic-gradient default.
   These are local branch facts only until the PR/issue ledger is reconciled on
   GitHub.
-- The local dashboard `GLLVM.jl` checkout is not the current paired bridge
-  runtime. Current R bridge evidence targets `GLLVM.jl-integration` at the head
-  shown on the dashboard, where `GLLVM.bridge_capabilities()` exposes the
-  tested bridge surface. Do not infer bridge capability from stale files in this
-  dashboard worktree.
+- The local dashboard `GLLVM.jl` checkout was not the paired bridge runtime
+  for this ledger. At the time, R bridge evidence targeted
+  `GLLVM.jl-integration` at the head shown on the dashboard, where
+  `GLLVM.bridge_capabilities()` exposed the tested bridge surface. Do not infer
+  current bridge capability from stale files in this historical dashboard
+  worktree.
 - The `gllvmTMB` `engine-julia` branch has a native mixed-family selector
   oracle hardened at 4474e8b: named family lists match selector levels by name,
   row-level family/link ids are retained, and malformed selector names fail
   explicitly. This gives `GLLVM.jl` a clean mixed-family target; it does not
   admit mixed-family `engine = "julia"` yet.
-- The `gllvmTMB` `engine-julia` branch live bridge tests now pass 439/439
-  against current `GLLVM.jl-integration`, including the bridge capability drift
-  guard, fixed-effect-X rows, missing-response-mask rows, Gaussian
-  Wald/profile/bootstrap CI transport, NB1 no-X admission, and NB1 post-fit
-  methods plus complete-data NB2/Beta/Gamma conditional simulation rows. That
-  validates bridge mechanics for the tested cells; it does not validate all
-  family/structure parity rows.
+- The `gllvmTMB` `engine-julia` branch live bridge tests then passed 439/439
+  against the then-current `GLLVM.jl-integration`, including the bridge
+  capability drift guard, fixed-effect-X rows, missing-response-mask rows,
+  Gaussian Wald/profile/bootstrap CI transport, NB1 no-X admission, and NB1
+  post-fit methods plus complete-data NB2/Beta/Gamma conditional simulation
+  rows. That validates bridge mechanics for the tested cells; it does not
+  validate all family/structure parity rows.
 - Non-Gaussian CI wording has had a first cleanup pass, but the matrix remains
   `partial` for non-Gaussian inference overall until docs, issue evidence,
   visual diagnostics, and R bridge parity all agree.

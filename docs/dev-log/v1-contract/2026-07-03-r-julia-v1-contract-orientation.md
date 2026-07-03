@@ -81,9 +81,9 @@ a user-facing release claim.
 1. Reconcile the live R `gllvm_julia_capabilities()` ledger with the local
    Julia `GLLVM.bridge_capabilities()` branch reality. Differences are allowed
    only when a named gate explains them.
-2. Decide whether to update the historical `docs/dev-log/capability-bridge-matrix.md`
-   in-place or supersede it with a dated v1.0 matrix. This packet starts with
-   a dated matrix to avoid rewriting historical status prematurely.
+2. Done: the historical `docs/dev-log/capability-bridge-matrix.md` is retained
+   as pre-v1 context and explicitly superseded by the dated v1.0 matrix for
+   current contract decisions.
 3. Run focused guard tests in both repos before any code or docs claim is
    promoted:
    - `Rscript -e 'testthat::test_file("tests/testthat/test-julia-bridge.R")'`
