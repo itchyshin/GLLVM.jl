@@ -9,6 +9,12 @@ coverage added in `tests/testthat/test-julia-bridge-live-capabilities.R`. With
 68 drift rows and zero unregistered rows. This is a registered-drift result,
 not bridge parity completion.
 
+Second follow-up, 2026-07-03: the selected-profile bridge slice routes no-X
+profile CI payloads locally for Gaussian, Poisson, Binomial, NB2, Beta, and
+Gamma. The paired live drift test now reports 62 registered drift rows and zero
+unregistered rows. Ordinal profile CI, masks, fixed-effect X, mixed-family
+vectors, source-specific `lv`, and `unique=` parity remain gated.
+
 ## Purpose
 
 This note records the expected drift between the current R-side
@@ -43,7 +49,7 @@ v1.0 arc it is acceptable only when it is named, scoped, and gated.
 | Mixed-family vector row | R broader than local Julia | `point-only` / `guarded` | `GJL-GATE-MIXED-COMPONENTS` + Rose | R admits complete balanced no-X/no-mask/no-CI mixed vectors; local Julia rejects family vectors outright. |
 | Fixed-effect `X` | R broader than local Julia | `partial` / branch drift | `GJL-GATE-X-FAMILY`, `GJL-GATE-X-DESIGN` | R routes complete one-part `X` rows for selected families. Local Julia rejects `X`; no local parity claim. |
 | Missing-response masks | R broader than local Julia | `partial` / branch drift | `GJL-GATE-MASK-X` for mask+X | R routes selected no-X mask rows. Local Julia has no mask argument. |
-| No-X profile CI | R broader than local Julia | `partial` / `guarded` | Fisher + Hopper | R ledger can route profile payloads for selected rows; local Julia `bridge_fit` returns unsupported profile payloads. |
+| No-X profile CI | resolved for local non-ordinal no-X rows | `partial` | Fisher + Hopper | Local Julia `bridge_fit` now routes profile payloads for Gaussian, Poisson, Binomial, NB2, Beta, and Gamma; Ordinal profile CI remains unavailable through the bridge and no mask/X/mixed/source-specific profile claim follows. |
 | No-X bootstrap CI | R broader than local Julia except Gaussian | `partial` / `guarded` | Fisher | R ledger can route selected rows; local Julia routes bootstrap only for Gaussian. Bootstrap remains secondary. |
 | Masked CI | R broader than local Julia | `partial` / `guarded` | `GJL-GATE-MASK-X-CI` | R no-X masked CI payloads are selected-row partial; local Julia has no masks. |
 | Fixed-effect-X CI | R broader than local Julia | `partial` / `guarded` | `GJL-GATE-X-CI` | R selected complete-response X CI rows are partial; local Julia has no X. |
@@ -73,9 +79,10 @@ not try to make every boolean equal. It:
 5. report the compact drift table for Mission Control and after-task reports.
 
 The live-path follow-up in
-`tests/testthat/test-julia-bridge-live-capabilities.R` asserts that the current
-local `GLLVM.bridge_capabilities()` surface produces 68 registered drift rows,
-including the NB1, ordinal-probit, mixed-family vector, binomial cbind,
-ordinal CI, and no-X profile-CI rows. Any future bridge widening that changes
+`tests/testthat/test-julia-bridge-live-capabilities.R` now asserts that the
+current local `GLLVM.bridge_capabilities()` surface produces 62 registered drift
+rows, including the NB1, ordinal-probit, mixed-family vector, binomial cbind,
+and ordinal CI rows. The old six no-X profile-CI drift rows are resolved for
+local non-ordinal no-X bridge rows. Any future bridge widening that changes
 this surface must update the R gate registry, this matrix, or both before it
 can be treated as v1.0 parity evidence.

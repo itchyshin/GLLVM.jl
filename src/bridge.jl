@@ -55,6 +55,22 @@ end
 _bridge_ci_level(options) = Float64(_bridge_get(options, "ci_level", 0.95))
 _bridge_ci_nboot(options) = Int(_bridge_get(options, "ci_nboot", 100))
 _bridge_ci_seed(options) = Int(_bridge_get(options, "ci_seed", 0))
+_bridge_profile_grid_extent(options) = Float64(_bridge_get(options, "profile_grid_extent", 5))
+_bridge_profile_max_expand(options) = Int(_bridge_get(options, "profile_max_expand", 20))
+_bridge_profile_max_bisect(options) = Int(_bridge_get(options, "profile_max_bisect", 30))
+
+function _bridge_ci_parm(options)
+    raw = _bridge_get(options, "ci_parm", nothing)
+    raw === nothing && return nothing
+    raw isa AbstractString && return String(raw)
+    raw isa Symbol && return String(raw)
+    if raw isa AbstractVector
+        isempty(raw) && throw(ArgumentError("bridge_fit: ci_parm cannot be empty"))
+        return String.(collect(raw))
+    end
+    throw(ArgumentError(
+        "bridge_fit: ci_parm must be a string, symbol, or vector of strings"))
+end
 
 function _bridge_trial_matrix(N, p::Integer, n::Integer)
     N === nothing && return fill(1, p, n)
@@ -163,25 +179,97 @@ function _bridge_ci_from_native(method::AbstractString, level::Real, ci; status 
     )
 end
 
-function _bridge_wald_ci(fit::GllvmFit, Y, N, level::Real)
-    return confint(fit; y = Y, level = level)
+function _bridge_wald_ci(fit::GllvmFit, Y, N, level::Real, parm = nothing)
+    return confint(fit; y = Y, level = level, parm = parm)
 end
-function _bridge_wald_ci(fit::BinomialFit, Y, N, level::Real)
-    return confint(fit; y = Matrix{Float64}(Y), N = N, level = level)
+function _bridge_wald_ci(fit::BinomialFit, Y, N, level::Real, parm = nothing)
+    return confint(fit; y = Matrix{Float64}(Y), N = N, level = level, parm = parm)
 end
-function _bridge_wald_ci(fit, Y, N, level::Real)
-    return confint(fit; y = Y, level = level)
+function _bridge_wald_ci(fit, Y, N, level::Real, parm = nothing)
+    return confint(fit; y = Y, level = level, parm = parm)
+end
+
+function _bridge_profile_one(fit::GllvmFit, term::AbstractString, Y, N, level::Real,
+                             grid_extent::Real, max_expand::Integer,
+                             max_bisect::Integer)
+    return profile_ci(fit, term; y = Y, level = level,
+        grid_extent = grid_extent, max_expand = max_expand,
+        max_bisect = max_bisect)
+end
+function _bridge_profile_one(fit::BinomialFit, term::AbstractString, Y, N, level::Real,
+                             grid_extent::Real, max_expand::Integer,
+                             max_bisect::Integer)
+    return profile_ci(fit, term; y = Matrix{Float64}(Y), N = N, level = level,
+        grid_extent = grid_extent, max_expand = max_expand,
+        max_bisect = max_bisect)
+end
+function _bridge_profile_one(fit, term::AbstractString, Y, N, level::Real,
+                             grid_extent::Real, max_expand::Integer,
+                             max_bisect::Integer)
+    return profile_ci(fit, term; y = Y, level = level,
+        grid_extent = grid_extent, max_expand = max_expand,
+        max_bisect = max_bisect)
+end
+
+function _bridge_profile_ci(fit::OrdinalFit, Y, N, level::Real, parm,
+                            grid_extent::Real, max_expand::Integer,
+                            max_bisect::Integer)
+    return _bridge_ci_empty("profile", level,
+        "profile CIs for OrdinalFit are native-engine only here; the minimal " *
+        "bridge keeps ordinal CI payloads gated until R semantics are reconciled.")
+end
+
+function _bridge_profile_ci(fit, Y, N, level::Real, parm,
+                            grid_extent::Real, max_expand::Integer,
+                            max_bisect::Integer)
+    wald = _bridge_wald_ci(fit, Y, N, level, parm)
+    terms = Vector{String}(wald.term)
+    estimates = Vector{Float64}(wald.estimate)
+    lowers = Float64[]
+    uppers = Float64[]
+    methods = Symbol[]
+    for term in terms
+        ci = _bridge_profile_one(fit, term, Y, N, level, grid_extent,
+            max_expand, max_bisect)
+        push!(lowers, Float64(ci.lower))
+        push!(uppers, Float64(ci.upper))
+        push!(methods, Symbol(ci.method))
+    end
+    status = if all(==(:profile), methods)
+        "ok"
+    elseif all(==(:failed), methods)
+        "failed"
+    else
+        "partial"
+    end
+    note = all(==(:profile), methods) ?
+        "profile CIs routed through the minimal no-X bridge" :
+        "profile CIs routed with per-term methods: " *
+            join(["$(terms[i])=$(methods[i])" for i in eachindex(terms)], ", ")
+    return (
+        ci_method = "profile",
+        ci_level = Float64(level),
+        ci_status = status,
+        ci_param_names = terms,
+        ci_estimate = estimates,
+        ci_lower = lowers,
+        ci_upper = uppers,
+        ci_note = note,
+    )
 end
 
 function _bridge_compute_ci(fit, Y, N, method::AbstractString, level::Real,
-                            nboot::Integer, seed::Integer, family::AbstractString)
+                            nboot::Integer, seed::Integer, family::AbstractString,
+                            parm, profile_grid_extent::Real,
+                            profile_max_expand::Integer,
+                            profile_max_bisect::Integer)
     method == "none" && return nothing
     if method == "wald"
-        return _bridge_ci_from_native("wald", level, _bridge_wald_ci(fit, Y, N, level))
+        return _bridge_ci_from_native("wald", level,
+            _bridge_wald_ci(fit, Y, N, level, parm))
     elseif method == "profile"
-        return _bridge_ci_empty("profile", level,
-            "profile CIs exist for selected native fits on this branch but are not " *
-            "yet routed through the minimal bridge contract.")
+        return _bridge_profile_ci(fit, Y, N, level, parm, profile_grid_extent,
+            profile_max_expand, profile_max_bisect)
     elseif method == "bootstrap"
         if fit isa GllvmFit
             ci = bootstrap_ci(fit; y = Y, level = level, n_boot = nboot, seed = seed)
@@ -254,6 +342,10 @@ function bridge_fit(; y,
     ci_level = _bridge_ci_level(options)
     ci_nboot = _bridge_ci_nboot(options)
     ci_seed = _bridge_ci_seed(options)
+    ci_parm = _bridge_ci_parm(options)
+    profile_grid_extent = _bridge_profile_grid_extent(options)
+    profile_max_expand = _bridge_profile_max_expand(options)
+    profile_max_bisect = _bridge_profile_max_bisect(options)
 
     fit = _bridge_fit_family(key, Y, K, Nm)
     loadings = Matrix{Float64}(getLoadings(fit; rotate = true))
@@ -297,7 +389,9 @@ function bridge_fit(; y,
     )
     ci = _bridge_compute_ci(fit, key in ("poisson", "binomial", "negbinomial", "ordinal") ?
                                  Matrix{Int}(Y) : Y, Nm, ci_method, ci_level,
-                             ci_nboot, ci_seed, key)
+                             ci_nboot, ci_seed, key, ci_parm,
+                             profile_grid_extent, profile_max_expand,
+                             profile_max_bisect)
     return ci === nothing ? base : merge(base, ci)
 end
 
@@ -336,9 +430,11 @@ Honest per-column rationale (local truth):
     `confint` for every one of the 7 fit types, INCLUDING `OrdinalFit`. (This is
     a deliberate divergence from the integration table, which marks ordinal Wald
     `false`; locally the route is verified `status = "ok"`.)
-  * `ci_no_x_profile` — `false` (all 7). `_bridge_compute_ci` returns an
-    `unsupported` empty payload for `profile` regardless of family; no profile
-    CI is ever routed through this branch's bridge.
+  * `ci_no_x_profile` — `true` for Gaussian and the five non-ordinal
+    non-Gaussian families, `false` for Ordinal. `_bridge_compute_ci` routes
+    profile payloads through native `profile_ci` for no-X rows, with optional
+    `options["ci_parm"]` selection; Ordinal remains gated until the R bridge
+    ordinal CI semantics are reconciled.
   * `ci_no_x_bootstrap` — `true` for `gaussian` ONLY. `_bridge_compute_ci` routes
     `bootstrap` only when `fit isa GllvmFit`; every non-Gaussian family returns an
     `unsupported` empty payload.
@@ -364,6 +460,7 @@ function bridge_capabilities()
     nf = length(fams)
     is_binom = [f == "binomial" for f in fams]
     is_gauss = [f == "gaussian" for f in fams]
+    is_profile = [f != "ordinal" for f in fams]
     falses_ = fill(false, nf)
     trues_ = fill(true, nf)
     return (
@@ -373,7 +470,7 @@ function bridge_capabilities()
         missing_response = falses_,
         cbind_binomial = is_binom,
         ci_no_x_wald = trues_,
-        ci_no_x_profile = falses_,
+        ci_no_x_profile = is_profile,
         ci_no_x_bootstrap = copy(is_gauss),
         ci_mask_wald = falses_,
         ci_mask_profile = falses_,
@@ -391,12 +488,12 @@ function bridge_capabilities()
         status = fill("partial", nf),
         notes = [
             f == "gaussian" ?
-                "no-X one-part bridge family; Wald and bootstrap CI payloads are routed; profile CI is not routed on this branch" :
+                "no-X one-part bridge family; Wald, profile, and bootstrap CI payloads are routed" :
             f == "binomial" ?
-                "no-X one-part bridge family; accepts N (cbind) trials; Wald CI is routed; profile/bootstrap are not routed on this branch" :
+                "no-X one-part bridge family; accepts N (cbind) trials; Wald and profile CI payloads are routed; bootstrap is not routed on this branch" :
             f == "ordinal" ?
                 "no-X one-part bridge family; Wald CI is routed (native OrdinalFit confint); profile/bootstrap are not routed; no scalar-mean simulate" :
-                "no-X one-part bridge family; Wald CI is routed; profile/bootstrap are not routed on this branch"
+                "no-X one-part bridge family; Wald and profile CI payloads are routed; bootstrap is not routed on this branch"
             for f in fams
         ],
     )

@@ -29,7 +29,7 @@ Status vocabulary:
 | Row | `gllvmTMB` R truth | `GLLVM.jl` truth | v1.0 contract | Evidence | Next gate |
 |---|---|---|---|---|---|
 | Wald CI no-X one-part bridge | `partial`: R ledger routes admitted rows except per-trait ordinal CI gates. | `partial`: local `bridge_fit` routes Wald for all seven local families, including Ordinal. | `partial`: support must be row-specific, not blanket. | `R/julia-bridge.R`; `src/bridge.jl`; tests listed above. | Fisher reconciles Ordinal family labels and native-vs-R CI status. |
-| Profile CI no-X bridge | `partial`: R ledger says complete-response no-X profile payloads are routed for selected rows. | `guarded`: local `bridge_fit` returns unsupported empty profile payloads. | `guarded/partial`: do not claim full R<->Julia profile parity until branch truth agrees. | `R/julia-bridge.R`; `src/bridge.jl` `_bridge_compute_ci`; dashboard `Native profile B_lv`. | Hopper registers drift or lands tested local route. |
+| Profile CI no-X bridge | `partial`: R ledger says complete-response no-X profile payloads are routed for selected non-ordinal rows. | `partial`: local `bridge_fit` now routes no-X profile payloads for Gaussian, Poisson, Binomial, NB2, Beta, and Gamma, with optional `options["ci_parm"]`; Ordinal remains unsupported through the bridge. | `partial`: selected no-X non-ordinal profile transport is admitted; coverage calibration, masks, fixed-effect X, mixed-family, and source-specific structural profile CIs remain gated. | `R/julia-bridge.R`; `src/bridge.jl` `_bridge_compute_ci`; `test/test_bridge_capabilities.jl`; `test/test_bridge_fit.jl`; paired gllvmTMB live drift test. | Fisher/Hopper can next test R `confint(..., method = "profile", parm = ...)` end-to-end before broader wording. |
 | Bootstrap CI no-X bridge | `partial`: R ledger can refit admitted rows, but bootstrap remains secondary. | `partial/guarded`: local `bridge_fit` routes bootstrap only for Gaussian. | `partial`: no coverage calibration claim. | `R/julia-bridge.R`; `src/bridge.jl`; Mission Control claim guard. | Keep bootstrap as diagnostic; do not use it as rescue evidence. |
 | Masked CI | `partial` for selected no-X mask rows in R ledger; mask+X blocked. | `guarded`: no local bridge mask route. | `guarded/partial`. | `GJL-GATE-MASK-X-CI`, `GJL-GATE-MASK-X`; `src/bridge.jl`. | Separate no-X mask CI from mask+X CI in tests and docs. |
 | Fixed-effect-X CI | `partial` for selected complete-response rows. | `guarded`: no local bridge X. | `guarded/partial`. | `GJL-GATE-X-CI`; `src/bridge.jl`. | Reconcile only after fixed-effect-X point row is shared. |
@@ -91,3 +91,7 @@ Before any row is promoted to `covered`, the implementing slice must provide:
    `439/439` evidence retained as pre-v1 context only.
 4. Only after the contract is stable, scope the queued selected beta-zero
    twin-lane from prior issues, PRs, and design docs in both repos.
+5. Done in the selected-profile bridge slice: local `GLLVM.bridge_fit` now
+   routes no-X profile CI payloads for the six non-ordinal local bridge rows,
+   and the paired live drift test now reports 62 registered drift rows with
+   zero unregistered rows.

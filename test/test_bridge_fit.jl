@@ -109,6 +109,26 @@ end
         @test br.ci_upper ≈ ci.upper atol = 1e-10 nans = true
     end
 
+    @testset "selected profile CI payload" begin
+        Y = Float64.(_bridge_test_poisson(123))
+        br = bridge_fit(; y = Y, family = "poisson", d = 1,
+                        options = Dict(
+                            "ci_method" => "profile",
+                            "ci_parm" => "beta[1]",
+                            "profile_max_expand" => 8,
+                            "profile_max_bisect" => 12,
+                        ))
+        fit = fit_poisson_gllvm(Matrix{Int}(Y); K = 1)
+        ci = profile_ci(fit, "beta[1]"; y = Matrix{Int}(Y),
+                        max_expand = 8, max_bisect = 12)
+        @test br.ci_method == "profile"
+        @test br.ci_status in ("ok", "partial")
+        @test br.ci_param_names == ["beta[1]"]
+        @test br.ci_lower ≈ [ci.lower] atol = 1e-8 nans = true
+        @test br.ci_upper ≈ [ci.upper] atol = 1e-8 nans = true
+        @test br.ci_lower[1] < br.ci_estimate[1] < br.ci_upper[1]
+    end
+
     @testset "explicit unsupported bridge cells" begin
         Y = Float64.(_bridge_test_poisson(130))
         X = zeros(size(Y, 1), size(Y, 2), 1)

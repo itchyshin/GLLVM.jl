@@ -41,10 +41,10 @@ using Distributions
         @test all(.!cap.missing_response)
         # cbind binomial trials accepted only for the binomial family
         @test cap.cbind_binomial == [f == "binomial" for f in cap.family]
-        # Wald CI routes for ALL families (incl. ordinal); profile never routes;
-        # bootstrap routes for gaussian only.
+        # Wald CI routes for ALL families (incl. ordinal); profile routes for
+        # the non-ordinal no-X rows; bootstrap routes for gaussian only.
         @test all(cap.ci_no_x_wald)
-        @test all(.!cap.ci_no_x_profile)
+        @test cap.ci_no_x_profile == [f != "ordinal" for f in cap.family]
         @test cap.ci_no_x_bootstrap == [f == "gaussian" for f in cap.family]
         # no masks / no covariates on this branch
         @test all(.!cap.ci_mask_wald)
@@ -101,8 +101,32 @@ using Distributions
         # routed, matching the advertised false flag.
         @test !cap.ci_no_x_bootstrap[findfirst(==("poisson"), cap.family)]
         brp = bridge_fit(; y = Yp, family = "poisson", d = 1,
-                         options = Dict("ci_method" => "bootstrap"))
+                        options = Dict("ci_method" => "bootstrap"))
         @test brp.ci_status == "unsupported"
         @test isempty(brp.ci_lower)
+
+        # ci_no_x_profile = true for non-ordinal rows — selected profile terms
+        # are routed through the flat bridge payload.
+        @test cap.ci_no_x_profile[findfirst(==("poisson"), cap.family)]
+        brprof = bridge_fit(; y = Yp, family = "poisson", d = 1,
+                            options = Dict(
+                                "ci_method" => "profile",
+                                "ci_parm" => "beta[1]",
+                                "profile_max_expand" => 8,
+                                "profile_max_bisect" => 12,
+                            ))
+        @test brprof.ci_method == "profile"
+        @test brprof.ci_status in ("ok", "partial")
+        @test brprof.ci_param_names == ["beta[1]"]
+        @test length(brprof.ci_lower) == 1
+        @test brprof.ci_lower[1] < brprof.ci_estimate[1] < brprof.ci_upper[1]
+
+        # Ordinal profile payloads stay unavailable through the bridge even
+        # though native OrdinalFit profile internals exist.
+        @test !cap.ci_no_x_profile[findfirst(==("ordinal"), cap.family)]
+        bro_prof = bridge_fit(; y = Yo, family = "ordinal", d = 1,
+                              options = Dict("ci_method" => "profile"))
+        @test bro_prof.ci_status == "unsupported"
+        @test isempty(bro_prof.ci_lower)
     end
 end

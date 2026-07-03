@@ -1,5 +1,42 @@
 # Check Log
 
+## 2026-07-03 - R + Julia v1.0 selected profile bridge
+
+Goal: reduce the R/Julia v1 bridge drift by routing selected no-X profile CI
+payloads through the local Julia bridge for admitted non-ordinal one-part rows.
+
+Changes:
+
+- Updated `src/bridge.jl` so `bridge_fit(..., options = Dict("ci_method" =>
+  "profile", "ci_parm" => ...))` returns flat CI payloads for Gaussian,
+  Poisson, Binomial, NB2, Beta, and Gamma.
+- Kept Ordinal profile CI unavailable through the bridge until R semantics are
+  reconciled.
+- Updated `bridge_capabilities()` so `ci_no_x_profile` is true for the six
+  non-ordinal local rows and false for Ordinal.
+- Updated `test/test_bridge_capabilities.jl` and `test/test_bridge_fit.jl`.
+- Updated v1 contract docs and paired `gllvmTMB` drift tests so live drift is
+  now 62 registered rows and zero unregistered rows.
+
+Checks:
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_bridge_capabilities.jl
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_bridge_fit.jl
+GLLVM_JL_PATH='/Users/z3437171/Dropbox/Github Local/GLLVM.jl' JULIA_HOME='/Users/z3437171/.juliaup/bin' Rscript --vanilla -e 'pkgload::load_all(quiet = TRUE); testthat::test_file("tests/testthat/test-julia-bridge-live-capabilities.R")'
+GLLVM_JL_PATH='' JULIA_HOME='' Rscript --vanilla -e 'pkgload::load_all(quiet = TRUE); testthat::test_file("tests/testthat/test-julia-bridge-live-capabilities.R")'
+Rscript --vanilla -e 'pkgload::load_all(quiet = TRUE); testthat::test_file("tests/testthat/test-julia-bridge.R")'
+```
+
+Result: Julia `test_bridge_capabilities.jl` 69/69, Julia `test_bridge_fit.jl`
+181/181, paired R live drift test 8/8 with 62 registered drift rows and zero
+unregistered rows, paired R unconfigured mode 1 expected skip / 0 failed, paired
+R bridge test 389 pass / 14 expected skips.
+
+Still not claimed: R/Julia parity completion, v1.0 completion, masks,
+fixed-effect X, mixed-family CIs, source-specific `lv`, `unique=` parity,
+coverage calibration, or Totoro/DRAC compute.
+
 ## 2026-07-03 - R + Julia v1.0 matrix supersession
 
 Goal: remove the last competing "governing matrix" wording from the old
