@@ -1,5 +1,76 @@
 # Check Log
 
+## 2026-07-02 - Phylo x shared-cutpoint Ordinal structural LV S1 likelihood and canary
+
+Added the private phylo x shared-cutpoint Ordinal(logit) x predictor-informed
+LV S1 route. This is internal route evidence only: no public fitter, no R
+grammar, no bridge transport, no per-trait ordinal parity claim, no Totoro/DRAC
+compute, no coverage calibration, and no source-specific `lv` support were
+added.
+
+Implemented:
+
+- new private source file `src/phylo_ordinal_xlv.jl`;
+- module include in `src/GLLVM.jl`;
+- new focused proof test `test/test_phylo_ordinal_xlv.jl`;
+- new S0 and S1 decision notes
+  `docs/dev-log/decisions/2026-07-02-phylo-ordinal-structural-lv-s0-target.md`
+  and
+  `docs/dev-log/decisions/2026-07-02-phylo-ordinal-structural-lv-s1-likelihood.md`;
+- updated the structural-source Gate 0 matrix and Design 73 status text.
+
+S1 contract:
+
+```text
+family: shared-cutpoint Ordinal(logit)
+source: augmented phylogeny
+target: B_eta_realized = slope_X(Lambda * Z_truth')
+cutpoints tau: fitted shared ordered nuisance parameters
+response Y: valid ordered categories 1:C
+status: private S1 likelihood/profile canary banked
+```
+
+Verification:
+
+```text
+julia --project=. --startup-file=no test/test_phylo_ordinal_xlv.jl
+Phylo x shared-cutpoint Ordinal predictor-informed LV S1 likelihood: 12 passed, 0 failed, 0 errored, 4.6s
+Phylo x shared-cutpoint Ordinal B_eta_realized selected-entry canary: 25 passed, 0 failed, 0 errored, 21.5s
+
+julia --project=. --startup-file=no test/test_phylo_beta_xlv.jl
+Phylo x Beta predictor-informed LV S1 likelihood: 13 passed, 0 failed, 0 errored, 5.7s
+Phylo x Beta B_eta_realized selected-entry canary: 25 passed, 0 failed, 0 errored, 28.8s
+
+julia --project=. --startup-file=no test/test_phylo_gamma_xlv.jl
+Phylo x Gamma predictor-informed LV S1 likelihood: 12 passed, 0 failed, 0 errored, 5.5s
+Phylo x Gamma B_eta_realized selected-entry canary: 25 passed, 0 failed, 0 errored, 53.4s
+
+julia --project=. --startup-file=no test/test_phylo_nb_xlv.jl
+Phylo x NB2 predictor-informed LV S1 likelihood: 12 passed, 0 failed, 0 errored, 5.8s
+Phylo x NB2 B_eta_realized selected-entry canary: 25 passed, 0 failed, 0 errored, 24.3s
+
+julia --project=. --startup-file=no test/test_phylo_binomial_xlv.jl
+Phylo x Binomial predictor-informed LV S1 likelihood: 14 passed, 0 failed, 0 errored, 6.6s
+Phylo x Binomial B_eta_realized selected-entry canary: 22 passed, 0 failed, 0 errored, 25.0s
+
+julia --project=. --startup-file=no test/test_phylo_poisson_xlv.jl
+Phylo x Poisson predictor-informed LV S1 likelihood: 9 passed, 0 failed, 0 errored, 5.0s
+Phylo x Poisson B_eta_realized selected-entry canary: 22 passed, 0 failed, 0 errored, 14.1s
+
+julia --project=. --startup-file=no test/test_lv_ci.jl
+X_lv Wald CIs - confint_lv_effects: 196 passed, 0 failed, 0 errored, 4m18.4s
+```
+
+Claim boundary: IN: one private stochastic selected-entry S1 finite-endpoint
+route canary for phylo x shared-cutpoint Ordinal `B_eta_realized`, with shared
+ordered cutpoints kept as nuisance parameters, plus reduction tests against
+ordinary shared-cutpoint Ordinal `X_lv` and a dense leaf-covariance reference.
+OUT: no public fitter, no `confint_lv_effects` source route, no R
+`phylo_latent(..., lv = ~ env)` grammar, no per-trait ordinal bridge parity, no
+bridge, no compute, no coverage calibration, no bootstrap rescue, no
+source-variance recovery claim, and no transfer to spatial, animal, kernel,
+mixed-family, missing/mask, or `unique=` parity.
+
 ## 2026-07-02 - Phylo x Beta structural LV S1 likelihood and canary
 
 Added the private phylo x Beta(logit) x predictor-informed LV S1 route. This is

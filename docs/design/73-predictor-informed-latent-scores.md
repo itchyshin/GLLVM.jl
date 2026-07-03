@@ -66,6 +66,16 @@ recorded in
 This adds only private Julia route evidence with fitted shared precision `phi`:
 no public fitter, bridge transport, R grammar, coverage calibration, compute,
 or source-specific `lv` support follows from it.
+A sixth source/family target, phylo x shared-cutpoint Ordinal logit, is
+recorded in
+`docs/dev-log/decisions/2026-07-02-phylo-ordinal-structural-lv-s0-target.md`;
+its internal S1 likelihood proof and one private selected-entry canary are
+recorded in
+`docs/dev-log/decisions/2026-07-02-phylo-ordinal-structural-lv-s1-likelihood.md`.
+This adds only private Julia shared-cutpoint route evidence with ordered
+cutpoints fitted as nuisance parameters: no public fitter, bridge transport,
+per-trait ordinal parity claim, R grammar, coverage calibration, compute, or
+source-specific `lv` support follows from it.
 This doc is the spec the Julia comments (`likelihood.jl:405`) reference. The
 compact evidence freeze is
 `docs/dev-log/decisions/2026-07-01-phylo-model-a-evidence-freeze-and-next-arc.md`;
