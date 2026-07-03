@@ -30,7 +30,19 @@ function _bridge_test_ordinal(seed = 104)
     return rand(rng, 1:3, 3, 30)
 end
 
-@testset "bridge_fit minimal no-X contract" begin
+function _bridge_test_gaussian_x(seed = 106)
+    rng = MersenneTwister(seed)
+    p, n = 3, 28
+    X = zeros(p, n, 1)
+    Y = randn(rng, p, n)
+    for t in axes(X, 1), s in axes(X, 2)
+        X[t, s, 1] = randn(rng)
+        Y[t, s] += 0.35 * X[t, s, 1]
+    end
+    return Y, X
+end
+
+@testset "bridge_fit minimal one-part contract" begin
     @testset "primitive flat payload and direct-fit parity" begin
         cases = [
             ("gaussian", randn(MersenneTwister(99), 3, 30), nothing),
@@ -93,6 +105,29 @@ end
                 @test br.loadings ≈ getLoadings(fit; rotate = true) atol = 1e-8
             end
         end
+    end
+
+    @testset "Gaussian fixed-effect X bridge parity" begin
+        Y, X = _bridge_test_gaussian_x()
+        br = bridge_fit(; y = Y, family = "gaussian", d = 1, X = X,
+                        trait_names = ["a", "b", "c"],
+                        options = Dict("ci_method" => "wald",
+                                       "ci_parm" => "beta[1]"))
+        fit = fit_gaussian_gllvm(Y; K = 1, X = X)
+        ci = confint(fit; y = Y, X = X, parm = "beta[1]")
+
+        @test br.family == "gaussian"
+        @test br.trait_names == ["a", "b", "c"]
+        @test haskey(br, :mean_coef)
+        @test br.mean_coef ≈ fit.pars.β atol = 1e-8
+        @test br.loglik ≈ fit.logLik atol = 1e-8
+        @test br.loadings ≈ getLoadings(fit; rotate = true) atol = 1e-8
+        @test br.ci_method == "wald"
+        @test br.ci_status == "ok"
+        @test br.ci_param_names == ci.term
+        @test br.ci_estimate ≈ ci.estimate atol = 1e-10
+        @test br.ci_lower ≈ ci.lower atol = 1e-10
+        @test br.ci_upper ≈ ci.upper atol = 1e-10
     end
 
     @testset "Wald CI parity" begin

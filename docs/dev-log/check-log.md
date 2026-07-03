@@ -1,5 +1,45 @@
 # Check Log
 
+## 2026-07-03 - R + Julia v1.0 Gaussian fixed-effect X bridge row
+
+Goal: reduce the live R/Julia v1 bridge drift by routing Gaussian
+fixed-effect `X` point fits and selected Gaussian `X` CI payloads through the
+local Julia bridge.
+
+Changes:
+
+- Updated `src/bridge.jl` so `bridge_fit(..., family = "gaussian", X = X)`
+  validates a `p x n_sites x q` covariate array, passes it to
+  `fit_gaussian_gllvm`, routes Gaussian scores with `getLV(...; X = X)`, and
+  passes `X` through Wald/profile/bootstrap CI helpers.
+- Kept non-Gaussian `X` fail-loud in `_bridge_fit_family`.
+- Updated `bridge_capabilities()` so `fixed_effect_X` and `ci_x_*` are true
+  for Gaussian only.
+- Added focused Julia tests for Gaussian `X` point parity and selected
+  Wald/profile/bootstrap payloads, plus non-Gaussian `X` rejection.
+- Updated the v1 contract matrix and drift-gates note: current live drift is
+  now 57 registered rows / 0 unregistered rows, with no Gaussian
+  `fixed_effect_X` or `ci_x_*` drift rows.
+
+Checks:
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_bridge_capabilities.jl
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_bridge_fit.jl
+GLLVM_JL_PATH='/Users/z3437171/Dropbox/Github Local/GLLVM.jl' JULIA_HOME='/Users/z3437171/.juliaup/bin' Rscript --vanilla -e 'pkgload::load_all(quiet = TRUE); testthat::test_file("tests/testthat/test-julia-bridge-live-capabilities.R")'
+Rscript --vanilla -e 'pkgload::load_all(quiet = TRUE); testthat::test_file("tests/testthat/test-julia-bridge.R")'
+```
+
+Result: Julia capability test passed 90/90; Julia bridge-fit test passed
+193/193; paired R live capability test passed 24/24; paired R bridge file
+passed 410 with 14 expected live-GLLVM-path skips. Direct drift printout:
+`drift_rows=57`, `unregistered=0`, and no Gaussian `fixed_effect_X` /
+`ci_x_*` rows.
+
+Still not claimed: non-Gaussian `X`, masks, mask+X, mixed-family vectors or
+CIs, source-specific `lv`, `unique=` parity, coverage calibration, full
+R/Julia parity, v1.0 completion, Totoro/DRAC compute, push, or PR.
+
 ## 2026-07-03 - R + Julia v1.0 cbind binomial bridge row
 
 Goal: update the GLLVM.jl v1 contract packet after the paired R bridge routed

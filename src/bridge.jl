@@ -1,9 +1,10 @@
 # Plain-data R -> Julia bridge entry point for the current GLLVM.jl branch.
 #
-# This branch does not yet carry the wider integration bridge (fixed-effect X,
-# mixed-family metadata, missing-response masks, and full CI method fan-out).
-# Keep this contract intentionally narrow and explicit: no Julia structs cross
-# the boundary, and unsupported bridge cells fail before any fit is attempted.
+# This branch does not yet carry the wider integration bridge (non-Gaussian
+# fixed-effect X, mixed-family metadata, missing-response masks, and full CI
+# method fan-out). Keep this contract intentionally narrow and explicit: no
+# Julia structs cross the boundary, and unsupported bridge cells fail before any
+# fit is attempted.
 
 const _BRIDGE_FAMILIES = (
     "gaussian", "poisson", "binomial", "negbinomial", "beta", "gamma", "ordinal"
@@ -83,6 +84,19 @@ function _bridge_trial_matrix(N, p::Integer, n::Integer)
     return Nm
 end
 
+function _bridge_x_array(X, p::Integer, n::Integer)
+    X === nothing && return nothing
+    ndims(X) == 3 || throw(DimensionMismatch(
+        "X must be a p x n_sites x q 3-D array; got ndims(X) = $(ndims(X))"))
+    size(X, 1) == p || throw(DimensionMismatch(
+        "X first dim ($(size(X, 1))) must equal p ($p)"))
+    size(X, 2) == n || throw(DimensionMismatch(
+        "X second dim ($(size(X, 2))) must equal n_sites ($n)"))
+    size(X, 3) >= 1 || throw(DimensionMismatch(
+        "X third dim must contain at least one covariate"))
+    return Array{Float64,3}(X)
+end
+
 function _bridge_corr_from_sigma(Σ::AbstractMatrix)
     p = size(Σ, 1)
     R = Matrix{Float64}(undef, p, p)
@@ -130,21 +144,21 @@ _bridge_sigma_eps(fit::GllvmFit) = Float64(fit.pars.σ_eps)
 _bridge_link_names(fit, p::Integer) = fill(_bridge_link_name(fit.link), p)
 _bridge_link_names(fit::GllvmFit, p::Integer) = fill("Identity", p)
 
-function _bridge_scores(fit::GllvmFit, Y, N)
+function _bridge_scores(fit::GllvmFit, Y, N, X = nothing)
     try
-        return Matrix{Float64}(getLV(fit, Y))
+        return Matrix{Float64}(getLV(fit, Y; X = X))
     catch
         return zeros(Float64, 0, 0)
     end
 end
-function _bridge_scores(fit::BinomialFit, Y, N)
+function _bridge_scores(fit::BinomialFit, Y, N, X = nothing)
     try
         return Matrix{Float64}(getLV(fit, Matrix{Int}(Y); N = N))
     catch
         return zeros(Float64, 0, 0)
     end
 end
-function _bridge_scores(fit, Y, N)
+function _bridge_scores(fit, Y, N, X = nothing)
     try
         return Matrix{Float64}(getLV(fit, Y))
     catch
@@ -179,33 +193,35 @@ function _bridge_ci_from_native(method::AbstractString, level::Real, ci; status 
     )
 end
 
-function _bridge_wald_ci(fit::GllvmFit, Y, N, level::Real, parm = nothing)
-    return confint(fit; y = Y, level = level, parm = parm)
+function _bridge_wald_ci(fit::GllvmFit, Y, N, level::Real, parm = nothing,
+                         X = nothing)
+    return confint(fit; y = Y, X = X, level = level, parm = parm)
 end
-function _bridge_wald_ci(fit::BinomialFit, Y, N, level::Real, parm = nothing)
+function _bridge_wald_ci(fit::BinomialFit, Y, N, level::Real, parm = nothing,
+                         X = nothing)
     return confint(fit; y = Matrix{Float64}(Y), N = N, level = level, parm = parm)
 end
-function _bridge_wald_ci(fit, Y, N, level::Real, parm = nothing)
+function _bridge_wald_ci(fit, Y, N, level::Real, parm = nothing, X = nothing)
     return confint(fit; y = Y, level = level, parm = parm)
 end
 
 function _bridge_profile_one(fit::GllvmFit, term::AbstractString, Y, N, level::Real,
                              grid_extent::Real, max_expand::Integer,
-                             max_bisect::Integer)
-    return profile_ci(fit, term; y = Y, level = level,
+                             max_bisect::Integer, X = nothing)
+    return profile_ci(fit, term; y = Y, X = X, level = level,
         grid_extent = grid_extent, max_expand = max_expand,
         max_bisect = max_bisect)
 end
 function _bridge_profile_one(fit::BinomialFit, term::AbstractString, Y, N, level::Real,
                              grid_extent::Real, max_expand::Integer,
-                             max_bisect::Integer)
+                             max_bisect::Integer, X = nothing)
     return profile_ci(fit, term; y = Matrix{Float64}(Y), N = N, level = level,
         grid_extent = grid_extent, max_expand = max_expand,
         max_bisect = max_bisect)
 end
 function _bridge_profile_one(fit, term::AbstractString, Y, N, level::Real,
                              grid_extent::Real, max_expand::Integer,
-                             max_bisect::Integer)
+                             max_bisect::Integer, X = nothing)
     return profile_ci(fit, term; y = Y, level = level,
         grid_extent = grid_extent, max_expand = max_expand,
         max_bisect = max_bisect)
@@ -213,7 +229,7 @@ end
 
 function _bridge_profile_ci(fit::OrdinalFit, Y, N, level::Real, parm,
                             grid_extent::Real, max_expand::Integer,
-                            max_bisect::Integer)
+                            max_bisect::Integer, X = nothing)
     return _bridge_ci_empty("profile", level,
         "profile CIs for OrdinalFit are native-engine only here; the minimal " *
         "bridge keeps ordinal CI payloads gated until R semantics are reconciled.")
@@ -221,8 +237,8 @@ end
 
 function _bridge_profile_ci(fit, Y, N, level::Real, parm,
                             grid_extent::Real, max_expand::Integer,
-                            max_bisect::Integer)
-    wald = _bridge_wald_ci(fit, Y, N, level, parm)
+                            max_bisect::Integer, X = nothing)
+    wald = _bridge_wald_ci(fit, Y, N, level, parm, X)
     terms = Vector{String}(wald.term)
     estimates = Vector{Float64}(wald.estimate)
     lowers = Float64[]
@@ -230,7 +246,7 @@ function _bridge_profile_ci(fit, Y, N, level::Real, parm,
     methods = Symbol[]
     for term in terms
         ci = _bridge_profile_one(fit, term, Y, N, level, grid_extent,
-            max_expand, max_bisect)
+            max_expand, max_bisect, X)
         push!(lowers, Float64(ci.lower))
         push!(uppers, Float64(ci.upper))
         push!(methods, Symbol(ci.method))
@@ -260,19 +276,20 @@ end
 
 function _bridge_compute_ci(fit, Y, N, method::AbstractString, level::Real,
                             nboot::Integer, seed::Integer, family::AbstractString,
-                            parm, profile_grid_extent::Real,
+                            parm, X, profile_grid_extent::Real,
                             profile_max_expand::Integer,
                             profile_max_bisect::Integer)
     method == "none" && return nothing
     if method == "wald"
         return _bridge_ci_from_native("wald", level,
-            _bridge_wald_ci(fit, Y, N, level, parm))
+            _bridge_wald_ci(fit, Y, N, level, parm, X))
     elseif method == "profile"
         return _bridge_profile_ci(fit, Y, N, level, parm, profile_grid_extent,
-            profile_max_expand, profile_max_bisect)
+            profile_max_expand, profile_max_bisect, X)
     elseif method == "bootstrap"
         if fit isa GllvmFit
-            ci = bootstrap_ci(fit; y = Y, level = level, n_boot = nboot, seed = seed)
+            ci = bootstrap_ci(fit; y = Y, X = X, level = level, n_boot = nboot,
+                              seed = seed, parms = parm)
             return _bridge_ci_from_native("bootstrap", level, ci)
         end
         return _bridge_ci_empty("bootstrap", level,
@@ -282,9 +299,15 @@ function _bridge_compute_ci(fit, Y, N, method::AbstractString, level::Real,
     error("unreachable bridge CI method")
 end
 
-function _bridge_fit_family(key::AbstractString, Y::AbstractMatrix, K::Integer, N)
+function _bridge_fit_family(key::AbstractString, Y::AbstractMatrix, K::Integer, N,
+                            X)
     if key == "gaussian"
-        return fit_gaussian_gllvm(Matrix{Float64}(Y); K = K)
+        return fit_gaussian_gllvm(Matrix{Float64}(Y); K = K, X = X)
+    elseif X !== nothing
+        throw(ArgumentError(
+            "bridge_fit: fixed-effect covariates X are routed only for " *
+            "family=\"gaussian\" on this branch; non-Gaussian X remains " *
+            "blocked until branch reconciliation."))
     elseif key == "poisson"
         return fit_poisson_gllvm(Matrix{Int}(Y); K = K)
     elseif key == "binomial"
@@ -305,14 +328,16 @@ end
     bridge_fit(; y, family, d=1, N=nothing, X=nothing,
                trait_names=nothing, unit_names=nothing, options=Dict())
 
-Minimal flat R-to-Julia bridge for this branch. Supports no-covariate one-part
-families: Gaussian, Poisson, Binomial, NB2 (`negbinomial`/`nbinom2`), Beta,
-Gamma, and Ordinal. The return value is a JuliaCall-safe `NamedTuple` containing
-only strings, numbers, booleans, and plain arrays.
+Minimal flat R-to-Julia bridge for this branch. Supports one-part Gaussian with
+optional fixed-effect covariates `X`, plus no-covariate Poisson, Binomial, NB2
+(`negbinomial`/`nbinom2`), Beta, Gamma, and Ordinal. The return value is a
+JuliaCall-safe `NamedTuple` containing only strings, numbers, booleans, and plain
+arrays.
 
-Unsupported cells (fixed-effect `X`, mixed-family vectors, missing-response
-masks) are rejected deliberately here; broader integration-branch support must
-be merged with its own parity tests before these gates are widened.
+Unsupported cells (non-Gaussian fixed-effect `X`, mixed-family vectors,
+missing-response masks) are rejected deliberately here; broader
+integration-branch support must be merged with its own parity tests before these
+gates are widened.
 """
 function bridge_fit(; y,
                     family,
@@ -327,13 +352,11 @@ function bridge_fit(; y,
     family isa AbstractVector && throw(ArgumentError(
         "bridge_fit: mixed-family vectors are not wired on this branch; use " *
         "the integration bridge after branch reconciliation."))
-    X === nothing || throw(ArgumentError(
-        "bridge_fit: fixed-effect covariates X are not wired on this branch; " *
-        "use the integration bridge after branch reconciliation."))
 
     key = _bridge_family_key(String(family))
     Y = Matrix{Float64}(y)
     p, n = size(Y)
+    Xm = _bridge_x_array(X, p, n)
     traits = _bridge_names(trait_names, p, "trait")
     units = _bridge_names(unit_names, n, "unit")
     Nm = key == "binomial" ? _bridge_trial_matrix(N, p, n) : nothing
@@ -347,7 +370,7 @@ function bridge_fit(; y,
     profile_max_expand = _bridge_profile_max_expand(options)
     profile_max_bisect = _bridge_profile_max_bisect(options)
 
-    fit = _bridge_fit_family(key, Y, K, Nm)
+    fit = _bridge_fit_family(key, Y, K, Nm, Xm)
     loadings = Matrix{Float64}(getLoadings(fit; rotate = true))
     Σ, R, comm = if fit isa GllvmFit
         S = Matrix{Float64}(sigma_y_site(fit))
@@ -356,7 +379,7 @@ function bridge_fit(; y,
         _bridge_latent_summary(loadings)
     end
     scores = _bridge_scores(fit, key in ("poisson", "binomial", "negbinomial", "ordinal") ?
-                                 Matrix{Int}(Y) : Y, Nm)
+                                 Matrix{Int}(Y) : Y, Nm, Xm)
 
     base = (
         family = key,
@@ -384,15 +407,24 @@ function bridge_fit(; y,
         iterations = Int(_bridge_iterations(fit)),
         message = fit.converged ? "converged" : "not converged",
         link = _bridge_link_names(fit, p),
-        note = "minimal no-X one-part bridge for this branch; X, mixed families, " *
-               "and missing-response masks are branch-reconciliation follow-ups",
+        note = Xm === nothing ?
+            "minimal one-part bridge for this branch; Gaussian X is admitted; " *
+            "non-Gaussian X, mixed families, and missing-response masks are " *
+            "branch-reconciliation follow-ups" :
+            "minimal one-part bridge for this branch; Gaussian fixed-effect X " *
+            "is routed; non-Gaussian X, mixed families, and missing-response " *
+            "masks remain blocked",
     )
+    x_payload = fit isa GllvmFit && Xm !== nothing ?
+        (mean_coef = Vector{Float64}(fit.pars.β),) :
+        NamedTuple()
+    payload = merge(base, x_payload)
     ci = _bridge_compute_ci(fit, key in ("poisson", "binomial", "negbinomial", "ordinal") ?
                                  Matrix{Int}(Y) : Y, Nm, ci_method, ci_level,
-                             ci_nboot, ci_seed, key, ci_parm,
+                             ci_nboot, ci_seed, key, ci_parm, Xm,
                              profile_grid_extent, profile_max_expand,
                              profile_max_bisect)
-    return ci === nothing ? base : merge(base, ci)
+    return ci === nothing ? payload : merge(payload, ci)
 end
 
 """
@@ -418,9 +450,10 @@ for it — there is no partial mixed-family capability to advertise.
 Honest per-column rationale (local truth):
 
   * `fit_no_x`        — `true` (all 7). Every family routes through
-    `_bridge_fit_family`; the bridge has no covariate path at all.
-  * `fixed_effect_X`  — `false` (all 7). `bridge_fit` throws on any non-`nothing`
-    `X` before fitting.
+    `_bridge_fit_family` without covariates.
+  * `fixed_effect_X`  — `true` for Gaussian only. Gaussian routes `X` through
+    `fit_gaussian_gllvm(...; X=...)`; every non-Gaussian family throws on
+    non-`nothing` `X` before fitting.
   * `missing_response`— `false` (all 7). `bridge_fit` has NO `mask` argument and
     no missing-cell handling; there is no way to admit a response mask.
   * `cbind_binomial`  — `true` for `binomial` only. Only the binomial path builds
@@ -439,7 +472,9 @@ Honest per-column rationale (local truth):
     `bootstrap` only when `fit isa GllvmFit`; every non-Gaussian family returns an
     `unsupported` empty payload.
   * `ci_mask_*`       — `false` (all 7). No masks exist on this branch.
-  * `ci_x_*`          — `false` (all 7). No covariate path exists on this branch.
+  * `ci_x_*`          — `true` for Gaussian only. Gaussian `X` CI requests route
+    through native Wald/profile/bootstrap methods with the same `X`; non-Gaussian
+    `X` remains fail-loud.
   * `postfit_coef`, `postfit_fit_stats`, `postfit_summary`, `postfit_ordination`
     — `true` (all 7). The assembled bridge payload always carries loadings/alpha,
     loglik/aic/bic/df/nobs, the full summary NamedTuple, and `scores` (ordination
@@ -466,7 +501,7 @@ function bridge_capabilities()
     return (
         family = fams,
         fit_no_x = trues_,
-        fixed_effect_X = falses_,
+        fixed_effect_X = copy(is_gauss),
         missing_response = falses_,
         cbind_binomial = is_binom,
         ci_no_x_wald = trues_,
@@ -475,9 +510,9 @@ function bridge_capabilities()
         ci_mask_wald = falses_,
         ci_mask_profile = falses_,
         ci_mask_bootstrap = falses_,
-        ci_x_wald = falses_,
-        ci_x_profile = falses_,
-        ci_x_bootstrap = falses_,
+        ci_x_wald = copy(is_gauss),
+        ci_x_profile = copy(is_gauss),
+        ci_x_bootstrap = copy(is_gauss),
         postfit_coef = trues_,
         postfit_fit_stats = trues_,
         postfit_summary = trues_,
@@ -488,7 +523,7 @@ function bridge_capabilities()
         status = fill("partial", nf),
         notes = [
             f == "gaussian" ?
-                "no-X one-part bridge family; Wald, profile, and bootstrap CI payloads are routed" :
+                "one-part bridge family; no-X and fixed-effect X fits are routed with Wald, profile, and bootstrap CI payloads" :
             f == "binomial" ?
                 "no-X one-part bridge family; accepts N (cbind) trials; Wald and profile CI payloads are routed; bootstrap is not routed on this branch" :
             f == "ordinal" ?

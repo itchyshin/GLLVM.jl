@@ -3,10 +3,10 @@ using GLLVM
 using Random
 using Distributions
 
-# Local bridge_capabilities() must report the HONEST narrow no-X one-part
-# surface of this branch's bridge_fit. These tests pin the column key set and
-# the honest values, AND cross-check the false/true flags against real
-# bridge_fit behaviour so the advertised table cannot drift from reality.
+# Local bridge_capabilities() must report the HONEST narrow one-part bridge
+# surface of this branch's bridge_fit: Gaussian admits fixed-effect X; all
+# non-Gaussian X rows remain blocked. These tests pin the column key set and
+# cross-check flags against real bridge_fit behaviour so the table cannot drift.
 
 @testset "bridge_capabilities honest local surface" begin
     cap = bridge_capabilities()
@@ -36,8 +36,8 @@ using Distributions
     @testset "honest values" begin
         # fit_no_x: every local family fits with no covariates
         @test all(cap.fit_no_x)
-        # fixed-effect X and missing-response masks are unsupported everywhere
-        @test all(.!cap.fixed_effect_X)
+        # fixed-effect X is admitted only for Gaussian; masks are unsupported
+        @test cap.fixed_effect_X == [f == "gaussian" for f in cap.family]
         @test all(.!cap.missing_response)
         # cbind binomial trials accepted only for the binomial family
         @test cap.cbind_binomial == [f == "binomial" for f in cap.family]
@@ -46,13 +46,13 @@ using Distributions
         @test all(cap.ci_no_x_wald)
         @test cap.ci_no_x_profile == [f != "ordinal" for f in cap.family]
         @test cap.ci_no_x_bootstrap == [f == "gaussian" for f in cap.family]
-        # no masks / no covariates on this branch
+        # no masks; covariate CIs are admitted only for Gaussian
         @test all(.!cap.ci_mask_wald)
         @test all(.!cap.ci_mask_profile)
         @test all(.!cap.ci_mask_bootstrap)
-        @test all(.!cap.ci_x_wald)
-        @test all(.!cap.ci_x_profile)
-        @test all(.!cap.ci_x_bootstrap)
+        @test cap.ci_x_wald == [f == "gaussian" for f in cap.family]
+        @test cap.ci_x_profile == [f == "gaussian" for f in cap.family]
+        @test cap.ci_x_bootstrap == [f == "gaussian" for f in cap.family]
         # postfit: coef/fit_stats/summary/predict/residuals/ordination supported;
         # simulate is NOT (no post-fit response simulator on this branch).
         @test all(cap.postfit_coef)
@@ -78,11 +78,65 @@ using Distributions
         @test br.family == "binomial"
         @test br.converged isa Bool
 
-        # fixed_effect_X = false (all) — passing X throws.
+        # fixed_effect_X = true for Gaussian — a real Gaussian X fit succeeds.
+        Yg = randn(rng, 3, 26)
+        Xg = zeros(size(Yg, 1), size(Yg, 2), 1)
+        for t in axes(Xg, 1), s in axes(Xg, 2)
+            Xg[t, s, 1] = randn(rng)
+            Yg[t, s] += 0.25 * Xg[t, s, 1]
+        end
+        @test cap.fixed_effect_X[findfirst(==("gaussian"), cap.family)]
+        brg = bridge_fit(; y = Yg, family = "gaussian", d = 1, X = Xg)
+        direct_g = fit_gaussian_gllvm(Yg; K = 1, X = Xg)
+        @test brg.family == "gaussian"
+        @test haskey(brg, :mean_coef)
+        @test brg.mean_coef ≈ direct_g.pars.β atol = 1e-8
+        @test brg.loglik ≈ direct_g.logLik atol = 1e-8
+        @test size(brg.scores) == (size(Yg, 2), 1)
+
+        # fixed_effect_X remains false for non-Gaussian rows — passing X throws.
         Yp = Float64.(rand(rng, Poisson(2.0), 3, 24))
         X = zeros(size(Yp, 1), size(Yp, 2), 1)
         @test !cap.fixed_effect_X[findfirst(==("poisson"), cap.family)]
         @test_throws ArgumentError bridge_fit(; y = Yp, family = "poisson", d = 1, X = X)
+
+        # Gaussian X CI routes are real and selected-entry capable.
+        @test cap.ci_x_wald[findfirst(==("gaussian"), cap.family)]
+        brg_wald = bridge_fit(; y = Yg, family = "gaussian", d = 1, X = Xg,
+                              options = Dict(
+                                  "ci_method" => "wald",
+                                  "ci_parm" => "beta[1]",
+                              ))
+        @test brg_wald.ci_method == "wald"
+        @test brg_wald.ci_status == "ok"
+        @test brg_wald.ci_param_names == ["beta[1]"]
+        @test brg_wald.ci_lower[1] < brg_wald.ci_estimate[1] < brg_wald.ci_upper[1]
+
+        @test cap.ci_x_profile[findfirst(==("gaussian"), cap.family)]
+        brg_profile = bridge_fit(; y = Yg, family = "gaussian", d = 1, X = Xg,
+                                 options = Dict(
+                                     "ci_method" => "profile",
+                                     "ci_parm" => "beta[1]",
+                                     "profile_max_expand" => 5,
+                                     "profile_max_bisect" => 8,
+                                 ))
+        @test brg_profile.ci_method == "profile"
+        @test brg_profile.ci_status in ("ok", "partial")
+        @test brg_profile.ci_param_names == ["beta[1]"]
+        @test brg_profile.ci_lower[1] < brg_profile.ci_estimate[1] < brg_profile.ci_upper[1]
+
+        @test cap.ci_x_bootstrap[findfirst(==("gaussian"), cap.family)]
+        brg_boot = bridge_fit(; y = Yg, family = "gaussian", d = 1, X = Xg,
+                              options = Dict(
+                                  "ci_method" => "bootstrap",
+                                  "ci_parm" => "beta[1]",
+                                  "ci_nboot" => 3,
+                                  "ci_seed" => 2026,
+                              ))
+        @test brg_boot.ci_method == "bootstrap"
+        @test brg_boot.ci_status == "ok"
+        @test brg_boot.ci_param_names == ["beta[1]"]
+        @test brg_boot.ci_estimate[1] == brg_boot.mean_coef[1]
 
         # mixed-family vector is rejected (consistent with the omitted row).
         @test_throws ArgumentError bridge_fit(;
