@@ -10446,3 +10446,39 @@ git diff --check
 
 Claim boundary unchanged: no public fitter, no R grammar, no bridge route, no
 coverage calibration, no source-specific `lv` exposure, and no bootstrap rescue.
+
+## 2026-07-03 - Arc 1 profile-first source LV Gate 0 truth lock
+
+Started the approved Arc 1 + Arc 3 ultra-plan execution as a Gate 0 truth-lock
+slice while PR #165 CI continued running on head `2fdd7a6`. PR #165 later
+merged as GitHub merge commit `8617ba1`; the late Julia matrix remained a
+post-merge follow-up watch item at Gate 0 closeout time.
+
+Four read-only audit lanes wrote file-backed evidence:
+
+```text
+docs/dev-log/audits/2026-07-03-arc1-profile-estimand-audit.md
+docs/dev-log/audits/2026-07-03-arc1-bridge-grammar-audit.md
+docs/dev-log/audits/2026-07-03-arc1-compute-test-plan.md
+docs/dev-log/audits/2026-07-03-arc1-rose-claim-audit.md
+```
+
+Consolidated decision note:
+
+```text
+docs/dev-log/decisions/2026-07-03-arc1-profile-first-source-lv-gate0.md
+docs/dev-log/after-task/2026-07-03-arc1-gate0-truth-lock.md
+```
+
+Gate 0 truth:
+
+- public source-specific `lv = ~ env` remains blocked/fail-loud for phylo,
+  spatial, animal, and kernel;
+- old population-`B_lv` remains negative/parked;
+- `B_eta_realized` is internal changed-target route evidence, not `B_lv`
+  rescue;
+- local tests are route/canary evidence only;
+- Totoro is diagnostic-only;
+- DRAC/Nibi is the only claim-bearing denominator;
+- no active compute is running;
+- Mission Control needs follow-up label cleanup before public-facing polish.
