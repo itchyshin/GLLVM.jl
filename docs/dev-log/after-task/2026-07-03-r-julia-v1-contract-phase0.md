@@ -168,7 +168,11 @@ while still disagreeing.
   `docs/dev-log/capability-bridge-matrix.md`.
 - No Mission Control refresh has happened yet because this packet does not
   change operating truth.
-- The drift-gate note is not yet backed by an automated R-vs-Julia drift test.
+- Follow-up resolved: paired `gllvmTMB` commit `73af9258` adds both the
+  synthetic drift-gate test and
+  `tests/testthat/test-julia-bridge-live-capabilities.R`. With
+  `GLLVM_JL_PATH` pointed at this checkout, the live comparator returned 68
+  registered drift rows and zero unregistered rows.
 
 ## Known Limitations
 

@@ -17,10 +17,10 @@ Status vocabulary:
 
 | Row | `gllvmTMB` R truth | `GLLVM.jl` truth | v1.0 contract | Evidence | Next gate |
 |---|---|---|---|---|---|
-| No-X one-part families | `partial`: R `engine = "julia"` ledger admits Gaussian, Poisson, Binomial, NB2, NB1, Beta, Gamma, Ordinal, Ordinal probit. | `partial`: local `bridge_fit` admits Gaussian, Poisson, Binomial, NB2, Beta, Gamma, Ordinal only. | `partial` until the same family set is reconciled or differences are named gates. | `R/julia-bridge.R`; `src/bridge.jl`; `tests/testthat/test-julia-bridge.R`; `test/test_bridge_capabilities.jl`. | Hopper reconciles row-by-row drift, especially NB1 and ordinal-probit. |
+| No-X one-part families | `partial`: R `engine = "julia"` ledger admits Gaussian, Poisson, Binomial, NB2, NB1, Beta, Gamma, Ordinal, Ordinal probit. | `partial`: local `bridge_fit` admits Gaussian, Poisson, Binomial, NB2, Beta, Gamma, Ordinal only. | `partial` until the same family set is reconciled or differences are named gates. | `R/julia-bridge.R`; `src/bridge.jl`; `tests/testthat/test-julia-bridge.R`; `tests/testthat/test-julia-bridge-live-capabilities.R` in gllvmTMB commit `73af9258`; `test/test_bridge_capabilities.jl`. | Hopper reconciles row-by-row drift, especially NB1 and ordinal-probit. |
 | Fixed-effect `X` bridge | `partial`: admitted for complete one-part rows for selected families; mask+X and unsupported designs are gated. | `guarded`: local `bridge_fit` rejects any `X`. | `guarded/partial`: R-side route may remain ahead, but Julia local matrix must not advertise it. | `R/julia-bridge.R` gates `GJL-GATE-X-FAMILY`, `GJL-GATE-X-DESIGN`; `src/bridge.jl` rejects `X`. | Either merge branch-reconciled Julia support or keep explicit drift gate. |
 | Missing-response masks | `partial`: admitted for no-X point rows across selected families; mask+X remains gated. | `guarded`: local `bridge_fit` has no `mask` argument. | `guarded/partial`: no public broad mask parity. | `R/julia-bridge.R`; dashboard `LV structural dependencies`; `src/bridge.jl`. | Curie tests mask-only vs mask+X claims separately. |
-| Mixed-family vector | `point-only`: complete balanced Gaussian + Poisson + Binomial point/postfit only. | `guarded`: local `bridge_fit` rejects mixed-family vectors. | `point-only` in R, `guarded` in local Julia until branch reconciliation. | `R/julia-bridge.R`; `tests/testthat/test-julia-bridge.R`; dashboard mixed blocker. | Keep `GJL-GATE-MIXED-COMPONENTS`; no CI, X, X_lv, mask, or missing-response claim. |
+| Mixed-family vector | `point-only`: complete balanced Gaussian + Poisson + Binomial point/postfit only. | `guarded`: local `bridge_fit` rejects mixed-family vectors. | `point-only` in R, `guarded` in local Julia until branch reconciliation. | `R/julia-bridge.R`; `tests/testthat/test-julia-bridge.R`; `tests/testthat/test-julia-bridge-live-capabilities.R`; dashboard mixed blocker. | Keep `GJL-GATE-MIXED-COMPONENTS`; no CI, X, X_lv, mask, or missing-response claim. |
 | Structured terms through bridge | `guarded`: `engine = "julia"` rejects structured covariance terms. | `planned`: native Julia structured pieces exist in separate engine paths but not flat bridge parity. | `guarded`. | `R/julia-bridge.R` `GJL-GATE-STRUCTURED-TERMS`; dashboard source grammar row. | Do not bridge phylo/spatial/animal/kernel until a public contract and parity tests exist. |
 | Multiple reduced-rank latent blocks | `guarded`. | `planned`. | `guarded`. | `R/julia-bridge.R` `GJL-GATE-MULTI-RR`. | Design first; no implicit widening. |
 
@@ -78,11 +78,13 @@ Before any row is promoted to `covered`, the implementing slice must provide:
 
 ## First Action Items
 
-1. Generate a compact drift report comparing R `gllvm_julia_capabilities()`
-   against local Julia `GLLVM.bridge_capabilities()` once the local Julia
-   binary path is available.
-2. Add or tighten tests that assert all expected drift rows are either
-   identical or named by a `GJL-GATE-*` gate.
+1. Done in paired `gllvmTMB` commit `73af9258`: generated a compact drift
+   report comparing R `gllvm_julia_capabilities()` against local Julia
+   `GLLVM.bridge_capabilities()`, with 68 registered drift rows and zero
+   unregistered rows when `GLLVM_JL_PATH` points at this checkout.
+2. Done in paired `gllvmTMB` commit `73af9258`: tightened the synthetic drift
+   test and added `tests/testthat/test-julia-bridge-live-capabilities.R`, which
+   asserts that live drift is named by `GJL-GATE-*` gates.
 3. Decide whether `docs/dev-log/capability-bridge-matrix.md` should be updated
    in place or superseded by this dated matrix after a focused review.
 4. Only after the contract is stable, scope the queued selected beta-zero

@@ -2,6 +2,13 @@
 
 Date: 2026-07-03
 
+Follow-up status, 2026-07-03: the required drift-gate test now exists in the
+paired `gllvmTMB` clean worktree at commit `73af9258`, with focused live-path
+coverage added in `tests/testthat/test-julia-bridge-live-capabilities.R`. With
+`GLLVM_JL_PATH` pointed at this `GLLVM.jl` checkout, the live comparator found
+68 drift rows and zero unregistered rows. This is a registered-drift result,
+not bridge parity completion.
+
 ## Purpose
 
 This note records the expected drift between the current R-side
@@ -13,10 +20,11 @@ v1.0 arc it is acceptable only when it is named, scoped, and gated.
 
 - R side: `gllvmTMB::gllvm_julia_capabilities()` from
   `/Users/z3437171/Dropbox/Github Local/gllvmTMB/R/julia-bridge.R`
-  on branch `codex/r-bridge-grouped-dispersion` at `5d15209e`.
+  and the focused drift tests from the clean worktree
+  `/private/tmp/gllvmtmb-v1-contract-drift-20260703` at `73af9258`.
 - Julia side: `GLLVM.bridge_capabilities()` from
   `/Users/z3437171/Dropbox/Github Local/GLLVM.jl/src/bridge.jl`
-  on branch `claude/jl-bridge-capabilities-20260619` at `b093dc16`.
+  on branch `claude/jl-bridge-capabilities-20260619` at `fc8af22c`.
 
 ## Confirmed Surface Counts
 
@@ -55,12 +63,19 @@ v1.0 arc it is acceptable only when it is named, scoped, and gated.
 
 ## Required Next Test Shape
 
-The next code-test slice should not try to make every boolean equal. It should:
+The first executable code-test slice now lives on the `gllvmTMB` side. It does
+not try to make every boolean equal. It:
 
 1. compare R and Julia capability row names and logical columns;
 2. mark exact matches as OK;
 3. mark expected drifts with gate IDs or branch-reconciliation labels;
 4. fail on any unregistered drift;
-5. print a compact drift table for Mission Control and after-task reports.
+5. report the compact drift table for Mission Control and after-task reports.
 
-This belongs in a focused test/doc slice before any bridge widening.
+The live-path follow-up in
+`tests/testthat/test-julia-bridge-live-capabilities.R` asserts that the current
+local `GLLVM.bridge_capabilities()` surface produces 68 registered drift rows,
+including the NB1, ordinal-probit, mixed-family vector, binomial cbind,
+ordinal CI, and no-X profile-CI rows. Any future bridge widening that changes
+this surface must update the R gate registry, this matrix, or both before it
+can be treated as v1.0 parity evidence.

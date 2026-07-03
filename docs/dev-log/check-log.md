@@ -1,5 +1,50 @@
 # Check Log
 
+## 2026-07-03 - R + Julia v1.0 live drift follow-up
+
+Goal: update the GLLVM.jl v1.0 contract packet now that the paired `gllvmTMB`
+drift gate has executable synthetic and live-path evidence.
+
+Changes:
+
+- Updated `docs/dev-log/v1-contract/2026-07-03-bridge-drift-gates.md` to record
+  paired `gllvmTMB` commit `73af9258`, the focused live drift test file, and
+  the live result of 68 registered drift rows / 0 unregistered rows.
+- Updated `docs/dev-log/v1-contract/r-julia-v1-capability-matrix.md` so the
+  first two action items are marked done and the evidence column points to
+  `tests/testthat/test-julia-bridge-live-capabilities.R`.
+- Updated the phase-0 after-task report with a follow-up status instead of
+  leaving the old "not yet backed" risk stale.
+- Added
+  `docs/dev-log/after-task/2026-07-03-r-julia-v1-live-drift-followup.md`.
+
+Checks:
+
+```sh
+GLLVM_JL_PATH='/Users/z3437171/Dropbox/Github Local/GLLVM.jl' JULIA_HOME='/Users/z3437171/.juliaup/bin' Rscript --vanilla -e 'pkgload::load_all(quiet = TRUE); testthat::test_file("tests/testthat/test-julia-bridge-live-capabilities.R")'
+```
+
+Result from the paired `gllvmTMB` clean worktree: 8 pass / 0 skip / 0 failed.
+The live `GLLVM.bridge_capabilities()` surface produced 68 registered drift
+rows and zero unregistered rows.
+
+```sh
+GLLVM_JL_PATH='' JULIA_HOME='' Rscript --vanilla -e 'pkgload::load_all(quiet = TRUE); testthat::test_file("tests/testthat/test-julia-bridge-live-capabilities.R")'
+```
+
+Result from the paired `gllvmTMB` clean worktree: 1 expected skip / 0 failed.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_bridge_capabilities.jl
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_bridge_fit.jl
+```
+
+Result: `test_bridge_capabilities.jl` 60/60 and `test_bridge_fit.jl` 175/175.
+
+Still not claimed: R/Julia parity completion, v1.0 completion, bridge
+widening, source-specific `lv` support, mixed-family CI/X/X_lv/mask support,
+`unique=` parity, or any Totoro/DRAC compute.
+
 ## 2026-07-03 - R + Julia v1.0 contract phase 0/1
 
 Goal: start the R + Julia v1.0 capability-contract arc by recording the
