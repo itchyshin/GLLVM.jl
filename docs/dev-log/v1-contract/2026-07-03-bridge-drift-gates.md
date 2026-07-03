@@ -15,6 +15,12 @@ Gamma. The paired live drift test now reports 62 registered drift rows and zero
 unregistered rows. Ordinal profile CI, masks, fixed-effect X, mixed-family
 vectors, source-specific `lv`, and `unique=` parity remain gated.
 
+Third follow-up, 2026-07-03: paired `gllvmTMB` commit `96028892` routes named
+post-fit R `confint(..., method = "profile", parm = ...)` selections into the
+Julia bridge `ci_parm` option and adds mocked plus live JuliaCall checks. This
+hardens the selected-profile transport path, but the live drift count remains
+62 registered rows and zero unregistered rows.
+
 ## Purpose
 
 This note records the expected drift between the current R-side
@@ -27,7 +33,7 @@ v1.0 arc it is acceptable only when it is named, scoped, and gated.
 - R side: `gllvmTMB::gllvm_julia_capabilities()` from
   `/Users/z3437171/Dropbox/Github Local/gllvmTMB/R/julia-bridge.R`
   and the focused drift tests from the clean worktree
-  `/private/tmp/gllvmtmb-v1-contract-drift-20260703` at `73af9258`.
+  `/private/tmp/gllvmtmb-v1-contract-drift-20260703` at `96028892`.
 - Julia side: `GLLVM.bridge_capabilities()` from
   `/Users/z3437171/Dropbox/Github Local/GLLVM.jl/src/bridge.jl`
   on branch `claude/jl-bridge-capabilities-20260619` at `fc8af22c`.
@@ -83,6 +89,7 @@ The live-path follow-up in
 current local `GLLVM.bridge_capabilities()` surface produces 62 registered drift
 rows, including the NB1, ordinal-probit, mixed-family vector, binomial cbind,
 and ordinal CI rows. The old six no-X profile-CI drift rows are resolved for
-local non-ordinal no-X bridge rows. Any future bridge widening that changes
-this surface must update the R gate registry, this matrix, or both before it
-can be treated as v1.0 parity evidence.
+local non-ordinal no-X bridge rows. The same file also checks the R post-fit
+selected-profile `parm` transport against the local Julia bridge. Any future
+bridge widening that changes this surface must update the R gate registry, this
+matrix, or both before it can be treated as v1.0 parity evidence.

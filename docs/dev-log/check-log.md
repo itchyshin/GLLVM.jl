@@ -1,5 +1,41 @@
 # Check Log
 
+## 2026-07-03 - R + Julia v1.0 selected profile parm transport
+
+Goal: update the GLLVM.jl v1 contract packet after the paired R bridge gained
+named post-fit `confint(..., method = "profile", parm = ...)` transport into
+Julia `ci_parm`.
+
+Changes:
+
+- Updated `docs/dev-log/v1-contract/r-julia-v1-capability-matrix.md` so the
+  profile-CI bridge row records paired `gllvmTMB` commit `96028892` as the
+  completed selected-`parm` transport gate.
+- Updated `docs/dev-log/v1-contract/2026-07-03-bridge-drift-gates.md` so the
+  R-side surface points at commit `96028892` and notes that the live drift
+  count remains 62 registered rows / 0 unregistered rows.
+- Added after-task report
+  `docs/dev-log/after-task/2026-07-03-r-julia-v1-profile-parm-transport.md`.
+
+Checks:
+
+```sh
+GLLVM_JL_PATH='/Users/z3437171/Dropbox/Github Local/GLLVM.jl' JULIA_HOME='/Users/z3437171/.juliaup/bin' Rscript --vanilla -e 'pkgload::load_all(quiet = TRUE); testthat::test_file("tests/testthat/test-julia-bridge-live-capabilities.R")'
+Rscript --vanilla -e 'pkgload::load_all(quiet = TRUE); testthat::test_file("tests/testthat/test-julia-bridge.R")'
+git diff --check -- docs/dev-log/v1-contract/r-julia-v1-capability-matrix.md docs/dev-log/v1-contract/2026-07-03-bridge-drift-gates.md docs/dev-log/check-log.md docs/dev-log/after-task/2026-07-03-r-julia-v1-profile-parm-transport.md
+rg -n "can next test R `confint|68 registered drift rows|73af9258" docs/dev-log/v1-contract docs/dev-log/check-log.md
+```
+
+Result: paired R live selected-`parm` test passed 12/12; paired R bridge file
+passed 394 with 14 expected live-GLLVM-path skips; `git diff --check` was
+clean. The wording scan retains expected historical `73af9258` and
+68-registered-row hits in old follow-up context only; the actionable next-gate
+wording now points past the completed selected-`parm` transport gate.
+
+Still not claimed: R/Julia parity completion, v1.0 completion, masks,
+fixed-effect X, mixed-family CIs, source-specific `lv`, `unique=` parity,
+coverage calibration, or Totoro/DRAC compute.
+
 ## 2026-07-03 - R + Julia v1.0 selected profile bridge
 
 Goal: reduce the R/Julia v1 bridge drift by routing selected no-X profile CI
