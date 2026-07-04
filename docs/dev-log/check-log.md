@@ -1,5 +1,35 @@
 # Check Log
 
+## 2026-07-04 - R + Julia v1.0 live drift gate cleanup
+
+Goal: refresh the GLLVM.jl v1 contract packet after the paired gllvmTMB bridge
+ledger was narrowed to the current live seven-family surface and post-fit
+simulation drift was registered explicitly.
+
+Changes:
+
+- Updated `docs/dev-log/v1-contract/r-julia-v1-capability-matrix.md` so the
+  current R ledger boundary matches the live GLLVM.jl bridge surface: seven
+  one-part families, Gaussian-only fixed `X`, masks unavailable, mixed-family
+  vectors guarded, and no NB1/ordinal-probit live bridge admission.
+- Updated `docs/dev-log/v1-contract/2026-07-03-bridge-drift-gates.md` with the
+  paired gllvmTMB follow-up: 9 live drift rows, all registered, zero
+  unregistered, and a new postfit-simulation drift gate.
+- Added after-task report
+  `docs/dev-log/after-task/2026-07-04-r-julia-v1-drift-gate-refresh.md`.
+
+Checks:
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_bridge_capabilities.jl
+```
+
+Result: local bridge capability test passed.
+
+Still not claimed: R/Julia parity completion, v1.0 completion, masks,
+non-Gaussian X, mixed-family vectors/CIs, source-specific `lv`, `unique=`
+parity, coverage calibration, or Totoro/DRAC compute.
+
 ## 2026-07-03 - R + Julia v1.0 Gaussian fixed-effect X bridge row
 
 Goal: reduce the live R/Julia v1 bridge drift by routing Gaussian

@@ -35,6 +35,15 @@ registered rows and zero unregistered rows, with no Gaussian
 `fixed_effect_X` / `ci_x_*` drift rows. Non-Gaussian `X`, masks, mixed-family
 vectors, source-specific `lv`, and `unique=` parity remain gated.
 
+Sixth follow-up, 2026-07-04: paired `gllvmTMB` commit `2b233f1f` narrowed the R
+capability ledger to the same seven one-part family rows as local
+`GLLVM.bridge_capabilities()` and removed the advertised mixed-family vector,
+NB1, Ordinal probit, mask, and non-Gaussian `X` admissions. Follow-up
+`gllvmTMB` commit `ecde980d` registers the retained-payload postfit simulation
+mismatch as `GJL-GATE-POSTFIT-SIMULATE-DRIFT`. The live comparator now reports
+9 drift rows, all gated, and zero unregistered rows. This is a truth-contract
+reduction, not full bridge parity.
+
 ## Purpose
 
 This note records the expected drift between the current R-side
@@ -56,24 +65,24 @@ v1.0 arc it is acceptable only when it is named, scoped, and gated.
 
 | Surface | Rows | Key boundary |
 |---|---:|---|
-| R `gllvm_julia_capabilities()` | 10 | Includes NB1, ordinal-probit, and a narrow mixed-family vector row. |
+| R `gllvm_julia_capabilities()` | 7 | Same one-part family rows as local Julia; NB1, ordinal-probit, masks, mixed-family vectors, and non-Gaussian `X` are gated. |
 | Julia `bridge_capabilities()` | 7 | Local no-X one-part rows only; omits NB1, ordinal-probit, and mixed-family vector. |
-| R gate registry | 20 | `GJL-GATE-*` rows describe R-side deliberate refusals. |
+| R gate registry | 22 | `GJL-GATE-*` rows describe R-side deliberate refusals and registered R-vs-Julia drift. |
 
 ## Expected Drift Rows
 
 | Drift | Direction | Status | Gate / owner | Why allowed for now |
 |---|---|---|---|---|
-| NB1 family row | R broader than local Julia | `partial` / branch drift | Hopper | R bridge ledger has NB1 rows; local Julia `bridge_fit` family table does not. Needs branch reconciliation before public twin parity. |
-| Ordinal-probit row | R broader than local Julia | `partial` / branch drift | Hopper + Fisher | R bridge ledger includes `ordinal_probit`; local Julia `bridge_fit` has `ordinal` only. Per-trait/probit labels and CI semantics need reconciliation. |
-| Mixed-family vector row | R broader than local Julia | `point-only` / `guarded` | `GJL-GATE-MIXED-COMPONENTS` + Rose | R admits complete balanced no-X/no-mask/no-CI mixed vectors; local Julia rejects family vectors outright. |
-| Fixed-effect `X` | resolved for Gaussian; R broader for non-Gaussian selected rows | `partial` / branch drift | `GJL-GATE-X-FAMILY`, `GJL-GATE-X-DESIGN` | R routes complete one-part `X` rows for selected families. Local Julia now routes Gaussian `X`; Poisson, Binomial, NB2, Beta, and Gamma `X` remain drift/gated. |
-| Missing-response masks | R broader than local Julia | `partial` / branch drift | `GJL-GATE-MASK-X` for mask+X | R routes selected no-X mask rows. Local Julia has no mask argument. |
+| NB1 family row | no live drift after R ledger narrowing | `guarded` | Hopper | R parser can name NB1, but the current capability ledger does not admit it and live calls fail before Julia bridge admission. |
+| Ordinal-probit row | no live drift after R ledger narrowing | `guarded` | Hopper + Fisher | R parser can name Ordinal probit, but the current capability ledger does not admit it and live calls fail before Julia bridge admission. |
+| Mixed-family vector row | no live drift after R ledger narrowing | `guarded` | `GJL-GATE-MIXED-COMPONENTS` + Rose | R and local Julia both omit the mixed-family row from the capability ledger; direct family vectors fail loud. |
+| Fixed-effect `X` | resolved for Gaussian; no non-Gaussian X drift after R ledger narrowing | `partial` / guarded | `GJL-GATE-X-FAMILY`, `GJL-GATE-X-DESIGN` | R and local Julia both advertise Gaussian `X` only. Poisson, Binomial, NB2, Beta, and Gamma `X` remain gated rather than drift rows. |
+| Missing-response masks | no live drift after R ledger narrowing | `guarded` | `GJL-GATE-MASK`, `GJL-GATE-MASK-X` | R and local Julia both advertise no mask route. |
 | No-X profile CI | resolved for local non-ordinal no-X rows | `partial` | Fisher + Hopper | Local Julia `bridge_fit` now routes profile payloads for Gaussian, Poisson, Binomial, NB2, Beta, and Gamma; Ordinal profile CI remains unavailable through the bridge and no mask/X/mixed/source-specific profile claim follows. |
-| No-X bootstrap CI | R broader than local Julia except Gaussian | `partial` / `guarded` | Fisher | R ledger can route selected rows; local Julia routes bootstrap only for Gaussian. Bootstrap remains secondary. |
-| Masked CI | R broader than local Julia | `partial` / `guarded` | `GJL-GATE-MASK-X-CI` | R no-X masked CI payloads are selected-row partial; local Julia has no masks. |
-| Fixed-effect-X CI | resolved for Gaussian; R broader for non-Gaussian selected rows | `partial` / `guarded` | `GJL-GATE-X-CI` | Local Julia now routes Gaussian `X` Wald/profile/bootstrap CI payloads. Poisson, Binomial, NB2, Beta, and Gamma X-CI rows remain drift/gated. |
-| `cbind` binomial / trial matrix | resolved for ordinary binomial cbind rows | `partial` / gated edges | `GJL-GATE-CBIND-BINOMIAL` | R and local Julia both admit the tested ordinary cbind-as-trials row. The R gate remains for non-binomial cbind rows, invalid cbind counts, and cbind with separate weights. |
+| No-X bootstrap CI | no live drift after R ledger narrowing | `partial` / `guarded` | Fisher | R and local Julia both advertise bootstrap only for Gaussian. Bootstrap remains secondary. |
+| Masked CI | no live drift after R ledger narrowing | `guarded` | `GJL-GATE-MASK-X-CI` | R and local Julia both advertise no mask CI route. |
+| Fixed-effect-X CI | resolved for Gaussian; no non-Gaussian X-CI drift after R ledger narrowing | `partial` / guarded | `GJL-GATE-X-CI` | R and local Julia both advertise Gaussian `X` Wald/profile/bootstrap CI payloads only. |
+| `cbind` binomial / trial matrix | local Julia broader than R ledger | `guarded/partial` | `GJL-GATE-CBIND-BINOMIAL` | Local Julia advertises binomial trial matrices; current R ledger does not admit cbind rows, so this remains a named drift row until R marshaling is re-promoted with tests. |
 | Ordinal Wald CI | Local Julia broader than R ledger | `guarded/partial` | Fisher | Local Julia reports Wald CI for `OrdinalFit`; R ledger keeps per-trait ordinal CI endpoints gated. Must not promote broad ordinal CI parity. |
 | Ordinal residuals | Local Julia broader than R ledger | `guarded` | `GJL-GATE-ORDINAL-RESIDUAL` | Local Julia capability says residuals exist for local fit objects; R bridge deliberately rejects ordinal response/Pearson residual semantics. |
 | Postfit simulate | R broader for non-ordinal retained payload rows; local Julia bridge says false | `partial` / branch drift | Grace + Hopper | R reconstructs conditional simulations from retained payloads for selected rows; local Julia `bridge_capabilities()` reports no post-fit response simulator. |
@@ -98,16 +107,12 @@ not try to make every boolean equal. It:
 4. fail on any unregistered drift;
 5. report the compact drift table for Mission Control and after-task reports.
 
-The live-path follow-up in
-`tests/testthat/test-julia-bridge-live-capabilities.R` now asserts that the
-current local `GLLVM.bridge_capabilities()` surface produces 57 registered drift
-rows, including the NB1, ordinal-probit, mixed-family vector, ordinal CI, mask,
-non-Gaussian X, non-Gaussian X-CI, and postfit simulation rows. The old six no-X
-profile-CI drift rows are resolved for local non-ordinal no-X bridge rows, the
-old cbind-binomial drift row is resolved for ordinary binomial cbind responses,
-and the old Gaussian `fixed_effect_X` / `ci_x_*` drift rows are resolved for the
-local Gaussian bridge. The same file also checks R post-fit selected-profile
-`parm` transport and live Gaussian-X coefficient/CI transport against the local
-Julia bridge. Any future bridge widening that changes this surface must update
-the R gate registry, this matrix, or both before it can be treated as v1.0
-parity evidence.
+The current live-path drift check in `tests/testthat/test-julia-bridge.R`
+asserts that the local `GLLVM.bridge_capabilities()` surface produces exactly 9
+registered drift rows and zero unregistered rows: binomial `cbind_binomial`,
+Ordinal Wald CI, Ordinal residual semantics, and six R-retained-payload
+postfit-simulation rows. The older family-row, mask, non-Gaussian `X`,
+non-Gaussian `X` CI, mixed-family vector, and NB1/Ordinal-probit drifts are
+resolved by narrowing the R capability ledger rather than by claiming parity.
+Any future bridge widening that changes this surface must update the R gate
+registry, this matrix, or both before it can be treated as v1.0 parity evidence.
