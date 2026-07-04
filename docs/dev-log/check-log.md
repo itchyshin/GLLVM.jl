@@ -1,5 +1,42 @@
 # Check Log
 
+## 2026-07-04 - R + Julia v1.0 current cbind drift closure
+
+Goal: update the GLLVM.jl v1 contract packet after paired `gllvmTMB` commit
+`fbb0e9be` re-admitted ordinary binomial `cbind(successes, failures)` in the
+current narrowed R bridge ledger.
+
+Changes:
+
+- Updated `docs/dev-log/v1-contract/r-julia-v1-capability-matrix.md` so the
+  Binomial row and action list point to paired R commit `fbb0e9be`.
+- Updated `docs/dev-log/v1-contract/2026-07-03-bridge-drift-gates.md` so the
+  current live drift count is 8 registered rows and 0 unregistered rows.
+- Reframed the older 9-row state as historical evidence from the ledger
+  narrowing slice, not current operating truth.
+
+Current boundary:
+
+- Remaining drift is Ordinal Wald CI, Ordinal residual semantics, and six
+  retained-payload postfit simulation rows.
+- No R/Julia parity completion, v1.0 completion, non-Gaussian fixed-effect X,
+  mask, mixed-family CI, source-specific `lv`, `unique=` parity, or coverage
+  calibration claim follows.
+
+Checks:
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_bridge_capabilities.jl
+```
+
+Result: `bridge_capabilities honest local surface` passed 90/90.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_bridge_fit.jl
+```
+
+Result: `bridge_fit minimal one-part contract` passed 193/193.
+
 ## 2026-07-04 - R + Julia v1.0 live drift gate cleanup
 
 Goal: refresh the GLLVM.jl v1 contract packet after the paired gllvmTMB bridge

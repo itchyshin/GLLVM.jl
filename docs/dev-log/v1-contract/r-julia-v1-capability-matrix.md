@@ -53,7 +53,7 @@ Status vocabulary:
 |---|---|---|---|---|
 | Gaussian | `partial` | `partial` | Admit no-X bridge, Gaussian fixed-effect `X`, and row-specific CI/status; keep Gaussian-only REML language. | Local Julia bridge routes Gaussian `X`, Wald/profile/bootstrap CI payloads, and ordinary cbind-free no-X rows; R ledger remains broader for masks and structured rows. |
 | Poisson | `partial` | `partial` | Admit only tested one-part rows. | Structural-source phylo Poisson S2 runner remains private plumbing. |
-| Binomial | `partial` | `partial` | Admit only tested standard-link rows. | Paired R commit `fa70b50d` routes ordinary `cbind(successes, failures)` rows as success-count `Y` plus trial-count `N`; `GJL-GATE-CBIND-BINOMIAL` remains for non-binomial cbind rows, invalid counts, and cbind with separate weights. |
+| Binomial | `partial` | `partial` | Admit only tested standard-link rows. | Paired R commits `fa70b50d` and `fbb0e9be` route ordinary `cbind(successes, failures)` rows as success-count `Y` plus trial-count `N`; `GJL-GATE-CBIND-BINOMIAL` remains for non-binomial cbind rows, invalid counts, cbind with separate weights, and other non-admitted combinations. |
 | NB2 | `partial` | `partial` | Admit only tested one-part rows. | Dispersion scale must stay explicit. |
 | NB1 | `guarded` | `planned/absent in local bridge` | No current R/JL bridge admission claim. | Keep as gated until branch reconciliation lands. |
 | Beta | `partial` | `partial` | Admit only tested one-part rows. | Precision scale must stay explicit. |
@@ -102,9 +102,9 @@ Before any row is promoted to `covered`, the implementing slice must provide:
    rows and zero unregistered rows.
 7. Done in paired `gllvmTMB` commit `fa70b50d`: R `engine = "julia"` now
    marshals ordinary binomial `cbind(successes, failures)` responses as
-   success-count `Y` plus trial-count `N`. The paired live drift test now
-   reports 61 registered rows, zero unregistered rows, and zero cbind drift
-   rows.
+   success-count `Y` plus trial-count `N`. At that step, the paired live drift
+   test reported 61 registered rows, zero unregistered rows, and zero cbind
+   drift rows.
 8. Done in the Gaussian fixed-effect-X bridge slice: local `GLLVM.bridge_fit`
    now routes Gaussian `X` point fits plus selected Wald/profile/bootstrap CI
    payloads through the native Gaussian engine. The paired live drift test now
@@ -113,7 +113,16 @@ Before any row is promoted to `covered`, the implementing slice must provide:
    vectors, source-specific `lv`, and `unique=` parity remain gated.
 9. Done in paired `gllvmTMB` commits `2b233f1f` and `ecde980d`: the R bridge
    capability ledger is narrowed to the same seven one-part family rows as
-   local `GLLVM.bridge_capabilities()`. Live drift is now 9 registered
-   capability rows and zero unregistered rows: binomial `cbind_binomial`,
-   Ordinal Wald/residual semantics, and six retained-payload postfit simulation
-   rows. This is truth-contract evidence, not full bridge parity.
+   local `GLLVM.bridge_capabilities()`. At that step, live drift was 9
+   registered capability rows and zero unregistered rows: binomial
+   `cbind_binomial`, Ordinal Wald/residual semantics, and six retained-payload
+   postfit simulation rows. This is truth-contract evidence, not full bridge
+   parity.
+10. Done in paired `gllvmTMB` commit `fbb0e9be`: the current narrowed R bridge
+   ledger admits ordinary binomial `cbind(successes, failures)` for complete
+   no-X binomial rows, using success-count `Y` plus trial-count `N`. Live drift
+   is now 8 registered capability rows and zero unregistered rows: Ordinal
+   Wald/residual semantics plus six retained-payload postfit simulation rows.
+   This is a bridge-transport closure only; masks, fixed-effect X for
+   non-Gaussian rows, mixed-family vectors/CIs, source-specific `lv`, and
+   `unique=` parity remain gated.
