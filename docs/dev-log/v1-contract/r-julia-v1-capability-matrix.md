@@ -29,8 +29,8 @@ Status vocabulary:
 
 | Row | `gllvmTMB` R truth | `GLLVM.jl` truth | v1.0 contract | Evidence | Next gate |
 |---|---|---|---|---|---|
-| Wald CI no-X one-part bridge | `partial`: R ledger routes admitted rows except per-trait ordinal CI gates. | `partial`: local `bridge_fit` routes Wald for all seven local families, including Ordinal. | `partial`: support must be row-specific, not blanket. | `R/julia-bridge.R`; `src/bridge.jl`; tests listed above. | Fisher reconciles Ordinal family labels and native-vs-R CI status. |
-| Profile CI no-X bridge | `partial`: R ledger routes complete-response no-X profile payloads for selected non-ordinal rows, including named post-fit `confint(..., method = "profile", parm = ...)` transport through `ci_parm`. | `partial`: local `bridge_fit` now routes no-X profile payloads for Gaussian, Poisson, Binomial, NB2, Beta, and Gamma, with optional `options["ci_parm"]`; Ordinal remains unsupported through the bridge. | `partial`: selected no-X non-ordinal profile transport is admitted; coverage calibration, masks, fixed-effect X, mixed-family, and source-specific structural profile CIs remain gated. | `R/julia-bridge.R`; `src/bridge.jl` `_bridge_compute_ci`; `test/test_bridge_capabilities.jl`; `test/test_bridge_fit.jl`; paired gllvmTMB live drift and selected-`parm` tests through commit `96028892`. | Fisher/Hopper next classify the remaining CI drifts: ordinal profile, masks, fixed-effect X, mixed-family, and bootstrap remain separate gates. |
+| Wald CI no-X one-part bridge | `partial`: R ledger routes admitted seven-family no-X Wald payloads, including the GLLVM.jl `ordinal` row; `ordinal_probit()` remains gated. | `partial`: local `bridge_fit` routes Wald for all seven local families, including Ordinal. | `partial`: Wald transport is reconciled for the current no-X one-part ledger; this is not coverage calibration or broad ordinal CI parity. | `R/julia-bridge.R`; `src/bridge.jl`; tests listed above; paired live bridge file now passes 798/798 and the live drift probe reports 0 rows. | Fisher keeps Ordinal profile/bootstrap and Ordinal-probit CI rows gated until separately routed and tested. |
+| Profile CI no-X bridge | `partial`: R ledger routes complete-response no-X profile payloads for selected non-ordinal rows, including named post-fit `confint(..., method = "profile", parm = ...)` transport through `ci_parm`; Ordinal profile remains gated. | `partial`: local `bridge_fit` now routes no-X profile payloads for Gaussian, Poisson, Binomial, NB2, Beta, and Gamma, with optional `options["ci_parm"]`; Ordinal remains unsupported through the bridge. | `partial`: selected no-X non-ordinal profile transport is admitted; coverage calibration, masks, fixed-effect X, mixed-family, and source-specific structural profile CIs remain gated. | `R/julia-bridge.R`; `src/bridge.jl` `_bridge_compute_ci`; `test/test_bridge_capabilities.jl`; `test/test_bridge_fit.jl`; paired gllvmTMB live drift and selected-`parm` tests through commit `96028892`. | Fisher/Hopper keep Ordinal profile, masks, non-Gaussian fixed-effect X, mixed-family, and source-specific profile rows as separate gates. |
 | Bootstrap CI no-X bridge | `partial`: R ledger can refit admitted rows, but bootstrap remains secondary. | `partial/guarded`: local `bridge_fit` routes bootstrap only for Gaussian. | `partial`: no coverage calibration claim. | `R/julia-bridge.R`; `src/bridge.jl`; Mission Control claim guard. | Keep bootstrap as diagnostic; do not use it as rescue evidence. |
 | Masked CI | `guarded`: masks are not admitted in the current R ledger. | `guarded`: no local bridge mask route. | `guarded`. | `GJL-GATE-MASK`, `GJL-GATE-MASK-X-CI`, `GJL-GATE-MASK-X`; `src/bridge.jl`. | Separate any future no-X mask CI from mask+X CI in tests and docs. |
 | Fixed-effect-X CI | `partial` for selected complete-response rows. | `partial`: Gaussian `X` Wald/profile/bootstrap CI payloads route through native Gaussian CI methods; non-Gaussian `X` CI rows remain fail-loud drift. | `guarded/partial`. | `GJL-GATE-X-CI`; `src/bridge.jl`; `test/test_bridge_capabilities.jl`; paired live R Gaussian-X smoke. | Reconcile non-Gaussian X CI only after non-Gaussian X point rows are shared. |
@@ -59,7 +59,7 @@ Status vocabulary:
 | NB1 | `guarded` | `planned/absent in local bridge` | No current R/JL bridge admission claim. | Keep as gated until branch reconciliation lands. |
 | Beta | `partial` | `partial` | Admit only tested one-part rows. | Precision scale must stay explicit. |
 | Gamma | `partial` | `partial` | Admit only tested one-part rows. | Shared Gamma grouped-dispersion boundary remains explicit on R side. |
-| Ordinal | `partial` | `partial` | Admit point/postfit and row-specific CI only where tested. | Per-trait ordinal CI and residual/simulate gates remain. |
+| Ordinal | `partial` | `partial` | Admit point/postfit, Wald CI, and ordinal-score residuals only where tested. | Ordinal profile/bootstrap CI, Ordinal simulation, Ordinal-probit bridge admission, masks, and structural rows remain gated. |
 | Ordinal probit | `guarded` | `planned/absent in local bridge` | No current R/JL bridge admission claim. | Keep as gated until per-trait/probit labels and CI semantics are reconciled. |
 | Delta/hurdle/two-part | `partial/planned` | Native pieces exist outside bridge parity. | `planned/guarded` for v1 public parity. | Two-scale latent covariance requires derivation before structural LV claims. |
 
@@ -138,3 +138,11 @@ Before any row is promoted to `covered`, the implementing slice must provide:
    Ordinal simulation, newdata simulation, masks,
    mixed-family vectors/CIs, source-specific `lv`, and `unique=` parity remain
    gated.
+12. Done in the paired gllvmTMB ordinal drift-closure slice: the R bridge now
+   admits GLLVM.jl `ordinal` no-X Wald CI payloads and reconstructs
+   response/Pearson ordinal-score residuals from retained category
+   probabilities. The configured live bridge file now passes 798/798 and the
+   live drift probe reports 0 rows and 0 unregistered rows. Ordinal
+   profile/bootstrap CIs, `ordinal_probit()` admission, Ordinal simulation,
+   masks, mixed-family rows/CIs, non-Gaussian fixed-effect `X`, source-specific
+   `lv`, and `unique=` parity remain gated.

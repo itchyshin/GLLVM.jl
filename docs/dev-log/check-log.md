@@ -1,5 +1,43 @@
 # Check Log
 
+## 2026-07-04 - R bridge ordinal drift closure sync
+
+Goal: update the GLLVM.jl v1 contract packet after the paired gllvmTMB bridge
+slice admitted the final two current drift rows: GLLVM.jl `ordinal` no-X Wald
+CI payloads and response/Pearson ordinal-score residuals.
+
+Changes:
+
+- Updated `docs/dev-log/v1-contract/r-julia-v1-capability-matrix.md` so the
+  Wald CI row and Ordinal family row record current R/JL agreement for no-X
+  Ordinal Wald CIs and ordinal-score residuals.
+- Updated `docs/dev-log/v1-contract/2026-07-03-bridge-drift-gates.md` so the
+  current live comparator result is 0 drift rows and 0 unregistered rows.
+- Kept Ordinal profile/bootstrap CIs, `ordinal_probit()` bridge admission,
+  Ordinal simulation, masks, mixed-family rows/CIs, non-Gaussian fixed-effect
+  `X`, source-specific `lv`, and `unique=` parity explicitly gated.
+
+Checks:
+
+```sh
+GLLVM_JL_PATH='/Users/z3437171/Dropbox/Github Local/GLLVM.jl' JULIA_HOME='/Users/z3437171/.juliaup/bin' Rscript --vanilla -e 'pkgload::load_all(quiet = TRUE); testthat::test_file("tests/testthat/test-julia-bridge.R")'
+```
+
+Result: paired configured live bridge test passed 798/798.
+
+```sh
+GLLVM_JL_PATH='/Users/z3437171/Dropbox/Github Local/GLLVM.jl' JULIA_HOME="$HOME/.juliaup/bin" Rscript --vanilla -e 'pkgload::load_all(quiet = TRUE); gllvm_julia_setup(); engine_caps <- JuliaCall::julia_eval("GLLVM.bridge_capabilities()"); drift <- gllvmTMB:::.gllvm_julia_capability_drift(julia_caps = engine_caps); print(drift[, c("family", "capability", "direction", "status", "gate_id")], row.names = FALSE); cat("n=", nrow(drift), "unregistered=", sum(drift$status == "unregistered"), "\n")'
+```
+
+Result: live drift probe printed 0 rows, `n = 0`, and `unregistered = 0`.
+
+Current boundary:
+
+- This closes current R-vs-local-Julia capability drift for the narrowed bridge
+  ledger; it is not v1.0 completion, coverage calibration, source-specific
+  `lv` support, mixed-family CI support, non-Gaussian `X` parity, mask parity,
+  `unique=` parity, or active compute.
+
 ## 2026-07-04 - GLLVM.jl postfit response simulation bridge closure
 
 Goal: remove the six non-ordinal postfit-simulation drift rows by routing native
