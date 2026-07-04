@@ -191,3 +191,6 @@ Failure on any check kicks the algorithm back to draft. After the battery
 passes, Florence renders a speedup plot vs `gllvmTMB`, an after-task audit
 is written, and Rose signs off. Workflow Q is the keystone routine —
 defined in §7 of the reference plan.
+
+<!-- shinichi-hub -->
+> Read first — personal operating contract & second brain (house rules, memory, agents): /Users/z3437171/Dropbox/Github Local/Shinichi/AGENTS.md  (repo rules override the hub where they differ)

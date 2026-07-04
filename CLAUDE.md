@@ -115,3 +115,6 @@ non-Gaussian families fast and scalable:
 - Kristensen et al. 2016 (TMB; the sparse-Cholesky analytic-adjoint pattern, *J Stat Soft*)
 - Morris et al. 2019; Williams et al. 2024 (ADEMP simulation reporting framework)
 - Takahashi 1973; Erisman & Tinney 1975 (selected-inverse recursion for sparse matrices)
+
+<!-- shinichi-hub -->
+@/Users/z3437171/Dropbox/Github Local/Shinichi/AGENTS.md
