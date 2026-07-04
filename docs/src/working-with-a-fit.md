@@ -2,7 +2,8 @@
 
 Once you have a fit from `fit_gaussian_gllvm`, `fit_gllvm(Y; family=…)`, or a
 two-part fitter, GLLVM.jl gives you the standard post-fit toolkit: ordination,
-predictions, residual diagnostics, and model-selection criteria. The current
+predictions, residual diagnostics, response simulation, and model-selection
+criteria. The current
 coverage is broadest for Gaussian and the one-part Laplace families; two-part
 fitters expose the same core summaries where the response-scale target is
 defined.
@@ -68,6 +69,22 @@ rp = residuals(fit, Y; type = :pearson)
 
 A normal quantile–quantile plot of `r` is the usual goodness-of-fit check.
 
+## Conditional response simulation
+
+`simulate_response` draws response matrices conditional on the fitted latent
+scores used by `predict`. With the default `nsim = 1` it returns a `p × n`
+matrix; with `nsim > 1` it returns a `p × n × nsim` array:
+
+```julia
+ysim  = simulate_response(fit, Y; rng = MersenneTwister(2))
+ysim5 = simulate_response(fit, Y; nsim = 5, rng = MersenneTwister(2))
+```
+
+The routed one-part families are Gaussian, Poisson, Binomial,
+NegativeBinomial, Beta, and Gamma. Binomial fits use Bernoulli trials by
+default; pass `N = trials` for multi-trial count responses. Ordinal response
+simulation is still gated until the R bridge ordinal semantics are reconciled.
+
 ## Model comparison
 
 ```julia
@@ -96,6 +113,7 @@ fitb = fit_gllvm(Yb; family = Binomial(), K = 2)
 getLV(fitb, Yb)                 # Laplace-mode scores
 predict(fitb, Yb)               # fitted probabilities
 residuals(fitb, Yb)             # Dunn–Smyth (set rng to reproduce)
+simulate_response(fitb, Yb)     # conditional Bernoulli response draw
 ```
 
 The same entry point dispatches to Poisson, NegativeBinomial, Beta, Ordinal,

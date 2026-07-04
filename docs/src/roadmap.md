@@ -33,6 +33,8 @@ future design input for exact Gaussian cells, not non-Gaussian Laplace.
   NegativeBinomial, Beta, Ordinal, and Gamma.
 - Wald/profile confidence-interval routes for the one-part Laplace families;
   parity and bridge exposure are still being audited.
+- Conditional in-sample response simulation for Gaussian, Poisson, Binomial,
+  NegativeBinomial, Beta, and Gamma.
 - Dedicated two-part fitters for Delta-lognormal, Hurdle-Poisson, and
   Hurdle-NB.
 - Minimal Julia-side `bridge_fit` for no-covariate one-part families.

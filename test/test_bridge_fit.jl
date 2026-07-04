@@ -164,6 +164,54 @@ end
         @test br.ci_lower[1] < br.ci_estimate[1] < br.ci_upper[1]
     end
 
+    @testset "postfit response simulation" begin
+        rng = MersenneTwister(707)
+
+        Yg = randn(rng, 3, 22)
+        fitg = fit_gaussian_gllvm(Yg; K = 1)
+        simg = simulate_response(fitg, Yg; rng = MersenneTwister(1))
+        @test size(simg) == size(Yg)
+        simg3 = simulate_response(fitg, Yg; nsim = 3, rng = MersenneTwister(1))
+        @test size(simg3) == (size(Yg, 1), size(Yg, 2), 3)
+
+        Yp = _bridge_test_poisson(708)
+        fitp = fit_poisson_gllvm(Matrix{Int}(Yp); K = 1)
+        simp = simulate_response(fitp, Matrix{Int}(Yp); rng = MersenneTwister(2))
+        @test size(simp) == size(Yp)
+        @test eltype(simp) <: Integer
+        @test all(simp .>= 0)
+
+        Yb, N = _bridge_test_binomial(709)
+        fitb = fit_binomial_gllvm(Matrix{Int}(Yb); K = 1, N = N)
+        simb = simulate_response(fitb, Matrix{Int}(Yb); N = N,
+                                 rng = MersenneTwister(3))
+        @test size(simb) == size(Yb)
+        @test all((simb .>= 0) .& (simb .<= N))
+
+        Ynb = rand(MersenneTwister(710), NegativeBinomial(5, 0.7), 3, 22)
+        fitnb = fit_nb_gllvm(Matrix{Int}(Ynb); K = 1)
+        simnb = simulate_response(fitnb, Matrix{Int}(Ynb); rng = MersenneTwister(4))
+        @test size(simnb) == size(Ynb)
+        @test all(simnb .>= 0)
+
+        Ybe = _bridge_test_beta(711)
+        fitbe = fit_beta_gllvm(Ybe; K = 1)
+        simbe = simulate_response(fitbe, Ybe; rng = MersenneTwister(5))
+        @test size(simbe) == size(Ybe)
+        @test all((simbe .> 0) .& (simbe .< 1))
+
+        Yga = _bridge_test_gamma(712)
+        fitga = fit_gamma_gllvm(Yga; K = 1)
+        simga = simulate_response(fitga, Yga; rng = MersenneTwister(6))
+        @test size(simga) == size(Yga)
+        @test all(simga .> 0)
+
+        Yo = _bridge_test_ordinal(713)
+        fito = fit_ordinal_gllvm(Matrix{Int}(Yo); K = 1)
+        @test_throws ArgumentError simulate_response(fito, Matrix{Int}(Yo))
+        @test_throws ArgumentError simulate_response(fitg, Yg; nsim = 0)
+    end
+
     @testset "explicit unsupported bridge cells" begin
         Y = Float64.(_bridge_test_poisson(130))
         X = zeros(size(Y, 1), size(Y, 2), 1)

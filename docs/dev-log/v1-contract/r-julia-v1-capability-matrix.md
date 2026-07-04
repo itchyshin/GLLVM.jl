@@ -21,6 +21,7 @@ Status vocabulary:
 | Fixed-effect `X` bridge | `partial`: current R ledger admits complete-response Gaussian `X` only; non-Gaussian `X`, mask+X, and unsupported designs are gated. | `partial`: local `bridge_fit` admits Gaussian `X` only; non-Gaussian `X` remains fail-loud. | `guarded/partial`: Gaussian `X` is shared locally; no non-Gaussian X parity claim. | `R/julia-bridge.R` gates `GJL-GATE-X-FAMILY`, `GJL-GATE-X-DESIGN`; `src/bridge.jl`; `test/test_bridge_capabilities.jl`; `test/test_bridge_fit.jl`. | Reconcile non-Gaussian X row by row; do not promote masks, mixed-family X, or source-specific LV. |
 | Missing-response masks | `guarded`: current R ledger marks response masks unavailable and fails through `GJL-GATE-MASK` or `GJL-GATE-MASK-X`. | `guarded`: local `bridge_fit` has no `mask` argument. | `guarded`: no public mask parity. | `R/julia-bridge.R`; dashboard `LV structural dependencies`; `src/bridge.jl`. | Curie tests any future mask-only route separately from mask+X claims. |
 | Mixed-family vector | `guarded`: current R capability ledger omits the mixed-family vector row and direct calls fail through `GJL-GATE-MIXED-COMPONENTS`. | `guarded`: local `bridge_fit` rejects mixed-family vectors. | `guarded`: no mixed-family v1 bridge parity claim. | `R/julia-bridge.R`; `tests/testthat/test-julia-bridge.R`; dashboard mixed blocker. | Keep `GJL-GATE-MIXED-COMPONENTS`; no CI, X, X_lv, mask, or missing-response claim. |
+| Postfit response simulation | `partial`: current R ledger advertises retained-payload conditional simulation for the six non-ordinal one-part rows and keeps Ordinal gated. | `partial`: `simulate_response` draws conditional in-sample response matrices for Gaussian, Poisson, Binomial, NB2, Beta, and Gamma; Ordinal throws. | `partial`: non-ordinal in-sample response simulation is admitted; Ordinal, newdata, masks, mixed-family vectors, and source-specific structural rows remain gated. | `src/simulate.jl`; `src/bridge.jl`; `test/test_bridge_capabilities.jl`; `test/test_bridge_fit.jl`; paired R drift tests. | Next simulation gate is semantics, not transport: Ordinal, newdata, unconditional random-effect redraws, masks, mixed-family vectors, and structural rows remain separate. |
 | Structured terms through bridge | `guarded`: `engine = "julia"` rejects structured covariance terms. | `planned`: native Julia structured pieces exist in separate engine paths but not flat bridge parity. | `guarded`. | `R/julia-bridge.R` `GJL-GATE-STRUCTURED-TERMS`; dashboard source grammar row. | Do not bridge phylo/spatial/animal/kernel until a public contract and parity tests exist. |
 | Multiple reduced-rank latent blocks | `guarded`. | `planned`. | `guarded`. | `R/julia-bridge.R` `GJL-GATE-MULTI-RR`. | Design first; no implicit widening. |
 
@@ -118,11 +119,22 @@ Before any row is promoted to `covered`, the implementing slice must provide:
    `cbind_binomial`, Ordinal Wald/residual semantics, and six retained-payload
    postfit simulation rows. This is truth-contract evidence, not full bridge
    parity.
-10. Done in paired `gllvmTMB` commit `fbb0e9be`: the current narrowed R bridge
+10. Done in paired `gllvmTMB` commit `fbb0e9be`: the narrowed R bridge
    ledger admits ordinary binomial `cbind(successes, failures)` for complete
-   no-X binomial rows, using success-count `Y` plus trial-count `N`. Live drift
-   is now 8 registered capability rows and zero unregistered rows: Ordinal
+   no-X binomial rows, using success-count `Y` plus trial-count `N`. At that
+   step, live drift was 8 registered capability rows and zero unregistered rows:
+   Ordinal
    Wald/residual semantics plus six retained-payload postfit simulation rows.
    This is a bridge-transport closure only; masks, fixed-effect X for
    non-Gaussian rows, mixed-family vectors/CIs, source-specific `lv`, and
    `unique=` parity remain gated.
+11. Done in the GLLVM.jl postfit-simulation slice and paired gllvmTMB
+   expectation refresh: local
+   `simulate_response` now routes conditional in-sample response draws for
+   Gaussian, Poisson, Binomial, NB2, Beta, and Gamma, and
+   `GLLVM.bridge_capabilities()` advertises `postfit_simulate = true` for those
+   six rows only. The paired live drift probe now reports 2 registered rows and
+   zero unregistered rows: Ordinal Wald CI and Ordinal residual semantics.
+   Ordinal simulation, newdata simulation, masks,
+   mixed-family vectors/CIs, source-specific `lv`, and `unique=` parity remain
+   gated.

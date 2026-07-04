@@ -94,6 +94,8 @@ with sparse random-effect design matrices. `GLLVM.jl` solves a
 - Phylogenetic random effects (`phylo_latent`, `phylo_unique`) with dense
   `Σ_phy`, plus sparse Brownian-tree single-axis fits via `phy=...`
 - Wald / profile / bootstrap CIs for the Gaussian path
+- Conditional in-sample response simulation for Gaussian, Poisson, Binomial,
+  NegativeBinomial, Beta, and Gamma fits
 - PPCA closed-form initialisation
 - Structure-aware Cholesky (Woodbury for Λ Λ' + diag)
 - EM-FA solver as an alternative to LBFGS

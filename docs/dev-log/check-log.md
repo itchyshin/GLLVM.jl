@@ -1,5 +1,52 @@
 # Check Log
 
+## 2026-07-04 - GLLVM.jl postfit response simulation bridge closure
+
+Goal: remove the six non-ordinal postfit-simulation drift rows by routing native
+conditional in-sample response simulation in GLLVM.jl and syncing the paired
+gllvmTMB live drift expectation.
+
+Changes:
+
+- Added `simulate_response` for Gaussian, Poisson, Binomial, NB2, Beta, and
+  Gamma fits. The method returns a `p x n` matrix for `nsim = 1` and a
+  `p x n x nsim` array for multiple draws.
+- Kept Ordinal response simulation fail-loud until its R bridge response
+  semantics are specified.
+- Updated `GLLVM.bridge_capabilities()` so `postfit_simulate` is true only for
+  the six non-ordinal one-part rows.
+- Updated docs, the v1 capability matrix, and the bridge drift-gates note.
+- Synced the paired gllvmTMB expectation so the live drift probe now reports 2
+  registered rows and 0 unregistered rows: Ordinal Wald CI and Ordinal
+  residual semantics.
+
+Checks:
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_bridge_capabilities.jl
+```
+
+Result: `bridge_capabilities honest local surface` passed 94/94.
+
+```sh
+/Users/z3437171/.juliaup/bin/julia --project=. --startup-file=no test/test_bridge_fit.jl
+```
+
+Result: `bridge_fit minimal one-part contract` passed 208/208.
+
+```sh
+GLLVM_JL_PATH='/Users/z3437171/Dropbox/Github Local/GLLVM.jl' JULIA_HOME='/Users/z3437171/.juliaup/bin' Rscript --vanilla -e 'pkgload::load_all(quiet = TRUE); testthat::test_file("tests/testthat/test-julia-bridge.R")'
+```
+
+Result: paired configured live bridge test passed 793/793.
+
+Current boundary:
+
+- This is conditional in-sample response simulation, not newdata simulation,
+  unconditional random-effect redraws, coverage calibration, source-specific
+  `lv`, mixed-family CI support, `unique=` parity, or v1.0 completion.
+- Remaining live drift is only Ordinal Wald CI and Ordinal residual semantics.
+
 ## 2026-07-04 - R + Julia v1.0 current cbind drift closure
 
 Goal: update the GLLVM.jl v1 contract packet after paired `gllvmTMB` commit
@@ -11,14 +58,14 @@ Changes:
 - Updated `docs/dev-log/v1-contract/r-julia-v1-capability-matrix.md` so the
   Binomial row and action list point to paired R commit `fbb0e9be`.
 - Updated `docs/dev-log/v1-contract/2026-07-03-bridge-drift-gates.md` so the
-  current live drift count is 8 registered rows and 0 unregistered rows.
+  live drift count at that step was 8 registered rows and 0 unregistered rows.
 - Reframed the older 9-row state as historical evidence from the ledger
   narrowing slice, not current operating truth.
 
 Current boundary:
 
-- Remaining drift is Ordinal Wald CI, Ordinal residual semantics, and six
-  retained-payload postfit simulation rows.
+- Remaining drift at that step was Ordinal Wald CI, Ordinal residual semantics,
+  and six retained-payload postfit simulation rows.
 - No R/Julia parity completion, v1.0 completion, non-Gaussian fixed-effect X,
   mask, mixed-family CI, source-specific `lv`, `unique=` parity, or coverage
   calibration claim follows.

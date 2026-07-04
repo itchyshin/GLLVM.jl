@@ -11,7 +11,6 @@ include("ppca_init.jl")                  # used by fit (warm-start)
 include("em_fa.jl")                      # alternative EM solver
 include("profile.jl")                    # σ_eps profile-out (used by fit)
 include("fit.jl")
-include("simulate.jl")
 include("structured_cov.jl")             # spatial_cov, relatedness_cov builders
 include("structured_schur.jl")           # internal Schur/SLQ substrate for structured non-Gaussian Laplace
 
@@ -37,6 +36,7 @@ include("families/fit_gllvm.jl")         # unified fit_gllvm(Y; family) dispatch
 
 # Post-fit API (ordination, predict, residuals, summary)
 include("postfit.jl")
+include("simulate.jl")
 
 # Confidence intervals
 include("confint.jl")                    # Wald
@@ -69,7 +69,7 @@ export spatial_cov, relatedness_cov,
        fit_hurdle_nb_gllvm, HurdleNBFit,
        hurdle_nb_marginal_loglik_laplace, fit_gllvm,
        getLV, getLoadings, rotation,
-       predict, fitted, residuals, aic, bic,
+       predict, fitted, residuals, simulate_response, aic, bic,
        bridge_fit, bridge_capabilities
 
 end # module GLLVM

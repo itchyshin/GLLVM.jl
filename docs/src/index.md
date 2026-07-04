@@ -56,7 +56,7 @@ After fitting, the usual report-ready quantities are:
 
 - First Gaussian fit: [Quick start](quickstart.md).
 - Model equation and estimands: [Model](model.md).
-- Ordination, predictions, residuals, AIC, and BIC:
+- Ordination, predictions, residuals, response simulation, AIC, and BIC:
   [Working with a fit](working-with-a-fit.md).
 - Response-family choice: [Response families](response-families.md).
 - R twin comparison: [Capability parity](gllvmtmb-parity.md).
@@ -70,6 +70,8 @@ After fitting, the usual report-ready quantities are:
       Hurdle-NB.
     - Wald/profile confidence-interval routes for the one-part Laplace
       families; R-parity and bridge exposure are still being audited.
+    - Conditional in-sample response simulation for Gaussian, Poisson,
+      Binomial, NegativeBinomial, Beta, and Gamma.
     - Minimal Julia-side `bridge_fit` for no-covariate one-part families; live
       `gllvmTMB` roundtrip support remains partial.
     - Still planned: formula syntax, structured non-Gaussian dependence,

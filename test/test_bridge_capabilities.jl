@@ -54,13 +54,13 @@ using Distributions
         @test cap.ci_x_profile == [f == "gaussian" for f in cap.family]
         @test cap.ci_x_bootstrap == [f == "gaussian" for f in cap.family]
         # postfit: coef/fit_stats/summary/predict/residuals/ordination supported;
-        # simulate is NOT (no post-fit response simulator on this branch).
+        # response simulation is routed for non-ordinal one-part rows only.
         @test all(cap.postfit_coef)
         @test all(cap.postfit_fit_stats)
         @test all(cap.postfit_summary)
         @test all(cap.postfit_predict)
         @test all(cap.postfit_residuals)
-        @test all(.!cap.postfit_simulate)
+        @test cap.postfit_simulate == [f != "ordinal" for f in cap.family]
         @test all(cap.postfit_ordination)
         @test all(==("partial"), cap.status)
         @test all(s -> s isa AbstractString && !isempty(s), cap.notes)
@@ -77,6 +77,11 @@ using Distributions
         br = bridge_fit(; y = Yb, family = "binomial", d = 1, N = N)
         @test br.family == "binomial"
         @test br.converged isa Bool
+        fitb = fit_binomial_gllvm(Matrix{Int}(Yb); K = 1, N = N)
+        yb_sim = simulate_response(fitb, Matrix{Int}(Yb); N = N,
+                                   rng = MersenneTwister(2027))
+        @test size(yb_sim) == size(Yb)
+        @test all((yb_sim .>= 0) .& (yb_sim .<= N))
 
         # fixed_effect_X = true for Gaussian — a real Gaussian X fit succeeds.
         Yg = randn(rng, 3, 26)
@@ -150,6 +155,9 @@ using Distributions
         @test bro.ci_method == "wald"
         @test bro.ci_status == "ok"
         @test !isempty(bro.ci_lower)
+        fito = fit_ordinal_gllvm(Matrix{Int}(Yo); K = 1)
+        @test !cap.postfit_simulate[findfirst(==("ordinal"), cap.family)]
+        @test_throws ArgumentError simulate_response(fito, Matrix{Int}(Yo))
 
         # ci_no_x_bootstrap = false for a non-Gaussian family — bootstrap is not
         # routed, matching the advertised false flag.

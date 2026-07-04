@@ -46,6 +46,7 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 | `getLV` / `getLoadings` / `rotation` | ✅ | Gaussian and implemented Laplace fit objects |
 | `predict` / `fitted` | ✅ | implemented Laplace fit objects; ordinal adds `:prob` / `:class` |
 | `residuals` (Dunn–Smyth + Pearson) | ✅ | implemented one-part families; two-part residuals are dedicated |
+| `simulate_response` | ✅ partial | conditional in-sample response draws for Gaussian, Poisson, Binomial, NB2, Beta, and Gamma; Ordinal remains gated |
 | `aic` / `bic` / `show` | ✅ | implemented fit objects |
 | Σ_y / communality / correlation / phylo signal H² | ✅ Gaussian | report-ready extractors |
 | Confidence intervals (Wald / profile / bootstrap) | ✅ Gaussian · 🔨 non-Gaussian | Wald/profile routes exist for one-part Laplace families; R-parity, derived CIs, and bridge exposure remain partial |

@@ -52,6 +52,14 @@ gated, and zero unregistered rows: six postfit-simulation rows plus Ordinal
 Wald CI and Ordinal residual semantics. This is a bridge-transport closure, not
 R/Julia parity completion.
 
+Eighth follow-up, 2026-07-04: local `GLLVM.jl` adds `simulate_response` for
+conditional in-sample response draws from Gaussian, Poisson, Binomial, NB2,
+Beta, and Gamma fits, and `GLLVM.bridge_capabilities()` now reports
+`postfit_simulate = true` for those six non-ordinal rows. Ordinal response
+simulation remains gated. After the paired R expectation refresh, the live
+comparator reports 2 drift rows, both registered: Ordinal Wald CI and Ordinal
+residual semantics.
+
 ## Purpose
 
 This note records the expected drift between the current R-side
@@ -93,7 +101,7 @@ v1.0 arc it is acceptable only when it is named, scoped, and gated.
 | `cbind` binomial / trial matrix | no live drift after R cbind re-admission | `partial` / guarded | `GJL-GATE-CBIND-BINOMIAL` | R and local Julia both advertise ordinary binomial trial matrices for complete no-X rows. The R gate remains active for non-binomial cbind rows, invalid counts, cbind plus weights, and non-admitted combinations. |
 | Ordinal Wald CI | Local Julia broader than R ledger | `guarded/partial` | Fisher | Local Julia reports Wald CI for `OrdinalFit`; R ledger keeps per-trait ordinal CI endpoints gated. Must not promote broad ordinal CI parity. |
 | Ordinal residuals | Local Julia broader than R ledger | `guarded` | `GJL-GATE-ORDINAL-RESIDUAL` | Local Julia capability says residuals exist for local fit objects; R bridge deliberately rejects ordinal response/Pearson residual semantics. |
-| Postfit simulate | R broader for non-ordinal retained payload rows; local Julia bridge says false | `partial` / branch drift | Grace + Hopper | R reconstructs conditional simulations from retained payloads for selected rows; local Julia `bridge_capabilities()` reports no post-fit response simulator. |
+| Postfit simulate | no live drift after local `simulate_response` routing | `partial` | Grace + Hopper | R and local Julia both advertise conditional in-sample simulation for the six non-ordinal one-part rows; Ordinal simulation remains gated on both sides. |
 
 ## Non-Drift Rows That Must Stay Locked
 
@@ -115,13 +123,13 @@ not try to make every boolean equal. It:
 4. fail on any unregistered drift;
 5. report the compact drift table for Mission Control and after-task reports.
 
-The current live-path drift check in `tests/testthat/test-julia-bridge.R`
-asserts that the local `GLLVM.bridge_capabilities()` surface produces exactly 8
-registered drift rows and zero unregistered rows: Ordinal Wald CI, Ordinal
-residual semantics, and six R-retained-payload postfit-simulation rows. The
+After the paired R expectation refresh, the current live-path drift check in
+`tests/testthat/test-julia-bridge.R` asserts that the local
+`GLLVM.bridge_capabilities()` surface produces exactly 2 registered drift rows
+and zero unregistered rows: Ordinal Wald CI and Ordinal residual semantics. The
 older family-row, mask, non-Gaussian `X`, non-Gaussian `X` CI, mixed-family
-vector, cbind-binomial, and NB1/Ordinal-probit drifts are resolved by narrowing
-or explicitly re-admitting the R capability ledger rather than by claiming full
-parity. Any future bridge widening that changes this surface must update the R
-gate registry, this matrix, or both before it can be treated as v1.0 parity
-evidence.
+vector, cbind-binomial, postfit-simulation, and NB1/Ordinal-probit drifts are
+resolved by narrowing, explicitly re-admitting, or implementing the local
+capability rather than by claiming full parity. Any future bridge widening that
+changes this surface must update the R gate registry, this matrix, or both
+before it can be treated as v1.0 parity evidence.

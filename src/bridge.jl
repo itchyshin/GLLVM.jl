@@ -481,10 +481,9 @@ Honest per-column rationale (local truth):
     via `_bridge_scores`/`getLV`).
   * `postfit_predict`, `postfit_residuals` — `true` (all 7). The engine ships
     `predict`/`residuals` methods for every one of the 7 fit types.
-  * `postfit_simulate` — `false` (all 7). The engine has NO post-fit response
-    simulator: `src/simulate.jl` is a placeholder and no `simulate(fit, ...)`
-    method exists for any family. (This too diverges from the integration table,
-    which advertises `simulate` for non-ordinal families.)
+  * `postfit_simulate` — `true` for the six non-ordinal one-part rows and
+    `false` for Ordinal. `simulate_response` routes conditional in-sample
+    response draws for Gaussian, Poisson, Binomial, NB2, Beta, and Gamma.
 
 `status` is `"partial"` for every family. `notes` is a short honest per-family
 string. The column key set is byte-comparable with the integration surface; only
@@ -518,17 +517,17 @@ function bridge_capabilities()
         postfit_summary = trues_,
         postfit_predict = trues_,
         postfit_residuals = trues_,
-        postfit_simulate = falses_,
+        postfit_simulate = copy(is_profile),
         postfit_ordination = trues_,
         status = fill("partial", nf),
         notes = [
             f == "gaussian" ?
-                "one-part bridge family; no-X and fixed-effect X fits are routed with Wald, profile, and bootstrap CI payloads" :
+                "one-part bridge family; no-X and fixed-effect X fits are routed with Wald/profile/bootstrap CI payloads and conditional response simulation" :
             f == "binomial" ?
-                "no-X one-part bridge family; accepts N (cbind) trials; Wald and profile CI payloads are routed; bootstrap is not routed on this branch" :
+                "no-X one-part bridge family; accepts N (cbind) trials; Wald/profile CI payloads and conditional response simulation are routed; bootstrap is not routed on this branch" :
             f == "ordinal" ?
                 "no-X one-part bridge family; Wald CI is routed (native OrdinalFit confint); profile/bootstrap are not routed; no scalar-mean simulate" :
-                "no-X one-part bridge family; Wald and profile CI payloads are routed; bootstrap is not routed on this branch"
+                "no-X one-part bridge family; Wald/profile CI payloads and conditional response simulation are routed; bootstrap is not routed on this branch"
             for f in fams
         ],
     )

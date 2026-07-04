@@ -26,6 +26,9 @@ Notable changes to GLLVM.jl. Style mirrors `gllvmTMB`'s NEWS: status labels
   preserved, and non-finite/factorization failures restart once from zero.
   This fixes the local #96 engine blocker but does not by itself flip any
   gradient default.
+- **IN:** `simulate_response` draws conditional in-sample response matrices for
+  Gaussian, Poisson, Binomial, NegativeBinomial, Beta, and Gamma fits; Ordinal
+  response simulation remains gated.
 - **PARTIAL:** minimal `bridge_fit` entrypoint for no-covariate one-part
   families; unsupported bridge cells reject deliberately. Live R roundtrip is
   still a bridge slice, not a release claim.
