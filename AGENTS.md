@@ -1,5 +1,13 @@
 # GLLVM.jl Agent Instructions
 
+## LOAD-FIRST manifest
+<!-- Brain dossier manifest (refresh: python3 ~/shinichi-brain/tools/route.py GLLVM.jl). Top = salience; drift-checked by route.py. -->
+- Compute is a default condition — before any parity/gradient/performance run ask *"Totoro or DRAC?"* (fast CPU ≤100 cores → Totoro; GPU parity / replicated campaigns → DRAC); scale out, never laptop-scale. Playbook: `~/shinichi-brain/projects/COMPUTE-PLAYBOOK.md`.
+- Trust recovery-to-truth and inspect populated diagnostics before a Hessian verdict.
+- Diff main before building; write symbolic alignment before changing covariance or latent scales.
+- Load `validation-harness` and the repo instructions below; gllvmTMB owns the first public R surface.
+- Keep Gaussian-only REML and exact-gradient claims inside their verified support cells.
+
 `GLLVM.jl` is a Julia implementation of the Gaussian + phylogenetic
 Generalised Linear Latent Variable Model, built as a digital twin of R's
 `gllvmTMB` engine at ~10× speed.
