@@ -1,7 +1,8 @@
 # test_ordinal_probit_parity.jl — ordinal-probit GLLVM logLik vs gllvmTMB
 #
-# Manual opt-in diagnostic. It is deliberately not included by runparity.jl
-# until the cell is green.
+# Included by runparity.jl. NEVER included by test/runtests.jl.
+# Same-model bar: cumulative-probit link, per-trait intercepts, τ₁ = 0,
+# and latent unique=FALSE (no Ψ).
 
 using GLLVM, RCall, Test, Random
 
