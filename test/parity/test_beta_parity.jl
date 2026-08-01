@@ -66,10 +66,9 @@ end
         @test r.logLik ≈ -r.objective rtol = 0 atol = 1e-10
     end
 
-    # Model-identity (#148) is aligned via grouped/disp_group. Residual ΔlogLik
-    # reflects the Fisher-scoring Laplace kernel vs TMB's AD Laplace on Beta+logit
-    # (non-canonical link); see test/test_beta_laplace.jl K=1 quadrature note.
+    # Model identity (#148) is aligned via grouped/disp_group; the grouped
+    # fitter's observed Beta/logit Laplace Hessian matches TMB's AD Laplace.
     @testset "log-likelihood agreement (rtol=1e-6)" begin
-        @test_broken jl_logL ≈ r.logLik rtol = 1e-6
+        @test jl_logL ≈ r.logLik rtol = 1e-6
     end
 end

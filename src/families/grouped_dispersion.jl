@@ -248,10 +248,27 @@ end
 # left untouched.
 # ===========================================================================
 
+# Exact negative conditional curvature for Beta/logit. TMB's Laplace objective
+# uses this observed Hessian rather than the expected Fisher information.
+function _beta_grouped_laplace_weight(hessian::Symbol, f::Beta, μ, me, y, link::Link, η)
+    hessian === :fisher && return _glm_weight(f, μ, 1, me)
+    hessian === :observed || throw(ArgumentError(
+        "hessian must be :fisher or :observed; got :$hessian"))
+    link isa LogitLink || throw(ArgumentError(
+        "hessian=:observed is currently supported only for Beta with LogitLink()"))
+    φ = f.α
+    ystar = log(y) - log1p(-y)
+    μstar = digamma(μ * φ) - digamma((1 - μ) * φ)
+    ν = trigamma(μ * φ) + trigamma((1 - μ) * φ)
+    μeta2 = me * (1 - 2μ)
+    return φ^2 * ν * me^2 - φ * (ystar - μstar) * μeta2
+end
+
 # Per-site Laplace log-marginal with per-species Beta precision markers `fams`.
 function _beta_grouped_loglik_site(fams::AbstractVector, y::AbstractVector, n::AbstractVector,
         Λ::AbstractMatrix, β::AbstractVector, link::Link;
-        mask = nothing, offset = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
+        mask = nothing, offset = nothing, hessian::Symbol = :fisher,
+        maxiter::Integer = 100, tol::Real = 1e-9)
     p, K = size(Λ)
     off = offset === nothing ? false : offset
     z = zeros(K)
@@ -261,7 +278,7 @@ function _beta_grouped_loglik_site(fams::AbstractVector, y::AbstractVector, n::A
         μ  = _clamp_mu.(fams, linkinv.(Ref(link), η))
         me = mu_eta.(Ref(link), η)
         s  = _glm_score.(fams, μ, n, me, y)
-        W  = _glm_weight.(fams, μ, n, me)
+        W  = _beta_grouped_laplace_weight.(Ref(hessian), fams, μ, me, y, Ref(link), η)
         if mask !== nothing
             s = ifelse.(mask, s, 0.0)
             W = ifelse.(mask, W, 0.0)
@@ -275,7 +292,7 @@ function _beta_grouped_loglik_site(fams::AbstractVector, y::AbstractVector, n::A
     η  = _clamp_eta.(β .+ off .+ Λ * z)
     μ  = _clamp_mu.(fams, linkinv.(Ref(link), η))
     me = mu_eta.(Ref(link), η)
-    W  = _glm_weight.(fams, μ, n, me)
+    W  = _beta_grouped_laplace_weight.(Ref(hessian), fams, μ, me, y, Ref(link), η)
     if mask !== nothing
         W = ifelse.(mask, W, 0.0)
     end
@@ -290,16 +307,18 @@ end
 
 """
     beta_grouped_marginal_loglik_laplace(Y, Λ, β, φvec; link=LogitLink(), mask=nothing,
-                                         offset=nothing, kwargs...) -> Float64
+                                         offset=nothing, hessian=:fisher, kwargs...) -> Float64
 
 Total Laplace log-marginal of a Beta GLLVM with **per-species** precision `φvec`
 (length p; `Var_t = μ_t(1−μ_t)/(1+φvec[t])`). `Y` is the p×n matrix of proportions
 in (0,1); `Λ` p×K; `β` length-p. With a constant `φvec = fill(φ, p)` this equals the
-shared-precision [`beta_marginal_loglik_laplace`](@ref) to machine precision.
+shared-precision [`beta_marginal_loglik_laplace`](@ref) to machine precision when
+`hessian=:fisher` (the default). `hessian=:observed` uses the conditional
+Beta/logit Hessian used by TMB's Laplace objective.
 """
 function beta_grouped_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix,
         β::AbstractVector, φvec::AbstractVector; link::Link = LogitLink(),
-        mask = nothing, offset = nothing, kwargs...)
+        mask = nothing, offset = nothing, hessian::Symbol = :fisher, kwargs...)
     p = size(Λ, 1)
     length(φvec) == p || throw(ArgumentError("length(φvec)=$(length(φvec)) must equal p=$p"))
     N = ones(Int, size(Y))
@@ -309,7 +328,7 @@ function beta_grouped_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMat
         mi = mask   === nothing ? nothing : view(mask, :, i)
         oi = offset === nothing ? nothing : view(offset, :, i)
         acc += _beta_grouped_loglik_site(fams, view(Y, :, i), view(N, :, i), Λ, β, link;
-                                         mask = mi, offset = oi, kwargs...)
+                                         mask = mi, offset = oi, hessian = hessian, kwargs...)
     end
     return acc
 end
@@ -368,18 +387,22 @@ function getLV(fit::BetaGroupedFit, Y::AbstractMatrix{<:Real};
 end
 
 """
-    fit_beta_gllvm_grouped(Y; K, group, link=LogitLink(), mask=nothing, offset=nothing, …) -> BetaGroupedFit
+    fit_beta_gllvm_grouped(Y; K, group, link=LogitLink(), mask=nothing, offset=nothing,
+                           hessian=:observed, …) -> BetaGroupedFit
 
 Fit a Beta GLLVM with grouped / species-specific precision (gllvm's `disp.group`):
 species `t` shares precision `φ[group[t]]`. `group` is a length-p vector of group
 ids (relabelled to `1..G` internally; default `1:p` = per-species). L-BFGS over
 `[β; vec(Λ); log φ_1 … log φ_G]`; finite-difference gradient; warm start from
 empirical logit-mean intercepts + SVD loadings + a moderate per-group `φ₀`. With one
-group this matches [`fit_beta_gllvm`](@ref).
+group this matches [`fit_beta_gllvm`](@ref). `hessian=:observed` (the default)
+uses the exact conditional Beta/logit curvature used by TMB's Laplace objective;
+set `hessian=:fisher` to retain the expected-information approximation.
 """
 function fit_beta_gllvm_grouped(Y::AbstractMatrix; K::Integer,
         group::AbstractVector{<:Integer} = collect(1:size(Y, 1)),
         link::Link = LogitLink(), mask = nothing, offset = nothing,
+        hessian::Symbol = :observed,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
@@ -411,7 +434,8 @@ function fit_beta_gllvm_grouped(Y::AbstractMatrix; K::Integer,
         φvec = [φg[gidx[t]] for t in 1:p]
         v = try
             -beta_grouped_marginal_loglik_laplace(Yc, Λ, β, φvec; link = link, mask = msk,
-                                                  offset = offset, maxiter = newton_maxiter,
+                                                  offset = offset, hessian = hessian,
+                                                  maxiter = newton_maxiter,
                                                   tol = newton_tol)
         catch
             return 1e12
