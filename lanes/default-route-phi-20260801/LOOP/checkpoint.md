@@ -2,7 +2,7 @@
 
 **STATE:** COMPLETE
 **BRANCH:** `parity/default-route-phi-20260801`
-**TIP:** `3b8d7548`
+**TIP:** `3f6590f3`
 **UPDATED:** 2026-08-01
 
 ## Done

@@ -91,7 +91,7 @@ Full responsibility detail lives in §2 of the reference plan.
 ## Phase state snapshot
 
 - **Default-route NB2/Beta per-trait φ DONE (2026-08-01).** Branch
-  `parity/default-route-phi-20260801` @ `96018cfc` (local): public
+  `parity/default-route-phi-20260801` @ `3f6590f3` (local): public
   `fit_gllvm(NB/Beta)` defaults to `disp_group=:species` → grouped fits; light
   parity **63/63** on that default path (NB2 Δ≈−2.5e-4, Beta Δ≈6e-9). Named
   shared-φ fitters kept. Rose fence: default-route light logLik only — **not**
