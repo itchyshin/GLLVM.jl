@@ -91,11 +91,11 @@ Full responsibility detail lives in §2 of the reference plan.
 ## Phase state snapshot
 
 - **Default-route NB2/Beta per-trait φ DONE (2026-08-01).** Branch
-  `parity/default-route-phi-20260801` (local): public `fit_gllvm(NB/Beta)`
-  defaults to `disp_group=:species` → grouped fits; light parity **63/63** on
-  that default path (NB2 Δ≈−2.5e-4, Beta Δ≈6e-9). Named shared-φ fitters kept.
-  Rose fence: default-route light logLik only — **not** full family parity.
-  LOOP: `lanes/default-route-phi-20260801/LOOP/`. After-task:
+  `parity/default-route-phi-20260801` @ `96018cfc` (local): public
+  `fit_gllvm(NB/Beta)` defaults to `disp_group=:species` → grouped fits; light
+  parity **63/63** on that default path (NB2 Δ≈−2.5e-4, Beta Δ≈6e-9). Named
+  shared-φ fitters kept. Rose fence: default-route light logLik only — **not**
+  full family parity. LOOP: `lanes/default-route-phi-20260801/LOOP/`. After-task:
   `docs/dev-log/after-task/2026-08-01-default-route-nb2-beta-pertrait-phi.md`.
   No push yet. Multi-lane pointer: `docs/dev-log/coordination-board.md`.
 - **Catch-up light gllvmTMB logLik oracles DONE (2026-08-01).** Branch
