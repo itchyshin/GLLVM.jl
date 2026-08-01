@@ -42,24 +42,29 @@ Only **rotation-invariant** quantities are tested:
 | Fitted covariance `Σ_y = ΛΛᵀ + σ²I` | Invariant under `Λ → ΛQ`, `Q'Q = I` |
 | Residual SD `σ_eps` | Invariant |
 
-## Live call shape (Gaussian cell)
+## Live call shape
 
 Primary oracle path (see
-`docs/dev-log/plans/scratch/2026-08-01-gaussian-rcall-shape.md`):
+`docs/dev-log/plans/scratch/2026-08-01-gaussian-rcall-shape.md` and
+`test/parity/parity_helpers.jl`):
 
 - Fit with **`gllvmTMB::gllvmTMB`**, formula
   `value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE)`.
-- **`unique = FALSE`** so Ψ is off and `Σ` matches Julia `ΛΛᵀ + σ²I`.
-- Centre Y per trait before both fits (gllvmTMB `0+trait` vs Julia zero-mean).
-- Extractors: `as.numeric(logLik(fit))`, `fit$report$sigma_eps`,
-  `extract_Sigma(fit, level="unit", part="shared")$Sigma + σ²I`.
+- **`unique = FALSE`** so Ψ is off (Gaussian: `Σ = ΛΛᵀ + σ²I`).
+- **Gaussian only:** centre Y per trait (Julia zero-mean J1 vs R `0+trait`).
+- **Binomial / Poisson:** do **not** centre — Julia already estimates per-trait `β`.
+- Extractors: `as.numeric(logLik(fit))` (= `-opt$objective`); Gaussian also
+  compares `report$sigma_eps` and `extract_Sigma(..., part="shared")`.
+
+Cells today: Gaussian, Binomial (Bernoulli), Poisson. NB2 / Beta / Ordinal
+are gated until #132 / #148 / #133 alignment.
 
 ## Tolerances
 
 | Quantity | Target |
 |---|---|
 | logLik | rtol ≤ 1e-6 |
-| σ_eps | rtol ≤ 1e-4 |
-| Σ_y | atol ≤ 1e-4 |
+| σ_eps (Gaussian) | rtol ≤ 1e-4 |
+| Σ_y (Gaussian) | atol ≤ 1e-4 |
 
 Do not silently widen. If a live cell fails, fix call shape / model identity.
