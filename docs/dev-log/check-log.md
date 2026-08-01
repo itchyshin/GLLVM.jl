@@ -1,5 +1,25 @@
 # Check Log
 
+## 2026-08-01 - Binomial + Poisson gllvmTMB logLik oracle cells (catch-up A3)
+
+Lane tip prior: `5d0cd93f` on `catchup/loglik-oracle-20260801`. Twin `cee55a07`.
+
+Shared helper `test/parity/parity_helpers.jl` + cells:
+`test_binomial_parity.jl`, `test_poisson_parity.jl` (wired in `runparity.jl`).
+Call shape: gllvmTMB `0+trait + latent(..., unique=FALSE)`; no Y-centring
+(Julia already has per-trait β). logLik rtol 1e-6; no silent widening.
+
+Live (`GLLVM_PARITY_TESTS=1 julia --project=test/parity test/parity/runparity.jl`):
+
+```text
+Gaussian  Julia=-501.450700343274  R=-501.45070035305673  Δ=9.78275238594506e-9   Pass 30/30
+Binomial  Julia=-194.681986234064  R=-194.68198623424576  Δ=1.8175683180743363e-10 Pass 6/6
+Poisson   Julia=-634.171284410425  R=-634.1712844171735   Δ=6.748564373992849e-9  Pass 6/6
+```
+
+Claim fence: ordinary no-X Bernoulli/Poisson Laplace logLik only. NB2/Beta/Ordinal
+still gated (#132/#148/#133 OPEN GATE). No ADEMP/coverage.
+
 ## 2026-08-01 - Live Gaussian gllvmTMB logLik oracle cell (catch-up A2)
 
 Lane: `catchup/loglik-oracle-20260801` from `origin/main` @ `05210eca`

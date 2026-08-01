@@ -9,25 +9,24 @@ Plan file slice table remains authoritative detail in `ultra-plan.md`.
 
 | Arc | Intent | Status | Gate |
 |---|---|---|---|
-| A0 | Lane from `origin/main` + twin main; re-run capability-drift probe; record SHAs + n_drift | **DONE** (`n_drift=0`, `unregistered=0`) | — |
-| A1 | Correctness inventory folded from scout note | **DONE** (Bin/Pois clear; #132/#148/#133 gate; #129/#128 fenced) | — |
-| A2 | **HEADLINE** — live Gaussian logLik vs gllvmTMB | **DONE** (ΔlogLik ≈ 9.78e-9; 30/30) | Rose before README/board claim upgrade |
-| A2b | Bridge transport smoke (JuliaCall) without heavy fits | **DONE** (live drift test 3/3; nrow(drift)==0) | — |
-| A3 | Binomial then Poisson fixed-seed logLik cells | **NEXT** | — |
+| A0 | Lane from `origin/main` + twin main; drift probe | **DONE** (`n_drift=0`) | — |
+| A1 | Correctness inventory folded from scout note | **DONE** | — |
+| A2 | Live Gaussian logLik vs gllvmTMB | **DONE** (Δ≈9.8e-9; 30/30) | Rose before board claim upgrade |
+| A2b | Bridge transport smoke | **DONE** | — |
+| A3 | Binomial then Poisson logLik cells | **DONE** (Bin Δ≈1.8e-10; Pois Δ≈6.7e-9) | — |
 | A4 | #132 / #148 dispersion alignment (Julia→R) | PENDING | **OPEN GATE** — API/param; blocks default NB2/Beta |
 | A5 | #133 ordinal location/cuts alignment | PENDING | **OPEN GATE** — API/param; blocks Ordinal |
 | A6 | NB2 / Beta / Ordinal logLik cells after A4/A5 | PENDING — do **not** open before OPEN GATE | claim fence |
-| Close | check-log + after-task + Rose + Melissa reconcile | PARTIAL (A2 after-task written) | — |
+| Close | check-log + after-task + Rose + Melissa reconcile | PARTIAL (A2+A3 after-tasks written) | — |
 
 ## Sequencing (locked)
 
-1. ~~A0 hygiene + drift receipt~~  
-2. ~~A2 Gaussian transport green~~  
-3. **A3 Binomial → Poisson**  
-4. **STOP** at OPEN GATE before #132/#148/#133  
-5. Only then A6 family cells  
+1. ~~A0–A2 Gaussian~~  
+2. ~~A3 Binomial → Poisson~~  
+3. **STOP** at OPEN GATE before #132/#148/#133  
+4. Only then A6 family cells  
 
 ## Fenced out of arc
 
-- #129 (CI scale), #128 (H² denom) — inference/derived only  
+- #129 (CI scale), #128 (H² denom)  
 - ADEMP, coverage, Totoro/DRAC, structured-source public claims  
