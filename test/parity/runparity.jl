@@ -47,9 +47,12 @@ catch err
 end
 
 # ── Run the parity tests ──────────────────────────────────────────────────────
-# Order locked by catch-up arc: Gaussian → Binomial → Poisson.
-# NB2 / Beta / Ordinal stay gated (OPEN GATE #132/#148/#133).
+# Order locked by catch-up arc: Gaussian → Binomial → Poisson → NB2 → Beta.
+# NB2/Beta includes are live canaries (currently FAIL logLik bar — not claim-green).
+# Ordinal parity file not wired until logLik debug closes (#133 param is on tip).
 include(joinpath(@__DIR__, "parity_helpers.jl"))
 include(joinpath(@__DIR__, "test_gaussian_parity.jl"))
 include(joinpath(@__DIR__, "test_binomial_parity.jl"))
 include(joinpath(@__DIR__, "test_poisson_parity.jl"))
+include(joinpath(@__DIR__, "test_negbin_parity.jl"))
+include(joinpath(@__DIR__, "test_beta_parity.jl"))

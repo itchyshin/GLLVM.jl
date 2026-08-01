@@ -29,11 +29,14 @@ no-X formula:
 value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE)
 ```
 
-`family` ∈ `(:gaussian, :binomial, :poisson)`. Returns
+`family` ∈ `(:gaussian, :binomial, :poisson, :negbinomial, :beta)`. Returns
 `(logLik, objective, converged)`.
+
+For `:negbinomial` / `:beta`, R defaults estimate per-trait dispersion; pair
+with Julia grouped fitters (`disp_group=:species`), not shared-dispersion defaults.
 """
 function fit_gllvmtmb_parity_loglik(y::AbstractMatrix, K::Integer; family::Symbol)
-    family in (:gaussian, :binomial, :poisson) ||
+    family in (:gaussian, :binomial, :poisson, :negbinomial, :beta) ||
         throw(ArgumentError("unsupported parity family: $family"))
     p, n = size(y)
     fam = String(family)
@@ -48,9 +51,11 @@ function fit_gllvmtmb_parity_loglik(y::AbstractMatrix, K::Integer; family::Symbo
         value = as.vector(y)   # column-major on p×n ⇒ site blocks
     )
     fam_obj <- switch(fam,
-        gaussian = stats::gaussian(),
-        binomial = stats::binomial(),
-        poisson  = stats::poisson(),
+        gaussian     = stats::gaussian(),
+        binomial     = stats::binomial(),
+        poisson      = stats::poisson(),
+        negbinomial  = gllvmTMB::nbinom2(),
+        beta         = gllvmTMB::Beta(),
         stop(sprintf("unknown family: %s", fam))
     )
     fit_r <- gllvmTMB(
