@@ -75,14 +75,17 @@ ft = fit_tweedie_gllvm(Y; K = 2)    # Tweedie; fitted φ and power p
 ft.φ, ft.p
 ```
 
-By default each dispersion family carries **one shared** dispersion across all
-species. To let it vary by species (or by groups of species — gllvm's
-`disp.group`), use the matching `_grouped` driver with a length-`p` `group` vector
-of integer group ids (default `1:p`, i.e. a separate dispersion per species). With
-a single group these match the shared-dispersion fit:
+For **NB2 and Beta**, `fit_gllvm` defaults to **per-species** dispersion
+(matching gllvmTMB). Shared dispersion remains available via the named fitters
+`fit_nb_gllvm` / `fit_beta_gllvm`. Other dispersion families still default to one
+shared parameter; to vary by species (or by groups — gllvm's `disp.group`), use
+`disp_group = :species` on `fit_gllvm`, or the matching `_grouped` driver with a
+length-`p` `group` vector (default `1:p`):
 
 ```julia
-fit_nb_gllvm_grouped(Y;  K = 2, group = group)   # NB2 r per group (group required)
+fit_gllvm(Y; family = NegativeBinomial(), K = 2) # NB2 per-species r (default)
+fit_nb_gllvm(Y; K = 2)                           # NB2 shared r (named)
+fit_nb_gllvm_grouped(Y;  K = 2, group = group)   # NB2 r per custom group
 fit_nb1_gllvm_grouped(Y; K = 2)                  # NB1 φ, default per-species
 fit_beta_gllvm_grouped(Yp;    K = 2)             # Beta precision φ per species
 fit_gamma_gllvm_grouped(Yc;   K = 2)             # Gamma shape α per species

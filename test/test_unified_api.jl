@@ -82,6 +82,7 @@ end
 
     # ------------------------------------------------------------------
     # REGRESSION: plain call still routes to the base family fitter.
+    # NB/Beta public default is per-trait φ (API B); Poisson stays shared base.
     # ------------------------------------------------------------------
     @testset "plain dispatch unchanged (regression)" begin
         Y = _count_data(; p = p, n = n, seed = 555)
@@ -92,6 +93,14 @@ end
         @test typeof(a) === typeof(b)
         @test a isa PoissonFit
         @test isapprox(a.loglik, b.loglik; atol = 1e-6)
+
+        Ynb = _count_data(; p = p, n = n, seed = 556, hi = 8)
+        Random.seed!(12)
+        anb = fit_gllvm(Ynb; family = NegativeBinomial(1.0, 0.5), K = K, iterations = iters)
+        Random.seed!(12)
+        bnb = fit_nb_gllvm_grouped(Ynb; K = K, group = collect(1:p), iterations = iters)
+        @test anb isa GLLVM.NBGroupedFit
+        @test isapprox(anb.loglik, bnb.loglik; atol = 1e-6)
     end
 
     # ------------------------------------------------------------------

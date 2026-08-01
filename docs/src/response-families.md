@@ -19,10 +19,10 @@ fit_gllvm(Yb; family = Binomial(), K = 2, link = LogitLink())
 # Count data — Laplace marginal
 fit_gllvm(Yc; family = Poisson(), K = 2)
 
-# Overdispersed counts — Laplace marginal
+# Overdispersed counts — per-species r by default (NBGroupedFit)
 fit_gllvm(Yc; family = NegativeBinomial(), K = 2)
 
-# Proportions in (0,1) — Laplace marginal
+# Proportions in (0,1) — per-species φ by default (BetaGroupedFit)
 fit_gllvm(Yp; family = Beta(), K = 2)
 
 # Ordered categories — Laplace marginal
@@ -130,23 +130,27 @@ matrices before considering overdispersion.
 ### Negative Binomial — `NegativeBinomial()`
 
 ```julia
-fit = fit_gllvm(Yc; family = NegativeBinomial(), K = 2)
+fit = fit_gllvm(Yc; family = NegativeBinomial(), K = 2)   # per-species r (default)
 ```
 
-For overdispersed counts. The NB2 variance function is Var = μ + μ²/r; the
-dispersion `r` is jointly estimated alongside `β` and `Λ`. As `r → ∞` the
-negative binomial collapses to Poisson. The fitted dispersion is available as
-`fit.r`.
+For overdispersed counts. The NB2 variance function is Var = μ + μ²/r. The
+public `fit_gllvm` default estimates **per-species** dispersion (returns
+`NBGroupedFit`; `fit.r_group`), matching gllvmTMB's length-`p` `log_phi_nbinom2`.
+As `r → ∞` the negative binomial collapses to Poisson. For a single shared `r`
+across species, call the named fitter [`fit_nb_gllvm`](@ref) (`NBFit`; `fit.r`).
 
 ### Beta — `Beta()`
 
 ```julia
-fit = fit_gllvm(Yp; family = Beta(), K = 2)
+fit = fit_gllvm(Yp; family = Beta(), K = 2)   # per-species φ (default)
 ```
 
 For proportions strictly inside (0,1) — e.g. cover fractions, frequencies.
 The per-observation law is Beta(μφ, (1−μ)φ), so Var = μ(1−μ)/(1+φ). The
-precision `φ` is jointly estimated; the estimate is available as `fit.φ`.
+public `fit_gllvm` default estimates **per-species** precision (returns
+`BetaGroupedFit`; vector `fit.φ`), matching gllvmTMB's length-`p` `log_phi_beta`.
+For a single shared precision, call the named fitter [`fit_beta_gllvm`](@ref)
+(`BetaFit`; scalar `fit.φ`).
 
 ### Ordinal — `Ordinal()`
 
@@ -206,11 +210,14 @@ going through `fit_gllvm`.
 
 ### Per-species and grouped dispersion
 
-For the five dispersion families, the dispersion can vary across species (gllvm's
-`disp.group`) instead of being shared. Each has a `_grouped` driver taking a
-length-`p` `group` vector of integer group ids (default `1:p` = a separate
-dispersion per species); with one group the result matches the shared-dispersion
-fit:
+For `NegativeBinomial` and `Beta`, the public `fit_gllvm` default already uses
+per-species dispersion (`disp_group = :species`). Pass an integer `disp_group`
+vector for custom grouping, or call the named shared fitters
+(`fit_nb_gllvm` / `fit_beta_gllvm`) for one dispersion across all species.
+
+The other dispersion families still default to a shared parameter on
+`fit_gllvm` / their named drivers; use a `_grouped` driver or
+`disp_group = :species` to vary by species (gllvm's `disp.group`):
 
 ```julia
 fit_nb_gllvm_grouped(Yc;  K = 2, group = group)   # NB2 dispersion r per group
@@ -223,11 +230,10 @@ fit_tweedie_gllvm_grouped(Yc; K = 2)             # Tweedie dispersion φ per spe
 (`fit_nb_gllvm_grouped` requires an explicit `group`; the other four default to
 per-species.)
 
-The unified entry point routes the same grouped fits with gllvm-style keywords:
-
 ```julia
-fit_gllvm(Yc; family = NegativeBinomial(), K = 2, disp_group = :species)
-fit_gllvm(Yp; family = Beta(), K = 2, disp_group = group)
+fit_gllvm(Yc; family = NegativeBinomial(), K = 2)                 # default = per-species
+fit_gllvm(Yp; family = Beta(), K = 2, disp_group = group)         # custom groups
+fit_gllvm(Yp; family = Gamma(), K = 2, disp_group = :species)     # Gamma opt-in
 ```
 
 `disp_group = :species` means one dispersion per species; an integer vector

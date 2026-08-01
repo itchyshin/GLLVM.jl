@@ -252,7 +252,8 @@ end
     r_true = 6.0
     μ = exp.(β .+ Λt * randn(K, n))
     Y = [rand(NegativeBinomial(r_true, r_true / (r_true + μ[t, s]))) for t in 1:p, s in 1:n]
-    fit = fit_gllvm(Y; family = NegativeBinomial(), K = K)
+    # Shared-φ postfit surface: named fitter (public fit_gllvm(NB) → grouped).
+    fit = fit_nb_gllvm(Y; K = K)
 
     @testset "getLV / getLoadings / rotation" begin
         Z = GLLVM.getLV(fit, Y; rotate = false)
@@ -292,7 +293,8 @@ end
     φ_true = 12.0
     μ = inv.(1 .+ exp.(-(β .+ Λt * randn(K, n))))
     Y = [rand(Beta(μ[t, s] * φ_true, (1 - μ[t, s]) * φ_true)) for t in 1:p, s in 1:n]
-    fit = fit_gllvm(Y; family = Beta(), K = K)
+    # Shared-φ postfit surface: named fitter (public fit_gllvm(Beta) → grouped).
+    fit = fit_beta_gllvm(Y; K = K)
 
     @testset "getLV / getLoadings / rotation" begin
         Z = GLLVM.getLV(fit, Y; rotate = false)
