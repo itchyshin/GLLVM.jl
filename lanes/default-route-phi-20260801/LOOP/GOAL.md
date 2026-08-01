@@ -1,6 +1,6 @@
 # GOAL — default-route-phi-20260801
 
-**STATUS:** ACTIVE
+**STATUS:** COMPLETE
 **PLATFORM:** Cursor (solo) via `/goal`
 **BASE:** `catchup/loglik-oracle-20260801` @ `bbf5d7d8`
 **BRANCH:** `parity/default-route-phi-20260801`

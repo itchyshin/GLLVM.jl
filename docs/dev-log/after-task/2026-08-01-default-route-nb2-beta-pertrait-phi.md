@@ -5,6 +5,7 @@
 **Branch:** `parity/default-route-phi-20260801`  
 **Base:** `catchup/loglik-oracle-20260801` @ `bbf5d7d8`  
 **Twin:** gllvmTMB `/tmp/gllvmtmb-parity-restart-20260801` @ `cee55a07`  
+**Tip:** `027ed322` (closeout docs; engine tip `80c98bdd` + cascade/parity commits)  
 **Rose verdict:** **PASS WITH NOTES** — default-route per-trait φ light logLik for NB2+Beta only; not “full family parity.”
 
 ## Goal
@@ -40,9 +41,20 @@ Total                               63/63
 Prior catch-up bands unchanged (NB2 ~1e-4, Beta ~1e-8); no tolerance widen.
 
 Cascade core (`test_fit_gllvm` / `test_nb_fit` / `test_beta_fit` / `test_unified_api`):
-**51/51** pass. Post-fit NB/Beta blocks on named fitters: **160 + 215** pass
-(when `test_postfit.jl` is included; ordinal postfit MethodError is pre-existing
-pertrait surface — fenced, not this lane).
+**51/51** pass. Full `test_postfit.jl` green after named-fitter retargets
+(NB/Beta/Ordinal shared surfaces).
+
+Core `test/runtests.jl` (`/tmp/default-route-phi-runtests.log`):
+
+```text
+5063 passed, 1 failed, 0 errored, 3 broken
+```
+
+The single failure is `test_grouped_dispersion.jl:61`
+(`fit_nb_gllvm_grouped` one-group ≈ `fit_nb_gllvm`, ΔlogLik≈0.94 at seed 503).
+**Not introduced by this lane** — `grouped_dispersion.jl` / `negbin.jl` byte-identical
+to base tip `bbf5d7d8`. No tolerance widen; left as a pre-existing engine/optima gap
+outside the default-route flip.
 
 ## Not covered / fenced
 

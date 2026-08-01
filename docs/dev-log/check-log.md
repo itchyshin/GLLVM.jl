@@ -18,8 +18,11 @@ Gaussian 30/30 · Binomial 6/6 · Poisson 6/6 · NB2 8/8 · Beta 8/8 · Ordinal-
 NB2 Δ=-2.499e-4 (fit_gllvm default) · Beta Δ=+5.969e-9 (fit_gllvm default)
 ```
 
-Cascade core 51/51. Rose fence: default-route per-trait φ light logLik for
-NB2+Beta only — **not** full family parity. After-task:
+Cascade core 51/51. Core `runtests.jl`: **5063 passed, 1 failed, 0 errored,
+3 broken** — sole fail is pre-existing one-group NB grouped≈shared cell
+(`test_grouped_dispersion.jl:61`; engines unchanged vs `bbf5d7d8`). Rose fence:
+default-route per-trait φ light logLik for NB2+Beta only — **not** full family
+parity. After-task:
 `docs/dev-log/after-task/2026-08-01-default-route-nb2-beta-pertrait-phi.md`.
 
 ## 2026-08-01 - A4/A5 catch-up logLik oracle CLOSE (all ordered cells green)
