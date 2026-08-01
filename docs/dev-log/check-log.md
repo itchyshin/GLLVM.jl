@@ -1,5 +1,39 @@
 # Check Log
 
+## 2026-08-01 - Live Gaussian gllvmTMB logLik oracle cell (catch-up A2)
+
+Lane: `catchup/loglik-oracle-20260801` from `origin/main` @ `05210eca`
+worktree `.worktrees/gllvmjl-catchup-loglik-20260801`. Twin R
+`/tmp/gllvmtmb-parity-restart-20260801` @ `cee55a07`.
+
+A0 capability drift (JuliaCall via `GLLVM_JL_PATH` = lane worktree):
+
+```text
+n_drift= 0  unregistered= 0
+```
+
+A2 replaced DRAFT CRAN `gllvm::gllvm` / `params$theta` call in
+`test/parity/test_gaussian_parity.jl` with live twin shape from
+`docs/dev-log/plans/scratch/2026-08-01-gaussian-rcall-shape.md`:
+`gllvmTMB` + `latent(..., unique=FALSE)` + per-trait centred Y;
+extractors `logLik(fit)`, `report$sigma_eps`, `extract_Sigma(..., part="shared")`.
+
+Live opt-in run (`GLLVM_PARITY_TESTS=1 julia --project=test/parity test/parity/runparity.jl`):
+
+```text
+Julia logLik          = -501.450700343274
+gllvmTMB logLik       = -501.45070035305673
+Δ logLik (jl − r)     = 9.78275238594506e-9
+Julia σ_eps           = 0.6906550063860128
+gllvmTMB σ_eps        = 0.6906556682823224
+Δ σ_eps               = -6.618963095395003e-7
+Test Summary: Gaussian GLLVM parity: GLLVM.jl vs gllvmTMB | Pass 30  Total 30
+```
+
+Claim fence: ledger n_drift=0 ≠ fit parity; this cell is ordinary Gaussian
+no-X logLik/σ/Σ only. No ADEMP/coverage. #129/#128 fenced. Bin/Pois next;
+NB2/Beta/Ordinal gated on #132/#148/#133 (see correctness inventory scratch).
+
 ## 2026-07-02 - Phylo x shared-cutpoint Ordinal structural LV S1 likelihood and canary
 
 Added the private phylo x shared-cutpoint Ordinal(logit) x predictor-informed
