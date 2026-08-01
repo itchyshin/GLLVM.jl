@@ -11,10 +11,23 @@
 # — reusing the exact same NB `_glm_score`/`_glm_weight`/`_glm_logpdf`/`_clamp_mu`
 # pieces. The shared families' hot path is left untouched.
 
+# Exact negative conditional curvature for NB2/log. TMB's Laplace objective uses
+# this observed Hessian rather than the expected Fisher information:
+# -∂²ℓ/∂η² = r * μ * (r + y) / (r + μ)^2.
+function _nb_grouped_laplace_weight(hessian::Symbol, f::NegativeBinomial, μ, me, y, link::Link)
+    hessian === :fisher && return _glm_weight(f, μ, 1, me)
+    hessian === :observed || throw(ArgumentError(
+        "hessian must be :fisher or :observed; got :$hessian"))
+    link isa LogLink || throw(ArgumentError(
+        "hessian=:observed is currently supported only for NB2 with LogLink()"))
+    return f.r * μ * (f.r + y) / (f.r + μ)^2
+end
+
 # Per-site Laplace log-marginal with per-species NB dispersion markers `fams`.
 function _nb_grouped_loglik_site(fams::AbstractVector, y::AbstractVector, n::AbstractVector,
         Λ::AbstractMatrix, β::AbstractVector, link::Link;
-        mask = nothing, offset = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
+        mask = nothing, offset = nothing, hessian::Symbol = :fisher,
+        maxiter::Integer = 100, tol::Real = 1e-9)
     p, K = size(Λ)
     off = offset === nothing ? false : offset
     z = zeros(K)
@@ -24,7 +37,7 @@ function _nb_grouped_loglik_site(fams::AbstractVector, y::AbstractVector, n::Abs
         μ  = _clamp_mu.(fams, linkinv.(Ref(link), η))
         me = mu_eta.(Ref(link), η)
         s  = _glm_score.(fams, μ, n, me, y)
-        W  = _glm_weight.(fams, μ, n, me)
+        W  = _nb_grouped_laplace_weight.(Ref(hessian), fams, μ, me, y, Ref(link))
         if mask !== nothing
             s = ifelse.(mask, s, 0.0)
             W = ifelse.(mask, W, 0.0)
@@ -38,7 +51,7 @@ function _nb_grouped_loglik_site(fams::AbstractVector, y::AbstractVector, n::Abs
     η  = _clamp_eta.(β .+ off .+ Λ * z)
     μ  = _clamp_mu.(fams, linkinv.(Ref(link), η))
     me = mu_eta.(Ref(link), η)
-    W  = _glm_weight.(fams, μ, n, me)
+    W  = _nb_grouped_laplace_weight.(Ref(hessian), fams, μ, me, y, Ref(link))
     if mask !== nothing
         W = ifelse.(mask, W, 0.0)
     end
@@ -100,16 +113,18 @@ end
 
 """
     nb_grouped_marginal_loglik_laplace(Y, Λ, β, rvec; link=LogLink(), mask=nothing,
-                                       offset=nothing, kwargs...) -> Float64
+                                       offset=nothing, hessian=:fisher, kwargs...) -> Float64
 
 Total Laplace log-marginal of a negative-binomial GLLVM with **per-species**
 dispersion `rvec` (length p; `Var_t = μ_t + μ_t²/rvec[t]`). `Y` is the p×n integer
-count matrix; `Λ` p×K; `β` length-p. With a constant `rvec = fill(r, p)` this equals
-the shared-dispersion [`nb_marginal_loglik_laplace`](@ref) to machine precision.
+count matrix; `Λ` p×K; `β` length-p. With a constant `rvec = fill(r, p)` and
+`hessian=:fisher` this equals the shared-dispersion
+[`nb_marginal_loglik_laplace`](@ref) to machine precision. `hessian=:observed`
+uses the conditional NB2/log Hessian used by TMB's Laplace objective.
 """
 function nb_grouped_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix,
         β::AbstractVector, rvec::AbstractVector; link::Link = LogLink(),
-        mask = nothing, offset = nothing, kwargs...)
+        mask = nothing, offset = nothing, hessian::Symbol = :fisher, kwargs...)
     p = size(Λ, 1)
     length(rvec) == p || throw(ArgumentError("length(rvec)=$(length(rvec)) must equal p=$p"))
     N = ones(Int, size(Y))
@@ -119,7 +134,7 @@ function nb_grouped_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatri
         mi = mask   === nothing ? nothing : view(mask, :, i)
         oi = offset === nothing ? nothing : view(offset, :, i)
         acc += _nb_grouped_loglik_site(fams, view(Y, :, i), view(N, :, i), Λ, β, link;
-                                       mask = mi, offset = oi, kwargs...)
+                                       mask = mi, offset = oi, hessian = hessian, kwargs...)
     end
     return acc
 end
@@ -178,17 +193,21 @@ function getLV(fit::NBGroupedFit, Y::AbstractMatrix{<:Integer};
 end
 
 """
-    fit_nb_gllvm_grouped(Y; K, group, link=LogLink(), mask=nothing, offset=nothing, …) -> NBGroupedFit
+    fit_nb_gllvm_grouped(Y; K, group, link=LogLink(), mask=nothing, offset=nothing,
+                         hessian=:observed, …) -> NBGroupedFit
 
 Fit a negative-binomial GLLVM with grouped / species-specific dispersion (gllvm's
 `disp.group`): species `t` shares dispersion `r_group[group[t]]`. `group` is a
 length-p vector of group ids (relabelled to `1..G` internally). L-BFGS over
 `[β; vec(Λ); log r_1 … log r_G]`; finite-difference gradient; warm start from
 empirical log-means + SVD loadings + a moderate per-group `r₀`. With one group this
-matches [`fit_nb_gllvm`](@ref).
+matches [`fit_nb_gllvm`](@ref) when `hessian=:fisher`. `hessian=:observed` (the
+default) uses the exact conditional NB2/log curvature used by TMB's Laplace
+objective; set `hessian=:fisher` to retain the expected-information approximation.
 """
 function fit_nb_gllvm_grouped(Y::AbstractMatrix; K::Integer, group::AbstractVector{<:Integer},
         link::Link = LogLink(), mask = nothing, offset = nothing,
+        hessian::Symbol = :observed,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
@@ -220,7 +239,8 @@ function fit_nb_gllvm_grouped(Y::AbstractMatrix; K::Integer, group::AbstractVect
         rvec = [rg[gidx[t]] for t in 1:p]
         v = try
             -nb_grouped_marginal_loglik_laplace(Yc, Λ, β, rvec; link = link, mask = msk,
-                                                offset = offset, maxiter = newton_maxiter,
+                                                offset = offset, hessian = hessian,
+                                                maxiter = newton_maxiter,
                                                 tol = newton_tol)
         catch
             return 1e12
