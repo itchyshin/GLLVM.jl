@@ -53,23 +53,24 @@ Primary oracle path (see
 - **`unique = FALSE`** so Ψ is off (Gaussian: `Σ = ΛΛᵀ + σ²I`).
 - **Gaussian only:** centre Y per trait (Julia zero-mean J1 vs R `0+trait`).
 - **Binomial / Poisson:** do **not** centre — Julia already estimates per-trait `β`.
-- **NB2:** per-trait dispersion — Julia uses `fit_gllvm(...; disp_group=:species)` /
-  `fit_nb_gllvm_grouped(...; group=1:p, hessian=:observed)` to match R's
-  `log_phi_nbinom2[p]` (#132) and TMB's observed Laplace curvature; do not use
-  the shared-`r` `fit_nb_gllvm` default fitter.
-- **Beta:** per-trait precision `φ` — Julia uses
-  `fit_beta_gllvm_grouped(...; group=1:p, hessian=:observed)` to match R's
-  `log_phi_beta[p]` (#148); do not use the shared-φ default fitter.
+- **NB2:** per-trait dispersion — Julia public default
+  `fit_gllvm(...; family=NegativeBinomial())` coerces `disp_group=:species`
+  → `NBGroupedFit` (observed Laplace Hessian) to match R's
+  `log_phi_nbinom2[p]` (#132). Shared-`r` remains via named `fit_nb_gllvm`.
+- **Beta:** per-trait precision `φ` — Julia public default
+  `fit_gllvm(...; family=Beta())` → `BetaGroupedFit` to match R's
+  `log_phi_beta[p]` (#148). Shared-φ remains via named `fit_beta_gllvm`.
 - Extractors: `as.numeric(logLik(fit))` (= `-opt$objective`); Gaussian also
   compares `report$sigma_eps` and `extract_Sigma(..., part="shared")`.
 
-Cells **green** (light logLik oracles, named routes):
-Gaussian; Binomial (Bernoulli); Poisson; NB2 (`group=1:p`); Beta (`group=1:p` +
-observed Beta/logit Laplace Hessian, tip `387d267a`); Ordinal **probit** +
-observed Hessian (`10fcd484` / `3a84d8b6`).
+Cells **green** (light logLik oracles):
+Gaussian; Binomial (Bernoulli); Poisson; NB2 (public `fit_gllvm` per-trait φ);
+Beta (public `fit_gllvm` per-trait φ + observed Beta/logit Laplace Hessian);
+Ordinal **probit** + observed Hessian.
 
-**Not claimed here:** shared-dispersion NB2/Beta defaults; ordinal-logit;
-ADEMP; coverage; “full family parity.” `n_drift=0` ≠ these cells.
+**Not claimed here:** shared-dispersion NB2/Beta via named fitters as twin
+default; ordinal-logit; ADEMP; coverage; “full family parity.”
+`n_drift=0` ≠ these cells.
 
 ## Tolerances
 

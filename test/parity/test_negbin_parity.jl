@@ -4,9 +4,9 @@
 # Same-model bar: per-trait intercepts + latent unique=FALSE (no Ψ) +
 # per-trait NB2 dispersion (R default log_phi_nbinom2[p]; Julia #132).
 #
-# Julia parity entry: fit_gllvm(...; disp_group=:species) ≡
-# fit_nb_gllvm_grouped(...; group=1:p) — NOT the shared-r fit_nb_gllvm default.
-# Inventory: docs/dev-log/plans/scratch/2026-08-01-correctness-inventory.md (#132)
+# Julia parity entry: plain fit_gllvm(...; family=NegativeBinomial()) defaults
+# to per-trait φ (disp_group=:species → NBGroupedFit). Shared-r remains
+# fit_nb_gllvm (named). Inventory #132 / default-route-phi-20260801.
 
 using GLLVM, RCall, Test, Random, LinearAlgebra
 
@@ -64,9 +64,9 @@ end
         Y[t, s] = _rand_nb2(μ, r_true)
     end
 
-    # Per-trait φ route — twin-aligned with gllvmTMB default nbinom2().
-    jl_fit = fit_nb_gllvm_grouped(Y; K = K, group = collect(1:p),
-                                  g_tol = 1e-7, iterations = 800)
+    # Public default route — twin-aligned with gllvmTMB default nbinom2().
+    jl_fit = fit_gllvm(Y; family = GLLVM.NegativeBinomial(), K = K,
+                       g_tol = 1e-7, iterations = 800)
     @test jl_fit isa NBGroupedFit
     @test jl_fit.converged
     @test isfinite(jl_fit.loglik)
@@ -78,7 +78,7 @@ end
     @test isfinite(r.logLik)
 
     print_parity_loglik(
-        "NB2 logLik oracle (seed=45, p=$p, K=$K, n=$n, per-trait φ via group=1:p)";
+        "NB2 logLik oracle (seed=45, p=$p, K=$K, n=$n, per-trait φ via fit_gllvm default)";
         jl_logL = jl_logL, r_logL = r.logLik, r_obj = r.objective,
     )
 
