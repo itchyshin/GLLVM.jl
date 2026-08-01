@@ -5,7 +5,7 @@
 > is a pointer, not a log.
 
 - **2026-08-01 · multi-lane · default-route φ DONE locally + catch-up DONE.** Branch
-  `parity/default-route-phi-20260801` @ `9f0198c3` (local, unpushed, no PR): public
+  `parity/default-route-phi-20260801` @ `ccd55f1f` (local, unpushed, no PR): public
   `fit_gllvm(NB/Beta)` → per-trait φ; light gllvmTMB logLik **63/63** on that
   default path. Catch-up ancestor `catchup/loglik-oracle-20260801` @ `def576c6`
   (pushed). Claim fence: light logLik only — not full family parity. Sibling

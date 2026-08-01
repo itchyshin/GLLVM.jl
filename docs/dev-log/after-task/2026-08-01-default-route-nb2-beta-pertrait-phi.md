@@ -5,7 +5,7 @@
 **Branch:** `parity/default-route-phi-20260801`  
 **Base:** `catchup/loglik-oracle-20260801` @ `bbf5d7d8`  
 **Twin:** gllvmTMB `/tmp/gllvmtmb-parity-restart-20260801` @ `cee55a07`  
-**Tip:** `9f0198c3`
+**Tip:** `ccd55f1f`
 **Rose verdict:** **PASS WITH NOTES** — default-route per-trait φ light logLik for NB2+Beta only; not “full family parity.”
 
 ## Goal

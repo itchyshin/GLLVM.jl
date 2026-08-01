@@ -2,7 +2,7 @@
 
 **STATE:** COMPLETE
 **BRANCH:** `parity/default-route-phi-20260801`
-**TIP:** `9f0198c3`
+**TIP:** `ccd55f1f`
 **UPDATED:** 2026-08-01
 
 ## Done
@@ -41,5 +41,5 @@ Optional follow-up (separate lane): investigate
 
 ## RESUME
 
-DONE — lane COMPLETE locally on `parity/default-route-phi-20260801` @ `9f0198c3`.
+DONE — lane COMPLETE locally on `parity/default-route-phi-20260801` @ `ccd55f1f`.
 Primary OWED after close: push+PR only when maintainer asks (handover above).
