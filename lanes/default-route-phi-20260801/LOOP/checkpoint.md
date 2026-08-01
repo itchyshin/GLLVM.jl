@@ -2,7 +2,7 @@
 
 **STATE:** COMPLETE
 **BRANCH:** `parity/default-route-phi-20260801`
-**TIP:** (see `git rev-parse --short HEAD` after closeout commit)
+**TIP:** `3b8d7548`
 **UPDATED:** 2026-08-01
 
 ## Done
