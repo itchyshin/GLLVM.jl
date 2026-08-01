@@ -3,37 +3,24 @@
 # Included by runparity.jl after the env gate and RCall load succeed.
 # NEVER included by test/runtests.jl.
 #
+# Call-shape source of truth (2026-08-01 recon):
+#   docs/dev-log/plans/scratch/2026-08-01-gaussian-rcall-shape.md
+#
 # ── Why rotation-invariant quantities only? ──────────────────────────────────
 # The loading matrix Λ has two non-identifiable symmetries under a Gaussian
 # GLLVM:
 #
 #   1. Rotation invariance: for any orthogonal Q, ΛQ gives the same marginal
-#      covariance ΛΛᵀ and thus the same likelihood.  Two implementations that
-#      agree on the log-likelihood can return completely different Λ matrices.
+#      covariance ΛΛᵀ and thus the same likelihood.
+#   2. Column-sign flip.
 #
-#   2. Column-sign flip: flipping the sign of any column of Λ (together with
-#      the corresponding row of the latent-factor draws) leaves the model
-#      unchanged.
-#
-# GLLVM.jl pins the rotational degree of freedom with a lower-triangular
-# constraint, but gllvmTMB uses a different canonical form.  Even with
-# the same constraint, sign choices may differ.  Comparing raw Λ entries
-# would produce spurious failures.
-#
-# The rotation-INVARIANT quantities that CAN be compared meaningfully:
-#   • marginal log-likelihood (scalar, fully invariant)
-#   • fitted covariance Σ_y = ΛΛᵀ + σ²_eps I  (invariant under ΛQ, Q'Q=I)
-#   • residual SD σ_eps (invariant)
-#
-# All @test assertions below use only these invariants.
+# Compare only: marginal log-likelihood, Σ_y = ΛΛᵀ + σ²_eps I, σ_eps.
 
 using GLLVM, RCall, Test, Random, LinearAlgebra, Statistics
 
 @testset "Gaussian GLLVM parity: GLLVM.jl vs gllvmTMB" begin
 
-    # ── 1. Simulate data (inline DGP — same pattern as test/test_fit.jl) ────
-    # simulate.jl is currently a placeholder (see src/simulate.jl). We use
-    # the canonical inline DGP from the existing test suite.
+    # ── 1. Simulate data (tiny fixed seed) ───────────────────────────────────
     Random.seed!(42)
     p, K, n = 5, 2, 80   # small: p traits, K latent factors, n sites
 
@@ -47,127 +34,105 @@ using GLLVM, RCall, Test, Random, LinearAlgebra, Statistics
     σ_true = 0.7
 
     η = randn(K, n)                       # K × n latent scores
-    y = Λ_true * η + σ_true * randn(p, n) # p × n data matrix (sites in columns)
+    y = Λ_true * η + σ_true * randn(p, n) # p × n (traits × sites)
+
+    # Centre per trait so gllvmTMB `0+trait` intercepts match Julia's zero-mean
+    # J1 model (see scratch/2026-08-01-gaussian-rcall-shape.md §2).
+    y .-= mean(y; dims = 2)
 
     # ── 2. Julia fit via GLLVM.jl ────────────────────────────────────────────
     jl_fit = fit_gaussian_gllvm(y; K = K)
 
-    @test jl_fit.converged           "GLLVM.jl fit did not converge"
-    @test isfinite(jl_fit.logLik)    "GLLVM.jl logLik is not finite"
+    @test jl_fit.converged
+    @test isfinite(jl_fit.logLik)
 
     jl_logL  = jl_fit.logLik
-    jl_Λ     = jl_fit.pars.Λ          # p × K loadings (rotation-non-unique)
-    jl_σ_eps = jl_fit.pars.σ_eps      # residual SD
-    jl_Σ_y   = jl_Λ * jl_Λ' + jl_σ_eps^2 * I(p)   # rotation-invariant
+    jl_Λ     = jl_fit.pars.Λ
+    jl_σ_eps = jl_fit.pars.σ_eps
+    jl_Σ_y   = jl_Λ * jl_Λ' + jl_σ_eps^2 * I(p)
 
-    # ── 3. R fit via gllvmTMB ────────────────────────────────────────────────
-    #
-    # DRAFT: R call shape not yet validated against a live R env —
-    # verify when R + gllvmTMB are installed (Phase 1.0 follow-up).
-    #
-    # gllvmTMB formula reference:
-    #   gllvm(y, family = "gaussian", num.lv = K)  [gllvm-style]
-    #   or, for the TMB variant:
-    #   gllvmTMB(traits(cbind(y1,…,yp)) ~ 1, data = ..., family = gaussian(),
-    #             num.lv = K)
-    #
-    # The API below uses `gllvm::gllvm()` (the CRAN package) rather than the
-    # development `gllvmTMB` function, because the CRAN interface is more
-    # stable and the Gaussian log-likelihood is identical between the two when
-    # num.lv = K and family = "gaussian".  If the maintainer's R environment
-    # has only the TMB variant, swap the R call accordingly — see the
-    # DRAFT comment above.
+    # ── 3. R fit via gllvmTMB (primary twin — not CRAN gllvm) ────────────────
+    # Model alignment:
+    #   latent(..., unique = FALSE) → no Ψ; Σ = ΛΛᵀ + σ²I like Julia
+    #   per-trait-centred Y         → intercepts do not shift the objective
+    @rput y K p n
 
-    @rput y K p n         # transfer Julia → R
-
-    r_result = R"""
-        # DRAFT: R call shape not yet validated against a live R env — verify
-        # when R + gllvmTMB are installed (Phase 1.0 follow-up).
-
-        # gllvmTMB is the development version of gllvm on GitHub.  The CRAN
-        # package is 'gllvm'; the function call is gllvm::gllvm().
-        # For the dev TMB variant, it may be gllvmTMB::gllvmTMB() instead.
-        # Adjust the library() call and function name to match the installation.
-
-        if (!requireNamespace("gllvm", quietly = TRUE)) {
-            stop("R package 'gllvm' is not installed. ",
-                 "Install with: install.packages('gllvm')")
+    # Assign into R global env so extractors are unambiguous; R""" return
+    # value alone is an RObject and is NOT named `r_result` on the R side.
+    R"""
+        if (!requireNamespace("gllvmTMB", quietly = TRUE)) {
+            stop("R package 'gllvmTMB' is not installed. ",
+                 "Install from the twin checkout or GitHub (itchyshin/gllvmTMB).")
         }
-        library(gllvm)
+        suppressPackageStartupMessages(library(gllvmTMB))
 
-        # y arrives as a p × n matrix (species in rows, sites in columns).
-        # gllvm expects sites in rows, species in columns, so transpose.
-        Y_r <- t(y)          # n × p
-
-        # Fit Gaussian GLLVM with K latent variables, intercept-only mean.
-        # DRAFT: num.lv, family, and optimizer arguments should be verified
-        # against the installed gllvm / gllvmTMB version.
-        fit_r <- gllvm(
-            Y_r,
-            num.lv  = K,
-            family  = "gaussian",
-            # Use VA (variational approximation) or Laplace; for Gaussian with
-            # no random covariate effects the VA log-lik equals the exact
-            # marginal — but confirm this with the gllvmTMB docs.
-            # method  = "VA",    # uncomment if needed
-            seed    = 42L
+        # y arrives as p × n (traits × sites). Build long data for explicit
+        # traits(...,) / latent formula (byte-equivalent to wide form).
+        trait_names <- paste0("t", seq_len(p))
+        df_long <- data.frame(
+            site  = factor(rep(seq_len(n), each = p)),
+            trait = factor(rep(trait_names, times = n), levels = trait_names),
+            value = as.vector(y)   # column-major on p×n ⇒ site blocks
         )
 
-        # Extract the rotation-invariant quantities.
-        # DRAFT: extractor names below are based on the gllvm 1.x API;
-        # verify field names match the installed version.
-        r_logL   <- fit_r$logL           # marginal log-likelihood (scalar)
-        r_theta  <- fit_r$params$theta   # loadings matrix (n.lv × p, DRAFT name)
-        r_sigma  <- fit_r$params$sigma   # residual SD vector (length p) or scalar
+        fit_r <- gllvmTMB(
+            value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE),
+            data = df_long,
+            unit = "site",
+            trait = "trait",
+            family = gaussian(),
+            control = gllvmTMBcontrol(n_init = 1L, se = FALSE)
+        )
 
-        # Build Σ_y on the R side for transfer.  gllvm stores loadings as
-        # (p × K) in params$theta or params$LvXcoef — DRAFT: confirm shape.
-        # Here we assume theta is p × K (transposing if necessary).
-        Lam <- r_theta          # adjust if shape differs
-        if (nrow(Lam) != p || ncol(Lam) != K) {
-            Lam <- t(Lam)       # try transposing
+        if (!identical(as.integer(fit_r$opt$convergence), 0L)) {
+            stop("gllvmTMB did not report convergence==0")
         }
-        # Use the mean residual SD if it is returned per-trait.
-        sigma_eps_r <- if (length(r_sigma) == 1L) r_sigma else mean(r_sigma)
-        Sigma_y_r   <- Lam %*% t(Lam) + diag(sigma_eps_r^2, p)
 
-        list(logL     = r_logL,
-             sigma    = sigma_eps_r,
-             Sigma_y  = Sigma_y_r)
+        r_logL  <- as.numeric(stats::logLik(fit_r))
+        r_sigma <- as.numeric(fit_r$report$sigma_eps)
+        Sig_sh  <- extract_Sigma(fit_r, level = "unit", part = "shared")$Sigma
+        Sigma_y_r <- Sig_sh + diag(r_sigma^2, p)
+
+        .gllvm_parity_gauss <<- list(
+            logL      = r_logL,
+            sigma     = r_sigma,
+            Sigma_y   = Sigma_y_r,
+            objective = as.numeric(fit_r$opt$objective)
+        )
+        invisible(NULL)
     """
 
-    r_logL   = rcopy(Float64,     R"r_result$logL")
-    r_sigma  = rcopy(Float64,     R"r_result$sigma")
-    r_Σ_y    = rcopy(Matrix{Float64}, R"r_result$Sigma_y")
+    r_logL   = rcopy(Float64, R".gllvm_parity_gauss$logL")
+    r_sigma  = rcopy(Float64, R".gllvm_parity_gauss$sigma")
+    r_Σ_y    = rcopy(Matrix{Float64}, R".gllvm_parity_gauss$Sigma_y")
+    r_obj    = rcopy(Float64, R".gllvm_parity_gauss$objective")
 
-    # ── 4. Parity assertions (rotation-invariant quantities only) ────────────
-    #
-    # Tolerances are PROVISIONAL and intentionally moderate.  The package
-    # headline claims machine-precision log-likelihood agreement vs gllvmTMB.
-    # These can be tightened (e.g. logL rtol → 1e-6) once the R call is
-    # validated in a live environment and the gllvmTMB objective is confirmed
-    # to be the same marginal log-likelihood as GLLVM.jl's.
+    # Always print the numbers — verify by log, not exit code alone.
+    println()
+    println("── Gaussian logLik oracle (seed=42, p=$p, K=$K, n=$n, centred) ──")
+    println("  Julia logLik          = ", jl_logL)
+    println("  gllvmTMB logLik       = ", r_logL)
+    println("  gllvmTMB -objective   = ", -r_obj)
+    println("  Δ logLik (jl − r)     = ", jl_logL - r_logL)
+    println("  Julia σ_eps           = ", jl_σ_eps)
+    println("  gllvmTMB σ_eps        = ", r_sigma)
+    println("  Δ σ_eps               = ", jl_σ_eps - r_sigma)
+    println()
 
-    @testset "log-likelihood agreement (provisional rtol=1e-3)" begin
-        # Both should return the same marginal log-likelihood at the MLE.
-        # A relative gap > 1e-3 suggests one optimizer is not at the optimum
-        # or the objectives are not equivalent.
-        @test jl_logL ≈ r_logL rtol=1e-3
+    # ── 4. Parity assertions (logLik first; then rotation-invariant extras) ──
+    @testset "log-likelihood agreement (rtol=1e-6)" begin
+        @test jl_logL ≈ r_logL rtol=1e-6
+        @test r_logL ≈ -r_obj rtol=0 atol=1e-10   # logLik == -objective
     end
 
-    @testset "fitted covariance Σ_y agreement (provisional atol=1e-2)" begin
-        # Σ_y = ΛΛᵀ + σ²_eps I is rotation-invariant and should agree
-        # entry-wise up to optimizer-induced rounding.
+    @testset "residual SD σ_eps agreement (rtol=1e-4)" begin
+        @test jl_σ_eps ≈ r_sigma rtol=1e-4
+    end
+
+    @testset "fitted covariance Σ_y agreement (atol=1e-4)" begin
         for i in 1:p, j in 1:p
-            @test jl_Σ_y[i, j] ≈ r_Σ_y[i, j] atol=1e-2 broken=false
+            @test jl_Σ_y[i, j] ≈ r_Σ_y[i, j] atol=1e-4
         end
-    end
-
-    @testset "residual SD σ_eps agreement (provisional rtol=5e-2)" begin
-        # If gllvmTMB returns per-trait σ values, r_sigma is the mean;
-        # GLLVM.jl currently fits a shared σ_eps.  Agreement within 5% at
-        # n=80, p=5 is consistent with MLE sampling variation.
-        @test jl_σ_eps ≈ r_sigma rtol=5e-2
     end
 
 end  # @testset
