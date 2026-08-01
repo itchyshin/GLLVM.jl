@@ -1,5 +1,38 @@
 # Check Log
 
+## 2026-08-01 - A4/A5 catch-up logLik oracle CLOSE (all ordered cells green)
+
+Lane tip (engine): `387d267a` on `catchup/loglik-oracle-20260801`. Twin `cee55a07`.
+GOAL complete for light gllvmTMB logLik oracles on named routes.
+
+| Family | Route | ΔlogLik order | Evidence SHA |
+|---|---|---|---|
+| Gaussian | centred unique=FALSE | ~1e-8 | A2 |
+| Binomial | Bernoulli | ~1e-10 | A3 |
+| Poisson | log | ~1e-8 | A3 |
+| NB2 | `fit_nb_gllvm_grouped` `group=1:p` + observed Hess. | ~2.5e-4 | cell `5ad55877`; curvature restored at closeout |
+| Beta | `fit_beta_gllvm_grouped` `group=1:p` + observed Hess. | ~6e-9 | `387d267a` |
+| Ordinal | **ordinal_probit** + observed Hess. | ~5e-9 | `10fcd484`/`3a84d8b6` |
+
+Full suite (`GLLVM_PARITY_TESTS=1 … runparity.jl` →
+`/tmp/gllvmjl-catchup-full-parity-20260801.log`):
+
+```text
+Gaussian 30/30 · Binomial 6/6 · Poisson 6/6 · NB2 8/8 · Beta 8/8 · Ordinal-probit 5/5
+= 63/63
+NB2 Δ=-2.499e-4 · Beta Δ=+5.969e-9 · Ordinal Δ=+5.476e-9
+```
+
+Closeout restored NB2 grouped `hessian=:observed` (prior bank at `5ad55877`
+omitted the engine hunk). Rose fence: OK for named-route light logLik greens.
+**Not OK:** “full family parity,” ADEMP/coverage, or equating `n_drift=0` with
+fit parity. #129/#128 fenced.
+Melissa plan-actual CLOSED:
+`docs/dev-log/plan-actual/2026-08-01-gllvm-jl-catchup-loglik-oracle.md`.
+After-task: `docs/dev-log/after-task/2026-08-01-a4a5-catchup-loglik-oracle-close.md`.
+(Interim blocked receipt retained:
+`docs/dev-log/after-task/2026-08-01-a4a5-nbbeta-ordinal-loglik-blocked.md`.)
+
 ## 2026-08-01 - Binomial + Poisson gllvmTMB logLik oracle cells (catch-up A3)
 
 Lane tip prior: `5d0cd93f` on `catchup/loglik-oracle-20260801`. Twin `cee55a07`.

@@ -47,9 +47,10 @@ catch err
 end
 
 # ── Run the parity tests ──────────────────────────────────────────────────────
-# Order locked by catch-up arc: Gaussian → Binomial → Poisson → NB2 → Beta.
-# NB2/Beta includes are live canaries (currently FAIL logLik bar — not claim-green).
-# Ordinal-probit uses the cumulative-probit, observed-Hessian Laplace cell.
+# Order locked by catch-up arc: Gaussian → Binomial → Poisson → NB2 → Beta →
+# Ordinal-probit. All six are live light logLik oracles on named routes:
+# NB2/Beta = grouped group=1:p; Ordinal = cumulative-probit + observed Hessian.
+# Do not narrate as “full family parity” (shared defaults / logit ordinal differ).
 include(joinpath(@__DIR__, "parity_helpers.jl"))
 include(joinpath(@__DIR__, "test_gaussian_parity.jl"))
 include(joinpath(@__DIR__, "test_binomial_parity.jl"))

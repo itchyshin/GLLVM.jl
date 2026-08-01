@@ -54,17 +54,22 @@ Primary oracle path (see
 - **Gaussian only:** centre Y per trait (Julia zero-mean J1 vs R `0+trait`).
 - **Binomial / Poisson:** do **not** centre — Julia already estimates per-trait `β`.
 - **NB2:** per-trait dispersion — Julia uses `fit_gllvm(...; disp_group=:species)` /
-  `fit_nb_gllvm_grouped(...; group=1:p)` to match R's `log_phi_nbinom2[p]` (#132);
-  do not use the shared-`r` `fit_nb_gllvm` default fitter.
-- **Beta:** per-trait precision `φ` — Julia uses `fit_beta_gllvm_grouped(...; group = 1:p)`
-  to match R's `log_phi_beta[p]` (#148); do not use the shared-φ default fitter.
+  `fit_nb_gllvm_grouped(...; group=1:p, hessian=:observed)` to match R's
+  `log_phi_nbinom2[p]` (#132) and TMB's observed Laplace curvature; do not use
+  the shared-`r` `fit_nb_gllvm` default fitter.
+- **Beta:** per-trait precision `φ` — Julia uses
+  `fit_beta_gllvm_grouped(...; group=1:p, hessian=:observed)` to match R's
+  `log_phi_beta[p]` (#148); do not use the shared-φ default fitter.
 - Extractors: `as.numeric(logLik(fit))` (= `-opt$objective`); Gaussian also
   compares `report$sigma_eps` and `extract_Sigma(..., part="shared")`.
 
-Cells **green**: Gaussian, Binomial (Bernoulli), Poisson.
-Cells **drafted / blocked** (do not claim): NB2 + Beta (per-trait φ routes exist;
-live ΔlogLik still fails — Fisher vs observed Laplace curvature), Ordinal
-(#133 param landed at `b7c2cdb8`; live probit logLik still fails — pending debug).
+Cells **green** (light logLik oracles, named routes):
+Gaussian; Binomial (Bernoulli); Poisson; NB2 (`group=1:p`); Beta (`group=1:p` +
+observed Beta/logit Laplace Hessian, tip `387d267a`); Ordinal **probit** +
+observed Hessian (`10fcd484` / `3a84d8b6`).
+
+**Not claimed here:** shared-dispersion NB2/Beta defaults; ordinal-logit;
+ADEMP; coverage; “full family parity.” `n_drift=0` ≠ these cells.
 
 ## Tolerances
 
