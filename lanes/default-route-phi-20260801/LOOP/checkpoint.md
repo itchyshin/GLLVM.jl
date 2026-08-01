@@ -2,35 +2,34 @@
 
 **STATE:** IN_PROGRESS
 **BRANCH:** `parity/default-route-phi-20260801`
-**TIP:** `bbf5d7d8` (pre-scaffold; update after first commit)
+**TIP:** `185b3db7`
 **UPDATED:** 2026-08-01
 
 ## Done
 
-- Branch created from catch-up tip `bbf5d7d8`.
-- Durable plan + LOOP scaffold written (this write).
+- Scaffold + plan committed (`185b3db7`).
+- S0 call-site inventory written.
 
 ## In progress
 
-- Scaffold commit, then S0 recon.
+- S0 commit, then S1 routing flip.
 
 ## Next
 
-1. Commit scaffold + plan surgically.
-2. S0 call-site inventory.
-3. S1 routing flip.
-4. S2 ∥ S3.
-5. S4 verify + closeout.
+1. Commit S0 inventory.
+2. S1 `fit_gllvm.jl` API B coerce.
+3. S2 ∥ S3.
+4. S4 verify + closeout.
 
 ## Open gate
 
-None (push/PR/merge paused until maintainer ask).
+None (no push).
 
 ## Where truth lives
 
 - `lanes/default-route-phi-20260801/LOOP/GOAL.md`
-- `docs/dev-log/plans/2026-08-01-default-route-nb2-beta-pertrait-phi.md`
+- `docs/dev-log/plans/scratch/2026-08-01-default-route-phi-callsites.md`
 
 ## RESUME
 
-`parity/default-route-phi-20260801` @ tip after scaffold commit → start S0.
+After S0 commit → S1 on `src/families/fit_gllvm.jl`.

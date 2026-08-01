@@ -4,7 +4,7 @@ Order: S0 → S1 → (S2 ∥ S3 after S1) → S4.
 
 | Arc | Status | Gate | Summary |
 | --- | --- | --- | --- |
-| S0 | PENDING | none | Call-site inventory → `docs/dev-log/plans/scratch/2026-08-01-default-route-phi-callsites.md` |
+| S0 | DONE | none | Call-site inventory → `docs/dev-log/plans/scratch/2026-08-01-default-route-phi-callsites.md` |
 | S1 | PENDING | none | Edit `src/families/fit_gllvm.jl` (+ docstring): NB/Beta `nothing`→`:species` |
 | S2 | PENDING | after S1 | Retarget `test/parity/test_negbin_parity.jl`, `test_beta_parity.jl`, helpers/README |
 | S3 | PENDING | after S1 | Cascade core tests/docs Fit-type + shared-default wording |
