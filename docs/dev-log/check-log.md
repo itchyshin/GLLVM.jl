@@ -1,5 +1,27 @@
 # Check Log
 
+## 2026-08-01 - Default-route NB2/Beta per-trait φ (API B)
+
+Lane: `parity/default-route-phi-20260801` from catch-up tip `bbf5d7d8`.
+Twin `/tmp/gllvmtmb-parity-restart-20260801` @ `cee55a07`.
+
+Engine: `fit_gllvm` coerces `disp_group=nothing`→`:species` for
+`NegativeBinomial`/`Beta` only → `NBGroupedFit`/`BetaGroupedFit`. Named
+`fit_nb_gllvm` / `fit_beta_gllvm` remain shared-φ. Gamma unchanged.
+
+Live (`GLLVM_PARITY_TESTS=1 … runparity.jl` →
+`/tmp/default-route-phi-parity.log`):
+
+```text
+Gaussian 30/30 · Binomial 6/6 · Poisson 6/6 · NB2 8/8 · Beta 8/8 · Ordinal-probit 5/5
+= 63/63
+NB2 Δ=-2.499e-4 (fit_gllvm default) · Beta Δ=+5.969e-9 (fit_gllvm default)
+```
+
+Cascade core 51/51. Rose fence: default-route per-trait φ light logLik for
+NB2+Beta only — **not** full family parity. After-task:
+`docs/dev-log/after-task/2026-08-01-default-route-nb2-beta-pertrait-phi.md`.
+
 ## 2026-08-01 - A4/A5 catch-up logLik oracle CLOSE (all ordered cells green)
 
 Lane tip (engine): `387d267a` on `catchup/loglik-oracle-20260801`. Twin `cee55a07`.
