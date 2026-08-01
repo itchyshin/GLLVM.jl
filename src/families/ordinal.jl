@@ -154,14 +154,16 @@ end
 end
 
 function _ordinal_laplace_mode_pertrait(y::AbstractVector, Λ::AbstractMatrix,
-        τ::AbstractMatrix, C::AbstractVector{<:Integer}, link::Link = LogitLink();
+        β::AbstractVector, τ::AbstractMatrix, C::AbstractVector{<:Integer},
+        link::Link = LogitLink();
         mask = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
     p, K = size(Λ)
+    length(β) == p || throw(ArgumentError("ordinal intercept length must equal p"))
     z = zeros(K)
     s = Vector{Float64}(undef, p)
     W = Vector{Float64}(undef, p)
     for _ in 1:maxiter
-        η = _clamp_eta.(Λ * z)
+        η = _clamp_eta.(β .+ Λ * z)
         @inbounds for t in 1:p
             if mask !== nothing && !mask[t]
                 s[t] = 0.0
@@ -183,12 +185,13 @@ function _ordinal_laplace_mode_pertrait(y::AbstractVector, Λ::AbstractMatrix,
 end
 
 function ordinal_loglik_site_pertrait(y::AbstractVector, Λ::AbstractMatrix,
-        τ::AbstractMatrix, C::AbstractVector{<:Integer}, link::Link = LogitLink();
+        β::AbstractVector, τ::AbstractMatrix, C::AbstractVector{<:Integer},
+        link::Link = LogitLink();
         mask = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
     p = size(Λ, 1)
-    z = _ordinal_laplace_mode_pertrait(y, Λ, τ, C, link;
+    z = _ordinal_laplace_mode_pertrait(y, Λ, β, τ, C, link;
                                        mask = mask, maxiter = maxiter, tol = tol)
-    η = _clamp_eta.(Λ * z)
+    η = _clamp_eta.(β .+ Λ * z)
     W = Vector{Float64}(undef, p)
     ℓ = 0.0
     @inbounds for t in 1:p
@@ -209,16 +212,22 @@ function ordinal_loglik_site_pertrait(y::AbstractVector, Λ::AbstractMatrix,
 end
 
 function ordinal_marginal_loglik_laplace_pertrait(Y::AbstractMatrix,
-        Λ::AbstractMatrix, τ::AbstractMatrix, C::AbstractVector{<:Integer};
+        Λ::AbstractMatrix, β::AbstractVector, τ::AbstractMatrix,
+        C::AbstractVector{<:Integer};
         link::Link = LogitLink(), mask = nothing, kwargs...)
     acc = 0.0
     @inbounds for s in axes(Y, 2)
         mcol = mask === nothing ? nothing : view(mask, :, s)
-        acc += ordinal_loglik_site_pertrait(view(Y, :, s), Λ, τ, C, link;
+        acc += ordinal_loglik_site_pertrait(view(Y, :, s), Λ, β, τ, C, link;
                                             mask = mcol, kwargs...)
     end
     return acc
 end
+
+ordinal_marginal_loglik_laplace_pertrait(Y::AbstractMatrix, Λ::AbstractMatrix,
+        τ::AbstractMatrix, C::AbstractVector{<:Integer}; kwargs...) =
+    ordinal_marginal_loglik_laplace_pertrait(Y, Λ, zeros(eltype(Λ), size(Λ, 1)),
+                                             τ, C; kwargs...)
 
 # ---------------------------------------------------------------------------
 # Fit driver (Ordinal family slice 2).
@@ -260,6 +269,7 @@ used by the R bridge; [`OrdinalFit`](@ref) remains the shared-cutpoint shape.
 """
 struct OrdinalPerTraitFit
     Λ::Matrix{Float64}
+    β::Vector{Float64}
     τ::Matrix{Float64}
     C::Vector{Int}
     link::Link
@@ -295,18 +305,22 @@ function _unpack_cutpoints_pertrait(ψ::AbstractVector, C::AbstractVector{<:Inte
     pos = 1
     @inbounds for t in 1:p
         m = C[t] - 1
-        τ[t, 1] = ψ[pos]
+        τ[t, 1] = 0.0
         for c in 2:m
-            τ[t, c] = τ[t, c - 1] + exp(ψ[pos + c - 1])
+            τ[t, c] = τ[t, c - 1] + exp(ψ[pos])
+            pos += 1
         end
-        pos += m
     end
     return τ
 end
 
-function _pack_initial_cutpoints_pertrait(Y::AbstractMatrix, obs::AbstractMatrix,
-                                          C::AbstractVector{<:Integer})
+_ord_quantile(p, ::LogitLink) = log(p / (1 - p))
+_ord_quantile(p, ::ProbitLink) = quantile(Normal(), p)
+
+function _pack_initial_ordinal_pertrait(Y::AbstractMatrix, obs::AbstractMatrix,
+                                        C::AbstractVector{<:Integer}, link::Link)
     p = size(Y, 1)
+    β0 = zeros(Float64, p)
     pieces = Vector{Float64}[]
     @inbounds for t in 1:p
         counts = zeros(Int, C[t])
@@ -316,16 +330,16 @@ function _pack_initial_cutpoints_pertrait(Y::AbstractMatrix, obs::AbstractMatrix
         total = sum(counts)
         total > 0 || throw(ArgumentError("ordinal response trait $t has no observed cells"))
         cum = cumsum(counts ./ total)
-        τ0 = [log(clamp(cum[c], 1e-3, 1 - 1e-3) /
-                  (1 - clamp(cum[c], 1e-3, 1 - 1e-3))) for c in 1:(C[t] - 1)]
-        ψ0 = similar(τ0)
-        ψ0[1] = τ0[1]
+        τ0 = [_ord_quantile(clamp(cum[c], 1e-3, 1 - 1e-3), link)
+              for c in 1:(C[t] - 1)]
+        β0[t] = -τ0[1]
+        ψ0 = Float64[]
         for c in 2:(C[t] - 1)
-            ψ0[c] = log(max(τ0[c] - τ0[c - 1], 1e-3))
+            push!(ψ0, log(max(τ0[c] - τ0[c - 1], 1e-3)))
         end
         push!(pieces, ψ0)
     end
-    return reduce(vcat, pieces)
+    return β0, reduce(vcat, pieces; init = Float64[])
 end
 
 """
@@ -561,14 +575,15 @@ function fit_ordinal_gllvm_pertrait(Y::AbstractMatrix{<:Integer}; K::Integer,
         collect(float.(Λ_init))
     end
 
-    ψ0 = _pack_initial_cutpoints_pertrait(Ys, obs, C)
-    θ0 = vcat(pack_lambda(Λ0), ψ0)
-    ncut = sum(C .- 1)
+    β0, ψ0 = _pack_initial_ordinal_pertrait(Ys, obs, C, link)
+    θ0 = vcat(β0, pack_lambda(Λ0), ψ0)
+    ncut = sum(C .- 2)
     function negll(θ)
-        Λ = unpack_lambda(θ[1:rr], p, K)
-        τ = _unpack_cutpoints_pertrait(θ[(rr + 1):(rr + ncut)], C)
+        β = @view θ[1:p]
+        Λ = unpack_lambda(@view(θ[(p + 1):(p + rr)]), p, K)
+        τ = _unpack_cutpoints_pertrait(@view(θ[(p + rr + 1):(p + rr + ncut)]), C)
         v = try
-            -ordinal_marginal_loglik_laplace_pertrait(Y, Λ, τ, C;
+            -ordinal_marginal_loglik_laplace_pertrait(Y, Λ, β, τ, C;
                 link = link, mask = mask, maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
@@ -579,8 +594,9 @@ function fit_ordinal_gllvm_pertrait(Y::AbstractMatrix{<:Integer}; K::Integer,
     res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
                          autodiff = :finite)
     θ̂ = Optim.minimizer(res)
-    Λ̂ = unpack_lambda(θ̂[1:rr], p, K)
-    τ̂ = _unpack_cutpoints_pertrait(θ̂[(rr + 1):(rr + ncut)], C)
-    return OrdinalPerTraitFit(Λ̂, τ̂, C, link, -Optim.minimum(res),
+    β̂ = collect(@view θ̂[1:p])
+    Λ̂ = unpack_lambda(@view(θ̂[(p + 1):(p + rr)]), p, K)
+    τ̂ = _unpack_cutpoints_pertrait(@view(θ̂[(p + rr + 1):(p + rr + ncut)]), C)
+    return OrdinalPerTraitFit(Λ̂, β̂, τ̂, C, link, -Optim.minimum(res),
                               Optim.converged(res), Optim.iterations(res))
 end

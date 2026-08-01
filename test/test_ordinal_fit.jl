@@ -24,7 +24,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         @test cor(fit.τ, τtrue) > 0.9                              # cutpoints recovered
     end
 
-    @testset "fit_gllvm(family=Ordinal()) dispatches to OrdinalFit" begin
+    @testset "fit_gllvm(family=Ordinal()) dispatches to the parity fitter" begin
         Random.seed!(221)
         p, n, C = 5, 150, 3
         τ = [-0.5, 0.8]
@@ -36,8 +36,9 @@ using GLLVM, Test, Random, Distributions, Statistics
             Y[t, i] = rand(Categorical(pr))
         end
         f = fit_gllvm(Y; family = Ordinal(), K = 1)
-        @test f isa OrdinalFit
-        @test f.C == C
-        @test issorted(f.τ)
+        @test f isa OrdinalPerTraitFit
+        @test f.C == fill(C, p)
+        @test all(iszero, f.τ[:, 1])
+        @test length(f.β) == p
     end
 end

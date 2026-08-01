@@ -13,7 +13,9 @@ using GLLVM
 
     @test fit isa OrdinalPerTraitFit
     @test fit.C == C
+    @test length(fit.β) == size(Y, 1)
     @test size(fit.τ) == (3, 3)
+    @test all(iszero, fit.τ[:, 1])
     @test all(isfinite, fit.τ[1, 1:2])
     @test isnan(fit.τ[1, 3])
     @test all(isfinite, fit.τ[2, 1:3])
@@ -21,7 +23,8 @@ using GLLVM
     @test all(isnan, fit.τ[3, 2:3])
     @test issorted(fit.τ[1, 1:2])
     @test issorted(fit.τ[2, 1:3])
-    @test GLLVM._nparams(fit) == GLLVM.rr_theta_len(size(Y, 1), K) + sum(C .- 1)
+    @test GLLVM._nparams(fit) == size(Y, 1) + GLLVM.rr_theta_len(size(Y, 1), K) +
+                                  sum(C .- 2)
     @test isfinite(fit.loglik)
 
     P = predict(fit, Y; type = :prob)
@@ -75,7 +78,8 @@ end
     @test all(isfinite, br.cutpoints[2, 1:3])
     @test isfinite(br.cutpoints[3, 1])
     @test all(isnan, br.cutpoints[3, 2:3])
-    @test br.df == GLLVM.rr_theta_len(size(Y, 1), K) + sum(br.n_categories .- 1)
+    @test br.df == size(Y, 1) + GLLVM.rr_theta_len(size(Y, 1), K) +
+                   sum(br.n_categories .- 2)
     @test !(:ci_method in keys(br))
     @test_throws ArgumentError bridge_fit(; y = Y, family = "ordinal_probit", d = K,
                                           options = Dict("ci_method" => "wald"))

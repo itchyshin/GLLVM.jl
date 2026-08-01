@@ -1059,8 +1059,8 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
         family_out = key == "ordinal_probit" ? "ordinal_probit" : "ordinal"
         model_out = key == "ordinal_probit" ? "ordinal_probit_rr" : "ordinal_rr"
         base = _bridge_assemble_ng(fit, family_out, model_out, traits, units, p, K, Yi, nothing;
-            alpha = fill(NaN, p), dispersion = fill(NaN, p),
-            df = _bridge_rr_df(p, K) + sum(fit.C .- 1), scores = scores, ci = nothing, mask = M)
+            alpha = fit.β, dispersion = fill(NaN, p),
+            df = _nparams(fit), scores = scores, ci = nothing, mask = M)
         # Ordinal-only FLAT extras (ASCII keys, primitive arrays): per-trait
         # ordered cutpoints (NaN-padded after each trait's final threshold) and
         # per-trait category counts. This is the native gllvmTMB parity shape.
