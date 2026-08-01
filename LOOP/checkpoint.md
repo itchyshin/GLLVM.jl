@@ -1,4 +1,4 @@
-GOAL: see GOAL.md.   STATE: **COMPLETE** — all ordered logLik oracle cells green (Gauss → Bin → Pois → NB2 grouped → Beta grouped → Ordinal probit). Tip includes Beta `387d267a`.
+GOAL: see GOAL.md.   STATE: **COMPLETE** — all ordered logLik oracle cells green (Gauss → Bin → Pois → NB2 grouped → Beta grouped → Ordinal probit). Tip `0e8bd6c3` (Beta engine `387d267a`; NB2 observed-Hess restore `9d661c4f`; docs close).
 
 ARCS DONE (verified):
 - A0 — lane + drift `n_drift=0` `unregistered=0`. Twin `cee55a07`.
@@ -36,7 +36,7 @@ NEXT:
 3. Optional maintainer: PR / push when instructed — **no push from this lane**.
 
 TRUTH LIVES IN:
-- Write lane: `.worktrees/gllvmjl-catchup-loglik-20260801` / `catchup/loglik-oracle-20260801` @ `387d267a` (+ closeout docs tip after commit)
+- Write lane: `.worktrees/gllvmjl-catchup-loglik-20260801` / `catchup/loglik-oracle-20260801` @ `0e8bd6c3`
 - Twin R: `/tmp/gllvmtmb-parity-restart-20260801` @ `cee55a07`
 - Full parity log: `/tmp/gllvmjl-catchup-full-parity-20260801.log`
 - After-tasks: `docs/dev-log/after-task/2026-08-01-gaussian-gllvmtmb-loglik-oracle.md`, `…/2026-08-01-binomial-poisson-gllvmtmb-loglik-oracle.md`, `…/2026-08-01-a4a5-nbbeta-ordinal-loglik-blocked.md` (interim), `…/2026-08-01-a4a5-catchup-loglik-oracle-close.md`
@@ -52,10 +52,10 @@ RESUME:
 ```
 You are gllvm-jl-catchup-loglik — DONE (closeout).
 READ FIRST: LOOP/GOAL.md -> LOOP/checkpoint.md.
-WORKSPACE: .worktrees/gllvmjl-catchup-loglik-20260801 on catchup/loglik-oracle-20260801 @ 387d267a (+ closeout commit if present).
-GOAL COMPLETE: Gauss/Bin/Pois/NB2-grouped/Beta-grouped/ordinal_probit logLik oracles green.
+WORKSPACE: .worktrees/gllvmjl-catchup-loglik-20260801 on catchup/loglik-oracle-20260801 @ 0e8bd6c3.
+GOAL COMPLETE: Gauss/Bin/Pois/NB2-grouped/Beta-grouped/ordinal_probit logLik oracles green (63/63).
 Fenced: #129/#128; ADEMP; coverage; “full family parity”; n_drift≠parity.
 No push unless maintainer instructs. Prefer FRESH TASK for next work.
 ```
 
-CONTINUE HERE vs START A FRESH TASK: **FRESH TASK** — catch-up logLik oracle goal is complete; do not re-open Beta curvature.
+CONTINUE HERE vs START A FRESH TASK: **FRESH TASK** — catch-up logLik oracle goal is complete; do not re-open Beta/NB2 curvature.
