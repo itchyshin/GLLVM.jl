@@ -17,7 +17,7 @@ OPEN GATES (need human):
 - **A4/A5** — Align Julia dispersion/cuts toward R public surface (#132 NB2 φ, #148 Beta φ, #133 ordinal intercepts/cuts). Until then, gate default NB2/Beta/Ordinal same-model claims (grouped routes noted in inventory for #132/#148 only).
 
 TRUTH LIVES IN:
-- Write lane: `.worktrees/gllvmjl-catchup-loglik-20260801` / `catchup/loglik-oracle-20260801`
+- Write lane: `.worktrees/gllvmjl-catchup-loglik-20260801` / `catchup/loglik-oracle-20260801` @ `6cde1da2`
 - Twin R: `/tmp/gllvmtmb-parity-restart-20260801` @ `cee55a07`
 - Scratch: `docs/dev-log/plans/scratch/2026-08-01-gaussian-rcall-shape.md`, `…/2026-08-01-correctness-inventory.md`
 - After-tasks: `docs/dev-log/after-task/2026-08-01-gaussian-gllvmtmb-loglik-oracle.md`, `…/2026-08-01-binomial-poisson-gllvmtmb-loglik-oracle.md`
