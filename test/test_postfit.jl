@@ -391,7 +391,9 @@ end
         pr = [GLLVM._ord_prob(c, η[t, s], τ) for c in 1:C]
         Y[t, s] = rand(Categorical(pr))
     end
-    fit = fit_gllvm(Y; family = Ordinal(), K = K)
+    # Shared-cutpoint postfit surface: named fitter (public fit_gllvm(Ordinal)
+    # → per-trait parity route).
+    fit = fit_ordinal_gllvm(Y; K = K)
 
     @testset "getLV / getLoadings / rotation" begin
         Z = GLLVM.getLV(fit, Y; rotate = false)
