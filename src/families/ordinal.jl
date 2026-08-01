@@ -50,19 +50,26 @@ _ord_f(x) = _ord_f(x, LogitLink())
     return Fhi - Flo
 end
 
-# Score ∂logP(y=c)/∂η and Fisher weight Σ_k (∂P_k/∂η)²/P_k at η.
+# Derivative of the link density f = F' with respect to its argument.
+_ord_fp(x, ::LogitLink) = begin
+    Fx = _ord_F(x, LogitLink())
+    fx = Fx * (one(Fx) - Fx)
+    fx * (one(Fx) - 2Fx)
+end
+_ord_fp(x, ::ProbitLink) = -_clamp_eta(x) * _ord_f(x, ProbitLink())
+
+# Score ∂logP(y=c)/∂η and observed curvature −∂²logP(y=c)/∂η² at η.
 function _ord_score_weight(c::Integer, η, τ::AbstractVector, link::Link = LogitLink())
     C = length(τ) + 1
     fhi = c == C ? zero(η) : _ord_f(τ[c] - η, link)
     flo = c == 1 ? zero(η) : _ord_f(τ[c - 1] - η, link)
-    score = (flo - fhi) / max(_ord_prob(c, η, τ, link), 1e-12)
-    W = zero(η)
-    @inbounds for k in 1:C
-        fk_hi = k == C ? zero(η) : _ord_f(τ[k] - η, link)
-        fk_lo = k == 1 ? zero(η) : _ord_f(τ[k - 1] - η, link)
-        dP = fk_lo - fk_hi
-        W += dP^2 / max(_ord_prob(k, η, τ, link), 1e-12)
-    end
+    fp_hi = c == C ? zero(η) : _ord_fp(τ[c] - η, link)
+    fp_lo = c == 1 ? zero(η) : _ord_fp(τ[c - 1] - η, link)
+    P = max(_ord_prob(c, η, τ, link), 1e-12)
+    dP = flo - fhi
+    ddP = fp_hi - fp_lo
+    score = dP / P
+    W = max(dP^2 / P^2 - ddP / P, zero(η))
     return score, W
 end
 
