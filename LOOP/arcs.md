@@ -12,7 +12,7 @@ Plan file slice table remains authoritative detail in `ultra-plan.md`.
 | A0 | Lane from `origin/main` + twin main; re-run capability-drift probe; record SHAs + n_drift | **DONE** (`n_drift=0`, `unregistered=0`) | — |
 | A1 | Correctness inventory folded from scout note | **DONE** (Bin/Pois clear; #132/#148/#133 gate; #129/#128 fenced) | — |
 | A2 | **HEADLINE** — live Gaussian logLik vs gllvmTMB | **DONE** (ΔlogLik ≈ 9.78e-9; 30/30) | Rose before README/board claim upgrade |
-| A2b | Bridge transport smoke (JuliaCall) without heavy fits | PENDING / parallel | — |
+| A2b | Bridge transport smoke (JuliaCall) without heavy fits | **DONE** (live drift test 3/3; nrow(drift)==0) | — |
 | A3 | Binomial then Poisson fixed-seed logLik cells | **NEXT** | — |
 | A4 | #132 / #148 dispersion alignment (Julia→R) | PENDING | **OPEN GATE** — API/param; blocks default NB2/Beta |
 | A5 | #133 ordinal location/cuts alignment | PENDING | **OPEN GATE** — API/param; blocks Ordinal |

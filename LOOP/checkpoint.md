@@ -1,16 +1,17 @@
 GOAL: see GOAL.md.   STATE: A0+A1+A2 landed; Gaussian logLik cell GREEN.
 
 ARCS DONE (verified):
-- A0 — write lane `.worktrees/gllvmjl-catchup-loglik-20260801` branch `catchup/loglik-oracle-20260801` @ `05210eca` (+ commits ahead). Drift probe: `n_drift=0` `unregistered=0` (log `/tmp/gllvmjl-a0-drift-20260801.log`). Twin `cee55a07`.
+- A0 — write lane `.worktrees/gllvmjl-catchup-loglik-20260801` branch `catchup/loglik-oracle-20260801` @ `1a0b9dc5` (from `05210eca`; commits `8ae8a640` LOOP, `b86ba7ea` A2 cell, `1a0b9dc5` evidence). Drift probe: `n_drift=0` `unregistered=0` (log `/tmp/gllvmjl-a0-drift-20260801.log`). Twin `cee55a07`.
 - A1 — correctness inventory folded from scout note (no re-inventory). Citations below.
-- A2 — live Gaussian cell green. Numbers from `/tmp/gllvmjl-a2-gaussian-parity-verify.log`:
+- A2 — live Gaussian cell green.
+- A2b — live bridge capabilities drift smoke PASS (3 expectations; nrow(drift)==0). Numbers from `/tmp/gllvmjl-a2-gaussian-parity-verify.log`:
   - Julia logLik = **-501.450700343274**
   - gllvmTMB logLik = **-501.45070035305673**
   - Δ = **9.78275238594506e-9**
   - σ_eps Δ = **-6.618963095395003e-7**
   - Test Summary: **30 pass / 30 total**
 
-ARC IN PROGRESS: none (A2 verified). A2b bridge smoke may still land from parallel child.
+ARC IN PROGRESS: none. A2b bridge smoke DONE (see LOOP/notes/A2b-bridge-smoke-prep.md; 3 expectations pass, nrow(drift)==0).
 
 NEXT: A3 — Binomial then Poisson fixed-seed logLik cells (call-shape risk only; no model-identity bugs per inventory). Do **not** open NB2/Beta/Ordinal until OPEN GATE #132/#148/#133.
 
