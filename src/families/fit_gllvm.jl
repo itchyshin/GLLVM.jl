@@ -10,10 +10,12 @@ distribution used as a marker (the GLM.jl convention):
 - `Normal()`   → [`fit_gaussian_gllvm`](@ref) — closed-form Gaussian marginal
 - `Binomial()` → [`fit_binomial_gllvm`](@ref) — Laplace marginal (binary / binomial)
 - `Poisson()`  → [`fit_poisson_gllvm`](@ref) — Laplace marginal (counts)
-- `NegativeBinomial()` → [`fit_nb_gllvm`](@ref) — Laplace marginal (overdispersed counts)
-- `Beta()`     → [`fit_beta_gllvm`](@ref) — Laplace marginal (proportions in (0,1))
+- `NegativeBinomial()` → [`fit_nb_gllvm_grouped`](@ref) with per-species `r`
+  (twin-aligned default; shared-`r` via [`fit_nb_gllvm`](@ref))
+- `Beta()`     → [`fit_beta_gllvm_grouped`](@ref) with per-species `φ`
+  (twin-aligned default; shared-`φ` via [`fit_beta_gllvm`](@ref))
 - `Ordinal()`  → [`fit_ordinal_gllvm_pertrait`](@ref) — Laplace marginal (ordered categories)
-- `Gamma()`    → [`fit_gamma_gllvm`](@ref) — Laplace marginal (positive continuous)
+- `Gamma()`    → [`fit_gamma_gllvm`](@ref) — Laplace marginal (positive continuous; shared shape)
 - `Exponential()` → [`fit_exponential_gllvm`](@ref) — Laplace marginal
 - `GeneralizedPoisson1(α)` → [`fit_gp1_gllvm`](@ref) — Laplace marginal (GP-1 counts, signed dispersion)
 
@@ -31,15 +33,18 @@ the plain-call behaviour when they are at their defaults (regression safe):
   - `:fixed`  → [`fit_roweffect_gllvm`](@ref) — per-site fixed intercept `ρ_s`.
   - `:random` → [`fit_row_random_gllvm`](@ref) — per-site random intercept `ρ_s ~ N(0, σ_row²)`.
 
-- `disp_group = nothing` — grouped / species-specific dispersion (gllvm's `disp.group`).
-  Pass a length-`p` integer vector of group ids, or the symbol `:species` for the
-  per-species map `1:p`. Routes to the family's grouped fitter:
-  - `NegativeBinomial` → [`fit_nb_gllvm_grouped`](@ref) (per-species `r`)
-  - `Beta`             → [`fit_beta_gllvm_grouped`](@ref) (per-species `φ`)
-  - `Gamma`            → [`fit_gamma_gllvm_grouped`](@ref) (per-species shape `α`)
+- `disp_group` — grouped / species-specific dispersion (gllvm's `disp.group`).
+  For `NegativeBinomial` and `Beta` only, `disp_group = nothing` is coerced to
+  `:species` (per-trait φ / `r`, matching gllvmTMB). Pass a length-`p` integer
+  vector of group ids for custom grouping, or `:species` explicitly. Routes to:
+  - `NegativeBinomial` → [`fit_nb_gllvm_grouped`](@ref) (per-group `r`)
+  - `Beta`             → [`fit_beta_gllvm_grouped`](@ref) (per-group `φ`)
+  - `Gamma`            → [`fit_gamma_gllvm_grouped`](@ref) (per-species shape `α`; opt-in only)
   - `GLLVM.NB1`        → [`fit_nb1_gllvm_grouped`](@ref) (per-species linear-variance `φ`)
   - `GLLVM.TweedieED`  → [`fit_tweedie_gllvm_grouped`](@ref) (per-species `φ`, shared power)
-  Families without a grouped fitter throw a clear `ArgumentError`.
+  Families without a grouped fitter throw a clear `ArgumentError`. Shared
+  dispersion for NB/Beta remains available via the named fitters
+  [`fit_nb_gllvm`](@ref) / [`fit_beta_gllvm`](@ref).
 
 - `pervar::Bool = false` — heteroscedastic (per-species variance) Gaussian. Only valid
   for `family = Normal()`; `true` routes to [`fit_gaussian_pervar_gllvm`](@ref).
@@ -47,7 +52,8 @@ the plain-call behaviour when they are at their defaults (regression safe):
 ## Precedence and unsupported combinations
 
 The variants route to single specialised fitters; no single underlying fitter combines
-two of them. Therefore at most one of `row_eff != :none`, `disp_group !== nothing`, and
+two of them. Therefore at most one of `row_eff != :none`, effective
+`disp_group !== nothing` (including the NB/Beta default coerce), and
 `pervar == true` may be active. Any other combination throws an `ArgumentError`
 ("combination not yet supported") rather than silently ignoring a request.
 
@@ -55,8 +61,8 @@ two of them. Therefore at most one of `row_eff != :none`, `disp_group !== nothin
 fit_gllvm(Y; family = Normal(),   K = 2)                          # Gaussian
 fit_gllvm(Y; family = Binomial(), K = 2, link = LogitLink())      # binary
 fit_gllvm(Y; family = Poisson(),  K = 2, row_eff = :random)       # random row effect
-fit_gllvm(Y; family = NegativeBinomial(1.0, 0.5), K = 2,
-          disp_group = :species)                                  # per-species dispersion
+fit_gllvm(Y; family = NegativeBinomial(1.0, 0.5), K = 2)          # per-species r (default)
+fit_gllvm(Y; family = Beta(), K = 2)                              # per-species φ (default)
 fit_gllvm(Y; family = Normal(), K = 2, pervar = true)             # per-species variance
 ```
 """
@@ -69,6 +75,12 @@ function fit_gllvm(Y::AbstractMatrix; family = Normal(), K = nothing,
             throw(ArgumentError("fit_gllvm: K=$K and num_lv=$num_lv disagree; pass only one"))
         end
         K = num_lv
+    end
+
+    # API B (Curie): NB/Beta public default matches gllvmTMB per-trait φ.
+    # Shared-φ engines remain `fit_nb_gllvm` / `fit_beta_gllvm`. Gamma unchanged.
+    if disp_group === nothing && (family isa NegativeBinomial || family isa Beta)
+        disp_group = :species
     end
 
     # Count how many structural/dispersion variants are active. At most one is
