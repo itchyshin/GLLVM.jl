@@ -90,6 +90,14 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
+- **Catch-up light gllvmTMB logLik oracles DONE (2026-08-01).** Branch
+  `catchup/loglik-oracle-20260801` @ `def576c6` (pushed): named-route logLik
+  cells green **63/63** (Gaussian, Binomial, Poisson, NB2 grouped 1:p, Beta
+  grouped 1:p, ordinal_probit). Rose fence: **not** full family parity;
+  `n_drift=0` ≠ fit parity. Next recommended lane: default-route NB2/Beta
+  per-trait φ. Multi-lane pointer (do not orphan Phylo Model A deferred menu):
+  `docs/dev-log/coordination-board.md`. `START HERE (Cursor):`
+  `docs/dev-log/handover/2026-08-01-cursor-handover.md`.
 - **Codex restart handoff for Phylo Model A redesign (2026-06-30).**
   The current LV arc is closed for ordinary `gllvmTMB` (`extract_lv_effects()`
   axis-effect default and trait-effect intervals are on `main` via #581), and
@@ -125,8 +133,9 @@ Full responsibility detail lives in §2 of the reference plan.
   2026-05-30).** PR #2; `src/node_gradient.jl` (+ wired `sparse_phy_grad.jl`);
   58 tests; full suite 491 pass; ~O(p) confirmed (35.7× vs `sparse_phy_grad`
   at p=2000).
-- **Phase 1.0 — RCall.jl parity scaffold (DRAFT, committed).** Isolated
-  `test/parity/`; R call shape pending live-R validation.
+- **Phase 1.0 — RCall.jl parity suite (live on catch-up branch, 2026-08-01).**
+  Isolated `test/parity/`; light gllvmTMB logLik oracles green on named routes
+  (see catch-up bullet above). Still not “full family parity.”
 - **Phase 4 runtime gap fill (local, 2026-06-14).** #91 high-rate Poisson
   divergence, #92 phylo-signal Wald scale, #96 Laplace mode-finder safeguard,
   and the Gamma analytic-gradient default are fixed on the local integration
