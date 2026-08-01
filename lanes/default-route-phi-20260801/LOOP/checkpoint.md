@@ -2,7 +2,7 @@
 
 **STATE:** COMPLETE
 **BRANCH:** `parity/default-route-phi-20260801`
-**TIP:** `3f6590f3`
+**TIP:** `9f0198c3`
 **UPDATED:** 2026-08-01
 
 ## Done
@@ -21,8 +21,10 @@ None.
 
 ## Next
 
-Maintainer ask required for push/PR. Optional follow-up (separate lane):
-investigate `test_grouped_dispersion.jl:61` one-group ≈ shared logLik gap.
+Maintainer ask required for push/PR (see Cursor handover
+`docs/dev-log/handover/2026-08-01-cursor-handover-default-route-phi.md`).
+Optional follow-up (separate lane): investigate
+`test_grouped_dispersion.jl:61` one-group ≈ shared logLik gap.
 
 ## Open gate
 
@@ -39,4 +41,5 @@ investigate `test_grouped_dispersion.jl:61` one-group ≈ shared logLik gap.
 
 ## RESUME
 
-DONE — lane COMPLETE locally on `parity/default-route-phi-20260801`.
+DONE — lane COMPLETE locally on `parity/default-route-phi-20260801` @ `9f0198c3`.
+Primary OWED after close: push+PR only when maintainer asks (handover above).
