@@ -4,7 +4,8 @@
 
 | Lane | Status | Branch / tip | Current handover / pointer | Owns |
 |---|---|---|---|---|
-| **NB2/Beta+X engine Arc 1** | **PR #175** (await CI → merge) | `fix/nb2-beta-x-grouped-cov-20260802` @ `39995d8b` | **`docs/dev-log/handover/2026-08-02-cursor-handover-nb2-beta-x-arc1.md`** · after-task `docs/dev-log/after-task/2026-08-02-nb2-beta-x-grouped-cov.md` | Land #175; Arc 2 RCall cells only after merge (separate `/goal`). |
+| **NB2/Beta+X engine Arc 1** | **MERGED** #175 | `main` @ `9f5133a7` | handover `docs/dev-log/handover/2026-08-02-cursor-handover-nb2-beta-x-arc1.md` · after-task `docs/dev-log/after-task/2026-08-02-nb2-beta-x-grouped-cov.md` · Windows harden after-task `docs/dev-log/after-task/2026-08-02-windows-roweffect-na-gate.md` | Arc 1 landed. Optional Windows row-effect NA budget follow-up. Arc 2 RCall = separate `/goal`. |
+| **Windows row-effect NA budget** | **follow-up PR** | `fix/windows-roweffect-na-budget-20260802` | after-task `docs/dev-log/after-task/2026-08-02-windows-roweffect-na-gate.md` | Restore fitter-default iterations on row-effect NA/mask cells (PR Windows flake). |
 | **Grouped dispersion one-group bug** | **MERGED** #172 | `main` | after-task `docs/dev-log/after-task/2026-08-02-grouped-dispersion-one-group.md` | One-group identity under `hessian=:fisher`. Closed. |
 | **MC Julia capability-status** | **MERGED** #173 | `main` | `docs/design/capability-status.md` | Twin-vocabulary MC `/julia-surface`. Closed. |
 | **X/covariate light logLik** | **MERGED** #170 (2026-08-02) | `main` | after-task `docs/dev-log/after-task/2026-08-02-x-covariate-light-loglik.md` | Shared site-X G/Bin/Pois (18/18). Closed. |
@@ -16,16 +17,16 @@
 ## Current Rule
 
 - Rehydrate via **this Active-Lane-Split**, not a single orphaned START HERE bullet.
-- `START HERE (Cursor):` `docs/dev-log/handover/2026-08-02-cursor-handover-nb2-beta-x-arc1.md` (rehydrate via this Active-Lane-Split).
+- `START HERE (Cursor):` Arc 1 landed — next only via dedicated `/goal` (Arc 2) or the Windows NA-budget follow-up PR. Dropbox checkout remains PROTECTED.
 - Rose fence: light logLik (no-X / shared-X G/Bin/Pois) ≠ full family parity; Arc 1 ≠ Arc 2 RCall NB2/Beta+X.
-- Fence NB2/Beta+X **RCall light cells** until Arc 2 (after #175 merges).
+- Fence NB2/Beta+X **RCall light cells** until Arc 2 (separate `/goal`; #175 merged).
 - Bridge execution R→Julia only (JuliaCall); RCall = opt-in oracle.
 - Fence #129 / #128, ADEMP, coverage, Totoro/DRAC unless a dedicated lane owns them.
 - Stage by name; never `git add -A`; no push without instruction.
 
 ## Status
 
-- 2026-08-02 — NB2/Beta+X **engine Arc 1** PR [#175](https://github.com/itchyshin/GLLVM.jl/pull/175) (await CI); handover `docs/dev-log/handover/2026-08-02-cursor-handover-nb2-beta-x-arc1.md`.
+- 2026-08-02 — NB2/Beta+X **engine Arc 1** **merged** [#175](https://github.com/itchyshin/GLLVM.jl/pull/175) @ `9f5133a7`; post-merge main CI green. Windows PR-path flake harden follow-up on `fix/windows-roweffect-na-budget-20260802`.
 - 2026-08-02 — NB2/Beta+X **identity design Arc 0** **merged** [#174](https://github.com/itchyshin/GLLVM.jl/pull/174).
 - 2026-08-02 — Grouped one-group fix **merged** [#172](https://github.com/itchyshin/GLLVM.jl/pull/172); MC capability-status **merged** [#173](https://github.com/itchyshin/GLLVM.jl/pull/173).
 - 2026-08-02 — X/covariate light logLik **merged** [#170](https://github.com/itchyshin/GLLVM.jl/pull/170).
