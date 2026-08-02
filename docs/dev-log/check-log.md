@@ -1,5 +1,15 @@
 # Check Log
 
+## 2026-08-02 - Default-route φ landing (push + PR #169)
+
+Branch `parity/default-route-phi-20260801` @ `3621ffde` pushed to origin.
+PR: https://github.com/itchyshin/GLLVM.jl/pull/169 (base `main`, **not merged**).
+Head OID matches local tip. Rose fence in PR body: light logLik / default-route
+φ only — not full family parity; grouped_dispersion:61 not claimed fixed.
+Parity re-smoke skipped (existing `/tmp/default-route-phi-parity.log` still green;
+twin `/tmp/gllvmtmb-parity-restart-20260801` @ `cee55a07`). Landing LOOP:
+`lanes/default-route-phi-landing-20260801/LOOP/`. Attach scratch left untracked.
+
 ## 2026-08-01 - Default-route NB2/Beta per-trait φ (API B)
 
 Lane: `parity/default-route-phi-20260801` from catch-up tip `bbf5d7d8`.

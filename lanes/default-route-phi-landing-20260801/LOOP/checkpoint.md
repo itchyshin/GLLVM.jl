@@ -1,10 +1,8 @@
-GOAL: see GOAL.md.   STATE: scaffolding / pre-push.
-ARCS DONE (verified): none yet this landing LOOP.
-ARC IN PROGRESS: A0 — write LOOP kit + commit plan.
-NEXT: A1 tip-stamp → A2 skip/smoke → A3 push → A4 PR → A5 close.
-OPEN GATES (need human): none (G0 push+PR approved 2026-08-02).
-TRUTH LIVES IN: worktree `.worktrees/gllvmjl-catchup-loglik-20260801` ·
-  branch `parity/default-route-phi-20260801` @ `5f1dfe77` · plan
-  `docs/dev-log/plans/2026-08-01-gllvm-default-route-phi-landing-ultra-plan.md` ·
-  handover `docs/dev-log/handover/2026-08-01-cursor-handover-default-route-phi.md`.
-RESUME: cd worktree; read LOOP/GOAL.md → checkpoint.md → ultra-plan.md; continue NEXT.
+GOAL: see GOAL.md.   STATE: COMPLETE (push+PR landed; not merged).
+ARCS DONE (verified): A0–A5. PR https://github.com/itchyshin/GLLVM.jl/pull/169 · head `3621ffde` matches origin.
+ARC IN PROGRESS: none.
+NEXT: none for this LOOP — merge only on separate maintainer ask; optional later X/covariate cells or grouped_dispersion:61 bug lane via fresh /goal.
+OPEN GATES (need human): merge (not requested).
+TRUTH LIVES IN: origin/parity/default-route-phi-20260801 @ 3621ffde · PR #169 ·
+  plan-actual docs/dev-log/plan-actual/2026-08-01-gllvm-default-route-phi-landing.md.
+RESUME: DONE — do not reopen φ code; do not merge unless asked.
