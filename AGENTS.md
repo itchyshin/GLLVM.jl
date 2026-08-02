@@ -90,13 +90,15 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
-- **Default-route NB2/Beta per-trait φ DONE locally (2026-08-01).** Branch
-  `parity/default-route-phi-20260801` @ `ccd55f1f` (local, unpushed, no PR):
-  public `fit_gllvm(NB/Beta)` defaults to `disp_group=:species` → grouped fits;
-  light parity **63/63** on that default path (NB2 Δ≈−2.5e-4, Beta Δ≈6e-9).
-  Named shared-φ fitters kept. Rose fence: default-route light logLik only —
-  **not** full family parity. LOOP COMPLETE:
-  `lanes/default-route-phi-20260801/LOOP/`. After-task:
+- **Default-route NB2/Beta per-trait φ DONE locally (2026-08-01); landing
+  G0-approved (2026-08-02).** Branch `parity/default-route-phi-20260801` @
+  `5f1dfe77` (engine COMPLETE @ `ccd55f1f`; tip-align docs): public
+  `fit_gllvm(NB/Beta)` defaults to `disp_group=:species` → grouped fits; light
+  parity **63/63** on that default path (NB2 Δ≈−2.5e-4, Beta Δ≈6e-9). Named
+  shared-φ fitters kept. Rose fence: default-route light logLik only — **not**
+  full family parity. Build LOOP COMPLETE:
+  `lanes/default-route-phi-20260801/LOOP/`. Landing LOOP:
+  `lanes/default-route-phi-landing-20260801/LOOP/`. After-task:
   `docs/dev-log/after-task/2026-08-01-default-route-nb2-beta-pertrait-phi.md`.
   Multi-lane pointer: `docs/dev-log/coordination-board.md`.
   `START HERE (Cursor):`

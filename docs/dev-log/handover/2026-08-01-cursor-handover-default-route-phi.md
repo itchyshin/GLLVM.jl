@@ -15,16 +15,15 @@ Sibling handovers (do not orphan):
 
 ## Critical Context
 
-1. **Lane COMPLETE locally** on `parity/default-route-phi-20260801` @ **`ccd55f1f`**
-   (verified at handoff writing). Public `fit_gllvm(NB/Beta)` defaults to
-   per-trait φ (API B / Curie: `disp_group === nothing` → `:species`). Named
-   `fit_nb_gllvm` / `fit_beta_gllvm` remain shared-φ engines. **Do not reopen
-   φ implementation.**
+1. **Lane COMPLETE locally** on `parity/default-route-phi-20260801` —
+   engine COMPLETE tip **`ccd55f1f`**; live tip after docs tip-align **`5f1dfe77`**.
+   Public `fit_gllvm(NB/Beta)` defaults to per-trait φ (API B / Curie:
+   `disp_group === nothing` → `:species`). Named `fit_nb_gllvm` /
+   `fit_beta_gllvm` remain shared-φ engines. **Do not reopen φ implementation.**
 2. **Live parity 63/63** on the public default path (`/tmp/default-route-phi-parity.log`):
    NB2 Δ≈−2.50e-4, Beta Δ≈+5.97e-9 (prior catch-up bands; no tol widen).
-3. **Unpushed / no PR.** Branch has **no upstream**. Gate FAIL is expected until
-   maintainer asks to push + open PR. **Do not push or auto-merge** without
-   explicit instruction.
+3. **Landing:** G0 authorized 2026-08-02 for push + PR (no merge). Prefer tip
+   `5f1dfe77` or later tip-align. **Do not auto-merge.**
 4. **Rose fence:** default-route / named-route **light logLik only** — **not**
    full family parity. Catch-up GOAL earlier DONE @ `bbf5d7d8` / engine close
    `def576c6` (pushed) — do not overwrite closed catch-up LOOP.
@@ -81,8 +80,8 @@ Sole core-suite red cell: `test_grouped_dispersion.jl:61` (pre-existing;
 
 ## Current Working State
 
-- Working: φ lane **COMPLETE** locally @ `ccd55f1f`; LOOP checkpoint
-  `STATE=COMPLETE`, RESUME=DONE.
+- Working: φ lane **COMPLETE** locally (engine @ `ccd55f1f`; tip-align @
+  `5f1dfe77`); build LOOP checkpoint `STATE=COMPLETE`, RESUME=DONE.
 - Working: catch-up tip `def576c6` remains **pushed** on
   `catchup/loglik-oracle-20260801` (ancestor of this branch).
 - In progress: **none** on φ implementation.
@@ -108,7 +107,7 @@ historical branches unpushed (noise). Annotated ledger:
 
 | Artifact / branch | Committed | Pushed | PR | State |
 |---|---|---|---|---|
-| GLLVM.jl `parity/default-route-phi-20260801` @ `ccd55f1f` (φ COMPLETE tip) | y | **n** (no upstream) | **none** | **CARRIED-OVER** — finished locally; maintainer must ask before push/PR. Resume: see Next Immediate Steps #1. |
+| GLLVM.jl `parity/default-route-phi-20260801` @ `5f1dfe77` (engine COMPLETE @ `ccd55f1f`) | y | **n** until landing push | **none** until landing | **OWED landing** — G0 approved 2026-08-02 for push/PR (no merge). Resume: landing LOOP. |
 | This handover + board/phase-snapshot/AGENTS pointer + checkpoint tip stamp (handover commit on same branch) | y (with this commit) | **n** until #1 | none | **CARRIED-OVER** with branch tip until push |
 | GLLVM.jl `catchup/loglik-oracle-20260801` @ `def576c6` | y | y (`origin`) | none | **LANDED** (ancestor; closed — do not reopen) |
 | `docs/dev-log/plans/scratch/2026-08-01-worktree-attach.md` | n | n | none | **CARRIED-OVER / PROTECTED** — leave untracked; never stage into parity/φ commits. |
@@ -208,7 +207,7 @@ Phase pointer: `docs/dev-log/phase-snapshot.md` → board (not a single-lane orp
 
 | Repo | Branch / tip | CI | What shipped | Plan by leverage |
 |---|---|---|---|---|
-| GLLVM.jl | `parity/default-route-phi-20260801` @ `ccd55f1f` (local, unpushed) | none yet (no PR) | Public NB/Beta default → per-trait φ; light parity 63/63 on default path | **OWED #1:** push + PR on maintainer ask |
+| GLLVM.jl | `parity/default-route-phi-20260801` @ `5f1dfe77` (landing) | none until PR | Public NB/Beta default → per-trait φ; light parity 63/63 on default path | **OWED #1:** push + PR (G0 approved) |
 | GLLVM.jl | `catchup/loglik-oracle-20260801` @ `def576c6` (pushed) | — | Named-route light logLik 63/63 | Closed; do not reopen |
 | gllvmTMB (twin, read-only) | `/tmp/…` @ `cee55a07` | — | Oracle partner | No R engine surgery |
 
@@ -219,7 +218,7 @@ Phase pointer: `docs/dev-log/phase-snapshot.md` → board (not a single-lane orp
 ```sh
 cd "/Users/z3437171/Dropbox/Github Local/GLLVM.jl/.worktrees/gllvmjl-catchup-loglik-20260801"
 git status -sb && git rev-parse --short HEAD
-# expect: parity/default-route-phi-20260801 @ ccd55f1f or later handover tip
+# expect: parity/default-route-phi-20260801 @ 5f1dfe77 or later tip-align
 
 export PATH="$HOME/.juliaup/bin:$PATH"
 export GLLVM_JL_PATH="/Users/z3437171/Dropbox/Github Local/GLLVM.jl/.worktrees/gllvmjl-catchup-loglik-20260801"
