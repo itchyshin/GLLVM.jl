@@ -4,7 +4,7 @@
 
 | Lane | Status | Branch / tip | Current handover / pointer | Owns |
 |---|---|---|---|---|
-| **Grouped dispersion one-group bug** | **NEXT OWED** (2026-08-02) | start from `origin/main` ≥ `d60d90e2` | **`docs/dev-log/handover/2026-08-02-cursor-handover-grouped-dispersion.md`** | Fix `test_grouped_dispersion.jl:61` one-group ≈ shared; no silent tol widen |
+| **Grouped dispersion one-group bug** | **READY TO LAND** (2026-08-02) | `fix/grouped-dispersion-one-group-20260802` (fix-only; MC capability-status on sibling docs branch) | after-task `docs/dev-log/after-task/2026-08-02-grouped-dispersion-one-group.md` · handover `docs/dev-log/handover/2026-08-02-cursor-handover-grouped-dispersion.md` | One-group identity under `hessian=:fisher`; core 5064/0 fail/3 broken; no tol widen |
 | **X/covariate light logLik** | **MERGED** #170 (2026-08-02) | `main` @ `d60d90e2` | after-task `docs/dev-log/after-task/2026-08-02-x-covariate-light-loglik.md` · LOOP `lanes/x-covariate-light-loglik-20260802/LOOP/` | Shared site-X light logLik G/Bin/Pois (18/18). Closed on `main`. |
 | **Default-route NB2/Beta φ** | **MERGED** #169 (2026-08-02) | `main` (ancestor of `d60d90e2`) | `docs/dev-log/handover/2026-08-01-cursor-handover-default-route-phi.md` | Public `fit_gllvm(NB/Beta)` → per-trait φ; light parity 63/63. Closed. |
 | **Catch-up logLik oracle** | **DONE** (2026-08-01) | `catchup/loglik-oracle-20260801` @ `def576c6` (ancestor) | `docs/dev-log/handover/2026-08-01-cursor-handover.md` | Named-route light logLik 63/63. Closed — do not reopen. |

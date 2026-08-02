@@ -1,5 +1,28 @@
 # Check Log
 
+## 2026-08-02 - Grouped NB one-group ≈ shared (objective mismatch)
+
+Lane: `fix/grouped-dispersion-one-group-20260802` from `origin/main` @ `16a9bcdd`
+(≥ `d60d90e2`). Worktree
+`.worktrees/gllvmjl-grouped-dispersion-20260802`.
+
+Diagnosis (seed 503, `iterations=150`): default
+`fit_nb_gllvm_grouped` (`hessian=:observed`) vs `fit_nb_gllvm` (Fisher-Laplace)
+ΔlogLik ≈ **−0.940** — different Laplace objectives, not an optimiser miss.
+With `hessian=:fisher`, ΔlogLik ≈ **3e-12** and `r` matches (rtol 0.1).
+
+Fix: one-group identity cell now requests `hessian=:fisher` (documented contract);
+header comment in `grouped_dispersion.jl` aligned. **No tolerance widen.**
+Observed default retained for TMB parity (`group=1:p`).
+
+Focused: `include("test/test_grouped_dispersion.jl")` → **14/14 pass**.
+Core `test/runtests.jl` → **5064 passed, 0 failed, 3 broken** (49m30s;
+`/tmp/grouped-dispersion-runtests-20260802.log`). Prior default-route tip had
+5063 pass + 1 fail on this cell — fail cleared; no tol widen.
+
+Rose fence: OK for matching-objective one-group identity. Not OK: claiming
+default `:observed` equals shared Fisher, or full family parity.
+
 ## 2026-08-02 - Default-route φ landing (push + PR #169)
 
 Branch `parity/default-route-phi-20260801` @ `3621ffde` pushed to origin.
