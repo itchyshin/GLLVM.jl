@@ -90,25 +90,26 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
-- **Default-route NB2/Beta per-trait φ DONE locally (2026-08-01); landing
-  G0-approved (2026-08-02).** Branch `parity/default-route-phi-20260801` @
-  `5f1dfe77` (engine COMPLETE @ `ccd55f1f`; tip-align docs): public
-  `fit_gllvm(NB/Beta)` defaults to `disp_group=:species` → grouped fits; light
-  parity **63/63** on that default path (NB2 Δ≈−2.5e-4, Beta Δ≈6e-9). Named
-  shared-φ fitters kept. Rose fence: default-route light logLik only — **not**
-  full family parity. Build LOOP COMPLETE:
-  `lanes/default-route-phi-20260801/LOOP/`. Landing LOOP:
-  `lanes/default-route-phi-landing-20260801/LOOP/`. After-task:
-  `docs/dev-log/after-task/2026-08-01-default-route-nb2-beta-pertrait-phi.md`.
-  Multi-lane pointer: `docs/dev-log/coordination-board.md`.
+- **Next Cursor lane — grouped_dispersion one-group bug (2026-08-02).**
+  Primary OWED: fix `test/test_grouped_dispersion.jl:61` (one-group
+  `fit_nb_gllvm_grouped` ≈ `fit_nb_gllvm`). Start from `origin/main` ≥
+  `d60d90e2`. Multi-lane pointer: `docs/dev-log/coordination-board.md`.
   `START HERE (Cursor):`
+  `docs/dev-log/handover/2026-08-02-cursor-handover-grouped-dispersion.md`.
+- **X/covariate light logLik cohort 1 MERGED (2026-08-02).** PR #170 →
+  `main` @ `d60d90e2` (branch tip `e87ec7a4`). Shared site-X light logLik for
+  Gaussian / Binomial / Poisson (Δ ≈ 1e-9; rtol 1e-6). Rose fence: shared-X
+  light logLik only — **not** NB2/Beta+X or full family parity. After-task:
+  `docs/dev-log/after-task/2026-08-02-x-covariate-light-loglik.md`.
+- **Default-route NB2/Beta per-trait φ MERGED (2026-08-02).** PR #169 →
+  `main`. Public `fit_gllvm(NB/Beta)` defaults to `disp_group=:species`;
+  light parity **63/63** on that default path. Rose fence: default-route
+  light logLik only. Handover (historical):
   `docs/dev-log/handover/2026-08-01-cursor-handover-default-route-phi.md`.
 - **Catch-up light gllvmTMB logLik oracles DONE (2026-08-01).** Branch
-  `catchup/loglik-oracle-20260801` @ `def576c6` (pushed): named-route logLik
-  cells green **63/63** (Gaussian, Binomial, Poisson, NB2 grouped 1:p, Beta
-  grouped 1:p, ordinal_probit). Rose fence: **not** full family parity;
-  `n_drift=0` ≠ fit parity. Multi-lane pointer:
-  `docs/dev-log/coordination-board.md`. `START HERE (Cursor, catch-up):`
+  `catchup/loglik-oracle-20260801` @ `def576c6` (pushed; on main ancestry):
+  named-route logLik cells green **63/63**. Rose fence: **not** full family
+  parity. `START HERE (Cursor, catch-up historical):`
   `docs/dev-log/handover/2026-08-01-cursor-handover.md`.
 - **Codex restart handoff for Phylo Model A redesign (2026-06-30).**
   The current LV arc is closed for ordinary `gllvmTMB` (`extract_lv_effects()`
