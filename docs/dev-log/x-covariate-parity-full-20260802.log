@@ -1,0 +1,82 @@
+========================================================================
+GLLVM.jl ↔ R gllvmTMB parity suite (Phase 1.0 scaffold)
+========================================================================
+   Resolving package versions...
+    Updating `~/Dropbox/Github Local/GLLVM.jl/.worktrees/gllvmjl-x-covariate-light-loglik-20260802/test/parity/Project.toml`
+  [2dc8e01c] ~ GLLVM v0.3.0 `../..` ⇒ v0.3.0 `~/Dropbox/Github Local/GLLVM.jl/.worktrees/gllvmjl-x-covariate-light-loglik-20260802`
+    Updating `~/Dropbox/Github Local/GLLVM.jl/.worktrees/gllvmjl-x-covariate-light-loglik-20260802/test/parity/Manifest.toml`
+  [2dc8e01c] ~ GLLVM v0.3.0 `../..` ⇒ v0.3.0 `~/Dropbox/Github Local/GLLVM.jl/.worktrees/gllvmjl-x-covariate-light-loglik-20260802`
+
+── Gaussian logLik oracle (seed=42, p=5, K=2, n=80, centred) ──
+  Julia logLik          = -501.450700343274
+  gllvmTMB logLik       = -501.45070035305673
+  gllvmTMB -objective   = -501.45070035305673
+  Δ logLik (jl − r)     = 9.78275238594506e-9
+  Julia σ_eps           = 0.6906550063860128
+  gllvmTMB σ_eps        = 0.6906556682823224
+  Δ σ_eps               = -6.618963095395003e-7
+
+Test Summary:                               | Pass  Total  Time
+Gaussian GLLVM parity: GLLVM.jl vs gllvmTMB |   30     30  5.6s
+
+── Binomial logLik oracle (seed=43, p=5, K=2, n=60, Bernoulli) ──
+  Julia logLik          = -194.681986234064
+  gllvmTMB logLik       = -194.68198623424576
+  gllvmTMB -objective   = -194.68198623424576
+  Δ logLik (jl − r)     = 1.8175683180743363e-10
+
+Test Summary:                               | Pass  Total  Time
+Binomial GLLVM parity: GLLVM.jl vs gllvmTMB |    6      6  5.3s
+
+── Poisson logLik oracle (seed=44, p=5, K=2, n=60) ──
+  Julia logLik          = -634.171284410425
+  gllvmTMB logLik       = -634.1712844171735
+  gllvmTMB -objective   = -634.1712844171735
+  Δ logLik (jl − r)     = 6.748564373992849e-9
+
+Test Summary:                              | Pass  Total  Time
+Poisson GLLVM parity: GLLVM.jl vs gllvmTMB |    6      6  3.2s
+
+── NB2 logLik oracle (seed=45, p=5, K=2, n=80, per-trait φ via fit_gllvm default) ──
+  Julia logLik          = -820.4152173224388
+  gllvmTMB logLik       = -820.4149674231894
+  gllvmTMB -objective   = -820.4149674231894
+  Δ logLik (jl − r)     = -0.00024989924941110075
+
+Test Summary:                          | Pass  Total  Time
+NB2 GLLVM parity: GLLVM.jl vs gllvmTMB |    8      8  3.5s
+
+── Beta logLik oracle (seed=45, p=5, K=1, n=60, per-trait φ via fit_gllvm default) ──
+  Julia logLik          = 173.07052637504887
+  gllvmTMB logLik       = 173.07052636908028
+  gllvmTMB -objective   = 173.07052636908028
+  Δ logLik (jl − r)     = 5.968587402094272e-9
+
+Test Summary:                           | Pass  Total  Time
+Beta GLLVM parity: GLLVM.jl vs gllvmTMB |    8      8  1.5s
+Ordinal-probit diagnostic: Julia = -304.66736396676623, R = -304.6673639722419, Δ = 5.475669695442775e-9
+Test Summary:                                         | Pass  Total  Time
+Ordinal-probit GLLVM diagnostic: GLLVM.jl vs gllvmTMB |    5      5  0.6s
+
+── Gaussian+X logLik oracle (seed=420, p=5, K=2, n=30, q=1 shared) ──
+  Julia logLik          = -185.3294188801452
+  gllvmTMB logLik       = -185.32941888133615
+  gllvmTMB -objective   = -185.32941888133615
+  Δ logLik (jl − r)     = 1.1909548902622191e-9
+
+
+── Binomial+X logLik oracle (seed=431, p=5, K=2, n=80, q=1 shared) ──
+  Julia logLik          = -257.14560535067085
+  gllvmTMB logLik       = -257.1456053540717
+  gllvmTMB -objective   = -257.1456053540717
+  Δ logLik (jl − r)     = 3.400828063604422e-9
+
+
+── Poisson+X logLik oracle (seed=422, p=5, K=2, n=30, q=1 shared) ──
+  Julia logLik          = -298.83104596193266
+  gllvmTMB logLik       = -298.8310459631652
+  gllvmTMB -objective   = -298.8310459631652
+  Δ logLik (jl − r)     = 1.2325358511589002e-9
+
+Test Summary:                                    | Pass  Total  Time
+Shared site-X light logLik: GLLVM.jl vs gllvmTMB |   18     18  7.6s

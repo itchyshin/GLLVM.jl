@@ -68,8 +68,16 @@ Gaussian; Binomial (Bernoulli); Poisson; NB2 (public `fit_gllvm` per-trait φ);
 Beta (public `fit_gllvm` per-trait φ + observed Beta/logit Laplace Hessian);
 Ordinal **probit** + observed Hessian.
 
-**Not claimed here:** shared-dispersion NB2/Beta via named fitters as twin
-default; ordinal-logit; ADEMP; coverage; “full family parity.”
+**Shared site-X cohort** (`test_x_covariate_parity.jl`, after no-X cells):
+Gaussian / Binomial / Poisson with `q=1` shared site covariate
+(`X[t,s,1]=x[s]`). R formula uses bare `+ x` (shared slope), not
+`(0 + trait):x`. Julia: `fit_gaussian_gllvm(; X=)` / `fit_gllvm_cov`.
+Prefer twin R lib via `GLLVM_PARITY_R_LIBS` (default
+`/tmp/R-gllvmtmb-x-parity-20260802`).
+
+**Not claimed here:** NB2/Beta+X; Gamma+X; Ordinal+X; species-specific XB;
+X_lv; shared-dispersion NB2/Beta via named fitters as twin default;
+ordinal-logit; ADEMP; coverage; “full family parity.”
 `n_drift=0` ≠ these cells.
 
 ## Tolerances
