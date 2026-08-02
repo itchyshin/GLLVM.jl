@@ -29,11 +29,11 @@ using GLLVM, Test, Distributions, Random
     Yc = [rand(0:5) for _ in 1:p, _ in 1:n]
     @test fit_gllvm(Yc; family = Poisson(), K = 1) isa PoissonFit
 
-    @test fit_gllvm(Yc; family = NegativeBinomial(), K = 1) isa NBFit
+    @test fit_gllvm(Yc; family = NegativeBinomial(), K = 1) isa NBGroupedFit
 
-    # Beta() dispatches to the Beta fitter (proportions in (0,1))
+    # Beta() public default is per-species precision (proportions in (0,1))
     Yp = clamp.(rand(p, n), 1e-3, 1 - 1e-3)
-    @test fit_gllvm(Yp; family = Beta(), K = 1) isa BetaFit
+    @test fit_gllvm(Yp; family = Beta(), K = 1) isa BetaGroupedFit
 
     # Gamma() now dispatches to fit_gamma_gllvm
     Ypos = abs.(randn(p, n)) .+ 0.1

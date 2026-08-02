@@ -20,14 +20,15 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics, Distributions
         @test isfinite(fit.r) && fit.r > 0
     end
 
-    @testset "fit_gllvm(family = NegativeBinomial()) dispatches to NBFit" begin
+    @testset "fit_gllvm(family = NegativeBinomial()) dispatches to NBGroupedFit" begin
         Random.seed!(71)
         p, K, n = 5, 1, 200
         β = log.(fill(5.0, p))
         Y = [rand(NegativeBinomial(8.0, 8.0 / (8.0 + exp(β[t] + 0.4 * randn()))))
              for t in 1:p, s in 1:n]
         fit = fit_gllvm(Y; family = NegativeBinomial(), K = K)
-        @test fit isa NBFit
+        @test fit isa NBGroupedFit
+        @test length(fit.r_group) == p
         @test fit.converged
     end
 end

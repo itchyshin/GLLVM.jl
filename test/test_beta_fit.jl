@@ -22,7 +22,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         @test 0.5 * φtrue < fit.φ < 2.5 * φtrue
     end
 
-    @testset "fit_gllvm(family=Beta()) dispatches to BetaFit" begin
+    @testset "fit_gllvm(family=Beta()) dispatches to BetaGroupedFit" begin
         Random.seed!(203)
         p, n = 5, 150
         β = 0.3 .* randn(p); Λ = 0.5 .* randn(p, 1)
@@ -30,7 +30,8 @@ using GLLVM, Test, Random, Distributions, Statistics
         μ = 1 ./ (1 .+ exp.(-η))
         Y = [rand(Beta(μ[t, i] * 12, (1 - μ[t, i]) * 12)) for t in 1:p, i in 1:n]
         f = fit_gllvm(Y; family = Beta(), K = 1)
-        @test f isa BetaFit
+        @test f isa BetaGroupedFit
+        @test length(f.φ) == p
         @test f.link isa LogitLink
     end
 end

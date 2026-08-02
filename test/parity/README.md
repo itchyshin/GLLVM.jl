@@ -1,7 +1,8 @@
 # GLLVM.jl parity suite (`test/parity/`)
 
-Opt-in comparison tests between GLLVM.jl (Julia) and R's `gllvmTMB` / `gllvm`
-package, using RCall.jl to drive R from within Julia.
+Opt-in comparison tests between GLLVM.jl (Julia) and R's `gllvmTMB`
+(primary twin), using RCall.jl to drive R from within Julia. Optional light
+CRAN `gllvm` cross-checks are secondary and must not block the twin cell.
 
 ## Why isolated from the default test suite
 
@@ -23,12 +24,7 @@ Running without `GLLVM_PARITY_TESTS=1` exits cleanly with a skip notice.
 ## R prerequisites
 
 1. R ≥ 4.2 installed and on `PATH` (or `R_HOME` set).
-2. The `gllvm` CRAN package (and/or the `gllvmTMB` development version):
-   ```r
-   install.packages("gllvm")
-   # or for the TMB dev version:
-   remotes::install_github("JenniNiku/gllvmTMB")
-   ```
+2. The **`gllvmTMB`** twin package (local checkout / GitHub), not only CRAN `gllvm`.
 3. RCall built against that R:
    ```sh
    julia --project=test/parity -e 'using Pkg; Pkg.build("RCall")'
@@ -36,10 +32,7 @@ Running without `GLLVM_PARITY_TESTS=1` exits cleanly with a skip notice.
 
 ## What is compared and why
 
-Raw loadings `Λ` are **not** compared.  Two correct implementations of a
-rank-K Gaussian factor model can return completely different `Λ` matrices that
-are related by an orthogonal rotation — both are exact global optima with
-identical likelihoods.  Additionally, each column has a sign non-identifiability.
+Raw loadings `Λ` are **not** compared (rotation / sign non-identifiability).
 
 Only **rotation-invariant** quantities are tested:
 
@@ -49,28 +42,42 @@ Only **rotation-invariant** quantities are tested:
 | Fitted covariance `Σ_y = ΛΛᵀ + σ²I` | Invariant under `Λ → ΛQ`, `Q'Q = I` |
 | Residual SD `σ_eps` | Invariant |
 
-## DRAFT status of the R call
+## Live call shape
 
-The R call in `test_gaussian_parity.jl` is a **best-effort draft** based on
-the published `gllvm` / `gllvmTMB` API documentation.  It has **not** been
-executed against a live R environment.  Before treating any parity assertion
-as authoritative, a human (or agent with R access) must:
+Primary oracle path (see
+`docs/dev-log/plans/scratch/2026-08-01-gaussian-rcall-shape.md` and
+`test/parity/parity_helpers.jl`):
 
-1. Confirm the `gllvm()` / `gllvmTMB()` function name and argument names
-   match the installed version.
-2. Confirm the extractor field names (`fit_r$logL`, `fit_r$params$theta`,
-   `fit_r$params$sigma`) are correct — these vary between `gllvm` 1.x and
-   the TMB development branch.
-3. Confirm the loadings matrix orientation (p × K vs K × p) returned by R.
-4. Confirm that the R log-likelihood is the same marginal quantity as
-   `gaussian_marginal_loglik` in GLLVM.jl (not a VA lower bound or a
-   Laplace approximation evaluated at a different point).
+- Fit with **`gllvmTMB::gllvmTMB`**, formula
+  `value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE)`.
+- **`unique = FALSE`** so Ψ is off (Gaussian: `Σ = ΛΛᵀ + σ²I`).
+- **Gaussian only:** centre Y per trait (Julia zero-mean J1 vs R `0+trait`).
+- **Binomial / Poisson:** do **not** centre — Julia already estimates per-trait `β`.
+- **NB2:** per-trait dispersion — Julia public default
+  `fit_gllvm(...; family=NegativeBinomial())` coerces `disp_group=:species`
+  → `NBGroupedFit` (observed Laplace Hessian) to match R's
+  `log_phi_nbinom2[p]` (#132). Shared-`r` remains via named `fit_nb_gllvm`.
+- **Beta:** per-trait precision `φ` — Julia public default
+  `fit_gllvm(...; family=Beta())` → `BetaGroupedFit` to match R's
+  `log_phi_beta[p]` (#148). Shared-φ remains via named `fit_beta_gllvm`.
+- Extractors: `as.numeric(logLik(fit))` (= `-opt$objective`); Gaussian also
+  compares `report$sigma_eps` and `extract_Sigma(..., part="shared")`.
 
-All four items are marked `# DRAFT` in `test_gaussian_parity.jl`.
+Cells **green** (light logLik oracles):
+Gaussian; Binomial (Bernoulli); Poisson; NB2 (public `fit_gllvm` per-trait φ);
+Beta (public `fit_gllvm` per-trait φ + observed Beta/logit Laplace Hessian);
+Ordinal **probit** + observed Hessian.
+
+**Not claimed here:** shared-dispersion NB2/Beta via named fitters as twin
+default; ordinal-logit; ADEMP; coverage; “full family parity.”
+`n_drift=0` ≠ these cells.
 
 ## Tolerances
 
-Current tolerances (`logL` rtol ≤ 1e-3, `Σ_y` atol ≤ 1e-2, `σ_eps` rtol ≤
-5e-2) are **provisional**.  The package headline claims machine-precision
-log-likelihood agreement vs `gllvmTMB`.  Once the R call is validated, these
-should tighten to at least `logL` rtol ≤ 1e-6 / `Σ_y` atol ≤ 1e-4.
+| Quantity | Target |
+|---|---|
+| logLik | rtol ≤ 1e-6 |
+| σ_eps (Gaussian) | rtol ≤ 1e-4 |
+| Σ_y (Gaussian) | atol ≤ 1e-4 |
+
+Do not silently widen. If a live cell fails, fix call shape / model identity.

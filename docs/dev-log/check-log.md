@@ -1,5 +1,127 @@
 # Check Log
 
+## 2026-08-02 - Default-route φ landing (push + PR #169)
+
+Branch `parity/default-route-phi-20260801` @ `3621ffde` pushed to origin.
+PR: https://github.com/itchyshin/GLLVM.jl/pull/169 (base `main`, **not merged**).
+Head OID matches local tip. Rose fence in PR body: light logLik / default-route
+φ only — not full family parity; grouped_dispersion:61 not claimed fixed.
+Parity re-smoke skipped (existing `/tmp/default-route-phi-parity.log` still green;
+twin `/tmp/gllvmtmb-parity-restart-20260801` @ `cee55a07`). Landing LOOP:
+`lanes/default-route-phi-landing-20260801/LOOP/`. Attach scratch left untracked.
+
+## 2026-08-01 - Default-route NB2/Beta per-trait φ (API B)
+
+Lane: `parity/default-route-phi-20260801` from catch-up tip `bbf5d7d8`.
+Twin `/tmp/gllvmtmb-parity-restart-20260801` @ `cee55a07`.
+
+Engine: `fit_gllvm` coerces `disp_group=nothing`→`:species` for
+`NegativeBinomial`/`Beta` only → `NBGroupedFit`/`BetaGroupedFit`. Named
+`fit_nb_gllvm` / `fit_beta_gllvm` remain shared-φ. Gamma unchanged.
+
+Live (`GLLVM_PARITY_TESTS=1 … runparity.jl` →
+`/tmp/default-route-phi-parity.log`):
+
+```text
+Gaussian 30/30 · Binomial 6/6 · Poisson 6/6 · NB2 8/8 · Beta 8/8 · Ordinal-probit 5/5
+= 63/63
+NB2 Δ=-2.499e-4 (fit_gllvm default) · Beta Δ=+5.969e-9 (fit_gllvm default)
+```
+
+Cascade core 51/51. Core `runtests.jl`: **5063 passed, 1 failed, 0 errored,
+3 broken** — sole fail is pre-existing one-group NB grouped≈shared cell
+(`test_grouped_dispersion.jl:61`; engines unchanged vs `bbf5d7d8`). Rose fence:
+default-route per-trait φ light logLik for NB2+Beta only — **not** full family
+parity. After-task:
+`docs/dev-log/after-task/2026-08-01-default-route-nb2-beta-pertrait-phi.md`.
+
+## 2026-08-01 - A4/A5 catch-up logLik oracle CLOSE (all ordered cells green)
+
+Lane tip (engine): `387d267a` on `catchup/loglik-oracle-20260801`. Twin `cee55a07`.
+GOAL complete for light gllvmTMB logLik oracles on named routes.
+
+| Family | Route | ΔlogLik order | Evidence SHA |
+|---|---|---|---|
+| Gaussian | centred unique=FALSE | ~1e-8 | A2 |
+| Binomial | Bernoulli | ~1e-10 | A3 |
+| Poisson | log | ~1e-8 | A3 |
+| NB2 | `fit_nb_gllvm_grouped` `group=1:p` + observed Hess. | ~2.5e-4 | cell `5ad55877`; curvature restored at closeout |
+| Beta | `fit_beta_gllvm_grouped` `group=1:p` + observed Hess. | ~6e-9 | `387d267a` |
+| Ordinal | **ordinal_probit** + observed Hess. | ~5e-9 | `10fcd484`/`3a84d8b6` |
+
+Full suite (`GLLVM_PARITY_TESTS=1 … runparity.jl` →
+`/tmp/gllvmjl-catchup-full-parity-20260801.log`):
+
+```text
+Gaussian 30/30 · Binomial 6/6 · Poisson 6/6 · NB2 8/8 · Beta 8/8 · Ordinal-probit 5/5
+= 63/63
+NB2 Δ=-2.499e-4 · Beta Δ=+5.969e-9 · Ordinal Δ=+5.476e-9
+```
+
+Closeout restored NB2 grouped `hessian=:observed` (prior bank at `5ad55877`
+omitted the engine hunk). Rose fence: OK for named-route light logLik greens.
+**Not OK:** “full family parity,” ADEMP/coverage, or equating `n_drift=0` with
+fit parity. #129/#128 fenced.
+Melissa plan-actual CLOSED:
+`docs/dev-log/plan-actual/2026-08-01-gllvm-jl-catchup-loglik-oracle.md`.
+After-task: `docs/dev-log/after-task/2026-08-01-a4a5-catchup-loglik-oracle-close.md`.
+(Interim blocked receipt retained:
+`docs/dev-log/after-task/2026-08-01-a4a5-nbbeta-ordinal-loglik-blocked.md`.)
+
+## 2026-08-01 - Binomial + Poisson gllvmTMB logLik oracle cells (catch-up A3)
+
+Lane tip prior: `5d0cd93f` on `catchup/loglik-oracle-20260801`. Twin `cee55a07`.
+
+Shared helper `test/parity/parity_helpers.jl` + cells:
+`test_binomial_parity.jl`, `test_poisson_parity.jl` (wired in `runparity.jl`).
+Call shape: gllvmTMB `0+trait + latent(..., unique=FALSE)`; no Y-centring
+(Julia already has per-trait β). logLik rtol 1e-6; no silent widening.
+
+Live (`GLLVM_PARITY_TESTS=1 julia --project=test/parity test/parity/runparity.jl`):
+
+```text
+Gaussian  Julia=-501.450700343274  R=-501.45070035305673  Δ=9.78275238594506e-9   Pass 30/30
+Binomial  Julia=-194.681986234064  R=-194.68198623424576  Δ=1.8175683180743363e-10 Pass 6/6
+Poisson   Julia=-634.171284410425  R=-634.1712844171735   Δ=6.748564373992849e-9  Pass 6/6
+```
+
+Claim fence: ordinary no-X Bernoulli/Poisson Laplace logLik only. NB2/Beta/Ordinal
+still gated (#132/#148/#133 OPEN GATE). No ADEMP/coverage.
+
+## 2026-08-01 - Live Gaussian gllvmTMB logLik oracle cell (catch-up A2)
+
+Lane: `catchup/loglik-oracle-20260801` from `origin/main` @ `05210eca`
+worktree `.worktrees/gllvmjl-catchup-loglik-20260801`. Twin R
+`/tmp/gllvmtmb-parity-restart-20260801` @ `cee55a07`.
+
+A0 capability drift (JuliaCall via `GLLVM_JL_PATH` = lane worktree):
+
+```text
+n_drift= 0  unregistered= 0
+```
+
+A2 replaced DRAFT CRAN `gllvm::gllvm` / `params$theta` call in
+`test/parity/test_gaussian_parity.jl` with live twin shape from
+`docs/dev-log/plans/scratch/2026-08-01-gaussian-rcall-shape.md`:
+`gllvmTMB` + `latent(..., unique=FALSE)` + per-trait centred Y;
+extractors `logLik(fit)`, `report$sigma_eps`, `extract_Sigma(..., part="shared")`.
+
+Live opt-in run (`GLLVM_PARITY_TESTS=1 julia --project=test/parity test/parity/runparity.jl`):
+
+```text
+Julia logLik          = -501.450700343274
+gllvmTMB logLik       = -501.45070035305673
+Δ logLik (jl − r)     = 9.78275238594506e-9
+Julia σ_eps           = 0.6906550063860128
+gllvmTMB σ_eps        = 0.6906556682823224
+Δ σ_eps               = -6.618963095395003e-7
+Test Summary: Gaussian GLLVM parity: GLLVM.jl vs gllvmTMB | Pass 30  Total 30
+```
+
+Claim fence: ledger n_drift=0 ≠ fit parity; this cell is ordinary Gaussian
+no-X logLik/σ/Σ only. No ADEMP/coverage. #129/#128 fenced. Bin/Pois next;
+NB2/Beta/Ordinal gated on #132/#148/#133 (see correctness inventory scratch).
+
 ## 2026-07-02 - Phylo x shared-cutpoint Ordinal structural LV S1 likelihood and canary
 
 Added the private phylo x shared-cutpoint Ordinal(logit) x predictor-informed

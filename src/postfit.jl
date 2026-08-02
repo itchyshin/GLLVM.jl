@@ -980,7 +980,7 @@ function _nparams(fit::OrdinalFit)
 end
 function _nparams(fit::OrdinalPerTraitFit)
     p, K = size(fit.Λ)
-    return (p * K - div(K * (K - 1), 2)) + sum(fit.C .- 1)
+    return p + (p * K - div(K * (K - 1), 2)) + sum(fit.C .- 2)
 end
 
 """
@@ -1021,8 +1021,8 @@ function getLV(fit::OrdinalPerTraitFit, Y::AbstractMatrix{<:Integer};
     Z = Matrix{Float64}(undef, K, n)
     @inbounds for s in 1:n
         mi = mask === nothing ? nothing : view(mask, :, s)
-        Z[:, s] = _ordinal_laplace_mode_pertrait(view(Y, :, s), fit.Λ, fit.τ,
-                                                 fit.C, fit.link; mask = mi)
+        Z[:, s] = _ordinal_laplace_mode_pertrait(view(Y, :, s), fit.Λ, fit.β,
+                                                 fit.τ, fit.C, fit.link; mask = mi)
     end
     Zt = permutedims(Z)
     return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
@@ -1070,7 +1070,7 @@ function predict(fit::OrdinalPerTraitFit, Y::AbstractMatrix{<:Integer};
     p, n = size(Y)
     Cmax = maximum(fit.C)
     Z = getLV(fit, Y; rotate = false)
-    η = fit.Λ * Z'
+    η = fit.β .+ fit.Λ * Z'
     type === :link && return η
     if type === :prob
         P = zeros(Float64, p, n, Cmax)
@@ -1127,7 +1127,7 @@ function residuals(fit::OrdinalPerTraitFit, Y::AbstractMatrix{<:Integer};
         throw(ArgumentError("ordinal residuals support type=:dunnsmyth only; got :$type"))
     p, n = size(Y)
     Z = getLV(fit, Y; rotate = false)
-    η = fit.Λ * Z'
+    η = fit.β .+ fit.Λ * Z'
     R = Matrix{Float64}(undef, p, n)
     @inbounds for s in 1:n, t in 1:p
         τt = _trait_cutpoints(fit.τ, fit.C, t)
