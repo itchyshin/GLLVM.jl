@@ -1,0 +1,163 @@
+# GLLVM.jl capability status (twin of gllvmTMB)
+
+Mission Control input for `/p/gllvmTMB/julia-surface`. **GLLVM.jl is a twin of
+gllvmTMB**: public capability rows use the **same R vocabulary**
+(sources × modes, families, intervals, slopes) so the board shows R↔Julia
+alignment. The *code behind* a row may be Julia (closed-form / dense Laplace /
+sparse phy / SPDE) rather than TMB — that is an engine difference, not a
+different product taxonomy.
+
+Status words (MC parser; counts derived at render time — never hand-typed into
+`status/*.json`):
+
+- `implemented` — Julia code under `src/` **and** a test (`test/` and/or gated
+  `test/parity/`) for this capability row (or its clear twin analogue).
+- `rejected` — deliberately refused, fail-loud, or not advertised.
+- `planned` — tracked / designed; no promoted twin-complete implementation yet.
+- `missing` — no Julia implementation found for this R-parallel row.
+
+**Rose fence.** Intended API similarity ≠ full parity claim.
+
+- Light gllvmTMB logLik: named-route **63/63** + shared site-X **18/18**
+  (Gaussian / Binomial / Poisson only). Not full family parity; NB2/Beta+X,
+  ADEMP, and coverage certificates remain fenced.
+- R-bridge (`engine = "julia"`) rows that are live are still **partial** vs the
+  public R-user surface even when Status = `implemented`.
+- Phylo Model A / source-specific `lv` intervals: **rejected** for advertising.
+- Prefer reading this beside R `/p/gllvmTMB/surface` — gaps should stay visible
+  as `planned` / `missing` / `rejected`, not renamed away.
+
+## Covariance structure grid (sources × modes)
+
+R grammar: source ∈ {none, phylogenetic, animal, spatial, kernel} × mode ∈
+{indep, dep, latent} (+ `common = TRUE` / `unique = TRUE` modifiers). Julia
+exposes twin capabilities under native fitters; engine notes in parentheses are
+implementation detail only.
+
+| Capability | Status |
+|---|---|
+| none × indep (`indep()` / ordinary independent RE) | implemented |
+| none × dep (`dep()` / unstructured trait covariance) | planned |
+| none × latent (`latent()` / ordinary LV GLLVM) | implemented |
+| phylogenetic × indep (`phylo_indep()`) | implemented |
+| phylogenetic × dep (`phylo_dep()`) | planned |
+| phylogenetic × latent (`phylo_latent()`) | implemented |
+| animal × indep (`animal_indep()`) | implemented |
+| animal × dep (`animal_dep()`) | planned |
+| animal × latent (`animal_latent()`) | planned |
+| spatial × indep (`spatial_indep()`) | implemented |
+| spatial × dep (`spatial_dep()`) | planned |
+| spatial × latent (`spatial_latent()`) | implemented |
+| kernel × indep (`kernel_indep()`) | planned |
+| kernel × dep (`kernel_dep()`) | planned |
+| kernel × latent (`kernel_latent()`) | planned |
+| phylo_latent + `lv = ~ x` (Phylo Model A public intervals) | rejected |
+
+Notes (not status rows): Julia phylo rows share three **equivalent** likelihood
+representations (sparse CHOLMOD, contrasts, edge-incidence). Gaussian animal/spatial
+today enter via `relatedness_cov` / `spatial_cov` (and SPDE latent for
+non-Gaussian `spatial_latent`). `none × indep` maps to random row effects /
+per-trait diagonal paths; full unstructured `dep()` without LV is still a gap.
+
+## Response families
+
+Twin family names align with gllvmTMB / gllvm. Status = native Julia engine
+(with tests). Bridge partiality is under **R bridge**, not hidden by renaming.
+
+| Capability | Status |
+|---|---|
+| gaussian | implemented |
+| poisson | implemented |
+| nbinom2 | implemented |
+| nbinom1 | implemented |
+| binomial | implemented |
+| betabinomial | implemented |
+| beta | implemented |
+| Gamma | implemented |
+| tweedie | implemented |
+| ordinal_probit / cumulative_logit | implemented |
+| student | planned |
+| lognormal | planned |
+| truncated_poisson / truncated_nbinom2 | planned |
+| censored_poisson | missing |
+| multinomial / categorical | missing |
+| delta_gamma | implemented |
+| delta_lognormal | implemented |
+| hurdle_poisson / hurdle_nbinom2 | implemented |
+| zip / zinb / zib | implemented |
+| ordered_beta / beta_hurdle | implemented |
+| exponential (Gamma shape=1 path) | implemented |
+| com_poisson | planned |
+
+## Intervals and estimation evidence
+
+| Capability | Status |
+|---|---|
+| Point extraction (coef / loadings / Σ_y / correlations) | implemented |
+| Wald intervals | implemented |
+| Profile-likelihood intervals | implemented |
+| Parametric bootstrap intervals | implemented |
+| Simulation-validated coverage certificate (broad grid) | missing |
+| Light gllvmTMB logLik named routes (63/63) | implemented |
+| Shared-X light logLik Gauss/Bin/Pois (18/18) | implemented |
+| ML default (Gaussian closed-form / non-Gaussian Laplace) | implemented |
+| REML (Gaussian pilot twin) | planned |
+| AGHQ estimator | missing |
+| VA / ELBO alternative (selected families; not R-default) | implemented |
+
+## Random slopes and special capabilities
+
+| Capability | Status |
+|---|---|
+| Fixed-effect covariates `X` (shared site design) | implemented |
+| Species-specific environmental coefficients | implemented |
+| Fourth-corner / trait–environment | implemented |
+| Row effects fixed | implemented |
+| Row effects random | implemented |
+| Per-species / grouped dispersion (`disp.group`) | implemented |
+| Keyworded random slopes (≥1) | planned |
+| Uncorrelated slope `(1 + x double-bar g)` R `\|\|` twin | planned |
+| Missing responses (NA / mask) | implemented |
+| Missing predictor `mi()` | planned |
+| Latent scores on covariates `latent(..., lv = ~ x)` ordinary | implemented |
+| Concurrent / constrained / RRR ordination (`num.lv.c` / `num.RR`) | implemented |
+| Quadratic response | implemented |
+| Mixed-family response vector | planned |
+| `@formula` / long+wide data (fixed effects) | implemented |
+
+## R bridge (`engine = "julia"`)
+
+Same twin surface, transport layer. Status = code + bridge/parity test exist;
+**every live bridge family remains partial vs full R-user parity.**
+
+| Capability | Status |
+|---|---|
+| Bridge capability ledger + drift probe | implemented |
+| Bridge no-X point fit (core one-part families) | implemented |
+| Bridge fixed-effect X (selected families) | implemented |
+| Bridge missing-response mask (selected families) | implemented |
+| Bridge CI transport Wald/profile/bootstrap (selected) | implemented |
+| Bridge predictor-informed `lv` / `X_lv` (selected) | implemented |
+| Bridge mixed-family vector | implemented |
+| Bridge full family × full structure parity | rejected |
+| Bridge phylo / animal / spatial / kernel source parity | planned |
+| Bridge Phylo Model A / source-specific `lv` advertising | rejected |
+
+## Withdrawn and deferred (twin fences)
+
+| Capability | Status |
+|---|---|
+| Full family R↔Julia parity claim | rejected |
+| Phylo Model A public interval promotion | rejected |
+| Delta/hurdle latent-scale correlation advertising | rejected |
+| Non-Gaussian REML | rejected |
+| Broad AGHQ (Julia) | missing |
+
+## Evidence pointers
+
+- R surface (compare side-by-side): `/p/gllvmTMB/surface` ←
+  `gllvmTMB/docs/dev-log/capability-surface.html`
+- Light logLik 63/63: `docs/dev-log/handover/2026-08-01-cursor-handover.md`
+- Shared-X 18/18: `docs/dev-log/after-task/2026-08-02-x-covariate-light-loglik.md`
+- Public catch-up prose: `docs/src/gllvmtmb-parity.md` (Documenter legend ≠ this
+  MC vocabulary)
