@@ -116,7 +116,7 @@ Twin family names align with gllvmTMB / gllvm. Status = native Julia engine
 | Row effects random | implemented |
 | Per-species / grouped dispersion (`disp.group`) | implemented |
 | Keyworded random slopes (≥1) | planned |
-| Uncorrelated slope `(1 + x double-bar g)` R `\|\|` twin | planned |
+| Uncorrelated slope (R double-bar / uncorrelated RE) | planned |
 | Missing responses (NA / mask) | implemented |
 | Missing predictor `mi()` | planned |
 | Latent scores on covariates `latent(..., lv = ~ x)` ordinary | implemented |
