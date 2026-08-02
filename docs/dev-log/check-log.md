@@ -2,12 +2,13 @@
 
 ## 2026-08-02 - NB2/Beta + X grouped_cov (API B under X)
 
-Lane `fix/nb2-beta-x-grouped-cov-20260802` from `origin/main` @ `16a9bcdd`.
-Engine: `fit_nb_gllvm_grouped_cov` / `fit_beta_gllvm_grouped_cov` (θ =
-`[β; γ; pack(Λ); log disp…]`, default `hessian=:observed`); bridge + `@formula`
-route NB/Beta+X here; `fit_gllvm_cov` stays shared-φ opt-in. Identity
-`test/test_nb_beta_x_identity.jl`: **15/15** (G=1+fisher ≈ `fit_gllvm_cov`;
-constant rvec/φvec+X offset ll ≈ shared to 1e-10). Formula smoke OK. Rose fence:
+Lane `fix/nb2-beta-x-grouped-cov-20260802` from post-merge `origin/main` @
+`c4c46293` (#172/#173/#174). Engine: `fit_nb_gllvm_grouped_cov` /
+`fit_beta_gllvm_grouped_cov` (θ = `[β; γ; pack(Λ); log disp…]`, default
+`hessian=:observed`); bridge + `@formula` route NB/Beta+X here; `fit_gllvm_cov`
+stays shared-φ opt-in. Identity `test/test_nb_beta_x_identity.jl`: **14/14**
+(G=1+fisher ≈ `fit_gllvm_cov` atol=1e-2/rtol=1e-4; constant rvec/φvec+X offset
+ll ≈ shared to 1e-10). Bridge X **201/201**; formula **11/11**. Rose fence:
 Arc 1 Julia identity + routing only — **not** Arc 2 RCall; Gamma+X unchanged.
 After-task: `docs/dev-log/after-task/2026-08-02-nb2-beta-x-grouped-cov.md`.
 
