@@ -96,7 +96,7 @@ end
 
 function _grouped_getLV(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVector,
         link::Link, fams::AbstractVector; N = nothing, rotate::Bool = true,
-        mask = nothing)
+        mask = nothing, offset = nothing)
     p, n = size(Y)
     length(fams) == p || throw(ArgumentError("length(fams)=$(length(fams)) must equal p=$p"))
     Nm = N === nothing ? ones(Int, p, n) : N
@@ -105,8 +105,9 @@ function _grouped_getLV(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVecto
     Z = Matrix{Float64}(undef, K, n)
     @inbounds for s in 1:n
         mi = mask === nothing ? nothing : view(mask, :, s)
+        oi = offset === nothing ? nothing : view(offset, :, s)
         Z[:, s] = _grouped_laplace_mode(fams, view(Y, :, s), view(Nm, :, s),
-                                        Λ, β, link; mask = mi)
+                                        Λ, β, link; mask = mi, offset = oi)
     end
     Zt = permutedims(Z)
     return rotate ? Zt * _svd_rotation(Λ) : Zt
@@ -257,6 +258,134 @@ function fit_nb_gllvm_grouped(Y::AbstractMatrix; K::Integer, group::AbstractVect
     r̂g = exp.(θ̂[(p + rr + 1):(p + rr + G)])
     return NBGroupedFit(β̂, Λ̂, r̂g, gidx, link, -Optim.minimum(res),
                         Optim.converged(res), Optim.iterations(res))
+end
+
+"""
+    NBGroupedCovFit
+
+Result of [`fit_nb_gllvm_grouped_cov`](@ref): per-trait intercepts `β`, shared
+covariate coefficients `γ` (with `γ_fixed` zero mask), loadings `Λ`, per-group
+dispersion `r_group`, species→group map `group`, `link`, maximised Laplace
+`loglik`, `converged`, and `iterations`. Linear predictor
+`η = β + Xγ + Λz` with species dispersion `r_group[group[t]]`.
+"""
+struct NBGroupedCovFit
+    β::Vector{Float64}
+    γ::Vector{Float64}
+    γ_fixed::Vector{Bool}
+    Λ::Matrix{Float64}
+    r_group::Vector{Float64}
+    group::Vector{Int}
+    link::Link
+    loglik::Float64
+    converged::Bool
+    iterations::Int
+end
+
+function Base.show(io::IO, f::NBGroupedCovFit)
+    p, K = size(f.Λ); q = length(f.γ)
+    print(io, "NBGroupedCovFit(p=", p, ", q=", q, ", K=", K, ", G=", length(f.r_group),
+          ", r_group=", round.(f.r_group; sigdigits = 4),
+          ", loglik=", round(f.loglik; sigdigits = 7),
+          f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+_loadings(fit::NBGroupedCovFit) = fit.Λ
+_loglik(fit::NBGroupedCovFit)   = fit.loglik
+
+function _nparams(fit::NBGroupedCovFit)
+    p, K = size(fit.Λ)
+    return p + count(!, fit.γ_fixed) + rr_theta_len(p, K) + length(fit.r_group)
+end
+
+"""
+    getLV(fit::NBGroupedCovFit, Y, X; rotate=true, mask=nothing) -> n×K matrix
+
+Conditional latent scores at `η = β + Xγ + Λz` with per-trait NB2 dispersion.
+"""
+function getLV(fit::NBGroupedCovFit, Y::AbstractMatrix{<:Integer},
+               X::AbstractArray{<:Real, 3};
+               rotate::Bool = true, mask = nothing)
+    p = size(Y, 1)
+    rvec = [fit.r_group[fit.group[t]] for t in 1:p]
+    fams = [NegativeBinomial(float(rvec[t]), 0.5) for t in 1:p]
+    O = _build_offset(X, fit.γ)
+    return _grouped_getLV(Y, fit.Λ, fit.β, fit.link, fams;
+                          rotate = rotate, mask = mask, offset = O)
+end
+
+"""
+    fit_nb_gllvm_grouped_cov(Y; X, K, group=1:p, link=LogLink(), mask=nothing,
+                             γ_fixed=nothing, hessian=:observed, …) -> NBGroupedCovFit
+
+Fit a negative-binomial GLLVM with **grouped / per-trait dispersion** and
+**shared site covariates** `X` (`p×n×q`). Working vector
+`[β; γ_free; pack(Λ); log r_1 … log r_G]`; offset `O = Xγ` is passed into the
+grouped Laplace marginal. Default `hessian=:observed` matches TMB; identity
+checks against shared [`fit_gllvm_cov`](@ref) should force `hessian=:fisher`.
+Public / bridge default under X for NB2 (twin API B). Keep `fit_gllvm_cov` for
+the shared-`r` + X opt-in.
+"""
+function fit_nb_gllvm_grouped_cov(Y::AbstractMatrix; X::AbstractArray{<:Real, 3},
+        K::Integer, group::AbstractVector{<:Integer} = collect(1:size(Y, 1)),
+        link::Link = LogLink(), mask = nothing, γ_fixed = nothing,
+        hessian::Symbol = :observed,
+        g_tol::Real = 1e-5, iterations::Integer = 500,
+        newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    p, n = size(Y)
+    size(X, 1) == p && size(X, 2) == n ||
+        throw(DimensionMismatch("X must be (p, n, q) = ($p, $n, q); got $(size(X))"))
+    length(group) == p || throw(ArgumentError("length(group)=$(length(group)) must equal p=$p"))
+    q_full = size(X, 3)
+    γ_fixed_mask = _fixed_zero_mask(γ_fixed, q_full, "γ_fixed")
+    X_fit, _ = _slice_fixed_X(X, γ_fixed_mask)
+    q = size(X_fit, 3)
+    rr = rr_theta_len(p, K)
+    labels = sort(unique(group))
+    G = length(labels)
+    gidx = [findfirst(==(group[t]), labels) for t in 1:p]
+
+    msk = _resolve_obs_mask(mask, Y)
+    Yc = Integer.(_sanitize_missing(Y, 0))
+    Zemp = [linkfun(link, max(Yc[t, i] + 0.5, 1e-4)) for t in 1:p, i in 1:n]
+    _mask_warmstart!(Zemp, msk)
+    β0 = vec(sum(Zemp; dims = 2)) ./ n
+    Zc = Zemp .- β0
+    F = svd(Zc); kk = min(K, length(F.S))
+    Λ0 = zeros(p, K)
+    @inbounds for j in 1:kk
+        Λ0[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
+    end
+    θ0 = vcat(β0, zeros(q), pack_lambda(Λ0), fill(log(10.0), G))
+
+    function negll(θ)
+        β = θ[1:p]
+        γ = θ[(p + 1):(p + q)]
+        Λ = unpack_lambda(θ[(p + q + 1):(p + q + rr)], p, K)
+        rg = exp.(θ[(p + q + rr + 1):(p + q + rr + G)])
+        rvec = [rg[gidx[t]] for t in 1:p]
+        O = _build_offset(X_fit, γ)
+        v = try
+            -nb_grouped_marginal_loglik_laplace(Yc, Λ, β, rvec; link = link, mask = msk,
+                                                offset = O, hessian = hessian,
+                                                maxiter = newton_maxiter,
+                                                tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
+    res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
+                         autodiff = :finite)
+    θ̂ = Optim.minimizer(res)
+    β̂ = θ̂[1:p]
+    γ̂_free = θ̂[(p + 1):(p + q)]
+    γ̂ = collect(Float64, _expand_fixed_zero(γ̂_free, γ_fixed_mask))
+    Λ̂ = unpack_lambda(θ̂[(p + q + 1):(p + q + rr)], p, K)
+    r̂g = exp.(θ̂[(p + q + rr + 1):(p + q + rr + G)])
+    return NBGroupedCovFit(β̂, γ̂, collect(Bool, γ_fixed_mask), Λ̂, r̂g, gidx, link,
+                           -Optim.minimum(res), Optim.converged(res), Optim.iterations(res))
 end
 
 # ===========================================================================
@@ -472,6 +601,133 @@ function fit_beta_gllvm_grouped(Y::AbstractMatrix; K::Integer,
     φ̂g = exp.(θ̂[(p + rr + 1):(p + rr + G)])
     return BetaGroupedFit(β̂, Λ̂, φ̂g, gidx, link, -Optim.minimum(res),
                           Optim.converged(res), Optim.iterations(res))
+end
+
+"""
+    BetaGroupedCovFit
+
+Result of [`fit_beta_gllvm_grouped_cov`](@ref): per-trait intercepts `β`, shared
+covariate coefficients `γ` (with `γ_fixed` zero mask), loadings `Λ`, per-group
+precision `φ`, species→group map `group`, `link`, maximised Laplace `loglik`,
+`converged`, and `iterations`. Linear predictor `η = β + Xγ + Λz` with species
+precision `φ[group[t]]`.
+"""
+struct BetaGroupedCovFit
+    β::Vector{Float64}
+    γ::Vector{Float64}
+    γ_fixed::Vector{Bool}
+    Λ::Matrix{Float64}
+    φ::Vector{Float64}
+    group::Vector{Int}
+    link::Link
+    loglik::Float64
+    converged::Bool
+    iterations::Int
+end
+
+function Base.show(io::IO, f::BetaGroupedCovFit)
+    p, K = size(f.Λ); q = length(f.γ)
+    print(io, "BetaGroupedCovFit(p=", p, ", q=", q, ", K=", K, ", G=", length(f.φ),
+          ", φ=", round.(f.φ; sigdigits = 4),
+          ", loglik=", round(f.loglik; sigdigits = 7),
+          f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+_loadings(fit::BetaGroupedCovFit) = fit.Λ
+_loglik(fit::BetaGroupedCovFit)   = fit.loglik
+
+function _nparams(fit::BetaGroupedCovFit)
+    p, K = size(fit.Λ)
+    return p + count(!, fit.γ_fixed) + rr_theta_len(p, K) + length(fit.φ)
+end
+
+"""
+    getLV(fit::BetaGroupedCovFit, Y, X; rotate=true, mask=nothing) -> n×K matrix
+
+Conditional latent scores at `η = β + Xγ + Λz` with per-trait Beta precision.
+"""
+function getLV(fit::BetaGroupedCovFit, Y::AbstractMatrix{<:Real},
+               X::AbstractArray{<:Real, 3};
+               rotate::Bool = true, mask = nothing)
+    p = size(Y, 1)
+    φvec = [fit.φ[fit.group[t]] for t in 1:p]
+    fams = [Beta(float(φvec[t]), 1.0) for t in 1:p]
+    O = _build_offset(X, fit.γ)
+    return _grouped_getLV(Y, fit.Λ, fit.β, fit.link, fams;
+                          rotate = rotate, mask = mask, offset = O)
+end
+
+"""
+    fit_beta_gllvm_grouped_cov(Y; X, K, group=1:p, link=LogitLink(), mask=nothing,
+                               γ_fixed=nothing, hessian=:observed, …) -> BetaGroupedCovFit
+
+Fit a Beta GLLVM with **grouped / per-trait precision** and **shared site
+covariates** `X` (`p×n×q`). Working vector `[β; γ_free; pack(Λ); log φ_1 … log φ_G]`;
+offset `O = Xγ` is passed into the grouped Laplace marginal. Default
+`hessian=:observed` matches TMB; identity checks against shared
+[`fit_gllvm_cov`](@ref) should force `hessian=:fisher`. Public / bridge default
+under X for Beta (twin API B). Keep `fit_gllvm_cov` for the shared-`φ` + X opt-in.
+"""
+function fit_beta_gllvm_grouped_cov(Y::AbstractMatrix; X::AbstractArray{<:Real, 3},
+        K::Integer, group::AbstractVector{<:Integer} = collect(1:size(Y, 1)),
+        link::Link = LogitLink(), mask = nothing, γ_fixed = nothing,
+        hessian::Symbol = :observed,
+        g_tol::Real = 1e-5, iterations::Integer = 500,
+        newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    p, n = size(Y)
+    size(X, 1) == p && size(X, 2) == n ||
+        throw(DimensionMismatch("X must be (p, n, q) = ($p, $n, q); got $(size(X))"))
+    length(group) == p || throw(ArgumentError("length(group)=$(length(group)) must equal p=$p"))
+    q_full = size(X, 3)
+    γ_fixed_mask = _fixed_zero_mask(γ_fixed, q_full, "γ_fixed")
+    X_fit, _ = _slice_fixed_X(X, γ_fixed_mask)
+    q = size(X_fit, 3)
+    rr = rr_theta_len(p, K)
+    labels = sort(unique(group))
+    G = length(labels)
+    gidx = [findfirst(==(group[t]), labels) for t in 1:p]
+
+    msk = _resolve_obs_mask(mask, Y)
+    Yc = _sanitize_missing(Y, 0.5)
+    Zemp = [linkfun(link, clamp(float(Yc[t, i]), 1e-6, 1 - 1e-6)) for t in 1:p, i in 1:n]
+    _mask_warmstart!(Zemp, msk)
+    β0 = vec(sum(Zemp; dims = 2)) ./ n
+    Zc = Zemp .- β0
+    F = svd(Zc); kk = min(K, length(F.S))
+    Λ0 = zeros(p, K)
+    @inbounds for j in 1:kk
+        Λ0[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
+    end
+    θ0 = vcat(β0, zeros(q), pack_lambda(Λ0), fill(log(10.0), G))
+
+    function negll(θ)
+        β = θ[1:p]
+        γ = θ[(p + 1):(p + q)]
+        Λ = unpack_lambda(θ[(p + q + 1):(p + q + rr)], p, K)
+        φg = exp.(θ[(p + q + rr + 1):(p + q + rr + G)])
+        φvec = [φg[gidx[t]] for t in 1:p]
+        O = _build_offset(X_fit, γ)
+        v = try
+            -beta_grouped_marginal_loglik_laplace(Yc, Λ, β, φvec; link = link, mask = msk,
+                                                  offset = O, hessian = hessian,
+                                                  maxiter = newton_maxiter,
+                                                  tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
+    res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
+                         autodiff = :finite)
+    θ̂ = Optim.minimizer(res)
+    β̂ = θ̂[1:p]
+    γ̂_free = θ̂[(p + 1):(p + q)]
+    γ̂ = collect(Float64, _expand_fixed_zero(γ̂_free, γ_fixed_mask))
+    Λ̂ = unpack_lambda(θ̂[(p + q + 1):(p + q + rr)], p, K)
+    φ̂g = exp.(θ̂[(p + q + rr + 1):(p + q + rr + G)])
+    return BetaGroupedCovFit(β̂, γ̂, collect(Bool, γ_fixed_mask), Λ̂, φ̂g, gidx, link,
+                             -Optim.minimum(res), Optim.converged(res), Optim.iterations(res))
 end
 
 # ===========================================================================

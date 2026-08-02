@@ -285,7 +285,8 @@ function _bridge_compute_ci_ng(fit, Ydata, N, method::AbstractString,
     return _bridge_ci_from_native(method, level, ci)
 end
 
-function _bridge_compute_ci_cov(fit::GllvmCovFit, Ydata, N, X,
+function _bridge_compute_ci_cov(fit::Union{GllvmCovFit, NBGroupedCovFit, BetaGroupedCovFit},
+                                Ydata, N, X,
                                 method::AbstractString, level::Real,
                                 nboot::Integer, seed::Integer)
     method == "none" && return _bridge_ci_payload("none", level, "")
@@ -633,10 +634,10 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
     end
 
     # X (a p×n×q covariate array) routes to the covariate fitters: the Gaussian
-    # branch below handles key=="gaussian"; every other one-part family with a
-    # covariate kernel (_BRIDGE_X_FAMILIES) routes to fit_gllvm_cov. Defend the
-    # invariant here too so a future DIRECT caller can't slip X past a family with
-    # no covariate fitter (ordinal/nb1) and have it silently dropped.
+    # branch below handles key=="gaussian"; NB2/Beta use per-trait grouped_cov
+    # (twin API B); other one-part _BRIDGE_X_FAMILIES use fit_gllvm_cov. Defend
+    # the invariant here too so a future DIRECT caller can't slip X past a family
+    # with no covariate fitter (ordinal/nb1) and have it silently dropped.
     if X !== nothing && key != "gaussian"
         key in _BRIDGE_X_FAMILIES ||
             throw(ArgumentError("bridge_fit: X is not wired for family=\"$key\"; " *
@@ -1111,6 +1112,23 @@ function _bridge_fit_onepart_cov(Yf::AbstractMatrix{Float64}, key::AbstractStrin
           (N isa Number ? fill(round(Int, N), p, n) : round.(Int, Matrix(N)))) :
          nothing
 
+    # Twin API B under X: NB2/Beta default to per-trait φ + shared site-X.
+    # Shared-φ + X remains available via direct `fit_gllvm_cov`.
+    if key == "negbinomial"
+        Yi = round.(Int, Ydata)
+        fit = fit_nb_gllvm_grouped_cov(Yi; X = Xarr, K = K, group = collect(1:p),
+                                       γ_fixed = coef_fixed)
+        return _bridge_assemble_grouped_cov(fit, key, traits, units, Yi, Xarr,
+                                            coef_fixed, ci_method, ci_level,
+                                            ci_nboot, ci_seed; N = nothing)
+    elseif key == "beta"
+        fit = fit_beta_gllvm_grouped_cov(Ydata; X = Xarr, K = K, group = collect(1:p),
+                                         γ_fixed = coef_fixed)
+        return _bridge_assemble_grouped_cov(fit, key, traits, units, Ydata, Xarr,
+                                            coef_fixed, ci_method, ci_level,
+                                            ci_nboot, ci_seed; N = nothing)
+    end
+
     fit = Nm === nothing ?
           fit_gllvm_cov(Ydata; family = marker, X = Xarr, K = K, γ_fixed = coef_fixed) :
           fit_gllvm_cov(Ydata; family = marker, X = Xarr, K = K, N = Nm,
@@ -1146,6 +1164,49 @@ function _bridge_fit_onepart_cov(Yf::AbstractMatrix{Float64}, key::AbstractStrin
             "coefficients. coef_fixed entries, if any, are fixed at zero. " *
             "Sigma/correlation use the shared block Lambda*Lambda' " *
             "(communality 1).",
+        ci = ci)
+    return merge(base, (beta_cov = β, gamma = γ, gamma_status = _fixed_status(coef_fixed)))
+end
+
+# Assemble the flat bridge contract for per-trait-dispersion + shared-X fits
+# (NB2/Beta API B under X). Dispersion is length-p (per trait); df counts G
+# free dispersion parameters.
+function _bridge_assemble_grouped_cov(fit::Union{NBGroupedCovFit, BetaGroupedCovFit},
+                                      key::AbstractString, traits, units,
+                                      Ydata, Xarr, coef_fixed,
+                                      ci_method::AbstractString, ci_level::Real,
+                                      ci_nboot::Integer, ci_seed::Integer; N = nothing)
+    p = size(fit.Λ, 1)
+    β = collect(Float64, fit.β)
+    γ = collect(Float64, fit.γ)
+    L = Matrix{Float64}(getLoadings(fit; rotate = true))
+    if fit isa NBGroupedCovFit
+        disp = Float64[fit.r_group[fit.group[t]] for t in 1:p]
+        G = length(fit.r_group)
+        disp_note = "per-trait NB2 size r (disp.group); shared site-X gamma."
+    else
+        disp = Float64[fit.φ[fit.group[t]] for t in 1:p]
+        G = length(fit.φ)
+        disp_note = "per-trait Beta precision phi (disp.group); shared site-X gamma."
+    end
+    scores = _bridge_scores(() -> getLV(fit, Ydata, Xarr; rotate = true))
+    ci = ci_method == "none" ? nothing :
+         _bridge_compute_ci_cov(fit, Ydata, N, Xarr, ci_method, ci_level,
+                                ci_nboot, ci_seed)
+    Λr = L
+    Σ = Λr * Λr'; Σ = (Σ + Σ') ./ 2
+    corr = _bridge_corr_from_sigma(Σ)
+    comm = ones(Float64, p)
+    df = p + count(!, coef_fixed) + _bridge_rr_df(p, size(fit.Λ, 2)) + G
+    base = _bridge_assemble(fit, key, "$(key)_x_rr", traits, units;
+        alpha = β, dispersion = disp, sigma_eps = NaN,
+        link = fill(_bridge_link_name(fit.link), p), Sigma = Σ, corr = corr,
+        comm = comm, scores = scores, df = df, loglik = fit.loglik,
+        converged = fit.converged, iterations = fit.iterations,
+        loadings = L, note =
+            "fixed-effect covariate fit (non-Gaussian, twin API B): eta = beta + " *
+            "X*gamma + Lambda*z. $disp_note Shared-dispersion + X remains via " *
+            "fit_gllvm_cov. Sigma/correlation use Lambda*Lambda' (communality 1).",
         ci = ci)
     return merge(base, (beta_cov = β, gamma = γ, gamma_status = _fixed_status(coef_fixed)))
 end

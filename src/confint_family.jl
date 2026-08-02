@@ -37,9 +37,10 @@ const _TwoPartFit = Union{DeltaLogNormalFit, DeltaGammaFit, HurdlePoissonFit,
 
 # Everything the unified confint(fit, Y; method=…) entry accepts.
 const _GroupedDispersionFit = Union{NBGroupedFit, NB1GroupedFit, BetaGroupedFit, GammaGroupedFit}
+const _GroupedDispersionCovFit = Union{NBGroupedCovFit, BetaGroupedCovFit}
 
-const _CIFit = Union{_FamilyFit, _TwoPartFit, _GroupedDispersionFit, OrdinalFit,
-                     GllvmCovFit, OrderedBetaFit, QuadraticFit, RowEffectFit}
+const _CIFit = Union{_FamilyFit, _TwoPartFit, _GroupedDispersionFit, _GroupedDispersionCovFit,
+                     OrdinalFit, GllvmCovFit, OrderedBetaFit, QuadraticFit, RowEffectFit}
 
 # ---------------------------------------------------------------------------
 # Per-family adapter. Bundles everything the generic routines need:
@@ -471,6 +472,125 @@ function _family_ci(fit::BetaGroupedFit, Y::AbstractMatrix;
     end
     names = _grouped_dispersion_names(p, K, "phi", G)
     kinds = vcat(fill(:linear, p + rr), fill(:log, G))
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+end
+
+# --- Grouped dispersion + shared site-X (NB2 / Beta API B under X) ---------
+function _family_ci(fit::NBGroupedCovFit, Y::AbstractMatrix;
+                    X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                    mask = nothing,
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    X === nothing && throw(ArgumentError(
+        "confint on an NBGroupedCovFit needs the design `X`: confint(fit, Y; method=…, X=X)"))
+    p, K = size(fit.Λ); n = size(Y, 2); q_full = length(fit.γ); rr = rr_theta_len(p, K)
+    link = fit.link; group = collect(Int, fit.group); G = length(fit.r_group)
+    Xfit, γ_free_idx = _slice_fixed_X(X, fit.γ_fixed)
+    q = length(γ_free_idx)
+    Yi = round.(Int, Y)
+    M = _ci_mask(mask, Y)
+    γ_free = fit.γ[γ_free_idx]
+    θ = vcat(fit.β, γ_free, pack_lambda(fit.Λ), log.(fit.r_group))
+    nll = function (θv)
+        β = θv[1:p]; γ = θv[(p + 1):(p + q)]
+        Λ = unpack_lambda(θv[(p + q + 1):(p + q + rr)], p, K)
+        rg = exp.(θv[(p + q + rr + 1):(p + q + rr + G)])
+        rvec = [rg[group[t]] for t in 1:p]
+        O = _build_offset(Xfit, γ)
+        v = try
+            -nb_grouped_marginal_loglik_laplace(Yi, Λ, β, rvec; link = link,
+                                                mask = M, offset = O,
+                                                maxiter = newton_maxiter,
+                                                tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    simulate = function (rng)
+        Yb = Matrix{Int}(undef, p, n)
+        O = _build_offset(X, fit.γ)
+        @inbounds for s in 1:n
+            η = fit.β .+ view(O, :, s) .+ fit.Λ * randn(rng, K)
+            for t in 1:p
+                μ = max(linkinv(link, _clamp_eta(η[t])), 1e-12)
+                r = fit.r_group[group[t]]
+                Yb[t, s] = rand(rng, NegativeBinomial(r, r / (r + μ)))
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try
+            fit_nb_gllvm_grouped_cov(Yb; X = X, K = K, group = group, link = link,
+                                     mask = M, γ_fixed = fit.γ_fixed)
+        catch
+            return nothing
+        end
+        return vcat(fb.β, fb.γ[γ_free_idx], pack_lambda(fb.Λ), log.(fb.r_group))
+    end
+    names = vcat(["beta[$t]" for t in 1:p], ["gamma[$k]" for k in γ_free_idx],
+                 _confint_lambda_term_names("Lambda", p, K),
+                 ["r[$g]" for g in 1:G])
+    kinds = vcat(fill(:linear, p + q + rr), fill(:log, G))
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+end
+
+function _family_ci(fit::BetaGroupedCovFit, Y::AbstractMatrix;
+                    X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                    mask = nothing,
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    X === nothing && throw(ArgumentError(
+        "confint on a BetaGroupedCovFit needs the design `X`: confint(fit, Y; method=…, X=X)"))
+    p, K = size(fit.Λ); n = size(Y, 2); q_full = length(fit.γ); rr = rr_theta_len(p, K)
+    link = fit.link; group = collect(Int, fit.group); G = length(fit.φ)
+    Xfit, γ_free_idx = _slice_fixed_X(X, fit.γ_fixed)
+    q = length(γ_free_idx)
+    Yf = clamp.(Float64.(Y), 1e-6, 1 - 1e-6)
+    M = _ci_mask(mask, Y)
+    γ_free = fit.γ[γ_free_idx]
+    θ = vcat(fit.β, γ_free, pack_lambda(fit.Λ), log.(fit.φ))
+    nll = function (θv)
+        β = θv[1:p]; γ = θv[(p + 1):(p + q)]
+        Λ = unpack_lambda(θv[(p + q + 1):(p + q + rr)], p, K)
+        φg = exp.(θv[(p + q + rr + 1):(p + q + rr + G)])
+        φvec = [φg[group[t]] for t in 1:p]
+        O = _build_offset(Xfit, γ)
+        v = try
+            -beta_grouped_marginal_loglik_laplace(Yf, Λ, β, φvec; link = link,
+                                                  mask = M, offset = O,
+                                                  maxiter = newton_maxiter,
+                                                  tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    simulate = function (rng)
+        Yb = Matrix{Float64}(undef, p, n)
+        O = _build_offset(X, fit.γ)
+        @inbounds for s in 1:n
+            η = fit.β .+ view(O, :, s) .+ fit.Λ * randn(rng, K)
+            for t in 1:p
+                μ = clamp(linkinv(link, _clamp_eta(η[t])), 1e-6, 1 - 1e-6)
+                φ = fit.φ[group[t]]
+                Yb[t, s] = clamp(rand(rng, Beta(μ * φ, (1 - μ) * φ)), 1e-6, 1 - 1e-6)
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try
+            fit_beta_gllvm_grouped_cov(Yb; X = X, K = K, group = group, link = link,
+                                       mask = M, γ_fixed = fit.γ_fixed)
+        catch
+            return nothing
+        end
+        return vcat(fb.β, fb.γ[γ_free_idx], pack_lambda(fb.Λ), log.(fb.φ))
+    end
+    names = vcat(["beta[$t]" for t in 1:p], ["gamma[$k]" for k in γ_free_idx],
+                 _confint_lambda_term_names("Lambda", p, K),
+                 ["phi[$g]" for g in 1:G])
+    kinds = vcat(fill(:linear, p + q + rr), fill(:log, G))
     return _FamilyCI(θ, nll, names, kinds, simulate, refit)
 end
 

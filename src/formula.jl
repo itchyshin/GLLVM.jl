@@ -65,9 +65,12 @@ The response symbol on the formula LHS (`y`) names the matrix `Y` and is otherwi
 ignored. The intercept (`1`) is the engine's built-in per-species intercept; each
 continuous covariate on the RHS becomes a coefficient **shared across species**
 (the engine's `(p,n,q)` design). Dispatches to [`fit_gaussian_gllvm`](@ref) for
-`Normal()` and to [`fit_gllvm_cov`](@ref) for the non-Gaussian families, returning
-that fitter's result (`GllvmFit`, or `GllvmCovFit` whose `γ[k]` matches the k-th
-RHS covariate). With no covariates it reduces to the intercept-only fit.
+`Normal()`, to [`fit_nb_gllvm_grouped_cov`](@ref) /
+[`fit_beta_gllvm_grouped_cov`](@ref) for NB2/Beta (per-trait φ + shared site-X;
+twin API B), and to [`fit_gllvm_cov`](@ref) for the other non-Gaussian families
+(shared dispersion + X). Returns that fitter's result (`GllvmFit`,
+`NBGroupedCovFit` / `BetaGroupedCovFit`, or `GllvmCovFit` whose `γ[k]` matches
+the k-th RHS covariate). With no covariates it reduces to the intercept-only fit.
 
 **v1 scope:** intercept + continuous main-effect covariates. Categorical terms,
 interactions (`a & b` / fourth-corner), function terms, and random effects
@@ -107,8 +110,15 @@ function gllvm(formula::FormulaTerm, Y::AbstractMatrix, data;
         end
     end
 
-    return family isa Normal ? fit_gaussian_gllvm(Y; X = X, K = K, kwargs...) :
-                               fit_gllvm_cov(Y; family = family, X = X, K = K, kwargs...)
+    if family isa Normal
+        return fit_gaussian_gllvm(Y; X = X, K = K, kwargs...)
+    elseif family isa NegativeBinomial
+        return fit_nb_gllvm_grouped_cov(Y; X = X, K = K, kwargs...)
+    elseif family isa Beta
+        return fit_beta_gllvm_grouped_cov(Y; X = X, K = K, kwargs...)
+    else
+        return fit_gllvm_cov(Y; family = family, X = X, K = K, kwargs...)
+    end
 end
 
 """
