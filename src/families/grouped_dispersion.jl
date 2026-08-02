@@ -1,8 +1,9 @@
 # Grouped / species-specific dispersion for the negative binomial (NB2) — gllvm's
 # `disp.group`. Each species t carries its own dispersion r_{g(t)} for a group
 # assignment g: 1..p → 1..G, so overdispersion can vary across species (or groups
-# of species) instead of one shared r. With G = 1 (all species in one group) this
-# reduces EXACTLY to the shared-dispersion NB2 fit.
+# of species) instead of one shared r. With G = 1 and hessian=:fisher this reduces
+# EXACTLY to the shared-dispersion NB2 fit (`fit_nb_gllvm`); the fit default
+# hessian=:observed is the TMB Laplace curvature and is a different objective.
 #
 # Implementation note: the generic Laplace core (families/laplace.jl) broadcasts a
 # SINGLE family marker over species (`Ref(family)`). Per-species dispersion instead
