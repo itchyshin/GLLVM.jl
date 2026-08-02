@@ -10604,3 +10604,19 @@ Gate 0 truth:
 - DRAC/Nibi is the only claim-bearing denominator;
 - no active compute is running;
 - Mission Control needs follow-up label cleanup before public-facing polish.
+
+## 2026-08-02 - X/covariate light logLik cohort 1
+
+Branch `parity/x-covariate-light-loglik-20260802` from `origin/main` @ `4d19c503`.
+Twin gllvmTMB `/tmp/gllvmtmb-parity-x-loglik-20260802` @ `910ebd54`; R lib
+`/tmp/R-gllvmtmb-x-parity-20260802`.
+
+Added shared-X RCall helper `fit_gllvmtmb_parity_loglik_x` (formula
+`value ~ 0 + trait + x + latent(..., unique=FALSE)`) and three light logLik
+cells (Gaussian / Binomial / Poisson, q=1 shared site X). Full opt-in parity
+suite green: prior 63 assertions + 18 X assertions. X ΔlogLik all ≤ 4e-9 at
+rtol 1e-6. Log: `docs/dev-log/x-covariate-parity-full-20260802.log`.
+After-task: `docs/dev-log/after-task/2026-08-02-x-covariate-light-loglik.md`.
+
+Rose fence: light logLik with shared X for G/Bin/Pois only — not NB2/Beta+X,
+not full family parity. Push/PR gated on maintainer ask.
