@@ -90,70 +90,35 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
-- **Next Cursor lane — grouped_dispersion one-group bug (2026-08-02).**
-  Primary OWED: fix `test/test_grouped_dispersion.jl:61` (one-group
-  `fit_nb_gllvm_grouped` ≈ `fit_nb_gllvm`). Start from `origin/main` ≥
-  `d60d90e2`. Multi-lane pointer: `docs/dev-log/coordination-board.md`.
+- **Next Cursor lane — land NB2/Beta+X Arc 1 then Arc 2 (2026-08-02).**
+  Primary OWED: merge [#175](https://github.com/itchyshin/GLLVM.jl/pull/175)
+  when CI green; Arc 2 RCall light cells only after that (separate `/goal`).
+  Multi-lane pointer: `docs/dev-log/coordination-board.md` (Active-Lane-Split).
   `START HERE (Cursor):`
-  `docs/dev-log/handover/2026-08-02-cursor-handover-grouped-dispersion.md`.
-- **X/covariate light logLik cohort 1 MERGED (2026-08-02).** PR #170 →
-  `main` @ `d60d90e2` (branch tip `e87ec7a4`). Shared site-X light logLik for
-  Gaussian / Binomial / Poisson (Δ ≈ 1e-9; rtol 1e-6). Rose fence: shared-X
-  light logLik only — **not** NB2/Beta+X or full family parity. After-task:
-  `docs/dev-log/after-task/2026-08-02-x-covariate-light-loglik.md`.
-- **Default-route NB2/Beta per-trait φ MERGED (2026-08-02).** PR #169 →
-  `main`. Public `fit_gllvm(NB/Beta)` defaults to `disp_group=:species`;
-  light parity **63/63** on that default path. Rose fence: default-route
-  light logLik only. Handover (historical):
+  `docs/dev-log/handover/2026-08-02-cursor-handover-nb2-beta-x-arc1.md`.
+- **Grouped dispersion one-group bug MERGED (2026-08-02).** PR #172 → `main`.
+  Identity under `hessian=:fisher`. After-task:
+  `docs/dev-log/after-task/2026-08-02-grouped-dispersion-one-group.md`.
+- **MC Julia capability-status MERGED (2026-08-02).** PR #173 → `main`.
+  `docs/design/capability-status.md`.
+- **NB2/Beta+X identity design Arc 0 MERGED (2026-08-02).** PR #174 → `main`.
+  Decision: `docs/dev-log/decisions/2026-08-02-nb2-beta-x-dispersion-identity.md`.
+- **X/covariate light logLik cohort 1 MERGED (2026-08-02).** PR #170 → `main`.
+  Shared site-X light logLik G/Bin/Pois only. Rose fence: not NB2/Beta+X RCall
+  (Arc 2) or full family parity.
+- **Default-route NB2/Beta per-trait φ MERGED (2026-08-02).** PR #169 → `main`.
+  Handover (historical):
   `docs/dev-log/handover/2026-08-01-cursor-handover-default-route-phi.md`.
-- **Catch-up light gllvmTMB logLik oracles DONE (2026-08-01).** Branch
-  `catchup/loglik-oracle-20260801` @ `def576c6` (pushed; on main ancestry):
-  named-route logLik cells green **63/63**. Rose fence: **not** full family
-  parity. `START HERE (Cursor, catch-up historical):`
+- **Catch-up light gllvmTMB logLik oracles DONE (2026-08-01).** Named-route
+  **63/63**. Rose fence: **not** full family parity. Historical:
   `docs/dev-log/handover/2026-08-01-cursor-handover.md`.
-- **Codex restart handoff for Phylo Model A redesign (2026-06-30).**
-  The current LV arc is closed for ordinary `gllvmTMB` (`extract_lv_effects()`
-  axis-effect default and trait-effect intervals are on `main` via #581), and
-  GLLVM.jl PR #127 is closed/parked as blocked evidence. The next session should
-  start with a small Phylo Model A redesign plan, not with more same-route
-  bootstrap compute. The decisive weak cell is p=80, K=2, lambda=0.5 `B_lv`:
-  `bootstrap_basic` reached `591/720 = 0.821`, optimistic bound `671/800 =
-  0.839`, and the direct `Y ~ X_lv` comparator tracks the fitted
-  latent-product slope, including task 8 (`0.536` vs `0.533`). Keep
-  source-specific `lv` coverage unadvertised and R `phylo_latent(..., lv = ~ x)`
-  fail-loud until a redesigned target is chosen. `START HERE (Codex):`
+- **Codex restart handoff for Phylo Model A redesign (2026-06-30).** PR #127
+  closed/parked. Do not orphan. `START HERE (Codex):`
   `docs/dev-log/handover/2026-06-30-codex-handover.md`.
-- **`latent(lv=~x)` CI trio DONE; phylo Model A interval gate BLOCKED (2026-06-30).**
-  `main` @ `0e99c04` has all six X_lv bridge routes + the `2f0` Wald-SE fix + the full
-  **Wald/profile/bootstrap CI trio** for ordinary `B_lv` (#116-#126). The headline
-  **phylo x X_lv = Model A** (predictor scores under phylogenetic trait-covariance) has local
-  direct/native Gaussian engine and CI plumbing on `claude/phylo-xlv-modelA-20260627`, but
-  Codex diagnostics block public promotion: the p=80, K=2, lambda=0.5 `B_lv` weak cell
-  under-covers for Wald, t-Wald, percentile bootstrap, and the bench-only `bootstrap_basic`
-  candidate (`591/720 = 0.821` across 9 valid basic-bootstrap seeds; perfect cancelled task 1
-  would still only reach `671/800 = 0.839`). A direct `Y ~ X_lv` slope comparator tracks the
-  latent-product slope almost exactly, including the bad task 8 (`0.536` vs `0.533` of truth),
-  so this is an interval/regime boundary rather than a simple extractor artifact. Important
-  scope boundary: `confint_lv_effects` covers induced trait-scale `B_lv`; it does not provide
-  CLV/axis-effect SEs for raw `alpha_lv`. **Remaining live-toolchain work:** choose a defensible
-  interval target or record the weak-cell block; keep R `phylo_latent(..., lv = ~ x)` fail-loud
-  until then; do not push PR #127 or advertise source-specific `lv` coverage without maintainer
-  instruction. R env is LIVE on the Mac.
-  `START HERE (Codex):` `docs/dev-log/handover/2026-06-27-codex-handover.md` ·
-  `START HERE (Claude):` `docs/dev-log/handover/2026-06-27-claude-handover-2.md`.
 - **Phase 0 — Team and memory scaffolding (complete, 2026-05-30).** PR #1.
-- **Phase 1.1 — O(p) node-frame gradient (complete, CI green cross-platform,
-  2026-05-30).** PR #2; `src/node_gradient.jl` (+ wired `sparse_phy_grad.jl`);
-  58 tests; full suite 491 pass; ~O(p) confirmed (35.7× vs `sparse_phy_grad`
-  at p=2000).
+- **Phase 1.1 — O(p) node-frame gradient (complete, 2026-05-30).** PR #2.
 - **Phase 1.0 — RCall.jl parity suite (live on catch-up branch, 2026-08-01).**
-  Isolated `test/parity/`; light gllvmTMB logLik oracles green on named routes
-  (see catch-up bullet above). Still not “full family parity.”
-- **Phase 4 runtime gap fill (local, 2026-06-14).** #91 high-rate Poisson
-  divergence, #92 phylo-signal Wald scale, #96 Laplace mode-finder safeguard,
-  and the Gamma analytic-gradient default are fixed on the local integration
-  branch with full `Pkg.test()` green. Still next: PR/issue reconciliation,
-  bridge statistical parity, and the guarded O(p) sparse-phylo gradient wiring.
+  Light logLik oracles green on named routes; still not “full family parity.”
 
 Update this snapshot after every after-task report.
 

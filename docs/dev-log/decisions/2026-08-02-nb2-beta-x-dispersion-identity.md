@@ -1,7 +1,8 @@
 # Decision: NB2 / Beta + X dispersion identity (twin with gllvmTMB)
 
 **Date:** 2026-08-02  
-**Status:** PROPOSED (design lock before any engine / parity-cell work)  
+**Status:** ACCEPTED (Arc 0 on `main` via #174; Arc 1 engine on
+`fix/nb2-beta-x-grouped-cov-20260802`)  
 **Lane:** `docs/nb2-beta-x-identity-20260802`  
 **Depends on:** #169 (default-route per-trait φ, no-X); #170 (shared-X light logLik G/Bin/Pois only)
 

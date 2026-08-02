@@ -136,8 +136,10 @@ fit = fit_gllvm(Yc; family = NegativeBinomial(), K = 2)   # per-species r (defau
 For overdispersed counts. The NB2 variance function is Var = μ + μ²/r. The
 public `fit_gllvm` default estimates **per-species** dispersion (returns
 `NBGroupedFit`; `fit.r_group`), matching gllvmTMB's length-`p` `log_phi_nbinom2`.
-As `r → ∞` the negative binomial collapses to Poisson. For a single shared `r`
-across species, call the named fitter [`fit_nb_gllvm`](@ref) (`NBFit`; `fit.r`).
+With shared site covariates (`@formula` / bridge `X`), the default is
+[`fit_nb_gllvm_grouped_cov`](@ref) (per-trait `r` + shared `γ`). As `r → ∞` the
+negative binomial collapses to Poisson. For a single shared `r` across species,
+call [`fit_nb_gllvm`](@ref) (no-X) or [`fit_gllvm_cov`](@ref) (with X).
 
 ### Beta — `Beta()`
 
@@ -149,8 +151,9 @@ For proportions strictly inside (0,1) — e.g. cover fractions, frequencies.
 The per-observation law is Beta(μφ, (1−μ)φ), so Var = μ(1−μ)/(1+φ). The
 public `fit_gllvm` default estimates **per-species** precision (returns
 `BetaGroupedFit`; vector `fit.φ`), matching gllvmTMB's length-`p` `log_phi_beta`.
-For a single shared precision, call the named fitter [`fit_beta_gllvm`](@ref)
-(`BetaFit`; scalar `fit.φ`).
+With shared site covariates, the default is [`fit_beta_gllvm_grouped_cov`](@ref)
+(per-trait `φ` + shared `γ`). For a single shared precision, call
+[`fit_beta_gllvm`](@ref) (no-X) or [`fit_gllvm_cov`](@ref) (with X).
 
 ### Ordinal — `Ordinal()`
 

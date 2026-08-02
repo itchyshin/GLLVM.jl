@@ -1,27 +1,16 @@
 # Check Log
 
-## 2026-08-02 - Grouped NB one-group ≈ shared (objective mismatch)
+## 2026-08-02 - NB2/Beta + X grouped_cov (API B under X)
 
-Lane: `fix/grouped-dispersion-one-group-20260802` from `origin/main` @ `16a9bcdd`
-(≥ `d60d90e2`). Worktree
-`.worktrees/gllvmjl-grouped-dispersion-20260802`.
-
-Diagnosis (seed 503, `iterations=150`): default
-`fit_nb_gllvm_grouped` (`hessian=:observed`) vs `fit_nb_gllvm` (Fisher-Laplace)
-ΔlogLik ≈ **−0.940** — different Laplace objectives, not an optimiser miss.
-With `hessian=:fisher`, ΔlogLik ≈ **3e-12** and `r` matches (rtol 0.1).
-
-Fix: one-group identity cell now requests `hessian=:fisher` (documented contract);
-header comment in `grouped_dispersion.jl` aligned. **No tolerance widen.**
-Observed default retained for TMB parity (`group=1:p`).
-
-Focused: `include("test/test_grouped_dispersion.jl")` → **14/14 pass**.
-Core `test/runtests.jl` → **5064 passed, 0 failed, 3 broken** (49m30s;
-`/tmp/grouped-dispersion-runtests-20260802.log`). Prior default-route tip had
-5063 pass + 1 fail on this cell — fail cleared; no tol widen.
-
-Rose fence: OK for matching-objective one-group identity. Not OK: claiming
-default `:observed` equals shared Fisher, or full family parity.
+Lane `fix/nb2-beta-x-grouped-cov-20260802` from post-merge `origin/main` @
+`c4c46293` (#172/#173/#174). Engine: `fit_nb_gllvm_grouped_cov` /
+`fit_beta_gllvm_grouped_cov` (θ = `[β; γ; pack(Λ); log disp…]`, default
+`hessian=:observed`); bridge + `@formula` route NB/Beta+X here; `fit_gllvm_cov`
+stays shared-φ opt-in. Identity `test/test_nb_beta_x_identity.jl`: **14/14**
+(G=1+fisher ≈ `fit_gllvm_cov` atol=1e-2/rtol=1e-4; constant rvec/φvec+X offset
+ll ≈ shared to 1e-10). Bridge X **201/201**; formula **11/11**. Rose fence:
+Arc 1 Julia identity + routing only — **not** Arc 2 RCall; Gamma+X unchanged.
+After-task: `docs/dev-log/after-task/2026-08-02-nb2-beta-x-grouped-cov.md`.
 
 ## 2026-08-02 - Default-route φ landing (push + PR #169)
 

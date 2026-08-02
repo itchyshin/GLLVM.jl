@@ -201,12 +201,16 @@ the linear predictor is `η_{ts} = β_t + Σ_k X[t,s,k]·γ_k + (Λ z_s)_t`.
 
 `family` is a `Distributions` marker — `Poisson()`, `NegativeBinomial()`,
 `Binomial()`, `Beta()`, or `Gamma()` — and dispatches the marginal (the dispersion,
-where present, is jointly estimated). `X` is the `(p, n, q)` covariate array (same
-contract as the Gaussian engine); `γ` (length q) are coefficients shared across
-species (encode species-specific responses by block-expanding `X`). `Y` is `p × n`;
-`N` supplies Binomial trial counts (default all-ones). Finite-difference gradient.
-`γ_fixed` optionally fixes selected covariate coefficients to zero; pass a Bool
-vector of length `size(X, 3)`, an integer index vector, or a Dict index=>0.
+where present, is a **shared scalar** jointly estimated). For NB2/Beta the public
+and bridge default under X is per-trait dispersion via
+[`fit_nb_gllvm_grouped_cov`](@ref) / [`fit_beta_gllvm_grouped_cov`](@ref); this
+shared-φ path remains the explicit opt-in. `X` is the `(p, n, q)` covariate array
+(same contract as the Gaussian engine); `γ` (length q) are coefficients shared
+across species (encode species-specific responses by block-expanding `X`). `Y` is
+`p × n`; `N` supplies Binomial trial counts (default all-ones). Finite-difference
+gradient. `γ_fixed` optionally fixes selected covariate coefficients to zero;
+pass a Bool vector of length `size(X, 3)`, an integer index vector, or a Dict
+index=>0.
 
 ```julia
 # Poisson abundance with one site covariate, shared coefficient:

@@ -1,19 +1,16 @@
 # Bridge fixed-effect covariates (X) for the one-part NON-Gaussian families:
-# bridge_fit(...; X=...) must route to the native `fit_gllvm_cov` and return the
-# covariate coefficients (per-trait intercepts + shared γ) in flat,
-# JuliaCall-convertible arrays that EQUAL the direct `fit_gllvm_cov` fit (the
-# oracle) to ~1e-8. The Gaussian-X path must preserve existing fields while
+# Poisson/Binomial/Gamma → `fit_gllvm_cov`; NB2/Beta → per-trait
+# `fit_*_gllvm_grouped_cov` (twin API B under X). Bridge coefficients must equal
+# the matching native oracle to ~1e-8. Gaussian-X preserves existing fields while
 # exposing the full mean coefficient payload needed by the R bridge.
 #
 # Gates encoded here:
-#   1. PARITY  — bridge-X coefficients == native fit_gllvm_cov coefficients (~1e-8)
-#                for Poisson + Binomial (+ NB/Beta/Gamma, all families
-#                fit_gllvm_cov supports).
+#   1. PARITY  — bridge-X coefficients == native oracle (~1e-8).
 #   2. FLAT CONTRACT — the new coef fields (alpha, beta_cov, gamma, dispersion,
 #                loadings, …) are primitive Float64 arrays.
 #   3. GAUSSIAN-X — bridge_fit gaussian + X preserves existing fields and returns
 #                the full mean coefficient vector needed by the R bridge.
-#   4. UNSUPPORTED — families fit_gllvm_cov can't fit with X (ordinal, nb1) and
+#   4. UNSUPPORTED — families without an X kernel (ordinal, nb1) and
 #                mixed-family X reject loudly with an ArgumentError.
 
 using Test
@@ -87,30 +84,25 @@ function _bx_sim(family_marker, p, n, K, q; seed = 7, Ntrial = 1)
 end
 
 @testset "bridge fixed-effect X (non-Gaussian one-part families)" begin
-    # -- PARITY: bridge-X coefficients == fit_gllvm_cov oracle (~1e-8) -----------
-    @testset "coefficient parity vs fit_gllvm_cov" begin
-        cases = [
-            ("poisson",     Poisson(),          (p = 5, n = 80, K = 1, q = 1), nothing),
-            ("binomial",    Binomial(),         (p = 5, n = 80, K = 1, q = 1), 6),
-            ("negbinomial", NegativeBinomial(), (p = 4, n = 80, K = 1, q = 1), nothing),
-            ("beta",        Beta(),             (p = 4, n = 80, K = 1, q = 1), nothing),
-            ("gamma",       Gamma(),            (p = 4, n = 80, K = 1, q = 1), nothing),
+    # -- PARITY: bridge-X coefficients == native oracle (~1e-8) ----------------
+    @testset "coefficient parity vs native X fitter" begin
+        shared_cases = [
+            ("poisson",  Poisson(),  (p = 5, n = 80, K = 1, q = 1), nothing),
+            ("binomial", Binomial(), (p = 5, n = 80, K = 1, q = 1), 6),
+            ("gamma",    Gamma(),    (p = 4, n = 80, K = 1, q = 1), nothing),
         ]
-        for (key, marker, dims, Ntrial) in cases
+        for (key, marker, dims, Ntrial) in shared_cases
             @testset "$key" begin
                 Y, X = _bx_sim(marker, dims.p, dims.n, dims.K, dims.q;
                                seed = 100 + dims.p, Ntrial = Ntrial === nothing ? 1 : Ntrial)
                 Nm = key == "binomial" ? fill(Ntrial, dims.p, dims.n) : nothing
-                # Oracle: direct fit_gllvm_cov on the SAME data.
                 oracle = Nm === nothing ?
                     GLLVM.fit_gllvm_cov(Y; family = marker, X = X, K = dims.K) :
                     GLLVM.fit_gllvm_cov(Y; family = marker, X = X, K = dims.K, N = Nm)
-                # Bridge: same data through bridge_fit with X.
                 br = bridge_fit(; y = Y, family = key, d = dims.K, N = Nm, X = X)
-
-                @test br.gamma ≈ oracle.γ atol = 1e-8         # the headline: env coefficients
-                @test br.beta_cov ≈ oracle.β atol = 1e-8      # per-trait intercepts
-                @test br.alpha ≈ oracle.β atol = 1e-8         # alpha mirrors the intercept
+                @test br.gamma ≈ oracle.γ atol = 1e-8
+                @test br.beta_cov ≈ oracle.β atol = 1e-8
+                @test br.alpha ≈ oracle.β atol = 1e-8
                 @test br.loadings ≈ GLLVM.getLoadings(oracle; rotate = true) atol = 1e-8
                 @test isapprox(br.loglik, oracle.loglik; atol = 1e-8)
                 if isnan(oracle.dispersion)
@@ -120,18 +112,43 @@ end
                 end
             end
         end
+
+        @testset "negbinomial (per-trait grouped_cov)" begin
+            Y, X = _bx_sim(NegativeBinomial(), 4, 80, 1, 1; seed = 104)
+            Yi = round.(Int, Y)
+            oracle = GLLVM.fit_nb_gllvm_grouped_cov(Yi; X = X, K = 1, group = collect(1:4))
+            br = bridge_fit(; y = Y, family = "negbinomial", d = 1, X = X)
+            @test br.gamma ≈ oracle.γ atol = 1e-8
+            @test br.beta_cov ≈ oracle.β atol = 1e-8
+            @test br.alpha ≈ oracle.β atol = 1e-8
+            @test br.loadings ≈ GLLVM.getLoadings(oracle; rotate = true) atol = 1e-8
+            @test isapprox(br.loglik, oracle.loglik; atol = 1e-8)
+            disp_true = [oracle.r_group[oracle.group[t]] for t in 1:4]
+            @test br.dispersion ≈ disp_true atol = 1e-8
+        end
+
+        @testset "beta (per-trait grouped_cov)" begin
+            Y, X = _bx_sim(Beta(), 4, 80, 1, 1; seed = 105)
+            oracle = GLLVM.fit_beta_gllvm_grouped_cov(Y; X = X, K = 1, group = collect(1:4))
+            br = bridge_fit(; y = Y, family = "beta", d = 1, X = X)
+            @test br.gamma ≈ oracle.γ atol = 1e-8
+            @test br.beta_cov ≈ oracle.β atol = 1e-8
+            @test br.alpha ≈ oracle.β atol = 1e-8
+            @test br.loadings ≈ GLLVM.getLoadings(oracle; rotate = true) atol = 1e-8
+            @test isapprox(br.loglik, oracle.loglik; atol = 1e-8)
+            disp_true = [oracle.φ[oracle.group[t]] for t in 1:4]
+            @test br.dispersion ≈ disp_true atol = 1e-8
+        end
     end
 
     # -- CI ROUTING: bridge-X CI payloads == native confint oracles -------------
     @testset "X-row CI payloads" begin
-        cases = [
-            ("poisson",     Poisson(),          (p = 4, n = 70, K = 1, q = 1), nothing),
-            ("binomial",    Binomial(),         (p = 4, n = 70, K = 1, q = 1), 6),
-            ("negbinomial", NegativeBinomial(), (p = 3, n = 70, K = 1, q = 1), nothing),
-            ("beta",        Beta(),             (p = 3, n = 70, K = 1, q = 1), nothing),
-            ("gamma",       Gamma(),            (p = 3, n = 70, K = 1, q = 1), nothing),
+        shared_cases = [
+            ("poisson",  Poisson(),  (p = 4, n = 70, K = 1, q = 1), nothing),
+            ("binomial", Binomial(), (p = 4, n = 70, K = 1, q = 1), 6),
+            ("gamma",    Gamma(),    (p = 3, n = 70, K = 1, q = 1), nothing),
         ]
-        for (key, marker, dims, Ntrial) in cases
+        for (key, marker, dims, Ntrial) in shared_cases
             @testset "$key Wald" begin
                 Y, X = _bx_sim(marker, dims.p, dims.n, dims.K, dims.q;
                                seed = 520 + dims.p, Ntrial = Ntrial === nothing ? 1 : Ntrial)
@@ -149,6 +166,33 @@ end
                                        nat.term, nat.lower, nat.upper)
                 @test d < 1e-8
             end
+        end
+
+        @testset "negbinomial Wald (grouped_cov)" begin
+            Y, X = _bx_sim(NegativeBinomial(), 3, 70, 1, 1; seed = 523)
+            Yi = round.(Int, Y)
+            oracle = GLLVM.fit_nb_gllvm_grouped_cov(Yi; X = X, K = 1, group = collect(1:3))
+            nat = GLLVM.confint(oracle, Yi; method = :wald, X = X)
+            br = bridge_fit(; y = Y, family = "negbinomial", d = 1, X = X,
+                            options = Dict("ci_method" => "wald"))
+            @test br.ci_method == "wald"
+            @test any(==("gamma[1]"), br.ci_param_names)
+            d = _bx_ci_max_absdiff(br.ci_param_names, br.ci_lower, br.ci_upper,
+                                   nat.term, nat.lower, nat.upper)
+            @test d < 1e-8
+        end
+
+        @testset "beta Wald (grouped_cov)" begin
+            Y, X = _bx_sim(Beta(), 3, 70, 1, 1; seed = 524)
+            oracle = GLLVM.fit_beta_gllvm_grouped_cov(Y; X = X, K = 1, group = collect(1:3))
+            nat = GLLVM.confint(oracle, Y; method = :wald, X = X)
+            br = bridge_fit(; y = Y, family = "beta", d = 1, X = X,
+                            options = Dict("ci_method" => "wald"))
+            @test br.ci_method == "wald"
+            @test any(==("gamma[1]"), br.ci_param_names)
+            d = _bx_ci_max_absdiff(br.ci_param_names, br.ci_lower, br.ci_upper,
+                                   nat.term, nat.lower, nat.upper)
+            @test d < 1e-8
         end
 
         # Gaussian-X uses the Gaussian CI engines, which have a distinct

@@ -22,8 +22,8 @@ X_lv; ADEMP; coverage; Phylo Model A; changing no-X API B.
 
 - [x] Decision note: `docs/dev-log/decisions/2026-08-02-nb2-beta-x-dispersion-identity.md`
 - [x] This ultra-plan
-- [ ] Board pointer + START HERE refresh
-- [ ] PR docs-only (no `src/` engine edits)
+- [x] Board pointer + START HERE refresh
+- [x] PR docs-only (no `src/` engine edits) — #174 merged
 
 **Done when:** decision merged or at least reviewed; fence text cites per-trait+X.
 
@@ -40,20 +40,20 @@ X_lv; ADEMP; coverage; Phylo Model A; changing no-X API B.
 
 ### Tasks
 
-- [ ] **T1** Sketch θ packing: `[β; γ; pack(Λ); log r_1…log r_p]` (NB2) and
+- [x] **T1** Sketch θ packing: `[β; γ; pack(Λ); log r_1…log r_G]` (NB2) and
       analog for Beta φ; confirm vs `rr_theta_len` and cov γ length.
-- [ ] **T2** Implement marginal with X offset + per-species family markers
+- [x] **T2** Implement marginal with X offset + per-species family markers
       (reuse `_nb_grouped_loglik_site` / beta twin with offset).
-- [ ] **T3** Fit driver (new or extended) with warm start = cov Zemp + SVD +
+- [x] **T3** Fit driver (new or extended) with warm start = cov Zemp + SVD +
       moderate per-trait log-disp; default `hessian=:observed` for TMB; expose
       `hessian=:fisher` for identity.
-- [ ] **T4** Identity tests (no R):
+- [x] **T4** Identity tests (no R):
   - G=1 + X + `hessian=:fisher` ≈ `fit_gllvm_cov` shared (atol/rtol as #172 spirit;
     **no silent widen**)
   - constant rvec/φvec with X equals shared cov marginal (machine precision on ll)
-- [ ] **T5** Wire public/bridge default for NB2/Beta+X to per-trait path; keep
+- [x] **T5** Wire public/bridge default for NB2/Beta+X to per-trait path; keep
       shared `fit_gllvm_cov` as opt-in.
-- [ ] **T6** Focused tests green; update check-log + after-task; Rose fence.
+- [x] **T6** Focused tests green; update check-log + after-task; Rose fence.
 
 **Done when:** identity tests green; bridge capabilities note per-trait under X;
 no light RCall claim yet.

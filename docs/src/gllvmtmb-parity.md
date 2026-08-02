@@ -36,7 +36,7 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 | Capability | GLLVM.jl | Notes |
 |-----------|:---:|-------|
 | Latent-variable ordination (loadings) | ✅ | any `K`; canonical SVD rotation |
-| Fixed-effect covariates (`Xβ`) | ✅ Gaussian · ✅ non-Gaussian (GLM families) | `fit_gllvm_cov(Y; family, X, K)` adds an `Xβ` offset to the Laplace path (Poisson/NB/Binomial/Beta/Gamma); shared coefficients over the `(p,n,q)` design. Gaussian `β_fixed` and non-Gaussian `γ_fixed` zero masks are supported for fixed-zero coefficient constraints. |
+| Fixed-effect covariates (`Xβ`) | ✅ Gaussian · ✅ non-Gaussian (GLM families) | Shared site-X: Poisson/Binomial/Gamma via `fit_gllvm_cov`; NB2/Beta public/bridge default via `fit_*_gllvm_grouped_cov` (per-trait φ + shared `γ`; twin API B). Shared-φ + X remains `fit_gllvm_cov`. Gaussian `β_fixed` / non-Gaussian `γ_fixed` zero masks supported. |
 | Between / within (multilevel) | ✅ Gaussian | `K_W` + per-trait diagonal |
 | Phylogenetic random effect | ✅ ⚡ | fast **O(p)** sparse path, benchmarked to p = 10⁴ |
 | Animal model (relatedness / GRM) | ✅ Gaussian | `relatedness_cov`, via the `Σ_phy` input |
