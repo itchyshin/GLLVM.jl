@@ -52,12 +52,16 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
             μ = exp(η[t, s])
             Y[t, s] = rand(NegativeBinomial(r_true, r_true / (r_true + μ)))
         end
-        fg = fit_nb_gllvm_grouped(Y; K = K, group = ones(Int, p), iterations = 150)
+        # Match the shared fitter's Fisher-Laplace objective. Grouped defaults to
+        # hessian=:observed (TMB curvature); that is a different Laplace approx and
+        # must not be compared to fit_nb_gllvm under the same-model identity.
+        fg = fit_nb_gllvm_grouped(Y; K = K, group = ones(Int, p), iterations = 150,
+                                  hessian = :fisher)
         @test fg isa NBGroupedFit
         @test length(fg.r_group) == 1
         @test isfinite(fg.loglik)
         fs = fit_nb_gllvm(Y; K = K, iterations = 150)
-        # same model ⇒ same optimum to optimiser tolerance.
+        # same Fisher-Laplace model ⇒ same optimum to optimiser tolerance.
         @test isapprox(fg.loglik, fs.loglik; atol = 1e-2, rtol = 1e-4)
         @test isapprox(fg.r_group[1], fs.r, rtol = 0.1)
     end
