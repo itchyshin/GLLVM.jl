@@ -119,9 +119,13 @@ uses a **shared** slope `+ x` (not `(0 + trait):x`):
 value ~ 0 + trait + x + latent(0 + trait | site, d = K, unique = FALSE)
 ```
 
-`family` ∈ `(:gaussian, :binomial, :poisson)`. Pair with Julia
-`fit_gaussian_gllvm(; X=)` / `fit_gllvm_cov` (shared γ). NB2/Beta+X are fenced
-(dispersion identity ≠ public per-trait default).
+`family` ∈ `(:gaussian, :binomial, :poisson, :negbinomial, :beta)`. Pair with
+Julia `fit_gaussian_gllvm(; X=)` / `fit_gllvm_cov` (shared γ) for G/Bin/Pois,
+or `fit_nb_gllvm_grouped_cov` / `fit_beta_gllvm_grouped_cov` (per-trait
+dispersion + shared γ, `group=collect(1:p)`) for NB2/Beta — R's
+`gllvmTMB::nbinom2()` / `gllvmTMB::Beta()` default to per-trait dispersion, the
+same twin identity as the no-X helper (Arc 0 decision:
+`docs/dev-log/decisions/2026-08-02-nb2-beta-x-dispersion-identity.md`).
 """
 function fit_gllvmtmb_parity_loglik_x(
     y::AbstractMatrix,
@@ -129,7 +133,7 @@ function fit_gllvmtmb_parity_loglik_x(
     K::Integer;
     family::Symbol,
 )
-    family in (:gaussian, :binomial, :poisson) ||
+    family in (:gaussian, :binomial, :poisson, :negbinomial, :beta) ||
         throw(ArgumentError("unsupported shared-X parity family: $family"))
     p, n = size(y)
     length(x_site) == n ||
@@ -148,9 +152,11 @@ function fit_gllvmtmb_parity_loglik_x(
         x     = rep(as.numeric(x), each = p)
     )
     fam_obj <- switch(fam,
-        gaussian = stats::gaussian(),
-        binomial = stats::binomial(),
-        poisson  = stats::poisson(),
+        gaussian    = stats::gaussian(),
+        binomial    = stats::binomial(),
+        poisson     = stats::poisson(),
+        negbinomial = gllvmTMB::nbinom2(),
+        beta        = gllvmTMB::Beta(),
         stop(sprintf("unknown family: %s", fam))
     )
     # Shared site slope: bare `x`, NOT `(0 + trait):x` (per-trait slopes).

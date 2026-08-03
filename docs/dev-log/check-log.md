@@ -1,5 +1,36 @@
 # Check Log
 
+## 2026-08-02 - NB2/Beta+X Arc 2 — light gllvmTMB logLik parity cells
+
+Lane `parity/nb2-beta-x-arc2-20260802` from post-merge `origin/main` @
+`9f5133a7` (#175 merged). No engine changes — extends
+`test/parity/parity_helpers.jl` `fit_gllvmtmb_parity_loglik_x` to accept
+`:negbinomial`/`:beta` (`gllvmTMB::nbinom2()`/`gllvmTMB::Beta()`, per-trait
+dispersion by R default) and adds two `@testset`s to
+`test/parity/test_x_covariate_parity.jl`: "NB2 + shared X (q=1)" and "Beta +
+shared X (q=1)", using Arc 1 `fit_nb_gllvm_grouped_cov` /
+`fit_beta_gllvm_grouped_cov` (`group=collect(1:p)`, default
+`hessian=:observed`).
+
+DGP repair (both cells): the first draw for each family left one trait's
+per-trait dispersion running to a near-boundary value (NB2 `r` → ~1e7,
+near-Poisson; Beta `φ` → ~3.5e5, near-degenerate) — a genuine Heywood-like
+identifiability failure under the combined X + latent + per-trait-dispersion
+load, not numerical noise. Repaired by moving to `K=1`, milder loadings, and
+stronger true overdispersion/precision signal (NB2: `r_true=1.5`, `n=120`;
+Beta: `φ_true=8.0`, `n=80`) — both R fits then converge cleanly and every
+per-trait estimate stays well away from its boundary. rtol 1e-6 unchanged, no
+tolerance widened.
+
+Live run (`GLLVM_PARITY_TESTS=1 julia --project=test/parity
+test/parity/runparity.jl`): shared site-X cohort **34/34** (was 18/18 before
+Arc 2). NB2+X Δ logLik = `1.29e-8`; Beta+X Δ logLik = `4.29e-9`. Full
+`Pkg.test()`: **5096 pass / 1 broken (pre-existing) / 0 fail** in 55m22s
+(Aqua/JET included, no regressions). Rose fence: "NB2/Beta + shared site-X
+light logLik under per-trait φ, twin to gllvmTMB `disp.group`" — **not** full
+family parity, **not** shared-φ-Julia-vs-per-trait-R, no Gamma+X/Ordinal+X.
+After-task: `docs/dev-log/after-task/2026-08-02-nb2-beta-x-arc2-parity.md`.
+
 ## 2026-08-02 - NB2/Beta + X grouped_cov (API B under X)
 
 Lane `fix/nb2-beta-x-grouped-cov-20260802` from post-merge `origin/main` @
