@@ -119,13 +119,13 @@ uses a **shared** slope `+ x` (not `(0 + trait):x`):
 value ~ 0 + trait + x + latent(0 + trait | site, d = K, unique = FALSE)
 ```
 
-`family` ∈ `(:gaussian, :binomial, :poisson, :gamma)`. Pair with Julia
-`fit_gaussian_gllvm(; X=)` / `fit_gllvm_cov` (shared γ) for G/Bin/Pois, or
-`fit_gamma_gllvm_grouped_cov` (per-trait shape α + shared γ,
-`group=collect(1:p)`) for Gamma — R's ordinary `Gamma(link="log")` estimates
-per-trait `log_phi_gamma` (fid 4; see
-`docs/dev-log/decisions/2026-08-03-gamma-x-dispersion-identity.md`).
-NB2/Beta+X X-helper widen lives on #177 — do not claim those cells here.
+`family` ∈ `(:gaussian, :binomial, :poisson, :gamma, :negbinomial, :beta)`.
+Pair with Julia `fit_gaussian_gllvm(; X=)` / `fit_gllvm_cov` (shared γ) for
+G/Bin/Pois; `fit_gamma_gllvm_grouped_cov` (per-trait shape α + shared γ) for
+Gamma; or `fit_nb_gllvm_grouped_cov` / `fit_beta_gllvm_grouped_cov` (per-trait
+dispersion + shared γ) for NB2/Beta — R defaults match twin API B under X
+(Gamma identity `2026-08-03-gamma-x-dispersion-identity.md`; NB2/Beta
+`2026-08-02-nb2-beta-x-dispersion-identity.md`).
 """
 function fit_gllvmtmb_parity_loglik_x(
     y::AbstractMatrix,
@@ -133,7 +133,7 @@ function fit_gllvmtmb_parity_loglik_x(
     K::Integer;
     family::Symbol,
 )
-    family in (:gaussian, :binomial, :poisson, :gamma) ||
+    family in (:gaussian, :binomial, :poisson, :gamma, :negbinomial, :beta) ||
         throw(ArgumentError("unsupported shared-X parity family: $family"))
     p, n = size(y)
     length(x_site) == n ||
@@ -152,10 +152,12 @@ function fit_gllvmtmb_parity_loglik_x(
         x     = rep(as.numeric(x), each = p)
     )
     fam_obj <- switch(fam,
-        gaussian = stats::gaussian(),
-        binomial = stats::binomial(),
-        poisson  = stats::poisson(),
-        gamma    = stats::Gamma(link = "log"),
+        gaussian    = stats::gaussian(),
+        binomial    = stats::binomial(),
+        poisson     = stats::poisson(),
+        gamma       = stats::Gamma(link = "log"),
+        negbinomial = gllvmTMB::nbinom2(),
+        beta        = gllvmTMB::Beta(),
         stop(sprintf("unknown family: %s", fam))
     )
     # Shared site slope: bare `x`, NOT `(0 + trait):x` (per-trait slopes).
