@@ -1,5 +1,15 @@
 # Check Log
 
+## 2026-08-02 - Windows row-effect NA gate (unblock #175)
+
+PR #175 Windows CI failed twice on
+`test/test_missing_response_extra.jl:284` (`fr_na.converged`) with
+`fit_roweffect_gllvm(...; iterations=160)`. Arc 1 identity **14/14** on the
+same Windows runs; macOS/ubuntu/Julia 1.10 green; local missing-response-extra
+**35/35**. Restored fitter-default iteration budget (500) for the row-effect
+NA/mask cells; kept `n=50` runtime bound. No tolerance change. Probe (macOS):
+converges in 142 iters under seed 44.
+
 ## 2026-08-02 - NB2/Beta + X grouped_cov (API B under X)
 
 Lane `fix/nb2-beta-x-grouped-cov-20260802` from post-merge `origin/main` @
