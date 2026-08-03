@@ -1,5 +1,5 @@
 # Bridge fixed-effect covariates (X) for the one-part NON-Gaussian families:
-# Poisson/Binomial/Gamma → `fit_gllvm_cov`; NB2/Beta → per-trait
+# Poisson/Binomial → `fit_gllvm_cov`; NB2/Beta/Gamma → per-trait
 # `fit_*_gllvm_grouped_cov` (twin API B under X). Bridge coefficients must equal
 # the matching native oracle to ~1e-8. Gaussian-X preserves existing fields while
 # exposing the full mean coefficient payload needed by the R bridge.
@@ -89,7 +89,6 @@ end
         shared_cases = [
             ("poisson",  Poisson(),  (p = 5, n = 80, K = 1, q = 1), nothing),
             ("binomial", Binomial(), (p = 5, n = 80, K = 1, q = 1), 6),
-            ("gamma",    Gamma(),    (p = 4, n = 80, K = 1, q = 1), nothing),
         ]
         for (key, marker, dims, Ntrial) in shared_cases
             @testset "$key" begin
@@ -139,6 +138,19 @@ end
             disp_true = [oracle.φ[oracle.group[t]] for t in 1:4]
             @test br.dispersion ≈ disp_true atol = 1e-8
         end
+
+        @testset "gamma (per-trait grouped_cov)" begin
+            Y, X = _bx_sim(Gamma(), 4, 80, 1, 1; seed = 106)
+            oracle = GLLVM.fit_gamma_gllvm_grouped_cov(Y; X = X, K = 1, group = collect(1:4))
+            br = bridge_fit(; y = Y, family = "gamma", d = 1, X = X)
+            @test br.gamma ≈ oracle.γ atol = 1e-8
+            @test br.beta_cov ≈ oracle.β atol = 1e-8
+            @test br.alpha ≈ oracle.β atol = 1e-8
+            @test br.loadings ≈ GLLVM.getLoadings(oracle; rotate = true) atol = 1e-8
+            @test isapprox(br.loglik, oracle.loglik; atol = 1e-8)
+            disp_true = [oracle.α[oracle.group[t]] for t in 1:4]
+            @test br.dispersion ≈ disp_true atol = 1e-8
+        end
     end
 
     # -- CI ROUTING: bridge-X CI payloads == native confint oracles -------------
@@ -146,7 +158,6 @@ end
         shared_cases = [
             ("poisson",  Poisson(),  (p = 4, n = 70, K = 1, q = 1), nothing),
             ("binomial", Binomial(), (p = 4, n = 70, K = 1, q = 1), 6),
-            ("gamma",    Gamma(),    (p = 3, n = 70, K = 1, q = 1), nothing),
         ]
         for (key, marker, dims, Ntrial) in shared_cases
             @testset "$key Wald" begin
@@ -187,6 +198,19 @@ end
             oracle = GLLVM.fit_beta_gllvm_grouped_cov(Y; X = X, K = 1, group = collect(1:3))
             nat = GLLVM.confint(oracle, Y; method = :wald, X = X)
             br = bridge_fit(; y = Y, family = "beta", d = 1, X = X,
+                            options = Dict("ci_method" => "wald"))
+            @test br.ci_method == "wald"
+            @test any(==("gamma[1]"), br.ci_param_names)
+            d = _bx_ci_max_absdiff(br.ci_param_names, br.ci_lower, br.ci_upper,
+                                   nat.term, nat.lower, nat.upper)
+            @test d < 1e-8
+        end
+
+        @testset "gamma Wald (grouped_cov)" begin
+            Y, X = _bx_sim(Gamma(), 3, 70, 1, 1; seed = 525)
+            oracle = GLLVM.fit_gamma_gllvm_grouped_cov(Y; X = X, K = 1, group = collect(1:3))
+            nat = GLLVM.confint(oracle, Y; method = :wald, X = X)
+            br = bridge_fit(; y = Y, family = "gamma", d = 1, X = X,
                             options = Dict("ci_method" => "wald"))
             @test br.ci_method == "wald"
             @test any(==("gamma[1]"), br.ci_param_names)

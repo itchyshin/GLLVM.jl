@@ -920,6 +920,132 @@ function fit_gamma_gllvm_grouped(Y::AbstractMatrix; K::Integer,
                            Optim.converged(res), Optim.iterations(res))
 end
 
+"""
+    GammaGroupedCovFit
+
+Result of [`fit_gamma_gllvm_grouped_cov`](@ref): per-trait intercepts `β`, shared
+covariate coefficients `γ` (with `γ_fixed` zero mask), loadings `Λ`, per-group
+shape `α`, species→group map `group`, `link`, maximised Laplace `loglik`,
+`converged`, and `iterations`. Linear predictor `η = β + Xγ + Λz` with species
+shape `α[group[t]]` (`Var = μ²/α`).
+"""
+struct GammaGroupedCovFit
+    β::Vector{Float64}
+    γ::Vector{Float64}
+    γ_fixed::Vector{Bool}
+    Λ::Matrix{Float64}
+    α::Vector{Float64}
+    group::Vector{Int}
+    link::Link
+    loglik::Float64
+    converged::Bool
+    iterations::Int
+end
+
+function Base.show(io::IO, f::GammaGroupedCovFit)
+    p, K = size(f.Λ); q = length(f.γ)
+    print(io, "GammaGroupedCovFit(p=", p, ", q=", q, ", K=", K, ", G=", length(f.α),
+          ", α=", round.(f.α; sigdigits = 4),
+          ", loglik=", round(f.loglik; sigdigits = 7),
+          f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+_loadings(fit::GammaGroupedCovFit) = fit.Λ
+_loglik(fit::GammaGroupedCovFit)   = fit.loglik
+
+function _nparams(fit::GammaGroupedCovFit)
+    p, K = size(fit.Λ)
+    return p + count(!, fit.γ_fixed) + rr_theta_len(p, K) + length(fit.α)
+end
+
+"""
+    getLV(fit::GammaGroupedCovFit, Y, X; rotate=true, mask=nothing) -> n×K matrix
+
+Conditional latent scores at `η = β + Xγ + Λz` with per-trait Gamma shape.
+"""
+function getLV(fit::GammaGroupedCovFit, Y::AbstractMatrix{<:Real},
+               X::AbstractArray{<:Real, 3};
+               rotate::Bool = true, mask = nothing)
+    p = size(Y, 1)
+    αvec = [fit.α[fit.group[t]] for t in 1:p]
+    fams = [Gamma(float(αvec[t]), 1.0) for t in 1:p]
+    O = _build_offset(X, fit.γ)
+    return _grouped_getLV(Y, fit.Λ, fit.β, fit.link, fams;
+                          rotate = rotate, mask = mask, offset = O)
+end
+
+"""
+    fit_gamma_gllvm_grouped_cov(Y; X, K, group=1:p, link=LogLink(), mask=nothing,
+                                γ_fixed=nothing, …) -> GammaGroupedCovFit
+
+Fit a Gamma GLLVM with **grouped / per-trait shape** and **shared site
+covariates** `X` (`p×n×q`). Working vector `[β; γ_free; pack(Λ); log α_1 … log α_G]`;
+offset `O = Xγ` is passed into the grouped Laplace marginal (Fisher weights;
+same substrate as [`fit_gamma_gllvm_grouped`](@ref)). Public / bridge default
+under X for Gamma (twin API B; decision 2026-08-03). Keep [`fit_gllvm_cov`](@ref)
+for the shared-`α` + X opt-in. Identity checks against shared cov should use
+`group = ones(Int, p)` (G=1).
+"""
+function fit_gamma_gllvm_grouped_cov(Y::AbstractMatrix; X::AbstractArray{<:Real, 3},
+        K::Integer, group::AbstractVector{<:Integer} = collect(1:size(Y, 1)),
+        link::Link = LogLink(), mask = nothing, γ_fixed = nothing,
+        g_tol::Real = 1e-5, iterations::Integer = 500,
+        newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    p, n = size(Y)
+    size(X, 1) == p && size(X, 2) == n ||
+        throw(DimensionMismatch("X must be (p, n, q) = ($p, $n, q); got $(size(X))"))
+    length(group) == p || throw(ArgumentError("length(group)=$(length(group)) must equal p=$p"))
+    q_full = size(X, 3)
+    γ_fixed_mask = _fixed_zero_mask(γ_fixed, q_full, "γ_fixed")
+    X_fit, _ = _slice_fixed_X(X, γ_fixed_mask)
+    q = size(X_fit, 3)
+    rr = rr_theta_len(p, K)
+    labels = sort(unique(group))
+    G = length(labels)
+    gidx = [findfirst(==(group[t]), labels) for t in 1:p]
+
+    msk = _resolve_obs_mask(mask, Y)
+    Yc = _sanitize_missing(Y, 1.0)
+    Zemp = log.(max.(Yc, 1e-6))
+    _mask_warmstart!(Zemp, msk)
+    β0 = vec(sum(Zemp; dims = 2)) ./ n
+    Zc = Zemp .- β0
+    F = svd(Zc); kk = min(K, length(F.S))
+    Λ0 = zeros(p, K)
+    @inbounds for j in 1:kk
+        Λ0[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
+    end
+    θ0 = vcat(β0, zeros(q), pack_lambda(Λ0), fill(log(2.0), G))
+
+    function negll(θ)
+        β = θ[1:p]
+        γ = θ[(p + 1):(p + q)]
+        Λ = unpack_lambda(θ[(p + q + 1):(p + q + rr)], p, K)
+        αg = exp.(θ[(p + q + rr + 1):(p + q + rr + G)])
+        αvec = [αg[gidx[t]] for t in 1:p]
+        O = _build_offset(X_fit, γ)
+        v = try
+            -gamma_grouped_marginal_loglik_laplace(Yc, Λ, β, αvec; link = link, mask = msk,
+                                                   offset = O, maxiter = newton_maxiter,
+                                                   tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
+    res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
+                         autodiff = :finite)
+    θ̂ = Optim.minimizer(res)
+    β̂ = θ̂[1:p]
+    γ̂_free = θ̂[(p + 1):(p + q)]
+    γ̂ = collect(Float64, _expand_fixed_zero(γ̂_free, γ_fixed_mask))
+    Λ̂ = unpack_lambda(θ̂[(p + q + 1):(p + q + rr)], p, K)
+    α̂g = exp.(θ̂[(p + q + rr + 1):(p + q + rr + G)])
+    return GammaGroupedCovFit(β̂, γ̂, collect(Bool, γ_fixed_mask), Λ̂, α̂g, gidx, link,
+                              -Optim.minimum(res), Optim.converged(res), Optim.iterations(res))
+end
+
 # ===========================================================================
 # NB1 family — grouped / species-specific dispersion φ (gllvm's disp.group with
 # disp.formula = NULL, `family = negative.binomial1`). Each species t carries its

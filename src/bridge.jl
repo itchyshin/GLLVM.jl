@@ -285,7 +285,7 @@ function _bridge_compute_ci_ng(fit, Ydata, N, method::AbstractString,
     return _bridge_ci_from_native(method, level, ci)
 end
 
-function _bridge_compute_ci_cov(fit::Union{GllvmCovFit, NBGroupedCovFit, BetaGroupedCovFit},
+function _bridge_compute_ci_cov(fit::Union{GllvmCovFit, NBGroupedCovFit, BetaGroupedCovFit, GammaGroupedCovFit},
                                 Ydata, N, X,
                                 method::AbstractString, level::Real,
                                 nboot::Integer, seed::Integer)
@@ -1112,8 +1112,8 @@ function _bridge_fit_onepart_cov(Yf::AbstractMatrix{Float64}, key::AbstractStrin
           (N isa Number ? fill(round(Int, N), p, n) : round.(Int, Matrix(N)))) :
          nothing
 
-    # Twin API B under X: NB2/Beta default to per-trait φ + shared site-X.
-    # Shared-φ + X remains available via direct `fit_gllvm_cov`.
+    # Twin API B under X: NB2/Beta/Gamma default to per-trait φ/α + shared site-X.
+    # Shared-dispersion + X remains available via direct `fit_gllvm_cov`.
     if key == "negbinomial"
         Yi = round.(Int, Ydata)
         fit = fit_nb_gllvm_grouped_cov(Yi; X = Xarr, K = K, group = collect(1:p),
@@ -1124,6 +1124,12 @@ function _bridge_fit_onepart_cov(Yf::AbstractMatrix{Float64}, key::AbstractStrin
     elseif key == "beta"
         fit = fit_beta_gllvm_grouped_cov(Ydata; X = Xarr, K = K, group = collect(1:p),
                                          γ_fixed = coef_fixed)
+        return _bridge_assemble_grouped_cov(fit, key, traits, units, Ydata, Xarr,
+                                            coef_fixed, ci_method, ci_level,
+                                            ci_nboot, ci_seed; N = nothing)
+    elseif key == "gamma"
+        fit = fit_gamma_gllvm_grouped_cov(Ydata; X = Xarr, K = K, group = collect(1:p),
+                                          γ_fixed = coef_fixed)
         return _bridge_assemble_grouped_cov(fit, key, traits, units, Ydata, Xarr,
                                             coef_fixed, ci_method, ci_level,
                                             ci_nboot, ci_seed; N = nothing)
@@ -1169,9 +1175,9 @@ function _bridge_fit_onepart_cov(Yf::AbstractMatrix{Float64}, key::AbstractStrin
 end
 
 # Assemble the flat bridge contract for per-trait-dispersion + shared-X fits
-# (NB2/Beta API B under X). Dispersion is length-p (per trait); df counts G
+# (NB2/Beta/Gamma API B under X). Dispersion is length-p (per trait); df counts G
 # free dispersion parameters.
-function _bridge_assemble_grouped_cov(fit::Union{NBGroupedCovFit, BetaGroupedCovFit},
+function _bridge_assemble_grouped_cov(fit::Union{NBGroupedCovFit, BetaGroupedCovFit, GammaGroupedCovFit},
                                       key::AbstractString, traits, units,
                                       Ydata, Xarr, coef_fixed,
                                       ci_method::AbstractString, ci_level::Real,
@@ -1184,10 +1190,14 @@ function _bridge_assemble_grouped_cov(fit::Union{NBGroupedCovFit, BetaGroupedCov
         disp = Float64[fit.r_group[fit.group[t]] for t in 1:p]
         G = length(fit.r_group)
         disp_note = "per-trait NB2 size r (disp.group); shared site-X gamma."
-    else
+    elseif fit isa BetaGroupedCovFit
         disp = Float64[fit.φ[fit.group[t]] for t in 1:p]
         G = length(fit.φ)
         disp_note = "per-trait Beta precision phi (disp.group); shared site-X gamma."
+    else
+        disp = Float64[fit.α[fit.group[t]] for t in 1:p]
+        G = length(fit.α)
+        disp_note = "per-trait Gamma shape alpha (disp.group); shared site-X gamma."
     end
     scores = _bridge_scores(() -> getLV(fit, Ydata, Xarr; rotate = true))
     ci = ci_method == "none" ? nothing :
