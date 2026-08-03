@@ -90,16 +90,14 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
-- **Ordinal+X identity Arc 0 LOCAL DONE (2026-08-03).** ACCEPTED decision
-  `docs/dev-log/decisions/2026-08-03-ordinal-x-cutpoint-identity.md` (per-trait
-  cutpoints τ₁=0 / K−2 + shared site-X γ). After-task:
-  `docs/dev-log/after-task/2026-08-03-ordinal-x-identity.md`. **No engine** in
-  this lane. Next capability = Ordinal+X engine Arc 1 in a **fresh** `/goal`
-  after docs PR / acceptance holds.
-- **Next Cursor landings still OWED (2026-08-03).** Primary OWED: push/PR
-  `parity/gamma-x-arc2-20260803` when asked; merge #177 when Julia CI green.
-  Multi-lane pointer: `docs/dev-log/coordination-board.md`. Do not dual-PR
-  `fix/gamma-x-grouped-cov-20260803`.
+- **Ordinal+X identity Arc 0 LOCAL DONE / PR #179 (2026-08-03).** ACCEPTED
+  decision `docs/dev-log/decisions/2026-08-03-ordinal-x-cutpoint-identity.md`
+  (per-trait cutpoints τ₁=0 / K−2 + shared site-X γ). Docs-only; no engine in
+  this lane. Rebase onto post-#178 main then merge #179. Next capability =
+  Ordinal+X engine Arc 1 in a **fresh** `/goal` after acceptance on `main`.
+- **Gamma+X Arc 1–2 MERGED #178 (2026-08-03).** Identity + grouped_cov engine +
+  OH default + Gamma+X light RCall cell on `main` @ `5f027f19`.
+- **NB2/Beta+X Arc 2 MERGED #177; Windows NA #176 MERGED.**
 - **Windows row-effect NA budget MERGED (2026-08-03).** PR #176 → `main`
   @ `0e241215`.
 - **NB2/Beta+X engine Arc 1 MERGED (2026-08-02).** PR #175 → `main`.

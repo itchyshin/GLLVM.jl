@@ -189,11 +189,15 @@ not promote per-trait ordinal bridge CI parity.
 ### Gamma — `Gamma()`
 
 For positive-continuous data with Var = μ²/α (constant coefficient of variation),
-fit with `fit_gamma_gllvm` — or the unified entry point — which jointly estimates
-the shape `α`:
+the no-X public default remains shared-shape [`fit_gamma_gllvm`](@ref) /
+`fit_gllvm(...; family = Gamma())`. With shared site covariates, the public /
+bridge default is [`fit_gamma_gllvm_grouped_cov`](@ref) (per-trait shape `α` +
+shared `γ`; twin API B). Shared-α + X remains the opt-in
+[`fit_gllvm_cov`](@ref). Per-species shape without X is available via
+[`fit_gamma_gllvm_grouped`](@ref) / `disp_group`.
 
 ```julia
-fit = fit_gllvm(Yp; family = Gamma(), K = 2)   # Yp > 0
+fit = fit_gllvm(Yp; family = Gamma(), K = 2)   # Yp > 0; shared α (no-X)
 ```
 
 ### Beta-binomial — `fit_beta_binomial_gllvm`

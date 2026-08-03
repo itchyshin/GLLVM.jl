@@ -74,21 +74,20 @@ Gaussian / Binomial / Poisson with `q=1` shared site covariate
 `(0 + trait):x`. Julia: `fit_gaussian_gllvm(; X=)` / `fit_gllvm_cov`.
 Prefer twin R lib via `GLLVM_PARITY_R_LIBS` (default
 `/tmp/R-gllvmtmb-x-parity-20260802`).
-
 **NB2+X / Beta+X (Arc 2, `test_x_covariate_parity.jl` cohort 2):** shared
 site-X slope γ + **per-trait** dispersion (`group=collect(1:p)`), twin API B
 under X — matches R's `gllvmTMB::nbinom2()` / `gllvmTMB::Beta()` per-trait
-default, same identity as the no-X cells above but with the added shared `x`
-term. Julia: `fit_nb_gllvm_grouped_cov` / `fit_beta_gllvm_grouped_cov`,
-**default `hessian=:observed`** (not `:fisher` — that is only for the Arc 1
-identity tests vs shared `fit_gllvm_cov`). DGP note: per-trait dispersion
-under added latent + X variability is more Heywood-prone than the no-X case;
-both cells needed a DGP repair (K=1, milder loadings, stronger true
-overdispersion/precision signal) to keep every per-trait `r`/`φ` away from
-its boundary — see
-`docs/dev-log/after-task/2026-08-02-nb2-beta-x-arc2-parity.md`.
+default. Julia: `fit_nb_gllvm_grouped_cov` / `fit_beta_gllvm_grouped_cov`,
+**default `hessian=:observed`**. See
+`docs/dev-log/after-task/2026-08-02-nb2-beta-x-arc2-parity.md` (#177 merged).
 
-**Not claimed here:** Gamma+X; Ordinal+X; species-specific XB; X_lv;
+**Gamma+X** (Arc 2 cohort 3): `fit_gamma_gllvm_grouped_cov` with
+`group=collect(1:p)` and default `hessian=:observed` (TMB Laplace curvature;
+OH unblocker vs Fisher-only) vs `stats::Gamma(link="log")` / per-trait
+`log_phi_gamma`. Δ ≈ 3.03e-8 at seed=46 (rtol 1e-6). See
+`docs/dev-log/after-task/2026-08-03-gamma-x-arc2-parity.md`.
+
+**Not claimed here:** Ordinal+X; species-specific XB; X_lv;
 shared-φ-Julia-vs-per-trait-R comparisons; shared-dispersion NB2/Beta via
 named fitters as twin default; ordinal-logit; ADEMP; coverage; “full family
 parity.” `n_drift=0` ≠ these cells.
