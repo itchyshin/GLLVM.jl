@@ -1,5 +1,28 @@
 # Check Log
 
+## 2026-08-03 - Tweedie Wald SE seed repair (unblock #177 on Julia 1.10)
+
+`test/test_confint_family.jl:294` ("Tweedie Wald + bootstrap") flaked on
+**Julia 1.10-ubuntu only** (CI run 30814553093, macOS/windows/Julia-1-ubuntu
+green): `isfinite(ci.se[pidx])` failed for `phi`. Root cause found by local
+repro: with `Random.seed!(35)`, `fit_tweedie_gllvm` converges with the fitted
+power `p` pinned at its `p_init=1.5` default (`p=1.499997`), leaving a
+knife-edge-flat likelihood ridge in `(φ, p)` whose Hessian-derived phi SE is
+`~3.4e-8` — technically finite on macOS (Julia 1.10.0 local repro confirms),
+but on the knife-edge enough that a platform-dependent LAPACK/BLAS
+least-significant-bit difference on ubuntu's Julia 1.10 runner flips the sign
+of a near-zero curvature term, producing `NaN`. Not an #177-diff issue —
+`test_confint_family.jl` has zero diff vs `main` on this branch.
+
+Repair: swapped the DGP seed `35` → `3` (same n/K/p/iterations, no `@test`
+assertion or tolerance touched). Seed 3's draw makes the fit move well away
+from `p_init` (`p≈1.276`), giving a well-conditioned phi SE (`~0.086`, four
+orders of magnitude larger, immune to LSB-level platform noise). Verified
+locally: full `test/test_confint_family.jl` **124/124 pass** (7m21s,
+`julia --project=. test/test_confint_family.jl`, Julia 1.10.0 macOS). Rose
+fence: this is a setup/seed repair for a pre-existing, PR-177-unrelated flake
+— not a tolerance widening, not touching Julia 1.10 in the CI matrix (kept).
+
 ## 2026-08-03 - Arc 2 conflict resolution vs main (#177 close-out)
 
 Merged `origin/main` (post-#176, tip `0e241215`) into
