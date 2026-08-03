@@ -31,7 +31,7 @@ ARCS DONE (verified):
 - S8: Local commit(s) by explicit path (no `git add -A`).
 
 OPEN GATES: **CLEARED** — owner said "please allow" (2026-08-03); pushed
-branch and opened PR. PR URL: see below / commit history.
+branch and opened PR [#177](https://github.com/itchyshin/GLLVM.jl/pull/177).
 
 TRUTH LIVES IN: branch `parity/nb2-beta-x-arc2-20260802` @ worktree
 `/Users/z3437171/Dropbox/Github Local/GLLVM.jl/.worktrees/gllvmjl-nb2-beta-x-arc2-20260802`;
