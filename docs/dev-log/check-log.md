@@ -1,5 +1,15 @@
 # Check Log
 
+## 2026-08-03 - Arc 2 conflict resolution vs main (#177 close-out)
+
+Merged `origin/main` (post-#176, tip `0e241215`) into
+`parity/nb2-beta-x-arc2-20260802` to unblock PR #177. Only
+`docs/dev-log/check-log.md` and `docs/dev-log/coordination-board.md`
+conflicted (both docs-only, additive log/board entries from disjoint
+lanes); resolved by keeping both sides' entries and updating the
+Active-Lane-Split to reflect #176 **MERGED** and #177 awaiting green
+Julia CI. No engine, test, or tolerance changes in this commit.
+
 ## 2026-08-02 - NB2/Beta+X Arc 2 — light gllvmTMB logLik parity cells
 
 Lane `parity/nb2-beta-x-arc2-20260802` from post-merge `origin/main` @
@@ -30,6 +40,16 @@ Arc 2). NB2+X Δ logLik = `1.29e-8`; Beta+X Δ logLik = `4.29e-9`. Full
 light logLik under per-trait φ, twin to gllvmTMB `disp.group`" — **not** full
 family parity, **not** shared-φ-Julia-vs-per-trait-R, no Gamma+X/Ordinal+X.
 After-task: `docs/dev-log/after-task/2026-08-02-nb2-beta-x-arc2-parity.md`.
+
+## 2026-08-02 - Windows row-effect NA gate (unblock #175)
+
+PR #175 Windows CI failed twice on
+`test/test_missing_response_extra.jl:284` (`fr_na.converged`) with
+`fit_roweffect_gllvm(...; iterations=160)`. Arc 1 identity **14/14** on the
+same Windows runs; macOS/ubuntu/Julia 1.10 green; local missing-response-extra
+**35/35**. Restored fitter-default iteration budget (500) for the row-effect
+NA/mask cells; kept `n=50` runtime bound. No tolerance change. Probe (macOS):
+converges in 142 iters under seed 44.
 
 ## 2026-08-02 - NB2/Beta + X grouped_cov (API B under X)
 
