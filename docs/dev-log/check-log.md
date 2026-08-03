@@ -1,5 +1,51 @@
 # Check Log
 
+## 2026-08-03 - Merge origin/main into Gamma+X tip (post-#177)
+
+Resolved docs + `test/parity` conflicts so this PR carries Gamma+X Arc 1–2
+on top of merged #177 (NB2/Beta+X light cells). Unioned shared-X oracle
+families and X-cohort cells; no tolerance widen.
+
+## 2026-08-03 - Cursor handover (Gamma+X Arc 1–2 close)
+
+Handover `docs/dev-log/handover/2026-08-03-cursor-handover-gamma-x-arc2-close.md`
+on preferred tip `parity/gamma-x-arc2-20260803` (Arc 2 content @ `44e5f801`).
+`handoff_gate.sh` FAIL declared: Gamma stack CARRIED-OVER (push/PR ask);
+duplicate `fix/gamma-x-grouped-cov-20260803` @ `bcd48513` CARRIED-OVER (do not
+push); Dropbox `claude/jl-bridge-capabilities-20260619` PROTECTED; #177
+CARRIED-OVER (merge when green). Board + AGENTS snapshot point at Active-Lane-
+Split. Next: land Gamma PR when asked; merge #177; fresh chat = Ordinal+X
+identity Arc 0 only.
+
+## 2026-08-03 - Gamma+X light RCall Arc 2
+
+Lane `parity/gamma-x-arc2-20260803` stacked on engine tip `ca2b2c0b`. Unblocker:
+`fit_gamma_gllvm_grouped_cov` / grouped Gamma Laplace gained
+`hessian=:observed` (default; TMB curvature `W=α y/μ` under log link) —
+Fisher-only objective was systematically Δ≈0.2–1 vs gllvmTMB. Identity G=1 vs
+`fit_gllvm_cov` forces `hessian=:fisher`. Parity: extend
+`fit_gllvmtmb_parity_loglik_x` for `:gamma` → `stats::Gamma(link="log")`; add
+Gamma+X cell (`group=collect(1:p)`, default observed). Live
+`GLLVM_PARITY_TESTS=1`: Gamma+X **Δ≈3.03e-8** (seed=46, p=5, K=1, n=120);
+shared-X suite pass; identity **7/7**; bridge_x **204/204**. rtol stayed
+`1e-6`. Rose: OK for “Gamma+X light logLik under per-trait α”; ≠ full family
+parity; ≠ NB2/Beta+X on this tip (#177); ≠ Ordinal+X. After-task:
+`docs/dev-log/after-task/2026-08-03-gamma-x-arc2-parity.md`. Fence #177 merge.
+
+## 2026-08-03 - Gamma + X grouped_cov (API B under X) — Arc 1
+
+Lane `fix/gamma-x-grouped-cov-20260803` from `origin/main` @ `0e241215` (+
+cherry-picked identity decision `82cdd5e5`/`2e865b82`). Engine:
+`fit_gamma_gllvm_grouped_cov` / `GammaGroupedCovFit` (θ = `[β; γ; pack(Λ); log α…]`,
+FD LBFGS; offset `O=Xγ` into `gamma_grouped_marginal_loglik_laplace`). Bridge +
+`@formula` route `gamma`+X here; `fit_gllvm_cov(...; family=Gamma())` stays
+shared-α opt-in. Identity `test/test_gamma_x_identity.jl`: **7/7** (G=1 ≈
+`fit_gllvm_cov` atol=1e-2/rtol=1e-4; constant αvec+X offset ll ≈ shared to
+1e-10). Bridge X **204/204**; formula **11/11** + Gamma route smoke →
+`GammaGroupedCovFit`. Rose fence: Arc 1 Julia identity + routing only — **not**
+Arc 2 RCall; no Option B flip; #177 untouched. After-task:
+`docs/dev-log/after-task/2026-08-03-gamma-x-grouped-cov.md`.
+
 ## 2026-08-03 - Tweedie Wald SE seed repair (unblock #177 on Julia 1.10)
 
 `test/test_confint_family.jl:294` ("Tweedie Wald + bootstrap") flaked on
@@ -10706,3 +10752,48 @@ After-task: `docs/dev-log/after-task/2026-08-02-x-covariate-light-loglik.md`.
 
 Rose fence: light logLik with shared X for G/Bin/Pois only — not NB2/Beta+X,
 not full family parity. Push/PR gated on maintainer ask.
+
+## 2026-08-03 - Gamma+X dispersion identity (Arc 0)
+
+Branch `docs/gamma-x-identity-20260803` from `origin/main` @ `0e241215` (#176
+merged). Docs-only; **no `src/`**.
+
+Decision lock (G0 Ada judgment): public/twin default for Gamma **under shared
+site-X** = per-trait shape `α_t` + shared `γ`, twin to live gllvmTMB
+`log_phi_gamma` (fid 4). Shared-α + X remains opt-in via `fit_gllvm_cov`.
+No-X bridge Option B = **named follow-up** (not flipped here).
+
+Twin cites verified on `gllvmTMB` `origin/main` @ `840d1da8`
+(`git show origin/main:…`):
+- `src/gllvmTMB.cpp:313,746,2152–2156` (`PARAMETER_VECTOR(log_phi_gamma)`,
+  per-trait `exp(log_phi_gamma(t))`)
+- `R/fit-multi.R:4034–4040,4771` (per-trait warmstart + Ordinary Gamma map note)
+
+Artefacts:
+- `docs/dev-log/decisions/2026-08-03-gamma-x-dispersion-identity.md`
+- `docs/dev-log/after-task/2026-08-03-gamma-x-identity.md`
+- `docs/dev-log/plan-actual/2026-08-03-gamma-x-identity.md`
+- board update in `docs/dev-log/coordination-board.md`
+
+Rose fence: identity ≠ engine; ≠ Gamma+X RCall; ≠ full family parity;
+≠ Ordinal+X; ≠ silent no-X Option B flip. #177 landing remains separate OWED.
+
+## 2026-08-03 - Gamma+X engine Arc 1 (`fit_gamma_gllvm_grouped_cov`)
+
+Branch `fix/gamma-x-grouped-cov-20260803` from `origin/main` @ `0e241215`
+(+ identity decision commits). Twin re-cite on local gllvmTMB @ `19e9cedd`:
+`src/gllvmTMB.cpp:248,617,2033–2037`; `R/fit-multi.R:4249`.
+
+Engine: `GammaGroupedCovFit` + `fit_gamma_gllvm_grouped_cov` (per-trait/group
+α + shared site-X γ; FD LBFGS). Bridge X + `@formula`+X route `gamma` through
+it. `fit_gllvm_cov(...; family=Gamma())` remains shared-α opt-in.
+
+Verify (printed tallies; no rtol widen):
+- `test/test_gamma_x_identity.jl` → **7/7 Pass**
+- `test/test_bridge_x.jl` → **204/204 Pass**
+- formula smoke → `GammaGroupedCovFit` (G=p)
+
+Rose fence: engine claim only (Julia identity + routing). **Not** light RCall
+Gamma+X; **not** no-X Option B flip; **not** full family parity; **not** #177
+merge. Next = separate RCall Arc 2 `/goal`. After-task:
+`docs/dev-log/after-task/2026-08-03-gamma-x-grouped-cov.md`.

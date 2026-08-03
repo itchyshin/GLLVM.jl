@@ -90,30 +90,34 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
-- **Next Cursor lane — land NB2/Beta+X Arc 1 then Arc 2 (2026-08-02).**
-  Primary OWED: merge [#175](https://github.com/itchyshin/GLLVM.jl/pull/175)
-  when CI green; Arc 2 RCall light cells only after that (separate `/goal`).
-  Multi-lane pointer: `docs/dev-log/coordination-board.md` (Active-Lane-Split).
+- **Next Cursor lane — land Gamma+X stack + #177 (2026-08-03).** Primary OWED:
+  push/PR `parity/gamma-x-arc2-20260803` (Arc 2 @ `44e5f801` + handover tip)
+  when asked; merge #177 when CI green. Multi-lane pointer:
+  `docs/dev-log/coordination-board.md`.
   `START HERE (Cursor):`
-  `docs/dev-log/handover/2026-08-02-cursor-handover-nb2-beta-x-arc1.md`.
-- **Grouped dispersion one-group bug MERGED (2026-08-02).** PR #172 → `main`.
-  Identity under `hessian=:fisher`. After-task:
-  `docs/dev-log/after-task/2026-08-02-grouped-dispersion-one-group.md`.
-- **MC Julia capability-status MERGED (2026-08-02).** PR #173 → `main`.
-  `docs/design/capability-status.md`.
+  `docs/dev-log/handover/2026-08-03-cursor-handover-gamma-x-arc2-close.md`.
+  After landings: fresh chat = Ordinal+X identity Arc 0 (decision doc only).
+- **Gamma+X Arc 2 LOCAL DONE (2026-08-03).** Light RCall Δ≈3.03e-8; OH default
+  on grouped Gamma Laplace. After-task:
+  `docs/dev-log/after-task/2026-08-03-gamma-x-arc2-parity.md`.
+- **Gamma+X engine Arc 1 LOCAL DONE (2026-08-03).** Bundled in preferred tip.
+  After-task: `docs/dev-log/after-task/2026-08-03-gamma-x-grouped-cov.md`.
+- **Gamma+X identity Arc 0 ACCEPTED (2026-08-03).** Decision
+  `docs/dev-log/decisions/2026-08-03-gamma-x-dispersion-identity.md`.
+- **Windows row-effect NA budget MERGED (2026-08-03).** PR #176 → `main`
+  @ `0e241215`.
+- **NB2/Beta+X engine Arc 1 MERGED (2026-08-02).** PR #175 → `main`.
 - **NB2/Beta+X identity design Arc 0 MERGED (2026-08-02).** PR #174 → `main`.
   Decision: `docs/dev-log/decisions/2026-08-02-nb2-beta-x-dispersion-identity.md`.
+- **Grouped dispersion one-group bug MERGED (2026-08-02).** PR #172 → `main`.
+- **MC Julia capability-status MERGED (2026-08-02).** PR #173 → `main`.
 - **X/covariate light logLik cohort 1 MERGED (2026-08-02).** PR #170 → `main`.
-  Shared site-X light logLik G/Bin/Pois only. Rose fence: not NB2/Beta+X RCall
-  (Arc 2) or full family parity.
+  Rose fence: not full family parity.
 - **Default-route NB2/Beta per-trait φ MERGED (2026-08-02).** PR #169 → `main`.
-  Handover (historical):
-  `docs/dev-log/handover/2026-08-01-cursor-handover-default-route-phi.md`.
 - **Catch-up light gllvmTMB logLik oracles DONE (2026-08-01).** Named-route
-  **63/63**. Rose fence: **not** full family parity. Historical:
-  `docs/dev-log/handover/2026-08-01-cursor-handover.md`.
+  **63/63**. Rose fence: **not** full family parity.
 - **Codex restart handoff for Phylo Model A redesign (2026-06-30).** PR #127
-  closed/parked. Do not orphan. `START HERE (Codex):`
+  closed/parked. Do not orphan.
   `docs/dev-log/handover/2026-06-30-codex-handover.md`.
 - **Phase 0 — Team and memory scaffolding (complete, 2026-05-30).** PR #1.
 - **Phase 1.1 — O(p) node-frame gradient (complete, 2026-05-30).** PR #2.

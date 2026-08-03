@@ -18,11 +18,11 @@ Status words (MC parser; counts derived at render time — never hand-typed into
 
 **Rose fence.** Intended API similarity ≠ full parity claim.
 
-- Light gllvmTMB logLik: named-route **63/63** + shared site-X **34/34**
-  (Gaussian / Binomial / Poisson **18/18**, plus Arc 2 NB2+X / Beta+X
-  **16/16** — per-trait dispersion + shared γ, `hessian=:observed`, twin API B
-  under X). Not full family parity; ADEMP and coverage certificates remain
-  fenced.
+- Light gllvmTMB logLik: named-route **63/63** + shared site-X
+  Gaussian/Binomial/Poisson **18/18** + NB2+X/Beta+X **16/16** (#177) +
+  **Gamma+X** light cell (per-trait α, observed Laplace; Δ≈3e-8). Engine
+  Arc 1 lands per-trait NB2/Beta/Gamma+X (Julia identity). Not full family
+  parity; ADEMP and coverage certificates remain fenced.
 - R-bridge (`engine = "julia"`) rows that are live are still **partial** vs the
   public R-user surface even when Status = `implemented`.
 - Phylo Model A / source-specific `lv` intervals: **rejected** for advertising.
