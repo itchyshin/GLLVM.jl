@@ -90,13 +90,16 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
-- **Next Cursor lane — Gamma+X identity Arc 0 (2026-08-03).** Docs-only
-  decision ACCEPTED (G0): per-trait shape + shared site-X under X; no-X
-  Option B = named follow-up. Branch `docs/gamma-x-identity-20260803`.
-  Decision: `docs/dev-log/decisions/2026-08-03-gamma-x-dispersion-identity.md`.
-  Multi-lane pointer: `docs/dev-log/coordination-board.md`. Engine Arc 1
-  fenced until this note is on `main`. Parallel OWED: land #177 (rebase after
-  #176).
+- **Gamma+X engine Arc 1 LOCAL DONE (2026-08-03).** Branch
+  `fix/gamma-x-grouped-cov-20260803` — `fit_gamma_gllvm_grouped_cov` +
+  bridge/`@formula` routing; Julia identity **7/7**; bridge_x **204/204**.
+  After-task: `docs/dev-log/after-task/2026-08-03-gamma-x-grouped-cov.md`.
+  Rose fence: engine claim only — **not** light RCall; **not** Option B flip;
+  **not** full family parity. Push/PR OWED. Next = RCall Arc 2 `/goal`.
+  Parallel OWED: land #177 (still CONFLICTING).
+- **Gamma+X identity Arc 0 ACCEPTED (2026-08-03).** Decision
+  `docs/dev-log/decisions/2026-08-03-gamma-x-dispersion-identity.md` (bundled
+  on the engine branch if not yet on `main`).
 - **Windows row-effect NA budget MERGED (2026-08-03).** PR #176 → `main`
   @ `0e241215`.
 - **NB2/Beta+X engine Arc 1 MERGED (2026-08-02).** PR #175 → `main`.

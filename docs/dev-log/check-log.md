@@ -1,5 +1,19 @@
 # Check Log
 
+## 2026-08-03 - Gamma + X grouped_cov (API B under X) — Arc 1
+
+Lane `fix/gamma-x-grouped-cov-20260803` from `origin/main` @ `0e241215` (+
+cherry-picked identity decision `82cdd5e5`/`2e865b82`). Engine:
+`fit_gamma_gllvm_grouped_cov` / `GammaGroupedCovFit` (θ = `[β; γ; pack(Λ); log α…]`,
+FD LBFGS; offset `O=Xγ` into `gamma_grouped_marginal_loglik_laplace`). Bridge +
+`@formula` route `gamma`+X here; `fit_gllvm_cov(...; family=Gamma())` stays
+shared-α opt-in. Identity `test/test_gamma_x_identity.jl`: **7/7** (G=1 ≈
+`fit_gllvm_cov` atol=1e-2/rtol=1e-4; constant αvec+X offset ll ≈ shared to
+1e-10). Bridge X **204/204**; formula **11/11** + Gamma route smoke →
+`GammaGroupedCovFit`. Rose fence: Arc 1 Julia identity + routing only — **not**
+Arc 2 RCall; no Option B flip; #177 untouched. After-task:
+`docs/dev-log/after-task/2026-08-03-gamma-x-grouped-cov.md`.
+
 ## 2026-08-02 - Windows row-effect NA gate (unblock #175)
 
 PR #175 Windows CI failed twice on
@@ -10667,3 +10681,23 @@ Artefacts:
 
 Rose fence: identity ≠ engine; ≠ Gamma+X RCall; ≠ full family parity;
 ≠ Ordinal+X; ≠ silent no-X Option B flip. #177 landing remains separate OWED.
+
+## 2026-08-03 - Gamma+X engine Arc 1 (`fit_gamma_gllvm_grouped_cov`)
+
+Branch `fix/gamma-x-grouped-cov-20260803` from `origin/main` @ `0e241215`
+(+ identity decision commits). Twin re-cite on local gllvmTMB @ `19e9cedd`:
+`src/gllvmTMB.cpp:248,617,2033–2037`; `R/fit-multi.R:4249`.
+
+Engine: `GammaGroupedCovFit` + `fit_gamma_gllvm_grouped_cov` (per-trait/group
+α + shared site-X γ; FD LBFGS). Bridge X + `@formula`+X route `gamma` through
+it. `fit_gllvm_cov(...; family=Gamma())` remains shared-α opt-in.
+
+Verify (printed tallies; no rtol widen):
+- `test/test_gamma_x_identity.jl` → **7/7 Pass**
+- `test/test_bridge_x.jl` → **204/204 Pass**
+- formula smoke → `GammaGroupedCovFit` (G=p)
+
+Rose fence: engine claim only (Julia identity + routing). **Not** light RCall
+Gamma+X; **not** no-X Option B flip; **not** full family parity; **not** #177
+merge. Next = separate RCall Arc 2 `/goal`. After-task:
+`docs/dev-log/after-task/2026-08-03-gamma-x-grouped-cov.md`.

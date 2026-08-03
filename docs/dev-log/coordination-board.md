@@ -4,7 +4,8 @@
 
 | Lane | Status | Branch / tip | Current handover / pointer | Owns |
 |---|---|---|---|---|
-| **Gamma+X identity Arc 0** | **ACTIVE** | `docs/gamma-x-identity-20260803` @ worktree | decision `docs/dev-log/decisions/2026-08-03-gamma-x-dispersion-identity.md` · plan `docs/dev-log/plans/2026-08-03-gamma-x-identity-ultra-plan.md` · after-task `docs/dev-log/after-task/2026-08-03-gamma-x-identity.md` | Docs-only identity lock (per-trait α + shared site-X). No engine. |
+| **Gamma+X engine Arc 1** | **LOCAL DONE** | `fix/gamma-x-grouped-cov-20260803` | after-task `docs/dev-log/after-task/2026-08-03-gamma-x-grouped-cov.md` · LOOP `lanes/gamma-x-grouped-cov-20260803/LOOP/` | `fit_gamma_gllvm_grouped_cov` + identity; no RCall; fence #177. |
+| **Gamma+X identity Arc 0** | **ACCEPTED** (bundled on engine branch) | `docs/gamma-x-identity-20260803` @ worktree | decision `docs/dev-log/decisions/2026-08-03-gamma-x-dispersion-identity.md` · plan `docs/dev-log/plans/2026-08-03-gamma-x-identity-ultra-plan.md` · after-task `docs/dev-log/after-task/2026-08-03-gamma-x-identity.md` | Docs-only identity lock (per-trait α + shared site-X). No engine. |
 | **NB2/Beta+X Arc 2** | **OPEN** #177 | `parity/nb2-beta-x-arc2-20260802` | handover `docs/dev-log/handover/2026-08-03-cursor-handover-nb2-beta-x-arc2-close.md` | Light RCall NB2+X/Beta+X. Landing gate (rebase vs #176); not Gamma content. |
 | **NB2/Beta+X engine Arc 1** | **MERGED** #175 | `main` | after-task `docs/dev-log/after-task/2026-08-02-nb2-beta-x-grouped-cov.md` | Per-trait φ + shared site-X. Closed. |
 | **Windows row-effect NA budget** | **MERGED** #176 | `main` @ `0e241215` | after-task `docs/dev-log/after-task/2026-08-02-windows-roweffect-na-gate.md` | Closed. |
@@ -19,18 +20,21 @@
 ## Current Rule
 
 - Rehydrate via **this Active-Lane-Split**, not a single orphaned START HERE bullet.
-- `START HERE (Cursor):` Gamma+X identity Arc 0 — decision note on
-  `docs/gamma-x-identity-20260803`. Next engine Arc 1 only after this note is
-  on `main` / accepted. Parallel: land #177 when green+MERGEABLE (rebase
-  after #176). Dropbox checkout remains PROTECTED.
-- Rose fence: Gamma+X identity ≠ engine; ≠ light RCall; ≠ full family parity;
-  ≠ Ordinal+X; ≠ `X_lv`; ≠ ADEMP/coverage; ≠ Phylo Model A; ≠ silent no-X
-  Option B flip.
+- `START HERE (Cursor):` Gamma+X engine Arc 1 is **local-done** on
+  `fix/gamma-x-grouped-cov-20260803` (push/PR OWED). Next separate `/goal` =
+  Gamma+X light RCall Arc 2. Parallel: land #177 when green+MERGEABLE.
+  Dropbox checkout remains PROTECTED.
+- Rose fence: Gamma+X engine claim = per-trait α + shared γ under X with Julia
+  identity only — ≠ light RCall; ≠ full family parity; ≠ Ordinal+X; ≠ `X_lv`;
+  ≠ ADEMP/coverage; ≠ Phylo Model A; ≠ silent no-X Option B flip; ≠ #177 merge.
 - Bridge execution R→Julia only (JuliaCall); RCall = opt-in oracle.
 - Stage by name; never `git add -A`; no push without instruction.
 
 ## Status
 
+- 2026-08-03 — Gamma+X **engine Arc 1** local-done on
+  `fix/gamma-x-grouped-cov-20260803` (identity 7/7; bridge_x 204/204).
+  RCall Arc 2 fenced. #177 still OPEN / CONFLICTING — leave alone.
 - 2026-08-03 — Gamma+X **identity Arc 0** ACCEPTED (G0 Ada judgment): per-trait
   shape + shared site-X; no-X Option B = named follow-up. Docs branch
   `docs/gamma-x-identity-20260803` from `origin/main` @ `0e241215`.
