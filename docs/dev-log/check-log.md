@@ -10642,3 +10642,28 @@ After-task: `docs/dev-log/after-task/2026-08-02-x-covariate-light-loglik.md`.
 
 Rose fence: light logLik with shared X for G/Bin/Pois only — not NB2/Beta+X,
 not full family parity. Push/PR gated on maintainer ask.
+
+## 2026-08-03 - Gamma+X dispersion identity (Arc 0)
+
+Branch `docs/gamma-x-identity-20260803` from `origin/main` @ `0e241215` (#176
+merged). Docs-only; **no `src/`**.
+
+Decision lock (G0 Ada judgment): public/twin default for Gamma **under shared
+site-X** = per-trait shape `α_t` + shared `γ`, twin to live gllvmTMB
+`log_phi_gamma` (fid 4). Shared-α + X remains opt-in via `fit_gllvm_cov`.
+No-X bridge Option B = **named follow-up** (not flipped here).
+
+Twin cites verified on `gllvmTMB` `origin/main` @ `840d1da8`
+(`git show origin/main:…`):
+- `src/gllvmTMB.cpp:313,746,2152–2156` (`PARAMETER_VECTOR(log_phi_gamma)`,
+  per-trait `exp(log_phi_gamma(t))`)
+- `R/fit-multi.R:4034–4040,4771` (per-trait warmstart + Ordinary Gamma map note)
+
+Artefacts:
+- `docs/dev-log/decisions/2026-08-03-gamma-x-dispersion-identity.md`
+- `docs/dev-log/after-task/2026-08-03-gamma-x-identity.md`
+- `docs/dev-log/plan-actual/2026-08-03-gamma-x-identity.md`
+- board update in `docs/dev-log/coordination-board.md`
+
+Rose fence: identity ≠ engine; ≠ Gamma+X RCall; ≠ full family parity;
+≠ Ordinal+X; ≠ silent no-X Option B flip. #177 landing remains separate OWED.
