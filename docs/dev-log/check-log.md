@@ -1,5 +1,26 @@
 # Check Log
 
+## 2026-08-03 - Rebase Ordinal identity tip onto post-#178 main
+
+Resolved board/AGENTS/check-log conflicts after Gamma+X #178 merged.
+Docs-only; no `src/`.
+
+## 2026-08-03 - Ordinal+X cutpoint identity (Arc 0 docs)
+
+Lane `docs/ordinal-x-identity-20260803` from `origin/main` @ `0e241215`.
+Decision ACCEPTED: public twin default under shared site-X =
+**per-trait cutpoints** (τ₁=0 fixed, K−2 free log-spacings) + **shared γ**,
+mirroring Gamma/NB2 API B under X for the cutpoint estimand (not φ).
+Twin cites: `gllvmTMB` `src/gllvmTMB.cpp:650–659`, `:2152–2167`;
+`man/ordinal_probit.Rd:24–26`; site-X via `X_fix*b_fix` `:664–667`.
+Julia cites: `fit_gllvm`→`fit_ordinal_gllvm_pertrait`
+(`src/families/fit_gllvm.jl:144`); per-trait unpack τ₁=0
+(`src/families/ordinal.jl:308–324`); bridge “no covariate kernel”
+(`src/bridge.jl:171–173`, `:393–405`). Mechanical: **no `src/`** in lane
+diff. Rose fence: docs ≠ engine ≠ RCall ≠ full family parity; Gamma land /
+#177 remain OWED outside GOAL. After-task:
+`docs/dev-log/after-task/2026-08-03-ordinal-x-identity.md`.
+
 ## 2026-08-03 - Merge origin/main into Gamma+X tip (post-#177)
 
 Resolved docs + `test/parity` conflicts so this PR carries Gamma+X Arc 1–2
