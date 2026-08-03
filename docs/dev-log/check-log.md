@@ -1,6 +1,5 @@
 # Check Log
 
-<<<<<<< HEAD
 ## 2026-08-03 - Ordinal+X cutpoint identity (Arc 0 docs)
 
 Lane `docs/ordinal-x-identity-20260803` from `origin/main` @ `0e241215`.
@@ -16,7 +15,7 @@ Julia cites: `fit_gllvm`→`fit_ordinal_gllvm_pertrait`
 diff. Rose fence: docs ≠ engine ≠ RCall ≠ full family parity; Gamma land /
 #177 remain OWED outside GOAL. After-task:
 `docs/dev-log/after-task/2026-08-03-ordinal-x-identity.md`.
-=======
+
 ## 2026-08-03 - Tweedie Wald SE seed repair (unblock #177 on Julia 1.10)
 
 `test/test_confint_family.jl:294` ("Tweedie Wald + bootstrap") flaked on
@@ -80,7 +79,6 @@ Arc 2). NB2+X Δ logLik = `1.29e-8`; Beta+X Δ logLik = `4.29e-9`. Full
 light logLik under per-trait φ, twin to gllvmTMB `disp.group`" — **not** full
 family parity, **not** shared-φ-Julia-vs-per-trait-R, no Gamma+X/Ordinal+X.
 After-task: `docs/dev-log/after-task/2026-08-02-nb2-beta-x-arc2-parity.md`.
->>>>>>> origin/main
 
 ## 2026-08-02 - Windows row-effect NA gate (unblock #175)
 
