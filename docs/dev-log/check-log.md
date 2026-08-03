@@ -1,5 +1,16 @@
 # Check Log
 
+## 2026-08-03 - Cursor handover (Gamma+X Arc 1–2 close)
+
+Handover `docs/dev-log/handover/2026-08-03-cursor-handover-gamma-x-arc2-close.md`
+on preferred tip `parity/gamma-x-arc2-20260803` (Arc 2 content @ `44e5f801`).
+`handoff_gate.sh` FAIL declared: Gamma stack CARRIED-OVER (push/PR ask);
+duplicate `fix/gamma-x-grouped-cov-20260803` @ `bcd48513` CARRIED-OVER (do not
+push); Dropbox `claude/jl-bridge-capabilities-20260619` PROTECTED; #177
+CARRIED-OVER (merge when green). Board + AGENTS snapshot point at Active-Lane-
+Split. Next: land Gamma PR when asked; merge #177; fresh chat = Ordinal+X
+identity Arc 0 only.
+
 ## 2026-08-03 - Gamma+X light RCall Arc 2
 
 Lane `parity/gamma-x-arc2-20260803` stacked on engine tip `ca2b2c0b`. Unblocker:

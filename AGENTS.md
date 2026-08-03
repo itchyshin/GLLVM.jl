@@ -90,16 +90,20 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
-- **Gamma+X engine Arc 1 LOCAL DONE (2026-08-03).** Branch
-  `fix/gamma-x-grouped-cov-20260803` — `fit_gamma_gllvm_grouped_cov` +
-  bridge/`@formula` routing; Julia identity **7/7**; bridge_x **204/204**.
+- **Next Cursor lane — land Gamma+X stack + #177 (2026-08-03).** Primary OWED:
+  push/PR `parity/gamma-x-arc2-20260803` (Arc 2 @ `44e5f801` + handover tip)
+  when asked; merge #177 when CI green. Multi-lane pointer:
+  `docs/dev-log/coordination-board.md`.
+  `START HERE (Cursor):`
+  `docs/dev-log/handover/2026-08-03-cursor-handover-gamma-x-arc2-close.md`.
+  After landings: fresh chat = Ordinal+X identity Arc 0 (decision doc only).
+- **Gamma+X Arc 2 LOCAL DONE (2026-08-03).** Light RCall Δ≈3.03e-8; OH default
+  on grouped Gamma Laplace. After-task:
+  `docs/dev-log/after-task/2026-08-03-gamma-x-arc2-parity.md`.
+- **Gamma+X engine Arc 1 LOCAL DONE (2026-08-03).** Bundled in preferred tip.
   After-task: `docs/dev-log/after-task/2026-08-03-gamma-x-grouped-cov.md`.
-  Rose fence: engine claim only — **not** light RCall; **not** Option B flip;
-  **not** full family parity. Push/PR OWED. Next = RCall Arc 2 `/goal`.
-  Parallel OWED: land #177 (still CONFLICTING).
 - **Gamma+X identity Arc 0 ACCEPTED (2026-08-03).** Decision
-  `docs/dev-log/decisions/2026-08-03-gamma-x-dispersion-identity.md` (bundled
-  on the engine branch if not yet on `main`).
+  `docs/dev-log/decisions/2026-08-03-gamma-x-dispersion-identity.md`.
 - **Windows row-effect NA budget MERGED (2026-08-03).** PR #176 → `main`
   @ `0e241215`.
 - **NB2/Beta+X engine Arc 1 MERGED (2026-08-02).** PR #175 → `main`.

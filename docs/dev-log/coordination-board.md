@@ -4,10 +4,11 @@
 
 | Lane | Status | Branch / tip | Current handover / pointer | Owns |
 |---|---|---|---|---|
-| **Gamma+X light RCall Arc 2** | **LOCAL DONE** | `parity/gamma-x-arc2-20260803` | after-task `docs/dev-log/after-task/2026-08-03-gamma-x-arc2-parity.md` · LOOP `lanes/gamma-x-arc2-20260803/LOOP/` | Gamma+X light logLik; OH unblocker; fence #177. |
-| **Gamma+X engine Arc 1** | **LOCAL DONE** (base of Arc 2) | `fix/gamma-x-grouped-cov-20260803` @ `ca2b2c0b` | after-task `docs/dev-log/after-task/2026-08-03-gamma-x-grouped-cov.md` | Engine tip; push/PR OWED with Arc 2 stack. |
-| **Gamma+X identity Arc 0** | **ACCEPTED** (bundled on engine branch) | `docs/gamma-x-identity-20260803` @ worktree | decision `docs/dev-log/decisions/2026-08-03-gamma-x-dispersion-identity.md` · plan `docs/dev-log/plans/2026-08-03-gamma-x-identity-ultra-plan.md` · after-task `docs/dev-log/after-task/2026-08-03-gamma-x-identity.md` | Docs-only identity lock (per-trait α + shared site-X). No engine. |
-| **NB2/Beta+X Arc 2** | **OPEN** #177 | `parity/nb2-beta-x-arc2-20260802` | handover `docs/dev-log/handover/2026-08-03-cursor-handover-nb2-beta-x-arc2-close.md` | Light RCall NB2+X/Beta+X. Landing gate; not Gamma content. |
+| **Gamma+X Arc 1–2 close (handover)** | **LOCAL DONE · push OWED** | `parity/gamma-x-arc2-20260803` (Arc2 @ `44e5f801` + handover) | handover `docs/dev-log/handover/2026-08-03-cursor-handover-gamma-x-arc2-close.md` · after-task Arc2 `docs/dev-log/after-task/2026-08-03-gamma-x-arc2-parity.md` | Preferred land tip (identity+engine+OH+light cell). |
+| **Gamma+X light RCall Arc 2** | **LOCAL DONE** (on preferred tip) | `parity/gamma-x-arc2-20260803` | after-task `docs/dev-log/after-task/2026-08-03-gamma-x-arc2-parity.md` · LOOP `lanes/gamma-x-arc2-20260803/LOOP/` | Gamma+X light logLik; OH unblocker; fence #177. |
+| **Gamma+X engine Arc 1** | **LOCAL DONE** (base of Arc 2) | `fix/gamma-x-grouped-cov-20260803` @ `ca2b2c0b` (+ duplicate Arc2 tip `bcd48513` — do not push) | after-task `docs/dev-log/after-task/2026-08-03-gamma-x-grouped-cov.md` | Duplicate Arc 2 CARRIED-OVER; prefer `parity/` PR. |
+| **Gamma+X identity Arc 0** | **ACCEPTED** (bundled on stack) | `docs/gamma-x-identity-20260803` | decision `docs/dev-log/decisions/2026-08-03-gamma-x-dispersion-identity.md` | Docs-only identity lock (per-trait α + shared site-X). |
+| **NB2/Beta+X Arc 2** | **OPEN** #177 | `parity/nb2-beta-x-arc2-20260802` | handover `docs/dev-log/handover/2026-08-03-cursor-handover-nb2-beta-x-arc2-close.md` | Light RCall NB2+X/Beta+X. Merge when CI green. |
 | **NB2/Beta+X engine Arc 1** | **MERGED** #175 | `main` | after-task `docs/dev-log/after-task/2026-08-02-nb2-beta-x-grouped-cov.md` | Per-trait φ + shared site-X. Closed. |
 | **Windows row-effect NA budget** | **MERGED** #176 | `main` @ `0e241215` | after-task `docs/dev-log/after-task/2026-08-02-windows-roweffect-na-gate.md` | Closed. |
 | **Grouped dispersion one-group bug** | **MERGED** #172 | `main` | after-task `docs/dev-log/after-task/2026-08-02-grouped-dispersion-one-group.md` | Closed. |
@@ -21,25 +22,26 @@
 ## Current Rule
 
 - Rehydrate via **this Active-Lane-Split**, not a single orphaned START HERE bullet.
-- `START HERE (Cursor):` Gamma+X Arc 2 **local-done** on
-  `parity/gamma-x-arc2-20260803` (push/PR OWED). Parallel: land #177 when
-  green+MERGEABLE. Dropbox checkout remains PROTECTED.
+- `START HERE (Cursor):`
+  `docs/dev-log/handover/2026-08-03-cursor-handover-gamma-x-arc2-close.md`
+  (land `parity/gamma-x-arc2-20260803` when asked; merge #177 when green; then
+  fresh chat = Ordinal+X identity Arc 0). Dropbox checkout remains PROTECTED.
 - Rose fence: Gamma+X light logLik under per-trait α (OH) — ≠ full family
   parity; ≠ Ordinal+X; ≠ `X_lv`; ≠ ADEMP/coverage; ≠ Phylo Model A; ≠ silent
-  no-X Option B flip; ≠ #177 merge.
+  no-X Option B flip; ≠ dual-PR the duplicate `fix/` Arc 2 tip.
 - Bridge execution R→Julia only (JuliaCall); RCall = opt-in oracle.
 - Stage by name; never `git add -A`; no push without instruction.
 
 ## Status
 
-- 2026-08-03 — Gamma+X **light RCall Arc 2** local-done on
-  `parity/gamma-x-arc2-20260803` (Δ≈3.03e-8; identity 7/7; bridge_x 204/204).
-  OH unblocker on grouped Gamma Laplace. #177 left alone.
-- 2026-08-03 — Gamma+X **engine Arc 1** local-done on
-  `fix/gamma-x-grouped-cov-20260803` (identity 7/7; bridge_x 204/204).
-- 2026-08-03 — Gamma+X **identity Arc 0** ACCEPTED (G0 Ada judgment): per-trait
-  shape + shared site-X; no-X Option B = named follow-up. Docs branch
-  `docs/gamma-x-identity-20260803` from `origin/main` @ `0e241215`.
+- 2026-08-03 — Cursor handover written: Gamma+X Arc 1–2 local-done on
+  `parity/gamma-x-arc2-20260803` (Arc 2 @ `44e5f801` + handover tip;
+  push/PR OWED). Duplicate `fix/…` @ `bcd48513` CARRIED-OVER (do not push).
+  #177 OPEN/MERGEABLE; Julia CI in progress.
+- 2026-08-03 — Gamma+X **light RCall Arc 2** local-done (Δ≈3.03e-8; identity
+  7/7; bridge_x 204/204). OH unblocker on grouped Gamma Laplace.
+- 2026-08-03 — Gamma+X **engine Arc 1** local-done (bundled in preferred tip).
+- 2026-08-03 — Gamma+X **identity Arc 0** ACCEPTED.
 - 2026-08-03 — #176 **merged**; #177 still OPEN / CONFLICTING vs main (docs
   conflict after #176) — separate OWED landing gate.
 - 2026-08-02 — NB2/Beta+X **engine Arc 1** **merged** [#175](https://github.com/itchyshin/GLLVM.jl/pull/175).
