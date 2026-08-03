@@ -75,10 +75,23 @@ Gaussian / Binomial / Poisson with `q=1` shared site covariate
 Prefer twin R lib via `GLLVM_PARITY_R_LIBS` (default
 `/tmp/R-gllvmtmb-x-parity-20260802`).
 
-**Not claimed here:** NB2/Beta+X; Gamma+X; Ordinal+X; species-specific XB;
-X_lv; shared-dispersion NB2/Beta via named fitters as twin default;
-ordinal-logit; ADEMP; coverage; “full family parity.”
-`n_drift=0` ≠ these cells.
+**NB2+X / Beta+X (Arc 2, `test_x_covariate_parity.jl` cohort 2):** shared
+site-X slope γ + **per-trait** dispersion (`group=collect(1:p)`), twin API B
+under X — matches R's `gllvmTMB::nbinom2()` / `gllvmTMB::Beta()` per-trait
+default, same identity as the no-X cells above but with the added shared `x`
+term. Julia: `fit_nb_gllvm_grouped_cov` / `fit_beta_gllvm_grouped_cov`,
+**default `hessian=:observed`** (not `:fisher` — that is only for the Arc 1
+identity tests vs shared `fit_gllvm_cov`). DGP note: per-trait dispersion
+under added latent + X variability is more Heywood-prone than the no-X case;
+both cells needed a DGP repair (K=1, milder loadings, stronger true
+overdispersion/precision signal) to keep every per-trait `r`/`φ` away from
+its boundary — see
+`docs/dev-log/after-task/2026-08-02-nb2-beta-x-arc2-parity.md`.
+
+**Not claimed here:** Gamma+X; Ordinal+X; species-specific XB; X_lv;
+shared-φ-Julia-vs-per-trait-R comparisons; shared-dispersion NB2/Beta via
+named fitters as twin default; ordinal-logit; ADEMP; coverage; “full family
+parity.” `n_drift=0` ≠ these cells.
 
 ## Tolerances
 

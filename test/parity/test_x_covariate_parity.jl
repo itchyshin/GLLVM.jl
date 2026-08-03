@@ -1,8 +1,12 @@
 # test_x_covariate_parity.jl — shared site-X light logLik vs gllvmTMB
 #
 # Included by runparity.jl AFTER no-X cells. NEVER included by runtests.jl.
-# Cohort 1: Gaussian / Binomial / Poisson with q=1 shared site covariate.
-# Fence: NB2/Beta+X, Gamma, Ordinal+X (see LOOP/GOAL.md).
+# Cohort 1: Gaussian / Binomial / Poisson with q=1 shared site covariate (#170).
+# Cohort 2 (Arc 2): NB2 / Beta with q=1 shared site-X + per-trait dispersion,
+# using Arc 1 fit_nb_gllvm_grouped_cov / fit_beta_gllvm_grouped_cov
+# (group=collect(1:p), default hessian=:observed — twin API B under X, per
+# docs/dev-log/decisions/2026-08-02-nb2-beta-x-dispersion-identity.md).
+# Fence: Gamma+X, Ordinal+X, X_lv, shared-φ-Julia-vs-per-trait-R comparisons.
 
 using GLLVM, RCall, Test, Random, LinearAlgebra, Statistics
 
@@ -16,6 +20,47 @@ function _rand_poisson_x(λ::Float64)
         k += 1
         prod *= rand()
         prod <= L && return k - 1
+    end
+end
+
+# Marsaglia–Tsang gamma sampler — matches test_negbin_parity.jl (no Distributions dep).
+function _rand_gamma_x(shape::Float64, scale::Float64)
+    if shape < 1.0
+        return _rand_gamma_x(shape + 1.0, scale) * rand()^(1.0 / shape)
+    end
+    d = shape - 1.0 / 3.0
+    c = 1.0 / sqrt(9.0 * d)
+    while true
+        z = randn()
+        v = (1.0 + c * z)^3
+        v <= 0 && continue
+        u = rand()
+        z2 = z * z
+        u < 1.0 - 0.0331 * z2 * z2 && return d * v * scale
+        logu = log(u)
+        logu < 0.5 * z2 + d * (1.0 - v + log(v)) && return d * v * scale
+    end
+end
+
+# Gamma–Poisson compound: NB2 with mean μ, dispersion r (Var = μ + μ²/r).
+function _rand_nb2_x(μ::Float64, r::Float64)
+    λ = _rand_gamma_x(r, μ / r)
+    return _rand_poisson_x(λ)
+end
+
+# Johnk's algorithm — Beta(a,b) for a,b > 0, matches test_beta_parity.jl.
+function _rand_beta_x(a::Float64, b::Float64)
+    a = max(a, 1e-12)
+    b = max(b, 1e-12)
+    while true
+        u = rand()
+        v = rand()
+        xu = u^(1 / a)
+        yv = v^(1 / b)
+        s = xu + yv
+        if s <= 1.0 && s > 0.0
+            return xu / s
+        end
     end
 end
 
@@ -113,6 +158,100 @@ end
 
         print_parity_loglik(
             "Poisson+X logLik oracle (seed=422, p=$p, K=$K, n=$n, q=1 shared)";
+            jl_logL = jl_logL, r_logL = r.logLik, r_obj = r.objective,
+        )
+
+        @testset "log-likelihood agreement (rtol=1e-6)" begin
+            @test jl_logL ≈ r.logLik rtol = 1e-6
+            @test r.logLik ≈ -r.objective rtol = 0 atol = 1e-10
+        end
+    end
+
+    @testset "NB2 + shared X (q=1)" begin
+        # Per-trait r (group=collect(1:p)) + shared site-X slope γ — twin API B
+        # under X (docs/dev-log/decisions/2026-08-02-nb2-beta-x-dispersion-identity.md).
+        # Default hessian=:observed (NOT :fisher — that's only for the Arc 1
+        # identity tests vs shared fit_gllvm_cov, a different estimand).
+        # DGP repair note: an initial K=2/r_true=6/n=60 draw left one trait's
+        # per-trait r running to a near-Poisson boundary (Heywood-like — same
+        # instability mode Fisher flagged for NB2+X), producing a genuine
+        # optimizer disagreement (R "relative convergence" but a different
+        # local optimum) rather than numerical noise. K=1 + strong
+        # overdispersion (r_true=1.5) + n=120 keeps every per-trait r
+        # well-identified (Δ ~1e-8 at seed=45).
+        Random.seed!(45)
+        p, K, n = 5, 1, 120
+        β = log.([2.5, 3.0, 2.0, 2.8, 2.2])
+        r_true = 1.5
+        Λ = 0.2 .* parity_loadings_p5k2()[:, 1:K]
+        γ = 0.4
+        x = randn(n)
+        X = parity_site_design(x, p)
+        Z = randn(K, n)
+        η = β .+ γ .* x' .+ Λ * Z
+        Y = [_rand_nb2_x(exp(clamp(η[t, s], -8.0, 8.0)), r_true) for t in 1:p, s in 1:n]
+
+        jl_fit = fit_nb_gllvm_grouped_cov(Y; X = X, K = K, group = collect(1:p))
+        @test jl_fit isa NBGroupedCovFit
+        @test jl_fit.converged
+        @test isfinite(jl_fit.loglik)
+        @test length(jl_fit.r_group) == p
+        jl_logL = jl_fit.loglik
+
+        r = fit_gllvmtmb_parity_loglik_x(Y, x, K; family = :negbinomial)
+        @test r.converged
+        @test isfinite(r.logLik)
+
+        print_parity_loglik(
+            "NB2+X logLik oracle (seed=45, p=$p, K=$K, n=$n, q=1 shared, per-trait r)";
+            jl_logL = jl_logL, r_logL = r.logLik, r_obj = r.objective,
+        )
+
+        @testset "log-likelihood agreement (rtol=1e-6)" begin
+            @test jl_logL ≈ r.logLik rtol = 1e-6
+            @test r.logLik ≈ -r.objective rtol = 0 atol = 1e-10
+        end
+    end
+
+    @testset "Beta + shared X (q=1)" begin
+        # Per-trait φ (group=collect(1:p)) + shared site-X slope γ — twin API B
+        # under X. Default hessian=:observed.
+        # DGP repair note: an initial φ_true=12/n=60 draw left one trait's
+        # per-trait φ running to a near-degenerate boundary (Heywood-like),
+        # producing R "false convergence (8)" even though the reported logLik
+        # itself still agreed to ~5e-8 relative. Milder loadings + φ_true=8 +
+        # n=80 keeps every per-trait φ well-identified and R converges cleanly.
+        Random.seed!(45)
+        p, K, n = 5, 1, 80
+        β = [0.30, -0.20, 0.25, -0.15, 0.05]
+        φ_true = 8.0
+        Λ = 0.1 .* parity_loadings_p5k2()[:, 1:K]
+        γ = 0.35
+        x = randn(n)
+        X = parity_site_design(x, p)
+        Z = randn(K, n)
+        η = β .+ γ .* x' .+ Λ * Z
+        Y = [
+            begin
+                μ = clamp(1 / (1 + exp(-η[t, s])), 1e-4, 1 - 1e-4)
+                _rand_beta_x(μ * φ_true, (1 - μ) * φ_true)
+            end
+            for t in 1:p, s in 1:n
+        ]
+
+        jl_fit = fit_beta_gllvm_grouped_cov(Y; X = X, K = K, group = collect(1:p))
+        @test jl_fit isa BetaGroupedCovFit
+        @test jl_fit.converged
+        @test isfinite(jl_fit.loglik)
+        @test length(jl_fit.φ) == p
+        jl_logL = jl_fit.loglik
+
+        r = fit_gllvmtmb_parity_loglik_x(Y, x, K; family = :beta)
+        @test r.converged
+        @test isfinite(r.logLik)
+
+        print_parity_loglik(
+            "Beta+X logLik oracle (seed=45, p=$p, K=$K, n=$n, q=1 shared, per-trait φ)";
             jl_logL = jl_logL, r_logL = r.logLik, r_obj = r.objective,
         )
 

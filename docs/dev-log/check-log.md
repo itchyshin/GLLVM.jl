@@ -1,5 +1,69 @@
 # Check Log
 
+## 2026-08-03 - Tweedie Wald SE seed repair (unblock #177 on Julia 1.10)
+
+`test/test_confint_family.jl:294` ("Tweedie Wald + bootstrap") flaked on
+**Julia 1.10-ubuntu only** (CI run 30814553093, macOS/windows/Julia-1-ubuntu
+green): `isfinite(ci.se[pidx])` failed for `phi`. Root cause found by local
+repro: with `Random.seed!(35)`, `fit_tweedie_gllvm` converges with the fitted
+power `p` pinned at its `p_init=1.5` default (`p=1.499997`), leaving a
+knife-edge-flat likelihood ridge in `(φ, p)` whose Hessian-derived phi SE is
+`~3.4e-8` — technically finite on macOS (Julia 1.10.0 local repro confirms),
+but on the knife-edge enough that a platform-dependent LAPACK/BLAS
+least-significant-bit difference on ubuntu's Julia 1.10 runner flips the sign
+of a near-zero curvature term, producing `NaN`. Not an #177-diff issue —
+`test_confint_family.jl` has zero diff vs `main` on this branch.
+
+Repair: swapped the DGP seed `35` → `3` (same n/K/p/iterations, no `@test`
+assertion or tolerance touched). Seed 3's draw makes the fit move well away
+from `p_init` (`p≈1.276`), giving a well-conditioned phi SE (`~0.086`, four
+orders of magnitude larger, immune to LSB-level platform noise). Verified
+locally: full `test/test_confint_family.jl` **124/124 pass** (7m21s,
+`julia --project=. test/test_confint_family.jl`, Julia 1.10.0 macOS). Rose
+fence: this is a setup/seed repair for a pre-existing, PR-177-unrelated flake
+— not a tolerance widening, not touching Julia 1.10 in the CI matrix (kept).
+
+## 2026-08-03 - Arc 2 conflict resolution vs main (#177 close-out)
+
+Merged `origin/main` (post-#176, tip `0e241215`) into
+`parity/nb2-beta-x-arc2-20260802` to unblock PR #177. Only
+`docs/dev-log/check-log.md` and `docs/dev-log/coordination-board.md`
+conflicted (both docs-only, additive log/board entries from disjoint
+lanes); resolved by keeping both sides' entries and updating the
+Active-Lane-Split to reflect #176 **MERGED** and #177 awaiting green
+Julia CI. No engine, test, or tolerance changes in this commit.
+
+## 2026-08-02 - NB2/Beta+X Arc 2 — light gllvmTMB logLik parity cells
+
+Lane `parity/nb2-beta-x-arc2-20260802` from post-merge `origin/main` @
+`9f5133a7` (#175 merged). No engine changes — extends
+`test/parity/parity_helpers.jl` `fit_gllvmtmb_parity_loglik_x` to accept
+`:negbinomial`/`:beta` (`gllvmTMB::nbinom2()`/`gllvmTMB::Beta()`, per-trait
+dispersion by R default) and adds two `@testset`s to
+`test/parity/test_x_covariate_parity.jl`: "NB2 + shared X (q=1)" and "Beta +
+shared X (q=1)", using Arc 1 `fit_nb_gllvm_grouped_cov` /
+`fit_beta_gllvm_grouped_cov` (`group=collect(1:p)`, default
+`hessian=:observed`).
+
+DGP repair (both cells): the first draw for each family left one trait's
+per-trait dispersion running to a near-boundary value (NB2 `r` → ~1e7,
+near-Poisson; Beta `φ` → ~3.5e5, near-degenerate) — a genuine Heywood-like
+identifiability failure under the combined X + latent + per-trait-dispersion
+load, not numerical noise. Repaired by moving to `K=1`, milder loadings, and
+stronger true overdispersion/precision signal (NB2: `r_true=1.5`, `n=120`;
+Beta: `φ_true=8.0`, `n=80`) — both R fits then converge cleanly and every
+per-trait estimate stays well away from its boundary. rtol 1e-6 unchanged, no
+tolerance widened.
+
+Live run (`GLLVM_PARITY_TESTS=1 julia --project=test/parity
+test/parity/runparity.jl`): shared site-X cohort **34/34** (was 18/18 before
+Arc 2). NB2+X Δ logLik = `1.29e-8`; Beta+X Δ logLik = `4.29e-9`. Full
+`Pkg.test()`: **5096 pass / 1 broken (pre-existing) / 0 fail** in 55m22s
+(Aqua/JET included, no regressions). Rose fence: "NB2/Beta + shared site-X
+light logLik under per-trait φ, twin to gllvmTMB `disp.group`" — **not** full
+family parity, **not** shared-φ-Julia-vs-per-trait-R, no Gamma+X/Ordinal+X.
+After-task: `docs/dev-log/after-task/2026-08-02-nb2-beta-x-arc2-parity.md`.
+
 ## 2026-08-02 - Windows row-effect NA gate (unblock #175)
 
 PR #175 Windows CI failed twice on
