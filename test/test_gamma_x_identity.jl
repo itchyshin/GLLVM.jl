@@ -52,7 +52,7 @@ using GLLVM
             Y[t, s] = rand(Gamma(α_true, μ / α_true)) + 1e-6
         end
         fg = fit_gamma_gllvm_grouped_cov(Y; X = X, K = K, group = ones(Int, p),
-                                         iterations = 200)
+                                         hessian = :fisher, iterations = 200)
         @test fg isa GammaGroupedCovFit
         @test length(fg.α) == 1
         @test length(fg.γ) == q

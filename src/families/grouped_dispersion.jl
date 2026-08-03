@@ -733,16 +733,31 @@ end
 # ===========================================================================
 # Gamma family — grouped / species-specific shape α (gllvm's disp.group with
 # disp.formula = NULL). Each species t carries its own shape α_{g(t)}, so the
-# Var = μ²/α overdispersion can vary across species (or groups). With G = 1 this
-# reduces EXACTLY to the shared-shape Gamma fit. The shape α is carried in the
-# family marker `Gamma(α, ·)` — only its `α` field is read. This mirrors the NB
-# grouped path above; the shared Gamma hot path (gamma.jl) is left untouched.
+# Var = μ²/α overdispersion can vary across species (or groups). With G = 1 and
+# hessian=:fisher this reduces EXACTLY to the shared-shape Gamma fit. The fit
+# default hessian=:observed is the TMB Laplace curvature (different objective).
+# The shape α is carried in the family marker `Gamma(α, ·)` — only its `α` field
+# is read. This mirrors the NB/Beta grouped paths; the shared Gamma hot path
+# (gamma.jl) is left untouched.
 # ===========================================================================
+
+# Exact negative conditional curvature for Gamma/log. TMB's Laplace objective
+# uses this observed Hessian rather than the expected Fisher information:
+# -∂²ℓ/∂η² = α * y / μ  (log link).
+function _gamma_grouped_laplace_weight(hessian::Symbol, f::Gamma, μ, me, y, link::Link)
+    hessian === :fisher && return _glm_weight(f, μ, 1, me)
+    hessian === :observed || throw(ArgumentError(
+        "hessian must be :fisher or :observed; got :$hessian"))
+    link isa LogLink || throw(ArgumentError(
+        "hessian=:observed is currently supported only for Gamma with LogLink()"))
+    return f.α * y / μ
+end
 
 # Per-site Laplace log-marginal with per-species Gamma shape markers `fams`.
 function _gamma_grouped_loglik_site(fams::AbstractVector, y::AbstractVector, n::AbstractVector,
         Λ::AbstractMatrix, β::AbstractVector, link::Link;
-        mask = nothing, offset = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
+        mask = nothing, offset = nothing, hessian::Symbol = :fisher,
+        maxiter::Integer = 100, tol::Real = 1e-9)
     p, K = size(Λ)
     off = offset === nothing ? false : offset
     z = zeros(K)
@@ -752,7 +767,7 @@ function _gamma_grouped_loglik_site(fams::AbstractVector, y::AbstractVector, n::
         μ  = _clamp_mu.(fams, linkinv.(Ref(link), η))
         me = mu_eta.(Ref(link), η)
         s  = _glm_score.(fams, μ, n, me, y)
-        W  = _glm_weight.(fams, μ, n, me)
+        W  = _gamma_grouped_laplace_weight.(Ref(hessian), fams, μ, me, y, Ref(link))
         if mask !== nothing
             s = ifelse.(mask, s, 0.0)
             W = ifelse.(mask, W, 0.0)
@@ -766,7 +781,7 @@ function _gamma_grouped_loglik_site(fams::AbstractVector, y::AbstractVector, n::
     η  = _clamp_eta.(β .+ off .+ Λ * z)
     μ  = _clamp_mu.(fams, linkinv.(Ref(link), η))
     me = mu_eta.(Ref(link), η)
-    W  = _glm_weight.(fams, μ, n, me)
+    W  = _gamma_grouped_laplace_weight.(Ref(hessian), fams, μ, me, y, Ref(link))
     if mask !== nothing
         W = ifelse.(mask, W, 0.0)
     end
@@ -781,16 +796,18 @@ end
 
 """
     gamma_grouped_marginal_loglik_laplace(Y, Λ, β, αvec; link=LogLink(), mask=nothing,
-                                          offset=nothing, kwargs...) -> Float64
+                                          offset=nothing, hessian=:fisher, kwargs...) -> Float64
 
 Total Laplace log-marginal of a Gamma GLLVM with **per-species** shape `αvec`
 (length p; `Var_t = μ_t²/αvec[t]`). `Y` is the p×n matrix of positive reals; `Λ`
 p×K; `β` length-p. With a constant `αvec = fill(α, p)` this equals the shared-shape
-[`gamma_marginal_loglik_laplace`](@ref) to machine precision.
+[`gamma_marginal_loglik_laplace`](@ref) to machine precision when
+`hessian=:fisher` (the default). `hessian=:observed` uses the conditional
+Gamma/log Hessian used by TMB's Laplace objective.
 """
 function gamma_grouped_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix,
         β::AbstractVector, αvec::AbstractVector; link::Link = LogLink(),
-        mask = nothing, offset = nothing, kwargs...)
+        mask = nothing, offset = nothing, hessian::Symbol = :fisher, kwargs...)
     p = size(Λ, 1)
     length(αvec) == p || throw(ArgumentError("length(αvec)=$(length(αvec)) must equal p=$p"))
     N = ones(Int, size(Y))
@@ -800,7 +817,7 @@ function gamma_grouped_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMa
         mi = mask   === nothing ? nothing : view(mask, :, i)
         oi = offset === nothing ? nothing : view(offset, :, i)
         acc += _gamma_grouped_loglik_site(fams, view(Y, :, i), view(N, :, i), Λ, β, link;
-                                          mask = mi, offset = oi, kwargs...)
+                                         mask = mi, offset = oi, hessian = hessian, kwargs...)
     end
     return acc
 end
@@ -859,18 +876,22 @@ function getLV(fit::GammaGroupedFit, Y::AbstractMatrix{<:Real};
 end
 
 """
-    fit_gamma_gllvm_grouped(Y; K, group, link=LogLink(), mask=nothing, offset=nothing, …) -> GammaGroupedFit
+    fit_gamma_gllvm_grouped(Y; K, group, link=LogLink(), mask=nothing, offset=nothing,
+                            hessian=:observed, …) -> GammaGroupedFit
 
 Fit a Gamma GLLVM with grouped / species-specific shape (gllvm's `disp.group`):
 species `t` shares shape `α[group[t]]`. `group` is a length-p vector of group ids
 (relabelled to `1..G` internally; default `1:p` = per-species). L-BFGS over
 `[β; vec(Λ); log α_1 … log α_G]`; finite-difference gradient; warm start from log
 row-means as intercepts + SVD of row-centred log-Y as loadings + a moderate per-group
-`α₀`. With one group this matches [`fit_gamma_gllvm`](@ref).
+`α₀`. With one group and `hessian=:fisher` this matches [`fit_gamma_gllvm`](@ref).
+`hessian=:observed` (the default) is the TMB Laplace curvature — a different
+objective; set `hessian=:fisher` to retain the expected-information approximation.
 """
 function fit_gamma_gllvm_grouped(Y::AbstractMatrix; K::Integer,
         group::AbstractVector{<:Integer} = collect(1:size(Y, 1)),
         link::Link = LogLink(), mask = nothing, offset = nothing,
+        hessian::Symbol = :observed,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
@@ -902,7 +923,8 @@ function fit_gamma_gllvm_grouped(Y::AbstractMatrix; K::Integer,
         αvec = [αg[gidx[t]] for t in 1:p]
         v = try
             -gamma_grouped_marginal_loglik_laplace(Yc, Λ, β, αvec; link = link, mask = msk,
-                                                   offset = offset, maxiter = newton_maxiter,
+                                                   offset = offset, hessian = hessian,
+                                                   maxiter = newton_maxiter,
                                                    tol = newton_tol)
         catch
             return 1e12
@@ -976,12 +998,13 @@ end
 
 """
     fit_gamma_gllvm_grouped_cov(Y; X, K, group=1:p, link=LogLink(), mask=nothing,
-                                γ_fixed=nothing, …) -> GammaGroupedCovFit
+                                γ_fixed=nothing, hessian=:observed, …) -> GammaGroupedCovFit
 
 Fit a Gamma GLLVM with **grouped / per-trait shape** and **shared site
 covariates** `X` (`p×n×q`). Working vector `[β; γ_free; pack(Λ); log α_1 … log α_G]`;
-offset `O = Xγ` is passed into the grouped Laplace marginal (Fisher weights;
-same substrate as [`fit_gamma_gllvm_grouped`](@ref)). Public / bridge default
+offset `O = Xγ` is passed into the grouped Laplace marginal. Default
+`hessian=:observed` matches TMB; identity checks against shared
+[`fit_gllvm_cov`](@ref) should force `hessian=:fisher`. Public / bridge default
 under X for Gamma (twin API B; decision 2026-08-03). Keep [`fit_gllvm_cov`](@ref)
 for the shared-`α` + X opt-in. Identity checks against shared cov should use
 `group = ones(Int, p)` (G=1).
@@ -989,6 +1012,7 @@ for the shared-`α` + X opt-in. Identity checks against shared cov should use
 function fit_gamma_gllvm_grouped_cov(Y::AbstractMatrix; X::AbstractArray{<:Real, 3},
         K::Integer, group::AbstractVector{<:Integer} = collect(1:size(Y, 1)),
         link::Link = LogLink(), mask = nothing, γ_fixed = nothing,
+        hessian::Symbol = :observed,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
@@ -1026,7 +1050,8 @@ function fit_gamma_gllvm_grouped_cov(Y::AbstractMatrix; X::AbstractArray{<:Real,
         O = _build_offset(X_fit, γ)
         v = try
             -gamma_grouped_marginal_loglik_laplace(Yc, Λ, β, αvec; link = link, mask = msk,
-                                                   offset = O, maxiter = newton_maxiter,
+                                                   offset = O, hessian = hessian,
+                                                   maxiter = newton_maxiter,
                                                    tol = newton_tol)
         catch
             return 1e12
