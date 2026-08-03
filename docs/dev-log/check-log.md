@@ -1,5 +1,20 @@
 # Check Log
 
+## 2026-08-03 - Gamma+X light RCall Arc 2
+
+Lane `parity/gamma-x-arc2-20260803` stacked on engine tip `ca2b2c0b`. Unblocker:
+`fit_gamma_gllvm_grouped_cov` / grouped Gamma Laplace gained
+`hessian=:observed` (default; TMB curvature `W=α y/μ` under log link) —
+Fisher-only objective was systematically Δ≈0.2–1 vs gllvmTMB. Identity G=1 vs
+`fit_gllvm_cov` forces `hessian=:fisher`. Parity: extend
+`fit_gllvmtmb_parity_loglik_x` for `:gamma` → `stats::Gamma(link="log")`; add
+Gamma+X cell (`group=collect(1:p)`, default observed). Live
+`GLLVM_PARITY_TESTS=1`: Gamma+X **Δ≈3.03e-8** (seed=46, p=5, K=1, n=120);
+shared-X suite pass; identity **7/7**; bridge_x **204/204**. rtol stayed
+`1e-6`. Rose: OK for “Gamma+X light logLik under per-trait α”; ≠ full family
+parity; ≠ NB2/Beta+X on this tip (#177); ≠ Ordinal+X. After-task:
+`docs/dev-log/after-task/2026-08-03-gamma-x-arc2-parity.md`. Fence #177 merge.
+
 ## 2026-08-03 - Gamma + X grouped_cov (API B under X) — Arc 1
 
 Lane `fix/gamma-x-grouped-cov-20260803` from `origin/main` @ `0e241215` (+

@@ -74,8 +74,12 @@ Gaussian / Binomial / Poisson with `q=1` shared site covariate
 `(0 + trait):x`. Julia: `fit_gaussian_gllvm(; X=)` / `fit_gllvm_cov`.
 Prefer twin R lib via `GLLVM_PARITY_R_LIBS` (default
 `/tmp/R-gllvmtmb-x-parity-20260802`).
+**Gamma+X** (Arc 2): `fit_gamma_gllvm_grouped_cov` with `group=collect(1:p)`
+and default `hessian=:observed` (TMB Laplace curvature; OH unblocker vs
+Fisher-only) vs `stats::Gamma(link="log")` / per-trait `log_phi_gamma`.
+Δ ≈ 3.03e-8 at seed=46 (rtol 1e-6). NB2/Beta+X cells live on #177 — not this tip.
 
-**Not claimed here:** NB2/Beta+X; Gamma+X; Ordinal+X; species-specific XB;
+**Not claimed here:** NB2/Beta+X (other PR); Ordinal+X; species-specific XB;
 X_lv; shared-dispersion NB2/Beta via named fitters as twin default;
 ordinal-logit; ADEMP; coverage; “full family parity.”
 `n_drift=0` ≠ these cells.
