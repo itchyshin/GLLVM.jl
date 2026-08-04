@@ -90,11 +90,18 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
-- **Ordinal+X engine Arc 1 LOCAL DONE (2026-08-03).** Tip
-  `fix/ordinal-x-pertrait-cov-20260803` — `fit_ordinal_gllvm_pertrait_cov` +
-  bridge/`@formula` X routing; Julia identity tests. After-task:
-  `docs/dev-log/after-task/2026-08-03-ordinal-x-engine.md`. Fence: no RCall
-  Arc 2 / ADEMP. Push/PR when asked.
+- **Next Cursor lane — push/PR Ordinal+X Arc 2 (2026-08-04).** Primary OWED:
+  push/PR `parity/ordinal-x-arc2-20260803` @ `b6cf71f5` when asked (#180
+  already on `main`). Multi-lane pointer:
+  `docs/dev-log/coordination-board.md`.
+- **Ordinal+X light RCall Arc 2 LOCAL DONE (2026-08-03).** Tip
+  `parity/ordinal-x-arc2-20260803` — `:ordinal` in X helper + light cell
+  Δ≈5.38e-9. After-task:
+  `docs/dev-log/after-task/2026-08-03-ordinal-x-arc2-parity.md`. Rose fence:
+  ≠ full family parity.
+- **Ordinal+X engine Arc 1 MERGED #180 (2026-08-04).** `main` @ `e4c20195` —
+  `fit_ordinal_gllvm_pertrait_cov` + bridge/`@formula`. After-task:
+  `docs/dev-log/after-task/2026-08-03-ordinal-x-engine.md`.
 - **Ordinal+X identity Arc 0 MERGED #179 (2026-08-03).** ACCEPTED decision
   `docs/dev-log/decisions/2026-08-03-ordinal-x-cutpoint-identity.md` on `main`
   @ `0630f8e4`.

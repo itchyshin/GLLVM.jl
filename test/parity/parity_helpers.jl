@@ -119,13 +119,18 @@ uses a **shared** slope `+ x` (not `(0 + trait):x`):
 value ~ 0 + trait + x + latent(0 + trait | site, d = K, unique = FALSE)
 ```
 
-`family` ∈ `(:gaussian, :binomial, :poisson, :gamma, :negbinomial, :beta)`.
+`family` ∈ `(:gaussian, :binomial, :poisson, :gamma, :negbinomial, :beta,
+:ordinal)`.
 Pair with Julia `fit_gaussian_gllvm(; X=)` / `fit_gllvm_cov` (shared γ) for
 G/Bin/Pois; `fit_gamma_gllvm_grouped_cov` (per-trait shape α + shared γ) for
-Gamma; or `fit_nb_gllvm_grouped_cov` / `fit_beta_gllvm_grouped_cov` (per-trait
-dispersion + shared γ) for NB2/Beta — R defaults match twin API B under X
-(Gamma identity `2026-08-03-gamma-x-dispersion-identity.md`; NB2/Beta
-`2026-08-02-nb2-beta-x-dispersion-identity.md`).
+Gamma; `fit_nb_gllvm_grouped_cov` / `fit_beta_gllvm_grouped_cov` (per-trait
+dispersion + shared γ) for NB2/Beta; or `fit_ordinal_gllvm_pertrait_cov`
+(per-trait cutpoints τ₁=0 / K−2 + shared γ, `ProbitLink`) for Ordinal —
+R defaults match twin API B under X (Gamma identity
+`2026-08-03-gamma-x-dispersion-identity.md`; NB2/Beta
+`2026-08-02-nb2-beta-x-dispersion-identity.md`; Ordinal cutpoint identity
+`2026-08-03-ordinal-x-cutpoint-identity.md`). `:ordinal` uses
+`gllvmTMB::ordinal_probit()`.
 """
 function fit_gllvmtmb_parity_loglik_x(
     y::AbstractMatrix,
@@ -133,7 +138,7 @@ function fit_gllvmtmb_parity_loglik_x(
     K::Integer;
     family::Symbol,
 )
-    family in (:gaussian, :binomial, :poisson, :gamma, :negbinomial, :beta) ||
+    family in (:gaussian, :binomial, :poisson, :gamma, :negbinomial, :beta, :ordinal) ||
         throw(ArgumentError("unsupported shared-X parity family: $family"))
     p, n = size(y)
     length(x_site) == n ||
@@ -158,6 +163,7 @@ function fit_gllvmtmb_parity_loglik_x(
         gamma       = stats::Gamma(link = "log"),
         negbinomial = gllvmTMB::nbinom2(),
         beta        = gllvmTMB::Beta(),
+        ordinal     = gllvmTMB::ordinal_probit(),
         stop(sprintf("unknown family: %s", fam))
     )
     # Shared site slope: bare `x`, NOT `(0 + trait):x` (per-trait slopes).

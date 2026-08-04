@@ -4,7 +4,8 @@
 
 | Lane | Status | Branch / tip | Current handover / pointer | Owns |
 |---|---|---|---|---|
-| **Ordinal+X engine Arc 1** | **LOCAL DONE** (no push yet) | `fix/ordinal-x-pertrait-cov-20260803` | after-task `docs/dev-log/after-task/2026-08-03-ordinal-x-engine.md` · LOOP `lanes/ordinal-x-engine-20260803/LOOP/` | `fit_ordinal_gllvm_pertrait_cov` + bridge/`@formula`; Julia identity. Fence RCall Arc 2. |
+| **Ordinal+X light RCall Arc 2** | **LOCAL DONE** (no push yet) | `parity/ordinal-x-arc2-20260803` | after-task `docs/dev-log/after-task/2026-08-03-ordinal-x-arc2-parity.md` · LOOP `lanes/ordinal-x-arc2-20260803/LOOP/` | `:ordinal` X helper + light `ordinal_probit`+X cell (Δ≈5e-9). Fence ≠ full family parity. |
+| **Ordinal+X engine Arc 1** | **MERGED** #180 | `main` @ `e4c20195` | after-task `docs/dev-log/after-task/2026-08-03-ordinal-x-engine.md` | `fit_ordinal_gllvm_pertrait_cov` + bridge/`@formula`; Julia identity. Closed. |
 | **Ordinal+X identity Arc 0** | **MERGED** #179 | `main` @ `0630f8e4` | decision `docs/dev-log/decisions/2026-08-03-ordinal-x-cutpoint-identity.md` | ACCEPTED: per-trait cutpoints (τ₁=0, K−2) + shared site-X γ. Closed. |
 | **Gamma+X Arc 1–2 land** | **MERGED** #178 | `main` @ `5f027f19` | handover `docs/dev-log/handover/2026-08-03-cursor-handover-gamma-x-arc2-close.md` | Identity+engine+OH+Gamma+X light cell. Closed. |
 | **NB2/Beta+X Arc 2** | **MERGED** #177 | `main` | after-task `docs/dev-log/after-task/2026-08-02-nb2-beta-x-arc2-parity.md` | Closed. |
@@ -21,17 +22,19 @@
 ## Current Rule
 
 - Rehydrate via **this Active-Lane-Split**, not a single orphaned START HERE bullet.
-- `START HERE (Cursor):` push/PR Ordinal+X engine tip when asked; next capability
-  after land = Ordinal+X **light RCall Arc 2** only in a fresh `/goal`. Dropbox
-  checkout remains PROTECTED.
-- Rose fence: Ordinal+X engine ≠ light RCall ≠ full family parity ≠ ADEMP.
+- `START HERE (Cursor):` push/PR Ordinal+X Arc 2 tip
+  (`parity/ordinal-x-arc2-20260803` @ `b6cf71f5`, already rebased onto
+  post-#180 `main`) when Shinichi asks. Dropbox checkout remains PROTECTED.
+- Rose fence: Ordinal+X light RCall ≠ full family parity ≠ ADEMP.
 - Bridge execution R→Julia only (JuliaCall); RCall = opt-in oracle.
 - Stage by name; never `git add -A`; no push without instruction.
 
 ## Status
 
-- 2026-08-03 — Ordinal+X **engine Arc 1 LOCAL DONE** on
-  `fix/ordinal-x-pertrait-cov-20260803` (awaiting push/PR ask).
+- 2026-08-03 — Ordinal+X **light RCall Arc 2 LOCAL DONE** on
+  `parity/ordinal-x-arc2-20260803` (Δ≈5.38e-9; awaiting push ask).
+- 2026-08-04 — Ordinal+X **engine Arc 1 merged**
+  [#180](https://github.com/itchyshin/GLLVM.jl/pull/180) @ `e4c20195`.
 - 2026-08-03 — Ordinal+X identity Arc 0 **merged**
   [#179](https://github.com/itchyshin/GLLVM.jl/pull/179) @ `0630f8e4`.
 - 2026-08-03 — Gamma+X stack **merged** [#178](https://github.com/itchyshin/GLLVM.jl/pull/178) @ `5f027f19`.
