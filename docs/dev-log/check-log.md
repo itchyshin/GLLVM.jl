@@ -1,5 +1,16 @@
 # Check Log
 
+## 2026-08-03 - Ordinal+X engine Arc 1 (`fit_ordinal_gllvm_pertrait_cov`)
+
+Lane `fix/ordinal-x-pertrait-cov-20260803` from `origin/main` @ `0630f8e4`
+(#179). Implements ACCEPTED cutpoint identity under X: per-trait τ₁=0 / K−2
++ shared site-X γ; bridge/`@formula` routing; Julia identity tests.
+Focused verify: identity **21/21** (incl. FD ≤ 1e-6); identity+capabilities
+**128/128**; bridge_x+formula Ordinal smoke **215/215**. Full `Pkg.test` not
+run. No tolerance widen. Rose fence: engine ≠ RCall Arc 2 ≠ ADEMP ≠ full
+family parity. After-task:
+`docs/dev-log/after-task/2026-08-03-ordinal-x-engine.md`.
+
 ## 2026-08-03 - Rebase Ordinal identity tip onto post-#178 main
 
 Resolved board/AGENTS/check-log conflicts after Gamma+X #178 merged.

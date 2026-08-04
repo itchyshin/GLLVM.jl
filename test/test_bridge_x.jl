@@ -10,7 +10,7 @@
 #                loadings, …) are primitive Float64 arrays.
 #   3. GAUSSIAN-X — bridge_fit gaussian + X preserves existing fields and returns
 #                the full mean coefficient vector needed by the R bridge.
-#   4. UNSUPPORTED — families without an X kernel (ordinal, nb1) and
+#   4. UNSUPPORTED — families without an X kernel (nb1) and
 #                mixed-family X reject loudly with an ArgumentError.
 
 using Test
@@ -150,6 +150,40 @@ end
             @test isapprox(br.loglik, oracle.loglik; atol = 1e-8)
             disp_true = [oracle.α[oracle.group[t]] for t in 1:4]
             @test br.dispersion ≈ disp_true atol = 1e-8
+        end
+
+        @testset "ordinal (per-trait cutpoint cov)" begin
+            Random.seed!(107)
+            p, n, K, q, C = 4, 70, 1, 1, 3
+            β = 0.2 .* randn(p); γ = [0.45]; Λ = 0.3 .* randn(p, K)
+            X = randn(p, n, q)
+            O = GLLVM._build_offset(X, γ)
+            Z = randn(K, n)
+            η = β .+ O .+ Λ * Z
+            Y = Matrix{Float64}(undef, p, n)
+            for t in 1:p, s in 1:n
+                η_ts = clamp(η[t, s], -5, 5)
+                u = rand()
+                y = C
+                for c in 1:(C - 1)
+                    τc = c == 1 ? 0.0 : 1.1
+                    if u <= GLLVM._ord_F(τc - η_ts, LogitLink())
+                        y = c; break
+                    end
+                end
+                Y[t, s] = float(y)
+            end
+            Yi = round.(Int, Y)
+            oracle = GLLVM.fit_ordinal_gllvm_pertrait_cov(Yi; X = X, K = 1)
+            br = bridge_fit(; y = Y, family = "ordinal", d = 1, X = X)
+            @test br.gamma ≈ oracle.γ atol = 1e-8
+            @test br.beta_cov ≈ oracle.β atol = 1e-8
+            @test br.alpha ≈ oracle.β atol = 1e-8
+            @test br.loadings ≈ GLLVM.getLoadings(oracle; rotate = true) atol = 1e-8
+            @test isapprox(br.loglik, oracle.loglik; atol = 1e-8)
+            @test br.cutpoint_mode == "per_trait"
+            @test br.cutpoints ≈ oracle.τ atol = 1e-8
+            @test br.n_categories == oracle.C
         end
     end
 
@@ -332,11 +366,12 @@ end
 
     # -- UNSUPPORTED X combos reject loudly --------------------------------------
     @testset "unsupported X combos error" begin
-        # ordinal: fit_gllvm_cov has no ordinal kernel
-        Yo = Float64.(rand(1:3, 3, 30))
-        Xo = randn(3, 30, 1)
-        @test_throws ArgumentError bridge_fit(; y = Yo, family = "ordinal", d = 1, X = Xo)
-        # nb1: fit_gllvm_cov has no nb1 kernel
+        # ordinal+X is wired; CI under X remains fenced (same as no-X per-trait)
+        Yo = Float64.(rand(1:3, 3, 40))
+        Xo = randn(3, 40, 1)
+        @test_throws ArgumentError bridge_fit(; y = Yo, family = "ordinal", d = 1, X = Xo,
+                                              options = Dict("ci_method" => "wald"))
+        # nb1: still no covariate kernel
         Yn = Float64.(rand(0:5, 3, 30))
         Xn = randn(3, 30, 1)
         @test_throws ArgumentError bridge_fit(; y = Yn, family = "nb1", d = 1, X = Xn)

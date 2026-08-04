@@ -176,6 +176,7 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        StudentTFamily, fit_studentt_gllvm, StudentTFit, studentt_marginal_loglik_laplace,
        Ordinal, fit_ordinal_gllvm, OrdinalFit,
        fit_ordinal_gllvm_pertrait, OrdinalPerTraitFit,
+       fit_ordinal_gllvm_pertrait_cov, OrdinalPerTraitCovFit,
        fit_gamma_gllvm, GammaFit,
        fit_exponential_gllvm, ExponentialFit, exponential_marginal_loglik_laplace,
        fit_tweedie_gllvm, TweedieFit, tweedie_marginal_loglik_laplace, tweedie_logpdf, tweedie_cdf,

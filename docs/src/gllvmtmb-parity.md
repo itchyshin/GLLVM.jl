@@ -36,7 +36,7 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 | Capability | GLLVM.jl | Notes |
 |-----------|:---:|-------|
 | Latent-variable ordination (loadings) | ✅ | any `K`; canonical SVD rotation |
-| Fixed-effect covariates (`Xβ`) | ✅ Gaussian · ✅ non-Gaussian (GLM families) | Shared site-X: Poisson/Binomial via `fit_gllvm_cov`; NB2/Beta/Gamma public/bridge default via `fit_*_gllvm_grouped_cov` (per-trait φ/α + shared `γ`; twin API B). Shared-dispersion + X remains `fit_gllvm_cov`. Gaussian `β_fixed` / non-Gaussian `γ_fixed` zero masks supported. |
+| Fixed-effect covariates (`Xβ`) | ✅ Gaussian · ✅ non-Gaussian (GLM families) | Shared site-X: Poisson/Binomial via `fit_gllvm_cov`; NB2/Beta/Gamma public/bridge default via `fit_*_gllvm_grouped_cov` (per-trait φ/α + shared `γ`; twin API B); Ordinal via `fit_ordinal_gllvm_pertrait_cov` (per-trait cutpoints τ₁=0 / K−2 + shared `γ`). Shared-dispersion + X remains `fit_gllvm_cov` where that path exists. Gaussian `β_fixed` / non-Gaussian `γ_fixed` zero masks supported. Light RCall Ordinal+X is Arc 2 (fenced). |
 | Between / within (multilevel) | ✅ Gaussian | `K_W` + per-trait diagonal |
 | Phylogenetic random effect | ✅ ⚡ | fast **O(p)** sparse path, benchmarked to p = 10⁴ |
 | Animal model (relatedness / GRM) | ✅ Gaussian | `relatedness_cov`, via the `Σ_phy` input |
