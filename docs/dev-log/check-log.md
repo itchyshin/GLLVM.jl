@@ -1,5 +1,16 @@
 # Check Log
 
+## 2026-08-03 - Ordinal+X light RCall Arc 2
+
+Lane `parity/ordinal-x-arc2-20260803` from engine tip `e2b4afde` (#180 tip
+exception while Julia CI finishes). Extended
+`fit_gllvmtmb_parity_loglik_x` with `:ordinal` → `ordinal_probit()`; one
+Ordinal+X `@testset` via `fit_ordinal_gllvm_pertrait_cov` + `ProbitLink`.
+Live focused cell (seed=47, p=5, K=1, n=80, C=3): **Δ ≈ 5.38e-9** (rtol
+1e-6). No `src/` redesign; no tolerance widen. Rose fence: light Ordinal+X
+logLik only ≠ full family parity ≠ ADEMP. After-task:
+`docs/dev-log/after-task/2026-08-03-ordinal-x-arc2-parity.md`.
+
 ## 2026-08-03 - Ordinal+X engine Arc 1 (`fit_ordinal_gllvm_pertrait_cov`)
 
 Lane `fix/ordinal-x-pertrait-cov-20260803` from `origin/main` @ `0630f8e4`

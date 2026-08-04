@@ -1,8 +1,9 @@
 # ARC CARD — Ordinal+X Arc 2 (light gllvmTMB logLik RCall)
 
-**Status:** **READY FOR G0** — engine Arc 1 LOCAL DONE + PR [#180](https://github.com/itchyshin/GLLVM.jl/pull/180)
-(`fix/ordinal-x-pertrait-cov-20260803` @ `233a310c`). Ultra Plan written;
-execute only after Shinichi approves → `/goal`.
+**Status:** **LOCAL DONE** — light cell Δ≈5.38e-9 on
+`parity/ordinal-x-arc2-20260803` (tip exception from engine #180 @ `e2b4afde`).
+After-task: `docs/dev-log/after-task/2026-08-03-ordinal-x-arc2-parity.md`.
+Push/PR after #180 merges + Shinichi ask.
 
 **Mode:** size  
 **Requested outcome:** one light RCall Ordinal+X logLik cell green at rtol
@@ -63,8 +64,8 @@ diagnose link/packing — do not widen rtol. If R/`gllvmTMB` absent, land helper
 **First action after G0:** fresh `/goal` from Ultra Plan GOAL block.
 
 ### Actuals (complete at close)
-**Recommended / actual:** 90–150 / _TBD_ · **Rungs completed:** _TBD_  
-**Result:** _TBD_ · **Next arc:** push/PR Arc 2 when asked
+**Recommended / actual:** 90–150 / ~45 (cell first-try green) · **Rungs completed:** Arc 0  
+**Result:** Δ≈5.38e-9 Pass · **Next arc:** push/PR after #180 + ask
 
 **HAND TO ULTRA PLAN:** size-mode Ordinal+X light RCall Arc 2, ~90–150 min,
 outcome = one `ordinal_probit`+X logLik cell @ rtol 1e-6 via
