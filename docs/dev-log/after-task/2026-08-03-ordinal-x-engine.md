@@ -10,7 +10,7 @@
 
 Twin API B under X for Ordinal: ship per-trait cutpoints (τ₁=0 / K−2
 log-spacings) + shared site-X γ, route bridge/`@formula`, and lock Julia-only
-identity + FD checks. Arc 2 RCall cells deferred. No ADEMP. No Dropbox write.
+identity tests. Arc 2 RCall cells deferred. No ADEMP. No Dropbox write.
 
 ## What shipped
 
@@ -31,29 +31,30 @@ identity + FD checks. Arc 2 RCall cells deferred. No ADEMP. No Dropbox write.
 
 | Check | Result |
 |---|---|
-| `test/test_ordinal_x_identity.jl` | **21/21 pass** |
-| `test/test_bridge_capabilities.jl` | **107/107 pass** |
-| `test/test_bridge_x.jl` | **212/212 pass** |
-| `test/test_ordinal_pertrait.jl` | **98 + 15 pass** |
-| `test/test_ordinal_fit.jl` | **10/10 pass** |
-| `test/test_formula.jl` | **11/11 pass** |
+| `test/test_ordinal_x_identity.jl` | **21/21 pass** (incl. FD ≤ 1e-6) |
+| identity + capabilities (bundled earlier) | **128/128 pass** |
+| `test_bridge_x.jl` + formula Ordinal smoke | **215/215 pass** |
+| Full `Pkg.test()` | **not run** — do not claim |
 | Tolerance widen | **none** |
 
 ## Rose verdict
 
 **OK** to claim: public/bridge/`@formula` Ordinal+X use per-trait cutpoints
 (τ₁=0, K−2) + shared γ; Julia identity (zero/constant offset; zero-X ≈ no-X)
-and FD self-check ≤ 1e-6 hold.
+and packed-cov FD self-check ≤ 1e-6 hold.
 
 **Not OK:** light RCall Ordinal+X parity (Arc 2); full family parity;
-ADEMP/coverage; shared-cutpoint as public X default; Ordinal+X CI payloads.
+ADEMP/coverage; shared-cutpoint as public X default; Ordinal+X CI payloads;
+full-suite green without running it.
 
 ## Remaining OWED
 
 - Push / PR when Shinichi asks (local-only until then).
 - Separate `/goal`: Ordinal+X light RCall Arc 2 (rtol `1e-6`, matching link).
+  Contingent card: `docs/dev-log/plans/2026-08-03-ordinal-x-arc2-arc-card.md`.
+- Optional later: confint adapter under X for per-trait ordinal.
 
 ## Next
 
-`START A FRESH TASK` for Ordinal+X light RCall Arc 2 after this tip lands on
-`main` (or when Shinichi opens that `/goal`).
+`START A FRESH TASK` for Ordinal+X light RCall Arc 2 after this tip is pushed
+(or when Shinichi opens that `/goal`). Ask before push/PR (**default no**).
