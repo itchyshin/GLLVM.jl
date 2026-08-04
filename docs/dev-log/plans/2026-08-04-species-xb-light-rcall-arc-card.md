@@ -65,9 +65,8 @@ Rose fence.
 optional under-run board hygiene in the same lane.
 
 ### Actuals (complete at close)
-**Recommended / actual:** 90–150 / _TBD_ · **Rungs completed:** _TBD_  
-**Result:** _TBD_ · **Next arc:** expand species-XB cohort or X_lv light
-(separate G0)
+**Recommended / actual:** 90–150 / ~40 (first-try green) · **Rungs completed:** U0 + Arc 0  
+**Result:** Δ≈4.20e-9 Pass · **Next arc:** push/PR when asked; expand cohort later
 
 **HAND TO ULTRA PLAN:** size-mode Species-specific XB light RCall Arc 0,
 ~90–150 min, outcome = one Poisson `(0+trait):x` logLik cell @ rtol 1e-6 via
