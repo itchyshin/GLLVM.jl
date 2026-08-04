@@ -11,8 +11,7 @@
 | **Board / snapshot hygiene** | **MERGED** #183/#184 | `main` @ `13d97b13` | after-task `docs/dev-log/after-task/2026-08-05-board-hygiene.md` | Post-#181 pointer truth + merged-branch GC. Closed. |
 | **Ordinal+X light RCall Arc 2** | **MERGED** #181 | `main` @ `a92c5040` | after-task `docs/dev-log/after-task/2026-08-03-ordinal-x-arc2-parity.md` | `:ordinal` X helper + light `ordinal_probit`+X cell (Δ≈5e-9). Closed. |
 | **Ordinal+X engine Arc 1** | **MERGED** #180 | `main` @ `e4c20195` | after-task `docs/dev-log/after-task/2026-08-03-ordinal-x-engine.md` | `fit_ordinal_gllvm_pertrait_cov` + bridge/`@formula`. Closed. |
-| **Ordinal+X identity Arc 0** | **MERGED** #179 | `main` @ `0630f8e4` | decision `docs/dev-log/decisions/2026-08-03-ordinal-x-cutpoint-identity.md` | ACCEPTED: per-trait cutpoints + shared γ. Closed. |
-| **Gamma+X Arc 1–2 land** | **MERGED** #178 | `main` @ `5f027f19` | handover `docs/dev-log/handover/2026-08-03-cursor-handover-gamma-x-arc2-close.md` | Identity+engine+OH+Gamma+X light cell. Closed. |
+| **Ordinal+X identity Arc 0** | **MERGED** #179 | `main` @ `0630f8e4` | decision `docs/dev-log/decisions/2026-08-03-ordinal-x-cutpoint-identity.md` | ACCEPTED: per-trait cutpoints + shared γ. Closed. || **Gamma+X Arc 1–2 land** | **MERGED** #178 | `main` @ `5f027f19` | handover `docs/dev-log/handover/2026-08-03-cursor-handover-gamma-x-arc2-close.md` | Identity+engine+OH+Gamma+X light cell. Closed. |
 | **NB2/Beta+X Arc 2** | **MERGED** #177 | `main` | after-task `docs/dev-log/after-task/2026-08-02-nb2-beta-x-arc2-parity.md` | Closed. |
 | **NB2/Beta+X engine Arc 1** | **MERGED** #175 | `main` | after-task `docs/dev-log/after-task/2026-08-02-nb2-beta-x-grouped-cov.md` | Closed. |
 | **Windows row-effect NA budget** | **MERGED** #176 | `main` | after-task `docs/dev-log/after-task/2026-08-02-windows-roweffect-na-gate.md` | Closed. |
@@ -32,8 +31,7 @@
   LOOP: `lanes/post-nb1-closeout-20260805/LOOP/`. Plan:
   `docs/dev-log/plans/2026-08-05-post-nb1-closeout-programme-ultra-plan.md`.
 - Rose fence: NB1+X live Δ proven ≠ full family parity ≠ ADEMP; Identity Arc 0
-  ≠ engine; Species-XB Poisson light ≠ full species-B surface.
-- Bridge execution R→Julia only (JuliaCall); RCall = opt-in oracle.
+  ≠ engine; Species-XB Poisson light ≠ full species-B surface.- Bridge execution R→Julia only (JuliaCall); RCall = opt-in oracle.
 - Stage by name; never `git add -A`; no push without instruction (this `/goal`
   run: G0 authorized Species push+merge + hygiene/Identity PRs).
 - Dropbox checkout remains PROTECTED.
@@ -51,8 +49,7 @@
   [#184](https://github.com/itchyshin/GLLVM.jl/pull/184) @ `13d97b13`.
 - 2026-08-04 — Ordinal+X **light RCall Arc 2 merged**
   [#181](https://github.com/itchyshin/GLLVM.jl/pull/181) @ `a92c5040`.
-- 2026-08-04 — Species-XB light RCall Arc 0 **LOCAL DONE** (unpushed; rebase owed).
-- 2026-08-04 — Ordinal+X **engine Arc 1 merged**
+- 2026-08-04 — Species-XB light RCall Arc 0 **LOCAL DONE** (unpushed; rebase owed).- 2026-08-04 — Ordinal+X **engine Arc 1 merged**
   [#180](https://github.com/itchyshin/GLLVM.jl/pull/180) @ `e4c20195`.
 - 2026-08-03 — Ordinal+X identity Arc 0 **merged**
   [#179](https://github.com/itchyshin/GLLVM.jl/pull/179) @ `0630f8e4`.

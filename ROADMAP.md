@@ -143,13 +143,12 @@ Ordered roughly by real-world impact.
 
 ## Priority design notes
 
-### 1. Species-specific covariates (`B`, p×q) — next, tractable
+### 1. Species-specific covariates (`B`, p×q) — engine landed; light RCall next
 
-Generalise `fit_gllvm_cov`: replace the shared `γ` (length q) with a `B` matrix
-(p×q), so `η_{ts} = β_t + Σ_k X[t,s,k]·B[t,k] + (Λ z_s)_t`. The offset builder
-becomes a row-wise contraction; packing gains `vec(B)`. Keep shared-`γ` as a
-special case (a one-row/broadcast `B`). Verifiable now via the existing exact
-`Λ=0` offset-reduction pattern (deterministic — no fit-quality dependence).
+Engine: `fit_gllvm_speciescov` (`η_{ts} = β_t + Σ_k X[t,s,k]·B[t,k] + (Λ z_s)_t`)
+is on `main` with Julia identity tests. Shared-`γ` remains `fit_gllvm_cov`.
+**Next tractable gap:** light gllvmTMB logLik for R `(0 + trait):x` vs Julia
+`B` (Poisson first) — lane `parity/species-xb-light-20260804`.
 
 ### 2. Variational approximation (VA) — chosen next; larger, staged
 

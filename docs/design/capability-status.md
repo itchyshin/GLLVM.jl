@@ -23,9 +23,10 @@ Status words (MC parser; counts derived at render time — never hand-typed into
   **Gamma+X** light cell (per-trait α, observed Laplace; Δ≈3e-8) +
   **Ordinal+X** light cell (per-trait cutpoints + shared γ, `ordinal_probit`;
   Δ≈5e-9) + **NB1+X** light cell (per-trait φ, observed Laplace; abs Δ≈1.53e-9,
-  seed=48; #186). Engine Arc 1 lands per-trait NB2/Beta/Gamma/NB1+X and
-  Ordinal+X. Not full family parity; ADEMP and coverage certificates remain
-  fenced.
+  seed=48; #186) + **Poisson species-XB** light cell (`(0+trait):x` /
+  `fit_gllvm_speciescov`; Δ≈4e-9). Engine Arc 1 lands per-trait
+  NB2/Beta/Gamma/NB1+X and Ordinal+X. Not full family parity; ADEMP and
+  coverage certificates remain fenced.
 - R-bridge (`engine = "julia"`) rows that are live are still **partial** vs the
   public R-user surface even when Status = `implemented`.
 - Phylo Model A / source-specific `lv` intervals: **rejected** for advertising.
