@@ -163,14 +163,15 @@ end
 function _ordinal_laplace_mode_pertrait(y::AbstractVector, Λ::AbstractMatrix,
         β::AbstractVector, τ::AbstractMatrix, C::AbstractVector{<:Integer},
         link::Link = LogitLink();
-        mask = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
+        mask = nothing, offset = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
     p, K = size(Λ)
     length(β) == p || throw(ArgumentError("ordinal intercept length must equal p"))
     z = zeros(K)
     s = Vector{Float64}(undef, p)
     W = Vector{Float64}(undef, p)
     for _ in 1:maxiter
-        η = _clamp_eta.(β .+ Λ * z)
+        η = offset === nothing ? _clamp_eta.(β .+ Λ * z) :
+            _clamp_eta.(β .+ offset .+ Λ * z)
         @inbounds for t in 1:p
             if mask !== nothing && !mask[t]
                 s[t] = 0.0
@@ -194,11 +195,13 @@ end
 function ordinal_loglik_site_pertrait(y::AbstractVector, Λ::AbstractMatrix,
         β::AbstractVector, τ::AbstractMatrix, C::AbstractVector{<:Integer},
         link::Link = LogitLink();
-        mask = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
+        mask = nothing, offset = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
     p = size(Λ, 1)
     z = _ordinal_laplace_mode_pertrait(y, Λ, β, τ, C, link;
-                                       mask = mask, maxiter = maxiter, tol = tol)
-    η = _clamp_eta.(β .+ Λ * z)
+                                       mask = mask, offset = offset,
+                                       maxiter = maxiter, tol = tol)
+    η = offset === nothing ? _clamp_eta.(β .+ Λ * z) :
+        _clamp_eta.(β .+ offset .+ Λ * z)
     W = Vector{Float64}(undef, p)
     ℓ = 0.0
     @inbounds for t in 1:p
@@ -221,12 +224,13 @@ end
 function ordinal_marginal_loglik_laplace_pertrait(Y::AbstractMatrix,
         Λ::AbstractMatrix, β::AbstractVector, τ::AbstractMatrix,
         C::AbstractVector{<:Integer};
-        link::Link = LogitLink(), mask = nothing, kwargs...)
+        link::Link = LogitLink(), mask = nothing, offset = nothing, kwargs...)
     acc = 0.0
     @inbounds for s in axes(Y, 2)
         mcol = mask === nothing ? nothing : view(mask, :, s)
+        ocol = offset === nothing ? nothing : view(offset, :, s)
         acc += ordinal_loglik_site_pertrait(view(Y, :, s), Λ, β, τ, C, link;
-                                            mask = mcol, kwargs...)
+                                            mask = mcol, offset = ocol, kwargs...)
     end
     return acc
 end
@@ -606,4 +610,118 @@ function fit_ordinal_gllvm_pertrait(Y::AbstractMatrix{<:Integer}; K::Integer,
     τ̂ = _unpack_cutpoints_pertrait(@view(θ̂[(p + rr + 1):(p + rr + ncut)]), C)
     return OrdinalPerTraitFit(Λ̂, β̂, τ̂, C, link, -Optim.minimum(res),
                               Optim.converged(res), Optim.iterations(res))
+end
+
+"""
+    OrdinalPerTraitCovFit
+
+Result of [`fit_ordinal_gllvm_pertrait_cov`](@ref): per-trait intercepts `β`,
+shared covariate coefficients `γ` (with `γ_fixed` zero mask), loadings `Λ`,
+per-trait ordered cutpoints `τ` (`p × max(C_t−1)`, τ₁=0 fixed), per-trait
+category counts `C`, `link`, maximised Laplace `loglik`, `converged`, and
+`iterations`. Linear predictor `η = β + Xγ + Λz` with twin cutpoint packing
+(τ₁=0 / K−2 free log-spacings). Shared-cutpoint [`OrdinalFit`](@ref) remains
+the Julia-side comparator and is **not** the public X default.
+"""
+struct OrdinalPerTraitCovFit
+    β::Vector{Float64}
+    γ::Vector{Float64}
+    γ_fixed::Vector{Bool}
+    Λ::Matrix{Float64}
+    τ::Matrix{Float64}
+    C::Vector{Int}
+    link::Link
+    loglik::Float64
+    converged::Bool
+    iterations::Int
+end
+
+function Base.show(io::IO, f::OrdinalPerTraitCovFit)
+    p, K = size(f.Λ); q = length(f.γ)
+    print(io, "OrdinalPerTraitCovFit(p=", p, ", q=", q, ", K=", K,
+          ", C=", f.C, ", link=", nameof(typeof(f.link)),
+          ", loglik=", round(f.loglik; sigdigits = 7),
+          f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+"""
+    fit_ordinal_gllvm_pertrait_cov(Y; X, K, link=LogitLink(), mask=nothing,
+                                   γ_fixed=nothing, …) -> OrdinalPerTraitCovFit
+
+Fit a cumulative ordinal GLLVM with **per-trait cutpoints** (τ₁=0 fixed; K−2
+free log-spacings per trait) and **shared site covariates** `X` (`p×n×q`).
+Working vector `[β; γ_free; pack(Λ); ψ]` with ψ the unconstrained per-trait
+log-spacings; offset `O = Xγ` enters the per-trait Laplace marginal as
+`η = β + O + Λz`. Public / bridge / `@formula` default under X for Ordinal
+(twin API B; decision 2026-08-03). Keep shared-cutpoint
+[`fit_ordinal_gllvm`](@ref) as an explicit comparator — do not route public X
+through shared cutpoints.
+"""
+function fit_ordinal_gllvm_pertrait_cov(Y::AbstractMatrix{<:Integer};
+        X::AbstractArray{<:Real, 3}, K::Integer,
+        link::Link = LogitLink(), Λ_init = nothing, mask = nothing,
+        γ_fixed = nothing,
+        g_tol::Real = 1e-5, iterations::Integer = 500,
+        newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    p, n = size(Y)
+    size(X, 1) == p && size(X, 2) == n ||
+        throw(DimensionMismatch("X must be (p, n, q) = ($p, $n, q); got $(size(X))"))
+    q_full = size(X, 3)
+    γ_fixed_mask = _fixed_zero_mask(γ_fixed, q_full, "γ_fixed")
+    X_fit, _ = _slice_fixed_X(X, γ_fixed_mask)
+    q = size(X_fit, 3)
+    obs = mask === nothing ? trues(p, n) : mask
+    C = zeros(Int, p)
+    @inbounds for t in 1:p, i in 1:n
+        obs[t, i] && (C[t] = max(C[t], Int(Y[t, i])))
+    end
+    all(>=(2), C) || throw(ArgumentError(
+        "ordinal response needs >= 2 observed categories for every trait; got $C"))
+    rr = rr_theta_len(p, K)
+    ncut = sum(C .- 2)
+    Ys = mask === nothing ? Y : [obs[t, i] ? Int(Y[t, i]) : 1 for t in 1:p, i in 1:n]
+
+    Zproxy = [quantile(Normal(), clamp((Ys[t, i] - 0.5) / C[t], 1e-3, 1 - 1e-3))
+              for t in 1:p, i in 1:n]
+    Λ0 = if Λ_init === nothing
+        Zc = Zproxy .- (sum(Zproxy; dims = 2) ./ n)
+        F = svd(Zc); kk = min(K, length(F.S))
+        L = zeros(p, K)
+        @inbounds for j in 1:kk
+            L[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
+        end
+        L
+    else
+        collect(float.(Λ_init))
+    end
+
+    β0, ψ0 = _pack_initial_ordinal_pertrait(Ys, obs, C, link)
+    θ0 = vcat(β0, zeros(q), pack_lambda(Λ0), ψ0)
+    function negll(θ)
+        β = @view θ[1:p]
+        γ = @view θ[(p + 1):(p + q)]
+        Λ = unpack_lambda(@view(θ[(p + q + 1):(p + q + rr)]), p, K)
+        τ = _unpack_cutpoints_pertrait(@view(θ[(p + q + rr + 1):(p + q + rr + ncut)]), C)
+        O = _build_offset(X_fit, γ)
+        v = try
+            -ordinal_marginal_loglik_laplace_pertrait(Y, Λ, β, τ, C;
+                link = link, mask = mask, offset = O,
+                maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
+    res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
+                         autodiff = :finite)
+    θ̂ = Optim.minimizer(res)
+    β̂ = collect(@view θ̂[1:p])
+    γ̂_free = @view θ̂[(p + 1):(p + q)]
+    γ̂ = collect(Float64, _expand_fixed_zero(γ̂_free, γ_fixed_mask))
+    Λ̂ = unpack_lambda(@view(θ̂[(p + q + 1):(p + q + rr)]), p, K)
+    τ̂ = _unpack_cutpoints_pertrait(@view(θ̂[(p + q + rr + 1):(p + q + rr + ncut)]), C)
+    return OrdinalPerTraitCovFit(β̂, γ̂, collect(Bool, γ_fixed_mask), Λ̂, τ̂, C, link,
+                                 -Optim.minimum(res), Optim.converged(res),
+                                 Optim.iterations(res))
 end

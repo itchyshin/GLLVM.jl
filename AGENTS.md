@@ -90,11 +90,14 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
-- **Ordinal+X identity Arc 0 LOCAL DONE / PR #179 (2026-08-03).** ACCEPTED
-  decision `docs/dev-log/decisions/2026-08-03-ordinal-x-cutpoint-identity.md`
-  (per-trait cutpoints τ₁=0 / K−2 + shared site-X γ). Docs-only; no engine in
-  this lane. Rebase onto post-#178 main then merge #179. Next capability =
-  Ordinal+X engine Arc 1 in a **fresh** `/goal` after acceptance on `main`.
+- **Ordinal+X engine Arc 1 LOCAL DONE (2026-08-03).** Tip
+  `fix/ordinal-x-pertrait-cov-20260803` — `fit_ordinal_gllvm_pertrait_cov` +
+  bridge/`@formula` X routing; Julia identity tests. After-task:
+  `docs/dev-log/after-task/2026-08-03-ordinal-x-engine.md`. Fence: no RCall
+  Arc 2 / ADEMP. Push/PR when asked.
+- **Ordinal+X identity Arc 0 MERGED #179 (2026-08-03).** ACCEPTED decision
+  `docs/dev-log/decisions/2026-08-03-ordinal-x-cutpoint-identity.md` on `main`
+  @ `0630f8e4`.
 - **Gamma+X Arc 1–2 MERGED #178 (2026-08-03).** Identity + grouped_cov engine +
   OH default + Gamma+X light RCall cell on `main` @ `5f027f19`.
 - **NB2/Beta+X Arc 2 MERGED #177; Windows NA #176 MERGED.**

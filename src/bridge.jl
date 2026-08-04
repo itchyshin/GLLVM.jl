@@ -84,9 +84,10 @@
 # dispersion for R-twin parity. Gamma uses the same grouped engine with one
 # shared group, matching current native gllvmTMB's scalar-CV Gamma oracle until
 # a native per-trait Gamma expansion lands. Ordinal/ordinal_probit default to
-# per-trait cutpoints; these cutpoint routes currently reject CI routing loudly
-# until matching CI engines land. Mixed-family and REML paths skip-with-note
-# since their fits have no native confint engine yet.
+# per-trait cutpoints (no-X and complete-response fixed-effect-X); these
+# cutpoint routes currently reject CI routing loudly until matching CI engines
+# land. Mixed-family and REML paths skip-with-note since their fits have no
+# native confint engine yet.
 #
 # ADDITIVE: this file + an include/export line in GLLVM.jl. It edits no fitter or
 # extractor; it is included LAST so every dispatch target already exists.
@@ -167,12 +168,16 @@ const _BRIDGE_BINOMIAL_XLV_FAMILIES = _BRIDGE_BINOMIAL_FAMILIES
 # route: ordinary Gaussian, Poisson (log link), and binomial logit/probit/cloglog.
 const _BRIDGE_XLV_FAMILIES = ("gaussian", "poisson", "negbinomial", "gamma", "beta", _BRIDGE_BINOMIAL_FAMILIES...)
 
-# One-part NON-Gaussian families `fit_gllvm_cov` fits with covariates X (it has a
-# `_cov_*` kernel for each). Ordinal and NB1 are absent — no covariate kernel yet.
-const _BRIDGE_X_FAMILIES = ("poisson", "binomial", "negbinomial", "beta", "gamma")
+# One-part NON-Gaussian families with a fixed-effect-X bridge route. NB2/Beta/Gamma
+# use per-trait grouped_cov; ordinal/ordinal_probit use per-trait cutpoint cov;
+# poisson/binomial use shared-dispersion `fit_gllvm_cov`. NB1 remains absent.
+const _BRIDGE_X_FAMILIES = ("poisson", "binomial", "negbinomial", "beta", "gamma",
+                            "ordinal", "ordinal_probit")
 
 # Map a bridge family key to the `Distributions` marker `fit_gllvm_cov` dispatches
 # on (the dispersion field is re-estimated, so the init values here are irrelevant).
+# Ordinal keys are admitted in `_BRIDGE_X_FAMILIES` but route via
+# `fit_ordinal_gllvm_pertrait_cov` (not this marker).
 function _bridge_cov_marker(key::AbstractString)
     key == "poisson"     && return Poisson()
     key == "binomial"    && return Binomial()
@@ -180,8 +185,10 @@ function _bridge_cov_marker(key::AbstractString)
     key == "beta"        && return Beta(10.0, 1.0)
     key == "gamma"       && return Gamma(2.0, 1.0)
     throw(ArgumentError(
-        "bridge_fit: family key \"$key\" has no covariate (X) fitter; " *
-        "X is supported for " * join(_BRIDGE_X_FAMILIES, ", ")))
+        "bridge_fit: family key \"$key\" has no shared-dispersion covariate " *
+        "(`fit_gllvm_cov`) marker; X is supported for " *
+        join(_BRIDGE_X_FAMILIES, ", ") *
+        " (ordinal routes via fit_ordinal_gllvm_pertrait_cov)"))
 end
 
 _bridge_rr_df(p::Integer, K::Integer) = p * K - div(K * (K - 1), 2)
@@ -387,11 +394,9 @@ function bridge_fit(; y,
     K = Int(d)
     K >= 0 || throw(ArgumentError("d must be a non-negative integer"))
     # Fixed-effect covariates X (a p×n×q array) are wired for the Gaussian family
-    # and the one-part NON-Gaussian families that `fit_gllvm_cov` fits (poisson,
-    # binomial, negbinomial, beta, gamma): fit_gaussian_gllvm / fit_gllvm_cov carry
-    # the covariate mean structure η = β + Xγ (+ Λz) and return the coefficients.
-    # Ordinal and NB1 (no covariate kernel) and the mixed-family path remain a
-    # documented follow-up — reject loudly rather than silently dropping X.
+    # and the one-part NON-Gaussian `_BRIDGE_X_FAMILIES` (incl. ordinal /
+    # ordinal_probit per-trait cutpoint cov). NB1 and the mixed-family path remain
+    # a documented follow-up — reject loudly rather than silently dropping X.
     if X !== nothing
         if family isa AbstractVector
             throw(ArgumentError(
@@ -402,7 +407,7 @@ function bridge_fit(; y,
         (key == "gaussian" || key in _BRIDGE_X_FAMILIES) || throw(ArgumentError(
             "bridge_fit: fixed-effect covariates X are wired for family ∈ {gaussian, " *
             join(_BRIDGE_X_FAMILIES, ", ") * "}; family=\"$(family)\" has no covariate " *
-                "fitter (ordinal/nb1 are a documented follow-up)"))
+                "fitter (nb1 is a documented follow-up)"))
     end
     # Predictor-informed latent-score covariates are narrower than ordinary
     # fixed-effect X in this bridge slice: complete Gaussian and binomial
@@ -537,9 +542,14 @@ function bridge_capabilities()
         ci_mask_wald = vcat([f in mask_ci_families for f in onepart], [false]),
         ci_mask_profile = vcat([f in mask_ci_families for f in onepart], [false]),
         ci_mask_bootstrap = vcat([f in mask_ci_families for f in onepart], [false]),
-        ci_x_wald = vcat([f in x_families for f in onepart], [false]),
-        ci_x_profile = vcat([f in x_families for f in onepart], [false]),
-        ci_x_bootstrap = vcat([f in x_families for f in onepart], [false]),
+        # Ordinal+X point fits are wired; CI under X remains a follow-up (same
+        # fence as no-X per-trait ordinal).
+        ci_x_wald = vcat([f in x_families && !(f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES)
+                          for f in onepart], [false]),
+        ci_x_profile = vcat([f in x_families && !(f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES)
+                             for f in onepart], [false]),
+        ci_x_bootstrap = vcat([f in x_families && !(f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES)
+                               for f in onepart], [false]),
         postfit_coef = vcat(fill(true, length(onepart)), [true]),
         postfit_fit_stats = vcat(fill(true, length(onepart)), [true]),
         postfit_summary = vcat(fill(true, length(onepart)), [true]),
@@ -559,7 +569,7 @@ function bridge_capabilities()
                 f == "gamma" ?
                     "one-part reduced-rank bridge family; default no-X route uses shared Gamma grouped dispersion to match current native scalar-CV Gamma; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; predictor-informed latent-score X_lv via the shared-shape fitter is wired for complete-response point fits; X_lv Wald B_lv CI payloads are routed; profile/bootstrap X_lv CIs remain follow-ups; per-trait Gamma is a native-expansion follow-up" :
                 f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES ?
-                    "one-part reduced-rank bridge family; default no-X route uses per-trait ordinal cutpoints; CI routing is a follow-up" :
+                    "one-part reduced-rank bridge family; default no-X and complete-response fixed-effect-X routes use per-trait ordinal cutpoints (τ₁=0 / K−2); CI routing is a follow-up" :
                 f == "poisson" ?
                     "one-part reduced-rank bridge family; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; predictor-informed latent-score X_lv is wired for complete-response point fits; X_lv Wald B_lv CI payloads are routed; profile/bootstrap X_lv CIs remain follow-ups; route support is narrower than full R-user parity" :
                 f == "binomial" ?
@@ -634,10 +644,11 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
     end
 
     # X (a p×n×q covariate array) routes to the covariate fitters: the Gaussian
-    # branch below handles key=="gaussian"; NB2/Beta use per-trait grouped_cov
-    # (twin API B); other one-part _BRIDGE_X_FAMILIES use fit_gllvm_cov. Defend
-    # the invariant here too so a future DIRECT caller can't slip X past a family
-    # with no covariate fitter (ordinal/nb1) and have it silently dropped.
+    # branch below handles key=="gaussian"; NB2/Beta/Gamma use per-trait
+    # grouped_cov; ordinal/ordinal_probit use per-trait cutpoint cov; other
+    # one-part _BRIDGE_X_FAMILIES use fit_gllvm_cov. Defend the invariant here
+    # too so a future DIRECT caller can't slip X past a family with no covariate
+    # fitter (nb1) and have it silently dropped.
     if X !== nothing && key != "gaussian"
         key in _BRIDGE_X_FAMILIES ||
             throw(ArgumentError("bridge_fit: X is not wired for family=\"$key\"; " *
@@ -1100,20 +1111,23 @@ function _bridge_fit_onepart_cov(Yf::AbstractMatrix{Float64}, key::AbstractStrin
     size(Xarr, 1) == p && size(Xarr, 2) == n || throw(ArgumentError(
         "bridge_fit: X must be p×n×q ($(p)×$(n)×q); got $(size(Xarr))"))
     q = size(Xarr, 3)
-    marker = _bridge_cov_marker(key)
     coef_fixed = _bridge_coef_fixed(options, q, "coef_fixed")
 
     # Per-family response coercion + Binomial trial counts (mirror the no-X path):
     # the count families round to integer-valued Float64; continuous pass through.
+    # Ordinal rounds to integer categories (same as no-X bridge path).
     is_count = key in ("poisson", "binomial", "negbinomial")
-    Ydata = is_count ? Float64.(round.(Int, Yf)) : Yf
+    is_ordinal = key in ("ordinal", "ordinal_probit")
+    Ydata = (is_count || is_ordinal) ? Float64.(round.(Int, Yf)) : Yf
     Nm = key == "binomial" ?
          (N === nothing ? fill(1, p, n) :
           (N isa Number ? fill(round(Int, N), p, n) : round.(Int, Matrix(N)))) :
          nothing
 
-    # Twin API B under X: NB2/Beta/Gamma default to per-trait φ/α + shared site-X.
-    # Shared-dispersion + X remains available via direct `fit_gllvm_cov`.
+    # Twin API B under X: NB2/Beta/Gamma default to per-trait φ/α + shared site-X;
+    # ordinal/ordinal_probit default to per-trait cutpoints (τ₁=0 / K−2) + shared γ.
+    # Shared-dispersion + X remains available via direct `fit_gllvm_cov` where that
+    # path exists; shared-cutpoint ordinal stays an explicit Julia comparator.
     if key == "negbinomial"
         Yi = round.(Int, Ydata)
         fit = fit_nb_gllvm_grouped_cov(Yi; X = Xarr, K = K, group = collect(1:p),
@@ -1133,8 +1147,17 @@ function _bridge_fit_onepart_cov(Yf::AbstractMatrix{Float64}, key::AbstractStrin
         return _bridge_assemble_grouped_cov(fit, key, traits, units, Ydata, Xarr,
                                             coef_fixed, ci_method, ci_level,
                                             ci_nboot, ci_seed; N = nothing)
+    elseif key in ("ordinal", "ordinal_probit")
+        Yi = round.(Int, Ydata)
+        link = key == "ordinal_probit" ? ProbitLink() : LogitLink()
+        _bridge_ci_guard_pertrait_ordinal(key, ci_method)
+        fit = fit_ordinal_gllvm_pertrait_cov(Yi; X = Xarr, K = K, link = link,
+                                             γ_fixed = coef_fixed)
+        return _bridge_assemble_ordinal_cov(fit, key, traits, units, Yi, Xarr,
+                                            coef_fixed)
     end
 
+    marker = _bridge_cov_marker(key)
     fit = Nm === nothing ?
           fit_gllvm_cov(Ydata; family = marker, X = Xarr, K = K, γ_fixed = coef_fixed) :
           fit_gllvm_cov(Ydata; family = marker, X = Xarr, K = K, N = Nm,
@@ -1219,6 +1242,41 @@ function _bridge_assemble_grouped_cov(fit::Union{NBGroupedCovFit, BetaGroupedCov
             "fit_gllvm_cov. Sigma/correlation use Lambda*Lambda' (communality 1).",
         ci = ci)
     return merge(base, (beta_cov = β, gamma = γ, gamma_status = _fixed_status(coef_fixed)))
+end
+
+# Assemble the flat bridge contract for per-trait ordinal cutpoints + shared-X
+# (twin API B under X). Dispersion is NaN (no φ); cutpoint extras mirror no-X.
+function _bridge_assemble_ordinal_cov(fit::OrdinalPerTraitCovFit,
+                                      key::AbstractString, traits, units,
+                                      Ydata, Xarr, coef_fixed)
+    p = size(fit.Λ, 1)
+    β = collect(Float64, fit.β)
+    γ = collect(Float64, fit.γ)
+    L = Matrix{Float64}(getLoadings(fit; rotate = true))
+    scores = _bridge_scores(() -> getLV(fit, Ydata, Xarr; rotate = true))
+    Λr = L
+    Σ = Λr * Λr'; Σ = (Σ + Σ') ./ 2
+    corr = _bridge_corr_from_sigma(Σ)
+    comm = ones(Float64, p)
+    df = _nparams(fit)
+    family_out = key == "ordinal_probit" ? "ordinal_probit" : "ordinal"
+    model_out = key == "ordinal_probit" ? "ordinal_probit_x_rr" : "ordinal_x_rr"
+    base = _bridge_assemble(fit, family_out, model_out, traits, units;
+        alpha = β, dispersion = fill(NaN, p), sigma_eps = NaN,
+        link = fill(_bridge_link_name(fit.link), p), Sigma = Σ, corr = corr,
+        comm = comm, scores = scores, df = df, loglik = fit.loglik,
+        converged = fit.converged, iterations = fit.iterations,
+        loadings = L, note =
+            "fixed-effect covariate fit (ordinal, twin API B): eta = beta + " *
+            "X*gamma + Lambda*z with per-trait cutpoints (τ₁=0, K−2 log-spacings). " *
+            "CI routing remains a follow-up. Sigma/correlation use Lambda*Lambda' " *
+            "(communality 1).",
+        ci = nothing)
+    return merge(base, (beta_cov = β, gamma = γ, gamma_status = _fixed_status(coef_fixed),
+                        cutpoints = Matrix{Float64}(fit.τ),
+                        n_categories = Vector{Int}(fit.C),
+                        cutpoint_mode = "per_trait",
+                        cutpoint_link = _bridge_link_name(fit.link)))
 end
 
 # --- mixed-family dispatch (the cross-distribution VCV headline) -----------

@@ -53,6 +53,8 @@ using GLLVM
         "negbinomial",
         "beta",
         "gamma",
+        "ordinal",
+        "ordinal_probit",
     ]
     @test caps.family[caps.predictor_informed_lv] == [
         "gaussian",
@@ -184,6 +186,7 @@ using GLLVM
             @test occursin("Wald/profile/bootstrap CI payloads are routed", note)
         elseif fam in pertrait_ordinal
             @test occursin("per-trait ordinal cutpoints", note)
+            @test occursin("fixed-effect-X", note)
             @test occursin("CI routing is a follow-up", note)
         else
             @test occursin("narrower than full R-user parity", note)

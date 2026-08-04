@@ -168,11 +168,11 @@ cutpoints carry the category levels. The fitted cutpoints are available as
 `fit.τ`. The cumulative link is `LogitLink()` by default; pass
 `link = ProbitLink()` for a cumulative-probit (ordered-probit) model.
 
-For native `gllvmTMB` bridge parity, use `fit_ordinal_gllvm_pertrait()`: it
-estimates one ordered cutpoint vector per trait and stores a NaN-padded
-`p × max(C_t - 1)` cutpoint matrix plus per-trait category counts `fit.C`. The
-shared-cutpoint `fit_ordinal_gllvm()` route remains available as a Julia-side
-comparator and keeps the existing shared-cutpoint CI engine.
+For native `gllvmTMB` bridge parity, use `fit_ordinal_gllvm_pertrait()` (no-X)
+or `fit_ordinal_gllvm_pertrait_cov()` / `@formula`+X / bridge X (shared site-X):
+per-trait cutpoints with τ₁=0 fixed and K−2 free log-spacings, plus shared `γ`
+under X (twin API B). The shared-cutpoint `fit_ordinal_gllvm()` route remains a
+Julia-side comparator and is **not** the public X default.
 
 The shared-cutpoint route also admits predictor-informed latent-score means:
 

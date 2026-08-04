@@ -971,6 +971,8 @@ _loadings(fit::OrdinalFit) = fit.Λ
 _loglik(fit::OrdinalFit)   = fit.loglik
 _loadings(fit::OrdinalPerTraitFit) = fit.Λ
 _loglik(fit::OrdinalPerTraitFit)   = fit.loglik
+_loadings(fit::OrdinalPerTraitCovFit) = fit.Λ
+_loglik(fit::OrdinalPerTraitCovFit)   = fit.loglik
 
 function _nparams(fit::OrdinalFit)
     p, K = size(fit.Λ)
@@ -981,6 +983,10 @@ end
 function _nparams(fit::OrdinalPerTraitFit)
     p, K = size(fit.Λ)
     return p + (p * K - div(K * (K - 1), 2)) + sum(fit.C .- 2)
+end
+function _nparams(fit::OrdinalPerTraitCovFit)
+    p, K = size(fit.Λ)
+    return p + count(!, fit.γ_fixed) + (p * K - div(K * (K - 1), 2)) + sum(fit.C .- 2)
 end
 
 """
@@ -1023,6 +1029,29 @@ function getLV(fit::OrdinalPerTraitFit, Y::AbstractMatrix{<:Integer};
         mi = mask === nothing ? nothing : view(mask, :, s)
         Z[:, s] = _ordinal_laplace_mode_pertrait(view(Y, :, s), fit.Λ, fit.β,
                                                  fit.τ, fit.C, fit.link; mask = mi)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
+end
+
+"""
+    getLV(fit::OrdinalPerTraitCovFit, Y, X; rotate=true, mask=nothing) -> n×K matrix
+
+Conditional latent scores at `η = β + Xγ + Λz` with per-trait ordinal cutpoints.
+"""
+function getLV(fit::OrdinalPerTraitCovFit, Y::AbstractMatrix{<:Integer},
+               X::AbstractArray{<:Real, 3};
+               rotate::Bool = true, mask = nothing)
+    p, n = size(Y)
+    K = size(fit.Λ, 2)
+    O = _build_offset(X, fit.γ)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        mi = mask === nothing ? nothing : view(mask, :, s)
+        oi = view(O, :, s)
+        Z[:, s] = _ordinal_laplace_mode_pertrait(view(Y, :, s), fit.Λ, fit.β,
+                                                 fit.τ, fit.C, fit.link;
+                                                 mask = mi, offset = oi)
     end
     Zt = permutedims(Z)
     return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
