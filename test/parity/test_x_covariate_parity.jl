@@ -9,7 +9,11 @@
 # Cohort 3 (Gamma Arc 2): Gamma with q=1 shared site-X + per-trait shape α,
 # using fit_gamma_gllvm_grouped_cov (default hessian=:observed — twin API B,
 # docs/dev-log/decisions/2026-08-03-gamma-x-dispersion-identity.md).
-# Fence: Ordinal+X, X_lv, shared-φ-Julia-vs-per-trait-R comparisons.
+# Cohort 4 (Ordinal Arc 2): Ordinal with q=1 shared site-X + per-trait
+# cutpoints (τ₁=0 / K−2), using fit_ordinal_gllvm_pertrait_cov + ProbitLink
+# vs gllvmTMB ordinal_probit
+# (docs/dev-log/decisions/2026-08-03-ordinal-x-cutpoint-identity.md).
+# Fence: X_lv, shared-φ-Julia-vs-per-trait-R, shared-cutpoint Option B.
 
 using GLLVM, RCall, Test, Random, LinearAlgebra, Statistics
 
@@ -306,6 +310,53 @@ end
 
         print_parity_loglik(
             "Gamma+X logLik oracle (seed=46, p=$p, K=$K, n=$n, q=1 shared, per-trait α)";
+            jl_logL = jl_logL, r_logL = r.logLik, r_obj = r.objective,
+        )
+
+        @testset "log-likelihood agreement (rtol=1e-6)" begin
+            @test jl_logL ≈ r.logLik rtol = 1e-6
+            @test r.logLik ≈ -r.objective rtol = 0 atol = 1e-10
+        end
+    end
+
+    @testset "Ordinal-probit + shared X (q=1)" begin
+        # Per-trait cutpoints (τ₁=0 / K−2 free) + shared site-X γ —
+        # twin API under X
+        # (docs/dev-log/decisions/2026-08-03-ordinal-x-cutpoint-identity.md).
+        # ProbitLink matches gllvmTMB::ordinal_probit(). Mild loadings / K=1
+        # to avoid Heywood; never widen rtol.
+        Random.seed!(47)
+        p, K, n, C = 5, 1, 80, 3
+        β = [0.30, -0.20, 0.15, -0.10, 0.05]
+        Λ = 0.35 .* reshape([0.8, 0.5, 0.3, -0.2, 0.1], p, K)
+        τ = [0.0, 0.75]
+        γ = 0.35
+        x = randn(n)
+        X = parity_site_design(x, p)
+        Z = randn(K, n)
+        η = β .+ γ .* x' .+ Λ * Z
+        Y = Matrix{Int}(undef, p, n)
+        for s in 1:n, t in 1:p
+            u = rand()
+            Y[t, s] = u < GLLVM._ord_F(τ[1] - η[t, s], ProbitLink()) ? 1 :
+                      u < GLLVM._ord_F(τ[2] - η[t, s], ProbitLink()) ? 2 : 3
+        end
+
+        jl_fit = fit_ordinal_gllvm_pertrait_cov(
+            Y; X = X, K = K, link = ProbitLink(),
+            g_tol = 1e-7, iterations = 1_000,
+        )
+        @test jl_fit isa OrdinalPerTraitCovFit
+        @test jl_fit.converged
+        @test isfinite(jl_fit.loglik)
+        jl_logL = jl_fit.loglik
+
+        r = fit_gllvmtmb_parity_loglik_x(Y, x, K; family = :ordinal)
+        @test r.converged
+        @test isfinite(r.logLik)
+
+        print_parity_loglik(
+            "Ordinal-probit+X logLik oracle (seed=47, p=$p, K=$K, n=$n, C=$C, q=1 shared, per-trait τ)";
             jl_logL = jl_logL, r_logL = r.logLik, r_obj = r.objective,
         )
 

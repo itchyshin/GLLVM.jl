@@ -48,9 +48,10 @@ end
 
 # ── Run the parity tests ──────────────────────────────────────────────────────
 # Order locked by catch-up arc: Gaussian → Binomial → Poisson → NB2 → Beta →
-# Ordinal-probit, then shared site-X cohort (Gaussian / Binomial / Poisson).
-# Light logLik oracles: NB2/Beta via public fit_gllvm default (per-trait φ);
-# Ordinal = cumulative-probit + observed Hessian. X cells use shared γ only.
+# Ordinal-probit, then shared site-X cohort (G/Bin/Pois + NB2/Beta/Gamma +
+# Ordinal-probit). Light logLik oracles: NB2/Beta/Gamma via grouped-cov +
+# per-trait dispersion; Ordinal+X via fit_ordinal_gllvm_pertrait_cov +
+# ProbitLink. X cells use shared γ only.
 # Do not narrate as “full family parity” (named shared-φ / logit ordinal differ).
 include(joinpath(@__DIR__, "parity_helpers.jl"))
 include(joinpath(@__DIR__, "test_gaussian_parity.jl"))
