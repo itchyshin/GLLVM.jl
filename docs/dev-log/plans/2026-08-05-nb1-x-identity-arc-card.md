@@ -1,8 +1,7 @@
 # ARC CARD — NB1+X dispersion identity (Arc 0)
 
-**Status:** **PLAN** — Ultra Plan written
-(`docs/dev-log/plans/2026-08-05-nb1-x-identity-ultra-plan.md`); awaiting G0.
-Docs-only; no execute until `/goal` after approval.
+**Status:** **LOCAL DONE** — G0 `1 yes 2 yes 3 A`; decision ACCEPTED on
+`cursor/nb1-x-identity-arc0-fffd` / PR #185. Awaiting merge.
 
 **Mode:** size  
 **Requested outcome:** not quantified — lock the NB1 (+ shared site-X)
@@ -98,8 +97,10 @@ git checkout -b docs/nb1-x-identity-20260805 origin/main
 
 ### Actuals (complete at close)
 
-**Recommended / actual:** 75 / _TBD_ · **Rungs completed:** _TBD_  
-**Result:** _TBD_ · **Next arc:** NB1+X engine Arc 1 (only if ACCEPTED)
+**Recommended / actual:** 75 / ~55 · **Rungs completed:** Arc 0 (S0–S6)  
+**Under-run event:** no engine; twin via raw GitHub fetch (no local mount)  
+**Result:** LOCAL DONE / ACCEPTED · **Next arc:** NB1+X engine Arc 1 after #185
+merges + fresh `/arc-creation`
 
 ---
 

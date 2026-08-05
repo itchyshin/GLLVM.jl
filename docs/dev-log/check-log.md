@@ -1,5 +1,16 @@
 # Check Log
 
+## 2026-08-05 - NB1+X dispersion identity (Arc 0 docs)
+
+Lane `cursor/nb1-x-identity-arc0-fffd` (PR #185). Decision ACCEPTED: public
+twin default under shared site-X = **per-trait φ** + **shared γ**, twin to
+gllvmTMB `nbinom1` / `log_phi_nbinom1` (fid 15). Twin cites from
+`gllvmTMB` @ `5bf18ab3` (`src/gllvmTMB.cpp:355–356`, `:800`, `:2369–2379`;
+`R/fit-multi.R:4034–4039`). Julia: bridge no-X grouped; +X kernel absent
+(ArgumentError). No `src/`. Rose fence: identity ≠ engine ≠ light RCall ≠
+full family parity ≠ ADEMP. After-task:
+`docs/dev-log/after-task/2026-08-05-nb1-x-identity.md`.
+
 ## 2026-08-05 - Note board hygiene #183 merged
 
 Docs-only pointer tick: `coordination-board.md` + `AGENTS.md` phase snapshot
