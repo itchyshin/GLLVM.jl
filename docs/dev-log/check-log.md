@@ -1,5 +1,18 @@
 # Check Log
 
+## 2026-08-05 - Post-#181 board / snapshot hygiene
+
+Docs-only catch-up after Merge #181 (`main` @ `a92c5040`). Cleared stale
+“push/PR Ordinal+X Arc 2” / “LOCAL DONE (no push)” pointers on
+`docs/dev-log/coordination-board.md` and `AGENTS.md` phase snapshot. START
+HERE → idle / await owner pick (G0 Q1). Remote GC of merged X-cohort heads
+(G0 Q2=yes). No `src/`; no capability-status promotion; no invented next
+family/+X arc. Mechanical verify: greps clear stale push/PR Ordinal LOCAL-DONE
+on live pointers. Rose fence unchanged: light RCall ≠ full family parity ≠
+ADEMP. After-task: `docs/dev-log/after-task/2026-08-05-board-hygiene.md`.
+Plans: `docs/dev-log/plans/2026-08-05-board-hygiene-arc-card.md`,
+`docs/dev-log/plans/2026-08-05-board-hygiene-ultra-plan.md`.
+
 ## 2026-08-03 - Ordinal+X light RCall Arc 2
 
 Lane `parity/ordinal-x-arc2-20260803` from engine tip `e2b4afde` (#180 tip

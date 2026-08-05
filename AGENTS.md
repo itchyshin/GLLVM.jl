@@ -90,13 +90,16 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
-- **Next Cursor lane — push/PR Ordinal+X Arc 2 (2026-08-04).** Primary OWED:
-  push/PR `parity/ordinal-x-arc2-20260803` @ `b6cf71f5` when asked (#180
-  already on `main`). Multi-lane pointer:
-  `docs/dev-log/coordination-board.md`.
-- **Ordinal+X light RCall Arc 2 LOCAL DONE (2026-08-03).** Tip
-  `parity/ordinal-x-arc2-20260803` — `:ordinal` in X helper + light cell
-  Δ≈5.38e-9. After-task:
+- **Next Cursor lane — idle / await owner pick (2026-08-05).** No active
+  capability OWED after X-cohort #170–#181 on `main` @ `a92c5040`. Board
+  hygiene in flight as PR #183 (`cursor/board-hygiene-arc-fffd`). Multi-lane
+  pointer: `docs/dev-log/coordination-board.md`. Next capability needs a
+  fresh `/arc-creation` after owner pick.
+- **Board / snapshot hygiene Arc 0 LOCAL DONE (2026-08-05).** Docs-only
+  post-#181 pointer truth + merged remote-head GC (G0 Q2=yes). PR #183 open.
+  After-task: `docs/dev-log/after-task/2026-08-05-board-hygiene.md`.
+- **Ordinal+X light RCall Arc 2 MERGED #181 (2026-08-04).** `main` @
+  `a92c5040` — `:ordinal` in X helper + light cell Δ≈5.38e-9. After-task:
   `docs/dev-log/after-task/2026-08-03-ordinal-x-arc2-parity.md`. Rose fence:
   ≠ full family parity.
 - **Ordinal+X engine Arc 1 MERGED #180 (2026-08-04).** `main` @ `e4c20195` —

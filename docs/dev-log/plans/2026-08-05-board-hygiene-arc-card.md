@@ -1,8 +1,7 @@
 # ARC CARD — Post-#181 board / snapshot hygiene
 
-**Status:** **PLAN** — Ultra Plan written
-(`docs/dev-log/plans/2026-08-05-board-hygiene-ultra-plan.md`); awaiting G0.
-Do not execute until `/goal` after approval.
+**Status:** **LOCAL DONE** — G0 approved (Q1=idle START HERE, Q2=yes remote
+GC); execute on `cursor/board-hygiene-arc-fffd` / PR #183. Awaiting merge.
 
 **Mode:** size  
 **Requested outcome:** not quantified — make Active-Lane-Split + `AGENTS.md`
@@ -99,11 +98,12 @@ git checkout -b docs/board-hygiene-20260805 origin/main
 
 ### Actuals (complete at close)
 
-**Recommended / actual:** 25 / _TBD_ · **Rungs completed:** _TBD_  
-**Result:** _TBD_ · **Next arc:** STOP unless owner names one
+**Recommended / actual:** 25 / ~20 · **Rungs completed:** Arc 0 (S0–S6 + Q2 GC)  
+**Under-run event:** none material — `/ask-brain` unavailable in cloud (noted)  
+**Result:** LOCAL DONE on PR #183 · **Next arc:** STOP until owner `/arc-creation`
 
 ---
 
 **HAND TO ULTRA PLAN:** done —
 `docs/dev-log/plans/2026-08-05-board-hygiene-ultra-plan.md` (Phases 0–2).
-After G0 run via `/goal` (fresh chat preferred).
+G0 executed in this chat after “1 yes 2 yes”.
