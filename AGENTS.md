@@ -108,6 +108,10 @@ Full responsibility detail lives in §2 of the reference plan.
   After-task: `docs/dev-log/after-task/2026-08-05-board-hygiene.md`.
 - **Ordinal+X light RCall Arc 2 MERGED #181 (2026-08-04).** `main` @
   `a92c5040` — `:ordinal` in X helper + light cell Δ≈5.38e-9. After-task:
+- **Species-XB light RCall Arc 0 LOCAL DONE (2026-08-04).** Tip
+  `parity/species-xb-light-20260804` — `(0+trait):x` helper + Poisson cell
+  Δ≈4.20e-9. After-task:
+  `docs/dev-log/after-task/2026-08-04-species-xb-light-rcall.md`.
   `docs/dev-log/after-task/2026-08-03-ordinal-x-arc2-parity.md`. Rose fence:
   ≠ full family parity.
 - **Ordinal+X engine Arc 1 MERGED #180 (2026-08-04).** `main` @ `e4c20195` —

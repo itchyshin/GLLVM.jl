@@ -87,7 +87,13 @@ OH unblocker vs Fisher-only) vs `stats::Gamma(link="log")` / per-trait
 `log_phi_gamma`. Δ ≈ 3.03e-8 at seed=46 (rtol 1e-6). See
 `docs/dev-log/after-task/2026-08-03-gamma-x-arc2-parity.md`.
 
-**Not claimed here:** Ordinal+X; species-specific XB; X_lv;
+**Ordinal+X** (Arc 2 cohort 4, #181): `fit_ordinal_gllvm_pertrait_cov` +
+`ProbitLink` vs `ordinal_probit()`; Δ ≈ 5.38e-9 at seed=47.
+
+**Species-specific XB** (Arc 0 in progress): R `(0 + trait):x` vs Julia
+`fit_gllvm_speciescov` — see `test_species_x_parity.jl` (Poisson first).
+
+**Not claimed here:** multi-family species-XB cohort; X_lv;
 shared-φ-Julia-vs-per-trait-R comparisons; shared-dispersion NB2/Beta via
 named fitters as twin default; ordinal-logit; ADEMP; coverage; “full family
 parity.” `n_drift=0` ≠ these cells.

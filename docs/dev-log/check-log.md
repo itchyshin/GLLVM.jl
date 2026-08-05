@@ -7,6 +7,13 @@ it to `_BRIDGE_X_FAMILIES` / X-CI routing — 4 failures on main CI. Hygiene PR
 #187 lands the expectation update (`fixed_effect_X` + `ci_x_*`). Local
 `test_bridge_capabilities.jl`: **107/107**.
 
+## 2026-08-04 - Species-XB light RCall Arc 0 (Poisson)
+
+Lane `parity/species-xb-light-20260804`. Helper
+`fit_gllvmtmb_parity_loglik_species_x` with R `(0 + trait):x`; Poisson cell via
+`fit_gllvm_speciescov`. Live Δ ≈ 4.20e-9 @ rtol 1e-6. After-task:
+`docs/dev-log/after-task/2026-08-04-species-xb-light-rcall.md`.
+
 ## 2026-08-05 - Post-NB1 hygiene (Δ paste + Distributions + board truth)
 
 Lane `cursor/post-nb1-hygiene-20260805` (closeout programme S1). Paste live

@@ -192,6 +192,71 @@ function fit_gllvmtmb_parity_loglik_x(
     )
 end
 
+"""
+    fit_gllvmtmb_parity_loglik_species_x(y, x_site, K; family) -> NamedTuple
+
+Species-specific site-X twin oracle. R formula uses **per-trait** slopes
+`(0 + trait):x` (not bare `+ x`):
+
+```
+value ~ 0 + trait + (0 + trait):x + latent(0 + trait | site, d = K, unique = FALSE)
+```
+
+Pair with Julia [`fit_gllvm_speciescov`](@ref) (`B` is `p×q`). Arc 0 starts
+with `:poisson` only; other families may need separate dispersion identity.
+"""
+function fit_gllvmtmb_parity_loglik_species_x(
+    y::AbstractMatrix,
+    x_site::AbstractVector{<:Real},
+    K::Integer;
+    family::Symbol,
+)
+    family in (:poisson,) ||
+        throw(ArgumentError("unsupported species-XB parity family (Arc 0): $family"))
+    p, n = size(y)
+    length(x_site) == n ||
+        throw(DimensionMismatch("x_site length ($(length(x_site))) must equal n ($n)"))
+    fam = String(family)
+    x = collect(Float64, x_site)
+    _parity_require_gllvmtmb!()
+    @rput y K p n fam x
+
+    R"""
+    trait_names <- paste0("t", seq_len(p))
+    df_long <- data.frame(
+        site  = factor(rep(seq_len(n), each = p)),
+        trait = factor(rep(trait_names, times = n), levels = trait_names),
+        value = as.vector(y),
+        x     = rep(as.numeric(x), each = p)
+    )
+    fam_obj <- switch(fam,
+        poisson = stats::poisson(),
+        stop(sprintf("unknown family: %s", fam))
+    )
+    # Per-trait slopes: (0 + trait):x — NOT bare shared `x`.
+    fit_r <- gllvmTMB(
+        value ~ 0 + trait + (0 + trait):x + latent(0 + trait | site, d = K, unique = FALSE),
+        data = df_long,
+        unit = "site",
+        trait = "trait",
+        family = fam_obj,
+        control = gllvmTMBcontrol(n_init = 1L, se = FALSE)
+    )
+    .gllvm_parity_last_species_x <<- list(
+        logL      = as.numeric(stats::logLik(fit_r)),
+        objective = as.numeric(fit_r$opt$objective),
+        converged = identical(as.integer(fit_r$opt$convergence), 0L)
+    )
+    invisible(NULL)
+    """
+
+    return (
+        logLik = rcopy(Float64, R".gllvm_parity_last_species_x$logL"),
+        objective = rcopy(Float64, R".gllvm_parity_last_species_x$objective"),
+        converged = rcopy(Bool, R".gllvm_parity_last_species_x$converged"),
+    )
+end
+
 function print_parity_loglik(label::AbstractString; jl_logL, r_logL, r_obj)
     println()
     println("── ", label, " ──")
