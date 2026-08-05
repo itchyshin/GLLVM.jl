@@ -90,13 +90,14 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
-- **Next Cursor lane — idle / await owner pick (2026-08-05).** No active
-  capability OWED after X-cohort #170–#181 and board hygiene #183 on `main`
-  @ `c38b9363`. Multi-lane pointer: `docs/dev-log/coordination-board.md`.
-  Next capability needs a fresh `/arc-creation` after owner pick.
-- **Board / snapshot hygiene Arc 0 MERGED #183 (2026-08-05).** Docs-only
-  post-#181 pointer truth + merged remote-head GC (G0 Q2=yes). `main` @
-  `c38b9363`. After-task: `docs/dev-log/after-task/2026-08-05-board-hygiene.md`.
+- **Next Cursor lane — NB1+X identity Arc 0 LOCAL DONE (2026-08-05).** PR
+  #185 `cursor/nb1-x-identity-arc0-fffd`. ACCEPTED decision
+  `docs/dev-log/decisions/2026-08-05-nb1-x-dispersion-identity.md` (per-trait
+  φ + shared site-X γ). Docs-only; engine Arc 1 after merge + fresh
+  `/arc-creation`. Multi-lane pointer: `docs/dev-log/coordination-board.md`.
+- **Board / snapshot hygiene Arc 0 MERGED #183/#184 (2026-08-05).** Docs-only
+  post-#181 pointer truth + merged remote-head GC. `main` @ `13d97b13`.
+  After-task: `docs/dev-log/after-task/2026-08-05-board-hygiene.md`.
 - **Ordinal+X light RCall Arc 2 MERGED #181 (2026-08-04).** `main` @
   `a92c5040` — `:ordinal` in X helper + light cell Δ≈5.38e-9. After-task:
   `docs/dev-log/after-task/2026-08-03-ordinal-x-arc2-parity.md`. Rose fence:
