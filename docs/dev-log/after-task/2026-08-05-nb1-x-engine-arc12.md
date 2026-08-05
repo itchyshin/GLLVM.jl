@@ -34,24 +34,22 @@ and one light gllvmTMB `nbinom1`+X logLik cell @ rtol `1e-6`.
 |---|---|
 | `test/test_nb1_x_identity.jl` | **7/7** |
 | `test/test_bridge_x.jl` | **208/208** |
-| Live NB1+X RCall (`GLLVM_PARITY_TESTS=1`) | **OWED** — no `R`/`gllvmTMB` in cloud execute env; cell scaffolded |
+| Live NB1+X RCall (`GLLVM_PARITY_TESTS=1`) | **PASS** — focused cell seed=48: jl=`-1110.8791732138086`, r=`-1110.87917321534`, abs Δ=`1.531e-9`, rel Δ=`1.379e-12` @ rtol `1e-6` (local 2026-08-05) |
 | Tolerance widen | **none** |
 
 ## Rose verdict
 
 **PASS WITH NOTES** — OK to claim: “NB1+X engine under **per-trait** φ +
-shared γ, twin API B; Julia identity green; light RCall cell **scaffolded**.”
+shared γ, twin API B; Julia identity green; light RCall Δ ≪ 1e-6.”
 
-**Not OK:** live Δ within 1e-6 (OWED); full family parity; ADEMP; Phylo Model A;
-second family in this PR.
+**Not OK:** full family parity; ADEMP; Phylo Model A; second family in #186.
 
 ## Remaining OWED
 
-- Live `GLLVM_PARITY_TESTS=1` NB1+X cell when R/`gllvmTMB` available; paste Δ.
-- Merge #186 when maintainer asks.
-- Full `Pkg.test()` / CI green after push (cloud targeted suites green).
+- None for live Δ / merge (#186 MERGED @ `a100cc63`).
+- Programme follow-on: Species-XB rebase/PR + BetaBinomial+X Identity
+  (`docs/dev-log/plans/2026-08-05-post-nb1-closeout-programme-ultra-plan.md`).
 
 ## Next
 
-`START A FRESH TASK` for merge or live RCall verify — do not invent the next
-family/+X arc without `/arc-creation`.
+Post-NB1 closeout programme (packaging A) — see coordination board START HERE.

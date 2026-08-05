@@ -90,13 +90,16 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
-- **Next Cursor lane — NB1+X combined Arc 1+2 LOCAL DONE (2026-08-05).** PR
-  #186 `cursor/nb1-x-engine-arc12-fffd` — `fit_nb1_gllvm_grouped_cov` +
-  bridge/`@formula` + identity 7/7; light RCall scaffold; **live Δ OWED**
-  (no R in cloud). After-task:
+- **Next Cursor lane — Post-NB1 closeout programme IN PROGRESS (2026-08-05).**
+  Packaging A: hygiene → Species-XB land → BetaBinomial+X Identity (docs-only).
+  LOOP: `lanes/post-nb1-closeout-20260805/LOOP/`. Plan:
+  `docs/dev-log/plans/2026-08-05-post-nb1-closeout-programme-ultra-plan.md`.
+  Multi-lane pointer: `docs/dev-log/coordination-board.md`.
+- **NB1+X Arc 1+2 MERGED #186 (2026-08-05).** `main` @ `a100cc63` —
+  `fit_nb1_gllvm_grouped_cov` + bridge/`@formula`; live Δ abs ≈1.53e-9
+  (seed=48). After-task:
   `docs/dev-log/after-task/2026-08-05-nb1-x-engine-arc12.md`. Rose fence:
-  ≠ full family parity. Multi-lane pointer:
-  `docs/dev-log/coordination-board.md`.
+  ≠ full family parity.
 - **NB1+X identity Arc 0 MERGED #185 (2026-08-05).** `main` @ `210de76d` —
   ACCEPTED decision
   `docs/dev-log/decisions/2026-08-05-nb1-x-dispersion-identity.md`.
