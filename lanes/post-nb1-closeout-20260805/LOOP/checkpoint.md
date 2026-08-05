@@ -1,7 +1,7 @@
-GOAL: see GOAL.md.   STATE: #187+#190 MERGED; Identity+S4 board on branch docs/betabinomial-x-identity-20260805 — push/PR/merge next.
-ARCS DONE (verified): S0; S1 (#187); S2 (#190 @ a8d19579).
-ARC IN PROGRESS: S3+S4 Identity PR + board closeout.
-NEXT: push Identity → open PR → merge on green → STOP.
+GOAL: see GOAL.md.   STATE: #187+#190 MERGED; Identity PR #191 open @ 2fe22e9d; waiting CI → merge → STOP.
+ARCS DONE: S0; S1 (#187); S2 (#190); S3+S4 pushed (#191).
+ARC IN PROGRESS: #191 CI → merge.
+NEXT: merge #191 on green → STOP (no engine).
 OPEN GATES: none.
-TRUTH LIVES IN: origin/main @ a8d19579; Identity branch tip (local, about to push).
-RESUME: push/PR/merge Identity docs; then programme STOP. No engine.
+TRUTH LIVES IN: https://github.com/itchyshin/GLLVM.jl/pull/191 ; origin/main @ a8d19579.
+RESUME: merge #191 when CI green; programme STOP. No engine. Do not open Identity before — already open.
