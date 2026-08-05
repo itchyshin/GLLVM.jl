@@ -1,7 +1,7 @@
-GOAL: see GOAL.md.   STATE: S0 scaffolded; S1 hygiene in progress.
-ARCS DONE (verified): S0 — worktree at origin/main a100cc63 + LOOP kit written
-ARC IN PROGRESS: S1 — NB1 hygiene docs + Distributions import
-NEXT: S1 commit → push → PR → merge when green (or continue to S2 if CI pending per pacing)
-OPEN GATES (need human): none (G0 authorized push/merge for Species; hygiene push authorized by /goal)
-TRUTH LIVES IN: branch cursor/post-nb1-hygiene-20260805 @ worktree gllvmjl-post-nb1-closeout-20260805; plan docs/dev-log/plans/2026-08-05-post-nb1-closeout-programme-ultra-plan.md
-RESUME: /goal RESUME post-nb1-closeout. READ lanes/post-nb1-closeout-20260805/LOOP/{GOAL,checkpoint,ultra-plan}.md. WORKSPACE: .worktrees/gllvmjl-post-nb1-closeout-20260805. CONTINUE FROM checkpoint NEXT. Packaging A. Do not redo S0.
+GOAL: see GOAL.md.   STATE: #187+#190 MERGED; Identity PR #191 open @ 2fe22e9d; waiting CI → merge → STOP.
+ARCS DONE: S0; S1 (#187); S2 (#190); S3+S4 pushed (#191).
+ARC IN PROGRESS: #191 CI → merge.
+NEXT: merge #191 on green → STOP (no engine).
+OPEN GATES: none.
+TRUTH LIVES IN: https://github.com/itchyshin/GLLVM.jl/pull/191 ; origin/main @ a8d19579.
+RESUME: merge #191 when CI green; programme STOP. No engine. Do not open Identity before — already open.

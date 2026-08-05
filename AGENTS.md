@@ -90,11 +90,18 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
-- **Next Cursor lane — Post-NB1 closeout programme IN PROGRESS (2026-08-05).**
-  Packaging A: hygiene → Species-XB land → BetaBinomial+X Identity (docs-only).
-  LOOP: `lanes/post-nb1-closeout-20260805/LOOP/`. Plan:
-  `docs/dev-log/plans/2026-08-05-post-nb1-closeout-programme-ultra-plan.md`.
+- **Next Cursor lane — BetaBinomial+X engine (after Identity merges).**
+  Fresh `/arc-creation` / `/ultra-plan` only. Decision:
+  `docs/dev-log/decisions/2026-08-05-betabinomial-x-dispersion-identity.md`.
   Multi-lane pointer: `docs/dev-log/coordination-board.md`.
+- **Post-NB1 closeout programme DONE (2026-08-05).** Packaging A: #187
+  hygiene + #190 Species-XB + BetaBinomial+X Identity (this PR). After-task:
+  `docs/dev-log/after-task/2026-08-05-post-nb1-closeout-programme.md`.
+- **Species-XB Arc 0 MERGED #190 (2026-08-05).** `main` @ `a8d19579` —
+  Poisson `(0+trait):x` Δ≈4.20e-9. After-task:
+  `docs/dev-log/after-task/2026-08-04-species-xb-light-rcall.md`.
+- **Post-NB1 hygiene MERGED #187 (2026-08-05).** `main` @ `f230b372` —
+  live Δ paste + Distributions + capabilities golden (#189 superseded).
 - **NB1+X Arc 1+2 MERGED #186 (2026-08-05).** `main` @ `a100cc63` —
   `fit_nb1_gllvm_grouped_cov` + bridge/`@formula`; live Δ abs ≈1.53e-9
   (seed=48). After-task:
@@ -108,10 +115,6 @@ Full responsibility detail lives in §2 of the reference plan.
   After-task: `docs/dev-log/after-task/2026-08-05-board-hygiene.md`.
 - **Ordinal+X light RCall Arc 2 MERGED #181 (2026-08-04).** `main` @
   `a92c5040` — `:ordinal` in X helper + light cell Δ≈5.38e-9. After-task:
-- **Species-XB light RCall Arc 0 LOCAL DONE (2026-08-04).** Tip
-  `parity/species-xb-light-20260804` — `(0+trait):x` helper + Poisson cell
-  Δ≈4.20e-9. After-task:
-  `docs/dev-log/after-task/2026-08-04-species-xb-light-rcall.md`.
   `docs/dev-log/after-task/2026-08-03-ordinal-x-arc2-parity.md`. Rose fence:
   ≠ full family parity.
 - **Ordinal+X engine Arc 1 MERGED #180 (2026-08-04).** `main` @ `e4c20195` —
