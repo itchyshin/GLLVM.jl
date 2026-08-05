@@ -1,6 +1,8 @@
 # ARC CARD — Post-#181 board / snapshot hygiene
 
-**Status:** **PLAN** — awaiting G0. Do not execute until `/goal` after approval.
+**Status:** **PLAN** — Ultra Plan written
+(`docs/dev-log/plans/2026-08-05-board-hygiene-ultra-plan.md`); awaiting G0.
+Do not execute until `/goal` after approval.
 
 **Mode:** size  
 **Requested outcome:** not quantified — make Active-Lane-Split + `AGENTS.md`
@@ -102,8 +104,6 @@ git checkout -b docs/board-hygiene-20260805 origin/main
 
 ---
 
-**HAND TO ULTRA PLAN:** size-mode board hygiene Arc 0, **~25 min (15–40)**,
-outcome = truthful post-#181 board + AGENTS snapshot + check-log + STOP; no
-`src/`; no invented next capability; PLATFORM = Cursor; after G0 run via
-`/goal` (fresh chat preferred). Invoke `/ultra-plan` only if you want the
-Phases 0–2 receipt before execute.
+**HAND TO ULTRA PLAN:** done —
+`docs/dev-log/plans/2026-08-05-board-hygiene-ultra-plan.md` (Phases 0–2).
+After G0 run via `/goal` (fresh chat preferred).
