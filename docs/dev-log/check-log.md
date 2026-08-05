@@ -1,5 +1,15 @@
 # Check Log
 
+## 2026-08-05 - BetaBinomial+X dispersion identity (Arc 0 docs)
+
+Lane `docs/betabinomial-x-identity-20260805` (closeout programme S3). Decision
+ACCEPTED: public twin default under shared site-X = **per-trait φ** + **shared
+γ**, twin to gllvmTMB `betabinomial` / `log_phi_betabinom` (fid 8). Twin cites
+from local `gllvmTMB` @ `ab49638b`. Tweedie rejected as next rung (user path
+fail-loud). **No** `src/` engine / bridge admit. Rose: Identity ≠ engine ≠
+full family parity ≠ ADEMP. After-task:
+`docs/dev-log/after-task/2026-08-05-betabinomial-x-identity.md`.
+
 ## 2026-08-05 - Fix bridge capabilities ledger for nb1+X (#186 follow-up)
 
 `test/test_bridge_capabilities.jl` golden lists omitted `nb1` after #186 added
