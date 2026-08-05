@@ -1,5 +1,11 @@
 # Check Log
 
+## 2026-08-05 - Note board hygiene #183 merged
+
+Docs-only pointer tick: `coordination-board.md` + `AGENTS.md` phase snapshot
+now record board hygiene as **MERGED #183** @ `c38b9363` (was “PR #183 open”).
+START HERE remains idle. No `src/`.
+
 ## 2026-08-05 - Post-#181 board / snapshot hygiene
 
 Docs-only catch-up after Merge #181 (`main` @ `a92c5040`). Cleared stale
