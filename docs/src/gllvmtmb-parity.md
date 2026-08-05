@@ -36,7 +36,7 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 | Capability | GLLVM.jl | Notes |
 |-----------|:---:|-------|
 | Latent-variable ordination (loadings) | ✅ | any `K`; canonical SVD rotation |
-| Fixed-effect covariates (`Xβ`) | ✅ Gaussian · ✅ non-Gaussian (GLM families) | Shared site-X: Poisson/Binomial via `fit_gllvm_cov`; NB2/Beta/Gamma public/bridge default via `fit_*_gllvm_grouped_cov` (per-trait φ/α + shared `γ`; twin API B); Ordinal via `fit_ordinal_gllvm_pertrait_cov` (per-trait cutpoints τ₁=0 / K−2 + shared `γ`; light RCall vs `ordinal_probit`). Shared-dispersion + X remains `fit_gllvm_cov` where that path exists. Gaussian `β_fixed` / non-Gaussian `γ_fixed` zero masks supported. |
+| Fixed-effect covariates (`Xβ`) | ✅ Gaussian · ✅ non-Gaussian (GLM families) | Shared site-X: Poisson/Binomial via `fit_gllvm_cov`; NB2/NB1/Beta/Gamma public/bridge default via `fit_*_gllvm_grouped_cov` (per-trait φ/α + shared `γ`; twin API B; NB1 = `fit_nb1_gllvm_grouped_cov`); Ordinal via `fit_ordinal_gllvm_pertrait_cov` (per-trait cutpoints τ₁=0 / K−2 + shared `γ`; light RCall vs `ordinal_probit`). Shared-dispersion + X remains `fit_gllvm_cov` where that path exists (incl. shared-φ NB1 opt-in). Gaussian `β_fixed` / non-Gaussian `γ_fixed` zero masks supported. |
 | Between / within (multilevel) | ✅ Gaussian | `K_W` + per-trait diagonal |
 | Phylogenetic random effect | ✅ ⚡ | fast **O(p)** sparse path, benchmarked to p = 10⁴ |
 | Animal model (relatedness / GRM) | ✅ Gaussian | `relatedness_cov`, via the `Σ_phy` input |
@@ -112,8 +112,9 @@ ordinal-probit bridge rows now use per-trait cutpoints by default and return
 ordinal CI endpoints remain unavailable-status rows until a per-trait cutpoint
 CI engine lands. Fixed-effect
 covariates (`X`) are admitted for complete, balanced one-part Gaussian, Poisson,
-Binomial, NB2, Beta, and Gamma fits. NB1 fixed-effect covariates remain a
-documented follow-up because the Julia bridge has no NB1 covariate kernel yet.
+Binomial, NB2, NB1, Beta, and Gamma fits (NB1 via per-trait
+`fit_nb1_gllvm_grouped_cov`; light RCall `nbinom1`+X cell scaffolded — live
+oracle may be OWED when R/`gllvmTMB` is absent).
 `GLLVM.bridge_capabilities()` exposes the current Julia bridge surface as a flat,
 JuliaCall-friendly ledger so the R side can enforce a one-way drift guard: every
 R-admitted row must have a Julia route with explicit status metadata, while

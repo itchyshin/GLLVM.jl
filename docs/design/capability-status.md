@@ -162,5 +162,9 @@ Same twin surface, transport layer. Status = code + bridge/parity test exist;
   `gllvmTMB/docs/dev-log/capability-surface.html`
 - Light logLik 63/63: `docs/dev-log/handover/2026-08-01-cursor-handover.md`
 - Shared-X 18/18: `docs/dev-log/after-task/2026-08-02-x-covariate-light-loglik.md`
+- NB1+X engine (bridge/`@formula`/`fit_nb1_gllvm_grouped_cov`):
+  `docs/dev-log/after-task/2026-08-05-nb1-x-engine-arc12.md` — light RCall
+  cell scaffolded; **live Δ OWED** until `GLLVM_PARITY_TESTS=1` with
+  R/`gllvmTMB` (≠ full family parity)
 - Public catch-up prose: `docs/src/gllvmtmb-parity.md` (Documenter legend ≠ this
   MC vocabulary)

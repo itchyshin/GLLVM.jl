@@ -1,7 +1,7 @@
 # ARC CARD — NB1+X combined Arc 1+2 (engine + light RCall)
 
-**Status:** **PLAN** — Ultra Plan written same turn; awaiting G0. Do not execute
-until `/goal` after approval.
+**Status:** **LOCAL DONE** — engine + identity + scaffold landed on
+`cursor/nb1-x-engine-arc12-fffd` (PR #186). Live RCall Δ OWED (no R in cloud).
 
 **Mode:** size  
 **Requested outcome:** quantified programme — (1) implement locked NB1+X twin
@@ -99,9 +99,11 @@ git checkout -b fix/nb1-x-grouped-cov-20260805 origin/main
 
 ### Actuals (complete at close)
 
-**Recommended / actual:** 4.5 h / _TBD_ · **Rungs completed:** _TBD_  
-**Result:** _TBD_ · **Next arc:** STOP or next one-part +X family (fresh
-`/arc-creation`)
+**Recommended / actual:** 4.5 h / cloud execute (G0 yes/yes) · **Rungs
+completed:** A (engine+identity+bridge) + B scaffold; live RCall OWED  
+**Result:** LOCAL DONE @ `a83391fa`+docs · **Next arc:** merge #186 when
+asked; live NB1+X RCall Δ when R/`gllvmTMB` available; STOP inventing next
+family — fresh `/arc-creation`
 
 ---
 
