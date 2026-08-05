@@ -22,8 +22,10 @@ Status words (MC parser; counts derived at render time — never hand-typed into
   Gaussian/Binomial/Poisson **18/18** + NB2+X/Beta+X **16/16** (#177) +
   **Gamma+X** light cell (per-trait α, observed Laplace; Δ≈3e-8) +
   **Ordinal+X** light cell (per-trait cutpoints + shared γ, `ordinal_probit`;
-  Δ≈5e-9). Engine Arc 1 lands per-trait NB2/Beta/Gamma+X and Ordinal+X.
-  Not full family parity; ADEMP and coverage certificates remain fenced.
+  Δ≈5e-9) + **NB1+X** light cell (per-trait φ, observed Laplace; abs Δ≈1.53e-9,
+  seed=48; #186). Engine Arc 1 lands per-trait NB2/Beta/Gamma/NB1+X and
+  Ordinal+X. Not full family parity; ADEMP and coverage certificates remain
+  fenced.
 - R-bridge (`engine = "julia"`) rows that are live are still **partial** vs the
   public R-user surface even when Status = `implemented`.
 - Phylo Model A / source-specific `lv` intervals: **rejected** for advertising.
@@ -164,7 +166,6 @@ Same twin surface, transport layer. Status = code + bridge/parity test exist;
 - Shared-X 18/18: `docs/dev-log/after-task/2026-08-02-x-covariate-light-loglik.md`
 - NB1+X engine (bridge/`@formula`/`fit_nb1_gllvm_grouped_cov`):
   `docs/dev-log/after-task/2026-08-05-nb1-x-engine-arc12.md` — light RCall
-  cell scaffolded; **live Δ OWED** until `GLLVM_PARITY_TESTS=1` with
-  R/`gllvmTMB` (≠ full family parity)
+  cell live Δ abs ≈1.53e-9 @ rtol 1e-6 (seed=48; ≠ full family parity)
 - Public catch-up prose: `docs/src/gllvmtmb-parity.md` (Documenter legend ≠ this
   MC vocabulary)

@@ -15,7 +15,7 @@
 # (docs/dev-log/decisions/2026-08-03-ordinal-x-cutpoint-identity.md).
 # Fence: X_lv, shared-φ-Julia-vs-per-trait-R, shared-cutpoint Option B.
 
-using GLLVM, RCall, Test, Random, LinearAlgebra, Statistics
+using GLLVM, RCall, Test, Random, LinearAlgebra, Statistics, Distributions
 
 # Knuth sampler — matches test_poisson_parity.jl (no Distributions dep).
 function _rand_poisson_x(λ::Float64)
@@ -267,7 +267,6 @@ end
             @test r.logLik ≈ -r.objective rtol = 0 atol = 1e-10
         end
     end
-end
 
     @testset "Gamma + shared X (q=1)" begin
         # Per-trait shape α (group=collect(1:p)) + shared site-X slope γ —

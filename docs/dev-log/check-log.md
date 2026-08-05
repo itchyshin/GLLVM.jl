@@ -1,5 +1,15 @@
 # Check Log
 
+## 2026-08-05 - Post-NB1 hygiene (Δ paste + Distributions + board truth)
+
+Lane `cursor/post-nb1-hygiene-20260805` (closeout programme S1). Paste live
+NB1+X Δ (abs ≈1.531e-9, seed=48); mark #186 MERGED on board/AGENTS/
+capability-status/after-task/gllvmtmb-parity; `using Distributions` + parity
+`Project.toml` dep so `runparity` NB1+X cell resolves `NegativeBinomial`;
+nest Gamma/NB1/Ordinal inside outer X `@testset`. No rtol widen. Rose: ledger
+truth ≠ full family parity. After-task:
+`docs/dev-log/after-task/2026-08-05-post-nb1-hygiene.md`.
+
 ## 2026-08-05 - NB1+X combined Arc 1+2 (engine + light scaffold)
 
 Lane `cursor/nb1-x-engine-arc12-fffd` (PR #186). Engine:

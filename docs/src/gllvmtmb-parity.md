@@ -113,8 +113,8 @@ ordinal CI endpoints remain unavailable-status rows until a per-trait cutpoint
 CI engine lands. Fixed-effect
 covariates (`X`) are admitted for complete, balanced one-part Gaussian, Poisson,
 Binomial, NB2, NB1, Beta, and Gamma fits (NB1 via per-trait
-`fit_nb1_gllvm_grouped_cov`; light RCall `nbinom1`+X cell scaffolded — live
-oracle may be OWED when R/`gllvmTMB` is absent).
+`fit_nb1_gllvm_grouped_cov`; light RCall `nbinom1`+X cell abs Δ ≈1.53e-9 @
+rtol 1e-6, seed=48).
 `GLLVM.bridge_capabilities()` exposes the current Julia bridge surface as a flat,
 JuliaCall-friendly ledger so the R side can enforce a one-way drift guard: every
 R-admitted row must have a Julia route with explicit status metadata, while
