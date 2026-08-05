@@ -209,7 +209,7 @@ Fit a non-Gaussian GLLVM **with fixed-effect covariates** by L-BFGS over
 the linear predictor is `η_{ts} = β_t + Σ_k X[t,s,k]·γ_k + (Λ z_s)_t`.
 
 `family` is a `Distributions` marker — `Poisson()`, `NegativeBinomial()`,
-`Binomial()`, `Beta()`, or `Gamma()` — or the custom [`NB1`](@ref) marker —
+`Binomial()`, `Beta()`, or `Gamma()` — or the custom `NB1` marker —
 and dispatches the marginal (the dispersion, where present, is a **shared
 scalar** jointly estimated). For NB2/Beta/Gamma/NB1 the public and bridge
 default under X is per-trait dispersion via
