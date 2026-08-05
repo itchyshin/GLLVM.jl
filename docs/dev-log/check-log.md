@@ -1,5 +1,12 @@
 # Check Log
 
+## 2026-08-05 - Post-NB1 closeout programme (packaging A) DONE
+
+#187 hygiene MERGED; #190 Species-XB MERGED (Poisson Δ≈4.20e-9); BetaBinomial+X
+Identity ACCEPTED (docs-only). Board START HERE → BetaBinomial+X engine (fresh
+plan). Rose: ≠ engine ≠ full family parity. After-task:
+`docs/dev-log/after-task/2026-08-05-post-nb1-closeout-programme.md`.
+
 ## 2026-08-05 - BetaBinomial+X dispersion identity (Arc 0 docs)
 
 Lane `docs/betabinomial-x-identity-20260805` (closeout programme S3). Decision
