@@ -4,7 +4,8 @@
 
 | Lane | Status | Branch / tip | Current handover / pointer | Owns |
 |---|---|---|---|---|
-| **NB1+X identity Arc 0** | **LOCAL DONE** (PR #185) | `cursor/nb1-x-identity-arc0-fffd` | decision `docs/dev-log/decisions/2026-08-05-nb1-x-dispersion-identity.md` · after-task `docs/dev-log/after-task/2026-08-05-nb1-x-identity.md` | ACCEPTED: per-trait φ + shared site-X γ. Docs-only. Awaiting merge. |
+| **NB1+X combined Arc 1+2** | **LOCAL DONE** (PR #186) | `cursor/nb1-x-engine-arc12-fffd` @ `a83391fa`+ | after-task `docs/dev-log/after-task/2026-08-05-nb1-x-engine-arc12.md` | Engine `fit_nb1_gllvm_grouped_cov` + bridge/`@formula` + identity 7/7; light RCall scaffold (live oracle OWED — no R in cloud). Awaiting merge. |
+| **NB1+X identity Arc 0** | **MERGED** #185 | `main` @ `210de76d` | decision `docs/dev-log/decisions/2026-08-05-nb1-x-dispersion-identity.md` · after-task `docs/dev-log/after-task/2026-08-05-nb1-x-identity.md` | ACCEPTED: per-trait φ + shared site-X γ. Closed. |
 | **Board / snapshot hygiene** | **MERGED** #183/#184 | `main` @ `13d97b13` | after-task `docs/dev-log/after-task/2026-08-05-board-hygiene.md` | Post-#181 pointer truth + merged-branch GC. Closed. |
 | **Ordinal+X light RCall Arc 2** | **MERGED** #181 | `main` @ `a92c5040` | after-task `docs/dev-log/after-task/2026-08-03-ordinal-x-arc2-parity.md` | `:ordinal` X helper + light `ordinal_probit`+X cell (Δ≈5e-9). Fence ≠ full family parity. Closed. |
 | **Ordinal+X engine Arc 1** | **MERGED** #180 | `main` @ `e4c20195` | after-task `docs/dev-log/after-task/2026-08-03-ordinal-x-engine.md` | `fit_ordinal_gllvm_pertrait_cov` + bridge/`@formula`. Closed. |
@@ -24,18 +25,24 @@
 ## Current Rule
 
 - Rehydrate via **this Active-Lane-Split**, not a single orphaned START HERE bullet.
-- `START HERE (Cursor):` **NB1+X identity Arc 0** — decision ACCEPTED on
-  `cursor/nb1-x-identity-arc0-fffd` / PR #185; merge when ready, then fresh
-  `/arc-creation` for **NB1+X engine Arc 1** only (no engine in #185).
-- Rose fence: NB1+X identity ≠ engine ≠ light RCall ≠ full family parity ≠ ADEMP.
+- `START HERE (Cursor):` **NB1+X Arc 1+2 LOCAL DONE** — PR #186
+  `cursor/nb1-x-engine-arc12-fffd`; merge when ready. Live RCall NB1+X Δ
+  remains **OWED** (no R/`gllvmTMB` in cloud execute env). Next family/+X
+  only after fresh `/arc-creation` (do not invent).
+- Rose fence: NB1+X engine + scaffolded light cell ≠ live Δ proof ≠ full
+  family parity ≠ ADEMP.
 - Bridge execution R→Julia only (JuliaCall); RCall = opt-in oracle.
-- Stage by name; never `git add -A`; no push without instruction.
+- Stage by name; never `git add -A`; no push without instruction (cloud
+  exception: this run pushes/PRs per cloud task instructions).
 - Dropbox checkout remains PROTECTED.
 
 ## Status
 
-- 2026-08-05 — NB1+X **identity Arc 0 LOCAL DONE** (#185): ACCEPTED
-  per-trait φ + shared site-X γ (twin `nbinom1` / `log_phi_nbinom1`).
+- 2026-08-05 — NB1+X **combined Arc 1+2 LOCAL DONE** (#186):
+  `fit_nb1_gllvm_grouped_cov` + bridge/`@formula` + identity 7/7 + bridge X
+  208/208; light cell scaffolded; live oracle OWED.
+- 2026-08-05 — NB1+X **identity Arc 0 MERGED**
+  [#185](https://github.com/itchyshin/GLLVM.jl/pull/185) @ `210de76d`.
 - 2026-08-05 — Board hygiene **merged** [#183](https://github.com/itchyshin/GLLVM.jl/pull/183) /
   [#184](https://github.com/itchyshin/GLLVM.jl/pull/184) @ `13d97b13`.
 - 2026-08-04 — Ordinal+X **light RCall Arc 2 merged**

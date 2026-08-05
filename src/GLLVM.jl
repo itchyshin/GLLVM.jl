@@ -172,6 +172,7 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        fit_gamma_gllvm_grouped, GammaGroupedFit, gamma_grouped_marginal_loglik_laplace,
        fit_gamma_gllvm_grouped_cov, GammaGroupedCovFit,
        fit_nb1_gllvm_grouped, NB1GroupedFit, nb1_grouped_marginal_loglik_laplace,
+       fit_nb1_gllvm_grouped_cov, NB1GroupedCovFit,
        fit_tweedie_gllvm_grouped, TweedieGroupedFit, tweedie_grouped_marginal_loglik_laplace,
        StudentTFamily, fit_studentt_gllvm, StudentTFit, studentt_marginal_loglik_laplace,
        Ordinal, fit_ordinal_gllvm, OrdinalFit,

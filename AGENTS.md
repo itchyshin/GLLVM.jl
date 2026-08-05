@@ -90,11 +90,16 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
-- **Next Cursor lane — NB1+X identity Arc 0 LOCAL DONE (2026-08-05).** PR
-  #185 `cursor/nb1-x-identity-arc0-fffd`. ACCEPTED decision
-  `docs/dev-log/decisions/2026-08-05-nb1-x-dispersion-identity.md` (per-trait
-  φ + shared site-X γ). Docs-only; engine Arc 1 after merge + fresh
-  `/arc-creation`. Multi-lane pointer: `docs/dev-log/coordination-board.md`.
+- **Next Cursor lane — NB1+X combined Arc 1+2 LOCAL DONE (2026-08-05).** PR
+  #186 `cursor/nb1-x-engine-arc12-fffd` — `fit_nb1_gllvm_grouped_cov` +
+  bridge/`@formula` + identity 7/7; light RCall scaffold; **live Δ OWED**
+  (no R in cloud). After-task:
+  `docs/dev-log/after-task/2026-08-05-nb1-x-engine-arc12.md`. Rose fence:
+  ≠ full family parity. Multi-lane pointer:
+  `docs/dev-log/coordination-board.md`.
+- **NB1+X identity Arc 0 MERGED #185 (2026-08-05).** `main` @ `210de76d` —
+  ACCEPTED decision
+  `docs/dev-log/decisions/2026-08-05-nb1-x-dispersion-identity.md`.
 - **Board / snapshot hygiene Arc 0 MERGED #183/#184 (2026-08-05).** Docs-only
   post-#181 pointer truth + merged remote-head GC. `main` @ `13d97b13`.
   After-task: `docs/dev-log/after-task/2026-08-05-board-hygiene.md`.

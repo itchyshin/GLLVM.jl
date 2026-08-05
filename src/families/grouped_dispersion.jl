@@ -1075,16 +1075,33 @@ end
 # NB1 family — grouped / species-specific dispersion φ (gllvm's disp.group with
 # disp.formula = NULL, `family = negative.binomial1`). Each species t carries its
 # own LINEAR-variance dispersion φ_{g(t)}, so the overdispersion Var = μ(1+φ) can
-# vary across species (or groups). With G = 1 this reduces EXACTLY to the
-# shared-dispersion NB1 fit. The dispersion is carried in the family marker
-# `NB1(φ)`. This mirrors the NB2 grouped path above; the shared NB1 hot path
-# (negbin1.jl) is left untouched.
+# vary across species (or groups). With G = 1 and hessian=:fisher this reduces
+# EXACTLY to the shared-dispersion NB1 fit. The fit/cov default hessian=:observed
+# is the TMB Laplace curvature (different objective). Dispersion is carried in
+# the family marker `NB1(φ)`. The shared NB1 hot path (negbin1.jl) is left
+# untouched for Fisher-only callers.
 # ===========================================================================
+
+# Exact negative conditional curvature for NB1/log. With r = μ/φ:
+# ∂ℓ/∂μ = (1/φ)[ψ(y+r) − ψ(r) − log(1+φ)],  ∂²ℓ/∂μ² = (1/φ²)[ψ'(y+r) − ψ'(r)].
+# Under η = log μ: W = −∂²ℓ/∂η² = −μ·(∂ℓ/∂μ) − μ²·(∂²ℓ/∂μ²).
+function _nb1_grouped_laplace_weight(hessian::Symbol, f::NB1, μ, me, y, link::Link)
+    hessian === :fisher && return _glm_weight(f, μ, 1, me)
+    hessian === :observed || throw(ArgumentError(
+        "hessian must be :fisher or :observed; got :$hessian"))
+    link isa LogLink || throw(ArgumentError(
+        "hessian=:observed is currently supported only for NB1 with LogLink()"))
+    φ = float(f.φ)
+    r = μ / φ
+    s_μ = (digamma(y + r) - digamma(r) - log1p(φ)) / φ
+    return -μ * s_μ - (μ / φ)^2 * (trigamma(y + r) - trigamma(r))
+end
 
 # Per-site Laplace log-marginal with per-species NB1 dispersion markers `fams`.
 function _nb1_grouped_loglik_site(fams::AbstractVector, y::AbstractVector, n::AbstractVector,
         Λ::AbstractMatrix, β::AbstractVector, link::Link;
-        mask = nothing, offset = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
+        mask = nothing, offset = nothing, hessian::Symbol = :fisher,
+        maxiter::Integer = 100, tol::Real = 1e-9)
     p, K = size(Λ)
     off = offset === nothing ? false : offset
     z = zeros(K)
@@ -1094,7 +1111,7 @@ function _nb1_grouped_loglik_site(fams::AbstractVector, y::AbstractVector, n::Ab
         μ  = _clamp_mu.(fams, linkinv.(Ref(link), η))
         me = mu_eta.(Ref(link), η)
         s  = _glm_score.(fams, μ, n, me, y)
-        W  = _glm_weight.(fams, μ, n, me)
+        W  = _nb1_grouped_laplace_weight.(Ref(hessian), fams, μ, me, y, Ref(link))
         if mask !== nothing
             s = ifelse.(mask, s, 0.0)
             W = ifelse.(mask, W, 0.0)
@@ -1108,7 +1125,7 @@ function _nb1_grouped_loglik_site(fams::AbstractVector, y::AbstractVector, n::Ab
     η  = _clamp_eta.(β .+ off .+ Λ * z)
     μ  = _clamp_mu.(fams, linkinv.(Ref(link), η))
     me = mu_eta.(Ref(link), η)
-    W  = _glm_weight.(fams, μ, n, me)
+    W  = _nb1_grouped_laplace_weight.(Ref(hessian), fams, μ, me, y, Ref(link))
     if mask !== nothing
         W = ifelse.(mask, W, 0.0)
     end
@@ -1123,17 +1140,18 @@ end
 
 """
     nb1_grouped_marginal_loglik_laplace(Y, Λ, β, φvec; link=LogLink(), mask=nothing,
-                                        offset=nothing, kwargs...) -> Float64
+                                        offset=nothing, hessian=:fisher, kwargs...) -> Float64
 
 Total Laplace log-marginal of a negative-binomial type-1 (NB1) GLLVM with
 **per-species** dispersion `φvec` (length p; linear variance `Var_t = μ_t(1+φvec[t])`).
 `Y` is the p×n integer count matrix; `Λ` p×K; `β` length-p. With a constant
-`φvec = fill(φ, p)` this equals the shared-dispersion
-[`nb1_marginal_loglik_laplace`](@ref) to machine precision.
+`φvec = fill(φ, p)` and `hessian=:fisher` this equals the shared-dispersion
+[`nb1_marginal_loglik_laplace`](@ref) to machine precision. `hessian=:observed`
+uses the conditional observed curvature (TMB Laplace).
 """
 function nb1_grouped_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix,
         β::AbstractVector, φvec::AbstractVector; link::Link = LogLink(),
-        mask = nothing, offset = nothing, kwargs...)
+        mask = nothing, offset = nothing, hessian::Symbol = :fisher, kwargs...)
     p = size(Λ, 1)
     length(φvec) == p || throw(ArgumentError("length(φvec)=$(length(φvec)) must equal p=$p"))
     N = ones(Int, size(Y))
@@ -1143,7 +1161,7 @@ function nb1_grouped_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatr
         mi = mask   === nothing ? nothing : view(mask, :, i)
         oi = offset === nothing ? nothing : view(offset, :, i)
         acc += _nb1_grouped_loglik_site(fams, view(Y, :, i), view(N, :, i), Λ, β, link;
-                                        mask = mi, offset = oi, kwargs...)
+                                        mask = mi, offset = oi, hessian = hessian, kwargs...)
     end
     return acc
 end
@@ -1264,6 +1282,135 @@ function fit_nb1_gllvm_grouped(Y::AbstractMatrix; K::Integer,
     φ̂g = exp.(θ̂[(p + rr + 1):(p + rr + G)])
     return NB1GroupedFit(β̂, Λ̂, φ̂g, gidx, link, -Optim.minimum(res),
                          Optim.converged(res), Optim.iterations(res))
+end
+
+"""
+    NB1GroupedCovFit
+
+Result of [`fit_nb1_gllvm_grouped_cov`](@ref): per-trait intercepts `β`, shared
+covariate coefficients `γ` (with `γ_fixed` zero mask), loadings `Λ`, per-group
+linear-variance dispersion `φ`, species→group map `group`, `link`, maximised
+Laplace `loglik`, `converged`, and `iterations`. Linear predictor
+`η = β + Xγ + Λz` with species dispersion `φ[group[t]]` (`Var = μ(1+φ)`).
+"""
+struct NB1GroupedCovFit
+    β::Vector{Float64}
+    γ::Vector{Float64}
+    γ_fixed::Vector{Bool}
+    Λ::Matrix{Float64}
+    φ::Vector{Float64}
+    group::Vector{Int}
+    link::Link
+    loglik::Float64
+    converged::Bool
+    iterations::Int
+end
+
+function Base.show(io::IO, f::NB1GroupedCovFit)
+    p, K = size(f.Λ); q = length(f.γ)
+    print(io, "NB1GroupedCovFit(p=", p, ", q=", q, ", K=", K, ", G=", length(f.φ),
+          ", φ=", round.(f.φ; sigdigits = 4),
+          ", loglik=", round(f.loglik; sigdigits = 7),
+          f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+_loadings(fit::NB1GroupedCovFit) = fit.Λ
+_loglik(fit::NB1GroupedCovFit)   = fit.loglik
+
+function _nparams(fit::NB1GroupedCovFit)
+    p, K = size(fit.Λ)
+    return p + count(!, fit.γ_fixed) + rr_theta_len(p, K) + length(fit.φ)
+end
+
+"""
+    getLV(fit::NB1GroupedCovFit, Y, X; rotate=true, mask=nothing) -> n×K matrix
+
+Conditional latent scores at `η = β + Xγ + Λz` with per-trait NB1 φ.
+"""
+function getLV(fit::NB1GroupedCovFit, Y::AbstractMatrix{<:Integer},
+               X::AbstractArray{<:Real, 3};
+               rotate::Bool = true, mask = nothing)
+    p = size(Y, 1)
+    φvec = [fit.φ[fit.group[t]] for t in 1:p]
+    fams = [NB1(float(φvec[t])) for t in 1:p]
+    O = _build_offset(X, fit.γ)
+    return _grouped_getLV(Y, fit.Λ, fit.β, fit.link, fams;
+                          rotate = rotate, mask = mask, offset = O)
+end
+
+"""
+    fit_nb1_gllvm_grouped_cov(Y; X, K, group=1:p, link=LogLink(), mask=nothing,
+                              γ_fixed=nothing, hessian=:observed, …) -> NB1GroupedCovFit
+
+Fit an NB1 GLLVM with **grouped / per-trait linear-variance φ** and **shared site
+covariates** `X` (`p×n×q`). Working vector
+`[β; γ_free; pack(Λ); log φ_1 … log φ_G]`; offset `O = Xγ` is passed into the
+grouped Laplace marginal. Default `hessian=:observed` matches TMB; identity
+checks against shared [`fit_gllvm_cov`](@ref) / G=1 should force
+`hessian=:fisher`. Public / bridge default under X for NB1 (twin API B;
+decision 2026-08-05). Keep [`fit_gllvm_cov`](@ref) for the shared-`φ` + X
+opt-in. Identity checks against shared cov should use `group = ones(Int, p)`.
+"""
+function fit_nb1_gllvm_grouped_cov(Y::AbstractMatrix; X::AbstractArray{<:Real, 3},
+        K::Integer, group::AbstractVector{<:Integer} = collect(1:size(Y, 1)),
+        link::Link = LogLink(), mask = nothing, γ_fixed = nothing,
+        hessian::Symbol = :observed,
+        g_tol::Real = 1e-5, iterations::Integer = 500,
+        newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    p, n = size(Y)
+    size(X, 1) == p && size(X, 2) == n ||
+        throw(DimensionMismatch("X must be (p, n, q) = ($p, $n, q); got $(size(X))"))
+    length(group) == p || throw(ArgumentError("length(group)=$(length(group)) must equal p=$p"))
+    q_full = size(X, 3)
+    γ_fixed_mask = _fixed_zero_mask(γ_fixed, q_full, "γ_fixed")
+    X_fit, _ = _slice_fixed_X(X, γ_fixed_mask)
+    q = size(X_fit, 3)
+    rr = rr_theta_len(p, K)
+    labels = sort(unique(group))
+    G = length(labels)
+    gidx = [findfirst(==(group[t]), labels) for t in 1:p]
+
+    msk = _resolve_obs_mask(mask, Y)
+    Yc = Integer.(_sanitize_missing(Y, 0))
+    Zemp = [linkfun(link, max(Yc[t, i] + 0.5, 1e-4)) for t in 1:p, i in 1:n]
+    _mask_warmstart!(Zemp, msk)
+    β0 = vec(sum(Zemp; dims = 2)) ./ n
+    Zc = Zemp .- β0
+    F = svd(Zc); kk = min(K, length(F.S))
+    Λ0 = zeros(p, K)
+    @inbounds for j in 1:kk
+        Λ0[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
+    end
+    θ0 = vcat(β0, zeros(q), pack_lambda(Λ0), fill(log(1.0), G))
+
+    function negll(θ)
+        β = θ[1:p]
+        γ = θ[(p + 1):(p + q)]
+        Λ = unpack_lambda(θ[(p + q + 1):(p + q + rr)], p, K)
+        φg = exp.(θ[(p + q + rr + 1):(p + q + rr + G)])
+        φvec = [φg[gidx[t]] for t in 1:p]
+        O = _build_offset(X_fit, γ)
+        v = try
+            -nb1_grouped_marginal_loglik_laplace(Yc, Λ, β, φvec; link = link, mask = msk,
+                                                 offset = O, hessian = hessian,
+                                                 maxiter = newton_maxiter,
+                                                 tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
+    res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
+                         autodiff = :finite)
+    θ̂ = Optim.minimizer(res)
+    β̂ = θ̂[1:p]
+    γ̂_free = θ̂[(p + 1):(p + q)]
+    γ̂ = collect(Float64, _expand_fixed_zero(γ̂_free, γ_fixed_mask))
+    Λ̂ = unpack_lambda(θ̂[(p + q + 1):(p + q + rr)], p, K)
+    φ̂g = exp.(θ̂[(p + q + rr + 1):(p + q + rr + G)])
+    return NB1GroupedCovFit(β̂, γ̂, collect(Bool, γ_fixed_mask), Λ̂, φ̂g, gidx, link,
+                            -Optim.minimum(res), Optim.converged(res), Optim.iterations(res))
 end
 
 # ===========================================================================

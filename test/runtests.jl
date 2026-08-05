@@ -54,6 +54,7 @@ using GLLVM
     include("test_grouped_dispersion_tweedie_nb1.jl")
     include("test_nb_beta_x_identity.jl")
     include("test_gamma_x_identity.jl")
+    include("test_nb1_x_identity.jl")
     include("test_ordinal_x_identity.jl")
     include("test_beta_fit.jl")
     include("test_gamma_fit.jl")

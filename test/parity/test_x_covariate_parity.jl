@@ -319,6 +319,49 @@ end
         end
     end
 
+    @testset "NB1 + shared X (q=1)" begin
+        # Per-trait linear-variance φ (group=collect(1:p)) + shared site-X γ —
+        # twin API B under X
+        # (docs/dev-log/decisions/2026-08-05-nb1-x-dispersion-identity.md).
+        # Default hessian=:observed matches TMB; identity cells use :fisher.
+        Random.seed!(48)
+        p, K, n = 5, 1, 120
+        β = log.([1.8, 2.2, 1.6, 2.0, 1.9])
+        φ_true = 0.85
+        Λ = 0.2 .* parity_loadings_p5k2()[:, 1:K]
+        γ = 0.4
+        x = randn(n)
+        X = parity_site_design(x, p)
+        Z = randn(K, n)
+        η = β .+ γ .* x' .+ Λ * Z
+        Y = Matrix{Int}(undef, p, n)
+        for t in 1:p, s in 1:n
+            μ = exp(clamp(η[t, s], -3.5, 3.5))
+            Y[t, s] = rand(NegativeBinomial(μ / φ_true, 1 / (1 + φ_true)))
+        end
+
+        jl_fit = fit_nb1_gllvm_grouped_cov(Y; X = X, K = K, group = collect(1:p))
+        @test jl_fit isa NB1GroupedCovFit
+        @test jl_fit.converged
+        @test isfinite(jl_fit.loglik)
+        @test length(jl_fit.φ) == p
+        jl_logL = jl_fit.loglik
+
+        r = fit_gllvmtmb_parity_loglik_x(Float64.(Y), x, K; family = :nb1)
+        @test r.converged
+        @test isfinite(r.logLik)
+
+        print_parity_loglik(
+            "NB1+X logLik oracle (seed=48, p=$p, K=$K, n=$n, q=1 shared, per-trait φ)";
+            jl_logL = jl_logL, r_logL = r.logLik, r_obj = r.objective,
+        )
+
+        @testset "log-likelihood agreement (rtol=1e-6)" begin
+            @test jl_logL ≈ r.logLik rtol = 1e-6
+            @test r.logLik ≈ -r.objective rtol = 0 atol = 1e-10
+        end
+    end
+
     @testset "Ordinal-probit + shared X (q=1)" begin
         # Per-trait cutpoints (τ₁=0 / K−2 free) + shared site-X γ —
         # twin API under X

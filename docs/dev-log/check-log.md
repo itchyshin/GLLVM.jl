@@ -1,5 +1,19 @@
 # Check Log
 
+## 2026-08-05 - NB1+X combined Arc 1+2 (engine + light scaffold)
+
+Lane `cursor/nb1-x-engine-arc12-fffd` (PR #186). Engine:
+`fit_nb1_gllvm_grouped_cov` / `NB1GroupedCovFit` (default
+`hessian=:observed`); OH weight
+`W = -μ·s_μ - (μ/φ)²·(trigamma(y+r)-trigamma(r))`; bridge + `@formula` +
+confint; shared-φ `fit_gllvm_cov(NB1)` opt-in via `GllvmCovFit.family::Any`.
+Identity `test/test_nb1_x_identity.jl`: **7/7**. Bridge X
+`test/test_bridge_x.jl`: **208/208**. Light cell scaffolded in
+`test/parity/test_x_covariate_parity.jl` (`:nb1` → `nbinom1()`, seed=48);
+live `GLLVM_PARITY_TESTS=1` **OWED** (no R/`gllvmTMB` in cloud). No rtol
+widen. Rose fence: engine + scaffold ≠ live Δ ≠ full family parity ≠ ADEMP.
+After-task: `docs/dev-log/after-task/2026-08-05-nb1-x-engine-arc12.md`.
+
 ## 2026-08-05 - NB1+X dispersion identity (Arc 0 docs)
 
 Lane `cursor/nb1-x-identity-arc0-fffd` (PR #185). Decision ACCEPTED: public

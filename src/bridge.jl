@@ -170,8 +170,8 @@ const _BRIDGE_XLV_FAMILIES = ("gaussian", "poisson", "negbinomial", "gamma", "be
 
 # One-part NON-Gaussian families with a fixed-effect-X bridge route. NB2/Beta/Gamma
 # use per-trait grouped_cov; ordinal/ordinal_probit use per-trait cutpoint cov;
-# poisson/binomial use shared-dispersion `fit_gllvm_cov`. NB1 remains absent.
-const _BRIDGE_X_FAMILIES = ("poisson", "binomial", "negbinomial", "beta", "gamma",
+# poisson/binomial use shared-dispersion `fit_gllvm_cov`. NB1 uses grouped_cov.
+const _BRIDGE_X_FAMILIES = ("poisson", "binomial", "negbinomial", "nb1", "beta", "gamma",
                             "ordinal", "ordinal_probit")
 
 # Map a bridge family key to the `Distributions` marker `fit_gllvm_cov` dispatches
@@ -394,9 +394,9 @@ function bridge_fit(; y,
     K = Int(d)
     K >= 0 || throw(ArgumentError("d must be a non-negative integer"))
     # Fixed-effect covariates X (a p×n×q array) are wired for the Gaussian family
-    # and the one-part NON-Gaussian `_BRIDGE_X_FAMILIES` (incl. ordinal /
-    # ordinal_probit per-trait cutpoint cov). NB1 and the mixed-family path remain
-    # a documented follow-up — reject loudly rather than silently dropping X.
+    # and the one-part NON-Gaussian `_BRIDGE_X_FAMILIES` (incl. nb1 grouped_cov and
+    # ordinal/ordinal_probit per-trait cutpoint cov). Mixed-family X remains a
+    # documented follow-up — reject loudly rather than silently dropping X.
     if X !== nothing
         if family isa AbstractVector
             throw(ArgumentError(
@@ -406,8 +406,7 @@ function bridge_fit(; y,
         key = _bridge_family_key(String(family))
         (key == "gaussian" || key in _BRIDGE_X_FAMILIES) || throw(ArgumentError(
             "bridge_fit: fixed-effect covariates X are wired for family ∈ {gaussian, " *
-            join(_BRIDGE_X_FAMILIES, ", ") * "}; family=\"$(family)\" has no covariate " *
-                "fitter (nb1 is a documented follow-up)"))
+            join(_BRIDGE_X_FAMILIES, ", ") * "}; family=\"$(family)\" has no covariate fitter"))
     end
     # Predictor-informed latent-score covariates are narrower than ordinary
     # fixed-effect X in this bridge slice: complete Gaussian and binomial
@@ -1124,7 +1123,7 @@ function _bridge_fit_onepart_cov(Yf::AbstractMatrix{Float64}, key::AbstractStrin
           (N isa Number ? fill(round(Int, N), p, n) : round.(Int, Matrix(N)))) :
          nothing
 
-    # Twin API B under X: NB2/Beta/Gamma default to per-trait φ/α + shared site-X;
+    # Twin API B under X: NB2/NB1/Beta/Gamma default to per-trait φ/α + shared site-X;
     # ordinal/ordinal_probit default to per-trait cutpoints (τ₁=0 / K−2) + shared γ.
     # Shared-dispersion + X remains available via direct `fit_gllvm_cov` where that
     # path exists; shared-cutpoint ordinal stays an explicit Julia comparator.
@@ -1132,6 +1131,13 @@ function _bridge_fit_onepart_cov(Yf::AbstractMatrix{Float64}, key::AbstractStrin
         Yi = round.(Int, Ydata)
         fit = fit_nb_gllvm_grouped_cov(Yi; X = Xarr, K = K, group = collect(1:p),
                                        γ_fixed = coef_fixed)
+        return _bridge_assemble_grouped_cov(fit, key, traits, units, Yi, Xarr,
+                                            coef_fixed, ci_method, ci_level,
+                                            ci_nboot, ci_seed; N = nothing)
+    elseif key == "nb1"
+        Yi = round.(Int, Ydata)
+        fit = fit_nb1_gllvm_grouped_cov(Yi; X = Xarr, K = K, group = collect(1:p),
+                                        γ_fixed = coef_fixed)
         return _bridge_assemble_grouped_cov(fit, key, traits, units, Yi, Xarr,
                                             coef_fixed, ci_method, ci_level,
                                             ci_nboot, ci_seed; N = nothing)
@@ -1200,7 +1206,7 @@ end
 # Assemble the flat bridge contract for per-trait-dispersion + shared-X fits
 # (NB2/Beta/Gamma API B under X). Dispersion is length-p (per trait); df counts G
 # free dispersion parameters.
-function _bridge_assemble_grouped_cov(fit::Union{NBGroupedCovFit, BetaGroupedCovFit, GammaGroupedCovFit},
+function _bridge_assemble_grouped_cov(fit::Union{NBGroupedCovFit, NB1GroupedCovFit, BetaGroupedCovFit, GammaGroupedCovFit},
                                       key::AbstractString, traits, units,
                                       Ydata, Xarr, coef_fixed,
                                       ci_method::AbstractString, ci_level::Real,
@@ -1213,6 +1219,10 @@ function _bridge_assemble_grouped_cov(fit::Union{NBGroupedCovFit, BetaGroupedCov
         disp = Float64[fit.r_group[fit.group[t]] for t in 1:p]
         G = length(fit.r_group)
         disp_note = "per-trait NB2 size r (disp.group); shared site-X gamma."
+    elseif fit isa NB1GroupedCovFit
+        disp = Float64[fit.φ[fit.group[t]] for t in 1:p]
+        G = length(fit.φ)
+        disp_note = "per-trait NB1 linear-variance phi (disp.group); shared site-X gamma."
     elseif fit isa BetaGroupedCovFit
         disp = Float64[fit.φ[fit.group[t]] for t in 1:p]
         G = length(fit.φ)

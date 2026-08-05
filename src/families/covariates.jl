@@ -95,6 +95,7 @@ end
 # --- family-specific bits (isolated so the fitter stays generic) ---
 _cov_default_link(::Poisson)          = LogLink()
 _cov_default_link(::NegativeBinomial) = LogLink()
+_cov_default_link(::NB1)              = LogLink()
 _cov_default_link(::Binomial)         = LogitLink()
 _cov_default_link(::Beta)             = LogitLink()
 _cov_default_link(::Gamma)            = LogLink()
@@ -104,10 +105,12 @@ _cov_has_disp(::Poisson)          = false
 _cov_has_disp(::Binomial)         = false
 _cov_has_disp(::Exponential)      = false
 _cov_has_disp(::NegativeBinomial) = true
+_cov_has_disp(::NB1)              = true
 _cov_has_disp(::Beta)             = true
 _cov_has_disp(::Gamma)            = true
 
 _cov_disp_init(::NegativeBinomial) = 10.0
+_cov_disp_init(::NB1)              = 1.0
 _cov_disp_init(::Beta)             = 10.0
 _cov_disp_init(::Gamma)            = 2.0
 _cov_disp_init(f)                  = 1.0
@@ -117,21 +120,26 @@ _cov_disp_init(f)                  = 1.0
 _cov_family(::Poisson, d)          = Poisson()
 _cov_family(::Binomial, d)         = Binomial()
 _cov_family(::NegativeBinomial, d) = NegativeBinomial(d, 0.5)
+_cov_family(::NB1, d)              = NB1(float(d))
 _cov_family(::Beta, d)             = Beta(d, 1.0)
 _cov_family(::Gamma, d)            = Gamma(d, 1.0)
 _cov_family(::Exponential, d)      = Exponential(1.0)
 
 # CI term name for the dispersion parameter (if any).
 _cov_dispname(::NegativeBinomial) = "r"
+_cov_dispname(::NB1)              = "phi"
 _cov_dispname(::Beta)             = "phi"
 _cov_dispname(::Gamma)            = "alpha"
 _cov_dispname(f)                  = "disp"
-
 # Draw one response from `family` (carrying its dispersion) at mean `μ`; `nt` is
 # the Binomial trial count (ignored otherwise). Used by predict-side simulation
 # and the bootstrap CI.
 _cov_sample(::Poisson, μ, nt, rng)          = rand(rng, Poisson(max(μ, 1e-12)))
 _cov_sample(f::NegativeBinomial, μ, nt, rng) = (m = max(μ, 1e-12); rand(rng, NegativeBinomial(f.r, f.r / (f.r + m))))
+_cov_sample(f::NB1, μ, nt, rng) = begin
+    m = max(μ, 1e-12)
+    rand(rng, NegativeBinomial(m / f.φ, 1 / (1 + f.φ)))
+end
 _cov_sample(::Binomial, μ, nt, rng)         = rand(rng, Binomial(nt, clamp(μ, 1e-12, 1 - 1e-12)))
 function _cov_sample(f::Beta, μ, nt, rng)
     m = clamp(μ, 1e-6, 1 - 1e-6)
@@ -139,7 +147,6 @@ function _cov_sample(f::Beta, μ, nt, rng)
 end
 _cov_sample(f::Gamma, μ, nt, rng)           = rand(rng, Gamma(f.α, max(μ, 1e-12) / f.α))
 _cov_sample(::Exponential, μ, nt, rng)      = rand(rng, Exponential(max(μ, 1e-12)))
-
 # Domain-safe placeholder for masked (missing) Y cells, per family. The masked
 # cells are dropped from every likelihood contribution and overwritten in the warm
 # start (`_mask_warmstart!`), so the placeholder only has to keep the score/weight
@@ -150,7 +157,7 @@ _cov_placeholder(f)      = 0.0                        # counts / Gamma (Zemp use
 # Link-scale latent proxy for the warm start (per family).
 function _cov_zemp(family, Y::AbstractMatrix, N::AbstractMatrix, link::Link)
     p, n = size(Y)
-    if family isa Poisson || family isa NegativeBinomial
+    if family isa Poisson || family isa NegativeBinomial || family isa NB1
         return [linkfun(link, max(Y[t, i] + 0.5, 1e-4)) for t in 1:p, i in 1:n]
     elseif family isa Binomial
         return [linkfun(link, clamp((Y[t, i] + 0.5) / (N[t, i] + 1), 1e-4, 1 - 1e-4)) for t in 1:p, i in 1:n]
@@ -172,7 +179,9 @@ covariate coefficients `γ` (length q, including fixed-zero entries), `γ_fixed`
 `loglik`, `converged`, and `iterations`.
 """
 struct GllvmCovFit
-    family::Distribution
+    # Distributions markers (Poisson, NB2, …) plus custom NB1(φ) for the
+    # shared-φ + X opt-in; public twin default under X is NB1GroupedCovFit.
+    family::Any
     β::Vector{Float64}
     γ::Vector{Float64}
     γ_fixed::Vector{Bool}
@@ -200,12 +209,14 @@ Fit a non-Gaussian GLLVM **with fixed-effect covariates** by L-BFGS over
 the linear predictor is `η_{ts} = β_t + Σ_k X[t,s,k]·γ_k + (Λ z_s)_t`.
 
 `family` is a `Distributions` marker — `Poisson()`, `NegativeBinomial()`,
-`Binomial()`, `Beta()`, or `Gamma()` — and dispatches the marginal (the dispersion,
-where present, is a **shared scalar** jointly estimated). For NB2/Beta/Gamma the
-public and bridge default under X is per-trait dispersion via
+`Binomial()`, `Beta()`, or `Gamma()` — or the custom `NB1` marker —
+and dispatches the marginal (the dispersion, where present, is a **shared
+scalar** jointly estimated). For NB2/Beta/Gamma/NB1 the public and bridge
+default under X is per-trait dispersion via
 [`fit_nb_gllvm_grouped_cov`](@ref) / [`fit_beta_gllvm_grouped_cov`](@ref) /
-[`fit_gamma_gllvm_grouped_cov`](@ref); this shared-dispersion path remains the
-explicit opt-in. `X` is the `(p, n, q)` covariate array
+[`fit_gamma_gllvm_grouped_cov`](@ref) / [`fit_nb1_gllvm_grouped_cov`](@ref);
+this shared-dispersion path remains the explicit opt-in. `X` is the `(p, n, q)`
+covariate array
 (same contract as the Gaussian engine); `γ` (length q) are coefficients shared
 across species (encode species-specific responses by block-expanding `X`). `Y` is
 `p × n`; `N` supplies Binomial trial counts (default all-ones). Finite-difference

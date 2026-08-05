@@ -10,7 +10,7 @@
 #                loadings, …) are primitive Float64 arrays.
 #   3. GAUSSIAN-X — bridge_fit gaussian + X preserves existing fields and returns
 #                the full mean coefficient vector needed by the R bridge.
-#   4. UNSUPPORTED — families without an X kernel (nb1) and
+#   4. UNSUPPORTED — remaining X fences (e.g. mixed-family X; CI under ordinal+X) and
 #                mixed-family X reject loudly with an ArgumentError.
 
 using Test
@@ -371,10 +371,14 @@ end
         Xo = randn(3, 40, 1)
         @test_throws ArgumentError bridge_fit(; y = Yo, family = "ordinal", d = 1, X = Xo,
                                               options = Dict("ci_method" => "wald"))
-        # nb1: still no covariate kernel
-        Yn = Float64.(rand(0:5, 3, 30))
-        Xn = randn(3, 30, 1)
-        @test_throws ArgumentError bridge_fit(; y = Yn, family = "nb1", d = 1, X = Xn)
+        # nb1: twin API B under X (per-trait φ + shared γ)
+        Yn = Float64.(rand(0:5, 3, 40))
+        Xn = randn(3, 40, 1)
+        brn = bridge_fit(; y = Yn, family = "nb1", d = 1, X = Xn,
+                         options = Dict("ci_method" => "none"))
+        @test brn.converged isa Bool
+        @test length(brn.gamma) == 1
+        @test length(brn.dispersion) == 3
         # mixed-family X still unsupported
         Ym = randn(2, 30)
         Xm = randn(2, 30, 1)
