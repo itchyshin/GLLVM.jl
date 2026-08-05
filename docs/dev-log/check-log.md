@@ -1,5 +1,12 @@
 # Check Log
 
+## 2026-08-05 - Fix bridge capabilities ledger for nb1+X (#186 follow-up)
+
+`test/test_bridge_capabilities.jl` golden lists omitted `nb1` after #186 added
+it to `_BRIDGE_X_FAMILIES` / X-CI routing — 4 failures on main CI. Hygiene PR
+#187 lands the expectation update (`fixed_effect_X` + `ci_x_*`). Local
+`test_bridge_capabilities.jl`: **107/107**.
+
 ## 2026-08-05 - Post-NB1 hygiene (Δ paste + Distributions + board truth)
 
 Lane `cursor/post-nb1-hygiene-20260805` (closeout programme S1). Paste live
