@@ -1,7 +1,8 @@
 # ARC CARD — NB1+X dispersion identity (Arc 0)
 
-**Status:** **PLAN** — Ultra Plan follows in same turn; awaiting G0. Docs-only;
-no execute until `/goal` after approval.
+**Status:** **PLAN** — Ultra Plan written
+(`docs/dev-log/plans/2026-08-05-nb1-x-identity-ultra-plan.md`); awaiting G0.
+Docs-only; no execute until `/goal` after approval.
 
 **Mode:** size  
 **Requested outcome:** not quantified — lock the NB1 (+ shared site-X)
@@ -102,6 +103,6 @@ git checkout -b docs/nb1-x-identity-20260805 origin/main
 
 ---
 
-**HAND TO ULTRA PLAN:** size-mode NB1+X identity Arc 0, **~75 min (60–100)**,
-outcome = decision doc only; no engine; mirror NB2/Beta/Gamma; PLATFORM =
-Cursor; after G0 via `/goal`. Ultra Plan written same turn.
+**HAND TO ULTRA PLAN:** done —
+`docs/dev-log/plans/2026-08-05-nb1-x-identity-ultra-plan.md` (Phases 0–2).
+After G0 run via `/goal` (fresh chat preferred).
