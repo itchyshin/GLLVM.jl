@@ -54,7 +54,7 @@ include("families/exponential.jl")       # Exponential (positive continuous, no 
 include("families/studentt.jl")          # Student-t (heavy-tailed continuous, fixed ν) family pieces
 include("families/twopart.jl")           # Two-part substrate + Delta-lognormal / Delta-Gamma / Hurdle (Phase 3)
 include("families/beta_hurdle.jl")       # Beta-hurdle (Bernoulli × Beta) two-part family
-include("families/beta_binomial.jl")     # Beta-binomial (overdispersed binomial) — gllvm family 15
+include("families/beta_binomial.jl")     # Beta-binomial (overdispersed binomial) — twin fid 8
 include("families/fit_gllvm.jl")         # unified fit_gllvm(Y; family) dispatcher
 include("laplace_grad.jl")               # exact (AD + implicit-step) Poisson Laplace gradient (issue #65)
 include("missing_predictor_poisson.jl")  # non-Gaussian missing predictor (mi Phase 5a): Poisson augmented-Laplace FIML
@@ -205,6 +205,9 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        fit_quadratic_gllvm, QuadraticFit, quadratic_marginal_loglik_laplace,
        fit_ordered_beta_gllvm, OrderedBetaFit, ordered_beta_marginal_loglik_laplace,
        fit_beta_binomial_gllvm, BetaBinomialFit, betabinomial_marginal_loglik_laplace,
+       fit_beta_binomial_gllvm_grouped, BetaBinomialGroupedFit,
+       betabinomial_grouped_marginal_loglik_laplace,
+       fit_beta_binomial_gllvm_grouped_cov, BetaBinomialGroupedCovFit,
        beta_marginal_loglik_va, fit_beta_gllvm_va,
        delta_gamma_marginal_loglik_va, fit_delta_gamma_gllvm_va,
        poisson_marginal_loglik_va, fit_poisson_gllvm_va,

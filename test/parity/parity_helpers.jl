@@ -110,7 +110,7 @@ function fit_gllvmtmb_parity_loglik(y::AbstractMatrix, K::Integer; family::Symbo
 end
 
 """
-    fit_gllvmtmb_parity_loglik_x(y, x_site, K; family) -> NamedTuple
+    fit_gllvmtmb_parity_loglik_x(y, x_site, K; family, N=nothing) -> NamedTuple
 
 Shared-site-X twin oracle. `x_site` is length-`n` (one value per site). R formula
 uses a **shared** slope `+ x` (not `(0 + trait):x`):
@@ -120,34 +120,51 @@ value ~ 0 + trait + x + latent(0 + trait | site, d = K, unique = FALSE)
 ```
 
 `family` ∈ `(:gaussian, :binomial, :poisson, :gamma, :negbinomial, :nb1, :beta,
-:ordinal)`.
+:ordinal, :betabinomial)`.
 Pair with Julia `fit_gaussian_gllvm(; X=)` / `fit_gllvm_cov` (shared γ) for
 G/Bin/Pois; `fit_gamma_gllvm_grouped_cov` (per-trait shape α + shared γ) for
 Gamma; `fit_nb_gllvm_grouped_cov` / `fit_nb1_gllvm_grouped_cov` /
-`fit_beta_gllvm_grouped_cov` (per-trait dispersion + shared γ) for NB2/NB1/Beta;
-or `fit_ordinal_gllvm_pertrait_cov` (per-trait cutpoints τ₁=0 / K−2 + shared γ,
+`fit_beta_gllvm_grouped_cov` / `fit_beta_binomial_gllvm_grouped_cov` (per-trait
+dispersion + shared γ) for NB2/NB1/Beta/BetaBinomial; or
+`fit_ordinal_gllvm_pertrait_cov` (per-trait cutpoints τ₁=0 / K−2 + shared γ,
 `ProbitLink`) for Ordinal — R defaults match twin API B under X (Gamma identity
 `2026-08-03-gamma-x-dispersion-identity.md`; NB2/Beta
 `2026-08-02-nb2-beta-x-dispersion-identity.md`; NB1
 `2026-08-05-nb1-x-dispersion-identity.md`; Ordinal cutpoint identity
-`2026-08-03-ordinal-x-cutpoint-identity.md`). `:ordinal` uses
-`gllvmTMB::ordinal_probit()`; `:nb1` uses `gllvmTMB::nbinom1()`.
+`2026-08-03-ordinal-x-cutpoint-identity.md`; BetaBinomial
+`2026-08-05-betabinomial-x-dispersion-identity.md`). `:ordinal` uses
+`gllvmTMB::ordinal_probit()`; `:nb1` uses `gllvmTMB::nbinom1()`; `:betabinomial`
+uses `gllvmTMB::betabinomial()`.
+
+`N` (`p×n` trial counts, required for `:betabinomial`) is threaded to R as the
+`weights` argument to `gllvmTMB()` — gllvmTMB's beta-binomial/binomial rows
+(fid 8/1) interpret a numeric `weights` vector of length `nrow(data)` as the
+per-row trial count (`R/fit-multi.R:2031–2045`), the "API (B)" alternative to
+`cbind(successes, failures)` on the LHS. Ignored for all other families.
 """
 function fit_gllvmtmb_parity_loglik_x(
     y::AbstractMatrix,
     x_site::AbstractVector{<:Real},
     K::Integer;
     family::Symbol,
+    N::Union{Nothing, AbstractMatrix{<:Real}} = nothing,
 )
-    family in (:gaussian, :binomial, :poisson, :gamma, :negbinomial, :nb1, :beta, :ordinal) ||
+    family in (:gaussian, :binomial, :poisson, :gamma, :negbinomial, :nb1, :beta, :ordinal, :betabinomial) ||
         throw(ArgumentError("unsupported shared-X parity family: $family"))
     p, n = size(y)
     length(x_site) == n ||
         throw(DimensionMismatch("x_site length ($(length(x_site))) must equal n ($n)"))
+    family === :betabinomial && N === nothing &&
+        throw(ArgumentError("family = :betabinomial requires trial counts N (p×n)"))
+    if N !== nothing
+        size(N) == (p, n) ||
+            throw(DimensionMismatch("N must be $(p)×$(n); got $(size(N))"))
+    end
     fam = String(family)
     x = collect(Float64, x_site)
+    trials = N === nothing ? fill(1.0, p, n) : Float64.(N)
     _parity_require_gllvmtmb!()
-    @rput y K p n fam x
+    @rput y K p n fam x trials
 
     R"""
     trait_names <- paste0("t", seq_len(p))
@@ -158,16 +175,20 @@ function fit_gllvmtmb_parity_loglik_x(
         x     = rep(as.numeric(x), each = p)
     )
     fam_obj <- switch(fam,
-        gaussian    = stats::gaussian(),
-        binomial    = stats::binomial(),
-        poisson     = stats::poisson(),
-        gamma       = stats::Gamma(link = "log"),
-        negbinomial = gllvmTMB::nbinom2(),
-        nb1         = gllvmTMB::nbinom1(),
-        beta        = gllvmTMB::Beta(),
-        ordinal     = gllvmTMB::ordinal_probit(),
+        gaussian     = stats::gaussian(),
+        binomial     = stats::binomial(),
+        poisson      = stats::poisson(),
+        gamma        = stats::Gamma(link = "log"),
+        negbinomial  = gllvmTMB::nbinom2(),
+        nb1          = gllvmTMB::nbinom1(),
+        beta         = gllvmTMB::Beta(),
+        ordinal      = gllvmTMB::ordinal_probit(),
+        betabinomial = gllvmTMB::betabinomial(),
         stop(sprintf("unknown family: %s", fam))
     )
+    # betabinomial/binomial rows: `weights` = per-row trial count (API B);
+    # NULL for every other family (lme4-style per-observation multiplier).
+    weights_vec <- if (identical(fam, "betabinomial")) as.vector(trials) else NULL
     # Shared site slope: bare `x`, NOT `(0 + trait):x` (per-trait slopes).
     fit_r <- gllvmTMB(
         value ~ 0 + trait + x + latent(0 + trait | site, d = K, unique = FALSE),
@@ -175,6 +196,7 @@ function fit_gllvmtmb_parity_loglik_x(
         unit = "site",
         trait = "trait",
         family = fam_obj,
+        weights = weights_vec,
         control = gllvmTMBcontrol(n_init = 1L, se = FALSE)
     )
     .gllvm_parity_last_x <<- list(

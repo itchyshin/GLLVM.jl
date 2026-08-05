@@ -90,10 +90,15 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
-- **Next Cursor lane — BetaBinomial+X engine (after Identity merges).**
-  Fresh `/arc-creation` / `/ultra-plan` only. Decision:
-  `docs/dev-log/decisions/2026-08-05-betabinomial-x-dispersion-identity.md`.
-  Multi-lane pointer: `docs/dev-log/coordination-board.md`.
+- **BetaBinomial+X engine Arc 1+2 — open PR pending (2026-08-05).** Worktree
+  `gllvmjl-betabinomial-x-engine-20260805`, branch
+  `cursor/betabinomial-x-engine-arc12-20260805`, on top of merged Identity
+  #191 (`d5d61cb7`). `fit_beta_binomial_gllvm_grouped(_cov)` + bridge/
+  `@formula` admit (`185d8847`); light RCall cell live Δ abs ≈1.50e-8, rel
+  ≈1.29e-11 (seed=49; full X-covariate cohort 65/65). After-task:
+  `docs/dev-log/after-task/2026-08-05-betabinomial-x-engine-arc12.md`. Rose
+  fence: engine+bridge+light cell ≠ full family parity ≠ ADEMP ≠ CI for BB
+  grouped. Multi-lane pointer: `docs/dev-log/coordination-board.md`.
 - **Post-NB1 closeout programme DONE (2026-08-05).** Packaging A: #187
   hygiene + #190 Species-XB + BetaBinomial+X Identity (this PR). After-task:
   `docs/dev-log/after-task/2026-08-05-post-nb1-closeout-programme.md`.

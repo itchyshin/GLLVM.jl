@@ -4,7 +4,8 @@
 
 | Lane | Status | Branch / tip | Current handover / pointer | Owns |
 |---|---|---|---|---|
-| **BetaBinomial+X Identity Arc 0** | **OPEN** #191 (docs) | `docs/betabinomial-x-identity-20260805` | decision `docs/dev-log/decisions/2026-08-05-betabinomial-x-dispersion-identity.md` | ACCEPTED: per-trait φ + shared site-X γ. **No engine.** |
+| **BetaBinomial+X engine Arc 1+2** | **THIS BRANCH / OPEN** | `cursor/betabinomial-x-engine-arc12-20260805` | after-task `docs/dev-log/after-task/2026-08-05-betabinomial-x-engine-arc12.md` | Engine `fit_beta_binomial_gllvm_grouped(_cov)` + bridge/`@formula` (`185d8847`) + light RCall cell live Δ abs ≈1.50e-8 (seed=49). Awaiting PR/merge. |
+| **BetaBinomial+X Identity Arc 0** | **MERGED** #191 | `main` @ `d5d61cb7` | decision `docs/dev-log/decisions/2026-08-05-betabinomial-x-dispersion-identity.md` | ACCEPTED: per-trait φ + shared site-X γ. Closed. |
 | **Post-NB1 closeout programme** | **DONE** (packaging A) | `main` @ `#187`/`#190` + this Identity | LOOP `lanes/post-nb1-closeout-20260805/LOOP/` · after-task `docs/dev-log/after-task/2026-08-05-post-nb1-closeout-programme.md` | Hygiene + Species-XB + Identity. Closed. |
 | **Species-XB light RCall Arc 0** | **MERGED** #190 | `main` @ `a8d19579` | after-task `docs/dev-log/after-task/2026-08-04-species-xb-light-rcall.md` | Poisson `(0+trait):x` Δ≈4.20e-9. Closed. |
 | **Post-NB1 hygiene** | **MERGED** #187 | `main` @ `f230b372` | after-task `docs/dev-log/after-task/2026-08-05-post-nb1-hygiene.md` | Board truth + Distributions + capabilities golden. Closed. |
@@ -29,19 +30,25 @@
 ## Current Rule
 
 - Rehydrate via **this Active-Lane-Split**, not a single orphaned START HERE bullet.
-- `START HERE (Cursor):` **BetaBinomial+X engine** — fresh `/arc-creation` /
-  `/ultra-plan` only after this Identity PR merges. **Do not** start engine in
-  the closeout chat. Decision:
+- `START HERE (Cursor):` **open a PR for BetaBinomial+X engine Arc 1+2**
+  (worktree `gllvmjl-betabinomial-x-engine-20260805`, engine+bridge+light cell
+  all green) — next Cursor lane starts **after this PR merges**. Decision:
   `docs/dev-log/decisions/2026-08-05-betabinomial-x-dispersion-identity.md`.
-- Rose fence: Identity Arc 0 ≠ engine ≠ light green ≠ full family parity ≠
-  ADEMP; Species-XB Poisson light ≠ full species-B surface; NB1+X live Δ ≠
-  full family parity.
+  After-task: `docs/dev-log/after-task/2026-08-05-betabinomial-x-engine-arc12.md`.
+- Rose fence: BetaBinomial+X engine+bridge+light cell ≠ full family parity ≠
+  ADEMP ≠ CI for BB grouped; Species-XB Poisson light ≠ full species-B
+  surface; NB1+X live Δ ≠ full family parity.
 - Bridge execution R→Julia only (JuliaCall); RCall = opt-in oracle.
 - Stage by name; never `git add -A`; no push without instruction.
 - Dropbox checkout remains PROTECTED.
 
 ## Status
 
+- 2026-08-05 — BetaBinomial+X engine Arc 1+2 **live Δ proven** (worktree
+  `gllvmjl-betabinomial-x-engine-20260805`, `185d8847` + this slice): abs
+  Δ ≈ `1.50e-8`, rel Δ ≈ `1.29e-11` @ rtol `1e-6` (seed=49). Awaiting PR.
+- 2026-08-05 — BetaBinomial+X Identity Arc 0 **MERGED**
+  [#191](https://github.com/itchyshin/GLLVM.jl/pull/191) @ `d5d61cb7`.
 - 2026-08-05 — Post-NB1 closeout programme **packaging A complete** (#187
   hygiene, #190 Species-XB, this BetaBinomial+X Identity).
 - 2026-08-05 — Species-XB **MERGED**

@@ -13,6 +13,10 @@
 # cutpoints (τ₁=0 / K−2), using fit_ordinal_gllvm_pertrait_cov + ProbitLink
 # vs gllvmTMB ordinal_probit
 # (docs/dev-log/decisions/2026-08-03-ordinal-x-cutpoint-identity.md).
+# Cohort 5 (BetaBinomial Arc 1+2): BetaBinomial with q=1 shared site-X +
+# per-trait precision φ + trials N, using fit_beta_binomial_gllvm_grouped_cov
+# vs gllvmTMB betabinomial() (trials threaded via `weights`, API B under X;
+# docs/dev-log/decisions/2026-08-05-betabinomial-x-dispersion-identity.md).
 # Fence: X_lv, shared-φ-Julia-vs-per-trait-R, shared-cutpoint Option B.
 
 using GLLVM, RCall, Test, Random, LinearAlgebra, Statistics, Distributions
@@ -399,6 +403,55 @@ end
 
         print_parity_loglik(
             "Ordinal-probit+X logLik oracle (seed=47, p=$p, K=$K, n=$n, C=$C, q=1 shared, per-trait τ)";
+            jl_logL = jl_logL, r_logL = r.logLik, r_obj = r.objective,
+        )
+
+        @testset "log-likelihood agreement (rtol=1e-6)" begin
+            @test jl_logL ≈ r.logLik rtol = 1e-6
+            @test r.logLik ≈ -r.objective rtol = 0 atol = 1e-10
+        end
+    end
+
+    @testset "BetaBinomial + shared X (q=1)" begin
+        # Per-trait Beta precision φ (group=collect(1:p)) + shared site-X γ +
+        # trials N — twin API B under X
+        # (docs/dev-log/decisions/2026-08-05-betabinomial-x-dispersion-identity.md).
+        # Mirrors the NB2/Beta/Gamma/NB1 Arc 2 DGP shape: K=1, mild loadings,
+        # trials N=8 (as in test/test_betabinomial_x_identity.jl), n large
+        # enough that every per-trait φ stays interior (no Heywood / rtol
+        # widen). Sum-of-Bernoulli binomial draw — small N keeps it cheap.
+        Random.seed!(49)
+        p, K, n = 5, 1, 120
+        β = [0.30, -0.20, 0.25, -0.15, 0.05]
+        φ_true = 8.0
+        N = fill(8, p, n)
+        Λ = 0.2 .* parity_loadings_p5k2()[:, 1:K]
+        γ = 0.35
+        x = randn(n)
+        X = parity_site_design(x, p)
+        Z = randn(K, n)
+        η = β .+ γ .* x' .+ Λ * Z
+        Y = Matrix{Int}(undef, p, n)
+        for t in 1:p, s in 1:n
+            μ = clamp(1 / (1 + exp(-η[t, s])), 1e-4, 1 - 1e-4)
+            psucc = clamp(_rand_beta_x(μ * φ_true, (1 - μ) * φ_true), 1e-6, 1 - 1e-6)
+            Y[t, s] = count(_ -> rand() < psucc, 1:N[t, s])
+        end
+
+        jl_fit = fit_beta_binomial_gllvm_grouped_cov(Y; X = X, K = K, N = N,
+                                                      group = collect(1:p))
+        @test jl_fit isa BetaBinomialGroupedCovFit
+        @test jl_fit.converged
+        @test isfinite(jl_fit.loglik)
+        @test length(jl_fit.φ) == p
+        jl_logL = jl_fit.loglik
+
+        r = fit_gllvmtmb_parity_loglik_x(Y, x, K; family = :betabinomial, N = N)
+        @test r.converged
+        @test isfinite(r.logLik)
+
+        print_parity_loglik(
+            "BetaBinomial+X logLik oracle (seed=49, p=$p, K=$K, n=$n, q=1 shared, per-trait φ, N=8)";
             jl_logL = jl_logL, r_logL = r.logLik, r_obj = r.objective,
         )
 

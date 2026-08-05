@@ -1,5 +1,20 @@
 # Check Log
 
+## 2026-08-05 - BetaBinomial+X engine Arc 1+2 (light RCall cell)
+
+Lane `cursor/betabinomial-x-engine-arc12-20260805` (worktree
+`gllvmjl-betabinomial-x-engine-20260805`), on top of merged Identity #191
+(`d5d61cb7`). S1–S4 (engine `fit_beta_binomial_gllvm_grouped(_cov)` + bridge
+one-part/X admit) already landed @ `185d8847`. This slice = **S5–S6**: extend
+`fit_gllvmtmb_parity_loglik_x` to thread trials `N` as R `weights` for
+`gllvmTMB::betabinomial()` (API B, per `fit-multi.R:2031–2045`); add one
+BetaBinomial+X `@testset` (`fit_beta_binomial_gllvm_grouped_cov` vs twin,
+per-trait φ + shared γ, trials N=8). **Live green**: abs Δ ≈ `1.50e-8`, rel
+Δ ≈ `1.29e-11` @ rtol `1e-6` (seed=49); full `test_x_covariate_parity.jl`
+cohort re-verified 65/65. Rose: engine+bridge+light cell ≠ full family
+parity ≠ ADEMP ≠ CI for BB grouped. After-task:
+`docs/dev-log/after-task/2026-08-05-betabinomial-x-engine-arc12.md`.
+
 ## 2026-08-05 - Post-NB1 closeout programme (packaging A) DONE
 
 #187 hygiene MERGED; #190 Species-XB MERGED (Poisson Δ≈4.20e-9); BetaBinomial+X
