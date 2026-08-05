@@ -92,7 +92,7 @@ Full responsibility detail lives in §2 of the reference plan.
 
 - **Next Cursor lane — idle / await owner pick (2026-08-05).** No active
   capability OWED after X-cohort #170–#181 on `main` @ `a92c5040`. Board
-  hygiene in flight as PR #183 (`cursor/board-hygiene-arc-fffd`). Multi-lane
+  hygiene LOCAL DONE on PR #183 (`cursor/board-hygiene-arc-fffd`). Multi-lane
   pointer: `docs/dev-log/coordination-board.md`. Next capability needs a
   fresh `/arc-creation` after owner pick.
 - **Board / snapshot hygiene Arc 0 LOCAL DONE (2026-08-05).** Docs-only
