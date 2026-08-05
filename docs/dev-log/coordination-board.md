@@ -4,7 +4,8 @@
 
 | Lane | Status | Branch / tip | Current handover / pointer | Owns |
 |---|---|---|---|---|
-| **Ordinal+X light RCall Arc 2** | **LOCAL DONE** (no push yet) | `parity/ordinal-x-arc2-20260803` | after-task `docs/dev-log/after-task/2026-08-03-ordinal-x-arc2-parity.md` · LOOP `lanes/ordinal-x-arc2-20260803/LOOP/` | `:ordinal` X helper + light `ordinal_probit`+X cell (Δ≈5e-9). Fence ≠ full family parity. |
+| **Board / snapshot hygiene** | **LOCAL DONE** (PR #183 open) | `cursor/board-hygiene-arc-fffd` | after-task `docs/dev-log/after-task/2026-08-05-board-hygiene.md` · Ultra Plan `docs/dev-log/plans/2026-08-05-board-hygiene-ultra-plan.md` | Post-#181 pointer truth + merged-branch GC (Q2). Docs-only. Awaiting merge. |
+| **Ordinal+X light RCall Arc 2** | **MERGED** #181 | `main` @ `a92c5040` | after-task `docs/dev-log/after-task/2026-08-03-ordinal-x-arc2-parity.md` | `:ordinal` X helper + light `ordinal_probit`+X cell (Δ≈5e-9). Fence ≠ full family parity. Closed. |
 | **Ordinal+X engine Arc 1** | **MERGED** #180 | `main` @ `e4c20195` | after-task `docs/dev-log/after-task/2026-08-03-ordinal-x-engine.md` | `fit_ordinal_gllvm_pertrait_cov` + bridge/`@formula`; Julia identity. Closed. |
 | **Ordinal+X identity Arc 0** | **MERGED** #179 | `main` @ `0630f8e4` | decision `docs/dev-log/decisions/2026-08-03-ordinal-x-cutpoint-identity.md` | ACCEPTED: per-trait cutpoints (τ₁=0, K−2) + shared site-X γ. Closed. |
 | **Gamma+X Arc 1–2 land** | **MERGED** #178 | `main` @ `5f027f19` | handover `docs/dev-log/handover/2026-08-03-cursor-handover-gamma-x-arc2-close.md` | Identity+engine+OH+Gamma+X light cell. Closed. |
@@ -22,17 +23,22 @@
 ## Current Rule
 
 - Rehydrate via **this Active-Lane-Split**, not a single orphaned START HERE bullet.
-- `START HERE (Cursor):` push/PR Ordinal+X Arc 2 tip
-  (`parity/ordinal-x-arc2-20260803` @ `b6cf71f5`, already rebased onto
-  post-#180 `main`) when Shinichi asks. Dropbox checkout remains PROTECTED.
-- Rose fence: Ordinal+X light RCall ≠ full family parity ≠ ADEMP.
+- `START HERE (Cursor):` **idle** — await owner pick / no active capability OWED
+  after X-cohort #170–#181 landed on `main` @ `a92c5040`. Hygiene PR #183 is
+  the only open docs lane; after it merges, STOP until a fresh `/arc-creation`.
+- Rose fence: Ordinal+X / Gamma+X / NB2+X / Beta+X light RCall ≠ full family
+  parity ≠ ADEMP.
 - Bridge execution R→Julia only (JuliaCall); RCall = opt-in oracle.
 - Stage by name; never `git add -A`; no push without instruction.
+- Dropbox checkout remains PROTECTED.
 
 ## Status
 
-- 2026-08-03 — Ordinal+X **light RCall Arc 2 LOCAL DONE** on
-  `parity/ordinal-x-arc2-20260803` (Δ≈5.38e-9; awaiting push ask).
+- 2026-08-05 — Board/snapshot hygiene Arc 0 **LOCAL DONE** (#183 open); G0 =
+  START HERE idle + remote GC of merged X-cohort heads (Q2=yes).
+- 2026-08-04 — Ordinal+X **light RCall Arc 2 merged**
+  [#181](https://github.com/itchyshin/GLLVM.jl/pull/181) @ `a92c5040`
+  (Δ≈5.38e-9).
 - 2026-08-04 — Ordinal+X **engine Arc 1 merged**
   [#180](https://github.com/itchyshin/GLLVM.jl/pull/180) @ `e4c20195`.
 - 2026-08-03 — Ordinal+X identity Arc 0 **merged**
