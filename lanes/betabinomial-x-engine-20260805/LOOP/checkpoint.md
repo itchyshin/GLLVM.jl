@@ -1,7 +1,7 @@
-GOAL: see GOAL.md.   STATE: G0 LOCKED (Ada defaults); S0 worktree+LOOP scaffold in progress.
-ARCS DONE: (S0 landing this commit).
-ARC IN PROGRESS: S0 → then S1 grouped Laplace.
-NEXT: S1 extend betabinomial_marginal_loglik_laplace(φvec, offset) + fit_beta_binomial_gllvm_grouped.
-OPEN GATES: none until push/PR (merge-on-green authorized).
-TRUTH LIVES IN: branch cursor/betabinomial-x-engine-arc12-20260805 @ d5d61cb7+; worktree gllvmjl-betabinomial-x-engine-20260805; Identity #191.
-RESUME: /goal continue S1 from LOOP; do not redo Identity/closeout.
+GOAL: see GOAL.md.   STATE: S0–S6 DONE. Engine+bridge @ `185d8847`; light RCall cell + docs this slice.
+ARCS DONE (verified): S0 scaffold f538dbc3; S1–S3 engine+identity 05019f52 (12/12 + regression BB suites green per builder); S4 bridge/formula/capabilities 185d8847; S5 light BetaBinomial+X RCall cell live green (abs Δ≈1.50e-8, rel Δ≈1.29e-11, seed=49; full cohort 65/65); S6 docs/board/after-task closeout.
+ARC IN PROGRESS: none — programme complete, awaiting PR + maintainer merge decision.
+NEXT: open PR for `cursor/betabinomial-x-engine-arc12-20260805`; after merge, board START HERE moves to next family (do not pick Tweedie/ZIP without a fresh Identity note).
+OPEN GATES: none (merge-on-green at PR, per G0).
+TRUTH LIVES IN: worktree gllvmjl-betabinomial-x-engine-20260805; branch tip = this slice's commits on top of `185d8847`.
+RESUME: STOP — programme done. If resumed, verify PR state via `gh pr list` before redoing any S-step.

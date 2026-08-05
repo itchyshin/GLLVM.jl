@@ -53,7 +53,7 @@ no-X grouped yet + trials `N` + custom FD Laplace — heavier than NB1 rung)
 
 | Field | Value |
 | --- | --- |
-| Started | — |
-| Ended | — |
-| Wall clock | — |
-| Outcome vs ladder | — |
+| Started | 2026-08-05 ~12:59 MDT (S0 scaffold `f538dbc3`) |
+| Ended | 2026-08-05 ~14:01 MDT (S6 docs closeout, this slice) |
+| Wall clock | ~1h (S0–S4 engine+bridge `f538dbc3`→`185d8847` ~38 min; S5–S6 light cell+docs this slice ~25 min) |
+| Outcome vs ladder | Under-run vs 5.5 h recommended (4.5–7.5 h range) — engine mirrored NB1/Beta grouped_cov packing closely enough that no novel debugging was needed; light cell green on first live run (abs Δ≈1.50e-8). Stopped after green per G0 (no Tweedie/ZIP). |
