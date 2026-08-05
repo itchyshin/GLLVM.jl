@@ -213,3 +213,36 @@ Failure on any check kicks the algorithm back to draft. After the battery
 passes, Florence renders a speedup plot vs `gllvmTMB`, an after-task audit
 is written, and Rose signs off. Workflow Q is the keystone routine —
 defined in §7 of the reference plan.
+
+## Cursor Cloud specific instructions
+
+This is a pure Julia library — there is **no service, server, or UI to run**.
+"Running the app" means loading the package and fitting a model, e.g.
+`using GLLVM; fit_gaussian_gllvm(y; K = 2)` (see the README Quick start).
+
+- **Julia toolchain.** Julia (1.10 LTS, the CI primary) is installed via
+  `juliaup` at `~/.juliaup/bin`. It is on `PATH` only through `~/.bashrc` /
+  `~/.profile`, so non-login shells may not see `julia`; use the explicit
+  `~/.juliaup/bin/julia` (or `source ~/.bashrc`) if `julia` is not found. The
+  package depot and instantiated deps live in `~/.julia` and persist in the VM
+  snapshot; the startup update script only refreshes them.
+- **Do NOT run two Julia processes at once.** The ForwardDiff-based family
+  fitters allocate several GB per fit; two concurrent `Pkg.test()` /
+  `runtests.jl` / fit processes GC-thrash the 16 GB VM and *look* hung (minutes
+  with no output at 100% CPU) when they are really just starved. Run tests and
+  heavy fits **single-process** and be patient. If a run appears stuck, first
+  check `ps -eo pid,pcpu,etimes,comm | grep julia` for a second Julia before
+  assuming a real hang.
+- **The full suite is slow (~50 min, single core).** Standard commands are in
+  the "Standard commands" section above. `Pkg.test()` (canonical, incl.
+  Aqua/JET) resolves a temp env and takes ~50 min here — first-run
+  ForwardDiff/Optim compilation dominates. Long-pole files:
+  `test_zero_inflated.jl`, `test_confint_family.jl`, `test_lv_ci.jl`,
+  `test_missing_response_extra.jl`. Expect little interim stdout (the outer
+  `Test Summary` prints at the end); this is normal, not a hang.
+- **Core vs full run.** `julia --project=. test/runtests.jl` is the quick core
+  run and **skips Aqua/JET** — `test_quality.jl` detects their absence and
+  `@test_skip`s gracefully. Only `Pkg.test()` (which merges the parent package
+  with `test/Project.toml`) exercises the Aqua hygiene + JET type-stability
+  gate. Running `julia --project=test …` directly will fail because the test
+  project does not list `GLLVM` as a dependency — that merge is Pkg.test-only.
