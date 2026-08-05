@@ -1,4 +1,4 @@
-# Beta-binomial family (gllvm family="beta.binomial", enum 15) for the Laplace path.
+# Beta-binomial family (gllvm family="beta.binomial", twin fid 8) for the Laplace path.
 #
 # Overdispersed binomial: y | N, p ~ Binomial(N, p) with p ~ Beta(a, b), so the
 # trial-success probability itself is random. gllvm parameterises (see
@@ -68,17 +68,27 @@ function _bb_score_weight(y, η, N, φ; link::Link = LogitLink())
     return s, max(W, 1e-8)
 end
 
+# φ can be shared (scalar, existing API) or per-trait (length-p vector, the
+# grouped/X extension); this tiny accessor keeps both call sites branch-free.
+@inline _bb_phi_at(φ::Real, ::Integer) = φ
+@inline _bb_phi_at(φ::AbstractVector, t::Integer) = φ[t]
+
 # Inner Laplace mode-finder for one site (Newton on the negative second
 # derivative). Mirrors `_ordered_beta_mode`. `mask` (length-p Bool, or `nothing` =
 # all observed) drops missing responses: a masked entry contributes zero score and
-# zero Fisher weight, so it neither pulls the mode nor enters the Hessian.
+# zero Fisher weight, so it neither pulls the mode nor enters the Hessian. `φ` is
+# either a shared scalar or a length-p per-trait vector (grouped/+X extension).
+# `offset` (length-p, or `nothing`) is an optional site-covariate contribution
+# `(Xγ)[:, i]` added to the linear predictor before the link.
 function _beta_binomial_mode(y::AbstractVector, N::AbstractVector, Λ::AbstractMatrix,
-        β::AbstractVector, φ::Real; link::Link = LogitLink(), mask = nothing,
+        β::AbstractVector, φ::Union{Real, AbstractVector}; link::Link = LogitLink(),
+        mask = nothing, offset::Union{Nothing, AbstractVector} = nothing,
         maxiter::Integer = 100, tol::Real = 1e-9)
     p, K = size(Λ)
+    off = offset === nothing ? false : offset
     z = zeros(K)
     for _ in 1:maxiter
-        η = β .+ Λ * z
+        η = β .+ off .+ Λ * z
         s = Vector{Float64}(undef, p)
         W = Vector{Float64}(undef, p)
         @inbounds for t in 1:p
@@ -86,7 +96,7 @@ function _beta_binomial_mode(y::AbstractVector, N::AbstractVector, Λ::AbstractM
                 s[t] = 0.0; W[t] = 0.0           # masked ⇒ no contribution
                 continue
             end
-            st, Wt = _bb_score_weight(y[t], η[t], N[t], φ; link = link)
+            st, Wt = _bb_score_weight(y[t], η[t], N[t], _bb_phi_at(φ, t); link = link)
             s[t] = st
             W[t] = Wt
         end
@@ -102,13 +112,16 @@ end
 # Per-site Laplace log-marginal:
 #   log p(y_s) ≈ ℓ(ẑ) − ½ẑ'ẑ − ½logdet(Λ'WΛ + I).
 # `mask` drops the masked entries from the score/weight (via `_beta_binomial_mode`)
-# and from the conditional log-density sum.
+# and from the conditional log-density sum. `φ`/`offset` as in `_beta_binomial_mode`.
 function _beta_binomial_loglik_site(y::AbstractVector, N::AbstractVector,
-        Λ::AbstractMatrix, β::AbstractVector, φ::Real; link::Link = LogitLink(),
-        mask = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
+        Λ::AbstractMatrix, β::AbstractVector, φ::Union{Real, AbstractVector};
+        link::Link = LogitLink(), mask = nothing, offset::Union{Nothing, AbstractVector} = nothing,
+        maxiter::Integer = 100, tol::Real = 1e-9)
     p, K = size(Λ)
-    z = _beta_binomial_mode(y, N, Λ, β, φ; link = link, mask = mask, maxiter = maxiter, tol = tol)
-    η = β .+ Λ * z
+    off = offset === nothing ? false : offset
+    z = _beta_binomial_mode(y, N, Λ, β, φ; link = link, mask = mask, offset = offset,
+                            maxiter = maxiter, tol = tol)
+    η = β .+ off .+ Λ * z
     ℓ = 0.0
     W = Vector{Float64}(undef, p)
     @inbounds for t in 1:p
@@ -116,8 +129,9 @@ function _beta_binomial_loglik_site(y::AbstractVector, N::AbstractVector,
             W[t] = 0.0                           # masked ⇒ no Hessian weight, no logpdf
             continue
         end
-        ℓ += betabinomial_logp(y[t], η[t], N[t], φ; link = link)
-        _, Wt = _bb_score_weight(y[t], η[t], N[t], φ; link = link)
+        φt = _bb_phi_at(φ, t)
+        ℓ += betabinomial_logp(y[t], η[t], N[t], φt; link = link)
+        _, Wt = _bb_score_weight(y[t], η[t], N[t], φt; link = link)
         W[t] = Wt
     end
     A = Symmetric(Λ' * (W .* Λ) + I)
@@ -125,7 +139,8 @@ function _beta_binomial_loglik_site(y::AbstractVector, N::AbstractVector,
 end
 
 """
-    betabinomial_marginal_loglik_laplace(Y, N, Λ, β, φ; mask=nothing, link=LogitLink(), maxiter=100, tol=1e-9) -> Float64
+    betabinomial_marginal_loglik_laplace(Y, N, Λ, β, φ; mask=nothing, link=LogitLink(),
+                                         offset=nothing, maxiter=100, tol=1e-9) -> Float64
 
 Total Laplace log-marginal over the `n` sites (columns) of a beta-binomial GLLVM.
 `Y` is a p×n matrix of integer successes; `N` the matching p×n trial counts; `Λ`
@@ -137,16 +152,62 @@ independent beta-binomial `logp`. As `φ → ∞` it approaches the Binomial mar
 `mask` (p×n Bool, or `nothing`) marks observed cells — masked (missing) responses
 are dropped per site from the score, the Hessian weight, and the log-density sum,
 so the marginal is over the observed entries only (invariant to the masked-cell
-placeholder).
+placeholder). `offset` (`nothing`, or a p×n matrix such as `Xγ`) is added to the
+linear predictor before the link — with a constant per-trait `φvec = fill(φ, p)`
+and the same `offset`, this equals
+[`betabinomial_grouped_marginal_loglik_laplace`](@ref) to machine precision.
 """
 function betabinomial_marginal_loglik_laplace(Y::AbstractMatrix, N::AbstractMatrix,
         Λ::AbstractMatrix, β::AbstractVector, φ::Real; mask = nothing, link::Link = LogitLink(),
+        offset::Union{Nothing, AbstractMatrix} = nothing,
         maxiter::Integer = 100, tol::Real = 1e-9)
     acc = 0.0
     @inbounds for i in axes(Y, 2)
         mi = mask === nothing ? nothing : view(mask, :, i)
+        oi = offset === nothing ? nothing : view(offset, :, i)
         acc += _beta_binomial_loglik_site(view(Y, :, i), view(N, :, i), Λ, β, φ;
-                                          link = link, mask = mi, maxiter = maxiter, tol = tol)
+                                          link = link, mask = mi, offset = oi,
+                                          maxiter = maxiter, tol = tol)
+    end
+    return acc
+end
+
+# ---------------------------------------------------------------------------
+# Grouped / per-trait Beta precision φ (gllvm's `disp.group`, twin default
+# under X — decision 2026-08-05). Reuses THIS file's own `_beta_binomial_mode` /
+# `_beta_binomial_loglik_site` (now φ-vector- and offset-aware) rather than the
+# generic grouped-dispersion machinery in `grouped_dispersion.jl` (that module's
+# `fams::AbstractVector` dispatch expects the shared `_glm_score`/`_glm_weight`
+# family interface, which beta-binomial does not implement — it runs its own
+# ForwardDiff-based per-site Laplace instead).
+# ---------------------------------------------------------------------------
+
+"""
+    betabinomial_grouped_marginal_loglik_laplace(Y, N, Λ, β, φvec; mask=nothing,
+                                                 link=LogitLink(), offset=nothing,
+                                                 maxiter=100, tol=1e-9) -> Float64
+
+Total Laplace log-marginal of a beta-binomial GLLVM with **per-trait** Beta
+precision `φvec` (length p; gllvm's `disp.group`, twin `log_phi_betabinom`).
+`Y` is the p×n matrix of integer successes; `N` the matching p×n trial counts;
+`Λ` p×K; `β` length-p. `offset` (`nothing`, or a p×n matrix such as `Xγ`) is
+added to the linear predictor before the link. With a constant
+`φvec = fill(φ, p)` and the same `offset` this equals
+[`betabinomial_marginal_loglik_laplace`](@ref) to machine precision.
+"""
+function betabinomial_grouped_marginal_loglik_laplace(Y::AbstractMatrix, N::AbstractMatrix,
+        Λ::AbstractMatrix, β::AbstractVector, φvec::AbstractVector; mask = nothing,
+        link::Link = LogitLink(), offset::Union{Nothing, AbstractMatrix} = nothing,
+        maxiter::Integer = 100, tol::Real = 1e-9)
+    p = size(Λ, 1)
+    length(φvec) == p || throw(ArgumentError("length(φvec)=$(length(φvec)) must equal p=$p"))
+    acc = 0.0
+    @inbounds for i in axes(Y, 2)
+        mi = mask === nothing ? nothing : view(mask, :, i)
+        oi = offset === nothing ? nothing : view(offset, :, i)
+        acc += _beta_binomial_loglik_site(view(Y, :, i), view(N, :, i), Λ, β, φvec;
+                                          link = link, mask = mi, offset = oi,
+                                          maxiter = maxiter, tol = tol)
     end
     return acc
 end
@@ -310,4 +371,336 @@ function fit_beta_binomial_gllvm(Y::AbstractMatrix; K::Integer,
     φ̂ = exp(θ̂[p + rr + 1])
     return BetaBinomialFit(β̂, Λ̂, link, φ̂, -Optim.minimum(res),
                            Optim.converged(res), Optim.iterations(res))
+end
+
+# ===========================================================================
+# Grouped-dispersion fit driver — per-trait Beta precision φ, no site-X.
+# Mirrors fit_nb1_gllvm_grouped's packing convention: θ = [β; pack(Λ); log φ_1
+# … log φ_G]. With G=1 this matches fit_beta_binomial_gllvm exactly (same
+# `_beta_binomial_loglik_site` under the hood).
+# ===========================================================================
+
+"""
+    BetaBinomialGroupedFit
+
+Result of [`fit_beta_binomial_gllvm_grouped`](@ref): intercepts `β` (length p),
+loadings `Λ` (p×K), the per-group Beta precision vector `φ` (length G), the
+species→group map `group` (length p), the `link`, the maximised Laplace
+`loglik`, `converged`, and `iterations`. The per-species precision is
+`φ[group[t]]`.
+"""
+struct BetaBinomialGroupedFit
+    β::Vector{Float64}
+    Λ::Matrix{Float64}
+    φ::Vector{Float64}
+    group::Vector{Int}
+    link::Link
+    loglik::Float64
+    converged::Bool
+    iterations::Int
+end
+
+function Base.show(io::IO, f::BetaBinomialGroupedFit)
+    p, K = size(f.Λ)
+    print(io, "BetaBinomialGroupedFit(p=", p, ", K=", K, ", G=", length(f.φ),
+          ", φ=", round.(f.φ; sigdigits = 4),
+          ", link=", nameof(typeof(f.link)),
+          ", loglik=", round(f.loglik; sigdigits = 7),
+          f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+_loadings(fit::BetaBinomialGroupedFit) = fit.Λ
+_loglik(fit::BetaBinomialGroupedFit)   = fit.loglik
+
+# Free params: β (p) + reduced loadings Λ + one precision per group (G).
+function _nparams(fit::BetaBinomialGroupedFit)
+    p, K = size(fit.Λ)
+    return p + rr_theta_len(p, K) + length(fit.φ)      # β + Λ + G precisions φ
+end
+
+"""
+    getLV(fit::BetaBinomialGroupedFit, Y; N=nothing, rotate=true, mask=nothing) -> n×K matrix
+
+Conditional latent-variable scores for a grouped-precision beta-binomial fit,
+using the per-trait Beta precision `φ[group[t]]` in the same Laplace mode
+equations as [`betabinomial_grouped_marginal_loglik_laplace`](@ref).
+"""
+function getLV(fit::BetaBinomialGroupedFit, Y::AbstractMatrix{<:Real};
+        N::Union{Nothing, AbstractMatrix{<:Real}} = nothing, rotate::Bool = true, mask = nothing)
+    p, n = size(Y)
+    K = size(fit.Λ, 2)
+    Nm = N === nothing ? fill(1, p, n) : N
+    φvec = [fit.φ[fit.group[t]] for t in 1:p]
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        mi = mask === nothing ? nothing : view(mask, :, s)
+        Z[:, s] = _beta_binomial_mode(view(Y, :, s), view(Nm, :, s), fit.Λ, fit.β, φvec;
+                                      link = fit.link, mask = mi)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
+end
+
+"""
+    predict(fit::BetaBinomialGroupedFit, Y; N=nothing, type=:mean) -> p×n matrix
+
+In-sample fitted values at the Laplace mode `ẑ` (see [`getLV`](@ref)):
+`type=:link` returns `η = β + Λẑ`; `type=:mean` returns the per-trial success
+probability `μ = linkinv(link, η)`.
+"""
+function predict(fit::BetaBinomialGroupedFit, Y::AbstractMatrix{<:Real};
+        N::Union{Nothing, AbstractMatrix{<:Real}} = nothing, type::Symbol = :mean)
+    type in (:link, :mean) ||
+        throw(ArgumentError("type must be :link or :mean; got :$type"))
+    Z = getLV(fit, Y; N = N, rotate = false)           # n×K
+    η = fit.β .+ fit.Λ * Z'                              # p×n
+    type === :link && return η
+    return linkinv.(Ref(fit.link), _clamp_eta.(η))
+end
+
+"""
+    fit_beta_binomial_gllvm_grouped(Y; K, N=nothing, group=1:p, link=LogitLink(),
+                                    mask=nothing, φ_init=nothing, …) -> BetaBinomialGroupedFit
+
+Fit a beta-binomial GLLVM with grouped / species-specific Beta precision
+(gllvm's `disp.group`; twin `log_phi_betabinom`): species `t` shares precision
+`φ[group[t]]`. `group` is a length-p vector of group ids (relabelled to `1..G`
+internally; default `1:p` = per-species). `N` is the matching p×n trial-count
+matrix (default all-ones). L-BFGS over `[β; vec(Λ); log φ_1 … log φ_G]`;
+finite-difference gradient (the Laplace inner mode-finder is not
+forward-AD-friendly); warm start from empirical link-mean intercepts + SVD
+loadings + a moderate per-group `φ₀`. With one group this matches
+[`fit_beta_binomial_gllvm`](@ref) exactly.
+
+Missing data: pass a `mask` (p×n Bool, `false` = unobserved) or `missing`
+entries in `Y`; masked cells are dropped from the marginal and the warm start.
+"""
+function fit_beta_binomial_gllvm_grouped(Y::AbstractMatrix; K::Integer,
+        N::Union{Nothing, AbstractMatrix{<:Real}} = nothing,
+        group::AbstractVector{<:Integer} = collect(1:size(Y, 1)),
+        link::Link = LogitLink(), mask = nothing, φ_init = nothing,
+        g_tol::Real = 1e-5, iterations::Integer = 500,
+        newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    p, n = size(Y)
+    Nm = N === nothing ? fill(1, p, n) : N
+    size(Nm) == (p, n) || throw(DimensionMismatch("N must be $(p)×$(n)"))
+    length(group) == p || throw(ArgumentError("length(group)=$(length(group)) must equal p=$p"))
+    rr = rr_theta_len(p, K)
+    labels = sort(unique(group))
+    G = length(labels)
+    gidx = [findfirst(==(group[t]), labels) for t in 1:p]
+
+    msk = _resolve_obs_mask(mask, Y)
+    Yc = Integer.(_sanitize_missing(Y, 0))
+
+    Zemp = [linkfun(link, clamp((float(Yc[t, i]) + 0.5) / (float(Nm[t, i]) + 1),
+                                1e-4, 1 - 1e-4)) for t in 1:p, i in 1:n]
+    _mask_warmstart!(Zemp, msk)
+    β0 = vec(sum(Zemp; dims = 2)) ./ n
+    Zc = Zemp .- β0
+    F = svd(Zc); kk = min(K, length(F.S))
+    Λ0 = zeros(p, K)
+    @inbounds for j in 1:kk
+        Λ0[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
+    end
+    logφ0 = φ_init === nothing ? log(10.0) : log(float(φ_init))
+    θ0 = vcat(β0, pack_lambda(Λ0), fill(logφ0, G))
+
+    function negll(θ)
+        β = θ[1:p]
+        Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+        φg = exp.(θ[(p + rr + 1):(p + rr + G)])
+        φvec = [φg[gidx[t]] for t in 1:p]
+        v = try
+            -betabinomial_grouped_marginal_loglik_laplace(Yc, Nm, Λ, β, φvec; link = link,
+                                                           mask = msk, maxiter = newton_maxiter,
+                                                           tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
+    res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
+                         autodiff = :finite)
+    θ̂ = Optim.minimizer(res)
+    β̂ = θ̂[1:p]
+    Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
+    φ̂g = exp.(θ̂[(p + rr + 1):(p + rr + G)])
+    return BetaBinomialGroupedFit(β̂, Λ̂, φ̂g, gidx, link, -Optim.minimum(res),
+                                  Optim.converged(res), Optim.iterations(res))
+end
+
+# ===========================================================================
+# Grouped-dispersion + shared site-X fit driver — per-trait Beta precision φ
+# PLUS shared covariate slopes γ (twin API B under X; decision 2026-08-05).
+# Mirrors fit_nb1_gllvm_grouped_cov's packing convention: θ = [β; γ_free;
+# pack(Λ); log φ_1 … log φ_G]; offset O = Xγ enters the grouped marginal.
+# No hessian=:observed/:fisher knob (G0 lock — FD-outer, ForwardDiff-inner
+# only; this file's own per-site Laplace has no analytic-Hessian variant yet).
+# ===========================================================================
+
+"""
+    BetaBinomialGroupedCovFit
+
+Result of [`fit_beta_binomial_gllvm_grouped_cov`](@ref): per-trait intercepts
+`β`, shared covariate coefficients `γ` (with `γ_fixed` zero mask), loadings
+`Λ`, per-group Beta precision `φ`, species→group map `group`, `link`,
+maximised Laplace `loglik`, `converged`, and `iterations`. Linear predictor
+`η = β + Xγ + Λz` with species precision `φ[group[t]]`.
+"""
+struct BetaBinomialGroupedCovFit
+    β::Vector{Float64}
+    γ::Vector{Float64}
+    γ_fixed::Vector{Bool}
+    Λ::Matrix{Float64}
+    φ::Vector{Float64}
+    group::Vector{Int}
+    link::Link
+    loglik::Float64
+    converged::Bool
+    iterations::Int
+end
+
+function Base.show(io::IO, f::BetaBinomialGroupedCovFit)
+    p, K = size(f.Λ); q = length(f.γ)
+    print(io, "BetaBinomialGroupedCovFit(p=", p, ", q=", q, ", K=", K, ", G=", length(f.φ),
+          ", φ=", round.(f.φ; sigdigits = 4),
+          ", loglik=", round(f.loglik; sigdigits = 7),
+          f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+_loadings(fit::BetaBinomialGroupedCovFit) = fit.Λ
+_loglik(fit::BetaBinomialGroupedCovFit)   = fit.loglik
+
+function _nparams(fit::BetaBinomialGroupedCovFit)
+    p, K = size(fit.Λ)
+    return p + count(!, fit.γ_fixed) + rr_theta_len(p, K) + length(fit.φ)
+end
+
+"""
+    getLV(fit::BetaBinomialGroupedCovFit, Y, X; N=nothing, rotate=true, mask=nothing) -> n×K matrix
+
+Conditional latent scores at `η = β + Xγ + Λz` with per-trait beta-binomial
+precision `φ[group[t]]`.
+"""
+function getLV(fit::BetaBinomialGroupedCovFit, Y::AbstractMatrix{<:Real},
+        X::AbstractArray{<:Real, 3};
+        N::Union{Nothing, AbstractMatrix{<:Real}} = nothing, rotate::Bool = true, mask = nothing)
+    p, n = size(Y)
+    K = size(fit.Λ, 2)
+    Nm = N === nothing ? fill(1, p, n) : N
+    φvec = [fit.φ[fit.group[t]] for t in 1:p]
+    O = _build_offset(X, fit.γ)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        mi = mask === nothing ? nothing : view(mask, :, s)
+        oi = view(O, :, s)
+        Z[:, s] = _beta_binomial_mode(view(Y, :, s), view(Nm, :, s), fit.Λ, fit.β, φvec;
+                                      link = fit.link, mask = mi, offset = oi)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λ) : Zt
+end
+
+"""
+    predict(fit::BetaBinomialGroupedCovFit, Y, X; N=nothing, type=:mean) -> p×n matrix
+
+In-sample fitted values at the Laplace mode `ẑ` (see [`getLV`](@ref)):
+`type=:link` returns `η = β + Xγ + Λẑ`; `type=:mean` returns the per-trial
+success probability `μ = linkinv(link, η)`.
+"""
+function predict(fit::BetaBinomialGroupedCovFit, Y::AbstractMatrix{<:Real},
+        X::AbstractArray{<:Real, 3};
+        N::Union{Nothing, AbstractMatrix{<:Real}} = nothing, type::Symbol = :mean)
+    type in (:link, :mean) ||
+        throw(ArgumentError("type must be :link or :mean; got :$type"))
+    Z = getLV(fit, Y, X; N = N, rotate = false)         # n×K
+    O = _build_offset(X, fit.γ)
+    η = fit.β .+ O .+ fit.Λ * Z'                          # p×n
+    type === :link && return η
+    return linkinv.(Ref(fit.link), _clamp_eta.(η))
+end
+
+"""
+    fit_beta_binomial_gllvm_grouped_cov(Y; X, K, N=nothing, group=1:p, link=LogitLink(),
+                                        mask=nothing, γ_fixed=nothing, φ_init=nothing,
+                                        …) -> BetaBinomialGroupedCovFit
+
+Fit a beta-binomial GLLVM with **grouped / per-trait Beta precision** and
+**shared site covariates** `X` (`p×n×q`) — the twin default under X (decision
+`docs/dev-log/decisions/2026-08-05-betabinomial-x-dispersion-identity.md`,
+API B: per-trait `φ_t` twin to gllvmTMB's `log_phi_betabinom` + shared `γ`).
+Working vector `[β; γ_free; pack(Λ); log φ_1 … log φ_G]`; offset `O = Xγ` is
+passed into [`betabinomial_grouped_marginal_loglik_laplace`](@ref).
+Finite-difference outer L-BFGS gradient (G0 lock; no `hessian=:observed`
+knob yet — unlike the NB1/Beta/Gamma grouped_cov siblings, this file's Laplace
+core has no analytic-Hessian variant). Keep [`fit_beta_binomial_gllvm`](@ref)
+for the shared-`φ`, no-X opt-in. Identity checks against a constant `φvec` +
+offset should use `group = ones(Int, p)`.
+"""
+function fit_beta_binomial_gllvm_grouped_cov(Y::AbstractMatrix; X::AbstractArray{<:Real, 3},
+        K::Integer, N::Union{Nothing, AbstractMatrix{<:Real}} = nothing,
+        group::AbstractVector{<:Integer} = collect(1:size(Y, 1)),
+        link::Link = LogitLink(), mask = nothing, γ_fixed = nothing, φ_init = nothing,
+        g_tol::Real = 1e-5, iterations::Integer = 500,
+        newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    p, n = size(Y)
+    Nm = N === nothing ? fill(1, p, n) : N
+    size(Nm) == (p, n) || throw(DimensionMismatch("N must be $(p)×$(n)"))
+    size(X, 1) == p && size(X, 2) == n ||
+        throw(DimensionMismatch("X must be (p, n, q) = ($p, $n, q); got $(size(X))"))
+    length(group) == p || throw(ArgumentError("length(group)=$(length(group)) must equal p=$p"))
+    q_full = size(X, 3)
+    γ_fixed_mask = _fixed_zero_mask(γ_fixed, q_full, "γ_fixed")
+    X_fit, _ = _slice_fixed_X(X, γ_fixed_mask)
+    q = size(X_fit, 3)
+    rr = rr_theta_len(p, K)
+    labels = sort(unique(group))
+    G = length(labels)
+    gidx = [findfirst(==(group[t]), labels) for t in 1:p]
+
+    msk = _resolve_obs_mask(mask, Y)
+    Yc = Integer.(_sanitize_missing(Y, 0))
+    Zemp = [linkfun(link, clamp((float(Yc[t, i]) + 0.5) / (float(Nm[t, i]) + 1),
+                                1e-4, 1 - 1e-4)) for t in 1:p, i in 1:n]
+    _mask_warmstart!(Zemp, msk)
+    β0 = vec(sum(Zemp; dims = 2)) ./ n
+    Zc = Zemp .- β0
+    F = svd(Zc); kk = min(K, length(F.S))
+    Λ0 = zeros(p, K)
+    @inbounds for j in 1:kk
+        Λ0[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
+    end
+    logφ0 = φ_init === nothing ? log(10.0) : log(float(φ_init))
+    θ0 = vcat(β0, zeros(q), pack_lambda(Λ0), fill(logφ0, G))
+
+    function negll(θ)
+        β = θ[1:p]
+        γ = θ[(p + 1):(p + q)]
+        Λ = unpack_lambda(θ[(p + q + 1):(p + q + rr)], p, K)
+        φg = exp.(θ[(p + q + rr + 1):(p + q + rr + G)])
+        φvec = [φg[gidx[t]] for t in 1:p]
+        O = _build_offset(X_fit, γ)
+        v = try
+            -betabinomial_grouped_marginal_loglik_laplace(Yc, Nm, Λ, β, φvec; link = link,
+                                                           mask = msk, offset = O,
+                                                           maxiter = newton_maxiter,
+                                                           tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
+    res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
+                         autodiff = :finite)
+    θ̂ = Optim.minimizer(res)
+    β̂ = θ̂[1:p]
+    γ̂_free = θ̂[(p + 1):(p + q)]
+    γ̂ = collect(Float64, _expand_fixed_zero(γ̂_free, γ_fixed_mask))
+    Λ̂ = unpack_lambda(θ̂[(p + q + 1):(p + q + rr)], p, K)
+    φ̂g = exp.(θ̂[(p + q + rr + 1):(p + q + rr + G)])
+    return BetaBinomialGroupedCovFit(β̂, γ̂, collect(Bool, γ_fixed_mask), Λ̂, φ̂g, gidx, link,
+                                     -Optim.minimum(res), Optim.converged(res), Optim.iterations(res))
 end
