@@ -67,15 +67,16 @@ continuous covariate on the RHS becomes a coefficient **shared across species**
 (the engine's `(p,n,q)` design). Dispatches to [`fit_gaussian_gllvm`](@ref) for
 `Normal()`, to [`fit_nb_gllvm_grouped_cov`](@ref) /
 [`fit_beta_gllvm_grouped_cov`](@ref) / [`fit_gamma_gllvm_grouped_cov`](@ref) /
-[`fit_nb1_gllvm_grouped_cov`](@ref) for
-NB2/NB1/Beta/Gamma (per-trait φ/α + shared site-X; twin API B), to
+[`fit_nb1_gllvm_grouped_cov`](@ref) / [`fit_beta_binomial_gllvm_grouped_cov`](@ref) for
+NB2/NB1/Beta/Gamma/beta-binomial (per-trait φ/α + shared site-X; twin API B; the
+beta-binomial route also threads a binomial-style `N` trial-count kwarg), to
 [`fit_ordinal_gllvm_pertrait_cov`](@ref) for `Ordinal()` (per-trait cutpoints +
 shared site-X), and to [`fit_gllvm_cov`](@ref) for the other non-Gaussian
 families (shared dispersion + X). Returns that fitter's result (`GllvmFit`,
 `NBGroupedCovFit` / `NB1GroupedCovFit` / `BetaGroupedCovFit` /
-`GammaGroupedCovFit` / `OrdinalPerTraitCovFit`, or `GllvmCovFit` whose `γ[k]`
-matches the k-th RHS covariate). With no covariates it reduces to the
-intercept-only fit.
+`GammaGroupedCovFit` / `BetaBinomialGroupedCovFit` / `OrdinalPerTraitCovFit`, or
+`GllvmCovFit` whose `γ[k]` matches the k-th RHS covariate). With no covariates it
+reduces to the intercept-only fit.
 
 **v1 scope:** intercept + continuous main-effect covariates. Categorical terms,
 interactions (`a & b` / fourth-corner), function terms, and random effects
@@ -125,6 +126,8 @@ function gllvm(formula::FormulaTerm, Y::AbstractMatrix, data;
         return fit_gamma_gllvm_grouped_cov(Y; X = X, K = K, kwargs...)
     elseif family isa NB1
         return fit_nb1_gllvm_grouped_cov(Y; X = X, K = K, kwargs...)
+    elseif family isa BetaBinom
+        return fit_beta_binomial_gllvm_grouped_cov(Y; X = X, K = K, kwargs...)
     elseif family isa Ordinal
         return fit_ordinal_gllvm_pertrait_cov(Y; X = X, K = K, kwargs...)
     else

@@ -41,6 +41,7 @@ using GLLVM
         "nb1",
         "beta",
         "gamma",
+        "betabinomial",
         "ordinal",
         "ordinal_probit",
         "mixed-family vector",
@@ -54,6 +55,7 @@ using GLLVM
         "nb1",
         "beta",
         "gamma",
+        "betabinomial",
         "ordinal",
         "ordinal_probit",
     ]
@@ -88,6 +90,7 @@ using GLLVM
         "nb1",
         "beta",
         "gamma",
+        "betabinomial",
         "ordinal",
         "ordinal_probit",
     ]
@@ -95,6 +98,7 @@ using GLLVM
         "binomial",
         "binomial_probit",
         "binomial_cloglog",
+        "betabinomial",
     ]
     ci_routed = [
         "gaussian",
@@ -180,6 +184,33 @@ using GLLVM
     @test caps.postfit_simulate[mixed_idx]
     @test occursin("no X", caps.notes[mixed_idx])
     @test occursin("CI", caps.notes[mixed_idx])
+
+    # betabinomial: one-part + X (grouped_cov, twin API B) and missing-response
+    # masks are wired; NO confint engine on this build (grouped Beta-precision
+    # Laplace) and NO scalar-mean postfit (residuals/simulate) extractor yet —
+    # pin both honestly rather than let bridge_capabilities() over-claim.
+    bb_idx = findfirst(==("betabinomial"), caps.family)
+    @test bb_idx !== nothing
+    @test caps.fit_no_x[bb_idx]
+    @test caps.fixed_effect_X[bb_idx]
+    @test !caps.predictor_informed_lv[bb_idx]
+    @test caps.missing_response[bb_idx]
+    @test caps.cbind_binomial[bb_idx]
+    @test !caps.ci_no_x_wald[bb_idx]
+    @test !caps.ci_no_x_profile[bb_idx]
+    @test !caps.ci_no_x_bootstrap[bb_idx]
+    @test !caps.ci_mask_wald[bb_idx]
+    @test !caps.ci_mask_profile[bb_idx]
+    @test !caps.ci_mask_bootstrap[bb_idx]
+    @test !caps.ci_x_wald[bb_idx]
+    @test !caps.ci_x_profile[bb_idx]
+    @test !caps.ci_x_bootstrap[bb_idx]
+    @test caps.postfit_predict[bb_idx]
+    @test !caps.postfit_residuals[bb_idx]
+    @test !caps.postfit_simulate[bb_idx]
+    @test caps.postfit_ordination[bb_idx]
+    @test occursin("NOT routed yet", caps.notes[bb_idx])
+
     grouped = Set(["negbinomial", "nb1", "beta", "gamma"])
     pertrait_ordinal = Set(["ordinal", "ordinal_probit"])
     for (fam, note) in zip(caps.family[1:(end - 1)], caps.notes[1:(end - 1)])
