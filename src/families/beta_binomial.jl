@@ -254,7 +254,7 @@ end
 Conditional latent-variable scores for a beta-binomial fit: the per-site Laplace
 mode `ẑₛ` (`_beta_binomial_mode`) at the fitted `(Λ, β)`, link, and precision `φ`.
 `Y` is the `p×n` matrix of integer successes; `N` the matching trial counts
-(default all-ones); `rotate=true` applies the canonical [`rotation`](@ref).
+(default all-ones); `rotate=true` applies the canonical SVD rotation of loadings.
 """
 function getLV(fit::BetaBinomialFit, Y::AbstractMatrix{<:Real};
         N::Union{Nothing, AbstractMatrix{<:Real}} = nothing, rotate::Bool = true)
@@ -273,7 +273,7 @@ end
 """
     predict(fit::BetaBinomialFit, Y; N=nothing, type=:mean) -> p×n matrix
 
-In-sample fitted values at the Laplace mode `ẑ` (see [`getLV`](@ref)): `type=:link`
+In-sample fitted values at the Laplace mode `ẑ` (see `getLV`): `type=:link`
 returns the linear predictor `η = β + Λ ẑ`; `type=:mean` returns the success
 probability `μ = linkinv(link, η)` (η clamped). Note `:mean` is the per-trial
 success probability, not the count mean `E[y] = N·μ`.
@@ -444,7 +444,7 @@ end
 """
     predict(fit::BetaBinomialGroupedFit, Y; N=nothing, type=:mean) -> p×n matrix
 
-In-sample fitted values at the Laplace mode `ẑ` (see [`getLV`](@ref)):
+In-sample fitted values at the Laplace mode `ẑ` (see `getLV`):
 `type=:link` returns `η = β + Λẑ`; `type=:mean` returns the per-trial success
 probability `μ = linkinv(link, η)`.
 """
@@ -606,7 +606,7 @@ end
 """
     predict(fit::BetaBinomialGroupedCovFit, Y, X; N=nothing, type=:mean) -> p×n matrix
 
-In-sample fitted values at the Laplace mode `ẑ` (see [`getLV`](@ref)):
+In-sample fitted values at the Laplace mode `ẑ` (see `getLV`):
 `type=:link` returns `η = β + Xγ + Λẑ`; `type=:mean` returns the per-trial
 success probability `μ = linkinv(link, η)`.
 """
