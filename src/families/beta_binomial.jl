@@ -155,7 +155,7 @@ so the marginal is over the observed entries only (invariant to the masked-cell
 placeholder). `offset` (`nothing`, or a p×n matrix such as `Xγ`) is added to the
 linear predictor before the link — with a constant per-trait `φvec = fill(φ, p)`
 and the same `offset`, this equals
-[`betabinomial_grouped_marginal_loglik_laplace`](@ref) to machine precision.
+`betabinomial_grouped_marginal_loglik_laplace` to machine precision.
 """
 function betabinomial_marginal_loglik_laplace(Y::AbstractMatrix, N::AbstractMatrix,
         Λ::AbstractMatrix, β::AbstractVector, φ::Real; mask = nothing, link::Link = LogitLink(),
@@ -193,7 +193,7 @@ precision `φvec` (length p; gllvm's `disp.group`, twin `log_phi_betabinom`).
 `Λ` p×K; `β` length-p. `offset` (`nothing`, or a p×n matrix such as `Xγ`) is
 added to the linear predictor before the link. With a constant
 `φvec = fill(φ, p)` and the same `offset` this equals
-[`betabinomial_marginal_loglik_laplace`](@ref) to machine precision.
+`betabinomial_marginal_loglik_laplace` to machine precision.
 """
 function betabinomial_grouped_marginal_loglik_laplace(Y::AbstractMatrix, N::AbstractMatrix,
         Λ::AbstractMatrix, β::AbstractVector, φvec::AbstractVector; mask = nothing,
@@ -219,7 +219,7 @@ end
 """
     BetaBinomialFit
 
-Result of [`fit_beta_binomial_gllvm`](@ref): intercepts `β` (length p), loadings
+Result of `fit_beta_binomial_gllvm`: intercepts `β` (length p), loadings
 `Λ` (p×K), the `link`, the Beta precision `φ`, the maximised Laplace `loglik`, the
 optimiser `converged` flag, and `iterations`.
 """
@@ -383,7 +383,7 @@ end
 """
     BetaBinomialGroupedFit
 
-Result of [`fit_beta_binomial_gllvm_grouped`](@ref): intercepts `β` (length p),
+Result of `fit_beta_binomial_gllvm_grouped`: intercepts `β` (length p),
 loadings `Λ` (p×K), the per-group Beta precision vector `φ` (length G), the
 species→group map `group` (length p), the `link`, the maximised Laplace
 `loglik`, `converged`, and `iterations`. The per-species precision is
@@ -423,7 +423,7 @@ end
 
 Conditional latent-variable scores for a grouped-precision beta-binomial fit,
 using the per-trait Beta precision `φ[group[t]]` in the same Laplace mode
-equations as [`betabinomial_grouped_marginal_loglik_laplace`](@ref).
+equations as `betabinomial_grouped_marginal_loglik_laplace`.
 """
 function getLV(fit::BetaBinomialGroupedFit, Y::AbstractMatrix{<:Real};
         N::Union{Nothing, AbstractMatrix{<:Real}} = nothing, rotate::Bool = true, mask = nothing)
@@ -470,7 +470,7 @@ matrix (default all-ones). L-BFGS over `[β; vec(Λ); log φ_1 … log φ_G]`;
 finite-difference gradient (the Laplace inner mode-finder is not
 forward-AD-friendly); warm start from empirical link-mean intercepts + SVD
 loadings + a moderate per-group `φ₀`. With one group this matches
-[`fit_beta_binomial_gllvm`](@ref) exactly.
+`fit_beta_binomial_gllvm` exactly.
 
 Missing data: pass a `mask` (p×n Bool, `false` = unobserved) or `missing`
 entries in `Y`; masked cells are dropped from the marginal and the warm start.
@@ -543,7 +543,7 @@ end
 """
     BetaBinomialGroupedCovFit
 
-Result of [`fit_beta_binomial_gllvm_grouped_cov`](@ref): per-trait intercepts
+Result of `fit_beta_binomial_gllvm_grouped_cov`: per-trait intercepts
 `β`, shared covariate coefficients `γ` (with `γ_fixed` zero mask), loadings
 `Λ`, per-group Beta precision `φ`, species→group map `group`, `link`,
 maximised Laplace `loglik`, `converged`, and `iterations`. Linear predictor
@@ -632,10 +632,10 @@ Fit a beta-binomial GLLVM with **grouped / per-trait Beta precision** and
 `docs/dev-log/decisions/2026-08-05-betabinomial-x-dispersion-identity.md`,
 API B: per-trait `φ_t` twin to gllvmTMB's `log_phi_betabinom` + shared `γ`).
 Working vector `[β; γ_free; pack(Λ); log φ_1 … log φ_G]`; offset `O = Xγ` is
-passed into [`betabinomial_grouped_marginal_loglik_laplace`](@ref).
+passed into `betabinomial_grouped_marginal_loglik_laplace`.
 Finite-difference outer L-BFGS gradient (G0 lock; no `hessian=:observed`
 knob yet — unlike the NB1/Beta/Gamma grouped_cov siblings, this file's Laplace
-core has no analytic-Hessian variant). Keep [`fit_beta_binomial_gllvm`](@ref)
+core has no analytic-Hessian variant). Keep `fit_beta_binomial_gllvm`
 for the shared-`φ`, no-X opt-in. Identity checks against a constant `φvec` +
 offset should use `group = ones(Int, p)`.
 """

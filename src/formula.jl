@@ -67,7 +67,7 @@ continuous covariate on the RHS becomes a coefficient **shared across species**
 (the engine's `(p,n,q)` design). Dispatches to [`fit_gaussian_gllvm`](@ref) for
 `Normal()`, to [`fit_nb_gllvm_grouped_cov`](@ref) /
 [`fit_beta_gllvm_grouped_cov`](@ref) / [`fit_gamma_gllvm_grouped_cov`](@ref) /
-[`fit_nb1_gllvm_grouped_cov`](@ref) / [`fit_beta_binomial_gllvm_grouped_cov`](@ref) for
+[`fit_nb1_gllvm_grouped_cov`](@ref) / `fit_beta_binomial_gllvm_grouped_cov` for
 NB2/NB1/Beta/Gamma/beta-binomial (per-trait φ/α + shared site-X; twin API B; the
 beta-binomial route also threads a binomial-style `N` trial-count kwarg), to
 [`fit_ordinal_gllvm_pertrait_cov`](@ref) for `Ordinal()` (per-trait cutpoints +
