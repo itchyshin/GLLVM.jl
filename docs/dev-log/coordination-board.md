@@ -4,7 +4,7 @@
 
 | Lane | Status | Branch / tip | Current handover / pointer | Owns |
 |---|---|---|---|---|
-| **BetaBinomial+X Identity Arc 0** | **THIS PR** (docs) | `docs/betabinomial-x-identity-20260805` | decision `docs/dev-log/decisions/2026-08-05-betabinomial-x-dispersion-identity.md` | ACCEPTED: per-trait φ + shared site-X γ. **No engine.** |
+| **BetaBinomial+X Identity Arc 0** | **OPEN** #191 (docs) | `docs/betabinomial-x-identity-20260805` | decision `docs/dev-log/decisions/2026-08-05-betabinomial-x-dispersion-identity.md` | ACCEPTED: per-trait φ + shared site-X γ. **No engine.** |
 | **Post-NB1 closeout programme** | **DONE** (packaging A) | `main` @ `#187`/`#190` + this Identity | LOOP `lanes/post-nb1-closeout-20260805/LOOP/` · after-task `docs/dev-log/after-task/2026-08-05-post-nb1-closeout-programme.md` | Hygiene + Species-XB + Identity. Closed. |
 | **Species-XB light RCall Arc 0** | **MERGED** #190 | `main` @ `a8d19579` | after-task `docs/dev-log/after-task/2026-08-04-species-xb-light-rcall.md` | Poisson `(0+trait):x` Δ≈4.20e-9. Closed. |
 | **Post-NB1 hygiene** | **MERGED** #187 | `main` @ `f230b372` | after-task `docs/dev-log/after-task/2026-08-05-post-nb1-hygiene.md` | Board truth + Distributions + capabilities golden. Closed. |
