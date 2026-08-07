@@ -1,5 +1,12 @@
 # Check Log
 
+## 2026-08-07 - Post-#192 board/handover hygiene
+
+`main` @ `f56befc1` (Merge #192). Docs-only: board/AGENTS snapshot truth
+(#192 MERGED), Cursor handover
+`docs/dev-log/handover/2026-08-07-cursor-handover-post-bb-x.md`. Next OWED:
+fresh chat `/ultra-plan` capacity programme. Rose: pointer hygiene ≠ engine.
+
 ## 2026-08-05 - BetaBinomial+X engine Arc 1+2 (light RCall cell)
 
 Lane `cursor/betabinomial-x-engine-arc12-20260805` (worktree
