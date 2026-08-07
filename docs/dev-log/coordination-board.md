@@ -4,8 +4,8 @@
 
 | Lane | Status | Branch / tip | Current handover / pointer | Owns |
 |---|---|---|---|---|
-| **Post-#192 next capacity programme** | **NEXT (plan)** | fresh worktree from `origin/main` after hygiene | handover `docs/dev-log/handover/2026-08-07-cursor-handover-post-bb-x.md` | Ultra-plan then `/goal`: Species-XB widen → BB grouped CI → next +X Identity. Not started. |
-| **Post-#192 board/handover hygiene** | **THIS BRANCH** | `docs/post-bb-x-handover-20260807` | this PR | Board/AGENTS truth + Cursor handover. Docs-only. |
+| **Post-#192 capacity programme** | **PLAN LOCKED (G0)** | `docs/post-bb-x-ultra-plan-20260807` (local; push gated) | ultra-plan `docs/dev-log/plans/2026-08-07-post-bb-x-capacity-programme.md` | `/goal`: S1 Species-XB Binomial → S2 BB grouped CI → S3 ZIP+X Identity docs-only. Packaging A; merge-on-green. |
+| **Post-#192 board/handover hygiene** | **MERGED** #193 | `main` @ `2f07ad37` | handover `docs/dev-log/handover/2026-08-07-cursor-handover-post-bb-x.md` | Board/AGENTS truth + Cursor handover. Closed. |
 | **BetaBinomial+X engine Arc 1+2** | **MERGED** #192 | `main` @ `f56befc1` | after-task `docs/dev-log/after-task/2026-08-05-betabinomial-x-engine-arc12.md` | Engine + bridge/`@formula` + light RCall Δ abs ≈1.50e-8 (seed=49). Closed. |
 | **BetaBinomial+X Identity Arc 0** | **MERGED** #191 | `main` @ `d5d61cb7` | decision `docs/dev-log/decisions/2026-08-05-betabinomial-x-dispersion-identity.md` | ACCEPTED: per-trait φ + shared site-X γ. Closed. |
 | **Post-NB1 closeout programme** | **DONE** (packaging A) | `main` @ `#187`/`#190` + this Identity | LOOP `lanes/post-nb1-closeout-20260805/LOOP/` · after-task `docs/dev-log/after-task/2026-08-05-post-nb1-closeout-programme.md` | Hygiene + Species-XB + Identity. Closed. |
@@ -33,24 +33,31 @@
 
 - Rehydrate via **this Active-Lane-Split**, not a single orphaned START HERE bullet.
 - `START HERE (Cursor):`
-  `docs/dev-log/handover/2026-08-07-cursor-handover-post-bb-x.md` — merge this
-  hygiene PR if still open, then **fresh chat `/ultra-plan`** the next capacity
-  programme (Species-XB widen → BB grouped CI → next +X Identity). Do **not**
-  start engine in the planning chat. After-task for closed engine:
-  `docs/dev-log/after-task/2026-08-05-betabinomial-x-engine-arc12.md`.
+  `docs/dev-log/plans/2026-08-07-post-bb-x-capacity-programme.md` — G0
+  **LOCKED** (Binomial Species-XB required; Gaussian optional; ZIP+X Identity
+  docs-only; packaging A; merge-on-green). Fresh chat **`/goal`** on that plan
+  (arc card sibling). Hygiene #193 MERGED @ `2f07ad37`. Do **not** start ZIP
+  engine in the `/goal` run. Handover context:
+  `docs/dev-log/handover/2026-08-07-cursor-handover-post-bb-x.md`.
 - Rose fence: BetaBinomial+X engine+bridge+light (#192) ≠ full family parity ≠
-  ADEMP ≠ CI for BB grouped; Species-XB Poisson light ≠ full species-B
-  surface; NB1+X live Δ ≠ full family parity.
+  ADEMP ≠ CI for BB grouped (S2 of this programme); Species-XB Poisson light ≠
+  full species-B surface; ZIP+X Identity ≠ ZIP engine; NB1+X live Δ ≠ full
+  family parity.
 - Bridge execution R→Julia only (JuliaCall); RCall = opt-in oracle.
 - Stage by name; never `git add -A`; no push without instruction.
 - Dropbox checkout remains PROTECTED.
 
 ## Status
 
+- 2026-08-07 — Post-#192 capacity programme ultra-plan **G0 LOCKED**
+  (`docs/dev-log/plans/2026-08-07-post-bb-x-capacity-programme.md`). Next:
+  fresh chat `/goal` (packaging A: Species-XB Binomial → BB CI → ZIP+X
+  Identity docs-only).
+- 2026-08-07 — Post-#192 board/handover hygiene **MERGED**
+  [#193](https://github.com/itchyshin/GLLVM.jl/pull/193) @ `2f07ad37`.
 - 2026-08-07 — BetaBinomial+X engine Arc 1+2 **MERGED**
   [#192](https://github.com/itchyshin/GLLVM.jl/pull/192) @ `f56befc1`
-  (live Δ abs ≈1.50e-8). Next: post-#192 capacity programme via handover
-  `docs/dev-log/handover/2026-08-07-cursor-handover-post-bb-x.md`.
+  (live Δ abs ≈1.50e-8).
 - 2026-08-05 — BetaBinomial+X engine Arc 1+2 **live Δ proven** (pre-merge
   tip): abs Δ ≈ `1.50e-8`, rel Δ ≈ `1.29e-11` @ rtol `1e-6` (seed=49).
 - 2026-08-05 — BetaBinomial+X Identity Arc 0 **MERGED**
