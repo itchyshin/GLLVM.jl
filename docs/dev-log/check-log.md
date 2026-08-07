@@ -1,11 +1,19 @@
 # Check Log
 
+## 2026-08-07 - Post-#192 capacity programme ultra-plan (G0 LOCKED)
+
+Base `origin/main` @ `2f07ad37` (#193). Binding plan
+`docs/dev-log/plans/2026-08-07-post-bb-x-capacity-programme.md` (+ arc card).
+Locks: programme yes; Species-XB Binomial required / Gaussian optional;
+ZIP+X Identity docs-only; merge-on-green; packaging A. Next OWED: fresh chat
+`/goal` (no Phase-3 in planning chat). Rose: plan ≠ S1–S3 execute ≠ ZIP engine.
+
 ## 2026-08-07 - Post-#192 board/handover hygiene
 
-`main` @ `f56befc1` (Merge #192). Docs-only: board/AGENTS snapshot truth
-(#192 MERGED), Cursor handover
-`docs/dev-log/handover/2026-08-07-cursor-handover-post-bb-x.md`. Next OWED:
-fresh chat `/ultra-plan` capacity programme. Rose: pointer hygiene ≠ engine.
+`main` @ `f56befc1` (Merge #192) → later MERGED as #193 @ `2f07ad37`.
+Docs-only: board/AGENTS snapshot truth (#192 MERGED), Cursor handover
+`docs/dev-log/handover/2026-08-07-cursor-handover-post-bb-x.md`. Rose: pointer
+hygiene ≠ engine.
 
 ## 2026-08-05 - BetaBinomial+X engine Arc 1+2 (light RCall cell)
 

@@ -90,11 +90,14 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
-- **Next Cursor lane — post-#192 capacity programme (2026-08-07).** Primary
-  OWED: merge hygiene if open, then fresh chat `/ultra-plan` (Species-XB
-  widen → BB grouped CI → next +X Identity). Handover:
-  `docs/dev-log/handover/2026-08-07-cursor-handover-post-bb-x.md`. Multi-lane
-  pointer: `docs/dev-log/coordination-board.md`.
+- **Post-#192 capacity programme G0 LOCKED (2026-08-07).** Binding ultra-plan
+  `docs/dev-log/plans/2026-08-07-post-bb-x-capacity-programme.md`. Locks:
+  Species-XB Binomial required / Gaussian optional; ZIP+X Identity docs-only;
+  packaging A; merge-on-green. Next OWED: fresh chat `/goal` (no Phase-3 in
+  planning chat). Board: `docs/dev-log/coordination-board.md`.
+- **Post-#192 board/handover hygiene MERGED #193 (2026-08-07).** `main` @
+  `2f07ad37`. Handover:
+  `docs/dev-log/handover/2026-08-07-cursor-handover-post-bb-x.md`.
 - **BetaBinomial+X engine Arc 1+2 MERGED #192 (2026-08-07).** `main` @
   `f56befc1` — `fit_beta_binomial_gllvm_grouped(_cov)` + bridge/`@formula`;
   light RCall Δ abs ≈1.50e-8 (seed=49). After-task:
