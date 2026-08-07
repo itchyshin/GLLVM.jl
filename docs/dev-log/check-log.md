@@ -1,5 +1,11 @@
 # Check Log
 
+## 2026-08-07 - Capacity programme ultra-plan MERGED #194 + goal handover
+
+`main` @ `49056186` (Merge #194). G0 LOCKED on main. Next: Cursor handover
+`docs/dev-log/handover/2026-08-07-cursor-handover-post-bb-x-goal.md` then
+fresh `/goal` (S1→S2→S3; ZIP engine fenced).
+
 ## 2026-08-07 - Post-#192 capacity programme ultra-plan (G0 LOCKED)
 
 Base `origin/main` @ `2f07ad37` (#193). Binding plan

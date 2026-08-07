@@ -90,11 +90,16 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
-- **Post-#192 capacity programme G0 LOCKED (2026-08-07).** Binding ultra-plan
-  `docs/dev-log/plans/2026-08-07-post-bb-x-capacity-programme.md`. Locks:
-  Species-XB Binomial required / Gaussian optional; ZIP+X Identity docs-only;
-  packaging A; merge-on-green. Next OWED: fresh chat `/goal` (no Phase-3 in
-  planning chat). Board: `docs/dev-log/coordination-board.md`.
+- **Next Cursor lane — `/goal` capacity programme (2026-08-07).** Primary
+  OWED: merge goal-handover if open, then fresh chat `/goal` on locked plan
+  (S1 Species-XB Binomial → S2 BB grouped CI → S3 ZIP+X Identity docs-only).
+  Handover:
+  `docs/dev-log/handover/2026-08-07-cursor-handover-post-bb-x-goal.md`.
+  Multi-lane pointer: `docs/dev-log/coordination-board.md`.
+- **Post-#192 capacity programme ultra-plan MERGED #194 (2026-08-07).**
+  `main` @ `49056186` — G0 LOCKED (Binomial required / Gaussian optional;
+  ZIP+X Identity docs-only; packaging A; merge-on-green). Plan:
+  `docs/dev-log/plans/2026-08-07-post-bb-x-capacity-programme.md`.
 - **Post-#192 board/handover hygiene MERGED #193 (2026-08-07).** `main` @
   `2f07ad37`. Handover:
   `docs/dev-log/handover/2026-08-07-cursor-handover-post-bb-x.md`.
