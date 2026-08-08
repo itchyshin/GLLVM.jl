@@ -90,6 +90,12 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
+- **Capacity S1 Species-XB Binomial landing (2026-08-08).** Branch
+  `parity/species-xb-binomial-20260808` from `origin/main` @ `d7f852df`
+  (#195). Live Δ abs ≈ **1.322e-9** (seed=49, rtol 1e-6). Gaussian skipped.
+  After-task: `docs/dev-log/after-task/2026-08-08-species-xb-binomial.md`.
+  Next after PR1 merge: S2 BB grouped CI. Multi-lane pointer:
+  `docs/dev-log/coordination-board.md`.
 - **Next Cursor lane — `/goal` capacity programme (2026-08-07).** Primary
   OWED: merge goal-handover if open, then fresh chat `/goal` on locked plan
   (S1 Species-XB Binomial → S2 BB grouped CI → S3 ZIP+X Identity docs-only).

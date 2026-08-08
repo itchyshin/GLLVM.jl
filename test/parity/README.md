@@ -90,10 +90,12 @@ OH unblocker vs Fisher-only) vs `stats::Gamma(link="log")` / per-trait
 **Ordinal+X** (Arc 2 cohort 4, #181): `fit_ordinal_gllvm_pertrait_cov` +
 `ProbitLink` vs `ordinal_probit()`; Δ ≈ 5.38e-9 at seed=47.
 
-**Species-specific XB** (Arc 0 in progress): R `(0 + trait):x` vs Julia
-`fit_gllvm_speciescov` — see `test_species_x_parity.jl` (Poisson first).
+**Species-specific XB**: R `(0 + trait):x` vs Julia `fit_gllvm_speciescov`
+— Poisson (#190, Δ≈4.20e-9) + Binomial Bernoulli N=1 (S1). See
+`test_species_x_parity.jl`.
 
-**Not claimed here:** multi-family species-XB cohort; X_lv;
+**Not claimed here:** multi-family species-XB cohort; Gaussian species-XB;
+X_lv;
 shared-φ-Julia-vs-per-trait-R comparisons; shared-dispersion NB2/Beta via
 named fitters as twin default; ordinal-logit; ADEMP; coverage; “full family
 parity.” `n_drift=0` ≠ these cells.

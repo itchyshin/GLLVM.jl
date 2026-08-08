@@ -1,9 +1,10 @@
 # test_species_x_parity.jl — species-specific XB light logLik vs gllvmTMB
 #
 # Included by runparity.jl AFTER shared site-X cells. NEVER by runtests.jl.
-# Arc 0: Poisson q=1 per-trait slopes — R `(0 + trait):x` vs Julia
-# `fit_gllvm_speciescov` (B is p×1). Fence: multi-family XB; X_lv; ADEMP;
-# full family parity.
+# Poisson (#190) + Binomial Bernoulli S1: q=1 per-trait slopes — R
+# `(0 + trait):x` vs Julia `fit_gllvm_speciescov` (B is p×1). Fence:
+# multi-family XB cohort; X_lv; ADEMP; full family parity; Gaussian
+# species-XB (optional under-run; no Laplace speciescov path).
 
 using GLLVM, RCall, Test, Random, LinearAlgebra, Statistics
 
@@ -49,6 +50,43 @@ end
 
         print_parity_loglik(
             "Poisson species-XB logLik oracle (seed=48, p=$p, K=$K, n=$n, q=1 per-trait B)";
+            jl_logL = jl_logL, r_logL = r.logLik, r_obj = r.objective,
+        )
+
+        @testset "log-likelihood agreement (rtol=1e-6)" begin
+            @test jl_logL ≈ r.logLik rtol = 1e-6
+            @test r.logLik ≈ -r.objective rtol = 0 atol = 1e-10
+        end
+    end
+
+    @testset "Binomial + species-XB (q=1, Bernoulli)" begin
+        # Per-trait slopes B[:,1] + site covariate x — twin `(0 + trait):x`.
+        # K=1 / mild loadings mirror the Poisson species-XB cell (Heywood
+        # avoided on shared-X binomial by n=80 + smaller Λ). N=1 Bernoulli.
+        Random.seed!(49)
+        p, K, n = 5, 1, 80
+        β = [-0.3, 0.0, 0.3, -0.15, 0.2]
+        B = reshape([0.45, 0.25, -0.20, 0.35, 0.15], p, 1)
+        Λ = 0.30 .* parity_loadings_p5k2()[:, 1:K]
+        x = randn(n)
+        X = parity_site_design(x, p)
+        Z = randn(K, n)
+        η = β .+ B[:, 1] .* x' .+ Λ * Z
+        Y = [rand() < 1 / (1 + exp(-η[t, s])) ? 1 : 0 for t in 1:p, s in 1:n]
+
+        jl_fit = fit_gllvm_speciescov(Y; family = GLLVM.Binomial(), X = X, K = K)
+        @test jl_fit isa GllvmSpeciesCovFit
+        @test jl_fit.converged
+        @test isfinite(jl_fit.loglik)
+        @test size(jl_fit.B) == (p, 1)
+        jl_logL = jl_fit.loglik
+
+        r = fit_gllvmtmb_parity_loglik_species_x(Y, x, K; family = :binomial)
+        @test r.converged
+        @test isfinite(r.logLik)
+
+        print_parity_loglik(
+            "Binomial species-XB logLik oracle (seed=49, p=$p, K=$K, n=$n, q=1 Bernoulli per-trait B)";
             jl_logL = jl_logL, r_logL = r.logLik, r_obj = r.objective,
         )
 
