@@ -1,5 +1,15 @@
 # Check Log
 
+## 2026-08-08 - Species-XB Binomial light RCall (capacity S1)
+
+Lane `parity/species-xb-binomial-20260808` from `origin/main` @ `d7f852df`
+(#195). Helper admits `:binomial`; focused cell seed=49 p=5 K=1 n=80
+Bernoulli: **Δ abs ≈ 1.322e-9** @ rtol 1e-6 (Julia −271.597100041 /
+gllvmTMB −271.597100042). Poisson regression Δ ≈ 4.20e-9. Tally 16/16.
+Gaussian species-XB skipped (no Laplace speciescov path). No `src/` change;
+no rtol widen. Next: PR1 merge-on-green → S2 BB grouped CI. Rose: ≠ full
+species-B cohort ≠ ZIP engine ≠ ADEMP.
+
 ## 2026-08-07 - Capacity programme ultra-plan MERGED #194 + goal handover
 
 `main` @ `49056186` (Merge #194). G0 LOCKED on main. Next: Cursor handover

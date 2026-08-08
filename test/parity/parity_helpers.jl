@@ -224,8 +224,11 @@ Species-specific site-X twin oracle. R formula uses **per-trait** slopes
 value ~ 0 + trait + (0 + trait):x + latent(0 + trait | site, d = K, unique = FALSE)
 ```
 
-Pair with Julia [`fit_gllvm_speciescov`](@ref) (`B` is `p×q`). Arc 0 starts
-with `:poisson` only; other families may need separate dispersion identity.
+Pair with Julia [`fit_gllvm_speciescov`](@ref) (`B` is `p×q`). Supported
+families: `:poisson` (Arc 0 / #190) and `:binomial` (Bernoulli N=1; capacity
+programme S1). Other families may need a separate dispersion identity.
+`:binomial` matches the shared-X helper: `stats::binomial()` with no `weights`
+(N=1). Do not narrate as a full species-B cohort.
 """
 function fit_gllvmtmb_parity_loglik_species_x(
     y::AbstractMatrix,
@@ -233,8 +236,8 @@ function fit_gllvmtmb_parity_loglik_species_x(
     K::Integer;
     family::Symbol,
 )
-    family in (:poisson,) ||
-        throw(ArgumentError("unsupported species-XB parity family (Arc 0): $family"))
+    family in (:poisson, :binomial) ||
+        throw(ArgumentError("unsupported species-XB parity family: $family"))
     p, n = size(y)
     length(x_site) == n ||
         throw(DimensionMismatch("x_site length ($(length(x_site))) must equal n ($n)"))
@@ -252,7 +255,8 @@ function fit_gllvmtmb_parity_loglik_species_x(
         x     = rep(as.numeric(x), each = p)
     )
     fam_obj <- switch(fam,
-        poisson = stats::poisson(),
+        poisson  = stats::poisson(),
+        binomial = stats::binomial(),
         stop(sprintf("unknown family: %s", fam))
     )
     # Per-trait slopes: (0 + trait):x — NOT bare shared `x`.
