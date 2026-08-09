@@ -8,7 +8,7 @@ TRUTH LIVES IN:
 - Arc Card `docs/dev-log/plans/2026-08-09-zip-x-engine-arc0-arc-card.md`
 - Identity `docs/dev-log/decisions/2026-08-09-zip-x-identity.md` (ACCEPTED)
 - LOOP `lanes/zip-x-engine-20260809/LOOP/`
-- scaffold branch `docs/zip-x-engine-ultraplan-20260809` on wt `.worktrees/gllvmjl-post-bb-x-capacity-handover-20260809`
+- scaffold branch `docs/zip-x-engine-ultraplan-20260809` @ `5a92aaa0` on wt `.worktrees/gllvmjl-post-bb-x-capacity-handover-20260809` (local only; not pushed)
 - PRs: https://github.com/itchyshin/GLLVM.jl/pull/197 · https://github.com/itchyshin/GLLVM.jl/pull/198
 
 RESUME: paste the block below into a **fresh Cursor chat** after `#197` and `#198` show `MERGED`.
