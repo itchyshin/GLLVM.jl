@@ -90,21 +90,25 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
-- **Capacity S2 BetaBinomial grouped CI landing (2026-08-09).** Branch
- `feat/betabinomial-grouped-ci-20260808` from `origin/main` @ `6aa8e0cb`
- (#196). `_family_ci` for BB grouped(_cov); `_bridge_ci_guard_betabinomial`
- lifted; Wald/profile/bootstrap routed (FD Hessian). After-task:
- `docs/dev-log/after-task/2026-08-09-betabinomial-grouped-ci.md`. Next after
- PR2 merge: S3 ZIP+X Identity docs-only → STOP. Multi-lane pointer:
- `docs/dev-log/coordination-board.md`.
+- **Capacity S3 ZIP+X Identity landing (2026-08-09).** Branch
+  `docs/zip-x-identity-20260809` on S2 tip `8112e533` (PR #197). Decision
+  ACCEPTED: `docs/dev-log/decisions/2026-08-09-zip-x-identity.md`
+  (separate `γ^z`/`γ^c`, `Λ_z=0`, twin-asymmetric). After-task:
+  `docs/dev-log/after-task/2026-08-09-zip-x-identity.md`. Programme **STOP**
+  before ZIP engine. Multi-lane pointer:
+  `docs/dev-log/coordination-board.md`.
+- **Capacity S2 BetaBinomial grouped CI PR #197 (2026-08-09).** Branch
+  `feat/betabinomial-grouped-ci-20260808` from `origin/main` @ `6aa8e0cb`
+  (#196). `_family_ci` for BB grouped(_cov); bridge guard lifted. After-task:
+  `docs/dev-log/after-task/2026-08-09-betabinomial-grouped-ci.md`.
 - **Capacity S1 Species-XB Binomial MERGED #196 (2026-08-08).** `main` @
- `6aa8e0cb`. Live Δ abs ≈ **1.322e-9** (seed=49, rtol 1e-6). Gaussian skipped.
- After-task: `docs/dev-log/after-task/2026-08-08-species-xb-binomial.md`.
-- **Next Cursor lane — `/goal` capacity programme (2026-08-07).** Primary
- OWED after S2: S3 ZIP+X Identity docs-only → board closeout → STOP.
- Handover:
- `docs/dev-log/handover/2026-08-07-cursor-handover-post-bb-x-goal.md`.
- Multi-lane pointer: `docs/dev-log/coordination-board.md`.
+  `6aa8e0cb`. Live Δ abs ≈ **1.322e-9** (seed=49, rtol 1e-6). Gaussian
+  skipped. After-task:
+  `docs/dev-log/after-task/2026-08-08-species-xb-binomial.md`.
+- **Next Cursor lane — merge-on-green then STOP (2026-08-09).** Merge S2 #197
+  + S3 Identity PR when CI green; do **not** start ZIP engine. Plan:
+  `docs/dev-log/plans/2026-08-07-post-bb-x-capacity-programme.md`. Multi-lane
+  pointer: `docs/dev-log/coordination-board.md`.
 - **Post-#192 capacity programme ultra-plan MERGED #194 (2026-08-07).**
   `main` @ `49056186` — G0 LOCKED (Binomial required / Gaussian optional;
   ZIP+X Identity docs-only; packaging A; merge-on-green). Plan:

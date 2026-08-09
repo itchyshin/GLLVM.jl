@@ -44,8 +44,8 @@
 **First action:** `/goal` on the ultra-plan (G0 already locked).
 
 ### Actuals (complete at close)
-**Recommended / actual:** 330 / — · **Requested / used:** 3-rung programme / — · **Rungs completed:** —  
-**Under-run event:** —  
-**Calibration:** —  
-**Metric movement:** —  
-**Result:** — · **Next arc:** ZIP+X engine Arc 1 (fresh `/arc-creation` or ultra-plan) only after this closes — and only if twin ZIP status is re-checked at that G0.
+**Recommended / actual:** 330 / multi-session (S1 2026-08-08; S2+S3 2026-08-09) · **Requested / used:** 3-rung programme / S1–S3 delivered · **Rungs completed:** S1 (#196), S2 (PR #197), S3 (this Identity)  
+**Under-run event:** Gaussian species-XB skipped (no Laplace speciescov path); S2 landed on sibling lane `feat/betabinomial-grouped-ci-20260808` (#197) rather than a second S2 branch  
+**Calibration:** packaging A serial landings held; twin ZIP cut forced ACCEPTED-with-fence as planned  
+**Metric movement:** Species-XB +Binomial light cell; BB CI fail-loud → routed; ZIP+X Identity on disk  
+**Result:** capacity used (pending PR2/PR3 merge-on-green) · **Next arc:** ZIP+X engine Arc 1 (fresh `/arc-creation` or ultra-plan) only after merges — and only if twin ZIP status is re-checked at that G0.

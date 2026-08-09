@@ -1,5 +1,13 @@
 # Check Log
 
+## 2026-08-09 - ZIP+X Identity Arc 0 ACCEPTED (capacity S3, docs-only)
+
+Lane `docs/zip-x-identity-20260809` on tip `8112e533` (S2 PR #197). Decision
+`docs/dev-log/decisions/2026-08-09-zip-x-identity.md`: shared site-X with
+separate `γ^z`/`γ^c`, `Λ_z=0`, Julia-forward / twin-asymmetric (gllvmTMB
+ZIP/ZINB cut). Zero `src/` ZIP engine / bridge X / light cell. Programme
+closeout → STOP. Rose: ≠ ZIP engine ≠ twin Δ ≠ ADEMP.
+
 ## 2026-08-09 - BetaBinomial grouped(_cov) CI (capacity S2)
 
 Lane `feat/betabinomial-grouped-ci-20260808` from `origin/main` @ `6aa8e0cb`
