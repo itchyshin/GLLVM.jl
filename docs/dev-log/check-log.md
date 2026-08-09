@@ -1,5 +1,16 @@
 # Check Log
 
+## 2026-08-09 - BetaBinomial grouped(_cov) CI (capacity S2)
+
+Lane `feat/betabinomial-grouped-ci-20260808` from `origin/main` @ `6aa8e0cb`
+(#196). `_family_ci` for `BetaBinomialGroupedFit` + `BetaBinomialGroupedCovFit`
+(thread `N`; FD Hessian). Lifted `_bridge_ci_guard_betabinomial`. Focused:
+capabilities 130/130; grouped_dispersion 131/131; missing_mask 89/89;
+confint_family 163/163; bridge_x 248/248. No rtol widen. Next: PR2
+merge-on-green → S3 ZIP+X Identity docs-only. Rose: ≠ full family parity ≠
+ADEMP ≠ ZIP engine. After-task:
+`docs/dev-log/after-task/2026-08-09-betabinomial-grouped-ci.md`.
+
 ## 2026-08-08 - Species-XB Binomial light RCall (capacity S1)
 
 Lane `parity/species-xb-binomial-20260808` from `origin/main` @ `d7f852df`

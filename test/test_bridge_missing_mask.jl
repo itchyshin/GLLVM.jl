@@ -88,6 +88,7 @@ using Random
                       0.75 0.62 0.50 0.38 0.28 0.18 0.85 0.70 0.55 0.42], nothing),
             ("gamma", [1.2 1.5 2.0 2.4 1.8 2.8 3.1 1.7 2.2 2.6;
                        2.1 2.4 1.6 1.9 2.7 3.2 2.5 1.4 2.0 2.9], nothing),
+            ("betabinomial", [1 2 0 3 1 4 2 0 1 3; 2 1 3 0 2 1 4 2 3 1], fill(6, 2, 10)),
         ]
         for (family, Ycase, Ncase) in cases
             if Ncase === nothing

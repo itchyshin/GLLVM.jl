@@ -299,7 +299,9 @@ function _bridge_compute_ci_ng(fit, Ydata, N, method::AbstractString,
     return _bridge_ci_from_native(method, level, ci)
 end
 
-function _bridge_compute_ci_cov(fit::Union{GllvmCovFit, NBGroupedCovFit, BetaGroupedCovFit, GammaGroupedCovFit},
+function _bridge_compute_ci_cov(fit::Union{GllvmCovFit, NBGroupedCovFit, NB1GroupedCovFit,
+                                           BetaGroupedCovFit, GammaGroupedCovFit,
+                                           BetaBinomialGroupedCovFit},
                                 Ydata, N, X,
                                 method::AbstractString, level::Real,
                                 nboot::Integer, seed::Integer)
@@ -462,21 +464,18 @@ const _BRIDGE_MASK_FAMILIES = (
     "negbinomial", "nb1", "beta", "gamma", "betabinomial", "ordinal", "ordinal_probit",
 )
 
-const _BRIDGE_GROUPED_DISPERSION_FAMILIES = ("negbinomial", "nb1", "beta", "gamma")
+const _BRIDGE_GROUPED_DISPERSION_FAMILIES = ("negbinomial", "nb1", "beta", "gamma",
+                                            "betabinomial")
 const _BRIDGE_PERTRAIT_ORDINAL_FAMILIES = ("ordinal", "ordinal_probit")
 const _BRIDGE_MASK_CI_FAMILIES = (
     "poisson", "binomial", "binomial_probit", "binomial_cloglog",
-    "negbinomial", "nb1", "beta", "gamma",
+    "negbinomial", "nb1", "beta", "gamma", "betabinomial",
 )
 # One-part families whose default fit route has NO native confint engine yet:
-# the per-trait ordinal-cutpoint routes (pre-existing fence), plus beta-binomial
-# — its grouped/grouped_cov Laplace (families/beta_binomial.jl) has no analytic-
-# or Fisher-Hessian variant on this build (only the ungrouped, no-X
-# `BetaBinomialFit` has `confint` wired, which the bridge does not route
-# through). Used to keep `bridge_capabilities()` honest: ci_no_x_*/ci_x_* must
-# stay false for these families even though they are one-part / fixed-effect-X
-# bridge rows.
-const _BRIDGE_NO_CI_FAMILIES = (_BRIDGE_PERTRAIT_ORDINAL_FAMILIES..., "betabinomial")
+# the per-trait ordinal-cutpoint routes. Beta-binomial grouped(_cov) now routes
+# Wald/profile/bootstrap via `_family_ci` (finite-difference Hessian; the BB
+# Laplace still has no analytic OH knob).
+const _BRIDGE_NO_CI_FAMILIES = (_BRIDGE_PERTRAIT_ORDINAL_FAMILIES...,)
 # One-part families with no scalar-mean postfit extractor (residuals = y - mu,
 # parametric simulate): the ordinal families (no scalar response mean), plus
 # beta-binomial (no `residuals`/`simulate` method for BetaBinomialFit or its
@@ -489,17 +488,6 @@ function _bridge_ci_guard_pertrait_ordinal(key::AbstractString, ci_method::Abstr
         "bridge_fit: confidence intervals for per-trait ordinal-cutpoint " *
         "$key fits are not routed yet; use ci_method=\"none\" or the shared-" *
         "cutpoint OrdinalFit directly as a Julia-side comparator."))
-end
-
-# Beta-binomial's grouped/grouped_cov Laplace (this build) has no confint
-# engine — see the docstring on `fit_beta_binomial_gllvm_grouped_cov`
-# ("no hessian=:observed knob yet"). Reject any non-"none" ci_method loudly
-# rather than letting a bare MethodError leak out of `confint`.
-function _bridge_ci_guard_betabinomial(ci_method::AbstractString)
-    ci_method == "none" && return nothing
-    throw(ArgumentError(
-        "bridge_fit: confidence intervals for betabinomial (grouped Beta-" *
-        "precision) fits are not routed yet; use ci_method=\"none\"."))
 end
 
 function _bridge_dispersion_payload(group_values::AbstractVector,
@@ -575,8 +563,9 @@ function bridge_capabilities()
         ci_mask_wald = vcat([f in mask_ci_families for f in onepart], [false]),
         ci_mask_profile = vcat([f in mask_ci_families for f in onepart], [false]),
         ci_mask_bootstrap = vcat([f in mask_ci_families for f in onepart], [false]),
-        # Ordinal+X and betabinomial+X point fits are wired; CI under X remains
-        # a follow-up for both (same fence as their respective no-X routes).
+        # Ordinal+X point fits are wired; CI under X remains a follow-up
+        # (same fence as the no-X per-trait ordinal route). Beta-binomial
+        # grouped(_cov) now routes Wald/profile/bootstrap CI (FD Hessian).
         ci_x_wald = vcat([f in x_families && !(f in no_ci_families)
                           for f in onepart], [false]),
         ci_x_profile = vcat([f in x_families && !(f in no_ci_families)
@@ -602,7 +591,7 @@ function bridge_capabilities()
                 f == "gamma" ?
                     "one-part reduced-rank bridge family; default no-X route uses shared Gamma grouped dispersion to match current native scalar-CV Gamma; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; predictor-informed latent-score X_lv via the shared-shape fitter is wired for complete-response point fits; X_lv Wald B_lv CI payloads are routed; profile/bootstrap X_lv CIs remain follow-ups; per-trait Gamma is a native-expansion follow-up" :
                 f == "betabinomial" ?
-                    "one-part reduced-rank bridge family; default no-X and complete-response fixed-effect-X routes use per-trait Beta-binomial precision (disp.group) with binomial-style cbind(success, failure) trial counts N; missing-response masks are wired for the no-X route; confidence intervals (no-X, masked, and X) are NOT routed yet (the grouped Beta-precision Laplace has no confint engine on this build); residuals/simulate are not wired (no scalar-mean postfit extractor yet); route support is narrower than full R-user parity" :
+                    "one-part reduced-rank bridge family; default no-X and complete-response fixed-effect-X routes use per-trait Beta-binomial precision (disp.group) with binomial-style cbind(success, failure) trial counts N; missing-response masks are wired for the no-X route; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed (finite-difference Hessian; no analytic OH); residuals/simulate are not wired (no scalar-mean postfit extractor yet); route support is narrower than full R-user parity" :
                 f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES ?
                     "one-part reduced-rank bridge family; default no-X and complete-response fixed-effect-X routes use per-trait ordinal cutpoints (τ₁=0 / K−2); CI routing is a follow-up" :
                 f == "poisson" ?
@@ -1101,15 +1090,16 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
         Yi = round.(Int, Yf)
         Ni = N === nothing ? fill(1, p, n) :
              (N isa Number ? fill(round(Int, N), p, n) : round.(Int, Matrix(N)))
-        _bridge_ci_guard_betabinomial(ci_method)
         fit = fit_beta_binomial_gllvm_grouped(Yi; K = K, N = Ni, group = collect(1:p), mask = M)
         disp = _bridge_dispersion_payload(fit.φ, fit.group, "phi",
             "Var = N * mu * (1 - mu) * (1 + (N - 1) * phi / (phi + 1))",
             "gllvm Beta precision phi = a + b (twin log_phi_betabinom); direct passthrough")
         scores = _bridge_scores(() -> getLV(fit, Yi; N = Ni, rotate = true, mask = M))
+        ci = ci_method == "none" ? nothing :
+             _bridge_compute_ci_ng(fit, Yi, Ni, ci_method, ci_level, ci_nboot, ci_seed; mask = M)
         base = _bridge_assemble_ng(fit, "betabinomial", "betabinomial_rr", traits, units, p, K, Yi, Ni;
             alpha = fit.β, dispersion = _bridge_expand_dispersion(disp), df = _bridge_group_df(p, K, disp),
-            scores = scores, ci = nothing, mask = M)
+            scores = scores, ci = ci, mask = M)
         return merge(base, disp)
     elseif key in ("ordinal", "ordinal_probit")
         Yi = round.(Int, Yf)
@@ -1205,7 +1195,6 @@ function _bridge_fit_onepart_cov(Yf::AbstractMatrix{Float64}, key::AbstractStrin
                                             ci_nboot, ci_seed; N = nothing)
     elseif key == "betabinomial"
         Yi = round.(Int, Ydata)
-        _bridge_ci_guard_betabinomial(ci_method)
         fit = fit_beta_binomial_gllvm_grouped_cov(Yi; X = Xarr, K = K, N = Nm,
                                                   group = collect(1:p), γ_fixed = coef_fixed)
         return _bridge_assemble_grouped_cov(fit, key, traits, units, Yi, Xarr,
@@ -1289,8 +1278,8 @@ function _bridge_assemble_grouped_cov(fit::Union{NBGroupedCovFit, NB1GroupedCovF
         disp = Float64[fit.φ[fit.group[t]] for t in 1:p]
         G = length(fit.φ)
         disp_note = "per-trait Beta-binomial precision phi (disp.group); shared site-X " *
-                    "gamma; binomial-style trial counts N. Confidence intervals are not " *
-                    "routed for this fit yet."
+                    "gamma; binomial-style trial counts N. Wald/profile/bootstrap CI " *
+                    "payloads are routed (finite-difference Hessian)."
     else
         disp = Float64[fit.α[fit.group[t]] for t in 1:p]
         G = length(fit.α)

@@ -110,6 +110,7 @@ using GLLVM
         "nb1",
         "beta",
         "gamma",
+        "betabinomial",
     ]
     @test caps.family[caps.ci_no_x_wald] == ci_routed
     @test caps.family[caps.ci_no_x_profile] == ci_routed
@@ -123,6 +124,7 @@ using GLLVM
         "nb1",
         "beta",
         "gamma",
+        "betabinomial",
     ]
     @test caps.family[caps.ci_mask_wald] == mask_ci_routed
     @test caps.family[caps.ci_mask_profile] == mask_ci_routed
@@ -135,6 +137,7 @@ using GLLVM
         "nb1",
         "beta",
         "gamma",
+        "betabinomial",
     ]
     @test caps.family[caps.ci_x_wald] == x_ci_routed
     @test caps.family[caps.ci_x_profile] == x_ci_routed
@@ -185,10 +188,9 @@ using GLLVM
     @test occursin("no X", caps.notes[mixed_idx])
     @test occursin("CI", caps.notes[mixed_idx])
 
-    # betabinomial: one-part + X (grouped_cov, twin API B) and missing-response
-    # masks are wired; NO confint engine on this build (grouped Beta-precision
-    # Laplace) and NO scalar-mean postfit (residuals/simulate) extractor yet —
-    # pin both honestly rather than let bridge_capabilities() over-claim.
+    # betabinomial: one-part + X (grouped_cov, twin API B), missing-response
+    # masks, and Wald/profile/bootstrap CI (FD Hessian) are wired; still NO
+    # scalar-mean postfit (residuals/simulate) extractor — pin that honestly.
     bb_idx = findfirst(==("betabinomial"), caps.family)
     @test bb_idx !== nothing
     @test caps.fit_no_x[bb_idx]
@@ -196,20 +198,22 @@ using GLLVM
     @test !caps.predictor_informed_lv[bb_idx]
     @test caps.missing_response[bb_idx]
     @test caps.cbind_binomial[bb_idx]
-    @test !caps.ci_no_x_wald[bb_idx]
-    @test !caps.ci_no_x_profile[bb_idx]
-    @test !caps.ci_no_x_bootstrap[bb_idx]
-    @test !caps.ci_mask_wald[bb_idx]
-    @test !caps.ci_mask_profile[bb_idx]
-    @test !caps.ci_mask_bootstrap[bb_idx]
-    @test !caps.ci_x_wald[bb_idx]
-    @test !caps.ci_x_profile[bb_idx]
-    @test !caps.ci_x_bootstrap[bb_idx]
+    @test caps.ci_no_x_wald[bb_idx]
+    @test caps.ci_no_x_profile[bb_idx]
+    @test caps.ci_no_x_bootstrap[bb_idx]
+    @test caps.ci_mask_wald[bb_idx]
+    @test caps.ci_mask_profile[bb_idx]
+    @test caps.ci_mask_bootstrap[bb_idx]
+    @test caps.ci_x_wald[bb_idx]
+    @test caps.ci_x_profile[bb_idx]
+    @test caps.ci_x_bootstrap[bb_idx]
     @test caps.postfit_predict[bb_idx]
     @test !caps.postfit_residuals[bb_idx]
     @test !caps.postfit_simulate[bb_idx]
     @test caps.postfit_ordination[bb_idx]
-    @test occursin("NOT routed yet", caps.notes[bb_idx])
+    @test occursin("Wald/profile/bootstrap CI payloads are routed", caps.notes[bb_idx])
+    @test occursin("finite-difference Hessian", caps.notes[bb_idx])
+    @test occursin("residuals/simulate are not wired", caps.notes[bb_idx])
 
     grouped = Set(["negbinomial", "nb1", "beta", "gamma"])
     pertrait_ordinal = Set(["ordinal", "ordinal_probit"])

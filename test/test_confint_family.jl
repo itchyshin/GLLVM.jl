@@ -418,6 +418,80 @@ end
         end
     end
 
+    @testset "Beta-binomial grouped Wald (phi[g] on natural scale, N as data)" begin
+        Random.seed!(47)
+        p, K, n, Ntr, φ_true = 3, 1, 50, 8, 7.0
+        β = 0.25 .* randn(p) .- 0.15
+        Λ = 0.35 .* randn(p, K)
+        Y = Matrix{Int}(undef, p, n)
+        for s in 1:n
+            η = β .+ Λ * randn(K)
+            for t in 1:p
+                μ = clamp(inv(1 + exp(-η[t])), 1e-12, 1 - 1e-12)
+                pdraw = clamp(rand(Beta(μ * φ_true, (1 - μ) * φ_true)), 1e-12, 1 - 1e-12)
+                Y[t, s] = rand(Binomial(Ntr, pdraw))
+            end
+        end
+        N = fill(Ntr, p, n)
+        fit = fit_beta_binomial_gllvm_grouped(Y; K = K, N = N, group = collect(1:p),
+                                              iterations = 80)
+        @test fit isa BetaBinomialGroupedFit
+        ci = confint(fit, Y; method = :wald, N = N)
+        @test ci.method === :wald
+        @test length(ci.term) == p + GLLVM.rr_theta_len(p, K) + p
+        @test all(("phi[$g]" in ci.term) for g in 1:p)
+        for g in 1:p
+            pidx = findfirst(==("phi[$g]"), ci.term)
+            @test pidx !== nothing
+            @test ci.estimate[pidx] ≈ fit.φ[g] atol = 1e-6
+        end
+        for i in eachindex(ci.term)
+            if isfinite(ci.lower[i]) && isfinite(ci.upper[i])
+                @test ci.lower[i] ≤ ci.estimate[i] ≤ ci.upper[i]
+            end
+        end
+        @test_throws ArgumentError confint(fit, Y; method = :nope, N = N)
+    end
+
+    @testset "Beta-binomial grouped_cov Wald (gamma + phi[g], N and X as data)" begin
+        Random.seed!(48)
+        p, K, n, q, Ntr, φ_true = 3, 1, 55, 1, 8, 8.0
+        β = 0.2 .* randn(p) .+ 0.1
+        γ = [0.35]
+        Λ = 0.3 .* randn(p, K)
+        X = randn(p, n, q)
+        O = GLLVM._build_offset(X, γ)
+        Y = Matrix{Int}(undef, p, n)
+        for s in 1:n
+            η = β .+ view(O, :, s) .+ Λ * randn(K)
+            for t in 1:p
+                μ = clamp(inv(1 + exp(-η[t])), 1e-12, 1 - 1e-12)
+                pdraw = clamp(rand(Beta(μ * φ_true, (1 - μ) * φ_true)), 1e-12, 1 - 1e-12)
+                Y[t, s] = rand(Binomial(Ntr, pdraw))
+            end
+        end
+        N = fill(Ntr, p, n)
+        fit = fit_beta_binomial_gllvm_grouped_cov(Y; X = X, K = K, N = N,
+                                                  group = collect(1:p), iterations = 80)
+        @test fit isa BetaBinomialGroupedCovFit
+        @test_throws ArgumentError confint(fit, Y; method = :wald, N = N)
+        ci = confint(fit, Y; method = :wald, N = N, X = X)
+        @test ci.method === :wald
+        @test "gamma[1]" in ci.term
+        @test all(("phi[$g]" in ci.term) for g in 1:p)
+        gidx = findfirst(==("gamma[1]"), ci.term)
+        @test ci.estimate[gidx] ≈ fit.γ[1] atol = 1e-6
+        for g in 1:p
+            pidx = findfirst(==("phi[$g]"), ci.term)
+            @test ci.estimate[pidx] ≈ fit.φ[g] atol = 1e-6
+        end
+        for i in eachindex(ci.term)
+            if isfinite(ci.lower[i]) && isfinite(ci.upper[i])
+                @test ci.lower[i] ≤ ci.estimate[i] ≤ ci.upper[i]
+            end
+        end
+    end
+
     @testset "Random row effect Wald + bootstrap (sigma_row + family dispersion)" begin
         Random.seed!(46)
         p, K, n, σ_true = 4, 1, 60, 0.6

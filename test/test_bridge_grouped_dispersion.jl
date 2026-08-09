@@ -77,6 +77,27 @@ using GLLVM
         end
     end
 
+    @testset "betabinomial grouped Wald (no-X, N as data)" begin
+        Y = Float64.([1 2 0 3 1 4 2 0 1 3 2 1
+                      2 1 3 0 2 1 4 2 3 1 0 2])
+        N = fill(6, size(Y))
+        p = size(Y, 1)
+        br = bridge_fit(; y = Y, family = "betabinomial", d = K, N = N)
+        @test br.dispersion_parameter == "phi"
+        @test br.dispersion_group_id == collect(1:p)
+        @test !(:ci_method in keys(br))
+        br_ci = bridge_fit(; y = Y, family = "betabinomial", d = K, N = N,
+                           options = Dict("ci_method" => "wald"))
+        @test br_ci.ci_method == "wald"
+        @test any(startswith(name, "phi[") for name in br_ci.ci_param_names)
+        @test length(br_ci.ci_param_names) == length(br_ci.ci_estimate)
+        for g in 1:p
+            j = findfirst(==("phi[$g]"), br_ci.ci_param_names)
+            @test j !== nothing
+            @test br_ci.ci_estimate[j] ≈ br_ci.dispersion_group[g]
+        end
+    end
+
     @testset "grouped-dispersion profile and bootstrap smoke" begin
         Y = [0.8 1.0 1.4 1.7 2.2 2.6 3.0 3.4 3.9 4.3
              4.2 3.7 3.2 2.8 2.4 2.0 1.6 1.3 1.1 0.9]

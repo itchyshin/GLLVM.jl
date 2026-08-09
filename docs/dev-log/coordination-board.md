@@ -4,7 +4,7 @@
 
 | Lane | Status | Branch / tip | Current handover / pointer | Owns |
 |---|---|---|---|---|
-| **Post-#192 capacity programme** | **S1 landing** | `parity/species-xb-binomial-20260808` from `origin/main` @ `d7f852df` (#195) | LOOP `lanes/post-bb-x-capacity-20260807/LOOP/` · after-task `docs/dev-log/after-task/2026-08-08-species-xb-binomial.md` | S1 Binomial species-XB Δ abs ≈1.322e-9. Next after PR1 merge: S2 BB grouped CI → S3 ZIP+X Identity docs-only. |
+| **Post-#192 capacity programme** | **S2 landing** | `feat/betabinomial-grouped-ci-20260808` from `origin/main` @ `6aa8e0cb` (#196) | LOOP `lanes/post-bb-x-capacity-20260807/LOOP/` · after-task `docs/dev-log/after-task/2026-08-09-betabinomial-grouped-ci.md` | S1 MERGED #196. S2 BB grouped(_cov) CI + guard lift. Next after PR2 merge: S3 ZIP+X Identity docs-only → STOP. |
 | **Post-#192 ultra-plan G0** | **MERGED** #194 | `main` @ `49056186` | ultra-plan `docs/dev-log/plans/2026-08-07-post-bb-x-capacity-programme.md` | Binding G0 + arc card. Closed. |
 | **Post-#192 board/handover hygiene** | **MERGED** #193 | `main` @ `2f07ad37` | handover `docs/dev-log/handover/2026-08-07-cursor-handover-post-bb-x.md` | Board/AGENTS truth + Cursor handover. Closed. |
 | **BetaBinomial+X engine Arc 1+2** | **MERGED** #192 | `main` @ `f56befc1` | after-task `docs/dev-log/after-task/2026-08-05-betabinomial-x-engine-arc12.md` | Engine + bridge/`@formula` + light RCall Δ abs ≈1.50e-8 (seed=49). Closed. |
@@ -33,23 +33,28 @@
 ## Current Rule
 
 - Rehydrate via **this Active-Lane-Split**, not a single orphaned START HERE bullet.
-- `START HERE (Cursor):` capacity programme S1 landing on
-  `parity/species-xb-binomial-20260808`. After PR1 merge-on-green → S2 BB
-  grouped CI (fresh branch from `origin/main`). Plan:
+- `START HERE (Cursor):` capacity programme S2 landing on
+  `feat/betabinomial-grouped-ci-20260808`. After PR2 merge-on-green → S3
+  ZIP+X Identity **docs-only** (fresh branch from `origin/main`). Plan:
   `docs/dev-log/plans/2026-08-07-post-bb-x-capacity-programme.md` (G0 LOCKED;
-  #194/#195 MERGED). Do **not** re-plan. Do **not** start ZIP engine.
+  #194/#196 MERGED). Do **not** re-plan. Do **not** start ZIP engine.
 - Rose fence: BetaBinomial+X engine+bridge+light (#192) ≠ full family parity ≠
-  ADEMP ≠ CI for BB grouped (S2 of this programme); Species-XB Poisson light ≠
-  full species-B surface; ZIP+X Identity ≠ ZIP engine; NB1+X live Δ ≠ full
-  family parity.
+  ADEMP; BB grouped CI ≠ ADEMP coverage ≠ analytic OH; Species-XB Binomial
+  light ≠ full species-B surface; ZIP+X Identity ≠ ZIP engine; NB1+X live Δ ≠
+  full family parity.
 - Bridge execution R→Julia only (JuliaCall); RCall = opt-in oracle.
 - Stage by name; never `git add -A`; no push without instruction.
 - Dropbox checkout remains PROTECTED.
 
 ## Status
 
-- 2026-08-08 — Capacity S1 Species-XB Binomial **live Δ proven**: abs
-  Δ ≈ `1.322e-9` @ rtol `1e-6` (seed=49, Bernoulli). Gaussian skipped.
+- 2026-08-09 — Capacity S2 BetaBinomial grouped(_cov) CI **local green**
+  (Wald/profile/bootstrap routed, FD Hessian; guard lifted). Focused
+  tallies: capabilities 130; grouped_dispersion 131; missing_mask 89;
+  confint_family 163; bridge_x 248. Next: PR2 merge-on-green → S3.
+- 2026-08-08 — Capacity S1 Species-XB Binomial **MERGED**
+  [#196](https://github.com/itchyshin/GLLVM.jl/pull/196) @ `6aa8e0cb`
+  (Δ abs ≈1.322e-9). Gaussian skipped.
 - 2026-08-07 — Capacity programme ultra-plan G0 **MERGED**
   [#194](https://github.com/itchyshin/GLLVM.jl/pull/194) @ `49056186`.
   Next: `/goal` via handover
