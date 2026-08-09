@@ -72,7 +72,7 @@ supports `LogitLink()` (default), `ProbitLink()`, and `CLogLogLink()`.
 | Beta-hurdle | ✅ available | logit × logit | two-part Laplace | precision `φ` | occurrence × positive Beta; `fit_beta_hurdle_gllvm` |
 | Hurdle-Poisson | ✅ available | logit × log | two-part Laplace | — | occurrence × zero-truncated Poisson; `fit_hurdle_poisson_gllvm` |
 | Hurdle-NB | ✅ available | logit × log | two-part Laplace | dispersion `r` | occurrence × zero-truncated NB2; `fit_hurdle_nb_gllvm` |
-| ZIP | ✅ available | logit × log | two-part Laplace | — | zero-inflated Poisson; `fit_zip_gllvm` |
+| ZIP | ✅ available | logit × log | two-part Laplace | — | zero-inflated Poisson; `fit_zip_gllvm` / shared site-X via `fit_zip_gllvm_cov` (separate `γz`/`γc`, `Λz=0`; Julia-forward) |
 | ZINB | ✅ available | logit × log | two-part Laplace | dispersion `r` | zero-inflated NB2; `fit_zinb_gllvm` |
 | ZIB | ✅ available | logit × logit | two-part Laplace | — | zero-inflated Binomial; `fit_zib_gllvm` |
 | Beta-binomial | ✅ available | logit / probit / cloglog | Laplace | precision `φ` (`a = μφ, b = (1−μ)φ`) | overdispersed binomial counts; `fit_beta_binomial_gllvm`; → Binomial as `φ → ∞` |
@@ -274,6 +274,7 @@ fit = fit_beta_hurdle_gllvm(Y;     K = 2)   # proportions; occurrence × positiv
 fit = fit_hurdle_poisson_gllvm(Y;  K = 2)   # counts; occurrence × zero-truncated Poisson
 fit = fit_hurdle_nb_gllvm(Y;       K = 2)   # counts; occurrence × zero-truncated NB2, r
 fit = fit_zip_gllvm(Y;             K = 2)   # counts; structural zero × Poisson
+fit = fit_zip_gllvm_cov(Y; X = X,  K = 2)   # ZIP + shared site-X (separate γz/γc; Λz=0)
 fit = fit_zinb_gllvm(Y;            K = 2)   # counts; structural zero × NB2, r
 fit = fit_zib_gllvm(Y;             K = 2, N = N)  # binomial counts; structural zero × Binomial(N, μ)
 fit = fit_ordered_beta_gllvm(Y;    K = 2)   # proportions with masses at 0 and 1

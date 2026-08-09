@@ -848,6 +848,99 @@ function fit_zip_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
                   Optim.converged(res), Optim.iterations(res))
 end
 
+"""
+    ZIPCovFit
+
+Result of [`fit_zip_gllvm_cov`](@ref): ZIP under shared site-X with separate
+structural-zero slopes `γz` and count slopes `γc` (Identity 2026-08-09;
+`Λ_z = 0`). Fields: `βz`, `γz`, `βc`, `γc`, `γ_fixed` (Bool mask of fixed-zero
+covariate columns applied to both parts), count loadings `Λc`, `loglik`,
+`converged`, `iterations`.
+"""
+struct ZIPCovFit
+    βz::Vector{Float64}
+    γz::Vector{Float64}
+    βc::Vector{Float64}
+    γc::Vector{Float64}
+    γ_fixed::Vector{Bool}
+    Λc::Matrix{Float64}
+    loglik::Float64
+    converged::Bool
+    iterations::Int
+end
+
+function Base.show(io::IO, f::ZIPCovFit)
+    p, K = size(f.Λc); q = length(f.γc)
+    print(io, "ZIPCovFit(p=", p, ", q=", q, ", K=", K,
+          any(f.γ_fixed) ? ", fixed γ=$(count(f.γ_fixed))" : "",
+          ", loglik=", round(f.loglik; sigdigits = 7),
+          f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+"""
+    fit_zip_gllvm_cov(Y; X, K, γ_fixed=nothing, …) -> ZIPCovFit
+
+Fit a zero-inflated Poisson GLLVM **with shared site covariates** under the
+ACCEPTED ZIP+X Identity (`docs/dev-log/decisions/2026-08-09-zip-x-identity.md`):
+
+- structural-zero logit: `η^z_{ts} = β^z_t + Σ_k X[t,s,k]·γ^z_k` (`Λ_z = 0`)
+- count log-mean: `η^c_{ts} = β^c_t + Σ_k X[t,s,k]·γ^c_k + (Λ_c z_s)_t`
+
+Packing is `[βz; γz; βc; γc; pack(Λc)]`. Offsets
+`Oz = _build_offset(X, γz)` / `Oc = _build_offset(X, γc)` feed the existing
+ZIP Laplace marginal. Finite-difference gradient; warm start from
+[`fit_zip_gllvm`](@ref)'s excess-zero / positive-count / SVD start with `γ=0`.
+
+`X` is `(p, n, q)`. `γ_fixed` optionally zeros selected covariate columns for
+**both** parts (same contract as [`fit_gllvm_cov`](@ref)). Twin light RCall Δ
+is out of scope (twin ZIP cut).
+"""
+function fit_zip_gllvm_cov(Y::AbstractMatrix{<:Real}; X::AbstractArray{<:Real, 3},
+        K::Integer, γ_fixed = nothing,
+        g_tol::Real = 1e-5, iterations::Integer = 500,
+        newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    p, n = size(Y)
+    size(X, 1) == p && size(X, 2) == n ||
+        throw(DimensionMismatch("X must be (p, n, q) = ($p, $n, q); got $(size(X))"))
+    q_full = size(X, 3)
+    γ_fixed_mask = _fixed_zero_mask(γ_fixed, q_full, "γ_fixed")
+    X_fit, _ = _slice_fixed_X(X, γ_fixed_mask)
+    q = size(X_fit, 3)
+    rr = rr_theta_len(p, K)
+    βz0, βc0, Λc0 = _zi_warmstart(Y, K)
+    θ0 = vcat(βz0, zeros(q), βc0, zeros(q), pack_lambda(Λc0))
+    function negll(θ)
+        βz = θ[1:p]
+        γz = θ[(p + 1):(p + q)]
+        βc = θ[(p + q + 1):(2p + q)]
+        γc = θ[(2p + q + 1):(2p + 2q)]
+        Λc = unpack_lambda(θ[(2p + 2q + 1):(2p + 2q + rr)], p, K)
+        Oz = _build_offset(X_fit, γz)
+        Oc = _build_offset(X_fit, γc)
+        v = try
+            -zip_marginal_loglik_laplace(Y, Λc, βz, βc;
+                                         offsetz = Oz, offsetc = Oc,
+                                         maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
+    res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
+                         autodiff = :finite)
+    θ̂ = Optim.minimizer(res)
+    βẑ = θ̂[1:p]
+    γz_free = θ̂[(p + 1):(p + q)]
+    βĉ = θ̂[(p + q + 1):(2p + q)]
+    γc_free = θ̂[(2p + q + 1):(2p + 2q)]
+    Λĉ = unpack_lambda(θ̂[(2p + 2q + 1):(2p + 2q + rr)], p, K)
+    γẑ = collect(Float64, _expand_fixed_zero(γz_free, γ_fixed_mask))
+    γĉ = collect(Float64, _expand_fixed_zero(γc_free, γ_fixed_mask))
+    return ZIPCovFit(βẑ, γẑ, βĉ, γĉ, collect(Bool, γ_fixed_mask), Λĉ,
+                     -Optim.minimum(res), Optim.converged(res), Optim.iterations(res))
+end
+
 # ---------------------------------------------------------------------------
 # Zero-inflated NB (ZINB) — structural zero × NB2 count with shared dispersion r.
 # ---------------------------------------------------------------------------

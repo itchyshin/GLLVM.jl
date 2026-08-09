@@ -44,6 +44,7 @@ using GLLVM
         "betabinomial",
         "ordinal",
         "ordinal_probit",
+        "zip",
         "mixed-family vector",
     ]
     @test caps.family[caps.fit_no_x] == caps.family
@@ -58,6 +59,7 @@ using GLLVM
         "betabinomial",
         "ordinal",
         "ordinal_probit",
+        "zip",
     ]
     @test caps.family[caps.predictor_informed_lv] == [
         "gaussian",
@@ -111,6 +113,7 @@ using GLLVM
         "beta",
         "gamma",
         "betabinomial",
+        "zip",
     ]
     @test caps.family[caps.ci_no_x_wald] == ci_routed
     @test caps.family[caps.ci_no_x_profile] == ci_routed
@@ -161,6 +164,7 @@ using GLLVM
         "nb1",
         "beta",
         "gamma",
+        "zip",
         "mixed-family vector",
     ]
     @test caps.family[caps.postfit_residuals] == scalar_mean_postfit
@@ -225,6 +229,16 @@ using GLLVM
             @test occursin("per-trait ordinal cutpoints", note)
             @test occursin("fixed-effect-X", note)
             @test occursin("CI routing is a follow-up", note)
+        elseif fam == "zip"
+            @test occursin("Julia-forward", note)
+            @test occursin("twin-asymmetric", note)
+            @test occursin("CI under X is a follow-up", note)
+            @test occursin("no twin light RCall Δ", note)
+            @test occursin("narrower than full R-user parity", note)
+            @test !caps.ci_x_wald[findfirst(==("zip"), caps.family)]
+            @test !caps.ci_x_profile[findfirst(==("zip"), caps.family)]
+            @test !caps.ci_x_bootstrap[findfirst(==("zip"), caps.family)]
+            @test caps.ci_no_x_wald[findfirst(==("zip"), caps.family)]
         else
             @test occursin("narrower than full R-user parity", note)
         end

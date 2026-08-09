@@ -91,7 +91,7 @@ Twin family names align with gllvmTMB / gllvm. Status = native Julia engine
 | delta_gamma | implemented |
 | delta_lognormal | implemented |
 | hurdle_poisson / hurdle_nbinom2 | implemented |
-| zip / zinb / zib | implemented |
+| zip / zinb / zib | implemented (ZIP+X via `fit_zip_gllvm_cov`; Julia-forward / twin-asymmetric — no twin light Δ) |
 | ordered_beta / beta_hurdle | implemented |
 | exponential (Gamma shape=1 path) | implemented |
 | com_poisson | planned |
@@ -172,5 +172,8 @@ Same twin surface, transport layer. Status = code + bridge/parity test exist;
 - BetaBinomial+X engine (bridge/`@formula`/`fit_beta_binomial_gllvm_grouped_cov`):
   `docs/dev-log/after-task/2026-08-05-betabinomial-x-engine-arc12.md` — light
   RCall cell live Δ abs ≈1.50e-8 @ rtol 1e-6 (seed=49; ≠ full family parity)
+- ZIP+X engine (bridge/`@formula`/`fit_zip_gllvm_cov`; Identity 2026-08-09):
+  `docs/dev-log/after-task/2026-08-09-zip-x-engine.md` — Julia identity/FD only;
+  **no** twin light Δ (gllvmTMB ZIP cut)
 - Public catch-up prose: `docs/src/gllvmtmb-parity.md` (Documenter legend ≠ this
   MC vocabulary)

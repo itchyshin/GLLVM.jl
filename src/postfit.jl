@@ -1706,6 +1706,8 @@ _loadings(fit::ZIPFit) = fit.Λc
 _loglik(fit::ZIPFit)   = fit.loglik
 _loadings(fit::ZINBFit) = fit.Λc
 _loglik(fit::ZINBFit)   = fit.loglik
+_loadings(fit::ZIPCovFit) = fit.Λc
+_loglik(fit::ZIPCovFit)   = fit.loglik
 
 function _nparams(fit::ZIPFit)
     p, K = size(fit.Λc)
@@ -1715,6 +1717,11 @@ function _nparams(fit::ZINBFit)
     p, K = size(fit.Λc)
     return 2p + (p * K - div(K * (K - 1), 2)) + 1     # βz + βc + Λc + r
 end
+function _nparams(fit::ZIPCovFit)
+    p, K = size(fit.Λc)
+    q_free = count(!, fit.γ_fixed)
+    return 2p + 2q_free + (p * K - div(K * (K - 1), 2))  # βz + γz + βc + γc + Λc
+end
 
 function getLV(fit::ZIPFit, Y::AbstractMatrix{<:Real}; rotate::Bool = true)
     p, n = size(Y); K = size(fit.Λc, 2)
@@ -1722,6 +1729,28 @@ function getLV(fit::ZIPFit, Y::AbstractMatrix{<:Real}; rotate::Bool = true)
     Z = Matrix{Float64}(undef, K, n)
     @inbounds for s in 1:n
         Z[:, s] = _twopart_mode(ZIPoisson(), view(Y, :, s), Λz, fit.Λc, fit.βz, fit.βc)
+    end
+    Zt = permutedims(Z)
+    return rotate ? Zt * _svd_rotation(fit.Λc) : Zt
+end
+
+"""
+    getLV(fit::ZIPCovFit, Y, X; rotate=true) -> n×K matrix
+
+Conditional latent modes under dual offsets `Oz = Xγz`, `Oc = Xγc` (`Λ_z = 0`).
+"""
+function getLV(fit::ZIPCovFit, Y::AbstractMatrix{<:Real}, X::AbstractArray{<:Real, 3};
+               rotate::Bool = true)
+    p, n = size(Y); K = size(fit.Λc, 2)
+    size(X, 1) == p && size(X, 2) == n ||
+        throw(DimensionMismatch("X must be (p, n, q); got $(size(X))"))
+    Oz = _build_offset(X, fit.γz)
+    Oc = _build_offset(X, fit.γc)
+    Λz = zeros(p, K)
+    Z = Matrix{Float64}(undef, K, n)
+    @inbounds for s in 1:n
+        Z[:, s] = _twopart_mode(ZIPoisson(), view(Y, :, s), Λz, fit.Λc, fit.βz, fit.βc;
+                                offsetz = view(Oz, :, s), offsetc = view(Oc, :, s))
     end
     Zt = permutedims(Z)
     return rotate ? Zt * _svd_rotation(fit.Λc) : Zt
