@@ -283,6 +283,36 @@ end
             @test d < 1e-8
         end
 
+        @testset "betabinomial Wald (grouped_cov)" begin
+            Random.seed!(526)
+            p, n, K, q, Ntr = 3, 70, 1, 1, 6
+            β = 0.2 .* randn(p); γ = [0.4]; Λ = 0.3 .* randn(p, K)
+            x1 = randn(n)
+            X = _bridge_x_design([x1], p)
+            O = GLLVM._build_offset(X, γ)
+            Z = randn(K, n)
+            η = β .+ O .+ Λ * Z
+            φ = 9.0
+            Nt = fill(Ntr, p, n)
+            Y = Matrix{Float64}(undef, p, n)
+            for t in 1:p, s in 1:n
+                μ = clamp(1 / (1 + exp(-clamp(η[t, s], -6, 6))), 1e-3, 1 - 1e-3)
+                a = μ * φ; b = (1 - μ) * φ
+                pr = clamp(rand(Distributions.Beta(a, b)), 1e-6, 1 - 1e-6)
+                Y[t, s] = float(rand(Distributions.Binomial(Nt[t, s], pr)))
+            end
+            oracle = GLLVM.fit_beta_binomial_gllvm_grouped_cov(Y; X = X, K = K, N = Nt,
+                                                               group = collect(1:p))
+            nat = GLLVM.confint(oracle, Y; method = :wald, X = X, N = Nt)
+            br = bridge_fit(; y = Y, family = "betabinomial", d = K, N = Nt, X = X,
+                            options = Dict("ci_method" => "wald"))
+            @test br.ci_method == "wald"
+            @test any(==("gamma[1]"), br.ci_param_names)
+            d = _bx_ci_max_absdiff(br.ci_param_names, br.ci_lower, br.ci_upper,
+                                   nat.term, nat.lower, nat.upper)
+            @test d < 1e-8
+        end
+
         # Gaussian-X uses the Gaussian CI engines, which have a distinct
         # signature from the GllvmCovFit non-Gaussian path.
         Random.seed!(707)
@@ -409,8 +439,7 @@ end
         @test brn.converged isa Bool
         @test length(brn.gamma) == 1
         @test length(brn.dispersion) == 3
-        # betabinomial: point fit under X converges; CI is fenced (no confint
-        # engine for the grouped Beta-precision Laplace on this build).
+        # betabinomial: point fit under X converges; CI is now routed (FD Hessian).
         Ybb = Float64.(rand(0:6, 3, 40))
         Xbb = randn(3, 40, 1)
         Nbb = fill(6, 3, 40)
@@ -419,9 +448,7 @@ end
         @test brbb.converged isa Bool
         @test length(brbb.gamma) == 1
         @test length(brbb.dispersion) == 3
-        @test_throws ArgumentError bridge_fit(; y = Ybb, family = "betabinomial", d = 1,
-                                              N = Nbb, X = Xbb,
-                                              options = Dict("ci_method" => "wald"))
+        @test !(:ci_method in keys(brbb))
         # mixed-family X still unsupported
         Ym = randn(2, 30)
         Xm = randn(2, 30, 1)

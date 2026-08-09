@@ -36,8 +36,10 @@ const _TwoPartFit = Union{DeltaLogNormalFit, DeltaGammaFit, HurdlePoissonFit,
                           HurdleNBFit, ZIPFit, ZINBFit, ZIBFit, BetaHurdleFit}
 
 # Everything the unified confint(fit, Y; method=…) entry accepts.
-const _GroupedDispersionFit = Union{NBGroupedFit, NB1GroupedFit, BetaGroupedFit, GammaGroupedFit}
-const _GroupedDispersionCovFit = Union{NBGroupedCovFit, NB1GroupedCovFit, BetaGroupedCovFit, GammaGroupedCovFit}
+const _GroupedDispersionFit = Union{NBGroupedFit, NB1GroupedFit, BetaGroupedFit, GammaGroupedFit,
+                                    BetaBinomialGroupedFit}
+const _GroupedDispersionCovFit = Union{NBGroupedCovFit, NB1GroupedCovFit, BetaGroupedCovFit, GammaGroupedCovFit,
+                                       BetaBinomialGroupedCovFit}
 
 const _CIFit = Union{_FamilyFit, _TwoPartFit, _GroupedDispersionFit, _GroupedDispersionCovFit,
                      OrdinalFit, GllvmCovFit, OrderedBetaFit, QuadraticFit, RowEffectFit}
@@ -641,6 +643,120 @@ function _family_ci(fit::BetaGroupedCovFit, Y::AbstractMatrix;
         fb = try
             fit_beta_gllvm_grouped_cov(Yb; X = X, K = K, group = group, link = link,
                                        mask = M, γ_fixed = fit.γ_fixed)
+        catch
+            return nothing
+        end
+        return vcat(fb.β, fb.γ[γ_free_idx], pack_lambda(fb.Λ), log.(fb.φ))
+    end
+    names = vcat(["beta[$t]" for t in 1:p], ["gamma[$k]" for k in γ_free_idx],
+                 _confint_lambda_term_names("Lambda", p, K),
+                 ["phi[$g]" for g in 1:G])
+    kinds = vcat(fill(:linear, p + q + rr), fill(:log, G))
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+end
+
+function _family_ci(fit::BetaBinomialGroupedFit, Y::AbstractMatrix;
+                    N::Union{Nothing, AbstractMatrix} = nothing,
+                    mask = nothing,
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K)
+    link = fit.link; group = collect(Int, fit.group); G = length(fit.φ)
+    Yi = round.(Int, Y)
+    Nm = N === nothing ? fill(1, p, n) : Matrix{Int}(N)
+    M = _ci_mask(mask, Y)
+    θ = vcat(fit.β, pack_lambda(fit.Λ), log.(fit.φ))
+    nll = function (θv)
+        β = θv[1:p]
+        Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+        φg = exp.(θv[(p + rr + 1):(p + rr + G)])
+        φvec = [φg[group[t]] for t in 1:p]
+        v = try
+            -betabinomial_grouped_marginal_loglik_laplace(Yi, Nm, Λ, β, φvec; link = link,
+                                                          mask = M,
+                                                          maxiter = newton_maxiter,
+                                                          tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    simulate = function (rng)
+        Yb = Matrix{Int}(undef, p, n)
+        @inbounds for s in 1:n
+            η = fit.β .+ fit.Λ * randn(rng, K)
+            for t in 1:p
+                μ = clamp(linkinv(link, _clamp_eta(η[t])), 1e-12, 1 - 1e-12)
+                φ = fit.φ[group[t]]
+                pdraw = clamp(rand(rng, Beta(μ * φ, (1 - μ) * φ)), 1e-12, 1 - 1e-12)
+                Yb[t, s] = rand(rng, Binomial(Nm[t, s], pdraw))
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try
+            fit_beta_binomial_gllvm_grouped(Yb; K = K, N = Nm, group = group,
+                                            link = link, mask = M)
+        catch
+            return nothing
+        end
+        return vcat(fb.β, pack_lambda(fb.Λ), log.(fb.φ))
+    end
+    names = _grouped_dispersion_names(p, K, "phi", G)
+    kinds = vcat(fill(:linear, p + rr), fill(:log, G))
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+end
+
+function _family_ci(fit::BetaBinomialGroupedCovFit, Y::AbstractMatrix;
+                    N::Union{Nothing, AbstractMatrix} = nothing,
+                    X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                    mask = nothing,
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    X === nothing && throw(ArgumentError(
+        "confint on a BetaBinomialGroupedCovFit needs the design `X`: confint(fit, Y; method=…, X=X)"))
+    p, K = size(fit.Λ); n = size(Y, 2); q_full = length(fit.γ); rr = rr_theta_len(p, K)
+    link = fit.link; group = collect(Int, fit.group); G = length(fit.φ)
+    Xfit, γ_free_idx = _slice_fixed_X(X, fit.γ_fixed)
+    q = length(γ_free_idx)
+    Yi = round.(Int, Y)
+    Nm = N === nothing ? fill(1, p, n) : Matrix{Int}(N)
+    M = _ci_mask(mask, Y)
+    γ_free = fit.γ[γ_free_idx]
+    θ = vcat(fit.β, γ_free, pack_lambda(fit.Λ), log.(fit.φ))
+    nll = function (θv)
+        β = θv[1:p]; γ = θv[(p + 1):(p + q)]
+        Λ = unpack_lambda(θv[(p + q + 1):(p + q + rr)], p, K)
+        φg = exp.(θv[(p + q + rr + 1):(p + q + rr + G)])
+        φvec = [φg[group[t]] for t in 1:p]
+        O = _build_offset(Xfit, γ)
+        v = try
+            -betabinomial_grouped_marginal_loglik_laplace(Yi, Nm, Λ, β, φvec; link = link,
+                                                          mask = M, offset = O,
+                                                          maxiter = newton_maxiter,
+                                                          tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    simulate = function (rng)
+        Yb = Matrix{Int}(undef, p, n)
+        O = _build_offset(X, fit.γ)
+        @inbounds for s in 1:n
+            η = fit.β .+ view(O, :, s) .+ fit.Λ * randn(rng, K)
+            for t in 1:p
+                μ = clamp(linkinv(link, _clamp_eta(η[t])), 1e-12, 1 - 1e-12)
+                φ = fit.φ[group[t]]
+                pdraw = clamp(rand(rng, Beta(μ * φ, (1 - μ) * φ)), 1e-12, 1 - 1e-12)
+                Yb[t, s] = rand(rng, Binomial(Nm[t, s], pdraw))
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try
+            fit_beta_binomial_gllvm_grouped_cov(Yb; X = X, K = K, N = Nm, group = group,
+                                                link = link, mask = M, γ_fixed = fit.γ_fixed)
         catch
             return nothing
         end
