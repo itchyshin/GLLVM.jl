@@ -1,5 +1,16 @@
 # Check Log
 
+## 2026-08-09 - ZIP+X engine Arc 0 (fit_zip_gllvm_cov)
+
+Lane `feat/zip-x-engine-20260809` from `origin/main` @ `6f9050e5` (#198).
+`ZIPCovFit` packs `[βz; γz; βc; γc; pack(Λc)]`, `Oz/Oc` via `_build_offset`,
+`Λz=0`. Focused: identity **28/28** (zero-X Δ≈1.14e-13; packed FD
+max|central−5pt|≈1.18e-8 ≤1e-6); capabilities **139/139**; bridge_x
+**265/265**. Full `Pkg.test()`: **5324 pass / 1 broken / 5325** (55m35s).
+Bridge admits one-part + X `zip`; CI under X fenced (Q1). No twin light Δ;
+no rtol widen. Rose: Julia ZIP+X engine ≠ twin parity ≠ ADEMP. After-task:
+`docs/dev-log/after-task/2026-08-09-zip-x-engine.md`.
+
 ## 2026-08-09 - ZIP+X Identity Arc 0 ACCEPTED (capacity S3, docs-only)
 
 Lane `docs/zip-x-identity-20260809` on tip `8112e533` (S2 PR #197). Decision

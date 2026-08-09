@@ -90,25 +90,23 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
-- **Capacity S3 ZIP+X Identity landing (2026-08-09).** Branch
-  `docs/zip-x-identity-20260809` on S2 tip `8112e533` (PR #197). Decision
-  ACCEPTED: `docs/dev-log/decisions/2026-08-09-zip-x-identity.md`
-  (separate `γ^z`/`γ^c`, `Λ_z=0`, twin-asymmetric). After-task:
-  `docs/dev-log/after-task/2026-08-09-zip-x-identity.md`. Programme **STOP**
-  before ZIP engine. Multi-lane pointer:
+- **ZIP+X engine Arc 0 ACTIVE (2026-08-09).** Branch
+  `feat/zip-x-engine-20260809` from post-merge `origin/main` @ `6f9050e5`
+  (#198). `fit_zip_gllvm_cov` / `ZIPCovFit` + identity/FD + bridge/`@formula`
+  (one-part + X). LOOP `lanes/zip-x-engine-20260809/LOOP/`. After-task:
+  `docs/dev-log/after-task/2026-08-09-zip-x-engine.md`. Rose: ≠ twin Δ ≠
+  ADEMP ≠ ZINB+X. Multi-lane pointer:
   `docs/dev-log/coordination-board.md`.
-- **Capacity S2 BetaBinomial grouped CI PR #197 (2026-08-09).** Branch
-  `feat/betabinomial-grouped-ci-20260808` from `origin/main` @ `6aa8e0cb`
-  (#196). `_family_ci` for BB grouped(_cov); bridge guard lifted. After-task:
+- **Capacity S3 ZIP+X Identity MERGED #198 (2026-08-09).** `main` @
+  `6f9050e5`. Decision ACCEPTED:
+  `docs/dev-log/decisions/2026-08-09-zip-x-identity.md`.
+- **Capacity S2 BetaBinomial grouped CI MERGED #197 (2026-08-09).** `main` @
+  `9c2b18d6`. After-task:
   `docs/dev-log/after-task/2026-08-09-betabinomial-grouped-ci.md`.
 - **Capacity S1 Species-XB Binomial MERGED #196 (2026-08-08).** `main` @
   `6aa8e0cb`. Live Δ abs ≈ **1.322e-9** (seed=49, rtol 1e-6). Gaussian
   skipped. After-task:
   `docs/dev-log/after-task/2026-08-08-species-xb-binomial.md`.
-- **Next Cursor lane — merge-on-green then STOP (2026-08-09).** Merge S2 #197
-  + S3 Identity PR when CI green; do **not** start ZIP engine. Plan:
-  `docs/dev-log/plans/2026-08-07-post-bb-x-capacity-programme.md`. Multi-lane
-  pointer: `docs/dev-log/coordination-board.md`.
 - **Post-#192 capacity programme ultra-plan MERGED #194 (2026-08-07).**
   `main` @ `49056186` — G0 LOCKED (Binomial required / Gaussian optional;
   ZIP+X Identity docs-only; packaging A; merge-on-green). Plan:

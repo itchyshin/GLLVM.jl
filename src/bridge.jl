@@ -143,10 +143,11 @@ function _bridge_family_key(family::AbstractString)
     key in ("betabinomial", "beta_binomial", "beta.binomial")       && return "betabinomial"
     key in ("ordinal", "ordered")                                   && return "ordinal"
     key in ("ordinal_probit", "ordered_probit")                     && return "ordinal_probit"
+    key in ("zip", "zipoisson", "zero_inflated_poisson", "zi_poisson") && return "zip"
     throw(ArgumentError(
         "bridge_fit: unsupported family \"$family\"; this engine build supports " *
         "gaussian, poisson, binomial, binomial_probit, binomial_cloglog, " *
-        "negbinomial (nbinom2), nb1, beta, gamma, betabinomial, ordinal, ordinal_probit"))
+        "negbinomial (nbinom2), nb1, beta, gamma, betabinomial, ordinal, ordinal_probit, zip"))
 end
 
 const _BRIDGE_ONEPART_FAMILIES = (
@@ -162,6 +163,7 @@ const _BRIDGE_ONEPART_FAMILIES = (
     "betabinomial",
     "ordinal",
     "ordinal_probit",
+    "zip",
 )
 
 const _BRIDGE_BINOMIAL_FAMILIES = ("binomial", "binomial_probit", "binomial_cloglog")
@@ -179,7 +181,10 @@ const _BRIDGE_XLV_FAMILIES = ("gaussian", "poisson", "negbinomial", "gamma", "be
 # poisson/binomial use shared-dispersion `fit_gllvm_cov`. NB1/beta-binomial use
 # grouped_cov (beta-binomial threads trial counts N; see fit_beta_binomial_gllvm_grouped_cov).
 const _BRIDGE_X_FAMILIES = ("poisson", "binomial", "negbinomial", "nb1", "beta", "gamma",
-                            "betabinomial", "ordinal", "ordinal_probit")
+                            "betabinomial", "ordinal", "ordinal_probit", "zip")
+# Families with no-X CI but no CI-under-X yet (Rung 2 / follow-up). Keep
+# `ci_no_x_*` honest while fencing `ci_x_*` in bridge_capabilities.
+const _BRIDGE_NO_CI_X_FAMILIES = ("zip",)
 
 # Map a bridge family key to the `Distributions` marker `fit_gllvm_cov` dispatches
 # on (the dispersion field is re-estimated, so the init values here are irrelevant).
@@ -490,6 +495,13 @@ function _bridge_ci_guard_pertrait_ordinal(key::AbstractString, ci_method::Abstr
         "cutpoint OrdinalFit directly as a Julia-side comparator."))
 end
 
+function _bridge_ci_guard_zip_x(ci_method::AbstractString)
+    ci_method == "none" && return nothing
+    throw(ArgumentError(
+        "bridge_fit: confidence intervals for ZIP+X (ZIPCovFit) are not routed " *
+        "yet (Rung 2 / not DoD); use ci_method=\"none\" or confint on no-X ZIPFit."))
+end
+
 function _bridge_dispersion_payload(group_values::AbstractVector,
                                     group_id::AbstractVector{<:Integer},
                                     parameter::AbstractString,
@@ -549,6 +561,9 @@ function bridge_capabilities()
     # beta-binomial (the success probability μ), so it uses every one-part family.
     postfit_families = Set(filter(f -> !(f in _BRIDGE_NO_SCALAR_POSTFIT_FAMILIES), onepart))
     predict_families = Set(onepart)
+    # Ordinal+X / ZIP+X point fits are wired; CI under X remains a follow-up for
+    # those fences (ZIP Rung 2 not DoD). Beta-binomial grouped(_cov) routes CI.
+    no_ci_x = Set(_BRIDGE_NO_CI_X_FAMILIES)
 
     return (
         family = family,
@@ -563,14 +578,11 @@ function bridge_capabilities()
         ci_mask_wald = vcat([f in mask_ci_families for f in onepart], [false]),
         ci_mask_profile = vcat([f in mask_ci_families for f in onepart], [false]),
         ci_mask_bootstrap = vcat([f in mask_ci_families for f in onepart], [false]),
-        # Ordinal+X point fits are wired; CI under X remains a follow-up
-        # (same fence as the no-X per-trait ordinal route). Beta-binomial
-        # grouped(_cov) now routes Wald/profile/bootstrap CI (FD Hessian).
-        ci_x_wald = vcat([f in x_families && !(f in no_ci_families)
+        ci_x_wald = vcat([f in x_families && !(f in no_ci_families) && !(f in no_ci_x)
                           for f in onepart], [false]),
-        ci_x_profile = vcat([f in x_families && !(f in no_ci_families)
+        ci_x_profile = vcat([f in x_families && !(f in no_ci_families) && !(f in no_ci_x)
                              for f in onepart], [false]),
-        ci_x_bootstrap = vcat([f in x_families && !(f in no_ci_families)
+        ci_x_bootstrap = vcat([f in x_families && !(f in no_ci_families) && !(f in no_ci_x)
                                for f in onepart], [false]),
         postfit_coef = vcat(fill(true, length(onepart)), [true]),
         postfit_fit_stats = vcat(fill(true, length(onepart)), [true]),
@@ -594,6 +606,8 @@ function bridge_capabilities()
                     "one-part reduced-rank bridge family; default no-X and complete-response fixed-effect-X routes use per-trait Beta-binomial precision (disp.group) with binomial-style cbind(success, failure) trial counts N; missing-response masks are wired for the no-X route; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed (finite-difference Hessian; no analytic OH); residuals/simulate are not wired (no scalar-mean postfit extractor yet); route support is narrower than full R-user parity" :
                 f in _BRIDGE_PERTRAIT_ORDINAL_FAMILIES ?
                     "one-part reduced-rank bridge family; default no-X and complete-response fixed-effect-X routes use per-trait ordinal cutpoints (τ₁=0 / K−2); CI routing is a follow-up" :
+                f == "zip" ?
+                    "two-part ZIP bridge family (Julia-forward / twin-asymmetric); no-X routes fit_zip_gllvm with Wald/profile/bootstrap CI; complete-response fixed-effect-X routes fit_zip_gllvm_cov (separate γz/γc, Λz=0); CI under X is a follow-up; no twin light RCall Δ (twin ZIP cut); route support is narrower than full R-user parity" :
                 f == "poisson" ?
                     "one-part reduced-rank bridge family; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; predictor-informed latent-score X_lv is wired for complete-response point fits; X_lv Wald B_lv CI payloads are routed; profile/bootstrap X_lv CIs remain follow-ups; route support is narrower than full R-user parity" :
                 f == "binomial" ?
@@ -1119,6 +1133,25 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                             n_categories = Vector{Int}(fit.C),
                             cutpoint_mode = "per_trait",
                             cutpoint_link = _bridge_link_name(fit.link)))
+    elseif key == "zip"
+        Yi = round.(Int, Yf)
+        M === nothing || throw(ArgumentError(
+            "bridge_fit: missing-response masks are not wired for family=\"zip\" yet"))
+        fit = fit_zip_gllvm(Yi; K = K)
+        scores = _bridge_scores(() -> getLV(fit, Yi; rotate = true))
+        ci = ci_method == "none" ? nothing :
+             _bridge_compute_ci_ng(fit, Float64.(Yi), nothing, ci_method, ci_level,
+                                   ci_nboot, ci_seed; mask = nothing)
+        base = _bridge_assemble_ng(fit, "zip", "zip_rr", traits, units, p, K, Yi, nothing;
+            alpha = fit.βc, dispersion = fill(NaN, p), df = _nparams(fit),
+            scores = scores, ci = ci, mask = nothing)
+        return merge(base, (beta_zero = collect(Float64, fit.βz),
+                            note = isempty(base.note) ?
+                                "ZIP no-X (Julia-forward): structural-zero logits beta_zero, " *
+                                "count intercepts alpha=beta_c, Λz=0; no twin light Δ." :
+                                string(base.note, " ZIP no-X (Julia-forward): structural-zero " *
+                                       "logits beta_zero, count intercepts alpha=beta_c, Λz=0; " *
+                                       "no twin light Δ.")))
     end
     throw(ArgumentError("bridge_fit: unhandled family key \"$key\""))  # unreachable
 end
@@ -1208,6 +1241,11 @@ function _bridge_fit_onepart_cov(Yf::AbstractMatrix{Float64}, key::AbstractStrin
                                              γ_fixed = coef_fixed)
         return _bridge_assemble_ordinal_cov(fit, key, traits, units, Yi, Xarr,
                                             coef_fixed)
+    elseif key == "zip"
+        Yi = round.(Int, Ydata)
+        _bridge_ci_guard_zip_x(ci_method)
+        fit = fit_zip_gllvm_cov(Yi; X = Xarr, K = K, γ_fixed = coef_fixed)
+        return _bridge_assemble_zip_cov(fit, traits, units, Yi, Xarr, coef_fixed)
     end
 
     marker = _bridge_cov_marker(key)
@@ -1310,6 +1348,35 @@ function _bridge_assemble_grouped_cov(fit::Union{NBGroupedCovFit, NB1GroupedCovF
             "fit_gllvm_cov. Sigma/correlation use Lambda*Lambda' (communality 1).",
         ci = ci)
     return merge(base, (beta_cov = β, gamma = γ, gamma_status = _fixed_status(coef_fixed)))
+end
+
+# Assemble ZIP+X under Identity: separate γz/γc, Λz=0. No CI payload (Rung 2).
+function _bridge_assemble_zip_cov(fit::ZIPCovFit, traits, units, Ydata, Xarr, coef_fixed)
+    p = size(fit.Λc, 1)
+    βc = collect(Float64, fit.βc)
+    βz = collect(Float64, fit.βz)
+    γz = collect(Float64, fit.γz)
+    γc = collect(Float64, fit.γc)
+    L = Matrix{Float64}(getLoadings(fit; rotate = true))
+    scores = _bridge_scores(() -> getLV(fit, Ydata, Xarr; rotate = true))
+    Λr = L
+    Σ = Λr * Λr'; Σ = (Σ + Σ') ./ 2
+    corr = _bridge_corr_from_sigma(Σ)
+    comm = ones(Float64, p)
+    df = _nparams(fit)
+    base = _bridge_assemble(fit, "zip", "zip_x_rr", traits, units;
+        alpha = βc, dispersion = fill(NaN, p), sigma_eps = NaN,
+        link = fill("log", p), Sigma = Σ, corr = corr,
+        comm = comm, scores = scores, df = df, loglik = fit.loglik,
+        converged = fit.converged, iterations = fit.iterations,
+        loadings = L, note =
+            "fixed-effect covariate ZIP fit (Julia-forward / twin-asymmetric): " *
+            "ηz = βz + X*γz (Λz=0), ηc = βc + X*γc + Λc*z; separate γz/γc. " *
+            "CI under X is a follow-up. No twin light RCall Δ (twin ZIP cut). " *
+            "Sigma/correlation use Lambda*Lambda' (communality 1).",
+        ci = nothing)
+    return merge(base, (beta_cov = βc, beta_zero = βz, gamma = γc, gamma_z = γz,
+                        gamma_c = γc, gamma_status = _fixed_status(coef_fixed)))
 end
 
 # Assemble the flat bridge contract for per-trait ordinal cutpoints + shared-X

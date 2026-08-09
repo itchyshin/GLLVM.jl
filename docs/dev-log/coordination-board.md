@@ -4,7 +4,8 @@
 
 | Lane | Status | Branch / tip | Current handover / pointer | Owns |
 |---|---|---|---|---|
-| **Post-#192 capacity programme** | **S3 landing → STOP** | `docs/zip-x-identity-20260809` (on S2 tip `8112e533` / PR #197) | LOOP `lanes/post-bb-x-capacity-20260807/LOOP/` · decision `docs/dev-log/decisions/2026-08-09-zip-x-identity.md` · after-task `docs/dev-log/after-task/2026-08-09-zip-x-identity.md` | S1 #196 MERGED. S2 PR #197. S3 ZIP+X Identity ACCEPTED (docs-only). **STOP** before ZIP engine. |
+| **ZIP+X engine Arc 0** | **STOP (DoD landed; uncommitted)** | `feat/zip-x-engine-20260809` wt @ base `6f9050e5` | LOOP `lanes/zip-x-engine-20260809/LOOP/` · after-task `docs/dev-log/after-task/2026-08-09-zip-x-engine.md` | Engine + identity/FD + bridge/`@formula` green (`Pkg.test` 5324/1 broken). Awaiting commit/PR ask. **≠ twin Δ ≠ ZINB+X ≠ ADEMP**. |
+| **Post-#192 capacity programme** | **CLOSED** (#197+#198 MERGED) | `main` @ `6f9050e5` | LOOP `lanes/post-bb-x-capacity-20260807/LOOP/` · decision `docs/dev-log/decisions/2026-08-09-zip-x-identity.md` | S1 #196 · S2 #197 · S3 #198 Identity. Closed before ZIP engine; engine is the lane above. |
 | **Post-#192 ultra-plan G0** | **MERGED** #194 | `main` @ `49056186` | ultra-plan `docs/dev-log/plans/2026-08-07-post-bb-x-capacity-programme.md` | Binding G0 + arc card. Closed. |
 | **Post-#192 board/handover hygiene** | **MERGED** #193 | `main` @ `2f07ad37` | handover `docs/dev-log/handover/2026-08-07-cursor-handover-post-bb-x.md` | Board/AGENTS truth + Cursor handover. Closed. |
 | **BetaBinomial+X engine Arc 1+2** | **MERGED** #192 | `main` @ `f56befc1` | after-task `docs/dev-log/after-task/2026-08-05-betabinomial-x-engine-arc12.md` | Engine + bridge/`@formula` + light RCall Δ abs ≈1.50e-8 (seed=49). Closed. |
@@ -33,24 +34,28 @@
 ## Current Rule
 
 - Rehydrate via **this Active-Lane-Split**, not a single orphaned START HERE bullet.
-- `START HERE (Cursor):` capacity programme **closing** — merge S2 PR #197 and
-  S3 Identity PR on green, then **STOP**. Next-family ZIP engine only via fresh
-  `/arc-creation` after re-checking twin ZIP status. Plan:
-  `docs/dev-log/plans/2026-08-07-post-bb-x-capacity-programme.md` (G0 LOCKED;
-  #194/#196 MERGED; S2=#197). Do **not** re-plan. Do **not** start ZIP engine.
-- Rose fence: BetaBinomial+X engine+bridge+light (#192) ≠ full family parity ≠
-  ADEMP; BB grouped CI ≠ ADEMP coverage ≠ analytic OH; Species-XB Binomial
-  light ≠ full species-B surface; ZIP+X Identity ≠ ZIP engine ≠ twin Δ;
-  NB1+X live Δ ≠ full family parity.
+- `START HERE (Cursor):` **ZIP+X engine Arc 0** on
+  `feat/zip-x-engine-20260809` (fresh wt from `origin/main` @ `6f9050e5` after
+  #197+#198 MERGED). LOOP `lanes/zip-x-engine-20260809/LOOP/`. Ship
+  `fit_zip_gllvm_cov` / `ZIPCovFit` + identity/FD≤1e-6 + bridge/`@formula`
+  (one-part + X). Do **not** invent twin light Δ (ZIP still cut in gllvmTMB).
+- Rose fence: ZIP+X Julia engine ≠ twin parity ≠ ADEMP ≠ ZINB+X ≠ Phylo #127;
+  ZIP+X Identity ≠ free `Λ_z`; BB/NB1/Ordinal+X precedents ≠ light RCall for ZIP.
 - Bridge execution R→Julia only (JuliaCall); RCall = opt-in oracle.
 - Stage by name; never `git add -A`; no push without instruction.
 - Dropbox checkout remains PROTECTED.
 
 ## Status
 
+- 2026-08-09 — ZIP+X engine Arc 0 **ACTIVE** on `feat/zip-x-engine-20260809`
+  (base `6f9050e5` = #198). Dual-γ packing + bridge admit; no twin Δ.
+- 2026-08-09 — Capacity S3 ZIP+X Identity **MERGED**
+  [#198](https://github.com/itchyshin/GLLVM.jl/pull/198) @ `6f9050e5`.
+- 2026-08-09 — Capacity S2 BetaBinomial grouped CI **MERGED**
+  [#197](https://github.com/itchyshin/GLLVM.jl/pull/197) @ `9c2b18d6`.
 - 2026-08-09 — Capacity S3 ZIP+X Identity **ACCEPTED** (docs-only): decision
   `2026-08-09-zip-x-identity.md` (separate `γ^z`/`γ^c`, `Λ_z=0`, twin-
-  asymmetric). Programme → **STOP** before ZIP engine.
+  asymmetric). Programme → **STOP** before ZIP engine (engine lane opened after merges).
 - 2026-08-09 — Capacity S2 BetaBinomial grouped(_cov) CI **PR #197**
   (Wald/profile/bootstrap routed, FD Hessian; guard lifted). Focused
   tallies: capabilities 130; grouped_dispersion 131; missing_mask 89;
