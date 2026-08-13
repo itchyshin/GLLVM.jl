@@ -4,7 +4,8 @@
 
 | Lane | Status | Branch / tip | Current handover / pointer | Owns |
 |---|---|---|---|---|
-| **ZIP+X engine Arc 0** | **STOP (DoD landed; uncommitted)** | `feat/zip-x-engine-20260809` wt @ base `6f9050e5` | LOOP `lanes/zip-x-engine-20260809/LOOP/` · after-task `docs/dev-log/after-task/2026-08-09-zip-x-engine.md` | Engine + identity/FD + bridge/`@formula` green (`Pkg.test` 5324/1 broken). Awaiting commit/PR ask. **≠ twin Δ ≠ ZINB+X ≠ ADEMP**. |
+| **ZIP+X confint under X** | **STOP (DoD; PR pending)** | `feat/zip-x-confint-20260813` wt @ base `5d570b11` (#200) | after-task `docs/dev-log/after-task/2026-08-13-zip-x-confint.md` | `confint(ZIPCovFit)` + bridge CI lift; `Pkg.test` 5390/1 broken. **≠ twin Δ ≠ ZINB+X ≠ ADEMP**. |
+| **ZIP+X engine Arc 0** | **MERGED** #200 | `main` @ `5d570b11` | after-task `docs/dev-log/after-task/2026-08-09-zip-x-engine.md` | Engine + identity/FD + bridge/`@formula`. Closed. |
 | **Post-#192 capacity programme** | **CLOSED** (#197+#198 MERGED) | `main` @ `6f9050e5` | LOOP `lanes/post-bb-x-capacity-20260807/LOOP/` · decision `docs/dev-log/decisions/2026-08-09-zip-x-identity.md` | S1 #196 · S2 #197 · S3 #198 Identity. Closed before ZIP engine; engine is the lane above. |
 | **Post-#192 ultra-plan G0** | **MERGED** #194 | `main` @ `49056186` | ultra-plan `docs/dev-log/plans/2026-08-07-post-bb-x-capacity-programme.md` | Binding G0 + arc card. Closed. |
 | **Post-#192 board/handover hygiene** | **MERGED** #193 | `main` @ `2f07ad37` | handover `docs/dev-log/handover/2026-08-07-cursor-handover-post-bb-x.md` | Board/AGENTS truth + Cursor handover. Closed. |
@@ -34,12 +35,11 @@
 ## Current Rule
 
 - Rehydrate via **this Active-Lane-Split**, not a single orphaned START HERE bullet.
-- `START HERE (Cursor):` **ZIP+X engine Arc 0** on
-  `feat/zip-x-engine-20260809` (fresh wt from `origin/main` @ `6f9050e5` after
-  #197+#198 MERGED). LOOP `lanes/zip-x-engine-20260809/LOOP/`. Ship
-  `fit_zip_gllvm_cov` / `ZIPCovFit` + identity/FD≤1e-6 + bridge/`@formula`
-  (one-part + X). Do **not** invent twin light Δ (ZIP still cut in gllvmTMB).
-- Rose fence: ZIP+X Julia engine ≠ twin parity ≠ ADEMP ≠ ZINB+X ≠ Phylo #127;
+- `START HERE (Cursor):` **ZIP+X confint under X** on
+  `feat/zip-x-confint-20260813` (fresh wt from `origin/main` @ `5d570b11` =
+  #200). Ship `confint(ZIPCovFit)` + bridge CI lift. Do **not** invent twin
+  light Δ (ZIP still cut in gllvmTMB).
+- Rose fence: Julia ZIP+X CI ≠ twin parity ≠ ADEMP ≠ ZINB+X ≠ Phylo #127;
   ZIP+X Identity ≠ free `Λ_z`; BB/NB1/Ordinal+X precedents ≠ light RCall for ZIP.
 - Bridge execution R→Julia only (JuliaCall); RCall = opt-in oracle.
 - Stage by name; never `git add -A`; no push without instruction.
@@ -47,8 +47,11 @@
 
 ## Status
 
-- 2026-08-09 — ZIP+X engine Arc 0 **ACTIVE** on `feat/zip-x-engine-20260809`
-  (base `6f9050e5` = #198). Dual-γ packing + bridge admit; no twin Δ.
+- 2026-08-13 — ZIP+X confint under X **ACTIVE** on
+  `feat/zip-x-confint-20260813` (base `5d570b11` = #200). Dual-γ `_family_ci`
+  + bridge CI lift; no twin Δ.
+- 2026-08-09 — ZIP+X engine Arc 0 **MERGED**
+  [#200](https://github.com/itchyshin/GLLVM.jl/pull/200) @ `5d570b11`.
 - 2026-08-09 — Capacity S3 ZIP+X Identity **MERGED**
   [#198](https://github.com/itchyshin/GLLVM.jl/pull/198) @ `6f9050e5`.
 - 2026-08-09 — Capacity S2 BetaBinomial grouped CI **MERGED**

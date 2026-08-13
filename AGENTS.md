@@ -90,13 +90,15 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
-- **ZIP+X engine Arc 0 ACTIVE (2026-08-09).** Branch
-  `feat/zip-x-engine-20260809` from post-merge `origin/main` @ `6f9050e5`
-  (#198). `fit_zip_gllvm_cov` / `ZIPCovFit` + identity/FD + bridge/`@formula`
-  (one-part + X). LOOP `lanes/zip-x-engine-20260809/LOOP/`. After-task:
-  `docs/dev-log/after-task/2026-08-09-zip-x-engine.md`. Rose: ≠ twin Δ ≠
-  ADEMP ≠ ZINB+X. Multi-lane pointer:
+- **ZIP+X confint under X ACTIVE (2026-08-13).** Branch
+  `feat/zip-x-confint-20260813` from `origin/main` @ `5d570b11` (#200).
+  `confint(ZIPCovFit)` + bridge CI lift (FD Hessian). After-task:
+  `docs/dev-log/after-task/2026-08-13-zip-x-confint.md`. Rose: Julia CI
+  claim only ≠ twin Δ ≠ ADEMP ≠ ZINB+X. Multi-lane pointer:
   `docs/dev-log/coordination-board.md`.
+- **ZIP+X engine Arc 0 MERGED #200 (2026-08-09).** `main` @ `5d570b11`.
+  `fit_zip_gllvm_cov` / `ZIPCovFit` + identity/FD + bridge/`@formula`.
+  After-task: `docs/dev-log/after-task/2026-08-09-zip-x-engine.md`.
 - **Capacity S3 ZIP+X Identity MERGED #198 (2026-08-09).** `main` @
   `6f9050e5`. Decision ACCEPTED:
   `docs/dev-log/decisions/2026-08-09-zip-x-identity.md`.

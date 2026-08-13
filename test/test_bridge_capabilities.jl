@@ -141,6 +141,7 @@ using GLLVM
         "beta",
         "gamma",
         "betabinomial",
+        "zip",
     ]
     @test caps.family[caps.ci_x_wald] == x_ci_routed
     @test caps.family[caps.ci_x_profile] == x_ci_routed
@@ -232,13 +233,15 @@ using GLLVM
         elseif fam == "zip"
             @test occursin("Julia-forward", note)
             @test occursin("twin-asymmetric", note)
-            @test occursin("CI under X is a follow-up", note)
+            @test occursin("Wald/profile/bootstrap CI under X", note)
+            @test occursin("finite-difference Hessian", note)
             @test occursin("no twin light RCall Δ", note)
             @test occursin("narrower than full R-user parity", note)
-            @test !caps.ci_x_wald[findfirst(==("zip"), caps.family)]
-            @test !caps.ci_x_profile[findfirst(==("zip"), caps.family)]
-            @test !caps.ci_x_bootstrap[findfirst(==("zip"), caps.family)]
-            @test caps.ci_no_x_wald[findfirst(==("zip"), caps.family)]
+            zip_idx = findfirst(==("zip"), caps.family)
+            @test caps.ci_x_wald[zip_idx]
+            @test caps.ci_x_profile[zip_idx]
+            @test caps.ci_x_bootstrap[zip_idx]
+            @test caps.ci_no_x_wald[zip_idx]
         else
             @test occursin("narrower than full R-user parity", note)
         end

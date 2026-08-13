@@ -1,5 +1,16 @@
 # Check Log
 
+## 2026-08-13 - ZIP+X confint under X (ZIPCovFit)
+
+Lane `feat/zip-x-confint-20260813` from `origin/main` @ `5d570b11` (#200).
+`_family_ci(::ZIPCovFit)` packs `[βz; γz_free; βc; γc_free; pack(Λc)]` with
+dual `Oz`/`Oc`; lifted `_bridge_ci_guard_zip_x` / emptied
+`_BRIDGE_NO_CI_X_FAMILIES`. Focused: capabilities **140/140**; confint_family
+**199/199**; bridge_x **294/294** (zip Wald bridge↔native ≤ 1e-8). Full
+`Pkg.test()`: **5390 pass / 1 broken / 5391** (53m35.8s). No rtol widen. No
+twin light Δ. Rose: Julia ZIP+X CI ≠ twin parity ≠ ADEMP. After-task:
+`docs/dev-log/after-task/2026-08-13-zip-x-confint.md`.
+
 ## 2026-08-09 - ZIP+X engine Arc 0 (fit_zip_gllvm_cov)
 
 Lane `feat/zip-x-engine-20260809` from `origin/main` @ `6f9050e5` (#198).
