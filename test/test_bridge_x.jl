@@ -346,6 +346,34 @@ end
             @test d < 1e-8
         end
 
+        @testset "zip Wald (ZIPCovFit dual-γ)" begin
+            Random.seed!(527)
+            p, n, K, q = 3, 60, 1, 1
+            βz = 0.25 .* randn(p) .- 0.6
+            γz = [0.25]; βc = 0.2 .* randn(p) .+ 0.5; γc = [0.35]
+            Λc = 0.25 .* randn(p, K)
+            X = _bridge_x_design([randn(n)], p)
+            Oz = GLLVM._build_offset(X, γz); Oc = GLLVM._build_offset(X, γc)
+            Z = randn(K, n)
+            Y = Matrix{Float64}(undef, p, n)
+            for t in 1:p, s in 1:n
+                π = 1 / (1 + exp(-(βz[t] + Oz[t, s])))
+                μ = exp(clamp(βc[t] + Oc[t, s] + (Λc * Z)[t, s], -4, 4))
+                Y[t, s] = rand() < π ? 0.0 : float(rand(Poisson(μ)))
+            end
+            Yi = round.(Int, Y)
+            oracle = GLLVM.fit_zip_gllvm_cov(Yi; X = X, K = K, iterations = 120)
+            nat = GLLVM.confint(oracle, Yi; method = :wald, X = X)
+            br = bridge_fit(; y = Y, family = "zip", d = K, X = X,
+                            options = Dict("ci_method" => "wald"))
+            @test br.ci_method == "wald"
+            @test any(==("gammaz[1]"), br.ci_param_names)
+            @test any(==("gammac[1]"), br.ci_param_names)
+            d = _bx_ci_max_absdiff(br.ci_param_names, br.ci_lower, br.ci_upper,
+                                   nat.term, nat.lower, nat.upper)
+            @test d < 1e-8
+        end
+
         # Gaussian-X uses the Gaussian CI engines, which have a distinct
         # signature from the GllvmCovFit non-Gaussian path.
         Random.seed!(707)
@@ -464,16 +492,19 @@ end
         Xo = randn(3, 40, 1)
         @test_throws ArgumentError bridge_fit(; y = Yo, family = "ordinal", d = 1, X = Xo,
                                               options = Dict("ci_method" => "wald"))
-        # zip+X point fit wired; CI under X fenced (Rung 2 not DoD)
+        # zip+X point fit + CI under X (dual-γ ZIPCovFit; FD Hessian)
         Yz = Float64.(rand(0:4, 3, 40))
         Xz = randn(3, 40, 1)
-        @test_throws ArgumentError bridge_fit(; y = Yz, family = "zip", d = 1, X = Xz,
-                                              options = Dict("ci_method" => "wald"))
         brz = bridge_fit(; y = Yz, family = "zip", d = 1, X = Xz,
                          options = Dict("ci_method" => "none"))
         @test brz.converged isa Bool
         @test length(brz.gamma) == 1
         @test length(brz.gamma_z) == 1
+        brz_w = bridge_fit(; y = Yz, family = "zip", d = 1, X = Xz,
+                          options = Dict("ci_method" => "wald"))
+        @test brz_w.ci_method == "wald"
+        @test any(==("gammaz[1]"), brz_w.ci_param_names)
+        @test any(==("gammac[1]"), brz_w.ci_param_names)
         # nb1: twin API B under X (per-trait φ + shared γ)
         Yn = Float64.(rand(0:5, 3, 40))
         Xn = randn(3, 40, 1)
