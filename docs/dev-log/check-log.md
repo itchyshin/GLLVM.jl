@@ -1,5 +1,19 @@
 # Check Log
 
+## 2026-08-14 - ZINB+X engine Arc 0 (fit_zinb_gllvm_cov)
+
+Lane `feat/zinb-x-engine-20260814` from `origin/main` @ `daf95da6` (#202).
+S0 twin re-cite: gllvmTMB @ `9518d1bf` still cuts ZIP/ZINB
+(`known-limitations` L146–148; `family_to_id` has no ZIP/ZINB arm) — Identity
+not re-opened. `ZINBCovFit` packs `[βz; γz; βc; γc; pack(Λc); log r]`,
+`Oz/Oc` via `_build_offset`, `Λz=0`, **one shared scalar `r`**. Public
+`@formula` marker `ZINegBin()`. Focused: identity **42/42** (zero-X
+Δ≈3.41e-13, r shared; packed FD max|central−5pt|≈1.66e-8 ≤1e-6);
+capabilities **152/152**; bridge_x **314/314**. Full `Pkg.test()`:
+**5464 pass / 1 broken / 5465** (54m17.7s). No rtol widen. No twin
+light Δ. CI under X fenced (G0). Rose: Julia ZINB+X engine ≠ twin parity ≠
+ADEMP. After-task: `docs/dev-log/after-task/2026-08-14-zinb-x-engine.md`.
+
 ## 2026-08-13 - ZINB+X Identity Arc 0 ACCEPTED (docs-only)
 
 Lane `docs/zinb-x-identity-20260813` from `origin/main` @ `8abdd751` (#201).

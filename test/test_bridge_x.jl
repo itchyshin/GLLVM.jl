@@ -248,6 +248,42 @@ end
             @test occursin("twin", lowercase(br.note))
             @test !occursin("parity vs gllvmTMB", br.note)
         end
+
+        @testset "zinb (dual-γ ZINBCovFit; shared r; Julia-forward)" begin
+            Random.seed!(109)
+            p, n, K, q = 3, 55, 1, 1
+            r = 7.0
+            βz = 0.3 .* randn(p) .- 0.7
+            γz = [0.3]; βc = 0.2 .* randn(p) .+ 0.5; γc = [0.4]
+            Λc = 0.25 .* randn(p, K)
+            X = randn(p, n, q)
+            Oz = GLLVM._build_offset(X, γz); Oc = GLLVM._build_offset(X, γc)
+            Z = randn(K, n)
+            Y = Matrix{Float64}(undef, p, n)
+            for t in 1:p, s in 1:n
+                π = 1 / (1 + exp(-(βz[t] + Oz[t, s])))
+                μ = exp(clamp(βc[t] + Oc[t, s] + (Λc * Z)[t, s], -4, 4))
+                Y[t, s] = rand() < π ? 0.0 : float(rand(NegativeBinomial(r, r / (r + μ))))
+            end
+            Yi = round.(Int, Y)
+            oracle = GLLVM.fit_zinb_gllvm_cov(Yi; X = X, K = K, iterations = 120)
+            br = bridge_fit(; y = Y, family = "zinb", d = K, X = X)
+            @test br.family == "zinb"
+            @test br.model == "zinb_x_rr"
+            @test br.gamma ≈ oracle.γc atol = 1e-8
+            @test br.gamma_z ≈ oracle.γz atol = 1e-8
+            @test br.gamma_c ≈ oracle.γc atol = 1e-8
+            @test br.beta_zero ≈ oracle.βz atol = 1e-8
+            @test br.beta_cov ≈ oracle.βc atol = 1e-8
+            @test br.alpha ≈ oracle.βc atol = 1e-8
+            @test all(x -> isapprox(x, oracle.r; atol = 1e-8), br.dispersion)
+            @test br.loadings ≈ GLLVM.getLoadings(oracle; rotate = true) atol = 1e-8
+            @test isapprox(br.loglik, oracle.loglik; atol = 1e-8)
+            @test occursin("Julia-forward", br.note)
+            @test occursin("shared scalar r", br.note)
+            @test occursin("twin", lowercase(br.note))
+            @test !occursin("parity vs gllvmTMB", br.note)
+        end
     end
 
     # -- CI ROUTING: bridge-X CI payloads == native confint oracles -------------
@@ -505,6 +541,17 @@ end
         @test brz_w.ci_method == "wald"
         @test any(==("gammaz[1]"), brz_w.ci_param_names)
         @test any(==("gammac[1]"), brz_w.ci_param_names)
+        # zinb+X point fit; CI under X fenced (Arc 0 G0)
+        Yzn = Float64.(rand(0:4, 3, 40))
+        Xzn = randn(3, 40, 1)
+        brzn = bridge_fit(; y = Yzn, family = "zinb", d = 1, X = Xzn,
+                          options = Dict("ci_method" => "none"))
+        @test brzn.converged isa Bool
+        @test length(brzn.gamma) == 1
+        @test length(brzn.gamma_z) == 1
+        @test all(>(0), brzn.dispersion)
+        @test_throws ArgumentError bridge_fit(; y = Yzn, family = "zinb", d = 1, X = Xzn,
+                                              options = Dict("ci_method" => "wald"))
         # nb1: twin API B under X (per-trait φ + shared γ)
         Yn = Float64.(rand(0:5, 3, 40))
         Xn = randn(3, 40, 1)

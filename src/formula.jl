@@ -72,13 +72,16 @@ NB2/NB1/Beta/Gamma/beta-binomial (per-trait φ/α + shared site-X; twin API B; t
 beta-binomial route also threads a binomial-style `N` trial-count kwarg), to
 [`fit_ordinal_gllvm_pertrait_cov`](@ref) for `Ordinal()` (per-trait cutpoints +
 shared site-X), to [`fit_zip_gllvm_cov`](@ref) for `ZIPoisson()` (separate
-`γz`/`γc`, `Λz=0`; Julia-forward), and to [`fit_gllvm_cov`](@ref) for the other
-non-Gaussian families (shared dispersion + X). Returns that fitter's result
+`γz`/`γc`, `Λz=0`; Julia-forward), to [`fit_zinb_gllvm_cov`](@ref) for
+`ZINegBin()` (separate `γz`/`γc`, `Λz=0`, shared scalar `r`; Julia-forward),
+and to [`fit_gllvm_cov`](@ref) for the other non-Gaussian families (shared
+dispersion + X). Returns that fitter's result
 (`GllvmFit`, `NBGroupedCovFit` / `NB1GroupedCovFit` / `BetaGroupedCovFit` /
 `GammaGroupedCovFit` / `BetaBinomialGroupedCovFit` / `OrdinalPerTraitCovFit` /
-`ZIPCovFit`, or `GllvmCovFit` whose `γ[k]` matches the k-th RHS covariate). With
-no covariates it reduces to the intercept-only fit (`ZIPoisson()` →
-[`fit_zip_gllvm`](@ref)).
+`ZIPCovFit` / `ZINBCovFit`, or `GllvmCovFit` whose `γ[k]` matches the k-th RHS
+covariate). With no covariates it reduces to the intercept-only fit
+(`ZIPoisson()` → [`fit_zip_gllvm`](@ref); `ZINegBin()` →
+[`fit_zinb_gllvm`](@ref)).
 
 **v1 scope:** intercept + continuous main-effect covariates. Categorical terms,
 interactions (`a & b` / fourth-corner), function terms, and random effects
@@ -97,6 +100,7 @@ function gllvm(formula::FormulaTerm, Y::AbstractMatrix, data;
     if q == 0
         return family isa Normal ? fit_gaussian_gllvm(Y; K = K, kwargs...) :
                family isa ZIPoisson ? fit_zip_gllvm(Y; K = K, kwargs...) :
+               family isa ZINegBin ? fit_zinb_gllvm(Y; K = K, kwargs...) :
                                       fit_gllvm(Y; family = family, K = K, kwargs...)
     end
 
@@ -135,6 +139,8 @@ function gllvm(formula::FormulaTerm, Y::AbstractMatrix, data;
         return fit_ordinal_gllvm_pertrait_cov(Y; X = X, K = K, kwargs...)
     elseif family isa ZIPoisson
         return fit_zip_gllvm_cov(Y; X = X, K = K, kwargs...)
+    elseif family isa ZINegBin
+        return fit_zinb_gllvm_cov(Y; X = X, K = K, kwargs...)
     else
         return fit_gllvm_cov(Y; family = family, X = X, K = K, kwargs...)
     end
