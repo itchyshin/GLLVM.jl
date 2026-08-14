@@ -1,5 +1,17 @@
 # Check Log
 
+## 2026-08-13 - ZINB+X Identity Arc 0 ACCEPTED (docs-only)
+
+Lane `docs/zinb-x-identity-20260813` from `origin/main` @ `8abdd751` (#201).
+Decision `docs/dev-log/decisions/2026-08-13-zinb-x-identity.md`: shared
+site-X with separate `γ^z`/`γ^c`, `Λ_z=0`, **shared scalar `r`** (log-scale),
+Julia-forward / twin-asymmetric (gllvmTMB ZIP/ZINB still cut @ `9518d1bf`).
+Cites Julia no-X `fit_zinb_gllvm` + ZIP dual-`γ` reuse. Rejects NB2
+per-trait φ copy. Zero `src/` ZINB+X engine / bridge `zinb` / light cell.
+Board START HERE: ZIP+X confint **MERGED #201** (flipped stale “PR pending”);
+this Identity **STOP** before engine. Rose: ≠ engine ≠ twin Δ ≠ ADEMP.
+After-task: `docs/dev-log/after-task/2026-08-13-zinb-x-identity.md`.
+
 ## 2026-08-13 - ZIP+X confint under X (ZIPCovFit)
 
 Lane `feat/zip-x-confint-20260813` from `origin/main` @ `5d570b11` (#200).

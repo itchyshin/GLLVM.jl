@@ -90,12 +90,17 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
-- **ZIP+X confint under X ACTIVE (2026-08-13).** Branch
-  `feat/zip-x-confint-20260813` from `origin/main` @ `5d570b11` (#200).
+- **ZINB+X Identity Arc 0 ACCEPTED (2026-08-13, docs-only).** Branch
+  `docs/zinb-x-identity-20260813` from `origin/main` @ `8abdd751` (#201).
+  Decision: `docs/dev-log/decisions/2026-08-13-zinb-x-identity.md` —
+  shared site-X, separate `γ^z`/`γ^c`, `Λ_z=0`, **shared scalar `r`**,
+  Julia-forward / twin-asymmetric. **STOP** — no ZINB+X engine. After-task:
+  `docs/dev-log/after-task/2026-08-13-zinb-x-identity.md`. Multi-lane
+  pointer: `docs/dev-log/coordination-board.md`.
+- **ZIP+X confint under X MERGED #201 (2026-08-13).** `main` @ `8abdd751`.
   `confint(ZIPCovFit)` + bridge CI lift (FD Hessian). After-task:
   `docs/dev-log/after-task/2026-08-13-zip-x-confint.md`. Rose: Julia CI
-  claim only ≠ twin Δ ≠ ADEMP ≠ ZINB+X. Multi-lane pointer:
-  `docs/dev-log/coordination-board.md`.
+  claim only ≠ twin Δ ≠ ADEMP ≠ ZINB+X engine.
 - **ZIP+X engine Arc 0 MERGED #200 (2026-08-09).** `main` @ `5d570b11`.
   `fit_zip_gllvm_cov` / `ZIPCovFit` + identity/FD + bridge/`@formula`.
   After-task: `docs/dev-log/after-task/2026-08-09-zip-x-engine.md`.
