@@ -90,13 +90,16 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
-- **ZINB+X Identity Arc 0 ACCEPTED (2026-08-13, docs-only).** Branch
-  `docs/zinb-x-identity-20260813` from `origin/main` @ `8abdd751` (#201).
-  Decision: `docs/dev-log/decisions/2026-08-13-zinb-x-identity.md` —
-  shared site-X, separate `γ^z`/`γ^c`, `Λ_z=0`, **shared scalar `r`**,
-  Julia-forward / twin-asymmetric. **STOP** — no ZINB+X engine. After-task:
-  `docs/dev-log/after-task/2026-08-13-zinb-x-identity.md`. Multi-lane
-  pointer: `docs/dev-log/coordination-board.md`.
+- **ZINB+X engine Arc 0 (2026-08-14).** Branch `feat/zinb-x-engine-20260814`
+  from `origin/main` @ `daf95da6` (#202). `fit_zinb_gllvm_cov` /
+  `ZINBCovFit` packing `[βz; γz; βc; γc; pack(Λc); log r]`, `Λ_z=0`,
+  **shared scalar `r`**. Identity/FD green; bridge/`@formula` admit no-X
+  `zinb` + ZINB+X (`ZINegBin()`). CI under X deferred (G0). After-task:
+  `docs/dev-log/after-task/2026-08-14-zinb-x-engine.md`. Identity lock:
+  `docs/dev-log/decisions/2026-08-13-zinb-x-identity.md`.
+- **ZINB+X Identity Arc 0 ACCEPTED (2026-08-13, docs-only).** MERGED #202
+  @ `daf95da6`. Decision:
+  `docs/dev-log/decisions/2026-08-13-zinb-x-identity.md`.
 - **ZIP+X confint under X MERGED #201 (2026-08-13).** `main` @ `8abdd751`.
   `confint(ZIPCovFit)` + bridge CI lift (FD Hessian). After-task:
   `docs/dev-log/after-task/2026-08-13-zip-x-confint.md`. Rose: Julia CI

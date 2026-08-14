@@ -118,7 +118,8 @@ occurrence/zero part (`βz`) and a positive/count part (`βc`, with loadings `Λ
 ```julia
 # Zero-inflated (a structural-zero mixture)
 fzip  = fit_zip_gllvm(Y;  K = 2)              # zero-inflated Poisson
-fzinb = fit_zinb_gllvm(Y; K = 2)             # zero-inflated NB2 (dispersion r)
+fzinb = fit_zinb_gllvm(Y; K = 2)             # zero-inflated NB2 (shared r)
+# fzinbx = fit_zinb_gllvm_cov(Y; X = X, K = 2)  # ZINB + shared site-X (γz/γc; Λz=0)
 fzib  = fit_zib_gllvm(Y;  K = 2, N = 10)     # zero-inflated Binomial — N trials (Int)
 
 # Hurdle (Bernoulli occurrence × zero-truncated positive count)

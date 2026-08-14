@@ -144,10 +144,12 @@ function _bridge_family_key(family::AbstractString)
     key in ("ordinal", "ordered")                                   && return "ordinal"
     key in ("ordinal_probit", "ordered_probit")                     && return "ordinal_probit"
     key in ("zip", "zipoisson", "zero_inflated_poisson", "zi_poisson") && return "zip"
+    key in ("zinb", "zinegbin", "zero_inflated_negbin", "zi_negbin",
+            "zinegativebinomial", "zero_inflated_nbinom2") && return "zinb"
     throw(ArgumentError(
         "bridge_fit: unsupported family \"$family\"; this engine build supports " *
         "gaussian, poisson, binomial, binomial_probit, binomial_cloglog, " *
-        "negbinomial (nbinom2), nb1, beta, gamma, betabinomial, ordinal, ordinal_probit, zip"))
+        "negbinomial (nbinom2), nb1, beta, gamma, betabinomial, ordinal, ordinal_probit, zip, zinb"))
 end
 
 const _BRIDGE_ONEPART_FAMILIES = (
@@ -164,6 +166,7 @@ const _BRIDGE_ONEPART_FAMILIES = (
     "ordinal",
     "ordinal_probit",
     "zip",
+    "zinb",
 )
 
 const _BRIDGE_BINOMIAL_FAMILIES = ("binomial", "binomial_probit", "binomial_cloglog")
@@ -181,10 +184,10 @@ const _BRIDGE_XLV_FAMILIES = ("gaussian", "poisson", "negbinomial", "gamma", "be
 # poisson/binomial use shared-dispersion `fit_gllvm_cov`. NB1/beta-binomial use
 # grouped_cov (beta-binomial threads trial counts N; see fit_beta_binomial_gllvm_grouped_cov).
 const _BRIDGE_X_FAMILIES = ("poisson", "binomial", "negbinomial", "nb1", "beta", "gamma",
-                            "betabinomial", "ordinal", "ordinal_probit", "zip")
+                            "betabinomial", "ordinal", "ordinal_probit", "zip", "zinb")
 # Families with no-X CI but no CI-under-X yet. Keep `ci_no_x_*` honest while
-# fencing `ci_x_*` in bridge_capabilities. Empty after ZIP+X CI landing.
-const _BRIDGE_NO_CI_X_FAMILIES = ()
+# fencing `ci_x_*` in bridge_capabilities. ZINB+X Arc 0 G0: confint deferred.
+const _BRIDGE_NO_CI_X_FAMILIES = ("zinb",)
 
 # Map a bridge family key to the `Distributions` marker `fit_gllvm_cov` dispatches
 # on (the dispersion field is re-estimated, so the init values here are irrelevant).
@@ -495,6 +498,13 @@ function _bridge_ci_guard_pertrait_ordinal(key::AbstractString, ci_method::Abstr
         "cutpoint OrdinalFit directly as a Julia-side comparator."))
 end
 
+function _bridge_ci_guard_zinb_x(ci_method::AbstractString)
+    ci_method == "none" && return nothing
+    throw(ArgumentError(
+        "bridge_fit: CI under X is not routed for family=\"zinb\" yet " *
+        "(ZINB+X Arc 0: confint deferred); use ci_method=\"none\"."))
+end
+
 function _bridge_dispersion_payload(group_values::AbstractVector,
                                     group_id::AbstractVector{<:Integer},
                                     parameter::AbstractString,
@@ -601,6 +611,8 @@ function bridge_capabilities()
                     "one-part reduced-rank bridge family; default no-X and complete-response fixed-effect-X routes use per-trait ordinal cutpoints (τ₁=0 / K−2); CI routing is a follow-up" :
                 f == "zip" ?
                     "two-part ZIP bridge family (Julia-forward / twin-asymmetric); no-X routes fit_zip_gllvm with Wald/profile/bootstrap CI; complete-response fixed-effect-X routes fit_zip_gllvm_cov (separate γz/γc, Λz=0) with Wald/profile/bootstrap CI under X (finite-difference Hessian); no twin light RCall Δ (twin ZIP cut); route support is narrower than full R-user parity" :
+                f == "zinb" ?
+                    "two-part ZINB bridge family (Julia-forward / twin-asymmetric); no-X routes fit_zinb_gllvm with Wald/profile/bootstrap CI and one shared scalar r (log r); complete-response fixed-effect-X routes fit_zinb_gllvm_cov (separate γz/γc, Λz=0, shared scalar r); CI under X is a follow-up; no twin light RCall Δ (twin ZINB cut); route support is narrower than full R-user parity" :
                 f == "poisson" ?
                     "one-part reduced-rank bridge family; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; predictor-informed latent-score X_lv is wired for complete-response point fits; X_lv Wald B_lv CI payloads are routed; profile/bootstrap X_lv CIs remain follow-ups; route support is narrower than full R-user parity" :
                 f == "binomial" ?
@@ -1145,6 +1157,32 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                                 string(base.note, " ZIP no-X (Julia-forward): structural-zero " *
                                        "logits beta_zero, count intercepts alpha=beta_c, Λz=0; " *
                                        "no twin light Δ.")))
+    elseif key == "zinb"
+        Yi = round.(Int, Yf)
+        M === nothing || throw(ArgumentError(
+            "bridge_fit: missing-response masks are not wired for family=\"zinb\" yet"))
+        fit = fit_zinb_gllvm(Yi; K = K)
+        scores = _bridge_scores(() -> getLV(fit, Yi; rotate = true))
+        ci = ci_method == "none" ? nothing :
+             _bridge_compute_ci_ng(fit, Float64.(Yi), nothing, ci_method, ci_level,
+                                   ci_nboot, ci_seed; mask = nothing)
+        L = Matrix{Float64}(getLoadings(fit; rotate = true))
+        Σ = L * L'; Σ = (Σ + Σ') ./ 2
+        corr = _bridge_corr_from_sigma(Σ)
+        comm = ones(Float64, p)
+        base = _bridge_assemble(fit, "zinb", "zinb_rr", traits, units;
+            alpha = collect(Float64, fit.βc),
+            dispersion = fill(Float64(fit.r), p),
+            sigma_eps = NaN,
+            link = fill("log", p), Sigma = Σ, corr = corr,
+            comm = comm, scores = scores, df = _nparams(fit),
+            loglik = fit.loglik, converged = fit.converged,
+            iterations = fit.iterations, loadings = L,
+            note = "ZINB no-X (Julia-forward / twin-asymmetric): structural-zero " *
+                   "logits beta_zero, count intercepts alpha=beta_c, Λz=0, " *
+                   "shared scalar r; no twin light Δ.",
+            ci = ci)
+        return merge(base, (beta_zero = collect(Float64, fit.βz),))
     end
     throw(ArgumentError("bridge_fit: unhandled family key \"$key\""))  # unreachable
 end
@@ -1239,6 +1277,11 @@ function _bridge_fit_onepart_cov(Yf::AbstractMatrix{Float64}, key::AbstractStrin
         fit = fit_zip_gllvm_cov(Yi; X = Xarr, K = K, γ_fixed = coef_fixed)
         return _bridge_assemble_zip_cov(fit, traits, units, Yi, Xarr, coef_fixed,
                                         ci_method, ci_level, ci_nboot, ci_seed)
+    elseif key == "zinb"
+        Yi = round.(Int, Ydata)
+        _bridge_ci_guard_zinb_x(ci_method)
+        fit = fit_zinb_gllvm_cov(Yi; X = Xarr, K = K, γ_fixed = coef_fixed)
+        return _bridge_assemble_zinb_cov(fit, traits, units, Yi, Xarr, coef_fixed)
     end
 
     marker = _bridge_cov_marker(key)
@@ -1374,6 +1417,36 @@ function _bridge_assemble_zip_cov(fit::ZIPCovFit, traits, units, Ydata, Xarr, co
             "No twin light RCall Δ (twin ZIP cut). " *
             "Sigma/correlation use Lambda*Lambda' (communality 1).",
         ci = ci)
+    return merge(base, (beta_cov = βc, beta_zero = βz, gamma = γc, gamma_z = γz,
+                        gamma_c = γc, gamma_status = _fixed_status(coef_fixed)))
+end
+
+# Assemble ZINB+X under Identity: separate γz/γc, Λz=0, shared scalar r.
+# CI under X is fenced (Arc 0 G0).
+function _bridge_assemble_zinb_cov(fit::ZINBCovFit, traits, units, Ydata, Xarr, coef_fixed)
+    p = size(fit.Λc, 1)
+    βc = collect(Float64, fit.βc)
+    βz = collect(Float64, fit.βz)
+    γz = collect(Float64, fit.γz)
+    γc = collect(Float64, fit.γc)
+    L = Matrix{Float64}(getLoadings(fit; rotate = true))
+    scores = _bridge_scores(() -> getLV(fit, Ydata, Xarr; rotate = true))
+    Λr = L
+    Σ = Λr * Λr'; Σ = (Σ + Σ') ./ 2
+    corr = _bridge_corr_from_sigma(Σ)
+    comm = ones(Float64, p)
+    df = _nparams(fit)
+    base = _bridge_assemble(fit, "zinb", "zinb_x_rr", traits, units;
+        alpha = βc, dispersion = fill(Float64(fit.r), p), sigma_eps = NaN,
+        link = fill("log", p), Sigma = Σ, corr = corr,
+        comm = comm, scores = scores, df = df, loglik = fit.loglik,
+        converged = fit.converged, iterations = fit.iterations,
+        loadings = L, note =
+            "fixed-effect covariate ZINB fit (Julia-forward / twin-asymmetric): " *
+            "ηz = βz + X*γz (Λz=0), ηc = βc + X*γc + Λc*z; separate γz/γc; " *
+            "one shared scalar r (log r). CI under X is a follow-up. " *
+            "No twin light RCall Δ (twin ZINB cut). " *
+            "Sigma/correlation use Lambda*Lambda' (communality 1).")
     return merge(base, (beta_cov = βc, beta_zero = βz, gamma = γc, gamma_z = γz,
                         gamma_c = γc, gamma_status = _fixed_status(coef_fixed)))
 end

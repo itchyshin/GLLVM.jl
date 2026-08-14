@@ -45,6 +45,7 @@ using GLLVM
         "ordinal",
         "ordinal_probit",
         "zip",
+        "zinb",
         "mixed-family vector",
     ]
     @test caps.family[caps.fit_no_x] == caps.family
@@ -60,6 +61,7 @@ using GLLVM
         "ordinal",
         "ordinal_probit",
         "zip",
+        "zinb",
     ]
     @test caps.family[caps.predictor_informed_lv] == [
         "gaussian",
@@ -114,6 +116,7 @@ using GLLVM
         "gamma",
         "betabinomial",
         "zip",
+        "zinb",
     ]
     @test caps.family[caps.ci_no_x_wald] == ci_routed
     @test caps.family[caps.ci_no_x_profile] == ci_routed
@@ -166,6 +169,7 @@ using GLLVM
         "beta",
         "gamma",
         "zip",
+        "zinb",
         "mixed-family vector",
     ]
     @test caps.family[caps.postfit_residuals] == scalar_mean_postfit
@@ -242,6 +246,20 @@ using GLLVM
             @test caps.ci_x_profile[zip_idx]
             @test caps.ci_x_bootstrap[zip_idx]
             @test caps.ci_no_x_wald[zip_idx]
+        elseif fam == "zinb"
+            @test occursin("Julia-forward", note)
+            @test occursin("twin-asymmetric", note)
+            @test occursin("shared scalar r", note)
+            @test occursin("CI under X is a follow-up", note)
+            @test occursin("no twin light RCall Δ", note)
+            @test occursin("narrower than full R-user parity", note)
+            zinb_idx = findfirst(==("zinb"), caps.family)
+            @test !caps.ci_x_wald[zinb_idx]
+            @test !caps.ci_x_profile[zinb_idx]
+            @test !caps.ci_x_bootstrap[zinb_idx]
+            @test caps.ci_no_x_wald[zinb_idx]
+            @test caps.fixed_effect_X[zinb_idx]
+            @test caps.fit_no_x[zinb_idx]
         else
             @test occursin("narrower than full R-user parity", note)
         end
