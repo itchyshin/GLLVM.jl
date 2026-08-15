@@ -1,5 +1,13 @@
 # Check Log
 
+## 2026-08-15 - Capability catch-up full Pkg.test (landing)
+
+Lane `cursor/capability-catchup-20260815` @ `d5ae8b62`. Full suite:
+`julia --project=. -e 'using Pkg; Pkg.test()'` → **5559 Pass / 1 Broken /
+5560 Total** (55m58.3s); `Testing GLLVM tests passed`; 0 Fail. No rtol
+widen. No push. Log: `/tmp/gllvmjl-capability-catchup-pkgtest-20260815.log`.
+Rose: suite green ≠ twin ZIP/ZINB Δ ≠ ADEMP; push/PR still human gate.
+
 ## 2026-08-15 - Capability catch-up post-#204 (truncated_poisson)
 
 Lane `cursor/capability-catchup-20260815` from `origin/main` @ `2914cc18`
