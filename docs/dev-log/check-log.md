@@ -4,9 +4,11 @@
 
 Ubuntu Julia 1.10 / Julia 1 failed `test_bridge_x.jl:273–280` (8 tests):
 two independent LBFGS runs (`iterations=120` vs bridge 500, `g_tol=1e-5`)
-differed by ~2–5e-6 on Linux OpenBLAS. No atol widen. Added `θ_init` on
-`fit_zinb_gllvm_cov`; point-fit + Wald cells now one-fit assemble +
-shared-start refit at 1e-8. `test/test_bridge_x.jl` **353/353** (56.0s).
+differed by ~2–5e-6 on Linux OpenBLAS while loglik agreed. No atol widen.
+Added `θ_init` + `iterations≤0` short-circuit on `fit_zinb_gllvm_cov`;
+point-fit + Wald cells one-fit assemble + packed identity; live
+`bridge_fit` tag smoke only. Focused: `test_bridge_x.jl` **357/357**;
+zinb identity+capabilities **195/195**; Wald smoke `pd_hessian=true`.
 After-task:
 `docs/dev-log/after-task/2026-08-15-zinb-x-confint-ubuntu-onefit.md`.
 
