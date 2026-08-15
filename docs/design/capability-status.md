@@ -83,9 +83,10 @@ Twin family names align with gllvmTMB / gllvm. Status = native Julia engine
 | Gamma | implemented |
 | tweedie | implemented |
 | ordinal_probit / cumulative_logit | implemented |
-| student | planned |
+| student | implemented |
 | lognormal | planned |
-| truncated_poisson / truncated_nbinom2 | planned |
+| truncated_poisson | implemented |
+| truncated_nbinom2 | planned |
 | censored_poisson | missing |
 | multinomial / categorical | missing |
 | delta_gamma | implemented |
@@ -94,12 +95,15 @@ Twin family names align with gllvmTMB / gllvm. Status = native Julia engine
 | zip / zinb / zib | implemented |
 | ordered_beta / beta_hurdle | implemented |
 | exponential (Gamma shape=1 path) | implemented |
-| com_poisson | planned |
+| com_poisson | implemented |
 
 Notes (not status rows): `zip` / `zinb` / `zib` are Julia-forward (ZIP+X via
 `fit_zip_gllvm_cov`; ZINB+X via `fit_zinb_gllvm_cov`, shared scalar `r`);
 twin gllvmTMB cut ZIP/ZINB — **no** invent twin light Δ. Status cells stay
-bare MC tokens.
+bare MC tokens. `student` / `com_poisson` promoted on native engine + package
+tests (`test_studentt.jl`, `test_com_poisson.jl`). `truncated_poisson` =
+zero-truncated Poisson (Identity 2026-08-15; twin fid 10); `truncated_nbinom2`
+remains planned (contingent).
 
 ## Intervals and estimation evidence
 
@@ -116,6 +120,11 @@ bare MC tokens.
 | REML (Gaussian pilot twin) | planned |
 | AGHQ estimator | missing |
 | VA / ELBO alternative (selected families; not R-default) | implemented |
+
+Notes (not status rows): Gaussian REML code exists (`src/reml.jl`,
+`fit_gaussian_reml`, bridge `reml=true` path) but **no dedicated package test**
+exercises the REML criterion — keep `planned` (OWED: add `test_reml.jl` before
+promote). Twin admits Gaussian-only REML pilot.
 
 ## Random slopes and special capabilities
 
@@ -185,5 +194,11 @@ Same twin surface, transport layer. Status = code + bridge/parity test exist;
   shared scalar `r`; **no** twin light Δ (gllvmTMB ZINB cut)
 - ZINB+X confint under X (`confint(ZINBCovFit)`; FD Hessian; `ci_x_*` true):
   Julia CI claim only ≠ twin Δ ≠ ADEMP
+- truncated_poisson Identity + engine (zero-truncated; twin fid 10):
+  `docs/dev-log/decisions/2026-08-15-truncated-poisson-identity.md` ·
+  `src/families/truncated_poisson.jl` · `test/test_truncated_poisson.jl`
+- student / com_poisson ledger promote: `test/test_studentt.jl`,
+  `test/test_com_poisson.jl` (code already present)
+- REML OWED: `src/reml.jl` present; dedicated package test still missing
 - Public catch-up prose: `docs/src/gllvmtmb-parity.md` (Documenter legend ≠ this
   MC vocabulary)
