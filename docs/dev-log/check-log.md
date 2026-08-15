@@ -1,5 +1,13 @@
 # Check Log
 
+
+## 2026-08-16 — overnight ADMIT wiring (lognormal + censored_poisson)
+
+- **What**: Conductor choke-point wiring after engine merges #213 / #212 (ZIB+X #211 pending CI on main).
+- **Files**: `src/GLLVM.jl` includes/exports; `src/families/fit_gllvm.jl` dispatch; `test/runtests.jl` includes; `docs/design/capability-status.md` ledger flip (`lognormal`, `censored_poisson` → implemented) with OWED twin-Δ / bridge notes.
+- **Verify**: focused `test_lognormal.jl` **16/16**; `test_censored_poisson.jl` **46/46** (private depot). No silent rtol widen. Twin light Δ not invented.
+- **Still OWED**: ZIB `fit_gllvm` / formula / bridge (per ADMIT); ZIB+X cov export+`test_zib_x_identity.jl` after #211 merges.
+
 ## 2026-08-15 - truncated_nbinom2 Sol score/weight a-factor fix
 
 Lane `cursor/truncated-nbinom2-20260815`. Sol HARD BLOCK: truncated NB2
