@@ -186,8 +186,8 @@ const _BRIDGE_XLV_FAMILIES = ("gaussian", "poisson", "negbinomial", "gamma", "be
 const _BRIDGE_X_FAMILIES = ("poisson", "binomial", "negbinomial", "nb1", "beta", "gamma",
                             "betabinomial", "ordinal", "ordinal_probit", "zip", "zinb")
 # Families with no-X CI but no CI-under-X yet. Keep `ci_no_x_*` honest while
-# fencing `ci_x_*` in bridge_capabilities. ZINB+X Arc 0 G0: confint deferred.
-const _BRIDGE_NO_CI_X_FAMILIES = ("zinb",)
+# fencing `ci_x_*` in bridge_capabilities. Empty: ZIP+X and ZINB+X now route CI.
+const _BRIDGE_NO_CI_X_FAMILIES = ()
 
 # Map a bridge family key to the `Distributions` marker `fit_gllvm_cov` dispatches
 # on (the dispersion field is re-estimated, so the init values here are irrelevant).
@@ -309,7 +309,7 @@ end
 
 function _bridge_compute_ci_cov(fit::Union{GllvmCovFit, NBGroupedCovFit, NB1GroupedCovFit,
                                            BetaGroupedCovFit, GammaGroupedCovFit,
-                                           BetaBinomialGroupedCovFit, ZIPCovFit},
+                                           BetaBinomialGroupedCovFit, ZIPCovFit, ZINBCovFit},
                                 Ydata, N, X,
                                 method::AbstractString, level::Real,
                                 nboot::Integer, seed::Integer)
@@ -498,13 +498,6 @@ function _bridge_ci_guard_pertrait_ordinal(key::AbstractString, ci_method::Abstr
         "cutpoint OrdinalFit directly as a Julia-side comparator."))
 end
 
-function _bridge_ci_guard_zinb_x(ci_method::AbstractString)
-    ci_method == "none" && return nothing
-    throw(ArgumentError(
-        "bridge_fit: CI under X is not routed for family=\"zinb\" yet " *
-        "(ZINB+X Arc 0: confint deferred); use ci_method=\"none\"."))
-end
-
 function _bridge_dispersion_payload(group_values::AbstractVector,
                                     group_id::AbstractVector{<:Integer},
                                     parameter::AbstractString,
@@ -565,7 +558,7 @@ function bridge_capabilities()
     postfit_families = Set(filter(f -> !(f in _BRIDGE_NO_SCALAR_POSTFIT_FAMILIES), onepart))
     predict_families = Set(onepart)
     # Ordinal+X point fits are wired; CI under X remains a follow-up for the
-    # per-trait ordinal fence. ZIP+X and beta-binomial grouped(_cov) route CI.
+    # per-trait ordinal fence. ZIP+X, ZINB+X, and beta-binomial grouped(_cov) route CI.
     no_ci_x = Set(_BRIDGE_NO_CI_X_FAMILIES)
 
     return (
@@ -612,7 +605,7 @@ function bridge_capabilities()
                 f == "zip" ?
                     "two-part ZIP bridge family (Julia-forward / twin-asymmetric); no-X routes fit_zip_gllvm with Wald/profile/bootstrap CI; complete-response fixed-effect-X routes fit_zip_gllvm_cov (separate γz/γc, Λz=0) with Wald/profile/bootstrap CI under X (finite-difference Hessian); no twin light RCall Δ (twin ZIP cut); route support is narrower than full R-user parity" :
                 f == "zinb" ?
-                    "two-part ZINB bridge family (Julia-forward / twin-asymmetric); no-X routes fit_zinb_gllvm with Wald/profile/bootstrap CI and one shared scalar r (log r); complete-response fixed-effect-X routes fit_zinb_gllvm_cov (separate γz/γc, Λz=0, shared scalar r); CI under X is a follow-up; no twin light RCall Δ (twin ZINB cut); route support is narrower than full R-user parity" :
+                    "two-part ZINB bridge family (Julia-forward / twin-asymmetric); no-X routes fit_zinb_gllvm with Wald/profile/bootstrap CI and one shared scalar r (log r); complete-response fixed-effect-X routes fit_zinb_gllvm_cov (separate γz/γc, Λz=0, shared scalar r) with Wald/profile/bootstrap CI under X (finite-difference Hessian); no twin light RCall Δ (twin ZINB cut); route support is narrower than full R-user parity" :
                 f == "poisson" ?
                     "one-part reduced-rank bridge family; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; predictor-informed latent-score X_lv is wired for complete-response point fits; X_lv Wald B_lv CI payloads are routed; profile/bootstrap X_lv CIs remain follow-ups; route support is narrower than full R-user parity" :
                 f == "binomial" ?
@@ -1279,9 +1272,9 @@ function _bridge_fit_onepart_cov(Yf::AbstractMatrix{Float64}, key::AbstractStrin
                                         ci_method, ci_level, ci_nboot, ci_seed)
     elseif key == "zinb"
         Yi = round.(Int, Ydata)
-        _bridge_ci_guard_zinb_x(ci_method)
         fit = fit_zinb_gllvm_cov(Yi; X = Xarr, K = K, γ_fixed = coef_fixed)
-        return _bridge_assemble_zinb_cov(fit, traits, units, Yi, Xarr, coef_fixed)
+        return _bridge_assemble_zinb_cov(fit, traits, units, Yi, Xarr, coef_fixed,
+                                         ci_method, ci_level, ci_nboot, ci_seed)
     end
 
     marker = _bridge_cov_marker(key)
@@ -1422,8 +1415,10 @@ function _bridge_assemble_zip_cov(fit::ZIPCovFit, traits, units, Ydata, Xarr, co
 end
 
 # Assemble ZINB+X under Identity: separate γz/γc, Λz=0, shared scalar r.
-# CI under X is fenced (Arc 0 G0).
-function _bridge_assemble_zinb_cov(fit::ZINBCovFit, traits, units, Ydata, Xarr, coef_fixed)
+# CI via `_family_ci` (ZIP clone + log-r tail).
+function _bridge_assemble_zinb_cov(fit::ZINBCovFit, traits, units, Ydata, Xarr, coef_fixed,
+                                   ci_method::AbstractString, ci_level::Real,
+                                   ci_nboot::Integer, ci_seed::Integer)
     p = size(fit.Λc, 1)
     βc = collect(Float64, fit.βc)
     βz = collect(Float64, fit.βz)
@@ -1431,6 +1426,9 @@ function _bridge_assemble_zinb_cov(fit::ZINBCovFit, traits, units, Ydata, Xarr, 
     γc = collect(Float64, fit.γc)
     L = Matrix{Float64}(getLoadings(fit; rotate = true))
     scores = _bridge_scores(() -> getLV(fit, Ydata, Xarr; rotate = true))
+    ci = ci_method == "none" ? nothing :
+         _bridge_compute_ci_cov(fit, Ydata, nothing, Xarr, ci_method, ci_level,
+                                ci_nboot, ci_seed)
     Λr = L
     Σ = Λr * Λr'; Σ = (Σ + Σ') ./ 2
     corr = _bridge_corr_from_sigma(Σ)
@@ -1444,9 +1442,11 @@ function _bridge_assemble_zinb_cov(fit::ZINBCovFit, traits, units, Ydata, Xarr, 
         loadings = L, note =
             "fixed-effect covariate ZINB fit (Julia-forward / twin-asymmetric): " *
             "ηz = βz + X*γz (Λz=0), ηc = βc + X*γc + Λc*z; separate γz/γc; " *
-            "one shared scalar r (log r). CI under X is a follow-up. " *
+            "one shared scalar r (log r). " *
+            "Wald/profile/bootstrap CI under X are routed (finite-difference Hessian). " *
             "No twin light RCall Δ (twin ZINB cut). " *
-            "Sigma/correlation use Lambda*Lambda' (communality 1).")
+            "Sigma/correlation use Lambda*Lambda' (communality 1).",
+        ci = ci)
     return merge(base, (beta_cov = βc, beta_zero = βz, gamma = γc, gamma_z = γz,
                         gamma_c = γc, gamma_status = _fixed_status(coef_fixed)))
 end

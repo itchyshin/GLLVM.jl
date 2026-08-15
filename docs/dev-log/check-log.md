@@ -1,5 +1,17 @@
 # Check Log
 
+## 2026-08-14 - ZINB+X confint under X (ZINBCovFit)
+
+Lane `feat/zinb-x-confint-20260814` from `origin/main` @ `d589bd40` (#203).
+`_family_ci(::ZINBCovFit)` packs `[βz; γz_free; βc; γc_free; pack(Λc); log r]`
+with dual `Oz`/`Oc`; lifted `_bridge_ci_guard_zinb_x` / emptied
+`_BRIDGE_NO_CI_X_FAMILIES`. Focused: capabilities **153/153**; confint_family
+**240/240**; bridge_x **347/347** (zinb Wald bridge↔native ≤ 1e-8). Wald
+smoke: Δγz=Δγc=Δr=0; 12/12 finite; `pd_hessian=true`. Full `Pkg.test()`:
+**5539 pass / 1 broken / 5540** (56m39.4s). No rtol widen. No twin light Δ. Rose: Julia ZINB+X CI
+≠ twin parity ≠ ADEMP. After-task:
+`docs/dev-log/after-task/2026-08-14-zinb-x-confint.md`.
+
 ## 2026-08-14 - ZINB+X engine Arc 0 (fit_zinb_gllvm_cov)
 
 Lane `feat/zinb-x-engine-20260814` from `origin/main` @ `daf95da6` (#202).

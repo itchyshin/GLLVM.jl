@@ -26,8 +26,12 @@ marginal likelihood. The call returns a `NamedTuple` with `term`, `estimate`,
 Supported fits: the GLM families (`PoissonFit`, `BinomialFit`, `NBFit`,
 `NB1Fit`, `BetaFit`, `GammaFit`), grouped-dispersion NB2/NB1/Beta/Gamma fits,
 the two-part families (`DeltaLogNormalFit`, `DeltaGammaFit`, `BetaHurdleFit`,
-`HurdlePoissonFit`, `HurdleNBFit`, `ZIPFit`, `ZINBFit`, `ZIBFit`), and
-shared-cutpoint ordinal (`OrdinalFit`). Grouped Tweedie and per-trait ordinal
+`HurdlePoissonFit`, `HurdleNBFit`, `ZIPFit`, `ZIPCovFit`, `ZINBFit`,
+`ZINBCovFit`, `ZIBFit`), and
+shared-cutpoint ordinal (`OrdinalFit`). `ZIPCovFit` / `ZINBCovFit` need the
+design via `X` (`confint(fit, Y; method=…, X=X)`); term names add free dual
+slopes `gammaz[k]` / `gammac[k]` (`ZINBCovFit` also reports shared scalar `r`
+on the log scale). Grouped Tweedie and per-trait ordinal
 cutpoint CI endpoints are deliberate follow-ups.
 
 ### Term names
