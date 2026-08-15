@@ -1,6 +1,5 @@
 # Check Log
 
-<<<<<<< HEAD
 ## 2026-08-15 - ZIB+X engine Arc 0 (fit_zib_gllvm_cov)
 
 Lane `cursor/zib-x-catchup-20260815`, rebased onto PR #208 tip `0041f769` so the
@@ -18,7 +17,7 @@ Verify: `julia --project=. --startup-file=no test/test_zib_x_identity.jl`
 → **23/23**; zero-X Δ≈0; packed FD max|central-5pt|=1.42e-8 (≤1e-6).
 
 Rose / packing public claim: **pending Sol/Opus APPROVED** (Composer mechanical only).
-=======
+
 ## 2026-08-15 - truncated_nbinom2 Sol score/weight a-factor fix
 
 Lane `cursor/truncated-nbinom2-20260815`. Sol HARD BLOCK: truncated NB2
@@ -41,7 +40,6 @@ Ada shared-`r`). Identity ACCEPTED
 (Notes: shared-`r`; twin per-trait Arc1b OWED). No rtol widen; no ZIP/ZINB
 invent-Δ; no Phylo #127; no ADEMP. After-task
 `2026-08-15-truncated-nbinom2-identity-engine.md`. #205 merge still CI gate.
->>>>>>> origin/main
 
 ## 2026-08-15 - Capability catch-up full Pkg.test (landing)
 
