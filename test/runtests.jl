@@ -38,6 +38,7 @@ using GLLVM
     include("test_binomial_laplace.jl")
     include("test_poisson_laplace.jl")
     include("test_truncated_poisson.jl")
+    include("test_truncated_nbinom2.jl")
     include("test_negbin_laplace.jl")
     include("test_beta_laplace.jl")
     include("test_ordinal_laplace.jl")

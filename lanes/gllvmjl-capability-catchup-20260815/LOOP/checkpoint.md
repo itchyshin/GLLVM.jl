@@ -1,21 +1,11 @@
-GOAL: see GOAL.md.   STATE: PROGRAMME STOP — Arc0–Rung4+Close verified; full `Pkg.test()` GREEN.
+GOAL: binding plan `docs/dev-log/plans/2026-08-15-truncated-nbinom2-identity-engine.md` (G0 LOCKED · Ada defaults).
+OWNERSHIP: this agent owns **truncated_nbinom2 only** (≥1 agent/distribution). Do NOT touch lognormal / ZIB+X / censored.
+STATE: Identity+engine+focused GREEN @ `8c666988`; await #205 merge then rebase/PR onto main.
+BINDING CONTRACT: `docs/dev-log/plans/2026-08-15-truncated-nbinom2-identity-engine.md`
+  Ada: Arc1 shared scalar `r` (Julia `r` ≡ twin `φ`); twin per-trait documented; Arc1b OWED.
 ARCS DONE (verified):
-- Arc0: #204 MERGED @ 2914cc18; board START HERE catch-up → STOP pointer
-- Rung1: bare implemented zip/zinb/zib; 0 non-bare Status (token parse)
-- Rung2: student+com_poisson implemented; REML OWED note
-- Rung3: Identity ACCEPTED docs/dev-log/decisions/2026-08-15-truncated-poisson-identity.md
-- Rung4: TruncatedPoisson engine; test_truncated_poisson.jl 10/10 Pass; ledger flip
-- Close: after-task + check-log + Melissa plan-actual + Rose fence in after-task
-- Full suite: `julia --project=. -e 'using Pkg; Pkg.test()'` @ tip `d5ae8b62` → **5559 Pass / 1 Broken / 5560 Total** (55m58.3s); Testing GLLVM tests passed; 0 Fail; no rtol widen
-ARC IN PROGRESS: none
-NEXT: human gate — ask Shinichi before push/PR (suite green; do not push until instructed)
-OPEN GATES (need human): push/PR without ask; public MC overwrite of R MSPL
-TRUTH LIVES IN:
-- Worktree `.worktrees/gllvmjl-capability-catchup-20260815` branch `cursor/capability-catchup-20260815` @ `d5ae8b62` (suite tip)
-- after-task `docs/dev-log/after-task/2026-08-15-gllvm-jl-capability-catchup.md`
-- plan-actual `docs/dev-log/plan-actual/2026-08-15-gllvm-jl-capability-catchup.md`
-- Full suite log: `/tmp/gllvmjl-capability-catchup-pkgtest-20260815.log`
-RESUME: You are gllvmjl-capability-catchup-20260815. PROGRAMME DONE for G0 scope; full Pkg.test GREEN.
-READ FIRST: LOOP/GOAL.md → checkpoint.md → after-task 2026-08-15-gllvm-jl-capability-catchup.md.
-If continuing: ask Shinichi before push/PR. Optional next lane: truncated_nbinom2 or REML test.
-Do NOT redo Arc0–Rung4. Do NOT invent ZIP/ZINB twin Δ. Do NOT write Dropbox protected fork.
+- S1 Identity ACCEPTED · S2 Engine · S3 focused 11/11 · FD 1.12e-7 · S4 ledger flip · S5 closeout docs
+- Local commit `8c666988` on `cursor/truncated-nbinom2-20260815`
+ARC IN PROGRESS: S0 #205 merge-gate (Documenter PASS; Julia CI IN_PROGRESS since ~16:41Z @ `b2b99463`)
+NEXT: merge #205 on green → rebase onto origin/main → open PR → merge-on-green → MC julia_surface PROPOSE only
+RESUME: truncated_nbinom2 sole owner. Binding plan path above. Rose fences hold.
