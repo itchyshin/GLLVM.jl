@@ -10,8 +10,8 @@
     TruncatedPoisson()
 
 Marker for zero-truncated Poisson (support `{1,2,…}`; log link on the
-*untruncated* mean `μ = exp(η)`). Distinct from [`Poisson`](@ref) and from the
-hurdle occurrence×truncated two-part family.
+*untruncated* mean `μ = exp(η)`). Distinct from Distributions.jl `Poisson()` and
+from the hurdle occurrence×truncated two-part family.
 """
 struct TruncatedPoisson end
 
