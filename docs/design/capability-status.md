@@ -84,10 +84,10 @@ Twin family names align with gllvmTMB / gllvm. Status = native Julia engine
 | tweedie | implemented |
 | ordinal_probit / cumulative_logit | implemented |
 | student | implemented |
-| lognormal | planned |
+| lognormal | implemented |
 | truncated_poisson | implemented |
 | truncated_nbinom2 | implemented |
-| censored_poisson | missing |
+| censored_poisson | implemented |
 | multinomial / categorical | missing |
 | delta_gamma | implemented |
 | delta_lognormal | implemented |
@@ -104,7 +104,7 @@ bare MC tokens. `student` / `com_poisson` promoted on native engine + package
 tests (`test_studentt.jl`, `test_com_poisson.jl`). `truncated_poisson` =
 zero-truncated Poisson (Identity 2026-08-15; twin fid 10); `truncated_nbinom2`
 = zero-truncated NB2 (Identity 2026-08-15; twin fid 11; Arc1 shared scalar `r`
-≡ twin `φ`; twin per-trait `log_phi_truncnb2` documented, Arc1b OWED).
+≡ twin `φ`; twin per-trait `log_phi_truncnb2` documented, Arc1b OWED). `lognormal` = one-part lognormal (Identity 2026-08-15; twin fid 3; engine+admit; light RCall Δ / bridge OWED). `censored_poisson` = right-censored Poisson (Identity 2026-08-15; Julia-forward / twin constructor-only; light RCall Δ FORBIDDEN).
 
 ## Intervals and estimation evidence
 
