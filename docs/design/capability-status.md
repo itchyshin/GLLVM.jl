@@ -177,6 +177,8 @@ Same twin surface, transport layer. Status = code + bridge/parity test exist;
   **no** twin light Δ (gllvmTMB ZIP cut)
 - ZINB+X engine (bridge/`@formula`/`fit_zinb_gllvm_cov`; Identity 2026-08-13):
   `docs/dev-log/after-task/2026-08-14-zinb-x-engine.md` — Julia identity/FD only;
-  shared scalar `r`; **no** twin light Δ (gllvmTMB ZINB cut); CI under X deferred
+  shared scalar `r`; **no** twin light Δ (gllvmTMB ZINB cut)
+- ZINB+X confint under X (`confint(ZINBCovFit)`; FD Hessian; `ci_x_*` true):
+  Julia CI claim only ≠ twin Δ ≠ ADEMP
 - Public catch-up prose: `docs/src/gllvmtmb-parity.md` (Documenter legend ≠ this
   MC vocabulary)

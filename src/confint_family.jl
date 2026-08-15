@@ -42,7 +42,7 @@ const _GroupedDispersionCovFit = Union{NBGroupedCovFit, NB1GroupedCovFit, BetaGr
                                        BetaBinomialGroupedCovFit}
 
 const _CIFit = Union{_FamilyFit, _TwoPartFit, _GroupedDispersionFit, _GroupedDispersionCovFit,
-                     OrdinalFit, GllvmCovFit, ZIPCovFit, OrderedBetaFit, QuadraticFit, RowEffectFit}
+                     OrdinalFit, GllvmCovFit, ZIPCovFit, ZINBCovFit, OrderedBetaFit, QuadraticFit, RowEffectFit}
 
 # ---------------------------------------------------------------------------
 # Per-family adapter. Bundles everything the generic routines need:
@@ -1642,6 +1642,68 @@ function _family_ci(fit::ZINBFit, Y::AbstractMatrix;
     return _FamilyCI(θ, nll, names, vcat(fill(:linear, length(θ) - 1), :log), sim, refit)
 end
 
+# --- Zero-inflated NB + shared site-X (dual γz/γc; Λz=0; shared scalar r) ---
+function _family_ci(fit::ZINBCovFit, Y::AbstractMatrix;
+                    X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    X === nothing && throw(ArgumentError(
+        "confint on a ZINBCovFit needs the design `X`: confint(fit, Y; method=…, X=X)"))
+    p, K = size(fit.Λc); n = size(Y, 2); rr = rr_theta_len(p, K)
+    Xfit, γ_free_idx = _slice_fixed_X(X, fit.γ_fixed)
+    q = length(γ_free_idx)
+    γz_free = fit.γz[γ_free_idx]
+    γc_free = fit.γc[γ_free_idx]
+    θ = vcat(fit.βz, γz_free, fit.βc, γc_free, pack_lambda(fit.Λc), log(fit.r))
+    nll = function (θv)
+        βz = θv[1:p]
+        γz = θv[(p + 1):(p + q)]
+        βc = θv[(p + q + 1):(2p + q)]
+        γc = θv[(2p + q + 1):(2p + 2q)]
+        Λc = unpack_lambda(θv[(2p + 2q + 1):(2p + 2q + rr)], p, K)
+        r = exp(θv[2p + 2q + rr + 1])
+        Oz = _build_offset(Xfit, γz)
+        Oc = _build_offset(Xfit, γc)
+        v = try
+            -zinb_marginal_loglik_laplace(Y, Λc, βz, βc, r;
+                                         offsetz = Oz, offsetc = Oc,
+                                         maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    sim = function (rng)
+        Yb = zeros(Int, p, n)
+        Oz = _build_offset(X, fit.γz)
+        Oc = _build_offset(X, fit.γc)
+        @inbounds for s in 1:n
+            ηc = fit.βc .+ view(Oc, :, s) .+ fit.Λc * randn(rng, K)
+            for t in 1:p
+                π = inv(1 + exp(-(fit.βz[t] + Oz[t, s])))
+                μ = exp(ηc[t])
+                Yb[t, s] = rand(rng) < π ? 0 : rand(rng, NegativeBinomial(fit.r, fit.r / (fit.r + μ)))
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try
+            fit_zinb_gllvm_cov(Yb; X = X, K = K, γ_fixed = fit.γ_fixed)
+        catch
+            return nothing
+        end
+        return vcat(fb.βz, fb.γz[γ_free_idx], fb.βc, fb.γc[γ_free_idx],
+                    pack_lambda(fb.Λc), log(fb.r))
+    end
+    names = vcat(["betaz[$t]" for t in 1:p],
+                 ["gammaz[$k]" for k in γ_free_idx],
+                 ["betac[$t]" for t in 1:p],
+                 ["gammac[$k]" for k in γ_free_idx],
+                 _confint_lambda_term_names("Lambda", p, K),
+                 "r")
+    return _FamilyCI(θ, nll, names, vcat(fill(:linear, length(θ) - 1), :log), sim, refit)
+end
+
 # --- Zero-inflated binomial ------------------------------------------------
 function _family_ci(fit::ZIBFit, Y::AbstractMatrix;
                     newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
@@ -2045,11 +2107,11 @@ families (`PoissonFit`, `BinomialFit`, `NBFit`, `BetaFit`, `GammaFit`,
 `TweedieFit`, `BetaBinomialFit`), the random-row-effect fit (`RowRandomFit`,
 which adds a `sigma_row` term plus the underlying family's dispersion), and the
 two-part families (`DeltaLogNormalFit`, `DeltaGammaFit`, `HurdlePoissonFit`,
-`HurdleNBFit`, `ZIPFit`, `ZIPCovFit`, `ZINBFit`, `ZIBFit`). `Y` is the same
+`HurdleNBFit`, `ZIPFit`, `ZIPCovFit`, `ZINBFit`, `ZINBCovFit`, `ZIBFit`). `Y` is the same
 response matrix passed to the fitter; it is needed to reconstruct the marginal
 likelihood. For `BinomialFit` / `BetaBinomialFit` (and a `Binomial`-family
 `RowRandomFit`) supply the trial counts via `N` (default all-ones). For
-`ZIPCovFit` (and other covariate fits) supply the design via `X`. For
+`ZIPCovFit` / `ZINBCovFit` (and other covariate fits) supply the design via `X`. For
 response-mask fits, pass the same Boolean `mask` matrix used by the fitter;
 masked cells are ignored by the likelihood and by bootstrap refits.
 
@@ -2057,8 +2119,9 @@ Term names are `beta[t]` / `Lambda[i,k]` (+ a dispersion `r`/`phi`/`alpha`) for
 the GLM families, `... + phi` for `BetaBinomialFit` (the Beta precision) and
 `... + sigma_row (+ r/phi/alpha)` for `RowRandomFit`, and `betaz[t]` (occurrence / zero-inflation logits) / `betac[t]`
 (positive / count intercepts) / `Lambda[i,k]` (+ `sigma`/`alpha`/`r`) for the
-two-part families. `ZIPCovFit` adds free dual slopes `gammaz[k]` / `gammac[k]`
-between the intercept blocks. For `TweedieFit` the dispersion term is `phi`; the
+two-part families. `ZIPCovFit` / `ZINBCovFit` add free dual slopes `gammaz[k]` / `gammac[k]`
+between the intercept blocks (`ZINBCovFit` also reports shared scalar `r` on the
+`:log` scale). For `TweedieFit` the dispersion term is `phi`; the
 power `p ∈ (1,2)` is held fixed at its fitted value, so only `phi` is profiled.
 
 `method` selects the inference:

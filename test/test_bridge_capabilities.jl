@@ -145,6 +145,7 @@ using GLLVM
         "gamma",
         "betabinomial",
         "zip",
+        "zinb",
     ]
     @test caps.family[caps.ci_x_wald] == x_ci_routed
     @test caps.family[caps.ci_x_profile] == x_ci_routed
@@ -250,13 +251,14 @@ using GLLVM
             @test occursin("Julia-forward", note)
             @test occursin("twin-asymmetric", note)
             @test occursin("shared scalar r", note)
-            @test occursin("CI under X is a follow-up", note)
+            @test occursin("Wald/profile/bootstrap CI under X", note)
+            @test occursin("finite-difference Hessian", note)
             @test occursin("no twin light RCall Δ", note)
             @test occursin("narrower than full R-user parity", note)
             zinb_idx = findfirst(==("zinb"), caps.family)
-            @test !caps.ci_x_wald[zinb_idx]
-            @test !caps.ci_x_profile[zinb_idx]
-            @test !caps.ci_x_bootstrap[zinb_idx]
+            @test caps.ci_x_wald[zinb_idx]
+            @test caps.ci_x_profile[zinb_idx]
+            @test caps.ci_x_bootstrap[zinb_idx]
             @test caps.ci_no_x_wald[zinb_idx]
             @test caps.fixed_effect_X[zinb_idx]
             @test caps.fit_no_x[zinb_idx]

@@ -1102,11 +1102,13 @@ start from [`fit_zinb_gllvm`](@ref)'s excess-zero / positive-count / SVD start
 with `γ=0` and `log r = log(10)`.
 
 `X` is `(p, n, q)`. `γ_fixed` optionally zeros selected covariate columns for
-**both** parts (same contract as [`fit_zip_gllvm_cov`](@ref)). Twin light
-RCall Δ is out of scope (twin ZINB cut). Per-trait `r` is **not** the default.
+**both** parts (same contract as [`fit_zip_gllvm_cov`](@ref)). `θ_init` is an
+optional packed start `[βz; γz; βc; γc; pack(Λc); log r]` (same length as the
+free packed vector). Twin light RCall Δ is out of scope (twin ZINB cut).
+Per-trait `r` is **not** the default.
 """
 function fit_zinb_gllvm_cov(Y::AbstractMatrix{<:Real}; X::AbstractArray{<:Real, 3},
-        K::Integer, γ_fixed = nothing,
+        K::Integer, γ_fixed = nothing, θ_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
@@ -1117,8 +1119,16 @@ function fit_zinb_gllvm_cov(Y::AbstractMatrix{<:Real}; X::AbstractArray{<:Real, 
     X_fit, _ = _slice_fixed_X(X, γ_fixed_mask)
     q = size(X_fit, 3)
     rr = rr_theta_len(p, K)
-    βz0, βc0, Λc0 = _zi_warmstart(Y, K)
-    θ0 = vcat(βz0, zeros(q), βc0, zeros(q), pack_lambda(Λc0), log(10.0))
+    nθ = 2p + 2q + rr + 1
+    θ0 = if θ_init === nothing
+        βz0, βc0, Λc0 = _zi_warmstart(Y, K)
+        vcat(βz0, zeros(q), βc0, zeros(q), pack_lambda(Λc0), log(10.0))
+    else
+        θin = collect(Float64, θ_init)
+        length(θin) == nθ || throw(ArgumentError(
+            "θ_init length ($(length(θin))) must equal $nθ = 2p+2q+rr+1"))
+        θin
+    end
     function negll(θ)
         βz = θ[1:p]
         γz = θ[(p + 1):(p + q)]
@@ -1136,6 +1146,22 @@ function fit_zinb_gllvm_cov(Y::AbstractMatrix{<:Real}; X::AbstractArray{<:Real, 
             return 1e12
         end
         return isfinite(v) ? v : 1e12
+    end
+    # iterations ≤ 0: evaluate at θ0 only (shared-start / transport checks; no
+    # second LBFGS wander on the shared-r ridge).
+    if iterations <= 0
+        θ̂ = θ0
+        nll0 = negll(θ̂)
+        βẑ = θ̂[1:p]
+        γz_free = θ̂[(p + 1):(p + q)]
+        βĉ = θ̂[(p + q + 1):(2p + q)]
+        γc_free = θ̂[(2p + q + 1):(2p + 2q)]
+        Λĉ = unpack_lambda(θ̂[(2p + 2q + 1):(2p + 2q + rr)], p, K)
+        r̂ = exp(θ̂[2p + 2q + rr + 1])
+        γẑ = collect(Float64, _expand_fixed_zero(γz_free, γ_fixed_mask))
+        γĉ = collect(Float64, _expand_fixed_zero(γc_free, γ_fixed_mask))
+        return ZINBCovFit(βẑ, γẑ, βĉ, γĉ, collect(Bool, γ_fixed_mask), Λĉ, r̂,
+                          -nll0, true, 0)
     end
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
     res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);

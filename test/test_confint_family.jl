@@ -541,6 +541,59 @@ end
         end
     end
 
+    @testset "ZINBCovFit Wald (dual γz/γc; shared r; missing X throws)" begin
+        Random.seed!(50)
+        p, K, n, q = 3, 1, 55, 1
+        r = 7.0
+        βz = 0.3 .* randn(p) .- 0.7
+        γz = [0.3]; βc = 0.2 .* randn(p) .+ 0.5; γc = [0.4]
+        Λc = 0.3 .* randn(p, K)
+        X = randn(p, n, q)
+        Oz = GLLVM._build_offset(X, γz); Oc = GLLVM._build_offset(X, γc)
+        Y = Matrix{Int}(undef, p, n)
+        for s in 1:n
+            z = randn(K)
+            for t in 1:p
+                π = inv(1 + exp(-(βz[t] + Oz[t, s])))
+                μ = exp(clamp(βc[t] + Oc[t, s] + (Λc * z)[t], -4, 4))
+                Y[t, s] = rand() < π ? 0 : rand(NegativeBinomial(r, r / (r + μ)))
+            end
+        end
+        fit = fit_zinb_gllvm_cov(Y; X = X, K = K, iterations = 120)
+        @test fit isa ZINBCovFit
+        @test_throws ArgumentError confint(fit, Y; method = :wald)
+        ci = confint(fit, Y; method = :wald, X = X)
+        @test ci.method === :wald
+        @test "gammaz[1]" in ci.term
+        @test "gammac[1]" in ci.term
+        @test "r" in ci.term
+        gz = findfirst(==("gammaz[1]"), ci.term)
+        gc = findfirst(==("gammac[1]"), ci.term)
+        ri = findfirst(==("r"), ci.term)
+        @test ci.estimate[gz] ≈ fit.γz[1] atol = 1e-6
+        @test ci.estimate[gc] ≈ fit.γc[1] atol = 1e-6
+        @test ci.estimate[ri] ≈ fit.r atol = 1e-6
+        for i in eachindex(ci.term)
+            if isfinite(ci.lower[i]) && isfinite(ci.upper[i])
+                @test ci.lower[i] ≤ ci.estimate[i] ≤ ci.upper[i]
+            end
+        end
+        # Optional Rung1: zero-X ZINBCovFit CI ≈ ZINBFit on shared intercept/loading/r.
+        X0 = zeros(p, n, q)
+        f0 = fit_zinb_gllvm(Y; K = K, iterations = 120)
+        fx0 = fit_zinb_gllvm_cov(Y; X = X0, K = K, iterations = 120)
+        ci0 = confint(f0, Y; method = :wald)
+        cix0 = confint(fx0, Y; method = :wald, X = X0)
+        shared = filter(t -> startswith(t, "betaz") || startswith(t, "betac") ||
+                             startswith(t, "Lambda") || t == "r", ci0.term)
+        for t in shared
+            i0 = findfirst(==(t), ci0.term)
+            ix = findfirst(==(t), cix0.term)
+            @test ix !== nothing
+            @test ci0.estimate[i0] ≈ cix0.estimate[ix] atol = 1e-4
+        end
+    end
+
     @testset "Random row effect Wald + bootstrap (sigma_row + family dispersion)" begin
         Random.seed!(46)
         p, K, n, σ_true = 4, 1, 60, 0.6
