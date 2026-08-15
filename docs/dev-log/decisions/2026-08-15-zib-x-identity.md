@@ -25,7 +25,8 @@ NB/Beta per-trait dispersion conventions that do not apply to binomial counts.
 | Surface | Zero / occurrence | Count / value | Trials | Shared site-X |
 |---|---|---|---|---|
 | R / gllvmTMB ZIB | **absent** (ZIP/ZINB cut; no ZIB fid) | **absent** | — | **absent** |
-| Julia `fit_zib_gllvm` / `ZIBFit` | per-trait `βz`, `Λ_z = 0` | per-trait `βc` + `Λc` | fixed `N` | **absent** |
+| Julia `fit_zib_gllvm` / `ZIBFit` | per-trait `βz`, `Λ_z = 0` | per-trait `βc` + `Λc` | **shared scalar `N::Int`** | **absent** |
+| Julia bridge one-part / X | — | — | — | **not admitted** (`zib` ∉ `_BRIDGE_*`) |
 | Julia ZIP+X (`ZIPCovFit`) | separate `γ^z`, `Λ_z = 0` | separate `γ^c` + `Λc` | — | **shipped** |
 | Julia `fit_zib_gllvm_cov` | — | — | — | **absent** |
 
@@ -49,12 +50,26 @@ This Identity is **Julia-forward / twin-asymmetric**.
    (`Λ_z` remains **0**).
 2. **Count success logit:**  
    `η^c_{ts} = β^c_t + Σ_k X[t,s,k] · γ^c_k + (Λ_c z_s)_t`  
-   (shared `γ^c`; per-trait `β^c`; reduced-rank `Λ_c`; binomial `N` as no-X ZIB).
-3. **Mixture** unchanged from existing ZIB / two-part design (structural zero × Binomial).
-4. **Packing (v1):** `[βz; γz; βc; γc; pack(Λc)]` with offsets
-   `Oz = Xγ^z` / `Oc = Xγ^c` into the existing ZIB Laplace marginal.
-5. **`γ_fixed`:** same both-parts mask contract as `fit_zip_gllvm_cov`.
-6. **Light RCall / twin Δ:** **forbidden** until twin ZIB restored.
+   (shared `γ^c`; per-trait `β^c`; reduced-rank `Λ_c`).
+3. **Trials (load-bearing lock):** one **shared scalar `N`** for all traits and
+   sites, carried exactly as no-X ZIB carries it — `struct ZIB` holds `N::Int`
+   (`src/families/twopart.jl:1209`). A **per-observation trials matrix
+   `N_{ts}`** is **not** the default and is **rejected for this arc**: it would
+   force edits to the family marker (`ZIB`) and the count-part information
+   kernel `_zi_Icc_binom(π, μ, N)` (`:1192`), both outside this note's
+   "ZIB cov append" ownership scope. Do **not** cargo-cult the `p×n` trials
+   matrix from `fit_beta_binomial_gllvm_grouped_cov`
+   (`src/families/beta_binomial.jl:642`) — that is a different family with a
+   different admitted bridge contract. Same treatment ZINB+X gave shared
+   scalar `r`; `N_{ts}` needs its own decision if ever pursued.
+4. **Mixture** unchanged from existing ZIB / two-part design (structural zero × Binomial).
+5. **Packing (v1):** `[βz; γz; βc; γc; pack(Λc)]` with offsets
+   `Oz = Xγ^z` / `Oc = Xγ^c` into the existing ZIB Laplace marginal
+   (shared scalar `N` stays a fixed input, not a packed parameter).
+6. **`γ_fixed`:** same both-parts mask contract as `fit_zip_gllvm_cov`.
+7. **Light RCall / twin Δ:** **forbidden** until twin ZIB **lands** and this
+   Identity is re-checked ("lands", not "restored" — ZIB never had a twin
+   surface to restore).
 
 ## Rejected alternatives
 
@@ -65,12 +80,28 @@ This Identity is **Julia-forward / twin-asymmetric**.
 | X on count only as silent default | Breaks ZIP+X dual-`γ` lock |
 | Free `Λ_z` as default under X | Breaks v1 two-part default |
 | Per-trait dispersion for ZIB | Binomial count has fixed `N`; no φ |
+| Per-observation trials matrix `N_{ts}` | Needs its own decision; would touch `struct ZIB` (`N::Int`) + `_zi_Icc_binom`, beyond a cov append. Shared scalar `N` is the lock (estimand item 3) |
+| Admit `zib` to `_BRIDGE_X_FAMILIES` with this arc | Would leapfrog a no-X bridge surface ZIB has never had (`zib` ∈ neither `_BRIDGE_ONEPART_FAMILIES` nor `_BRIDGE_X_FAMILIES`); fenced as follow-up OWED |
 
 ## Out of scope
 
 - ZIP+X / ZINB+X re-open
 - ADEMP / coverage
-- Shared choke points — merge-conductor only
+- **Bridge admission for `zib` (one-part *and* X) — follow-up OWED.** Today
+  `zib` is in **neither** `_BRIDGE_ONEPART_FAMILIES` nor `_BRIDGE_X_FAMILIES`
+  (`src/bridge.jl:155`, `:186`), while `zip` and `zinb` are in **both**. This
+  arc must **not** leapfrog: "clone ZIP+X" is licence for the *fitter* shape
+  only, not for bridge admission. Chosen route: **(b) fence bridge admit as a
+  separate follow-up**, no-X `zib` bridge first, then X — *not* (a) admit no-X
+  in this Identity. Rationale: a no-X `zib` admit is **not** docs + one list
+  entry. It needs a family-alias arm (`:146` pattern), the one-part list, a
+  `bridge_fit` dispatch arm (`:1134` pattern), an assemble arm (`:1268`
+  pattern), a `bridge_capabilities` entry (`:605`), **plus** a trials contract
+  reconciling ZIB's shared scalar `N::Int` against the bridge's `p×n`
+  `cbind(success, failure)` matrix convention (`_BRIDGE_TRIALS_FAMILIES`,
+  `:177`) — which collides with estimand item 3. Bridge admit therefore gets
+  its own arc and its own G0.
+- Shared choke points — merge-conductor only (`src/bridge.jl` is one)
 - truncated_nbinom2 (owned elsewhere)
 - lognormal / censored_poisson (sibling lanes)
 
@@ -83,6 +114,13 @@ This Identity is **Julia-forward / twin-asymmetric**.
 
 Identity ACCEPTED → **CONTINUE** to ZIB+X engine cloning `fit_zip_gllvm_cov` onto ZIB.
 No twin Δ. Public claim waits for FD ≤1e-6 + focused tests + ledger note + Rose fence.
+
+**Wave2 engine gate (2026-08-15).** The Wave2 ZIB+X engine arc may open its G0
+only with amendments **R1** (shared scalar `N`) and **R2** (bridge fence, route
+(b)) present on the PR #208 branch tip. Any engine work built on an Identity
+copy that predates the ceiling review is **not** admitted: it carries neither
+the trials lock nor the bridge fence, which are the two failure modes the
+review was run to close.
 
 ## Ceiling review (2026-08-15) — **APPROVED**
 
@@ -146,6 +184,29 @@ surface ZIB has never had.
 Amendment: add the row *Julia bridge one-part / X — **not admitted**
 (`zib` ∉ `_BRIDGE_*`)*, and put bridge admission in "Out of scope" (it is
 already excluded from Ownership).
+
+### Amendments applied (2026-08-15, docs-only)
+
+Both required amendments are now **on this branch tip** — the locked estimand is
+otherwise unaltered, and no engine code was touched.
+
+| Amendment | Landed as | Where |
+|---|---|---|
+| **R1** — shared scalar `N` load-bearing | Numbered lock (estimand item 3, mirroring ZINB+X shared `r`) + explicit rejection of per-observation `N_{ts}` | §Julia estimand item 3; §Rejected alternatives row; surface table now reads **shared scalar `N::Int`** |
+| **R2** — bridge fence explicit | Bridge row **not admitted** (`zib` ∉ `_BRIDGE_*`) + "Out of scope" entry choosing route **(b) fence bridge admit as follow-up OWED** | §surface table; §Out of scope; §Rejected alternatives row |
+| Advisory wording | "until twin ZIB **lands**" replaces "restored" | §Julia estimand item 7 |
+
+**R2 route choice, evidence-backed:** route (b), *not* (a). A no-X `zib` bridge
+admit is **not** trivial docs + one list entry — it needs a family-alias arm,
+the one-part list, `bridge_fit` + assemble dispatch arms, a
+`bridge_capabilities` entry, **and** a trials-contract reconciliation between
+`ZIB`'s scalar `N::Int` and the bridge's `p×n` `cbind(success, failure)`
+convention. Bridge admit is therefore fenced as a separate arc with its own G0.
+
+Re-numbering note: the trials lock was inserted as item **3**, so mixture /
+packing / `γ_fixed` / light-Δ shifted to items **4–7**. Downstream references to
+"item 4" (cov append) in the verification table above now point at item **5**
+(packing); the substance is unchanged.
 
 ### Advisory (not blocking)
 
