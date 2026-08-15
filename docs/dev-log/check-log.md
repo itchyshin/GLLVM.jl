@@ -1,5 +1,12 @@
 # Check Log
 
+## 2026-08-16 — overnight ADMIT ZIB+X postfit + Sol ledger
+
+- **What**: Complete non-OWED ZIB+X admit after #211: `postfit.jl` `ZIBCovFit` helpers; Sol-approved Julia-forward ledger sentence in `capability-status.md` (already had export + `test_zib_x_identity.jl` on #215).
+- **Verify**: patch from Sol-narrowed #214 commit `497621ae`; no twin Δ; `fit_gllvm`/formula/bridge remain OWED.
+- **Still OWED**: twin light Δ; no-X ZIB `fit_gllvm` / `@formula` / bridge before any X surface there.
+
+
 ## 2026-08-16 — overnight ADMIT wiring (lognormal + censored_poisson + ZIB+X non-OWED)
 
 - **What**: Conductor choke-point wiring after engine merges #213 / #212 / #211.
