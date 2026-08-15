@@ -59,3 +59,10 @@ No push unless maintainer instructs. Prefer FRESH TASK for next work.
 ```
 
 CONTINUE HERE vs START A FRESH TASK: **FRESH TASK** — catch-up logLik oracle goal is complete; do not re-open Beta/NB2 curvature.
+
+
+---
+
+## Wave2 pointer (lognormal Identity PR #207) — 2026-08-15
+
+Identity ACCEPTED @ `06a3b5a1`; ceiling APPROVED @ `210505c5`. Engine-wave binding conditions C1–C5 (not W1 blockers): see `ENGINE-GATES.md` and `docs/dev-log/decisions/2026-08-15-lognormal-identity-review-opus.md`. Do not start engine from Identity lane without owned engine worktree.

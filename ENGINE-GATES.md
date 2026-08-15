@@ -1,0 +1,1 @@
+Wave2 engine gates (C1–C5): docs/dev-log/decisions/2026-08-15-lognormal-identity-review-opus.md — (1) parity on logLik not estimates (−log y Jacobian); (2) y>0 guard mask-aware (!masked_response); (3) FD max |analytic−FD| over full packed θ incl. log σ, no silent widen; (4) check-log.md with engine; (5) do not cite Identity as evidence Julia DeltaLogNormal == twin fid 12.
