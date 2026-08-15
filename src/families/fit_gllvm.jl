@@ -11,6 +11,7 @@ distribution used as a marker (the GLM.jl convention):
 - `Binomial()` → [`fit_binomial_gllvm`](@ref) — Laplace marginal (binary / binomial)
 - `Poisson()`  → [`fit_poisson_gllvm`](@ref) — Laplace marginal (counts)
 - `TruncatedPoisson()` → [`fit_truncated_poisson_gllvm`](@ref) — zero-truncated Poisson
+- `TruncatedNegBin2()` → [`fit_truncated_nbinom2_gllvm`](@ref) — zero-truncated NB2 (shared `r`)
 - `NegativeBinomial()` → [`fit_nb_gllvm_grouped`](@ref) with per-species `r`
   (twin-aligned default; shared-`r` via [`fit_nb_gllvm`](@ref))
 - `Beta()`     → [`fit_beta_gllvm_grouped`](@ref) with per-species `φ`
@@ -142,6 +143,8 @@ _fit_gllvm(::Binomial, Y::AbstractMatrix; kwargs...) = fit_binomial_gllvm(Y; kwa
 _fit_gllvm(::Poisson,  Y::AbstractMatrix; kwargs...) = fit_poisson_gllvm(Y; kwargs...)
 _fit_gllvm(::TruncatedPoisson, Y::AbstractMatrix; kwargs...) =
     fit_truncated_poisson_gllvm(Y; kwargs...)
+_fit_gllvm(::TruncatedNegBin2, Y::AbstractMatrix; kwargs...) =
+    fit_truncated_nbinom2_gllvm(Y; kwargs...)
 _fit_gllvm(::NegativeBinomial, Y::AbstractMatrix; kwargs...) = fit_nb_gllvm(Y; kwargs...)
 _fit_gllvm(::Beta,     Y::AbstractMatrix; kwargs...) = fit_beta_gllvm(Y; kwargs...)
 _fit_gllvm(::Ordinal,  Y::AbstractMatrix; kwargs...) = fit_ordinal_gllvm_pertrait(Y; kwargs...)
@@ -154,7 +157,7 @@ _fit_gllvm(::ZINegBin, Y::AbstractMatrix; kwargs...) = fit_zinb_gllvm(Y; kwargs.
 # Clear error for families not yet implemented (hurdle, remaining zero-inflated, …).
 _fit_gllvm(family, Y::AbstractMatrix; kwargs...) = throw(ArgumentError(
     "fit_gllvm: family $(nameof(typeof(family))) is not implemented yet " *
-    "(available: Normal, Binomial, Poisson, TruncatedPoisson, NegativeBinomial, Beta, Ordinal, Gamma, Exponential, GeneralizedPoisson1, ZIPoisson, ZINegBin)"))
+    "(available: Normal, Binomial, Poisson, TruncatedPoisson, TruncatedNegBin2, NegativeBinomial, Beta, Ordinal, Gamma, Exponential, GeneralizedPoisson1, ZIPoisson, ZINegBin)"))
 
 # --- grouped-dispersion routing keyed on the family marker. ------------------
 _fit_gllvm_grouped(::NegativeBinomial, Y::AbstractMatrix; kwargs...) =

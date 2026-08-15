@@ -1,5 +1,18 @@
 # Check Log
 
+## 2026-08-15 - truncated_nbinom2 Identity→Engine
+
+Lane `cursor/truncated-nbinom2-20260815` from catch-up tip `b2b99463` (#205).
+Binding plan `2026-08-15-truncated-nbinom2-identity-engine.md` (G0 LOCKED;
+Ada shared-`r`). Identity ACCEPTED
+`2026-08-15-truncated-nbinom2-identity.md` (twin fid 11). Engine
+`TruncatedNegBin2{T}` + `fit_truncated_nbinom2_gllvm`; focused
+`test_truncated_nbinom2.jl` **11/11 Pass** (~8.3s); packed NLL
+`max_abs_FD=1.12e-7` ≤ 1e-6. Ledger `truncated_nbinom2` planned→implemented
+(Notes: shared-`r`; twin per-trait Arc1b OWED). No rtol widen; no ZIP/ZINB
+invent-Δ; no Phylo #127; no ADEMP. After-task
+`2026-08-15-truncated-nbinom2-identity-engine.md`. #205 merge still CI gate.
+
 ## 2026-08-15 - Capability catch-up full Pkg.test (landing)
 
 Lane `cursor/capability-catchup-20260815` @ `d5ae8b62`. Full suite:
