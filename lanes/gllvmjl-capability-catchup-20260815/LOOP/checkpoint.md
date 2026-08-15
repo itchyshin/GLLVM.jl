@@ -10,7 +10,7 @@ ARC IN PROGRESS: none
 NEXT: human gate — full `Pkg.test()` then ask before push/PR; optional next lane truncated_nbinom2 or REML test
 OPEN GATES (need human): push/PR without ask; full-suite before merge claim; public MC overwrite of R MSPL
 TRUTH LIVES IN:
-- Worktree `.worktrees/gllvmjl-capability-catchup-20260815` branch `cursor/capability-catchup-20260815`
+- Worktree `.worktrees/gllvmjl-capability-catchup-20260815` branch `cursor/capability-catchup-20260815` @ `94380daf`
 - after-task `docs/dev-log/after-task/2026-08-15-gllvm-jl-capability-catchup.md`
 - plan-actual `docs/dev-log/plan-actual/2026-08-15-gllvm-jl-capability-catchup.md`
 RESUME: You are gllvmjl-capability-catchup-20260815. PROGRAMME DONE for G0 scope.
