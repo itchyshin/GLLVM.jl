@@ -1,5 +1,15 @@
 # Check Log
 
+## 2026-08-15 - ZINB+X Ubuntu one-fit / shared-start (#204)
+
+Ubuntu Julia 1.10 / Julia 1 failed `test_bridge_x.jl:273–280` (8 tests):
+two independent LBFGS runs (`iterations=120` vs bridge 500, `g_tol=1e-5`)
+differed by ~2–5e-6 on Linux OpenBLAS. No atol widen. Added `θ_init` on
+`fit_zinb_gllvm_cov`; point-fit + Wald cells now one-fit assemble +
+shared-start refit at 1e-8. `test/test_bridge_x.jl` **353/353** (56.0s).
+After-task:
+`docs/dev-log/after-task/2026-08-15-zinb-x-confint-ubuntu-onefit.md`.
+
 ## 2026-08-14 - ZINB+X confint under X (ZINBCovFit)
 
 Lane `feat/zinb-x-confint-20260814` from `origin/main` @ `d589bd40` (#203).

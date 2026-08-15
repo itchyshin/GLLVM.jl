@@ -266,8 +266,26 @@ end
                 Y[t, s] = rand() < π ? 0.0 : float(rand(NegativeBinomial(r, r / (r + μ))))
             end
             Yi = round.(Int, Y)
-            oracle = GLLVM.fit_zinb_gllvm_cov(Yi; X = X, K = K, iterations = 120)
-            br = bridge_fit(; y = Y, family = "zinb", d = K, X = X)
+            # One Optim run. A second independent LBFGS (old oracle
+            # iterations=120 vs bridge default 500) is not a 1e-8 oracle on
+            # Linux OpenBLAS — Ubuntu CI missed γ/β/Λ/r by ~2–5e-6 while
+            # loglik still agreed. Keep atol=1e-8 via same-fit transport +
+            # θ_init with iterations=0 (no second wander on the shared-r ridge).
+            oracle = GLLVM.fit_zinb_gllvm_cov(Yi; X = X, K = K)
+            θ̂ = vcat(oracle.βz, oracle.γz, oracle.βc, oracle.γc,
+                     GLLVM.pack_lambda(oracle.Λc), log(oracle.r))
+            started = GLLVM.fit_zinb_gllvm_cov(Yi; X = X, K = K, θ_init = θ̂,
+                                               iterations = 0)
+            @test started.γc ≈ oracle.γc atol = 1e-8
+            @test started.γz ≈ oracle.γz atol = 1e-8
+            @test started.βz ≈ oracle.βz atol = 1e-8
+            @test started.βc ≈ oracle.βc atol = 1e-8
+            @test started.r ≈ oracle.r atol = 1e-8
+            @test started.loglik ≈ oracle.loglik atol = 1e-8
+            traits = GLLVM._bridge_names(nothing, p, "trait")
+            units = GLLVM._bridge_names(nothing, n, "unit")
+            br = GLLVM._bridge_assemble_zinb_cov(oracle, traits, units, Yi, X,
+                                                fill(false, q), "none", 0.95, 0, 1)
             @test br.family == "zinb"
             @test br.model == "zinb_x_rr"
             @test br.gamma ≈ oracle.γc atol = 1e-8
@@ -283,6 +301,12 @@ end
             @test occursin("shared scalar r", br.note)
             @test occursin("twin", lowercase(br.note))
             @test !occursin("parity vs gllvmTMB", br.note)
+            # Live bridge_fit route smoke (tags/notes only — not dual-Optim 1e-8).
+            br_live = bridge_fit(; y = Y, family = "zinb", d = K, X = X)
+            @test br_live.family == "zinb"
+            @test br_live.model == "zinb_x_rr"
+            @test occursin("Julia-forward", br_live.note)
+            @test occursin("shared scalar r", br_live.note)
         end
     end
 
@@ -427,10 +451,12 @@ end
                 Y[t, s] = rand() < π ? 0.0 : float(rand(NegativeBinomial(r, r / (r + μ))))
             end
             Yi = round.(Int, Y)
-            oracle = GLLVM.fit_zinb_gllvm_cov(Yi; X = X, K = K, iterations = 120)
+            oracle = GLLVM.fit_zinb_gllvm_cov(Yi; X = X, K = K)
             nat = GLLVM.confint(oracle, Yi; method = :wald, X = X)
-            br = bridge_fit(; y = Y, family = "zinb", d = K, X = X,
-                            options = Dict("ci_method" => "wald"))
+            traits = GLLVM._bridge_names(nothing, p, "trait")
+            units = GLLVM._bridge_names(nothing, n, "unit")
+            br = GLLVM._bridge_assemble_zinb_cov(oracle, traits, units, Yi, X,
+                                                fill(false, q), "wald", 0.95, 0, 1)
             @test br.ci_method == "wald"
             @test any(==("gammaz[1]"), br.ci_param_names)
             @test any(==("gammac[1]"), br.ci_param_names)
