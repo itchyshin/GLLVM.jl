@@ -1333,3 +1333,98 @@ function fit_zib_gllvm(Y::AbstractMatrix{<:Real}; K::Integer, N::Integer,
     return ZIBFit(βz, βc, Λc, Int(N), -Optim.minimum(res),
                   Optim.converged(res), Optim.iterations(res))
 end
+
+"""
+    ZIBCovFit
+
+Result of [`fit_zib_gllvm_cov`](@ref): ZIB under shared site-X with separate
+structural-zero slopes `γz` and count slopes `γc` (Identity 2026-08-15;
+`Λ_z = 0`) and fixed trial count `N`. Fields: `βz`, `γz`, `βc`, `γc`,
+`γ_fixed` (Bool mask of fixed-zero covariate columns applied to both parts),
+count loadings `Λc`, `N`, `loglik`, `converged`, `iterations`.
+"""
+struct ZIBCovFit
+    βz::Vector{Float64}
+    γz::Vector{Float64}
+    βc::Vector{Float64}
+    γc::Vector{Float64}
+    γ_fixed::Vector{Bool}
+    Λc::Matrix{Float64}
+    N::Int
+    loglik::Float64
+    converged::Bool
+    iterations::Int
+end
+
+function Base.show(io::IO, f::ZIBCovFit)
+    p, K = size(f.Λc); q = length(f.γc)
+    print(io, "ZIBCovFit(p=", p, ", q=", q, ", K=", K, ", N=", f.N,
+          any(f.γ_fixed) ? ", fixed γ=$(count(f.γ_fixed))" : "",
+          ", loglik=", round(f.loglik; sigdigits = 7),
+          f.converged ? "" : ", NOT CONVERGED", ")")
+end
+
+"""
+    fit_zib_gllvm_cov(Y; X, K, N, γ_fixed=nothing, …) -> ZIBCovFit
+
+Fit a zero-inflated binomial GLLVM **with shared site covariates** under the
+ACCEPTED ZIB+X Identity (`docs/dev-log/decisions/2026-08-15-zib-x-identity.md`):
+
+- structural-zero logit: `η^z_{ts} = β^z_t + Σ_k X[t,s,k]·γ^z_k` (`Λ_z = 0`)
+- count success logit: `η^c_{ts} = β^c_t + Σ_k X[t,s,k]·γ^c_k + (Λ_c z_s)_t`
+- shared fixed trials `N` (same contract as [`fit_zib_gllvm`](@ref))
+
+Packing is `[βz; γz; βc; γc; pack(Λc)]`. Offsets
+`Oz = _build_offset(X, γz)` / `Oc = _build_offset(X, γc)` feed the existing
+ZIB Laplace marginal. Finite-difference gradient; warm start from
+[`fit_zib_gllvm`](@ref)'s excess-zero / positive-success / SVD start with `γ=0`.
+
+`X` is `(p, n, q)`. `γ_fixed` optionally zeros selected covariate columns for
+**both** parts (same contract as [`fit_zip_gllvm_cov`](@ref)). Twin light
+RCall Δ is out of scope (twin ZIP/ZINB cut; no live twin ZIB).
+"""
+function fit_zib_gllvm_cov(Y::AbstractMatrix{<:Real}; X::AbstractArray{<:Real, 3},
+        K::Integer, N::Integer, γ_fixed = nothing,
+        g_tol::Real = 1e-5, iterations::Integer = 500,
+        newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    p, n = size(Y)
+    size(X, 1) == p && size(X, 2) == n ||
+        throw(DimensionMismatch("X must be (p, n, q) = ($p, $n, q); got $(size(X))"))
+    q_full = size(X, 3)
+    γ_fixed_mask = _fixed_zero_mask(γ_fixed, q_full, "γ_fixed")
+    X_fit, _ = _slice_fixed_X(X, γ_fixed_mask)
+    q = size(X_fit, 3)
+    rr = rr_theta_len(p, K)
+    βz0, βc0, Λc0 = _zib_warmstart(Y, N, K)
+    θ0 = vcat(βz0, zeros(q), βc0, zeros(q), pack_lambda(Λc0))
+    function negll(θ)
+        βz = θ[1:p]
+        γz = θ[(p + 1):(p + q)]
+        βc = θ[(p + q + 1):(2p + q)]
+        γc = θ[(2p + q + 1):(2p + 2q)]
+        Λc = unpack_lambda(θ[(2p + 2q + 1):(2p + 2q + rr)], p, K)
+        Oz = _build_offset(X_fit, γz)
+        Oc = _build_offset(X_fit, γc)
+        v = try
+            -zib_marginal_loglik_laplace(Y, Λc, βz, βc, N;
+                                         offsetz = Oz, offsetc = Oc,
+                                         maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
+    res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
+                         autodiff = :finite)
+    θ̂ = Optim.minimizer(res)
+    βẑ = θ̂[1:p]
+    γz_free = θ̂[(p + 1):(p + q)]
+    βĉ = θ̂[(p + q + 1):(2p + q)]
+    γc_free = θ̂[(2p + q + 1):(2p + 2q)]
+    Λĉ = unpack_lambda(θ̂[(2p + 2q + 1):(2p + 2q + rr)], p, K)
+    γẑ = collect(Float64, _expand_fixed_zero(γz_free, γ_fixed_mask))
+    γĉ = collect(Float64, _expand_fixed_zero(γc_free, γ_fixed_mask))
+    return ZIBCovFit(βẑ, γẑ, βĉ, γĉ, collect(Bool, γ_fixed_mask), Λĉ, Int(N),
+                     -Optim.minimum(res), Optim.converged(res), Optim.iterations(res))
+end

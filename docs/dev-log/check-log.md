@@ -1,3 +1,14 @@
+## 2026-08-15 - ZIB+X engine Arc 0 (fit_zib_gllvm_cov)
+
+`ZIBCovFit` packs `[βz; γz; βc; γc; pack(Λc)]` with fixed `N`, `Λ_z=0`,
+`Oz/Oc` via `_build_offset` into `zib_marginal_loglik_laplace` (ZIP+X clone;
+Julia-forward — no twin Δ). Shared choke points left in `ADMIT.md`.
+
+Verify: `julia --project=. --startup-file=no test/test_zib_x_identity.jl`
+→ **23/23**; zero-X Δ≈0; packed FD max|central-5pt|=1.42e-8 (≤1e-6).
+
+Rose / packing public claim: **pending Sol/Opus APPROVED** (Composer mechanical only).
+
 # Check Log
 
 ## 2026-08-15 - Capability catch-up full Pkg.test (landing)
