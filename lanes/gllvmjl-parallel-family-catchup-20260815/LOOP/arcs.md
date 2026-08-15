@@ -4,11 +4,11 @@ Status legend: `pending` | `in_progress` | `done` | `blocked` | `skipped`
 
 | ID | Status | Gate? | Budget | Outcome |
 | --- | --- | --- | ---: | --- |
-| W0 | done | — | 15–30 min | G0 locked; programme WT + 3 Identity WTs from catch-up tip `b2b99463`; #205 OPEN (use catch-up tip, not post-merge main) |
-| W1-lognormal-Id | in_progress | — | 90–120 min | Identity decision ACCEPTED + PR |
-| W1-zibx-Id | in_progress | — | 90–120 min | Identity decision ACCEPTED + PR (Julia-forward; ≠ invent ZIP/ZINB Δ) |
-| W1-censored-Id | in_progress | — | 90–150 min | Identity decision ACCEPTED + PR (fence if twin engine absent) |
-| W1-admit | pending | OPEN GATE: Wave1 PRs green | 30–60 min | Merge Identity PRs when CI green; checkpoint Wave2 |
+| W0 | done | — | 15–30 min | G0 locked; programme WT + 3 Identity WTs from catch-up tip `b2b99463`; #205 OPEN; programme PR #206 @ `66dc3e90` |
+| W1-lognormal-Id | done | — | 90–120 min | ACCEPTED + PR #207 @ `06a3b5a1` (twin fid 3; shared σ) |
+| W1-zibx-Id | done | — | 90–120 min | ACCEPTED + PR #208 @ `0625316a` (Julia-forward; ≠ invent ZIP/ZINB Δ) |
+| W1-censored-Id | done | — | 90–150 min | ACCEPTED + PR #209 @ `6ab338f8` (right-censor; twin ctor-only fence) |
+| W1-admit | in_progress | OPEN GATE: Wave1 PRs green | 30–60 min | Merge #206–#209 on CI green; then Wave2 |
 | W2-lognormal-Eng | pending | after W1 | 5–7 h | Engine + FD ≤1e-6 + focused tests on owned files only |
 | W2-zibx-Eng | pending | after W1 | 5–7 h | ZIB+X cov engine; owns twopart.jl alone |
 | W2-censored-Eng | pending | after W1 | 5–8 h | Julia-forward if twin cpp absent |
