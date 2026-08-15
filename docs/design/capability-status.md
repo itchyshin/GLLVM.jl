@@ -100,7 +100,8 @@ Twin family names align with gllvmTMB / gllvm. Status = native Julia engine
 Notes (not status rows): `zip` / `zinb` / `zib` are Julia-forward (ZIP+X via
 `fit_zip_gllvm_cov`; ZINB+X via `fit_zinb_gllvm_cov`, shared scalar `r`);
 twin gllvmTMB cut ZIP/ZINB — **no** invent twin light Δ. Status cells stay
-bare MC tokens. `student` / `com_poisson` promoted on native engine + package
+bare MC tokens. `zib` also has a native Julia ZIB+X fitter (`fit_zib_gllvm_cov`) with dual shared slopes (`γz`, `γc`), `Λ_z = 0`, and one shared scalar `N::Int`; this is Julia-forward only—no `fit_gllvm`, `@formula`, bridge, CI-under-X, or gllvmTMB parity claim.
+`student` / `com_poisson` promoted on native engine + package
 tests (`test_studentt.jl`, `test_com_poisson.jl`). `truncated_poisson` =
 zero-truncated Poisson (Identity 2026-08-15; twin fid 10); `truncated_nbinom2`
 remains planned (contingent).
