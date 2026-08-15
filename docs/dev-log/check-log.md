@@ -1,12 +1,29 @@
 # Check Log
 
+## 2026-08-16 — overnight ADMIT wiring (lognormal + censored_poisson + ZIB+X non-OWED)
 
-## 2026-08-16 — overnight ADMIT wiring (lognormal + censored_poisson)
+- **What**: Conductor choke-point wiring after engine merges #213 / #212 / #211.
+- **Files**: `src/GLLVM.jl` includes/exports (incl. `fit_zib_gllvm_cov` / `ZIBCovFit`); `src/families/fit_gllvm.jl` dispatch for lognormal + censored_poisson only; `test/runtests.jl` includes; `docs/design/capability-status.md` ledger notes.
+- **Verify**: focused `test_lognormal.jl` **16/16**; `test_censored_poisson.jl` **46/46**. No silent rtol widen. Twin light Δ not invented.
+- **Still OWED**: ZIB `fit_gllvm` / `@formula` / `bridge.jl` (no-X ZIB first); twin light Δ; Rose README marketing.
 
-- **What**: Conductor choke-point wiring after engine merges #213 / #212 (ZIB+X #211 pending CI on main).
-- **Files**: `src/GLLVM.jl` includes/exports; `src/families/fit_gllvm.jl` dispatch; `test/runtests.jl` includes; `docs/design/capability-status.md` ledger flip (`lognormal`, `censored_poisson` → implemented) with OWED twin-Δ / bridge notes.
-- **Verify**: focused `test_lognormal.jl` **16/16**; `test_censored_poisson.jl` **46/46** (private depot). No silent rtol widen. Twin light Δ not invented.
-- **Still OWED**: ZIB `fit_gllvm` / formula / bridge (per ADMIT); ZIB+X cov export+`test_zib_x_identity.jl` after #211 merges.
+## 2026-08-15 - ZIB+X engine Arc 0 (fit_zib_gllvm_cov)
+
+Lane `cursor/zib-x-catchup-20260815`, rebased onto PR #208 tip `0041f769` so the
+R1 (shared scalar `N`) + R2 (bridge fence) Identity is in the base history and
+this branch carries **no second copy** of the decision note.
+
+`ZIBCovFit` packs `[βz; γz; βc; γc; pack(Λc)]` with fixed scalar `N`, `Λ_z=0`,
+`Oz/Oc` via `_build_offset` into `zib_marginal_loglik_laplace` (ZIP+X clone;
+Julia-forward — no twin Δ). Shared choke points left in
+`docs/dev-log/handover/2026-08-15-zib-x-ADMIT.md`; `fit_gllvm`, `@formula` and
+`src/bridge.jl` are all **OWED**, gated on a no-X ZIB surface that does not exist
+yet — ZIB+X must not be reachable by name before plain ZIB is.
+
+Verify: `julia --project=. --startup-file=no test/test_zib_x_identity.jl`
+→ **23/23**; zero-X Δ≈0; packed FD max|central-5pt|=1.42e-8 (≤1e-6).
+
+Rose / packing public claim: **pending Sol/Opus APPROVED** (Composer mechanical only).
 
 ## 2026-08-15 - truncated_nbinom2 Sol score/weight a-factor fix
 
