@@ -1,5 +1,27 @@
 # Check Log
 
+## 2026-08-15 - Capability catch-up full Pkg.test (landing)
+
+Lane `cursor/capability-catchup-20260815` @ `d5ae8b62`. Full suite:
+`julia --project=. -e 'using Pkg; Pkg.test()'` → **5559 Pass / 1 Broken /
+5560 Total** (55m58.3s); `Testing GLLVM tests passed`; 0 Fail. No rtol
+widen. No push. Log: `/tmp/gllvmjl-capability-catchup-pkgtest-20260815.log`.
+Rose: suite green ≠ twin ZIP/ZINB Δ ≠ ADEMP; push/PR still human gate.
+
+## 2026-08-15 - Capability catch-up post-#204 (truncated_poisson)
+
+Lane `cursor/capability-catchup-20260815` from `origin/main` @ `2914cc18`
+(#204 MERGED). Arc0 board START HERE → catch-up. Rung1 bare `implemented`
+zip/zinb/zib Status. Rung2: student+com_poisson → implemented; REML OWED
+(no package test). Rung3 Identity ACCEPTED
+`2026-08-15-truncated-poisson-identity.md` (twin fid 10). Rung4
+`TruncatedPoisson` + `fit_truncated_poisson_gllvm`; focused
+`test_truncated_poisson.jl` **10/10**; FD ≤1e-6. Ledger 49→52 implemented /
+18→16 planned; 0 non-bare Status. Rung5 skipped. No twin ZIP/ZINB Δ; no
+rtol widen; no push. After-task
+`2026-08-15-gllvm-jl-capability-catchup.md`. Rose: Julia truncated claim ≠
+ADEMP ≠ invent ZIP/ZINB Δ; REML stays planned.
+
 ## 2026-08-15 - ZINB+X Ubuntu one-fit / shared-start (#204)
 
 Ubuntu Julia 1.10 / Julia 1 failed `test_bridge_x.jl:273–280` (8 tests):
