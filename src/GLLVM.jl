@@ -42,6 +42,8 @@ include("families/links.jl")
 include("families/laplace.jl")           # generic family-dispatched Laplace marginal core
 include("families/binomial.jl")          # Binomial family pieces + fit (Phase 3)
 include("families/poisson.jl")           # Poisson family pieces (Phase 3)
+include("families/truncated_poisson.jl") # Zero-truncated Poisson (twin fid 10)
+include("families/truncated_nbinom2.jl") # Zero-truncated NB2 (twin fid 11; shared-r Arc1)
 include("families/negbin.jl")            # Negative-binomial (NB2) family pieces (Phase 3)
 include("families/gp1.jl")               # Generalized-Poisson type-1 (GP-1, signed dispersion) — issue #104
 include("families/negbin1.jl")           # Negative-binomial type-1 (NB1, linear variance)
@@ -160,6 +162,10 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        LogitLink, ProbitLink, CLogLogLink, IdentityLink, LogLink,
        fit_mixed_gllvm, MixedFamilyFit, mixed_marginal_loglik_laplace,
        fit_binomial_gllvm, BinomialFit, fit_poisson_gllvm, PoissonFit,
+       TruncatedPoisson, fit_truncated_poisson_gllvm, TruncatedPoissonFit,
+       truncated_poisson_marginal_loglik_laplace,
+       TruncatedNegBin2, fit_truncated_nbinom2_gllvm, TruncatedNegBin2Fit,
+       truncated_nbinom2_marginal_loglik_laplace,
        poisson_laplace_grad, binomial_laplace_grad, nb_laplace_grad,
        gamma_laplace_grad, beta_laplace_grad,
        fit_nb_gllvm, NBFit, fit_beta_gllvm, BetaFit,

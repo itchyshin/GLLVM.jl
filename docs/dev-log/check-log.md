@@ -1,5 +1,50 @@
 # Check Log
 
+## 2026-08-15 - truncated_nbinom2 Sol score/weight a-factor fix
+
+Lane `cursor/truncated-nbinom2-20260815`. Sol HARD BLOCK: truncated NB2
+score/weight omitted `a = r/(r+μ)`. Fixed `_glm_score` /
+`_glm_weight` to `s = a·(y−μ_tr)`, `W = a²·Var_tr`. Identity + tests
+rewritten to density-derivative truth (not wrong HurdleNB copy). Focused
+`test_truncated_nbinom2.jl` **13/13 Pass** (~6.7s). Sol cell: score
+0.05011869 vs dℓ/dη 0.05011869 (abs 4.1e-10). No rtol widen. Sol BLOCK
+**CLEAR**.
+
+## 2026-08-15 - truncated_nbinom2 Identity→Engine
+
+Lane `cursor/truncated-nbinom2-20260815` from catch-up tip `b2b99463` (#205).
+Binding plan `2026-08-15-truncated-nbinom2-identity-engine.md` (G0 LOCKED;
+Ada shared-`r`). Identity ACCEPTED
+`2026-08-15-truncated-nbinom2-identity.md` (twin fid 11). Engine
+`TruncatedNegBin2{T}` + `fit_truncated_nbinom2_gllvm`; focused
+`test_truncated_nbinom2.jl` **11/11 Pass** (~8.3s); packed NLL
+`max_abs_FD=1.12e-7` ≤ 1e-6. Ledger `truncated_nbinom2` planned→implemented
+(Notes: shared-`r`; twin per-trait Arc1b OWED). No rtol widen; no ZIP/ZINB
+invent-Δ; no Phylo #127; no ADEMP. After-task
+`2026-08-15-truncated-nbinom2-identity-engine.md`. #205 merge still CI gate.
+
+## 2026-08-15 - Capability catch-up full Pkg.test (landing)
+
+Lane `cursor/capability-catchup-20260815` @ `d5ae8b62`. Full suite:
+`julia --project=. -e 'using Pkg; Pkg.test()'` → **5559 Pass / 1 Broken /
+5560 Total** (55m58.3s); `Testing GLLVM tests passed`; 0 Fail. No rtol
+widen. No push. Log: `/tmp/gllvmjl-capability-catchup-pkgtest-20260815.log`.
+Rose: suite green ≠ twin ZIP/ZINB Δ ≠ ADEMP; push/PR still human gate.
+
+## 2026-08-15 - Capability catch-up post-#204 (truncated_poisson)
+
+Lane `cursor/capability-catchup-20260815` from `origin/main` @ `2914cc18`
+(#204 MERGED). Arc0 board START HERE → catch-up. Rung1 bare `implemented`
+zip/zinb/zib Status. Rung2: student+com_poisson → implemented; REML OWED
+(no package test). Rung3 Identity ACCEPTED
+`2026-08-15-truncated-poisson-identity.md` (twin fid 10). Rung4
+`TruncatedPoisson` + `fit_truncated_poisson_gllvm`; focused
+`test_truncated_poisson.jl` **10/10**; FD ≤1e-6. Ledger 49→52 implemented /
+18→16 planned; 0 non-bare Status. Rung5 skipped. No twin ZIP/ZINB Δ; no
+rtol widen; no push. After-task
+`2026-08-15-gllvm-jl-capability-catchup.md`. Rose: Julia truncated claim ≠
+ADEMP ≠ invent ZIP/ZINB Δ; REML stays planned.
+
 ## 2026-08-15 - ZINB+X Ubuntu one-fit / shared-start (#204)
 
 Ubuntu Julia 1.10 / Julia 1 failed `test_bridge_x.jl:273–280` (8 tests):
