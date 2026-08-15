@@ -1,7 +1,8 @@
 # Identity: ZIB + shared site-X under ACCEPTED decision 2026-08-15.
 # Contract: zero-X ≈ fit_zib_gllvm; packed central FD ≤ 1e-6.
 # No silent tolerance widen. Twin light Δ forbidden (twin ZIP/ZINB cut; no twin ZIB).
-# Shared choke points (exports / bridge / @formula / runtests) left to ADMIT.md.
+# Shared choke points (exports / bridge / @formula / runtests) left to
+# docs/dev-log/handover/2026-08-15-zib-x-ADMIT.md.
 
 using Test
 using Random
