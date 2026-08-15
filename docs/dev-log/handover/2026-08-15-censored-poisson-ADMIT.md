@@ -35,13 +35,30 @@
 ## Verification (local focused)
 
 ```
-Test Summary: censored_poisson family (Julia-forward) | Pass  Total
-                                                     |   43     43
+Test Summary:                           | Pass  Total
+censored_poisson family (Julia-forward) |   46     46
 ```
 
-ENGINE-GATES 1–4 exercised: stable `μ≪C` via `logcdf(Gamma(C,1),μ)`;
-hand-coded η score/weight FD-checked; censored-dominated packed NLL finite;
+ENGINE-GATES 1–4 exercised: stable `μ≪C` via `logcdf(Gamma(C,1),μ)`; hand-coded
+η score/weight checked against Richardson-extrapolated FD on a relative scale
+(first derivative ≤ 1e-8, second ≤ 1e-6); censored-dominated cell checked against
+an **independent Laplace oracle** rebuilt from `_glm_logpdf` alone
+(derivative-free mode + Richardson FD Hessian, worst site Δ = 2.46e-9 ≤ 1e-6);
 `(lower,upper)` interval-ready encoding with v1 right-censored only.
+
+## Opus re-review required — ENGINE-GATE 4
+
+The second pass (Opus BLOCKED remediation) narrowed the accepted argument domain
+of `censored_poisson_marginal_loglik_laplace` by adding a `LogLink`-only guard,
+and replaced the gate-3 test. **Opus must re-CLEAR ENGINE-GATE 4** (interval-ready
+`(lower, upper)` encoding / forward-compatibility) against the new entry-point
+signature — the earlier verdict was issued pre-guard and does not carry over.
+Detail and per-gate numbers: `docs/dev-log/after-task/2026-08-15-censored-poisson-engine.md`.
+
+`docs/dev-log/ENGINE-GATES.md` is **not** edited from this lane — it is on the
+shared `73d3a1bc` tip also carried by PR #209 (identity lane). The gate-3 wording
+there still describes the superseded plain-FD form; conductor or the identity lane
+should refresh it after Opus re-clears.
 
 ## Packing lock
 

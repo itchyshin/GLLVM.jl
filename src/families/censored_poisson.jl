@@ -125,10 +125,19 @@ end
 Laplace log-marginal for a right-censored Poisson GLLVM. `N[t,s] == 0` marks an
 uncensored count `Y[t,s]`; `N[t,s] == C ≥ 1` marks a right-censored observation
 at limit `C`. Prefer [`censored_bounds_to_YN`](@ref) from `(lower, upper)`.
+
+Only `LogLink` is accepted: the censored η-derivatives in `_glm_score` /
+`_glm_weight` are hand-coded against `μ = exp(η)` and silently drop the
+chain-rule factor `dμ/dη` for any other link (Identity lock).
 """
-censored_poisson_marginal_loglik_laplace(Y::AbstractMatrix, N::AbstractMatrix,
-        Λ::AbstractMatrix, β::AbstractVector, link::Link = LogLink(); kwargs...) =
-    marginal_loglik_laplace(CensoredPoisson(), Y, N, Λ, β, link; kwargs...)
+function censored_poisson_marginal_loglik_laplace(Y::AbstractMatrix, N::AbstractMatrix,
+        Λ::AbstractMatrix, β::AbstractVector, link::Link = LogLink(); kwargs...)
+    link isa LogLink || throw(ArgumentError(
+        "censored_poisson_marginal_loglik_laplace: only LogLink is supported " *
+        "(Identity lock — censored η-derivatives hardcode the log link); got " *
+        string(nameof(typeof(link)))))
+    return marginal_loglik_laplace(CensoredPoisson(), Y, N, Λ, β, link; kwargs...)
+end
 
 """
     CensoredPoissonFit

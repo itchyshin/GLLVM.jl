@@ -22,7 +22,20 @@ end
         @test logS < -50   # deeply in the tail, but finite
     end
 
-    @testset "hand-coded η derivatives match FD on logcdf (ENGINE-GATE 2/3)" begin
+    @testset "hand-coded η derivatives vs Richardson FD (ENGINE-GATE 2)" begin
+        # Richardson extrapolation kills the O(h²) truncation term that forced the
+        # earlier loose absolute tolerance, so both η-derivatives are checked on a
+        # *relative* scale: first derivative ≤ 1e-8, second derivative ≤ 1e-6.
+        # Step sizes are chosen per derivative order (roundoff ∝ 1/h² for the
+        # second difference, so it needs the larger step).
+        richardson1 = (f, x, h) -> begin
+            d = hh -> (f(x + hh) - f(x - hh)) / (2hh)
+            (4 * d(h / 2) - d(h)) / 3
+        end
+        richardson2 = (f, x, h) -> begin
+            d = hh -> (f(x + hh) - 2 * f(x) + f(x - hh)) / hh^2
+            (4 * d(h / 2) - d(h)) / 3
+        end
         cells = [(3.7, 5), (0.3, 30), (0.05, 10), (25.0, 30), (120.0, 100)]
         for (μ, C) in cells
             G = GLLVM._censored_poisson_G(μ, C)
@@ -32,20 +45,21 @@ end
             W = GLLVM._glm_weight(GLLVM.CensoredPoisson(), μ, C, μ)
             @test W ≈ G * (G + μ - C) atol = 1e-10
             @test W ≥ -1e-12
-            # Central FD on stable logS(η) with μ = exp(η).
-            # First deriv ≤ 1e-6 (Identity gate). Second deriv tolerates FD
-            # truncation on small |g2| — ceiling review reported ≤ 1.2e-6 on
-            # favourable cells and looser truncation elsewhere.
             ℓ = η -> GLLVM._censored_poisson_logS(exp(η), C)
             η = log(μ)
-            h = 1e-6
-            d1 = (ℓ(η + h) - ℓ(η - h)) / (2h)
-            h2 = 1e-4
-            d2 = (ℓ(η + h2) - 2ℓ(η) + ℓ(η - h2)) / h2^2
             g2 = G * (C - μ - G)
-            @test abs(G - d1) ≤ 1e-6
-            @test abs(g2 - d2) ≤ max(5e-4, 5e-3 * abs(g2))
+            @test abs(G - richardson1(ℓ, η, 1e-3)) ≤ 1e-8 * abs(G)
+            @test abs(g2 - richardson2(ℓ, η, 5e-3)) ≤ 1e-6 * abs(g2)
         end
+    end
+
+    @testset "non-log link rejected (Identity lock)" begin
+        Y = [1 2; 3 4]
+        N = zeros(Int, 2, 2)
+        @test_throws ArgumentError GLLVM.censored_poisson_marginal_loglik_laplace(
+            Y, N, zeros(2, 1), zeros(2), IdentityLink())
+        @test isfinite(GLLVM.censored_poisson_marginal_loglik_laplace(
+            Y, N, zeros(2, 1), zeros(2), LogLink()))
     end
 
     @testset "uncensored path matches Poisson (N≡0)" begin
@@ -117,48 +131,112 @@ end
         @test fit_c.loglik ≈ fit_p.loglik rtol = 1e-5 atol = 1e-3
     end
 
-    @testset "packed NLL FD ≤ 1e-6 on censored-dominated cell (ENGINE-GATE 3)" begin
+    @testset "independent Laplace oracle on censored-dominated cell (ENGINE-GATE 3)" begin
+        # The engine's Laplace value depends on _glm_score (through the mode) and
+        # on _glm_weight (through logdet(Λ'WΛ + I)). Comparing two finite-difference
+        # steps of the same objective is vacuous — it re-tests the same kernels.
+        # This gate rebuilds the Laplace approximation from `_glm_logpdf` ALONE:
+        #   · conditional mode by derivative-free golden-section coordinate ascent
+        #   · curvature by Richardson-extrapolated finite-difference Hessian
+        # so a wrong score or a wrong weight shows up as a log-likelihood mismatch.
+
+        # Derivative-free 1-D minimiser on a bracket (unimodal conditional posterior).
+        gss = (f, a, b) -> begin
+            φ = (sqrt(5.0) - 1) / 2
+            c = b - φ * (b - a); d = a + φ * (b - a)
+            fc = f(c); fd = f(d)
+            for _ in 1:200
+                if fc < fd
+                    b, d, fd = d, c, fc
+                    c = b - φ * (b - a); fc = f(c)
+                else
+                    a, c, fc = c, d, fd
+                    d = a + φ * (b - a); fd = f(d)
+                end
+                (b - a) ≤ 1e-15 * (1 + abs(a) + abs(b)) && break
+            end
+            (a + b) / 2
+        end
+        fdhess = (f, x, h) -> begin
+            m = length(x); H = zeros(m, m); fmid = f(x)
+            for a in 1:m
+                xp = copy(x); xp[a] += h
+                xm = copy(x); xm[a] -= h
+                H[a, a] = (f(xp) - 2 * fmid + f(xm)) / h^2
+                for b in (a + 1):m
+                    xpp = copy(x); xpp[a] += h; xpp[b] += h
+                    xpm = copy(x); xpm[a] += h; xpm[b] -= h
+                    xmp = copy(x); xmp[a] -= h; xmp[b] += h
+                    xmm = copy(x); xmm[a] -= h; xmm[b] -= h
+                    v = (f(xpp) - f(xpm) - f(xmp) + f(xmm)) / (4 * h^2)
+                    H[a, b] = v; H[b, a] = v
+                end
+            end
+            H
+        end
+        rhess = (f, x, h) -> (4 .* fdhess(f, x, h / 2) .- fdhess(f, x, h)) ./ 3
+
         Random.seed!(63)
-        p, n, K = 3, 25, 1
-        β = randn(p) .* 0.2 .+ 0.5
-        # Dominate with right-censored rows at moderate C.
-        Y = fill(4, p, n)
-        N = fill(4, p, n)
-        # Sprinkle a few uncensored so the column is identified.
-        for s in 1:5
-            for t in 1:p
-                Y[t, s] = rand(Poisson(exp(β[t])))
-                N[t, s] = 0
+        p, n, K = 4, 12, 2
+        β = randn(p) .* 0.2 .+ 0.6
+        Λ = 0.35 .* randn(p, K)
+        Y = Matrix{Int}(undef, p, n)
+        N = Matrix{Int}(undef, p, n)
+        for s in 1:n, t in 1:p
+            if (t + s) % 4 == 0
+                Y[t, s] = rand(Poisson(exp(β[t]))); N[t, s] = 0
+            else
+                C = 3 + ((t + s) % 3)
+                Y[t, s] = C; N[t, s] = C
             end
         end
-        rr = GLLVM.rr_theta_len(p, K)
-        θ = vcat(β, GLLVM.pack_lambda(0.25 .* randn(p, K)))
-        nll = θv -> begin
-            βv = θv[1:p]
-            Λv = GLLVM.unpack_lambda(θv[(p + 1):(p + rr)], p, K)
-            -GLLVM.marginal_loglik_laplace(GLLVM.CensoredPoisson(), Y, N, Λv, βv, LogLink())
+        @test count(!iszero, N) / length(N) ≥ 0.75   # censored-dominated cell
+
+        fam = GLLVM.CensoredPoisson()
+        worst = 0.0
+        worst_grad = 0.0
+        min_weight = Inf
+        for s in 1:n
+            ys = Vector(view(Y, :, s)); ns = Vector(view(N, :, s))
+            # Site log-joint, built from `_glm_logpdf` only (no score, no weight).
+            q = z -> begin
+                μ = exp.(β .+ Λ * z)
+                acc = -0.5 * dot(z, z)
+                for t in 1:p
+                    acc += GLLVM._glm_logpdf(fam, μ[t], ns[t], ys[t])
+                end
+                acc
+            end
+            ẑ = zeros(K)
+            for _sweep in 1:300
+                moved = 0.0
+                for d in 1:K
+                    along = t -> begin zz = copy(ẑ); zz[d] = t; -q(zz) end
+                    znew = gss(along, ẑ[d] - 5.0, ẑ[d] + 5.0)
+                    moved = max(moved, abs(znew - ẑ[d]))
+                    ẑ[d] = znew
+                end
+                moved < 1e-13 && break
+            end
+            # The derivative-free mode really is a stationary point of the log-joint.
+            for d in 1:K
+                zp = copy(ẑ); zp[d] += 1e-5
+                zm = copy(ẑ); zm[d] -= 1e-5
+                worst_grad = max(worst_grad, abs((q(zp) - q(zm)) / 2e-5))
+            end
+            # Laplace: q(ẑ) − ½logdet(−∇²q). The (2π)^{K/2} factors cancel against
+            # the N(0,I) prior normaliser, matching `laplace_loglik_site`'s form.
+            ℓ_oracle = q(ẑ) - 0.5 * logdet(-rhess(q, ẑ, 5e-3))
+            ℓ_engine = GLLVM.laplace_loglik_site(fam, ys, ns, Λ, β, LogLink())
+            worst = max(worst, abs(ℓ_oracle - ℓ_engine))
+            μ̂ = exp.(β .+ Λ * ẑ)
+            for t in 1:p
+                min_weight = min(min_weight, GLLVM._glm_weight(fam, μ̂[t], ns[t], μ̂[t]))
+            end
         end
-        # Analytic/hand-coded path is inside the objective; FD the packed nll.
-        # ForwardDiff through logcdf fails — use central FD self-consistency of
-        # the hand-coded score via a one-site scalar check already covered above.
-        # Here: central FD of nll vs a second coarser FD (truncation gate).
-        h = 1e-6
-        g_fd = similar(θ)
-        @inbounds for i in eachindex(θ)
-            θp = copy(θ); θp[i] += h
-            θm = copy(θ); θm[i] -= h
-            g_fd[i] = (nll(θp) - nll(θm)) / (2h)
-        end
-        h2 = 1e-5
-        g_fd2 = similar(θ)
-        @inbounds for i in eachindex(θ)
-            θp = copy(θ); θp[i] += h2
-            θm = copy(θ); θm[i] -= h2
-            g_fd2[i] = (nll(θp) - nll(θm)) / (2h2)
-        end
-        @test maximum(abs, g_fd .- g_fd2) ≤ 1e-6 || maximum(abs, g_fd) < 1e-8
-        @test all(isfinite, g_fd)
-        @test isfinite(nll(θ))
+        @test worst_grad ≤ 1e-6
+        @test min_weight > 0        # the max(W,0) floor is inactive here
+        @test worst ≤ 1e-6
     end
 
     @testset "smoke fit with mixed censored / uncensored" begin
