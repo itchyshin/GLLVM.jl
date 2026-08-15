@@ -91,10 +91,15 @@ Twin family names align with gllvmTMB / gllvm. Status = native Julia engine
 | delta_gamma | implemented |
 | delta_lognormal | implemented |
 | hurdle_poisson / hurdle_nbinom2 | implemented |
-| zip / zinb / zib | implemented (ZIP+X via `fit_zip_gllvm_cov`; ZINB+X via `fit_zinb_gllvm_cov`, shared scalar `r`; Julia-forward / twin-asymmetric — no twin light Δ) |
+| zip / zinb / zib | implemented |
 | ordered_beta / beta_hurdle | implemented |
 | exponential (Gamma shape=1 path) | implemented |
 | com_poisson | planned |
+
+Notes (not status rows): `zip` / `zinb` / `zib` are Julia-forward (ZIP+X via
+`fit_zip_gllvm_cov`; ZINB+X via `fit_zinb_gllvm_cov`, shared scalar `r`);
+twin gllvmTMB cut ZIP/ZINB — **no** invent twin light Δ. Status cells stay
+bare MC tokens.
 
 ## Intervals and estimation evidence
 

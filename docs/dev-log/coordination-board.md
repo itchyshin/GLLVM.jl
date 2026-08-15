@@ -4,7 +4,8 @@
 
 | Lane | Status | Branch / tip | Current handover / pointer | Owns |
 |---|---|---|---|---|
-| **ZINB+X confint under X** | **THIS LANDING** | `feat/zinb-x-confint-20260814` from `origin/main` @ `d589bd40` (#203) | after-task `docs/dev-log/after-task/2026-08-14-zinb-x-confint.md` | `confint(ZINBCovFit)` + bridge CI lift; `_BRIDGE_NO_CI_X_FAMILIES` empty; `ci_x_*` true for `zinb`. **≠ twin Δ ≠ ADEMP ≠ per-trait r**. |
+| **Capability catch-up (post-#204)** | **THIS LANDING** | `cursor/capability-catchup-20260815` from `origin/main` @ `2914cc18` (#204) | LOOP `lanes/gllvmjl-capability-catchup-20260815/LOOP/` · plan `docs/dev-log/plans/2026-08-15-gllvm-jl-gllvmtmb-capability-catchup.md` | Hygiene bare `implemented` zip/zinb + student/REML/com_poisson promote-or-OWED + **truncated_poisson** Identity→Engine (Ada G0). **≠ invent ZIP/ZINB twin Δ ≠ ADEMP ≠ Phylo A ≠ race-merge**. |
+| **ZINB+X confint under X** | **MERGED** #204 | `main` @ `2914cc18` | after-task `docs/dev-log/after-task/2026-08-14-zinb-x-confint.md` · Ubuntu one-fit `2026-08-15-zinb-x-confint-ubuntu-onefit.md` | `confint(ZINBCovFit)` + bridge CI lift; `_BRIDGE_NO_CI_X_FAMILIES` empty; `ci_x_*` true for `zinb`. Closed. **≠ twin Δ ≠ ADEMP ≠ per-trait r**. |
 | **ZINB+X engine Arc 0** | **MERGED** #203 | `main` @ `d589bd40` | after-task `docs/dev-log/after-task/2026-08-14-zinb-x-engine.md` | `fit_zinb_gllvm_cov` / `ZINBCovFit` + identity/FD + bridge/`@formula`. Closed. **≠ twin Δ ≠ ADEMP ≠ per-trait r**. |
 | **ZINB+X Identity Arc 0** | **ACCEPTED** (docs-only; MERGED #202) | `main` @ `daf95da6` | decision `docs/dev-log/decisions/2026-08-13-zinb-x-identity.md` | Shared site-X, separate `γ^z`/`γ^c`, `Λ_z=0`, **shared scalar `r`**. Closed before engine. |
 | **ZIP+X confint under X** | **MERGED** #201 | `main` @ `8abdd751` | after-task `docs/dev-log/after-task/2026-08-13-zip-x-confint.md` | `confint(ZIPCovFit)` + bridge CI lift. Closed. **≠ twin Δ ≠ ZINB+X engine ≠ ADEMP**. |
@@ -38,20 +39,28 @@
 ## Current Rule
 
 - Rehydrate via **this Active-Lane-Split**, not a single orphaned START HERE bullet.
-- `START HERE (Cursor):` **ZINB+X confint under X** on
-  `feat/zinb-x-confint-20260814` (`origin/main` @ `d589bd40` = #203).
-  `confint(ZINBCovFit)` + bridge CI lift. Engine is **MERGED** #203.
-- Rose fence: Julia ZINB+X CI ≠ twin Δ ≠ ADEMP ≠ free `Λ_z` ≠ per-trait `r`
-  (do not copy NB2) ≠ hurdle/Tweedie+X ≠ Phylo #127; do not re-open Identity.
+- `START HERE (Cursor):` **Capability catch-up (post-#204)** on
+  `cursor/capability-catchup-20260815` (`origin/main` @ `2914cc18` = #204).
+  LOOP `lanes/gllvmjl-capability-catchup-20260815/LOOP/` — hygiene →
+  ledger honesty → **truncated_poisson** Identity→Engine (Ada G0 locked).
+- Rose fence: ≠ invent twin light Δ for cut ZIP/ZINB ≠ ADEMP/coverage unless
+  Totoro/DRAC sized+asked ≠ Phylo Model A public intervals ≠ silent rtol
+  widen ≠ hurdle/Tweedie+X / none×dep / slopes / AGHQ / multinomial as this
+  programme's primary engine; do not re-open ZINB Identity.
 - Bridge execution R→Julia only (JuliaCall); RCall = opt-in oracle.
 - Stage by name; never `git add -A`; no push without instruction.
 - Dropbox checkout remains PROTECTED.
 
 ## Status
 
-- 2026-08-14 — ZINB+X confint under X **THIS LANDING** on
-  `feat/zinb-x-confint-20260814` from `origin/main` @ `d589bd40` (#203).
-  `_family_ci(::ZINBCovFit)` + guard lift; `ci_x_*` true; shared scalar `r`.
+- 2026-08-15 — Capability catch-up programme **THIS LANDING** on
+  `cursor/capability-catchup-20260815` from `origin/main` @ `2914cc18`
+  (#204 MERGED). G0 Ada defaults: truncated_poisson Identity→Engine;
+  local compute; light Δ only when twin admits.
+- 2026-08-15 — ZINB+X confint under X **MERGED**
+  [#204](https://github.com/itchyshin/GLLVM.jl/pull/204) @ `2914cc18`.
+  `_family_ci(::ZINBCovFit)` + guard lift; `ci_x_*` true; shared scalar `r`;
+  Ubuntu one-fit bridge_x 357/357.
 - 2026-08-14 — ZINB+X engine Arc 0 **MERGED**
   [#203](https://github.com/itchyshin/GLLVM.jl/pull/203) @ `d589bd40`.
   `fit_zinb_gllvm_cov` / `ZINBCovFit`; shared scalar `r`; identity/FD
