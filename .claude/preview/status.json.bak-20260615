@@ -1,0 +1,1050 @@
+{
+  "build": "2026-06-14-gllvm-finish-001",
+  "generated_at": "2026-06-15T21:42:13.000Z",
+  "title": "Finishing the twin - GLLVM.jl + gllvmTMB",
+  "mission": "Finish the R-Julia twin: GLLVM.jl as the Julia engine and gllvmTMB as the R user surface. A capability is done only when engine support, R bridge support, point estimates, objective/logLik, CI or CI-status, docs/articles, visual evidence, tests, issue ledger, and Rose audit agree.",
+  "current_work": "R-first sequencing is the operating rule: complete the gllvmTMB user surface first, then make GLLVM.jl match and accelerate those exact targets. Latest banked slice: gllvmTMB a0274e0 hardens unsupported CI-status for supported non-Gaussian fixed-effect-X Julia bridge point fits. Direct ci_method requests and confint() now report wald/profile/bootstrap_unavailable_non_gaussian_x, and complete non-Gaussian-X point-fit objects cache ci_unavailable_non_gaussian_x. Evidence: no-Julia bridge 248 pass / 18 expected skips, live R-Julia bridge 599/599 against GLLVM.jl-integration, full gllvmTMB devtools::test() 3018 pass / 724 skips / 0 failures / 3 pre-existing warnings, git diff --check clean. Boundary: no new interval endpoints, no NB1-X admission, no Julia likelihood/speed change. REML remains Gaussian-only; HSquared-style AI-REML is later exact-Gaussian scouting, never non-Gaussian/Laplace wording.",
+  "footer": "GLLVM.jl + gllvmTMB mission-control board at http://127.0.0.1:8770/",
+  "metrics": [
+    {
+      "label": "Active phase",
+      "value": "5",
+      "status": "active"
+    },
+    {
+      "label": "Slices visible",
+      "value": "62",
+      "status": "partial"
+    },
+    {
+      "label": "Blocked claims",
+      "value": "2",
+      "status": "partial"
+    },
+    {
+      "label": "Release verdict",
+      "value": "hold",
+      "status": "unsupported"
+    }
+  ],
+  "repos": [
+    {
+      "name": "GLLVM.jl local board worktree",
+      "branch": "codex/non-gaussian-fitter-gradients",
+      "head": "1d8c7d3",
+      "dirty": false,
+      "note": "Dashboard/ledger branch. This JSON records the source SHA before the current board-sync commit; run git rev-parse for the exact local board commit. Use GLLVM.jl-integration for current bridge tests until branches are reconciled."
+    },
+    {
+      "name": "GLLVM.jl integration",
+      "branch": "codex/high-rate-poisson-safeguard",
+      "head": "5fabcb1",
+      "dirty": false,
+      "note": "Paired runtime engine checkout for current gllvmTMB bridge evidence. Latest NB1 mask slice routes mask-aware NB1 bridge point fits and masked score reconstruction. Evidence: Julia bridge ledger 20/20, mask gate 34/34, GLLVM core 3931 pass / 3 broken / 0 fail, live gllvmTMB bridge 571/571, temporary developed-env Documenter build completed with known residual warnings."
+    },
+    {
+      "name": "gllvmTMB",
+      "branch": "engine-julia",
+      "head": "a0274e0",
+      "dirty": false,
+      "note": "engine-julia has local R-first bridge/inference/plot slices committed through non-Gaussian-X unsupported-CI status hardening. Current green evidence uses GLLVM_JL_PATH=/Users/z3437171/Dropbox/Github Local/GLLVM.jl-integration: no-Julia bridge 248 pass / 18 expected skips, live bridge 599/599, full devtools::test() 3018 pass / 724 skips / 0 failures / 3 pre-existing warnings. Julia CI endpoint parity and broader bridge cells remain queued."
+    },
+    {
+      "name": "drmTMB",
+      "branch": "detached HEAD",
+      "head": "b4a4d7be",
+      "dirty": true,
+      "note": "Dirty user-owned Phase 18/bridge/simulation work; read-only cross-check source."
+    },
+    {
+      "name": "DRM.jl",
+      "branch": "shannon/ayumi-integration",
+      "head": "23d8f79",
+      "dirty": true,
+      "note": "Dirty finish-audit files; source of bridge-drift and profile-CI lessons."
+    },
+    {
+      "name": "hsquared",
+      "branch": "main",
+      "head": "3666363",
+      "dirty": false,
+      "note": "Clean R twin; capability-matrix and AI-REML boundary pattern."
+    },
+    {
+      "name": "HSquared.jl",
+      "branch": "codex/phase5-marker-region-data",
+      "head": "2317133",
+      "dirty": true,
+      "note": "Dirty marker-region slice; use as validation-status pattern, not as GLLVM algorithm claim."
+    }
+  ],
+  "agents": [
+    {
+      "name": "Ada",
+      "initials": "Ad",
+      "role": "orchestration and phase sequencing",
+      "state": "active",
+      "color": "#5b6fa8"
+    },
+    {
+      "name": "Rose",
+      "initials": "Ro",
+      "role": "claim-vs-evidence audit",
+      "state": "active",
+      "color": "#b15b72"
+    },
+    {
+      "name": "Grace",
+      "initials": "Gr",
+      "role": "CI, docs, release gates",
+      "state": "active",
+      "color": "#4f7f52"
+    },
+    {
+      "name": "Shannon",
+      "initials": "Sh",
+      "role": "branches, PR stacks, issue ledger",
+      "state": "active",
+      "color": "#7a6b9b"
+    },
+    {
+      "name": "Hopper",
+      "initials": "Ho",
+      "role": "R-Julia bridge parity",
+      "state": "active",
+      "color": "#3d7f89"
+    },
+    {
+      "name": "Gauss",
+      "initials": "Ga",
+      "role": "sparse math and likelihood engine",
+      "state": "queued",
+      "color": "#4d75a8"
+    },
+    {
+      "name": "Karpinski",
+      "initials": "Ka",
+      "role": "Julia performance and AD",
+      "state": "queued",
+      "color": "#47907e"
+    },
+    {
+      "name": "Fisher",
+      "initials": "Fi",
+      "role": "CIs, identifiability, calibration",
+      "state": "active",
+      "color": "#a37955"
+    },
+    {
+      "name": "Curie",
+      "initials": "Cu",
+      "role": "ADEMP and recovery tests",
+      "state": "queued",
+      "color": "#bf7a36"
+    },
+    {
+      "name": "Florence",
+      "initials": "Fl",
+      "role": "figures and diagnostic visuals",
+      "state": "queued",
+      "color": "#b25b91"
+    },
+    {
+      "name": "Pat",
+      "initials": "Pa",
+      "role": "applied-user workflow",
+      "state": "queued",
+      "color": "#7c9868"
+    },
+    {
+      "name": "Jason",
+      "initials": "Ja",
+      "role": "DRM/HSquared scout",
+      "state": "queued",
+      "color": "#8a7d4b"
+    }
+  ],
+  "phases": [
+    {
+      "key": "P0",
+      "name": "Rehydrate, merge gates, and current truth",
+      "status": "partial",
+      "done": 2,
+      "total": 4,
+      "open": true,
+      "slices": [
+        {
+          "name": "Confirm repo state across GLLVM.jl, integration, gllvmTMB, DRM/drmTMB, HSquared/hsquared",
+          "status": "partial",
+          "evidence": "Local git state plus Grace/Shannon GitHub snapshot captured; issue mutation still queued."
+        },
+        {
+          "name": "Land or hold GLLVM #95",
+          "status": "planned",
+          "evidence": "Maintainer-gated; do not merge from this board slice."
+        },
+        {
+          "name": "Audit GLLVM #94 unique content before closure",
+          "status": "partial",
+          "evidence": "Local audit at docs/dev-log/2026-06-15-pr94-unique-content-audit.md: #94 is draft/conflicting; 124 paths absent from integration, 50 present-different, 2 byte-identical. Do not merge; create successor issues before closure."
+        },
+        {
+          "name": "Repair gllvmTMB bridge branch from current origin/main",
+          "status": "partial",
+          "evidence": "Bridge contract shrink applied locally on engine-julia; full branch repair/cherry-pick hygiene remains maintainer-gated."
+        }
+      ]
+    },
+    {
+      "key": "P1",
+      "name": "Mission-control dashboard",
+      "status": "covered",
+      "done": 3,
+      "total": 3,
+      "open": true,
+      "slices": [
+        {
+          "name": "Convert board to JSON-backed status",
+          "status": "covered",
+          "evidence": ".claude/preview/index.html fetches status.json, sweep.json, and version.txt."
+        },
+        {
+          "name": "Add dashboard fields for phases, agents, repos, blockers, evidence",
+          "status": "covered",
+          "evidence": "Rendered from status.json and sweep.json in the in-app browser."
+        },
+        {
+          "name": "Version guard",
+          "status": "covered",
+          "evidence": "HTML BUILD matches version.txt and status.json build."
+        }
+      ]
+    },
+    {
+      "key": "P2",
+      "name": "Issue-led claim governance",
+      "status": "partial",
+      "done": 2,
+      "total": 3,
+      "open": false,
+      "slices": [
+        {
+          "name": "Create master issue map",
+          "status": "partial",
+          "evidence": "Local issue action map written at docs/dev-log/2026-06-14-issue-action-map.md; no GitHub mutation yet."
+        },
+        {
+          "name": "Apply capability issue template",
+          "status": "queued",
+          "evidence": "Template drafted in roadmap docs; live issue updates pending approval/work slice."
+        },
+        {
+          "name": "Close stale issues only with successors",
+          "status": "queued",
+          "evidence": "No stale issue closed yet."
+        }
+      ]
+    },
+    {
+      "key": "P3",
+      "name": "Capability and bridge matrix",
+      "status": "active",
+      "done": 2,
+      "total": 3,
+      "open": true,
+      "slices": [
+        {
+          "name": "Capability rows for families, structures, data complications, inference",
+          "status": "partial",
+          "evidence": "Drafted in docs/dev-log/capability-bridge-matrix.md and sweep.json; bridge_fit no-X and X rows updated after test evidence."
+        },
+        {
+          "name": "Matrix columns for engine, bridge, estimates, objective, CIs, parity, ADEMP, visual, article",
+          "status": "active",
+          "evidence": "Drafted; needs second pass after live issue refresh."
+        },
+        {
+          "name": "Public status vocabulary",
+          "status": "covered",
+          "evidence": "covered, partial, experimental, planned, unsupported used in JSON and docs."
+        }
+      ]
+    },
+    {
+      "key": "P4",
+      "name": "Core robustness before breadth",
+      "status": "covered",
+      "done": 4,
+      "total": 4,
+      "open": true,
+      "slices": [
+        {
+          "name": "Fix #96 Laplace mode-finder safeguard",
+          "status": "covered",
+          "evidence": "Backtracking/near-mode full-step/zero-restart safeguards implemented; new test_laplace_mode_safeguards 5/5, core suite, and full Pkg.test green. Issue/PR reconciliation still open."
+        },
+        {
+          "name": "Fix #91 high-rate Poisson beta divergence",
+          "status": "covered",
+          "evidence": "Reproduced on integration analytic path; branch codex/high-rate-poisson-safeguard keeps beta6 on empirical scale, adds analytic-vs-FD regression, and latest full Pkg.test passed 3869/1 broken after follow-up changes."
+        },
+        {
+          "name": "Fix #92 phylo-signal CI scale/export/test gap",
+          "status": "covered",
+          "evidence": "_derived_unpack now respects identity-scale sigma_phy; phylo_signal_wald_ci exported; transformed-Wald test 108/108, adjacent derived/profile CI tests, and full Pkg.test 3869/1 broken green."
+        },
+        {
+          "name": "Gamma analytic gradient recheck",
+          "status": "covered",
+          "evidence": "Gamma default flipped to analytic after quick + medium benchmark cells showed ~9.7-14.3x speedups and |delta logLik| <= 1.9e-12; Pkg.test passed after the flip."
+        }
+      ]
+    },
+    {
+      "key": "P5",
+      "name": "R-Julia bridge contract and gate drift",
+      "status": "partial",
+      "done": 4,
+      "total": 9,
+      "open": true,
+      "slices": [
+        {
+          "name": "Bring bridge_fit into the current GLLVM surface",
+          "status": "covered",
+          "evidence": "src/bridge.jl exported bridge_fit; test/test_bridge_fit.jl passed 175/175 for Gaussian, Poisson, Binomial, NB2, Beta, Gamma, and Ordinal no-X fits."
+        },
+        {
+          "name": "NB1 no-X bridge admission",
+          "status": "partial",
+          "owner": "Hopper/Fisher",
+          "note": "R admits nbinom1()/nb1 complete-data no-X fits with live logLik equality and Wald phi CI smoke; NB1 missing-response masks are now admitted for no-X point fits; NB1 X/profile/bootstrap/native parity remain queued."
+        },
+        {
+          "name": "NB1 post-fit methods",
+          "status": "partial",
+          "owner": "Hopper/Fisher",
+          "note": "R routes predict/fitted/residuals/augment for admitted NB1 no-X fits, including masked rows via cached fitted means. Conditional simulate() remains complete-data only; NB1 X/profile/bootstrap/native parity remain queued."
+        },
+        {
+          "name": "Fixed-effect-X public evidence rows",
+          "status": "partial",
+          "owner": "Hopper/Fisher",
+          "note": "Gaussian, Poisson, Binomial, NB2, Beta, and Gamma complete-data X rows now have public formula-vs-direct bridge evidence. Non-Gaussian X interval endpoints remain unavailable but now have method-specific CI-status evidence; X+mask, NB1 X, ordinal X, mixed-family X, and native TMB parity remain queued."
+        },
+        {
+          "name": "Flat ASCII-safe bridge payload",
+          "status": "partial",
+          "evidence": "Minimal NamedTuple payload uses ASCII keys and primitive arrays; gllvmTMB live test covers field access and names for no-X one-part routes, and mixed-family bridge objects now preserve selector, family_by_trait, per-trait families, and link metadata."
+        },
+        {
+          "name": "Gate-vs-engine guard for gllvmTMB #488",
+          "status": "partial",
+          "evidence": "R gate narrowed to current GLLVM.bridge_fit and now exposes gllvm_julia_capabilities() as a method-aware R-side admission ledger. Bridge family, X, non-Gaussian-X CI-status, mask, masked-CI status, cbind-binomial transport, no-X CI rows, post-fit rows, simulation rows, and narrow mixed-family admission are live-tested against GLLVM.jl-integration (599/599). Automated cross-repo drift CI remains queued."
+        },
+        {
+          "name": "Wording freeze: default GLLVM.jl fitting path only",
+          "status": "covered",
+          "evidence": "Bridge wording avoids engine_control or selectable Julia-algorithm claims."
+        },
+        {
+          "name": "Bridge CI surface",
+          "status": "partial",
+          "evidence": "Wald, Gaussian profile, and bootstrap CI routes are live-tested through confint.gllvmTMB_julia for supported non-masked cells. Native R derived confint matrices now share row-named ci_status semantics for icc, phylo_signal, communality, rho, and proportion; these are the R targets Julia CI payloads must match later. Masked objects, including masked cbind-binomial cells, fail at the R S3 boundary with method-specific unavailable statuses; actual masked and mixed-family Julia interval endpoints remain queued."
+        },
+        {
+          "name": "Post-fit methods through bridge",
+          "status": "partial",
+          "evidence": "coef()/tidy()/glance()/augment()/summary()/predict()/fitted()/residuals()/simulate()/nobs() plus extract_ordination()/getLoadings()/getLV()/rotate_loadings()/ordiplot()/plot(type=\"ordination\") are live-tested for current in-sample bridge payloads, including fixed-effect tidy rows, cached glance fit statistics, in-sample augment row diagnostics, conditional gaussian/poisson/binomial/NB2/NB1/Beta/Gamma simulation, NB1 masked fitted/residual/augment rows, non-Gaussian-X cached unavailable-CI status, and row-family-aware prediction/residual/augment/simulate for narrow trait-aligned mixed-family objects (599/599 against GLLVM.jl-integration). tidy() deliberately excludes loadings, SEs, CIs, random parameters, and cutpoints until covariance/parameter-class payloads are routed. glance() is fit statistics only. augment() is response-scale/default-conditional/in-sample only. simulate() is conditional complete-data only for NB1 and still rejects masked responses. vcov() fails with an explicit not-yet-routed status. newdata prediction/augmentation, link-scale augment rows, ordinal probabilities, covariance payloads, broader plot types, masked-response simulation, and richer diagnostic residuals remain queued."
+        }
+      ]
+    },
+    {
+      "key": "P6",
+      "name": "Missing values and incomplete data",
+      "status": "partial",
+      "done": 2,
+      "total": 6,
+      "open": false,
+      "slices": [
+        {
+          "name": "Response-missing masks: mask data term only",
+          "status": "partial",
+          "evidence": "GLLVM.bridge_fit(mask=...) normalizes all-true masks to the complete-data path and now covers Poisson, Bernoulli Binomial, NB2, NB1, Beta, Gamma, and ordinal-probit no-X bridge masks. NB1 native-vs-bridge parity and sentinel invariance pass in test_bridge_missing_mask.jl; Gaussian/X/mixed masks and masked CIs remain unsupported."
+        },
+        {
+          "name": "R bridge missing response",
+          "status": "partial",
+          "evidence": "gllvmTMB missing=miss_control(response=\"include\") now routes true=observed masks for no-X one-part Poisson, Bernoulli Binomial, cbind Binomial, NB2, NB1, Beta, Gamma, and Ordinal-probit fits; live bridge tests pass 571/571 after NB1 mask admission. Ordinal prediction/residual payloads, masked simulation, masked CIs, Gaussian masks, and X+mask remain queued."
+        },
+        {
+          "name": "Predictor-missing FIML/MI matrix",
+          "status": "queued",
+          "evidence": "No mean-imputation shortcut."
+        },
+        {
+          "name": "Mixed missingness definition",
+          "status": "queued",
+          "evidence": "Deliberate rejection if unsupported."
+        },
+        {
+          "name": "Missingness diagnostics and visuals",
+          "status": "queued",
+          "evidence": "Heatmap, observed counts, warning summary, article."
+        }
+      ]
+    },
+    {
+      "key": "P7",
+      "name": "Mixed and cross-family models",
+      "status": "active",
+      "done": 1,
+      "total": 6,
+      "open": false,
+      "slices": [
+        {
+          "name": "Native per-response family dispatch",
+          "status": "partial",
+          "evidence": "Native gllvmTMB named-list selector oracle is hardened, GLLVM.jl-integration 21f6662 returns row-aligned mixed bridge families/link labels, and gllvmTMB d22d0de now admits complete balanced trait-aligned no-X/no-mask/no-CI mixed-family Julia fits. Live public-dispatch test compares gllvmTMB(..., engine=\"julia\") to direct gllvm_julia_fit() on the resolved per-trait family vector. Mixed X, masks, cbind/weights, CI endpoints, REML, ordinal/NB1/delta/hurdle/two-part mixed routes, and broad native-TMB-vs-Julia equivalence remain queued."
+        },
+        {
+          "name": "Gaussian plus Poisson first mixed slice",
+          "status": "queued",
+          "evidence": "Shared latent correlation recovery required."
+        },
+        {
+          "name": "Tier-2 NB2, Beta, Gamma",
+          "status": "queued",
+          "evidence": "Then Binomial and Ordinal as separate gates."
+        },
+        {
+          "name": "Cross-family latent correlation target",
+          "status": "queued",
+          "evidence": "Must distinguish latent correlation from residual rho12."
+        },
+        {
+          "name": "Bridge metadata for per-column families",
+          "status": "queued",
+          "evidence": "confint refit must not guess labels."
+        },
+        {
+          "name": "Mixed-family article and profile visual",
+          "status": "queued",
+          "evidence": "Latent-correlation profile curve needed."
+        }
+      ]
+    },
+    {
+      "key": "P8",
+      "name": "Random slopes",
+      "status": "queued",
+      "done": 0,
+      "total": 5,
+      "open": false,
+      "slices": [
+        {
+          "name": "Audit current support",
+          "status": "queued",
+          "evidence": "Separate Gaussian, Poisson, intercepts, slopes."
+        },
+        {
+          "name": "Non-Gaussian random slopes by family",
+          "status": "queued",
+          "evidence": "NB2, Binomial, Beta, Gamma, Ordinal if identifiable."
+        },
+        {
+          "name": "Structured random slopes",
+          "status": "queued",
+          "evidence": "phylo, animal/relmat, spatial, kernel."
+        },
+        {
+          "name": "CI and diagnostics",
+          "status": "queued",
+          "evidence": "SD/correlation intervals and boundary statuses."
+        },
+        {
+          "name": "Random-slope visuals",
+          "status": "queued",
+          "evidence": "Slope distribution, correlation, failure heatmap."
+        }
+      ]
+    },
+    {
+      "key": "P9",
+      "name": "Structural dependencies",
+      "status": "queued",
+      "done": 0,
+      "total": 6,
+      "open": false,
+      "slices": [
+        {
+          "name": "Phylo representation parity",
+          "status": "queued",
+          "evidence": "dense/sparse/contrasts/edge-incidence equality."
+        },
+        {
+          "name": "Takahashi/node-gradient route",
+          "status": "partial",
+          "evidence": "Phylo-unique K_aug=1/K_phy=0/has_unique route now uses node_grad; node vs leaf-block max rel error <= 1.015e-13, bench speedup 2.99-21.58x, full Pkg.test 3869/1 broken. Λ_phy and mixed augmented shapes still use exact leaf-block fallback."
+        },
+        {
+          "name": "Animal/relmat K/Q backend",
+          "status": "queued",
+          "evidence": "Label alignment and PSD/PD checks."
+        },
+        {
+          "name": "Spatial/SPDE",
+          "status": "queued",
+          "evidence": "Bridge route, prediction, CI status, field visual."
+        },
+        {
+          "name": "Kernel/NNGP/Matern",
+          "status": "queued",
+          "evidence": "Fixed kernel first; NNGP/Matern stay roadmap until implemented."
+        },
+        {
+          "name": "Coevolution/cross-kernel",
+          "status": "queued",
+          "evidence": "Follow C0-C5 serialized gates from gllvmTMB #361."
+        }
+      ]
+    },
+    {
+      "key": "P10",
+      "name": "Speedups with robust inference",
+      "status": "partial",
+      "done": 1,
+      "total": 6,
+      "open": false,
+      "slices": [
+        {
+          "name": "Exact implicit Laplace gradients",
+          "status": "queued",
+          "evidence": "FD <= 1e-6 across families and structures."
+        },
+        {
+          "name": "Selected inverse/Takahashi",
+          "status": "partial",
+          "evidence": "Phylo-unique selected-diagonal/node shortcut has equality plus speed table; general selected-inverse/Takahashi route remains planned for unsupported augmented shapes."
+        },
+        {
+          "name": "Observed-information Newton/Fisher scoring",
+          "status": "queued",
+          "evidence": "Gaussian REML only. HSquared AI-REML is design inspiration for exact Gaussian variance-component cells; do not use AI-REML wording for non-Gaussian Laplace. Objective, estimates, and CIs must match baseline before any speed claim."
+        },
+        {
+          "name": "Profile-CI acceleration",
+          "status": "queued",
+          "evidence": "Endpoint solver matches baseline profile."
+        },
+        {
+          "name": "Bootstrap/profile batching",
+          "status": "queued",
+          "evidence": "Separate cold/warm/marshalling/kernel/reconstruction time."
+        },
+        {
+          "name": "Allocation and AD cleanup",
+          "status": "queued",
+          "evidence": "JET/Allocs gates for hot paths."
+        }
+      ]
+    },
+    {
+      "key": "P11-16",
+      "name": "Articles, visuals, cross-team visits, simulations, release",
+      "status": "queued",
+      "done": 0,
+      "total": 21,
+      "open": false,
+      "slices": [
+        {
+          "name": "Articles walkthrough together",
+          "status": "queued",
+          "evidence": "Pat/Darwin/Fisher/Hopper/Florence/Rose review passes."
+        },
+        {
+          "name": "Visual aids",
+          "status": "queued",
+          "evidence": "Capability heatmap, missingness, parity, profiles, structure, recovery, runtime."
+        },
+        {
+          "name": "Cross-team visits",
+          "status": "partial",
+          "evidence": "DRM/HSquared lessons imported into roadmap; issue comments still queued."
+        },
+        {
+          "name": "ADEMP, parity, comparator gates",
+          "status": "queued",
+          "evidence": "StableRNG and ADEMP blocks required before big sims."
+        },
+        {
+          "name": "Big simulation and power program",
+          "status": "queued",
+          "evidence": "Only after small parity/recovery gates pass."
+        },
+        {
+          "name": "Release",
+          "status": "blocked",
+          "evidence": "Hold until package health, bridge claims, docs, dashboard, and issue ledger agree."
+        }
+      ]
+    }
+  ],
+  "activity": [
+    {
+      "time": "now",
+      "html": "<b>Hopper/Fisher/Rose non-Gaussian-X CI-status contract green.</b> Supported non-Gaussian fixed-effect-X Julia bridge point fits now cache <code>ci_unavailable_non_gaussian_x</code>, and direct <code>ci_method</code> plus <code>confint()</code> requests report <code>wald/profile/bootstrap_unavailable_non_gaussian_x</code>. Evidence: no-Julia bridge <code>248</code> pass / <code>18</code> expected skips; live bridge <code>599/599</code>; full <code>devtools::test()</code> <code>3018</code> pass / <code>724</code> skips / <code>0</code> failures / <code>3</code> pre-existing warnings. Boundary: unsupported-cell status only; no interval endpoints, NB1-X admission, Julia likelihood, or speed change."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper/Gauss/Rose NB1 mask bridge green.</b> <code>gllvmTMB(..., family = nbinom1(), engine = \"julia\", missing = miss_control(response = \"include\"))</code> now reaches the paired Julia NB1 mask route for no-X point fits. Evidence: GLLVM bridge ledger <code>20/20</code>, mask gate <code>34/34</code>, live R-Julia bridge <code>571/571</code>, GLLVM core <code>3931</code> pass / <code>3</code> broken / <code>0</code> fail, full gllvmTMB suite <code>2997</code> pass / <code>724</code> skips / <code>0</code> fail. Boundary: masked CIs/simulations, NB1-X, Gaussian masks, and mixed-family masks remain unsupported."
+    },
+    {
+      "time": "now",
+      "html": "<b>Rose/Hopper R-first claim cleanup green.</b> <code>GLLVM.bridge_capabilities()</code> now reports current bridge rows as <code>partial</code>, and README/CLAUDE/CHANGELOG/docs wording no longer says blanket full parity or parity-and-beyond. Evidence: Julia bridge ledger <code>20/20</code>; live <code>gllvmTMB</code> bridge <code>552/552</code>; temporary developed-env Documenter build completed with known residual warnings. Boundary: claim/status metadata only; no new fit, CI endpoint, calibration, or speed claim."
+    },
+    {
+      "time": "now",
+      "html": "<b>Fisher/Hopper Julia bridge CI-status slice green.</b> <code>confint.gllvmTMB_julia()</code> now returns successful interval matrices with row-named <code>ci_status</code> attributes, preserved after <code>parm</code> subsetting. Evidence: no-Julia bridge <code>228</code> pass / <code>18</code> expected skips; live bridge <code>552/552</code>; full <code>devtools::test()</code> <code>2998</code> pass / <code>724</code> skips / <code>0</code> failures / <code>3</code> pre-existing external warnings; <code>pkgdown::check_pkgdown()</code> green. Boundary: metadata/status only; interval numerics unchanged."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper/Rose method-aware bridge ledger green.</b> <code>gllvm_julia_capabilities()</code> now separates fit admission from no-X CI and in-sample post-fit method rows, and the live guard checks every admitted logical R column against <code>GLLVM.bridge_capabilities()</code>. Evidence: no-Julia bridge <code>219</code> pass / <code>18</code> expected skips; live bridge <code>519/519</code>; paired Julia metadata <code>19/19</code>; full <code>devtools::test()</code> <code>2989</code> pass / <code>724</code> skips / <code>0</code> failures / <code>3</code> pre-existing external warnings; <code>pkgdown::check_pkgdown()</code> green. Boundary: contract and drift guard only, not new fitters, estimates, CI numerics, or speed."
+    },
+    {
+      "time": "now",
+      "html": "<b>Florence/Fisher/Hopper/Rose plot CI-status propagation green.</b> <code>plot(type=\"integration\")</code>, <code>plot(type=\"communality\")</code>, and <code>plot_correlations()</code> now keep row-level <code>ci_status</code> in <code>gllvmTMB_data</code>; <code>plot_Sigma_table()</code> preserves an existing <code>ci_status</code> column from report-ready rows. Evidence: targeted plot gate <code>493</code> pass / <code>0</code> fail / <code>0</code> warn; full <code>devtools::test()</code> <code>2976</code> pass / <code>724</code> skips / <code>0</code> failures / <code>3</code> pre-existing warnings; <code>pkgdown::check_pkgdown()</code> green. Boundary: plot geometry is unchanged; status payloads are for audit/reporting, not calibrated coverage or Julia endpoint parity."
+    },
+    {
+      "time": "now",
+      "html": "<b>Fisher/Hopper/Rose R extractor CI-status slice green.</b> <code>extract_repeatability()</code>, <code>extract_communality(ci=TRUE)</code>, and <code>extract_phylo_signal(ci=TRUE)</code> now expose row-level interval status directly in returned R tables. <code>extract_phylo_signal(ci=TRUE, method=\"wald\")</code> and <code>method=\"bootstrap\"</code> now use the existing native H2 helper routes instead of placeholder bootstrap <code>NA</code> bounds. Evidence: helper probe covers vectorized profile/bootstrap/wald/unavailable statuses and zero-row status; targeted heavy gate <code>141</code> pass / <code>0</code> fail / <code>1</code> known conditional-bootstrap warning; full <code>devtools::test()</code> <code>2951</code> pass / <code>724</code> skips / <code>0</code> failures / <code>3</code> pre-existing warnings; <code>pkgdown::check_pkgdown()</code> green. Boundary: no calibrated coverage claim; H2 bootstrap remains conditional on fitted random effects; Julia CI endpoint parity remains queued."
+    },
+    {
+      "time": "now",
+      "html": "<b>Fisher/Hopper/Rose derived <code>confint()</code> status contract green.</b> Native R derived interval matrices for <code>icc</code>, <code>phylo_signal</code>, <code>communality</code>, <code>rho</code>, and <code>proportion</code> now carry row-named <code>ci_status</code> attributes while preserving the standard two-column matrix shape; <code>extract_correlations()</code> keeps its <code>ci_status</code> column. Evidence: helper probe classifies <code>profile_boundary</code>, <code>profile_failed</code>, and <code>wald_unavailable</code>; heavy derived/profile gate <code>121/121</code>; default gate <code>0</code> pass / <code>50</code> expected heavy skips; full <code>devtools::test()</code> <code>2951</code> pass / <code>724</code> skips / <code>0</code> failures / <code>3</code> pre-existing warnings; <code>pkgdown::check_pkgdown()</code> green. Boundary: status metadata only; no changed interval numerics, calibrated coverage, or Julia mixed-family CI endpoints."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper/Fisher/Rose mixed-family Julia bridge admission green.</b> <code>gllvmTMB(..., engine=\"julia\")</code> now admits the narrow complete balanced trait-aligned no-X/no-mask/no-CI mixed-family route for Gaussian, Poisson, Binomial, NB2, Beta, and Gamma components. The R selector resolves named <code>family = list(...)</code> entries by selector level, preserves <code>family_selector</code> and <code>family_by_trait</code>, and makes prediction, residuals, augmentation, and simulation row-family-aware. Evidence: no-Julia bridge <code>206</code> pass / <code>18</code> expected skips; live bridge <code>496/496</code>; native mixed oracle <code>33/33</code>; full <code>devtools::test()</code> <code>2943</code> pass / <code>722</code> skips / <code>0</code> failures / <code>3</code> pre-existing warnings; <code>pkgdown::check_pkgdown()</code> green. Boundary: no mixed X, masks, cbind/weights, CI endpoints, REML, ordinal/NB1/delta/hurdle/two-part mixed Julia route, or broad native-TMB-vs-Julia equivalence."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper/Rose Julia mixed-label bridge slice green.</b> <code>GLLVM.bridge_fit(family=[...])</code> keeps <code>family</code> as the compact joined tag while returning row-aligned <code>families</code> and <code>link</code> vectors for mixed-family fits. Evidence: <code>test_bridge_mixed.jl</code> passed <code>18/18</code>; bridge capabilities passed <code>9/9</code>; direct smoke printed <code>gaussian,poisson,binomial</code>. Superseded by <code>gllvmTMB</code> <code>d22d0de</code>: the narrow R bridge admission is now green, and the current live bridge regression is <code>496/496</code>. Remaining boundary: no mixed X, masks, cbind/weights, CI endpoints, REML, ordinal/NB1/delta/hurdle/two-part mixed Julia route, or broad native-TMB-vs-Julia equivalence."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper/Fisher/Rose native mixed-family oracle green.</b> Native <code>gllvmTMB</code> mixed-family selector handling matches named family lists to selector levels by name, preserves row-level family/link metadata, rejects mismatched selectors explicitly, and keeps prediction/simulation family-valid. Evidence at oracle slice: Stage 37 passed <code>33/33</code>; mixed-family + bootstrap filter passed <code>33</code> with <code>7</code> expected skips; full <code>devtools::test()</code> passed <code>2912</code> with <code>721</code> skips and <code>3</code> pre-existing warnings; <code>pkgdown::check_pkgdown()</code> was green. This oracle is now the R target behind the narrow mixed-family Julia bridge admission in <code>d22d0de</code>."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper/Fisher dispersion simulate slice green.</b> <code>simulate.gllvmTMB_julia()</code> supports conditional in-sample NB2, Beta, and Gamma draws from cached fitted means plus row-aligned dispersion payloads: NB2 uses <code>rnbinom(mu, size=r)</code>, Beta uses <code>rbeta(mu*phi, (1-mu)*phi)</code>, and Gamma uses <code>rgamma(shape=alpha, scale=mu/alpha)</code>. Evidence at slice: no-Julia bridge tests passed <code>175</code> with <code>17</code> expected skips; <code>pkgdown::check_pkgdown()</code> was green. Superseded current bridge suite: <code>496/496</code>. Boundary: conditional/in-sample only, not bootstrap or posterior predictive simulation."
+    },
+    {
+      "time": "now",
+      "html": "<b>Ada/Rose plan pivot recorded.</b> Work is now R-first: complete the <code>gllvmTMB</code> user-facing bridge surface and evidence rows first, then make <code>GLLVM.jl</code> follow as the validation and acceleration target. REML stays Gaussian-only; HSquared AI-REML remains future design input only for exact Gaussian cells."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper/Fisher X-evidence slice green.</b> Fixed-effect-X <code>binomial()</code>, <code>nbinom2()</code>, and <code>Gamma(link=\"log\")</code> rows now have public <code>gllvmTMB(..., engine=\"julia\")</code> formula dispatch checked against direct <code>gllvm_julia_fit()</code> on the same <code>Y</code>, <code>X</code>, and family. Evidence: no-Julia bridge tests passed <code>163</code> with <code>17</code> expected skips; live bridge tests passed <code>416/416</code> against <code>GLLVM.jl-integration</code>. Boundary: this is R formula-vs-direct bridge evidence, not native TMB-vs-Julia statistical parity or non-Gaussian X CI support."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper/Fisher NB1 post-fit slice green.</b> Complete-data no-X <code>nbinom1()</code> Julia-engine fits route <code>predict()</code>, <code>fitted()</code>, <code>residuals()</code>, <code>augment()</code>, and conditional in-sample <code>simulate()</code>. NB1 simulation uses <code>Var = mu * (1 + phi)</code> via <code>rnbinom(mu = mu, size = mu / phi)</code> and rejects missing/non-positive dispersion payloads. That slice's live bridge evidence is superseded by the current <code>496/496</code> bridge suite; <code>pkgdown::check_pkgdown()</code> was green."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper/Fisher NB1 bridge slice green.</b> <code>nbinom1()</code> now routes through <code>engine=\"julia\"</code> for complete balanced no-X reduced-rank fits. The R bridge maps NB1 to <code>GLLVM.bridge_fit(family=\"nb1\")</code>, keeps NB1 fixed-effect-X and missing-response-mask cells rejected before JuliaCall, and live-tests direct logLik equality plus a Wald CI <code>phi</code> row. No-Julia bridge tests passed <code>151</code> with <code>16</code> expected skips; live bridge tests passed <code>370/370</code>; <code>pkgdown::check_pkgdown()</code> is green."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper/Rose bridge drift guard green.</b> <code>GLLVM.bridge_capabilities()</code> now exposes the Julia bridge surface as a flat JuliaCall-safe ledger, and <code>gllvm_julia_capabilities()</code> now makes <code>nb1</code> plus mixed-family vectors explicit <code>planned</code> R debt rather than invisible drift. Julia targeted test passed <code>9/9</code>; GLLVM core suite passed <code>3891</code> with <code>3</code> broken and <code>0</code> failed; no-Julia bridge tests passed <code>146</code> with <code>15</code> expected skips; live bridge tests passed <code>353/353</code>; <code>pkgdown::check_pkgdown()</code> is green. NB1 and mixed-family are still rejected before JuliaCall on the R side."
+    },
+    {
+      "time": "now",
+      "html": "<b>Rose Gamma-status blocker cleared.</b> <code>CLAUDE.md</code> no longer says Gamma is on the old direct ForwardDiff fitter path; it now matches the check-log evidence that Gamma defaults to the analytic Laplace-gradient route with finite-difference fallback for unsupported masked/offset cells. This is documentation cleanup only, not a new speed or capability claim."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper/Rose capability ledger slice green.</b> <code>gllvm_julia_capabilities()</code> now exposes the R-side Julia bridge admission table before JuliaCall setup: no-X fits, fixed-effect-X rows, missing-response masks, cbind-binomial transport, and the planned mixed-family vector row. No-Julia bridge tests passed <code>141</code> with <code>14</code> expected skips; live package-level bridge tests passed <code>340/340</code>; <code>pkgdown::check_pkgdown()</code> reports no problems after the new Julia bridge reference section."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper/Rose augment bridge slice green.</b> <code>gllvmTMB_julia</code> now has <code>generics::augment()</code> as an in-sample response-scale row diagnostic table with identifiers plus <code>.observed</code>, <code>.fitted</code>, <code>.resid</code>, and <code>.status</code>. It preserves masked rows and rejects <code>newdata</code>, <code>type=\"link\"</code>, non-default <code>re_form</code>, and ordinal prediction payloads explicitly. No-Julia bridge tests passed <code>132</code> with <code>14</code> expected skips; live package-level bridge tests passed <code>331/331</code> against <code>GLLVM.jl-integration</code>."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper/Pat glance bridge slice green.</b> <code>gllvmTMB_julia</code> now has <code>generics::glance()</code> as a one-row cached fit-statistics table: logLik, AIC, BIC, df, nobs, convergence, iterations, engine, family, and model. It does not imply covariance, CI, diagnostic, or simulation-calibration payloads. No-Julia bridge tests passed <code>116</code> with <code>14</code> expected skips; live package-level bridge tests passed <code>311/311</code> against <code>GLLVM.jl-integration</code>."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper/Fisher simulate bridge slice green.</b> <code>gllvmTMB_julia</code> now has <code>simulate()</code> for conditional in-sample gaussian, poisson, and binomial bridge objects. It uses cached fitted means plus <code>sigma_eps</code> or binomial <code>N</code>, preserves long-format row order, and rejects masked responses plus unsupported families explicitly. No-Julia bridge tests passed <code>109</code> with <code>14</code> expected skips; live package-level bridge tests passed <code>301/301</code> against <code>GLLVM.jl-integration</code>."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper/Pat tidy bridge slice green.</b> <code>gllvmTMB_julia</code> now has <code>generics::tidy()</code> for fixed-effect coefficient rows from the cached bridge table. Unsupported <code>effects = \"ran_pars\"</code>, <code>effects = \"cutpoint\"</code>, and <code>conf.int = TRUE</code> fail explicitly instead of implying hidden SE/CI support. No-Julia bridge tests passed <code>97</code> with <code>14</code> expected skips; live package-level bridge tests passed <code>283/283</code> against <code>GLLVM.jl-integration</code>."
+    },
+    {
+      "time": "now",
+      "html": "<b>Rose/Ada R-first status ledger green.</b> README now exposes <code>engine = \"julia\"</code> as a partial paired-checkout bridge, not a TMB replacement; current boundaries now require payload, label, objective/logLik, CI or CI-status, and failure-message agreement. The ASReml/AI-REML design note now says AI-REML is a later exact-Gaussian REML candidate only, not non-Gaussian Laplace wording. Stale-claim scan found expected boundary rows only; no-Julia bridge tests passed <code>91</code> with <code>14</code> skips."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper/Rose cbind-binomial bridge green.</b> <code>gllvmTMB(..., engine = \"julia\")</code> now transports binomial <code>cbind(successes, failures)</code> as Julia <code>Y</code> plus trial matrix <code>N</code>, including missing-response masks when either component is missing. Malformed negative/non-finite/zero-trial rows fail before JuliaCall. No-Julia bridge tests passed <code>91</code> with <code>14</code> skips; live bridge file and package-level filtered gate both passed <code>277/277</code> against <code>GLLVM.jl-integration</code>. This is R-side transport, not R/TMB statistical parity or masked interval support."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper/Rose masked-CI status boundary green.</b> Masked <code>gllvmTMB_julia</code> point fits now carry <code>ci_unavailable_masked_response</code>, and <code>confint()</code> fails before any masked refit attempt with method-specific <code>wald/profile/bootstrap_unavailable_masked_response</code> statuses. This is R-side unsupported-CI status handling, not interval support. No-Julia bridge tests passed <code>87</code> with <code>12</code> skips; live bridge file and package-level filtered gate both passed <code>259/259</code> against <code>GLLVM.jl-integration</code>."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper/Rose masked-family matrix green.</b> <code>gllvmTMB(..., engine = \"julia\", missing = miss_control(response = \"include\"))</code> now has live no-X masked rows for Poisson, Bernoulli Binomial, NB2, Beta, Gamma, and Ordinal-probit against <code>GLLVM.jl-integration</code>. <code>ordinal_probit()</code> maps to a distinct <code>ProbitLink</code> bridge key. GLLVM mask tests passed <code>23/23</code>; GLLVM bridge CI regression passed <code>66/66</code>; gllvmTMB live bridge tests passed <code>232/232</code>; default no-Julia mode passed <code>80</code> with <code>12</code> skips."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper/Gauss response-mask bridge slice green.</b> <code>gllvmTMB(..., engine = \"julia\", missing = miss_control(response = \"include\"))</code> now routes an observed-cell mask to <code>GLLVM.bridge_fit(mask=...)</code> for one-part no-X non-Gaussian fits. Poisson is live-tested end-to-end; masked residual rows report <code>status=\"masked\"</code>. GLLVM mask hook tests passed <code>17/17</code>; gllvmTMB live bridge tests passed <code>150/150</code>; default no-Julia mode passed <code>79</code> with <code>10</code> skips."
+    },
+    {
+      "time": "now",
+      "html": "<b>Florence/Hopper ggplot ordination slice green.</b> <code>plot(type = \"ordination\")</code> now works for <code>gllvmTMB_julia</code> as a narrow ggplot route over cached scores/loadings. Unsupported plot types and standardized arrows fail explicitly. Live bridge tests passed <code>125/125</code> against <code>GLLVM.jl-integration</code>."
+    },
+    {
+      "time": "now",
+      "html": "<b>Rose target-checkout blocker caught and narrowed.</b> Current X/<code>mean_coef</code>/CI bridge evidence is against <code>GLLVM.jl-integration</code>, not the dashboard <code>GLLVM.jl</code> worktree, whose <code>bridge_fit</code> still rejects <code>X</code>. NEWS/check-log/board now carry this guard."
+    },
+    {
+      "time": "now",
+      "html": "<b>Florence/Hopper ordiplot slice green.</b> <code>gllvmTMB_julia</code> now dispatches through <code>ordiplot()</code> using cached bridge scores/loadings; canonical <code>level = \"unit\"</code> no longer triggers the deprecated <code>\"B\"</code> warning. Live bridge tests passed <code>119/119</code>."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper/Rose ordination extractor slice green.</b> <code>gllvmTMB_julia</code> now routes cached bridge <code>scores</code>/<code>loadings</code> through <code>extract_ordination()</code>, <code>getLoadings()</code>, <code>getLV()</code>, and <code>rotate_loadings()</code>; <code>nobs()</code> is registered and <code>vcov()</code> reports an explicit not-yet-routed status. Live bridge tests passed <code>115/115</code>."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper/Gauss Gaussian-X prediction green.</b> <code>GLLVM.bridge_fit</code> now returns <code>mean_coef</code> for Gaussian covariate fits, and <code>gllvmTMB_julia</code> consumes it for in-sample prediction/residual reconstruction. GLLVM <code>test_bridge_x.jl</code> passed <code>52/52</code>; gllvmTMB live bridge tests passed <code>102/102</code>."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper/Rose missing-response guard green.</b> Direct <code>gllvm_julia_fit()</code> calls with <code>NA</code> responses now fail before JuliaCall until <code>GLLVM.bridge_fit</code> accepts an observed-response mask. Live bridge tests passed <code>99/99</code>."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper/Pat predict-residual slice green.</b> <code>gllvmTMB_julia</code> now has in-sample <code>predict()</code>, <code>fitted()</code>, and simple response <code>residuals()</code> for current one-part bridge payloads. Unsupported <code>newdata</code>, ordinal probabilities, and Gaussian-X full-mean prediction fail loudly. Live bridge tests passed <code>98/98</code>."
+    },
+    {
+      "time": "now",
+      "html": "<b>Pat/Hopper post-fit slice green.</b> <code>gllvmTMB_julia</code> now has <code>coef()</code>, <code>summary()</code>, and printable summaries for fitted Julia-engine objects. Pure-R synthetic-object tests and live Julia bridge tests passed <code>77/77</code>."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper bridge-X slice green.</b> <code>gllvmTMB</code> now admits fixed-effect <code>X</code> for complete balanced one-part Gaussian/Poisson/Binomial/NB2/Beta/Gamma Julia-engine fits; response-missing masks still fail loudly. Live bridge tests passed <code>64/64</code>; paired <code>GLLVM.jl test_bridge_x.jl</code> passed <code>50/50</code>."
+    },
+    {
+      "time": "now",
+      "html": "<b>Ada priority update.</b> Roadmap is now R-first: complete <code>gllvmTMB</code> functionality, status guards, docs, and tests first; <code>GLLVM.jl</code> follows as the parity and acceleration target. REML remains Gaussian-only; HSquared-style AI-REML is later exact-Gaussian scouting, not a non-Gaussian Laplace claim."
+    },
+    {
+      "time": "now",
+      "html": "<b>Rose/Shannon #94 successor bank committed.</b> Seven durable successor issue drafts are banked locally for GenPoisson, Student-t, true lognormal, standalone truncation, ANOVA/LRT, check-fit diagnostics, and structured Schur/Poisson. Benchmark-script notes route to existing #65/#61 instead of a duplicate issue."
+    },
+    {
+      "time": "now",
+      "html": "<b>Shannon/Rose #94 audit banked.</b> Draft/conflicting #94 was classified against local integration: <code>124</code> paths absent, <code>50</code> present-different, <code>2</code> byte-identical. Verdict: do not merge; create successor issues for unique candidates before closure."
+    },
+    {
+      "time": "now",
+      "html": "<b>Grace/Rose test-log hygiene green.</b> Takahashi tests now use module-loaded functions and bridge-CI Poisson helpers have unique names; core suite passed <code>3857/3 broken</code> and full <code>Pkg.test()</code> passed <code>3869/1 broken</code> with the duplicate-method warnings gone."
+    },
+    {
+      "time": "now",
+      "html": "<b>Gauss/Karpinski sparse-phylo shortcut green.</b> Verified phylo-unique <code>sparse_phy_grad</code> now routes through <code>node_grad</code>; node-vs-leaf-block max relative error is at most <code>1.015e-13</code>, benchmark speedup is <code>2.99-21.58x</code>, and full <code>Pkg.test()</code> passed <code>3869/1 broken</code>."
+    },
+    {
+      "time": "now",
+      "html": "<b>Karpinski/Gauss Gamma default green.</b> <code>fit_gamma_gllvm</code> now defaults to analytic gradients; quick + medium benchmark cells show about 9.7-14.3x speedups with <code>|delta logLik| <= 1.9e-12</code>; latest full <code>Pkg.test()</code> passed 3869/1 broken after the #92 wiring."
+    },
+    {
+      "time": "now",
+      "html": "<b>Gauss #91 integration fix green.</b> High-rate Poisson beta divergence is guarded by a fit-scale regression and analytic-vs-FD check; full <code>test/runtests.jl</code> and <code>Pkg.test()</code> passed locally."
+    },
+    {
+      "time": "now",
+      "html": "<b>Grace docs gate improved.</b> Vitepress hard dead-link failure removed by normalising relative page links; no-deploy docs build reached successful Vitepress render, with warning-level docs-infra cleanup still open."
+    },
+    {
+      "time": "now",
+      "html": "<b>Gauss/Karpinski #96 local fix green.</b> Shared Laplace mode finder now backtracks large uphill Fisher steps, keeps full near-mode steps, and zero-restarts after non-finite solves; new safeguard test 5/5 and full <code>Pkg.test()</code> passed."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper/Rose gllvmTMB bridge gate green.</b> R now rejects unsupported cells before pretending the Julia bridge can fit them; stale Gaussian CI oracle corrected for centered data; live <code>julia-bridge</code> test passed 53/53 against GLLVM.jl-integration."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper bridge slice green.</b> <code>bridge_fit</code> is exported on this branch for no-X one-part families; focused test, core suite, and full <code>Pkg.test()</code> passed."
+    },
+    {
+      "time": "now",
+      "html": "<b>Fisher/Noether #92 fix green.</b> Packed phylo signal now matches public <code>phylo_signal</code> on both unique and low-rank phylo paths; transformed-Wald test 108/108 and full <code>Pkg.test()</code> passed 3869/1 broken."
+    },
+    {
+      "time": "now",
+      "html": "<b>Rose public-doc cleanup.</b> Non-Gaussian CI and R-bridge status pages now say partial instead of stale planned/deferred wording; Documenter build passed."
+    },
+    {
+      "time": "now",
+      "html": "<b>Mission-control implementation started.</b> Board now reads status.json, sweep.json, and version.txt instead of hard-coded completion prose."
+    },
+    {
+      "time": "now",
+      "html": "<b>Hopper bridge audit.</b> Initial blocker was real: the branch lacked <code>GLLVM.bridge_fit</code>. First narrow no-X route is now implemented; X, mixed families, missingness, and gllvmTMB roundtrip remain open."
+    },
+    {
+      "time": "now",
+      "html": "<b>Rose audit.</b> No publish/tag signoff: dashboard and public docs must not imply main, registry, CRAN, or bridge completion."
+    }
+  ],
+  "inflight": [
+    {
+      "owner": "Ada",
+      "text": "R-first sequencing is explicit. Latest banked slice: gllvmTMB a0274e0 hardens non-Gaussian-X unsupported CI-status handling without adding a positive admission. Next gate: reconcile the R-first capability ledger and issues before broadening another family or method row."
+    },
+    {
+      "owner": "Rose",
+      "text": "Release/tag language remains blocked until current bridge truth is reconciled across gllvmTMB NEWS, GLLVM.jl docs, dashboard, and issue rows. Legacy full-capability handoffs are historical context, not current proof."
+    },
+    {
+      "owner": "Hopper",
+      "text": "Preserve fail-fast boundaries: NB1 X, X+mask, mixed-family CI endpoints/masks, ordinal predictions, masked CIs, masked simulations, and non-rr covariance terms remain explicit unsupported cells. Non-Gaussian-X point fits now have a status contract, not CI endpoints."
+    },
+    {
+      "owner": "Gauss/Karpinski",
+      "text": "Julia speed work waits behind R-user contract and point/CI status evidence. REML is Gaussian-only; AI-REML wording is reserved for exact Gaussian variance-component scouting."
+    },
+    {
+      "owner": "Fisher",
+      "text": "Every admitted route needs point/logLik evidence plus CI or CI-status evidence. CI-status metadata is not coverage calibration."
+    }
+  ],
+  "evidence": [
+    {
+      "status": "covered",
+      "text": "Hopper/Fisher/Rose: non-Gaussian-X unsupported CI-status contract committed locally at gllvmTMB a0274e0. Supported non-Gaussian fixed-effect-X point fits cache ci_unavailable_non_gaussian_x; direct ci_method and confint() requests fail with method-specific wald/profile/bootstrap_unavailable_non_gaussian_x statuses. Evidence: no-Julia bridge 248 pass / 18 expected skips, live bridge 599/599 against GLLVM.jl-integration, full devtools::test() 3018 pass / 724 skips / 0 failures / 3 pre-existing warnings, git diff --check clean. Boundary: no interval endpoints, NB1-X admission, Julia likelihood, or speed change."
+    },
+    {
+      "status": "partial",
+      "text": "Hopper/Gauss/Rose: NB1 missing-response masks committed locally at GLLVM.jl-integration 5fabcb1 and gllvmTMB 4fd1ed7. The paired bridge passes mask-aware NB1 point fits and score reconstruction; R admits nbinom1() missing-response no-X fits through engine=\"julia\". Evidence: GLLVM bridge ledger 20/20, mask gate 34/34, live R-Julia bridge 571/571, GLLVM core 3931 pass / 3 broken / 0 fail, gllvmTMB full suite 2997 pass / 724 skips / 0 failures / 3 pre-existing warnings, temporary Documenter build green with known warnings. Boundary: point fit and in-sample post-fit only; masked CIs/simulations, NB1-X, Gaussian masks, and mixed-family masks remain unsupported."
+    },
+    {
+      "status": "partial",
+      "text": "Rose/Hopper: R-first bridge claim cleanup committed locally at GLLVM.jl-integration f9d6ade. README/CLAUDE/CHANGELOG/docs no longer claim blanket full parity; bridge_capabilities() reports partial rows and explains no-X CI route scope. Evidence: stale-claim scan leaves only the intended caveat, Julia bridge ledger 20/20, live gllvmTMB bridge 552/552, temporary developed-env Documenter build completed with known warnings, git diff --check clean. Boundary: claim/status metadata only."
+    },
+    {
+      "status": "partial",
+      "text": "Fisher/Hopper: successful Julia bridge confint matrix ci_status committed locally at gllvmTMB ca9c4f8. confint.gllvmTMB_julia() attaches row-named ci_status after parm filtering for cached and refit paths. Evidence: no-Julia bridge 228 pass / 18 expected skips; live bridge 552/552; full devtools::test() 2998 pass / 724 skips / 0 failures / 3 pre-existing warnings; pkgdown check green; git diff --check clean. Boundary: interval numerics unchanged and no calibrated coverage claim."
+    },
+    {
+      "status": "partial",
+      "text": "Hopper/Rose: method-aware Julia bridge capability ledger committed locally at gllvmTMB 5272d7e and paired GLLVM.jl-integration 78f8916. gllvm_julia_capabilities() now separates fit admission from no-X CI and in-sample post-fit method rows, and the live drift guard compares every admitted R logical column against GLLVM.bridge_capabilities(). Evidence: GLLVM metadata smoke printed 10 capability rows, GLLVM capability test 19/19, no-Julia bridge 219 pass / 18 expected skips, live bridge 519/519, full devtools::test() 2989 pass / 724 skips / 0 failures / 3 pre-existing warnings, pkgdown check green. Boundary: contract/metadata only; no new estimates, likelihoods, CI numerics, REML, or speed claim."
+    },
+    {
+      "status": "partial",
+      "text": "Florence/Fisher/Hopper/Rose: plot CI-status propagation committed locally at gllvmTMB e575d08. plot(type=\"integration\"), plot(type=\"communality\"), and plot_correlations() now carry row-level ci_status in gllvmTMB_data; plot_Sigma_table() preserves supplied ci_status rows. Evidence: targeted plot gate passed 493 with 0 skips/failures/warnings; full devtools::test() passed 2976 with 724 skips, 0 failures, and 3 pre-existing warnings; pkgdown check green; staged whitespace check clean. Boundary: plot/report payload propagation only; captions do not enumerate every status, no vdiffr/rendered visual gate, no calibrated coverage, and Julia bridge endpoint parity remains queued."
+    },
+    {
+      "status": "partial",
+      "text": "Fisher/Hopper/Rose: R extractor CI-status slice committed locally at gllvmTMB 9789b1f. extract_repeatability(), extract_communality(ci=TRUE), and extract_phylo_signal(ci=TRUE) now expose visible row-level status columns, and extract_phylo_signal(method=\"wald\"|\"bootstrap\") reaches the existing native H2 helper routes. Evidence: helper probe returned profile_boundary/ok/wald_unavailable/interval_unavailable plus character(0); targeted default gate passed with 28 expected heavy skips; targeted heavy gate passed 141 with 1 known conditional-bootstrap warning; full devtools::test() passed 2951 with 724 skips, 0 failures, and 3 pre-existing warnings; pkgdown check green; git diff --check clean. Boundary: R-side status/route completion only; coverage calibration, unconditional phylogenetic bootstrap, visual display of status, and Julia bridge endpoint parity remain future slices."
+    },
+    {
+      "status": "partial",
+      "text": "Fisher/Hopper/Rose: derived confint CI-status contract committed locally at gllvmTMB 4bc4e65. confint() matrices for icc, phylo_signal, communality, rho, and proportion now carry row-named ci_status attributes without changing the two-column matrix shape; extract_correlations() keeps its ci_status column. Helper probe confirmed profile_boundary/profile_failed/wald_unavailable classification; heavy derived/profile gate passed 121/121; default targeted gate passed with 50 expected heavy skips; full devtools::test() passed 2951 with 724 skips, 0 failures, and 3 pre-existing warnings; pkgdown check green; git diff --check clean. Boundary: status metadata only; calibrated coverage, visual handling, changed interval numerics, and Julia mixed-family CI endpoints remain future slices."
+    },
+    {
+      "status": "partial",
+      "text": "Hopper/Rose: Julia mixed-family bridge labels committed locally at GLLVM.jl-integration 21f6662. The flat payload returns family as the joined tag and families as the row-aligned per-trait vector, with a length guard and explicit empty CI-status payload for mixed CI requests. Evidence: test_bridge_mixed passed 18/18, test_bridge_capabilities passed 9/9, direct smoke printed gaussian,poisson,binomial / wald / 0. Superseded by gllvmTMB d22d0de: narrow R-side mixed-family admission, point/logLik direct-wrapper equality, and unavailable-CI status are now banked; CI endpoints remain queued."
+    },
+    {
+      "status": "partial",
+      "text": "Hopper/Fisher/Rose: native mixed-family selector oracle committed locally at gllvmTMB 4474e8b. Named family lists match selector levels by name, partially named or mismatched lists fail explicitly, and fit objects preserve family_selector metadata with row-level family/link ids. Evidence at oracle slice: stage37-mixed-family passed 33/33; stage37 plus m1-8 mixed-family filter passed 33 with 7 expected skips; no-Julia bridge tests passed 175 with 17 expected skips; full devtools::test() passed 2912 with 721 skips and 3 pre-existing warnings; pkgdown check green. This oracle now underpins gllvmTMB d22d0de's narrow mixed-family Julia bridge admission."
+    },
+    {
+      "status": "partial",
+      "text": "Hopper/Fisher/Rose: NB2/Beta/Gamma conditional simulate committed locally at gllvmTMB 17b2154. simulate.gllvmTMB_julia() draws NB2 via rnbinom(mu, size=r), Beta via rbeta(mu*phi, (1-mu)*phi), and Gamma via rgamma(shape=alpha, scale=mu/alpha), with synthetic and live bridge tests. Evidence at slice: no-Julia bridge 175 pass / 17 skip, pkgdown check green; current superseding live bridge suite is 496/496. Boundary: conditional in-sample simulation only; no masked simulation, newdata, bootstrap, posterior predictive, or calibration claim."
+    },
+    {
+      "status": "partial",
+      "text": "Hopper/Fisher/Rose: fixed-effect-X Binomial/NB2/Gamma evidence committed locally at gllvmTMB e91921a. Public gllvmTMB engine=\"julia\" formula fits match direct gllvm_julia_fit() logLik on the same Y/X/family and check model tags, finite gamma, response-scale predictions, and positive dispersion where applicable. Evidence: no-Julia bridge 163 pass / 17 skip, live bridge 416/416 against GLLVM.jl-integration. Boundary: no native TMB-vs-Julia parity, non-Gaussian X CI, X+mask, newdata, or mixed-family X claim yet."
+    },
+    {
+      "status": "partial",
+      "text": "Hopper/Fisher/Rose: NB1 post-fit methods committed locally at gllvmTMB 174d3a0. The admitted complete-data no-X NB1 route has response-scale predict/fitted, residuals, augment rows, and reproducible conditional simulate() with the NB1 linear variance law. Evidence from that slice is superseded by the current live bridge 496/496 against GLLVM.jl-integration; pkgdown check was green. Boundary: NB1 X, masks, masked simulations, profile/bootstrap CIs, native TMB parity, and mixed-family NB1 remain future slices."
+    },
+    {
+      "status": "partial",
+      "text": "Hopper/Fisher/Rose: NB1 no-X bridge admission committed locally at gllvmTMB 8cc29a6. R family mapping now accepts nbinom1()/nbinom1/nb1, passes complete-data no-X fits to GLLVM.bridge_fit(family=\"nb1\"), rejects NB1 X and missing-mask cells before JuliaCall, and verifies formula-vs-direct logLik equality plus Wald CI phi rows in live tests. Evidence: no-Julia bridge 151 pass / 16 skip, live bridge 370/370 against GLLVM.jl-integration, pkgdown check green. Boundary: NB1 with covariates, missing responses, profile/bootstrap CIs, native gllvmTMB parity, and mixed-family NB1 remain future slices."
+    },
+    {
+      "status": "covered",
+      "text": "Hopper/Rose: bridge drift guard committed locally. GLLVM.jl-integration 8afda81 exposes bridge_capabilities(); gllvmTMB 18e0803 marks nb1 and mixed-family vector as planned R debt and live-checks R-admitted rows as a subset of Julia support. Evidence: GLLVM targeted 9/9, GLLVM core 3891 pass / 3 broken / 0 failed, R no-Julia bridge 146 pass / 15 skip, R live bridge 353/353, pkgdown check green."
+    },
+    {
+      "status": "covered",
+      "text": "Rose: GLLVM.jl maintainer-doc stale Gamma wording fixed locally. CLAUDE.md now says Gamma defaults to the analytic Laplace-gradient path after the finite-vs-analytic benchmark gate, with finite-difference fallback for unsupported masked/offset cells. Stale scan confirms REML/AI-REML hits are boundary wording or historical check-log entries. No engine code changed."
+    },
+    {
+      "status": "partial",
+      "text": "Hopper/Rose: gllvm_julia_capabilities() committed locally at gllvmTMB c0f14c8. The table is tied to R bridge constants for fit_no_x, fixed_effect_X, missing_response, and cbind_binomial, and it records mixed-family vectors as planned because R-side metadata/labels/parity/CI-status are not validated. devtools::document() completed with pre-existing unrelated roxygen warnings; no-Julia devtools::test(filter=\"julia-bridge\") passed 141 with 14 skips; live devtools::test(filter=\"julia-bridge\") passed 340/340 against GLLVM.jl-integration; pkgdown::check_pkgdown() is green after adding a Julia bridge reference section."
+    },
+    {
+      "status": "partial",
+      "text": "Hopper/Rose: augment.gllvmTMB_julia() committed locally at gllvmTMB 01a9a7e. generics::augment() now returns in-sample response-scale row diagnostics with .observed, .fitted, .resid, and .status; masked rows keep status=\"masked\" with NA observed/residual values. air format passed; devtools::document() completed with pre-existing unrelated roxygen warnings; git diff --check passed; no-Julia devtools::test(filter=\"julia-bridge\") passed 132 with 14 skips; live devtools::test(filter=\"julia-bridge\") passed 331/331 against GLLVM.jl-integration. This is not newdata, link-scale, fixed-effects-only, ordinal-probability, influence, CI, or diagnostic-calibration support."
+    },
+    {
+      "status": "partial",
+      "text": "Hopper/Pat: glance.gllvmTMB_julia() committed locally at gllvmTMB 4750513. generics::glance() now returns one row of cached fit statistics: logLik, AIC, BIC, df, nobs, converged, iterations, engine, family, model. air format passed; no-Julia devtools::test(filter=\"julia-bridge\") passed 116 with 14 skips; live devtools::test(filter=\"julia-bridge\") passed 311/311 against GLLVM.jl-integration. This is not a covariance, CI, diagnostic, or simulation-calibration payload."
+    },
+    {
+      "status": "partial",
+      "text": "Hopper/Fisher: simulate.gllvmTMB_julia() committed locally at gllvmTMB e0c994b. simulate() now returns n_obs x nsim conditional in-sample draws for gaussian, poisson, and binomial bridge objects; masked responses, unsupported families, and missing Gaussian sigma_eps payloads fail explicitly. air format passed; no-Julia devtools::test(filter=\"julia-bridge\") passed 109 with 14 skips; live devtools::test(filter=\"julia-bridge\") passed 301/301 against GLLVM.jl-integration. This is not unconditional latent-factor redraw and not bootstrap-grade simulation."
+    },
+    {
+      "status": "partial",
+      "text": "Hopper/Pat: tidy.gllvmTMB_julia() committed locally at gllvmTMB c11d42a. generics::tidy() now returns fixed-effect bridge rows with term, estimate, and component; loadings stay in coef()/ordination extractors; conf.int=TRUE and non-fixed effects fail explicitly. air format passed; no-Julia devtools::test(filter=\"julia-bridge\") passed 97 with 14 skips; live devtools::test(filter=\"julia-bridge\") passed 283/283 against GLLVM.jl-integration."
+    },
+    {
+      "status": "partial",
+      "text": "Rose/Ada: R-first bridge and REML status ledger committed locally at gllvmTMB f3414c7. README now labels engine=\"julia\" as a partial paired-checkout bridge; ASReml/AI-REML note is updated for the landed Gaussian-only REML pilot and blocks AI-REML-for-Laplace wording. Stale-claim scan found expected boundary rows only; no-Julia devtools::test(filter=\"julia-bridge\") passed 91 with 14 skips."
+    },
+    {
+      "status": "partial",
+      "text": "Hopper/Rose: cbind-binomial bridge transport committed locally at gllvmTMB 7703cb3. R cbind(successes, failures) now maps to Julia Y plus binomial N for complete and missing-response no-X reduced-rank bridge rows; malformed rows fail before JuliaCall. No-Julia devtools::test(filter=\"julia-bridge\") passed 91 with 14 skips; live test_file and live devtools::test(filter=\"julia-bridge\") both passed 277/277 against GLLVM.jl-integration. This is not R/TMB statistical parity and not masked interval support."
+    },
+    {
+      "status": "partial",
+      "text": "Hopper/Rose: R-side masked-CI status boundary committed locally at gllvmTMB a73568a. Masked point fits carry ci_unavailable_masked_response; confint() reports method-specific wald/profile/bootstrap_unavailable_masked_response before cached CIs or refits can bypass the mask. No-Julia devtools::test(filter=\"julia-bridge\") passed 87 with 12 skips; live test_file and live devtools::test(filter=\"julia-bridge\") both passed 259/259 against GLLVM.jl-integration. This is not masked interval support."
+    },
+    {
+      "status": "partial",
+      "text": "Hopper/Rose: masked family matrix committed locally at gllvmTMB e7515a6 and GLLVM.jl-integration f75376c; GLLVM.jl-integration test_bridge_missing_mask passed 23/23 and test_bridge_ci passed 66/66; gllvmTMB test_file and devtools::test(filter=\"julia-bridge\") both passed 232/232 against GLLVM.jl-integration; default no-Julia mode passed 80 with 12 skips. Covered transport rows: Poisson, Bernoulli Binomial, NB2, Beta, Gamma, Ordinal-probit. Still unsupported: Gaussian masks, X+mask, masked CI/profile/bootstrap, cbind binomial, ordinal prediction/residual payloads, and R/TMB-vs-Julia parity."
+    },
+    {
+      "status": "partial",
+      "text": "Hopper/Gauss: response-mask bridge slice committed locally at GLLVM.jl-integration 892d555 and gllvmTMB 481ae5e; GLLVM.jl-integration test_bridge_missing_mask passed 17/17, bridge_x passed 52/52, bridge_ci passed 66/66, missing_data passed 34/34 with Distributions loaded, postfit blocks passed, confint_family passed 122/122; gllvmTMB live bridge test_file and devtools::test(filter=\"julia-bridge\") both passed 150/150 against GLLVM.jl-integration. Poisson is the R-live-tested masked route; Gaussian/X/masked-CI remain unsupported."
+    },
+    {
+      "status": "covered",
+      "text": "Rose: gllvmTMB paired-checkout guard committed locally at da2b5a6; NEWS/check-log now distinguish GLLVM.jl-integration runtime evidence from the dashboard GLLVM.jl worktree."
+    },
+    {
+      "status": "covered",
+      "text": "Florence/Hopper: gllvmTMB Julia-engine ggplot ordination route committed locally at 3389c36; test_file passed 125/125 and devtools::test(filter=\"julia-bridge\") passed 125/125 in 47.7s against GLLVM.jl-integration."
+    },
+    {
+      "status": "partial",
+      "text": "Rose: paired-checkout guard added after audit. GLLVM.jl-integration a0e6848 supports current X/mean_coef bridge tests; dashboard GLLVM.jl 84c0547 still rejects fixed-effect covariate X and is not evidence for those claims."
+    },
+    {
+      "status": "covered",
+      "text": "Florence/Hopper: gllvmTMB Julia-engine ordiplot dispatch committed locally at c078702; ordiplot() is tested on synthetic bridge scores/loadings and the canonical-level warning is fixed; live test_file passed 119/119 and devtools::test(filter=\"julia-bridge\") passed 119/119 in 43.1s."
+    },
+    {
+      "status": "covered",
+      "text": "Hopper/Rose: gllvmTMB Julia-engine ordination/nobs slice committed locally at 308ad46; extract_ordination(), getLoadings(), getLV(), rotate_loadings(), nobs(), and explicit vcov() status are tested on synthetic bridge objects; live test_file passed 115/115 and devtools::test(filter=\"julia-bridge\") passed 115/115 in 45.0s."
+    },
+    {
+      "status": "covered",
+      "text": "Hopper/Gauss: Gaussian-X bridge mean_coef payload committed locally at GLLVM.jl-integration a0e6848 and consumed by gllvmTMB 017a1f1; GLLVM test_bridge_x.jl passed 52/52, gllvmTMB test_file passed 102/102, and devtools::test(filter=\"julia-bridge\") passed 102/102 in 42.6s."
+    },
+    {
+      "status": "covered",
+      "text": "Hopper/Rose: direct gllvm_julia_fit() missing-response guard committed locally at 5bd7bb0; test_file passed 99/99 and devtools::test(filter=\"julia-bridge\") passed 99/99 in 42.3s. This is not mask support; it is a fail-fast pre-JuliaCall guard."
+    },
+    {
+      "status": "covered",
+      "text": "Hopper/Pat: gllvmTMB Julia-engine predict/fitted/residuals slice committed locally at b2d126f; test_file passed 98/98 and devtools::test(filter=\"julia-bridge\") passed 98/98 in 41.6s. Scope is in-sample one-part bridge payloads; unsupported prediction cells fail explicitly."
+    },
+    {
+      "status": "covered",
+      "text": "Pat/Hopper: gllvmTMB Julia-engine post-fit methods committed locally at c912a8e; coef()/summary()/print(summary()) tested on synthetic and live bridge objects; test_file passed 77/77 and devtools::test(filter=\"julia-bridge\") passed 77/77 in 46.4s."
+    },
+    {
+      "status": "partial",
+      "text": "Ada/Rose: roadmap priority changed to R-first completion. gllvmTMB is the functional reference surface; GLLVM.jl follows as parity/acceleration target. REML remains Gaussian-only; AI-REML is later exact-Gaussian scouting."
+    },
+    {
+      "status": "covered",
+      "text": "Hopper: gllvmTMB bridge-X admission committed locally at ad9912a; test_file test-julia-bridge passed 64/64, devtools::test(filter=\"julia-bridge\") passed 64/64 in 41.0s, paired GLLVM.jl test_bridge_x passed 50/50."
+    },
+    {
+      "status": "partial",
+      "text": "Rose/Shannon: #94 successor issue bank committed locally at GLLVM.jl-integration 659f3d2; seven durable issue drafts exist, benchmark-script notes are routed to existing #65/#61, and no GitHub remote mutation was performed."
+    },
+    {
+      "status": "partial",
+      "text": "Shannon/Rose: #94 unique-content audit banked locally; verdict is do not merge, preserve candidate work through successor issues for GenPoisson, Student-t, true lognormal, standalone truncation, ANOVA/LRT, check-fit diagnostics, and structured Schur/Poisson."
+    },
+    {
+      "status": "covered",
+      "text": "Grace/Rose: duplicate-method test warnings removed; test_takahashi_selinv 8/8, test_bridge_ci 66/66, core suite 3857/3 broken, and full Pkg.test 3869/1 broken ran without the previous overwrite warnings."
+    },
+    {
+      "status": "covered",
+      "text": "Gauss/Karpinski: phylo-unique sparse-phylo gradient now uses node_grad under a guarded dispatcher; test_node_gradient 58/58, test_sparse_phy_grad 101/101, core suite 3857/3 broken, full Pkg.test 3869/1 broken, benchmark speedup 2.99-21.58x with max rel err <= 2.28e-14."
+    },
+    {
+      "status": "covered",
+      "text": "Karpinski/Gauss: Gamma analytic default benchmark gate passed: 8x40x1 10.09x, 12x60x1 9.68x, 20x100x2 14.27x; all delta logLik values around 1e-12 or smaller."
+    },
+    {
+      "status": "covered",
+      "text": "Grace: post-Gamma full Pkg.test passed 3761 pass, 1 broken, 0 fail/error in 35m09.1s."
+    },
+    {
+      "status": "covered",
+      "text": "Grace: no-deploy DocumenterVitepress build passed after docs page-link cleanup; remaining docs warnings are warning-level infrastructure items."
+    },
+    {
+      "status": "partial",
+      "text": "Local git state checked for GLLVM.jl, GLLVM.jl-integration, gllvmTMB, drmTMB, DRM.jl, hsquared, HSquared.jl."
+    },
+    {
+      "status": "covered",
+      "text": "Dashboard data source split into status.json and sweep.json with build guard in version.txt."
+    },
+    {
+      "status": "partial",
+      "text": "Capability/bridge matrix drafted locally and updated for the tested no-X bridge_fit route; live GitHub issue updates and engine fixes are not complete."
+    },
+    {
+      "status": "partial",
+      "text": "Issue action map drafted locally; GitHub comments/edits still require a controlled remote update slice."
+    },
+    {
+      "status": "covered",
+      "text": "Hopper: bridge_fit is exported and passed focused test 175/175, core test/runtests.jl, and full Pkg.test() for the minimal no-X one-part contract."
+    },
+    {
+      "status": "covered",
+      "text": "Hopper/Rose: gllvmTMB R bridge narrowed to the current GLLVM.bridge_fit contract; live julia-bridge test passed 53/53 against GLLVM.jl-integration."
+    },
+    {
+      "status": "covered",
+      "text": "Gauss/Karpinski: #96 Laplace mode-finder safeguards fixed locally; new safeguard test 5/5, core suite, and full Pkg.test() passed."
+    },
+    {
+      "status": "covered",
+      "text": "Fisher/Noether: #92 phylo_signal_wald_ci scale bug fixed; transformed-Wald 108/108, adjacent derived/profile CI tests green, and full Pkg.test() passed 3869/1 broken."
+    },
+    {
+      "status": "partial",
+      "text": "Rose/Pat: public status docs cleaned for non-Gaussian CI, bridge wording, Gamma default, tag gating, and current gllvmTMB CI transport; broader issue-led docs audit remains open."
+    },
+    {
+      "status": "blocked",
+      "text": "Rose: no publish/tag messaging until main, version, changelog, CI, docs, bridge, and issue ledgers agree."
+    },
+    {
+      "status": "blocked",
+      "text": "Release/tag/CRAN/registry claims remain blocked until Rose audit, docs, issue ledger, CI, and bridge evidence agree."
+    }
+  ]
+}

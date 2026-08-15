@@ -1,0 +1,14 @@
+agent	routing_class	model_reasoning_effort
+documentation-writer	build	medium
+documenter-editor	build	medium
+julia-engineer	build	high
+landscape-scout	build	high
+literature-curator	build	high
+notebooklm-librarian	build	medium
+r-julia-translator	build	high
+ranganathan-notebooklm-librarian	build	medium
+reproducibility-engineer	build	high
+reviewer	build	high
+simulation-tester	build	medium
+systems-auditor	ceiling	high
+user-tester	build	medium

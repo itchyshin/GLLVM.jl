@@ -1,0 +1,286 @@
+{
+  "build": "2026-06-14-gllvm-finish-001",
+  "generated_at": "2026-06-15T21:16:00.000Z",
+  "status_vocabulary": [
+    "covered",
+    "partial",
+    "experimental",
+    "planned",
+    "unsupported"
+  ],
+  "rows": [
+    {
+      "capability": "Gaussian family",
+      "engine": "covered",
+      "bridge": "partial",
+      "inference": "covered",
+      "evidence": "Minimal no-X bridge_fit route and gllvmTMB R dispatch-to-direct-Julia roundtrip tested; X/missingness and TMB statistical parity still open."
+    },
+    {
+      "capability": "Poisson family",
+      "engine": "covered",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "Minimal no-X bridge_fit route and gllvmTMB no-X live dispatch tested. #91 high-rate divergence fixed on integration with fit-scale + analytic-vs-FD regression; full Pkg.test passed after follow-up changes."
+    },
+    {
+      "capability": "Binomial family",
+      "engine": "covered",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "Minimal no-X bridge_fit route tested. gllvmTMB transports binomial cbind(successes, failures) as Julia Y plus N for complete and missing-response no-X reduced-rank bridge rows, and the fixed-effect-X binomial formula path now matches direct gllvm_julia_fit() dispatch. Live bridge tests pass 416/416 against GLLVM.jl-integration. Broader R/TMB parity, mixed-family cbind, X+mask, and masked interval endpoints remain gates."
+    },
+    {
+      "capability": "Negative binomial NB2",
+      "engine": "covered",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "Minimal no-X bridge_fit route tested and R maps nbinom2 to negbinomial. Fixed-effect-X nbinom2 formula dispatch now matches direct gllvm_julia_fit() with finite positive dispersion. Conditional in-sample simulate() is routed via rnbinom(mu, size=r). Native TMB-vs-Julia parity, X+mask, non-Gaussian X CIs, and simulation calibration remain gates."
+    },
+    {
+      "capability": "NB1",
+      "engine": "covered",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "GLLVM.jl bridge surface reports NB1 one-part no-X support and now admits NB1 no-X response masks through bridge_capabilities(); gllvmTMB admits nbinom1()/nb1 complete and missing-response no-X reduced-rank point fits through engine=\"julia\". Evidence: formula-vs-direct logLik equality, Wald phi CI smoke on complete data, mask parity/sentinel invariance, in-sample predict/fitted/residuals/augment for masked point fits, live bridge 571/571. NB1 fixed-effect-X, masked simulation, profile/bootstrap, native-TMB parity, and mixed-family cells remain queued and fail deliberately."
+    },
+    {
+      "capability": "Beta",
+      "engine": "covered",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "Minimal no-X bridge_fit route tested; precision transform and live R parity remain gates. Conditional in-sample simulate() is routed via rbeta(mu*phi, (1-mu)*phi) for current bridge objects."
+    },
+    {
+      "capability": "Gamma",
+      "engine": "covered",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "Minimal no-X bridge_fit route tested; #96 mode-finder safeguards fixed locally; Gamma now defaults analytic after quick/medium finite-vs-analytic benchmarks with |delta logLik| <= 1.9e-12 and full Pkg.test green. Fixed-effect-X Gamma formula dispatch now matches direct gllvm_julia_fit(); conditional in-sample simulate() is routed via rgamma(shape=alpha, scale=mu/alpha). Gamma X CIs and native TMB parity remain queued."
+    },
+    {
+      "capability": "Ordinal",
+      "engine": "partial",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "Minimal no-X bridge_fit route tested; cutpoint, prediction, and R label route remain gates."
+    },
+    {
+      "capability": "COM-Poisson",
+      "engine": "experimental",
+      "bridge": "planned",
+      "inference": "planned",
+      "evidence": "Keep as experimental until parity/recovery gates are recorded."
+    },
+    {
+      "capability": "Tweedie",
+      "engine": "planned",
+      "bridge": "planned",
+      "inference": "planned",
+      "evidence": "Roadmap only."
+    },
+    {
+      "capability": "Exponential",
+      "engine": "planned",
+      "bridge": "planned",
+      "inference": "planned",
+      "evidence": "Gamma subcase but no separate public row yet."
+    },
+    {
+      "capability": "Two-part and hurdle families",
+      "engine": "partial",
+      "bridge": "planned",
+      "inference": "partial",
+      "evidence": "Dedicated fitters exist in some branches; unified bridge route missing."
+    },
+    {
+      "capability": "Latent factors and loadings",
+      "engine": "covered",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "Minimal bridge test checks rotated loading parity to direct Julia fits; R Procrustes parity still needed."
+    },
+    {
+      "capability": "Fixed-effect covariates X",
+      "engine": "partial",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "R bridge admits complete balanced one-part X rows for Gaussian, Poisson, Binomial, NB2, Beta, and Gamma against GLLVM.jl-integration. Public formula-vs-direct dispatch evidence is live for all admitted X families; non-Gaussian X interval endpoints remain unavailable but now have method-specific CI-status evidence. Latest live bridge suite passes 599/599. X+mask, ordinal X, NB1 X, mixed-family X, newdata, and native TMB-vs-Julia parity remain unsupported gates."
+    },
+    {
+      "capability": "Response missingness",
+      "engine": "partial",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "No-X response masks are engine+bridge verified for Poisson, Bernoulli Binomial, cbind Binomial, NB2, NB1, Beta, Gamma, and Ordinal-probit against GLLVM.jl-integration. Latest evidence: GLLVM mask gate 34/34 and live gllvmTMB bridge 571/571. Gaussian masks, X+mask, mixed missingness, masked simulation, and masked CI endpoints remain unsupported gates."
+    },
+    {
+      "capability": "Predictor missingness",
+      "engine": "partial",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "Explicit mi() design only; no imputation shortcut."
+    },
+    {
+      "capability": "Mixed missingness",
+      "engine": "planned",
+      "bridge": "planned",
+      "inference": "planned",
+      "evidence": "Define or deliberately reject."
+    },
+    {
+      "capability": "Per-response family dispatch",
+      "engine": "partial",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "GLLVM.jl bridge surface reports a mixed-family vector route for no-X/no-mask fits; gllvmTMB d22d0de admits the narrow complete balanced trait-aligned no-X/no-mask/no-CI mixed-family Julia route after selector metadata, per-trait labels, direct-wrapper logLik equality, row-family-aware post-fit methods, and method-specific unavailable-CI statuses were validated. NB1 is not admitted inside mixed-family vectors yet; it remains a separate partial no-X one-part R bridge row."
+    },
+    {
+      "capability": "Cross-family latent correlation",
+      "engine": "experimental",
+      "bridge": "planned",
+      "inference": "planned",
+      "evidence": "Do not confuse with residual rho12."
+    },
+    {
+      "capability": "Random intercepts",
+      "engine": "partial",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "Family-by-family audit required."
+    },
+    {
+      "capability": "Random slopes",
+      "engine": "planned",
+      "bridge": "planned",
+      "inference": "planned",
+      "evidence": "No blanket support claim."
+    },
+    {
+      "capability": "Phylogenetic dependence",
+      "engine": "partial",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "#92 phylo-signal transformed-Wald scale fixed locally; sparse-gradient wiring and R bridge remain gates."
+    },
+    {
+      "capability": "Animal/relmat",
+      "engine": "partial",
+      "bridge": "planned",
+      "inference": "partial",
+      "evidence": "Name alignment and PSD tests required."
+    },
+    {
+      "capability": "Spatial/SPDE",
+      "engine": "experimental",
+      "bridge": "planned",
+      "inference": "planned",
+      "evidence": "Do not promote without field visual and CI status."
+    },
+    {
+      "capability": "Kernel/NNGP/Matern",
+      "engine": "planned",
+      "bridge": "planned",
+      "inference": "planned",
+      "evidence": "Fixed kernel first; NNGP/Matern roadmap only."
+    },
+    {
+      "capability": "Coevolution/cross-kernel",
+      "engine": "experimental",
+      "bridge": "planned",
+      "inference": "planned",
+      "evidence": "Use gllvmTMB #361 C0-C5 gates."
+    },
+    {
+      "capability": "Wald CIs",
+      "engine": "partial",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "Minimal bridge tests check native Julia Wald CI equality and gllvmTMB confint surface for Gaussian; successful Julia bridge confint matrices now carry row-named ci_status attributes. Wider family/status coverage still needed."
+    },
+    {
+      "capability": "Profile CIs",
+      "engine": "partial",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "Gaussian profile CIs route through confint.gllvmTMB_julia and successful matrices now carry row-named ci_status attributes after gllvmTMB ca9c4f8; live julia-bridge tests pass 552/552 against GLLVM.jl-integration. Wider family/status coverage, profile visuals, and calibration remain gates."
+    },
+    {
+      "capability": "Bootstrap CIs",
+      "engine": "partial",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "Gaussian bootstrap route is available through confint.gllvmTMB_julia and successful matrices now carry ci_status metadata. Calibration claims still need coverage study; wider family/status coverage remains gated."
+    },
+    {
+      "capability": "Julia bridge confint matrix ci_status",
+      "engine": "partial",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "gllvmTMB ca9c4f8 attaches row-named ci_status attributes to successful confint.gllvmTMB_julia() matrices after parm filtering for cached and refit paths. Evidence: no-Julia bridge 228 pass / 18 expected skips; live bridge 552/552; full devtools::test() 2998 pass / 724 skips / 0 failures. Interval numerics unchanged; no coverage calibration claim."
+    },
+    {
+      "capability": "Bridge claim/status vocabulary",
+      "engine": "partial",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "GLLVM.jl-integration f9d6ade changes bridge_capabilities() status from supported to partial and removes blanket full-parity wording from README/CLAUDE/CHANGELOG/docs. Evidence: Julia bridge ledger 20/20, live gllvmTMB bridge 552/552, temporary developed-env Documenter build completed with known warnings."
+    },
+    {
+      "capability": "Derived phylo-signal Wald CI",
+      "engine": "covered",
+      "bridge": "planned",
+      "inference": "partial",
+      "evidence": "#92 scale/export/test gap fixed locally and wired into Pkg.test; R bridge exposure and public docs still pending."
+    },
+    {
+      "capability": "AIC/BIC/logLik",
+      "engine": "covered",
+      "bridge": "partial",
+      "inference": "covered",
+      "evidence": "Minimal bridge returns AIC/BIC/logLik; gllvmTMB test checks dispatch vs direct Julia logLik, while TMB statistical parity remains open."
+    },
+    {
+      "capability": "predict/fitted/residuals/summary",
+      "engine": "partial",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "R-first post-fit bridge surface now includes coef(), tidy(), glance(), augment(), summary(), print(summary()), predict(), fitted(), residuals(), simulate(), nobs(), ordination extractors, ordiplot(), and plot(type=\"ordination\") for current in-sample bridge payloads. Conditional in-sample simulate() is routed for gaussian, poisson, binomial, NB2, NB1, Beta, Gamma, and narrow trait-aligned mixed-family objects; non-Gaussian fixed-effect-X point fits cache unsupported-CI status; live bridge tests pass 599/599 against GLLVM.jl-integration. Still unsupported: newdata prediction/augmentation, link-scale augment rows, fixed-effects-only augment rows, covariance/CI/diagnostic payloads in glance, unconditional/bootstrap-grade simulation, masked-response simulation, ordinal simulation/probability payloads, tidy SE/CI columns, tidy random parameters/cutpoints, vcov payloads, broader plots, and richer diagnostic residuals."
+    },
+    {
+      "capability": "Exact implicit gradients",
+      "engine": "experimental",
+      "bridge": "unsupported",
+      "inference": "planned",
+      "evidence": "Speed slice; FD <= 1e-6 required before default."
+    },
+    {
+      "capability": "Takahashi/selected inverse",
+      "engine": "experimental",
+      "bridge": "unsupported",
+      "inference": "planned",
+      "evidence": "Wire O(p) only where verified."
+    },
+    {
+      "capability": "AI-REML-inspired acceleration",
+      "engine": "planned",
+      "bridge": "unsupported",
+      "inference": "planned",
+      "evidence": "Use boundary language; not AI-REML for non-Gaussian Laplace."
+    },
+    {
+      "capability": "Plot/report CI-status payloads",
+      "engine": "partial",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "gllvmTMB e575d08 keeps row-level ci_status in plot(type=\"integration\"), plot(type=\"communality\"), and plot_correlations() gllvmTMB_data, and preserves supplied ci_status in plot_Sigma_table() report-ready rows. Targeted plot gate passed 493/493; full devtools::test() passed 2976 with 724 skips, 0 failures, and 3 pre-existing warnings; pkgdown check green. Visual encoding, rendered article review, calibrated coverage, and Julia bridge CI endpoint parity remain queued."
+    },
+    {
+      "capability": "Method-aware Julia bridge capability ledger",
+      "engine": "partial",
+      "bridge": "partial",
+      "inference": "partial",
+      "evidence": "gllvmTMB 5272d7e expands gllvm_julia_capabilities() with no-X CI and in-sample post-fit method rows; GLLVM.jl-integration 78f8916 exposes matching bridge_capabilities() metadata. No-Julia bridge gate passed 219 with 18 expected skips; live bridge passed 519/519; full devtools::test() passed 2989 with 724 skips, 0 failures, and 3 pre-existing external warnings; pkgdown and Julia metadata test are green. Contract/metadata only; no new fitters, CI numerics, REML, or speed claim."
+    }
+  ]
+}
