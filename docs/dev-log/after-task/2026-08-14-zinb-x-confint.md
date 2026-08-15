@@ -123,3 +123,24 @@ Open PR from `feat/zinb-x-confint-20260814`; merge only on maintainer ask.
 
 Rose verdict: **PASS WITH NOTES** — Julia ZINB+X CI claim only (FD Hessian);
 bridge↔native ≤ 1e-8; not twin parity; not ADEMP.
+
+---
+
+## Addendum 2026-08-15 — Ubuntu CI shared-start fix (PR #204)
+
+**Symptom:** Julia 1.10 / Julia 1 on ubuntu-latest failed 8 assertions in
+`zinb (dual-γ ZINBCovFit; shared r; Julia-forward)` at `atol=1e-8` (Δ ~2–5e-6
+on γc/γz/β/Λ/r); macOS+Windows green; ZIP clone at same atol green; loglik
+still agreed — two independent Optim runs on the shared-`r` ridge (and
+mismatched `iterations` 120 vs 500), not a packing bug.
+
+**Fix (no atol widen):**
+- `fit_zinb_gllvm_cov(...; θ_init=…)` optional packed start; `iterations≤0`
+  evaluates at `θ0` without a second LBFGS wander.
+- Point-fit + Wald zinb bridge_x cells: one Optim +
+  `_bridge_assemble_zinb_cov` for 1e-8 transport; `θ_init`/`iterations=0`
+  identity; live `bridge_fit` tag/note smoke only.
+
+**Verify:** `test_bridge_x.jl` **357/357**; zinb identity+capabilities
+**195/195**; ZINBCovFit Wald smoke `pd_hessian=true`. Rose fence unchanged:
+Julia CI ≠ twin Δ ≠ ADEMP ≠ per-trait r.
