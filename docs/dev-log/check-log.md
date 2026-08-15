@@ -1,5 +1,15 @@
 # Check Log
 
+## 2026-08-15 - truncated_nbinom2 Sol score/weight a-factor fix
+
+Lane `cursor/truncated-nbinom2-20260815`. Sol HARD BLOCK: truncated NB2
+score/weight omitted `a = r/(r+μ)`. Fixed `_glm_score` /
+`_glm_weight` to `s = a·(y−μ_tr)`, `W = a²·Var_tr`. Identity + tests
+rewritten to density-derivative truth (not wrong HurdleNB copy). Focused
+`test_truncated_nbinom2.jl` **13/13 Pass** (~6.7s). Sol cell: score
+0.05011869 vs dℓ/dη 0.05011869 (abs 4.1e-10). No rtol widen. Sol BLOCK
+**CLEAR**.
+
 ## 2026-08-15 - truncated_nbinom2 Identity→Engine
 
 Lane `cursor/truncated-nbinom2-20260815` from catch-up tip `b2b99463` (#205).

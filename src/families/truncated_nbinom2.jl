@@ -3,8 +3,10 @@
 # Twin gllvmTMB family_id 11 (`truncated_nbinom2()`, log link; y ≥ 1 strictly):
 #   ℓ = log NB2(y; μ, φ) − log(1 − p0),   μ = exp(η), p0 = (φ/(μ+φ))^φ,
 #   φ = exp(log_phi_truncnb2) per trait on the twin; Arc1 Julia = shared scalar r ≡ φ.
-# Score / weight (log link) match the HurdleNB positive-block formulas:
-#   μ_tr = μ/(1−p0);  s = y − μ_tr;  W = (V+μ²)/(1−p0) − μ_tr²,  V = μ + μ²/r.
+# Score / weight (log link) — NB2 chain-rule factor a = r/(r+μ) is REQUIRED:
+#   μ_tr = μ/(1−p0);  Var_tr = (V+μ²)/(1−p0) − μ_tr²,  V = μ + μ²/r;
+#   s = a · (y − μ_tr);  W = a² · Var_tr.
+# (Do NOT omit `a`; Sol ceiling 2026-08-15: bare (y−μ_tr) mismatches dℓ/dη.)
 # Cite: gllvmTMB `src/gllvmTMB.cpp` fid==11; Identity 2026-08-15-truncated-nbinom2-identity.md.
 
 """
@@ -34,15 +36,20 @@ function _truncnb2_mean_var(μ, r)
     return μtr, var_tr
 end
 
-# General-link score: ∂ℓ/∂η = [(y − μ_tr)/μ] · me. Log link ⇒ me = μ ⇒ y − μ_tr.
+# NB2 mean-to-η factor a = r/(r+μ). Ordinary NB2 log-link score is a·(y−μ);
+# truncated replaces μ with μ_tr. General link: ∂ℓ/∂η = a · (y − μ_tr)/μ · me.
 function _glm_score(f::TruncatedNegBin2, μ, n, me, y)
-    μtr, _ = _truncnb2_mean_var(μ, f.r)
-    return (y - μtr) / μ * me
+    r = f.r
+    μtr, _ = _truncnb2_mean_var(μ, r)
+    a = r / (r + μ)
+    return a * (y - μtr) / μ * me
 end
 
 function _glm_weight(f::TruncatedNegBin2, μ, n, me)
-    _, var_tr = _truncnb2_mean_var(μ, f.r)
-    return (me / μ)^2 * var_tr
+    r = f.r
+    _, var_tr = _truncnb2_mean_var(μ, r)
+    a = r / (r + μ)
+    return (a * me / μ)^2 * var_tr
 end
 
 function _glm_logpdf(f::TruncatedNegBin2, μ, n, y)

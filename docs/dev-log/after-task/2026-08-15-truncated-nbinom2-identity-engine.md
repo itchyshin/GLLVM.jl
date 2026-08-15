@@ -17,16 +17,21 @@ scalar `r`** (Julia `r` ≡ twin `φ`); twin per-trait documented; Arc1b OWED.
 |---|---|
 | S1 Identity | ACCEPTED `docs/dev-log/decisions/2026-08-15-truncated-nbinom2-identity.md` |
 | S2 Engine | `src/families/truncated_nbinom2.jl` — `TruncatedNegBin2{T}`, score/weight/logpdf, `fit_truncated_nbinom2_gllvm` over `[β; Λ; log r]` |
-| S3 Tests | `test/test_truncated_nbinom2.jl` **11/11 Pass** (~8.3s) |
+| S3 Tests | `test/test_truncated_nbinom2.jl` **13/13 Pass** (post-Sol `a`-factor fix) |
 | S4 Ledger | `truncated_nbinom2` → `implemented` (bare token); Notes = shared-`r` / twin per-trait |
 | Wire | `src/GLLVM.jl` include/export; `fit_gllvm` dispatch; `test/runtests.jl` include |
 
 ## Verification
 
-- Focused: **11 Pass / 0 Fail** — Λ=0 exact, HurdleNB score/weight match, y=0 reject, smoke fit + `fit_gllvm`, packed NLL ForwardDiff vs central FD ≤ 1e-6
-- FD receipt (seed 52): `max_abs_FD=1.1155e-7` ≤ 1e-6
-- Ledger parse: `truncated_poisson => implemented`, `truncated_nbinom2 => implemented`
+- Focused (post-Sol fix): **13 Pass / 0 Fail** (~6.7s) — Λ=0 exact, score/weight with `a=r/(r+μ)` + density-derivative check, y=0 reject, smoke fit + `fit_gllvm`, packed NLL FD ≤ 1e-6
+- Sol BLOCK cell (μ=2.5, y=3, r=4): bare `(y−μ_tr)=0.08144` ≠ `dℓ/dη`; fixed `score=a·(y−μ_tr)=0.05011869` vs central FD `dℓ/dη=0.05011869` (abs diff 4.1e-10)
+- Weight: `W = a² · Var(Y|Y>0)`
 - No rtol/atol widen
+
+## Sol ceiling BLOCK
+
+- **2026-08-15 HARD BLOCK:** score/weight omitted `a = r/(r+μ)` (wrong HurdleNB-positive copy).
+- **CLEAR:** kernel fixed; Identity + tests updated to density-derivative truth; focused 13/13 green.
 
 ## Rose fence
 

@@ -26,18 +26,29 @@ end
         @test ll ≈ ll_indep atol = 1e-8
     end
 
-    @testset "score/weight at log link match HurdleNB positive-block formulas" begin
+    @testset "score/weight include a=r/(r+μ); match density derivative" begin
         μ, y, r = 2.5, 3, 4.0
         me = μ  # LogLink
         f = TruncatedNegBin2(r)
-        s = GLLVM._glm_score(f, μ, 1, me, y)
-        W = GLLVM._glm_weight(f, μ, 1, me)
+        a = r / (r + μ)
         p0 = (r / (r + μ))^r
         μtr = μ / (1 - p0)
         V = μ + μ^2 / r
-        Wc = (V + μ^2) / (1 - p0) - μtr^2
-        @test s ≈ y - μtr atol = 1e-12
-        @test W ≈ Wc atol = 1e-12
+        var_tr = (V + μ^2) / (1 - p0) - μtr^2
+        s = GLLVM._glm_score(f, μ, 1, me, y)
+        W = GLLVM._glm_weight(f, μ, 1, me)
+        @test s ≈ a * (y - μtr) atol = 1e-12
+        @test W ≈ a^2 * var_tr atol = 1e-12
+        # Sol BLOCK evidence: bare (y−μ_tr) ≈ 0.08144 ≠ dℓ/dη ≈ 0.05012; a·(y−μ_tr) matches.
+        @test abs(s - (y - μtr)) > 1e-3   # must NOT equal the a-omitted form
+        ℓ = η -> begin
+            μv = exp(η)
+            GLLVM._glm_logpdf(TruncatedNegBin2(r), μv, 1, y)
+        end
+        η = log(μ)
+        h = 1e-6
+        dℓ = (ℓ(η + h) - ℓ(η - h)) / (2h)
+        @test s ≈ dℓ rtol = 1e-5 atol = 1e-8
     end
 
     @testset "rejects y=0" begin

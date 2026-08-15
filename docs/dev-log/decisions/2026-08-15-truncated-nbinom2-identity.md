@@ -36,7 +36,7 @@ dispersion is **per-trait** `log_phi_truncnb2`.
 | Mean parameter | Untruncated `μ = exp(η)` (matches TMB `mu_t`) |
 | Dispersion | Julia `r` with `Var = μ + μ²/r` ≡ twin `φ`; **Arc1 fitter = shared scalar `r`** (Ada default). Twin per-trait `log_phi_truncnb2` is documented; **Arc1b / OWED** if light Δ needs per-trait |
 | Log-pmf | `log NB2(y; μ, r) − log(1 − p0)`, `p0 = (r/(r+μ))^r` |
-| Score / weight (log link) | reuse HurdleNB positive-block: `μ_tr = μ/(1−p0)`; `s = y − μ_tr`; `W = (V+μ²)/(1−p0) − μ_tr²`, `V = μ + μ²/r` |
+| Score / weight (log link) | `a = r/(r+μ)`; `μ_tr = μ/(1−p0)`; `s = a·(y − μ_tr)`; `W = a²·Var(Y\|Y>0)` with `Var_tr = (V+μ²)/(1−p0) − μ_tr²`, `V = μ + μ²/r`. **Do not omit `a`** (ordinary NB2 factor; Sol ceiling 2026-08-15) |
 | Marker / fitter | `TruncatedNegBin2` + `fit_truncated_nbinom2_gllvm` |
 
 ## Twin light Δ
