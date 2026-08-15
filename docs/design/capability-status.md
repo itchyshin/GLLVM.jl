@@ -86,7 +86,7 @@ Twin family names align with gllvmTMB / gllvm. Status = native Julia engine
 | student | implemented |
 | lognormal | planned |
 | truncated_poisson | implemented |
-| truncated_nbinom2 | planned |
+| truncated_nbinom2 | implemented |
 | censored_poisson | missing |
 | multinomial / categorical | missing |
 | delta_gamma | implemented |
@@ -104,7 +104,8 @@ bare MC tokens. `zib` also has a native Julia ZIB+X fitter (`fit_zib_gllvm_cov`)
 `student` / `com_poisson` promoted on native engine + package
 tests (`test_studentt.jl`, `test_com_poisson.jl`). `truncated_poisson` =
 zero-truncated Poisson (Identity 2026-08-15; twin fid 10); `truncated_nbinom2`
-remains planned (contingent).
+= zero-truncated NB2 (Identity 2026-08-15; twin fid 11; Arc1 shared scalar `r`
+≡ twin `φ`; twin per-trait `log_phi_truncnb2` documented, Arc1b OWED).
 
 ## Intervals and estimation evidence
 
@@ -198,6 +199,10 @@ Same twin surface, transport layer. Status = code + bridge/parity test exist;
 - truncated_poisson Identity + engine (zero-truncated; twin fid 10):
   `docs/dev-log/decisions/2026-08-15-truncated-poisson-identity.md` ·
   `src/families/truncated_poisson.jl` · `test/test_truncated_poisson.jl`
+- truncated_nbinom2 Identity + engine (zero-truncated NB2; twin fid 11; shared-`r`):
+  `docs/dev-log/decisions/2026-08-15-truncated-nbinom2-identity.md` ·
+  `docs/dev-log/plans/2026-08-15-truncated-nbinom2-identity-engine.md` ·
+  `src/families/truncated_nbinom2.jl` · `test/test_truncated_nbinom2.jl`
 - student / com_poisson ledger promote: `test/test_studentt.jl`,
   `test/test_com_poisson.jl` (code already present)
 - REML OWED: `src/reml.jl` present; dedicated package test still missing

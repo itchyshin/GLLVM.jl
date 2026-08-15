@@ -1,5 +1,15 @@
 # Check Log
 
+## 2026-08-15 - ZIB+X Sol-narrowed choke-point admit
+
+Conductor branch `cursor/family-admit-20260815` (PR #214) on post-#205/#210
+`main`. Sol-approved apply only: export `ZIBCovFit`/`fit_zib_gllvm_cov`,
+`postfit` helpers, `include("test_zib_x_identity.jl")`, verbatim Julia-forward
+ledger sentence. `fit_gllvm` / `@formula` / `bridge` remain **OWED**.
+
+Focused verify: `test_zib_x_identity.jl` → **23/23**; packed FD
+max|central-5pt|≈1.42e-8 (≤1e-6). Full CI green before rematch onto main.
+
 ## 2026-08-15 - ZIB+X engine Arc 0 (fit_zib_gllvm_cov)
 
 Lane `cursor/zib-x-catchup-20260815`, rebased onto PR #208 tip `0041f769` so the
@@ -16,7 +26,28 @@ yet — ZIB+X must not be reachable by name before plain ZIB is.
 Verify: `julia --project=. --startup-file=no test/test_zib_x_identity.jl`
 → **23/23**; zero-X Δ≈0; packed FD max|central-5pt|=1.42e-8 (≤1e-6).
 
-Rose / packing public claim: **pending Sol/Opus APPROVED** (Composer mechanical only).
+## 2026-08-15 - truncated_nbinom2 Sol score/weight a-factor fix
+
+Lane `cursor/truncated-nbinom2-20260815`. Sol HARD BLOCK: truncated NB2
+score/weight omitted `a = r/(r+μ)`. Fixed `_glm_score` /
+`_glm_weight` to `s = a·(y−μ_tr)`, `W = a²·Var_tr`. Identity + tests
+rewritten to density-derivative truth (not wrong HurdleNB copy). Focused
+`test_truncated_nbinom2.jl` **13/13 Pass** (~6.7s). Sol cell: score
+0.05011869 vs dℓ/dη 0.05011869 (abs 4.1e-10). No rtol widen. Sol BLOCK
+**CLEAR**.
+
+## 2026-08-15 - truncated_nbinom2 Identity→Engine
+
+Lane `cursor/truncated-nbinom2-20260815` from catch-up tip `b2b99463` (#205).
+Binding plan `2026-08-15-truncated-nbinom2-identity-engine.md` (G0 LOCKED;
+Ada shared-`r`). Identity ACCEPTED
+`2026-08-15-truncated-nbinom2-identity.md` (twin fid 11). Engine
+`TruncatedNegBin2{T}` + `fit_truncated_nbinom2_gllvm`; focused
+`test_truncated_nbinom2.jl` **11/11 Pass** (~8.3s); packed NLL
+`max_abs_FD=1.12e-7` ≤ 1e-6. Ledger `truncated_nbinom2` planned→implemented
+(Notes: shared-`r`; twin per-trait Arc1b OWED). No rtol widen; no ZIP/ZINB
+invent-Δ; no Phylo #127; no ADEMP. After-task
+`2026-08-15-truncated-nbinom2-identity-engine.md`. #205 merge still CI gate.
 
 ## 2026-08-15 - Capability catch-up full Pkg.test (landing)
 
