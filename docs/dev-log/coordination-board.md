@@ -4,7 +4,7 @@
 
 | Lane | Status | Branch / tip | Current handover / pointer | Owns |
 |---|---|---|---|---|
-| **Capability catch-up (post-#204)** | **THIS LANDING** | `cursor/capability-catchup-20260815` from `origin/main` @ `2914cc18` (#204) | LOOP `lanes/gllvmjl-capability-catchup-20260815/LOOP/` · plan `docs/dev-log/plans/2026-08-15-gllvm-jl-gllvmtmb-capability-catchup.md` | Hygiene bare `implemented` zip/zinb + student/REML/com_poisson promote-or-OWED + **truncated_poisson** Identity→Engine (Ada G0). **≠ invent ZIP/ZINB twin Δ ≠ ADEMP ≠ Phylo A ≠ race-merge**. |
+| **Capability catch-up (post-#204)** | **LANDING / STOP** | `cursor/capability-catchup-20260815` from `origin/main` @ `2914cc18` (#204) | after-task `docs/dev-log/after-task/2026-08-15-gllvm-jl-capability-catchup.md` · LOOP `lanes/gllvmjl-capability-catchup-20260815/LOOP/` | Hygiene + student/com_poisson promote + REML OWED + **truncated_poisson** Identity→Engine (10/10). Rung5 skipped. **≠ invent ZIP/ZINB twin Δ ≠ ADEMP ≠ Phylo A**. Next gate: full `Pkg.test` + PR ask. |
 | **ZINB+X confint under X** | **MERGED** #204 | `main` @ `2914cc18` | after-task `docs/dev-log/after-task/2026-08-14-zinb-x-confint.md` · Ubuntu one-fit `2026-08-15-zinb-x-confint-ubuntu-onefit.md` | `confint(ZINBCovFit)` + bridge CI lift; `_BRIDGE_NO_CI_X_FAMILIES` empty; `ci_x_*` true for `zinb`. Closed. **≠ twin Δ ≠ ADEMP ≠ per-trait r**. |
 | **ZINB+X engine Arc 0** | **MERGED** #203 | `main` @ `d589bd40` | after-task `docs/dev-log/after-task/2026-08-14-zinb-x-engine.md` | `fit_zinb_gllvm_cov` / `ZINBCovFit` + identity/FD + bridge/`@formula`. Closed. **≠ twin Δ ≠ ADEMP ≠ per-trait r**. |
 | **ZINB+X Identity Arc 0** | **ACCEPTED** (docs-only; MERGED #202) | `main` @ `daf95da6` | decision `docs/dev-log/decisions/2026-08-13-zinb-x-identity.md` | Shared site-X, separate `γ^z`/`γ^c`, `Λ_z=0`, **shared scalar `r`**. Closed before engine. |
@@ -39,10 +39,11 @@
 ## Current Rule
 
 - Rehydrate via **this Active-Lane-Split**, not a single orphaned START HERE bullet.
-- `START HERE (Cursor):` **Capability catch-up (post-#204)** on
-  `cursor/capability-catchup-20260815` (`origin/main` @ `2914cc18` = #204).
-  LOOP `lanes/gllvmjl-capability-catchup-20260815/LOOP/` — hygiene →
-  ledger honesty → **truncated_poisson** Identity→Engine (Ada G0 locked).
+- `START HERE (Cursor):` **Capability catch-up STOP** — programme landed on
+  `cursor/capability-catchup-20260815` (after-task
+  `2026-08-15-gllvm-jl-capability-catchup.md`). Next chips: truncated_nbinom2
+  Identity→Engine, or REML `test_reml.jl` promote, or light RCall truncated
+  cell — open a new lane; do not reopen ZIP/ZINB Identity.
 - Rose fence: ≠ invent twin light Δ for cut ZIP/ZINB ≠ ADEMP/coverage unless
   Totoro/DRAC sized+asked ≠ Phylo Model A public intervals ≠ silent rtol
   widen ≠ hurdle/Tweedie+X / none×dep / slopes / AGHQ / multinomial as this
@@ -53,10 +54,10 @@
 
 ## Status
 
-- 2026-08-15 — Capability catch-up programme **THIS LANDING** on
-  `cursor/capability-catchup-20260815` from `origin/main` @ `2914cc18`
-  (#204 MERGED). G0 Ada defaults: truncated_poisson Identity→Engine;
-  local compute; light Δ only when twin admits.
+- 2026-08-15 — Capability catch-up programme **STOP** (Arc0–Rung4+Close).
+  Ledger 49→52 implemented; bare zip/zinb; student+com_poisson promoted;
+  REML OWED; truncated_poisson Identity+engine (focused 10/10). Rung5 skipped.
+  Full `Pkg.test` + push/PR = next human gates.
 - 2026-08-15 — ZINB+X confint under X **MERGED**
   [#204](https://github.com/itchyshin/GLLVM.jl/pull/204) @ `2914cc18`.
   `_family_ci(::ZINBCovFit)` + guard lift; `ci_x_*` true; shared scalar `r`;

@@ -1,16 +1,19 @@
-GOAL: see GOAL.md.   STATE: SCAFFOLD done; Arc0 awaiting #204 merge (OPEN GATE).
-ARCS DONE (verified): none yet (LOOP kit + durable plan written; not yet verified post-merge).
-ARC IN PROGRESS: Arc0 — poll `gh pr view 204` until MERGED; then fetch main into this WT and refresh board START HERE.
-NEXT: After #204 MERGED → rebase/reset this WT onto post-merge origin/main; board START HERE → catch-up; then Rung1 hygiene.
-OPEN GATES (need human): none for wait itself — **do not race-merge #204** (worker ddaebb9f owns merge-on-green). Pause before push / public overclaim.
+GOAL: see GOAL.md.   STATE: PROGRAMME STOP — Arc0–Rung4+Close verified (focused); Rung5 skipped.
+ARCS DONE (verified):
+- Arc0: #204 MERGED @ 2914cc18; board START HERE catch-up → STOP pointer
+- Rung1: bare implemented zip/zinb/zib; 0 non-bare Status (token parse)
+- Rung2: student+com_poisson implemented; REML OWED note
+- Rung3: Identity ACCEPTED docs/dev-log/decisions/2026-08-15-truncated-poisson-identity.md
+- Rung4: TruncatedPoisson engine; test_truncated_poisson.jl 10/10 Pass; ledger flip
+- Close: after-task + check-log + Melissa plan-actual + Rose fence in after-task
+ARC IN PROGRESS: none
+NEXT: human gate — full `Pkg.test()` then ask before push/PR; optional next lane truncated_nbinom2 or REML test
+OPEN GATES (need human): push/PR without ask; full-suite before merge claim; public MC overwrite of R MSPL
 TRUTH LIVES IN:
-- Worktree `.worktrees/gllvmjl-capability-catchup-20260815` @ branch `cursor/capability-catchup-20260815`
-- Base tip at scaffold: `d589bd40` (origin/main pre-#204; #203 ZINB+X engine)
-- Plan: `docs/dev-log/plans/2026-08-15-gllvm-jl-gllvmtmb-capability-catchup.md`
-- LOOP: `lanes/gllvmjl-capability-catchup-20260815/LOOP/`
-- #204: OPEN MERGEABLE tip ~`cc45d359`; CI Julia matrix still IN_PROGRESS at scaffold time
-RESUME: You are gllvmjl-capability-catchup-20260815 — capability catch-up post-#204. RESUME.
-READ FIRST: lanes/gllvmjl-capability-catchup-20260815/LOOP/GOAL.md → checkpoint.md → ultra-plan.md → AGENTS.md.
-WORKSPACE: .worktrees/gllvmjl-capability-catchup-20260815 on cursor/capability-catchup-20260815 (reattach; do NOT recreate; never Dropbox fork).
-CONTINUE FROM: Arc0 — poll #204; if MERGED, pull post-merge main then Rung1 bare implemented tokens.
-Pause at: race-merge #204; push without ask; public capability overclaim.
+- Worktree `.worktrees/gllvmjl-capability-catchup-20260815` branch `cursor/capability-catchup-20260815`
+- after-task `docs/dev-log/after-task/2026-08-15-gllvm-jl-capability-catchup.md`
+- plan-actual `docs/dev-log/plan-actual/2026-08-15-gllvm-jl-capability-catchup.md`
+RESUME: You are gllvmjl-capability-catchup-20260815. PROGRAMME DONE for G0 scope.
+READ FIRST: LOOP/GOAL.md → checkpoint.md → after-task 2026-08-15-gllvm-jl-capability-catchup.md.
+If continuing: run full Pkg.test in this WT; then ask Shinichi before push/PR.
+Do NOT redo Arc0–Rung4. Do NOT invent ZIP/ZINB twin Δ. Do NOT write Dropbox protected fork.
