@@ -1,5 +1,19 @@
 # Check Log
 
+## 2026-08-16 — overnight ADMIT ZIB+X postfit + Sol ledger
+
+- **What**: Complete non-OWED ZIB+X admit after #211: `postfit.jl` `ZIBCovFit` helpers; Sol-approved Julia-forward ledger sentence in `capability-status.md` (already had export + `test_zib_x_identity.jl` on #215).
+- **Verify**: patch from Sol-narrowed #214 commit `497621ae`; no twin Δ; `fit_gllvm`/formula/bridge remain OWED.
+- **Still OWED**: twin light Δ; no-X ZIB `fit_gllvm` / `@formula` / bridge before any X surface there.
+
+
+## 2026-08-16 — overnight ADMIT wiring (lognormal + censored_poisson + ZIB+X non-OWED)
+
+- **What**: Conductor choke-point wiring after engine merges #213 / #212 / #211.
+- **Files**: `src/GLLVM.jl` includes/exports (incl. `fit_zib_gllvm_cov` / `ZIBCovFit`); `src/families/fit_gllvm.jl` dispatch for lognormal + censored_poisson only; `test/runtests.jl` includes; `docs/design/capability-status.md` ledger notes.
+- **Verify**: focused `test_lognormal.jl` **16/16**; `test_censored_poisson.jl` **46/46**. No silent rtol widen. Twin light Δ not invented.
+- **Still OWED**: ZIB `fit_gllvm` / `@formula` / `bridge.jl` (no-X ZIB first); twin light Δ; Rose README marketing.
+
 ## 2026-08-15 - ZIB+X engine Arc 0 (fit_zib_gllvm_cov)
 
 Lane `cursor/zib-x-catchup-20260815`, rebased onto PR #208 tip `0041f769` so the

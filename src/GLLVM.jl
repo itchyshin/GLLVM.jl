@@ -43,6 +43,7 @@ include("families/laplace.jl")           # generic family-dispatched Laplace mar
 include("families/binomial.jl")          # Binomial family pieces + fit (Phase 3)
 include("families/poisson.jl")           # Poisson family pieces (Phase 3)
 include("families/truncated_poisson.jl") # Zero-truncated Poisson (twin fid 10)
+include("families/censored_poisson.jl") # Right-censored Poisson (Julia-forward; twin constructor-only)
 include("families/truncated_nbinom2.jl") # Zero-truncated NB2 (twin fid 11; shared-r Arc1)
 include("families/negbin.jl")            # Negative-binomial (NB2) family pieces (Phase 3)
 include("families/gp1.jl")               # Generalized-Poisson type-1 (GP-1, signed dispersion) — issue #104
@@ -54,6 +55,7 @@ include("families/gamma.jl")             # Gamma (positive continuous) family pi
 include("families/tweedie.jl")           # Tweedie (compound Poisson–Gamma, 1<p<2) — biomass/abundance with zeros
 include("families/exponential.jl")       # Exponential (positive continuous, no dispersion) — Gamma(α=1)
 include("families/studentt.jl")          # Student-t (heavy-tailed continuous, fixed ν) family pieces
+include("families/lognormal.jl")         # one-part lognormal (twin fid 3)
 include("families/twopart.jl")           # Two-part substrate + Delta-lognormal / Delta-Gamma / Hurdle (Phase 3)
 include("families/beta_hurdle.jl")       # Beta-hurdle (Bernoulli × Beta) two-part family
 include("families/beta_binomial.jl")     # Beta-binomial (overdispersed binomial) — twin fid 8
@@ -164,6 +166,7 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        fit_binomial_gllvm, BinomialFit, fit_poisson_gllvm, PoissonFit,
        TruncatedPoisson, fit_truncated_poisson_gllvm, TruncatedPoissonFit,
        truncated_poisson_marginal_loglik_laplace,
+       CensoredPoisson, fit_censored_poisson_gllvm, CensoredPoissonFit,
        TruncatedNegBin2, fit_truncated_nbinom2_gllvm, TruncatedNegBin2Fit,
        truncated_nbinom2_marginal_loglik_laplace,
        poisson_laplace_grad, binomial_laplace_grad, nb_laplace_grad,
@@ -181,6 +184,8 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        fit_nb1_gllvm_grouped_cov, NB1GroupedCovFit,
        fit_tweedie_gllvm_grouped, TweedieGroupedFit, tweedie_grouped_marginal_loglik_laplace,
        StudentTFamily, fit_studentt_gllvm, StudentTFit, studentt_marginal_loglik_laplace,
+       Lognormal, LognormalFit, fit_lognormal_gllvm,
+       lognormal_marginal_loglik, lognormal_response_mean,
        Ordinal, fit_ordinal_gllvm, OrdinalFit,
        fit_ordinal_gllvm_pertrait, OrdinalPerTraitFit,
        fit_ordinal_gllvm_pertrait_cov, OrdinalPerTraitCovFit,
@@ -201,7 +206,7 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        fit_zip_gllvm_cov, ZIPCovFit,
        fit_zinb_gllvm, ZINBFit, zinb_marginal_loglik_laplace, ZINegBin,
        fit_zinb_gllvm_cov, ZINBCovFit,
-       fit_zib_gllvm, ZIBFit, zib_marginal_loglik_laplace, fit_gllvm,
+       fit_zib_gllvm, ZIBFit, fit_zib_gllvm_cov, ZIBCovFit, zib_marginal_loglik_laplace, fit_gllvm,
        fit_gllvm_cov, GllvmCovFit, gllvm, @formula,
        fit_gllvm_speciescov, GllvmSpeciesCovFit,
        fit_fourthcorner_gllvm, FourthCornerFit,
