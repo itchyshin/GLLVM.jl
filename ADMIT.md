@@ -23,15 +23,38 @@ Composer delivered the mechanical ZIP→ZIB dual-γ clone only.
 
 Leave these to the merge conductor after Sol/Opus packing/Rose sign-off:
 
-1. **`src/GLLVM.jl`** — export `fit_zib_gllvm_cov`, `ZIBCovFit` (and any public marker if added).
-2. **`src/families/fit_gllvm.jl`** — dispatch `X` → `fit_zib_gllvm_cov` for ZIB / binomial-ZI route if applicable.
+1. **`src/GLLVM.jl`** — export `fit_zib_gllvm_cov`, `ZIBCovFit` **only**. Exporting
+   the `ZIB` family marker belongs to the fenced no-X arc (items 2 and 4), not to
+   this PR's conductor admit — it is the precondition for `fit_gllvm` / `@formula`
+   reaching ZIB at all, so it must not slip in here.
+2. **`src/families/fit_gllvm.jl`** — **OWED / fenced, not this PR.** There is no
+   `_fit_gllvm(::ZIB)` arm at all (`src/families/fit_gllvm.jl:139–149` covers
+   Normal … ZIPoisson / ZINegBin), the fallback availability list (`:154`) omits
+   ZIB, and the `ZIB` marker is **not exported** from `src/GLLVM.jl` (`:198`
+   exports `fit_zib_gllvm` / `ZIBFit` / `zib_marginal_loglik_laplace` only,
+   while `ZIPoisson` and `ZINegBin` are exported at `:194` / `:196`). So
+   `fit_gllvm` cannot reach ZIB today even without X. Adding an X arm here would
+   leapfrog a no-X `fit_gllvm` surface ZIB has never had. Route **(b)**, as for
+   the bridge: this admit gets its own arc and its own G0, and that arc must land
+   **no-X ZIB through `fit_gllvm` first** — export `ZIB`, add the
+   `_fit_gllvm(::ZIB)` → `fit_zib_gllvm` arm, add ZIB to the availability list —
+   before any X dispatch.
 3. **`src/bridge.jl`** — **OWED / fenced, not this PR (Identity R2).** `zib` is in
    **neither** `_BRIDGE_ONEPART_FAMILIES` nor `_BRIDGE_X_FAMILIES`, and this PR leaves
    `src/bridge.jl` untouched. Admitting `zib` here would leapfrog a no-X bridge surface
    ZIB has never had. Route **(b)**: bridge admit gets its own arc and its own G0, no-X
    `zib` first, then X — including the trials-contract reconciliation between `ZIB`'s
    scalar `N::Int` and the bridge's `p×n` `cbind(success, failure)` convention.
-4. **`src/formula.jl`** — `@formula` → `fit_zib_gllvm_cov` when X present (mirror ZIP/ZINB).
+4. **`src/formula.jl`** — **OWED / fenced, not this PR.** `src/formula.jl` never
+   mentions ZIB: the no-X ladder dispatches `ZIPoisson()` / `ZINegBin()` only
+   (`:102–:103`) and the X branch dispatches those two only (`:140–:143`).
+   Combined with the unexported `ZIB` marker (above), `@formula` has no no-X ZIB
+   route either. Wiring an X route here would leapfrog that missing surface.
+   Route **(b)**: own arc, own G0, landing **no-X ZIB through `@formula` first**
+   (which itself presupposes the exported marker and the `fit_gllvm`
+   availability-list entry from item 2) before any X dispatch. "Mirror
+   ZIP/ZINB" is **not** licence on its own — ZIP/ZINB already have both no-X
+   and X arms in this file; ZIB has neither.
 5. **`src/postfit.jl`** — `_loadings` / `_loglik` / `_nparams` / `getLV(::ZIBCovFit, Y, X)`.
 6. **`test/runtests.jl`** — `include("test_zib_x_identity.jl")`.
 7. **`docs/design/capability-status.md`** — ledger note only after Sol/Opus Rose OK.
@@ -51,4 +74,6 @@ julia --project=. --startup-file=no test/test_zib_x_identity.jl
 - No CI-under-X until confint follow-up.
 - No edits to sibling family lanes.
 - No bridge admission for `zib` (one-part or X) — **OWED**, fenced to its own arc.
+- No `fit_gllvm` or `@formula` admission for ZIB (no-X **or** X) — **OWED**, fenced
+  to its own arc; no-X must land first, and the `ZIB` marker is not even exported yet.
 - No per-observation trials matrix `N_{ts}` — shared scalar `N` is the locked contract.
