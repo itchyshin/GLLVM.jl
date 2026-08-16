@@ -81,4 +81,31 @@ end
         s = sprint(show, MIME("text/plain"), fit)
         @test occursin("Hurdle-Poisson", s)
     end
+
+    @testset "fit_gllvm reaches no-X Hurdle-Poisson via the HurdlePoisson() marker" begin
+        Random.seed!(1608)
+        p, K, n = 4, 1, 60
+        βz_true = fill(-0.2, p)
+        βc_true = log.(2 .+ abs.(randn(p)))
+        Λc_true = 0.4 .* randn(p, K)
+        π = inv.(1 .+ exp.(-βz_true))
+        Z = randn(K, n)
+        ηc = βc_true .+ Λc_true * Z
+        Y = zeros(Int, p, n)
+        for t in 1:p, s in 1:n
+            rand() < π[t] && (Y[t, s] = _rztpois(exp(ηc[t, s])))
+        end
+
+        fit = fit_gllvm(Y; family = HurdlePoisson(), K = K, iterations = 40)
+        @test fit isa HurdlePoissonFit
+        @test isfinite(fit.loglik)
+        direct = fit_hurdle_poisson_gllvm(Y; K = K, iterations = 40)
+        @test fit.loglik ≈ direct.loglik atol = 1e-8
+
+        # No-X `@formula` inherits the arm via the q == 0 fall-through.
+        ff = gllvm(@formula(y ~ 1), Y, (; temp = randn(n));
+                   family = HurdlePoisson(), K = K, iterations = 40)
+        @test ff isa HurdlePoissonFit
+        @test ff.loglik ≈ direct.loglik atol = 1e-8
+    end
 end

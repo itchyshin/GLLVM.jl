@@ -143,8 +143,9 @@ fp            # rich REPL summary
 
 When zeros are *more* frequent than the count family predicts, use a
 zero-inflated or hurdle/delta model. These carry **two** linear predictors — an
-occurrence/zero part (`βz`) and a positive/count part (`βc`, with loadings `Λc`)
-— so they have dedicated drivers rather than going through `fit_gllvm`:
+occurrence/zero part (`βz`) and a positive/count part (`βc`, with loadings `Λc`).
+Hurdle-Poisson and the Delta families are reachable through no-X `fit_gllvm`;
+the others still have dedicated drivers:
 
 ```julia
 # Zero-inflated (a structural-zero mixture)
@@ -154,7 +155,8 @@ fzinb = fit_zinb_gllvm(Y; K = 2)             # zero-inflated NB2 (shared r)
 fzib  = fit_zib_gllvm(Y;  K = 2, N = 10)     # zero-inflated Binomial — N trials (Int)
 
 # Hurdle (Bernoulli occurrence × zero-truncated positive count)
-fhp = fit_hurdle_poisson_gllvm(Y; K = 2)
+fhp = fit_gllvm(Y; family = HurdlePoisson(), K = 2)
+# named fitter remains: fit_hurdle_poisson_gllvm
 fhn = fit_hurdle_nb_gllvm(Y;      K = 2)
 
 # Delta / two-part continuous (occurrence × positive continuous)
@@ -164,9 +166,10 @@ fdg = fit_gllvm(Yc; family = DeltaGamma(), K = 2)      # Bernoulli × Gamma
 fbh = fit_beta_hurdle_gllvm(Yp;     K = 2)   # Bernoulli × Beta (point mass at 0)
 ```
 
-Delta-lognormal and Delta-Gamma are **no-X** surfaces on `fit_gllvm` /
-`gllvm(@formula(y ~ 1), …)`: the markers' `σ` / `α` are tag payloads (always
-estimated). Covariates and row effects are not admitted on these routes.
+Delta-lognormal, Delta-Gamma, and Hurdle-Poisson are **no-X** surfaces on
+`fit_gllvm` / `gllvm(@formula(y ~ 1), …)`. The Delta markers' `σ` / `α` are tag
+payloads (always estimated); `HurdlePoisson()` is an empty marker. Covariates
+and row effects are not admitted on these routes.
 
 `fit_zib_gllvm` needs the number of trials `N` as a scalar `Int` (a shared trial
 count for all entries). The two-part fits expose `βz` (occurrence/zero logits),

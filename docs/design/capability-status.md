@@ -123,7 +123,12 @@ light Δ is invented. Since the 2026-08-16 Delta no-X surface admit,
 `fit_gllvm(Y; family = DeltaLogNormal())` / `DeltaGamma()` and `@formula(y ~ 1)`;
 marker `σ` / `α` are inert tag payloads (always estimated). Delta +X,
 `disp_group`, row effects, `bridge.jl`, and any twin light Δ remain OWED — no
-invented twin Δ. `truncated_poisson` =
+invented twin Δ. Since the 2026-08-16 Hurdle-Poisson no-X surface admit,
+`hurdle_poisson` is reachable through `fit_gllvm(Y; family = HurdlePoisson())`
+and `@formula(y ~ 1)`; the marker is empty (no payload). Hurdle-Poisson +X,
+`disp_group`, row effects, `bridge.jl`, Hurdle-NB / beta-hurdle / ordered-beta
+surface admits, and any twin light Δ remain OWED — the twin has no hurdle
+family, so a Δ would be invented. `truncated_poisson` =
 zero-truncated Poisson (Identity 2026-08-15; twin fid 10); `truncated_nbinom2`
 = zero-truncated NB2 (Identity 2026-08-15; twin fid 11; Arc1 shared scalar `r`
 ≡ twin `φ`; twin per-trait `log_phi_truncnb2` documented, Arc1b OWED). `lognormal` = one-part lognormal (Identity 2026-08-15; twin fid 3; engine+admit; light RCall Δ / bridge OWED). `censored_poisson` = right-censored Poisson (Identity 2026-08-15; Julia-forward / twin constructor-only; light RCall Δ FORBIDDEN).
@@ -249,6 +254,10 @@ Same twin surface, transport layer. Status = code + bridge/parity test exist;
   `src/families/censored_poisson.jl` · `test/test_censored_poisson.jl` ·
   `docs/dev-log/after-task/2026-08-15-censored-poisson-engine.md` — Julia-forward;
   twin is constructor-only, so a light RCall Δ is **forbidden**, not owed
+- Hurdle-Poisson no-X surface admit (`fit_gllvm` + `@formula` fall-through):
+  `src/families/fit_gllvm.jl` · `test/test_hurdle_poisson.jl` — empty marker
+  `HurdlePoisson()`; +X / bridge / Hurdle-NB remain OWED; twin light Δ
+  **forbidden** (no twin hurdle family)
 - ZIB no-X surface admit (`fit_gllvm` #218, `@formula` #220):
   `src/families/fit_gllvm.jl` · `src/formula.jl` · `test/test_zero_inflated.jl` /
   `test/test_formula.jl` — X on those surfaces remains OWED

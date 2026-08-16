@@ -1,6 +1,18 @@
 # Check Log
 
 
+## 2026-08-16 — Hurdle-Poisson no-X `fit_gllvm` surface admit
+
+Lane `cursor/hurdle-poisson-nox-20260816`. Base `origin/main` @ `497be1c4` (#235).
+Cheapest remaining `_fit_gllvm` surface admit after the 2026-08-16 wave
+(ZIB / NB1 / BetaBinom / Student-t / Delta; Tweedie reserved for #236).
+`HurdlePoisson` was an empty two-part marker with a working named fitter and
+no public export / dispatch arm. Export + `_fit_gllvm(::HurdlePoisson)` →
+`fit_hurdle_poisson_gllvm`; no-X `@formula` opens by fall-through. No payload
+Identity (empty marker). No bridge. No twin Δ (twin has no hurdle family).
+Mac-LIGHT focused: `test/test_hurdle_poisson.jl` **171/171** in 13.2s. Full
+suite = GitHub CI.
+
 ## 2026-08-16 — ZIP no-X bridge arm fixed (`fit.link` on a `ZIPFit`)
 
 Lane `cursor/zip-nox-bridge-fix-20260816`. Base `origin/main` @ `7254edda` (#233).
