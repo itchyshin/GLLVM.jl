@@ -143,6 +143,64 @@ tweedie_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix, β::Abstr
 # Fit driver.
 # ---------------------------------------------------------------------------
 
+# Value the packed objective returns when the Laplace marginal cannot be
+# evaluated. It must be finite so the line search retreats rather than stalling
+# on a NaN, but it is a failure marker, not a log-likelihood: `_tweedie_verdict`
+# refuses to report a point still sitting on it.
+const _TWEEDIE_FAIL_PENALTY = 1e12
+
+# |ξ| beyond this puts the power within ~2e-9 of 1 or 2 — a run that has
+# diverged along the (φ, power) ridge, not an estimate on the open interval the
+# `TweedieFit` docstring promises. Any genuine Tweedie power (1.1–1.9) sits at
+# |ξ| < 2.2, so the bound never fires on a real optimum.
+const _TWEEDIE_XI_MAX = 20.0
+
+# Data-scaled offset for the log warm start. Responses have an exact atom at 0,
+# and `log(max(y, 1e-6))` maps every structural zero to −13.8 whatever the data
+# scale: that drags the intercepts far below the log-mean and inflates the SVD
+# loadings, landing the start on a part of the Laplace marginal from which the
+# optimiser cannot recover. Offsetting by a fraction of the mean *positive*
+# observed response keeps the zeros on the data's own scale.
+function _tweedie_log_offset(Yc::AbstractMatrix, msk)
+    tot = 0.0
+    cnt = 0
+    @inbounds for i in eachindex(Yc)
+        (msk === nothing || msk[i]) || continue
+        Yc[i] > 0 || continue
+        tot += Yc[i]
+        cnt += 1
+    end
+    cnt == 0 && return 1e-6
+    return 0.1 * (tot / cnt)
+end
+
+"""
+    _tweedie_verdict(optim_converged, gres, nll, ξ, g_tol) -> (converged, loglik, reason)
+
+Convergence contract for [`fit_tweedie_gllvm`](@ref). `Optim`'s own verdict is
+necessary but not sufficient here: on this objective it fires `f_converged` on a
+relative step test while the gradient residual is still ~1e15 (the optimiser
+stalled), and `g_converged` on the flat failure plateau where the
+finite-difference gradient is exactly zero. Three additional checks gate the
+reported flag, and the failure sentinel is never reported as a log-likelihood:
+
+- `:objective_failed` — the objective at the returned point is still at
+  `_TWEEDIE_FAIL_PENALTY`; the marginal was never evaluated successfully.
+  `loglik` is `-Inf`, not `-1e12`.
+- `:power_at_boundary` — `|ξ| > _TWEEDIE_XI_MAX`, i.e. the power has run to the
+  closed end of `(1, 2)`.
+- `:gradient_not_small` — the gradient residual is large relative to the
+  objective's own scale, so the point is not a stationary point.
+"""
+function _tweedie_verdict(optim_converged::Bool, gres::Real, nll::Real, ξ::Real, g_tol::Real)
+    (isfinite(nll) && nll < _TWEEDIE_FAIL_PENALTY) ||
+        return (false, -Inf, :objective_failed)
+    abs(ξ) <= _TWEEDIE_XI_MAX || return (false, -float(nll), :power_at_boundary)
+    (isfinite(gres) && gres <= max(g_tol, g_tol * abs(nll))) ||
+        return (false, -float(nll), :gradient_not_small)
+    return (optim_converged, -float(nll), :ok)
+end
+
 """
     TweedieFit
 
@@ -180,8 +238,16 @@ marginal (`tweedie_marginal_loglik_laplace`), jointly estimating the dispersion
 `φ` and power `p`. The power is mapped to `(1,2)` by `p = 1 + 1/(1+exp(-ξ))`
 (so `ξ = 0 ⇒ p = 1.5`). `Y` is a p×n matrix of non-negative reals (a point mass
 at 0 allowed); `K` the latent dimension. Finite-difference gradient; warm start =
-log row-means of `max(Y, 1e-6)` as intercepts + SVD of row-centred log-Y as
-loadings + `logφ₀ = log(φ_init)`, `ξ₀ = logit(p_init − 1)`.
+log row-means of `Y + c` as intercepts + SVD of row-centred log-`(Y + c)` as
+loadings + `logφ₀ = log(φ_init)`, `ξ₀ = logit(p_init − 1)`, where the offset
+`c = 0.1 · mean(Y[Y > 0])` keeps the exact zeros on the data's own scale.
+
+`converged` is not `Optim`'s verdict alone: it additionally requires that the
+Laplace marginal was evaluated successfully at the returned point, that the
+power is strictly interior to `(1, 2)`, and that the gradient residual is small
+relative to the objective's scale (see `_tweedie_verdict`). A fit that fails any
+of these reports `converged = false` rather than advertising a stalled,
+boundary, or unevaluable point as a maximum.
 
 Missing data: pass a `mask` (p×n Bool, `false` = unobserved) or simply include
 `missing` entries in `Y` — either way the masked cells are dropped from the
@@ -201,7 +267,7 @@ function fit_tweedie_gllvm(Y::AbstractMatrix; K::Integer,
     msk = _resolve_obs_mask(mask, Y)
     Yc = float.(_sanitize_missing(Y, 0))
 
-    Zemp = log.(max.(Yc, 1e-6))
+    Zemp = log.(Yc .+ _tweedie_log_offset(Yc, msk))
     _mask_warmstart!(Zemp, msk)
     β0 = β_init === nothing ? vec(sum(Zemp; dims = 2)) ./ n : collect(float.(β_init))
     Λ0 = if Λ_init === nothing
@@ -231,9 +297,9 @@ function fit_tweedie_gllvm(Y::AbstractMatrix; K::Integer,
                                              mask = msk, link = link,
                                              maxiter = newton_maxiter, tol = newton_tol)
         catch
-            return 1e12
+            return _TWEEDIE_FAIL_PENALTY
         end
-        return isfinite(v) ? v : 1e12
+        return isfinite(v) ? v : _TWEEDIE_FAIL_PENALTY
     end
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
     res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
@@ -242,7 +308,17 @@ function fit_tweedie_gllvm(Y::AbstractMatrix; K::Integer,
     β̂ = θ̂[1:p_sp]
     Λ̂ = unpack_lambda(θ̂[(p_sp + 1):(p_sp + rr)], p_sp, K)
     φ̂ = exp(θ̂[p_sp + rr + 1])
-    p̂ = 1.0 + 1.0 / (1.0 + exp(-θ̂[p_sp + rr + 2]))
-    return TweedieFit(β̂, Λ̂, φ̂, p̂, link, -Optim.minimum(res),
-                      Optim.converged(res), Optim.iterations(res))
+    ξ̂ = θ̂[p_sp + rr + 2]
+    p̂ = 1.0 + 1.0 / (1.0 + exp(-ξ̂))
+    conv, loglik, reason = _tweedie_verdict(Optim.converged(res), Optim.g_residual(res),
+                                            Optim.minimum(res), ξ̂, g_tol)
+    if reason === :objective_failed
+        @warn "fit_tweedie_gllvm: the Laplace marginal could not be evaluated at any \
+               accepted point; returning converged = false and loglik = -Inf. Try a \
+               different `p_init` / `φ_init`, or check `Y` for extreme values."
+    elseif reason === :power_at_boundary
+        @warn "fit_tweedie_gllvm: the power ran to the boundary of (1, 2) \
+               (p̂ = $(p̂), φ̂ = $(φ̂)); the fit is flagged as not converged."
+    end
+    return TweedieFit(β̂, Λ̂, φ̂, p̂, link, loglik, conv, Optim.iterations(res))
 end

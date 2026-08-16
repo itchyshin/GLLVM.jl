@@ -11469,3 +11469,64 @@ RCall Δ** — the twin `gllvmTMB` has no ZIB at all, so a Δ would be invented
 (the `censored_poisson` **forbidden** case, not the `lognormal` **owed** one),
 and ZIP's "(twin ZIP cut)" note wording must not be copied. No R-parity, ADEMP,
 or coverage claimed. #208's shared-scalar-`N` lock inherited, not re-opened.
+
+## 2026-08-16 — Tweedie engine health: false convergence repaired (G-a…G-d)
+
+Lane `cursor/tweedie-engine-health-20260816`, base `origin/main` @ `7b45ba04`
+(merge of #234). Closes gates G-a…G-d in §T6 of
+`docs/dev-log/decisions/2026-08-16-tweedie-fit-gllvm-identity.md` for the
+**scalar** fitter `fit_tweedie_gllvm`. The `fit_gllvm` surface admit stays shut.
+
+Cause (instrumented, not inferred): the log warm start `log(max(Y, 1e-6))` sends
+every structural zero to −13.8 regardless of data scale. On the shipped test cell
+(50 zeros in 200 cells) that gives `β0 = [-6.70, -2.36, -2.05, -1.39, -3.34]`
+against a truth of `[-0.33, 0.66, 0.51, 0.86, 0.16]`, and `‖Λ0‖ = 10.1` against
+`1.14`. Two independent verdict flaws then advertised the resulting stall as
+success: `Optim`'s *relative* f-change test fires on an objective of ~3.9e11
+while `g_residual = 8.1e15` (`stopped_by.f_converged = true`), and the bare
+`1e12` failure value is a perfectly flat plateau whose finite-difference gradient
+is exactly zero, so `stopped_by.g_converged = true` at iteration 1 with `−1e12`
+returned as a maximised log-likelihood, `φ̂ = 3.2e54`, `p̂ = 1.0`.
+
+Repair: offset warm start `log(Y + 0.1·mean(Y[Y>0]))` over observed cells; named
+`_TWEEDIE_FAIL_PENALTY` / `_TWEEDIE_XI_MAX`; and `_tweedie_verdict`, which
+requires a successfully evaluated objective (else `converged = false`,
+`loglik = -Inf`, warn), a strictly interior power (else flagged + warn), and a
+gradient residual small relative to the objective's own scale.
+
+Verification (Mac-light; full `Pkg.test()` left to GitHub CI):
+
+```sh
+julia --project=. test/test_tweedie_engine_health.jl   # 48/48   7m41.4s
+julia --project=. test/test_tweedie.jl                 # 14/14     48.3s
+julia --project=. test/test_missing_response_extra.jl  # 35/35   3m33.1s
+julia --project=. test/test_postfit_zib_tweedie.jl     # 37/37     43.7s
+julia --project=. test/test_confint_family.jl          # 240/240  6m53.9s
+```
+
+Power-start sweep on the shipped cell, before → after:
+
+```
+p_init=1.1  -569.73996     ->  -336.5943511
+p_init=1.3  -1090.0722     ->  -336.5943511
+p_init=1.5  -3.8886709e11  ->  -336.5943511
+p_init=1.7  -1e12          ->  -336.5943511
+p_init=1.9  -1e12          ->  -336.5943511
+```
+
+`(φ̂, p̂)` agree to 8 significant figures across all five starts, all reaching
+`g_converged` with a gradient residual ~5e-6. G-d recovery from the correct
+compound Poisson–Gamma DGP (p=6, n=80, K=1, φ=1.0, power=1.5, 3 replicates):
+mean `φ̂ = 1.0216`, mean `p̂ = 1.4987`, all converged.
+
+No tolerance was widened and no seed changed. `test/test_confint_family.jl` was
+not opened — the 2026-08-03 Tweedie seed repair stands and was re-run only as a
+blast-radius check. `src/bridge.jl` was not opened; no R-parity claim or twin Δ
+follows from this work.
+
+OWED: `fit_tweedie_gllvm_grouped` (`src/families/grouped_dispersion.jl:1563`,
+`:1589`, `:1602`) carries all three defects verbatim and is the only Tweedie
+route reachable from a public entry point today
+(`fit_gllvm(disp_group = :species)`). The helpers it needs now exist. Also owed:
+the whole T2/T3/T4/T5 surface admit, an analytic Tweedie gradient, and a coverage
+certificate.

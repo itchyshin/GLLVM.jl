@@ -5,6 +5,26 @@ All notable changes to GLLVM.jl are documented here.
 ## Unreleased
 
 ### Fixed
+- **`fit_tweedie_gllvm` reported `converged = true` at points that were not
+  maxima.** The log warm start `log(max(Y, 1e-6))` sent every structural zero to
+  −13.8 regardless of the data scale, wrecking the intercepts and inflating the
+  SVD loadings; from there the optimiser stalled, and two independent flaws in
+  the convergence verdict advertised the stall as success. `Optim`'s *relative*
+  f-change test fired on an objective of size ~1e11 while the gradient residual
+  was still ~1e15, and the bare `1e12` failure value formed a perfectly flat
+  plateau whose finite-difference gradient is exactly zero, so `Optim` reported
+  gradient convergence and `−1e12` was returned as a maximised log-likelihood
+  with `p̂ = 1.0`, outside the documented open interval `(1,2)`. On the family's
+  own shipped test cell the default start landed ~9 orders of magnitude below a
+  neighbouring start. The warm start now offsets by `0.1 · mean(Y[Y > 0])`, and
+  `converged` additionally requires a successfully evaluated objective, a
+  strictly interior power, and a gradient residual small *relative to the
+  objective's scale*; failures return `converged = false` (with `loglik = -Inf`
+  rather than the sentinel) and warn. A power-start sweep over
+  `p_init ∈ {1.1 … 1.9}` now agrees to 8 significant figures where it previously
+  spanned 9 orders of magnitude. Pinned by
+  `test/test_tweedie_engine_health.jl`. **`fit_tweedie_gllvm_grouped` still
+  carries the same three defects and is not fixed here.**
 - **Every non-Gaussian Wald confidence-interval standard error was silently
   corrupted.** The observed-information finite-difference Hessian (`_fd_hessian`,
   backing `confint(fit, Y; method=:wald)` / `_family_wald` for Poisson / Binomial /

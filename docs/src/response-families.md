@@ -230,6 +230,32 @@ shared `γ`; twin API B). Shared-α + X remains the opt-in
 fit = fit_gllvm(Yp; family = Gamma(), K = 2)   # Yp > 0; shared α (no-X)
 ```
 
+### Tweedie — `fit_tweedie_gllvm`
+
+Compound Poisson–Gamma for biomass / abundance with true zeros: an exact point
+mass at 0 plus a positive continuous part, `Var = φ μ^p` with `1 < p < 2`. Both
+the dispersion `φ` and the power `p` are estimated; there is no way to pin the
+power at present (the R twin's `tweedie(p = )`).
+
+```julia
+fit = fit_tweedie_gllvm(Y; K = 2)                    # Y ≥ 0; φ and p estimated
+fit = fit_tweedie_gllvm_grouped(Y; K = 2)            # φ per species, shared p
+```
+
+`φ` and the power sit on a nearly flat joint ridge, so the reported `converged`
+flag is deliberately strict: on top of the optimiser's own verdict, the fit is
+flagged as **not** converged if the Laplace marginal could not be evaluated at
+the returned point (`loglik` is then `-Inf`, never an internal sentinel), if the
+power has run to the closed end of `(1, 2)`, or if the gradient residual is large
+relative to the objective's own scale. Treat `converged = false` as a real
+result: try a different `p_init`, or a cell with more sites.
+
+!!! warning
+    This contract currently applies to `fit_tweedie_gllvm` only.
+    `fit_tweedie_gllvm_grouped` — and therefore
+    `fit_gllvm(...; disp_group = :species)` — has not been repaired yet and can
+    still report `converged = true` at a start-pinned point.
+
 ### Student-t — `StudentTFamily(ν)`
 
 ```julia
