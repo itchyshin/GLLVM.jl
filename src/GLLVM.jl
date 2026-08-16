@@ -218,7 +218,7 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        fit_rrr_gllvm, RRRFit, rrr_marginal_loglik,
        fit_quadratic_gllvm, QuadraticFit, quadratic_marginal_loglik_laplace,
        fit_ordered_beta_gllvm, OrderedBetaFit, ordered_beta_marginal_loglik_laplace,
-       fit_beta_binomial_gllvm, BetaBinomialFit, betabinomial_marginal_loglik_laplace,
+       BetaBinom, fit_beta_binomial_gllvm, BetaBinomialFit, betabinomial_marginal_loglik_laplace,
        fit_beta_binomial_gllvm_grouped, BetaBinomialGroupedFit,
        betabinomial_grouped_marginal_loglik_laplace,
        fit_beta_binomial_gllvm_grouped_cov, BetaBinomialGroupedCovFit,

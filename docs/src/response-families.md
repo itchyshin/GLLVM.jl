@@ -75,13 +75,13 @@ supports `LogitLink()` (default), `ProbitLink()`, and `CLogLogLink()`.
 | ZIP | ✅ available | logit × log | two-part Laplace | — | zero-inflated Poisson; `fit_zip_gllvm` / shared site-X via `fit_zip_gllvm_cov` (separate `γz`/`γc`, `Λz=0`; Julia-forward) |
 | ZINB | ✅ available | logit × log | two-part Laplace | shared scalar `r` | zero-inflated NB2; `fit_zinb_gllvm` / shared site-X via `fit_zinb_gllvm_cov` (separate `γz`/`γc`, `Λz=0`, shared `r`; Julia-forward) |
 | ZIB | ✅ available | logit × logit | two-part Laplace | — | zero-inflated Binomial; `fit_zib_gllvm` |
-| Beta-binomial | ✅ available | logit / probit / cloglog | Laplace | precision `φ` (`a = μφ, b = (1−μ)φ`) | overdispersed binomial counts; `fit_beta_binomial_gllvm`; → Binomial as `φ → ∞` |
+| `BetaBinom()` | ✅ available | logit / probit / cloglog | Laplace | precision `φ` (`a = μφ, b = (1−μ)φ`) | overdispersed binomial counts; `fit_gllvm` default is per-species `φ` and requires the p×n `N`; shared `φ` via `fit_beta_binomial_gllvm`; → Binomial as `φ → ∞` |
 
 The single-block families with a plain `Distributions` marker — `Normal`,
 `Binomial`, `Poisson`, `NegativeBinomial` (NB2), `Beta`, `Ordinal`, `Gamma`,
-`Exponential` — are reached through the unified `fit_gllvm` entry, as is `NB1`
-via the package's own exported marker. Beta-binomial,
-Tweedie, and the two-part families currently have dedicated
+`Exponential` — are reached through the unified `fit_gllvm` entry, as are `NB1`
+and `BetaBinom` via the package's own exported markers. Tweedie and the two-part
+families currently have dedicated
 `fit_<family>_gllvm` drivers (they carry estimated parameters — `σ`, `α`, `r`,
 `φ`, the Tweedie power — or trial counts that do not yet share a single
 `Distributions` marker). Calling `fit_gllvm` with an unimplemented family raises a
@@ -220,28 +220,41 @@ shared `γ`; twin API B). Shared-α + X remains the opt-in
 fit = fit_gllvm(Yp; family = Gamma(), K = 2)   # Yp > 0; shared α (no-X)
 ```
 
-### Beta-binomial — `fit_beta_binomial_gllvm`
+### Beta-binomial — `BetaBinom()`
 
 ```julia
-fit = fit_beta_binomial_gllvm(Yb; K = 2, N = trials)   # overdispersed binomial
+fit = fit_gllvm(Yb; family = BetaBinom(), K = 2, N = trials)   # per-species φ (default)
 ```
 
 For binomial counts that are **over-dispersed** relative to `Binomial(N, μ)` — the
 per-trial success probability is itself random, `p ~ Beta(a, b)` with `a = μφ`,
 `b = (1−μ)φ`. `Y` is a `p × n` matrix of integer successes; `N` the matching trial
-counts (default all-ones, i.e. an over-dispersed Bernoulli). The Beta precision
-`φ` (the shape-sum `a + b`) is jointly estimated and available as `fit.φ`; as
-`φ → ∞` the family collapses to `Binomial(N, μ)`. Links: `LogitLink()` (default),
-`ProbitLink()`, `CLogLogLink()`. This family has a dedicated driver rather than
-going through `fit_gllvm`.
+counts. The Beta precision `φ` (the shape-sum `a + b`) is jointly estimated and
+available as `fit.φ`; as `φ → ∞` the family collapses to `Binomial(N, μ)`. Links:
+`LogitLink()` (default), `ProbitLink()`, `CLogLogLink()`.
+
+`BetaBinom` is GLLVM.jl's own exported marker, named to avoid colliding with
+`Distributions.BetaBinomial`. The public `fit_gllvm` default estimates
+**per-species** `φ` (returns `BetaBinomialGroupedFit`; vector `fit.φ`), matching
+gllvmTMB's length-`p` `log_phi_betabinom` and the estimand already used with shared
+site covariates ([`fit_beta_binomial_gllvm_grouped_cov`](@ref)). For a single shared
+`φ`, call [`fit_beta_binomial_gllvm`](@ref).
+
+Unlike the named fitters, which default `N` to all-ones, **`fit_gllvm` and `gllvm`
+require `N`** as a p×n matrix. At `N = 1` the beta-binomial collapses to
+`Bernoulli(μ)` and `φ` is unidentifiable, so there is no safe default at a public
+entry point; a missing `N` — or a scalar, which is not broadcast — raises a clear
+error. As for `NB1`, the marker's `φ` field is a tag payload: `BetaBinom()` and
+`BetaBinom(7.5)` give the same fit. Pass `φ_init` to the named fitters to set a
+starting value.
 
 ### Per-species and grouped dispersion
 
-For `NegativeBinomial`, `Beta`, and `NB1`, the public `fit_gllvm` default already
-uses per-species dispersion (`disp_group = :species`). Pass an integer `disp_group`
-vector for custom grouping, or call the named shared fitters
-(`fit_nb_gllvm` / `fit_beta_gllvm` / `fit_nb1_gllvm`) for one dispersion across all
-species.
+For `NegativeBinomial`, `Beta`, `NB1`, and `BetaBinom`, the public `fit_gllvm`
+default already uses per-species dispersion (`disp_group = :species`). Pass an
+integer `disp_group` vector for custom grouping, or call the named shared fitters
+(`fit_nb_gllvm` / `fit_beta_gllvm` / `fit_nb1_gllvm` /
+`fit_beta_binomial_gllvm`) for one dispersion across all species.
 
 The remaining dispersion families (`Gamma`, Tweedie) still default to a shared
 parameter on `fit_gllvm` / their named drivers; use a `_grouped` driver or
@@ -251,16 +264,18 @@ parameter on `fit_gllvm` / their named drivers; use a `_grouped` driver or
 fit_nb_gllvm_grouped(Yc;  K = 2, group = group)   # NB2 dispersion r per group
 fit_nb1_gllvm_grouped(Yc; K = 2)                  # NB1 dispersion φ, default per-species
 fit_beta_gllvm_grouped(Yp;    K = 2)              # Beta precision φ per species
+fit_beta_binomial_gllvm_grouped(Yb; K = 2, N = trials)  # beta-binomial φ per species
 fit_gamma_gllvm_grouped(Yc;   K = 2)              # Gamma shape α per species
 fit_tweedie_gllvm_grouped(Yc; K = 2)             # Tweedie dispersion φ per species (shared power p)
 ```
 
-(`fit_nb_gllvm_grouped` requires an explicit `group`; the other four default to
-per-species.)
+(`fit_nb_gllvm_grouped` requires an explicit `group`; the other five default to
+per-species. The beta-binomial drivers additionally need the trial counts `N`.)
 
 ```julia
 fit_gllvm(Yc; family = NegativeBinomial(), K = 2)                 # default = per-species
 fit_gllvm(Yc; family = NB1(), K = 2)                              # default = per-species
+fit_gllvm(Yb; family = BetaBinom(), K = 2, N = trials)            # default = per-species; N required
 fit_gllvm(Yp; family = Beta(), K = 2, disp_group = group)         # custom groups
 fit_gllvm(Yp; family = Gamma(), K = 2, disp_group = :species)     # Gamma opt-in
 ```

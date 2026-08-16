@@ -83,7 +83,9 @@ covariate). With no covariates it reduces to the intercept-only fit
 (`ZIPoisson()` → [`fit_zip_gllvm`](@ref); `ZINegBin()` →
 [`fit_zinb_gllvm`](@ref); `ZIB(N)` → [`fit_gllvm`](@ref) / [`fit_zib_gllvm`](@ref);
 `NB1()` → [`fit_gllvm`](@ref) → [`fit_nb1_gllvm_grouped`](@ref), per-trait `φ`, the
-same estimand as the `+ X` route above).
+same estimand as the `+ X` route above; `BetaBinom()` → [`fit_gllvm`](@ref) →
+[`fit_beta_binomial_gllvm_grouped`](@ref), per-trait `φ`, with the p×n `N` trial
+counts **required** — `φ` is unidentifiable at `N = 1`).
 `ZIB` through `@formula` is **no-X only** for now (bridge still OWED; ZIB+X formula
 is fenced).
 
