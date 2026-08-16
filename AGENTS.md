@@ -231,7 +231,7 @@ table above remain the vocabulary; file stems are the dispatch ids.
 - Completion-claim discipline — see brain [[DECISIONS]] D-43 (≥2 NOT-DONE verdicts withhold the claim; a task isn't "done" on say-so).
 - Smoke-first — see brain `protocols/after-task.md` (no fix/feature claim without running the smoke/verification check and showing its output).
 - Own-the-verifier — see brain Principle 1 (the agent that built a thing does not get to be its only judge; run a fresh check or a named review lens before claiming green).
-- Brain-write boundary — see brain [[DECISIONS]] D-37 (never write to the brain vault without explicit approval; stage a draft and propose).
+- Brain-write boundary — never write to the brain vault without explicit approval; stage a draft and propose. (Shinichi's standing instruction. It has **no decision record**: this line previously cited D-37, which is "Brain foundation sprint: local-only restored · honest health gate · truth repair" and contains no approval gate — verified 2026-08-16, and the phrases "without explicit approval" / "stage a draft" appear nowhere in `memory/DECISIONS.md`. The rule stands on Shinichi's instruction alone until he records one.)
 - After-task discipline — see brain [[DECISIONS]] D-6 / `protocols/after-task.md` (every finished slice closes with a repo-visible after-task report, not just a chat summary).
 - Recovery-over-pdHess — a converged fit is not a validated fit; see brain quantitative-genetics validation discipline (simulation-based recovery/coverage evidence is required before any fitting capability claim).
 <!-- uinit:guards:end -->
