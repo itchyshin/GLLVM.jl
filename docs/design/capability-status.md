@@ -100,7 +100,12 @@ Twin family names align with gllvmTMB / gllvm. Status = native Julia engine
 Notes (not status rows): `zip` / `zinb` / `zib` are Julia-forward (ZIP+X via
 `fit_zip_gllvm_cov`; ZINB+X via `fit_zinb_gllvm_cov`, shared scalar `r`);
 twin gllvmTMB cut ZIP/ZINB — **no** invent twin light Δ. Status cells stay
-bare MC tokens. `zib` also has a native Julia ZIB+X fitter (`fit_zib_gllvm_cov`) with dual shared slopes (`γz`, `γc`), `Λ_z = 0`, and one shared scalar `N::Int`; this is Julia-forward only—no `fit_gllvm`, `@formula`, bridge, CI-under-X, or gllvmTMB parity claim.
+bare MC tokens. `zib` also has a native Julia ZIB+X fitter (`fit_zib_gllvm_cov`)
+with dual shared slopes (`γz`, `γc`), `Λ_z = 0`, and one shared scalar `N::Int`.
+Since #218 / #220 the **no-X** ZIB is reachable through `fit_gllvm(Y;
+family = ZIB(N))` and `@formula(y ~ 1)`; ZIB+X on those surfaces, `bridge.jl`
+admission, `confint` under X, and any gllvmTMB parity claim all remain OWED
+(the twin has no ZIB, so a light Δ would be invented).
 `student` / `com_poisson` promoted on native engine + package
 tests (`test_studentt.jl`, `test_com_poisson.jl`). `truncated_poisson` =
 zero-truncated Poisson (Identity 2026-08-15; twin fid 10); `truncated_nbinom2`
@@ -119,14 +124,18 @@ zero-truncated Poisson (Identity 2026-08-15; twin fid 10); `truncated_nbinom2`
 | Light gllvmTMB logLik named routes (63/63) | implemented |
 | Shared-X light logLik Gauss/Bin/Pois (18/18) | implemented |
 | ML default (Gaussian closed-form / non-Gaussian Laplace) | implemented |
-| REML (Gaussian pilot twin) | planned |
+| REML (Gaussian pilot twin) | implemented |
 | AGHQ estimator | missing |
 | VA / ELBO alternative (selected families; not R-default) | implemented |
 
-Notes (not status rows): Gaussian REML code exists (`src/reml.jl`,
-`fit_gaussian_reml`, bridge `reml=true` path) but **no dedicated package test**
-exercises the REML criterion — keep `planned` (OWED: add `test_reml.jl` before
-promote). Twin admits Gaussian-only REML pilot.
+Notes (not status rows): Gaussian REML is promoted on `src/reml.jl`
+(`gaussian_reml_loglik`, `fit_gaussian_reml`) + the bridge `reml=true` route +
+`test/test_reml.jl` (dense-oracle criterion at rtol 1e-8, FD gradient ≤ 1e-6,
+span-of-`X` invariance, recovery, bridge route). Twin admits a Gaussian-only
+REML pilot and non-Gaussian REML stays `rejected`; the `fit_gaussian_gllvm(reml
+= true)` profile engine and phylogenetic REML are **not** on `main` (feature
+branch), so this row is the standalone + bridge path only — no twin light Δ, no
+coverage certificate.
 
 ## Random slopes and special capabilities
 
@@ -203,8 +212,25 @@ Same twin surface, transport layer. Status = code + bridge/parity test exist;
   `docs/dev-log/decisions/2026-08-15-truncated-nbinom2-identity.md` ·
   `docs/dev-log/plans/2026-08-15-truncated-nbinom2-identity-engine.md` ·
   `src/families/truncated_nbinom2.jl` · `test/test_truncated_nbinom2.jl`
+- lognormal Identity + engine + admit (one-part lognormal; twin fid 3):
+  `docs/dev-log/decisions/2026-08-15-lognormal-identity.md` ·
+  `src/families/lognormal.jl` · `test/test_lognormal.jl` ·
+  `docs/dev-log/handover/2026-08-15-lognormal-ADMIT.md` — Julia identity/FD only;
+  light RCall Δ and bridge admission still OWED
+- censored_poisson Identity + engine + admit (right-censored Poisson):
+  `docs/dev-log/decisions/2026-08-15-censored-poisson-identity.md` ·
+  `src/families/censored_poisson.jl` · `test/test_censored_poisson.jl` ·
+  `docs/dev-log/after-task/2026-08-15-censored-poisson-engine.md` — Julia-forward;
+  twin is constructor-only, so a light RCall Δ is **forbidden**, not owed
+- ZIB no-X surface admit (`fit_gllvm` #218, `@formula` #220):
+  `src/families/fit_gllvm.jl` · `src/formula.jl` · `test/test_zero_inflated.jl` /
+  `test/test_formula.jl` — X on those surfaces + bridge remain OWED
 - student / com_poisson ledger promote: `test/test_studentt.jl`,
   `test/test_com_poisson.jl` (code already present)
-- REML OWED: `src/reml.jl` present; dedicated package test still missing
+- REML promote: `src/reml.jl` + bridge `reml=true` + `test/test_reml.jl`
+  (dense-oracle criterion rtol 1e-8; FD gradient ≤ 1e-6; span-of-`X` invariance;
+  β/σ_eps recovery; bridge `gaussian_reml_rr` route vs the standalone fitter).
+  Gaussian-only; `fit_gaussian_gllvm(reml = true)` and phylo REML are not on
+  `main`
 - Public catch-up prose: `docs/src/gllvmtmb-parity.md` (Documenter legend ≠ this
   MC vocabulary)
