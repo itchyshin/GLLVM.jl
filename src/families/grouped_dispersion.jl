@@ -1498,7 +1498,10 @@ Result of [`fit_tweedie_gllvm_grouped`](@ref): intercepts `β` (length p), loadi
 (p×K), the per-group dispersion vector `φ` (length G), the SHARED `power` ∈ (1,2), the
 species→group map `group` (length p), the `link`, the maximised Laplace `loglik`,
 `converged`, and `iterations`. The per-species dispersion is `φ[group[t]]`
-(`Var_t = φ[group[t]]·μ_t^power`).
+(`Var_t = φ[group[t]]·μ_t^power`). `converged` uses the same `_tweedie_verdict`
+contract as [`fit_tweedie_gllvm`](@ref): a successfully evaluated objective, a
+strictly interior power, and a gradient residual small relative to the
+objective's scale.
 """
 struct TweedieGroupedFit
     β::Vector{Float64}
@@ -1541,9 +1544,16 @@ species `t` shares dispersion `φ[group[t]]`, with a single SHARED power `p ∈ 
 vector of group ids (relabelled to `1..G` internally; default `1:p` = per-species).
 L-BFGS over `[β; vec(Λ); log φ_1 … log φ_G; ξ]`, the power mapped to `(1,2)` by
 `p = 1 + 1/(1+exp(-ξ))` (so `ξ = 0 ⇒ p = 1.5`) — the SAME transform as the scalar
-[`fit_tweedie_gllvm`](@ref). Finite-difference gradient; warm start from log row-means
-intercepts + SVD loadings + a moderate per-group `φ₀` + `ξ₀ = logit(power_init − 1)`.
-With one group this matches [`fit_tweedie_gllvm`](@ref).
+[`fit_tweedie_gllvm`](@ref). Finite-difference gradient; warm start from log
+row-means of `Y + c` as intercepts + SVD of row-centred log-`(Y + c)` as loadings
++ a moderate per-group `φ₀` + `ξ₀ = logit(power_init − 1)`, where
+`c = 0.1 · mean(Y[Y > 0])` keeps the exact zeros on the data's own scale (the
+same offset as [`fit_tweedie_gllvm`](@ref)).
+
+`converged` is not `Optim`'s verdict alone: it uses `_tweedie_verdict`, so a
+fit that stalls, sits on the failure sentinel, or runs the power to the closed
+end of `(1, 2)` reports `converged = false` rather than advertising that point
+as a maximum. With one group this matches [`fit_tweedie_gllvm`](@ref).
 """
 function fit_tweedie_gllvm_grouped(Y::AbstractMatrix{<:Real}; K::Integer,
         group::AbstractVector{<:Integer} = collect(1:size(Y, 1)),
@@ -1560,7 +1570,7 @@ function fit_tweedie_gllvm_grouped(Y::AbstractMatrix{<:Real}; K::Integer,
 
     msk = _resolve_obs_mask(mask, Y)
     Yc  = _sanitize_missing(Y, 1e-6)
-    Zemp = log.(max.(Yc, 1e-6))
+    Zemp = log.(Yc .+ _tweedie_log_offset(Yc, msk))
     offset === nothing || (Zemp .-= offset)
     _mask_warmstart!(Zemp, msk)
     β0 = vec(sum(Zemp; dims = 2)) ./ n
@@ -1586,9 +1596,9 @@ function fit_tweedie_gllvm_grouped(Y::AbstractMatrix{<:Real}; K::Integer,
                                                      maxiter = newton_maxiter,
                                                      tol = newton_tol)
         catch
-            return 1e12
+            return _TWEEDIE_FAIL_PENALTY
         end
-        return isfinite(v) ? v : 1e12
+        return isfinite(v) ? v : _TWEEDIE_FAIL_PENALTY
     end
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
     res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
@@ -1597,7 +1607,17 @@ function fit_tweedie_gllvm_grouped(Y::AbstractMatrix{<:Real}; K::Integer,
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
     φ̂g = exp.(θ̂[(p + rr + 1):(p + rr + G)])
-    p̂ = 1.0 + 1.0 / (1.0 + exp(-θ̂[p + rr + G + 1]))
-    return TweedieGroupedFit(β̂, Λ̂, φ̂g, p̂, gidx, link, -Optim.minimum(res),
-                             Optim.converged(res), Optim.iterations(res))
+    ξ̂ = θ̂[p + rr + G + 1]
+    p̂ = 1.0 + 1.0 / (1.0 + exp(-ξ̂))
+    conv, loglik, reason = _tweedie_verdict(Optim.converged(res), Optim.g_residual(res),
+                                            Optim.minimum(res), ξ̂, g_tol)
+    if reason === :objective_failed
+        @warn "fit_tweedie_gllvm_grouped: the Laplace marginal could not be evaluated at any \
+               accepted point; returning converged = false and loglik = -Inf. Try a \
+               different `power_init`, or check `Y` for extreme values."
+    elseif reason === :power_at_boundary
+        @warn "fit_tweedie_gllvm_grouped: the power ran to the boundary of (1, 2) \
+               (p̂ = $(p̂), φ̂ = $(φ̂g)); the fit is flagged as not converged."
+    end
+    return TweedieGroupedFit(β̂, Λ̂, φ̂g, p̂, gidx, link, loglik, conv, Optim.iterations(res))
 end
