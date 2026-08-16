@@ -183,4 +183,28 @@ using GLLVM, Test, Random, Distributions, Statistics
         # Rotation/sign-invariant loadings Gram (βc shares the ZINB multimodality).
         @test cor(vec(fit.Λc * fit.Λc'), vec(Λc_true * Λc_true')) > 0.3
     end
+
+    @testset "fit_gllvm reaches no-X ZIB via the ZIB(N) marker" begin
+        Random.seed!(1608)
+        p, K, n, Ntr = 4, 1, 60, 6
+        βz_true = fill(-1.0, p)
+        βc_true = 0.2 .* randn(p)
+        Λc_true = 0.4 .* randn(p, K)
+        π = inv.(1 .+ exp.(-βz_true))
+        Z = randn(K, n)
+        ηc = βc_true .+ Λc_true * Z
+        Y = zeros(Int, p, n)
+        for t in 1:p, s in 1:n
+            μ = inv(1 + exp(-ηc[t, s]))
+            Y[t, s] = rand() < π[t] ? 0 : rand(Binomial(Ntr, μ))
+        end
+
+        fit = fit_gllvm(Y; family = ZIB(Ntr), K = K, iterations = 40)
+        @test fit isa ZIBFit
+        @test fit.N == Ntr
+        @test isfinite(fit.loglik)
+        # The marker-borne scalar `N` is the only trials contract (Identity R1).
+        direct = fit_zib_gllvm(Y; K = K, N = Ntr, iterations = 40)
+        @test fit.loglik ≈ direct.loglik atol = 1e-8
+    end
 end

@@ -1,5 +1,24 @@
 # Check Log
 
+## 2026-08-16 — no-X ZIB surface admit (`fit_gllvm` only)
+
+- **What**: Clears the first fence of the ZIB+X ADMIT route (b) — plain ZIB is now
+  reachable by name. Exports the `ZIB` marker from `src/GLLVM.jl`; adds
+  `_fit_gllvm(family::ZIB, Y; kwargs...) = fit_zib_gllvm(Y; N = family.N, kwargs...)`;
+  adds `ZIB` to the availability string and the `fit_gllvm` docstring family list.
+- **Design gate**: `struct ZIB` carries `N::Int`, unlike the empty `ZIPoisson` /
+  `ZINegBin` markers, so the ZIP/ZINB wiring does not transfer. The shared scalar
+  trials count travels **on the family instance** (`ZIB(N)`) and is forwarded as
+  `N = family.N`. No `N` keyword is introduced and the Identity R1 trials lock is
+  untouched (no per-observation `N_{ts}`).
+- **Verify**: smoke in `test/test_zero_inflated.jl` (already wired into
+  `runtests.jl`) — `fit_gllvm(Y; family = ZIB(N), K)` returns a `ZIBFit` whose
+  `loglik` matches a direct `fit_zib_gllvm` call to 1e-8. Heavy verification is
+  **GitHub CI**, not this Mac. No rtol widen.
+- **Still OWED**: `@formula` and `src/bridge.jl` ZIB routes (each its own arc/G0);
+  ZIB+X on `fit_gllvm` / `@formula`; `confint(ZIBCovFit)`; twin light Δ —
+  **forbidden**, the twin has no ZIB family.
+
 ## 2026-08-16 — overnight ADMIT ZIB+X postfit + Sol ledger
 
 - **What**: Complete non-OWED ZIB+X admit after #211: `postfit.jl` `ZIBCovFit` helpers; Sol-approved Julia-forward ledger sentence in `capability-status.md` (already had export + `test_zib_x_identity.jl` on #215).
