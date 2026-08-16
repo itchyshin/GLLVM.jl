@@ -83,4 +83,30 @@ using GLLVM, Test, Random, Distributions, Statistics
                    temp = [0.5, 0.9, 0.1, 0.2])
         @test_throws ArgumentError gllvm(@formula(y ~ 1 + temp), long_nc; family = Normal(), K = 1)
     end
+
+    @testset "ZIB no-X @formula (bridge fenced)" begin
+        Random.seed!(160816)
+        p, K, n, Ntr = 4, 1, 50, 5
+        βz = fill(-1.0, p)
+        βc = 0.2 .* randn(p)
+        Λc = 0.4 .* randn(p, K)
+        π = inv.(1 .+ exp.(-βz))
+        Z = randn(K, n)
+        ηc = βc .+ Λc * Z
+        Y = zeros(Int, p, n)
+        for t in 1:p, s in 1:n
+            μ = inv(1 + exp(-ηc[t, s]))
+            Y[t, s] = rand() < π[t] ? 0 : rand(Binomial(Ntr, μ))
+        end
+        site = (temp = randn(n),)
+        f0 = gllvm(@formula(y ~ 1), Y, site; family = ZIB(Ntr), K = K, iterations = 40)
+        @test f0 isa ZIBFit
+        @test f0.N == Ntr
+        @test isfinite(f0.loglik)
+        direct = fit_zib_gllvm(Y; K = K, N = Ntr, iterations = 40)
+        @test f0.loglik ≈ direct.loglik atol = 1e-8
+        @test_throws ArgumentError gllvm(@formula(y ~ 1 + temp), Y, site;
+                                         family = ZIB(Ntr), K = K, iterations = 20)
+    end
+
 end
