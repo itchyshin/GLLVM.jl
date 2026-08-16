@@ -143,13 +143,32 @@ end
 # ---------------------------------------------------------------------------
 
 """
-    DeltaLogNormal(σ)
+    DeltaLogNormal(σ = 1.0)
 
-Marker for the Delta-lognormal two-part family with shared log-scale SD `σ`.
+Marker for the Delta-lognormal two-part family (Bernoulli occurrence × positive
+lognormal). Use with the unified entry point:
+
+```julia
+fit_gllvm(Y; family = DeltaLogNormal(), K = 2)
+fit_gllvm(Y; family = DeltaLogNormal(0.5), K = 2)   # same fit — σ is a tag payload
+gllvm(@formula(y ~ 1), Y, site_data; family = DeltaLogNormal(), K = 2)
+```
+
+The marker's `σ` field is a **tag payload** — it is never read by
+[`fit_gllvm`](@ref) / [`fit_delta_lognormal_gllvm`](@ref); the shared log-scale
+SD is always estimated. The value is only used when the marker is passed into
+the Laplace marginal / score kernels during fitting (with the current iterate's
+`σ`). Pass `DeltaLogNormal()` so the public call need not invent a scale that
+is never read from the family instance.
+
+Named fitter [`fit_delta_lognormal_gllvm`](@ref) remains available. +X,
+`disp_group`, and `row_eff` are not admitted on this surface.
 """
 struct DeltaLogNormal
     σ::Float64
 end
+
+DeltaLogNormal() = DeltaLogNormal(1.0)
 
 function _tp_pieces(f::DeltaLogNormal, y, ηz, ηc)
     π = inv(one(ηz) + exp(-ηz))                 # occurrence prob = logistic(η^z)
@@ -538,14 +557,31 @@ end
 # ---------------------------------------------------------------------------
 
 """
-    DeltaGamma(α)
+    DeltaGamma(α = 1.0)
 
-Marker for the Delta-Gamma two-part family: Bernoulli occurrence × positive Gamma
-with shared shape `α` (mean `μ=exp(η^c)`, `Var=μ²/α`).
+Marker for the Delta-Gamma two-part family (Bernoulli occurrence × positive
+Gamma with log-link mean). Use with the unified entry point:
+
+```julia
+fit_gllvm(Y; family = DeltaGamma(), K = 2)
+fit_gllvm(Y; family = DeltaGamma(4.0), K = 2)   # same fit — α is a tag payload
+gllvm(@formula(y ~ 1), Y, site_data; family = DeltaGamma(), K = 2)
+```
+
+The marker's `α` field is a **tag payload** — it is never read by
+[`fit_gllvm`](@ref) / [`fit_delta_gamma_gllvm`](@ref); the shared shape is
+always estimated (`Var = μ²/α`, `μ = exp(η^c)`). Pass `DeltaGamma()` so the
+public call need not invent a shape that is never read from the family
+instance.
+
+Named fitter [`fit_delta_gamma_gllvm`](@ref) remains available. +X,
+`disp_group`, and `row_eff` are not admitted on this surface.
 """
 struct DeltaGamma
     α::Float64
 end
+
+DeltaGamma() = DeltaGamma(1.0)
 
 function _tp_pieces(f::DeltaGamma, y, ηz, ηc)
     π = inv(one(ηz) + exp(-ηz))                 # occurrence prob = logistic(η^z)

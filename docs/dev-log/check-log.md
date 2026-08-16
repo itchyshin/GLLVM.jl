@@ -1,5 +1,13 @@
 # Check Log
 
+
+## 2026-08-16 — Delta-lognormal / Delta-Gamma no-X `fit_gllvm` surface admit
+
+Lane `cursor/delta-nox-surface-20260816`. Base `origin/main` @ `63cdf892` (#232).
+Exports `DeltaLogNormal` / `DeltaGamma`, zero-arg constructors, `_fit_gllvm` arms
+(tag-payload `σ`/`α` never read), focused no-X `@formula` tests. No bridge, no
+twin Δ, no +X. Mac-LIGHT: focused Julia tests locally; full suite = GitHub CI.
+
 ## 2026-08-16 — Student-t no-X surface admit (`fit_gllvm` + `@formula`, ν on the marker)
 
 - **What**: `StudentTFamily` had a complete Laplace engine, an exported marker, a

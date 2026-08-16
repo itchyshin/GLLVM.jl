@@ -118,7 +118,12 @@ and `@formula(y ~ 1)`; the FIXED `ν` travels on the marker (a separate `nu`
 keyword is rejected) and the marker's `σ` is an inert tag payload. Student-t +X,
 `disp_group`, row effects, `bridge.jl` admission, and any gllvmTMB parity claim
 remain OWED — the twin's `student` route is not benchmarked here, so **no**
-light Δ is invented. `truncated_poisson` =
+light Δ is invented. Since the 2026-08-16 Delta no-X surface admit,
+`delta_lognormal` / `delta_gamma` are reachable through
+`fit_gllvm(Y; family = DeltaLogNormal())` / `DeltaGamma()` and `@formula(y ~ 1)`;
+marker `σ` / `α` are inert tag payloads (always estimated). Delta +X,
+`disp_group`, row effects, `bridge.jl`, and any twin light Δ remain OWED — no
+invented twin Δ. `truncated_poisson` =
 zero-truncated Poisson (Identity 2026-08-15; twin fid 10); `truncated_nbinom2`
 = zero-truncated NB2 (Identity 2026-08-15; twin fid 11; Arc1 shared scalar `r`
 ≡ twin `φ`; twin per-trait `log_phi_truncnb2` documented, Arc1b OWED). `lognormal` = one-part lognormal (Identity 2026-08-15; twin fid 3; engine+admit; light RCall Δ / bridge OWED). `censored_poisson` = right-censored Poisson (Identity 2026-08-15; Julia-forward / twin constructor-only; light RCall Δ FORBIDDEN).
