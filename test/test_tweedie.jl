@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
 
 @testset "Tweedie family" begin
     # ---------------------------------------------------------------------
@@ -67,5 +67,8 @@ using GLLVM, Test, Random, Distributions, Statistics
         @test 1 < fit.p < 2
         @test fit.φ > 0
         @test size(fit.Λ) == (p_sp, K)
+        # `converged` must mean converged: see test_tweedie_engine_health.jl for
+        # the full G-a…G-d gates this cell used to pass while stalled.
+        @test fit.converged
     end
 end
