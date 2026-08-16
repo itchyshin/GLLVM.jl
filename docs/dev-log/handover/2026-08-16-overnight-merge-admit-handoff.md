@@ -51,3 +51,33 @@ See `gh pr list --state open`. Expected: #215 (ADMIT) pending green; engines clo
 - Twin light Δ: untouched. Mac-light (no local `Pkg.test`).
 - Accidental #221/#222 (wrong branch) closed without merge.
 
+## Append — cheap-clears session (Cursor, 2026-08-16 UTC, Mac-light)
+
+- Base: `origin/main` @ `51d5d310` (post-#218/#219/#220/#223).
+- **#224** merged (REML promote on evidence + Rose ledger honesty pass):
+  merge commit `e21f9d1660f26101fb7b6e249a832afe9fa42d63`.
+  - New `test/test_reml.jl` (wired into `runtests.jl`) — built **on** the
+    unmerged `a1-nongaussian-ci` REML testsets, restricted to the surface `main`
+    ships, plus span-of-`X` invariance and a bridge `reml = true` route check.
+    Focused local run **23/23 Pass**; full matrix left to CI.
+  - Ledger: `REML (Gaussian pilot twin)` `planned` → `implemented`; ZIB note
+    de-staled for the #218/#220 no-X `fit_gllvm` / `@formula` routes; evidence
+    pointers added for `lognormal`, `censored_poisson`, ZIB no-X, REML.
+  - `lognormal` / `censored_poisson` tokens were already bare `implemented` on
+    `main` — nothing flipped, only evidence pointers filled.
+- Twin light Δ: untouched. `censored_poisson`'s stays **forbidden**;
+  `lognormal`'s stays **owed**. No `bridge.jl` change; no ADEMP claim.
+- **Not** taken: NB1 / BetaBinom no-X `_fit_gllvm` arms. Not surgical like ZIB
+  #218 — the markers are unexported (public-API change) and carry an *estimated*
+  `φ` rather than a structural scalar, so the arm needs a parameterisation
+  decision note; `BetaBinom` also needs the `p×n` trial matrix. Own G0 arc.
+- Still OWED after this session: `bridge.jl` for `lognormal`; ZIB+X on
+  `fit_gllvm` / `@formula` / bridge; mixed-family + `mi()` ledger-verify pass.
+
+### Next 3 actions
+
+1. `gh run list --limit 4` — confirm the post-merge `main` CI (run 31933288936)
+   and Documenter went green for `e21f9d16`; fix forward if not.
+2. Open the `lognormal` bridge arc (the one genuinely owed bridge row).
+3. Open the NB1 / BetaBinom no-X arc with the marker-`φ` decision note first.
+
