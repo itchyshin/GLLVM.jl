@@ -59,6 +59,7 @@ include("families/lognormal.jl")         # one-part lognormal (twin fid 3)
 include("families/twopart.jl")           # Two-part substrate + Delta-lognormal / Delta-Gamma / Hurdle (Phase 3)
 include("families/beta_hurdle.jl")       # Beta-hurdle (Bernoulli × Beta) two-part family
 include("families/beta_binomial.jl")     # Beta-binomial (overdispersed binomial) — twin fid 8
+include("families/com_poisson.jl")        # Conway–Maxwell–Poisson (under/overdispersed counts) — beyond gllvmTMB
 include("families/fit_gllvm.jl")         # unified fit_gllvm(Y; family) dispatcher
 include("laplace_grad.jl")               # exact (AD + implicit-step) Poisson Laplace gradient (issue #65)
 include("missing_predictor_poisson.jl")  # non-Gaussian missing predictor (mi Phase 5a): Poisson augmented-Laplace FIML
@@ -98,7 +99,6 @@ include("coevolution_glm.jl")             # cross-family (non-Gaussian) cross-li
 # Post-fit API (ordination, predict, residuals, summary)
 include("postfit.jl")
 include("lv_targets.jl")                # internal eta-scale realised LV targets
-include("families/com_poisson.jl")        # Conway–Maxwell–Poisson (under/overdispersed counts) — beyond gllvmTMB
 include("ordination.jl")                  # ordination output (site scores + species loadings, canonical rotation)
 include("model_selection.jl")             # select_lv: latent-dimension selection by AIC/BIC
 include("simulate_fit.jl")               # simulate(fit, …) for the non-Gaussian families

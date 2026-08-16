@@ -75,6 +75,7 @@ supports `LogitLink()` (default), `ProbitLink()`, and `CLogLogLink()`.
 | `Exponential()` | ✅ available | log | Laplace | — | positive continuous, `Var = μ²` (Gamma with α=1) |
 | `StudentTFamily(ν)` | ✅ available | identity | Laplace | scale `σ`; FIXED df `ν` on the marker | heavy-tailed continuous, `(y − η)/σ ~ t_ν`; outlier-robust alternative to `Normal()`; `σ` estimated, `ν` held fixed; → `Normal(η, σ²)` as `ν → ∞` |
 | Tweedie | ✅ available | log | Laplace | dispersion `φ`, power `p` (1<p<2) | compound Poisson–Gamma; biomass / abundance with true zeros; `fit_tweedie_gllvm` |
+| `COMPoisson()` | ✅ available | log | Laplace | dispersion exponent `ν` (tag payload) | counts with under- or over-dispersion (`ν>1` / `ν<1`; `ν=1 ⇒ Poisson`); `fit_gllvm` / named `fit_compoisson_gllvm`; Julia-forward |
 | Ordered-beta | ✅ available | logit | Laplace | precision `φ`, cutpoints `c₀<c₁` | proportions / cover with point masses at 0 and 1; `fit_ordered_beta_gllvm` |
 | `DeltaLogNormal()` | ✅ available | logit × identity(log) | two-part Laplace | log-SD `σ` (tag payload) | occurrence × positive lognormal; `fit_gllvm` / named `fit_delta_lognormal_gllvm` |
 | `DeltaGamma()` | ✅ available | logit × log | two-part Laplace | shape `α` (tag payload) | occurrence × positive Gamma; `fit_gllvm` / named `fit_delta_gamma_gllvm` |
@@ -89,9 +90,9 @@ supports `LogitLink()` (default), `ProbitLink()`, and `CLogLogLink()`.
 The single-block families with a plain `Distributions` marker — `Normal`,
 `Binomial`, `Poisson`, `NegativeBinomial` (NB2), `Beta`, `Ordinal`, `Gamma`,
 `Exponential` — are reached through the unified `fit_gllvm` entry, as are `NB1`,
-`BetaBinom`, `StudentTFamily`, `DeltaLogNormal`, `DeltaGamma`, and
-`HurdlePoisson` via the package's own exported markers. Tweedie and the remaining
-two-part / hurdle families currently have dedicated
+`BetaBinom`, `StudentTFamily`, `DeltaLogNormal`, `DeltaGamma`,
+`HurdlePoisson`, and `COMPoisson` via the package's own exported markers.
+Tweedie and the remaining two-part / hurdle families currently have dedicated
 `fit_<family>_gllvm` drivers (they carry estimated parameters — `r`,
 `φ`, the Tweedie power — or trial counts that do not yet share a single
 `Distributions` marker). Calling `fit_gllvm` with an unimplemented family raises a
@@ -282,6 +283,24 @@ named fitter instead.
 Student-t is a **no-X** surface: `fit_gllvm` and `gllvm(@formula(y ~ 1), …)` are
 admitted, but covariates, `disp_group`, and row effects are not.
 
+### Conway–Maxwell–Poisson — `COMPoisson()`
+
+```julia
+fit = fit_gllvm(Y; family = COMPoisson(), K = 2)      # counts; ν estimated
+fit = fit_gllvm(Y; family = COMPoisson(2.0), K = 2)   # same — marker ν never read
+```
+
+A one-parameter-dispersion count family that handles **both** under- and
+over-dispersion via the exponent `ν` (`ν = 1` ⇒ Poisson, `ν > 1` ⇒
+underdispersion, `ν < 1` ⇒ overdispersion). The named fitter
+[`fit_compoisson_gllvm`](@ref) always estimates `ν` (seeded by `ν_init`,
+default 1). The marker's `ν` field is a **tag payload** — it is never read —
+the opposite of [`StudentTFamily`](@ref), whose `ν` is structural and held
+fixed. `COMPoisson()` is the usual call; `COMPoisson(9.0)` gives the same fit.
+
+COM-Poisson is Julia-forward (the twin has no CMP family) and a **no-X**
+surface: `fit_gllvm` and `gllvm(@formula(y ~ 1), …)` are admitted, but
+covariates, `disp_group`, and row effects are not. There is no twin light Δ.
 
 ### Delta-lognormal — `DeltaLogNormal()`
 

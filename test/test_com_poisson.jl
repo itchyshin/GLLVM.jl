@@ -61,4 +61,33 @@ _indep_compoisson_loglik(Y, β, ν) = sum(
         g_hat  = vec(fit.Λ * fit.Λ')
         @test abs(cor(g_true, g_hat)) > 0.3
     end
+
+    @testset "fit_gllvm reaches no-X COM-Poisson via the COMPoisson() marker" begin
+        Random.seed!(1608)
+        p, K, n = 4, 1, 60
+        β = randn(p) .* 0.4 .+ 1.0
+        Λtrue = reshape(0.7 .* randn(p), p, K)
+        Z = randn(K, n)
+        Y = [rand(Poisson(exp(β[t] + dot(Λtrue[t, :], Z[:, s])))) for t in 1:p, s in 1:n]
+
+        @test COMPoisson().ν == 1.0
+
+        fit = fit_gllvm(Y; family = COMPoisson(), K = K, iterations = 40)
+        @test fit isa COMPoissonFit
+        @test isfinite(fit.loglik)
+        direct = fit_compoisson_gllvm(Y; K = K, iterations = 40)
+        @test fit.loglik ≈ direct.loglik atol = 1e-8
+        @test fit.ν ≈ direct.ν atol = 1e-8
+
+        # Marker ν is a tag payload — never read, never a starting value.
+        tagged = fit_gllvm(Y; family = COMPoisson(9.0), K = K, iterations = 40)
+        @test tagged.loglik ≈ fit.loglik atol = 1e-8
+        @test tagged.ν ≈ fit.ν atol = 1e-8
+
+        # No-X `@formula` inherits the arm via the q == 0 fall-through.
+        ff = gllvm(@formula(y ~ 1), Y, (; temp = randn(n));
+                   family = COMPoisson(), K = K, iterations = 40)
+        @test ff isa COMPoissonFit
+        @test ff.loglik ≈ direct.loglik atol = 1e-8
+    end
 end

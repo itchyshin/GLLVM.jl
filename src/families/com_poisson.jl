@@ -29,16 +29,37 @@
 # 10_000, mirroring the NB1 Fisher-sum idiom in families/negbin1.jl).
 
 """
-    COMPoisson(ν)
+    COMPoisson(ν = 1.0)
 
 Conway–Maxwell–Poisson family marker (rate parameterisation). `ν > 0` is the
 dispersion exponent: `ν = 1` ⇒ Poisson, `ν > 1` ⇒ underdispersion, `ν < 1` ⇒
-overdispersion. Named to avoid colliding with any `Distributions` type; used only
-as a tag for the dedicated CMP Laplace path.
+overdispersion. Named to avoid colliding with any `Distributions` type. Use with
+the unified entry point:
+
+```julia
+fit_gllvm(Y; family = COMPoisson(), K = 2)
+fit_gllvm(Y; family = COMPoisson(2.0), K = 2)   # same fit — ν is a tag payload
+gllvm(@formula(y ~ 1), Y, site_data; family = COMPoisson(), K = 2)
+```
+
+The marker's `ν` field is a **tag payload** — it is never read by
+[`fit_gllvm`](@ref) / [`fit_compoisson_gllvm`](@ref); the shared dispersion
+exponent is always estimated. This is the opposite of [`StudentTFamily`](@ref),
+whose `ν` is structural and held fixed. Pass `COMPoisson()` so the public call
+need not invent an exponent that is never read from the family instance.
+`COMPoisson(1.0)` is the Poisson-anchor dummy (the fitter's own `ν_init`
+default).
+
+Named fitter [`fit_compoisson_gllvm`](@ref) remains available. +X,
+`disp_group`, and `row_eff` are not admitted on this surface.
 """
 struct COMPoisson <: Distribution{Univariate, Discrete}
     ν::Float64
 end
+
+# Public-call convenience (mirrors `NB1()` / `DeltaGamma()`): ν is never read
+# on the `fit_gllvm` route. 1.0 is the Poisson anchor and the fitter default.
+COMPoisson() = COMPoisson(1.0)
 
 const _CMP_LOGZ_TOL = 1e-12
 const _CMP_LOGZ_CAP = 10_000
