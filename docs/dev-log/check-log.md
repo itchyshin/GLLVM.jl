@@ -11158,3 +11158,38 @@ Rose fence: engine claim only (Julia identity + routing). **Not** light RCall
 Gamma+X; **not** no-X Option B flip; **not** full family parity; **not** #177
 merge. Next = separate RCall Arc 2 `/goal`. After-task:
 `docs/dev-log/after-task/2026-08-03-gamma-x-grouped-cov.md`.
+## 2026-08-16 - REML ledger promote + Rose ledger honesty pass
+
+Branch `cursor/ledger-reml-20260816` from `origin/main` @ `51d5d310`
+(post-#218/#219/#220/#223). Mac-light session: focused local run only, full
+suite delegated to GitHub CI.
+
+Test (new): `test/test_reml.jl`, wired into `test/runtests.jl` after
+`test_fixed_effects.jl`. Built **on** the existing REML testsets carried by the
+unmerged `a1-nongaussian-ci` branch (same seeds/testset names so that branch
+rebases cleanly), restricted to what `main` actually ships, plus two additions:
+span-of-`X` invariance of the criterion and a bridge `reml = true` route check
+against the standalone fitter. The `fit_gaussian_gllvm(reml = true)` profile
+engine and phylo-REML testsets stay on that feature branch.
+
+Gates in the file: dense-Σ_y oracle for `gaussian_reml_loglik` at rtol 1e-8;
+`_gaussian_gls` β̂ / `logdet M` vs the dense reference; REML = ML-at-β̂ +
+adjustment at rtol 1e-10; central-FD gradient ≤ 1e-6; (β, σ_eps, ΛΛ') recovery;
+argument validation; bridge `gaussian_reml_rr` loglik/alpha/sigma_eps vs
+`fit_gaussian_reml`.
+
+Verify (printed tally; no rtol widen):
+- `julia --project=. -e 'include("test/test_reml.jl")'` → **23/23 Pass** (15.3s)
+
+Ledger (`docs/design/capability-status.md`):
+- `REML (Gaussian pilot twin)`: `planned` → `implemented` (the OWED was the
+  dedicated package test; it now exists). Non-Gaussian REML stays `rejected`.
+- ZIB note de-staled: no-X `fit_gllvm` / `@formula` landed in #218 / #220;
+  ZIB+X on those surfaces, `bridge.jl`, `confint` under X stay OWED.
+- Evidence pointers added for `lognormal`, `censored_poisson`, the ZIB no-X
+  surface, and REML. `lognormal` / `censored_poisson` status cells were already
+  bare `implemented` on `main` — no token change was needed.
+
+Rose fence: no twin light Δ invented anywhere (censored_poisson's is
+**forbidden**, lognormal's is **owed**); no ADEMP or coverage certificate
+claimed; REML remains Gaussian-only and, on `main`, standalone + bridge only.
