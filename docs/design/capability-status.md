@@ -194,6 +194,11 @@ Same twin surface, transport layer. Status = code + bridge/parity test exist;
 - NB1+X engine (bridge/`@formula`/`fit_nb1_gllvm_grouped_cov`):
   `docs/dev-log/after-task/2026-08-05-nb1-x-engine-arc12.md` — light RCall
   cell live Δ abs ≈1.53e-9 @ rtol 1e-6 (seed=48; ≠ full family parity)
+- NB1 no-X surface admit (`fit_gllvm` + `@formula` with no X; Identity
+  `docs/dev-log/decisions/2026-08-16-nb1-betabinom-fit-gllvm-identity.md`):
+  `docs/dev-log/after-task/2026-08-16-nb1-nox-surface.md` — exported `NB1` marker,
+  per-trait φ via the API-B coerce. Julia-side surface + identity only; **no** new
+  twin Δ (bridge behaviour unchanged, `src/bridge.jl` not opened)
 - BetaBinomial+X engine (bridge/`@formula`/`fit_beta_binomial_gllvm_grouped_cov`):
   `docs/dev-log/after-task/2026-08-05-betabinomial-x-engine-arc12.md` — light
   RCall cell live Δ abs ≈1.50e-8 @ rtol 1e-6 (seed=49; ≠ full family parity)

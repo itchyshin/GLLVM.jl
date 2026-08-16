@@ -62,8 +62,17 @@ Two negative-binomial variances are available. The default `fit_nb_gllvm` is
 proportionally with the mean:
 
 ```julia
-f2 = fit_nb_gllvm(Y;  K = 2)    # NB2, dispersion r
-f1 = fit_nb1_gllvm(Y; K = 2)    # NB1, dispersion φ; Var = μ(1+φ)
+f2 = fit_nb_gllvm(Y;  K = 2)    # NB2, dispersion r (shared)
+f1 = fit_nb1_gllvm(Y; K = 2)    # NB1, dispersion φ (shared); Var = μ(1+φ)
+```
+
+NB1 also has a marker, so it goes through the unified entry point and the
+`@formula` front end. Both default to **per-species** `φ`; the marker's own `φ`
+argument is inert (dispersion is always estimated), so `NB1()` is the usual call:
+
+```julia
+fit_gllvm(Y; family = NB1(), K = 2)               # per-species φ → NB1GroupedFit
+gllvm(@formula(y ~ 1), Y, site_data; family = NB1(), K = 2)   # same fit
 ```
 
 For biomass / abundance with exact zeros and continuous positives, **Tweedie**
@@ -75,10 +84,11 @@ ft = fit_tweedie_gllvm(Y; K = 2)    # Tweedie; fitted φ and power p
 ft.φ, ft.p
 ```
 
-For **NB2 and Beta**, `fit_gllvm` defaults to **per-species** dispersion
+For **NB2, NB1, and Beta**, `fit_gllvm` defaults to **per-species** dispersion
 (matching gllvmTMB). Shared dispersion remains available via the named fitters
-`fit_nb_gllvm` / `fit_beta_gllvm`. Other dispersion families still default to one
-shared parameter; to vary by species (or by groups — gllvm's `disp.group`), use
+`fit_nb_gllvm` / `fit_nb1_gllvm` / `fit_beta_gllvm`. Other dispersion families
+still default to one shared parameter; to vary by species (or by groups —
+gllvm's `disp.group`), use
 `disp_group = :species` on `fit_gllvm`, or the matching `_grouped` driver with a
 length-`p` `group` vector (default `1:p`):
 
@@ -86,6 +96,7 @@ length-`p` `group` vector (default `1:p`):
 fit_gllvm(Y; family = NegativeBinomial(), K = 2) # NB2 per-species r (default)
 fit_nb_gllvm(Y; K = 2)                           # NB2 shared r (named)
 fit_nb_gllvm_grouped(Y;  K = 2, group = group)   # NB2 r per custom group
+fit_gllvm(Y; family = NB1(), K = 2)              # NB1 per-species φ (default)
 fit_nb1_gllvm_grouped(Y; K = 2)                  # NB1 φ, default per-species
 fit_beta_gllvm_grouped(Yp;    K = 2)             # Beta precision φ per species
 fit_gamma_gllvm_grouped(Yc;   K = 2)             # Gamma shape α per species

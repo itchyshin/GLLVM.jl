@@ -81,7 +81,9 @@ dispersion + X). Returns that fitter's result
 `ZIPCovFit` / `ZINBCovFit`, or `GllvmCovFit` whose `γ[k]` matches the k-th RHS
 covariate). With no covariates it reduces to the intercept-only fit
 (`ZIPoisson()` → [`fit_zip_gllvm`](@ref); `ZINegBin()` →
-[`fit_zinb_gllvm`](@ref); `ZIB(N)` → [`fit_gllvm`](@ref) / [`fit_zib_gllvm`](@ref)).
+[`fit_zinb_gllvm`](@ref); `ZIB(N)` → [`fit_gllvm`](@ref) / [`fit_zib_gllvm`](@ref);
+`NB1()` → [`fit_gllvm`](@ref) → [`fit_nb1_gllvm_grouped`](@ref), per-trait `φ`, the
+same estimand as the `+ X` route above).
 `ZIB` through `@formula` is **no-X only** for now (bridge still OWED; ZIB+X formula
 is fenced).
 

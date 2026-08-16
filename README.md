@@ -91,7 +91,8 @@ with sparse random-effect design matrices. `GLLVM.jl` solves a
   Tweedie
 - Heteroscedastic Gaussian with per-species variance (`fit_gaussian_pervar_gllvm`)
 - Per-species / grouped dispersion (`disp.group`) for NB2, NB1, Beta, Gamma, and
-  Tweedie via the `_grouped` drivers
+  Tweedie via the `_grouped` drivers — per-species is the `fit_gllvm` default for
+  NB2, NB1, and Beta (`family = NB1()`), matching gllvmTMB
 - Two-part / mixture families: Delta-lognormal, Delta-Gamma, Hurdle-Poisson,
   Hurdle-NB, beta-hurdle, ordered-beta, ZIP, ZINB, ZIB (zero-inflated binomial)
 - Variational (VA / ELBO) estimator alongside Laplace, with VA-based SEs

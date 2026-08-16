@@ -60,7 +60,7 @@ supports `LogitLink()` (default), `ProbitLink()`, and `CLogLogLink()`.
 | `Binomial()` | ✅ available | logit / probit / cloglog | Laplace | — | binary (Bernoulli) and binomial counts |
 | `Poisson()` | ✅ available | log | Laplace | — | counts |
 | `NegativeBinomial()` | ✅ available | log | Laplace | dispersion `r` (Var = μ + μ²/r) | overdispersed counts; `r` jointly estimated |
-| NB1 | ✅ available | log | Laplace | dispersion `φ` (Var = μ(1+φ)) | linear-variance (quasi-Poisson-like) overdispersed counts; `fit_nb1_gllvm` |
+| `NB1()` | ✅ available | log | Laplace | dispersion `φ` (Var = μ(1+φ)) | linear-variance (quasi-Poisson-like) overdispersed counts; `fit_gllvm` default is per-species `φ`; shared `φ` via `fit_nb1_gllvm` |
 | `Beta()` | ✅ available | logit | Laplace | precision `φ` (Var = μ(1−μ)/(1+φ)) | proportions in (0,1); `φ` jointly estimated |
 | `Ordinal()` | ✅ available | cumulative logit / probit | Laplace | cutpoints `τ` | ordered categories `1:C`; `fit_ordinal_gllvm()` uses shared cutpoints, `fit_ordinal_gllvm_pertrait()` uses trait-specific cutpoints for R-bridge parity |
 | `Gamma()` | ✅ available | log | Laplace | shape `α` (Var = μ²/α) | positive continuous; `α` jointly estimated |
@@ -79,8 +79,9 @@ supports `LogitLink()` (default), `ProbitLink()`, and `CLogLogLink()`.
 
 The single-block families with a plain `Distributions` marker — `Normal`,
 `Binomial`, `Poisson`, `NegativeBinomial` (NB2), `Beta`, `Ordinal`, `Gamma`,
-`Exponential` — are reached through the unified `fit_gllvm` entry. NB1,
-beta-binomial, Tweedie, and the two-part families currently have dedicated
+`Exponential` — are reached through the unified `fit_gllvm` entry, as is `NB1`
+via the package's own exported marker. Beta-binomial,
+Tweedie, and the two-part families currently have dedicated
 `fit_<family>_gllvm` drivers (they carry estimated parameters — `σ`, `α`, `r`,
 `φ`, the Tweedie power — or trial counts that do not yet share a single
 `Distributions` marker). Calling `fit_gllvm` with an unimplemented family raises a
@@ -140,6 +141,25 @@ With shared site covariates (`@formula` / bridge `X`), the default is
 [`fit_nb_gllvm_grouped_cov`](@ref) (per-trait `r` + shared `γ`). As `r → ∞` the
 negative binomial collapses to Poisson. For a single shared `r` across species,
 call [`fit_nb_gllvm`](@ref) (no-X) or [`fit_gllvm_cov`](@ref) (with X).
+
+### Negative binomial type-1 — `NB1()`
+
+```julia
+fit = fit_gllvm(Yc; family = NB1(), K = 2)   # per-species φ (default)
+```
+
+The NB1 variance function is linear in the mean, Var = μ(1+φ) — quasi-Poisson-like
+overdispersion, the alternative to NB2's quadratic tail. `NB1` is GLLVM.jl's own
+exported marker (there is no `Distributions` counterpart) and matches R gllvm's
+`negative.binomial1` with the same `φ`. The public `fit_gllvm` default estimates
+**per-species** dispersion (returns `NB1GroupedFit`; vector `fit.φ`), matching
+gllvmTMB's length-`p` `log_phi_nbinom1` and the estimand already used with shared
+site covariates ([`fit_nb1_gllvm_grouped_cov`](@ref)). For a single shared `φ`,
+call [`fit_nb1_gllvm`](@ref).
+
+The marker's `φ` field is a tag payload: `NB1()` and `NB1(2.5)` give the same fit,
+because `φ` is always estimated and never seeded from the marker. Pass `φ_init` to
+the named fitters to set a starting value.
 
 ### Beta — `Beta()`
 
@@ -217,13 +237,14 @@ going through `fit_gllvm`.
 
 ### Per-species and grouped dispersion
 
-For `NegativeBinomial` and `Beta`, the public `fit_gllvm` default already uses
-per-species dispersion (`disp_group = :species`). Pass an integer `disp_group`
+For `NegativeBinomial`, `Beta`, and `NB1`, the public `fit_gllvm` default already
+uses per-species dispersion (`disp_group = :species`). Pass an integer `disp_group`
 vector for custom grouping, or call the named shared fitters
-(`fit_nb_gllvm` / `fit_beta_gllvm`) for one dispersion across all species.
+(`fit_nb_gllvm` / `fit_beta_gllvm` / `fit_nb1_gllvm`) for one dispersion across all
+species.
 
-The other dispersion families still default to a shared parameter on
-`fit_gllvm` / their named drivers; use a `_grouped` driver or
+The remaining dispersion families (`Gamma`, Tweedie) still default to a shared
+parameter on `fit_gllvm` / their named drivers; use a `_grouped` driver or
 `disp_group = :species` to vary by species (gllvm's `disp.group`):
 
 ```julia
@@ -239,6 +260,7 @@ per-species.)
 
 ```julia
 fit_gllvm(Yc; family = NegativeBinomial(), K = 2)                 # default = per-species
+fit_gllvm(Yc; family = NB1(), K = 2)                              # default = per-species
 fit_gllvm(Yp; family = Beta(), K = 2, disp_group = group)         # custom groups
 fit_gllvm(Yp; family = Gamma(), K = 2, disp_group = :species)     # Gamma opt-in
 ```

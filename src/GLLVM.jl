@@ -173,7 +173,7 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        gamma_laplace_grad, beta_laplace_grad,
        fit_nb_gllvm, NBFit, fit_beta_gllvm, BetaFit,
        GeneralizedPoisson1, fit_gp1_gllvm, GP1Fit, gp1_marginal_loglik_laplace,
-       fit_nb1_gllvm, NB1Fit, nb1_marginal_loglik_laplace,
+       NB1, fit_nb1_gllvm, NB1Fit, nb1_marginal_loglik_laplace,
        fit_nb_gllvm_grouped, NBGroupedFit, nb_grouped_marginal_loglik_laplace,
        fit_nb_gllvm_grouped_cov, NBGroupedCovFit,
        fit_beta_gllvm_grouped, BetaGroupedFit, beta_grouped_marginal_loglik_laplace,

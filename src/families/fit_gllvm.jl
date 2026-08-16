@@ -18,6 +18,9 @@ distribution used as a marker (the GLM.jl convention):
   (twin-aligned default; shared-`r` via [`fit_nb_gllvm`](@ref))
 - `Beta()`     → [`fit_beta_gllvm_grouped`](@ref) with per-species `φ`
   (twin-aligned default; shared-`φ` via [`fit_beta_gllvm`](@ref))
+- `NB1()`      → [`fit_nb1_gllvm_grouped`](@ref) with per-species linear-variance `φ`
+  (twin-aligned default; shared-`φ` via [`fit_nb1_gllvm`](@ref)). The marker's `φ`
+  field is a tag payload — it is never read here; `φ` is always estimated.
 - `Ordinal()`  → [`fit_ordinal_gllvm_pertrait`](@ref) — Laplace marginal (ordered categories)
 - `Gamma()`    → [`fit_gamma_gllvm`](@ref) — Laplace marginal (positive continuous; shared shape)
 - `Exponential()` → [`fit_exponential_gllvm`](@ref) — Laplace marginal
@@ -41,17 +44,17 @@ the plain-call behaviour when they are at their defaults (regression safe):
   - `:random` → [`fit_row_random_gllvm`](@ref) — per-site random intercept `ρ_s ~ N(0, σ_row²)`.
 
 - `disp_group` — grouped / species-specific dispersion (gllvm's `disp.group`).
-  For `NegativeBinomial` and `Beta` only, `disp_group = nothing` is coerced to
-  `:species` (per-trait φ / `r`, matching gllvmTMB). Pass a length-`p` integer
+  For `NegativeBinomial`, `Beta`, and `NB1` only, `disp_group = nothing` is coerced
+  to `:species` (per-trait φ / `r`, matching gllvmTMB). Pass a length-`p` integer
   vector of group ids for custom grouping, or `:species` explicitly. Routes to:
   - `NegativeBinomial` → [`fit_nb_gllvm_grouped`](@ref) (per-group `r`)
   - `Beta`             → [`fit_beta_gllvm_grouped`](@ref) (per-group `φ`)
   - `Gamma`            → [`fit_gamma_gllvm_grouped`](@ref) (per-species shape `α`; opt-in only)
-  - `GLLVM.NB1`        → [`fit_nb1_gllvm_grouped`](@ref) (per-species linear-variance `φ`)
+  - `NB1`              → [`fit_nb1_gllvm_grouped`](@ref) (per-species linear-variance `φ`)
   - `GLLVM.TweedieED`  → [`fit_tweedie_gllvm_grouped`](@ref) (per-species `φ`, shared power)
   Families without a grouped fitter throw a clear `ArgumentError`. Shared
-  dispersion for NB/Beta remains available via the named fitters
-  [`fit_nb_gllvm`](@ref) / [`fit_beta_gllvm`](@ref).
+  dispersion for NB/Beta/NB1 remains available via the named fitters
+  [`fit_nb_gllvm`](@ref) / [`fit_beta_gllvm`](@ref) / [`fit_nb1_gllvm`](@ref).
 
 - `pervar::Bool = false` — heteroscedastic (per-species variance) Gaussian. Only valid
   for `family = Normal()`; `true` routes to [`fit_gaussian_pervar_gllvm`](@ref).
@@ -70,6 +73,7 @@ fit_gllvm(Y; family = Binomial(), K = 2, link = LogitLink())      # binary
 fit_gllvm(Y; family = Poisson(),  K = 2, row_eff = :random)       # random row effect
 fit_gllvm(Y; family = NegativeBinomial(1.0, 0.5), K = 2)          # per-species r (default)
 fit_gllvm(Y; family = Beta(), K = 2)                              # per-species φ (default)
+fit_gllvm(Y; family = NB1(),  K = 2)                              # per-species linear-variance φ
 fit_gllvm(Y; family = Normal(), K = 2, pervar = true)             # per-species variance
 ```
 """
@@ -84,9 +88,13 @@ function fit_gllvm(Y::AbstractMatrix; family = Normal(), K = nothing,
         K = num_lv
     end
 
-    # API B (Curie): NB/Beta public default matches gllvmTMB per-trait φ.
-    # Shared-φ engines remain `fit_nb_gllvm` / `fit_beta_gllvm`. Gamma unchanged.
-    if disp_group === nothing && (family isa NegativeBinomial || family isa Beta)
+    # API B (Curie): NB/Beta/NB1 public default matches gllvmTMB per-trait φ — the
+    # estimand already shipped on the R bridge and on `@formula` with X, so the
+    # unified entry point must not default to a shared scalar instead. Shared-φ
+    # engines remain `fit_nb_gllvm` / `fit_beta_gllvm` / `fit_nb1_gllvm`. The NB1
+    # marker's `φ` field is never read: φ is always estimated. Gamma unchanged.
+    if disp_group === nothing &&
+       (family isa NegativeBinomial || family isa Beta || family isa NB1)
         disp_group = :species
     end
 
@@ -167,10 +175,15 @@ _fit_gllvm(::ZINegBin, Y::AbstractMatrix; kwargs...) = fit_zinb_gllvm(Y; kwargs.
 _fit_gllvm(family::ZIB, Y::AbstractMatrix; kwargs...) =
     fit_zib_gllvm(Y; N = family.N, kwargs...)
 
+# No `_fit_gllvm(::NB1, …)` arm: the per-trait coerce above always sets
+# `disp_group`, so NB1 reaches `_fit_gllvm_grouped` instead. A bare arm here would
+# be unreachable and would advertise the shared-φ estimand, which is available
+# only through the named `fit_nb1_gllvm`.
+
 # Clear error for families not yet implemented (hurdle, remaining zero-inflated, …).
 _fit_gllvm(family, Y::AbstractMatrix; kwargs...) = throw(ArgumentError(
     "fit_gllvm: family $(nameof(typeof(family))) is not implemented yet " *
-    "(available: Normal, Binomial, Poisson, TruncatedPoisson, CensoredPoisson, TruncatedNegBin2, Lognormal, NegativeBinomial, Beta, Ordinal, Gamma, Exponential, GeneralizedPoisson1, ZIPoisson, ZINegBin, ZIB)"))
+    "(available: Normal, Binomial, Poisson, TruncatedPoisson, CensoredPoisson, TruncatedNegBin2, Lognormal, NegativeBinomial, NB1, Beta, Ordinal, Gamma, Exponential, GeneralizedPoisson1, ZIPoisson, ZINegBin, ZIB)"))
 
 # --- grouped-dispersion routing keyed on the family marker. ------------------
 _fit_gllvm_grouped(::NegativeBinomial, Y::AbstractMatrix; kwargs...) =
