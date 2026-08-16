@@ -81,7 +81,9 @@ dispersion + X). Returns that fitter's result
 `ZIPCovFit` / `ZINBCovFit`, or `GllvmCovFit` whose `γ[k]` matches the k-th RHS
 covariate). With no covariates it reduces to the intercept-only fit
 (`ZIPoisson()` → [`fit_zip_gllvm`](@ref); `ZINegBin()` →
-[`fit_zinb_gllvm`](@ref)).
+[`fit_zinb_gllvm`](@ref); `ZIB(N)` → [`fit_gllvm`](@ref) / [`fit_zib_gllvm`](@ref)).
+`ZIB` through `@formula` is **no-X only** for now (bridge still OWED; ZIB+X formula
+is fenced).
 
 **v1 scope:** intercept + continuous main-effect covariates. Categorical terms,
 interactions (`a & b` / fourth-corner), function terms, and random effects
@@ -101,6 +103,7 @@ function gllvm(formula::FormulaTerm, Y::AbstractMatrix, data;
         return family isa Normal ? fit_gaussian_gllvm(Y; K = K, kwargs...) :
                family isa ZIPoisson ? fit_zip_gllvm(Y; K = K, kwargs...) :
                family isa ZINegBin ? fit_zinb_gllvm(Y; K = K, kwargs...) :
+               family isa ZIB ? fit_gllvm(Y; family = family, K = K, kwargs...) :
                                       fit_gllvm(Y; family = family, K = K, kwargs...)
     end
 
@@ -141,6 +144,10 @@ function gllvm(formula::FormulaTerm, Y::AbstractMatrix, data;
         return fit_zip_gllvm_cov(Y; X = X, K = K, kwargs...)
     elseif family isa ZINegBin
         return fit_zinb_gllvm_cov(Y; X = X, K = K, kwargs...)
+    elseif family isa ZIB
+        throw(ArgumentError(
+            "ZIB through @formula is no-X only for now (pass `@formula(y ~ 1)`); " *
+            "ZIB+X formula / bridge admission is still OWED"))
     else
         return fit_gllvm_cov(Y; family = family, X = X, K = K, kwargs...)
     end
