@@ -11193,3 +11193,47 @@ Ledger (`docs/design/capability-status.md`):
 Rose fence: no twin light Δ invented anywhere (censored_poisson's is
 **forbidden**, lognormal's is **owed**); no ADEMP or coverage certificate
 claimed; REML remains Gaussian-only and, on `main`, standalone + bridge only.
+
+## 2026-08-16 - NB1 + BetaBinom no-X `fit_gllvm` Identity (Arc 0, docs-only)
+
+Branch `cursor/nb1-betabinom-identity-20260816` from `origin/main` @ `dc3609f1`
+(post-#224 REML + ledger, post-#225 handoff). Mac-light, docs-only: one new
+decision note, no engine code.
+
+Note: `docs/dev-log/decisions/2026-08-16-nb1-betabinom-fit-gllvm-identity.md`.
+Locks the estimand for admitting `NB1` and `BetaBinom` to the unified `fit_gllvm`
+entry point (and, by fall-through, to no-X `@formula`), and records why the ZIB
+#218 shape (+53/-2, export + one dispatch arm) does **not** transfer.
+
+Four locks: **C1** marker φ is a tag payload — ignored on every public route,
+never `φ_init`, φ always estimated (+ additive zero-arg constructors, gated on a
+`family.φ` call-site audit). **C2** per-trait φ via the API-B coerce, **not** a
+bare `_fit_gllvm` arm — a shared-φ arm would contradict the per-trait default
+already locked by #185/#186 and already shipped on the bridge and `@formula`+X.
+**C3** BetaBinom trials travel as a required `N` keyword (p×n), never on the
+marker, with no scalar normalisation. **C4** exports + AGENTS.md rule-3 cascade.
+
+Evidence gathered live at `dc3609f1` (probe output pasted into the note, not
+inferred): both markers unexported and lacking zero-arg constructors; `fit_gllvm`
+and no-X `@formula` both raise "not implemented yet" for both families;
+`disp_group = :species` already works for NB1 (`NB1GroupedFit`) but **not** for
+BetaBinom (no `_fit_gllvm_grouped` arm) — the two families need different change
+sets; `row_eff = :random` already fails for both today with a raw `MethodError`,
+so the C2 coerce closes no working route.
+
+BetaBinom `N` evidence: `betabinomial_logp(1, 0.3, N, φ)` is flat in φ to ~3e-14
+at `N = 1` (-0.5543552444685267 / ...265 / ...4963 for φ = 0.5 / 5 / 50) versus
+~0.57 nats of spread at `N = 6` — φ is unidentifiable at `N = 1`, so inheriting
+the fitters' silent `N = ones` default at the public boundary would return a
+silently unidentified per-trait φ vector.
+
+Bridge fence is the **inverse** of ZIB's: `nb1` and `betabinomial` are already in
+`_BRIDGE_ONEPART_FAMILIES`, `_BRIDGE_X_FAMILIES`,
+`_BRIDGE_GROUPED_DISPERSION_FAMILIES` (and `betabinomial` in
+`_BRIDGE_TRIALS_FAMILIES`). Nothing is owed there — the lock is *do not open*
+`src/bridge.jl`.
+
+Rose fence: docs-only, no engine code, no ledger row touched. No twin `gllvmTMB`
+light Δ invented and no R-parity claim earned — this arc changes no bridge
+behaviour. No ADEMP or coverage claimed. #185 / #186 not re-opened. `TweedieED`
+(the third unexported marker) recorded as out of scope with its own G0.
