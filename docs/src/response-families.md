@@ -30,6 +30,10 @@ fit_gllvm(Yo; family = Ordinal(), K = 2)
 
 # Heavy-tailed continuous — outlier-robust alternative to Normal()
 fit_gllvm(Y;  family = StudentTFamily(4.0), K = 2)
+
+# two-part continuous (occurrence × positive continuous)
+fit_gllvm(Yd; family = DeltaLogNormal(), K = 2)
+fit_gllvm(Yd; family = DeltaGamma(), K = 2)
 ```
 
 `fit_gllvm` dispatches on the family: `Normal()` uses the exact closed-form
@@ -72,8 +76,8 @@ supports `LogitLink()` (default), `ProbitLink()`, and `CLogLogLink()`.
 | `StudentTFamily(ν)` | ✅ available | identity | Laplace | scale `σ`; FIXED df `ν` on the marker | heavy-tailed continuous, `(y − η)/σ ~ t_ν`; outlier-robust alternative to `Normal()`; `σ` estimated, `ν` held fixed; → `Normal(η, σ²)` as `ν → ∞` |
 | Tweedie | ✅ available | log | Laplace | dispersion `φ`, power `p` (1<p<2) | compound Poisson–Gamma; biomass / abundance with true zeros; `fit_tweedie_gllvm` |
 | Ordered-beta | ✅ available | logit | Laplace | precision `φ`, cutpoints `c₀<c₁` | proportions / cover with point masses at 0 and 1; `fit_ordered_beta_gllvm` |
-| Delta-lognormal | ✅ available | logit × identity(log) | two-part Laplace | log-SD `σ` | occurrence × positive lognormal; `fit_delta_lognormal_gllvm` |
-| Delta-Gamma | ✅ available | logit × log | two-part Laplace | shape `α` | occurrence × positive Gamma; `fit_delta_gamma_gllvm` |
+| `DeltaLogNormal()` | ✅ available | logit × identity(log) | two-part Laplace | log-SD `σ` (tag payload) | occurrence × positive lognormal; `fit_gllvm` / named `fit_delta_lognormal_gllvm` |
+| `DeltaGamma()` | ✅ available | logit × log | two-part Laplace | shape `α` (tag payload) | occurrence × positive Gamma; `fit_gllvm` / named `fit_delta_gamma_gllvm` |
 | Beta-hurdle | ✅ available | logit × logit | two-part Laplace | precision `φ` | occurrence × positive Beta; `fit_beta_hurdle_gllvm` |
 | Hurdle-Poisson | ✅ available | logit × log | two-part Laplace | — | occurrence × zero-truncated Poisson; `fit_hurdle_poisson_gllvm` |
 | Hurdle-NB | ✅ available | logit × log | two-part Laplace | dispersion `r` | occurrence × zero-truncated NB2; `fit_hurdle_nb_gllvm` |
@@ -85,8 +89,9 @@ supports `LogitLink()` (default), `ProbitLink()`, and `CLogLogLink()`.
 The single-block families with a plain `Distributions` marker — `Normal`,
 `Binomial`, `Poisson`, `NegativeBinomial` (NB2), `Beta`, `Ordinal`, `Gamma`,
 `Exponential` — are reached through the unified `fit_gllvm` entry, as are `NB1`,
-`BetaBinom`, and `StudentTFamily` via the package's own exported markers. Tweedie
-and the two-part families currently have dedicated
+`BetaBinom`, `StudentTFamily`, `DeltaLogNormal`, and `DeltaGamma` via the package's
+own exported markers. Tweedie and the remaining two-part / hurdle families currently
+have dedicated
 `fit_<family>_gllvm` drivers (they carry estimated parameters — `σ`, `α`, `r`,
 `φ`, the Tweedie power — or trial counts that do not yet share a single
 `Distributions` marker). Calling `fit_gllvm` with an unimplemented family raises a
@@ -250,6 +255,38 @@ named fitter instead.
 
 Student-t is a **no-X** surface: `fit_gllvm` and `gllvm(@formula(y ~ 1), …)` are
 admitted, but covariates, `disp_group`, and row effects are not.
+
+
+### Delta-lognormal — `DeltaLogNormal()`
+
+```julia
+fit = fit_gllvm(Y; family = DeltaLogNormal(), K = 2)   # occurrence × positive lognormal
+fit = fit_gllvm(Y; family = DeltaLogNormal(9.0), K = 2)  # same — marker σ never read
+```
+
+Two-part Laplace: Bernoulli occurrence (`π = logistic(β^z)`, `Λ_z = 0` in v1) times
+a positive lognormal with meanlog `η^c = β^c + Λ_c z` and shared sdlog `σ`. The
+marker's `σ` is a **tag payload** — always estimated (returned as `fit.σ`). Named
+fitter [`fit_delta_lognormal_gllvm`](@ref) remains available.
+
+Delta-lognormal is a **no-X** surface: `fit_gllvm` and `gllvm(@formula(y ~ 1), …)`
+are open; covariates, `disp_group`, and `row_eff` are not admitted. No bridge /
+R-parity claim.
+
+### Delta-Gamma — `DeltaGamma()`
+
+```julia
+fit = fit_gllvm(Y; family = DeltaGamma(), K = 2)   # occurrence × positive Gamma
+fit = fit_gllvm(Y; family = DeltaGamma(4.0), K = 2)  # same — marker α never read
+```
+
+Two-part Laplace: Bernoulli occurrence times a positive Gamma with log-link mean
+`μ = exp(η^c)` and shared shape `α` (`Var = μ²/α`). The marker's `α` is a **tag
+payload** — always estimated (returned as `fit.α`). Named fitter
+[`fit_delta_gamma_gllvm`](@ref) remains available.
+
+Delta-Gamma is a **no-X** surface: same fence as Delta-lognormal (no +X, no
+`disp_group`, no `row_eff`, no bridge / R-parity claim).
 
 ### Beta-binomial — `BetaBinom()`
 

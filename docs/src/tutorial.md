@@ -158,10 +158,15 @@ fhp = fit_hurdle_poisson_gllvm(Y; K = 2)
 fhn = fit_hurdle_nb_gllvm(Y;      K = 2)
 
 # Delta / two-part continuous (occurrence × positive continuous)
-fdl = fit_delta_lognormal_gllvm(Yc; K = 2)   # Bernoulli × lognormal
-fdg = fit_delta_gamma_gllvm(Yc;     K = 2)   # Bernoulli × Gamma
+fdl = fit_gllvm(Yc; family = DeltaLogNormal(), K = 2)  # Bernoulli × lognormal
+fdg = fit_gllvm(Yc; family = DeltaGamma(), K = 2)      # Bernoulli × Gamma
+# named fitters remain: fit_delta_lognormal_gllvm / fit_delta_gamma_gllvm
 fbh = fit_beta_hurdle_gllvm(Yp;     K = 2)   # Bernoulli × Beta (point mass at 0)
 ```
+
+Delta-lognormal and Delta-Gamma are **no-X** surfaces on `fit_gllvm` /
+`gllvm(@formula(y ~ 1), …)`: the markers' `σ` / `α` are tag payloads (always
+estimated). Covariates and row effects are not admitted on these routes.
 
 `fit_zib_gllvm` needs the number of trials `N` as a scalar `Int` (a shared trial
 count for all entries). The two-part fits expose `βz` (occurrence/zero logits),

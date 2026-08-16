@@ -144,4 +144,39 @@ using GLLVM, Test, Random, Distributions, Statistics
         @test ci_va.term == ci_la.term
         @test ci_va.estimate ≈ ci_la.estimate
     end
+
+    # No-X public surfaces. Marker α is a tag payload (never read by fit_gllvm).
+    @testset "no-X public surfaces: fit_gllvm and @formula" begin
+        Random.seed!(163)
+        p, K, n = 6, 1, 120
+        βz = 0.4 .* randn(p) .+ 0.3
+        βc = 0.4 .* randn(p)
+        Λc = 0.5 .* randn(p, K)
+        α = 3.0
+        Z = randn(K, n)
+        ηc = βc .+ Λc * Z
+        π = inv.(1 .+ exp.(-βz))
+        Y = zeros(p, n)
+        for t in 1:p, s in 1:n
+            if rand() < π[t]
+                μ = exp(ηc[t, s])
+                Y[t, s] = rand(Gamma(α, μ / α))
+            end
+        end
+
+        fn = fit_delta_gamma_gllvm(Y; K = K, iterations = 40)
+        fu = fit_gllvm(Y; family = DeltaGamma(), K = K, iterations = 40)
+        @test fu isa DeltaGammaFit
+        @test fu.loglik ≈ fn.loglik atol = 1e-10
+        @test fu.α ≈ fn.α atol = 1e-10
+
+        @test fit_gllvm(Y; family = DeltaGamma(9.0), K = K, iterations = 40).α ≈
+              fu.α atol = 1e-10
+        @test DeltaGamma().α == 1.0
+
+        ff = gllvm(@formula(y ~ 1), Y, (; temp = randn(n));
+                   family = DeltaGamma(), K = K, iterations = 40)
+        @test ff isa DeltaGammaFit
+        @test ff.loglik ≈ fn.loglik atol = 1e-10
+    end
 end

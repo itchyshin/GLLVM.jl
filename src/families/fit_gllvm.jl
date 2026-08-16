@@ -35,6 +35,10 @@ distribution used as a marker (the GLM.jl convention):
   marker: the FIXED degrees of freedom `ν` is structural and travels on the family
   instance, forwarded here as the fitter's `nu`, so passing `nu` as a separate keyword
   is an error. The marker's `σ` field is a tag payload — the scale is always estimated.
+- `DeltaLogNormal()` → [`fit_delta_lognormal_gllvm`](@ref) — two-part Laplace (Bernoulli
+  occurrence × positive lognormal). The marker's `σ` is a tag payload — always estimated.
+- `DeltaGamma()` → [`fit_delta_gamma_gllvm`](@ref) — two-part Laplace (Bernoulli occurrence
+  × positive Gamma). The marker's `α` is a tag payload — always estimated.
 - `GeneralizedPoisson1(α)` → [`fit_gp1_gllvm`](@ref) — Laplace marginal (GP-1 counts, signed dispersion)
 - `ZIB(N)` → [`fit_zib_gllvm`](@ref) — zero-inflated binomial (Julia-forward). Unlike the
   other markers, `ZIB` carries the shared trials count, so `N` travels on the family
@@ -90,6 +94,8 @@ fit_gllvm(Y; family = Beta(), K = 2)                              # per-species 
 fit_gllvm(Y; family = NB1(),  K = 2)                              # per-species linear-variance φ
 fit_gllvm(Y; family = BetaBinom(), K = 2, N = trials)             # per-species φ; N is p×n, required
 fit_gllvm(Y; family = StudentTFamily(4.0), K = 2)                 # heavy-tailed continuous, ν fixed
+fit_gllvm(Y; family = DeltaLogNormal(), K = 2)                    # two-part: occurrence × lognormal
+fit_gllvm(Y; family = DeltaGamma(), K = 2)                        # two-part: occurrence × Gamma
 fit_gllvm(Y; family = Normal(), K = 2, pervar = true)             # per-species variance
 ```
 """
@@ -198,6 +204,12 @@ function _fit_gllvm(family::StudentTFamily, Y::AbstractMatrix; kwargs...)
         "pass family = StudentTFamily($(kwargs[:nu])) rather than a separate nu keyword"))
     return fit_studentt_gllvm(Y; nu = family.ν, kwargs...)
 end
+# Delta markers are tag-payload markers: σ / α are always estimated by the named
+# fitters and are never read from the family instance (same pattern as NB1(φ)).
+_fit_gllvm(::DeltaLogNormal, Y::AbstractMatrix; kwargs...) =
+    fit_delta_lognormal_gllvm(Y; kwargs...)
+_fit_gllvm(::DeltaGamma, Y::AbstractMatrix; kwargs...) =
+    fit_delta_gamma_gllvm(Y; kwargs...)
 _fit_gllvm(::GeneralizedPoisson1, Y::AbstractMatrix; kwargs...) = fit_gp1_gllvm(Y; kwargs...)
 _fit_gllvm(::ZIPoisson, Y::AbstractMatrix; kwargs...) = fit_zip_gllvm(Y; kwargs...)
 _fit_gllvm(::ZINegBin, Y::AbstractMatrix; kwargs...) = fit_zinb_gllvm(Y; kwargs...)
@@ -215,7 +227,7 @@ _fit_gllvm(family::ZIB, Y::AbstractMatrix; kwargs...) =
 # Clear error for families not yet implemented (hurdle, remaining zero-inflated, …).
 _fit_gllvm(family, Y::AbstractMatrix; kwargs...) = throw(ArgumentError(
     "fit_gllvm: family $(nameof(typeof(family))) is not implemented yet " *
-    "(available: Normal, Binomial, Poisson, TruncatedPoisson, CensoredPoisson, TruncatedNegBin2, Lognormal, NegativeBinomial, NB1, Beta, BetaBinom, Ordinal, Gamma, Exponential, StudentTFamily, GeneralizedPoisson1, ZIPoisson, ZINegBin, ZIB)"))
+    "(available: Normal, Binomial, Poisson, TruncatedPoisson, CensoredPoisson, TruncatedNegBin2, Lognormal, NegativeBinomial, NB1, Beta, BetaBinom, Ordinal, Gamma, Exponential, StudentTFamily, DeltaLogNormal, DeltaGamma, GeneralizedPoisson1, ZIPoisson, ZINegBin, ZIB)"))
 
 # --- grouped-dispersion routing keyed on the family marker. ------------------
 _fit_gllvm_grouped(::NegativeBinomial, Y::AbstractMatrix; kwargs...) =
