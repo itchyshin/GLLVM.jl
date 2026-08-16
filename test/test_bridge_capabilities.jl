@@ -46,6 +46,7 @@ using GLLVM
         "ordinal_probit",
         "zip",
         "zinb",
+        "zib",
         "mixed-family vector",
     ]
     @test caps.family[caps.fit_no_x] == caps.family
@@ -117,6 +118,7 @@ using GLLVM
         "betabinomial",
         "zip",
         "zinb",
+        "zib",
     ]
     @test caps.family[caps.ci_no_x_wald] == ci_routed
     @test caps.family[caps.ci_no_x_profile] == ci_routed
@@ -157,8 +159,8 @@ using GLLVM
     # cutpoints payload (per-category probabilities / modal class), so postfit_predict
     # is the full family list.
     @test caps.family[caps.postfit_predict] == caps.family
-    # Scalar-mean post-fit (residuals = y - mu, parametric simulate) still EXCLUDES
-    # the ordinal families, which have no scalar response mean on the payload.
+    # Scalar-mean post-fit (residuals = y - mu) still EXCLUDES the ordinal families,
+    # which have no scalar response mean on the payload.
     scalar_mean_postfit = [
         "gaussian",
         "poisson",
@@ -171,10 +173,25 @@ using GLLVM
         "gamma",
         "zip",
         "zinb",
+        "zib",
         "mixed-family vector",
     ]
     @test caps.family[caps.postfit_residuals] == scalar_mean_postfit
-    @test caps.family[caps.postfit_simulate] == scalar_mean_postfit
+    # `simulate` is NARROWER than `residuals`: no simulate method exists for any of
+    # the three zero-inflated fit types (ZIPFit / ZINBFit / ZIBFit), so those rows
+    # report false rather than inheriting the residuals column.
+    @test caps.family[caps.postfit_simulate] == [
+        "gaussian",
+        "poisson",
+        "binomial",
+        "binomial_probit",
+        "binomial_cloglog",
+        "negbinomial",
+        "nb1",
+        "beta",
+        "gamma",
+        "mixed-family vector",
+    ]
     @test caps.family[caps.postfit_ordination] == caps.family
     @test all(==("partial"), caps.status)
     mixed_idx = findfirst(==("mixed-family vector"), caps.family)
@@ -225,6 +242,36 @@ using GLLVM
     @test occursin("finite-difference Hessian", caps.notes[bb_idx])
     @test occursin("residuals/simulate are not wired", caps.notes[bb_idx])
 
+    # zib: no-X only. `cbind_binomial` stays FALSE (ZIB's N is one shared scalar,
+    # not the per-observation cbind contract), masks and X are unwired, and no-X CI
+    # routes all three methods through _family_ci(::ZIBFit).
+    zib_idx = findfirst(==("zib"), caps.family)
+    @test zib_idx !== nothing
+    @test caps.fit_no_x[zib_idx]
+    @test !caps.fixed_effect_X[zib_idx]
+    @test !caps.predictor_informed_lv[zib_idx]
+    @test !caps.missing_response[zib_idx]
+    @test !caps.cbind_binomial[zib_idx]
+    @test caps.ci_no_x_wald[zib_idx]
+    @test caps.ci_no_x_profile[zib_idx]
+    @test caps.ci_no_x_bootstrap[zib_idx]
+    @test !caps.ci_mask_wald[zib_idx]
+    @test !caps.ci_x_wald[zib_idx]
+    @test !caps.ci_x_profile[zib_idx]
+    @test !caps.ci_x_bootstrap[zib_idx]
+    @test caps.postfit_predict[zib_idx]
+    @test caps.postfit_residuals[zib_idx]
+    @test !caps.postfit_simulate[zib_idx]
+    @test caps.postfit_ordination[zib_idx]
+
+    # The postfit_simulate narrowing covers all three zero-inflated rows at once,
+    # not just the new one — none of them has a simulate method.
+    for fam in ("zip", "zinb", "zib")
+        idx = findfirst(==(fam), caps.family)
+        @test caps.postfit_residuals[idx]
+        @test !caps.postfit_simulate[idx]
+    end
+
     grouped = Set(["negbinomial", "nb1", "beta", "gamma"])
     pertrait_ordinal = Set(["ordinal", "ordinal_probit"])
     for (fam, note) in zip(caps.family[1:(end - 1)], caps.notes[1:(end - 1)])
@@ -262,6 +309,16 @@ using GLLVM
             @test caps.ci_no_x_wald[zinb_idx]
             @test caps.fixed_effect_X[zinb_idx]
             @test caps.fit_no_x[zinb_idx]
+        elseif fam == "zib"
+            @test occursin("Julia-forward", note)
+            @test occursin("twin-asymmetric", note)
+            @test occursin("shared scalar trials count N", note)
+            @test occursin("not per-observation cbind", note)
+            @test occursin("no twin light RCall Δ", note)
+            @test occursin("the twin gllvmTMB has no ZIB", note)
+            @test occursin("narrower than full R-user parity", note)
+            # The X arm is a separate arc: no fixed-effect-X, no CI under X, no masks.
+            @test !occursin("Wald/profile/bootstrap CI under X", note)
         else
             @test occursin("narrower than full R-user parity", note)
         end
