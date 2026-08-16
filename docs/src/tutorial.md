@@ -44,17 +44,21 @@ and can be overridden with `link = ...` (`LogitLink`, `ProbitLink`,
 `CLogLogLink`, `LogLink`, `IdentityLink`). For ordered categories the cumulative
 link can be switched to probit: `fit_ordinal_gllvm(Yo; K = 2, link = ProbitLink())`.
 
-For binomial counts that are **over-dispersed** relative to `Binomial(N, μ)`,
-`fit_beta_binomial_gllvm` lets the per-trial success probability itself vary
+For binomial counts that are **over-dispersed** relative to `Binomial(N, μ)`, the
+beta-binomial lets the per-trial success probability itself vary
 (`p ~ Beta(μφ, (1−μ)φ)`), jointly estimating the Beta precision `φ`:
 
 ```julia
-fbb = fit_beta_binomial_gllvm(Yb; K = 2, N = N)   # overdispersed binomial; fbb.φ
+fbb = fit_gllvm(Yb; family = BetaBinom(), K = 2, N = N)  # per-species φ → fbb.φ is length p
+fbs = fit_beta_binomial_gllvm(Yb; K = 2, N = N)          # one shared φ
 ```
 
-`N` is a `p×n` matrix of trial counts (default all-ones); as `φ → ∞` the family
-reduces to `Binomial(N, μ)`. Links: `LogitLink()` (default), `ProbitLink()`,
-`CLogLogLink()`.
+`N` is a `p×n` matrix of trial counts; as `φ → ∞` the family reduces to
+`Binomial(N, μ)`. Links: `LogitLink()` (default), `ProbitLink()`, `CLogLogLink()`.
+Through `fit_gllvm` (and `gllvm`) `N` is **required** — at `N = 1` the family
+collapses to `Bernoulli(μ)` and `φ` cannot be identified — while the named fitters
+keep their all-ones default. The marker's own `φ` argument is inert, so
+`BetaBinom()` is the usual call.
 
 Two negative-binomial variances are available. The default `fit_nb_gllvm` is
 **NB2** (quadratic, `Var = μ + μ²/r`); `fit_nb1_gllvm` is **NB1** (linear,
@@ -84,9 +88,10 @@ ft = fit_tweedie_gllvm(Y; K = 2)    # Tweedie; fitted φ and power p
 ft.φ, ft.p
 ```
 
-For **NB2, NB1, and Beta**, `fit_gllvm` defaults to **per-species** dispersion
-(matching gllvmTMB). Shared dispersion remains available via the named fitters
-`fit_nb_gllvm` / `fit_nb1_gllvm` / `fit_beta_gllvm`. Other dispersion families
+For **NB2, NB1, Beta, and the beta-binomial**, `fit_gllvm` defaults to
+**per-species** dispersion (matching gllvmTMB). Shared dispersion remains available
+via the named fitters `fit_nb_gllvm` / `fit_nb1_gllvm` / `fit_beta_gllvm` /
+`fit_beta_binomial_gllvm`. Other dispersion families
 still default to one shared parameter; to vary by species (or by groups —
 gllvm's `disp.group`), use
 `disp_group = :species` on `fit_gllvm`, or the matching `_grouped` driver with a
@@ -99,6 +104,7 @@ fit_nb_gllvm_grouped(Y;  K = 2, group = group)   # NB2 r per custom group
 fit_gllvm(Y; family = NB1(), K = 2)              # NB1 per-species φ (default)
 fit_nb1_gllvm_grouped(Y; K = 2)                  # NB1 φ, default per-species
 fit_beta_gllvm_grouped(Yp;    K = 2)             # Beta precision φ per species
+fit_gllvm(Yb; family = BetaBinom(), K = 2, N = N) # beta-binomial per-species φ (N required)
 fit_gamma_gllvm_grouped(Yc;   K = 2)             # Gamma shape α per species
 fit_tweedie_gllvm_grouped(Y;  K = 2)             # Tweedie φ per species (shared power p)
 ```

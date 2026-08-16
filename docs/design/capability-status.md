@@ -202,6 +202,12 @@ Same twin surface, transport layer. Status = code + bridge/parity test exist;
 - BetaBinomial+X engine (bridge/`@formula`/`fit_beta_binomial_gllvm_grouped_cov`):
   `docs/dev-log/after-task/2026-08-05-betabinomial-x-engine-arc12.md` — light
   RCall cell live Δ abs ≈1.50e-8 @ rtol 1e-6 (seed=49; ≠ full family parity)
+- BetaBinom no-X surface admit (`fit_gllvm` + `@formula` with no X; same Identity
+  as the NB1 row above): `docs/dev-log/after-task/2026-08-16-betabinom-nox-surface.md`
+  — exported `BetaBinom` marker, per-trait φ via the API-B coerce, p×n trials `N`
+  **required** at the entry point (φ unidentifiable at `N = 1`). Julia-side surface
+  + identity only; **no** new twin Δ (bridge behaviour unchanged, `src/bridge.jl`
+  not opened)
 - ZIP+X engine (bridge/`@formula`/`fit_zip_gllvm_cov`; Identity 2026-08-09):
   `docs/dev-log/after-task/2026-08-09-zip-x-engine.md` — Julia identity/FD only;
   **no** twin light Δ (gllvmTMB ZIP cut)

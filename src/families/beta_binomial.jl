@@ -25,16 +25,36 @@
 # through the marginal and the fit exactly like families/binomial.jl threads them.
 
 """
-    BetaBinom(φ)
+    BetaBinom(φ = 1.0)
 
 Beta-binomial family marker (gllvm `family="beta.binomial"`, enum 15). `φ > 0` is
 the Beta precision (the shape-sum `a+b`, i.e. the species dispersion). Named to
-avoid colliding with `Distributions.BetaBinomial`; used only as a tag for the
-dedicated beta-binomial Laplace path.
+avoid colliding with `Distributions.BetaBinomial` — with `using GLLVM,
+Distributions` both names are in scope, and `BetaBinom` is the GLLVM marker.
+Pass it to [`fit_gllvm`](@ref) or [`gllvm`](@ref):
+
+```julia
+fit_gllvm(Y; family = BetaBinom(), K = 2, N = trials)   # per-trait φ → BetaBinomialGroupedFit
+```
+
+The trial counts travel as the `N` keyword (a p×n matrix), **not** on the marker,
+and `N` is **required** on those two routes: at `N = 1` the beta-binomial collapses
+to `Bernoulli(μ)` and `φ` is unidentifiable, so the named fitters' silent
+all-ones default is not safe at a public boundary.
+
+The `φ` field is a **tag payload only**: no public route reads it. `φ` is always
+estimated — per trait by default, matching gllvmTMB's length-`p`
+`log_phi_betabinom` — and is never used as a starting value. To seed it, pass
+`φ_init` to a named fitter ([`fit_beta_binomial_gllvm`](@ref),
+[`fit_beta_binomial_gllvm_grouped`](@ref)). Internally the Laplace kernels
+construct their own per-iteration `BetaBinom(φ)` markers, which is what the field
+is for.
 """
 struct BetaBinom <: Distribution{Univariate, Discrete}
     φ::Float64
 end
+
+BetaBinom() = BetaBinom(1.0)
 
 # logistic σ(x), numerically safe at large |x| (mirrors ordered_beta.jl).
 _bb_logistic(x) = x ≥ 0 ? inv(one(x) + exp(-x)) : (e = exp(x); e / (one(x) + e))

@@ -1,5 +1,54 @@
 # Check Log
 
+## 2026-08-16 — BetaBinom no-X surface admit (`fit_gllvm` + `@formula`, per-trait φ, required `N`)
+
+- **What**: Closes the BetaBinom half of the 2026-08-16 NB1/BetaBinom no-X Identity
+  (#226), after the NB1 half landed in #227. Exports the `BetaBinom` marker with a
+  docstring and `BetaBinom() = BetaBinom(1.0)` (C1b); extends the API-B coerce in
+  `fit_gllvm` to `BetaBinom`, so `disp_group === nothing` ⇒ `:species` (C2); **adds**
+  `_fit_gllvm_grouped(::BetaBinom, …)` → `fit_beta_binomial_gllvm_grouped` — the arm
+  NB1 already had, which is why this arc is larger than #227 despite being the same
+  Identity; adds `BetaBinom` to both availability strings; rule-3 cascade over the
+  `fit_gllvm` / `formula.jl` docstrings, `docs/src/response-families.md`,
+  `docs/src/tutorial.md`, and README.
+- **Design gate (C3, the load-bearing one)**: the p×n trial counts `N` are
+  **required** on the `fit_gllvm` / `gllvm` routes, and a scalar is rejected rather
+  than broadcast. `fit_beta_binomial_gllvm_grouped` defaults `N === nothing` to
+  all-ones, but at `N = 1` the beta-binomial collapses exactly to `Bernoulli(μ)` and
+  φ is unidentifiable (Identity C3 measured the log-density flat in φ to ~3e-14 at
+  `N = 1` vs ~0.57 nats of spread at `N = 6`). Inheriting that default at a public
+  boundary would return a per-trait φ vector the likelihood cannot inform, silently.
+  The named fitters' own `N = ones` default is **unchanged** — the requirement is a
+  property of the entry point only, a deliberate documented divergence.
+- **Design gate (C2)**: **no** bare `_fit_gllvm(::BetaBinom, …)` arm. With the coerce
+  in place it would be unreachable *and* would advertise the shared-φ estimand
+  against the per-trait default already shipped on the R bridge (`bridge.jl:1105`)
+  and on `@formula`+X (`formula.jl:139`). Shared φ stays reachable only through
+  `fit_beta_binomial_gllvm`. A code comment fences it, alongside #227's NB1 fence.
+- **Design gate (C1)**: the marker's `φ` field is a tag payload — never read on any
+  public route, never `φ_init`; φ is always estimated. Verified by
+  `fit_gllvm(Y; family = BetaBinom(7.5), N)` matching `BetaBinom()` to 1e-8.
+- **Naming (C4)**: `BetaBinom` is deliberately not `BetaBinomial` — with
+  `using GLLVM, Distributions` both names are in scope, and the marker docstring now
+  says which one is ours.
+- **Formula**: `q == 0` falls through to `fit_gllvm` with no `BetaBinom` branch in
+  `formula.jl`, so the no-X `@formula` surface opens in the **same** PR (and inherits
+  the `N` requirement — tested).
+- **Verify**: focused testset added to `test/test_betabinomial_x_identity.jl` (already
+  in `runtests.jl`) — both no-X surfaces return `BetaBinomialGroupedFit` with a
+  length-`p` positive φ and a `loglik` matching a direct
+  `fit_beta_binomial_gllvm_grouped(group = 1:p)` call to 1e-8; marker payload inert;
+  missing `N` and scalar `N` both `ArgumentError` on `fit_gllvm` and `gllvm`. Local
+  focused file run recorded in the after-task report. Full suite is **GitHub CI**,
+  not this Mac. No rtol widen.
+- **Not claimed**: no new R-parity or twin Δ (no bridge behaviour changes;
+  `src/bridge.jl` not opened — nothing is owed there, both keys already admitted);
+  no coverage/ADEMP result; shared-φ is **not** available through `fit_gllvm`; a
+  scalar `N` is **not** accepted.
+- **Still OWED**: `TweedieED` marker export/admit (the last unexported marker holding
+  a grouped arm); scalar-`N` convenience inside `src/families/beta_binomial.jl`
+  applied to all four BB fitters at once, if wanted.
+
 ## 2026-08-16 — NB1 no-X surface admit (`fit_gllvm` + `@formula`, per-trait φ)
 
 - **What**: Engine arc for the NB1 half of the 2026-08-16 NB1/BetaBinom no-X
