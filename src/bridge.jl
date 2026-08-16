@@ -1205,16 +1205,28 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
         ci = ci_method == "none" ? nothing :
              _bridge_compute_ci_ng(fit, Float64.(Yi), nothing, ci_method, ci_level,
                                    ci_nboot, ci_seed; mask = nothing)
-        base = _bridge_assemble_ng(fit, "zip", "zip_rr", traits, units, p, K, Yi, nothing;
-            alpha = fit.βc, dispersion = fill(NaN, p), df = _nparams(fit),
-            scores = scores, ci = ci, mask = nothing)
-        return merge(base, (beta_zero = collect(Float64, fit.βz),
-                            note = isempty(base.note) ?
-                                "ZIP no-X (Julia-forward): structural-zero logits beta_zero, " *
-                                "count intercepts alpha=beta_c, Λz=0; no twin light Δ." :
-                                string(base.note, " ZIP no-X (Julia-forward): structural-zero " *
-                                       "logits beta_zero, count intercepts alpha=beta_c, Λz=0; " *
-                                       "no twin light Δ.")))
+        # ZIPFit carries no `link` field and no link-residual extractor, so assemble
+        # directly (as ZINB/ZIB do) rather than through _bridge_assemble_ng, whose
+        # `fit.link` read does not apply here: build Sigma/correlation/communality
+        # from the shared block ΛcΛcᵀ and name the count-part link explicitly.
+        L = Matrix{Float64}(getLoadings(fit; rotate = true))
+        Σ = L * L'; Σ = (Σ + Σ') ./ 2
+        corr = _bridge_corr_from_sigma(Σ)
+        comm = ones(Float64, p)
+        base = _bridge_assemble(fit, "zip", "zip_rr", traits, units;
+            alpha = collect(Float64, fit.βc),
+            dispersion = fill(NaN, p),
+            sigma_eps = NaN,
+            link = fill("log", p), Sigma = Σ, corr = corr,
+            comm = comm, scores = scores, df = _nparams(fit),
+            loglik = fit.loglik, converged = fit.converged,
+            iterations = fit.iterations, loadings = L,
+            note = "ZIP no-X (Julia-forward / twin-asymmetric): structural-zero " *
+                   "logits beta_zero, count intercepts alpha=beta_c, Λz=0; " *
+                   "Sigma/correlation use the shared block Lambda*Lambda' only " *
+                   "(communality 1); no twin light Δ.",
+            ci = ci)
+        return merge(base, (beta_zero = collect(Float64, fit.βz),))
     elseif key == "zinb"
         Yi = round.(Int, Yf)
         M === nothing || throw(ArgumentError(

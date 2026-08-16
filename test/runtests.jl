@@ -151,6 +151,7 @@ using GLLVM
     include("test_bridge_mixed.jl")
     include("test_bridge_x.jl")
     include("test_bridge_zib.jl")
+    include("test_bridge_zip_nox.jl")
     include("test_bridge_lv_predictor.jl")
     include("test_lv_ci.jl")
     include("test_phylo_eta_realized.jl")
