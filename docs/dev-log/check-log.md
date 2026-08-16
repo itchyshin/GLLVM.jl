@@ -4,7 +4,8 @@
 ## 2026-08-16 — `fit_tweedie_gllvm_grouped` false-convergence (OWED from #236)
 
 Lane `cursor/tweedie-grouped-engine-health-20260816`. Base `origin/main` @
-`cb3c8716` (#236). Ports `_tweedie_log_offset` + `_tweedie_verdict` into
+`cb3c8716` (#236); rematched onto `d70a6a25` (#237) for a clean merge.
+Ports `_tweedie_log_offset` + `_tweedie_verdict` into
 `fit_tweedie_gllvm_grouped` — the three defects the #236 PR note left OWED
 (warm start `log(max(Y, 1e-6))`, bare `1e12` sentinel, naked `Optim.converged`).
 Tweedie block of `grouped_dispersion.jl` only; no other family, no `fit_gllvm`
@@ -15,6 +16,18 @@ sweep on the existing grouped smoke cell must agree and stay interior. Local
 Mac-LIGHT: new file **47/47 Pass** (3m35.7s); blast
 `test_tweedie.jl` + `test_grouped_dispersion_tweedie_nb1.jl` **39/39 Pass**
 (1m13.2s). Full suite = GitHub CI. No rtol widen, no seed change.
+
+## 2026-08-16 — Hurdle-Poisson no-X `fit_gllvm` surface admit
+
+Lane `cursor/hurdle-poisson-nox-20260816`. Base `origin/main` @ `497be1c4` (#235).
+Cheapest remaining `_fit_gllvm` surface admit after the 2026-08-16 wave
+(ZIB / NB1 / BetaBinom / Student-t / Delta; Tweedie reserved for #236).
+`HurdlePoisson` was an empty two-part marker with a working named fitter and
+no public export / dispatch arm. Export + `_fit_gllvm(::HurdlePoisson)` →
+`fit_hurdle_poisson_gllvm`; no-X `@formula` opens by fall-through. No payload
+Identity (empty marker). No bridge. No twin Δ (twin has no hurdle family).
+Mac-LIGHT focused: `test/test_hurdle_poisson.jl` **171/171** in 13.2s. Full
+suite = GitHub CI.
 
 ## 2026-08-16 — ZIP no-X bridge arm fixed (`fit.link` on a `ZIPFit`)
 

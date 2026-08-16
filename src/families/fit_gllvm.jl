@@ -39,6 +39,8 @@ distribution used as a marker (the GLM.jl convention):
   occurrence × positive lognormal). The marker's `σ` is a tag payload — always estimated.
 - `DeltaGamma()` → [`fit_delta_gamma_gllvm`](@ref) — two-part Laplace (Bernoulli occurrence
   × positive Gamma). The marker's `α` is a tag payload — always estimated.
+- `HurdlePoisson()` → [`fit_hurdle_poisson_gllvm`](@ref) — two-part Laplace (Bernoulli
+  occurrence × zero-truncated Poisson). Empty marker; no payload.
 - `GeneralizedPoisson1(α)` → [`fit_gp1_gllvm`](@ref) — Laplace marginal (GP-1 counts, signed dispersion)
 - `ZIB(N)` → [`fit_zib_gllvm`](@ref) — zero-inflated binomial (Julia-forward). Unlike the
   other markers, `ZIB` carries the shared trials count, so `N` travels on the family
@@ -217,6 +219,9 @@ _fit_gllvm(::ZINegBin, Y::AbstractMatrix; kwargs...) = fit_zinb_gllvm(Y; kwargs.
 # family instance (`ZIB(N)`), so it is forwarded here rather than taken as a kwarg.
 _fit_gllvm(family::ZIB, Y::AbstractMatrix; kwargs...) =
     fit_zib_gllvm(Y; N = family.N, kwargs...)
+# Empty two-part marker (same shape as `ZIPoisson`): no payload to forward.
+_fit_gllvm(::HurdlePoisson, Y::AbstractMatrix; kwargs...) =
+    fit_hurdle_poisson_gllvm(Y; kwargs...)
 
 # No `_fit_gllvm(::NB1, …)` / `_fit_gllvm(::BetaBinom, …)` arms: the per-trait
 # coerce above always sets `disp_group`, so both reach `_fit_gllvm_grouped`
@@ -224,10 +229,10 @@ _fit_gllvm(family::ZIB, Y::AbstractMatrix; kwargs...) =
 # estimand, which is available only through the named `fit_nb1_gllvm` /
 # `fit_beta_binomial_gllvm`.
 
-# Clear error for families not yet implemented (hurdle, remaining zero-inflated, …).
+# Clear error for families not yet implemented (remaining hurdle / ordered-beta, …).
 _fit_gllvm(family, Y::AbstractMatrix; kwargs...) = throw(ArgumentError(
     "fit_gllvm: family $(nameof(typeof(family))) is not implemented yet " *
-    "(available: Normal, Binomial, Poisson, TruncatedPoisson, CensoredPoisson, TruncatedNegBin2, Lognormal, NegativeBinomial, NB1, Beta, BetaBinom, Ordinal, Gamma, Exponential, StudentTFamily, DeltaLogNormal, DeltaGamma, GeneralizedPoisson1, ZIPoisson, ZINegBin, ZIB)"))
+    "(available: Normal, Binomial, Poisson, TruncatedPoisson, CensoredPoisson, TruncatedNegBin2, Lognormal, NegativeBinomial, NB1, Beta, BetaBinom, Ordinal, Gamma, Exponential, StudentTFamily, DeltaLogNormal, DeltaGamma, HurdlePoisson, GeneralizedPoisson1, ZIPoisson, ZINegBin, ZIB)"))
 
 # --- grouped-dispersion routing keyed on the family marker. ------------------
 _fit_gllvm_grouped(::NegativeBinomial, Y::AbstractMatrix; kwargs...) =
