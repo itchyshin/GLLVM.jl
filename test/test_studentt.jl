@@ -156,6 +156,51 @@ _max_rel_err(a, b) = maximum(abs.(a .- b) ./ max.(1.0, abs.(b)))
         @test link_residual(StudentTFamily(2.0, 1.0), IdentityLink(), 0.0, 1.0) == Inf
     end
 
+    # ---------------------------------------------------------------------
+    # No-X public surfaces. `fit_gllvm` and `@formula` must reach exactly the
+    # named `fit_studentt_gllvm` engine, with the FIXED ν carried by the marker
+    # and the marker's σ ignored (the scale is always estimated).
+    # ---------------------------------------------------------------------
+    @testset "no-X public surfaces: fit_gllvm and @formula" begin
+        Random.seed!(709)
+        p, K, n = 4, 1, 60
+        β_true = [0.4, 0.9, -0.2, 0.6]
+        Λ_true = 0.3 .* randn(p, K)
+        σ_true = 0.7
+        ν = 5.0
+        Z = randn(K, n)
+        Y = β_true .+ Λ_true * Z .+ σ_true .* [rand(TDist(ν)) for _ in 1:p, _ in 1:n]
+
+        # ν travels on the marker and is forwarded as `nu`: same fit as by name.
+        fu = fit_gllvm(Y; family = StudentTFamily(ν), K = K, iterations = 40)
+        direct = fit_studentt_gllvm(Y; K = K, nu = ν, iterations = 40)
+        @test fu isa StudentTFit
+        @test fu.ν == ν                                    # fixed, straight off the marker
+        @test fu.loglik ≈ direct.loglik atol = 1e-8
+        @test fu.σ ≈ direct.σ atol = 1e-8
+
+        # The marker's σ is a tag payload — never read, never a starting value.
+        @test fit_gllvm(Y; family = StudentTFamily(ν, 9.0), K = K,
+                        iterations = 40).loglik ≈ fu.loglik atol = 1e-8
+
+        # Zero-arg convenience agrees with the fitter's own ν = 4 default.
+        @test StudentTFamily().ν == 4.0
+        @test fit_gllvm(Y; family = StudentTFamily(), K = K, iterations = 40).ν == 4.0
+
+        # A different ν is a different likelihood — the marker is really read.
+        @test !isapprox(fit_gllvm(Y; family = StudentTFamily(50.0), K = K,
+                                  iterations = 40).loglik, fu.loglik; atol = 1e-6)
+
+        # ν must not be specifiable twice: a bare `nu` kwarg would silently win.
+        @test_throws ArgumentError fit_gllvm(Y; family = StudentTFamily(ν), K = K, nu = 9.0)
+
+        # The `@formula` no-X surface opens by fall-through to `fit_gllvm`.
+        ff = gllvm(@formula(y ~ 1), Y, (; temp = randn(n));
+                   family = StudentTFamily(ν), K = K, iterations = 40)
+        @test ff isa StudentTFit
+        @test ff.loglik ≈ fu.loglik atol = 1e-8
+    end
+
     @testset "simulate(fit, n) round-trips through StudentTFit" begin
         Random.seed!(708)
         p, K, n = 4, 1, 50

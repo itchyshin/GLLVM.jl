@@ -88,6 +88,20 @@ ft = fit_tweedie_gllvm(Y; K = 2)    # Tweedie; fitted φ and power p
 ft.φ, ft.p
 ```
 
+For continuous responses with occasional gross outliers, **Student-t** is an
+outlier-robust drop-in for `Normal()` on the identity link — the heavy tail bounds
+each cell's influence, so a few extreme values barely move `β̂`. The degrees of
+freedom `ν` sets the tail weight and is held **fixed** (it travels on the marker,
+not as a keyword); the scale `σ` is estimated:
+
+```julia
+fit_gllvm(Y; family = StudentTFamily(4.0), K = 2)   # ν = 4; fitted σ
+fit_gllvm(Y; family = StudentTFamily(), K = 2)      # same default ν
+gllvm(@formula(y ~ 1), Y, site_data; family = StudentTFamily(4.0), K = 2)
+```
+
+Student-t is a no-X surface for now: covariates and row effects are not admitted.
+
 For **NB2, NB1, Beta, and the beta-binomial**, `fit_gllvm` defaults to
 **per-species** dispersion (matching gllvmTMB). Shared dispersion remains available
 via the named fitters `fit_nb_gllvm` / `fit_nb1_gllvm` / `fit_beta_gllvm` /

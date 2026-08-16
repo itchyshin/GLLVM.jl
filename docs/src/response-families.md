@@ -27,6 +27,9 @@ fit_gllvm(Yp; family = Beta(), K = 2)
 
 # Ordered categories — Laplace marginal
 fit_gllvm(Yo; family = Ordinal(), K = 2)
+
+# Heavy-tailed continuous — outlier-robust alternative to Normal()
+fit_gllvm(Y;  family = StudentTFamily(4.0), K = 2)
 ```
 
 `fit_gllvm` dispatches on the family: `Normal()` uses the exact closed-form
@@ -48,7 +51,8 @@ fit_gllvm(Yb; family = Binomial(), K = 2, link = ProbitLink())
 ```
 
 For `Poisson`, `NegativeBinomial`, and `Gamma` the default and only supported
-link is `LogLink()`. For `Beta` the default is `LogitLink()`. `Ordinal` defaults
+link is `LogLink()`. For `StudentTFamily` it is `IdentityLink()` (the response is
+a location on the real line). For `Beta` the default is `LogitLink()`. `Ordinal` defaults
 to a cumulative `LogitLink()` and also supports `ProbitLink()`. Beta-binomial
 supports `LogitLink()` (default), `ProbitLink()`, and `CLogLogLink()`.
 
@@ -65,6 +69,7 @@ supports `LogitLink()` (default), `ProbitLink()`, and `CLogLogLink()`.
 | `Ordinal()` | ✅ available | cumulative logit / probit | Laplace | cutpoints `τ` | ordered categories `1:C`; `fit_ordinal_gllvm()` uses shared cutpoints, `fit_ordinal_gllvm_pertrait()` uses trait-specific cutpoints for R-bridge parity |
 | `Gamma()` | ✅ available | log | Laplace | shape `α` (Var = μ²/α) | positive continuous; `α` jointly estimated |
 | `Exponential()` | ✅ available | log | Laplace | — | positive continuous, `Var = μ²` (Gamma with α=1) |
+| `StudentTFamily(ν)` | ✅ available | identity | Laplace | scale `σ`; FIXED df `ν` on the marker | heavy-tailed continuous, `(y − η)/σ ~ t_ν`; outlier-robust alternative to `Normal()`; `σ` estimated, `ν` held fixed; → `Normal(η, σ²)` as `ν → ∞` |
 | Tweedie | ✅ available | log | Laplace | dispersion `φ`, power `p` (1<p<2) | compound Poisson–Gamma; biomass / abundance with true zeros; `fit_tweedie_gllvm` |
 | Ordered-beta | ✅ available | logit | Laplace | precision `φ`, cutpoints `c₀<c₁` | proportions / cover with point masses at 0 and 1; `fit_ordered_beta_gllvm` |
 | Delta-lognormal | ✅ available | logit × identity(log) | two-part Laplace | log-SD `σ` | occurrence × positive lognormal; `fit_delta_lognormal_gllvm` |
@@ -79,9 +84,9 @@ supports `LogitLink()` (default), `ProbitLink()`, and `CLogLogLink()`.
 
 The single-block families with a plain `Distributions` marker — `Normal`,
 `Binomial`, `Poisson`, `NegativeBinomial` (NB2), `Beta`, `Ordinal`, `Gamma`,
-`Exponential` — are reached through the unified `fit_gllvm` entry, as are `NB1`
-and `BetaBinom` via the package's own exported markers. Tweedie and the two-part
-families currently have dedicated
+`Exponential` — are reached through the unified `fit_gllvm` entry, as are `NB1`,
+`BetaBinom`, and `StudentTFamily` via the package's own exported markers. Tweedie
+and the two-part families currently have dedicated
 `fit_<family>_gllvm` drivers (they carry estimated parameters — `σ`, `α`, `r`,
 `φ`, the Tweedie power — or trial counts that do not yet share a single
 `Distributions` marker). Calling `fit_gllvm` with an unimplemented family raises a
@@ -219,6 +224,32 @@ shared `γ`; twin API B). Shared-α + X remains the opt-in
 ```julia
 fit = fit_gllvm(Yp; family = Gamma(), K = 2)   # Yp > 0; shared α (no-X)
 ```
+
+### Student-t — `StudentTFamily(ν)`
+
+```julia
+fit = fit_gllvm(Y; family = StudentTFamily(4.0), K = 2)   # heavy-tailed continuous
+fit = fit_gllvm(Y; family = StudentTFamily(), K = 2)      # same, ν = 4 by default
+```
+
+An outlier-robust drop-in for `Normal()` on the identity link: the
+per-observation law is the location–scale t, `(y − η)/σ ~ t_ν`. The heavy tail
+bounds the influence of extreme cells — the score `(ν+1)r/(νσ² + r²)` *decreases*
+in the residual `r`, so a handful of gross outliers barely move `β̂`, where a
+Gaussian fit would chase them. As `ν → ∞` the family tends to `Normal(η, σ²)`.
+
+The two marker fields play different roles. The degrees of freedom `ν` is
+**structural**: it is held FIXED rather than estimated (estimating it jointly
+needs a second auxiliary, which the scalar-auxiliary path does not support), so it
+travels on the marker and `fit_gllvm` forwards it to
+[`fit_studentt_gllvm`](@ref)'s `nu`. Passing `nu` as a separate keyword alongside
+the marker is an error rather than a silent override. The scale `σ` is a **tag
+payload** — it is always estimated (returned as `fit.σ`), so `StudentTFamily(4.0)`
+and `StudentTFamily(4.0, 9.0)` give the same fit; seed it with `σ_init` on the
+named fitter instead.
+
+Student-t is a **no-X** surface: `fit_gllvm` and `gllvm(@formula(y ~ 1), …)` are
+admitted, but covariates, `disp_group`, and row effects are not.
 
 ### Beta-binomial — `BetaBinom()`
 

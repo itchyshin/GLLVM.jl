@@ -1,5 +1,49 @@
 # Check Log
 
+## 2026-08-16 — Student-t no-X surface admit (`fit_gllvm` + `@formula`, ν on the marker)
+
+- **What**: `StudentTFamily` had a complete Laplace engine, an exported marker, a
+  `link_residual` rule, a `simulate` method, and its own test file — but no
+  `_fit_gllvm` arm, so it was unreachable through the unified entry point and hence
+  through no-X `@formula`, which falls through to it. This is the cheapest of the
+  remaining surface admits: one dispatch arm, no new estimand, no new engine.
+- **Design gate (ν is structural, not a payload)**: unlike `NB1` / `BetaBinom`,
+  whose `φ` fields are inert tags, Student-t's `ν` **defines the likelihood** and is
+  held FIXED rather than estimated (joint ν needs a second auxiliary the scalar-aux
+  path does not support). So it is forwarded — `_fit_gllvm(f::StudentTFamily, Y; …) =
+  fit_studentt_gllvm(Y; nu = f.ν, …)` — exactly as `ZIB(N)` forwards its trials
+  count. The marker's **`σ` is** a tag payload: always estimated, never `σ_init`.
+- **Design gate (no silent ν override)**: Julia resolves a duplicated keyword in
+  favour of the splatted one, so a bare `nu = …` alongside the marker would have
+  silently won and contradicted `family`. Verified in the REPL, then fenced: the arm
+  raises a clear `ArgumentError` naming the marker form. This is a deliberate
+  **deviation** from the `ZIB` precedent, which leaves the analogous `N` collision
+  unguarded; `ZIB` is out of lane here and was not touched.
+- **Convenience constructors** (mirrors `NB1()`, C1b): `StudentTFamily() =
+  StudentTFamily(4.0, 1.0)` and `StudentTFamily(ν)`, so the public call need not
+  invent a σ that is never read. ν = 4.0 matches `fit_studentt_gllvm`'s own default.
+- **Formula**: `q == 0` falls through to `fit_gllvm` and there is no Student-t branch
+  in `formula.jl`, so the no-X `@formula` surface opens by construction in the same
+  PR — no #218 → #220 style split was available.
+- **Scope fences (unchanged, still erroring)**: +X (`fit_gllvm_cov` has no
+  `_cov_default_link(::StudentTFamily)`), `disp_group` (clear `ArgumentError` from
+  the generic `_fit_gllvm_grouped`), and `row_eff` (same missing `_cov_*` methods).
+  None of these routes worked before this PR and none is opened by it.
+- **Verify**: focused smoke added to `test/test_studentt.jl` (already in
+  `runtests.jl`) — `fit_gllvm` and `gllvm(@formula(y ~ 1), …)` both return
+  `StudentTFit` with `loglik`/`σ` matching a direct `fit_studentt_gllvm(nu = ν)` to
+  1e-8; `StudentTFamily(ν, 9.0)` matches `StudentTFamily(ν)` (σ payload inert);
+  `StudentTFamily().ν == 4.0`; a different ν gives a different loglik (the marker is
+  really read); the duplicate-`nu` guard throws. Local focused file **28/28 Pass**
+  (22.4 s). Full suite is **GitHub CI**, not this Mac. No rtol widen.
+- **Not claimed**: no bridge change (`src/bridge.jl` not opened), so **no** new
+  R-parity and **no** twin Δ — the twin's `student` route is not benchmarked here and
+  inventing a light Δ was explicitly out of scope. No coverage/ADEMP result. No
+  analytic `studentt_laplace_grad` (still finite-difference Optim; issue #105).
+- **Still OWED**: Student-t +X / `disp_group` / row effects; `bridge.jl` admission
+  and any gllvmTMB parity claim; analytic Laplace gradient; `TweedieED` marker
+  export/admit (unrelated, still open from the NB1 arc).
+
 ## 2026-08-16 — BetaBinom no-X surface admit (`fit_gllvm` + `@formula`, per-trait φ, required `N`)
 
 - **What**: Closes the BetaBinom half of the 2026-08-16 NB1/BetaBinom no-X Identity

@@ -112,7 +112,13 @@ surface, bridge missing-response masks, `confint` under X, and any gllvmTMB
 parity claim all remain OWED (the twin has no ZIB, so a light Δ would be
 invented, not owed).
 `student` / `com_poisson` promoted on native engine + package
-tests (`test_studentt.jl`, `test_com_poisson.jl`). `truncated_poisson` =
+tests (`test_studentt.jl`, `test_com_poisson.jl`). Since the 2026-08-16 Student-t
+surface admit the **no-X** `student` surface is reachable through `fit_gllvm(Y; family = StudentTFamily(ν))`
+and `@formula(y ~ 1)`; the FIXED `ν` travels on the marker (a separate `nu`
+keyword is rejected) and the marker's `σ` is an inert tag payload. Student-t +X,
+`disp_group`, row effects, `bridge.jl` admission, and any gllvmTMB parity claim
+remain OWED — the twin's `student` route is not benchmarked here, so **no**
+light Δ is invented. `truncated_poisson` =
 zero-truncated Poisson (Identity 2026-08-15; twin fid 10); `truncated_nbinom2`
 = zero-truncated NB2 (Identity 2026-08-15; twin fid 11; Arc1 shared scalar `r`
 ≡ twin `φ`; twin per-trait `log_phi_truncnb2` documented, Arc1b OWED). `lognormal` = one-part lognormal (Identity 2026-08-15; twin fid 3; engine+admit; light RCall Δ / bridge OWED). `censored_poisson` = right-censored Poisson (Identity 2026-08-15; Julia-forward / twin constructor-only; light RCall Δ FORBIDDEN).
