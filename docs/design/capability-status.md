@@ -103,9 +103,14 @@ twin gllvmTMB cut ZIP/ZINB — **no** invent twin light Δ. Status cells stay
 bare MC tokens. `zib` also has a native Julia ZIB+X fitter (`fit_zib_gllvm_cov`)
 with dual shared slopes (`γz`, `γc`), `Λ_z = 0`, and one shared scalar `N::Int`.
 Since #218 / #220 the **no-X** ZIB is reachable through `fit_gllvm(Y;
-family = ZIB(N))` and `@formula(y ~ 1)`; ZIB+X on those surfaces, `bridge.jl`
-admission, `confint` under X, and any gllvmTMB parity claim all remain OWED
-(the twin has no ZIB, so a light Δ would be invented).
+family = ZIB(N))` and `@formula(y ~ 1)`, and since the bridge no-X arc through
+`bridge_fit(; family = "zib", N = …)` with Wald/profile/bootstrap CI and one
+**required shared scalar** trials count `N` (a uniform `p×n` `N` collapses; a
+non-uniform one errors — ZIB is deliberately **out** of
+`_BRIDGE_TRIALS_FAMILIES`, so `cbind_binomial` stays false). ZIB+X on any public
+surface, bridge missing-response masks, `confint` under X, and any gllvmTMB
+parity claim all remain OWED (the twin has no ZIB, so a light Δ would be
+invented, not owed).
 `student` / `com_poisson` promoted on native engine + package
 tests (`test_studentt.jl`, `test_com_poisson.jl`). `truncated_poisson` =
 zero-truncated Poisson (Identity 2026-08-15; twin fid 10); `truncated_nbinom2`
@@ -235,7 +240,13 @@ Same twin surface, transport layer. Status = code + bridge/parity test exist;
   twin is constructor-only, so a light RCall Δ is **forbidden**, not owed
 - ZIB no-X surface admit (`fit_gllvm` #218, `@formula` #220):
   `src/families/fit_gllvm.jl` · `src/formula.jl` · `test/test_zero_inflated.jl` /
-  `test/test_formula.jl` — X on those surfaces + bridge remain OWED
+  `test/test_formula.jl` — X on those surfaces remains OWED
+- ZIB no-X **bridge** admit (Identity
+  `docs/dev-log/decisions/2026-08-16-zib-bridge-identity.md`):
+  `src/bridge.jl` · `test/test_bridge_zib.jl` — `"zib"` is a one-part bridge
+  family with Wald/profile/bootstrap no-X CI and a required shared scalar `N`;
+  ZIB+X on the bridge, `_family_ci(::ZIBCovFit)`, and masks remain OWED; a twin
+  light RCall Δ is **forbidden**, not owed (no twin ZIB)
 - student / com_poisson ledger promote: `test/test_studentt.jl`,
   `test/test_com_poisson.jl` (code already present)
 - REML promote: `src/reml.jl` + bridge `reml=true` + `test/test_reml.jl`
