@@ -79,7 +79,7 @@ supports `LogitLink()` (default), `ProbitLink()`, and `CLogLogLink()`.
 | `DeltaLogNormal()` | ✅ available | logit × identity(log) | two-part Laplace | log-SD `σ` (tag payload) | occurrence × positive lognormal; `fit_gllvm` / named `fit_delta_lognormal_gllvm` |
 | `DeltaGamma()` | ✅ available | logit × log | two-part Laplace | shape `α` (tag payload) | occurrence × positive Gamma; `fit_gllvm` / named `fit_delta_gamma_gllvm` |
 | Beta-hurdle | ✅ available | logit × logit | two-part Laplace | precision `φ` | occurrence × positive Beta; `fit_beta_hurdle_gllvm` |
-| Hurdle-Poisson | ✅ available | logit × log | two-part Laplace | — | occurrence × zero-truncated Poisson; `fit_hurdle_poisson_gllvm` |
+| `HurdlePoisson()` | ✅ available | logit × log | two-part Laplace | — | occurrence × zero-truncated Poisson; `fit_gllvm` / named `fit_hurdle_poisson_gllvm` |
 | Hurdle-NB | ✅ available | logit × log | two-part Laplace | dispersion `r` | occurrence × zero-truncated NB2; `fit_hurdle_nb_gllvm` |
 | ZIP | ✅ available | logit × log | two-part Laplace | — | zero-inflated Poisson; `fit_zip_gllvm` / shared site-X via `fit_zip_gllvm_cov` (separate `γz`/`γc`, `Λz=0`; Julia-forward) |
 | ZINB | ✅ available | logit × log | two-part Laplace | shared scalar `r` | zero-inflated NB2; `fit_zinb_gllvm` / shared site-X via `fit_zinb_gllvm_cov` (separate `γz`/`γc`, `Λz=0`, shared `r`; Julia-forward) |
@@ -89,10 +89,10 @@ supports `LogitLink()` (default), `ProbitLink()`, and `CLogLogLink()`.
 The single-block families with a plain `Distributions` marker — `Normal`,
 `Binomial`, `Poisson`, `NegativeBinomial` (NB2), `Beta`, `Ordinal`, `Gamma`,
 `Exponential` — are reached through the unified `fit_gllvm` entry, as are `NB1`,
-`BetaBinom`, `StudentTFamily`, `DeltaLogNormal`, and `DeltaGamma` via the package's
-own exported markers. Tweedie and the remaining two-part / hurdle families currently
-have dedicated
-`fit_<family>_gllvm` drivers (they carry estimated parameters — `σ`, `α`, `r`,
+`BetaBinom`, `StudentTFamily`, `DeltaLogNormal`, `DeltaGamma`, and
+`HurdlePoisson` via the package's own exported markers. Tweedie and the remaining
+two-part / hurdle families currently have dedicated
+`fit_<family>_gllvm` drivers (they carry estimated parameters — `r`,
 `φ`, the Tweedie power — or trial counts that do not yet share a single
 `Distributions` marker). Calling `fit_gllvm` with an unimplemented family raises a
 clear error listing what is currently available.
@@ -376,7 +376,8 @@ per-species intercept (`β_z`, i.e. `Λ_z = 0`). Each has a dedicated fitter:
 fit = fit_delta_lognormal_gllvm(Y; K = 2)   # Y ≥ 0; positive part lognormal, log-SD σ
 fit = fit_delta_gamma_gllvm(Y;     K = 2)   # Y ≥ 0; positive part Gamma, shape α
 fit = fit_beta_hurdle_gllvm(Y;     K = 2)   # proportions; occurrence × positive Beta, precision φ
-fit = fit_hurdle_poisson_gllvm(Y;  K = 2)   # counts; occurrence × zero-truncated Poisson
+fit = fit_gllvm(Y; family = HurdlePoisson(), K = 2)  # counts; occurrence × zero-truncated Poisson
+# named fitter remains: fit_hurdle_poisson_gllvm
 fit = fit_hurdle_nb_gllvm(Y;       K = 2)   # counts; occurrence × zero-truncated NB2, r
 fit = fit_zip_gllvm(Y;             K = 2)   # counts; structural zero × Poisson
 fit = fit_zip_gllvm_cov(Y; X = X,  K = 2)   # ZIP + shared site-X (separate γz/γc; Λz=0)
