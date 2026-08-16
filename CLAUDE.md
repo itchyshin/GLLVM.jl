@@ -118,3 +118,5 @@ non-Gaussian families fast and scalable:
 
 <!-- shinichi-hub -->
 @/Users/z3437171/Dropbox/Github Local/Shinichi/AGENTS.md
+
+@AGENTS.md

@@ -204,3 +204,42 @@ defined in §7 of the reference plan.
 > Read first — personal operating contract & second brain (house rules, memory, agents): /Users/z3437171/Dropbox/Github Local/Shinichi/AGENTS.md  (repo rules override the hub where they differ)
 <!-- shinichi-hub -->
 > Read \`~/shinichi-brain/AGENTS.md\` first; this repository's rules override the personal hub where they differ.
+
+<!-- uinit:project:start -->
+This is **GLLVM.jl**.
+<!-- uinit:project:end -->
+
+<!-- uinit:type-scope:start -->
+This project is a **Julia package** (`Project.toml`-based). Development
+follows Pkg.jl conventions; tests run via `Pkg.test()`.
+<!-- uinit:type-scope:end -->
+
+<!-- uinit:twin-boundary:start -->
+R twin: `gllvmTMB` (read-only for engine surgery). JuliaCall bridge coordination
+is allowed; numerical claims require paired live evidence. Mission Control board:
+`/p/gllvmTMB/`.
+<!-- uinit:twin-boundary:end -->
+
+<!-- uinit:roster-routing:start -->
+Neutral roster: `.uinit/roster.tsv`. Rendered agents:
+`.claude/agents/*.md` (Claude), `.codex/agents/*.toml` + `tiers.tsv` (Codex),
+`.cursor/agents/*.md` (Cursor project subagents). Standing review names in the
+table above remain the vocabulary; file stems are the dispatch ids.
+<!-- uinit:roster-routing:end -->
+
+<!-- uinit:guards:start -->
+- Completion-claim discipline — see brain [[DECISIONS]] D-43 (≥2 NOT-DONE verdicts withhold the claim; a task isn't "done" on say-so).
+- Smoke-first — see brain `protocols/after-task.md` (no fix/feature claim without running the smoke/verification check and showing its output).
+- Own-the-verifier — see brain Principle 1 (the agent that built a thing does not get to be its only judge; run a fresh check or a named review lens before claiming green).
+- Brain-write boundary — see brain [[DECISIONS]] D-37 (never write to the brain vault without explicit approval; stage a draft and propose).
+- After-task discipline — see brain [[DECISIONS]] D-6 / `protocols/after-task.md` (every finished slice closes with a repo-visible after-task report, not just a chat summary).
+- Recovery-over-pdHess — a converged fit is not a validated fit; see brain quantitative-genetics validation discipline (simulation-based recovery/coverage evidence is required before any fitting capability claim).
+<!-- uinit:guards:end -->
+
+<!-- uinit:codex-doctrine:start -->
+## Codex Routing
+
+Scout/read-only slices must route via `codex-tier-run.sh`/`-batch.sh`, never native
+dispatch — native cannot reach the Luna/scout tier; `.toml` `model_reasoning_effort` is
+honored only on native build/ceiling dispatch.
+<!-- uinit:codex-doctrine:end -->
