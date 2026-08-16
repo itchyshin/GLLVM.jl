@@ -30,6 +30,11 @@ distribution used as a marker (the GLM.jl convention):
 - `Ordinal()`  → [`fit_ordinal_gllvm_pertrait`](@ref) — Laplace marginal (ordered categories)
 - `Gamma()`    → [`fit_gamma_gllvm`](@ref) — Laplace marginal (positive continuous; shared shape)
 - `Exponential()` → [`fit_exponential_gllvm`](@ref) — Laplace marginal
+- `StudentTFamily(ν)` → [`fit_studentt_gllvm`](@ref) — Laplace marginal (heavy-tailed
+  continuous; location–scale t, identity link). Like `ZIB`, this is not a zero-payload
+  marker: the FIXED degrees of freedom `ν` is structural and travels on the family
+  instance, forwarded here as the fitter's `nu`, so passing `nu` as a separate keyword
+  is an error. The marker's `σ` field is a tag payload — the scale is always estimated.
 - `GeneralizedPoisson1(α)` → [`fit_gp1_gllvm`](@ref) — Laplace marginal (GP-1 counts, signed dispersion)
 - `ZIB(N)` → [`fit_zib_gllvm`](@ref) — zero-inflated binomial (Julia-forward). Unlike the
   other markers, `ZIB` carries the shared trials count, so `N` travels on the family
@@ -84,6 +89,7 @@ fit_gllvm(Y; family = NegativeBinomial(1.0, 0.5), K = 2)          # per-species 
 fit_gllvm(Y; family = Beta(), K = 2)                              # per-species φ (default)
 fit_gllvm(Y; family = NB1(),  K = 2)                              # per-species linear-variance φ
 fit_gllvm(Y; family = BetaBinom(), K = 2, N = trials)             # per-species φ; N is p×n, required
+fit_gllvm(Y; family = StudentTFamily(4.0), K = 2)                 # heavy-tailed continuous, ν fixed
 fit_gllvm(Y; family = Normal(), K = 2, pervar = true)             # per-species variance
 ```
 """
@@ -179,6 +185,19 @@ _fit_gllvm(::Beta,     Y::AbstractMatrix; kwargs...) = fit_beta_gllvm(Y; kwargs.
 _fit_gllvm(::Ordinal,  Y::AbstractMatrix; kwargs...) = fit_ordinal_gllvm_pertrait(Y; kwargs...)
 _fit_gllvm(::Gamma,    Y::AbstractMatrix; kwargs...) = fit_gamma_gllvm(Y; kwargs...)
 _fit_gllvm(::Exponential, Y::AbstractMatrix; kwargs...) = fit_exponential_gllvm(Y; kwargs...)
+# `StudentTFamily` is not a zero-payload marker. The FIXED degrees of freedom `ν`
+# is STRUCTURAL — it defines the likelihood and is not estimated — so it travels on
+# the family instance (as `ZIB`'s trials count does) and is forwarded as `nu`. A
+# separate `nu` keyword would silently win over the marker (Julia resolves a
+# duplicated keyword in favour of the splatted one), so it is rejected rather than
+# left to contradict `family` in silence. The marker's `σ` is a tag payload: the
+# scale is always estimated, seeded only by `σ_init`.
+function _fit_gllvm(family::StudentTFamily, Y::AbstractMatrix; kwargs...)
+    haskey(kwargs, :nu) && throw(ArgumentError(
+        "fit_gllvm: the Student-t degrees of freedom travels on the family marker — " *
+        "pass family = StudentTFamily($(kwargs[:nu])) rather than a separate nu keyword"))
+    return fit_studentt_gllvm(Y; nu = family.ν, kwargs...)
+end
 _fit_gllvm(::GeneralizedPoisson1, Y::AbstractMatrix; kwargs...) = fit_gp1_gllvm(Y; kwargs...)
 _fit_gllvm(::ZIPoisson, Y::AbstractMatrix; kwargs...) = fit_zip_gllvm(Y; kwargs...)
 _fit_gllvm(::ZINegBin, Y::AbstractMatrix; kwargs...) = fit_zinb_gllvm(Y; kwargs...)
@@ -196,7 +215,7 @@ _fit_gllvm(family::ZIB, Y::AbstractMatrix; kwargs...) =
 # Clear error for families not yet implemented (hurdle, remaining zero-inflated, …).
 _fit_gllvm(family, Y::AbstractMatrix; kwargs...) = throw(ArgumentError(
     "fit_gllvm: family $(nameof(typeof(family))) is not implemented yet " *
-    "(available: Normal, Binomial, Poisson, TruncatedPoisson, CensoredPoisson, TruncatedNegBin2, Lognormal, NegativeBinomial, NB1, Beta, BetaBinom, Ordinal, Gamma, Exponential, GeneralizedPoisson1, ZIPoisson, ZINegBin, ZIB)"))
+    "(available: Normal, Binomial, Poisson, TruncatedPoisson, CensoredPoisson, TruncatedNegBin2, Lognormal, NegativeBinomial, NB1, Beta, BetaBinom, Ordinal, Gamma, Exponential, StudentTFamily, GeneralizedPoisson1, ZIPoisson, ZINegBin, ZIB)"))
 
 # --- grouped-dispersion routing keyed on the family marker. ------------------
 _fit_gllvm_grouped(::NegativeBinomial, Y::AbstractMatrix; kwargs...) =

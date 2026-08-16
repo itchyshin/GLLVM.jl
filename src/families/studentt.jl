@@ -29,19 +29,36 @@
 # which is what makes the generic scalar-aux implicit-gradient path AD-clean.
 
 """
-    StudentTFamily(ν, σ)
+    StudentTFamily(ν = 4.0, σ = 1.0)
 
 Student-t (heavy-tailed continuous) family marker: location–scale t with FIXED
 degrees of freedom `ν > 0` and scale `σ > 0`, identity link (location `μ = η`),
-so `(y − η)/σ ~ t_ν`. Used as the family argument to the generic Laplace core.
-`σ` is the dispersion (estimated on a log scale via the scalar-auxiliary implicit
-path); `ν` is held fixed (a fitter kwarg). As `ν → ∞` it tends to `Normal(η, σ²)`.
+so `(y − η)/σ ~ t_ν`. Used as the family argument to the generic Laplace core and
+to [`fit_gllvm`](@ref):
+
+```julia
+fit_gllvm(Y; family = StudentTFamily(), K = 2)      # ν = 4 (default tail weight)
+fit_gllvm(Y; family = StudentTFamily(7.0), K = 2)   # lighter tail
+```
+
+The two fields play **different** roles on the public route. `ν` is structural: it
+defines the likelihood, is held fixed rather than estimated, and travels on the
+marker (`fit_gllvm` forwards it as the fitter's `nu`). `σ` is a **tag payload** —
+the scale is always estimated, so `StudentTFamily(4.0, 1.0)` and
+`StudentTFamily(4.0, 9.0)` give the same fit; pass `σ_init` to
+[`fit_studentt_gllvm`](@ref) to seed it. Internally the Laplace kernels construct
+their own per-iteration `StudentTFamily(ν, σ)` markers, which is what the `σ`
+field is for. As `ν → ∞` the family tends to `Normal(η, σ²)`.
 """
 struct StudentTFamily{T<:Real}
     ν::T
     σ::T
 end
 StudentTFamily(ν::Real, σ::Real) = (νσ = promote(float(ν), float(σ)); StudentTFamily(νσ[1], νσ[2]))
+# Public-call convenience (mirrors `NB1()`): σ is never read on the `fit_gllvm`
+# route, and ν defaults to the same 4.0 as `fit_studentt_gllvm`'s `nu`.
+StudentTFamily(ν::Real) = StudentTFamily(float(ν), 1.0)
+StudentTFamily() = StudentTFamily(4.0, 1.0)
 
 default_link(::StudentTFamily) = IdentityLink()
 
