@@ -1,36 +1,55 @@
 # Overnight catch-up handoff — 2026-08-16
 
 **Operator:** Cursor (Shinichi AFK; merge-on-green authorized)  
-**Lane:** `cursor/family-admit-overnight-20260815`  
+**Lane:** `cursor/family-admit-overnight-20260815` → handoff update on `cursor/overnight-catchup-handoff-20260816`  
 **Worktree:** `.worktrees/gllvmjl-admit-conductor-20260815` (from `origin/main`; not Dropbox fork)
 
-## SHAs
+## Merge SHAs (final)
 
-| Item | SHA | Note |
-|---|---|---|
-| #213 lognormal engine merge | `7954cdb7` | done before this shift |
-| #208 ZIB+X Identity merge | `32eb3dc7` | done before this shift |
-| #212 censored_poisson engine merge | `ffa92aea` | done before this shift |
-| #211 ZIB+X engine merge | `65f5400d` | head `4f63c22a`; Julia+Documenter green |
-| ADMIT PR #215 tip (pre-merge) | `f2e27536` | lognormal + censored_poisson + ZIB+X non-OWED |
-| `origin/main` at handoff write | `65f5400d` | ADMIT not yet on main until #215 merges |
+| PR | Merge SHA | Merged at (UTC) | What |
+|---|---|---|---|
+| **#213** | `7954cdb77cc5c1844e9352908d3e53e41b064013` | 2026-08-15T20:49:41Z | lognormal Identity→Engine |
+| **#208** | `32eb3dc769d464492827ace4814c17ee958043fe` | 2026-08-15T20:52:54Z | ZIB+X Identity (docs) |
+| **#212** | `ffa92aeaf7e4ba0e6e039493d526efbaeb45b86f` | 2026-08-15T20:57:56Z | censored_poisson engine |
+| **#211** | `65f5400d355ae819b8b434cefe7182cf5575586d` | 2026-08-15T22:30:57Z | ZIB+X cov engine |
+| **#215** | `c4d6d5bf7dde1ae7511654c3f7bcdd57a634f4dd` | 2026-08-15T23:06:33Z | conductor ADMIT (non-OWED) |
 
-## Done this overnight slice
+`origin/main` tip after #215: **`c4d6d5bf`**.
 
-1. Confirmed **#211** full Julia+Documenter green → merged as `65f5400d` (auto-merge / prior waiter; verified here).
-2. **ADMIT wiring** on PR **#215** (supersedes closed conflicting **#214**):
-   - `src/GLLVM.jl` / `fit_gllvm.jl` / `test/runtests.jl` for lognormal + censored_poisson
-   - ZIB+X non-OWED: export `fit_zib_gllvm_cov` / `ZIBCovFit`, `test_zib_x_identity.jl`, `postfit.jl` helpers, Sol-approved Julia-forward ledger sentence
-   - **Not** wired (OWED): twin light Δ; `bridge.jl`; ZIB no-X `fit_gllvm` / `@formula` / bridge
-3. Focused verifies (prior overnight + this tip): lognormal 16/16; censored_poisson 46/46; ZIB+X identity 23/23.
+## ZIB+X ADMIT status — intentionally OWED (not missing)
 
-## Morning next-3
+Non-OWED choke points **landed in #215** (not deferred as a gap):
 
-1. `gh pr checks 215` — if all Julia + Documenter green, `gh pr merge 215 --merge`; confirm merge SHA on `origin/main`.
-2. `git fetch origin main && julia --project=. -e 'using Pkg; Pkg.test()'` if CI was mixed or Windows was the slow peer.
-3. Schedule **no-X ZIB** arc (export `ZIB` + `fit_gllvm` / `@formula` / bridge) **before** any X admit on those surfaces; leave twin Δ alone; optional Opus re-CLEAR censored ENGINE-GATE 4.
+- export `fit_zib_gllvm_cov` / `ZIBCovFit`
+- `test/runtests.jl` → `test_zib_x_identity.jl`
+- optional `postfit.jl` helpers + Sol-approved ledger note
+
+**Intentionally fenced / morning OWED** (do **not** open a leapfrog PR):
+
+- twin light Δ / inventing R parity
+- `bridge.jl` for `zib` (no-X first, then X) — Identity R2
+- `fit_gllvm` / `@formula` for ZIB — no-X surface must land before any X admit; `ZIB` marker not exported for formula dispatch yet
+
+See `docs/dev-log/handover/2026-08-15-zib-x-ADMIT.md`. Handovers **forbid** non-OWED wiring of those surfaces; treat as **morning OWED**, not “missing admit.”
+
+## Done overnight
+
+1. Engines + Identity on main: #208, #211, #212, #213.
+2. Conductor ADMIT **#215** merged: lognormal + censored_poisson (`GLLVM.jl` / `fit_gllvm` / `runtests`) + ZIB+X non-OWED exports/tests.
+3. Documenter green on #215 and on main push for `c4d6d5bf`.
+4. Focused verifies (pre-merge): lognormal 16/16; censored_poisson 46/46; ZIB+X identity 23/23.
+
+## CI note (honest)
+
+#215 merge landed with **Documenter SUCCESS**; the full Julia matrix on the PR head / main push was still running at merge time (long suite). Morning must treat **main CI run for `c4d6d5bf`** as the verification gate — do not claim Workflow-Q green until that matrix finishes.
+
+## Morning next-3 (gllvmTMB capability parity)
+
+1. **Verify main Julia CI** for merge `c4d6d5bf` (`gh run view 31913877999` / `gh run list --branch main --limit 5`). If red, fix cause — no silent rtol widen. If still running, wait; Windows is usually the slow peer.
+2. **Schedule no-X ZIB arc** (export `ZIB` marker + `fit_gllvm` / `@formula` / bridge availability) **before** any ZIB+X admit on those surfaces; leave twin light Δ alone until the parity harness asks.
+3. **Capability ledger / Rose** — confirm `docs/design/capability-status.md` rows for `lognormal` + `censored_poisson` match engine+admit on main; optional Opus re-CLEAR censored ENGINE-GATE 4; do not invent bridge Δ for Julia-forward families.
 
 ## Fences
 
-- No invented twin Δ. No silent rtol widen. Stage by name only. No force-push.
+- No invented twin Δ. No silent rtol widen. Stage by name only. No force-push. No Dropbox fork.
 - Do not touch truncated_nbinom2 / Phylo lanes unless their owner hands off.
