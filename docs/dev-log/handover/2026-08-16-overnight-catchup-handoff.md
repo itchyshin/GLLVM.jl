@@ -14,7 +14,7 @@
 | **#211** | `65f5400d355ae819b8b434cefe7182cf5575586d` | 2026-08-15T22:30:57Z | ZIB+X cov engine |
 | **#215** | `c4d6d5bf7dde1ae7511654c3f7bcdd57a634f4dd` | 2026-08-15T23:06:33Z | conductor ADMIT (non-OWED) |
 
-`origin/main` tip after #215: **`c4d6d5bf`**.
+`origin/main` after #215: **`c4d6d5bf`**; after handoff #216: **`ef332643`**.
 
 ## ZIB+X ADMIT status — intentionally OWED (not missing)
 
@@ -41,12 +41,16 @@ See `docs/dev-log/handover/2026-08-15-zib-x-ADMIT.md`. Handovers **forbid** non-
 
 ## CI note (honest)
 
-#215 merge landed with **Documenter SUCCESS**; the full Julia matrix on the PR head / main push was still running at merge time (long suite). Morning must treat **main CI run for `c4d6d5bf`** as the verification gate — do not claim Workflow-Q green until that matrix finishes.
+- #215 merge `c4d6d5bf` landed with **Documenter SUCCESS** before the full Julia matrix finished.
+- Main CI run `31913877999` for `c4d6d5bf`: **macOS + Julia 1.10 SUCCESS**; **ubuntu-latest + windows CANCELLED** when handoff PR **#216** (`ef332643`) pushed to main (~1h33m).
+- PR-branch CI `31913747586` for #215: same partial pattern (macOS + 1.10 green; peers cancelled).
+- Handoff doc itself: PR **#216** merge `ef3326435571dd233b90a2e88e8c9aa9ccd03b13`.
+- Do **not** claim full-matrix Workflow-Q green for #215; morning verifies the **current** main CI tip.
 
 ## Morning next-3 (gllvmTMB capability parity)
 
-1. **Verify main Julia CI** for merge `c4d6d5bf` (`gh run view 31913877999` / `gh run list --branch main --limit 5`). If red, fix cause — no silent rtol widen. If still running, wait; Windows is usually the slow peer.
-2. **Schedule no-X ZIB arc** (export `ZIB` marker + `fit_gllvm` / `@formula` / bridge availability) **before** any ZIB+X admit on those surfaces; leave twin light Δ alone until the parity harness asks.
+1. **Verify current main Julia CI** (`gh run list --branch main --limit 5`; watch run after `ef332643` / successor tip). If cancelled again by a newer push, re-run the tip once — no silent rtol widen. Prefer green Julia 1.10 + macOS + ubuntu before trusting Windows as optional slow peer.
+2. **Schedule no-X ZIB arc** (export `ZIB` marker + `fit_gllvm` / `@formula` / bridge availability) **before** any ZIB+X admit on those surfaces; leave twin light Δ alone until the parity harness asks. ZIB+X non-OWED ADMIT is **done** in #215 — remaining surfaces are **intentionally OWED**, not missing.
 3. **Capability ledger / Rose** — confirm `docs/design/capability-status.md` rows for `lognormal` + `censored_poisson` match engine+admit on main; optional Opus re-CLEAR censored ENGINE-GATE 4; do not invent bridge Δ for Julia-forward families.
 
 ## Fences
