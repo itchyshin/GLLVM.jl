@@ -88,6 +88,48 @@
   `_fit_gllvm_grouped(::BetaBinom)` plus the required p×n trials `N` boundary
   guard, Identity C3); `TweedieED` marker export/admit; scalar-`N` convenience.
 
+## 2026-08-16 — ZIB **no-X bridge** engine (Identity #229, B1–B5)
+
+- **What**: `bridge_fit(; family = "zib", N = …)` now routes `fit_zib_gllvm`.
+  `"zib"` is a real family key with four aliases (`zib`, `zibinomial`,
+  `zero_inflated_binomial`, `zi_binomial`), joins `_BRIDGE_ONEPART_FAMILIES`, and
+  gains a no-X dispatch arm returning the flat contract plus `beta_zero` and
+  `trials`. **No-X only** — `"zib"` stays out of `_BRIDGE_X_FAMILIES`.
+- **Trials (B2)**: new `_bridge_zib_trials` normalises the boundary `N` to ONE
+  shared `Int`. Scalars round; a `p×n` `N` is admitted **only if uniform**, then
+  collapsed; unequal entries raise (never a silent `N[1, 1]`); `N === nothing`
+  raises — the binomial `fill(1, p, n)` default would silently select the
+  zero-inflated Bernoulli, where `(βz, βc)` is aliased. `"zib"` deliberately
+  stays **out** of `_BRIDGE_TRIALS_FAMILIES`, so `cbind_binomial` reports false.
+- **Masks (B3)**: unwired (`fit_zib_gllvm` has no `mask` kwarg), with a
+  family-named throw mirroring the ZIP/ZINB arms.
+- **CI (B4)**: no-X routes all three methods through the existing
+  `_family_ci(::ZIBFit)`; `N = nothing` is passed to the CI helper because ZIB's
+  trials count lives on the fit object. `ci_x_*` stays false — `ZIBCovFit` is in
+  neither `_CIFit` nor the `_bridge_compute_ci_cov` Union, so the +X arc must add
+  that engine (or fence itself) before it can ship.
+- **Capability row (B5)**: took the Identity's *preferred* resolution — new
+  `_BRIDGE_NO_SIMULATE_FAMILIES = ("zip", "zinb", "zib")` narrows the
+  `postfit_simulate` column only. No `simulate` method exists for any of the
+  three zero-inflated fit types, so this makes all three rows honest at once
+  rather than propagating an inherited over-claim. Behaviour is unchanged.
+- **Engine note**: `ZIBFit` carries no `link` field and no link-residual
+  extractor, so this arm calls `_bridge_assemble` directly (like the ZINB arm)
+  with `link = "LogitLink"` and the stated `ΛcΛcᵀ` fallback, rather than
+  `_bridge_assemble_ng`, which reads `fit.link`.
+- **Verify**: new `test/test_bridge_zib.jl` (family keys + list membership,
+  trials contract incl. every rejection path, no-X point route vs
+  `fit_zib_gllvm` at 1e-8, uniform-matrix `N` bit-equality, alias route, loud
+  rejection of missing/non-uniform `N` / out-of-range `y` / mask / X / X_lv /
+  mixed-family, no-X Wald CI vs native `confint` at 1e-8) plus the updated
+  `test/test_bridge_capabilities.jl` golden. Mac-LIGHT: **no local `Pkg.test()`**
+  — GitHub CI is the verifier. No tolerance widened.
+- **Still OWED**: ZIB+X on the bridge; `_family_ci(::ZIBCovFit)` and the
+  `_bridge_compute_ci_cov` Union; bridge masks for any zero-inflated family;
+  `simulate` for ZIP/ZINB/ZIB. Twin light RCall Δ is **forbidden**, not owed —
+  `gllvmTMB` has no ZIB, so a Δ would be invented. No parity, ADEMP, or coverage
+  claim is made.
+
 ## 2026-08-16 — no-X ZIB surface admit (`fit_gllvm` only)
 
 - **What**: Clears the first fence of the ZIB+X ADMIT route (b) — plain ZIB is now

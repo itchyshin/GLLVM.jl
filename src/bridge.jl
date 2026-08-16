@@ -44,6 +44,8 @@
 #   beta_cov     :: Vector{Float64}   — non-Gaussian-X per-trait intercepts
 #   gamma        :: Vector{Float64}   — non-Gaussian-X shared covariate slopes
 #   gamma_status :: Vector{String}    — "estimated"/"fixed" for gamma
+#   beta_zero    :: Vector{Float64}   — zero-inflated structural-zero logits βz
+#   trials       :: Int               — ZIB shared scalar trials count N
 #
 # Optional predictor-informed latent-score keys:
 #   lv_effects        :: Matrix{Float64} — Gaussian-X_lv trait effects Λ*alpha_lv'
@@ -146,10 +148,12 @@ function _bridge_family_key(family::AbstractString)
     key in ("zip", "zipoisson", "zero_inflated_poisson", "zi_poisson") && return "zip"
     key in ("zinb", "zinegbin", "zero_inflated_negbin", "zi_negbin",
             "zinegativebinomial", "zero_inflated_nbinom2") && return "zinb"
+    key in ("zib", "zibinomial", "zero_inflated_binomial", "zi_binomial") && return "zib"
     throw(ArgumentError(
         "bridge_fit: unsupported family \"$family\"; this engine build supports " *
         "gaussian, poisson, binomial, binomial_probit, binomial_cloglog, " *
-        "negbinomial (nbinom2), nb1, beta, gamma, betabinomial, ordinal, ordinal_probit, zip, zinb"))
+        "negbinomial (nbinom2), nb1, beta, gamma, betabinomial, ordinal, ordinal_probit, " *
+        "zip, zinb, zib"))
 end
 
 const _BRIDGE_ONEPART_FAMILIES = (
@@ -167,6 +171,7 @@ const _BRIDGE_ONEPART_FAMILIES = (
     "ordinal_probit",
     "zip",
     "zinb",
+    "zib",
 )
 
 const _BRIDGE_BINOMIAL_FAMILIES = ("binomial", "binomial_probit", "binomial_cloglog")
@@ -375,6 +380,12 @@ file header for the key->type contract). `y` is a `p x n` response matrix
 (traits x units); `d` is the latent dimension `K`; `N` (Binomial trials, `p x n`
 or a scalar) is forwarded to the Binomial fitter.
 
+`family = "zib"` reads `N` differently: the zero-inflated binomial carries ONE
+shared scalar trials count, so `N` is **required** (there is no safe default —
+`N = 1` is the zero-inflated Bernoulli, whose two intercepts are aliased) and a
+`p x n` `N` is accepted only when every entry is equal, then collapsed to that
+scalar. The value actually used is returned as `trials`.
+
 Confidence intervals are routed through `options` (all optional):
   - `"ci_method"` ∈ {`"none"` (default), `"wald"`, `"profile"`, `"bootstrap"`}.
     When not `"none"`, the returned tuple gains the `ci_*` keys documented in the
@@ -489,6 +500,54 @@ const _BRIDGE_NO_CI_FAMILIES = (_BRIDGE_PERTRAIT_ORDINAL_FAMILIES...,)
 # beta-binomial (no `residuals`/`simulate` method for BetaBinomialFit or its
 # grouped/grouped_cov siblings yet).
 const _BRIDGE_NO_SCALAR_POSTFIT_FAMILIES = (_BRIDGE_PERTRAIT_ORDINAL_FAMILIES..., "betabinomial")
+# One-part families with `residuals` but NO `simulate` method on this engine: the
+# three zero-inflated fit types. They share the scalar-mean `residuals` extractor,
+# so the broader set above would advertise `postfit_simulate` for a route that
+# does not exist; this narrows that one column without changing any behaviour.
+const _BRIDGE_NO_SIMULATE_FAMILIES = ("zip", "zinb", "zib")
+
+# ZIB carries ONE shared scalar trials count `N::Int` (`struct ZIB`), not the
+# per-observation `cbind(success, failure)` counts the binomial / beta-binomial
+# routes use. Normalise the bridge's `N` argument to that scalar:
+#   * a number            → rounded to Int;
+#   * a p×n array         → admitted ONLY if every entry is equal (R's
+#                           `cbind(success, failure)` naturally builds a matrix),
+#                           then collapsed to that shared value;
+#   * unequal entries     → error naming the shared-scalar contract. Taking
+#                           `N[1, 1]` would silently fit a different model.
+#   * `nothing`           → error. The binomial default `N = 1` is NOT safe here:
+#                           at N = 1 ZIB is the zero-inflated Bernoulli, where the
+#                           structural-zero and success intercepts are aliased, so
+#                           the optimiser reports an arbitrary point on a flat
+#                           ridge with no warning.
+function _bridge_zib_trials(N, p::Integer, n::Integer)
+    N === nothing && throw(ArgumentError(
+        "bridge_fit: family=\"zib\" requires an explicit trials count N. ZIB uses " *
+        "ONE shared scalar N for every observation, and there is no safe default: " *
+        "N = 1 is the zero-inflated Bernoulli, whose structural-zero and success " *
+        "intercepts are not separately identified. Pass N as a scalar, or as a " *
+        "$(p)×$(n) array whose entries are all equal."))
+    if N isa Number
+        Ni = round(Int, N)
+        Ni >= 1 || throw(ArgumentError(
+            "bridge_fit: family=\"zib\" needs trials N >= 1; got $(Ni)"))
+        return Ni
+    end
+    A = Matrix(N)
+    size(A) == (p, n) || throw(ArgumentError(
+        "bridge_fit: family=\"zib\" trials N must be a scalar or a $(p)×$(n) array; " *
+        "got $(size(A))"))
+    Ai = round.(Int, A)
+    Ni = first(Ai)
+    all(==(Ni), Ai) || throw(ArgumentError(
+        "bridge_fit: family=\"zib\" requires ONE shared scalar trials count N, but " *
+        "the supplied $(p)×$(n) N has unequal entries (min $(minimum(Ai)), " *
+        "max $(maximum(Ai))). Per-observation cbind(success, failure) trials are " *
+        "not the ZIB contract; pass a uniform N."))
+    Ni >= 1 || throw(ArgumentError(
+        "bridge_fit: family=\"zib\" needs trials N >= 1; got $(Ni)"))
+    return Ni
+end
 
 function _bridge_ci_guard_pertrait_ordinal(key::AbstractString, ci_method::AbstractString)
     ci_method == "none" && return nothing
@@ -556,6 +615,10 @@ function bridge_capabilities()
     # ordinal via the cutpoints payload (type "prob"/"class") AND for
     # beta-binomial (the success probability μ), so it uses every one-part family.
     postfit_families = Set(filter(f -> !(f in _BRIDGE_NO_SCALAR_POSTFIT_FAMILIES), onepart))
+    # `simulate` is narrower than `residuals`: the zero-inflated fit types have a
+    # residuals method but no simulate method on this engine.
+    simulate_families = Set(filter(f -> !(f in _BRIDGE_NO_SIMULATE_FAMILIES),
+                                   collect(postfit_families)))
     predict_families = Set(onepart)
     # Ordinal+X point fits are wired; CI under X remains a follow-up for the
     # per-trait ordinal fence. ZIP+X, ZINB+X, and beta-binomial grouped(_cov) route CI.
@@ -585,7 +648,7 @@ function bridge_capabilities()
         postfit_summary = vcat(fill(true, length(onepart)), [true]),
         postfit_predict = vcat([f in predict_families for f in onepart], [true]),
         postfit_residuals = vcat([f in postfit_families for f in onepart], [true]),
-        postfit_simulate = vcat([f in postfit_families for f in onepart], [true]),
+        postfit_simulate = vcat([f in simulate_families for f in onepart], [true]),
         postfit_ordination = vcat(fill(true, length(onepart)), [true]),
         status = vcat(fill("partial", length(onepart)), ["partial"]),
         notes = vcat(
@@ -606,6 +669,8 @@ function bridge_capabilities()
                     "two-part ZIP bridge family (Julia-forward / twin-asymmetric); no-X routes fit_zip_gllvm with Wald/profile/bootstrap CI; complete-response fixed-effect-X routes fit_zip_gllvm_cov (separate γz/γc, Λz=0) with Wald/profile/bootstrap CI under X (finite-difference Hessian); no twin light RCall Δ (twin ZIP cut); route support is narrower than full R-user parity" :
                 f == "zinb" ?
                     "two-part ZINB bridge family (Julia-forward / twin-asymmetric); no-X routes fit_zinb_gllvm with Wald/profile/bootstrap CI and one shared scalar r (log r); complete-response fixed-effect-X routes fit_zinb_gllvm_cov (separate γz/γc, Λz=0, shared scalar r) with Wald/profile/bootstrap CI under X (finite-difference Hessian); no twin light RCall Δ (twin ZINB cut); route support is narrower than full R-user parity" :
+                f == "zib" ?
+                    "two-part ZIB bridge family (Julia-forward / twin-asymmetric); no-X routes fit_zib_gllvm with Wald/profile/bootstrap CI and one shared scalar trials count N (not per-observation cbind); fixed-effect-X, missing-response masks, and CI under X remain follow-ups; no twin light RCall Δ — the twin gllvmTMB has no ZIB, so a Δ would be invented (contrast ZIP/ZINB, which the twin cut); route support is narrower than full R-user parity" :
                 f == "poisson" ?
                     "one-part reduced-rank bridge family; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; predictor-informed latent-score X_lv is wired for complete-response point fits; X_lv Wald B_lv CI payloads are routed; profile/bootstrap X_lv CIs remain follow-ups; route support is narrower than full R-user parity" :
                 f == "binomial" ?
@@ -1176,6 +1241,44 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                    "shared scalar r; no twin light Δ.",
             ci = ci)
         return merge(base, (beta_zero = collect(Float64, fit.βz),))
+    elseif key == "zib"
+        Yi = round.(Int, Yf)
+        M === nothing || throw(ArgumentError(
+            "bridge_fit: missing-response masks are not wired for family=\"zib\" yet"))
+        Ni = _bridge_zib_trials(N, p, n)
+        all(v -> 0 <= v <= Ni, Yi) || throw(ArgumentError(
+            "bridge_fit: family=\"zib\" responses must lie in 0:N (N = $(Ni)); got " *
+            "min $(minimum(Yi)), max $(maximum(Yi))"))
+        fit = fit_zib_gllvm(Yi; K = K, N = Ni)
+        scores = _bridge_scores(() -> getLV(fit, Yi; rotate = true))
+        ci = ci_method == "none" ? nothing :
+             _bridge_compute_ci_ng(fit, Float64.(Yi), nothing, ci_method, ci_level,
+                                   ci_nboot, ci_seed; mask = nothing)
+        # ZIBFit carries no `link` field and no link-residual extractor, so build
+        # Sigma/correlation/communality from the shared block ΛcΛcᵀ directly (the
+        # same honest fallback _bridge_assemble_ng applies elsewhere) and name the
+        # count-part link explicitly.
+        L = Matrix{Float64}(getLoadings(fit; rotate = true))
+        Σ = L * L'; Σ = (Σ + Σ') ./ 2
+        corr = _bridge_corr_from_sigma(Σ)
+        comm = ones(Float64, p)
+        base = _bridge_assemble(fit, "zib", "zib_rr", traits, units;
+            alpha = collect(Float64, fit.βc),
+            dispersion = fill(NaN, p),
+            sigma_eps = NaN,
+            link = fill(_bridge_link_name(LogitLink()), p), Sigma = Σ, corr = corr,
+            comm = comm, scores = scores, df = _nparams(fit),
+            loglik = fit.loglik, converged = fit.converged,
+            iterations = fit.iterations, loadings = L,
+            note = "ZIB no-X (Julia-forward / twin-asymmetric): structural-zero " *
+                   "logits beta_zero, success-logit intercepts alpha=beta_c, Λz=0, " *
+                   "one shared scalar trials count N (required at the boundary; " *
+                   "not per-observation cbind); Sigma/correlation use the shared " *
+                   "block Lambda*Lambda' only (communality 1); no twin light Δ — " *
+                   "the twin gllvmTMB has no ZIB.",
+            ci = ci)
+        return merge(base, (beta_zero = collect(Float64, fit.βz),
+                            trials = Ni))
     end
     throw(ArgumentError("bridge_fit: unhandled family key \"$key\""))  # unreachable
 end
