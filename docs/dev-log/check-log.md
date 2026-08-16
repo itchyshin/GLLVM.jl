@@ -1,6 +1,21 @@
 # Check Log
 
 
+## 2026-08-16 — `fit_tweedie_gllvm_grouped` false-convergence (OWED from #236)
+
+Lane `cursor/tweedie-grouped-engine-health-20260816`. Base `origin/main` @
+`cb3c8716` (#236). Ports `_tweedie_log_offset` + `_tweedie_verdict` into
+`fit_tweedie_gllvm_grouped` — the three defects the #236 PR note left OWED
+(warm start `log(max(Y, 1e-6))`, bare `1e12` sentinel, naked `Optim.converged`).
+Tweedie block of `grouped_dispersion.jl` only; no other family, no `fit_gllvm`
+bare-marker admit, no `bridge.jl`. New
+`test/test_tweedie_grouped_engine_health.jl`: one-group power-start sweep on the
+shipped cell must agree with itself and with `fit_tweedie_gllvm`; per-species
+sweep on the existing grouped smoke cell must agree and stay interior. Local
+Mac-LIGHT: new file **47/47 Pass** (3m35.7s); blast
+`test_tweedie.jl` + `test_grouped_dispersion_tweedie_nb1.jl` **39/39 Pass**
+(1m13.2s). Full suite = GitHub CI. No rtol widen, no seed change.
+
 ## 2026-08-16 — ZIP no-X bridge arm fixed (`fit.link` on a `ZIPFit`)
 
 Lane `cursor/zip-nox-bridge-fix-20260816`. Base `origin/main` @ `7254edda` (#233).

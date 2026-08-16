@@ -23,8 +23,16 @@ All notable changes to GLLVM.jl are documented here.
   rather than the sentinel) and warn. A power-start sweep over
   `p_init ∈ {1.1 … 1.9}` now agrees to 8 significant figures where it previously
   spanned 9 orders of magnitude. Pinned by
-  `test/test_tweedie_engine_health.jl`. **`fit_tweedie_gllvm_grouped` still
-  carries the same three defects and is not fixed here.**
+  `test/test_tweedie_engine_health.jl`.
+- **`fit_tweedie_gllvm_grouped` reported `converged = true` at the same class
+  of non-maxima.** It carried the three defects #236 closed on the scalar
+  fitter: `log(max(Y, 1e-6))` warm start, a bare `1e12` failure sentinel, and
+  a naked `Optim.converged` verdict. It now uses `_tweedie_log_offset` and
+  `_tweedie_verdict`. A one-group power-start sweep on the shipped cell agrees
+  with `fit_tweedie_gllvm`, and a per-species sweep on the existing grouped
+  smoke cell agrees with itself. Pinned by
+  `test/test_tweedie_grouped_engine_health.jl`. The `fit_gllvm` bare-marker
+  admit stays shut.
 - **Every non-Gaussian Wald confidence-interval standard error was silently
   corrupted.** The observed-information finite-difference Hessian (`_fd_hessian`,
   backing `confint(fit, Y; method=:wald)` / `_family_wald` for Poisson / Binomial /
