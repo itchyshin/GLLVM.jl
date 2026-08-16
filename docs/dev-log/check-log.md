@@ -11237,3 +11237,53 @@ Rose fence: docs-only, no engine code, no ledger row touched. No twin `gllvmTMB`
 light Δ invented and no R-parity claim earned — this arc changes no bridge
 behaviour. No ADEMP or coverage claimed. #185 / #186 not re-opened. `TweedieED`
 (the third unexported marker) recorded as out of scope with its own G0.
+
+## 2026-08-16 - ZIB bridge Identity (Arc 0, docs-only)
+
+Branch `docs/zib-bridge-identity-20260816` from `origin/main` @ `ef96463b`
+(post-#226). Mac-light, docs-only: one new decision note, no engine code.
+`src/bridge.jl` and every `src/` / `test/` file untouched — PR #227 owns the
+`fit_gllvm` / `@formula` surfaces in parallel.
+
+Note: `docs/dev-log/decisions/2026-08-16-zib-bridge-identity.md`. Settles the
+OWED bridge admission that #208's amendment R2 fenced (route **(b)**: no-X
+first) and that the ZIB+X ADMIT handover left as conductor item 3.
+
+Five locks: **B1** no-X only — `"zib"` becomes a real family key in
+`_BRIDGE_ONEPART_FAMILIES` with a four-alias row, and stays out of
+`_BRIDGE_X_FAMILIES`. **B2** trials travel as a shared scalar `N::Int`,
+**required** at the boundary, with a `p×n` matrix admitted only when uniform and
+then collapsed — never `N[1,1]`; `zib` stays out of `_BRIDGE_TRIALS_FAMILIES` so
+the `cbind_binomial` column does not advertise the per-observation `N_{ts}`
+contract #208 rejected. **B3** masks unwired (no `mask` kwarg on the fitter);
+the family-named throw inside the ZIP/ZINB arms is redundant with the generic
+guard and is not load-bearing. **B4** no-X CI routes all three methods free
+(`_family_ci(::ZIBFit)` already exists), but +X CI is blocked by a **missing
+engine**, not a policy fence. **B5** capability row + a draft `notes` string.
+
+Evidence gathered live at `ef96463b` (probe output pasted into the note, not
+inferred): `"zib"` and `"zero_inflated_binomial"` both throw at
+`_bridge_family_key` — unknown family, not unsupported route; `zib` absent from
+all five `_BRIDGE_*` lists; `ZIBFit <: _CIFit` **true** but
+`ZIBCovFit <: _CIFit` **false** while `ZIPCovFit` / `ZINBCovFit` are both true,
+and `_bridge_compute_ci_cov`'s Union has no `ZIBCovFit` — so a cloned ZIP+X arm
+would `MethodError` on `ci_method != "none"`; postfit coverage identical to
+ZIP/ZINB (`predict`/`residuals`/`getLV` yes, `simulate`/`sigma_y_site`/
+`correlation`/`communality` no).
+
+`N` evidence: `zib_marginal_loglik_laplace` with `Λc = 0`, swept along
+`(1−π)·μ = 0.30`, is flat to ~1e-14 at `N = 1` (−81.77669485045925 /
+...925 / ...926 / ...925 for π = 0.05 / 0.15 / 0.25 / 0.40) versus ~69 nats of
+spread at `N = 6` — at `N = 1` ZIB is the ZI-Bernoulli and `(β^z, β^c)` is
+exactly aliased, so inheriting the binomial route's silent `N = ones` default
+would return an unidentified pair with no warning.
+
+Also recorded: `postfit_simulate` is advertised `true` for `zip` / `zinb` today
+although neither has a `simulate` method — an inherited inaccuracy ZIB would
+propagate; the note's preferred resolution narrows all three at once.
+
+Rose fence: docs-only, no engine code, no ledger row touched. **No twin light
+RCall Δ** — the twin `gllvmTMB` has no ZIB at all, so a Δ would be invented
+(the `censored_poisson` **forbidden** case, not the `lognormal` **owed** one),
+and ZIP's "(twin ZIP cut)" note wording must not be copied. No R-parity, ADEMP,
+or coverage claimed. #208's shared-scalar-`N` lock inherited, not re-opened.
