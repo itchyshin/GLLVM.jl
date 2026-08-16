@@ -1,6 +1,19 @@
 # Check Log
 
 
+## 2026-08-16 — ZIP no-X bridge arm fixed (`fit.link` on a `ZIPFit`)
+
+Lane `cursor/zip-nox-bridge-fix-20260816`. Base `origin/main` @ `7254edda` (#233).
+Pre-existing defect surfaced by the #231 after-task: the no-X ZIP arm assembled
+through `_bridge_assemble_ng`, which reads `fit.link`, but `ZIPFit` has no `link`
+field — `bridge_fit(; y, family = "zip", d)` without `X` threw `type ZIPFit has no
+field link` before any contract check ran. Every prior ZIP bridge test drives the
+`+X` arm, so nothing caught it. Fixed by assembling directly (the ZINB/ZIB pattern):
+shared-block `Σ = ΛcΛcᵀ`, `link = fill("log", p)` matching `_bridge_assemble_zip_cov`,
+note stating the shared-block fallback. New `test/test_bridge_zip_nox.jl` fits the
+no-X route for real (39/39 local). Swept all 15 no-X one-part families — ZIP was the
+only broken arm. No twin Δ; no capability-status row touched.
+
 ## 2026-08-16 — Delta-lognormal / Delta-Gamma no-X `fit_gllvm` surface admit
 
 Lane `cursor/delta-nox-surface-20260816`. Base `origin/main` @ `63cdf892` (#232).
