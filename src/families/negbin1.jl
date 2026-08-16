@@ -18,10 +18,29 @@
 # model when NB2's quadratic tail is wrong. gllvm parameterises NB1 as Var=μ+μ·φ
 # with the SAME φ as here, so the dispersion maps 1:1 across the R↔Julia bridge.
 
-# Marker — only the dispersion φ (Var = μ(1+φ)) is carried.
+"""
+    NB1(φ = 1.0)
+
+Family marker for the negative-binomial type-1 (linear-variance) GLLVM,
+`Var = μ(1 + φ)` — R gllvm's `negative.binomial1`. Pass it to
+[`fit_gllvm`](@ref) or [`gllvm`](@ref):
+
+```julia
+fit_gllvm(Y; family = NB1(), K = 2)     # per-trait φ → NB1GroupedFit
+```
+
+The `φ` field is a **tag payload only**: no public route reads it. `φ` is always
+estimated — per trait by default, matching gllvmTMB's length-`p`
+`log_phi_nbinom1` — and is never used as a starting value. To seed it, pass
+`φ_init` to a named fitter ([`fit_nb1_gllvm`](@ref),
+[`fit_nb1_gllvm_grouped`](@ref)). Internally the Laplace kernels construct their
+own per-iteration `NB1(φ)` markers, which is what the field is for.
+"""
 struct NB1
     φ::Float64
 end
+
+NB1() = NB1(1.0)
 
 # Expected Fisher information of NB1 w.r.t. the mean μ:
 #   I_μ = (1/φ²)[ψ'(r) − E_y ψ'(y+r)],  r = μ/φ,  y ~ NB(r, p = 1/(1+φ)).

@@ -84,6 +84,46 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         @test fg.group == collect(1:p)
     end
 
+    # No-X public surfaces for NB1 (Identity 2026-08-16, C1–C4). Both `fit_gllvm`
+    # and `@formula` with no covariates must reach the SAME per-trait engine the
+    # bridge and the `+ X` route already use — the coerce, not a bare shared-φ arm.
+    @testset "NB1 no-X public surfaces: fit_gllvm and @formula" begin
+        Random.seed!(705)
+        p, K, n = 4, 1, 50
+        β = 0.3 .* randn(p)
+        Λ = 0.3 .* randn(p, K)
+        φtrue = 1.0
+        Z = randn(K, n)
+        μ = exp.(β .+ Λ * Z)
+        Y = [rand(NegativeBinomial(μ[t, i] / φtrue, 1 / (1 + φtrue))) for t in 1:p, i in 1:n]
+
+        # C2: the per-trait coerce, identical to calling the grouped fitter directly.
+        fu = fit_gllvm(Y; family = NB1(), K = K, iterations = 40)
+        direct = fit_nb1_gllvm_grouped(Y; K = K, group = collect(1:p), iterations = 40)
+        @test fu isa GLLVM.NB1GroupedFit
+        @test length(fu.φ) == p && all(fu.φ .> 0)
+        @test fu.group == collect(1:p)
+        @test fu.loglik ≈ direct.loglik atol = 1e-8
+
+        # C1: the marker's φ is a tag payload — never read, never an init.
+        @test fit_gllvm(Y; family = NB1(7.5), K = K, iterations = 40).loglik ≈ fu.loglik atol = 1e-8
+
+        # C2: shared φ stays reachable only through the named fitter, and differs.
+        shared = fit_nb1_gllvm(Y; K = K, iterations = 40)
+        @test shared isa GLLVM.NB1Fit
+        @test shared.φ isa Real
+
+        # An explicit group vector routes the same way; :species is the default.
+        @test fit_gllvm(Y; family = NB1(), K = K, disp_group = :species,
+                        iterations = 40).loglik ≈ fu.loglik atol = 1e-8
+
+        # The `@formula` no-X surface opens by fall-through to `fit_gllvm`.
+        ff = gllvm(@formula(y ~ 1), Y, (; temp = randn(n)); family = NB1(), K = K,
+                   iterations = 40)
+        @test ff isa GLLVM.NB1GroupedFit
+        @test ff.loglik ≈ fu.loglik atol = 1e-8
+    end
+
     @testset "fit_tweedie_gllvm_grouped: tiny per-species smoke (group = 1:p)" begin
         Random.seed!(704)
         p, K, n = 3, 1, 40

@@ -1,5 +1,44 @@
 # Check Log
 
+## 2026-08-16 — NB1 no-X surface admit (`fit_gllvm` + `@formula`, per-trait φ)
+
+- **What**: Engine arc for the NB1 half of the 2026-08-16 NB1/BetaBinom no-X
+  Identity (#226). Exports the `NB1` marker with a docstring and a zero-arg
+  `NB1() = NB1(1.0)` convenience constructor (C1b); extends the API-B coerce in
+  `fit_gllvm` from `(NegativeBinomial, Beta)` to include `NB1`, so
+  `disp_group === nothing` ⇒ `:species` (C2); adds `NB1` to the availability
+  string; rule-3 cascade over the `fit_gllvm` / `formula.jl` docstrings,
+  `docs/src/response-families.md`, `docs/src/tutorial.md`, and README.
+- **Design gate (C2)**: **no** bare `_fit_gllvm(::NB1, …)` arm. The grouped arm
+  `_fit_gllvm_grouped(::NB1, …)` already existed, so with the coerce in place a
+  bare arm would be unreachable *and* would advertise the shared-φ estimand
+  against the per-trait default already shipped on the R bridge (`bridge.jl:990`)
+  and on `@formula`+X (`formula.jl:137`). Shared φ stays reachable only through
+  `fit_nb1_gllvm`, matching the NB2/Beta contract. A code comment fences it.
+- **Design gate (C1)**: the marker's `φ` field is a tag payload — never read on
+  any public route, never used as `φ_init`; φ is always estimated. Verified by
+  `fit_gllvm(Y; family = NB1(7.5))` matching `NB1()` to 1e-8.
+- **Formula**: `gllvm(@formula(y ~ 1), …)` with `q == 0` falls through to
+  `fit_gllvm`, so the no-X `@formula` surface opens in the **same** PR — there is
+  no NB1 branch in `formula.jl` to defer (unlike ZIB #218 → #220).
+- **row_eff**: the coerce turns the previously raw `MethodError` for
+  `row_eff = :random` into the family's clear `ArgumentError`; no working route
+  closes (confirmed in the smoke).
+- **Verify**: focused smoke added to `test/test_grouped_dispersion_tweedie_nb1.jl`
+  (already in `runtests.jl`) — `fit_gllvm(Y; family = NB1(), K)` and
+  `gllvm(@formula(y ~ 1), …)` both return `NB1GroupedFit` with a length-`p`
+  positive φ and a `loglik` matching a direct
+  `fit_nb1_gllvm_grouped(group = 1:p)` call to 1e-8. Local focused file
+  **25/25 Pass** (~33 s). Full suite is **GitHub CI**, not this Mac. No rtol
+  widen.
+- **Not claimed**: no new R-parity or twin Δ (no bridge behaviour changes;
+  `src/bridge.jl` not opened — nothing is owed there, both keys already
+  admitted); no coverage/ADEMP result; shared-φ is **not** available through
+  `fit_gllvm`.
+- **Still OWED**: `BetaBinom` no-X (separate asymmetric arc — needs
+  `_fit_gllvm_grouped(::BetaBinom)` plus the required p×n trials `N` boundary
+  guard, Identity C3); `TweedieED` marker export/admit; scalar-`N` convenience.
+
 ## 2026-08-16 — no-X ZIB surface admit (`fit_gllvm` only)
 
 - **What**: Clears the first fence of the ZIB+X ADMIT route (b) — plain ZIB is now
