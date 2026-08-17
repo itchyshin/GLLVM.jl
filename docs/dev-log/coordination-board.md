@@ -4,6 +4,9 @@
 
 | Lane | Status | Branch / tip | Current handover / pointer | Owns |
 |---|---|---|---|---|
+| **Cursor handover — surface-admit era close** | **ACTIVE / rehydration entrypoint** | `cursor/handover-20260817` from `origin/main` @ `1dafee68` (merge of #248) | handover `docs/dev-log/handover/2026-08-17-cursor-handover.md` | OWED/DONE/RETRACTED/PROTECTED ledger for #205–#248; env + safe-verify + do-not-stage list; Landing State ledger declaring the `handoff_gate.sh` FAIL items. **OWED:** close #247 → AGHQ Stage-1a grid + `k=1` golden (arc-creation first) → near-parity leftovers. **≠ Tweedie `fit_gllvm` admit ≠ invent twin Δ ≠ AGHQ ledger promote ≠ write in the Dropbox checkout.** |
+| **Overnight surface admits #241–#246** | **MERGED** (#241 `5bd236dc` · #242 `fce43de4` · #243 `104ec5a7` · #244 `07a01ede` · #245 `320c83b1` · #246 `51ffa320`) | `main` @ `51ffa320` | handover `docs/dev-log/handover/2026-08-17-overnight-surface-handoff.md` · docs PR [#247](https://github.com/itchyshin/GLLVM.jl/pull/247) | COM-Poisson / Hurdle-NB / Beta-hurdle / Ordered-beta no-X `fit_gllvm` admits + two tag-payload Identities. #247 is the docs record — merge on full green, never `--auto`. |
+| **AGHQ estimator Identity** | **ACCEPTED** (docs-only; MERGED #248) | `main` @ `1dafee68` | decision `docs/dev-log/decisions/2026-08-17-aghq-identity.md` · after-task `docs/dev-log/after-task/2026-08-17-aghq-identity.md` | Both AGHQ ledger rows stay `missing`. Stage-1a live pin `.gllvmTMB_aghq_grid`; `k=1` ≡ Laplace is the first golden test. **≠ rename VA `_gauss_hermite` ≠ stub `aghq=` knob ≠ twin Δ ≠ `src/` engine without a fresh arc.** |
 | **truncated_nbinom2 Identity→Engine** | **ACTIVE / CLOSEOUT** | `cursor/truncated-nbinom2-20260815` from #205 tip `b2b99463` | plan `docs/dev-log/plans/2026-08-15-truncated-nbinom2-identity-engine.md` · after-task `docs/dev-log/after-task/2026-08-15-truncated-nbinom2-identity-engine.md` · LOOP checkpoint cites plan | Identity ACCEPTED + engine + focused **11/11**; FD 1.12e-7; Status `implemented` (shared-`r`; Arc1b OWED). Await #205 merge → rebase → PR. **≠ invent ZIP/ZINB Δ ≠ Phylo #127 ≠ ADEMP ≠ silent rtol**. |
 | **Capability catch-up (post-#204)** | **LANDING (#205)** | `cursor/capability-catchup-20260815` @ `b2b99463` | after-task `docs/dev-log/after-task/2026-08-15-gllvm-jl-capability-catchup.md` · PR https://github.com/itchyshin/GLLVM.jl/pull/205 | truncated_poisson + ledger honesty; Documenter PASS; Julia CI pending. Sole merge-on-green owner = keep-going. |
 | **ZINB+X confint under X** | **MERGED** #204 | `main` @ `2914cc18` | after-task `docs/dev-log/after-task/2026-08-14-zinb-x-confint.md` · Ubuntu one-fit `2026-08-15-zinb-x-confint-ubuntu-onefit.md` | `confint(ZINBCovFit)` + bridge CI lift; `_BRIDGE_NO_CI_X_FAMILIES` empty; `ci_x_*` true for `zinb`. Closed. **≠ twin Δ ≠ ADEMP ≠ per-trait r**. |
@@ -40,11 +43,20 @@
 ## Current Rule
 
 - Rehydrate via **this Active-Lane-Split**, not a single orphaned START HERE bullet.
-- `START HERE (Cursor):` **Capability catch-up STOP** — programme landed on
-  `cursor/capability-catchup-20260815` (after-task
-  `2026-08-15-gllvm-jl-capability-catchup.md`). Next chips: truncated_nbinom2
-  Identity→Engine, or REML `test_reml.jl` promote, or light RCall truncated
-  cell — open a new lane; do not reopen ZIP/ZINB Identity.
+- `START HERE (Cursor):` **`docs/dev-log/handover/2026-08-17-cursor-handover.md`**
+  — the surface-admit-era close, from `origin/main` @ `1dafee68`. It classifies
+  every item OWED / DONE / RETRACTED / PROTECTED and carries the Landing State
+  ledger. **OWED only:** (1) close #247 on full green (`gh pr merge 247 --merge`,
+  never `--auto`); (2) AGHQ Stage-1a grid + `k=1`-≡-Laplace golden test, behind a
+  fresh `/arc-creation` (#248 says the engine campaign is unpaid) — **not** a
+  family or surface admit; (3) near-parity leftovers: unstructured `dep()`,
+  cross-validation, coverage certificate on Totoro/DRAC. Do **not** reopen
+  ZIP/ZINB Identity, and do **not** open a Tweedie `fit_gllvm` admit.
+- Earlier pointer, superseded but not orphaned: **Capability catch-up STOP** —
+  programme landed on `cursor/capability-catchup-20260815` (after-task
+  `2026-08-15-gllvm-jl-capability-catchup.md`). Its remaining chips —
+  truncated_nbinom2 Arc1b per-trait dispersion, REML `test_reml.jl` promote,
+  light RCall truncated cell — stay available as short slices.
 - Rose fence: ≠ invent twin light Δ for cut ZIP/ZINB ≠ ADEMP/coverage unless
   Totoro/DRAC sized+asked ≠ Phylo Model A public intervals ≠ silent rtol
   widen ≠ hurdle/Tweedie+X / none×dep / slopes / AGHQ / multinomial as this
@@ -55,6 +67,32 @@
 
 ## Status
 
+- 2026-08-17 — **Cursor handover written; surface-admit era closed.** Tip
+  `1dafee68` (merge of #248). Ledger at that tip: **58 implemented · 3 partial ·
+  13 planned · 4 missing** (multinomial, coverage certificate, AGHQ estimator,
+  Broad AGHQ). Era landed: #234 Tweedie Identity **STOP** + #236/#238 engine
+  health · #235 ZIP no-X bridge fix · #241–#246 four no-X surface admits
+  (COM-Poisson, Hurdle-NB, Beta-hurdle, Ordered-beta) + two tag-payload
+  Identities · #248 AGHQ Identity (`missing`, no engine). ZIB three-surface arc
+  complete (#218 `fit_gllvm` → #220 `@formula` → #231 bridge). `handoff_gate.sh`
+  FAILed on pre-existing debris only (protected Dropbox checkout, 36 unpushed
+  commits on 20 stale branches, stale `.git/index.lock` — Shinichi clears that
+  one); all declared CARRIED-OVER/PROTECTED in the handover's Landing State
+  ledger. Pointer: `docs/dev-log/handover/2026-08-17-cursor-handover.md`.
+- 2026-08-17 — AGHQ estimator Identity **MERGED**
+  [#248](https://github.com/itchyshin/GLLVM.jl/pull/248) @ `1dafee68`. Both AGHQ
+  rows stay `missing`; VA `_gauss_hermite` is explicitly **not** AGHQ; Stage-1a
+  live pin is `.gllvmTMB_aghq_grid` (probabilists' nodes); `k=1` ≡ Laplace is the
+  first engine test. No stub knob, no twin Δ, no `src/`.
+- 2026-08-17 — Overnight no-X surface admits **MERGED**: #241 `5bd236dc`
+  (COM-Poisson) · #242 `fce43de4` (Hurdle-NB Identity) · #243 `104ec5a7`
+  (Beta-hurdle Identity) · #244 `07a01ede` (Hurdle-NB) · #245 `320c83b1`
+  (Beta-hurdle) · #246 `51ffa320` (Ordered-beta, focused 36/36 in 11.5 s).
+  Tweedie `fit_gllvm` deliberately **not** opened.
+- 2026-08-16 — Tweedie engine health **MERGED** #236 `cb3c8716` / #238
+  `e0eabb6f`: `fit_tweedie_gllvm` and `fit_tweedie_gllvm_grouped` no longer
+  advertise false convergence. Surface admit stays **STOP** (#234 `7b45ba04`;
+  T2–T5 unpaid). ZIP no-X bridge arm made reachable, #235 `497be1c4`.
 - 2026-08-15 — Capability catch-up programme **STOP** (Arc0–Rung4+Close).
   Ledger 49→52 implemented; bare zip/zinb; student+com_poisson promoted;
   REML OWED; truncated_poisson Identity+engine (focused 10/10). Rung5 skipped.
