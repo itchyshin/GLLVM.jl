@@ -133,10 +133,12 @@ invented twin Δ. Since the 2026-08-16 Hurdle-Poisson no-X surface admit,
 and `@formula(y ~ 1)`; the marker is empty (no payload). Since the 2026-08-17
 Hurdle-NB no-X surface admit, `hurdle_nbinom2` is reachable through
 `fit_gllvm(Y; family = HurdleNB())` and `@formula(y ~ 1)`; the marker's `r` is
-an inert tag payload (always estimated; no `r_init`). Hurdle-Poisson / Hurdle-NB
-+X, `disp_group`, row effects, `bridge.jl`, beta-hurdle / ordered-beta surface
-admits, and any twin light Δ remain OWED — the twin has no hurdle family, so a
-Δ would be invented. `truncated_poisson` =
+an inert tag payload (always estimated; no `r_init`). Since the 2026-08-17 Beta-hurdle no-X surface admit, `beta_hurdle` is reachable
+through `fit_gllvm(Y; family = BetaHurdle())` and `@formula(y ~ 1)`; the
+marker's `φ` is an inert tag payload (always estimated; no `φ_init`).
+Hurdle-Poisson / Hurdle-NB / Beta-hurdle +X, `disp_group`, row effects,
+`bridge.jl`, ordered-beta surface admit, and any twin light Δ remain OWED —
+the twin has no hurdle / ordered-beta family, so a Δ would be invented. `truncated_poisson` =
 zero-truncated Poisson (Identity 2026-08-15; twin fid 10); `truncated_nbinom2`
 = zero-truncated NB2 (Identity 2026-08-15; twin fid 11; Arc1 shared scalar `r`
 ≡ twin `φ`; twin per-trait `log_phi_truncnb2` documented, Arc1b OWED). `lognormal` = one-part lognormal (Identity 2026-08-15; twin fid 3; engine+admit; light RCall Δ / bridge OWED). `censored_poisson` = right-censored Poisson (Identity 2026-08-15; Julia-forward / twin constructor-only; light RCall Δ FORBIDDEN).
@@ -270,6 +272,10 @@ Same twin surface, transport layer. Status = code + bridge/parity test exist;
   `src/families/fit_gllvm.jl` · `test/test_hurdle_nb.jl` — tag-payload marker
   `HurdleNB()` (`r` never read); +X / bridge remain OWED; twin light Δ
   **forbidden** (no twin hurdle family)
+- Beta-hurdle no-X surface admit (`fit_gllvm` + `@formula` fall-through):
+  `src/families/fit_gllvm.jl` · `test/test_beta_hurdle.jl` — tag-payload marker
+  `BetaHurdle()` (`φ` never read); +X / bridge remain OWED; twin light Δ
+  **forbidden** (no twin beta-hurdle family)
 - ZIB no-X surface admit (`fit_gllvm` #218, `@formula` #220):
   `src/families/fit_gllvm.jl` · `src/formula.jl` · `test/test_zero_inflated.jl` /
   `test/test_formula.jl` — X on those surfaces remains OWED

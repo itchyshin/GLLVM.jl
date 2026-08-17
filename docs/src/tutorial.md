@@ -178,14 +178,15 @@ fhn = fit_gllvm(Y; family = HurdleNB(), K = 2)
 fdl = fit_gllvm(Yc; family = DeltaLogNormal(), K = 2)  # Bernoulli × lognormal
 fdg = fit_gllvm(Yc; family = DeltaGamma(), K = 2)      # Bernoulli × Gamma
 # named fitters remain: fit_delta_lognormal_gllvm / fit_delta_gamma_gllvm
-fbh = fit_beta_hurdle_gllvm(Yp;     K = 2)   # Bernoulli × Beta (point mass at 0)
+fbh = fit_gllvm(Yp; family = BetaHurdle(), K = 2)   # Bernoulli × Beta (point mass at 0)
+# named fitter remains: fit_beta_hurdle_gllvm
 ```
 
-Delta-lognormal, Delta-Gamma, Hurdle-Poisson, and Hurdle-NB are **no-X**
-surfaces on `fit_gllvm` / `gllvm(@formula(y ~ 1), …)`. The Delta markers' `σ` /
-`α` and the Hurdle-NB marker's `r` are tag payloads (always estimated);
-`HurdlePoisson()` is an empty marker. Covariates and row effects are not
-admitted on these routes.
+Delta-lognormal, Delta-Gamma, Hurdle-Poisson, Hurdle-NB, and Beta-hurdle are
+**no-X** surfaces on `fit_gllvm` / `gllvm(@formula(y ~ 1), …)`. The Delta
+markers' `σ` / `α`, the Hurdle-NB marker's `r`, and the Beta-hurdle marker's
+`φ` are tag payloads (always estimated); `HurdlePoisson()` is an empty marker.
+Covariates and row effects are not admitted on these routes.
 
 `fit_zib_gllvm` needs the number of trials `N` as a scalar `Int` (a shared trial
 count for all entries). The two-part fits expose `βz` (occurrence/zero logits),

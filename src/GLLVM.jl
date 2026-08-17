@@ -200,7 +200,7 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        hurdle_nb_marginal_loglik_laplace,
        fit_delta_gamma_gllvm, DeltaGammaFit, DeltaGamma,
        delta_gamma_marginal_loglik_laplace,
-       fit_beta_hurdle_gllvm, BetaHurdleFit, beta_hurdle_marginal_loglik_laplace,
+       fit_beta_hurdle_gllvm, BetaHurdleFit, BetaHurdle, beta_hurdle_marginal_loglik_laplace,
        observed_mask,
        fit_zip_gllvm, ZIPFit, zip_marginal_loglik_laplace, ZIPoisson,
        fit_zip_gllvm_cov, ZIPCovFit,

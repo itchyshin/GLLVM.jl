@@ -1,6 +1,17 @@
 # Check Log
 
 
+## 2026-08-17 — Beta-hurdle no-X `fit_gllvm` surface admit
+
+Lane `cursor/betahurdle-nox-20260817`. Base Identity
+`docs/dev-log/decisions/2026-08-17-betahurdle-fit-gllvm-identity.md` (#243) on
+`origin/main` @ `07a01ede` (#244). Marker `φ` is a tag payload (C1): never
+read, never an init (named fitter has no `φ_init`); `BetaHurdle() = BetaHurdle(5.0)`
+(C1b); export `BetaHurdle` (C5); one `_fit_gllvm(::BetaHurdle)` arm →
+`fit_beta_hurdle_gllvm` (C2). No-X `@formula` opens by fall-through. No bridge.
+No twin Δ (twin has no beta-hurdle family). `tweedie.jl` not opened. Mac-LIGHT
+focused: `test/test_beta_hurdle.jl` **62/62** in 10.4s. Full suite = GitHub CI.
+
 ## 2026-08-17 — Hurdle-NB no-X `fit_gllvm` surface admit
 
 Lane `cursor/hurdlenb-nox-20260817`. Base Identity
