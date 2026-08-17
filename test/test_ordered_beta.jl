@@ -189,4 +189,57 @@ end
         @test ct isa GllvmCoefTable
         @test length(ct.term) == nterm
     end
+
+    @testset "fit_gllvm reaches no-X ordered-beta via the OrderedBeta() marker" begin
+        Random.seed!(1608)
+        p, K, n = 4, 1, 60
+        βt = [-0.3, 0.5, 0.0, 0.8]
+        Λt = reshape([0.6, -0.4, 0.5, 0.3], p, 1)
+        c0, c1, φ = -1.0, 1.0, 10.0
+        Y = Matrix{Float64}(undef, p, n)
+        for i in 1:n
+            z = randn()
+            for t in 1:p
+                η = βt[t] + Λt[t, 1] * z
+                u = 1 / (1 + exp(-(η - c0)))
+                v = 1 / (1 + exp(-(η - c1)))
+                p0 = 1 - u
+                p1 = v
+                r = rand()
+                if r < p0
+                    Y[t, i] = 0.0
+                elseif r > 1 - p1
+                    Y[t, i] = 1.0
+                else
+                    μ = 1 / (1 + exp(-η))
+                    Y[t, i] = clamp(rand(Beta(μ * φ, (1 - μ) * φ)), 1e-4, 1 - 1e-4)
+                end
+            end
+        end
+
+        @test OrderedBeta().c0 == -1.0
+        @test OrderedBeta().c1 == 1.0
+        @test OrderedBeta().φ == 10.0
+
+        fit = fit_gllvm(Y; family = OrderedBeta(), K = K, iterations = 40)
+        @test fit isa OrderedBetaFit
+        @test isfinite(fit.loglik)
+        direct = fit_ordered_beta_gllvm(Y; K = K, iterations = 40)
+        @test fit.loglik ≈ direct.loglik atol = 1e-8
+        @test fit.c0 ≈ direct.c0 atol = 1e-8
+        @test fit.c1 ≈ direct.c1 atol = 1e-8
+        @test fit.φ ≈ direct.φ atol = 1e-8
+
+        # Marker c0, c1, φ are tag payloads — never read, never starting values.
+        tagged = fit_gllvm(Y; family = OrderedBeta(0.0, 2.0, 3.0), K = K, iterations = 40)
+        @test tagged.loglik ≈ fit.loglik atol = 1e-8
+        @test tagged.c0 ≈ fit.c0 atol = 1e-8
+        @test tagged.c1 ≈ fit.c1 atol = 1e-8
+        @test tagged.φ ≈ fit.φ atol = 1e-8
+
+        ff = gllvm(@formula(y ~ 1), Y, (; temp = randn(n));
+                   family = OrderedBeta(), K = K, iterations = 40)
+        @test ff isa OrderedBetaFit
+        @test ff.loglik ≈ direct.loglik atol = 1e-8
+    end
 end

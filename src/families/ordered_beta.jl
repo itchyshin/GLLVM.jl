@@ -23,17 +23,38 @@
 
 """
     OrderedBeta(c0, c1, φ)
+    OrderedBeta()
 
-Ordered-beta family marker (Kubinec 2023). `c0 < c1` are the ordered cutpoints
-that carve the zero / interior / one regions out of the latent η, and `φ` is the
-Beta precision of the (0,1) interior. Used only as a tag for the dedicated
-ordered-beta Laplace path.
+Ordered-beta family marker (Kubinec 2023) for proportions / cover in `[0,1]`
+with point masses at 0 and 1. `c0 < c1` are the ordered cutpoints and `φ` is
+the Beta precision of the (0,1) interior.
+
+```julia
+fit_gllvm(Y; family = OrderedBeta(), K = 2)
+fit_gllvm(Y; family = OrderedBeta(0.0, 2.0, 3.0), K = 2)  # same — tags never read
+gllvm(@formula(y ~ 1), Y, site_data; family = OrderedBeta(), K = 2)
+```
+
+The marker's `c0`, `c1`, and `φ` fields are **tag payloads** — they are never
+read by [`fit_gllvm`](@ref) / [`fit_ordered_beta_gllvm`](@ref); all three are
+always estimated. They are not used as `c0_init` / `c1_init` / `φ_init`. This
+is the opposite of [`StudentTFamily`](@ref), whose `ν` is structural and held
+fixed, and of Ordinal's `τ₁ = 0` pin (this family has no twin pin).
+`OrderedBeta()` is the public convenience (`-1.0, 1.0, 10.0` matches the named
+fitter's own defaults).
+
+Named fitter [`fit_ordered_beta_gllvm`](@ref) remains available. +X,
+`disp_group`, and `row_eff` are not admitted on this surface.
 """
 struct OrderedBeta <: Distribution{Univariate, Continuous}
     c0::Float64
     c1::Float64
     φ::Float64
 end
+
+# Public-call convenience (mirrors `COMPoisson()` / `BetaHurdle()`): c0, c1, φ
+# are never read on the `fit_gllvm` route. Defaults match the named fitter.
+OrderedBeta() = OrderedBeta(-1.0, 1.0, 10.0)
 
 # logistic σ(x), numerically safe at large |x|.
 _ob_logistic(x) = x ≥ 0 ? inv(one(x) + exp(-x)) : (e = exp(x); e / (one(x) + e))
