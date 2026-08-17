@@ -60,6 +60,7 @@ include("families/twopart.jl")           # Two-part substrate + Delta-lognormal 
 include("families/beta_hurdle.jl")       # Beta-hurdle (Bernoulli × Beta) two-part family
 include("families/beta_binomial.jl")     # Beta-binomial (overdispersed binomial) — twin fid 8
 include("families/com_poisson.jl")        # Conway–Maxwell–Poisson (under/overdispersed counts) — beyond gllvmTMB
+include("families/ordered_beta.jl")       # ordered-beta (must precede fit_gllvm)
 include("families/fit_gllvm.jl")         # unified fit_gllvm(Y; family) dispatcher
 include("laplace_grad.jl")               # exact (AD + implicit-step) Poisson Laplace gradient (issue #65)
 include("missing_predictor_poisson.jl")  # non-Gaussian missing predictor (mi Phase 5a): Poisson augmented-Laplace FIML
@@ -69,7 +70,6 @@ include("families/species_covariates.jl") # species-specific covariate coefficie
 include("families/constrained_ordination.jl") # constrained ordination (RRR of latent vars on env predictors)
 include("families/rrr.jl")                # reduced-rank regression (num.RR) — deterministic constrained ordination
 include("families/quadratic.jl")          # quadratic-response GLLVM (species optima/tolerances)
-include("families/ordered_beta.jl")       # ordered-beta family (proportions with point masses at 0 and 1)
 include("families/fourthcorner.jl")       # fourth-corner trait–environment interaction for the Laplace families
 include("families/row_effects.jl")        # community row effects (per-site intercepts) for the Laplace families
 include("families/row_random.jl")          # random row effects (ρ_s ~ N(0,σ_row²), gllvmTMB row.eff="random")
@@ -217,7 +217,7 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        fit_concurrent_gllvm, ConcurrentOrdinationFit,
        fit_rrr_gllvm, RRRFit, rrr_marginal_loglik,
        fit_quadratic_gllvm, QuadraticFit, quadratic_marginal_loglik_laplace,
-       fit_ordered_beta_gllvm, OrderedBetaFit, ordered_beta_marginal_loglik_laplace,
+       fit_ordered_beta_gllvm, OrderedBetaFit, OrderedBeta, ordered_beta_marginal_loglik_laplace,
        BetaBinom, fit_beta_binomial_gllvm, BetaBinomialFit, betabinomial_marginal_loglik_laplace,
        fit_beta_binomial_gllvm_grouped, BetaBinomialGroupedFit,
        betabinomial_grouped_marginal_loglik_laplace,

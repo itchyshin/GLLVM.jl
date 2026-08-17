@@ -1,6 +1,19 @@
 # Check Log
 
 
+## 2026-08-17 — Ordered-beta no-X `fit_gllvm` surface admit
+
+Lane `cursor/orderedbeta-nox-20260817`. Base Identity
+`docs/dev-log/decisions/2026-08-16-orderedbeta-fit-gllvm-identity.md` (#240) on
+`origin/main` @ `320c83b1` (#245). Marker `c0`, `c1`, `φ` are tag payloads
+(C1 / C1-cuts): never read, never inits; `OrderedBeta() = OrderedBeta(-1.0, 1.0, 10.0)`
+(C1b); export `OrderedBeta` (C5); one `_fit_gllvm(::OrderedBeta)` arm →
+`fit_ordered_beta_gllvm` (C2). Include `ordered_beta.jl` moved before
+`fit_gllvm.jl`. No-X `@formula` opens by fall-through. No bridge. No twin Δ
+(twin has no ordered-beta family; `"ordered"` already means ordinal).
+`tweedie.jl` not opened. Mac-LIGHT focused: `test/test_ordered_beta.jl`
+**36/36** in 11.5s. Full suite = GitHub CI.
+
 ## 2026-08-17 — Beta-hurdle no-X `fit_gllvm` surface admit
 
 Lane `cursor/betahurdle-nox-20260817`. Base Identity

@@ -76,7 +76,7 @@ supports `LogitLink()` (default), `ProbitLink()`, and `CLogLogLink()`.
 | `StudentTFamily(ν)` | ✅ available | identity | Laplace | scale `σ`; FIXED df `ν` on the marker | heavy-tailed continuous, `(y − η)/σ ~ t_ν`; outlier-robust alternative to `Normal()`; `σ` estimated, `ν` held fixed; → `Normal(η, σ²)` as `ν → ∞` |
 | Tweedie | ✅ available | log | Laplace | dispersion `φ`, power `p` (1<p<2) | compound Poisson–Gamma; biomass / abundance with true zeros; `fit_tweedie_gllvm` |
 | `COMPoisson()` | ✅ available | log | Laplace | dispersion exponent `ν` (tag payload) | counts with under- or over-dispersion (`ν>1` / `ν<1`; `ν=1 ⇒ Poisson`); `fit_gllvm` / named `fit_compoisson_gllvm`; Julia-forward |
-| Ordered-beta | ✅ available | logit | Laplace | precision `φ`, cutpoints `c₀<c₁` | proportions / cover with point masses at 0 and 1; `fit_ordered_beta_gllvm` |
+| `OrderedBeta()` | ✅ available | logit | Laplace | precision `φ`, cutpoints `c₀<c₁` (tag payloads) | proportions / cover with point masses at 0 and 1; `fit_gllvm` / named `fit_ordered_beta_gllvm`; Julia-forward |
 | `DeltaLogNormal()` | ✅ available | logit × identity(log) | two-part Laplace | log-SD `σ` (tag payload) | occurrence × positive lognormal; `fit_gllvm` / named `fit_delta_lognormal_gllvm` |
 | `DeltaGamma()` | ✅ available | logit × log | two-part Laplace | shape `α` (tag payload) | occurrence × positive Gamma; `fit_gllvm` / named `fit_delta_gamma_gllvm` |
 | `BetaHurdle()` | ✅ available | logit × logit | two-part Laplace | precision `φ` (tag payload) | occurrence × positive Beta; `fit_gllvm` / named `fit_beta_hurdle_gllvm`; Julia-forward |
@@ -91,12 +91,11 @@ The single-block families with a plain `Distributions` marker — `Normal`,
 `Binomial`, `Poisson`, `NegativeBinomial` (NB2), `Beta`, `Ordinal`, `Gamma`,
 `Exponential` — are reached through the unified `fit_gllvm` entry, as are `NB1`,
 `BetaBinom`, `StudentTFamily`, `DeltaLogNormal`, `DeltaGamma`,
-`HurdlePoisson`, `HurdleNB`, `BetaHurdle`, and `COMPoisson` via the package's own exported markers.
-Tweedie and the remaining two-part / hurdle families currently have dedicated
-`fit_<family>_gllvm` drivers (they carry estimated parameters — `r`,
-`φ`, the Tweedie power — or trial counts that do not yet share a single
-`Distributions` marker). Calling `fit_gllvm` with an unimplemented family raises a
-clear error listing what is currently available.
+`HurdlePoisson`, `HurdleNB`, `BetaHurdle`, `COMPoisson`, and `OrderedBeta`
+via the package's own exported markers.
+Tweedie currently has a dedicated `fit_tweedie_gllvm` driver (the power is
+not yet a public `fit_gllvm` marker). Calling `fit_gllvm` with an unimplemented
+family raises a clear error listing what is currently available.
 
 **Phylogenetic GLM.** For a per-species phylogenetic random intercept under a
 non-Gaussian family, `fit_phylo_glm(Y, phy; family = …)` fits the augmented-state
@@ -430,7 +429,9 @@ fit = fit_zip_gllvm_cov(Y; X = X,  K = 2)   # ZIP + shared site-X (separate γz/
 fit = fit_zinb_gllvm(Y;            K = 2)   # counts; structural zero × NB2, shared r
 fit = fit_zinb_gllvm_cov(Y; X = X, K = 2)   # ZINB + shared site-X (separate γz/γc; Λz=0; shared r)
 fit = fit_zib_gllvm(Y;             K = 2, N = N)  # binomial counts; structural zero × Binomial(N, μ)
-fit = fit_ordered_beta_gllvm(Y;    K = 2)   # proportions with masses at 0 and 1
+fit = fit_gllvm(Y; family = OrderedBeta(), K = 2)          # proportions; 0/1 masses + Beta interior
+fit = fit_gllvm(Y; family = OrderedBeta(0.0, 2.0, 3.0), K = 2)  # same — marker tags never read
+# named fitter remains: fit_ordered_beta_gllvm
 ```
 
 **Hurdle vs zero-inflated.** A *hurdle* model treats every zero as a
