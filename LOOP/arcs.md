@@ -11,12 +11,30 @@ Status: todo / doing / done / blocked / deferred. Gate = needs a human before it
 
 ## Deferred / not this run (Q1 STOP)
 
+Q2 sequential: no disjoint worktree for leftovers or A4(3). Do **not** start leftover-1 / leftover-2 in this `/goal`. Do **not** write Identity decision files now.
+
+After **this** `/goal` STOP (A4(2) PR-ready), the next leftover Identities are:
+
 | # | arc | status | note |
 |---|-----|--------|------|
-| A4(3) | Structural-gate Identity then engine | deferred | Later `/goal`. Q2: no disjoint worktree now. |
+| leftover-1 | `none × dep()` Identity then engine | deferred | **First leftover after A4(2) STOP.** Twin `dep()` at `R/brms-sugar.R` ~1653. Julia `docs/design/capability-status.md` row is `planned`. No `dep` symbol under `src/`. Do **not** confuse with slope Σ_b. |
+| leftover-2 | CV Identity | deferred | After leftover-1. Twin internals `.cv_run` / `.cv_score` — **not** a NAMESPACE `crossval` export. Julia has no `crossval` symbol. No `crossval=` stub. |
+
+Later AGHQ rungs (not leftovers; still not this run):
+
+| # | arc | status | note |
+|---|-----|--------|------|
+| A4(3) | Structural-gate Identity then engine | deferred | Later `/goal`. **Out of this run.** Q2: no disjoint worktree now. |
 | A4(4) | Adaptation loop + convergence verdict | deferred | After A4(3). |
 | A4(5) | Report honesty (`used`, `k`, engine label) | deferred | Earliest public `aghq=` discussable. |
-| leftover-1 | `none × dep()` Identity then engine | deferred | Q3: first leftover after A4(5). |
-| leftover-2 | CV Identity (no `crossval=` stub) | deferred | Q3: after `none × dep()`. |
+
+## Out of the leftover inventory (do not start)
+
+- Tweedie `fit_gllvm` admit
+- multinomial campaign
+- AGHQ public knob (`aghq=`)
+- invented twin Δ
+- A4(3) in this run
+- coverage certificate / Totoro (only if Shinichi sizes it later)
 
 Do **not** execute the frozen 2026-08-01 logLik-oracle LOOP notes under `LOOP/notes/`.
