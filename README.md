@@ -98,11 +98,12 @@ with sparse random-effect design matrices. `GLLVM.jl` solves a
   default for NB2, NB1, Beta, and beta-binomial (`family = NB1()`,
   `family = BetaBinom()`), matching gllvmTMB
 - Two-part / mixture families: Delta-lognormal, Delta-Gamma, Hurdle-Poisson,
-  Hurdle-NB, and Beta-hurdle via `family = DeltaLogNormal()` / `DeltaGamma()` /
-  `HurdlePoisson()` / `HurdleNB()` / `BetaHurdle()` on `fit_gllvm` (no-X; Delta
-  marker `σ`/`α`, Hurdle-NB `r`, and Beta-hurdle `φ` are tag payloads;
-  `HurdlePoisson()` is empty), plus named drivers; ordered-beta, ZIP, ZINB,
-  ZIB (zero-inflated binomial)
+  Hurdle-NB, Beta-hurdle, and ordered-beta via `family = DeltaLogNormal()` /
+  `DeltaGamma()` / `HurdlePoisson()` / `HurdleNB()` / `BetaHurdle()` /
+  `OrderedBeta()` on `fit_gllvm` (no-X; Delta marker `σ`/`α`, Hurdle-NB `r`,
+  Beta-hurdle `φ`, and Ordered-beta `c0`/`c1`/`φ` are tag payloads;
+  `HurdlePoisson()` is empty), plus named drivers; ZIP, ZINB, ZIB
+  (zero-inflated binomial)
 - Variational (VA / ELBO) estimator alongside Laplace, with VA-based SEs
 - Ordination trio: unconstrained, concurrent (`num.lv.c`), constrained / RRR (`num.RR`)
 - Fixed effects (X β), including fixed-zero coefficient masks for shared

@@ -116,6 +116,20 @@ gllvm(@formula(y ~ 1), Y, site_data; family = COMPoisson(), K = 2)
 COM-Poisson is a no-X surface: covariates and row effects are not admitted.
 The twin has no CMP family, so there is no R-parity claim.
 
+For proportions / cover in `[0,1]` with point masses at **0 and 1**,
+**ordered-beta** (Kubinec 2023) estimates shared cutpoints `c0 < c1` and a
+shared Beta precision `φ`. All three marker fields are tag payloads (always
+estimated) — they are not Ordinal's `τ₁ = 0` pin:
+
+```julia
+fit_gllvm(Y; family = OrderedBeta(), K = 2)                 # c0, c1, φ estimated
+fit_gllvm(Y; family = OrderedBeta(0.0, 2.0, 3.0), K = 2)    # same fit — tags never read
+gllvm(@formula(y ~ 1), Y, site_data; family = OrderedBeta(), K = 2)
+```
+
+Ordered-beta is a no-X surface: covariates and row effects are not admitted.
+The twin has no ordered-beta family, so there is no R-parity claim.
+
 For **NB2, NB1, Beta, and the beta-binomial**, `fit_gllvm` defaults to
 **per-species** dispersion (matching gllvmTMB). Shared dispersion remains available
 via the named fitters `fit_nb_gllvm` / `fit_nb1_gllvm` / `fit_beta_gllvm` /
@@ -436,8 +450,8 @@ Match the family to the response support and its mean–variance behaviour:
 - **Presence/absence and trials.** `Binomial()` (with `N` trials; `N ≡ 1` is
   Bernoulli for presence/absence).
 - **Proportions in (0,1).** `Beta()`. If there are point masses at 0 (or at 0 and
-  1), use `fit_beta_hurdle_gllvm` (zero) or `fit_ordered_beta_gllvm` (zeros and
-  ones).
+  1), use `fit_gllvm(Y; family = BetaHurdle())` (zero) or
+  `fit_gllvm(Y; family = OrderedBeta())` (zeros and ones).
 - **Positive continuous (biomass, size).** `Gamma()` (or `Exponential()` with no
   dispersion). With exact zeros mixed in, use a delta model
   (`fit_delta_gamma_gllvm`, `fit_delta_lognormal_gllvm`) or `fit_tweedie_gllvm`
