@@ -57,7 +57,7 @@ Julia cannot evaluate.
 | VA `_gauss_hermite` (`src/families/variational.jl`) | **ELBO** quadrature for selected VA families — not AGHQ |
 | Ledger `AGHQ estimator` | `missing` |
 | Ledger `Broad AGHQ (Julia)` | `missing` |
-| Twin `gllvmTMB` @ `114a227e` | **shipped**, opt-in experimental (see below) |
+| Twin `gllvmTMB` @ `e3e813f4` (`origin/main`; gap sheet read `114a227e`) | **shipped**, opt-in experimental (see below) |
 
 No Julia `using GLLVM` probe is recorded here: this worktree has no
 instantiated depot (Mac-light; `Pkg.instantiate` not run). The `rg` over
@@ -65,9 +65,11 @@ instantiated depot (Mac-light; `Pkg.instantiate` not run). The `rg` over
 
 ## Twin (read-only; no Δ invented)
 
-Read at local `gllvmTMB` @ `114a227e` (`DESCRIPTION` Version **0.6.0**).
-The four modules named by the 2026-08-16 gap sheet are still the shipped
-surface:
+Read at `gllvmTMB` `origin/main` @ `e3e813f4` (`DESCRIPTION` Version
+**0.6.0**). `R/aghq-control.R` and `R/aghq-gate.R` are byte-identical to
+the gap sheet's `114a227e` tip; the live grid / Stage 1a fences were
+re-read off `e3e813f4`. The four modules named by the 2026-08-16 gap
+sheet are still the shipped surface:
 
 | File | Role (from the file header / Rd, not inferred) |
 |---|---|
@@ -89,6 +91,31 @@ Public knob (from `man/gllvmTMBcontrol.Rd`, not from Julia):
 The AGHQ helpers are **internal** (file headers: no `@export`, no NAMESPACE
 edit). The user-facing name is the control argument, not an exported
 `aghq()` constructor.
+
+### Live pin (Stage 1a; do not confuse the two grids)
+
+Twin AGHQ that Julia may one day twin is **Stage 1a only**: quadrature
+over the between-unit reduced-rank latent `z_B`, loadings-only
+(`latent(..., unique = FALSE)` / no free `s_B`). Default `latent()`
+carries per-trait Psi and is **ineligible**. Template fences on
+`e3e813f4` also reject `use_lv_B`, `mi()`, and multinomial (fid 16).
+
+Two grids exist. Only one is the template pin:
+
+- **Live pin** — `.gllvmTMB_aghq_grid` in `R/fit-multi.R`, matching the
+  C++ `use_aghq` comment. Nodes are **probabilists'** (standard-normal)
+  GH. `logw_j = Σ_m log w_{j_m} + (d/2) log(2π) + ½ u_j'u_j`. Identity:
+  `Σ_j exp(logw_j) φ_d(u_j) = 1`. **`k = 1` reproduces Laplace exactly**
+  and is routed to the Laplace path on purpose.
+- **Peer helper** — `.aghq_grid` in `R/aghq-control.R` uses physicists'
+  nodes then folds `exp(u'u)` and `(√2)^d`. Fit-time substitution is
+  allowed only if `.gllvmTMB_aghq_grid_ok` passes.
+
+Julia `_gauss_hermite` is the physicists' `e^{-t²}` rule (`Σ w = √π`)
+for VA `E_q`. It shares Golub–Welsch with the twin helper and **does
+not** share the live measure. A later grid slice must implement the
+live pin as a **new** symbol; it must not call `_gauss_hermite` and
+relabel.
 
 **Locked reading:** a twin light logLik Δ for AGHQ would require a Julia
 AGHQ engine that does not exist. Until that engine exists, any numerical
@@ -124,12 +151,18 @@ the package does not have. Julia's honest surface today is Laplace
 A Julia AGHQ that could later support a legitimate twin Δ must include,
 at minimum, the pieces the twin already separates:
 
-1. tensor GH grid + adaptive correction (Liu & Pierce 1994);
-2. a structural gate (what is affordable / eligible);
-3. an adaptation loop and a convergence verdict that is not
+1. tensor GH grid on the **live** `.gllvmTMB_aghq_grid` convention
+   (probabilists' nodes + three-term `logw`), with a golden test that
+   `k = 1` matches the existing dense Laplace marginal;
+2. per-site adaptation (mode + Cholesky) from the existing Laplace
+   cache, fail-loud unless the random part is a single loadings-only
+   `z_B` block;
+3. a structural gate (what is affordable / eligible) — later than (1)–(2);
+4. an adaptation loop and a convergence verdict that is not
    `Optim`'s relative f-change alone;
-4. report honesty (`used`, `k`, engine label) so AIC/print cannot mix
-   Laplace and AGHQ silently.
+5. report honesty (`used`, `k`, engine label) so AIC/print cannot mix
+   Laplace and AGHQ silently. Do not port `aghq_ridge = "auto"` in the
+   first engine PR (Bernoulli-only experimental).
 
 That is out of this slice. Tweedie `fit_gllvm` is also out (STOP).
 Cross-validation (`R/cv-*.R` on the twin; no `crossval` under Julia
@@ -153,7 +186,8 @@ Delta / Hurdle-Poisson) are not reopened. Exponential is not reopened.
 ## Rose fence
 
 Both AGHQ status cells stay `missing`. No R-parity, ADEMP, or coverage
-claimed. Twin AGHQ is cited from files at `114a227e`, not from a Julia
-number. VA GH is explicitly not AGHQ.
+claimed. Twin AGHQ is cited from files at `e3e813f4`, not from a Julia
+number. VA GH is explicitly not AGHQ. `k = 1` ≡ Laplace is the first
+engine test, not a capability claim.
 
 Rose verdict for **this** note: PASS — locks only; no engine code.

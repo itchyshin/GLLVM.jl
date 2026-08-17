@@ -17,8 +17,10 @@ pointer. Check-log entry written. No family-row token flipped. Tweedie
 
 ## Mathematical Contract
 
-Twin AGHQ (read-only at `gllvmTMB` @ `114a227e`) is Liu & Pierce 1994
-adaptive Gauss–Hermite of the full joint integrand at the Laplace mode.
+Twin AGHQ (read-only at `gllvmTMB` `origin/main` @ `e3e813f4`) is Liu &
+Pierce 1994 adaptive Gauss–Hermite of the full joint integrand at the
+Laplace mode. Live pin is `.gllvmTMB_aghq_grid` (probabilists' `logw`);
+`k = 1` is Laplace.
 Julia VA `_gauss_hermite` evaluates an ELBO expectation. This slice
 implements neither integral; it forbids conflating them.
 

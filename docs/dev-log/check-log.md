@@ -7,9 +7,9 @@ Lane `cursor/aghq-identity-20260817` on `origin/main` @ `51ffa320` (#246).
 Locks: both AGHQ ledger rows stay `missing`; Julia `src/` / `test/` have no
 `aghq` symbol (`rg -n -i aghq src test` empty); VA `_gauss_hermite` is ELBO
 quadrature, not AGHQ; no stub `aghq=` knob; next engine is a campaign, not a
-`fit_gllvm` admit. Twin cited read-only at `gllvmTMB` @ `114a227e`
-(`R/aghq-control.R`, `aghq-gate.R`, `aghq-auto-ridge.R`, `aghq-report.R`;
-`gllvmTMBcontrol(aghq = FALSE | k | "auto")`). No `src/` edit. No twin Δ.
+`fit_gllvm` admit. Twin cited read-only at `gllvmTMB` `origin/main` @ `e3e813f4` (gap sheet
+`114a227e`; control/gate unchanged). Live pin `.gllvmTMB_aghq_grid`;
+`k = 1` ≡ Laplace; Stage 1a loadings-only `z_B`. No `src/` edit. No twin Δ.
 Tweedie `fit_gllvm` not opened. Mac-LIGHT: no local `Pkg.test` / instantiate.
 Full suite = GitHub CI (Documenter + Julia matrix).
 
