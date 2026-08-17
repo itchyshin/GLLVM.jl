@@ -29,14 +29,32 @@
 # ---------------------------------------------------------------------------
 
 """
-    BetaHurdle(φ)
+    BetaHurdle(φ = 5.0)
 
 Marker for the Beta-hurdle two-part family: Bernoulli occurrence × positive Beta
 with shared precision `φ` (mean `μ = logistic(η^c)`, `Var = μ(1−μ)/(1+φ)`).
+Use with the unified entry point:
+
+```julia
+fit_gllvm(Y; family = BetaHurdle(), K = 2)
+fit_gllvm(Y; family = BetaHurdle(80.0), K = 2)   # same fit — φ is a tag payload
+gllvm(@formula(y ~ 1), Y, site_data; family = BetaHurdle(), K = 2)
+```
+
+The marker's `φ` field is a **tag payload** — it is never read by
+[`fit_gllvm`](@ref) / [`fit_beta_hurdle_gllvm`](@ref); the shared precision is
+always estimated. There is no `φ_init` keyword. `BetaHurdle()` is the public
+convenience (`5.0` matches the named fitter's MoM fallback). Named fitter
+[`fit_beta_hurdle_gllvm`](@ref) remains available. +X, `disp_group`, and
+`row_eff` are not admitted on this surface.
 """
 struct BetaHurdle
     φ::Float64
 end
+
+# Public-call convenience (mirrors `HurdleNB()` / `COMPoisson()`): φ is never
+# read on the `fit_gllvm` route. 5.0 is the fitter's MoM fallback.
+BetaHurdle() = BetaHurdle(5.0)
 
 # Two-part pieces dispatched on BetaHurdle. `_tp_pieces` is defined in
 # src/families/twopart.jl (loaded before this file).

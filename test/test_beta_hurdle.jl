@@ -288,4 +288,43 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         @test ct isa GllvmCoefTable
     end
 
+    @testset "fit_gllvm reaches no-X Beta-hurdle via the BetaHurdle() marker" begin
+        Random.seed!(1608)
+        p, K, n = 4, 1, 60
+        βz_true = fill(-0.2, p)
+        βc_true = 0.3 .* randn(p)
+        φ_true  = 5.0
+        Z = randn(K, n)
+        Λc_true = 0.4 .* randn(p, K)
+        ηc = βc_true .+ Λc_true * Z
+        π_true = inv.(1 .+ exp.(-βz_true))
+        μ_true = inv.(1 .+ exp.(-ηc))
+        Y = zeros(Float64, p, n)
+        for t in 1:p, s in 1:n
+            if rand() < π_true[t]
+                Y[t, s] = rand(Beta(μ_true[t, s] * φ_true,
+                                    (1 - μ_true[t, s]) * φ_true))
+            end
+        end
+
+        @test BetaHurdle().φ == 5.0
+
+        fit = fit_gllvm(Y; family = BetaHurdle(), K = K, iterations = 40)
+        @test fit isa BetaHurdleFit
+        @test isfinite(fit.loglik)
+        direct = fit_beta_hurdle_gllvm(Y; K = K, iterations = 40)
+        @test fit.loglik ≈ direct.loglik atol = 1e-8
+        @test fit.φ ≈ direct.φ atol = 1e-8
+
+        # Marker φ is a tag payload — never read, never a starting value.
+        tagged = fit_gllvm(Y; family = BetaHurdle(80.0), K = K, iterations = 40)
+        @test tagged.loglik ≈ fit.loglik atol = 1e-8
+        @test tagged.φ ≈ fit.φ atol = 1e-8
+
+        ff = gllvm(@formula(y ~ 1), Y, (; temp = randn(n));
+                   family = BetaHurdle(), K = K, iterations = 40)
+        @test ff isa BetaHurdleFit
+        @test ff.loglik ≈ direct.loglik atol = 1e-8
+    end
+
 end  # @testset "beta-hurdle GLLVM"

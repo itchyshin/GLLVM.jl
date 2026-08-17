@@ -27,7 +27,7 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 | Hurdle (Poisson / NB) | ✅ | occurrence Bernoulli × zero-truncated Poisson / NB2; `fit_gllvm(Y; family = HurdlePoisson())` / `HurdleNB()` (marker `r` is a tag payload). Julia-forward — twin has no hurdle family |
 | Zero-inflated (ZIP / ZINB / ZIB) | ✅ | structural zero × Poisson / NB2 / Binomial; zero-inflation intercept-only (Λ_z = 0) so the coupled-zero cross-term drops out |
 | Ordered-beta | ✅ | proportions / cover with point masses at 0 and 1; `fit_ordered_beta_gllvm` |
-| Beta-hurdle | ✅ | occurrence Bernoulli × positive Beta; `fit_beta_hurdle_gllvm` |
+| Beta-hurdle | ✅ | occurrence Bernoulli × positive Beta; `fit_gllvm(Y; family = BetaHurdle())` (marker `φ` is a tag payload). Julia-forward — twin has no beta-hurdle family |
 | Exponential | ✅ | positive continuous, `Var = μ²` (Gamma with shape α=1) |
 | Tweedie | ✅ | compound Poisson–Gamma (1<p<2); `fit_tweedie_gllvm`, Dunn–Smyth density series |
 | Conway–Maxwell–Poisson | ✅ ⚡ | under- or over-dispersed counts; `fit_gllvm(Y; family = COMPoisson())`; marker `ν` is a tag payload (always estimated). Julia-forward — twin has no CMP family |
