@@ -41,6 +41,10 @@ distribution used as a marker (the GLM.jl convention):
   × positive Gamma). The marker's `α` is a tag payload — always estimated.
 - `HurdlePoisson()` → [`fit_hurdle_poisson_gllvm`](@ref) — two-part Laplace (Bernoulli
   occurrence × zero-truncated Poisson). Empty marker; no payload.
+- `COMPoisson()` → [`fit_compoisson_gllvm`](@ref) — Laplace marginal (CMP counts;
+  under- or over-dispersion). The marker's `ν` field is a tag payload — it is
+  never read here; `ν` is always estimated. This is the opposite of
+  `StudentTFamily(ν)`, whose degrees of freedom are structural and held fixed.
 - `GeneralizedPoisson1(α)` → [`fit_gp1_gllvm`](@ref) — Laplace marginal (GP-1 counts, signed dispersion)
 - `ZIB(N)` → [`fit_zib_gllvm`](@ref) — zero-inflated binomial (Julia-forward). Unlike the
   other markers, `ZIB` carries the shared trials count, so `N` travels on the family
@@ -96,6 +100,7 @@ fit_gllvm(Y; family = Beta(), K = 2)                              # per-species 
 fit_gllvm(Y; family = NB1(),  K = 2)                              # per-species linear-variance φ
 fit_gllvm(Y; family = BetaBinom(), K = 2, N = trials)             # per-species φ; N is p×n, required
 fit_gllvm(Y; family = StudentTFamily(4.0), K = 2)                 # heavy-tailed continuous, ν fixed
+fit_gllvm(Y; family = COMPoisson(), K = 2)                        # CMP counts; ν estimated (tag payload)
 fit_gllvm(Y; family = DeltaLogNormal(), K = 2)                    # two-part: occurrence × lognormal
 fit_gllvm(Y; family = DeltaGamma(), K = 2)                        # two-part: occurrence × Gamma
 fit_gllvm(Y; family = Normal(), K = 2, pervar = true)             # per-species variance
@@ -222,6 +227,11 @@ _fit_gllvm(family::ZIB, Y::AbstractMatrix; kwargs...) =
 # Empty two-part marker (same shape as `ZIPoisson`): no payload to forward.
 _fit_gllvm(::HurdlePoisson, Y::AbstractMatrix; kwargs...) =
     fit_hurdle_poisson_gllvm(Y; kwargs...)
+# COM-Poisson marker is a tag-payload marker: ν is always estimated by the
+# named fitter and is never read from the family instance (same pattern as
+# NB1(φ) / DeltaGamma(α); opposite of StudentTFamily(ν), which is structural).
+_fit_gllvm(::COMPoisson, Y::AbstractMatrix; kwargs...) =
+    fit_compoisson_gllvm(Y; kwargs...)
 
 # No `_fit_gllvm(::NB1, …)` / `_fit_gllvm(::BetaBinom, …)` arms: the per-trait
 # coerce above always sets `disp_group`, so both reach `_fit_gllvm_grouped`
@@ -232,7 +242,7 @@ _fit_gllvm(::HurdlePoisson, Y::AbstractMatrix; kwargs...) =
 # Clear error for families not yet implemented (remaining hurdle / ordered-beta, …).
 _fit_gllvm(family, Y::AbstractMatrix; kwargs...) = throw(ArgumentError(
     "fit_gllvm: family $(nameof(typeof(family))) is not implemented yet " *
-    "(available: Normal, Binomial, Poisson, TruncatedPoisson, CensoredPoisson, TruncatedNegBin2, Lognormal, NegativeBinomial, NB1, Beta, BetaBinom, Ordinal, Gamma, Exponential, StudentTFamily, DeltaLogNormal, DeltaGamma, HurdlePoisson, GeneralizedPoisson1, ZIPoisson, ZINegBin, ZIB)"))
+    "(available: Normal, Binomial, Poisson, TruncatedPoisson, CensoredPoisson, TruncatedNegBin2, Lognormal, NegativeBinomial, NB1, Beta, BetaBinom, Ordinal, Gamma, Exponential, StudentTFamily, DeltaLogNormal, DeltaGamma, HurdlePoisson, COMPoisson, GeneralizedPoisson1, ZIPoisson, ZINegBin, ZIB)"))
 
 # --- grouped-dispersion routing keyed on the family marker. ------------------
 _fit_gllvm_grouped(::NegativeBinomial, Y::AbstractMatrix; kwargs...) =

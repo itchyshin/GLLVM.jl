@@ -1,6 +1,18 @@
 # Check Log
 
 
+## 2026-08-16 — COM-Poisson no-X `fit_gllvm` surface admit
+
+Lane `cursor/compoisson-nox-20260816`. Base Identity
+`docs/dev-log/decisions/2026-08-16-compoisson-fit-gllvm-identity.md` (#239) on
+`origin/main` @ `d70a6a25` (#237); rematched onto `e0eabb6f` (#238) for a
+clean merge (check-log only). Marker `ν` is a tag payload (C1): never
+read, never `ν_init`; `COMPoisson() = COMPoisson(1.0)` (C1b); one
+`_fit_gllvm(::COMPoisson)` arm → `fit_compoisson_gllvm` (C2). No-X `@formula`
+opens by fall-through. No bridge. No twin Δ (twin has no CMP family).
+`tweedie.jl` not opened (#238). Mac-LIGHT focused: `test/test_com_poisson.jl`
+**24/24** in 5.6s. Full suite = GitHub CI.
+
 ## 2026-08-16 — `fit_tweedie_gllvm_grouped` false-convergence (OWED from #236)
 
 Lane `cursor/tweedie-grouped-engine-health-20260816`. Base `origin/main` @

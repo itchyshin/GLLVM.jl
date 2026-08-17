@@ -118,7 +118,12 @@ and `@formula(y ~ 1)`; the FIXED `ν` travels on the marker (a separate `nu`
 keyword is rejected) and the marker's `σ` is an inert tag payload. Student-t +X,
 `disp_group`, row effects, `bridge.jl` admission, and any gllvmTMB parity claim
 remain OWED — the twin's `student` route is not benchmarked here, so **no**
-light Δ is invented. Since the 2026-08-16 Delta no-X surface admit,
+light Δ is invented. Since the 2026-08-16 COM-Poisson no-X surface admit,
+`com_poisson` is reachable through `fit_gllvm(Y; family = COMPoisson())` and
+`@formula(y ~ 1)`; the marker's `ν` is an inert tag payload (always estimated —
+the opposite of Student-t's structural `ν`). COM-Poisson +X, `disp_group`,
+row effects, `bridge.jl`, and any twin light Δ remain OWED — the twin has no
+CMP family, so a Δ would be invented. Since the 2026-08-16 Delta no-X surface admit,
 `delta_lognormal` / `delta_gamma` are reachable through
 `fit_gllvm(Y; family = DeltaLogNormal())` / `DeltaGamma()` and `@formula(y ~ 1)`;
 marker `σ` / `α` are inert tag payloads (always estimated). Delta +X,

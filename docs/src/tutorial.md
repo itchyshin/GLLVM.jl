@@ -102,6 +102,20 @@ gllvm(@formula(y ~ 1), Y, site_data; family = StudentTFamily(4.0), K = 2)
 
 Student-t is a no-X surface for now: covariates and row effects are not admitted.
 
+For counts that are under- or over-dispersed relative to Poisson,
+**Conway–Maxwell–Poisson** estimates a shared dispersion exponent `ν`
+(`ν = 1` ⇒ Poisson). The marker's `ν` is a tag payload (always estimated) —
+the opposite of Student-t's fixed `ν`:
+
+```julia
+fit_gllvm(Y; family = COMPoisson(), K = 2)          # ν estimated
+fit_gllvm(Y; family = COMPoisson(2.0), K = 2)       # same fit — marker ν never read
+gllvm(@formula(y ~ 1), Y, site_data; family = COMPoisson(), K = 2)
+```
+
+COM-Poisson is a no-X surface: covariates and row effects are not admitted.
+The twin has no CMP family, so there is no R-parity claim.
+
 For **NB2, NB1, Beta, and the beta-binomial**, `fit_gllvm` defaults to
 **per-species** dispersion (matching gllvmTMB). Shared dispersion remains available
 via the named fitters `fit_nb_gllvm` / `fit_nb1_gllvm` / `fit_beta_gllvm` /

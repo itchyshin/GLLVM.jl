@@ -30,6 +30,7 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 | Beta-hurdle | ✅ | occurrence Bernoulli × positive Beta; `fit_beta_hurdle_gllvm` |
 | Exponential | ✅ | positive continuous, `Var = μ²` (Gamma with shape α=1) |
 | Tweedie | ✅ | compound Poisson–Gamma (1<p<2); `fit_tweedie_gllvm`, Dunn–Smyth density series |
+| Conway–Maxwell–Poisson | ✅ ⚡ | under- or over-dispersed counts; `fit_gllvm(Y; family = COMPoisson())`; marker `ν` is a tag payload (always estimated). Julia-forward — twin has no CMP family |
 
 ## Model structure
 
