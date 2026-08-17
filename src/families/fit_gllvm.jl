@@ -41,6 +41,9 @@ distribution used as a marker (the GLM.jl convention):
   × positive Gamma). The marker's `α` is a tag payload — always estimated.
 - `HurdlePoisson()` → [`fit_hurdle_poisson_gllvm`](@ref) — two-part Laplace (Bernoulli
   occurrence × zero-truncated Poisson). Empty marker; no payload.
+- `HurdleNB()` → [`fit_hurdle_nb_gllvm`](@ref) — two-part Laplace (Bernoulli
+  occurrence × zero-truncated NB2). The marker's `r` field is a tag payload —
+  it is never read here; `r` is always estimated. There is no `r_init`.
 - `COMPoisson()` → [`fit_compoisson_gllvm`](@ref) — Laplace marginal (CMP counts;
   under- or over-dispersion). The marker's `ν` field is a tag payload — it is
   never read here; `ν` is always estimated. This is the opposite of
@@ -227,6 +230,11 @@ _fit_gllvm(family::ZIB, Y::AbstractMatrix; kwargs...) =
 # Empty two-part marker (same shape as `ZIPoisson`): no payload to forward.
 _fit_gllvm(::HurdlePoisson, Y::AbstractMatrix; kwargs...) =
     fit_hurdle_poisson_gllvm(Y; kwargs...)
+# Hurdle-NB marker is a tag-payload marker: r is always estimated by the
+# named fitter and is never read from the family instance (same pattern as
+# COMPoisson(ν) / DeltaGamma(α); opposite of StudentTFamily(ν)).
+_fit_gllvm(::HurdleNB, Y::AbstractMatrix; kwargs...) =
+    fit_hurdle_nb_gllvm(Y; kwargs...)
 # COM-Poisson marker is a tag-payload marker: ν is always estimated by the
 # named fitter and is never read from the family instance (same pattern as
 # NB1(φ) / DeltaGamma(α); opposite of StudentTFamily(ν), which is structural).
@@ -239,10 +247,10 @@ _fit_gllvm(::COMPoisson, Y::AbstractMatrix; kwargs...) =
 # estimand, which is available only through the named `fit_nb1_gllvm` /
 # `fit_beta_binomial_gllvm`.
 
-# Clear error for families not yet implemented (remaining hurdle / ordered-beta, …).
+# Clear error for families not yet implemented (remaining beta-hurdle / ordered-beta, …).
 _fit_gllvm(family, Y::AbstractMatrix; kwargs...) = throw(ArgumentError(
     "fit_gllvm: family $(nameof(typeof(family))) is not implemented yet " *
-    "(available: Normal, Binomial, Poisson, TruncatedPoisson, CensoredPoisson, TruncatedNegBin2, Lognormal, NegativeBinomial, NB1, Beta, BetaBinom, Ordinal, Gamma, Exponential, StudentTFamily, DeltaLogNormal, DeltaGamma, HurdlePoisson, COMPoisson, GeneralizedPoisson1, ZIPoisson, ZINegBin, ZIB)"))
+    "(available: Normal, Binomial, Poisson, TruncatedPoisson, CensoredPoisson, TruncatedNegBin2, Lognormal, NegativeBinomial, NB1, Beta, BetaBinom, Ordinal, Gamma, Exponential, StudentTFamily, DeltaLogNormal, DeltaGamma, HurdlePoisson, HurdleNB, COMPoisson, GeneralizedPoisson1, ZIPoisson, ZINegBin, ZIB)"))
 
 # --- grouped-dispersion routing keyed on the family marker. ------------------
 _fit_gllvm_grouped(::NegativeBinomial, Y::AbstractMatrix; kwargs...) =

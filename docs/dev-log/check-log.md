@@ -1,6 +1,17 @@
 # Check Log
 
 
+## 2026-08-17 — Hurdle-NB no-X `fit_gllvm` surface admit
+
+Lane `cursor/hurdlenb-nox-20260817`. Base Identity
+`docs/dev-log/decisions/2026-08-17-hurdlenb-fit-gllvm-identity.md` (#242) on
+`origin/main` @ `5bd236dc` (#241). Marker `r` is a tag payload (C1): never
+read, never an init (named fitter has no `r_init`); `HurdleNB() = HurdleNB(10.0)`
+(C1b); export `HurdleNB` (C5); one `_fit_gllvm(::HurdleNB)` arm →
+`fit_hurdle_nb_gllvm` (C2). No-X `@formula` opens by fall-through. No bridge.
+No twin Δ (twin has no hurdle family). `tweedie.jl` not opened. Mac-LIGHT
+focused: `test/test_hurdle_nb.jl` **24/24** in 22.7s. Full suite = GitHub CI.
+
 ## 2026-08-16 — COM-Poisson no-X `fit_gllvm` surface admit
 
 Lane `cursor/compoisson-nox-20260816`. Base Identity
