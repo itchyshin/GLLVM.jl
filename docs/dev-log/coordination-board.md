@@ -4,6 +4,7 @@
 
 | Lane | Status | Branch / tip | Current handover / pointer | Owns |
 |---|---|---|---|---|
+| **AGHQ Stage-1a grid + k=1 golden** | **ACTIVE / this session** | `cursor/aghq-stage1a-20260817` from `origin/main` @ `1550eef3` | arc `docs/dev-log/plans/2026-08-17-aghq-stage1a-arc.md` · decision `docs/dev-log/decisions/2026-08-17-aghq-stage1a-grid.md` | Live-pin `aghq_grid` + `k=1` ≡ Laplace golden. Ledger rows stay `missing`. **≠ public `aghq=` ≠ rename `_gauss_hermite` ≠ twin Δ ≠ Tweedie admit ≠ #247.** |
 | **Cursor handover — surface-admit era close** | **ACTIVE / rehydration entrypoint** | `main` @ `a0e0d696` (#249) + `#250` correction | handover `docs/dev-log/handover/2026-08-17-cursor-handover.md` | OWED/DONE/RETRACTED/PROTECTED ledger for #205–#248; env + safe-verify + do-not-stage list; Landing State ledger declaring the `handoff_gate.sh` FAIL items. **OWED:** confirm tip → AGHQ Stage-1a grid + `k=1` golden (arc-creation first) → near-parity leftovers. **≠ Tweedie `fit_gllvm` admit ≠ invent twin Δ ≠ AGHQ ledger promote ≠ write in the Dropbox checkout ≠ re-merge #247.** |
 | **Overnight surface admits #241–#246** | **MERGED** (#241 `5bd236dc` · #242 `fce43de4` · #243 `104ec5a7` · #244 `07a01ede` · #245 `320c83b1` · #246 `51ffa320`) | engine record on `main`; its docs PR [#247](https://github.com/itchyshin/GLLVM.jl/pull/247) **CLOSED UNMERGED** 13:01Z | COM-Poisson / Hurdle-NB / Beta-hurdle / Ordered-beta no-X `fit_gllvm` admits + two tag-payload Identities — all on `main`. #247's overnight handoff file never landed; its substance is carried into the 2026-08-17 Cursor handover. **Do not reopen or re-merge #247.** |
 | **AGHQ estimator Identity** | **ACCEPTED** (docs-only; MERGED #248) | `main` @ `1dafee68` | decision `docs/dev-log/decisions/2026-08-17-aghq-identity.md` · after-task `docs/dev-log/after-task/2026-08-17-aghq-identity.md` | Both AGHQ ledger rows stay `missing`. Stage-1a live pin `.gllvmTMB_aghq_grid`; `k=1` ≡ Laplace is the first golden test. **≠ rename VA `_gauss_hermite` ≠ stub `aghq=` knob ≠ twin Δ ≠ `src/` engine without a fresh arc.** |
@@ -67,6 +68,10 @@
 
 ## Status
 
+- 2026-08-17 — **AGHQ Stage-1a grid + k=1 golden** on
+  `cursor/aghq-stage1a-20260817` from `origin/main` @ `1550eef3`. Focused
+  `test/test_aghq_grid.jl` **69/69** in 4.3 s. Both AGHQ ledger rows stay
+  `missing`. No public knob, no twin Δ, no Tweedie admit.
 - 2026-08-17 — **Cursor handover written; surface-admit era closed.** Tip
   `1dafee68` (merge of #248). Ledger at that tip: **58 implemented · 3 partial ·
   13 planned · 4 missing** (multinomial, coverage certificate, AGHQ estimator,
