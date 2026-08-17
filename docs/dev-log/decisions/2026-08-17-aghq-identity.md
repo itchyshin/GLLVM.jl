@@ -1,0 +1,159 @@
+# Decision: AGHQ estimator Identity — missing, not a surface admit
+
+**Date:** 2026-08-17
+**Status:** ACCEPTED as a decision record; **engine NOT started** (STOP)
+**Lane:** `cursor/aghq-identity-20260817`
+**Tip probed:** `51ffa320` (merge of #246, OrderedBeta no-X admit)
+**Depends on:** capability gap sheet
+`docs/dev-log/plans/2026-08-16-gllvmtmb-capability-gap.md` (named AGHQ the
+largest *estimator-shaped* twin gap); Tweedie Identity
+`2026-08-16-tweedie-fit-gllvm-identity.md` (#234) as the STOP-shaped
+precedent (lock first; do not ship a public knob that cannot earn it).
+**Do not** open a Tweedie `fit_gllvm` admit (Identity STOP; T2–T5 unpaid).
+**Do not** invent a twin `gllvmTMB` light Δ. **Do not** touch `src/`.
+**Do not** add a stub `aghq=` keyword that only errors.
+
+## Why this slice, not another north-star chip
+
+#241–#246 closed the overnight no-X surface-admit sequence (COM-Poisson,
+Hurdle-NB, Beta-hurdle, Ordered-beta). Family-row honesty for those admits
+already lives on `docs/design/capability-status.md` at `51ffa320`. Exponential
+is already `implemented`. Tweedie `fit_gllvm` stays STOP.
+
+The remaining cheap, useful lock is the estimator the twin ships and Julia
+does not: adaptive Gauss–Hermite quadrature (AGHQ). This note is that lock.
+It is **not** an implementation campaign and **not** a `fit_gllvm` admit.
+
+| Candidate | Why this slice / not |
+|---|---|
+| Newly admitted family ledger rows | Already honest on `51ffa320` (notes name #241–#246) |
+| Tweedie `fit_gllvm` admit | Identity #234 STOP; T2–T5 unpaid — **out** |
+| Exponential | Already `implemented` |
+| Bridge gaps (lognormal / truncated_*) | Would start a Δ or a `bridge.jl` arc — **out** |
+| **AGHQ Identity** | Twin ships it; Julia has no symbol; ledger rows already `missing` with no fence — **this slice** |
+
+## Problem
+
+`docs/design/capability-status.md` already marks `AGHQ estimator` and
+`Broad AGHQ (Julia)` as `missing`. That token is true and must stay true.
+What it does **not** yet lock:
+
+1. That Julia VA Gauss–Hermite is **not** AGHQ.
+2. What the twin actually ships (read off twin files, not inferred).
+3. That a one-PR "add `aghq=`" would advertise a capability the package
+   does not have.
+4. That the next engine is a campaign, not a surface admit.
+
+Without those locks, a later lane can rename `_gauss_hermite` as AGHQ, or
+add a failing public knob, or invent a twin logLik Δ for an estimator
+Julia cannot evaluate.
+
+### Live surface map (probed at `51ffa320`, not inferred)
+
+| Surface | AGHQ |
+|---|---|
+| `src/` symbol `aghq` / `AGHQ` | **absent** — `rg -n -i aghq src test` is empty |
+| `fit_gllvm` / `@formula` / `bridge.jl` | no AGHQ argument, no quadrature engine |
+| VA `_gauss_hermite` (`src/families/variational.jl`) | **ELBO** quadrature for selected VA families — not AGHQ |
+| Ledger `AGHQ estimator` | `missing` |
+| Ledger `Broad AGHQ (Julia)` | `missing` |
+| Twin `gllvmTMB` @ `114a227e` | **shipped**, opt-in experimental (see below) |
+
+No Julia `using GLLVM` probe is recorded here: this worktree has no
+instantiated depot (Mac-light; `Pkg.instantiate` not run). The `rg` over
+`src/` and `test/` is the engine-absence evidence.
+
+## Twin (read-only; no Δ invented)
+
+Read at local `gllvmTMB` @ `114a227e` (`DESCRIPTION` Version **0.6.0**).
+The four modules named by the 2026-08-16 gap sheet are still the shipped
+surface:
+
+| File | Role (from the file header / Rd, not inferred) |
+|---|---|
+| `R/aghq-control.R` | node grid, per-cell resolve, `aghq = "auto"` on/off; Liu & Pierce 1994 adaptive identity; `.aghq_grid(d, k)` tensor GH |
+| `R/aghq-gate.R` | structural eligibility from Hessian sparsity / treewidth; hard exclusions (REML, `equalto()`, `propto()`, multi-kernel) |
+| `R/aghq-auto-ridge.R` | experimental `aghq_ridge = "auto"` scale-aware ridge (#847) |
+| `R/aghq-report.R` | `fit$aghq` honesty for print / summary / AIC engine labels |
+
+Public knob (from `man/gllvmTMBcontrol.Rd`, not from Julia):
+
+- `gllvmTMBcontrol(aghq = FALSE)` — **default**; Laplace.
+- Positive integer — that many quadrature nodes.
+- `"auto"` — package decides; declines to Laplace when ineligible or when
+  expected gain does not justify cost.
+- Twin's own Rd: **opt-in and experimental**; *no capability claim is made
+  for quadrature-fitted models*; eligibility is narrow — a single ordinary
+  `latent()` block on the unit tier.
+
+The AGHQ helpers are **internal** (file headers: no `@export`, no NAMESPACE
+edit). The user-facing name is the control argument, not an exported
+`aghq()` constructor.
+
+**Locked reading:** a twin light logLik Δ for AGHQ would require a Julia
+AGHQ engine that does not exist. Until that engine exists, any numerical
+"parity" number would be invented. This note records the twin *files and
+knobs*, not a Δ.
+
+## Decision
+
+### A1 — Status stays `missing`. This PR does not promote either AGHQ row
+
+`implemented` requires Julia code under `src/` **and** a test. Neither
+exists. Renaming VA GH as AGHQ to flip the token is **rejected**.
+
+### A2 — Julia VA `_gauss_hermite` is not AGHQ
+
+VA evaluates `E_q[log p(y|η)]` under a variational Gaussian for an ELBO
+lower bound (`src/families/variational.jl` and the per-family VA files).
+Twin AGHQ is *adaptive* quadrature of the **full joint integrand** at the
+Laplace mode with a local Cholesky (`aghq_Lt` / `aghq_logdet`; Liu &
+Pierce 1994, cited in `R/aghq-control.R`). Same orthogonal polynomials,
+different integral, different claim. Do not share a public name.
+
+### A3 — No stub public knob
+
+Do not add `aghq=` / `method = "AGHQ"` that only throws. The twin's own
+EVA write-up in the same Rd file states the honesty rule this repo
+already uses: an argument that can only error advertises a capability
+the package does not have. Julia's honest surface today is Laplace
+(default) and VA (selected families). AGHQ is absent.
+
+### A4 — Next engine is a campaign, not a one-PR admit
+
+A Julia AGHQ that could later support a legitimate twin Δ must include,
+at minimum, the pieces the twin already separates:
+
+1. tensor GH grid + adaptive correction (Liu & Pierce 1994);
+2. a structural gate (what is affordable / eligible);
+3. an adaptation loop and a convergence verdict that is not
+   `Optim`'s relative f-change alone;
+4. report honesty (`used`, `k`, engine label) so AIC/print cannot mix
+   Laplace and AGHQ silently.
+
+That is out of this slice. Tweedie `fit_gllvm` is also out (STOP).
+Cross-validation (`R/cv-*.R` on the twin; no `crossval` under Julia
+`src/`) is a **sibling** missing estimator, not this Identity.
+
+### A5 — No bridge, no twin Δ, no family-row edits
+
+`src/bridge.jl` stays closed. Newly admitted family rows
+(COM-Poisson / Hurdle-NB / Beta-hurdle / Ordered-beta / Student-t /
+Delta / Hurdle-Poisson) are not reopened. Exponential is not reopened.
+
+## Out of this PR
+
+- Any `src/` AGHQ / quadrature engine.
+- Tweedie `fit_gllvm` admit.
+- Twin light Δ for any family or estimator.
+- `scalar()` covariance-mode ledger row (cheap, separate Rose pass).
+- Cross-validation Identity.
+- Mixed-family / `mi()` ledger-verify.
+
+## Rose fence
+
+Both AGHQ status cells stay `missing`. No R-parity, ADEMP, or coverage
+claimed. Twin AGHQ is cited from files at `114a227e`, not from a Julia
+number. VA GH is explicitly not AGHQ.
+
+Rose verdict for **this** note: PASS — locks only; no engine code.

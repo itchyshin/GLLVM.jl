@@ -172,6 +172,18 @@ REML pilot and non-Gaussian REML stays `rejected`; the `fit_gaussian_gllvm(reml
 branch), so this row is the standalone + bridge path only — no twin light Δ, no
 coverage certificate.
 
+AGHQ (this row and "Broad AGHQ (Julia)" below) stays `missing`. Julia has no
+`aghq` symbol under `src/` or `test/` (probed 2026-08-17 at `origin/main`
+`51ffa320`). The VA path's `_gauss_hermite` is physicists' GH for VA `E_q`,
+not AGHQ — do not rename it. Twin `gllvmTMB` @ `e3e813f4` ships opt-in
+experimental AGHQ via `gllvmTMBcontrol(aghq = FALSE | k | "auto")`
+(`R/aghq-control.R`, `aghq-gate.R`, `aghq-auto-ridge.R`, `aghq-report.R`);
+default remains Laplace; eligibility is a single ordinary loadings-only
+`latent()` unit-tier block; the twin itself makes no capability claim for
+quadrature-fitted models. Identity:
+`docs/dev-log/decisions/2026-08-17-aghq-identity.md`. No engine in that
+slice. No twin light Δ.
+
 ## Random slopes and special capabilities
 
 | Capability | Status |
@@ -301,5 +313,8 @@ Same twin surface, transport layer. Status = code + bridge/parity test exist;
   β/σ_eps recovery; bridge `gaussian_reml_rr` route vs the standalone fitter).
   Gaussian-only; `fit_gaussian_gllvm(reml = true)` and phylo REML are not on
   `main`
+- AGHQ Identity (estimator absent; twin opt-in experimental; VA GH ≠ AGHQ):
+  `docs/dev-log/decisions/2026-08-17-aghq-identity.md` — both AGHQ ledger
+  rows stay `missing`; no engine, no stub knob, no twin Δ
 - Public catch-up prose: `docs/src/gllvmtmb-parity.md` (Documenter legend ≠ this
   MC vocabulary)
