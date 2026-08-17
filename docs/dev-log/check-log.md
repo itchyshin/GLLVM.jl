@@ -1,6 +1,18 @@
 # Check Log
 
 
+## 2026-08-17 — AGHQ Stage-1a live-pin grid + k=1 golden
+
+Lane `cursor/aghq-stage1a-20260817` from `origin/main` @ `1550eef3` (#250).
+New internal `aghq_grid` / `_aghq_gh_normal` on the live
+`.gllvmTMB_aghq_grid` pin (probabilists' nodes; three-term `logw`).
+`k = 1` site/marginal matches dense Laplace (grid identity, not a
+capability claim; twin fit-time k=1 routing not ported). Fail-loud unless
+loadings-only `z_B`. VA `_gauss_hermite` not called. No public `aghq=`
+knob. Both AGHQ ledger rows stay `missing`. No twin Δ. Tweedie not opened.
+#247 not touched. Mac-LIGHT focused: `test/test_aghq_grid.jl` **69/69**
+in 4.3 s. Full suite = GitHub CI.
+
 ## 2026-08-17 — AGHQ estimator Identity (docs-only STOP)
 
 Lane `cursor/aghq-identity-20260817` on `origin/main` @ `51ffa320` (#246).
