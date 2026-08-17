@@ -131,7 +131,7 @@ breadth as twin *validation*.
 | Capability | Twin status | Julia status | Blocker | Next arc |
 |---|---|---|---|---|
 | ML (Laplace / closed-form Gaussian) | default | implemented | — | — |
-| **AGHQ** | **shipped**: `R/aghq-control.R`, `aghq-gate.R`, `aghq-auto-ridge.R`, `aghq-report.R` (incl. auto-decide gate) | **missing** — no `aghq` symbol under `src/` | whole estimator absent | largest *estimator-shaped* gap; needs its own campaign |
+| **AGHQ** | **shipped**: `R/aghq-control.R`, `aghq-gate.R`, `aghq-auto-ridge.R`, `aghq-report.R` (incl. auto-decide gate) | **missing** — no `aghq` symbol under `src/` | whole estimator absent | Identity ACCEPTED 2026-08-17 (`docs/dev-log/decisions/2026-08-17-aghq-identity.md`); engine campaign still unpaid — do not start without a fresh `/arc-creation` |
 | REML | Gaussian-only pilot | code exists (`src/reml.jl`, `fit_gaussian_reml`, bridge `reml=true`) but **no dedicated package test** → ledger `planned` | test-shaped, not engine-shaped | cheap: add `test_reml.jl`, then promote |
 | Non-Gaussian REML | — | **rejected** (deliberate) | — | never |
 | **Cross-validation** | **shipped**: `R/cv-internal.R`, `R/cv-metrics.R`, `data-cv-fixture.R` | **missing** — no `crossval` symbol under `src/` | absent | mid-term |
