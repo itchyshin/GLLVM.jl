@@ -137,13 +137,11 @@ in the gap sheet (§3) rather than as its own ledger row.
   no-X surface-admit sequence (COM-Poisson → Hurdle-NB → Beta-hurdle →
   Ordered-beta) is complete and the ZIB three-surface arc (`fit_gllvm` #218 →
   `@formula` #220 → bridge #231) is complete.
-- **In progress:** **#247** — `docs: overnight surface-admit handoff (2026-08-17)`,
-  docs-only, branch `cursor/overnight-surface-handoff-20260817`. `MERGEABLE`, but
-  `mergeStateStatus: UNSTABLE`: Documenter, `documenter/deploy`,
-  `Julia 1.10 - ubuntu-latest`, and `Julia 1 - macOS-latest` are all **SUCCESS**;
-  `Julia 1 - ubuntu-latest` and `Julia 1 - windows-latest` were still
-  **IN_PROGRESS** at write time (that CI matrix has been running ~90 min/job on
-  this tip). See the Landing State ledger for its disposition and resume command.
+- **In progress:** nothing. **#247** — `docs: overnight surface-admit handoff
+  (2026-08-17)`, docs-only, branch `cursor/overnight-surface-handoff-20260817` —
+  was **closed unmerged** at 13:01Z by a lane outside this one. Its content is
+  carried forward into this file; see the #247 disposition under Landing State.
+  Do not try to merge it.
 - **Not working / blocked:** nothing in the engine. Two housekeeping items:
   - **Stale `.git/index.lock`** (zero bytes, dated Aug 16 08:26) in the Dropbox
     checkout. The handoff gate reports it and refuses to remove it; the harness
@@ -184,8 +182,9 @@ session authored is left undeclared.
 | Artifact / branch | Committed | Pushed | PR | State |
 |---|---|---|---|---|
 | `origin/main` @ `1dafee68` (#234–#248 era) | y | y | all merged | **LANDED** |
-| #247 `cursor/overnight-surface-handoff-20260817` (docs-only) | y | y | [#247](https://github.com/itchyshin/GLLVM.jl/pull/247) open | see disposition below |
-| This handover: `cursor/handover-20260817`, worktree `.worktrees/gllvmjl-cursor-handover-20260817` | y | y | PR opened → merged to `main` | **LANDED** |
+| #247 `cursor/overnight-surface-handoff-20260817` (docs-only) | y | y | [#247](https://github.com/itchyshin/GLLVM.jl/pull/247) **CLOSED UNMERGED** 13:01Z | **CARRIED-OVER** — content carried into this file; see disposition below |
+| This handover: `cursor/handover-20260817` @ `d66eb733`, worktree `.worktrees/gllvmjl-cursor-handover-20260817` | y | y | [#249](https://github.com/itchyshin/GLLVM.jl/pull/249) merged @ `a0e0d696` | **LANDED on `main`** |
+| This #247 correction: `cursor/handover-247-correction-20260817` | y | y | [#250](https://github.com/itchyshin/GLLVM.jl/pull/250) | **LANDED on `main`** |
 | Dropbox checkout `claude/jl-bridge-capabilities-20260619` — 25 uncommitted paths (`.claude/preview/*` modified; `.claude/agents/*`, `.cursor/agents/*`, `.codex/agents/*` untracked) | n | n | none | **PROTECTED — never land** |
 | `.git/index.lock` (0 bytes, Aug 16 08:26) in the Dropbox checkout | n/a | n/a | none | **CARRIED-OVER — Shinichi only** |
 | 36 unpushed commits across 20 stale branches (`codex/p2-r-bridge` 6, `codex/phylo-poisson-s2-runner-reland-20260703` 6, `fix/gamma-x-grouped-cov-20260803` 4, `codex/phylo-xlv-modela-ci-20260630` 4, `docs/gamma-x-identity-20260803` 2, + 15 branches × 1) | y (local) | n | none | **CARRIED-OVER** |
@@ -214,22 +213,33 @@ session authored is left undeclared.
   other tools' sessions. They are **not** to be landed by any lane. Treat as
   read-only.
 
-### #247 disposition
+### #247 disposition — **CLOSED UNMERGED. Do not try to merge it.**
 
-Docs-only, one file
-(`docs/dev-log/handover/2026-08-17-overnight-surface-handoff.md`), Documenter
-green, three of five Julia jobs green. If you find it **still open**, that means
-the last two CI jobs had not reported when this handover landed:
+**Updated 2026-08-17 13:01Z, after this handover first landed at `a0e0d696`.**
+#247 (`docs: overnight surface-admit handoff`) was **closed without merging**
+(`state=CLOSED`, `mergedAt=null`, `mergeCommit=none`) by a lane outside this one,
+while its last CI job (`Julia 1 - windows-latest`) was still in flight. Four of
+five Julia jobs plus Documenter had already reported SUCCESS, so this was a
+deliberate close, not a CI failure.
+
+**Consequence:** its single file,
+`docs/dev-log/handover/2026-08-17-overnight-surface-handoff.md`, is **not on
+`origin/main`**. It survives only on the unmerged branch
+`cursor/overnight-surface-handoff-20260817` and in the worktree
+`.worktrees/gllvmjl-overnight-surface-handoff-20260817`.
+
+**Nothing is lost.** Its substance is carried forward into *this* file: every
+merge SHA for #241–#246 is in *What Was Accomplished*, the three tag-payload
+Identity locks are in *Key Decisions*, and its "remaining / do not claim done"
+list is now the OWED / PROTECTED classification below.
+
+Do **not** reopen or re-merge #247. If Shinichi later wants that overnight
+record on `main` as its own artifact, read it first, then cherry-pick it onto a
+fresh branch off `origin/main`:
 
 ```sh
-gh pr view 247 --json mergeable,mergeStateStatus,statusCheckRollup \
-  --jq '{m:.mergeStateStatus, c:[.statusCheckRollup[]|{n:(.name//.context),s:(.conclusion//.state//.status)}]}'
-# all SUCCESS  ->
-gh pr merge 247 --merge          # NEVER --auto
+git show cursor/overnight-surface-handoff-20260817:docs/dev-log/handover/2026-08-17-overnight-surface-handoff.md
 ```
-
-If it reads `DIRTY` against `origin/main`, rematch by merging `origin/main`
-**into** the PR branch — **no force-push**.
 
 ---
 
@@ -240,11 +250,11 @@ not an instruction to repeat work. Classify, then act.
 
 ### OWED — do these, in this order
 
-1. **Confirm the tip and close #247.** `git fetch origin main` and check
-   `git log -3 --oneline origin/main`; expect `1dafee68` or later (later, if this
-   handover's own PR and/or #247 landed). Then run the #247 block above: merge on
-   full green with `gh pr merge 247 --merge`, or rematch if dirty. Also confirm
-   the tip's own CI is green before starting engine work.
+1. **Confirm the tip. #247 needs nothing — it is closed unmerged (see above).**
+   `git fetch origin main && git log -3 --oneline origin/main`; expect
+   `a0e0d696` (this handover) or later, on top of `1dafee68` (#248). Confirm the
+   tip's own CI is green, and `gh pr list --state open` to see whether any new
+   lane has opened a PR since. Do **not** attempt to merge #247.
 2. **AGHQ Stage-1a `/arc-creation` — grid + `k = 1` golden test.** This is the
    next real slice, and it is **not** a family admit and **not** a surface admit.
    Scope, straight from #248 §A4 item (1):
@@ -308,8 +318,12 @@ three-surface arc is closed. The AGHQ Identity is written; do not re-derive it.
 
 ## Blockers / Open Questions
 
-- **#247's last two CI jobs.** Not a blocker for engine work; the merge is
-  mechanical once they report. Handled by OWED step 1.
+- **#247 was closed unmerged by another lane while its last CI job ran.** Not a
+  blocker — its content lives in this file — but it is a live example of why the
+  lane pre-flight matters here: another lane acted on a PR this one was tracking.
+  **Open question for Shinichi:** was closing #247 intentional (this handover
+  supersedes it), or should the overnight record be cherry-picked onto `main` as
+  its own artifact?
 - **`.git/index.lock`** needs Shinichi. Agents cannot clear it.
 - **AGENTS.md `## Phase state snapshot` is badly stale** — it still describes
   Phase 0 / 1.1 (node-frame gradient, Takahashi swap) while `main` is deep in the
@@ -416,7 +430,7 @@ with their own after-task reports under `docs/dev-log/after-task/`.
 
 | Repo | Branch / tip | CI | What shipped | Plan by leverage |
 |---|---|---|---|---|
-| **GLLVM.jl** | `main` @ `1dafee68` (+ this handover) | green on tip; #247 two jobs pending at write | #234 Tweedie STOP + #236/#238 health · #235 ZIP bridge fix · #241–#246 four no-X surface admits + two Identities · #248 AGHQ Identity | **1.** close #247 · **2.** AGHQ Stage-1a grid + `k=1` golden (arc-creation first) · **3.** near-parity leftovers: `none × dep()`, CV, coverage on Totoro/DRAC |
+| **GLLVM.jl** | `main` @ `a0e0d696` (this handover) on `1dafee68` (#248) | green on tip; Documenter green on both handover PRs | #234 Tweedie STOP + #236/#238 health · #235 ZIP bridge fix · #241–#246 four no-X surface admits + two Identities · #248 AGHQ Identity · #249/#250 this handover | **1.** confirm tip (#247 is closed unmerged — nothing to do) · **2.** AGHQ Stage-1a grid + `k=1` golden (arc-creation first) · **3.** near-parity leftovers: `none × dep()`, CV, coverage on Totoro/DRAC |
 | `gllvmTMB` (R twin) | read-only reference @ `e3e813f4`, v0.6.0 | — | AGHQ + CV shipped there; `.valid_family` ids 0–16 | never engine-surgery from this repo; never invent a Δ |
 
 Ledger at `1dafee68`: **58 implemented · 3 partial · 13 planned · 4 missing.**
@@ -460,8 +474,7 @@ Read AGENTS.md and docs/dev-log/handover/2026-08-17-cursor-handover.md. Run the 
 ### Which tool does what next
 
 - **Cursor** (you): the AGHQ Stage-1a grid + `k = 1` golden test is a bounded
-  multi-file Julia slice with a focused local test — a good Cursor arc. So is the
-  #247 close.
+  multi-file Julia slice with a focused local test — a good Cursor arc.
 - **Codex** owns anything needing the live R twin side-by-side (a real
   `gllvmTMB` fit, `R CMD check`, an RCall parity cell) — Codex runs that
   toolchain natively.
