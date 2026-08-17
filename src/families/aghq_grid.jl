@@ -122,24 +122,36 @@ function _aghq_stage1a_reject_extra(family, row_effects, phylo, mi,
     return nothing
 end
 
+@inline function _aghq_logsumexp(x::AbstractVector)
+    m = maximum(x)
+    isfinite(m) || return m
+    s = 0.0
+    @inbounds for xi in x
+        s += exp(xi - m)
+    end
+    return m + log(s)
+end
+
 """
     aghq_stage1a_loglik_site(family, y, n, Λ, β, link; k=1, ...) -> Float64
 
-Stage-1a `k = 1` grid-convention identity on a single loadings-only `z_B`
-block. Evaluates the twin *template* identity
+Stage-1a/1b site evaluator on a single loadings-only `z_B` block. Liu–Pierce
+adaptation at the existing Laplace mode (Hopper A4(2) pin; no `√2`):
 
 ```
-log L_i = −½ logdet H_i + (d/2) log(2π) + inner_ll(ẑ_i)
+z_ij = ẑᵢ + Lᵢ^{-T} uⱼ
+log Lᵢ = −½ logdet Aᵢ + logsumexpⱼ(logwⱼ + inner_ll(i,j))
 ```
 
-using [`aghq_grid`](@ref)`(d, 1)` for the `(d/2) log(2π)` term (via `logw`)
-and the existing Laplace mode/Hessian. This is a golden test of the grid,
-not a capability claim and **not** the twin's fit-time route that skips
-the AGHQ template at `k = 1`.
+`Aᵢ = Λ'WΛ + I` is the Laplace expected-Fisher cache at `ẑᵢ`; `L^{-T}` is
+`R^{-1}` from `cholesky(Aᵢ)`. `inner_ll` is the Stage-1a joint
+`ℓ − ½ z′z − (d/2) log(2π)` at each mapped node. At `k = 1` the single
+node is `u = 0`, so this **is** the existing Laplace golden — the template
+is evaluated, not skipped (twin fit-time `k = 1` → Laplace routing is A4.4).
 
-Fails loud if `k ≠ 1` or if the random part is not loadings-only `z_B`
+Fails loud if the random part is not loadings-only `z_B`
 (`unique`/`s_B`, `use_lv_B`, `mi()`, multinomial, row effects, phylo).
-Not a public `aghq=` surface.
+Not a public `aghq=` surface. Not a capability claim.
 """
 function aghq_stage1a_loglik_site(family, y::AbstractVector, n::AbstractVector,
         Λ::AbstractMatrix, β::AbstractVector, link::Link;
@@ -148,12 +160,11 @@ function aghq_stage1a_loglik_site(family, y::AbstractVector, n::AbstractVector,
         unique_latent = nothing, s_B = nothing,
         use_lv_B = nothing, multinomial = nothing,
         maxiter::Integer = 100, tol::Real = 1e-9)
-    k == 1 || throw(ArgumentError(
-        "AGHQ Stage 1a: k = 1 only (grid identity vs Laplace); per-site adaptation for k > 1 is unpaid"))
+    k ≥ 1 || throw(ArgumentError("AGHQ Stage 1a: k must be ≥ 1, got $k"))
     _aghq_stage1a_reject_extra(family, row_effects, phylo, mi, unique_latent,
                               s_B, use_lv_B, multinomial)
     d = size(Λ, 2)
-    grid = aghq_grid(d, 1)
+    grid = aghq_grid(d, k)
     p = size(Λ, 1)
     off = offset === nothing ? false : offset
     z = _laplace_mode(family, y, n, Λ, β, link;
@@ -171,21 +182,33 @@ function aghq_stage1a_loglik_site(family, y::AbstractVector, n::AbstractVector,
         Amat[i, i] += 1.0
     end
     A = Symmetric(Amat)
-    ℓ = 0.0
-    @inbounds for t in 1:p
-        (mask === nothing || mask[t]) || continue
-        ℓ += _glm_logpdf(family, μ[t], n[t], y[t])
-    end
-    inner_ll = ℓ - 0.5 * dot(z, z) - (d / 2) * log(2π)
     logdet_i = -0.5 * logdet(A)
-    return logdet_i + grid.logw[1] + inner_ll
+    # A = R'R; L = R' so L^{-T} = R^{-1}. No √2; no twin ridge / 1e-8 floor.
+    R = cholesky(A).U
+    ngrid = size(grid.nodes, 1)
+    terms = Vector{Float64}(undef, ngrid)
+    half_log2π = (d / 2) * log(2π)
+    @inbounds for j in 1:ngrid
+        zj = z + (R \ view(grid.nodes, j, :))
+        Λzj = Λ * zj
+        ηj = _clamp_eta.(β .+ off .+ Λzj)
+        μj = _clamp_mu.(Ref(family), linkinv.(Ref(link), ηj))
+        ℓj = 0.0
+        for t in 1:p
+            (mask === nothing || mask[t]) || continue
+            ℓj += _glm_logpdf(family, μj[t], n[t], y[t])
+        end
+        inner_ll = ℓj - 0.5 * dot(zj, zj) - half_log2π
+        terms[j] = grid.logw[j] + inner_ll
+    end
+    return logdet_i + _aghq_logsumexp(terms)
 end
 
 """
     aghq_stage1a_marginal_loglik(family, Y, N, Λ, β, link; k=1, ...) -> Float64
 
-Sum of [`aghq_stage1a_loglik_site`](@ref) over sites. Stage 1a only:
-`k` must be 1; loadings-only `z_B`.
+Sum of [`aghq_stage1a_loglik_site`](@ref) over sites. Loadings-only `z_B`.
+`k = 1` remains the Laplace template golden; `k > 1` is Stage-1b adaptation.
 """
 function aghq_stage1a_marginal_loglik(family, Y::AbstractMatrix, N::AbstractMatrix,
         Λ::AbstractMatrix, β::AbstractVector, link::Link;

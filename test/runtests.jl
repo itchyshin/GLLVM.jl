@@ -38,6 +38,7 @@ using GLLVM
     include("test_families.jl")
     include("test_binomial_laplace.jl")
     include("test_aghq_grid.jl")
+    include("test_aghq_adapt.jl")
     include("test_poisson_laplace.jl")
     include("test_truncated_poisson.jl")
     include("test_censored_poisson.jl")

@@ -76,7 +76,23 @@ using GLLVM, Test, Random, Distributions, LinearAlgebra
         @test aghq ≈ lap atol = 1e-12
     end
 
-    @testset "fail-loud: k≠1 and extra random structure" begin
+    @testset "k>1 site evaluator exercises Liu–Pierce nodes" begin
+        Random.seed!(1710)
+        p, K = 4, 2
+        β = randn(p) .* 0.4 .+ 0.8
+        Λ = 0.5 .* randn(p, K)
+        y = [rand(Poisson(exp(β[t]))) for t in 1:p]
+        n = ones(Int, p)
+        link = GLLVM.LogLink()
+        fam = Poisson()
+        ll1 = GLLVM.aghq_stage1a_loglik_site(fam, y, n, Λ, β, link; k = 1)
+        ll3 = GLLVM.aghq_stage1a_loglik_site(fam, y, n, Λ, β, link; k = 3)
+        @test isfinite(ll1) && isfinite(ll3)
+        # Stage-1b: k>1 is the live node loop, not a Stage-1a throw.
+        @test !isapprox(ll3, ll1; atol = 1e-10)
+    end
+
+    @testset "fail-loud: extra random structure (loadings-only z_B)" begin
         p, K = 3, 1
         β = zeros(p)
         Λ = ones(p, K)
@@ -84,8 +100,6 @@ using GLLVM, Test, Random, Distributions, LinearAlgebra
         n = ones(Int, p)
         link = GLLVM.LogLink()
         fam = Poisson()
-        @test_throws ArgumentError GLLVM.aghq_stage1a_loglik_site(
-            fam, y, n, Λ, β, link; k = 3)
         @test_throws ArgumentError GLLVM.aghq_stage1a_loglik_site(
             fam, y, n, Λ, β, link; k = 1, row_effects = true)
         @test_throws ArgumentError GLLVM.aghq_stage1a_loglik_site(

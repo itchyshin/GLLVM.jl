@@ -1,68 +1,21 @@
-GOAL: see GOAL.md.   STATE: **COMPLETE** — all ordered logLik oracle cells green (Gauss → Bin → Pois → NB2 grouped → Beta grouped → Ordinal probit). Tip `34b66e48` (Beta engine `387d267a`; NB2 observed-Hess restore `9d661c4f`; docs close).
+GOAL: see GOAL.md.   STATE: A0 still blocked — #251 not on origin/main; A4(2) not started. Leftover inventory folded as deferred next after A4(2) STOP — not started. GOAL FINISHED = no.
 
-ARCS DONE (verified):
-- A0 — lane + drift `n_drift=0` `unregistered=0`. Twin `cee55a07`.
-- A1 — correctness inventory banked (Bin/Pois clear; #132/#148/#133 via parity routes; #129/#128 fenced).
-- A2 — Gaussian ΔlogLik = **9.78275238594506e-9** (30/30).
-- A2b — bridge drift smoke PASS.
-- A3 — Binomial + Poisson live green:
-  - Binomial Julia = **-194.681986234064** · R = **-194.68198623424576** · Δ = **1.8175683180743363e-10** · **6/6**
-  - Poisson Julia = **-634.171284410425** · R = **-634.1712844171735** · Δ = **6.748564373992849e-9** · **6/6**
-- A4 **#132 NB2 logLik** — GREEN. Route: `fit_nb_gllvm_grouped` · `group=1:p` + **observed NB2/log** Laplace Hessian (parity cell `5ad55877`; curvature default restored at closeout — earlier bank omitted the engine hunk). ΔlogLik ≈ **−2.50e-4** (rtol 1e-6).
-- A4 **#148 Beta logLik** — GREEN @ `387d267a`. Route: `fit_beta_gllvm_grouped` · `group=1:p` + **observed Beta/logit** Laplace Hessian. ΔlogLik ≈ **+5.97e-9**.
-- A5 **#133 Ordinal logLik** — GREEN @ `3a84d8b6` (impl `10fcd484`). Route: **`ordinal_probit`** (not logit) + **observed Hessian** Laplace. ΔlogLik ≈ **5.48e-9**.
+ARCS DONE (verified): LOOP kit rewrite (`116e25f6`); A0 first recon (`95cd76ba`); A0 14:05Z recheck (`ac60813b`); A0 14:33Z recheck (`12ca372d`); leftover inventory folded into arcs/checkpoint (this commit).
 
-**Family oracle bank (lane close):**
+ARC IN PROGRESS: A0 — wait/recon #251. Landed iff `git merge-base --is-ancestor 17857481 origin/main` exits 0.
 
-| Family | Status | Route / note | Δ order |
-|---|---|---|---|
-| Gaussian | green | closed-form marginal | ~1e-8 |
-| Binomial | green | Bernoulli logit | ~1e-10 |
-| Poisson | green | log | ~1e-8 |
-| NB2 | green | grouped `1:p` | ~2.5e-4 |
-| Beta | green @ `387d267a` | grouped `1:p` + observed Hess. | ~6e-9 |
-| Ordinal | green | **probit** + observed Hess. | ~5e-9 |
+NEXT: Stay on A0. Re-fetch `origin/main` and `gh pr checks 251`. Do **not** start A1. Do **not** edit `src/families/aghq_grid.jl`. Do **not** `gh pr merge`. Do **not** start leftover-1 / leftover-2. Do **not** write Identity decision files.
 
-A4/A5 STATUS: **CLOSED** for light logLik oracles on the routes above. Default shared-dispersion NB2/Beta fitters and ordinal-logit are **not** the twin parity entries.
+DEFERRED NEXT (after this `/goal` STOP = A4(2) PR-ready; Q2 sequential; not now):
+1. leftover-1 Identity = `none × dep()` — twin `dep()` at `R/brms-sugar.R` ~1653; Julia capability-status `planned`; no `dep` in `src/`; do not confuse with slope Σ_b.
+2. leftover-2 CV Identity — twin internal `.cv_run` / `.cv_score` (NOT a NAMESPACE `crossval` export); Julia has no `crossval` symbol.
 
-OPEN GATES / FENCED:
-- #129 / #128 still fenced (CI scale / H² denom — not this arc).
-- No ADEMP / coverage / Totoro-DRAC.
-- `n_drift=0` ≠ fit parity (ledger hygiene only).
+OUT (do not start): Tweedie admit · multinomial · AGHQ public knob · twin Δ · A4(3) in this run · coverage/Totoro.
 
-NEXT:
-1. Rose claim fence holds on public boards (no “full family parity”).
-2. Melissa plan-actual CLOSED (this closeout).
-3. Optional maintainer: PR / push when instructed — **no push from this lane**.
+OPEN GATES (need human):
+1. **Wait for #251.** Recheck 2026-08-17 ~14:33Z (sibling merge check agrees): `17857481` is **not** an ancestor of `origin/main` (`1550eef3`). PR OPEN, MERGEABLE, UNSTABLE, `mergedAt` null. Documenter + documenter/deploy SUCCESS only. Four Julia jobs still IN_PROGRESS (run `32035360864`, ~1h4m): macOS, windows, ubuntu 1.10, ubuntu 1 — none concluded. This lane does not merge. A sibling may `gh pr merge 251 --merge` only when those four are SUCCESS — settings DENY merge here.
+2. Push/PR after A4(2) is PR-ready — DENIED here. Not yet reached.
 
-TRUTH LIVES IN:
-- Write lane: `.worktrees/gllvmjl-catchup-loglik-20260801` / `catchup/loglik-oracle-20260801` @ `34b66e48`
-- Twin R: `/tmp/gllvmtmb-parity-restart-20260801` @ `cee55a07`
-- Full parity log: `/tmp/gllvmjl-catchup-full-parity-20260801.log`
-- After-tasks: `docs/dev-log/after-task/2026-08-01-gaussian-gllvmtmb-loglik-oracle.md`, `…/2026-08-01-binomial-poisson-gllvmtmb-loglik-oracle.md`, `…/2026-08-01-a4a5-nbbeta-ordinal-loglik-blocked.md` (interim), `…/2026-08-01-a4a5-catchup-loglik-oracle-close.md`
-- Melissa: `docs/dev-log/plan-actual/2026-08-01-gllvm-jl-catchup-loglik-oracle.md`
+TRUTH LIVES IN: `~/local-scratch/lanes/GLLVM.jl-aghq-stage1b` on `claude/lane-aghq-stage1b` @ `12ca372d` + this checkpoint. Plan `docs/dev-log/plans/2026-08-17-estimator-covariance-ultraplan.md`. Stage-1a engine exists only on #251 worktree @ `17857481`. Leftover cites: twin `R/brms-sugar.R` ~1653; `docs/design/capability-status.md` (`none × dep` = planned).
 
-PARALLEL CHILDREN (banked):
-- Ordinal impl → `b7c2cdb8`; Ordinal logLik → `10fcd484` / `3a84d8b6`
-- NB2 → `5ad55877` (+ docs `b74b91f4`)
-- Beta → `d666a09c` (cell) + `387d267a` (observed-Hessian green)
-- Ignore confused Curvature child claiming stale-fork Beta untested — lane repaired; Beta authoritative via Beta child.
-
-RESUME:
-```
-You are gllvm-jl-catchup-loglik — DONE (closeout).
-READ FIRST: LOOP/GOAL.md -> LOOP/checkpoint.md.
-WORKSPACE: .worktrees/gllvmjl-catchup-loglik-20260801 on catchup/loglik-oracle-20260801 @ 34b66e48.
-GOAL COMPLETE: Gauss/Bin/Pois/NB2-grouped/Beta-grouped/ordinal_probit logLik oracles green (63/63).
-Fenced: #129/#128; ADEMP; coverage; “full family parity”; n_drift≠parity.
-No push unless maintainer instructs. Prefer FRESH TASK for next work.
-```
-
-CONTINUE HERE vs START A FRESH TASK: **FRESH TASK** — catch-up logLik oracle goal is complete; do not re-open Beta/NB2 curvature.
-
-
----
-
-## Wave2 pointer (lognormal Identity PR #207) — 2026-08-15
-
-Identity ACCEPTED @ `06a3b5a1`; ceiling APPROVED @ `210505c5`. Engine-wave binding conditions C1–C5 (not W1 blockers): see `ENGINE-GATES.md` and `docs/dev-log/decisions/2026-08-15-lognormal-identity-review-opus.md`. Do not start engine from Identity lane without owned engine worktree.
+RESUME: You are aghq-stage1b — running wait #251 + A4(2) only. RESUME. READ FIRST: LOOP/GOAL.md -> LOOP/checkpoint.md -> LOOP/ultra-plan.md -> AGENTS.md. WORKSPACE: `~/local-scratch/lanes/GLLVM.jl-aghq-stage1b` on `claude/lane-aghq-stage1b` (reattach; do NOT recreate). CONTINUE FROM: A0 — re-check whether `17857481` is on `origin/main`. If yes, rebase and start A1 (Hopper A4(2)). If no, stay waiting. Pause at: merge #251 (denied) and push/PR (denied). Do not start A4(3). Do not start leftover-1 (`none × dep()`) or leftover-2 (CV Identity) in this run — they are deferred until after A4(2) is PR-ready. GOAL FINISHED remains no until A4(2) is PR-ready.

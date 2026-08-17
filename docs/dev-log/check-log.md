@@ -1,6 +1,20 @@
 # Check Log
 
 
+## 2026-08-17 — AGHQ Stage-1b A4(2) Liu–Pierce adapt golden
+
+Lane `claude/lane-aghq-stage1b` @ `32967ef4` + this test/DoD close (PR #252).
+Src already maps `z_ij = ẑᵢ + Lᵢ^{-T} uⱼ` (no √2) and
+`log L = −½ logdet A + logsumexp(logw + inner_ll)`. This slice adds
+`test/test_aghq_adapt.jl`, retires the Stage-1a `k=3` throw, and wires
+`test/runtests.jl`. `k = 1` still matches dense Laplace (template, not
+twin skip). `k > 1` matches an independent Liu–Pierce golden and rejects
+the √2 map. Fail-loud remains for non loadings-only `z_B`. VA
+`_gauss_hermite` not called. No public `aghq=` knob. Both AGHQ ledger
+rows stay `missing`. No twin Δ. Tweedie / #247 / Dropbox checkout not
+touched. Mac-LIGHT focused: `test/test_aghq_grid.jl` **70/70** in 4.3 s;
+`test/test_aghq_adapt.jl` **17/17** in 3.5 s. Full suite = GitHub CI.
+
 ## 2026-08-17 — AGHQ Stage-1a live-pin grid + k=1 golden
 
 Lane `cursor/aghq-stage1a-20260817` from `origin/main` @ `1550eef3` (#250).

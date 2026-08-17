@@ -1,33 +1,40 @@
-# Arcs — gllvm-jl-catchup-loglik
+# Arcs — G0-approved estimator+covariance HEADLINE (this `/goal` only)
 
-Binding arc ids follow the `/goal` launch contract (inventory = A1, Gaussian headline = A2).
-Plan file slice table remains authoritative detail in `ultra-plan.md`.
+Status: todo / doing / done / blocked / deferred. Gate = needs a human before it can proceed.
 
-**Recon citations (do not re-inventory):**
-- A1: `docs/dev-log/plans/scratch/2026-08-01-correctness-inventory.md` → `LOOP/notes/A1-correctness-inventory.md`
-- A2 call shape: `docs/dev-log/plans/scratch/2026-08-01-gaussian-rcall-shape.md` → `LOOP/notes/A2-rcall-callshape-audit.md`
+| # | arc | dep | status | gate? |
+|---|-----|-----|--------|-------|
+| A0 | Wait/recon PR #251 (`17857481`). `git fetch origin main`; `gh pr view 251` / `gh pr checks 251`. This lane does **not** merge. Read-only recon allowed while waiting. | — | blocked | OPEN GATE: this lane does not merge #251. CI still IN_PROGRESS (not fully SUCCESS). Do not merge. |
+| A1 | After `17857481` is an ancestor of `origin/main`: merge/rebase `origin/main` into `claude/lane-aghq-stage1b`. Implement Hopper A4(2): extend `aghq_stage1a_loglik_site`; `z_ij = ẑᵢ + Lᵢ^{-T} uⱼ` (no √2); `log Lᵢ = logdet_i + logsumexp(logw + inner_ll)`; k=1 remains the template golden; fail-loud `_aghq_stage1a_reject_extra`; `test/test_aghq_adapt.jl`. No public `aghq=`; ledger rows stay `missing`; no `_gauss_hermite`. | A0 | todo | Blocked until #251 is on `origin/main`. |
+| A2 | Verify Mac-light: `export PATH="$HOME/.juliaup/bin:$PATH"`; `julia --project=. --startup-file=no test/test_aghq_adapt.jl` (and `test/test_aghq_grid.jl` if present). Paste tally. k=1 still ≡ Laplace. | A1 | todo | — |
+| A3 | check-log + after-task. A4(2) PR-ready. Overwrite checkpoint with RESUME. | A2 | todo | OPEN GATE: push/PR. `lane_launch` DENIES `git push` and `gh pr merge`. STOP. |
 
-| Arc | Intent | Status | Gate |
-|---|---|---|---|
-| A0 | Lane from `origin/main` + twin main; drift probe | **DONE** (`n_drift=0`) | — |
-| A1 | Correctness inventory folded from scout note | **DONE** | — |
-| A2 | Live Gaussian logLik vs gllvmTMB | **DONE** (Δ≈9.8e-9; 30/30) | Rose claim fence |
-| A2b | Bridge transport smoke | **DONE** | — |
-| A3 | Binomial then Poisson logLik cells | **DONE** (Bin Δ≈1.8e-10; Pois Δ≈6.7e-9) | — |
-| A4 | #132 / #148 dispersion alignment (Julia→R) | **DONE via parity routes** | grouped `1:p` (not shared default) |
-| A5 | #133 ordinal location/cuts + probit oracle | **DONE** | **ordinal_probit** + observed Hess. |
-| A6 | NB2 / Beta / Ordinal logLik cells after A4/A5 | **DONE** | NB2 ~2.5e-4; Beta ~6e-9; Ord ~5e-9 |
-| Close | check-log + after-task + Rose + Melissa | **DONE** (this closeout) | claim fence |
+## Deferred / not this run (Q1 STOP)
 
-## Sequencing (locked — completed)
+Q2 sequential: no disjoint worktree for leftovers or A4(3). Do **not** start leftover-1 / leftover-2 in this `/goal`. Do **not** write Identity decision files now.
 
-1. ~~A0–A2 Gaussian~~  
-2. ~~A3 Binomial → Poisson~~  
-3. ~~OPEN GATE #132/#148/#133~~  
-4. ~~A6 family cells on twin-aligned routes~~  
+After **this** `/goal` STOP (A4(2) PR-ready), the next leftover Identities are:
 
-## Fenced out of arc
+| # | arc | status | note |
+|---|-----|--------|------|
+| leftover-1 | `none × dep()` Identity then engine | deferred | **First leftover after A4(2) STOP.** Twin `dep()` at `R/brms-sugar.R` ~1653. Julia `docs/design/capability-status.md` row is `planned`. No `dep` symbol under `src/`. Do **not** confuse with slope Σ_b. |
+| leftover-2 | CV Identity | deferred | After leftover-1. Twin internals `.cv_run` / `.cv_score` — **not** a NAMESPACE `crossval` export. Julia has no `crossval` symbol. No `crossval=` stub. |
 
-- #129 (CI scale), #128 (H² denom)  
-- ADEMP, coverage, Totoro/DRAC, structured-source public claims  
-- “Full family parity” / default shared-φ NB2·Beta / ordinal-logit twin claims  
+Later AGHQ rungs (not leftovers; still not this run):
+
+| # | arc | status | note |
+|---|-----|--------|------|
+| A4(3) | Structural-gate Identity then engine | deferred | Later `/goal`. **Out of this run.** Q2: no disjoint worktree now. |
+| A4(4) | Adaptation loop + convergence verdict | deferred | After A4(3). |
+| A4(5) | Report honesty (`used`, `k`, engine label) | deferred | Earliest public `aghq=` discussable. |
+
+## Out of the leftover inventory (do not start)
+
+- Tweedie `fit_gllvm` admit
+- multinomial campaign
+- AGHQ public knob (`aghq=`)
+- invented twin Δ
+- A4(3) in this run
+- coverage certificate / Totoro (only if Shinichi sizes it later)
+
+Do **not** execute the frozen 2026-08-01 logLik-oracle LOOP notes under `LOOP/notes/`.
