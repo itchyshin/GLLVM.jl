@@ -67,6 +67,7 @@ using GLLVM
     include("test_gamma_fit.jl")
     include("test_tweedie.jl")
     include("test_tweedie_engine_health.jl")
+    include("test_tweedie_grouped_engine_health.jl")
     include("test_exponential.jl")
     include("test_studentt.jl")
     include("test_lognormal.jl")

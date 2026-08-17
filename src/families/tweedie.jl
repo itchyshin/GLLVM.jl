@@ -177,7 +177,8 @@ end
 """
     _tweedie_verdict(optim_converged, gres, nll, ξ, g_tol) -> (converged, loglik, reason)
 
-Convergence contract for [`fit_tweedie_gllvm`](@ref). `Optim`'s own verdict is
+Convergence contract for [`fit_tweedie_gllvm`](@ref) and
+[`fit_tweedie_gllvm_grouped`](@ref). `Optim`'s own verdict is
 necessary but not sufficient here: on this objective it fires `f_converged` on a
 relative step test while the gradient residual is still ~1e15 (the optimiser
 stalled), and `g_converged` on the flat failure plateau where the

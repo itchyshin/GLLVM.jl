@@ -249,13 +249,10 @@ flagged as **not** converged if the Laplace marginal could not be evaluated at
 the returned point (`loglik` is then `-Inf`, never an internal sentinel), if the
 power has run to the closed end of `(1, 2)`, or if the gradient residual is large
 relative to the objective's own scale. Treat `converged = false` as a real
-result: try a different `p_init`, or a cell with more sites.
-
-!!! warning
-    This contract currently applies to `fit_tweedie_gllvm` only.
-    `fit_tweedie_gllvm_grouped` — and therefore
-    `fit_gllvm(...; disp_group = :species)` — has not been repaired yet and can
-    still report `converged = true` at a start-pinned point.
+result: try a different `p_init` / `power_init`, or a cell with more sites.
+The same contract applies to [`fit_tweedie_gllvm_grouped`](@ref) (and therefore
+to the already-shipped `fit_gllvm(...; disp_group = :species)` route). The
+bare-marker `fit_gllvm` admit is still closed.
 
 ### Student-t — `StudentTFamily(ν)`
 
