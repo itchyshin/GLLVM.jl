@@ -430,14 +430,31 @@ end
 # ---------------------------------------------------------------------------
 
 """
-    HurdleNB(r)
+    HurdleNB(r = 10.0)
 
 Marker for the Hurdle-NB family (Bernoulli occurrence × zero-truncated NB2 count,
-shared dispersion `r`).
+shared dispersion `r`). Use with the unified entry point:
+
+```julia
+fit_gllvm(Y; family = HurdleNB(), K = 2)
+fit_gllvm(Y; family = HurdleNB(99.0), K = 2)   # same fit — r is a tag payload
+gllvm(@formula(y ~ 1), Y, site_data; family = HurdleNB(), K = 2)
+```
+
+The marker's `r` field is a **tag payload** — it is never read by
+[`fit_gllvm`](@ref) / [`fit_hurdle_nb_gllvm`](@ref); the shared dispersion is
+always estimated. There is no `r_init` keyword. `HurdleNB()` is the public
+convenience (`10.0` matches the named fitter's hardcoded start). Named fitter
+[`fit_hurdle_nb_gllvm`](@ref) remains available. +X, `disp_group`, and
+`row_eff` are not admitted on this surface.
 """
 struct HurdleNB
     r::Float64
 end
+
+# Public-call convenience (mirrors `NB1()` / `HurdlePoisson()` / `COMPoisson()`):
+# r is never read on the `fit_gllvm` route. 10.0 matches the fitter start.
+HurdleNB() = HurdleNB(10.0)
 
 function _tp_pieces(f::HurdleNB, y, ηz, ηc)
     π = inv(one(ηz) + exp(-ηz))

@@ -196,7 +196,7 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        delta_lognormal_marginal_loglik_laplace,
        fit_hurdle_poisson_gllvm, HurdlePoissonFit, HurdlePoisson,
        hurdle_poisson_marginal_loglik_laplace,
-       fit_hurdle_nb_gllvm, HurdleNBFit,
+       fit_hurdle_nb_gllvm, HurdleNBFit, HurdleNB,
        hurdle_nb_marginal_loglik_laplace,
        fit_delta_gamma_gllvm, DeltaGammaFit, DeltaGamma,
        delta_gamma_marginal_loglik_laplace,

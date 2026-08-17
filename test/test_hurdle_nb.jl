@@ -79,4 +79,40 @@ end
         s = sprint(show, MIME("text/plain"), fit)
         @test occursin("Hurdle-NB", s)
     end
+
+    @testset "fit_gllvm reaches no-X Hurdle-NB via the HurdleNB() marker" begin
+        Random.seed!(1608)
+        p, K, n = 4, 1, 60
+        βz_true = fill(-0.2, p)
+        βc_true = log.(2 .+ abs.(randn(p)))
+        Λc_true = 0.4 .* randn(p, K)
+        r_true = 6.0
+        π = inv.(1 .+ exp.(-βz_true))
+        Z = randn(K, n)
+        ηc = βc_true .+ Λc_true * Z
+        Y = zeros(Int, p, n)
+        for t in 1:p, s in 1:n
+            rand() < π[t] && (Y[t, s] = _rztnb(exp(ηc[t, s]), r_true))
+        end
+
+        @test HurdleNB().r == 10.0
+
+        fit = fit_gllvm(Y; family = HurdleNB(), K = K, iterations = 40)
+        @test fit isa HurdleNBFit
+        @test isfinite(fit.loglik)
+        direct = fit_hurdle_nb_gllvm(Y; K = K, iterations = 40)
+        @test fit.loglik ≈ direct.loglik atol = 1e-8
+        @test fit.r ≈ direct.r atol = 1e-8
+
+        # Marker r is a tag payload — never read, never a starting value.
+        tagged = fit_gllvm(Y; family = HurdleNB(99.0), K = K, iterations = 40)
+        @test tagged.loglik ≈ fit.loglik atol = 1e-8
+        @test tagged.r ≈ fit.r atol = 1e-8
+
+        # No-X `@formula` inherits the arm via the q == 0 fall-through.
+        ff = gllvm(@formula(y ~ 1), Y, (; temp = randn(n));
+                   family = HurdleNB(), K = K, iterations = 40)
+        @test ff isa HurdleNBFit
+        @test ff.loglik ≈ direct.loglik atol = 1e-8
+    end
 end
