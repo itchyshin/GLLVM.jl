@@ -122,6 +122,23 @@ function _aghq_stage1a_reject_extra(family, row_effects, phylo, mi,
     return nothing
 end
 
+"""
+    _aghq_kd_bound(d, k) -> Nothing
+
+Cheap tensor-cost analogue of twin `tw ≤ 4` for dense loadings-only `z_B`.
+Throws `ArgumentError` iff `k > 1` and `d > 5`. `k = 1` always returns
+(Laplace template; do not skip mode / Cholesky). Error text names tensor
+cost `k^d` and `d ≤ 5`. Not a treewidth measurement. Not `.aghq_gate`.
+"""
+function _aghq_kd_bound(d::Integer, k::Integer)
+    if k > 1 && d > 5
+        throw(ArgumentError(
+            "AGHQ Stage 1a: tensor cost k^d with d=$d, k=$k exceeds d ≤ 5; " *
+            "k = 1 remains Laplace"))
+    end
+    return nothing
+end
+
 @inline function _aghq_logsumexp(x::AbstractVector)
     m = maximum(x)
     isfinite(m) || return m
@@ -151,6 +168,8 @@ is evaluated, not skipped (twin fit-time `k = 1` → Laplace routing is A4.4).
 
 Fails loud if the random part is not loadings-only `z_B`
 (`unique`/`s_B`, `use_lv_B`, `mi()`, multinomial, row effects, phylo).
+At `k > 1`, also fails loud when `d > 5` ([`_aghq_kd_bound`](@ref);
+tensor cost `k^d` / `d ≤ 5`). `k = 1` is still the Laplace template.
 Not a public `aghq=` surface. Not a capability claim.
 """
 function aghq_stage1a_loglik_site(family, y::AbstractVector, n::AbstractVector,
@@ -164,6 +183,7 @@ function aghq_stage1a_loglik_site(family, y::AbstractVector, n::AbstractVector,
     _aghq_stage1a_reject_extra(family, row_effects, phylo, mi, unique_latent,
                               s_B, use_lv_B, multinomial)
     d = size(Λ, 2)
+    _aghq_kd_bound(d, k)
     grid = aghq_grid(d, k)
     p = size(Λ, 1)
     off = offset === nothing ? false : offset
