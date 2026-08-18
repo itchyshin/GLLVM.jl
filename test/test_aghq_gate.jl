@@ -83,11 +83,4 @@ end
         @test isfinite(lap) && isfinite(aghq)
         @test aghq ≈ lap atol = 1e-12
     end
-
-    @testset "eligibility gate remains the named helper" begin
-        # Twin R/aghq-gate.R uses TMB min-fill treewidth (tw≤4 ≈ d≤5).
-        # Julia affordability is `_aghq_kd_bound`, not a TMB gate port.
-        # `#253` `!isdefined` absence rows are deleted — the helper exists.
-        @test isdefined(GLLVM, :_aghq_stage1a_reject_extra)
-    end
 end

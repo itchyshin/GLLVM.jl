@@ -1,9 +1,9 @@
 using GLLVM, Test, Random, Distributions
 
 # A4(3) affordability: `_aghq_kd_bound` throw-iff k>1 && d>5.
-# File-disjoint from #255 (`test/test_aghq_gate.jl` still owns the
-# `!isdefined` absence rows). Not a public `aghq=` surface. Not a
-# TMB min-fill / treewidth port.
+# #255 MERGED — the three `!isdefined` absence rows are gone from
+# `test/test_aghq_gate.jl`. Not a public `aghq=` surface. Not a
+# TMB min-fill / treewidth port. Do not invent `aghq_gate`.
 
 function _bound_site(; k::Integer, d::Integer, kwargs...)
     p = max(d, 3)

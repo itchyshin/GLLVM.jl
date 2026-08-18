@@ -16,17 +16,16 @@ after `_aghq_stage1a_reject_extra` (unchanged).
 |---|-----|--------|-------|
 | 2a | LOOP kit on this worktree (GOAL / arcs / checkpoint / ultra-plan) | done | — |
 | 2b | `_aghq_kd_bound` + call site on `src/families/aghq_grid.jl` | done | — |
-| 2c | Fail-loud tests + delete `#253` `!isdefined` absence tests in `test/test_aghq_gate.jl` | blocked | **OPEN: wait #255 MERGED** |
-| 2d | Decision addendum on `docs/dev-log/decisions/2026-08-18-aghq-a43-gate.md` | blocked | **OPEN: wait #255 MERGED** |
-| 2e | check-log + after-task; named-path commits; STOP at sibling push/PR | todo | OPEN GATE = sibling push/PR |
+| 2c | Fail-loud tests + delete `#253` `!isdefined` absence tests in `test/test_aghq_gate.jl` | done | #255 MERGED @ `81866b1a` |
+| 2d | Decision addendum: affordability closed by `_aghq_kd_bound`; eligibility still declared-kwargs | done | #255 MERGED @ `81866b1a` |
+| 2e | check-log + after-task; named-path commits; STOP at sibling push/PR | done (this closeout) | OPEN GATE = sibling push onto #256; do not merge |
 | 3 | Gate wiring (`false` vs omitted kwargs) | OUT | — |
 | 4 | A4(4) site-evaluator / fitter | OUT | — |
 | 5 | A4(5) print/AIC/`used` / public `aghq=` | OUT | waits |
 | 6 | `none × dep()` Identity | OUT | waits |
 | 7 | CV Identity | OUT | waits |
 
-Do **not** edit until #255 MERGED: `test/test_aghq_gate.jl`, honesty
-`LOOP/arcs.md` / `LOOP/checkpoint.md`,
-`docs/dev-log/decisions/2026-08-18-aghq-a43-gate.md`.
+#255 MERGED @ `81866b1a`. Absence tests deleted. Do not invent
+`aghq_gate`. No public `aghq=`. Ledger AGHQ stays `missing`.
 
 This worktree’s `LOOP/` is not the overnight / honesty kit.

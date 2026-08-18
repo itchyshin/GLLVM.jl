@@ -12,7 +12,7 @@ kit over that path.
 | `../../../docs/dev-log/decisions/2026-08-18-aghq-a43-afford.md` | Decision addendum (NEW file; not `#255` `…-a43-gate.md`) |
 | `../../../docs/dev-log/after-task/2026-08-18-aghq-a43-afford.md` | After-task + Rose fence |
 
-**WAIT for #255 merge:** `docs/dev-log/check-log.md` prepend;
-rewriting `docs/dev-log/decisions/2026-08-18-aghq-a43-gate.md`;
-deleting `#253` `!isdefined` tests. `src/families/aghq_grid.jl` is
-Noether.
+**#255 MERGED @ `81866b1a`.** Absence tests deleted. Addendum closes
+the affordability half (`_aghq_kd_bound`); eligibility stays
+declared-kwargs. `src/families/aghq_grid.jl` is Noether. Do not invent
+`aghq_gate`. No public `aghq=`. Ledger AGHQ stays `missing`.
