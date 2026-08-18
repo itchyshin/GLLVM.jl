@@ -28,6 +28,21 @@ ledger rows **untouched** (`missing`). Not piled onto OPEN #257.
 Mac-LIGHT focused: `test/test_bridge_capabilities.jl` **211/211**;
 `test/test_bridge_lognormal.jl` **43/43**. Full suite = GitHub CI.
 
+## 2026-08-18 — none × dep() Identity (docs-only ACCEPTED)
+
+Lane `cursor/lane-none-dep-identity-20260818` from `origin/main` `3d5acba0`.
+Locks standalone twin `dep(0 + trait | g)`: unstructured \(T \times T\)
+\(\boldsymbol\Sigma\), \(T(T+1)/2\) via Cholesky (twin L1661–1662, L1681–1682,
+L32). Constructor L1721. Grid L10 `none | indep() | dep() | latent()`.
+L1694–1698 **documents** over-parameterised `dep`+`latent`; this file
+does **not** contain the `cli_abort` body (parser `.dep = TRUE` at
+L4193–4200; guards elsewhere / `fit-multi.R`). Twin pin `gllvmTMB`
+`origin/main` **`b8a1891a`** (Merge #1139); blob `R/brms-sugar.R`
+**`e1922dbf`**. `phylo_dep` L1787 not this slice. Ledger L47 stays
+**planned** — `capability-status.md` **not** edited. `git grep -n 'dep('
+3d5acba0 -- src/` empty (exit 1). No invented Δ. Mac-light N/A.
+Parity: N/A.
+
 ## 2026-08-18 — AGHQ A4(3) affordability half closed (`_aghq_kd_bound`)
 
 Lane `cursor/lane-aghq-a43-afford-20260818` from `origin/main` @
