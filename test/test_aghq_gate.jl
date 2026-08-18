@@ -2,7 +2,8 @@ using GLLVM, Test, Random, Distributions, LinearAlgebra
 
 # A4(3): `_aghq_stage1a_reject_extra` fail-loud IS the gate.
 # No public `aghq=`. No TMB min-fill / treewidth port.
-# Optional k^d / d cost bound: skipped — no engine helper exists.
+# Affordability (`k^d` / `d ≤ 5`) is `_aghq_kd_bound` — see
+# `test/test_aghq_kd_bound.jl`. Do not re-assert helper absence here.
 
 function _reject_extra(family = Poisson(); row_effects = nothing,
         phylo = nothing, mi = nothing, unique_latent = nothing,
@@ -81,17 +82,5 @@ end
         aghq = GLLVM.aghq_stage1a_loglik_site(fam, y, n, Λ, β, link; k = 1)
         @test isfinite(lap) && isfinite(aghq)
         @test aghq ≈ lap atol = 1e-12
-    end
-
-    @testset "optional k^d / d cost bound is not an engine helper" begin
-        # Twin R/aghq-gate.R uses TMB min-fill treewidth (tw≤4 ≈ d≤5).
-        # Julia has no k^d / d / treewidth helper. Do not invent one here;
-        # `_aghq_stage1a_reject_extra` remains the only Stage-1a gate.
-        # Absence is not a closed affordability claim. Delete these
-        # `!isdefined` tests when A4(3) affordability (`k^d` / `d ≤ 5`) ships.
-        @test !isdefined(GLLVM, :_aghq_kd_bound)
-        @test !isdefined(GLLVM, :_aghq_d_bound)
-        @test !isdefined(GLLVM, :aghq_gate)
-        @test isdefined(GLLVM, :_aghq_stage1a_reject_extra)
     end
 end

@@ -1,23 +1,35 @@
-# Checkpoint — OVERWRITTEN every arc
+# Checkpoint — OVERWRITTEN every arc (a pointer to truth, not a log)
 
-GOAL: see GOAL.md. STATE: overnight /goal DONE on A4(3) **eligibility**
-only (#253 @ `3d5acba0`). A4(3) **affordability** (`k^d` / `d ≤ 5`) is
-**open**. Honesty follow-up on `cursor/a43-honesty-20260818` after Opus
-MIXED. Do not start A4(4)/A4(5)/leftover-1 tonight.
+GOAL: see LOOP/lanes/aghq-a43-afford-20260818/GOAL.md.
+STATE: #255 MERGED @ `81866b1a`. Helper + tests + addendum landed.
 
 ARCS DONE (verified):
-- lane_launch from origin/main @ `17f4a415`; GOAL.md is Shinichi’s pasted GOAL
-- A0: `docs/dev-log/decisions/2026-08-18-aghq-a43-gate.md` @ `b2d646fc`
-- A1: `test/test_aghq_gate.jl` + `test/runtests.jl` include @ `5b4d9666`; Mac-light gate 34/34, adapt 17/17, grid 70/70
-- A2: check-log + after-task `docs/dev-log/after-task/2026-08-18-aghq-a43-gate.md`. Self-signed Rose PASS stripped at tip `06c3ef17`
-- A3: PR #253 MERGED @ `3d5acba0` (head `06c3ef17`). PR CI SUCCESS. Eligibility only — not affordability.
+- 2a LOOP kit on this worktree (not overnight/honesty).
+- 2b `_aghq_kd_bound(d, k)` + call site on `src/families/aghq_grid.jl`.
+- 2c three `#253` `!isdefined` absence tests + #255 comments deleted
+  from `test/test_aghq_gate.jl`. Bound coverage stays in
+  `test/test_aghq_kd_bound.jl`.
+- 2d decision addendum: affordability half closed by `_aghq_kd_bound`;
+  eligibility still declared-kwargs.
 
-ARC IN PROGRESS: docs-only honesty (P1-2 declared-kwargs contract; P1-3 affordability still open).
+ARC IN PROGRESS: none.
 
-NEXT: later G0. Do **not** start A4(4) engine, A4(5) surface, leftover-1, or the affordability helper from this honesty lane. Do not change gate behavior in `src`.
+NEXT: sibling push onto open PR #256. Do **not** merge from this
+worktree.
 
-OPEN GATES (need human): none on #253 (merged). Affordability remains unpaid. Rose: independent review; do not self-sign.
+OPEN GATES (need human):
 
-TRUTH LIVES IN: `origin/main` merge `3d5acba0`; honesty lane `cursor/a43-honesty-20260818` at `~/local-scratch/lanes/GLLVM.jl-a43-honesty-20260818`. Overnight close tip `580b5ae4` on `claude/lane-overnight-a43-20260817` is cited and built on, not overwritten blindly. Closed Stage-1b LOOP at `21e24e97` is cited, not resumed.
+- Sibling **push/PR**. This worktree does not `gh pr merge` / `--auto`.
+- PR already exists: https://github.com/itchyshin/GLLVM.jl/pull/256
 
-RESUME: overnight A4(3) eligibility is closed. Affordability is open. Do not resume A4(4)/A4(5)/none×dep from these files.
+TRUTH LIVES IN:
+
+- worktree `/Users/z3437171/local-scratch/lanes/GLLVM.jl-aghq-a43-afford-20260818`
+- branch `cursor/lane-aghq-a43-afford-20260818` from `origin/main` @ `81866b1a`
+- helper: `src/families/aghq_grid.jl` (`_aghq_kd_bound`)
+- addendum: `docs/dev-log/decisions/2026-08-18-aghq-a43-afford.md`
+- this worktree’s `LOOP/` (not honesty overnight LOOP)
+
+RESUME: You are **aghq-a43-afford-20260818**. #255 MERGED. Do not use
+the honesty worktree. Do not invent `aghq_gate`. No public `aghq=`.
+Ledger AGHQ stays `missing`. Never merge from this worktree.
