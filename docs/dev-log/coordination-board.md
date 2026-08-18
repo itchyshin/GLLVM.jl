@@ -4,10 +4,15 @@
 
 | Lane | Status | Branch / tip | Current handover / pointer | Owns |
 |---|---|---|---|---|
-| **AGHQ Stage-1a grid + k=1 golden** | **ACTIVE / this session** | `cursor/aghq-stage1a-20260817` from `origin/main` @ `1550eef3` | arc `docs/dev-log/plans/2026-08-17-aghq-stage1a-arc.md` · decision `docs/dev-log/decisions/2026-08-17-aghq-stage1a-grid.md` | Live-pin `aghq_grid` + `k=1` ≡ Laplace golden. Ledger rows stay `missing`. **≠ public `aghq=` ≠ rename `_gauss_hermite` ≠ twin Δ ≠ Tweedie admit ≠ #247.** |
-| **Cursor handover — surface-admit era close** | **ACTIVE / rehydration entrypoint** | `main` @ `a0e0d696` (#249) + `#250` correction | handover `docs/dev-log/handover/2026-08-17-cursor-handover.md` | OWED/DONE/RETRACTED/PROTECTED ledger for #205–#248; env + safe-verify + do-not-stage list; Landing State ledger declaring the `handoff_gate.sh` FAIL items. **OWED:** confirm tip → AGHQ Stage-1a grid + `k=1` golden (arc-creation first) → near-parity leftovers. **≠ Tweedie `fit_gllvm` admit ≠ invent twin Δ ≠ AGHQ ledger promote ≠ write in the Dropbox checkout ≠ re-merge #247.** |
-| **Overnight surface admits #241–#246** | **MERGED** (#241 `5bd236dc` · #242 `fce43de4` · #243 `104ec5a7` · #244 `07a01ede` · #245 `320c83b1` · #246 `51ffa320`) | engine record on `main`; its docs PR [#247](https://github.com/itchyshin/GLLVM.jl/pull/247) **CLOSED UNMERGED** 13:01Z | COM-Poisson / Hurdle-NB / Beta-hurdle / Ordered-beta no-X `fit_gllvm` admits + two tag-payload Identities — all on `main`. #247's overnight handoff file never landed; its substance is carried into the 2026-08-17 Cursor handover. **Do not reopen or re-merge #247.** |
-| **AGHQ estimator Identity** | **ACCEPTED** (docs-only; MERGED #248) | `main` @ `1dafee68` | decision `docs/dev-log/decisions/2026-08-17-aghq-identity.md` · after-task `docs/dev-log/after-task/2026-08-17-aghq-identity.md` | Both AGHQ ledger rows stay `missing`. Stage-1a live pin `.gllvmTMB_aghq_grid`; `k=1` ≡ Laplace is the first golden test. **≠ rename VA `_gauss_hermite` ≠ stub `aghq=` knob ≠ twin Δ ≠ `src/` engine without a fresh arc.** |
+| **Cursor handover — post-#253 AGHQ era** | **ACTIVE / Cursor rehydration entrypoint** | `cursor/handover-20260818` from `origin/main` @ `3d5acba0` · [#254](https://github.com/itchyshin/GLLVM.jl/pull/254) | handover `docs/dev-log/handover/2026-08-18-cursor-handover.md` | Rehydrate **DONE**. Honesty landed as #255. Remaining: **wait G0**; do **not** start arcs 2–5 together / no 7-way `src/`. **≠ treat #253 eligibility as unpaid ≠ Tweedie admit ≠ invent twin Δ ≠ Dropbox checkout ≠ merge this handover from the agent.** |
+| **A4(3) honesty follow-up** | **ACTIVE / OPEN PR** | `cursor/a43-honesty-20260818` @ `e87a2047` · [#255](https://github.com/itchyshin/GLLVM.jl/pull/255) | decision `docs/dev-log/decisions/2026-08-18-aghq-a43-gate.md` · after-task `docs/dev-log/after-task/2026-08-18-aghq-a43-honesty.md` · `LOOP/arcs.md` · `LOOP/checkpoint.md` · `test/test_aghq_gate.jl` comments | Docs/comment honesty after Opus MIXED: declared-kwargs only; affordability (`k^d`/`d≤5`) still open; `false` vs omitted inconsistency later. Mac-light gate **34/34**. **#253 already paid eligibility — do not rewrite the lock as unpaid. Do not merge from the agent.** |
+| **Seven-arc ultra-plan (Ada)** | **CARRIED-OVER / G0 unpaid** | uncommitted `??` on `cursor/aghq-stage1b-20260817` (22 behind `origin/main`) | `/Users/z3437171/Dropbox/Github Local/GLLVM.jl/.worktrees/gllvmjl-aghq-stage1b-20260817/docs/dev-log/plans/2026-08-18-seven-arcs-ultraplan.md` | Cite only. **Do not write a second plan.** Land with this handover or a follow-up docs PR. G0 defaults: this session = none of the 7; later 2→3→4; 5 waits; 6/7 wait; after arc 1 next `aghq_grid.jl` owner is 2 then 3 then 4. |
+| **Overnight A4(3) `/goal`** | **DONE / MERGED** #253 `3d5acba0` (PR tip `06c3ef17`) | extra close commit `580b5ae4` on `origin/claude/lane-overnight-a43-20260817` **not** on `main` | after-task `docs/dev-log/after-task/2026-08-18-aghq-a43-gate.md` | Fail-loud `_aghq_stage1a_reject_extra` is the eligibility gate. **≠ TMB `.aghq_gate` port ≠ A4(4)/A4(5) closed ≠ public `aghq=`.** LOOP on `main` still reads "#253 open" — stale; LOOP edits are in [#255](https://github.com/itchyshin/GLLVM.jl/pull/255). |
+| **AGHQ Stage-1b A4(2) Liu–Pierce** | **MERGED** #252 `17f4a415` | `claude/lane-aghq-stage1b` | decision `docs/dev-log/decisions/2026-08-17-aghq-stage1b-adapt.md` · after-task `docs/dev-log/after-task/2026-08-17-aghq-stage1b-adapt.md` | `k>1` adapt golden. Hopper: do **not** copy the TMB A4(4) freeze loop. Closed. |
+| **AGHQ Stage-1a grid + k=1 golden** | **MERGED** #251 `fc845404` | `cursor/aghq-stage1a-20260817` | arc `docs/dev-log/plans/2026-08-17-aghq-stage1a-arc.md` · decision `docs/dev-log/decisions/2026-08-17-aghq-stage1a-grid.md` | Live-pin `aghq_grid` + `k=1` ≡ Laplace golden. Ledger rows stay `missing`. Closed. |
+| **Cursor handover — surface-admit era close** | **MERGED** #249 `a0e0d696` + #250 `1550eef3` | `main` | handover `docs/dev-log/handover/2026-08-17-cursor-handover.md` | Superseded as the Cursor rehydration entrypoint by the 2026-08-18 file. Its "#247 closed unmerged" sentence is **superseded** — #247 later **MERGED** `724e297f`. Keep as historical record; do not execute its OWED (Stage-1a already landed). |
+| **Overnight surface admits #241–#246** | **MERGED** (#241 `5bd236dc` · #242 `fce43de4` · #243 `104ec5a7` · #244 `07a01ede` · #245 `320c83b1` · #246 `51ffa320`) | engine record on `main`; docs PR [#247](https://github.com/itchyshin/GLLVM.jl/pull/247) **MERGED** `724e297f` 15:21Z | overnight handoff `docs/dev-log/handover/2026-08-17-overnight-surface-handoff.md` **is on `main`** | COM-Poisson / Hurdle-NB / Beta-hurdle / Ordered-beta no-X admits + two tag-payload Identities. **Do not re-merge #247.** |
+| **AGHQ estimator Identity** | **ACCEPTED** (docs-only; MERGED #248) | `main` @ `1dafee68` | decision `docs/dev-log/decisions/2026-08-17-aghq-identity.md` · after-task `docs/dev-log/after-task/2026-08-17-aghq-identity.md` | Both AGHQ ledger rows stay `missing`. §A3 forbids a stub `aghq=`. A4(5) waits on a real public knob. **≠ rename VA `_gauss_hermite` ≠ twin Δ.** |
 | **truncated_nbinom2 Identity→Engine** | **ACTIVE / CLOSEOUT** | `cursor/truncated-nbinom2-20260815` from #205 tip `b2b99463` | plan `docs/dev-log/plans/2026-08-15-truncated-nbinom2-identity-engine.md` · after-task `docs/dev-log/after-task/2026-08-15-truncated-nbinom2-identity-engine.md` · LOOP checkpoint cites plan | Identity ACCEPTED + engine + focused **11/11**; FD 1.12e-7; Status `implemented` (shared-`r`; Arc1b OWED). Await #205 merge → rebase → PR. **≠ invent ZIP/ZINB Δ ≠ Phylo #127 ≠ ADEMP ≠ silent rtol**. |
 | **Capability catch-up (post-#204)** | **LANDING (#205)** | `cursor/capability-catchup-20260815` @ `b2b99463` | after-task `docs/dev-log/after-task/2026-08-15-gllvm-jl-capability-catchup.md` · PR https://github.com/itchyshin/GLLVM.jl/pull/205 | truncated_poisson + ledger honesty; Documenter PASS; Julia CI pending. Sole merge-on-green owner = keep-going. |
 | **ZINB+X confint under X** | **MERGED** #204 | `main` @ `2914cc18` | after-task `docs/dev-log/after-task/2026-08-14-zinb-x-confint.md` · Ubuntu one-fit `2026-08-15-zinb-x-confint-ubuntu-onefit.md` | `confint(ZINBCovFit)` + bridge CI lift; `_BRIDGE_NO_CI_X_FAMILIES` empty; `ci_x_*` true for `zinb`. Closed. **≠ twin Δ ≠ ADEMP ≠ per-trait r**. |
@@ -43,31 +48,69 @@
 
 ## Current Rule
 
-- Rehydrate via **this Active-Lane-Split**, not a single orphaned START HERE bullet.
-- `START HERE (Cursor):` **`docs/dev-log/handover/2026-08-17-cursor-handover.md`**
-  — the surface-admit-era close, from `origin/main` @ `1dafee68`. It classifies
-  every item OWED / DONE / RETRACTED / PROTECTED and carries the Landing State
-  ledger. **OWED only:** (1) confirm the tip and open-PR list — **#247 is closed
-  unmerged, do not try to merge it**; (2) AGHQ Stage-1a grid + `k=1`-≡-Laplace golden test, behind a
-  fresh `/arc-creation` (#248 says the engine campaign is unpaid) — **not** a
-  family or surface admit; (3) near-parity leftovers: unstructured `dep()`,
-  cross-validation, coverage certificate on Totoro/DRAC. Do **not** reopen
-  ZIP/ZINB Identity, and do **not** open a Tweedie `fit_gllvm` admit.
-- Earlier pointer, superseded but not orphaned: **Capability catch-up STOP** —
-  programme landed on `cursor/capability-catchup-20260815` (after-task
-  `2026-08-15-gllvm-jl-capability-catchup.md`). Its remaining chips —
-  truncated_nbinom2 Arc1b per-trait dispersion, REML `test_reml.jl` promote,
-  light RCall truncated cell — stay available as short slices.
-- Rose fence: ≠ invent twin light Δ for cut ZIP/ZINB ≠ ADEMP/coverage unless
-  Totoro/DRAC sized+asked ≠ Phylo Model A public intervals ≠ silent rtol
-  widen ≠ hurdle/Tweedie+X / none×dep / slopes / AGHQ / multinomial as this
-  programme's primary engine; do not re-open ZINB Identity.
+- Rehydrate via **this Active-Lane-Split**. Read **every** live row
+  (handover + honesty sibling + parked leftovers). A single `START HERE`
+  that names only one doc **orphans** the other lane — do not do that.
+- Cursor rehydration entrypoint:
+  **`docs/dev-log/handover/2026-08-18-cursor-handover.md`**
+  (`origin/main` @ `3d5acba0`). Sibling honesty lane:
+  [#255](https://github.com/itchyshin/GLLVM.jl/pull/255)
+  (`cursor/a43-honesty-20260818` @ `e87a2047`).
+- **OWED remaining:** **wait G0** on the cited ultra-plan; do **not**
+  start 2–5 together. Honesty is **OPEN** as #255 (do not merge from the
+  agent). Arcs 2 ∩ 3 ∩ 4 ∩ 5 serialize on
+  `src/families/aghq_grid.jl` + AGHQ tests. G0 defaults (unpaid): this
+  session = none of the 7; later 2→3→4; 5 waits; 6 and 7 wait; after
+  arc 1 the next `aghq_grid.jl` owner is 2 then 3 then 4.
+- **#253 eligibility is LANDED.** Do not treat it as unpaid honesty.
+  Affordability (`k^d` / `d ≤ 5`) and omitted-kwargs / `false` detection
+  remain open. Overnight `/goal` A4(3) is DONE.
+- **#247 is MERGED** (`724e297f`). Do not merge it again. The 2026-08-17
+  handover's "closed unmerged" sentence is superseded.
+- Earlier pointer, superseded but not orphaned: 2026-08-17 Cursor handover
+  `docs/dev-log/handover/2026-08-17-cursor-handover.md` (its Stage-1a OWED
+  has landed as #251). Capability-catch-up leftover chips
+  (truncated_nbinom2 Arc1b, REML `test_reml.jl`, light RCall truncated
+  cell) stay available as short slices.
+- Seven-arc ultra-plan is **uncommitted** at
+  `.worktrees/gllvmjl-aghq-stage1b-20260817/docs/dev-log/plans/2026-08-18-seven-arcs-ultraplan.md`.
+  **G0 answers unpaid.** Do not execute arcs. Do not write a second plan.
+- Rose fence: ≠ invent twin light Δ ≠ ADEMP/coverage unless Totoro/DRAC
+  sized+asked ≠ Phylo Model A public intervals ≠ silent rtol widen ≠
+  Tweedie `fit_gllvm` admit ≠ stub `aghq=` ≠ TMB `.aghq_gate` port ≠
+  7-way parallel `src/` without G0.
 - Bridge execution R→Julia only (JuliaCall); RCall = opt-in oracle.
-- Stage by name; never `git add -A`; no push without instruction.
-- Dropbox checkout remains PROTECTED.
+- Stage by name; never `git add -A`; never `gh pr merge --auto`; no push
+  without instruction (handover branch excepted so the next session can
+  read it).
+- Dropbox checkout remains PROTECTED (`9f8378aa`; nothing legitimate).
 
 ## Status
 
+- 2026-08-18 — **A4(3) honesty follow-up OPEN**
+  [#255](https://github.com/itchyshin/GLLVM.jl/pull/255) @ `e87a2047`.
+  Declared-kwargs contract recorded; affordability still open; Mac-light
+  gate 34/34. Do not merge from the agent. G0 on the seven-arc ultra-plan
+  remains **unpaid**.
+- 2026-08-18 — **Cursor handover written** for the post-#253 AGHQ era.
+  Tip `3d5acba0` (merge of #253; PR tip `06c3ef17`). #251 Stage-1a /
+  #252 A4(2) / #253 A4(3) eligibility are **LANDED**; Julia + Documenter
+  CI green. Honesty follow-up is now [#255](https://github.com/itchyshin/GLLVM.jl/pull/255).
+  Seven next arcs proposed; G0 **not** approved; arcs 2–5 serialize on
+  `aghq_grid.jl`. Pointer:
+  `docs/dev-log/handover/2026-08-18-cursor-handover.md`. Do not orphan
+  the honesty sibling with a single START HERE.
+- 2026-08-18 — **A4(3) fail-loud eligibility MERGED**
+  [#253](https://github.com/itchyshin/GLLVM.jl/pull/253) @ `3d5acba0`.
+  Overnight `/goal` DONE. Opus MIXED: declared-kwargs only; affordability
+  still open. Hopper: do not copy TMB A4(4) loop; A4(5) needs public
+  `aghq=` (Identity §A3 forbids a stub).
+- 2026-08-17 — **AGHQ Stage-1b A4(2) Liu–Pierce MERGED**
+  [#252](https://github.com/itchyshin/GLLVM.jl/pull/252) @ `17f4a415`.
+- 2026-08-17 — **#247 overnight surface-admit handoff MERGED**
+  `724e297f` (reopened after the #250 "closed unmerged" correction).
+  File `docs/dev-log/handover/2026-08-17-overnight-surface-handoff.md`
+  is on `main`. Do not re-merge.
 - 2026-08-17 — **AGHQ Stage-1a grid + k=1 golden** on
   `cursor/aghq-stage1a-20260817` from `origin/main` @ `1550eef3`. Focused
   `test/test_aghq_grid.jl` **69/69** in 4.3 s. Both AGHQ ledger rows stay
