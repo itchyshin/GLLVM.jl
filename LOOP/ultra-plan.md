@@ -1,55 +1,51 @@
-# Ultra-plan (frozen at G0) — arc 2 only
+# Ultra-plan — none-dep-identity-20260818 (pointer; not a new seven-arc plan)
 
-**Cite, do not rewrite** the approved seven-arc plan:
+**Status:** G0 already approved as **parity-beyond Phase C item 1**.
+**This file is a one-page pointer.** Do not expand it into a second
+programme. Do not invent arcs beyond Identity → STOP.
 
-`/Users/z3437171/Dropbox/Github Local/GLLVM.jl/.worktrees/gllvmjl-aghq-stage1b-20260817/docs/dev-log/plans/2026-08-18-seven-arcs-ultraplan.md`
+## Parent (authoritative WHAT)
 
-G0 answers (binding): **2 → 3 → 4**; **5 waits**; **6 and 7 wait**. This
-file is the arc-2 extract. It is not a new plan.
+- Programme GOAL:
+  `~/local-scratch/lanes/GLLVM.jl-parity-beyond-20260818/LOOP/GOAL.md`
+  **Phase C — covariance grammar**, cheapest first = **`none × dep()`**.
+- Frozen parent plan:
+  `~/local-scratch/lanes/GLLVM.jl-parity-beyond-20260818/LOOP/ultra-plan.md`
+  arc **C** (item 1 of the planned covariance walk).
+- Gap sheet (planned, not paid):
+  `docs/dev-log/plans/2026-08-16-gllvmtmb-capability-gap.md`
+  — `none × dep (unstructured trait cov, no LV)` | twin exported | Julia
+  **planned**.
+- Live ledger row (do **not** edit this run):
+  `docs/design/capability-status.md` **L47** stays **`planned`**.
+  Exact quote: `| none × dep (`dep()` / unstructured trait covariance) | planned |`
+  #258 / #259 own that file.
 
-## This lane
+## Twin pin (read-only; CLOSED)
 
-A4(3) **affordability** half (plan S2 / arc 2).
+- Repo: `gllvmTMB` `origin/main` **`b8a1891a`** (Merge #1139).
+- Blob `R/brms-sugar.R` = **`e1922dbf`**.
+- L6–14 grid; **L10** `none | indep() | dep() | latent()`.
+- L32 Cholesky \(\boldsymbol\Sigma = \mathbf{L}\mathbf{L}^\top\).
+- **L1721** `dep <- function(formula) {`.
+- **L1661–1662** \(T(T+1)/2\) via Cholesky; **L1681–1682** PSD + count.
+- **L1694–1698** documents over-parameterised `dep`+`latent`; documents
+  that a fit raises `cli_abort`. The abort **body is not in this file**
+  (parser `.dep = TRUE` at L4193–4200; guards elsewhere / `fit-multi.R`).
+- **L1787** `phylo_dep` — **not this slice**.
 
-Binding helper contract (do not re-derive Hopper):
+## Julia pin (CLOSED)
 
-```julia
-_aghq_kd_bound(d::Integer, k::Integer) -> Nothing
-```
+- Base: `origin/main` **`3d5acba0`**.
+- `git grep -n 'dep(' 3d5acba0 -- src/` empty (exit 1).
+- Packing cite only: `rr_theta_len(p,K) = p*K - K*(K-1)/2`; at \(K=p\)
+  this is \(p(p+1)/2\).
+- Lane: `cursor/lane-none-dep-identity-20260818`
+  at `~/local-scratch/lanes/GLLVM.jl-lane-none-dep-identity-20260818`.
+- This run: **docs-only Identity**. No `src/`. No engine G0.
 
-Argument order matches `aghq_grid(d, k)`. Throw `ArgumentError`
-(`"AGHQ Stage 1a: …"`) iff **`k > 1` and `d > 5`**. Return `nothing`
-when affordable. Error text names tensor cost `k^d` and `d ≤ 5`. Never
-say treewidth / min-fill / `spHess` / `.aghq_gate`. Do not compute huge
-`k^d` as Int. Do **not** add `_aghq_d_bound` or `aghq_gate`.
+## Arc this lane may run
 
-Call site only from `aghq_stage1a_loglik_site`, in this order:
-
-1. existing `k ≥ 1` check
-2. `_aghq_stage1a_reject_extra(...)` **unchanged**
-3. `d = size(Λ, 2)`
-4. `_aghq_kd_bound(d, k)`
-5. `aghq_grid(d, k)`
-
-`k == 1`, any `d`: pass — still evaluate the Laplace template. `k>1`,
-`d≤5`: pass. `k>1`, `d>5`: throw. Declared extras (e.g. `phylo=true`)
-throw first.
-
-## Collision
-
-`src/families/aghq_grid.jl` is **not** on #255. Helper + call site may
-land from `origin/main` `@ 3d5acba0`.
-
-**OPEN GATE: wait #255 MERGED** before editing `test/test_aghq_gate.jl`
-or `docs/dev-log/decisions/2026-08-18-aghq-a43-gate.md`.
-
-Pending tests (notes only until the gate opens): bound(6,3) and (6,2)
-throw; site k=3 d=6 throws; phylo=true still wins; bound(5,3),(1,3),(6,1),(20,1)
-nothing; k=1 K=6 still ≈ Laplace; k=3 K=2 adapt golden still passes;
-k=3 d=5 does not throw. Delete the three `!isdefined` absence tests.
-Optional: keep `!isdefined(:aghq_gate)` in a renamed not-a-TMB-port testset.
-
-## Fences
-
-Arc 3–7 OUT. No TMB port, no stub `aghq=`, no ledger promote, no merge
-from this worktree. Never honesty worktree. Never Dropbox checkout.
+1. **Identity** — ACCEPTED note + closed twin/Julia cites + check-log +
+   after-task.
+2. **STOP** — sibling push/PR is the OPEN GATE. No merge. No engine.

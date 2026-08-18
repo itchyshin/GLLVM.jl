@@ -1,35 +1,36 @@
-# Checkpoint — OVERWRITTEN every arc (a pointer to truth, not a log)
-
-GOAL: see LOOP/lanes/aghq-a43-afford-20260818/GOAL.md.
-STATE: #255 MERGED @ `81866b1a`. Helper + tests + addendum landed.
+GOAL: see GOAL.md.   STATE: Identity ACCEPTED (docs-only); STOP at sibling push/PR.
 
 ARCS DONE (verified):
-- 2a LOOP kit on this worktree (not overnight/honesty).
-- 2b `_aghq_kd_bound(d, k)` + call site on `src/families/aghq_grid.jl`.
-- 2c three `#253` `!isdefined` absence tests + #255 comments deleted
-  from `test/test_aghq_gate.jl`. Bound coverage stays in
-  `test/test_aghq_kd_bound.jl`.
-- 2d decision addendum: affordability half closed by `_aghq_kd_bound`;
-  eligibility still declared-kwargs.
+- C1-Id — `docs/dev-log/decisions/2026-08-18-none-dep-identity.md` is
+  ACCEPTED. Twin pin `gllvmTMB` `origin/main` **`b8a1891a`** (Merge #1139);
+  blob `R/brms-sugar.R` **`e1922dbf`**. Cites: L10 grid; L32 / L1661–1662 /
+  L1681–1682 Cholesky \(T(T+1)/2\); L1721 `dep <-`; L1694–1698 documents
+  over-parameterised `dep`+`latent` (abort body **not** in this file).
+  `phylo_dep` L1787 out. Julia `3d5acba0` L47 **planned** (file not
+  edited). `git grep -n 'dep(' 3d5acba0 -- src/` empty. No `src/` in
+  diff. Check-log + after-task written. Mac-light N/A.
 
-ARC IN PROGRESS: none.
+ARC IN PROGRESS: none (Identity landed).
 
-NEXT: sibling push onto open PR #256. Do **not** merge from this
-worktree.
+NEXT: wait Shinichi merge of **PR #260**. Do **not** start engine.
+Do **not** `gh pr merge`.
 
-OPEN GATES (need human):
-
-- Sibling **push/PR**. This worktree does not `gh pr merge` / `--auto`.
-- PR already exists: https://github.com/itchyshin/GLLVM.jl/pull/256
+OPEN GATES (need human): **merge of https://github.com/itchyshin/GLLVM.jl/pull/260**.
+Push/PR already done. Merge stays Shinichi.
 
 TRUTH LIVES IN:
+- worktree `~/local-scratch/lanes/GLLVM.jl-lane-none-dep-identity-20260818`
+- branch `cursor/lane-none-dep-identity-20260818`
+- base `origin/main` `3d5acba0`
+- Identity `docs/dev-log/decisions/2026-08-18-none-dep-identity.md`
+- after-task `docs/dev-log/after-task/2026-08-18-none-dep-identity.md`
+- twin pin `gllvmTMB` `origin/main` `b8a1891a` blob `e1922dbf`
+- PR https://github.com/itchyshin/GLLVM.jl/pull/260
 
-- worktree `/Users/z3437171/local-scratch/lanes/GLLVM.jl-aghq-a43-afford-20260818`
-- branch `cursor/lane-aghq-a43-afford-20260818` from `origin/main` @ `81866b1a`
-- helper: `src/families/aghq_grid.jl` (`_aghq_kd_bound`)
-- addendum: `docs/dev-log/decisions/2026-08-18-aghq-a43-afford.md`
-- this worktree’s `LOOP/` (not honesty overnight LOOP)
-
-RESUME: You are **aghq-a43-afford-20260818**. #255 MERGED. Do not use
-the honesty worktree. Do not invent `aghq_gate`. No public `aghq=`.
-Ledger AGHQ stays `missing`. Never merge from this worktree.
+RESUME: You are none-dep-identity-20260818 — RESUME. READ FIRST:
+LOOP/GOAL.md → LOOP/checkpoint.md → LOOP/ultra-plan.md → AGENTS.md.
+WORKSPACE: `~/local-scratch/lanes/GLLVM.jl-lane-none-dep-identity-20260818`
+on `cursor/lane-none-dep-identity-20260818` (reattach; do NOT recreate;
+do NOT write in honesty / afford / parity-beyond / lognormal-bridge /
+truncnb2 / Dropbox). CONTINUE FROM: OPEN GATE merge of PR #260. Pause at merge. No `src/`.
+No `capability-status.md`. No engine G0.
