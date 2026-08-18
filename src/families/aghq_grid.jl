@@ -125,12 +125,22 @@ end
 """
     _aghq_kd_bound(d, k) -> Nothing
 
-Cheap tensor-cost analogue of twin `tw ≤ 4` for dense loadings-only `z_B`.
-Throws `ArgumentError` iff `k > 1` and `d > 5`. `k = 1` always returns
-(Laplace template; do not skip mode / Cholesky). Error text names tensor
-cost `k^d` and `d ≤ 5`. Not a treewidth measurement. Not `.aghq_gate`.
+Cheap tensor-cost bound on a dense loadings-only `z_B` block of latent
+dimension `d` (size `k^d`). Hopper pin: analogue of twin `tw ≤ 4` is
+`d ≤ 5` on this complete block — not a treewidth measurement, not
+`.aghq_gate`. `_aghq_d_bound` and `aghq_gate` stay undefined.
+
+Throws `ArgumentError` when `k < 1` or `d < 1`, and when `k > 1` and
+`d > 5`. Returns `nothing` at `k = 1` for every `d ≥ 1` (including
+`d > 5`) so the site evaluator stays the `u = 0` Laplace template
+(A4.4 unpaid — do not skip to a different function). Error text names
+tensor `k^d` / `d`, never treewidth.
 """
 function _aghq_kd_bound(d::Integer, k::Integer)
+    if k < 1 || d < 1
+        throw(ArgumentError(
+            "AGHQ Stage 1a: tensor cost k^d requires k ≥ 1 and d ≥ 1, got d=$d, k=$k"))
+    end
     if k > 1 && d > 5
         throw(ArgumentError(
             "AGHQ Stage 1a: tensor cost k^d with d=$d, k=$k exceeds d ≤ 5; " *
