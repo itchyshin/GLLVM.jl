@@ -1,18 +1,39 @@
-# Arcs — overnight-a43-20260817 (G0 approved; Shinichi GOAL wins)
+# Arcs — gllvmjl-parity-beyond (G0 approved 2026-08-18)
 
 Status: todo / doing / done / blocked. Gate = needs a human before it can proceed.
 
+Do **not** start P2 / P3 / E / C / X in the P1 Identity arc.
+
 | # | arc | status | gate? |
 |---|-----|--------|-------|
-| A0 | Identity-adjacent decision `docs/dev-log/decisions/2026-08-18-aghq-a43-gate.md` @ `b2d646fc` | done | — |
-| A1 | Tests that `_aghq_stage1a_reject_extra` fail-loud is the gate at k>1 (`test/test_aghq_gate.jl` @ `5b4d9666`; 34/34) | done | — |
-| A2 | check-log + after-task; Rose fence: not a TMB gate port; not an estimator; rows stay `missing` (Ada) | done | — |
-| A3 | PR #253 open at current HEAD. Merge waits on full CI. Do not merge. | done | **OPEN GATE** — full CI |
+| P1-Id | Multinomial / categorical Identity (docs only; twin fid 16; ledger stays `missing`) | doing | STOP before `src/` |
+| P1-eng | Multinomial engine (`src/` + focused FD/tests). **Not this arc.** | todo | after sibling push/PR of P1-Id |
+| P2a | `truncated_nbinom2` Arc1b — twin fid 11, per-trait `log_phi_truncnb2`. Notes: `docs/design/capability-status.md` + `docs/dev-log/after-task/2026-08-15-truncated-nbinom2-identity-engine.md`. Later file: `src/families/truncated_nbinom2.jl` | todo | **OWED — do not start this arc** |
+| P2b | `lognormal` bridge + light RCall Δ — twin fid 3. Notes: capability-status; reml after-task `docs/dev-log/after-task/2026-08-16-reml-promote-ledger-honesty.md` (“the one genuinely OWED bridge row”). **No Δ number exists.** Later file: `src/bridge.jl` | todo | **OWED — do not start this arc** |
+| P3 | Tweedie T2–T5 unpaid; T6 **paid** (#236/#238). `fit_gllvm` admit **STOP**. Do not open T2–T5 files in P1 | todo | later G0 before any admit |
+| E | AGHQ chips 2 → 3 → 4 after affordability `/goal` STOPs. A4(5) waits. Both AGHQ rows stay `missing` | blocked | **wait #255 / afford STOP**; do not touch `aghq_grid.jl` |
+| C | Covariance grammar; cheapest first = `none × dep()`. File-disjoint from `aghq_grid.jl` | todo | after E (or Shannon-clear file-disjoint slice) |
+| X | Broad-grid coverage certificate | blocked | Totoro/DRAC only if Shinichi sizes+asks |
 
-## Fence (do not start)
+## Owed-chip stamp (2026-08-18; live `origin/main` `3d5acba0`)
 
-- A4(4) adaptation loop as engine
-- A4(5) report honesty as surface / public `aghq=`
-- leftover-1 `none × dep()` · CV · Tweedie · multinomial · ledger promote · Totoro/DRAC
-- TMB `.aghq_gate` min-fill / `spHess` port
-- Closed Stage-1b LOOP (`21e24e97`) · Dropbox checkout
+**Still OWED (fid-admitted):**
+
+1. `truncated_nbinom2` Arc1b — twin fid 11, per-trait `log_phi_truncnb2`.
+2. `lognormal` bridge + light RCall Δ — twin fid 3. No Δ number exists.
+
+**Not restamped OWED:** `truncated_poisson` fid 10 — leftover cell only,
+not an OWED stamp after reml honesty.
+
+**Tweedie:** T6 paid. T2–T5 unpaid. Surface admit STOP.
+
+## Fence (this P1 Identity arc)
+
+- No `src/` (including stub `Multinomial` marker)
+- No invented twin Δ
+- No `categorical()` alias
+- No `aghq_grid.jl` / `test/test_aghq_gate.jl`
+- No honesty worktree, no Dropbox checkout, no overnight `LOOP/GOAL.md`
+- No Phase E / C / X
+- No Tweedie T2–T5 files
+- No P2a / P2b engine or bridge edits
