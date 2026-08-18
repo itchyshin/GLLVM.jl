@@ -34,10 +34,10 @@ dispersion is **per-trait** `log_phi_truncnb2`.
 | Support | `{1, 2, …}` — reject `y = 0` fail-loud |
 | Linear predictor | `η = β + Λz` (+ optional offset later); **log link only** |
 | Mean parameter | Untruncated `μ = exp(η)` (matches TMB `mu_t`) |
-| Dispersion | Julia `r` with `Var = μ + μ²/r` ≡ twin `φ`; **Arc1 fitter = shared scalar `r`** (Ada default). Twin per-trait `log_phi_truncnb2` is documented; **Arc1b / OWED** if light Δ needs per-trait |
+| Dispersion | Julia `r` with `Var = μ + μ²/r` ≡ twin `φ`. **Arc1** = shared scalar `r`, pack `[β; pack(Λ); log r]` (length `p+rr+1`). **Arc1b (2026-08-18)** = per-trait `r_t` ≡ twin `log_phi_truncnb2`, pack `[β; pack(Λ); log r_1…log r_p]` (length `p+rr+p`); `rvec=exp.(θ[tail])`; `fams=TruncatedNegBin2.(rvec)`; mode via `_grouped_laplace_mode`. Score/weight keep `a=r_t/(r_t+μ)` (Sol 2026-08-15). |
 | Log-pmf | `log NB2(y; μ, r) − log(1 − p0)`, `p0 = (r/(r+μ))^r` |
 | Score / weight (log link) | `a = r/(r+μ)`; `μ_tr = μ/(1−p0)`; `s = a·(y − μ_tr)`; `W = a²·Var(Y\|Y>0)` with `Var_tr = (V+μ²)/(1−p0) − μ_tr²`, `V = μ + μ²/r`. **Do not omit `a`** (ordinary NB2 factor; Sol ceiling 2026-08-15) |
-| Marker / fitter | `TruncatedNegBin2` + `fit_truncated_nbinom2_gllvm` |
+| Marker / fitter | `TruncatedNegBin2` + `fit_truncated_nbinom2_gllvm` (shared-`r`) + `fit_truncated_nbinom2_gllvm_pertrait` (Arc1b) |
 
 ## Twin light Δ
 
@@ -61,3 +61,14 @@ per-trait or gate parity.
 Identity ACCEPTED → **CONTINUE** to truncated_nbinom2 engine (Arc 1) in this
 programme. Public capability claim waits for tests + ledger flip + Rose fence.
 Rose fences: ≠ invent ZIP/ZINB twin Δ ≠ Phylo #127 ≠ ADEMP ≠ silent rtol widen.
+
+## Amendment 2026-08-18 — Arc1b per-trait `log_phi_truncnb2`
+
+Lane `cursor/truncnb2-arc1b-20260818` from `origin/main` @ `3d5acba0`.
+Identity already OWED this. Arc1b **lands**: per-trait pack
+`[β; pack(Λ); log r_1…log r_p]` ≡ twin `log_phi_truncnb2`; equal-`r_t`
+reduces to shared-`r` ll (atol 1e-8). Shared-`r` Arc1 path kept.
+
+Rose: per-trait pack ≡ twin `log_phi_truncnb2`; **≠ bridge admit ≠ AGHQ**.
+Still out of scope: invent ZIP/ZINB Δ; ADEMP; silent rtol; `bridge.jl` /
+`aghq_grid.jl` / `laplace.jl` / `grouped_dispersion.jl` edits.
