@@ -4,10 +4,10 @@
 
 | Lane | Status | Branch / tip | Current handover / pointer | Owns |
 |---|---|---|---|---|
-| **Cursor handover — post-#253 AGHQ era** | **ACTIVE / Cursor rehydration entrypoint** | `cursor/handover-20260818` from `origin/main` @ `3d5acba0` | handover `docs/dev-log/handover/2026-08-18-cursor-handover.md` | OWED: (1) confirm tip/CI · (2) G0 on seven-arcs **or** land honesty if local WIP is ready · (3) do **not** start arcs 2–5 together / no 7-way `src/`. **≠ treat #253 eligibility as unpaid ≠ Tweedie admit ≠ invent twin Δ ≠ Dropbox checkout ≠ merge this handover from the agent.** |
-| **A4(3) honesty follow-up** | **ACTIVE / sibling · CARRIED-OVER** | `cursor/a43-honesty-20260818` @ `/Users/z3437171/local-scratch/lanes/GLLVM.jl-a43-honesty-20260818` · **no PR** · 4 dirty files | decision `docs/dev-log/decisions/2026-08-18-aghq-a43-gate.md` (local edits) · `LOOP/arcs.md` · `LOOP/checkpoint.md` · `test/test_aghq_gate.jl` comments | Docs/comment honesty after Opus MIXED: declared-kwargs only; affordability (`k^d`/`d≤5`) still open; `false` vs omitted inconsistency later. **#253 already paid eligibility — do not rewrite the lock as unpaid.** |
+| **Cursor handover — post-#253 AGHQ era** | **ACTIVE / Cursor rehydration entrypoint** | `cursor/handover-20260818` from `origin/main` @ `3d5acba0` · [#254](https://github.com/itchyshin/GLLVM.jl/pull/254) | handover `docs/dev-log/handover/2026-08-18-cursor-handover.md` | Rehydrate **DONE**. Honesty landed as #255. Remaining: **wait G0**; do **not** start arcs 2–5 together / no 7-way `src/`. **≠ treat #253 eligibility as unpaid ≠ Tweedie admit ≠ invent twin Δ ≠ Dropbox checkout ≠ merge this handover from the agent.** |
+| **A4(3) honesty follow-up** | **ACTIVE / OPEN PR** | `cursor/a43-honesty-20260818` @ `e87a2047` · [#255](https://github.com/itchyshin/GLLVM.jl/pull/255) | decision `docs/dev-log/decisions/2026-08-18-aghq-a43-gate.md` · after-task `docs/dev-log/after-task/2026-08-18-aghq-a43-honesty.md` · `LOOP/arcs.md` · `LOOP/checkpoint.md` · `test/test_aghq_gate.jl` comments | Docs/comment honesty after Opus MIXED: declared-kwargs only; affordability (`k^d`/`d≤5`) still open; `false` vs omitted inconsistency later. Mac-light gate **34/34**. **#253 already paid eligibility — do not rewrite the lock as unpaid. Do not merge from the agent.** |
 | **Seven-arc ultra-plan (Ada)** | **CARRIED-OVER / G0 unpaid** | uncommitted `??` on `cursor/aghq-stage1b-20260817` (22 behind `origin/main`) | `/Users/z3437171/Dropbox/Github Local/GLLVM.jl/.worktrees/gllvmjl-aghq-stage1b-20260817/docs/dev-log/plans/2026-08-18-seven-arcs-ultraplan.md` | Cite only. **Do not write a second plan.** Land with this handover or a follow-up docs PR. G0 defaults: this session = none of the 7; later 2→3→4; 5 waits; 6/7 wait; after arc 1 next `aghq_grid.jl` owner is 2 then 3 then 4. |
-| **Overnight A4(3) `/goal`** | **DONE / MERGED** #253 `3d5acba0` (PR tip `06c3ef17`) | extra close commit `580b5ae4` on `origin/claude/lane-overnight-a43-20260817` **not** on `main` | after-task `docs/dev-log/after-task/2026-08-18-aghq-a43-gate.md` | Fail-loud `_aghq_stage1a_reject_extra` is the eligibility gate. **≠ TMB `.aghq_gate` port ≠ A4(4)/A4(5) closed ≠ public `aghq=`.** LOOP on `main` still reads "#253 open" — stale; honesty owns LOOP edits. |
+| **Overnight A4(3) `/goal`** | **DONE / MERGED** #253 `3d5acba0` (PR tip `06c3ef17`) | extra close commit `580b5ae4` on `origin/claude/lane-overnight-a43-20260817` **not** on `main` | after-task `docs/dev-log/after-task/2026-08-18-aghq-a43-gate.md` | Fail-loud `_aghq_stage1a_reject_extra` is the eligibility gate. **≠ TMB `.aghq_gate` port ≠ A4(4)/A4(5) closed ≠ public `aghq=`.** LOOP on `main` still reads "#253 open" — stale; LOOP edits are in [#255](https://github.com/itchyshin/GLLVM.jl/pull/255). |
 | **AGHQ Stage-1b A4(2) Liu–Pierce** | **MERGED** #252 `17f4a415` | `claude/lane-aghq-stage1b` | decision `docs/dev-log/decisions/2026-08-17-aghq-stage1b-adapt.md` · after-task `docs/dev-log/after-task/2026-08-17-aghq-stage1b-adapt.md` | `k>1` adapt golden. Hopper: do **not** copy the TMB A4(4) freeze loop. Closed. |
 | **AGHQ Stage-1a grid + k=1 golden** | **MERGED** #251 `fc845404` | `cursor/aghq-stage1a-20260817` | arc `docs/dev-log/plans/2026-08-17-aghq-stage1a-arc.md` · decision `docs/dev-log/decisions/2026-08-17-aghq-stage1a-grid.md` | Live-pin `aghq_grid` + `k=1` ≡ Laplace golden. Ledger rows stay `missing`. Closed. |
 | **Cursor handover — surface-admit era close** | **MERGED** #249 `a0e0d696` + #250 `1550eef3` | `main` | handover `docs/dev-log/handover/2026-08-17-cursor-handover.md` | Superseded as the Cursor rehydration entrypoint by the 2026-08-18 file. Its "#247 closed unmerged" sentence is **superseded** — #247 later **MERGED** `724e297f`. Keep as historical record; do not execute its OWED (Stage-1a already landed). |
@@ -54,10 +54,11 @@
 - Cursor rehydration entrypoint:
   **`docs/dev-log/handover/2026-08-18-cursor-handover.md`**
   (`origin/main` @ `3d5acba0`). Sibling honesty lane:
-  `cursor/a43-honesty-20260818` (local WIP, **no PR**).
-- **OWED only:** rehydrate; land honesty WIP
-  `cursor/a43-honesty-20260818` if ready; **do not** start 2–5 together;
-  **wait G0** on the cited ultra-plan. Arcs 2 ∩ 3 ∩ 4 ∩ 5 serialize on
+  [#255](https://github.com/itchyshin/GLLVM.jl/pull/255)
+  (`cursor/a43-honesty-20260818` @ `e87a2047`).
+- **OWED remaining:** **wait G0** on the cited ultra-plan; do **not**
+  start 2–5 together. Honesty is **OPEN** as #255 (do not merge from the
+  agent). Arcs 2 ∩ 3 ∩ 4 ∩ 5 serialize on
   `src/families/aghq_grid.jl` + AGHQ tests. G0 defaults (unpaid): this
   session = none of the 7; later 2→3→4; 5 waits; 6 and 7 wait; after
   arc 1 the next `aghq_grid.jl` owner is 2 then 3 then 4.
@@ -86,12 +87,17 @@
 
 ## Status
 
+- 2026-08-18 — **A4(3) honesty follow-up OPEN**
+  [#255](https://github.com/itchyshin/GLLVM.jl/pull/255) @ `e87a2047`.
+  Declared-kwargs contract recorded; affordability still open; Mac-light
+  gate 34/34. Do not merge from the agent. G0 on the seven-arc ultra-plan
+  remains **unpaid**.
 - 2026-08-18 — **Cursor handover written** for the post-#253 AGHQ era.
   Tip `3d5acba0` (merge of #253; PR tip `06c3ef17`). #251 Stage-1a /
   #252 A4(2) / #253 A4(3) eligibility are **LANDED**; Julia + Documenter
-  CI green. Honesty follow-up is **local WIP only** on
-  `cursor/a43-honesty-20260818` (**no PR**). Seven next arcs proposed;
-  G0 **not** approved; arcs 2–5 serialize on `aghq_grid.jl`. Pointer:
+  CI green. Honesty follow-up is now [#255](https://github.com/itchyshin/GLLVM.jl/pull/255).
+  Seven next arcs proposed; G0 **not** approved; arcs 2–5 serialize on
+  `aghq_grid.jl`. Pointer:
   `docs/dev-log/handover/2026-08-18-cursor-handover.md`. Do not orphan
   the honesty sibling with a single START HERE.
 - 2026-08-18 — **A4(3) fail-loud eligibility MERGED**

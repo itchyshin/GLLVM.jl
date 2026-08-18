@@ -92,9 +92,9 @@ Full responsibility detail lives in §2 of the reference plan.
 
 - **2026-08-18 — post-#253 Cursor handover.** `cursor/handover-20260818`
   from `origin/main` @ `3d5acba0` (#253). #251 Stage-1a / #252 A4(2) /
-  #253 A4(3) eligibility LANDED. Honesty WIP local, no PR. Seven-arc
-  ultra-plan uncommitted (cite only; G0 unpaid). **START HERE:** the
-  coordination board **Active-Lane-Split**
+  #253 A4(3) eligibility LANDED. Honesty follow-up OPEN as #255
+  (`e87a2047`). Seven-arc ultra-plan uncommitted (cite only; G0 unpaid).
+  **START HERE:** the coordination board **Active-Lane-Split**
   (`docs/dev-log/coordination-board.md`) — read every live row, not a
   single doc. Cursor entrypoint:
   `docs/dev-log/handover/2026-08-18-cursor-handover.md`.
