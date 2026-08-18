@@ -12,11 +12,11 @@ ARCS DONE (verified):
 
 ARC IN PROGRESS: none (Identity landed).
 
-NEXT: sibling push + docs-only `gh pr create`. Do **not** start engine.
+NEXT: wait Shinichi merge of **PR #260**. Do **not** start engine.
 Do **not** `gh pr merge`.
 
-OPEN GATES (need human): **sibling push / docs-only PR**. This worktree
-likely DENIES push/merge. Merge stays Shinichi.
+OPEN GATES (need human): **merge of https://github.com/itchyshin/GLLVM.jl/pull/260**.
+Push/PR already done. Merge stays Shinichi.
 
 TRUTH LIVES IN:
 - worktree `~/local-scratch/lanes/GLLVM.jl-lane-none-dep-identity-20260818`
@@ -25,12 +25,12 @@ TRUTH LIVES IN:
 - Identity `docs/dev-log/decisions/2026-08-18-none-dep-identity.md`
 - after-task `docs/dev-log/after-task/2026-08-18-none-dep-identity.md`
 - twin pin `gllvmTMB` `origin/main` `b8a1891a` blob `e1922dbf`
+- PR https://github.com/itchyshin/GLLVM.jl/pull/260
 
 RESUME: You are none-dep-identity-20260818 — RESUME. READ FIRST:
 LOOP/GOAL.md → LOOP/checkpoint.md → LOOP/ultra-plan.md → AGENTS.md.
 WORKSPACE: `~/local-scratch/lanes/GLLVM.jl-lane-none-dep-identity-20260818`
 on `cursor/lane-none-dep-identity-20260818` (reattach; do NOT recreate;
 do NOT write in honesty / afford / parity-beyond / lognormal-bridge /
-truncnb2 / Dropbox). CONTINUE FROM: OPEN GATE sibling push/PR if the
-local commit is not yet a PR; else wait. Pause at merge. No `src/`.
+truncnb2 / Dropbox). CONTINUE FROM: OPEN GATE merge of PR #260. Pause at merge. No `src/`.
 No `capability-status.md`. No engine G0.

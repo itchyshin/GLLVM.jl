@@ -7,7 +7,7 @@ This is **not** a seven-arc plan. Parent programme owns the rest of Phase C.
 | # | arc | status | gate? |
 |---|-----|--------|-------|
 | C1-Id | none × `dep()` Identity (docs only; twin `R/brms-sugar.R` `dep()` @ `b8a1891a` / blob `e1922dbf`; ledger L47 stays `planned`) | done | ACCEPTED; `cli_abort` body not in this file |
-| STOP | Sibling push / docs-only PR | todo | **OPEN GATE** — no merge; no engine |
+| STOP | Sibling push / docs-only PR | done (PR #260) | **OPEN GATE** = merge; no engine |
 
 ## Fence
 
