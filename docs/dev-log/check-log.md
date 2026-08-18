@@ -1,5 +1,20 @@
 # Check Log
 
+## 2026-08-18 — truncated_nbinom2 Arc1b per-trait `log_phi_truncnb2`
+
+Lane `cursor/truncnb2-arc1b-20260818` from `origin/main` @ `3d5acba0`.
+Identity 2026-08-15 already OWED this. Pack
+`[β; pack(Λ); log r_1…log r_p]` length `p+rr+p`; `rvec=exp.(θ[tail])`;
+`fams=TruncatedNegBin2.(rvec)`; mode via `_grouped_laplace_mode` (no edit
+to `grouped_dispersion.jl`). Keep `a=r_t/(r_t+μ)` (Sol 2026-08-15).
+Shared-`r` Arc1 pack `[β; pack(Λ); log r]` kept. Mac-light:
+`julia --project=. --startup-file=no test/test_truncated_nbinom2.jl`
+→ **18 Pass / 0 Fail / 0 Error** (9.8 s). Packed NLL FD on log-`r` tail
+≤ 1e-6; equal-`r_t` reduces to shared-`r` ll atol 1e-8; y=0 still throws.
+No rtol widen. No ZIP/ZINB invent-Δ. No ADEMP. Did not touch `bridge.jl`,
+`aghq_grid.jl`, `laplace.jl`. Rose: per-trait pack ≡ twin
+`log_phi_truncnb2`; ≠ bridge admit ≠ AGHQ. After-task
+`docs/dev-log/after-task/2026-08-18-truncated-nbinom2-arc1b.md`.
 
 ## 2026-08-18 — Multinomial P1 engine (FE softmax, twin fid 16)
 
