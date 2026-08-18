@@ -1,6 +1,21 @@
 # Check Log
 
 
+## 2026-08-18 — AGHQ A4(3) fail-loud gate (Identity-adjacent)
+
+Lane `claude/lane-overnight-a43-20260817` @ `b2d646fc` (decision) +
+`5b4d9666` (gate tests) on `origin/main` `17f4a415` (#252). Hopper pin:
+twin `.aghq_gate` (`R/aghq-gate.R` @ `b926f47f`) is TMB `spHess` +
+min-fill `tw ≤ 4` then warn+Laplace; Julia
+`_aghq_stage1a_reject_extra` **throws**. Fail-loud is the A4(3) gate
+while there is no public `aghq=` (Identity §A3). Not a TMB gate port.
+No `k^d` / `d` engine helper invented. No public `aghq=` knob. Both
+AGHQ ledger rows stay `missing`. A4(4) adaptation-loop engine and A4(5)
+report-honesty surface are **not** closed (why-not only). No twin Δ.
+Tweedie / Dropbox checkout not touched. Mac-LIGHT focused:
+`test/test_aghq_gate.jl` **34/34**; `test/test_aghq_adapt.jl` **17/17**;
+`test/test_aghq_grid.jl` **70/70**. Full suite = GitHub CI. Parity: N/A.
+
 ## 2026-08-17 — AGHQ Stage-1b A4(2) Liu–Pierce adapt golden
 
 Lane `claude/lane-aghq-stage1b` @ `32967ef4` + this test/DoD close (PR #252).
