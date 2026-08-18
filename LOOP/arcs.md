@@ -1,25 +1,31 @@
-# Arcs — overnight-a43-20260817 (G0 approved; Shinichi GOAL wins)
+# Arcs — aghq-a43-afford-20260818 (arc 2 only)
 
-Status: todo / doing / done / blocked. Gate = needs a human before it can proceed.
+Cite, do not rewrite:
+`/Users/z3437171/Dropbox/Github Local/GLLVM.jl/.worktrees/gllvmjl-aghq-stage1b-20260817/docs/dev-log/plans/2026-08-18-seven-arcs-ultraplan.md`
+
+G0 (approved): **2 → 3 → 4**; **5 waits**; **6 and 7 wait**. This lane
+runs **arc 2 only**. Do not start 3–7.
+
+Helper contract (Grok scout, binding): one unexported
+`_aghq_kd_bound(d::Integer, k::Integer) -> Nothing`. Throw `ArgumentError`
+(`"AGHQ Stage 1a: …"`) iff **`k > 1` and `d > 5`**. Do **not** add
+`_aghq_d_bound` or `aghq_gate`. Call only from `aghq_stage1a_loglik_site`
+after `_aghq_stage1a_reject_extra` (unchanged).
 
 | # | arc | status | gate? |
 |---|-----|--------|-------|
-| A0 | Identity-adjacent decision `docs/dev-log/decisions/2026-08-18-aghq-a43-gate.md` @ `b2d646fc` | done | — |
-| A1 | Tests that `_aghq_stage1a_reject_extra` fail-loud is the gate at k>1 (`test/test_aghq_gate.jl` @ `5b4d9666`; 34/34) | done | — |
-| A2 | check-log + after-task; Rose fence: not a TMB gate port; not an estimator; rows stay `missing` (Ada) | done | — |
-| A3 | PR #253 MERGED @ `3d5acba0` (head `06c3ef17`). PR CI SUCCESS. Eligibility half only. | done | closed |
-| A4(3) eligibility | declared-kwargs fail-loud lock (#253); honesty follow-up after Opus MIXED | done | — |
-| A4(3) affordability | `k^d` / `d ≤ 5` cost bound | **open** | — |
+| 2a | LOOP kit on this worktree (GOAL / arcs / checkpoint / ultra-plan) | done | — |
+| 2b | `_aghq_kd_bound` + call site on `src/families/aghq_grid.jl` | done | — |
+| 2c | Fail-loud tests + delete `#253` `!isdefined` absence tests in `test/test_aghq_gate.jl` | done | #255 MERGED @ `81866b1a` |
+| 2d | Decision addendum: affordability closed by `_aghq_kd_bound`; eligibility still declared-kwargs | done | #255 MERGED @ `81866b1a` |
+| 2e | check-log + after-task; named-path commits; STOP at sibling push/PR | done (this closeout) | OPEN GATE = sibling push onto #256; do not merge |
+| 3 | Gate wiring (`false` vs omitted kwargs) | OUT | — |
+| 4 | A4(4) site-evaluator / fitter | OUT | — |
+| 5 | A4(5) print/AIC/`used` / public `aghq=` | OUT | waits |
+| 6 | `none × dep()` Identity | OUT | waits |
+| 7 | CV Identity | OUT | waits |
 
-**Overnight /goal DONE on eligibility.** Affordability is still **open**.
-NEXT = later G0. Do not start A4(4) from this marker.
+#255 MERGED @ `81866b1a`. Absence tests deleted. Do not invent
+`aghq_gate`. No public `aghq=`. Ledger AGHQ stays `missing`.
 
-## Fence (do not start)
-
-- A4(3) affordability / `k^d` / `d ≤ 5` engine (open; `#253` did not close it)
-- A4(4) adaptation loop as engine
-- A4(5) report honesty as surface / public `aghq=`
-- leftover-1 `none × dep()` · CV · Tweedie · multinomial · ledger promote · Totoro/DRAC
-- TMB `.aghq_gate` min-fill / `spHess` port
-- Closed Stage-1b LOOP (`21e24e97`) · Dropbox checkout
-- Omitted-kwargs detection / `row_effects=false` vs `unique_latent=false` (later engine)
+This worktree’s `LOOP/` is not the overnight / honesty kit.

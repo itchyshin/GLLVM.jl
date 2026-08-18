@@ -16,6 +16,22 @@ No rtol widen. No ZIP/ZINB invent-Δ. No ADEMP. Did not touch `bridge.jl`,
 `log_phi_truncnb2`; ≠ bridge admit ≠ AGHQ. After-task
 `docs/dev-log/after-task/2026-08-18-truncated-nbinom2-arc1b.md`.
 
+## 2026-08-18 — AGHQ A4(3) affordability half closed (`_aghq_kd_bound`)
+
+Lane `cursor/lane-aghq-a43-afford-20260818` from `origin/main` @
+`81866b1a` (#255 MERGED). Affordability half **closed** by
+`_aghq_kd_bound` (throw iff `k>1` and `d>5` on dense loadings-only
+`z_B`). Eligibility stays **declared-kwargs** (`_aghq_stage1a_reject_extra`).
+Three `#253` `!isdefined` absence tests (`_aghq_kd_bound`,
+`_aghq_d_bound`, `aghq_gate`) plus the #255 comments on those rows
+are deleted from `test/test_aghq_gate.jl`. Bound coverage stays in
+`test/test_aghq_kd_bound.jl`. No `aghq_gate` invented. No public
+`aghq=`. Both AGHQ ledger rows stay `missing`. A4(4)/A4(5) not
+started. No twin Δ. Tweedie / Dropbox checkout / honesty worktree
+not touched. Mac-LIGHT focused: `test/test_aghq_gate.jl` **30/30**
+in 3.1 s; `test/test_aghq_kd_bound.jl` **29/29** in 0.1 s. Full
+suite = GitHub CI. Parity: N/A.
+
 ## 2026-08-18 — AGHQ A4(3) honesty follow-up (declared-kwargs; affordability open)
 
 Lane `cursor/a43-honesty-20260818` from `origin/main` @ `3d5acba0` (#253).
