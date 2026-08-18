@@ -1,7 +1,15 @@
 module GLLVM
 
-using LinearAlgebra, Distributions, Optim, ForwardDiff, Random, SparseArrays, Statistics
+using LinearAlgebra, Optim, ForwardDiff, Random, SparseArrays, Statistics
 using SpecialFunctions: digamma, trigamma, besselk, gamma, loggamma
+# Import Distributions without `Multinomial` so the Identity marker
+# `GLLVM.Multinomial` (unordered categorical, twin fid 16) can bind.
+# `Distributions.Multinomial` is the count-vector law — still available qualified.
+import Distributions
+using Distributions: Distribution, Univariate, Discrete, Continuous,
+    Poisson, Binomial, Normal, Gamma, Exponential, Beta,
+    NegativeBinomial, LogNormal, TDist, Categorical, Bernoulli, Geometric,
+    Chisq, cdf, pdf, logpdf, logcdf, quantile, ccdf
 
 # Core
 include("packing.jl")
@@ -57,6 +65,7 @@ include("families/tweedie.jl")           # Tweedie (compound Poisson–Gamma, 1<
 include("families/exponential.jl")       # Exponential (positive continuous, no dispersion) — Gamma(α=1)
 include("families/studentt.jl")          # Student-t (heavy-tailed continuous, fixed ν) family pieces
 include("families/lognormal.jl")         # one-part lognormal (twin fid 3)
+include("families/multinomial.jl")       # unordered categorical FE softmax (twin fid 16; v1 no LV)
 include("families/twopart.jl")           # Two-part substrate + Delta-lognormal / Delta-Gamma / Hurdle (Phase 3)
 include("families/beta_hurdle.jl")       # Beta-hurdle (Bernoulli × Beta) two-part family
 include("families/beta_binomial.jl")     # Beta-binomial (overdispersed binomial) — twin fid 8
@@ -187,6 +196,7 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        StudentTFamily, fit_studentt_gllvm, StudentTFit, studentt_marginal_loglik_laplace,
        Lognormal, LognormalFit, fit_lognormal_gllvm,
        lognormal_marginal_loglik, lognormal_response_mean,
+       Multinomial, MultinomialFit, fit_multinomial_gllvm,
        Ordinal, fit_ordinal_gllvm, OrdinalFit,
        fit_ordinal_gllvm_pertrait, OrdinalPerTraitFit,
        fit_ordinal_gllvm_pertrait_cov, OrdinalPerTraitCovFit,

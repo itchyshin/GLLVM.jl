@@ -22,7 +22,6 @@
 using Random
 using Statistics
 using LinearAlgebra
-using Distributions
 
 # ---------------------------------------------------------------------------
 # Term-name builder (legacy θ_packed layout).

@@ -57,6 +57,9 @@ distribution used as a marker (the GLM.jl convention):
   always estimated. They are not used as `c0_init` / `c1_init` / `φ_init`.
   This is the opposite of `StudentTFamily(ν)` (structural pin) and of Ordinal's
   `τ₁ = 0` pin.
+- `Multinomial()` → [`fit_multinomial_gllvm`](@ref) — fixed-effect softmax
+  (twin fid 16; v1, no LV). `K` / `num_lv` must be omitted or 0. Not a
+  capability-table admit; ledger stays `missing`.
 - `GeneralizedPoisson1(α)` → [`fit_gp1_gllvm`](@ref) — Laplace marginal (GP-1 counts, signed dispersion)
 - `ZIB(N)` → [`fit_zib_gllvm`](@ref) — zero-inflated binomial (Julia-forward). Unlike the
   other markers, `ZIB` carries the shared trials count, so `N` travels on the family
@@ -140,6 +143,22 @@ function fit_gllvm(Y::AbstractMatrix; family = Normal(), K = nothing,
        (family isa NegativeBinomial || family isa Beta || family isa NB1 ||
         family isa BetaBinom)
         disp_group = :species
+    end
+
+    # --- Multinomial v1: FE softmax only (no LV). ----------------------------
+    # Must run before row_eff / disp_group / pervar routes (those require K).
+    if family isa Multinomial
+        row_eff === :none || throw(ArgumentError(
+            "fit_gllvm: Multinomial v1 is fixed-effects softmax only — " *
+            "row_eff is not supported"))
+        disp_group === nothing || throw(ArgumentError(
+            "fit_gllvm: Multinomial has no dispersion — disp_group is not supported"))
+        pervar && throw(ArgumentError(
+            "fit_gllvm: Multinomial v1 is fixed-effects softmax only — pervar is not supported"))
+        (K !== nothing && K != 0) && throw(ArgumentError(
+            "fit_gllvm: Multinomial v1 is fixed-effects softmax only — no LV " *
+            "(got K=$K). Leave K / num_lv unset."))
+        return fit_multinomial_gllvm(Y; kwargs...)
     end
 
     # Count how many structural/dispersion variants are active. At most one is
@@ -261,6 +280,8 @@ _fit_gllvm(::COMPoisson, Y::AbstractMatrix; kwargs...) =
 # StudentTFamily(ν) and of Ordinal's τ₁ = 0 pin).
 _fit_gllvm(::OrderedBeta, Y::AbstractMatrix; kwargs...) =
     fit_ordered_beta_gllvm(Y; kwargs...)
+_fit_gllvm(::Multinomial, Y::AbstractMatrix; kwargs...) =
+    fit_multinomial_gllvm(Y; kwargs...)
 
 # No `_fit_gllvm(::NB1, …)` / `_fit_gllvm(::BetaBinom, …)` arms: the per-trait
 # coerce above always sets `disp_group`, so both reach `_fit_gllvm_grouped`
@@ -271,7 +292,7 @@ _fit_gllvm(::OrderedBeta, Y::AbstractMatrix; kwargs...) =
 # Clear error for families not yet implemented.
 _fit_gllvm(family, Y::AbstractMatrix; kwargs...) = throw(ArgumentError(
     "fit_gllvm: family $(nameof(typeof(family))) is not implemented yet " *
-    "(available: Normal, Binomial, Poisson, TruncatedPoisson, CensoredPoisson, TruncatedNegBin2, Lognormal, NegativeBinomial, NB1, Beta, BetaBinom, Ordinal, Gamma, Exponential, StudentTFamily, DeltaLogNormal, DeltaGamma, HurdlePoisson, HurdleNB, BetaHurdle, COMPoisson, OrderedBeta, GeneralizedPoisson1, ZIPoisson, ZINegBin, ZIB)"))
+    "(available: Normal, Binomial, Poisson, TruncatedPoisson, CensoredPoisson, TruncatedNegBin2, Lognormal, Multinomial, NegativeBinomial, NB1, Beta, BetaBinom, Ordinal, Gamma, Exponential, StudentTFamily, DeltaLogNormal, DeltaGamma, HurdlePoisson, HurdleNB, BetaHurdle, COMPoisson, OrderedBeta, GeneralizedPoisson1, ZIPoisson, ZINegBin, ZIB)"))
 
 # --- grouped-dispersion routing keyed on the family marker. ------------------
 _fit_gllvm_grouped(::NegativeBinomial, Y::AbstractMatrix; kwargs...) =
