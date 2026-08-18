@@ -13,6 +13,20 @@ ledger rows **untouched** (`missing`). Not piled onto OPEN #257.
 Mac-LIGHT focused: `test/test_bridge_capabilities.jl` **211/211**;
 `test/test_bridge_lognormal.jl` **43/43**. Full suite = GitHub CI.
 
+## 2026-08-18 — AGHQ A4(3) honesty follow-up (declared-kwargs; affordability open)
+
+Lane `cursor/a43-honesty-20260818` from `origin/main` @ `3d5acba0` (#253).
+Docs/comment honesty after Opus MIXED on merged #253: fail-loud is
+**declared-kwargs eligibility**, not model inspection; omitted kwargs
+never fire the gate; `false` is inconsistent (`row_effects=false`
+throws, `unique_latent=false` passes) and is later engine; `#253`
+`!isdefined` absence tests do **not** close affordability (`k^d` /
+`d ≤ 5`). LOOP A3 records #253 MERGED. No `src/` gate behavior change.
+No public `aghq=`. Both AGHQ ledger rows stay `missing`. A4(4)/A4(5)
+not started. No twin Δ. Tweedie / Dropbox checkout not touched.
+Mac-LIGHT focused: `test/test_aghq_gate.jl` **34/34** in 3.0 s
+(comment-only on the absence tests). Full suite = GitHub CI. Parity: N/A.
+
 ## 2026-08-18 — AGHQ A4(3) fail-loud gate (Identity-adjacent)
 
 Lane `claude/lane-overnight-a43-20260817` @ `b2d646fc` (decision) +
