@@ -87,6 +87,8 @@ end
         # Twin R/aghq-gate.R uses TMB min-fill treewidth (tw≤4 ≈ d≤5).
         # Julia has no k^d / d / treewidth helper. Do not invent one here;
         # `_aghq_stage1a_reject_extra` remains the only Stage-1a gate.
+        # Absence is not a closed affordability claim. Delete these
+        # `!isdefined` tests when A4(3) affordability (`k^d` / `d ≤ 5`) ships.
         @test !isdefined(GLLVM, :_aghq_kd_bound)
         @test !isdefined(GLLVM, :_aghq_d_bound)
         @test !isdefined(GLLVM, :aghq_gate)
