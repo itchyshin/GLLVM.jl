@@ -34,6 +34,7 @@ using GLLVM
     @test caps.family == [
         "gaussian",
         "poisson",
+        "lognormal",
         "binomial",
         "binomial_probit",
         "binomial_cloglog",
@@ -242,6 +243,32 @@ using GLLVM
     @test occursin("finite-difference Hessian", caps.notes[bb_idx])
     @test occursin("residuals/simulate are not wired", caps.notes[bb_idx])
 
+    # lognormal: no-X only (twin fid 3). CI / X / X_lv / masks / scalar-mean
+    # postfit remain follow-ups — LognormalFit is not in `_CIFit` and has no
+    # residuals/simulate extractor. Light RCall Δ is still OWED (not invented).
+    ln_idx = findfirst(==("lognormal"), caps.family)
+    @test ln_idx !== nothing
+    @test ln_idx == findfirst(==("poisson"), caps.family) + 1
+    @test caps.fit_no_x[ln_idx]
+    @test !caps.fixed_effect_X[ln_idx]
+    @test !caps.predictor_informed_lv[ln_idx]
+    @test !caps.missing_response[ln_idx]
+    @test !caps.cbind_binomial[ln_idx]
+    @test !caps.ci_no_x_wald[ln_idx]
+    @test !caps.ci_no_x_profile[ln_idx]
+    @test !caps.ci_no_x_bootstrap[ln_idx]
+    @test !caps.ci_mask_wald[ln_idx]
+    @test !caps.ci_x_wald[ln_idx]
+    @test caps.postfit_predict[ln_idx]
+    @test !caps.postfit_residuals[ln_idx]
+    @test !caps.postfit_simulate[ln_idx]
+    @test caps.postfit_ordination[ln_idx]
+    @test occursin("twin fid 3", caps.notes[ln_idx])
+    @test occursin("fit_lognormal_gllvm", caps.notes[ln_idx])
+    @test occursin("light RCall Δ still OWED", caps.notes[ln_idx])
+    @test occursin("not invented", caps.notes[ln_idx])
+    @test occursin("narrower than full R-user parity", caps.notes[ln_idx])
+
     # zib: no-X only. `cbind_binomial` stays FALSE (ZIB's N is one shared scalar,
     # not the per-observation cbind contract), masks and X are unwired, and no-X CI
     # routes all three methods through _family_ci(::ZIBFit).
@@ -319,6 +346,13 @@ using GLLVM
             @test occursin("narrower than full R-user parity", note)
             # The X arm is a separate arc: no fixed-effect-X, no CI under X, no masks.
             @test !occursin("Wald/profile/bootstrap CI under X", note)
+        elseif fam == "lognormal"
+            @test occursin("twin fid 3", note)
+            @test occursin("fit_lognormal_gllvm", note)
+            @test occursin("light RCall Δ still OWED", note)
+            @test occursin("not invented", note)
+            @test occursin("narrower than full R-user parity", note)
+            @test !occursin("Wald/profile/bootstrap CI payloads are routed", note)
         else
             @test occursin("narrower than full R-user parity", note)
         end

@@ -16,6 +16,18 @@ No rtol widen. No ZIP/ZINB invent-Δ. No ADEMP. Did not touch `bridge.jl`,
 `log_phi_truncnb2`; ≠ bridge admit ≠ AGHQ. After-task
 `docs/dev-log/after-task/2026-08-18-truncated-nbinom2-arc1b.md`.
 
+## 2026-08-18 — lognormal no-X bridge admit (twin fid 3)
+
+Lane `cursor/lognormal-bridge-20260818` from `origin/main` @ `3d5acba0`
+(#253). `"lognormal"` inserted after `"poisson"` in
+`_BRIDGE_ONEPART_FAMILIES` / `_bridge_family_key` /
+`_bridge_fit_onepart`. Engine already on main; this slice pays the
+bridge admit only. CI / X / X_lv / masks fenced. Light RCall Δ still
+**OWED** — `GLLVM_PARITY_TESTS` unset; **no invented number**. AGHQ
+ledger rows **untouched** (`missing`). Not piled onto OPEN #257.
+Mac-LIGHT focused: `test/test_bridge_capabilities.jl` **211/211**;
+`test/test_bridge_lognormal.jl` **43/43**. Full suite = GitHub CI.
+
 ## 2026-08-18 — Multinomial P1 engine (FE softmax, twin fid 16)
 
 Lane `cursor/lane-parity-beyond-20260818` (PR #257) on `origin/main`
