@@ -104,4 +104,50 @@ end
         end
         @test maximum(abs, g_ad .- g_fd) ≤ 1e-6
     end
+
+    @testset "Arc1b: equal r_t reduces to shared-r ll" begin
+        Random.seed!(53)
+        p, n, K = 3, 30, 1
+        β = randn(p) .* 0.2 .+ 0.8
+        Λ = 0.3 .* randn(p, K)
+        r = 5.0
+        rvec = fill(r, p)
+        Y = [_rtruncnb2(exp(β[t]), r) for t in 1:p, s in 1:n]
+        ll_shared = GLLVM.truncated_nbinom2_marginal_loglik_laplace(Y, Λ, β, r)
+        ll_pt = GLLVM.truncated_nbinom2_pertrait_marginal_loglik_laplace(Y, Λ, β, rvec)
+        @test ll_pt ≈ ll_shared atol = 1e-8
+    end
+
+    @testset "Arc1b: packed NLL FD vs ForwardDiff on log-r tail ≤ 1e-6" begin
+        Random.seed!(54)
+        p, n, K = 3, 30, 1
+        β = randn(p) .* 0.2 .+ 0.8
+        rvec = [4.0, 6.0, 5.0]
+        Y = [_rtruncnb2(exp(β[t]), rvec[t]) for t in 1:p, s in 1:n]
+        rr = GLLVM.rr_theta_len(p, K)
+        θ = vcat(β, GLLVM.pack_lambda(0.3 .* randn(p, K)), log.(rvec))
+        @test length(θ) == p + rr + p
+        nll = θv -> begin
+            βv = θv[1:p]
+            Λv = GLLVM.unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+            rv = exp.(θv[(p + rr + 1):(p + rr + p)])
+            -GLLVM.truncated_nbinom2_pertrait_marginal_loglik_laplace(Y, Λv, βv, rv)
+        end
+        g_ad = ForwardDiff.gradient(nll, θ)
+        h = 1e-6
+        g_fd = similar(θ)
+        @inbounds for i in eachindex(θ)
+            θp = copy(θ); θp[i] += h
+            θm = copy(θ); θm[i] -= h
+            g_fd[i] = (nll(θp) - nll(θm)) / (2h)
+        end
+        tail = (p + rr + 1):(p + rr + p)
+        @test maximum(abs, g_ad[tail] .- g_fd[tail]) ≤ 1e-6
+    end
+
+    @testset "Arc1b: y=0 still throws" begin
+        Y = [1 2; 0 3]
+        @test_throws ArgumentError fit_truncated_nbinom2_gllvm_pertrait(Y; K = 1, iterations = 5)
+        @test_throws ArgumentError fit_truncated_nbinom2_gllvm(Y; K = 1, iterations = 5)
+    end
 end
