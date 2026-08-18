@@ -1,6 +1,18 @@
 # Check Log
 
 
+## 2026-08-18 — lognormal no-X bridge admit (twin fid 3)
+
+Lane `cursor/lognormal-bridge-20260818` from `origin/main` @ `3d5acba0`
+(#253). `"lognormal"` inserted after `"poisson"` in
+`_BRIDGE_ONEPART_FAMILIES` / `_bridge_family_key` /
+`_bridge_fit_onepart`. Engine already on main; this slice pays the
+bridge admit only. CI / X / X_lv / masks fenced. Light RCall Δ still
+**OWED** — `GLLVM_PARITY_TESTS` unset; **no invented number**. AGHQ
+ledger rows **untouched** (`missing`). Not piled onto OPEN #257.
+Mac-LIGHT focused: `test/test_bridge_capabilities.jl` **211/211**;
+`test/test_bridge_lognormal.jl` **43/43**. Full suite = GitHub CI.
+
 ## 2026-08-18 — AGHQ A4(3) fail-loud gate (Identity-adjacent)
 
 Lane `claude/lane-overnight-a43-20260817` @ `b2d646fc` (decision) +
