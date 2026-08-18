@@ -130,17 +130,14 @@ dimension `d` (size `k^d`). Hopper pin: analogue of twin `tw ≤ 4` is
 `d ≤ 5` on this complete block — not a treewidth measurement, not
 `.aghq_gate`. `_aghq_d_bound` and `aghq_gate` stay undefined.
 
-Throws `ArgumentError` when `k < 1` or `d < 1`, and when `k > 1` and
-`d > 5`. Returns `nothing` at `k = 1` for every `d ≥ 1` (including
-`d > 5`) so the site evaluator stays the `u = 0` Laplace template
-(A4.4 unpaid — do not skip to a different function). Error text names
-tensor `k^d` / `d`, never treewidth.
+Throws `ArgumentError` iff `k > 1` and `d > 5`. Returns `nothing`
+otherwise, including at `k = 1` for every `d` (the site evaluator
+stays the `u = 0` Laplace template; A4.4 unpaid — do not skip to a
+different function). `k < 1` is the site-evaluator check;
+`aghq_grid` already checks `d ≥ 1` / `k ≥ 1`. This helper may assume
+`k ≥ 1`. Error text names tensor `k^d` / `d`, never treewidth.
 """
 function _aghq_kd_bound(d::Integer, k::Integer)
-    if k < 1 || d < 1
-        throw(ArgumentError(
-            "AGHQ Stage 1a: tensor cost k^d requires k ≥ 1 and d ≥ 1, got d=$d, k=$k"))
-    end
     if k > 1 && d > 5
         throw(ArgumentError(
             "AGHQ Stage 1a: tensor cost k^d with d=$d, k=$k exceeds d ≤ 5; " *
