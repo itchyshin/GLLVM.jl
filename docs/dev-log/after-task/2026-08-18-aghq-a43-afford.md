@@ -16,9 +16,10 @@ closes affordability. Live afford GOAL lives at
 `LOOP/lanes/aghq-a43-afford-20260818/GOAL.md`. Origin/main
 `LOOP/GOAL.md` (overnight) was **not** edited.
 
-`src/families/aghq_grid.jl` and `test/test_aghq_gate.jl` are **Noether**.
-This commit does not invent a helper name, does not delete the `#253`
-absence tests, and does not claim Mac-light tallies.
+Noether shipped `_aghq_kd_bound` on `src/families/aghq_grid.jl` @
+`7b4ad0f3` (fail-loud at `k > 1` and `d > 5`; `k = 1` still ≡ Laplace).
+This Ada commit does not edit `src/` or `test/`. Deleting the `#253`
+`!isdefined` absence tests **waits** for #255 merge.
 
 ## Mathematical Contract
 
@@ -98,7 +99,8 @@ first half’s honesty PR.
 
 ## Remaining Risks
 
-- Noether helper + `#253` absence-test deletion not in this commit.
+- `#253` `!isdefined` absence-test deletion **waits** for #255 merge
+  (helper `_aghq_kd_bound` already on this branch @ `7b4ad0f3`).
 - Arc 3 (`false` vs omitted kwargs) is **not** closed.
 - A4(4) and A4(5) are **not** closed.
 - Both AGHQ ledger rows stay `missing`.

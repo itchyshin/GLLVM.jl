@@ -21,7 +21,7 @@ slice ships the second.
 | Half | What it is | After this slice |
 |---|---|---|
 | Eligibility | `_aghq_stage1a_reject_extra` throws on **declared** extras | **Unchanged.** Stays declared-kwargs (#253 / #255). Omitted kwargs still do not fire the gate. Arc 3 (`false` vs `nothing`) stays later engine. |
-| Affordability | cheap `k^d` / `d ≤ 5` cost bound on dense loadings-only `z_B` | **Closed** by this slice (Noether helper on `src/families/aghq_grid.jl`). Delete the `#253` `!isdefined` absence tests when that helper exists. |
+| Affordability | cheap `k^d` / `d ≤ 5` cost bound on dense loadings-only `z_B` | **Closed** by `_aghq_kd_bound` (Noether @ `7b4ad0f3`). Deleting the `#253` `!isdefined` absence tests **waits** for #255 merge. |
 
 #255 correctly left affordability **open** on the gate note. This new
 file is the later lock. It does **not** patch #255’s paragraph until
