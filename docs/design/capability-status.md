@@ -146,7 +146,7 @@ hurdle / ordered-beta family, so a Δ would be invented. `truncated_poisson` =
 zero-truncated Poisson (Identity 2026-08-15; twin fid 10); `truncated_nbinom2`
 = zero-truncated NB2 (Identity 2026-08-15; twin fid 11; Arc1 shared scalar `r`
 ≡ twin `φ`; Arc1b 2026-08-18 per-trait pack ≡ twin `log_phi_truncnb2`;
-≠ bridge admit ≠ AGHQ). `lognormal` = one-part lognormal (Identity 2026-08-15; twin fid 3; engine+admit; light RCall Δ / bridge OWED). `censored_poisson` = right-censored Poisson (Identity 2026-08-15; Julia-forward / twin constructor-only; light RCall Δ FORBIDDEN).
+≠ bridge admit ≠ AGHQ). `lognormal` = one-part lognormal (Identity 2026-08-15; twin fid 3; engine+admit; **bridge no-X paid** via `bridge_fit(; family = "lognormal")`; light RCall Δ still OWED — no invented number). `censored_poisson` = right-censored Poisson (Identity 2026-08-15; Julia-forward / twin constructor-only; light RCall Δ FORBIDDEN).
 
 ## Intervals and estimation evidence
 
@@ -274,11 +274,14 @@ Same twin surface, transport layer. Status = code + bridge/parity test exist;
   `src/families/truncated_nbinom2.jl` · `test/test_truncated_nbinom2.jl`
   — Arc1b pack `[β; pack(Λ); log r_1…log r_p]` ≡ twin `log_phi_truncnb2`;
   ≠ bridge admit ≠ AGHQ
-- lognormal Identity + engine + admit (one-part lognormal; twin fid 3):
+- lognormal Identity + engine + admit + **bridge no-X** (one-part lognormal; twin fid 3):
   `docs/dev-log/decisions/2026-08-15-lognormal-identity.md` ·
-  `src/families/lognormal.jl` · `test/test_lognormal.jl` ·
-  `docs/dev-log/handover/2026-08-15-lognormal-ADMIT.md` — Julia identity/FD only;
-  light RCall Δ and bridge admission still OWED
+  `src/families/lognormal.jl` · `src/bridge.jl` (`_BRIDGE_ONEPART_FAMILIES` /
+  `_bridge_family_key` / `_bridge_fit_onepart`) · `test/test_lognormal.jl` ·
+  `test/test_bridge_lognormal.jl` ·
+  `docs/dev-log/handover/2026-08-15-lognormal-ADMIT.md` — Julia identity/FD +
+  bridge admit; light RCall Δ still OWED (not invented); CI / X / X_lv / masks
+  remain follow-ups
 - censored_poisson Identity + engine + admit (right-censored Poisson):
   `docs/dev-log/decisions/2026-08-15-censored-poisson-identity.md` ·
   `src/families/censored_poisson.jl` · `test/test_censored_poisson.jl` ·
