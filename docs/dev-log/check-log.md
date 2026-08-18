@@ -1,6 +1,23 @@
 # Check Log
 
 
+## 2026-08-18 — Multinomial P1 engine (FE softmax, twin fid 16)
+
+Lane `cursor/lane-parity-beyond-20260818` (PR #257) on `origin/main`
+`3d5acba0`. Identity ACCEPTED
+`docs/dev-log/decisions/2026-08-18-multinomial-identity.md`. Engine:
+`src/families/multinomial.jl` — marker `Multinomial` (not `Categorical`;
+not `Distributions.Multinomial`), `y ∈ {1…K}`, `K ≥ 3` fail-loud
+(binomial-logit), `η₁ ≡ 0`, packing `(K−1)(1+p)` contrast-major, one
+softmax per observation. No TMB `K−1` pseudo-rows. No LV. `fit_gllvm`
+dispatch rejects `K` / `num_lv` > 0. Ledger row stays `missing`. No
+bridge. No `@formula`. No twin Δ. `aghq_grid.jl` untouched. Mac-LIGHT
+focused: `export PATH="$HOME/.juliaup/bin:$PATH"`;
+`julia --project=. --startup-file=no test/test_multinomial.jl` —
+**37 passed, 0 failed** in 2.7 s (Test Summary pasted in after-task).
+FD ≤ 1e-6 on packed objective. Full suite = GitHub CI. P2 lognormal /
+Tweedie not started.
+
 ## 2026-08-18 — AGHQ A4(3) fail-loud gate (Identity-adjacent)
 
 Lane `claude/lane-overnight-a43-20260817` @ `b2d646fc` (decision) +
