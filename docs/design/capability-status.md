@@ -145,7 +145,8 @@ row effects, `bridge.jl`, and any twin light Δ remain OWED — the twin has no
 hurdle / ordered-beta family, so a Δ would be invented. `truncated_poisson` =
 zero-truncated Poisson (Identity 2026-08-15; twin fid 10); `truncated_nbinom2`
 = zero-truncated NB2 (Identity 2026-08-15; twin fid 11; Arc1 shared scalar `r`
-≡ twin `φ`; twin per-trait `log_phi_truncnb2` documented, Arc1b OWED). `lognormal` = one-part lognormal (Identity 2026-08-15; twin fid 3; engine+admit; **bridge no-X paid** via `bridge_fit(; family = "lognormal")`; light RCall Δ still OWED — no invented number). `censored_poisson` = right-censored Poisson (Identity 2026-08-15; Julia-forward / twin constructor-only; light RCall Δ FORBIDDEN).
+≡ twin `φ`; Arc1b 2026-08-18 per-trait pack ≡ twin `log_phi_truncnb2`;
+≠ bridge admit ≠ AGHQ). `lognormal` = one-part lognormal (Identity 2026-08-15; twin fid 3; engine+admit; **bridge no-X paid** via `bridge_fit(; family = "lognormal")`; light RCall Δ still OWED — no invented number). `censored_poisson` = right-censored Poisson (Identity 2026-08-15; Julia-forward / twin constructor-only; light RCall Δ FORBIDDEN).
 
 ## Intervals and estimation evidence
 
@@ -266,10 +267,13 @@ Same twin surface, transport layer. Status = code + bridge/parity test exist;
 - truncated_poisson Identity + engine (zero-truncated; twin fid 10):
   `docs/dev-log/decisions/2026-08-15-truncated-poisson-identity.md` ·
   `src/families/truncated_poisson.jl` · `test/test_truncated_poisson.jl`
-- truncated_nbinom2 Identity + engine (zero-truncated NB2; twin fid 11; shared-`r`):
+- truncated_nbinom2 Identity + engine (zero-truncated NB2; twin fid 11; shared-`r` Arc1 + per-trait Arc1b):
   `docs/dev-log/decisions/2026-08-15-truncated-nbinom2-identity.md` ·
   `docs/dev-log/plans/2026-08-15-truncated-nbinom2-identity-engine.md` ·
+  `docs/dev-log/after-task/2026-08-18-truncated-nbinom2-arc1b.md` ·
   `src/families/truncated_nbinom2.jl` · `test/test_truncated_nbinom2.jl`
+  — Arc1b pack `[β; pack(Λ); log r_1…log r_p]` ≡ twin `log_phi_truncnb2`;
+  ≠ bridge admit ≠ AGHQ
 - lognormal Identity + engine + admit + **bridge no-X** (one-part lognormal; twin fid 3):
   `docs/dev-log/decisions/2026-08-15-lognormal-identity.md` ·
   `src/families/lognormal.jl` · `src/bridge.jl` (`_BRIDGE_ONEPART_FAMILIES` /
