@@ -11,16 +11,19 @@ ARCS DONE (verified):
   `2a5f32ea`. Pins twin fid 16, `η₁ ≡ 0`, `K ≥ 3`, no `categorical()` alias,
   no Δ. Ledger stays `missing`.
 - P1-eng: `src/families/multinomial.jl` + `fit_gllvm` dispatch +
-  `test/test_multinomial.jl`. Mac-light **37/37** in 2.7 s. FD ≤ 1e-6.
-  After-task: `docs/dev-log/after-task/2026-08-18-multinomial-engine.md`.
+  `test/test_multinomial.jl`. Mac-light **41/41** in 2.6 s after
+  `GLLVM.Multinomial` qualify vs Distributions. FD ≤ 1e-6.
+  After-task: `docs/dev-log/after-task/2026-08-18-multinomial-engine.md`
+  + `docs/dev-log/after-task/2026-08-18-multinomial-name-clash.md`.
 - Owed chips stamped, **not started:** P2a `truncated_nbinom2` Arc1b fid 11;
   P2b `lognormal` bridge+Δ fid 3. Tweedie T6 paid; T2–T5 unpaid;
   `fit_gllvm` STOP.
 
 ARC IN PROGRESS: none. P1-eng landed.
 
-NEXT: push engine commits to existing #257. Do **not** `gh pr merge`.
-Do **not** start P2a/P2b, P3 T2–T5, Phase E, C, or X.
+NEXT: push name-clash qualify to existing #257. Watch Julia CI. Do
+**not** `gh pr merge` until SUCCESS. Do **not** start P2a/P2b, P3
+T2–T5, Phase E, C, or X.
 
 OPEN GATES (need human): **Shinichi merge of #257** after CI — not from
 this agent. Ledger promote is a later gate (still `missing`).

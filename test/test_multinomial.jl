@@ -1,4 +1,9 @@
-using GLLVM, Test, Random, LinearAlgebra, ForwardDiff
+using GLLVM, Test, Random, LinearAlgebra, ForwardDiff, Distributions
+
+# `using Distributions` after `using GLLVM` makes bare `Multinomial`
+# undefined (both export it). Identity keeps the public marker as
+# `GLLVM.Multinomial`; qualify here so the suite stays usable after
+# earlier `runtests.jl` files have already imported Distributions.
 
 # Central FD (same stencil as test_lognormal.jl / test_studentt.jl).
 function _mn_central_fd_gradient(f, theta; h = 1e-6)
@@ -20,11 +25,20 @@ end
 @testset "multinomial family (FE softmax, twin fid 16)" begin
 
     @testset "marker is Multinomial, not Categorical" begin
-        m = Multinomial()
-        @test m isa Multinomial
+        m = GLLVM.Multinomial()
+        @test m isa GLLVM.Multinomial
         @test nameof(typeof(m)) === :Multinomial
         @test nameof(typeof(m)) !== :Categorical
         @test !(m isa GLLVM.Ordinal)
+    end
+
+    @testset "GLLVM.Multinomial vs Distributions.Multinomial" begin
+        m = GLLVM.Multinomial()
+        d = Distributions.Multinomial(3, [0.2, 0.3, 0.5])
+        @test m isa GLLVM.Multinomial
+        @test d isa Distributions.Multinomial
+        @test typeof(m) !== typeof(d)
+        @test length(d) == 3
     end
 
     @testset "K < 3 fail-loud (use binomial-logit)" begin
@@ -87,8 +101,8 @@ end
 
     @testset "rejects LV K / num_lv" begin
         Y = reshape(Int[1, 2, 3, 1, 2, 3, 1, 2, 3], 1, 9)
-        @test_throws ArgumentError fit_gllvm(Y; family = Multinomial(), K = 1)
-        @test_throws ArgumentError fit_gllvm(Y; family = Multinomial(), num_lv = 2)
+        @test_throws ArgumentError fit_gllvm(Y; family = GLLVM.Multinomial(), K = 1)
+        @test_throws ArgumentError fit_gllvm(Y; family = GLLVM.Multinomial(), num_lv = 2)
         @test_throws ArgumentError fit_multinomial_gllvm(Y; K = 1)
     end
 
@@ -119,7 +133,7 @@ end
         @test length(fit.theta_packed) == 2
         @test isfinite(fit.loglik)
         @test maximum(abs, fit.β .- β_true) < 0.25
-        fit2 = fit_gllvm(Y; family = Multinomial())
+        fit2 = fit_gllvm(Y; family = GLLVM.Multinomial())
         @test fit2 isa MultinomialFit
         @test fit2.loglik ≈ fit.loglik atol = 1e-8
     end

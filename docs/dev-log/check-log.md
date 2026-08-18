@@ -1,5 +1,19 @@
 # Check Log
 
+## 2026-08-18 — Multinomial name-clash vs Distributions (#257 CI)
+
+Lane `cursor/lane-parity-beyond-20260818` (PR #257) after merge of
+`origin/main` @ `13ccb7d5` (#259). Julia CI FAILED:
+`UndefVarError: Multinomial not defined` in `test/test_multinomial.jl`
+because earlier `runtests.jl` files `using Distributions` (both export
+the name). Public marker stays `Multinomial` (Identity). Tests qualify
+`GLLVM.Multinomial`; `Distributions.Multinomial` still usable (new
+clash testset). Mac-LIGHT:
+`julia --project=. --startup-file=no test/test_multinomial.jl` →
+**41 passed, 0 failed** in 2.6 s. No export rename. No invented Δ.
+No Dropbox. After-task:
+`docs/dev-log/after-task/2026-08-18-multinomial-name-clash.md`.
+
 ## 2026-08-18 — truncated_nbinom2 Arc1b per-trait `log_phi_truncnb2`
 
 Lane `cursor/truncnb2-arc1b-20260818` from `origin/main` @ `3d5acba0`.

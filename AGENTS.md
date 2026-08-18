@@ -90,12 +90,19 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
+- **Multinomial name-clash vs Distributions (2026-08-18).** PR #257
+  after `origin/main` @ `13ccb7d5` (#259). Bare `Multinomial` in
+  `test/test_multinomial.jl` was `UndefVarError` once `runtests.jl`
+  had `using Distributions`. Public API stays `Multinomial`; tests
+  qualify `GLLVM.Multinomial`. Mac-light **41/41**. After-task:
+  `docs/dev-log/after-task/2026-08-18-multinomial-name-clash.md`.
 - **Multinomial P1 engine (2026-08-18).** Branch
   `cursor/lane-parity-beyond-20260818` (PR #257). Identity ACCEPTED
   `docs/dev-log/decisions/2026-08-18-multinomial-identity.md`. v1 FE
   softmax only: marker `Multinomial`, `η₁≡0`, pack `(K−1)(1+p)`, one
   softmax per observation, no TMB pseudo-rows, no LV. Focused
-  `test/test_multinomial.jl` **37/37**. Ledger stays `missing`. No Δ.
+  `test/test_multinomial.jl` **41/41** after the name-clash qualify.
+  Ledger stays `missing`. No Δ.
   After-task: `docs/dev-log/after-task/2026-08-18-multinomial-engine.md`.
   Rose: Julia focused claim only ≠ twin Δ ≠ ledger promote ≠ LV.
 - **ZINB+X confint under X (2026-08-14).** Branch
