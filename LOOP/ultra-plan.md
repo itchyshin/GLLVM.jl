@@ -1,51 +1,51 @@
-# Ultra-plan — none-dep-identity-20260818 (pointer; not a new seven-arc plan)
+# Ultra-plan — gllvmjl-parity-beyond (FROZEN at G0 2026-08-18)
 
-**Status:** G0 already approved as **parity-beyond Phase C item 1**.
-**This file is a one-page pointer.** Do not expand it into a second
-programme. Do not invent arcs beyond Identity → STOP.
+**Status:** G0 APPROVED. Binding detail for the running `/goal`.
+**Lane:** `cursor/lane-parity-beyond-20260818`
+**Worktree:** `~/local-scratch/lanes/GLLVM.jl-parity-beyond-20260818`
+**Base:** `origin/main` **`3d5acba0`**
+**Do not mutate this file mid-run.** GOAL.md wins on what must never be lost.
 
-## Parent (authoritative WHAT)
+This is the approved programme (Shinichi **approve!** 2026-08-18), not the
+overnight A4(3) plan and not the Stage-1b AGHQ ultra-plan that previously
+lived at this path on `origin/main`.
 
-- Programme GOAL:
-  `~/local-scratch/lanes/GLLVM.jl-parity-beyond-20260818/LOOP/GOAL.md`
-  **Phase C — covariance grammar**, cheapest first = **`none × dep()`**.
-- Frozen parent plan:
-  `~/local-scratch/lanes/GLLVM.jl-parity-beyond-20260818/LOOP/ultra-plan.md`
-  arc **C** (item 1 of the planned covariance walk).
-- Gap sheet (planned, not paid):
-  `docs/dev-log/plans/2026-08-16-gllvmtmb-capability-gap.md`
-  — `none × dep (unstructured trait cov, no LV)` | twin exported | Julia
-  **planned**.
-- Live ledger row (do **not** edit this run):
-  `docs/design/capability-status.md` **L47** stays **`planned`**.
-  Exact quote: `| none × dep (`dep()` / unstructured trait covariance) | planned |`
-  #258 / #259 own that file.
+---
 
-## Twin pin (read-only; CLOSED)
+## Arc order (derived; status lives in `arcs.md`)
 
-- Repo: `gllvmTMB` `origin/main` **`b8a1891a`** (Merge #1139).
-- Blob `R/brms-sugar.R` = **`e1922dbf`**.
-- L6–14 grid; **L10** `none | indep() | dep() | latent()`.
-- L32 Cholesky \(\boldsymbol\Sigma = \mathbf{L}\mathbf{L}^\top\).
-- **L1721** `dep <- function(formula) {`.
-- **L1661–1662** \(T(T+1)/2\) via Cholesky; **L1681–1682** PSD + count.
-- **L1694–1698** documents over-parameterised `dep`+`latent`; documents
-  that a fit raises `cli_abort`. The abort **body is not in this file**
-  (parser `.dep = TRUE` at L4193–4200; guards elsewhere / `fit-multi.R`).
-- **L1787** `phylo_dep` — **not this slice**.
+1. **P1 Identity** — multinomial / categorical, docs only. Twin fid 16.
+   Ledger stays `missing`. STOP before `src/`.
+2. **P1 engine** — after Identity is on a pushed branch (sibling push/PR).
+   Not in the same arc as Identity.
+3. **P2 owed bridges** — `truncated_nbinom2` Arc1b (fid 11, per-trait
+   `log_phi_truncnb2`); `lognormal` bridge + light RCall Δ (fid 3).
+   `truncated_poisson` fid 10 is **not** restamped OWED.
+4. **P3 Tweedie T2–T5** — T6 already paid (#236/#238). `fit_gllvm` admit STOP.
+5. **E** — AGHQ 2 → 3 → 4 **after** affordability `/goal` STOPs. A4(5) waits.
+   Do not touch `src/families/aghq_grid.jl` while #255 is open.
+6. **C** — covariance grammar, cheapest first = `none × dep()`. File-disjoint.
+7. **X** — coverage certificate. Totoro/DRAC only if Shinichi sizes+asks.
 
-## Julia pin (CLOSED)
+## Affordability lock (do not abort)
 
-- Base: `origin/main` **`3d5acba0`**.
-- `git grep -n 'dep(' 3d5acba0 -- src/` empty (exit 1).
-- Packing cite only: `rr_theta_len(p,K) = p*K - K*(K-1)/2`; at \(K=p\)
-  this is \(p(p+1)/2\).
-- Lane: `cursor/lane-none-dep-identity-20260818`
-  at `~/local-scratch/lanes/GLLVM.jl-lane-none-dep-identity-20260818`.
-- This run: **docs-only Identity**. No `src/`. No engine G0.
+In-flight A4(3) affordability `/goal`:
+`~/local-scratch/lanes/GLLVM.jl-aghq-a43-afford-20260818`
+branch `cursor/lane-aghq-a43-afford-20260818` — **OPEN GATE #255** —
+owns `test/test_aghq_gate.jl`. Helper already on `src/families/aghq_grid.jl`.
 
-## Arc this lane may run
+This programme **must not** touch those files, the honesty worktree
+`GLLVM.jl-a43-honesty-20260818`, overnight `LOOP/GOAL.md`, or the Dropbox
+checkout.
 
-1. **Identity** — ACCEPTED note + closed twin/Julia cites + check-log +
-   after-task.
-2. **STOP** — sibling push/PR is the OPEN GATE. No merge. No engine.
+## Twin pins
+
+- Multinomial Identity: twin `origin/main` **`af1218d8`**; Julia **`3d5acba0`**.
+- Decision: `docs/dev-log/decisions/2026-08-18-multinomial-identity.md`.
+- Do not alias `categorical()`. No invented Δ.
+
+## Full mission fence
+
+See `LOOP/GOAL.md` (immutable). That file is the complete In / Out /
+Invariant / Definition of done. This file is the frozen plan pointer and
+arc order.

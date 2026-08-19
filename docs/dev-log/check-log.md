@@ -1,5 +1,19 @@
 # Check Log
 
+## 2026-08-18 — Multinomial name-clash vs Distributions (#257 CI)
+
+Lane `cursor/lane-parity-beyond-20260818` (PR #257) after merge of
+`origin/main` @ `13ccb7d5` (#259). Julia CI FAILED:
+`UndefVarError: Multinomial not defined` in `test/test_multinomial.jl`
+because earlier `runtests.jl` files `using Distributions` (both export
+the name). Public marker stays `Multinomial` (Identity). Tests qualify
+`GLLVM.Multinomial`; `Distributions.Multinomial` still usable (new
+clash testset). Mac-LIGHT:
+`julia --project=. --startup-file=no test/test_multinomial.jl` →
+**41 passed, 0 failed** in 2.6 s. No export rename. No invented Δ.
+No Dropbox. After-task:
+`docs/dev-log/after-task/2026-08-18-multinomial-name-clash.md`.
+
 ## 2026-08-18 — truncated_nbinom2 Arc1b per-trait `log_phi_truncnb2`
 
 Lane `cursor/truncnb2-arc1b-20260818` from `origin/main` @ `3d5acba0`.
@@ -27,6 +41,23 @@ bridge admit only. CI / X / X_lv / masks fenced. Light RCall Δ still
 ledger rows **untouched** (`missing`). Not piled onto OPEN #257.
 Mac-LIGHT focused: `test/test_bridge_capabilities.jl` **211/211**;
 `test/test_bridge_lognormal.jl` **43/43**. Full suite = GitHub CI.
+
+## 2026-08-18 — Multinomial P1 engine (FE softmax, twin fid 16)
+
+Lane `cursor/lane-parity-beyond-20260818` (PR #257) on `origin/main`
+`3d5acba0`. Identity ACCEPTED
+`docs/dev-log/decisions/2026-08-18-multinomial-identity.md`. Engine:
+`src/families/multinomial.jl` — marker `Multinomial` (not `Categorical`;
+not `Distributions.Multinomial`), `y ∈ {1…K}`, `K ≥ 3` fail-loud
+(binomial-logit), `η₁ ≡ 0`, packing `(K−1)(1+p)` contrast-major, one
+softmax per observation. No TMB `K−1` pseudo-rows. No LV. `fit_gllvm`
+dispatch rejects `K` / `num_lv` > 0. Ledger row stays `missing`. No
+bridge. No `@formula`. No twin Δ. `aghq_grid.jl` untouched. Mac-LIGHT
+focused: `export PATH="$HOME/.juliaup/bin:$PATH"`;
+`julia --project=. --startup-file=no test/test_multinomial.jl` —
+**37 passed, 0 failed** in 2.7 s (Test Summary pasted in after-task).
+FD ≤ 1e-6 on packed objective. Full suite = GitHub CI. P2 lognormal /
+Tweedie not started.
 
 ## 2026-08-18 — none × dep() Identity (docs-only ACCEPTED)
 

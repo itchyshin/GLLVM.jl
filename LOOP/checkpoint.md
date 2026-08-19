@@ -1,36 +1,44 @@
-GOAL: see GOAL.md.   STATE: Identity ACCEPTED (docs-only); STOP at sibling push/PR.
+# Checkpoint — OVERWRITTEN every arc
+
+GOAL: see GOAL.md. STATE: P1 Identity ACCEPTED + P1 engine landed on this
+branch (FE softmax). Ledger stays `missing`. STOP at push to #257 — do not merge.
 
 ARCS DONE (verified):
-- C1-Id — `docs/dev-log/decisions/2026-08-18-none-dep-identity.md` is
-  ACCEPTED. Twin pin `gllvmTMB` `origin/main` **`b8a1891a`** (Merge #1139);
-  blob `R/brms-sugar.R` **`e1922dbf`**. Cites: L10 grid; L32 / L1661–1662 /
-  L1681–1682 Cholesky \(T(T+1)/2\); L1721 `dep <-`; L1694–1698 documents
-  over-parameterised `dep`+`latent` (abort body **not** in this file).
-  `phylo_dep` L1787 out. Julia `3d5acba0` L47 **planned** (file not
-  edited). `git grep -n 'dep(' 3d5acba0 -- src/` empty. No `src/` in
-  diff. Check-log + after-task written. Mac-light N/A.
+- Worktree `~/local-scratch/lanes/GLLVM.jl-parity-beyond-20260818` on
+  `cursor/lane-parity-beyond-20260818` from `origin/main` `3d5acba0`.
+- LOOP kit committed `1bd38100`.
+- P1-Id: `docs/dev-log/decisions/2026-08-18-multinomial-identity.md` @
+  `2a5f32ea`. Pins twin fid 16, `η₁ ≡ 0`, `K ≥ 3`, no `categorical()` alias,
+  no Δ. Ledger stays `missing`.
+- P1-eng: `src/families/multinomial.jl` + `fit_gllvm` dispatch +
+  `test/test_multinomial.jl`. Mac-light **41/41** in 2.6 s after
+  `GLLVM.Multinomial` qualify vs Distributions. FD ≤ 1e-6.
+  After-task: `docs/dev-log/after-task/2026-08-18-multinomial-engine.md`
+  + `docs/dev-log/after-task/2026-08-18-multinomial-name-clash.md`.
+- Owed chips stamped, **not started:** P2a `truncated_nbinom2` Arc1b fid 11;
+  P2b `lognormal` bridge+Δ fid 3. Tweedie T6 paid; T2–T5 unpaid;
+  `fit_gllvm` STOP.
 
-ARC IN PROGRESS: none (Identity landed).
+ARC IN PROGRESS: none. P1-eng landed.
 
-NEXT: wait Shinichi merge of **PR #260**. Do **not** start engine.
-Do **not** `gh pr merge`.
+NEXT: push name-clash qualify to existing #257. Watch Julia CI. Do
+**not** `gh pr merge` until SUCCESS. Do **not** start P2a/P2b, P3
+T2–T5, Phase E, C, or X.
 
-OPEN GATES (need human): **merge of https://github.com/itchyshin/GLLVM.jl/pull/260**.
-Push/PR already done. Merge stays Shinichi.
+OPEN GATES (need human): **Shinichi merge of #257** after CI — not from
+this agent. Ledger promote is a later gate (still `missing`).
 
 TRUTH LIVES IN:
-- worktree `~/local-scratch/lanes/GLLVM.jl-lane-none-dep-identity-20260818`
-- branch `cursor/lane-none-dep-identity-20260818`
-- base `origin/main` `3d5acba0`
-- Identity `docs/dev-log/decisions/2026-08-18-none-dep-identity.md`
-- after-task `docs/dev-log/after-task/2026-08-18-none-dep-identity.md`
-- twin pin `gllvmTMB` `origin/main` `b8a1891a` blob `e1922dbf`
-- PR https://github.com/itchyshin/GLLVM.jl/pull/260
+- `cursor/lane-parity-beyond-20260818` (this worktree)
+- Identity `docs/dev-log/decisions/2026-08-18-multinomial-identity.md`
+- Engine after-task `docs/dev-log/after-task/2026-08-18-multinomial-engine.md`
+- Twin pin `gllvmTMB origin/main af1218d8`
+- Affordability still in-flight: `GLLVM.jl-aghq-a43-afford-20260818` / #255
+  owns `test/test_aghq_gate.jl` + `src/families/aghq_grid.jl`
 
-RESUME: You are none-dep-identity-20260818 — RESUME. READ FIRST:
-LOOP/GOAL.md → LOOP/checkpoint.md → LOOP/ultra-plan.md → AGENTS.md.
-WORKSPACE: `~/local-scratch/lanes/GLLVM.jl-lane-none-dep-identity-20260818`
-on `cursor/lane-none-dep-identity-20260818` (reattach; do NOT recreate;
-do NOT write in honesty / afford / parity-beyond / lognormal-bridge /
-truncnb2 / Dropbox). CONTINUE FROM: OPEN GATE merge of PR #260. Pause at merge. No `src/`.
-No `capability-status.md`. No engine G0.
+RESUME: You are **gllvmjl-parity-beyond** — RESUME. READ FIRST:
+`LOOP/GOAL.md` → `LOOP/checkpoint.md` → `LOOP/ultra-plan.md` → `./AGENTS.md`.
+WORKSPACE: `~/local-scratch/lanes/GLLVM.jl-parity-beyond-20260818` on
+`cursor/lane-parity-beyond-20260818` (reattach; do **not** recreate; do **not**
+use the honesty worktree). CONTINUE FROM: P1-eng pushed / STOP. Do not start
+P2, P3, E, C, or X. Do not touch `aghq_grid.jl`. Do not invent a Δ.

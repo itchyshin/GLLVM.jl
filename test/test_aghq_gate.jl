@@ -43,7 +43,9 @@ end
         @test occursin("use_lv_B", err.value.msg)
         err = @test_throws ArgumentError _reject_extra(; multinomial = true)
         @test occursin("multinomial", err.value.msg)
-        err = @test_throws ArgumentError _reject_extra(Multinomial(2, [0.5, 0.5]))
+        # Qualify: GLLVM now exports Multinomial (fid 16 marker). Bare
+        # Multinomial is an ambiguous import against Distributions.
+        err = @test_throws ArgumentError _reject_extra(Distributions.Multinomial(2, [0.5, 0.5]))
         @test occursin("multinomial", err.value.msg)
     end
 
