@@ -74,7 +74,9 @@
 # VECTOR routes to the MIXED-family path (fit_mixed_gllvm): one shared latent block
 # across distinct response families, with the cross-distribution latent-scale
 # `correlation` as the headline. Lognormal is admitted no-X (`fit_lognormal_gllvm`,
-# twin fid 3); CI / X / X_lv / masks remain follow-ups. Fixed-effect
+# twin fid 3); CI / X / X_lv / masks remain follow-ups. Truncated Poisson is
+# admitted no-X (`fit_truncated_poisson_gllvm`, twin fid 10; y ≥ 1); CI / X /
+# X_lv / masks remain follow-ups. Fixed-effect
 # X is wired (Gaussian plus the admitted one-part covariate kernels);
 # predictor-informed latent-score X_lv is wired for complete-response one-part
 # Gaussian, Poisson, NB2, Beta, Gamma, and binomial logit/probit/cloglog bridge
@@ -151,11 +153,12 @@ function _bridge_family_key(family::AbstractString)
     key in ("zinb", "zinegbin", "zero_inflated_negbin", "zi_negbin",
             "zinegativebinomial", "zero_inflated_nbinom2") && return "zinb"
     key in ("zib", "zibinomial", "zero_inflated_binomial", "zi_binomial") && return "zib"
+    key in ("truncated_poisson", "truncpois", "truncatedpoisson") && return "truncated_poisson"
     throw(ArgumentError(
         "bridge_fit: unsupported family \"$family\"; this engine build supports " *
         "gaussian, poisson, lognormal, binomial, binomial_probit, binomial_cloglog, " *
         "negbinomial (nbinom2), nb1, beta, gamma, betabinomial, ordinal, ordinal_probit, " *
-        "zip, zinb, zib"))
+        "zip, zinb, zib, truncated_poisson"))
 end
 
 const _BRIDGE_ONEPART_FAMILIES = (
@@ -175,6 +178,7 @@ const _BRIDGE_ONEPART_FAMILIES = (
     "zip",
     "zinb",
     "zib",
+    "truncated_poisson",
 )
 
 const _BRIDGE_BINOMIAL_FAMILIES = ("binomial", "binomial_probit", "binomial_cloglog")
@@ -495,16 +499,19 @@ const _BRIDGE_MASK_CI_FAMILIES = (
 )
 # One-part families whose default fit route has NO native confint engine yet:
 # the per-trait ordinal-cutpoint routes, plus lognormal (`LognormalFit` is not
-# in `_CIFit`). Beta-binomial grouped(_cov) now routes Wald/profile/bootstrap
-# via `_family_ci` (finite-difference Hessian; the BB Laplace still has no
-# analytic OH knob).
-const _BRIDGE_NO_CI_FAMILIES = (_BRIDGE_PERTRAIT_ORDINAL_FAMILIES..., "lognormal")
+# in `_CIFit`) and truncated Poisson (`TruncatedPoissonFit` is not in `_CIFit`).
+# Beta-binomial grouped(_cov) now routes Wald/profile/bootstrap via `_family_ci`
+# (finite-difference Hessian; the BB Laplace still has no analytic OH knob).
+const _BRIDGE_NO_CI_FAMILIES = (_BRIDGE_PERTRAIT_ORDINAL_FAMILIES..., "lognormal",
+                                "truncated_poisson")
 # One-part families with no scalar-mean postfit extractor (residuals = y - mu,
 # parametric simulate): the ordinal families (no scalar response mean), plus
 # beta-binomial (no `residuals`/`simulate` method for BetaBinomialFit or its
 # grouped/grouped_cov siblings yet), plus lognormal (no extractor on
-# `LognormalFit` yet).
-const _BRIDGE_NO_SCALAR_POSTFIT_FAMILIES = (_BRIDGE_PERTRAIT_ORDINAL_FAMILIES..., "betabinomial", "lognormal")
+# `LognormalFit` yet) and truncated Poisson (no extractor on
+# `TruncatedPoissonFit` yet).
+const _BRIDGE_NO_SCALAR_POSTFIT_FAMILIES = (_BRIDGE_PERTRAIT_ORDINAL_FAMILIES...,
+    "betabinomial", "lognormal", "truncated_poisson")
 # One-part families with `residuals` but NO `simulate` method on this engine: the
 # three zero-inflated fit types. They share the scalar-mean `residuals` extractor,
 # so the broader set above would advertise `postfit_simulate` for a route that
@@ -567,6 +574,14 @@ function _bridge_ci_guard_lognormal(ci_method::AbstractString)
     throw(ArgumentError(
         "bridge_fit: confidence intervals for family=\"lognormal\" are not " *
         "routed yet; LognormalFit is not in the native confint union. " *
+        "Use ci_method=\"none\"."))
+end
+
+function _bridge_ci_guard_truncated_poisson(ci_method::AbstractString)
+    ci_method == "none" && return nothing
+    throw(ArgumentError(
+        "bridge_fit: confidence intervals for family=\"truncated_poisson\" are not " *
+        "routed yet; TruncatedPoissonFit is not in the native confint union. " *
         "Use ci_method=\"none\"."))
 end
 
@@ -688,6 +703,8 @@ function bridge_capabilities()
                     "one-part reduced-rank bridge family; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; predictor-informed latent-score X_lv is wired for complete-response point fits; X_lv Wald B_lv CI payloads are routed; profile/bootstrap X_lv CIs remain follow-ups; route support is narrower than full R-user parity" :
                 f == "lognormal" ?
                     "one-part reduced-rank bridge family (twin fid 3); no-X routes fit_lognormal_gllvm (shared scalar σ on log y; y-scale loglik includes Jacobian); CI, fixed-effect-X, X_lv, and missing-response masks remain follow-ups; light RCall Δ still OWED (not invented here); route support is narrower than full R-user parity" :
+                f == "truncated_poisson" ?
+                    "one-part reduced-rank bridge family (twin fid 10); no-X routes fit_truncated_poisson_gllvm (log link on untruncated μ; support y ≥ 1); CI, fixed-effect-X, X_lv, and missing-response masks remain follow-ups; light RCall Δ still OWED (not invented here); route support is narrower than full R-user parity" :
                 f == "binomial" ?
                     "one-part reduced-rank bridge family; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; predictor-informed latent-score X_lv is wired for complete-response point fits; X_lv Wald B_lv CI payloads are routed; profile/bootstrap X_lv CIs remain follow-ups; route support is narrower than full R-user parity" :
                 f in _BRIDGE_BINOMIAL_XLV_FAMILIES ?
@@ -997,6 +1014,40 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                    "(no getLV(::LognormalFit)); CI, X, X_lv, and masks " *
                    "remain follow-ups; light RCall Δ still OWED " *
                    "(not invented here)",
+            ci = nothing)
+    elseif key == "truncated_poisson"
+        # No-X only. TruncatedPoissonFit has no getLV / link-residual / confint
+        # adapter on this engine, so assemble the shared block ΛΛᵀ directly
+        # (same honest fallback as lognormal) and fence CI / X / X_lv / masks
+        # via list membership plus a loud CI guard. Support is y ≥ 1 strictly
+        # (twin fid 10); zeros and non-positive cells fail loud.
+        all(>=(1), Yf) || throw(ArgumentError(
+            "bridge_fit: family=\"truncated_poisson\" requires y ≥ 1; found y < 1"))
+        _bridge_ci_guard_truncated_poisson(ci_method)
+        Yi = round.(Int, Yf)
+        fit = fit_truncated_poisson_gllvm(Yi; K = K)
+        L = Matrix{Float64}(fit.Λ * _svd_rotation(fit.Λ))
+        Σ = L * L'; Σ = (Σ + Σ') ./ 2
+        corr = _bridge_corr_from_sigma(Σ)
+        comm = ones(Float64, p)
+        return _bridge_assemble(fit, "truncated_poisson", "truncated_poisson_rr",
+            traits, units;
+            alpha = collect(Float64, fit.β),
+            dispersion = fill(NaN, p),
+            sigma_eps = NaN,
+            link = fill(_bridge_link_name(fit.link), p),
+            Sigma = Σ, corr = corr, comm = comm,
+            scores = zeros(Float64, 0, 0),
+            df = p + _bridge_rr_df(p, K),
+            loglik = fit.loglik, converged = fit.converged,
+            iterations = fit.iterations, loadings = L,
+            note = "one-part truncated Poisson (twin fid 10): " *
+                   "y ~ TruncPois(μ = exp(η)), log link on the untruncated " *
+                   "mean; support y ≥ 1; no-X only; Sigma/correlation use " *
+                   "the shared block Lambda*Lambda' only (communality 1); " *
+                   "scores empty (no getLV(::TruncatedPoissonFit)); CI, X, " *
+                   "X_lv, and masks remain follow-ups; light RCall Δ still " *
+                   "OWED (not invented here)",
             ci = nothing)
     elseif key in _BRIDGE_BINOMIAL_FAMILIES
         Yi = round.(Int, Yf)
