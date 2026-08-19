@@ -38,7 +38,7 @@ a twin Δ. L47 stays **planned**.
 | --- | --- |
 | `src/none_dep.jl` | **new** — `fit_dep_gllvm` Gaussian K=p wrapper + fail-loud |
 | `src/GLLVM.jl` | `include` + export |
-| `test/test_none_dep.jl` | **new** — free count / FD / match / fail-loud (37 tests) |
+| `test/test_none_dep.jl` | **new** — free count / FD / match / Σ PSD / fail-loud (39 tests) |
 | `test/runtests.jl` | include the new file |
 | `docs/dev-log/check-log.md` | entry for this arc |
 | `docs/dev-log/after-task/2026-08-19-none-dep-engine.md` | this report |
@@ -49,9 +49,10 @@ a twin Δ. L47 stays **planned**.
 
 ## Tests Added
 
-`test/test_none_dep.jl` (37 tests). Clauses: independent packing length;
+`test/test_none_dep.jl` (39 tests). Clauses: independent packing length;
 FD vs ForwardDiff ≤ 1e-6; match `fit_gaussian_gllvm(Y; K = p)` ≤ 1e-8;
-loud rejects for forbidden knobs.
+`Σ = ΛΛᵀ` symmetric PSD (`eigvals ≥ -1e-10`); loud rejects for
+forbidden knobs.
 
 ## Benchmark Numbers
 
@@ -77,7 +78,7 @@ Mac-LIGHT: **no local `Pkg.test()`**. `GLLVM_PARITY_TESTS` unset.
 ```
 $ julia --project=. --startup-file=no test/test_none_dep.jl
 Test Summary:            | Pass  Total  Time
-none × dep matrix fitter |   37     37  8.1s
+none × dep matrix fitter |   39     39  8.2s
 ```
 
 ## Consistency Audit

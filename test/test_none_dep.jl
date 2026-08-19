@@ -57,6 +57,9 @@ const ForwardDiff = GLLVM.ForwardDiff
         @test isfinite(fit_dep.logLik)
         @test fit_dep.logLik ≈ fit_lat.logLik atol = 1e-8
         @test pack_lambda(fit_dep.pars.Λ) ≈ pack_lambda(fit_lat.pars.Λ) atol = 1e-8
+        Σ = fit_dep.pars.Λ * fit_dep.pars.Λ'
+        @test issymmetric(Σ)
+        @test minimum(eigvals(Symmetric(Σ))) ≥ -1e-10
     end
 
     @testset "fail-loud on K, num_lv, W-tier, has_diag, phylo" begin
