@@ -143,7 +143,7 @@ not used as inits; not Ordinal's `τ₁ = 0` pin).
 Hurdle-Poisson / Hurdle-NB / Beta-hurdle / Ordered-beta +X, `disp_group`,
 row effects, `bridge.jl`, and any twin light Δ remain OWED — the twin has no
 hurdle / ordered-beta family, so a Δ would be invented. `truncated_poisson` =
-zero-truncated Poisson (Identity 2026-08-15; twin fid 10); `truncated_nbinom2`
+zero-truncated Poisson (Identity 2026-08-15; twin fid 10; engine+admit; **bridge no-X paid** via `bridge_fit(; family = "truncated_poisson")`; light RCall Δ still OWED — no invented number); `truncated_nbinom2`
 = zero-truncated NB2 (Identity 2026-08-15; twin fid 11; Arc1 shared scalar `r`
 ≡ twin `φ`; Arc1b 2026-08-18 per-trait pack ≡ twin `log_phi_truncnb2`;
 ≠ bridge admit ≠ AGHQ). `lognormal` = one-part lognormal (Identity 2026-08-15; twin fid 3; engine+admit; **bridge no-X paid** via `bridge_fit(; family = "lognormal")`; light RCall Δ still OWED — no invented number). `censored_poisson` = right-censored Poisson (Identity 2026-08-15; Julia-forward / twin constructor-only; light RCall Δ FORBIDDEN).
@@ -264,9 +264,13 @@ Same twin surface, transport layer. Status = code + bridge/parity test exist;
   shared scalar `r`; **no** twin light Δ (gllvmTMB ZINB cut)
 - ZINB+X confint under X (`confint(ZINBCovFit)`; FD Hessian; `ci_x_*` true):
   Julia CI claim only ≠ twin Δ ≠ ADEMP
-- truncated_poisson Identity + engine (zero-truncated; twin fid 10):
+- truncated_poisson Identity + engine + **bridge no-X** (zero-truncated; twin fid 10):
   `docs/dev-log/decisions/2026-08-15-truncated-poisson-identity.md` ·
-  `src/families/truncated_poisson.jl` · `test/test_truncated_poisson.jl`
+  `src/families/truncated_poisson.jl` · `src/bridge.jl` (`_BRIDGE_ONEPART_FAMILIES`
+  after `zib` / `_bridge_family_key` / `_bridge_fit_onepart`) ·
+  `test/test_truncated_poisson.jl` · `test/test_bridge_truncated_poisson.jl` —
+  Julia identity/FD + bridge admit; light RCall Δ still OWED (not invented);
+  CI / X / X_lv / masks remain follow-ups; y ≥ 1 fail-loud
 - truncated_nbinom2 Identity + engine (zero-truncated NB2; twin fid 11; shared-`r` Arc1 + per-trait Arc1b):
   `docs/dev-log/decisions/2026-08-15-truncated-nbinom2-identity.md` ·
   `docs/dev-log/plans/2026-08-15-truncated-nbinom2-identity-engine.md` ·

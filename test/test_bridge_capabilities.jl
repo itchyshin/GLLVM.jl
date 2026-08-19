@@ -48,6 +48,7 @@ using GLLVM
         "zip",
         "zinb",
         "zib",
+        "truncated_poisson",
         "mixed-family vector",
     ]
     @test caps.family[caps.fit_no_x] == caps.family
@@ -269,6 +270,33 @@ using GLLVM
     @test occursin("not invented", caps.notes[ln_idx])
     @test occursin("narrower than full R-user parity", caps.notes[ln_idx])
 
+    # truncated_poisson: no-X only (twin fid 10). CI / X / X_lv / masks /
+    # scalar-mean postfit remain follow-ups — TruncatedPoissonFit is not in
+    # `_CIFit` and has no residuals/simulate extractor. Light RCall Δ is still
+    # OWED (not invented).
+    tp_idx = findfirst(==("truncated_poisson"), caps.family)
+    @test tp_idx !== nothing
+    @test tp_idx == findfirst(==("zib"), caps.family) + 1
+    @test caps.fit_no_x[tp_idx]
+    @test !caps.fixed_effect_X[tp_idx]
+    @test !caps.predictor_informed_lv[tp_idx]
+    @test !caps.missing_response[tp_idx]
+    @test !caps.cbind_binomial[tp_idx]
+    @test !caps.ci_no_x_wald[tp_idx]
+    @test !caps.ci_no_x_profile[tp_idx]
+    @test !caps.ci_no_x_bootstrap[tp_idx]
+    @test !caps.ci_mask_wald[tp_idx]
+    @test !caps.ci_x_wald[tp_idx]
+    @test caps.postfit_predict[tp_idx]
+    @test !caps.postfit_residuals[tp_idx]
+    @test !caps.postfit_simulate[tp_idx]
+    @test caps.postfit_ordination[tp_idx]
+    @test occursin("twin fid 10", caps.notes[tp_idx])
+    @test occursin("fit_truncated_poisson_gllvm", caps.notes[tp_idx])
+    @test occursin("light RCall Δ still OWED", caps.notes[tp_idx])
+    @test occursin("not invented", caps.notes[tp_idx])
+    @test occursin("narrower than full R-user parity", caps.notes[tp_idx])
+
     # zib: no-X only. `cbind_binomial` stays FALSE (ZIB's N is one shared scalar,
     # not the per-observation cbind contract), masks and X are unwired, and no-X CI
     # routes all three methods through _family_ci(::ZIBFit).
@@ -349,6 +377,13 @@ using GLLVM
         elseif fam == "lognormal"
             @test occursin("twin fid 3", note)
             @test occursin("fit_lognormal_gllvm", note)
+            @test occursin("light RCall Δ still OWED", note)
+            @test occursin("not invented", note)
+            @test occursin("narrower than full R-user parity", note)
+            @test !occursin("Wald/profile/bootstrap CI payloads are routed", note)
+        elseif fam == "truncated_poisson"
+            @test occursin("twin fid 10", note)
+            @test occursin("fit_truncated_poisson_gllvm", note)
             @test occursin("light RCall Δ still OWED", note)
             @test occursin("not invented", note)
             @test occursin("narrower than full R-user parity", note)

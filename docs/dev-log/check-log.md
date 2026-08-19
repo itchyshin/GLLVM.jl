@@ -1,5 +1,19 @@
 # Check Log
 
+## 2026-08-19 — truncated_poisson no-X bridge admit (twin fid 10)
+
+Lane `cursor/truncpois-nox-bridge-20260819` from `origin/main` @
+`d9bd69ca` (#257). `"truncated_poisson"` appended after `"zib"` in
+`_BRIDGE_ONEPART_FAMILIES` / `_bridge_family_key` /
+`_bridge_fit_onepart`. Engine already on main; this slice pays the
+bridge admit only. Fail-loud on y < 1. CI / X / X_lv / masks fenced.
+Light RCall Δ still **OWED** — `GLLVM_PARITY_TESTS` unset; **no
+invented number**. L47 none × dep stays **planned**. AGHQ
+untouched. Not piled onto OPEN #254. Mac-LIGHT focused:
+`test/test_bridge_capabilities.jl` **238/238**;
+`test/test_bridge_truncated_poisson.jl` **45/45**. Full suite =
+GitHub CI.
+
 ## 2026-08-18 — Multinomial name-clash vs Distributions (#257 CI)
 
 Lane `cursor/lane-parity-beyond-20260818` (PR #257) after merge of
