@@ -1,5 +1,21 @@
 # Check Log
 
+## 2026-08-19 — none × dep() Gaussian matrix fitter (K = p)
+
+Lane `cursor/lane-none-dep-engine-20260818` rematched onto `origin/main`
+@ `663e6f57` (#261 TruncPois). Identity ACCEPTED #260. New
+`src/none_dep.jl`: `fit_dep_gllvm` wraps `fit_gaussian_gllvm(Y; K = p)`
+via existing packing `rr_theta_len(p, p) = p(p+1)/2`. Fail-loud on
+`K` / `num_lv`, W-tier, `has_diag`, phylo kwargs. **No** formula
+`dep()` / FunctionTerm / RE-grammar v2. **No** `bridge.jl` edit (only
+the #261 merge). L47 stays **planned** (Rose promote is a later flip;
+not this chip). Twin Δ **forbidden** (no invented number). AGHQ
+parked. Other worktree `cursor/none-dep-engine-20260818` L47
+`implemented` flip discarded. Mac-LIGHT: `test/test_none_dep.jl`
+**39/39** in 8.2 s. FD ≤ 1e-6; match `fit_gaussian_gllvm(Y; K = p)`
+≤ 1e-8; `Σ = ΛΛᵀ` symmetric with `eigvals ≥ -1e-10`. Full suite =
+GitHub CI.
+
 ## 2026-08-19 — truncated_poisson no-X bridge admit (twin fid 10)
 
 Lane `cursor/truncpois-nox-bridge-20260819` from `origin/main` @

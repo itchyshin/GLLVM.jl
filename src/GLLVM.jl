@@ -72,6 +72,7 @@ include("families/beta_binomial.jl")     # Beta-binomial (overdispersed binomial
 include("families/com_poisson.jl")        # Conway–Maxwell–Poisson (under/overdispersed counts) — beyond gllvmTMB
 include("families/ordered_beta.jl")       # ordered-beta (must precede fit_gllvm)
 include("families/fit_gllvm.jl")         # unified fit_gllvm(Y; family) dispatcher
+include("none_dep.jl")                    # none × dep matrix fitter (K = p; no formula sugar)
 include("laplace_grad.jl")               # exact (AD + implicit-step) Poisson Laplace gradient (issue #65)
 include("missing_predictor_poisson.jl")  # non-Gaussian missing predictor (mi Phase 5a): Poisson augmented-Laplace FIML
 include("missing_predictor_multi.jl")    # multiple missing predictors, jointly integrated (mi() vector axis, Track T3)
@@ -221,6 +222,7 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        fit_zinb_gllvm_cov, ZINBCovFit,
        fit_zib_gllvm, ZIBFit, fit_zib_gllvm_cov, ZIBCovFit, zib_marginal_loglik_laplace, ZIB,
        fit_gllvm,
+       fit_dep_gllvm,
        fit_gllvm_cov, GllvmCovFit, gllvm, @formula,
        fit_gllvm_speciescov, GllvmSpeciesCovFit,
        fit_fourthcorner_gllvm, FourthCornerFit,
