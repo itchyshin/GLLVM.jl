@@ -11972,3 +11972,40 @@ per-trait-scale model nests Julia's shared-scale model) would be honest. Recorde
 **No-X** twin-verified coverage moves **8/17 → 10/17** (Gamma fid 4, BetaBinomial
 fid 8 added; NB1 fid 15 attempted and *not* counted — it is broken, not passing).
 The global "full family R↔Julia parity claim" stays **`rejected`**.
+
+---
+
+## 2026-08-24 — per-fit speed, Julia vs twin, on the parity fixtures (measured)
+
+Prompted by the expectation that "Julia is faster, especially bootstrapping".
+Measured rather than assumed, on the **same fixtures the parity cells use** — so
+these are timings of fits already known to agree to ~1e-8, not of two different
+answers. Harness kept **outside** the package (comparison work stays out of package
+tests). Julia warmed up first so compile time is excluded; R timed with R's own
+`system.time()` so RCall marshalling is not charged to R.
+
+| Family | Julia | R gllvmTMB | per-fit speedup |
+|---|---|---|---|
+| lognormal (fid 3), p=5 K=2 n=60 | **0.104 ms** (mean of 200) | 133 ms (median of 5) | **≈1280×** |
+| truncated_poisson (fid 10), p=5 K=2 n=60 | 203 ms | 451 ms | **≈2.2×** |
+| Gamma (fid 4), p=5 K=1 n=120 | 329 ms | 521 ms | **≈1.6×** |
+
+**The spread is the finding, and it is an algorithm story, not a language story.**
+lognormal reuses the closed-form Gaussian marginal + σ profile-out path (`log y` is
+exactly Gaussian), so it inherits the same advantage as the ~340× single-σ Gaussian
+headline. truncated_poisson and Gamma go through the dense-Laplace machinery with a
+finite-difference or implicit outer gradient, and there Julia is only **1.6–2.2×**
+faster. **The headline speed claim does not generalise to the non-Gaussian families**,
+and nothing here licenses restating ~340× outside its verified Gaussian cell.
+
+**Bootstrap.** A parametric bootstrap is B refits, so the per-fit ratio carries over
+multiplicatively — the gain compounds, but it compounds *that family's* ratio. At
+B = 500 the lognormal path is transformative (≈0.1 s vs ≈1.1 min); Gamma would be
+≈2.7 min vs ≈4.3 min — useful, not transformative. Note this is **inferred** from
+per-fit timings (sound while refits dominate the cost); an end-to-end
+`confint_bootstrap` comparison was **not** run and no such number is claimed.
+
+**Limits, stated plainly:** tiny fixtures (p=5, n=60/120), 3–5 reps, one machine, one
+seed each. TMB's fixed overhead amortises better at larger p and n, so these ratios
+are specific to small problems and are **not** a benchmark result. A real
+scaling claim needs a sweep over p and n, which this arc did not do.
