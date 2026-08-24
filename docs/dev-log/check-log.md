@@ -1,5 +1,17 @@
 # Check Log
 
+## 2026-08-24 — Claude handover (post-#262 honesty wave)
+
+Lane `handover/2026-08-24-claude` cut from `origin/main` @ `c5b72310`
+(#262). Docs-only. Classifies #257–#262 as DONE; TruncPois + lognormal
+light RCall Δ as OWED (not invented); AGHQ 2∩3∩4∩5 PARKED; L47 still
+`planned`; #254 OPEN leave-alone; Dropbox checkout @ `9f8378aa`
+PROTECTED. Does **not** edit `AGENTS.md` or the coordination board
+(multi-lane: #254 owns those files). No `src/`. No twin Δ. No public
+`aghq=`. No Tweedie admit. Gate FAIL declared (36 stale unpushed
+branches + Dropbox dirt + `.git/index.lock`) as CARRIED-OVER /
+PROTECTED. Branch **unpushed** until Shinichi asks.
+
 ## 2026-08-19 — none × dep() Gaussian matrix fitter (K = p)
 
 Lane `cursor/lane-none-dep-engine-20260818` rematched onto `origin/main`
