@@ -12129,3 +12129,56 @@ The last two are **not** the same bug: beta-binomial explicitly documents *"No
 fisher/observed split exists and there is nothing to pass. Beta-binomial's no-X cell
 independently agrees with the twin at 6.15e-9, confirming it empirically. **NB1 was
 the only instance of this class.**
+
+---
+
+## 2026-08-24 — CORRECTION to the NB1 sweep scope, + truncated_nbinom2 (fid 11) verdict
+
+**Correcting the entry above.** It said *"NB1 was the only instance of this class."*
+That is true only **within the `fit_*_grouped*` routes I swept** — which is where the
+`hessian` fisher/observed keyword exists at all. It is **not** true of the codebase as
+a whole, and the unqualified sentence overstated the sweep.
+
+The generic Laplace core is **Fisher-only**: `src/families/laplace.jl:85,166` hard-codes
+`W .= _glm_weight.(...)  # Fisher weight wrt η`, with no `hessian` keyword anywhere.
+Every family routed through that core therefore uses expected information, while TMB
+always Laplaces with the **observed** joint Hessian.
+
+**Why that has not corrupted the cells already paid:** for the Poisson-class
+likelihoods at the canonical log link, `y` enters η linearly, so the observed and
+expected information coincide *pointwise* — Fisher ≡ observed, and the comparison is
+exact. That is precisely why truncated_poisson (fid 10) paid legitimately at ~2.7e-9
+through the Fisher core. lognormal is exact-Gaussian (no Laplace at all), and
+Gamma/NB1/BetaBinomial go through the grouped routes that *do* carry the keyword. So
+no paid receipt is affected — but the general claim was too broad, and is corrected
+here rather than left standing.
+
+### truncated_nbinom2 (twin fid 11) — VERDICT (b): structurally sound, NOT payable today
+
+Everything except the curvature matches, read from twin source:
+
+| Dimension | Twin | Julia (`_pertrait` route) | |
+|---|---|---|---|
+| Dispersion granularity | per-trait `log_phi_truncnb2`, length `n_traits` (`cpp:1187-1190`; map `fit-multi.R:5354-5355`) | per-trait `r_t`, pack tail `log r_1…log r_p` | MATCH |
+| Mean scale | untruncated `μ = exp(η)`, truncation via `−log(1−p0)` (`cpp:2806-2815`) | untruncated `μ`, `−log1p(−p0)` | MATCH |
+| Link | log only (`fit-multi.R:844-845`) | LogLink enforced | MATCH |
+| Laplace curvature | **observed** joint Hessian (TMB autodiff) | **Fisher** only — no keyword, no observed weight for `TruncatedNegBin2` exists | **MISMATCH** |
+
+For NB2-class likelihoods the observed curvature is **y-dependent** (via the
+`−(y+φ)·log(μ+φ)` term), so Fisher ≠ observed pointwise — unlike fid 10. A cell run
+today would therefore compare two different objectives: **the exact 0.115-class
+artifact just fixed for NB1, except here there is no keyword to flip.**
+
+Use the **per-trait** route when it is unblocked; the shared-scalar
+`fit_truncated_nbinom2_gllvm` adds a second mismatch (scalar vs per-trait) and must not
+be paired with the twin default.
+
+**Unblocking change** (a separate arc, `src/`): implement an observed-curvature weight
+for `TruncatedNegBin2` — `W_obs = −∂²/∂η²[log NB2(y; μ, φ) − log(1−p0)]` at log link,
+including the truncation-correction second derivative — and thread a `hessian` keyword
+through `fit_truncated_nbinom2_gllvm_pertrait` / `_truncnb2_pertrait_loglik_site`,
+mirroring the NB1 fix. The Arc1b amendment fences `laplace.jl` / `grouped_dispersion.jl`
+edits, so the weight belongs in `truncated_nbinom2.jl` beside the existing family-local
+site kernel.
+
+**Recorded as BLOCKED-pending-engine. No fit run spent, no Δ quoted.**
