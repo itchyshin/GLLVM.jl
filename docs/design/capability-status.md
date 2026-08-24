@@ -247,14 +247,17 @@ Same twin surface, transport layer. Status = code + bridge/parity test exist;
   `docs/dev-log/after-task/2026-08-16-nb1-nox-surface.md` — exported `NB1` marker,
   per-trait φ via the API-B coerce. Julia-side surface + identity only; **no** new
   twin Δ (bridge behaviour unchanged, `src/bridge.jl` not opened)
-- **NB1 no-X light RCall Δ — ATTEMPTED 2026-08-24, NOT PAID (engine defect).**
-  `test/parity/test_nox_dispersion_parity.jl` marks the Δ assertion `@test_broken`:
-  `fit_nb1_gllvm_grouped` converges stably to a loglik ≈0.115 **worse** than the twin
-  (≈1.0e-4 relative, 100× rtol 1e-6), while `fit_nb1_gllvm_grouped_cov` with an
-  all-zero X — the same model — matches the twin to ≈1.34e-8. Outer convergence
-  (`g_tol` 1e-5→1e-10) and inner Laplace mode (`newton_tol` 1e-9→1e-12) ruled out by
-  experiment. Defect localised to the no-X grouped route; **no Δ is claimed for this
-  cell**. See `docs/dev-log/check-log.md` 2026-08-24 Rung A
+- **NB1 no-X light RCall Δ PAID 2026-08-24** — live Δ abs ≈1.34e-8 @ rtol 1e-6
+  (seed=55, p=5, K=1, n=120, per-trait φ; gllvmTMB 0.7.0 / R 4.6.0;
+  `test/parity/test_nox_dispersion_parity.jl`; ≠ full family parity). **This cell
+  first FAILED at Δ ≈ −0.115 and found a real engine defect**, since fixed:
+  `fit_nb1_gllvm_grouped` declared no `hessian` keyword, so it silently inherited the
+  `:fisher` default of `nb1_grouped_marginal_loglik_laplace` — the
+  expected-information Laplace, a *different objective* from TMB's — while its NB2,
+  Beta and `_cov` siblings all default to `:observed`. The optimiser was never
+  failing; it was converging correctly to the wrong objective. Fix aligns the default;
+  `hessian=:fisher` stays reachable explicitly. See `docs/dev-log/check-log.md`
+  2026-08-24
 - BetaBinomial+X engine (bridge/`@formula`/`fit_beta_binomial_gllvm_grouped_cov`):
   `docs/dev-log/after-task/2026-08-05-betabinomial-x-engine-arc12.md` — light
   RCall cell live Δ abs ≈1.50e-8 @ rtol 1e-6 (seed=49; ≠ full family parity)

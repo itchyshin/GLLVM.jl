@@ -1222,7 +1222,8 @@ function getLV(fit::NB1GroupedFit, Y::AbstractMatrix{<:Integer};
 end
 
 """
-    fit_nb1_gllvm_grouped(Y; K, group, link=LogLink(), mask=nothing, offset=nothing, …) -> NB1GroupedFit
+    fit_nb1_gllvm_grouped(Y; K, group, link=LogLink(), mask=nothing, offset=nothing,
+                          hessian=:observed, …) -> NB1GroupedFit
 
 Fit a negative-binomial type-1 (NB1) GLLVM with grouped / species-specific
 dispersion (gllvm's `disp.group`): species `t` shares dispersion `φ[group[t]]`
@@ -1230,11 +1231,26 @@ dispersion (gllvm's `disp.group`): species `t` shares dispersion `φ[group[t]]`
 group ids (relabelled to `1..G` internally; default `1:p` = per-species). L-BFGS over
 `[β; vec(Λ); log φ_1 … log φ_G]`; finite-difference gradient; warm start from
 empirical log-mean intercepts + SVD loadings + a moderate per-group `φ₀`. With one
-group this matches [`fit_nb1_gllvm`](@ref).
+group this matches [`fit_nb1_gllvm`](@ref) when `hessian=:fisher`.
+`hessian=:observed` (the default) uses the conditional NB1/log curvature that TMB's
+Laplace objective uses; set `hessian=:fisher` to retain the expected-information
+approximation.
+
+!!! note "Why the default is `:observed` (2026-08-24)"
+    This keyword was previously absent here, so the fit silently inherited the
+    `:fisher` default of `nb1_grouped_marginal_loglik_laplace` — a *different
+    objective* from TMB's, as the header of this file already warned. The symptom
+    was a stable but strictly worse optimum: on a p=5, K=1, n=120 fixture the no-X
+    route returned a log-likelihood 0.115 below the twin, while
+    [`fit_nb1_gllvm_grouped_cov`](@ref) with an all-zero `X` — the same model, but
+    already defaulting to `:observed` — matched `gllvmTMB` to 1.3e-8. Aligning this
+    default with the NB2 ([`fit_nb_gllvm_grouped`](@ref)) and Beta siblings closes
+    the gap. Caught by `test/parity/test_nox_dispersion_parity.jl`.
 """
 function fit_nb1_gllvm_grouped(Y::AbstractMatrix; K::Integer,
         group::AbstractVector{<:Integer} = collect(1:size(Y, 1)),
         link::Link = LogLink(), mask = nothing, offset = nothing,
+        hessian::Symbol = :observed,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
@@ -1266,7 +1282,8 @@ function fit_nb1_gllvm_grouped(Y::AbstractMatrix; K::Integer,
         φvec = [φg[gidx[t]] for t in 1:p]
         v = try
             -nb1_grouped_marginal_loglik_laplace(Yc, Λ, β, φvec; link = link, mask = msk,
-                                                 offset = offset, maxiter = newton_maxiter,
+                                                 offset = offset, hessian = hessian,
+                                                 maxiter = newton_maxiter,
                                                  tol = newton_tol)
         catch
             return 1e12

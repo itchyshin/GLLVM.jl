@@ -12009,3 +12009,123 @@ per-fit timings (sound while refits dominate the cost); an end-to-end
 seed each. TMB's fixed overhead amortises better at larger p and n, so these ratios
 are specific to small problems and are **not** a benchmark result. A real
 scaling claim needs a sweep over p and n, which this arc did not do.
+
+---
+
+## 2026-08-24 — Rung D (delta_lognormal fid 12, delta_gamma fid 13): BLOCKED, no cell
+
+Source-grounded identity check before spending any fit. **Both families are blocked,
+and not for a reason configuration can fix.**
+
+**Twin (fid 12/13).** `R/enum.R:18-19` confirms the ids; `R/fit-multi.R:753-767`
+admits only `type = "standard"` and maps `c("binomial","lognormal") → 12L`,
+`c("binomial","Gamma") → 13L` (the `delta_poisson_link_*`, `*_mix`, `delta_gengamma`
+and `delta_truncated_nbinom*` constructors are **not** fid 12/13 and are rejected by
+the multivariate engine). Occurrence link is logit and only logit
+(`fit-multi.R:771`). Decisively, `src/gllvmTMB.cpp:714-716`: *"Delta families share
+ONE linear predictor for both components"* — the presence logit and the positive-part
+log-mean are **the same η**, so one intercept and one loading row drive both parts.
+Dispersion is **per-trait** (`log_sigma_lognormal_delta` / `log_phi_gamma_delta`,
+length `n_traits`, free for every delta trait).
+
+**Julia (`src/families/twopart.jl`).** Two *separate* predictors — `η^z = β^z` and
+`η^c = β^c + Λ_c z` — with the v1 default `Λ_z = 0`, so the occurrence part carries a
+free per-species intercept and **no latent** at all. Dispersion is **one shared
+scalar** (σ or α).
+
+| Axis | Twin | Julia | |
+|---|---|---|---|
+| Occurrence link | logit | logit | MATCH |
+| Positive link | log | log | MATCH |
+| Predictor structure | **one shared η** for both parts | **separate** β^z/β^c, `Λz = 0` | **MISMATCH** |
+| Joint loglik, one call | yes | yes | MATCH |
+| Dispersion granularity | per-trait | one shared scalar | **MISMATCH** |
+
+**Why this is (c) BLOCKED and not (b) configurable:** the predictor structures are
+**non-nested in both directions**. Matching the twin from Julia needs β^z ≡ β^c and
+Λ_z ≡ Λ_c tied together — Julia cannot express that, and its v1 fence is the opposite.
+Matching Julia from the twin needs a second presence parameter set — the twin has
+none. No `map=` pinning, seed, or keyword reaches it; even K = 0 leaves β^z ≡ β^c
+unimposable. The dispersion mismatch could only be neutralised at `n_traits = 1`,
+which would still leave the shared-η mismatch standing.
+
+This is the Student-t situation but worse: Student-t had two *pinnable* parameter
+gaps; the delta gap is a structural constraint neither engine can express.
+
+**Standing fences that bind even if a cell ever passes:** `capability-status.md:232`
+"Delta/hurdle latent-scale correlation advertising | **rejected**" — marginal-loglik
+agreement only, never a latent-scale/Σ interpretation for these families. And
+`capability-status.md:127-131` already records delta twin light Δ as **OWED with no
+invented number**. The Opus identity review
+(`docs/dev-log/decisions/2026-08-15-lognormal-identity-review-opus.md:85-88`, C5) is
+explicit: *"do not launder the delta gap … This Identity must not be cited as evidence
+that `delta_lognormal` is twin-faithful."*
+
+**Recorded as BLOCKED. No fit run spent, no Δ quoted, no ledger row moved.**
+
+---
+
+## 2026-08-24 — NB1 no-X defect FIXED: missing `hessian` kwarg (a wrong default, not a wrong algorithm)
+
+Follow-on to the Rung A entry above, which recorded the defect as `@test_broken`.
+Root-caused and fixed in the same day.
+
+**Root cause — a one-line omission with a documented contract to contradict.**
+`nb1_grouped_marginal_loglik_laplace` defaults to `hessian = :fisher`
+(`src/families/grouped_dispersion.jl:1154`). `fit_nb1_gllvm_grouped` declared **no
+`hessian` keyword at all**, so every no-X NB1 fit silently inherited the
+expected-information Laplace — which this file's own section header (line 1079)
+already flags as a *different objective*:
+
+> `# The fit/cov default hessian=:observed is the TMB Laplace curvature (different objective).`
+
+That header documents the contract for **fit *and* cov**. `fit_nb1_gllvm_grouped_cov`
+honoured it (`hessian::Symbol = :observed`, passed through); the no-X sibling did not.
+So the code contradicted its own stated contract, and the NB2
+(`fit_nb_gllvm_grouped`) and Beta (`fit_beta_gllvm_grouped`) siblings had both had the
+keyword all along. NB1 no-X was the lone straggler.
+
+This also explains every symptom cleanly: the optimiser was **not** failing — it was
+converging correctly to a *different objective*. Hence stability under `g_tol`
+1e-5→1e-10 and `newton_tol` 1e-9→1e-12, `converged == true` throughout, and a
+reproducible offset rather than noise.
+
+**Fix.** Give `fit_nb1_gllvm_grouped` the same `hessian::Symbol = :observed` default
+as its siblings and thread it into the objective. Two lines plus docstring.
+
+```
+twin gllvmTMB              = -1129.6667320371555
+no-X default (now :observed) = -1129.6667320237123   Δ = 1.3443241186905652e-8   ✓
+no-X hessian=:fisher         = -1129.7817843739615   Δ = -0.11505233680600213    (old default)
+zero-X _cov route            = -1129.6667320237116   Δ = 1.3443923307931982e-8
+```
+
+**A default changed, not a capability removed.** `hessian = :fisher` remains a
+legitimate expected-information objective and is still reachable explicitly; it was
+only ever wrong as a *silent default*. A regression testset now asserts that it stays
+reachable, stays a different objective, and stays strictly worse against TMB's — so
+the direction of the fix is pinned, not just its magnitude.
+
+**Verification.** Parity suite **195 pass / 0 broken / 0 failed, exit 0** — the
+NB1 `@test_broken` flipped back to `@test` and passes, and every previously-green cell
+stayed green in the same invocation. Full `Pkg.test()` run because `src/` changed
+(result recorded below). No tolerance widened; no seed changed.
+
+**Rose sweep — assume ten more of the same kind.** Audited *every* `fit_*_grouped*`
+entry point for the same omission:
+
+| Fitter | declares `hessian` | passes it |
+|---|---|---|
+| `fit_nb_gllvm_grouped` / `_cov` (NB2) | yes | yes |
+| `fit_beta_gllvm_grouped` / `_cov` | yes | yes |
+| `fit_gamma_gllvm_grouped` / `_cov` | yes | yes |
+| `fit_nb1_gllvm_grouped` / `_cov` | yes (**this fix**) | yes |
+| `fit_beta_binomial_gllvm_grouped` / `_cov` | no — **not applicable** | — |
+| `fit_tweedie_gllvm_grouped` | no — **not applicable** | — |
+
+The last two are **not** the same bug: beta-binomial explicitly documents *"No
+`hessian=:observed`/`:fisher` knob (G0 lock — FD-outer, ForwardDiff-inner)"* and
+`_tweedie_grouped_loglik_site` takes no `hessian` parameter, so in both cases no
+fisher/observed split exists and there is nothing to pass. Beta-binomial's no-X cell
+independently agrees with the twin at 6.15e-9, confirming it empirically. **NB1 was
+the only instance of this class.**

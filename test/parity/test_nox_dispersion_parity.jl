@@ -109,39 +109,41 @@ const _NOXD_SEED_BB    = 56
             jl_logL = jl_logL, r_logL = r.logLik, r_obj = r.objective,
         )
 
-        # ── KNOWN ENGINE DEFECT — do NOT widen this tolerance ────────────────
-        # `fit_nb1_gllvm_grouped` (the no-X grouped route) converges STABLY to a
-        # log-likelihood ≈0.115 WORSE than the twin, i.e. ~1.0e-4 relative — 100×
-        # the locked rtol. Isolated 2026-08-24; it is a defect in this route, not a
-        # tolerance problem, not an identity mismatch, and not the twin being wrong:
-        #
-        #   fit_nb1_gllvm_grouped(Y; K, group)                 -> -1129.7817843739615
-        #   fit_nb1_gllvm_grouped_cov(Y; X = zeros(p,n,1), …)  -> -1129.6667320237116
-        #   gllvmTMB (twin fid 15)                             -> -1129.6667320371555
-        #
-        # An all-zero X contributes nothing, so the `_cov` route fits the SAME model
-        # and matches the twin to 1.3e-8. The no-X route does not. Ruled out as
-        # causes: outer convergence (loglik invariant for g_tol 1e-5 → 1e-10, always
-        # `converged = true`) and inner Laplace mode accuracy (invariant for
-        # newton_tol 1e-9 → 1e-12, newton_maxiter 100 → 500).
-        #
-        # Marked broken rather than deleted so the suite ALERTS when the engine is
-        # fixed (`@test_broken` fails loudly once it starts passing). Fixing it is a
-        # `src/` change and therefore a separate arc carrying a full `Pkg.test()`.
+        # This cell found — and now guards — a real engine defect (fixed 2026-08-24).
+        # `fit_nb1_gllvm_grouped` had no `hessian` keyword, so it silently inherited
+        # the `:fisher` default of `nb1_grouped_marginal_loglik_laplace`: a DIFFERENT
+        # objective from TMB's observed-information Laplace. It converged stably to a
+        # log-likelihood ≈0.115 worse than the twin (~1.0e-4 relative, 100× rtol),
+        # while `fit_nb1_gllvm_grouped_cov` — which already defaulted to `:observed` —
+        # matched the twin with an all-zero X. The section header at the top of
+        # `grouped_dispersion.jl` had documented "The fit/cov default hessian=:observed"
+        # all along, so the code contradicted its own contract. Fix: give the no-X
+        # route the same `hessian = :observed` default as its NB2 and Beta siblings.
         @testset "log-likelihood agreement (rtol=1e-6)" begin
-            @test_broken jl_logL ≈ r.logLik rtol = 1e-6
+            @test jl_logL ≈ r.logLik rtol = 1e-6
             @test r.logLik ≈ -r.objective rtol = 0 atol = 1e-10
         end
 
-        # The twin-vs-`_cov`-route agreement IS assertable today, and pins the defect
-        # to the no-X route specifically. This is the live evidence for the claim
-        # above, so it runs as a real test rather than sitting in a comment.
-        @testset "zero-X `_cov` route DOES match the twin (isolates the defect)" begin
+        # Regression guards for that fix. These are what would catch a silent
+        # re-introduction, so they run as real assertions rather than prose.
+        @testset "no-X route agrees with the zero-X `_cov` route (same model)" begin
             Xz = zeros(Float64, p, n, 1)
             f_cov = fit_nb1_gllvm_grouped_cov(Y; X = Xz, K = K, group = collect(1:p))
             @test f_cov.converged
             @test f_cov.loglik ≈ r.logLik rtol = 1e-6
-            @test f_cov.loglik > jl_logL          # the no-X route is strictly worse
+            @test f_cov.loglik ≈ jl_logL rtol = 1e-6   # the two routes now agree
+        end
+
+        @testset "`hessian=:fisher` remains reachable and is a different objective" begin
+            # The old behaviour is a legitimate (expected-information) objective; it
+            # was only wrong as a silent DEFAULT. Keeping it asserted documents that
+            # the fix changed a default, not a capability — and pins the direction:
+            # the Fisher variant is strictly worse against TMB's objective.
+            f_fisher = fit_nb1_gllvm_grouped(Y; K = K, group = collect(1:p),
+                                             hessian = :fisher)
+            @test f_fisher.converged
+            @test f_fisher.loglik < jl_logL
+            @test !isapprox(f_fisher.loglik, r.logLik; rtol = 1e-6)
         end
     end
 
