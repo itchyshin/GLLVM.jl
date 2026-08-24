@@ -1,25 +1,69 @@
-# Exponential (positive continuous, no dispersion) family for the generic Laplace
-# core (src/families/laplace.jl). y_t > 0; mean μ = exp(η) (log link), so the
-# per-observation law is Exponential(μ) — i.e. Gamma(shape 1, scale μ): E[y]=μ,
-# Var = μ². It is the dispersion-free special case of the Gamma family (α ≡ 1),
-# so its score/weight are the Gamma GLM pieces at α = 1:
-#   s = (y − μ)/μ² · dμ/dη,   W = (dμ/dη)²/μ²   (expected information ⇒ W ≥ 0).
+# Exponential (positive continuous, no dispersion) family. y_t > 0; mean μ = exp(η)
+# (log link), so the per-observation law is Exponential(μ) — i.e. Gamma(shape 1,
+# scale μ): E[y]=μ, Var = μ². It is the dispersion-free special case of the Gamma
+# family (α ≡ 1), so its score/weight are the Gamma GLM pieces at α = 1:
+#   s = (y − μ)/μ² · dμ/dη,   W_fisher = (dμ/dη)²/μ².
+#
+# CURVATURE — corrected 2026-08-24. `_glm_weight` below is the **expected** (Fisher)
+# information; at the log link it is the CONSTANT 1, independent of y. TMB's Laplace
+# uses the **observed** joint Hessian, which for Exponential/log is
+#
+#     −∂²ℓ/∂η² = y / μ          (verified against ForwardDiff to 1.9e-16)
+#
+# E[y] = μ recovers 1, so the shipped Fisher value was exactly the *expectation* of
+# the correct one — the signature of this fault class (six instances repo-wide; see
+# docs/dev-log/check-log.md 2026-08-24). The error is not marginal: at μ = 0.5, y = 9
+# the correct weight is 18, not 1.
+#
+# The generic core (`src/families/laplace.jl`) hard-codes the Fisher weight, carries
+# no `hessian` keyword, and is fenced by the Arc1b amendment. So the marginal below
+# routes through the **Gamma grouped** kernel at α ≡ 1, which already implements the
+# observed weight (`_gamma_grouped_laplace_weight` = `α·y/μ`) and accepts `hessian`.
+# Verified equivalent at α = 1: `_glm_logpdf` agrees to 4.4e-16, `_glm_score` exactly.
+# `_glm_weight` is retained for `hessian = :fisher` and for the generic-core path.
 _clamp_mu(::Exponential, μ) = max(μ, 1e-12)
 _glm_score(::Exponential, μ, n, me, y) = (y - μ) / μ^2 * me
 _glm_weight(::Exponential, μ, n, me)   = me^2 / μ^2
 _glm_logpdf(::Exponential, μ, n, y)    = logpdf(Exponential(μ), y)
 
 """
-    exponential_marginal_loglik_laplace(Y, Λ, β; link=LogLink(), kwargs...) -> Float64
+    exponential_marginal_loglik_laplace(Y, Λ, β; link=LogLink(), hessian=:observed,
+                                        kwargs...) -> Float64
 
 Total Laplace log-marginal over the `n` sites (columns) of an Exponential GLLVM —
 responses `Y > 0`, mean `μ = exp(η)` (log link), per-observation `Exponential(μ)`
-(`Var = μ²`). A thin wrapper over the family-generic `marginal_loglik_laplace`
-with the `Exponential` marker (its scale field is unused — `μ` comes from `η`).
+(`Var = μ²`).
+
+`hessian=:observed` (the default) uses TMB's observed Laplace curvature `y/μ`;
+`hessian=:fisher` retains the expected-information approximation (constant `1` at the
+log link), which is what this path used unconditionally before 2026-08-24.
+
+Evaluated through the **Gamma grouped** kernel at `α ≡ 1` rather than the generic
+Laplace core, because only the former carries an observed-curvature implementation
+and a `hessian` keyword. Exponential is exactly Gamma(shape 1), verified: `_glm_logpdf`
+agrees to 4.4e-16 and `_glm_score` agrees exactly at `α = 1`.
 """
-exponential_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVector;
-        link::Link = LogLink(), kwargs...) =
-    marginal_loglik_laplace(Exponential(1.0), Y, ones(Int, size(Y)), Λ, β, link; kwargs...)
+function exponential_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix,
+        β::AbstractVector; link::Link = LogLink(), hessian::Symbol = :observed, kwargs...)
+    hessian in (:observed, :fisher) || throw(ArgumentError(
+        "exponential_marginal_loglik_laplace: hessian must be :observed or :fisher; got :$hessian"))
+    if hessian === :fisher
+        # Route the Fisher branch through the ORIGINAL generic core, not through the
+        # Gamma grouped kernel. Both give the same value at a fixed (Λ, β) — verified
+        # bit-for-bit — but they use DIFFERENT mode solvers: the generic core carries
+        # restart/backtracking safety (`_laplace_mode_should_backtrack`) that
+        # `_grouped_laplace_mode` does not. Under optimisation that difference is not
+        # cosmetic: routing Fisher through the grouped kernel let ‖Λ‖ run away to ~960
+        # against a true 0.38 on a p=5, K=1, n=80 fixture. Preserving the original path
+        # here keeps `:fisher` EXACTLY the pre-2026-08-24 behaviour, so this change is a
+        # corrected default rather than an altered capability.
+        return marginal_loglik_laplace(Exponential(1.0), Y, ones(Int, size(Y)), Λ, β,
+                                       link; kwargs...)
+    end
+    return gamma_grouped_marginal_loglik_laplace(Y, Λ, β, ones(size(Λ, 1));
+                                                 link = link, hessian = :observed,
+                                                 kwargs...)
+end
 
 # ---------------------------------------------------------------------------
 # Fit driver.
@@ -62,9 +106,15 @@ depends only on the observed cells (gllvm-style NA handling).
 """
 function fit_exponential_gllvm(Y::AbstractMatrix; K::Integer,
         link::Link = LogLink(), mask = nothing, offset = nothing,
+        hessian::Symbol = :observed,
         β_init = nothing, Λ_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    # Validated up front: the objective below wraps its body in a try/catch that turns
+    # any throw into a large penalty, which would launder a typo'd symbol into a
+    # converged-looking garbage fit.
+    hessian in (:observed, :fisher) || throw(ArgumentError(
+        "fit_exponential_gllvm: hessian must be :observed or :fisher; got :$hessian"))
     p, n = size(Y)
     rr = rr_theta_len(p, K)
 
@@ -94,7 +144,7 @@ function fit_exponential_gllvm(Y::AbstractMatrix; K::Integer,
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
         v = try
             -exponential_marginal_loglik_laplace(Yc, Λ, β; link = link, mask = msk,
-                                                 offset = offset,
+                                                 offset = offset, hessian = hessian,
                                                  maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12

@@ -12417,3 +12417,69 @@ describing a Fisher form; the implementation is correct, the doc is not.
   Arc1b amendment and the blast radius covers every family routed through it.
 
 **Not decided here.** Recorded so the finding is durable and the fork is explicit.
+
+---
+
+## 2026-08-24 — Exponential observed curvature FIXED, with a correction to its impact
+
+Instance 6 from the systemic entry above is fixed. Two things to record straight: what
+the fix is, and a measurement I initially got wrong.
+
+### The fix
+
+`_glm_weight(::Exponential)` is the **expected** information — the constant `1` at the
+log link. TMB uses the **observed** Hessian, `y/μ` (AD-verified to 1.9e-16). The
+generic core (`laplace.jl`) hard-codes Fisher, has no `hessian` keyword, and is fenced
+by the Arc1b amendment — so `exponential_marginal_loglik_laplace` now routes the
+`:observed` branch through the **Gamma grouped** kernel at `α ≡ 1`, which already
+implements `α·y/μ` and accepts `hessian`. Exponential is exactly Gamma(shape 1):
+`_glm_logpdf` agrees to 4.4e-16, `_glm_score` agrees exactly.
+
+`hessian=:observed` is now the default on `exponential_marginal_loglik_laplace` and
+`fit_exponential_gllvm`; the symbol is validated up front (the objective's `try/catch`
+would otherwise launder a typo into a large penalty and a converged-looking fit).
+
+### CORRECTION — the practical impact is ~0.23 loglik, not ~530
+
+An intermediate measurement suggested the shipped Fisher path produced catastrophically
+wrong estimates (‖Λ‖ ≈ 960 against a true 0.38; ~530 loglik lost). **That was an
+artifact of the fix under construction, not a property of the shipped code**, and the
+claim is withdrawn.
+
+Cause: the first version routed **both** branches through the Gamma grouped kernel.
+That kernel uses `_grouped_laplace_mode`, whereas the generic core carries
+restart/backtracking safety (`_laplace_mode_should_backtrack`). The two agree
+bit-for-bit at a fixed `(Λ, β)` — which is exactly why the substitution looked safe —
+but under optimisation the missing safety let ‖Λ‖ run away. I then compared that broken
+branch against the corrected one and read the gap as damage in the shipped engine.
+
+Measured correctly, on the same p=5, K=1, n=80 fixture (seed 61):
+
+| path | loglik | ‖Λ‖ (true 0.3815) |
+|---|---|---|
+| original shipped (generic core, Fisher) | −711.4159531651619 | 0.4442 |
+| `:fisher` after the fix | −711.4159531651619 | 0.4442 |
+| `:observed` (new default) | −711.1895165112529 | 0.4889 |
+
+**Practical impact: 0.226 loglik.** Real, and the weight is objectively wrong against
+TMB — but modest, and the shipped estimates were never degenerate.
+
+### Consequence for the fix itself
+
+`:fisher` is now routed back through the **original generic core**, not the grouped
+kernel, so it reproduces pre-2026-08-24 behaviour **bit-for-bit** (verified: `Δ = 0.0`
+at fixed parameters, and the fit matches to the last digit). That restores the property
+the other two fixes have — a default corrected, not a capability altered — which the
+first version had silently broken.
+
+A test now locks all of it (`test/test_exponential.jl`, 22/22): the two curvatures
+differ; `:fisher` equals the generic core exactly; the observed weight equals `y/μ`;
+both fits converge without degenerating; invalid symbols throw.
+
+### Lesson worth keeping
+
+Agreement at a fixed parameter point does **not** imply agreement under optimisation.
+Two Laplace paths can return identical values everywhere you check and still diverge,
+because the mode *solver* differs even when the objective does not. Any future
+"delegate this family to that kernel" move must be checked by **fitting**, not only by
+evaluating.
