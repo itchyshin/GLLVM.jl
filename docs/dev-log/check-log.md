@@ -12182,3 +12182,71 @@ edits, so the weight belongs in `truncated_nbinom2.jl` beside the existing famil
 site kernel.
 
 **Recorded as BLOCKED-pending-engine. No fit run spent, no Δ quoted.**
+
+---
+
+## 2026-08-24 — multinomial (twin fid 16) PAID: the ladder is now complete
+
+Last rung. Verdict from the source-grounded identity check was **(a) payable now**,
+and it was.
+
+**Why it needed its own oracle helper.** Every other cell reshapes a numeric `p×n`
+matrix and fits `value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE)`.
+Multinomial breaks that on both counts: the response is a **categorical factor column**
+(the twin expands it into `C−1` one-hot pseudo-trait rows internally,
+`R/gllvmTMB.R:1149` `expand_multinomial_response()`), and there is **no `latent(...)`
+term**, because Julia v1 is fixed-effects softmax only (`fit_multinomial_gllvm` throws
+on `K`/`num_lv`). The twin *does* support a no-covstruct multinomial fit, so FE-only is
+a genuine same-model comparison rather than a concession. New helper
+`fit_gllvmtmb_parity_loglik_multinomial`.
+
+```
+── multinomial FE logLik oracle (seed=57, ncat=4, n=400; twin fid 16) ──
+  Julia logLik          = -532.6016144503127
+  gllvmTMB logLik       = -532.6016144503104
+  Δ logLik (jl − r)     = -2.2737367544323206e-12
+```
+
+**Full suite: 208 pass / 0 broken / 0 failed, exit 0.**
+
+The Δ is ~1e-12 — three to four orders tighter than every Laplace-based cell — and that
+is *expected*, not luck: the FE softmax likelihood is exact and concave, with no Laplace
+approximation on either side, so both optimisers reach the same unique optimum. The
+fisher/observed curvature question that bit NB1 cannot arise here (no latent integral).
+
+**An independent anchor, not just engine-vs-engine.** For an intercept-only multinomial
+the MLE is the observed category frequency, so the maximised log-likelihood has a closed
+form. The cell asserts **both** engines against `Σ_c n_c log(n_c/n)`. Two engines
+agreeing tells you nothing if they share a mistake; matching an analytic value
+independently rules that out. Both matched.
+
+Two footguns are handled inside the helper rather than left to callers: factor levels
+are pinned to `as.character(1:ncat)` (bare `factor(y)` sorts levels as strings, so
+`ncat ≥ 10` would silently permute the baseline), and `baseline=` is deliberately not
+passed (the twin default is the first level = category 1 = Julia's `η₁ ≡ 0`).
+
+**Claim fence — the ledger row stays `missing` on purpose.** Engine + parity cell is not
+a surface admit. This cell licenses exactly one sentence: *FE-only softmax logLik parity
+with twin fid 16 at rtol 1e-6.* It does not cover the twin's latent/phylo/spatial
+multinomial surface (Design 123 — structurally absent in Julia) and does not admit
+multinomial to `fit_gllvm`/bridge dispatch.
+
+## Ladder status — every twin family is now resolved
+
+**PAID (12/17 no-X twin-verified):** gaussian 0 · binomial 1 · poisson 2 · lognormal 3 ·
+Gamma 4 · nbinom2 5 · Beta 7 · betabinomial 8 · truncated_poisson 10 · ordinal_probit 14 ·
+nbinom1 15 · multinomial 16.
+
+**BLOCKED (5/17), each with a written, source-cited reason and zero compute spent:**
+
+| fid | family | blocking reason |
+|---|---|---|
+| 6 | tweedie | grouped route carries previously recorded defects; a Δ would measure a defective route |
+| 9 | student | twin ESTIMATES ν (Julia fixes it) **and** twin per-trait scale vs Julia shared σ |
+| 11 | truncated_nbinom2 | NB2-class observed curvature is y-dependent; Julia core is Fisher-only with no keyword |
+| 12 | delta_lognormal | twin shares ONE η across both parts; Julia uses separate predictors — non-nested |
+| 13 | delta_gamma | same structural mismatch as fid 12 |
+
+**No twin family is now un-triaged.** The global *"Full family R↔Julia parity claim"*
+remains **`rejected`** — 12/17 is a count of no-X logLik-agreement cells at one fixed
+seed each, and nothing more.

@@ -89,6 +89,17 @@ Twin family names align with gllvmTMB / gllvm. Status = native Julia engine
 | truncated_nbinom2 | implemented |
 | censored_poisson | implemented |
 | multinomial / categorical | missing |
+<!-- Row stays `missing` deliberately: engine + parity cell is NOT a surface admit.
+     **FE-only light RCall Δ PAID 2026-08-24** — live Δ abs ≈2.27e-12 @ rtol 1e-6
+     (seed=57, ncat=4, n=400; gllvmTMB 0.7.0 / R 4.6.0;
+     `test/parity/test_multinomial_parity.jl`). Exact concave softmax, no Laplace on
+     either side, hence the picoscale Δ. Both engines additionally pinned to the
+     closed-form intercept-only MLE `Σ n_c log(n_c/n)`. The 2026-08-18 Identity
+     fenced a Δ as FORBIDDEN "until an engine exists" and sanctioned exactly this
+     cell once it did (#257). Claim is limited to FE-only softmax logLik parity: it
+     does NOT promote this row, does NOT cover the twin's latent/phylo/spatial
+     multinomial surface (Design 123 — structurally absent in Julia), and does NOT
+     admit multinomial to `fit_gllvm`/bridge dispatch. ≠ full family parity. -->
 | delta_gamma | implemented |
 | delta_lognormal | implemented |
 | hurdle_poisson / hurdle_nbinom2 | implemented |

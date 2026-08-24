@@ -74,5 +74,9 @@ include(joinpath(@__DIR__, "test_truncated_poisson_parity.jl"))
 # previously had twin Δ evidence only through the +X cohort — Gamma (fid 4),
 # NB1 (fid 15), BetaBinomial (fid 8). Grouped fitters, never shared-dispersion.
 include(joinpath(@__DIR__, "test_nox_dispersion_parity.jl"))
+# Multinomial (twin fid 16) uses its OWN oracle helper: categorical factor response
+# and no latent(...) term (Julia v1 is fixed-effects softmax only). Not a clone of the
+# shared numeric-matrix shape.
+include(joinpath(@__DIR__, "test_multinomial_parity.jl"))
 include(joinpath(@__DIR__, "test_x_covariate_parity.jl"))
 include(joinpath(@__DIR__, "test_species_x_parity.jl"))
