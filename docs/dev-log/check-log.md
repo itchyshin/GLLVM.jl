@@ -12250,3 +12250,88 @@ nbinom1 15 · multinomial 16.
 **No twin family is now un-triaged.** The global *"Full family R↔Julia parity claim"*
 remains **`rejected`** — 12/17 is a count of no-X logLik-agreement cells at one fixed
 seed each, and nothing more.
+
+---
+
+## 2026-08-24 — truncated_nbinom2 (fid 11) UNBLOCKED and PAID: observed Laplace curvature
+
+The entry above recorded fid 11 as **(b) blocked pending an engine change**: everything
+matched the twin except the Laplace curvature, and there was no keyword to flip. That
+engine change is now made, and the cell is paid.
+
+### Derivation (done before any engine code, verified before being trusted)
+
+For zero-truncated NB2 at the **log link**, with
+`ℓ = log NB2(y; μ, r) − log(1 − p₀)` and `p₀ = (r/(r+μ))^r`:
+
+```
+−∂²ℓ/∂η² = μr(y+r)/(μ+r)²  −  p₀A²/(1−p₀)²  +  [p₀/(1−p₀)]·μr²/(μ+r)²
+                                                        with A = −μr/(μ+r)
+```
+
+Verified against **ForwardDiff**: max relative error **1.8e-13** over 125 (μ, r, y)
+cells spanning μ ∈ [0.5, 25], r ∈ [0.3, 50], y ∈ [1, 40].
+
+**A methodological note worth keeping.** The first verification used central finite
+differences at `h = 1e-5` and reported the derivation WRONG at ~1e-5 relative error.
+That was the *instrument*, not the formula: a second central difference carries
+roundoff ≈ `eps/h² ≈ 2e-6`, so the 1e-6 pass threshold was tighter than the method
+could resolve. The verifier was less accurate than the thing being verified. Switching
+to AD settled it at machine precision. Trusting the first result would have discarded a
+correct derivation.
+
+**Why this term is the whole story:** substituting `E[y] = μ` into the first term
+recovers `μr/(μ+r)`, the untruncated NB2 **Fisher** weight. So `y` genuinely enters the
+observed curvature — which is exactly why fid 11 was blocked while fid 10 was not
+(there `y` enters `η` linearly, observed ≡ Fisher pointwise, and the Fisher-core cell
+paid legitimately at ~2.7e-9).
+
+### Result
+
+```
+── truncated_nbinom2 logLik oracle (seed=58, p=5, K=1, n=120, per-trait r; twin fid 11) ──
+  Julia logLik          = -1375.39137543662
+  gllvmTMB logLik       = -1375.3913738604654
+  Δ logLik (jl − r)     = -1.57615454554616e-6
+```
+
+Full suite: **219 pass / 0 broken / 0 failed, exit 0.**
+
+Before/after, same data and seed — the fix moved the number, which is the only thing
+that makes it worth having:
+
+| objective | logLik | Δ vs twin | relative | vs rtol 1e-6 |
+|---|---|---|---|---|
+| `:fisher` (previously the only option) | −1375.4059371497754 | −0.01456 | 1.06e-5 | **fails** |
+| `:observed` (new default) | −1375.39137543662 | −1.576e-6 | **1.15e-9** | **passes** |
+
+### What changed
+
+- `_truncnb2_observed_weight` — the analytic observed curvature, log link only (the twin
+  restricts fid 11 to log at `R/fit-multi.R:844-845`).
+- `_truncnb2_laplace_weight` — `:fisher` / `:observed` dispatch, mirroring
+  `_nb_grouped_laplace_weight`.
+- `hessian::Symbol = :observed` threaded through
+  `fit_truncated_nbinom2_gllvm_pertrait` → `_truncnb2_pertrait_loglik_site`.
+- **Mode solve deliberately left on the Fisher weight.** The mode is where the joint
+  gradient vanishes (`Λ's − z = 0`), which does not involve the weight; Fisher scoring
+  and Newton reach the same fixed point by different paths. Only the Laplace **log-det**
+  needs the observed curvature, and that is the only place it was changed.
+- A default changed, not a capability removed: `:fisher` remains a legitimate
+  expected-information objective, still reachable, with a regression test asserting it
+  stays a *different* objective so the fix's direction is pinned.
+
+### Robustness hole found and closed in passing
+
+The smoke test's invalid-symbol check printed nothing. Cause: an invalid `hessian`
+throws **inside** `negll`, whose `try/catch` converts any throw into `1e12` — so a
+typo'd symbol would have returned a converged-looking garbage fit instead of an error.
+Validation now happens up front, beside the link check, with
+`@test_throws ArgumentError` covering it.
+
+### Coverage
+
+**No-X twin-verified coverage 12/17 → 13/17.** Remaining blocked: tweedie (6),
+student (9), delta_lognormal (12), delta_gamma (13) — the last three are identity
+mismatches that no keyword can reach, and tweedie waits on its own route defects. The
+global *"Full family R↔Julia parity claim"* stays **`rejected`**.

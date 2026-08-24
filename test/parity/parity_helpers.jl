@@ -70,6 +70,14 @@ log-likelihood is on the **y scale** and must include the change-of-variables
 Jacobian `−Σ log y` on both sides (Identity
 `docs/dev-log/decisions/2026-08-15-lognormal-identity.md`).
 
+`:truncated_nbinom2` (twin fid 11) carries **per-trait** dispersion
+`log_phi_truncnb2` (`src/gllvmTMB.cpp:1187-1190`), so pair it with
+`fit_truncated_nbinom2_gllvm_pertrait`, never the shared-scalar
+`fit_truncated_nbinom2_gllvm`. Log link only; support `y ≥ 1`; η on the untruncated
+mean. Its Laplace log-det must use `hessian = :observed` to match TMB — the NB2
+curvature is y-dependent, unlike fid 10 (Identity
+`docs/dev-log/decisions/2026-08-15-truncated-nbinom2-identity.md`).
+
 `:truncated_poisson` (twin fid 10) has no dispersion. η is on the **untruncated**
 mean `μ = exp(η)`; the twin's `linkinv` returns the truncated mean
 `λ/(1−e^{−λ})` for GLM display only — never compare a mean-scale quantity, only
@@ -79,7 +87,7 @@ the log-likelihood (Identity
 function fit_gllvmtmb_parity_loglik(y::AbstractMatrix, K::Integer; family::Symbol,
         N::Union{Nothing, AbstractMatrix{<:Real}} = nothing)
     family in (:gaussian, :binomial, :poisson, :lognormal, :gamma, :negbinomial,
-               :nb1, :beta, :betabinomial, :truncated_poisson) ||
+               :nb1, :beta, :betabinomial, :truncated_poisson, :truncated_nbinom2) ||
         throw(ArgumentError("unsupported parity family: $family"))
     p, n = size(y)
     family === :betabinomial && N === nothing &&
@@ -111,6 +119,7 @@ function fit_gllvmtmb_parity_loglik(y::AbstractMatrix, K::Integer; family::Symbo
         beta              = gllvmTMB::Beta(),
         betabinomial      = gllvmTMB::betabinomial(),
         truncated_poisson = gllvmTMB::truncated_poisson(),
+        truncated_nbinom2 = gllvmTMB::truncated_nbinom2(),
         stop(sprintf("unknown family: %s", fam))
     )
     # betabinomial/binomial rows: `weights` = per-row trial count (twin API B);

@@ -78,5 +78,9 @@ include(joinpath(@__DIR__, "test_nox_dispersion_parity.jl"))
 # and no latent(...) term (Julia v1 is fixed-effects softmax only). Not a clone of the
 # shared numeric-matrix shape.
 include(joinpath(@__DIR__, "test_multinomial_parity.jl"))
+# truncated_nbinom2 (twin fid 11): per-trait dispersion, and REQUIRES the observed
+# Laplace curvature (hessian=:observed, the default since 2026-08-24) — the NB2
+# curvature is y-dependent, so the Fisher weight is a different objective from TMB.
+include(joinpath(@__DIR__, "test_truncated_nbinom2_parity.jl"))
 include(joinpath(@__DIR__, "test_x_covariate_parity.jl"))
 include(joinpath(@__DIR__, "test_species_x_parity.jl"))
