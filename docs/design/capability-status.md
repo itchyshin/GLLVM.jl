@@ -143,10 +143,10 @@ not used as inits; not Ordinal's `τ₁ = 0` pin).
 Hurdle-Poisson / Hurdle-NB / Beta-hurdle / Ordered-beta +X, `disp_group`,
 row effects, `bridge.jl`, and any twin light Δ remain OWED — the twin has no
 hurdle / ordered-beta family, so a Δ would be invented. `truncated_poisson` =
-zero-truncated Poisson (Identity 2026-08-15; twin fid 10; engine+admit; **bridge no-X paid** via `bridge_fit(; family = "truncated_poisson")`; light RCall Δ still OWED — no invented number); `truncated_nbinom2`
+zero-truncated Poisson (Identity 2026-08-15; twin fid 10; engine+admit; **bridge no-X paid** via `bridge_fit(; family = "truncated_poisson")`; **light RCall no-X Δ PAID 2026-08-24** — live Δ abs ≈2.71e-9 @ rtol 1e-6 (seed=53, p=5, K=2, n=60; Laplace both sides; gllvmTMB 0.7.0 / R 4.6.0; `test/parity/test_truncated_poisson_parity.jl`; ≠ full family parity)); `truncated_nbinom2`
 = zero-truncated NB2 (Identity 2026-08-15; twin fid 11; Arc1 shared scalar `r`
 ≡ twin `φ`; Arc1b 2026-08-18 per-trait pack ≡ twin `log_phi_truncnb2`;
-≠ bridge admit ≠ AGHQ). `lognormal` = one-part lognormal (Identity 2026-08-15; twin fid 3; engine+admit; **bridge no-X paid** via `bridge_fit(; family = "lognormal")`; light RCall Δ still OWED — no invented number). `censored_poisson` = right-censored Poisson (Identity 2026-08-15; Julia-forward / twin constructor-only; light RCall Δ FORBIDDEN).
+≠ bridge admit ≠ AGHQ). `lognormal` = one-part lognormal (Identity 2026-08-15; twin fid 3; engine+admit; **bridge no-X paid** via `bridge_fit(; family = "lognormal")`; **light RCall no-X Δ PAID 2026-08-24** — live Δ abs ≈2.24e-8 @ rtol 1e-6 (seed=52, p=5, K=2, n=60; exact-vs-exact; shared scalar σ; loglik includes `−Σ log y`, verified structurally **and** by a scale-shift test on `2·Y`; gllvmTMB 0.7.0 / R 4.6.0; `test/parity/test_lognormal_parity.jl`; ≠ full family parity)). `censored_poisson` = right-censored Poisson (Identity 2026-08-15; Julia-forward / twin constructor-only; light RCall Δ FORBIDDEN).
 
 ## Intervals and estimation evidence
 
@@ -247,9 +247,24 @@ Same twin surface, transport layer. Status = code + bridge/parity test exist;
   `docs/dev-log/after-task/2026-08-16-nb1-nox-surface.md` — exported `NB1` marker,
   per-trait φ via the API-B coerce. Julia-side surface + identity only; **no** new
   twin Δ (bridge behaviour unchanged, `src/bridge.jl` not opened)
+- **NB1 no-X light RCall Δ — ATTEMPTED 2026-08-24, NOT PAID (engine defect).**
+  `test/parity/test_nox_dispersion_parity.jl` marks the Δ assertion `@test_broken`:
+  `fit_nb1_gllvm_grouped` converges stably to a loglik ≈0.115 **worse** than the twin
+  (≈1.0e-4 relative, 100× rtol 1e-6), while `fit_nb1_gllvm_grouped_cov` with an
+  all-zero X — the same model — matches the twin to ≈1.34e-8. Outer convergence
+  (`g_tol` 1e-5→1e-10) and inner Laplace mode (`newton_tol` 1e-9→1e-12) ruled out by
+  experiment. Defect localised to the no-X grouped route; **no Δ is claimed for this
+  cell**. See `docs/dev-log/check-log.md` 2026-08-24 Rung A
 - BetaBinomial+X engine (bridge/`@formula`/`fit_beta_binomial_gllvm_grouped_cov`):
   `docs/dev-log/after-task/2026-08-05-betabinomial-x-engine-arc12.md` — light
   RCall cell live Δ abs ≈1.50e-8 @ rtol 1e-6 (seed=49; ≠ full family parity)
+- **Gamma + BetaBinomial no-X light RCall Δ PAID 2026-08-24** —
+  `test/parity/test_nox_dispersion_parity.jl`, per-trait dispersion via the grouped
+  fitters: Gamma (twin fid 4) live Δ abs ≈2.05e-8 @ rtol 1e-6 (seed=54, p=5, K=1,
+  n=120); BetaBinomial (twin fid 8, N=8, trials via twin API-B `weights`) live Δ abs
+  ≈6.15e-9 @ rtol 1e-6 (seed=56, p=5, K=1, n=120). gllvmTMB 0.7.0 / R 4.6.0.
+  These are the **no-X** arms of families that previously had twin evidence only
+  under +X; ≠ full family parity
 - BetaBinom no-X surface admit (`fit_gllvm` + `@formula` with no X; same Identity
   as the NB1 row above): `docs/dev-log/after-task/2026-08-16-betabinom-nox-surface.md`
   — exported `BetaBinom` marker, per-trait φ via the API-B coerce, p×n trials `N`

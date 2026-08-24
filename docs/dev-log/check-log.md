@@ -11816,3 +11816,159 @@ route reachable from a public entry point today
 (`fit_gllvm(disp_group = :species)`). The helpers it needs now exist. Also owed:
 the whole T2/T3/T4/T5 surface admit, an analytic Tweedie gradient, and a coverage
 certificate.
+
+---
+
+## 2026-08-24 — twin-parity catch-up: the two OWED light RCall Δ cells paid live
+
+**Lane:** `parity-catchup` on `handover/2026-08-24-claude` (cut from `origin/main`
+@ `c5b72310`). PLATFORM: claude. OTHER LANES: cursor+#254 (its three files were not
+opened). `src/` was not opened at all — this arc is `test/parity/` + docs only.
+
+**Why this arc exists.** The 2026-08-24 handover classified the truncated_poisson
+(twin fid 10) and lognormal (twin fid 3) light RCall Δ cells as **OWED**, on the
+stated premise that no live R twin was reachable ("if this session cannot run the
+live twin, write the cell and stop — do not invent"). That premise was re-tested
+rather than inherited, and it did not hold: R 4.6.0 and `gllvmTMB` 0.7.0 are both
+installed on this machine, and RCall's built `Rhome` already matches live `R RHOME`.
+Provenance receipt: `docs/dev-log/parity-provenance-20260824.md`.
+
+**Canary first.** Before writing either new cell, the entire existing parity suite
+was re-run unchanged: **144/144 pass, exit 0**, all Δ ~1e-10..1e-8 except NB2 at
+−2.58e-4 on logLik −820.415 (3.1e-7 relative — inside the locked rtol 1e-6, and the
+expected size for Laplace-vs-Laplace). A new number is only trustworthy if the old
+ones still reproduce.
+
+**Live result — full suite with both new cells: 167/167 pass, exit 0.**
+
+```
+── lognormal logLik oracle (seed=52, p=5, K=2, n=60; twin fid 3) ──
+  Julia logLik          = -594.6707717158076
+  gllvmTMB logLik       = -594.6707717381979
+  Δ logLik (jl − r)     = 2.2390281628759112e-8
+
+── truncated_poisson logLik oracle (seed=53, p=5, K=2, n=60; twin fid 10) ──
+  Julia logLik          = -618.0776776554326
+  gllvmTMB logLik       = -618.0776776581457
+  Δ logLik (jl − r)     = 2.7131363822263665e-9
+```
+
+**The lognormal Jacobian was verified twice, not assumed.** The Identity
+(`2026-08-15-lognormal-identity.md`) requires the reported y-scale loglik to include
+`−Σ log y`. Two independent gates: (a) *structural* — the reported value reproduces
+`gaussian_marginal(centred log Y) − Σ log Y` to 1e-8; (b) *behavioural and decisive*
+— refitting both sides on `2·Y` shifts each log-likelihood by exactly `−p·n·log 2`
+and leaves Δ unchanged.
+
+**Corrected after the Rose audit.** The first draft of this paragraph overstated the
+gate, claiming no tolerance check could detect a dropped Jacobian. That is wrong: a
+**one-sided** drop is already caught by the ordinary Δ test, since the offset
+`Σ log y ≈ 375` against a log-likelihood of ≈ −594.67 is a relative error of ~0.6 —
+thousands of times the locked rtol 1e-6. What the Δ test genuinely **cannot** see is
+a **both-sides** drop: a shared convention error in which both engines omit the term,
+still agree with each other, and are both wrong. That is the failure mode this gate
+uniquely covers, and it additionally pins the Jacobian's functional form
+(coefficient `p·n`, negative sign) rather than merely its presence.
+
+**Seeds.** The plan pre-registered 45/46; both collide with existing cells (45 = NB2
+and Beta, 46 = Ordinal). They were re-registered to **52** and **53** *before either
+cell had ever executed* — a uniqueness fix for receipt legibility, not a re-roll
+after seeing a Δ. Reserved next: 54 Gamma, 55 nb1, 56 betabinomial.
+
+No tolerance was widened. `test/runtests.jl` still contains **zero** references to
+`test/parity/` (verified) — the default suite stays runnable on machines without R.
+`capability-status.md` L47 `none × dep` remains `planned`; AGHQ rows and
+`src/families/aghq_grid.jl` were not touched.
+
+**Defect found in passing (pre-existing, NOT introduced here, NOT fixed here):**
+running `runparity.jl` mutates its own `test/parity/Project.toml` — `Pkg.develop`
+strips the comment block explaining why GLLVM must not be listed in `[deps]`, and
+then lists it. `Manifest.toml` is gitignored; `Project.toml` is not, so every parity
+run leaves the tree dirty. Restored from HEAD here and deliberately not staged.
+
+**OWED after this arc:** no-X cells for Gamma(4), betabinomial(8), nbinom1(15)
+(cheap clones); identity decisions for student(9), truncated_nbinom2(11) dispersion
+granularity, delta_lognormal(12), delta_gamma(13), multinomial(16) data shape;
+tweedie(6) blocked behind its grouped-route defects. **No-X** twin-verified coverage
+moves **6/17 → 8/17**. That qualifier is load-bearing: Gamma(4), betabinomial(8) and
+nbinom1(15) already carry live twin Δ evidence through the **+X** cohort in this same
+log (≈3.03e-8, ≈1.50e-8, ≈1.53e-9), so the family total is higher than 8 — 8/17 is
+the no-X count alone. The global "full family R↔Julia parity claim" stays
+**`rejected`**.
+
+---
+
+## 2026-08-24 — Rung A: no-X arms for Gamma / NB1 / BetaBinomial (+ an engine defect)
+
+Same lane and toolchain as the entry above (R 4.6.0, gllvmTMB 0.7.0). `src/` not opened.
+These three families previously had live twin Δ evidence **only** through the +X
+cohort; this arc adds the no-X arm. R defaults to per-trait dispersion, so each cell
+pairs with the Julia **grouped** fitter (`group = collect(1:p)`), never the
+shared-dispersion default.
+
+Full suite: **191 pass · 1 broken · 192 total, exit 0, zero failures.**
+
+```
+── Gamma no-X logLik oracle (seed=54, p=5, K=1, n=120, per-trait α; twin fid 4) ──
+  Julia logLik    = -917.4461930187695
+  gllvmTMB logLik = -917.446193039268
+  Δ logLik        = 2.049853264907142e-8          PASS
+
+── BetaBinomial no-X logLik oracle (seed=56, p=5, K=1, n=120, per-trait φ, N=8; fid 8) ──
+  Julia logLik    = -1222.772713082222
+  gllvmTMB logLik = -1222.7727130883698
+  Δ logLik        = 6.1477294366341084e-9         PASS
+
+── NB1 no-X logLik oracle (seed=55, p=5, K=1, n=120, per-trait φ; twin fid 15) ──
+  Julia logLik    = -1129.7817843739615
+  gllvmTMB logLik = -1129.6667320371555
+  Δ logLik        = -0.11505233680600213          BROKEN — engine defect, see below
+```
+
+### The NB1 no-X cell found a real engine defect
+
+Δ = −0.115 is ~1.0e-4 relative, 100× the locked rtol 1e-6, and Julia's optimum is
+**worse** than the twin's. No tolerance was widened and no seed re-rolled. Isolation:
+
+```
+fit_nb1_gllvm_grouped(Y; K, group)                    -> -1129.7817843739615
+fit_nb1_gllvm_grouped_cov(Y; X = zeros(p,n,1), K, …)  -> -1129.6667320237116
+gllvmTMB nbinom1() (twin fid 15)                      -> -1129.6667320371555
+```
+
+An all-zero X contributes nothing to the linear predictor, so the `_cov` route fits
+the **same model** — and matches the twin to 1.34e-8. The no-X route does not.
+
+Ruled out by experiment, not by argument:
+- **Outer convergence** — loglik invariant at −1129.78178 for `g_tol` ∈ {1e-5, 1e-8,
+  1e-10} with up to 5000 iterations, `converged == true` throughout.
+- **Inner Laplace mode** — invariant for `newton_tol` ∈ {1e-9, 1e-12} and
+  `newton_maxiter` ∈ {100, 500}.
+- **Identity** — the +X NB1 cell already agrees to 1.53e-9 under the same per-trait
+  dispersion identity, so the model definition is not in question.
+
+Conclusion: the defect is localised to the no-X `fit_nb1_gllvm_grouped` path
+(`src/families/grouped_dispersion.jl:1235`). The Δ assertion is `@test_broken` so the
+suite **alerts when the engine is fixed**, and a live assertion that the zero-X `_cov`
+route *does* match the twin ships alongside it, so the isolating evidence is executed
+rather than merely asserted in prose. Fixing it is a `src/` change and therefore a
+separate arc carrying a full `Pkg.test()`.
+
+### Rung B (student, fid 9) — blocked on identity, not attempted
+
+Source-grounded check of the twin: `R/families.R:367` `student(link, df = NULL)`
+**estimates** ν by default (`src/gllvmTMB.cpp:1184-1185` carries `log_df_student` in
+the parameter vector; `R/fit-multi.R:5346-5348` maps it to `factor(NA)` only when
+`df` is given). Julia's `fit_studentt_gllvm` **fixes** ν as a keyword, default 4.0.
+Worse, the scale differs in dimension: R fits `log_sigma_student` **per trait**
+(length `n_traits`), Julia a **single shared** σ. So default-vs-default compares
+different parameter spaces twice over. Even with `student(df = 4)` pinning ν, a
+symmetric Δ remains meaningless; only a one-sided nesting check (R ≥ Julia, since R's
+per-trait-scale model nests Julia's shared-scale model) would be honest. Recorded as
+**blocked on ν + scale identity** — no number quoted, no cell shipped.
+
+### Coverage
+
+**No-X** twin-verified coverage moves **8/17 → 10/17** (Gamma fid 4, BetaBinomial
+fid 8 added; NB1 fid 15 attempted and *not* counted — it is broken, not passing).
+The global "full family R↔Julia parity claim" stays **`rejected`**.

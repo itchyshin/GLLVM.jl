@@ -57,19 +57,41 @@ no-X formula:
 value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE)
 ```
 
-`family` ∈ `(:gaussian, :binomial, :poisson, :negbinomial, :beta)`. Returns
-`(logLik, objective, converged)`.
+`family` ∈ `(:gaussian, :binomial, :poisson, :lognormal, :negbinomial, :beta,
+:truncated_poisson)`. Returns `(logLik, objective, converged)`.
 
 For `:negbinomial` / `:beta`, R defaults estimate per-trait dispersion; pair
 with Julia grouped fitters (`disp_group=:species`), not shared-dispersion defaults.
+
+`:lognormal` (twin fid 3) is the one no-X family where per-trait dispersion would
+be WRONG: the twin ties a **shared scalar** `sigma_eps` across traits, so pair it
+with `fit_lognormal_gllvm` (scalar `σ`), never a grouped fitter. Its reported
+log-likelihood is on the **y scale** and must include the change-of-variables
+Jacobian `−Σ log y` on both sides (Identity
+`docs/dev-log/decisions/2026-08-15-lognormal-identity.md`).
+
+`:truncated_poisson` (twin fid 10) has no dispersion. η is on the **untruncated**
+mean `μ = exp(η)`; the twin's `linkinv` returns the truncated mean
+`λ/(1−e^{−λ})` for GLM display only — never compare a mean-scale quantity, only
+the log-likelihood (Identity
+`docs/dev-log/decisions/2026-08-15-truncated-poisson-identity.md`).
 """
-function fit_gllvmtmb_parity_loglik(y::AbstractMatrix, K::Integer; family::Symbol)
-    family in (:gaussian, :binomial, :poisson, :negbinomial, :beta) ||
+function fit_gllvmtmb_parity_loglik(y::AbstractMatrix, K::Integer; family::Symbol,
+        N::Union{Nothing, AbstractMatrix{<:Real}} = nothing)
+    family in (:gaussian, :binomial, :poisson, :lognormal, :gamma, :negbinomial,
+               :nb1, :beta, :betabinomial, :truncated_poisson) ||
         throw(ArgumentError("unsupported parity family: $family"))
     p, n = size(y)
+    family === :betabinomial && N === nothing &&
+        throw(ArgumentError("family = :betabinomial requires trial counts N (p×n)"))
+    if N !== nothing
+        size(N) == (p, n) ||
+            throw(DimensionMismatch("N must be $(p)×$(n); got $(size(N))"))
+    end
     fam = String(family)
+    trials = N === nothing ? fill(1.0, p, n) : Float64.(N)
     _parity_require_gllvmtmb!()
-    @rput y K p n fam
+    @rput y K p n fam trials
 
     R"""
     trait_names <- paste0("t", seq_len(p))
@@ -79,19 +101,28 @@ function fit_gllvmtmb_parity_loglik(y::AbstractMatrix, K::Integer; family::Symbo
         value = as.vector(y)   # column-major on p×n ⇒ site blocks
     )
     fam_obj <- switch(fam,
-        gaussian     = stats::gaussian(),
-        binomial     = stats::binomial(),
-        poisson      = stats::poisson(),
-        negbinomial  = gllvmTMB::nbinom2(),
-        beta         = gllvmTMB::Beta(),
+        gaussian          = stats::gaussian(),
+        binomial          = stats::binomial(),
+        poisson           = stats::poisson(),
+        lognormal         = gllvmTMB::lognormal(),
+        gamma             = stats::Gamma(link = "log"),
+        negbinomial       = gllvmTMB::nbinom2(),
+        nb1               = gllvmTMB::nbinom1(),
+        beta              = gllvmTMB::Beta(),
+        betabinomial      = gllvmTMB::betabinomial(),
+        truncated_poisson = gllvmTMB::truncated_poisson(),
         stop(sprintf("unknown family: %s", fam))
     )
+    # betabinomial/binomial rows: `weights` = per-row trial count (twin API B);
+    # NULL for every other family (lme4-style per-observation multiplier).
+    weights_vec <- if (identical(fam, "betabinomial")) as.vector(trials) else NULL
     fit_r <- gllvmTMB(
         value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE),
         data = df_long,
         unit = "site",
         trait = "trait",
         family = fam_obj,
+        weights = weights_vec,
         control = gllvmTMBcontrol(n_init = 1L, se = FALSE)
     )
     .gllvm_parity_last <<- list(
