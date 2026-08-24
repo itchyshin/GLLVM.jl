@@ -12483,3 +12483,77 @@ Two Laplace paths can return identical values everywhere you check and still div
 because the mode *solver* differs even when the objective does not. Any future
 "delegate this family to that kernel" move must be checked by **fitting**, not only by
 evaluating.
+
+---
+
+## 2026-08-24 — RANKING the three open curvature instances (measurement, not guesswork)
+
+Three instances of the Fisher-vs-observed fault remain open (tweedie 6, student 9,
+DeltaGamma 12/13). Rather than fix them in a guessed order at ~80 min of suite time
+each, they were **measured** first. Cheap: the Laplace mode is gradient-determined and
+therefore *identical* under either weight, so the entire impact is the log-det term —
+`½ Σ_sites [logdet(A_fisher) − logdet(A_observed)]` at the same mode. No refit, no
+engine change.
+
+### Step 1 — the candidate observed formulas, verified against ForwardDiff
+
+| family | shipped (Fisher) | observed `−∂²ℓ/∂η²` | max rel err vs AD |
+|---|---|---|---|
+| Tweedie (log) | `μ^{2−p}/φ` | `(1/φ)μ^{1−p}[(2−p)μ + (p−1)y]` | **8.9e-16** |
+| Student-t (identity) | `(ν+1)/((ν+3)σ²)` — a **constant** | `(ν+1)(νσ²−r²)/(νσ²+r²)²` | **1.2e-15** |
+| DeltaGamma (log) | `α` — a **constant** | `α·y/μ` | **3.1e-14** |
+
+All three shipped weights are **y-free**; all three correct ones are not. Confirmed
+independently, not inherited from the sweep.
+
+### Step 2 — measured impact on the reported logLik (p=5, K=1, n=120, true parameters)
+
+| family | logLik impact | `A_obs` not PD | min eigenvalue |
+|---|---|---|---|
+| **DeltaGamma** | **+3.2128** | 0/120 | 1.158 |
+| Tweedie | +0.2414 | 0/120 | 1.177 |
+| Student-t | −0.1720 | 0/120 | 1.022 |
+| *(Exponential, already fixed)* | *+0.226* | — | — |
+
+**Ranking: DeltaGamma ≫ Tweedie ≈ Exponential ≈ Student-t.** DeltaGamma is ~13× the
+others and is the only one materially above the already-fixed Exponential baseline.
+
+**This contradicts the prior expectation.** Student-t looked like the worst candidate —
+its Fisher weight is a literal constant, structurally the same shape as Exponential's
+constant `1`. It measures **smallest**, and with the opposite sign (observed reports a
+*lower* logLik there). The intuition was wrong; 20 minutes of measurement beat it.
+
+### Step 3 — the Student-t positive-definiteness worry, tested rather than assumed
+
+Student-t's observed weight is genuinely **negative** where `|r| > σ√ν` — 37 of 90
+probe cells (41%) — which raised the concern that `A = Λ'W_obsΛ + I` could lose
+positive-definiteness and make the log-det undefined. Swept ‖Λ‖ over an order of
+magnitude, 200 sites each:
+
+```
+ Lambda scale   |Lambda|   sites NOT PD    min eig
+         0.25     0.5458        0/200       1.0384
+         1.00     2.1833        0/200       1.5862
+         2.00     4.3667        0/200       2.4656
+         5.00    10.9167        0/200      22.7927
+```
+
+**PD held at every scale, in 1400 site-solves — and the minimum eigenvalue *increases*
+with ‖Λ‖.** The mode adapts so residuals stay moderate, and traits with positive weight
+dominate the aggregate. So the concern is real per-observation but did **not**
+materialise as an indefinite matrix. It is not a blocker. A cheap `isposdef` guard is
+still worth adding when Student-t is fixed (p=5, K=1 is not a proof), but it should be
+insurance, not a redesign.
+
+### Consequence for sequencing
+
+**DeltaGamma first** — largest impact, and it sits in the `twopart.jl` substrate. Note
+its unblocking is *not* only the curvature: the two-part substrate also lacks per-trait
+dispersion, and `_tp_pieces` receives no trait index, so that change touches the shared
+signature ~10 families implement. Curvature alone is the cheap half and is worth doing
+on its own merits — the inner mode is unaffected (the score is correct), so the error
+lives purely in `−½logdet A`, biasing the reported logLik *and* the outer estimates
+while the fit still converges and looks healthy.
+
+Tweedie and Student-t are ~0.2 — real, worth fixing, but not urgent, and Tweedie
+additionally needs its power-parameter granularity settled before any twin cell.
