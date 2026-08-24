@@ -21,6 +21,26 @@ GLLVM_PARITY_TESTS=1 julia --project=test/parity test/parity/runparity.jl
 
 Running without `GLLVM_PARITY_TESTS=1` exits cleanly with a skip notice.
 
+`runparity.jl` resolves its own environment (it calls `Pkg.develop` before loading
+RCall), so the command above works on a fresh checkout. There is no committed
+`Manifest.toml` — it is gitignored. If you instead load this project **directly**
+(e.g. `julia --project=test/parity -e 'using RCall'`) on a machine that has never run
+the suite, instantiate it first, or `using RCall` fails with a missing-dependency
+error:
+
+```sh
+julia --project=test/parity -e 'using Pkg; Pkg.instantiate()'
+```
+
+Point `GLLVM_PARITY_R_LIBS` at the library holding the twin. The historical default
+(`/tmp/R-gllvmtmb-x-parity-20260802`) is a `/tmp` path and does not survive a reboot;
+when it is missing, `_parity_prepend_twin_lib!()` silently falls back to
+`.libPaths()`. That often still works, but by accident — set it explicitly:
+
+```sh
+export GLLVM_PARITY_R_LIBS="$(Rscript -e 'cat(.libPaths()[1])')"
+```
+
 ## R prerequisites
 
 1. R ≥ 4.2 installed and on `PATH` (or `R_HOME` set).
