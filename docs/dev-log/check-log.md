@@ -12335,3 +12335,85 @@ Validation now happens up front, beside the link check, with
 student (9), delta_lognormal (12), delta_gamma (13) — the last three are identity
 mismatches that no keyword can reach, and tweedie waits on its own route defects. The
 global *"Full family R↔Julia parity claim"* stays **`rejected`**.
+
+---
+
+## 2026-08-24 — SYSTEMIC FINDING: the Fisher-vs-observed Laplace fault is SIX instances, not two
+
+The two engine bugs fixed today (NB1, truncated_nbinom2) were **not two slips**. A
+multi-agent sweep across the remaining families, with each verdict adversarially
+reviewed, found the same fault class **six** times. The root cause is structural:
+**two shared substrates have no observed-curvature knob at all** —
+`src/families/laplace.jl` (the generic core, Fisher hard-coded at `:85`/`:166`, no
+`hessian` kwarg) and the two-part substrate in `src/families/twopart.jl`.
+
+TMB always Laplaces with the **observed** joint Hessian. Where `y` enters `η` linearly
+the two coincide pointwise and the Fisher weight is correct; where it does not, the
+reported log-likelihood — and the outer estimates that depend on it — are wrong while
+the fit still converges and looks healthy. That is the "plausible wrong number"
+signature.
+
+### Confirmed wrong (y genuinely enters −∂²ℓ/∂η²)
+
+| # | Family | Site | shipped (Fisher) | correct (observed) | status |
+|---|---|---|---|---|---|
+| 1 | NB1 | `negbin1.jl:77` | `_nb1_fisher_mu` | — | **fixed today** (grouped route) |
+| 2 | TruncatedNegBin2 | `truncated_nbinom2.jl:52` | Fisher only | derived today | **fixed today**; NOT yet on `origin/main` |
+| 3 | Tweedie | `tweedie.jl:26` | `μ^{2−p}/φ` | `(1/φ)μ^{1−p}[(2−p)μ+(p−1)y]` | open |
+| 4 | Student-t | `studentt.jl:75` | `(ν+1)/((ν+3)σ²)` — *constant* | `(ν+1)(νσ²−r²)/(νσ²+r²)²` | open |
+| 5 | DeltaGamma | `twopart.jl:603-615` | `Wc = α` | `α·y/μ` | open |
+| **6** | **Exponential** | **`exponential.jl:9`** | **`me²/μ² = 1` at log link** | **`y/μ`** | **open — NEW** |
+
+### Instance 6 (Exponential) is the one to act on first
+
+`_glm_weight(::Exponential, μ, n, me) = me^2 / μ^2`, which at the log link is the
+**constant 1**. The file's own header states the intent outright: *"expected
+information ⇒ W ≥ 0"*. Verified here against ForwardDiff (`−∂²ℓ/∂η² = y/μ`, max
+relative error **1.9e-16** over 16 (μ, y) cells):
+
+```
+   mu      y    W_shipped   W_observed   AD(-d2l/deta2)
+ 0.50   9.00     1.000000    18.000000        18.000000
+ 2.00   0.10     1.000000     0.050000         0.050000
+ 7.00   9.00     1.000000     1.285714         1.285714
+```
+
+An **18× error** in the log-det term at (μ=0.5, y=9), not a rounding difference.
+`E[y] = μ` recovers `1`, confirming the shipped value is exactly the expectation of
+the correct one — the signature of this whole fault class.
+
+Three properties make this the priority: (a) the correct formula **already exists in
+this repo** at `grouped_dispersion.jl:747` (`α·y/μ` for Gamma/log, and Exponential is
+Gamma at α = 1); (b) Exponential has **no grouped route and no observed path
+anywhere**, so *every* Exponential fit the package ships is affected and no user can
+reach a correct one; (c) it was invisible precisely **because Exponential was never a
+parity target** — no test compares it to anything that would notice.
+
+That last point is the lesson: the parity campaign found this bug not by testing
+Exponential, but by making the fault class legible enough to go looking.
+
+### Confirmed CORRECT — verified, do not touch
+
+Poisson (`poisson.jl:7`), Binomial-logit (`binomial.jl:29`), Normal, DeltaLogNormal
+(`twopart.jl:173-175`), TruncatedPoisson (`truncated_poisson.jl:35`), HurdlePoisson
+`Wc` (`twopart.jl:325`) — in each, `y` enters `η` linearly, the curvature is y-free,
+and observed ≡ Fisher pointwise.
+
+**Ordinal (`ordinal.jl:61-74`) is already observed** — the one place the codebase gets
+this right by construction: `_ord_score_weight` takes the *observed category* and
+returns `(dP/P)² − d²P/P = −∂²logP/∂η²`. Two notes: its `max(·, 0)` clamp is benign for
+log-concave links (logit/probit) but **must not be copied to Student-t**, whose
+observed curvature is genuinely negative for `|r| > σ√ν` — clamping there would
+silently diverge from TMB. And `ordinal.jl:16` carries a stale header comment
+describing a Fisher form; the implementation is correct, the doc is not.
+
+### Fix-scope fork (needs a maintainer decision)
+
+- **Per-family patches** — each family needs its own site kernel, because the generic
+  core cannot carry a `hessian` kwarg today. Repeats the truncNB2 pattern 4×, each
+  with its own full-suite gate. Low blast radius, high duplication.
+- **Substrate fix** — give `laplace.jl` an optional `hessian` kwarg and fix all
+  remaining instances at once. Correct at the root, but `laplace.jl` is fenced by the
+  Arc1b amendment and the blast radius covers every family routed through it.
+
+**Not decided here.** Recorded so the finding is durable and the fork is explicit.
