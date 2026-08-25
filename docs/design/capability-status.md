@@ -98,8 +98,21 @@ Twin family names align with gllvmTMB / gllvm. Status = native Julia engine
      fenced a Δ as FORBIDDEN "until an engine exists" and sanctioned exactly this
      cell once it did (#257). Claim is limited to FE-only softmax logLik parity: it
      does NOT promote this row, does NOT cover the twin's latent/phylo/spatial
-     multinomial surface (Design 123 — structurally absent in Julia), and does NOT
-     admit multinomial to `fit_gllvm`/bridge dispatch. ≠ full family parity. -->
+     multinomial surface (Design 123 — structurally absent in Julia), and is NOT
+     itself a surface admit. ≠ full family parity.
+
+     WORDING CORRECTED 2026-08-25. This clause previously read "does NOT admit
+     multinomial to `fit_gllvm`/bridge dispatch", which reads as a statement of
+     fact and is half wrong:
+       * `fit_gllvm`: a live dispatch arm DOES exist — `fit_gllvm.jl:283-284`
+         (`_fit_gllvm(::Multinomial, …) = fit_multinomial_gllvm(…)`), with a
+         guarded branch at `:148`, and `test/test_multinomial.jl:136-138` asserts
+         `fit_gllvm(Y; family = GLLVM.Multinomial())` returns a `MultinomialFit`
+         agreeing with the named fitter to atol 1e-8.
+       * bridge: correct — `grep -c multinomial src/bridge.jl` → 0.
+     Bundling the two surfaces into one phrase is what made it misread. The row
+     status is UNCHANGED (`missing`) and is separately defensible: it tracks the
+     twin's latent/phylo/spatial multinomial surface, which is genuinely absent. -->
 | delta_gamma | implemented |
 | delta_lognormal | implemented |
 | hurdle_poisson / hurdle_nbinom2 | implemented |
