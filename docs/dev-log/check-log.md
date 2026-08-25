@@ -12783,3 +12783,80 @@ converges rather than throwing is read from the code path, not measured. The abs
 guards is verified; the precise runtime behaviour is inference.
 
 Docs-only entry. No `src/` change, no fence lifted, nothing merged.
+
+## 2026-08-25 — eight `src/` files are not in the module; CLAUDE.md documents six as components
+
+Found by verifying a claim about orphaned tests. The test finding was real but smaller
+than reported; underneath it sits a larger one.
+
+### Eight source files are not included anywhere
+
+`grep -rn 'include("<f>.jl")' src/` returns nothing for all eight:
+
+`edge_incidence.jl` · `likelihood_edge_incidence.jl` · `phylo_contrasts.jl` ·
+`likelihood_contrasts.jl` · `em_phylo.jl` · `em_squarem.jl` · `relaxed_clock.jl` ·
+`phylo_branch_re.jl`
+
+They are not loaded by `using GLLVM`. **This is not a regression** — `git log -S` finds
+no commit that ever added an include line for any of them (checked for
+`edge_incidence`, `phylo_contrasts`, `em_squarem`: zero hits). They were committed to
+`src/` as prototypes and never wired in. The commit subjects say as much:
+`f5e2195b PERF++++`, `214f6a3d PERF+++`, `addd108a PERF`, `a7e2cbbb … prototype`.
+
+**Parking prototypes is fine. Documenting them as components is not.**
+
+### What the docs claim
+
+`CLAUDE.md:49-56` lists six of them as package components, under headings that read as
+shipped capability — *"Phylogenetic representations (all compute the identical
+log-likelihood to machine precision)"* and *"Fitting at scale (closes the
+fast-and-fittable gap)"*:
+
+- `phylo_contrasts.jl` + `likelihood_contrasts.jl` — Felsenstein independent contrasts
+- `edge_incidence.jl` + `likelihood_edge_incidence.jl` — edge-node incidence, matrix-free
+- `em_phylo.jl` — gradient-free EM fit
+- `em_squarem.jl` — SQUAREM accelerator
+- `relaxed_clock.jl` — per-branch rate prototype (this one at least says "prototype")
+
+`AGENTS.md` carries the same shape: *"Phylogenetic representations: sparse (CHOLMOD),
+contrasts, edge-incidence; all return identical log-likelihoods to machine precision."*
+Two of those three representations are not in the module, so that identity **cannot be
+exercised by the test suite** as it stands.
+
+**Scope, stated precisely: `README.md` and `docs/src/` make NO such claim** (greps
+return nothing). This is agent-facing orientation drift, **not** a public overclaim. That
+distinction matters and should not be inflated.
+
+### Why it still matters
+
+`CLAUDE.md` and `AGENTS.md` are what orient every agent that touches this repo. As
+written, they invite an agent to "fix" or "optimise" a file whose changes cannot affect
+the package — and no test would notice, because those files' tests are orphaned too
+(below). Wasted work that looks like progress is the expensive failure mode here.
+
+### The orphaned-test finding, corrected
+
+15 test files are absent from `test/runtests.jl` (a 16th, `test_quality_jet.jl`, is NOT
+orphaned — it is conditionally included from `test_quality.jl:31`). They split cleanly:
+
+**(A) SHIPPED code whose tests CI never runs — the real gap:**
+`test_phylo_beta_xlv.jl`, `test_phylo_binomial_xlv.jl`, `test_phylo_gamma_xlv.jl`,
+`test_phylo_nb_xlv.jl`, `test_phylo_ordinal_xlv.jl` (sources at `src/phylo_*_xlv.jl`,
+included at `GLLVM.jl:103-107`) and `test_sparse_phy_grad.jl`
+(`src/sparse_phy_grad.jl`, included at `GLLVM.jl:44`).
+
+**(B) tests for the un-included files above** — orphaned consistently with their
+sources. Wiring these in without first wiring the sources would simply fail.
+
+Note the correction: an earlier survey reported these as `src/families/phylo_*_xlv.jl`.
+They are at `src/phylo_*_xlv.jl`; the `src/families/` path does not exist.
+
+### Recorded, not patched
+
+Three separate maintainer decisions, none of them this session's to take:
+1. Are the eight files parked-on-purpose, or should they be wired in?
+2. `CLAUDE.md` / `AGENTS.md` wording — both are approval-gated files.
+3. Adding category (A) tests to `runtests.jl` is test-only and low-risk, **but they have
+   never run in CI**, so their current pass state is unknown. Run them before wiring.
+
+No `src/` change. No fence lifted. Nothing merged.
