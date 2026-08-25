@@ -12557,3 +12557,66 @@ while the fit still converges and looks healthy.
 
 Tweedie and Student-t are ~0.2 — real, worth fixing, but not urgent, and Tweedie
 additionally needs its power-parameter granularity settled before any twin cell.
+
+## 2026-08-25 — DeltaGamma observed Laplace curvature (instance 5) LANDED
+
+The curvature half of instance 5, complete and now gated. This work was written
+2026-08-24 and left uncommitted when its authoring session ended; its `Pkg.test()` was
+killed by SIGTERM at ~46 min when that session's process group was cleaned up, so the
+result was never seen. Re-run from scratch here.
+
+### The change — `src/families/twopart.jl` only
+
+`_tp_pieces(::DeltaGamma, …)` returns the Fisher weight `Wc = α`, which the two-part
+substrate then used for **both** roles: the Fisher-scoring mode search and the Laplace
+log-det. Only the log-det is wrong there.
+
+- `_tp_observed_Wc(::Any, y, ηc, Wc) = Wc` — an **identity default**, so every two-part
+  family without a specific method is bit-for-bit unchanged.
+- `_tp_observed_Wc(f::DeltaGamma, …)` delegates to the already-verified
+  `_gamma_grouped_laplace_weight` in `grouped_dispersion.jl`, which implements `α·y/μ` and
+  is under test elsewhere. **The observed weight is not re-derived** — one formula, one
+  place.
+- `hessian::Symbol = :observed` threaded through `twopart_loglik_site` →
+  `twopart_marginal_loglik_laplace` → `delta_gamma_marginal_loglik_laplace` →
+  `fit_delta_gamma_gllvm`, validated up front so a typo cannot be laundered into a large
+  penalty and a converged-looking fit.
+
+**The mode solve stays on Fisher.** Observed curvature enters only the A-matrix in
+`twopart_loglik_site`, never `_twopart_mode`. Not incidental: substituting a curvature
+into a mode search tuned for a different one is exactly how the Exponential fix first went
+wrong (‖Λ‖ ran away to ~960 against a true 0.38).
+
+`laplace.jl` and `grouped_dispersion.jl` are untouched.
+
+### Verification
+
+| check | result |
+|---|---|
+| `test/test_delta_gamma.jl` standalone | **50 / 50** (32.8 s) |
+| **DeltaLogNormal `:fisher` ≡ `:observed`** | **Δ = 0.000e+00, exact** — the load-bearing invariant |
+| `:observed` vs `:fisher` differ (DeltaGamma) | yes — impact **1.4937** |
+| invalid `hessian` symbol | `ArgumentError` |
+| full `Pkg.test()` | **6424 pass / 1 broken (pre-existing) / 0 fail / 0 error**, exit 0, 70m52s |
+
+The exact zero on DeltaLogNormal is the sharpest available probe of the identity default:
+its positive part is Gaussian in `log y`, so its `Wc = 1/σ²` was *already* the exact
+Hessian and must not move. It did not.
+
+### Impact number, stated correctly
+
+**1.49**, not the **3.21** carried by the earlier ranking entry. The ranking fixture had
+all cells positive; a realistic delta has ~64% presence, so only that fraction carries the
+positive part. 3.21 was an upper bound, not an estimate. DeltaGamma remains the largest of
+the measured instances.
+
+### What this does NOT do
+
+Curvature half only. DeltaGamma's other gap — per-trait dispersion in the two-part
+substrate — is untouched and is a much larger change (`_tp_pieces` takes no trait index;
+altering that signature touches ~10 families). No parity cell is paid: fid 13 stays
+blocked on the structural predictor mismatch (twin shares ONE linear predictor across both
+parts, Julia uses two non-nested ones), which curvature does not address. No twin Δ, no
+capability claim, no ledger row flipped.
+
+Instance 5 of 13 is now closed. Twelve remain; see the structural-design entry.

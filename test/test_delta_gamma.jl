@@ -179,4 +179,73 @@ using GLLVM, Test, Random, Distributions, Statistics
         @test ff isa DeltaGammaFit
         @test ff.loglik ≈ fn.loglik atol = 1e-10
     end
+
+    @testset "observed Laplace curvature (2026-08-24 fix)" begin
+        # `_tp_pieces(::DeltaGamma)` returns the Fisher weight Wc = alpha, a CONSTANT.
+        # TMB uses the observed joint Hessian, which for the Gamma/log positive part is
+        # alpha*y/mu. TMB never faces this choice: MakeADFun(..., random=) differentiates
+        # the coded nll, so it gets observed curvature structurally. GLLVM.jl hand-codes
+        # the weight and so must choose -- and used the same W for two different roles
+        # (mode search AND log-det). Only the log-det needs observed curvature.
+        Random.seed!(73)
+        p, K, n = 5, 1, 120
+        al = 2.0
+        bz = [0.8, 0.4, 1.0, 0.2, 0.6]
+        bc = log.([2.0, 3.0, 1.5, 2.5, 2.2])
+        Lc = 0.25 .* randn(p, K)
+        Z = randn(K, n)
+        Y = zeros(p, n)
+        for t in 1:p, s in 1:n
+            if rand() < 1 / (1 + exp(-bz[t]))
+                mu = exp(bc[t] + (Lc * Z[:, s])[1])
+                Y[t, s] = rand(Gamma(al, mu / al))
+            end
+        end
+        @test count(>(0), Y) > 0
+
+        lf = delta_gamma_marginal_loglik_laplace(Y, Lc, bz, bc, al; hessian = :fisher)
+        lo = delta_gamma_marginal_loglik_laplace(Y, Lc, bz, bc, al; hessian = :observed)
+        @test isfinite(lf) && isfinite(lo)
+        @test !isapprox(lo, lf; rtol = 1e-8)      # genuinely different objectives
+
+        # The observed weight is taken from the already-verified Gamma implementation
+        # in grouped_dispersion.jl rather than re-derived here.
+        for (mu, y) in ((0.5, 4.0), (2.0, 0.3), (7.0, 9.0))
+            @test GLLVM._gamma_grouped_laplace_weight(:observed, GLLVM.Gamma(al, 1.0),
+                                                      mu, mu, y, GLLVM.LogLink()) ≈ al * y / mu
+        end
+
+        # Fits converge under both and neither degenerates.
+        fo = fit_delta_gamma_gllvm(Y; K = K)
+        ff = fit_delta_gamma_gllvm(Y; K = K, hessian = :fisher)
+        @test fo.converged && ff.converged
+        @test !isapprox(fo.loglik, ff.loglik; rtol = 1e-8)
+        @test sqrt(sum(abs2, fo.Λc)) < 10 && sqrt(sum(abs2, ff.Λc)) < 10
+
+        # Fail loud: the objective's try/catch would otherwise turn a typo into a
+        # large penalty and a converged-looking garbage fit.
+        @test_throws ArgumentError fit_delta_gamma_gllvm(Y; K = K, hessian = :bogus)
+    end
+
+    @testset "the override does NOT touch other two-part families" begin
+        # `_tp_observed_Wc` defaults to identity, so every family without a method is
+        # bit-for-bit unchanged. DeltaLogNormal is the sharpest check: its positive part
+        # is Gaussian in log y, so Wc = 1/sigma^2 is ALREADY the exact Hessian.
+        Random.seed!(74)
+        p, K, n = 5, 1, 120
+        bz = [0.8, 0.4, 1.0, 0.2, 0.6]
+        bc = log.([2.0, 3.0, 1.5, 2.5, 2.2])
+        Lc = 0.25 .* randn(p, K)
+        Z = randn(K, n)
+        Yl = zeros(p, n)
+        for t in 1:p, s in 1:n
+            if rand() < 1 / (1 + exp(-bz[t]))
+                Yl[t, s] = exp(bc[t] + (Lc * Z[:, s])[1] + 0.5 * randn())
+            end
+        end
+        a = delta_lognormal_marginal_loglik_laplace(Yl, Lc, bz, bc, 0.5; hessian = :fisher)
+        b = delta_lognormal_marginal_loglik_laplace(Yl, Lc, bz, bc, 0.5; hessian = :observed)
+        @test a == b        # EXACT equality: the default override is the identity
+    end
+
 end
