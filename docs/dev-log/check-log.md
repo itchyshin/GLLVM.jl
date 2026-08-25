@@ -12860,3 +12860,87 @@ Three separate maintainer decisions, none of them this session's to take:
    never run in CI**, so their current pass state is unknown. Run them before wiring.
 
 No `src/` change. No fence lifted. Nothing merged.
+
+## 2026-08-25 — seven code findings surfaced while fact-checking the new family docs
+
+Documenting the seven previously-undocumented families required reading their sources
+closely. That is what turned them up: **writing the docs was the audit.** Six of seven
+drafted sections came back CORRECTIONS from an independent per-family reviewer (33 doc
+errors, including a Lognormal example that could not run and a forbidden TMB-parity
+claim). Those were fixed before the docs landed. These seven are different — they are
+findings about the **package**, not the draft.
+
+### C1 — malformed error message · `truncated_poisson.jl:106` · **FIXED here**
+
+```julia
+"truncated_poisson requires y ≥ 1; found y=$Yc[t,s] at ($t,$s)"
+```
+`$Yc` interpolates the **entire count matrix**, after which `[t,s]` is literal text. So
+the reported value and cell index were not what the message promised, and the message
+grew with the size of the data. Now `$(Yc[t, s])`. A regression test locks the value, the
+index, the absence of a spliced matrix, and a constant-size message.
+
+**Swept for siblings** (`grep -rE '"[^"]*\$[A-Za-z_]+\['` over `src/`, excluding `$(`):
+**exactly one occurrence package-wide.** Isolated, not a pattern.
+
+### C2 — missing link guard · `gp1.jl` — already recorded
+
+See the fail-loud sweep entry above; `fit_gp1_gllvm` is one instance of a package-wide
+pattern, not a lone omission.
+
+### C3 — silent category inference · `multinomial.jl:105`
+
+`K = n_categories === nothing ? ymax : Int(n_categories)`. With `n_categories` unset, `K`
+is inferred as `maximum(y)`. A sample in which the top category happens to be unobserved
+silently fits a **smaller `K`**, with no warning. Every other constraint in this family
+fails loud (`y < 1`, `y > K`, `K = 2`); this one does not. Recorded, not patched —
+changing it is a behaviour decision.
+
+### C4 — ledger wording contradicts shipped dispatch · `capability-status.md:92-102`
+
+The multinomial row's comment ends: *"…does NOT admit multinomial to `fit_gllvm`/bridge
+dispatch."* Taken as a statement of fact, that is **half wrong**:
+
+- **`fit_gllvm`: a live route exists and is tested.** `fit_gllvm.jl:283-284` defines
+  `_fit_gllvm(::Multinomial, Y; kwargs...) = fit_multinomial_gllvm(Y; kwargs...)`, with a
+  dedicated guarded branch at `:148`, and `test/test_multinomial.jl:136-138` asserts
+  `fit_gllvm(Y; family = GLLVM.Multinomial())` returns a `MultinomialFit` matching the
+  named fitter to `atol = 1e-8`.
+- **Bridge: the ledger is correct.** `grep -c multinomial src/bridge.jl` → **0**.
+
+In fairness the sentence is ambiguous: read as *"this parity claim does not by itself
+constitute the admit"* it is true and unremarkable; read as *"no such dispatch exists"*
+it is false. Bundling `fit_gllvm` and bridge into one phrase is what makes it misread.
+**This is a wording fix, not a ledger flip** — the row's `missing` status is separately
+defensible, since it tracks the twin's latent/phylo/spatial multinomial surface, which is
+genuinely absent.
+
+### C5 — unguarded, untested `X` path · `lognormal.jl`
+
+`fit_lognormal_gllvm` declares no `X` keyword but forwards `kwargs...` to
+`fit_gaussian_gllvm`, which **does** accept one — after per-trait intercepts have already
+been removed from `log(Y)`. So any `X` design would be fitted against already-centred log
+residuals. No test covers it. Either guard it or support it deliberately; the docs
+landed making no claim either way.
+
+### C6 — mixed-family warm start errors on `missing` · `mixed.jl`
+
+`_mixed_laplace_mode` and `_mixed_loglik_site` both drop `missing` cells (FIML), but only
+the `Normal` method of `_mixed_pseudo_link_row` handles `missing`; the Poisson / Binomial
+/ Gamma / Beta methods call `float(y[i])` unguarded and would error. A source comment
+already calls this "a separate slice", so it is known — recorded so it is tracked rather
+than remembered.
+
+### C7 — no `confint` surface for six fit types
+
+`LognormalFit`, `TruncatedPoissonFit`, `CensoredPoissonFit`, `TruncatedNegBin2Fit` /
+`…PerTraitFit`, `MultinomialFit`, `MixedFamilyFit` have no `confint` dispatch — confirmed
+independently: `confint_family.jl` contains **zero** references to Lognormal,
+Multinomial, TruncatedPoisson, TruncatedNegBin2 or CensoredPoisson, and `_CIFit`
+(`confint_family.jl:44-45`) is the complete union. The **bridge** fails loud for lognormal
+and truncated_poisson (`_bridge_ci_guard_*`); the **native** side simply has no method, so
+a user gets a bare `MethodError` instead of a guided one. Worth a uniform fail-loud path
+— the same argument as the link guards, and cheap alongside them.
+
+Only C1 is fixed here. C2–C7 are recorded for the maintainer: each is either a behaviour
+decision, an approval-gated file, or a slice of its own.
