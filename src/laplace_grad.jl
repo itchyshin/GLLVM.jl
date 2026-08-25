@@ -218,8 +218,17 @@ function _gamma_site_diffable(y::AbstractVector, Λ::AbstractMatrix, β::Abstrac
     z = ẑ .+ (Aobs \ (Λ' * s .- ẑ))
 
     ηz = _clamp_eta.(β .+ Λ * z); μz = exp.(ηz)
-    # Fisher weight = α (constant) per observed cell ⇒ logdet term; masked cells drop.
-    Wf = mask === nothing ? fill(α, p) : ifelse.(mask, α, zero(α))
+    # OBSERVED weight α·y/μ per observed cell ⇒ logdet term; masked cells drop.
+    # CHANGED 2026-08-25 together with `_default_hessian(::Gamma, ::LogLink)`.
+    # This previously used the Fisher weight α (constant), deliberately matching
+    # the objective's Fisher log-det. The objective now uses the observed
+    # curvature, so this must too: an analytic gradient tuned to a different
+    # log-det than the one being reported is not the gradient of the objective,
+    # and it degrades optimisation SILENTLY rather than erroring.
+    # `test_laplace_grad.jl` adjudicates this by comparing against a finite
+    # difference of the actual objective — it needs no stored expected value.
+    Wobs_z = α .* y ./ μz
+    Wf = mask === nothing ? Wobs_z : ifelse.(mask, Wobs_z, zero(eltype(Wobs_z)))
     Az = Λ' * (Wf .* Λ) + I
     ℓ = zero(eltype(z))
     @inbounds for t in 1:p

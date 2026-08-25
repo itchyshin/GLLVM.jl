@@ -756,7 +756,7 @@ end
 # Per-site Laplace log-marginal with per-species Gamma shape markers `fams`.
 function _gamma_grouped_loglik_site(fams::AbstractVector, y::AbstractVector, n::AbstractVector,
         Λ::AbstractMatrix, β::AbstractVector, link::Link;
-        mask = nothing, offset = nothing, hessian::Symbol = :fisher,
+        mask = nothing, offset = nothing, hessian::Symbol = :observed,
         maxiter::Integer = 100, tol::Real = 1e-9)
     p, K = size(Λ)
     off = offset === nothing ? false : offset
@@ -807,7 +807,7 @@ Gamma/log Hessian used by TMB's Laplace objective.
 """
 function gamma_grouped_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix,
         β::AbstractVector, αvec::AbstractVector; link::Link = LogLink(),
-        mask = nothing, offset = nothing, hessian::Symbol = :fisher, kwargs...)
+        mask = nothing, offset = nothing, hessian::Symbol = :observed, kwargs...)
     p = size(Λ, 1)
     length(αvec) == p || throw(ArgumentError("length(αvec)=$(length(αvec)) must equal p=$p"))
     N = ones(Int, size(Y))
