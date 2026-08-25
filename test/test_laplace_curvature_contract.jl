@@ -120,4 +120,143 @@ using GLLVM, Test, Random, Distributions, ForwardDiff
             @test GLLVM._glm_obs_weight(f, μ, 1, me, μ, link, η) ≈ GLLVM._glm_weight(f, μ, 1, me) rtol = 1e-10
         end
     end
+
+    # ---- D1 FIX: a FALSIFIABLE test of each trait claim ---------------------
+    #
+    # The `a === b` assertions below are true BY CONSTRUCTION: the selector in
+    # laplace_loglik_site short-circuits on the trait, so a trait-true family
+    # takes the identical branch under either setting and never evaluates
+    # _glm_obs_weight. They therefore cannot fail for a WRONG declaration —
+    # which is the failure mode this file exists to catch.
+    #
+    # This testset can fail. `_glm_weight` is y-free; the observed curvature is
+    # y-dependent in general. So if a trait declaration is mathematically wrong,
+    # varying y at fixed η moves the observed weight away from the Fisher one
+    # and this fails. It tests the CLAIM, not the branch.
+    @testset "trait claims are falsifiable: observed ≡ Fisher across distinct y" begin
+
+        @testset "Poisson / log" begin
+            f, link = Poisson(), GLLVM.LogLink()
+            for η in (-1.0, 0.0, 1.7), y in (0, 1, 4, 19)
+                μ  = GLLVM._clamp_mu(f, GLLVM.linkinv(link, η))
+                me = GLLVM.mu_eta(link, η)
+                @test GLLVM._glm_obs_weight(f, μ, 1, me, y, link, η) ≈
+                      GLLVM._glm_weight(f, μ, 1, me) rtol = 1e-10
+            end
+        end
+
+        @testset "Binomial / logit" begin
+            f, link = Binomial(), GLLVM.LogitLink()
+            for η in (-1.3, 0.0, 0.8), nt in (1, 6), y in 0:min(nt, 3)
+                μ  = GLLVM._clamp_mu(f, GLLVM.linkinv(link, η))
+                me = GLLVM.mu_eta(link, η)
+                @test GLLVM._glm_obs_weight(f, μ, nt, me, y, link, η) ≈
+                      GLLVM._glm_weight(f, μ, nt, me) rtol = 1e-10
+            end
+        end
+
+        @testset "TruncatedPoisson / log" begin
+            f, link = GLLVM.TruncatedPoisson(), GLLVM.LogLink()
+            for η in (-0.5, 0.4, 1.6), y in (1, 2, 7, 15)
+                μ  = GLLVM._clamp_mu(f, GLLVM.linkinv(link, η))
+                me = GLLVM.mu_eta(link, η)
+                @test GLLVM._glm_obs_weight(f, μ, 1, me, y, link, η) ≈
+                      GLLVM._glm_weight(f, μ, 1, me) rtol = 1e-10
+            end
+        end
+
+        # D2 FIX: CensoredPoisson had ZERO coverage, and is the one declaration
+        # carrying an explicit UNVERIFIED caveat (its slot applies max(W, 0)).
+        # `n` carries the censoring limit C: n = 0 means uncensored.
+        @testset "CensoredPoisson / log" begin
+            f, link = GLLVM.CensoredPoisson(), GLLVM.LogLink()
+            @testset "uncensored branch (C = 0) — reduces to Poisson" begin
+                for η in (-0.7, 0.3, 1.4), y in (0, 2, 9)
+                    μ  = GLLVM._clamp_mu(f, GLLVM.linkinv(link, η))
+                    me = GLLVM.mu_eta(link, η)
+                    @test GLLVM._glm_obs_weight(f, μ, 0, me, y, link, η) ≈
+                          GLLVM._glm_weight(f, μ, 0, me) rtol = 1e-10
+                end
+            end
+            # MEASURED 2026-08-25: the generic ForwardDiff fallback CANNOT be
+            # used here. `_glm_logpdf(::CensoredPoisson, …)` on the censored
+            # branch is `logcdf(Gamma(C,1), μ)`, and `_gammalogcdf` has no
+            # method for `ForwardDiff.Dual` — it fails at the FIRST derivative,
+            # with a MethodError.
+            #
+            # That is a load-bearing fact, not a nuisance: this family is safe
+            # ONLY because it is declared trait-true and therefore never reaches
+            # the fallback. If a future change routed it there, it would ERROR
+            # rather than silently return a wrong number. Both properties are
+            # locked below so neither can regress unnoticed.
+            @testset "fallback is NOT dual-safe here — locked, because the trait depends on it" begin
+                for C in (1, 3)
+                    η = 0.3
+                    μ  = GLLVM._clamp_mu(f, GLLVM.linkinv(link, η))
+                    me = GLLVM.mu_eta(link, η)
+                    @test_throws MethodError GLLVM._glm_obs_weight(f, μ, C, me, C, link, η)
+                end
+                # …and the trait keeps it off that path.
+                @test GLLVM._glm_weight_matches_observed(f, link)
+            end
+
+            @testset "censored branch (C ≥ 1) — hand-derived G(G+μ−C) vs numerical 2nd derivative" begin
+                # Checks the hand derivation at censored_poisson.jl:73 using
+                # central finite differences (no Duals), and simultaneously
+                # probes whether the max(W, 0) clamp can bind: if it did, the
+                # slot and the true curvature would diverge and this fails —
+                # converting the recorded UNVERIFIED caveat into a measurement.
+                ℓ(ηv, C) = GLLVM._glm_logpdf(f, GLLVM._clamp_mu(f, GLLVM.linkinv(link, ηv)), C, C)
+                for η in (-0.7, 0.3, 1.4, 2.2), C in (1, 3, 8)
+                    μ  = GLLVM._clamp_mu(f, GLLVM.linkinv(link, η))
+                    me = GLLVM.mu_eta(link, η)
+                    h  = 1e-4
+                    d2 = (ℓ(η + h, C) - 2ℓ(η, C) + ℓ(η - h, C)) / h^2
+                    @test GLLVM._glm_weight(f, μ, C, me) ≈ -d2 rtol = 1e-4
+                end
+            end
+        end
+    end
+
+    # ---- D3 FIX: pin the DEFAULT WIRING, not just the trait function --------
+    # Asserting `_default_hessian(...) === :fisher` tests a function in
+    # isolation; an inverted condition in the selector leaves it green. This
+    # pins the value actually produced, and does it on a trait-FALSE family
+    # (Gamma), where the two settings genuinely differ — so it fails if the
+    # default ever silently moves.
+    @testset "default wiring produces the :fisher value (trait-false family)" begin
+        Random.seed!(7)
+        p2, n2 = 4, 8
+        Λ2 = reshape(0.35 .* randn(p2), p2, 1)
+        β2 = fill(0.6, p2)
+        Y2 = 0.4 .+ rand(p2, n2)
+        N2 = ones(Int, p2, n2)
+        f  = Gamma(2.5, 1.0)
+        bare = GLLVM.marginal_loglik_laplace(f, Y2, N2, Λ2, β2, GLLVM.LogLink())
+        fish = GLLVM.marginal_loglik_laplace(f, Y2, N2, Λ2, β2, GLLVM.LogLink(); hessian = :fisher)
+        obs  = GLLVM.marginal_loglik_laplace(f, Y2, N2, Λ2, β2, GLLVM.LogLink(); hessian = :observed)
+        @test bare === fish        # the default IS :fisher, at the value level
+        @test bare != obs          # and the two are genuinely different here
+    end
+
+    # ---- D4 FIX: the nested-AD arm must survive OUTER differentiation -------
+    # `_glm_obs_weight` is itself a nested ForwardDiff derivative. Fitters run
+    # ForwardDiff OVER this objective, so the composition must work. That was
+    # asserted by static reasoning and never measured; measure it.
+    @testset "outer AD differentiates through the :observed arm" begin
+        Random.seed!(11)
+        p3, n3 = 4, 6
+        Λ3 = reshape(0.3 .* randn(p3), p3, 1)
+        Y3 = 0.5 .+ rand(p3, n3)
+        N3 = ones(Int, p3, n3)
+        f  = Gamma(3.0, 1.0)
+        obj = b -> GLLVM.marginal_loglik_laplace(f, Y3, N3, Λ3, fill(b, p3),
+                                                 GLLVM.LogLink(); hessian = :observed)
+        g_ad = ForwardDiff.derivative(obj, 0.5)
+        h    = 1e-6
+        g_fd = (obj(0.5 + h) - obj(0.5 - h)) / (2h)
+        @test isfinite(g_ad)
+        @test g_ad ≈ g_fd rtol = 1e-5
+    end
+
 end

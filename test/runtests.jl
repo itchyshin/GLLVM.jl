@@ -53,6 +53,7 @@ using GLLVM
     include("test_binomial_fit.jl")
     include("test_poisson_fit.jl")
     include("test_laplace_curvature_contract.jl")
+    include("test_laplace_curvature_oracle.jl")
     include("test_laplace_grad.jl")
     include("test_masked_dispersion_grad.jl")
     include("test_laplace_alloc_equiv.jl")
