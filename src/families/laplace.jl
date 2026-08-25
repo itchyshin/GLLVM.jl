@@ -272,16 +272,31 @@ function laplace_loglik_site(family, y::AbstractVector, n::AbstractVector,
         Amat[d, d] += 1.0                     # + I (adds 1.0 to each diagonal entry)
     end
     A  = Symmetric(Amat)
-    # PD guard. Fisher weights are ≥ 0, so A is SPD by construction and this can
-    # only bite on the observed branch, where W may be negative (Student-t, GP-1).
-    # Guard at the assembly — never by clamping the weight.
-    if hessian === :observed && !_glm_weight_matches_observed(family, link)
-        isposdef(A) || return -Inf
-    end
     ℓ = 0.0
     @inbounds for t in 1:p
         (mask === nothing || mask[t]) || continue
         ℓ += _glm_logpdf(family, μ[t], n[t], y[t])
+    end
+    # PD guard, keyed on the WEIGHT'S SIGN — not on the selector and not on the
+    # trait. `A = Λ'WΛ + I` is SPD by construction whenever every `W ≥ 0`, so
+    # the factorisation is needed only when a negative weight is actually
+    # present. Keying on the sign is both cheaper (the common path skips it
+    # entirely) and strictly more correct than keying on a proxy: it fires on
+    # the real condition however the weight was produced.
+    #
+    # Observed curvature is genuinely negative for Beta, Student-t and GP-1
+    # (measured, not assumed) — so this is load-bearing, not defensive. The
+    # guard lives HERE, at the assembly, never as a clamp on the weight:
+    # `ordinal.jl`'s `max(·, 0)` is safe only for log-concave links and would
+    # silently diverge from TMB elsewhere.
+    #
+    # `-Inf` is returned via `oftype(ℓ, …)` so the value carries the caller's
+    # numeric type: fitters run ForwardDiff OVER this objective, and a raw
+    # `Float64` returned into a `Dual` context is a type error waiting to
+    # happen.
+    if any(w -> w < zero(w), W)
+        F = cholesky(A; check = false)
+        issuccess(F) || return oftype(ℓ, -Inf)
     end
     return ℓ - 0.5 * dot(z, z) - 0.5 * logdet(A)
 end
