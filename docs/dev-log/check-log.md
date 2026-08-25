@@ -13300,3 +13300,52 @@ global default in one step. Gamma — instance 8, the wrong public default — h
 case and the clearest measured benefit. GP1 has a measured case *against*.
 
 Nothing was committed from the dry run; the default remains `:fisher` and the tree is clean.
+
+## 2026-08-25 — the curvature contract now covers SIX kernels, and coevolution WAS splittable
+
+Following the Gamma flip (instance 8), a six-agent audit mapped every kernel a Gamma model
+can reach. All six were reachable; the contract has now been extended to all of them.
+
+| kernel | status | note |
+|---|---|---|
+| `families/laplace.jl` | contract (commit A) | the generic core |
+| `families/covariates.jl` | **added** | 6 public fitters + 4 `confint` objectives inherit it; was 0.238 adrift |
+| `families/mixed.jl` | **added** | per-trait; closes the bridge two-loglik hole |
+| `families/quadratic.jl` | **added** | exported, documents `Gamma()`; silent because every quadratic test is Poisson |
+| `spde_latent.jl` | **added** | `confint_spde_latent` inherits this log-det for its **Wald SEs** |
+| `coevolution_glm.jl` | **added** | see below — the audit said this one was impossible |
+
+### The audit was wrong about `coevolution_glm.jl`, and it matters
+
+It reported that this kernel **"CANNOT take this fix"** because a single `cholH` serves both
+the Newton step (`:88`) and the log-det (`:146`). The diagnosis was right; the conclusion
+was not.
+
+The two roles want different objects: the Newton step legitimately wants the **Fisher**
+Hessian (SPD by construction, so the step is always well-defined), and the log-det wants the
+**observed** one. So on the observed branch, rebuild `H = P + J` at the **already-converged**
+mode using the observed weight and factorise it separately. Cost: one extra Cholesky, paid
+only on that branch, only after the mode is found. **The mode search is untouched.**
+
+That is the same role separation as the core, applied one level down — which is what the
+"one object, two roles" diagnosis should have implied in the first place. Recorded because a
+kernel left unfixed on an auditor's say-so is exactly the kind of gap that survives for
+months.
+
+A PD guard comes with it: the observed weight can be negative, so `H` is no longer SPD by
+construction and a failed factorisation returns `-Inf` rather than a meaningless log-det.
+
+### One non-finding, checked before it became a false alarm
+
+`test/test_spde_latent.jl` errors when run standalone with `UndefVarError: Poisson`. That is
+**pre-existing and unrelated**: the file imports no `Distributions` and relies on
+`runtests.jl` to supply it. It IS in the suite (`grep -c` → 1), so the full run exercises it.
+Verified against `HEAD` before concluding, rather than assuming my change had broken it.
+
+### Where the class stands
+
+**6 kernels of 13.** Still NOT closed, and still must not be described as closed. What
+remains: `grouped_dispersion.jl`'s other families, `aghq_grid.jl` (PARKED), `phylo_glm.jl`,
+the four `phylo_*_xlv.jl` kernels, and `truncated_nbinom2.jl`'s own kernel — plus the
+per-family decisions for Beta, NB2, NB1, Tweedie, Student-t, GP1 and Binomial at
+probit/cloglog, two of which (Beta, GP1) have measured evidence AGAINST flipping.
