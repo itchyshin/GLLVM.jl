@@ -13411,3 +13411,88 @@ remains: `grouped_dispersion.jl`'s other families, `aghq_grid.jl` (PARKED), `phy
 the four `phylo_*_xlv.jl` kernels, and `truncated_nbinom2.jl`'s own kernel — plus the
 per-family decisions for Beta, NB2, NB1, Tweedie, Student-t, GP1 and Binomial at
 probit/cloglog, two of which (Beta, GP1) have measured evidence AGAINST flipping.
+
+## 2026-08-25 — a live defect in the grouped fitters: the Newton loop was running on observed curvature
+
+A two-agent audit of the last unexamined kernels, with a Fable ruling on what structural
+closure now requires. It found something that predates all of this session's work.
+
+### The defect
+
+`grouped_dispersion.jl`'s site kernels use **one `hessian` symbol for both roles**. The
+Newton loop and the post-loop log-det both call
+`_<fam>_grouped_laplace_weight(hessian, …)` — so whatever the caller selects governs the
+**mode search** as well as the log-det.
+
+And the grouped **fitters default to `:observed`** (`fit_beta_gllvm_grouped:555`,
+`fit_nb1_gllvm_grouped`, and the `_cov` variants). So the shipped fitters were running
+their Newton mode search on the observed weight — which **can be negative**: measured
+earlier this session at Beta, φ=12, η=−1.2, y=0.87 → **−1.218**.
+
+With a negative weight, `A = Λ'WΛ + I` is no longer SPD, and `_safe_solve` does `A \ b`.
+Julia's `\` on a `Symmetric` uses Bunch–Kaufman, which handles indefinite matrices
+**without erroring** — so the step is not a descent step and nothing complains. A
+silent-wrong-answer path, not a crash.
+
+Verified directly before acting: `_beta_grouped_loglik_site` line 14 (in-loop) uses the
+selected weight, and the fitter's default is `:observed`.
+
+### The fix — four one-line changes
+
+The Newton loops are now Fisher-scored **always** (`Ref(:fisher)`, not the caller's
+selector) in the NB2, Beta, Gamma and NB1 grouped site kernels; the post-loop log-dets
+keep the selector.
+
+**Why this is safe, and why it cannot change any answer:** the converged mode is the fixed
+point of `Λ's − z = 0`, which does **not** involve `W` at all. `W` only sets the Newton
+*step*. Fisher-scoring therefore changes the path taken, never the destination — and it
+guarantees every step is a descent step, because expected information is ≥ 0 so
+`Λ'WΛ + I` is SPD by construction.
+
+Confirmed empirically: `test_grouped_dispersion.jl`,
+`test_grouped_dispersion_beta_gamma.jl`, `test_grouped_dispersion_tweedie_nb1.jl` and the
+cross-kernel Gamma test all pass unchanged.
+
+This is the same role separation now applied in 11 other kernels — but here it is not
+merely tidiness: it removes a live indefinite-Newton path from shipped fitters.
+
+### Two debts, and they must not be reported as one
+
+The ruling drew a distinction worth preserving:
+
+- **Structural defect** — a kernel that still *conflates* the two roles. That is a code
+  fault, and `grouped_dispersion.jl` was the last one.
+- **Per-family default** — a kernel that has the contract but whose default has not been
+  flipped to `:observed`. That is an *evidence decision*, not a defect, and for Beta and
+  GP-1 the measured evidence says do **not** flip.
+
+Collapsing the two would overstate the remaining debt in one direction and the completed
+work in the other.
+
+`truncated_nbinom2.jl` was also audited: it does **not** conflate the roles. It lacks the
+`_default_hessian` / `_glm_obs_weight` trait wiring, which is the lesser debt.
+
+### Also in this batch
+
+The three remaining `phylo_*_xlv` kernels (beta, binomial, nb) gained the contract — pure
+structural work with **zero behaviour change**, since all three carry families whose
+default stays `:fisher`.
+
+**A near-miss worth recording.** The first version of that patch referenced `fam` at the
+call site, but `fam` is a **local inside the helper** and is not defined in the enclosing
+mode function. `using GLLVM` loaded without complaint, because Julia resolves globals
+lazily — so "the module loads" would have shipped a runtime `UndefVarError` into the phylo
+paths. Caught by checking scope, then confirmed by **running** the tests rather than
+re-checking that it loads. Loading is not evidence.
+
+### Orphaned tests: 15 → 9
+
+All six `phylo_*_xlv` tests and `test_sparse_phy_grad.jl` pass and are now wired into
+`runtests.jl`. Their sources are shipped (`GLLVM.jl:44`, `:103-107`), so this was untested
+shipped code running in CI for the first time. `test_phylo_gamma_xlv.jl` is deliberately
+**not** wired in: its `:123` assertion compares against a reference implementation inside
+the test file that still computes the Fisher log-det, and that oracle should not be
+updated by whoever changed the code it judges.
+
+The nine still orphaned test the **un-included** source files — a different finding
+(8 `src/` files are in no `include`), not a test problem.
