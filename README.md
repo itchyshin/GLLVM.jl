@@ -31,9 +31,15 @@ y_s ~ N(X_s β, Λ_B Λ_B' + diag(d_total))
 warm-starting LBFGS with the PPCA initialisation. Per-iteration cost is
 O(p K² + K³) via the Woodbury identity (instead of O(p³) for generic
 Cholesky). The result is a fit that is often **10-100× faster** than
-the R `gllvmTMB` engine on the same problem, with identical answers
-(matched to 1e-7 in log-likelihood and 1e-5 in Σ_y across our benchmark
-grid).
+the R `gllvmTMB` engine on the same problem, with answers agreeing to at
+least six significant digits (worst case across our benchmark grid:
+`|Δ logLik| = 2.3e-07`, `Σ_y` relative Frobenius `4.4e-05`; see
+[Benchmarks](https://itchyshin.github.io/GLLVM.jl/dev/benchmarks)).
+
+Corrected 2026-08-25: this previously read "matched to 1e-7 in log-likelihood
+and 1e-5 in Σ_y". Both bounds are exceeded by the package's own published
+table — worst case 2.343e-07 and 4.424e-05 respectively. The benchmarks page
+was already accurate; the summary here was not.
 
 ## Quick start
 

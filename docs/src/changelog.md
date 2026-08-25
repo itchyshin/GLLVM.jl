@@ -119,3 +119,10 @@ package; every numerical addition is gated by deterministic tests.
   cross-trait correlation, phylogenetic signal).
 - **IN:** ~340× median per-fit speedup over R `gllvmTMB` on the Gaussian
   benchmark grid, reproducing estimates and likelihoods to machine precision.
+  *(Correction appended 2026-08-25 — the entry is left as originally published
+  rather than rewritten. "Machine precision" overstates it: the measured
+  worst case across that grid is `|Δ logLik| = 2.343e-07` and `Σ_y` relative
+  Frobenius `4.424e-05`, i.e. agreement to at least six significant digits, not
+  to ~2.2e-16. The `~340×` figure is also specific to the single-σ² Gaussian
+  closed-form path and does NOT generalise: measured non-Gaussian speedups
+  include truncated_poisson ≈2.2× and Gamma ≈1.6×.)*

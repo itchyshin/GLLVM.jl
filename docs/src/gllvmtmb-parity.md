@@ -2,7 +2,16 @@
 
 GLLVM.jl is a from-scratch Julia twin of R's `gllvmTMB`, built for fitting speed
 at moderate-to-large species counts while reproducing point estimates and
-likelihoods to machine precision on the shared Gaussian + phylogenetic path. This
+likelihoods to **at least six significant digits** on the shared Gaussian +
+phylogenetic path (worst case across the benchmark grid:
+`|Δ logLik| = 2.343e-07`, `Σ_y` relative Frobenius `4.424e-05`). This
+
+!!! note "Corrected 2026-08-25"
+    This sentence previously claimed agreement "to machine precision". Machine
+    precision is ~2.2e-16; the measured worst case is 2.343e-07 — roughly nine
+    orders of magnitude larger. The [Benchmarks](/benchmarks) page always
+    reported the honest figure and its gates; this summary did not.
+
 page is the live **catch-up scoreboard** — where GLLVM.jl stands against the
 `gllvmTMB` feature set. For *speed* comparisons see
 [Comparison](/comparison) and [Benchmarks](/benchmarks).
