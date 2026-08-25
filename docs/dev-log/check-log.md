@@ -12730,3 +12730,56 @@ claims *"exact expected information"* — but the observed form was not derived 
 
 No `src/` change in this entry. Docs-only, no twin Δ, no tolerance touched, no fence
 lifted, nothing merged.
+
+## 2026-08-25 — documented link contracts are not enforced (fail-loud sweep)
+
+Found while fact-checking family documentation: `gp1.jl` has no link guard, unlike
+`truncated_poisson.jl:96` which throws. Applying the "assume there are ten more" rule
+turned one omission into a package-wide pattern.
+
+### The sweep
+
+Explicit link guards (`link isa … || throw`) exist in exactly **five** of ~34 family
+files — `lognormal.jl`, `multinomial.jl`, `truncated_poisson.jl`, `censored_poisson.jl`,
+`truncated_nbinom2.jl`. All five are recent additions. **Every older family has none.**
+
+### Why that is not merely untidy
+
+`docs/src/response-families.md:36-38` states: *"For `Poisson`, `NegativeBinomial`, and
+`Gamma` the default and only supported link is `LogLink()`."* That contract is **not
+enforced anywhere**:
+
+- `fit_poisson_gllvm` (`poisson.jl:129-130`) and `fit_gamma_gllvm`
+  (`gamma.jl:118-119`) both declare `link::Link = LogLink()` — accepting **any**
+  `Link` subtype.
+- `links.jl:10-31` defines `linkinv` for all five links generically, so every
+  combination evaluates.
+- `laplace.jl` performs no link validation (grep for a throw returns nothing).
+- The weight machinery is genuinely link-generic: `poisson.jl:7`'s
+  `_glm_weight = me²/μ` is the correct Fisher weight for *any* link, since `me = dμ/dη`.
+
+So `fit_poisson_gllvm(Y; K = 2, link = ProbitLink())` does not error. It runs, converges,
+and returns a fit whose mean is bounded in (0,1) for count data. **The failure mode is a
+plausible-looking wrong answer, not an exception** — the worst kind, and the same shape
+as the curvature fault class: the machinery is happy, the statistics are not.
+
+`IdentityLink()` on Gamma is the sharper case: it permits negative μ for a
+strictly-positive family.
+
+### Scope note — recorded, deliberately NOT patched here
+
+Adding guards touches ~30 files and is a **user-facing behaviour change**: any caller
+currently passing a non-default link would begin to throw. That is very likely the
+correct outcome, but it is a deliberate API decision, not a cleanup, and this session
+holds no mandate for it. Queued for the maintainer alongside the release-surface work.
+
+Suggested shape when it is taken up: a single `_check_link(family, link)` helper with
+per-family methods, so the contract lives in one place rather than being re-typed 30
+times — the same "one formula, one place" reasoning used for the DeltaGamma curvature
+fix, which delegated to `_gamma_grouped_laplace_weight` rather than re-deriving.
+
+**UNVERIFIED:** I did not run the mis-linked fit to observe the output; the claim that it
+converges rather than throwing is read from the code path, not measured. The absence of
+guards is verified; the precise runtime behaviour is inference.
+
+Docs-only entry. No `src/` change, no fence lifted, nothing merged.
