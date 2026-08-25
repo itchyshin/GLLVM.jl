@@ -12944,3 +12944,90 @@ a user gets a bare `MethodError` instead of a guided one. Worth a uniform fail-l
 
 Only C1 is fixed here. C2–C7 are recorded for the maintainer: each is either a behaviour
 decision, an approval-gated file, or a slice of its own.
+
+## 2026-08-25 — structural-fix gate: PROCEED WITH MODIFICATIONS; class is 13, and the suite cannot adjudicate it
+
+The maintainer lifted the Arc1b fence on `laplace.jl` and gated the structural fix on an
+adversarial verdict. That review has now run (design + two censuses on Fable, reviewer on
+Opus with veto authority — deliberately a different model from the designer, so the review
+could not merely re-confirm the design's own priors). Full artifact:
+`docs/dev-log/plans/2026-08-25-laplace-structural-design.md`.
+
+**Verdict: PROCEED WITH MODIFICATIONS** (M1–M6). Implementation **not started.**
+
+### Two findings that change the shape of the work
+
+**1. The contract does NOT close the fault class — 1 kernel of 13.** The design's stated
+purpose was "separate the two roles so the fault class cannot recur." The proposed
+`hessian` kwarg reaches exactly **one** kernel (`laplace.jl`). Twelve others build their
+own `Λ'WΛ + I` and their own `logdet` and are untouched — among them two live user
+surfaces: `covariates.jl:52-69` (backing `fourthcorner.jl`, `species_covariates.jl`,
+`constrained_ordination.jl`, `row_effects.jl`) and `mixed.jl:249-254` (backing
+`fit_mixed_gllvm`). A new family added through any of those doors still silently gets
+Fisher.
+
+**The instruction is explicit and is recorded here so it binds later: buy the contract for
+the correctness of the core-reachable families; do NOT claim it as anti-recurrence, and do
+NOT let any after-task report record the class as closed.** This log already carries two
+errors of exactly that kind (a false "fixed" on DeltaGamma, a wrong fix-site citation for
+NB1). A third would be a pattern.
+
+**2. The suite cannot distinguish a fix from a regression.** `test/parity/` is **not
+referenced by `test/runtests.jl` at all** — verified independently here:
+`grep -c parity test/runtests.jl` → **0**. It never runs in CI or under `Pkg.test()`. The
+only in-suite independent oracles are three quadrature comparisons
+(`test_beta_laplace.jl:37` and `test_gamma_laplace.jl:36` at `atol = 0.5`,
+`test_binomial_laplace.jl:38` at `atol = 0.06`) — loose enough to pass under *either*
+curvature.
+
+Consequently the most dangerous step is **not the algebra** but re-deriving the stored
+oracle values: when five `atol = 1e-10` identities go red, the natural repair is to paste
+in whatever the new code prints, making the new code its own oracle and shipping a
+*different* wrong weight fully green. **Own-the-verifier, carried forward verbatim:
+whoever changes the weight must not be the one who writes the new expected numbers.**
+
+### The class is now 13
+
+- **#12 GeneralizedPoisson1** (`gp1.jl:65-71`) — the UNVERIFIED lead recorded earlier is
+  now **CONFIRMED**, derived by hand and independently reproduced by the reviewer. Shipped
+  Fisher `μ/(1+αμ)²`; observed `μ(1+2αy−αμ)/(1+αμ)³`; substituting `E[y] = μ` recovers the
+  shipped value exactly — this class's signature. `1 + 2αy − αμ` **can be negative**, so
+  GP1 joins Student-t in needing the PD guard and must **not** be clamped.
+- **#13 mixed-family** (`mixed.jl:249-254`) — `_mixed_loglik_site` builds its own `A` and
+  `logdet` from `_glm_weight`. Separate kernel, same conflation, reachable via
+  `fit_mixed_gllvm` with NB2/Gamma/Beta traits.
+
+Boundary re-confirmed: DeltaGamma (#5) does **not** route through this core
+(`twopart.jl:610`); its fix lands separately.
+
+### What the reviewer verified rather than accepted
+
+All four proposed observed formulas were re-derived independently and hold (GP1; Tweedie
+`μ^(1−p)[(p−1)y+(2−p)μ]/φ`, non-negative on `1<p<2, y≥0`; Student-t; and TruncatedPoisson
+where observed ≡ Fisher, so it is correctly on the safe list). Two census claims were
+**refuted**: Tweedie's infinite series is *not* an AD hazard (`_tweedie_logA` receives only
+primals and never sees a Dual), and two claimed `laplace_loglik_site` call sites are
+comments, not calls — so BetaBinomial, COM-Poisson, OrderedBeta and Ordinal define no
+`_glm_weight` method and *cannot* reach the core at all.
+
+### Blocking modifications, in brief
+
+- **M1** — split into two commits: (A) contract with the default still `:fisher`, whole
+  suite bit-for-bit green with **zero test edits**; (B) the flip. Unsplit, "the suite is
+  green" carries no information, because A's failures and B's intended changes are
+  indistinguishable in one diff.
+- **M2** — `exponential.jl:60` must pass `hessian = :fisher` explicitly, and
+  `test_exponential.jl:84` must be re-armed against a recorded literal: after the flip both
+  of its sides would compute observed, so it would keep passing while testing nothing.
+- **M3** — Tweedie's grouped kernel needs the selector too; not optional.
+- **M4** — no oracle may be re-baselined from the new code's own output. Cheap independent
+  adjudicator needing no R: convert the three loose quadrature checks from "within atol" to
+  "**the error is strictly smaller than under `hessian = :fisher`**" — a direction-of-change
+  assertion, which is exactly the claim being made, and free.
+- **M5** — the after-task report must state the 1-of-13 coverage and file the twelve
+  uncovered kernels by name.
+- **M6** — resolve the clamp-convention mismatch (N1): the FD fallback and the analytic
+  overrides implement *different functions* wherever `_clamp_mu` binds, so the design's own
+  rtol-1e-10 gate test cannot pass as written.
+
+Nothing implemented. No `src/` change in this entry, no fence lifted, nothing merged.
