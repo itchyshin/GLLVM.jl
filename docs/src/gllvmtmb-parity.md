@@ -9,7 +9,7 @@ phylogenetic path (worst case across the benchmark grid:
 !!! note "Corrected 2026-08-25"
     This sentence previously claimed agreement "to machine precision". Machine
     precision is ~2.2e-16; the measured worst case is 2.343e-07 — roughly nine
-    orders of magnitude larger. The [Benchmarks](/benchmarks) page always
+    orders of magnitude larger. The Benchmarks page (linked below) always
     reported the honest figure and its gates; this summary did not.
 
 page is the live **catch-up scoreboard** — where GLLVM.jl stands against the

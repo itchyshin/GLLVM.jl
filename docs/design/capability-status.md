@@ -247,6 +247,71 @@ Same twin surface, transport layer. Status = code + bridge/parity test exist;
 | Bridge phylo / animal / spatial / kernel source parity | planned |
 | Bridge Phylo Model A / source-specific `lv` advertising | rejected |
 
+## Laplace curvature: which families match TMB's log-det (2026-08-25)
+
+**This section exists because `implemented` alone is misleading for these rows.**
+A row can be fully implemented and tested and still not reproduce `gllvmTMB` to
+the precision a reader would assume, for a reason orthogonal to capability.
+
+`gllvmTMB` is built on TMB, whose `MakeADFun(..., random = ...)` differentiates
+the coded joint negative log-likelihood — so its Laplace log-determinant uses the
+**observed** joint Hessian, structurally, without ever choosing. GLLVM.jl
+hand-codes its Laplace kernels, and several used the **Fisher (expected)**
+information in that role. The two coincide at canonical links (Poisson/log,
+Binomial/logit) where the curvature is free of `y`, which is why the launch
+families were unaffected and the discrepancy went unnoticed for so long.
+
+**Status by family.** "observed" = matches TMB's log-det; "Fisher" = does not,
+so a log-likelihood from that family will *not* match `gllvmTMB` to machine
+precision even where the row reads `implemented`.
+
+| family / link | log-det curvature | note |
+|---|---|---|
+| Poisson / log | observed ≡ Fisher | canonical; y-free, unaffected |
+| Binomial / logit | observed ≡ Fisher | canonical; y-free, unaffected |
+| TruncatedPoisson / log | observed ≡ Fisher | verified by expansion |
+| CensoredPoisson / log | observed | hand-derived, already correct |
+| Ordinal | observed | correct by construction |
+| Gamma / log | **observed** | flipped 2026-08-25 — was the public default path |
+| Exponential / log | **observed** | fixed |
+| NB1 (grouped route) | **observed** | fixed |
+| TruncatedNegBin2 | **observed** | fixed; both entry points agree since 2026-08-25 |
+| DeltaGamma | **observed** | fixed |
+| **Beta** | Fisher | evidence AGAINST flipping — see below |
+| **GP-1** | Fisher | evidence AGAINST flipping — see below |
+| **NB2 (shared route)** | Fisher | not yet decided |
+| **NB1 (generic core)** | Fisher | not yet decided |
+| **Tweedie** | Fisher | not yet decided |
+| **Student-t** | Fisher | not yet decided |
+| **Binomial / probit** | Fisher | link-specific instance |
+| **Binomial / cloglog** | Fisher | link-specific instance |
+
+The last two are worth calling out: `Binomial` is clean at **logit** and is a
+genuine instance at **probit** and **cloglog**. These are properties of the
+*(family, link)* pair, so any census organised by family alone will miss them.
+
+**This is a PARITY goal, not an accuracy improvement — and that distinction is
+load-bearing.** Measured against high-resolution numerical quadrature over 12
+seeds per family:
+
+- **Gamma**: observed is closer **12/12**, with 20–60× smaller error.
+- **Beta**: observed is closer only **2/12** — Fisher is usually nearer.
+- **GP-1**: observed is measurably **worse** for dispersion recovery
+  (α = 0.879 against a truth of 0.4, where Fisher lands inside the test's
+  tolerance).
+
+So each family is decided on its own evidence, not on principle. Matching TMB is
+the objective; "the numbers get better" would be an overstatement, and for two of
+the three families measured it is simply false.
+
+**Where a curvature was corrected, the previous behaviour stays reachable** via
+`hessian = :fisher` on the corresponding marginal.
+
+**Not closed.** A role-separation contract (Fisher-scored mode search, selectable
+log-det) now covers 12 kernels, but `src/families/aghq_grid.jl` remains FENCED
+and PARKED with the Fisher weight at `:203`. The fault class must not be
+described as closed.
+
 ## Withdrawn and deferred (twin fences)
 
 | Capability | Status |

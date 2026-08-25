@@ -5,6 +5,28 @@ Notable changes to GLLVM.jl. Style mirrors `gllvmTMB`'s NEWS: status labels
 
 ## GLLVM.jl (development version)
 
+### Changed
+- **CHANGED:** Gamma's Laplace **log-determinant now uses the observed
+  conditional curvature** `α·y/μ`, matching TMB and therefore `gllvmTMB`.
+  It previously used the Fisher (expected) weight — the constant `α`, which is
+  exactly the *expectation* of the correct one. **This moves reported `loglik`
+  values for Gamma fits**, and anything derived from the Hessian such as Wald
+  standard errors; point estimates move very little, because the conditional
+  mode is determined by the score, which is unaffected. Measured against
+  numerical quadrature the observed curvature is closer **12/12** seeds, with
+  20–60× smaller error. `hessian = :fisher` restores the previous behaviour.
+
+  This was **instance 8** of a Fisher-vs-observed fault class and the
+  worst-placed one: `fit_gllvm(Y; family = Gamma())` reaches it, because Gamma
+  is deliberately excluded from the `disp_group = :species` auto-coercion that
+  shields the other dispersion families.
+
+  **Per-family, not a global switch.** Other families keep the Fisher default:
+  measured evidence says observed is *not* closer for Beta (2/12) and is
+  measurably worse for GP-1's dispersion recovery. See
+  `docs/design/capability-status.md` § *Laplace curvature* for the family-by-family
+  table and which rows will not match `gllvmTMB` to machine precision.
+
 ### Fixed
 - **FIX:** every non-Gaussian **Wald** standard error was wrong. The
   observed-information finite-difference Hessian (`_fd_hessian`, backing
