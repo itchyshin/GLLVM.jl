@@ -89,6 +89,17 @@ Twin family names align with gllvmTMB / gllvm. Status = native Julia engine
 | truncated_nbinom2 | implemented |
 | censored_poisson | implemented |
 | multinomial / categorical | missing |
+<!-- Row stays `missing` deliberately: engine + parity cell is NOT a surface admit.
+     **FE-only light RCall Δ PAID 2026-08-24** — live Δ abs ≈2.27e-12 @ rtol 1e-6
+     (seed=57, ncat=4, n=400; gllvmTMB 0.7.0 / R 4.6.0;
+     `test/parity/test_multinomial_parity.jl`). Exact concave softmax, no Laplace on
+     either side, hence the picoscale Δ. Both engines additionally pinned to the
+     closed-form intercept-only MLE `Σ n_c log(n_c/n)`. The 2026-08-18 Identity
+     fenced a Δ as FORBIDDEN "until an engine exists" and sanctioned exactly this
+     cell once it did (#257). Claim is limited to FE-only softmax logLik parity: it
+     does NOT promote this row, does NOT cover the twin's latent/phylo/spatial
+     multinomial surface (Design 123 — structurally absent in Julia), and does NOT
+     admit multinomial to `fit_gllvm`/bridge dispatch. ≠ full family parity. -->
 | delta_gamma | implemented |
 | delta_lognormal | implemented |
 | hurdle_poisson / hurdle_nbinom2 | implemented |
@@ -143,10 +154,10 @@ not used as inits; not Ordinal's `τ₁ = 0` pin).
 Hurdle-Poisson / Hurdle-NB / Beta-hurdle / Ordered-beta +X, `disp_group`,
 row effects, `bridge.jl`, and any twin light Δ remain OWED — the twin has no
 hurdle / ordered-beta family, so a Δ would be invented. `truncated_poisson` =
-zero-truncated Poisson (Identity 2026-08-15; twin fid 10; engine+admit; **bridge no-X paid** via `bridge_fit(; family = "truncated_poisson")`; light RCall Δ still OWED — no invented number); `truncated_nbinom2`
-= zero-truncated NB2 (Identity 2026-08-15; twin fid 11; Arc1 shared scalar `r`
+zero-truncated Poisson (Identity 2026-08-15; twin fid 10; engine+admit; **bridge no-X paid** via `bridge_fit(; family = "truncated_poisson")`; **light RCall no-X Δ PAID 2026-08-24** — live Δ abs ≈2.71e-9 @ rtol 1e-6 (seed=53, p=5, K=2, n=60; Laplace both sides; gllvmTMB 0.7.0 / R 4.6.0; `test/parity/test_truncated_poisson_parity.jl`; ≠ full family parity)); `truncated_nbinom2`
+= zero-truncated NB2 (Identity 2026-08-15; twin fid 11; **light RCall no-X Δ PAID 2026-08-24** — live Δ abs ≈1.58e-6 @ rtol 1e-6, relative ≈1.15e-9 (seed=58, p=5, K=1, n=120, per-trait `r`; gllvmTMB 0.7.0 / R 4.6.0; `test/parity/test_truncated_nbinom2_parity.jl`; pairs with `fit_truncated_nbinom2_gllvm_pertrait`, NEVER the shared-scalar route; requires `hessian=:observed`, the default since 2026-08-24 — the Fisher weight gives relative 1.06e-5 and FAILS; ≠ full family parity); Arc1 shared scalar `r`
 ≡ twin `φ`; Arc1b 2026-08-18 per-trait pack ≡ twin `log_phi_truncnb2`;
-≠ bridge admit ≠ AGHQ). `lognormal` = one-part lognormal (Identity 2026-08-15; twin fid 3; engine+admit; **bridge no-X paid** via `bridge_fit(; family = "lognormal")`; light RCall Δ still OWED — no invented number). `censored_poisson` = right-censored Poisson (Identity 2026-08-15; Julia-forward / twin constructor-only; light RCall Δ FORBIDDEN).
+≠ bridge admit ≠ AGHQ). `lognormal` = one-part lognormal (Identity 2026-08-15; twin fid 3; engine+admit; **bridge no-X paid** via `bridge_fit(; family = "lognormal")`; **light RCall no-X Δ PAID 2026-08-24** — live Δ abs ≈2.24e-8 @ rtol 1e-6 (seed=52, p=5, K=2, n=60; exact-vs-exact; shared scalar σ; loglik includes `−Σ log y`, verified structurally **and** by a scale-shift test on `2·Y`; gllvmTMB 0.7.0 / R 4.6.0; `test/parity/test_lognormal_parity.jl`; ≠ full family parity)). `censored_poisson` = right-censored Poisson (Identity 2026-08-15; Julia-forward / twin constructor-only; light RCall Δ FORBIDDEN).
 
 ## Intervals and estimation evidence
 
@@ -247,9 +258,27 @@ Same twin surface, transport layer. Status = code + bridge/parity test exist;
   `docs/dev-log/after-task/2026-08-16-nb1-nox-surface.md` — exported `NB1` marker,
   per-trait φ via the API-B coerce. Julia-side surface + identity only; **no** new
   twin Δ (bridge behaviour unchanged, `src/bridge.jl` not opened)
+- **NB1 no-X light RCall Δ PAID 2026-08-24** — live Δ abs ≈1.34e-8 @ rtol 1e-6
+  (seed=55, p=5, K=1, n=120, per-trait φ; gllvmTMB 0.7.0 / R 4.6.0;
+  `test/parity/test_nox_dispersion_parity.jl`; ≠ full family parity). **This cell
+  first FAILED at Δ ≈ −0.115 and found a real engine defect**, since fixed:
+  `fit_nb1_gllvm_grouped` declared no `hessian` keyword, so it silently inherited the
+  `:fisher` default of `nb1_grouped_marginal_loglik_laplace` — the
+  expected-information Laplace, a *different objective* from TMB's — while its NB2,
+  Beta and `_cov` siblings all default to `:observed`. The optimiser was never
+  failing; it was converging correctly to the wrong objective. Fix aligns the default;
+  `hessian=:fisher` stays reachable explicitly. See `docs/dev-log/check-log.md`
+  2026-08-24
 - BetaBinomial+X engine (bridge/`@formula`/`fit_beta_binomial_gllvm_grouped_cov`):
   `docs/dev-log/after-task/2026-08-05-betabinomial-x-engine-arc12.md` — light
   RCall cell live Δ abs ≈1.50e-8 @ rtol 1e-6 (seed=49; ≠ full family parity)
+- **Gamma + BetaBinomial no-X light RCall Δ PAID 2026-08-24** —
+  `test/parity/test_nox_dispersion_parity.jl`, per-trait dispersion via the grouped
+  fitters: Gamma (twin fid 4) live Δ abs ≈2.05e-8 @ rtol 1e-6 (seed=54, p=5, K=1,
+  n=120); BetaBinomial (twin fid 8, N=8, trials via twin API-B `weights`) live Δ abs
+  ≈6.15e-9 @ rtol 1e-6 (seed=56, p=5, K=1, n=120). gllvmTMB 0.7.0 / R 4.6.0.
+  These are the **no-X** arms of families that previously had twin evidence only
+  under +X; ≠ full family parity
 - BetaBinom no-X surface admit (`fit_gllvm` + `@formula` with no X; same Identity
   as the NB1 row above): `docs/dev-log/after-task/2026-08-16-betabinom-nox-surface.md`
   — exported `BetaBinom` marker, per-trait φ via the API-B coerce, p×n trials `N`

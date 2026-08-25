@@ -1,5 +1,17 @@
 # Check Log
 
+## 2026-08-24 — Claude handover (post-#262 honesty wave)
+
+Lane `handover/2026-08-24-claude` cut from `origin/main` @ `c5b72310`
+(#262). Docs-only. Classifies #257–#262 as DONE; TruncPois + lognormal
+light RCall Δ as OWED (not invented); AGHQ 2∩3∩4∩5 PARKED; L47 still
+`planned`; #254 OPEN leave-alone; Dropbox checkout @ `9f8378aa`
+PROTECTED. Does **not** edit `AGENTS.md` or the coordination board
+(multi-lane: #254 owns those files). No `src/`. No twin Δ. No public
+`aghq=`. No Tweedie admit. Gate FAIL declared (36 stale unpushed
+branches + Dropbox dirt + `.git/index.lock`) as CARRIED-OVER /
+PROTECTED. Branch **unpushed** until Shinichi asks.
+
 ## 2026-08-19 — none × dep() Gaussian matrix fitter (K = p)
 
 Lane `cursor/lane-none-dep-engine-20260818` rematched onto `origin/main`
@@ -11804,3 +11816,744 @@ route reachable from a public entry point today
 (`fit_gllvm(disp_group = :species)`). The helpers it needs now exist. Also owed:
 the whole T2/T3/T4/T5 surface admit, an analytic Tweedie gradient, and a coverage
 certificate.
+
+---
+
+## 2026-08-24 — twin-parity catch-up: the two OWED light RCall Δ cells paid live
+
+**Lane:** `parity-catchup` on `handover/2026-08-24-claude` (cut from `origin/main`
+@ `c5b72310`). PLATFORM: claude. OTHER LANES: cursor+#254 (its three files were not
+opened). `src/` was not opened at all — this arc is `test/parity/` + docs only.
+
+**Why this arc exists.** The 2026-08-24 handover classified the truncated_poisson
+(twin fid 10) and lognormal (twin fid 3) light RCall Δ cells as **OWED**, on the
+stated premise that no live R twin was reachable ("if this session cannot run the
+live twin, write the cell and stop — do not invent"). That premise was re-tested
+rather than inherited, and it did not hold: R 4.6.0 and `gllvmTMB` 0.7.0 are both
+installed on this machine, and RCall's built `Rhome` already matches live `R RHOME`.
+Provenance receipt: `docs/dev-log/parity-provenance-20260824.md`.
+
+**Canary first.** Before writing either new cell, the entire existing parity suite
+was re-run unchanged: **144/144 pass, exit 0**, all Δ ~1e-10..1e-8 except NB2 at
+−2.58e-4 on logLik −820.415 (3.1e-7 relative — inside the locked rtol 1e-6, and the
+expected size for Laplace-vs-Laplace). A new number is only trustworthy if the old
+ones still reproduce.
+
+**Live result — full suite with both new cells: 167/167 pass, exit 0.**
+
+```
+── lognormal logLik oracle (seed=52, p=5, K=2, n=60; twin fid 3) ──
+  Julia logLik          = -594.6707717158076
+  gllvmTMB logLik       = -594.6707717381979
+  Δ logLik (jl − r)     = 2.2390281628759112e-8
+
+── truncated_poisson logLik oracle (seed=53, p=5, K=2, n=60; twin fid 10) ──
+  Julia logLik          = -618.0776776554326
+  gllvmTMB logLik       = -618.0776776581457
+  Δ logLik (jl − r)     = 2.7131363822263665e-9
+```
+
+**The lognormal Jacobian was verified twice, not assumed.** The Identity
+(`2026-08-15-lognormal-identity.md`) requires the reported y-scale loglik to include
+`−Σ log y`. Two independent gates: (a) *structural* — the reported value reproduces
+`gaussian_marginal(centred log Y) − Σ log Y` to 1e-8; (b) *behavioural and decisive*
+— refitting both sides on `2·Y` shifts each log-likelihood by exactly `−p·n·log 2`
+and leaves Δ unchanged.
+
+**Corrected after the Rose audit.** The first draft of this paragraph overstated the
+gate, claiming no tolerance check could detect a dropped Jacobian. That is wrong: a
+**one-sided** drop is already caught by the ordinary Δ test, since the offset
+`Σ log y ≈ 375` against a log-likelihood of ≈ −594.67 is a relative error of ~0.6 —
+thousands of times the locked rtol 1e-6. What the Δ test genuinely **cannot** see is
+a **both-sides** drop: a shared convention error in which both engines omit the term,
+still agree with each other, and are both wrong. That is the failure mode this gate
+uniquely covers, and it additionally pins the Jacobian's functional form
+(coefficient `p·n`, negative sign) rather than merely its presence.
+
+**Seeds.** The plan pre-registered 45/46; both collide with existing cells (45 = NB2
+and Beta, 46 = Ordinal). They were re-registered to **52** and **53** *before either
+cell had ever executed* — a uniqueness fix for receipt legibility, not a re-roll
+after seeing a Δ. Reserved next: 54 Gamma, 55 nb1, 56 betabinomial.
+
+No tolerance was widened. `test/runtests.jl` still contains **zero** references to
+`test/parity/` (verified) — the default suite stays runnable on machines without R.
+`capability-status.md` L47 `none × dep` remains `planned`; AGHQ rows and
+`src/families/aghq_grid.jl` were not touched.
+
+**Defect found in passing (pre-existing, NOT introduced here, NOT fixed here):**
+running `runparity.jl` mutates its own `test/parity/Project.toml` — `Pkg.develop`
+strips the comment block explaining why GLLVM must not be listed in `[deps]`, and
+then lists it. `Manifest.toml` is gitignored; `Project.toml` is not, so every parity
+run leaves the tree dirty. Restored from HEAD here and deliberately not staged.
+
+**OWED after this arc:** no-X cells for Gamma(4), betabinomial(8), nbinom1(15)
+(cheap clones); identity decisions for student(9), truncated_nbinom2(11) dispersion
+granularity, delta_lognormal(12), delta_gamma(13), multinomial(16) data shape;
+tweedie(6) blocked behind its grouped-route defects. **No-X** twin-verified coverage
+moves **6/17 → 8/17**. That qualifier is load-bearing: Gamma(4), betabinomial(8) and
+nbinom1(15) already carry live twin Δ evidence through the **+X** cohort in this same
+log (≈3.03e-8, ≈1.50e-8, ≈1.53e-9), so the family total is higher than 8 — 8/17 is
+the no-X count alone. The global "full family R↔Julia parity claim" stays
+**`rejected`**.
+
+---
+
+## 2026-08-24 — Rung A: no-X arms for Gamma / NB1 / BetaBinomial (+ an engine defect)
+
+Same lane and toolchain as the entry above (R 4.6.0, gllvmTMB 0.7.0). `src/` not opened.
+These three families previously had live twin Δ evidence **only** through the +X
+cohort; this arc adds the no-X arm. R defaults to per-trait dispersion, so each cell
+pairs with the Julia **grouped** fitter (`group = collect(1:p)`), never the
+shared-dispersion default.
+
+Full suite: **191 pass · 1 broken · 192 total, exit 0, zero failures.**
+
+```
+── Gamma no-X logLik oracle (seed=54, p=5, K=1, n=120, per-trait α; twin fid 4) ──
+  Julia logLik    = -917.4461930187695
+  gllvmTMB logLik = -917.446193039268
+  Δ logLik        = 2.049853264907142e-8          PASS
+
+── BetaBinomial no-X logLik oracle (seed=56, p=5, K=1, n=120, per-trait φ, N=8; fid 8) ──
+  Julia logLik    = -1222.772713082222
+  gllvmTMB logLik = -1222.7727130883698
+  Δ logLik        = 6.1477294366341084e-9         PASS
+
+── NB1 no-X logLik oracle (seed=55, p=5, K=1, n=120, per-trait φ; twin fid 15) ──
+  Julia logLik    = -1129.7817843739615
+  gllvmTMB logLik = -1129.6667320371555
+  Δ logLik        = -0.11505233680600213          BROKEN — engine defect, see below
+```
+
+### The NB1 no-X cell found a real engine defect
+
+Δ = −0.115 is ~1.0e-4 relative, 100× the locked rtol 1e-6, and Julia's optimum is
+**worse** than the twin's. No tolerance was widened and no seed re-rolled. Isolation:
+
+```
+fit_nb1_gllvm_grouped(Y; K, group)                    -> -1129.7817843739615
+fit_nb1_gllvm_grouped_cov(Y; X = zeros(p,n,1), K, …)  -> -1129.6667320237116
+gllvmTMB nbinom1() (twin fid 15)                      -> -1129.6667320371555
+```
+
+An all-zero X contributes nothing to the linear predictor, so the `_cov` route fits
+the **same model** — and matches the twin to 1.34e-8. The no-X route does not.
+
+Ruled out by experiment, not by argument:
+- **Outer convergence** — loglik invariant at −1129.78178 for `g_tol` ∈ {1e-5, 1e-8,
+  1e-10} with up to 5000 iterations, `converged == true` throughout.
+- **Inner Laplace mode** — invariant for `newton_tol` ∈ {1e-9, 1e-12} and
+  `newton_maxiter` ∈ {100, 500}.
+- **Identity** — the +X NB1 cell already agrees to 1.53e-9 under the same per-trait
+  dispersion identity, so the model definition is not in question.
+
+Conclusion: the defect is localised to the no-X `fit_nb1_gllvm_grouped` path
+(`src/families/grouped_dispersion.jl:1235`). The Δ assertion is `@test_broken` so the
+suite **alerts when the engine is fixed**, and a live assertion that the zero-X `_cov`
+route *does* match the twin ships alongside it, so the isolating evidence is executed
+rather than merely asserted in prose. Fixing it is a `src/` change and therefore a
+separate arc carrying a full `Pkg.test()`.
+
+### Rung B (student, fid 9) — blocked on identity, not attempted
+
+Source-grounded check of the twin: `R/families.R:367` `student(link, df = NULL)`
+**estimates** ν by default (`src/gllvmTMB.cpp:1184-1185` carries `log_df_student` in
+the parameter vector; `R/fit-multi.R:5346-5348` maps it to `factor(NA)` only when
+`df` is given). Julia's `fit_studentt_gllvm` **fixes** ν as a keyword, default 4.0.
+Worse, the scale differs in dimension: R fits `log_sigma_student` **per trait**
+(length `n_traits`), Julia a **single shared** σ. So default-vs-default compares
+different parameter spaces twice over. Even with `student(df = 4)` pinning ν, a
+symmetric Δ remains meaningless; only a one-sided nesting check (R ≥ Julia, since R's
+per-trait-scale model nests Julia's shared-scale model) would be honest. Recorded as
+**blocked on ν + scale identity** — no number quoted, no cell shipped.
+
+### Coverage
+
+**No-X** twin-verified coverage moves **8/17 → 10/17** (Gamma fid 4, BetaBinomial
+fid 8 added; NB1 fid 15 attempted and *not* counted — it is broken, not passing).
+The global "full family R↔Julia parity claim" stays **`rejected`**.
+
+---
+
+## 2026-08-24 — per-fit speed, Julia vs twin, on the parity fixtures (measured)
+
+Prompted by the expectation that "Julia is faster, especially bootstrapping".
+Measured rather than assumed, on the **same fixtures the parity cells use** — so
+these are timings of fits already known to agree to ~1e-8, not of two different
+answers. Harness kept **outside** the package (comparison work stays out of package
+tests). Julia warmed up first so compile time is excluded; R timed with R's own
+`system.time()` so RCall marshalling is not charged to R.
+
+| Family | Julia | R gllvmTMB | per-fit speedup |
+|---|---|---|---|
+| lognormal (fid 3), p=5 K=2 n=60 | **0.104 ms** (mean of 200) | 133 ms (median of 5) | **≈1280×** |
+| truncated_poisson (fid 10), p=5 K=2 n=60 | 203 ms | 451 ms | **≈2.2×** |
+| Gamma (fid 4), p=5 K=1 n=120 | 329 ms | 521 ms | **≈1.6×** |
+
+**The spread is the finding, and it is an algorithm story, not a language story.**
+lognormal reuses the closed-form Gaussian marginal + σ profile-out path (`log y` is
+exactly Gaussian), so it inherits the same advantage as the ~340× single-σ Gaussian
+headline. truncated_poisson and Gamma go through the dense-Laplace machinery with a
+finite-difference or implicit outer gradient, and there Julia is only **1.6–2.2×**
+faster. **The headline speed claim does not generalise to the non-Gaussian families**,
+and nothing here licenses restating ~340× outside its verified Gaussian cell.
+
+**Bootstrap.** A parametric bootstrap is B refits, so the per-fit ratio carries over
+multiplicatively — the gain compounds, but it compounds *that family's* ratio. At
+B = 500 the lognormal path is transformative (≈0.1 s vs ≈1.1 min); Gamma would be
+≈2.7 min vs ≈4.3 min — useful, not transformative. Note this is **inferred** from
+per-fit timings (sound while refits dominate the cost); an end-to-end
+`confint_bootstrap` comparison was **not** run and no such number is claimed.
+
+**Limits, stated plainly:** tiny fixtures (p=5, n=60/120), 3–5 reps, one machine, one
+seed each. TMB's fixed overhead amortises better at larger p and n, so these ratios
+are specific to small problems and are **not** a benchmark result. A real
+scaling claim needs a sweep over p and n, which this arc did not do.
+
+---
+
+## 2026-08-24 — Rung D (delta_lognormal fid 12, delta_gamma fid 13): BLOCKED, no cell
+
+Source-grounded identity check before spending any fit. **Both families are blocked,
+and not for a reason configuration can fix.**
+
+**Twin (fid 12/13).** `R/enum.R:18-19` confirms the ids; `R/fit-multi.R:753-767`
+admits only `type = "standard"` and maps `c("binomial","lognormal") → 12L`,
+`c("binomial","Gamma") → 13L` (the `delta_poisson_link_*`, `*_mix`, `delta_gengamma`
+and `delta_truncated_nbinom*` constructors are **not** fid 12/13 and are rejected by
+the multivariate engine). Occurrence link is logit and only logit
+(`fit-multi.R:771`). Decisively, `src/gllvmTMB.cpp:714-716`: *"Delta families share
+ONE linear predictor for both components"* — the presence logit and the positive-part
+log-mean are **the same η**, so one intercept and one loading row drive both parts.
+Dispersion is **per-trait** (`log_sigma_lognormal_delta` / `log_phi_gamma_delta`,
+length `n_traits`, free for every delta trait).
+
+**Julia (`src/families/twopart.jl`).** Two *separate* predictors — `η^z = β^z` and
+`η^c = β^c + Λ_c z` — with the v1 default `Λ_z = 0`, so the occurrence part carries a
+free per-species intercept and **no latent** at all. Dispersion is **one shared
+scalar** (σ or α).
+
+| Axis | Twin | Julia | |
+|---|---|---|---|
+| Occurrence link | logit | logit | MATCH |
+| Positive link | log | log | MATCH |
+| Predictor structure | **one shared η** for both parts | **separate** β^z/β^c, `Λz = 0` | **MISMATCH** |
+| Joint loglik, one call | yes | yes | MATCH |
+| Dispersion granularity | per-trait | one shared scalar | **MISMATCH** |
+
+**Why this is (c) BLOCKED and not (b) configurable:** the predictor structures are
+**non-nested in both directions**. Matching the twin from Julia needs β^z ≡ β^c and
+Λ_z ≡ Λ_c tied together — Julia cannot express that, and its v1 fence is the opposite.
+Matching Julia from the twin needs a second presence parameter set — the twin has
+none. No `map=` pinning, seed, or keyword reaches it; even K = 0 leaves β^z ≡ β^c
+unimposable. The dispersion mismatch could only be neutralised at `n_traits = 1`,
+which would still leave the shared-η mismatch standing.
+
+This is the Student-t situation but worse: Student-t had two *pinnable* parameter
+gaps; the delta gap is a structural constraint neither engine can express.
+
+**Standing fences that bind even if a cell ever passes:** `capability-status.md:232`
+"Delta/hurdle latent-scale correlation advertising | **rejected**" — marginal-loglik
+agreement only, never a latent-scale/Σ interpretation for these families. And
+`capability-status.md:127-131` already records delta twin light Δ as **OWED with no
+invented number**. The Opus identity review
+(`docs/dev-log/decisions/2026-08-15-lognormal-identity-review-opus.md:85-88`, C5) is
+explicit: *"do not launder the delta gap … This Identity must not be cited as evidence
+that `delta_lognormal` is twin-faithful."*
+
+**Recorded as BLOCKED. No fit run spent, no Δ quoted, no ledger row moved.**
+
+---
+
+## 2026-08-24 — NB1 no-X defect FIXED: missing `hessian` kwarg (a wrong default, not a wrong algorithm)
+
+Follow-on to the Rung A entry above, which recorded the defect as `@test_broken`.
+Root-caused and fixed in the same day.
+
+**Root cause — a one-line omission with a documented contract to contradict.**
+`nb1_grouped_marginal_loglik_laplace` defaults to `hessian = :fisher`
+(`src/families/grouped_dispersion.jl:1154`). `fit_nb1_gllvm_grouped` declared **no
+`hessian` keyword at all**, so every no-X NB1 fit silently inherited the
+expected-information Laplace — which this file's own section header (line 1079)
+already flags as a *different objective*:
+
+> `# The fit/cov default hessian=:observed is the TMB Laplace curvature (different objective).`
+
+That header documents the contract for **fit *and* cov**. `fit_nb1_gllvm_grouped_cov`
+honoured it (`hessian::Symbol = :observed`, passed through); the no-X sibling did not.
+So the code contradicted its own stated contract, and the NB2
+(`fit_nb_gllvm_grouped`) and Beta (`fit_beta_gllvm_grouped`) siblings had both had the
+keyword all along. NB1 no-X was the lone straggler.
+
+This also explains every symptom cleanly: the optimiser was **not** failing — it was
+converging correctly to a *different objective*. Hence stability under `g_tol`
+1e-5→1e-10 and `newton_tol` 1e-9→1e-12, `converged == true` throughout, and a
+reproducible offset rather than noise.
+
+**Fix.** Give `fit_nb1_gllvm_grouped` the same `hessian::Symbol = :observed` default
+as its siblings and thread it into the objective. Two lines plus docstring.
+
+```
+twin gllvmTMB              = -1129.6667320371555
+no-X default (now :observed) = -1129.6667320237123   Δ = 1.3443241186905652e-8   ✓
+no-X hessian=:fisher         = -1129.7817843739615   Δ = -0.11505233680600213    (old default)
+zero-X _cov route            = -1129.6667320237116   Δ = 1.3443923307931982e-8
+```
+
+**A default changed, not a capability removed.** `hessian = :fisher` remains a
+legitimate expected-information objective and is still reachable explicitly; it was
+only ever wrong as a *silent default*. A regression testset now asserts that it stays
+reachable, stays a different objective, and stays strictly worse against TMB's — so
+the direction of the fix is pinned, not just its magnitude.
+
+**Verification.** Parity suite **195 pass / 0 broken / 0 failed, exit 0** — the
+NB1 `@test_broken` flipped back to `@test` and passes, and every previously-green cell
+stayed green in the same invocation. Full `Pkg.test()` run because `src/` changed
+(result recorded below). No tolerance widened; no seed changed.
+
+**Rose sweep — assume ten more of the same kind.** Audited *every* `fit_*_grouped*`
+entry point for the same omission:
+
+| Fitter | declares `hessian` | passes it |
+|---|---|---|
+| `fit_nb_gllvm_grouped` / `_cov` (NB2) | yes | yes |
+| `fit_beta_gllvm_grouped` / `_cov` | yes | yes |
+| `fit_gamma_gllvm_grouped` / `_cov` | yes | yes |
+| `fit_nb1_gllvm_grouped` / `_cov` | yes (**this fix**) | yes |
+| `fit_beta_binomial_gllvm_grouped` / `_cov` | no — **not applicable** | — |
+| `fit_tweedie_gllvm_grouped` | no — **not applicable** | — |
+
+The last two are **not** the same bug: beta-binomial explicitly documents *"No
+`hessian=:observed`/`:fisher` knob (G0 lock — FD-outer, ForwardDiff-inner)"* and
+`_tweedie_grouped_loglik_site` takes no `hessian` parameter, so in both cases no
+fisher/observed split exists and there is nothing to pass. Beta-binomial's no-X cell
+independently agrees with the twin at 6.15e-9, confirming it empirically. **NB1 was
+the only instance of this class.**
+
+---
+
+## 2026-08-24 — CORRECTION to the NB1 sweep scope, + truncated_nbinom2 (fid 11) verdict
+
+**Correcting the entry above.** It said *"NB1 was the only instance of this class."*
+That is true only **within the `fit_*_grouped*` routes I swept** — which is where the
+`hessian` fisher/observed keyword exists at all. It is **not** true of the codebase as
+a whole, and the unqualified sentence overstated the sweep.
+
+The generic Laplace core is **Fisher-only**: `src/families/laplace.jl:85,166` hard-codes
+`W .= _glm_weight.(...)  # Fisher weight wrt η`, with no `hessian` keyword anywhere.
+Every family routed through that core therefore uses expected information, while TMB
+always Laplaces with the **observed** joint Hessian.
+
+**Why that has not corrupted the cells already paid:** for the Poisson-class
+likelihoods at the canonical log link, `y` enters η linearly, so the observed and
+expected information coincide *pointwise* — Fisher ≡ observed, and the comparison is
+exact. That is precisely why truncated_poisson (fid 10) paid legitimately at ~2.7e-9
+through the Fisher core. lognormal is exact-Gaussian (no Laplace at all), and
+Gamma/NB1/BetaBinomial go through the grouped routes that *do* carry the keyword. So
+no paid receipt is affected — but the general claim was too broad, and is corrected
+here rather than left standing.
+
+### truncated_nbinom2 (twin fid 11) — VERDICT (b): structurally sound, NOT payable today
+
+Everything except the curvature matches, read from twin source:
+
+| Dimension | Twin | Julia (`_pertrait` route) | |
+|---|---|---|---|
+| Dispersion granularity | per-trait `log_phi_truncnb2`, length `n_traits` (`cpp:1187-1190`; map `fit-multi.R:5354-5355`) | per-trait `r_t`, pack tail `log r_1…log r_p` | MATCH |
+| Mean scale | untruncated `μ = exp(η)`, truncation via `−log(1−p0)` (`cpp:2806-2815`) | untruncated `μ`, `−log1p(−p0)` | MATCH |
+| Link | log only (`fit-multi.R:844-845`) | LogLink enforced | MATCH |
+| Laplace curvature | **observed** joint Hessian (TMB autodiff) | **Fisher** only — no keyword, no observed weight for `TruncatedNegBin2` exists | **MISMATCH** |
+
+For NB2-class likelihoods the observed curvature is **y-dependent** (via the
+`−(y+φ)·log(μ+φ)` term), so Fisher ≠ observed pointwise — unlike fid 10. A cell run
+today would therefore compare two different objectives: **the exact 0.115-class
+artifact just fixed for NB1, except here there is no keyword to flip.**
+
+Use the **per-trait** route when it is unblocked; the shared-scalar
+`fit_truncated_nbinom2_gllvm` adds a second mismatch (scalar vs per-trait) and must not
+be paired with the twin default.
+
+**Unblocking change** (a separate arc, `src/`): implement an observed-curvature weight
+for `TruncatedNegBin2` — `W_obs = −∂²/∂η²[log NB2(y; μ, φ) − log(1−p0)]` at log link,
+including the truncation-correction second derivative — and thread a `hessian` keyword
+through `fit_truncated_nbinom2_gllvm_pertrait` / `_truncnb2_pertrait_loglik_site`,
+mirroring the NB1 fix. The Arc1b amendment fences `laplace.jl` / `grouped_dispersion.jl`
+edits, so the weight belongs in `truncated_nbinom2.jl` beside the existing family-local
+site kernel.
+
+**Recorded as BLOCKED-pending-engine. No fit run spent, no Δ quoted.**
+
+---
+
+## 2026-08-24 — multinomial (twin fid 16) PAID: the ladder is now complete
+
+Last rung. Verdict from the source-grounded identity check was **(a) payable now**,
+and it was.
+
+**Why it needed its own oracle helper.** Every other cell reshapes a numeric `p×n`
+matrix and fits `value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE)`.
+Multinomial breaks that on both counts: the response is a **categorical factor column**
+(the twin expands it into `C−1` one-hot pseudo-trait rows internally,
+`R/gllvmTMB.R:1149` `expand_multinomial_response()`), and there is **no `latent(...)`
+term**, because Julia v1 is fixed-effects softmax only (`fit_multinomial_gllvm` throws
+on `K`/`num_lv`). The twin *does* support a no-covstruct multinomial fit, so FE-only is
+a genuine same-model comparison rather than a concession. New helper
+`fit_gllvmtmb_parity_loglik_multinomial`.
+
+```
+── multinomial FE logLik oracle (seed=57, ncat=4, n=400; twin fid 16) ──
+  Julia logLik          = -532.6016144503127
+  gllvmTMB logLik       = -532.6016144503104
+  Δ logLik (jl − r)     = -2.2737367544323206e-12
+```
+
+**Full suite: 208 pass / 0 broken / 0 failed, exit 0.**
+
+The Δ is ~1e-12 — three to four orders tighter than every Laplace-based cell — and that
+is *expected*, not luck: the FE softmax likelihood is exact and concave, with no Laplace
+approximation on either side, so both optimisers reach the same unique optimum. The
+fisher/observed curvature question that bit NB1 cannot arise here (no latent integral).
+
+**An independent anchor, not just engine-vs-engine.** For an intercept-only multinomial
+the MLE is the observed category frequency, so the maximised log-likelihood has a closed
+form. The cell asserts **both** engines against `Σ_c n_c log(n_c/n)`. Two engines
+agreeing tells you nothing if they share a mistake; matching an analytic value
+independently rules that out. Both matched.
+
+Two footguns are handled inside the helper rather than left to callers: factor levels
+are pinned to `as.character(1:ncat)` (bare `factor(y)` sorts levels as strings, so
+`ncat ≥ 10` would silently permute the baseline), and `baseline=` is deliberately not
+passed (the twin default is the first level = category 1 = Julia's `η₁ ≡ 0`).
+
+**Claim fence — the ledger row stays `missing` on purpose.** Engine + parity cell is not
+a surface admit. This cell licenses exactly one sentence: *FE-only softmax logLik parity
+with twin fid 16 at rtol 1e-6.* It does not cover the twin's latent/phylo/spatial
+multinomial surface (Design 123 — structurally absent in Julia) and does not admit
+multinomial to `fit_gllvm`/bridge dispatch.
+
+## Ladder status — every twin family is now resolved
+
+**PAID (12/17 no-X twin-verified):** gaussian 0 · binomial 1 · poisson 2 · lognormal 3 ·
+Gamma 4 · nbinom2 5 · Beta 7 · betabinomial 8 · truncated_poisson 10 · ordinal_probit 14 ·
+nbinom1 15 · multinomial 16.
+
+**BLOCKED (5/17), each with a written, source-cited reason and zero compute spent:**
+
+| fid | family | blocking reason |
+|---|---|---|
+| 6 | tweedie | grouped route carries previously recorded defects; a Δ would measure a defective route |
+| 9 | student | twin ESTIMATES ν (Julia fixes it) **and** twin per-trait scale vs Julia shared σ |
+| 11 | truncated_nbinom2 | NB2-class observed curvature is y-dependent; Julia core is Fisher-only with no keyword |
+| 12 | delta_lognormal | twin shares ONE η across both parts; Julia uses separate predictors — non-nested |
+| 13 | delta_gamma | same structural mismatch as fid 12 |
+
+**No twin family is now un-triaged.** The global *"Full family R↔Julia parity claim"*
+remains **`rejected`** — 12/17 is a count of no-X logLik-agreement cells at one fixed
+seed each, and nothing more.
+
+---
+
+## 2026-08-24 — truncated_nbinom2 (fid 11) UNBLOCKED and PAID: observed Laplace curvature
+
+The entry above recorded fid 11 as **(b) blocked pending an engine change**: everything
+matched the twin except the Laplace curvature, and there was no keyword to flip. That
+engine change is now made, and the cell is paid.
+
+### Derivation (done before any engine code, verified before being trusted)
+
+For zero-truncated NB2 at the **log link**, with
+`ℓ = log NB2(y; μ, r) − log(1 − p₀)` and `p₀ = (r/(r+μ))^r`:
+
+```
+−∂²ℓ/∂η² = μr(y+r)/(μ+r)²  −  p₀A²/(1−p₀)²  +  [p₀/(1−p₀)]·μr²/(μ+r)²
+                                                        with A = −μr/(μ+r)
+```
+
+Verified against **ForwardDiff**: max relative error **1.8e-13** over 125 (μ, r, y)
+cells spanning μ ∈ [0.5, 25], r ∈ [0.3, 50], y ∈ [1, 40].
+
+**A methodological note worth keeping.** The first verification used central finite
+differences at `h = 1e-5` and reported the derivation WRONG at ~1e-5 relative error.
+That was the *instrument*, not the formula: a second central difference carries
+roundoff ≈ `eps/h² ≈ 2e-6`, so the 1e-6 pass threshold was tighter than the method
+could resolve. The verifier was less accurate than the thing being verified. Switching
+to AD settled it at machine precision. Trusting the first result would have discarded a
+correct derivation.
+
+**Why this term is the whole story:** substituting `E[y] = μ` into the first term
+recovers `μr/(μ+r)`, the untruncated NB2 **Fisher** weight. So `y` genuinely enters the
+observed curvature — which is exactly why fid 11 was blocked while fid 10 was not
+(there `y` enters `η` linearly, observed ≡ Fisher pointwise, and the Fisher-core cell
+paid legitimately at ~2.7e-9).
+
+### Result
+
+```
+── truncated_nbinom2 logLik oracle (seed=58, p=5, K=1, n=120, per-trait r; twin fid 11) ──
+  Julia logLik          = -1375.39137543662
+  gllvmTMB logLik       = -1375.3913738604654
+  Δ logLik (jl − r)     = -1.57615454554616e-6
+```
+
+Full suite: **219 pass / 0 broken / 0 failed, exit 0.**
+
+Before/after, same data and seed — the fix moved the number, which is the only thing
+that makes it worth having:
+
+| objective | logLik | Δ vs twin | relative | vs rtol 1e-6 |
+|---|---|---|---|---|
+| `:fisher` (previously the only option) | −1375.4059371497754 | −0.01456 | 1.06e-5 | **fails** |
+| `:observed` (new default) | −1375.39137543662 | −1.576e-6 | **1.15e-9** | **passes** |
+
+### What changed
+
+- `_truncnb2_observed_weight` — the analytic observed curvature, log link only (the twin
+  restricts fid 11 to log at `R/fit-multi.R:844-845`).
+- `_truncnb2_laplace_weight` — `:fisher` / `:observed` dispatch, mirroring
+  `_nb_grouped_laplace_weight`.
+- `hessian::Symbol = :observed` threaded through
+  `fit_truncated_nbinom2_gllvm_pertrait` → `_truncnb2_pertrait_loglik_site`.
+- **Mode solve deliberately left on the Fisher weight.** The mode is where the joint
+  gradient vanishes (`Λ's − z = 0`), which does not involve the weight; Fisher scoring
+  and Newton reach the same fixed point by different paths. Only the Laplace **log-det**
+  needs the observed curvature, and that is the only place it was changed.
+- A default changed, not a capability removed: `:fisher` remains a legitimate
+  expected-information objective, still reachable, with a regression test asserting it
+  stays a *different* objective so the fix's direction is pinned.
+
+### Robustness hole found and closed in passing
+
+The smoke test's invalid-symbol check printed nothing. Cause: an invalid `hessian`
+throws **inside** `negll`, whose `try/catch` converts any throw into `1e12` — so a
+typo'd symbol would have returned a converged-looking garbage fit instead of an error.
+Validation now happens up front, beside the link check, with
+`@test_throws ArgumentError` covering it.
+
+### Coverage
+
+**No-X twin-verified coverage 12/17 → 13/17.** Remaining blocked: tweedie (6),
+student (9), delta_lognormal (12), delta_gamma (13) — the last three are identity
+mismatches that no keyword can reach, and tweedie waits on its own route defects. The
+global *"Full family R↔Julia parity claim"* stays **`rejected`**.
+
+---
+
+## 2026-08-24 — SYSTEMIC FINDING: the Fisher-vs-observed Laplace fault is SIX instances, not two
+
+The two engine bugs fixed today (NB1, truncated_nbinom2) were **not two slips**. A
+multi-agent sweep across the remaining families, with each verdict adversarially
+reviewed, found the same fault class **six** times. The root cause is structural:
+**two shared substrates have no observed-curvature knob at all** —
+`src/families/laplace.jl` (the generic core, Fisher hard-coded at `:85`/`:166`, no
+`hessian` kwarg) and the two-part substrate in `src/families/twopart.jl`.
+
+TMB always Laplaces with the **observed** joint Hessian. Where `y` enters `η` linearly
+the two coincide pointwise and the Fisher weight is correct; where it does not, the
+reported log-likelihood — and the outer estimates that depend on it — are wrong while
+the fit still converges and looks healthy. That is the "plausible wrong number"
+signature.
+
+### Confirmed wrong (y genuinely enters −∂²ℓ/∂η²)
+
+| # | Family | Site | shipped (Fisher) | correct (observed) | status |
+|---|---|---|---|---|---|
+| 1 | NB1 | `negbin1.jl:77` | `_nb1_fisher_mu` | — | **fixed today** (grouped route) |
+| 2 | TruncatedNegBin2 | `truncated_nbinom2.jl:52` | Fisher only | derived today | **fixed today**; NOT yet on `origin/main` |
+| 3 | Tweedie | `tweedie.jl:26` | `μ^{2−p}/φ` | `(1/φ)μ^{1−p}[(2−p)μ+(p−1)y]` | open |
+| 4 | Student-t | `studentt.jl:75` | `(ν+1)/((ν+3)σ²)` — *constant* | `(ν+1)(νσ²−r²)/(νσ²+r²)²` | open |
+| 5 | DeltaGamma | `twopart.jl:603-615` | `Wc = α` | `α·y/μ` | open |
+| **6** | **Exponential** | **`exponential.jl:9`** | **`me²/μ² = 1` at log link** | **`y/μ`** | **open — NEW** |
+
+### Instance 6 (Exponential) is the one to act on first
+
+`_glm_weight(::Exponential, μ, n, me) = me^2 / μ^2`, which at the log link is the
+**constant 1**. The file's own header states the intent outright: *"expected
+information ⇒ W ≥ 0"*. Verified here against ForwardDiff (`−∂²ℓ/∂η² = y/μ`, max
+relative error **1.9e-16** over 16 (μ, y) cells):
+
+```
+   mu      y    W_shipped   W_observed   AD(-d2l/deta2)
+ 0.50   9.00     1.000000    18.000000        18.000000
+ 2.00   0.10     1.000000     0.050000         0.050000
+ 7.00   9.00     1.000000     1.285714         1.285714
+```
+
+An **18× error** in the log-det term at (μ=0.5, y=9), not a rounding difference.
+`E[y] = μ` recovers `1`, confirming the shipped value is exactly the expectation of
+the correct one — the signature of this whole fault class.
+
+Three properties make this the priority: (a) the correct formula **already exists in
+this repo** at `grouped_dispersion.jl:747` (`α·y/μ` for Gamma/log, and Exponential is
+Gamma at α = 1); (b) Exponential has **no grouped route and no observed path
+anywhere**, so *every* Exponential fit the package ships is affected and no user can
+reach a correct one; (c) it was invisible precisely **because Exponential was never a
+parity target** — no test compares it to anything that would notice.
+
+That last point is the lesson: the parity campaign found this bug not by testing
+Exponential, but by making the fault class legible enough to go looking.
+
+### Confirmed CORRECT — verified, do not touch
+
+Poisson (`poisson.jl:7`), Binomial-logit (`binomial.jl:29`), Normal, DeltaLogNormal
+(`twopart.jl:173-175`), TruncatedPoisson (`truncated_poisson.jl:35`), HurdlePoisson
+`Wc` (`twopart.jl:325`) — in each, `y` enters `η` linearly, the curvature is y-free,
+and observed ≡ Fisher pointwise.
+
+**Ordinal (`ordinal.jl:61-74`) is already observed** — the one place the codebase gets
+this right by construction: `_ord_score_weight` takes the *observed category* and
+returns `(dP/P)² − d²P/P = −∂²logP/∂η²`. Two notes: its `max(·, 0)` clamp is benign for
+log-concave links (logit/probit) but **must not be copied to Student-t**, whose
+observed curvature is genuinely negative for `|r| > σ√ν` — clamping there would
+silently diverge from TMB. And `ordinal.jl:16` carries a stale header comment
+describing a Fisher form; the implementation is correct, the doc is not.
+
+### Fix-scope fork (needs a maintainer decision)
+
+- **Per-family patches** — each family needs its own site kernel, because the generic
+  core cannot carry a `hessian` kwarg today. Repeats the truncNB2 pattern 4×, each
+  with its own full-suite gate. Low blast radius, high duplication.
+- **Substrate fix** — give `laplace.jl` an optional `hessian` kwarg and fix all
+  remaining instances at once. Correct at the root, but `laplace.jl` is fenced by the
+  Arc1b amendment and the blast radius covers every family routed through it.
+
+**Not decided here.** Recorded so the finding is durable and the fork is explicit.
+
+---
+
+## 2026-08-24 — Exponential observed curvature FIXED, with a correction to its impact
+
+Instance 6 from the systemic entry above is fixed. Two things to record straight: what
+the fix is, and a measurement I initially got wrong.
+
+### The fix
+
+`_glm_weight(::Exponential)` is the **expected** information — the constant `1` at the
+log link. TMB uses the **observed** Hessian, `y/μ` (AD-verified to 1.9e-16). The
+generic core (`laplace.jl`) hard-codes Fisher, has no `hessian` keyword, and is fenced
+by the Arc1b amendment — so `exponential_marginal_loglik_laplace` now routes the
+`:observed` branch through the **Gamma grouped** kernel at `α ≡ 1`, which already
+implements `α·y/μ` and accepts `hessian`. Exponential is exactly Gamma(shape 1):
+`_glm_logpdf` agrees to 4.4e-16, `_glm_score` agrees exactly.
+
+`hessian=:observed` is now the default on `exponential_marginal_loglik_laplace` and
+`fit_exponential_gllvm`; the symbol is validated up front (the objective's `try/catch`
+would otherwise launder a typo into a large penalty and a converged-looking fit).
+
+### CORRECTION — the practical impact is ~0.23 loglik, not ~530
+
+An intermediate measurement suggested the shipped Fisher path produced catastrophically
+wrong estimates (‖Λ‖ ≈ 960 against a true 0.38; ~530 loglik lost). **That was an
+artifact of the fix under construction, not a property of the shipped code**, and the
+claim is withdrawn.
+
+Cause: the first version routed **both** branches through the Gamma grouped kernel.
+That kernel uses `_grouped_laplace_mode`, whereas the generic core carries
+restart/backtracking safety (`_laplace_mode_should_backtrack`). The two agree
+bit-for-bit at a fixed `(Λ, β)` — which is exactly why the substitution looked safe —
+but under optimisation the missing safety let ‖Λ‖ run away. I then compared that broken
+branch against the corrected one and read the gap as damage in the shipped engine.
+
+Measured correctly, on the same p=5, K=1, n=80 fixture (seed 61):
+
+| path | loglik | ‖Λ‖ (true 0.3815) |
+|---|---|---|
+| original shipped (generic core, Fisher) | −711.4159531651619 | 0.4442 |
+| `:fisher` after the fix | −711.4159531651619 | 0.4442 |
+| `:observed` (new default) | −711.1895165112529 | 0.4889 |
+
+**Practical impact: 0.226 loglik.** Real, and the weight is objectively wrong against
+TMB — but modest, and the shipped estimates were never degenerate.
+
+### Consequence for the fix itself
+
+`:fisher` is now routed back through the **original generic core**, not the grouped
+kernel, so it reproduces pre-2026-08-24 behaviour **bit-for-bit** (verified: `Δ = 0.0`
+at fixed parameters, and the fit matches to the last digit). That restores the property
+the other two fixes have — a default corrected, not a capability altered — which the
+first version had silently broken.
+
+A test now locks all of it (`test/test_exponential.jl`, 22/22): the two curvatures
+differ; `:fisher` equals the generic core exactly; the observed weight equals `y/μ`;
+both fits converge without degenerating; invalid symbols throw.
+
+### Lesson worth keeping
+
+Agreement at a fixed parameter point does **not** imply agreement under optimisation.
+Two Laplace paths can return identical values everywhere you check and still diverge,
+because the mode *solver* differs even when the objective does not. Any future
+"delegate this family to that kernel" move must be checked by **fitting**, not only by
+evaluating.
+
+---
+
+## 2026-08-24 — RANKING the three open curvature instances (measurement, not guesswork)
+
+Three instances of the Fisher-vs-observed fault remain open (tweedie 6, student 9,
+DeltaGamma 12/13). Rather than fix them in a guessed order at ~80 min of suite time
+each, they were **measured** first. Cheap: the Laplace mode is gradient-determined and
+therefore *identical* under either weight, so the entire impact is the log-det term —
+`½ Σ_sites [logdet(A_fisher) − logdet(A_observed)]` at the same mode. No refit, no
+engine change.
+
+### Step 1 — the candidate observed formulas, verified against ForwardDiff
+
+| family | shipped (Fisher) | observed `−∂²ℓ/∂η²` | max rel err vs AD |
+|---|---|---|---|
+| Tweedie (log) | `μ^{2−p}/φ` | `(1/φ)μ^{1−p}[(2−p)μ + (p−1)y]` | **8.9e-16** |
+| Student-t (identity) | `(ν+1)/((ν+3)σ²)` — a **constant** | `(ν+1)(νσ²−r²)/(νσ²+r²)²` | **1.2e-15** |
+| DeltaGamma (log) | `α` — a **constant** | `α·y/μ` | **3.1e-14** |
+
+All three shipped weights are **y-free**; all three correct ones are not. Confirmed
+independently, not inherited from the sweep.
+
+### Step 2 — measured impact on the reported logLik (p=5, K=1, n=120, true parameters)
+
+| family | logLik impact | `A_obs` not PD | min eigenvalue |
+|---|---|---|---|
+| **DeltaGamma** | **+3.2128** | 0/120 | 1.158 |
+| Tweedie | +0.2414 | 0/120 | 1.177 |
+| Student-t | −0.1720 | 0/120 | 1.022 |
+| *(Exponential, already fixed)* | *+0.226* | — | — |
+
+**Ranking: DeltaGamma ≫ Tweedie ≈ Exponential ≈ Student-t.** DeltaGamma is ~13× the
+others and is the only one materially above the already-fixed Exponential baseline.
+
+**This contradicts the prior expectation.** Student-t looked like the worst candidate —
+its Fisher weight is a literal constant, structurally the same shape as Exponential's
+constant `1`. It measures **smallest**, and with the opposite sign (observed reports a
+*lower* logLik there). The intuition was wrong; 20 minutes of measurement beat it.
+
+### Step 3 — the Student-t positive-definiteness worry, tested rather than assumed
+
+Student-t's observed weight is genuinely **negative** where `|r| > σ√ν` — 37 of 90
+probe cells (41%) — which raised the concern that `A = Λ'W_obsΛ + I` could lose
+positive-definiteness and make the log-det undefined. Swept ‖Λ‖ over an order of
+magnitude, 200 sites each:
+
+```
+ Lambda scale   |Lambda|   sites NOT PD    min eig
+         0.25     0.5458        0/200       1.0384
+         1.00     2.1833        0/200       1.5862
+         2.00     4.3667        0/200       2.4656
+         5.00    10.9167        0/200      22.7927
+```
+
+**PD held at every scale, in 1400 site-solves — and the minimum eigenvalue *increases*
+with ‖Λ‖.** The mode adapts so residuals stay moderate, and traits with positive weight
+dominate the aggregate. So the concern is real per-observation but did **not**
+materialise as an indefinite matrix. It is not a blocker. A cheap `isposdef` guard is
+still worth adding when Student-t is fixed (p=5, K=1 is not a proof), but it should be
+insurance, not a redesign.
+
+### Consequence for sequencing
+
+**DeltaGamma first** — largest impact, and it sits in the `twopart.jl` substrate. Note
+its unblocking is *not* only the curvature: the two-part substrate also lacks per-trait
+dispersion, and `_tp_pieces` receives no trait index, so that change touches the shared
+signature ~10 families implement. Curvature alone is the cheap half and is worth doing
+on its own merits — the inner mode is unaffected (the score is correct), so the error
+lives purely in `−½logdet A`, biasing the reported logLik *and* the outer estimates
+while the fit still converges and looks healthy.
+
+Tweedie and Student-t are ~0.2 — real, worth fixing, but not urgent, and Tweedie
+additionally needs its power-parameter granularity settled before any twin cell.

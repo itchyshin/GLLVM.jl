@@ -56,6 +56,49 @@ function _glm_weight(f::TruncatedNegBin2, μ, n, me)
     return (a * me / μ)^2 * var_tr
 end
 
+# Exact negative conditional curvature −∂²ℓ/∂η² for zero-truncated NB2 at the LOG
+# link, where ℓ = log NB2(y; μ, r) − log(1 − p₀) and p₀ = (r/(r+μ))^r.
+#
+# This is the curvature TMB's Laplace uses (observed joint Hessian). It differs from
+# the Fisher weight above because the NB2 term is **y-dependent**:
+#
+#   −∂²ℓ_nb/∂η²    = μ r (y + r) / (μ + r)²                        (y enters here)
+#   −∂²ℓ_trunc/∂η² = −p₀A²/(1−p₀)² + [p₀/(1−p₀)]·μr²/(μ+r)²,   A = −μr/(μ+r)
+#
+# Substituting E[y] = μ in the first term recovers μr/(μ+r), the untruncated NB2
+# Fisher weight — which is precisely why Fisher ≢ observed here, unlike truncated
+# Poisson (fid 10), where y enters η linearly and the two coincide pointwise. That
+# distinction is why the fid-10 cell paid legitimately through the Fisher core while
+# fid 11 could not.
+#
+# Verified against ForwardDiff to a max relative error of 1.8e-13 over 125 (μ, r, y)
+# cells spanning μ ∈ [0.5, 25], r ∈ [0.3, 50], y ∈ [1, 40].
+#
+# Log link only: the twin restricts fid 11 to the log link (`R/fit-multi.R:844-845`)
+# and the Julia fitters enforce `LogLink` as well.
+function _truncnb2_observed_weight(f::TruncatedNegBin2, μ, y, link::Link)
+    link isa LogLink || throw(ArgumentError(
+        "hessian=:observed for truncated_nbinom2 is supported only with LogLink()"))
+    r = f.r
+    s = μ + r
+    nb = μ * r * (y + r) / s^2
+    p0 = (r / s)^r
+    # p₀ → 1 as μ → 0; fall back to the Fisher weight rather than dividing by ~0.
+    p0 ≥ 1 - eps(typeof(float(μ))) && return _glm_weight(f, μ, 1, μ)
+    om = 1 - p0
+    A = -μ * r / s
+    return nb - p0 * A^2 / om^2 + (p0 / om) * μ * r^2 / s^2
+end
+
+# Dispatch helper, mirroring `_nb_grouped_laplace_weight` in grouped_dispersion.jl.
+function _truncnb2_laplace_weight(hessian::Symbol, f::TruncatedNegBin2, μ, me, y,
+        link::Link)
+    hessian === :fisher && return _glm_weight(f, μ, 1, me)
+    hessian === :observed || throw(ArgumentError(
+        "hessian must be :fisher or :observed; got :$hessian"))
+    return _truncnb2_observed_weight(f, μ, y, link)
+end
+
 function _glm_logpdf(f::TruncatedNegBin2, μ, n, y)
     yi = Int(y)
     yi < 1 && return oftype(μ, -Inf)
@@ -69,15 +112,34 @@ end
 _laplace_mode_should_backtrack(::TruncatedNegBin2) = true
 
 """
-    truncated_nbinom2_marginal_loglik_laplace(Y, Λ, β, r; link=LogLink(), kwargs...) -> Float64
+    truncated_nbinom2_marginal_loglik_laplace(Y, Λ, β, r; link=LogLink(),
+                                              hessian=:observed, kwargs...) -> Float64
 
 Laplace log-marginal for a zero-truncated NB2 GLLVM with shared dispersion `r`.
 `Y` must be integer counts with every observed cell `≥ 1`.
+
+`hessian=:observed` (the default) uses TMB's observed Laplace curvature;
+`hessian=:fisher` retains the expected-information approximation.
+
+Implemented as the **equal-`r_t` special case** of
+[`truncated_nbinom2_pertrait_marginal_loglik_laplace`](@ref) rather than through the
+generic Laplace core. Two reasons (2026-08-24):
+
+1. The generic core hard-codes the **Fisher** weight with no `hessian` keyword, so
+   routing through it would leave the shared route on a different objective from TMB —
+   and from the per-trait route, which now defaults to `:observed`.
+2. It makes *"equal `r_t` reduces to shared `r`"* true **by construction** instead of
+   an invariant that has to be asserted and can silently break. That invariant
+   (`test/test_truncated_nbinom2.jl` "Arc1b: equal r_t reduces to shared-r ll") is
+   exactly what caught the asymmetry when only the per-trait route was converted.
+
+`laplace.jl` is deliberately untouched (Arc1b amendment fences it).
 """
 truncated_nbinom2_marginal_loglik_laplace(Y::AbstractMatrix,
         Λ::AbstractMatrix, β::AbstractVector, r::Real;
         link::Link = LogLink(), kwargs...) =
-    marginal_loglik_laplace(TruncatedNegBin2(float(r)), Y, ones(Int, size(Y)), Λ, β, link; kwargs...)
+    truncated_nbinom2_pertrait_marginal_loglik_laplace(
+        Y, Λ, β, fill(float(r), size(Λ, 1)); link = link, kwargs...)
 
 """
     TruncatedNegBin2Fit
@@ -116,11 +178,17 @@ Throws if any observed cell is `< 1`.
 """
 function fit_truncated_nbinom2_gllvm(Y::AbstractMatrix; K::Integer,
         link::Link = LogLink(), mask = nothing, offset = nothing,
+        hessian::Symbol = :observed,
         β_init = nothing, Λ_init = nothing, r_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     link isa LogLink || throw(ArgumentError(
         "fit_truncated_nbinom2_gllvm: only LogLink is supported (twin truncated_nbinom2)"))
+    # Validated up front, NOT inside negll: that objective wraps its body in a
+    # try/catch converting any throw into 1e12, which would launder a typo'd symbol
+    # into a converged-looking garbage fit.
+    hessian in (:observed, :fisher) || throw(ArgumentError(
+        "fit_truncated_nbinom2_gllvm: hessian must be :observed or :fisher; got :$hessian"))
     p, n = size(Y)
     rr = rr_theta_len(p, K)
     msk = mask === nothing ? (any(ismissing, Y) ? observed_mask(Y) : nothing) : mask
@@ -165,8 +233,9 @@ function fit_truncated_nbinom2_gllvm(Y::AbstractMatrix; K::Integer,
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
         r = exp(θ[p + rr + 1])
         v = try
-            -marginal_loglik_laplace(TruncatedNegBin2(float(r)), Yc, N1, Λ, β, link;
-                                     mask = msk, offset = offset,
+            -truncated_nbinom2_marginal_loglik_laplace(Yc, Λ, β, r;
+                                     link = link, mask = msk, offset = offset,
+                                     hessian = hessian,
                                      maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
@@ -192,15 +261,20 @@ end
 
 function _truncnb2_pertrait_loglik_site(fams::AbstractVector, y::AbstractVector,
         n::AbstractVector, Λ::AbstractMatrix, β::AbstractVector, link::Link;
-        mask = nothing, offset = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
+        mask = nothing, offset = nothing, hessian::Symbol = :observed,
+        maxiter::Integer = 100, tol::Real = 1e-9)
     p, K = size(Λ)
     off = offset === nothing ? false : offset
+    # NOTE: the mode solve stays on the Fisher weight (`_grouped_laplace_mode`), which
+    # is a Fisher-scoring iteration. That affects only HOW the mode is found, not the
+    # objective — the log-det below is what defines the Laplace approximation, and it
+    # is the term that must carry TMB's observed curvature.
     z = _grouped_laplace_mode(fams, y, n, Λ, β, link;
                               mask = mask, offset = offset, maxiter = maxiter, tol = tol)
     η  = _clamp_eta.(β .+ off .+ Λ * z)
     μ  = _clamp_mu.(fams, linkinv.(Ref(link), η))
     me = mu_eta.(Ref(link), η)
-    W  = _glm_weight.(fams, μ, n, me)
+    W  = _truncnb2_laplace_weight.(Ref(hessian), fams, μ, me, y, Ref(link))
     if mask !== nothing
         W = ifelse.(mask, W, 0.0)
     end
@@ -269,21 +343,42 @@ function Base.show(io::IO, f::TruncatedNegBin2PerTraitFit)
 end
 
 """
-    fit_truncated_nbinom2_gllvm_pertrait(Y; K, link=LogLink(), …) -> TruncatedNegBin2PerTraitFit
+    fit_truncated_nbinom2_gllvm_pertrait(Y; K, link=LogLink(), hessian=:observed, …)
+        -> TruncatedNegBin2PerTraitFit
 
 Fit a zero-truncated NB2 GLLVM with **per-trait** dispersion by Laplace + LBFGS
 over `[β; pack(Λ); log r_1 … log r_p]` (length `p+rr+p`). Twin-aligned:
 `r_t` ≡ `φ_t = exp(log_phi_truncnb2[t])`; log link on untruncated `μ`;
-support `y ≥ 1`. Score/weight keep `a = r_t/(r_t+μ)` (Sol 2026-08-15).
+support `y ≥ 1`. Score keeps `a = r_t/(r_t+μ)` (Sol 2026-08-15).
 Throws if any observed cell is `< 1`.
+
+`hessian=:observed` (the default) uses the exact conditional truncated-NB2/log
+curvature that TMB's Laplace objective uses; `hessian=:fisher` retains the
+expected-information approximation.
+
+!!! note "Why the default is `:observed` (2026-08-24)"
+    Both truncated-NB2 routes previously used the Fisher weight with no way to
+    select otherwise, so the Laplace log-det term was built from expected rather
+    than observed information — **a different objective from TMB's**, which made a
+    twin parity cell for fid 11 meaningless. Unlike truncated Poisson (fid 10),
+    where `y` enters `η` linearly so the two curvatures coincide pointwise, the
+    NB2 curvature is y-dependent through `−(y+r)·log(μ+r)`; the difference is real
+    and is the same class of fault fixed for NB1 the same day. The observed weight
+    is `_truncnb2_observed_weight`, verified against ForwardDiff to 1.8e-13.
 """
 function fit_truncated_nbinom2_gllvm_pertrait(Y::AbstractMatrix; K::Integer,
         link::Link = LogLink(), mask = nothing, offset = nothing,
+        hessian::Symbol = :observed,
         β_init = nothing, Λ_init = nothing, r_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     link isa LogLink || throw(ArgumentError(
         "fit_truncated_nbinom2_gllvm_pertrait: only LogLink is supported (twin truncated_nbinom2)"))
+    # Validate here, NOT inside negll: the objective wraps its body in a try/catch that
+    # converts any throw into 1e12, so a typo'd symbol would otherwise be swallowed and
+    # silently return a garbage fit instead of failing loudly.
+    hessian in (:observed, :fisher) || throw(ArgumentError(
+        "fit_truncated_nbinom2_gllvm_pertrait: hessian must be :observed or :fisher; got :$hessian"))
     p, n = size(Y)
     rr = rr_theta_len(p, K)
     msk = mask === nothing ? (any(ismissing, Y) ? observed_mask(Y) : nothing) : mask
@@ -338,7 +433,7 @@ function fit_truncated_nbinom2_gllvm_pertrait(Y::AbstractMatrix; K::Integer,
         rvec = exp.(θ[(p + rr + 1):(p + rr + p)])
         v = try
             -truncated_nbinom2_pertrait_marginal_loglik_laplace(Yc, Λ, β, rvec;
-                    link = link, mask = msk, offset = offset,
+                    link = link, mask = msk, offset = offset, hessian = hessian,
                     maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12

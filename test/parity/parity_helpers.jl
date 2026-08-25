@@ -57,19 +57,49 @@ no-X formula:
 value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE)
 ```
 
-`family` ∈ `(:gaussian, :binomial, :poisson, :negbinomial, :beta)`. Returns
-`(logLik, objective, converged)`.
+`family` ∈ `(:gaussian, :binomial, :poisson, :lognormal, :negbinomial, :beta,
+:truncated_poisson)`. Returns `(logLik, objective, converged)`.
 
 For `:negbinomial` / `:beta`, R defaults estimate per-trait dispersion; pair
 with Julia grouped fitters (`disp_group=:species`), not shared-dispersion defaults.
+
+`:lognormal` (twin fid 3) is the one no-X family where per-trait dispersion would
+be WRONG: the twin ties a **shared scalar** `sigma_eps` across traits, so pair it
+with `fit_lognormal_gllvm` (scalar `σ`), never a grouped fitter. Its reported
+log-likelihood is on the **y scale** and must include the change-of-variables
+Jacobian `−Σ log y` on both sides (Identity
+`docs/dev-log/decisions/2026-08-15-lognormal-identity.md`).
+
+`:truncated_nbinom2` (twin fid 11) carries **per-trait** dispersion
+`log_phi_truncnb2` (`src/gllvmTMB.cpp:1187-1190`), so pair it with
+`fit_truncated_nbinom2_gllvm_pertrait`, never the shared-scalar
+`fit_truncated_nbinom2_gllvm`. Log link only; support `y ≥ 1`; η on the untruncated
+mean. Its Laplace log-det must use `hessian = :observed` to match TMB — the NB2
+curvature is y-dependent, unlike fid 10 (Identity
+`docs/dev-log/decisions/2026-08-15-truncated-nbinom2-identity.md`).
+
+`:truncated_poisson` (twin fid 10) has no dispersion. η is on the **untruncated**
+mean `μ = exp(η)`; the twin's `linkinv` returns the truncated mean
+`λ/(1−e^{−λ})` for GLM display only — never compare a mean-scale quantity, only
+the log-likelihood (Identity
+`docs/dev-log/decisions/2026-08-15-truncated-poisson-identity.md`).
 """
-function fit_gllvmtmb_parity_loglik(y::AbstractMatrix, K::Integer; family::Symbol)
-    family in (:gaussian, :binomial, :poisson, :negbinomial, :beta) ||
+function fit_gllvmtmb_parity_loglik(y::AbstractMatrix, K::Integer; family::Symbol,
+        N::Union{Nothing, AbstractMatrix{<:Real}} = nothing)
+    family in (:gaussian, :binomial, :poisson, :lognormal, :gamma, :negbinomial,
+               :nb1, :beta, :betabinomial, :truncated_poisson, :truncated_nbinom2) ||
         throw(ArgumentError("unsupported parity family: $family"))
     p, n = size(y)
+    family === :betabinomial && N === nothing &&
+        throw(ArgumentError("family = :betabinomial requires trial counts N (p×n)"))
+    if N !== nothing
+        size(N) == (p, n) ||
+            throw(DimensionMismatch("N must be $(p)×$(n); got $(size(N))"))
+    end
     fam = String(family)
+    trials = N === nothing ? fill(1.0, p, n) : Float64.(N)
     _parity_require_gllvmtmb!()
-    @rput y K p n fam
+    @rput y K p n fam trials
 
     R"""
     trait_names <- paste0("t", seq_len(p))
@@ -79,19 +109,29 @@ function fit_gllvmtmb_parity_loglik(y::AbstractMatrix, K::Integer; family::Symbo
         value = as.vector(y)   # column-major on p×n ⇒ site blocks
     )
     fam_obj <- switch(fam,
-        gaussian     = stats::gaussian(),
-        binomial     = stats::binomial(),
-        poisson      = stats::poisson(),
-        negbinomial  = gllvmTMB::nbinom2(),
-        beta         = gllvmTMB::Beta(),
+        gaussian          = stats::gaussian(),
+        binomial          = stats::binomial(),
+        poisson           = stats::poisson(),
+        lognormal         = gllvmTMB::lognormal(),
+        gamma             = stats::Gamma(link = "log"),
+        negbinomial       = gllvmTMB::nbinom2(),
+        nb1               = gllvmTMB::nbinom1(),
+        beta              = gllvmTMB::Beta(),
+        betabinomial      = gllvmTMB::betabinomial(),
+        truncated_poisson = gllvmTMB::truncated_poisson(),
+        truncated_nbinom2 = gllvmTMB::truncated_nbinom2(),
         stop(sprintf("unknown family: %s", fam))
     )
+    # betabinomial/binomial rows: `weights` = per-row trial count (twin API B);
+    # NULL for every other family (lme4-style per-observation multiplier).
+    weights_vec <- if (identical(fam, "betabinomial")) as.vector(trials) else NULL
     fit_r <- gllvmTMB(
         value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE),
         data = df_long,
         unit = "site",
         trait = "trait",
         family = fam_obj,
+        weights = weights_vec,
         control = gllvmTMBcontrol(n_init = 1L, se = FALSE)
     )
     .gllvm_parity_last <<- list(
@@ -303,4 +343,75 @@ function parity_loadings_p5k2()
        -0.2   0.5
         0.1   0.3
     ]
+end
+
+"""
+    fit_gllvmtmb_parity_loglik_multinomial(y, ncat) -> NamedTuple
+
+Twin oracle for **multinomial (twin fid 16)**. Deliberately NOT part of
+[`fit_gllvmtmb_parity_loglik`](@ref): every other cell reshapes a numeric `p×n`
+matrix and fits `value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE)`.
+Multinomial differs on both counts —
+
+* the response is a **single categorical (factor) column** on the formula LHS, not a
+  numeric cell value; the twin expands it internally into `K−1` one-hot pseudo-trait
+  rows (`R/gllvmTMB.R` `expand_multinomial_response()`), and
+* there is **no `latent(...)` term**, because GLLVM.jl's v1 multinomial is
+  fixed-effects softmax only (no LV — `fit_multinomial_gllvm` throws on `K`/`num_lv`).
+  The twin supports a no-covstruct multinomial fit, so the FE-only shape is a genuine
+  same-model comparison rather than a concession.
+
+`y` is a length-`n` integer vector of category codes `1..ncat` (`ncat ≥ 3`; a
+2-category response is binomial and the twin rejects it). Returns
+`(logLik, objective, converged)`.
+
+Two footguns are handled here rather than left to callers:
+
+1. **Explicit factor levels.** `factor(y)` sorts levels as *strings*, so with
+   `ncat ≥ 10` the baseline would silently permute ("10" sorts before "2"). Levels are
+   pinned to `as.character(1:ncat)`.
+2. **No `baseline=` argument.** The twin's default reference is the first level, which
+   under those pinned levels is category 1 — exactly Julia's `η₁ ≡ 0`. Passing
+   `baseline` would risk disagreeing with the Julia convention.
+"""
+function fit_gllvmtmb_parity_loglik_multinomial(y::AbstractVector{<:Integer},
+        ncat::Integer)
+    ncat >= 3 || throw(ArgumentError(
+        "multinomial parity needs ncat ≥ 3 (a 2-category response is binomial)"))
+    all(v -> 1 <= v <= ncat, y) ||
+        throw(ArgumentError("y must hold category codes in 1..$ncat"))
+    n = length(y)
+    yv = collect(Int, y)
+    _parity_require_gllvmtmb!()
+    @rput yv ncat n
+
+    R"""
+    lev <- as.character(seq_len(ncat))
+    df_long <- data.frame(
+        unit  = factor(seq_len(n)),
+        trait = factor(rep("t1", n)),
+        value = factor(as.character(yv), levels = lev)
+    )
+    # No latent(...) term: GLLVM.jl v1 multinomial is fixed-effects softmax only.
+    fit_r <- gllvmTMB(
+        value ~ 0 + trait,
+        data = df_long,
+        unit = "unit",
+        trait = "trait",
+        family = multinomial(),
+        control = gllvmTMBcontrol(n_init = 1L, se = FALSE)
+    )
+    .gllvm_parity_multinom <<- list(
+        logL      = as.numeric(stats::logLik(fit_r)),
+        objective = as.numeric(fit_r$opt$objective),
+        converged = identical(as.integer(fit_r$opt$convergence), 0L)
+    )
+    invisible(NULL)
+    """
+
+    return (
+        logLik = rcopy(Float64, R".gllvm_parity_multinom$logL"),
+        objective = rcopy(Float64, R".gllvm_parity_multinom$objective"),
+        converged = rcopy(Bool, R".gllvm_parity_multinom$converged"),
+    )
 end
