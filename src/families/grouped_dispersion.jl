@@ -1,6 +1,15 @@
 # Grouped / species-specific dispersion for the negative binomial (NB2) — gllvm's
 # `disp.group`. Each species t carries its own dispersion r_{g(t)} for a group
 # assignment g: 1..p → 1..G, so overdispersion can vary across species (or groups
+# NOTE (2026-08-25): `hessian` selects the LOG-DET weight ONLY. The Newton mode
+# search in every grouped site kernel is Fisher-scored unconditionally, because
+# expected information is >= 0 and so keeps `Λ'WΛ + I` SPD, making every step a
+# descent step. Previously this one symbol drove BOTH roles, which meant the
+# fitters — which default to `:observed` — ran an unguarded, possibly-indefinite
+# Newton (Beta's observed weight is measurably negative). The converged mode is
+# unaffected either way: it is the fixed point of `Λ's − z = 0`, which does not
+# involve W at all.
+#
 # of species) instead of one shared r. With G = 1 and hessian=:fisher this reduces
 # EXACTLY to the shared-dispersion NB2 fit (`fit_nb_gllvm`); the fit default
 # hessian=:observed is the TMB Laplace curvature and is a different objective.
@@ -38,7 +47,18 @@ function _nb_grouped_loglik_site(fams::AbstractVector, y::AbstractVector, n::Abs
         μ  = _clamp_mu.(fams, linkinv.(Ref(link), η))
         me = mu_eta.(Ref(link), η)
         s  = _glm_score.(fams, μ, n, me, y)
-        W  = _nb_grouped_laplace_weight.(Ref(hessian), fams, μ, me, y, Ref(link))
+        # Role separation (2026-08-25). The MODE SEARCH is Fisher-scored,
+        # ALWAYS — `:fisher` here is not the caller's selector. Expected
+        # information is >= 0, so `Λ'WΛ + I` is SPD by construction and every
+        # Newton step is a descent step. The observed weight CAN be negative
+        # (measured: Beta at φ=12, η=−1.2, y=0.87 gives −1.218), which made this
+        # loop an unguarded, possibly-indefinite Newton whenever the caller
+        # asked for `:observed` — and the grouped fitters default to it.
+        # The selector still governs the post-loop log-det below, which is the
+        # only role that needs the observed curvature. The converged mode is
+        # unchanged either way: it is the fixed point of `Λ's − z = 0`, which
+        # does not involve W at all — W only sets the step.
+        W  = _nb_grouped_laplace_weight.(Ref(:fisher), fams, μ, me, y, Ref(link))
         if mask !== nothing
             s = ifelse.(mask, s, 0.0)
             W = ifelse.(mask, W, 0.0)
@@ -428,7 +448,18 @@ function _beta_grouped_loglik_site(fams::AbstractVector, y::AbstractVector, n::A
         μ  = _clamp_mu.(fams, linkinv.(Ref(link), η))
         me = mu_eta.(Ref(link), η)
         s  = _glm_score.(fams, μ, n, me, y)
-        W  = _beta_grouped_laplace_weight.(Ref(hessian), fams, μ, me, y, Ref(link), η)
+        # Role separation (2026-08-25). The MODE SEARCH is Fisher-scored,
+        # ALWAYS — `:fisher` here is not the caller's selector. Expected
+        # information is >= 0, so `Λ'WΛ + I` is SPD by construction and every
+        # Newton step is a descent step. The observed weight CAN be negative
+        # (measured: Beta at φ=12, η=−1.2, y=0.87 gives −1.218), which made this
+        # loop an unguarded, possibly-indefinite Newton whenever the caller
+        # asked for `:observed` — and the grouped fitters default to it.
+        # The selector still governs the post-loop log-det below, which is the
+        # only role that needs the observed curvature. The converged mode is
+        # unchanged either way: it is the fixed point of `Λ's − z = 0`, which
+        # does not involve W at all — W only sets the step.
+        W  = _beta_grouped_laplace_weight.(Ref(:fisher), fams, μ, me, y, Ref(link), η)
         if mask !== nothing
             s = ifelse.(mask, s, 0.0)
             W = ifelse.(mask, W, 0.0)
@@ -767,7 +798,18 @@ function _gamma_grouped_loglik_site(fams::AbstractVector, y::AbstractVector, n::
         μ  = _clamp_mu.(fams, linkinv.(Ref(link), η))
         me = mu_eta.(Ref(link), η)
         s  = _glm_score.(fams, μ, n, me, y)
-        W  = _gamma_grouped_laplace_weight.(Ref(hessian), fams, μ, me, y, Ref(link))
+        # Role separation (2026-08-25). The MODE SEARCH is Fisher-scored,
+        # ALWAYS — `:fisher` here is not the caller's selector. Expected
+        # information is >= 0, so `Λ'WΛ + I` is SPD by construction and every
+        # Newton step is a descent step. The observed weight CAN be negative
+        # (measured: Beta at φ=12, η=−1.2, y=0.87 gives −1.218), which made this
+        # loop an unguarded, possibly-indefinite Newton whenever the caller
+        # asked for `:observed` — and the grouped fitters default to it.
+        # The selector still governs the post-loop log-det below, which is the
+        # only role that needs the observed curvature. The converged mode is
+        # unchanged either way: it is the fixed point of `Λ's − z = 0`, which
+        # does not involve W at all — W only sets the step.
+        W  = _gamma_grouped_laplace_weight.(Ref(:fisher), fams, μ, me, y, Ref(link))
         if mask !== nothing
             s = ifelse.(mask, s, 0.0)
             W = ifelse.(mask, W, 0.0)
@@ -1111,7 +1153,18 @@ function _nb1_grouped_loglik_site(fams::AbstractVector, y::AbstractVector, n::Ab
         μ  = _clamp_mu.(fams, linkinv.(Ref(link), η))
         me = mu_eta.(Ref(link), η)
         s  = _glm_score.(fams, μ, n, me, y)
-        W  = _nb1_grouped_laplace_weight.(Ref(hessian), fams, μ, me, y, Ref(link))
+        # Role separation (2026-08-25). The MODE SEARCH is Fisher-scored,
+        # ALWAYS — `:fisher` here is not the caller's selector. Expected
+        # information is >= 0, so `Λ'WΛ + I` is SPD by construction and every
+        # Newton step is a descent step. The observed weight CAN be negative
+        # (measured: Beta at φ=12, η=−1.2, y=0.87 gives −1.218), which made this
+        # loop an unguarded, possibly-indefinite Newton whenever the caller
+        # asked for `:observed` — and the grouped fitters default to it.
+        # The selector still governs the post-loop log-det below, which is the
+        # only role that needs the observed curvature. The converged mode is
+        # unchanged either way: it is the fixed point of `Λ's − z = 0`, which
+        # does not involve W at all — W only sets the step.
+        W  = _nb1_grouped_laplace_weight.(Ref(:fisher), fams, μ, me, y, Ref(link))
         if mask !== nothing
             s = ifelse.(mask, s, 0.0)
             W = ifelse.(mask, W, 0.0)
