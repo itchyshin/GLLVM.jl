@@ -252,7 +252,16 @@ function laplace_loglik_site(family, y::AbstractVector, n::AbstractVector,
     W  = if hessian === :fisher || _glm_weight_matches_observed(family, link)
         _glm_weight.(Ref(family), μ, n, me)  # Fisher weight wrt η
     else
-        _glm_obs_weight.(Ref(family), μ, n, me, y, Ref(link), η)
+        # Masked cells carry a PLACEHOLDER response. `_glm_weight` never reads
+        # `y`, so placeholders were harmless; the observed weight DOES read it,
+        # so it must not be evaluated there — a placeholder can make
+        # `_glm_logpdf` throw outright (y = 0 for a zero-truncated family,
+        # a non-integral value under `Int(y)`), which masking W afterwards
+        # cannot undo. This honours the docstring promise below that the value
+        # is invariant to whatever sits in the masked cells of `Y`.
+        [(mask === nothing || mask[t]) ?
+            _glm_obs_weight(family, μ[t], n[t], me[t], y[t], link, η[t]) : 0.0
+         for t in 1:p]
     end
     if mask !== nothing
         W = ifelse.(mask, W, 0.0)
