@@ -51,8 +51,17 @@ using GLLVM
             μ = exp(clamp(η[t, s], -4, 4))
             Y[t, s] = rand(Gamma(α_true, μ / α_true)) + 1e-6
         end
+        # `hessian = :fisher` was pinned here so this fit matched `fit_gllvm_cov`,
+        # which took the generic core's Fisher default. Since 2026-08-25 Gamma/log
+        # defaults to `:observed` (instance 8 of the curvature fault class, on the
+        # public default path), so that pin makes this compare UNLIKE WITH UNLIKE:
+        # a Fisher grouped fit against an observed unified fit. Dropped, so both
+        # sides take the family's default — which is the identity the testset name
+        # actually claims. Verified separately that the two OBJECTIVES agree to
+        # 1.15e-10 at a fixed parameter point, i.e. the routes are equivalent and
+        # only the pin was stale.
         fg = fit_gamma_gllvm_grouped_cov(Y; X = X, K = K, group = ones(Int, p),
-                                         hessian = :fisher, iterations = 200)
+                                         iterations = 200)
         @test fg isa GammaGroupedCovFit
         @test length(fg.α) == 1
         @test length(fg.γ) == q

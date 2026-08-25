@@ -20,8 +20,14 @@ using GLLVM, Test, Random, Distributions, ForwardDiff
         # The contract must not change any default. This is the guard against a
         # flip landing by accident rather than by decision.
         @test GLLVM._default_hessian(Poisson(), GLLVM.LogLink()) === :fisher
-        @test GLLVM._default_hessian(Gamma(3.0, 1.0), GLLVM.LogLink()) === :fisher
         @test GLLVM._default_hessian(NegativeBinomial(4.0, 0.5), GLLVM.LogLink()) === :fisher
+        @test GLLVM._default_hessian(Beta(12.0, 1.0), GLLVM.LogitLink()) === :fisher
+        # Gamma/log is the ONE deliberate exception (2026-08-25): instance 8 of
+        # the curvature fault class, on the public default path, flipped on
+        # family-specific measured evidence (observed is closer to quadrature
+        # 12/12, by 20-60×). Pinned so the exception stays deliberate and
+        # visible rather than spreading by accident.
+        @test GLLVM._default_hessian(Gamma(3.0, 1.0), GLLVM.LogLink()) === :observed
     end
 
     @testset "invalid selector fails loud" begin
@@ -231,12 +237,24 @@ using GLLVM, Test, Random, Distributions, ForwardDiff
         β2 = fill(0.6, p2)
         Y2 = 0.4 .+ rand(p2, n2)
         N2 = ones(Int, p2, n2)
-        f  = Gamma(2.5, 1.0)
+        # NegativeBinomial, not Gamma: Gamma's default is now deliberately
+        # :observed, so it can no longer serve as the "default is :fisher" pin.
+        f  = NegativeBinomial(4.0, 0.5)
+        Y2 = Float64.(rand(0:6, p2, n2))
         bare = GLLVM.marginal_loglik_laplace(f, Y2, N2, Λ2, β2, GLLVM.LogLink())
         fish = GLLVM.marginal_loglik_laplace(f, Y2, N2, Λ2, β2, GLLVM.LogLink(); hessian = :fisher)
         obs  = GLLVM.marginal_loglik_laplace(f, Y2, N2, Λ2, β2, GLLVM.LogLink(); hessian = :observed)
         @test bare === fish        # the default IS :fisher, at the value level
         @test bare != obs          # and the two are genuinely different here
+
+        # …and the mirror image for Gamma, whose default is now :observed.
+        fg = Gamma(2.5, 1.0)
+        Yg = 0.4 .+ rand(p2, n2)
+        bg = GLLVM.marginal_loglik_laplace(fg, Yg, N2, Λ2, β2, GLLVM.LogLink())
+        og = GLLVM.marginal_loglik_laplace(fg, Yg, N2, Λ2, β2, GLLVM.LogLink(); hessian = :observed)
+        fgv = GLLVM.marginal_loglik_laplace(fg, Yg, N2, Λ2, β2, GLLVM.LogLink(); hessian = :fisher)
+        @test bg === og            # Gamma's default IS :observed, at the value level
+        @test bg != fgv
     end
 
     # ---- D4 FIX: the nested-AD arm must survive OUTER differentiation -------
