@@ -88,4 +88,41 @@ using GLLVM, Test, Random, Distributions
                   tol = MODE_TOL, hessian = :fisher) ≈ ref_f atol = 1e-10
         @test ref_f != ref
     end
+
+    # ---- TruncatedNegBin2: two entry points, one answer --------------------
+    #
+    # This family has its OWN kernel (it was among the first fixed, instance 2)
+    # AND is reachable through the generic core. Its own kernel defaulted to
+    # `:observed` while the core fell through to the global `:fisher`, so the
+    # same model returned two different log-likelihoods depending on which entry
+    # point the caller used. Measured before the fix: 4.088e-02 apart.
+    #
+    # Same class of defect as the R bridge sending `family = "gamma"` and
+    # `["gamma", …]` to different kernels. Locked here so it cannot silently
+    # reopen.
+    @testset "TruncatedNegBin2: generic core ≡ its own kernel" begin
+        Random.seed!(77)
+        pt, Kt, nt, rr = 5, 1, 40, 4.0
+        bt = log.(fill(3.0, pt))
+        Lt = reshape(0.3 .* randn(pt), pt, Kt)
+        Yt = [max(1, rand(NegativeBinomial(rr, rr / (rr + exp(bt[t]))))) for t in 1:pt, _ in 1:nt]
+        Nt = ones(Int, pt, nt)
+        ft = GLLVM.TruncatedNegBin2(rr)
+        lk = GLLVM.LogLink()
+
+        @test GLLVM._default_hessian(ft, lk) === :observed
+
+        core = GLLVM.marginal_loglik_laplace(ft, Yt, Nt, Lt, bt, lk)
+        own  = GLLVM.truncated_nbinom2_marginal_loglik_laplace(Yt, Lt, bt, rr)
+        @test core ≈ own atol = 1e-10
+
+        # …and the negative control: forced to :fisher BOTH routes must also
+        # agree, at a different value. Without this, two routes wrong together
+        # would be indistinguishable from two routes right together.
+        core_f = GLLVM.marginal_loglik_laplace(ft, Yt, Nt, Lt, bt, lk; hessian = :fisher)
+        own_f  = GLLVM.truncated_nbinom2_marginal_loglik_laplace(Yt, Lt, bt, rr; hessian = :fisher)
+        @test core_f ≈ own_f atol = 1e-10
+        @test !isapprox(core_f, core; rtol = 1e-6)
+    end
+
 end
