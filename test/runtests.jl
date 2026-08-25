@@ -74,6 +74,12 @@ using GLLVM
     # Also orphaned, also shipped: src/sparse_phy_grad.jl is included at
     # src/GLLVM.jl:44. Passes; wired in so CI actually exercises it.
     include("test_sparse_phy_grad.jl")
+
+    # chibar2_pvalue / variance_lrt / profile_ci_variance are EXPORTED and had
+    # zero tests. They return p-values and confidence intervals — the outputs
+    # most likely to end up in a paper — so untested was the least acceptable
+    # place for it. Every assertion is against an independently derived value.
+    include("test_boundary_inference.jl")
     include("test_laplace_grad.jl")
     include("test_masked_dispersion_grad.jl")
     include("test_laplace_alloc_equiv.jl")
