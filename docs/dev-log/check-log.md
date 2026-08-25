@@ -13166,3 +13166,71 @@ under `:observed` the weight now reads `y`, and masked cells carry a placeholder
 previously never reached the response · and do not describe commit B as closing the class.
 
 No `src/` change in this entry.
+
+## 2026-08-25 — dual-safety census: the fallback is not universal, and two link-specific instances were hiding
+
+Commit-B blocker work. Two measurements, both of which change what commit B has to do.
+
+### 1. The generic ForwardDiff fallback is not universal — 13 of 14
+
+Probed `_glm_obs_weight` for every `(family, link)` that can reach the generic core:
+
+| dual-safe | families |
+|---|---|
+| **yes (13)** | Poisson/log · Binomial at logit, **probit, cloglog** · NB2 · NB1 · Beta · Gamma · Exponential · TruncatedPoisson · GP1 · Student-t · **Tweedie** |
+| ***** NO (1)** | **CensoredPoisson** — `logcdf(Gamma(C,1), μ)` → `_gammalogcdf` has no `ForwardDiff.Dual` method; fails at the FIRST derivative |
+
+**Tweedie is dual-safe.** Its infinite series was flagged during design as a likely AD
+hazard; it is not one — `_tweedie_logA` receives only primals (`y` is the response, `φ`
+and `p` are struct fields), so the series never sees a Dual. Measured, and now asserted so
+the refutation stays refuted.
+
+**CensoredPoisson is safe only because the trait keeps it off the fallback** — a stronger
+and more brittle reason than "the numbers coincide". Route it there and it throws. Both
+facts are pinned in `test/test_laplace_dual_safety.jl` so neither can regress unnoticed,
+and so a *second* non-dual-safe family cannot appear silently.
+
+### 2. Two link-specific instances a family-level census cannot see
+
+`Binomial` is clean at **logit** (observed ≡ Fisher, y-free) and is a genuine **instance of
+the fault class at probit and cloglog** — measured at η = 0.35, n = 6, y = 2:
+
+| link | observed | Fisher |
+|---|---|---|
+| logit | 1.45498 | 1.45498 |
+| **probit** | **3.93064** | 3.65289 |
+| **cloglog** | **6.46611** | 3.85621 |
+
+Every census so far has been organised by *family*. These two are properties of the
+**(family, link) pair**, so a family-level sweep structurally cannot find them. Recorded as
+executable fact in the new census test rather than as prose that can drift.
+
+### 3. The Beta `-Inf` risk I flagged is much smaller than it looked — measured
+
+Earlier I warned that flipping the default could drive Beta into the PD guard, returning
+`-Inf`, which with the repo-wide `isfinite(v) ? v : 1e12` sentinel would be a *declared
+convergence* rather than an error. That inference was sound but **does not survive
+measurement.**
+
+Beta's observed curvature is genuinely negative *pointwise* (φ=12, η=−1.2, y=0.87 →
+−1.218). But **at the Fisher mode it is positive.** Across p ∈ {4,8,20} × ‖Λ‖ ∈ {1,3,10,30}
+with adversarial data (y = 0.985, β = −1.5), the minimum observed weight at the mode was
+**+1.18**, with **zero** negative cells — the guard fired **0 / 12**. The mode-finder moves
+η to where the data support it, and the observed curvature is positive there.
+
+**Pointwise negativity is common; negativity at the mode is not.** That distinction is what
+matters for the flip, and it downgrades this from a blocker to cheap insurance.
+
+**Known residual, stated rather than papered over:** the guard's `-Inf` *return branch* is
+therefore not exercised by any test — no natural fixture reaches it. The predicate and
+surrounding path are covered; the failure return is not.
+
+### Also in this batch
+
+The PD guard is **re-keyed on the weight's sign** rather than on the selector or the trait
+(review blocker 1). `A = Λ'WΛ + I` is SPD by construction whenever every `W ≥ 0`, so the
+factorisation is needed only when a negative weight is actually present — cheaper on the
+common path and strictly more correct, since it fires on the real condition however the
+weight was produced. `-Inf` is returned through `oftype(ℓ, …)` so it carries the caller's
+numeric type; fitters run ForwardDiff *over* this objective and a raw `Float64` returned
+into a `Dual` context is a latent type error (blocker 2).
