@@ -58,7 +58,7 @@ function _phylo_nb_xlv_logpost(Y, beta, Lambda, alpha_lv, r, mean_eta, Q,
 end
 
 function _phylo_nb_xlv_grad_hessian(Y, beta, Lambda, alpha_lv, r, mean_eta, Q,
-        leaf_pos, eps, u)
+        leaf_pos, eps, u; hessian::Symbol = :fisher)
     p, n = size(Y)
     K = size(Lambda, 2)
     fam = NegativeBinomial(r, 0.5)
@@ -89,7 +89,13 @@ function _phylo_nb_xlv_grad_hessian(Y, beta, Lambda, alpha_lv, r, mean_eta, Q,
         mu_ts = exp(eta_c)
         me_ts = mu_eta(LogLink(), eta_c)
         score_ts = _glm_score(fam, mu_ts, 1, me_ts, Y[t, s])
-        weight_ts = _glm_weight(fam, mu_ts, 1, me_ts)
+        # Role separation. Default `:fisher` leaves the Newton loop exactly as it
+        # was — the mode search wants expected information (W ≥ 0, so the step is
+        # always well-defined). Only the FINAL assembly, at the converged mode,
+        # asks for `:observed`, which is what the log-det needs to match TMB.
+        weight_ts = hessian === :fisher ?
+            _glm_weight(fam, mu_ts, 1, me_ts) :
+            _glm_obs_weight(fam, mu_ts, 1, me_ts, Y[t, s], LogLink(), eta_c)
         uidx = n_z + leaf_pos[t]
 
         grad[uidx] += score_ts
@@ -159,7 +165,8 @@ function _phylo_nb_xlv_mode(Y, beta, Lambda, alpha_lv, r, mean_eta, Q, leaf_pos;
     end
 
     _, H = _phylo_nb_xlv_grad_hessian(Y, beta, Lambda, alpha_lv, r, mean_eta,
-                                      Q, leaf_pos, eps, u)
+                                      Q, leaf_pos, eps, u;
+        hessian = _default_hessian(NegativeBinomial(r, 0.5), LogLink()))
     cholH = try
         cholesky(Symmetric(H))
     catch
