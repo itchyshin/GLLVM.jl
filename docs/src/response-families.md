@@ -67,15 +67,21 @@ supports `LogitLink()` (default), `ProbitLink()`, and `CLogLogLink()`.
 | `Normal()` | ✅ available | identity | closed form | — | continuous; the original engine |
 | `Binomial()` | ✅ available | logit / probit / cloglog | Laplace | — | binary (Bernoulli) and binomial counts |
 | `Poisson()` | ✅ available | log | Laplace | — | counts |
+| `TruncatedPoisson()` | ✅ available | log | Laplace | — | zero-truncated counts (`y ≥ 1`); the log link applies to the *untruncated* μ; `fit_gllvm` / named `fit_truncated_poisson_gllvm` |
+| `CensoredPoisson()` | ✅ available | log | Laplace | — | right-censored counts; pass `censored::BitMatrix` (or `lower`/`upper`); `fit_gllvm` / named `fit_censored_poisson_gllvm` |
 | `NegativeBinomial()` | ✅ available | log | Laplace | dispersion `r` (Var = μ + μ²/r) | overdispersed counts; `r` jointly estimated |
 | `NB1()` | ✅ available | log | Laplace | dispersion `φ` (Var = μ(1+φ)) | linear-variance (quasi-Poisson-like) overdispersed counts; `fit_gllvm` default is per-species `φ`; shared `φ` via `fit_nb1_gllvm` |
+| `TruncatedNegBin2()` | ✅ available | log | Laplace | dispersion `r` (Var = μ + μ²/r) | zero-truncated NB2 (`y ≥ 1`); shared `r`, or per-trait `r_t` via `fit_truncated_nbinom2_gllvm_pertrait` (twin `log_phi_truncnb2`) |
 | `Beta()` | ✅ available | logit | Laplace | precision `φ` (Var = μ(1−μ)/(1+φ)) | proportions in (0,1); `φ` jointly estimated |
 | `Ordinal()` | ✅ available | cumulative logit / probit | Laplace | cutpoints `τ` | ordered categories `1:C`; `fit_ordinal_gllvm()` uses shared cutpoints, `fit_ordinal_gllvm_pertrait()` uses trait-specific cutpoints for R-bridge parity |
+| `GLLVM.Multinomial()` | ✅ available | baseline-category softmax (`η₁ ≡ 0`) | fixed effects only — **no latent variables** | — | one *unordered* categorical trait per fit (`1×n` row, length-`n` vector, or `K×n` one-hot); categories `1:K` with `K ≥ 3`; qualify the marker — the bare name clashes with `Distributions.Multinomial` |
 | `Gamma()` | ✅ available | log | Laplace | shape `α` (Var = μ²/α) | positive continuous; `α` jointly estimated |
+| `Lognormal()` | ✅ available | log | **closed form** (Gaussian on `log y`) | log-SD `σ` | one-part positive continuous, `log y ~ Normal(η, σ²)`; reuses the closed-form Gaussian fitter on `log(Y)`, not a Laplace approximation; `loglik` is reported on the *y* scale; distinct from the two-part `DeltaLogNormal()` |
 | `Exponential()` | ✅ available | log | Laplace | — | positive continuous, `Var = μ²` (Gamma with α=1) |
 | `StudentTFamily(ν)` | ✅ available | identity | Laplace | scale `σ`; FIXED df `ν` on the marker | heavy-tailed continuous, `(y − η)/σ ~ t_ν`; outlier-robust alternative to `Normal()`; `σ` estimated, `ν` held fixed; → `Normal(η, σ²)` as `ν → ∞` |
 | Tweedie | ✅ available | log | Laplace | dispersion `φ`, power `p` (1<p<2) | compound Poisson–Gamma; biomass / abundance with true zeros; `fit_tweedie_gllvm` |
 | `COMPoisson()` | ✅ available | log | Laplace | dispersion exponent `ν` (tag payload) | counts with under- or over-dispersion (`ν>1` / `ν<1`; `ν=1 ⇒ Poisson`); `fit_gllvm` / named `fit_compoisson_gllvm`; Julia-forward |
+| `GeneralizedPoisson1(α)` | ✅ available | log | Laplace | signed dispersion `α` (tag payload) | counts with over- **or** under-dispersion (`α>0` / `α<0`); `fit_gllvm` / named `fit_gp1_gllvm`; Julia-forward (no twin counterpart) |
 | `OrderedBeta()` | ✅ available | logit | Laplace | precision `φ`, cutpoints `c₀<c₁` (tag payloads) | proportions / cover with point masses at 0 and 1; `fit_gllvm` / named `fit_ordered_beta_gllvm`; Julia-forward |
 | `DeltaLogNormal()` | ✅ available | logit × identity(log) | two-part Laplace | log-SD `σ` (tag payload) | occurrence × positive lognormal; `fit_gllvm` / named `fit_delta_lognormal_gllvm` |
 | `DeltaGamma()` | ✅ available | logit × log | two-part Laplace | shape `α` (tag payload) | occurrence × positive Gamma; `fit_gllvm` / named `fit_delta_gamma_gllvm` |
@@ -94,7 +100,10 @@ The single-block families with a plain `Distributions` marker — `Normal`,
 `HurdlePoisson`, `HurdleNB`, `BetaHurdle`, `COMPoisson`, and `OrderedBeta`
 via the package's own exported markers.
 Tweedie currently has a dedicated `fit_tweedie_gllvm` driver (the power is
-not yet a public `fit_gllvm` marker). Calling `fit_gllvm` with an unimplemented
+not yet a public `fit_gllvm` marker).
+A **mixed-family response vector** — a different family per trait in one fit —
+is available through the dedicated `fit_mixed_gllvm` driver rather than a
+`family =` marker; see its section below. Calling `fit_gllvm` with an unimplemented
 family raises a clear error listing what is currently available.
 
 **Phylogenetic GLM.** For a per-species phylogenetic random intercept under a
@@ -138,6 +147,87 @@ For count data (`Y` a `p × n` integer matrix). Uses a log link and a Laplace
 marginal. Poisson GLLVMs are a natural starting point for species-abundance
 matrices before considering overdispersion.
 
+### Zero-truncated Poisson — `TruncatedPoisson()`
+
+
+```julia
+fit = fit_gllvm(Yc; family = TruncatedPoisson(), K = 2)   # counts; y ≥ 1; log link on untruncated μ
+fit = fit_truncated_poisson_gllvm(Yc; K = 2)              # same driver, called directly
+```
+
+For counts with **no observable zeros** — e.g. counts recorded only where a
+species was detected at all. The log link applies to the *untruncated*
+Poisson mean `μ = exp(η)`; the per-cell density is `Poisson(y; μ) / (1 −
+e^{−μ})` for `y ≥ 1`. Every observed cell of `Yc` must be `≥ 1`:
+`fit_truncated_poisson_gllvm` (and `fit_gllvm`, which delegates to it) scans
+the observed cells first and throws an `ArgumentError` —
+`"truncated_poisson requires y ≥ 1; …"` — on any cell below 1, so zeros and
+negatives both fail loud rather than being silently dropped. Masked cells are
+skipped by that scan. Only `LogLink()` is supported, and the guard is
+explicit:
+
+```julia
+link isa LogLink || throw(ArgumentError(
+    "fit_truncated_poisson_gllvm: only LogLink is supported (twin truncated_poisson)"))
+```
+
+Fitting is Laplace + L-BFGS with a finite-difference outer gradient. Beyond
+`K` (required) and `link`, the fitter takes `mask` and `offset`, warm-start
+`β_init` / `Λ_init`, and the usual `g_tol` / `iterations` /
+`newton_maxiter` / `newton_tol` controls. There is **no** `X`-covariate
+keyword on this route.
+
+`TruncatedPoisson()` is distinct from the `HurdlePoisson()` occurrence ×
+zero-truncated two-part family: `HurdlePoisson()` models the zero/non-zero
+split with its own Bernoulli part, whereas `TruncatedPoisson()` has no
+occurrence part at all — it treats zeros as structurally unobservable, not
+as a competing process to be estimated.
+
+Current limits: `TruncatedPoissonFit` is not in the package's Wald
+confidence-interval union, so there is no CI route for this family, and the
+R-bridge arm (`family = "truncated_poisson"`) is no-X only — `X`, `X_lv`,
+missing-response masks, and CI are loud rejects there rather than silent
+no-ops.
+
+### Right-censored Poisson — `CensoredPoisson()`
+
+
+```julia
+fit = fit_censored_poisson_gllvm(Y; K = 2, censored = falses(size(Y)))   # no censored cells
+fit = fit_censored_poisson_gllvm(Y; K = 2, censored = cens)              # cens::BitMatrix; Y holds count/limit
+fit = fit_censored_poisson_gllvm(Y; K = 2, lower = L, upper = U)         # interval-ready (lower, upper)
+fit = fit_gllvm(Y; family = CensoredPoisson(), K = 2, censored = cens)   # same route via fit_gllvm
+```
+
+Right-censored counts — e.g. an abundance recorded only as "at least `C`"
+above some detection ceiling. Log link on the untruncated mean `μ =
+exp(η)`; `P(y ≥ C | μ)` is evaluated as `logcdf(Gamma(C, 1), μ)` for numerical
+stability rather than `1 − cdf`. Encode censoring either as `(lower, upper)`
+integer matrices — uncensored `lower == upper == y`; right-censored `lower == C`,
+`upper == typemax(Int)` — or as a Boolean `censored` matrix with `Y` holding
+the observed count (uncensored cells) or the censoring limit (censored
+cells) at each position. Pass one encoding or the other, never both
+(`"censored_poisson: pass either (lower,upper) or censored, not both"`).
+Left-censoring and finite (non-right) intervals are rejected — a documented
+future extension. Only `LogLink()` is supported; there is no dispersion
+parameter, so packing is Poisson-identical, `θ = [β; pack(Λ)]`; there is no
+`X`-covariate keyword.
+
+Both encodings fail loud on out-of-range cells rather than silently
+recoding them: a censored cell needs `C ≥ 1`
+(`"censored_poisson: right-censored C ≥ 1; got C=…"` — `C = 0` is
+uninformative, since `P(Y ≥ 0) = 1`), and an uncensored cell needs `y ≥ 0`
+(`"censored_poisson: uncensored y ≥ 0; got y=…"`). A non-log link throws
+before any fitting (`"fit_censored_poisson_gllvm: only LogLink is supported
+(Identity lock)"`), because the censored η-derivatives are hand-coded
+against `μ = exp(η)`.
+
+`CensoredPoisson` is **Julia-forward**: the twin `gllvmTMB` exposes a
+constructor for it but has no working density behind it, so there is no
+twin-parity claim for this family. `CensoredPoissonFit` is not among the fit
+types handled by the package's Wald confidence-interval dispatch, and there
+is no R-bridge route for it.
+
 ### Negative Binomial — `NegativeBinomial()`
 
 ```julia
@@ -170,6 +260,79 @@ call [`fit_nb1_gllvm`](@ref).
 The marker's `φ` field is a tag payload: `NB1()` and `NB1(2.5)` give the same fit,
 because `φ` is always estimated and never seeded from the marker. Pass `φ_init` to
 the named fitters to set a starting value.
+
+### Zero-truncated Negative Binomial (NB2) — `TruncatedNegBin2()`
+
+
+```julia
+fit = fit_gllvm(Yc; family = TruncatedNegBin2(), K = 2)   # counts, y ≥ 1; shared r
+fit = fit_truncated_nbinom2_gllvm(Yc; K = 2, r_init = 5.0) # same route, explicit seed
+fit = fit_truncated_nbinom2_gllvm_pertrait(Yc; K = 2)      # per-trait r_t (twin log_phi_truncnb2)
+```
+
+The zero-truncated counterpart of `NegativeBinomial()` (twin `truncated_nbinom2()`,
+family_id 11) — for counts where zeros are structurally unobservable. Support is
+`{1, 2, …}`; the log link applies to the *untruncated* mean `μ = exp(η)`, with the
+NB2 variance function `Var = μ + μ²/r` before truncation. The per-cell density is
+`NB2(y; μ, r) / (1 − p₀)` with `p₀ = (r/(r+μ))^r`.
+
+`Yc` must be integer-valued counts, and **every observed cell must be `≥ 1`**:
+
+```
+ArgumentError: truncated_nbinom2 requires y ≥ 1; found y=0 at (2,1)
+```
+
+Masked cells are exempt from that check. Both routes accept a `mask`, derive one
+automatically when `Yc` contains `missing`, and accept an `offset`. Only
+`LogLink()` is supported — anything else throws
+(`"only LogLink is supported (twin truncated_nbinom2)"`). There is no
+`X`-covariate keyword on either route.
+
+#### Dispersion: shared vs per-trait
+
+`fit_gllvm`'s only route for this family is [`fit_truncated_nbinom2_gllvm`](@ref),
+which estimates a single **shared** `r` across species, packing
+`[β; pack(Λ); log r]` (length `p+rr+1`). Per-trait dispersion `r_t` (twin
+`log_phi_truncnb2`) is [`fit_truncated_nbinom2_gllvm_pertrait`](@ref), packing
+`[β; pack(Λ); log r_1 … log r_p]` (length `p+rr+p`); it is **not** reachable
+through `fit_gllvm`, including via `disp_group`, which throws for this family.
+
+The `TruncatedNegBin2` marker carries an `r` field (`TruncatedNegBin2()` fills in
+`10.0`), but **no fit path reads it** — `r` is always jointly estimated. To seed
+the search, pass `r_init` to the named fitters: a scalar on the shared route, a
+scalar or a length-`p` vector on the per-trait route. Left unset, both start from
+`r = 10`.
+
+Equal `r_t` reproduces the shared-`r` log-likelihood **by construction**, not by
+coincidence: `truncated_nbinom2_marginal_loglik_laplace` is implemented as the
+equal-`r_t` special case of `truncated_nbinom2_pertrait_marginal_loglik_laplace`,
+so the two routes cannot drift apart.
+
+#### Laplace curvature: `hessian = :observed` (default) or `:fisher`
+
+Both routes take a `hessian` keyword. `:observed` (the default) builds the Laplace
+log-determinant term from the exact conditional curvature `−∂²ℓ/∂η²` of the
+zero-truncated NB2 at the log link; `:fisher` uses the expected-information
+weight instead. The two differ here because the NB2 term is **`y`-dependent**
+through `−(y+r)·log(μ+r)` — unlike zero-truncated Poisson, where `y` enters `η`
+linearly and the two curvatures coincide pointwise. The observed weight
+(`_truncnb2_observed_weight`) is checked against ForwardDiff to a max relative
+error of 1.8e-13 over 125 `(μ, r, y)` cells spanning `μ ∈ [0.5, 25]`,
+`r ∈ [0.3, 50]`, `y ∈ [1, 40]`.
+
+The keyword selects only the weight in that log-det term; the mode solve itself is
+a Fisher-scoring iteration in both cases, which changes *how* the mode is found,
+not the objective. An unrecognised symbol is rejected up front with a clear
+`ArgumentError` rather than inside the objective, whose `try`/`catch` would
+otherwise convert a typo into a converged-looking garbage fit.
+
+#### Limits
+
+The outer optimisation is Optim LBFGS with a **finite-difference** gradient over
+the packed vector, not a hand-coded analytic outer gradient. Neither
+`TruncatedNegBin2Fit` nor `TruncatedNegBin2PerTraitFit` has a `confint` dispatch,
+so `confint(fit, Y)` is not available for this family, and there is no R-bridge
+route for it.
 
 ### Beta — `Beta()`
 
@@ -216,6 +379,63 @@ confint_lv_effects(fit_xlv, Yo, X_lv; method = :profile,
 Those intervals target the native Julia `B_lv = Λ * alpha_lv'` product. They do
 not promote per-trait ordinal bridge CI parity.
 
+### Multinomial — `GLLVM.Multinomial()`
+
+
+```julia
+Y = reshape(y, 1, n)                                    # y::Vector{Int}, values in 1:K, K ≥ 3
+
+fit = fit_multinomial_gllvm(Y; n_categories = K)        # 1×n matrix, or a length-n vector
+fit = fit_gllvm(Y; family = GLLVM.Multinomial())        # same route; Y must be a MATRIX here
+fit = fit_multinomial_gllvm(Y; X = X, n_categories = K) # + site covariates (n×p, no intercept column)
+```
+
+Unordered categorical responses (twin `multinomial()`, family_id 16) via
+fixed-effects baseline-category softmax: `η₁ ≡ 0`, `η_k = β_k + xᵀγ_k` for
+`k = 2,…,K`, `P(y=k) = softmax(η)_k`. **Unlike every other family in this
+table, `Y` here is one categorical trait, not a species-by-site matrix**:
+pass a `1×n` integer row, a length-`n` integer vector, or a `K×n` one-hot
+matrix for a single categorical variable. Stacking several categorical traits
+into one call is rejected — `"multinomial v1 is one unordered trait per fit
+(1×n integer categories or K×n one-hot); do not expand TMB K−1 pseudo-rows"`
+— so fit each trait separately. Note the vector form is accepted only by
+`fit_multinomial_gllvm`; `fit_gllvm` takes a matrix, so reshape to `1×n`
+before routing through it.
+
+Categories must be coded `1:K` with **`K ≥ 3`**. Both constraints fail loud:
+any `y < 1` (or `y > K`) throws `"multinomial requires y ∈ {1, …, K}; found
+y=$v"`, and `K = 2` throws `"multinomial requires K ≥ 3 categories; K = 2 is
+binomial-logit — use Binomial() / LogitLink()"`. `K` itself comes from
+`n_categories` when you pass it; **when `n_categories` is left unset, `K` is
+inferred as `maximum(y)`** — so pass it explicitly whenever the top category
+may be unobserved in your sample, or you will silently fit a smaller `K`.
+Only `LogitLink()` is supported, and that is an explicit guard, not just a
+default: any other link throws `"fit_multinomial_gllvm: only LogitLink is
+supported (twin multinomial)"`.
+
+**v1 is fixed-effects softmax only — no latent variables.** `fit_gllvm`
+rejects any `K` / `num_lv` other than `nothing` or `0`, and rejects
+`row_eff`, `disp_group`, or `pervar`; `fit_multinomial_gllvm` carries the
+same `K` / `num_lv` rejection itself. There is no dispersion parameter. The
+packed vector is contrast-major, `[β₂…β_K; γ₂; …; γ_K]`, of length
+`(K−1)(1+p)`. `X` (site covariates, `n×p`, no intercept column) is supported
+directly on `fit_multinomial_gllvm` and passes through `fit_gllvm`. The
+returned `MultinomialFit` carries `β` (length `K−1`), `γ` (`(K−1)×p`),
+`n_categories`, `link`, `loglik`, `converged`, `iterations`, and
+`theta_packed`; there are no loadings in v1. Multinomial fits have no Wald
+confidence-interval dispatch and no R-bridge route.
+
+The marker is `GLLVM.Multinomial`, not `Distributions.Multinomial` (the
+count-vector law). GLLVM.jl deliberately excludes `Multinomial` from its
+`using Distributions` list so the identity marker can bind unqualified
+*inside* the package — but both packages **export** the name, so in user code
+that does `using GLLVM, Distributions` the bare name `Multinomial` is
+undefined rather than resolving to either one. Always write
+`GLLVM.Multinomial()` (and `Distributions.Multinomial(...)` for the count
+law). Because v1 has no latent variables, `Multinomial` is **not a completed
+capability in the same sense as the families above**: its row in the
+capability ledger is deliberately `missing`, not "available".
+
 ### Gamma — `Gamma()`
 
 For positive-continuous data with Var = μ²/α (constant coefficient of variation),
@@ -229,6 +449,63 @@ shared `γ`; twin API B). Shared-α + X remains the opt-in
 ```julia
 fit = fit_gllvm(Yp; family = Gamma(), K = 2)   # Yp > 0; shared α (no-X)
 ```
+
+### Lognormal — `Lognormal()`
+
+
+```julia
+fit = fit_gllvm(Y; family = Lognormal(), K = 2)   # Y > 0; log link on E[log y] = η
+fit = fit_lognormal_gllvm(Y; K = 2)               # same route, called directly
+```
+
+A one-part lognormal GLLVM (twin `lognormal()`, family_id 3): `log(y) ~
+Normal(η, σ²)` with `η = β + Λz`. On the log scale this is exactly the
+Gaussian GLLVM, so `fit_lognormal_gllvm` **reuses the closed-form Gaussian
+fitter** on `log(Y)` rather than a Laplace approximation: per-trait intercepts
+`β_t = mean_s log(Y[t,s])` are removed first, then `fit_gaussian_gllvm`
+estimates `(Λ, σ)` on the centred log scale. The reported `loglik` is on the
+*y*-scale — the Gaussian log-scale marginal plus the change-of-variables
+Jacobian `−Σ log y`.
+
+`Y` must be strictly positive; a non-positive cell throws
+`ArgumentError("lognormal requires y > 0; found non-positive response")`.
+Only `LogLink()` is supported — any other link throws
+`ArgumentError("fit_lognormal_gllvm: only LogLink is supported (twin lognormal)")`.
+
+`Lognormal` is distinct from `Distributions.LogNormal` and from the two-part
+`DeltaLogNormal()` hurdle (occurrence × positive lognormal, fid 12) — this is
+the one-part law with no zero mass.
+
+`LognormalFit` carries `β` (length `p`, mean of `log y`), `Λ` (`p×K`, on the
+log scale), `σ` (`Var(log y) = σ²`), `link`, `loglik`, `converged`,
+`iterations`, and the free-σ reference packing
+`theta_packed = [β; pack(Λ); log σ]`. To evaluate the y-scale marginal at
+explicit parameters, use the exported `lognormal_marginal_loglik(Y, Λ, β, σ)`.
+
+The response mean uses the standard lognormal bias correction —
+`E[y | η] = exp(η + σ²/2)`, not `exp(η)` (the median). `lognormal_response_mean`
+is a **scalar** function of `(η, σ)`; broadcast it for an array of linear
+predictors:
+
+```julia
+lognormal_response_mean(fit.β[1], fit.σ)    # E[y] for trait 1 at z = 0
+lognormal_response_mean.(fit.β, fit.σ)      # broadcast over the p intercepts
+```
+
+Note that you must supply `η` yourself: `LognormalFit` defines no `getLV`,
+`predict`, or `link_residual` method, so latent scores and fitted linear
+predictors are not extracted from the fit object on this engine.
+
+**Surface limits.** There is no Wald confidence-interval route —
+`LognormalFit` is not in the native `confint` family union — and the R bridge
+rejects CI requests loudly, requiring `ci_method = "none"`. On the bridge,
+lognormal is a **no-X** family: fixed-effect `X`, `X_lv`, and missing-response
+masks are all fenced as follow-ups, and bridge `scores` come back empty with
+`Sigma` / `correlation` assembled from the shared block `ΛΛᵀ` alone
+(communality `1`). `fit_lognormal_gllvm` itself declares no `X` keyword; it
+forwards remaining keywords to `fit_gaussian_gllvm`, but no test exercises an
+X-covariate route through the lognormal entry point, so treat it as
+unsupported.
 
 ### Tweedie — `fit_tweedie_gllvm`
 
@@ -297,6 +574,50 @@ fixed. `COMPoisson()` is the usual call; `COMPoisson(9.0)` gives the same fit.
 COM-Poisson is Julia-forward (the twin has no CMP family) and a **no-X**
 surface: `fit_gllvm` and `gllvm(@formula(y ~ 1), …)` are admitted, but
 covariates, `disp_group`, and row effects are not. There is no twin light Δ.
+
+### Generalized Poisson type-1 — `GeneralizedPoisson1(α)`
+
+
+```julia
+fit = fit_gllvm(Y; family = GeneralizedPoisson1(0.3), K = 2)   # counts; α estimated (tag payload)
+fit = fit_gp1_gllvm(Y; K = 2, α_init = 0.3)                    # same driver, explicit seed
+```
+
+Counts with a **signed** scalar dispersion `α` (Famoye / Consul–Jain
+mean-parameterisation, log link): `μ = exp(η)`, `E[y] = μ`,
+`Var = μ(1+αμ)²`. `α = 0` is the Poisson limit; `α > 0` overdisperses and is
+exactly normalised for any `α ≥ 0`; `α < 0` underdisperses, with finite
+support `y < 1/|α|` and a small loss of tail mass once `|α|μ` is large — an
+intrinsic property of the underdispersed GP-1, not an implementation defect.
+As for `NB1()` and `COMPoisson()`, the marker's `α` field is a **tag
+payload**: it is required by the constructor but `fit_gllvm` never reads it,
+so `α` is always estimated from the data by [`fit_gp1_gllvm`](@ref); seed the
+search with `α_init` rather than the marker value.
+
+`fit_gp1_gllvm` fits by **profiling over `α`** — a fixed grid of trial values,
+each one refit for `(β, Λ)` at that *fixed* `α` (warm-start-chained), then a
+Brent refinement of `α` on the profile and a final `(β, Λ)` refit — rather
+than one joint L-BFGS over `[β; Λ; α]`, because `α` and the latent-factor
+variance both absorb overdispersion and a naive joint fit collapses onto a
+degenerate optimum (`Λ → 0`, `α` pinned at its bound). `α_bound` (default
+`2.0`) caps `|α|`; raise it if a fit saturates near the cap. `α_init`, if
+given, is clamped into `±0.99·α_bound` and added to the profile grid as a
+seed. `Y` is a `p×n` integer count matrix and may contain `missing` (pass a
+`mask`, or leave `missing` entries in `Y` — masked cells are dropped from the
+marginal and the warm start); an `offset` keyword (`η = β + offset + Λz`) is
+accepted. GP-1 has no `X`-covariate keyword — it is a **no-X surface**.
+
+`link` defaults to `LogLink()` and the family pieces above are derived for
+`μ = exp(η)`. Note that — unlike `TruncatedPoisson()`, which throws on any
+other link — GP-1 has **no link guard**: another `link` is accepted without
+an error, so pass one only deliberately.
+
+Post-fit, a `GP1Fit` supports `getLV`, `predict(fit, Y; type = :link` or
+`:response)`, `residuals(fit, Y; type = :dunnsmyth` or `:pearson)`, and
+`aic` / `bic` (parameter count `β` + `Λ` + `α`). Confidence intervals go
+through the unified family layer — `confint(fit, Y; method = :wald)`,
+`:profile`, or `:bootstrap` — with `α` reported on its raw signed scale (not
+a log scale) under the term name `"alpha"`.
 
 ### Delta-lognormal — `DeltaLogNormal()`
 
@@ -404,6 +725,60 @@ A heteroscedastic Gaussian GLLVM with a **separate residual variance per species
 (gllvm's heteroscedastic default), in contrast to the single shared `σ_eps` of
 `fit_gaussian_gllvm`. The per-species intercepts are profiled out analytically
 (column means), so only the per-species variances and the loadings are optimised.
+
+### Mixed-family response vector — `fit_mixed_gllvm`
+
+
+```julia
+using GLLVM, Distributions   # the family markers come from Distributions, not GLLVM
+
+families = [Normal(), Poisson(), Binomial()]
+links    = [IdentityLink(), LogLink(), LogitLink()]
+fit = fit_mixed_gllvm(Y; families = families, links = links, K = 2)
+
+correlation(fit, Y)    # cross-family latent-scale trait correlation
+sigma_y_site(fit, Y)   # Σ_latent = ΛΛᵀ + diag(σ²_d)
+communality(fit, Y)    # per-trait communality on the latent scale
+getLV(fit, Y)          # per-site latent scores
+```
+
+Each of the `p` rows (traits) of `Y` can carry its **own** response family and
+link, while all traits share one `K`-dimensional latent block `Λ` — one factor
+structure spanning, for example, a Poisson count trait, a Binomial binary
+trait, and a Beta proportion trait, so that `correlation` returns a trait
+correlation across those families on the common latent (link) scale.
+`fit_mixed_gllvm` is a **named fitter, not a `fit_gllvm` family**: there is no
+`Mixed` marker, and `fit_gllvm` does not dispatch to it.
+
+`families` and `K` are required keywords; `links`, `N`, and the `*_init` seeds
+are optional. v1 supports six per-trait families — `Normal()`, `Poisson()`,
+`Binomial()`, `NegativeBinomial()`, `Gamma()`, `Beta()` — passed as a length-`p`
+vector to `families`; anything else (e.g. `Ordinal()`) is rejected up front with
+an `ArgumentError` naming the supported set, before any optimisation starts.
+`Normal`, `NegativeBinomial`, `Gamma`, and `Beta` traits each carry one scalar
+dispersion, optimised on the log scale and reported back on the natural scale in
+`fit.dispersion` (`NaN` for `Poisson` and `Binomial` traits, which carry none);
+`fit.disp_index` records which packed slot each one occupies. `links` defaults
+to each family's canonical link if omitted. `N` (Binomial trial counts, `p×n`)
+defaults to all-ones. The outer gradient is a direct `ForwardDiff` gradient
+taken straight through the per-site Laplace mode solve, not a hand-coded
+analytic kernel. There is no `X`-covariate keyword on this route.
+
+Note that the family markers (`Normal`, `Poisson`, …) are `Distributions` types
+that GLLVM.jl uses internally but does not re-export, so a mixed-family script
+needs `using Distributions` alongside `using GLLVM`; the links
+(`IdentityLink`, `LogLink`, `LogitLink`, …) are exported by GLLVM.jl.
+
+Unlike the single-family extractors elsewhere on this page, the mixed
+extractors — `correlation`, `sigma_y_site`, `communality`, `getLV`, `predict`,
+`link_residual` — all take **`(fit, Y)`**, not `fit` alone. `MixedFamilyFit`
+stores only the parameters (`β`, `Λ`, `families`, `links`, `dispersion`, plus
+the usual `loglik` / `converged` / `iterations`), not the latent scores, so each
+extractor re-solves the per-site Laplace mode from `Y` and works forward from
+there. Mixed-family fits have **no confidence-interval engine yet**: no
+`MixedFamilyFit` method appears in the `confint` dispatch, and the R-bridge CI
+route skips such fits with an explicit "not routed" note rather than returning
+intervals.
 
 ## Two-part and mixture families (occurrence/zero × value)
 
