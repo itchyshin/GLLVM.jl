@@ -136,7 +136,10 @@ mode `Û` found by Fisher-scoring Newton over the stacked GMRF. An infeasible st
 function spde_latent_marginal_loglik(family, Y::AbstractMatrix, Ntr::AbstractMatrix,
         Λ::AbstractMatrix, β::AbstractVector, link::Link,
         A::AbstractMatrix, Q::AbstractMatrix;
+        hessian::Symbol = _default_hessian(family, link),
         maxiter::Integer = 50, tol::Real = 1e-9)
+    (hessian === :fisher || hessian === :observed) || throw(ArgumentError(
+        "hessian must be :fisher or :observed; got :$hessian"))
     p, M = size(Y)
     K = size(Λ, 2)
 
@@ -157,7 +160,18 @@ function spde_latent_marginal_loglik(family, Y::AbstractMatrix, Ntr::AbstractMat
     η  = _clamp_eta.(β .+ Λ * Z')
     μ  = _clamp_mu.(Ref(family), linkinv.(Ref(link), η))
     me = mu_eta.(Ref(link), η)
-    W  = _glm_weight.(Ref(family), μ, Ntr, me)
+    # Log-det curvature. This kernel builds its own Hessian and logdet, so the
+    # generic core's selector never reached it; a family whose default is
+    # `:observed` (Gamma/log) would otherwise disagree with every flipped path.
+    # The MODE SEARCH above (`_spde_latent_mode`) stays on Fisher — only this
+    # evaluation takes the selector. `confint_spde_latent`
+    # (`confint_family.jl:2253`) inherits whatever is computed here for its Wald
+    # standard errors, so the choice is user-visible.
+    W  = if hessian === :fisher || _glm_weight_matches_observed(family, link)
+        _glm_weight.(Ref(family), μ, Ntr, me)
+    else
+        _glm_obs_weight.(Ref(family), μ, Ntr, me, Y, Ref(link), η)
+    end
 
     ℓ_data = 0.0
     @inbounds for s in 1:M, t in 1:p
