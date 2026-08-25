@@ -222,3 +222,81 @@ Wait on the actual PID.
 ```text
 Read AGENTS.md and docs/dev-log/handover/2026-08-24-claude-overnight-handover.md. Run the handover rehydration steps, reconcile them with the current git state, then continue only the OWED Next Immediate Steps.
 ```
+
+---
+
+## 8. SESSION-CLOSE ADDENDUM (2026-08-24, written at handover to a new Claude session)
+
+The authoring session is closing. **Two things were in flight and a fresh session cannot
+see them** — neither is lost, but both need an explicit pickup.
+
+### 8.1 UNCOMMITTED WORK IN THE OTHER LANE — highest priority
+
+Worktree `/Users/z3437171/local-scratch/lanes/GLLVM.jl-a43-honesty-20260818`
+(branch `handover/2026-08-24-claude`, the PR #263 lane) has the **DeltaGamma curvature
+fix uncommitted**:
+
+```
+ M src/families/twopart.jl
+ M test/test_delta_gamma.jl
+?? docs/dev-log/after-task/2026-08-24-deltagamma-observed-curvature.md
+```
+
+It is **complete and locally verified** — `test_delta_gamma.jl` 50/50, DeltaLogNormal
+unchanged at Δ = 0.000e+00 exactly, `test_twopart_substrate.jl` and `test_delta_fit.jl`
+green. It was awaiting only its full `Pkg.test()`.
+
+**Its suite was still running at close** (~29 min in of ~70, **zero failures**), logging
+to
+`/private/tmp/claude-503/-Users-z3437171-Dropbox-Github-Local-GLLVM-jl/38ec6663-83c6-4f4c-85d8-86b8b3000189/scratchpad/pkgtest-dg.log`.
+That process will not survive the session. **Re-run the suite in that worktree, then:**
+
+- green (expect ≈6463 pass / 1 broken (pre-existing) / exit 0) → commit the three paths
+  above and push. Commit message content is in the after-task file.
+- red → **fix the cause, not the test.** Invariant that must hold:
+  DeltaLogNormal `:fisher` and `:observed` must be **exactly equal** (Δ = 0.000e+00) —
+  that is the proof the identity default leaves the other ~10 two-part families
+  untouched.
+
+### 8.2 TWO WORKFLOWS — one result captured, one lost
+
+- **Gap survey (`wpuopy4e7`) — COMPLETE.** Its most important finding is already
+  committed: the **eighth** curvature instance, on the public default path
+  `fit_gllvm(Y; family = Gamma())`. See `check-log.md` 2026-08-24. Its wider roadmap
+  (ledger rows, covariance grid, CV gap, "beyond") is in the workflow transcript at
+  `~/.claude/projects/.../workflows/scripts/gllvm-beyond-gap-wf_674554f1-5f9.js`
+  (`resumeFromRunId: wf_674554f1-5f9` replays cached agents).
+- **Structural-fix design (`w3ywfi2wd`) — INCOMPLETE at close.** This is the one whose
+  **adversarial verdict is the maintainer's gate** on touching `laplace.jl`. Re-run:
+  `Workflow({scriptPath: "~/.claude/projects/.../workflows/scripts/gllvm-laplace-structural-wf_b2b95464-796.js", resumeFromRunId: "wf_b2b95464-796"})`.
+  **Do not do the structural fix without that PROCEED verdict** (§0).
+
+### 8.3 The single most important open finding
+
+**Instance 8 — `fit_gllvm(Y; family = Gamma())` is on the wrong objective.** Gamma is in
+the *paid* 13/17 set, but its Δ was measured on the **grouped** route; the default public
+surface was never compared to the twin. A green receipt coexists with a wrong default
+path.
+
+**It is deliberately NOT patched**, because `fit_gamma_gllvm` uses `gradient = :analytic`
+and `laplace_grad.jl:237` records that path as *deliberately* matched to the current
+Fisher log-det. Changing one side alone degrades optimisation **silently**. This is the
+same coupled-pair mistake the session made twice; do not repeat it. It belongs to the
+structural arc, behind the same gate.
+
+Cheap next measurement, which also decides the architecture question: quantify instance
+8's impact (the mode is gradient-determined, so the whole impact is the log-det —
+no refit needed). Material → the substrate hook is justified. Exponential-sized (~0.23)
+→ per-family patches win.
+
+### 8.4 State at close
+
+| item | state |
+|---|---|
+| `origin/main` | `c5b72310` — **still carries the truncNB2 + Exponential bugs** |
+| PR #263 | OPEN, mergeable, **unmerged** (human merges) |
+| PR #254 | OPEN, 6 days stale — Shinichi's call |
+| `claude/lane-beyond-20260824` | pushed, carries this handover + the instance-8 record |
+| Merges performed | **none** — per the §0 gates |
+| CI on #263 | **unverified** (`gh run list --branch handover/2026-08-24-claude`) |
+
