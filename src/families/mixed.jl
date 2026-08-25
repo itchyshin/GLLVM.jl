@@ -246,7 +246,22 @@ function _mixed_loglik_site(families::AbstractVector, links::AbstractVector,
             ηt = _clamp_eta(β[t] + η[t])
             μt = _clamp_mu(families[t], linkinv(links[t], ηt))
             met = mu_eta(links[t], ηt)
-            W[t] = _glm_weight(families[t], μt, n[t], met)
+            # Per-trait log-det curvature. Each trait takes ITS OWN family's
+            # default, which is what makes the two bridge routes agree:
+            # `bridge.jl:472-479` sends `family = "gamma"` to the generic core
+            # but an all-same vector `["gamma", …]` here, and the comment there
+            # says so explicitly. Before this, a Gamma family flipped in the core
+            # but not here returned two different log-likelihoods for the SAME
+            # model on the public R surface.
+            #
+            # Missing cells never reach this branch (guarded above), so the
+            # observed weight — which reads `y` — is safe here.
+            W[t] = if _default_hessian(families[t], links[t]) === :fisher ||
+                      _glm_weight_matches_observed(families[t], links[t])
+                _glm_weight(families[t], μt, n[t], met)
+            else
+                _glm_obs_weight(families[t], μt, n[t], met, y[t], links[t], ηt)
+            end
             ℓ += _glm_logpdf(families[t], μt, n[t], y[t])
         end
     end
