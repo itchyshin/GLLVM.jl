@@ -57,8 +57,13 @@ function exponential_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatr
         # against a true 0.38 on a p=5, K=1, n=80 fixture. Preserving the original path
         # here keeps `:fisher` EXACTLY the pre-2026-08-24 behaviour, so this change is a
         # corrected default rather than an altered capability.
+        # `hessian = :fisher` is passed EXPLICITLY, never left to the core's
+        # default. If that default is ever flipped to `:observed`, this branch
+        # would otherwise start computing observed curvature while still calling
+        # itself `:fisher` — silently destroying the bit-for-bit guarantee the
+        # comment above promises, with no test able to see it.
         return marginal_loglik_laplace(Exponential(1.0), Y, ones(Int, size(Y)), Λ, β,
-                                       link; kwargs...)
+                                       link; hessian = :fisher, kwargs...)
     end
     return gamma_grouped_marginal_loglik_laplace(Y, Λ, β, ones(size(Λ, 1));
                                                  link = link, hessian = :observed,
