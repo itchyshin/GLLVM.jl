@@ -12654,3 +12654,79 @@ curvature feeds the central-difference Wald Hessian directly
 (`src/confint_family.jl:22-25`). That is the ledger row already marked `missing`
 ("simulation-validated coverage certificate", `capability-status.md:170`). Recovery
 tests would not have found this class; coverage would.
+
+## 2026-08-25 — the curvature fault class is ELEVEN instances, not eight; two entries above are wrong
+
+Independent read-only audit against the **code**, not against this log. Three further
+instances of the Fisher-vs-observed Laplace fault were found, and two claims in the
+tally above do not survive checking. Every citation below was opened and verified in
+this lane (`claude/lane-beyond-20260824` @ `1a3fa3bd`) before being written here.
+
+### Three unlisted instances — all in the generic Fisher-only core
+
+| # | family | site | evidence |
+|---|---|---|---|
+| 9 | NB2 shared route | `negbin.jl:11` | `_glm_weight(f::NegativeBinomial,μ,n,me) = me^2/(μ+μ²/f.r)`; the comment at `:8` says *"expected-information ⇒ W ≥ 0"*. At the log link this is `μr/(r+μ)` — precisely the Fisher weight this log itself derives at `:12318` while fixing truncated_nbinom2. Observed is `μr(y+r)/(μ+r)²`. Routes to the generic core at `negbin.jl:25`. |
+| 10 | Beta shared route | `beta.jl:21-25` | `_glm_weight(f::Beta,…) = φ²·ν·me²`; comment at `:9` says *"expected information ⇒ W ≥ 0"*. Routes to the generic core at `beta.jl:38-40`. |
+| 11 | NB1 generic (non-grouped) core | `negbin1.jl:77` | `_glm_weight(f::NB1,μ,n,me) = me^2 * _nb1_fisher_mu(μ,f.φ)`; comment at `:76` says *"Expected-information working weight"*, and the helper is **named** `_nb1_fisher_mu`. |
+
+### Two corrections to the tally above
+
+1. **DeltaGamma is recorded as "fixed". No branch carries that fix.** The work is
+   complete and locally verified but **uncommitted**, in the sibling worktree
+   `GLLVM.jl-a43-honesty-20260818`. A ledger reading "fixed" for what was ranked the
+   worst instance, while every branch still ships the bug, is the exact failure mode the
+   pre-publish gate exists to catch. (Its full suite was re-run on 2026-08-25 after the
+   original run was killed by SIGTERM at ~46 min when the authoring session's process
+   group was cleaned up.)
+2. **`negbin1.jl:77` is cited as the NB1 fix site. That line is untouched and still
+   Fisher.** The actual NB1 fix was the *grouped* route
+   (`grouped_dispersion.jl:1253`, `hessian::Symbol = :observed`). The generic core was
+   never part of it. The citation should be corrected, not merely re-read.
+
+### Why these three were missed — and why Gamma is still the urgent one
+
+`fit_gllvm.jl:142-145` auto-coerces `disp_group = :species` for NegativeBinomial / Beta
+/ NB1 / BetaBinom, so the **default** public path for those three lands on the corrected
+grouped route. They are reachable only via the exported `fit_nb_gllvm` /
+`fit_beta_gllvm` / `fit_nb1_gllvm`, via `disp_group = nothing`, via `bridge.jl:1111`, or
+via `confint_family.jl:183,2771` (bootstrap refit + Wald). Real, but not the default.
+
+**Gamma is excluded from that list** — the comment at `fit_gllvm.jl:141` says so in as
+many words: *"Gamma unchanged."* That is exactly why instance 8,
+`fit_gllvm(Y; family = Gamma())`, sits on the surface a user actually reaches. The
+exclusion was deliberate and correct for dispersion purposes; it just happens to leave
+Gamma alone on the Fisher core.
+
+### Two families already correct that no list mentions
+
+- **CensoredPoisson** (`censored_poisson.jl:67-75`) — its censored branch is *already*
+  the observed Hessian, derived by hand: *"Observed (−Hessian): −d²ℓ/dη² = −G·(C−μ−G)"*.
+- **Ordinal** (`ordinal.jl:61-74`) — already observed by construction.
+
+Both belong in the bit-for-bit invariance set alongside Poisson/log, Binomial/logit,
+Gaussian, TruncatedPoisson, HurdlePoisson `Wc` and DeltaLogNormal.
+
+### The gradient coupling, enumerated
+
+Five fitters default to `gradient = :analytic` (poisson, binomial, negbin, gamma, beta).
+**Exactly three are coupled** to the Fisher log-det and must change in the same commit
+as any substrate fix: `laplace_grad.jl:156` (NB2), `:221-222` (Gamma), `:302-303`
+(Beta). Poisson (`:73/:84`) and Binomial (`:359/:369`) are **not** coupled — canonical
+links, where one formula serves both roles.
+
+### Impact number corrected
+
+DeltaGamma's impact is **1.49**, not the **3.21** carried by the ranking entry above.
+The ranking fixture had all cells positive; a realistic delta has ~64% presence, so only
+that fraction carries the positive part. 3.21 was an upper bound, not an estimate. It
+remains the largest of the measured instances.
+
+### Open, unverified
+
+**GeneralizedPoisson1** (`gp1.jl:65-68`) is a plausible twelfth instance — its comment
+claims *"exact expected information"* — but the observed form was not derived here.
+**UNVERIFIED; a lead, not a finding.**
+
+No `src/` change in this entry. Docs-only, no twin Δ, no tolerance touched, no fence
+lifted, nothing merged.
