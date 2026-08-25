@@ -13234,3 +13234,69 @@ common path and strictly more correct, since it fires on the real condition howe
 weight was produced. `-Inf` is returned through `oftype(ℓ, …)` so it carries the caller's
 numeric type; fitters run ForwardDiff *over* this objective and a raw `Float64` returned
 into a `Dual` context is a latent type error (blocker 2).
+
+## 2026-08-25 — DRY RUN of the flip: 29 failures, categorised, and two families argue against it
+
+Before writing commit B, the default was flipped to `:observed` **locally and uncommitted**,
+the full suite run, and the change reverted. Purpose: produce the exact list of oracles that
+move, without me deciding what their new values should be. The reviewer's constraint binds
+here — *whoever changes the weight must not be the one who writes the new expected numbers* —
+and I wrote the contract. Measuring the damage is allowed; adjudicating it is not.
+
+**Result: 6601 pass / 29 fail / 0 error / 1 broken.** Far smaller than feared, and every
+failure is explicable.
+
+### The 29, by cause
+
+| n | what fails | cause | disposition |
+|---|---|---|---|
+| **5** | `test_laplace_curvature_contract.jl` default pins | **working as designed** — my own guards detecting the flip | update deliberately at commit B |
+| **8** | `test_laplace_grad.jl` (5) + `test_masked_dispersion_grad.jl` (3): `gan ≈ gfd` | **blocker 7 confirmed live** — the analytic gradients still match the *Fisher* log-det | must change in the SAME commit |
+| **9** | grouped-vs-shared reduction identities in `test_grouped_dispersion*.jl` (6) + `test_tweedie_grouped_engine_health.jl` (3), at `atol = 1e-10` | grouped **marginals** default `:fisher` while the core flips to `:observed`, so `ll_grouped ≡ ll_shared` breaks | **bigger than M3** — see below |
+| **6** | `test_offset.jl` offset-absorption identity | fits land in different places; loglik off by only 1.6e-4, but NB `r` differs 187.95 vs 264.68 | investigate — likely a flat `r` surface amplified |
+| **1** | `test_gp1_laplace.jl:102` α recovery | **real degradation** — see below | evidence AGAINST flipping GP1 |
+
+### M3 is understated: it is not just Tweedie
+
+The review asked for a `hessian` selector on `_tweedie_grouped_loglik_site`. The dry run
+shows the obligation is **general**: every grouped-dispersion marginal defaults to `:fisher`
+(NB2, NB1, Beta, Gamma, BetaBinomial, Tweedie), and each carries a reduction identity of the
+form *"equal per-species dispersion reduces to the shared-dispersion path"* pinned at
+`atol = 1e-10`. Flip the core and every one of those identities breaks, because the two
+sides stop using the same curvature. **Six identities across three files, not one family.**
+
+### GP1: the flip makes recovery WORSE, and it is not a gradient artefact
+
+`test_gp1_laplace.jl:102` recovers `α = 0.879` against a truth of `0.4` under `:observed`;
+under `:fisher` it lands within the `atol = 0.15` the test asks for. That is a ~2× error in
+a dispersion parameter.
+
+Checked before concluding: `fit_gp1_gllvm` optimises with `autodiff = :finite`
+(`gp1.jl:226`), so its gradient is **self-consistent with whatever objective it is given**.
+This is therefore not the blocker-7 coupling showing through — it is the observed-curvature
+objective genuinely recovering α worse on this fixture.
+
+**Caveat, stated plainly:** one seed, one fixture, one parameter. A signal, not a coverage
+claim. But a strong signal, because the assertion was calibrated to pass under Fisher.
+
+### Where this leaves the arc
+
+Three families now argue that `:observed` is not an unalloyed improvement:
+
+| family | evidence |
+|---|---|
+| **Gamma** | observed is **much better** — 12/12 closer to quadrature, 20-60× |
+| **Beta** | observed slightly **worse** — 2/12 closer |
+| **GP1** | observed **substantially worse** for α recovery — 0.879 vs 0.4 |
+
+This does not make the arc wrong. **It makes it a parity change** — TMB computes the
+observed joint Hessian structurally, and matching it is the goal. But it decisively rules
+out describing commit B as an accuracy improvement, and it means the flip should not be sold
+as "the numbers get better". For two of the three families measured, they get worse.
+
+**Recommendation for the maintainer, not a decision taken here:** the evidence now supports
+flipping *per family* on the strength of family-specific evidence, rather than flipping the
+global default in one step. Gamma — instance 8, the wrong public default — has the strongest
+case and the clearest measured benefit. GP1 has a measured case *against*.
+
+Nothing was committed from the dry run; the default remains `:fisher` and the tree is clean.
