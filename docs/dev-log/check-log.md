@@ -12557,3 +12557,100 @@ while the fit still converges and looks healthy.
 
 Tweedie and Student-t are ~0.2 — real, worth fixing, but not urgent, and Tweedie
 additionally needs its power-parameter granularity settled before any twin cell.
+
+---
+
+## 2026-08-24 — EIGHTH instance, and it is on a PUBLIC DEFAULT path: `fit_gllvm(Gamma())`
+
+Found by the gap-survey workflow and verified here line by line. **Not fixed — queued.**
+See "Why this is queued, not patched" below.
+
+### The finding
+
+`fit_gllvm(Y; family = Gamma())` dispatches to `fit_gamma_gllvm`
+(`src/families/fit_gllvm.jl:231`), whose Laplace log-det uses the **Fisher** weight:
+
+```julia
+# src/families/gamma.jl:9-12
+#   W = α (dμ/dη)² / μ²          (expected information ⇒ W ≥ 0)
+_glm_weight(f::Gamma, μ, n, me) = f.α * me^2 / μ^2
+```
+
+At the log link `me = μ`, so this is the **constant α** — y-free, the now-familiar
+signature. TMB uses the observed `α·y/μ`, and **that correct formula already exists in
+this repo twenty lines away** at `grouped_dispersion.jl:747`
+(`_gamma_grouped_laplace_weight`).
+
+### Why this one is worse than the other seven
+
+Gamma is in the **paid 13/17** set — its twin Δ is 2.05e-8. But that cell was measured
+on the **grouped** route, and says so explicitly:
+
+```julia
+# test/parity/test_nox_dispersion_parity.jl:60
+# Per-trait α — pair with the GROUPED fitter, not fit_gamma_gllvm.
+jl_fit = fit_gamma_gllvm_grouped(Y; K = K, group = collect(1:p))
+```
+
+So **the default public surface a user actually reaches was never compared to the twin,
+and is on the wrong objective.** Gamma is also the one dispersion family that
+`fit_gllvm.jl:142-145` deliberately excludes from the `disp_group = :species` default
+that carries NB2/Beta/NB1/BetaBinomial onto the corrected grouped kernel. A green parity
+receipt therefore coexists with a wrong default path — the receipt is true and the
+reader's natural inference from it is false.
+
+### Why this is QUEUED, not patched tonight
+
+Exponential looked like a template for this (commit `35e65fac`, delegate to the grouped
+kernel). **It is not**, because `fit_gamma_gllvm` has `gradient::Symbol = :analytic` and
+that analytic path is *deliberately matched to the current Fisher objective*:
+
+```
+# src/laplace_grad.jl:237
+(observed weight `αy/μ` in the implicit step, Fisher weight `α` in the log-det).
+```
+
+The implicit step already uses the **observed** weight — correctly. Only the **log-det**
+uses Fisher, precisely so the gradient matches the marginal it differentiates. Changing
+the objective without changing `laplace_grad.jl:200-237` in the same arc produces an
+objective/gradient mismatch that **degrades optimisation silently** rather than erroring.
+
+That is the gradient cascade the structural-fix census is scoping, and the maintainer
+gated any change of this class on the adversarial reviewer's verdict. Acting first would
+be exactly the mistake this session has already made twice — substituting one piece of a
+coupled pair and reading the resulting divergence as a discovery.
+
+### Running tally of the fault class
+
+| # | Family | Site | Status |
+|---|---|---|---|
+| 1 | NB1 | `negbin1.jl:77` | fixed |
+| 2 | TruncatedNegBin2 | `truncated_nbinom2.jl:52` | fixed |
+| 3 | Tweedie | `tweedie.jl:26` | open, measured +0.2414 |
+| 4 | Student-t | `studentt.jl:75` | open, measured −0.1720 |
+| 5 | DeltaGamma | `twopart.jl` | fixed (curvature half) |
+| 6 | Exponential | `exponential.jl:9` | fixed |
+| 7 | AGHQ adaptation | `aghq_grid.jl:203` | open, PARKED |
+| **8** | **Gamma shared route** | **`gamma.jl:12`** | **open — PUBLIC DEFAULT, has a gradient cascade** |
+
+### The measurement that decides the architecture question
+
+Quantifying instance 8's impact also settles the bigger call: if the shared-Gamma Δ is
+material, the substrate hook in `laplace.jl` is justified; if it is Exponential-sized
+(~0.23 logLik), the per-family route wins and the fence can stay closed. That
+measurement is cheap (the mode is gradient-determined, so the whole impact is the
+log-det) and should precede the decision.
+
+### A methodological correction worth keeping
+
+The survey's reviewer disputed the assumption that missing **ADEMP recovery tests** are
+the best detector for this fault class, and is right: the curvature error lives in the
+log-det while the **score stays correct**, so the estimator remains consistent and
+recovery-to-truth is a weak detector at realistic replicate counts (Exponential moved
+‖Λ‖ 0.4442 → 0.4889 against a truth of 0.3815 — well inside Monte Carlo noise).
+
+**CI coverage is the detector that would have caught all eight**, because the wrong
+curvature feeds the central-difference Wald Hessian directly
+(`src/confint_family.jl:22-25`). That is the ledger row already marked `missing`
+("simulation-validated coverage certificate", `capability-status.md:170`). Recovery
+tests would not have found this class; coverage would.
