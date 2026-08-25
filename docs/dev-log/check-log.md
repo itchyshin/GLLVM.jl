@@ -13031,3 +13031,138 @@ comments, not calls — so BetaBinomial, COM-Poisson, OrderedBeta and Ordinal de
   rtol-1e-10 gate test cannot pass as written.
 
 Nothing implemented. No `src/` change in this entry, no fence lifted, nothing merged.
+
+## 2026-08-25 — the oracle exists, and it REFUTES the assumption it was built on
+
+M4 of the adversarial review proposed a direction-of-change oracle: convert the
+loose quadrature comparisons to *"the error is strictly smaller under
+`hessian = :observed` than under `:fisher`"*, on the grounds that this is
+"exactly the claim being made, and free."
+
+Built it. **Measured it before asserting it. It does not hold.**
+
+### The measurement (K = 1, p = 6, 12 seeds per family, quadrature on 8001 nodes)
+
+| family | observed closer than Fisher | magnitude |
+|---|---|---|
+| **Gamma / log** | **12 / 12** | Fisher error 1.4e-2 … 1.1e-1; observed 5.4e-4 … 3.0e-3 — **20-60× smaller** |
+| **Beta / logit** | **2 / 12** | both ~1e-3 … 1e-2; Fisher usually marginally closer |
+
+So observed is decisively better for Gamma and **not** better for Beta.
+
+### This is not a bug in the fallback — checked before concluding
+
+The generic ForwardDiff fallback was cross-checked against
+`_beta_grouped_laplace_weight` (`grouped_dispersion.jl:403`), an independently
+hand-derived closed form living in a different file. **Worst relative error over a
+27-point (φ, η, y) grid: 1.8e-14.** An AD derivative and a hand-derived formula
+agreeing to machine precision is not something a wrong implementation does by
+accident. The Beta result is real.
+
+### What it actually means — and the overclaim it prevents
+
+**"Observed" and "closer to the exact marginal" are different claims.** The goal
+of this arc is **parity with TMB**, which computes the observed joint Hessian
+structurally via `MakeADFun(..., random=)`. Whether that approximation lands
+nearer the exact integral than a Fisher-weighted one is a *separate* empirical
+question, and for Beta the answer is no.
+
+The arc is still right — but it must be described as **a parity change, not an
+accuracy improvement.** Conflating the two would be precisely the class of
+overclaim this log keeps catching. Recorded before it could reach a release note.
+
+### A finding the design did not anticipate: Beta's observed curvature is NEGATIVE
+
+At reachable `(η, y)` — e.g. `φ = 12, η = −1.2, y = 0.87` — the Beta observed
+weight is **−1.218**, while the Fisher weight is strictly positive by
+construction. The design named only Student-t and GP-1 as needing the
+positive-definiteness guard. **Beta needs it too**, which makes the guard at the
+`Λ'WΛ + I` assembly load-bearing rather than defensive, and confirms that
+clamping the weight (`ordinal.jl`'s `max(·,0)`) must never be copied here.
+
+**Consequence for commit B, flagged now:** flipping the default to `:observed`
+can drive Beta sites into the PD guard and return `-Inf`. Combined with the
+repo-wide `isfinite(v) ? v : 1e12` sentinel, the reviewer's warning applies —
+that stalls the optimiser at a *declared convergence* rather than erroring. This
+must be exercised deliberately before the flip, not discovered after it.
+
+### What landed
+
+`test/test_laplace_curvature_oracle.jl` — 60/60. Two oracles, neither
+satisfiable by tuning: cross-implementation agreement at rtol 1e-10 between the
+generic AD fallback and two independently hand-derived formulas; and the
+direction-of-change assertion **for Gamma only**, where it was measured to hold.
+The file states the Beta result in its own comments so a later reader cannot
+mistake the omission for an oversight.
+
+## 2026-08-25 — commit A reviewed: the safety net could not detect the failure it exists for
+
+Commit A (`6d9d3e1b`) was written in this lane, so it went to three independent adversarial
+lenses (invariance / mathematics / PD-guard-and-fallback) before commit B builds on it.
+Own-the-verifier: the agent that built a thing does not get to be its only judge.
+
+**Verdict: SAFE WITH FIXES.** Ten confirmed defects — six wrong now, four dormant until the
+flip. The reviewer re-derived the bit-for-bit claim independently rather than accepting it:
+`6d9d3e1b^:laplace.jl:166` and `6d9d3e1b:laplace.jl:252-253` hold that expression
+character-for-character, and `_default_hessian` returns `:fisher`. **Nothing shipped moved.**
+
+### D1 — the invariance tests are tautological. This is the important one.
+
+The selector reads `if hessian === :fisher || _glm_weight_matches_observed(family, link)`.
+A trait-true family therefore takes the **identical branch under both settings** and never
+evaluates `_glm_obs_weight` at all. So `@test a === b` cannot fail — **for a right
+declaration or a wrong one.**
+
+The commit's own stated worst failure mode is "a genuinely wrong weight silently acquiring
+the trait." That mode had **zero instrumentation**. The four current declarations are in
+fact mathematically correct (the maths lens derived all four from the coded densities), so
+nothing is numerically wrong today — but nothing in the repo would have said so if they
+weren't. A test that cannot fail is not evidence, and asserting `===` rather than a
+tolerance did not save it: the problem was never the tolerance, it was the branch.
+
+**Fix:** assert `_glm_obs_weight ≈ _glm_weight` across **distinct y** at fixed η, for all
+four trait-true pairs. `_glm_weight` is y-free by definition; the observed curvature is
+y-dependent in general. If a declaration is wrong, varying y moves one and not the other
+and the test fails. That tests the *claim* instead of the *branch*.
+
+### The other five current defects
+
+- **D2** — `CensoredPoisson` is declared trait-true and appears in **no test**
+  (`grep -c CensoredPoisson` on the contract file → 0). It is the single declaration
+  carrying an explicit UNVERIFIED caveat (its slot applies `max(W, 0)`) and had no coverage.
+- **D3** — the "default is `:fisher`" testset asserts only that `_default_hessian` *returns*
+  `:fisher`. An inverted condition in the selector leaves it green. The real evidence was
+  the 6462-pass regression run, not that file.
+- **D4** — `ForwardDiff` is imported by the test and never called. The observed arm is a
+  *nested* ForwardDiff that outer AD must differentiate through; that composition was
+  argued statically, never measured.
+- **D5** — evidence hygiene: `runtests.jl` in the working tree included a file in no commit
+  on any branch. **The committed state is consistent** (HEAD's `runtests.jl` has zero
+  references and the file is untracked), so no CI was broken — but the two must land in the
+  same commit.
+- **D6** — and the one that matters beyond this commit: **five `logdet` sites in
+  `grouped_dispersion.jl` already default to `:observed` with no PD guard at all**, and
+  `isposdef` appears exactly once in all of `src/` — the occurrence commit A just added.
+  So unguarded observed-curvature paths are **pre-existing**, not introduced here.
+
+### Corrections to the reviewers themselves
+
+Two lens claims did not survive checking and are recorded so they are not propagated: one
+lens's headline mechanism for a shadowing bug was wrong (Julia rebinds `acc`; the
+initialisers are pre-existing at parent lines 176/201, though its conclusion survives on a
+different mechanism), and another's "logdet returns a finite meaningless number on an even
+count of negative eigenvalues" is not established for `Symmetric`, which does not take the
+generic `AbstractMatrix` path it cited. The unguarded-logdet finding underneath it is
+confirmed, and **understated** — five sites, not three.
+
+### Commit-B blockers, recorded
+
+Re-key the PD guard on the **weight's sign**, not on the trait · give it a margin and test
+the branch · `exponential.jl:59-61` must forward `hessian = :fisher` explicitly and
+`test_exponential.jl:82-84` must be re-armed so `old` pins `:fisher` · exercise the fallback
+for the nine reachable-but-untested cells (Binomial/probit and cloglog first) · update the
+three coupled gradients in the same commit · **decide and test the masked-cell contract**:
+under `:observed` the weight now reads `y`, and masked cells carry a placeholder that
+previously never reached the response · and do not describe commit B as closing the class.
+
+No `src/` change in this entry.
