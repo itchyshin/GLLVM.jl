@@ -90,13 +90,19 @@ using GLLVM, Test, Random, Distributions, Statistics
                                             hessian = :fisher)
         @test lf == old
 
-        #    And pinned to a RECORDED LITERAL, so the assertion survives even if
-        #    both sides were to move together. Provenance matters here: this
-        #    number was captured while the core default was still `:fisher` AND
-        #    the `:fisher` arm was verified to hold the original expression
-        #    verbatim -- so it is the genuine pre-2026-08-24 value, not the
-        #    current code's report of itself.
-        @test lf === -721.33208612614351
+        #    NOT pinned to a recorded literal. A literal WAS added here on
+        #    2026-08-25 and reverted the same day: the fixture comes from
+        #    `Random.seed!(61)` + `randn`, and that stream differs between Julia
+        #    1.10 and 1.12, so the value is version-specific. CI proved it —
+        #    ubuntu/1.10 passed while macOS and Windows on 1.12 both evaluated
+        #    -721.1485447143208 against the 1.10 literal -721.33208612614351.
+        #    A local machine running one Julia version cannot catch that.
+        #
+        #    The vacuity concern the literal was meant to address is already
+        #    covered portably: BOTH sides now request `hessian = :fisher`
+        #    explicitly (so a default flip cannot make them agree by accident),
+        #    and assertion 1 above independently pins that `:fisher` and
+        #    `:observed` are genuinely different objectives on this fixture.
 
         # 3. The observed weight equals -d2l/deta2 = y/mu (AD-verified to 1.9e-16
         #    separately); check the algebraic identity against the Gamma alpha=1 route,
