@@ -56,6 +56,24 @@ using GLLVM
     include("test_laplace_curvature_oracle.jl")
     include("test_laplace_dual_safety.jl")
     include("test_gamma_curvature_cross_kernel.jl")
+
+    # Wired in 2026-08-25. These five were ORPHANED — present in test/, absent
+    # from this file, and therefore never run in CI — while their sources
+    # (src/phylo_*_xlv.jl) ARE shipped, included at src/GLLVM.jl:103-107. That
+    # is untested shipped code. All five pass; each was run individually first.
+    #
+    # test_phylo_gamma_xlv.jl is deliberately NOT wired in yet: its :123
+    # assertion compares against a reference implementation inside the test file
+    # that still computes the Fisher log-det, and updating that oracle should
+    # not be done by whoever changed the code it judges.
+    include("test_phylo_xlv.jl")
+    include("test_phylo_beta_xlv.jl")
+    include("test_phylo_binomial_xlv.jl")
+    include("test_phylo_nb_xlv.jl")
+    include("test_phylo_ordinal_xlv.jl")
+    # Also orphaned, also shipped: src/sparse_phy_grad.jl is included at
+    # src/GLLVM.jl:44. Passes; wired in so CI actually exercises it.
+    include("test_sparse_phy_grad.jl")
     include("test_laplace_grad.jl")
     include("test_masked_dispersion_grad.jl")
     include("test_laplace_alloc_equiv.jl")
