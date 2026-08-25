@@ -103,7 +103,7 @@ function fit_truncated_poisson_gllvm(Y::AbstractMatrix; K::Integer,
     @inbounds for t in 1:p, s in 1:n
         (msk !== nothing && !msk[t, s]) && continue
         Yc[t, s] < 1 && throw(ArgumentError(
-            "truncated_poisson requires y ≥ 1; found y=$Yc[t,s] at ($t,$s)"))
+            "truncated_poisson requires y ≥ 1; found y=$(Yc[t, s]) at ($t,$s)"))
     end
 
     Zemp = [linkfun(link, max(Float64(Yc[t, i]), 1.0)) for t in 1:p, i in 1:n]

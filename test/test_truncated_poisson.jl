@@ -36,6 +36,22 @@ end
     @testset "rejects y=0" begin
         Y = [1 2; 0 3]
         @test_throws ArgumentError fit_truncated_poisson_gllvm(Y; K = 1, iterations = 5)
+
+        # The message must name the offending VALUE and CELL. Regression guard:
+        # it previously read "y=$Yc[t,s]", which interpolates the whole count
+        # matrix and then prints a literal "[t,s]" — so the reported value and
+        # index were not what the message promised, and the text grew with the
+        # size of the data rather than staying constant.
+        err = try
+            fit_truncated_poisson_gllvm(Y; K = 1, iterations = 5)
+            nothing
+        catch e
+            e
+        end
+        @test err isa ArgumentError
+        @test occursin("found y=0 at (2,1)", err.msg)
+        @test !occursin("[1, 2]", err.msg)      # no spliced matrix
+        @test length(err.msg) < 120             # constant-size message
     end
 
     @testset "smoke fit converges" begin
