@@ -192,6 +192,38 @@ public through the R bridge yet:
 
 ## Honest gaps
 
+### Laplace curvature: Fisher vs observed
+
+`gllvmTMB` is built on TMB, whose `MakeADFun(..., random = ...)` differentiates
+the coded joint negative log-likelihood. Its Laplace log-determinant therefore
+uses the **observed** joint Hessian, structurally and without ever making a
+choice about it. GLLVM.jl hand-codes its Laplace kernels, and several of them
+used the **Fisher (expected)** information in that role instead.
+
+The two coincide at canonical links — Poisson/log and Binomial/logit, where the
+curvature is free of `y` — which is why the launch families were unaffected and
+why the discrepancy went unnoticed. They differ everywhere else.
+
+**Status, stated plainly rather than as a capability claim:**
+
+- **Fixed and on `main`:** NB1 (grouped route), `truncated_nbinom2`,
+  `Exponential`, `DeltaGamma`, and **`Gamma`** — the last being the one that
+  sat on the public default path `fit_gllvm(Y; family = Gamma())`.
+- **Still using the Fisher weight:** Tweedie, Student-t, GP-1, and the shared
+  (non-grouped) routes of NB2, Beta and NB1, plus `Binomial` at the **probit**
+  and **cloglog** links. Every one of these is reachable, so a log-likelihood
+  from them will not match `gllvmTMB` to machine precision.
+- **Not a uniform improvement.** Against numerical quadrature, the observed
+  curvature is decisively closer for Gamma (12/12 seeds, 20–60× smaller error),
+  but *not* for Beta, and measurably worse for GP-1's dispersion recovery. So
+  each family is decided on its own evidence. Matching TMB is the goal;
+  "the numbers get better" would be an overstatement.
+
+Where a curvature has been corrected, the previous behaviour stays reachable
+through `hessian = :fisher` on the corresponding marginal.
+
+### Other gaps
+
 The rows above describe engine capabilities and the narrower R bridge admission
 surface separately. Engine-side work now covers the major response-family rows,
 fixed-effect covariates for the GLM families, the VA estimator, ordination

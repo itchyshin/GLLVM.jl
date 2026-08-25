@@ -4,6 +4,17 @@ All notable changes to GLLVM.jl are documented here.
 
 ## Unreleased
 
+### Changed
+- **Gamma's Laplace log-determinant now uses the observed conditional curvature
+  `α·y/μ`, matching TMB / `gllvmTMB`** (previously the Fisher weight, the
+  constant `α`). This **changes reported `loglik` values for Gamma fits**, and
+  anything derived from the Hessian such as Wald standard errors; point
+  estimates move very little, since the conditional mode is score-determined.
+  Measured 12/12 closer to numerical quadrature with 20–60× smaller error.
+  `hessian = :fisher` restores the previous behaviour. Other families are
+  unchanged — this was a per-family decision on per-family evidence, not a
+  global switch.
+
 ### Fixed
 - **`fit_tweedie_gllvm` reported `converged = true` at points that were not
   maxima.** The log warm start `log(max(Y, 1e-6))` sent every structural zero to

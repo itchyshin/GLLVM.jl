@@ -450,6 +450,31 @@ shared `γ`; twin API B). Shared-α + X remains the opt-in
 fit = fit_gllvm(Yp; family = Gamma(), K = 2)   # Yp > 0; shared α (no-X)
 ```
 
+!!! note "Laplace curvature: Gamma uses the observed Hessian (changed 2026-08-25)"
+    Gamma's Laplace log-determinant now uses the **observed** conditional
+    curvature `−∂²ℓ/∂η² = α·y/μ`, matching what TMB — and therefore
+    `gllvmTMB` — computes. It previously used the Fisher (expected)
+    information, the constant `α`, which is exactly the *expectation* of the
+    correct weight.
+
+    **This changes reported log-likelihoods for Gamma fits.** Point estimates
+    move very little (the conditional mode is determined by the score, which is
+    unaffected), but `loglik`, and anything derived from the Hessian such as
+    Wald standard errors, will differ from earlier versions.
+
+    Measured against high-resolution numerical quadrature across 12 seeds, the
+    observed curvature is closer to the exact marginal in 12/12 cases, with
+    20–60× smaller error. The previous behaviour remains available:
+
+    ```julia
+    ll = gamma_marginal_loglik_laplace(Y, Λ, β, α; hessian = :fisher)
+    ```
+
+    Other families are **unchanged** and keep the Fisher default. This was a
+    per-family decision made on per-family evidence, not a global switch — for
+    some families the observed curvature is *not* closer to the exact marginal,
+    so each is decided on its own measurements.
+
 ### Lognormal — `Lognormal()`
 
 
