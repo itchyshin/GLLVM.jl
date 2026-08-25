@@ -79,10 +79,30 @@ Two-part Laplace log-marginal for one site: `ℓ_s(ẑ) − ½ẑ'ẑ − ½logd
 `offsetz` / `offsetc` are known additive terms on the occurrence / positive-part
 predictors (`η^z = β^z + offsetz + Λ^z z`, similarly `η^c`).
 """
+# ---------------------------------------------------------------------------
+# Observed-curvature override for the POSITIVE-part weight (2026-08-24).
+#
+# `_tp_pieces` returns the Fisher (expected-information) `Wc`, which the two-part
+# substrate then uses for BOTH roles: the Fisher-scoring mode search and the Laplace
+# log-det. Those roles have different requirements. The mode search may use expected
+# information — it solves the same score equation, so the mode is unchanged. The
+# log-det must use the OBSERVED curvature to match TMB, which obtains it structurally
+# by AD-ing the joint nll (`TMB::MakeADFun(..., random=)`) and so never faces this
+# choice at all.
+#
+# This hook is applied ONLY in `twopart_loglik_site`'s A-matrix, never in
+# `_twopart_mode`. Keeping the mode solver untouched is deliberate: substituting a
+# curvature into a mode search that was tuned for a different one is exactly how the
+# Exponential fix first went wrong (‖Λ‖ ran away to ~960 against a true 0.38).
+#
+# Default is identity, so every family not given a method here is bit-for-bit
+# unchanged.
+_tp_observed_Wc(::Any, y, ηc, Wc) = Wc
+
 function twopart_loglik_site(family, y::AbstractVector,
         Λz::AbstractMatrix, Λc::AbstractMatrix,
         βz::AbstractVector, βc::AbstractVector;
-        offsetz = nothing, offsetc = nothing,
+        offsetz = nothing, offsetc = nothing, hessian::Symbol = :observed,
         maxiter::Integer = 100, tol::Real = 1e-9)
     p = size(Λc, 1)
     offz = offsetz === nothing ? false : offsetz
@@ -96,7 +116,10 @@ function twopart_loglik_site(family, y::AbstractVector,
     ℓ = 0.0
     @inbounds for t in 1:p
         _, _, W_z, W_c, logf = _tp_pieces(family, y[t], ηz[t], ηc[t])
-        Wz[t] = W_z; Wc[t] = W_c; ℓ += logf
+        # Observed curvature enters HERE ONLY (the log-det), never the mode solve.
+        Wz[t] = W_z
+        Wc[t] = hessian === :observed ? _tp_observed_Wc(family, y[t], ηc[t], W_c) : W_c
+        ℓ += logf
     end
     # Per-call buffers (written in place with the SAME broadcast / BLAS expressions
     # as before ⇒ bit-identical values and FP-operation order).
@@ -614,6 +637,17 @@ function _tp_pieces(f::DeltaGamma, y, ηz, ηc)
     end
 end
 
+# DeltaGamma: the positive part is Gamma(α, μ/α) at the log link, whose observed
+# curvature is α·y/μ. Rather than re-derive it, reuse the already-verified
+# implementation in `grouped_dispersion.jl` (`_gamma_grouped_laplace_weight`), which
+# is the same formula under test elsewhere in the package.
+function _tp_observed_Wc(f::DeltaGamma, y, ηc, Wc)
+    y > 0 || return Wc          # absence cells contribute nothing to the positive part
+    μ = exp(ηc)
+    return _gamma_grouped_laplace_weight(:observed, Gamma(f.α, 1.0), μ, μ, y, LogLink())
+end
+
+
 """
     delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α; Λz=nothing, kwargs...) -> Float64
 
@@ -668,9 +702,14 @@ positive value as log-mean intercepts + SVD of positive-part log-residuals as
 loadings + a method-of-moments `α₀` from the standardised positives.
 """
 function fit_delta_gamma_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
-        offset = nothing,
+        offset = nothing, hessian::Symbol = :observed,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    # Validated up front: the objective wraps its body in a try/catch that converts any
+    # throw into a large penalty, so a typo'd symbol would otherwise be laundered into
+    # a converged-looking garbage fit.
+    hessian in (:observed, :fisher) || throw(ArgumentError(
+        "fit_delta_gamma_gllvm: hessian must be :observed or :fisher; got :$hessian"))
     p, n = size(Y)
     rr = rr_theta_len(p, K)
 
@@ -717,6 +756,7 @@ function fit_delta_gamma_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         α = exp(θ[2p + rr + 1])
         v = try
             -delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α; offsetc = offset,
+                                                 hessian = hessian,
                                                  maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
