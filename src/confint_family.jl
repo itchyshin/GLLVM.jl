@@ -1853,27 +1853,49 @@ end
 # Generic numerics
 # ---------------------------------------------------------------------------
 
+# Objectives in this package return a large FINITE penalty (`_PHYLO_PENALTY`,
+# `_TWEEDIE_FAIL_PENALTY`, the bare 1e12 in constrained_ordination.jl) when they cannot be
+# evaluated — near a domain edge, for instance. Differencing such an arm is not a curvature
+# measurement: it produces enormous apparent curvature and therefore a VANISHING standard
+# error. The failure direction is toward false certainty, which is the dangerous one.
+#
+# Measured before this guard existed: `fit_gp1_gllvm(fill(600, 40, 5); K = 1)` put α̂ about
+# 0.05·h from the GP-1 domain edge, 17 stencil arms returned the sentinel, and the reported
+# 95% interval for α was 4.8e-10 wide on an estimate of 1.7e-3 — with `pd_hessian` true.
+const _FD_FAIL_THRESHOLD = 1e11
+
+_fd_failed(v) = !isfinite(v) || abs(v) >= _FD_FAIL_THRESHOLD
+
 # Central-difference Hessian of `f` at `x`. Step ∝ eps^(1/4) (the optimum for
 # the 3-point second derivative, balancing O(h²) truncation against O(eps/h²)
 # rounding). O(m²) function evaluations.
+#
+# Any entry whose stencil touches a failed arm is `NaN`. Callers already treat a non-finite
+# Hessian as "not positive definite" and report `NaN` intervals, so a failure surfaces as
+# "no interval" rather than as a confident wrong one.
 function _fd_hessian(f, x::AbstractVector)
     m = length(x)
     h = [eps()^(1 / 4) * max(abs(x[i]), 1.0) for i in 1:m]
     H = Matrix{Float64}(undef, m, m)
     f0 = f(x)
+    f0_bad = _fd_failed(f0)
     @inbounds for i in 1:m
         xp = copy(x); xp[i] += h[i]
         xm = copy(x); xm[i] -= h[i]
+        fp = f(xp); fm = f(xm)
         # NB `2 * f0`, not `2f0`: the latter lexes as the Float32 literal 2.0f0,
         # dropping the central term and corrupting every observed-information SE.
-        H[i, i] = (f(xp) - 2 * f0 + f(xm)) / h[i]^2
+        H[i, i] = (f0_bad || _fd_failed(fp) || _fd_failed(fm)) ? NaN :
+                  (fp - 2 * f0 + fm) / h[i]^2
     end
     @inbounds for i in 1:m, j in (i + 1):m
         xpp = copy(x); xpp[i] += h[i]; xpp[j] += h[j]
         xpm = copy(x); xpm[i] += h[i]; xpm[j] -= h[j]
         xmp = copy(x); xmp[i] -= h[i]; xmp[j] += h[j]
         xmm = copy(x); xmm[i] -= h[i]; xmm[j] -= h[j]
-        H[i, j] = H[j, i] = (f(xpp) - f(xpm) - f(xmp) + f(xmm)) / (4 * h[i] * h[j])
+        a = f(xpp); b = f(xpm); c = f(xmp); d = f(xmm)
+        H[i, j] = H[j, i] = any(_fd_failed, (a, b, c, d)) ? NaN :
+                            (a - b - c + d) / (4 * h[i] * h[j])
     end
     return H
 end

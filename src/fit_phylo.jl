@@ -81,6 +81,19 @@ end
 # variance trials (σ² → 0 / Inf / NaN).
 const _PHYLO_PENALTY = 1e12
 
+# A run that ends ON the penalty plateau did not converge, and its objective is not a
+# log-likelihood. Optim cannot tell the difference by itself: the finite-difference
+# gradient of a constant is exactly zero, so `g_converged` fires at iteration 0 and
+# `Optim.converged(res)` returns `true` on a fit whose μ is NaN.
+#
+# Mirrors `_tweedie_verdict` (families/tweedie.jl:186), whose governing rule is that the
+# failure sentinel is never reported as a log-likelihood. Returns `Inf` for a negative
+# log-likelihood, which is the `-Inf` of the loglik convention.
+function _phylo_verdict(optim_converged::Bool, nll::Real)
+    (isfinite(nll) && nll < _PHYLO_PENALTY) || return (false, Inf)
+    return (optim_converged, float(nll))
+end
+
 """
     fit_phylo_gaussian(phy, y; profile_mu=true, μ0, logσ²phy0, logσ²eps0,
                        g_tol=1e-5, iterations=500) -> PhyloGaussianFit
@@ -130,8 +143,8 @@ function fit_phylo_gaussian(phy::AugmentedPhy, y::AbstractVector;
         σ²_phy = exp(θ̂[1]); σ²_eps = exp(θ̂[2])
         st = build_node_perspecies(phy, fill(sqrt(σ²_phy), p), σ²_eps)
         μ̂ = _phylo_profile_mu(st, yf)
-        return PhyloGaussianFit(μ̂, σ²_phy, σ²_eps, Optim.minimum(res),
-                                Optim.converged(res), Optim.iterations(res))
+        conv, nll = _phylo_verdict(Optim.converged(res), Optim.minimum(res))
+        return PhyloGaussianFit(μ̂, σ²_phy, σ²_eps, nll, conv, Optim.iterations(res))
     else
         # θ = (μ, log σ²_phy, log σ²_eps); all three jointly.
         function negll3(θ)
@@ -144,8 +157,9 @@ function fit_phylo_gaussian(phy::AugmentedPhy, y::AbstractVector;
         res = Optim.optimize(negll3, [float(μ0), float(logσ²phy0), float(logσ²eps0)],
                              ls, opts; autodiff = :finite)
         θ̂ = Optim.minimizer(res)
-        return PhyloGaussianFit(θ̂[1], exp(θ̂[2]), exp(θ̂[3]), Optim.minimum(res),
-                                Optim.converged(res), Optim.iterations(res))
+        conv, nll = _phylo_verdict(Optim.converged(res), Optim.minimum(res))
+        return PhyloGaussianFit(θ̂[1], exp(θ̂[2]), exp(θ̂[3]), nll, conv,
+                                Optim.iterations(res))
     end
 end
 

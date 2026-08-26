@@ -14248,3 +14248,93 @@ Worked around the same way (qualified calls, with the reason written at the top 
 file) rather than restructuring two unrelated test files at this hour. **The underlying
 hazard stands: direct `src/` includes in tests are a type-identity trap, and the workaround
 is invisible to anyone who has not been bitten.**
+
+### A3 verified: the dense fitter recovers a WRONG-SIGN σ_phy component
+
+Third finding from the sweep that I reproduced myself rather than relay. On
+`test_em_phylo.jl`'s own seed-30 fixture:
+
+```
+truth      [0.9,  0.9,   0.9,    0.9,    0.9,    0.9  ]
+recovered  [-0.3231, 0.551, 0.3599, 0.3469, 0.7767, 1.6176]
+converged = true   logLik = -2184.19
+```
+
+`fit_gaussian_gllvm(...; has_phy_unique = true)` — shipped and exported — reaches a
+**sign-flipped** optimum, with component 1 off by 1.22 against a truth that is uniformly
+positive. Only a *global* sign flip is unidentified here; a single flipped component is a
+recovery failure, not an identifiability artefact.
+
+**Why nothing catches it — three independent reasons, all verified:**
+
+1. `test_signed_sigma_phy.jl:110` asserts `all(abs.(σ_phy) .> 0.3)` — the **absolute
+   value**, so it structurally cannot see a sign flip. With `-0.3231` it passes by 0.023.
+2. Its own comment (`:101-103`) claims *"all signs equal up to the global anchor"* — it
+   asserts precisely what it does not test.
+3. The anchor assertion checks only the largest-magnitude entry (`1.6176`, positive).
+4. `test_em_phylo.jl`, which compares dense against EM and would have caught it, is **not
+   wired into `runtests.jl` and never has been** (`git log -S` confirms).
+
+Same family as everything else tonight: **a check whose comment claims more than its
+assertion tests.** `abs()` in a guard is the sign-flip equivalent of a line-anchored grep —
+it returns a reassuring answer to a question nobody asked.
+
+Recorded as `@test_broken` alongside the two sentinel defects. Not fixed: the cause is at
+`src/fit.jl:425` (σ_phy moved to a signed identity link with greedy single-flip restarts at
+`:465-471`) against `src/em_phylo.jl:798-803`'s post-hoc global anchor — engine work.
+Also stale: `src/em_phylo.jl:432-433` still states "the dense fit restricts σ_phy = exp(·)
+> 0", contradicted by `src/fit.jl:425`.
+
+## 2026-08-26 — the "wrong sign" σ_phy defect is a symptom of a 62% downward bias
+
+Authorised to fix the sign defect, I measured before patching. **There is no sign bug, and
+patching one would have hidden something worse.**
+
+### The optimiser is not at fault
+
+Starting from the truth (`σ_phy_init = 0.9`) converges to the **identical** point —
+Δ logLik exactly 0, same estimates. The greedy single-flip restart loop
+(`src/fit.jl:465-471`) is doing its job; there is no unexplored basin.
+
+### ADEMP replication, 40 datasets, global sign anchored
+
+Probe: `docs/dev-log/pending/sigma-phy-recovery-ademp.jl`.
+
+| component | mean | bias | sd | % negative |
+|---|---|---|---|---|
+| 1 | 0.245 | **−0.655** | 0.528 | 32 % |
+| 2 | 0.336 | −0.564 | 0.585 | 30 % |
+| 3 | 0.249 | −0.651 | 0.537 | 30 % |
+| 4 | 0.357 | −0.543 | 0.595 | 32 % |
+| 5 | 0.446 | −0.454 | 0.669 | 22 % |
+| 6 | 0.425 | −0.475 | 0.724 | 18 % |
+
+**Overall mean 0.343 against a truth of 0.900 — a ~62 % systematic underestimate**, with
+28 % of components landing negative. The sign flips are not the defect; they are what a
+sampling distribution centred near 0.34 with sd ≈ 0.5–0.7 does when it straddles zero.
+
+### Why this is probably inherent, not a code bug (AGENT-INFERRED)
+
+Under `has_phy_unique` the phylogenetic effect is drawn **once**: `z = σ_phy ⊙ φ`, a single
+p-vector. Six SD parameters are then estimated from six numbers — one observation per
+parameter. A downward-biased scale estimate is what that estimand does (cf.
+`E|x| = σ√(2/π) ≈ 0.8σ` from a single draw, before the other parameters compete for the
+same variance). **Marked AGENT-INFERRED**: the bias is measured, the *explanation* is my
+inference and has not been derived.
+
+### What this means
+
+- **Do not "fix the sign".** Forcing positive signs would make the fit worse and paper over
+  a 62 % bias. `src/` is untouched.
+- `test_signed_sigma_phy.jl:101-103` claims *"all signs equal up to the global anchor"* —
+  measurably false, and its `abs()` guard is what let the bias sit unseen.
+- Whether per-species `σ_phy` should be advertised as recoverable in this configuration is
+  a **capability claim**, and therefore the maintainer's call, not an auditor's.
+
+### The pattern, again
+
+Every earlier instance tonight was a label asserting something nothing verified. This one
+is the same shape with a statistical face: `@test all(abs.(σ_phy) .> 0.3)` asks whether the
+magnitudes are non-trivial, which is not the question anyone cares about. It passes at
+`-0.3231` by 0.023 while the estimator is 62 % low. **An assertion can be true, wired,
+green, and still be measuring the wrong thing.**
