@@ -14174,3 +14174,77 @@ Current measured position:
 **The pattern, twice in one night:** a category label — `STRUCTURALLY_EXEMPT`,
 `TWOPART_KNOWN_OPEN` — becomes the thing nobody re-examines. Both times the fix was the
 same: make the label an assertion the machine checks, not a word a human wrote.
+
+## 2026-08-26 — the unchecked-assertion sweep: two live user-facing defects, reproduced
+
+Applying the Rose principle to the night's own evidence — the same shape had appeared three
+times (`TWOPART_KNOWN_OPEN`, `STRUCTURALLY_EXEMPT`, the twin's empty expected-drift frame) —
+a 21-agent sweep looked for **any list, constant or marker that asserts something nothing
+verifies**. 48 candidates, 11 surviving an adversarial recheck. **I reproduced the two worst
+myself on live fits.** These are not hypotheticals.
+
+### A1 — a fit reports success while containing `NaN`
+
+```julia
+phy = GLLVM.augmented_phy("(((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1):0.1,(E:0.2,F:0.2):0.1);")
+f   = GLLVM.fit_phylo_gaussian(phy, fill(3.0, 6))
+# converged = true · negll = 1.0e12 · iterations = 0 · μ = NaN
+# show() → PhyloGaussianFit(μ=NaN, σ²_phy=0.0, σ²_eps=0.0, negll=1.0e12)
+```
+
+A constant response makes `log(var(y)/2) = -Inf`, tripping the `all(isfinite, θ)` guard at
+`src/fit_phylo.jl:121`. The objective returns the flat `_PHYLO_PENALTY = 1e12` plateau
+(`:82`), the FD gradient over a constant is exactly 0, and Optim declares `g_converged` at
+iteration 0. **`show` prints no NOT-CONVERGED marker.** The sentinel is *finite*, so it
+flows into `aic`/`bic`/`select_lv` — and `src/model_selection.jl:69-80` guards with
+`try`/`catch`, which cannot see a failure that does not throw, while its docstring
+(`:41-43`) claims non-convergence is skipped.
+
+### A2 — Wald intervals collapse toward false certainty
+
+```julia
+f  = GLLVM.fit_gp1_gllvm(fill(600, 40, 5); K = 1)
+ci = GLLVM.confint(f, Y; method = :wald)
+# α̂ = -0.001657780884622944 · se = 1.2207e-10 · CI width = 4.79e-10
+```
+
+`α̂` sits ~0.05·h from the GP-1 domain edge (α packed raw, `confint_family.jl:225`;
+h = eps()^(1/4) ≈ 1.22e-4), so stencil arms leave the domain and return the sentinel.
+`_fd_hessian` (`:1859`) differences it, apparent curvature explodes, the SE vanishes —
+**seven orders of magnitude below the estimate**, with `pd_hessian` still `true`. The
+failure direction is toward *false certainty*, which is the dangerous one.
+
+### The common cause, and the fix the package already has
+
+Both are the sentinel pattern: **a value asserting success that nothing verifies.**
+`_tweedie_verdict` (`src/families/tweedie.jl:186-198`) names this exact mechanism and forces
+`-Inf`. It is called at **2 sites out of 79** that return the sentinel.
+
+**Not fixed here.** These are `src/` changes to convergence reporting and interval
+machinery. Recorded instead as `@test_broken` in `test/test_known_sentinel_defects.jl`, so
+they **error the moment someone fixes them** — a marker that invalidates itself, the
+opposite of a silent allowlist.
+
+Two of my first `@test_broken` assertions errored as *Unexpected Pass* because I had chosen
+claims that were already true. The mechanism catching its author is the point; I fixed the
+assertions, not the harness.
+
+### And a latent hazard the new file walked straight into
+
+The file was green standalone and errored under `Pkg.test()`:
+
+```
+MethodError: no method matching fit_phylo_gaussian(::AugmentedPhy{Float64}, ::Vector{Float64})
+  Closest candidates: fit_phylo_gaussian(!Matched::GLLVM.AugmentedPhy, ::AbstractVector; ...)
+```
+
+Two distinct types, one name. **`test_confint_bootstrap.jl:19` and
+`test_confint_derived.jl:7,10,130` `include` package sources DIRECTLY into the test module**,
+defining duplicates alongside the package's own; an unqualified call in a later file can
+bind to the wrong one. `test_edge_incidence.jl:157` and `test_em_louis.jl:32` already
+qualify as `GLLVM.augmented_phy` — evidence others hit this and worked around it silently.
+
+Worked around the same way (qualified calls, with the reason written at the top of the
+file) rather than restructuring two unrelated test files at this hour. **The underlying
+hazard stands: direct `src/` includes in tests are a type-identity trap, and the workaround
+is invisible to anyone who has not been bitten.**
