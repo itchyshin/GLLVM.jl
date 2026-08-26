@@ -14129,3 +14129,48 @@ something checks the exemption.** The single-part `STRUCTURALLY_EXEMPT` (Normal,
 Exponential) has the same shape and is *not* yet measured — Normal is provable by
 inspection (Gaussian curvature is y-free) and Exponential is a documented deliberate
 routing, but neither is machine-checked. Flagged.
+
+## 2026-08-26 — the exemption label was hiding a 705% discrepancy
+
+Having found that an unchecked exemption list is a hole, I machine-checked the one I had
+flagged and left: the single-part `STRUCTURALLY_EXEMPT` (Normal, Exponential). Probe:
+`docs/dev-log/pending/onepart-exempt-probe.jl`.
+
+| family / link | worst Fisher-vs-observed gap | what the exemption actually is |
+|---|---|---|
+| Normal / IdentityLink | **0.00 %** | a genuine identity — machine-checkable |
+| Exponential / LogLink | **705.50 %** | **not an identity at all** |
+
+**Exponential was an open curvature cell wearing an exemption label.** Its recorded reason
+— explicit `:fisher` routing, `exponential.jl:55-66` — is true and good: routing it through
+the grouped kernel made ‖Λ‖ run away to ~960 against a true 0.38. But that is a **decision
+taken for an unrelated reason**, not a statement that the two curvatures agree. Filing it
+beside Normal implied the latter, and the label meant nobody looked.
+
+The dict conflated two categories that need opposite treatment:
+
+- **`EXEMPT_BY_IDENTITY`** — asserts Fisher ≡ observed as fact. Now **machine-checked**
+  across 9 (y, η) cells; an entry that is not actually an identity fails. Negative control
+  confirms: claiming Exponential belongs here fails on `isapprox`.
+- **`DEFERRED_BY_DECISION`** — curvatures genuinely differ, Fisher retained deliberately,
+  each entry carrying its citation. These are **open cells with a decision attached, not
+  safe cells**, and the guard now says so.
+
+Guard: 48 → **59 tests**.
+
+### The count, restated honestly
+
+Every earlier figure in this log understated the class, including the ones I wrote tonight.
+Current measured position:
+
+- **single-part:** 6 open (`negbin.jl`, `negbin1.jl`, `studentt.jl`, `tweedie.jl`,
+  `beta.jl`, `gp1.jl`) + **Exponential deferred-by-decision** = 7 cells not on observed
+- **two-part:** 5 open (HurdleNB, ZIPoisson, ZINB, ZIB, BetaHurdle)
+- **fixed:** Gamma, TruncatedNegBin2, DeltaGamma
+- **identity-safe:** Binomial/logit, Poisson/log, TruncatedPoisson, CensoredPoisson, Normal,
+  DeltaLogNormal, HurdlePoisson
+- **fenced:** AGHQ
+
+**The pattern, twice in one night:** a category label — `STRUCTURALLY_EXEMPT`,
+`TWOPART_KNOWN_OPEN` — becomes the thing nobody re-examines. Both times the fix was the
+same: make the label an assertion the machine checks, not a word a human wrote.

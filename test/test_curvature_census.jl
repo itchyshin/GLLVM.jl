@@ -34,7 +34,7 @@
 #      none of them, so a 9th two-part family with a Fisher `Wc` would have extended the
 #      class with this test green.
 
-using GLLVM, Test, InteractiveUtils, ForwardDiff
+using GLLVM, Test, InteractiveUtils, ForwardDiff, Distributions
 
 const G = GLLVM
 
@@ -50,13 +50,31 @@ const KNOWN_OPEN = Set([:TweedieED, :NB1, :Beta, :GeneralizedPoisson1,
 
 # Families where Fisher == observed for STRUCTURAL reasons that are not expressed as a
 # `_glm_weight_matches_observed` trait, each with the reason recorded.
-const STRUCTURALLY_EXEMPT = Dict(
-    # Gaussian log-density is quadratic in η at the identity link, so the second
-    # derivative carries no y-dependence and expected == observed identically.
+# MEASURED 2026-08-26. The first version of this file put Normal and Exponential in one
+# "structurally exempt" dict. That conflated two different things, and the label was hiding
+# a 705% discrepancy:
+#
+#   Normal / IdentityLink      worst Fisher-vs-observed gap    0.00%
+#   Exponential / LogLink      worst Fisher-vs-observed gap  705.50%
+#
+# Exponential is NOT structurally safe. It is an open curvature cell deliberately left on
+# `:fisher` for an unrelated reason (routing it through the grouped kernel made ‖Λ‖ run away
+# to ~960 against a true 0.38 — exponential.jl:55-66). That is a DECISION, not an identity,
+# and it must not be filed as though the two curvatures agree.
+#
+# Probe: docs/dev-log/pending/onepart-exempt-probe.jl
+
+# Fisher ≡ observed as a matter of fact. Machine-checked below — an entry here that is not
+# actually an identity FAILS.
+const EXEMPT_BY_IDENTITY = Dict(
     :Normal => "Gaussian/identity: log-density quadratic in η, curvature is y-free",
-    # Routed with `hessian = :fisher` EXPLICITLY and deliberately; see the comment at
-    # exponential.jl:55-66. Folding it into the class without re-deriving would be wrong.
-    :Exponential => "deliberate explicit :fisher routing, documented at exponential.jl:55",
+)
+
+# Curvatures genuinely DIFFER; Fisher is retained deliberately, for a reason on record.
+# These are open cells with a decision attached, not safe cells. Each needs a citation.
+const DEFERRED_BY_DECISION = Dict(
+    :Exponential => "explicit :fisher routing to avoid the grouped-kernel ‖Λ‖ runaway; " *
+                    "see exponential.jl:55-66. Measured gap up to 705% — NOT an identity.",
 )
 
 @testset "Laplace curvature census (structural guard)" begin
@@ -89,7 +107,8 @@ const STRUCTURALLY_EXEMPT = Dict(
         declared = name in declared_safe ||
                    name in has_observed ||
                    name in KNOWN_OPEN ||
-                   haskey(STRUCTURALLY_EXEMPT, name)
+                   haskey(EXEMPT_BY_IDENTITY, name) ||
+                   haskey(DEFERRED_BY_DECISION, name)
 
         declared || push!(undeclared, (name, site))
     end
@@ -231,6 +250,26 @@ const STRUCTURALLY_EXEMPT = Dict(
     tp_names = Set(nameof(_family_of(m)) for m in methods(G._tp_pieces)
                    if _family_of(m) !== nothing)
     @test isempty(setdiff(TWOPART_KNOWN_OPEN, tp_names))
+
+    # ---- Single-part identity claims are machine-checked -----------------------------
+    #
+    # An entry in EXEMPT_BY_IDENTITY asserts Fisher == observed as a fact. Verify it, so the
+    # label cannot hide a discrepancy the way it hid Exponential's 705%.
+    _sp_instance = Dict(:Normal => Normal(0.0, 1.0))
+    _sp_link = Dict(:Normal => G.IdentityLink())
+    for (name, _) in EXEMPT_BY_IDENTITY
+        fam = get(_sp_instance, name, nothing); lnk = get(_sp_link, name, nothing)
+        @test fam !== nothing && lnk !== nothing
+        (fam === nothing || lnk === nothing) && continue
+        for y in (-1.5, 0.4, 2.2), η in (-0.7, 0.2, 1.1)
+            μ = G.linkinv(lnk, η); me = G.mu_eta(lnk, η)
+            @test isapprox(G._glm_obs_weight(fam, μ, 1, me, y, lnk, η),
+                           G._glm_weight(fam, μ, 1, me); rtol = 1e-8, atol = 1e-10)
+        end
+    end
+
+    # A family cannot be both an identity and a deferred decision.
+    @test isempty(intersect(keys(EXEMPT_BY_IDENTITY), keys(DEFERRED_BY_DECISION)))
 
     # ---- The exemption must be MEASURED, not asserted -------------------------------
     #
