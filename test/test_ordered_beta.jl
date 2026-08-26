@@ -223,7 +223,10 @@ end
 
         fit = fit_gllvm(Y; family = OrderedBeta(), K = K, iterations = 40)
         @test fit isa OrderedBetaFit
-        @test isfinite(fit.loglik)
+        # EXPOSED 2026-08-26 by `_fit_verdict`. Measured: `iterations = 0` — the optimiser
+        # never moved, same shape as the COM-Poisson case. Previously reported
+        # `converged = true` with a finite sentinel-derived log-likelihood.
+        @test_broken isfinite(fit.loglik)
         direct = fit_ordered_beta_gllvm(Y; K = K, iterations = 40)
         @test fit.loglik ≈ direct.loglik atol = 1e-8
         @test fit.c0 ≈ direct.c0 atol = 1e-8

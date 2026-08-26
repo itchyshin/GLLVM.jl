@@ -282,13 +282,11 @@ function fit_binomial_gllvm(Y::AbstractMatrix; K::Integer,
         alpha_hat = reshape(collect(θ̂[(cursor + 1):(cursor + q_lv * K)]), q_lv, K)
         cursor += q_lv * K
         Λ̂ = unpack_lambda(@view(θ̂[(cursor + 1):(cursor + rr)]), p, K)
-        return BinomialFit(β̂, Λ̂, link, -Optim.minimum(res),
-                           Optim.converged(res), Optim.iterations(res),
+        return BinomialFit(β̂, Λ̂, link, _fit_verdict(res)...,
                            alpha_hat, collect(Float64, θ̂))
     else
         β̂ = θ̂[1:p]
         Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
-        return BinomialFit(β̂, Λ̂, link, -Optim.minimum(res),
-                           Optim.converged(res), Optim.iterations(res))
+        return BinomialFit(β̂, Λ̂, link, _fit_verdict(res)...)
     end
 end

@@ -491,8 +491,7 @@ function fit_mixed_gllvm(Y::AbstractMatrix; families::AbstractVector, K::Integer
         disp_index[t] > 0 && (dispersion[t] = _positive_from_log(θ̂[p + rr + disp_index[t]]))
     end
     return MixedFamilyFit(β̂, Λ̂, families_bare, links_v, dispersion, disp_index,
-                          n_disp, links_v[1], -Optim.minimum(res),
-                          Optim.converged(res), Optim.iterations(res))
+                          n_disp, links_v[1], _fit_verdict(res)...)
 end
 
 # ===========================================================================

@@ -332,6 +332,5 @@ function fit_beta_gllvm_va(Y::AbstractMatrix{<:Real}; K::Integer,
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
     φ̂ = exp(θ̂[p + rr + 1])
-    return BetaFit(β̂, Λ̂, φ̂, link, -Optim.minimum(res),
-                   Optim.converged(res), Optim.iterations(res))
+    return BetaFit(β̂, Λ̂, φ̂, link, _fit_verdict(res)...)
 end

@@ -148,6 +148,5 @@ function fit_gamma_gllvm_va(Y::AbstractMatrix{<:Real}; K::Integer,
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
     α̂ = exp(clamp(θ̂[p + rr + 1], logαlo, logαhi))
-    return GammaFit(β̂, Λ̂, α̂, link, -Optim.minimum(res),
-                    Optim.converged(res), Optim.iterations(res))
+    return GammaFit(β̂, Λ̂, α̂, link, _fit_verdict(res)...)
 end

@@ -336,6 +336,5 @@ function fit_ordered_beta_gllvm(Y::AbstractMatrix; K::Integer,
     c0̂ = θ̂[p + rr + 1]
     c1̂ = c0̂ + exp(θ̂[p + rr + 2])
     φ̂  = exp(θ̂[p + rr + 3])
-    return OrderedBetaFit(β̂, Λ̂, c0̂, c1̂, φ̂, -Optim.minimum(res),
-                          Optim.converged(res), Optim.iterations(res))
+    return OrderedBetaFit(β̂, Λ̂, c0̂, c1̂, φ̂, _fit_verdict(res)...)
 end

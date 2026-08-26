@@ -210,6 +210,5 @@ function fit_studentt_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
     σ̂ = exp(θ̂[p + rr + 1])
-    return StudentTFit(β̂, Λ̂, ν0, σ̂, link, -Optim.minimum(res),
-                       Optim.converged(res), Optim.iterations(res))
+    return StudentTFit(β̂, Λ̂, ν0, σ̂, link, _fit_verdict(res)...)
 end

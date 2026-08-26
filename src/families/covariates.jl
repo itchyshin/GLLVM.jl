@@ -315,6 +315,5 @@ function fit_gllvm_cov(Y::AbstractMatrix; family, X::AbstractArray{<:Real, 3},
     γ̂ = collect(Float64, _expand_fixed_zero(γ̂_free, γ_fixed_mask))
     Λ̂ = unpack_lambda(θ̂[(p + q + 1):(p + q + rr)], p, K)
     disp̂ = has_disp ? exp(θ̂[p + q + rr + 1]) : NaN
-    return GllvmCovFit(family, β̂, γ̂, collect(Bool, γ_fixed_mask), Λ̂, disp̂, lk, -Optim.minimum(res),
-                       Optim.converged(res), Optim.iterations(res))
+    return GllvmCovFit(family, β̂, γ̂, collect(Bool, γ_fixed_mask), Λ̂, disp̂, lk, _fit_verdict(res)...)
 end

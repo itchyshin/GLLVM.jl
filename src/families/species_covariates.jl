@@ -207,6 +207,5 @@ function fit_gllvm_speciescov(Y::AbstractMatrix; family, X::AbstractArray{<:Real
     B̂ = reshape(θ̂[(p + 1):(p + p * q)], p, q)
     Λ̂ = unpack_lambda(θ̂[(p + p * q + 1):(p + p * q + rr)], p, K)
     disp̂ = has_disp ? exp(θ̂[p + p * q + rr + 1]) : NaN
-    return GllvmSpeciesCovFit(family, β̂, B̂, Λ̂, disp̂, lk, -Optim.minimum(res),
-                              Optim.converged(res), Optim.iterations(res))
+    return GllvmSpeciesCovFit(family, β̂, B̂, Λ̂, disp̂, lk, _fit_verdict(res)...)
 end

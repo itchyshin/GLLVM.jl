@@ -219,6 +219,5 @@ function fit_fourthcorner_gllvm(Y::AbstractMatrix; family,
     Ĉ = reshape(θ̂[(p + 1):(p + q * r)], q, r)
     Λ̂ = unpack_lambda(θ̂[(p + q * r + 1):(p + q * r + rr)], p, K)
     disp̂ = has_disp ? exp(θ̂[p + q * r + rr + 1]) : NaN
-    return FourthCornerFit(family, β̂, Ĉ, Λ̂, disp̂, lk, -Optim.minimum(res),
-                           Optim.converged(res), Optim.iterations(res))
+    return FourthCornerFit(family, β̂, Ĉ, Λ̂, disp̂, lk, _fit_verdict(res)...)
 end

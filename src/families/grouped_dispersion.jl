@@ -276,8 +276,7 @@ function fit_nb_gllvm_grouped(Y::AbstractMatrix; K::Integer, group::AbstractVect
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
     r̂g = exp.(θ̂[(p + rr + 1):(p + rr + G)])
-    return NBGroupedFit(β̂, Λ̂, r̂g, gidx, link, -Optim.minimum(res),
-                        Optim.converged(res), Optim.iterations(res))
+    return NBGroupedFit(β̂, Λ̂, r̂g, gidx, link, _fit_verdict(res)...)
 end
 
 """
@@ -405,7 +404,7 @@ function fit_nb_gllvm_grouped_cov(Y::AbstractMatrix; X::AbstractArray{<:Real, 3}
     Λ̂ = unpack_lambda(θ̂[(p + q + 1):(p + q + rr)], p, K)
     r̂g = exp.(θ̂[(p + q + rr + 1):(p + q + rr + G)])
     return NBGroupedCovFit(β̂, γ̂, collect(Bool, γ_fixed_mask), Λ̂, r̂g, gidx, link,
-                           -Optim.minimum(res), Optim.converged(res), Optim.iterations(res))
+                           _fit_verdict(res)...)
 end
 
 # ===========================================================================
@@ -630,8 +629,7 @@ function fit_beta_gllvm_grouped(Y::AbstractMatrix; K::Integer,
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
     φ̂g = exp.(θ̂[(p + rr + 1):(p + rr + G)])
-    return BetaGroupedFit(β̂, Λ̂, φ̂g, gidx, link, -Optim.minimum(res),
-                          Optim.converged(res), Optim.iterations(res))
+    return BetaGroupedFit(β̂, Λ̂, φ̂g, gidx, link, _fit_verdict(res)...)
 end
 
 """
@@ -758,7 +756,7 @@ function fit_beta_gllvm_grouped_cov(Y::AbstractMatrix; X::AbstractArray{<:Real, 
     Λ̂ = unpack_lambda(θ̂[(p + q + 1):(p + q + rr)], p, K)
     φ̂g = exp.(θ̂[(p + q + rr + 1):(p + q + rr + G)])
     return BetaGroupedCovFit(β̂, γ̂, collect(Bool, γ_fixed_mask), Λ̂, φ̂g, gidx, link,
-                             -Optim.minimum(res), Optim.converged(res), Optim.iterations(res))
+                             _fit_verdict(res)...)
 end
 
 # ===========================================================================
@@ -980,8 +978,7 @@ function fit_gamma_gllvm_grouped(Y::AbstractMatrix; K::Integer,
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
     α̂g = exp.(θ̂[(p + rr + 1):(p + rr + G)])
-    return GammaGroupedFit(β̂, Λ̂, α̂g, gidx, link, -Optim.minimum(res),
-                           Optim.converged(res), Optim.iterations(res))
+    return GammaGroupedFit(β̂, Λ̂, α̂g, gidx, link, _fit_verdict(res)...)
 end
 
 """
@@ -1110,7 +1107,7 @@ function fit_gamma_gllvm_grouped_cov(Y::AbstractMatrix; X::AbstractArray{<:Real,
     Λ̂ = unpack_lambda(θ̂[(p + q + 1):(p + q + rr)], p, K)
     α̂g = exp.(θ̂[(p + q + rr + 1):(p + q + rr + G)])
     return GammaGroupedCovFit(β̂, γ̂, collect(Bool, γ_fixed_mask), Λ̂, α̂g, gidx, link,
-                              -Optim.minimum(res), Optim.converged(res), Optim.iterations(res))
+                              _fit_verdict(res)...)
 end
 
 # ===========================================================================
@@ -1350,8 +1347,7 @@ function fit_nb1_gllvm_grouped(Y::AbstractMatrix; K::Integer,
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
     φ̂g = exp.(θ̂[(p + rr + 1):(p + rr + G)])
-    return NB1GroupedFit(β̂, Λ̂, φ̂g, gidx, link, -Optim.minimum(res),
-                         Optim.converged(res), Optim.iterations(res))
+    return NB1GroupedFit(β̂, Λ̂, φ̂g, gidx, link, _fit_verdict(res)...)
 end
 
 """
@@ -1480,7 +1476,7 @@ function fit_nb1_gllvm_grouped_cov(Y::AbstractMatrix; X::AbstractArray{<:Real, 3
     Λ̂ = unpack_lambda(θ̂[(p + q + 1):(p + q + rr)], p, K)
     φ̂g = exp.(θ̂[(p + q + rr + 1):(p + q + rr + G)])
     return NB1GroupedCovFit(β̂, γ̂, collect(Bool, γ_fixed_mask), Λ̂, φ̂g, gidx, link,
-                            -Optim.minimum(res), Optim.converged(res), Optim.iterations(res))
+                            _fit_verdict(res)...)
 end
 
 # ===========================================================================

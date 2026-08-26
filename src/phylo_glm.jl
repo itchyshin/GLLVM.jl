@@ -240,7 +240,6 @@ function fit_phylo_glm(Y::AbstractMatrix, phy::AugmentedPhy;
     β̂ = θ̂[1:p]
     σ²_phŷ = exp(θ̂[p + 1])
     disp = _spde_disp_value(family, θ̂[(pbase + 1):(pbase + nd)])
-    return PhyloGLMFit(β̂, σ²_phŷ, disp, link, family, -Optim.minimum(res),
-                       Optim.converged(res), Optim.iterations(res))
+    return PhyloGLMFit(β̂, σ²_phŷ, disp, link, family, _fit_verdict(res)...)
 end
 

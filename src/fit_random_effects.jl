@@ -223,5 +223,5 @@ function fit_gaussian_random_slope(y::AbstractMatrix, grouping::AbstractVector,
     th = Optim.minimizer(res)
     Σ_b̂, _ = _unpack_chol_cov(th[(rr + 2):(rr + 1 + nc)], q)
     return GaussianRandomSlopeFit(unpack_lambda(th[1:rr], p, K), exp(th[rr + 1]), Matrix{Float64}(Σ_b̂),
-                                  L, q, -Optim.minimum(res), Optim.converged(res), Optim.iterations(res))
+                                  L, q, _fit_verdict(res)...)
 end

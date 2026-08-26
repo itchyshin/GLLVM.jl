@@ -273,14 +273,12 @@ function fit_gamma_gllvm(Y::AbstractMatrix; K::Integer,
         Λ̂ = unpack_lambda(@view(θ̂[(cursor + 1):(cursor + rr)]), p, K)
         cursor += rr
         α̂ = exp(θ̂[cursor + 1])
-        return GammaFit(β̂, Λ̂, α̂, link, -Optim.minimum(res),
-                       Optim.converged(res), Optim.iterations(res),
+        return GammaFit(β̂, Λ̂, α̂, link, _fit_verdict(res)...,
                        alpha_hat, collect(Float64, θ̂))
     else
         β̂ = θ̂[1:p]
         Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
         α̂ = exp(θ̂[p + rr + 1])
-        return GammaFit(β̂, Λ̂, α̂, link, -Optim.minimum(res),
-                       Optim.converged(res), Optim.iterations(res))
+        return GammaFit(β̂, Λ̂, α̂, link, _fit_verdict(res)...)
     end
 end

@@ -23,9 +23,53 @@
 # `test_edge_incidence.jl:157` and `test_em_louis.jl:32` already qualify for the same
 # reason. See the check-log entry for 2026-08-26.
 
-using GLLVM, Test, Random, LinearAlgebra
+using GLLVM, Test, Random, LinearAlgebra, Distributions
 
-@testset "Sentinel defects: two FIXED, one still open" begin
+@testset "Sentinel defects: fixed at the class level, one still open" begin
+
+    @testset "the sentinel never escapes as a converged log-likelihood" begin
+        # FIXED 2026-08-26 by `_fit_verdict` (src/fit_verdict.jl), applied at 68 return
+        # sites. Both cases below were reproduced BEFORE the fix and returned
+        # converged=true with loglik=-1.0e12 and aic=2.0e12.
+        #
+        # A sentinel INSIDE an objective closure is correct — it is a barrier keeping the
+        # line search out of a bad region. The defect was only ever that
+        # `Optim.minimum(res)` carried it out: the FD gradient of the flat plateau is
+        # exactly zero, so `g_converged` fires at iteration 0 and the constructor stores
+        # the plateau as a log-likelihood.
+
+        # (1) One zero cell in Gamma data — no y > 0 validation, an ordinary user slip.
+        Random.seed!(7)
+        Yg = abs.(randn(6, 40)) .+ 0.5
+        Yg[2, 3] = 0.0
+        fg = GLLVM.fit_gamma_gllvm(Yg; K = 1)
+        @test !fg.converged                 # was true
+        @test fg.loglik == -Inf             # was -1.0e12
+        @test !isfinite(GLLVM.aic(fg))      # was a clean-looking 2.0e12
+
+        # (2) NB grouped_cov with a non-LogLink. This failed 100% of calls under the
+        # DOCUMENTED DEFAULT `hessian = :observed`, and the package's own informative
+        # ArgumentError ("supported only for NB2 with LogLink()") was being swallowed by a
+        # catch to manufacture the fake success.
+        Random.seed!(104)
+        X = randn(4, 80, 1)
+        Yi = rand(Distributions.NegativeBinomial(3.0, 0.4), 4, 80)
+        fb = GLLVM.fit_nb_gllvm_grouped_cov(Yi; X = X, K = 1, group = collect(1:4),
+                                            link = GLLVM.IdentityLink())
+        @test !fb.converged                 # was true
+        @test fb.loglik == -Inf             # was -1.0e12
+
+        # A healthy fit on the same route is untouched — the screen must not fire on
+        # real answers.
+        fh = GLLVM.fit_nb_gllvm_grouped_cov(Yi; X = X, K = 1, group = collect(1:4))
+        @test fh.converged
+        @test isfinite(fh.loglik) && fh.loglik < 0
+
+        # The helper itself, at its boundaries.
+        @test GLLVM._fit_verdict(1.0e12, true, 0) == (-Inf, false, 0)
+        @test GLLVM._fit_verdict(NaN, true, 5) == (-Inf, false, 5)
+        @test GLLVM._fit_verdict(780.13, true, 42)[2]
+    end
 
     @testset "signed σ_phy: dense fitter recovers a wrong-SIGN component" begin
         # Reproduced 2026-08-26. `fit_gaussian_gllvm(...; has_phy_unique = true)` reaches a

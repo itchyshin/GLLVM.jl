@@ -329,6 +329,5 @@ function fit_beta_hurdle_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     βc = θ̂[(p + 1):(2p)]
     Λc = unpack_lambda(θ̂[(2p + 1):(2p + rr)], p, K)
     φ  = exp(θ̂[2p + rr + 1])
-    return BetaHurdleFit(βz, βc, Λc, φ, -Optim.minimum(res),
-                         Optim.converged(res), Optim.iterations(res))
+    return BetaHurdleFit(βz, βc, Λc, φ, _fit_verdict(res)...)
 end

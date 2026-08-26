@@ -323,6 +323,5 @@ function fit_nb_gllvm_va(Y::AbstractMatrix{<:Integer}; K::Integer,
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
     r̂ = exp(θ̂[p + rr + 1])
-    return NBFit(β̂, Λ̂, r̂, link, -Optim.minimum(res),
-                 Optim.converged(res), Optim.iterations(res))
+    return NBFit(β̂, Λ̂, r̂, link, _fit_verdict(res)...)
 end

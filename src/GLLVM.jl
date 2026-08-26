@@ -12,6 +12,7 @@ using Distributions: Distribution, Univariate, Discrete, Continuous,
     Chisq, cdf, pdf, logpdf, logcdf, quantile, ccdf
 
 # Core
+include("fit_verdict.jl")            # _fit_verdict: never report a failure sentinel as a loglik
 include("packing.jl")
 include("lowrank_cholesky.jl")          # used by likelihood
 include("likelihood.jl")

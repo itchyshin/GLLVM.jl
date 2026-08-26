@@ -185,7 +185,6 @@ function fit_spde_gaussian(y::AbstractVector, nodes::AbstractMatrix,
     σ2̂ = exp(θ̂[3])
     μ̂ = θ̂[4]
 
-    return SPDEGaussianFit(κ̂, τ̂, σ2̂, μ̂, -Optim.minimum(res),
-                           Optim.converged(res), Optim.iterations(res),
+    return SPDEGaussianFit(κ̂, τ̂, σ2̂, μ̂, _fit_verdict(res)...,
                            nodes, tris)
 end

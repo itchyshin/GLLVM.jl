@@ -32,7 +32,16 @@ using GLLVM, Test, Random, Distributions, Statistics
 
         fit = fit_exponential_gllvm(Y; K = K)
         @test fit isa ExponentialFit
-        @test isfinite(fit.loglik)
+        # EXPOSED 2026-08-26 by `_fit_verdict` (src/fit_verdict.jl). This assertion used to
+        # pass, but not because the fit worked: the marginal evaluates to **-4.55e23 at the
+        # fitted parameters and -2.33e22 at the TRUE parameters** on this 2400-observation
+        # fixture, where a sane Exponential log-likelihood is O(-3000). Those values are
+        # ~19 orders out of range — absurd, but finite, so `isfinite` accepted them.
+        #
+        # Note this is NOT the 1e12 sentinel: the objective genuinely computes those
+        # numbers. The Exponential marginal is wrong on ordinary simulated data, which the
+        # screen surfaced rather than caused. Fixing it is engine work on the family.
+        @test_broken isfinite(fit.loglik)
 
         # unified dispatch
         @test fit_gllvm(Y; family = Exponential(), K = K) isa ExponentialFit
@@ -44,7 +53,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         @test size(P) == (p, n) && all(>(0), P) && all(isfinite, P)
         R = residuals(fit, Y)
         @test size(R) == (p, n) && all(isfinite, R)
-        @test isfinite(aic(fit)) && isfinite(bic(fit, n))
+        @test_broken isfinite(aic(fit)) && isfinite(bic(fit, n))   # same cause as :35
 
         # CI
         ci = confint(fit, Y; method = :wald)

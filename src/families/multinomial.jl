@@ -281,7 +281,6 @@ function fit_multinomial_gllvm(Y::AbstractVecOrMat;
     θ̂ = Optim.minimizer(res)
     β̂, γ̂ = unpack_multinomial(θ̂, ncat, p)
     return MultinomialFit(collect(Float64, β̂), Matrix{Float64}(γ̂), ncat,
-                          LogitLink(), -Optim.minimum(res),
-                          Optim.converged(res), Optim.iterations(res),
+                          LogitLink(), _fit_verdict(res)...,
                           collect(Float64, θ̂))
 end

@@ -195,6 +195,5 @@ function fit_roweffect_gllvm(Y::AbstractMatrix; family,
     ρ̂ = vcat(0.0, θ̂[(p + 1):(p + nfree)])
     Λ̂ = unpack_lambda(θ̂[(p + nfree + 1):(p + nfree + rr)], p, K)
     disp̂ = has_disp ? exp(θ̂[p + nfree + rr + 1]) : NaN
-    return RowEffectFit(family, β̂, ρ̂, Λ̂, disp̂, lk, -Optim.minimum(res),
-                        Optim.converged(res), Optim.iterations(res))
+    return RowEffectFit(family, β̂, ρ̂, Λ̂, disp̂, lk, _fit_verdict(res)...)
 end

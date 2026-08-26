@@ -14338,3 +14338,94 @@ is the same shape with a statistical face: `@test all(abs.(σ_phy) .> 0.3)` asks
 magnitudes are non-trivial, which is not the question anyone cares about. It passes at
 `-0.3231` by 0.023 while the estimator is 62 % low. **An assertion can be true, wired,
 green, and still be measuring the wrong thing.**
+
+## 2026-08-26 — the sentinel class fixed at the root, and three broken fitters fall out
+
+Authorised to fix the confirmed escapes. A 22-agent audit (Fable synthesising, Opus
+refuting) examined 175 sites and confirmed 15 escapes; `grep -rn -- "-Optim.minimum(res)"`
+shows **93 sites in 57 files** carrying the pattern.
+
+**Two reproduced before touching anything:**
+
+```julia
+Y = abs.(randn(6,40)) .+ 0.5;  Y[2,3] = 0.0        # one zero cell
+fit_gamma_gllvm(Y; K=1)  →  converged=true, loglik=-1.0e12, aic=2.0e12
+
+fit_nb_gllvm_grouped_cov(Yi; X, K=1, group, link=IdentityLink())
+                         →  converged=true, loglik=-1.0e12, iterations=0
+```
+
+The NB case fails **100 % of calls** under the documented default `hessian = :observed` —
+and the package's own `ArgumentError("hessian=:observed is currently supported only for NB2
+with LogLink()")` was being **swallowed by a `catch` to manufacture the fake success**. A
+correct diagnostic destroyed to produce a wrong answer.
+
+### The fix: one shared helper, 68 sites
+
+`src/fit_verdict.jl` — `_fit_verdict(res) -> (loglik, converged, iterations)`. Failure
+reports `-Inf` / `false`, matching `_phylo_verdict`'s convention: `-Inf` cannot masquerade
+as a finite AIC and trips every downstream `isfinite` check.
+
+Not 68 per-fitter verdict functions. `_tweedie_verdict` and `_phylo_verdict` are
+family-specific because they carry *extra* tests; these sites ask one question — "is this
+the plateau?". Ninety hand-copied verdicts is the drift machine that produced the class.
+
+The substitution was mechanical because the three fields are always the trailing arguments,
+so `_fit_verdict(res)...` splats in with no restructuring.
+
+**25 sites remain un-screened** (the `variational_*` family, `phylo_*_xlv`). Different
+shapes, individually unread. 68 of 93 is not a completed sweep and should not be recorded
+as one.
+
+### What the fix exposed: three exported fitters do not work on their own fixtures
+
+The suite went red with four failures, all `isfinite(fit.loglik)`. Each was investigated
+rather than assumed, and **none was a false positive from the screen**:
+
+| fitter | measured | cause |
+|---|---|---|
+| `fit_gllvm(COMPoisson())` | `iterations = 0`, marginal at fitted params = **NaN** | classic sentinel escape |
+| `fit_gllvm(OrderedBeta())` | `iterations = 0` | classic sentinel escape |
+| `fit_exponential_gllvm` | marginal **−4.55e23** at fitted, **−2.33e22 at the TRUE parameters** | **NOT the sentinel** — a genuinely computed, genuinely absurd objective |
+
+The Exponential case is the important one. On 2400 observations a sane log-likelihood is
+O(−3000); −2.33e22 is nineteen orders out. The objective computes that value honestly, so
+the screen surfaced a *separate, pre-existing* defect in the Exponential marginal rather
+than causing one.
+
+All three are now `@test_broken` with the measurement written at the assertion.
+
+### The lesson, which is the same one all night
+
+`@test isfinite(fit.loglik)` passed for all three. **Absurd numbers are finite.** An
+assertion that only rules out `Inf` and `NaN` cannot tell a log-likelihood from a
+catastrophe, and three exported fitters sat broken behind it. The magnitude check that
+would have caught them — "is this the right order for the number of observations?" — costs
+one line.
+
+### The 25 un-screened sites, classified — and one class is my own regex's fault
+
+| class | n | shape | note |
+|---|---|---|---|
+| **A** keyword constructors | 12 | `loglik = -Optim.minimum(res), converged = Optim.converged(res)` | `phylo_*_xlv` (6), `missing_predictor_*` (4), `coevolution_kronecker`/`_blockna`. Two-line edit each; the splat trick does not apply to kwargs |
+| **B** bare scalar returns | 9 | `return -Optim.minimum(res)` | the whole `variational_*` family |
+| **C** same shape, missed | 3 | trailing args split across lines | `coevolution_glm:320`, `ordinal.jl:722`, `fit.jl:412` |
+| **D** assigned to a local | 1 | `ll = -Optim.minimum(res)` | `gaussian_pervar:243` |
+
+**Class C is a regex limitation, not a different shape.** Those three are the exact pattern
+already fixed; my substitution pattern simply did not match their line breaks. So "68 of
+93" both understates what is mechanically fixable and overstates how much is genuinely
+distinct. Recorded because a count that flatters the work is the failure mode this log
+exists to catch — and this is the *fourth* time tonight a pattern-match returned a
+confident partial answer.
+
+**Class B is the one that needs a decision, not an edit.** The `variational_*` functions
+return a **bare log-likelihood with no convergence flag at all**. Screening the value to
+`-Inf` stops it being consumed as a number, but the caller still has no way to learn that
+the fit failed — there is no verdict channel to write to. Giving them one changes their
+return type, which is an API change. **Flagged for the maintainer, not done.**
+
+`fit.jl:412` additionally uses a **`1e10` sentinel** (`fit.jl:345`), which sits *below* the
+`1e11` screen threshold and would slip through unchanged. Either that constant moves to
+`_NLL_SENTINEL` or the site needs its own screen; harmonising the constant is the cleaner
+of the two and is what the audit recommended.

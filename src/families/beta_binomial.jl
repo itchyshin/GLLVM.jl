@@ -389,8 +389,7 @@ function fit_beta_binomial_gllvm(Y::AbstractMatrix; K::Integer,
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
     φ̂ = exp(θ̂[p + rr + 1])
-    return BetaBinomialFit(β̂, Λ̂, link, φ̂, -Optim.minimum(res),
-                           Optim.converged(res), Optim.iterations(res))
+    return BetaBinomialFit(β̂, Λ̂, link, φ̂, _fit_verdict(res)...)
 end
 
 # ===========================================================================
@@ -547,8 +546,7 @@ function fit_beta_binomial_gllvm_grouped(Y::AbstractMatrix; K::Integer,
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
     φ̂g = exp.(θ̂[(p + rr + 1):(p + rr + G)])
-    return BetaBinomialGroupedFit(β̂, Λ̂, φ̂g, gidx, link, -Optim.minimum(res),
-                                  Optim.converged(res), Optim.iterations(res))
+    return BetaBinomialGroupedFit(β̂, Λ̂, φ̂g, gidx, link, _fit_verdict(res)...)
 end
 
 # ===========================================================================
@@ -722,5 +720,5 @@ function fit_beta_binomial_gllvm_grouped_cov(Y::AbstractMatrix; X::AbstractArray
     Λ̂ = unpack_lambda(θ̂[(p + q + 1):(p + q + rr)], p, K)
     φ̂g = exp.(θ̂[(p + q + rr + 1):(p + q + rr + G)])
     return BetaBinomialGroupedCovFit(β̂, γ̂, collect(Bool, γ_fixed_mask), Λ̂, φ̂g, gidx, link,
-                                     -Optim.minimum(res), Optim.converged(res), Optim.iterations(res))
+                                     _fit_verdict(res)...)
 end

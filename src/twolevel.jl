@@ -246,7 +246,7 @@ function fit_twolevel_gaussian(y::AbstractMatrix, individual::AbstractVector;
     Σ_B = Matrix{Float64}(_dense_sigma(Λ_Bf, σ²_Bf))
     Σ_W = Matrix{Float64}(_dense_sigma(Λ_Wf, σ²_Wf))
     return TwoLevelFit(Λ_Bf, σ²_Bf, Λ_Wf, σ²_Wf, Σ_B, Σ_W, L,
-                       -Optim.minimum(res), Optim.converged(res), Optim.iterations(res))
+                       _fit_verdict(res)...)
 end
 
 # ---------------------------------------------------------------------------
