@@ -236,7 +236,7 @@ Same twin surface, transport layer. Status = code + bridge/parity test exist;
 
 | Capability | Status |
 |---|---|
-| Bridge capability ledger + drift probe | implemented |
+| Bridge capability ledger + drift probe (**probe is RED — see fence below**) | implemented |
 | Bridge no-X point fit (core one-part families) | implemented |
 | Bridge fixed-effect X (selected families) | implemented |
 | Bridge missing-response mask (selected families) | implemented |
@@ -246,6 +246,42 @@ Same twin surface, transport layer. Status = code + bridge/parity test exist;
 | Bridge full family × full structure parity | rejected |
 | Bridge phylo / animal / spatial / kernel source parity | planned |
 | Bridge Phylo Model A / source-specific `lv` advertising | rejected |
+
+## Bridge drift probe: `implemented` is misleading for this row (2026-08-26)
+
+**This section exists because the row above is a compound of two halves with different
+truth values.** The capability-ledger half is genuinely implemented and tested
+(`bridge_capabilities()` at `src/bridge.jl:632`, exported `src/GLLVM.jl:251`, test wired
+at `test/runtests.jl:206`). **The drift probe is RED**, and nothing in either repo's CI
+reports it.
+
+Measured against the twin at `origin/main`, re-derived from both constant sets:
+
+| surface | R mirror | engine | engine-only |
+|---|---|---|---|
+| one-part families | 11 (`R/julia-bridge.R:18`) | 17 (`src/bridge.jl:164`) | `zip`, `zinb`, `zib`, `lognormal`, `betabinomial`, `truncated_poisson` |
+| fixed-effect `X` | 6 (`:76`) | 11 (`src/bridge.jl:198`) | `zip`, `zinb`, `betabinomial`, `nb1`, `ordinal`, `ordinal_probit` |
+| CI under `X` | inherits the stale 6 (`:106`) | all 11 (`_BRIDGE_NO_CI_X_FAMILIES` is empty) | same six |
+
+There is no drift in the other direction: the R mirror never claims a family the engine
+lacks.
+
+**Why nothing catches it.** `.gllvm_julia_expected_capability_drifts()`
+(`R/julia-bridge.R:432`) returns a literal 0-row frame whose comment states as fact that
+the two surfaces agree. The only engine-facing assertion
+(`tests/testthat/test-julia-bridge.R:2848`) sits behind `skip_if_no_julia()`, so it does
+not run in ordinary CI — and would fail if it did. The check that *does* pass compares the
+R mirror against itself.
+
+**User-visible consequence.** An R user on `engine = "julia"` cannot reach six families the
+Julia engine ships — including the zero-inflated trio and lognormal, which are precisely
+the families where GLLVM.jl is *ahead* of the twin. The bridge that would expose that lead
+does not know they exist.
+
+Reported upstream at `gllvmTMB#488`, the issue that predicted this bug class and asked for
+the audit. The status word is left `implemented` because the ledger half is real; this
+fence is what makes the row honest, in the same style as the Laplace-curvature section
+below.
 
 ## Laplace curvature: which families match TMB's log-det (2026-08-25)
 
