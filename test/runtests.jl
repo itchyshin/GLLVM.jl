@@ -214,5 +214,6 @@ using GLLVM
     include("test_lv_ci.jl")
     include("test_phylo_eta_realized.jl")
     include("test_bridge_missing_mask.jl")
+    include("test_curvature_census.jl")
     include("test_quality.jl")
 end
