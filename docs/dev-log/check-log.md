@@ -14051,3 +14051,28 @@ Three of four defects were in the corrections, not the original work. Writing a 
 record is not the same as writing a correct one, and a document whose purpose is accuracy
 gets no immunity from being audited. The independent gate earned its place tonight for the
 second time in one session.
+
+### The `~340×` headline: fenced where I may, flagged where I may not
+
+Rose's top pre-tag blocker. The figure is live in four places. I cannot verify it — its
+"Gaussian + phylogenetic" grid lives in the separate local bench repo, deliberately outside
+this one — so this is not a claim that it is *wrong*, only that a reader cannot check it
+here, and that the one grid we do publish has a median of **265.1×**.
+
+| location | action |
+|---|---|
+| `docs/src/gllvmtmb-parity.md:82` | **fenced** — now leads with the published 161–698× grid, marks `~340×` unverified in-repo, and corrects "machine-precision agreement" to six significant digits |
+| `docs/src/changelog.md:142` | **left alone** — already carries an appended 2026-08-25 correction, and that file's convention is explicitly to append rather than rewrite published entries |
+| `CLAUDE.md:7` | **NOT touched — needs maintainer approval** |
+| `AGENTS.md:13` | **NOT touched — needs maintainer approval** |
+
+The parity page was the worst of the four: it still asserted *"machine-precision agreement
+on estimates and likelihoods"* — the exact overstatement the changelog had already corrected
+on 2026-08-25. A correction applied to one surface and not its neighbours is the same defect
+as the README speedup clause earlier today, and this is now the second instance in one
+session. **When a claim appears in N places, correcting it in one is not correcting it.**
+
+Two of the four remain unqualified because AGENTS.md's merge-authority rule puts edits to
+those files beyond a Phase-state snapshot under maintainer approval. That is a governance
+fence working as designed, not an oversight — but it does mean the repo currently states the
+claim two ways. Recorded so the pre-tag gate sees it.
