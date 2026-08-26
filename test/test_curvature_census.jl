@@ -34,7 +34,7 @@
 #      none of them, so a 9th two-part family with a Fisher `Wc` would have extended the
 #      class with this test green.
 
-using GLLVM, Test, InteractiveUtils
+using GLLVM, Test, InteractiveUtils, ForwardDiff
 
 const G = GLLVM
 
@@ -176,8 +176,23 @@ const STRUCTURALLY_EXEMPT = Dict(
     #
     # `_tp_pieces` returns the Fisher `Wc` (see the comment at twopart.jl:84-90). A
     # two-part family is fixed only if it supplies a specialised `_tp_observed_Wc`.
-    TWOPART_KNOWN_OPEN = Set([:DeltaLogNormal, :HurdlePoisson, :HurdleNB,
-                              :ZIPoisson, :ZINB, :ZIB, :BetaHurdle])
+    # Two-part families where Fisher == observed, MEASURED not assumed: a nested
+    # ForwardDiff second derivative of the family's own `_tp_pieces` log-density wrt ηc
+    # agrees with the returned Fisher `Wc` to 0.0% relative gap across the probe grid.
+    # The instrument was validated against DeltaGamma's merged `_tp_observed_Wc` override
+    # to <= 2.4e-16 before being trusted. Probe:
+    # `docs/dev-log/pending/twopart-curvature-probe.jl`.
+    TWOPART_STRUCTURALLY_EXEMPT = Dict(
+        :DeltaLogNormal => "conditional part is Gaussian in ηc; curvature is y-free",
+        :HurdlePoisson  => "canonical log link on the conditional Poisson part",
+    )
+
+    # Genuinely open: measured worst-case relative gap between Fisher and observed, and
+    # how many probe cells have NEGATIVE observed curvature (a PD-guard risk if flipped).
+    #   HurdleNB   251%, 0 negative      ZIPoisson  280%, 3 negative
+    #   ZINB      1223%, 3 negative      ZIB        214%, 6 negative
+    #   BetaHurdle 127%, 2 negative
+    TWOPART_KNOWN_OPEN = Set([:HurdleNB, :ZIPoisson, :ZINB, :ZIB, :BetaHurdle])
 
     tp_observed = Set{Symbol}()
     for m in methods(G._tp_observed_Wc)
@@ -191,7 +206,8 @@ const STRUCTURALLY_EXEMPT = Dict(
         f = _family_of(m)
         f === nothing && continue
         name = nameof(f)
-        (name in tp_observed || name in TWOPART_KNOWN_OPEN) && continue
+        (name in tp_observed || name in TWOPART_KNOWN_OPEN ||
+         haskey(TWOPART_STRUCTURALLY_EXEMPT, name)) && continue
         push!(tp_undeclared, (name, string(basename(string(m.file)), ":", m.line)))
     end
 
@@ -215,4 +231,29 @@ const STRUCTURALLY_EXEMPT = Dict(
     tp_names = Set(nameof(_family_of(m)) for m in methods(G._tp_pieces)
                    if _family_of(m) !== nothing)
     @test isempty(setdiff(TWOPART_KNOWN_OPEN, tp_names))
+
+    # ---- The exemption must be MEASURED, not asserted -------------------------------
+    #
+    # A negative control exposed this: moving a genuinely-open family into
+    # TWOPART_STRUCTURALLY_EXEMPT with an invented justification passed silently. An
+    # unchecked escape hatch can silence exactly the defect this guard exists to catch.
+    #
+    # So every exemption is now verified numerically: the observed curvature
+    # (-d²logf/dηc², nested ForwardDiff on the family's own `_tp_pieces` log-density)
+    # must equal the Fisher `Wc` the family returns. Claiming an exemption for a family
+    # where they differ now FAILS.
+    _tp_instance = Dict(:DeltaLogNormal => G.DeltaLogNormal(1.0),
+                        :HurdlePoisson  => G.HurdlePoisson())
+
+    for (name, reason) in TWOPART_STRUCTURALLY_EXEMPT
+        fam = get(_tp_instance, name, nothing)
+        @test fam !== nothing            # an exemption with no instance cannot be checked
+        fam === nothing && continue
+        for y in (0.0, 1.0, 4.0), ηz in (-0.8, 0.5), ηc in (-1.0, 0.3, 1.2)
+            fisher = G._tp_pieces(fam, y, ηz, ηc)[4]
+            observed = -ForwardDiff.derivative(
+                a -> ForwardDiff.derivative(b -> G._tp_pieces(fam, y, ηz, b)[5], a), ηc)
+            @test isapprox(observed, fisher; rtol = 1e-8, atol = 1e-10)
+        end
+    end
 end

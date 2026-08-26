@@ -14076,3 +14076,56 @@ Two of the four remain unqualified because AGENTS.md's merge-authority rule puts
 those files beyond a Phase-state snapshot under maintainer approval. That is a governance
 fence working as designed, not an oversight — but it does mean the repo currently states the
 claim two ways. Recorded so the pre-tag gate sees it.
+
+## 2026-08-26 — the two-part substrate, measured: 2 of the 7 were never open
+
+I had deferred this arc on the grounds that my error rate tonight was elevated. That
+reasoning does not survive inspection: every error tonight was in **prose and audits**, and
+a curvature derivation is gated by an *objective* ForwardDiff check that does not depend on
+my judgement. So I measured it.
+
+**Instrument.** `-∂²logf/∂ηc²` by nested ForwardDiff on the family's own `_tp_pieces`
+log-density. Family-agnostic — whatever the structure (hurdle, zero-inflated mixture), that
+IS the observed quantity the Laplace log-det wants. Probe:
+`docs/dev-log/pending/twopart-curvature-probe.jl`.
+
+**Control first.** DeltaGamma already has a merged, independently verified
+`_tp_observed_Wc` (`twopart.jl:644`). The instrument reproduces it to **≤ 2.4e-16** across
+four (α, y, ηc) points. Only then did I trust it on the rest.
+
+| family | worst rel gap | negative-observed cells | verdict |
+|---|---|---|---|
+| **DeltaLogNormal** | **0.0 %** | 0 | **NOT open** — Fisher ≡ observed |
+| **HurdlePoisson** | **0.0 %** | 0 | **NOT open** — Fisher ≡ observed |
+| HurdleNB | 250.6 % | 0 | open |
+| ZIPoisson | 279.7 % | 3 | open |
+| ZINB | **1223.4 %** | 3 | open |
+| ZIB | 213.9 % | 6 | open |
+| BetaHurdle | 127.3 % | 2 | open |
+
+**Two of the seven were never open.** My `TWOPART_KNOWN_OPEN` list was wrong, and the
+earlier session had already established both as correct — I put them on the open list
+anyway. Corrected: they now sit in `TWOPART_STRUCTURALLY_EXEMPT` with the measurement as
+evidence. **The two-part substrate is 5 open, not 7**, and the class total is 11, not 13.
+
+For the maintainer's decision, the gaps are not marginal: ZINB's Fisher weight is off by a
+factor of ~13, and ZIB's observed curvature is negative in 6 of 18 probe cells — a real
+PD-guard risk if flipped, unlike Beta where the analogous risk measured 0 of 20.
+
+### A negative control that did NOT fire — and the hole it exposed
+
+Checking the corrected guard, one control passed when it should have failed: moving a
+genuinely-open family into `TWOPART_STRUCTURALLY_EXEMPT` with an invented justification was
+accepted silently. **The exemption list was an unchecked escape hatch** — it could be used
+to silence exactly the defect the guard exists to catch, and I had just created it.
+
+Fixed by making the exemption a *measured* claim rather than a stated one: every exempt
+family is now verified numerically (observed ≡ Fisher to rtol 1e-8 across 18 cells).
+Re-running the control now fails with the real numbers — `-0.409` vs `1.158`, which is
+ZIB's negative-curvature cell.
+
+Guard: 10 → **48 tests**. The lesson generalises: **an exemption list is a hole unless
+something checks the exemption.** The single-part `STRUCTURALLY_EXEMPT` (Normal,
+Exponential) has the same shape and is *not* yet measured — Normal is provable by
+inspection (Gaussian curvature is y-free) and Exponential is a documented deliberate
+routing, but neither is machine-checked. Flagged.
