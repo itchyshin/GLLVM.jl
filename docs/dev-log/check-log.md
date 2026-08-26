@@ -13892,8 +13892,11 @@ ENGINE-ONLY — the bridge silently refuses these:
 R-ONLY: none
 ```
 
-Plus 3 `fixed_effect_X` drifts (R omits nb1/ordinal/ordinal_probit) and 3 CI-flag drifts
-(nb1) — **12 unregistered drifts**, all `status = "unregistered"`, because
+Plus **6** `fixed_effect_X` drifts and 6 CI-flag drifts
+*(**corrected 2026-08-26**: this entry originally said 3, counting only nb1/ordinal/
+ordinal_probit. It missed `betabinomial`, `zip` and `zinb` — families absent from the R
+admission list entirely, hence trivially absent from its X-list too. 6 is the figure in the
+`capability-status.md` fence and the handover; this line was the stale one.)* — **12 unregistered drifts**, all `status = "unregistered"`, because
 `.gllvm_julia_expected_capability_drifts()` (`julia-bridge.R:432`) returns a literal 0-row
 frame whose comment asserts as fact that the two surfaces agree.
 
@@ -13992,3 +13995,59 @@ published pages are reachable), so this is warning noise rather than broken navi
 but 41 standing warnings are exactly the cover under which a *real* broken link goes
 unnoticed. Converting them is an 11-file cosmetic sweep and belongs in its own commit, not
 bolted onto a test change. Flagged for the maintainer.
+
+## 2026-08-26 — Rose audit of the 9-commit batch: four defects, three in the corrections themselves
+
+The goal's DISCIPLINE line specifies `closure = after-task report + Rose audit`. The audit
+had not run. It has now, against `origin/main..HEAD`, and it found four citable defects —
+**three of them inside artifacts written specifically to fix earlier sloppiness.**
+
+1. **[fixed] The drift fence undercounted the engine's own surface.** I cited
+   `_BRIDGE_X_FAMILIES` (`src/bridge.jl:198`, 11 entries) as the engine's fixed-effect-`X`
+   surface. That constant is documented *"One-part **NON-Gaussian** families"* and excludes
+   `gaussian` by design; the advertised surface is built at `src/bridge.jl:635` as
+   `Set(vcat(["gaussian"], _BRIDGE_X_FAMILIES))` = **12**, and the R mirror's list includes
+   `gaussian`. I compared a gaussian-exclusive count against a gaussian-inclusive one.
+   Totals are 6 vs 12; the six-family delta is unaffected because `gaussian` cancels.
+   **The same wrong number had been posted publicly to `gllvmTMB#488`; corrected there too.**
+   This is the fence making the exact error the fence exists to prevent.
+2. **[fixed] Two same-day entries disagreed on the drift count, unreconciled.** The ledger-
+   audit entry said 3 `fixed_effect_X` drifts; the fence and handover said 6. **6 is right** —
+   the 3 missed `betabinomial`/`zip`/`zinb`, absent from the R admission list entirely. The
+   stale line is now marked, following this log's own S24 correction precedent.
+3. **[fixed] The after-task report documented the superseded guard.** Its falsifiability
+   citations (`:102`, `:114`, "6 pass") describe `247efbc1` — the version *before* the two
+   holes were closed by `52bd95e1`. The Definition-of-Done record described a guard that is
+   not the one shipping. Noted inline and in a post-audit section.
+4. **[fixed] One-directional cross-link.** `pitfalls.md` says README's MixedModels section
+   invites the co-loading that breaks six verbs; README had no pointer back. Added.
+
+**Process finding, also fixed:** the after-task report carried a self-issued
+`## Rose verdict`. AGENTS.md defines Rose as an independent gate so the implementer does not
+grade their own work. Renamed to an author's statement; the real verdict is here.
+
+### Confirmed clean by the audit
+
+The `14 _glm_weight + 8 _tp_pieces` census and every family's bucket assignment,
+independently re-enumerated. README's 161–698× against the benchmarks table. The guard's
+mechanism — reflection over method tables, golden-set equality on `(family, link)`,
+disjointness and stale-ledger checks — **non-vacuous, every assertion traceable to an
+invariant that fails under a concrete mutation.** `Project.toml` compat clean;
+`InteractiveUtils` correctly declared.
+
+### Carried forward as pre-tag blockers
+
+- **The `~340×` headline** is live in four places (`CLAUDE.md:7`, `AGENTS.md:13`,
+  `gllvmtmb-parity.md:82`, `changelog.md:142`) and cannot be verified against anything
+  published in-repo; the only published grid has a median of **265.1×**. Rose's verdict:
+  this is the one item that *would* violate the pre-publish gate if a tag shipped with it
+  unresolved.
+- **These 9 commits have never been through CI.** `.github/workflows/CI.yml` triggers on
+  `push:[main]` or `pull_request` only, and no PR is open. The suite tally is self-reported.
+
+### The pattern, stated plainly
+
+Three of four defects were in the corrections, not the original work. Writing a careful
+record is not the same as writing a correct one, and a document whose purpose is accuracy
+gets no immunity from being audited. The independent gate earned its place tonight for the
+second time in one session.

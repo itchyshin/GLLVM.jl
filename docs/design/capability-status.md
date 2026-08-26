@@ -260,11 +260,21 @@ Measured against the twin at `origin/main`, re-derived from both constant sets:
 | surface | R mirror | engine | engine-only |
 |---|---|---|---|
 | one-part families | 11 (`R/julia-bridge.R:18`) | 17 (`src/bridge.jl:164`) | `zip`, `zinb`, `zib`, `lognormal`, `betabinomial`, `truncated_poisson` |
-| fixed-effect `X` | 6 (`:76`) | 11 (`src/bridge.jl:198`) | `zip`, `zinb`, `betabinomial`, `nb1`, `ordinal`, `ordinal_probit` |
-| CI under `X` | inherits the stale 6 (`:106`) | all 11 (`_BRIDGE_NO_CI_X_FAMILIES` is empty) | same six |
+| fixed-effect `X` | 6 (`:76`) | 12 (`src/bridge.jl:635`) | `zip`, `zinb`, `betabinomial`, `nb1`, `ordinal`, `ordinal_probit` |
+| CI under `X` | inherits the stale 6 (`:106`) | all 12 (`_BRIDGE_NO_CI_X_FAMILIES` is empty) | same six |
 
 There is no drift in the other direction: the R mirror never claims a family the engine
 lacks.
+
+**Count the X row from `bridge_capabilities()`, not from the constant.**
+`_BRIDGE_X_FAMILIES` (`src/bridge.jl:198`) holds **11** and is documented as *"One-part
+**NON-Gaussian** families"* — it excludes `gaussian` by design. The engine's actual
+advertised surface is built at `src/bridge.jl:635` as
+`Set(vcat(["gaussian"], _BRIDGE_X_FAMILIES))` = **12**, and the R mirror's list *includes*
+`gaussian`. Citing the constant against the R list compares a gaussian-exclusive count with
+a gaussian-inclusive one. The six-family delta is unaffected — `gaussian` is on both sides —
+but the totals are 6 vs 12. (Corrected 2026-08-26 after a Rose audit; the first version of
+this fence made exactly the error the fence exists to prevent.)
 
 **Why nothing catches it.** `.gllvm_julia_expected_capability_drifts()`
 (`R/julia-bridge.R:432`) returns a literal 0-row frame whose comment states as fact that

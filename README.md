@@ -92,6 +92,11 @@ GLLVM.bootstrap_ci(fit; n_boot = 1000, seed = 42)     # parametric bootstrap
 
 ## Comparison to MixedModels.jl
 
+> **Loading both in one session breaks six verbs.** GLLVM.jl and MixedModels.jl each
+> export `confint`, `aic`, `bic`, `predict`, `fitted` and `residuals` as unrelated generics,
+> so the bare names become ambiguous. Qualify the call (`GLLVM.confint(...)`) — see
+> [Common pitfalls](https://itchyshin.github.io/GLLVM.jl/dev/pitfalls).
+
 `MixedModels.jl` is the canonical Julia engine for linear mixed models
 with sparse random-effect design matrices. `GLLVM.jl` solves a
 *different* model class — reduced-rank latent factors. Use:
