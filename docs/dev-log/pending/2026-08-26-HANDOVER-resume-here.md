@@ -9,7 +9,7 @@ documented failure mode of this repo, and I added to the pile before catching it
 
 `PLATFORM: claude` · `BRANCH: claude/lane-beyond-20260824` ·
 `WORKTREE: /Users/z3437171/local-scratch/lanes/GLLVM.jl-beyond-20260824`
-**7 commits ahead of `origin/main`, 0 behind. All pushed. All docs + tests — no `src/` change.**
+**11 commits ahead of `origin/main`, 0 behind. All pushed. All docs + tests — no `src/` change.**
 **The Dropbox checkout is a STALE FORK — never commit there.**
 
 ## State: verified, not asserted
@@ -31,6 +31,29 @@ documented failure mode of this repo, and I added to the pile before catching it
 3. Ledger + claim corrections throughout `check-log.md`; README speedup claim fixed to the
    measured 161–698×.
 4. `gllvmTMB#488` — the bridge-drift audit that issue asked for, posted with measurements.
+
+## Rose audit — RAN, and found four defects (all fixed)
+
+The goal's DISCIPLINE requires `closure = after-task report + Rose audit`. Both are done.
+Rose found four citable defects, **three of them inside artifacts written to fix earlier
+sloppiness** — including the drift fence undercounting the engine's own X surface by one
+(the fence making the error the fence exists to prevent). That wrong number had gone public
+at `gllvmTMB#488`; corrected there too.
+
+**Rose confirmed clean:** the `14 _glm_weight + 8 _tp_pieces` census and every bucket
+assignment, independently re-enumerated; README's 161–698× against the benchmarks table;
+the guard's assertions non-vacuous, each traceable to an invariant that fails under a
+concrete mutation.
+
+**Rose's two carried-forward pre-tag blockers:**
+
+1. **`~340×`** — fenced on `docs/src/gllvmtmb-parity.md`, left alone in `changelog.md`
+   (already corrected there), and **NOT touched in `CLAUDE.md:7` / `AGENTS.md:13`, which
+   need your approval.** The repo therefore states the claim two ways right now.
+2. **These 11 commits have never been through CI.** The workflow triggers only on
+   `push:[main]` / `pull_request` and no PR is open. The suite tally below is
+   self-reported. **Opening a PR is the fix and I did not do it — every PR so far was
+   authorised individually.**
 
 ## THE DECISIONS WAITING ON YOU
 
