@@ -14429,3 +14429,56 @@ return type, which is an API change. **Flagged for the maintainer, not done.**
 `1e11` screen threshold and would slip through unchanged. Either that constant moves to
 `_NLL_SENTINEL` or the site needs its own screen; harmonising the constant is the cleaner
 of the two and is what the audit recommended.
+
+## 2026-08-26 — two of three exposed fitters FIXED, not just diagnosed
+
+Continued past diagnosis on the hook's push. Both are standard numerical-stability
+guards on an already-correct mathematical quantity — not model changes — so
+implemented, ForwardDiff-gated, and per-file tested to the same bar as the sentinel work.
+
+### OrderedBeta — reused the tool already in the file
+
+`ordered_beta_logp`'s interior branch computed `log(σ(η−c0) − σ(η−c1))` unguarded.
+`_ob_logsigmoid` was already stable and already used by the boundary (y=0/y=1) branches;
+the interior branch just never got the same treatment. Fixed via
+`log(σ(a) − σ(b)) = logσ(a) + log1mexp(logσ(b) − logσ(a))` for `a > b`, whose `log1mexp`
+argument is `≤ 0` by construction, so it never faces the cancellation that broke the naive
+form.
+
+Verified: matches the naive computation to `< 1.5e-15` everywhere naive is accurate;
+finite at η=38.6 (the failing site) where naive gave `-Inf`; ForwardDiff first AND second
+derivatives finite at η ∈ {0.6, 20, 38.6, 40, 100} (the nested nested derivative is what
+the mode-solver actually evaluates).
+
+### COM-Poisson — a genuine second bug found while deriving the first fix
+
+`compoisson_logz`'s naive `Z += exp(logterm)` overflows near the series' mode even though
+`log Z` itself is small. Rewritten as a streaming log-sum-exp (running max + rescaled
+running sum). Verified against the naive form to machine precision where naive works,
+and against the closed-form Poisson identity `logZ(λ, ν=1) = λ` where it doesn't.
+
+**While deriving it, found `_CMP_LOGZ_CAP = 10_000` is independently too small once the
+series' mode exceeds it** (`logλ ≳ 9.2` at ν=1) — the loop hits the cap before converging
+and silently returns a value low by orders of magnitude. This is a SEPARATE, PRE-EXISTING
+bug that the original naive form never exposed because it overflowed to `Inf` first. **Not
+fixed** — out of scope for what motivated this fix, and not the cause of the reported bug
+(the fixture's failing site has logλ≈8, mode≈2981, under the cap). Flagged in-code for the
+maintainer.
+
+### End-to-end, both original fixtures
+
+```
+COM-Poisson:  converged=true  loglik=-568.18  iterations=29   (was: iters=0, loglik=NaN)
+OrderedBeta:  converged=true  loglik=-209.79  iterations=29   (was: iters=0)
+```
+
+Both `@test_broken` markers promoted to real assertions (`converged`, `isfinite(loglik)`,
+`iterations > 0`); both files pass standalone with zero broken.
+
+**Exponential remains diagnosed-not-fixed.** Its failure shape is different — a
+genuinely computed, absurd value (−2.3e22 at the TRUE parameters), not a NaN/Inf
+collapse — so there is no single underflow site to patch the way CMP and OrderedBeta had.
+Needs its own investigation before any fix is attempted.
+
+Derivation scripts preserved: `docs/dev-log/pending/compoisson-logz-fix.jl`,
+`docs/dev-log/pending/ordered-beta-logmass-fix.jl`.

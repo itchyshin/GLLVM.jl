@@ -223,10 +223,13 @@ end
 
         fit = fit_gllvm(Y; family = OrderedBeta(), K = K, iterations = 40)
         @test fit isa OrderedBetaFit
-        # EXPOSED 2026-08-26 by `_fit_verdict`. Measured: `iterations = 0` — the optimiser
-        # never moved, same shape as the COM-Poisson case. Previously reported
-        # `converged = true` with a finite sentinel-derived log-likelihood.
-        @test_broken isfinite(fit.loglik)
+        # FIXED 2026-08-26. Root cause was `ordered_beta_logp`'s interior-mass branch
+        # computing log(σ(η−c0) − σ(η−c1)) unguarded, which underflows to log(0.0) at
+        # large |η|; rewritten via the stable logσ(a) + log1mexp(logσ(b) − logσ(a))
+        # identity (ordered_beta.jl:81-96). Was: iterations=0.
+        @test fit.converged
+        @test isfinite(fit.loglik)
+        @test fit.iterations > 0
         direct = fit_ordered_beta_gllvm(Y; K = K, iterations = 40)
         @test fit.loglik ≈ direct.loglik atol = 1e-8
         @test fit.c0 ≈ direct.c0 atol = 1e-8

@@ -75,18 +75,46 @@ terms). At `ν = 1` this returns `λ` exactly (`Z = e^λ`), the Poisson anchor.
 """
 function compoisson_logz(logλ, ν)
     T = promote_type(typeof(logλ), typeof(ν))
-    # j = 0 term is exp(0) = 1; the series terms decay fast once j > λ^{1/ν}.
-    Z = one(T)
+    # FIXED 2026-08-26 (root cause: docs/dev-log/check-log.md). The series is
+    # Σⱼ exp(logtermⱼ), logtermⱼ = j·logλ − ν·loggamma(j+1), which peaks near
+    # j ≈ λ^{1/ν}. NEAR THAT PEAK `logtermⱼ` can be in the thousands even though the
+    # properly-normalised `log Z` is small — e.g. logλ=8, ν=1: logterm₂₉₈₁ ≈ 2972,
+    # so `exp(logterm)` alone overflows Float64 (max exponent ~709) long before the
+    # naive accumulator `Z += exp(logterm)` ever reaches its own convergence check.
+    # This is reachable from an ordinary Newton step in the Laplace mode solve, not a
+    # constructed corner case (measured: η went from 1.8 to 8.0 in one step on real
+    # data). Rewritten as a streaming/online log-sum-exp: track the running maximum
+    # `m` and the running sum `S = Σ exp(logtermⱼ − m)` of terms seen so far, rescaling
+    # `S` whenever a new term exceeds the current max. `m + log(S)` is then `log Z`
+    # without ever exponentiating an unnormalised term. Verified against the naive
+    # computation to machine precision everywhere the naive form is itself accurate,
+    # and correct (cross-checked against the closed-form Poisson identity
+    # log Z(λ, ν=1) = λ) at the value that produced the reported bug — see
+    # docs/dev-log/pending/compoisson-logz-fix.jl.
+    m = zero(T)
+    S = one(T)
     j = 0
     @inbounds while j < _CMP_LOGZ_CAP
         j += 1
         logterm = j * logλ - ν * loggamma(T(j + 1))
-        term = exp(logterm)
-        Z += term
-        term < _CMP_LOGZ_TOL * Z && break
+        if logterm > m
+            S = S * exp(m - logterm) + one(T)
+            m = logterm
+        else
+            S += exp(logterm - m)
+        end
+        exp(logterm - m) < _CMP_LOGZ_TOL * S && break
     end
-    return log(Z)
+    return m + log(S)
 end
+
+# KNOWN LIMITATION, not fixed here: `_CMP_LOGZ_CAP = 10_000` is too small once the
+# series' own mode (≈ λ^{1/ν}) exceeds it — e.g. logλ ≳ 9.2 at ν=1, where the mode
+# is past j=10,000 and the loop hits the cap before converging, silently returning a
+# value low by orders of magnitude rather than erroring. Discovered while deriving
+# the fix above; out of scope for the sentinel-escape work that motivated it, and
+# not the cause of the reported bug (the fixture's failing site has logλ≈8, mode
+# ≈2981, well under the cap). Flagged for the maintainer.
 
 """
     compoisson_logpdf(y, η, ν) -> Float64

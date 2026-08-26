@@ -32,15 +32,35 @@ using GLLVM, Test, Random, Distributions, Statistics
 
         fit = fit_exponential_gllvm(Y; K = K)
         @test fit isa ExponentialFit
-        # EXPOSED 2026-08-26 by `_fit_verdict` (src/fit_verdict.jl). This assertion used to
-        # pass, but not because the fit worked: the marginal evaluates to **-4.55e23 at the
-        # fitted parameters and -2.33e22 at the TRUE parameters** on this 2400-observation
-        # fixture, where a sane Exponential log-likelihood is O(-3000). Those values are
-        # ~19 orders out of range — absurd, but finite, so `isfinite` accepted them.
+        # EXPOSED 2026-08-26 by `_fit_verdict`; ROOT CAUSE FOUND 2026-08-26 (different
+        # shape from the CMP / OrderedBeta cases, and NOT fixed — see below).
         #
-        # Note this is NOT the 1e12 sentinel: the objective genuinely computes those
-        # numbers. The Exponential marginal is wrong on ordinary simulated data, which the
-        # screen surfaced rather than caused. Fixing it is engine work on the family.
+        # The default `hessian=:observed` route goes through
+        # `gamma_grouped_marginal_loglik_laplace` at α≡1 (exponential.jl:60), whose
+        # per-site Newton mode-solve (`_gamma_grouped_loglik_site`,
+        # grouped_dispersion.jl:786) has NO step-size damping or line search — plain
+        # undamped Newton, `maxiter=100`. For an ORDINARY site in this fixture (site 284;
+        # Y in [0.2, 5.3], nothing extreme), the iteration genuinely DIVERGES: step size
+        # grows geometrically (|Δ|: 0.54, 0.60, 0.73, 0.96, 1.23, 1.67, 2.18, 3.22, 4.67,
+        # 10.45, 67.08, then 1.8e11 and oscillating at that magnitude for the rest of the
+        # 100 iterations) rather than converging. The loop has no divergence check, so it
+        # runs to `maxiter` regardless and evaluates the log-density at a garbage `z`.
+        #
+        # Confirmed causal, not incidental: capping the SAME site at `maxiter=8` (before
+        # divergence sets in) gives a sane per-site loglik of -31.67; the full `maxiter=100`
+        # run gives -1.41e22. The `:fisher` route through the ORIGINAL generic core (not
+        # this grouped kernel) gives a sane total marginal of -2288.58 at the identical
+        # (Y, Λ, β) — confirming the mode itself is fine in principle and the bug is
+        # specific to this kernel's unguarded Newton loop, exactly the gap its own comment
+        # at grouped_dispersion.jl:797-806 already names relative to the generic core's
+        # `_laplace_mode_should_backtrack` safety.
+        #
+        # NOT FIXED. This is a structural change to a shared mode-solver (used by every
+        # grouped-dispersion family, not just Exponential/Gamma), not a local numerical
+        # stabilization like the CMP/OrderedBeta fixes — needs a step-size cap or
+        # backtracking line search, and needs its own verification that doing so does not
+        # change the CONVERGED mode for the families that currently work. Diagnosis:
+        # docs/dev-log/pending/exponential-diverging-newton-diagnosis.jl.
         @test_broken isfinite(fit.loglik)
 
         # unified dispatch
