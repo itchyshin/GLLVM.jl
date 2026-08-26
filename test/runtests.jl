@@ -52,6 +52,54 @@ using GLLVM
     include("test_gamma_laplace.jl")
     include("test_binomial_fit.jl")
     include("test_poisson_fit.jl")
+    include("test_laplace_curvature_contract.jl")
+    include("test_laplace_curvature_oracle.jl")
+    include("test_laplace_dual_safety.jl")
+    include("test_gamma_curvature_cross_kernel.jl")
+
+    # Wired in 2026-08-25. These five were ORPHANED — present in test/, absent
+    # from this file, and therefore never run in CI — while their sources
+    # (src/phylo_*_xlv.jl) ARE shipped, included at src/GLLVM.jl:103-107. That
+    # is untested shipped code. All five pass; each was run individually first.
+    #
+    # test_phylo_gamma_xlv.jl is deliberately NOT wired in yet: its :123
+    # assertion compares against a reference implementation inside the test file
+    # that still computes the Fisher log-det, and updating that oracle should
+    # not be done by whoever changed the code it judges.
+    include("test_phylo_xlv.jl")
+    include("test_phylo_beta_xlv.jl")
+
+    # UN-WIRED 2026-08-25, having briefly been wired in. test_phylo_binomial_xlv,
+    # test_phylo_nb_xlv, test_phylo_ordinal_xlv and test_sparse_phy_grad pass
+    # locally but fail on CI, on DIFFERENT platform subsets each time:
+    #
+    #   macOS 1.12      ordinal (6), nb (2), sparse_phy_grad (1), binomial (1)
+    #   Windows 1.12    nb (2), sparse_phy_grad (1), binomial (1)
+    #   ubuntu 1.10     nb (2)
+    #
+    # Different platforms failing different subsets is instability, not a
+    # deterministic bug. The failing assertions are the tell: `prof.pd_hessian`,
+    # profile-CI endpoint status, and NaN/inverted CI bounds — all
+    # optimiser-path and BLAS sensitive.
+    #
+    # This is very likely WHY they were orphaned. Wiring them in on the strength
+    # of one local run, on one platform and one Julia version, was premature —
+    # "passes locally" is not evidence that a numerically sensitive test is
+    # stable. They need stabilising (fixed seeds per platform, or tolerance
+    # analysis, or a `@test_broken`), which is its own slice and should be done
+    # by someone looking at the numerics, not folded into a curvature PR.
+    #
+    #   include("test_phylo_binomial_xlv.jl")
+    #   include("test_phylo_nb_xlv.jl")
+    #   include("test_phylo_ordinal_xlv.jl")
+    #   include("test_sparse_phy_grad.jl")
+
+
+    # chibar2_pvalue / variance_lrt / profile_ci_variance are EXPORTED and had
+    # zero tests. They return p-values and confidence intervals — the outputs
+    # most likely to end up in a paper — so untested was the least acceptable
+    # place for it. Every assertion is against an independently derived value.
+    include("test_boundary_inference.jl")
     include("test_laplace_grad.jl")
     include("test_masked_dispersion_grad.jl")
     include("test_laplace_alloc_equiv.jl")

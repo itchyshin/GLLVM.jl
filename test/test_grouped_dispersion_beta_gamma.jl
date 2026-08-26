@@ -44,8 +44,19 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
                 Y[t, s] = rand(Gamma(α, μ[t] / α))
             end
         end
-        ll_shared  = GLLVM.gamma_marginal_loglik_laplace(Y, Λ, β, α)
-        ll_grouped = GLLVM.gamma_grouped_marginal_loglik_laplace(Y, Λ, β, fill(α, p))
+        # `tol` here is the MODE tolerance, not the assertion tolerance, and it
+        # is tightened rather than the atol loosened. Reason, measured:
+        # Gamma/log's FISHER log-det weight is the constant α, so it is entirely
+        # mode-INSENSITIVE and this identity held at any mode tolerance. The
+        # OBSERVED weight is α·y/μ(ẑ), which IS mode-sensitive, so the two
+        # Newton loops stopping within the default tol=1e-9 of the same fixed
+        # point — but at slightly different points — leave a ~7e-11 residual.
+        # Sweeping the mode tolerance: 1e-9 → 7.08e-11, 1e-11 → 9.10e-13,
+        # 1e-13 → 0.000e+00 EXACTLY. The identity is exact; the default mode
+        # tolerance was simply not tight enough to observe it once the log-det
+        # became mode-sensitive. Fixing the cause, not the tolerance.
+        ll_shared  = GLLVM.gamma_marginal_loglik_laplace(Y, Λ, β, α; tol = 1e-13)
+        ll_grouped = GLLVM.gamma_grouped_marginal_loglik_laplace(Y, Λ, β, fill(α, p); tol = 1e-13)
         @test ll_grouped ≈ ll_shared atol = 1e-10
         # mixed per-species shape also evaluates finitely.
         @test isfinite(GLLVM.gamma_grouped_marginal_loglik_laplace(Y, Λ, β, [1.5, 3.0, 5.0, 8.0, 12.0]))

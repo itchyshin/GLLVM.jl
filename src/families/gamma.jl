@@ -12,6 +12,45 @@ _glm_score(f::Gamma, μ, n, me, y) = f.α * (y - μ) / μ^2 * me
 _glm_weight(f::Gamma, μ, n, me)   = f.α * me^2 / μ^2
 _glm_logpdf(f::Gamma, μ, n, y)    = logpdf(Gamma(f.α, μ / f.α), y)
 
+# ---------------------------------------------------------------------------
+# Log-det curvature default for Gamma/log (2026-08-25). PER-FAMILY, deliberately
+# not a global flip.
+#
+# TMB Laplaces with the OBSERVED joint Hessian, which for Gamma at the log link
+# is `α·y/μ` — not the Fisher weight `α`, which is exactly its expectation
+# (substitute y = E[y] = μ). This was instance 8 of the curvature fault class,
+# and the worst-placed one: `fit_gllvm(Y; family = Gamma())` reaches it, because
+# Gamma is deliberately excluded from the `disp_group = :species` auto-coerce at
+# `fit_gllvm.jl:141-145` ("Gamma unchanged").
+#
+# Flipped for Gamma ALONE, on family-specific evidence rather than as part of a
+# global default change: measured over 12 seeds against 8001-node quadrature,
+# `:observed` is closer 12/12, with 20-60× smaller error. The same measurement
+# says Beta is slightly WORSE and GP-1 substantially worse, so those keep the
+# Fisher default until they have evidence of their own.
+#
+# This obliges `laplace_grad.jl`'s Gamma log-det weight to move in the same
+# commit — otherwise the analytic gradient stops being the gradient of this
+# objective and degrades silently rather than erroring.
+_default_hessian(::Gamma, ::LogLink) = :observed
+
+# Analytic observed curvature for Gamma/log: −∂²ℓ/∂η² = α·y/μ.
+#
+# The generic nested-ForwardDiff fallback reproduces this to ~1e-16 relative
+# (locked in the oracle tests), but "to 1e-16" is not "identically". The shared
+# path and the grouped path must agree EXACTLY, because
+# `test_grouped_dispersion_beta_gamma.jl:49` pins "constant αvec ≡ shared α" at
+# atol 1e-10 — and AD-vs-closed-form round-off, accumulated over p×n cells and
+# through a log-det, lands at ~1.3e-10. That is round-off, not a semantic
+# difference, but the correct response is to make both paths use ONE formula
+# rather than to widen a tolerance.
+#
+# Same reasoning as the DeltaGamma fix, which delegates to this same weight
+# rather than re-deriving it: one formula, one place. Delegating here keeps that
+# property and takes the AD call out of the hot path as a side benefit.
+_glm_obs_weight(f::Gamma, μ, n, me, y, link::LogLink, η) =
+    _gamma_grouped_laplace_weight(:observed, f, μ, me, y, link)
+
 """
     gamma_marginal_loglik_laplace(Y, Λ, β, α; link=LogLink(), kwargs...) -> Float64
 

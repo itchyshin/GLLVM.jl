@@ -10,6 +10,24 @@ L-BFGS with `ForwardDiff` gradients).
 
 Six cells × three replicates × two engines = 36 fits. All 36 converged.
 
+!!! warning "This grid is Gaussian only — the speedup does NOT generalise"
+    Every number on this page comes from the **Gaussian** path, where GLLVM.jl
+    uses a closed-form marginal and R uses a TMB Laplace approximation. That is
+    an *algorithmic* difference, not a language one, and it is where the large
+    factors come from.
+
+    Non-Gaussian families use a dense Laplace approximation on both sides, and
+    the measured speedups are far smaller. From the twin-parity fixtures:
+
+    | family | measured per-fit speedup vs `gllvmTMB` |
+    |---|---|
+    | lognormal | ≈ 1280× (also a closed-form path) |
+    | truncated_poisson | ≈ 2.2× |
+    | Gamma | ≈ 1.6× |
+
+    So do not read the Gaussian headline as a general claim about the package.
+    It describes the closed-form path and nothing else.
+
 ## Wall-clock (median over reps)
 
 | cell_id        | n_sites | n_species | d | median t\_R (s) | median t\_Julia (s) | median R / Julia |

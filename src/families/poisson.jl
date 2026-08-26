@@ -4,6 +4,11 @@
 # Poisson has no trial count, so `n` is ignored.
 _clamp_mu(::Poisson, μ) = max(μ, 1e-12)
 _glm_score(::Poisson, μ, n, me, y) = (y - μ) / μ * me
+# Canonical link: y enters η linearly, so −∂²ℓ/∂η² = μ is y-free and the
+# observed curvature coincides with the Fisher weight POINTWISE. This family is
+# therefore bit-for-bit unaffected by the log-det curvature selector.
+_glm_weight_matches_observed(::Poisson, ::LogLink) = true
+
 _glm_weight(::Poisson, μ, n, me)   = me^2 / μ
 _glm_logpdf(::Poisson, μ, n, y)    = logpdf(Poisson(μ), Int(y))
 

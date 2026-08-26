@@ -50,13 +50,30 @@ end
 
 function _laplace_site_off(family, y::AbstractVector, n::AbstractVector,
         Λ::AbstractMatrix, η0::AbstractVector, link::Link;
-        mask = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
+        mask = nothing, hessian::Symbol = _default_hessian(family, link),
+        maxiter::Integer = 100, tol::Real = 1e-9)
+    (hessian === :fisher || hessian === :observed) || throw(ArgumentError(
+        "hessian must be :fisher or :observed; got :$hessian"))
     p = size(Λ, 1)
+    # The MODE SEARCH stays on Fisher (`_laplace_mode_off` is untouched) — only
+    # the log-det takes the selector. Same role separation as the generic core.
     z  = _laplace_mode_off(family, y, n, Λ, η0, link; mask = mask, maxiter = maxiter, tol = tol)
     η  = _clamp_eta.(η0 .+ Λ * z)
     μ  = _clamp_mu.(Ref(family), linkinv.(Ref(link), η))
     me = mu_eta.(Ref(link), η)
-    W  = _glm_weight.(Ref(family), μ, n, me)
+    # This kernel builds its OWN Λ'WΛ + I and its own logdet, so the generic
+    # core's selector never reached it. Without this, a family whose default is
+    # `:observed` (Gamma/log since 2026-08-25) disagrees with every flipped path
+    # — measured at 0.238 on `test_gamma_x_identity.jl:35` before this change.
+    # Masked cells: the observed weight reads `y`, which is a PLACEHOLDER there,
+    # so it must not be evaluated — see the same note in `laplace.jl`.
+    W  = if hessian === :fisher || _glm_weight_matches_observed(family, link)
+        _glm_weight.(Ref(family), μ, n, me)
+    else
+        [(mask === nothing || mask[t]) ?
+            _glm_obs_weight(family, μ[t], n[t], me[t], y[t], link, η[t]) : 0.0
+         for t in 1:p]
+    end
     if mask !== nothing
         W = ifelse.(mask, W, 0.0)
     end
@@ -65,6 +82,11 @@ function _laplace_site_off(family, y::AbstractVector, n::AbstractVector,
     @inbounds for t in 1:p
         (mask === nothing || mask[t]) || continue
         ℓ += _glm_logpdf(family, μ[t], n[t], y[t])
+    end
+    # PD guard, keyed on the weight's sign — see `laplace.jl` for the reasoning.
+    if any(w -> w < zero(w), W)
+        F = cholesky(A; check = false)
+        issuccess(F) || return oftype(ℓ, -Inf)
     end
     return ℓ - 0.5 * dot(z, z) - 0.5 * logdet(A)
 end

@@ -26,6 +26,11 @@
 # the logit link (me = μ(1−μ)) the weight reduces to the canonical nμ(1−μ).
 _clamp_mu(::Binomial, μ) = clamp(μ, 1e-12, 1 - 1e-12)
 _glm_score(::Binomial, μ, n, me, y) = (y - n * μ) / (μ * (one(μ) - μ)) * me
+# Canonical link: −∂²ℓ/∂η² = n·μ(1−μ) is y-free, so observed ≡ Fisher pointwise.
+# NOTE the link specificity — under ProbitLink/CLogLogLink the two differ, and
+# those combinations deliberately do NOT get this method.
+_glm_weight_matches_observed(::Binomial, ::LogitLink) = true
+
 _glm_weight(::Binomial, μ, n, me)   = n * me^2 / (μ * (one(μ) - μ))
 _glm_logpdf(::Binomial, μ, n, y)    = logpdf(Binomial(Int(n), μ), Int(y))
 

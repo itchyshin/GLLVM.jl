@@ -79,9 +79,30 @@ using GLLVM, Test, Random, Distributions, Statistics
         #    grouped kernel instead gives the same value HERE but a different mode
         #    solver under optimisation (it let |Lambda| run away to ~960 vs a true
         #    0.38). So this assertion guards a real, already-observed failure.
+        #    RE-ARMED 2026-08-25. This previously called the core with NO
+        #    `hessian` kwarg, i.e. it relied on the default. If that default is
+        #    flipped to `:observed`, BOTH sides would compute observed curvature
+        #    and `lf == old` would keep passing while the property it documents
+        #    -- "reproduces the pre-2026-08-24 path" -- had become false. A test
+        #    that silently stops testing is worse than one that fails.
         old = GLLVM.marginal_loglik_laplace(GLLVM.Exponential(1.0), Y,
-                                            ones(Int, size(Y)), Lam, beta, GLLVM.LogLink())
+                                            ones(Int, size(Y)), Lam, beta, GLLVM.LogLink();
+                                            hessian = :fisher)
         @test lf == old
+
+        #    NOT pinned to a recorded literal. A literal WAS added here on
+        #    2026-08-25 and reverted the same day: the fixture comes from
+        #    `Random.seed!(61)` + `randn`, and that stream differs between Julia
+        #    1.10 and 1.12, so the value is version-specific. CI proved it —
+        #    ubuntu/1.10 passed while macOS and Windows on 1.12 both evaluated
+        #    -721.1485447143208 against the 1.10 literal -721.33208612614351.
+        #    A local machine running one Julia version cannot catch that.
+        #
+        #    The vacuity concern the literal was meant to address is already
+        #    covered portably: BOTH sides now request `hessian = :fisher`
+        #    explicitly (so a default flip cannot make them agree by accident),
+        #    and assertion 1 above independently pins that `:fisher` and
+        #    `:observed` are genuinely different objectives on this fixture.
 
         # 3. The observed weight equals -d2l/deta2 = y/mu (AD-verified to 1.9e-16
         #    separately); check the algebraic identity against the Gamma alpha=1 route,

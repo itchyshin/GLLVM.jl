@@ -112,7 +112,10 @@ or `σ²_phy ≤ 0`.
 function coevolution_glm_marginal_loglik(family, Y::AbstractMatrix, N::AbstractMatrix,
         β::AbstractVector, Λ::AbstractMatrix, σ²_phy::Real, K_star::AbstractMatrix;
         link::Link = default_link(family), mask = nothing,
+        hessian::Symbol = _default_hessian(family, link),
         maxiter::Integer = 50, tol::Real = 1e-9)
+    (hessian === :fisher || hessian === :observed) || throw(ArgumentError(
+        "hessian must be :fisher or :observed; got :$hessian"))
     T, n = size(Y)
     size(Λ, 1) == T || throw(ArgumentError("size(Λ,1)=$(size(Λ,1)) must equal size(Y,1)=$T."))
     (size(K_star, 1) == n && size(K_star, 2) == n) ||
@@ -143,7 +146,40 @@ function coevolution_glm_marginal_loglik(family, Y::AbstractMatrix, N::AbstractM
     quad = 0.5 * dot(z, P * z)
     # logdet P = -logdet(σ²_phy K*) summed over the d iid axes = -d·logdet(Kf)
     logdetP = -d * logdet(cholKf)
-    return ℓ - quad + 0.5 * logdetP - 0.5 * logdet(cholH)
+
+    # Role separation. `_coevolution_glm_mode` returns the Cholesky of the
+    # FISHER Hessian from its final Newton step, and that same factorisation was
+    # previously reused for the log-det — one object serving two roles, which is
+    # the architectural defect this whole programme exists to fix, one level
+    # down. The Newton step legitimately wants the Fisher Hessian (SPD by
+    # construction); the log-det must be the OBSERVED one to match TMB.
+    #
+    # So on the observed branch, rebuild H = P + J at the CONVERGED mode using
+    # the observed weight and factorise it separately. That costs one extra
+    # Cholesky per evaluation, paid only on that branch and only once the mode
+    # is already found — the mode search itself is untouched.
+    cholL = cholH
+    if hessian === :observed && !_glm_weight_matches_observed(family, link)
+        Hobs = copy(P)
+        @inbounds for j in 1:n, t in 1:T
+            (mask === nothing || mask[t, j]) || continue
+            ηtj = _clamp_eta(β[t] + dot(view(Λ, t, :), view(Ẑ, j, :)))
+            μtj = _clamp_mu(family, linkinv(link, ηtj))
+            metj = mu_eta(link, ηtj)
+            wtj = _glm_obs_weight(family, μtj, N[t, j], metj, Y[t, j], link, ηtj)
+            for a in 1:d, b in 1:d
+                Hobs[(a - 1) * n + j, (b - 1) * n + j] += Λ[t, a] * wtj * Λ[t, b]
+            end
+        end
+        # PD guard: the observed weight may be negative, so H is no longer SPD by
+        # construction. Fail to -Inf rather than returning a meaningless logdet.
+        cholL = try
+            cholesky(Symmetric(Hobs))
+        catch
+            return -Inf
+        end
+    end
+    return ℓ - quad + 0.5 * logdetP - 0.5 * logdet(cholL)
 end
 
 # ---------------------------------------------------------------------------

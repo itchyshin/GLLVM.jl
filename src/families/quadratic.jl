@@ -62,13 +62,23 @@ evaluated at the converged mode `ẑ`. At `D = 0` this equals `laplace_loglik_si
 """
 function quadratic_loglik_site(family, y::AbstractVector, n::AbstractVector,
         Λ::AbstractMatrix, D::AbstractMatrix, β::AbstractVector, link::Link;
+        hessian::Symbol = _default_hessian(family, link),
         maxiter::Integer = 100, tol::Real = 1e-9)
+    (hessian === :fisher || hessian === :observed) || throw(ArgumentError(
+        "hessian must be :fisher or :observed; got :$hessian"))
     p = size(Λ, 1)
     z  = _quadratic_mode(family, y, n, Λ, D, β, link; maxiter = maxiter, tol = tol)
     η  = _clamp_eta.(β .+ Λ * z .+ D * (z .^ 2))
     μ  = _clamp_mu.(Ref(family), linkinv.(Ref(link), η))
     me = mu_eta.(Ref(link), η)
-    W  = _glm_weight.(Ref(family), μ, n, me)
+    # This kernel builds its own J'WJ + I and logdet, so the generic core's
+    # selector never reached it. The MODE SEARCH (`_quadratic_mode`) stays on
+    # Fisher; only the log-det takes the selector.
+    W  = if hessian === :fisher || _glm_weight_matches_observed(family, link)
+        _glm_weight.(Ref(family), μ, n, me)
+    else
+        [_glm_obs_weight(family, μ[t], n[t], me[t], y[t], link, η[t]) for t in 1:p]
+    end
     J  = Λ .+ 2 .* D .* z'
     A  = Symmetric(J' * (W .* J) + I)
     ℓ = 0.0

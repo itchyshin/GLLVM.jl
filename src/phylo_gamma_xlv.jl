@@ -56,7 +56,7 @@ function _phylo_gamma_xlv_logpost(Y, beta, Lambda, alpha_lv, alpha_shape,
 end
 
 function _phylo_gamma_xlv_grad_hessian(Y, beta, Lambda, alpha_lv, alpha_shape,
-        mean_eta, Q, leaf_pos, eps, u)
+        mean_eta, Q, leaf_pos, eps, u; hessian::Symbol = :fisher)
     p, n = size(Y)
     K = size(Lambda, 2)
     fam = Gamma(alpha_shape, 1.0)
@@ -87,7 +87,13 @@ function _phylo_gamma_xlv_grad_hessian(Y, beta, Lambda, alpha_lv, alpha_shape,
         mu_ts = exp(eta_c)
         me_ts = mu_eta(LogLink(), eta_c)
         score_ts = _glm_score(fam, mu_ts, 1, me_ts, Y[t, s])
-        weight_ts = _glm_weight(fam, mu_ts, 1, me_ts)
+        # Role separation. Default `:fisher` keeps the Newton loop exactly as it
+        # was — the mode search wants expected information (W ≥ 0, so the step
+        # is always well-defined). Only the FINAL call, at the converged mode,
+        # asks for `:observed`, which is what the log-det needs to match TMB.
+        weight_ts = hessian === :fisher ?
+            _glm_weight(fam, mu_ts, 1, me_ts) :
+            _glm_obs_weight(fam, mu_ts, 1, me_ts, Y[t, s], LogLink(), eta_c)
         uidx = n_z + leaf_pos[t]
 
         grad[uidx] += score_ts
@@ -109,7 +115,8 @@ function _phylo_gamma_xlv_grad_hessian(Y, beta, Lambda, alpha_lv, alpha_shape,
 end
 
 function _phylo_gamma_xlv_mode(Y, beta, Lambda, alpha_lv, alpha_shape,
-        mean_eta, Q, leaf_pos; maxiter::Integer = 80, tol::Real = 1e-9)
+        mean_eta, Q, leaf_pos; hessian::Symbol = :fisher,
+        maxiter::Integer = 80, tol::Real = 1e-9)
     n = size(Y, 2)
     K = size(Lambda, 2)
     eps = zeros(Float64, n, K)
@@ -156,8 +163,11 @@ function _phylo_gamma_xlv_mode(Y, beta, Lambda, alpha_lv, alpha_shape,
         step * max_delta < tol && break
     end
 
+    # The Newton loop above ran on Fisher; this final assembly, at the CONVERGED
+    # mode, is the one whose logdet enters the marginal.
     _, H = _phylo_gamma_xlv_grad_hessian(Y, beta, Lambda, alpha_lv, alpha_shape,
-                                         mean_eta, Q, leaf_pos, eps, u)
+                                         mean_eta, Q, leaf_pos, eps, u;
+                                         hessian = hessian)
     cholH = try
         cholesky(Symmetric(H))
     catch
@@ -199,6 +209,7 @@ function _phylo_gamma_xlv_marginal_loglik(Y::AbstractMatrix,
 
     eps_hat, u_hat, cholH = _phylo_gamma_xlv_mode(
         Yc, beta_c, Lambda_c, alpha_c, float(alpha_shape), mean_eta, Q, leaf_pos;
+        hessian = _default_hessian(Gamma(float(alpha_shape), 1.0), LogLink()),
         maxiter = maxiter, tol = tol)
     eps_hat === nothing && return -Inf
     q = _phylo_gamma_xlv_logpost(Yc, beta_c, Lambda_c, alpha_c, float(alpha_shape),

@@ -12620,3 +12620,879 @@ parts, Julia uses two non-nested ones), which curvature does not address. No twi
 capability claim, no ledger row flipped.
 
 Instance 5 of 13 is now closed. Twelve remain; see the structural-design entry.
+---
+
+## 2026-08-24 — EIGHTH instance, and it is on a PUBLIC DEFAULT path: `fit_gllvm(Gamma())`
+
+Found by the gap-survey workflow and verified here line by line. **Not fixed — queued.**
+See "Why this is queued, not patched" below.
+
+### The finding
+
+`fit_gllvm(Y; family = Gamma())` dispatches to `fit_gamma_gllvm`
+(`src/families/fit_gllvm.jl:231`), whose Laplace log-det uses the **Fisher** weight:
+
+```julia
+# src/families/gamma.jl:9-12
+#   W = α (dμ/dη)² / μ²          (expected information ⇒ W ≥ 0)
+_glm_weight(f::Gamma, μ, n, me) = f.α * me^2 / μ^2
+```
+
+At the log link `me = μ`, so this is the **constant α** — y-free, the now-familiar
+signature. TMB uses the observed `α·y/μ`, and **that correct formula already exists in
+this repo twenty lines away** at `grouped_dispersion.jl:747`
+(`_gamma_grouped_laplace_weight`).
+
+### Why this one is worse than the other seven
+
+Gamma is in the **paid 13/17** set — its twin Δ is 2.05e-8. But that cell was measured
+on the **grouped** route, and says so explicitly:
+
+```julia
+# test/parity/test_nox_dispersion_parity.jl:60
+# Per-trait α — pair with the GROUPED fitter, not fit_gamma_gllvm.
+jl_fit = fit_gamma_gllvm_grouped(Y; K = K, group = collect(1:p))
+```
+
+So **the default public surface a user actually reaches was never compared to the twin,
+and is on the wrong objective.** Gamma is also the one dispersion family that
+`fit_gllvm.jl:142-145` deliberately excludes from the `disp_group = :species` default
+that carries NB2/Beta/NB1/BetaBinomial onto the corrected grouped kernel. A green parity
+receipt therefore coexists with a wrong default path — the receipt is true and the
+reader's natural inference from it is false.
+
+### Why this is QUEUED, not patched tonight
+
+Exponential looked like a template for this (commit `35e65fac`, delegate to the grouped
+kernel). **It is not**, because `fit_gamma_gllvm` has `gradient::Symbol = :analytic` and
+that analytic path is *deliberately matched to the current Fisher objective*:
+
+```
+# src/laplace_grad.jl:237
+(observed weight `αy/μ` in the implicit step, Fisher weight `α` in the log-det).
+```
+
+The implicit step already uses the **observed** weight — correctly. Only the **log-det**
+uses Fisher, precisely so the gradient matches the marginal it differentiates. Changing
+the objective without changing `laplace_grad.jl:200-237` in the same arc produces an
+objective/gradient mismatch that **degrades optimisation silently** rather than erroring.
+
+That is the gradient cascade the structural-fix census is scoping, and the maintainer
+gated any change of this class on the adversarial reviewer's verdict. Acting first would
+be exactly the mistake this session has already made twice — substituting one piece of a
+coupled pair and reading the resulting divergence as a discovery.
+
+### Running tally of the fault class
+
+| # | Family | Site | Status |
+|---|---|---|---|
+| 1 | NB1 | `negbin1.jl:77` | fixed |
+| 2 | TruncatedNegBin2 | `truncated_nbinom2.jl:52` | fixed |
+| 3 | Tweedie | `tweedie.jl:26` | open, measured +0.2414 |
+| 4 | Student-t | `studentt.jl:75` | open, measured −0.1720 |
+| 5 | DeltaGamma | `twopart.jl` | fixed (curvature half) |
+| 6 | Exponential | `exponential.jl:9` | fixed |
+| 7 | AGHQ adaptation | `aghq_grid.jl:203` | open, PARKED |
+| **8** | **Gamma shared route** | **`gamma.jl:12`** | **open — PUBLIC DEFAULT, has a gradient cascade** |
+
+### The measurement that decides the architecture question
+
+Quantifying instance 8's impact also settles the bigger call: if the shared-Gamma Δ is
+material, the substrate hook in `laplace.jl` is justified; if it is Exponential-sized
+(~0.23 logLik), the per-family route wins and the fence can stay closed. That
+measurement is cheap (the mode is gradient-determined, so the whole impact is the
+log-det) and should precede the decision.
+
+### A methodological correction worth keeping
+
+The survey's reviewer disputed the assumption that missing **ADEMP recovery tests** are
+the best detector for this fault class, and is right: the curvature error lives in the
+log-det while the **score stays correct**, so the estimator remains consistent and
+recovery-to-truth is a weak detector at realistic replicate counts (Exponential moved
+‖Λ‖ 0.4442 → 0.4889 against a truth of 0.3815 — well inside Monte Carlo noise).
+
+**CI coverage is the detector that would have caught all eight**, because the wrong
+curvature feeds the central-difference Wald Hessian directly
+(`src/confint_family.jl:22-25`). That is the ledger row already marked `missing`
+("simulation-validated coverage certificate", `capability-status.md:170`). Recovery
+tests would not have found this class; coverage would.
+
+## 2026-08-25 — the curvature fault class is ELEVEN instances, not eight; two entries above are wrong
+
+Independent read-only audit against the **code**, not against this log. Three further
+instances of the Fisher-vs-observed Laplace fault were found, and two claims in the
+tally above do not survive checking. Every citation below was opened and verified in
+this lane (`claude/lane-beyond-20260824` @ `1a3fa3bd`) before being written here.
+
+### Three unlisted instances — all in the generic Fisher-only core
+
+| # | family | site | evidence |
+|---|---|---|---|
+| 9 | NB2 shared route | `negbin.jl:11` | `_glm_weight(f::NegativeBinomial,μ,n,me) = me^2/(μ+μ²/f.r)`; the comment at `:8` says *"expected-information ⇒ W ≥ 0"*. At the log link this is `μr/(r+μ)` — precisely the Fisher weight this log itself derives at `:12318` while fixing truncated_nbinom2. Observed is `μr(y+r)/(μ+r)²`. Routes to the generic core at `negbin.jl:25`. |
+| 10 | Beta shared route | `beta.jl:21-25` | `_glm_weight(f::Beta,…) = φ²·ν·me²`; comment at `:9` says *"expected information ⇒ W ≥ 0"*. Routes to the generic core at `beta.jl:38-40`. |
+| 11 | NB1 generic (non-grouped) core | `negbin1.jl:77` | `_glm_weight(f::NB1,μ,n,me) = me^2 * _nb1_fisher_mu(μ,f.φ)`; comment at `:76` says *"Expected-information working weight"*, and the helper is **named** `_nb1_fisher_mu`. |
+
+### Two corrections to the tally above
+
+1. **DeltaGamma is recorded as "fixed". No branch carries that fix.** The work is
+   complete and locally verified but **uncommitted**, in the sibling worktree
+   `GLLVM.jl-a43-honesty-20260818`. A ledger reading "fixed" for what was ranked the
+   worst instance, while every branch still ships the bug, is the exact failure mode the
+   pre-publish gate exists to catch. (Its full suite was re-run on 2026-08-25 after the
+   original run was killed by SIGTERM at ~46 min when the authoring session's process
+   group was cleaned up.)
+2. **`negbin1.jl:77` is cited as the NB1 fix site. That line is untouched and still
+   Fisher.** The actual NB1 fix was the *grouped* route
+   (`grouped_dispersion.jl:1253`, `hessian::Symbol = :observed`). The generic core was
+   never part of it. The citation should be corrected, not merely re-read.
+
+### Why these three were missed — and why Gamma is still the urgent one
+
+`fit_gllvm.jl:142-145` auto-coerces `disp_group = :species` for NegativeBinomial / Beta
+/ NB1 / BetaBinom, so the **default** public path for those three lands on the corrected
+grouped route. They are reachable only via the exported `fit_nb_gllvm` /
+`fit_beta_gllvm` / `fit_nb1_gllvm`, via `disp_group = nothing`, via `bridge.jl:1111`, or
+via `confint_family.jl:183,2771` (bootstrap refit + Wald). Real, but not the default.
+
+**Gamma is excluded from that list** — the comment at `fit_gllvm.jl:141` says so in as
+many words: *"Gamma unchanged."* That is exactly why instance 8,
+`fit_gllvm(Y; family = Gamma())`, sits on the surface a user actually reaches. The
+exclusion was deliberate and correct for dispersion purposes; it just happens to leave
+Gamma alone on the Fisher core.
+
+### Two families already correct that no list mentions
+
+- **CensoredPoisson** (`censored_poisson.jl:67-75`) — its censored branch is *already*
+  the observed Hessian, derived by hand: *"Observed (−Hessian): −d²ℓ/dη² = −G·(C−μ−G)"*.
+- **Ordinal** (`ordinal.jl:61-74`) — already observed by construction.
+
+Both belong in the bit-for-bit invariance set alongside Poisson/log, Binomial/logit,
+Gaussian, TruncatedPoisson, HurdlePoisson `Wc` and DeltaLogNormal.
+
+### The gradient coupling, enumerated
+
+Five fitters default to `gradient = :analytic` (poisson, binomial, negbin, gamma, beta).
+**Exactly three are coupled** to the Fisher log-det and must change in the same commit
+as any substrate fix: `laplace_grad.jl:156` (NB2), `:221-222` (Gamma), `:302-303`
+(Beta). Poisson (`:73/:84`) and Binomial (`:359/:369`) are **not** coupled — canonical
+links, where one formula serves both roles.
+
+### Impact number corrected
+
+DeltaGamma's impact is **1.49**, not the **3.21** carried by the ranking entry above.
+The ranking fixture had all cells positive; a realistic delta has ~64% presence, so only
+that fraction carries the positive part. 3.21 was an upper bound, not an estimate. It
+remains the largest of the measured instances.
+
+### Open, unverified
+
+**GeneralizedPoisson1** (`gp1.jl:65-68`) is a plausible twelfth instance — its comment
+claims *"exact expected information"* — but the observed form was not derived here.
+**UNVERIFIED; a lead, not a finding.**
+
+No `src/` change in this entry. Docs-only, no twin Δ, no tolerance touched, no fence
+lifted, nothing merged.
+
+## 2026-08-25 — documented link contracts are not enforced (fail-loud sweep)
+
+Found while fact-checking family documentation: `gp1.jl` has no link guard, unlike
+`truncated_poisson.jl:96` which throws. Applying the "assume there are ten more" rule
+turned one omission into a package-wide pattern.
+
+### The sweep
+
+Explicit link guards (`link isa … || throw`) exist in exactly **five** of ~34 family
+files — `lognormal.jl`, `multinomial.jl`, `truncated_poisson.jl`, `censored_poisson.jl`,
+`truncated_nbinom2.jl`. All five are recent additions. **Every older family has none.**
+
+### Why that is not merely untidy
+
+`docs/src/response-families.md:36-38` states: *"For `Poisson`, `NegativeBinomial`, and
+`Gamma` the default and only supported link is `LogLink()`."* That contract is **not
+enforced anywhere**:
+
+- `fit_poisson_gllvm` (`poisson.jl:129-130`) and `fit_gamma_gllvm`
+  (`gamma.jl:118-119`) both declare `link::Link = LogLink()` — accepting **any**
+  `Link` subtype.
+- `links.jl:10-31` defines `linkinv` for all five links generically, so every
+  combination evaluates.
+- `laplace.jl` performs no link validation (grep for a throw returns nothing).
+- The weight machinery is genuinely link-generic: `poisson.jl:7`'s
+  `_glm_weight = me²/μ` is the correct Fisher weight for *any* link, since `me = dμ/dη`.
+
+So `fit_poisson_gllvm(Y; K = 2, link = ProbitLink())` does not error. It runs, converges,
+and returns a fit whose mean is bounded in (0,1) for count data. **The failure mode is a
+plausible-looking wrong answer, not an exception** — the worst kind, and the same shape
+as the curvature fault class: the machinery is happy, the statistics are not.
+
+`IdentityLink()` on Gamma is the sharper case: it permits negative μ for a
+strictly-positive family.
+
+### Scope note — recorded, deliberately NOT patched here
+
+Adding guards touches ~30 files and is a **user-facing behaviour change**: any caller
+currently passing a non-default link would begin to throw. That is very likely the
+correct outcome, but it is a deliberate API decision, not a cleanup, and this session
+holds no mandate for it. Queued for the maintainer alongside the release-surface work.
+
+Suggested shape when it is taken up: a single `_check_link(family, link)` helper with
+per-family methods, so the contract lives in one place rather than being re-typed 30
+times — the same "one formula, one place" reasoning used for the DeltaGamma curvature
+fix, which delegated to `_gamma_grouped_laplace_weight` rather than re-deriving.
+
+**UNVERIFIED:** I did not run the mis-linked fit to observe the output; the claim that it
+converges rather than throwing is read from the code path, not measured. The absence of
+guards is verified; the precise runtime behaviour is inference.
+
+Docs-only entry. No `src/` change, no fence lifted, nothing merged.
+
+## 2026-08-25 — eight `src/` files are not in the module; CLAUDE.md documents six as components
+
+Found by verifying a claim about orphaned tests. The test finding was real but smaller
+than reported; underneath it sits a larger one.
+
+### Eight source files are not included anywhere
+
+`grep -rn 'include("<f>.jl")' src/` returns nothing for all eight:
+
+`edge_incidence.jl` · `likelihood_edge_incidence.jl` · `phylo_contrasts.jl` ·
+`likelihood_contrasts.jl` · `em_phylo.jl` · `em_squarem.jl` · `relaxed_clock.jl` ·
+`phylo_branch_re.jl`
+
+They are not loaded by `using GLLVM`. **This is not a regression** — `git log -S` finds
+no commit that ever added an include line for any of them (checked for
+`edge_incidence`, `phylo_contrasts`, `em_squarem`: zero hits). They were committed to
+`src/` as prototypes and never wired in. The commit subjects say as much:
+`f5e2195b PERF++++`, `214f6a3d PERF+++`, `addd108a PERF`, `a7e2cbbb … prototype`.
+
+**Parking prototypes is fine. Documenting them as components is not.**
+
+### What the docs claim
+
+`CLAUDE.md:49-56` lists six of them as package components, under headings that read as
+shipped capability — *"Phylogenetic representations (all compute the identical
+log-likelihood to machine precision)"* and *"Fitting at scale (closes the
+fast-and-fittable gap)"*:
+
+- `phylo_contrasts.jl` + `likelihood_contrasts.jl` — Felsenstein independent contrasts
+- `edge_incidence.jl` + `likelihood_edge_incidence.jl` — edge-node incidence, matrix-free
+- `em_phylo.jl` — gradient-free EM fit
+- `em_squarem.jl` — SQUAREM accelerator
+- `relaxed_clock.jl` — per-branch rate prototype (this one at least says "prototype")
+
+`AGENTS.md` carries the same shape: *"Phylogenetic representations: sparse (CHOLMOD),
+contrasts, edge-incidence; all return identical log-likelihoods to machine precision."*
+Two of those three representations are not in the module, so that identity **cannot be
+exercised by the test suite** as it stands.
+
+**Scope, stated precisely: `README.md` and `docs/src/` make NO such claim** (greps
+return nothing). This is agent-facing orientation drift, **not** a public overclaim. That
+distinction matters and should not be inflated.
+
+### Why it still matters
+
+`CLAUDE.md` and `AGENTS.md` are what orient every agent that touches this repo. As
+written, they invite an agent to "fix" or "optimise" a file whose changes cannot affect
+the package — and no test would notice, because those files' tests are orphaned too
+(below). Wasted work that looks like progress is the expensive failure mode here.
+
+### The orphaned-test finding, corrected
+
+15 test files are absent from `test/runtests.jl` (a 16th, `test_quality_jet.jl`, is NOT
+orphaned — it is conditionally included from `test_quality.jl:31`). They split cleanly:
+
+**(A) SHIPPED code whose tests CI never runs — the real gap:**
+`test_phylo_beta_xlv.jl`, `test_phylo_binomial_xlv.jl`, `test_phylo_gamma_xlv.jl`,
+`test_phylo_nb_xlv.jl`, `test_phylo_ordinal_xlv.jl` (sources at `src/phylo_*_xlv.jl`,
+included at `GLLVM.jl:103-107`) and `test_sparse_phy_grad.jl`
+(`src/sparse_phy_grad.jl`, included at `GLLVM.jl:44`).
+
+**(B) tests for the un-included files above** — orphaned consistently with their
+sources. Wiring these in without first wiring the sources would simply fail.
+
+Note the correction: an earlier survey reported these as `src/families/phylo_*_xlv.jl`.
+They are at `src/phylo_*_xlv.jl`; the `src/families/` path does not exist.
+
+### Recorded, not patched
+
+Three separate maintainer decisions, none of them this session's to take:
+1. Are the eight files parked-on-purpose, or should they be wired in?
+2. `CLAUDE.md` / `AGENTS.md` wording — both are approval-gated files.
+3. Adding category (A) tests to `runtests.jl` is test-only and low-risk, **but they have
+   never run in CI**, so their current pass state is unknown. Run them before wiring.
+
+No `src/` change. No fence lifted. Nothing merged.
+
+## 2026-08-25 — seven code findings surfaced while fact-checking the new family docs
+
+Documenting the seven previously-undocumented families required reading their sources
+closely. That is what turned them up: **writing the docs was the audit.** Six of seven
+drafted sections came back CORRECTIONS from an independent per-family reviewer (33 doc
+errors, including a Lognormal example that could not run and a forbidden TMB-parity
+claim). Those were fixed before the docs landed. These seven are different — they are
+findings about the **package**, not the draft.
+
+### C1 — malformed error message · `truncated_poisson.jl:106` · **FIXED here**
+
+```julia
+"truncated_poisson requires y ≥ 1; found y=$Yc[t,s] at ($t,$s)"
+```
+`$Yc` interpolates the **entire count matrix**, after which `[t,s]` is literal text. So
+the reported value and cell index were not what the message promised, and the message
+grew with the size of the data. Now `$(Yc[t, s])`. A regression test locks the value, the
+index, the absence of a spliced matrix, and a constant-size message.
+
+**Swept for siblings** (`grep -rE '"[^"]*\$[A-Za-z_]+\['` over `src/`, excluding `$(`):
+**exactly one occurrence package-wide.** Isolated, not a pattern.
+
+### C2 — missing link guard · `gp1.jl` — already recorded
+
+See the fail-loud sweep entry above; `fit_gp1_gllvm` is one instance of a package-wide
+pattern, not a lone omission.
+
+### C3 — silent category inference · `multinomial.jl:105`
+
+`K = n_categories === nothing ? ymax : Int(n_categories)`. With `n_categories` unset, `K`
+is inferred as `maximum(y)`. A sample in which the top category happens to be unobserved
+silently fits a **smaller `K`**, with no warning. Every other constraint in this family
+fails loud (`y < 1`, `y > K`, `K = 2`); this one does not. Recorded, not patched —
+changing it is a behaviour decision.
+
+### C4 — ledger wording contradicts shipped dispatch · `capability-status.md:92-102`
+
+The multinomial row's comment ends: *"…does NOT admit multinomial to `fit_gllvm`/bridge
+dispatch."* Taken as a statement of fact, that is **half wrong**:
+
+- **`fit_gllvm`: a live route exists and is tested.** `fit_gllvm.jl:283-284` defines
+  `_fit_gllvm(::Multinomial, Y; kwargs...) = fit_multinomial_gllvm(Y; kwargs...)`, with a
+  dedicated guarded branch at `:148`, and `test/test_multinomial.jl:136-138` asserts
+  `fit_gllvm(Y; family = GLLVM.Multinomial())` returns a `MultinomialFit` matching the
+  named fitter to `atol = 1e-8`.
+- **Bridge: the ledger is correct.** `grep -c multinomial src/bridge.jl` → **0**.
+
+In fairness the sentence is ambiguous: read as *"this parity claim does not by itself
+constitute the admit"* it is true and unremarkable; read as *"no such dispatch exists"*
+it is false. Bundling `fit_gllvm` and bridge into one phrase is what makes it misread.
+**This is a wording fix, not a ledger flip** — the row's `missing` status is separately
+defensible, since it tracks the twin's latent/phylo/spatial multinomial surface, which is
+genuinely absent.
+
+### C5 — unguarded, untested `X` path · `lognormal.jl`
+
+`fit_lognormal_gllvm` declares no `X` keyword but forwards `kwargs...` to
+`fit_gaussian_gllvm`, which **does** accept one — after per-trait intercepts have already
+been removed from `log(Y)`. So any `X` design would be fitted against already-centred log
+residuals. No test covers it. Either guard it or support it deliberately; the docs
+landed making no claim either way.
+
+### C6 — mixed-family warm start errors on `missing` · `mixed.jl`
+
+`_mixed_laplace_mode` and `_mixed_loglik_site` both drop `missing` cells (FIML), but only
+the `Normal` method of `_mixed_pseudo_link_row` handles `missing`; the Poisson / Binomial
+/ Gamma / Beta methods call `float(y[i])` unguarded and would error. A source comment
+already calls this "a separate slice", so it is known — recorded so it is tracked rather
+than remembered.
+
+### C7 — no `confint` surface for six fit types
+
+`LognormalFit`, `TruncatedPoissonFit`, `CensoredPoissonFit`, `TruncatedNegBin2Fit` /
+`…PerTraitFit`, `MultinomialFit`, `MixedFamilyFit` have no `confint` dispatch — confirmed
+independently: `confint_family.jl` contains **zero** references to Lognormal,
+Multinomial, TruncatedPoisson, TruncatedNegBin2 or CensoredPoisson, and `_CIFit`
+(`confint_family.jl:44-45`) is the complete union. The **bridge** fails loud for lognormal
+and truncated_poisson (`_bridge_ci_guard_*`); the **native** side simply has no method, so
+a user gets a bare `MethodError` instead of a guided one. Worth a uniform fail-loud path
+— the same argument as the link guards, and cheap alongside them.
+
+Only C1 is fixed here. C2–C7 are recorded for the maintainer: each is either a behaviour
+decision, an approval-gated file, or a slice of its own.
+
+## 2026-08-25 — structural-fix gate: PROCEED WITH MODIFICATIONS; class is 13, and the suite cannot adjudicate it
+
+The maintainer lifted the Arc1b fence on `laplace.jl` and gated the structural fix on an
+adversarial verdict. That review has now run (design + two censuses on Fable, reviewer on
+Opus with veto authority — deliberately a different model from the designer, so the review
+could not merely re-confirm the design's own priors). Full artifact:
+`docs/dev-log/plans/2026-08-25-laplace-structural-design.md`.
+
+**Verdict: PROCEED WITH MODIFICATIONS** (M1–M6). Implementation **not started.**
+
+### Two findings that change the shape of the work
+
+**1. The contract does NOT close the fault class — 1 kernel of 13.** The design's stated
+purpose was "separate the two roles so the fault class cannot recur." The proposed
+`hessian` kwarg reaches exactly **one** kernel (`laplace.jl`). Twelve others build their
+own `Λ'WΛ + I` and their own `logdet` and are untouched — among them two live user
+surfaces: `covariates.jl:52-69` (backing `fourthcorner.jl`, `species_covariates.jl`,
+`constrained_ordination.jl`, `row_effects.jl`) and `mixed.jl:249-254` (backing
+`fit_mixed_gllvm`). A new family added through any of those doors still silently gets
+Fisher.
+
+**The instruction is explicit and is recorded here so it binds later: buy the contract for
+the correctness of the core-reachable families; do NOT claim it as anti-recurrence, and do
+NOT let any after-task report record the class as closed.** This log already carries two
+errors of exactly that kind (a false "fixed" on DeltaGamma, a wrong fix-site citation for
+NB1). A third would be a pattern.
+
+**2. The suite cannot distinguish a fix from a regression.** `test/parity/` is **not
+referenced by `test/runtests.jl` at all** — verified independently here:
+`grep -c parity test/runtests.jl` → **0**. It never runs in CI or under `Pkg.test()`. The
+only in-suite independent oracles are three quadrature comparisons
+(`test_beta_laplace.jl:37` and `test_gamma_laplace.jl:36` at `atol = 0.5`,
+`test_binomial_laplace.jl:38` at `atol = 0.06`) — loose enough to pass under *either*
+curvature.
+
+Consequently the most dangerous step is **not the algebra** but re-deriving the stored
+oracle values: when five `atol = 1e-10` identities go red, the natural repair is to paste
+in whatever the new code prints, making the new code its own oracle and shipping a
+*different* wrong weight fully green. **Own-the-verifier, carried forward verbatim:
+whoever changes the weight must not be the one who writes the new expected numbers.**
+
+### The class is now 13
+
+- **#12 GeneralizedPoisson1** (`gp1.jl:65-71`) — the UNVERIFIED lead recorded earlier is
+  now **CONFIRMED**, derived by hand and independently reproduced by the reviewer. Shipped
+  Fisher `μ/(1+αμ)²`; observed `μ(1+2αy−αμ)/(1+αμ)³`; substituting `E[y] = μ` recovers the
+  shipped value exactly — this class's signature. `1 + 2αy − αμ` **can be negative**, so
+  GP1 joins Student-t in needing the PD guard and must **not** be clamped.
+- **#13 mixed-family** (`mixed.jl:249-254`) — `_mixed_loglik_site` builds its own `A` and
+  `logdet` from `_glm_weight`. Separate kernel, same conflation, reachable via
+  `fit_mixed_gllvm` with NB2/Gamma/Beta traits.
+
+Boundary re-confirmed: DeltaGamma (#5) does **not** route through this core
+(`twopart.jl:610`); its fix lands separately.
+
+### What the reviewer verified rather than accepted
+
+All four proposed observed formulas were re-derived independently and hold (GP1; Tweedie
+`μ^(1−p)[(p−1)y+(2−p)μ]/φ`, non-negative on `1<p<2, y≥0`; Student-t; and TruncatedPoisson
+where observed ≡ Fisher, so it is correctly on the safe list). Two census claims were
+**refuted**: Tweedie's infinite series is *not* an AD hazard (`_tweedie_logA` receives only
+primals and never sees a Dual), and two claimed `laplace_loglik_site` call sites are
+comments, not calls — so BetaBinomial, COM-Poisson, OrderedBeta and Ordinal define no
+`_glm_weight` method and *cannot* reach the core at all.
+
+### Blocking modifications, in brief
+
+- **M1** — split into two commits: (A) contract with the default still `:fisher`, whole
+  suite bit-for-bit green with **zero test edits**; (B) the flip. Unsplit, "the suite is
+  green" carries no information, because A's failures and B's intended changes are
+  indistinguishable in one diff.
+- **M2** — `exponential.jl:60` must pass `hessian = :fisher` explicitly, and
+  `test_exponential.jl:84` must be re-armed against a recorded literal: after the flip both
+  of its sides would compute observed, so it would keep passing while testing nothing.
+- **M3** — Tweedie's grouped kernel needs the selector too; not optional.
+- **M4** — no oracle may be re-baselined from the new code's own output. Cheap independent
+  adjudicator needing no R: convert the three loose quadrature checks from "within atol" to
+  "**the error is strictly smaller than under `hessian = :fisher`**" — a direction-of-change
+  assertion, which is exactly the claim being made, and free.
+- **M5** — the after-task report must state the 1-of-13 coverage and file the twelve
+  uncovered kernels by name.
+- **M6** — resolve the clamp-convention mismatch (N1): the FD fallback and the analytic
+  overrides implement *different functions* wherever `_clamp_mu` binds, so the design's own
+  rtol-1e-10 gate test cannot pass as written.
+
+Nothing implemented. No `src/` change in this entry, no fence lifted, nothing merged.
+
+## 2026-08-25 — the oracle exists, and it REFUTES the assumption it was built on
+
+M4 of the adversarial review proposed a direction-of-change oracle: convert the
+loose quadrature comparisons to *"the error is strictly smaller under
+`hessian = :observed` than under `:fisher`"*, on the grounds that this is
+"exactly the claim being made, and free."
+
+Built it. **Measured it before asserting it. It does not hold.**
+
+### The measurement (K = 1, p = 6, 12 seeds per family, quadrature on 8001 nodes)
+
+| family | observed closer than Fisher | magnitude |
+|---|---|---|
+| **Gamma / log** | **12 / 12** | Fisher error 1.4e-2 … 1.1e-1; observed 5.4e-4 … 3.0e-3 — **20-60× smaller** |
+| **Beta / logit** | **2 / 12** | both ~1e-3 … 1e-2; Fisher usually marginally closer |
+
+So observed is decisively better for Gamma and **not** better for Beta.
+
+### This is not a bug in the fallback — checked before concluding
+
+The generic ForwardDiff fallback was cross-checked against
+`_beta_grouped_laplace_weight` (`grouped_dispersion.jl:403`), an independently
+hand-derived closed form living in a different file. **Worst relative error over a
+27-point (φ, η, y) grid: 1.8e-14.** An AD derivative and a hand-derived formula
+agreeing to machine precision is not something a wrong implementation does by
+accident. The Beta result is real.
+
+### What it actually means — and the overclaim it prevents
+
+**"Observed" and "closer to the exact marginal" are different claims.** The goal
+of this arc is **parity with TMB**, which computes the observed joint Hessian
+structurally via `MakeADFun(..., random=)`. Whether that approximation lands
+nearer the exact integral than a Fisher-weighted one is a *separate* empirical
+question, and for Beta the answer is no.
+
+The arc is still right — but it must be described as **a parity change, not an
+accuracy improvement.** Conflating the two would be precisely the class of
+overclaim this log keeps catching. Recorded before it could reach a release note.
+
+### A finding the design did not anticipate: Beta's observed curvature is NEGATIVE
+
+At reachable `(η, y)` — e.g. `φ = 12, η = −1.2, y = 0.87` — the Beta observed
+weight is **−1.218**, while the Fisher weight is strictly positive by
+construction. The design named only Student-t and GP-1 as needing the
+positive-definiteness guard. **Beta needs it too**, which makes the guard at the
+`Λ'WΛ + I` assembly load-bearing rather than defensive, and confirms that
+clamping the weight (`ordinal.jl`'s `max(·,0)`) must never be copied here.
+
+**Consequence for commit B, flagged now:** flipping the default to `:observed`
+can drive Beta sites into the PD guard and return `-Inf`. Combined with the
+repo-wide `isfinite(v) ? v : 1e12` sentinel, the reviewer's warning applies —
+that stalls the optimiser at a *declared convergence* rather than erroring. This
+must be exercised deliberately before the flip, not discovered after it.
+
+### What landed
+
+`test/test_laplace_curvature_oracle.jl` — 60/60. Two oracles, neither
+satisfiable by tuning: cross-implementation agreement at rtol 1e-10 between the
+generic AD fallback and two independently hand-derived formulas; and the
+direction-of-change assertion **for Gamma only**, where it was measured to hold.
+The file states the Beta result in its own comments so a later reader cannot
+mistake the omission for an oversight.
+
+## 2026-08-25 — commit A reviewed: the safety net could not detect the failure it exists for
+
+Commit A (`6d9d3e1b`) was written in this lane, so it went to three independent adversarial
+lenses (invariance / mathematics / PD-guard-and-fallback) before commit B builds on it.
+Own-the-verifier: the agent that built a thing does not get to be its only judge.
+
+**Verdict: SAFE WITH FIXES.** Ten confirmed defects — six wrong now, four dormant until the
+flip. The reviewer re-derived the bit-for-bit claim independently rather than accepting it:
+`6d9d3e1b^:laplace.jl:166` and `6d9d3e1b:laplace.jl:252-253` hold that expression
+character-for-character, and `_default_hessian` returns `:fisher`. **Nothing shipped moved.**
+
+### D1 — the invariance tests are tautological. This is the important one.
+
+The selector reads `if hessian === :fisher || _glm_weight_matches_observed(family, link)`.
+A trait-true family therefore takes the **identical branch under both settings** and never
+evaluates `_glm_obs_weight` at all. So `@test a === b` cannot fail — **for a right
+declaration or a wrong one.**
+
+The commit's own stated worst failure mode is "a genuinely wrong weight silently acquiring
+the trait." That mode had **zero instrumentation**. The four current declarations are in
+fact mathematically correct (the maths lens derived all four from the coded densities), so
+nothing is numerically wrong today — but nothing in the repo would have said so if they
+weren't. A test that cannot fail is not evidence, and asserting `===` rather than a
+tolerance did not save it: the problem was never the tolerance, it was the branch.
+
+**Fix:** assert `_glm_obs_weight ≈ _glm_weight` across **distinct y** at fixed η, for all
+four trait-true pairs. `_glm_weight` is y-free by definition; the observed curvature is
+y-dependent in general. If a declaration is wrong, varying y moves one and not the other
+and the test fails. That tests the *claim* instead of the *branch*.
+
+### The other five current defects
+
+- **D2** — `CensoredPoisson` is declared trait-true and appears in **no test**
+  (`grep -c CensoredPoisson` on the contract file → 0). It is the single declaration
+  carrying an explicit UNVERIFIED caveat (its slot applies `max(W, 0)`) and had no coverage.
+- **D3** — the "default is `:fisher`" testset asserts only that `_default_hessian` *returns*
+  `:fisher`. An inverted condition in the selector leaves it green. The real evidence was
+  the 6462-pass regression run, not that file.
+- **D4** — `ForwardDiff` is imported by the test and never called. The observed arm is a
+  *nested* ForwardDiff that outer AD must differentiate through; that composition was
+  argued statically, never measured.
+- **D5** — evidence hygiene: `runtests.jl` in the working tree included a file in no commit
+  on any branch. **The committed state is consistent** (HEAD's `runtests.jl` has zero
+  references and the file is untracked), so no CI was broken — but the two must land in the
+  same commit.
+- **D6** — and the one that matters beyond this commit: **five `logdet` sites in
+  `grouped_dispersion.jl` already default to `:observed` with no PD guard at all**, and
+  `isposdef` appears exactly once in all of `src/` — the occurrence commit A just added.
+  So unguarded observed-curvature paths are **pre-existing**, not introduced here.
+
+### Corrections to the reviewers themselves
+
+Two lens claims did not survive checking and are recorded so they are not propagated: one
+lens's headline mechanism for a shadowing bug was wrong (Julia rebinds `acc`; the
+initialisers are pre-existing at parent lines 176/201, though its conclusion survives on a
+different mechanism), and another's "logdet returns a finite meaningless number on an even
+count of negative eigenvalues" is not established for `Symmetric`, which does not take the
+generic `AbstractMatrix` path it cited. The unguarded-logdet finding underneath it is
+confirmed, and **understated** — five sites, not three.
+
+### Commit-B blockers, recorded
+
+Re-key the PD guard on the **weight's sign**, not on the trait · give it a margin and test
+the branch · `exponential.jl:59-61` must forward `hessian = :fisher` explicitly and
+`test_exponential.jl:82-84` must be re-armed so `old` pins `:fisher` · exercise the fallback
+for the nine reachable-but-untested cells (Binomial/probit and cloglog first) · update the
+three coupled gradients in the same commit · **decide and test the masked-cell contract**:
+under `:observed` the weight now reads `y`, and masked cells carry a placeholder that
+previously never reached the response · and do not describe commit B as closing the class.
+
+No `src/` change in this entry.
+
+## 2026-08-25 — dual-safety census: the fallback is not universal, and two link-specific instances were hiding
+
+Commit-B blocker work. Two measurements, both of which change what commit B has to do.
+
+### 1. The generic ForwardDiff fallback is not universal — 13 of 14
+
+Probed `_glm_obs_weight` for every `(family, link)` that can reach the generic core:
+
+| dual-safe | families |
+|---|---|
+| **yes (13)** | Poisson/log · Binomial at logit, **probit, cloglog** · NB2 · NB1 · Beta · Gamma · Exponential · TruncatedPoisson · GP1 · Student-t · **Tweedie** |
+| ***** NO (1)** | **CensoredPoisson** — `logcdf(Gamma(C,1), μ)` → `_gammalogcdf` has no `ForwardDiff.Dual` method; fails at the FIRST derivative |
+
+**Tweedie is dual-safe.** Its infinite series was flagged during design as a likely AD
+hazard; it is not one — `_tweedie_logA` receives only primals (`y` is the response, `φ`
+and `p` are struct fields), so the series never sees a Dual. Measured, and now asserted so
+the refutation stays refuted.
+
+**CensoredPoisson is safe only because the trait keeps it off the fallback** — a stronger
+and more brittle reason than "the numbers coincide". Route it there and it throws. Both
+facts are pinned in `test/test_laplace_dual_safety.jl` so neither can regress unnoticed,
+and so a *second* non-dual-safe family cannot appear silently.
+
+### 2. Two link-specific instances a family-level census cannot see
+
+`Binomial` is clean at **logit** (observed ≡ Fisher, y-free) and is a genuine **instance of
+the fault class at probit and cloglog** — measured at η = 0.35, n = 6, y = 2:
+
+| link | observed | Fisher |
+|---|---|---|
+| logit | 1.45498 | 1.45498 |
+| **probit** | **3.93064** | 3.65289 |
+| **cloglog** | **6.46611** | 3.85621 |
+
+Every census so far has been organised by *family*. These two are properties of the
+**(family, link) pair**, so a family-level sweep structurally cannot find them. Recorded as
+executable fact in the new census test rather than as prose that can drift.
+
+### 3. The Beta `-Inf` risk I flagged is much smaller than it looked — measured
+
+Earlier I warned that flipping the default could drive Beta into the PD guard, returning
+`-Inf`, which with the repo-wide `isfinite(v) ? v : 1e12` sentinel would be a *declared
+convergence* rather than an error. That inference was sound but **does not survive
+measurement.**
+
+Beta's observed curvature is genuinely negative *pointwise* (φ=12, η=−1.2, y=0.87 →
+−1.218). But **at the Fisher mode it is positive.** Across p ∈ {4,8,20} × ‖Λ‖ ∈ {1,3,10,30}
+with adversarial data (y = 0.985, β = −1.5), the minimum observed weight at the mode was
+**+1.18**, with **zero** negative cells — the guard fired **0 / 12**. The mode-finder moves
+η to where the data support it, and the observed curvature is positive there.
+
+**Pointwise negativity is common; negativity at the mode is not.** That distinction is what
+matters for the flip, and it downgrades this from a blocker to cheap insurance.
+
+**Known residual, stated rather than papered over:** the guard's `-Inf` *return branch* is
+therefore not exercised by any test — no natural fixture reaches it. The predicate and
+surrounding path are covered; the failure return is not.
+
+### Also in this batch
+
+The PD guard is **re-keyed on the weight's sign** rather than on the selector or the trait
+(review blocker 1). `A = Λ'WΛ + I` is SPD by construction whenever every `W ≥ 0`, so the
+factorisation is needed only when a negative weight is actually present — cheaper on the
+common path and strictly more correct, since it fires on the real condition however the
+weight was produced. `-Inf` is returned through `oftype(ℓ, …)` so it carries the caller's
+numeric type; fitters run ForwardDiff *over* this objective and a raw `Float64` returned
+into a `Dual` context is a latent type error (blocker 2).
+
+## 2026-08-25 — DRY RUN of the flip: 29 failures, categorised, and two families argue against it
+
+Before writing commit B, the default was flipped to `:observed` **locally and uncommitted**,
+the full suite run, and the change reverted. Purpose: produce the exact list of oracles that
+move, without me deciding what their new values should be. The reviewer's constraint binds
+here — *whoever changes the weight must not be the one who writes the new expected numbers* —
+and I wrote the contract. Measuring the damage is allowed; adjudicating it is not.
+
+**Result: 6601 pass / 29 fail / 0 error / 1 broken.** Far smaller than feared, and every
+failure is explicable.
+
+### The 29, by cause
+
+| n | what fails | cause | disposition |
+|---|---|---|---|
+| **5** | `test_laplace_curvature_contract.jl` default pins | **working as designed** — my own guards detecting the flip | update deliberately at commit B |
+| **8** | `test_laplace_grad.jl` (5) + `test_masked_dispersion_grad.jl` (3): `gan ≈ gfd` | **blocker 7 confirmed live** — the analytic gradients still match the *Fisher* log-det | must change in the SAME commit |
+| **9** | grouped-vs-shared reduction identities in `test_grouped_dispersion*.jl` (6) + `test_tweedie_grouped_engine_health.jl` (3), at `atol = 1e-10` | grouped **marginals** default `:fisher` while the core flips to `:observed`, so `ll_grouped ≡ ll_shared` breaks | **bigger than M3** — see below |
+| **6** | `test_offset.jl` offset-absorption identity | fits land in different places; loglik off by only 1.6e-4, but NB `r` differs 187.95 vs 264.68 | investigate — likely a flat `r` surface amplified |
+| **1** | `test_gp1_laplace.jl:102` α recovery | **real degradation** — see below | evidence AGAINST flipping GP1 |
+
+### M3 is understated: it is not just Tweedie
+
+The review asked for a `hessian` selector on `_tweedie_grouped_loglik_site`. The dry run
+shows the obligation is **general**: every grouped-dispersion marginal defaults to `:fisher`
+(NB2, NB1, Beta, Gamma, BetaBinomial, Tweedie), and each carries a reduction identity of the
+form *"equal per-species dispersion reduces to the shared-dispersion path"* pinned at
+`atol = 1e-10`. Flip the core and every one of those identities breaks, because the two
+sides stop using the same curvature. **Six identities across three files, not one family.**
+
+### GP1: the flip makes recovery WORSE, and it is not a gradient artefact
+
+`test_gp1_laplace.jl:102` recovers `α = 0.879` against a truth of `0.4` under `:observed`;
+under `:fisher` it lands within the `atol = 0.15` the test asks for. That is a ~2× error in
+a dispersion parameter.
+
+Checked before concluding: `fit_gp1_gllvm` optimises with `autodiff = :finite`
+(`gp1.jl:226`), so its gradient is **self-consistent with whatever objective it is given**.
+This is therefore not the blocker-7 coupling showing through — it is the observed-curvature
+objective genuinely recovering α worse on this fixture.
+
+**Caveat, stated plainly:** one seed, one fixture, one parameter. A signal, not a coverage
+claim. But a strong signal, because the assertion was calibrated to pass under Fisher.
+
+### Where this leaves the arc
+
+Three families now argue that `:observed` is not an unalloyed improvement:
+
+| family | evidence |
+|---|---|
+| **Gamma** | observed is **much better** — 12/12 closer to quadrature, 20-60× |
+| **Beta** | observed slightly **worse** — 2/12 closer |
+| **GP1** | observed **substantially worse** for α recovery — 0.879 vs 0.4 |
+
+This does not make the arc wrong. **It makes it a parity change** — TMB computes the
+observed joint Hessian structurally, and matching it is the goal. But it decisively rules
+out describing commit B as an accuracy improvement, and it means the flip should not be sold
+as "the numbers get better". For two of the three families measured, they get worse.
+
+**Recommendation for the maintainer, not a decision taken here:** the evidence now supports
+flipping *per family* on the strength of family-specific evidence, rather than flipping the
+global default in one step. Gamma — instance 8, the wrong public default — has the strongest
+case and the clearest measured benefit. GP1 has a measured case *against*.
+
+Nothing was committed from the dry run; the default remains `:fisher` and the tree is clean.
+
+## 2026-08-25 — the curvature contract now covers SIX kernels, and coevolution WAS splittable
+
+Following the Gamma flip (instance 8), a six-agent audit mapped every kernel a Gamma model
+can reach. All six were reachable; the contract has now been extended to all of them.
+
+| kernel | status | note |
+|---|---|---|
+| `families/laplace.jl` | contract (commit A) | the generic core |
+| `families/covariates.jl` | **added** | 6 public fitters + 4 `confint` objectives inherit it; was 0.238 adrift |
+| `families/mixed.jl` | **added** | per-trait; closes the bridge two-loglik hole |
+| `families/quadratic.jl` | **added** | exported, documents `Gamma()`; silent because every quadratic test is Poisson |
+| `spde_latent.jl` | **added** | `confint_spde_latent` inherits this log-det for its **Wald SEs** |
+| `coevolution_glm.jl` | **added** | see below — the audit said this one was impossible |
+
+### The audit was wrong about `coevolution_glm.jl`, and it matters
+
+It reported that this kernel **"CANNOT take this fix"** because a single `cholH` serves both
+the Newton step (`:88`) and the log-det (`:146`). The diagnosis was right; the conclusion
+was not.
+
+The two roles want different objects: the Newton step legitimately wants the **Fisher**
+Hessian (SPD by construction, so the step is always well-defined), and the log-det wants the
+**observed** one. So on the observed branch, rebuild `H = P + J` at the **already-converged**
+mode using the observed weight and factorise it separately. Cost: one extra Cholesky, paid
+only on that branch, only after the mode is found. **The mode search is untouched.**
+
+That is the same role separation as the core, applied one level down — which is what the
+"one object, two roles" diagnosis should have implied in the first place. Recorded because a
+kernel left unfixed on an auditor's say-so is exactly the kind of gap that survives for
+months.
+
+A PD guard comes with it: the observed weight can be negative, so `H` is no longer SPD by
+construction and a failed factorisation returns `-Inf` rather than a meaningless log-det.
+
+### One non-finding, checked before it became a false alarm
+
+`test/test_spde_latent.jl` errors when run standalone with `UndefVarError: Poisson`. That is
+**pre-existing and unrelated**: the file imports no `Distributions` and relies on
+`runtests.jl` to supply it. It IS in the suite (`grep -c` → 1), so the full run exercises it.
+Verified against `HEAD` before concluding, rather than assuming my change had broken it.
+
+### Where the class stands
+
+**6 kernels of 13.** Still NOT closed, and still must not be described as closed. What
+remains: `grouped_dispersion.jl`'s other families, `aghq_grid.jl` (PARKED), `phylo_glm.jl`,
+the four `phylo_*_xlv.jl` kernels, and `truncated_nbinom2.jl`'s own kernel — plus the
+per-family decisions for Beta, NB2, NB1, Tweedie, Student-t, GP1 and Binomial at
+probit/cloglog, two of which (Beta, GP1) have measured evidence AGAINST flipping.
+
+## 2026-08-25 — a live defect in the grouped fitters: the Newton loop was running on observed curvature
+
+A two-agent audit of the last unexamined kernels, with a Fable ruling on what structural
+closure now requires. It found something that predates all of this session's work.
+
+### The defect
+
+`grouped_dispersion.jl`'s site kernels use **one `hessian` symbol for both roles**. The
+Newton loop and the post-loop log-det both call
+`_<fam>_grouped_laplace_weight(hessian, …)` — so whatever the caller selects governs the
+**mode search** as well as the log-det.
+
+And the grouped **fitters default to `:observed`** (`fit_beta_gllvm_grouped:555`,
+`fit_nb1_gllvm_grouped`, and the `_cov` variants). So the shipped fitters were running
+their Newton mode search on the observed weight — which **can be negative**: measured
+earlier this session at Beta, φ=12, η=−1.2, y=0.87 → **−1.218**.
+
+With a negative weight, `A = Λ'WΛ + I` is no longer SPD, and `_safe_solve` does `A \ b`.
+Julia's `\` on a `Symmetric` uses Bunch–Kaufman, which handles indefinite matrices
+**without erroring** — so the step is not a descent step and nothing complains. A
+silent-wrong-answer path, not a crash.
+
+Verified directly before acting: `_beta_grouped_loglik_site` line 14 (in-loop) uses the
+selected weight, and the fitter's default is `:observed`.
+
+### The fix — four one-line changes
+
+The Newton loops are now Fisher-scored **always** (`Ref(:fisher)`, not the caller's
+selector) in the NB2, Beta, Gamma and NB1 grouped site kernels; the post-loop log-dets
+keep the selector.
+
+**Why this is safe, and why it cannot change any answer:** the converged mode is the fixed
+point of `Λ's − z = 0`, which does **not** involve `W` at all. `W` only sets the Newton
+*step*. Fisher-scoring therefore changes the path taken, never the destination — and it
+guarantees every step is a descent step, because expected information is ≥ 0 so
+`Λ'WΛ + I` is SPD by construction.
+
+Confirmed empirically: `test_grouped_dispersion.jl`,
+`test_grouped_dispersion_beta_gamma.jl`, `test_grouped_dispersion_tweedie_nb1.jl` and the
+cross-kernel Gamma test all pass unchanged.
+
+This is the same role separation now applied in 11 other kernels — but here it is not
+merely tidiness: it removes a live indefinite-Newton path from shipped fitters.
+
+### Two debts, and they must not be reported as one
+
+The ruling drew a distinction worth preserving:
+
+- **Structural defect** — a kernel that still *conflates* the two roles. That is a code
+  fault, and `grouped_dispersion.jl` was the last one.
+- **Per-family default** — a kernel that has the contract but whose default has not been
+  flipped to `:observed`. That is an *evidence decision*, not a defect, and for Beta and
+  GP-1 the measured evidence says do **not** flip.
+
+Collapsing the two would overstate the remaining debt in one direction and the completed
+work in the other.
+
+`truncated_nbinom2.jl` was also audited: it does **not** conflate the roles. It lacks the
+`_default_hessian` / `_glm_obs_weight` trait wiring, which is the lesser debt.
+
+### Also in this batch
+
+The three remaining `phylo_*_xlv` kernels (beta, binomial, nb) gained the contract — pure
+structural work with **zero behaviour change**, since all three carry families whose
+default stays `:fisher`.
+
+**A near-miss worth recording.** The first version of that patch referenced `fam` at the
+call site, but `fam` is a **local inside the helper** and is not defined in the enclosing
+mode function. `using GLLVM` loaded without complaint, because Julia resolves globals
+lazily — so "the module loads" would have shipped a runtime `UndefVarError` into the phylo
+paths. Caught by checking scope, then confirmed by **running** the tests rather than
+re-checking that it loads. Loading is not evidence.
+
+### Orphaned tests: 15 → 9
+
+All six `phylo_*_xlv` tests and `test_sparse_phy_grad.jl` pass and are now wired into
+`runtests.jl`. Their sources are shipped (`GLLVM.jl:44`, `:103-107`), so this was untested
+shipped code running in CI for the first time. `test_phylo_gamma_xlv.jl` is deliberately
+**not** wired in: its `:123` assertion compares against a reference implementation inside
+the test file that still computes the Fisher log-det, and that oracle should not be
+updated by whoever changed the code it judges.
+
+The nine still orphaned test the **un-included** source files — a different finding
+(8 `src/` files are in no `include`), not a test problem.

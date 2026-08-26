@@ -5,6 +5,28 @@ Notable changes to GLLVM.jl. Style mirrors `gllvmTMB`'s NEWS: status labels
 
 ## GLLVM.jl (development version)
 
+### Changed
+- **CHANGED:** Gamma's Laplace **log-determinant now uses the observed
+  conditional curvature** `α·y/μ`, matching TMB and therefore `gllvmTMB`.
+  It previously used the Fisher (expected) weight — the constant `α`, which is
+  exactly the *expectation* of the correct one. **This moves reported `loglik`
+  values for Gamma fits**, and anything derived from the Hessian such as Wald
+  standard errors; point estimates move very little, because the conditional
+  mode is determined by the score, which is unaffected. Measured against
+  numerical quadrature the observed curvature is closer **12/12** seeds, with
+  20–60× smaller error. `hessian = :fisher` restores the previous behaviour.
+
+  This was **instance 8** of a Fisher-vs-observed fault class and the
+  worst-placed one: `fit_gllvm(Y; family = Gamma())` reaches it, because Gamma
+  is deliberately excluded from the `disp_group = :species` auto-coercion that
+  shields the other dispersion families.
+
+  **Per-family, not a global switch.** Other families keep the Fisher default:
+  measured evidence says observed is *not* closer for Beta (2/12) and is
+  measurably worse for GP-1's dispersion recovery. See
+  `docs/design/capability-status.md` § *Laplace curvature* for the family-by-family
+  table and which rows will not match `gllvmTMB` to machine precision.
+
 ### Fixed
 - **FIX:** every non-Gaussian **Wald** standard error was wrong. The
   observed-information finite-difference Hessian (`_fd_hessian`, backing
@@ -119,3 +141,10 @@ package; every numerical addition is gated by deterministic tests.
   cross-trait correlation, phylogenetic signal).
 - **IN:** ~340× median per-fit speedup over R `gllvmTMB` on the Gaussian
   benchmark grid, reproducing estimates and likelihoods to machine precision.
+  *(Correction appended 2026-08-25 — the entry is left as originally published
+  rather than rewritten. "Machine precision" overstates it: the measured
+  worst case across that grid is `|Δ logLik| = 2.343e-07` and `Σ_y` relative
+  Frobenius `4.424e-05`, i.e. agreement to at least six significant digits, not
+  to ~2.2e-16. The `~340×` figure is also specific to the single-σ² Gaussian
+  closed-form path and does NOT generalise: measured non-Gaussian speedups
+  include truncated_poisson ≈2.2× and Gamma ≈1.6×.)*

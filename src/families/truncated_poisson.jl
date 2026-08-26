@@ -32,6 +32,12 @@ function _glm_score(::TruncatedPoisson, μ, n, me, y)
     return (y - μtr) / μ * me
 end
 
+# Observed ≡ Fisher here, verified by expansion: var_tr = μtr(1+μ−μtr) gives
+# exactly μ[(1−p₀)−μp₀]/(1−p₀)² = μ·dμtr/dμ, which is y-free. Zero-truncation
+# does not reintroduce a y-dependence, so this family is unaffected by the
+# selector.
+_glm_weight_matches_observed(::TruncatedPoisson, ::LogLink) = true
+
 function _glm_weight(::TruncatedPoisson, μ, n, me)
     _, var_tr = _truncpois_mean_var(μ)
     return (me / μ)^2 * var_tr
@@ -103,7 +109,7 @@ function fit_truncated_poisson_gllvm(Y::AbstractMatrix; K::Integer,
     @inbounds for t in 1:p, s in 1:n
         (msk !== nothing && !msk[t, s]) && continue
         Yc[t, s] < 1 && throw(ArgumentError(
-            "truncated_poisson requires y ≥ 1; found y=$Yc[t,s] at ($t,$s)"))
+            "truncated_poisson requires y ≥ 1; found y=$(Yc[t, s]) at ($t,$s)"))
     end
 
     Zemp = [linkfun(link, max(Float64(Yc[t, i]), 1.0)) for t in 1:p, i in 1:n]

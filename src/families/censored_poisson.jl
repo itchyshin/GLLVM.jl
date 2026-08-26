@@ -75,6 +75,19 @@ function _glm_weight(::CensoredPoisson, μ, n, me)
     return max(W, zero(typeof(W)))
 end
 
+# This family's `_glm_weight` slot is ALREADY the observed Hessian, hand-derived
+# (`−G·(C−μ−G)` on the censored branch; the uncensored branch is Poisson/log,
+# where observed ≡ Fisher). It is therefore correct for the log-det as it
+# stands, and takes the untouched path under either selector setting.
+#
+# CAVEAT, recorded rather than hidden: that slot applies `max(W, 0)`. So it is
+# observed-CLAMPED, not raw observed. The clamp is pre-existing and is preserved
+# here deliberately — routing this family through the generic ForwardDiff
+# fallback instead would hand the log-det an unclamped, possibly negative weight
+# and change shipped behaviour. Whether the clamp can actually bind for
+# reachable (μ, C) is UNVERIFIED.
+_glm_weight_matches_observed(::CensoredPoisson, ::LogLink) = true
+
 _laplace_mode_should_backtrack(::CensoredPoisson) = true
 
 """

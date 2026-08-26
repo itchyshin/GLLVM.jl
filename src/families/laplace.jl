@@ -138,6 +138,86 @@ function _laplace_mode(family, y::AbstractVector, n::AbstractVector,
     return z
 end
 
+# ===========================================================================
+# Curvature role separation (2026-08-25).
+#
+# `_glm_weight` (documented at the top of this file) is the FISHER (expected)
+# information wrt η. It plays TWO roles here, and they have different
+# requirements:
+#
+#   (a) the Fisher-scoring MODE SEARCH (`_laplace_mode`) — expected information
+#       is correct here. It solves the same score equation, so the mode is
+#       unchanged, and W ≥ 0 keeps Λ'WΛ + I SPD inside Newton.
+#   (b) the marginal's LOG-DET — this must be the OBSERVED curvature
+#       −∂²ℓ/∂η² to match TMB, which obtains it structurally because
+#       `MakeADFun(..., random=)` differentiates the coded joint nll and so
+#       never faces this choice.
+#
+# Conflating the two is a confirmed fault class (see
+# `docs/dev-log/plans/2026-08-25-laplace-structural-design.md`).
+#
+# SCOPE, STATED HONESTLY: this selector reaches THIS kernel only. Other kernels
+# build their own Λ'WΛ + I and their own logdet — `grouped_dispersion.jl`,
+# `covariates.jl`, `quadratic.jl`, `mixed.jl`, `spde_latent.jl`,
+# `aghq_grid.jl`, `phylo_glm.jl`, the `phylo_*_xlv.jl` family, and
+# `coevolution_glm.jl`. It is NOT an anti-recurrence guarantee, and must not be
+# described as closing the class.
+
+"""
+    _glm_weight_matches_observed(family, link) -> Bool
+
+`true` when the existing `_glm_weight` slot already yields the correct log-det
+curvature at this `(family, link)` — either because observed ≡ Fisher pointwise
+(canonical link, y-free curvature) or because the slot is hand-coded observed.
+
+Trait-true families take the branch containing the UNTOUCHED original code, so
+they are bit-for-bit identical under either `hessian` setting. Each family
+declares its own method in its own file (this file is included first).
+"""
+_glm_weight_matches_observed(family, link::Link) = false
+
+"""
+    _default_hessian(family, link) -> Symbol
+
+Which curvature the log-det uses when the caller does not choose.
+
+Currently `:fisher` — preserving shipped behaviour exactly. Flipping this to
+`:observed` is a separate, deliberate change that must land together with the
+coupled analytic-gradient paths in `src/laplace_grad.jl` (NB2 `:156`, Gamma
+`:221-222`, Beta `:302-303`); otherwise those gradients stop being the gradient
+of the objective and degrade SILENTLY rather than erroring.
+"""
+_default_hessian(family, link::Link) = :fisher
+
+"""
+    _glm_obs_weight(family, μ, n, me, y, link, η) -> −∂²ℓ(y|η)/∂η²
+
+Observed conditional curvature wrt the linear predictor at one cell — the
+log-det weight TMB's Laplace uses.
+
+**May be NEGATIVE** (Student-t for |r| > σ√ν; GP-1 where `1 + 2αy − αμ < 0`).
+That is not an error: the positive-definiteness guard belongs at the
+`Λ'WΛ + I` assembly, never here. Do NOT clamp this to zero — `ordinal.jl`'s
+`max(·, 0)` is safe only for log-concave links and would silently diverge from
+TMB elsewhere.
+
+Default: nested `ForwardDiff` through the CODED conditional log-density, μ-clamp
+included — i.e. the derivative of the function the objective actually sums,
+which is TMB's semantics (it differentiates its coded nll, guards and all).
+
+CONVENTION NOTE: where `_clamp_mu` binds, this returns the derivative of the
+clamped composition (zero in the saturated region), whereas a hand-derived
+analytic override evaluates the unclamped formula at the clamped μ. The two
+therefore differ AT THE CLAMP BOUNDARY and agree in the interior. This is a
+deliberate choice — the fallback is faithful to the coded objective — so any
+override-vs-fallback gate test must be restricted to interior cells.
+"""
+function _glm_obs_weight(family, μ, n, me, y, link::Link, η)
+    f = ηv -> _glm_logpdf(family, _clamp_mu(family, linkinv(link, ηv)), n, y)
+    g = ηv -> ForwardDiff.derivative(f, ηv)
+    return -ForwardDiff.derivative(g, η)
+end
+
 """
     laplace_loglik_site(family, y, n, Λ, β, link; mask=nothing, maxiter=100, tol=1e-9) -> Float64
 
@@ -151,7 +231,10 @@ the score, the Hessian weight, and the log-density sum. Returns
 """
 function laplace_loglik_site(family, y::AbstractVector, n::AbstractVector,
         Λ::AbstractMatrix, β::AbstractVector, link::Link;
-        mask = nothing, offset = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
+        mask = nothing, offset = nothing, hessian::Symbol = _default_hessian(family, link),
+        maxiter::Integer = 100, tol::Real = 1e-9)
+    (hessian === :fisher || hessian === :observed) || throw(ArgumentError(
+        "hessian must be :fisher or :observed; got :$hessian"))
     p = size(Λ, 1)
     K = size(Λ, 2)
     off = offset === nothing ? false : offset
@@ -163,7 +246,23 @@ function laplace_loglik_site(family, y::AbstractVector, n::AbstractVector,
     η  = _clamp_eta.(β .+ off .+ Λz)          # clamped linear predictor
     μ  = _clamp_mu.(Ref(family), linkinv.(Ref(link), η))  # clamped mean
     me = mu_eta.(Ref(link), η)                # dμ/dη
-    W  = _glm_weight.(Ref(family), μ, n, me)  # Fisher weight wrt η
+    # Role (b): the log-det weight. The `:fisher` arm is the ORIGINAL expression,
+    # verbatim, so the default path is bit-for-bit unchanged. Trait-true families
+    # take it under `:observed` too, because there the two coincide pointwise.
+    W  = if hessian === :fisher || _glm_weight_matches_observed(family, link)
+        _glm_weight.(Ref(family), μ, n, me)  # Fisher weight wrt η
+    else
+        # Masked cells carry a PLACEHOLDER response. `_glm_weight` never reads
+        # `y`, so placeholders were harmless; the observed weight DOES read it,
+        # so it must not be evaluated there — a placeholder can make
+        # `_glm_logpdf` throw outright (y = 0 for a zero-truncated family,
+        # a non-integral value under `Int(y)`), which masking W afterwards
+        # cannot undo. This honours the docstring promise below that the value
+        # is invariant to whatever sits in the masked cells of `Y`.
+        [(mask === nothing || mask[t]) ?
+            _glm_obs_weight(family, μ[t], n[t], me[t], y[t], link, η[t]) : 0.0
+         for t in 1:p]
+    end
     if mask !== nothing
         W = ifelse.(mask, W, 0.0)
     end
@@ -177,6 +276,27 @@ function laplace_loglik_site(family, y::AbstractVector, n::AbstractVector,
     @inbounds for t in 1:p
         (mask === nothing || mask[t]) || continue
         ℓ += _glm_logpdf(family, μ[t], n[t], y[t])
+    end
+    # PD guard, keyed on the WEIGHT'S SIGN — not on the selector and not on the
+    # trait. `A = Λ'WΛ + I` is SPD by construction whenever every `W ≥ 0`, so
+    # the factorisation is needed only when a negative weight is actually
+    # present. Keying on the sign is both cheaper (the common path skips it
+    # entirely) and strictly more correct than keying on a proxy: it fires on
+    # the real condition however the weight was produced.
+    #
+    # Observed curvature is genuinely negative for Beta, Student-t and GP-1
+    # (measured, not assumed) — so this is load-bearing, not defensive. The
+    # guard lives HERE, at the assembly, never as a clamp on the weight:
+    # `ordinal.jl`'s `max(·, 0)` is safe only for log-concave links and would
+    # silently diverge from TMB elsewhere.
+    #
+    # `-Inf` is returned via `oftype(ℓ, …)` so the value carries the caller's
+    # numeric type: fitters run ForwardDiff OVER this objective, and a raw
+    # `Float64` returned into a `Dual` context is a type error waiting to
+    # happen.
+    if any(w -> w < zero(w), W)
+        F = cholesky(A; check = false)
+        issuccess(F) || return oftype(ℓ, -Inf)
     end
     return ℓ - 0.5 * dot(z, z) - 0.5 * logdet(A)
 end

@@ -91,6 +91,33 @@ function _truncnb2_observed_weight(f::TruncatedNegBin2, μ, y, link::Link)
 end
 
 # Dispatch helper, mirroring `_nb_grouped_laplace_weight` in grouped_dispersion.jl.
+# ---------------------------------------------------------------------------
+# Curvature contract wiring (2026-08-25).
+#
+# This family's OWN kernels already default to `:observed` — it was among the
+# first fixed (instance 2, on main via #263). But the GENERIC core
+# (`families/laplace.jl`) was never told, so `_default_hessian` fell through to
+# the global `:fisher` and the two routes returned DIFFERENT log-likelihoods for
+# the same model. Measured on a p=5, K=1, n=40 fixture (seed 77):
+#
+#     generic core                 = -408.8988683230   (:fisher, by fallthrough)
+#     truncated_nbinom2 own kernel = -408.9397531377   (:observed, by its default)
+#     abs Δ                        =  4.088e-02
+#
+# and the own kernel forced to `:fisher` reproduces the core EXACTLY, which is
+# what proves the curvature default was the only difference.
+#
+# Same class of defect as the R bridge routing `family = "gamma"` and
+# `["gamma", …]` to different kernels: one model, two answers, depending on
+# which entry point the caller happened to use.
+_default_hessian(::TruncatedNegBin2, ::LogLink) = :observed
+
+# Analytic override so the generic core and this family's own kernel compute the
+# SAME formula rather than AD-vs-closed-form. One formula, one place — the same
+# reasoning as the Gamma override and the DeltaGamma fix.
+_glm_obs_weight(f::TruncatedNegBin2, μ, n, me, y, link::LogLink, η) =
+    _truncnb2_laplace_weight(:observed, f, μ, me, y, link)
+
 function _truncnb2_laplace_weight(hessian::Symbol, f::TruncatedNegBin2, μ, me, y,
         link::Link)
     hessian === :fisher && return _glm_weight(f, μ, 1, me)

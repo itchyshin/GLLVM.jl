@@ -97,7 +97,18 @@ mode `û` over the tree nodes. Sparse CHOLMOD throughout; `-Inf` on a non-SPD st
 """
 function phylo_glm_marginal_loglik(family, Y::AbstractMatrix, N::AbstractMatrix,
         β::AbstractVector, σ²_phy::Real, phy::AugmentedPhy;
-        link::Link = default_link(family), maxiter::Integer = 50, tol::Real = 1e-9)
+        link::Link = default_link(family),
+        # Paired with `_phylo_gamma_xlv_marginal_loglik`:
+        # `test/test_phylo_gamma_xlv.jl:116` pins the two equal at atol 1e-7, so
+        # the two kernels must take the SAME curvature. Both now do — this one
+        # via the family default, its partner via the same call. Briefly pinned
+        # to `:fisher` while only this side had the contract; unpinned once the
+        # partner moved, which is the "they must move together" constraint the
+        # audit identified.
+        hessian::Symbol = _default_hessian(family, link),
+        maxiter::Integer = 50, tol::Real = 1e-9)
+    (hessian === :fisher || hessian === :observed) || throw(ArgumentError(
+        "hessian must be :fisher or :observed; got :$hessian"))
     p, n = size(Y)
     p == phy.n_leaves || throw(ArgumentError("size(Y,1)=$p must equal phy.n_leaves=$(phy.n_leaves)"))
     σ²_phy > 0 || return -Inf
@@ -122,7 +133,34 @@ function phylo_glm_marginal_loglik(family, Y::AbstractMatrix, N::AbstractMatrix,
         ℓ += _glm_logpdf(family, μ[t], N[t, s], Y[t, s])
     end
     quad = 0.5 * dot(û, Q * û)
-    return ℓ - quad + 0.5 * logdet(cholQ) - 0.5 * logdet(cholH)
+
+    # Role separation. `_phylo_glm_mode` returns the Cholesky of the FISHER
+    # Hessian from its final Newton step, and that same factorisation was reused
+    # for the log-det — one object, two roles, which is the defect this
+    # programme exists to fix. The Newton step wants Fisher (SPD by
+    # construction); the log-det must be observed to match TMB.
+    #
+    # On the observed branch, rebuild H = Q + diag(W_obs) at the ALREADY-
+    # CONVERGED mode and factorise separately: one extra Cholesky, on that
+    # branch only, with the mode search untouched. Same treatment as
+    # `coevolution_glm.jl`.
+    cholL = cholH
+    if hessian === :observed && !_glm_weight_matches_observed(family, link)
+        me_h = mu_eta.(Ref(link), η)
+        Wobs = zeros(p)
+        @inbounds for t in 1:p, s in 1:n
+            Wobs[t] += _glm_obs_weight(family, μ[t], N[t, s], me_h[t], Y[t, s], link, η[t])
+        end
+        Hobs = Q + sparse(leaf_pos, leaf_pos, Wobs, n_block, n_block)
+        # The observed weight may be negative, so H is no longer SPD by
+        # construction: fail to -Inf rather than return a meaningless log-det.
+        cholL = try
+            cholesky(Symmetric(Hobs))
+        catch
+            return -Inf
+        end
+    end
+    return ℓ - quad + 0.5 * logdet(cholQ) - 0.5 * logdet(cholL)
 end
 
 # ---------------------------------------------------------------------------
