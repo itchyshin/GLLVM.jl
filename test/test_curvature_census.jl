@@ -19,8 +19,22 @@
 #
 # It deliberately does not assert which choice is correct — that is a per-family
 # modelling decision. It asserts only that a choice was MADE and written down.
+#
+# REVISED 2026-08-26 after an adversarial review found two holes in the first version:
+#
+#   1. OVER-CERTIFICATION. The census keyed on the family alone, but the trait is keyed
+#      on (family, link). `_glm_weight_matches_observed(::Binomial, ::LogitLink) = true`
+#      caused the whole Binomial family to read as safe — while Binomial+probit and
+#      Binomial+cloglog report `matches_observed = false` and `_default_hessian = :fisher`,
+#      i.e. they are OPEN cells the guard was silently certifying.
+#
+#   2. UNDER-COVERAGE. The class has a SECOND substrate. Two-part families carry their
+#      curvature in `_tp_pieces` (8 definitions across `twopart.jl` and `beta_hurdle.jl`),
+#      documented as the identical defect at `twopart.jl:84-90`. The first version covered
+#      none of them, so a 9th two-part family with a Fisher `Wc` would have extended the
+#      class with this test green.
 
-using GLLVM, Test
+using GLLVM, Test, InteractiveUtils
 
 const G = GLLVM
 
@@ -128,4 +142,77 @@ const STRUCTURALLY_EXEMPT = Dict(
     for name in has_observed
         @test name in specialised_default
     end
+
+    # ---- Hole 1: certification is per (family, link), not per family ----------------
+    #
+    # A trait declared for one link must not certify the family's other links. This is a
+    # golden-set assertion: the computed set of certified cells must equal the recorded
+    # one, so gaining OR losing a certification fails until the ledger is updated.
+    _specialised(fn, F, L) = try
+        _family_of(which(fn, Tuple{F, L})) !== Any
+    catch
+        false
+    end
+
+    CERTIFIED_CELLS = Set([
+        (:TruncatedPoisson, :LogLink),    # trait: canonical log
+        (:CensoredPoisson,  :LogLink),    # trait: hand-derived observed
+        (:Poisson,          :LogLink),    # trait: canonical log
+        (:Binomial,         :LogitLink),  # trait: canonical logit ONLY — probit/cloglog are OPEN
+        (:TruncatedNegBin2, :LogLink),    # _default_hessian = :observed
+        (:Gamma,            :LogLink),    # _default_hessian = :observed
+    ])
+
+    families = unique([_family_of(m) for m in weight_methods if _family_of(m) !== nothing])
+    computed = Set{Tuple{Symbol,Symbol}}()
+    for F in families, L in subtypes(G.Link)
+        (_specialised(G._glm_weight_matches_observed, F, L) ||
+         _specialised(G._default_hessian, F, L)) &&
+            push!(computed, (nameof(F), nameof(L)))
+    end
+    @test computed == CERTIFIED_CELLS
+
+    # ---- Hole 2: the two-part substrate --------------------------------------------
+    #
+    # `_tp_pieces` returns the Fisher `Wc` (see the comment at twopart.jl:84-90). A
+    # two-part family is fixed only if it supplies a specialised `_tp_observed_Wc`.
+    TWOPART_KNOWN_OPEN = Set([:DeltaLogNormal, :HurdlePoisson, :HurdleNB,
+                              :ZIPoisson, :ZINB, :ZIB, :BetaHurdle])
+
+    tp_observed = Set{Symbol}()
+    for m in methods(G._tp_observed_Wc)
+        f = _family_of(m)
+        (f === nothing || f === Any) && continue
+        push!(tp_observed, nameof(f))
+    end
+
+    tp_undeclared = Tuple{Symbol,String}[]
+    for m in methods(G._tp_pieces)
+        f = _family_of(m)
+        f === nothing && continue
+        name = nameof(f)
+        (name in tp_observed || name in TWOPART_KNOWN_OPEN) && continue
+        push!(tp_undeclared, (name, string(basename(string(m.file)), ":", m.line)))
+    end
+
+    if !isempty(tp_undeclared)
+        @error """
+        A two-part family defines `_tp_pieces` but declares nothing about its curvature.
+
+        $(join(["  $(n) @ $(s)" for (n, s) in tp_undeclared], "\n"))
+
+        `_tp_pieces` returns the Fisher `Wc`; the marginal's log-det wants the observed
+        one. Supply `_tp_observed_Wc(f::F, y, ηc, Wc)`, or add the family to
+        `TWOPART_KNOWN_OPEN` in this file if the flip is a pending decision.
+        """
+    end
+    @test isempty(tp_undeclared)
+
+    # A two-part family cannot be both fixed and open.
+    @test isempty(intersect(tp_observed, TWOPART_KNOWN_OPEN))
+
+    # Stale-ledger check, same as for the single-part substrate.
+    tp_names = Set(nameof(_family_of(m)) for m in methods(G._tp_pieces)
+                   if _family_of(m) !== nothing)
+    @test isempty(setdiff(TWOPART_KNOWN_OPEN, tp_names))
 end

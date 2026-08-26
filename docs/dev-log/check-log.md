@@ -13743,3 +13743,225 @@ Verified this session: S16 (three rows) wrong · S18 wrong · S22 mis-scoped (re
 wrong description) · S24 wrong · S25 half wrong, half right-but-inverted. The Phase 4/5
 slice list was largely built from greps that were never checked against the files, and a
 substantial fraction of the "remaining work" does not exist.
+
+## 2026-08-26 — CORRECTION: I withdrew S24 wrongly, and it was my own error class
+
+An adversarial review of this session's six audit claims (7 agents, each told to refute
+rather than confirm) refuted three. One of them is a correction I owe outright.
+
+### S24 was TRUE, was DONE, and I recorded it as never-needed
+
+I wrote, four hours ago, that the plan's S24 claim — `response-families.md` has zero
+coverage of seven shipped families — was *"wrong, all seven claims false"*, on the
+evidence that all seven have `###` sections today. Checked against git:
+
+```
+$ git log --oneline -1 3958210e
+3958210e docs(families): document the 7 undocumented shipped families
+
+$ git show 3958210e^:docs/src/response-families.md | grep -c "^### .*Lognormal"      → 0
+  (same for Multinomial, GeneralizedPoisson, TruncatedPoisson,
+   TruncatedNegBin2, CensoredPoisson, MixedFamily)
+```
+
+**S24 was accurate.** The sections exist because a commit on 2026-08-24 created them. I
+read the working tree 24 hours later and concluded the requirement had never been real.
+
+**This is precisely the error class I spent the session documenting in the plan** —
+judging a claim by present state without asking when that state arrived. I wrote *"a
+parity gap needs evidence from both halves"* in one entry and then, in the next, took a
+file's current contents as proof a requirement never existed. The repo's own history was
+one `git log` away.
+
+**Correction:** S24 is **closed by `3958210e`**, not withdrawn. The docs themselves are
+correct and stay as they are; it is the *status* that was misrecorded. The entry above
+titled "S24 'docs gaps' — withdrawn, all seven claims false" is wrong and is superseded
+by this one.
+
+### S16: the three `planned` rows — refuted, and it is not mine to fix
+
+The reviewer's case is stronger than my defence. The ledger's own bar is *"Julia code
+under `src/` **and** a test"*, and all three rows clear it: `none_dep.jl` + wired
+`test_none_dep.jl` (39/39); `families/mixed.jl` + a **native**-kernel assertion at
+`test_gamma_curvature_cross_kernel.jl:67` (I claimed the only test was the bridge — that
+was wrong); four `missing_predictor_*.jl` + seven wired test files.
+
+My "no formula sugar" discriminator does not survive either: `grep` on `src/formula.jl`
+returns **0** for *every* covariance-grid name, including seven rows already marked
+`implemented`. And narrowness is encoded elsewhere in the **label**, not the status —
+`:187` ships "REML (Gaussian pilot twin) | implemented".
+
+**Not changed here.** Flipping `planned` → `implemented` is a public capability claim,
+which is exactly what the Rose fence exists to gate, and the reviewer separately flagged
+that `fit_dep_gllvm`'s identifiability is **UNRESOLVED** (a K=p wrapper implies
+ΛΛ' + σ_eps²I — p(p+1)/2 + 1 parameters for a p(p+1)/2 target, σ_eps not separately
+identified). Maintainer decision, with that check first.
+
+### The guard had two holes; both are closed
+
+The same review found my census guard was neither sound nor complete.
+
+**Over-certification.** It keyed on the family, but the trait is keyed on (family, link).
+`_glm_weight_matches_observed(::Binomial, ::LogitLink) = true` made the whole Binomial
+family read as safe. Measured:
+
+```
+Binomial + LogitLink    matches_observed=true    default_hessian=fisher
+Binomial + ProbitLink   matches_observed=false   default_hessian=fisher
+Binomial + CLogLogLink  matches_observed=false   default_hessian=fisher
+```
+
+Two open cells were being certified. Now a golden-set assertion over (family, link):
+exactly **six** declared cells exist, and gaining or losing one fails until recorded.
+
+**Under-coverage.** The class has a **second substrate**. Two-part families carry their
+curvature in `_tp_pieces` — 8 definitions across `twopart.jl` and `beta_hurdle.jl`,
+documented as the identical defect at `twopart.jl:84-90`. Only DeltaGamma has a
+`_tp_observed_Wc` override. The guard covered none of them, so a 9th two-part family
+shipping a Fisher `Wc` would have extended the fault class with the test green.
+
+So the fault class is **larger than any count I have given**: 14 `_glm_weight` sites (of
+which 6 (family, link) cells are declared) **plus** 8 `_tp_pieces` sites (7 open). Every
+earlier figure in this log — 8, 11, 13, 14 — understated it.
+
+Guard now 10 tests, both new checks falsifiability-proven: falsely certifying
+Binomial+probit fails on `computed == CERTIFIED_CELLS`; dropping ZIB from
+`TWOPART_KNOWN_OPEN` fails naming `ZIB @ twopart.jl:1306`.
+
+### Also from the review, not yet acted on
+
+- **~~The published docs site is stale.~~ REFUTED on check — the reviewer was wrong, and
+  so was my first probe.** `origin/gh-pages` is at `525c331c`, *"build based on c960507"*,
+  timestamped 2026-08-26 01:00:45 UTC — two minutes after the #265 merge. The reviewer
+  read a stale local ref. My own first probe then looked for `dev/benchmarks/index.html`,
+  which does not exist in the current build; the real path is `dev/benchmarks.html`, and
+  it carries the warning (1 hit for "does NOT generalise"/"1280", likewise in
+  `dev/assets/benchmarks.md.Dt03XylR.js`). **No redeploy needed.** Recorded because a
+  wrong path returning zero hits looks exactly like a missing deploy — `git ls-tree` the
+  branch before concluding a file is absent.
+- **MixedModels.jl exports all six shadowed generics too**, and README has a "Comparison
+  to MixedModels.jl" section inviting co-loading. The collision is wider than StatsBase.
+- **The `_family_of` link-drop also affects reporting**, not just this guard — any future
+  census keyed on family alone inherits the same fault.
+
+### The MixedModels claim: verified, after my own first check got it wrong
+
+The review's claim that `MixedModels.jl` exports the same six generics is **confirmed** —
+`aic`, `bic`, `confint`, `fitted`, `predict`, `residuals` all appear in its export block
+in `MixedModels.jl`. It matters because README has a "Comparison to MixedModels.jl"
+section that invites exactly the co-loading that breaks them.
+
+Worth recording *how* I nearly got this wrong. My first probe was
+`grep -rhoE "^export[^#]*"`, which reported **0 of 6** — because MixedModels declares
+them in a multi-line `export` block and the pattern is anchored to a single line. That is
+the **third** false negative today from the same mistake:
+
+1. `^_glm_weight(` missed Beta and GP1 (function-block form).
+2. A `src/families/*.jl` sweep missed `spde_latent.jl:54` (wrong directory).
+3. `^export[^#]*` missed all six MixedModels exports (multi-line block).
+
+Each time the grep returned a confident empty result that looked like a finding.
+**A line-anchored grep cannot see a multi-line declaration, and an empty result from one
+is not evidence of absence.** Where the answer matters, parse or reflect — the census
+guard reflects over the method table for precisely this reason.
+
+Documented for users at `docs/src/pitfalls.md` ("Loading StatsBase or MixedModels
+alongside GLLVM breaks six verbs") with the qualified-call workaround, since the real fix
+is an API change awaiting maintainer approval.
+
+## 2026-08-26 — full ledger audit: 80 rows, one confirmed false green
+
+Eight agents: one auditor per ledger section, then every claimed *overstatement* handed to
+a separate skeptic told to refute it. 80 rows checked, 11 raw findings, **1 confirmed
+overstatement, 0 refuted**. I re-verified the confirmed finding's arithmetic myself.
+
+### CONFIRMED OVERSTATEMENT — `Bridge capability ledger + drift probe` (`:239`, `implemented`)
+
+The row is a compound of two halves with different truth values. The ledger half is
+genuinely implemented (`bridge_capabilities()` at `src/bridge.jl:632`, exported, tested).
+**The drift probe is RED.**
+
+Independently re-derived:
+
+```
+R mirror  (.GLLVM_JULIA_BRIDGE_FAMILIES, julia-bridge.R:18) : 11 families
+engine    (_BRIDGE_ONEPART_FAMILIES,     src/bridge.jl:164) : 17 families
+
+ENGINE-ONLY — the bridge silently refuses these:
+  betabinomial  lognormal  truncated_poisson  zib  zinb  zip
+R-ONLY: none
+```
+
+Plus 3 `fixed_effect_X` drifts (R omits nb1/ordinal/ordinal_probit) and 3 CI-flag drifts
+(nb1) — **12 unregistered drifts**, all `status = "unregistered"`, because
+`.gllvm_julia_expected_capability_drifts()` (`julia-bridge.R:432`) returns a literal 0-row
+frame whose comment asserts as fact that the two surfaces agree.
+
+**Nothing catches it.** The only engine-facing assertion
+(`test-julia-bridge.R:2848`, `expect_equal(nrow(drift), 0L)`) sits behind
+`skip_if_no_julia()` and would fail if run. The test that *does* pass (`:700`) compares the
+R mirror against itself — trivially zero drift. The R file was last touched 2026-07-22;
+the engine added those families 2026-08-05..19, and
+`git log --all -S betabinomial -- R/julia-bridge.R` returns nothing on any branch.
+
+**User-visible consequence:** an R user going through `engine = "julia"` cannot reach six
+families the Julia engine ships — including the zero-inflated trio and lognormal, which are
+precisely the families where GLLVM.jl is *ahead* of the twin. The bridge that would expose
+that lead does not know those families exist.
+
+**Fix shape:** split the row, or fence it in the style the Laplace-curvature section
+already uses at `:250` (*"`implemented` alone is misleading"*). Not changed here — a status
+edit is a public capability claim.
+
+### UNDERSTATEMENTS — 8 rows, none changed
+
+Relabelling is a maintainer call. Strongest, all with src included + exported + a test
+wired into `runtests.jl`:
+
+| row | line | now | note |
+|---|---|---|---|
+| multinomial / categorical | `:91` | `missing` | included `GLLVM.jl:68`, exported `:202`, 9 dispatch sites, test wired `runtests.jl:127`. `missing` is defined as *"no Julia implementation found"* — flatly false. Narrowness (fixed effects only, no LVs) belongs in the **label**, as `:187` REML already does |
+| Missing predictor `mi()` | `:225` | `planned` | 4 modules, 4 exports, **7** wired test files |
+| Mixed-family response vector | `:229` | `planned` | **contradicts the ledger's own `Bridge mixed-family vector \| implemented` at `:245`** — the bridge cannot be implemented while the native engine it dispatches into is planned |
+| none × dep | `:47` | `planned` | `fit_dep_gllvm`, wired test asserting ≈ to 1e-8 + PSD |
+| kernel × indep | `:58` | `planned` | **contradicts `:49/:52/:55`** — phylo/animal/spatial `indep` are all `implemented` off the *same* generic path |
+| kernel × latent | `:60` | `planned` | `make_cross_kernel` exported; only the multi-tier named-kernel case is absent |
+| Phylo Model A interval promotion | `:320` | `rejected` | `confint_lv_effects` is exported and publicly documented; **no fail-loud gate exists**, so `rejected` (*"deliberately refused, fail-loud, or not advertised"*) does not describe it |
+| animal × latent | `:54` | `planned` | thin evidence — auditor flagged it as such |
+
+### Not settled
+
+The two AGHQ rows drew **contradictory** corrections from two auditors on identical code —
+one says `planned`, one says `rejected`. The capability question is settled (no `aghq`
+symbol); the right *word* is not. Left alone; it is inside the AGHQ fence anyway.
+
+### On the parity figures
+
+The tally I reported earlier — 55/75 rows implemented, ~73% — is the ledger's self-report.
+This audit moves it: multinomial alone makes Response families 23/23 rather than 22/23, and
+seven more rows understate. Treat any percentage from this document as provisional until
+the maintainer rules on the eight understatements.
+
+### The census guard failed CI on my own missing dependency
+
+First full-suite run with the extended guard: **6762 passed, 0 failed, 1 errored, 1 broken.**
+
+```
+LoadError: ArgumentError: Package InteractiveUtils not found in current path.
+  in expression starting at test/test_curvature_census.jl:37
+```
+
+I added `using InteractiveUtils` (for `subtypes`, needed to enumerate the concrete `Link`
+types in the per-(family, link) check) and did not declare it in `test/Project.toml`.
+
+**Why the isolated run did not catch it.** `julia --project=. test/test_curvature_census.jl`
+runs against the *package* environment, where the stdlib resolves. `Pkg.test()` builds an
+isolated test environment containing only what `test/Project.toml` declares. Green in one,
+error in the other.
+
+This is the same lesson as the day's others, in a fourth costume: **a check passing in one
+context is not the check passing.** I had written, in this log, that "one isolated green run
+isn't evidence the suite is green" — and then shipped exactly that failure. The rule only
+protects you if the *first* run you trust is the real one.
+
+Fixed at the cause (declared the dep), not by dropping the check. Full suite re-running.
