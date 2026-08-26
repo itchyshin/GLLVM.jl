@@ -173,6 +173,6 @@ function fit_gaussian_mi_phylo(y::AbstractMatrix, x::AbstractVector,
     end
 
     return (b_x = b_x, a = a, α = α, σ_x = σ_x, σ_eps = σ_eps, Λ = Λ,
-            eblup_x = eblup, logLik = -Optim.minimum(res),
-            converged = Optim.converged(res), n_missing = length(mis))
+            eblup_x = eblup, logLik = _fit_verdict(res)[1],
+            converged = _fit_verdict(res)[2], n_missing = length(mis))
 end

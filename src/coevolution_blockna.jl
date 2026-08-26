@@ -89,5 +89,6 @@ function fit_coevolution_blockna(Y_HH::AbstractMatrix, Y_PP::AbstractMatrix,
     θ = Optim.minimizer(res)
     Λ = reshape(θ[1:(T * d)], T, d)
     σ = exp(θ[T * d + 1])
-    return (Λ = Λ, σ = σ, logLik = -Optim.minimum(res), converged = Optim.converged(res))
+    _ll, _cv, _it = _fit_verdict(res)
+    return (Λ = Λ, σ = σ, logLik = _ll, converged = _cv)
 end

@@ -424,6 +424,6 @@ function fit_gllvm_mi_multi(family, Y::AbstractMatrix, X::AbstractMatrix; K::Int
     Σx = Lx * Lx'
     dispersion = has_disp ? exp(θ[dispidx]) : nothing
     return (β = β, Λ = Λ, b = b, μ = μ, Σx = Σx, Lx = Lx, dispersion = dispersion,
-            logLik = -Optim.minimum(res), converged = Optim.converged(res),
+            logLik = _fit_verdict(res)[1], converged = _fit_verdict(res)[2],
             n_missing = count(!, isobs))
 end

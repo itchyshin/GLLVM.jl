@@ -180,7 +180,8 @@ function fit_gaussian_mi_fiml(y::AbstractMatrix, x::AbstractVector; K::Integer,
         end
     end
 
+    _ll, _cv, _it = _fit_verdict(res)
     return (b_x = b_x, a = a, μ_x = μ_x, γ = γ, σ_x = σ_x, σ_eps = σ_eps, Λ = Λ,
-            eblup_x = eblup, logLik = -Optim.minimum(res),
-            converged = Optim.converged(res), n_missing = n_missing)
+            eblup_x = eblup, logLik = _ll,
+            converged = _cv, n_missing = n_missing)
 end

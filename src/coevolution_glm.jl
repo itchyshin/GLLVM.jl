@@ -317,6 +317,5 @@ function fit_coevolution_glm(Y::AbstractMatrix, K_star::AbstractMatrix;
     disp = _spde_disp_value(family, θ̂[(dbase + 1):(dbase + nd)])
     nh = n_host_traits === nothing ? nothing : Int(n_host_traits)
     return CoevolutionGLMFit(β̂, Matrix(Λ̂), 1.0, disp, nh, link, family,
-                             -Optim.minimum(res), Optim.converged(res),
-                             Optim.iterations(res))
+                             _fit_verdict(res)...)
 end

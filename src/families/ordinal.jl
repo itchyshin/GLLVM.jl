@@ -719,6 +719,5 @@ function fit_ordinal_gllvm_pertrait_cov(Y::AbstractMatrix{<:Integer};
     Λ̂ = unpack_lambda(@view(θ̂[(p + q + 1):(p + q + rr)]), p, K)
     τ̂ = _unpack_cutpoints_pertrait(@view(θ̂[(p + q + rr + 1):(p + q + rr + ncut)]), C)
     return OrdinalPerTraitCovFit(β̂, γ̂, collect(Bool, γ_fixed_mask), Λ̂, τ̂, C, link,
-                                 -Optim.minimum(res), Optim.converged(res),
-                                 Optim.iterations(res))
+                                 _fit_verdict(res)...)
 end

@@ -330,7 +330,7 @@ function _fit_phylo_binomial_xlv(Y::AbstractMatrix, N::AbstractMatrix,
         _phylo_binomial_xlv_unpack_packed(theta_hat, p, K, q_lv)
     return (beta = collect(beta_hat), Lambda = Matrix(Lambda_hat),
             alpha_lv = Matrix(alpha_hat), sigma2_phy = sigma2_hat,
-            loglik = -Optim.minimum(res), converged = Optim.converged(res),
+            loglik = _fit_verdict(res)[1], converged = _fit_verdict(res)[2],
             iterations = Optim.iterations(res), theta_packed = collect(theta_hat))
 end
 
