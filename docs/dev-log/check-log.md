@@ -13550,3 +13550,73 @@ Both withdrawn/corrected items failed the same way: **"the file exists in the tw
 treated as evidence the twin ships the capability.** The Julia-side facts were right in
 both cases. A parity gap needs evidence from *both* halves — an exported entry point on
 the twin side, not just a source file.
+
+## 2026-08-26 — ledger honesty pass: the fault-class tally was stale in BOTH directions
+
+The "Running tally of the fault class" table (`check-log.md:12687-12695`) is the artifact
+a reader hits first, and it is wrong in two opposite ways. Re-measured every row against
+the working tree at `5de9736d`.
+
+### Corrected census — every `_glm_weight` site
+
+| family | site | curvature status | evidence |
+|---|---|---|---|
+| Binomial | `binomial.jl:34` | **safe** | `_glm_weight_matches_observed(::Binomial, ::LogitLink) = true` (`:32`) — canonical link, Fisher ≡ observed |
+| Poisson | `poisson.jl:12` | **safe** | trait `= true` at `:10` |
+| TruncatedPoisson | `truncated_poisson.jl` | **safe** | trait `= true` at `:39` |
+| CensoredPoisson | `censored_poisson.jl` | **safe** | trait `= true` at `:89` |
+| Gamma | `gamma.jl:12` | **FIXED** | `_glm_obs_weight` override `:51` + `_default_hessian(::Gamma, ::LogLink) = :observed` `:35` |
+| TruncatedNegBin2 | `truncated_nbinom2.jl` | **FIXED** | `_glm_obs_weight` `:118` + `_default_hessian` `:113` |
+| DeltaGamma | `twopart.jl:644` | **FIXED** | `_tp_observed_Wc(f::DeltaGamma,…)` → `_gamma_grouped_laplace_weight(:observed,…)`; kernel default `hessian = :observed` (`:105`) |
+| NB2 | `negbin.jl:11` | **open** | no trait, no `_glm_obs_weight`, default `:fisher` |
+| **NB1** | `negbin1.jl:77` | **open** | `me^2 * _nb1_fisher_mu(μ, f.φ)` — untouched |
+| Student-t | `studentt.jl:75` | **open** | measured Δ −0.1720 |
+| Tweedie | `tweedie.jl:26` | **open** | measured Δ +0.2414 |
+| Beta | `beta.jl:21` | **open** | block-form definition |
+| GP1 | `gp1.jl:65` | **open** | block-form definition |
+| Exponential | `exponential.jl:26` | **separate question** | deliberately passes `hessian = :fisher` with a documented routing reason (`:55-66`); not the same defect — do not fold it in without re-deriving |
+| AGHQ | `aghq_grid.jl:203` | **FENCED** | PARKED; maintainer decision |
+
+### The two errors in the old tally
+
+1. **`| 1 | NB1 | negbin1.jl:77 | fixed |` overstates.** That line still reads
+   `me^2 * _nb1_fisher_mu(μ, f.φ)`. What was fixed was the *grouped* route
+   (`grouped_dispersion.jl`), not the generic core. A reader taking the tally at face
+   value would believe a Fisher-weighted objective is corrected. The correction already
+   exists further down the log at `:12744` — but the summary table is what gets read, and
+   it was never updated. **A correction that lives only below the summary is not a
+   correction.**
+2. **`| 8 | Gamma shared route | open — PUBLIC DEFAULT |` is stale in the safe
+   direction.** Instance 8 has been fixed since; the tally still advertises the public
+   default as broken.
+
+### The class is larger than the tally shows
+
+The old table has 8 rows. The measured surface is **10 `_glm_weight` sites plus AGHQ**.
+**Beta (`beta.jl:21`) and GP1 (`gp1.jl:65`) never appeared in it at all** — both define
+`_glm_weight` in `function … end` block form, so a `^_glm_weight(` grep (the shape used
+to build the original census) silently skips them. That is not a bookkeeping slip; it is
+the census method having a blind spot, and it is worth stating because the same grep
+shape will keep missing them.
+
+### What was NOT wrong — a correction to the plan, not the ledger
+
+The ultra-plan claimed three ledger rows "understate the code": `mi()`, mixed-family
+native, and `none × dep`. Checked against the ledger's **own published vocabulary**
+(`capability-status.md:12-17`) — `planned` = *"tracked / designed; no promoted
+twin-complete implementation yet"*, which explicitly does **not** mean "no code exists":
+
+- **Mixed-family native `planned` is correct.** `fit_mixed_gllvm` ships and is exported,
+  but the only test is `test_bridge_mixed.jl` — the *bridge*, not the native path. No
+  native test ⇒ not `implemented` under the stated rule. The plan was wrong here.
+- **`mi()` and `none × dep` are defensible as `planned`.** Both have included source,
+  exported entry points and wired tests — but neither offers the twin's grammar term
+  (`none_dep.jl`'s own include comment says *"no formula sugar"*). Not twin-complete.
+
+**No status flipped.** The Rose fence says gaps stay visible rather than renamed away,
+and flipping these to `implemented` would have been exactly the overstatement this pass
+exists to catch. The plan's S16 "three understate the code" claim is **withdrawn**.
+
+That is the third instance today of one error shape: **judging a capability by whether a
+file exists rather than by whether the capability is reachable and tested.** Twice on the
+twin's side (S18 cross-validation, the 0.7.0/0.7.1 target), once on ours.
