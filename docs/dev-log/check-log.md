@@ -13620,3 +13620,59 @@ exists to catch. The plan's S16 "three understate the code" claim is **withdrawn
 That is the third instance today of one error shape: **judging a capability by whether a
 file exists rather than by whether the capability is reachable and tested.** Twice on the
 twin's side (S18 cross-validation, the 0.7.0/0.7.1 target), once on ours.
+
+## 2026-08-26 — Beta PD-hit measurement: my blocking concern was wrong, and a real blocker replaced it
+
+I reported the Beta curvature flip as blocked by a silent-failure risk: observed
+curvature goes negative at reachable (η, y), the PD guard returns `-Inf`, and the
+repo-wide `1e12` sentinel would read that as a *declared convergence*. Measured it
+instead of leaving it as an assertion. Probe: `docs/dev-log/pending/beta-pd-probe.jl`
+(p=8, K=2, n=60, 4 dispersion settings × 5 seeds = 20 runs).
+
+| setting | mean negative-W cells | `-Inf` marginals | mean Δ loglik (obs − fisher) |
+|---|---|---|---|
+| φ=4 loose | 0.63 % | **0 / 5** | −3.20 |
+| φ=8 mid | 0.42 % | **0 / 5** | −2.45 |
+| φ=12 tight | 0.33 % | **0 / 5** | −1.82 |
+| φ=25 very tight | 0.04 % | **0 / 5** | −1.25 |
+
+**The catastrophic mode did not occur — 0 of 20.** Negative weights are real but rare
+(0.04–0.63 % of cells) and evidently too sparse to make `ΛᵀWΛ + I` indefinite, so the
+guard never fired. **My "silent wrong answer" framing overstated the risk and should not
+be used as the reason to hold.**
+
+What the measurement does confirm: the flip moves the Beta marginal by **−0.8 to −4.5
+loglik units**, consistently *downward*, and more at loose φ. Combined with S11′'s finding
+that Fisher was closer to the exact marginal in 10/12 Beta cells, this remains a **parity
+change that costs accuracy** — the honest framing — rather than a correctness fix.
+
+### The real blocker, found while trying to verify properly
+
+The plan's own verification rule says *"agreement at a fixed parameter point does not
+imply agreement under optimisation — check every delegation move by FITTING, not
+evaluating."* I could not follow it:
+
+```
+fit_beta_gllvm      hessian kwarg: NO
+fit_gamma_gllvm     hessian kwarg: NO
+fit_studentt_gllvm  hessian kwarg: NO
+fit_tweedie_gllvm   hessian kwarg: NO
+fit_gp1_gllvm       hessian kwarg: NO
+fit_poisson_gllvm   hessian kwarg: NO
+fit_binomial_gllvm  hessian kwarg: NO
+```
+
+**No public fitter exposes `hessian`.** The contract reaches the marginal-loglik
+functions and stops there. Three consequences:
+
+1. A user cannot select the curvature at the surface they actually call.
+2. Flipping a family's `_default_hessian` silently changes what every fit optimises,
+   with no way to A/B it and no user-visible control.
+3. **The mandated verification is not currently possible.** The probe above evaluates at
+   the true parameters; it cannot test an optimisation path, which is exactly where the
+   plan warns the two curvatures diverge.
+
+So the six open flips are blocked on plumbing, not on judgement. Adding an optional
+`hessian` kwarg that defaults to today's behaviour is backward-compatible and needed
+whichever way the decision goes — but it is a new kwarg on exported functions, which
+AGENTS.md puts under maintainer approval. **Flagged, not added.**
