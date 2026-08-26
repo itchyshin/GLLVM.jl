@@ -29,6 +29,9 @@ end
     MAXIT = 50_000       # EM's slow linear tail needs a high cap to converge
 
     # Balanced p = 8 tree, K_B = 1, interior all-positive optimum.
+    # UNVERIFIED 2026-08-26: the identical claim on the seed-30 p = 6 fixture was
+    # measured FALSE (see test_em_louis.jl). This p = 8 fixture has NOT been checked
+    # either way — do not rely on the claim without measuring it.
     tree   = GLLVM.augmented_phy(
         "(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2," *
         "((E:0.3,F:0.3):0.2,(G:0.3,H:0.3):0.2):0.2);")

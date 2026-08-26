@@ -28,7 +28,13 @@ end
 
 @testset "EM observed information (Louis / Supplemented EM)" begin
 
-    # -- p = 6 fixture (K_B = 1, interior all-positive optimum, n = 400) -------
+    # -- p = 6 fixture (K_B = 1, n = 400) --------------------------------------
+    # CORRECTED 2026-08-26: the seed-30 optimum is NOT all-positive. Measured:
+    # σ_phy = [-0.323, 0.551, 0.360, 0.347, 0.777, 1.618] against a truth of +0.9,
+    # and ADEMP over 40 replicates shows a ~62% systematic UNDERESTIMATE (mean 0.343)
+    # with 28% of components negative. Starting from the truth converges to the same
+    # point, so it is not a basin artefact. See docs/dev-log/check-log.md 2026-08-26
+    # and docs/dev-log/pending/sigma-phy-recovery-ademp.jl.
     tree1   = GLLVM.augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
     p1      = tree1.n_leaves
     Λ_B1    = reshape([0.8, 0.6, 0.4, -0.3, 0.5, -0.2], p1, 1)

@@ -95,22 +95,43 @@ end
         @test ll_anchored ≈ ll_flipped rtol = 1e-12
     end
 
-    @testset "NO REGRESSION (interior +ve optimum): signed fit matches the previous behaviour" begin
-        # Seed 30 has an interior all-positive optimum (see test_em_phylo.jl
-        # "CORRECTNESS GATE: EM matches dense MLE (K_B = 1)"). With the
-        # identity link the optimum should remain in the same basin —
-        # |σ_phy| close to the truth (0.9), all signs equal up to the
-        # global anchor.
+    @testset "NO REGRESSION (seed 30, optimum has ONE negative component): signed fit is stable" begin
+        # CORRECTED 2026-08-26. This comment previously claimed seed 30 has "an interior
+        # all-positive optimum", that "|σ_phy| close to the truth (0.9)", and that "all
+        # signs equal up to the global anchor". All three are measurably FALSE:
+        #
+        #   fitted σ_phy = [-0.323, 0.551, 0.360, 0.347, 0.777, 1.618]   (truth +0.9)
+        #
+        # Component 1 is negative, and only the GLOBAL sign is unidentified, so that is
+        # not an anchoring artefact. Starting the optimiser from the truth converges to
+        # the identical point (Δ logLik exactly 0), so it is not a basin problem either.
+        #
+        # ADEMP over 40 replicate datasets (docs/dev-log/pending/sigma-phy-recovery-ademp.jl):
+        # per-component bias −0.45 to −0.66, overall mean 0.343 against a truth of 0.900 —
+        # a ~62% systematic UNDERESTIMATE, with 28% of components landing negative. The
+        # sign flips are a symptom of a sampling distribution centred near 0.34 with
+        # sd ≈ 0.5–0.7 straddling zero, not a defect in their own right.
+        #
+        # The old guard `@test all(abs.(σ_phy) .> 0.3)` used the ABSOLUTE value, so it
+        # could not see a sign flip, and it passed at −0.3231 by 0.023 while the estimator
+        # ran 62% low. An assertion can be true, wired and green and still be measuring
+        # the wrong thing.
         y30 = _sim_phy_unique_signed(Σ_phy, Λ_B, fill(0.9, p), 0.5, 400; seed = 30)
         fit = fit_gaussian_gllvm(y30; K = 1, has_phy_unique = true, Σ_phy = Σ_phy)
+
+        # What this testset legitimately guards: the signed-identity-link fit still runs
+        # and returns a usable, bounded answer. That is a regression check, NOT a recovery
+        # claim, and it is now labelled as such.
         @test fit.converged
         @test isfinite(fit.logLik)
-        # |σ_phy| should be reasonably close to true 0.9 (n = 400).
-        @test all(abs.(fit.pars.σ_phy) .> 0.3)
-        @test all(abs.(fit.pars.σ_phy) .< 2.0)
-        # Anchored: largest-magnitude entry is non-negative.
-        i_max = argmax(abs.(fit.pars.σ_phy))
-        @test fit.pars.σ_phy[i_max] ≥ 0
+        @test all(isfinite, fit.pars.σ_phy)
+        @test all(abs.(fit.pars.σ_phy) .< 2.0)          # bounded; not "close to truth"
+
+        # What a reader of the old comment would have assumed was being tested. It is not
+        # true, and it is @test_broken so the claim is on record and self-invalidating
+        # rather than implied by a comment nothing checked.
+        @test_broken maximum(abs.(abs.(fit.pars.σ_phy) .- 0.9)) < 0.3   # recovery
+        @test_broken all(fit.pars.σ_phy .> 0)                           # sign agreement
     end
 
     @testset "PACKED-θ ROUND-TRIP: identity link is consistent with fit.pars" begin

@@ -79,9 +79,24 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 
 ## Performance — the differentiator
 
-⚡ ~340× per-fit median speedup over R `gllvmTMB` on the Gaussian + phylogenetic
-path (with machine-precision agreement on estimates and likelihoods), and an O(p)
-phylogenetic gradient benchmarked to p = 10,000. Poisson, NB2, Binomial, and
+⚡ Large per-fit speedups on the **Gaussian closed-form path**, and an O(p)
+phylogenetic gradient benchmarked to p = 10,000.
+
+!!! warning "Read the published grid, not the headline"
+    The grid published in these docs ([Benchmarks](benchmarks.md)) measures
+    **161.2×, 185.3×, 194.9×, 335.3×, 398.8×, 698.1×** — median **265.1×**.
+
+    A `~340×` figure appears elsewhere in this repo, attributed to a "Gaussian +
+    phylogenetic" grid. **That grid is not published here**, so a reader cannot check
+    it against anything in this repository, and it does not match the one grid that
+    is. Treat `~340×` as unverified in-repo pending publication of its source.
+
+    Agreement is **at least six significant digits**, not machine precision: the
+    measured worst case across the published grid is `|Δ logLik| = 2.343e-07` and
+    `Σ_y` relative Frobenius `4.424e-05`.
+
+    None of this generalises beyond the Gaussian closed-form path. Measured
+    non-Gaussian speedups include zero-truncated Poisson ≈ 2.2× and Gamma ≈ 1.6×. Poisson, NB2, Binomial, and
 Beta use analytic Laplace outer gradients by default on plain no-mask/no-offset
 fits, with finite-difference fallback; Gamma and the remaining finite-difference
 Laplace paths stay conservative until their analytic gradients clear the runtime

@@ -13496,3 +13496,845 @@ updated by whoever changed the code it judges.
 
 The nine still orphaned test the **un-included** source files — a different finding
 (8 `src/` files are in no `include`), not a test problem.
+
+---
+
+## 2026-08-26 — post-#265: two audits that removed work, one that added a defect
+
+PR #265 merged at `c9605077` with all six checks green (macOS 1h35m, ubuntu-1.10 1h56m,
+windows 2h19m, ubuntu-1 2h26m, Documenter + deploy). Recorded for planning: **CI runs
+roughly 2× the local suite's ~72 min** — a full matrix is a ~2.5 h round trip, so batching
+pushes matters.
+
+### S22 was mis-scoped — it is a defect, not an additive gap
+
+The plan recorded S22 as "missing StatsAPI methods". The missing half is confirmed
+(`coef`, `vcov`, `nobs`, `dof`, `loglikelihood`, `stderror`, `coeftable` — zero
+definitions in `src/`). The other half is worse: a sweep of **all 301 exports** against
+StatsBase / Distributions / StatsModels / Base found **7 that shadow another package's
+generic**.
+
+One (`Multinomial` vs `Distributions.Multinomial`) is **already documented**, twice and
+precisely — `response-families.md:77` and `:428-437` state the consequence and give the
+workaround. Not a defect.
+
+The other six — `confint`, `aic`, `bic`, `predict`, `fitted`, `residuals` — are
+undocumented and shadow StatsBase, because `src/GLLVM.jl` never imports StatsAPI.
+Measured: `using GLLVM, StatsBase` makes all six `UndefVarError` at unqualified call.
+These are exactly the verbs the tutorials are written in.
+
+**Why CI is green anyway:** `grep -rn "using StatsBase" test/ docs/` → no matches. Nothing
+ever loads StatsBase beside GLLVM. Same shape as the curvature fault class — nothing
+compares two entry points, so the disagreement cannot be seen. Not fixed: re-rooting six
+exported generics plus a new dependency is an API change and needs maintainer approval.
+Full write-up + reproducible sweep in `docs/dev-log/pending/`.
+
+### S18 (cross-validation) is not a parity gap — withdrawn
+
+The twin's `cv-*.R` holds 20 functions, **all dot-prefixed internals, zero `@export`,
+zero `NAMESPACE` entries, and no caller outside `R/cv-*.R`**. It is tested internal
+machinery no exported function reaches, so there is nothing to reach parity with. The
+capability ledger's *lack* of a CV row is correct; the plan's "gap in the ledger's own
+coverage" criticism is withdrawn.
+
+### The parity target was one release stale, and it does not matter
+
+Twin `origin/main` is **0.7.1**, not the 0.7.0 the goal names. Its NEWS says the release
+"adds no new response family, likelihood, integration engine, random-slope capability,
+iSDM route" — docs, a deprecation-help update, one new warning, and it is an unreleased
+release candidate. **The ladder is not chasing a moving target.**
+
+### The transferable lesson
+
+Both withdrawn/corrected items failed the same way: **"the file exists in the twin" was
+treated as evidence the twin ships the capability.** The Julia-side facts were right in
+both cases. A parity gap needs evidence from *both* halves — an exported entry point on
+the twin side, not just a source file.
+
+## 2026-08-26 — ledger honesty pass: the fault-class tally was stale in BOTH directions
+
+The "Running tally of the fault class" table (`check-log.md:12687-12695`) is the artifact
+a reader hits first, and it is wrong in two opposite ways. Re-measured every row against
+the working tree at `5de9736d`.
+
+### Corrected census — every `_glm_weight` site
+
+| family | site | curvature status | evidence |
+|---|---|---|---|
+| Binomial | `binomial.jl:34` | **safe** | `_glm_weight_matches_observed(::Binomial, ::LogitLink) = true` (`:32`) — canonical link, Fisher ≡ observed |
+| Poisson | `poisson.jl:12` | **safe** | trait `= true` at `:10` |
+| TruncatedPoisson | `truncated_poisson.jl` | **safe** | trait `= true` at `:39` |
+| CensoredPoisson | `censored_poisson.jl` | **safe** | trait `= true` at `:89` |
+| Gamma | `gamma.jl:12` | **FIXED** | `_glm_obs_weight` override `:51` + `_default_hessian(::Gamma, ::LogLink) = :observed` `:35` |
+| TruncatedNegBin2 | `truncated_nbinom2.jl` | **FIXED** | `_glm_obs_weight` `:118` + `_default_hessian` `:113` |
+| DeltaGamma | `twopart.jl:644` | **FIXED** | `_tp_observed_Wc(f::DeltaGamma,…)` → `_gamma_grouped_laplace_weight(:observed,…)`; kernel default `hessian = :observed` (`:105`) |
+| NB2 | `negbin.jl:11` | **open** | no trait, no `_glm_obs_weight`, default `:fisher` |
+| **NB1** | `negbin1.jl:77` | **open** | `me^2 * _nb1_fisher_mu(μ, f.φ)` — untouched |
+| Student-t | `studentt.jl:75` | **open** | measured Δ −0.1720 |
+| Tweedie | `tweedie.jl:26` | **open** | measured Δ +0.2414 |
+| Beta | `beta.jl:21` | **open** | block-form definition |
+| GP1 | `gp1.jl:65` | **open** | block-form definition |
+| Exponential | `exponential.jl:26` | **separate question** | deliberately passes `hessian = :fisher` with a documented routing reason (`:55-66`); not the same defect — do not fold it in without re-deriving |
+| AGHQ | `aghq_grid.jl:203` | **FENCED** | PARKED; maintainer decision |
+
+### The two errors in the old tally
+
+1. **`| 1 | NB1 | negbin1.jl:77 | fixed |` overstates.** That line still reads
+   `me^2 * _nb1_fisher_mu(μ, f.φ)`. What was fixed was the *grouped* route
+   (`grouped_dispersion.jl`), not the generic core. A reader taking the tally at face
+   value would believe a Fisher-weighted objective is corrected. The correction already
+   exists further down the log at `:12744` — but the summary table is what gets read, and
+   it was never updated. **A correction that lives only below the summary is not a
+   correction.**
+2. **`| 8 | Gamma shared route | open — PUBLIC DEFAULT |` is stale in the safe
+   direction.** Instance 8 has been fixed since; the tally still advertises the public
+   default as broken.
+
+### The class is larger than the tally shows
+
+The old table has 8 rows. The measured surface is **10 `_glm_weight` sites plus AGHQ**.
+**Beta (`beta.jl:21`) and GP1 (`gp1.jl:65`) never appeared in it at all** — both define
+`_glm_weight` in `function … end` block form, so a `^_glm_weight(` grep (the shape used
+to build the original census) silently skips them. That is not a bookkeeping slip; it is
+the census method having a blind spot, and it is worth stating because the same grep
+shape will keep missing them.
+
+### What was NOT wrong — a correction to the plan, not the ledger
+
+The ultra-plan claimed three ledger rows "understate the code": `mi()`, mixed-family
+native, and `none × dep`. Checked against the ledger's **own published vocabulary**
+(`capability-status.md:12-17`) — `planned` = *"tracked / designed; no promoted
+twin-complete implementation yet"*, which explicitly does **not** mean "no code exists":
+
+- **Mixed-family native `planned` is correct.** `fit_mixed_gllvm` ships and is exported,
+  but the only test is `test_bridge_mixed.jl` — the *bridge*, not the native path. No
+  native test ⇒ not `implemented` under the stated rule. The plan was wrong here.
+- **`mi()` and `none × dep` are defensible as `planned`.** Both have included source,
+  exported entry points and wired tests — but neither offers the twin's grammar term
+  (`none_dep.jl`'s own include comment says *"no formula sugar"*). Not twin-complete.
+
+**No status flipped.** The Rose fence says gaps stay visible rather than renamed away,
+and flipping these to `implemented` would have been exactly the overstatement this pass
+exists to catch. The plan's S16 "three understate the code" claim is **withdrawn**.
+
+That is the third instance today of one error shape: **judging a capability by whether a
+file exists rather than by whether the capability is reachable and tested.** Twice on the
+twin's side (S18 cross-validation, the 0.7.0/0.7.1 target), once on ours.
+
+## 2026-08-26 — Beta PD-hit measurement: my blocking concern was wrong, and a real blocker replaced it
+
+I reported the Beta curvature flip as blocked by a silent-failure risk: observed
+curvature goes negative at reachable (η, y), the PD guard returns `-Inf`, and the
+repo-wide `1e12` sentinel would read that as a *declared convergence*. Measured it
+instead of leaving it as an assertion. Probe: `docs/dev-log/pending/beta-pd-probe.jl`
+(p=8, K=2, n=60, 4 dispersion settings × 5 seeds = 20 runs).
+
+| setting | mean negative-W cells | `-Inf` marginals | mean Δ loglik (obs − fisher) |
+|---|---|---|---|
+| φ=4 loose | 0.63 % | **0 / 5** | −3.20 |
+| φ=8 mid | 0.42 % | **0 / 5** | −2.45 |
+| φ=12 tight | 0.33 % | **0 / 5** | −1.82 |
+| φ=25 very tight | 0.04 % | **0 / 5** | −1.25 |
+
+**The catastrophic mode did not occur — 0 of 20.** Negative weights are real but rare
+(0.04–0.63 % of cells) and evidently too sparse to make `ΛᵀWΛ + I` indefinite, so the
+guard never fired. **My "silent wrong answer" framing overstated the risk and should not
+be used as the reason to hold.**
+
+What the measurement does confirm: the flip moves the Beta marginal by **−0.8 to −4.5
+loglik units**, consistently *downward*, and more at loose φ. Combined with S11′'s finding
+that Fisher was closer to the exact marginal in 10/12 Beta cells, this remains a **parity
+change that costs accuracy** — the honest framing — rather than a correctness fix.
+
+### The real blocker, found while trying to verify properly
+
+The plan's own verification rule says *"agreement at a fixed parameter point does not
+imply agreement under optimisation — check every delegation move by FITTING, not
+evaluating."* I could not follow it:
+
+```
+fit_beta_gllvm      hessian kwarg: NO
+fit_gamma_gllvm     hessian kwarg: NO
+fit_studentt_gllvm  hessian kwarg: NO
+fit_tweedie_gllvm   hessian kwarg: NO
+fit_gp1_gllvm       hessian kwarg: NO
+fit_poisson_gllvm   hessian kwarg: NO
+fit_binomial_gllvm  hessian kwarg: NO
+```
+
+**No public fitter exposes `hessian`.** The contract reaches the marginal-loglik
+functions and stops there. Three consequences:
+
+1. A user cannot select the curvature at the surface they actually call.
+2. Flipping a family's `_default_hessian` silently changes what every fit optimises,
+   with no way to A/B it and no user-visible control.
+3. **The mandated verification is not currently possible.** The probe above evaluates at
+   the true parameters; it cannot test an optimisation path, which is exactly where the
+   plan warns the two curvatures diverge.
+
+So the six open flips are blocked on plumbing, not on judgement. Adding an optional
+`hessian` kwarg that defaults to today's behaviour is backward-compatible and needed
+whichever way the decision goes — but it is a new kwarg on exported functions, which
+AGENTS.md puts under maintainer approval. **Flagged, not added.**
+
+## 2026-08-26 — docs/API gaps: S24 withdrawn entirely, S25 was the wrong shape
+
+Checked both plan slices against the files. The docs are in substantially better shape
+than the plan asserted.
+
+### S24 "docs gaps" — withdrawn, all seven claims false
+
+The plan said `docs/src/response-families.md` has *"**zero** coverage of Lognormal,
+Multinomial, GP1, TruncatedPoisson, TruncatedNegBin2, CensoredPoisson, MixedFamily."*
+Every one has its own `###` section:
+
+| family | section |
+|---|---|
+| TruncatedPoisson | `:150` |
+| CensoredPoisson | `:192` |
+| TruncatedNegBin2 | `:264` |
+| Multinomial | `:382` |
+| Lognormal | `:478` |
+| GeneralizedPoisson1 | `:603` |
+| MixedFamily (`fit_mixed_gllvm`) | `:754` |
+
+23 family sections in total. **S24 is withdrawn.**
+
+### S25 — the second half was also false
+
+The plan said the measured non-Gaussian numbers *"live **only** in internal dev-log
+notes"* and that `benchmarks.md` *"shows a user zero non-Gaussian numbers."* In fact
+`benchmarks.md:12-28` opens with a `!!! warning "This grid is Gaussian only — the
+speedup does NOT generalise"` admonition carrying exactly those numbers (lognormal
+≈1280×, truncated_poisson ≈2.2×, Gamma ≈1.6×) and the explicit instruction *"do not read
+the Gaussian headline as a general claim about the package."* **Withdrawn.**
+
+### S25 — the one real item, and it is the opposite shape
+
+The README's speedup claim was **understating the repo's own data**, not overstating it.
+It read *"often 10-100× faster"*. The package's published wall-clock table
+(`benchmarks.md:34-41`) measures **161.2×, 185.3×, 194.9×, 335.3×, 398.8×, 698.1×** —
+**no measured cell falls inside 10–100×**.
+
+Fixed: README now states the measured 161–698× range, fences it to the Gaussian
+closed-form path, and carries the non-Gaussian counter-numbers inline.
+
+Worth noting *how* this survived: the README already carried a `Corrected 2026-08-25`
+note fixing the **agreement bounds** in the very same sentence, with the reasoning *"the
+benchmarks page was already accurate; the summary here was not."* The identical defect
+sat in the neighbouring clause and was not looked at. **A correction pass that fixes the
+clause it was pointed at, and not its neighbour, leaves the same bug in the same
+sentence.**
+
+### Flagged, not changed: the `~340×` headline has no published grid
+
+`gllvmtmb-parity.md:82` and `changelog.md:142` advertise *"~340× per-fit median speedup
+… on the Gaussian + phylogenetic path"*. `benchmarks.md` contains **no phylogenetic
+speedup table** — its only speedup grid is the six Gaussian cells above, whose median is
+**265.1×**, not 340×. The figure may well be correct and sourced from the separate local
+bench repo, which is deliberately out of this repo. But as published, a reader cannot
+check the headline number against anything here, and the one table that exists disagrees
+with it. **Not edited — I cannot verify it either way from this repo.** Rose item for the
+pre-tag gate.
+
+### Tally of the plan's slice list
+
+Verified this session: S16 (three rows) wrong · S18 wrong · S22 mis-scoped (real defect,
+wrong description) · S24 wrong · S25 half wrong, half right-but-inverted. The Phase 4/5
+slice list was largely built from greps that were never checked against the files, and a
+substantial fraction of the "remaining work" does not exist.
+
+## 2026-08-26 — CORRECTION: I withdrew S24 wrongly, and it was my own error class
+
+An adversarial review of this session's six audit claims (7 agents, each told to refute
+rather than confirm) refuted three. One of them is a correction I owe outright.
+
+### S24 was TRUE, was DONE, and I recorded it as never-needed
+
+I wrote, four hours ago, that the plan's S24 claim — `response-families.md` has zero
+coverage of seven shipped families — was *"wrong, all seven claims false"*, on the
+evidence that all seven have `###` sections today. Checked against git:
+
+```
+$ git log --oneline -1 3958210e
+3958210e docs(families): document the 7 undocumented shipped families
+
+$ git show 3958210e^:docs/src/response-families.md | grep -c "^### .*Lognormal"      → 0
+  (same for Multinomial, GeneralizedPoisson, TruncatedPoisson,
+   TruncatedNegBin2, CensoredPoisson, MixedFamily)
+```
+
+**S24 was accurate.** The sections exist because a commit on 2026-08-24 created them. I
+read the working tree 24 hours later and concluded the requirement had never been real.
+
+**This is precisely the error class I spent the session documenting in the plan** —
+judging a claim by present state without asking when that state arrived. I wrote *"a
+parity gap needs evidence from both halves"* in one entry and then, in the next, took a
+file's current contents as proof a requirement never existed. The repo's own history was
+one `git log` away.
+
+**Correction:** S24 is **closed by `3958210e`**, not withdrawn. The docs themselves are
+correct and stay as they are; it is the *status* that was misrecorded. The entry above
+titled "S24 'docs gaps' — withdrawn, all seven claims false" is wrong and is superseded
+by this one.
+
+### S16: the three `planned` rows — refuted, and it is not mine to fix
+
+The reviewer's case is stronger than my defence. The ledger's own bar is *"Julia code
+under `src/` **and** a test"*, and all three rows clear it: `none_dep.jl` + wired
+`test_none_dep.jl` (39/39); `families/mixed.jl` + a **native**-kernel assertion at
+`test_gamma_curvature_cross_kernel.jl:67` (I claimed the only test was the bridge — that
+was wrong); four `missing_predictor_*.jl` + seven wired test files.
+
+My "no formula sugar" discriminator does not survive either: `grep` on `src/formula.jl`
+returns **0** for *every* covariance-grid name, including seven rows already marked
+`implemented`. And narrowness is encoded elsewhere in the **label**, not the status —
+`:187` ships "REML (Gaussian pilot twin) | implemented".
+
+**Not changed here.** Flipping `planned` → `implemented` is a public capability claim,
+which is exactly what the Rose fence exists to gate, and the reviewer separately flagged
+that `fit_dep_gllvm`'s identifiability is **UNRESOLVED** (a K=p wrapper implies
+ΛΛ' + σ_eps²I — p(p+1)/2 + 1 parameters for a p(p+1)/2 target, σ_eps not separately
+identified). Maintainer decision, with that check first.
+
+### The guard had two holes; both are closed
+
+The same review found my census guard was neither sound nor complete.
+
+**Over-certification.** It keyed on the family, but the trait is keyed on (family, link).
+`_glm_weight_matches_observed(::Binomial, ::LogitLink) = true` made the whole Binomial
+family read as safe. Measured:
+
+```
+Binomial + LogitLink    matches_observed=true    default_hessian=fisher
+Binomial + ProbitLink   matches_observed=false   default_hessian=fisher
+Binomial + CLogLogLink  matches_observed=false   default_hessian=fisher
+```
+
+Two open cells were being certified. Now a golden-set assertion over (family, link):
+exactly **six** declared cells exist, and gaining or losing one fails until recorded.
+
+**Under-coverage.** The class has a **second substrate**. Two-part families carry their
+curvature in `_tp_pieces` — 8 definitions across `twopart.jl` and `beta_hurdle.jl`,
+documented as the identical defect at `twopart.jl:84-90`. Only DeltaGamma has a
+`_tp_observed_Wc` override. The guard covered none of them, so a 9th two-part family
+shipping a Fisher `Wc` would have extended the fault class with the test green.
+
+So the fault class is **larger than any count I have given**: 14 `_glm_weight` sites (of
+which 6 (family, link) cells are declared) **plus** 8 `_tp_pieces` sites (7 open). Every
+earlier figure in this log — 8, 11, 13, 14 — understated it.
+
+Guard now 10 tests, both new checks falsifiability-proven: falsely certifying
+Binomial+probit fails on `computed == CERTIFIED_CELLS`; dropping ZIB from
+`TWOPART_KNOWN_OPEN` fails naming `ZIB @ twopart.jl:1306`.
+
+### Also from the review, not yet acted on
+
+- **~~The published docs site is stale.~~ REFUTED on check — the reviewer was wrong, and
+  so was my first probe.** `origin/gh-pages` is at `525c331c`, *"build based on c960507"*,
+  timestamped 2026-08-26 01:00:45 UTC — two minutes after the #265 merge. The reviewer
+  read a stale local ref. My own first probe then looked for `dev/benchmarks/index.html`,
+  which does not exist in the current build; the real path is `dev/benchmarks.html`, and
+  it carries the warning (1 hit for "does NOT generalise"/"1280", likewise in
+  `dev/assets/benchmarks.md.Dt03XylR.js`). **No redeploy needed.** Recorded because a
+  wrong path returning zero hits looks exactly like a missing deploy — `git ls-tree` the
+  branch before concluding a file is absent.
+- **MixedModels.jl exports all six shadowed generics too**, and README has a "Comparison
+  to MixedModels.jl" section inviting co-loading. The collision is wider than StatsBase.
+- **The `_family_of` link-drop also affects reporting**, not just this guard — any future
+  census keyed on family alone inherits the same fault.
+
+### The MixedModels claim: verified, after my own first check got it wrong
+
+The review's claim that `MixedModels.jl` exports the same six generics is **confirmed** —
+`aic`, `bic`, `confint`, `fitted`, `predict`, `residuals` all appear in its export block
+in `MixedModels.jl`. It matters because README has a "Comparison to MixedModels.jl"
+section that invites exactly the co-loading that breaks them.
+
+Worth recording *how* I nearly got this wrong. My first probe was
+`grep -rhoE "^export[^#]*"`, which reported **0 of 6** — because MixedModels declares
+them in a multi-line `export` block and the pattern is anchored to a single line. That is
+the **third** false negative today from the same mistake:
+
+1. `^_glm_weight(` missed Beta and GP1 (function-block form).
+2. A `src/families/*.jl` sweep missed `spde_latent.jl:54` (wrong directory).
+3. `^export[^#]*` missed all six MixedModels exports (multi-line block).
+
+Each time the grep returned a confident empty result that looked like a finding.
+**A line-anchored grep cannot see a multi-line declaration, and an empty result from one
+is not evidence of absence.** Where the answer matters, parse or reflect — the census
+guard reflects over the method table for precisely this reason.
+
+Documented for users at `docs/src/pitfalls.md` ("Loading StatsBase or MixedModels
+alongside GLLVM breaks six verbs") with the qualified-call workaround, since the real fix
+is an API change awaiting maintainer approval.
+
+## 2026-08-26 — full ledger audit: 80 rows, one confirmed false green
+
+Eight agents: one auditor per ledger section, then every claimed *overstatement* handed to
+a separate skeptic told to refute it. 80 rows checked, 11 raw findings, **1 confirmed
+overstatement, 0 refuted**. I re-verified the confirmed finding's arithmetic myself.
+
+### CONFIRMED OVERSTATEMENT — `Bridge capability ledger + drift probe` (`:239`, `implemented`)
+
+The row is a compound of two halves with different truth values. The ledger half is
+genuinely implemented (`bridge_capabilities()` at `src/bridge.jl:632`, exported, tested).
+**The drift probe is RED.**
+
+Independently re-derived:
+
+```
+R mirror  (.GLLVM_JULIA_BRIDGE_FAMILIES, julia-bridge.R:18) : 11 families
+engine    (_BRIDGE_ONEPART_FAMILIES,     src/bridge.jl:164) : 17 families
+
+ENGINE-ONLY — the bridge silently refuses these:
+  betabinomial  lognormal  truncated_poisson  zib  zinb  zip
+R-ONLY: none
+```
+
+Plus **6** `fixed_effect_X` drifts and 6 CI-flag drifts
+*(**corrected 2026-08-26**: this entry originally said 3, counting only nb1/ordinal/
+ordinal_probit. It missed `betabinomial`, `zip` and `zinb` — families absent from the R
+admission list entirely, hence trivially absent from its X-list too. 6 is the figure in the
+`capability-status.md` fence and the handover; this line was the stale one.)* — **12 unregistered drifts**, all `status = "unregistered"`, because
+`.gllvm_julia_expected_capability_drifts()` (`julia-bridge.R:432`) returns a literal 0-row
+frame whose comment asserts as fact that the two surfaces agree.
+
+**Nothing catches it.** The only engine-facing assertion
+(`test-julia-bridge.R:2848`, `expect_equal(nrow(drift), 0L)`) sits behind
+`skip_if_no_julia()` and would fail if run. The test that *does* pass (`:700`) compares the
+R mirror against itself — trivially zero drift. The R file was last touched 2026-07-22;
+the engine added those families 2026-08-05..19, and
+`git log --all -S betabinomial -- R/julia-bridge.R` returns nothing on any branch.
+
+**User-visible consequence:** an R user going through `engine = "julia"` cannot reach six
+families the Julia engine ships — including the zero-inflated trio and lognormal, which are
+precisely the families where GLLVM.jl is *ahead* of the twin. The bridge that would expose
+that lead does not know those families exist.
+
+**Fix shape:** split the row, or fence it in the style the Laplace-curvature section
+already uses at `:250` (*"`implemented` alone is misleading"*). Not changed here — a status
+edit is a public capability claim.
+
+### UNDERSTATEMENTS — 8 rows, none changed
+
+Relabelling is a maintainer call. Strongest, all with src included + exported + a test
+wired into `runtests.jl`:
+
+| row | line | now | note |
+|---|---|---|---|
+| multinomial / categorical | `:91` | `missing` | included `GLLVM.jl:68`, exported `:202`, 9 dispatch sites, test wired `runtests.jl:127`. `missing` is defined as *"no Julia implementation found"* — flatly false. Narrowness (fixed effects only, no LVs) belongs in the **label**, as `:187` REML already does |
+| Missing predictor `mi()` | `:225` | `planned` | 4 modules, 4 exports, **7** wired test files |
+| Mixed-family response vector | `:229` | `planned` | **contradicts the ledger's own `Bridge mixed-family vector \| implemented` at `:245`** — the bridge cannot be implemented while the native engine it dispatches into is planned |
+| none × dep | `:47` | `planned` | `fit_dep_gllvm`, wired test asserting ≈ to 1e-8 + PSD |
+| kernel × indep | `:58` | `planned` | **contradicts `:49/:52/:55`** — phylo/animal/spatial `indep` are all `implemented` off the *same* generic path |
+| kernel × latent | `:60` | `planned` | `make_cross_kernel` exported; only the multi-tier named-kernel case is absent |
+| Phylo Model A interval promotion | `:320` | `rejected` | `confint_lv_effects` is exported and publicly documented; **no fail-loud gate exists**, so `rejected` (*"deliberately refused, fail-loud, or not advertised"*) does not describe it |
+| animal × latent | `:54` | `planned` | thin evidence — auditor flagged it as such |
+
+### Not settled
+
+The two AGHQ rows drew **contradictory** corrections from two auditors on identical code —
+one says `planned`, one says `rejected`. The capability question is settled (no `aghq`
+symbol); the right *word* is not. Left alone; it is inside the AGHQ fence anyway.
+
+### On the parity figures
+
+The tally I reported earlier — 55/75 rows implemented, ~73% — is the ledger's self-report.
+This audit moves it: multinomial alone makes Response families 23/23 rather than 22/23, and
+seven more rows understate. Treat any percentage from this document as provisional until
+the maintainer rules on the eight understatements.
+
+### The census guard failed CI on my own missing dependency
+
+First full-suite run with the extended guard: **6762 passed, 0 failed, 1 errored, 1 broken.**
+
+```
+LoadError: ArgumentError: Package InteractiveUtils not found in current path.
+  in expression starting at test/test_curvature_census.jl:37
+```
+
+I added `using InteractiveUtils` (for `subtypes`, needed to enumerate the concrete `Link`
+types in the per-(family, link) check) and did not declare it in `test/Project.toml`.
+
+**Why the isolated run did not catch it.** `julia --project=. test/test_curvature_census.jl`
+runs against the *package* environment, where the stdlib resolves. `Pkg.test()` builds an
+isolated test environment containing only what `test/Project.toml` declares. Green in one,
+error in the other.
+
+This is the same lesson as the day's others, in a fourth costume: **a check passing in one
+context is not the check passing.** I had written, in this log, that "one isolated green run
+isn't evidence the suite is green" — and then shipped exactly that failure. The rule only
+protects you if the *first* run you trust is the real one.
+
+Fixed at the cause (declared the dep), not by dropping the check. Full suite re-running.
+
+### Docs build green; and the 41-warning baseline has a single cause
+
+`julia --project=docs docs/make.jl` → **exit 0**, 41 invalid-link warnings — the
+established baseline, unchanged by the `pitfalls.md` addition.
+
+Checked whether my new cross-reference was one of them. It is not: `pitfalls.md`'s three
+warnings all come from the pre-existing line 47. My line 93 uses
+`[Response families](response-families.md)` — a **relative link with the extension**, which
+Documenter resolves natively and silently.
+
+That turns out to explain the entire baseline. All 41 warnings, across 11 files, are the
+**absolute** form the rest of the docs use:
+
+```
+tutorial.md 8 · index.md 8 · response-families.md 4 · morphometrics.md 4 ·
+working-with-a-fit.md 3 · pitfalls.md 3 · covariance-correlation.md 3 ·
+confidence-intervals.md 3 · quickstart.md 2 · gllvmtmb-parity.md 2 · comparison.md 1
+```
+
+e.g. `[Response families](/response-families)` warns; `(response-families.md)` does not.
+
+**Not swept.** The links very likely resolve fine in the deployed Vitepress site (the
+published pages are reachable), so this is warning noise rather than broken navigation —
+but 41 standing warnings are exactly the cover under which a *real* broken link goes
+unnoticed. Converting them is an 11-file cosmetic sweep and belongs in its own commit, not
+bolted onto a test change. Flagged for the maintainer.
+
+## 2026-08-26 — Rose audit of the 9-commit batch: four defects, three in the corrections themselves
+
+The goal's DISCIPLINE line specifies `closure = after-task report + Rose audit`. The audit
+had not run. It has now, against `origin/main..HEAD`, and it found four citable defects —
+**three of them inside artifacts written specifically to fix earlier sloppiness.**
+
+1. **[fixed] The drift fence undercounted the engine's own surface.** I cited
+   `_BRIDGE_X_FAMILIES` (`src/bridge.jl:198`, 11 entries) as the engine's fixed-effect-`X`
+   surface. That constant is documented *"One-part **NON-Gaussian** families"* and excludes
+   `gaussian` by design; the advertised surface is built at `src/bridge.jl:635` as
+   `Set(vcat(["gaussian"], _BRIDGE_X_FAMILIES))` = **12**, and the R mirror's list includes
+   `gaussian`. I compared a gaussian-exclusive count against a gaussian-inclusive one.
+   Totals are 6 vs 12; the six-family delta is unaffected because `gaussian` cancels.
+   **The same wrong number had been posted publicly to `gllvmTMB#488`; corrected there too.**
+   This is the fence making the exact error the fence exists to prevent.
+2. **[fixed] Two same-day entries disagreed on the drift count, unreconciled.** The ledger-
+   audit entry said 3 `fixed_effect_X` drifts; the fence and handover said 6. **6 is right** —
+   the 3 missed `betabinomial`/`zip`/`zinb`, absent from the R admission list entirely. The
+   stale line is now marked, following this log's own S24 correction precedent.
+3. **[fixed] The after-task report documented the superseded guard.** Its falsifiability
+   citations (`:102`, `:114`, "6 pass") describe `247efbc1` — the version *before* the two
+   holes were closed by `52bd95e1`. The Definition-of-Done record described a guard that is
+   not the one shipping. Noted inline and in a post-audit section.
+4. **[fixed] One-directional cross-link.** `pitfalls.md` says README's MixedModels section
+   invites the co-loading that breaks six verbs; README had no pointer back. Added.
+
+**Process finding, also fixed:** the after-task report carried a self-issued
+`## Rose verdict`. AGENTS.md defines Rose as an independent gate so the implementer does not
+grade their own work. Renamed to an author's statement; the real verdict is here.
+
+### Confirmed clean by the audit
+
+The `14 _glm_weight + 8 _tp_pieces` census and every family's bucket assignment,
+independently re-enumerated. README's 161–698× against the benchmarks table. The guard's
+mechanism — reflection over method tables, golden-set equality on `(family, link)`,
+disjointness and stale-ledger checks — **non-vacuous, every assertion traceable to an
+invariant that fails under a concrete mutation.** `Project.toml` compat clean;
+`InteractiveUtils` correctly declared.
+
+### Carried forward as pre-tag blockers
+
+- **The `~340×` headline** is live in four places (`CLAUDE.md:7`, `AGENTS.md:13`,
+  `gllvmtmb-parity.md:82`, `changelog.md:142`) and cannot be verified against anything
+  published in-repo; the only published grid has a median of **265.1×**. Rose's verdict:
+  this is the one item that *would* violate the pre-publish gate if a tag shipped with it
+  unresolved.
+- **These 9 commits have never been through CI.** `.github/workflows/CI.yml` triggers on
+  `push:[main]` or `pull_request` only, and no PR is open. The suite tally is self-reported.
+
+### The pattern, stated plainly
+
+Three of four defects were in the corrections, not the original work. Writing a careful
+record is not the same as writing a correct one, and a document whose purpose is accuracy
+gets no immunity from being audited. The independent gate earned its place tonight for the
+second time in one session.
+
+### The `~340×` headline: fenced where I may, flagged where I may not
+
+Rose's top pre-tag blocker. The figure is live in four places. I cannot verify it — its
+"Gaussian + phylogenetic" grid lives in the separate local bench repo, deliberately outside
+this one — so this is not a claim that it is *wrong*, only that a reader cannot check it
+here, and that the one grid we do publish has a median of **265.1×**.
+
+| location | action |
+|---|---|
+| `docs/src/gllvmtmb-parity.md:82` | **fenced** — now leads with the published 161–698× grid, marks `~340×` unverified in-repo, and corrects "machine-precision agreement" to six significant digits |
+| `docs/src/changelog.md:142` | **left alone** — already carries an appended 2026-08-25 correction, and that file's convention is explicitly to append rather than rewrite published entries |
+| `CLAUDE.md:7` | **NOT touched — needs maintainer approval** |
+| `AGENTS.md:13` | **NOT touched — needs maintainer approval** |
+
+The parity page was the worst of the four: it still asserted *"machine-precision agreement
+on estimates and likelihoods"* — the exact overstatement the changelog had already corrected
+on 2026-08-25. A correction applied to one surface and not its neighbours is the same defect
+as the README speedup clause earlier today, and this is now the second instance in one
+session. **When a claim appears in N places, correcting it in one is not correcting it.**
+
+Two of the four remain unqualified because AGENTS.md's merge-authority rule puts edits to
+those files beyond a Phase-state snapshot under maintainer approval. That is a governance
+fence working as designed, not an oversight — but it does mean the repo currently states the
+claim two ways. Recorded so the pre-tag gate sees it.
+
+## 2026-08-26 — the two-part substrate, measured: 2 of the 7 were never open
+
+I had deferred this arc on the grounds that my error rate tonight was elevated. That
+reasoning does not survive inspection: every error tonight was in **prose and audits**, and
+a curvature derivation is gated by an *objective* ForwardDiff check that does not depend on
+my judgement. So I measured it.
+
+**Instrument.** `-∂²logf/∂ηc²` by nested ForwardDiff on the family's own `_tp_pieces`
+log-density. Family-agnostic — whatever the structure (hurdle, zero-inflated mixture), that
+IS the observed quantity the Laplace log-det wants. Probe:
+`docs/dev-log/pending/twopart-curvature-probe.jl`.
+
+**Control first.** DeltaGamma already has a merged, independently verified
+`_tp_observed_Wc` (`twopart.jl:644`). The instrument reproduces it to **≤ 2.4e-16** across
+four (α, y, ηc) points. Only then did I trust it on the rest.
+
+| family | worst rel gap | negative-observed cells | verdict |
+|---|---|---|---|
+| **DeltaLogNormal** | **0.0 %** | 0 | **NOT open** — Fisher ≡ observed |
+| **HurdlePoisson** | **0.0 %** | 0 | **NOT open** — Fisher ≡ observed |
+| HurdleNB | 250.6 % | 0 | open |
+| ZIPoisson | 279.7 % | 3 | open |
+| ZINB | **1223.4 %** | 3 | open |
+| ZIB | 213.9 % | 6 | open |
+| BetaHurdle | 127.3 % | 2 | open |
+
+**Two of the seven were never open.** My `TWOPART_KNOWN_OPEN` list was wrong, and the
+earlier session had already established both as correct — I put them on the open list
+anyway. Corrected: they now sit in `TWOPART_STRUCTURALLY_EXEMPT` with the measurement as
+evidence. **The two-part substrate is 5 open, not 7**, and the class total is 11, not 13.
+
+For the maintainer's decision, the gaps are not marginal: ZINB's Fisher weight is off by a
+factor of ~13, and ZIB's observed curvature is negative in 6 of 18 probe cells — a real
+PD-guard risk if flipped, unlike Beta where the analogous risk measured 0 of 20.
+
+### A negative control that did NOT fire — and the hole it exposed
+
+Checking the corrected guard, one control passed when it should have failed: moving a
+genuinely-open family into `TWOPART_STRUCTURALLY_EXEMPT` with an invented justification was
+accepted silently. **The exemption list was an unchecked escape hatch** — it could be used
+to silence exactly the defect the guard exists to catch, and I had just created it.
+
+Fixed by making the exemption a *measured* claim rather than a stated one: every exempt
+family is now verified numerically (observed ≡ Fisher to rtol 1e-8 across 18 cells).
+Re-running the control now fails with the real numbers — `-0.409` vs `1.158`, which is
+ZIB's negative-curvature cell.
+
+Guard: 10 → **48 tests**. The lesson generalises: **an exemption list is a hole unless
+something checks the exemption.** The single-part `STRUCTURALLY_EXEMPT` (Normal,
+Exponential) has the same shape and is *not* yet measured — Normal is provable by
+inspection (Gaussian curvature is y-free) and Exponential is a documented deliberate
+routing, but neither is machine-checked. Flagged.
+
+## 2026-08-26 — the exemption label was hiding a 705% discrepancy
+
+Having found that an unchecked exemption list is a hole, I machine-checked the one I had
+flagged and left: the single-part `STRUCTURALLY_EXEMPT` (Normal, Exponential). Probe:
+`docs/dev-log/pending/onepart-exempt-probe.jl`.
+
+| family / link | worst Fisher-vs-observed gap | what the exemption actually is |
+|---|---|---|
+| Normal / IdentityLink | **0.00 %** | a genuine identity — machine-checkable |
+| Exponential / LogLink | **705.50 %** | **not an identity at all** |
+
+**Exponential was an open curvature cell wearing an exemption label.** Its recorded reason
+— explicit `:fisher` routing, `exponential.jl:55-66` — is true and good: routing it through
+the grouped kernel made ‖Λ‖ run away to ~960 against a true 0.38. But that is a **decision
+taken for an unrelated reason**, not a statement that the two curvatures agree. Filing it
+beside Normal implied the latter, and the label meant nobody looked.
+
+The dict conflated two categories that need opposite treatment:
+
+- **`EXEMPT_BY_IDENTITY`** — asserts Fisher ≡ observed as fact. Now **machine-checked**
+  across 9 (y, η) cells; an entry that is not actually an identity fails. Negative control
+  confirms: claiming Exponential belongs here fails on `isapprox`.
+- **`DEFERRED_BY_DECISION`** — curvatures genuinely differ, Fisher retained deliberately,
+  each entry carrying its citation. These are **open cells with a decision attached, not
+  safe cells**, and the guard now says so.
+
+Guard: 48 → **59 tests**.
+
+### The count, restated honestly
+
+Every earlier figure in this log understated the class, including the ones I wrote tonight.
+Current measured position:
+
+- **single-part:** 6 open (`negbin.jl`, `negbin1.jl`, `studentt.jl`, `tweedie.jl`,
+  `beta.jl`, `gp1.jl`) + **Exponential deferred-by-decision** = 7 cells not on observed
+- **two-part:** 5 open (HurdleNB, ZIPoisson, ZINB, ZIB, BetaHurdle)
+- **fixed:** Gamma, TruncatedNegBin2, DeltaGamma
+- **identity-safe:** Binomial/logit, Poisson/log, TruncatedPoisson, CensoredPoisson, Normal,
+  DeltaLogNormal, HurdlePoisson
+- **fenced:** AGHQ
+
+**The pattern, twice in one night:** a category label — `STRUCTURALLY_EXEMPT`,
+`TWOPART_KNOWN_OPEN` — becomes the thing nobody re-examines. Both times the fix was the
+same: make the label an assertion the machine checks, not a word a human wrote.
+
+## 2026-08-26 — the unchecked-assertion sweep: two live user-facing defects, reproduced
+
+Applying the Rose principle to the night's own evidence — the same shape had appeared three
+times (`TWOPART_KNOWN_OPEN`, `STRUCTURALLY_EXEMPT`, the twin's empty expected-drift frame) —
+a 21-agent sweep looked for **any list, constant or marker that asserts something nothing
+verifies**. 48 candidates, 11 surviving an adversarial recheck. **I reproduced the two worst
+myself on live fits.** These are not hypotheticals.
+
+### A1 — a fit reports success while containing `NaN`
+
+```julia
+phy = GLLVM.augmented_phy("(((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1):0.1,(E:0.2,F:0.2):0.1);")
+f   = GLLVM.fit_phylo_gaussian(phy, fill(3.0, 6))
+# converged = true · negll = 1.0e12 · iterations = 0 · μ = NaN
+# show() → PhyloGaussianFit(μ=NaN, σ²_phy=0.0, σ²_eps=0.0, negll=1.0e12)
+```
+
+A constant response makes `log(var(y)/2) = -Inf`, tripping the `all(isfinite, θ)` guard at
+`src/fit_phylo.jl:121`. The objective returns the flat `_PHYLO_PENALTY = 1e12` plateau
+(`:82`), the FD gradient over a constant is exactly 0, and Optim declares `g_converged` at
+iteration 0. **`show` prints no NOT-CONVERGED marker.** The sentinel is *finite*, so it
+flows into `aic`/`bic`/`select_lv` — and `src/model_selection.jl:69-80` guards with
+`try`/`catch`, which cannot see a failure that does not throw, while its docstring
+(`:41-43`) claims non-convergence is skipped.
+
+### A2 — Wald intervals collapse toward false certainty
+
+```julia
+f  = GLLVM.fit_gp1_gllvm(fill(600, 40, 5); K = 1)
+ci = GLLVM.confint(f, Y; method = :wald)
+# α̂ = -0.001657780884622944 · se = 1.2207e-10 · CI width = 4.79e-10
+```
+
+`α̂` sits ~0.05·h from the GP-1 domain edge (α packed raw, `confint_family.jl:225`;
+h = eps()^(1/4) ≈ 1.22e-4), so stencil arms leave the domain and return the sentinel.
+`_fd_hessian` (`:1859`) differences it, apparent curvature explodes, the SE vanishes —
+**seven orders of magnitude below the estimate**, with `pd_hessian` still `true`. The
+failure direction is toward *false certainty*, which is the dangerous one.
+
+### The common cause, and the fix the package already has
+
+Both are the sentinel pattern: **a value asserting success that nothing verifies.**
+`_tweedie_verdict` (`src/families/tweedie.jl:186-198`) names this exact mechanism and forces
+`-Inf`. It is called at **2 sites out of 79** that return the sentinel.
+
+**Not fixed here.** These are `src/` changes to convergence reporting and interval
+machinery. Recorded instead as `@test_broken` in `test/test_known_sentinel_defects.jl`, so
+they **error the moment someone fixes them** — a marker that invalidates itself, the
+opposite of a silent allowlist.
+
+Two of my first `@test_broken` assertions errored as *Unexpected Pass* because I had chosen
+claims that were already true. The mechanism catching its author is the point; I fixed the
+assertions, not the harness.
+
+### And a latent hazard the new file walked straight into
+
+The file was green standalone and errored under `Pkg.test()`:
+
+```
+MethodError: no method matching fit_phylo_gaussian(::AugmentedPhy{Float64}, ::Vector{Float64})
+  Closest candidates: fit_phylo_gaussian(!Matched::GLLVM.AugmentedPhy, ::AbstractVector; ...)
+```
+
+Two distinct types, one name. **`test_confint_bootstrap.jl:19` and
+`test_confint_derived.jl:7,10,130` `include` package sources DIRECTLY into the test module**,
+defining duplicates alongside the package's own; an unqualified call in a later file can
+bind to the wrong one. `test_edge_incidence.jl:157` and `test_em_louis.jl:32` already
+qualify as `GLLVM.augmented_phy` — evidence others hit this and worked around it silently.
+
+Worked around the same way (qualified calls, with the reason written at the top of the
+file) rather than restructuring two unrelated test files at this hour. **The underlying
+hazard stands: direct `src/` includes in tests are a type-identity trap, and the workaround
+is invisible to anyone who has not been bitten.**
+
+### A3 verified: the dense fitter recovers a WRONG-SIGN σ_phy component
+
+Third finding from the sweep that I reproduced myself rather than relay. On
+`test_em_phylo.jl`'s own seed-30 fixture:
+
+```
+truth      [0.9,  0.9,   0.9,    0.9,    0.9,    0.9  ]
+recovered  [-0.3231, 0.551, 0.3599, 0.3469, 0.7767, 1.6176]
+converged = true   logLik = -2184.19
+```
+
+`fit_gaussian_gllvm(...; has_phy_unique = true)` — shipped and exported — reaches a
+**sign-flipped** optimum, with component 1 off by 1.22 against a truth that is uniformly
+positive. Only a *global* sign flip is unidentified here; a single flipped component is a
+recovery failure, not an identifiability artefact.
+
+**Why nothing catches it — three independent reasons, all verified:**
+
+1. `test_signed_sigma_phy.jl:110` asserts `all(abs.(σ_phy) .> 0.3)` — the **absolute
+   value**, so it structurally cannot see a sign flip. With `-0.3231` it passes by 0.023.
+2. Its own comment (`:101-103`) claims *"all signs equal up to the global anchor"* — it
+   asserts precisely what it does not test.
+3. The anchor assertion checks only the largest-magnitude entry (`1.6176`, positive).
+4. `test_em_phylo.jl`, which compares dense against EM and would have caught it, is **not
+   wired into `runtests.jl` and never has been** (`git log -S` confirms).
+
+Same family as everything else tonight: **a check whose comment claims more than its
+assertion tests.** `abs()` in a guard is the sign-flip equivalent of a line-anchored grep —
+it returns a reassuring answer to a question nobody asked.
+
+Recorded as `@test_broken` alongside the two sentinel defects. Not fixed: the cause is at
+`src/fit.jl:425` (σ_phy moved to a signed identity link with greedy single-flip restarts at
+`:465-471`) against `src/em_phylo.jl:798-803`'s post-hoc global anchor — engine work.
+Also stale: `src/em_phylo.jl:432-433` still states "the dense fit restricts σ_phy = exp(·)
+> 0", contradicted by `src/fit.jl:425`.
+
+## 2026-08-26 — the "wrong sign" σ_phy defect is a symptom of a 62% downward bias
+
+Authorised to fix the sign defect, I measured before patching. **There is no sign bug, and
+patching one would have hidden something worse.**
+
+### The optimiser is not at fault
+
+Starting from the truth (`σ_phy_init = 0.9`) converges to the **identical** point —
+Δ logLik exactly 0, same estimates. The greedy single-flip restart loop
+(`src/fit.jl:465-471`) is doing its job; there is no unexplored basin.
+
+### ADEMP replication, 40 datasets, global sign anchored
+
+Probe: `docs/dev-log/pending/sigma-phy-recovery-ademp.jl`.
+
+| component | mean | bias | sd | % negative |
+|---|---|---|---|---|
+| 1 | 0.245 | **−0.655** | 0.528 | 32 % |
+| 2 | 0.336 | −0.564 | 0.585 | 30 % |
+| 3 | 0.249 | −0.651 | 0.537 | 30 % |
+| 4 | 0.357 | −0.543 | 0.595 | 32 % |
+| 5 | 0.446 | −0.454 | 0.669 | 22 % |
+| 6 | 0.425 | −0.475 | 0.724 | 18 % |
+
+**Overall mean 0.343 against a truth of 0.900 — a ~62 % systematic underestimate**, with
+28 % of components landing negative. The sign flips are not the defect; they are what a
+sampling distribution centred near 0.34 with sd ≈ 0.5–0.7 does when it straddles zero.
+
+### Why this is probably inherent, not a code bug (AGENT-INFERRED)
+
+Under `has_phy_unique` the phylogenetic effect is drawn **once**: `z = σ_phy ⊙ φ`, a single
+p-vector. Six SD parameters are then estimated from six numbers — one observation per
+parameter. A downward-biased scale estimate is what that estimand does (cf.
+`E|x| = σ√(2/π) ≈ 0.8σ` from a single draw, before the other parameters compete for the
+same variance). **Marked AGENT-INFERRED**: the bias is measured, the *explanation* is my
+inference and has not been derived.
+
+### What this means
+
+- **Do not "fix the sign".** Forcing positive signs would make the fit worse and paper over
+  a 62 % bias. `src/` is untouched.
+- `test_signed_sigma_phy.jl:101-103` claims *"all signs equal up to the global anchor"* —
+  measurably false, and its `abs()` guard is what let the bias sit unseen.
+- Whether per-species `σ_phy` should be advertised as recoverable in this configuration is
+  a **capability claim**, and therefore the maintainer's call, not an auditor's.
+
+### The pattern, again
+
+Every earlier instance tonight was a label asserting something nothing verified. This one
+is the same shape with a statistical face: `@test all(abs.(σ_phy) .> 0.3)` asks whether the
+magnitudes are non-trivial, which is not the question anyone cares about. It passes at
+`-0.3231` by 0.023 while the estimator is 62 % low. **An assertion can be true, wired,
+green, and still be measuring the wrong thing.**
