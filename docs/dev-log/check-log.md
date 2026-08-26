@@ -13676,3 +13676,70 @@ So the six open flips are blocked on plumbing, not on judgement. Adding an optio
 `hessian` kwarg that defaults to today's behaviour is backward-compatible and needed
 whichever way the decision goes — but it is a new kwarg on exported functions, which
 AGENTS.md puts under maintainer approval. **Flagged, not added.**
+
+## 2026-08-26 — docs/API gaps: S24 withdrawn entirely, S25 was the wrong shape
+
+Checked both plan slices against the files. The docs are in substantially better shape
+than the plan asserted.
+
+### S24 "docs gaps" — withdrawn, all seven claims false
+
+The plan said `docs/src/response-families.md` has *"**zero** coverage of Lognormal,
+Multinomial, GP1, TruncatedPoisson, TruncatedNegBin2, CensoredPoisson, MixedFamily."*
+Every one has its own `###` section:
+
+| family | section |
+|---|---|
+| TruncatedPoisson | `:150` |
+| CensoredPoisson | `:192` |
+| TruncatedNegBin2 | `:264` |
+| Multinomial | `:382` |
+| Lognormal | `:478` |
+| GeneralizedPoisson1 | `:603` |
+| MixedFamily (`fit_mixed_gllvm`) | `:754` |
+
+23 family sections in total. **S24 is withdrawn.**
+
+### S25 — the second half was also false
+
+The plan said the measured non-Gaussian numbers *"live **only** in internal dev-log
+notes"* and that `benchmarks.md` *"shows a user zero non-Gaussian numbers."* In fact
+`benchmarks.md:12-28` opens with a `!!! warning "This grid is Gaussian only — the
+speedup does NOT generalise"` admonition carrying exactly those numbers (lognormal
+≈1280×, truncated_poisson ≈2.2×, Gamma ≈1.6×) and the explicit instruction *"do not read
+the Gaussian headline as a general claim about the package."* **Withdrawn.**
+
+### S25 — the one real item, and it is the opposite shape
+
+The README's speedup claim was **understating the repo's own data**, not overstating it.
+It read *"often 10-100× faster"*. The package's published wall-clock table
+(`benchmarks.md:34-41`) measures **161.2×, 185.3×, 194.9×, 335.3×, 398.8×, 698.1×** —
+**no measured cell falls inside 10–100×**.
+
+Fixed: README now states the measured 161–698× range, fences it to the Gaussian
+closed-form path, and carries the non-Gaussian counter-numbers inline.
+
+Worth noting *how* this survived: the README already carried a `Corrected 2026-08-25`
+note fixing the **agreement bounds** in the very same sentence, with the reasoning *"the
+benchmarks page was already accurate; the summary here was not."* The identical defect
+sat in the neighbouring clause and was not looked at. **A correction pass that fixes the
+clause it was pointed at, and not its neighbour, leaves the same bug in the same
+sentence.**
+
+### Flagged, not changed: the `~340×` headline has no published grid
+
+`gllvmtmb-parity.md:82` and `changelog.md:142` advertise *"~340× per-fit median speedup
+… on the Gaussian + phylogenetic path"*. `benchmarks.md` contains **no phylogenetic
+speedup table** — its only speedup grid is the six Gaussian cells above, whose median is
+**265.1×**, not 340×. The figure may well be correct and sourced from the separate local
+bench repo, which is deliberately out of this repo. But as published, a reader cannot
+check the headline number against anything here, and the one table that exists disagrees
+with it. **Not edited — I cannot verify it either way from this repo.** Rose item for the
+pre-tag gate.
+
+### Tally of the plan's slice list
+
+Verified this session: S16 (three rows) wrong · S18 wrong · S22 mis-scoped (real defect,
+wrong description) · S24 wrong · S25 half wrong, half right-but-inverted. The Phase 4/5
+slice list was largely built from greps that were never checked against the files, and a
+substantial fraction of the "remaining work" does not exist.

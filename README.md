@@ -30,16 +30,29 @@ y_s ~ N(X_s β, Λ_B Λ_B' + diag(d_total))
 — solving directly via SVD (PPCA closed form) when possible, otherwise
 warm-starting LBFGS with the PPCA initialisation. Per-iteration cost is
 O(p K² + K³) via the Woodbury identity (instead of O(p³) for generic
-Cholesky). The result is a fit that is often **10-100× faster** than
-the R `gllvmTMB` engine on the same problem, with answers agreeing to at
+Cholesky). On our Gaussian benchmark grid that path runs **161–698× faster**
+than the R `gllvmTMB` engine on the same problem, with answers agreeing to at
 least six significant digits (worst case across our benchmark grid:
 `|Δ logLik| = 2.3e-07`, `Σ_y` relative Frobenius `4.4e-05`; see
 [Benchmarks](https://itchyshin.github.io/GLLVM.jl/dev/benchmarks)).
+
+That range describes the **Gaussian closed-form path only**, where GLLVM.jl
+uses a closed-form marginal and R uses a TMB Laplace approximation — an
+algorithmic difference, not a language one. Non-Gaussian families use a dense
+Laplace on both sides and the measured factors are far smaller (Gamma ≈ 1.6×,
+zero-truncated Poisson ≈ 2.2×). Do not read the headline as a general claim
+about the package; the Benchmarks page opens with the same warning.
 
 Corrected 2026-08-25: this previously read "matched to 1e-7 in log-likelihood
 and 1e-5 in Σ_y". Both bounds are exceeded by the package's own published
 table — worst case 2.343e-07 and 4.424e-05 respectively. The benchmarks page
 was already accurate; the summary here was not.
+
+Corrected 2026-08-26: the speedup claim in the same sentence read "often
+10-100× faster". Every cell in the package's own wall-clock table is between
+161× and 698×, so no measured cell fell inside the advertised range — it
+understated the repo's own data. The 2026-08-25 pass fixed the agreement
+bounds and left the neighbouring clause untouched.
 
 ## Quick start
 
