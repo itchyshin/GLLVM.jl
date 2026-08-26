@@ -13496,3 +13496,57 @@ updated by whoever changed the code it judges.
 
 The nine still orphaned test the **un-included** source files — a different finding
 (8 `src/` files are in no `include`), not a test problem.
+
+---
+
+## 2026-08-26 — post-#265: two audits that removed work, one that added a defect
+
+PR #265 merged at `c9605077` with all six checks green (macOS 1h35m, ubuntu-1.10 1h56m,
+windows 2h19m, ubuntu-1 2h26m, Documenter + deploy). Recorded for planning: **CI runs
+roughly 2× the local suite's ~72 min** — a full matrix is a ~2.5 h round trip, so batching
+pushes matters.
+
+### S22 was mis-scoped — it is a defect, not an additive gap
+
+The plan recorded S22 as "missing StatsAPI methods". The missing half is confirmed
+(`coef`, `vcov`, `nobs`, `dof`, `loglikelihood`, `stderror`, `coeftable` — zero
+definitions in `src/`). The other half is worse: a sweep of **all 301 exports** against
+StatsBase / Distributions / StatsModels / Base found **7 that shadow another package's
+generic**.
+
+One (`Multinomial` vs `Distributions.Multinomial`) is **already documented**, twice and
+precisely — `response-families.md:77` and `:428-437` state the consequence and give the
+workaround. Not a defect.
+
+The other six — `confint`, `aic`, `bic`, `predict`, `fitted`, `residuals` — are
+undocumented and shadow StatsBase, because `src/GLLVM.jl` never imports StatsAPI.
+Measured: `using GLLVM, StatsBase` makes all six `UndefVarError` at unqualified call.
+These are exactly the verbs the tutorials are written in.
+
+**Why CI is green anyway:** `grep -rn "using StatsBase" test/ docs/` → no matches. Nothing
+ever loads StatsBase beside GLLVM. Same shape as the curvature fault class — nothing
+compares two entry points, so the disagreement cannot be seen. Not fixed: re-rooting six
+exported generics plus a new dependency is an API change and needs maintainer approval.
+Full write-up + reproducible sweep in `docs/dev-log/pending/`.
+
+### S18 (cross-validation) is not a parity gap — withdrawn
+
+The twin's `cv-*.R` holds 20 functions, **all dot-prefixed internals, zero `@export`,
+zero `NAMESPACE` entries, and no caller outside `R/cv-*.R`**. It is tested internal
+machinery no exported function reaches, so there is nothing to reach parity with. The
+capability ledger's *lack* of a CV row is correct; the plan's "gap in the ledger's own
+coverage" criticism is withdrawn.
+
+### The parity target was one release stale, and it does not matter
+
+Twin `origin/main` is **0.7.1**, not the 0.7.0 the goal names. Its NEWS says the release
+"adds no new response family, likelihood, integration engine, random-slope capability,
+iSDM route" — docs, a deprecation-help update, one new warning, and it is an unreleased
+release candidate. **The ladder is not chasing a moving target.**
+
+### The transferable lesson
+
+Both withdrawn/corrected items failed the same way: **"the file exists in the twin" was
+treated as evidence the twin ships the capability.** The Julia-side facts were right in
+both cases. A parity gap needs evidence from *both* halves — an exported entry point on
+the twin side, not just a source file.
