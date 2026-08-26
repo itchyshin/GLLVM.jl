@@ -13965,3 +13965,30 @@ isn't evidence the suite is green" — and then shipped exactly that failure. Th
 protects you if the *first* run you trust is the real one.
 
 Fixed at the cause (declared the dep), not by dropping the check. Full suite re-running.
+
+### Docs build green; and the 41-warning baseline has a single cause
+
+`julia --project=docs docs/make.jl` → **exit 0**, 41 invalid-link warnings — the
+established baseline, unchanged by the `pitfalls.md` addition.
+
+Checked whether my new cross-reference was one of them. It is not: `pitfalls.md`'s three
+warnings all come from the pre-existing line 47. My line 93 uses
+`[Response families](response-families.md)` — a **relative link with the extension**, which
+Documenter resolves natively and silently.
+
+That turns out to explain the entire baseline. All 41 warnings, across 11 files, are the
+**absolute** form the rest of the docs use:
+
+```
+tutorial.md 8 · index.md 8 · response-families.md 4 · morphometrics.md 4 ·
+working-with-a-fit.md 3 · pitfalls.md 3 · covariance-correlation.md 3 ·
+confidence-intervals.md 3 · quickstart.md 2 · gllvmtmb-parity.md 2 · comparison.md 1
+```
+
+e.g. `[Response families](/response-families)` warns; `(response-families.md)` does not.
+
+**Not swept.** The links very likely resolve fine in the deployed Vitepress site (the
+published pages are reachable), so this is warning noise rather than broken navigation —
+but 41 standing warnings are exactly the cover under which a *real* broken link goes
+unnoticed. Converting them is an 11-file cosmetic sweep and belongs in its own commit, not
+bolted onto a test change. Flagged for the maintainer.
