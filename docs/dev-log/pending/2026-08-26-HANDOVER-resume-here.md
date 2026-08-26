@@ -9,7 +9,7 @@ documented failure mode of this repo, and I added to the pile before catching it
 
 `PLATFORM: claude` · `BRANCH: claude/lane-beyond-20260824` ·
 `WORKTREE: /Users/z3437171/local-scratch/lanes/GLLVM.jl-beyond-20260824`
-**11 commits ahead of `origin/main`, 0 behind. All pushed. All docs + tests — no `src/` change.**
+**13 commits ahead of `origin/main`, 0 behind. All pushed. All docs + tests — no `src/` change.**
 **The Dropbox checkout is a STALE FORK — never commit there.**
 
 ## State: verified, not asserted
@@ -63,10 +63,30 @@ Nothing below is blocked on effort. Each is a maintainer call.
    it, so the plan's own rule — *check by fitting, not evaluating* — **cannot be followed**,
    and flipping any `_default_hessian` silently changes what every fit optimises with no way
    to A/B it. Additive, backward-compatible, needed whichever way the flips go.
-2. **The curvature flips themselves.** 6 `_glm_weight` cells + 7 `_tp_pieces` cells still
-   open. Measured: this is a **parity change that costs accuracy** (Beta observed is farther
-   from the exact marginal in 10/12 cells; the flip moves the marginal down 0.8–4.5 loglik).
-   The catastrophic PD-guard risk I once claimed was **measured and refuted — 0 of 20.**
+2. **The curvature flips themselves. The class is 11, not 13 — measured.**
+   6 `_glm_weight` cells + **5** `_tp_pieces` cells. DeltaLogNormal and HurdlePoisson have
+   Fisher ≡ observed **exactly** (0.0 % gap) and were never open; they are now
+   machine-verified as exempt.
+
+   The five open two-part families are **not** marginal, and they are a different case from
+   the single-part ones:
+
+   | family | worst rel gap | negative-observed cells |
+   |---|---|---|
+   | ZINB | **1223 %** | 3 |
+   | ZIPoisson | 280 % | 3 |
+   | HurdleNB | 251 % | 0 |
+   | ZIB | 214 % | **6 of 18** |
+   | BetaHurdle | 127 % | 2 |
+
+   **ZIB is the one to look at first** — negative observed curvature in a third of probe
+   cells is a genuine PD-guard risk, where the same risk for Beta measured **0 of 20**.
+
+   For the **single-part** cells the earlier finding stands: a **parity change that costs
+   accuracy** (Beta observed is farther from the exact marginal in 10/12 cells; the flip
+   moves the marginal down 0.8–4.5 loglik). Those still need the `hessian` kwarg first.
+   The two-part kernel already has one (`twopart.jl:105`), so that substrate is testable
+   today.
 3. **StatsAPI re-rooting** — API change + full convention cascade.
 4. **The bridge drift** — R mirror is 6 families and 6 X-families behind the engine. R users
    silently cannot reach zip/zinb/zib/lognormal/betabinomial/truncated_poisson.
