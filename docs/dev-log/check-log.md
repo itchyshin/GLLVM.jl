@@ -14482,3 +14482,55 @@ Needs its own investigation before any fix is attempted.
 
 Derivation scripts preserved: `docs/dev-log/pending/compoisson-logz-fix.jl`,
 `docs/dev-log/pending/ordered-beta-logmass-fix.jl`.
+
+## 2026-08-26 — Rose found a fourth pattern-match miss: GP1's `fit_bL`, fixed
+
+Dispatched Rose against the 14-commit boundary since the last after-task report. Verdict:
+**BLOCKED** — two findings, one fixed here, one requiring a PR (below).
+
+### The defect: `gp1.jl`'s `fit_bL` had the identical escape, invisible to the sweep's grep
+
+`fit_bL` (`src/families/gp1.jl:226`) wrote `nll = Optim.minimum(res)` — **no leading
+minus**; negation happened once, at the very end of `fit_gp1_gllvm`. The sweep's discovery
+method, `grep -rn -- "-Optim.minimum(res)"`, could not match this file. **The fourth
+instance this session of a pattern-match returning a confident partial answer** — this
+check-log already named three others before Rose found a fourth.
+
+Verified independently before acting (Rose's own report flagged she had not forced a live
+repro): `best`'s selection is `r.nll < best.nll` with **no `< 1e11` screen on that
+comparison** — only the separate warm-start chaining decision checks the threshold.
+Confirmed at the unit level: driving the closure to a forbidden `α` (`1+αμ≤0`, the
+marginal's own documented guard) gives `Optim.minimum(res) = 1.0e12` with
+`Optim.converged(res) = true` — the exact fake-success pattern, on data that needs no
+pathological construction (μ up to 500, α=-0.2).
+
+### Fixed, same mechanism as everywhere else tonight
+
+Routed `fit_bL` through `_fit_verdict`. Verified bit-identical on the healthy fixture (no
+regression: `loglik=-903.2072345764634` before and after, to full precision) and correctly
+screened (`nll=Inf`) on the forbidden-region case. The Brent-refinement branch calls the
+same now-screened `fit_bL`, so it inherits the fix without a separate edit. Family suite:
+101/101 pass, unaffected. Recorded as an explicit test in
+`test/test_known_sentinel_defects.jl`.
+
+### The second finding: no `src/` change in this arc has been through CI
+
+PR #266 merged before the sentinel-screening work started; every commit since —
+`afa6b097`, `aa021cfd`, `9a046b7e`, `273f45bf`, and now the GP1 fix — has never had a CI
+run, on any platform. Local `Pkg.test()` is not the same evidence. **A PR is needed before
+any tag**, per AGENTS.md's own pre-publish gate. Opening one is the next step.
+
+### What Rose confirmed clean, independently reproduced (not just re-read)
+
+`compoisson_logz` matches the naive form to bit-identical precision where naive works, and
+the closed-form Poisson identity to ~1e-9 where it doesn't. `ordered_beta_logp`'s fix was
+checked against a BigFloat ground truth and found *better* than claimed — the old naive
+form had already silently drifted at η=30/35 well before its outright collapse at 38.6. The
+Exponential divergence trajectory (0.54 → ... → 67.08 → 1.8e11) was reproduced exactly. The
+"83 of 93" bookkeeping is internally consistent, modulo the GP1 site the denominator itself
+never counted.
+
+Two lower-severity notes, both accepted: a citation in the after-task report pointed at a
+probe file that doesn't contain the diff computation it was cited for (the underlying claim
+is true, the citation was imprecise); and one commit message overstated a cleanup as
+uniform when it was file-specific (cosmetic, no wrong values result).

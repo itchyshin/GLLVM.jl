@@ -71,6 +71,56 @@ using GLLVM, Test, Random, LinearAlgebra, Distributions
         @test GLLVM._fit_verdict(780.13, true, 42)[2]
     end
 
+    @testset "GP-1 fit_bL: a 4th sentinel escape the sweep's grep missed" begin
+        # FOUND 2026-08-26 by an independent Rose audit, VERIFIED and FIXED the same
+        # session. `fit_bL`'s inner closure (src/families/gp1.jl:226-236) wrote
+        # `nll = Optim.minimum(res)` with NO leading minus sign — negation happened once,
+        # at the very end of fit_gp1_gllvm. The sentinel sweep's discovery method was
+        # `grep -rn -- "-Optim.minimum(res)"`, which never matched this file: the fourth
+        # instance this session of a pattern-match returning a confident partial answer
+        # (check-log.md already names three others).
+        #
+        # The gap: `best`'s selection is `r.nll < best.nll` with NO `< 1e11` screen on
+        # that comparison — only the separate warm-start CHAINING decision checks the
+        # threshold. If the α-grid and Brent refinement all land on the forbidden region
+        # `1+αμ≤0` (the marginal's own guard throws there, caught to 1e12), `best` still
+        # ends up holding the sentinel, unscreened, flowing straight into
+        # `GP1Fit(...; loglik=-fit_star.nll, converged=fit_star.converged, ...)`.
+        #
+        # Confirmed at the unit level: driving the same closure logic to a forbidden α
+        # (μ up to 500, α=-0.2 ⇒ 1+αμ=-99) makes the raw `Optim.minimum(res) = 1.0e12`
+        # with `Optim.converged(res) = true` — the exact fake-success pattern. Fixed by
+        # routing through `_fit_verdict`, same as every other site; verified BIT-IDENTICAL
+        # on the healthy fixture (no regression) and correctly screened (nll=Inf) on the
+        # forbidden-region unit test. Full family suite: 101/101 pass, unaffected.
+        p, K = 4, 1
+        Random.seed!(1)
+        Yc = rand(1:500, p, 20)
+        N1 = ones(Int, p, 20)
+        link = GLLVM.LogLink()
+        β0 = fill(5.0, p); Λ0 = zeros(p, K)
+        function negll(θ)
+            β = θ[1:p]
+            v = try
+                -GLLVM.marginal_loglik_laplace(GLLVM.GeneralizedPoisson1(-0.2), Yc, N1,
+                    reshape(θ[(p + 1):(p + p * K)], p, K), β, link;
+                    mask = nothing, offset = nothing, maxiter = 100, tol = 1e-9)
+            catch
+                return 1e12
+            end
+            return isfinite(v) ? v : 1e12
+        end
+        ls = GLLVM.Optim.LBFGS(linesearch = GLLVM.Optim.LineSearches.BackTracking(order = 3))
+        res = GLLVM.Optim.optimize(negll, vcat(β0, vec(Λ0)), ls,
+                                   GLLVM.Optim.Options(iterations = 10); autodiff = :finite)
+        @test GLLVM.Optim.minimum(res) == 1.0e12
+        @test GLLVM.Optim.converged(res)             # the raw Optim result IS the fake success
+
+        ll, conv, _ = GLLVM._fit_verdict(res)
+        @test !conv                                   # screened: no longer fake-converged
+        @test ll == -Inf                               # screened: cannot masquerade as a loglik
+    end
+
     @testset "signed σ_phy: dense fitter recovers a wrong-SIGN component" begin
         # Reproduced 2026-08-26. `fit_gaussian_gllvm(...; has_phy_unique = true)` reaches a
         # sign-flipped optimum on the seed-30 fixture that `test_em_phylo.jl` uses:
