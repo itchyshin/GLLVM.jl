@@ -11,6 +11,12 @@ _glm_score(f::NegativeBinomial, μ, n, me, y) = (y - μ) / (μ + μ^2 / f.r) * m
 _glm_weight(f::NegativeBinomial, μ, n, me)   = me^2 / (μ + μ^2 / f.r)
 _glm_logpdf(f::NegativeBinomial, μ, n, y)    = logpdf(NegativeBinomial(f.r, f.r / (f.r + μ)), Int(y))
 
+# Observed conditional curvature for NB2/log: −∂²ℓ/∂η² = μ·r·(r+y)/(r+μ)².
+# (Derivative of the score r(y−μ)/(r+μ) wrt η with μ = e^η; differs from the
+# Fisher weight μr/(r+μ) whenever y ≠ μ — log is non-canonical for NB2.)
+_glm_obs_weight(f::NegativeBinomial, μ, n, me, y, link::LogLink, η) =
+    μ * f.r * (f.r + y) / (f.r + μ)^2
+
 """
     nb_marginal_loglik_laplace(Y, Λ, β, r; link=LogLink(), kwargs...) -> Float64
 
@@ -109,6 +115,18 @@ function nb_lv_nll_packed(params::AbstractVector, Y::AbstractMatrix,
                                        maxiter = maxiter, tol = tol)
 end
 
+# NB2/log Laplace log-det defaults to the OBSERVED conditional curvature
+# W_obs = μ·r·(r+y)/(r+μ)², matching TMB / gllvmTMB. CHANGED 2026-08-27 on the
+# curvature-adjudication campaign (900 cells): observed's estimates land closer
+# to the exact-marginal optimum in 100% of medium/strong cells AND its
+# objective value approximates the exact marginal better in 87% of cells —
+# both metrics agree for NB2 (unlike Beta/NB1/Student-t, which stay Fisher
+# pending the maintainer's call on the estimator-vs-reporting trade-off).
+# This obliges `laplace_grad.jl`'s NB2 log-det weight to move in the same
+# commit — otherwise the analytic gradient stops being the gradient of this
+# objective and degrades silently rather than erroring.
+_default_hessian(::NegativeBinomial, ::LogLink) = :observed
+
 """
     fit_nb_gllvm(Y; K, link=LogLink(), mask=nothing, r_init=nothing, …) -> NBFit
 
@@ -126,7 +144,8 @@ depends only on the observed cells.
 
 `hessian` selects the Laplace log-det curvature only (`:fisher` expected /
 `:observed` joint — TMB's choice); the inner mode search is always
-Fisher-scored. Default: NB2/log default `:fisher`. Omitting it is exactly the pre-kwarg
+Fisher-scored. Default: NB2/log default `:observed` (changed 2026-08-27 on the
+curvature-adjudication campaign evidence). Omitting it is exactly the default-path
 behaviour.
 """
 function fit_nb_gllvm(Y::AbstractMatrix; K::Integer,

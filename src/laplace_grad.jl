@@ -153,7 +153,16 @@ function _nb_site_diffable(y::AbstractVector, Λ::AbstractMatrix, β::AbstractVe
     z = ẑ .+ (Aobs \ (Λ' * s .- ẑ))
 
     ηz = _clamp_eta.(β .+ Λ * z); μz = exp.(ηz)
-    Wz = μz ./ (1 .+ μz ./ r)                 # Fisher weight — matches the marginal's logdet
+    # OBSERVED weight μr(r+y)/(r+μ)² per observed cell ⇒ logdet term.
+    # CHANGED 2026-08-27 together with `_default_hessian(::NegativeBinomial, ::LogLink)`.
+    # Previously the Fisher weight μ/(1+μ/r), deliberately matching the
+    # objective's then-Fisher log-det. The objective now uses the observed
+    # curvature, so this must too — an analytic gradient tuned to a different
+    # log-det than the one being reported is not the gradient of the objective,
+    # and it degrades optimisation SILENTLY rather than erroring.
+    # `test_laplace_grad.jl` adjudicates against a finite difference of the
+    # actual objective — no stored expected value.
+    Wz = μz .* r .* (r .+ y) ./ (r .+ μz) .^ 2
     if mask !== nothing
         Wz = ifelse.(mask, Wz, zero(eltype(Wz)))
     end

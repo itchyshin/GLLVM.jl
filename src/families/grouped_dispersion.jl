@@ -10,9 +10,11 @@
 # unaffected either way: it is the fixed point of `Λ's − z = 0`, which does not
 # involve W at all.
 #
-# of species) instead of one shared r. With G = 1 and hessian=:fisher this reduces
-# EXACTLY to the shared-dispersion NB2 fit (`fit_nb_gllvm`); the fit default
-# hessian=:observed is the TMB Laplace curvature and is a different objective.
+# of species) instead of one shared r. With G = 1 this reduces EXACTLY to the
+# shared-dispersion NB2 fit (`fit_nb_gllvm`): both routes default to
+# hessian=:observed (TMB's Laplace curvature) since 2026-08-27, when the shared
+# NB2 default flipped on the curvature-adjudication campaign evidence;
+# hessian=:fisher selects the previous expected-information objective on both.
 #
 # Implementation note: the generic Laplace core (families/laplace.jl) broadcasts a
 # SINGLE family marker over species (`Ref(family)`). Per-species dispersion instead
@@ -36,7 +38,7 @@ end
 # Per-site Laplace log-marginal with per-species NB dispersion markers `fams`.
 function _nb_grouped_loglik_site(fams::AbstractVector, y::AbstractVector, n::AbstractVector,
         Λ::AbstractMatrix, β::AbstractVector, link::Link;
-        mask = nothing, offset = nothing, hessian::Symbol = :fisher,
+        mask = nothing, offset = nothing, hessian::Symbol = :observed,
         maxiter::Integer = 100, tol::Real = 1e-9)
     p, K = size(Λ)
     off = offset === nothing ? false : offset
@@ -135,18 +137,19 @@ end
 
 """
     nb_grouped_marginal_loglik_laplace(Y, Λ, β, rvec; link=LogLink(), mask=nothing,
-                                       offset=nothing, hessian=:fisher, kwargs...) -> Float64
+                                       offset=nothing, hessian=:observed, kwargs...) -> Float64
 
 Total Laplace log-marginal of a negative-binomial GLLVM with **per-species**
 dispersion `rvec` (length p; `Var_t = μ_t + μ_t²/rvec[t]`). `Y` is the p×n integer
-count matrix; `Λ` p×K; `β` length-p. With a constant `rvec = fill(r, p)` and
-`hessian=:fisher` this equals the shared-dispersion
-[`nb_marginal_loglik_laplace`](@ref) to machine precision. `hessian=:observed`
-uses the conditional NB2/log Hessian used by TMB's Laplace objective.
+count matrix; `Λ` p×K; `β` length-p. With a constant `rvec = fill(r, p)` this
+equals the shared-dispersion [`nb_marginal_loglik_laplace`](@ref) to machine
+precision — both default `hessian=:observed` (TMB's conditional NB2/log
+Hessian) since 2026-08-27; `hessian=:fisher` selects the previous
+expected-information objective on both routes.
 """
 function nb_grouped_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix,
         β::AbstractVector, rvec::AbstractVector; link::Link = LogLink(),
-        mask = nothing, offset = nothing, hessian::Symbol = :fisher, kwargs...)
+        mask = nothing, offset = nothing, hessian::Symbol = :observed, kwargs...)
     p = size(Λ, 1)
     length(rvec) == p || throw(ArgumentError("length(rvec)=$(length(rvec)) must equal p=$p"))
     N = ones(Int, size(Y))

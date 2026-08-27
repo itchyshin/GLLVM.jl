@@ -14625,6 +14625,64 @@ still open, both still recorded, both still the maintainer's to schedule. This o
 CI failing on an assertion that was never safe to make in the first place: a platform-
 dependent numerical outcome asserted as if it were deterministic.
 
+## 2026-08-27 — NB2 default flips to the observed curvature (campaign-adjudicated)
+
+Authorized ("flip gamma and negbin to :observed") on the curvature-adjudication
+campaign evidence. Gamma needed nothing — its default flipped 2026-08-25 in the
+structural arc; today's campaign confirmed that decision (100% estimator
+preference, 83% approximation preference).
+
+### The evidence that decided NB2
+
+The 900-cell campaign (Totoro, 12 workers, 5.1 min wall, tree b0cd33c8):
+NB2 preferred `:observed` on BOTH metrics — estimator quality (observed's θ̂
+closer to the exact-marginal optimum in 100% of medium/strong cells, mean
+preference +0.17 to +0.20 loglik units) and approximation accuracy (observed's
+objective value closer to the exact marginal in 87% of cells). NB2 and Gamma
+are the only two families where both metrics agree; Beta/NB1/Student-t split
+(observed better estimates, Fisher better reported loglik) and stay Fisher
+pending the maintainer's trade-off call. Full table:
+`campaigns/curvature_adjudication/RESULTS.md`.
+
+### The coupled change (one commit, per the 2026-08-25 rule)
+
+1. `negbin.jl`: `_default_hessian(::NegativeBinomial, ::LogLink) = :observed`
+   plus the specialised analytic observed weight `μr(r+y)/(r+μ)²` (previously
+   the generic ForwardDiff fallback served `:observed` requests).
+2. `laplace_grad.jl` `_nb_site_diffable`: the log-det weight moved from Fisher
+   `μ/(1+μ/r)` to the observed form IN THE SAME EDIT — an analytic gradient
+   tuned to a different log-det than the objective degrades silently.
+3. `test_curvature_census.jl`: NB2 leaves `KNOWN_OPEN` (the set shrank),
+   joins `CERTIFIED_CELLS` (now 7 pairs; census 60/60).
+4. Docs cascade: CHANGELOG, `response-families.md` admonition,
+   `gllvmtmb-parity.md` "still Fisher" list — all citing the campaign.
+5. **The first full suite caught the flip's route cascade (7 failures, all
+   understood, none numerical)**: the grouped NB2 *marginal evaluator*
+   defaulted `:fisher` (mirroring the old shared default — its FITTERS already
+   defaulted `:observed`), and three tests pinned the old world (the
+   curvature-contract pins, by design; two cross-route identity tests pinned
+   `hessian = :fisher` with comments explaining the then-mismatch). Completed:
+   `_nb_grouped_loglik_site` + `nb_grouped_marginal_loglik_laplace` defaults
+   aligned to `:observed` (NB1's grouped marginal explicitly left at Fisher —
+   a blanket regex would have flipped it; caught by an assert before writing),
+   contract pins moved NB2 to the deliberate-exception set (Beta becomes the
+   Fisher-default exemplar), identity tests unpinned so both routes compare
+   under the aligned defaults. The grouped observed weight is bit-identical to
+   the new shared one (same expression, IEEE-commutative operand order).
+
+### Gates
+
+FD gate: `test_laplace_grad.jl` 26/26 + 6/6 — the analytic gradient matches a
+central finite difference of the NEW objective (no stored expected values in
+that file by design). Census 60/60. Contract test 23/23. `test_negbin_laplace`
+and `test_nb_fit` green — no stored expectation broke, no tolerance touched.
+Full suite: 6885 pass / 0 fail / 4 expected-broken (6889 total, 74m22s) — GREEN, including the seven cascade sites.
+
+User-facing consequence (also in CHANGELOG): reported logliks and Wald SEs for
+`fit_nb_gllvm` / shared-route NB2 fits change; point estimates move little;
+`hessian = :fisher` restores prior behaviour; the grouped per-trait NB2 route
+already used the observed weight and is unchanged.
+
 ## 2026-08-27 — PR #267 re-run: 4 of 5 green, Windows still red — same trap, different lines
 
 The NB1 `@info` fix from the previous entry worked: macOS and ubuntu are now green.

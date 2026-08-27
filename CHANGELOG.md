@@ -5,6 +5,18 @@ All notable changes to GLLVM.jl are documented here.
 ## Unreleased
 
 ### Changed
+- **NB2's Laplace log-determinant now uses the observed conditional curvature
+  `μ·r·(r+y)/(r+μ)²`, matching TMB / `gllvmTMB`** (previously the Fisher weight
+  `μr/(r+μ)`). This **changes reported `loglik` values for
+  `fit_nb_gllvm` / shared-route NB2 fits** and anything Hessian-derived (Wald
+  SEs); point estimates move little. Evidence: the 900-cell curvature-
+  adjudication campaign (2026-08-27) — observed's estimates land closer to the
+  exact-marginal optimum in 100% of medium/strong cells *and* its objective
+  value approximates the exact marginal better in 87% of cells; NB2 and Gamma
+  are the two families where both metrics agree. The analytic gradient's
+  log-det weight moved in the same commit (they must move together).
+  `hessian = :fisher` restores the previous behaviour. The grouped
+  (per-trait dispersion) NB2 route already used the observed weight.
 - **Gamma's Laplace log-determinant now uses the observed conditional curvature
   `α·y/μ`, matching TMB / `gllvmTMB`** (previously the Fisher weight, the
   constant `α`). This **changes reported `loglik` values for Gamma fits**, and

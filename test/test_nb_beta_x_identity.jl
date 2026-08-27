@@ -29,7 +29,7 @@ using GLLVM
         end
         rvec = fill(r, p)
         ll_g = GLLVM.nb_grouped_marginal_loglik_laplace(Y, Λ, β, rvec;
-                                                       offset = O, hessian = :fisher)
+                                                       offset = O)
         fam = NegativeBinomial(r, 0.5)
         N = ones(Int, p, n)
         ll_s = GLLVM._marginal_loglik_offset(fam, Float64.(Y), N, Λ, β, O, LogLink())
@@ -78,7 +78,7 @@ using GLLVM
             Y[t, s] = rand(NegativeBinomial(r_true, r_true / (r_true + μ)))
         end
         fg = fit_nb_gllvm_grouped_cov(Y; X = X, K = K, group = ones(Int, p),
-                                      hessian = :fisher, iterations = 200)
+                                      iterations = 200)
         @test fg isa NBGroupedCovFit
         @test length(fg.r_group) == 1
         @test length(fg.γ) == q
