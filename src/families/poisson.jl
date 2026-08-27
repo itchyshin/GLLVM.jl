@@ -130,10 +130,16 @@ marginal *and* from the warm start, so the fit depends only on the observed cell
 Offset: pass a p×n `offset` (known additive term in `η = β + offset + Λz`, e.g.
 log-exposure/effort/area). It is subtracted from the link-scale warm start so `β`
 estimates the offset-free intercept.
+
+`hessian` selects the Laplace log-det curvature only (`:fisher` expected /
+`:observed` joint — TMB's choice); the inner mode search is always
+Fisher-scored. Default: canonical log link — the two coincide. Omitting it is exactly the pre-kwarg
+behaviour.
 """
 function fit_poisson_gllvm(Y::AbstractMatrix; K::Integer,
         link::Link = LogLink(), mask = nothing, offset = nothing,
         gradient::Symbol = :analytic,
+        hessian::Symbol = _default_hessian(Poisson(), link),
         β_init = nothing, Λ_init = nothing,
         X_lv::Union{Nothing, AbstractMatrix} = nothing,
         alpha_lv_init = nothing,
@@ -141,6 +147,12 @@ function fit_poisson_gllvm(Y::AbstractMatrix; K::Integer,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
     rr = rr_theta_len(p, K)
+    hessian in (:fisher, :observed) || throw(ArgumentError(
+        "fit_poisson_gllvm: hessian must be :fisher or :observed; got :$hessian"))
+    if X_lv !== nothing && hessian !== _default_hessian(Poisson(), link)
+        throw(ArgumentError("fit_poisson_gllvm: a non-default hessian is not yet supported " *
+                            "together with X_lv (the packed X_lv objective does not thread it)"))
+    end
 
     # Predictor-informed latent-score mean (Design 73 / gllvmTMB C1): X_lv (n×q_lv)
     # activates joint estimation of alpha_lv via the parameter-dependent offset
@@ -223,6 +235,7 @@ function fit_poisson_gllvm(Y::AbstractMatrix; K::Integer,
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
         v = try
             -marginal_loglik_laplace(Poisson(), Yc, N1, Λ, β, link; mask = msk, offset = offset,
+                                     hessian = hessian,
                                      maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
@@ -254,7 +267,9 @@ function fit_poisson_gllvm(Y::AbstractMatrix; K::Integer,
             return isfinite(v) ? v : 1e12
         end
         Optim.optimize(negll_lv, θ0_lv, ls, opts; autodiff = :finite)
-    elseif gradient === :analytic && offset === nothing
+    elseif gradient === :analytic && offset === nothing &&
+           (hessian === _default_hessian(Poisson(), link) ||
+            _glm_weight_matches_observed(Poisson(), link))
         function g!(G, θ)
             β = θ[1:p]; Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
             gg = try

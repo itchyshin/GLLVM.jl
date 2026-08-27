@@ -135,9 +135,9 @@ invariant to whatever placeholder sits in the masked cells of `Y`.
 """
 tweedie_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVector,
         φ::Real, p::Real; mask = nothing, link::Link = LogLink(), maxiter::Integer = 100,
-        tol::Real = 1e-9) =
+        tol::Real = 1e-9, kwargs...) =
     marginal_loglik_laplace(TweedieED(float(φ), float(p)), Y, ones(Int, size(Y)),
-                            Λ, β, link; mask = mask, maxiter = maxiter, tol = tol)
+                            Λ, β, link; mask = mask, maxiter = maxiter, tol = tol, kwargs...)
 
 # ---------------------------------------------------------------------------
 # Fit driver.
@@ -254,14 +254,22 @@ Missing data: pass a `mask` (p×n Bool, `false` = unobserved) or simply include
 `missing` entries in `Y` — either way the masked cells are dropped from the
 marginal *and* from the warm start, so the fit depends only on the observed cells
 (it is invariant to whatever sits in the masked positions).
+
+`hessian` selects the Laplace log-det curvature only (`:fisher` expected /
+`:observed` joint — TMB's choice); the inner mode search is always
+Fisher-scored. Default: Tweedie/log default `:fisher`. Omitting it is exactly the pre-kwarg
+behaviour.
 """
 function fit_tweedie_gllvm(Y::AbstractMatrix; K::Integer,
         link::Link = LogLink(), φ_init::Real = 1.0, p_init::Real = 1.5, mask = nothing,
+        hessian::Symbol = _default_hessian(TweedieED(1.0, 1.5), link),
         β_init = nothing, Λ_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p_sp, n = size(Y)
     rr = rr_theta_len(p_sp, K)
+    hessian in (:fisher, :observed) || throw(ArgumentError(
+        "fit_tweedie_gllvm: hessian must be :fisher or :observed; got :$hessian"))
 
     # NA handling: derive the observation mask (explicit `mask`, else from `missing`)
     # and a sanitized response matrix with a safe placeholder (0) in the masked cells.
@@ -295,6 +303,7 @@ function fit_tweedie_gllvm(Y::AbstractMatrix; K::Integer,
         pw = 1.0 + 1.0 / (1.0 + exp(-ξ))
         v = try
             -tweedie_marginal_loglik_laplace(Yc, Λ, β, φ, pw;
+                                             hessian = hessian,
                                              mask = msk, link = link,
                                              maxiter = newton_maxiter, tol = newton_tol)
         catch

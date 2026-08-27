@@ -132,14 +132,22 @@ moderate `φ₀`.
 
 Missing data: pass a `mask` (p×n Bool, `false` = unobserved) or `missing` entries in
 `Y`; masked cells are dropped from the marginal and the warm start.
+
+`hessian` selects the Laplace log-det curvature only (`:fisher` expected /
+`:observed` joint — TMB's choice); the inner mode search is always
+Fisher-scored. Default: NB1/log default `:fisher`. Omitting it is exactly the pre-kwarg
+behaviour.
 """
 function fit_nb1_gllvm(Y::AbstractMatrix; K::Integer,
         link::Link = LogLink(), mask = nothing, offset = nothing,
+        hessian::Symbol = _default_hessian(NB1(1.0), link),
         β_init = nothing, Λ_init = nothing, φ_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
     rr = rr_theta_len(p, K)
+    hessian in (:fisher, :observed) || throw(ArgumentError(
+        "fit_nb1_gllvm: hessian must be :fisher or :observed; got :$hessian"))
 
     msk = mask === nothing ? (any(ismissing, Y) ? observed_mask(Y) : nothing) : mask
     Yc = Integer.(_sanitize_missing(Y, 0))
@@ -177,6 +185,7 @@ function fit_nb1_gllvm(Y::AbstractMatrix; K::Integer,
         φ = exp(θ[p + rr + 1])
         v = try
             -nb1_marginal_loglik_laplace(Yc, Λ, β, φ; link = link, mask = msk, offset = offset,
+                                         hessian = hessian,
                                          maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12

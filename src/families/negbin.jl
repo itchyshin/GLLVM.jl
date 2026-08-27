@@ -123,10 +123,16 @@ an SVD loadings init + a moderate `r₀`.
 Missing data: pass a `mask` (p×n Bool, `false` = unobserved) or `missing` entries in
 `Y`; masked cells are dropped from the marginal and the warm start, so the fit
 depends only on the observed cells.
+
+`hessian` selects the Laplace log-det curvature only (`:fisher` expected /
+`:observed` joint — TMB's choice); the inner mode search is always
+Fisher-scored. Default: NB2/log default `:fisher`. Omitting it is exactly the pre-kwarg
+behaviour.
 """
 function fit_nb_gllvm(Y::AbstractMatrix; K::Integer,
         link::Link = LogLink(), mask = nothing, offset = nothing,
         gradient::Symbol = :analytic,
+        hessian::Symbol = _default_hessian(NegativeBinomial(1.0, 0.5), link),
         β_init = nothing, Λ_init = nothing, r_init = nothing,
         X_lv::Union{Nothing, AbstractMatrix} = nothing,
         alpha_lv_init = nothing,
@@ -134,6 +140,12 @@ function fit_nb_gllvm(Y::AbstractMatrix; K::Integer,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
     rr = rr_theta_len(p, K)
+    hessian in (:fisher, :observed) || throw(ArgumentError(
+        "fit_nb_gllvm: hessian must be :fisher or :observed; got :$hessian"))
+    if X_lv !== nothing && hessian !== _default_hessian(NegativeBinomial(1.0, 0.5), link)
+        throw(ArgumentError("fit_nb_gllvm: a non-default hessian is not yet supported " *
+                            "together with X_lv (the packed X_lv objective does not thread it)"))
+    end
 
     # Predictor-informed latent-score mean (Design 73 / gllvmTMB C1): X_lv (n×q_lv)
     # activates joint estimation of alpha_lv with the shared NB2 dispersion r, via
@@ -212,6 +224,7 @@ function fit_nb_gllvm(Y::AbstractMatrix; K::Integer,
         r = exp(θ[p + rr + 1])
         v = try
             -marginal_loglik_laplace(NegativeBinomial(float(r), 0.5), Yc, N1, Λ, β, link;
+                                     hessian = hessian,
                                      mask = msk, offset = offset,
                                      maxiter = newton_maxiter, tol = newton_tol)
         catch
@@ -237,7 +250,8 @@ function fit_nb_gllvm(Y::AbstractMatrix; K::Integer,
             return isfinite(v) ? v : 1e12
         end
         Optim.optimize(negll_lv, θ0_lv, ls, opts; autodiff = :finite)
-    elseif gradient === :analytic && offset === nothing
+    elseif gradient === :analytic && offset === nothing &&
+           hessian === _default_hessian(NegativeBinomial(1.0, 0.5), link)
         ag = θ -> begin
             β = θ[1:p]; Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K); rv = exp(θ[p + rr + 1])
             try -nb_laplace_grad(Yc, Λ, β, rv; mask = msk) catch; nothing end

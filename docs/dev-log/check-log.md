@@ -14667,3 +14667,90 @@ diverge at all) was itself platform-stable. It wasn't. This is the same root cau
 and it is further evidence for treating that mode-solver as a genuine priority fix rather
 than a one-off — every platform quirk that surfaces here is a symptom of the same
 un-derived defect, not a new one to patch around individually.
+
+## 2026-08-27 — the `hessian` kwarg lands: the headline is now measurable by FITTING
+
+Authorized ("Go") after PR #267 merged. This is decision #1 from the consolidated
+decisions document — the single item every open curvature question was waiting on.
+
+### What was built
+
+An optional `hessian::Symbol` kwarg on nine single-part family fitters (beta, negbin,
+negbin1, gamma, poisson, binomial, studentt, tweedie, gp1; exponential already had it
+from the earlier curvature work). Selects the **log-det curvature only** — the mode
+search stays Fisher-scored per the 2026-08-25 role separation. Default =
+`_default_hessian(family, link)`, i.e. omitting the kwarg is exactly the old behaviour.
+
+### The three structural rules
+
+1. **Bit-identity by construction, then verified.** Baselines were captured to 15
+   significant digits BEFORE any edit and every default reproduces them bit-for-bit
+   after — but see "The escape" below: the first verification net covered only eight of
+   the nine edited fitters (plus exponential as a control) and MISSED Tweedie, which was
+   broken. Tweedie's pre-edit baseline was recovered afterwards by re-running the fixture
+   on the stashed pre-edit code (−336.59435114737, seed-2024 compound Poisson–Gamma,
+   p=5 K=2 n=40); the fixed code reproduces it bit-for-bit.
+2. **Gradient can never desynchronise from objective.** The analytic gradient implements
+   the default-curvature objective (they moved together in the role-separation work), so
+   it is used only when the selected objective equals that one — either the selector
+   equals the default, or `_glm_weight_matches_observed` says the curvatures coincide.
+   Anything else falls to `:finite`, which differentiates the actual objective.
+3. **No silent ignoring.** Routes that do not thread the kwarg (the packed X_lv
+   objectives) throw an ArgumentError when handed a non-default hessian, rather than
+   quietly fitting something other than what was asked.
+
+### The measurement that was impossible before
+
+Fisher-vs-observed under actual FITTING, per family (fixed seed-11 fixture, p=5 K=1 n=60):
+
+| family | `:fisher` | `:observed` | differ? |
+|---|---|---|---|
+| poisson | −406.2874 | −406.2874 | no — canonical, trait confirmed live |
+| binomial | −204.9262 | −204.9262 | no — canonical, trait confirmed live |
+| gamma | −301.8736 | −300.7751 | yes |
+| beta | 123.8741 | 123.4658 | yes |
+| negbin | −436.2302 | −436.4799 | yes |
+| negbin1 | −436.1021 | −436.0921 | yes |
+| gp1 | −436.3371 | −436.6237 | yes |
+| studentt | −338.1737 | −338.7329 | yes |
+| exponential | −328.0774 | −326.6154 | yes |
+| tweedie | −336.5944 | −336.6367 | yes — post-fix, seed-2024 fixture |
+
+(NOTE these logliks are each the max of a *different* objective — comparing them to each
+other is not a verdict on which is closer to the exact marginal. That comparison, against
+quadrature, is the next arc's work; this table only proves the A/B now RUNS.)
+
+### The escape: Tweedie's wrapper silently dropped the kwarg
+
+The full suite (not the verification scripts) caught a second real defect: 22 failures,
+all Tweedie. `tweedie_marginal_loglik_laplace` was the only family wrapper WITHOUT a
+`kwargs...` passthrough (its own docstring promised one), so the threaded
+`hessian = hessian` raised a MethodError on every objective evaluation — which the
+packed objective's bare `try/catch` swallowed into the 1e12 fail penalty. Every Tweedie
+fit collapsed onto the sentinel plateau, and the (correctly working) `_fit_verdict`
+screen reported `-Inf`/unconverged. Three compounding lessons:
+
+1. **The verification net had a hole exactly at the bug.** The baseline/verify scripts
+   and the contract test all covered "nine families" — but the measured nine were the
+   eight other edited fitters plus exponential (a control that was NOT edited), while
+   Tweedie (edited) had no baseline, no A/B row, and no contract test. Fixed: Tweedie now
+   has all three (stash-recovered pre-edit baseline, table row above, contract testset).
+2. **A bare `catch` around an objective converts an API bug into a numerical failure.**
+   The sentinel screen then does its job — loud failure instead of fake convergence —
+   but the diagnosis points at optimisation, not at the MethodError that caused it.
+3. **Fix: one line** — `kwargs...` passthrough on the wrapper, matching its four
+   siblings (beta/binomial/gamma/studentt all had it, which is why only Tweedie broke).
+
+### One real defect caught by the bit-identity test
+
+The first version of the gradient gate keyed only on `hessian === default`, which forced
+canonical-link families to FD under `:observed` even though the objective is identical —
+a 1.4e-11 optimizer-trajectory difference the bit-identity assertion caught immediately.
+Fixed at the gate (trait-coincident curvatures keep the analytic path), not at the test.
+
+### Contract tests
+
+`test/test_hessian_kwarg.jl` (18 assertions, wired): default ≡ explicit default
+(bit-identical), non-default runs and differs, canonical links no-op under both
+selectors, invalid symbols throw before optimising, every fitter accepts both.
+Docstrings updated on all nine fitters.

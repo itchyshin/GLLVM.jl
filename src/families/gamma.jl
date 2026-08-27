@@ -153,10 +153,16 @@ Fit a Gamma GLLVM by L-BFGS over `[β; vec(Λ); log α]` on the Laplace marginal
 dimension. Analytic gradient on the no-mask/no-offset path with finite-difference
 fallback; warm start = log row-means as intercepts + SVD of row-centred log-Y as
 loadings + `logα₀ = log(2.0)`.
+
+`hessian` selects the Laplace log-det curvature only (`:fisher` expected /
+`:observed` joint — TMB's choice); the inner mode search is always
+Fisher-scored. Default: Gamma/log default `:observed` (2026-08-25 flip). Omitting it is exactly the pre-kwarg
+behaviour.
 """
 function fit_gamma_gllvm(Y::AbstractMatrix; K::Integer,
         link::Link = LogLink(), mask = nothing, offset = nothing,
         gradient::Symbol = :analytic,
+        hessian::Symbol = _default_hessian(Gamma(1.0, 1.0), link),
         β_init = nothing, Λ_init = nothing, α_init = nothing,
         X_lv::Union{Nothing, AbstractMatrix} = nothing,
         alpha_lv_init = nothing,
@@ -164,6 +170,12 @@ function fit_gamma_gllvm(Y::AbstractMatrix; K::Integer,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
     rr = rr_theta_len(p, K)
+    hessian in (:fisher, :observed) || throw(ArgumentError(
+        "fit_gamma_gllvm: hessian must be :fisher or :observed; got :$hessian"))
+    if X_lv !== nothing && hessian !== _default_hessian(Gamma(1.0, 1.0), link)
+        throw(ArgumentError("fit_gamma_gllvm: a non-default hessian is not yet supported " *
+                            "together with X_lv (the packed X_lv objective does not thread it)"))
+    end
 
     # Predictor-informed latent-score mean (Design 73 / gllvmTMB C1): X_lv (n×q_lv)
     # activates joint estimation of alpha_lv with the shared shape α, via the
@@ -232,6 +244,7 @@ function fit_gamma_gllvm(Y::AbstractMatrix; K::Integer,
         α = exp(θ[p + rr + 1])
         v = try
             -gamma_marginal_loglik_laplace(Yc, Λ, β, α; mask = msk, offset = offset,
+                                           hessian = hessian,
                                            maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
@@ -254,7 +267,8 @@ function fit_gamma_gllvm(Y::AbstractMatrix; K::Integer,
             return isfinite(v) ? v : 1e12
         end
         Optim.optimize(negll_lv, θ0_lv, ls, opts; autodiff = :finite)
-    elseif gradient === :analytic && offset === nothing
+    elseif gradient === :analytic && offset === nothing &&
+           hessian === _default_hessian(Gamma(1.0, 1.0), link)
         ag = θ -> begin
             β = θ[1:p]; Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K); av = exp(θ[p + rr + 1])
             try -gamma_laplace_grad(Yc, Λ, β, av; mask = msk) catch; nothing end
