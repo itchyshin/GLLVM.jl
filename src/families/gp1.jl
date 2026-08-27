@@ -172,15 +172,23 @@ fit saturates near the cap. `α_init`, if given, is added to the profile grid as
 
 Missing data: pass a `mask` (p×n Bool, `false` = unobserved) or `missing` entries in `Y`;
 masked cells are dropped from the marginal and the warm start.
+
+`hessian` selects the Laplace log-det curvature only (`:fisher` expected /
+`:observed` joint — TMB's choice); the inner mode search is always
+Fisher-scored. Default: GP-1/log default `:fisher`. Omitting it is exactly the pre-kwarg
+behaviour.
 """
 function fit_gp1_gllvm(Y::AbstractMatrix; K::Integer,
         link::Link = LogLink(), mask = nothing, offset = nothing,
+        hessian::Symbol = _default_hessian(GeneralizedPoisson1(0.0), link),
         β_init = nothing, Λ_init = nothing, α_init = nothing,
         α_bound::Real = 2.0,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
     rr = rr_theta_len(p, K)
+    hessian in (:fisher, :observed) || throw(ArgumentError(
+        "fit_gp1_gllvm: hessian must be :fisher or :observed; got :$hessian"))
 
     # NA handling: observation mask + sanitized counts (see fit_poisson_gllvm).
     msk = _resolve_obs_mask(mask, Y)
@@ -216,6 +224,7 @@ function fit_gp1_gllvm(Y::AbstractMatrix; K::Integer,
             Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
             v = try
                 -marginal_loglik_laplace(GeneralizedPoisson1(α), Yc, N1, Λ, β, link;
+                                         hessian = hessian,
                                          mask = msk, offset = offset,
                                          maxiter = newton_maxiter, tol = newton_tol)
             catch

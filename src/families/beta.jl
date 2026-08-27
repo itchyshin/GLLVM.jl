@@ -129,10 +129,16 @@ dimension. The default analytic Laplace gradient is used on the plain
 no-mask/no-offset path, with an internal finite-difference fallback; masked or
 offset fits use finite differences. Warm start = empirical logit-mean intercepts +
 an SVD loadings init + a moderate `φ₀`.
+
+`hessian` selects the Laplace log-det curvature only (`:fisher` expected /
+`:observed` joint — TMB's choice); the inner mode search is always
+Fisher-scored. Default: Beta/logit default `:fisher`. Omitting it is exactly the pre-kwarg
+behaviour.
 """
 function fit_beta_gllvm(Y::AbstractMatrix; K::Integer,
         link::Link = LogitLink(), mask = nothing, offset = nothing,
         gradient::Symbol = :analytic,
+        hessian::Symbol = _default_hessian(Beta(1.0, 1.0), link),
         β_init = nothing, Λ_init = nothing, φ_init = nothing,
         X_lv::Union{Nothing, AbstractMatrix} = nothing,
         alpha_lv_init = nothing,
@@ -140,6 +146,15 @@ function fit_beta_gllvm(Y::AbstractMatrix; K::Integer,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
     rr = rr_theta_len(p, K)
+    # `hessian` selects the log-det curvature ONLY (the mode search is always
+    # Fisher-scored — see families/laplace.jl). Default = the family's registered
+    # default, so omitting the kwarg is bit-for-bit the pre-kwarg behaviour.
+    hessian in (:fisher, :observed) || throw(ArgumentError(
+        "fit_beta_gllvm: hessian must be :fisher or :observed; got :$hessian"))
+    if X_lv !== nothing && hessian !== _default_hessian(Beta(1.0, 1.0), link)
+        throw(ArgumentError("fit_beta_gllvm: a non-default hessian is not yet supported " *
+                            "together with X_lv (the packed X_lv objective does not thread it)"))
+    end
 
     # Predictor-informed latent-score mean (Design 73 / gllvmTMB C1): X_lv (n×q_lv)
     # activates joint estimation of alpha_lv with the shared precision φ, via the
@@ -208,6 +223,7 @@ function fit_beta_gllvm(Y::AbstractMatrix; K::Integer,
         φ = exp(θ[p + rr + 1])
         v = try
             -beta_marginal_loglik_laplace(Yc, Λ, β, φ; mask = msk, offset = offset,
+                                          hessian = hessian,
                                           maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
@@ -230,7 +246,12 @@ function fit_beta_gllvm(Y::AbstractMatrix; K::Integer,
             return isfinite(v) ? v : 1e12
         end
         Optim.optimize(negll_lv, θ0_lv, ls, opts; autodiff = :finite)
-    elseif gradient === :analytic && offset === nothing
+    elseif gradient === :analytic && offset === nothing &&
+           hessian === _default_hessian(Beta(1.0, 1.0), link)
+        # The analytic gradient implements the DEFAULT curvature's objective (the two
+        # moved together in the 2026-08-25 role-separation work). A non-default
+        # `hessian` therefore falls through to :finite below, which differentiates the
+        # actual objective and cannot desynchronise from it.
         ag = θ -> begin
             β = θ[1:p]; Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K); fv = exp(θ[p + rr + 1])
             try -beta_laplace_grad(Yc, Λ, β, fv; mask = msk) catch; nothing end

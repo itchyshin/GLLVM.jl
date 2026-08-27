@@ -358,6 +358,39 @@ log-det) now covers 12 kernels, but `src/families/aghq_grid.jl` remains FENCED
 and PARKED with the Fisher weight at `:203`. The fault class must not be
 described as closed.
 
+## gllvmTMB 0.7.1 delta (tracked 2026-08-27)
+
+The twin moved while the Julia campaign ran: `gllvmTMB` origin/main is at
+**0.7.1 (release candidate)** — 126 commits past the 0.7.0 snapshot this ledger
+was written against. **The parity milestone stays pinned at 0.7.0** (do not
+re-baseline mid-campaign); this section makes the new twin surface visible as
+tracked debt instead of invisible. Sources: twin `NEWS.md` at origin/main plus
+the merged feature PRs (#1192, #1196, #1216, #1217).
+
+New twin capability with **no Julia ledger vocabulary until now**:
+
+| Capability (twin 0.7.1 vocabulary) | Status |
+|---|---|
+| Response-column slope family (`slope()`, `phylo_slope()`, `animal_slope()`, `kernel_slope()`, `spatial_slope()`; Gaussian long-format, predictor-only) | missing |
+| Internal IID column coefficients (#1216) | missing |
+| Per-source iSDM observation formulas (#1192) | missing |
+| Column-slope covariance helpers incl. diagonal phylogenetic column slopes (#1196) | missing |
+
+Deltas to rows that already exist elsewhere in this ledger (no duplicate rows —
+the existing row keeps its status; the twin side moved):
+
+- **Mixed-family response vector** (`planned` above): the twin's named
+  mixed-family LV programme is now validated and closed on its main (#1217) —
+  the R side of this row strengthened from partial to native-validated.
+- **Predictor-informed latent scores** (`implemented` above, partial scope):
+  0.7.1 ships an evaluated guide; the twin's interval evidence remains limited
+  to named native Gaussian and rank-1 multi-trial binomial cells, so the
+  Julia-side scope fence is unchanged.
+
+Not capability (API hygiene in 0.7.1, nothing to mirror): unused grouping-slot
+warnings (#1190), `extract_Sigma_*` soft-deprecation (#1194), VA remains opt-in
+experimental (#1189).
+
 ## Withdrawn and deferred (twin fences)
 
 | Capability | Status |

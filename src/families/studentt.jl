@@ -148,14 +148,22 @@ intercepts + an SVD loadings init + a robust scale `σ₀` from the residual MAD
 
 Estimating `nu` jointly is a follow-up (it requires a second auxiliary, which the
 scalar-aux path does not support); pass `nu` to change the fixed tail weight.
+
+`hessian` selects the Laplace log-det curvature only (`:fisher` expected /
+`:observed` joint — TMB's choice); the inner mode search is always
+Fisher-scored. Default: Student-t default `:fisher`. Omitting it is exactly the pre-kwarg
+behaviour.
 """
 function fit_studentt_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         nu::Real = 4.0, link::Link = IdentityLink(),
+        hessian::Symbol = _default_hessian(StudentTFamily(4.0, 1.0), link),
         β_init = nothing, Λ_init = nothing, σ_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
     nu > 0 || throw(ArgumentError("Student-t degrees of freedom nu must be > 0; got $nu"))
+    hessian in (:fisher, :observed) || throw(ArgumentError(
+        "fit_studentt_gllvm: hessian must be :fisher or :observed; got :$hessian"))
     rr = rr_theta_len(p, K)
 
     Zemp = float.(Y)                                   # identity link ⇒ Z = Y
@@ -197,6 +205,7 @@ function fit_studentt_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         σ = exp(θ[p + rr + 1])
         v = try
             -studentt_marginal_loglik_laplace(Y, Λ, β, σ; ν = ν0, link = link,
+                                              hessian = hessian,
                                               maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12

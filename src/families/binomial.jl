@@ -164,11 +164,17 @@ finite differences. `X_lv` fits also use finite differences because the offset
 depends jointly on `Λ` and `alpha_lv`. Warm start: empirical link-scale
 intercepts + an SVD (PPCA-style) loadings init; `alpha_lv` starts from a
 least-squares regression of the initial latent scores on `X_lv`.
+
+`hessian` selects the Laplace log-det curvature only (`:fisher` expected /
+`:observed` joint — TMB's choice); the inner mode search is always
+Fisher-scored. Default: canonical logit — the two coincide. Omitting it is exactly the pre-kwarg
+behaviour.
 """
 function fit_binomial_gllvm(Y::AbstractMatrix; K::Integer,
         link::Link = LogitLink(),
         N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing, mask = nothing,
         offset = nothing, gradient::Symbol = :analytic,
+        hessian::Symbol = _default_hessian(Binomial(), link),
         β_init = nothing, Λ_init = nothing,
         X_lv::Union{Nothing, AbstractMatrix} = nothing,
         alpha_lv_init = nothing,
@@ -176,6 +182,12 @@ function fit_binomial_gllvm(Y::AbstractMatrix; K::Integer,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
     K >= 0 || throw(ArgumentError("K must be non-negative for fit_binomial_gllvm"))
+    hessian in (:fisher, :observed) || throw(ArgumentError(
+        "fit_binomial_gllvm: hessian must be :fisher or :observed; got :$hessian"))
+    if X_lv !== nothing && hessian !== _default_hessian(Binomial(), link)
+        throw(ArgumentError("fit_binomial_gllvm: a non-default hessian is not yet supported " *
+                            "together with X_lv"))
+    end
     Nm = N === nothing ? fill(1, p, n) : N
     size(Nm) == (p, n) || throw(DimensionMismatch("N must be $(p)×$(n)"))
     rr = rr_theta_len(p, K)
@@ -243,6 +255,7 @@ function fit_binomial_gllvm(Y::AbstractMatrix; K::Integer,
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
         v = try
             -binomial_marginal_loglik_laplace(Yc, Nm, Λ, β, link; mask = msk, offset = offset,
+                                              hessian = hessian,
                                               maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
@@ -265,7 +278,9 @@ function fit_binomial_gllvm(Y::AbstractMatrix; K::Integer,
             return isfinite(v) ? v : 1e12
         end
         Optim.optimize(negll_lv, θ0_lv, ls, opts; autodiff = :finite)
-    elseif gradient === :analytic && offset === nothing && link isa LogitLink
+    elseif gradient === :analytic && offset === nothing && link isa LogitLink &&
+           (hessian === _default_hessian(Binomial(), link) ||
+            _glm_weight_matches_observed(Binomial(), link))
         ag = θ -> begin
             β = θ[1:p]; Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
             try -binomial_laplace_grad(Yc, Nm, Λ, β; mask = msk) catch; nothing end
