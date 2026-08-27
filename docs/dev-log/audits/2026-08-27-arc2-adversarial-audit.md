@@ -1,0 +1,65 @@
+<!-- 11-agent ultracode audit (3 adversarial refuters on the day's engine
+changes, 5 undamped-loop analysts, 2 campaign-extension writers, Rose
+synthesis), 2026-08-27. Static analysis only. The census blocker it predicted
+was confirmed by the following suite run. -->
+
+# Rose audit — Arc 2 engine changes, undamped-loop ledger, campaign readiness
+**Date:** 2026-08-24 · **Lane:** `/Users/z3437171/local-scratch/lanes/GLLVM.jl-beyond-20260824` (HEAD 49183b7a) · **Basis:** static adversarial review only; no Julia executed this session. All line refs are lane-absolute.
+
+---
+
+## 1. Verdict table — the three engine changes
+
+**BLOCKER (stated first, plainly): the Exponential observed-weight override statically breaks the full test suite.** `_glm_obs_weight(::Exponential, …)` (src/families/exponential.jl:31) puts `:Exponential` into the census's `has_observed` set by method-table reflection, and `test/test_curvature_census.jl:158-165` requires every such family to carry a family-specialised `_default_hessian`. None exists for Exponential anywhere in `src/`. `@test :Exponential in specialised_default` fails; the suite is wired at test/runtests.jl:219, so **CI is red until this is resolved**. CONFIRMED by static reflection logic; no other outcome is possible. The obvious one-line patch (`_default_hessian(::Exponential, ::LogLink) = :observed`) is a trap: it breaks `CERTIFIED_CELLS` unless the ledger entry is added, and silently flips the Exponential default in six other kernels (covariates.jl:53, quadratic.jl:65, mixed.jl:259, spde_latent.jl:139, phylo_glm.jl:108, coevolution_glm.jl:115) — a scope expansion needing its own verification. **Do not fill the check-log "full suite" tally placeholder while this stands.**
+
+| Change | Verdict | Blockers | Confirmed non-blockers | Plausible |
+|---|---|---|---|---|
+| **A. Grouped Laplace backtracking** (`_grouped_laplace_mode`, grouped_dispersion.jl:107-176) | Mechanics UPHELD; framing REFUTED IN PART | none | Gate incomplete: NB1/TweedieED unprotected (F2). New mode/loglik asymmetry: grouped getLV now damped while NB2/Beta/Gamma/NB1 loglik site loops stay undamped (F4). Restart is dead weight (F5). exponential.jl:56-63 comment now inverted (F6). Float64 hardcode in restart (F7, negligible) | TruncatedNB2 loglik objective silently changed by the gate; the motivating comment (grouped_dispersion.jl:118-121) cites the retired Exponential detour, not the paths actually affected (F1). Bit-identity claim conditional, not structural (F3) |
+| **B. Exponential re-route + observed override** (exponential.jl:31, 74-86) | REFUTED IN PART | **Census failure above (F1)** | Census ledger `DEFERRED_BY_DECISION[:Exponential]` and exponential.jl:55-67 comment now assert falsehoods; test_laplace_dual_safety.jl:38 row silently stopped testing the AD fallback (F2). Diff comment misattributes the divergence mechanism — no exponential path reaches `_grouped_laplace_mode` before or after; check-log inherits the error (F3). `_family_ci(::ExponentialFit)` ignores the fit's hessian choice — pre-existing, numbers silently changed by this diff (F4) | Clamp-region desync of the analytic weight exported globally to six kernels, latent until F1's obvious fix flips their default (F5) |
+| **C. NB2 observed-curvature flip** (b0fddf22 via PR #269) | UPHELD at the core | none | `hessian=:fisher` escape hatch not honored by confint/bootstrap — CHANGELOG claim is a live falsehood (F1, worst). Grouped NB2 CI values silently changed; CHANGELOG understates blast radius (F2). AGHQ k=1 "is Laplace" docstring now false for NB2, invisible to Poisson-only tests (F4). Two stale docstrings in the edited file (F5); stale `_default_hessian` generic docstring (F6) | Non-log-link analytic-gradient hazard, pre-existing, likely unexercised (F3) |
+
+Formula/derivation quality across all three: clean. Every weight formula, signature, kwarg thread, and mask semantic survived independent refutation. The failures are all at the edges — gates, ledgers, docstrings, and the confint layer's ignorance of the fit's curvature choice (a **recurring class**: B-F4 and C-F1 are the same defect in two families).
+
+---
+
+## 2. Undamped-loop ledger (risk × reachability, worst first)
+
+All five loops share the same skeleton: SPD Fisher-scored descent direction, unbounded full step `z .+= Δ`, break-on-failed-solve with no restart, silent maxiter exit. All five can return a **finite garbage marginal** that the fitters' `catch → 1e12` fences cannot catch, silently poisoning L-BFGS. All five merit functions are the same: `_grouped_laplace_mode_logpost` (grouped_dispersion.jl:92-105) is confirmed reusable for every one.
+
+| Rank | Loop | Location | Risk | Reachability | Why |
+|---|---|---|---|---|---|
+| 1 | **Gamma** `_gamma_grouped_loglik_site` | grouped_dispersion.jl:856-882 | **HIGH — measured**, not hypothetical: −5.0e23 vs exact −1717.6 at a healthy optimum, ‖z‖~7e11 | Default bridge Gamma route (bridge.jl:1252, group=fill(1,p)), both exported grouped fitters, confint at confint_family.jl:786/837 | Unbounded score α·y/μ as μ underflows; constant Fisher weight. This is the loop that produced the curvature-campaign garbage |
+| 2 | **Tweedie** `_tweedie_grouped_loglik_site` | grouped_dispersion.jl:1563-1578 | **HIGH** — W = μ^(2−p)/φ vanishes as score explodes; zeros in Y pull η negative routinely | Narrower: exported fitter + `fit_gllvm` dispatch; **no bridge route** | Extra hazard: `_laplace_mode_should_backtrack` is FALSE for TweedieED — reusing the fixed kernel silently degrades to undamped unless the union is extended |
+| 3 | **NB2** `_nb_grouped_loglik_site` | grouped_dispersion.jl:47-73 | MEDIUM — bounded score s ∈ (−r, y) caps runaway; limit cycles / stale-z-on-break remain | Widest: default bridge NB route (1139/1441), exported fitters, `fit_gllvm`, formula, confint ×4 | Wrong-mode exit at maxiter is the live failure, not norm blowup |
+| 4 | **Beta** `_beta_grouped_loglik_site` | grouped_dispersion.jl:507-533 | MEDIUM — bounded logit score; but observed weight can go negative at a wrong mode (measured −1.218), so logdet can DomainError → 1e12 poisoning | Bridge (1200/1454), exported fitters, formula, confint (profile CIs traverse the extremes) | |
+| 5 | **NB1** `_nb1_grouped_loglik_site` | grouped_dispersion.jl:1210-1236 | MEDIUM — quasi-self-scaling Poisson-like step; clamp-region stall/cycle remains | Bridge (1152/1448), exported fitters, formula, confint | Also needs `_laplace_mode_should_backtrack(::NB1)` added |
+
+**Recommended treatment: shared helper, not per-loop transplants.** Delegate each site loop's mode search to the already-fixed `_grouped_laplace_mode` and keep only the family-specific post-loop weight/logdet/logpdf assembly locally. Grounds: (a) the converged fixed point Λ′s − z = 0 does not involve W, so mode-only delegation is value-preserving by construction; (b) it eliminates five duplicated kernels rather than growing five patched ones; (c) it **repairs review-A F4 for free** — mode and loglik trajectories become the same code again. Two mandatory riders: extend `_laplace_mode_should_backtrack` to NB1 and TweedieED (laplace.jl:32-35 union covers NB2/Beta/Gamma already), and fix the change-A F1 comment while in the file so the gate's rationale names the routes it actually affects.
+
+**Verification each delegation needs** (per loop, before merge): (1) bit-identity on a healthy-cell fixture (small-step fast path should keep well-behaved cells bitwise unchanged — assert it, don't assume it); (2) the Gamma regression fixture: p=10, n=150 exponential-scale, kernel must return ≈ −1717.6, not −5.0e23; (3) FD gradient check ≤ 1e-6 on each grouped packed objective; (4) full suite tally; (5) for Tweedie/NB1, a direct test that backtracking actually engages (the gate trap is exactly what change A shipped).
+
+---
+
+## 3. Campaign-extension readiness (both files written, neither run)
+
+`campaigns/curvature_adjudication/cell_ext.jl` (GP-1, Tweedie) and `cell_binlinks.jl` (Binomial probit/cloglog). Pre-first-run gate, in order:
+
+1. **Suite must be green first.** The census blocker (§1) means the lane's suite is red; campaign results from a red lane are inadmissible as evidence.
+2. **D-139 estimate is missing for both.** Tweedie's series logpdf over 8001 nodes × p × n is the most expensive oracle in the campaign, and both new fitters are the slowest in the package; binlinks runs FD outer gradients plus nested ForwardDiff per cell on the `:observed` arm. **Run one seed of one cell per family, time it, report, get approval** before any sweep. No estimate exists — that is itself the D-139 finding.
+3. **Untested-path smoke:** nothing confirms `hessian = :observed` on Binomial probit/cloglog is exercised anywhere in the suite; a fit-time error would first surface mid-campaign. One smoke fit per (family, link, selector) before the sweep.
+4. **Interpretation caveats to carry into the campaign doc, not discover later:** Tweedie `disp_true = NaN` (compound Poisson–Gamma DGP has no scalar φ truth — cells adjudicate curvature only, not dispersion recovery); GP-1 oracle is exact for the *truncated* density, α̂ < 0 with 1+α̂y ≤ 0 gives a legitimately −Inf site marginal; GP-1 sampler shares the package pmf (one notch less independent than cell.jl's draws); direct `laplace_fisher` vs `laplace_observed` values are optima of different objectives — rank only through `exact_at_*`.
+5. **Ordering dependency:** if the §2 loop fixes land first, grouped-route campaign numbers change; run the campaign after the loop fixes or accept a re-run. Do not interleave.
+
+---
+
+## 4. Arc 2 continuation plan (executable by a fresh session)
+
+1. **Unblock the suite (blocker, do first).** Decide the Exponential default deliberately: either (a) add `_default_hessian(::Exponential, ::LogLink) = :observed` + the `(:Exponential, :LogLink)` `CERTIFIED_CELLS` entry + explicit verification of the six-kernel default flip it causes (each kernel supports Exponential — check one FD gradient per affected kernel), or (b) keep `:fisher` as the family default and re-route the override so reflection doesn't classify Exponential as observed-capable. Option (a) is consistent with the shipped generic-core default; (b) is smaller. Either way, delete/update `DEFERRED_BY_DECISION[:Exponential]` and the exponential.jl:55-67 comment, and add the missing census assertion `isempty(intersect(has_observed, keys(DEFERRED_BY_DECISION)))` so this class of stale ledger can never survive green again. Run full suite; record the real tally in check-log.
+2. **Correct the three misattributing/stale comments from change A and B** (grouped_dispersion.jl:118-121 gate rationale; exponential.jl:56-63 inverted premise; check-log "Necessary but NOT sufficient" item 2). One doc commit; no engine change.
+3. **Loop fixes, shared-helper pattern (§2), in ledger order:** Gamma → Tweedie → NB2 → Beta → NB1. Extend `_laplace_mode_should_backtrack` to NB1 + TweedieED in the same commit as their delegations. One family per commit, each with its §2 verification block pasted into the commit message. Add the Gamma −1717.6 fixture as a permanent regression test.
+4. **Confint/hessian consistency debt (recurring class, three sightings: B-F4, C-F1, C-F2).** Record the fit's `hessian` choice in the fit structs (`NBFit`, `NBGroupedFit`, `ExponentialFit`, and audit the other families for the same gap — Rose principle: assume ten more) and thread it through `_family_ci` + bootstrap refits; make `_family_ci` error on unknown kwargs instead of swallowing them. Fix the CHANGELOG falsehood ("`hessian = :fisher` restores the previous behaviour") and add the missing grouped-NB2-CI-change line. Update the two grouped_dispersion.jl docstrings (:288, :405-406), the laplace.jl:184-190 generic docstring, and the stale test_exponential.jl:36-77 narrative block — convention-change cascade, same PR.
+5. **AGHQ annotation.** aghq_grid.jl:172-174 "k=1 is the existing Laplace golden" is false for NB2/Gamma/TruncatedNB2; either fix the assembly to consult `_default_hessian` or amend the docstring and add a non-Poisson k=1 test that pins the *documented* (Fisher) behaviour explicitly.
+6. **Campaign pre-run (§3):** suite green from step 1 → one-seed timed pre-run per new family → D-139 estimate to maintainer → approval → sweep on Totoro (≤150 cores, `OPENBLAS_NUM_THREADS=1`), after step 3 lands.
+7. **Close-out:** check-log entries per step, after-task report under `docs/dev-log/after-task/`, Phase-state snapshot update, and this audit's verdicts cross-referenced from the check-log.
+
+**Bottom line:** the mathematics in all three changes is sound — no formula, signature, or threading error survived four review lanes. What is broken is the evidence layer around it: one statically certain test failure (Exponential census), a gate whose stated justification names a retired route, an escape hatch the CI layer ignores in two families, and five undamped twins of a loop that measurably produced −5.0e23. Fix the census first; nothing downstream is reportable until the suite is green.
