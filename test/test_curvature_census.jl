@@ -45,8 +45,10 @@ _family_of(m) = (p = Base.unwrap_unionall(m.sig).parameters;
 # wants the observed one, and the flip is a pending maintainer decision (it is a parity
 # change with a measured accuracy cost — see docs/dev-log/check-log.md 2026-08-26).
 # This list is the ledger. Shrinking it is progress; growing it silently is the bug.
+# NB2 left this set 2026-08-27: default flipped to :observed on the
+# curvature-adjudication campaign evidence (both metrics agreed for NB2).
 const KNOWN_OPEN = Set([:TweedieED, :NB1, :Beta, :GeneralizedPoisson1,
-                        :NegativeBinomial, :StudentTFamily])
+                        :StudentTFamily])
 
 # Families where Fisher == observed for STRUCTURAL reasons that are not expressed as a
 # `_glm_weight_matches_observed` trait, each with the reason recorded.
@@ -180,6 +182,7 @@ const DEFERRED_BY_DECISION = Dict(
         (:Binomial,         :LogitLink),  # trait: canonical logit ONLY — probit/cloglog are OPEN
         (:TruncatedNegBin2, :LogLink),    # _default_hessian = :observed
         (:Gamma,            :LogLink),    # _default_hessian = :observed
+        (:NegativeBinomial, :LogLink),    # _default_hessian = :observed (2026-08-27 campaign)
     ])
 
     families = unique([_family_of(m) for m in weight_methods if _family_of(m) !== nothing])

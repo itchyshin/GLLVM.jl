@@ -52,11 +52,10 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
             μ = exp(η[t, s])
             Y[t, s] = rand(NegativeBinomial(r_true, r_true / (r_true + μ)))
         end
-        # Match the shared fitter's Fisher-Laplace objective. Grouped defaults to
-        # hessian=:observed (TMB curvature); that is a different Laplace approx and
-        # must not be compared to fit_nb_gllvm under the same-model identity.
-        fg = fit_nb_gllvm_grouped(Y; K = K, group = ones(Int, p), iterations = 150,
-                                  hessian = :fisher)
+        # Both routes default to hessian=:observed since 2026-08-27 (the shared
+        # NB2 default flipped on the curvature-adjudication campaign), so the
+        # same-model identity compares the defaults directly.
+        fg = fit_nb_gllvm_grouped(Y; K = K, group = ones(Int, p), iterations = 150)
         @test fg isa NBGroupedFit
         @test length(fg.r_group) == 1
         @test isfinite(fg.loglik)

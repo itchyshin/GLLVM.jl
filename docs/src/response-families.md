@@ -450,6 +450,17 @@ shared `γ`; twin API B). Shared-α + X remains the opt-in
 fit = fit_gllvm(Yp; family = Gamma(), K = 2)   # Yp > 0; shared α (no-X)
 ```
 
+!!! note "Laplace curvature: NB2 uses the observed Hessian (changed 2026-08-27)"
+    The shared-dispersion NB2 route (`fit_nb_gllvm`, and `fit_gllvm` when it
+    does not coerce to the grouped route) now uses the **observed** conditional
+    curvature `−∂²ℓ/∂η² = μ·r·(r+y)/(r+μ)²` in the Laplace log-determinant,
+    matching TMB / `gllvmTMB`. The grouped per-trait route already did.
+    **Reported log-likelihoods and Wald SEs change**; point estimates move
+    little. Decided on the 900-cell curvature-adjudication campaign
+    (2026-08-27), where NB2 preferred the observed curvature on both the
+    estimator-quality and approximation-accuracy metrics. The previous
+    behaviour stays reachable via `hessian = :fisher`.
+
 !!! note "Laplace curvature: Gamma uses the observed Hessian (changed 2026-08-25)"
     Gamma's Laplace log-determinant now uses the **observed** conditional
     curvature `−∂²ℓ/∂η² = α·y/μ`, matching what TMB — and therefore
