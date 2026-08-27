@@ -225,9 +225,16 @@ function fit_gp1_gllvm(Y::AbstractMatrix; K::Integer,
         end
         res = Optim.optimize(negll, θ0, ls, opts; autodiff = :finite)
         θ̂ = Optim.minimizer(res)
+        # FIXED 2026-08-26 (Rose audit). `nll` here previously carried
+        # `Optim.minimum(res)` UNSCREENED — no leading `-`, so the `-Optim.minimum(res)`
+        # grep this session's sentinel sweep used to find escape sites never matched this
+        # file. `_fit_verdict` returns `(-Inf, false, iters)` on a plateau; negate its
+        # loglik back to an `nll` convention so `best.nll`/`r.nll < best.nll` below keep
+        # working unchanged (a screened failure now reports `Inf`, so it can never win
+        # `best`'s min-nll selection against any grid point that actually solved).
+        ll, conv, iters = _fit_verdict(res)
         (β = θ̂[1:p], Λ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K),
-         nll = Optim.minimum(res), converged = Optim.converged(res),
-         iters = Optim.iterations(res))
+         nll = -ll, converged = conv, iters = iters)
     end
 
     # Profile grid over α (kept strictly inside ±α_bound), seeded with α_init if given.

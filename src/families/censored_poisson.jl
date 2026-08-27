@@ -288,7 +288,6 @@ function fit_censored_poisson_gllvm(Y::AbstractMatrix; K::Integer,
     θ̂ = Optim.minimizer(res)
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
-    return CensoredPoissonFit(β̂, Λ̂, link, -Optim.minimum(res),
-                              Optim.converged(res), Optim.iterations(res),
+    return CensoredPoissonFit(β̂, Λ̂, link, _fit_verdict(res)...,
                               collect(Float64, θ̂))
 end

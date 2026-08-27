@@ -194,6 +194,5 @@ function fit_delta_gamma_gllvm_va(Y::AbstractMatrix{<:Real}; K::Integer,
     βz = θ̂[1:p]; βc = θ̂[(p + 1):(2p)]
     Λc = unpack_lambda(θ̂[(2p + 1):(2p + rr)], p, K)
     α = exp(clamp(θ̂[2p + rr + 1], logαlo, logαhi))
-    return DeltaGammaFit(βz, βc, Λc, α, -Optim.minimum(res),
-                         Optim.converged(res), Optim.iterations(res))
+    return DeltaGammaFit(βz, βc, Λc, α, _fit_verdict(res)...)
 end

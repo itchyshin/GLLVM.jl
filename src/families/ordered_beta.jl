@@ -61,6 +61,10 @@ _ob_logistic(x) = x ≥ 0 ? inv(one(x) + exp(-x)) : (e = exp(x); e / (one(x) + e
 # log σ(x) = −log(1 + e^{−x}), numerically safe.
 _ob_logsigmoid(x) = -log1p(exp(-abs(x))) + (x < 0 ? x : zero(x))
 
+# Stable log(1 - exp(x)) for x ≤ 0. Standard split at log(2): for x close to 0
+# (1-exp(x)) loses precision via log1p, so use log(-expm1(x)) there instead.
+_ob_log1mexp(x) = x < -log(2) ? log1p(-exp(x)) : log(-expm1(x))
+
 const _OB_MU_LO = 1e-12
 const _OB_MU_HI = 1 - 1e-12
 
@@ -78,9 +82,21 @@ function ordered_beta_logp(y, η, c0, c1, φ)
         return _ob_logsigmoid(η - c1)
     else
         # interior mass: log(σ(η−c0) − σ(η−c1)); since c0 < c1, σ(η−c0) > σ(η−c1).
-        s0 = _ob_logistic(η - c0)
-        s1 = _ob_logistic(η - c1)
-        logmass = log(s0 - s1)
+        #
+        # FIXED 2026-08-26 (root cause: docs/dev-log/check-log.md). The naive
+        # `log(σ(η−c0) − σ(η−c1))` underflows to log(0.0) = -Inf whenever both raw
+        # sigmoids round to 1.0 in Float64 (η ≳ 37 at this c0/c1, an ordinary value
+        # reachable by the Laplace mode solve, not a corner case). `_ob_logsigmoid` is
+        # already stable and already used by the boundary branches above; the interior
+        # branch simply never got the same treatment. Rewritten via the identity
+        # log(σ(a) − σ(b)) = logσ(a) + log1mexp(logσ(b) − logσ(a)) for a > b, whose
+        # argument to log1mexp is ≤ 0 by construction (logσ is monotone in its argument
+        # and a > b), so it never faces the cancellation that broke the naive form.
+        # Verified against the naive computation to < 1.5e-15 everywhere the naive form
+        # is itself accurate (see docs/dev-log/pending/ordered-beta-logmass-fix.jl).
+        loga = _ob_logsigmoid(η - c0)
+        logb = _ob_logsigmoid(η - c1)
+        logmass = loga + _ob_log1mexp(logb - loga)
         μ = clamp(_ob_logistic(η), _OB_MU_LO, _OB_MU_HI)
         return logmass + logpdf(Beta(μ * φ, (one(μ) - μ) * φ), y)
     end
@@ -336,6 +352,5 @@ function fit_ordered_beta_gllvm(Y::AbstractMatrix; K::Integer,
     c0̂ = θ̂[p + rr + 1]
     c1̂ = c0̂ + exp(θ̂[p + rr + 2])
     φ̂  = exp(θ̂[p + rr + 3])
-    return OrderedBetaFit(β̂, Λ̂, c0̂, c1̂, φ̂, -Optim.minimum(res),
-                          Optim.converged(res), Optim.iterations(res))
+    return OrderedBetaFit(β̂, Λ̂, c0̂, c1̂, φ̂, _fit_verdict(res)...)
 end

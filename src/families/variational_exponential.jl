@@ -146,6 +146,5 @@ function fit_exponential_gllvm_va(Y::AbstractMatrix{<:Real}; K::Integer,
     θ̂ = Optim.minimizer(res)
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
-    return ExponentialFit(β̂, Λ̂, link, -Optim.minimum(res),
-                          Optim.converged(res), Optim.iterations(res))
+    return ExponentialFit(β̂, Λ̂, link, _fit_verdict(res)...)
 end

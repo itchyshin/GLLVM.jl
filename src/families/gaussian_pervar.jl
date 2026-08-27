@@ -240,14 +240,14 @@ function fit_gaussian_pervar_gllvm(Y::AbstractMatrix;
     # Recover the profiled per-species intercept (column means).
     β_hat = vec(sum(Yf, dims = 2)) ./ n
 
-    ll = -Optim.minimum(res)
+    ll, conv, iters = _fit_verdict(res)
 
     return GaussianPerVarFit(
         collect(Float64, β_hat),
         Matrix{Float64}(Λ_hat),
         collect(Float64, φ²_hat),
         Float64(ll),
-        Optim.converged(res),
-        Optim.iterations(res),
+        conv,
+        iters,
     )
 end

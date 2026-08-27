@@ -9,8 +9,40 @@ documented failure mode of this repo, and I added to the pile before catching it
 
 `PLATFORM: claude` · `BRANCH: claude/lane-beyond-20260824` ·
 `WORKTREE: /Users/z3437171/local-scratch/lanes/GLLVM.jl-beyond-20260824`
-**13 commits ahead of `origin/main`, 0 behind. All pushed. All docs + tests — no `src/` change.**
+**MERGED.** PR #266 landed at `ba3587b1`, all six checks green (macOS 1h33m, ubuntu-1.10
+1h56m, ubuntu 2h14m, windows 2h17m, Documenter + deploy). 18 commits, including the
+session's only `src/` changes.
+
+**One commit is stranded locally: `a28fb865`** (drops `push:[main]` from `CI.yml`). The
+push is rejected — *"refusing to allow an OAuth App to create or update workflow ... without
+`workflow` scope"*. Fix: `gh auth refresh -s workflow -h github.com`, then push. Until it
+lands, every merge still burns ~25 Linux-equivalent hours re-testing an identical tree.
 **The Dropbox checkout is a STALE FORK — never commit there.**
+
+## LANDED ON MAIN — two user-facing bugs are fixed for real users
+
+Both reproduced on live fits before being touched, both the same pattern: a large FINITE
+penalty on a failure path that downstream code read as a real value.
+
+1. **`fit_phylo_gaussian` reported `converged = true` on a fit containing `NaN`**, with
+   `negll = 1.0e12` flowing into `aic`/`bic`/`select_lv`. Fixed by `_phylo_verdict`
+   (`src/fit_phylo.jl:92`), mirroring `_tweedie_verdict`.
+2. **Wald intervals collapsed toward false certainty** — `se = 1.22e-10` against an
+   estimate of `1.66e-3`, `pd_hessian` still `true`. Fixed by `_fd_failed`
+   (`src/confint_family.jl:1867`); "no interval" now replaces a confidently wrong one.
+
+## THE BIGGEST REMAINING CORRECTNESS LEVER
+
+`_tweedie_verdict` is the correct pattern and is applied at **3 of 268 sentinel sites**
+across 51 files. The two fixed above were the two I could reproduce; the rest are
+unaudited. An audit was running at hand-over — check
+`docs/dev-log/check-log.md` for its result before assuming anything about it.
+
+**The discriminator matters and is easy to get wrong:** a sentinel INSIDE an objective
+closure is *correct* — it is a barrier keeping the line search out of a bad region. It is a
+defect only when it ESCAPES into a user-visible field (a `converged` flag, a returned
+loglik, an SE, a CI bound). `Optim.minimum(res)` carrying the value out is the classic
+escape, and is exactly how both confirmed bugs worked. Do not "fix" the barriers.
 
 ## State: verified, not asserted
 

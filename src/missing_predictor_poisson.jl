@@ -380,6 +380,6 @@ function fit_gllvm_mi(family, Y::AbstractMatrix, x::AbstractVector; K::Integer,
     σ_x = exp(0.5 * θ[base + 3])
     dispersion = has_disp ? exp(θ[base + 4]) : nothing
     return (β = β, Λ = Λ, b_x = b_x, μ_x = μ_x, σ_x = σ_x, dispersion = dispersion,
-            logLik = -Optim.minimum(res), converged = Optim.converged(res),
+            logLik = _fit_verdict(res)[1], converged = _fit_verdict(res)[2],
             n_missing = count(!, isobs))
 end

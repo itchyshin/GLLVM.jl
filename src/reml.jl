@@ -152,6 +152,5 @@ function fit_gaussian_reml(y::AbstractMatrix, X::AbstractArray{<:Real, 3}; K::In
     Λ̂ = unpack_lambda(θ̂[1:rr], p, K)
     σ̂ = exp(θ̂[rr + 1])
     β̂, _ = _gaussian_gls(y, X, Λ̂, σ̂)
-    return GaussianREMLFit(collect(Float64, β̂), Λ̂, σ̂, -Optim.minimum(res),
-                           Optim.converged(res), Optim.iterations(res))
+    return GaussianREMLFit(collect(Float64, β̂), Λ̂, σ̂, _fit_verdict(res)...)
 end

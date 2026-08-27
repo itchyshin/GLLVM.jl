@@ -276,8 +276,7 @@ function fit_truncated_nbinom2_gllvm(Y::AbstractMatrix; K::Integer,
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
     r̂ = exp(θ̂[p + rr + 1])
-    return TruncatedNegBin2Fit(β̂, Λ̂, r̂, link, -Optim.minimum(res),
-                               Optim.converged(res), Optim.iterations(res),
+    return TruncatedNegBin2Fit(β̂, Λ̂, r̂, link, _fit_verdict(res)...,
                                collect(Float64, θ̂))
 end
 
@@ -474,7 +473,6 @@ function fit_truncated_nbinom2_gllvm_pertrait(Y::AbstractMatrix; K::Integer,
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
     r̂ = exp.(θ̂[(p + rr + 1):(p + rr + p)])
-    return TruncatedNegBin2PerTraitFit(β̂, Λ̂, r̂, link, -Optim.minimum(res),
-                                       Optim.converged(res), Optim.iterations(res),
+    return TruncatedNegBin2PerTraitFit(β̂, Λ̂, r̂, link, _fit_verdict(res)...,
                                        collect(Float64, θ̂))
 end

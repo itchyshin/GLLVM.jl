@@ -74,7 +74,12 @@ _indep_compoisson_loglik(Y, β, ν) = sum(
 
         fit = fit_gllvm(Y; family = COMPoisson(), K = K, iterations = 40)
         @test fit isa COMPoissonFit
+        # FIXED 2026-08-26. Root cause was `compoisson_logz`'s naive `Σ exp(logterm)`
+        # overflowing near the series' own mode; rewritten as a streaming log-sum-exp
+        # (com_poisson.jl:76). Was: iterations=0, marginal NaN.
+        @test fit.converged
         @test isfinite(fit.loglik)
+        @test fit.iterations > 0
         direct = fit_compoisson_gllvm(Y; K = K, iterations = 40)
         @test fit.loglik ≈ direct.loglik atol = 1e-8
         @test fit.ν ≈ direct.ν atol = 1e-8

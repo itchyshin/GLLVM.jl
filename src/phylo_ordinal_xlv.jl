@@ -355,7 +355,7 @@ function _fit_phylo_ordinal_xlv(Y::AbstractMatrix, phy::AugmentedPhy;
         _phylo_ordinal_xlv_unpack_packed(theta_hat, p, K, q_lv, C)
     return (Lambda = Matrix(Lambda_hat), alpha_lv = Matrix(alpha_hat),
             tau = Vector{Float64}(tau_hat), C = C, sigma2_phy = sigma2_hat,
-            loglik = -Optim.minimum(res), converged = Optim.converged(res),
+            loglik = _fit_verdict(res)[1], converged = _fit_verdict(res)[2],
             iterations = Optim.iterations(res), theta_packed = collect(theta_hat))
 end
 

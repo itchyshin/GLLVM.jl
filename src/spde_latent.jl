@@ -307,8 +307,7 @@ function fit_spde_latent_gllvm(Y::AbstractMatrix, nodes::AbstractMatrix,
     τ̂ = exp(θ̂[p + rr + 2])
     disp = _spde_disp_value(family, θ̂[(dbase + 1):(dbase + nd)])
 
-    return SPDELatentFit(β̂, Λ̂, κ̂, τ̂, disp, link, family, -Optim.minimum(res),
-                         Optim.converged(res), Optim.iterations(res), nodes, tris)
+    return SPDELatentFit(β̂, Λ̂, κ̂, τ̂, disp, link, family, _fit_verdict(res)..., nodes, tris)
 end
 
 # Domain-safe empirical mean for the link-scale warm start.

@@ -272,6 +272,5 @@ function fit_quadratic_gllvm(Y::AbstractMatrix{<:Real}; family = Poisson(),
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
     D̂ = reshape(θ̂[(p + rr + 1):(p + rr + pK)], p, K)
     disp̂ = has_disp ? exp(θ̂[p + rr + pK + 1]) : NaN
-    return QuadraticFit(family, β̂, Λ̂, D̂, disp̂, lk, -Optim.minimum(res),
-                        Optim.converged(res), Optim.iterations(res))
+    return QuadraticFit(family, β̂, Λ̂, D̂, disp̂, lk, _fit_verdict(res)...)
 end

@@ -248,6 +248,5 @@ function fit_constrained_gllvm(Y::AbstractMatrix{<:Real}; family, X::AbstractMat
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
     B̂ = reshape(θ̂[(p + rr + 1):(p + rr + qK)], q, K)
     disp̂ = has_disp ? exp(θ̂[p + rr + qK + 1]) : NaN
-    return ConstrainedOrdinationFit(family, β̂, Λ̂, B̂, disp̂, lk, -Optim.minimum(res),
-                                    Optim.converged(res), Optim.iterations(res))
+    return ConstrainedOrdinationFit(family, β̂, Λ̂, B̂, disp̂, lk, _fit_verdict(res)...)
 end

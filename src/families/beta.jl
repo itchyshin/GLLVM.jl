@@ -249,14 +249,12 @@ function fit_beta_gllvm(Y::AbstractMatrix; K::Integer,
         Λ̂ = unpack_lambda(@view(θ̂[(cursor + 1):(cursor + rr)]), p, K)
         cursor += rr
         φ̂ = exp(θ̂[cursor + 1])
-        return BetaFit(β̂, Λ̂, φ̂, link, -Optim.minimum(res),
-                       Optim.converged(res), Optim.iterations(res),
+        return BetaFit(β̂, Λ̂, φ̂, link, _fit_verdict(res)...,
                        alpha_hat, collect(Float64, θ̂))
     else
         β̂ = θ̂[1:p]
         Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
         φ̂ = exp(θ̂[p + rr + 1])
-        return BetaFit(β̂, Λ̂, φ̂, link, -Optim.minimum(res),
-                       Optim.converged(res), Optim.iterations(res))
+        return BetaFit(β̂, Λ̂, φ̂, link, _fit_verdict(res)...)
     end
 end

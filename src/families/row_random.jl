@@ -168,8 +168,7 @@ function fit_row_random_gllvm(Y::AbstractMatrix{<:Real}; family = Poisson(),
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
     σ̂_row = exp(θ̂[p + rr + 1])
     disp̂ = has_disp ? exp(θ̂[p + rr + 2]) : NaN
-    return RowRandomFit(family, β̂, Λ̂, σ̂_row, disp̂, lk, -Optim.minimum(res),
-                        Optim.converged(res), Optim.iterations(res))
+    return RowRandomFit(family, β̂, Λ̂, σ̂_row, disp̂, lk, _fit_verdict(res)...)
 end
 
 # ---------------------------------------------------------------------------

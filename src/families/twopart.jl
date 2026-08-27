@@ -319,8 +319,7 @@ function fit_delta_lognormal_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     βz = θ̂[1:p]; βc = θ̂[(p + 1):(2p)]
     Λc = unpack_lambda(θ̂[(2p + 1):(2p + rr)], p, K)
     σ = exp(θ̂[2p + rr + 1])
-    return DeltaLogNormalFit(βz, βc, Λc, σ, -Optim.minimum(res),
-                             Optim.converged(res), Optim.iterations(res))
+    return DeltaLogNormalFit(βz, βc, Λc, σ, _fit_verdict(res)...)
 end
 
 # ---------------------------------------------------------------------------
@@ -442,8 +441,7 @@ function fit_hurdle_poisson_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     θ̂ = Optim.minimizer(res)
     βz = θ̂[1:p]; βc = θ̂[(p + 1):(2p)]
     Λc = unpack_lambda(θ̂[(2p + 1):(2p + rr)], p, K)
-    return HurdlePoissonFit(βz, βc, Λc, -Optim.minimum(res),
-                            Optim.converged(res), Optim.iterations(res))
+    return HurdlePoissonFit(βz, βc, Λc, _fit_verdict(res)...)
 end
 
 # ---------------------------------------------------------------------------
@@ -582,8 +580,7 @@ function fit_hurdle_nb_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     βz = θ̂[1:p]; βc = θ̂[(p + 1):(2p)]
     Λc = unpack_lambda(θ̂[(2p + 1):(2p + rr)], p, K)
     r = exp(θ̂[2p + rr + 1])
-    return HurdleNBFit(βz, βc, Λc, r, -Optim.minimum(res),
-                       Optim.converged(res), Optim.iterations(res))
+    return HurdleNBFit(βz, βc, Λc, r, _fit_verdict(res)...)
 end
 
 # ---------------------------------------------------------------------------
@@ -770,8 +767,7 @@ function fit_delta_gamma_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     βz = θ̂[1:p]; βc = θ̂[(p + 1):(2p)]
     Λc = unpack_lambda(θ̂[(2p + 1):(2p + rr)], p, K)
     α = exp(θ̂[2p + rr + 1])
-    return DeltaGammaFit(βz, βc, Λc, α, -Optim.minimum(res),
-                         Optim.converged(res), Optim.iterations(res))
+    return DeltaGammaFit(βz, βc, Λc, α, _fit_verdict(res)...)
 end
 
 # ===========================================================================
@@ -937,8 +933,7 @@ function fit_zip_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     θ̂ = Optim.minimizer(res)
     βz = θ̂[1:p]; βc = θ̂[(p + 1):(2p)]
     Λc = unpack_lambda(θ̂[(2p + 1):(2p + rr)], p, K)
-    return ZIPFit(βz, βc, Λc, -Optim.minimum(res),
-                  Optim.converged(res), Optim.iterations(res))
+    return ZIPFit(βz, βc, Λc, _fit_verdict(res)...)
 end
 
 """
@@ -1031,7 +1026,7 @@ function fit_zip_gllvm_cov(Y::AbstractMatrix{<:Real}; X::AbstractArray{<:Real, 3
     γẑ = collect(Float64, _expand_fixed_zero(γz_free, γ_fixed_mask))
     γĉ = collect(Float64, _expand_fixed_zero(γc_free, γ_fixed_mask))
     return ZIPCovFit(βẑ, γẑ, βĉ, γĉ, collect(Bool, γ_fixed_mask), Λĉ,
-                     -Optim.minimum(res), Optim.converged(res), Optim.iterations(res))
+                     _fit_verdict(res)...)
 end
 
 # ---------------------------------------------------------------------------
@@ -1135,8 +1130,7 @@ function fit_zinb_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     βz = θ̂[1:p]; βc = θ̂[(p + 1):(2p)]
     Λc = unpack_lambda(θ̂[(2p + 1):(2p + rr)], p, K)
     r = exp(θ̂[2p + rr + 1])
-    return ZINBFit(βz, βc, Λc, r, -Optim.minimum(res),
-                   Optim.converged(res), Optim.iterations(res))
+    return ZINBFit(βz, βc, Λc, r, _fit_verdict(res)...)
 end
 
 """
@@ -1269,7 +1263,7 @@ function fit_zinb_gllvm_cov(Y::AbstractMatrix{<:Real}; X::AbstractArray{<:Real, 
     γẑ = collect(Float64, _expand_fixed_zero(γz_free, γ_fixed_mask))
     γĉ = collect(Float64, _expand_fixed_zero(γc_free, γ_fixed_mask))
     return ZINBCovFit(βẑ, γẑ, βĉ, γĉ, collect(Bool, γ_fixed_mask), Λĉ, r̂,
-                      -Optim.minimum(res), Optim.converged(res), Optim.iterations(res))
+                      _fit_verdict(res)...)
 end
 
 # ---------------------------------------------------------------------------
@@ -1423,8 +1417,7 @@ function fit_zib_gllvm(Y::AbstractMatrix{<:Real}; K::Integer, N::Integer,
     θ̂ = Optim.minimizer(res)
     βz = θ̂[1:p]; βc = θ̂[(p + 1):(2p)]
     Λc = unpack_lambda(θ̂[(2p + 1):(2p + rr)], p, K)
-    return ZIBFit(βz, βc, Λc, Int(N), -Optim.minimum(res),
-                  Optim.converged(res), Optim.iterations(res))
+    return ZIBFit(βz, βc, Λc, Int(N), _fit_verdict(res)...)
 end
 
 """
@@ -1519,5 +1512,5 @@ function fit_zib_gllvm_cov(Y::AbstractMatrix{<:Real}; X::AbstractArray{<:Real, 3
     γẑ = collect(Float64, _expand_fixed_zero(γz_free, γ_fixed_mask))
     γĉ = collect(Float64, _expand_fixed_zero(γc_free, γ_fixed_mask))
     return ZIBCovFit(βẑ, γẑ, βĉ, γĉ, collect(Bool, γ_fixed_mask), Λĉ, Int(N),
-                     -Optim.minimum(res), Optim.converged(res), Optim.iterations(res))
+                     _fit_verdict(res)...)
 end

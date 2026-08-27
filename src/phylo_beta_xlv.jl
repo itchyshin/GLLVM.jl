@@ -333,8 +333,8 @@ function _fit_phylo_beta_xlv(Y::AbstractMatrix, phy::AugmentedPhy;
         _phylo_beta_xlv_unpack_packed(theta_hat, p, K, q_lv)
     return (beta = collect(beta_hat), Lambda = Matrix(Lambda_hat),
             alpha_lv = Matrix(alpha_hat), phi = phi_hat,
-            sigma2_phy = sigma2_hat, loglik = -Optim.minimum(res),
-            converged = Optim.converged(res), iterations = Optim.iterations(res),
+            sigma2_phy = sigma2_hat, loglik = _fit_verdict(res)[1],
+            converged = _fit_verdict(res)[2], iterations = _fit_verdict(res)[3],
             theta_packed = collect(theta_hat))
 end
 

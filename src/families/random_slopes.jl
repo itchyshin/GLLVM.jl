@@ -204,5 +204,5 @@ function fit_poisson_random_slope(Y::AbstractMatrix{<:Real}, grouping::AbstractV
     Λ̂ = unpack_lambda(th[(p + 1):(p + rr)], p, K)
     Σ_b̂, _ = _unpack_chol_cov(th[(p + rr + 1):(p + rr + nc)], q)
     return PoissonRandomSlopeFit(β̂, Λ̂, Matrix{Float64}(Σ_b̂), L, q, link,
-                                 -Optim.minimum(res), Optim.converged(res), Optim.iterations(res))
+                                 _fit_verdict(res)...)
 end

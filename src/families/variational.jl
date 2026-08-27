@@ -148,7 +148,6 @@ function fit_poisson_gllvm_va(Y::AbstractMatrix{<:Integer}; K::Integer,
     θ̂ = Optim.minimizer(res)
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
-    return PoissonFit(β̂, Λ̂, link, -Optim.minimum(res),
-                      Optim.converged(res), Optim.iterations(res))
+    return PoissonFit(β̂, Λ̂, link, _fit_verdict(res)...)
 end
 
