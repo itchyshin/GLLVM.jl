@@ -14624,3 +14624,46 @@ near-zero-dispersion Newton sensitivity and the Exponential diverging-Newton bug
 still open, both still recorded, both still the maintainer's to schedule. This only stops
 CI failing on an assertion that was never safe to make in the first place: a platform-
 dependent numerical outcome asserted as if it were deterministic.
+
+## 2026-08-27 — PR #267 re-run: 4 of 5 green, Windows still red — same trap, different lines
+
+The NB1 `@info` fix from the previous entry worked: macOS and ubuntu are now green.
+**Windows still failed**, on a mechanism I had not anticipated.
+
+### The actual cause: the Exponential divergence is ITSELF platform-inconsistent
+
+```
+Unexpected Pass — Expression: isfinite(fit.loglik)                              [:64]
+Unexpected Pass — Expression: isfinite(aic(fit)) && isfinite(bic(fit, n))       [:102]
+```
+
+Not the downstream `getLV`/`confint` calls I wrapped last time — the two **original**
+`@test_broken` markers on this file, on the diverging-Newton bug documented earlier
+tonight. **The divergence itself does not reproduce on Windows** for this fixture: whatever
+LBFGS/BLAS floating-point path Windows CI takes does not diverge, where the identical
+fixture diverges on this Mac and on macOS/ubuntu CI. I had implicitly assumed the
+divergence was platform-universal (deterministic given a fixed seed and no threading) and
+only wrapped what happens *downstream* of it — never considered the upstream trigger
+itself might not fire everywhere.
+
+### Same fix as before, applied to the markers I missed
+
+Both converted from `@test_broken` to an `if isfinite(...) @info ... end` observation,
+identical pattern to the NB1 case. Verified locally: 20/20 pass, **0 broken** (this Mac
+still diverges, so both guards correctly skip and the previous 2-broken tally is now 0
+broken with the assertion removed rather than failed). Confirmed the interaction with the
+earlier downstream-wrapping fix is sound: when `fit.loglik` is finite, the `try`/`catch`
+blocks around `getLV`/`predict`/`residuals`/`confint` simply succeed normally (no
+exception to catch), so both fixes compose without conflict.
+
+### The lesson, stated plainly
+
+**A divergent, undamped optimizer is not just numerically fragile — it is fragile
+*differently on every platform*, at every level: whether it diverges at all, and if so
+what garbage value it diverges to.** I fixed the second-order symptom (what breaks
+downstream of a known divergence) before checking whether the first-order fact (does it
+diverge at all) was itself platform-stable. It wasn't. This is the same root cause
+(`grouped_dispersion.jl`'s unguarded Newton loop) manifesting a second time in one CI run,
+and it is further evidence for treating that mode-solver as a genuine priority fix rather
+than a one-off — every platform quirk that surfaces here is a symptom of the same
+un-derived defect, not a new one to patch around individually.
