@@ -217,6 +217,7 @@ using GLLVM
     include("test_bridge_missing_mask.jl")
     include("test_hessian_kwarg.jl")
     include("test_confint_hessian_consistency.jl")
+    include("test_grouped_hessian_consistency.jl")
     include("test_saturation_health.jl")
     include("test_known_sentinel_defects.jl")
     include("test_curvature_census.jl")

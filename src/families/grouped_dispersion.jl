@@ -240,7 +240,15 @@ struct NBGroupedFit
     loglik::Float64
     converged::Bool
     iterations::Int
+    hessian::Symbol   # the Laplace log-det curvature this fit's objective used
 end
+
+# Positional compatibility constructor (2026-08-28): every pre-existing
+# construction site builds a default-curvature fit; the `hessian` field
+# records the objective identity so `confint`/bootstrap can rebuild THE
+# SAME objective instead of guessing (the audit's confint-consistency class).
+NBGroupedFit(β, Λ, r_group, group, link, loglik, converged, iterations) =
+    NBGroupedFit(β, Λ, r_group, group, link, loglik, converged, iterations, :observed)
 
 function Base.show(io::IO, f::NBGroupedFit)
     p, K = size(f.Λ)
@@ -338,7 +346,7 @@ function fit_nb_gllvm_grouped(Y::AbstractMatrix; K::Integer, group::AbstractVect
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
     r̂g = exp.(θ̂[(p + rr + 1):(p + rr + G)])
-    return NBGroupedFit(β̂, Λ̂, r̂g, gidx, link, _fit_verdict(res)...)
+    return NBGroupedFit(β̂, Λ̂, r̂g, gidx, link, _fit_verdict(res)..., hessian)
 end
 
 """
@@ -361,7 +369,12 @@ struct NBGroupedCovFit
     loglik::Float64
     converged::Bool
     iterations::Int
+    hessian::Symbol   # the Laplace log-det curvature this fit's objective used
 end
+
+# Positional compatibility constructor (2026-08-28): see NBGroupedFit above.
+NBGroupedCovFit(β, γ, γ_fixed, Λ, r_group, group, link, loglik, converged, iterations) =
+    NBGroupedCovFit(β, γ, γ_fixed, Λ, r_group, group, link, loglik, converged, iterations, :observed)
 
 function Base.show(io::IO, f::NBGroupedCovFit)
     p, K = size(f.Λ); q = length(f.γ)
@@ -466,7 +479,7 @@ function fit_nb_gllvm_grouped_cov(Y::AbstractMatrix; X::AbstractArray{<:Real, 3}
     Λ̂ = unpack_lambda(θ̂[(p + q + 1):(p + q + rr)], p, K)
     r̂g = exp.(θ̂[(p + q + rr + 1):(p + q + rr + G)])
     return NBGroupedCovFit(β̂, γ̂, collect(Bool, γ_fixed_mask), Λ̂, r̂g, gidx, link,
-                           _fit_verdict(res)...)
+                           _fit_verdict(res)..., hessian)
 end
 
 # ===========================================================================
@@ -592,7 +605,12 @@ struct BetaGroupedFit
     loglik::Float64
     converged::Bool
     iterations::Int
+    hessian::Symbol   # the Laplace log-det curvature this fit's objective used
 end
+
+# Positional compatibility constructor (2026-08-28): see NBGroupedFit above.
+BetaGroupedFit(β, Λ, φ, group, link, loglik, converged, iterations) =
+    BetaGroupedFit(β, Λ, φ, group, link, loglik, converged, iterations, :observed)
 
 function Base.show(io::IO, f::BetaGroupedFit)
     p, K = size(f.Λ)
@@ -691,7 +709,7 @@ function fit_beta_gllvm_grouped(Y::AbstractMatrix; K::Integer,
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
     φ̂g = exp.(θ̂[(p + rr + 1):(p + rr + G)])
-    return BetaGroupedFit(β̂, Λ̂, φ̂g, gidx, link, _fit_verdict(res)...)
+    return BetaGroupedFit(β̂, Λ̂, φ̂g, gidx, link, _fit_verdict(res)..., hessian)
 end
 
 """
@@ -714,7 +732,12 @@ struct BetaGroupedCovFit
     loglik::Float64
     converged::Bool
     iterations::Int
+    hessian::Symbol   # the Laplace log-det curvature this fit's objective used
 end
+
+# Positional compatibility constructor (2026-08-28): see NBGroupedFit above.
+BetaGroupedCovFit(β, γ, γ_fixed, Λ, φ, group, link, loglik, converged, iterations) =
+    BetaGroupedCovFit(β, γ, γ_fixed, Λ, φ, group, link, loglik, converged, iterations, :observed)
 
 function Base.show(io::IO, f::BetaGroupedCovFit)
     p, K = size(f.Λ); q = length(f.γ)
@@ -818,7 +841,7 @@ function fit_beta_gllvm_grouped_cov(Y::AbstractMatrix; X::AbstractArray{<:Real, 
     Λ̂ = unpack_lambda(θ̂[(p + q + 1):(p + q + rr)], p, K)
     φ̂g = exp.(θ̂[(p + q + rr + 1):(p + q + rr + G)])
     return BetaGroupedCovFit(β̂, γ̂, collect(Bool, γ_fixed_mask), Λ̂, φ̂g, gidx, link,
-                             _fit_verdict(res)...)
+                             _fit_verdict(res)..., hessian)
 end
 
 # ===========================================================================
@@ -941,7 +964,12 @@ struct GammaGroupedFit
     loglik::Float64
     converged::Bool
     iterations::Int
+    hessian::Symbol   # the Laplace log-det curvature this fit's objective used
 end
+
+# Positional compatibility constructor (2026-08-28): see NBGroupedFit above.
+GammaGroupedFit(β, Λ, α, group, link, loglik, converged, iterations) =
+    GammaGroupedFit(β, Λ, α, group, link, loglik, converged, iterations, :observed)
 
 function Base.show(io::IO, f::GammaGroupedFit)
     p, K = size(f.Λ)
@@ -1040,7 +1068,7 @@ function fit_gamma_gllvm_grouped(Y::AbstractMatrix; K::Integer,
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
     α̂g = exp.(θ̂[(p + rr + 1):(p + rr + G)])
-    return GammaGroupedFit(β̂, Λ̂, α̂g, gidx, link, _fit_verdict(res)...)
+    return GammaGroupedFit(β̂, Λ̂, α̂g, gidx, link, _fit_verdict(res)..., hessian)
 end
 
 """
@@ -1063,7 +1091,12 @@ struct GammaGroupedCovFit
     loglik::Float64
     converged::Bool
     iterations::Int
+    hessian::Symbol   # the Laplace log-det curvature this fit's objective used
 end
+
+# Positional compatibility constructor (2026-08-28): see NBGroupedFit above.
+GammaGroupedCovFit(β, γ, γ_fixed, Λ, α, group, link, loglik, converged, iterations) =
+    GammaGroupedCovFit(β, γ, γ_fixed, Λ, α, group, link, loglik, converged, iterations, :observed)
 
 function Base.show(io::IO, f::GammaGroupedCovFit)
     p, K = size(f.Λ); q = length(f.γ)
@@ -1169,7 +1202,7 @@ function fit_gamma_gllvm_grouped_cov(Y::AbstractMatrix; X::AbstractArray{<:Real,
     Λ̂ = unpack_lambda(θ̂[(p + q + 1):(p + q + rr)], p, K)
     α̂g = exp.(θ̂[(p + q + rr + 1):(p + q + rr + G)])
     return GammaGroupedCovFit(β̂, γ̂, collect(Bool, γ_fixed_mask), Λ̂, α̂g, gidx, link,
-                              _fit_verdict(res)...)
+                              _fit_verdict(res)..., hessian)
 end
 
 # ===========================================================================
@@ -1296,7 +1329,12 @@ struct NB1GroupedFit
     loglik::Float64
     converged::Bool
     iterations::Int
+    hessian::Symbol   # the Laplace log-det curvature this fit's objective used
 end
+
+# Positional compatibility constructor (2026-08-28): see NBGroupedFit above.
+NB1GroupedFit(β, Λ, φ, group, link, loglik, converged, iterations) =
+    NB1GroupedFit(β, Λ, φ, group, link, loglik, converged, iterations, :observed)
 
 function Base.show(io::IO, f::NB1GroupedFit)
     p, K = size(f.Λ)
@@ -1409,7 +1447,7 @@ function fit_nb1_gllvm_grouped(Y::AbstractMatrix; K::Integer,
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
     φ̂g = exp.(θ̂[(p + rr + 1):(p + rr + G)])
-    return NB1GroupedFit(β̂, Λ̂, φ̂g, gidx, link, _fit_verdict(res)...)
+    return NB1GroupedFit(β̂, Λ̂, φ̂g, gidx, link, _fit_verdict(res)..., hessian)
 end
 
 """
@@ -1432,7 +1470,12 @@ struct NB1GroupedCovFit
     loglik::Float64
     converged::Bool
     iterations::Int
+    hessian::Symbol   # the Laplace log-det curvature this fit's objective used
 end
+
+# Positional compatibility constructor (2026-08-28): see NBGroupedFit above.
+NB1GroupedCovFit(β, γ, γ_fixed, Λ, φ, group, link, loglik, converged, iterations) =
+    NB1GroupedCovFit(β, γ, γ_fixed, Λ, φ, group, link, loglik, converged, iterations, :observed)
 
 function Base.show(io::IO, f::NB1GroupedCovFit)
     p, K = size(f.Λ); q = length(f.γ)
@@ -1538,7 +1581,7 @@ function fit_nb1_gllvm_grouped_cov(Y::AbstractMatrix; X::AbstractArray{<:Real, 3
     Λ̂ = unpack_lambda(θ̂[(p + q + 1):(p + q + rr)], p, K)
     φ̂g = exp.(θ̂[(p + q + rr + 1):(p + q + rr + G)])
     return NB1GroupedCovFit(β̂, γ̂, collect(Bool, γ_fixed_mask), Λ̂, φ̂g, gidx, link,
-                            _fit_verdict(res)...)
+                            _fit_verdict(res)..., hessian)
 end
 
 # ===========================================================================
@@ -1641,7 +1684,16 @@ struct TweedieGroupedFit
     loglik::Float64
     converged::Bool
     iterations::Int
+    hessian::Symbol   # the Laplace log-det curvature this fit's objective used —
+                       # ALWAYS :fisher: `_tweedie_grouped_loglik_site` has no
+                       # `hessian` selector (unconditional `_glm_weight`), unlike
+                       # its NB2/Beta/Gamma/NB1 grouped siblings.
 end
+
+# Positional compatibility constructor (2026-08-28): see NBGroupedFit above.
+# Fixed at `:fisher` — this route has no `hessian` kwarg to record.
+TweedieGroupedFit(β, Λ, φ, power, group, link, loglik, converged, iterations) =
+    TweedieGroupedFit(β, Λ, φ, power, group, link, loglik, converged, iterations, :fisher)
 
 function Base.show(io::IO, f::TweedieGroupedFit)
     p, K = size(f.Λ)

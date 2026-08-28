@@ -13,10 +13,16 @@ All notable changes to GLLVM.jl are documented here.
   default-curvature CIs silently — the ":fisher restores previous behaviour"
   claim was true at fit time only; it is now true through `confint`.
   Positional fit-struct construction stays source-compatible (a compat
-  constructor defaults the new field to the family default). Residual: the
-  GROUPED fit structs do not yet record the selector (their explicit-:fisher
-  confint path keeps the old behaviour); Student-t has no confint adapter at
-  all (pre-existing gap, now recorded).
+  constructor defaults the new field to the family default). **Closed
+  2026-08-28**: the GROUPED fit structs (NBGroupedFit, NBGroupedCovFit,
+  BetaGroupedFit, BetaGroupedCovFit, GammaGroupedFit, GammaGroupedCovFit,
+  NB1GroupedFit, NB1GroupedCovFit) now also record `hessian`, and their
+  `_family_ci` adapters thread it the same way; TweedieGroupedFit and
+  BetaBinomialGroupedFit/BetaBinomialGroupedCovFit have no `hessian`
+  selector on their underlying kernel at all (unconditional Fisher weight),
+  so their field is fixed at `:fisher` by construction — there is nothing to
+  thread. Residual: Student-t has no confint adapter at all (pre-existing
+  gap, now recorded).
 - **Beta, NB1 and Student-t Laplace log-determinants now use the observed
   conditional curvature, completing decision A (2026-08-27)** — with Gamma,
   NB2 and Exponential, every one-part family except Tweedie and GP-1 now

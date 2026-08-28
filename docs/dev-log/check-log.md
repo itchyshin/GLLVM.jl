@@ -1,5 +1,40 @@
 # Check Log
 
+## 2026-08-28 — confint curvature consistency: GROUPED fit structs close the recorded residual
+
+Closes the residual left by "confint honors the fit's curvature (the audit
+class, closed for one-part fits)" (below): the GROUPED fit structs now also
+record the selector.
+
+- Eight grouped fit structs gain `hessian::Symbol` and a positional compat
+  constructor defaulting to `:observed` (the fitters' own default): NBGroupedFit,
+  NBGroupedCovFit, BetaGroupedFit, BetaGroupedCovFit, GammaGroupedFit,
+  GammaGroupedCovFit, NB1GroupedFit, NB1GroupedCovFit — all eight fitters
+  already accepted a `hessian` kwarg and now store the actual value passed.
+- Two more grouped structs gain the same field for uniformity but are fixed
+  at `:fisher` by construction: TweedieGroupedFit and
+  BetaBinomialGroupedFit/BetaBinomialGroupedCovFit — their underlying per-site
+  Laplace kernels have no `hessian` selector at all (unconditional Fisher
+  weight), so there is nothing to record beyond the fixed value and nothing
+  for `_family_ci` to thread.
+- Eight `_family_ci` adapters (NBGroupedFit, NB1GroupedFit, BetaGroupedFit,
+  NBGroupedCovFit, NB1GroupedCovFit, BetaGroupedCovFit, GammaGroupedFit,
+  GammaGroupedCovFit) thread `fit.hessian` into both the rebuilt marginal and
+  the bootstrap refit. BetaBinomialGroupedFit/CovFit adapters are unchanged —
+  no selector exists on that route to thread. TweedieGroupedFit has no
+  `_family_ci` adapter at all (pre-existing; not created here).
+- New contract test `test_grouped_hessian_consistency.jl` (wired into
+  `runtests.jl` next to the one-part consistency test): mirrors the one-part
+  test — the fit records its selector (default and explicit `:fisher`) for
+  NB2/Beta/Gamma/NB1-grouped, rebuilt nll(θ̂) == −loglik under both selectors
+  for those four families, the selector demonstrably reaches the grouped CI
+  objective (NB2-grouped, non-canonical log link), and the no-selector routes
+  (Tweedie-grouped, beta-binomial-grouped) carry the fixed `:fisher` field
+  plus the nll(θ̂) identity.
+
+Residual unchanged from the parent entry: Student-t has no confint adapter at
+all (pre-existing gap). Suite: [tally on full-suite green].
+
 ## 2026-08-28 — Arc 2 mop-up: Gaussian verdict screened, CMP cap closed, two-part hessian exposed
 
 Three flagged residue items, one slice:
