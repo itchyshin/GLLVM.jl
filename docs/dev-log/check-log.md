@@ -1,5 +1,50 @@
 # Check Log
 
+## 2026-08-28 — PARITY CELLS 12 AND 13 PAY: per-trait delta dispersion closes the Δ
+
+The measurement earlier today (Δ logLik −1.9232 / −2.5657, MISSING the 1e-6
+gate) proved the cause: the twin fits PER-TRAIT delta dispersion
+(`gllvmTMB.cpp:1195-1196`, both `length n_traits`) while our fitters fit one
+shared scalar. The synthesis note showed this is the twin's systematic
+parameterisation and that GLLVM.jl already ships the matching pattern for
+five families (`disp_group = :species`).
+
+Built the missing half: `disp_group::Symbol` (`:shared` default / `:species`)
+on `fit_delta_lognormal_gllvm` and `fit_delta_gamma_gllvm`, named for the
+repo's existing convention. Multiple-dispatch helpers (`_tp_pieces_at`,
+`_tp_observed_Wc_at`) let the unchanged kernels take either a scalar marker
+or a length-p marker vector — no branching in the hot loop. Per-trait warm
+starts with a pooled fallback for sparse traits. Composes with `predictor`
+and `hessian`. Default bit-identical (asserted `==`).
+
+**Result — the Δ closes:**
+
+| cell | OLD Δ (shared σ/α) | NEW Δ (per-trait) | rel |
+|---|---|---|---|
+| 12 delta_lognormal | −1.9232 | **1.82e-8** | 2.4e-11 |
+| 13 delta_gamma | −2.5657 | **1.79e-8** | 2.5e-11 |
+
+**Independently re-verified by the orchestrator on FRESH seeds (9101/9102,
+not the builder's 61/62)** — own-the-verifier, since the agent that built a
+thing does not get to be its only judge: Δ = 1.474e-8 (rel 1.68e-11) and
+7.53e-10 (rel 8.28e-13). Per-trait σ̂ matches the twin to 4–5 significant
+figures. Both cells are now marked PAID in
+`docs/src/gllvmtmb-parity.md` and `docs/design/capability-status.md`, with
+the two required settings stated (`predictor = :shared`, `disp_group =
+:species`) — the DEFAULT configuration still does not match the twin and the
+rows say so.
+
+**Parity ladder: 13/17 → 15/17.** Remaining: cell 9 student (same per-trait
+dispersion root cause per the synthesis, PLUS genuine ν estimation) and
+cell 6 tweedie (grouped-route defects first).
+
+Verify: `test_delta_disp_group.jl` 53/53 (new, wired) + regression across
+`test_delta_shared_predictor` / `test_delta_fit` / `test_delta_gamma` /
+`test_delta_postfit` / `test_twopart_substrate` / `test_twopart_alloc_equiv`
+/ `test_twopart_hessian_kwarg`, all green, no tolerance touched. Full-suite
+coverage owed (the 7062-pass run predates this slice).
+
+
 ## 2026-08-28 — L47 `none × dep` promoted (maintainer gate 6), with a MEASURED identifiability caveat
 
 Decision batch gate 6 authorised promoting the `none × dep` ledger row. The

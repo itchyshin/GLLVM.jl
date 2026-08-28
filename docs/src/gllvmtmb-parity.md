@@ -31,8 +31,8 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 | Beta | ✅ | precision `φ` (matches gllvm) |
 | Ordinal (cumulative) | ✅ | logit + probit links (`link=ProbitLink()` matches gllvm's default cumulative-probit); `P(y≤c)=F(τ_c−η)` convention verified == gllvm; `fit_ordinal_gllvm()` keeps the shared-cutpoint Julia route, while `fit_ordinal_gllvm_pertrait()` and the R bridge use trait-specific cutpoints for native `gllvmTMB` parity |
 | Gamma | ✅ | shape `α` |
-| Delta-lognormal | ✅ | first two-part family; shared 2-block Laplace substrate |
-| Delta-Gamma | ✅ | occurrence Bernoulli × positive Gamma (log-link mean) on the substrate |
+| Delta-lognormal | ✅ | first two-part family; shared 2-block Laplace substrate. **Light RCall no-X logLik Δ PAID 2026-08-28** — Δ ≈ 1.5e-8 (rel 1.7e-11) against gllvmTMB 0.7.1, requires `predictor = :shared` + `disp_group = :species` (the twin's parameterisation: one shared η, per-trait σ); `test/parity/test_delta_lognormal_parity.jl` |
+| Delta-Gamma | ✅ | occurrence Bernoulli × positive Gamma (log-link mean) on the substrate. **Light RCall no-X logLik Δ PAID 2026-08-28** — Δ ≈ 7.5e-10 (rel 8.3e-13), same two settings; `test/parity/test_delta_gamma_parity.jl` |
 | Hurdle (Poisson / NB) | ✅ | occurrence Bernoulli × zero-truncated Poisson / NB2; `fit_gllvm(Y; family = HurdlePoisson())` / `HurdleNB()` (marker `r` is a tag payload). Julia-forward — twin has no hurdle family |
 | Zero-inflated (ZIP / ZINB / ZIB) | ✅ | structural zero × Poisson / NB2 / Binomial; zero-inflation intercept-only (Λ_z = 0) so the coupled-zero cross-term drops out |
 | Ordered-beta | ✅ | proportions / cover with point masses at 0 and 1; `fit_gllvm(Y; family = OrderedBeta())` (marker `c0`, `c1`, `φ` are tag payloads). Julia-forward — twin has no ordered-beta family |

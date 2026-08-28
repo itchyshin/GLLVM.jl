@@ -16,6 +16,18 @@
 # `_clamp_eta`/`_safe_solve` are reused from families/laplace.jl. With the v1
 # default Λ_z = 0 the occurrence block drops out of A and g (the integral is
 # genuinely K-dimensional; β^z carries a per-species occurrence intercept).
+#
+# Per-trait dispersion (2026-08-28, gllvmTMB.cpp:1195-1196 `log_sigma_lognormal_delta`
+# / `log_phi_gamma_delta`, both length n_traits). `family` is broadcast over species
+# by `_twopart_mode`/`twopart_loglik_site` via `_tp_pieces_at`/`_tp_observed_Wc_at`
+# below: the scalar-marker method is unchanged (bit-identical), and a NEW
+# `AbstractVector` method dispatches `fams[t]` per species — the same pattern as
+# `grouped_dispersion.jl`'s per-species `fams::AbstractVector`, kept local here since
+# the two-part kernel threads `family` through 3 call sites rather than 1.
+@inline _tp_pieces_at(family, t, y, ηz, ηc) = _tp_pieces(family, y, ηz, ηc)
+@inline _tp_pieces_at(fams::AbstractVector, t, y, ηz, ηc) = _tp_pieces(fams[t], y, ηz, ηc)
+@inline _tp_observed_Wc_at(family, t, y, ηc, Wc) = _tp_observed_Wc(family, y, ηc, Wc)
+@inline _tp_observed_Wc_at(fams::AbstractVector, t, y, ηc, Wc) = _tp_observed_Wc(fams[t], y, ηc, Wc)
 
 # Per-site joint mode ẑ over the shared latent z (Fisher-scoring Newton).
 function _twopart_mode(family, y::AbstractVector,
@@ -48,7 +60,7 @@ function _twopart_mode(family, y::AbstractVector,
         ηz .= _clamp_eta.(βz .+ offz .+ Λzz)
         ηc .= _clamp_eta.(βc .+ offc .+ Λcz)
         @inbounds for t in 1:p
-            s_z, s_c, W_z, W_c, _ = _tp_pieces(family, y[t], ηz[t], ηc[t])
+            s_z, s_c, W_z, W_c, _ = _tp_pieces_at(family, t, y[t], ηz[t], ηc[t])
             sz[t] = s_z; sc[t] = s_c; Wz[t] = W_z; Wc[t] = W_c
         end
         WzΛz .= Wz .* Λz                       # = Wz .* Λz (p×K)
@@ -115,10 +127,10 @@ function twopart_loglik_site(family, y::AbstractVector,
     Wz = Vector{Float64}(undef, p); Wc = Vector{Float64}(undef, p)
     ℓ = 0.0
     @inbounds for t in 1:p
-        _, _, W_z, W_c, logf = _tp_pieces(family, y[t], ηz[t], ηc[t])
+        _, _, W_z, W_c, logf = _tp_pieces_at(family, t, y[t], ηz[t], ηc[t])
         # Observed curvature enters HERE ONLY (the log-det), never the mode solve.
         Wz[t] = W_z
-        Wc[t] = hessian === :observed ? _tp_observed_Wc(family, y[t], ηc[t], W_c) : W_c
+        Wc[t] = hessian === :observed ? _tp_observed_Wc_at(family, t, y[t], ηc[t], W_c) : W_c
         ℓ += logf
     end
     # Per-call buffers (written in place with the SAME broadcast / BLAS expressions
@@ -224,6 +236,25 @@ function delta_lognormal_marginal_loglik_laplace(Y::AbstractMatrix, Λc::Abstrac
     return twopart_marginal_loglik_laplace(DeltaLogNormal(float(σ)), Y, Λz_, Λc, βz, βc; kwargs...)
 end
 
+"""
+    delta_lognormal_marginal_loglik_laplace(Y, Λc, βz, βc, σ::AbstractVector; Λz=nothing, kwargs...) -> Float64
+
+Per-trait-dispersion variant (`length(σ) == p`, gllvmTMB's `log_sigma_lognormal_delta`,
+`gllvmTMB.cpp:1195-1196`, length `n_traits`): species `t` gets its own sdlog `σ[t]`
+rather than one shared scalar. With a constant `σ` this equals the shared-scalar
+method above to machine precision (same `_tp_pieces` density per species, only the
+dispersion lookup changes).
+"""
+function delta_lognormal_marginal_loglik_laplace(Y::AbstractMatrix, Λc::AbstractMatrix,
+        βz::AbstractVector, βc::AbstractVector, σ::AbstractVector;
+        Λz::Union{Nothing, AbstractMatrix} = nothing, kwargs...)
+    p, K = size(Λc)
+    length(σ) == p || throw(ArgumentError("length(σ)=$(length(σ)) must equal p=$p"))
+    Λz_ = Λz === nothing ? zeros(p, K) : Λz
+    fams = DeltaLogNormal.(float.(σ))
+    return twopart_marginal_loglik_laplace(fams, Y, Λz_, Λc, βz, βc; kwargs...)
+end
+
 # ---------------------------------------------------------------------------
 # Fit driver (Delta-lognormal slice 2).
 # ---------------------------------------------------------------------------
@@ -233,8 +264,10 @@ end
 
 Result of [`fit_delta_lognormal_gllvm`](@ref): occurrence logits `βz` (length p),
 positive-part meanlog intercepts `βc` (length p), positive-part loadings `Λc`
-(p×K), the shared log-scale SD `σ`, the maximised `loglik`, `converged`,
-`iterations`, and `predictor` (`:separate` default or `:shared`).
+(p×K), the log-scale SD `σ` (a `Float64` under `disp_group == :shared`, or a
+length-p `Vector{Float64}` under `disp_group == :species`), the maximised
+`loglik`, `converged`, `iterations`, `predictor` (`:separate` default or
+`:shared`), and `disp_group` (`:shared` default or `:species`).
 (`Λz = 0` — occurrence is intercept-only — under `predictor == :separate`.
 Under `predictor == :shared` (the gllvmTMB twin-identity mode: one linear
 predictor drives both parts, `gllvmTMB.cpp:2816-2830`), `βz === βc` and `Λc`
@@ -246,21 +279,25 @@ struct DeltaLogNormalFit
     βz::Vector{Float64}
     βc::Vector{Float64}
     Λc::Matrix{Float64}
-    σ::Float64
+    σ::Union{Float64, Vector{Float64}}
     loglik::Float64
     converged::Bool
     iterations::Int
     predictor::Symbol
+    disp_group::Symbol
 end
 
-# Positional-compat constructor (hessian::Symbol precedent, e.g. binomial.jl):
-# old 7-arg call sites default to :separate.
+# Positional-compat constructors (hessian::Symbol precedent, e.g. binomial.jl):
+# old 7-/8-arg call sites default the newly-appended trailing field(s).
 DeltaLogNormalFit(βz, βc, Λc, σ, loglik, converged, iterations) =
-    DeltaLogNormalFit(βz, βc, Λc, σ, loglik, converged, iterations, :separate)
+    DeltaLogNormalFit(βz, βc, Λc, σ, loglik, converged, iterations, :separate, :shared)
+DeltaLogNormalFit(βz, βc, Λc, σ, loglik, converged, iterations, predictor) =
+    DeltaLogNormalFit(βz, βc, Λc, σ, loglik, converged, iterations, predictor, :shared)
 
 function Base.show(io::IO, f::DeltaLogNormalFit)
     p, K = size(f.Λc)
-    print(io, "DeltaLogNormalFit(p=", p, ", K=", K, ", σ=", round(f.σ; sigdigits = 4),
+    σstr = f.σ isa Real ? string(round(f.σ; sigdigits = 4)) : "per-trait"
+    print(io, "DeltaLogNormalFit(p=", p, ", K=", K, ", σ=", σstr,
           ", loglik=", round(f.loglik; sigdigits = 7),
           f.converged ? "" : ", NOT CONVERGED", ")")
 end
@@ -288,6 +325,19 @@ log-responses + `σ₀ = sd(log y_{>0})`.
   `:shared` so the tie `ηz ≡ ηc` is preserved (see
   `docs/dev-log/decisions/2026-08-28-delta-shared-predictor-identity.md`).
 
+`disp_group` selects the dispersion parameterisation (`:shared` default, or
+`:species`), following the repo's `disp_group` convention for grouped /
+species-specific dispersion (`fit_gllvm.jl`, `grouped_dispersion.jl`):
+- `:shared` (default, previous/only behaviour before this kwarg existed): one
+  scalar sdlog `σ` for every species.
+- `:species`: one sdlog per species (`length(σ) == p`), matching gllvmTMB's
+  per-trait `log_sigma_lognormal_delta` (`gllvmTMB.cpp:1195-1196`,
+  `docs/dev-log/decisions/2026-08-28-per-trait-dispersion-synthesis.md`). Adds
+  `p − 1` free parameters relative to `:shared`; the two nest (`:shared` is
+  the `:species` model with all p sdlogs tied), so `:species` logLik ≥
+  `:shared` logLik on the same data up to optimiser noise. Composes with
+  either `predictor` mode.
+
 `hessian` selects the two-part Laplace log-det curvature (`:observed` default /
 `:fisher`); the mode search is always Fisher-scored. NOTE (2026-08-28): for this
 family the observed count-part weight is not yet specialised, so both selectors
@@ -300,6 +350,7 @@ function fit_delta_lognormal_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         offset = nothing,
         hessian::Symbol = :observed,
         predictor::Symbol = :separate,
+        disp_group::Symbol = :shared,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
@@ -307,6 +358,8 @@ function fit_delta_lognormal_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         "fit_delta_lognormal_gllvm: hessian must be :observed or :fisher; got :$hessian"))
     predictor in (:separate, :shared) || throw(ArgumentError(
         "fit_delta_lognormal_gllvm: predictor must be :separate or :shared; got :$predictor"))
+    disp_group in (:shared, :species) || throw(ArgumentError(
+        "fit_delta_lognormal_gllvm: disp_group must be :shared or :species; got :$disp_group"))
     rr = rr_theta_len(p, K)
 
     βz0 = Vector{Float64}(undef, p)
@@ -324,26 +377,34 @@ function fit_delta_lognormal_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         βc0[t] = c == 0 ? 0.0 : s / c
     end
     sumsq = 0.0; nres = 0
+    sumsq_t = zeros(p); nres_t = zeros(Int, p)
     @inbounds for t in 1:p, j in 1:n
         if Y[t, j] > 0
-            r = log(Y[t, j]) - βc0[t]; sumsq += r^2; nres += 1
+            r = log(Y[t, j]) - βc0[t]
+            sumsq += r^2; nres += 1
+            sumsq_t[t] += r^2; nres_t[t] += 1
         end
     end
     σ0 = nres > 1 ? max(sqrt(sumsq / (nres - 1)), 0.1) : 0.5
+    # Per-trait warm start (disp_group == :species): per-species sd(log y_{>0}),
+    # falling back to the pooled σ0 for species with < 2 positive observations.
+    σ0vec = [nres_t[t] > 1 ? max(sqrt(sumsq_t[t] / (nres_t[t] - 1)), 0.1) : σ0 for t in 1:p]
+    ndisp = disp_group === :shared ? 1 : p
     Zc = [Y[t, j] > 0 ? log(Y[t, j]) - βc0[t] : 0.0 for t in 1:p, j in 1:n]
     F = svd(Zc); kk = min(K, length(F.S))
     Λc0 = zeros(p, K)
     @inbounds for j in 1:kk
         Λc0[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
     end
+    logσ0 = disp_group === :shared ? [log(σ0)] : log.(σ0vec)
 
     if predictor === :separate
-        θ0 = vcat(βz0, βc0, pack_lambda(Λc0), log(σ0))
+        θ0 = vcat(βz0, βc0, pack_lambda(Λc0), logσ0)
         negll = θ -> begin
             βz = θ[1:p]
             βc = θ[(p + 1):(2p)]
             Λc = unpack_lambda(θ[(2p + 1):(2p + rr)], p, K)
-            σ = exp(θ[2p + rr + 1])
+            σ = disp_group === :shared ? exp(θ[2p + rr + 1]) : exp.(θ[(2p + rr + 1):(2p + rr + ndisp)])
             v = try
                 -delta_lognormal_marginal_loglik_laplace(Y, Λc, βz, βc, σ; offsetc = offset, hessian = hessian,
                                                          maxiter = newton_maxiter, tol = newton_tol)
@@ -354,11 +415,11 @@ function fit_delta_lognormal_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         end
     else # :shared — one η = β + Λz drives both parts; offset threads to both parts symmetrically.
         β0 = 0.5 .* (βz0 .+ βc0)
-        θ0 = vcat(β0, pack_lambda(Λc0), log(σ0))
+        θ0 = vcat(β0, pack_lambda(Λc0), logσ0)
         negll = θ -> begin
             β = θ[1:p]
             Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
-            σ = exp(θ[p + rr + 1])
+            σ = disp_group === :shared ? exp(θ[p + rr + 1]) : exp.(θ[(p + rr + 1):(p + rr + ndisp)])
             v = try
                 -delta_lognormal_marginal_loglik_laplace(Y, Λ, β, β, σ; Λz = Λ,
                         offsetz = offset, offsetc = offset, hessian = hessian,
@@ -376,14 +437,14 @@ function fit_delta_lognormal_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     if predictor === :separate
         βz = θ̂[1:p]; βc = θ̂[(p + 1):(2p)]
         Λc = unpack_lambda(θ̂[(2p + 1):(2p + rr)], p, K)
-        σ = exp(θ̂[2p + rr + 1])
+        σ = disp_group === :shared ? exp(θ̂[2p + rr + 1]) : exp.(θ̂[(2p + rr + 1):(2p + rr + ndisp)])
     else
         β = θ̂[1:p]
         Λc = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
-        σ = exp(θ̂[p + rr + 1])
+        σ = disp_group === :shared ? exp(θ̂[p + rr + 1]) : exp.(θ̂[(p + rr + 1):(p + rr + ndisp)])
         βz = β; βc = β
     end
-    return DeltaLogNormalFit(βz, βc, Λc, σ, _fit_verdict(res)..., predictor)
+    return DeltaLogNormalFit(βz, βc, Λc, σ, _fit_verdict(res)..., predictor, disp_group)
 end
 
 # ---------------------------------------------------------------------------
@@ -747,12 +808,33 @@ function delta_gamma_marginal_loglik_laplace(Y::AbstractMatrix, Λc::AbstractMat
 end
 
 """
+    delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α::AbstractVector; Λz=nothing, kwargs...) -> Float64
+
+Per-trait-dispersion variant (`length(α) == p`, gllvmTMB's `log_phi_gamma_delta`,
+`gllvmTMB.cpp:1195-1196`, length `n_traits`): species `t` gets its own shape `α[t]`
+rather than one shared scalar. With a constant `α` this equals the shared-scalar
+method above to machine precision (same `_tp_pieces` density per species, only the
+dispersion lookup changes).
+"""
+function delta_gamma_marginal_loglik_laplace(Y::AbstractMatrix, Λc::AbstractMatrix,
+        βz::AbstractVector, βc::AbstractVector, α::AbstractVector;
+        Λz::Union{Nothing, AbstractMatrix} = nothing, kwargs...)
+    p, K = size(Λc)
+    length(α) == p || throw(ArgumentError("length(α)=$(length(α)) must equal p=$p"))
+    Λz_ = Λz === nothing ? zeros(p, K) : Λz
+    fams = DeltaGamma.(float.(α))
+    return twopart_marginal_loglik_laplace(fams, Y, Λz_, Λc, βz, βc; kwargs...)
+end
+
+"""
     DeltaGammaFit
 
 Result of [`fit_delta_gamma_gllvm`](@ref): occurrence logits `βz` (length p),
 positive-part log-mean intercepts `βc` (length p), positive-part loadings `Λc`
-(p×K), the shared shape `α` (`Var = μ²/α`), the maximised `loglik`, `converged`,
-`iterations`, and `predictor` (`:separate` default or `:shared`). (`Λz = 0` —
+(p×K), the shape `α` (`Var = μ²/α`; a `Float64` under `disp_group == :shared`,
+or a length-p `Vector{Float64}` under `disp_group == :species`), the maximised
+`loglik`, `converged`, `iterations`, `predictor` (`:separate` default or
+`:shared`), and `disp_group` (`:shared` default or `:species`). (`Λz = 0` —
 occurrence is intercept-only — under `predictor == :separate`. Under
 `predictor == :shared` (the gllvmTMB twin-identity mode: one linear predictor
 drives both parts, `gllvmTMB.cpp:2831-2844`), `βz === βc` and `Λc` IS the
@@ -764,21 +846,25 @@ struct DeltaGammaFit
     βz::Vector{Float64}
     βc::Vector{Float64}
     Λc::Matrix{Float64}
-    α::Float64
+    α::Union{Float64, Vector{Float64}}
     loglik::Float64
     converged::Bool
     iterations::Int
     predictor::Symbol
+    disp_group::Symbol
 end
 
-# Positional-compat constructor (hessian::Symbol precedent, e.g. binomial.jl):
-# old 7-arg call sites default to :separate.
+# Positional-compat constructors (hessian::Symbol precedent, e.g. binomial.jl):
+# old 7-/8-arg call sites default the newly-appended trailing field(s).
 DeltaGammaFit(βz, βc, Λc, α, loglik, converged, iterations) =
-    DeltaGammaFit(βz, βc, Λc, α, loglik, converged, iterations, :separate)
+    DeltaGammaFit(βz, βc, Λc, α, loglik, converged, iterations, :separate, :shared)
+DeltaGammaFit(βz, βc, Λc, α, loglik, converged, iterations, predictor) =
+    DeltaGammaFit(βz, βc, Λc, α, loglik, converged, iterations, predictor, :shared)
 
 function Base.show(io::IO, f::DeltaGammaFit)
     p, K = size(f.Λc)
-    print(io, "DeltaGammaFit(p=", p, ", K=", K, ", α=", round(f.α; sigdigits = 4),
+    αstr = f.α isa Real ? string(round(f.α; sigdigits = 4)) : "per-trait"
+    print(io, "DeltaGammaFit(p=", p, ", K=", K, ", α=", αstr,
           ", loglik=", round(f.loglik; sigdigits = 7),
           f.converged ? "" : ", NOT CONVERGED", ")")
 end
@@ -808,6 +894,19 @@ standardised positives.
   `:shared` so the tie `ηz ≡ ηc` is preserved (see
   `docs/dev-log/decisions/2026-08-28-delta-shared-predictor-identity.md`).
 
+`disp_group` selects the dispersion parameterisation (`:shared` default, or
+`:species`), following the repo's `disp_group` convention for grouped /
+species-specific dispersion (`fit_gllvm.jl`, `grouped_dispersion.jl`):
+- `:shared` (default, previous/only behaviour before this kwarg existed): one
+  scalar shape `α` for every species.
+- `:species`: one shape per species (`length(α) == p`), matching gllvmTMB's
+  per-trait `log_phi_gamma_delta` (`gllvmTMB.cpp:1195-1196`,
+  `docs/dev-log/decisions/2026-08-28-per-trait-dispersion-synthesis.md`). Adds
+  `p − 1` free parameters relative to `:shared`; the two nest (`:shared` is
+  the `:species` model with all p shapes tied), so `:species` logLik ≥
+  `:shared` logLik on the same data up to optimiser noise. Composes with
+  either `predictor` mode.
+
 `hessian` selects the two-part Laplace log-det curvature (`:observed` default /
 `:fisher`); the mode search is always Fisher-scored. DeltaGamma is the one
 two-part family whose observed count-part weight is implemented, so the two
@@ -816,6 +915,7 @@ selectors genuinely differ here. This holds under both `predictor` modes.
 function fit_delta_gamma_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         offset = nothing, hessian::Symbol = :observed,
         predictor::Symbol = :separate,
+        disp_group::Symbol = :shared,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     # Validated up front: the objective wraps its body in a try/catch that converts any
@@ -825,6 +925,8 @@ function fit_delta_gamma_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         "fit_delta_gamma_gllvm: hessian must be :observed or :fisher; got :$hessian"))
     predictor in (:separate, :shared) || throw(ArgumentError(
         "fit_delta_gamma_gllvm: predictor must be :separate or :shared; got :$predictor"))
+    disp_group in (:shared, :species) || throw(ArgumentError(
+        "fit_delta_gamma_gllvm: disp_group must be :shared or :species; got :$disp_group"))
     p, n = size(Y)
     rr = rr_theta_len(p, K)
 
@@ -843,15 +945,22 @@ function fit_delta_gamma_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     end
     # method-of-moments shape from standardised positives r = y/μ̂ (mean≈1, Var≈1/α)
     sumsq = 0.0; nres = 0
+    sumsq_t = zeros(p); nres_t = zeros(Int, p)
     @inbounds for t in 1:p
         μt = exp(βc0[t])
         for j in 1:n
             if Y[t, j] > 0
-                r = Y[t, j] / μt - 1.0; sumsq += r^2; nres += 1
+                r = Y[t, j] / μt - 1.0
+                sumsq += r^2; nres += 1
+                sumsq_t[t] += r^2; nres_t[t] += 1
             end
         end
     end
     α0 = nres > 1 ? clamp((nres - 1) / sumsq, 0.1, 100.0) : 1.0
+    # Per-trait warm start (disp_group == :species): per-species method-of-moments
+    # shape, falling back to the pooled α0 for species with < 2 positive observations.
+    α0vec = [nres_t[t] > 1 ? clamp((nres_t[t] - 1) / sumsq_t[t], 0.1, 100.0) : α0 for t in 1:p]
+    ndisp = disp_group === :shared ? 1 : p
     Zc = [Y[t, j] > 0 ? log(max(Y[t, j], 1e-6)) - βc0[t] : 0.0 for t in 1:p, j in 1:n]
     # Offset (on the positive-part predictor η^c = β^c + offset + Λ^c z): remove it
     # from the loadings warm start so the SVD sees the offset-free residual.
@@ -864,12 +973,14 @@ function fit_delta_gamma_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         Λc0[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
     end
 
+    logα0 = disp_group === :shared ? [log(α0)] : log.(α0vec)
+
     if predictor === :separate
-        θ0 = vcat(βz0, βc0, pack_lambda(Λc0), log(α0))
+        θ0 = vcat(βz0, βc0, pack_lambda(Λc0), logα0)
         negll = θ -> begin
             βz = θ[1:p]; βc = θ[(p + 1):(2p)]
             Λc = unpack_lambda(θ[(2p + 1):(2p + rr)], p, K)
-            α = exp(θ[2p + rr + 1])
+            α = disp_group === :shared ? exp(θ[2p + rr + 1]) : exp.(θ[(2p + rr + 1):(2p + rr + ndisp)])
             v = try
                 -delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α; offsetc = offset,
                                                      hessian = hessian,
@@ -881,11 +992,11 @@ function fit_delta_gamma_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         end
     else # :shared — one η = β + Λz drives both parts; offset threads to both parts symmetrically.
         β0 = 0.5 .* (βz0 .+ βc0)
-        θ0 = vcat(β0, pack_lambda(Λc0), log(α0))
+        θ0 = vcat(β0, pack_lambda(Λc0), logα0)
         negll = θ -> begin
             β = θ[1:p]
             Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
-            α = exp(θ[p + rr + 1])
+            α = disp_group === :shared ? exp(θ[p + rr + 1]) : exp.(θ[(p + rr + 1):(p + rr + ndisp)])
             v = try
                 -delta_gamma_marginal_loglik_laplace(Y, Λ, β, β, α; Λz = Λ,
                         offsetz = offset, offsetc = offset, hessian = hessian,
@@ -903,14 +1014,14 @@ function fit_delta_gamma_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     if predictor === :separate
         βz = θ̂[1:p]; βc = θ̂[(p + 1):(2p)]
         Λc = unpack_lambda(θ̂[(2p + 1):(2p + rr)], p, K)
-        α = exp(θ̂[2p + rr + 1])
+        α = disp_group === :shared ? exp(θ̂[2p + rr + 1]) : exp.(θ̂[(2p + rr + 1):(2p + rr + ndisp)])
     else
         β = θ̂[1:p]
         Λc = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
-        α = exp(θ̂[p + rr + 1])
+        α = disp_group === :shared ? exp(θ̂[p + rr + 1]) : exp.(θ̂[(p + rr + 1):(p + rr + ndisp)])
         βz = β; βc = β
     end
-    return DeltaGammaFit(βz, βc, Λc, α, _fit_verdict(res)..., predictor)
+    return DeltaGammaFit(βz, βc, Λc, α, _fit_verdict(res)..., predictor, disp_group)
 end
 
 # ===========================================================================

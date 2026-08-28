@@ -132,8 +132,8 @@ Twin family names align with gllvmTMB / gllvm. Status = native Julia engine
      Bundling the two surfaces into one phrase is what made it misread. The row
      status is UNCHANGED (`missing`) and is separately defensible: it tracks the
      twin's latent/phylo/spatial multinomial surface, which is genuinely absent. -->
-| delta_gamma | implemented |
-| delta_lognormal | implemented |
+| delta_gamma | implemented (**parity Δ PAID 2026-08-28**) |
+| delta_lognormal | implemented (**parity Δ PAID 2026-08-28**) |
 | hurdle_poisson / hurdle_nbinom2 | implemented |
 | zip / zinb / zib | implemented |
 | ordered_beta / beta_hurdle | implemented |
