@@ -12,9 +12,10 @@ The standing goal is *"GLLVM.jl at full capability parity with the gllvmTMB
 0.7.0 twin — correctness debt cleared at the root, the 17-cell parity ladder
 closed, the capability ledger honest, and the package releasable."*
 
-**Achieved:** the HEADLINE only — the Fisher-vs-observed Laplace fault class
-is structurally dead (census `KNOWN_OPEN` empty). Plus the ledger honesty
-pass on the curvature table.
+**Achieved:** the HEADLINE — the Fisher-vs-observed Laplace fault class is
+structurally dead (census `KNOWN_OPEN` empty) — plus two ledger-honesty
+passes: the overstated curvature table (corrected) and the understated L47
+`none × dep` row (promoted with a measured caveat).
 
 **NOT achieved, and this session did not claim otherwise:**
 - The **parity ladder is NOT closed.** 13/17 paid; cells 12/13 are *measured
@@ -167,8 +168,11 @@ plus this handover and the after-task report.
    Totoro suites are green (6955 / 6997 / 7062, all exit 0).
 2. **If the maintainer says merge #273** (their call): `gh pr merge 273 --merge`
    on green. Never `--auto`.
-3. **L47 none×dep promote** (decision batch gate 6, OWED, small):
-   `src/none_dep.jl` works (39/39); promotion = ledger row + docs cascade.
+3. ~~L47 none×dep promote~~ **DONE 2026-08-28** (commit `5f135797`):
+   promoted to `implemented (function API only)` with the Σ/σ_eps
+   identifiability caveat MEASURED (σ_eps = 0.9875 vs an exactly-equivalent
+   σ_eps = 0 parameterisation, Σ_total matched to 4.4e-16) and asserted in a
+   new testset. Owes full-suite coverage (the 7062 run predates it).
 4. **Parity-in-CI keystone** (the honest-parity gap): promote `test/parity/`
    into an opt-in CI job using the libunwind fix for any R↔Julia embedding.
    Codex's bridge-gate spec + `docs/dev-log/compute/2026-08-28-*.md` are the
