@@ -87,6 +87,23 @@ function _nb_grouped_loglik_site(fams::AbstractVector, y::AbstractVector, n::Abs
     return ℓ - 0.5 * dot(z, z) - 0.5 * logdet(A)
 end
 
+# Per-species log-posterior for one site: the backtracking merit function.
+# Mirrors `_laplace_mode_logpost` (families/laplace.jl) with a fams vector.
+function _grouped_laplace_mode_logpost(fams::AbstractVector, y::AbstractVector,
+        n::AbstractVector, Λ::AbstractMatrix, β::AbstractVector, link::Link,
+        z::AbstractVector; mask = nothing, offset = nothing)
+    p = size(Λ, 1)
+    off = offset === nothing ? false : offset
+    η = _clamp_eta.(β .+ off .+ Λ * z)
+    μ = _clamp_mu.(fams, linkinv.(Ref(link), η))
+    q = -0.5 * dot(z, z)
+    @inbounds for t in 1:p
+        (mask === nothing || mask[t]) || continue
+        q += _glm_logpdf(fams[t], μ[t], n[t], y[t])
+    end
+    return q
+end
+
 function _grouped_laplace_mode(fams::AbstractVector, y::AbstractVector,
         n::AbstractVector, Λ::AbstractMatrix, β::AbstractVector, link::Link;
         mask = nothing, offset = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
@@ -97,6 +114,16 @@ function _grouped_laplace_mode(fams::AbstractVector, y::AbstractVector,
     K == 0 && return zeros(Float64, 0)
     off = offset === nothing ? false : offset
     z = zeros(K)
+    # Restart/backtracking safety, mirrored from the generic `_laplace_mode`
+    # (2026-08-27). Without it an undamped Newton overshoot let ‖Λ‖ run away
+    # (~960 against a true 0.38 on the Exponential :observed route, which
+    # evaluates through this kernel; 75% of the curvature-adjudication
+    # campaign's Exponential cells produced garbage estimates the same way).
+    # Well-behaved cells are BIT-IDENTICAL: small steps and accepted full
+    # steps update `z .+ Δ` exactly as before; only steps that DECREASE the
+    # per-site log-posterior are halved.
+    backtrack = any(_laplace_mode_should_backtrack, fams)
+    restarted = false
     @inbounds for _ in 1:maxiter
         η  = _clamp_eta.(β .+ off .+ Λ * z)
         μ  = _clamp_mu.(fams, linkinv.(Ref(link), η))
@@ -109,9 +136,41 @@ function _grouped_laplace_mode(fams::AbstractVector, y::AbstractVector,
         end
         A  = Symmetric(Λ' * (W .* Λ) + I)
         Δ  = _safe_solve(A, Λ' * s .- z)
-        (Δ === nothing || !all(isfinite, Δ)) && break
-        z  = z .+ Δ
-        maximum(abs, Δ) < tol && break
+        if Δ === nothing || !all(isfinite, Δ)
+            if !restarted
+                z = zeros(K)
+                restarted = true
+                continue
+            end
+            break
+        end
+        step_taken = 1.0
+        if norm(Δ) <= 1e-3 * (1 + norm(z)) || !backtrack
+            z = z .+ Δ
+        else
+            q0 = _grouped_laplace_mode_logpost(fams, y, n, Λ, β, link, z;
+                                               mask = mask, offset = offset)
+            if isfinite(q0)
+                accepted = false
+                step = 1.0
+                for _half in 1:30
+                    ztrial = z .+ step .* Δ
+                    q1 = _grouped_laplace_mode_logpost(fams, y, n, Λ, β, link, ztrial;
+                                                       mask = mask, offset = offset)
+                    if isfinite(q1) && q1 >= q0
+                        z = ztrial
+                        step_taken = step
+                        accepted = true
+                        break
+                    end
+                    step *= 0.5
+                end
+                accepted || break
+            else
+                z = z .+ Δ
+            end
+        end
+        step_taken * maximum(abs, Δ) < tol && break
     end
     return z
 end
@@ -439,7 +498,7 @@ end
 # Per-site Laplace log-marginal with per-species Beta precision markers `fams`.
 function _beta_grouped_loglik_site(fams::AbstractVector, y::AbstractVector, n::AbstractVector,
         Λ::AbstractMatrix, β::AbstractVector, link::Link;
-        mask = nothing, offset = nothing, hessian::Symbol = :fisher,
+        mask = nothing, offset = nothing, hessian::Symbol = :observed,
         maxiter::Integer = 100, tol::Real = 1e-9)
     p, K = size(Λ)
     off = offset === nothing ? false : offset
@@ -490,7 +549,7 @@ end
 
 """
     beta_grouped_marginal_loglik_laplace(Y, Λ, β, φvec; link=LogitLink(), mask=nothing,
-                                         offset=nothing, hessian=:fisher, kwargs...) -> Float64
+                                         offset=nothing, hessian=:observed, kwargs...) -> Float64
 
 Total Laplace log-marginal of a Beta GLLVM with **per-species** precision `φvec`
 (length p; `Var_t = μ_t(1−μ_t)/(1+φvec[t])`). `Y` is the p×n matrix of proportions
@@ -501,7 +560,7 @@ Beta/logit Hessian used by TMB's Laplace objective.
 """
 function beta_grouped_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix,
         β::AbstractVector, φvec::AbstractVector; link::Link = LogitLink(),
-        mask = nothing, offset = nothing, hessian::Symbol = :fisher, kwargs...)
+        mask = nothing, offset = nothing, hessian::Symbol = :observed, kwargs...)
     p = size(Λ, 1)
     length(φvec) == p || throw(ArgumentError("length(φvec)=$(length(φvec)) must equal p=$p"))
     N = ones(Int, size(Y))
@@ -1142,7 +1201,7 @@ end
 # Per-site Laplace log-marginal with per-species NB1 dispersion markers `fams`.
 function _nb1_grouped_loglik_site(fams::AbstractVector, y::AbstractVector, n::AbstractVector,
         Λ::AbstractMatrix, β::AbstractVector, link::Link;
-        mask = nothing, offset = nothing, hessian::Symbol = :fisher,
+        mask = nothing, offset = nothing, hessian::Symbol = :observed,
         maxiter::Integer = 100, tol::Real = 1e-9)
     p, K = size(Λ)
     off = offset === nothing ? false : offset
@@ -1193,7 +1252,7 @@ end
 
 """
     nb1_grouped_marginal_loglik_laplace(Y, Λ, β, φvec; link=LogLink(), mask=nothing,
-                                        offset=nothing, hessian=:fisher, kwargs...) -> Float64
+                                        offset=nothing, hessian=:observed, kwargs...) -> Float64
 
 Total Laplace log-marginal of a negative-binomial type-1 (NB1) GLLVM with
 **per-species** dispersion `φvec` (length p; linear variance `Var_t = μ_t(1+φvec[t])`).
@@ -1204,7 +1263,7 @@ uses the conditional observed curvature (TMB Laplace).
 """
 function nb1_grouped_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix,
         β::AbstractVector, φvec::AbstractVector; link::Link = LogLink(),
-        mask = nothing, offset = nothing, hessian::Symbol = :fisher, kwargs...)
+        mask = nothing, offset = nothing, hessian::Symbol = :observed, kwargs...)
     p = size(Λ, 1)
     length(φvec) == p || throw(ArgumentError("length(φvec)=$(length(φvec)) must equal p=$p"))
     N = ones(Int, size(Y))

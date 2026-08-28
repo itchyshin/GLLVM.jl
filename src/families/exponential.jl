@@ -26,6 +26,19 @@ _glm_score(::Exponential, μ, n, me, y) = (y - μ) / μ^2 * me
 _glm_weight(::Exponential, μ, n, me)   = me^2 / μ^2
 _glm_logpdf(::Exponential, μ, n, y)    = logpdf(Exponential(μ), y)
 
+# Observed conditional curvature for Exponential/log: ℓ = −η − y·e^{−η}, so
+# −∂²ℓ/∂η² = y·e^{−η} = y/μ (the Gamma α=1 special case of α·y/μ).
+_glm_obs_weight(::Exponential, μ, n, me, y, link::LogLink, η) = y / μ
+
+# The family-level default, DECLARED (2026-08-27, adversarial-audit fix): the
+# user-facing fitter has defaulted `:observed` since 2026-08-24, but only via
+# its own signature — the `_default_hessian` registry still said `:fisher`,
+# so the covariates/quadratic/mixed/SPDE/phylo-GLM/coevolution kernels ran
+# Exponential on the OTHER curvature. Declaring it here makes every route
+# agree with the shipped default (the same cross-route coherence the NB2 flip
+# enforced) and satisfies the census's has-observed ⇒ declared-default rule.
+_default_hessian(::Exponential, ::LogLink) = :observed
+
 """
     exponential_marginal_loglik_laplace(Y, Λ, β; link=LogLink(), hessian=:observed,
                                         kwargs...) -> Float64
@@ -65,9 +78,20 @@ function exponential_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatr
         return marginal_loglik_laplace(Exponential(1.0), Y, ones(Int, size(Y)), Λ, β,
                                        link; hessian = :fisher, kwargs...)
     end
-    return gamma_grouped_marginal_loglik_laplace(Y, Λ, β, ones(size(Λ, 1));
-                                                 link = link, hessian = :observed,
-                                                 kwargs...)
+    # RE-ROUTED 2026-08-27: through the generic core, retiring the Gamma
+    # grouped-kernel detour. The detour existed (2026-08-24) because only that
+    # kernel carried an observed implementation; the generic core has taken
+    # `hessian = :observed` since the kwarg work (PR #268). The detour's own
+    # per-site Newton loop is UNDAMPED and diverges at moderate parameters on
+    # exponential-scale data — measured: at a healthy fisher-fit optimum
+    # (p=10, n=150 fixture) it returned −5.0e23 against an exact marginal of
+    # −1717.6, while the generic core returned −1716.1. That garbage surface
+    # is what drove `fit_exponential_gllvm(hessian = :observed)` fits to
+    # ‖Λ̂‖ ~ 10³ with `converged = true` in 87/150 curvature-adjudication
+    # campaign cells. The undamped per-site loops remaining in
+    # `grouped_dispersion.jl` are recorded engine debt (Arc 2).
+    return marginal_loglik_laplace(Exponential(1.0), Y, ones(Int, size(Y)), Λ, β,
+                                   link; hessian = :observed, kwargs...)
 end
 
 # ---------------------------------------------------------------------------

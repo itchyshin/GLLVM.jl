@@ -54,14 +54,14 @@ using GLLVM
         end
         φvec = fill(φ, p)
         ll_g = GLLVM.beta_grouped_marginal_loglik_laplace(Y, Λ, β, φvec;
-                                                         offset = O, hessian = :fisher)
+                                                         offset = O)
         fam = Beta(φ, 1.0)
         N = ones(Int, p, n)
         ll_s = GLLVM._marginal_loglik_offset(fam, Y, N, Λ, β, O, LogitLink())
         @test isapprox(ll_g, ll_s; atol = 1e-10, rtol = 0)
     end
 
-    @testset "fit_nb_gllvm_grouped_cov G=1+fisher ≈ fit_gllvm_cov" begin
+    @testset "fit_nb_gllvm_grouped_cov G=1 ≈ fit_gllvm_cov (aligned observed defaults)" begin
         Random.seed!(8103)
         p, n, K, q = 5, 120, 1, 1
         β_true = 0.25 .* randn(p) .+ 1.1
@@ -89,7 +89,7 @@ using GLLVM
         @test isapprox(fg.r_group[1], fs.dispersion; rtol = 0.15)
     end
 
-    @testset "fit_beta_gllvm_grouped_cov G=1+fisher ≈ fit_gllvm_cov" begin
+    @testset "fit_beta_gllvm_grouped_cov G=1 ≈ fit_gllvm_cov (aligned observed defaults)" begin
         Random.seed!(8104)
         p, n, K, q = 5, 120, 1, 1
         β_true = 0.2 .* randn(p)
@@ -106,7 +106,7 @@ using GLLVM
             Y[t, s] = clamp(rand(Beta(μ * φ_true, (1 - μ) * φ_true)), 1e-6, 1 - 1e-6)
         end
         fg = fit_beta_gllvm_grouped_cov(Y; X = X, K = K, group = ones(Int, p),
-                                        hessian = :fisher, iterations = 200)
+                                        iterations = 200)
         @test fg isa BetaGroupedCovFit
         @test length(fg.φ) == 1
         @test length(fg.γ) == q

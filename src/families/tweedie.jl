@@ -231,6 +231,14 @@ function Base.show(io::IO, f::TweedieFit)
           f.converged ? "" : ", NOT CONVERGED", ")")
 end
 
+# TweedieED deliberately does NOT opt into the damped mode-search
+# backtracking (audit rider REVERTED same day, 2026-08-27): the backtracking
+# merit function evaluates the log-posterior, and Tweedie's log-density is the
+# infinite series — opting in ballooned the "Tweedie engine health" testset
+# from minutes to 48m20s (measured, full-suite run). The undamped exposure is
+# recorded engine debt; a cheap merit function (series value cached from the
+# objective evaluation, or a quadratic model test) is the eventual fix shape.
+
 """
     fit_tweedie_gllvm(Y; K, link=LogLink(), φ_init=1.0, p_init=1.5, …) -> TweedieFit
 

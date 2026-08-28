@@ -20,7 +20,6 @@ using GLLVM, Test, Random, Distributions, ForwardDiff
         # The contract must not change any default. This is the guard against a
         # flip landing by accident rather than by decision.
         @test GLLVM._default_hessian(Poisson(), GLLVM.LogLink()) === :fisher
-        @test GLLVM._default_hessian(Beta(12.0, 1.0), GLLVM.LogitLink()) === :fisher
         # Gamma/log is the ONE deliberate exception (2026-08-25): instance 8 of
         # the curvature fault class, on the public default path, flipped on
         # family-specific measured evidence (observed is closer to quadrature
@@ -32,6 +31,14 @@ using GLLVM, Test, Random, Distributions, ForwardDiff
         # observed curvature on BOTH the estimator-quality and the
         # approximation-accuracy metrics (campaigns/curvature_adjudication/).
         @test GLLVM._default_hessian(NegativeBinomial(4.0, 0.5), GLLVM.LogLink()) === :observed
+        # Decision A (2026-08-27): Beta, NB1 and Student-t flipped on the
+        # campaign's estimator-quality metric with the reported-loglik cost
+        # accepted; Exponential's long-shipped fitter default is now DECLARED
+        # at the registry level (adversarial-audit fix). All dated, deliberate.
+        @test GLLVM._default_hessian(Beta(12.0, 1.0), GLLVM.LogitLink()) === :observed
+        @test GLLVM._default_hessian(GLLVM.NB1(1.5), GLLVM.LogLink()) === :observed
+        @test GLLVM._default_hessian(GLLVM.StudentTFamily(4.0, 1.0), GLLVM.IdentityLink()) === :observed
+        @test GLLVM._default_hessian(Exponential(1.0), GLLVM.LogLink()) === :observed
     end
 
     @testset "invalid selector fails loud" begin
@@ -241,15 +248,15 @@ using GLLVM, Test, Random, Distributions, ForwardDiff
         β2 = fill(0.6, p2)
         Y2 = 0.4 .+ rand(p2, n2)
         N2 = ones(Int, p2, n2)
-        # Beta/logit, not Gamma or NB2: those defaults are now deliberately
-        # :observed (2026-08-25 / 2026-08-27), so neither can serve as the
-        # "default is :fisher" pin. Beta remains Fisher pending the maintainer's
-        # estimator-vs-reporting call (campaign 2026-08-27).
-        f  = Beta(12.0, 1.0)
-        Y2 = clamp.(rand(p2, n2), 1e-3, 1 - 1e-3)
-        bare = GLLVM.marginal_loglik_laplace(f, Y2, N2, Λ2, β2, GLLVM.LogitLink())
-        fish = GLLVM.marginal_loglik_laplace(f, Y2, N2, Λ2, β2, GLLVM.LogitLink(); hessian = :fisher)
-        obs  = GLLVM.marginal_loglik_laplace(f, Y2, N2, Λ2, β2, GLLVM.LogitLink(); hessian = :observed)
+        # TweedieED, the last trait-false family (with GP-1) still on the
+        # :fisher default after decision A (2026-08-27) — the exemplar has
+        # moved twice as the flips landed (NB2 → Beta → Tweedie), which is
+        # exactly the census shrinking.
+        f  = GLLVM.TweedieED(1.2, 1.5)
+        Y2 = [rand() < 0.3 ? 0.0 : rand() * 3.0 + 0.1 for _ in 1:p2, _ in 1:n2]
+        bare = GLLVM.marginal_loglik_laplace(f, Y2, N2, Λ2, β2, GLLVM.LogLink())
+        fish = GLLVM.marginal_loglik_laplace(f, Y2, N2, Λ2, β2, GLLVM.LogLink(); hessian = :fisher)
+        obs  = GLLVM.marginal_loglik_laplace(f, Y2, N2, Λ2, β2, GLLVM.LogLink(); hessian = :observed)
         @test bare === fish        # the default IS :fisher, at the value level
         @test bare != obs          # and the two are genuinely different here
 

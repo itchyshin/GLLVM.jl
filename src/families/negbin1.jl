@@ -120,6 +120,20 @@ function Base.show(io::IO, f::NB1Fit)
           f.converged ? "" : ", NOT CONVERGED", ")")
 end
 
+# NB1/log Laplace log-det defaults to the OBSERVED conditional curvature
+# (decision A, 2026-08-27 — campaign: estimator preference 90–100% med/strong;
+# reported-loglik cost accepted). Delegates to the hand-derived grouped
+# formula (the 2026-08-24 NB1 parity fix's weight). No analytic-gradient
+# coupling: this fitter is finite-difference only.
+_glm_obs_weight(f::NB1, μ, n, me, y, link::LogLink, η) =
+    _nb1_grouped_laplace_weight(:observed, f, μ, me, y, link)
+_default_hessian(::NB1, ::LogLink) = :observed
+
+# Opt into the damped mode-search backtracking (2026-08-27 audit rider): the
+# grouped solver's gate `any(_laplace_mode_should_backtrack, fams)` silently
+# no-opped for NB1, leaving its grouped mode search undamped.
+_laplace_mode_should_backtrack(::NB1) = true
+
 """
     fit_nb1_gllvm(Y; K, link=LogLink(), mask=nothing, offset=nothing, φ_init=nothing, …) -> NB1Fit
 

@@ -132,6 +132,20 @@ function Base.show(io::IO, f::StudentTFit)
           f.converged ? "" : ", NOT CONVERGED", ")")
 end
 
+# Student-t/identity Laplace log-det defaults to the OBSERVED conditional
+# curvature (decision A, 2026-08-27 — campaign: estimator preference 100% in
+# every regime; reported-loglik cost accepted). With r = y − μ (identity link,
+# me = 1): −∂²ℓ/∂η² = (ν+1)(νσ² − r²)/(νσ² + r²)². GENUINELY NEGATIVE for
+# |r| > σ√ν — the assembly-level PD guard in `marginal_loglik_laplace` handles
+# that (measured, load-bearing; never clamp here). No analytic-gradient
+# coupling: this fitter is finite-difference only.
+function _glm_obs_weight(f::StudentTFamily, μ, n, me, y, link::IdentityLink, η)
+    r = y - μ
+    νσ² = f.ν * f.σ^2
+    return (f.ν + 1) * (νσ² - r^2) / (νσ² + r^2)^2
+end
+_default_hessian(::StudentTFamily, ::IdentityLink) = :observed
+
 """
     fit_studentt_gllvm(Y; K, nu=4.0, link=IdentityLink(), σ_init=nothing, …) -> StudentTFit
 

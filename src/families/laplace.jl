@@ -33,6 +33,9 @@ _laplace_mode_should_backtrack(family) = false
 _laplace_mode_should_backtrack(family::Union{
     Poisson, Binomial, NegativeBinomial, Beta, Gamma, Exponential,
 }) = true
+# NB1 and TweedieED also opt in — declared in their own family files (they
+# are defined AFTER this one in the include order; 2026-08-27 audit rider:
+# the grouped solver's backtrack gate silently no-opped for them).
 
 function _laplace_mode_logpost(family, y::AbstractVector, n::AbstractVector,
         Λ::AbstractMatrix, β::AbstractVector, link::Link, z::AbstractVector;

@@ -28,14 +28,14 @@ using GLLVM
         end
         φvec = fill(φ, p)
         ll_g = GLLVM.nb1_grouped_marginal_loglik_laplace(Y, Λ, β, φvec;
-                                                         offset = O, hessian = :fisher)
+                                                         offset = O)
         fam = GLLVM.NB1(φ)
         N = ones(Int, p, n)
         ll_s = GLLVM._marginal_loglik_offset(fam, Float64.(Y), N, Λ, β, O, LogLink())
         @test isapprox(ll_g, ll_s; atol = 1e-10, rtol = 0)
     end
 
-    @testset "fit_nb1_gllvm_grouped_cov G=1+fisher ≈ fit_gllvm_cov" begin
+    @testset "fit_nb1_gllvm_grouped_cov G=1 ≈ fit_gllvm_cov (aligned observed defaults)" begin
         Random.seed!(9200)
         p, n, K, q = 5, 140, 1, 1
         β_true = 0.2 .* randn(p) .+ 0.6
@@ -52,7 +52,7 @@ using GLLVM
             Y[t, s] = rand(NegativeBinomial(μ / φ_true, 1 / (1 + φ_true)))
         end
         fg = fit_nb1_gllvm_grouped_cov(Y; X = X, K = K, group = ones(Int, p),
-                                       hessian = :fisher, iterations = 200)
+                                       iterations = 200)
         @test fg isa NB1GroupedCovFit
         @test length(fg.φ) == 1
         @test length(fg.γ) == q
