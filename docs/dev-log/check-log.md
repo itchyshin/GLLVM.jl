@@ -12,14 +12,20 @@ D-139 pre-run of the agent-written campaign cell types (first execution):
 - **Binomial/probit**: 150/150 — VERDICT: **lean observed, maintainer's
   call** (medians +0.1…+0.25, 74–92% prefer observed, observed approximates
   better in 83%; thin outlier tail makes it weaker than Beta's case).
-- **Binomial/cloglog — NEW ENGINE FINDING, cells fenced**: on the seed-1 small
-  fixture, fits run ‖Λ̂‖ to 20–27 against a truth of 0.9 under BOTH curvature
-  selectors, report `converged = true`, and the Laplace objective overstates
-  the exact marginal by +17 to +75 loglik units. Probit on the same data shape
-  is clean, pointing at the cloglog-specific weight/score path rather than
-  the curvature class. Same runaway signature as the (healed) Exponential
-  story but selector-independent. Adjudicating cloglog's curvature before this
-  is fixed would measure a defective route — fenced, investigation queued.
+- **Binomial/cloglog — cells fenced; DIAGNOSED same day as an INTRINSIC
+  approximation pathology, not an implementation defect.** Fits run ‖Λ̂‖ to
+  20–27 (truth 0.9) under BOTH selectors with `converged = true`. The
+  investigation: link derivatives FD-verified correct to 1e-10; the Laplace
+  approximation is accurate at truth (err −0.62) and over-optimistic by +74.8
+  at the runaway, with 19/300 cells saturated at the runaway modes. Mechanism:
+  cloglog's doubly-exponential upper tail saturates at η ≈ 3 (logit needs
+  ~35), so the saturation ridge — where W → 0 deletes the log-det penalty —
+  is reachable at moderate ‖Λ‖ and the optimizer climbs approximation error
+  into it. Probit's symmetric tails keep the ridge out of reach on the same
+  data. TMB's identical objective faces the same ridge ⇒ this is a
+  twin-parity question and a fit-health-diagnostic question (a saturation
+  warning on cloglog fits), NOT a weight/score bug. Remedy decision queued
+  for the maintainer.
 - **Tweedie — cells fenced on cost**: one small cell exceeds 10 minutes; the
   oracle pays the infinite-series log-density at 8001 nodes × every (t, s)
   per evaluation (~10⁶ series calls/fit). Estimate for 150 cells: 50–75
