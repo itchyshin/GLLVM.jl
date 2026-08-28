@@ -233,10 +233,11 @@ why the discrepancy went unnoticed. They differ everywhere else.
 - **Fixed and on `main`:** NB1 (grouped route), `truncated_nbinom2`,
   `Exponential`, `DeltaGamma`, and **`Gamma`** — the last being the one that
   sat on the public default path `fit_gllvm(Y; family = Gamma())`.
-- **Still using the Fisher weight:** Tweedie, Student-t, GP-1, and the shared
-  (non-grouped) routes of Beta and NB1, plus `Binomial` at the **probit**
-  and **cloglog** links. (NB2's shared route flipped to observed 2026-08-27 on
-  the curvature-adjudication campaign evidence.) Every one of these is reachable, so a log-likelihood
+- **Still using the Fisher weight:** Tweedie, GP-1, and `Binomial` at the
+  **probit** and **cloglog** links — nothing else. (NB2, Beta, NB1 and
+  Student-t all flipped to observed 2026-08-27 on the curvature-adjudication
+  campaign evidence — decision A; Exponential's registry default was declared
+  the same day.) Every one of these is reachable, so a log-likelihood
   from them will not match `gllvmTMB` to machine precision.
 - **Not a uniform improvement.** Against numerical quadrature, the observed
   curvature is decisively closer for Gamma (12/12 seeds, 20–60× smaller error)

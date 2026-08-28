@@ -45,10 +45,11 @@ _family_of(m) = (p = Base.unwrap_unionall(m.sig).parameters;
 # wants the observed one, and the flip is a pending maintainer decision (it is a parity
 # change with a measured accuracy cost — see docs/dev-log/check-log.md 2026-08-26).
 # This list is the ledger. Shrinking it is progress; growing it silently is the bug.
-# NB2 left this set 2026-08-27: default flipped to :observed on the
-# curvature-adjudication campaign evidence (both metrics agreed for NB2).
-const KNOWN_OPEN = Set([:TweedieED, :NB1, :Beta, :GeneralizedPoisson1,
-                        :StudentTFamily])
+# NB2 left this set 2026-08-27 (both campaign metrics agreed). Beta, NB1 and
+# StudentTFamily left 2026-08-27 under decision A — flipped on the campaign's
+# estimator-quality metric, with the reported-loglik cost accepted explicitly
+# (docs/dev-log/pending/2026-08-27-curvature-flip-decision-brief.md).
+const KNOWN_OPEN = Set([:TweedieED, :GeneralizedPoisson1])
 
 # Families where Fisher == observed for STRUCTURAL reasons that are not expressed as a
 # `_glm_weight_matches_observed` trait, each with the reason recorded.
@@ -74,10 +75,13 @@ const EXEMPT_BY_IDENTITY = Dict(
 
 # Curvatures genuinely DIFFER; Fisher is retained deliberately, for a reason on record.
 # These are open cells with a decision attached, not safe cells. Each needs a citation.
-const DEFERRED_BY_DECISION = Dict(
-    :Exponential => "explicit :fisher routing to avoid the grouped-kernel ‖Λ‖ runaway; " *
-                    "see exponential.jl:55-66. Measured gap up to 705% — NOT an identity.",
-)
+# Exponential left this dict 2026-08-27: the grouped-kernel detour was retired
+# (the :observed route now evaluates through the generic core, whose safe mode
+# solver ended the ‖Λ‖ runaway), and `_default_hessian(::Exponential, ::LogLink)`
+# is now DECLARED :observed — matching the fitter default shipped since
+# 2026-08-24 and making the covariates/quadratic/mixed/SPDE/phylo-GLM/
+# coevolution kernels agree with it.
+const DEFERRED_BY_DECISION = Dict{Symbol,String}()
 
 @testset "Laplace curvature census (structural guard)" begin
     weight_methods = collect(methods(G._glm_weight))
@@ -183,6 +187,10 @@ const DEFERRED_BY_DECISION = Dict(
         (:TruncatedNegBin2, :LogLink),    # _default_hessian = :observed
         (:Gamma,            :LogLink),    # _default_hessian = :observed
         (:NegativeBinomial, :LogLink),    # _default_hessian = :observed (2026-08-27 campaign)
+        (:Beta,             :LogitLink),    # _default_hessian = :observed (decision A)
+        (:NB1,              :LogLink),      # _default_hessian = :observed (decision A)
+        (:StudentTFamily,   :IdentityLink), # _default_hessian = :observed (decision A)
+        (:Exponential,      :LogLink),      # _default_hessian = :observed (declared; audit fix)
     ])
 
     families = unique([_family_of(m) for m in weight_methods if _family_of(m) !== nothing])

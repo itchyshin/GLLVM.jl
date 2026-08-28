@@ -5,6 +5,28 @@ All notable changes to GLLVM.jl are documented here.
 ## Unreleased
 
 ### Changed
+- **Beta, NB1 and Student-t Laplace log-determinants now use the observed
+  conditional curvature, completing decision A (2026-08-27)** — with Gamma,
+  NB2 and Exponential, every one-part family except Tweedie and GP-1 now
+  matches TMB's log-det. The evidence (900-cell adjudication campaign): the
+  observed curvature's *estimates* land closer to the exact-marginal optimum
+  in 90–100% of medium/strong cells for all three; its *reported loglik* is
+  measurably more biased for them (Beta |err| 0.50→1.22; NB1 0.54→1.09;
+  Student-t 1.60→2.08) — that cost was accepted explicitly for TMB parity and
+  estimator quality. Reported logliks, AIC/BIC and Wald SEs change for these
+  families; `hessian = :fisher` restores the previous objective at fit time.
+  Beta's analytic gradient log-det weight moved in the same commit; the
+  grouped Beta/NB1 marginal evaluators align with their (already-observed)
+  fitters. Beta's and Student-t's genuinely-negative observed curvature is
+  handled by the assembly-level PD guard (measured, load-bearing).
+- **Exponential's `_default_hessian` is now declared `:observed` at the
+  registry level** (it was only a fitter-signature default since 2026-08-24),
+  so the covariates/quadratic/mixed/SPDE/phylo-GLM/coevolution kernels agree
+  with the shipped default. The `:observed` route also re-routed through the
+  generic Laplace core, retiring a grouped-kernel detour whose undamped
+  per-site Newton loop produced garbage marginals at moderate parameters
+  (measured: −5.0e23 against an exact −1717.6) — the cause of runaway
+  `‖Λ̂‖ ~ 10³` fits that still reported `converged = true`.
 - **NB2's Laplace log-determinant now uses the observed conditional curvature
   `μ·r·(r+y)/(r+μ)²`, matching TMB / `gllvmTMB`** (previously the Fisher weight
   `μr/(r+μ)`). This **changes reported `loglik` values for

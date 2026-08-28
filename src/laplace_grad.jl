@@ -318,7 +318,15 @@ function _beta_site_diffable(y::AbstractVector, Λ::AbstractMatrix, β::Abstract
     ηz = _clamp_eta.(β .+ Λ * z); μz = 1 ./ (1 .+ exp.(-ηz))
     mez = μz .* (1 .- μz)
     νz = trigamma.(μz .* φ) .+ trigamma.((1 .- μz) .* φ)
-    WFz = φ .^ 2 .* νz .* mez .^ 2                 # Fisher weight ⇒ logdet
+    # OBSERVED weight ⇒ logdet: φ²ν·me² − φ(y* − μ*)·me·(1 − 2μ).
+    # CHANGED 2026-08-27 together with `_default_hessian(::Beta, ::LogitLink)`
+    # (decision A). Previously the Fisher weight φ²ν·me², matching the
+    # objective's then-Fisher log-det; the objective now uses the observed
+    # curvature, so this must too. `test_laplace_grad.jl` adjudicates against
+    # a finite difference of the actual objective — no stored expected value.
+    ystarz = log.(y) .- log1p.(-y)
+    μstarz = digamma.(μz .* φ) .- digamma.((1 .- μz) .* φ)
+    WFz = φ .^ 2 .* νz .* mez .^ 2 .- φ .* (ystarz .- μstarz) .* mez .* (1 .- 2 .* μz)
     if mask !== nothing
         WFz = ifelse.(mask, WFz, zero(eltype(WFz)))
     end

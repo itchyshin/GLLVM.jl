@@ -17,7 +17,7 @@
 #  gp1/tweedie deferred to a follow-up cell type: their density pieces need
 #  care in the integrand and their fitters are the slowest.)
 
-using GLLVM, Random, Distributions, LinearAlgebra, Printf
+using GLLVM, Random, Distributions, LinearAlgebra, Printf, SpecialFunctions
 
 const REGIMES = Dict(
     "small"  => (p = 5,  n = 60,  lam = 0.4),
@@ -30,7 +30,10 @@ logistic(x) = inv(1 + exp(-x))
 # Per-site integrand pieces: log f(y_ts | z) for each family at the FITTED params.
 function site_logdens(fam::String, y, η, disp)
     if fam == "gamma"           # α = disp; mean exp(η)
-        α = disp; μ = exp(η); return logpdf(Gamma(α, μ / α), y)
+        # Direct log-density (robust at extreme η, cf. exponential below):
+        # log f = α log α − lgamma(α) + (α−1) log y − α η − α y e^{−η}
+        α = disp
+        return α * log(α) - loggamma(α) + (α - 1) * log(y) - α * η - α * y * exp(-η)
     elseif fam == "beta"        # φ = disp; mean logistic(η)
         φ = disp; μ = clamp(logistic(η), 1e-12, 1 - 1e-12)
         return logpdf(Beta(μ * φ, (1 - μ) * φ), y)
@@ -42,7 +45,10 @@ function site_logdens(fam::String, y, η, disp)
     elseif fam == "studentt"    # σ = disp, ν fixed 5
         σ = disp; return logpdf(TDist(5.0), (y - η) / σ) - log(σ)
     elseif fam == "exponential"
-        μ = exp(η); return logpdf(Exponential(μ), y)
+        # Direct log-density: -η - y·e^{-η}. Robust where exp(η) under/overflows
+        # (a diverged fit's Λ̂ can push η past ±745 on the z-grid; Distributions'
+        # Exponential(0.0) constructor throws there, the formula returns -Inf).
+        return -η - y * exp(-η)
     else
         error("unknown family $fam")
     end

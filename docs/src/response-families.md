@@ -450,6 +450,19 @@ shared `γ`; twin API B). Shared-α + X remains the opt-in
 fit = fit_gllvm(Yp; family = Gamma(), K = 2)   # Yp > 0; shared α (no-X)
 ```
 
+!!! note "Laplace curvature: Beta, NB1 and Student-t use the observed Hessian (decision A, 2026-08-27)"
+    The shared routes of Beta/logit, NB1/log and Student-t/identity now
+    default to the **observed** conditional curvature in the Laplace
+    log-determinant, matching TMB / `gllvmTMB` (their grouped fitters already
+    did). Decided on the 900-cell curvature-adjudication campaign: the
+    observed curvature's estimates are closer to the exact-ML optimum in
+    90–100% of realistic cells for all three; its reported log-likelihood is
+    measurably more biased for these families — that trade-off was accepted
+    deliberately. **Reported logliks, AIC/BIC and Wald SEs change**;
+    `hessian = :fisher` restores the previous objective. Beta's and
+    Student-t's observed curvature can be genuinely negative; the
+    positive-definiteness guard at the Laplace assembly handles that case.
+
 !!! note "Laplace curvature: NB2 uses the observed Hessian (changed 2026-08-27)"
     The shared-dispersion NB2 route (`fit_nb_gllvm`, and `fit_gllvm` when it
     does not coerce to the grouped route) now uses the **observed** conditional

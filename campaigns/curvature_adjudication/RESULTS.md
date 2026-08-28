@@ -22,7 +22,7 @@ Exponential (see finding 3). Raw rows: `results/` (tarball on Totoro:
 | beta | 150 | +0.08 / +0.12 | 100% med/strong (56% small) | **Fisher (100%)** |
 | negbin1 | 150 | +0.17 / +0.14 | 90–100% med/strong | **Fisher (83%)** |
 | studentt | 150 | +0.34 / +0.29 | 100% everywhere | **Fisher (67%)** |
-| exponential | 37 | garbage | — | no verdict |
+| exponential | 150 (healed re-run) | +0.43 / +1.59 / +1.44 by regime | 100% everywhere | observed (67%) — **both metrics agree** |
 
 ## Findings
 
@@ -36,12 +36,17 @@ Exponential (see finding 3). Raw rows: `results/` (tarball on Totoro:
    flip to observed for these three buys better estimates at the cost of a
    more biased reported loglik (e.g. beta: |err| 0.50 → 1.22). TMB reports
    the observed-curvature value, so twin parity also pulls toward observed.
-3. **Exponential's engine bug now has a campaign-scale measurement**: 113 of
-   150 cells (75%) died with DomainError inside the fit — the undamped-Newton
-   divergence in the shared grouped-dispersion mode solver (roadmap Arc 2),
-   previously known only as "platform-inconsistent". Among the 37 survivors,
-   diverged observed-fits produce garbage (|err| ~1400). **No adjudication is
-   possible until Arc 2 lands.**
+3. **Exponential — healed and adjudicated (same day)**: the original run's
+   75% mortality decomposed into an oracle fragility (campaign code) and the
+   real engine defect — the `:observed` route's Gamma grouped-kernel detour,
+   whose own undamped per-site Newton loop returned −5.0e23 at healthy
+   parameters (exact: −1717.6), sending the optimizer into a runaway basin
+   with `converged = true`. After re-routing through the generic core
+   (retiring the detour), the 150-cell re-run is 150/150 convergent, and
+   Exponential joins Gamma and NB2 in the both-metrics-agree club: observed's
+   estimates preferred in 100% of cells in every regime (mean +0.4 to +1.6),
+   approximation closer in 67%, Λ recovery equal. The long-shipped
+   `:observed` default is now evidence-backed rather than inherited.
 4. Λ recovery differences are negligible (≤0.007 rmse) for all usable
    families — the curvature choice moves loglik reporting and fine estimate
    position, not gross recovery.

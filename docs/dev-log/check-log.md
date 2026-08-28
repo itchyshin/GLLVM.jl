@@ -14625,6 +14625,101 @@ still open, both still recorded, both still the maintainer's to schedule. This o
 CI failing on an assertion that was never safe to make in the first place: a platform-
 dependent numerical outcome asserted as if it were deterministic.
 
+## 2026-08-27 — decision A executes: Beta, NB1, Student-t flip; Exponential's default declared
+
+The maintainer answered the flip decision brief with "A - flip all three". In
+the same pass, the adversarial audit's census blocker was resolved (its
+predicted single-failure suite landed exactly as forecast: 6885/1/4, the one
+failure at test_curvature_census.jl:164).
+
+### The coupled changes
+
+- **Beta/logit**: `_default_hessian` override + `_glm_obs_weight` delegating
+  to the hand-derived grouped formula + the analytic gradient's log-det
+  weight moved in the same commit (`_beta_site_diffable`; FD-adjudicated) +
+  grouped marginal/site defaults aligned + the grouped-cov identity test
+  unpinned (now compares aligned defaults — strictly stronger).
+- **NB1/log**: override + `_glm_obs_weight` delegating to
+  `_nb1_grouped_laplace_weight(:observed, …)` + grouped defaults aligned.
+  FD-only fitter — no gradient coupling.
+- **Student-t/identity**: override + hand-derived specialised weight
+  `(ν+1)(νσ²−r²)/(νσ²+r²)²` (re-derived from the score in-session; genuinely
+  negative for |r|>σ√ν — assembly PD guard handles it). FD-only fitter.
+- **Exponential**: `_default_hessian(::Exponential, ::LogLink) = :observed`
+  DECLARED (was fitter-signature-only since 2026-08-24) — the audit blocker —
+  which also makes the six `_default_hessian`-consulting kernels
+  (covariates/quadratic/mixed/SPDE/phylo-GLM/coevolution) agree with the
+  shipped default. Accepted blast radius: those routes' Exponential values
+  move from Fisher to observed (the NB2-flip precedent).
+- **Audit riders**: `_laplace_mode_should_backtrack` opt-ins for NB1 and
+  TweedieED placed in their own family files (a Union edit in laplace.jl
+  would have been an include-order UndefVarError — caught before commit).
+- Census: KNOWN_OPEN = {TweedieED, GeneralizedPoisson1} (from six at dawn);
+  CERTIFIED_CELLS = 10 pairs; DEFERRED_BY_DECISION now empty. Contract pins:
+  four new dated deliberate-exception assertions; the Fisher-default exemplar
+  moved NB2 → Beta → TweedieED as the flips landed.
+
+### Verification
+
+Per-file gates + full suite: 6892 pass / 0 fail / 4 expected-broken
+(70m09s). Three lessons the suite taught along the way: the stale-pin class
+had an eleventh instance in the sibling file (test_nb1_x_identity); the
+phylo-beta-xlv test oracle hardcoded the Fisher weight while its src kernel
+correctly consults `_default_hessian` (the oracle now tracks the selector);
+and the TweedieED backtrack rider was reverted with a measured reason — the
+merit function pays the infinite-series log-density, 48m20s for one testset.
+The confint-layer
+curvature-consistency defect the audit found (confint/bootstrap ignore the
+fit's `hessian`; Exponential + NB2 instances — a recurring class) is NOT
+addressed here — it is the next named slice.
+
+## 2026-08-27 — Exponential :observed heals: the Gamma-kernel detour retired (Arc 2 opener)
+
+The campaign's 75% Exponential mortality decomposed into three defects, found
+by peeling in order:
+
+1. **The oracle** (campaign code, not the package): `Exponential(0.0)` thrown
+   at diverged estimates where `exp(η)` underflows. Hardened with direct
+   log-density formulas (gamma too).
+2. **The undamped `_grouped_laplace_mode`**: fixed — zero-restart + per-site
+   log-posterior backtracking mirrored from the generic core. CORRECTED by the
+   adversarial audit (same day): no Exponential path ever reached this solver,
+   so this fix was defence-in-depth for its actual users (grouped getLV,
+   TruncatedNB2), NOT part of the Exponential story. Two audit riders stand:
+   the backtrack gate `any(_laplace_mode_should_backtrack, fams)` silently
+   no-ops for NB1 and TweedieED (union extension needed), and the fix
+   introduced a mode/loglik solver asymmetry with the five still-undamped
+   per-site loops (see the 2026-08-27 arc2 adversarial audit).
+3. **The actual killer — the Gamma grouped-kernel detour's own Newton loop**:
+   `exponential_marginal_loglik_laplace(:observed)` routed through
+   `gamma_grouped_marginal_loglik_laplace` (2026-08-24, when only that kernel
+   had an observed implementation), whose per-site solver
+   (`_gamma_grouped_loglik_site`, its OWN loop, bypassing #2's fix) diverges
+   at moderate parameters on exponential-scale data. Measured at a healthy
+   fisher-fit optimum (p=10 n=150): detour −5.0e23 vs generic core −1716.1 vs
+   exact −1717.6. The optimizer fled that garbage surface into a runaway
+   basin and reported `converged = true` — 87/150 campaign cells.
+
+**Fix: re-route Exponential's `:observed` through the generic core** (possible
+since PR #268 gave the core the `hessian` kwarg), plus a specialised
+`_glm_obs_weight(::Exponential, …, ::LogLink) = y/μ`. A two-stage
+Fisher-warm-start continuation was prototyped, validated, and then DELETED —
+the re-route alone heals every probed cell cold-start (small/1: objerr
++8.66 → +0.06; medium/1, medium/10, strong/1, strong/7 all sane, ‖Λ̂‖ 0.5–3.9).
+
+**Named residual class (Rose)**: `grouped_dispersion.jl` still carries FIVE
+family-specialised per-site Newton loops with no step control (lines ≈47,
+507, 856, 1210, 1563 pre-edit numbering). Fisher-scoring makes each step a
+descent DIRECTION, not a bounded one — the gamma-kernel escape above is the
+measured proof. Exposure: grouped fitters on hard cells. This is recorded
+Arc 2 debt; each loop needs the same backtracking treatment with its own
+verification.
+
+Verification: 5-seed cold-start probe (above); 150-cell re-run 150/150
+convergent — Exponential adjudicates observed on BOTH metrics (100% estimator
+preference every regime, 67% approximation, Λ recovery equal); full suite
+6892 pass / 0 fail / 4 expected-broken (70m09s), which also covers decision A.
+
 ## 2026-08-27 — NB2 default flips to the observed curvature (campaign-adjudicated)
 
 Authorized ("flip gamma and negbin to :observed") on the curvature-adjudication

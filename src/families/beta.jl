@@ -119,6 +119,17 @@ function beta_lv_nll_packed(params::AbstractVector, Y::AbstractMatrix,
                                          maxiter = maxiter, tol = tol)
 end
 
+# Beta/logit Laplace log-det defaults to the OBSERVED conditional curvature
+# (decision A, 2026-08-27, on the 900-cell campaign: observed's estimates beat
+# Fisher's in 100% of medium/strong cells; the reported-loglik accuracy cost
+# — Fisher approximated the VALUE better in 83% of cells — was accepted
+# explicitly for TMB parity and estimator quality). Delegates to the
+# hand-derived grouped formula. The analytic gradient's log-det weight
+# (`laplace_grad.jl`) moves in the same commit — the coupled-change rule.
+_glm_obs_weight(f::Beta, μ, n, me, y, link::LogitLink, η) =
+    _beta_grouped_laplace_weight(:observed, f, μ, me, y, link, η)
+_default_hessian(::Beta, ::LogitLink) = :observed
+
 """
     fit_beta_gllvm(Y; K, link=LogitLink(), φ_init=nothing, …) -> BetaFit
 

@@ -41,7 +41,12 @@ function _dense_leaf_phylo_beta_xlv_loglik(Y, beta, Lambda, alpha_lv,
             mu_ts = GLLVM._clamp_mu(fam, GLLVM.linkinv(LogitLink(), eta_c))
             me_ts = GLLVM.mu_eta(LogitLink(), eta_c)
             score_ts = GLLVM._glm_score(fam, mu_ts, 1, me_ts, Y[t, s])
-            weight_ts = GLLVM._glm_weight(fam, mu_ts, 1, me_ts)
+            # Track the family default like the src kernel (phylo_beta_xlv.jl
+            # consults `_default_hessian`); hardcoding the Fisher weight broke
+            # this oracle when Beta flipped to :observed (decision A, 2026-08-27).
+            weight_ts = GLLVM._default_hessian(fam, LogitLink()) === :fisher ?
+                GLLVM._glm_weight(fam, mu_ts, 1, me_ts) :
+                GLLVM._glm_obs_weight(fam, mu_ts, 1, me_ts, Y[t, s], LogitLink(), eta_c)
             aidx = n_z + t
             grad[aidx] += score_ts
             H[aidx, aidx] += weight_ts

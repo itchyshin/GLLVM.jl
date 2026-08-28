@@ -41,7 +41,7 @@ using GLLVM, Test, Random, Distributions
 
     @testset "default == explicit default, bit-identical (contract 1+2)" begin
         f0 = GLLVM.fit_beta_gllvm(Ybe; K = K)
-        ff = GLLVM.fit_beta_gllvm(Ybe; K = K, hessian = :fisher)   # Beta/logit default
+        ff = GLLVM.fit_beta_gllvm(Ybe; K = K, hessian = :observed) # Beta/logit default (decision A)
         @test f0.loglik == ff.loglik                                # bit-identical
         g0 = GLLVM.fit_gamma_gllvm(Yg; K = K)
         go = GLLVM.fit_gamma_gllvm(Yg; K = K, hessian = :observed) # Gamma/log default
