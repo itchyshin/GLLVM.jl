@@ -342,7 +342,11 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
                                        Σ_phy = Σ_phy)
             catch err
                 err isa PosDefException || rethrow(err)
-                convert(eltype(params), 1e10)
+                # _NLL_SENTINEL, not an ad-hoc 1e10: the ad-hoc value sat BELOW
+                # the 1e11 screen threshold, so a fit stranded on this penalty
+                # plateau would have reported converged=true (the sentinel-escape
+                # class, 2026-08-26). Aligned 2026-08-28.
+                convert(eltype(params), _NLL_SENTINEL)
             end
         end
 
@@ -409,9 +413,11 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
              σ_phy = σ_phy_hat,
              Σ_phy = Σ_phy,
              θ_packed = θ_packed_lv),
-            -Optim.minimum(res),
+            # screened verdict (2026-08-28): a run stranded on the PosDef
+            # sentinel plateau must not report converged=true.
+            _fit_verdict(res)[1],
             Optim.iterations(res),
-            Optim.converged(res),
+            _fit_verdict(res)[2],
             res,
             t1 - t0,
         )
@@ -580,7 +586,11 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
          θ_packed = θ_packed_legacy),
         rec.logLik,
         Optim.iterations(res),
-        Optim.converged(res),
+        # screened (2026-08-28), defensively: this legacy path's objective
+        # (gaussian_profile_nll) has no catch/sentinel return today, so the
+        # screen only guards against a future one; logLik stays the
+        # recomputed closed-form value.
+        (_fit_verdict(res)[2]),
         res,
         t1 - t0,
     )
