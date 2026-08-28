@@ -66,6 +66,8 @@ AGHQ ledger rows stay `missing`/`missing`; only the fence prose at
 `:355-361` was updated to say the AGHQ instance of the fault class is fixed
 while the class generally is not.
 
+## 2026-08-28 — TweedieED and Binomial-probit Laplace curvature flip to :observed
+
 Maintainer decision batch (`docs/dev-log/decisions/2026-08-28-arc-decision-batch.md`,
 gates 1–2): both flips executed as coupled changes per the established
 template (NB2 `e74749b7`, decision A `4155853b`). Sequential — Tweedie first,
@@ -174,6 +176,9 @@ for verbatim tallies): `test_tweedie.jl`, `test_tweedie_engine_health.jl`,
 `test_curvature_census.jl`, `test_laplace_curvature_contract.jl`,
 `test_laplace_dual_safety.jl`, `test_hessian_kwarg.jl`.
 
+Full suite (Totoro, tree `db3b90ad` = these flips + the grouped-selector
+slice): **6997 pass / 0 fail / 4 expected-broken, exit 0, 84m39.4s.**
+
 ## 2026-08-28 — confint curvature consistency: GROUPED fit structs close the recorded residual
 
 Closes the residual left by "confint honors the fit's curvature (the audit
@@ -212,10 +217,11 @@ all (pre-existing gap).
 Verification: targeted 310/310 across the touched surface
 (`test_grouped_hessian_consistency` 20, `test_confint_hessian_consistency` 12,
 `test_grouped_dispersion` 14, `test_grouped_dispersion_beta_gamma` 24,
-`test_confint_family` 240). NOT yet covered by a full suite — the 2026-08-28
-Totoro run (6955 pass / 0 fail / 4 expected-broken, exit 0, 85m28s) was
-launched from the tree at `dc1ee936`, which PREDATES this slice. A full suite
-covering it runs before the release gate.
+`test_confint_family` 240). Full-suite coverage PAID by the later 2026-08-28
+Totoro run from the tree at `db3b90ad` (which includes this slice AND the
+Tweedie/probit flips): 6997 pass / 0 fail / 4 expected-broken, exit 0,
+84m39.4s. (The earlier 6955 run predated this slice and was never claimed
+for it.)
 
 ## 2026-08-28 — Arc 2 mop-up: Gaussian verdict screened, CMP cap closed, two-part hessian exposed
 
