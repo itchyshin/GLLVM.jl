@@ -138,7 +138,7 @@ evaluation with `offsetz = offsetc = offset` at θ̂ reproduces the fitted
 Full tallies: `test_delta_shared_predictor.jl` 38/38, `test_delta_fit.jl`
 13/13, `test_delta_postfit.jl` 213/213, `test_delta_gamma.jl` 50/50,
 `test_twopart_hessian_kwarg.jl` 13/13, `test_twopart_substrate.jl` 2/2 — all
-green, no tolerance touched. `[tally on full-suite green]`
+green, no tolerance touched. `7062 pass / 0 fail / 4 expected-broken, exit 0 (85m19.9s, Totoro, tree `8b1448ab`)`
 
 **Out of scope this slice**: live fit-vs-fit parity Δ against gllvmTMB
 (no R session available here; kernel-Δ / fit-Δ receipt wiring described in

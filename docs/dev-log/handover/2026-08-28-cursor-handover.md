@@ -68,9 +68,9 @@ All on PR #273 (12 commits, origin tip `31c3d7cc` at writing):
 
 Suite evidence (Totoro): run A (tree `dc1ee936`) **6955 / 0 fail / 4 broken**,
 exit 0; run B (tree `db3b90ad` = grouped + flips) **6997 / 0 / 4**, exit 0,
-84m39s. **Run C (tree `8b1448ab` = + AGHQ Slice 0 + delta `:shared`) was still
-RUNNING at handover — see CARRIED-OVER.** Those two commits currently rest on
-targeted evidence (AGHQ 403/403, delta 329/329) plus PR CI.
+84m39s. run C (tree `8b1448ab` = + AGHQ Slice 0 + delta `:shared`) **7062 / 0 / 4**,
+exit 0, 85m20s — **GREEN, landed after the handover was first written; every
+commit on PR #273 now has full-suite coverage.**
 
 ## Current Working State
 
@@ -90,15 +90,9 @@ targeted evidence (AGHQ 403/403, delta 329/329) plus PR CI.
 
 ## Landing State ledger (CARRIED-OVER items — declared, not landed)
 
-- **Totoro full suite run C (tree `8b1448ab`) — IN FLIGHT at handover.**
-  WHY: ~85 min wall-clock; the handover window closed first. It covers the
-  AGHQ Slice 0 and delta `:shared` commits, whose current evidence is
-  targeted-only. RESUME: `ssh snakagaw@totoro.biology.ualberta.ca
-  'tail -6 ~/gllvm-delta-suite.log'` — expect a `Test Summary` line then
-  `EXIT:0` (prior runs: ~7000 pass / 0 fail / 4 broken, 84–85 min). If it is
-  RED, that is a real finding: triage before merging #273. Then stamp the
-  tally onto the two check-log entries dated 2026-08-28 (AGHQ Slice 0/1 and
-  the delta `predictor` entry) which carry `[tally on full-suite green]`.
+- ~~Totoro full suite run C~~ **RESOLVED before session close: 7062 pass /
+  0 fail / 4 expected-broken, exit 0, 85m19.9s (tree `8b1448ab`).** Tally
+  stamped into the check-log. No carried-over suite work remains.
 
 - `viz-plots2` branch: 1 unpushed commit `aa19b773` (Florence Plots.jl
   extension, predates this arc). WHY: unrelated lane, not this session's work.
@@ -144,10 +138,9 @@ plus this handover and the after-task report.
 
 ## Next Immediate Steps (narrow; run lane preflight FIRST)
 
-1. **Reconcile the two in-flight items** (suite run C, PR CI) against reality:
-   `gh pr view 273` + `gh pr checks 273`; Totoro
-   `tail ~/gllvm-delta-suite.log` (expect `EXIT:0`, ~7000 pass / 4 broken);
-   `git log origin/claude/lane-beyond-20260824 --oneline -3`.
+1. **Verify PR #273's Julia matrix jobs** (`gh pr checks 273`) — the only
+   item left unconfirmed at close; Documenter + deploy passed and all three
+   Totoro suites are green (6955 / 6997 / 7062, all exit 0).
 2. **If the maintainer says merge #273** (their call): `gh pr merge 273 --merge`
    on green. Never `--auto`.
 3. **L47 none×dep promote** (decision batch gate 6, OWED, small):
@@ -216,4 +209,4 @@ Read AGENTS.md and docs/dev-log/handover/2026-08-28-cursor-handover.md. Run the 
 
 | repo | branch vs main | CI | shipped today | next by leverage |
 |---|---|---|---|---|
-| GLLVM.jl | PR #273 (12 commits) open, +2 to push | Documenter ✅ · Julia matrix: CHECK | fault class CLOSED · AGHQ Slice 0 · delta `:shared` mode · JuliaCall fix · decision batch | merge #273 → L47 promote → parity-in-CI → student-ν → Arc 4 |
+| GLLVM.jl | PR #273 (16 commits) open | Documenter ✅ · suites 6955/6997/7062 all ✅ · Julia matrix: CHECK | fault class CLOSED · AGHQ Slice 0 · delta `:shared` mode · JuliaCall fix · decision batch | merge #273 → L47 promote → parity-in-CI → student-ν → Arc 4 |
