@@ -18,9 +18,14 @@ passes: the overstated curvature table (corrected) and the understated L47
 `none × dep` row (promoted with a measured caveat).
 
 **NOT achieved, and this session did not claim otherwise:**
-- The **parity ladder is NOT closed.** 13/17 paid; cells 12/13 are *measured
-  with cause* but explicitly NOT paid; student (9) and tweedie (6) are
-  untouched estimator/defect gaps.
+- The **parity ladder is NOT closed — but it moved: 15/17.** Cells 12 and 13
+  PAID 2026-08-28 (per-trait `disp_group = :species` + `predictor = :shared`;
+  Δ 1.8e-8 / 1.8e-8, independently re-verified on fresh seeds). Remaining:
+  **cell 9 student** — the synthesis note says the SAME per-trait dispersion
+  root cause applies (twin fits `log_sigma_student` AND `log_df_student` per
+  trait), plus genuine ν estimation; that attribution is a source reading, NOT
+  a measured Δ, so measure it first. **Cell 6 tweedie** — grouped-route
+  defects first.
 - The **package is NOT releasable.** Arcs 3, 4 and 6 are open (covariance
   grid, cross-validation, `@formula` categoricals, random slopes, StatsAPI
   methods, orphaned tests, claim reconciliation, version bump, Rose
@@ -104,12 +109,12 @@ commit on PR #273 now has full-suite coverage.**
   Julia matrix jobs were still queued/running at handover — CHECK THEM
   (`gh pr checks 273`) before any merge. **The maintainer merges; never
   auto-merge, never `--auto`.**
-- **Live parity Δ for delta cells 12/13: MEASURED — honest mismatch, model
-  difference.** Twin fits PER-TRAIT delta dispersion, Julia shared scalar:
-  Δ logLik −1.92 (lognormal) / −2.57 (gamma), commit `6c471352`. Cells NOT
-  marked paid. NEW MAINTAINER DECISION: per-trait dispersion variant on the
-  Julia delta fitters, or reclassify the cells with this record as evidence.
-  (Also: installed twin is 0.7.1, not 0.7.0 — recorded, not substituted.)
+- **Delta cells 12/13: MEASURED then PAID, same day.** The mismatch
+  (Δ −1.92 / −2.57, commit `6c471352`) was traced to per-trait dispersion,
+  then closed by building it (`15388b46`): Δ now 1.8e-8 / 1.8e-8, both marked
+  PAID with their two required settings stated. The decision this once needed
+  is resolved — no maintainer input required here any more.
+  (Note: installed twin is 0.7.1, not 0.7.0 — recorded, not substituted.)
 - Working tree at writing: clean except this handover + the `AGENTS.md`
   snapshot bullet (both committed by this handover's own commit).
 
@@ -177,9 +182,14 @@ plus this handover and the after-task report.
    into an opt-in CI job using the libunwind fix for any R↔Julia embedding.
    Codex's bridge-gate spec + `docs/dev-log/compute/2026-08-28-*.md` are the
    references.
-5. **Student-ν estimator** (parity cell 9): adjudicated plan in
-   `docs/dev-log/plans/2026-08-28-three-arc-designs.md`; NOTE the twin df-CI
-   bug when comparing intervals.
+5. **Student cell 9 — HIGHEST-VALUE NEXT SLICE.** Per
+   `docs/dev-log/decisions/2026-08-28-per-trait-dispersion-synthesis.md` the
+   twin fits `log_sigma_student` AND `log_df_student` per trait, so the same
+   `disp_group = :species` pattern that just paid cells 12/13 likely applies —
+   but MEASURE the Δ first (that attribution is a source reading, not a
+   measurement). ν estimation is genuine extra work beyond per-trait scale, and
+   the twin's df-CI is off-by-one, so interval comparisons need care. Plan:
+   `docs/dev-log/plans/2026-08-28-three-arc-designs.md`.
 6. Then Arc 4 per the structured-dependence sequencing: `spatial_dep` →
    kernel-source grammar → large-p non-Gaussian determinant path (design-first,
    maintainer sign-off before build).
