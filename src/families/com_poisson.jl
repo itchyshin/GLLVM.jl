@@ -72,9 +72,34 @@ Log normalising constant `log Z(λ,ν)` with `λ = exp(logλ)`, computed by summ
 is ForwardDiff-Dual-safe (accumulators take the type of `logλ`). The series is
 truncated once an added term is `< 1e-12` of the running sum (hard cap 10_000
 terms). At `ν = 1` this returns `λ` exactly (`Z = e^λ`), the Poisson anchor.
+
+When the series' mode `j* = λ^{1/ν}` exceeds 80% of the term cap (where the
+truncated sum would be silently low), the function instead returns the
+Shmueli et al. (2005) asymptotic
+`ν·λ^{1/ν} − ((ν−1)/(2ν))·log λ − ((ν−1)/2)·log 2π − ½·log ν` — exact at
+`ν = 1`, `O(1/j*)` relative error otherwise, validated against the series on
+the crossover band (rel. err. ≤ 3e-8 for ν ∈ {1.3, 2}).
 """
 function compoisson_logz(logλ, ν)
-    T = promote_type(typeof(logλ), typeof(ν))
+    # float(...): integer arguments must not make T an Int — the asymptotic
+    # guard below computes T(0.8) (InexactError for Int T; regression caught
+    # by the 2026-08-28 pre-commit review).
+    T = float(promote_type(typeof(logλ), typeof(ν)))
+    # ASYMPTOTIC BRANCH (2026-08-28, closes the flagged _CMP_LOGZ_CAP
+    # limitation): the series' mode sits at j* ≈ λ^{1/ν} = exp(logλ/ν). Once
+    # j* approaches the term cap the truncated sum is silently low by orders
+    # of magnitude, so beyond 80% of the cap switch to Shmueli et al. (2005,
+    # JRSS-C 54:127-142, eq. 2):
+    #     log Z ≈ ν·λ^{1/ν} − ((ν−1)/(2ν))·log λ − ((ν−1)/2)·log 2π − ½·log ν,
+    # exact at ν = 1 (log Z = λ, the Poisson anchor) and accurate to O(1/j*)
+    # relative error at large j* — validated against the series itself on the
+    # crossover band j* ∈ [2000, 8000] (test_com_poisson_logz_asymptotic).
+    # Dual-safe: arithmetic only, in T.
+    jstar = exp(logλ / ν)
+    if jstar > T(0.8) * _CMP_LOGZ_CAP
+        return ν * jstar - ((ν - one(T)) / (2ν)) * logλ -
+               ((ν - one(T)) / 2) * log(2 * T(π)) - log(T(ν)) / 2
+    end
     # FIXED 2026-08-26 (root cause: docs/dev-log/check-log.md). The series is
     # Σⱼ exp(logtermⱼ), logtermⱼ = j·logλ − ν·loggamma(j+1), which peaks near
     # j ≈ λ^{1/ν}. NEAR THAT PEAK `logtermⱼ` can be in the thousands even though the
@@ -108,13 +133,10 @@ function compoisson_logz(logλ, ν)
     return m + log(S)
 end
 
-# KNOWN LIMITATION, not fixed here: `_CMP_LOGZ_CAP = 10_000` is too small once the
-# series' own mode (≈ λ^{1/ν}) exceeds it — e.g. logλ ≳ 9.2 at ν=1, where the mode
-# is past j=10,000 and the loop hits the cap before converging, silently returning a
-# value low by orders of magnitude rather than erroring. Discovered while deriving
-# the fix above; out of scope for the sentinel-escape work that motivated it, and
-# not the cause of the reported bug (the fixture's failing site has logλ≈8, mode
-# ≈2981, well under the cap). Flagged for the maintainer.
+# The former KNOWN LIMITATION (cap too small once the mode λ^{1/ν} exceeds it,
+# silently returning a value low by orders of magnitude) is CLOSED 2026-08-28
+# by the asymptotic branch above: past 80% of the cap the Shmueli expansion
+# takes over, so no reachable logλ silently truncates.
 
 """
     compoisson_logpdf(y, η, ν) -> Float64

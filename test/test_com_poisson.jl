@@ -96,3 +96,36 @@ _indep_compoisson_loglik(Y, β, ν) = sum(
         @test ff.loglik ≈ direct.loglik atol = 1e-8
     end
 end
+
+
+@testset "compoisson_logz asymptotic branch (the retired cap limitation)" begin
+    # The series' mode j* = exp(logλ/ν); past 80% of _CMP_LOGZ_CAP the Shmueli
+    # asymptotic takes over. Crossover validation: on the band where BOTH
+    # branches are computable, they must agree tightly.
+    for (logl, nu, rtol) in ((7.8, 1.0, 1e-12), (8.9, 1.0, 1e-12),
+                             (16.5, 2.0, 1e-7), (8.6, 1.3, 1e-6))
+        jstar = exp(logl / nu)
+        @test jstar < 0.8 * GLLVM._CMP_LOGZ_CAP      # series branch is the one tested
+        series = GLLVM.compoisson_logz(logl, nu)
+        asym = nu * jstar - ((nu - 1) / (2nu)) * logl -
+               ((nu - 1) / 2) * log(2π) - log(nu) / 2
+        @test isapprox(series, asym; rtol = rtol)
+    end
+    # ν = 1 anchor holds THROUGH the asymptotic branch: log Z = λ exactly.
+    for logl in (9.5, 12.0, 20.0)                     # j* = 13360, 1.6e5, 4.9e8 — all past the cap
+        @test GLLVM.compoisson_logz(logl, 1.0) ≈ exp(logl) rtol = 1e-12
+    end
+    # And the value is monotone across the branch switch (no cliff): a fine
+    # grid spanning the 0.8·cap boundary must be strictly increasing in logλ —
+    # at the exact anchor ν = 1 AND at a genuinely-asymptotic ν
+    # (the 2026-08-28 review flagged that ν = 1 alone doesn't test the ν ≠ 1
+    # branch terms across the switch; boundary logλ = ν·log(0.8·cap)).
+    vals = [GLLVM.compoisson_logz(x, 1.0) for x in 8.90:0.01:9.10]
+    @test all(diff(vals) .> 0)
+    vals2 = [GLLVM.compoisson_logz(x, 2.0) for x in 17.85:0.01:18.10]
+    @test all(diff(vals2) .> 0)
+    # Integer arguments must not throw (exported function; a review caught the
+    # asymptotic guard computing T(0.8) with T = Int64 → InexactError).
+    @test GLLVM.compoisson_logz(2, 1) == GLLVM.compoisson_logz(2.0, 1.0)
+    @test GLLVM.compoisson_logz(9, 1) == GLLVM.compoisson_logz(9.0, 1.0)
+end
