@@ -233,8 +233,14 @@ end
 
 Result of [`fit_delta_lognormal_gllvm`](@ref): occurrence logits `βz` (length p),
 positive-part meanlog intercepts `βc` (length p), positive-part loadings `Λc`
-(p×K), the shared log-scale SD `σ`, the maximised `loglik`, `converged`, and
-`iterations`. (`Λz = 0` — occurrence is intercept-only in v1.)
+(p×K), the shared log-scale SD `σ`, the maximised `loglik`, `converged`,
+`iterations`, and `predictor` (`:separate` default or `:shared`).
+(`Λz = 0` — occurrence is intercept-only — under `predictor == :separate`.
+Under `predictor == :shared` (the gllvmTMB twin-identity mode: one linear
+predictor drives both parts, `gllvmTMB.cpp:2816-2830`), `βz === βc` and `Λc`
+IS the shared loadings matrix (also equal to `Λz`) — read `f.βc`/`f.Λc` as
+"the one shared predictor" in that mode, `f.βz` is the identical array, not
+an independent estimate.)
 """
 struct DeltaLogNormalFit
     βz::Vector{Float64}
@@ -244,7 +250,13 @@ struct DeltaLogNormalFit
     loglik::Float64
     converged::Bool
     iterations::Int
+    predictor::Symbol
 end
+
+# Positional-compat constructor (hessian::Symbol precedent, e.g. binomial.jl):
+# old 7-arg call sites default to :separate.
+DeltaLogNormalFit(βz, βc, Λc, σ, loglik, converged, iterations) =
+    DeltaLogNormalFit(βz, βc, Λc, σ, loglik, converged, iterations, :separate)
 
 function Base.show(io::IO, f::DeltaLogNormalFit)
     p, K = size(f.Λc)
@@ -256,28 +268,45 @@ end
 """
     fit_delta_lognormal_gllvm(Y; K, …) -> DeltaLogNormalFit
 
-Fit a Delta-lognormal two-part GLLVM by L-BFGS over `[βz; βc; vec(Λc); log σ]` on
-the two-part Laplace marginal ([`delta_lognormal_marginal_loglik_laplace`](@ref)),
-with `Λz = 0` (per-species occurrence intercept). `Y` is p×n with `0` for absences
-and positive reals otherwise. Finite-difference gradient; warm start =
+Fit a Delta-lognormal two-part GLLVM by L-BFGS on the two-part Laplace marginal
+([`delta_lognormal_marginal_loglik_laplace`](@ref)). `Y` is p×n with `0` for
+absences and positive reals otherwise. Finite-difference gradient; warm start =
 `logit(empirical P(y>0))` occurrence intercepts + mean / SVD of the positive-part
 log-responses + `σ₀ = sd(log y_{>0})`.
+
+`predictor` selects the parameterisation (`:separate` default, or `:shared`):
+- `:separate` (default, previous/only behaviour before this kwarg existed):
+  independent occurrence (`βz`, `Λz = 0`) and positive-part (`βc`, `Λc`)
+  predictors; optimises over `[βz; βc; vec(Λc); log σ]`.
+- `:shared`: the gllvmTMB twin-identity mode (`gllvmTMB.cpp:2816-2830`,
+  `R/gllvmTMB.R:151-154`) — ONE linear predictor `η = β + Λz` drives both
+  parts (`βz ≡ βc ≡ β`, `Λz ≡ Λc ≡ Λ`), optimising over the smaller
+  `[β; vec(Λ); log σ]`. This is a twin-parity-oriented, restrictive
+  parameterisation (occurrence log-odds and log-abundance move together by
+  construction), not a general-purpose recommendation over `:separate`. A
+  supplied `offset` is threaded into BOTH `offsetz` and `offsetc` under
+  `:shared` so the tie `ηz ≡ ηc` is preserved (see
+  `docs/dev-log/decisions/2026-08-28-delta-shared-predictor-identity.md`).
 
 `hessian` selects the two-part Laplace log-det curvature (`:observed` default /
 `:fisher`); the mode search is always Fisher-scored. NOTE (2026-08-28): for this
 family the observed count-part weight is not yet specialised, so both selectors
 currently produce the identical objective (the `TWOPART_KNOWN_OPEN` census gap;
 DeltaGamma is the only two-part family whose observed weight is implemented).
-Exposing the kwarg is the measurement prerequisite for closing that gap.
+Exposing the kwarg is the measurement prerequisite for closing that gap. This
+holds under both `predictor` modes.
 """
 function fit_delta_lognormal_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         offset = nothing,
         hessian::Symbol = :observed,
+        predictor::Symbol = :separate,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
     hessian in (:observed, :fisher) || throw(ArgumentError(
         "fit_delta_lognormal_gllvm: hessian must be :observed or :fisher; got :$hessian"))
+    predictor in (:separate, :shared) || throw(ArgumentError(
+        "fit_delta_lognormal_gllvm: predictor must be :separate or :shared; got :$predictor"))
     rr = rr_theta_len(p, K)
 
     βz0 = Vector{Float64}(undef, p)
@@ -308,28 +337,53 @@ function fit_delta_lognormal_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         Λc0[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
     end
 
-    θ0 = vcat(βz0, βc0, pack_lambda(Λc0), log(σ0))
-    function negll(θ)
-        βz = θ[1:p]
-        βc = θ[(p + 1):(2p)]
-        Λc = unpack_lambda(θ[(2p + 1):(2p + rr)], p, K)
-        σ = exp(θ[2p + rr + 1])
-        v = try
-            -delta_lognormal_marginal_loglik_laplace(Y, Λc, βz, βc, σ; offsetc = offset, hessian = hessian,
-                                                     maxiter = newton_maxiter, tol = newton_tol)
-        catch
-            return 1e12
+    if predictor === :separate
+        θ0 = vcat(βz0, βc0, pack_lambda(Λc0), log(σ0))
+        negll = θ -> begin
+            βz = θ[1:p]
+            βc = θ[(p + 1):(2p)]
+            Λc = unpack_lambda(θ[(2p + 1):(2p + rr)], p, K)
+            σ = exp(θ[2p + rr + 1])
+            v = try
+                -delta_lognormal_marginal_loglik_laplace(Y, Λc, βz, βc, σ; offsetc = offset, hessian = hessian,
+                                                         maxiter = newton_maxiter, tol = newton_tol)
+            catch
+                1e12
+            end
+            isfinite(v) ? v : 1e12
         end
-        return isfinite(v) ? v : 1e12
+    else # :shared — one η = β + Λz drives both parts; offset threads to both parts symmetrically.
+        β0 = 0.5 .* (βz0 .+ βc0)
+        θ0 = vcat(β0, pack_lambda(Λc0), log(σ0))
+        negll = θ -> begin
+            β = θ[1:p]
+            Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+            σ = exp(θ[p + rr + 1])
+            v = try
+                -delta_lognormal_marginal_loglik_laplace(Y, Λ, β, β, σ; Λz = Λ,
+                        offsetz = offset, offsetc = offset, hessian = hessian,
+                        maxiter = newton_maxiter, tol = newton_tol)
+            catch
+                1e12
+            end
+            isfinite(v) ? v : 1e12
+        end
     end
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
     res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
                          autodiff = :finite)
     θ̂ = Optim.minimizer(res)
-    βz = θ̂[1:p]; βc = θ̂[(p + 1):(2p)]
-    Λc = unpack_lambda(θ̂[(2p + 1):(2p + rr)], p, K)
-    σ = exp(θ̂[2p + rr + 1])
-    return DeltaLogNormalFit(βz, βc, Λc, σ, _fit_verdict(res)...)
+    if predictor === :separate
+        βz = θ̂[1:p]; βc = θ̂[(p + 1):(2p)]
+        Λc = unpack_lambda(θ̂[(2p + 1):(2p + rr)], p, K)
+        σ = exp(θ̂[2p + rr + 1])
+    else
+        β = θ̂[1:p]
+        Λc = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
+        σ = exp(θ̂[p + rr + 1])
+        βz = β; βc = β
+    end
+    return DeltaLogNormalFit(βz, βc, Λc, σ, _fit_verdict(res)..., predictor)
 end
 
 # ---------------------------------------------------------------------------
@@ -698,7 +752,13 @@ end
 Result of [`fit_delta_gamma_gllvm`](@ref): occurrence logits `βz` (length p),
 positive-part log-mean intercepts `βc` (length p), positive-part loadings `Λc`
 (p×K), the shared shape `α` (`Var = μ²/α`), the maximised `loglik`, `converged`,
-and `iterations`. (`Λz = 0` — occurrence is intercept-only in v1.)
+`iterations`, and `predictor` (`:separate` default or `:shared`). (`Λz = 0` —
+occurrence is intercept-only — under `predictor == :separate`. Under
+`predictor == :shared` (the gllvmTMB twin-identity mode: one linear predictor
+drives both parts, `gllvmTMB.cpp:2831-2844`), `βz === βc` and `Λc` IS the
+shared loadings matrix (also equal to `Λz`) — read `f.βc`/`f.Λc` as "the one
+shared predictor" in that mode, `f.βz` is the identical array, not an
+independent estimate.)
 """
 struct DeltaGammaFit
     βz::Vector{Float64}
@@ -708,7 +768,13 @@ struct DeltaGammaFit
     loglik::Float64
     converged::Bool
     iterations::Int
+    predictor::Symbol
 end
+
+# Positional-compat constructor (hessian::Symbol precedent, e.g. binomial.jl):
+# old 7-arg call sites default to :separate.
+DeltaGammaFit(βz, βc, Λc, α, loglik, converged, iterations) =
+    DeltaGammaFit(βz, βc, Λc, α, loglik, converged, iterations, :separate)
 
 function Base.show(io::IO, f::DeltaGammaFit)
     p, K = size(f.Λc)
@@ -720,21 +786,36 @@ end
 """
     fit_delta_gamma_gllvm(Y; K, …) -> DeltaGammaFit
 
-Fit a Delta-Gamma two-part GLLVM by L-BFGS over `[βz; βc; vec(Λc); log α]` on the
-two-part Laplace marginal ([`delta_gamma_marginal_loglik_laplace`](@ref)), with
-`Λz = 0` (per-species occurrence intercept), jointly estimating the shape `α`. `Y`
-is p×n with `0` for absences and positive reals otherwise. Finite-difference
-gradient; warm start = `logit(empirical P(y>0))` occurrence intercepts + `log` mean
-positive value as log-mean intercepts + SVD of positive-part log-residuals as
-loadings + a method-of-moments `α₀` from the standardised positives.
+Fit a Delta-Gamma two-part GLLVM by L-BFGS on the two-part Laplace marginal
+([`delta_gamma_marginal_loglik_laplace`](@ref)), jointly estimating the shape
+`α`. `Y` is p×n with `0` for absences and positive reals otherwise.
+Finite-difference gradient; warm start = `logit(empirical P(y>0))` occurrence
+intercepts + `log` mean positive value as log-mean intercepts + SVD of
+positive-part log-residuals as loadings + a method-of-moments `α₀` from the
+standardised positives.
+
+`predictor` selects the parameterisation (`:separate` default, or `:shared`):
+- `:separate` (default, previous/only behaviour before this kwarg existed):
+  independent occurrence (`βz`, `Λz = 0`) and positive-part (`βc`, `Λc`)
+  predictors; optimises over `[βz; βc; vec(Λc); log α]`.
+- `:shared`: the gllvmTMB twin-identity mode (`gllvmTMB.cpp:2831-2844`,
+  `R/gllvmTMB.R:151-154`) — ONE linear predictor `η = β + Λz` drives both
+  parts (`βz ≡ βc ≡ β`, `Λz ≡ Λc ≡ Λ`), optimising over the smaller
+  `[β; vec(Λ); log α]`. This is a twin-parity-oriented, restrictive
+  parameterisation (occurrence log-odds and log-abundance move together by
+  construction), not a general-purpose recommendation over `:separate`. A
+  supplied `offset` is threaded into BOTH `offsetz` and `offsetc` under
+  `:shared` so the tie `ηz ≡ ηc` is preserved (see
+  `docs/dev-log/decisions/2026-08-28-delta-shared-predictor-identity.md`).
 
 `hessian` selects the two-part Laplace log-det curvature (`:observed` default /
 `:fisher`); the mode search is always Fisher-scored. DeltaGamma is the one
 two-part family whose observed count-part weight is implemented, so the two
-selectors genuinely differ here.
+selectors genuinely differ here. This holds under both `predictor` modes.
 """
 function fit_delta_gamma_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         offset = nothing, hessian::Symbol = :observed,
+        predictor::Symbol = :separate,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     # Validated up front: the objective wraps its body in a try/catch that converts any
@@ -742,6 +823,8 @@ function fit_delta_gamma_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     # a converged-looking garbage fit.
     hessian in (:observed, :fisher) || throw(ArgumentError(
         "fit_delta_gamma_gllvm: hessian must be :observed or :fisher; got :$hessian"))
+    predictor in (:separate, :shared) || throw(ArgumentError(
+        "fit_delta_gamma_gllvm: predictor must be :separate or :shared; got :$predictor"))
     p, n = size(Y)
     rr = rr_theta_len(p, K)
 
@@ -781,28 +864,53 @@ function fit_delta_gamma_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         Λc0[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
     end
 
-    θ0 = vcat(βz0, βc0, pack_lambda(Λc0), log(α0))
-    function negll(θ)
-        βz = θ[1:p]; βc = θ[(p + 1):(2p)]
-        Λc = unpack_lambda(θ[(2p + 1):(2p + rr)], p, K)
-        α = exp(θ[2p + rr + 1])
-        v = try
-            -delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α; offsetc = offset,
-                                                 hessian = hessian,
-                                                 maxiter = newton_maxiter, tol = newton_tol)
-        catch
-            return 1e12
+    if predictor === :separate
+        θ0 = vcat(βz0, βc0, pack_lambda(Λc0), log(α0))
+        negll = θ -> begin
+            βz = θ[1:p]; βc = θ[(p + 1):(2p)]
+            Λc = unpack_lambda(θ[(2p + 1):(2p + rr)], p, K)
+            α = exp(θ[2p + rr + 1])
+            v = try
+                -delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α; offsetc = offset,
+                                                     hessian = hessian,
+                                                     maxiter = newton_maxiter, tol = newton_tol)
+            catch
+                1e12
+            end
+            isfinite(v) ? v : 1e12
         end
-        return isfinite(v) ? v : 1e12
+    else # :shared — one η = β + Λz drives both parts; offset threads to both parts symmetrically.
+        β0 = 0.5 .* (βz0 .+ βc0)
+        θ0 = vcat(β0, pack_lambda(Λc0), log(α0))
+        negll = θ -> begin
+            β = θ[1:p]
+            Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+            α = exp(θ[p + rr + 1])
+            v = try
+                -delta_gamma_marginal_loglik_laplace(Y, Λ, β, β, α; Λz = Λ,
+                        offsetz = offset, offsetc = offset, hessian = hessian,
+                        maxiter = newton_maxiter, tol = newton_tol)
+            catch
+                1e12
+            end
+            isfinite(v) ? v : 1e12
+        end
     end
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
     res = Optim.optimize(negll, θ0, ls, Optim.Options(g_tol = g_tol, iterations = iterations);
                          autodiff = :finite)
     θ̂ = Optim.minimizer(res)
-    βz = θ̂[1:p]; βc = θ̂[(p + 1):(2p)]
-    Λc = unpack_lambda(θ̂[(2p + 1):(2p + rr)], p, K)
-    α = exp(θ̂[2p + rr + 1])
-    return DeltaGammaFit(βz, βc, Λc, α, _fit_verdict(res)...)
+    if predictor === :separate
+        βz = θ̂[1:p]; βc = θ̂[(p + 1):(2p)]
+        Λc = unpack_lambda(θ̂[(2p + 1):(2p + rr)], p, K)
+        α = exp(θ̂[2p + rr + 1])
+    else
+        β = θ̂[1:p]
+        Λc = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
+        α = exp(θ̂[p + rr + 1])
+        βz = β; βc = β
+    end
+    return DeltaGammaFit(βz, βc, Λc, α, _fit_verdict(res)..., predictor)
 end
 
 # ===========================================================================

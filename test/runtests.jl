@@ -156,6 +156,7 @@ using GLLVM
     include("test_twopart_substrate.jl")
     include("test_twopart_alloc_equiv.jl")
     include("test_delta_fit.jl")
+    include("test_delta_shared_predictor.jl")
     include("test_delta_postfit.jl")
     include("test_hurdle_poisson.jl")
     include("test_hurdle_nb.jl")

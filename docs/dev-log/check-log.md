@@ -1,5 +1,75 @@
 # Check Log
 
+## 2026-08-28 — Delta-family `predictor` mode: twin-identity shared-η parameterisation
+
+Maintainer decision batch gate 4 (`docs/dev-log/decisions/2026-08-28-arc-decision-batch.md`):
+**Twin identity MODE** — add the shared-single-predictor parameterisation as
+a parity-comparable mode on `fit_delta_lognormal_gllvm` / `fit_delta_gamma_gllvm`,
+keeping the current two-predictor `:separate` form default and unchanged.
+Built per the reviewed design (`predictor::Symbol = :separate | :shared`
+kwarg on the existing fitters, not a new named function).
+
+**What changed**: `predictor::Symbol` kwarg, validated `∈ (:separate,
+:shared)` (`ArgumentError` otherwise, matching the `hessian::Symbol`
+validation style already in this file). `:separate` (default) packs
+`[βz; βc; vec(Λc); log dispersion]`, unchanged — `Λz ≡ 0`. `:shared` packs
+the smaller `[β; vec(Λ); log dispersion]` and calls the existing,
+**unmodified** `delta_lognormal_marginal_loglik_laplace` /
+`delta_gamma_marginal_loglik_laplace` kernel with `βz = βc = β`, `Λz = Λc =
+Λ` — no kernel source change (`_twopart_mode`'s curvature assembly is
+already correct when `Λz = Λc`). `DeltaLogNormalFit` / `DeltaGammaFit` each
+gain one `predictor::Symbol` field; a positional-compat constructor keeps
+the one other in-repo 7-arg call site (`families/variational_dgamma.jl`)
+defaulting to `:separate` unchanged.
+
+**Offset symmetry (twin-matched)**: under `:shared`, a supplied `offset` is
+threaded into BOTH `offsetz` and `offsetc`, matching the twin's single
+shared `eta(o) = eta_fix(o) + offset_vec(o)` construction BEFORE the
+family-fid dispatch (`gllvmTMB.cpp:1401` — the offset hits both parts by
+construction, not by a delta-specific branch). The `:separate` path's
+existing `offset → offsetc`-only wiring is unchanged.
+
+**Design R4 note** (recorded per the reviewed design): this kwarg-on-
+existing-fitter shape follows the 2026-08-28 maintainer instruction and
+supersedes the 2026-08-25 parity-ladder brief's decisions #8/#11
+recommendation of a separately-named fitter (`fit_delta_lognormal_shared_eta_gllvm`)
+for the *shape* of this change only; the brief's other delta-family
+conclusions are unaffected.
+
+**FD gate**: not applicable — both fitters optimise via `autodiff = :finite`
+on the whole packed objective; no hand-coded analytic gradient exists in
+this file for the packing change to touch. Stated explicitly rather than
+silently skipped, per the reviewed design §3.1.
+
+**Verification**: new `test/test_delta_shared_predictor.jl` (wired into
+`test/runtests.jl` next to `test_delta_fit.jl`) — `:separate` ≡ omitted
+bit-identity, invalid-symbol `ArgumentError`, `:shared` recovery on a
+freshly-simulated tied-DGP (lognormal + gamma), the tie itself (`βz == βc`,
+fitted `loglik` == direct kernel eval at `θ̂` to `atol = 1e-8`),
+`hessian × predictor` composition (DeltaGamma's `:observed`/`:fisher`
+genuinely differ under `:shared`; DeltaLogNormal's coincide bit-for-bit,
+consistent with `test_twopart_hessian_kwarg.jl`), and offset symmetry
+(constant per-species offset fully absorbable into `β`; direct kernel
+evaluation with `offsetz = offsetc = offset` at θ̂ reproduces the fitted
+`loglik` to `1e-8`, proving the offset actually hit both parts).
+
+Full tallies: `test_delta_shared_predictor.jl` 38/38, `test_delta_fit.jl`
+13/13, `test_delta_postfit.jl` 213/213, `test_delta_gamma.jl` 50/50,
+`test_twopart_hessian_kwarg.jl` 13/13, `test_twopart_substrate.jl` 2/2 — all
+green, no tolerance touched. `[tally on full-suite green]`
+
+**Out of scope this slice**: live fit-vs-fit parity Δ against gllvmTMB
+(no R session available here; kernel-Δ / fit-Δ receipt wiring described in
+the design remains future work, to be pinned to gllvmTMB 0.7.0);
+`docs/design/capability-status.md` and `docs/src/gllvmtmb-parity.md`
+receipt-genre updates (same reason). See
+`docs/dev-log/decisions/2026-08-28-delta-shared-predictor-identity.md` for
+the full twin-cite table and design detail.
+
+Files touched: `src/families/twopart.jl`, `test/test_delta_shared_predictor.jl`
+(new), `test/runtests.jl`, `docs/src/response-families.md`, `CHANGELOG.md`,
+`docs/dev-log/decisions/2026-08-28-delta-shared-predictor-identity.md` (new).
+
 ## 2026-08-28 — AGHQ unpark Slice 0/1: Fisher/observed curvature drift fixed
 
 Maintainer decision batch gate 5 (`docs/dev-log/decisions/2026-08-28-arc-decision-batch.md`):

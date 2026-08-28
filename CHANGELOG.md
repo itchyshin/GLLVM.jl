@@ -175,6 +175,20 @@ All notable changes to GLLVM.jl are documented here.
   unaffected. Pinned by `test/test_fd_hessian.jl`.
 
 ### Added
+- **`predictor::Symbol = :separate | :shared` on `fit_delta_lognormal_gllvm` /
+  `fit_delta_gamma_gllvm`** (2026-08-28, maintainer decision "Twin identity
+  MODE" — `docs/dev-log/decisions/2026-08-28-arc-decision-batch.md` gate 4):
+  `:shared` reproduces gllvmTMB's delta-family design where ONE linear
+  predictor drives both the occurrence and positive-value components
+  (`gllvmTMB.cpp:2816-2844`) — `βz ≡ βc`, `Λz ≡ Λc`, optimised over the
+  smaller `[β; vec(Λ); log dispersion]`. Offset threads to both parts
+  symmetrically under `:shared`, matching the twin's single shared `eta`
+  construction (`gllvmTMB.cpp:1401`). `:separate` (default) is unchanged and
+  bit-identical to the pre-existing behaviour; `DeltaLogNormalFit` /
+  `DeltaGammaFit` gain a `predictor::Symbol` field (positional-compat
+  constructor keeps old 7-arg call sites defaulting to `:separate`). See
+  `docs/dev-log/decisions/2026-08-28-delta-shared-predictor-identity.md` and
+  `test/test_delta_shared_predictor.jl`.
 - **All ten remaining two-part entry points expose the `hessian` curvature
   selector** (`fit_delta_lognormal_gllvm`, `fit_hurdle_poisson_gllvm`,
   `fit_hurdle_nb_gllvm`, `fit_zip_gllvm`, `fit_zinb_gllvm`, `fit_zib_gllvm`,

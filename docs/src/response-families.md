@@ -725,6 +725,15 @@ Delta-lognormal is a **no-X** surface: `fit_gllvm` and `gllvm(@formula(y ~ 1), �
 are open; covariates, `disp_group`, and `row_eff` are not admitted. No bridge /
 R-parity claim.
 
+**`predictor` mode (2026-08-28):** [`fit_delta_lognormal_gllvm`](@ref) takes a
+`predictor::Symbol` kwarg, `:separate` (default, the behaviour above) or
+`:shared`. gllvmTMB's `delta_lognormal()` ties occurrence and the positive
+part to ONE shared linear predictor (`gllvmTMB.cpp:2816-2830`); `predictor =
+:shared` reproduces that — `βz ≡ βc`, `Λz ≡ Λc` — as a twin-parity-oriented
+mode, not a general recommendation over `:separate` (occurrence log-odds and
+log-abundance move together by construction under `:shared`). See
+`docs/dev-log/decisions/2026-08-28-delta-shared-predictor-identity.md`.
+
 ### Delta-Gamma — `DeltaGamma()`
 
 ```julia
@@ -739,6 +748,12 @@ payload** — always estimated (returned as `fit.α`). Named fitter
 
 Delta-Gamma is a **no-X** surface: same fence as Delta-lognormal (no +X, no
 `disp_group`, no `row_eff`, no bridge / R-parity claim).
+
+**`predictor` mode (2026-08-28):** same kwarg as Delta-lognormal above —
+[`fit_delta_gamma_gllvm`](@ref)'s `predictor::Symbol`, `:separate` (default)
+or `:shared` (twin-identity mode, `gllvmTMB.cpp:2831-2844`). DeltaGamma is
+the one two-part family whose observed count-part weight is implemented, so
+`hessian = :observed` vs `:fisher` genuinely differ under `:shared` too.
 
 ### Beta-binomial — `BetaBinom()`
 
