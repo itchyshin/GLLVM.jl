@@ -184,7 +184,12 @@ plus this handover and the after-task report.
    kernel-source grammar → large-p non-Gaussian determinant path (design-first,
    maintainer sign-off before build).
 
-**Needs a maintainer decision (do NOT decide):** delta cells 12/13 closure
+**Needs a maintainer decision (do NOT decide):** the headline speedup figure
+— `AGENTS.md:13` / `CLAUDE.md` assert `~340×` while the published grid's
+median is 265.1× and the parity page already calls `~340×` unverified;
+options + recommendation in
+`docs/dev-log/pending/2026-08-28-speedup-claim-decision.md` (NOT fixed here:
+those two files are behind the merge-authority fence) · delta cells 12/13 closure
 shape (per-trait dispersion vs reclassify — see commit `6c471352`) ·
 AGHQ Slices 2–4 (outer adaptation loop, report honesty, public `aghq=` knob) ·
 posting the upstream df-CI bug report · merge word for #273 · any
