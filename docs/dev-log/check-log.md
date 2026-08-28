@@ -1,5 +1,87 @@
 # Check Log
 
+## 2026-08-28 — Cells 12/13 (delta_lognormal, delta_gamma) fit-vs-fit parity: MEASURED, not paid at rtol=1e-6
+
+Ran live fit-vs-fit parity for `predictor = :shared` against a real gllvmTMB
+0.7.1 install (`GLLVM_PARITY_R_LIBS=/Users/z3437171/Library/R/arm64/4.6/library`,
+built 2026-08-25; twin checkout at `b9a90c8c8`, tag `v0.6.0-1387-gb9a90c8c8` —
+NOTE the task brief said "gllvmTMB 0.7.0"; the installed/live version is 0.7.1,
+recorded here rather than silently substituted). New files
+`test/parity/test_delta_lognormal_parity.jl`, `test/parity/test_delta_gamma_parity.jl`,
+wired into `runparity.jl`; new oracle `fit_gllvmtmb_parity_delta` in
+`parity_helpers.jl` (also fixed the accessor bug found while building it: the
+twin's TMB object lives at `fit_r$tmb_obj`, not `fit_r$obj` — `fit_r$obj` is a
+plain list; `fit_r$obj$env$parList(...)` throws `attempt to apply non-function`).
+
+**Fixture** (both cells): seed 61 (lognormal) / 62 (gamma), p=5, K=1, n=130,
+simulated UNDER the shared-predictor identity (`η[t,s] = β[t] + Λ[t]·z[s]`
+drives both the Bernoulli occurrence and the positive part, `β_true =
+[0.2,-0.1,0.3,0.0,-0.2]`, `Λ_true = 0.5·parity_loadings_p5k2()[:,1]`), so both
+engines fit their native shared-η model. `σ_true = 0.5` (lognormal, shared
+across traits); `α_true = 4.0` shape (gamma, shared across traits; twin CV
+`phi_true = 0.5`).
+
+**Measured**:
+| cell | Julia logLik | R logLik | Δ (jl−r) |
+|---|---|---|---|
+| delta_lognormal (fid 12) | −746.3732494 | −744.4500531 | **−1.9232** |
+| delta_gamma (fid 13)     | −728.5254616 | −725.9597544 | **−2.5657** |
+
+Both fail the light-cell genre's `rtol=1e-6` — NOT tuned/widened to pass; the
+tests assert only `r.logLik >= jl_logL - 1e-6` (twin never worse) and print
+the numbers, per the no-fudge instruction.
+
+**Definition risks checked, per the task brief**:
+- (a) logLik composition (Jacobian): twin's `dnorm(log(y), eta, sigma, true)
+  - log(y)` (`gllvmTMB.cpp:2827`) vs Julia's `logpdf(LogNormal(ηc,σ), y)`
+  (`src/families/twopart.jl` `_tp_pieces`, `DeltaLogNormal`) — `Distributions.jl`'s
+  `LogNormal` density already folds in the `-log y` Jacobian, so both sides carry
+  it identically. Ruled out as the Δ source.
+- (b) DeltaGamma curvature: both call sites default `hessian = :observed`;
+  confirmed in the source this is genuinely the specialised observed weight
+  for DeltaGamma (`_tp_observed_Wc`, the one two-part family with it
+  implemented) — like-for-like on both sides. Ruled out as the Δ source.
+- (c) **Dispersion parameterisation — CONFIRMED as the Δ driver, not a bug.**
+  The twin's `log_sigma_lognormal_delta` / `log_phi_gamma_delta` are
+  **PER-TRAIT** `n_traits`-length TMB parameter vectors (`gllvmTMB.cpp:1195-1196`;
+  `R/dispersion-trait-map.R` confirms no shared/pinned mode is exposed through
+  the family constructor or `gllvmTMB()` for delta families — the `map` machinery
+  only pins traits belonging to a *different* family in a mixed-family fit).
+  Julia's `fit_delta_lognormal_gllvm` / `fit_delta_gamma_gllvm` estimate a single
+  SHARED scalar `σ` / `α` across all `p` traits. Even under the shared-dispersion
+  DGP used here, the twin has `p−1 = 4` more free parameters, so its maximised
+  log-likelihood is generically ≥ Julia's — exactly the observed sign and rough
+  magnitude:
+  - lognormal: twin per-trait σ̂ = [0.398, 0.441, 0.472, 0.563, 0.467] (spread
+    0.165) around Julia's shared σ̂ = 0.4796 — the spread is real dispersion in
+    the per-trait estimates, consistent with 4 extra degrees of freedom
+    absorbing sampling noise at n=130, not with a broken shared-σ fit.
+  - gamma: twin per-trait shape (1/CV²) = [5.51, 3.20, 5.94, 3.59, 4.71]
+    (spread 2.74) around Julia's shared α̂ = 4.32 — same pattern, larger spread
+    (gamma shape estimation is noisier than lognormal σ at this n).
+  - Additionally the twin's dispersion is the **CV** `phi`, not shape
+    (`shape_g = 1/phi²`); the gamma test converts and prints both.
+  Intercepts (`b_fix` vs Julia `βc`) are close but not identical, as expected
+  when one side has extra per-trait nuisance freedom: lognormal
+  `[0.351,-0.119,0.252,-0.035,-0.276]` (Julia) vs `[0.332,-0.132,0.254,-0.014,-0.276]`
+  (R); gamma `[0.348,-0.049,0.266,-0.004,-0.233]` (Julia) vs
+  `[0.302,0.014,0.260,0.004,-0.233]` (R).
+
+**Verdict**: this is a genuine, structural parameterisation mismatch between
+the twin (per-trait delta dispersion, no shared mode available in the R API)
+and Julia's current `:shared`/`:separate` fitters (single scalar dispersion
+only). It is NOT closable from the Julia test file alone — either Julia would
+need a NEW per-trait-dispersion delta fitter to pair against, or the twin
+would need a `map`-pinned shared-dispersion call path that its public API does
+not currently expose. Docs NOT updated as "paid" (capability-status.md /
+gllvmtmb-parity.md unchanged) — this is a measured, honest mismatch, not a
+tolerance win, and the ledger genre reserves "paid" rows for `rtol=1e-6`
+agreement. Flagged for a maintainer decision: either add a per-trait-dispersion
+`predictor=:shared` delta variant to pair against the twin as-is, or treat
+these two cells as permanently "not directly fit-vs-fit-comparable at
+machine tolerance" in the parity ladder and record the Δ as the best-available
+evidence instead.
+
 ## 2026-08-28 — Delta-family `predictor` mode: twin-identity shared-η parameterisation
 
 Maintainer decision batch gate 4 (`docs/dev-log/decisions/2026-08-28-arc-decision-batch.md`):
