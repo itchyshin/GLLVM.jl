@@ -5,6 +5,18 @@ All notable changes to GLLVM.jl are documented here.
 ## Unreleased
 
 ### Changed
+- **`confint`/bootstrap now rebuild the fit's own objective** (the
+  curvature-consistency class from the 2026-08-27 adversarial audit): every
+  one-part fit struct records the `hessian` its objective used, and the CI
+  adapters thread `fit.hessian` into both the rebuilt marginal and the
+  bootstrap refit. Previously an explicit `hessian = :fisher` fit received
+  default-curvature CIs silently — the ":fisher restores previous behaviour"
+  claim was true at fit time only; it is now true through `confint`.
+  Positional fit-struct construction stays source-compatible (a compat
+  constructor defaults the new field to the family default). Residual: the
+  GROUPED fit structs do not yet record the selector (their explicit-:fisher
+  confint path keeps the old behaviour); Student-t has no confint adapter at
+  all (pre-existing gap, now recorded).
 - **Beta, NB1 and Student-t Laplace log-determinants now use the observed
   conditional curvature, completing decision A (2026-08-27)** — with Gamma,
   NB2 and Exponential, every one-part family except Tweedie and GP-1 now

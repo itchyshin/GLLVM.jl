@@ -1,5 +1,31 @@
 # Check Log
 
+## 2026-08-28 — confint honors the fit's curvature (the audit class, closed for one-part fits)
+
+The structural fix for the recurring class the adversarial audit named
+(Exponential + NB2 instances): `confint`/bootstrap rebuilt objectives with the
+default curvature, ignoring the fit's `hessian`.
+
+- Ten one-part fit structs gain `hessian::Symbol` — the fit carries its
+  objective identity. A positional compat constructor defaults the field to
+  the family default, keeping all ~50 pre-existing construction sites source-
+  compatible AND correct (they are all default-curvature routes).
+- The ten fitters record their actual selector (15 construction sites,
+  including both X_lv branches).
+- Nine `_family_ci` adapters thread `fit.hessian` into the rebuilt marginal
+  and the bootstrap refit (Student-t has NO adapter — pre-existing gap,
+  recorded, not created here).
+- Contract test (`test_confint_hessian_consistency.jl`, wired): the rebuilt
+  nll at the fit's own θ̂ reproduces −loglik under BOTH selectors — the
+  :fisher case is exactly what the old code failed — and the selector
+  demonstrably reaches the CI objective.
+- One mechanical escape during the edit: a comma dropped by the threading
+  script broke seven marginal calls at parse time — caught immediately by the
+  module-load smoke, fixed in one replace.
+
+Residuals (recorded): grouped fit structs don't yet record the selector;
+Student-t confint adapter absent. Suite: 6904 pass / 0 fail / 4 expected-broken (69m22s).
+
 ## 2026-08-24 — Claude handover (post-#262 honesty wave)
 
 Lane `handover/2026-08-24-claude` cut from `origin/main` @ `c5b72310`

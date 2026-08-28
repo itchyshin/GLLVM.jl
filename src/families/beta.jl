@@ -59,7 +59,15 @@ struct BetaFit
     iterations::Int
     alpha_lv::Union{Nothing, Matrix{Float64}}
     theta_packed::Vector{Float64}
+    hessian::Symbol   # the Laplace log-det curvature this fit's objective used
 end
+
+# Positional compatibility constructor (2026-08-28): every pre-existing
+# construction site builds a default-curvature fit; the `hessian` field
+# records the objective identity so `confint`/bootstrap can rebuild THE
+# SAME objective instead of guessing (the audit's confint-consistency class).
+BetaFit(β, Λ, φ, link, loglik, converged, iterations, alpha_lv, theta_packed) =
+    BetaFit(β, Λ, φ, link, loglik, converged, iterations, alpha_lv, theta_packed, _default_hessian(Beta(1.0, 1.0), link))
 
 BetaFit(β::Vector{Float64}, Λ::Matrix{Float64}, φ::Float64, link::Link,
         loglik::Float64, converged::Bool, iterations::Int) =
@@ -282,11 +290,11 @@ function fit_beta_gllvm(Y::AbstractMatrix; K::Integer,
         cursor += rr
         φ̂ = exp(θ̂[cursor + 1])
         return BetaFit(β̂, Λ̂, φ̂, link, _fit_verdict(res)...,
-                       alpha_hat, collect(Float64, θ̂))
+                       alpha_hat, collect(Float64, θ̂), hessian)
     else
         β̂ = θ̂[1:p]
         Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
         φ̂ = exp(θ̂[p + rr + 1])
-        return BetaFit(β̂, Λ̂, φ̂, link, _fit_verdict(res)...)
+        return BetaFit(β̂, Λ̂, φ̂, link, _fit_verdict(res)..., nothing, Float64[], hessian)
     end
 end
