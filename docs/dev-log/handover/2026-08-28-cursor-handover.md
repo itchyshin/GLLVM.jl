@@ -184,7 +184,14 @@ plus this handover and the after-task report.
    kernel-source grammar → large-p non-Gaussian determinant path (design-first,
    maintainer sign-off before build).
 
-**Needs a maintainer decision (do NOT decide):** the headline speedup figure
+**Needs a maintainer decision (do NOT decide):** ⚠️ **five documented phylo
+source files (contrasts, edge-incidence, em_phylo, em_squarem, relaxed_clock)
+are NOT in the module** — `AGENTS.md`/`CLAUDE.md` describe them as shipping,
+their symbols are `NOT DEFINED` at runtime, their seven tests are orphaned,
+and the "identical log-likelihoods to machine precision" claim is therefore
+exercised by nothing; options + cheap first probe in
+`docs/dev-log/pending/2026-08-28-uninstalled-phylo-subsystem.md` · the
+headline speedup figure
 — `AGENTS.md:13` / `CLAUDE.md` assert `~340×` while the published grid's
 median is 265.1× and the parity page already calls `~340×` unverified;
 options + recommendation in
