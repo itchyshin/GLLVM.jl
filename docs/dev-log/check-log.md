@@ -1,6 +1,70 @@
 # Check Log
 
-## 2026-08-28 — TweedieED and Binomial-probit Laplace curvature flip to :observed
+## 2026-08-28 — AGHQ unpark Slice 0/1: Fisher/observed curvature drift fixed
+
+Maintainer decision batch gate 5 (`docs/dev-log/decisions/2026-08-28-arc-decision-batch.md`):
+AGHQ **UNPARK**. Executed only the scout's Slice 0 ("re-audit + fix the
+Fisher/observed drift at `aghq_grid.jl:203` before anything else builds on
+it") and Slice 1 ("re-verify Stage-1a/1b goldens still hold"), per
+`docs/dev-log/decisions/2026-08-28-aghq-unpark-scope.md` (scout work-map,
+today). Slices 2-5 (outer adaptation loop, report honesty, public `aghq=`
+knob, `d≤5` affordability reconsideration) each need their own maintainer
+decision and were explicitly NOT started.
+
+**The defect, confirmed** (`src/families/aghq_grid.jl:203`, pre-fix): the
+Stage-1a site evaluator `aghq_stage1a_loglik_site` computed `W =
+_glm_weight.(...)` (Fisher weight) unconditionally for the adaptation
+curvature `Aᵢ = Λ'WΛ + I`, with no `hessian` keyword at all. This predates
+(2026-08-17) the curvature-correction campaign (2026-08-25 through
+2026-08-28) that flipped nine (family, link) cells' `_default_hessian` to
+`:observed`: Gamma/log, NegativeBinomial/log, Beta/logit, NB1/log,
+StudentTFamily/identity, Exponential/log, TruncatedNegBin2/log (2026-08-25
+through 2026-08-27), and — same day as this fix — TweedieED/log and
+Binomial/probit (the 2026-08-28 decision batch, gates 1-2). The module was
+never revisited, so it silently diverged from each affected family's own
+default Laplace fitter the moment that family's default flipped: at k=1 the
+AGHQ template should be an exact identity with `laplace_loglik_site`, and
+for these nine cells it no longer was. Already named as an open fault class
+in `docs/design/capability-status.md:357-358` ("remains FENCED and PARKED
+with the Fisher weight... must not be described as closed").
+
+**The fix**: `aghq_stage1a_loglik_site` gains `hessian::Symbol =
+_default_hessian(family, link)`, mirroring `laplace_loglik_site`
+(`families/laplace.jl`) and its sibling kernel `covariates.jl`'s
+`_laplace_site_off` exactly — same validation (`:fisher`/`:observed` or
+`ArgumentError`), same branch (`hessian === :fisher ||
+_glm_weight_matches_observed(family, link)` → `_glm_weight`; else the
+masked-cell-safe `_glm_obs_weight` comprehension), same PD guard keyed on the
+weight's sign (`any(w -> w < 0, W)` → `cholesky(A; check=false)` →
+`issuccess(F) || return -Inf`, since Beta and Student-t have measured
+negative observed curvature in some cells — see `capability-status.md`'s
+own 12-seed evidence table). The Newton mode search (`_laplace_mode`) is
+UNCHANGED — still unconditionally Fisher-scored, per the existing
+role-separation contract this fix extends rather than reinvents. The
+per-site adaptation Cholesky is still computed ONCE and reused across every
+quadrature node (Liu-Pierce 1994 adaptive GH by design; not touched).
+
+**Verification** (`/private/tmp/.../scratchpad/verify_fisher_pin.jl`, a
+standalone script re-deriving the pre-change `aghq_stage1a_loglik_site` body
+verbatim from `git show HEAD:src/families/aghq_grid.jl` under a renamed
+function, calling GLLVM's untouched helpers): for Poisson (k=1 and k=3) plus
+all nine `:observed`-default families at k=1, `hessian = :fisher` pinned on
+the NEW code is bit-identical (Julia `===`) to the OLD unconditional-Fisher
+formula. For the nine affected families, the NEW default (now `:observed`)
+genuinely differs from the old value (by design — e.g. Gamma Δ=+0.273,
+Exponential Δ=+0.299, StudentT Δ=−0.226 at the fixed seed), confirming the
+fix does real work rather than being a no-op. New cross-check added to
+`test/test_aghq_grid.jl` ("k=1 site loglik matches dense Laplace under each
+family's DEFAULT hessian"): for all nine families,
+`aghq_stage1a_loglik_site(...; k=1)` under the family default equals
+`laplace_loglik_site(...)` under the same default to `atol=1e-10`.
+
+**Not done, flagged for a maintainer decision, not decided here**: no public
+`aghq=` surface, no outer adaptation loop (A4(4)), no fitted-object `aghq`
+report field (A4(5)) — per the scout's Slices 2-4. `capability-status.md`'s
+AGHQ ledger rows stay `missing`/`missing`; only the fence prose at
+`:355-361` was updated to say the AGHQ instance of the fault class is fixed
+while the class generally is not.
 
 Maintainer decision batch (`docs/dev-log/decisions/2026-08-28-arc-decision-batch.md`,
 gates 1–2): both flips executed as coupled changes per the established

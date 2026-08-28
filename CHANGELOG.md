@@ -5,6 +5,30 @@ All notable changes to GLLVM.jl are documented here.
 ## Unreleased
 
 ### Changed
+- **AGHQ Stage-1a site evaluator now threads the Fisher-vs-observed curvature
+  selector (unpark Slice 0/1, 2026-08-28)**: `aghq_stage1a_loglik_site`
+  (`src/families/aghq_grid.jl`, internal, no public `aghq=` surface) gains a
+  `hessian::Symbol = _default_hessian(family, link)` keyword, mirroring the
+  role-separation contract in `laplace_loglik_site`/`covariates.jl` exactly —
+  the Newton mode search stays Fisher-scored; only the adaptation curvature
+  (the log-det AND the per-site Cholesky reused across every quadrature node)
+  is selectable. Previously the site evaluator computed an unconditional
+  Fisher weight for both roles, which had silently diverged from the same
+  family's own default Laplace fitter for every family whose
+  `_default_hessian` is `:observed` (Beta, Gamma, NegativeBinomial, NB1,
+  StudentT, Exponential, TruncatedNegBin2, and — since the 2026-08-28
+  curvature-flip decision batch — TweedieED and Binomial-probit): the AGHQ
+  `k=1` template no longer equaled that family's own Laplace golden once its
+  default flipped. `hessian = :fisher` pinned reproduces the pre-fix value
+  bit-for-bit (verified against an independent copy of the pre-change
+  unconditional-Fisher formula); the family-default `k=1` template now
+  matches that family's default dense Laplace marginal to 1e-10 for all 9
+  affected families (new cross-check in `test/test_aghq_grid.jl`). A PD guard
+  keyed on the weight's sign (matching `laplace.jl`) was added so a negative
+  observed weight (Beta/Student-t) fails to `-Inf` rather than throwing out of
+  `cholesky`. The module remains internal and FENCED — this closes only the
+  AGHQ instance of the Fisher-vs-observed fault class, not the class
+  generally (`docs/design/capability-status.md`). No ledger row promoted.
 - **`confint`/bootstrap now rebuild the fit's own objective** (the
   curvature-consistency class from the 2026-08-27 adversarial audit): every
   one-part fit struct records the `hessian` its objective used, and the CI

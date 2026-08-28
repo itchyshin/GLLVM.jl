@@ -92,6 +92,52 @@ using GLLVM, Test, Random, Distributions, LinearAlgebra
         @test !isapprox(ll3, ll1; atol = 1e-10)
     end
 
+    @testset "k=1 site loglik matches dense Laplace under each family's DEFAULT hessian" begin
+        # Unpark Slice 0/1 (2026-08-28, docs/dev-log/decisions/2026-08-28-arc-decision-batch.md
+        # gate 5): `aghq_stage1a_loglik_site` now threads `hessian::Symbol =
+        # _default_hessian(family, link)` through the SAME role-separation contract
+        # as `laplace_loglik_site` (Fisher-scored mode search; selectable adaptation
+        # curvature). This is the required cross-check: for every family whose OWN
+        # default Laplace fitter is `:observed` (the curvature-correction campaign,
+        # 2026-08-25 through 2026-08-28 — Gamma, NegativeBinomial, Beta, NB1,
+        # StudentTFamily, Exponential, TruncatedNegBin2, TweedieED, Binomial/probit),
+        # the AGHQ k=1 template must equal that family's default dense Laplace
+        # marginal, not silently diverge onto the previously-hardcoded Fisher weight.
+        Random.seed!(20260828)
+        p, K = 5, 1
+        β = randn(p) .* 0.3 .+ 0.5
+        Λ = 0.4 .* randn(p, K)
+
+        cases = (
+            (fam = Gamma(3.0, 1.0), link = GLLVM.LogLink(),
+             y = 0.4 .+ rand(p), n = ones(Int, p)),
+            (fam = NegativeBinomial(4.0, 0.5), link = GLLVM.LogLink(),
+             y = Float64.(rand(0:8, p)), n = ones(Int, p)),
+            (fam = Beta(8.0, 1.0), link = GLLVM.LogitLink(),
+             y = clamp.(rand(p), 0.02, 0.98), n = ones(Int, p)),
+            (fam = GLLVM.NB1(1.5), link = GLLVM.LogLink(),
+             y = Float64.(rand(0:8, p)), n = ones(Int, p)),
+            (fam = GLLVM.StudentTFamily(4.0, 1.0), link = GLLVM.IdentityLink(),
+             y = randn(p), n = ones(Int, p)),
+            (fam = Exponential(1.0), link = GLLVM.LogLink(),
+             y = 0.3 .+ rand(p), n = ones(Int, p)),
+            (fam = GLLVM.TruncatedNegBin2(), link = GLLVM.LogLink(),
+             y = Float64.(rand(1:8, p)), n = ones(Int, p)),
+            (fam = GLLVM.TweedieED(1.2, 1.5), link = GLLVM.LogLink(),
+             y = [rand() < 0.3 ? 0.0 : 0.2 + 2 * rand() for _ in 1:p], n = ones(Int, p)),
+            (fam = Binomial(), link = GLLVM.ProbitLink(),
+             y = Float64.(rand(0:6, p)), n = fill(6, p)),
+        )
+
+        for c in cases
+            @test GLLVM._default_hessian(c.fam, c.link) === :observed
+            lap  = GLLVM.laplace_loglik_site(c.fam, c.y, c.n, Λ, β, c.link)
+            aghq = GLLVM.aghq_stage1a_loglik_site(c.fam, c.y, c.n, Λ, β, c.link; k = 1)
+            @test isfinite(lap) && isfinite(aghq)
+            @test aghq ≈ lap atol = 1e-10
+        end
+    end
+
     @testset "fail-loud: extra random structure (loadings-only z_B)" begin
         p, K = 3, 1
         β = zeros(p)
