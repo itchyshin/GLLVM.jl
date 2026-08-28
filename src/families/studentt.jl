@@ -101,6 +101,109 @@ studentt_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix, β::Abst
     marginal_loglik_laplace(StudentTFamily(ν, σ), Y, ones(Int, size(Y)), Λ, β, link; kwargs...)
 
 # ---------------------------------------------------------------------------
+# Per-trait dispersion substrate (2026-08-28, gllvmTMB.cpp:1184 `log_sigma_student`,
+# length n_traits — measured baseline Δ logLik = +1.070 at df fixed = ν on both
+# sides, docs/dev-log/decisions/2026-08-28-studentt-parameterisation.md). Mirrors
+# the established `grouped_dispersion.jl` pattern (Gamma/Beta/NB2/NB1): the
+# family-generic single-marker core in `families/laplace.jl` broadcasts ONE
+# family via `Ref(family)`, so per-species dispersion needs its own site kernel
+# that broadcasts a length-p VECTOR of `StudentTFamily` markers instead — reusing
+# the exact same `_glm_score`/`_glm_weight`/`_glm_logpdf`/`_clamp_mu`/
+# `_glm_obs_weight` pieces already defined above. The shared-σ path
+# (`studentt_marginal_loglik_laplace(..., σ::Real; ...)` above) is left
+# byte-for-byte untouched, which is what keeps `disp_group = :shared` (the
+# default) bit-identical to the pre-existing fitter.
+function _studentt_grouped_laplace_weight(hessian::Symbol, f::StudentTFamily, μ, me, y, link::Link, η)
+    hessian === :fisher && return _glm_weight(f, μ, 1, me)
+    hessian === :observed || throw(ArgumentError(
+        "hessian must be :fisher or :observed; got :$hessian"))
+    link isa IdentityLink || throw(ArgumentError(
+        "hessian=:observed is currently supported only for Student-t with IdentityLink()"))
+    return _glm_obs_weight(f, μ, 1, me, y, link, η)
+end
+
+# Per-site Laplace log-marginal with per-species Student-t markers `fams` (each
+# entry shares ν, differs only in σ). PD guard mirrors the generic single-family
+# core (`families/laplace.jl`'s `laplace_loglik_site`): the observed Student-t
+# curvature is genuinely negative for |r| > σ√ν (documented above at
+# `_glm_obs_weight`), so `A` is not SPD by construction here the way it is for
+# Gamma/log — the guard is load-bearing, not defensive.
+function _studentt_grouped_loglik_site(fams::AbstractVector{<:StudentTFamily}, y::AbstractVector, n::AbstractVector,
+        Λ::AbstractMatrix, β::AbstractVector, link::Link;
+        mask = nothing, offset = nothing, hessian::Symbol = :observed,
+        maxiter::Integer = 100, tol::Real = 1e-9)
+    p, K = size(Λ)
+    off = offset === nothing ? false : offset
+    z = zeros(K)
+    local A
+    for _ in 1:maxiter
+        η  = _clamp_eta.(β .+ off .+ Λ * z)
+        μ  = _clamp_mu.(fams, linkinv.(Ref(link), η))
+        me = mu_eta.(Ref(link), η)
+        s  = _glm_score.(fams, μ, n, me, y)
+        # Mode search is ALWAYS Fisher-scored (role separation, 2026-08-25
+        # convention shared with Gamma/Beta/NB2 grouped kernels): expected
+        # information is >= 0, so `Λ'WΛ + I` is SPD by construction and every
+        # Newton step is a descent step, independent of the caller's `hessian`.
+        W  = _glm_weight.(fams, μ, n, me)
+        if mask !== nothing
+            s = ifelse.(mask, s, 0.0)
+            W = ifelse.(mask, W, 0.0)
+        end
+        A  = Symmetric(Λ' * (W .* Λ) + I)
+        Δ  = _safe_solve(A, Λ' * s .- z)
+        (Δ === nothing || !all(isfinite, Δ)) && break
+        z  = z .+ Δ
+        maximum(abs, Δ) < tol && break
+    end
+    η  = _clamp_eta.(β .+ off .+ Λ * z)
+    μ  = _clamp_mu.(fams, linkinv.(Ref(link), η))
+    me = mu_eta.(Ref(link), η)
+    W  = _studentt_grouped_laplace_weight.(Ref(hessian), fams, μ, me, y, Ref(link), η)
+    if mask !== nothing
+        W = ifelse.(mask, W, 0.0)
+    end
+    A  = Symmetric(Λ' * (W .* Λ) + I)
+    ℓ = 0.0
+    @inbounds for t in 1:p
+        (mask === nothing || mask[t]) || continue
+        ℓ += _glm_logpdf(fams[t], μ[t], n[t], y[t])
+    end
+    if any(w -> w < zero(w), W)
+        F = cholesky(A; check = false)
+        issuccess(F) || return oftype(ℓ, -Inf)
+    end
+    return ℓ - 0.5 * dot(z, z) - 0.5 * logdet(A)
+end
+
+"""
+    studentt_marginal_loglik_laplace(Y, Λ, β, σ::AbstractVector; ν=4.0, link=IdentityLink(), kwargs...) -> Float64
+
+Per-trait-dispersion variant (`length(σ) == p`, gllvmTMB's `log_sigma_student`,
+`gllvmTMB.cpp:1184`, length `n_traits`): species `t` gets its own scale `σ[t]`
+(same fixed `ν` for every species) rather than one shared scalar. With a
+constant `σ` this equals the shared-scalar method above to machine precision
+(same `_glm_score`/`_glm_weight`/`_glm_logpdf` pieces, only the dispersion
+lookup changes).
+"""
+function studentt_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVector,
+        σ::AbstractVector; ν::Real = 4.0, link::Link = IdentityLink(), mask = nothing,
+        offset = nothing, kwargs...)
+    p = size(Λ, 1)
+    length(σ) == p || throw(ArgumentError("length(σ)=$(length(σ)) must equal p=$p"))
+    fams = StudentTFamily.(ν, float.(σ))
+    N = ones(Int, size(Y))
+    acc = 0.0
+    @inbounds for i in axes(Y, 2)
+        mi = mask   === nothing ? nothing : view(mask, :, i)
+        oi = offset === nothing ? nothing : view(offset, :, i)
+        acc += _studentt_grouped_loglik_site(fams, view(Y, :, i), view(N, :, i), Λ, β, link;
+                                             mask = mi, offset = oi, kwargs...)
+    end
+    return acc
+end
+
+# ---------------------------------------------------------------------------
 # Fit driver.
 # ---------------------------------------------------------------------------
 
@@ -108,33 +211,43 @@ studentt_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix, β::Abst
     StudentTFit
 
 Result of [`fit_studentt_gllvm`](@ref): intercepts `β` (length p), loadings `Λ`
-(p×K), the FIXED degrees of freedom `ν`, the estimated scale `σ`
-(`(y − η)/σ ~ t_ν`), the `link` (always `IdentityLink()`), the maximised Laplace
-`loglik`, the optimiser `converged` flag, and `iterations`.
+(p×K), the FIXED degrees of freedom `ν`, the estimated scale `σ` (`(y − η)/σ ~
+t_ν`; a `Float64` under `disp_group == :shared`, or a length-p `Vector{Float64}`
+under `disp_group == :species`), the `link` (always `IdentityLink()`), the
+maximised Laplace `loglik`, the optimiser `converged` flag, `iterations`, the
+`hessian` curvature selector, and `disp_group` (`:shared` default or
+`:species`).
 """
 struct StudentTFit
     β::Vector{Float64}
     Λ::Matrix{Float64}
     ν::Float64
-    σ::Float64
+    σ::Union{Float64, Vector{Float64}}
     link::Link
     loglik::Float64
     converged::Bool
     iterations::Int
     hessian::Symbol   # the Laplace log-det curvature this fit's objective used
+    disp_group::Symbol
 end
 
-# Positional compatibility constructor (2026-08-28): every pre-existing
-# construction site builds a default-curvature fit; the `hessian` field
-# records the objective identity so `confint`/bootstrap can rebuild THE
-# SAME objective instead of guessing (the audit's confint-consistency class).
+# Positional compatibility constructors (2026-08-28): every pre-existing
+# construction site builds a default-curvature, shared-dispersion fit; the
+# `hessian` field records the objective identity so `confint`/bootstrap can
+# rebuild THE SAME objective instead of guessing (the audit's
+# confint-consistency class); `disp_group` mirrors the delta fitters'
+# precedent (`DeltaLogNormalFit`).
 StudentTFit(β, Λ, ν, σ, link, loglik, converged, iterations) =
-    StudentTFit(β, Λ, ν, σ, link, loglik, converged, iterations, _default_hessian(StudentTFamily(4.0, 1.0), link))
+    StudentTFit(β, Λ, ν, σ, link, loglik, converged, iterations,
+               _default_hessian(StudentTFamily(4.0, 1.0), link), :shared)
+StudentTFit(β, Λ, ν, σ, link, loglik, converged, iterations, hessian::Symbol) =
+    StudentTFit(β, Λ, ν, σ, link, loglik, converged, iterations, hessian, :shared)
 
 function Base.show(io::IO, f::StudentTFit)
     p, K = size(f.Λ)
+    σstr = f.σ isa Real ? string(round(f.σ; sigdigits = 4)) : "per-trait"
     print(io, "StudentTFit(p=", p, ", K=", K, ", ν=", round(f.ν; sigdigits = 4),
-          " (fixed), σ=", round(f.σ; sigdigits = 4),
+          " (fixed), σ=", σstr,
           ", link=", nameof(typeof(f.link)),
           ", loglik=", round(f.loglik; sigdigits = 7),
           f.converged ? "" : ", NOT CONVERGED", ")")
@@ -175,10 +288,21 @@ scalar-aux path does not support); pass `nu` to change the fixed tail weight.
 `:observed` joint — TMB's choice); the inner mode search is always
 Fisher-scored. Default: Student-t default `:fisher`. Omitting it is exactly the pre-kwarg
 behaviour.
+
+`disp_group` selects the dispersion parameterisation (`:shared` default, or
+`:species`), following the repo's `disp_group` convention for grouped /
+per-trait dispersion (`grouped_dispersion.jl`, the delta fitters). Under
+`:species`, `σ` is a length-p vector (`StudentTFamily`'s scale `σ[t]`; `ν`
+stays a single shared scalar for every trait — per-trait `ν` is a further
+step, not attempted here) — this matches gllvmTMB's `log_sigma_student`
+(`gllvmTMB.cpp:1184`, length `n_traits`). `:shared` (the default) is
+BIT-IDENTICAL to the pre-`disp_group` fitter: it routes through the
+byte-for-byte unchanged scalar-σ code path.
 """
 function fit_studentt_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         nu::Real = 4.0, link::Link = IdentityLink(),
         hessian::Symbol = _default_hessian(StudentTFamily(4.0, 1.0), link),
+        disp_group::Symbol = :shared,
         β_init = nothing, Λ_init = nothing, σ_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
@@ -186,6 +310,8 @@ function fit_studentt_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     nu > 0 || throw(ArgumentError("Student-t degrees of freedom nu must be > 0; got $nu"))
     hessian in (:fisher, :observed) || throw(ArgumentError(
         "fit_studentt_gllvm: hessian must be :fisher or :observed; got :$hessian"))
+    disp_group in (:shared, :species) || throw(ArgumentError(
+        "fit_studentt_gllvm: disp_group must be :shared or :species; got :$disp_group"))
     rr = rr_theta_len(p, K)
 
     Zemp = float.(Y)                                   # identity link ⇒ Z = Y
@@ -204,27 +330,34 @@ function fit_studentt_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     end
     # Robust σ₀ from the residual MAD (1.4826·MAD ≈ Gaussian SD; for a t the scale
     # σ < SD, but MAD is a stable, outlier-resistant starting point).
+    R = Zemp .- β0
     σ0 = if σ_init === nothing
-        R = Zemp .- β0
         s = 1.4826 * median(abs.(R .- median(R)))
         max(s, 1e-3)
     else
         float(σ_init)
     end
-    logσ0 = log(σ0)
+    # Per-trait warm start (disp_group == :species): per-species MAD, falling
+    # back to the pooled σ0 for any species whose per-species MAD is ~0 (a
+    # near-constant trait), mirroring the delta fitters' fallback-to-pooled
+    # convention.
+    σ0vec = [max(1.4826 * median(abs.(view(R, t, :) .- median(view(R, t, :)))), 0.1 * σ0) for t in 1:p]
+    ndisp = disp_group === :shared ? 1 : p
+    logσ0 = disp_group === :shared ? [log(σ0)] : log.(σ0vec)
     ν0 = float(nu)
 
     θ0 = vcat(β0, pack_lambda(Λ0), logσ0)
-    # Negative Laplace marginal log-likelihood over [β; vec(Λ); log σ], ν fixed.
-    # Mirrors the current scalar-aux fitters (fit_beta_gllvm / fit_gamma_gllvm):
-    # build the marker per θ and call the family-generic Laplace marginal, with a
-    # finite-diff Optim gradient. (The old marginal_loglik_laplace_aux_value_grad
-    # implicit path was retired in the engine refactor; a studentt_laplace_grad
-    # analytic gradient is a follow-up, see issue #105.)
+    # Negative Laplace marginal log-likelihood over [β; vec(Λ); log σ (1 or p
+    # entries)], ν fixed. Mirrors the current scalar-aux fitters
+    # (fit_beta_gllvm / fit_gamma_gllvm); disp_group threading mirrors the
+    # delta fitters (twopart.jl). (The old
+    # marginal_loglik_laplace_aux_value_grad implicit path was retired in the
+    # engine refactor; a studentt_laplace_grad analytic gradient is a
+    # follow-up, see issue #105.)
     function negll(θ)
         β = θ[1:p]
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
-        σ = exp(θ[p + rr + 1])
+        σ = disp_group === :shared ? exp(θ[p + rr + 1]) : exp.(θ[(p + rr + 1):(p + rr + ndisp)])
         v = try
             -studentt_marginal_loglik_laplace(Y, Λ, β, σ; ν = ν0, link = link,
                                               hessian = hessian,
@@ -240,6 +373,6 @@ function fit_studentt_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     θ̂ = Optim.minimizer(res)
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
-    σ̂ = exp(θ̂[p + rr + 1])
-    return StudentTFit(β̂, Λ̂, ν0, σ̂, link, _fit_verdict(res)..., hessian)
+    σ̂ = disp_group === :shared ? exp(θ̂[p + rr + 1]) : exp.(θ̂[(p + rr + 1):(p + rr + ndisp)])
+    return StudentTFit(β̂, Λ̂, ν0, σ̂, link, _fit_verdict(res)..., hessian, disp_group)
 end

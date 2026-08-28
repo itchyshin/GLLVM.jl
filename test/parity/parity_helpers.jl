@@ -499,3 +499,70 @@ function fit_gllvmtmb_parity_delta(y::AbstractMatrix, K::Integer; family::Symbol
         disp_vec = rcopy(Vector{Float64}, R".gllvm_parity_delta$disp_vec"),
     )
 end
+
+"""
+    fit_gllvmtmb_parity_student(y, K; df_fixed) -> NamedTuple
+
+Twin oracle for the Student-t family (`gllvmTMB::student()`, fid 9,
+identity link). `df_fixed` is passed straight to `student(df = df_fixed)`
+so BOTH sides hold degrees of freedom fixed at the same value — the twin's
+own default is to ESTIMATE df per trait (`student(df = NULL)`), which is
+not the same model as Julia's `fit_studentt_gllvm` (fixed scalar `nu`); see
+`docs/dev-log/decisions/2026-08-28-studentt-parameterisation.md`. Fixing
+`df` on the twin isolates the ONE remaining structural difference: the
+twin's `log_sigma_student` is a PER-TRAIT `n_traits`-length TMB parameter
+(`gllvmTMB.cpp:1184`; no shared/pinned mode is exposed through the family
+constructor or `dispersion_trait_map()`), while Julia's `fit_studentt_gllvm`
+estimates a single SHARED scalar `σ`. This mirrors
+[`fit_gllvmtmb_parity_delta`](@ref) exactly, for the same reason.
+
+Returns `(logLik, objective, converged, b_fix, sigma_vec, df_vec)`: `b_fix`
+is the twin's trait-intercept vector (length `p`); `sigma_vec` /`df_vec` are
+the reported per-trait `sigma_student` / `df_student` vectors (length `p`).
+Per the parameterisation note, `df_vec` should equal `df_fixed` on every
+trait (fixed, not estimated) — assert that in the caller before trusting a
+logLik Δ as dispersion-only.
+"""
+function fit_gllvmtmb_parity_student(y::AbstractMatrix, K::Integer; df_fixed::Real)
+    df_fixed > 1 || throw(ArgumentError("student(): df_fixed must be > 1; got $df_fixed"))
+    p, n = size(y)
+    _parity_require_gllvmtmb!()
+    dfv = Float64(df_fixed)
+    @rput y K p n dfv
+
+    R"""
+    trait_names <- paste0("t", seq_len(p))
+    df_long <- data.frame(
+        site  = factor(rep(seq_len(n), each = p)),
+        trait = factor(rep(trait_names, times = n), levels = trait_names),
+        value = as.vector(y)   # column-major on p×n ⇒ site blocks
+    )
+    fit_r <- gllvmTMB(
+        value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE),
+        data = df_long,
+        unit = "site",
+        trait = "trait",
+        family = gllvmTMB::student(link = "identity", df = dfv),
+        control = gllvmTMBcontrol(n_init = 1L, se = FALSE)
+    )
+    pl <- fit_r$tmb_obj$env$parList(fit_r$opt$par)
+    .gllvm_parity_student <<- list(
+        logL      = as.numeric(stats::logLik(fit_r)),
+        objective = as.numeric(fit_r$opt$objective),
+        converged = identical(as.integer(fit_r$opt$convergence), 0L),
+        b_fix     = as.numeric(pl$b_fix),
+        sigma_vec = as.numeric(fit_r$report$sigma_student),
+        df_vec    = as.numeric(fit_r$report$df_student)
+    )
+    invisible(NULL)
+    """
+
+    return (
+        logLik = rcopy(Float64, R".gllvm_parity_student$logL"),
+        objective = rcopy(Float64, R".gllvm_parity_student$objective"),
+        converged = rcopy(Bool, R".gllvm_parity_student$converged"),
+        b_fix = rcopy(Vector{Float64}, R".gllvm_parity_student$b_fix"),
+        sigma_vec = rcopy(Vector{Float64}, R".gllvm_parity_student$sigma_vec"),
+        df_vec = rcopy(Vector{Float64}, R".gllvm_parity_student$df_vec"),
+    )
+end

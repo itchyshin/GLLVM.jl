@@ -102,7 +102,7 @@ Twin family names align with gllvmTMB / gllvm. Status = native Julia engine
 | Gamma | implemented |
 | tweedie | implemented |
 | ordinal_probit / cumulative_logit | implemented |
-| student | implemented |
+| student | implemented (**parity Δ PAID 2026-08-28 at FIXED ν only** — see caveat) |
 | lognormal | implemented |
 | truncated_poisson | implemented |
 | truncated_nbinom2 | implemented |
@@ -155,6 +155,31 @@ surface, bridge missing-response masks, `confint` under X, and any gllvmTMB
 parity claim all remain OWED (the twin has no ZIB, so a light Δ would be
 invented, not owed).
 `student` / `com_poisson` promoted on native engine + package
+**Student-t parity, PARTIAL (2026-08-28).** The live logLik Δ against
+gllvmTMB 0.7.1 is PAID — but only in the **fixed-ν** configuration, and the
+scope fence matters:
+
+- **What is paid:** with ν pinned on BOTH sides (`gllvmTMB::student(df = 4)`
+  vs Julia `nu = 4.0`) and Julia set to the twin's per-trait scale
+  (`disp_group = :species`), Δ logLik = −9.66e-10 (builder, seed 71) and
+  **3.34e-9, rel 3.6e-12 on an independent re-measurement at fresh seed 9203**
+  — both far inside the 1e-6 light-cell gate. Julia's per-trait σ̂ matches the
+  twin's to 4–5 significant figures. Test: `test/parity/test_studentt_parity.jl`.
+- **What is NOT paid:** the twin's DEFAULT `student()` **estimates** ν
+  (`R/families.R:362,367` — *"estimates degrees of freedom unless `df` is
+  supplied"*), and `log_df_student` is itself per-trait
+  (`gllvmTMB.cpp:1185`). GLLVM.jl fixes ν and does not estimate it. So the
+  twin's default student model is still NOT comparable, and this cell must not
+  be described as fully paid.
+- Related: the twin's df profile CI is off by one (reports df−1 as df; see
+  `docs/dev-log/decisions/2026-08-28-studentt-parameterisation.md`), so any
+  future ν-interval comparison must account for that before attributing a
+  mismatch to GLLVM.jl.
+- Known limitation of `disp_group = :species` on this family: the postfit
+  helpers in `link_residual.jl` / `simulate_fit.jl` assume a scalar σ and now
+  raise a clean `MethodError` under per-trait σ — a fail-fast boundary, not
+  silent misbehaviour, and not extended in this slice.
+
 tests (`test_studentt.jl`, `test_com_poisson.jl`). Since the 2026-08-16 Student-t
 surface admit the **no-X** `student` surface is reachable through `fit_gllvm(Y; family = StudentTFamily(ν))`
 and `@formula(y ~ 1)`; the FIXED `ν` travels on the marker (a separate `nu`

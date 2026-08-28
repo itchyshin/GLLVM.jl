@@ -1,5 +1,50 @@
 # Check Log
 
+## 2026-08-28 — Student cell 9: per-trait σ closes the Δ AT FIXED ν (not the twin's default)
+
+Third application of today's route (measure → find the parameterisation cause
+→ extend the existing pattern → re-measure), after cells 12 and 13.
+
+**Phase 1 (measured, converting the synthesis note's SOURCE READING into a
+number):** with ν pinned at 4 on both sides to isolate the scale question,
+twin per-trait σ vs Julia shared σ gave Δ = **+1.0700** (seed 71, p=5, K=1,
+n=130, gllvmTMB 0.7.1) — same direction as the delta cells, confirming the
+predicted cause.
+
+**Phase 2 (smallest justified slice):** `disp_group::Symbol` on
+`fit_studentt_gllvm`, mirroring today's delta convention. A local
+`_studentt_grouped_loglik_site` / `_studentt_grouped_laplace_weight` pair
+follows the `grouped_dispersion.jl` precedent rather than touching the shared
+single-family core in `families/laplace.jl` — the same reasoning that made
+NB2/Beta/Gamma keep local kernels. `StudentTFit.σ` widened to
+`Union{Float64,Vector{Float64}}` with compat constructors. ν stays a shared
+scalar; per-trait ν was explicitly out of scope.
+
+**Phase 3 (re-measured):** Δ = **−9.66e-10**, and **independently re-verified
+by the orchestrator at a FRESH seed (9203) the builder never used: Δ =
+3.34e-9, rel 3.6e-12** — inside the 1e-6 gate. Per-trait σ̂ matches the twin
+to 4–5 significant figures.
+
+**THE FENCE, and it is load-bearing.** The twin's default `student()`
+ESTIMATES ν (`R/families.R:362,367`) and its `log_df_student` is per-trait
+(`gllvmTMB.cpp:1185`). GLLVM.jl fixes ν. So what is paid is the **fixed-ν
+cell**, not the twin's default student model. The ladder is therefore
+**15/17 paid + 1 conditional**, NOT 16/17 — recording it as 16/17 would be
+precisely the overstatement class corrected twice today. ν estimation remains
+genuine outstanding work (and the twin's df CI is off-by-one, so future
+interval comparisons need care).
+
+Known limitation introduced: `link_residual.jl` / `simulate_fit.jl` postfit
+helpers assume scalar σ and now raise a clean `MethodError` under
+`disp_group = :species` — fail-fast, not silent, and not extended here.
+
+Verify: `test_studentt_disp_group.jl` 26/26 (new, wired) · `test_studentt.jl`
+28/28 · `test_studentt_parity.jl` 13/13 live · census 66/66 · contract
+134/134 · dual-safety 37/37. Stale-pin sweep over `StudentTFit(` positional
+sites and the census/contract/dual-safety/AGHQ files found none. No tolerance
+touched. Full-suite coverage owed.
+
+
 ## 2026-08-28 — PARITY CELLS 12 AND 13 PAY: per-trait delta dispersion closes the Δ
 
 The measurement earlier today (Δ logLik −1.9232 / −2.5657, MISSING the 1e-6
