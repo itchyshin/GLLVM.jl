@@ -39,6 +39,18 @@ using GLLVM, Test, Random, Distributions, ForwardDiff
         @test GLLVM._default_hessian(GLLVM.NB1(1.5), GLLVM.LogLink()) === :observed
         @test GLLVM._default_hessian(GLLVM.StudentTFamily(4.0, 1.0), GLLVM.IdentityLink()) === :observed
         @test GLLVM._default_hessian(Exponential(1.0), GLLVM.LogLink()) === :observed
+        # Maintainer decision batch (2026-08-28,
+        # docs/dev-log/decisions/2026-08-28-arc-decision-batch.md): TweedieED/log
+        # and Binomial/probit both flip to :observed — TMB/gllvmTMB structural
+        # parity (TMB differentiates the joint nll, so its log-det is observed
+        # for every family it ships). Binomial/cloglog is explicitly EXCLUDED —
+        # the diagnosed Laplace saturation pathology (check-log 2026-08-28) — and
+        # stays :fisher; it is not asserted here because Poisson/log above
+        # already pins a trait-true :fisher default and this file must not grow
+        # a THIRD "stays :fisher" pin whose only job is to encode a name.
+        @test GLLVM._default_hessian(GLLVM.TweedieED(1.2, 1.5), GLLVM.LogLink()) === :observed
+        @test GLLVM._default_hessian(Binomial(), GLLVM.ProbitLink()) === :observed
+        @test GLLVM._default_hessian(Binomial(), GLLVM.CLogLogLink()) === :fisher
     end
 
     @testset "invalid selector fails loud" begin
@@ -104,6 +116,26 @@ using GLLVM, Test, Random, Distributions, ForwardDiff
             @test isfinite(a) && isfinite(b)
             @test a != b
             @test !GLLVM._glm_weight_matches_observed(f, GLLVM.LogLink())
+        end
+
+        @testset "TweedieED / log differs" begin
+            Y = [rand() < 0.3 ? 0.0 : 0.1 + 2 * rand() for _ in 1:p, _ in 1:n]
+            f = GLLVM.TweedieED(1.3, 1.5)
+            a = GLLVM.marginal_loglik_laplace(f, Y, N, Λ, β, GLLVM.LogLink(); hessian = :fisher)
+            b = GLLVM.marginal_loglik_laplace(f, Y, N, Λ, β, GLLVM.LogLink(); hessian = :observed)
+            @test isfinite(a) && isfinite(b)
+            @test a != b
+            @test !GLLVM._glm_weight_matches_observed(f, GLLVM.LogLink())
+        end
+
+        @testset "Binomial / probit differs" begin
+            Nb = fill(6, p, n)
+            Yb = [rand(0:6) for _ in 1:p, _ in 1:n]
+            a = GLLVM.marginal_loglik_laplace(Binomial(), Yb, Nb, Λ, β, GLLVM.ProbitLink(); hessian = :fisher)
+            b = GLLVM.marginal_loglik_laplace(Binomial(), Yb, Nb, Λ, β, GLLVM.ProbitLink(); hessian = :observed)
+            @test isfinite(a) && isfinite(b)
+            @test a != b
+            @test !GLLVM._glm_weight_matches_observed(Binomial(), GLLVM.ProbitLink())
         end
     end
 
@@ -246,14 +278,17 @@ using GLLVM, Test, Random, Distributions, ForwardDiff
         p2, n2 = 4, 8
         Λ2 = reshape(0.35 .* randn(p2), p2, 1)
         β2 = fill(0.6, p2)
-        Y2 = 0.4 .+ rand(p2, n2)
         N2 = ones(Int, p2, n2)
-        # TweedieED, the last trait-false family (with GP-1) still on the
-        # :fisher default after decision A (2026-08-27) — the exemplar has
-        # moved twice as the flips landed (NB2 → Beta → Tweedie), which is
-        # exactly the census shrinking.
-        f  = GLLVM.TweedieED(1.2, 1.5)
-        Y2 = [rand() < 0.3 ? 0.0 : rand() * 3.0 + 0.1 for _ in 1:p2, _ in 1:n2]
+        # GeneralizedPoisson1, the trait-false exemplar still on the :fisher
+        # default: ADJUDICATED 2026-08-28 and Fisher RETAINED on the 150-cell
+        # campaign (a minority of cells derail badly under the observed weight
+        # — DEFERRED_BY_DECISION in test_curvature_census.jl). TweedieED, the
+        # PREVIOUS exemplar here, flipped to :observed 2026-08-28 (maintainer
+        # decision batch) and moved to the mirror block below alongside Gamma —
+        # restructuring this pin rather than deleting its coverage, per the
+        # same "exemplar moves as the census shrinks" pattern noted historically.
+        f  = GLLVM.GeneralizedPoisson1(0.3)
+        Y2 = rand(0:6, p2, n2)
         bare = GLLVM.marginal_loglik_laplace(f, Y2, N2, Λ2, β2, GLLVM.LogLink())
         fish = GLLVM.marginal_loglik_laplace(f, Y2, N2, Λ2, β2, GLLVM.LogLink(); hessian = :fisher)
         obs  = GLLVM.marginal_loglik_laplace(f, Y2, N2, Λ2, β2, GLLVM.LogLink(); hessian = :observed)
@@ -268,6 +303,28 @@ using GLLVM, Test, Random, Distributions, ForwardDiff
         fgv = GLLVM.marginal_loglik_laplace(fg, Yg, N2, Λ2, β2, GLLVM.LogLink(); hessian = :fisher)
         @test bg === og            # Gamma's default IS :observed, at the value level
         @test bg != fgv
+
+        # TweedieED (2026-08-28 maintainer decision): default IS :observed now,
+        # the same shape as Gamma above — restructured from a :fisher-default
+        # pin (this file's original exemplar for this testset) into an explicit
+        # :fisher-kwarg call, per the maintainer's own guidance for handling a
+        # flipped exemplar.
+        ft = GLLVM.TweedieED(1.2, 1.5)
+        Yt = [rand() < 0.3 ? 0.0 : rand() * 3.0 + 0.1 for _ in 1:p2, _ in 1:n2]
+        bt = GLLVM.marginal_loglik_laplace(ft, Yt, N2, Λ2, β2, GLLVM.LogLink())
+        ot = GLLVM.marginal_loglik_laplace(ft, Yt, N2, Λ2, β2, GLLVM.LogLink(); hessian = :observed)
+        ftv = GLLVM.marginal_loglik_laplace(ft, Yt, N2, Λ2, β2, GLLVM.LogLink(); hessian = :fisher)
+        @test bt === ot            # TweedieED's default IS :observed, at the value level
+        @test bt != ftv
+
+        # …and Binomial/probit (same decision batch): default IS :observed.
+        Nb2 = fill(5, p2, n2)
+        Yb2 = rand(0:5, p2, n2)
+        bb = GLLVM.marginal_loglik_laplace(Binomial(), Yb2, Nb2, Λ2, β2, GLLVM.ProbitLink())
+        ob = GLLVM.marginal_loglik_laplace(Binomial(), Yb2, Nb2, Λ2, β2, GLLVM.ProbitLink(); hessian = :observed)
+        fbv = GLLVM.marginal_loglik_laplace(Binomial(), Yb2, Nb2, Λ2, β2, GLLVM.ProbitLink(); hessian = :fisher)
+        @test bb === ob            # Binomial/probit's default IS :observed, at the value level
+        @test bb != fbv
     end
 
     # ---- D4 FIX: the nested-AD arm must survive OUTER differentiation -------

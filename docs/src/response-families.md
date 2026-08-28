@@ -514,6 +514,32 @@ fit = fit_gllvm(Yp; family = Gamma(), K = 2)   # Yp > 0; shared α (no-X)
     some families the observed curvature is *not* closer to the exact marginal,
     so each is decided on its own measurements.
 
+!!! note "Laplace curvature: TweedieED and Binomial-probit use the observed Hessian (changed 2026-08-28)"
+    Maintainer decision batch (`docs/dev-log/decisions/2026-08-28-arc-decision-batch.md`):
+    the shared Tweedie route (`fit_tweedie_gllvm`) and Binomial/probit both
+    default to the **observed** conditional curvature in the Laplace
+    log-determinant, matching TMB / `gllvmTMB` structurally — TMB
+    differentiates the joint negative log-likelihood, so its log-det is
+    observed for *every* family it ships, not a per-family exception.
+    `hessian = :fisher` restores the previous objective for both.
+
+    - TweedieED/log: `−∂²ℓ/∂η² = μ^(1−p)·[(2−p)·μ + (p−1)·y] / φ`. The
+      normalising series in the Tweedie density is μ-free, so it contributes
+      no η-curvature and the closed form above is exact, not an
+      approximation. Always non-negative (μ, φ > 0, p ∈ (1,2), y ≥ 0).
+    - Binomial/probit: `−∂²ℓ/∂η² = η·φ(η)·(y−nμ)/(μ(1−μ)) + φ(η)²·[y/μ² +
+      (n−y)/(1−μ)²]`, μ = Φ(η). Provably non-negative for every (η, y, n) —
+      the probit binomial log-likelihood is globally concave in η (Pratt 1981,
+      *JASA*), so unlike Beta/Student-t the positive-definiteness guard is not
+      expected to fire for this family.
+    - Binomial/**cloglog** is explicitly excluded and stays `:fisher` — the
+      diagnosed Laplace saturation pathology above, not a pending flip.
+    - The Tweedie **grouped** route (`fit_tweedie_gllvm_grouped`, per-species
+      dispersion) has no `hessian` selector at all and stays unconditionally
+      Fisher — a recorded scope limit, not fixed by this change; with `G = 1`
+      it therefore no longer matches the shared route's *default* (it matches
+      `hessian = :fisher` on the shared route).
+
 ### Lognormal — `Lognormal()`
 
 

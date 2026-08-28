@@ -1,5 +1,115 @@
 # Check Log
 
+## 2026-08-28 — TweedieED and Binomial-probit Laplace curvature flip to :observed
+
+Maintainer decision batch (`docs/dev-log/decisions/2026-08-28-arc-decision-batch.md`,
+gates 1–2): both flips executed as coupled changes per the established
+template (NB2 `e74749b7`, decision A `4155853b`). Sequential — Tweedie first,
+then probit — sharing the cascade files (census, contract, hessian-kwarg
+tests, docs, CHANGELOG).
+
+**Derivations**, each FD-verified against the actual `_glm_logpdf` conditional
+density at a fixed seed (`scratchpad/fd_probe_tweedie_probit.jl`, worst
+relative gap 2.5e-7, well under the 1e-6 bar):
+
+- TweedieED/log: `W_obs = μ^(1−p)·[(2−p)·μ + (p−1)·y] / φ`. Confirmed
+  structurally that the Dunn–Smyth normalising series is μ-free (its
+  arguments are `y, φ, p` only), so it contributes zero η-curvature and the
+  closed form derived from the kernel alone is exact, not an approximation.
+  Symmetry check holds (`y = μ ⇒ W_obs = W_fisher`, 6/6 cells in the probe).
+  Always non-negative for `p ∈ (1,2), y ≥ 0`.
+- Binomial/probit: `W_obs = η·φ(η)·(y−nμ)/(μ(1−μ)) + φ(η)²·[y/μ² +
+  (n−y)/(1−μ)²]`, μ = Φ(η). Symmetry check holds (`y = nμ ⇒ W_obs = W_fisher`,
+  9/9 cells). **Correction to the task brief's working assumption**: probit
+  observed curvature is NOT genuinely sign-changing. `W_obs(y)` is affine in y
+  for fixed η, so its extrema over `y ∈ [0,n]` sit at the endpoints; a
+  BigFloat evaluation at those endpoints across `η ∈ [3,20]` stayed strictly
+  positive, converging to `n` as `|η| → ∞` — consistent with Pratt (1981,
+  *JASA*), who proved the probit binomial log-likelihood is globally concave
+  in η. The Float64 grid probe DOES show apparent negative values right at
+  `η ≈ ±8`, but re-evaluating those exact cells in BigFloat confirms this is a
+  catastrophic-cancellation artifact of `μ(1−μ)` underflowing near the
+  Float64 saturation boundary, not a genuine sign change; `_clamp_mu` (already
+  shipped) bounds μ away from exact 0/1 before this function ever sees it in
+  the fitted pipeline, so the artifact is unreachable there. The PD guard at
+  the Laplace assembly is therefore not expected to fire for this family —
+  documented as a finding, not assumed.
+- DRM.jl consulted per the maintainer's rider
+  (`src/sparse_laplace_glmm.jl` — the `_laplace_d1/d2/d3` AD-gated kernels
+  exist, contrary to an earlier `find` miss caused by a stale directory
+  listing). No usable oracle for either family: its `:binomial` kernel
+  (`_laplace_mean(::Val{:binomial}, η) = _laplace_logistic(...)`, line 2036)
+  is logit-only, and it has no `:tweedie` kernel at all. Recorded as
+  "consulted, no cross-check available" rather than silently skipped.
+
+**Coupled changes, per flip:**
+
+- TweedieED (`src/families/tweedie.jl`): `_default_hessian(::TweedieED,
+  ::LogLink) = :observed` + specialised `_glm_obs_weight`. No analytic
+  gradient exists for Tweedie (`fit_tweedie_gllvm` is finite-difference
+  only via `autodiff = :finite`), so no gradient-side coupling was needed.
+  Grouped route (`grouped_dispersion.jl`, `_tweedie_grouped_loglik_site`) has
+  no `hessian` selector at all (unconditional Fisher) — FENCED, not aligned:
+  documented as a recorded scope limit in both docs pages and in a source
+  comment at the grouped-Tweedie section header. With `G = 1` the grouped
+  route no longer matches the shared route's new default, only its
+  `hessian = :fisher` call.
+- Binomial/probit (`src/families/binomial.jl`): `_default_hessian(::Binomial,
+  ::ProbitLink) = :observed` + specialised `_glm_obs_weight`. The
+  logit-only analytic-gradient gate (`link isa LogitLink` in
+  `fit_binomial_gllvm`) already excluded probit from the analytic gradient
+  before this change — confirmed by reading `binomial_laplace_grad` /
+  `_binomial_site_diffable` (`laplace_grad.jl:376-380`), which hardcodes
+  `LogitLink()` in its mode solve. No coupling was therefore needed; a
+  comment was added at the gate documenting why. Binomial/cloglog untouched
+  (stays `:fisher`, the diagnosed saturation pathology).
+
+**Cascade**: `test_curvature_census.jl` — `KNOWN_OPEN` is now empty;
+`(:TweedieED, :LogLink)` and `(:Binomial, :ProbitLink)` join
+`CERTIFIED_CELLS`. `test_laplace_curvature_contract.jl` — both defaults
+pinned; the "default wiring produces :fisher" testset's TweedieED exemplar
+(now flipped) was restructured into an explicit `hessian = :fisher` call
+mirroring the Gamma pattern, per the maintainer's own suggested resolution;
+`GeneralizedPoisson1` (still Fisher, adjudicated) is the new trait-false
+:fisher exemplar; a Binomial/probit mirror block was added alongside it.
+`test_hessian_kwarg.jl` — the Tweedie block's bit-identical assertion moved
+from the `:fisher` comparison to `:observed`; a new probit testset covers
+contracts 1/2/3/5/6 plus a cloglog-stays-Fisher control. Docs
+(`response-families.md`, `gllvmtmb-parity.md`) — "still Fisher" lists now
+read GP-1 (by decision) and Binomial/cloglog only, plus the Tweedie-grouped
+scope-limit fence. CHANGELOG entry added.
+
+**Stale-pin sweep**: grepped `test_*_identity.jl`, `test_*_xlv.jl`, and any
+`_glm_weight(` hardcoding for Tweedie/probit oracles — none of THAT shape
+found (the eleven prior instances were all NB2/Beta/NB1/Gamma/Exponential-
+adjacent; Tweedie and Binomial-probit had no fitted-value oracle tests to go
+stale in that pattern). But the FULL targeted run caught a DIFFERENT stale-pin
+shape, the twelfth and thirteenth instances of the class: two tests compared
+the shared Tweedie route's DEFAULT (silently now `:observed`) against the
+grouped Tweedie route (unconditionally `:fisher`, no selector to move) and
+asserted near-exact agreement.
+- `test_grouped_dispersion_tweedie_nb1.jl:61` — "Tweedie: constant φvec ==
+  shared-φ marginal (exact)" — `ll_shared` used the shared route's bare
+  default; failed at `atol = 1e-10` (observed −263.602 vs grouped/Fisher
+  −263.528). Fixed: pin `hessian = :fisher` on the shared-route call, per
+  the fence documented in `grouped_dispersion.jl` and the two docs pages.
+- `test_tweedie_grouped_engine_health.jl:66` — "one-group power-start
+  agreement on the shipped cell" — the scalar-fitter comparison call used
+  the shared route's bare default; failed at `rtol = 1e-4` on `power`, `φ`,
+  and `loglik` (3 of the 4 total failures on the first full run). Same fix.
+Both are now pinned to the objective they are actually claiming to match,
+not the one a silent default change made them match by accident. Neither
+fix widened a tolerance — both fixed which call the assertion was making.
+
+**Verify** (targeted, one Julia process at a time; see the after-task report
+for verbatim tallies): `test_tweedie.jl`, `test_tweedie_engine_health.jl`,
+`test_grouped_dispersion_tweedie_nb1.jl`, `test_tweedie_grouped_engine_health.jl`,
+`test_binomial_fit.jl`, `test_binomial_laplace.jl`, `test_beta_binomial.jl`,
+`test_betabinomial_x_identity.jl`, `test_phylo_binomial_xlv.jl`,
+`test_variational_binomial.jl`, `test_postfit_zib_tweedie.jl`,
+`test_curvature_census.jl`, `test_laplace_curvature_contract.jl`,
+`test_laplace_dual_safety.jl`, `test_hessian_kwarg.jl`.
+
 ## 2026-08-28 — confint curvature consistency: GROUPED fit structs close the recorded residual
 
 Closes the residual left by "confint honors the fit's curvature (the audit
@@ -33,7 +143,15 @@ record the selector.
   plus the nll(θ̂) identity.
 
 Residual unchanged from the parent entry: Student-t has no confint adapter at
-all (pre-existing gap). Suite: [tally on full-suite green].
+all (pre-existing gap).
+
+Verification: targeted 310/310 across the touched surface
+(`test_grouped_hessian_consistency` 20, `test_confint_hessian_consistency` 12,
+`test_grouped_dispersion` 14, `test_grouped_dispersion_beta_gamma` 24,
+`test_confint_family` 240). NOT yet covered by a full suite — the 2026-08-28
+Totoro run (6955 pass / 0 fail / 4 expected-broken, exit 0, 85m28s) was
+launched from the tree at `dc1ee936`, which PREDATES this slice. A full suite
+covering it runs before the release gate.
 
 ## 2026-08-28 — Arc 2 mop-up: Gaussian verdict screened, CMP cap closed, two-part hessian exposed
 
@@ -76,8 +194,9 @@ Three flagged residue items, one slice:
    defensive). Full-suite tally on the pre-review tree: 6921 pass / 0 fail /
    4 broken, exit 0 (72m33s, Totoro); post-review verification: targeted
    suites green (fit 12, com_poisson 26+16, delta_fit 13, hurdle_poisson
-   171, beta_hurdle 62, twopart_hessian_kwarg 13); full suite re-running
-   before push.
+   171, beta_hurdle 62, twopart_hessian_kwarg 13); post-review FULL SUITE on
+   the committed tree (Totoro, 2026-08-28): 6955 pass / 0 fail / 4
+   expected-broken, exit 0, 85m28.4s.
 
 ## 2026-08-28 — the cloglog saturation guard ships (diagnostic only)
 

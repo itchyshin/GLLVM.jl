@@ -1589,10 +1589,22 @@ end
 # disp.formula = NULL). Each species t carries its own dispersion φ_{g(t)}, so the
 # Var = φ μ^power overdispersion can vary across species (or groups). The POWER
 # p ∈ (1,2) is SHARED (a single global power, matching gllvm — `disp.formula`
-# governs the dispersion only). With G = 1 this reduces EXACTLY to the
-# shared-dispersion Tweedie fit. The dispersion φ and shared power are carried in
+# governs the dispersion only). The dispersion φ and shared power are carried in
 # the family marker `TweedieED(φ, power)`. This mirrors the NB2 grouped path above;
 # the shared Tweedie hot path (tweedie.jl) is left untouched.
+#
+# RECORDED DEFECT, deliberately NOT fixed here (2026-08-28): `fit_tweedie_gllvm`
+# (shared route) flipped its default log-det curvature to `:observed` on the
+# maintainer's decision (docs/dev-log/decisions/2026-08-28-arc-decision-batch.md).
+# `_tweedie_grouped_loglik_site` below has NO `hessian` selector at all — it is
+# unconditionally Fisher. So with G = 1 and a constant `φvec`, this grouped route
+# no longer reduces to the shared route's DEFAULT objective; it reduces to the
+# shared route called with `hessian = :fisher` explicitly. Out of scope for this
+# flip: threading a `hessian` kwarg through this kernel and its mode-search
+# backtracking gate is the same-shaped work as the NB2/Beta/NB1 grouped
+# alignments, but the campaign evidence and the maintainer's decision cover the
+# shared Tweedie route only. See `docs/src/response-families.md` and
+# `docs/src/gllvmtmb-parity.md` for the user-facing fence.
 # ===========================================================================
 
 # Per-site Laplace log-marginal with per-species Tweedie dispersion markers `fams`.

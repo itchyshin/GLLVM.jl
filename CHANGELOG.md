@@ -66,6 +66,36 @@ All notable changes to GLLVM.jl are documented here.
   `hessian = :fisher` restores the previous behaviour. Other families are
   unchanged — this was a per-family decision on per-family evidence, not a
   global switch.
+- **TweedieED (shared route) and Binomial/probit Laplace log-determinants now
+  use the observed conditional curvature, matching TMB / `gllvmTMB`**
+  (maintainer decision batch, 2026-08-28 — TMB structurally differentiates the
+  joint negative log-likelihood, so its log-det is observed for every family
+  it ships). This **changes reported `loglik`, AIC/BIC and Wald SEs** for
+  `fit_tweedie_gllvm` and `fit_binomial_gllvm(...; link = ProbitLink())`;
+  point estimates are expected to move little (the conditional mode stays
+  Fisher-scored). `hessian = :fisher` restores the previous objective for
+  both.
+  - TweedieED/log: `μ^(1−p)·[(2−p)·μ + (p−1)·y] / φ`. The Tweedie density's
+    normalising series is μ-free, so it contributes zero η-curvature and this
+    closed form is exact (not an approximation); no analytic-gradient
+    coupling was needed (`fit_tweedie_gllvm` is finite-difference only).
+    Always non-negative.
+  - Binomial/probit: `η·φ(η)·(y−nμ)/(μ(1−μ)) + φ(η)²·[y/μ²+(n−y)/(1−μ)²]`,
+    μ = Φ(η). Provably non-negative for every cell (the probit binomial
+    log-likelihood is globally concave in η, Pratt 1981 *JASA*) — unlike
+    Beta/Student-t, the PD guard is not expected to fire here. No
+    analytic-gradient coupling was needed either: `binomial_laplace_grad` is
+    hardcoded to `LogitLink()` in its mode solve, so a probit fit was already
+    routed to finite differences regardless of `hessian`, before and after
+    this change.
+  - Binomial/**cloglog** is explicitly excluded (the diagnosed Laplace
+    saturation pathology) and stays `:fisher`.
+  - **Recorded, not fixed:** the Tweedie **grouped** route
+    (`fit_tweedie_gllvm_grouped`) has no `hessian` selector at all
+    (unconditional Fisher) — with `G = 1` it no longer matches the shared
+    route's new default, only `hessian = :fisher` on the shared route. Fenced
+    in `docs/src/response-families.md` and `docs/src/gllvmtmb-parity.md`
+    rather than aligned; out of scope for this change.
 
 ### Fixed
 - **`compoisson_logz` no longer truncates silently past its term cap**: for

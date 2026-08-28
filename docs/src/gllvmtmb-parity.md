@@ -231,14 +231,24 @@ why the discrepancy went unnoticed. They differ everywhere else.
 **Status, stated plainly rather than as a capability claim:**
 
 - **Fixed and on `main`:** NB1 (grouped route), `truncated_nbinom2`,
-  `Exponential`, `DeltaGamma`, and **`Gamma`** — the last being the one that
-  sat on the public default path `fit_gllvm(Y; family = Gamma())`.
-- **Still using the Fisher weight:** Tweedie, GP-1, and `Binomial` at the
-  **probit** and **cloglog** links — nothing else. (NB2, Beta, NB1 and
-  Student-t all flipped to observed 2026-08-27 on the curvature-adjudication
-  campaign evidence — decision A; Exponential's registry default was declared
-  the same day.) Every one of these is reachable, so a log-likelihood
-  from them will not match `gllvmTMB` to machine precision.
+  `Exponential`, `DeltaGamma`, **`Gamma`** — the one that sat on the public
+  default path `fit_gllvm(Y; family = Gamma())` — and, as of 2026-08-28, the
+  shared **Tweedie** route (`fit_tweedie_gllvm`) and **`Binomial`/probit**
+  (maintainer decision batch,
+  `docs/dev-log/decisions/2026-08-28-arc-decision-batch.md`: TMB structurally
+  differentiates the joint nll, so its log-det is observed for every family it
+  ships, not a per-family exception).
+- **Still using the Fisher weight, by decision rather than oversight:** GP-1
+  (adjudicated 2026-08-28, Fisher retained — a minority of cells derail badly
+  under the observed weight) and `Binomial` at the **cloglog** link (the
+  diagnosed Laplace saturation pathology, check-log 2026-08-28). Nothing else
+  remains open. (NB2, Beta, NB1 and Student-t all flipped to observed
+  2026-08-27 on the curvature-adjudication campaign evidence — decision A;
+  Exponential's registry default was declared the same day.) A log-likelihood
+  from these two will not match `gllvmTMB` to machine precision. The Tweedie
+  **grouped** route (`fit_tweedie_gllvm_grouped`, per-species dispersion) also
+  stays Fisher — it carries no `hessian` selector at all, a recorded scope
+  limit rather than a curvature decision (see `docs/src/response-families.md`).
 - **Not a uniform improvement.** Against numerical quadrature, the observed
   curvature is decisively closer for Gamma (12/12 seeds, 20–60× smaller error)
   and for NB2 (87% of 150 curvature-adjudication campaign cells, 2026-08-27),

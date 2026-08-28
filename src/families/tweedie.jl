@@ -25,6 +25,24 @@ _clamp_mu(::TweedieED, μ) = max(μ, 1e-12)
 _glm_score(f::TweedieED, μ, n, me, y) = me * (y - μ) / (f.φ * μ^f.p)
 _glm_weight(f::TweedieED, μ, n, me)   = me^2 / (f.φ * μ^f.p)
 
+# Observed conditional curvature for TweedieED/log: −∂²ℓ/∂η² = μ^(1-p)·[(2-p)·μ +
+# (p-1)·y] / φ. Derivation: the μ-dependent kernel of log f (see the module header)
+# is K(η) = (1/φ)[y·μ^(1-p)/(1-p) − μ^(2-p)/(2-p)], μ = e^η; the normalising series
+# `_tweedie_logA(y,φ,p)` is μ-FREE (its arguments are y, φ, p only), so it
+# contributes zero η-curvature and the claim reduces to differentiating K twice.
+# dK/dη = (y·μ^(1-p) − μ^(2-p))/φ (= _glm_score at me=μ, matching the existing
+# slot); d²K/dη² = μ^(1-p)·[y(1-p) − (2-p)μ]/φ, so W_obs = −d²K/dη² as above.
+# FD-verified against the FULL `_glm_logpdf` (kernel + series, y > 0 and y = 0
+# separately) to ≤ 3e-7 relative gap across φ ∈ {0.4,1,2.5}, p ∈ {1.2,…,1.9},
+# η ∈ [-1,2], y ∈ {0,…,12.4} (scratchpad/fd_probe_tweedie_probit.jl, 2026-08-28).
+# Symmetry check holds: at y = μ this collapses to μ^(2-p)/φ = _glm_weight
+# (since (2-p)+(p-1) = 1). ALWAYS NON-NEGATIVE: μ, φ > 0, p ∈ (1,2) ⇒ (2-p) > 0,
+# (p-1) > 0, y ≥ 0, so both summands of the bracket are ≥ 0 — unlike Beta/
+# Student-t there is no PD-guard-relevant sign-changing region for this family.
+_default_hessian(::TweedieED, ::LogLink) = :observed
+_glm_obs_weight(f::TweedieED, μ, n, me, y, link::LogLink, η) =
+    μ^(1.0 - f.p) * ((2.0 - f.p) * μ + (f.p - 1.0) * y) / f.φ
+
 # Numerically-safe log-sum-exp over a vector of log-weights.
 @inline function _tweedie_logsumexp(logw::AbstractVector)
     m = maximum(logw)
@@ -273,8 +291,10 @@ marginal *and* from the warm start, so the fit depends only on the observed cell
 
 `hessian` selects the Laplace log-det curvature only (`:fisher` expected /
 `:observed` joint — TMB's choice); the inner mode search is always
-Fisher-scored. Default: Tweedie/log default `:fisher`. Omitting it is exactly the pre-kwarg
-behaviour.
+Fisher-scored. Default: Tweedie/log default `:observed` (changed 2026-08-28,
+maintainer decision — TMB/`gllvmTMB` parity, see
+`docs/dev-log/decisions/2026-08-28-arc-decision-batch.md`). Omitting it is
+exactly the default-path behaviour.
 """
 function fit_tweedie_gllvm(Y::AbstractMatrix; K::Integer,
         link::Link = LogLink(), φ_init::Real = 1.0, p_init::Real = 1.5, mask = nothing,
