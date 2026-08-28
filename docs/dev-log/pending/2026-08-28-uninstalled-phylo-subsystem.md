@@ -48,6 +48,40 @@ instruction files — human or agent — will believe the capability is present.
 This is the same class as today's other two ledger findings (curvature table
 overstated; L47 row understated), and it is the largest of the three.
 
+## PROBE RESULT (run 2026-08-28 — this answers the "unknown cost" question)
+
+A scratch session (`Base.include(GLLVM, …)`, module untouched) loaded all
+seven files against the CURRENT engine:
+
+**All 7/7 load cleanly. There is no compile drift.** That is the good news and
+it removes the main risk this note originally flagged (the AGHQ precedent,
+where parked code had silently diverged). These files are stale in *wiring*,
+not in *code*.
+
+Two concrete, small integration items the probe surfaced:
+
+1. **`em_phylo.jl:65` carries its own `include(joinpath(@__DIR__,
+   "takahashi_selinv.jl"))`** — a file the module already includes. Installing
+   it as-is double-includes that file (observed: "Replacing docs for
+   `GLLVM.takahashi_selinv`" warnings). Fix: drop that line at install time.
+   It is a self-contained-file artifact, NOT a competing definition —
+   `em_phylo.jl` defines no `takahashi_*` function of its own (verified:
+   `grep -c "^function takahashi_selinv" src/em_phylo.jl` → 0). An earlier
+   draft of this note called it a "duplicate with drift"; that was wrong, from
+   a `diff` of an empty extraction, and is corrected here.
+2. **Test-referenced names do not all exist.** After loading, only
+   `fit_relaxed_clock` becomes defined; `fit_em_phylo`, `fit_phylo_squarem`
+   and `fit_branch_re` remain missing. The files define
+   `em_fit_phylo_squarem`, `blup_phylo_sparse`, `felsenstein_contrasts`,
+   `edge_phy`, `Q_perbranch`, etc. So the orphaned tests were written against
+   an older naming, and wiring them needs a name-reconciliation pass — the
+   real cost of option (1), and it is bounded and mechanical.
+
+**Revised recommendation:** option (1) is cheaper than this note first
+assumed — the code compiles, so the work is one include-line fix plus a
+naming pass, then let the seven tests report. Still a maintainer call because
+it changes the public surface and the instruction files.
+
 ## Options
 
 1. **Install the subsystem**: add the `include`s, export what should be
@@ -63,9 +97,9 @@ overstated; L47 row understated), and it is the largest of the three.
 3. Remove them. Not recommended — the contrasts and edge-incidence
    representations are cited design work with references.
 
-Recommendation: **(1) if the tests pass or nearly pass, else (2) now and (1)
-as its own arc.** Cheap first probe: wire the tests in a scratch branch and
-run them; the result decides the option.
+Recommendation (updated by the probe above): **(1)** — the compile risk is
+gone; what remains is an include-line fix and a name-reconciliation pass
+before the seven tests can report.
 
 ## Provenance note
 
