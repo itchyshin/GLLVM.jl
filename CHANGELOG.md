@@ -62,6 +62,21 @@ All notable changes to GLLVM.jl are documented here.
   global switch.
 
 ### Fixed
+- **`compoisson_logz` no longer truncates silently past its term cap**: for
+  large `λ^{1/ν}` the series' dominant terms outran the fixed summation cap and
+  the partial sum understated log Z. Past 80% of the cap the function now
+  switches to the Shmueli et al. (2005) asymptotic
+  (`ν·λ^{1/ν} − ((ν−1)/(2ν))·log λ − ((ν−1)/2)·log 2π − ½·log ν`), exact at
+  ν = 1 and validated against the direct series on the crossover band
+  (rel. err. ≤ 3e-8); the switch is monotone across the branch boundary
+  (tested at ν = 1 and ν = 2), and integer arguments still work (a
+  pre-commit review caught the guard computing `T(0.8)` with integer `T`).
+- **`fit_gaussian_gllvm` could report `converged = true` while stranded on the
+  PosDef penalty plateau**: the catch's ad-hoc `1e10` penalty sat below the
+  sentinel screen threshold and both return sites used raw `Optim.converged`.
+  The catch now returns `_NLL_SENTINEL` and both return sites screen the
+  verdict through `_fit_verdict` (the same sentinel-escape class fixed for
+  Tweedie on 2026-08-26). Well-behaved fits are unchanged.
 - **`fit_tweedie_gllvm` reported `converged = true` at points that were not
   maxima.** The log warm start `log(max(Y, 1e-6))` sent every structural zero to
   −13.8 regardless of the data scale, wrecking the intercepts and inflating the
@@ -100,6 +115,20 @@ All notable changes to GLLVM.jl are documented here.
   unaffected. Pinned by `test/test_fd_hessian.jl`.
 
 ### Added
+- **All ten remaining two-part entry points expose the `hessian` curvature
+  selector** (`fit_delta_lognormal_gllvm`, `fit_hurdle_poisson_gllvm`,
+  `fit_hurdle_nb_gllvm`, `fit_zip_gllvm`, `fit_zinb_gllvm`, `fit_zib_gllvm`,
+  `fit_beta_hurdle_gllvm`, and the covariate variants `fit_zip_gllvm_cov`,
+  `fit_zinb_gllvm_cov`, `fit_zib_gllvm_cov`; DeltaGamma already had it) —
+  kwarg validation and threading to the two-part Laplace kernel, default
+  `:observed` (bit-identical to the previous behaviour; proven by test for
+  an invalid selector and the `:fisher ≡ :observed` identity on all-ten
+  coverage in `test_twopart_hessian_kwarg.jl`). Honest scope: the kernel's
+  observed count-part weight is currently specialised only for DeltaGamma,
+  so for the other families both selectors coincide until their observed
+  weights land (the recorded two-part curvature gap); each docstring and the
+  response-families page state this. The exposure is the measurement
+  prerequisite for closing that gap.
 - **`confint_lv_effects(fit, Y, X_lv; method = :wald | :bootstrap)`** — Wald
   (delta-method) and parametric-bootstrap confidence intervals for the
   predictor-informed latent-score trait-effect matrix `B_lv = Λ·α'`, for Gaussian

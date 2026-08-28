@@ -1,5 +1,49 @@
 # Check Log
 
+## 2026-08-28 — Arc 2 mop-up: Gaussian verdict screened, CMP cap closed, two-part hessian exposed
+
+Three flagged residue items, one slice:
+
+1. **`fit.jl`'s Gaussian fitters join the sentinel screen**: the PosDef catch's
+   ad-hoc `1e10` penalty sat BELOW the 1e11 screen threshold, and both return
+   sites used raw `Optim.converged` — a run stranded on the penalty plateau
+   reported `converged = true`. Now `_NLL_SENTINEL` + `_fit_verdict` at both
+   sites (the second site keeps its recomputed closed-form logLik and screens
+   only the flag). Well-behaved smoke unchanged.
+2. **`_CMP_LOGZ_CAP` limitation CLOSED** (was flagged 2026-08-26): past 80% of
+   the term cap the series' mode outruns it and the sum silently truncates.
+   Added the Shmueli et al. (2005) asymptotic branch — exact at ν = 1,
+   validated on the crossover band against the series itself (rel. err.
+   2e-15 at ν=1, ≤3e-8 at ν∈{1.3, 2}), monotone across the branch switch.
+   New testset in test_com_poisson.jl.
+3. **Ten two-part entry points expose `hessian`** (delta_lognormal, both
+   hurdles, ZIP, ZINB, ZIB, beta_hurdle + the zip/zinb/zib `_cov` variants;
+   DeltaGamma already had it): kwarg + validation + threading to the kernel,
+   default `:observed` = the kernel default (bit-identical), invalid throws.
+   HONEST SCOPE: the kernel's observed count-part weight is specialised ONLY
+   for DeltaGamma (`_tp_observed_Wc(::Any) = Wc` fallback), so for the other
+   families both selectors currently coincide — the recorded
+   TWOPART_KNOWN_OPEN gap. This exposure is that gap's measurement
+   prerequisite, mirrored on the one-part kwarg arc; docstrings, the
+   response-families page, and `test_twopart_hessian_kwarg.jl` (invalid
+   throws + `:fisher ≡ :observed` bit-identity, all ten) state and prove it.
+
+   Pre-commit adversarial review round (3 lenses + refute stage) caught and
+   fixed before commit: (a) the seven kwargs had shipped with zero tests —
+   the cascade blocker; (b) the three `_cov` fitters were missed entirely;
+   (c) the CMP asymptotic guard threw `InexactError` on integer arguments
+   (`T(0.8)` with `T = Int64` — exported-surface regression, now
+   regression-tested); (d) `compoisson_logz`'s docstring still described the
+   pure series; (e) the ν = 1-only monotonicity test didn't exercise the
+   ν ≠ 1 branch terms (now also ν = 2); (f) DeltaGamma's docstring never
+   mentioned its (real) `hessian` kwarg; (g) an overclaiming comment at the
+   legacy Gaussian return site (its objective has no sentinel — screen is
+   defensive). Full-suite tally on the pre-review tree: 6921 pass / 0 fail /
+   4 broken, exit 0 (72m33s, Totoro); post-review verification: targeted
+   suites green (fit 12, com_poisson 26+16, delta_fit 13, hurdle_poisson
+   171, beta_hurdle 62, twopart_hessian_kwarg 13); full suite re-running
+   before push.
+
 ## 2026-08-28 — the cloglog saturation guard ships (diagnostic only)
 
 Implements Section 2 of the three-arc consolidated design (adversarially
