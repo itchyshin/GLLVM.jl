@@ -76,3 +76,21 @@ const ForwardDiff = GLLVM.ForwardDiff
         @test_throws ArgumentError fit_dep_gllvm(y; family = Poisson())
     end
 end
+
+# Identifiability caveat, asserted rather than only documented (2026-08-28,
+# L47 promotion): at K = p the likelihood pins Σ_total = ΛΛᵀ + σ²I only —
+# NOT the Σ/σ_eps split. An alternative (Λ = chol(Σ_total).L, σ_eps = 0)
+# reproduces Σ_total exactly, so the reported σ_eps is one point on a ridge.
+@testset "none × dep: σ_eps is not separately identified at K = p" begin
+    Random.seed!(4747)
+    p, n = 4, 200
+    Ltrue = 0.6 .* randn(p, p)
+    Σtrue = Ltrue * Ltrue' + 0.25I
+    Y = cholesky(Symmetric(Σtrue)).L * randn(p, n) .+ 0.3 .* randn(p)
+    f = fit_dep_gllvm(Y)
+    Λ̂ = f.pars.Λ
+    @test size(Λ̂, 2) == p                      # K forced to p
+    Σtot = Λ̂ * Λ̂' + f.pars.σ_eps^2 * I
+    Λalt = cholesky(Symmetric(Matrix(Σtot))).L  # the σ_eps = 0 equivalent
+    @test norm(Λalt * Λalt' - Σtot) < 1e-10     # same Σ_total, different split
+end

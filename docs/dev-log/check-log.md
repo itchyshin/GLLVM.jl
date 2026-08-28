@@ -1,5 +1,32 @@
 # Check Log
 
+## 2026-08-28 — L47 `none × dep` promoted (maintainer gate 6), with a MEASURED identifiability caveat
+
+Decision batch gate 6 authorised promoting the `none × dep` ledger row. The
+row read `planned` while `fit_dep_gllvm` was implemented (`src/none_dep.jl`),
+exported (`GLLVM.jl:226`), included (`GLLVM.jl:76`) and tested (29
+assertions, in `runtests.jl`) — an UNDERSTATED row, the mirror of the
+overstated curvature table corrected earlier today.
+
+Promoted to `implemented (function API only — see caveat)`, deliberately not
+to a bare `implemented`. The scope fence: no `@formula` `dep()` sugar (v1
+rejects `FunctionTerm` / `(… | g)`), Gaussian-only (non-Normal fails loud),
+no phylo/animal/spatial/kernel `dep` variant.
+
+**The caveat is measured, not asserted.** At `K = p`, `ΛΛᵀ` is already full
+rank, so the likelihood pins only `Σ_total = ΛΛᵀ + σ²I` — not the split.
+Probe (seed 4747, p=4, n=200): the fit reports `σ_eps = 0.98752306`, and the
+alternative `(Λ = cholesky(Σ_total).L, σ_eps = 0)` reproduces `Σ_total` to
+`4.44e-16`. So the returned `σ_eps` is one point on a flat ridge. This is now
+(a) a `!!! warning` admonition in the fitter's own docstring — a user reading
+the docstring sees it, not only the design ledger — and (b) an ASSERTED
+testset in `test/test_none_dep.jl`, so a future refactor that silently starts
+treating `σ_eps` as estimated will fail.
+
+Verify: `test_none_dep.jl` 39/39 + the new identifiability testset 2/2.
+Full-suite coverage owed (the 7062-pass run predates this slice).
+
+
 ## 2026-08-28 — Cells 12/13 (delta_lognormal, delta_gamma) fit-vs-fit parity: MEASURED, not paid at rtol=1e-6
 
 Ran live fit-vs-fit parity for `predictor = :shared` against a real gllvmTMB

@@ -44,7 +44,7 @@ implementation detail only.
 | Capability | Status |
 |---|---|
 | none × indep (`indep()` / ordinary independent RE) | implemented |
-| none × dep (`dep()` / unstructured trait covariance) | planned |
+| none × dep (`dep()` / unstructured trait covariance) | implemented (function API only — see caveat) |
 | none × latent (`latent()` / ordinary LV GLLVM) | implemented |
 | phylogenetic × indep (`phylo_indep()`) | implemented |
 | phylogenetic × dep (`phylo_dep()`) | planned |
@@ -63,6 +63,25 @@ implementation detail only.
 Notes (not status rows): Julia phylo rows share three **equivalent** likelihood
 representations (sparse CHOLMOD, contrasts, edge-incidence). Gaussian animal/spatial
 today enter via `relatedness_cov` / `spatial_cov` (and SPDE latent for
+**`none × dep` promotion (2026-08-28, maintainer decision gate 6).** Promoted
+from `planned` on the evidence: `fit_dep_gllvm` is implemented
+(`src/none_dep.jl`), exported (`src/GLLVM.jl:226`), included
+(`src/GLLVM.jl:76`), and tested (`test/test_none_dep.jl`, 29 assertions, in
+`runtests.jl`). It forces `K = p` (full-rank packed Λ, `p(p+1)/2` free
+parameters, Σ = LLᵀ) — the same estimand as the twin's
+`latent(0 + trait | g, d = T)`.
+
+**Scope caveat, MEASURED not asserted:** the row is `implemented` for the
+**function API only**. There is no `@formula` `dep()` sugar (v1 rejects
+`FunctionTerm` / `(… | g)`), the wrapper is **Gaussian-only** (non-Normal
+families fail loud), and no phylo/animal/spatial/kernel `dep` variant exists.
+Critically, **at `K = p` the Σ / σ_eps split is not separately identified**:
+the likelihood pins only the total `Σ_total = ΛΛᵀ + σ²I`. Verified 2026-08-28
+(seed 4747, p=4, n=200): the fit reports `σ_eps = 0.9875`, yet the
+alternative parameterisation `(Λ = chol(Σ_total).L, σ_eps = 0)` reproduces
+`Σ_total` to `4.4e-16`. Read `σ_eps` from this path as one point on a flat
+ridge, never as an estimated residual variance.
+
 non-Gaussian `spatial_latent`). `none × indep` maps to random row effects /
 per-trait diagonal paths; full unstructured `dep()` without LV is still a gap.
 
