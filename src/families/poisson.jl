@@ -47,7 +47,15 @@ struct PoissonFit
     iterations::Int
     alpha_lv::Union{Nothing, Matrix{Float64}}
     theta_packed::Vector{Float64}
+    hessian::Symbol   # the Laplace log-det curvature this fit's objective used
 end
+
+# Positional compatibility constructor (2026-08-28): every pre-existing
+# construction site builds a default-curvature fit; the `hessian` field
+# records the objective identity so `confint`/bootstrap can rebuild THE
+# SAME objective instead of guessing (the audit's confint-consistency class).
+PoissonFit(β, Λ, link, loglik, converged, iterations, alpha_lv, theta_packed) =
+    PoissonFit(β, Λ, link, loglik, converged, iterations, alpha_lv, theta_packed, _default_hessian(Poisson(), link))
 
 PoissonFit(β::Vector{Float64}, Λ::Matrix{Float64}, link::Link,
            loglik::Float64, converged::Bool, iterations::Int) =
@@ -301,10 +309,10 @@ function fit_poisson_gllvm(Y::AbstractMatrix; K::Integer,
         cursor += q_lv * K
         Λ̂ = unpack_lambda(@view(θ̂[(cursor + 1):(cursor + rr)]), p, K)
         return PoissonFit(β̂, Λ̂, link, _fit_verdict(res)...,
-                          alpha_hat, collect(Float64, θ̂))
+                          alpha_hat, collect(Float64, θ̂), hessian)
     else
         β̂ = θ̂[1:p]
         Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
-        return PoissonFit(β̂, Λ̂, link, _fit_verdict(res)...)
+        return PoissonFit(β̂, Λ̂, link, _fit_verdict(res)..., nothing, Float64[], hessian)
     end
 end

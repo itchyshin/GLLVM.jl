@@ -121,7 +121,15 @@ struct StudentTFit
     loglik::Float64
     converged::Bool
     iterations::Int
+    hessian::Symbol   # the Laplace log-det curvature this fit's objective used
 end
+
+# Positional compatibility constructor (2026-08-28): every pre-existing
+# construction site builds a default-curvature fit; the `hessian` field
+# records the objective identity so `confint`/bootstrap can rebuild THE
+# SAME objective instead of guessing (the audit's confint-consistency class).
+StudentTFit(β, Λ, ν, σ, link, loglik, converged, iterations) =
+    StudentTFit(β, Λ, ν, σ, link, loglik, converged, iterations, _default_hessian(StudentTFamily(4.0, 1.0), link))
 
 function Base.show(io::IO, f::StudentTFit)
     p, K = size(f.Λ)
@@ -233,5 +241,5 @@ function fit_studentt_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
     σ̂ = exp(θ̂[p + rr + 1])
-    return StudentTFit(β̂, Λ̂, ν0, σ̂, link, _fit_verdict(res)...)
+    return StudentTFit(β̂, Λ̂, ν0, σ̂, link, _fit_verdict(res)..., hessian)
 end

@@ -54,7 +54,15 @@ struct NBFit
     iterations::Int
     alpha_lv::Union{Nothing, Matrix{Float64}}
     theta_packed::Vector{Float64}
+    hessian::Symbol   # the Laplace log-det curvature this fit's objective used
 end
+
+# Positional compatibility constructor (2026-08-28): every pre-existing
+# construction site builds a default-curvature fit; the `hessian` field
+# records the objective identity so `confint`/bootstrap can rebuild THE
+# SAME objective instead of guessing (the audit's confint-consistency class).
+NBFit(β, Λ, r, link, loglik, converged, iterations, alpha_lv, theta_packed) =
+    NBFit(β, Λ, r, link, loglik, converged, iterations, alpha_lv, theta_packed, _default_hessian(NegativeBinomial(1.0, 0.5), link))
 
 NBFit(β::Vector{Float64}, Λ::Matrix{Float64}, r::Float64, link::Link,
       loglik::Float64, converged::Bool, iterations::Int) =
@@ -290,11 +298,11 @@ function fit_nb_gllvm(Y::AbstractMatrix; K::Integer,
         cursor += rr
         r̂ = exp(θ̂[cursor + 1])
         return NBFit(β̂, Λ̂, r̂, link, _fit_verdict(res)...,
-                     alpha_hat, collect(Float64, θ̂))
+                     alpha_hat, collect(Float64, θ̂), hessian)
     else
         β̂ = θ̂[1:p]
         Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
         r̂ = exp(θ̂[p + rr + 1])
-        return NBFit(β̂, Λ̂, r̂, link, _fit_verdict(res)...)
+        return NBFit(β̂, Λ̂, r̂, link, _fit_verdict(res)..., nothing, Float64[], hessian)
     end
 end

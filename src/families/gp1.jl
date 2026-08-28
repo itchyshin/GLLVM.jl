@@ -139,7 +139,15 @@ struct GP1Fit
     loglik::Float64
     converged::Bool
     iterations::Int
+    hessian::Symbol   # the Laplace log-det curvature this fit's objective used
 end
+
+# Positional compatibility constructor (2026-08-28): every pre-existing
+# construction site builds a default-curvature fit; the `hessian` field
+# records the objective identity so `confint`/bootstrap can rebuild THE
+# SAME objective instead of guessing (the audit's confint-consistency class).
+GP1Fit(β, Λ, α, link, loglik, converged, iterations) =
+    GP1Fit(β, Λ, α, link, loglik, converged, iterations, _default_hessian(GeneralizedPoisson1(0.0), link))
 
 function Base.show(io::IO, f::GP1Fit)
     p, K = size(f.Λ)
@@ -278,5 +286,5 @@ function fit_gp1_gllvm(Y::AbstractMatrix; K::Integer,
     end
 
     return GP1Fit(fit_star.β, fit_star.Λ, fit_star.α, link, -fit_star.nll,
-                  fit_star.converged, fit_star.iters)
+                  fit_star.converged, fit_star.iters, hessian)
 end

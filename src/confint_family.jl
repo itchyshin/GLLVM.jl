@@ -93,7 +93,7 @@ function _family_ci(fit::PoissonFit, Y::AbstractMatrix;
         v = try
             objective === :va ?
                 -poisson_marginal_loglik_va(Y, Λ, β; maxiter = newton_maxiter, tol = newton_tol) :
-                -poisson_marginal_loglik_laplace(Y, Λ, β, link; mask = M,
+                -poisson_marginal_loglik_laplace(Y, Λ, β, link; mask = M, hessian = fit.hessian,
                                                  maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
@@ -103,7 +103,7 @@ function _family_ci(fit::PoissonFit, Y::AbstractMatrix;
     simulate = rng -> _glm_simulate_counts(rng, fit.β, fit.Λ, link, n,
                                            (r, μ) -> Poisson(max(μ, 1e-12)))
     refit = function (Yb)
-        fb = try fit_poisson_gllvm(Yb; K = K, link = link, mask = M) catch; return nothing end
+        fb = try fit_poisson_gllvm(Yb; K = K, link = link, mask = M, hessian = fit.hessian) catch; return nothing end
         return vcat(fb.β, pack_lambda(fb.Λ))
     end
     return _FamilyCI(θ, nll, _glm_lin_names(p, K), fill(:linear, length(θ)), simulate, refit)
@@ -128,7 +128,7 @@ function _family_ci(fit::BinomialFit, Y::AbstractMatrix;
         v = try
             objective === :va ?
                 -binomial_marginal_loglik_va(Y, Nm, Λ, β; maxiter = newton_maxiter, tol = newton_tol) :
-                -binomial_marginal_loglik_laplace(Y, Nm, Λ, β, link; mask = M,
+                -binomial_marginal_loglik_laplace(Y, Nm, Λ, β, link; mask = M, hessian = fit.hessian,
                                                   maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
@@ -147,7 +147,7 @@ function _family_ci(fit::BinomialFit, Y::AbstractMatrix;
         return Yb
     end
     refit = function (Yb)
-        fb = try fit_binomial_gllvm(Yb; K = K, link = link, N = Nm, mask = M) catch; return nothing end
+        fb = try fit_binomial_gllvm(Yb; K = K, link = link, N = Nm, mask = M, hessian = fit.hessian) catch; return nothing end
         return vcat(fb.β, pack_lambda(fb.Λ))
     end
     return _FamilyCI(θ, nll, _glm_lin_names(p, K), fill(:linear, length(θ)), simulate, refit)
@@ -170,7 +170,7 @@ function _family_ci(fit::NBFit, Y::AbstractMatrix;
         v = try
             objective === :va ?
                 -nb_marginal_loglik_va(Y, Λ, β, r; maxiter = newton_maxiter, tol = newton_tol) :
-                -nb_marginal_loglik_laplace(Y, Λ, β, r; link = link, mask = M,
+                -nb_marginal_loglik_laplace(Y, Λ, β, r; link = link, mask = M, hessian = fit.hessian,
                                             maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
@@ -180,7 +180,7 @@ function _family_ci(fit::NBFit, Y::AbstractMatrix;
     simulate = rng -> _glm_simulate_counts(rng, fit.β, fit.Λ, link, n,
                                            (rg, μ) -> (m = max(μ, 1e-12); NegativeBinomial(fit.r, fit.r / (fit.r + m))))
     refit = function (Yb)
-        fb = try fit_nb_gllvm(Yb; K = K, link = link, mask = M) catch; return nothing end
+        fb = try fit_nb_gllvm(Yb; K = K, link = link, mask = M, hessian = fit.hessian) catch; return nothing end
         return vcat(fb.β, pack_lambda(fb.Λ), log(fb.r))
     end
     names = vcat(_glm_lin_names(p, K), "r")
@@ -198,7 +198,7 @@ function _family_ci(fit::NB1Fit, Y::AbstractMatrix;
     nll = function (θv)
         β = θv[1:p]; Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K); φ = exp(θv[p + rr + 1])
         v = try
-            -nb1_marginal_loglik_laplace(Y, Λ, β, φ; link = link, mask = M,
+            -nb1_marginal_loglik_laplace(Y, Λ, β, φ; link = link, mask = M, hessian = fit.hessian,
                                          maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
@@ -208,7 +208,7 @@ function _family_ci(fit::NB1Fit, Y::AbstractMatrix;
     simulate = rng -> _glm_simulate_counts(rng, fit.β, fit.Λ, link, n,
                                            (rg, μ) -> (m = max(μ, 1e-12); NegativeBinomial(m / fit.φ, 1 / (1 + fit.φ))))
     refit = function (Yb)
-        fb = try fit_nb1_gllvm(Yb; K = K, link = link, mask = M) catch; return nothing end
+        fb = try fit_nb1_gllvm(Yb; K = K, link = link, mask = M, hessian = fit.hessian) catch; return nothing end
         return vcat(fb.β, pack_lambda(fb.Λ), log(fb.φ))
     end
     names = vcat(_glm_lin_names(p, K), "phi")
@@ -226,7 +226,7 @@ function _family_ci(fit::GP1Fit, Y::AbstractMatrix;
     nll = function (θv)
         β = θv[1:p]; Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K); α = θv[p + rr + 1]
         v = try
-            -gp1_marginal_loglik_laplace(Y, Λ, β, α; link = link, mask = M,
+            -gp1_marginal_loglik_laplace(Y, Λ, β, α; link = link, mask = M, hessian = fit.hessian,
                                          maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
@@ -245,7 +245,7 @@ function _family_ci(fit::GP1Fit, Y::AbstractMatrix;
         return Yb
     end
     refit = function (Yb)
-        fb = try fit_gp1_gllvm(Yb; K = K, link = link, mask = M) catch; return nothing end
+        fb = try fit_gp1_gllvm(Yb; K = K, link = link, mask = M, hessian = fit.hessian) catch; return nothing end
         return vcat(fb.β, pack_lambda(fb.Λ), fb.α)
     end
     names = vcat(_glm_lin_names(p, K), "alpha")
@@ -270,7 +270,7 @@ function _family_ci(fit::BetaFit, Y::AbstractMatrix;
         v = try
             objective === :va ?
                 -beta_marginal_loglik_va(Y, Λ, β, φ; maxiter = newton_maxiter, tol = newton_tol) :
-                -beta_marginal_loglik_laplace(Y, Λ, β, φ; link = link, mask = M,
+                -beta_marginal_loglik_laplace(Y, Λ, β, φ; link = link, mask = M, hessian = fit.hessian,
                                               maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
@@ -289,7 +289,7 @@ function _family_ci(fit::BetaFit, Y::AbstractMatrix;
         return Yb
     end
     refit = function (Yb)
-        fb = try fit_beta_gllvm(Yb; K = K, link = link, mask = M) catch; return nothing end
+        fb = try fit_beta_gllvm(Yb; K = K, link = link, mask = M, hessian = fit.hessian) catch; return nothing end
         return vcat(fb.β, pack_lambda(fb.Λ), log(fb.φ))
     end
     names = vcat(_glm_lin_names(p, K), "phi")
@@ -314,7 +314,7 @@ function _family_ci(fit::GammaFit, Y::AbstractMatrix;
         v = try
             objective === :va ?
                 -gamma_marginal_loglik_va(Y, Λ, β, α; maxiter = newton_maxiter, tol = newton_tol) :
-                -gamma_marginal_loglik_laplace(Y, Λ, β, α; link = link, mask = M,
+                -gamma_marginal_loglik_laplace(Y, Λ, β, α; link = link, mask = M, hessian = fit.hessian,
                                                maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
@@ -333,7 +333,7 @@ function _family_ci(fit::GammaFit, Y::AbstractMatrix;
         return Yb
     end
     refit = function (Yb)
-        fb = try fit_gamma_gllvm(Yb; K = K, link = link, mask = M) catch; return nothing end
+        fb = try fit_gamma_gllvm(Yb; K = K, link = link, mask = M, hessian = fit.hessian) catch; return nothing end
         return vcat(fb.β, pack_lambda(fb.Λ), log(fb.α))
     end
     names = vcat(_glm_lin_names(p, K), "alpha")
@@ -903,7 +903,7 @@ function _family_ci(fit::TweedieFit, Y::AbstractMatrix;
     nll = function (θv)
         β = θv[1:p]; Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K); φ = exp(θv[p + rr + 1])
         v = try
-            -tweedie_marginal_loglik_laplace(Y, Λ, β, φ, pw; link = link,
+            -tweedie_marginal_loglik_laplace(Y, Λ, β, φ, pw; link = link, hessian = fit.hessian,
                                              maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
@@ -922,7 +922,7 @@ function _family_ci(fit::TweedieFit, Y::AbstractMatrix;
         return Yb
     end
     refit = function (Yb)
-        fb = try fit_tweedie_gllvm(Yb; K = K, link = link) catch; return nothing end
+        fb = try fit_tweedie_gllvm(Yb; K = K, link = link, hessian = fit.hessian) catch; return nothing end
         return vcat(fb.β, pack_lambda(fb.Λ), log(fb.φ))
     end
     names = vcat(_glm_lin_names(p, K), "phi")
@@ -938,7 +938,7 @@ function _family_ci(fit::ExponentialFit, Y::AbstractMatrix;
     nll = function (θv)
         β = θv[1:p]; Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K)
         v = try
-            -exponential_marginal_loglik_laplace(Y, Λ, β; link = link, maxiter = newton_maxiter, tol = newton_tol)
+            -exponential_marginal_loglik_laplace(Y, Λ, β; link = link, hessian = fit.hessian, maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
         end
@@ -955,7 +955,7 @@ function _family_ci(fit::ExponentialFit, Y::AbstractMatrix;
         return Yb
     end
     refit = function (Yb)
-        fb = try fit_exponential_gllvm(Yb; K = K, link = link) catch; return nothing end
+        fb = try fit_exponential_gllvm(Yb; K = K, link = link, hessian = fit.hessian) catch; return nothing end
         return vcat(fb.β, pack_lambda(fb.Λ))
     end
     return _FamilyCI(θ, nll, _glm_lin_names(p, K), fill(:linear, length(θ)), simulate, refit)

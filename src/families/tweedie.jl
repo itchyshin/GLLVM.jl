@@ -219,7 +219,15 @@ struct TweedieFit
     loglik::Float64
     converged::Bool
     iterations::Int
+    hessian::Symbol   # the Laplace log-det curvature this fit's objective used
 end
+
+# Positional compatibility constructor (2026-08-28): every pre-existing
+# construction site builds a default-curvature fit; the `hessian` field
+# records the objective identity so `confint`/bootstrap can rebuild THE
+# SAME objective instead of guessing (the audit's confint-consistency class).
+TweedieFit(β, Λ, φ, p, link, loglik, converged, iterations) =
+    TweedieFit(β, Λ, φ, p, link, loglik, converged, iterations, _default_hessian(TweedieED(1.0, 1.5), link))
 
 function Base.show(io::IO, f::TweedieFit)
     pp, K = size(f.Λ)
@@ -338,5 +346,5 @@ function fit_tweedie_gllvm(Y::AbstractMatrix; K::Integer,
         @warn "fit_tweedie_gllvm: the power ran to the boundary of (1, 2) \
                (p̂ = $(p̂), φ̂ = $(φ̂)); the fit is flagged as not converged."
     end
-    return TweedieFit(β̂, Λ̂, φ̂, p̂, link, loglik, conv, Optim.iterations(res))
+    return TweedieFit(β̂, Λ̂, φ̂, p̂, link, loglik, conv, Optim.iterations(res), hessian)
 end
