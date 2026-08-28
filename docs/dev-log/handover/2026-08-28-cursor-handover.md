@@ -6,6 +6,30 @@ state. Read `AGENTS.md` first (mission, rules, review roles), then this file,
 then reconcile against live git before acting. Classify every item below as
 OWED / DONE / RETRACTED / PROTECTED against what you actually find.
 
+## GOAL STATUS — NOT COMPLETE (read this before claiming anything)
+
+The standing goal is *"GLLVM.jl at full capability parity with the gllvmTMB
+0.7.0 twin — correctness debt cleared at the root, the 17-cell parity ladder
+closed, the capability ledger honest, and the package releasable."*
+
+**Achieved:** the HEADLINE only — the Fisher-vs-observed Laplace fault class
+is structurally dead (census `KNOWN_OPEN` empty). Plus the ledger honesty
+pass on the curvature table.
+
+**NOT achieved, and this session did not claim otherwise:**
+- The **parity ladder is NOT closed.** 13/17 paid; cells 12/13 are *measured
+  with cause* but explicitly NOT paid; student (9) and tweedie (6) are
+  untouched estimator/defect gaps.
+- The **package is NOT releasable.** Arcs 3, 4 and 6 are open (covariance
+  grid, cross-validation, `@formula` categoricals, random slopes, StatsAPI
+  methods, orphaned tests, claim reconciliation, version bump, Rose
+  pre-publish audit). Estimated ~1–3 weeks of work remains.
+- Several **maintainer decisions are pending** (listed under Next Immediate
+  Steps) and gate parts of that remainder.
+
+This handover is a **platform transfer mid-goal**, not a completion report.
+Continue the goal; do not treat any of the above as done.
+
 ## Critical Context
 
 - **Goal (maintainer-set):** GLLVM.jl at full capability parity with the
