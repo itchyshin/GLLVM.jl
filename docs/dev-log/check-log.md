@@ -1,5 +1,26 @@
 # Check Log
 
+## 2026-08-28 — the cloglog saturation guard ships (diagnostic only)
+
+Implements Section 2 of the three-arc consolidated design (adversarially
+adjudicated; all seven critique defects incorporated — per-fit warning with no
+`maxlog`, hedged intercept-vs-latent-mode wording, plateau guard, the
+campaign's own `Xoshiro` DGP embedded verbatim in the acceptance test).
+
+- `LaplaceSaturationHealth` + `BinomialFit.saturation` (compat tiers keep all
+  legacy and VA construction sites at `nothing` = "not computed").
+- `_laplace_saturation_health`: recomputes per-site modes at the fitted
+  parameters; counts μ-saturation-threshold contact and log-det-weight
+  collapse under the FIT's own curvature selector; mask-respecting.
+- Fires exactly on the diagnosed runaway (19/300 cells — matching the
+  independent diagnosis count), quiet on benign logit/probit/cloglog fits;
+  `show` gains `SATURATED (k cells)` beside an honestly-unchanged
+  `converged = true`.
+- No exported helper: the struct field IS the accessor, dodging the API-
+  addition question (noted for the PR).
+- Tests: `test_saturation_health.jl` 17/17, wired. Docs: response-families
+  warning admonition. Suite: [tally on green].
+
 ## 2026-08-28 — the last four curvature cells: two adjudicable, two fenced on findings
 
 D-139 pre-run of the agent-written campaign cell types (first execution):
@@ -26,11 +47,13 @@ D-139 pre-run of the agent-written campaign cell types (first execution):
   twin-parity question and a fit-health-diagnostic question (a saturation
   warning on cloglog fits), NOT a weight/score bug. Remedy decision queued
   for the maintainer.
-- **Tweedie — cells fenced on cost**: one small cell exceeds 10 minutes; the
-  oracle pays the infinite-series log-density at 8001 nodes × every (t, s)
-  per evaluation (~10⁶ series calls/fit). Estimate for 150 cells: 50–75
-  CPU-hours — a DRAC-array or Totoro campaign needing its own D-139 approval,
-  or an oracle-optimization pass (fewer nodes + series caching) first.
+- **Tweedie — ADJUDICATED (2026-08-28, same day)**: the oracle node-reduction
+  (8001 → 1001, validated bit-identical on the gp1 fixture) cut the cell to
+  4.7 min; 150 cells ran on Totoro at 24 workers, 150/150 ok. VERDICT: the
+  strongest flip case in the table — observed preferred in 98–100% of cells
+  in every regime with means ≡ medians (no outlier tail) and negligible
+  approximation cost (0.56 vs 0.61). Flip recommendation added to the
+  decision brief addendum alongside probit's.
 
 ## 2026-08-28 — confint honors the fit's curvature (the audit class, closed for one-part fits)
 
