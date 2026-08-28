@@ -18,14 +18,16 @@ passes: the overstated curvature table (corrected) and the understated L47
 `none × dep` row (promoted with a measured caveat).
 
 **NOT achieved, and this session did not claim otherwise:**
-- The **parity ladder is NOT closed — but it moved: 15/17.** Cells 12 and 13
-  PAID 2026-08-28 (per-trait `disp_group = :species` + `predictor = :shared`;
-  Δ 1.8e-8 / 1.8e-8, independently re-verified on fresh seeds). Remaining:
-  **cell 9 student** — the synthesis note says the SAME per-trait dispersion
-  root cause applies (twin fits `log_sigma_student` AND `log_df_student` per
-  trait), plus genuine ν estimation; that attribution is a source reading, NOT
-  a measured Δ, so measure it first. **Cell 6 tweedie** — grouped-route
-  defects first.
+- The **parity ladder is NOT closed — but it moved twice: 15/17 PAID + 1
+  CONDITIONAL.** Cells 12 and 13 PAID (per-trait `disp_group = :species` +
+  `predictor = :shared`; Δ 1.8e-8 both, independently re-verified on fresh
+  seeds). **Cell 9 student PAID AT FIXED ν ONLY** (Δ 3.34e-9 at fresh seed
+  9203) — the twin's DEFAULT `student()` estimates ν and its `log_df_student`
+  is per-trait, and GLLVM.jl fixes ν, so the default model is still not
+  comparable. Do NOT record this as 16/17. Remaining work: **ν estimation**
+  (the real cell-9 remainder; twin df-CI is off-by-one, so intervals need
+  care) and **cell 6 tweedie** (grouped-route defects first, then the fenced
+  STOP #234 admit).
 - The **package is NOT releasable.** Arcs 3, 4 and 6 are open (covariance
   grid, cross-validation, `@formula` categoricals, random slopes, StatsAPI
   methods, orphaned tests, claim reconciliation, version bump, Rose
