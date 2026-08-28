@@ -873,6 +873,14 @@ fit = fit_gllvm(Y; family = OrderedBeta(0.0, 2.0, 3.0), K = 2)  # same — marke
 # named fitter remains: fit_ordered_beta_gllvm
 ```
 
+All two-part fitters (including the `_cov` variants) accept the
+`hessian = :observed | :fisher` curvature selector introduced for the one-part
+families. Honest scope: the observed count-part weight is currently implemented
+only for DeltaGamma, so for every other two-part family the two selectors
+produce the identical objective until their observed weights land (the recorded
+two-part curvature gap); the kwarg is exposed now as the measurement
+prerequisite for closing that gap.
+
 **Hurdle vs zero-inflated.** A *hurdle* model treats every zero as a
 non-occurrence and the positive part as a **zero-truncated** count. A
 *zero-inflated* model mixes a structural-zero process with an **ordinary** count

@@ -262,12 +262,22 @@ with `Λz = 0` (per-species occurrence intercept). `Y` is p×n with `0` for abse
 and positive reals otherwise. Finite-difference gradient; warm start =
 `logit(empirical P(y>0))` occurrence intercepts + mean / SVD of the positive-part
 log-responses + `σ₀ = sd(log y_{>0})`.
+
+`hessian` selects the two-part Laplace log-det curvature (`:observed` default /
+`:fisher`); the mode search is always Fisher-scored. NOTE (2026-08-28): for this
+family the observed count-part weight is not yet specialised, so both selectors
+currently produce the identical objective (the `TWOPART_KNOWN_OPEN` census gap;
+DeltaGamma is the only two-part family whose observed weight is implemented).
+Exposing the kwarg is the measurement prerequisite for closing that gap.
 """
 function fit_delta_lognormal_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         offset = nothing,
+        hessian::Symbol = :observed,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
+    hessian in (:observed, :fisher) || throw(ArgumentError(
+        "fit_delta_lognormal_gllvm: hessian must be :observed or :fisher; got :$hessian"))
     rr = rr_theta_len(p, K)
 
     βz0 = Vector{Float64}(undef, p)
@@ -305,7 +315,7 @@ function fit_delta_lognormal_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         Λc = unpack_lambda(θ[(2p + 1):(2p + rr)], p, K)
         σ = exp(θ[2p + rr + 1])
         v = try
-            -delta_lognormal_marginal_loglik_laplace(Y, Λc, βz, βc, σ; offsetc = offset,
+            -delta_lognormal_marginal_loglik_laplace(Y, Λc, βz, βc, σ; offsetc = offset, hessian = hessian,
                                                      maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
@@ -396,12 +406,22 @@ end
 Fit a Hurdle-Poisson two-part GLLVM by L-BFGS over `[βz; βc; vec(Λc)]` (Λz=0).
 `Y` p×n integer counts. Finite-difference gradient; warm start =
 `logit(empirical P(y>0))` + `log` mean positive count + SVD loadings.
+
+`hessian` selects the two-part Laplace log-det curvature (`:observed` default /
+`:fisher`); the mode search is always Fisher-scored. NOTE (2026-08-28): for this
+family the observed count-part weight is not yet specialised, so both selectors
+currently produce the identical objective (the `TWOPART_KNOWN_OPEN` census gap;
+DeltaGamma is the only two-part family whose observed weight is implemented).
+Exposing the kwarg is the measurement prerequisite for closing that gap.
 """
 function fit_hurdle_poisson_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         offset = nothing,
+        hessian::Symbol = :observed,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
+    hessian in (:observed, :fisher) || throw(ArgumentError(
+        "fit_hurdle_poisson_gllvm: hessian must be :observed or :fisher; got :$hessian"))
     rr = rr_theta_len(p, K)
     βz0 = Vector{Float64}(undef, p); βc0 = Vector{Float64}(undef, p)
     @inbounds for t in 1:p
@@ -428,7 +448,7 @@ function fit_hurdle_poisson_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         βz = θ[1:p]; βc = θ[(p + 1):(2p)]
         Λc = unpack_lambda(θ[(2p + 1):(2p + rr)], p, K)
         v = try
-            -hurdle_poisson_marginal_loglik_laplace(Y, Λc, βz, βc; offsetc = offset,
+            -hurdle_poisson_marginal_loglik_laplace(Y, Λc, βz, βc; offsetc = offset, hessian = hessian,
                                                     maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
@@ -534,12 +554,22 @@ end
     fit_hurdle_nb_gllvm(Y; K, …) -> HurdleNBFit
 
 Fit a Hurdle-NB two-part GLLVM by L-BFGS over `[βz; βc; vec(Λc); log r]` (Λz=0).
+
+`hessian` selects the two-part Laplace log-det curvature (`:observed` default /
+`:fisher`); the mode search is always Fisher-scored. NOTE (2026-08-28): for this
+family the observed count-part weight is not yet specialised, so both selectors
+currently produce the identical objective (the `TWOPART_KNOWN_OPEN` census gap;
+DeltaGamma is the only two-part family whose observed weight is implemented).
+Exposing the kwarg is the measurement prerequisite for closing that gap.
 """
 function fit_hurdle_nb_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         offset = nothing,
+        hessian::Symbol = :observed,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
+    hessian in (:observed, :fisher) || throw(ArgumentError(
+        "fit_hurdle_nb_gllvm: hessian must be :observed or :fisher; got :$hessian"))
     rr = rr_theta_len(p, K)
     βz0 = Vector{Float64}(undef, p); βc0 = Vector{Float64}(undef, p)
     @inbounds for t in 1:p
@@ -566,7 +596,7 @@ function fit_hurdle_nb_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         Λc = unpack_lambda(θ[(2p + 1):(2p + rr)], p, K)
         r = exp(θ[2p + rr + 1])
         v = try
-            -hurdle_nb_marginal_loglik_laplace(Y, Λc, βz, βc, r; offsetc = offset,
+            -hurdle_nb_marginal_loglik_laplace(Y, Λc, βz, βc, r; offsetc = offset, hessian = hessian,
                                                maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
@@ -697,6 +727,11 @@ is p×n with `0` for absences and positive reals otherwise. Finite-difference
 gradient; warm start = `logit(empirical P(y>0))` occurrence intercepts + `log` mean
 positive value as log-mean intercepts + SVD of positive-part log-residuals as
 loadings + a method-of-moments `α₀` from the standardised positives.
+
+`hessian` selects the two-part Laplace log-det curvature (`:observed` default /
+`:fisher`); the mode search is always Fisher-scored. DeltaGamma is the one
+two-part family whose observed count-part weight is implemented, so the two
+selectors genuinely differ here.
 """
 function fit_delta_gamma_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         offset = nothing, hessian::Symbol = :observed,
@@ -907,12 +942,22 @@ end
 Fit a zero-inflated Poisson GLLVM by L-BFGS over `[βz; βc; vec(Λc)]` (Λz=0).
 `Y` p×n integer counts. Finite-difference gradient; warm start from the
 excess-zero fraction + positive-count log-means + SVD loadings.
+
+`hessian` selects the two-part Laplace log-det curvature (`:observed` default /
+`:fisher`); the mode search is always Fisher-scored. NOTE (2026-08-28): for this
+family the observed count-part weight is not yet specialised, so both selectors
+currently produce the identical objective (the `TWOPART_KNOWN_OPEN` census gap;
+DeltaGamma is the only two-part family whose observed weight is implemented).
+Exposing the kwarg is the measurement prerequisite for closing that gap.
 """
 function fit_zip_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         offset = nothing,
+        hessian::Symbol = :observed,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
+    hessian in (:observed, :fisher) || throw(ArgumentError(
+        "fit_zip_gllvm: hessian must be :observed or :fisher; got :$hessian"))
     rr = rr_theta_len(p, K)
     βz0, βc0, Λc0 = _zi_warmstart(Y, K)
     θ0 = vcat(βz0, βc0, pack_lambda(Λc0))
@@ -920,7 +965,7 @@ function fit_zip_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         βz = θ[1:p]; βc = θ[(p + 1):(2p)]
         Λc = unpack_lambda(θ[(2p + 1):(2p + rr)], p, K)
         v = try
-            -zip_marginal_loglik_laplace(Y, Λc, βz, βc; offsetc = offset,
+            -zip_marginal_loglik_laplace(Y, Λc, βz, βc; offsetc = offset, hessian = hessian,
                                          maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
@@ -982,11 +1027,19 @@ ZIP Laplace marginal. Finite-difference gradient; warm start from
 `X` is `(p, n, q)`. `γ_fixed` optionally zeros selected covariate columns for
 **both** parts (same contract as [`fit_gllvm_cov`](@ref)). Twin light RCall Δ
 is out of scope (twin ZIP cut).
+
+`hessian` selects the two-part Laplace log-det curvature (`:observed` default /
+`:fisher`); the mode search is always Fisher-scored. As for the no-covariate
+fitter, the observed count-part weight is not yet specialised for this family,
+so both selectors currently produce the identical objective (the
+`TWOPART_KNOWN_OPEN` census gap).
 """
 function fit_zip_gllvm_cov(Y::AbstractMatrix{<:Real}; X::AbstractArray{<:Real, 3},
-        K::Integer, γ_fixed = nothing,
+        K::Integer, γ_fixed = nothing, hessian::Symbol = :observed,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    hessian in (:observed, :fisher) || throw(ArgumentError(
+        "fit_zip_gllvm_cov: hessian must be :observed or :fisher; got :$hessian"))
     p, n = size(Y)
     size(X, 1) == p && size(X, 2) == n ||
         throw(DimensionMismatch("X must be (p, n, q) = ($p, $n, q); got $(size(X))"))
@@ -1007,7 +1060,7 @@ function fit_zip_gllvm_cov(Y::AbstractMatrix{<:Real}; X::AbstractArray{<:Real, 3
         Oc = _build_offset(X_fit, γc)
         v = try
             -zip_marginal_loglik_laplace(Y, Λc, βz, βc;
-                                         offsetz = Oz, offsetc = Oc,
+                                         offsetz = Oz, offsetc = Oc, hessian = hessian,
                                          maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
@@ -1102,12 +1155,22 @@ end
     fit_zinb_gllvm(Y; K, …) -> ZINBFit
 
 Fit a zero-inflated NB2 GLLVM by L-BFGS over `[βz; βc; vec(Λc); log r]` (Λz=0).
+
+`hessian` selects the two-part Laplace log-det curvature (`:observed` default /
+`:fisher`); the mode search is always Fisher-scored. NOTE (2026-08-28): for this
+family the observed count-part weight is not yet specialised, so both selectors
+currently produce the identical objective (the `TWOPART_KNOWN_OPEN` census gap;
+DeltaGamma is the only two-part family whose observed weight is implemented).
+Exposing the kwarg is the measurement prerequisite for closing that gap.
 """
 function fit_zinb_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         offset = nothing,
+        hessian::Symbol = :observed,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
+    hessian in (:observed, :fisher) || throw(ArgumentError(
+        "fit_zinb_gllvm: hessian must be :observed or :fisher; got :$hessian"))
     rr = rr_theta_len(p, K)
     βz0, βc0, Λc0 = _zi_warmstart(Y, K)
     θ0 = vcat(βz0, βc0, pack_lambda(Λc0), log(10.0))
@@ -1116,7 +1179,7 @@ function fit_zinb_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         Λc = unpack_lambda(θ[(2p + 1):(2p + rr)], p, K)
         r = exp(θ[2p + rr + 1])
         v = try
-            -zinb_marginal_loglik_laplace(Y, Λc, βz, βc, r; offsetc = offset,
+            -zinb_marginal_loglik_laplace(Y, Λc, βz, βc, r; offsetc = offset, hessian = hessian,
                                           maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
@@ -1193,11 +1256,19 @@ with `γ=0` and `log r = log(10)`.
 optional packed start `[βz; γz; βc; γc; pack(Λc); log r]` (same length as the
 free packed vector). Twin light RCall Δ is out of scope (twin ZINB cut).
 Per-trait `r` is **not** the default.
+
+`hessian` selects the two-part Laplace log-det curvature (`:observed` default /
+`:fisher`); the mode search is always Fisher-scored. As for the no-covariate
+fitter, the observed count-part weight is not yet specialised for this family,
+so both selectors currently produce the identical objective (the
+`TWOPART_KNOWN_OPEN` census gap).
 """
 function fit_zinb_gllvm_cov(Y::AbstractMatrix{<:Real}; X::AbstractArray{<:Real, 3},
-        K::Integer, γ_fixed = nothing, θ_init = nothing,
+        K::Integer, γ_fixed = nothing, θ_init = nothing, hessian::Symbol = :observed,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    hessian in (:observed, :fisher) || throw(ArgumentError(
+        "fit_zinb_gllvm_cov: hessian must be :observed or :fisher; got :$hessian"))
     p, n = size(Y)
     size(X, 1) == p && size(X, 2) == n ||
         throw(DimensionMismatch("X must be (p, n, q) = ($p, $n, q); got $(size(X))"))
@@ -1226,7 +1297,7 @@ function fit_zinb_gllvm_cov(Y::AbstractMatrix{<:Real}; X::AbstractArray{<:Real, 
         Oz = _build_offset(X_fit, γz)
         Oc = _build_offset(X_fit, γc)
         v = try
-            -zinb_marginal_loglik_laplace(Y, Λc, βz, βc, r;
+            -zinb_marginal_loglik_laplace(Y, Λc, βz, βc, r; hessian = hessian,
                                          offsetz = Oz, offsetc = Oc,
                                          maxiter = newton_maxiter, tol = newton_tol)
         catch
@@ -1391,12 +1462,22 @@ Fit a zero-inflated binomial GLLVM by L-BFGS over `[βz; βc; vec(Λc)]` (Λz=0)
 with a shared number of trials `N`. `Y` p×n with counts in `0:N`. Finite-difference
 gradient; warm start from the excess-zero share + positive-part success logits +
 SVD loadings.
+
+`hessian` selects the two-part Laplace log-det curvature (`:observed` default /
+`:fisher`); the mode search is always Fisher-scored. NOTE (2026-08-28): for this
+family the observed count-part weight is not yet specialised, so both selectors
+currently produce the identical objective (the `TWOPART_KNOWN_OPEN` census gap;
+DeltaGamma is the only two-part family whose observed weight is implemented).
+Exposing the kwarg is the measurement prerequisite for closing that gap.
 """
 function fit_zib_gllvm(Y::AbstractMatrix{<:Real}; K::Integer, N::Integer,
         offset = nothing,
+        hessian::Symbol = :observed,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
+    hessian in (:observed, :fisher) || throw(ArgumentError(
+        "fit_zib_gllvm: hessian must be :observed or :fisher; got :$hessian"))
     rr = rr_theta_len(p, K)
     βz0, βc0, Λc0 = _zib_warmstart(Y, N, K)
     θ0 = vcat(βz0, βc0, pack_lambda(Λc0))
@@ -1404,7 +1485,7 @@ function fit_zib_gllvm(Y::AbstractMatrix{<:Real}; K::Integer, N::Integer,
         βz = θ[1:p]; βc = θ[(p + 1):(2p)]
         Λc = unpack_lambda(θ[(2p + 1):(2p + rr)], p, K)
         v = try
-            -zib_marginal_loglik_laplace(Y, Λc, βz, βc, N; offsetc = offset,
+            -zib_marginal_loglik_laplace(Y, Λc, βz, βc, N; offsetc = offset, hessian = hessian,
                                          maxiter = newton_maxiter, tol = newton_tol)
         catch
             return 1e12
@@ -1468,11 +1549,19 @@ ZIB Laplace marginal. Finite-difference gradient; warm start from
 `X` is `(p, n, q)`. `γ_fixed` optionally zeros selected covariate columns for
 **both** parts (same contract as [`fit_zip_gllvm_cov`](@ref)). Twin light
 RCall Δ is out of scope (twin ZIP/ZINB cut; no live twin ZIB).
+
+`hessian` selects the two-part Laplace log-det curvature (`:observed` default /
+`:fisher`); the mode search is always Fisher-scored. As for the no-covariate
+fitter, the observed count-part weight is not yet specialised for this family,
+so both selectors currently produce the identical objective (the
+`TWOPART_KNOWN_OPEN` census gap).
 """
 function fit_zib_gllvm_cov(Y::AbstractMatrix{<:Real}; X::AbstractArray{<:Real, 3},
-        K::Integer, N::Integer, γ_fixed = nothing,
+        K::Integer, N::Integer, γ_fixed = nothing, hessian::Symbol = :observed,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    hessian in (:observed, :fisher) || throw(ArgumentError(
+        "fit_zib_gllvm_cov: hessian must be :observed or :fisher; got :$hessian"))
     p, n = size(Y)
     size(X, 1) == p && size(X, 2) == n ||
         throw(DimensionMismatch("X must be (p, n, q) = ($p, $n, q); got $(size(X))"))
@@ -1492,7 +1581,7 @@ function fit_zib_gllvm_cov(Y::AbstractMatrix{<:Real}; X::AbstractArray{<:Real, 3
         Oz = _build_offset(X_fit, γz)
         Oc = _build_offset(X_fit, γc)
         v = try
-            -zib_marginal_loglik_laplace(Y, Λc, βz, βc, N;
+            -zib_marginal_loglik_laplace(Y, Λc, βz, βc, N; hessian = hessian,
                                          offsetz = Oz, offsetc = Oc,
                                          maxiter = newton_maxiter, tol = newton_tol)
         catch

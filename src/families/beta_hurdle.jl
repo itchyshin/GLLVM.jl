@@ -246,11 +246,21 @@ gradient; warm start = `logit(empirical P(y>0))` occurrence intercepts +
 `logit` mean of the positive values as logit-mean intercepts + SVD of the
 logit-scale positive residuals as loadings + a method-of-moments `φ₀` from the
 positive-part empirical variance.
+
+`hessian` selects the two-part Laplace log-det curvature (`:observed` default /
+`:fisher`); the mode search is always Fisher-scored. NOTE (2026-08-28): for this
+family the observed count-part weight is not yet specialised, so both selectors
+currently produce the identical objective (the `TWOPART_KNOWN_OPEN` census gap;
+DeltaGamma is the only two-part family whose observed weight is implemented).
+Exposing the kwarg is the measurement prerequisite for closing that gap.
 """
 function fit_beta_hurdle_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
+        hessian::Symbol = :observed,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
+    hessian in (:observed, :fisher) || throw(ArgumentError(
+        "fit_beta_hurdle_gllvm: hessian must be :observed or :fisher; got :$hessian"))
     rr = rr_theta_len(p, K)
 
     # --- Warm start --------------------------------------------------------
@@ -310,7 +320,7 @@ function fit_beta_hurdle_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
         Λc = unpack_lambda(θ[(2p + 1):(2p + rr)], p, K)
         φ  = exp(θ[2p + rr + 1])
         v  = try
-            -beta_hurdle_marginal_loglik_laplace(Y, Λc, βz, βc, φ;
+            -beta_hurdle_marginal_loglik_laplace(Y, Λc, βz, βc, φ; hessian = hessian,
                                                  maxiter = newton_maxiter,
                                                  tol = newton_tol)
         catch
