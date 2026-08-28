@@ -1,5 +1,60 @@
 # Check Log
 
+## 2026-08-28 — the cloglog saturation guard ships (diagnostic only)
+
+Implements Section 2 of the three-arc consolidated design (adversarially
+adjudicated; all seven critique defects incorporated — per-fit warning with no
+`maxlog`, hedged intercept-vs-latent-mode wording, plateau guard, the
+campaign's own `Xoshiro` DGP embedded verbatim in the acceptance test).
+
+- `LaplaceSaturationHealth` + `BinomialFit.saturation` (compat tiers keep all
+  legacy and VA construction sites at `nothing` = "not computed").
+- `_laplace_saturation_health`: recomputes per-site modes at the fitted
+  parameters; counts μ-saturation-threshold contact and log-det-weight
+  collapse under the FIT's own curvature selector; mask-respecting.
+- Fires exactly on the diagnosed runaway (19/300 cells — matching the
+  independent diagnosis count), quiet on benign logit/probit/cloglog fits;
+  `show` gains `SATURATED (k cells)` beside an honestly-unchanged
+  `converged = true`.
+- No exported helper: the struct field IS the accessor, dodging the API-
+  addition question (noted for the PR).
+- Tests: `test_saturation_health.jl` 17/17, wired. Docs: response-families
+  warning admonition. Suite: 6921 pass / 0 fail / 4 expected-broken (72m33s).
+
+## 2026-08-28 — the last four curvature cells: two adjudicable, two fenced on findings
+
+D-139 pre-run of the agent-written campaign cell types (first execution):
+
+- **GP-1**: 150 cells complete (147 conv-both) — VERDICT: **keep Fisher**.
+  Median estimator preference leans observed (+0.1…+0.45) but a minority of
+  cells derail badly under observed (means −5.6/−10.3 medium/strong;
+  |err|_O 15.2 vs |err|_F 1.5) — the documented negative-curvature tail.
+  The cell closes as adjudicated-Fisher-retained, not as unfinished.
+- **Binomial/probit**: 150/150 — VERDICT: **lean observed, maintainer's
+  call** (medians +0.1…+0.25, 74–92% prefer observed, observed approximates
+  better in 83%; thin outlier tail makes it weaker than Beta's case).
+- **Binomial/cloglog — cells fenced; DIAGNOSED same day as an INTRINSIC
+  approximation pathology, not an implementation defect.** Fits run ‖Λ̂‖ to
+  20–27 (truth 0.9) under BOTH selectors with `converged = true`. The
+  investigation: link derivatives FD-verified correct to 1e-10; the Laplace
+  approximation is accurate at truth (err −0.62) and over-optimistic by +74.8
+  at the runaway, with 19/300 cells saturated at the runaway modes. Mechanism:
+  cloglog's doubly-exponential upper tail saturates at η ≈ 3 (logit needs
+  ~35), so the saturation ridge — where W → 0 deletes the log-det penalty —
+  is reachable at moderate ‖Λ‖ and the optimizer climbs approximation error
+  into it. Probit's symmetric tails keep the ridge out of reach on the same
+  data. TMB's identical objective faces the same ridge ⇒ this is a
+  twin-parity question and a fit-health-diagnostic question (a saturation
+  warning on cloglog fits), NOT a weight/score bug. Remedy decision queued
+  for the maintainer.
+- **Tweedie — ADJUDICATED (2026-08-28, same day)**: the oracle node-reduction
+  (8001 → 1001, validated bit-identical on the gp1 fixture) cut the cell to
+  4.7 min; 150 cells ran on Totoro at 24 workers, 150/150 ok. VERDICT: the
+  strongest flip case in the table — observed preferred in 98–100% of cells
+  in every regime with means ≡ medians (no outlier tail) and negligible
+  approximation cost (0.56 vs 0.61). Flip recommendation added to the
+  decision brief addendum alongside probit's.
+
 ## 2026-08-28 — confint honors the fit's curvature (the audit class, closed for one-part fits)
 
 The structural fix for the recurring class the adversarial audit named

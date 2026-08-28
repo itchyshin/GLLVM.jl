@@ -69,6 +69,26 @@ raw latent-axis coefficients for the predictor-informed score mean; use
 [`extract_lv_effects`](@ref) for the rotation-stable trait-scale product
 `Λ * alpha_lv'`.
 """
+# Post-fit Laplace saturation health (2026-08-28, the diagnosed cloglog
+# pathology). A SATURATED cell is one whose per-site conditional mode drives
+# the linear predictor to (or past) the link's μ-saturation thresholds
+# (η where linkinv(η) hits the `_clamp_mu` bounds 1e-12 / 1−1e-12), or whose
+# log-det weight under the fit's own curvature selector has collapsed
+# (W ≤ 1e-8). At such cells the log-det penalty is effectively deleted, and
+# the Laplace value can overstate the exact marginal without bound — measured
+# +74.8 loglik units at a cloglog runaway with `converged = true` (check-log
+# 2026-08-28). Saturation MAY be latent-mode driven (a runaway ‖Λ̂‖) or purely
+# intercept-driven (extreme prevalence / separation): the diagnostic reports,
+# it does not adjudicate. `nothing` means "not computed" (plateau verdicts,
+# compat-constructed fits, non-dense kernels, VA fits).
+struct LaplaceSaturationHealth
+    n_clamp::Int         # cells whose mode-η reached a μ-saturation threshold (incl. the ±30 η-clamp)
+    n_wcollapse::Int     # cells whose log-det weight ≤ 1e-8 under the fit's selector
+    n_obs::Int           # observed (unmasked) cells assessed
+    max_abs_eta::Float64 # largest |η̂| over observed cells at the fitted modes
+    hessian_used::Symbol
+end
+
 struct BinomialFit
     β::Vector{Float64}
     Λ::Matrix{Float64}
@@ -79,6 +99,7 @@ struct BinomialFit
     alpha_lv::Union{Nothing, Matrix{Float64}}
     theta_packed::Vector{Float64}
     hessian::Symbol   # the Laplace log-det curvature this fit's objective used
+    saturation::Union{Nothing, LaplaceSaturationHealth}
 end
 
 # Positional compatibility constructor (2026-08-28): every pre-existing
@@ -87,6 +108,9 @@ end
 # SAME objective instead of guessing (the audit's confint-consistency class).
 BinomialFit(β, Λ, link, loglik, converged, iterations, alpha_lv, theta_packed) =
     BinomialFit(β, Λ, link, loglik, converged, iterations, alpha_lv, theta_packed, _default_hessian(Binomial(), link))
+# 9-arg tier (with hessian, pre-saturation): saturation defaults to "not computed".
+BinomialFit(β, Λ, link, loglik, converged, iterations, alpha_lv, theta_packed, hessian::Symbol) =
+    BinomialFit(β, Λ, link, loglik, converged, iterations, alpha_lv, theta_packed, hessian, nothing)
 
 BinomialFit(β::Vector{Float64}, Λ::Matrix{Float64}, link::Link,
             loglik::Float64, converged::Bool, iterations::Int) =
@@ -97,7 +121,9 @@ function Base.show(io::IO, f::BinomialFit)
     print(io, "BinomialFit(p=", p, ", K=", K, ", link=", nameof(typeof(f.link)),
           f.alpha_lv === nothing ? "" : ", X_lv=true",
           ", loglik=", round(f.loglik; sigdigits = 7),
-          f.converged ? "" : ", NOT CONVERGED", ")")
+          f.converged ? "" : ", NOT CONVERGED",
+          (f.saturation !== nothing && (f.saturation.n_clamp > 0 || f.saturation.n_wcollapse > 0)) ?
+              ", SATURATED ($(max(f.saturation.n_clamp, f.saturation.n_wcollapse)) cells)" : "", ")")
 end
 
 """
@@ -149,6 +175,70 @@ function binomial_lv_nll_packed(params::AbstractVector, Y::AbstractMatrix,
     return -binomial_marginal_loglik_laplace(Y, N, Λ, β, link;
                                              mask = mask, offset = off,
                                              maxiter = maxiter, tol = tol)
+end
+
+"""
+    _laplace_saturation_health(Y, N, Λ, β, link, hessian; mask = nothing)
+
+Post-fit Laplace saturation diagnostic. Recomputes each observed site's
+conditional mode at the fitted `(β, Λ)` (the same solve `getLV` performs) and
+counts, over observed cells only: (`n_clamp`) cells whose mode-η reaches the
+link's μ-saturation thresholds — the η at which `linkinv` hits the `_clamp_mu`
+bounds `1e-12` / `1 − 1e-12` — or the ±30 η-clamp itself; and (`n_wcollapse`)
+cells whose log-det weight under `hessian` (the FIT's own selector) is
+`≤ 1e-8`. Where either count is positive, the Laplace log-det penalty is
+locally deleted and the reported loglik can overstate the exact marginal
+without bound. Assessed for the dense Binomial kernel only; the grouped /
+covariate / quadratic / mixed / SPDE / phylo / AGHQ / coevolution kernels and
+the VA route (`variational_binomial.jl`) are out of scope and carry
+`saturation = nothing`.
+"""
+function _laplace_saturation_health(Y::AbstractMatrix, N::AbstractMatrix,
+        Λ::AbstractMatrix, β::AbstractVector, link::Link, hessian::Symbol;
+        mask = nothing)
+    p, n = size(Y)
+    η_hi = linkfun(link, 1 - 1e-12)
+    η_lo = linkfun(link, 1e-12)
+    fam = Binomial()
+    n_clamp = 0; n_wcol = 0; n_obs = 0; maxeta = 0.0
+    for s in 1:n
+        mi = mask === nothing ? nothing : view(mask, :, s)
+        z = _laplace_mode(fam, view(Y, :, s), view(N, :, s), Λ, β, link; mask = mi)
+        for t in 1:p
+            (mi === nothing || mi[t]) || continue
+            n_obs += 1
+            η = _clamp_eta(sum(Λ[t, k] * z[k] for k in 1:size(Λ, 2); init = β[t]))
+            a = abs(η); a > maxeta && (maxeta = a)
+            if η >= η_hi || η <= η_lo || a >= 30.0
+                n_clamp += 1
+            end
+            μ = _clamp_mu(fam, linkinv(link, η))
+            me = mu_eta(link, η)
+            W = (hessian === :fisher || _glm_weight_matches_observed(fam, link)) ?
+                _glm_weight(fam, μ, N[t, s], me) :
+                _glm_obs_weight(fam, μ, N[t, s], me, Y[t, s], link, η)
+            abs(W) <= 1e-8 && (n_wcol += 1)
+        end
+    end
+    return LaplaceSaturationHealth(n_clamp, n_wcol, n_obs, maxeta, hessian)
+end
+
+# Emit the (per-fit, never rate-limited) saturation warning and return the
+# health record; `nothing` in ⇒ `nothing` out (plateau verdicts stay silent).
+function _warn_saturation(sat::Union{Nothing, LaplaceSaturationHealth}, link::Link, Λ)
+    sat === nothing && return sat
+    if sat.n_clamp > 0 || sat.n_wcollapse > 0
+        @warn string("Binomial/", nameof(typeof(link)), " fit reached the Laplace ",
+            "saturation region: ", sat.n_clamp, " of ", sat.n_obs, " cells at a ",
+            "μ-saturation threshold, ", sat.n_wcollapse, " with collapsed log-det ",
+            "weight (‖Λ̂‖ = ", round(sqrt(sum(abs2, Λ)); sigdigits = 3), " for context). ",
+            "This MAY indicate the Laplace approximation is unreliable at this ",
+            "optimum; loadings and loglik can be strongly inflated when the ",
+            "saturation is latent-mode driven, while extreme-prevalence data can ",
+            "saturate benignly through the intercepts. See docs/dev-log/check-log.md ",
+            "2026-08-28 (the diagnosed cloglog pathology).")
+    end
+    return sat
 end
 
 """
@@ -305,11 +395,19 @@ function fit_binomial_gllvm(Y::AbstractMatrix; K::Integer,
         alpha_hat = reshape(collect(θ̂[(cursor + 1):(cursor + q_lv * K)]), q_lv, K)
         cursor += q_lv * K
         Λ̂ = unpack_lambda(@view(θ̂[(cursor + 1):(cursor + rr)]), p, K)
-        return BinomialFit(β̂, Λ̂, link, _fit_verdict(res)...,
-                           alpha_hat, collect(Float64, θ̂), hessian)
+        ll, conv, iters = _fit_verdict(res)
+        sat = isfinite(ll) ?
+            _warn_saturation(_laplace_saturation_health(Yc, Nm, Λ̂, β̂, link, hessian;
+                                                        mask = msk), link, Λ̂) : nothing
+        return BinomialFit(β̂, Λ̂, link, ll, conv, iters,
+                           alpha_hat, collect(Float64, θ̂), hessian, sat)
     else
         β̂ = θ̂[1:p]
         Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
-        return BinomialFit(β̂, Λ̂, link, _fit_verdict(res)..., nothing, Float64[], hessian)
+        ll, conv, iters = _fit_verdict(res)
+        sat = isfinite(ll) ?
+            _warn_saturation(_laplace_saturation_health(Yc, Nm, Λ̂, β̂, link, hessian;
+                                                        mask = msk), link, Λ̂) : nothing
+        return BinomialFit(β̂, Λ̂, link, ll, conv, iters, nothing, Float64[], hessian, sat)
     end
 end

@@ -62,3 +62,12 @@ Exponential (see finding 3). Raw rows: `results/` (tarball on Totoro:
 - Scope caveats: K = 1 only; one dispersion level per family; the oracle is
   dense 1-D quadrature (8001 nodes) — K > 1 adjudication needs an AGHQ-grade
   oracle and is a separate arc.
+
+## Extension cells (2026-08-28): GP-1 and Binomial/probit adjudicated; cloglog and Tweedie fenced
+
+| family | n | estimator preference | reported-loglik accuracy | verdict |
+|---|---|---|---|---|
+| gp1 | 150 (147 conv-both) | medians +0.11/+0.45/+0.37, %>0 = 98/86/74 — but MEANS −5.6/−10.3 in medium/strong (outlier tail) | Fisher far better (\|err\| 1.5 vs 15.2; observed closer in only 27%) | **KEEP FISHER** — a minority of cells derail badly under observed (the documented negative-curvature region `1+2αy−αμ<0`); the asymmetric downside outweighs the small median gain |
+| binomial/probit | 150 | medians +0.11 to +0.25, %>0 = 74–92; means mildly negative in small/medium (thin outlier tail) | observed better (83% closer; 2.1 vs 2.6) | **lean observed — maintainer's call**; thinner than Beta's case, consistent with decision A's principle |
+| binomial/cloglog | fenced | — | — | DIAGNOSED: intrinsic Laplace saturation pathology (doubly-exponential tail ⇒ saturation ridge at moderate ‖Λ‖; link FD-verified correct; accurate at truth, +75 over-optimism at the runaway). A twin-parity + fit-health-diagnostic question, not a weight bug. Adjudication deferred until a saturation guard exists |
+| tweedie | 150 (145 conv-both) | +0.05/+0.18/+0.12 by regime, %>0 = 98–100, means ≡ medians (no outlier tail) | tie (54% observed-closer; 0.56 vs 0.61) | **strongest flip case in the table** — uniform observed preference at negligible reported-loglik cost. Ran on Totoro (24 workers) after the oracle node-reduction (1001 nodes, validated bit-identical on the gp1 fixture) |

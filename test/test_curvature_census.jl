@@ -46,10 +46,11 @@ _family_of(m) = (p = Base.unwrap_unionall(m.sig).parameters;
 # change with a measured accuracy cost — see docs/dev-log/check-log.md 2026-08-26).
 # This list is the ledger. Shrinking it is progress; growing it silently is the bug.
 # NB2 left this set 2026-08-27 (both campaign metrics agreed). Beta, NB1 and
-# StudentTFamily left 2026-08-27 under decision A — flipped on the campaign's
-# estimator-quality metric, with the reported-loglik cost accepted explicitly
-# (docs/dev-log/pending/2026-08-27-curvature-flip-decision-brief.md).
-const KNOWN_OPEN = Set([:TweedieED, :GeneralizedPoisson1])
+# StudentTFamily left 2026-08-27 under decision A. GeneralizedPoisson1 left
+# 2026-08-28 the OTHER way — adjudicated and Fisher RETAINED (see
+# DEFERRED_BY_DECISION below). TweedieED is the last genuinely open cell
+# (campaign cells staged; fenced on oracle cost).
+const KNOWN_OPEN = Set([:TweedieED])
 
 # Families where Fisher == observed for STRUCTURAL reasons that are not expressed as a
 # `_glm_weight_matches_observed` trait, each with the reason recorded.
@@ -81,7 +82,13 @@ const EXEMPT_BY_IDENTITY = Dict(
 # is now DECLARED :observed — matching the fitter default shipped since
 # 2026-08-24 and making the covariates/quadratic/mixed/SPDE/phylo-GLM/
 # coevolution kernels agree with it.
-const DEFERRED_BY_DECISION = Dict{Symbol,String}()
+const DEFERRED_BY_DECISION = Dict{Symbol,String}(
+    :GeneralizedPoisson1 => "ADJUDICATED 2026-08-28, Fisher RETAINED on the 150-cell " *
+        "campaign: medians lean observed (+0.1…+0.45) but a minority of cells derail " *
+        "badly under the observed weight (means −5.6/−10.3 medium/strong; |err| 15.2 " *
+        "vs 1.5) — the documented negative-curvature tail (1+2αy−αμ<0). A closed cell, " *
+        "closed the other way; hessian=:observed stays reachable explicitly.",
+)
 
 @testset "Laplace curvature census (structural guard)" begin
     weight_methods = collect(methods(G._glm_weight))

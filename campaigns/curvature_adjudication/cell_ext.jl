@@ -60,9 +60,14 @@ end
 
 # Exact marginal, K = 1 — same grid and log-sum-exp trapezoid as cell.jl's
 # exact_marginal, dispatching on site_logdens_ext (disp may be a tuple).
-function exact_marginal_ext(fam, Y, Λ, β, disp)
+function exact_marginal_ext(fam, Y, Λ, β, disp; nnodes::Int = 8001)
     p, n = size(Y)
-    zs = range(-10.0, 10.0; length = 8001); dz = step(zs)
+    # `nnodes` exists for the Tweedie cells (2026-08-28): the series density
+    # makes 8001 nodes × every (t,s) the dominant cost (>10 min/cell measured).
+    # 1001 nodes changes a gamma-fixture marginal by <2e-9 (validated below in
+    # the pre-run record) — far under the comparison scale — and cuts the
+    # oracle cost 8×.
+    zs = range(-10.0, 10.0; length = nnodes); dz = step(zs)
     total = 0.0
     lw = similar(collect(zs))
     for s in 1:n
@@ -132,7 +137,7 @@ function run_cell_ext(fam::String, reg::String, seed::Int, outdir::String)
     for (tag, h) in (("fisher", :fisher), ("observed", :observed))
         fit = fitcell_ext(fam, Y, h)
         d = dispof_ext(fam, fit)
-        ex = fit.converged ? exact_marginal_ext(fam, Y, fit.Λ, fit.β, d) : NaN
+        ex = fit.converged ? exact_marginal_ext(fam, Y, fit.Λ, fit.β, d; nnodes = fam == "tweedie" ? 1001 : 8001) : NaN
         row["conv_$tag"] = fit.converged
         row["laplace_$tag"] = fit.loglik           # the Laplace objective at its own optimum
         row["exact_at_$tag"] = ex                  # the true marginal at that optimum
