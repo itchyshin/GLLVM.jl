@@ -1,5 +1,31 @@
 # Check Log
 
+## 2026-08-28 — the last four curvature cells: two adjudicable, two fenced on findings
+
+D-139 pre-run of the agent-written campaign cell types (first execution):
+
+- **GP-1**: 150 cells complete (147 conv-both) — VERDICT: **keep Fisher**.
+  Median estimator preference leans observed (+0.1…+0.45) but a minority of
+  cells derail badly under observed (means −5.6/−10.3 medium/strong;
+  |err|_O 15.2 vs |err|_F 1.5) — the documented negative-curvature tail.
+  The cell closes as adjudicated-Fisher-retained, not as unfinished.
+- **Binomial/probit**: 150/150 — VERDICT: **lean observed, maintainer's
+  call** (medians +0.1…+0.25, 74–92% prefer observed, observed approximates
+  better in 83%; thin outlier tail makes it weaker than Beta's case).
+- **Binomial/cloglog — NEW ENGINE FINDING, cells fenced**: on the seed-1 small
+  fixture, fits run ‖Λ̂‖ to 20–27 against a truth of 0.9 under BOTH curvature
+  selectors, report `converged = true`, and the Laplace objective overstates
+  the exact marginal by +17 to +75 loglik units. Probit on the same data shape
+  is clean, pointing at the cloglog-specific weight/score path rather than
+  the curvature class. Same runaway signature as the (healed) Exponential
+  story but selector-independent. Adjudicating cloglog's curvature before this
+  is fixed would measure a defective route — fenced, investigation queued.
+- **Tweedie — cells fenced on cost**: one small cell exceeds 10 minutes; the
+  oracle pays the infinite-series log-density at 8001 nodes × every (t, s)
+  per evaluation (~10⁶ series calls/fit). Estimate for 150 cells: 50–75
+  CPU-hours — a DRAC-array or Totoro campaign needing its own D-139 approval,
+  or an oracle-optimization pass (fewer nodes + series caching) first.
+
 ## 2026-08-28 — confint honors the fit's curvature (the audit class, closed for one-part fits)
 
 The structural fix for the recurring class the adversarial audit named
