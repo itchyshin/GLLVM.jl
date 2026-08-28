@@ -19,7 +19,7 @@ campaign's own `Xoshiro` DGP embedded verbatim in the acceptance test).
 - No exported helper: the struct field IS the accessor, dodging the API-
   addition question (noted for the PR).
 - Tests: `test_saturation_health.jl` 17/17, wired. Docs: response-families
-  warning admonition. Suite: [tally on green].
+  warning admonition. Suite: 6921 pass / 0 fail / 4 expected-broken (72m33s).
 
 ## 2026-08-28 — the last four curvature cells: two adjudicable, two fenced on findings
 

@@ -450,6 +450,21 @@ shared `γ`; twin API B). Shared-α + X remains the opt-in
 fit = fit_gllvm(Yp; family = Gamma(), K = 2)   # Yp > 0; shared α (no-X)
 ```
 
+!!! warning "Cloglog fits can saturate the Laplace approximation (diagnostic added 2026-08-28)"
+    The complementary log-log link's doubly-exponential upper tail saturates at
+    η ≈ 3.3 (logit needs ~35), so a Binomial/cloglog fit can converge onto a
+    "saturation ridge" where the Laplace log-determinant penalty is locally
+    deleted and the reported log-likelihood strongly overstates the exact
+    marginal (measured: +74.8 loglik units with ‖Λ̂‖ ≈ 27 against a simulated
+    truth of 0.9, `converged = true`). This is an intrinsic property of the
+    Laplace approximation at this link — the implementation is FD-verified —
+    so `fit_binomial_gllvm` now computes a post-fit saturation health record
+    (`fit.saturation`), emits a warning when any cell reaches a saturation
+    threshold or its log-det weight collapses, and tags `show` output with
+    `SATURATED (k cells)`. The diagnostic reports; it never alters the
+    objective or the `converged` flag. Treat saturated cloglog fits with
+    suspicion, especially the loadings.
+
 !!! note "Laplace curvature: Beta, NB1 and Student-t use the observed Hessian (decision A, 2026-08-27)"
     The shared routes of Beta/logit, NB1/log and Student-t/identity now
     default to the **observed** conditional curvature in the Laplace
