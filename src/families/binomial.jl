@@ -34,6 +34,39 @@ _glm_weight_matches_observed(::Binomial, ::LogitLink) = true
 _glm_weight(::Binomial, μ, n, me)   = n * me^2 / (μ * (one(μ) - μ))
 _glm_logpdf(::Binomial, μ, n, y)    = logpdf(Binomial(Int(n), μ), Int(y))
 
+# Observed conditional curvature for Binomial/probit: −∂²ℓ/∂η² with μ = Φ(η),
+# me = dμ/dη = φ(η) (standard normal pdf). Derivation: ℓ(η) = y·log μ +
+# (n−y)·log(1−μ); with s(η) = y/μ − (n−y)/(1−μ) = (y−nμ)/(μ(1−μ)) (the score
+# form already shared by `_glm_score` above, which is link-generic in `me`),
+# dℓ/dη = me·s(η). Differentiating again, using dme/dη = −η·me (the standard
+# normal pdf's own derivative, φ'(x) = −x·φ(x)):
+#   d²ℓ/dη² = −η·me·s(η) − me²·[y/μ² + (n−y)/(1−μ)²]
+#   W_obs   = η·me·(y−nμ)/(μ(1−μ)) + me²·[y/μ² + (n−y)/(1−μ)²]
+# FD-verified against the FULL `_glm_logpdf` to ≤ 3e-7 relative gap across
+# n ∈ {1,4,10}, η ∈ [-1.5,1.8], y ∈ 0:n (scratchpad/fd_probe_tweedie_probit.jl,
+# 2026-08-28). Symmetry check holds: at y = n·μ (s(η) = 0) this collapses to
+# me²·n·[1/μ + 1/(1−μ)] = n·me²/(μ(1−μ)) = `_glm_weight` exactly.
+#
+# NOT genuinely sign-changing, unlike Beta/Student-t: W_obs(y) is AFFINE in y
+# for fixed η (both η-dependent coefficients are y-free), so its extrema over
+# y ∈ [0,n] sit at y = 0 and y = n; a BigFloat evaluation at those endpoints
+# across η ∈ [3,20] stayed strictly positive (converging to n as |η| grows —
+# consistent with the classical GLM fact, Pratt 1981 JASA, that the probit
+# binomial log-likelihood is concave in η for every y). The Float64 grid probe
+# in the same scratchpad script DOES show apparent negative values right at
+# η ≈ ±8, but that is a catastrophic-cancellation ARTIFACT of μ(1−μ)
+# underflowing near the Float64 saturation boundary, not a genuine sign
+# change — confirmed by re-evaluating the same cells in BigFloat. In the
+# fitted pipeline `_clamp_mu` (above) bounds μ away from exact 0/1 before this
+# function ever sees it, keeping μ(1−μ) ≥ ~1e-12 and the cancellation
+# unreachable. The assembly-level PD guard in `marginal_loglik_laplace`
+# remains the correct place for any residual defence — this weight is not
+# clamped here, matching the repo-wide convention.
+_glm_obs_weight(f::Binomial, μ, n, me, y, link::ProbitLink, η) =
+    η * me * (y - n * μ) / (μ * (one(μ) - μ)) +
+    me^2 * (y / μ^2 + (n - y) / (one(μ) - μ)^2)
+_default_hessian(::Binomial, ::ProbitLink) = :observed
+
 # Binomial-default convenience methods (back-compat: family ⇒ Binomial()), used
 # by getLV(::BinomialFit) and the Binomial tests.
 _laplace_mode(y::AbstractVector, n::AbstractVector, Λ::AbstractMatrix,
@@ -258,15 +291,22 @@ interval engines for this expanded parameter layout remain a separate gate.
 
 The default analytic Laplace gradient is used on the logit no-offset path, with
 an internal finite-difference fallback; non-logit links and offset fits use
-finite differences. `X_lv` fits also use finite differences because the offset
-depends jointly on `Λ` and `alpha_lv`. Warm start: empirical link-scale
-intercepts + an SVD (PPCA-style) loadings init; `alpha_lv` starts from a
-least-squares regression of the initial latent scores on `X_lv`.
+finite differences (this is a `link isa LogitLink` gate, not a `hessian` gate —
+a probit fit never reaches the logit-specific analytic gradient regardless of
+`hessian`, so its coupling to the log-det curvature is moot). `X_lv` fits also
+use finite differences because the offset depends jointly on `Λ` and
+`alpha_lv`. Warm start: empirical link-scale intercepts + an SVD (PPCA-style)
+loadings init; `alpha_lv` starts from a least-squares regression of the
+initial latent scores on `X_lv`.
 
 `hessian` selects the Laplace log-det curvature only (`:fisher` expected /
 `:observed` joint — TMB's choice); the inner mode search is always
-Fisher-scored. Default: canonical logit — the two coincide. Omitting it is exactly the pre-kwarg
-behaviour.
+Fisher-scored. Default: canonical logit — the two coincide (`:fisher`).
+Probit defaults to `:observed` (changed 2026-08-28, maintainer decision — TMB/
+`gllvmTMB` parity, see `docs/dev-log/decisions/2026-08-28-arc-decision-batch.md`).
+Cloglog stays `:fisher` (the diagnosed Laplace saturation pathology, see
+check-log 2026-08-28 — a deliberate exception, not an oversight). Omitting the
+kwarg is exactly the default-path behaviour for every link.
 """
 function fit_binomial_gllvm(Y::AbstractMatrix; K::Integer,
         link::Link = LogitLink(),
@@ -379,6 +419,14 @@ function fit_binomial_gllvm(Y::AbstractMatrix; K::Integer,
     elseif gradient === :analytic && offset === nothing && link isa LogitLink &&
            (hessian === _default_hessian(Binomial(), link) ||
             _glm_weight_matches_observed(Binomial(), link))
+        # `link isa LogitLink` here is load-bearing for the 2026-08-28 probit
+        # flip too: `binomial_laplace_grad` (laplace_grad.jl) is a logit-only
+        # analytic gradient (its log-det weight is the LOGIT Fisher/observed
+        # identity, not link-generic), so a probit fit — under EITHER
+        # `hessian` selector — never reaches this branch and always falls
+        # through to the finite-difference path below. That is the "route
+        # probit to FD with a measured note" resolution: no analytic-gradient
+        # coupling was needed because probit was never coupled to begin with.
         ag = θ -> begin
             β = θ[1:p]; Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
             try -binomial_laplace_grad(Yc, Nm, Λ, β; mask = msk) catch; nothing end

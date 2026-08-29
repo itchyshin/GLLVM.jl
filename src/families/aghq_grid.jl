@@ -157,7 +157,7 @@ end
 end
 
 """
-    aghq_stage1a_loglik_site(family, y, n, Λ, β, link; k=1, ...) -> Float64
+    aghq_stage1a_loglik_site(family, y, n, Λ, β, link; k=1, hessian=_default_hessian(family, link), ...) -> Float64
 
 Stage-1a/1b site evaluator on a single loadings-only `z_B` block. Liu–Pierce
 adaptation at the existing Laplace mode (Hopper A4(2) pin; no `√2`):
@@ -167,11 +167,22 @@ z_ij = ẑᵢ + Lᵢ^{-T} uⱼ
 log Lᵢ = −½ logdet Aᵢ + logsumexpⱼ(logwⱼ + inner_ll(i,j))
 ```
 
-`Aᵢ = Λ'WΛ + I` is the Laplace expected-Fisher cache at `ẑᵢ`; `L^{-T}` is
+`Aᵢ = Λ'WΛ + I` is the adaptation curvature cache at `ẑᵢ`; `L^{-T}` is
 `R^{-1}` from `cholesky(Aᵢ)`. `inner_ll` is the Stage-1a joint
 `ℓ − ½ z′z − (d/2) log(2π)` at each mapped node. At `k = 1` the single
 node is `u = 0`, so this **is** the existing Laplace golden — the template
 is evaluated, not skipped (twin fit-time `k = 1` → Laplace routing is A4.4).
+
+`hessian` follows the SAME role-separation contract as `laplace_loglik_site`
+(`families/laplace.jl`) and its sibling kernels (`covariates.jl`,
+`quadratic.jl`, `mixed.jl`): the Newton MODE SEARCH (`_laplace_mode`) is
+always Fisher-scored — that solves the same score equation regardless of
+`hessian`, so the mode `ẑ` is unchanged — and only the adaptation curvature
+`Aᵢ` (the log-det AND the Cholesky reused across every quadrature node) is
+selectable. Default is `_default_hessian(family, link)`, matching that
+family's own default Laplace fitter, so at `k = 1` this function is
+bit-for-bit `laplace_loglik_site` under the SAME default for every family —
+not just the families whose default happens to be `:fisher`.
 
 Fails loud if the random part is not loadings-only `z_B`
 (`unique`/`s_B`, `use_lv_B`, `mi()`, multinomial, row effects, phylo).
@@ -182,11 +193,14 @@ Not a public `aghq=` surface. Not a capability claim.
 function aghq_stage1a_loglik_site(family, y::AbstractVector, n::AbstractVector,
         Λ::AbstractMatrix, β::AbstractVector, link::Link;
         k::Integer = 1, mask = nothing, offset = nothing,
+        hessian::Symbol = _default_hessian(family, link),
         row_effects = nothing, phylo = nothing, mi = nothing,
         unique_latent = nothing, s_B = nothing,
         use_lv_B = nothing, multinomial = nothing,
         maxiter::Integer = 100, tol::Real = 1e-9)
     k ≥ 1 || throw(ArgumentError("AGHQ Stage 1a: k must be ≥ 1, got $k"))
+    (hessian === :fisher || hessian === :observed) || throw(ArgumentError(
+        "hessian must be :fisher or :observed; got :$hessian"))
     _aghq_stage1a_reject_extra(family, row_effects, phylo, mi, unique_latent,
                               s_B, use_lv_B, multinomial)
     d = size(Λ, 2)
@@ -200,7 +214,19 @@ function aghq_stage1a_loglik_site(family, y::AbstractVector, n::AbstractVector,
     η = _clamp_eta.(β .+ off .+ Λz)
     μ = _clamp_mu.(Ref(family), linkinv.(Ref(link), η))
     me = mu_eta.(Ref(link), η)
-    W = _glm_weight.(Ref(family), μ, n, me)
+    # Role separation (2026-08-25 contract, extended here): (a) the mode search
+    # above stays Fisher-scored via `_laplace_mode`; (b) only this adaptation
+    # curvature — the log-det AND the Cholesky reused across every quadrature
+    # node — takes the selector. Masked cells carry a placeholder response, so
+    # (as in `laplace.jl`/`covariates.jl`) the observed branch must not read
+    # `y` there.
+    W = if hessian === :fisher || _glm_weight_matches_observed(family, link)
+        _glm_weight.(Ref(family), μ, n, me)
+    else
+        [(mask === nothing || mask[t]) ?
+            _glm_obs_weight(family, μ[t], n[t], me[t], y[t], link, η[t]) : 0.0
+         for t in 1:p]
+    end
     if mask !== nothing
         W = ifelse.(mask, W, 0.0)
     end
@@ -209,6 +235,13 @@ function aghq_stage1a_loglik_site(family, y::AbstractVector, n::AbstractVector,
         Amat[i, i] += 1.0
     end
     A = Symmetric(Amat)
+    # PD guard, keyed on the weight's sign — same reasoning as `laplace.jl`:
+    # observed curvature is genuinely negative for Beta, Student-t and GP-1,
+    # and `Aᵢ = Λ'WΛ + I` is SPD by construction only when every `W ≥ 0`.
+    if any(w -> w < zero(w), W)
+        F = cholesky(A; check = false)
+        issuccess(F) || return -Inf
+    end
     logdet_i = -0.5 * logdet(A)
     # A = R'R; L = R' so L^{-T} = R^{-1}. No √2; no twin ridge / 1e-8 floor.
     R = cholesky(A).U

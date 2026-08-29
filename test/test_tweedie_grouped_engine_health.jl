@@ -63,7 +63,13 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
 
         # One group is the scalar estimand. After both repairs the two fitters
         # must land on the same point (not merely both report converged).
-        fs = fit_tweedie_gllvm(Y; K = K, p_init = 1.5)
+        # `fit_tweedie_gllvm_grouped` has no `hessian` selector at all
+        # (unconditional Fisher); the shared route's DEFAULT flipped to
+        # :observed 2026-08-28 (maintainer decision batch), so it must be
+        # pinned to `hessian = :fisher` explicitly here to stay the same
+        # estimand as `ref` — otherwise this compares two different
+        # objectives and calls the difference a bug.
+        fs = fit_tweedie_gllvm(Y; K = K, p_init = 1.5, hessian = :fisher)
         @test fs.converged
         @test isapprox(ref.power, fs.p; rtol = 1e-4)
         @test isapprox(ref.φ[1], fs.φ; rtol = 1e-4)

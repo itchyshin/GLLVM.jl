@@ -514,6 +514,32 @@ fit = fit_gllvm(Yp; family = Gamma(), K = 2)   # Yp > 0; shared α (no-X)
     some families the observed curvature is *not* closer to the exact marginal,
     so each is decided on its own measurements.
 
+!!! note "Laplace curvature: TweedieED and Binomial-probit use the observed Hessian (changed 2026-08-28)"
+    Maintainer decision batch (`docs/dev-log/decisions/2026-08-28-arc-decision-batch.md`):
+    the shared Tweedie route (`fit_tweedie_gllvm`) and Binomial/probit both
+    default to the **observed** conditional curvature in the Laplace
+    log-determinant, matching TMB / `gllvmTMB` structurally — TMB
+    differentiates the joint negative log-likelihood, so its log-det is
+    observed for *every* family it ships, not a per-family exception.
+    `hessian = :fisher` restores the previous objective for both.
+
+    - TweedieED/log: `−∂²ℓ/∂η² = μ^(1−p)·[(2−p)·μ + (p−1)·y] / φ`. The
+      normalising series in the Tweedie density is μ-free, so it contributes
+      no η-curvature and the closed form above is exact, not an
+      approximation. Always non-negative (μ, φ > 0, p ∈ (1,2), y ≥ 0).
+    - Binomial/probit: `−∂²ℓ/∂η² = η·φ(η)·(y−nμ)/(μ(1−μ)) + φ(η)²·[y/μ² +
+      (n−y)/(1−μ)²]`, μ = Φ(η). Provably non-negative for every (η, y, n) —
+      the probit binomial log-likelihood is globally concave in η (Pratt 1981,
+      *JASA*), so unlike Beta/Student-t the positive-definiteness guard is not
+      expected to fire for this family.
+    - Binomial/**cloglog** is explicitly excluded and stays `:fisher` — the
+      diagnosed Laplace saturation pathology above, not a pending flip.
+    - The Tweedie **grouped** route (`fit_tweedie_gllvm_grouped`, per-species
+      dispersion) has no `hessian` selector at all and stays unconditionally
+      Fisher — a recorded scope limit, not fixed by this change; with `G = 1`
+      it therefore no longer matches the shared route's *default* (it matches
+      `hessian = :fisher` on the shared route).
+
 ### Lognormal — `Lognormal()`
 
 
@@ -699,6 +725,15 @@ Delta-lognormal is a **no-X** surface: `fit_gllvm` and `gllvm(@formula(y ~ 1), �
 are open; covariates, `disp_group`, and `row_eff` are not admitted. No bridge /
 R-parity claim.
 
+**`predictor` mode (2026-08-28):** [`fit_delta_lognormal_gllvm`](@ref) takes a
+`predictor::Symbol` kwarg, `:separate` (default, the behaviour above) or
+`:shared`. gllvmTMB's `delta_lognormal()` ties occurrence and the positive
+part to ONE shared linear predictor (`gllvmTMB.cpp:2816-2830`); `predictor =
+:shared` reproduces that — `βz ≡ βc`, `Λz ≡ Λc` — as a twin-parity-oriented
+mode, not a general recommendation over `:separate` (occurrence log-odds and
+log-abundance move together by construction under `:shared`). See
+`docs/dev-log/decisions/2026-08-28-delta-shared-predictor-identity.md`.
+
 ### Delta-Gamma — `DeltaGamma()`
 
 ```julia
@@ -713,6 +748,12 @@ payload** — always estimated (returned as `fit.α`). Named fitter
 
 Delta-Gamma is a **no-X** surface: same fence as Delta-lognormal (no +X, no
 `disp_group`, no `row_eff`, no bridge / R-parity claim).
+
+**`predictor` mode (2026-08-28):** same kwarg as Delta-lognormal above —
+[`fit_delta_gamma_gllvm`](@ref)'s `predictor::Symbol`, `:separate` (default)
+or `:shared` (twin-identity mode, `gllvmTMB.cpp:2831-2844`). DeltaGamma is
+the one two-part family whose observed count-part weight is implemented, so
+`hessian = :observed` vs `:fisher` genuinely differ under `:shared` too.
 
 ### Beta-binomial — `BetaBinom()`
 
@@ -872,6 +913,14 @@ fit = fit_gllvm(Y; family = OrderedBeta(), K = 2)          # proportions; 0/1 ma
 fit = fit_gllvm(Y; family = OrderedBeta(0.0, 2.0, 3.0), K = 2)  # same — marker tags never read
 # named fitter remains: fit_ordered_beta_gllvm
 ```
+
+All two-part fitters (including the `_cov` variants) accept the
+`hessian = :observed | :fisher` curvature selector introduced for the one-part
+families. Honest scope: the observed count-part weight is currently implemented
+only for DeltaGamma, so for every other two-part family the two selectors
+produce the identical objective until their observed weights land (the recorded
+two-part curvature gap); the kwarg is exposed now as the measurement
+prerequisite for closing that gap.
 
 **Hurdle vs zero-inflated.** A *hurdle* model treats every zero as a
 non-occurrence and the positive part as a **zero-truncated** count. A

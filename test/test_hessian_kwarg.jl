@@ -90,12 +90,40 @@ using GLLVM, Test, Random, Distributions
         # into the 1e12 fail penalty SILENTLY, and the fit collapses to -Inf/unconverged.
         # These assertions fail loudly if that passthrough ever regresses.
         tw0 = GLLVM.fit_tweedie_gllvm(Ytw; K = K)
-        twf = GLLVM.fit_tweedie_gllvm(Ytw; K = K, hessian = :fisher)   # Tweedie/log default
+        two = GLLVM.fit_tweedie_gllvm(Ytw; K = K, hessian = :observed)  # Tweedie/log default (2026-08-28)
         @test tw0.converged && isfinite(tw0.loglik)
-        @test tw0.loglik == twf.loglik                                 # bit-identical
-        two = GLLVM.fit_tweedie_gllvm(Ytw; K = K, hessian = :observed)
-        @test two.converged && isfinite(two.loglik)
+        @test tw0.loglik == two.loglik                                  # bit-identical
+        twf = GLLVM.fit_tweedie_gllvm(Ytw; K = K, hessian = :fisher)
+        @test twf.converged && isfinite(twf.loglik)
         @test abs(twf.loglik - two.loglik) > 1e-6
         @test_throws ArgumentError GLLVM.fit_tweedie_gllvm(Ytw; K = K, hessian = :banana)
+    end
+
+    @testset "binomial/probit: default flips to :observed (contracts 1+2+3+5+6, 2026-08-28)" begin
+        Ybp = [rand(Binomial(1, 1 / (1 + exp(-H[t, s])))) for t in 1:p, s in 1:n]
+        bp0 = GLLVM.fit_binomial_gllvm(Ybp; K = K, link = GLLVM.ProbitLink())
+        bpo = GLLVM.fit_binomial_gllvm(Ybp; K = K, link = GLLVM.ProbitLink(), hessian = :observed)
+        @test bp0.converged && isfinite(bp0.loglik)
+        @test bp0.loglik == bpo.loglik                                  # bit-identical (contracts 1+2)
+        bpf = GLLVM.fit_binomial_gllvm(Ybp; K = K, link = GLLVM.ProbitLink(), hessian = :fisher)
+        @test bpf.converged && isfinite(bpf.loglik)
+        @test abs(bpf.loglik - bpo.loglik) > 1e-6                       # genuinely different (contract 3)
+        @test_throws ArgumentError GLLVM.fit_binomial_gllvm(Ybp; K = K, link = GLLVM.ProbitLink(), hessian = :banana)
+        # Contract 6, probit-specific: the analytic-gradient branch in
+        # `fit_binomial_gllvm` is gated on `link isa LogitLink` (binomial.jl),
+        # so a probit fit NEVER reaches the logit-specific analytic Laplace
+        # gradient (binomial_laplace_grad) regardless of `hessian` — it always
+        # takes the finite-difference `Optim.optimize(...; autodiff = :finite)`
+        # branch. That gate was already unconditional on link before this flip
+        # (not a new guard added here); this locks it stays true post-flip, so
+        # a probit fit is never silently desynchronised from a logit-only
+        # analytic gradient.
+        @test !(GLLVM.ProbitLink() isa GLLVM.LogitLink)
+        # cloglog stays :fisher (the diagnosed saturation pathology) — the
+        # selector still runs and differs when forced, it is simply not the
+        # default.
+        bc0 = GLLVM.fit_binomial_gllvm(Ybp; K = K, link = GLLVM.CLogLogLink())
+        bcf = GLLVM.fit_binomial_gllvm(Ybp; K = K, link = GLLVM.CLogLogLink(), hessian = :fisher)
+        @test bc0.loglik == bcf.loglik                                  # default IS :fisher for cloglog
     end
 end

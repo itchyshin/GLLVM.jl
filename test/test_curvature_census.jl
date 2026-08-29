@@ -48,9 +48,16 @@ _family_of(m) = (p = Base.unwrap_unionall(m.sig).parameters;
 # NB2 left this set 2026-08-27 (both campaign metrics agreed). Beta, NB1 and
 # StudentTFamily left 2026-08-27 under decision A. GeneralizedPoisson1 left
 # 2026-08-28 the OTHER way — adjudicated and Fisher RETAINED (see
-# DEFERRED_BY_DECISION below). TweedieED is the last genuinely open cell
-# (campaign cells staged; fenced on oracle cost).
-const KNOWN_OPEN = Set([:TweedieED])
+# DEFERRED_BY_DECISION below). TweedieED left 2026-08-28 under the maintainer's
+# decision batch (docs/dev-log/decisions/2026-08-28-arc-decision-batch.md):
+# flip to :observed for TMB/gllvmTMB structural parity. The set is now empty —
+# Binomial/probit joins it here too (flipped 2026-08-28, same decision batch);
+# Binomial/cloglog stays Fisher deliberately (the diagnosed Laplace saturation
+# pathology, docs/dev-log/check-log.md 2026-08-28 — a decision, not a pending
+# flip). Both are certified per (family, link) below, not by family name
+# (Binomial is already "declared safe" as a family via the LogitLink trait, so
+# neither probit nor cloglog was ever tracked in THIS set).
+const KNOWN_OPEN = Set{Symbol}()
 
 # Families where Fisher == observed for STRUCTURAL reasons that are not expressed as a
 # `_glm_weight_matches_observed` trait, each with the reason recorded.
@@ -190,7 +197,7 @@ const DEFERRED_BY_DECISION = Dict{Symbol,String}(
         (:TruncatedPoisson, :LogLink),    # trait: canonical log
         (:CensoredPoisson,  :LogLink),    # trait: hand-derived observed
         (:Poisson,          :LogLink),    # trait: canonical log
-        (:Binomial,         :LogitLink),  # trait: canonical logit ONLY — probit/cloglog are OPEN
+        (:Binomial,         :LogitLink),  # trait: canonical logit — cloglog stays OPEN (Fisher, by decision)
         (:TruncatedNegBin2, :LogLink),    # _default_hessian = :observed
         (:Gamma,            :LogLink),    # _default_hessian = :observed
         (:NegativeBinomial, :LogLink),    # _default_hessian = :observed (2026-08-27 campaign)
@@ -198,6 +205,8 @@ const DEFERRED_BY_DECISION = Dict{Symbol,String}(
         (:NB1,              :LogLink),      # _default_hessian = :observed (decision A)
         (:StudentTFamily,   :IdentityLink), # _default_hessian = :observed (decision A)
         (:Exponential,      :LogLink),      # _default_hessian = :observed (declared; audit fix)
+        (:TweedieED,        :LogLink),      # _default_hessian = :observed (2026-08-28 maintainer decision)
+        (:Binomial,         :ProbitLink),   # _default_hessian = :observed (2026-08-28 maintainer decision)
     ])
 
     families = unique([_family_of(m) for m in weight_methods if _family_of(m) !== nothing])

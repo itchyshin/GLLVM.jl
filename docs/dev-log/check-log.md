@@ -1,5 +1,542 @@
 # Check Log
 
+## 2026-08-28 — Student cell 9: per-trait σ closes the Δ AT FIXED ν (not the twin's default)
+
+Third application of today's route (measure → find the parameterisation cause
+→ extend the existing pattern → re-measure), after cells 12 and 13.
+
+**Phase 1 (measured, converting the synthesis note's SOURCE READING into a
+number):** with ν pinned at 4 on both sides to isolate the scale question,
+twin per-trait σ vs Julia shared σ gave Δ = **+1.0700** (seed 71, p=5, K=1,
+n=130, gllvmTMB 0.7.1) — same direction as the delta cells, confirming the
+predicted cause.
+
+**Phase 2 (smallest justified slice):** `disp_group::Symbol` on
+`fit_studentt_gllvm`, mirroring today's delta convention. A local
+`_studentt_grouped_loglik_site` / `_studentt_grouped_laplace_weight` pair
+follows the `grouped_dispersion.jl` precedent rather than touching the shared
+single-family core in `families/laplace.jl` — the same reasoning that made
+NB2/Beta/Gamma keep local kernels. `StudentTFit.σ` widened to
+`Union{Float64,Vector{Float64}}` with compat constructors. ν stays a shared
+scalar; per-trait ν was explicitly out of scope.
+
+**Phase 3 (re-measured):** Δ = **−9.66e-10**, and **independently re-verified
+by the orchestrator at a FRESH seed (9203) the builder never used: Δ =
+3.34e-9, rel 3.6e-12** — inside the 1e-6 gate. Per-trait σ̂ matches the twin
+to 4–5 significant figures.
+
+**THE FENCE, and it is load-bearing.** The twin's default `student()`
+ESTIMATES ν (`R/families.R:362,367`) and its `log_df_student` is per-trait
+(`gllvmTMB.cpp:1185`). GLLVM.jl fixes ν. So what is paid is the **fixed-ν
+cell**, not the twin's default student model. The ladder is therefore
+**15/17 paid + 1 conditional**, NOT 16/17 — recording it as 16/17 would be
+precisely the overstatement class corrected twice today. ν estimation remains
+genuine outstanding work (and the twin's df CI is off-by-one, so future
+interval comparisons need care).
+
+Known limitation introduced: `link_residual.jl` / `simulate_fit.jl` postfit
+helpers assume scalar σ and now raise a clean `MethodError` under
+`disp_group = :species` — fail-fast, not silent, and not extended here.
+
+Verify: `test_studentt_disp_group.jl` 26/26 (new, wired) · `test_studentt.jl`
+28/28 · `test_studentt_parity.jl` 13/13 live · census 66/66 · contract
+134/134 · dual-safety 37/37. Stale-pin sweep over `StudentTFit(` positional
+sites and the census/contract/dual-safety/AGHQ files found none. No tolerance
+touched. Full-suite coverage PAID: Totoro run D on tree `22226cda` — **7143 pass / 0 fail / 4 expected-broken, exit 0, 88m40.7s**.
+
+
+## 2026-08-28 — PARITY CELLS 12 AND 13 PAY: per-trait delta dispersion closes the Δ
+
+The measurement earlier today (Δ logLik −1.9232 / −2.5657, MISSING the 1e-6
+gate) proved the cause: the twin fits PER-TRAIT delta dispersion
+(`gllvmTMB.cpp:1195-1196`, both `length n_traits`) while our fitters fit one
+shared scalar. The synthesis note showed this is the twin's systematic
+parameterisation and that GLLVM.jl already ships the matching pattern for
+five families (`disp_group = :species`).
+
+Built the missing half: `disp_group::Symbol` (`:shared` default / `:species`)
+on `fit_delta_lognormal_gllvm` and `fit_delta_gamma_gllvm`, named for the
+repo's existing convention. Multiple-dispatch helpers (`_tp_pieces_at`,
+`_tp_observed_Wc_at`) let the unchanged kernels take either a scalar marker
+or a length-p marker vector — no branching in the hot loop. Per-trait warm
+starts with a pooled fallback for sparse traits. Composes with `predictor`
+and `hessian`. Default bit-identical (asserted `==`).
+
+**Result — the Δ closes:**
+
+| cell | OLD Δ (shared σ/α) | NEW Δ (per-trait) | rel |
+|---|---|---|---|
+| 12 delta_lognormal | −1.9232 | **1.82e-8** | 2.4e-11 |
+| 13 delta_gamma | −2.5657 | **1.79e-8** | 2.5e-11 |
+
+**Independently re-verified by the orchestrator on FRESH seeds (9101/9102,
+not the builder's 61/62)** — own-the-verifier, since the agent that built a
+thing does not get to be its only judge: Δ = 1.474e-8 (rel 1.68e-11) and
+7.53e-10 (rel 8.28e-13). Per-trait σ̂ matches the twin to 4–5 significant
+figures. Both cells are now marked PAID in
+`docs/src/gllvmtmb-parity.md` and `docs/design/capability-status.md`, with
+the two required settings stated (`predictor = :shared`, `disp_group =
+:species`) — the DEFAULT configuration still does not match the twin and the
+rows say so.
+
+**Parity ladder: 13/17 → 15/17.** Remaining: cell 9 student (same per-trait
+dispersion root cause per the synthesis, PLUS genuine ν estimation) and
+cell 6 tweedie (grouped-route defects first).
+
+Verify: `test_delta_disp_group.jl` 53/53 (new, wired) + regression across
+`test_delta_shared_predictor` / `test_delta_fit` / `test_delta_gamma` /
+`test_delta_postfit` / `test_twopart_substrate` / `test_twopart_alloc_equiv`
+/ `test_twopart_hessian_kwarg`, all green, no tolerance touched. Full-suite
+coverage PAID: Totoro run D on tree `22226cda` — **7143 pass / 0 fail / 4 expected-broken, exit 0, 88m40.7s**.
+
+
+## 2026-08-28 — L47 `none × dep` promoted (maintainer gate 6), with a MEASURED identifiability caveat
+
+Decision batch gate 6 authorised promoting the `none × dep` ledger row. The
+row read `planned` while `fit_dep_gllvm` was implemented (`src/none_dep.jl`),
+exported (`GLLVM.jl:226`), included (`GLLVM.jl:76`) and tested (29
+assertions, in `runtests.jl`) — an UNDERSTATED row, the mirror of the
+overstated curvature table corrected earlier today.
+
+Promoted to `implemented (function API only — see caveat)`, deliberately not
+to a bare `implemented`. The scope fence: no `@formula` `dep()` sugar (v1
+rejects `FunctionTerm` / `(… | g)`), Gaussian-only (non-Normal fails loud),
+no phylo/animal/spatial/kernel `dep` variant.
+
+**The caveat is measured, not asserted.** At `K = p`, `ΛΛᵀ` is already full
+rank, so the likelihood pins only `Σ_total = ΛΛᵀ + σ²I` — not the split.
+Probe (seed 4747, p=4, n=200): the fit reports `σ_eps = 0.98752306`, and the
+alternative `(Λ = cholesky(Σ_total).L, σ_eps = 0)` reproduces `Σ_total` to
+`4.44e-16`. So the returned `σ_eps` is one point on a flat ridge. This is now
+(a) a `!!! warning` admonition in the fitter's own docstring — a user reading
+the docstring sees it, not only the design ledger — and (b) an ASSERTED
+testset in `test/test_none_dep.jl`, so a future refactor that silently starts
+treating `σ_eps` as estimated will fail.
+
+Verify: `test_none_dep.jl` 39/39 + the new identifiability testset 2/2.
+Full-suite coverage PAID: Totoro run D on tree `22226cda` — **7143 pass / 0 fail / 4 expected-broken, exit 0, 88m40.7s**.
+
+
+## 2026-08-28 — Cells 12/13 (delta_lognormal, delta_gamma) fit-vs-fit parity: MEASURED, not paid at rtol=1e-6
+
+Ran live fit-vs-fit parity for `predictor = :shared` against a real gllvmTMB
+0.7.1 install (`GLLVM_PARITY_R_LIBS=/Users/z3437171/Library/R/arm64/4.6/library`,
+built 2026-08-25; twin checkout at `b9a90c8c8`, tag `v0.6.0-1387-gb9a90c8c8` —
+NOTE the task brief said "gllvmTMB 0.7.0"; the installed/live version is 0.7.1,
+recorded here rather than silently substituted). New files
+`test/parity/test_delta_lognormal_parity.jl`, `test/parity/test_delta_gamma_parity.jl`,
+wired into `runparity.jl`; new oracle `fit_gllvmtmb_parity_delta` in
+`parity_helpers.jl` (also fixed the accessor bug found while building it: the
+twin's TMB object lives at `fit_r$tmb_obj`, not `fit_r$obj` — `fit_r$obj` is a
+plain list; `fit_r$obj$env$parList(...)` throws `attempt to apply non-function`).
+
+**Fixture** (both cells): seed 61 (lognormal) / 62 (gamma), p=5, K=1, n=130,
+simulated UNDER the shared-predictor identity (`η[t,s] = β[t] + Λ[t]·z[s]`
+drives both the Bernoulli occurrence and the positive part, `β_true =
+[0.2,-0.1,0.3,0.0,-0.2]`, `Λ_true = 0.5·parity_loadings_p5k2()[:,1]`), so both
+engines fit their native shared-η model. `σ_true = 0.5` (lognormal, shared
+across traits); `α_true = 4.0` shape (gamma, shared across traits; twin CV
+`phi_true = 0.5`).
+
+**Measured**:
+| cell | Julia logLik | R logLik | Δ (jl−r) |
+|---|---|---|---|
+| delta_lognormal (fid 12) | −746.3732494 | −744.4500531 | **−1.9232** |
+| delta_gamma (fid 13)     | −728.5254616 | −725.9597544 | **−2.5657** |
+
+Both fail the light-cell genre's `rtol=1e-6` — NOT tuned/widened to pass; the
+tests assert only `r.logLik >= jl_logL - 1e-6` (twin never worse) and print
+the numbers, per the no-fudge instruction.
+
+**Definition risks checked, per the task brief**:
+- (a) logLik composition (Jacobian): twin's `dnorm(log(y), eta, sigma, true)
+  - log(y)` (`gllvmTMB.cpp:2827`) vs Julia's `logpdf(LogNormal(ηc,σ), y)`
+  (`src/families/twopart.jl` `_tp_pieces`, `DeltaLogNormal`) — `Distributions.jl`'s
+  `LogNormal` density already folds in the `-log y` Jacobian, so both sides carry
+  it identically. Ruled out as the Δ source.
+- (b) DeltaGamma curvature: both call sites default `hessian = :observed`;
+  confirmed in the source this is genuinely the specialised observed weight
+  for DeltaGamma (`_tp_observed_Wc`, the one two-part family with it
+  implemented) — like-for-like on both sides. Ruled out as the Δ source.
+- (c) **Dispersion parameterisation — CONFIRMED as the Δ driver, not a bug.**
+  The twin's `log_sigma_lognormal_delta` / `log_phi_gamma_delta` are
+  **PER-TRAIT** `n_traits`-length TMB parameter vectors (`gllvmTMB.cpp:1195-1196`;
+  `R/dispersion-trait-map.R` confirms no shared/pinned mode is exposed through
+  the family constructor or `gllvmTMB()` for delta families — the `map` machinery
+  only pins traits belonging to a *different* family in a mixed-family fit).
+  Julia's `fit_delta_lognormal_gllvm` / `fit_delta_gamma_gllvm` estimate a single
+  SHARED scalar `σ` / `α` across all `p` traits. Even under the shared-dispersion
+  DGP used here, the twin has `p−1 = 4` more free parameters, so its maximised
+  log-likelihood is generically ≥ Julia's — exactly the observed sign and rough
+  magnitude:
+  - lognormal: twin per-trait σ̂ = [0.398, 0.441, 0.472, 0.563, 0.467] (spread
+    0.165) around Julia's shared σ̂ = 0.4796 — the spread is real dispersion in
+    the per-trait estimates, consistent with 4 extra degrees of freedom
+    absorbing sampling noise at n=130, not with a broken shared-σ fit.
+  - gamma: twin per-trait shape (1/CV²) = [5.51, 3.20, 5.94, 3.59, 4.71]
+    (spread 2.74) around Julia's shared α̂ = 4.32 — same pattern, larger spread
+    (gamma shape estimation is noisier than lognormal σ at this n).
+  - Additionally the twin's dispersion is the **CV** `phi`, not shape
+    (`shape_g = 1/phi²`); the gamma test converts and prints both.
+  Intercepts (`b_fix` vs Julia `βc`) are close but not identical, as expected
+  when one side has extra per-trait nuisance freedom: lognormal
+  `[0.351,-0.119,0.252,-0.035,-0.276]` (Julia) vs `[0.332,-0.132,0.254,-0.014,-0.276]`
+  (R); gamma `[0.348,-0.049,0.266,-0.004,-0.233]` (Julia) vs
+  `[0.302,0.014,0.260,0.004,-0.233]` (R).
+
+**Verdict**: this is a genuine, structural parameterisation mismatch between
+the twin (per-trait delta dispersion, no shared mode available in the R API)
+and Julia's current `:shared`/`:separate` fitters (single scalar dispersion
+only). It is NOT closable from the Julia test file alone — either Julia would
+need a NEW per-trait-dispersion delta fitter to pair against, or the twin
+would need a `map`-pinned shared-dispersion call path that its public API does
+not currently expose. Docs NOT updated as "paid" (capability-status.md /
+gllvmtmb-parity.md unchanged) — this is a measured, honest mismatch, not a
+tolerance win, and the ledger genre reserves "paid" rows for `rtol=1e-6`
+agreement. Flagged for a maintainer decision: either add a per-trait-dispersion
+`predictor=:shared` delta variant to pair against the twin as-is, or treat
+these two cells as permanently "not directly fit-vs-fit-comparable at
+machine tolerance" in the parity ladder and record the Δ as the best-available
+evidence instead.
+
+## 2026-08-28 — Delta-family `predictor` mode: twin-identity shared-η parameterisation
+
+Maintainer decision batch gate 4 (`docs/dev-log/decisions/2026-08-28-arc-decision-batch.md`):
+**Twin identity MODE** — add the shared-single-predictor parameterisation as
+a parity-comparable mode on `fit_delta_lognormal_gllvm` / `fit_delta_gamma_gllvm`,
+keeping the current two-predictor `:separate` form default and unchanged.
+Built per the reviewed design (`predictor::Symbol = :separate | :shared`
+kwarg on the existing fitters, not a new named function).
+
+**What changed**: `predictor::Symbol` kwarg, validated `∈ (:separate,
+:shared)` (`ArgumentError` otherwise, matching the `hessian::Symbol`
+validation style already in this file). `:separate` (default) packs
+`[βz; βc; vec(Λc); log dispersion]`, unchanged — `Λz ≡ 0`. `:shared` packs
+the smaller `[β; vec(Λ); log dispersion]` and calls the existing,
+**unmodified** `delta_lognormal_marginal_loglik_laplace` /
+`delta_gamma_marginal_loglik_laplace` kernel with `βz = βc = β`, `Λz = Λc =
+Λ` — no kernel source change (`_twopart_mode`'s curvature assembly is
+already correct when `Λz = Λc`). `DeltaLogNormalFit` / `DeltaGammaFit` each
+gain one `predictor::Symbol` field; a positional-compat constructor keeps
+the one other in-repo 7-arg call site (`families/variational_dgamma.jl`)
+defaulting to `:separate` unchanged.
+
+**Offset symmetry (twin-matched)**: under `:shared`, a supplied `offset` is
+threaded into BOTH `offsetz` and `offsetc`, matching the twin's single
+shared `eta(o) = eta_fix(o) + offset_vec(o)` construction BEFORE the
+family-fid dispatch (`gllvmTMB.cpp:1401` — the offset hits both parts by
+construction, not by a delta-specific branch). The `:separate` path's
+existing `offset → offsetc`-only wiring is unchanged.
+
+**Design R4 note** (recorded per the reviewed design): this kwarg-on-
+existing-fitter shape follows the 2026-08-28 maintainer instruction and
+supersedes the 2026-08-25 parity-ladder brief's decisions #8/#11
+recommendation of a separately-named fitter (`fit_delta_lognormal_shared_eta_gllvm`)
+for the *shape* of this change only; the brief's other delta-family
+conclusions are unaffected.
+
+**FD gate**: not applicable — both fitters optimise via `autodiff = :finite`
+on the whole packed objective; no hand-coded analytic gradient exists in
+this file for the packing change to touch. Stated explicitly rather than
+silently skipped, per the reviewed design §3.1.
+
+**Verification**: new `test/test_delta_shared_predictor.jl` (wired into
+`test/runtests.jl` next to `test_delta_fit.jl`) — `:separate` ≡ omitted
+bit-identity, invalid-symbol `ArgumentError`, `:shared` recovery on a
+freshly-simulated tied-DGP (lognormal + gamma), the tie itself (`βz == βc`,
+fitted `loglik` == direct kernel eval at `θ̂` to `atol = 1e-8`),
+`hessian × predictor` composition (DeltaGamma's `:observed`/`:fisher`
+genuinely differ under `:shared`; DeltaLogNormal's coincide bit-for-bit,
+consistent with `test_twopart_hessian_kwarg.jl`), and offset symmetry
+(constant per-species offset fully absorbable into `β`; direct kernel
+evaluation with `offsetz = offsetc = offset` at θ̂ reproduces the fitted
+`loglik` to `1e-8`, proving the offset actually hit both parts).
+
+Full tallies: `test_delta_shared_predictor.jl` 38/38, `test_delta_fit.jl`
+13/13, `test_delta_postfit.jl` 213/213, `test_delta_gamma.jl` 50/50,
+`test_twopart_hessian_kwarg.jl` 13/13, `test_twopart_substrate.jl` 2/2 — all
+green, no tolerance touched. `7062 pass / 0 fail / 4 expected-broken, exit 0 (85m19.9s, Totoro, tree `8b1448ab`)`
+
+**Out of scope this slice**: live fit-vs-fit parity Δ against gllvmTMB
+(no R session available here; kernel-Δ / fit-Δ receipt wiring described in
+the design remains future work, to be pinned to gllvmTMB 0.7.0);
+`docs/design/capability-status.md` and `docs/src/gllvmtmb-parity.md`
+receipt-genre updates (same reason). See
+`docs/dev-log/decisions/2026-08-28-delta-shared-predictor-identity.md` for
+the full twin-cite table and design detail.
+
+Files touched: `src/families/twopart.jl`, `test/test_delta_shared_predictor.jl`
+(new), `test/runtests.jl`, `docs/src/response-families.md`, `CHANGELOG.md`,
+`docs/dev-log/decisions/2026-08-28-delta-shared-predictor-identity.md` (new).
+
+## 2026-08-28 — AGHQ unpark Slice 0/1: Fisher/observed curvature drift fixed
+
+Maintainer decision batch gate 5 (`docs/dev-log/decisions/2026-08-28-arc-decision-batch.md`):
+AGHQ **UNPARK**. Executed only the scout's Slice 0 ("re-audit + fix the
+Fisher/observed drift at `aghq_grid.jl:203` before anything else builds on
+it") and Slice 1 ("re-verify Stage-1a/1b goldens still hold"), per
+`docs/dev-log/decisions/2026-08-28-aghq-unpark-scope.md` (scout work-map,
+today). Slices 2-5 (outer adaptation loop, report honesty, public `aghq=`
+knob, `d≤5` affordability reconsideration) each need their own maintainer
+decision and were explicitly NOT started.
+
+**The defect, confirmed** (`src/families/aghq_grid.jl:203`, pre-fix): the
+Stage-1a site evaluator `aghq_stage1a_loglik_site` computed `W =
+_glm_weight.(...)` (Fisher weight) unconditionally for the adaptation
+curvature `Aᵢ = Λ'WΛ + I`, with no `hessian` keyword at all. This predates
+(2026-08-17) the curvature-correction campaign (2026-08-25 through
+2026-08-28) that flipped nine (family, link) cells' `_default_hessian` to
+`:observed`: Gamma/log, NegativeBinomial/log, Beta/logit, NB1/log,
+StudentTFamily/identity, Exponential/log, TruncatedNegBin2/log (2026-08-25
+through 2026-08-27), and — same day as this fix — TweedieED/log and
+Binomial/probit (the 2026-08-28 decision batch, gates 1-2). The module was
+never revisited, so it silently diverged from each affected family's own
+default Laplace fitter the moment that family's default flipped: at k=1 the
+AGHQ template should be an exact identity with `laplace_loglik_site`, and
+for these nine cells it no longer was. Already named as an open fault class
+in `docs/design/capability-status.md:357-358` ("remains FENCED and PARKED
+with the Fisher weight... must not be described as closed").
+
+**The fix**: `aghq_stage1a_loglik_site` gains `hessian::Symbol =
+_default_hessian(family, link)`, mirroring `laplace_loglik_site`
+(`families/laplace.jl`) and its sibling kernel `covariates.jl`'s
+`_laplace_site_off` exactly — same validation (`:fisher`/`:observed` or
+`ArgumentError`), same branch (`hessian === :fisher ||
+_glm_weight_matches_observed(family, link)` → `_glm_weight`; else the
+masked-cell-safe `_glm_obs_weight` comprehension), same PD guard keyed on the
+weight's sign (`any(w -> w < 0, W)` → `cholesky(A; check=false)` →
+`issuccess(F) || return -Inf`, since Beta and Student-t have measured
+negative observed curvature in some cells — see `capability-status.md`'s
+own 12-seed evidence table). The Newton mode search (`_laplace_mode`) is
+UNCHANGED — still unconditionally Fisher-scored, per the existing
+role-separation contract this fix extends rather than reinvents. The
+per-site adaptation Cholesky is still computed ONCE and reused across every
+quadrature node (Liu-Pierce 1994 adaptive GH by design; not touched).
+
+**Verification** (`/private/tmp/.../scratchpad/verify_fisher_pin.jl`, a
+standalone script re-deriving the pre-change `aghq_stage1a_loglik_site` body
+verbatim from `git show HEAD:src/families/aghq_grid.jl` under a renamed
+function, calling GLLVM's untouched helpers): for Poisson (k=1 and k=3) plus
+all nine `:observed`-default families at k=1, `hessian = :fisher` pinned on
+the NEW code is bit-identical (Julia `===`) to the OLD unconditional-Fisher
+formula. For the nine affected families, the NEW default (now `:observed`)
+genuinely differs from the old value (by design — e.g. Gamma Δ=+0.273,
+Exponential Δ=+0.299, StudentT Δ=−0.226 at the fixed seed), confirming the
+fix does real work rather than being a no-op. New cross-check added to
+`test/test_aghq_grid.jl` ("k=1 site loglik matches dense Laplace under each
+family's DEFAULT hessian"): for all nine families,
+`aghq_stage1a_loglik_site(...; k=1)` under the family default equals
+`laplace_loglik_site(...)` under the same default to `atol=1e-10`.
+
+**Not done, flagged for a maintainer decision, not decided here**: no public
+`aghq=` surface, no outer adaptation loop (A4(4)), no fitted-object `aghq`
+report field (A4(5)) — per the scout's Slices 2-4. `capability-status.md`'s
+AGHQ ledger rows stay `missing`/`missing`; only the fence prose at
+`:355-361` was updated to say the AGHQ instance of the fault class is fixed
+while the class generally is not.
+
+## 2026-08-28 — TweedieED and Binomial-probit Laplace curvature flip to :observed
+
+Maintainer decision batch (`docs/dev-log/decisions/2026-08-28-arc-decision-batch.md`,
+gates 1–2): both flips executed as coupled changes per the established
+template (NB2 `e74749b7`, decision A `4155853b`). Sequential — Tweedie first,
+then probit — sharing the cascade files (census, contract, hessian-kwarg
+tests, docs, CHANGELOG).
+
+**Derivations**, each FD-verified against the actual `_glm_logpdf` conditional
+density at a fixed seed (`scratchpad/fd_probe_tweedie_probit.jl`, worst
+relative gap 2.5e-7, well under the 1e-6 bar):
+
+- TweedieED/log: `W_obs = μ^(1−p)·[(2−p)·μ + (p−1)·y] / φ`. Confirmed
+  structurally that the Dunn–Smyth normalising series is μ-free (its
+  arguments are `y, φ, p` only), so it contributes zero η-curvature and the
+  closed form derived from the kernel alone is exact, not an approximation.
+  Symmetry check holds (`y = μ ⇒ W_obs = W_fisher`, 6/6 cells in the probe).
+  Always non-negative for `p ∈ (1,2), y ≥ 0`.
+- Binomial/probit: `W_obs = η·φ(η)·(y−nμ)/(μ(1−μ)) + φ(η)²·[y/μ² +
+  (n−y)/(1−μ)²]`, μ = Φ(η). Symmetry check holds (`y = nμ ⇒ W_obs = W_fisher`,
+  9/9 cells). **Correction to the task brief's working assumption**: probit
+  observed curvature is NOT genuinely sign-changing. `W_obs(y)` is affine in y
+  for fixed η, so its extrema over `y ∈ [0,n]` sit at the endpoints; a
+  BigFloat evaluation at those endpoints across `η ∈ [3,20]` stayed strictly
+  positive, converging to `n` as `|η| → ∞` — consistent with Pratt (1981,
+  *JASA*), who proved the probit binomial log-likelihood is globally concave
+  in η. The Float64 grid probe DOES show apparent negative values right at
+  `η ≈ ±8`, but re-evaluating those exact cells in BigFloat confirms this is a
+  catastrophic-cancellation artifact of `μ(1−μ)` underflowing near the
+  Float64 saturation boundary, not a genuine sign change; `_clamp_mu` (already
+  shipped) bounds μ away from exact 0/1 before this function ever sees it in
+  the fitted pipeline, so the artifact is unreachable there. The PD guard at
+  the Laplace assembly is therefore not expected to fire for this family —
+  documented as a finding, not assumed.
+- DRM.jl consulted per the maintainer's rider
+  (`src/sparse_laplace_glmm.jl` — the `_laplace_d1/d2/d3` AD-gated kernels
+  exist, contrary to an earlier `find` miss caused by a stale directory
+  listing). No usable oracle for either family: its `:binomial` kernel
+  (`_laplace_mean(::Val{:binomial}, η) = _laplace_logistic(...)`, line 2036)
+  is logit-only, and it has no `:tweedie` kernel at all. Recorded as
+  "consulted, no cross-check available" rather than silently skipped.
+
+**Coupled changes, per flip:**
+
+- TweedieED (`src/families/tweedie.jl`): `_default_hessian(::TweedieED,
+  ::LogLink) = :observed` + specialised `_glm_obs_weight`. No analytic
+  gradient exists for Tweedie (`fit_tweedie_gllvm` is finite-difference
+  only via `autodiff = :finite`), so no gradient-side coupling was needed.
+  Grouped route (`grouped_dispersion.jl`, `_tweedie_grouped_loglik_site`) has
+  no `hessian` selector at all (unconditional Fisher) — FENCED, not aligned:
+  documented as a recorded scope limit in both docs pages and in a source
+  comment at the grouped-Tweedie section header. With `G = 1` the grouped
+  route no longer matches the shared route's new default, only its
+  `hessian = :fisher` call.
+- Binomial/probit (`src/families/binomial.jl`): `_default_hessian(::Binomial,
+  ::ProbitLink) = :observed` + specialised `_glm_obs_weight`. The
+  logit-only analytic-gradient gate (`link isa LogitLink` in
+  `fit_binomial_gllvm`) already excluded probit from the analytic gradient
+  before this change — confirmed by reading `binomial_laplace_grad` /
+  `_binomial_site_diffable` (`laplace_grad.jl:376-380`), which hardcodes
+  `LogitLink()` in its mode solve. No coupling was therefore needed; a
+  comment was added at the gate documenting why. Binomial/cloglog untouched
+  (stays `:fisher`, the diagnosed saturation pathology).
+
+**Cascade**: `test_curvature_census.jl` — `KNOWN_OPEN` is now empty;
+`(:TweedieED, :LogLink)` and `(:Binomial, :ProbitLink)` join
+`CERTIFIED_CELLS`. `test_laplace_curvature_contract.jl` — both defaults
+pinned; the "default wiring produces :fisher" testset's TweedieED exemplar
+(now flipped) was restructured into an explicit `hessian = :fisher` call
+mirroring the Gamma pattern, per the maintainer's own suggested resolution;
+`GeneralizedPoisson1` (still Fisher, adjudicated) is the new trait-false
+:fisher exemplar; a Binomial/probit mirror block was added alongside it.
+`test_hessian_kwarg.jl` — the Tweedie block's bit-identical assertion moved
+from the `:fisher` comparison to `:observed`; a new probit testset covers
+contracts 1/2/3/5/6 plus a cloglog-stays-Fisher control. Docs
+(`response-families.md`, `gllvmtmb-parity.md`) — "still Fisher" lists now
+read GP-1 (by decision) and Binomial/cloglog only, plus the Tweedie-grouped
+scope-limit fence. CHANGELOG entry added.
+
+**Stale-pin sweep**: grepped `test_*_identity.jl`, `test_*_xlv.jl`, and any
+`_glm_weight(` hardcoding for Tweedie/probit oracles — none of THAT shape
+found (the eleven prior instances were all NB2/Beta/NB1/Gamma/Exponential-
+adjacent; Tweedie and Binomial-probit had no fitted-value oracle tests to go
+stale in that pattern). But the FULL targeted run caught a DIFFERENT stale-pin
+shape, the twelfth and thirteenth instances of the class: two tests compared
+the shared Tweedie route's DEFAULT (silently now `:observed`) against the
+grouped Tweedie route (unconditionally `:fisher`, no selector to move) and
+asserted near-exact agreement.
+- `test_grouped_dispersion_tweedie_nb1.jl:61` — "Tweedie: constant φvec ==
+  shared-φ marginal (exact)" — `ll_shared` used the shared route's bare
+  default; failed at `atol = 1e-10` (observed −263.602 vs grouped/Fisher
+  −263.528). Fixed: pin `hessian = :fisher` on the shared-route call, per
+  the fence documented in `grouped_dispersion.jl` and the two docs pages.
+- `test_tweedie_grouped_engine_health.jl:66` — "one-group power-start
+  agreement on the shipped cell" — the scalar-fitter comparison call used
+  the shared route's bare default; failed at `rtol = 1e-4` on `power`, `φ`,
+  and `loglik` (3 of the 4 total failures on the first full run). Same fix.
+Both are now pinned to the objective they are actually claiming to match,
+not the one a silent default change made them match by accident. Neither
+fix widened a tolerance — both fixed which call the assertion was making.
+
+**Verify** (targeted, one Julia process at a time; see the after-task report
+for verbatim tallies): `test_tweedie.jl`, `test_tweedie_engine_health.jl`,
+`test_grouped_dispersion_tweedie_nb1.jl`, `test_tweedie_grouped_engine_health.jl`,
+`test_binomial_fit.jl`, `test_binomial_laplace.jl`, `test_beta_binomial.jl`,
+`test_betabinomial_x_identity.jl`, `test_phylo_binomial_xlv.jl`,
+`test_variational_binomial.jl`, `test_postfit_zib_tweedie.jl`,
+`test_curvature_census.jl`, `test_laplace_curvature_contract.jl`,
+`test_laplace_dual_safety.jl`, `test_hessian_kwarg.jl`.
+
+Full suite (Totoro, tree `db3b90ad` = these flips + the grouped-selector
+slice): **6997 pass / 0 fail / 4 expected-broken, exit 0, 84m39.4s.**
+
+## 2026-08-28 — confint curvature consistency: GROUPED fit structs close the recorded residual
+
+Closes the residual left by "confint honors the fit's curvature (the audit
+class, closed for one-part fits)" (below): the GROUPED fit structs now also
+record the selector.
+
+- Eight grouped fit structs gain `hessian::Symbol` and a positional compat
+  constructor defaulting to `:observed` (the fitters' own default): NBGroupedFit,
+  NBGroupedCovFit, BetaGroupedFit, BetaGroupedCovFit, GammaGroupedFit,
+  GammaGroupedCovFit, NB1GroupedFit, NB1GroupedCovFit — all eight fitters
+  already accepted a `hessian` kwarg and now store the actual value passed.
+- Two more grouped structs gain the same field for uniformity but are fixed
+  at `:fisher` by construction: TweedieGroupedFit and
+  BetaBinomialGroupedFit/BetaBinomialGroupedCovFit — their underlying per-site
+  Laplace kernels have no `hessian` selector at all (unconditional Fisher
+  weight), so there is nothing to record beyond the fixed value and nothing
+  for `_family_ci` to thread.
+- Eight `_family_ci` adapters (NBGroupedFit, NB1GroupedFit, BetaGroupedFit,
+  NBGroupedCovFit, NB1GroupedCovFit, BetaGroupedCovFit, GammaGroupedFit,
+  GammaGroupedCovFit) thread `fit.hessian` into both the rebuilt marginal and
+  the bootstrap refit. BetaBinomialGroupedFit/CovFit adapters are unchanged —
+  no selector exists on that route to thread. TweedieGroupedFit has no
+  `_family_ci` adapter at all (pre-existing; not created here).
+- New contract test `test_grouped_hessian_consistency.jl` (wired into
+  `runtests.jl` next to the one-part consistency test): mirrors the one-part
+  test — the fit records its selector (default and explicit `:fisher`) for
+  NB2/Beta/Gamma/NB1-grouped, rebuilt nll(θ̂) == −loglik under both selectors
+  for those four families, the selector demonstrably reaches the grouped CI
+  objective (NB2-grouped, non-canonical log link), and the no-selector routes
+  (Tweedie-grouped, beta-binomial-grouped) carry the fixed `:fisher` field
+  plus the nll(θ̂) identity.
+
+Residual unchanged from the parent entry: Student-t has no confint adapter at
+all (pre-existing gap).
+
+Verification: targeted 310/310 across the touched surface
+(`test_grouped_hessian_consistency` 20, `test_confint_hessian_consistency` 12,
+`test_grouped_dispersion` 14, `test_grouped_dispersion_beta_gamma` 24,
+`test_confint_family` 240). Full-suite coverage PAID by the later 2026-08-28
+Totoro run from the tree at `db3b90ad` (which includes this slice AND the
+Tweedie/probit flips): 6997 pass / 0 fail / 4 expected-broken, exit 0,
+84m39.4s. (The earlier 6955 run predated this slice and was never claimed
+for it.)
+
+## 2026-08-28 — Arc 2 mop-up: Gaussian verdict screened, CMP cap closed, two-part hessian exposed
+
+Three flagged residue items, one slice:
+
+1. **`fit.jl`'s Gaussian fitters join the sentinel screen**: the PosDef catch's
+   ad-hoc `1e10` penalty sat BELOW the 1e11 screen threshold, and both return
+   sites used raw `Optim.converged` — a run stranded on the penalty plateau
+   reported `converged = true`. Now `_NLL_SENTINEL` + `_fit_verdict` at both
+   sites (the second site keeps its recomputed closed-form logLik and screens
+   only the flag). Well-behaved smoke unchanged.
+2. **`_CMP_LOGZ_CAP` limitation CLOSED** (was flagged 2026-08-26): past 80% of
+   the term cap the series' mode outruns it and the sum silently truncates.
+   Added the Shmueli et al. (2005) asymptotic branch — exact at ν = 1,
+   validated on the crossover band against the series itself (rel. err.
+   2e-15 at ν=1, ≤3e-8 at ν∈{1.3, 2}), monotone across the branch switch.
+   New testset in test_com_poisson.jl.
+3. **Ten two-part entry points expose `hessian`** (delta_lognormal, both
+   hurdles, ZIP, ZINB, ZIB, beta_hurdle + the zip/zinb/zib `_cov` variants;
+   DeltaGamma already had it): kwarg + validation + threading to the kernel,
+   default `:observed` = the kernel default (bit-identical), invalid throws.
+   HONEST SCOPE: the kernel's observed count-part weight is specialised ONLY
+   for DeltaGamma (`_tp_observed_Wc(::Any) = Wc` fallback), so for the other
+   families both selectors currently coincide — the recorded
+   TWOPART_KNOWN_OPEN gap. This exposure is that gap's measurement
+   prerequisite, mirrored on the one-part kwarg arc; docstrings, the
+   response-families page, and `test_twopart_hessian_kwarg.jl` (invalid
+   throws + `:fisher ≡ :observed` bit-identity, all ten) state and prove it.
+
+   Pre-commit adversarial review round (3 lenses + refute stage) caught and
+   fixed before commit: (a) the seven kwargs had shipped with zero tests —
+   the cascade blocker; (b) the three `_cov` fitters were missed entirely;
+   (c) the CMP asymptotic guard threw `InexactError` on integer arguments
+   (`T(0.8)` with `T = Int64` — exported-surface regression, now
+   regression-tested); (d) `compoisson_logz`'s docstring still described the
+   pure series; (e) the ν = 1-only monotonicity test didn't exercise the
+   ν ≠ 1 branch terms (now also ν = 2); (f) DeltaGamma's docstring never
+   mentioned its (real) `hessian` kwarg; (g) an overclaiming comment at the
+   legacy Gaussian return site (its objective has no sentinel — screen is
+   defensive). Full-suite tally on the pre-review tree: 6921 pass / 0 fail /
+   4 broken, exit 0 (72m33s, Totoro); post-review verification: targeted
+   suites green (fit 12, com_poisson 26+16, delta_fit 13, hurdle_poisson
+   171, beta_hurdle 62, twopart_hessian_kwarg 13); post-review FULL SUITE on
+   the committed tree (Totoro, 2026-08-28): 6955 pass / 0 fail / 4
+   expected-broken, exit 0, 85m28.4s.
+
 ## 2026-08-28 — the cloglog saturation guard ships (diagnostic only)
 
 Implements Section 2 of the three-arc consolidated design (adversarially

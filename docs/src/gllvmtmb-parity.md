@@ -31,8 +31,8 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advanta
 | Beta | ✅ | precision `φ` (matches gllvm) |
 | Ordinal (cumulative) | ✅ | logit + probit links (`link=ProbitLink()` matches gllvm's default cumulative-probit); `P(y≤c)=F(τ_c−η)` convention verified == gllvm; `fit_ordinal_gllvm()` keeps the shared-cutpoint Julia route, while `fit_ordinal_gllvm_pertrait()` and the R bridge use trait-specific cutpoints for native `gllvmTMB` parity |
 | Gamma | ✅ | shape `α` |
-| Delta-lognormal | ✅ | first two-part family; shared 2-block Laplace substrate |
-| Delta-Gamma | ✅ | occurrence Bernoulli × positive Gamma (log-link mean) on the substrate |
+| Delta-lognormal | ✅ | first two-part family; shared 2-block Laplace substrate. **Light RCall no-X logLik Δ PAID 2026-08-28** — Δ ≈ 1.5e-8 (rel 1.7e-11) against gllvmTMB 0.7.1, requires `predictor = :shared` + `disp_group = :species` (the twin's parameterisation: one shared η, per-trait σ); `test/parity/test_delta_lognormal_parity.jl` |
+| Delta-Gamma | ✅ | occurrence Bernoulli × positive Gamma (log-link mean) on the substrate. **Light RCall no-X logLik Δ PAID 2026-08-28** — Δ ≈ 7.5e-10 (rel 8.3e-13), same two settings; `test/parity/test_delta_gamma_parity.jl` |
 | Hurdle (Poisson / NB) | ✅ | occurrence Bernoulli × zero-truncated Poisson / NB2; `fit_gllvm(Y; family = HurdlePoisson())` / `HurdleNB()` (marker `r` is a tag payload). Julia-forward — twin has no hurdle family |
 | Zero-inflated (ZIP / ZINB / ZIB) | ✅ | structural zero × Poisson / NB2 / Binomial; zero-inflation intercept-only (Λ_z = 0) so the coupled-zero cross-term drops out |
 | Ordered-beta | ✅ | proportions / cover with point masses at 0 and 1; `fit_gllvm(Y; family = OrderedBeta())` (marker `c0`, `c1`, `φ` are tag payloads). Julia-forward — twin has no ordered-beta family |
@@ -231,14 +231,24 @@ why the discrepancy went unnoticed. They differ everywhere else.
 **Status, stated plainly rather than as a capability claim:**
 
 - **Fixed and on `main`:** NB1 (grouped route), `truncated_nbinom2`,
-  `Exponential`, `DeltaGamma`, and **`Gamma`** — the last being the one that
-  sat on the public default path `fit_gllvm(Y; family = Gamma())`.
-- **Still using the Fisher weight:** Tweedie, GP-1, and `Binomial` at the
-  **probit** and **cloglog** links — nothing else. (NB2, Beta, NB1 and
-  Student-t all flipped to observed 2026-08-27 on the curvature-adjudication
-  campaign evidence — decision A; Exponential's registry default was declared
-  the same day.) Every one of these is reachable, so a log-likelihood
-  from them will not match `gllvmTMB` to machine precision.
+  `Exponential`, `DeltaGamma`, **`Gamma`** — the one that sat on the public
+  default path `fit_gllvm(Y; family = Gamma())` — and, as of 2026-08-28, the
+  shared **Tweedie** route (`fit_tweedie_gllvm`) and **`Binomial`/probit**
+  (maintainer decision batch,
+  `docs/dev-log/decisions/2026-08-28-arc-decision-batch.md`: TMB structurally
+  differentiates the joint nll, so its log-det is observed for every family it
+  ships, not a per-family exception).
+- **Still using the Fisher weight, by decision rather than oversight:** GP-1
+  (adjudicated 2026-08-28, Fisher retained — a minority of cells derail badly
+  under the observed weight) and `Binomial` at the **cloglog** link (the
+  diagnosed Laplace saturation pathology, check-log 2026-08-28). Nothing else
+  remains open. (NB2, Beta, NB1 and Student-t all flipped to observed
+  2026-08-27 on the curvature-adjudication campaign evidence — decision A;
+  Exponential's registry default was declared the same day.) A log-likelihood
+  from these two will not match `gllvmTMB` to machine precision. The Tweedie
+  **grouped** route (`fit_tweedie_gllvm_grouped`, per-species dispersion) also
+  stays Fisher — it carries no `hessian` selector at all, a recorded scope
+  limit rather than a curvature decision (see `docs/src/response-families.md`).
 - **Not a uniform improvement.** Against numerical quadrature, the observed
   curvature is decisively closer for Gamma (12/12 seeds, 20–60× smaller error)
   and for NB2 (87% of 150 curvature-adjudication campaign cells, 2026-08-27),

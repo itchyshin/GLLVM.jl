@@ -5,6 +5,30 @@ All notable changes to GLLVM.jl are documented here.
 ## Unreleased
 
 ### Changed
+- **AGHQ Stage-1a site evaluator now threads the Fisher-vs-observed curvature
+  selector (unpark Slice 0/1, 2026-08-28)**: `aghq_stage1a_loglik_site`
+  (`src/families/aghq_grid.jl`, internal, no public `aghq=` surface) gains a
+  `hessian::Symbol = _default_hessian(family, link)` keyword, mirroring the
+  role-separation contract in `laplace_loglik_site`/`covariates.jl` exactly —
+  the Newton mode search stays Fisher-scored; only the adaptation curvature
+  (the log-det AND the per-site Cholesky reused across every quadrature node)
+  is selectable. Previously the site evaluator computed an unconditional
+  Fisher weight for both roles, which had silently diverged from the same
+  family's own default Laplace fitter for every family whose
+  `_default_hessian` is `:observed` (Beta, Gamma, NegativeBinomial, NB1,
+  StudentT, Exponential, TruncatedNegBin2, and — since the 2026-08-28
+  curvature-flip decision batch — TweedieED and Binomial-probit): the AGHQ
+  `k=1` template no longer equaled that family's own Laplace golden once its
+  default flipped. `hessian = :fisher` pinned reproduces the pre-fix value
+  bit-for-bit (verified against an independent copy of the pre-change
+  unconditional-Fisher formula); the family-default `k=1` template now
+  matches that family's default dense Laplace marginal to 1e-10 for all 9
+  affected families (new cross-check in `test/test_aghq_grid.jl`). A PD guard
+  keyed on the weight's sign (matching `laplace.jl`) was added so a negative
+  observed weight (Beta/Student-t) fails to `-Inf` rather than throwing out of
+  `cholesky`. The module remains internal and FENCED — this closes only the
+  AGHQ instance of the Fisher-vs-observed fault class, not the class
+  generally (`docs/design/capability-status.md`). No ledger row promoted.
 - **`confint`/bootstrap now rebuild the fit's own objective** (the
   curvature-consistency class from the 2026-08-27 adversarial audit): every
   one-part fit struct records the `hessian` its objective used, and the CI
@@ -13,10 +37,16 @@ All notable changes to GLLVM.jl are documented here.
   default-curvature CIs silently — the ":fisher restores previous behaviour"
   claim was true at fit time only; it is now true through `confint`.
   Positional fit-struct construction stays source-compatible (a compat
-  constructor defaults the new field to the family default). Residual: the
-  GROUPED fit structs do not yet record the selector (their explicit-:fisher
-  confint path keeps the old behaviour); Student-t has no confint adapter at
-  all (pre-existing gap, now recorded).
+  constructor defaults the new field to the family default). **Closed
+  2026-08-28**: the GROUPED fit structs (NBGroupedFit, NBGroupedCovFit,
+  BetaGroupedFit, BetaGroupedCovFit, GammaGroupedFit, GammaGroupedCovFit,
+  NB1GroupedFit, NB1GroupedCovFit) now also record `hessian`, and their
+  `_family_ci` adapters thread it the same way; TweedieGroupedFit and
+  BetaBinomialGroupedFit/BetaBinomialGroupedCovFit have no `hessian`
+  selector on their underlying kernel at all (unconditional Fisher weight),
+  so their field is fixed at `:fisher` by construction — there is nothing to
+  thread. Residual: Student-t has no confint adapter at all (pre-existing
+  gap, now recorded).
 - **Beta, NB1 and Student-t Laplace log-determinants now use the observed
   conditional curvature, completing decision A (2026-08-27)** — with Gamma,
   NB2 and Exponential, every one-part family except Tweedie and GP-1 now
@@ -60,8 +90,53 @@ All notable changes to GLLVM.jl are documented here.
   `hessian = :fisher` restores the previous behaviour. Other families are
   unchanged — this was a per-family decision on per-family evidence, not a
   global switch.
+- **TweedieED (shared route) and Binomial/probit Laplace log-determinants now
+  use the observed conditional curvature, matching TMB / `gllvmTMB`**
+  (maintainer decision batch, 2026-08-28 — TMB structurally differentiates the
+  joint negative log-likelihood, so its log-det is observed for every family
+  it ships). This **changes reported `loglik`, AIC/BIC and Wald SEs** for
+  `fit_tweedie_gllvm` and `fit_binomial_gllvm(...; link = ProbitLink())`;
+  point estimates are expected to move little (the conditional mode stays
+  Fisher-scored). `hessian = :fisher` restores the previous objective for
+  both.
+  - TweedieED/log: `μ^(1−p)·[(2−p)·μ + (p−1)·y] / φ`. The Tweedie density's
+    normalising series is μ-free, so it contributes zero η-curvature and this
+    closed form is exact (not an approximation); no analytic-gradient
+    coupling was needed (`fit_tweedie_gllvm` is finite-difference only).
+    Always non-negative.
+  - Binomial/probit: `η·φ(η)·(y−nμ)/(μ(1−μ)) + φ(η)²·[y/μ²+(n−y)/(1−μ)²]`,
+    μ = Φ(η). Provably non-negative for every cell (the probit binomial
+    log-likelihood is globally concave in η, Pratt 1981 *JASA*) — unlike
+    Beta/Student-t, the PD guard is not expected to fire here. No
+    analytic-gradient coupling was needed either: `binomial_laplace_grad` is
+    hardcoded to `LogitLink()` in its mode solve, so a probit fit was already
+    routed to finite differences regardless of `hessian`, before and after
+    this change.
+  - Binomial/**cloglog** is explicitly excluded (the diagnosed Laplace
+    saturation pathology) and stays `:fisher`.
+  - **Recorded, not fixed:** the Tweedie **grouped** route
+    (`fit_tweedie_gllvm_grouped`) has no `hessian` selector at all
+    (unconditional Fisher) — with `G = 1` it no longer matches the shared
+    route's new default, only `hessian = :fisher` on the shared route. Fenced
+    in `docs/src/response-families.md` and `docs/src/gllvmtmb-parity.md`
+    rather than aligned; out of scope for this change.
 
 ### Fixed
+- **`compoisson_logz` no longer truncates silently past its term cap**: for
+  large `λ^{1/ν}` the series' dominant terms outran the fixed summation cap and
+  the partial sum understated log Z. Past 80% of the cap the function now
+  switches to the Shmueli et al. (2005) asymptotic
+  (`ν·λ^{1/ν} − ((ν−1)/(2ν))·log λ − ((ν−1)/2)·log 2π − ½·log ν`), exact at
+  ν = 1 and validated against the direct series on the crossover band
+  (rel. err. ≤ 3e-8); the switch is monotone across the branch boundary
+  (tested at ν = 1 and ν = 2), and integer arguments still work (a
+  pre-commit review caught the guard computing `T(0.8)` with integer `T`).
+- **`fit_gaussian_gllvm` could report `converged = true` while stranded on the
+  PosDef penalty plateau**: the catch's ad-hoc `1e10` penalty sat below the
+  sentinel screen threshold and both return sites used raw `Optim.converged`.
+  The catch now returns `_NLL_SENTINEL` and both return sites screen the
+  verdict through `_fit_verdict` (the same sentinel-escape class fixed for
+  Tweedie on 2026-08-26). Well-behaved fits are unchanged.
 - **`fit_tweedie_gllvm` reported `converged = true` at points that were not
   maxima.** The log warm start `log(max(Y, 1e-6))` sent every structural zero to
   −13.8 regardless of the data scale, wrecking the intercepts and inflating the
@@ -100,6 +175,34 @@ All notable changes to GLLVM.jl are documented here.
   unaffected. Pinned by `test/test_fd_hessian.jl`.
 
 ### Added
+- **`predictor::Symbol = :separate | :shared` on `fit_delta_lognormal_gllvm` /
+  `fit_delta_gamma_gllvm`** (2026-08-28, maintainer decision "Twin identity
+  MODE" — `docs/dev-log/decisions/2026-08-28-arc-decision-batch.md` gate 4):
+  `:shared` reproduces gllvmTMB's delta-family design where ONE linear
+  predictor drives both the occurrence and positive-value components
+  (`gllvmTMB.cpp:2816-2844`) — `βz ≡ βc`, `Λz ≡ Λc`, optimised over the
+  smaller `[β; vec(Λ); log dispersion]`. Offset threads to both parts
+  symmetrically under `:shared`, matching the twin's single shared `eta`
+  construction (`gllvmTMB.cpp:1401`). `:separate` (default) is unchanged and
+  bit-identical to the pre-existing behaviour; `DeltaLogNormalFit` /
+  `DeltaGammaFit` gain a `predictor::Symbol` field (positional-compat
+  constructor keeps old 7-arg call sites defaulting to `:separate`). See
+  `docs/dev-log/decisions/2026-08-28-delta-shared-predictor-identity.md` and
+  `test/test_delta_shared_predictor.jl`.
+- **All ten remaining two-part entry points expose the `hessian` curvature
+  selector** (`fit_delta_lognormal_gllvm`, `fit_hurdle_poisson_gllvm`,
+  `fit_hurdle_nb_gllvm`, `fit_zip_gllvm`, `fit_zinb_gllvm`, `fit_zib_gllvm`,
+  `fit_beta_hurdle_gllvm`, and the covariate variants `fit_zip_gllvm_cov`,
+  `fit_zinb_gllvm_cov`, `fit_zib_gllvm_cov`; DeltaGamma already had it) —
+  kwarg validation and threading to the two-part Laplace kernel, default
+  `:observed` (bit-identical to the previous behaviour; proven by test for
+  an invalid selector and the `:fisher ≡ :observed` identity on all-ten
+  coverage in `test_twopart_hessian_kwarg.jl`). Honest scope: the kernel's
+  observed count-part weight is currently specialised only for DeltaGamma,
+  so for the other families both selectors coincide until their observed
+  weights land (the recorded two-part curvature gap); each docstring and the
+  response-families page state this. The exposure is the measurement
+  prerequisite for closing that gap.
 - **`confint_lv_effects(fit, Y, X_lv; method = :wald | :bootstrap)`** — Wald
   (delta-method) and parametric-bootstrap confidence intervals for the
   predictor-informed latent-score trait-effect matrix `B_lv = Λ·α'`, for Gaussian

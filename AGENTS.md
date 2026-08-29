@@ -90,6 +90,16 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
+- **Full-parity campaign day (2026-08-28).** PR #273 (12 commits,
+  branch `claude/lane-beyond-20260824`): the Fisher-vs-observed curvature
+  fault class CLOSED (census `KNOWN_OPEN` empty; Tweedie+probit flipped,
+  GP-1 Fisher by decision, cloglog intrinsic); AGHQ unparked, Slice 0 done;
+  delta `predictor = :shared` twin-identity mode; grouped structs record
+  `hessian`; JuliaCall/Totoro embedding segfault root-caused + fixed
+  (libunwind LD_PRELOAD). Maintainer decision batch re-scoped fences:
+  `docs/dev-log/decisions/2026-08-28-arc-decision-batch.md`. Suites 6955 and
+  6997 pass / 0 fail / 4 broken (Totoro). Session handed to Cursor.
+  **START HERE:** `docs/dev-log/handover/2026-08-28-cursor-handover.md`.
 - **Multinomial name-clash vs Distributions (2026-08-18).** PR #257
   after `origin/main` @ `13ccb7d5` (#259). Bare `Multinomial` in
   `test/test_multinomial.jl` was `UndefVarError` once `runtests.jl`

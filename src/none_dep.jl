@@ -20,6 +20,15 @@ and twin `latent(0 + trait | g, d = T)`.
 
 This is a **Gaussian matrix** fitter. `@formula` `dep()` sugar is not in
 this slice (v1 rejects `FunctionTerm` and random-effect terms `(… | g)`).
+
+!!! warning "σ_eps is not separately identified on this path"
+    Because `K = p`, `ΛΛᵀ` is already full rank, so the likelihood pins only
+    the TOTAL covariance `Σ_total = ΛΛᵀ + σ²I` — not the split between them.
+    Measured 2026-08-28 (seed 4747, p=4, n=200): a fit reporting
+    `σ_eps = 0.9875` has an exactly-equivalent parameterisation
+    `(Λ = cholesky(Σ_total).L, σ_eps = 0)` matching `Σ_total` to `4.4e-16`.
+    Interpret the returned `σ_eps` as one point on a flat ridge, and read
+    `Σ_total` as the estimand.
 `K` / `num_lv`, W-tier (`K_W`), `has_diag`, and phylogenetic kwargs
 (`K_phy`, `has_phy_unique`, `Σ_phy`) are fail-loud — they are not knobs
 on this path.

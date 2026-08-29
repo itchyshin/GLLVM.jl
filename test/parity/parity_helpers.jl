@@ -415,3 +415,154 @@ function fit_gllvmtmb_parity_loglik_multinomial(y::AbstractVector{<:Integer},
         converged = rcopy(Bool, R".gllvm_parity_multinom$converged"),
     )
 end
+
+"""
+    fit_gllvmtmb_parity_delta(y, K; family) -> NamedTuple
+
+Twin oracle for the **delta (hurdle) families**, `:delta_lognormal` (fid 12) /
+`:delta_gamma` (fid 13). Unlike [`fit_gllvmtmb_parity_loglik`](@ref), the twin's
+`delta_lognormal()` / `delta_gamma()` share ONE linear predictor across occurrence
+and the positive part (`gllvmTMB.cpp:2816-2844`), matching Julia's
+`predictor = :shared` mode on `fit_delta_lognormal_gllvm` /
+`fit_delta_gamma_gllvm` (Identity
+`docs/dev-log/decisions/2026-08-28-delta-shared-predictor-identity.md`).
+
+**Dispersion parameterisation is PER-TRAIT on the twin side** (`log_sigma_lognormal_delta`
+/ `log_phi_gamma_delta`, `n_traits`-length TMB parameter vectors — no shared/pinned
+mode is exposed through the family constructor or `gllvmTMB()`; see
+`R/dispersion-trait-map.R`), while Julia's `fit_delta_lognormal_gllvm` /
+`fit_delta_gamma_gllvm` estimate a single SHARED scalar `σ` / `α` across all traits.
+This is a genuine, irreducible parameterisation mismatch (not a bug): the twin has
+`p−1` more free parameters than Julia here, so its maximised log-likelihood is
+generically ≥ Julia's even under a shared-dispersion DGP. Report the per-trait
+dispersion vector `r_disp_vec` alongside the Δ so a caller can see whether the twin's
+per-trait estimates are close to each other (consistent with a genuinely shared DGP)
+or spread apart.
+
+`family` ∈ `(:delta_lognormal, :delta_gamma)`. `y` is `p×n` with `0` for absences.
+Returns `(logLik, objective, converged, b_fix, disp_vec)`: `b_fix` is the twin's
+trait-intercept vector (length `p`, ONE per trait since the shared predictor has
+no separate occurrence/positive intercepts); `disp_vec` is the reported per-trait
+`sigma_lognormal_delta` / `phi_gamma_delta` vector (length `p`; for `:delta_gamma`
+this is the **CV**, `phi = 1/sqrt(shape)`, NOT the shape — map before comparing to
+Julia's `α` = shape via `α ≈ 1/phi^2`).
+"""
+function fit_gllvmtmb_parity_delta(y::AbstractMatrix, K::Integer; family::Symbol)
+    family in (:delta_lognormal, :delta_gamma) ||
+        throw(ArgumentError("unsupported delta parity family: $family"))
+    p, n = size(y)
+    fam = String(family)
+    _parity_require_gllvmtmb!()
+    @rput y K p n fam
+
+    R"""
+    trait_names <- paste0("t", seq_len(p))
+    df_long <- data.frame(
+        site  = factor(rep(seq_len(n), each = p)),
+        trait = factor(rep(trait_names, times = n), levels = trait_names),
+        value = as.vector(y)   # column-major on p×n ⇒ site blocks
+    )
+    fam_obj <- switch(fam,
+        delta_lognormal = gllvmTMB::delta_lognormal(),
+        delta_gamma     = gllvmTMB::delta_gamma(),
+        stop(sprintf("unknown family: %s", fam))
+    )
+    fit_r <- gllvmTMB(
+        value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE),
+        data = df_long,
+        unit = "site",
+        trait = "trait",
+        family = fam_obj,
+        control = gllvmTMBcontrol(n_init = 1L, se = FALSE)
+    )
+    pl <- fit_r$tmb_obj$env$parList(fit_r$opt$par)
+    disp_vec <- if (identical(fam, "delta_lognormal")) {
+        as.numeric(fit_r$report$sigma_lognormal_delta)
+    } else {
+        as.numeric(fit_r$report$phi_gamma_delta)
+    }
+    .gllvm_parity_delta <<- list(
+        logL      = as.numeric(stats::logLik(fit_r)),
+        objective = as.numeric(fit_r$opt$objective),
+        converged = identical(as.integer(fit_r$opt$convergence), 0L),
+        b_fix     = as.numeric(pl$b_fix),
+        disp_vec  = disp_vec
+    )
+    invisible(NULL)
+    """
+
+    return (
+        logLik = rcopy(Float64, R".gllvm_parity_delta$logL"),
+        objective = rcopy(Float64, R".gllvm_parity_delta$objective"),
+        converged = rcopy(Bool, R".gllvm_parity_delta$converged"),
+        b_fix = rcopy(Vector{Float64}, R".gllvm_parity_delta$b_fix"),
+        disp_vec = rcopy(Vector{Float64}, R".gllvm_parity_delta$disp_vec"),
+    )
+end
+
+"""
+    fit_gllvmtmb_parity_student(y, K; df_fixed) -> NamedTuple
+
+Twin oracle for the Student-t family (`gllvmTMB::student()`, fid 9,
+identity link). `df_fixed` is passed straight to `student(df = df_fixed)`
+so BOTH sides hold degrees of freedom fixed at the same value — the twin's
+own default is to ESTIMATE df per trait (`student(df = NULL)`), which is
+not the same model as Julia's `fit_studentt_gllvm` (fixed scalar `nu`); see
+`docs/dev-log/decisions/2026-08-28-studentt-parameterisation.md`. Fixing
+`df` on the twin isolates the ONE remaining structural difference: the
+twin's `log_sigma_student` is a PER-TRAIT `n_traits`-length TMB parameter
+(`gllvmTMB.cpp:1184`; no shared/pinned mode is exposed through the family
+constructor or `dispersion_trait_map()`), while Julia's `fit_studentt_gllvm`
+estimates a single SHARED scalar `σ`. This mirrors
+[`fit_gllvmtmb_parity_delta`](@ref) exactly, for the same reason.
+
+Returns `(logLik, objective, converged, b_fix, sigma_vec, df_vec)`: `b_fix`
+is the twin's trait-intercept vector (length `p`); `sigma_vec` /`df_vec` are
+the reported per-trait `sigma_student` / `df_student` vectors (length `p`).
+Per the parameterisation note, `df_vec` should equal `df_fixed` on every
+trait (fixed, not estimated) — assert that in the caller before trusting a
+logLik Δ as dispersion-only.
+"""
+function fit_gllvmtmb_parity_student(y::AbstractMatrix, K::Integer; df_fixed::Real)
+    df_fixed > 1 || throw(ArgumentError("student(): df_fixed must be > 1; got $df_fixed"))
+    p, n = size(y)
+    _parity_require_gllvmtmb!()
+    dfv = Float64(df_fixed)
+    @rput y K p n dfv
+
+    R"""
+    trait_names <- paste0("t", seq_len(p))
+    df_long <- data.frame(
+        site  = factor(rep(seq_len(n), each = p)),
+        trait = factor(rep(trait_names, times = n), levels = trait_names),
+        value = as.vector(y)   # column-major on p×n ⇒ site blocks
+    )
+    fit_r <- gllvmTMB(
+        value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE),
+        data = df_long,
+        unit = "site",
+        trait = "trait",
+        family = gllvmTMB::student(link = "identity", df = dfv),
+        control = gllvmTMBcontrol(n_init = 1L, se = FALSE)
+    )
+    pl <- fit_r$tmb_obj$env$parList(fit_r$opt$par)
+    .gllvm_parity_student <<- list(
+        logL      = as.numeric(stats::logLik(fit_r)),
+        objective = as.numeric(fit_r$opt$objective),
+        converged = identical(as.integer(fit_r$opt$convergence), 0L),
+        b_fix     = as.numeric(pl$b_fix),
+        sigma_vec = as.numeric(fit_r$report$sigma_student),
+        df_vec    = as.numeric(fit_r$report$df_student)
+    )
+    invisible(NULL)
+    """
+
+    return (
+        logLik = rcopy(Float64, R".gllvm_parity_student$logL"),
+        objective = rcopy(Float64, R".gllvm_parity_student$objective"),
+        converged = rcopy(Bool, R".gllvm_parity_student$converged"),
+        b_fix = rcopy(Vector{Float64}, R".gllvm_parity_student$b_fix"),
+        sigma_vec = rcopy(Vector{Float64}, R".gllvm_parity_student$sigma_vec"),
+        df_vec = rcopy(Vector{Float64}, R".gllvm_parity_student$df_vec"),
+    )
+end

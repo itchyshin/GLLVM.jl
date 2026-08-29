@@ -44,7 +44,7 @@ implementation detail only.
 | Capability | Status |
 |---|---|
 | none × indep (`indep()` / ordinary independent RE) | implemented |
-| none × dep (`dep()` / unstructured trait covariance) | planned |
+| none × dep (`dep()` / unstructured trait covariance) | implemented (function API only — see caveat) |
 | none × latent (`latent()` / ordinary LV GLLVM) | implemented |
 | phylogenetic × indep (`phylo_indep()`) | implemented |
 | phylogenetic × dep (`phylo_dep()`) | planned |
@@ -63,6 +63,25 @@ implementation detail only.
 Notes (not status rows): Julia phylo rows share three **equivalent** likelihood
 representations (sparse CHOLMOD, contrasts, edge-incidence). Gaussian animal/spatial
 today enter via `relatedness_cov` / `spatial_cov` (and SPDE latent for
+**`none × dep` promotion (2026-08-28, maintainer decision gate 6).** Promoted
+from `planned` on the evidence: `fit_dep_gllvm` is implemented
+(`src/none_dep.jl`), exported (`src/GLLVM.jl:226`), included
+(`src/GLLVM.jl:76`), and tested (`test/test_none_dep.jl`, 29 assertions, in
+`runtests.jl`). It forces `K = p` (full-rank packed Λ, `p(p+1)/2` free
+parameters, Σ = LLᵀ) — the same estimand as the twin's
+`latent(0 + trait | g, d = T)`.
+
+**Scope caveat, MEASURED not asserted:** the row is `implemented` for the
+**function API only**. There is no `@formula` `dep()` sugar (v1 rejects
+`FunctionTerm` / `(… | g)`), the wrapper is **Gaussian-only** (non-Normal
+families fail loud), and no phylo/animal/spatial/kernel `dep` variant exists.
+Critically, **at `K = p` the Σ / σ_eps split is not separately identified**:
+the likelihood pins only the total `Σ_total = ΛΛᵀ + σ²I`. Verified 2026-08-28
+(seed 4747, p=4, n=200): the fit reports `σ_eps = 0.9875`, yet the
+alternative parameterisation `(Λ = chol(Σ_total).L, σ_eps = 0)` reproduces
+`Σ_total` to `4.4e-16`. Read `σ_eps` from this path as one point on a flat
+ridge, never as an estimated residual variance.
+
 non-Gaussian `spatial_latent`). `none × indep` maps to random row effects /
 per-trait diagonal paths; full unstructured `dep()` without LV is still a gap.
 
@@ -83,7 +102,7 @@ Twin family names align with gllvmTMB / gllvm. Status = native Julia engine
 | Gamma | implemented |
 | tweedie | implemented |
 | ordinal_probit / cumulative_logit | implemented |
-| student | implemented |
+| student | implemented (**parity Δ PAID 2026-08-28 at FIXED ν only** — see caveat) |
 | lognormal | implemented |
 | truncated_poisson | implemented |
 | truncated_nbinom2 | implemented |
@@ -113,8 +132,8 @@ Twin family names align with gllvmTMB / gllvm. Status = native Julia engine
      Bundling the two surfaces into one phrase is what made it misread. The row
      status is UNCHANGED (`missing`) and is separately defensible: it tracks the
      twin's latent/phylo/spatial multinomial surface, which is genuinely absent. -->
-| delta_gamma | implemented |
-| delta_lognormal | implemented |
+| delta_gamma | implemented (**parity Δ PAID 2026-08-28**) |
+| delta_lognormal | implemented (**parity Δ PAID 2026-08-28**) |
 | hurdle_poisson / hurdle_nbinom2 | implemented |
 | zip / zinb / zib | implemented |
 | ordered_beta / beta_hurdle | implemented |
@@ -136,6 +155,31 @@ surface, bridge missing-response masks, `confint` under X, and any gllvmTMB
 parity claim all remain OWED (the twin has no ZIB, so a light Δ would be
 invented, not owed).
 `student` / `com_poisson` promoted on native engine + package
+**Student-t parity, PARTIAL (2026-08-28).** The live logLik Δ against
+gllvmTMB 0.7.1 is PAID — but only in the **fixed-ν** configuration, and the
+scope fence matters:
+
+- **What is paid:** with ν pinned on BOTH sides (`gllvmTMB::student(df = 4)`
+  vs Julia `nu = 4.0`) and Julia set to the twin's per-trait scale
+  (`disp_group = :species`), Δ logLik = −9.66e-10 (builder, seed 71) and
+  **3.34e-9, rel 3.6e-12 on an independent re-measurement at fresh seed 9203**
+  — both far inside the 1e-6 light-cell gate. Julia's per-trait σ̂ matches the
+  twin's to 4–5 significant figures. Test: `test/parity/test_studentt_parity.jl`.
+- **What is NOT paid:** the twin's DEFAULT `student()` **estimates** ν
+  (`R/families.R:362,367` — *"estimates degrees of freedom unless `df` is
+  supplied"*), and `log_df_student` is itself per-trait
+  (`gllvmTMB.cpp:1185`). GLLVM.jl fixes ν and does not estimate it. So the
+  twin's default student model is still NOT comparable, and this cell must not
+  be described as fully paid.
+- Related: the twin's df profile CI is off by one (reports df−1 as df; see
+  `docs/dev-log/decisions/2026-08-28-studentt-parameterisation.md`), so any
+  future ν-interval comparison must account for that before attributing a
+  mismatch to GLLVM.jl.
+- Known limitation of `disp_group = :species` on this family: the postfit
+  helpers in `link_residual.jl` / `simulate_fit.jl` assume a scalar σ and now
+  raise a clean `MethodError` under per-trait σ — a fail-fast boundary, not
+  silent misbehaviour, and not extended in this slice.
+
 tests (`test_studentt.jl`, `test_com_poisson.jl`). Since the 2026-08-16 Student-t
 surface admit the **no-X** `student` surface is reachable through `fit_gllvm(Y; family = StudentTFamily(ν))`
 and `@formula(y ~ 1)`; the FIXED `ν` travels on the marker (a separate `nu`
@@ -323,18 +367,34 @@ precision even where the row reads `implemented`.
 | NB1 (grouped route) | **observed** | fixed |
 | TruncatedNegBin2 | **observed** | fixed; both entry points agree since 2026-08-25 |
 | DeltaGamma | **observed** | fixed |
-| **Beta** | Fisher | evidence AGAINST flipping — see below |
-| **GP-1** | Fisher | evidence AGAINST flipping — see below |
-| **NB2 (shared route)** | Fisher | not yet decided |
-| **NB1 (generic core)** | Fisher | not yet decided |
-| **Tweedie** | Fisher | not yet decided |
-| **Student-t** | Fisher | not yet decided |
-| **Binomial / probit** | Fisher | link-specific instance |
-| **Binomial / cloglog** | Fisher | link-specific instance |
+| **NB2 (shared route)** | **observed** | flipped 2026-08-27 (PR #269) |
+| **Beta** | **observed** | flipped 2026-08-28, decision A (PR #270) |
+| **NB1 (generic core)** | **observed** | flipped 2026-08-28, decision A |
+| **Student-t** | **observed** | flipped 2026-08-28, decision A |
+| **Tweedie** | **observed** | flipped 2026-08-28, maintainer gate 1 |
+| **Binomial / probit** | **observed** | flipped 2026-08-28, maintainer gate 2 |
+| **GP-1** | Fisher | **retained BY DECISION** — evidence against, see below |
+| **Binomial / cloglog** | Fisher | intrinsic Laplace saturation pathology, see below |
 
-The last two are worth calling out: `Binomial` is clean at **logit** and is a
-genuine instance at **probit** and **cloglog**. These are properties of the
-*(family, link)* pair, so any census organised by family alone will miss them.
+CORRECTED 2026-08-28: this table had drifted roughly four flips behind the
+engine (it still described Beta, NB2, NB1 and Student-t as "not yet decided"
+after decision A had already flipped all four). The census structural guard
+`test/test_curvature_census.jl` is the machine-checked source of truth; this
+table is prose and must be re-read against it whenever a default moves.
+
+`Binomial` is worth calling out: it is clean at **logit** (canonical, the two
+weights coincide), a flipped instance at **probit**, and a documented
+exception at **cloglog**. These are properties of the *(family, link)* pair,
+so any census organised by family alone will miss them.
+
+**Census state:** `KNOWN_OPEN` is EMPTY as of 2026-08-28 — every one-part
+family's curvature is adjudicated and declared. Two families are deliberate
+exceptions rather than open items: GP-1 sits in `DEFERRED_BY_DECISION` with
+its evidence recorded, and Binomial/cloglog's runaway is an intrinsic Laplace
+saturation pathology (link FD-verified correct; diagnostic guard shipped in
+PR #272), not a weight bug. **Still open: the TWO-PART families** — only
+DeltaGamma has a specialised observed count-part weight, so the selector is
+currently inert for the other nine (`TWOPART_KNOWN_OPEN`).
 
 **This is a PARITY goal, not an accuracy improvement — and that distinction is
 load-bearing.** Measured against high-resolution numerical quadrature over 12
@@ -344,19 +404,51 @@ seeds per family:
 - **Beta**: observed is closer only **2/12** — Fisher is usually nearer.
 - **GP-1**: observed is measurably **worse** for dispersion recovery
   (α = 0.879 against a truth of 0.4, where Fisher lands inside the test's
-  tolerance).
+  tolerance) — this is why GP-1 was retained on Fisher by decision.
 
 So each family is decided on its own evidence, not on principle. Matching TMB is
 the objective; "the numbers get better" would be an overstatement, and for two of
 the three families measured it is simply false.
 
+**How the remaining flips were decided (2026-08-28).** The 900-cell
+adjudication campaign scored each cell on two metrics against an exact
+quadrature oracle: objective error (|Laplace − exact|, which feeds AIC/BIC
+honesty) and estimator preference (does the exact marginal prefer the
+observed fit's θ̂ or the Fisher fit's?). Where the two metrics disagreed —
+Beta, NB1, Student-t — the maintainer chose **estimator quality over
+reported-loglik accuracy** (decision A), accepting a measurably more biased
+reported loglik for estimates nearer the exact optimum, for TMB parity.
+Tweedie was the strongest flip case in the entire table (observed preferred
+in 98–100% of cells in every regime). Probit was decided on parity grounds
+with a supporting derivation: its observed curvature is provably
+non-negative (affine in `y`, endpoints positive under BigFloat; Pratt 1981
+proves the probit binomial log-likelihood globally concave), so the flip
+carries no indefiniteness risk.
+
 **Where a curvature was corrected, the previous behaviour stays reachable** via
 `hessian = :fisher` on the corresponding marginal.
 
-**Not closed.** A role-separation contract (Fisher-scored mode search, selectable
-log-det) now covers 12 kernels, but `src/families/aghq_grid.jl` remains FENCED
-and PARKED with the Fisher weight at `:203`. The fault class must not be
-described as closed.
+**Not closed, but the AGHQ instance of this fault class is fixed (2026-08-28,
+AGHQ unpark Slice 0/1).** A role-separation contract (Fisher-scored mode
+search, selectable log-det) now covers 12 kernels; `src/families/aghq_grid.jl`
+was the 13th and, until this fix, carried an unconditional Fisher weight at
+`aghq_stage1a_loglik_site` for BOTH roles — silently diverging from the same
+family's own default Laplace fitter for every family whose `_default_hessian`
+is `:observed` (Beta, Gamma, NegativeBinomial, NB1, StudentT, Exponential,
+TruncatedNegBin2, TweedieED, Binomial-probit). It now takes a
+`hessian::Symbol = _default_hessian(family, link)` keyword mirroring
+`laplace_loglik_site`/`covariates.jl` exactly: the Newton mode search stays
+Fisher-scored; only the adaptation curvature (log-det AND the per-site
+Cholesky reused across every quadrature node) is selectable. `hessian =
+:fisher` pinned reproduces the pre-fix value bit-for-bit (verified against an
+independent copy of the pre-change unconditional-Fisher formula, all 9
+affected families plus Poisson at k=1 and k=3); the family-default k=1
+template now equals that family's own default dense Laplace marginal to
+1e-10, for all 9 affected families (`test/test_aghq_grid.jl`). **This closes
+only the AGHQ instance.** The module remains internal — no `aghq=` public
+surface, no capability-status ledger row changes from `missing`/`missing`
+(§AGHQ above). The fault class generally (any future kernel that builds its
+own `Λ'WΛ + I`) is still not guaranteed closed by this fix.
 
 ## gllvmTMB 0.7.1 delta (tracked 2026-08-27)
 

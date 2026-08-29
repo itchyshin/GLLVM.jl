@@ -417,7 +417,17 @@ struct BetaBinomialGroupedFit
     loglik::Float64
     converged::Bool
     iterations::Int
+    hessian::Symbol   # the Laplace log-det curvature this fit's objective used —
+                       # ALWAYS :fisher: this file's per-site Laplace has no
+                       # analytic-Hessian variant (ForwardDiff-scored weight only;
+                       # G0 lock), unlike the NB2/Beta/Gamma/NB1 grouped siblings.
 end
+
+# Positional compatibility constructor (2026-08-28): see NBGroupedFit
+# (families/grouped_dispersion.jl) above. Fixed at `:fisher` — this route has
+# no `hessian` kwarg to record.
+BetaBinomialGroupedFit(β, Λ, φ, group, link, loglik, converged, iterations) =
+    BetaBinomialGroupedFit(β, Λ, φ, group, link, loglik, converged, iterations, :fisher)
 
 function Base.show(io::IO, f::BetaBinomialGroupedFit)
     p, K = size(f.Λ)
@@ -578,7 +588,14 @@ struct BetaBinomialGroupedCovFit
     loglik::Float64
     converged::Bool
     iterations::Int
+    hessian::Symbol   # the Laplace log-det curvature this fit's objective used —
+                       # ALWAYS :fisher (see BetaBinomialGroupedFit above; G0 lock).
 end
+
+# Positional compatibility constructor (2026-08-28): fixed at `:fisher` — this
+# route has no `hessian` kwarg to record.
+BetaBinomialGroupedCovFit(β, γ, γ_fixed, Λ, φ, group, link, loglik, converged, iterations) =
+    BetaBinomialGroupedCovFit(β, γ, γ_fixed, Λ, φ, group, link, loglik, converged, iterations, :fisher)
 
 function Base.show(io::IO, f::BetaBinomialGroupedCovFit)
     p, K = size(f.Λ); q = length(f.γ)

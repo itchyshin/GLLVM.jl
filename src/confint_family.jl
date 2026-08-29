@@ -360,7 +360,7 @@ function _family_ci(fit::NBGroupedFit, Y::AbstractMatrix;
         rvec = [rg[group[t]] for t in 1:p]
         v = try
             -nb_grouped_marginal_loglik_laplace(Yi, Λ, β, rvec; link = link,
-                                                mask = M,
+                                                mask = M, hessian = fit.hessian,
                                                 maxiter = newton_maxiter,
                                                 tol = newton_tol)
         catch
@@ -381,7 +381,7 @@ function _family_ci(fit::NBGroupedFit, Y::AbstractMatrix;
         return Yb
     end
     refit = function (Yb)
-        fb = try fit_nb_gllvm_grouped(Yb; K = K, group = group, link = link, mask = M) catch; return nothing end
+        fb = try fit_nb_gllvm_grouped(Yb; K = K, group = group, link = link, mask = M, hessian = fit.hessian) catch; return nothing end
         return vcat(fb.β, pack_lambda(fb.Λ), log.(fb.r_group))
     end
     names = _grouped_dispersion_names(p, K, "r", G)
@@ -404,7 +404,7 @@ function _family_ci(fit::NB1GroupedFit, Y::AbstractMatrix;
         φvec = [φg[group[t]] for t in 1:p]
         v = try
             -nb1_grouped_marginal_loglik_laplace(Yi, Λ, β, φvec; link = link,
-                                                 mask = M,
+                                                 mask = M, hessian = fit.hessian,
                                                  maxiter = newton_maxiter,
                                                  tol = newton_tol)
         catch
@@ -425,7 +425,7 @@ function _family_ci(fit::NB1GroupedFit, Y::AbstractMatrix;
         return Yb
     end
     refit = function (Yb)
-        fb = try fit_nb1_gllvm_grouped(Yb; K = K, group = group, link = link, mask = M) catch; return nothing end
+        fb = try fit_nb1_gllvm_grouped(Yb; K = K, group = group, link = link, mask = M, hessian = fit.hessian) catch; return nothing end
         return vcat(fb.β, pack_lambda(fb.Λ), log.(fb.φ))
     end
     names = _grouped_dispersion_names(p, K, "phi", G)
@@ -448,7 +448,7 @@ function _family_ci(fit::BetaGroupedFit, Y::AbstractMatrix;
         φvec = [φg[group[t]] for t in 1:p]
         v = try
             -beta_grouped_marginal_loglik_laplace(Yf, Λ, β, φvec; link = link,
-                                                  mask = M,
+                                                  mask = M, hessian = fit.hessian,
                                                   maxiter = newton_maxiter,
                                                   tol = newton_tol)
         catch
@@ -469,7 +469,7 @@ function _family_ci(fit::BetaGroupedFit, Y::AbstractMatrix;
         return Yb
     end
     refit = function (Yb)
-        fb = try fit_beta_gllvm_grouped(Yb; K = K, group = group, link = link, mask = M) catch; return nothing end
+        fb = try fit_beta_gllvm_grouped(Yb; K = K, group = group, link = link, mask = M, hessian = fit.hessian) catch; return nothing end
         return vcat(fb.β, pack_lambda(fb.Λ), log.(fb.φ))
     end
     names = _grouped_dispersion_names(p, K, "phi", G)
@@ -500,7 +500,7 @@ function _family_ci(fit::NBGroupedCovFit, Y::AbstractMatrix;
         O = _build_offset(Xfit, γ)
         v = try
             -nb_grouped_marginal_loglik_laplace(Yi, Λ, β, rvec; link = link,
-                                                mask = M, offset = O,
+                                                mask = M, offset = O, hessian = fit.hessian,
                                                 maxiter = newton_maxiter,
                                                 tol = newton_tol)
         catch
@@ -524,7 +524,7 @@ function _family_ci(fit::NBGroupedCovFit, Y::AbstractMatrix;
     refit = function (Yb)
         fb = try
             fit_nb_gllvm_grouped_cov(Yb; X = X, K = K, group = group, link = link,
-                                     mask = M, γ_fixed = fit.γ_fixed)
+                                     mask = M, γ_fixed = fit.γ_fixed, hessian = fit.hessian)
         catch
             return nothing
         end
@@ -559,7 +559,7 @@ function _family_ci(fit::NB1GroupedCovFit, Y::AbstractMatrix;
         O = _build_offset(Xfit, γ)
         v = try
             -nb1_grouped_marginal_loglik_laplace(Yi, Λ, β, φvec; link = link,
-                                                 mask = M, offset = O,
+                                                 mask = M, offset = O, hessian = fit.hessian,
                                                  maxiter = newton_maxiter,
                                                  tol = newton_tol)
         catch
@@ -583,7 +583,7 @@ function _family_ci(fit::NB1GroupedCovFit, Y::AbstractMatrix;
     refit = function (Yb)
         fb = try
             fit_nb1_gllvm_grouped_cov(Yb; X = X, K = K, group = group, link = link,
-                                      mask = M, γ_fixed = fit.γ_fixed)
+                                      mask = M, γ_fixed = fit.γ_fixed, hessian = fit.hessian)
         catch
             return nothing
         end
@@ -618,7 +618,7 @@ function _family_ci(fit::BetaGroupedCovFit, Y::AbstractMatrix;
         O = _build_offset(Xfit, γ)
         v = try
             -beta_grouped_marginal_loglik_laplace(Yf, Λ, β, φvec; link = link,
-                                                  mask = M, offset = O,
+                                                  mask = M, offset = O, hessian = fit.hessian,
                                                   maxiter = newton_maxiter,
                                                   tol = newton_tol)
         catch
@@ -642,7 +642,7 @@ function _family_ci(fit::BetaGroupedCovFit, Y::AbstractMatrix;
     refit = function (Yb)
         fb = try
             fit_beta_gllvm_grouped_cov(Yb; X = X, K = K, group = group, link = link,
-                                       mask = M, γ_fixed = fit.γ_fixed)
+                                       mask = M, γ_fixed = fit.γ_fixed, hessian = fit.hessian)
         catch
             return nothing
         end
@@ -784,7 +784,7 @@ function _family_ci(fit::GammaGroupedFit, Y::AbstractMatrix;
         αvec = [αg[group[t]] for t in 1:p]
         v = try
             -gamma_grouped_marginal_loglik_laplace(Yf, Λ, β, αvec; link = link,
-                                                   mask = M,
+                                                   mask = M, hessian = fit.hessian,
                                                    maxiter = newton_maxiter,
                                                    tol = newton_tol)
         catch
@@ -805,7 +805,7 @@ function _family_ci(fit::GammaGroupedFit, Y::AbstractMatrix;
         return Yb
     end
     refit = function (Yb)
-        fb = try fit_gamma_gllvm_grouped(Yb; K = K, group = group, link = link, mask = M) catch; return nothing end
+        fb = try fit_gamma_gllvm_grouped(Yb; K = K, group = group, link = link, mask = M, hessian = fit.hessian) catch; return nothing end
         return vcat(fb.β, pack_lambda(fb.Λ), log.(fb.α))
     end
     names = _grouped_dispersion_names(p, K, "alpha", G)
@@ -835,7 +835,7 @@ function _family_ci(fit::GammaGroupedCovFit, Y::AbstractMatrix;
         O = _build_offset(Xfit, γ)
         v = try
             -gamma_grouped_marginal_loglik_laplace(Yf, Λ, β, αvec; link = link,
-                                                   mask = M, offset = O,
+                                                   mask = M, offset = O, hessian = fit.hessian,
                                                    maxiter = newton_maxiter,
                                                    tol = newton_tol)
         catch
@@ -859,7 +859,7 @@ function _family_ci(fit::GammaGroupedCovFit, Y::AbstractMatrix;
     refit = function (Yb)
         fb = try
             fit_gamma_gllvm_grouped_cov(Yb; X = X, K = K, group = group, link = link,
-                                        mask = M, γ_fixed = fit.γ_fixed)
+                                        mask = M, γ_fixed = fit.γ_fixed, hessian = fit.hessian)
         catch
             return nothing
         end

@@ -84,3 +84,16 @@ include(joinpath(@__DIR__, "test_multinomial_parity.jl"))
 include(joinpath(@__DIR__, "test_truncated_nbinom2_parity.jl"))
 include(joinpath(@__DIR__, "test_x_covariate_parity.jl"))
 include(joinpath(@__DIR__, "test_species_x_parity.jl"))
+# delta_lognormal / delta_gamma (twin fid 12/13): pair ONLY with Julia's
+# `predictor = :shared` mode (2026-08-28 twin-identity kwarg) — the twin ties ONE
+# linear predictor across occurrence and the positive part. Twin dispersion is
+# PER-TRAIT (no shared/pinned mode exposed via the family constructor); Julia's
+# fitters estimate a single shared scalar σ/α, an irreducible parameterisation
+# mismatch reported alongside the Δ, not tolerance-widened away.
+include(joinpath(@__DIR__, "test_delta_lognormal_parity.jl"))
+include(joinpath(@__DIR__, "test_delta_gamma_parity.jl"))
+# Student-t (twin fid 9): same per-trait-dispersion identity as the delta
+# cells above. Both sides pin df = ν_true (Julia always fixes ν; the twin's
+# own default is to estimate it per trait, a different model — see the file
+# header). disp_group = :species (2026-08-28) closes the shared-σ mismatch.
+include(joinpath(@__DIR__, "test_studentt_parity.jl"))
