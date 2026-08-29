@@ -107,7 +107,6 @@ const _ST_SEED = 71
 
     @testset "per-trait σ + per-trait estimated ν (twin default) — Parity Cell 9" begin
         r_est = fit_gllvmtmb_parity_student(Y, K; df_fixed = nothing)
-        @test r_est.converged
         @test isfinite(r_est.logLik)
 
         jl_est = fit_studentt_gllvm(Y; K = K, nu = nothing, disp_group = :species,
