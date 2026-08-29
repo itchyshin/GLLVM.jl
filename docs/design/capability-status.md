@@ -44,7 +44,7 @@ implementation detail only.
 | Capability | Status |
 |---|---|
 | none × indep (`indep()` / ordinary independent RE) | implemented |
-| none × dep (`dep()` / unstructured trait covariance) | implemented (function API only — see caveat) |
+| none × dep (`dep()` / unstructured trait covariance) | implemented (function API) |
 | none × latent (`latent()` / ordinary LV GLLVM) | implemented |
 | phylogenetic × indep (`phylo_indep()`) | implemented |
 | phylogenetic × dep (`phylo_dep()`) | planned |
@@ -63,6 +63,9 @@ implementation detail only.
 Notes (not status rows): Julia phylo rows share three **equivalent** likelihood
 representations (sparse CHOLMOD, contrasts, edge-incidence). Gaussian animal/spatial
 today enter via `relatedness_cov` / `spatial_cov` (and SPDE latent for
+non-Gaussian `spatial_latent`). `none × indep` maps to random row effects /
+per-trait diagonal paths; full unstructured `dep()` without LV is still a gap.
+
 **`none × dep` promotion (2026-08-28, maintainer decision gate 6).** Promoted
 from `planned` on the evidence: `fit_dep_gllvm` is implemented
 (`src/none_dep.jl`), exported (`src/GLLVM.jl:226`), included
@@ -81,9 +84,6 @@ the likelihood pins only the total `Σ_total = ΛΛᵀ + σ²I`. Verified 2026-0
 alternative parameterisation `(Λ = chol(Σ_total).L, σ_eps = 0)` reproduces
 `Σ_total` to `4.4e-16`. Read `σ_eps` from this path as one point on a flat
 ridge, never as an estimated residual variance.
-
-non-Gaussian `spatial_latent`). `none × indep` maps to random row effects /
-per-trait diagonal paths; full unstructured `dep()` without LV is still a gap.
 
 ## Response families
 

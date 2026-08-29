@@ -10,9 +10,7 @@ Generalised Linear Latent Variable Model, built as a digital twin of R's
   missing-data, structural-dependence, and bridge capability is present, but
   release/tag signoff remains gated by the issue ledger, R bridge parity, docs,
   and Rose audit.
-- Headline result: ~340× per-fit median speedup over R/`gllvmTMB` on
-  Gaussian fits, with log-likelihoods and point estimates matching R to
-  machine precision.
+- Headline result: median 265.1× (range 161–698×) on the published Gaussian closed-form profile grid over R/`gllvmTMB`, with log-likelihoods and point estimates matching R to machine precision.
 - Phylogenetic representations: sparse (CHOLMOD), contrasts, edge-incidence;
   all return identical log-likelihoods to machine precision.
 - Next milestone: finish-gap hardening for the R-Julia twin: reconcile #95/#94,

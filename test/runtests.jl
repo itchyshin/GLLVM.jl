@@ -136,6 +136,7 @@ using GLLVM
     include("test_gaussian_pervar.jl")
     include("test_aicbic_newfits.jl")
     include("test_postfit.jl")
+    include("test_statsapi.jl")
     include("test_postfit_zib_tweedie.jl")
     include("test_ordination.jl")
     include("test_model_selection.jl")

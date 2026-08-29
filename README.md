@@ -30,7 +30,7 @@ y_s ~ N(X_s β, Λ_B Λ_B' + diag(d_total))
 — solving directly via SVD (PPCA closed form) when possible, otherwise
 warm-starting LBFGS with the PPCA initialisation. Per-iteration cost is
 O(p K² + K³) via the Woodbury identity (instead of O(p³) for generic
-Cholesky). On our Gaussian benchmark grid that path runs **161–698× faster**
+Cholesky). On our Gaussian benchmark grid that path runs **median 265.1× (range 161–698×) on the published Gaussian closed-form profile grid**
 than the R `gllvmTMB` engine on the same problem, with answers agreeing to at
 least six significant digits (worst case across our benchmark grid:
 `|Δ logLik| = 2.3e-07`, `Σ_y` relative Frobenius `4.4e-05`; see

@@ -348,3 +348,13 @@ function confint(fit::GllvmFit;
             se = se_out,
             pd_hessian = pd)
 end
+
+function confint(fit::GllvmFit, y::AbstractMatrix;
+                 level::Real = 0.95,
+                 parm::Union{Nothing, AbstractString, Symbol, AbstractVector} = nothing,
+                 X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                 Σ_phy::Union{Nothing, AbstractMatrix} = nothing,
+                 method::Symbol = :wald,
+                 kwargs...)
+    return confint(fit; level = level, parm = parm, y = y, X = X, Σ_phy = Σ_phy)
+end
