@@ -254,11 +254,11 @@ function predict(fit::BinomialFit, Y::AbstractMatrix{<:Integer};
 end
 
 """
-    fitted(fit, data; kwargs...) -> p×n matrix
+    fitted(fit::GllvmFit, data; kwargs...) -> p×n matrix
 
 Response-scale in-sample fitted values — `predict(fit, data; type=:response, kwargs...)`.
 """
-fitted(fit, data; kwargs...) = predict(fit, data; type = :response, kwargs...)
+fitted(fit::GllvmFit, data; kwargs...) = predict(fit, data; type = :response, kwargs...)
 
 """
     residuals(fit::GllvmFit, y; type=:dunnsmyth, X=nothing, X_lv=nothing) -> p×n matrix
@@ -496,19 +496,37 @@ function _nparams(fit)
     return max(k, 1)
 end
 
+const AnyGllvmFit = Union{
+    GllvmFit, GllvmCovFit, GllvmSpeciesCovFit, FourthCornerFit, RRRFit,
+    ConstrainedOrdinationFit, RowEffectFit, RowRandomFit, PoissonRandomSlopeFit,
+    GaussianRandomSlopeFit, TwoLevelFit, GaussianREMLFit, PhyloGaussianFit,
+    GaussianPerVarFit, SPDEGaussianFit, SPDELatentFit, PhyloGLMFit,
+    CoevolutionGLMFit, EMPhyloFit, BranchREFit, RelaxedClockFit, PoissonFit,
+    BinomialFit, NBFit, BetaFit, GammaFit, OrdinalFit, OrdinalPerTraitFit,
+    OrdinalPerTraitCovFit, TweedieFit, StudentTFit, ExponentialFit, LognormalFit,
+    MultinomialFit, TruncatedPoissonFit, TruncatedNegBin2Fit, TruncatedNegBin2PerTraitFit,
+    CensoredPoissonFit, GP1Fit, NB1Fit, COMPoissonFit, BetaBinomialFit,
+    BetaBinomialGroupedFit, BetaBinomialGroupedCovFit, BetaHurdleFit,
+    DeltaLogNormalFit, HurdlePoissonFit, HurdleNBFit, DeltaGammaFit,
+    ZIPFit, ZIPCovFit, ZINBFit, ZINBCovFit, ZIBFit, ZIBCovFit,
+    NBGroupedFit, NBGroupedCovFit, BetaGroupedFit, BetaGroupedCovFit,
+    GammaGroupedFit, GammaGroupedCovFit, NB1GroupedFit, NB1GroupedCovFit,
+    TweedieGroupedFit
+}
+
 """
     dof(fit) -> Integer
 
 Return the degrees of freedom (number of free estimated parameters) of `fit`.
 """
-StatsAPI.dof(fit) = _nparams(fit)
+StatsAPI.dof(fit::AnyGllvmFit) = _nparams(fit)
 
 """
     loglikelihood(fit) -> Float64
 
 Return the maximized marginal log-likelihood of `fit`.
 """
-StatsAPI.loglikelihood(fit) = _loglik(fit)
+StatsAPI.loglikelihood(fit::AnyGllvmFit) = _loglik(fit)
 
 """
     aic(fit) -> Float64
@@ -516,7 +534,7 @@ StatsAPI.loglikelihood(fit) = _loglik(fit)
 Akaike information criterion `2k − 2ℓ`: `k` the free-parameter count (`dof(fit)`),
 `ℓ` the maximised marginal log-likelihood (`loglikelihood(fit)`).
 """
-StatsAPI.aic(fit) = 2 * StatsAPI.dof(fit) - 2 * StatsAPI.loglikelihood(fit)
+StatsAPI.aic(fit::AnyGllvmFit) = 2 * StatsAPI.dof(fit) - 2 * StatsAPI.loglikelihood(fit)
 
 """
     bic(fit, n_sites) -> Float64
@@ -525,8 +543,8 @@ StatsAPI.aic(fit) = 2 * StatsAPI.dof(fit) - 2 * StatsAPI.loglikelihood(fit)
 Bayesian information criterion `k·log(n_sites) − 2ℓ`. `n_sites` is the number of
 independent sites/rows, or inferred from `size(Y, 2)`.
 """
-StatsAPI.bic(fit, n_sites::Integer) = StatsAPI.dof(fit) * log(n_sites) - 2 * StatsAPI.loglikelihood(fit)
-StatsAPI.bic(fit, Y::AbstractMatrix) = StatsAPI.bic(fit, size(Y, 2))
+StatsAPI.bic(fit::AnyGllvmFit, n_sites::Integer) = StatsAPI.dof(fit) * log(n_sites) - 2 * StatsAPI.loglikelihood(fit)
+StatsAPI.bic(fit::AnyGllvmFit, Y::AbstractMatrix) = StatsAPI.bic(fit, size(Y, 2))
 
 """
     nobs(fit, [Y]) -> Integer
@@ -535,14 +553,14 @@ Number of observations (sites / independent observation units). If `Y` is provid
 returns `size(Y, 2)`. For fit structs that store observation or level counts,
 `nobs(fit)` returns that count directly.
 """
-StatsAPI.nobs(fit, Y::AbstractMatrix) = size(Y, 2)
+StatsAPI.nobs(fit::AnyGllvmFit, Y::AbstractMatrix) = size(Y, 2)
 StatsAPI.nobs(fit::TwoLevelFit) = fit.nindiv
 StatsAPI.nobs(fit::GaussianRandomSlopeFit) = fit.nlevels
 StatsAPI.nobs(fit::PoissonRandomSlopeFit) = fit.nlevels
 StatsAPI.nobs(fit::RowEffectFit) = length(fit.ρ)
 StatsAPI.nobs(fit::SPDEGaussianFit) = size(fit.nodes, 1)
 StatsAPI.nobs(fit::SPDELatentFit) = size(fit.nodes, 1)
-function StatsAPI.nobs(fit)
+function StatsAPI.nobs(fit::AnyGllvmFit)
     if hasfield(typeof(fit), :nindiv)
         return fit.nindiv
     elseif hasfield(typeof(fit), :nlevels)
@@ -589,7 +607,7 @@ StatsAPI.coef(fit::PhyloGaussianFit) = [fit.μ]
 StatsAPI.coef(fit::SPDEGaussianFit) = [fit.μ]
 StatsAPI.coef(fit::TwoLevelFit) = Float64[]
 StatsAPI.coef(fit::GaussianRandomSlopeFit) = Float64[]
-function StatsAPI.coef(fit)
+function StatsAPI.coef(fit::AnyGllvmFit)
     if hasfield(typeof(fit), :γ) && fit.γ !== nothing
         return copy(fit.γ)
     elseif hasfield(typeof(fit), :β) && fit.β !== nothing
@@ -619,7 +637,7 @@ function StatsAPI.vcov(fit::GllvmFit, Y::AbstractMatrix; kwargs...)
     return Diagonal(ci.se .^ 2)
 end
 
-function StatsAPI.vcov(fit, Y::AbstractMatrix; kwargs...)
+function StatsAPI.vcov(fit::AnyGllvmFit, Y::AbstractMatrix; kwargs...)
     ci = confint(fit, Y; method = :wald, kwargs...)
     return Diagonal(ci.se .^ 2)
 end
@@ -641,7 +659,7 @@ function StatsAPI.stderror(fit::GllvmFit, Y::AbstractMatrix; kwargs...)
     return copy(ci.se)
 end
 
-function StatsAPI.stderror(fit, Y::AbstractMatrix; kwargs...)
+function StatsAPI.stderror(fit::AnyGllvmFit, Y::AbstractMatrix; kwargs...)
     ci = confint(fit, Y; method = :wald, kwargs...)
     return copy(ci.se)
 end
@@ -651,7 +669,7 @@ end
 
 Return a tidy coefficient table for `fit` at response matrix `Y`.
 """
-StatsAPI.coeftable(fit, Y::AbstractMatrix; kwargs...) = coef_table(fit, Y; kwargs...)
+StatsAPI.coeftable(fit::AnyGllvmFit, Y::AbstractMatrix; kwargs...) = coef_table(fit, Y; kwargs...)
 
 """
     summary(fit) -> String

@@ -367,7 +367,7 @@ This is **O(p³)** in storage and time — only intended for small trees in
 tests. Do NOT call it on the real workload; the entire point of
 `AugmentedPhy` is to avoid materialising Σ_phy.
 """
-function sigma_phy_dense(phy::AugmentedPhy{T}; σ²_phy::Real = 1.0) where {T}
+function sigma_phy_dense(phy::AugmentedPhy; σ²_phy = 1.0)
     p = phy.n_leaves
     keep = setdiff(1:phy.n_total, [phy.root_index])
     Q_cond = Matrix(phy.Q_topology[keep, keep])

@@ -4,7 +4,6 @@ using Random
 using LinearAlgebra
 using Statistics
 using Distributions
-using SpecialFunctions: besselk, gamma
 
 @testset "Structured Spatial Covariance Engine & Analytical Gradients" begin
 

@@ -912,3 +912,5 @@ function em_observed_information(emf::EMPhyloFit, y::AbstractMatrix,
     return (info = I_obs, cov = cov_, se = se, se_raw = se_raw,
             term = terms, pd = pd)
 end
+
+const fit_em_phylo = em_fit_phylo
