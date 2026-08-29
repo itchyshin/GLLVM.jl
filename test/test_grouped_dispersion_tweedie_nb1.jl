@@ -58,16 +58,19 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
             end
         end
         # Same FIXED power passed to both — the key cheap correctness check.
-        # `tweedie_grouped_marginal_loglik_laplace` has no `hessian` selector at
-        # all (unconditional Fisher; see the header comment in
-        # grouped_dispersion.jl), while the shared route's DEFAULT flipped to
-        # :observed 2026-08-28 (maintainer decision batch). So the exact
-        # reduction now holds against the shared route's `hessian = :fisher`
-        # call, not its default — pin that explicitly rather than let this
-        # test silently encode the pre-2026-08-28 default.
-        ll_shared  = GLLVM.tweedie_marginal_loglik_laplace(Y, Λ, β, φ, power; hessian = :fisher)
-        ll_grouped = GLLVM.tweedie_grouped_marginal_loglik_laplace(Y, Λ, β, fill(φ, p), power)
-        @test ll_grouped ≈ ll_shared atol = 1e-10
+        # `_tweedie_grouped_loglik_site` was aligned 2026-08-28 (same shape as
+        # the NB2/Beta/NB1/Gamma grouped alignments): `hessian::Symbol` now
+        # threads through the log-det, default `:observed`, matching the
+        # shared route's own default. So the exact reduction now holds
+        # DEFAULT vs DEFAULT — restored from the pre-alignment `:fisher` pin.
+        ll_shared_obs  = GLLVM.tweedie_marginal_loglik_laplace(Y, Λ, β, φ, power)
+        ll_grouped_obs = GLLVM.tweedie_grouped_marginal_loglik_laplace(Y, Λ, β, fill(φ, p), power)
+        @test ll_grouped_obs ≈ ll_shared_obs atol = 1e-10
+        # And the :fisher selector still reduces exactly on both sides.
+        ll_shared_fis  = GLLVM.tweedie_marginal_loglik_laplace(Y, Λ, β, φ, power; hessian = :fisher)
+        ll_grouped_fis = GLLVM.tweedie_grouped_marginal_loglik_laplace(Y, Λ, β, fill(φ, p), power;
+                                                                        hessian = :fisher)
+        @test ll_grouped_fis ≈ ll_shared_fis atol = 1e-10
         # mixed per-species dispersion also evaluates finitely.
         @test isfinite(GLLVM.tweedie_grouped_marginal_loglik_laplace(Y, Λ, β, [0.8, 1.2, 1.5, 2.0], power))
     end

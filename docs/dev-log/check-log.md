@@ -1,5 +1,99 @@
 # Check Log
 
+## 2026-08-28 — Tweedie grouped route gains the `hessian` selector (self-consistency defect closed)
+
+The Tweedie shared route (`fit_tweedie_gllvm`) flipped its default log-det
+curvature to `:observed` earlier today (maintainer decision batch,
+`docs/dev-log/decisions/2026-08-28-arc-decision-batch.md`), but
+`_tweedie_grouped_loglik_site` (`src/families/grouped_dispersion.jl`) had NO
+`hessian` selector at all — unconditionally Fisher. So with `G = 1` and a
+constant `φvec`, the grouped route no longer reduced to the shared route's
+DEFAULT objective; it reduced to the shared route called with
+`hessian = :fisher` explicitly. Recorded in-code as a deliberate, honestly
+fenced defect (not a silent gap) at the time of the flip.
+
+**Fixed with the same-shaped work as the NB2/Beta/NB1/Gamma grouped
+alignments**: `hessian::Symbol` now threads through
+`_tweedie_grouped_loglik_site`, `tweedie_grouped_marginal_loglik_laplace`, and
+`fit_tweedie_gllvm_grouped` — LOG-DET ONLY, the Newton mode search stays
+Fisher-scored unconditionally (role-separation contract, matching every
+sibling). Default `:observed`, using the tweedie.jl `_glm_obs_weight`
+observed curvature already FD-verified for the shared route (always
+non-negative for `p ∈ (1,2)`, `y ≥ 0` — no PD-guard concern for this family,
+so **no backtracking gate was added**, honouring the caution from today's
+48-minute Tweedie mode-search-backtracking regression, which was reverted
+earlier and is NOT reopened here).
+
+One precompile wrinkle: the new `_tweedie_grouped_laplace_weight` selector
+initially annotated its family argument `f::TweedieED`, mirroring the
+NB1/Beta precedents' `f::NB1`/`f::Beta` — but `TweedieED` is defined in
+`families/tweedie.jl`, included AFTER `families/grouped_dispersion.jl` in
+`GLLVM.jl` (`grouped_dispersion.jl` needs to precede `beta.jl`/`gamma.jl`/
+`tweedie.jl` for unrelated ordering reasons), so the typed annotation failed
+precompilation (`UndefVarError: TweedieED not defined`). Fixed by leaving `f`
+untyped; runtime dispatch to `_glm_weight`/`_glm_obs_weight` still resolves
+correctly on the argument's actual type, and the function is only ever called
+with `TweedieED` elements.
+
+**G = 1 reduction, both selectors** (`test/test_grouped_dispersion_tweedie_nb1.jl`,
+p=4, K=1, n=40, seed 702): `:observed` grouped vs shared, exact to atol=1e-10;
+`:fisher` grouped vs shared, exact to atol=1e-10 (both pass). Restored the two
+pre-alignment stale pins to default-vs-default comparisons:
+`test/test_grouped_dispersion_tweedie_nb1.jl` (dropped the explicit
+`hessian = :fisher` pin on the shared-route call) and
+`test/test_tweedie_grouped_engine_health.jl` (dropped the same pin on the
+`fit_tweedie_gllvm` cross-check against the grouped fitter's default) — both
+now compare default vs default and both pass.
+
+`TweedieGroupedFit` now records its own `hessian` field (positional
+compat constructor defaults to `:observed`); `test/test_grouped_hessian_consistency.jl`
+gained a dedicated Tweedie testset checking both selectors and the
+nll(θ̂) == loglik identity against `tweedie_grouped_marginal_loglik_laplace`
+directly (no `_family_ci` adapter exists yet for this struct — out of scope
+here).
+
+Docs updated: `docs/src/response-families.md` and
+`docs/src/gllvmtmb-parity.md` no longer describe the grouped Tweedie route as
+having "no `hessian` selector at all" / staying "unconditionally Fisher".
+CHANGELOG.md entry added.
+
+**Out of scope, not touched**: mode-search backtracking for Tweedie (the
+48-minute regression class), and the `fit_gllvm` ADMIT dispatch fence for
+Tweedie under STOP #234.
+
+**Verification (worktree `/Users/z3437171/local-scratch/lanes/tweedie-align-20260828`,
+branch `tweedie-grouped-align-20260828`, targeted files only, no full
+`Pkg.test()`)**:
+
+```
+test/test_grouped_dispersion_tweedie_nb1.jl   26/26 pass   (33s)
+test/test_tweedie_grouped_engine_health.jl    47/47 pass   (4m21s)
+test/test_grouped_hessian_consistency.jl      23/23 pass   (1m34s)
+test/test_curvature_census.jl                 66/66 pass   (1.5s)
+test/test_laplace_curvature_contract.jl      134/134 pass  (7.1s)
+test/test_hessian_kwarg.jl                    30/30 pass   (3m05s)
+test/test_tweedie.jl                          14/14 pass   (57s)
+test/test_tweedie_engine_health.jl            48/48 pass   (8m07s)
+test/test_aicbic_newfits.jl                   18/18 pass   (26s)
+```
+
+[tally on full-suite green: not run this slice — targeted files only, per
+brief. All 9 targeted files above pass: 406/406, 0 fail.]
+
+No wall-clock regression observed: no backtracking or mode-search change was
+made, only the post-convergence log-det weight selector (one broadcast call),
+matching the cost shape of the NB2/Beta/NB1/Gamma alignments already shipped
+today.
+
+**Worktree note**: this slice was redone once. The first attempt (in
+`/Users/z3437171/local-scratch/lanes/GLLVM.jl-beyond-20260824`) was verified
+working (26/26 on the NB1/Tweedie reduction test) before another actor
+checked that SHARED worktree out from `hessian-kwarg-20260827` to
+`overnight-parity-closure-20260828` (landing PR #273), silently discarding
+the uncommitted edits. Redone from scratch in a dedicated worktree per
+maintainer instruction; nothing of the orchestrator's own work was lost (it
+was committed/pushed before the checkout).
+
 ## 2026-08-28 — Student cell 9: per-trait σ closes the Δ AT FIXED ν (not the twin's default)
 
 Third application of today's route (measure → find the parameterisation cause

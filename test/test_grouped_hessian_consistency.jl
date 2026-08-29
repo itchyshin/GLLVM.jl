@@ -11,12 +11,19 @@
 # default, `:observed`), and every grouped `_family_ci` adapter threads
 # `fit.hessian` into BOTH the rebuilt marginal and the bootstrap refit.
 #
-# TweedieGroupedFit and BetaBinomialGroupedFit/BetaBinomialGroupedCovFit are
-# EXCLUDED from the selector-varies checks below: their underlying per-site
-# Laplace kernels have no `hessian` selector at all (unconditional Fisher
-# weight), so their `hessian` field is fixed at `:fisher` by construction —
-# there is nothing for `_family_ci` to thread. BetaBinomialGroupedFit is
-# still checked for the fixed-`:fisher` field and the nll(θ̂) identity.
+# TweedieGroupedFit now (2026-08-28 alignment) carries a real `hessian`
+# selector too, mirroring NB2/Beta/Gamma/NB1 — `_tweedie_grouped_loglik_site`
+# threads `hessian::Symbol` through the log-det only, default `:observed`,
+# matching `fit_tweedie_gllvm`'s own default. It has no `_family_ci` adapter
+# yet (out of scope here), so it is checked directly against
+# `tweedie_grouped_marginal_loglik_laplace` rather than through the adapter.
+#
+# BetaBinomialGroupedFit/BetaBinomialGroupedCovFit remain EXCLUDED from the
+# selector-varies checks below: their underlying per-site Laplace kernels
+# have no `hessian` selector at all (unconditional Fisher weight), so their
+# `hessian` field is fixed at `:fisher` by construction — there is nothing
+# for `_family_ci` to thread. BetaBinomialGroupedFit is still checked for the
+# fixed-`:fisher` field and the nll(θ̂) identity.
 #
 # THE CONTRACT, per family × selector: the adapter's rebuilt nll, evaluated
 # at the fit's own packed θ̂, equals −fit.loglik — the CI machinery
@@ -85,20 +92,33 @@ using GLLVM, Test, Random, Distributions
         @test !isapprox(ao.nll(ao.θ), af.nll(ao.θ); atol = 1e-6)
     end
 
-    # TweedieGroupedFit / BetaBinomialGroupedFit: no `hessian` selector exists
-    # on these routes (unconditional Fisher weight) — the field is fixed at
-    # `:fisher`, and there is nothing for `_family_ci` to thread. Still check
-    # the field and the nll(θ̂) identity for BetaBinomialGroupedFit (cheap).
-    @testset "no-selector grouped routes: field fixed at :fisher, nll(θ̂) identity holds" begin
+    # BetaBinomialGroupedFit: no `hessian` selector exists on this route
+    # (unconditional Fisher weight) — the field is fixed at `:fisher`, and
+    # there is nothing for `_family_ci` to thread.
+    @testset "no-selector grouped route (BetaBinomial): field fixed at :fisher, nll(θ̂) identity holds" begin
         Nb = fill(5, p, n)
         Ybb = [rand(Binomial(5, clamp(rand(Beta(6.0 * μβ[t, s], 6.0 * (1 - μβ[t, s]))), 1e-6, 1 - 1e-6)))
                for t in 1:p, s in 1:n]
         fbb = GLLVM.fit_beta_binomial_gllvm_grouped(Ybb; K = K, N = Nb, group = group)
         @test fbb.hessian === :fisher
         @test isapprox(nll_at_thetahat(fbb, Ybb; N = Nb), -fbb.loglik; atol = 1e-8)
+    end
 
+    # TweedieGroupedFit (2026-08-28 alignment): the fit records its selector
+    # (default :observed, matching fit_tweedie_gllvm's own default), and the
+    # rebuilt marginal at θ̂ matches -loglik under both selectors. No
+    # `_family_ci` adapter exists yet for this struct, so rebuild directly
+    # via `tweedie_grouped_marginal_loglik_laplace` instead of `_family_ci`.
+    @testset "TweedieGroupedFit records its selector; nll(θ̂) identity holds" begin
         Ytw = max.(Yg, 1e-6)   # reuse Gamma-shaped positive data as a Tweedie fixture
-        ftw = GLLVM.fit_tweedie_gllvm_grouped(Ytw; K = K, group = group, iterations = 60)
-        @test ftw.hessian === :fisher
+        for h in (:observed, :fisher)
+            ftw = GLLVM.fit_tweedie_gllvm_grouped(Ytw; K = K, group = group,
+                                                  hessian = h, iterations = 60)
+            @test ftw.hessian === h
+            φvec = [ftw.φ[ftw.group[t]] for t in 1:p]
+            ll = GLLVM.tweedie_grouped_marginal_loglik_laplace(Ytw, ftw.Λ, ftw.β, φvec,
+                                                                ftw.power; hessian = h)
+            @test isapprox(ll, ftw.loglik; atol = 1e-8)
+        end
     end
 end

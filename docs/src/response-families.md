@@ -535,10 +535,11 @@ fit = fit_gllvm(Yp; family = Gamma(), K = 2)   # Yp > 0; shared α (no-X)
     - Binomial/**cloglog** is explicitly excluded and stays `:fisher` — the
       diagnosed Laplace saturation pathology above, not a pending flip.
     - The Tweedie **grouped** route (`fit_tweedie_gllvm_grouped`, per-species
-      dispersion) has no `hessian` selector at all and stays unconditionally
-      Fisher — a recorded scope limit, not fixed by this change; with `G = 1`
-      it therefore no longer matches the shared route's *default* (it matches
-      `hessian = :fisher` on the shared route).
+      dispersion) was aligned 2026-08-28 (same shape as the NB2/Beta/NB1/Gamma
+      grouped alignments): it now carries the same `hessian::Symbol` selector,
+      defaulting to `:observed` to match the shared route's default. With
+      `G = 1` and a constant `φvec` it again reduces exactly to the shared
+      route under each selector.
 
 ### Lognormal — `Lognormal()`
 

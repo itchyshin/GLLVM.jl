@@ -246,9 +246,10 @@ why the discrepancy went unnoticed. They differ everywhere else.
   2026-08-27 on the curvature-adjudication campaign evidence — decision A;
   Exponential's registry default was declared the same day.) A log-likelihood
   from these two will not match `gllvmTMB` to machine precision. The Tweedie
-  **grouped** route (`fit_tweedie_gllvm_grouped`, per-species dispersion) also
-  stays Fisher — it carries no `hessian` selector at all, a recorded scope
-  limit rather than a curvature decision (see `docs/src/response-families.md`).
+  **grouped** route (`fit_tweedie_gllvm_grouped`, per-species dispersion) was
+  aligned 2026-08-28: it now carries the same `hessian::Symbol` selector as
+  its NB2/Beta/NB1/Gamma grouped siblings, defaulting to `:observed` (see
+  `docs/src/response-families.md`).
 - **Not a uniform improvement.** Against numerical quadrature, the observed
   curvature is decisively closer for Gamma (12/12 seeds, 20–60× smaller error)
   and for NB2 (87% of 150 curvature-adjudication campaign cells, 2026-08-27),

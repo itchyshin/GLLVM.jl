@@ -41,12 +41,32 @@ All notable changes to GLLVM.jl are documented here.
   2026-08-28**: the GROUPED fit structs (NBGroupedFit, NBGroupedCovFit,
   BetaGroupedFit, BetaGroupedCovFit, GammaGroupedFit, GammaGroupedCovFit,
   NB1GroupedFit, NB1GroupedCovFit) now also record `hessian`, and their
-  `_family_ci` adapters thread it the same way; TweedieGroupedFit and
-  BetaBinomialGroupedFit/BetaBinomialGroupedCovFit have no `hessian`
-  selector on their underlying kernel at all (unconditional Fisher weight),
-  so their field is fixed at `:fisher` by construction — there is nothing to
-  thread. Residual: Student-t has no confint adapter at all (pre-existing
-  gap, now recorded).
+  `_family_ci` adapters thread it the same way; BetaBinomialGroupedFit/
+  BetaBinomialGroupedCovFit have no `hessian` selector on their underlying
+  kernel at all (unconditional Fisher weight), so their field is fixed at
+  `:fisher` by construction — there is nothing to thread. TweedieGroupedFit
+  was aligned separately below. Residual: Student-t has no confint adapter
+  at all (pre-existing gap, now recorded).
+- **Tweedie's grouped route gains the `hessian` selector, closing the
+  self-consistency defect the earlier flip left open (2026-08-28)**: the
+  shared `fit_tweedie_gllvm` flipped its default log-det curvature to
+  `:observed` above, but `_tweedie_grouped_loglik_site` had no `hessian`
+  selector at all — unconditional Fisher — so with `G = 1` and a constant
+  `φvec` the grouped route no longer reduced to the shared route's DEFAULT
+  objective. Fixed with the same-shaped work as the NB2/Beta/NB1/Gamma
+  grouped alignments: `hessian::Symbol` threads through
+  `_tweedie_grouped_loglik_site`, `tweedie_grouped_marginal_loglik_laplace`,
+  and `fit_tweedie_gllvm_grouped` (LOG-DET only — the Newton mode search
+  stays Fisher-scored, matching every sibling), default `:observed` using
+  the tweedie.jl `_glm_obs_weight` observed curvature (FD-verified, always
+  non-negative for `p ∈ (1,2)`, `y ≥ 0` — no PD-guard concern, so no
+  backtracking gate needed). `TweedieGroupedFit` now records its own
+  `hessian`. With `G = 1` and a constant `φvec` the grouped route again
+  reduces exactly to the shared route under each selector (restored the two
+  stale `hessian = :fisher` pins in
+  `test/test_grouped_dispersion_tweedie_nb1.jl` and
+  `test/test_tweedie_grouped_engine_health.jl` to default-vs-default
+  comparisons, verified at 1e-10 / 1e-6).
 - **Beta, NB1 and Student-t Laplace log-determinants now use the observed
   conditional curvature, completing decision A (2026-08-27)** — with Gamma,
   NB2 and Exponential, every one-part family except Tweedie and GP-1 now

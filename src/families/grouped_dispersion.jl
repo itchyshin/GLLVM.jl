@@ -1593,24 +1593,51 @@ end
 # the family marker `TweedieED(φ, power)`. This mirrors the NB2 grouped path above;
 # the shared Tweedie hot path (tweedie.jl) is left untouched.
 #
-# RECORDED DEFECT, deliberately NOT fixed here (2026-08-28): `fit_tweedie_gllvm`
-# (shared route) flipped its default log-det curvature to `:observed` on the
-# maintainer's decision (docs/dev-log/decisions/2026-08-28-arc-decision-batch.md).
-# `_tweedie_grouped_loglik_site` below has NO `hessian` selector at all — it is
-# unconditionally Fisher. So with G = 1 and a constant `φvec`, this grouped route
-# no longer reduces to the shared route's DEFAULT objective; it reduces to the
-# shared route called with `hessian = :fisher` explicitly. Out of scope for this
-# flip: threading a `hessian` kwarg through this kernel and its mode-search
-# backtracking gate is the same-shaped work as the NB2/Beta/NB1 grouped
-# alignments, but the campaign evidence and the maintainer's decision cover the
-# shared Tweedie route only. See `docs/src/response-families.md` and
-# `docs/src/gllvmtmb-parity.md` for the user-facing fence.
+# FIXED DEFECT (2026-08-28): `fit_tweedie_gllvm` (shared route) flipped its
+# default log-det curvature to `:observed` on the maintainer's decision
+# (docs/dev-log/decisions/2026-08-28-arc-decision-batch.md), but
+# `_tweedie_grouped_loglik_site` had NO `hessian` selector at all — it was
+# unconditionally Fisher. So with G = 1 and a constant `φvec`, the grouped
+# route no longer reduced to the shared route's DEFAULT objective; it reduced
+# to the shared route called with `hessian = :fisher` explicitly. Aligned here
+# with the same-shaped NB2/Beta/NB1/Gamma grouped work: `hessian::Symbol`
+# threaded through the LOG-DET only (role separation below — the Newton mode
+# search stays Fisher-scored unconditionally, matching every sibling). Default
+# is `:observed`, using the tweedie.jl `_glm_obs_weight(::TweedieED, …)`
+# observed curvature (FD-verified, always non-negative for p ∈ (1,2), y ≥ 0 —
+# no PD-guard sign concern for this family, so no backtracking gate is needed
+# here, matching the caution in the maintainer's brief). With G = 1 and a
+# constant `φvec`, this grouped route now reduces EXACTLY to the shared route
+# under ITS default (`hessian = :observed`), and under `hessian = :fisher` to
+# the shared route with `:fisher`. See `docs/src/response-families.md` and
+# `docs/src/gllvmtmb-parity.md` for the (now-updated) user-facing note.
 # ===========================================================================
+
+# Observed vs expected log-det weight selector, mirroring
+# `_nb_grouped_laplace_weight` / `_nb1_grouped_laplace_weight` /
+# `_beta_grouped_laplace_weight`. `η` is required by `_glm_obs_weight`'s
+# TweedieED/LogLink signature (tweedie.jl). `f` is left UNTYPED (unlike the
+# NB1/Beta precedents, which annotate `f::NB1`/`f::Beta`): `TweedieED` is
+# defined in `families/tweedie.jl`, included AFTER this file
+# (`GLLVM.jl` include order), so a top-level `f::TweedieED` annotation here
+# fails to precompile (`UndefVarError: TweedieED not defined`). Runtime
+# dispatch to `_glm_weight`/`_glm_obs_weight` below still resolves correctly
+# on `f`'s actual type; this function is only ever called with `TweedieED`
+# elements from `_tweedie_grouped_loglik_site`.
+function _tweedie_grouped_laplace_weight(hessian::Symbol, f, μ, me, y, link::Link, η)
+    hessian === :fisher && return _glm_weight(f, μ, 1, me)
+    hessian === :observed || throw(ArgumentError(
+        "hessian must be :fisher or :observed; got :$hessian"))
+    link isa LogLink || throw(ArgumentError(
+        "hessian=:observed is currently supported only for Tweedie with LogLink()"))
+    return _glm_obs_weight(f, μ, 1, me, y, link, η)
+end
 
 # Per-site Laplace log-marginal with per-species Tweedie dispersion markers `fams`.
 function _tweedie_grouped_loglik_site(fams::AbstractVector, y::AbstractVector, n::AbstractVector,
         Λ::AbstractMatrix, β::AbstractVector, link::Link;
-        mask = nothing, offset = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
+        mask = nothing, offset = nothing, hessian::Symbol = :observed,
+        maxiter::Integer = 100, tol::Real = 1e-9)
     p, K = size(Λ)
     off = offset === nothing ? false : offset
     z = zeros(K)
@@ -1620,7 +1647,14 @@ function _tweedie_grouped_loglik_site(fams::AbstractVector, y::AbstractVector, n
         μ  = _clamp_mu.(fams, linkinv.(Ref(link), η))
         me = mu_eta.(Ref(link), η)
         s  = _glm_score.(fams, μ, n, me, y)
-        W  = _glm_weight.(fams, μ, n, me)
+        # Role separation (mirrors NB2/Beta/NB1 above). The MODE SEARCH is
+        # Fisher-scored, ALWAYS — `:fisher` here is not the caller's selector.
+        # Expected information is >= 0, so `Λ'WΛ + I` is SPD by construction
+        # and every Newton step is a descent step. The selector still governs
+        # the post-loop log-det below, which is the only role that needs the
+        # observed curvature. The converged mode is unchanged either way: it
+        # is the fixed point of `Λ's − z = 0`, which does not involve W at all.
+        W  = _tweedie_grouped_laplace_weight.(Ref(:fisher), fams, μ, me, y, Ref(link), η)
         if mask !== nothing
             s = ifelse.(mask, s, 0.0)
             W = ifelse.(mask, W, 0.0)
@@ -1634,7 +1668,7 @@ function _tweedie_grouped_loglik_site(fams::AbstractVector, y::AbstractVector, n
     η  = _clamp_eta.(β .+ off .+ Λ * z)
     μ  = _clamp_mu.(fams, linkinv.(Ref(link), η))
     me = mu_eta.(Ref(link), η)
-    W  = _glm_weight.(fams, μ, n, me)
+    W  = _tweedie_grouped_laplace_weight.(Ref(hessian), fams, μ, me, y, Ref(link), η)
     if mask !== nothing
         W = ifelse.(mask, W, 0.0)
     end
@@ -1654,12 +1688,14 @@ end
 Total Laplace log-marginal of a Tweedie GLLVM with **per-species** dispersion `φvec`
 (length p) and a single SHARED `power` ∈ (1,2) (`Var_t = φvec[t]·μ_t^power`). `Y` is
 the p×n matrix of non-negative reals (point mass at 0 allowed); `Λ` p×K; `β` length-p.
-With a constant `φvec = fill(φ, p)` (same `power`) this equals the shared-dispersion
-[`tweedie_marginal_loglik_laplace`](@ref) to machine precision.
+With a constant `φvec = fill(φ, p)` (same `power`) and `hessian=:fisher` this
+equals the shared-dispersion [`tweedie_marginal_loglik_laplace`](@ref) to
+machine precision; `hessian=:observed` (the default) uses the conditional
+observed curvature (TMB Laplace) that [`fit_tweedie_gllvm`](@ref) defaults to.
 """
 function tweedie_grouped_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix,
         β::AbstractVector, φvec::AbstractVector, power::Real; link::Link = LogLink(),
-        mask = nothing, offset = nothing, kwargs...)
+        mask = nothing, offset = nothing, hessian::Symbol = :observed, kwargs...)
     p = size(Λ, 1)
     length(φvec) == p || throw(ArgumentError("length(φvec)=$(length(φvec)) must equal p=$p"))
     N = ones(Int, size(Y))
@@ -1669,7 +1705,7 @@ function tweedie_grouped_marginal_loglik_laplace(Y::AbstractMatrix, Λ::Abstract
         mi = mask   === nothing ? nothing : view(mask, :, i)
         oi = offset === nothing ? nothing : view(offset, :, i)
         acc += _tweedie_grouped_loglik_site(fams, view(Y, :, i), view(N, :, i), Λ, β, link;
-                                            mask = mi, offset = oi, kwargs...)
+                                            mask = mi, offset = oi, hessian = hessian, kwargs...)
     end
     return acc
 end
@@ -1696,16 +1732,14 @@ struct TweedieGroupedFit
     loglik::Float64
     converged::Bool
     iterations::Int
-    hessian::Symbol   # the Laplace log-det curvature this fit's objective used —
-                       # ALWAYS :fisher: `_tweedie_grouped_loglik_site` has no
-                       # `hessian` selector (unconditional `_glm_weight`), unlike
-                       # its NB2/Beta/Gamma/NB1 grouped siblings.
+    hessian::Symbol   # the Laplace log-det curvature this fit's objective used
 end
 
 # Positional compatibility constructor (2026-08-28): see NBGroupedFit above.
-# Fixed at `:fisher` — this route has no `hessian` kwarg to record.
+# Defaults to `:observed` (2026-08-28 alignment), matching the NB2/Beta/NB1/
+# Gamma grouped siblings and `fit_tweedie_gllvm`'s own default.
 TweedieGroupedFit(β, Λ, φ, power, group, link, loglik, converged, iterations) =
-    TweedieGroupedFit(β, Λ, φ, power, group, link, loglik, converged, iterations, :fisher)
+    TweedieGroupedFit(β, Λ, φ, power, group, link, loglik, converged, iterations, :observed)
 
 function Base.show(io::IO, f::TweedieGroupedFit)
     p, K = size(f.Λ)
@@ -1745,11 +1779,14 @@ same offset as [`fit_tweedie_gllvm`](@ref)).
 `converged` is not `Optim`'s verdict alone: it uses `_tweedie_verdict`, so a
 fit that stalls, sits on the failure sentinel, or runs the power to the closed
 end of `(1, 2)` reports `converged = false` rather than advertising that point
-as a maximum. With one group this matches [`fit_tweedie_gllvm`](@ref).
+as a maximum. With one group and `hessian=:observed` (the default) this
+matches [`fit_tweedie_gllvm`](@ref)'s own default; `hessian=:fisher` selects
+the previous expected-information objective on both.
 """
 function fit_tweedie_gllvm_grouped(Y::AbstractMatrix{<:Real}; K::Integer,
         group::AbstractVector{<:Integer} = collect(1:size(Y, 1)),
         power_init::Real = 1.5, link::Link = LogLink(), mask = nothing, offset = nothing,
+        hessian::Symbol = :observed,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
@@ -1785,6 +1822,7 @@ function fit_tweedie_gllvm_grouped(Y::AbstractMatrix{<:Real}; K::Integer,
         v = try
             -tweedie_grouped_marginal_loglik_laplace(Yc, Λ, β, φvec, pw; link = link,
                                                      mask = msk, offset = offset,
+                                                     hessian = hessian,
                                                      maxiter = newton_maxiter,
                                                      tol = newton_tol)
         catch
@@ -1811,5 +1849,5 @@ function fit_tweedie_gllvm_grouped(Y::AbstractMatrix{<:Real}; K::Integer,
         @warn "fit_tweedie_gllvm_grouped: the power ran to the boundary of (1, 2) \
                (p̂ = $(p̂), φ̂ = $(φ̂g)); the fit is flagged as not converged."
     end
-    return TweedieGroupedFit(β̂, Λ̂, φ̂g, p̂, gidx, link, loglik, conv, Optim.iterations(res))
+    return TweedieGroupedFit(β̂, Λ̂, φ̂g, p̂, gidx, link, loglik, conv, Optim.iterations(res), hessian)
 end
