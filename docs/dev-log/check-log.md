@@ -42,7 +42,7 @@ Verify: `test_studentt_disp_group.jl` 26/26 (new, wired) · `test_studentt.jl`
 28/28 · `test_studentt_parity.jl` 13/13 live · census 66/66 · contract
 134/134 · dual-safety 37/37. Stale-pin sweep over `StudentTFit(` positional
 sites and the census/contract/dual-safety/AGHQ files found none. No tolerance
-touched. Full-suite coverage owed.
+touched. Full-suite coverage PAID: Totoro run D on tree `22226cda` — **7143 pass / 0 fail / 4 expected-broken, exit 0, 88m40.7s**.
 
 
 ## 2026-08-28 — PARITY CELLS 12 AND 13 PAY: per-trait delta dispersion closes the Δ
@@ -87,7 +87,7 @@ Verify: `test_delta_disp_group.jl` 53/53 (new, wired) + regression across
 `test_delta_shared_predictor` / `test_delta_fit` / `test_delta_gamma` /
 `test_delta_postfit` / `test_twopart_substrate` / `test_twopart_alloc_equiv`
 / `test_twopart_hessian_kwarg`, all green, no tolerance touched. Full-suite
-coverage owed (the 7062-pass run predates this slice).
+coverage PAID: Totoro run D on tree `22226cda` — **7143 pass / 0 fail / 4 expected-broken, exit 0, 88m40.7s**.
 
 
 ## 2026-08-28 — L47 `none × dep` promoted (maintainer gate 6), with a MEASURED identifiability caveat
@@ -114,7 +114,7 @@ testset in `test/test_none_dep.jl`, so a future refactor that silently starts
 treating `σ_eps` as estimated will fail.
 
 Verify: `test_none_dep.jl` 39/39 + the new identifiability testset 2/2.
-Full-suite coverage owed (the 7062-pass run predates this slice).
+Full-suite coverage PAID: Totoro run D on tree `22226cda` — **7143 pass / 0 fail / 4 expected-broken, exit 0, 88m40.7s**.
 
 
 ## 2026-08-28 — Cells 12/13 (delta_lognormal, delta_gamma) fit-vs-fit parity: MEASURED, not paid at rtol=1e-6

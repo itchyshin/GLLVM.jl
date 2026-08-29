@@ -124,17 +124,12 @@ commit on PR #273 now has full-suite coverage.**
 
 - ~~Totoro full suite run C~~ **RESOLVED: 7062 pass / 0 fail / 4
   expected-broken, exit 0, 85m19.9s (tree `8b1448ab`).**
-- **Totoro full suite run D — IN FLIGHT at session close** (launched ~18:04
-  MDT against tree `22226cda`). It covers the three slices that landed after
-  run C and currently rest on TARGETED evidence only: the L47 identifiability
-  testset, the delta per-trait `disp_group`, and the Student-t per-trait σ.
-  RESUME: `ssh snakagaw@totoro.biology.ualberta.ca
-  'tail -6 ~/gllvm-parity-suite.log'` — expect a `Test Summary` line then
-  `EXIT:0`; prior runs were 6955 / 6997 / 7062 pass with 0 fail and 4
-  expected-broken, ~85 min. Then stamp the tally onto the three check-log
-  entries dated 2026-08-28 that say "Full-suite coverage owed". If it is RED,
-  triage before merging PR #273 — the three slices are the prime suspects.
-
+- ~~Totoro full suite run D~~ **RESOLVED: 7143 pass / 0 fail / 4
+  expected-broken, exit 0, 88m40.7s (tree `22226cda`).** Covers the L47
+  identifiability testset, the delta per-trait `disp_group`, and the Student-t
+  per-trait σ. All three check-log entries stamped; **no "coverage owed"
+  markers remain in the check-log.** Four green suites today: 6955 / 6997 /
+  7062 / 7143, every one exit 0 with 0 failures.
 - `viz-plots2` branch: 1 unpushed commit `aa19b773` (Florence Plots.jl
   extension, predates this arc). WHY: unrelated lane, not this session's work.
   Resume: `git checkout viz-plots2 && git log origin/viz-plots2..viz-plots2`.
