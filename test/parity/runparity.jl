@@ -27,19 +27,14 @@ if get(ENV, "GLLVM_PARITY_TESTS", "0") != "1"
 end
 
 # ── Wire the local GLLVM package ─────────────────────────────────────────────
-# GLLVM is declared in test/parity/Project.toml [deps]; this dev-add points the
-# (gitignored) Manifest at THIS working tree — the path is what actually varies
-# across machines and worktrees, not the UUID. Because the [deps] entry already
-# exists, Pkg has nothing to change in Project.toml and does not rewrite it, which
-# is what keeps that file's explanatory comments alive. Before 2026-08-24 the entry
-# was absent, so every run rewrote Project.toml, deleted its comment block, and left
-# the tracked file dirty.
+# In CI or isolated runner, develop GLLVM if not already pointing to root
 using Pkg
-Pkg.develop(path = normpath(joinpath(@__DIR__, "..", "..")))
 
 # ── Try to load RCall — bail gracefully if R is not set up ───────────────────
 try
-    using RCall
+    @info "Loading RCall..."
+    @eval using RCall
+    @info "RCall loaded successfully."
 catch err
     println()
     println("SKIPPED — RCall or R not available.")
