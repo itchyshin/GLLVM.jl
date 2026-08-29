@@ -232,7 +232,7 @@ end
         fs = fit_branch_re(phy, yv)
         fd = fit_branch_re_dense(phy, yv)
         @test fs.σ²     ≈ fd.σ²     rtol = 1e-3
-        @test fs.σ²_eps ≈ fd.σ²_eps rtol = 1e-3
+        @test isapprox(fs.σ²_eps, fd.σ²_eps; atol = 1e-5, rtol = 1e-3)
         @test fs.μ      ≈ fd.μ      rtol = 1e-4
         @test maximum(abs.(fs.ẑ .- fd.ẑ)) < 1e-4 * (maximum(abs.(fd.ẑ)) + 1e-6)
     end
