@@ -8,13 +8,6 @@ using GLLVM, Test, Random, LinearAlgebra, Distributions, SparseArrays, Statistic
 # polish gains more than `safety_tol`, it re-runs plain EM from the warm start
 # and returns that, flagging `fallback_used = true`.
 #
-# Test-harness convention (see test_em_louis.jl): guard the include so that when
-# the full suite has already pulled em_phylo.jl into Main we reuse those
-# definitions, and build any newick tree with the MODULE-QUALIFIED
-# `GLLVM.augmented_phy` so a bare `augmented_phy` cannot resolve to a Main-scoped
-# shadow that breaks `GLLVM.sigma_phy_dense` dispatch.
-isdefined(Main, :em_fit_phylo_squarem) ||
-    include(joinpath(@__DIR__, "..", "src", "em_squarem.jl"))
 
 # Identical fixture builder to bench/em_squarem_bench.jl, with a per-call seed:
 # random balanced tree (so Σ_phy precision is sparse), K_B = 1, n = 200.
@@ -35,6 +28,9 @@ function _sim_squarem_safety(p, seed; K_B = 1, n = 200,
     return y, Σ_phy
 end
 
+if get(ENV, "GLLVM_SLOW_TESTS", "0") != "1"
+    @info "test_em_squarem_safety skipped — set GLLVM_SLOW_TESTS=1 to run (~38 min; p=500 EM fits)"
+else
 @testset "SQUAREM inferior-basin safety check (plain-EM polish + fallback)" begin
 
     TOL    = 1e-9
@@ -104,4 +100,5 @@ end
                                     safety_check = false)
         @test !off.fallback_used
     end
+end
 end

@@ -225,5 +225,12 @@ using GLLVM
     include("test_saturation_health.jl")
     include("test_known_sentinel_defects.jl")
     include("test_curvature_census.jl")
+    include("test_phylo_contrasts.jl")
+    include("test_edge_incidence.jl")
+    include("test_phylo_branch_re.jl")
+    include("test_em_phylo.jl")
+    include("test_em_squarem.jl")
+    include("test_em_squarem_safety.jl")
+    include("test_relaxed_clock.jl")
     include("test_quality.jl")
 end

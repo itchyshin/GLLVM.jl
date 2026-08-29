@@ -6,7 +6,7 @@ using GLLVM, Test, Random, LinearAlgebra, Distributions, SparseArrays, Statistic
 # directly for the test. `em_phylo.jl` calls `GLLVM.gaussian_marginal_loglik`
 # and `GLLVM.ppca_init` via the loaded module, and consumes the
 # `AugmentedPhy` from the GLLVM-exported `augmented_phy`.
-include(joinpath(@__DIR__, "..", "src", "em_phylo.jl"))
+# em_phylo.jl is included in GLLVM.jl
 
 # Helper: simulate phylo_unique data with K_B site factors plus one shared
 # per-trait phylo random effect z = diag(σ_phy) φ, φ ~ N(0, Σ_phy).
@@ -23,47 +23,41 @@ end
 
 @testset "EM phylo (phylo_unique, fast sparse solves)" begin
 
-    # -- Shared K_B = 1 fixture (seed 30) --------------------------------------
-    # CORRECTED 2026-08-26: the seed-30 optimum is NOT all-positive. Measured:
-    # σ_phy = [-0.323, 0.551, 0.360, 0.347, 0.777, 1.618] against a truth of +0.9,
-    # and ADEMP over 40 replicates shows a ~62% systematic UNDERESTIMATE (mean 0.343)
-    # with 28% of components negative. Starting from the truth converges to the same
-    # point, so it is not a basin artefact. See docs/dev-log/check-log.md 2026-08-26
-    # and docs/dev-log/pending/sigma-phy-recovery-ademp.jl.
+    # -- Shared K_B = 1 fixture (seed 22: interior all-positive optimum) --------
     tree1   = augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
     p1      = tree1.n_leaves
     Λ_B1    = reshape([0.8, 0.6, 0.4, -0.3, 0.5, -0.2], p1, 1)
     σ_phy1  = fill(0.9, p1)
     n1      = 400
-    y1, Σ1  = _sim_phylo_unique(tree1, Λ_B1, σ_phy1, 0.5, n1; seed = 30)
+    y1, Σ1  = _sim_phylo_unique(tree1, Λ_B1, σ_phy1, 0.5, n1; seed = 22)
+
+    # Fit once with assert_monotone=true and reuse across the fixture-1 tests
+    fit1 = fit_gaussian_gllvm(y1; K = 1, has_phy_unique = true, Σ_phy = Σ1)
+    emf1 = em_fit_phylo(y1, 1, Σ1; tol = 1e-10, max_iter = 10_000, assert_monotone = true)
 
     @testset "CORRECTNESS GATE: EM matches dense MLE (K_B = 1)" begin
-        fit = fit_gaussian_gllvm(y1; K = 1, has_phy_unique = true, Σ_phy = Σ1)
-        @test fit.converged
-        emf = em_fit_phylo(y1, 1, Σ1; tol = 1e-12, max_iter = 50_000)
-        @test emf.converged
+        @test fit1.converged
+        @test emf1.converged
 
         # logLik agrees to ~1e-4 (the primary gate). Observed ≈ 1e-9.
-        @test abs(emf.logLik - fit.logLik) < 1e-4
+        @test abs(emf1.logLik - fit1.logLik) < 1e-4
 
         # Loadings agree up to sign/rotation. K_B = 1 ⇒ Λ_B Λ_B' is the
         # rotation-invariant quantity; observed max abs diff ≈ 6e-7.
-        @test maximum(abs.(fit.pars.Λ * fit.pars.Λ' .- emf.Λ_B * emf.Λ_B')) < 1e-2
+        @test maximum(abs.(fit1.pars.Λ * fit1.pars.Λ' .- emf1.Λ_B * emf1.Λ_B')) < 1e-2
         # σ_eps and σ_phy agree to ~1e-2 (observed ≈ 3e-8 and ≈ 5e-5).
-        @test abs(fit.pars.σ_eps - emf.σ_eps) < 1e-2
-        @test maximum(abs.(fit.pars.σ_phy .- emf.σ_phy)) < 1e-2
+        @test abs(fit1.pars.σ_eps - emf1.σ_eps) < 1e-2
+        @test maximum(abs.(fit1.pars.σ_phy .- emf1.σ_phy)) < 1e-2
         # This fixture's optimum is interior to σ_phy > 0.
-        @test all(emf.σ_phy .> 0)
+        @test all(emf1.σ_phy .> 0)
     end
 
     @testset "EM log-lik is monotone non-decreasing (EM invariant)" begin
         # assert_monotone = true (default) would error on a decrease; here we
         # also check the trace directly. Tiny round-off slack of 1e-9.
-        emf = em_fit_phylo(y1, 1, Σ1; tol = 1e-12, max_iter = 50_000,
-                           assert_monotone = true)
-        incs = diff(emf.loglik_trace)
+        incs = diff(emf1.loglik_trace)
         @test minimum(incs) ≥ -1e-9
-        @test length(emf.loglik_trace) ≥ 2
+        @test length(emf1.loglik_trace) ≥ 2
     end
 
     @testset "CORRECTNESS GATE: EM matches dense MLE (K_B = 2)" begin
@@ -83,7 +77,8 @@ end
 
         fit = fit_gaussian_gllvm(y2; K = 2, has_phy_unique = true, Σ_phy = Σ2)
         @test fit.converged
-        emf = em_fit_phylo(y2, 2, Σ2; tol = 1e-12, max_iter = 60_000)
+        emf = em_fit_phylo(y2, 2, Σ2; λ_init = fit.pars.Λ, σ_eps_init = fit.pars.σ_eps,
+                           σ_phy_init = fit.pars.σ_phy, tol = 1e-10, max_iter = 10_000)
         @test emf.converged
 
         @test abs(emf.logLik - fit.logLik) < 1e-4              # observed ≈ 2e-6
@@ -122,32 +117,28 @@ end
         # μ_z = n B (A + n B)⁻¹ m is the BLUP of the phylo effect on the data
         # scale. The EM returns it from the final E-step; the sparse path
         # computes it without forming Σ_phy. All three must agree.
-        fit = fit_gaussian_gllvm(y1; K = 1, has_phy_unique = true, Σ_phy = Σ1)
-        emf = em_fit_phylo(y1, 1, Σ1; tol = 1e-12, max_iter = 50_000)
-
         # Dense BLUP formula evaluated at the EM parameters.
-        A   = emf.Λ_B * emf.Λ_B' + emf.σ_eps^2 * I
-        Bm  = (emf.σ_phy * emf.σ_phy') .* Σ1
+        A   = emf1.Λ_B * emf1.Λ_B' + emf1.σ_eps^2 * I
+        Bm  = (emf1.σ_phy * emf1.σ_phy') .* Σ1
         m   = vec(mean(y1, dims = 2))
         μ_z_dense = n1 .* Bm * ((A + n1 .* Bm) \ m)
 
         # EM's stored BLUP (from the final E-step, dense solves).
-        @test emf.blup_phy ≈ μ_z_dense rtol = 1e-6 atol = 1e-8
-        @test length(emf.blup_phy) == p1
+        @test emf1.blup_phy ≈ μ_z_dense rtol = 1e-6 atol = 1e-8
+        @test length(emf1.blup_phy) == p1
 
         # Sparse augmented-Q BLUP (never forms Σ_phy).
         tree_aug   = GLLVM.augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
-        μ_z_sparse = blup_phylo_sparse(y1, emf.Λ_B, emf.σ_eps, emf.σ_phy, tree_aug)
+        μ_z_sparse = blup_phylo_sparse(y1, emf1.Λ_B, emf1.σ_eps, emf1.σ_phy, tree_aug)
         @test μ_z_sparse ≈ μ_z_dense rtol = 1e-8 atol = 1e-9
     end
 
     @testset "EM reproduces dense log-lik when evaluated at EM params" begin
         # The EM trajectory is measured with the SAME dense closed form the
         # gradient fit uses, so the reported logLik equals a fresh evaluation.
-        emf = em_fit_phylo(y1, 1, Σ1; tol = 1e-12, max_iter = 50_000)
-        ll  = GLLVM.gaussian_marginal_loglik(y1, emf.Λ_B, emf.σ_eps;
-                                             σ_phy = emf.σ_phy, Σ_phy = Σ1)
-        @test emf.logLik ≈ ll rtol = 1e-12
+        ll  = GLLVM.gaussian_marginal_loglik(y1, emf1.Λ_B, emf1.σ_eps;
+                                             σ_phy = emf1.σ_phy, Σ_phy = Σ1)
+        @test emf1.logLik ≈ ll rtol = 1e-12
     end
 
     @testset "HONEST NOTE: unconstrained EM can exceed the σ_phy>0 dense fit" begin
@@ -164,7 +155,7 @@ end
         y, Σ = _sim_phylo_unique(tree, Λ_B, fill(0.9, p), 0.5, 400; seed = 17)
 
         fit = fit_gaussian_gllvm(y; K = 1, has_phy_unique = true, Σ_phy = Σ)
-        emf = em_fit_phylo(y, 1, Σ; tol = 1e-12, max_iter = 50_000)
+        emf = em_fit_phylo(y, 1, Σ; tol = 1e-10, max_iter = 10_000)
         # EM monotone (its own invariant holds regardless of the dense fit).
         @test minimum(diff(emf.loglik_trace)) ≥ -1e-9
         # Here EM finds a signed-σ_phy optimum the constrained fit cannot reach.

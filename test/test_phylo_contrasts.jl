@@ -1,11 +1,6 @@
 using GLLVM, Test, Random, LinearAlgebra, Distributions, SparseArrays, Statistics
 
-# Felsenstein's independent contrasts: NEW FILES that are not (yet) wired
-# into the GLLVM module on this branch (per the PERF+++ hard constraint
-# "do not modify src/GLLVM.jl"). Pull them in directly for the test.
-include(joinpath(@__DIR__, "..", "src", "sparse_phy.jl"))
-include(joinpath(@__DIR__, "..", "src", "phylo_contrasts.jl"))
-include(joinpath(@__DIR__, "..", "src", "likelihood_contrasts.jl"))
+# Felsenstein independent contrasts: included in GLLVM.jl.
 
 @testset "Felsenstein contrasts" begin
 

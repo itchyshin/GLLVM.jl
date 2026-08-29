@@ -9,12 +9,7 @@
 
 using GLLVM, Test, Random, LinearAlgebra, SparseArrays, Statistics
 
-include(joinpath(@__DIR__, "..", "src", "edge_incidence.jl"))
-include(joinpath(@__DIR__, "..", "src", "phylo_branch_re.jl"))
-# Augmented-precision (Hadfield–Nakagawa) path for the head-to-head, and the
-# sparse-phy marginal log-lik that drives it.
-include(joinpath(@__DIR__, "..", "src", "sparse_phy.jl"))
-include(joinpath(@__DIR__, "..", "src", "likelihood_sparse_phy.jl"))
+# Single-variance branch random-effects: included in GLLVM.jl.
 
 # ---------------------------------------------------------------------------
 # Helpers.

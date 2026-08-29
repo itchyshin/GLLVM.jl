@@ -60,9 +60,7 @@ using ForwardDiff
 
 # Takahashi (1973) / Erisman–Tinney (1975) selected inverse — used by the
 # sparse E-step (`_estep_sparse`) below to compute `diag(V_φ)` in O(p)
-# instead of the dense `inv(cVφ)`'s O(p³). See `src/takahashi_selinv.jl`
-# for the recursion.
-include(joinpath(@__DIR__, "takahashi_selinv.jl"))
+# instead of the dense `inv(cVφ)`'s O(p³). Defined in `src/takahashi_selinv.jl`.
 
 # ---------------------------------------------------------------------------
 # Sparse (A + n B)⁻¹ apply via the augmented-state saddle point.

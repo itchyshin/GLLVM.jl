@@ -1,15 +1,6 @@
 using GLLVM, Test, Random, LinearAlgebra, Distributions, SparseArrays, ForwardDiff
 
-# The edge-incidence path lives in new src files that are not (yet) wired
-# into the GLLVM module on this branch (matching the PERF++ hard constraint
-# of `do NOT modify any existing src/test/Project.toml file`). Pull them in
-# directly for the test.
-include(joinpath(@__DIR__, "..", "src", "edge_incidence.jl"))
-include(joinpath(@__DIR__, "..", "src", "likelihood_edge_incidence.jl"))
-
-# We also need the augmented-Q sparse path to cross-check Σ_phy values
-# (both representations should produce the SAME leaf-marginal covariance).
-include(joinpath(@__DIR__, "..", "src", "sparse_phy.jl"))
+# Edge incidence sparse phylo representation: included in GLLVM.jl.
 
 """
     _build_balanced_edge_phy(p; branch_length=0.1) :: EdgePhy
