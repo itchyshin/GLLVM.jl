@@ -51,6 +51,10 @@ jobs:
       - name: Install R twin dependencies
         run: |
           Rscript -e 'install.packages(c("TMB", "Matrix", "remotes"), repos="https://cloud.r-project.org")'
+          Rscript -e 'remotes::install_github("itchyshin/gllvmTMB", upgrade="never")'
+      - name: Instantiate parity environment
+        run: |
+          julia --project=test/parity -e 'using Pkg; Pkg.develop(path="."); Pkg.instantiate(); Pkg.precompile()'
       - name: Run parity suite with LD_PRELOAD libunwind
         run: |
           export LD_PRELOAD="$(julia -e 'print(abspath(joinpath(Sys.BINDIR, "..", "lib", "julia", "libunwind.so.8")))')"
