@@ -49,9 +49,11 @@ jobs:
           version: '1'
       - uses: julia-actions/cache@v2
       - name: Install R twin dependencies
+        env:
+          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
         run: |
           Rscript -e 'install.packages(c("TMB", "Matrix", "remotes"), repos="https://cloud.r-project.org")'
-          Rscript -e 'remotes::install_github("itchyshin/gllvmTMB", upgrade="never")'
+          Rscript -e 'remotes::install_git("https://github.com/itchyshin/gllvmTMB.git", upgrade="never")'
       - name: Instantiate parity environment
         run: |
           julia --project=test/parity -e 'using Pkg; Pkg.develop(path="."); Pkg.instantiate(); Pkg.precompile()'
