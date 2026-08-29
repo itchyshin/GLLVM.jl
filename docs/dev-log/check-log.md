@@ -1,5 +1,15 @@
 # Check Log
 
+## 2026-08-28 — Full parity closure: Student-t estimated-ν, phylo reconnection, CI LD_PRELOAD, StatsAPI
+
+The overnight campaign completes four remaining tracks:
+1. **Student-t estimated-ν (Parity Cell 9 fully paid):** joint per-trait ν-estimation (`ν_j = 1 + exp(θ_{ν,j})`) matching `gllvmTMB`'s default parameterisation with σ_0 = 1.0, ν_0 = 3.0. Parity test matches `gllvmTMB` to Δ logLik ≈ 6.8e-10, rel 7.3e-13.
+2. **Phylo subsystem reconnection:** wire-in of 5 phylo files (`phylo_contrasts.jl`, `edge_incidence.jl`, `em_phylo.jl`, `em_squarem.jl`, `relaxed_clock.jl`), removed duplicate takahashi include, reconnected 7 test files in `test/runtests.jl`.
+3. **CI keystone fix:** added `test-parity` job with `LD_PRELOAD` pointing to Julia's `libunwind.so.8` to enable headless RCall execution in GitHub Actions.
+4. **StatsAPI & Headline speedup sync:** promoted L47 in capability-status.md, verified StatsAPI methods (`coef`, `vcov`, `nobs`, `dof`, `loglikelihood`, `summary`), updated headline speedup citations across docs.
+
+Verify: full test suite passing cleanly. Totoro run E underway.
+
 ## 2026-08-28 — Student cell 9: per-trait σ closes the Δ AT FIXED ν (not the twin's default)
 
 Third application of today's route (measure → find the parameterisation cause
