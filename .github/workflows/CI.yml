@@ -56,10 +56,10 @@ jobs:
           Rscript -e 'remotes::install_git("https://github.com/itchyshin/gllvmTMB.git", upgrade="never")'
       - name: Instantiate parity environment
         run: |
-          julia --project=test/parity -e 'using Pkg; Pkg.develop(path="."); Pkg.instantiate(); Pkg.precompile()'
+          julia --project=test/parity -e 'using Pkg; Pkg.develop(path="."); Pkg.instantiate(); Pkg.build("RCall"); Pkg.precompile()'
       - name: Run parity suite with LD_PRELOAD libunwind
         run: |
           export LD_PRELOAD="$(julia -e 'print(abspath(joinpath(Sys.BINDIR, "..", "lib", "julia", "libunwind.so.8")))')"
           export GLLVM_PARITY_TESTS=1
-          julia --project=test/parity test/parity/runparity.jl
+          julia --project=test/parity -e 'include("test/parity/runparity.jl")'
 

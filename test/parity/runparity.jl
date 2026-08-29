@@ -35,7 +35,7 @@ end
 # was absent, so every run rewrote Project.toml, deleted its comment block, and left
 # the tracked file dirty.
 using Pkg
-Pkg.develop(path = joinpath(@__DIR__, "..", ".."))
+Pkg.develop(path = normpath(joinpath(@__DIR__, "..", "..")))
 
 # ── Try to load RCall — bail gracefully if R is not set up ───────────────────
 try
@@ -43,7 +43,7 @@ try
 catch err
     println()
     println("SKIPPED — RCall or R not available.")
-    println("  Error: ", err)
+    println("  Error: ", sprint(showerror, err, catch_backtrace()))
     println()
     println("  Install R and the gllvmTMB package, then rebuild RCall:")
     println("    julia --project=test/parity -e 'using Pkg; Pkg.build(\"RCall\")'")
