@@ -62,5 +62,6 @@ jobs:
           export LD_PRELOAD="$(julia -e 'print(abspath(joinpath(Sys.BINDIR, "..", "lib", "julia", "libunwind.so.8")))')"
           export GLLVM_PARITY_TESTS=1
           export R_HOME="$(R RHOME)"
+          export LD_LIBRARY_PATH="$(R RHOME)/lib:$LD_LIBRARY_PATH"
           julia --project=test/parity test/parity/runparity.jl
 

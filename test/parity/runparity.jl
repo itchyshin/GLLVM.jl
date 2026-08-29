@@ -33,6 +33,7 @@ using Pkg
 # ── Try to load RCall — bail gracefully if R is not set up ───────────────────
 try
     @info "Loading RCall..."
+    @info "R_HOME in Julia: " * get(ENV, "R_HOME", "<unset>")
     @eval using RCall
     @info "RCall loaded successfully."
 catch err
