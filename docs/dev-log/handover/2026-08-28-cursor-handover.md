@@ -142,6 +142,20 @@ commit on PR #273 now has full-suite coverage.**
   trim) which CANNOT be pushed: OAuth token lacks `workflow` scope. WHY:
   only the maintainer can fix — `gh auth refresh -s workflow -h github.com`.
   Until then every push must EXCLUDE it (the cherry-pick route below).
+  VERIFIED at close: origin's `.github/workflows/CI.yml` still has
+  `push: branches: [main]`; the local trim (`pull_request` +
+  `workflow_dispatch` + `cancel-in-progress`) is the desired end state and is
+  still unlanded.
+- **Local-vs-pushed reconciliation, run at session close** (do this yourself
+  before trusting any "clean" claim — the push route is cherry-pick, so SHAs
+  differ by design and only a CONTENT diff is meaningful):
+  `git diff --stat HEAD origin/claude/lane-beyond-20260824`. It caught one
+  real miss: `docs/dev-log/decisions/2026-08-28-studentt-parameterisation.md`
+  (the confirmed twin df-CI bug + upstream report draft) had NEVER been
+  pushed, while both this handover and `capability-status.md` cite it — two
+  dangling references. Pushed at close (`0a4a9a41`). The only other
+  difference is `campaigns/curvature_adjudication/cell_ext.jl`, where ORIGIN
+  is ahead (tweedie oracle node-reduction from a merged PR) — benign.
 - Totoro artifacts (all `snakagaw@totoro`, ControlMaster socket
   `~/.ssh/cm-snakagaw@totoro...`): `~/GLLVM.jl-mopup` (suite checkout),
   `~/GLLVM.jl-pin-00a2d7b7` (byte-exact bridge-gate engine pin — Codex needs
