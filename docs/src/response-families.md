@@ -944,6 +944,6 @@ correlation(fit)   # cross-response correlation matrix
 getLV(fit)         # latent variable scores (sites × K)
 ```
 
-See [Working with a fit](/working-with-a-fit) for the full extractor reference.
+See [Working with a fit](working-with-a-fit.md) for the full extractor reference.
 
-See also: [Get started](/quickstart) · [Covariance and correlation](/covariance-correlation) · [Reference](/api).
+See also: [Get started](quickstart.md) · [Covariance and correlation](covariance-correlation.md) · [Reference](api.md).

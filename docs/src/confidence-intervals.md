@@ -100,7 +100,7 @@ bootstrap_ci(fit; y = y, n_boot = 500)    # parametric bootstrap
 ```
 
 and derived-quantity CIs (Σ_y entries, communality, correlation, phylogenetic
-signal H²) via [`confint_derived`-family helpers](/covariance-correlation).
+signal H²) via [`confint_derived`-family helpers](covariance-correlation.md).
 
 ## Predictor-informed latent-score effects
 
@@ -125,4 +125,4 @@ returned names such as `B_lv[2,1]` and `B_lv[4,1]`. It is intentionally only
 accepted with `method = :profile`; Wald/bootstrap calls return their full
 supported surface.
 
-See also: [Response families](/response-families) · [Working with a fit](/working-with-a-fit) · [Reference](/api).
+See also: [Response families](response-families.md) · [Working with a fit](working-with-a-fit.md) · [Reference](api.md).

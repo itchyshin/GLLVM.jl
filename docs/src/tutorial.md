@@ -309,7 +309,7 @@ bootstrap route, while species-covariate, fourth-corner, RRR, and constrained
 ordination fits use dedicated Wald helpers because their designs are not stored
 inside the fit object. (The Gaussian `GllvmFit` uses the separate `confint` /
 `profile_ci` / `bootstrap_ci` interface — see [Confidence
-intervals](/confidence-intervals).)
+intervals](confidence-intervals.md).)
 
 For the headline regression-style summary, `coef_table` wraps the Wald entry and
 adds the `z` statistic and two-sided p-value:
@@ -460,8 +460,8 @@ Match the family to the response support and its mean–variance behaviour:
 
 When a Laplace fit looks unstable (a degenerate Hessian, implausible dispersion),
 the variational (`fit_*_gllvm_va`) drivers optimise an ELBO instead — slower but
-steadier; see [Response families](/response-families).
+steadier; see [Response families](response-families.md).
 
-See also: [Get started](/quickstart) · [Working with a fit](/working-with-a-fit) ·
-[Response families](/response-families) · [Structured dependence](/structured-dependence) ·
-[Confidence intervals](/confidence-intervals) · [Reference](/api).
+See also: [Get started](quickstart.md) · [Working with a fit](working-with-a-fit.md) ·
+[Response families](response-families.md) · [Structured dependence](structured-dependence.md) ·
+[Confidence intervals](confidence-intervals.md) · [Reference](api.md).

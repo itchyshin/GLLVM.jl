@@ -232,5 +232,7 @@ using GLLVM
     include("test_em_squarem.jl")
     include("test_em_squarem_safety.jl")
     include("test_relaxed_clock.jl")
+    include("test_spatial_cov.jl")
+    include("test_cv.jl")
     include("test_quality.jl")
 end

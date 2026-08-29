@@ -12,27 +12,35 @@ makedocs(;
         devurl    = "dev",
     ),
     pages    = [
-        "Home"        => "index.md",
-        "Tutorial"    => "tutorial.md",
-        "Get started" => "quickstart.md",
-        "Articles"    => [
-            "Model"                    => "model.md",
-            "Morphometrics"            => "morphometrics.md",
-            "Working with a fit"       => "working-with-a-fit.md",
-            "Covariance & correlation" => "covariance-correlation.md",
-            "Structured dependence"    => "structured-dependence.md",
-            "Response families"        => "response-families.md",
-            "Confidence intervals"     => "confidence-intervals.md",
-            "Common pitfalls"          => "pitfalls.md",
-            "Benchmarks"               => "benchmarks.md",
-            "Comparison vs gllvmTMB"   => "comparison.md",
-            "Capability parity"        => "gllvmtmb-parity.md",
+        "Getting Started" => [
+            "Overview"        => "index.md",
+            "Quick Start"     => "quickstart.md",
+            "Tutorial"        => "tutorial.md",
+            "Common Pitfalls" => "pitfalls.md",
         ],
-        "Roadmap"     => "roadmap.md",
-        "Reference"   => "api.md",
-        "Changelog"   => "changelog.md",
+        "Vignettes" => [
+            "Community Abundance (JSDM)" => "vignettes/community-abundance.md",
+            "Phylogenetic GLLVM"         => "vignettes/phylogenetic-gllvm.md",
+            "Morphometrics"              => "morphometrics.md",
+        ],
+        "Guides & Methods" => [
+            "Mathematical Model"       => "model.md",
+            "Response Families"        => "response-families.md",
+            "Working with a Fit"       => "working-with-a-fit.md",
+            "Covariance & Correlation" => "covariance-correlation.md",
+            "Structured Dependence"    => "structured-dependence.md",
+            "Confidence Intervals"     => "confidence-intervals.md",
+        ],
+        "Reference & Benchmarks" => [
+            "API Reference"          => "api.md",
+            "Benchmarks"             => "benchmarks.md",
+            "Comparison vs gllvmTMB" => "comparison.md",
+            "Capability Parity"      => "gllvmtmb-parity.md",
+            "Roadmap"                => "roadmap.md",
+            "Changelog"              => "changelog.md",
+        ],
     ],
-    warnonly = true,   # pilot: don't fail the build on small doc issues
+    warnonly = true,
 )
 
 # Use DocumenterVitepress.deploydocs (NOT Documenter's): it flattens the Vitepress

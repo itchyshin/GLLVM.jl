@@ -58,4 +58,4 @@ derived-quantity confidence intervals (`confint_derived`, and the
 transformed-scale Wald intervals for `[0,1]`- and `[−1,1]`-bounded quantities),
 which provide profile-likelihood and parametric-bootstrap intervals.
 
-See also: [Get started](/quickstart) · [Model](/model) · [Reference](/api).
+See also: [Get started](quickstart.md) · [Model](model.md) · [Reference](api.md).

@@ -65,6 +65,6 @@ sigma_y_site(fit)    # p×p model-implied covariance Σ_y
 
 Because latent factors are identified only up to rotation, interpret these
 rotation-invariant summaries rather than the raw loadings `Λ` — see
-[Common pitfalls](/pitfalls).
+[Common pitfalls](pitfalls.md).
 
-See also: [Get started](/quickstart) · [Covariance and correlation](/covariance-correlation) · [Reference](/api).
+See also: [Get started](quickstart.md) · [Covariance and correlation](covariance-correlation.md) · [Reference](api.md).

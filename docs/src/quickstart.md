@@ -3,7 +3,13 @@
 This page walks through one end-to-end fit: simulate a Gaussian GLLVM,
 fit it with `fit_gaussian_gllvm`, inspect the recovered parameters, build
 three flavours of confidence interval, and visualise the recovered
-`Σ_y` against the truth.
+`Σ_y` against the truth. It concludes with an R `gllvmTMB` ⟷ Julia `GLLVM.jl`
+cheat sheet.
+
+!!! warning "Matrix Orientation: $p \times n$ in Julia vs $n \times p$ in R"
+    **GLLVM.jl expects species/traits in rows and sites/observations in columns ($p \times n$).**
+
+    If you are importing data formatted for R packages such as `gllvm` or `gllvmTMB` (which use the $n \times p$ convention with sites in rows and species in columns), you must transpose your matrix (`Y'`) before passing it to `fit_gllvm`, `fit_gaussian_gllvm`, or any other GLLVM.jl fitter.
 
 ## 1. Simulate a fixture
 
@@ -35,7 +41,7 @@ fit = fit_gaussian_gllvm(y; K = K)
 
 `fit_gaussian_gllvm` returns a `GllvmFit` object. The Gaussian path is
 fit at the marginal log-likelihood maximum via the closed-form
-integration described in the [Model](/model) page. For models without
+integration described in the [Model](model.md) page. For models without
 diagonal random effects or phylogeny the PPCA warm start lands on the
 optimum directly, so L-BFGS typically reports convergence after 0–1
 iterations.
@@ -76,7 +82,7 @@ maximum(abs, Σ_hat .- Σ_true)        # largest per-cell discrepancy — should
 ```
 
 Per-cell agreement at the relative Frobenius scale is `< 1e-3` on the benchmark
-grid (see [Benchmarks](/benchmarks)).
+grid (see [Benchmarks](benchmarks.md)).
 
 To visualise it, with Plots.jl installed separately (`Pkg.add("Plots")` — it is
 not a GLLVM.jl dependency):
@@ -93,3 +99,33 @@ heatmap(
 
 The residual panel should sit close to zero across the full
 species-by-species surface.
+
+---
+
+## Cheat Sheet: R `gllvm` / `gllvmTMB` ⟷ Julia `GLLVM.jl`
+
+| Task / Feature | R (`gllvm` / `gllvmTMB`) | Julia (`GLLVM.jl`) | Notes |
+|:---|:---|:---|:---|
+| **Matrix shape** | `Y` is $n \times p$ (sites $\times$ species) | `Y` is $p \times n$ (species $\times$ sites) | **Transpose R matrices (`Y'`) when loading into Julia** |
+| **Gaussian GLLVM** | `gllvm(Y, family = "gaussian", num.lv = 2)` | `fit_gaussian_gllvm(Y; K = 2)` or `fit_gllvm(Y; family = Normal(), K = 2)` | ~340× faster closed-form profile path |
+| **Poisson count JSDM** | `gllvm(Y, family = "poisson", num.lv = 2)` | `fit_gllvm(Y; family = Poisson(), K = 2)` or `fit_poisson_gllvm(Y; K = 2)` | Laplace approximation with exact gradients |
+| **Negative Binomial (NB2)** | `gllvm(Y, family = "negative.binomial", num.lv = 2)` | `fit_gllvm(Y; family = NegativeBinomial(), K = 2)` or `fit_nb_gllvm(Y; K = 2)` | Quadratic variance $V(\mu) = \mu + \phi \mu^2$ |
+| **Negative Binomial 1 (NB1)** | `gllvm(Y, family = "NB1", num.lv = 2)` | `fit_nb1_gllvm(Y; K = 2)` | Linear variance $V(\mu) = (1 + \phi)\mu$ |
+| **Binomial / Bernoulli** | `gllvm(Y, family = "binomial", num.lv = 2)` | `fit_gllvm(Y; family = Binomial(), K = 2)` or `fit_binomial_gllvm(Y; K = 2)` | Logit or probit link |
+| **Beta (continuous (0,1))** | `gllvm(Y, family = "beta", num.lv = 2)` | `fit_gllvm(Y; family = Beta(), K = 2)` or `fit_beta_gllvm(Y; K = 2)` | Precision parameter $\phi$ |
+| **Gamma (positive continuous)** | `gllvm(Y, family = "gamma", num.lv = 2)` | `fit_gllvm(Y; family = Gamma(), K = 2)` or `fit_gamma_gllvm(Y; K = 2)` | Log link with shape parameter $\alpha$ |
+| **Ordinal (cumulative-logit)** | `gllvm(Y, family = "ordinal", num.lv = 2)` | `fit_ordinal_gllvm(Y; K = 2)` | Shared or per-trait cutpoints |
+| **Zero-inflated models** | `gllvm(Y, family = "ZIP", num.lv = 2)` | `fit_zip_gllvm(Y; K = 2)`, `fit_zinb_gllvm(Y; K = 2)` | Two-part mixture models |
+| **Site latent scores** | `getLV(fit)` | `getLV(fit)` | Returns $n \times K$ site coordinates |
+| **Species factor loadings** | `getLoadings(fit)` or `fit$params$theta` | `getLoadings(fit)` | Returns $p \times K$ species loadings |
+| **Residual correlation matrix** | `getResidualCor(fit)` | `correlation(fit)` | Returns $p \times p$ model-implied correlations |
+| **Total species covariance** | `getResidualCov(fit)` | `sigma_y_site(fit)` | Returns $p \times p$ matrix $\Sigma_y = \Lambda\Lambda^\top + \Sigma_\varepsilon$ |
+| **Variance partitioning** | `getResidualCov(fit)$var.part` | `communality(fit)` | Shared variance fraction per response |
+| **Environmental covariates** | `gllvm(Y, X = X, formula = ~ x1 + x2, num.lv = 2)` | `fit_gllvm(Y; family = ..., X = X, K = 2)` or `@formula(Y ~ x1 + x2)` | Fixed effects for environmental predictors |
+| **Species-specific slopes** | `gllvm(Y, X = X, formula = ~ (x1 \| species), ...)` | `fit_gllvm_speciescov(Y, X; K = 2)` | Species-specific environmental responses |
+| **Fourth-corner models** | `gllvm(Y, X = X, TR = TR, formula = Y ~ ...)` | `fit_fourthcorner_gllvm(Y, X, TR; K = 2)` | Trait $\times$ environment interactions |
+| **Phylogenetic GLLVM** | `gllvm(Y, tree = phy, ...)` | `fit_phylo_gaussian(Y, phy; K = 2)` or `fit_phylo_glm(Y, phy; family = Poisson(), K = 2)` | Hadfield & Nakagawa sparse precision |
+| **Phylogenetic signal $H^2$** | (derived from variance components) | `phylo_signal(fit)`, `phylo_signal_wald_ci(fit)` | Transformed-Wald CIs with exact boundary bounds |
+| **Confidence intervals** | `confint(fit)` | `confint(fit)`, `profile_ci(fit, "par")`, `bootstrap_ci(fit)` | Wald, profile likelihood, and parametric bootstrap |
+
+For complete worked workflows, explore the [Community Abundance Vignette](vignettes/community-abundance.md) and the [Phylogenetic GLLVM Vignette](vignettes/phylogenetic-gllvm.md).

@@ -14,7 +14,7 @@ phylogenetic path (worst case across the benchmark grid:
 
 page is the live **catch-up scoreboard** — where GLLVM.jl stands against the
 `gllvmTMB` feature set. For *speed* comparisons see
-[Comparison](/comparison) and [Benchmarks](/benchmarks).
+[Comparison](comparison.md) and [Benchmarks](benchmarks.md).
 
 Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advantage.
 

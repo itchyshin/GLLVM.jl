@@ -375,6 +375,19 @@ function _bridge_compute_ci_gaussian(fit::GllvmFit, ydata, method::AbstractStrin
     end
 end
 
+# Delta-method Wald CI fields for predictor-informed latent-score effects,
+# reshaped from confint_lv_effects' vec(B_lv) order to the p×q_lv layout that
+# matches `lv_effects`. Merged into the X_lv bridge rows when ci_method=="wald".
+function _bridge_lv_ci_fields(ci, q_lv::Integer)
+    p = length(ci.estimate) ÷ q_lv
+    return (lv_effects_lower = reshape(collect(Float64, ci.lower), p, q_lv),
+            lv_effects_upper = reshape(collect(Float64, ci.upper), p, q_lv),
+            lv_effects_se = reshape(collect(Float64, ci.se), p, q_lv),
+            lv_effects_ci_level = float(ci.level),
+            lv_effects_ci_method = "wald",
+            lv_effects_ci_pd = ci.pd_hessian)
+end
+
 # --- public entry point ----------------------------------------------------
 
 """
@@ -403,19 +416,6 @@ Confidence intervals are routed through `options` (all optional):
   - `"ci_nboot"` — bootstrap replicates (default `200`).
   - `"ci_seed"`  — bootstrap RNG seed (default `0`; fixed → reproducible).
 """
-# Delta-method Wald CI fields for predictor-informed latent-score effects,
-# reshaped from confint_lv_effects' vec(B_lv) order to the p×q_lv layout that
-# matches `lv_effects`. Merged into the X_lv bridge rows when ci_method=="wald".
-function _bridge_lv_ci_fields(ci, q_lv::Integer)
-    p = length(ci.estimate) ÷ q_lv
-    return (lv_effects_lower = reshape(collect(Float64, ci.lower), p, q_lv),
-            lv_effects_upper = reshape(collect(Float64, ci.upper), p, q_lv),
-            lv_effects_se = reshape(collect(Float64, ci.se), p, q_lv),
-            lv_effects_ci_level = float(ci.level),
-            lv_effects_ci_method = "wald",
-            lv_effects_ci_pd = ci.pd_hessian)
-end
-
 function bridge_fit(; y,
                     family,
                     d::Integer = 1,

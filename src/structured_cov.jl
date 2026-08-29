@@ -54,7 +54,8 @@ function spatial_cov(coords::AbstractMatrix;
     sill  > 0 || throw(ArgumentError("sill must be positive; got $sill"))
     nugget ≥ 0 || throw(ArgumentError("nugget must be non-negative; got $nugget"))
 
-    C = Matrix{Float64}(undef, p, p)
+    T = promote_type(eltype(coords), typeof(range), typeof(smoothness), typeof(sill), typeof(nugget), Float64)
+    C = Matrix{T}(undef, p, p)
 
     if kernel === :exponential
         @inbounds for j in 1:p, i in 1:p
@@ -67,7 +68,7 @@ function spatial_cov(coords::AbstractMatrix;
             C[i, j] = sill * exp(-(d / range)^2)
         end
     elseif kernel === :matern
-        ν = Float64(smoothness)
+        ν = smoothness
         ν > 0 || throw(ArgumentError("Matérn smoothness ν must be positive; got $ν"))
         @inbounds for j in 1:p, i in 1:p
             d = norm(coords[i, :] - coords[j, :])
