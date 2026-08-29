@@ -275,7 +275,9 @@ function simulate(fit::StudentTFit, n::Integer; rng::AbstractRNG = default_rng()
         η = fit.β .+ fit.Λ * randn(rng, K)
         for t in 1:p
             μ = linkinv(fit.link, _clamp_eta(η[t]))
-            Y[t, s] = μ + fit.σ * rand(rng, TDist(fit.ν))
+            σ_t = fit.σ isa Real ? fit.σ : fit.σ[t]
+            ν_t = fit.ν isa Real ? fit.ν : fit.ν[t]
+            Y[t, s] = μ + σ_t * rand(rng, TDist(ν_t))
         end
     end
     return Y

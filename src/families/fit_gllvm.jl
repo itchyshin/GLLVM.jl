@@ -141,7 +141,7 @@ function fit_gllvm(Y::AbstractMatrix; family = Normal(), K = nothing,
     # read: φ is always estimated. Gamma unchanged.
     if disp_group === nothing &&
        (family isa NegativeBinomial || family isa Beta || family isa NB1 ||
-        family isa BetaBinom)
+        family isa BetaBinom || (family isa StudentTFamily && family.ν === nothing))
         disp_group = :species
     end
 
@@ -302,6 +302,8 @@ _fit_gllvm_grouped(::Gamma, Y::AbstractMatrix; kwargs...) = fit_gamma_gllvm_grou
 _fit_gllvm_grouped(::NB1,   Y::AbstractMatrix; kwargs...) = fit_nb1_gllvm_grouped(Y; kwargs...)
 _fit_gllvm_grouped(::TweedieED, Y::AbstractMatrix; kwargs...) =
     fit_tweedie_gllvm_grouped(Y; kwargs...)
+_fit_gllvm_grouped(family::StudentTFamily, Y::AbstractMatrix; group = nothing, kwargs...) =
+    fit_studentt_gllvm(Y; nu = family.ν, disp_group = :species, kwargs...)
 
 # Beta-binomial: the trial counts are required here, unlike in the named fitter.
 # `fit_beta_binomial_gllvm_grouped` defaults `N === nothing` to all-ones, but at
@@ -326,4 +328,4 @@ end
 # Families without a grouped-dispersion fitter.
 _fit_gllvm_grouped(family, Y::AbstractMatrix; kwargs...) = throw(ArgumentError(
     "fit_gllvm: disp_group (grouped dispersion) is not supported for family " *
-    "$(nameof(typeof(family))) — available: NegativeBinomial, Beta, Gamma, NB1, BetaBinom, Tweedie (TweedieED)"))
+    "$(nameof(typeof(family))) — available: NegativeBinomial, Beta, Gamma, NB1, BetaBinom, Tweedie (TweedieED), StudentTFamily"))

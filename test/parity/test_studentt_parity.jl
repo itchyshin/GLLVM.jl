@@ -104,4 +104,34 @@ const _ST_SEED = 71
             @test r.logLik ≈ jl_fit.loglik rtol = 1e-6
         end
     end
+
+    @testset "per-trait σ + per-trait estimated ν (twin default) — Parity Cell 9" begin
+        r_est = fit_gllvmtmb_parity_student(Y, K; df_fixed = nothing)
+        @test r_est.converged
+        @test isfinite(r_est.logLik)
+
+        jl_est = fit_studentt_gllvm(Y; K = K, nu = nothing, disp_group = :species,
+                                    iterations = 400)
+        @test jl_est.converged
+        @test isfinite(jl_est.loglik)
+        @test jl_est.disp_group === :species
+        @test jl_est.σ isa Vector{Float64}
+        @test jl_est.ν isa Vector{Float64}
+        @test all(>(1.0), jl_est.ν)
+
+        print_parity_loglik(
+            "student logLik oracle, disp_group=:species, estimated ν (seed=$(_ST_SEED), p=$p, " *
+            "K=$K, n=$n; twin fid 9)";
+            jl_logL = jl_est.loglik, r_logL = r_est.logLik, r_obj = r_est.objective,
+        )
+        println("  Julia per-trait σ  = ", round.(jl_est.σ; sigdigits = 5))
+        println("  gllvmTMB per-trait σ = ", round.(r_est.sigma_vec; sigdigits = 5))
+        println("  Julia per-trait ν  = ", round.(jl_est.ν; sigdigits = 5))
+        println("  gllvmTMB per-trait ν = ", round.(r_est.df_vec; sigdigits = 5))
+        println()
+
+        @testset "log-likelihood agreement (Δ logLik ≤ 1e-3)" begin
+            @test abs(r_est.logLik - jl_est.loglik) ≤ 1e-3
+        end
+    end
 end

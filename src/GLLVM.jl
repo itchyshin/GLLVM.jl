@@ -2,6 +2,7 @@ module GLLVM
 
 using LinearAlgebra, Optim, ForwardDiff, Random, SparseArrays, Statistics
 using SpecialFunctions: digamma, trigamma, besselk, gamma, loggamma
+import StatsModels: coef, vcov, nobs, dof, loglikelihood, aic, bic, coeftable, stderror, confint, predict, residuals, fitted, StatsAPI
 # Import Distributions without `Multinomial` so the Identity marker
 # `GLLVM.Multinomial` (unordered categorical, twin fid 16) can bind.
 # `Distributions.Multinomial` is the count-vector law — still available qualified.
@@ -45,6 +46,14 @@ include("likelihood_sparse_phy.jl")
 include("sparse_phy_grad.jl")            # analytic gradient + SparsePhyState (self-includes takahashi_selinv.jl)
 include("node_gradient.jl")              # O(p) node-frame gradient + per-species BLUPs (Phase 1.1)
 include("fit_phylo.jl")                  # O(p) single-trait phylogenetic Gaussian fitter (Phase 1.4)
+include("phylo_contrasts.jl")            # Felsenstein independent contrasts (AD-friendly)
+include("likelihood_contrasts.jl")       # Gaussian marginal log-lik on contrast scale
+include("edge_incidence.jl")             # Edge-node incidence sparse representation (Bolker phylog.rmd)
+include("likelihood_edge_incidence.jl")  # Gaussian marginal log-lik via edge-node incidence
+include("phylo_branch_re.jl")            # Single-variance branch random-effects model
+include("em_phylo.jl")                   # Gradient-free EM for Gaussian phylogenetic GLLVM
+include("em_squarem.jl")                 # SQUAREM acceleration for phylogenetic EM
+include("relaxed_clock.jl")              # Relaxed-clock per-branch evolution rates
 
 # Response families (Phase 3): Distributions types as markers + link functions
 include("families/links.jl")
@@ -58,11 +67,11 @@ include("families/truncated_nbinom2.jl") # Zero-truncated NB2 (twin fid 11; shar
 include("families/negbin.jl")            # Negative-binomial (NB2) family pieces (Phase 3)
 include("families/gp1.jl")               # Generalized-Poisson type-1 (GP-1, signed dispersion) — issue #104
 include("families/negbin1.jl")           # Negative-binomial type-1 (NB1, linear variance)
-include("families/grouped_dispersion.jl") # Grouped / species-specific NB dispersion (disp.group)
 include("families/beta.jl")              # Beta family pieces (Phase 3)
 include("families/ordinal.jl")           # Ordinal (cumulative-logit) family pieces (Phase 3)
 include("families/gamma.jl")             # Gamma (positive continuous) family pieces (Phase 3)
 include("families/tweedie.jl")           # Tweedie (compound Poisson–Gamma, 1<p<2) — biomass/abundance with zeros
+include("families/grouped_dispersion.jl") # Grouped / species-specific dispersion (disp.group)
 include("families/exponential.jl")       # Exponential (positive continuous, no dispersion) — Gamma(α=1)
 include("families/studentt.jl")          # Student-t (heavy-tailed continuous, fixed ν) family pieces
 include("families/lognormal.jl")         # one-part lognormal (twin fid 3)
@@ -166,13 +175,28 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        ppca_init, em_fa,
        sigma_y_site, communality, correlation, phylo_signal, link_residual,
        chibar2_pvalue, variance_lrt, profile_ci_variance,
-       augmented_phy, gaussian_marginal_loglik_sparse_phy,
+       augmented_phy, AugmentedPhy, random_balanced_tree, sigma_phy_dense,
+       gaussian_marginal_loglik_sparse_phy,
        node_grad, node_dσ_phy_only, NodePerSpecies, build_node_perspecies,
        grad_node_perspecies, node_blups,
        fit_phylo_gaussian, PhyloGaussianFit,
        phylo_glm_marginal_loglik, fit_phylo_glm, PhyloGLMFit,
        coevolution_glm_marginal_loglik, fit_coevolution_glm, CoevolutionGLMFit,
        coevolution_gamma,
+       FelsensteinContrasts, felsenstein_contrast_matrix, felsenstein_contrasts,
+       contrast_transform, gaussian_marginal_loglik_contrasts,
+       EdgePhy, edge_phy, Q_times_x, sigma_phy_dense_edge, log_det_Q, solve_Q,
+       gaussian_marginal_loglik_edge_phy,
+       path_membership, simulate_branch_re, BranchRECache, branch_re_cache,
+       branch_re_profile_negll, branch_blups, BranchREFit, fit_branch_re,
+       fit_branch_re_dense, clade_edges, find_clade_root,
+       welch_t, rank_sum_z, excess_kurtosis, qq_max_dev,
+       AnBSparseSolver, build_AnB_sparse, solve_AnB, blup_phylo_sparse,
+       EMPhyloFit, em_fit_phylo, fit_em_phylo, em_observed_information,
+       em_fit_phylo_squarem, fit_phylo_squarem,
+       edge_W_diag, Q_perbranch, simulate_relaxed_bm, estep_edge_moments,
+       shrink_logrates, RelaxedClockFit, fit_relaxed_clock,
+       spearman, shrinkage_factor, clade_detection,
        LogitLink, ProbitLink, CLogLogLink, IdentityLink, LogLink,
        fit_mixed_gllvm, MixedFamilyFit, mixed_marginal_loglik_laplace,
        fit_binomial_gllvm, BinomialFit, fit_poisson_gllvm, PoissonFit,
@@ -197,7 +221,7 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        fit_nb1_gllvm_grouped, NB1GroupedFit, nb1_grouped_marginal_loglik_laplace,
        fit_nb1_gllvm_grouped_cov, NB1GroupedCovFit,
        fit_tweedie_gllvm_grouped, TweedieGroupedFit, tweedie_grouped_marginal_loglik_laplace,
-       StudentTFamily, fit_studentt_gllvm, StudentTFit, studentt_marginal_loglik_laplace,
+       StudentTFamily, StudentT, fit_studentt_gllvm, StudentTFit, studentt_marginal_loglik_laplace,
        Lognormal, LognormalFit, fit_lognormal_gllvm,
        lognormal_marginal_loglik, lognormal_response_mean,
        Multinomial, MultinomialFit, fit_multinomial_gllvm,
@@ -248,6 +272,7 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        getLV, getLoadings, rotation, ordination, ordiplot, ordination_uncertainty,
        extract_lv_effects, lv_effects, predict_spatial,
        coef_table, GllvmCoefTable, select_lv, LVSelection,
+       StatsAPI, coef, vcov, nobs, dof, loglikelihood, stderror, coeftable,
        predict, fitted, residuals, aic, bic, simulate,
        bridge_fit, bridge_capabilities
 

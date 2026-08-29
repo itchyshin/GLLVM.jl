@@ -523,11 +523,11 @@ Per the parameterisation note, `df_vec` should equal `df_fixed` on every
 trait (fixed, not estimated) — assert that in the caller before trusting a
 logLik Δ as dispersion-only.
 """
-function fit_gllvmtmb_parity_student(y::AbstractMatrix, K::Integer; df_fixed::Real)
-    df_fixed > 1 || throw(ArgumentError("student(): df_fixed must be > 1; got $df_fixed"))
+function fit_gllvmtmb_parity_student(y::AbstractMatrix, K::Integer; df_fixed::Union{Nothing, Real} = nothing)
+    df_fixed !== nothing && (df_fixed > 1 || throw(ArgumentError("student(): df_fixed must be > 1; got $df_fixed")))
     p, n = size(y)
     _parity_require_gllvmtmb!()
-    dfv = Float64(df_fixed)
+    dfv = df_fixed === nothing ? nothing : Float64(df_fixed)
     @rput y K p n dfv
 
     R"""
@@ -537,12 +537,17 @@ function fit_gllvmtmb_parity_student(y::AbstractMatrix, K::Integer; df_fixed::Re
         trait = factor(rep(trait_names, times = n), levels = trait_names),
         value = as.vector(y)   # column-major on p×n ⇒ site blocks
     )
+    fam_obj <- if (is.null(dfv)) {
+        gllvmTMB::student(link = "identity")
+    } else {
+        gllvmTMB::student(link = "identity", df = dfv)
+    }
     fit_r <- gllvmTMB(
         value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE),
         data = df_long,
         unit = "site",
         trait = "trait",
-        family = gllvmTMB::student(link = "identity", df = dfv),
+        family = fam_obj,
         control = gllvmTMBcontrol(n_init = 1L, se = FALSE)
     )
     pl <- fit_r$tmb_obj$env$parList(fit_r$opt$par)

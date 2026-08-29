@@ -109,6 +109,30 @@ _max_rel_err(a, b) = maximum(abs.(a .- b) ./ max.(1.0, abs.(b)))
         @test fit.σ ≈ σ_true rtol = 0.35                   # scale identifiable-but-noisy
     end
 
+    @testset "simulate → fit → recover with jointly estimated per-trait ν" begin
+        Random.seed!(7051)
+        p, K, n = 4, 1, 500
+        β_true = [0.4, 0.8, -0.2, 0.5]
+        Λ_true = 0.4 .* randn(p, K)
+        σ_true = [0.7, 0.8, 0.6, 0.75]
+        ν_true = [4.0, 5.0, 3.5, 6.0]
+        Z = randn(K, n)
+        η = β_true .+ Λ_true * Z
+        Y = zeros(p, n)
+        for t in 1:p, s in 1:n
+            Y[t, s] = η[t, s] + σ_true[t] * rand(TDist(ν_true[t]))
+        end
+        fit = fit_studentt_gllvm(Y; K = K, nu = nothing, disp_group = :species)
+        @test fit isa StudentTFit
+        @test fit.ν isa Vector{Float64}
+        @test length(fit.ν) == p
+        @test all(>(1.0), fit.ν)
+        @test fit.σ isa Vector{Float64}
+        @test length(fit.σ) == p
+        @test maximum(abs.(fit.β .- β_true)) < 0.4
+        @test all(isfinite, fit.σ) && all(>(0), fit.σ)
+    end
+
     @testset "fit is robust: a few gross outliers barely move β̂ (vs Gaussian)" begin
         # Bounded-influence sanity: contaminate ~3% of cells with huge values and
         # confirm the Student-t intercepts stay close to the clean truth. This is
@@ -183,9 +207,16 @@ _max_rel_err(a, b) = maximum(abs.(a .- b) ./ max.(1.0, abs.(b)))
         @test fit_gllvm(Y; family = StudentTFamily(ν, 9.0), K = K,
                         iterations = 40).loglik ≈ fu.loglik atol = 1e-8
 
-        # Zero-arg convenience agrees with the fitter's own ν = 4 default.
-        @test StudentTFamily().ν == 4.0
-        @test fit_gllvm(Y; family = StudentTFamily(), K = K, iterations = 40).ν == 4.0
+        # Zero-arg constructor defaults to estimated ν (ν === nothing), matching gllvmTMB.
+        @test StudentTFamily().ν === nothing
+        @test StudentTFamily(nothing).ν === nothing
+        @test StudentT().ν === nothing
+        @test StudentT(ν).ν == ν
+        fit_est = fit_gllvm(Y; family = StudentTFamily(), K = K, iterations = 40)
+        @test fit_est.ν isa Vector{Float64}
+        @test all(>(1.0), fit_est.ν)
+        @test fit_est.σ isa Vector{Float64}
+        @test all(>(0.0), fit_est.σ)
 
         # A different ν is a different likelihood — the marker is really read.
         @test !isapprox(fit_gllvm(Y; family = StudentTFamily(50.0), K = K,
