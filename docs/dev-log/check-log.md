@@ -15919,3 +15919,6 @@ unpaid. No numerical source changes, outer optimization or campaign.
 
 ## 2026-08-30 — Binomial whole-fit stopping diagnosis
 Totoro77.26s bounded run:3Bernoulli PASS,3varying FAIL R health. rel.tol1e-14 leaves varying parameters/likelihood/gradient unchanged and returns singular convergence code1. All six finite-difference/likelihood/native-health checks pass, analytic-FDmax4.19e-7. Baseline1of6 and priorcompanion2of6 unchanged. Evidence verifier5negativesPASS; Unlazy1met/2unmet. Next curvature/step diagnosis, not further blind tolerance changes. M1PARTIAL, RoseNOTRUN. See after-task/2026-08-30-core070-binomial-stopping.md.
+
+## 2026-08-30 — Six scoped binomial models qualified with public R controls
+Curvature83.36s found positive stable Hessians; PORT control slots independently verified. Explicit sing.tol1e-14 qualifies5of6; final probit/varying public BFGS12.60s returns code0/gradient1.1164e-5. Allsix completefits now pass unchanged health/likelihood gates, maxabsdelta6.83e-11. Defaultbaseline1of6 immutable. Matrix7assertions+wholefit5negatives+bundle3negativesPASS. FullmanifestDRAFT/M1PARTIAL, independent review unpaid. See after-task/2026-08-30-core070-binomial-qualified.md.

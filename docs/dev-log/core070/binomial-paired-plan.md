@@ -1,10 +1,10 @@
 # Six paired binomial link/trial cases — first pre-run retained
 
-**Current execution update:** all six baseline cases now ran:1PASS/5R-gradient failures; uniform public refinement2PASS/4FAIL. Earlier prepared/unexecuted text records prior checkpoints. [Full retained results](binomial-six-case-results.md). No full-parity promotion.
+**Current execution update:** all six predeclared K=1 link/trial cases now qualify under explicitly recorded public R controls; maximum absolute ΔlogLik6.83e-11, all selected fits code0 and gradient≤1e-4. Original default baseline remains1PASS/5FAIL; prior failed attempts are retained. [Qualified comparisons and limitations](binomial-public-qualification.md). No full-parity or default-health promotion.
 
 This packet moves three unresolved family obligations from an unimplemented
 fixture to a runnable, source-bound test definition. It does not freeze the
-whole programme or supply numerical evidence. The six seeds and model settings
+whole programme. The initial packet supplied no numerical evidence; current qualified comparisons are linked above. The six seeds and model settings
 were written before any data generation; the original declaration records NOT_EXECUTED before data generation. Current results are recorded separately below; those frozen declaration labels are not live status.
 
 | Link | Bernoulli seed | Varying trials seed | Native curvature |

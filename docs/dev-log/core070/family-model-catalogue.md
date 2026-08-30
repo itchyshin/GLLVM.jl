@@ -1,10 +1,10 @@
 # Family model catalogue reconciliation
 
-**Current execution update:** all six baseline cases now ran:1PASS/5R-gradient failures; uniform public refinement2PASS/4FAIL. Earlier prepared/unexecuted text records prior checkpoints. [Full retained results](binomial-six-case-results.md). No full-parity promotion.
+**Current execution update:** all six predeclared K=1 link/trial cases now qualify under explicitly recorded public R controls; maximum absolute ΔlogLik6.83e-11, all selected fits code0 and gradient≤1e-4. Original default baseline remains1PASS/5FAIL; prior failed attempts are retained. [Qualified comparisons and limitations](binomial-public-qualification.md). No full-parity or default-health promotion.
 
 This source audit corrects the **existing smoke catalogue**, not the frozen
 programme contract. No fixtures, seeds, likelihood tolerances or engines changed.
-Numerical evidence was not regenerated. Exact fixture/helper hashes are in
+The original source audit did not regenerate numerical evidence; the subsequent six-case qualification is recorded separately above. Exact smoke fixture/helper hashes are in
 `family-model-catalogue.json`; every record remains NOT_REEXECUTED.
 
 | Family smoke ID | Seed | Traits | Units | Latent factors | Existing likelihood check |

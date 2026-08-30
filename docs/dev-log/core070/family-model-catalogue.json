@@ -641,18 +641,20 @@
       "source_admission_id": "FAMILY-01-PROBIT",
       "status": "PARTIAL",
       "owner": "A3/B2/B5",
-      "detail": "Bernoulli baseline passes14checks; varying-trial baseline fails only R raw gradient. Uniform refinement makes Bernoulli optimizer code1 and leaves varying-trial R gradient1.117e-4. Native observed-curvature health/likelihood pass. Formula/bridge and full qualification remain unpaid.",
+      "detail": "Six predeclared K1 direct Julia versus explicit-public-control R fits now qualify with unchanged health/likelihood gates and all original failures retained. Default R baseline remains1of6. Julia observed-curvature scope only; shared-X, formula/bridge, inference/recovery and complete finite coverage remain unpaid.",
       "paired_contract": "docs/dev-log/core070/binomial-paired-contract.toml",
-      "evidence": "docs/dev-log/core070/binomial-six-case-evidence.json"
+      "evidence": "docs/dev-log/core070/binomial-six-case-evidence.json",
+      "qualified_evidence": "docs/dev-log/core070/binomial-bfgs-evidence.json"
     },
     {
       "id": "FAMILY-LINK-CLOGLOG",
       "source_admission_id": "FAMILY-01-CLOGLOG",
       "status": "PARTIAL",
       "owner": "A3/B2/B5",
-      "detail": "Both baseline cases fail only R raw gradient; native observed-curvature health/likelihood pass. Public precision companion passes Bernoulli, varying-trial gradient1.210e-4 still fails. No claim about Julia default Fisher equivalence or formula/bridge reach.",
+      "detail": "Six predeclared K1 direct Julia versus explicit-public-control R fits now qualify with unchanged health/likelihood gates and all original failures retained. Default R baseline remains1of6. Julia observed-curvature scope only; shared-X, formula/bridge, inference/recovery and complete finite coverage remain unpaid.",
       "paired_contract": "docs/dev-log/core070/binomial-paired-contract.toml",
-      "evidence": "docs/dev-log/core070/binomial-six-case-evidence.json"
+      "evidence": "docs/dev-log/core070/binomial-six-case-evidence.json",
+      "qualified_evidence": "docs/dev-log/core070/binomial-bfgs-evidence.json"
     },
     {
       "id": "NB2-TOLERANCE",
@@ -664,9 +666,10 @@
       "id": "BINOMIAL-TRIALS",
       "status": "PARTIAL",
       "owner": "A3/B4/B5",
-      "detail": "All three varying-trial cases executed and preserve exact R trial vectors with matching free parameter counts and normalized likelihoods. Native health passes; R gradients fail baseline and remain just above1e-4 after uniform nlminb refinement. Shared-X/formula/bridge coverage remains unpaid.",
+      "detail": "Six predeclared K1 direct Julia versus explicit-public-control R fits now qualify with unchanged health/likelihood gates and all original failures retained. Default R baseline remains1of6. Julia observed-curvature scope only; shared-X, formula/bridge, inference/recovery and complete finite coverage remain unpaid.",
       "paired_contract": "docs/dev-log/core070/binomial-paired-contract.toml",
-      "evidence": "docs/dev-log/core070/binomial-six-case-evidence.json"
+      "evidence": "docs/dev-log/core070/binomial-six-case-evidence.json",
+      "qualified_evidence": "docs/dev-log/core070/binomial-bfgs-evidence.json"
     },
     {
       "id": "FAMILY-MODEL-VARIANTS",
@@ -687,9 +690,10 @@
       "detail": "Converged flags and likelihood-only checks do not discharge original fit-health, inference, formula or public bridge requirements. Per-case numerical gates and independent review still needed."
     }
   ],
-  "revision": 5,
+  "revision": 6,
   "supersedes_sha256": "6be7697d405163cc9773e080037194fcb8b083cb70c2433cebdcbf147ed17caa",
-  "revision_note": "All six baseline binomial cases executed:1PASS/5R-gradient failures. Uniform precision companion2PASS/4FAIL; native health and likelihood comparisons pass all6, full qualification incomplete.",
+  "revision_note": "Six K1 binomial link/trial models qualify under explicit public R controls; default baseline1of6 unchanged. This does not replace the older K2 smoke case or freeze the full finite manifest.",
   "binomial_first_prerun": "docs/dev-log/core070/binomial-prerun-evidence.json",
-  "binomial_six_case_evidence": "docs/dev-log/core070/binomial-six-case-evidence.json"
+  "binomial_six_case_evidence": "docs/dev-log/core070/binomial-six-case-evidence.json",
+  "binomial_public_qualification": "docs/dev-log/core070/binomial-bfgs-evidence.json"
 }
