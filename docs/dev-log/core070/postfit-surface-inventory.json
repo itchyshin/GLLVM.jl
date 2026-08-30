@@ -1,0 +1,1863 @@
+{
+  "status": "SOURCE_SURFACE_INVENTORY_NOT_COMPLETE_POSTFIT_CONTRACT",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "expected_entries": 100,
+  "namespace_inventory_sha256": "7b5450326e50021e76d1f82dbaca5d5d5730927a1c485eb66b1e617b908aafa4",
+  "parser": "tools/core070_postfit_inventory.R",
+  "parser_sha256": "8f16a46f4239e80aef37b2c887c2bb685527bce8d48ae5d64587f2dd6428925a",
+  "source_pins": {
+    "NAMESPACE": "9094613610789faab69c43195d3cfdafb2c7dfef284e6646b10dababa4fa132c",
+    "R/bootstrap-sigma.R": "33095a8b5d34a7f23fc8c469682c3aa83521da0096242df7c2ee7aa009ce1668",
+    "R/check-auto-residual.R": "cd13979a32bf960d0dd6f2bc8c4840fb1f8b6902a327a7a0a982cc1a52827424",
+    "R/check-consistency.R": "7f2834acd47fa44b8816591fb974dd677b83c18e7e053f3612cd44d96745d1b6",
+    "R/check-identifiability.R": "05fe2be9ee07eb5347a370b8198878ffa782cd86f8780224cc39d7192efa8057",
+    "R/confint-inspect.R": "321469bedf844e2aee03426660049e7b9cbe6a6e9090e3d085fd5aa9a139c426",
+    "R/coverage-study.R": "9ba9735c8d2ea7788a9f35d21497ad10430c3c905ee7a1a8a0ce0928cb371b0c",
+    "R/crs.R": "bbe88d1c80b5f4bd933ccbac77ac497f1c8c8e3d490b0fecc81ba3811dff84f8",
+    "R/diagnose.R": "7a7e2fd389c0f417504bf8892744a3288975267f435604b12cc5d15436cc6637",
+    "R/diagnostic-tables.R": "ef59644b23517d08b7ce1414daf09d3dd6a0faa182c138170959ac476165301a",
+    "R/extract-correlations.R": "8981505704c8de886d613f43e4479df9e5613ce7b805a247b8f3592c36acee3f",
+    "R/extract-cutpoints.R": "a6b7133735c7ff854ac5e3b547bf46a790e771fef5d6d0b05585d454200ef905",
+    "R/extract-omega.R": "1d5e65c1832ce0f30868f46fdb6d3fb48b69896ff8e675c39e94bd3c80399484",
+    "R/extract-repeatability.R": "279be2420cc228c78ae2e5ef132d28c87a818aa4674f83fc15d32ab7b974199f",
+    "R/extract-sigma-table.R": "297359eb866c7f67c92ea20827e103fe5791a11107e76a40c7f316b2e58615db",
+    "R/extract-sigma.R": "629740a1edf6b5ea9b2a0004046df6fdedaec9a6e02eb96e056fdd68ca08c76d",
+    "R/extract-two-psi-cross-check.R": "0fb76534bcd11907ecd63526c32e7f0159013ea1ab33cb635bf1e0676b20e6e4",
+    "R/extractors.R": "ab40d8251dae70b29f1a5af8e23ca26cc831fc0c795c5954b2dfa4e22ca5ddca",
+    "R/kernel-helpers.R": "3ba87ba05ccc52af3f0ffcf83eb6a08d7bfacebbd0851b9c8090dafc6328f394",
+    "R/loading-ci.R": "058f5bde518b4d0f030be944a6eba32fbd02b027c54b60a81fdc463359babd46",
+    "R/loading-profile.R": "ba3bfa3b1bcda733cd814b695b961569a898c3dcf1e29da2260d2cc6f98d94d9",
+    "R/mesh.R": "762dcc65afd60766f4a44a456d021a4586a06261e65704e11a72df6b0a062f1f",
+    "R/methods-gllvmTMB.R": "fd5515ec3eb355d0672ca19d7031ce251250d1dbeee80e8c2e772594cbd37fb3",
+    "R/missing-predictor.R": "e0b8d4a7299ce18a64b171059e1c2c36ba9ee0f7234bb6d65f3cd36e606cad84",
+    "R/output-methods.R": "576df3ae9070c9062ec58f8034e0dc329ef31f0a484693e2757a0759e31b2fac",
+    "R/plot-covariance-tables.R": "260f85154dd714d270c9ea64f86fa2617670b5f5d1b760edd6f2c81ce173f01d",
+    "R/plot-gllvmTMB.R": "734f7e4b4878143c7bfc6654f12ca9b9819494147b49a7571c32cf7f31a384b6",
+    "R/plot-loadings-confidence-eye.R": "fc2ceb99f0aaf7dfcd54eb40a559448ece5b79398f5c31b864fb80cf9f68adae",
+    "R/plot-rotated-loadings.R": "d1f1cf7efbf27045032681dd6301ad1bcbedcfeba4aebb6124237907d5cc0958",
+    "R/plot.R": "eddf51c7de5e0469e1582e7531ca845ea3cf97158283167ee0817d587a7da91b",
+    "R/predictive-diagnostics.R": "7416069e6e6dcb46bb242f296093131e70d9e8cc35f0d40bd19c728b2c85efc0",
+    "R/profile-ci.R": "b6e9dc29c06d7a52709630f3020ea92dac25f94b5cb002b810b51284cab1b3b5",
+    "R/profile-derived-curves.R": "31fda975d0a24c1a92eb6b1a79adab0b2fe931690224751a22ec0b0bb049aa86",
+    "R/profile-derived.R": "e527be9c360a5f2d4ce29e35069d7eee83a97b363e37a2c746934d418305f1c5",
+    "R/profile-targets.R": "295c50812a571f6fe97965fe9e42f41731c31f1f4bb5b078392d01b4beec093b",
+    "R/proportions-ci.R": "6c927aec8135ca55da599c43a30940fe70b1a0d1643cb82ccd26068c86f7a22f",
+    "R/re-uncertainty.R": "720ce373ebd884e9ff95ca8591bf06b9b218554b95b7c321177abf349bee5087",
+    "R/reportable-table.R": "2040a9c7b60b1f35045057a08c4e5a85f696a876b7b00afcc26c27cec087ac79",
+    "R/rotate-loadings.R": "c10c9dbdbfe974bbda0e2280ac1f3ef30759a3db5b2fd175215676c024ff41e7",
+    "R/simulate-site-trait.R": "628e19204ba973a03cf5e32cee05113ca93a8997affdadb051d7b39b28a20aab",
+    "R/simulate-unit-trait.R": "af2c47dedd3977c15141d75731398c581f5996b5916bc300c99afb8f9db494ef",
+    "R/slope-sd-ci.R": "31eb6a3e404fa1917714ea543e4929ff7a74f77e28548ac9142fa4a5882f565f",
+    "R/standard-errors.R": "b15e59b969f3b9225c9056b8caae579cbaa696eead9626708a917504a4c7fb44",
+    "R/vcov-coef.R": "7092603b1d86e5fcaf030e2e0d2c39a27febb08ffea9f46a5390954f116b4a04",
+    "R/z-confint-gllvmTMB.R": "c521f0874fd76b22d93bab9f43108b07603de0044f8b76228c75fd83e8c75893"
+  },
+  "entries": [
+    {
+      "id": "POSTFIT-SURFACE-coef.gllvmTMB_multi",
+      "registration": "S3method",
+      "namespace_name": "coef,gllvmTMB_multi",
+      "reference_definition": {
+        "name": "coef.gllvmTMB_multi",
+        "file": "R/vcov-coef.R",
+        "line_start": 59,
+        "line_end": 65,
+        "kind": "function",
+        "formals": "as.pairlist(alist(object = , ... = ))"
+      },
+      "source_sha256": "7092603b1d86e5fcaf030e2e0d2c39a27febb08ffea9f46a5390954f116b4a04",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-confint.gllvmTMB_multi",
+      "registration": "S3method",
+      "namespace_name": "confint,gllvmTMB_multi",
+      "reference_definition": {
+        "name": "confint.gllvmTMB_multi",
+        "file": "R/z-confint-gllvmTMB.R",
+        "line_start": 1608,
+        "line_end": 1796,
+        "kind": "function",
+        "formals": "as.pairlist(alist(object = , parm = , level = 0.95, method = c(\"profile\", \"wald\", \"bootstrap\"), nsim = 500L, seed = NULL, ... = ))"
+      },
+      "source_sha256": "c521f0874fd76b22d93bab9f43108b07603de0044f8b76228c75fd83e8c75893",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-deviance.gllvmTMB_multi",
+      "registration": "S3method",
+      "namespace_name": "deviance,gllvmTMB_multi",
+      "reference_definition": {
+        "name": "deviance.gllvmTMB_multi",
+        "file": "R/methods-gllvmTMB.R",
+        "line_start": 2862,
+        "line_end": 2864,
+        "kind": "function",
+        "formals": "as.pairlist(alist(object = , ... = ))"
+      },
+      "source_sha256": "fd5515ec3eb355d0672ca19d7031ce251250d1dbeee80e8c2e772594cbd37fb3",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-fitted.gllvmTMB_multi",
+      "registration": "S3method",
+      "namespace_name": "fitted,gllvmTMB_multi",
+      "reference_definition": {
+        "name": "fitted.gllvmTMB_multi",
+        "file": "R/methods-gllvmTMB.R",
+        "line_start": 2837,
+        "line_end": 2840,
+        "kind": "function",
+        "formals": "as.pairlist(alist(object = , type = c(\"response\", \"link\"), ... = ))"
+      },
+      "source_sha256": "fd5515ec3eb355d0672ca19d7031ce251250d1dbeee80e8c2e772594cbd37fb3",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-imputed.gllvmTMB",
+      "registration": "S3method",
+      "namespace_name": "imputed,gllvmTMB",
+      "reference_definition": {
+        "name": "imputed.gllvmTMB",
+        "file": "R/missing-predictor.R",
+        "line_start": 2603,
+        "line_end": 2725,
+        "kind": "function",
+        "formals": "as.pairlist(alist(object = , variable = NULL, rows = c(\"missing\", \"all\"), se = TRUE, ... = ))"
+      },
+      "source_sha256": "e0b8d4a7299ce18a64b171059e1c2c36ba9ee0f7234bb6d65f3cd36e606cad84",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-logLik.gllvmTMB_multi",
+      "registration": "S3method",
+      "namespace_name": "logLik,gllvmTMB_multi",
+      "reference_definition": {
+        "name": "logLik.gllvmTMB_multi",
+        "file": "R/methods-gllvmTMB.R",
+        "line_start": 1026,
+        "line_end": 1121,
+        "kind": "function",
+        "formals": "as.pairlist(alist(object = , ... = ))"
+      },
+      "source_sha256": "fd5515ec3eb355d0672ca19d7031ce251250d1dbeee80e8c2e772594cbd37fb3",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-ordiplot.gllvmTMB_multi",
+      "registration": "S3method",
+      "namespace_name": "ordiplot,gllvmTMB_multi",
+      "reference_definition": {
+        "name": "ordiplot.gllvmTMB_multi",
+        "file": "R/output-methods.R",
+        "line_start": 384,
+        "line_end": 446,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , level = \"unit\", axes = c(1, 2), biplot = TRUE, rotate = c(\"none\", \"varimax\", \"promax\"), ... = ))"
+      },
+      "source_sha256": "576df3ae9070c9062ec58f8034e0dc329ef31f0a484693e2757a0759e31b2fac",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-plot.gllvmTMB_multi",
+      "registration": "S3method",
+      "namespace_name": "plot,gllvmTMB_multi",
+      "reference_definition": {
+        "name": "plot.gllvmTMB_multi",
+        "file": "R/plot-gllvmTMB.R",
+        "line_start": 111,
+        "line_end": 176,
+        "kind": "function",
+        "formals": "as.pairlist(alist(x = , type = c(\"correlation\", \"correlation_ellipse\", \"loadings\", \"integration\", \"communality\", \"variance\", \"ordination\"), level = c(\"unit\", \"unit_obs\"), boot = NULL, axes = c(1L, 2L), rotation = c(\"varimax\", \"none\", \"promax\"), order_axes = TRUE, sign_anchor = c(\"auto\", \"none\"), anchor_traits = NULL, standardize_loadings = FALSE, ... = ))"
+      },
+      "source_sha256": "734f7e4b4878143c7bfc6654f12ca9b9819494147b49a7571c32cf7f31a384b6",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-plot.gllvmTMBmesh",
+      "registration": "S3method",
+      "namespace_name": "plot,gllvmTMBmesh",
+      "reference_definition": {
+        "name": "plot.gllvmTMBmesh",
+        "file": "R/mesh.R",
+        "line_start": 447,
+        "line_end": 455,
+        "kind": "function",
+        "formals": "as.pairlist(alist(x = , ... = ))"
+      },
+      "source_sha256": "762dcc65afd60766f4a44a456d021a4586a06261e65704e11a72df6b0a062f1f",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-plot.profile_derived",
+      "registration": "S3method",
+      "namespace_name": "plot,profile_derived",
+      "reference_definition": {
+        "name": "plot.profile_derived",
+        "file": "R/profile-derived-curves.R",
+        "line_start": 1104,
+        "line_end": 1185,
+        "kind": "function",
+        "formals": "as.pairlist(alist(x = , interval = TRUE, ... = ))"
+      },
+      "source_sha256": "31fda975d0a24c1a92eb6b1a79adab0b2fe931690224751a22ec0b0bb049aa86",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-plot.profile_loadings",
+      "registration": "S3method",
+      "namespace_name": "plot,profile_loadings",
+      "reference_definition": {
+        "name": "plot.profile_loadings",
+        "file": "R/loading-profile.R",
+        "line_start": 321,
+        "line_end": 378,
+        "kind": "function",
+        "formals": "as.pairlist(alist(x = , interval = TRUE, ... = ))"
+      },
+      "source_sha256": "ba3bfa3b1bcda733cd814b695b961569a898c3dcf1e29da2260d2cc6f98d94d9",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-plot.sdmTMBmesh",
+      "registration": "S3method",
+      "namespace_name": "plot,sdmTMBmesh",
+      "reference_definition": {
+        "name": "plot.sdmTMBmesh",
+        "file": "R/mesh.R",
+        "line_start": 462,
+        "line_end": 470,
+        "kind": "function",
+        "formals": "as.pairlist(alist(x = , ... = ))"
+      },
+      "source_sha256": "762dcc65afd60766f4a44a456d021a4586a06261e65704e11a72df6b0a062f1f",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-predict.gllvmTMB_multi",
+      "registration": "S3method",
+      "namespace_name": "predict,gllvmTMB_multi",
+      "reference_definition": {
+        "name": "predict.gllvmTMB_multi",
+        "file": "R/methods-gllvmTMB.R",
+        "line_start": 2421,
+        "line_end": 2813,
+        "kind": "function",
+        "formals": "as.pairlist(alist(object = , newdata = NULL, type = c(\"link\", \"response\"), re_form = ~., se.fit = FALSE, ... = ))"
+      },
+      "source_sha256": "fd5515ec3eb355d0672ca19d7031ce251250d1dbeee80e8c2e772594cbd37fb3",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-print.gllvmTMB_Sigma_phy_slope",
+      "registration": "S3method",
+      "namespace_name": "print,gllvmTMB_Sigma_phy_slope",
+      "reference_definition": {
+        "name": "print.gllvmTMB_Sigma_phy_slope",
+        "file": "R/extract-sigma.R",
+        "line_start": 2137,
+        "line_end": 2153,
+        "kind": "function",
+        "formals": "as.pairlist(alist(x = , digits = 3, ... = ))"
+      },
+      "source_sha256": "629740a1edf6b5ea9b2a0004046df6fdedaec9a6e02eb96e056fdd68ca08c76d",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-print.gllvmTMB_check_consistency",
+      "registration": "S3method",
+      "namespace_name": "print,gllvmTMB_check_consistency",
+      "reference_definition": {
+        "name": "print.gllvmTMB_check_consistency",
+        "file": "R/check-consistency.R",
+        "line_start": 244,
+        "line_end": 275,
+        "kind": "function",
+        "formals": "as.pairlist(alist(x = , ... = ))"
+      },
+      "source_sha256": "7f2834acd47fa44b8816591fb974dd677b83c18e7e053f3612cd44d96745d1b6",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-print.gllvmTMB_confint_inspect",
+      "registration": "S3method",
+      "namespace_name": "print,gllvmTMB_confint_inspect",
+      "reference_definition": {
+        "name": "print.gllvmTMB_confint_inspect",
+        "file": "R/confint-inspect.R",
+        "line_start": 490,
+        "line_end": 510,
+        "kind": "function",
+        "formals": "as.pairlist(alist(x = , ... = ))"
+      },
+      "source_sha256": "321469bedf844e2aee03426660049e7b9cbe6a6e9090e3d085fd5aa9a139c426",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-print.gllvmTMB_coverage_study",
+      "registration": "S3method",
+      "namespace_name": "print,gllvmTMB_coverage_study",
+      "reference_definition": {
+        "name": "print.gllvmTMB_coverage_study",
+        "file": "R/coverage-study.R",
+        "line_start": 348,
+        "line_end": 378,
+        "kind": "function",
+        "formals": "as.pairlist(alist(x = , ... = ))"
+      },
+      "source_sha256": "9ba9735c8d2ea7788a9f35d21497ad10430c3c905ee7a1a8a0ce0928cb371b0c",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-print.gllvmTMB_identifiability",
+      "registration": "S3method",
+      "namespace_name": "print,gllvmTMB_identifiability",
+      "reference_definition": {
+        "name": "print.gllvmTMB_identifiability",
+        "file": "R/check-identifiability.R",
+        "line_start": 630,
+        "line_end": 659,
+        "kind": "function",
+        "formals": "as.pairlist(alist(x = , ... = ))"
+      },
+      "source_sha256": "05fe2be9ee07eb5347a370b8198878ffa782cd86f8780224cc39d7192efa8057",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-print.gllvmTMB_multi",
+      "registration": "S3method",
+      "namespace_name": "print,gllvmTMB_multi",
+      "reference_definition": {
+        "name": "print.gllvmTMB_multi",
+        "file": "R/methods-gllvmTMB.R",
+        "line_start": 623,
+        "line_end": 740,
+        "kind": "function",
+        "formals": "as.pairlist(alist(x = , ... = ))"
+      },
+      "source_sha256": "fd5515ec3eb355d0672ca19d7031ce251250d1dbeee80e8c2e772594cbd37fb3",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-print.gllvmTMB_reportable_table",
+      "registration": "S3method",
+      "namespace_name": "print,gllvmTMB_reportable_table",
+      "reference_definition": {
+        "name": "print.gllvmTMB_reportable_table",
+        "file": "R/reportable-table.R",
+        "line_start": 35,
+        "line_end": 44,
+        "kind": "function",
+        "formals": "as.pairlist(alist(x = , ... = ))"
+      },
+      "source_sha256": "2040a9c7b60b1f35045057a08c4e5a85f696a876b7b00afcc26c27cec087ac79",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-print.gllvmTMB_slope_ci",
+      "registration": "S3method",
+      "namespace_name": "print,gllvmTMB_slope_ci",
+      "reference_definition": {
+        "name": "print.gllvmTMB_slope_ci",
+        "file": "R/slope-sd-ci.R",
+        "line_start": 662,
+        "line_end": 684,
+        "kind": "function",
+        "formals": "as.pairlist(alist(x = , ... = ))"
+      },
+      "source_sha256": "31eb6a3e404fa1917714ea543e4929ff7a74f77e28548ac9142fa4a5882f565f",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-print.summary.gllvmTMB_multi",
+      "registration": "S3method",
+      "namespace_name": "print,summary.gllvmTMB_multi",
+      "reference_definition": {
+        "name": "print.summary.gllvmTMB_multi",
+        "file": "R/methods-gllvmTMB.R",
+        "line_start": 866,
+        "line_end": 1022,
+        "kind": "function",
+        "formals": "as.pairlist(alist(x = , digits = 3, ... = ))"
+      },
+      "source_sha256": "fd5515ec3eb355d0672ca19d7031ce251250d1dbeee80e8c2e772594cbd37fb3",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-residuals.gllvmTMB_multi",
+      "registration": "S3method",
+      "namespace_name": "residuals,gllvmTMB_multi",
+      "reference_definition": {
+        "name": "residuals.gllvmTMB_multi",
+        "file": "R/predictive-diagnostics.R",
+        "line_start": 229,
+        "line_end": 281,
+        "kind": "function",
+        "formals": "as.pairlist(alist(object = , type = c(\"randomized_quantile\", \"simulation_rank\"), scale = c(\"normal\", \"uniform\"), nsim = NULL, ndraws = NULL, seed = NULL, trait = NULL, condition_on_RE = TRUE, ... = ))"
+      },
+      "source_sha256": "7416069e6e6dcb46bb242f296093131e70d9e8cc35f0d40bd19c728b2c85efc0",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-simulate.gllvmTMB_multi",
+      "registration": "S3method",
+      "namespace_name": "simulate,gllvmTMB_multi",
+      "reference_definition": {
+        "name": "simulate.gllvmTMB_multi",
+        "file": "R/methods-gllvmTMB.R",
+        "line_start": 1431,
+        "line_end": 1520,
+        "kind": "function",
+        "formals": "as.pairlist(alist(object = , nsim = 1, seed = NULL, newdata = NULL, condition_on_RE = FALSE, ... = ))"
+      },
+      "source_sha256": "fd5515ec3eb355d0672ca19d7031ce251250d1dbeee80e8c2e772594cbd37fb3",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-nobs.gllvmTMB_multi",
+      "registration": "S3method",
+      "namespace_name": "stats::nobs,gllvmTMB_multi",
+      "reference_definition": {
+        "name": "nobs.gllvmTMB_multi",
+        "file": "R/methods-gllvmTMB.R",
+        "line_start": 1133,
+        "line_end": 1148,
+        "kind": "function",
+        "formals": "as.pairlist(alist(object = , ... = ))"
+      },
+      "source_sha256": "fd5515ec3eb355d0672ca19d7031ce251250d1dbeee80e8c2e772594cbd37fb3",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-summary.gllvmTMB_multi",
+      "registration": "S3method",
+      "namespace_name": "summary,gllvmTMB_multi",
+      "reference_definition": {
+        "name": "summary.gllvmTMB_multi",
+        "file": "R/methods-gllvmTMB.R",
+        "line_start": 744,
+        "line_end": 862,
+        "kind": "function",
+        "formals": "as.pairlist(alist(object = , ... = ))"
+      },
+      "source_sha256": "fd5515ec3eb355d0672ca19d7031ce251250d1dbeee80e8c2e772594cbd37fb3",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-tidy.gllvmTMB_multi",
+      "registration": "S3method",
+      "namespace_name": "tidy,gllvmTMB_multi",
+      "reference_definition": {
+        "name": "tidy.gllvmTMB_multi",
+        "file": "R/methods-gllvmTMB.R",
+        "line_start": 1177,
+        "line_end": 1370,
+        "kind": "function",
+        "formals": "as.pairlist(alist(x = , effects = c(\"fixed\", \"ran_pars\", \"cutpoint\"), conf.int = FALSE, conf.level = 0.95, ... = ))"
+      },
+      "source_sha256": "fd5515ec3eb355d0672ca19d7031ce251250d1dbeee80e8c2e772594cbd37fb3",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-vcov.gllvmTMB_multi",
+      "registration": "S3method",
+      "namespace_name": "vcov,gllvmTMB_multi",
+      "reference_definition": {
+        "name": "vcov.gllvmTMB_multi",
+        "file": "R/vcov-coef.R",
+        "line_start": 69,
+        "line_end": 103,
+        "kind": "function",
+        "formals": "as.pairlist(alist(object = , ... = ))"
+      },
+      "source_sha256": "7092603b1d86e5fcaf030e2e0d2c39a27febb08ffea9f46a5390954f116b4a04",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-.proportions_bootstrap_ci",
+      "registration": "export",
+      "namespace_name": ".proportions_bootstrap_ci",
+      "reference_definition": {
+        "name": ".proportions_bootstrap_ci",
+        "file": "R/proportions-ci.R",
+        "line_start": 423,
+        "line_end": 599,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , components = NULL, trait_idx = NULL, level = 0.95, nsim = 500L, seed = NULL))"
+      },
+      "source_sha256": "6c927aec8135ca55da599c43a30940fe70b1a0d1643cb82ccd26068c86f7a22f",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-.proportions_wald_ci",
+      "registration": "export",
+      "namespace_name": ".proportions_wald_ci",
+      "reference_definition": {
+        "name": ".proportions_wald_ci",
+        "file": "R/proportions-ci.R",
+        "line_start": 247,
+        "line_end": 395,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , components = NULL, trait_idx = NULL, level = 0.95))"
+      },
+      "source_sha256": "6c927aec8135ca55da599c43a30940fe70b1a0d1643cb82ccd26068c86f7a22f",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-bootstrap_Sigma",
+      "registration": "export",
+      "namespace_name": "bootstrap_Sigma",
+      "reference_definition": {
+        "name": "bootstrap_Sigma",
+        "file": "R/bootstrap-sigma.R",
+        "line_start": 196,
+        "line_end": 502,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , n_boot = 999, level = c(\"unit\", \"unit_obs\", \"phy\", \"B\", \"W\"), what = c(\"Sigma\", \"R\", \"communality\", \"ICC\", \"cross_corr\"), conf = 0.95, seed = NULL, n_cores = 1, progress = TRUE, keep_draws = FALSE, link_residual = c(\"auto\", \"none\")))"
+      },
+      "source_sha256": "33095a8b5d34a7f23fc8c469682c3aa83521da0096242df7c2ee7aa009ce1668",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-check_auto_residual",
+      "registration": "export",
+      "namespace_name": "check_auto_residual",
+      "reference_definition": {
+        "name": "check_auto_residual",
+        "file": "R/check-auto-residual.R",
+        "line_start": 60,
+        "line_end": 146,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = ))"
+      },
+      "source_sha256": "cd13979a32bf960d0dd6f2bc8c4840fb1f8b6902a327a7a0a982cc1a52827424",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-check_gllvmTMB",
+      "registration": "export",
+      "namespace_name": "check_gllvmTMB",
+      "reference_definition": {
+        "name": "check_gllvmTMB",
+        "file": "R/diagnose.R",
+        "line_start": 1548,
+        "line_end": 1964,
+        "kind": "function",
+        "formals": "as.pairlist(alist(object = , gradient_thresh = 0.01, se_thresh = 100, weak_axis_thresh = 0.05, psi_thresh = 1e-04, psi_rel_thresh = 0.01, sigma_eps_thresh = 1e-04, cross_loading_thresh = 0.6, binary_prevalence_thresh = 0.9, binary_saturation_prob_thresh = 0.99, binary_saturation_share_thresh = 0.5, loading_relative_thresh = 8, loading_runaway_thresh = 25, loading_absolute_thresh = 8, multinomial_collapse_floor = 1e-10, multinomial_collapse_rel_thresh = Inf, multinomial_rail_thresh = 0.99, multinomial_range_collapse_thresh = 0.02, ordinal_loading_runaway_thresh = Inf, ordinal_loading_absolute_thresh = Inf))"
+      },
+      "source_sha256": "7a7e2fd389c0f417504bf8892744a3288975267f435604b12cc5d15436cc6637",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-compare_Sigma_table",
+      "registration": "export",
+      "namespace_name": "compare_Sigma_table",
+      "reference_definition": {
+        "name": "compare_Sigma_table",
+        "file": "R/extract-sigma-table.R",
+        "line_start": 494,
+        "line_end": 596,
+        "kind": "function",
+        "formals": "as.pairlist(alist(x = , truth = , level = \"unit\", part = c(\"total\", \"shared\", \"unique\"), measure = c(\"covariance\", \"correlation\"), entries = c(\"unique\", \"all\", \"upper\", \"lower\", \"offdiag\", \"diag\"), link_residual = c(\"auto\", \"none\")))"
+      },
+      "source_sha256": "297359eb866c7f67c92ea20827e103fe5791a11107e76a40c7f316b2e58615db",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-compare_dep_vs_two_psi",
+      "registration": "export",
+      "namespace_name": "compare_dep_vs_two_psi",
+      "reference_definition": {
+        "name": "compare_dep_vs_two_psi",
+        "file": "R/extract-two-psi-cross-check.R",
+        "line_start": 488,
+        "line_end": 559,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit_two_psi = , threshold = 0.1, phylo_vcv = NULL, phylo_tree = NULL))"
+      },
+      "source_sha256": "0fb76534bcd11907ecd63526c32e7f0159013ea1ab33cb635bf1e0676b20e6e4",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-compare_indep_vs_two_psi",
+      "registration": "export",
+      "namespace_name": "compare_indep_vs_two_psi",
+      "reference_definition": {
+        "name": "compare_indep_vs_two_psi",
+        "file": "R/extract-two-psi-cross-check.R",
+        "line_start": 616,
+        "line_end": 705,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit_two_psi = , threshold = 0.1, phylo_vcv = NULL, phylo_tree = NULL))"
+      },
+      "source_sha256": "0fb76534bcd11907ecd63526c32e7f0159013ea1ab33cb635bf1e0676b20e6e4",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-compare_loadings",
+      "registration": "export",
+      "namespace_name": "compare_loadings",
+      "reference_definition": {
+        "name": "compare_loadings",
+        "file": "R/rotate-loadings.R",
+        "line_start": 428,
+        "line_end": 449,
+        "kind": "function",
+        "formals": "as.pairlist(alist(Lambda_a = , Lambda_b = ))"
+      },
+      "source_sha256": "c10c9dbdbfe974bbda0e2280ac1f3ef30759a3db5b2fd175215676c024ff41e7",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-confint_inspect",
+      "registration": "export",
+      "namespace_name": "confint_inspect",
+      "reference_definition": {
+        "name": "confint_inspect",
+        "file": "R/confint-inspect.R",
+        "line_start": 128,
+        "line_end": 382,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , parm = , level = 0.95, ystep = 0.5, ytol = NULL, parm.range = c(-Inf, Inf)))"
+      },
+      "source_sha256": "321469bedf844e2aee03426660049e7b9cbe6a6e9090e3d085fd5aa9a139c426",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-diagnose_kernel_separability",
+      "registration": "export",
+      "namespace_name": "diagnose_kernel_separability",
+      "reference_definition": {
+        "name": "diagnose_kernel_separability",
+        "file": "R/kernel-helpers.R",
+        "line_start": 581,
+        "line_end": 633,
+        "kind": "function",
+        "formals": "as.pairlist(alist(... = , thresholds = c(near_orthogonal = 0.25, high = 0.7)))"
+      },
+      "source_sha256": "3ba87ba05ccc52af3f0ffcf83eb6a08d7bfacebbd0851b9c8090dafc6328f394",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-diagnostic_table",
+      "registration": "export",
+      "namespace_name": "diagnostic_table",
+      "reference_definition": {
+        "name": "diagnostic_table",
+        "file": "R/diagnostic-tables.R",
+        "line_start": 53,
+        "line_end": 67,
+        "kind": "function",
+        "formals": "as.pairlist(alist(x = , table = c(\"data\", \"row_status\", \"fit_health_status\", \"check_gllvmTMB\")))"
+      },
+      "source_sha256": "ef59644b23517d08b7ce1414daf09d3dd6a0faa182c138170959ac476165301a",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-extract_Gamma",
+      "registration": "export",
+      "namespace_name": "extract_Gamma",
+      "reference_definition": {
+        "name": "extract_Gamma",
+        "file": "R/extract-sigma.R",
+        "line_start": 1719,
+        "line_end": 1789,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , level = , row_traits = , col_traits = , scale = c(\"shape\", \"effect\")))"
+      },
+      "source_sha256": "629740a1edf6b5ea9b2a0004046df6fdedaec9a6e02eb96e056fdd68ca08c76d",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-extract_ICC_site",
+      "registration": "export",
+      "namespace_name": "extract_ICC_site",
+      "reference_definition": {
+        "name": "extract_ICC_site",
+        "file": "R/extractors.R",
+        "line_start": 101,
+        "line_end": 125,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , link_residual = c(\"auto\", \"none\")))"
+      },
+      "source_sha256": "ab40d8251dae70b29f1a5af8e23ca26cc831fc0c795c5954b2dfa4e22ca5ddca",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-extract_Omega",
+      "registration": "export",
+      "namespace_name": "extract_Omega",
+      "reference_definition": {
+        "name": "extract_Omega",
+        "file": "R/extract-omega.R",
+        "line_start": 189,
+        "line_end": 323,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , tiers = NULL, link_residual = c(\"auto\", \"none\")))"
+      },
+      "source_sha256": "1d5e65c1832ce0f30868f46fdb6d3fb48b69896ff8e675c39e94bd3c80399484",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-extract_Sigma",
+      "registration": "export",
+      "namespace_name": "extract_Sigma",
+      "reference_definition": {
+        "name": "extract_Sigma",
+        "file": "R/extract-sigma.R",
+        "line_start": 686,
+        "line_end": 1660,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , level = c(\"unit\", \"unit_slope\", \"unit_obs\", \"phy\", \"phy_slope\", \"column_slope\", \"spatial\", \"spde_slope\", \"cluster\", \"cluster2\", \"B\", \"B_slope\", \"W\", \"spde\"), part = c(\"total\", \"shared\", \"unique\", \"psi\"), link_residual = c(\"auto\", \"none\"), .skip_warn = FALSE))"
+      },
+      "source_sha256": "629740a1edf6b5ea9b2a0004046df6fdedaec9a6e02eb96e056fdd68ca08c76d",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-extract_Sigma_B",
+      "registration": "export",
+      "namespace_name": "extract_Sigma_B",
+      "reference_definition": {
+        "name": "extract_Sigma_B",
+        "file": "R/extractors.R",
+        "line_start": 31,
+        "line_end": 38,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = ))"
+      },
+      "source_sha256": "ab40d8251dae70b29f1a5af8e23ca26cc831fc0c795c5954b2dfa4e22ca5ddca",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-extract_Sigma_W",
+      "registration": "export",
+      "namespace_name": "extract_Sigma_W",
+      "reference_definition": {
+        "name": "extract_Sigma_W",
+        "file": "R/extractors.R",
+        "line_start": 66,
+        "line_end": 73,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = ))"
+      },
+      "source_sha256": "ab40d8251dae70b29f1a5af8e23ca26cc831fc0c795c5954b2dfa4e22ca5ddca",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-extract_Sigma_table",
+      "registration": "export",
+      "namespace_name": "extract_Sigma_table",
+      "reference_definition": {
+        "name": "extract_Sigma_table",
+        "file": "R/extract-sigma-table.R",
+        "line_start": 310,
+        "line_end": 441,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , level = \"unit\", part = c(\"total\", \"shared\", \"unique\"), measure = c(\"covariance\", \"correlation\"), entries = c(\"unique\", \"all\", \"upper\", \"lower\", \"offdiag\", \"diag\"), link_residual = c(\"auto\", \"none\")))"
+      },
+      "source_sha256": "297359eb866c7f67c92ea20827e103fe5791a11107e76a40c7f316b2e58615db",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-extract_coevolution_modules",
+      "registration": "export",
+      "namespace_name": "extract_coevolution_modules",
+      "reference_definition": {
+        "name": "extract_coevolution_modules",
+        "file": "R/extract-sigma.R",
+        "line_start": 2203,
+        "line_end": 2343,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , level = , row_traits = , col_traits = , scale = c(\"shape\", \"effect\"), n_modules = NULL, tol = sqrt(.Machine$double.eps)))"
+      },
+      "source_sha256": "629740a1edf6b5ea9b2a0004046df6fdedaec9a6e02eb96e056fdd68ca08c76d",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-extract_communality",
+      "registration": "export",
+      "namespace_name": "extract_communality",
+      "reference_definition": {
+        "name": "extract_communality",
+        "file": "R/extractors.R",
+        "line_start": 212,
+        "line_end": 344,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , level = c(\"unit\", \"unit_obs\", \"phy\", \"B\", \"W\"), link_residual = c(\"auto\", \"none\"), ci = FALSE, conf_level = 0.95, method = c(\"wald\", \"bootstrap\", \"profile\"), nsim = 500L, seed = NULL))"
+      },
+      "source_sha256": "ab40d8251dae70b29f1a5af8e23ca26cc831fc0c795c5954b2dfa4e22ca5ddca",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-extract_correlations",
+      "registration": "export",
+      "namespace_name": "extract_correlations",
+      "reference_definition": {
+        "name": "extract_correlations",
+        "file": "R/extract-correlations.R",
+        "line_start": 392,
+        "line_end": 769,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , tier = \"all\", pair = NULL, level = 0.95, method = c(\"none\", \"fisher-z\", \"profile\", \"wald\", \"bootstrap\"), n_eff = NULL, nsim = 500L, seed = NULL, link_residual = c(\"auto\", \"none\")))"
+      },
+      "source_sha256": "8981505704c8de886d613f43e4479df9e5613ce7b805a247b8f3592c36acee3f",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-extract_cross_correlations",
+      "registration": "export",
+      "namespace_name": "extract_cross_correlations",
+      "reference_definition": {
+        "name": "extract_cross_correlations",
+        "file": "R/extract-correlations.R",
+        "line_start": 884,
+        "line_end": 1035,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , level = \"unit\", contrasts = FALSE, link_residual = c(\"auto\", \"none\"), method = c(\"point\", \"bootstrap\", \"profile\", \"wald\"), conf = 0.95, nsim = 500L, seed = NULL))"
+      },
+      "source_sha256": "8981505704c8de886d613f43e4479df9e5613ce7b805a247b8f3592c36acee3f",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-extract_cutpoints",
+      "registration": "export",
+      "namespace_name": "extract_cutpoints",
+      "reference_definition": {
+        "name": "extract_cutpoints",
+        "file": "R/extract-cutpoints.R",
+        "line_start": 66,
+        "line_end": 131,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , quiet = FALSE))"
+      },
+      "source_sha256": "a6b7133735c7ff854ac5e3b547bf46a790e771fef5d6d0b05585d454200ef905",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-extract_loadings",
+      "registration": "export",
+      "namespace_name": "extract_loadings",
+      "reference_definition": {
+        "name": "extract_loadings",
+        "file": "R/output-methods.R",
+        "line_start": 87,
+        "line_end": 94,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , level = \"unit\", rotate = c(\"none\", \"varimax\", \"promax\")))"
+      },
+      "source_sha256": "576df3ae9070c9062ec58f8034e0dc329ef31f0a484693e2757a0759e31b2fac",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-extract_lv_effects",
+      "registration": "export",
+      "namespace_name": "extract_lv_effects",
+      "reference_definition": {
+        "name": "extract_lv_effects",
+        "file": "R/extractors.R",
+        "line_start": 641,
+        "line_end": 768,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , level = \"unit\", type = c(\"axis_effect\", \"trait_effect\"), conf.level = 0.95, method = c(\"wald\", \"profile\", \"bootstrap\"), ... = ))"
+      },
+      "source_sha256": "ab40d8251dae70b29f1a5af8e23ca26cc831fc0c795c5954b2dfa4e22ca5ddca",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-extract_ordination",
+      "registration": "export",
+      "namespace_name": "extract_ordination",
+      "reference_definition": {
+        "name": "extract_ordination",
+        "file": "R/extractors.R",
+        "line_start": 482,
+        "line_end": 569,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , level = \"unit\", component = c(\"total\", \"innovation\", \"mean\")))"
+      },
+      "source_sha256": "ab40d8251dae70b29f1a5af8e23ca26cc831fc0c795c5954b2dfa4e22ca5ddca",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-extract_phylo_signal",
+      "registration": "export",
+      "namespace_name": "extract_phylo_signal",
+      "reference_definition": {
+        "name": "extract_phylo_signal",
+        "file": "R/extract-omega.R",
+        "line_start": 463,
+        "line_end": 660,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , ci = FALSE, conf_level = 0.95, method = c(\"profile\", \"wald\", \"bootstrap\"), nsim = 500L, seed = NULL, link_residual = c(\"none\", \"auto\")))"
+      },
+      "source_sha256": "1d5e65c1832ce0f30868f46fdb6d3fb48b69896ff8e675c39e94bd3c80399484",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-extract_proportions",
+      "registration": "export",
+      "namespace_name": "extract_proportions",
+      "reference_definition": {
+        "name": "extract_proportions",
+        "file": "R/extract-omega.R",
+        "line_start": 725,
+        "line_end": 838,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , link_residual = c(\"auto\", \"none\"), format = c(\"long\", \"wide\")))"
+      },
+      "source_sha256": "1d5e65c1832ce0f30868f46fdb6d3fb48b69896ff8e675c39e94bd3c80399484",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-extract_repeatability",
+      "registration": "export",
+      "namespace_name": "extract_repeatability",
+      "reference_definition": {
+        "name": "extract_repeatability",
+        "file": "R/extract-repeatability.R",
+        "line_start": 83,
+        "line_end": 227,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , level = 0.95, method = c(\"wald\", \"profile\", \"bootstrap\"), nsim = 500L, seed = NULL))"
+      },
+      "source_sha256": "279be2420cc228c78ae2e5ef132d28c87a818aa4674f83fc15d32ab7b974199f",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-extract_residual_cor",
+      "registration": "export",
+      "namespace_name": "extract_residual_cor",
+      "reference_definition": {
+        "name": "extract_residual_cor",
+        "file": "R/output-methods.R",
+        "line_start": 342,
+        "line_end": 344,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , level = \"unit\"))"
+      },
+      "source_sha256": "576df3ae9070c9062ec58f8034e0dc329ef31f0a484693e2757a0759e31b2fac",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-extract_residual_cov",
+      "registration": "export",
+      "namespace_name": "extract_residual_cov",
+      "reference_definition": {
+        "name": "extract_residual_cov",
+        "file": "R/output-methods.R",
+        "line_start": 336,
+        "line_end": 338,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , level = \"unit\"))"
+      },
+      "source_sha256": "576df3ae9070c9062ec58f8034e0dc329ef31f0a484693e2757a0759e31b2fac",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-extract_residual_split",
+      "registration": "export",
+      "namespace_name": "extract_residual_split",
+      "reference_definition": {
+        "name": "extract_residual_split",
+        "file": "R/extract-omega.R",
+        "line_start": 95,
+        "line_end": 141,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = ))"
+      },
+      "source_sha256": "1d5e65c1832ce0f30868f46fdb6d3fb48b69896ff8e675c39e94bd3c80399484",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-extract_rotated_loadings_table",
+      "registration": "export",
+      "namespace_name": "extract_rotated_loadings_table",
+      "reference_definition": {
+        "name": "extract_rotated_loadings_table",
+        "file": "R/rotate-loadings.R",
+        "line_start": 281,
+        "line_end": 376,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , level = \"unit\", method = c(\"varimax\", \"promax\", \"none\"), order_axes = TRUE, sign_anchor = c(\"auto\", \"none\"), anchor_traits = NULL, loading_scale = c(\"raw\", \"standardized\")))"
+      },
+      "source_sha256": "c10c9dbdbfe974bbda0e2280ac1f3ef30759a3db5b2fd175215676c024ff41e7",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-flag_unreliable_loadings",
+      "registration": "export",
+      "namespace_name": "flag_unreliable_loadings",
+      "reference_definition": {
+        "name": "flag_unreliable_loadings",
+        "file": "R/loading-ci.R",
+        "line_start": 363,
+        "line_end": 415,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , null_region = c(-0.1, 0.1), level = c(\"unit\", \"unit_obs\"), method = \"wald\", conf_level = 0.95, loading_scale = NULL))"
+      },
+      "source_sha256": "058f5bde518b4d0f030be944a6eba32fbd02b027c54b60a81fdc463359babd46",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-getLV",
+      "registration": "export",
+      "namespace_name": "getLV",
+      "reference_definition": {
+        "name": "getLV",
+        "file": "R/output-methods.R",
+        "line_start": 169,
+        "line_end": 218,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , level = \"unit\", rotate = c(\"none\", \"varimax\", \"promax\"), se = FALSE))"
+      },
+      "source_sha256": "576df3ae9070c9062ec58f8034e0dc329ef31f0a484693e2757a0759e31b2fac",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-getLoadings",
+      "registration": "export",
+      "namespace_name": "getLoadings",
+      "reference_definition": {
+        "name": "getLoadings",
+        "file": "R/output-methods.R",
+        "line_start": 33,
+        "line_end": 69,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , level = \"unit\", rotate = c(\"none\", \"varimax\", \"promax\")))"
+      },
+      "source_sha256": "576df3ae9070c9062ec58f8034e0dc329ef31f0a484693e2757a0759e31b2fac",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-getREsd",
+      "registration": "export",
+      "namespace_name": "getREsd",
+      "reference_definition": {
+        "name": "getREsd",
+        "file": "R/re-uncertainty.R",
+        "line_start": 99,
+        "line_end": 211,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , block = c(\"diag_unit\", \"diag_unit_obs\", \"diag_species\", \"phylo\", \"re_int\", \"equalto\")))"
+      },
+      "source_sha256": "720ce373ebd884e9ff95ca8591bf06b9b218554b95b7c321177abf349bee5087",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-getResidualCor",
+      "registration": "export",
+      "namespace_name": "getResidualCor",
+      "reference_definition": {
+        "name": "getResidualCor",
+        "file": "R/output-methods.R",
+        "line_start": 311,
+        "line_end": 322,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , level = \"unit\"))"
+      },
+      "source_sha256": "576df3ae9070c9062ec58f8034e0dc329ef31f0a484693e2757a0759e31b2fac",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-getResidualCov",
+      "registration": "export",
+      "namespace_name": "getResidualCov",
+      "reference_definition": {
+        "name": "getResidualCov",
+        "file": "R/output-methods.R",
+        "line_start": 295,
+        "line_end": 306,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , level = \"unit\"))"
+      },
+      "source_sha256": "576df3ae9070c9062ec58f8034e0dc329ef31f0a484693e2757a0759e31b2fac",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-get_crs",
+      "registration": "export",
+      "namespace_name": "get_crs",
+      "reference_definition": {
+        "name": "get_crs",
+        "file": "R/crs.R",
+        "line_start": 71,
+        "line_end": 116,
+        "kind": "function",
+        "formals": "as.pairlist(alist(dat = , ll_names = c(\"longitude\", \"latitude\")))"
+      },
+      "source_sha256": "bbe88d1c80b5f4bd933ccbac77ac497f1c8c8e3d490b0fecc81ba3811dff84f8",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-gllvmTMB_diagnose",
+      "registration": "export",
+      "namespace_name": "gllvmTMB_diagnose",
+      "reference_definition": {
+        "name": "gllvmTMB_diagnose",
+        "file": "R/diagnose.R",
+        "line_start": 2005,
+        "line_end": 2213,
+        "kind": "function",
+        "formals": "as.pairlist(alist(object = , gradient_thresh = 0.01, se_thresh = 100, big_corr_thresh = 0.5, verbose = TRUE))"
+      },
+      "source_sha256": "7a7e2fd389c0f417504bf8892744a3288975267f435604b12cc5d15436cc6637",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-impute_model",
+      "registration": "export",
+      "namespace_name": "impute_model",
+      "reference_definition": {
+        "name": "impute_model",
+        "file": "R/missing-predictor.R",
+        "line_start": 62,
+        "line_end": 77,
+        "kind": "function",
+        "formals": "as.pairlist(alist(formula = , family = stats::gaussian()))"
+      },
+      "source_sha256": "e0b8d4a7299ce18a64b171059e1c2c36ba9ee0f7234bb6d65f3cd36e606cad84",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-imputed",
+      "registration": "export",
+      "namespace_name": "imputed",
+      "reference_definition": {
+        "name": "imputed",
+        "file": "R/missing-predictor.R",
+        "line_start": 2597,
+        "line_end": 2599,
+        "kind": "function",
+        "formals": "as.pairlist(alist(object = , ... = ))"
+      },
+      "source_sha256": "e0b8d4a7299ce18a64b171059e1c2c36ba9ee0f7234bb6d65f3cd36e606cad84",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-loading_ci",
+      "registration": "export",
+      "namespace_name": "loading_ci",
+      "reference_definition": {
+        "name": "loading_ci",
+        "file": "R/loading-ci.R",
+        "line_start": 112,
+        "line_end": 315,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , level = c(\"unit\", \"unit_obs\"), method = c(\"wald\", \"wald_asym\", \"profile\"), conf_level = 0.95, sigma_d2 = 1, loading_scale = NULL))"
+      },
+      "source_sha256": "058f5bde518b4d0f030be944a6eba32fbd02b027c54b60a81fdc463359babd46",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-loading_profile",
+      "registration": "export",
+      "namespace_name": "loading_profile",
+      "reference_definition": {
+        "name": "loading_profile",
+        "file": "R/loading-profile.R",
+        "line_start": 71,
+        "line_end": 214,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , level = c(\"unit\", \"unit_obs\"), entries = NULL, n_grid = 11L, grid_extent = 6, conf_level = 0.95))"
+      },
+      "source_sha256": "ba3bfa3b1bcda733cd814b695b961569a898c3dcf1e29da2260d2cc6f98d94d9",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-ordiplot",
+      "registration": "export",
+      "namespace_name": "ordiplot",
+      "reference_definition": {
+        "name": "ordiplot",
+        "file": "R/output-methods.R",
+        "line_start": 377,
+        "line_end": 379,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , ... = ))"
+      },
+      "source_sha256": "576df3ae9070c9062ec58f8034e0dc329ef31f0a484693e2757a0759e31b2fac",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-plot_Sigma_comparison",
+      "registration": "export",
+      "namespace_name": "plot_Sigma_comparison",
+      "reference_definition": {
+        "name": "plot_Sigma_comparison",
+        "file": "R/plot-covariance-tables.R",
+        "line_start": 1423,
+        "line_end": 1686,
+        "kind": "function",
+        "formals": "as.pairlist(alist(x = , truth = , level = \"unit\", part = c(\"total\", \"shared\", \"unique\"), measure = c(\"covariance\", \"correlation\"), entries = c(\"upper\", \"unique\", \"all\", \"offdiag\", \"lower\", \"diag\"), link_residual = c(\"auto\", \"none\"), include_diagonal = FALSE, facet = c(\"level\", \"comparison\", \"none\"), sort = c(\"abs_error\", \"error\", \"estimate\", \"truth\", \"trait\", \"level\"), style = c(\"difference\", \"scatter\")))"
+      },
+      "source_sha256": "260f85154dd714d270c9ea64f86fa2617670b5f5d1b760edd6f2c81ce173f01d",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-plot_Sigma_heatmap",
+      "registration": "export",
+      "namespace_name": "plot_Sigma_heatmap",
+      "reference_definition": {
+        "name": "plot_Sigma_heatmap",
+        "file": "R/plot-covariance-tables.R",
+        "line_start": 2083,
+        "line_end": 2290,
+        "kind": "function",
+        "formals": "as.pairlist(alist(x = , level = \"unit\", part = c(\"total\", \"shared\", \"unique\"), measure = c(\"correlation\", \"covariance\"), entries = c(\"all\", \"unique\", \"upper\", \"lower\", \"offdiag\", \"diag\"), link_residual = c(\"auto\", \"none\"), include_diagonal = TRUE, facet = c(\"level\", \"none\"), label = TRUE, label_digits = 2, title = NULL, subtitle = NULL, caption = NULL))"
+      },
+      "source_sha256": "260f85154dd714d270c9ea64f86fa2617670b5f5d1b760edd6f2c81ce173f01d",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-plot_Sigma_table",
+      "registration": "export",
+      "namespace_name": "plot_Sigma_table",
+      "reference_definition": {
+        "name": "plot_Sigma_table",
+        "file": "R/plot-covariance-tables.R",
+        "line_start": 1760,
+        "line_end": 2027,
+        "kind": "function",
+        "formals": "as.pairlist(alist(x = , level = \"unit\", part = c(\"total\", \"shared\", \"unique\"), measure = c(\"covariance\", \"correlation\"), entries = c(\"upper\", \"unique\", \"all\", \"offdiag\", \"lower\", \"diag\"), link_residual = c(\"auto\", \"none\"), include_diagonal = FALSE, facet = c(\"level\", \"none\"), sort = c(\"estimate\", \"magnitude\", \"trait\", \"level\"), show_intervals = NULL, style = c(\"interval\", \"eye\", \"raindrop\"), eye_level = 0.95, raindrop_level = NULL))"
+      },
+      "source_sha256": "260f85154dd714d270c9ea64f86fa2617670b5f5d1b760edd6f2c81ce173f01d",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-plot_anisotropy",
+      "registration": "export",
+      "namespace_name": "plot_anisotropy",
+      "reference_definition": {
+        "name": "plot_anisotropy",
+        "file": "R/plot.R",
+        "line_start": 30,
+        "line_end": 61,
+        "kind": "function",
+        "formals": "as.pairlist(alist(object = , return_data = FALSE))"
+      },
+      "source_sha256": "eddf51c7de5e0469e1582e7531ca845ea3cf97158283167ee0817d587a7da91b",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-plot_anisotropy2",
+      "registration": "export",
+      "namespace_name": "plot_anisotropy2",
+      "reference_definition": {
+        "name": "plot_anisotropy2",
+        "file": "R/plot.R",
+        "line_start": 65,
+        "line_end": 89,
+        "kind": "function",
+        "formals": "as.pairlist(alist(object = , model = 1L))"
+      },
+      "source_sha256": "eddf51c7de5e0469e1582e7531ca845ea3cf97158283167ee0817d587a7da91b",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-plot_correlations",
+      "registration": "export",
+      "namespace_name": "plot_correlations",
+      "reference_definition": {
+        "name": "plot_correlations",
+        "file": "R/plot-covariance-tables.R",
+        "line_start": 1076,
+        "line_end": 1356,
+        "kind": "function",
+        "formals": "as.pairlist(alist(x = , tier = \"all\", pair = NULL, level = 0.95, method = c(\"none\", \"fisher-z\", \"profile\", \"wald\", \"bootstrap\"), n_eff = NULL, nsim = 500L, seed = NULL, link_residual = c(\"auto\", \"none\"), facet = c(\"level\", \"none\"), sort = c(\"estimate\", \"magnitude\", \"trait\", \"level\"), show_intervals = NULL, style = c(\"interval\", \"eye\", \"raindrop\", \"heatmap\", \"ellipse\", \"oval\"), eye_level = level, raindrop_level = NULL, triangle = c(\"full\", \"lower\", \"upper\"), include_diagonal = TRUE, label = TRUE, label_type = c(\"auto\",      \"estimate\", \"ci\", \"estimate_ci\", \"none\"), label_digits = 2, matrix_layout = c(\"by_level\", \"estimate_ci\", \"levels\"), title = NULL, subtitle = NULL, caption = NULL))"
+      },
+      "source_sha256": "260f85154dd714d270c9ea64f86fa2617670b5f5d1b760edd6f2c81ce173f01d",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-plot_loadings_confidence_eye",
+      "registration": "export",
+      "namespace_name": "plot_loadings_confidence_eye",
+      "reference_definition": {
+        "name": "plot_loadings_confidence_eye",
+        "file": "R/plot-loadings-confidence-eye.R",
+        "line_start": 66,
+        "line_end": 289,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , level = c(\"unit\", \"unit_obs\"), method = \"wald\", conf_level = 0.95, null_region = NULL, sort_by = c(\"trait_order\", \"magnitude\"), ylim = NULL, loading_scale = NULL))"
+      },
+      "source_sha256": "fc2ceb99f0aaf7dfcd54eb40a559448ece5b79398f5c31b864fb80cf9f68adae",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-plot_rotated_loadings",
+      "registration": "export",
+      "namespace_name": "plot_rotated_loadings",
+      "reference_definition": {
+        "name": "plot_rotated_loadings",
+        "file": "R/plot-rotated-loadings.R",
+        "line_start": 269,
+        "line_end": 409,
+        "kind": "function",
+        "formals": "as.pairlist(alist(x = , level = \"unit\", method = c(\"varimax\", \"promax\", \"none\"), order_axes = TRUE, sign_anchor = c(\"auto\", \"none\"), anchor_traits = NULL, loading_scale = c(\"standardized\", \"raw\"), sort = c(\"dominant\", \"abs_loading\", \"trait\"), show_values = NULL, digits = 2L, limits = NULL, facet = c(\"level\", \"none\")))"
+      },
+      "source_sha256": "d1f1cf7efbf27045032681dd6301ad1bcbedcfeba4aebb6124237907d5cc0958",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-predict_cross_covariance",
+      "registration": "export",
+      "namespace_name": "predict_cross_covariance",
+      "reference_definition": {
+        "name": "predict_cross_covariance",
+        "file": "R/extract-sigma.R",
+        "line_start": 1837,
+        "line_end": 1959,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , level = , row_levels = NULL, col_levels = NULL, row_traits = , col_traits = ))"
+      },
+      "source_sha256": "629740a1edf6b5ea9b2a0004046df6fdedaec9a6e02eb96e056fdd68ca08c76d",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-predict_missing",
+      "registration": "export",
+      "namespace_name": "predict_missing",
+      "reference_definition": {
+        "name": "predict_missing",
+        "file": "R/methods-gllvmTMB.R",
+        "line_start": 3948,
+        "line_end": 4085,
+        "kind": "function",
+        "formals": "as.pairlist(alist(object = , type = c(\"link\", \"response\"), se = FALSE, se_route = c(\"quad\", \"joint\", \"joint_load\", \"sim\", \"boot\"), n_sim = 2000L, sim_seed = NULL, n_boot = 200L, boot_seed = NULL, boot_dgp = c(\"ml\", \"reml\"), ... = ))"
+      },
+      "source_sha256": "fd5515ec3eb355d0672ca19d7031ce251250d1dbeee80e8c2e772594cbd37fb3",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-predictive_check",
+      "registration": "export",
+      "namespace_name": "predictive_check",
+      "reference_definition": {
+        "name": "predictive_check",
+        "file": "R/predictive-diagnostics.R",
+        "line_start": 78,
+        "line_end": 155,
+        "kind": "function",
+        "formals": "as.pairlist(alist(object = , type = c(\"rq_qq\", \"rootogram\", \"stat_grouped\", \"dens_overlay\"), nsim = NULL, ndraws = NULL, seed = NULL, trait = NULL, group = NULL, stat = c(\"mean\", \"median\", \"zero_fraction\"), residual_type = c(\"randomized_quantile\", \"simulation_rank\"), condition_on_RE = TRUE, max_count = NULL))"
+      },
+      "source_sha256": "7416069e6e6dcb46bb242f296093131e70d9e8cc35f0d40bd19c728b2c85efc0",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-profile_ci_phylo_signal",
+      "registration": "export",
+      "namespace_name": "profile_ci_phylo_signal",
+      "reference_definition": {
+        "name": "profile_ci_phylo_signal",
+        "file": "R/profile-derived.R",
+        "line_start": 173,
+        "line_end": 249,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , trait_idx = NULL, level = 0.95))"
+      },
+      "source_sha256": "e527be9c360a5f2d4ce29e35069d7eee83a97b363e37a2c746934d418305f1c5",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-profile_ci_total_variance",
+      "registration": "export",
+      "namespace_name": "profile_ci_total_variance",
+      "reference_definition": {
+        "name": "profile_ci_total_variance",
+        "file": "R/profile-derived.R",
+        "line_start": 1048,
+        "line_end": 1083,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , tier = c(\"unit\", \"unit_obs\", \"phy\", \"B\", \"W\"), trait_idx = NULL, level = 0.95))"
+      },
+      "source_sha256": "e527be9c360a5f2d4ce29e35069d7eee83a97b363e37a2c746934d418305f1c5",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-profile_cross_rho",
+      "registration": "export",
+      "namespace_name": "profile_cross_rho",
+      "reference_definition": {
+        "name": "profile_cross_rho",
+        "file": "R/kernel-helpers.R",
+        "line_start": 166,
+        "line_end": 262,
+        "kind": "function",
+        "formals": "as.pairlist(alist(A_H = , A_P = , W = , rho = , refit = , metrics = NULL, eps = 1e-08, keep_fits = FALSE, ... = ))"
+      },
+      "source_sha256": "3ba87ba05ccc52af3f0ffcf83eb6a08d7bfacebbd0851b9c8090dafc6328f394",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-profile_cross_rho_ci",
+      "registration": "export",
+      "namespace_name": "profile_cross_rho_ci",
+      "reference_definition": {
+        "name": "profile_cross_rho_ci",
+        "file": "R/kernel-helpers.R",
+        "line_start": 294,
+        "line_end": 359,
+        "kind": "function",
+        "formals": "as.pairlist(alist(profile = , level = 0.95))"
+      },
+      "source_sha256": "3ba87ba05ccc52af3f0ffcf83eb6a08d7bfacebbd0851b9c8090dafc6328f394",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-profile_phylo_signal",
+      "registration": "export",
+      "namespace_name": "profile_phylo_signal",
+      "reference_definition": {
+        "name": "profile_phylo_signal",
+        "file": "R/profile-derived-curves.R",
+        "line_start": 497,
+        "line_end": 590,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , trait_idx = NULL, n_grid = 21L, grid_extent = 4, conf_level = 0.95))"
+      },
+      "source_sha256": "31fda975d0a24c1a92eb6b1a79adab0b2fe931690224751a22ec0b0bb049aa86",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-profile_targets",
+      "registration": "export",
+      "namespace_name": "profile_targets",
+      "reference_definition": {
+        "name": "profile_targets",
+        "file": "R/profile-targets.R",
+        "line_start": 462,
+        "line_end": 542,
+        "kind": "function",
+        "formals": "as.pairlist(alist(object = , ready_only = FALSE))"
+      },
+      "source_sha256": "295c50812a571f6fe97965fe9e42f41731c31f1f4bb5b078392d01b4beec093b",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-rotate_loadings",
+      "registration": "export",
+      "namespace_name": "rotate_loadings",
+      "reference_definition": {
+        "name": "rotate_loadings",
+        "file": "R/rotate-loadings.R",
+        "line_start": 90,
+        "line_end": 214,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , level = \"unit\", method = c(\"varimax\", \"promax\", \"none\"), order_axes = TRUE, sign_anchor = c(\"auto\", \"none\"), anchor_traits = NULL))"
+      },
+      "source_sha256": "c10c9dbdbfe974bbda0e2280ac1f3ef30759a3db5b2fd175215676c024ff41e7",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-sanity_multi",
+      "registration": "export",
+      "namespace_name": "sanity_multi",
+      "reference_definition": {
+        "name": "sanity_multi",
+        "file": "R/methods-gllvmTMB.R",
+        "line_start": 2017,
+        "line_end": 2142,
+        "kind": "function",
+        "formals": "as.pairlist(alist(object = , gradient_thresh = 0.01, se_thresh = 100))"
+      },
+      "source_sha256": "fd5515ec3eb355d0672ca19d7031ce251250d1dbeee80e8c2e772594cbd37fb3",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-simulate_site_trait",
+      "registration": "export",
+      "namespace_name": "simulate_site_trait",
+      "reference_definition": {
+        "name": "simulate_site_trait",
+        "file": "R/simulate-site-trait.R",
+        "line_start": 76,
+        "line_end": 233,
+        "kind": "function",
+        "formals": "pairlist(n_sites = 50, n_species = 20, n_traits = 3, mean_species_per_site = 5, n_predictors = 2, alpha = NULL, beta = NULL, sigma2_eps = 0.5, Lambda_B = NULL, Lambda_W = NULL, psi_B = NULL, psi_W = NULL, sigma2_phy = NULL, sigma2_sp = NULL, Cphy = NULL, spatial_range = NULL, sigma2_spa = NULL, coords = NULL, seed = NULL)"
+      },
+      "source_sha256": "628e19204ba973a03cf5e32cee05113ca93a8997affdadb051d7b39b28a20aab",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-simulate_unit_trait",
+      "registration": "export",
+      "namespace_name": "simulate_unit_trait",
+      "reference_definition": {
+        "name": "simulate_unit_trait",
+        "file": "R/simulate-unit-trait.R",
+        "line_start": 78,
+        "line_end": 164,
+        "kind": "function",
+        "formals": "as.pairlist(alist(n_units = 50L, n_obs_per_unit = 3L, n_traits = 5L, alpha = NULL, Lambda_B = NULL, Lambda_W = NULL, psi_B = NULL, psi_W = NULL, sigma2_eps = 0.5, seed = NULL, ... = ))"
+      },
+      "source_sha256": "af2c47dedd3977c15141d75731398c581f5996b5916bc300c99afb8f9db494ef",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-slope_sd_ci",
+      "registration": "export",
+      "namespace_name": "slope_sd_ci",
+      "reference_definition": {
+        "name": "slope_sd_ci",
+        "file": "R/slope-sd-ci.R",
+        "line_start": 481,
+        "line_end": 659,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , level = 0.95, scale = c(\"sd\", \"variance\")))"
+      },
+      "source_sha256": "31eb6a3e404fa1917714ea543e4929ff7a74f77e28548ac9142fa4a5882f565f",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-standard_errors",
+      "registration": "export",
+      "namespace_name": "standard_errors",
+      "reference_definition": {
+        "name": "standard_errors",
+        "file": "R/standard-errors.R",
+        "line_start": 96,
+        "line_end": 161,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = ))"
+      },
+      "source_sha256": "b15e59b969f3b9225c9056b8caae579cbaa696eead9626708a917504a4c7fb44",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-tidy",
+      "registration": "export",
+      "namespace_name": "tidy",
+      "reference_definition": {
+        "name": "tidy",
+        "file": "NAMESPACE",
+        "line_start": 222,
+        "line_end": 222,
+        "kind": "reexport",
+        "formals": "importFrom(generics,tidy)"
+      },
+      "source_sha256": "9094613610789faab69c43195d3cfdafb2c7dfef284e6646b10dababa4fa132c",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    },
+    {
+      "id": "POSTFIT-SURFACE-tmbprofile_wrapper",
+      "registration": "export",
+      "namespace_name": "tmbprofile_wrapper",
+      "reference_definition": {
+        "name": "tmbprofile_wrapper",
+        "file": "R/profile-ci.R",
+        "line_start": 370,
+        "line_end": 453,
+        "kind": "function",
+        "formals": "as.pairlist(alist(fit = , name = NULL, which = 1L, lincomb = NULL, level = 0.95, transform = identity, ystep = 0.5, ytol = NULL, parm.range = c(-Inf, Inf)))"
+      },
+      "source_sha256": "b6e9dc29c06d7a52709630f3020ea92dac25f94b5cb002b810b51284cab1b3b5",
+      "classification": "REQUIRED_INFORMATION",
+      "owner": "B4",
+      "native_status": "UNQUALIFIED_REQUIRES_MODEL_AND_ESTIMAND_MAPPING",
+      "acceptance": "Same defined information with explicit scale, conditioning, parameter identity, missingness and uncertainty; require numerical/structural receipts from valid fitted objects; formatting may be Julia idiomatic"
+    }
+  ],
+  "limitations": [
+    "Definitions and signatures are not numerical parity",
+    "Branch cross-products and same-model fixtures remain unpaid",
+    "Imported generic tidy delegates to the separately listed method",
+    "No R0.7.1 code or VA/MSPL expansion"
+  ]
+}

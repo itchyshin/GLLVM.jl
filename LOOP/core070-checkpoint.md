@@ -421,3 +421,10 @@ No production B dispatch, full suite or long campaign was launched.
 - Historical reference-only native gap is closed at density level for the tested cells. Broader B1 and optimized fit/health/formula/bridge/postfit/recovery remain UNPAID. Source-contract review remains useful; independent implementation review tracked in native-source runtime.
 - No new production child; no full suite, push/merge/release/cleanup. Next remains finite required manifest/M1 blockers and checkpoint before new production tranche.
 - Noether implementation review: no blocker; added requested unequal2/3group direct-reference regression. Final25unit+18parity assertions pass in22.99s. Mission Control Julia-only update served/read-back; R fields preserved.
+
+## 2026-08-30 — Postfit source inventory and policy
+-100 frozen namespace postfit obligations resolve to99 source functions +one tidy generic reexport. New postfit-surface-inventory.json binds definitions/formals/lines; verifier reparses, not just checks names.
+-29 frozen-R policy probes PASS (0.366s, no fit). Covers defaults/counts/coef/logLik/deviance/SE guards/re_form/link inversion. Minimal objects only; valid fitted numerical parity remains unpaid. Corruption, omissions, fabricated signatures and nonzero process negative controls reject.
+-B4 semantic requirement: R truncated-Poisson response helper gives underlying rate0.5, whereas expected positive count=1.270747. Native marker already documents rate link. Preserve explicit rate parity and label any conditional-mean output separately; no API decision/engine change made here.
+-Next: finite per-model data/postfit/inference/conditioning cases and M1 blockers/checkpoint. Source signatures are not completed capabilities; full manifest DRAFT, Student health unresolved. No new production child, full suite, push, merge, release or cleanup.
+-Mission Control Julia-only update358a1d3f served HTTP200/readback matches; R fields unchanged. Native-source evaluator evidence freshly reverified and unaffected by this documentation/policy slice.

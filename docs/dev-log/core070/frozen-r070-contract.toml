@@ -645,3 +645,11 @@ evidence = "docs/dev-log/core070/fit-input-evidence.json"
 contract_notes = "docs/dev-log/core070/fit-input-contract.md"
 status = "INPUT_PREPARATION_PASS_FITTED_PARITY_UNPAID"
 expected_cases = 14
+
+[[source_subsets]]
+id = "postfit-surfaces-and-policy"
+manifest = "docs/dev-log/core070/postfit-surface-inventory.json"
+evidence = "docs/dev-log/core070/postfit-policy-subset.json"
+contract_notes = "docs/dev-log/core070/postfit-contract.md"
+status = "100_SOURCE_SURFACES_29_POLICY_PROBES_PASS_FITTED_PARITY_UNPAID"
+expected_cases = 29

@@ -15814,3 +15814,8 @@ unpaid. No numerical source changes, outer optimization or campaign.
 - Implemented internal source evaluator with independent residual noise; complete Gaussian rank-one one/two-source contract, dense Cholesky, no fitter/export or coevolution behavior change.
 - Expected red0pass/1fail/0errors; green25unit +18frozen-reference assertions on Totoro1.12.6. Six exact R points maxnll delta8.527e-14/maxscaledgradient8.921e-15; current source and raw oracle hashes pinned.
 - Three candidate rows native fixed-point PASS; general B1, optimized fits and interfaces remain UNPAID. No full suite or speed claim. See native-source-evidence and after-task report.
+
+### 2026-08-30 — Postfit definitions and policy contract
+- Resolved100 frozen postfit namespace entries (99 functions +tidy reexport), exact formals/source pins; verifier freshly reparses definitions. All29 installed-frozen-R policy probes PASS in0.366s, package integrity before/after confirmed.
+- Captured scale/conditioning/count/SE rules. Truncated-Poisson response helper returns underlying rate (0.5), not expected positive count(1.270747); both quantities must be labelled separately in B4. No engine/API change.
+- Six corruption/omission/nonzero-exit controls rejected. Source probes are not fits. Master manifest remains DRAFT; fitted-object and branch cross-product obligations remain unpaid. See postfit-contract and after-task report.
