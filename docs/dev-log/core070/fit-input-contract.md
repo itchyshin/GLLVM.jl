@@ -63,3 +63,11 @@ No objective was constructed or optimized by these captured calls. The source
 prefix can perform ordinary design/start-value calculations; this diagnostic
 does not assert that every internal calculation is absent. The capture boundary
 also precedes later AGHQ adaptation and postfit checks, which remain unpaid.
+
+## Source data-control extension
+
+[The data-control contract](data-controls-contract.md) adds56 exact source-helper
+cases for weights ordering/masks, missing controls and offsets. Matrix and traits()
+paths use different stacking orders; the adapter must retain unit/trait alignment.
+These source controls do not extend the11 prepared numerical model candidates into
+fitted parity, and no new installed-package or Julia interface proof is implied.

@@ -662,3 +662,12 @@ contract = "docs/dev-log/core070/inference-routing-contract.md"
 expected_cases = 98
 owner = "B4"
 completion_scope = "Dispatch and selected rejection boundaries only; numerical interval cases unpaid."
+
+[data_controls_subset]
+status = "FROZEN_SOURCE_DATA_CONTROLS_NOT_FITTED_PARITY"
+fixture = "test/parity/fixtures/core070_data_controls.R"
+evidence = "docs/dev-log/core070/data-controls-subset.json"
+contract = "docs/dev-log/core070/data-controls-contract.md"
+expected_cases = 56
+owner = "B4/B2/B5"
+completion_scope = "Weight shapes/order/masks, missing controls and offsets only; complete fitted data parity unpaid."

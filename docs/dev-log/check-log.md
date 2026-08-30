@@ -15865,3 +15865,7 @@ unpaid. No numerical source changes, outer optimization or campaign.
 ## 2026-08-30 — Student-t scalar diagnosis at retained parameters
 - Exact15 retained native/R scale-df pairs,75 selected standardized-residual points,900 assertions PASS with768-bit density/derivative reference. No Student engine change justified; original fitted failure remains.
 - Normalizer mutation in disposable copy gives825pass/75fail; six metadata negatives pass. Actual full-module local Julia1.10 evidence; no fits/modes. Original seed71 and likelihood gate untouched, full manifest DRAFT/M1 PARTIAL.
+
+## 2026-08-30 — Frozen data shape/offset controls
+-56 source controls PASS: weight order/masks, missing-data defaults/rejections, offset admission and newdata behavior. R matrix versus traits() stacking now explicit; Julia traits×units adapter contract recorded.
+-Wrong-order live negative55pass/1fail; eight metadata negatives pass. Source-only, no fits/engine changes; native/formula/bridge numerical data parity unpaid. Full manifest DRAFT/M1 PARTIAL.

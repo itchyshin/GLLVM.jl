@@ -494,3 +494,8 @@ No production B dispatch, full suite or long campaign was launched.
 -Disposable +1e-4 normalizer mutation yields825pass/75fail; six evidence negatives pass. Test registered, fullrunner unpaid. Original Student fit-health and logLik gates unchanged/unpaid; next decisive work same-point R/native joint/marginal and mode comparison.
 -Totoro socket absent; remote family-recheck-01 UNKNOWN, no restart. Full manifest DRAFT/M1 PARTIAL; no new child/push/merge/release/cleanup.
 - Mission Control Julia-only correction3d28861b7fbfc46b454e6ce6e729a241f6298b78 locally committed; served HTTP200/readback verified and R fields preserved. Lease released; Unlazy2met/1unmet, no abandonment.
+
+## 2026-08-30 — Data controls frozen as a subset
+-56 exact frozen R helper cases pass; wrong matrix-order expected vector yields55pass/1fail. Eight metadata negatives pass. Contracts capture matrix vs traits() order, masked values, missing controls and offset differences.
+-Source-only, no installed package or numerical parity. Full manifest DRAFT/M1 PARTIAL; exact complete fitted data fixtures still required by B4/B2/B5. No new child/engine change/push/merge/release/cleanup. Totoro socket absent; existing remote job UNKNOWN, no restart.
+- Mission Control Julia-only correctionc084788085c7d4877a5d7e1f18cb73a2d2d51da0 locally committed; served HTTP200/readback verified, R fields unchanged and lease released. Unlazy2met/1unmet, no abandonment.
