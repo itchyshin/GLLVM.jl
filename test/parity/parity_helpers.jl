@@ -6,6 +6,133 @@
 # Source: docs/dev-log/plans/scratch/2026-08-01-gaussian-rcall-shape.md
 
 using RCall
+using SHA
+using TOML
+using LinearAlgebra
+
+const _CORE070_REFERENCE_COMMIT = "b4d5fee64def88bc768dda1f1f77c29b295edd86"
+const _CORE070_NAMESPACE_SHA256 = "9094613610789faab69c43195d3cfdafb2c7dfef284e6646b10dababa4fa132c"
+const _CORE070_SOURCE_TREE_SHA256 = "f83545faa6543dbb1f64d64bbf5a9498adcdf036cc3da5851f269912698b1cc7"
+const _CORE070_ARCHIVE_SHA256 = "0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc"
+const _CORE070_FAMILY_SMOKE_IDS = [
+    "NATIVE-01-GAUSSIAN", "NATIVE-02-BINOMIAL", "NATIVE-03-POISSON",
+    "NATIVE-04-LOGNORMAL", "NATIVE-05-GAMMA", "NATIVE-06-NB2",
+    "NATIVE-07-TWEEDIE", "NATIVE-08-BETA", "NATIVE-09-BETABINOMIAL",
+    "NATIVE-10-STUDENT", "NATIVE-11-TRUNCATED-POISSON",
+    "NATIVE-12-TRUNCATED-NB2", "NATIVE-13-DELTA-LOGNORMAL",
+    "NATIVE-14-DELTA-GAMMA", "NATIVE-15-ORDINAL-PROBIT", "NATIVE-16-NB1",
+    "NATIVE-17-MULTINOMIAL-FIXED",
+]
+const _CORE070_SOURCE = Ref{Dict{String, Any}}()
+_core070_required() = get(ENV, "CORE070_PARITY_REQUIRED", "0") == "1"
+
+function _core070_receipt_dir()
+    raw = get(ENV, "GLLVM_PARITY_RECEIPT_DIR", "")
+    isempty(raw) && throw(ArgumentError(
+        "required parity evidence needs GLLVM_PARITY_RECEIPT_DIR; no receipt means no pass"))
+    dir = abspath(raw)
+    mkpath(dir)
+    return dir
+end
+
+_core070_sha256_file(path::AbstractString) = bytes2hex(sha256(read(path)))
+
+function _core070_tree_sha256(root::AbstractString; ignore::Function = _ -> false)
+    entries = String[]
+    for (dir, _, files) in walkdir(root)
+        for file in sort(files)
+            path = joinpath(dir, file)
+            rel = relpath(path, root)
+            (islink(path) || ignore(rel)) && continue
+            push!(entries, rel * "\0" * _core070_sha256_file(path))
+        end
+    end
+    return bytes2hex(sha256(join(sort(entries), "\n")))
+end
+
+function _core070_write_toml(name::AbstractString, receipt::Dict{String, Any})
+    path = joinpath(_core070_receipt_dir(), name)
+    open(path, "w") do io
+        TOML.print(io, receipt)
+    end
+    return path
+end
+
+function _core070_source_pin!()
+    marker = get(ENV, "GLLVM_PARITY_R_SOURCE_PIN", "")
+    isempty(marker) && throw(ArgumentError(
+        "required parity evidence needs GLLVM_PARITY_R_SOURCE_PIN inside the installed gllvmTMB library"))
+    isfile(marker) || throw(ArgumentError("R source-pin marker is missing: $marker"))
+    pin = TOML.parsefile(marker)
+    get(pin, "reference_commit", nothing) == _CORE070_REFERENCE_COMMIT ||
+        throw(ArgumentError("R source-pin reference_commit does not match frozen CORE-070 commit"))
+    get(pin, "namespace_sha256", nothing) == _CORE070_NAMESPACE_SHA256 ||
+        throw(ArgumentError("R source-pin namespace_sha256 does not match frozen CORE-070 source"))
+    source_tree = get(pin, "source_tree_sha256", "")
+    source_tree == _CORE070_SOURCE_TREE_SHA256 ||
+        throw(ArgumentError("R source-pin source_tree_sha256 does not match the pinned archive tree"))
+    get(pin, "archive_sha256", nothing) == _CORE070_ARCHIVE_SHA256 ||
+        throw(ArgumentError("R source-pin archive_sha256 does not match the pinned archive"))
+    pkg_root = rcopy(String, R"find.package('gllvmTMB')")
+    realpath(marker) == joinpath(realpath(pkg_root), "CORE070_SOURCE_PIN.toml") ||
+        throw(ArgumentError("R source-pin marker must be CORE070_SOURCE_PIN.toml in the installed gllvmTMB library"))
+    _core070_sha256_file(joinpath(pkg_root, "NAMESPACE")) == _CORE070_NAMESPACE_SHA256 ||
+        throw(ArgumentError("installed gllvmTMB NAMESPACE is not the frozen R reference"))
+    installed_tree = _core070_tree_sha256(pkg_root; ignore = rel -> rel == "CORE070_SOURCE_PIN.toml")
+    get(pin, "installed_tree_sha256", nothing) == installed_tree ||
+        throw(ArgumentError("installed gllvmTMB bytes differ from the exact-build source-pin receipt"))
+    source = Dict{String, Any}(
+        "reference_commit" => _CORE070_REFERENCE_COMMIT,
+        "archive_sha256" => _CORE070_ARCHIVE_SHA256,
+        "namespace_sha256" => _CORE070_NAMESPACE_SHA256,
+        "source_marker_sha256" => _core070_sha256_file(marker),
+        "source_tree_sha256" => source_tree,
+        "installed_tree_sha256" => installed_tree,
+        "julia_source_tree_sha256" => _core070_tree_sha256(joinpath(@__DIR__, "..", "..", "src")),
+        "julia_version" => string(VERSION),
+        "julia_machine" => Sys.MACHINE,
+        "julia_threads" => Threads.nthreads(),
+        "blas_threads" => BLAS.get_num_threads(),
+        "rcall_version" => string(Base.pkgversion(RCall)),
+        "r_version" => rcopy(String, R"R.version.string"),
+        "r_home" => rcopy(String, R"R.home()"),
+        "r_library_path" => realpath(pkg_root),
+        "tmb_version" => rcopy(String, R"as.character(packageVersion('TMB'))"),
+        "matrix_version" => rcopy(String, R"as.character(packageVersion('Matrix'))"),
+    )
+    _CORE070_SOURCE[] = source
+    return source
+end
+
+function core070_start_run!()
+    _core070_required() || return nothing
+    source = _core070_source_pin!()
+    _core070_write_toml("run.toml", Dict{String, Any}(
+        "status" => "started", "exit_code" => -1,
+        "family_smoke_ids" => _CORE070_FAMILY_SMOKE_IDS, "source" => source,
+    ))
+end
+
+function core070_record_cell!(id::AbstractString, fixture::AbstractString)
+    _core070_required() || return nothing
+    id in _CORE070_FAMILY_SMOKE_IDS || throw(ArgumentError("unknown CORE-070 family-smoke cell: $id"))
+    isassigned(_CORE070_SOURCE) || throw(ArgumentError("CORE-070 run provenance was not verified"))
+    isfile(fixture) || throw(ArgumentError("fixture is missing: $fixture"))
+    _core070_write_toml("cell-$(id).toml", Dict{String, Any}(
+        "id" => id, "status" => "success", "fixture" => fixture,
+        "fixture_sha256" => _core070_sha256_file(fixture),
+        "reference_commit" => _CORE070_REFERENCE_COMMIT,
+    ))
+end
+
+function core070_finish_run!()
+    _core070_required() || return nothing
+    isassigned(_CORE070_SOURCE) || throw(ArgumentError("CORE-070 run provenance was not verified"))
+    _core070_write_toml("run.toml", Dict{String, Any}(
+        "status" => "success", "success_marker" => "CORE070_PARITY_SUCCESS", "exit_code" => 0,
+        "family_smoke_ids" => _CORE070_FAMILY_SMOKE_IDS, "source" => _CORE070_SOURCE[],
+    ))
+end
 
 # Prefer the lane twin install when present (gllvmTMB @ origin/main SHA recorded
 # in LOOP / after-task). Override with ENV["GLLVM_PARITY_R_LIBS"].
@@ -13,10 +140,26 @@ const _PARITY_TWIN_RLIB =
     get(ENV, "GLLVM_PARITY_R_LIBS", "/tmp/R-gllvmtmb-x-parity-20260802")
 
 function _parity_prepend_twin_lib!()
-    twin = _PARITY_TWIN_RLIB
+    # Required runs may never fall back to the historical developer library
+    # after validating a different oracle at startup.
+    twin = if _core070_required()
+        marker = get(ENV, "GLLVM_PARITY_R_SOURCE_PIN", "")
+        isfile(marker) || throw(ArgumentError("required R source marker is missing"))
+        dirname(dirname(realpath(marker)))
+    else
+        _PARITY_TWIN_RLIB
+    end
     isdir(joinpath(twin, "gllvmTMB")) || return nothing
     @rput twin
-    R""".libPaths(c(twin, .libPaths())); invisible(TRUE)"""
+    R"""
+    expected_package <- normalizePath(file.path(twin, "gllvmTMB"), mustWork = TRUE)
+    if ("gllvmTMB" %in% loadedNamespaces() &&
+        normalizePath(getNamespaceInfo("gllvmTMB", "path"), mustWork = TRUE) != expected_package) {
+      stop("gllvmTMB is already loaded from a different library; start a fresh pinned process")
+    }
+    .libPaths(c(twin, .libPaths()))
+    invisible(TRUE)
+    """
     return nothing
 end
 
@@ -30,6 +173,7 @@ function _parity_require_gllvmtmb!()
     suppressPackageStartupMessages(library(gllvmTMB))
     invisible(TRUE)
     """
+    _core070_required() && _core070_source_pin!()
     return nothing
 end
 
@@ -427,17 +571,12 @@ and the positive part (`gllvmTMB.cpp:2816-2844`), matching Julia's
 `fit_delta_gamma_gllvm` (Identity
 `docs/dev-log/decisions/2026-08-28-delta-shared-predictor-identity.md`).
 
-**Dispersion parameterisation is PER-TRAIT on the twin side** (`log_sigma_lognormal_delta`
-/ `log_phi_gamma_delta`, `n_traits`-length TMB parameter vectors — no shared/pinned
-mode is exposed through the family constructor or `gllvmTMB()`; see
-`R/dispersion-trait-map.R`), while Julia's `fit_delta_lognormal_gllvm` /
-`fit_delta_gamma_gllvm` estimate a single SHARED scalar `σ` / `α` across all traits.
-This is a genuine, irreducible parameterisation mismatch (not a bug): the twin has
-`p−1` more free parameters than Julia here, so its maximised log-likelihood is
-generically ≥ Julia's even under a shared-dispersion DGP. Report the per-trait
-dispersion vector `r_disp_vec` alongside the Δ so a caller can see whether the twin's
-per-trait estimates are close to each other (consistent with a genuinely shared DGP)
-or spread apart.
+**Dispersion is PER-TRAIT on the twin side** (`log_sigma_lognormal_delta` /
+`log_phi_gamma_delta`, `n_traits`-length TMB parameter vectors; see
+`R/dispersion-trait-map.R`). Julia's delta fitters now expose `disp_group`, so
+the caller must choose `:species` for a same-grouping comparison or explicitly
+record a deliberate shared-dispersion mismatch. This helper reports the twin
+vector so the selected parameterisation is auditable.
 
 `family` ∈ `(:delta_lognormal, :delta_gamma)`. `y` is `p×n` with `0` for absences.
 Returns `(logLik, objective, converged, b_fix, disp_vec)`: `b_fix` is the twin's
@@ -506,22 +645,18 @@ end
 Twin oracle for the Student-t family (`gllvmTMB::student()`, fid 9,
 identity link). `df_fixed` is passed straight to `student(df = df_fixed)`
 so BOTH sides hold degrees of freedom fixed at the same value — the twin's
-own default is to ESTIMATE df per trait (`student(df = NULL)`), which is
-not the same model as Julia's `fit_studentt_gllvm` (fixed scalar `nu`); see
-`docs/dev-log/decisions/2026-08-28-studentt-parameterisation.md`. Fixing
-`df` on the twin isolates the ONE remaining structural difference: the
-twin's `log_sigma_student` is a PER-TRAIT `n_traits`-length TMB parameter
-(`gllvmTMB.cpp:1184`; no shared/pinned mode is exposed through the family
-constructor or `dispersion_trait_map()`), while Julia's `fit_studentt_gllvm`
-estimates a single SHARED scalar `σ`. This mirrors
-[`fit_gllvmtmb_parity_delta`](@ref) exactly, for the same reason.
+own default is to ESTIMATE df per trait (`student(df = NULL)`). Julia now
+also supports estimated `nu` and `disp_group = :species`; this fixed-`df`
+helper remains useful for the original target, while the estimated route must
+be compared under its own declared parameter map.
 
-Returns `(logLik, objective, converged, b_fix, sigma_vec, df_vec)`: `b_fix`
-is the twin's trait-intercept vector (length `p`); `sigma_vec` /`df_vec` are
-the reported per-trait `sigma_student` / `df_student` vectors (length `p`).
-Per the parameterisation note, `df_vec` should equal `df_fixed` on every
-trait (fixed, not estimated) — assert that in the caller before trusting a
-logLik Δ as dispersion-only.
+Returns `(logLik, objective, converged, optimizer_code, optimizer_message,
+optimizer_iterations, b_fix, sigma_vec, df_vec)`. `b_fix` is the twin's
+trait-intercept vector (length `p`); `sigma_vec` /`df_vec` are the reported
+per-trait `sigma_student` / `df_student` vectors (length `p`). Per the
+parameterisation note, `df_vec` should equal `df_fixed` on every trait
+(fixed, not estimated) — assert that in the caller before trusting a logLik
+Δ as dispersion-only.
 """
 function fit_gllvmtmb_parity_student(y::AbstractMatrix, K::Integer; df_fixed::Union{Nothing, Real} = nothing)
     df_fixed !== nothing && (df_fixed > 1 || throw(ArgumentError("student(): df_fixed must be > 1; got $df_fixed")))
@@ -555,6 +690,9 @@ function fit_gllvmtmb_parity_student(y::AbstractMatrix, K::Integer; df_fixed::Un
         logL      = as.numeric(stats::logLik(fit_r)),
         objective = as.numeric(fit_r$opt$objective),
         converged = identical(as.integer(fit_r$opt$convergence), 0L),
+        optimizer_code = as.integer(fit_r$opt$convergence),
+        optimizer_message = as.character(if (is.null(fit_r$opt$message)) "" else fit_r$opt$message),
+        optimizer_iterations = as.integer(if (is.null(fit_r$opt$iterations)) NA_integer_ else fit_r$opt$iterations),
         b_fix     = as.numeric(pl$b_fix),
         sigma_vec = as.numeric(fit_r$report$sigma_student),
         df_vec    = as.numeric(fit_r$report$df_student)
@@ -566,6 +704,9 @@ function fit_gllvmtmb_parity_student(y::AbstractMatrix, K::Integer; df_fixed::Un
         logLik = rcopy(Float64, R".gllvm_parity_student$logL"),
         objective = rcopy(Float64, R".gllvm_parity_student$objective"),
         converged = rcopy(Bool, R".gllvm_parity_student$converged"),
+        optimizer_code = rcopy(Int, R".gllvm_parity_student$optimizer_code"),
+        optimizer_message = rcopy(String, R".gllvm_parity_student$optimizer_message"),
+        optimizer_iterations = rcopy(Int, R".gllvm_parity_student$optimizer_iterations"),
         b_fix = rcopy(Vector{Float64}, R".gllvm_parity_student$b_fix"),
         sigma_vec = rcopy(Vector{Float64}, R".gllvm_parity_student$sigma_vec"),
         df_vec = rcopy(Vector{Float64}, R".gllvm_parity_student$df_vec"),
@@ -573,21 +714,37 @@ function fit_gllvmtmb_parity_student(y::AbstractMatrix, K::Integer; df_fixed::Un
 end
 
 """
-    fit_gllvmtmb_parity_tweedie(y, K; p_fixed) -> NamedTuple
+    fit_gllvmtmb_parity_tweedie(y, K; p_fixed, power_group=:species) -> NamedTuple
 
 Twin oracle for the Tweedie family (`gllvmTMB::tweedie()`, fid 6,
 log link). `p_fixed` is passed to `tweedie(link = "log", p = p_fixed)`
-if specified; if `p_fixed === nothing`, the power parameter is estimated
-per-trait (`p_tweedie`). `phi_tweedie` is estimated per-trait.
+if specified. With the default `power_group = :species`, an unpinned power is
+estimated per trait (`p_tweedie`), exactly as the public frozen-R call does.
+
+`power_group = :shared` is a **reference-engine constraint adapter**, not a
+public `gllvmTMB()` argument. It first fits the ordinary frozen-R model, then
+rebuilds that exact fit's retained `tmb_data`, parameter list, map, and
+`random = "z_B"` declaration with a single `logit_p_tweedie` map level. It
+refuses mixed-family, AGHQ, non-ML, or non-`z_B` fits; preserves every other
+map; checks that exactly one power coordinate remains; and checks the report
+has one equal power for every trait. This is the only admissible shared-power
+oracle until R exposes a public control. `p_fixed` and `power_group = :shared`
+are intentionally mutually exclusive.
 
 Returns `(logLik, objective, converged, b_fix, phi_vec, p_vec)`.
 """
-function fit_gllvmtmb_parity_tweedie(y::AbstractMatrix, K::Integer; p_fixed::Union{Nothing, Real} = nothing)
+function fit_gllvmtmb_parity_tweedie(y::AbstractMatrix, K::Integer;
+        p_fixed::Union{Nothing, Real} = nothing, power_group::Symbol = :species)
     p_fixed !== nothing && (1.0 < p_fixed < 2.0 || throw(ArgumentError("tweedie(): p_fixed must be in (1, 2); got $p_fixed")))
+    power_group in (:species, :shared) || throw(ArgumentError(
+        "tweedie power_group must be :species or :shared; got :$power_group"))
+    p_fixed !== nothing && power_group === :shared && throw(ArgumentError(
+        "p_fixed already defines the Tweedie power; power_group=:shared is only for estimated power"))
     p, n = size(y)
     _parity_require_gllvmtmb!()
     pv = p_fixed === nothing ? nothing : Float64(p_fixed)
-    @rput y K p n pv
+    pg = String(power_group)
+    @rput y K p n pv pg
 
     R"""
     trait_names <- paste0("t", seq_len(p))
@@ -609,14 +766,66 @@ function fit_gllvmtmb_parity_tweedie(y::AbstractMatrix, K::Integer; p_fixed::Uni
         family = fam_obj,
         control = gllvmTMBcontrol(n_init = 1L, se = FALSE)
     )
+    adapter <- FALSE
+    if (identical(pg, "shared")) {
+      if (!is.null(pv) || !identical(fit_r$estimator, "ML") ||
+          isTRUE(fit_r$aghq$used) || !identical(fit_r$random, "z_B") ||
+          !all(fit_r$tmb_data$family_id == 6L)) {
+        stop("shared Tweedie power adapter requires an ordinary ML, all-Tweedie, z_B-only Laplace fit", call. = FALSE)
+      }
+      ## Rebuild only the power map.  Data, all non-power maps, the compiled
+      ## template, and the Laplace random block come from the fitted frozen R
+      ## object; no R engine source is changed or reimplemented here.
+      shared_map <- fit_r$tmb_map
+      shared_params <- fit_r$tmb_params
+      fitted_params <- fit_r$tmb_obj$env$parList(fit_r$opt$par)
+      for (nm in intersect(names(shared_params), names(fitted_params))) {
+        shared_params[[nm]] <- fitted_params[[nm]]
+      }
+      length(shared_params$logit_p_tweedie) == p ||
+        stop("shared Tweedie adapter expected one power entry per trait", call. = FALSE)
+      shared_params$logit_p_tweedie[] <- mean(fitted_params$logit_p_tweedie)
+      shared_map$logit_p_tweedie <- factor(rep(1L, p))
+      obj_shared <- TMB::MakeADFun(
+        data = fit_r$tmb_data, parameters = shared_params, map = shared_map,
+        random = fit_r$random, DLL = "gllvmTMB", silent = TRUE
+      )
+      sum(grepl("^logit_p_tweedie", names(obj_shared$par))) == 1L ||
+        stop("shared Tweedie adapter did not produce exactly one free power coordinate", call. = FALSE)
+      opt_shared <- nlminb(start = obj_shared$par, objective = obj_shared$fn,
+                           gradient = obj_shared$gr)
+      if (!identical(as.integer(opt_shared$convergence), 0L))
+        stop("shared Tweedie adapter did not converge", call. = FALSE)
+      fit_r$opt <- opt_shared
+      fit_r$tmb_obj <- obj_shared
+      fit_r$tmb_params <- shared_params
+      fit_r$tmb_map <- shared_map
+      ## report() consumes the full vector (including latent modes), whereas
+      ## nlminb returns only the free outer vector. Re-evaluate fn at the
+      ## selected optimum to refresh the conditional modes, then use the
+      ## object's full best vector; passing opt_shared$par is a length error.
+      obj_shared$fn(opt_shared$par)
+      fit_r$report <- obj_shared$report(obj_shared$env$last.par.best)
+      adapter <- TRUE
+    }
     pl <- fit_r$tmb_obj$env$parList(fit_r$opt$par)
+    p_report <- as.numeric(fit_r$report$p_tweedie)
+    if (isTRUE(adapter) && (!all(is.finite(p_report)) ||
+        length(unique(round(p_report, 12))) != 1L)) {
+      stop("shared Tweedie adapter report does not carry one common power", call. = FALSE)
+    }
     .gllvm_parity_tweedie <<- list(
-        logL      = as.numeric(stats::logLik(fit_r)),
+        ## The constraint adapter changes the objective. The public fit's
+        ## cached objective_components belongs to the pre-adapter fit and
+        ## must not be reused as logLik evidence for the tied-power model.
+        logL      = if (adapter) -as.numeric(fit_r$opt$objective) else as.numeric(stats::logLik(fit_r)),
         objective = as.numeric(fit_r$opt$objective),
         converged = identical(as.integer(fit_r$opt$convergence), 0L),
         b_fix     = as.numeric(pl$b_fix),
         phi_vec   = as.numeric(fit_r$report$phi_tweedie),
-        p_vec     = as.numeric(fit_r$report$p_tweedie)
+        p_vec     = p_report,
+        power_group = pg,
+        reference_constraint_adapter = adapter
     )
     invisible(NULL)
     """
@@ -628,5 +837,7 @@ function fit_gllvmtmb_parity_tweedie(y::AbstractMatrix, K::Integer; p_fixed::Uni
         b_fix = rcopy(Vector{Float64}, R".gllvm_parity_tweedie$b_fix"),
         phi_vec = rcopy(Vector{Float64}, R".gllvm_parity_tweedie$phi_vec"),
         p_vec = rcopy(Vector{Float64}, R".gllvm_parity_tweedie$p_vec"),
+        power_group = rcopy(String, R".gllvm_parity_tweedie$power_group"),
+        reference_constraint_adapter = rcopy(Bool, R".gllvm_parity_tweedie$reference_constraint_adapter"),
     )
 end

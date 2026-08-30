@@ -9,12 +9,12 @@
 # docs/dev-log/decisions/2026-08-28-per-trait-dispersion-synthesis.md (why the
 # cause below was PREDICTED before being measured).
 #
-# The twin's own default is to ESTIMATE `df` per trait
-# (`student(df = NULL)`, `R/families.R:381`) — that is NOT the same model as
-# Julia's `fit_studentt_gllvm`, which always holds `ν` FIXED (a follow-up;
-# `families/studentt.jl`, issue #105). So BOTH sides fix
-# `df = ν_true` (`gllvmTMB::student(df = ν_true)`), isolating the one
-# remaining structural difference: the twin's `log_sigma_student` is a
+# The twin's default estimates `df` per trait (`student(df = NULL)`), and
+# Julia's public `nu = nothing, disp_group = :species` route estimates the
+# matching per-trait `ν` and scale in `src/families/studentt.jl`. The fixed-ν
+# call below is a control: BOTH sides fix `df = ν_true`
+# (`gllvmTMB::student(df = ν_true)`), isolating the one remaining structural
+# difference under the shared Julia scale: the twin's `log_sigma_student` is a
 # PER-TRAIT `n_traits`-length TMB parameter (`gllvmTMB.cpp:1184`; no
 # shared/pinned mode is exposed through the family constructor), while
 # Julia's `fit_studentt_gllvm` defaults to a single SHARED scalar `σ`
@@ -23,9 +23,11 @@
 # fit even under a correct fit on both sides — exactly the delta-cell
 # pattern (`test_delta_lognormal_parity.jl`, commit 6c471352).
 #
-# `disp_group = :species` (2026-08-28, `test_studentt_disp_group.jl`) closes
-# that gap: it is the SAME model as the twin's default dispersion
-# parameterisation (df still pinned equal on both sides).
+# `disp_group = :species` (2026-08-28) closes that scale-grouping gap. With
+# `nu = nothing`, it also estimates per-trait ν; that public estimated-ν target
+# remains separate from the fixed-ν control. Near the Gaussian limit ν can be
+# weakly identified, so cross-evaluating ν is diagnostic only, never an
+# equality requirement.
 #
 # Twin Δ rule: no number is quoted unless this cell runs live under
 # GLLVM_PARITY_TESTS=1 against a real gllvmTMB. Never invent, never carry over.
@@ -56,6 +58,7 @@ const _ST_SEED = 71
 
     r = fit_gllvmtmb_parity_student(Y, K; df_fixed = ν_true)
     @test r.converged
+    @test r.optimizer_code == 0
     @test isfinite(r.logLik)
     @test all(≈(ν_true; atol = 1e-8), r.df_vec)   # df genuinely pinned, not estimated
 
@@ -100,13 +103,15 @@ const _ST_SEED = 71
         println("  gllvmTMB per-trait σ vector = ", round.(r.sigma_vec; sigdigits = 5))
         println()
 
-        @testset "log-likelihood agreement (light cell: rtol=1e-6)" begin
-            @test r.logLik ≈ jl_fit.loglik rtol = 1e-6
+        @testset "log-likelihood agreement (fixed-ν control, absolute Δ ≤ 0.001)" begin
+            @test abs(r.logLik - jl_fit.loglik) ≤ 0.001
         end
     end
 
     @testset "per-trait σ + per-trait estimated ν (twin default) — Parity Cell 9" begin
         r_est = fit_gllvmtmb_parity_student(Y, K; df_fixed = nothing)
+        @test r_est.converged
+        @test r_est.optimizer_code == 0
         @test isfinite(r_est.logLik)
 
         jl_est = fit_studentt_gllvm(Y; K = K, nu = nothing, disp_group = :species,
@@ -127,14 +132,70 @@ const _ST_SEED = 71
         println("  gllvmTMB per-trait σ = ", round.(r_est.sigma_vec; sigdigits = 5))
         println("  Julia per-trait ν  = ", round.(jl_est.ν; sigdigits = 5))
         println("  gllvmTMB per-trait ν = ", round.(r_est.df_vec; sigdigits = 5))
+        println("  gllvmTMB optimizer code/message/iterations = ",
+                (r_est.optimizer_code, r_est.optimizer_message, r_est.optimizer_iterations))
+        flat_boundary = any(>(1e6), jl_est.ν) || any(>(1e6), r_est.df_vec)
+        println("  flat Gaussian-limit boundary diagnosed = ", flat_boundary)
         println()
 
-        # In the unconstrained ν estimation regime with small sample sizes,
-        # traits with large degrees of freedom (Gaussian limit) can have flat log-likelihood
-        # surfaces where optimizer stopping tolerances (nlminb in R vs L-BFGS in Julia)
-        # yield tiny likelihood variations (Δ logLik ≈ 0.0024, relative diff ≈ 3e-6).
-        @testset "log-likelihood agreement (rtol=1e-5)" begin
-            @test jl_est.loglik ≈ r_est.logLik rtol = 1e-5
+        # A large ν on either engine is a flat-boundary diagnosis, not a
+        # parameter-equality target. The original fixture's admissible result
+        # is instead the absolute likelihood difference and both fit-health
+        # checks above.
+        @testset "log-likelihood agreement (public estimated-ν target, absolute Δ ≤ 0.001)" begin
+            @test abs(jl_est.loglik - r_est.logLik) ≤ 0.001
         end
+    end
+
+    @testset "well-identified estimated-ν diagnostic" begin
+        Random.seed!(72)
+        p_diag, K_diag, n_diag = 3, 1, 400
+        β_diag = [0.2, -0.1, 0.3]
+        Λ_diag = reshape([0.45, -0.35, 0.25], p_diag, K_diag)
+        σ_diag = [0.6, 0.8, 0.7]
+        ν_diag = 4.0
+        η_diag = β_diag .+ Λ_diag * randn(K_diag, n_diag)
+        Y_diag = [η_diag[t, s] + σ_diag[t] * rand(TDist(ν_diag))
+                  for t in 1:p_diag, s in 1:n_diag]
+
+        r_diag = fit_gllvmtmb_parity_student(Y_diag, K_diag; df_fixed = nothing)
+        jl_diag = fit_studentt_gllvm(Y_diag; K = K_diag, nu = nothing,
+                                     disp_group = :species, g_tol = 1e-7,
+                                     iterations = 800)
+        @test r_diag.converged
+        @test r_diag.optimizer_code == 0
+        @test jl_diag.converged
+        @test isfinite(r_diag.logLik) && isfinite(jl_diag.loglik)
+        # This is an independent diagnosis and regression guard. It supports,
+        # but never substitutes for, the original seed-71 target above.
+        @test abs(jl_diag.loglik - r_diag.logLik) ≤ 0.001
+    end
+
+    @testset "near-Gaussian estimated-ν diagnostic" begin
+        Random.seed!(73)
+        p_diag, K_diag, n_diag = 3, 1, 400
+        β_diag = [0.2, -0.1, 0.3]
+        Λ_diag = reshape([0.45, -0.35, 0.25], p_diag, K_diag)
+        σ_diag = [0.6, 0.8, 0.7]
+        ν_diag = 1.0e6
+        η_diag = β_diag .+ Λ_diag * randn(K_diag, n_diag)
+        Y_diag = [η_diag[t, s] + σ_diag[t] * rand(TDist(ν_diag))
+                  for t in 1:p_diag, s in 1:n_diag]
+
+        r_diag = fit_gllvmtmb_parity_student(Y_diag, K_diag; df_fixed = nothing)
+        jl_diag = fit_studentt_gllvm(Y_diag; K = K_diag, nu = nothing,
+                                     disp_group = :species, g_tol = 1e-7,
+                                     iterations = 800)
+        @test r_diag.converged
+        @test r_diag.optimizer_code == 0
+        @test jl_diag.converged
+        @test isfinite(r_diag.logLik) && isfinite(jl_diag.loglik)
+        # ν is inherently weakly identified near the Gaussian limit. Do not
+        # force its equality or turn cross-evaluation into a substitute for
+        # the original seed-71 gate. Retain the difference as a diagnostic.
+        println("  near-Gaussian diagnostic Δ logLik (jl − r) = ",
+                jl_diag.loglik - r_diag.logLik)
+        println("  near-Gaussian diagnostic ν (Julia, R) = ",
+                (jl_diag.ν, r_diag.df_vec))
     end
 end

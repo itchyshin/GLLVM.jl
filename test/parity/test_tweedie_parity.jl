@@ -1,90 +1,66 @@
-# test_tweedie_parity.jl — Tweedie GLLVM logLik vs gllvmTMB (twin fid 6)
+# test_tweedie_parity.jl — frozen-R Tweedie power contracts (twin fid 6)
 #
-# Included by runparity.jl. NEVER included by test/runtests.jl.
-#
-# Parameterisation note:
-# gllvmTMB::tweedie(link = "log") estimates per-trait dispersion (phi_tweedie)
-# and per-trait power (p_tweedie) by default, or accepts a fixed power `p`.
-# Julia's `fit_tweedie_gllvm_grouped` estimates per-species dispersion `φ`
-# and a single shared power `p ∈ (1, 2)`.
-#
-# Under fixed power `p = p_true` (matching on both sides), Julia and R
-# estimate the exact same model: per-trait intercepts β, rank-K loadings Λ,
-# and per-trait dispersion φ.
-# Under joint estimation of power p, Julia and R both recover p ∈ (1, 2)
-# within 5% relative error of the true power.
+# Included by runparity.jl, never by test/runtests.jl. The three cases below
+# are deliberately distinct: fixed common power, a reference-engine constrained
+# shared power, and gllvmTMB's public per-species default. None substitutes for
+# another. See docs/dev-log/decisions/2026-08-30-core070-tweedie-power.md.
 
 using GLLVM, RCall, Test, Random, Distributions
 
 const _TW_SEED = 82
+const _TW_LOGLIK_ATOL = 1e-6
 
-@testset "Tweedie GLLVM parity: GLLVM.jl vs gllvmTMB (twin fid 6)" begin
-
+@testset "Tweedie GLLVM parity: frozen gllvmTMB fid 6" begin
     Random.seed!(_TW_SEED)
     p, K, n = 5, 1, 150
     β_true = [0.5, -0.2, 0.3, -0.4, 0.1]
     Λ_true = 0.5 .* parity_loadings_p5k2()[:, 1:K]
     φ_true = [0.8, 1.0, 1.2, 0.9, 1.1]
     p_true = 1.5
-
     Z = randn(K, n)
-    η = β_true .+ Λ_true * Z          # p×n
-    μ = exp.(η)
-
+    μ = exp.(β_true .+ Λ_true * Z)
     Y = zeros(p, n)
     for t in 1:p, s in 1:n
         Y[t, s] = GLLVM._tweedie_sample(μ[t, s], φ_true[t], p_true, Random.default_rng())
     end
 
-    @testset "fixed power p = $p_true on both sides" begin
-        r_fix = fit_gllvmtmb_parity_tweedie(Y, K; p_fixed = p_true)
-        @test r_fix.converged
-        @test isfinite(r_fix.logLik)
-        @test all(≈(p_true; atol = 1e-8), r_fix.p_vec)
-
-        jl_fit = fit_tweedie_gllvm_grouped(Y; K = K, power_init = p_true,
-                                          iterations = 400)
-        @test jl_fit.converged
-        @test isfinite(jl_fit.loglik)
-
-        print_parity_loglik(
-            "tweedie logLik oracle, fixed p=$p_true in R (seed=$(_TW_SEED), p=$p, K=$K, n=$n; twin fid 6)";
-            jl_logL = jl_fit.loglik, r_logL = r_fix.logLik, r_obj = r_fix.objective,
-        )
-        println("  Julia per-trait φ      = ", round.(jl_fit.φ; sigdigits = 5))
-        println("  gllvmTMB per-trait φ   = ", round.(r_fix.phi_vec; sigdigits = 5))
-        println("  Julia estimated power  = ", round(jl_fit.power; sigdigits = 5))
-        println("  gllvmTMB fixed power   = ", round.(r_fix.p_vec; sigdigits = 5))
-        println()
-
-        # Both sides log-likelihoods should be close (within 2e-3 relative)
-        @test abs(jl_fit.loglik - r_fix.logLik) / abs(r_fix.logLik) <= 2e-3
+    @testset "fixed common power is the same public model on both engines" begin
+        r_fit = fit_gllvmtmb_parity_tweedie(Y, K; p_fixed = p_true)
+        jl_fit = fit_tweedie_gllvm_grouped(Y; K = K, power = p_true, iterations = 400)
+        println("TWEEDIE_PARITY fixed julia_logLik=$(jl_fit.loglik) r_logLik=$(r_fit.logLik)")
+        @test r_fit.converged && jl_fit.converged
+        @test isfinite(r_fit.logLik) && isfinite(jl_fit.loglik)
+        @test r_fit.power_group == "species" && !r_fit.reference_constraint_adapter
+        @test all(≈(p_true; atol = 1e-8), r_fit.p_vec)
+        @test jl_fit.power_fixed && jl_fit.power == p_true
+        @test GLLVM._nparams(jl_fit) == p + GLLVM.rr_theta_len(p, K) + p
+        @test isapprox(jl_fit.loglik, r_fit.logLik; atol = _TW_LOGLIK_ATOL)
     end
 
-    @testset "estimated power p ∈ (1, 2) on both sides" begin
-        r_est = fit_gllvmtmb_parity_tweedie(Y, K; p_fixed = nothing)
-        @test isfinite(r_est.logLik)
-        @test all(pv -> 1.0 < pv < 2.0, r_est.p_vec)
+    @testset "estimated shared power uses the explicit reference constraint adapter" begin
+        r_fit = fit_gllvmtmb_parity_tweedie(Y, K; power_group = :shared)
+        jl_fit = fit_tweedie_gllvm_grouped(Y; K = K, power_group = :shared, iterations = 400)
+        println("TWEEDIE_PARITY shared julia_logLik=$(jl_fit.loglik) r_logLik=$(r_fit.logLik)")
+        @test r_fit.converged && jl_fit.converged
+        @test isfinite(r_fit.logLik) && isfinite(jl_fit.loglik)
+        @test r_fit.power_group == "shared" && r_fit.reference_constraint_adapter
+        @test all(≈(r_fit.p_vec[1]; atol = 1e-10), r_fit.p_vec)
+        @test !jl_fit.power_fixed && 1.0 < jl_fit.power < 2.0
+        @test GLLVM._nparams(jl_fit) == p + GLLVM.rr_theta_len(p, K) + p + 1
+        @test isapprox(jl_fit.loglik, r_fit.logLik; atol = _TW_LOGLIK_ATOL)
+    end
 
-        jl_fit = fit_tweedie_gllvm_grouped(Y; K = K, power_init = 1.5,
-                                          iterations = 400)
-        @test jl_fit.converged
-        @test isfinite(jl_fit.loglik)
-        @test 1.0 < jl_fit.power < 2.0
-
-        print_parity_loglik(
-            "tweedie logLik oracle, estimated p (seed=$(_TW_SEED), p=$p, K=$K, n=$n; twin fid 6)";
-            jl_logL = jl_fit.loglik, r_logL = r_est.logLik, r_obj = r_est.objective,
-        )
-        println("  Julia estimated power  = ", round(jl_fit.power; sigdigits = 5))
-        println("  gllvmTMB per-trait p   = ", round.(r_est.p_vec; sigdigits = 5))
-        println("  True power p           = ", p_true)
-        println()
-
-        # Power estimation relative error vs true power <= 5% (Julia shared p)
-        # Note: In gllvmTMB, power is estimated per-trait on n=150 samples without pooling across traits,
-        # so individual per-trait estimates have higher sample variance (within 15% of truth).
-        @test abs(jl_fit.power - p_true) / p_true <= 0.05
-        @test all(pv -> abs(pv - p_true) / p_true <= 0.15, r_est.p_vec)
+    @testset "estimated per-species power matches the public R default" begin
+        r_fit = fit_gllvmtmb_parity_tweedie(Y, K; power_group = :species)
+        jl_fit = fit_tweedie_gllvm_grouped(Y; K = K, power_group = :species, iterations = 400)
+        println("TWEEDIE_PARITY species julia_logLik=$(jl_fit.loglik) r_logLik=$(r_fit.logLik)")
+        @test r_fit.converged && jl_fit.converged
+        @test isfinite(r_fit.logLik) && isfinite(jl_fit.loglik)
+        @test r_fit.power_group == "species" && !r_fit.reference_constraint_adapter
+        @test jl_fit isa GLLVM.TweediePerTraitPowerFit
+        @test all(pw -> 1.0 < pw < 2.0, jl_fit.power)
+        @test all(pw -> 1.0 < pw < 2.0, r_fit.p_vec)
+        @test GLLVM.StatsAPI.dof(jl_fit) == p + GLLVM.rr_theta_len(p, K) + p + p
+        @test isapprox(jl_fit.loglik, r_fit.logLik; atol = _TW_LOGLIK_ATOL)
     end
 end

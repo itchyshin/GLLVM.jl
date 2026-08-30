@@ -39,7 +39,7 @@ jobs:
         if: always()
 
   test-parity:
-    name: Parity Tests (RCall + gllvmTMB)
+    name: Frozen R 0.7.0 family smoke (required RCall)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -50,12 +50,20 @@ jobs:
         with:
           version: '1'
       - uses: julia-actions/cache@v2
-      - name: Install R twin dependencies
+      - name: Check out the frozen R reference
+        uses: actions/checkout@v4
+        with:
+          repository: itchyshin/gllvmTMB
+          ref: b4d5fee64def88bc768dda1f1f77c29b295edd86
+          path: .unlazy/r-source
+      - name: Build an isolated, source-pinned R oracle
         env:
           GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          Rscript -e 'install.packages(c("TMB", "Matrix", "remotes"), repos="https://cloud.r-project.org")'
-          Rscript -e 'remotes::install_git("https://github.com/itchyshin/gllvmTMB.git", upgrade="never")'
+          Rscript -e 'install.packages("remotes", repos="https://cloud.r-project.org"); remotes::install_deps(".unlazy/r-source", dependencies=c("Depends", "Imports", "LinkingTo"), upgrade="never")'
+          python3 tools/core070_build_oracle.py prepare --repo .unlazy/r-source --destination .unlazy/r-archive
+          python3 tools/core070_build_oracle.py build --archive .unlazy/r-archive/gllvmTMB-core070.tar --source-receipt .unlazy/r-archive/source.json --destination .unlazy/r-build --r-binary "$(command -v R)" --timeout 1200
+          python3 tools/core070_build_oracle.py verify --destination .unlazy/r-build
       - name: Instantiate parity environment
         run: |
           julia --project=test/parity -e 'using Pkg; Pkg.develop(path="."); Pkg.instantiate(); Pkg.build("RCall"); Pkg.precompile()'
@@ -63,7 +71,24 @@ jobs:
         run: |
           export LD_PRELOAD="$(julia -e 'print(abspath(joinpath(Sys.BINDIR, "..", "lib", "julia", "libunwind.so.8")))')"
           export GLLVM_PARITY_TESTS=1
+          export CORE070_PARITY_REQUIRED=1
+          export GLLVM_PARITY_RECEIPT_DIR="$PWD/.unlazy/ci-parity-receipts"
+          export R_LIBS="$PWD/.unlazy/r-build/library"
+          export GLLVM_PARITY_R_LIBS="$R_LIBS"
+          export GLLVM_PARITY_R_SOURCE_PIN="$R_LIBS/gllvmTMB/CORE070_SOURCE_PIN.toml"
           export R_HOME="$(R RHOME)"
           export LD_LIBRARY_PATH="$(R RHOME)/lib:$LD_LIBRARY_PATH"
           julia --project=test/parity test/parity/runparity.jl
 
+      - name: Retain oracle provenance and parity receipts, including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frozen-core070-family-smoke
+          include-hidden-files: true
+          path: |
+            .unlazy/r-archive/source.json
+            .unlazy/r-build/build.json
+            .unlazy/r-build/install.log
+            .unlazy/r-build/library/gllvmTMB/CORE070_SOURCE_PIN.toml
+            .unlazy/ci-parity-receipts/
