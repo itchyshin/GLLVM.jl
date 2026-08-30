@@ -488,3 +488,9 @@ No production B dispatch, full suite or long campaign was launched.
 -Actual using GLLVM and path assertion, unchanged352 scalar tests PASS7.41s; unchanged66 curvature census tests PASS3.17s. Nine evidence negative controls pass. Existing scalar-only evidence left unchanged; new whole-module evidence separate.
 -No engine/fixture change. Local load gap closed; fullsuite/fit replay/review unpaid. Remote family-recheck-01 UNKNOWN, socket absent, no restart. Master DRAFT/M1 PARTIAL. No new production child/push/merge/release/cleanup.
 - Mission Control Julia-only update587229601c70d30366fc5e9b3f6723adac85304f committed; served HTTP200/readback verified, R fields preserved and lease released. Unlazy2met/1unmet, no abandonment.
+
+## 2026-08-30 — Student retained scalar range checked
+-900 scalar assertions pass at exact15 retained native/R scale-df pairs (including native df3e31),768-bit FD reference; no demonstrated scalar defect or production engine change.75 selected residual points do not replay latent residuals or marginal objective.
+-Disposable +1e-4 normalizer mutation yields825pass/75fail; six evidence negatives pass. Test registered, fullrunner unpaid. Original Student fit-health and logLik gates unchanged/unpaid; next decisive work same-point R/native joint/marginal and mode comparison.
+-Totoro socket absent; remote family-recheck-01 UNKNOWN, no restart. Full manifest DRAFT/M1 PARTIAL; no new child/push/merge/release/cleanup.
+- Mission Control Julia-only correction3d28861b7fbfc46b454e6ce6e729a241f6298b78 locally committed; served HTTP200/readback verified and R fields preserved. Lease released; Unlazy2met/1unmet, no abandonment.

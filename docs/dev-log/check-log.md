@@ -15861,3 +15861,7 @@ unpaid. No numerical source changes, outer optimization or campaign.
 ## 2026-08-30 — Full-module scalar qualification
 - Offline isolated Julia1.10 package resolve/load PASS44.39s; realpath module guard confirms current source copy.352 unchanged scalar tests and66 unchanged curvature census assertions PASS. Local environment pinned separately from Totoro; no fits.
 - Julia1.12.6 remnant had no binary; exit127 retained. Nine evidence negative controls pass. Fullsuite, original fitted replay and independent review unpaid; full manifest DRAFT/M1 PARTIAL. No engine/tolerance/API change.
+
+## 2026-08-30 — Student-t scalar diagnosis at retained parameters
+- Exact15 retained native/R scale-df pairs,75 selected standardized-residual points,900 assertions PASS with768-bit density/derivative reference. No Student engine change justified; original fitted failure remains.
+- Normalizer mutation in disposable copy gives825pass/75fail; six metadata negatives pass. Actual full-module local Julia1.10 evidence; no fits/modes. Original seed71 and likelihood gate untouched, full manifest DRAFT/M1 PARTIAL.
