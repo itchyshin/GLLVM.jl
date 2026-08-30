@@ -1,5 +1,35 @@
 # Check Log
 
+## 2026-08-30 — Core070 + AGHQ execution: current evidence supersedes closure claims
+
+The approved programme is **IN PROGRESS**, in the isolated
+`codex/core070-aghq-20260830` lane based on PR #274 candidate `7a4ac8de`.
+The frozen R reference is `b4d5fee64def88bc768dda1f1f77c29b295edd86`.
+Read `plans/2026-08-30-core070-aghq-execution.md` for scope and acceptance.
+
+This entry supersedes the completion interpretation of the two entries below;
+the historical text is retained verbatim. On the inspected PR #274 head,
+GitHub Actions run `33295781600` passed Julia 1.10 Ubuntu and the existing RCall
+parity job, but **failed current-Julia Ubuntu, macOS and Windows**.
+Documenter run `33295781601` passed. A successful documentation build does not
+establish executable-example coverage or the strict warning gate.
+
+The parity job did execute tests, but its current reference is not frozen and
+its failure behavior and model contracts need repair. The original Student-t
+absolute likelihood-difference target (at most 0.001) remains required;
+fixed-power Tweedie evidence cannot substitute for estimated-power models.
+The confirmed phylogenetic failure is in `phylo_branch_re.jl`, distinct from
+the passing relaxed-clock tests. No new numerical pass is claimed here.
+
+Milestone 1 has a verified census and three active bounded tasks: preservation,
+frozen contract/runner, and phylogenetic diagnosis. Worktree absence, apparent
+idleness, or clean status does not authorize cleanup. The R 0.7.1 and active
+article lanes remain protected. No push, merge, release, or cleanup occurred.
+
+Mission Control's two Julia fields were corrected and verified against its
+served status endpoint; all R fields were preserved. The vault-only update is
+local commit `f35161c`. Historical board narratives are explicitly superseded.
+
 ## 2026-08-30 — Road to 0.7.0 Tracks 5 & 6: Documenter build verification & Rose pre-publish audit
 
 Tracks 5 & 6 of the Road to 0.7.0 Parity & Release campaign verified:
