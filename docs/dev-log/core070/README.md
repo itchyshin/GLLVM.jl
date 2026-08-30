@@ -91,5 +91,35 @@ on its command row. Retain the supervisor's complete output directory, including
 `--process-receipt <output>/process-receipt.json` alongside `--receipts` to the
 aggregator. Direct invocation above is still a useful developer/diagnostic run,
 but a Julia success marker alone no longer satisfies programme acceptance.
-The current full-contract checker still rejects DRAFT; aggregation across
-separately executed required leaves is the next harness scaling obligation.
+The current full-contract checker still rejects DRAFT. Once all required cases
+are frozen, separately supervised leaves can be verified together:
+
+```sh
+python3 tools/core070_evidence.py --collection collection.json
+```
+
+The JSON index binds the contract SHA-256 and explicitly lists each run's
+receipt directory and supervisor receipt. Paths are relative to the index:
+
+```json
+{
+  "contract_sha256": "<SHA-256 of the frozen contract file>",
+  "runs": [
+    {"receipts": "leaf-a/receipts", "process_receipt": "leaf-a/process/process-receipt.json"},
+    {"receipts": "leaf-b/receipts", "process_receipt": "leaf-b/process/process-receipt.json"}
+  ]
+}
+```
+
+Every listed run must pass both internal checks and the external process gate.
+The union must equal the full required-case set with no duplicate case or run
+IDs. Common source, dependency, oracle and runtime pins must agree; only the
+absolute installation/checkout locations may differ. A passing subset alone
+does not satisfy the single-run programme gate. A mixed batch with one failing
+command cannot supply accepted evidence through its passing sibling.
+
+The index is an explicit integration selection, not a discovery tool for all
+historical attempts. Keep earlier failures archived and document why a new
+revision supersedes them. The checker never selects a passing retry, filters a
+failure or silently deduplicates runs. The eight collection tests exercise
+synthetic receipts from real Python child processes, not scientific models.

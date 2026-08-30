@@ -165,7 +165,7 @@ def _validate_source(source: dict, manifest: dict, execution: dict, receipt_dir:
 
 
 def _verify_loaded(run: dict, cell_files: dict[str, dict], manifest: dict,
-                   manifest_path: Path, receipt_dir: Path | None = None) -> dict:
+                   manifest_path: Path, receipt_dir: Path | None = None, *, required_subset: bool = False) -> dict:
     if manifest.get("status") != "FROZEN":
         raise EvidenceError("DRAFT_CONTRACT: aggregate evidence is disabled until every required row is frozen")
     obligations = {row["id"] for row in manifest["obligation"]}
@@ -175,14 +175,15 @@ def _verify_loaded(run: dict, cell_files: dict[str, dict], manifest: dict,
     cases = manifest.get("executable_case", [])
     case_by_id = {row.get("id"): row for row in cases}
     needed = ("id", "fixture", "fixture_sha256", "reference_call", "julia_call", "model_contract", "acceptance_rule")
-    if len(case_by_id) != len(expected_ids) or set(case_by_id) != set(expected_ids) or \
+    if len(cases) != len(expected_ids) or len(case_by_id) != len(expected_ids) or set(case_by_id) != set(expected_ids) or \
        any(not all(row.get(key) for key in needed) for row in cases):
         raise EvidenceError("INCOMPLETE_PROGRAMME: every obligation requires an executable frozen case")
     if run.get("status") != "success" or run.get("success_marker") != "CORE070_PARITY_SUCCESS" or run.get("exit_code") != 0:
         raise EvidenceError("NONZERO_OR_INCOMPLETE_RUN: no successful parity marker")
     requested = run.get("requested_case_ids")
     completed = run.get("completed_case_ids")
-    if not isinstance(requested, list) or len(requested) != len(set(requested)) or set(requested) != set(expected_ids):
+    if not isinstance(requested, list) or not requested or len(requested) != len(set(requested)) or \
+       not set(requested).issubset(expected_ids) or (not required_subset and set(requested) != set(expected_ids)):
         raise EvidenceError("INCOMPLETE_PROGRAMME: run did not request every frozen executable case")
     if not isinstance(completed, list) or len(completed) != len(set(completed)) or set(completed) != set(requested):
         raise EvidenceError("UNEXECUTED_OR_DUPLICATE_CASE: completed cases do not exactly match requested cases")
@@ -226,7 +227,8 @@ def _verify_loaded(run: dict, cell_files: dict[str, dict], manifest: dict,
     summary = run.get("cells", {})
     if not isinstance(summary, dict) or set(summary) != set(requested) or any(summary[key] != cell_files[key] for key in requested):
         raise EvidenceError("CELL_RUN_MISMATCH")
-    return {"status": "PASS", "required_cells": len(expected_ids),
+    return {"status": "PASS", "scope": "REQUIRED_SUBSET" if required_subset else "FULL_PROGRAMME",
+            "required_cells": len(expected_ids), "verified_cells": len(requested),
             "actual_assertions": total_assertions, "manifest_sha256": digest(manifest_path)}
 
 
@@ -286,8 +288,7 @@ def verify_process(receipt_dir: Path, process_path: Path | None, inventory: dict
         raise EvidenceError(f"EXTERNAL_PROCESS_BAD_RECEIPT: {exc}") from exc
 
 
-def verify(receipt_dir: Path, manifest_path: Path, process_path: Path | None = None) -> dict:
-    manifest = load_manifest(manifest_path)
+def _load_receipts(receipt_dir: Path) -> tuple[dict, dict]:
     if not receipt_dir.is_dir():
         raise EvidenceError(f"MISSING_DEPENDENCY: receipt directory absent: {receipt_dir}")
     run_path = receipt_dir / "run.toml"
@@ -301,9 +302,69 @@ def verify(receipt_dir: Path, manifest_path: Path, process_path: Path | None = N
         if not isinstance(cell_id, str) or cell_id in cells:
             raise EvidenceError("DUPLICATE_OR_BAD_CELL_FILE")
         cells[cell_id] = cell
+    return run, cells
+
+
+def verify(receipt_dir: Path, manifest_path: Path, process_path: Path | None = None) -> dict:
+    manifest = load_manifest(manifest_path)
+    run, cells = _load_receipts(receipt_dir)
     report = _verify_loaded(run, cells, manifest, manifest_path, receipt_dir)
     report["external_process"] = verify_process(receipt_dir, process_path, run["execution"])
     return report
+
+
+def verify_collection(collection_path: Path, manifest_path: Path) -> dict:
+    """Verify all listed runs, without choosing successes or deduplicating attempts.
+
+    A collection is an explicit integration selection, not an archive census.
+    Failed historical attempts must remain archived separately. A listed failure
+    cannot be suppressed by a later success. Relocated roots are allowed only
+    when content pins and runtime versions agree; each root is independently
+    bound to its supervisor's execution plan.
+    """
+    manifest = load_manifest(manifest_path)
+    try:
+        collection = json.loads(collection_path.read_text())
+        if collection.get("contract_sha256") != digest(manifest_path):
+            raise EvidenceError("STALE_CONTRACT: collection does not bind the frozen manifest")
+        rows = collection.get("runs")
+        if not isinstance(rows, list) or not rows:
+            raise EvidenceError("EMPTY_COLLECTION")
+        seen_ids, seen_runs = set(), set()
+        reports = []
+        baseline_source = None
+        # Absolute locations may differ after an identical checkout is transferred.
+        location_keys = {"julia_package_path", "julia_package_root", "julia_project_path",
+                         "r_home", "r_library_path"}
+        for row in rows:
+            if not isinstance(row, dict) or not isinstance(row.get("receipts"), str) or not row["receipts"]:
+                raise EvidenceError("MISSING_RECEIPT_PATH")
+            if not isinstance(row.get("process_receipt"), str) or not row["process_receipt"]:
+                raise EvidenceError("MISSING_PROCESS_RECEIPT_PATH")
+            receipt_dir = collection_path.parent / row["receipts"]
+            process_path = collection_path.parent / row["process_receipt"]
+            run, cells = _load_receipts(receipt_dir)
+            report = _verify_loaded(run, cells, manifest, manifest_path, receipt_dir, required_subset=True)
+            report["external_process"] = verify_process(receipt_dir, process_path, run["execution"])
+            ids = set(run["requested_case_ids"])
+            if seen_ids.intersection(ids) or run["run_id"] in seen_runs:
+                raise EvidenceError("DUPLICATE_COLLECTION_CASE_OR_RUN")
+            source = {key:value for key,value in run["source"].items() if key not in location_keys}
+            if baseline_source is not None and source != baseline_source:
+                raise EvidenceError("MIXED_RUNTIME: source/runtime pins differ between required runs")
+            baseline_source = source
+            seen_ids.update(ids)
+            seen_runs.add(run["run_id"])
+            report.update(run_id=run["run_id"], case_ids=run["requested_case_ids"])
+            reports.append(report)
+        if seen_ids != set(manifest["required_case_ids"]):
+            raise EvidenceError("INCOMPLETE_PROGRAMME: collection omits required cases")
+        return {"status": "PASS", "scope": "FULL_PROGRAMME", "required_cells": len(seen_ids),
+                "actual_assertions": sum(report["actual_assertions"] for report in reports),
+                "manifest_sha256": digest(manifest_path), "collection_sha256": digest(collection_path),
+                "runs": reports}
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise EvidenceError(f"BAD_COLLECTION: {exc}") from exc
 
 
 def _expect_error(fn, marker: str) -> None:
@@ -388,11 +449,17 @@ def main() -> int:
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     parser.add_argument("--receipts", type=Path)
     parser.add_argument("--process-receipt", type=Path)
+    parser.add_argument("--collection", type=Path, help="JSON index of separately supervised required-case runs")
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
     try:
+        if args.collection is not None and (args.receipts is not None or args.process_receipt is not None or args.self_test):
+            raise EvidenceError("AMBIGUOUS_INPUT: collection cannot be combined with single-run options")
         if args.self_test:
             self_test(args.manifest)
+            return 0
+        if args.collection is not None:
+            print(json.dumps(verify_collection(args.collection, args.manifest), sort_keys=True))
             return 0
         if args.receipts is None:
             raise EvidenceError("MISSING_DEPENDENCY: --receipts is required")

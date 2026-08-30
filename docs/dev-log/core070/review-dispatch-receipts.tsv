@@ -4,3 +4,4 @@ Noether	gpt-5.6-terra	high	fresh_ephemeral	261	0	.unlazy/core070-aghq/dispatch/N
 Rose	gpt-5.6-sol	high	fresh_ephemeral	244	0	.unlazy/core070-aghq/dispatch/Rose-events.dispatch.txt	configured route; backend routing not independently exposed
 Rose-repair-followup	gpt-5.6-sol	high	fresh_ephemeral	219	0	.unlazy/core070-aghq/dispatch/Rose-repair-events.dispatch.txt	configured route; backend routing not independently exposed; bounded follow-up not completion panel
 Noether-AGHQ-followup	gpt-5.6-terra	high	fresh_ephemeral	133	0	.unlazy/core070-aghq/dispatch/Noether-aghq-events.dispatch.txt	configured route; backend routing not independently exposed; bounded follow-up not completion panel
+Acceptance-collection-review	gpt-5.6-terra	high	fresh_ephemeral	124	0	.unlazy/core070-aghq/dispatch/collection-review-events.dispatch.txt	configured route; backend not independently exposed; no blockers on inspection; tests unavailable in read-only child
