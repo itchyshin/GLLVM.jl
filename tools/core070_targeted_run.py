@@ -75,6 +75,31 @@ def run(plan_path, destination):
     results = []
     active_child = None
     batch_error = None
+    observer_warnings = []
+
+    def announce(*parts):
+        """Persist progress locally; a disconnected observer cannot stop checks."""
+        message = ' '.join(str(part) for part in parts) + '\n'
+        with (destination / 'events.log').open('a') as events:
+            events.write(message)
+        if observer_warnings:
+            return
+        try:
+            try:
+                descriptor = sys.stdout.fileno()
+            except (AttributeError, OSError):
+                # Support in-process text capture without requiring a file descriptor.
+                print(message, end='', flush=True)
+            else:
+                # No buffered stdout bytes remain to fail during interpreter shutdown.
+                remaining_bytes = message.encode(sys.stdout.encoding or 'utf-8', errors='replace')
+                while remaining_bytes:
+                    written = os.write(descriptor, remaining_bytes)
+                    if written <= 0:
+                        raise OSError('stdout write made no progress')
+                    remaining_bytes = remaining_bytes[written:]
+        except BrokenPipeError as exc:
+            observer_warnings.append(repr(exc))
 
     def stop_child(child):
         try:
@@ -93,7 +118,7 @@ def run(plan_path, destination):
             log = destination / f'{index:02d}.log'
             started = time.monotonic()
             supervisor_error = None
-            print('START', row['id'], flush=True)
+            announce('START', row['id'])
             child_env = env.copy()
             parity_directory = parity_dirs[index]
             if parity_directory is not None:
@@ -135,8 +160,8 @@ def run(plan_path, destination):
                             'elapsed_seconds': time.monotonic() - started,
                             'log': log.name, 'log_sha256': sha(log),
                             'supervisor_error': supervisor_error, 'parity': parity, 'parity_error': parity_error})
-            print('FINISH', row['id'], 'exit', code, flush=True)
             (destination / 'progress.json').write_text(json.dumps(results, indent=2) + '\n')
+            announce('FINISH', row['id'], 'exit', code)
             if supervisor_error:
                 batch_error = supervisor_error
                 break
@@ -156,9 +181,14 @@ def run(plan_path, destination):
     receipt = {'status': 'PASS' if passed else 'FAIL', 'scope': 'targeted_process_batch_only',
                'plan_sha256': plan_sha, 'source_pins': plan['pins'],
                'source_unchanged': fresh, 'supervisor_error': batch_error, 'expected_ids': ids, 'results': results,
-               'environment_overrides': plan.get('env', {})}
+               'environment_overrides': plan.get('env', {}), 'observer_warnings': observer_warnings}
+    try:
+        announce('CORE070_TARGETED_' + receipt['status'])
+    except Exception as exc:
+        passed = False
+        receipt['status'] = 'FAIL'
+        receipt['supervisor_error'] = f'{batch_error}; terminal notification failure: {exc!r}'
     (destination / 'process-receipt.json').write_text(json.dumps(receipt, indent=2) + '\n')
-    print('CORE070_TARGETED_' + receipt['status'], flush=True)
     return 0 if passed else 1
 
 

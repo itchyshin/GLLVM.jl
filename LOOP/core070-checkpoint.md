@@ -529,3 +529,9 @@ No production B dispatch, full suite or long campaign was launched.
 -Totoro/Fir sockets restored. Old5be659b1 batch terminalFAIL:16group217pass/3fail, Tweedie28pass; BrokenPipeError omitted oracle-after. Separate oracle verifyPASS,153 archived source pins/raw hashes verified. Current4 changed pins make old evidence historical.
 -Raw actual_assertions273 duplicates shared fixture; unique217. Next fix supervisor logging/counts, qualify current candidate and bounded binomial pre-run. FullmanifestDRAFT/M1PARTIAL; review unpaid.
 -Mission Control380981b314abbe34f20e522aa49b9575b60f5c49 servedHTTP200/readbackPASS; Rfields unchanged.
+
+## 2026-08-30 — Supervisor observer disconnect repair
+-Real output-pipe regression red2fail; terminal unrelated-I/O neighbour red1error. Final local24 tests PASS15.94s; Totoro6 plus supervisor selftest PASS with remote source hashes.
+-Events/progress persisted before optional notification; EPIPE warning preserves remaining checks and actual child failures. Other I/O errors fail with terminal receipt. No fits; does not imply SIGHUP/host-loss survival.
+-Next fix explicit shared execution assertion counting (273attributed vs217actual), qualify current-source candidate and bounded binomial pre-run. Full manifestDRAFT/M1PARTIAL; independent review and numerical health unpaid.
+- Mission Control Julia-only correction95141a16d6971936d8a60c6a882bc3d972237b26 committed and servedHTTP200/readbackPASS; R fields unchanged, lease released. Unlazy1met/1unmet reverified.
