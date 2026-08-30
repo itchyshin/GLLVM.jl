@@ -15695,3 +15695,17 @@ adds engine checks, including constructed beta-binomial cloglog rejected by
 fit-multi. No required model was removed. Omitted/stale/wrong-expectation negative
 controls fail. Current full manifest remains DRAFT; covariance/modifier/data/
 postfit/formula/bridge and multi-run aggregation remain unpaid.
+
+
+## Worktree refresh — 2026-08-30 15:29 UTC
+
+Read-only census: Julia103 registrations/31dirty/5stashes; R210 registrations,
+42functional/9dirty,46broken,122missing/16stashes. Compared with the preservation
+census, only this Julia lane and the protected article worktree changed observed
+HEAD/status; refs changed, stash inventories did not. This is Git-state evidence,
+not an unchanged-byte claim. Article tip advanced fb99172e ->2e10e3fb and is
+preserved separately as a prerequisite-bound delta plus exact-tree readback.
+No article code integrated; no foreign checkout edited. Its checkpoint reports
+a numerical full-coefficient-prior repair, not completed optimizer/recovery
+validation. Treat that as a covariance-manifest risk lead, not permission to
+change the frozen Rb4d5fee6 reference or run the article's pending jobs.

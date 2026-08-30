@@ -44,7 +44,10 @@ Combined batchFAIL. Raw run/cell/process receipts and hashes read back intact.
 The frozen39 R AGHQ helper/control checks and69 R family/link admission
 checks passed on R4.6.0 and TotoroR4.5.3. Five real-child process-binding tests
 and existing supervisor/evidence controls pass; internal success plus exit7
-is rejected. No new numerical run accompanies these source/gate changes.
+is rejected. No new numerical run accompanies these source/gate changes. A fresh Git
+census found the protected article tip advanced; its new commit is separately
+preserved as a prerequisite-bound bundle plus4842-blob exact-tree readback.
+Unavailable R checkouts remain protected; unchanged status is not byte proof.
 
 ## 6. Tests of the Tests
 
@@ -101,6 +104,6 @@ required observed-curvature/repair branch; that implementation gate remains open
 
 Covers this Julia lane and a pinned R0.7.0 oracle only. Does NOT cover R0.7.1,
 the article lane, public AGHQ, recovery/coverage or full programme acceptance. Mission Control correction
-2dacdae is served with HTTP200 and exact field readback; R0.7.1 content is
+442d4d1 is served with HTTP200 and exact field readback; R0.7.1 content is
 unchanged. No scientific campaign or full suite was launched. The long-running
 programme remains active and its durable checkpoint will retain the next step.

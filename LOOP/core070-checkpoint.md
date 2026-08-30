@@ -237,3 +237,32 @@ adds engine checks, including constructed beta-binomial cloglog rejected by
 fit-multi. No required model was removed. Omitted/stale/wrong-expectation negative
 controls fail. Current full manifest remains DRAFT; covariance/modifier/data/
 postfit/formula/bridge and multi-run aggregation remain unpaid.
+
+
+## Next continuation — 2026-08-30 15:29 UTC
+
+External-exit binding committed91040fe3; frozen family/link admission catalogue
+committed7cdc0cbf. Programme remains M1 PARTIAL. No active fit/reviewer. The
+source-family subset has69 checks, not69 validated Julia models. R0.7.1/foreign
+lanes remain protected. MissionControl442d4d1 served/readback confirmed, lease
+released. Next steps: multi-run aggregation across required leaves, and finite
+covariance/modifier/data/postfit/interface admission contracts. Mixed-source
+entry points are R/isdm-sources.R:48,116 and fit-multi.R:204,279 in the frozen
+source; inspect those actual call paths rather than excluding their exports.
+Student original R health remains unresolved; preserve fixture and0.001 gate.
+The latest read-only census is inventory-refresh-20260830T1529.json; compare it
+with inventory-preservation.json before declaring any new material preserved.
+
+
+## Worktree refresh — 2026-08-30 15:29 UTC
+
+Read-only census: Julia103 registrations/31dirty/5stashes; R210 registrations,
+42functional/9dirty,46broken,122missing/16stashes. Compared with the preservation
+census, only this Julia lane and the protected article worktree changed observed
+HEAD/status; refs changed, stash inventories did not. This is Git-state evidence,
+not an unchanged-byte claim. Article tip advanced fb99172e ->2e10e3fb and is
+preserved separately as a prerequisite-bound delta plus exact-tree readback.
+No article code integrated; no foreign checkout edited. Its checkpoint reports
+a numerical full-coefficient-prior repair, not completed optimizer/recovery
+validation. Treat that as a covariance-manifest risk lead, not permission to
+change the frozen Rb4d5fee6 reference or run the article's pending jobs.
