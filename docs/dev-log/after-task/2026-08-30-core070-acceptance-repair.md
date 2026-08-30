@@ -12,7 +12,8 @@ R Hessian-field lookup, and supervisor prevalidation/exception cleanup.
 A frozen39-case R AGHQ control subset and source contract clarify B6.
 The final aggregation entry now binds externally observed exits and artifact
 hashes; a69-case R family/link admission catalogue separates callable routes
-from constructor-only descriptors.
+from constructor-only descriptors. Required evidence now aggregates disjoint bounded runs,
+rejecting missing/duplicate cases and source/runtime mismatches.
 
 ## 3a. Decisions and Rejected Alternatives
 
@@ -49,6 +50,14 @@ census found the protected article tip advanced; its new commit is separately
 preserved as a prerequisite-bound bundle plus4842-blob exact-tree readback.
 Unavailable R checkouts remain protected; unchanged status is not byte proof.
 
+Eight synthetic collection tests pass through real Python child processes; all
+three Unlazy collection gates freshly reverified. The independent Terra/high
+review found no blockers on inspection; its read-only sandbox could not rerun
+tests. Its requested positive relocation check was added and passes, including
+a wrong-loaded-root negative control. No new Julia/R fits were run. The public
+integrated-source call path now has22 draft admission/design cases documented,
+not frozen or numerically validated.
+
 ## 6. Tests of the Tests
 
 Source-root mismatch fails. Recursive test counts retain nested failures.
@@ -64,7 +73,7 @@ by explicitly binding the repository cwd; a status query was not used as proof.
 
 Resolved with regression evidence: TestCounts API change, wrong loaded checkout,
 R partial-field match, supervisor validation after child launch. External process-result binding is repaired and regression-tested. Open:
-aggregation across separately executed required leaves; complete frozen capability
+Complete frozen capability
 manifest; Student reference health; original failing CI environment; full-suite
 and broader capability validation. The draft aggregate remains fail-closed.
 

@@ -15709,3 +15709,21 @@ No article code integrated; no foreign checkout edited. Its checkpoint reports
 a numerical full-coefficient-prior repair, not completed optimizer/recovery
 validation. Treat that as a covariance-manifest risk lead, not permission to
 change the frozen Rb4d5fee6 reference or run the article's pending jobs.
+
+
+## Required-run collection acceptance — 2026-08-30
+
+Implemented collection verification with a disjoint complete required-case union,
+per-leaf external process binding, identical source/runtime pins and no automatic
+retry selection. Standalone partial runs still reject. Test-first regression
+found and fixed silent duplicate executable-row collapse. Eight synthetic tests
+using real supervised Python children pass; existing five process-binding tests,
+two supervisor tests and evidence self-test pass. Three Unlazy gates freshly
+reverified; real DRAFT contract remains rejected. Terra/high fresh independent
+review (124sec) found no blockers; child could inspect but not rerun tests in its
+read-only sandbox. Suggested relocation test added and passed locally.
+No numerical source/test fixture changed and no fit launched. Frozen R public
+integrated-source route inspected into22 draft admission/design cases; it is
+not excluded solely by its experimental interface label. Next: execute and
+freeze remaining source-admission cases, map full native/formula/bridge fixtures,
+and resolve Student reference health. Milestone1 remains PARTIAL.
