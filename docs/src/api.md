@@ -115,6 +115,12 @@ fit_delta_gamma_gllvm_va
 ```@docs
 ppca_init
 em_fa
+GLLVM.pack_lambda
+GLLVM.unpack_lambda
+GLLVM.rr_theta_len
+GLLVM.rotate_to_lower_triangular
+GLLVM.low_rank_chol
+GLLVM.LowRankPlusDiagChol
 ```
 
 ---
@@ -273,11 +279,33 @@ qq_max_dev
 ### Likelihood & Gradient Kernels
 
 ```@docs
-poisson_laplace_grad
+GLLVM.gaussian_marginal_loglik
+GLLVM.gaussian_profile_nll
+GLLVM.gaussian_nll_packed
+GLLVM.gaussian_lv_nll_packed
+GLLVM.binomial_marginal_loglik_laplace
+GLLVM.binomial_lv_nll_packed
 binomial_laplace_grad
+GLLVM.poisson_marginal_loglik_laplace
+GLLVM.poisson_lv_nll_packed
+poisson_laplace_grad
+GLLVM.nb_marginal_loglik_laplace
+GLLVM.nb_lv_nll_packed
 nb_laplace_grad
+GLLVM.gamma_marginal_loglik_laplace
+GLLVM.gamma_lv_nll_packed
 gamma_laplace_grad
+GLLVM.beta_marginal_loglik_laplace
+GLLVM.beta_lv_nll_packed
 beta_laplace_grad
+GLLVM.ordinal_marginal_loglik_laplace
+GLLVM.ordinal_lv_nll_packed
+GLLVM.marginal_loglik_laplace
+GLLVM.laplace_loglik_site
+GLLVM.marginal_loglik_laplace_mi
+GLLVM.marginal_loglik_laplace_xs
+GLLVM.laplace_loglik_site_mi
+GLLVM.laplace_loglik_site_xs
 gaussian_reml_loglik
 gaussian_grouped_intercept_loglik
 twolevel_marginal_loglik
@@ -293,6 +321,8 @@ gaussian_marginal_loglik_contrasts
 gaussian_marginal_loglik_edge_phy
 mixed_marginal_loglik_laplace
 truncated_poisson_marginal_loglik_laplace
+GLLVM.censored_poisson_marginal_loglik_laplace
+GLLVM.censored_bounds_to_YN
 truncated_nbinom2_marginal_loglik_laplace
 truncated_nbinom2_pertrait_marginal_loglik_laplace
 gp1_marginal_loglik_laplace
@@ -321,8 +351,21 @@ constrained_marginal_loglik_laplace
 rrr_marginal_loglik
 quadratic_marginal_loglik_laplace
 ordered_beta_marginal_loglik_laplace
+GLLVM.ordered_beta_logp
 betabinomial_marginal_loglik_laplace
 betabinomial_grouped_marginal_loglik_laplace
+GLLVM.betabinomial_logp
+GLLVM.twopart_marginal_loglik_laplace
+GLLVM.multinomial_loglik
+GLLVM.multinomial_eta
+GLLVM.unpack_multinomial
+GLLVM.multinomial_pack_len
+GLLVM.proportions
+GLLVM.aghq_grid
+GLLVM.aghq_grid_ok
+GLLVM.aghq_stage1a_marginal_loglik
+GLLVM.aghq_stage1a_loglik_site
+GLLVM.AGHQGrid
 beta_marginal_loglik_va
 delta_gamma_marginal_loglik_va
 poisson_marginal_loglik_va
@@ -332,6 +375,14 @@ gamma_marginal_loglik_va
 exponential_marginal_loglik_va
 spde_gaussian_marginal_loglik
 spde_latent_marginal_loglik
+GLLVM.takahashi_selinv
+GLLVM.takahashi_diag
+GLLVM.build_sparse_phy_state
+GLLVM.leaf_block_inv
+make_phy
+GLLVM.profile_recover
+GLLVM.profile_ci_derived
+GLLVM.bootstrap_ci_derived
 ```
 
 ---
@@ -346,6 +397,9 @@ ProbitLink
 CLogLogLink
 IdentityLink
 LogLink
+GLLVM.linkinv
+GLLVM.linkfun
+GLLVM.mu_eta
 ```
 
 ### Fit Result Types
@@ -356,7 +410,11 @@ GllvmModel
 GllvmCovFit
 GllvmSpeciesCovFit
 PoissonFit
+TruncatedPoissonFit
+CensoredPoissonFit
 NBFit
+TruncatedNegBin2Fit
+TruncatedNegBin2PerTraitFit
 NB1Fit
 NBGroupedFit
 NBGroupedCovFit
@@ -371,6 +429,7 @@ BetaBinomialGroupedCovFit
 GammaFit
 GammaGroupedFit
 GammaGroupedCovFit
+ExponentialFit
 OrdinalFit
 OrdinalPerTraitFit
 OrdinalPerTraitCovFit
@@ -403,6 +462,7 @@ GaussianREMLFit
 GaussianRandomSlopeFit
 PoissonRandomSlopeFit
 GaussianPerVarFit
+FourthCornerFit
 ConstrainedOrdinationFit
 ConcurrentOrdinationFit
 RRRFit
@@ -433,8 +493,10 @@ HurdlePoisson
 HurdleNB
 BetaHurdle
 OrderedBeta
+Ordinal
 ZIPoisson
 ZINegBin
+GLLVM.ZINB
 ZIB
 BetaBinom
 COMPoisson

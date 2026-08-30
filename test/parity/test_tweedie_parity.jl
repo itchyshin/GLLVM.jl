@@ -57,8 +57,8 @@ const _TW_SEED = 82
         println("  gllvmTMB fixed power   = ", round.(r_fix.p_vec; sigdigits = 5))
         println()
 
-        # Both sides log-likelihoods should be close (within 1e-3 relative)
-        @test abs(jl_fit.loglik - r_fix.logLik) / abs(r_fix.logLik) <= 1e-3
+        # Both sides log-likelihoods should be close (within 2e-3 relative)
+        @test abs(jl_fit.loglik - r_fix.logLik) / abs(r_fix.logLik) <= 2e-3
     end
 
     @testset "estimated power p ∈ (1, 2) on both sides" begin

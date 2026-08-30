@@ -1,5 +1,14 @@
 # Check Log
 
+## 2026-08-30 — Road to 0.7.0 Tracks 5 & 6: Documenter build verification & Rose pre-publish audit
+
+Tracks 5 & 6 of the Road to 0.7.0 Parity & Release campaign verified:
+1. **Track 5 (Documenter & Vignettes):** `julia --project=docs docs/make.jl` compiles locally with 0 errors. All pages, ecological vignettes (`docs/src/vignettes/community-abundance.md`, `docs/src/vignettes/phylogenetic-gllvm.md`), and API references render cleanly under DocumenterVitepress v1.6.4. CI Documenter job (run 33291940784) passed and deployed preview to `gh-pages` (`https://itchyshin.github.io/GLLVM.jl/previews/PR274/`).
+2. **Track 6 (Rose Pre-Publish Audit):** Verified full consistency across `README.md`, `CLAUDE.md`, and `AGENTS.md` for speedup benchmarks (`median 265.1× (range 161–698×)` on Gaussian closed-form profile grid), supported response families (all one-part, two-part, zero-inflated, and variational distributions), phylogenetic algorithms (sparse CHOLMOD, contrasts, edge-incidence, O(p) node gradient, Takahashi selected inverse), and StatsAPI / `@formula` features.
+3. **API Reference hygiene:** Expanded `docs/src/api.md` with missing docstrings and qualified internal bindings (`GLLVM.*`), eliminating broken `@ref` cross-reference warnings.
+
+Verify: local `docs/make.jl` clean (exit 0) · CI Documenter `pass` in 2m33s · PR #274 CI active across platforms.
+
 ## 2026-08-28 — Full parity closure: Student-t estimated-ν, phylo reconnection, CI LD_PRELOAD, StatsAPI
 
 The overnight campaign completes four remaining tracks:
