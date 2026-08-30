@@ -1703,6 +1703,30 @@ function tweedie_grouped_marginal_loglik_laplace(Y::AbstractMatrix, Λ::Abstract
     return acc
 end
 
+# R's Tweedie engine carries `logit_p_tweedie` per trait.  Keep the scalar
+# method above for the historical shared-power contract and make the trait
+# vector a separate dispatch path; this avoids scalar/vector branches in the
+# site likelihood itself.
+function tweedie_grouped_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix,
+        β::AbstractVector, φvec::AbstractVector, power::AbstractVector; link::Link = LogLink(),
+        mask = nothing, offset = nothing, hessian::Symbol = :observed, kwargs...)
+    p = size(Λ, 1)
+    length(φvec) == p || throw(ArgumentError("length(φvec)=$(length(φvec)) must equal p=$p"))
+    length(power) == p || throw(ArgumentError("length(power)=$(length(power)) must equal p=$p"))
+    all(x -> isfinite(x) && 1.0 < x < 2.0, power) ||
+        throw(ArgumentError("each Tweedie power must be finite and strictly between 1 and 2"))
+    N = ones(Int, size(Y))
+    fams = [TweedieED(float(φvec[t]), float(power[t])) for t in 1:p]
+    acc = 0.0
+    @inbounds for i in axes(Y, 2)
+        mi = mask   === nothing ? nothing : view(mask, :, i)
+        oi = offset === nothing ? nothing : view(offset, :, i)
+        acc += _tweedie_grouped_loglik_site(fams, view(Y, :, i), view(N, :, i), Λ, β, link;
+                                            mask = mi, offset = oi, hessian = hessian, kwargs...)
+    end
+    return acc
+end
+
 """
     TweedieGroupedFit
 
@@ -1726,13 +1750,16 @@ struct TweedieGroupedFit
     converged::Bool
     iterations::Int
     hessian::Symbol   # the Laplace log-det curvature this fit's objective used
+    power_fixed::Bool # true only when `power = p0` removed all power coordinates
 end
 
 # Positional compatibility constructor (2026-08-28): see NBGroupedFit above.
 # Defaults to `:observed` (2026-08-28 alignment), matching the NB2/Beta/NB1/
 # Gamma grouped siblings and `fit_tweedie_gllvm`'s own default.
 TweedieGroupedFit(β, Λ, φ, power, group, link, loglik, converged, iterations) =
-    TweedieGroupedFit(β, Λ, φ, power, group, link, loglik, converged, iterations, :observed)
+    TweedieGroupedFit(β, Λ, φ, power, group, link, loglik, converged, iterations, :observed, false)
+TweedieGroupedFit(β, Λ, φ, power, group, link, loglik, converged, iterations, hessian) =
+    TweedieGroupedFit(β, Λ, φ, power, group, link, loglik, converged, iterations, hessian, false)
 
 function Base.show(io::IO, f::TweedieGroupedFit)
     p, K = size(f.Λ)
@@ -1747,23 +1774,97 @@ end
 _loadings(fit::TweedieGroupedFit) = fit.Λ
 _loglik(fit::TweedieGroupedFit)   = fit.loglik
 
-# Free params: β (p) + reduced loadings Λ + one dispersion per group (G) + the
-# single SHARED power.
+# Free params: β (p) + reduced loadings Λ + one dispersion per group (G) + an
+# estimated shared power only. Fixed power is model identity, never inferred
+# from the numerical value.
 function _nparams(fit::TweedieGroupedFit)
     p, K = size(fit.Λ)
-    return p + rr_theta_len(p, K) + length(fit.φ) + 1   # β + Λ + G dispersions φ + power
+    return p + rr_theta_len(p, K) + length(fit.φ) + (fit.power_fixed ? 0 : 1)
 end
 
 """
-    fit_tweedie_gllvm_grouped(Y; K, group, power_init=1.5, link=LogLink(), …) -> TweedieGroupedFit
+    TweediePerTraitPowerFit
+
+Result of `fit_tweedie_gllvm_grouped(...; power_group=:species)`.  The grouped
+dispersion vector `φ` is indexed by `group`; `power[t]` is the separately
+estimated Tweedie power for species `t`.
+"""
+struct TweediePerTraitPowerFit
+    β::Vector{Float64}
+    Λ::Matrix{Float64}
+    φ::Vector{Float64}
+    power::Vector{Float64}
+    group::Vector{Int}
+    link::Link
+    loglik::Float64
+    converged::Bool
+    iterations::Int
+    hessian::Symbol
+end
+
+_loadings(fit::TweediePerTraitPowerFit) = fit.Λ
+_loglik(fit::TweediePerTraitPowerFit) = fit.loglik
+function _nparams(fit::TweediePerTraitPowerFit)
+    p, K = size(fit.Λ)
+    return p + rr_theta_len(p, K) + length(fit.φ) + length(fit.power)
+end
+StatsAPI.dof(fit::TweediePerTraitPowerFit) = _nparams(fit)
+
+struct _TweediePowerSpec
+    values::Vector{Float64}
+    nfree::Int
+    fixed::Bool
+    mode::Symbol
+end
+
+function _tweedie_power_spec(power::Union{Nothing,Real}, power_group::Symbol, p::Integer)
+    power_group in (:shared, :species) || throw(ArgumentError(
+        "power_group must be :shared or :species; got :$power_group"))
+    p > 0 || throw(ArgumentError("number of species must be positive"))
+    if power !== nothing
+        isfinite(power) && 1.0 < power < 2.0 || throw(ArgumentError(
+            "fixed Tweedie power must be finite and strictly between 1 and 2"))
+        return _TweediePowerSpec(fill(float(power), p), 0, true, :fixed)
+    elseif power_group === :shared
+        return _TweediePowerSpec(fill(1.5, p), 1, false, :shared)
+    else
+        return _TweediePowerSpec(fill(1.5, p), p, false, :species)
+    end
+end
+
+function _tweedie_power_init(power_init::Union{Real,AbstractVector}, p::Integer, mode::Symbol)
+    values = if power_init isa Real
+        fill(float(power_init), p)
+    else
+        length(power_init) == p || throw(ArgumentError(
+            "length(power_init)=$(length(power_init)) must equal p=$p"))
+        collect(float.(power_init))
+    end
+    all(x -> isfinite(x) && 1.0 < x < 2.0, values) || throw(ArgumentError(
+        "each power_init value must be finite and strictly between 1 and 2"))
+    mode === :shared && !all(==(values[1]), values) && throw(ArgumentError(
+        "power_init must be scalar or constant when power_group=:shared"))
+    return values
+end
+
+_tweedie_xi(p::Real) = log((float(p) - 1.0) / (2.0 - float(p)))
+_tweedie_power(ξ::Real) = 1.0 + 1.0 / (1.0 + exp(-ξ))
+
+"""
+    fit_tweedie_gllvm_grouped(Y; K, group, power=nothing, power_group=:shared,
+                              power_init=1.5, link=LogLink(), …)
 
 Fit a Tweedie GLLVM with grouped / species-specific dispersion (gllvm's `disp.group`):
-species `t` shares dispersion `φ[group[t]]`, with a single SHARED power `p ∈ (1,2)`
-(matching gllvm — `disp.formula` governs the dispersion only). `group` is a length-p
-vector of group ids (relabelled to `1..G` internally; default `1:p` = per-species).
-L-BFGS over `[β; vec(Λ); log φ_1 … log φ_G; ξ]`, the power mapped to `(1,2)` by
-`p = 1 + 1/(1+exp(-ξ))` (so `ξ = 0 ⇒ p = 1.5`) — the SAME transform as the scalar
-[`fit_tweedie_gllvm`](@ref). Finite-difference gradient; warm start from log
+species `t` shares dispersion `φ[group[t]]`. `group` is a length-p vector of group
+ids (relabelled to `1..G` internally; default `1:p` = per-species). The three power
+contracts are explicit: `power=p0` fixes a common `p0 ∈ (1,2)`; with
+`power=nothing`, `power_group=:shared` estimates one power (the historical Julia
+grouped model), while `power_group=:species` estimates a vector `p_t` and matches
+the frozen gllvmTMB default parameterisation. Invalid controls are rejected before
+fitting, including an invalid `power_group` paired with fixed `power`.
+
+L-BFGS uses `[β; vec(Λ); log φ_1 … log φ_G; ξ…]`; every free power uses
+`p = 1 + 1/(1+exp(-ξ))` (so `ξ = 0 ⇒ p = 1.5`). Finite-difference gradient; warm start from log
 row-means of `Y + c` as intercepts + SVD of row-centred log-`(Y + c)` as loadings
 + a moderate per-group `φ₀` + `ξ₀ = logit(power_init − 1)`, where
 `c = 0.1 · mean(Y[Y > 0])` keeps the exact zeros on the data's own scale (the
@@ -1778,12 +1879,18 @@ the previous expected-information objective on both.
 """
 function fit_tweedie_gllvm_grouped(Y::AbstractMatrix{<:Real}; K::Integer,
         group::AbstractVector{<:Integer} = collect(1:size(Y, 1)),
-        power_init::Real = 1.5, link::Link = LogLink(), mask = nothing, offset = nothing,
+        power::Union{Nothing,Real} = nothing, power_group::Symbol = :shared,
+        power_init::Union{Real,AbstractVector} = 1.5,
+        link::Link = LogLink(), mask = nothing, offset = nothing,
         hessian::Symbol = :observed,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
     length(group) == p || throw(ArgumentError("length(group)=$(length(group)) must equal p=$p"))
+    hessian in (:fisher, :observed) || throw(ArgumentError(
+        "fit_tweedie_gllvm_grouped: hessian must be :fisher or :observed; got :$hessian"))
+    spec = _tweedie_power_spec(power, power_group, p)
+    power0 = spec.fixed ? spec.values : _tweedie_power_init(power_init, p, spec.mode)
     rr = rr_theta_len(p, K)
     # relabel groups to 1..G, build species→group index
     labels = sort(unique(group))
@@ -1802,7 +1909,8 @@ function fit_tweedie_gllvm_grouped(Y::AbstractMatrix{<:Real}; K::Integer,
     @inbounds for j in 1:kk
         Λ0[:, j] = F.U[:, j] .* (F.S[j] / sqrt(n))
     end
-    ξ0 = log((float(power_init) - 1.0) / (2.0 - float(power_init)))   # logit(power_init - 1)
+    ξ0 = spec.nfree == 0 ? Float64[] :
+         spec.mode === :shared ? [_tweedie_xi(power0[1])] : _tweedie_xi.(power0)
     θ0 = vcat(β0, pack_lambda(Λ0), fill(log(1.0), G), ξ0)
 
     function negll(θ)
@@ -1810,8 +1918,14 @@ function fit_tweedie_gllvm_grouped(Y::AbstractMatrix{<:Real}; K::Integer,
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
         φg = exp.(θ[(p + rr + 1):(p + rr + G)])
         φvec = [φg[gidx[t]] for t in 1:p]
-        ξ = θ[p + rr + G + 1]
-        pw = 1.0 + 1.0 / (1.0 + exp(-ξ))
+        ξ = spec.nfree == 0 ? Float64[] : @view θ[(p + rr + G + 1):end]
+        pw = if spec.nfree == 0
+            spec.values
+        elseif spec.mode === :shared
+            fill(_tweedie_power(ξ[1]), p)
+        else
+            _tweedie_power.(ξ)
+        end
         v = try
             -tweedie_grouped_marginal_loglik_laplace(Yc, Λ, β, φvec, pw; link = link,
                                                      mask = msk, offset = offset,
@@ -1830,10 +1944,17 @@ function fit_tweedie_gllvm_grouped(Y::AbstractMatrix{<:Real}; K::Integer,
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
     φ̂g = exp.(θ̂[(p + rr + 1):(p + rr + G)])
-    ξ̂ = θ̂[p + rr + G + 1]
-    p̂ = 1.0 + 1.0 / (1.0 + exp(-ξ̂))
+    ξ̂ = spec.nfree == 0 ? Float64[] : @view θ̂[(p + rr + G + 1):end]
+    p̂ = if spec.nfree == 0
+        spec.values
+    elseif spec.mode === :shared
+        fill(_tweedie_power(ξ̂[1]), p)
+    else
+        _tweedie_power.(ξ̂)
+    end
+    verdict_xi = spec.nfree == 0 ? 0.0 : spec.mode === :shared ? ξ̂[1] : ξ̂
     conv, loglik, reason = _tweedie_verdict(Optim.converged(res), Optim.g_residual(res),
-                                            Optim.minimum(res), ξ̂, g_tol)
+                                            Optim.minimum(res), verdict_xi, g_tol)
     if reason === :objective_failed
         @warn "fit_tweedie_gllvm_grouped: the Laplace marginal could not be evaluated at any \
                accepted point; returning converged = false and loglik = -Inf. Try a \
@@ -1842,5 +1963,10 @@ function fit_tweedie_gllvm_grouped(Y::AbstractMatrix{<:Real}; K::Integer,
         @warn "fit_tweedie_gllvm_grouped: the power ran to the boundary of (1, 2) \
                (p̂ = $(p̂), φ̂ = $(φ̂g)); the fit is flagged as not converged."
     end
-    return TweedieGroupedFit(β̂, Λ̂, φ̂g, p̂, gidx, link, loglik, conv, Optim.iterations(res), hessian)
+    if spec.mode === :species && !spec.fixed
+        return TweediePerTraitPowerFit(β̂, Λ̂, φ̂g, collect(p̂), gidx, link, loglik, conv,
+                                       Optim.iterations(res), hessian)
+    end
+    return TweedieGroupedFit(β̂, Λ̂, φ̂g, p̂[1], gidx, link, loglik, conv,
+                             Optim.iterations(res), hessian, spec.fixed)
 end

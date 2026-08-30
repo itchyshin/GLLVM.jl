@@ -221,7 +221,7 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        fit_gamma_gllvm_grouped_cov, GammaGroupedCovFit,
        fit_nb1_gllvm_grouped, NB1GroupedFit, nb1_grouped_marginal_loglik_laplace,
        fit_nb1_gllvm_grouped_cov, NB1GroupedCovFit,
-       fit_tweedie_gllvm_grouped, TweedieGroupedFit, tweedie_grouped_marginal_loglik_laplace,
+       fit_tweedie_gllvm_grouped, TweedieGroupedFit, TweediePerTraitPowerFit, tweedie_grouped_marginal_loglik_laplace,
        StudentTFamily, StudentT, fit_studentt_gllvm, StudentTFit, studentt_marginal_loglik_laplace,
        Lognormal, LognormalFit, fit_lognormal_gllvm,
        lognormal_marginal_loglik, lognormal_response_mean,

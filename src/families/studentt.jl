@@ -1,15 +1,18 @@
 # Student-t (heavy-tailed continuous) family pieces for the generic Laplace core
 # (src/families/laplace.jl). y_t ∈ ℝ; location η (IDENTITY link, so μ = η), scale
-# σ > 0, with FIXED degrees of freedom ν: the per-observation law is the
-# location–scale t, (y − η)/σ ~ t_ν. The scale σ is the dispersion (carried on a
-# log scale as the single scalar auxiliary). The conditional density is
+# σ > 0 and degrees of freedom ν > 1: the per-observation law is the
+# location–scale t, (y − η)/σ ~ t_ν. A numeric `nu` fixes ν; `nu = nothing`
+# estimates it. The scale σ is always estimated on a log scale, and
+# `disp_group = :species` estimates one scale and (when ν is free) one ν per
+# trait. This implementation lives in this file, not `grouped_dispersion.jl`.
+# The conditional density is
 #
 #   p(y | η) = Γ((ν+1)/2) / (Γ(ν/2) √(νπ) σ) · (1 + (y−η)²/(ν σ²))^{−(ν+1)/2},
 #
 # i.e. a Gaussian-tailed model robustified against outliers; as ν → ∞ it tends to
-# Normal(η, σ²). For v1 ν is FIXED (a fitter kwarg, default ν = 4); estimating ν
-# jointly is a follow-up (it would need a SECOND auxiliary, breaking the scalar-aux
-# implicit path used here). The marker `StudentTFamily(ν, σ)` stores both.
+# Normal(η, σ²). The marker `StudentTFamily(ν, σ)` carries a fixed numerical ν
+# for an individual likelihood evaluation; the fitter supplies the estimated
+# value when `nu = nothing`.
 #
 # Score/weight wrt η (identity link ⇒ dμ/dη = me = 1). The robust t-score is
 #   r = y − η,   s_η = (ν+1) r / (ν σ² + r²)
@@ -29,21 +32,22 @@
 # which is what makes the generic scalar-aux implicit-gradient path AD-clean.
 
 """
-    StudentTFamily(ν = 4.0, σ = 1.0)
+    StudentTFamily(ν = nothing, σ = 1.0)
 
-Student-t (heavy-tailed continuous) family marker: location–scale t with FIXED
-degrees of freedom `ν > 0` and scale `σ > 0`, identity link (location `μ = η`),
+Student-t (heavy-tailed continuous) family marker: location–scale t with
+degrees of freedom `ν > 0` (or `nothing` before fitting) and scale `σ > 0`,
+identity link (location `μ = η`),
 so `(y − η)/σ ~ t_ν`. Used as the family argument to the generic Laplace core and
 to [`fit_gllvm`](@ref):
 
 ```julia
-fit_gllvm(Y; family = StudentTFamily(), K = 2)      # ν = 4 (default tail weight)
-fit_gllvm(Y; family = StudentTFamily(7.0), K = 2)   # lighter tail
+fit_gllvm(Y; family = StudentTFamily(), K = 2)      # estimate ν (default)
+fit_gllvm(Y; family = StudentTFamily(7.0), K = 2)   # fix a lighter tail
 ```
 
 The two fields play **different** roles on the public route. `ν` is structural: it
-defines the likelihood, is held fixed rather than estimated, and travels on the
-marker (`fit_gllvm` forwards it as the fitter's `nu`). `σ` is a **tag payload** —
+defines the likelihood and a numeric value fixes it, while `ν = nothing` asks the
+fitter to estimate it. `σ` is a **tag payload** —
 the scale is always estimated, so `StudentTFamily(4.0, 1.0)` and
 `StudentTFamily(4.0, 9.0)` give the same fit; pass `σ_init` to
 [`fit_studentt_gllvm`](@ref) to seed it. Internally the Laplace kernels construct
@@ -217,7 +221,8 @@ end
     StudentTFit
 
 Result of [`fit_studentt_gllvm`](@ref): intercepts `β` (length p), loadings `Λ`
-(p×K), degrees of freedom `ν` (`Float64` or length-p `Vector{Float64}`), estimated scale `σ`
+(p×K), degrees of freedom `ν` (`Float64` or length-p `Vector{Float64}`), whether
+`ν` was estimated (`estimated_nu`), and estimated scale `σ`
 (`(y − η)/σ ~ t_ν`; a `Float64` under `disp_group == :shared`, or a length-p `Vector{Float64}`
 under `disp_group == :species`), the `link` (always `IdentityLink()`), the
 maximised Laplace `loglik`, the optimiser `converged` flag, `iterations`, the
@@ -235,6 +240,7 @@ struct StudentTFit
     iterations::Int
     hessian::Symbol   # the Laplace log-det curvature this fit's objective used
     disp_group::Symbol
+    estimated_nu::Bool
 end
 
 # Positional compatibility constructors (2026-08-28): every pre-existing
@@ -245,15 +251,20 @@ end
 # precedent (`DeltaLogNormalFit`).
 StudentTFit(β, Λ, ν, σ, link, loglik, converged, iterations) =
     StudentTFit(β, Λ, ν, σ, link, loglik, converged, iterations,
-               _default_hessian(StudentTFamily(4.0, 1.0), link), :shared)
+               _default_hessian(StudentTFamily(4.0, 1.0), link), :shared, false)
 StudentTFit(β, Λ, ν, σ, link, loglik, converged, iterations, hessian::Symbol) =
-    StudentTFit(β, Λ, ν, σ, link, loglik, converged, iterations, hessian, :shared)
+    StudentTFit(β, Λ, ν, σ, link, loglik, converged, iterations, hessian, :shared, false)
+StudentTFit(β, Λ, ν, σ, link, loglik, converged, iterations, hessian::Symbol,
+            disp_group::Symbol) =
+    StudentTFit(β, Λ, ν, σ, link, loglik, converged, iterations, hessian,
+                disp_group, false)
 
 function Base.show(io::IO, f::StudentTFit)
     p, K = size(f.Λ)
     σstr = f.σ isa Real ? string(round(f.σ; sigdigits = 4)) : "per-trait"
     νstr = f.ν isa Real ? string(round(f.ν; sigdigits = 4)) : "per-trait"
     print(io, "StudentTFit(p=", p, ", K=", K, ", ν=", νstr,
+          f.estimated_nu ? " (estimated)" : " (fixed)",
           ", σ=", σstr,
           ", link=", nameof(typeof(f.link)),
           ", loglik=", round(f.loglik; sigdigits = 7),
@@ -381,5 +392,6 @@ function fit_studentt_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     else
         ν_fixed
     end
-    return StudentTFit(β̂, Λ̂, ν̂, σ̂, link, _fit_verdict(res)..., hessian, disp_group)
+    return StudentTFit(β̂, Λ̂, ν̂, σ̂, link, _fit_verdict(res)..., hessian,
+                       disp_group, nu === nothing)
 end

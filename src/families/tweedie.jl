@@ -220,6 +220,21 @@ function _tweedie_verdict(optim_converged::Bool, gres::Real, nll::Real, ξ::Real
     return (optim_converged, -float(nll), :ok)
 end
 
+# The per-species grouped contract has one unconstrained power coordinate per
+# response. Reuse the scalar objective/gradient checks, but require every
+# coordinate to remain interior; one boundary coordinate makes the whole
+# parameter vector an invalid Tweedie estimate.
+function _tweedie_verdict(optim_converged::Bool, gres::Real, nll::Real,
+                          ξ::AbstractVector, g_tol::Real)
+    (isfinite(nll) && nll < _TWEEDIE_FAIL_PENALTY) ||
+        return (false, -Inf, :objective_failed)
+    all(isfinite, ξ) && all(abs.(ξ) .<= _TWEEDIE_XI_MAX) ||
+        return (false, -float(nll), :power_at_boundary)
+    (isfinite(gres) && gres <= max(g_tol, g_tol * abs(nll))) ||
+        return (false, -float(nll), :gradient_not_small)
+    return (optim_converged, -float(nll), :ok)
+end
+
 """
     TweedieFit
 

@@ -21,7 +21,7 @@ const AnyGllvmFit = Union{
     ZIPFit, ZIPCovFit, ZINBFit, ZINBCovFit, ZIBFit, ZIBCovFit,
     NBGroupedFit, NBGroupedCovFit, BetaGroupedFit, BetaGroupedCovFit,
     GammaGroupedFit, GammaGroupedCovFit, NB1GroupedFit, NB1GroupedCovFit,
-    TweedieGroupedFit
+    TweedieGroupedFit, TweediePerTraitPowerFit
 }
 
 # Loadings accessor — dispatches over the fitted types.
@@ -488,7 +488,7 @@ _nparams(f::PhyloGLMFit) = length(f.β) + 1 + length(f.dispersion)
 _nparams(f::PhyloGaussianFit) = 3
 _nparams(f::PoissonRandomSlopeFit) = (p = size(f.Λ, 1); K = size(f.Λ, 2); length(f.β) + (p * K - div(K * (K - 1), 2)) + div(f.q * (f.q + 1), 2))
 _nparams(f::SPDEGaussianFit) = 4
-_nparams(f::StudentTFit) = (p = size(f.Λ, 1); K = size(f.Λ, 2); length(f.β) + (p * K - div(K * (K - 1), 2)) + length(f.σ))
+_nparams(f::StudentTFit) = (p = size(f.Λ, 1); K = size(f.Λ, 2); length(f.β) + (p * K - div(K * (K - 1), 2)) + length(f.σ) + (f.estimated_nu ? length(f.ν) : 0))
 _nparams(f::TruncatedNegBin2Fit) = (p = size(f.Λ, 1); K = size(f.Λ, 2); length(f.β) + (p * K - div(K * (K - 1), 2)) + length(f.r))
 _nparams(f::TruncatedNegBin2PerTraitFit) = (p = size(f.Λ, 1); K = size(f.Λ, 2); length(f.β) + (p * K - div(K * (K - 1), 2)) + length(f.r))
 _nparams(f::TruncatedPoissonFit) = (p = size(f.Λ, 1); K = size(f.Λ, 2); length(f.β) + (p * K - div(K * (K - 1), 2)))
