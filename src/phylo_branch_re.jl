@@ -181,7 +181,21 @@ function _lambda(cache::BranchRECache, σ²::Real, σ²_eps::Real)
 end
 
 # Cholesky of the (SPD) sparse Λ. Λ is SPD because W ≻ 0 and σ_eps⁻²ZᵀZ ⪰ 0.
-_lambda_chol(Λ) = cholesky(Symmetric(Λ))
+function _lambda_chol(Λ)
+    try
+        return cholesky(Symmetric(Λ))
+    catch e
+        if isa(e, PosDefException)
+            # Add minimal numerical ridge to guarantee positive definiteness
+            Λdiag = copy(Λ)
+            @inbounds for i in 1:size(Λdiag, 1)
+                Λdiag[i, i] += max(1e-12, eps(Float64) * abs(Λdiag[i, i]))
+            end
+            return cholesky(Symmetric(Λdiag))
+        end
+        rethrow(e)
+    end
+end
 
 # ---------------------------------------------------------------------------
 # 4. Profile marginal log-likelihood (μ profiled out by GLS).

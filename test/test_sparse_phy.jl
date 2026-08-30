@@ -1,11 +1,5 @@
 using GLLVM, Test, Random, LinearAlgebra, Distributions, SparseArrays
 
-# The sparse phy path lives in two new src files that are not (yet) wired
-# into the `GLLVM` module so that we never touch src/GLLVM.jl on this branch
-# (per the PERF++ hard constraint). Pull them in directly for the test.
-include(joinpath(@__DIR__, "..", "src", "sparse_phy.jl"))
-include(joinpath(@__DIR__, "..", "src", "likelihood_sparse_phy.jl"))
-
 @testset "sparse phy precision" begin
 
     @testset "Newick parser handles 3-leaf tree" begin

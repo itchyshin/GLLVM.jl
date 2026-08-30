@@ -6,6 +6,24 @@
 # decreasing singular value. Rotating loadings (Λ → Λ V) and scores
 # (Z → Z V) by the same V leaves Λ Zᵀ — hence Σ_y — unchanged.
 
+const AnyGllvmFit = Union{
+    GllvmFit, GllvmCovFit, GllvmSpeciesCovFit, FourthCornerFit, RRRFit,
+    ConstrainedOrdinationFit, RowEffectFit, RowRandomFit, PoissonRandomSlopeFit,
+    GaussianRandomSlopeFit, TwoLevelFit, GaussianREMLFit, PhyloGaussianFit,
+    GaussianPerVarFit, SPDEGaussianFit, SPDELatentFit, PhyloGLMFit,
+    CoevolutionGLMFit, EMPhyloFit, BranchREFit, RelaxedClockFit, PoissonFit,
+    BinomialFit, NBFit, BetaFit, GammaFit, OrdinalFit, OrdinalPerTraitFit,
+    OrdinalPerTraitCovFit, TweedieFit, StudentTFit, ExponentialFit, LognormalFit,
+    MultinomialFit, TruncatedPoissonFit, TruncatedNegBin2Fit, TruncatedNegBin2PerTraitFit,
+    CensoredPoissonFit, GP1Fit, NB1Fit, COMPoissonFit, BetaBinomialFit,
+    BetaBinomialGroupedFit, BetaBinomialGroupedCovFit, BetaHurdleFit,
+    DeltaLogNormalFit, HurdlePoissonFit, HurdleNBFit, DeltaGammaFit,
+    ZIPFit, ZIPCovFit, ZINBFit, ZINBCovFit, ZIBFit, ZIBCovFit,
+    NBGroupedFit, NBGroupedCovFit, BetaGroupedFit, BetaGroupedCovFit,
+    GammaGroupedFit, GammaGroupedCovFit, NB1GroupedFit, NB1GroupedCovFit,
+    TweedieGroupedFit
+}
+
 # Loadings accessor — dispatches over the fitted types.
 _loadings(fit::GllvmFit)    = fit.pars.Λ
 _loadings(fit::BinomialFit) = fit.Λ
@@ -254,11 +272,11 @@ function predict(fit::BinomialFit, Y::AbstractMatrix{<:Integer};
 end
 
 """
-    fitted(fit::GllvmFit, data; kwargs...) -> p×n matrix
+    fitted(fit, data; kwargs...) -> p×n matrix
 
 Response-scale in-sample fitted values — `predict(fit, data; type=:response, kwargs...)`.
 """
-fitted(fit::GllvmFit, data; kwargs...) = predict(fit, data; type = :response, kwargs...)
+StatsAPI.fitted(fit::AnyGllvmFit, data; kwargs...) = predict(fit, data; type = :response, kwargs...)
 
 """
     residuals(fit::GllvmFit, y; type=:dunnsmyth, X=nothing, X_lv=nothing) -> p×n matrix
@@ -495,24 +513,6 @@ function _nparams(fit)
     end
     return max(k, 1)
 end
-
-const AnyGllvmFit = Union{
-    GllvmFit, GllvmCovFit, GllvmSpeciesCovFit, FourthCornerFit, RRRFit,
-    ConstrainedOrdinationFit, RowEffectFit, RowRandomFit, PoissonRandomSlopeFit,
-    GaussianRandomSlopeFit, TwoLevelFit, GaussianREMLFit, PhyloGaussianFit,
-    GaussianPerVarFit, SPDEGaussianFit, SPDELatentFit, PhyloGLMFit,
-    CoevolutionGLMFit, EMPhyloFit, BranchREFit, RelaxedClockFit, PoissonFit,
-    BinomialFit, NBFit, BetaFit, GammaFit, OrdinalFit, OrdinalPerTraitFit,
-    OrdinalPerTraitCovFit, TweedieFit, StudentTFit, ExponentialFit, LognormalFit,
-    MultinomialFit, TruncatedPoissonFit, TruncatedNegBin2Fit, TruncatedNegBin2PerTraitFit,
-    CensoredPoissonFit, GP1Fit, NB1Fit, COMPoissonFit, BetaBinomialFit,
-    BetaBinomialGroupedFit, BetaBinomialGroupedCovFit, BetaHurdleFit,
-    DeltaLogNormalFit, HurdlePoissonFit, HurdleNBFit, DeltaGammaFit,
-    ZIPFit, ZIPCovFit, ZINBFit, ZINBCovFit, ZIBFit, ZIBCovFit,
-    NBGroupedFit, NBGroupedCovFit, BetaGroupedFit, BetaGroupedCovFit,
-    GammaGroupedFit, GammaGroupedCovFit, NB1GroupedFit, NB1GroupedCovFit,
-    TweedieGroupedFit
-}
 
 """
     dof(fit) -> Integer

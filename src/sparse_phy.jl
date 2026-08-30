@@ -367,7 +367,7 @@ This is **O(p³)** in storage and time — only intended for small trees in
 tests. Do NOT call it on the real workload; the entire point of
 `AugmentedPhy` is to avoid materialising Σ_phy.
 """
-function sigma_phy_dense(phy::AugmentedPhy; σ²_phy = 1.0)
+function sigma_phy_dense(phy::AugmentedPhy; σ²_phy::Real = 1.0)
     p = phy.n_leaves
     keep = setdiff(1:phy.n_total, [phy.root_index])
     Q_cond = Matrix(phy.Q_topology[keep, keep])
@@ -375,6 +375,8 @@ function sigma_phy_dense(phy::AugmentedPhy; σ²_phy = 1.0)
     leaf_pos = [findfirst(==(phy.leaf_indices[t]), keep) for t in 1:p]
     return σ²_phy .* Σ_full[leaf_pos, leaf_pos]
 end
+
+sigma_phy_dense(phy::AugmentedPhy, σ²_phy::Real) = sigma_phy_dense(phy; σ²_phy = σ²_phy)
 
 """
     random_balanced_tree(p::Integer; branch_length::Real = 0.1) :: AugmentedPhy

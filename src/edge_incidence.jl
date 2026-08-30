@@ -396,7 +396,8 @@ function sigma_phy_dense_edge(phy::EdgePhy{T}, σ²_phy::S) where {T, S}
     return Σ
 end
 
-sigma_phy_dense(phy::EdgePhy, σ²_phy = 1.0) = sigma_phy_dense_edge(phy, σ²_phy)
+sigma_phy_dense(phy::EdgePhy; σ²_phy = 1.0) = sigma_phy_dense_edge(phy, σ²_phy)
+sigma_phy_dense(phy::EdgePhy, σ²_phy) = sigma_phy_dense_edge(phy, σ²_phy)
 
 """
     log_det_Q(phy::EdgePhy, σ²_phy::Real) -> Real
