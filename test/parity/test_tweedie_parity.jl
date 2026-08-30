@@ -28,10 +28,13 @@ const _TW_LOGLIK_ATOL = 1e-6
         r_fit = fit_gllvmtmb_parity_tweedie(Y, K; p_fixed = p_true)
         jl_fit = fit_tweedie_gllvm_grouped(Y; K = K, power = p_true, iterations = 400)
         println("TWEEDIE_PARITY fixed julia_logLik=$(jl_fit.loglik) r_logLik=$(r_fit.logLik)")
-        @test r_fit.converged && jl_fit.converged
+        @test r_fit.health.passed && r_fit.converged && jl_fit.converged
+        @test r_fit.health.n_free == GLLVM._nparams(jl_fit)
+        println("TWEEDIE_R_HEALTH ", r_fit.health)
         @test isfinite(r_fit.logLik) && isfinite(jl_fit.loglik)
         @test r_fit.power_group == "species" && !r_fit.reference_constraint_adapter
         @test all(≈(p_true; atol = 1e-8), r_fit.p_vec)
+        @test r_fit.health.n_power_free == 0
         @test jl_fit.power_fixed && jl_fit.power == p_true
         @test GLLVM._nparams(jl_fit) == p + GLLVM.rr_theta_len(p, K) + p
         @test isapprox(jl_fit.loglik, r_fit.logLik; atol = _TW_LOGLIK_ATOL)
@@ -41,10 +44,13 @@ const _TW_LOGLIK_ATOL = 1e-6
         r_fit = fit_gllvmtmb_parity_tweedie(Y, K; power_group = :shared)
         jl_fit = fit_tweedie_gllvm_grouped(Y; K = K, power_group = :shared, iterations = 400)
         println("TWEEDIE_PARITY shared julia_logLik=$(jl_fit.loglik) r_logLik=$(r_fit.logLik)")
-        @test r_fit.converged && jl_fit.converged
+        @test r_fit.health.passed && r_fit.converged && jl_fit.converged
+        @test r_fit.health.n_free == GLLVM._nparams(jl_fit)
+        println("TWEEDIE_R_HEALTH ", r_fit.health)
         @test isfinite(r_fit.logLik) && isfinite(jl_fit.loglik)
         @test r_fit.power_group == "shared" && r_fit.reference_constraint_adapter
         @test all(≈(r_fit.p_vec[1]; atol = 1e-10), r_fit.p_vec)
+        @test r_fit.health.n_power_free == 1
         @test !jl_fit.power_fixed && 1.0 < jl_fit.power < 2.0
         @test GLLVM._nparams(jl_fit) == p + GLLVM.rr_theta_len(p, K) + p + 1
         @test isapprox(jl_fit.loglik, r_fit.logLik; atol = _TW_LOGLIK_ATOL)
@@ -54,9 +60,12 @@ const _TW_LOGLIK_ATOL = 1e-6
         r_fit = fit_gllvmtmb_parity_tweedie(Y, K; power_group = :species)
         jl_fit = fit_tweedie_gllvm_grouped(Y; K = K, power_group = :species, iterations = 400)
         println("TWEEDIE_PARITY species julia_logLik=$(jl_fit.loglik) r_logLik=$(r_fit.logLik)")
-        @test r_fit.converged && jl_fit.converged
+        @test r_fit.health.passed && r_fit.converged && jl_fit.converged
+        @test r_fit.health.n_free == GLLVM._nparams(jl_fit)
+        println("TWEEDIE_R_HEALTH ", r_fit.health)
         @test isfinite(r_fit.logLik) && isfinite(jl_fit.loglik)
         @test r_fit.power_group == "species" && !r_fit.reference_constraint_adapter
+        @test r_fit.health.n_power_free == p
         @test jl_fit isa GLLVM.TweediePerTraitPowerFit
         @test all(pw -> 1.0 < pw < 2.0, jl_fit.power)
         @test all(pw -> 1.0 < pw < 2.0, r_fit.p_vec)

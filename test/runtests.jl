@@ -231,6 +231,7 @@ using GLLVM
     include("test_edge_incidence.jl")
     include("test_phylo_branch_re.jl")
     include("test_branch_re_marginal_fallback.jl")
+    include("test_core070_receipts.jl")
     include("test_em_phylo.jl")
     include("test_em_squarem.jl")
     include("test_em_squarem_safety.jl")

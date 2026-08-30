@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
-"""Fail-closed aggregation for CORE-070 required parity receipts."""
+"""Fail-closed aggregation for immutable CORE-070 parity receipts.
+
+This is deliberately a programme aggregator, not the 17-family smoke runner:
+it rejects a smoke-only receipt until every frozen executable obligation exists.
+"""
 import argparse
+from copy import deepcopy
 import hashlib
 import json
 from pathlib import Path
@@ -10,6 +15,14 @@ import tomllib
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = ROOT / "docs/dev-log/core070/frozen-r070-contract.toml"
+ORACLE_BUILD = ROOT / ".unlazy/core070-aghq/oracle-receipts/build.json"
+ORACLE_SOURCE = ROOT / ".unlazy/core070-aghq/oracle-source/source.json"
+CONTRACT_REL = "docs/dev-log/core070/frozen-r070-contract.toml"
+EXECUTION_STATIC = (
+    "src", "test/parity/core070_receipts.jl", "test/parity/parity_helpers.jl",
+    "test/parity/runparity.jl", "test/parity/r_health.R", "Project.toml", "test/Project.toml",
+    "test/parity/Project.toml",
+)
 
 
 class EvidenceError(RuntimeError):
@@ -21,9 +34,8 @@ def digest(path: Path) -> str:
 
 
 def tree_digest(root: Path) -> str:
-    rows = []
-    for path in sorted(p for p in root.rglob("*") if p.is_file() and not p.is_symlink()):
-        rows.append(f"{path.relative_to(root)}\0{digest(path)}")
+    rows = [f"{path.relative_to(root)}\0{digest(path)}" for path in sorted(root.rglob("*"))
+            if path.is_file() and not path.is_symlink()]
     return hashlib.sha256("\n".join(rows).encode()).hexdigest()
 
 
@@ -67,192 +79,249 @@ def load_manifest(path: Path) -> dict:
     obligations = manifest.get("obligation", [])
     if not obligations or any(not obligation_fields.issubset(row) for row in obligations):
         raise EvidenceError("MANIFEST_INVALID: required obligation rows are not source-complete")
-    smoke_ids = set(manifest.get("family_smoke_case_ids", []))
-    if not smoke_ids.issubset({row["id"] for row in obligations}):
+    if not set(required).issubset({row["id"] for row in obligations}):
         raise EvidenceError("MANIFEST_INVALID: every family-smoke row needs its own source-bound obligation")
-    blocker_fields = {"id", "kind", "source", "question", "blocks", "resolution_evidence", "status"}
-    if any(not blocker_fields.issubset(row) for row in manifest.get("blocker", [])):
-        raise EvidenceError("MANIFEST_INVALID: blocker lacks a machine-readable resolution contract")
     return manifest
+
+
+def _hash_inventory(entries: list[dict]) -> str:
+    rows = sorted(f"{row['path']}\0{row['sha256']}" for row in entries)
+    return hashlib.sha256("\n".join(rows).encode()).hexdigest()
+
+
+def execution_inventory(case_by_id: dict[str, dict], requested_ids: list[str], manifest_path: Path) -> dict:
+    paths = list(EXECUTION_STATIC) + [case_by_id[case_id]["fixture"] for case_id in requested_ids]
+    for rel in ("Manifest.toml", "test/Manifest.toml", "test/parity/Manifest.toml"):
+        if (ROOT / rel).is_file():
+            paths.append(rel)
+    paths.append(CONTRACT_REL)
+    entries = []
+    for rel in sorted(set(paths)):
+        path = ROOT / rel
+        if rel == CONTRACT_REL:
+            entries.append({"path": rel, "sha256": digest(manifest_path)})
+        elif path.is_file() and not path.is_symlink():
+            entries.append({"path": rel, "sha256": digest(path)})
+        elif path.is_dir():
+            entries.extend({"path": str(child.relative_to(ROOT)), "sha256": digest(child)}
+                           for child in sorted(path.rglob("*"))
+                           if child.is_file() and not child.is_symlink())
+        else:
+            raise EvidenceError(f"MISSING_EXECUTION_INPUT: {rel}")
+    entries.sort(key=lambda row: row["path"])
+    return {"entries": entries, "manifest_sha256": _hash_inventory(entries)}
+
+
+def _require_string(mapping: dict, key: str, error: str) -> str:
+    value = mapping.get(key)
+    if not isinstance(value, str) or not value:
+        raise EvidenceError(error)
+    return value
+
+
+def _oracle_build() -> dict:
+    try:
+        return json.loads(ORACLE_BUILD.read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        raise EvidenceError(f"MISSING_DEPENDENCY: immutable oracle build receipt: {exc}") from exc
+
+
+def _validate_source(source: dict, manifest: dict, execution: dict, receipt_dir: Path | None) -> None:
+    if source.get("reference_commit") != manifest["reference_commit"]:
+        raise EvidenceError("STALE_SOURCE: installed R reference commit differs from frozen pin")
+    for key, manifest_key in (("namespace_sha256", "reference_namespace_sha256"),
+                              ("source_tree_sha256", "reference_source_tree_sha256"),
+                              ("archive_sha256", "reference_archive_sha256")):
+        if source.get(key) != manifest[manifest_key]:
+            raise EvidenceError(f"STALE_SOURCE: source.{key}")
+    build = _oracle_build()
+    if source.get("source_marker_sha256") != build.get("marker_sha256"):
+        raise EvidenceError("STALE_ORACLE: source marker does not match immutable build receipt")
+    if source.get("installed_tree_sha256") != build.get("installed_tree_sha256"):
+        raise EvidenceError("STALE_ORACLE: installed tree does not match immutable build receipt")
+    if source.get("oracle_build_receipt_sha256") != digest(ORACLE_BUILD) or \
+       source.get("oracle_source_receipt_sha256") != digest(ORACLE_SOURCE):
+        raise EvidenceError("STALE_ORACLE: retained oracle receipt hash mismatch")
+    if receipt_dir is not None:
+        for source_path, local_name, key in ((ORACLE_BUILD, "build.json", "oracle_build_receipt_sha256"),
+                                             (ORACLE_SOURCE, "source.json", "oracle_source_receipt_sha256")):
+            retained = receipt_dir / local_name
+            if not retained.is_file() or digest(retained) != digest(source_path) or digest(retained) != source[key]:
+                raise EvidenceError("MISSING_OR_STALE_ORACLE_RECEIPT")
+    if source.get("julia_source_tree_sha256") != tree_digest(ROOT / "src"):
+        raise EvidenceError("STALE_JULIA_SOURCE: receipt does not bind the current Julia src tree")
+    hashes = {entry["path"]: entry["sha256"] for entry in execution["entries"]}
+    if source.get("julia_project_sha256") != hashes.get("test/parity/Project.toml"):
+        raise EvidenceError("STALE_DEPENDENCY: active Julia project does not match execution inventory")
+    if source.get("julia_manifest_sha256") != hashes.get("test/parity/Manifest.toml", "ABSENT"):
+        raise EvidenceError("STALE_DEPENDENCY: active Julia manifest does not match execution inventory")
+    for key in ("julia_package_path", "julia_package_root", "julia_project_path", "julia_version",
+                "julia_machine", "rcall_version", "r_version", "r_home", "r_library_path",
+                "tmb_version", "matrix_version"):
+        _require_string(source, key, f"MISSING_RUNTIME_PIN: source.{key}")
+    for key in ("julia_threads", "blas_threads"):
+        if not isinstance(source.get(key), int) or source[key] < 1:
+            raise EvidenceError(f"MISSING_RUNTIME_PIN: source.{key}")
+
+
+def _verify_loaded(run: dict, cell_files: dict[str, dict], manifest: dict,
+                   manifest_path: Path, receipt_dir: Path | None = None) -> dict:
+    if manifest.get("status") != "FROZEN":
+        raise EvidenceError("DRAFT_CONTRACT: aggregate evidence is disabled until every required row is frozen")
+    obligations = {row["id"] for row in manifest["obligation"]}
+    expected_ids = manifest.get("required_case_ids", [])
+    if len(expected_ids) != len(set(expected_ids)) or set(expected_ids) != obligations:
+        raise EvidenceError("INCOMPLETE_PROGRAMME: required IDs must include every obligation, not only family smoke")
+    cases = manifest.get("executable_case", [])
+    case_by_id = {row.get("id"): row for row in cases}
+    needed = ("id", "fixture", "fixture_sha256", "reference_call", "julia_call", "model_contract", "acceptance_rule")
+    if len(case_by_id) != len(expected_ids) or set(case_by_id) != set(expected_ids) or \
+       any(not all(row.get(key) for key in needed) for row in cases):
+        raise EvidenceError("INCOMPLETE_PROGRAMME: every obligation requires an executable frozen case")
+    if run.get("status") != "success" or run.get("success_marker") != "CORE070_PARITY_SUCCESS" or run.get("exit_code") != 0:
+        raise EvidenceError("NONZERO_OR_INCOMPLETE_RUN: no successful parity marker")
+    requested = run.get("requested_case_ids")
+    completed = run.get("completed_case_ids")
+    if not isinstance(requested, list) or len(requested) != len(set(requested)) or set(requested) != set(expected_ids):
+        raise EvidenceError("INCOMPLETE_PROGRAMME: run did not request every frozen executable case")
+    if not isinstance(completed, list) or len(completed) != len(set(completed)) or set(completed) != set(requested):
+        raise EvidenceError("UNEXECUTED_OR_DUPLICATE_CASE: completed cases do not exactly match requested cases")
+    if run.get("contract_sha256") != digest(manifest_path):
+        raise EvidenceError("STALE_CONTRACT: full contract changed since execution")
+    execution = run.get("execution")
+    if not isinstance(execution, dict):
+        raise EvidenceError("MISSING_EXECUTION_INVENTORY")
+    expected_inventory = execution_inventory(case_by_id, requested, manifest_path)
+    if execution != expected_inventory:
+        raise EvidenceError("STALE_EXECUTION_INVENTORY: helper, runner, fixture, dependency, source, or contract changed")
+    _validate_source(run.get("source", {}), manifest, execution, receipt_dir)
+    if not isinstance(run.get("run_id"), str) or not run["run_id"]:
+        raise EvidenceError("MISSING_RUN_ID")
+    if set(cell_files) != set(requested):
+        raise EvidenceError("MISSING_OR_EXTRA_CELL_RECEIPT")
+    if len({cell.get("id") for cell in cell_files.values()}) != len(cell_files):
+        raise EvidenceError("DUPLICATE_CELL_ID")
+    total_assertions = 0
+    for case_id in requested:
+        cell = cell_files[case_id]
+        frozen = case_by_id[case_id]
+        if cell.get("id") != case_id or cell.get("run_id") != run["run_id"]:
+            raise EvidenceError(f"TRANSPLANTED_CELL: {case_id}")
+        if cell.get("status") != "success":
+            raise EvidenceError(f"FAILED_CELL: {case_id}")
+        counts = cell.get("assertions", {})
+        if not all(isinstance(counts.get(key), int) for key in ("passed", "failed", "errored", "broken")) or \
+           counts.get("passed", 0) <= 0 or any(counts[key] != 0 for key in ("failed", "errored", "broken")):
+            raise EvidenceError(f"INVALID_ASSERTIONS: {case_id}")
+        total_assertions += counts["passed"]
+        fixture = ROOT / frozen["fixture"]
+        if cell.get("fixture") != frozen["fixture"] or not fixture.is_file() or \
+           cell.get("fixture_sha256") != digest(fixture) or frozen["fixture_sha256"] != digest(fixture):
+            raise EvidenceError(f"STALE_FIXTURE: {case_id}")
+        if cell.get("execution_manifest_sha256") != execution["manifest_sha256"] or \
+           cell.get("contract_sha256") != run["contract_sha256"]:
+            raise EvidenceError(f"TRANSPLANTED_CELL: {case_id}")
+    if run.get("actual_assertions") != total_assertions or total_assertions == 0:
+        raise EvidenceError("INVALID_ASSERTION_TOTAL")
+    summary = run.get("cells", {})
+    if not isinstance(summary, dict) or set(summary) != set(requested) or any(summary[key] != cell_files[key] for key in requested):
+        raise EvidenceError("CELL_RUN_MISMATCH")
+    return {"status": "PASS", "required_cells": len(expected_ids),
+            "actual_assertions": total_assertions, "manifest_sha256": digest(manifest_path)}
 
 
 def verify(receipt_dir: Path, manifest_path: Path) -> dict:
     manifest = load_manifest(manifest_path)
-    if manifest.get("status") != "FROZEN":
-        raise EvidenceError("DRAFT_CONTRACT: aggregate evidence is disabled until every required row is frozen")
-    if "required_case_ids" not in manifest:
-        raise EvidenceError("MANIFEST_INVALID: frozen contract has no full required-ID inventory")
-    obligations = {row["id"] for row in manifest["obligation"]}
-    ids = manifest["required_case_ids"]
-    if len(ids) != len(set(ids)) or set(ids) != obligations:
-        raise EvidenceError("INCOMPLETE_PROGRAMME: required IDs must include every obligation, not only family smoke")
-    cases = manifest.get("executable_case", [])
-    if len(cases) != len(ids) or {row.get("id") for row in cases} != set(ids):
-        raise EvidenceError("INCOMPLETE_PROGRAMME: every obligation requires an executable frozen case")
-    if any(not all(row.get(key) for key in ("id", "fixture", "fixture_sha256", "reference_call", "julia_call", "model_contract", "acceptance_rule")) for row in cases):
-        raise EvidenceError("INCOMPLETE_PROGRAMME: executable case lacks model or acceptance contract")
     if not receipt_dir.is_dir():
         raise EvidenceError(f"MISSING_DEPENDENCY: receipt directory absent: {receipt_dir}")
     run_path = receipt_dir / "run.toml"
     if not run_path.is_file():
         raise EvidenceError("MISSING_RECEIPT: run.toml")
     run = load_toml(run_path)
-    source = run.get("source", {})
-    if run.get("status") != "success" or run.get("success_marker") != "CORE070_PARITY_SUCCESS":
-        raise EvidenceError("NONZERO_OR_INCOMPLETE_RUN: no successful parity marker")
-    if run.get("exit_code") != 0:
-        raise EvidenceError("NONZERO_EXIT: required parity runner did not exit 0")
-    if run.get("required_ids") != manifest["required_case_ids"]:
-        raise EvidenceError("STALE_CONTRACT: required-ID inventory differs from frozen manifest")
-    if source.get("reference_commit") != manifest["reference_commit"]:
-        raise EvidenceError("STALE_SOURCE: installed R reference commit differs from frozen pin")
-    if source.get("namespace_sha256") != manifest["reference_namespace_sha256"]:
-        raise EvidenceError("STALE_SOURCE: installed R NAMESPACE differs from frozen reference")
-    if source.get("source_tree_sha256") != manifest["reference_source_tree_sha256"]:
-        raise EvidenceError("STALE_SOURCE: exact archived R source tree differs from receipt")
-    if source.get("archive_sha256") != manifest["reference_archive_sha256"]:
-        raise EvidenceError("STALE_SOURCE: exact archived R archive differs from receipt")
-    for key in ("source_marker_sha256", "source_tree_sha256", "installed_tree_sha256"):
-        if not isinstance(source.get(key), str) or len(source[key]) != 64:
-            raise EvidenceError(f"MISSING_PROVENANCE: source.{key}")
-    if source.get("julia_source_tree_sha256") != tree_digest(ROOT / "src"):
-        raise EvidenceError("STALE_JULIA_SOURCE: receipt does not bind the current Julia src tree")
-
-    fixture_by_id = {row["id"]: row["fixture"] for row in cases}
-    for case_id in manifest["required_case_ids"]:
-        path = receipt_dir / f"cell-{case_id}.toml"
-        if not path.is_file():
-            raise EvidenceError(f"MISSING_CELL_RECEIPT: {case_id}")
+    cells: dict[str, dict] = {}
+    for path in receipt_dir.glob("cell-*.toml"):
         cell = load_toml(path)
-        if cell.get("id") != case_id or cell.get("status") != "success":
-            raise EvidenceError(f"FAILED_CELL: {case_id}")
-        fixture = cell.get("fixture")
-        if fixture != fixture_by_id[case_id]:
-            raise EvidenceError(f"FIXTURE_BINDING_MISMATCH: {case_id}")
-        fixture_path = ROOT / fixture
-        frozen_case = next(row for row in cases if row["id"] == case_id)
-        if not fixture_path.is_file() or cell.get("fixture_sha256") != digest(fixture_path) or frozen_case["fixture_sha256"] != digest(fixture_path):
-            raise EvidenceError(f"STALE_FIXTURE: {case_id}")
-        if cell.get("reference_commit") != manifest["reference_commit"]:
-            raise EvidenceError(f"STALE_SOURCE: {case_id}")
-    return {"status": "PASS", "required_cells": len(manifest["required_case_ids"]),
-            "receipt_dir": str(receipt_dir), "manifest_sha256": digest(manifest_path)}
+        cell_id = cell.get("id")
+        if not isinstance(cell_id, str) or cell_id in cells:
+            raise EvidenceError("DUPLICATE_OR_BAD_CELL_FILE")
+        cells[cell_id] = cell
+    return _verify_loaded(run, cells, manifest, manifest_path, receipt_dir)
 
 
-def toml_run(run: dict) -> str:
-    source = run["source"]
-    ids = ", ".join(json.dumps(x) for x in run["required_ids"])
-    return (f'status = "{run["status"]}"\nsuccess_marker = "{run["success_marker"]}"\n'
-            f'exit_code = {run["exit_code"]}\nrequired_ids = [{ids}]\n[source]\n' +
-            "\n".join(f'{k} = "{v}"' for k, v in source.items()) + "\n")
+def _expect_error(fn, marker: str) -> None:
+    try:
+        fn()
+    except EvidenceError as exc:
+        assert marker in str(exc), (marker, exc)
+    else:
+        raise AssertionError(f"negative control was accepted: {marker}")
 
 
 def self_test(manifest_path: Path) -> None:
     draft = load_manifest(manifest_path)
     with tempfile.TemporaryDirectory() as tmp:
-        receipts = Path(tmp)
-        frozen_path = receipts / "frozen.toml"
-        frozen_text = manifest_path.read_text().replace('status = "DRAFT_INCOMPLETE_NOT_FROZEN"', 'status = "FROZEN"', 1)
+        tmpdir = Path(tmp)
+        frozen_path = tmpdir / "frozen.toml"
         all_ids = [row["id"] for row in draft["obligation"]]
+        frozen_text = manifest_path.read_text().replace('status = "DRAFT_INCOMPLETE_NOT_FROZEN"', 'status = "FROZEN"', 1)
         frozen_text = "required_case_ids = " + json.dumps(all_ids) + "\n" + frozen_text
         family_fixture = {row["id"]: row["fixture"] for row in draft["families"]}
-        # Synthetic receipt fixtures test the checker mechanics, never claim
-        # execution of these non-family obligations.
-        for id in all_ids:
-            fixture = family_fixture.get(id, draft["families"][0]["fixture"])
-            row = {"id": id, "fixture": fixture, "fixture_sha256": digest(ROOT / fixture),
-                   "reference_call": "synthetic verifier control", "julia_call": "synthetic verifier control",
-                   "model_contract": "synthetic only", "acceptance_rule": "synthetic only"}
-            frozen_text += "\n[[executable_case]]\n" + "\n".join(k + " = " + json.dumps(v) for k,v in row.items()) + "\n"
+        for case_id in all_ids:
+            fixture = family_fixture.get(case_id, draft["families"][0]["fixture"])
+            frozen_text += ("\n[[executable_case]]\n" +
+                            f'id = {json.dumps(case_id)}\nfixture = {json.dumps(fixture)}\n' +
+                            f'fixture_sha256 = {json.dumps(digest(ROOT / fixture))}\n' +
+                            'reference_call = "self-test"\njulia_call = "self-test"\n' +
+                            'model_contract = "self-test"\nacceptance_rule = "self-test"\n')
         frozen_path.write_text(frozen_text)
-        manifest = load_manifest(frozen_path)
-        sha = "a" * 64
-        good = {"status": "success", "success_marker": "CORE070_PARITY_SUCCESS", "exit_code": 0,
-                "required_ids": manifest["required_case_ids"],
-                "source": {"reference_commit": manifest["reference_commit"],
-                           "archive_sha256": manifest["reference_archive_sha256"],
-                           "namespace_sha256": manifest["reference_namespace_sha256"],
-                           "source_marker_sha256": sha, "source_tree_sha256": manifest["reference_source_tree_sha256"], "installed_tree_sha256": sha,
-                           "julia_source_tree_sha256": tree_digest(ROOT / "src")}}
-        (receipts / "run.toml").write_text(toml_run(good))
-        for row in manifest["executable_case"]:
-            fixture = ROOT / row["fixture"]
-            (receipts / f"cell-{row['id']}.toml").write_text(
-                f'id = "{row["id"]}"\nstatus = "success"\nfixture = "{row["fixture"]}"\n'
-                f'fixture_sha256 = "{digest(fixture)}"\nreference_commit = "{manifest["reference_commit"]}"\n')
-        assert verify(receipts, frozen_path)["status"] == "PASS"
-        smoke_only = receipts / "smoke-only.toml"
-        smoke_only.write_text(frozen_text.replace("required_case_ids = " + json.dumps(all_ids), "required_case_ids = " + json.dumps(draft["family_smoke_case_ids"]), 1))
-        try:
-            verify(receipts, smoke_only)
-        except EvidenceError as exc:
-            assert "INCOMPLETE_PROGRAMME" in str(exc)
-        else:
-            raise AssertionError("family-smoke-only manifest was promoted to programme evidence")
-        (receipts / "run.toml").write_text(toml_run({**good, "exit_code": 1}))
-        try:
-            verify(receipts, frozen_path)
-        except EvidenceError as exc:
-            assert "NONZERO_EXIT" in str(exc)
-        else:
-            raise AssertionError("nonzero exit accepted")
-        (receipts / "run.toml").write_text(toml_run(good))
-        (receipts / f"cell-{manifest['required_case_ids'][0]}.toml").unlink()
-        try:
-            verify(receipts, frozen_path)
-        except EvidenceError as exc:
-            assert "MISSING_CELL_RECEIPT" in str(exc)
-        else:
-            raise AssertionError("missing cell accepted")
-        try:
-            verify(receipts, manifest_path)
-        except EvidenceError as exc:
-            assert "DRAFT_CONTRACT" in str(exc)
-        else:
-            raise AssertionError("draft contract accepted")
-        try:
-            verify(receipts / "absent", frozen_path)
-        except EvidenceError as exc:
-            assert "MISSING_DEPENDENCY" in str(exc)
-        else:
-            raise AssertionError("missing dependency accepted")
-        empty_receipts = receipts / "empty"
-        empty_receipts.mkdir()
-        try:
-            verify(empty_receipts, frozen_path)
-        except EvidenceError as exc:
-            assert "MISSING_RECEIPT" in str(exc)
-        else:
-            raise AssertionError("missing run receipt accepted")
-        (receipts / "run.toml").write_text(toml_run({**good, "source": {**good["source"], "namespace_sha256": sha}}))
-        try:
-            verify(receipts, frozen_path)
-        except EvidenceError as exc:
-            assert "STALE_SOURCE" in str(exc)
-        else:
-            raise AssertionError("stale R source accepted")
-        (receipts / "run.toml").write_text(toml_run(good))
-        first = manifest["executable_case"][0]
-        (receipts / f"cell-{first['id']}.toml").write_text(
-            f'id = "{first["id"]}"\nstatus = "success"\nfixture = "{first["fixture"]}"\n'
-            f'fixture_sha256 = "{sha}"\nreference_commit = "{manifest["reference_commit"]}"\n')
-        try:
-            verify(receipts, frozen_path)
-        except EvidenceError as exc:
-            assert "STALE_FIXTURE" in str(exc)
-        else:
-            raise AssertionError("stale fixture accepted")
-        (receipts / f"cell-{first['id']}.toml").write_text(
-            f'id = "{first["id"]}"\nstatus = "success"\nfixture = "{first["fixture"]}"\n'
-            f'fixture_sha256 = "{digest(ROOT / first["fixture"])}"\nreference_commit = "{manifest["reference_commit"]}"\n')
-        stale_julia = {**good, "source": {**good["source"], "julia_source_tree_sha256": sha}}
-        (receipts / "run.toml").write_text(toml_run(stale_julia))
-        try:
-            verify(receipts, frozen_path)
-        except EvidenceError as exc:
-            assert "STALE_JULIA_SOURCE" in str(exc)
-        else:
-            raise AssertionError("stale Julia source accepted")
+        frozen = load_manifest(frozen_path)
+        cases = {row["id"]: row for row in frozen["executable_case"]}
+        execution = execution_inventory(cases, all_ids, frozen_path)
+        hashes = {row["path"]: row["sha256"] for row in execution["entries"]}
+        build = _oracle_build()
+        source = {
+            "reference_commit": frozen["reference_commit"], "namespace_sha256": frozen["reference_namespace_sha256"],
+            "source_tree_sha256": frozen["reference_source_tree_sha256"], "archive_sha256": frozen["reference_archive_sha256"],
+            "source_marker_sha256": build["marker_sha256"], "installed_tree_sha256": build["installed_tree_sha256"],
+            "oracle_build_receipt_sha256": digest(ORACLE_BUILD), "oracle_source_receipt_sha256": digest(ORACLE_SOURCE),
+            "julia_source_tree_sha256": tree_digest(ROOT / "src"), "julia_package_path": "/tmp/GLLVM/src/GLLVM.jl",
+            "julia_package_root": "/tmp/GLLVM", "julia_project_path": "/tmp/GLLVM/test/parity/Project.toml",
+            "julia_project_sha256": hashes["test/parity/Project.toml"], "julia_manifest_sha256": hashes.get("test/parity/Manifest.toml", "ABSENT"),
+            "julia_version": "1.10", "julia_machine": "selftest", "julia_threads": 1, "blas_threads": 1,
+            "rcall_version": "0.14", "r_version": "R", "r_home": "/R", "r_library_path": "/R/library/gllvmTMB",
+            "tmb_version": "1", "matrix_version": "1",
+        }
+        run_id = "self-test-run"
+        cells = {case_id: {"id": case_id, "run_id": run_id, "status": "success",
+                           "fixture": row["fixture"], "fixture_sha256": digest(ROOT / row["fixture"]),
+                           "assertions": {"passed": 1, "failed": 0, "errored": 0, "broken": 0},
+                           "execution_manifest_sha256": execution["manifest_sha256"],
+                           "contract_sha256": digest(frozen_path)} for case_id, row in cases.items()}
+        run = {"status": "success", "success_marker": "CORE070_PARITY_SUCCESS", "exit_code": 0,
+               "run_id": run_id, "requested_case_ids": all_ids, "completed_case_ids": all_ids,
+               "actual_assertions": len(cells), "source": source, "execution": execution,
+               "contract_sha256": digest(frozen_path), "cells": cells}
+        receipt_dir = tmpdir / "receipts"
+        receipt_dir.mkdir()
+        (receipt_dir / "build.json").write_bytes(ORACLE_BUILD.read_bytes())
+        (receipt_dir / "source.json").write_bytes(ORACLE_SOURCE.read_bytes())
+        assert _verify_loaded(run, cells, frozen, frozen_path, receipt_dir)["status"] == "PASS"
+        missing = deepcopy(cells); missing.pop(all_ids[0])
+        _expect_error(lambda: _verify_loaded(run, missing, frozen, frozen_path, receipt_dir), "MISSING_OR_EXTRA_CELL_RECEIPT")
+        skipped = deepcopy(cells); skipped[all_ids[0]]["assertions"]["broken"] = 1
+        _expect_error(lambda: _verify_loaded(run, skipped, frozen, frozen_path, receipt_dir), "INVALID_ASSERTIONS")
+        zero = deepcopy(cells); zero[all_ids[0]]["assertions"]["passed"] = 0
+        _expect_error(lambda: _verify_loaded(run, zero, frozen, frozen_path, receipt_dir), "INVALID_ASSERTIONS")
+        transplanted = deepcopy(cells); transplanted[all_ids[0]]["run_id"] = "other-run"
+        _expect_error(lambda: _verify_loaded(run, transplanted, frozen, frozen_path, receipt_dir), "TRANSPLANTED_CELL")
+        stale_helper = deepcopy(run); stale_helper["execution"]["entries"][0]["sha256"] = "0" * 64
+        _expect_error(lambda: _verify_loaded(stale_helper, cells, frozen, frozen_path, receipt_dir), "STALE_EXECUTION_INVENTORY")
+        bad_oracle = deepcopy(run); bad_oracle["source"]["source_marker_sha256"] = "0" * 64
+        _expect_error(lambda: _verify_loaded(bad_oracle, cells, frozen, frozen_path, receipt_dir), "STALE_ORACLE")
+        smoke_only = deepcopy(run); smoke_only["requested_case_ids"] = draft["family_smoke_case_ids"]
+        smoke_only["completed_case_ids"] = draft["family_smoke_case_ids"]
+        _expect_error(lambda: _verify_loaded(smoke_only, cells, frozen, frozen_path, receipt_dir), "INCOMPLETE_PROGRAMME")
+        _expect_error(lambda: _verify_loaded(run, cells, draft, manifest_path, receipt_dir), "DRAFT_CONTRACT")
     print("CORE070_EVIDENCE_SELFTEST_PASS")
 
 

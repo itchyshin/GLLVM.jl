@@ -10,6 +10,9 @@ using SHA
 using TOML
 using LinearAlgebra
 
+include(joinpath(@__DIR__, "core070_receipts.jl"))
+using .Core070Receipts
+
 const _CORE070_REFERENCE_COMMIT = "b4d5fee64def88bc768dda1f1f77c29b295edd86"
 const _CORE070_NAMESPACE_SHA256 = "9094613610789faab69c43195d3cfdafb2c7dfef284e6646b10dababa4fa132c"
 const _CORE070_SOURCE_TREE_SHA256 = "f83545faa6543dbb1f64d64bbf5a9498adcdf036cc3da5851f269912698b1cc7"
@@ -24,7 +27,74 @@ const _CORE070_FAMILY_SMOKE_IDS = [
     "NATIVE-17-MULTINOMIAL-FIXED",
 ]
 const _CORE070_SOURCE = Ref{Dict{String, Any}}()
+const _CORE070_RUN = Ref{Any}(nothing)
 _core070_required() = get(ENV, "CORE070_PARITY_REQUIRED", "0") == "1"
+const _CORE070_ORACLE_BUILD_RECEIPT = ".unlazy/core070-aghq/oracle-receipts/build.json"
+const _CORE070_ORACLE_SOURCE_RECEIPT = ".unlazy/core070-aghq/oracle-source/source.json"
+
+const _CORE070_FIXTURES = Dict(
+    "NATIVE-01-GAUSSIAN" => "test/parity/test_gaussian_parity.jl",
+    "NATIVE-02-BINOMIAL" => "test/parity/test_binomial_parity.jl",
+    "NATIVE-03-POISSON" => "test/parity/test_poisson_parity.jl",
+    "NATIVE-04-LOGNORMAL" => "test/parity/test_lognormal_parity.jl",
+    "NATIVE-05-GAMMA" => "test/parity/test_nox_dispersion_parity.jl",
+    "NATIVE-06-NB2" => "test/parity/test_negbin_parity.jl",
+    "NATIVE-07-TWEEDIE" => "test/parity/test_tweedie_parity.jl",
+    "NATIVE-08-BETA" => "test/parity/test_beta_parity.jl",
+    "NATIVE-09-BETABINOMIAL" => "test/parity/test_nox_dispersion_parity.jl",
+    "NATIVE-10-STUDENT" => "test/parity/test_studentt_parity.jl",
+    "NATIVE-11-TRUNCATED-POISSON" => "test/parity/test_truncated_poisson_parity.jl",
+    "NATIVE-12-TRUNCATED-NB2" => "test/parity/test_truncated_nbinom2_parity.jl",
+    "NATIVE-13-DELTA-LOGNORMAL" => "test/parity/test_delta_lognormal_parity.jl",
+    "NATIVE-14-DELTA-GAMMA" => "test/parity/test_delta_gamma_parity.jl",
+    "NATIVE-15-ORDINAL-PROBIT" => "test/parity/test_ordinal_probit_parity.jl",
+    "NATIVE-16-NB1" => "test/parity/test_nox_dispersion_parity.jl",
+    "NATIVE-17-MULTINOMIAL-FIXED" => "test/parity/test_multinomial_parity.jl",
+)
+
+_core070_root() = normpath(joinpath(@__DIR__, "..", ".."))
+
+function _core070_copy_oracle_receipts!(receipt_dir::AbstractString)
+    root = _core070_root()
+    for rel in (_CORE070_ORACLE_BUILD_RECEIPT, _CORE070_ORACLE_SOURCE_RECEIPT)
+        source = joinpath(root, rel)
+        isfile(source) || throw(ArgumentError("required oracle receipt is missing: $rel"))
+        cp(source, joinpath(receipt_dir, basename(source)); force = false)
+    end
+    return nothing
+end
+
+function core070_requested_case_ids()
+    raw = strip(get(ENV, "CORE070_PARITY_CASE_IDS", ""))
+    ids = isempty(raw) ? copy(_CORE070_FAMILY_SMOKE_IDS) : strip.(split(raw, ','))
+    any(isempty, ids) && throw(ArgumentError("CORE070_PARITY_CASE_IDS contains an empty case ID"))
+    length(ids) == length(unique(ids)) || throw(ArgumentError("CORE070_PARITY_CASE_IDS contains duplicate IDs"))
+    all(id -> id in _CORE070_FAMILY_SMOKE_IDS, ids) ||
+        throw(ArgumentError("CORE070_PARITY_CASE_IDS contains an unknown family-smoke ID"))
+    grouped = ("NATIVE-05-GAMMA", "NATIVE-09-BETABINOMIAL", "NATIVE-16-NB1")
+    selected_grouped = [id for id in ids if id in grouped]
+    isempty(selected_grouped) || length(selected_grouped) == length(grouped) ||
+        throw(ArgumentError("the grouped Gamma/NB1/BetaBinomial fixture must be requested as its exact three-case scope"))
+    return ids
+end
+
+function core070_case_requested(id::AbstractString)
+    run = _CORE070_RUN[]
+    return run !== nothing && String(id) in run.requested_case_ids
+end
+
+function _core070_execution_paths(requested::AbstractVector{<:AbstractString})
+    paths = String[
+        "src", "test/parity/core070_receipts.jl", "test/parity/parity_helpers.jl",
+        "test/parity/runparity.jl", "test/parity/r_health.R", "Project.toml", "test/Project.toml",
+        "test/parity/Project.toml", "docs/dev-log/core070/frozen-r070-contract.toml",
+    ]
+    append!(paths, (_CORE070_FIXTURES[id] for id in requested))
+    for manifest in ("Manifest.toml", "test/Manifest.toml", "test/parity/Manifest.toml")
+        isfile(joinpath(_core070_root(), manifest)) && push!(paths, manifest)
+    end
+    return unique(paths)
+end
 
 function _core070_receipt_dir()
     raw = get(ENV, "GLLVM_PARITY_RECEIPT_DIR", "")
@@ -88,9 +158,19 @@ function _core070_source_pin!()
         "source_marker_sha256" => _core070_sha256_file(marker),
         "source_tree_sha256" => source_tree,
         "installed_tree_sha256" => installed_tree,
+        "oracle_build_receipt_sha256" => _core070_sha256_file(joinpath(_core070_root(), _CORE070_ORACLE_BUILD_RECEIPT)),
+        "oracle_source_receipt_sha256" => _core070_sha256_file(joinpath(_core070_root(), _CORE070_ORACLE_SOURCE_RECEIPT)),
         "julia_source_tree_sha256" => _core070_tree_sha256(joinpath(@__DIR__, "..", "..", "src")),
         "julia_version" => string(VERSION),
         "julia_machine" => Sys.MACHINE,
+        "julia_package_path" => realpath(pathof(GLLVM)),
+        "julia_package_root" => realpath(Base.pkgdir(GLLVM)),
+        "julia_project_path" => realpath(Base.active_project()),
+        "julia_project_sha256" => _core070_sha256_file(Base.active_project()),
+        "julia_manifest_sha256" => begin
+            manifest = joinpath(dirname(Base.active_project()), "Manifest.toml")
+            isfile(manifest) ? _core070_sha256_file(manifest) : "ABSENT"
+        end,
         "julia_threads" => Threads.nthreads(),
         "blas_threads" => BLAS.get_num_threads(),
         "rcall_version" => string(Base.pkgversion(RCall)),
@@ -106,32 +186,68 @@ end
 
 function core070_start_run!()
     _core070_required() || return nothing
+    _CORE070_RUN[] === nothing || throw(ArgumentError("CORE-070 run was already started in this Julia process"))
+    requested = core070_requested_case_ids()
     source = _core070_source_pin!()
-    _core070_write_toml("run.toml", Dict{String, Any}(
-        "status" => "started", "exit_code" => -1,
-        "family_smoke_ids" => _CORE070_FAMILY_SMOKE_IDS, "source" => source,
-    ))
+    root = _core070_root()
+    inventory = execution_inventory(root, _core070_execution_paths(requested))
+    run = start_run!(_core070_receipt_dir();
+        requested_case_ids = requested, source = source, inventory = inventory,
+        contract_sha256 = _core070_sha256_file(joinpath(root, "docs/dev-log/core070/frozen-r070-contract.toml")))
+    try
+        _core070_copy_oracle_receipts!(run.dir)
+    catch err
+        abort_run!(run, err)
+        rethrow()
+    end
+    _CORE070_RUN[] = run
+    return nothing
 end
 
-function core070_record_cell!(id::AbstractString, fixture::AbstractString)
+function core070_execute_case!(id::AbstractString, fixture::AbstractString, thunk::Function)
+    _core070_required() || return thunk()
+    core070_case_requested(id) || return nothing
+    run = _CORE070_RUN[]
+    run === nothing && throw(ArgumentError("CORE-070 run provenance was not verified"))
+    testset = @testset "CORE-070 required cell: $id" begin
+        thunk()
+    end
+    counts = testset_counts(testset)
+    return record_case!(run, id, fixture;
+        passed = counts["passed"], failed = counts["failed"],
+        errored = counts["errored"], broken = counts["broken"])
+end
+
+function core070_execute_group!(ids::AbstractVector{<:AbstractString}, fixture::AbstractString, thunk::Function)
+    _core070_required() || return thunk()
+    active = [String(id) for id in ids if core070_case_requested(id)]
+    isempty(active) && return nothing
+    length(active) == length(ids) || throw(ArgumentError(
+        "a shared-fixture CORE-070 group must be requested as one complete scope"))
+    run = _CORE070_RUN[]
+    run === nothing && throw(ArgumentError("CORE-070 run provenance was not verified"))
+    testset = @testset "CORE-070 required fixture group: $(join(active, ", "))" begin
+        thunk()
+    end
+    counts = testset_counts(testset)
+    return [record_case!(run, id, fixture;
+                         passed = counts["passed"], failed = counts["failed"],
+                         errored = counts["errored"], broken = counts["broken"]) for id in active]
+end
+
+function core070_abort_run!(reason)
     _core070_required() || return nothing
-    id in _CORE070_FAMILY_SMOKE_IDS || throw(ArgumentError("unknown CORE-070 family-smoke cell: $id"))
-    isassigned(_CORE070_SOURCE) || throw(ArgumentError("CORE-070 run provenance was not verified"))
-    isfile(fixture) || throw(ArgumentError("fixture is missing: $fixture"))
-    _core070_write_toml("cell-$(id).toml", Dict{String, Any}(
-        "id" => id, "status" => "success", "fixture" => fixture,
-        "fixture_sha256" => _core070_sha256_file(fixture),
-        "reference_commit" => _CORE070_REFERENCE_COMMIT,
-    ))
+    run = _CORE070_RUN[]
+    run === nothing || abort_run!(run, reason)
+    return nothing
 end
 
 function core070_finish_run!()
     _core070_required() || return nothing
-    isassigned(_CORE070_SOURCE) || throw(ArgumentError("CORE-070 run provenance was not verified"))
-    _core070_write_toml("run.toml", Dict{String, Any}(
-        "status" => "success", "success_marker" => "CORE070_PARITY_SUCCESS", "exit_code" => 0,
-        "family_smoke_ids" => _CORE070_FAMILY_SMOKE_IDS, "source" => _CORE070_SOURCE[],
-    ))
+    run = _CORE070_RUN[]
+    run === nothing && throw(ArgumentError("CORE-070 run provenance was not verified"))
+    finish_run!(run)
+    return nothing
 end
 
 # Prefer the lane twin install when present (gllvmTMB @ origin/main SHA recorded
@@ -744,9 +860,11 @@ function fit_gllvmtmb_parity_tweedie(y::AbstractMatrix, K::Integer;
     _parity_require_gllvmtmb!()
     pv = p_fixed === nothing ? nothing : Float64(p_fixed)
     pg = String(power_group)
-    @rput y K p n pv pg
+    health_source = joinpath(@__DIR__, "r_health.R")
+    @rput y K p n pv pg health_source
 
     R"""
+    source(health_source, local = FALSE)
     trait_names <- paste0("t", seq_len(p))
     df_long <- data.frame(
         site  = factor(rep(seq_len(n), each = p)),
@@ -794,8 +912,6 @@ function fit_gllvmtmb_parity_tweedie(y::AbstractMatrix, K::Integer;
         stop("shared Tweedie adapter did not produce exactly one free power coordinate", call. = FALSE)
       opt_shared <- nlminb(start = obj_shared$par, objective = obj_shared$fn,
                            gradient = obj_shared$gr)
-      if (!identical(as.integer(opt_shared$convergence), 0L))
-        stop("shared Tweedie adapter did not converge", call. = FALSE)
       fit_r$opt <- opt_shared
       fit_r$tmb_obj <- obj_shared
       fit_r$tmb_params <- shared_params
@@ -814,7 +930,18 @@ function fit_gllvmtmb_parity_tweedie(y::AbstractMatrix, K::Integer;
         length(unique(round(p_report, 12))) != 1L)) {
       stop("shared Tweedie adapter report does not carry one common power", call. = FALSE)
     }
+    gradient_error <- ""
+    gradient <- tryCatch(as.numeric(fit_r$tmb_obj$gr(fit_r$opt$par)),
+      error = function(e) {
+        gradient_error <<- conditionMessage(e)
+        rep(NA_real_, length(fit_r$opt$par))
+      })
+    health <- core070_tweedie_health(fit_r$opt, gradient,
+      as.numeric(fit_r$report$phi_tweedie), p_report,
+      hessian_pd = if (is.null(fit_r$sdr$pdHess)) NA else fit_r$sdr$pdHess)
+    health$gradient_error <- gradient_error
     .gllvm_parity_tweedie <<- list(
+        health = health,
         ## The constraint adapter changes the objective. The public fit's
         ## cached objective_components belongs to the pre-adapter fit and
         ## must not be reused as logLik evidence for the tied-power model.
@@ -831,6 +958,18 @@ function fit_gllvmtmb_parity_tweedie(y::AbstractMatrix, K::Integer;
     """
 
     return (
+        health = (
+            passed = rcopy(Bool, R".gllvm_parity_tweedie$health$healthy"),
+            optimizer_code = rcopy(Int, R".gllvm_parity_tweedie$health$optimizer_code"),
+            optimizer_message = rcopy(String, R"paste(.gllvm_parity_tweedie$health$optimizer_message, collapse='; ')"),
+            gradient_max_scaled = rcopy(Float64, R".gllvm_parity_tweedie$health$gradient_max_scaled"),
+            finite_parameters = rcopy(Bool, R".gllvm_parity_tweedie$health$finite_parameters"),
+            finite_report = rcopy(Bool, R".gllvm_parity_tweedie$health$finite_report"),
+            n_free = rcopy(Int, R".gllvm_parity_tweedie$health$n_free"),
+            n_power_free = rcopy(Int, R".gllvm_parity_tweedie$health$n_power_free"),
+            hessian_diagnostic = rcopy(String, R".gllvm_parity_tweedie$health$hessian_diagnostic"),
+            gradient_error = rcopy(String, R".gllvm_parity_tweedie$health$gradient_error"),
+        ),
         logLik = rcopy(Float64, R".gllvm_parity_tweedie$logL"),
         objective = rcopy(Float64, R".gllvm_parity_tweedie$objective"),
         converged = rcopy(Bool, R".gllvm_parity_tweedie$converged"),

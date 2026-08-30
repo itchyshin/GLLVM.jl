@@ -34,6 +34,8 @@ end
 # ── Wire the local GLLVM package ─────────────────────────────────────────────
 # In CI or isolated runner, develop GLLVM if not already pointing to root
 using Pkg
+using GLLVM
+using Test
 
 # ── Try to load RCall — optional skip only; required mode fails ──────────────
 try
@@ -65,57 +67,62 @@ end
 # sigma_eps), and its logLik carries the −Σ log y Jacobian on both sides.
 # Do not narrate as “full family parity” (named shared-φ / logit ordinal differ).
 include(joinpath(@__DIR__, "parity_helpers.jl"))
-core070_start_run!()
-include(joinpath(@__DIR__, "test_gaussian_parity.jl"))
-core070_record_cell!("NATIVE-01-GAUSSIAN", "test/parity/test_gaussian_parity.jl")
-include(joinpath(@__DIR__, "test_binomial_parity.jl"))
-core070_record_cell!("NATIVE-02-BINOMIAL", "test/parity/test_binomial_parity.jl")
-include(joinpath(@__DIR__, "test_poisson_parity.jl"))
-core070_record_cell!("NATIVE-03-POISSON", "test/parity/test_poisson_parity.jl")
-include(joinpath(@__DIR__, "test_negbin_parity.jl"))
-core070_record_cell!("NATIVE-06-NB2", "test/parity/test_negbin_parity.jl")
-include(joinpath(@__DIR__, "test_beta_parity.jl"))
-core070_record_cell!("NATIVE-08-BETA", "test/parity/test_beta_parity.jl")
-include(joinpath(@__DIR__, "test_ordinal_probit_parity.jl"))
-core070_record_cell!("NATIVE-15-ORDINAL-PROBIT", "test/parity/test_ordinal_probit_parity.jl")
-include(joinpath(@__DIR__, "test_lognormal_parity.jl"))
-core070_record_cell!("NATIVE-04-LOGNORMAL", "test/parity/test_lognormal_parity.jl")
-include(joinpath(@__DIR__, "test_truncated_poisson_parity.jl"))
-core070_record_cell!("NATIVE-11-TRUNCATED-POISSON", "test/parity/test_truncated_poisson_parity.jl")
-# Rung A (2026-08-24): no-X arms for the three per-trait-dispersion families that
-# previously had twin Δ evidence only through the +X cohort — Gamma (fid 4),
-# NB1 (fid 15), BetaBinomial (fid 8). Grouped fitters, never shared-dispersion.
-include(joinpath(@__DIR__, "test_nox_dispersion_parity.jl"))
-core070_record_cell!("NATIVE-05-GAMMA", "test/parity/test_nox_dispersion_parity.jl")
-core070_record_cell!("NATIVE-16-NB1", "test/parity/test_nox_dispersion_parity.jl")
-core070_record_cell!("NATIVE-09-BETABINOMIAL", "test/parity/test_nox_dispersion_parity.jl")
-# Multinomial (twin fid 16) uses its OWN oracle helper: categorical factor response
-# and no latent(...) term (Julia v1 is fixed-effects softmax only). Not a clone of the
-# shared numeric-matrix shape.
-include(joinpath(@__DIR__, "test_multinomial_parity.jl"))
-core070_record_cell!("NATIVE-17-MULTINOMIAL-FIXED", "test/parity/test_multinomial_parity.jl")
-# truncated_nbinom2 (twin fid 11): per-trait dispersion, and REQUIRES the observed
-# Laplace curvature (hessian=:observed, the default since 2026-08-24) — the NB2
-# curvature is y-dependent, so the Fisher weight is a different objective from TMB.
-include(joinpath(@__DIR__, "test_truncated_nbinom2_parity.jl"))
-core070_record_cell!("NATIVE-12-TRUNCATED-NB2", "test/parity/test_truncated_nbinom2_parity.jl")
-include(joinpath(@__DIR__, "test_x_covariate_parity.jl"))
-include(joinpath(@__DIR__, "test_species_x_parity.jl"))
-# delta_lognormal / delta_gamma (twin fid 12/13): the fixture pins the shared
-# predictor identity. Both Julia delta fitters now expose `disp_group`; this
-# record therefore binds only the fixture's selected grouping rather than
-# describing grouped-dispersion support as unavailable.
-include(joinpath(@__DIR__, "test_delta_lognormal_parity.jl"))
-core070_record_cell!("NATIVE-13-DELTA-LOGNORMAL", "test/parity/test_delta_lognormal_parity.jl")
-include(joinpath(@__DIR__, "test_delta_gamma_parity.jl"))
-core070_record_cell!("NATIVE-14-DELTA-GAMMA", "test/parity/test_delta_gamma_parity.jl")
-# Student-t (twin fid 9): preserve the original estimated-ν, per-trait-scale
-# target and its absolute likelihood plus both-engine health gates. The fixed-ν
-# control and interior/near-Gaussian diagnostics do not replace that target.
-include(joinpath(@__DIR__, "test_studentt_parity.jl"))
-core070_record_cell!("NATIVE-10-STUDENT", "test/parity/test_studentt_parity.jl")
-# Tweedie (twin fid 6): compound Poisson–Gamma with power p ∈ (1, 2)
-# and per-trait dispersion φ.
-include(joinpath(@__DIR__, "test_tweedie_parity.jl"))
-core070_record_cell!("NATIVE-07-TWEEDIE", "test/parity/test_tweedie_parity.jl")
-core070_finish_run!()
+
+function run_required_family_cell!(id::AbstractString, fixture::AbstractString)
+    core070_execute_case!(id, fixture, () -> include(joinpath(@__DIR__, basename(fixture))))
+end
+
+function run_required_family_group!(ids::AbstractVector{<:AbstractString}, fixture::AbstractString)
+    core070_execute_group!(ids, fixture, () -> include(joinpath(@__DIR__, basename(fixture))))
+end
+
+function run_required_family_smoke!()
+    # This runner is deliberately only the 17 required family-smoke cells.  The
+    # broader developer cohort below is not programme evidence and its optional
+    # skips cannot appear in a CORE-070 receipt.
+    @testset "CORE-070 required family smoke" begin
+        run_required_family_cell!("NATIVE-01-GAUSSIAN", "test/parity/test_gaussian_parity.jl")
+        run_required_family_cell!("NATIVE-02-BINOMIAL", "test/parity/test_binomial_parity.jl")
+        run_required_family_cell!("NATIVE-03-POISSON", "test/parity/test_poisson_parity.jl")
+        run_required_family_cell!("NATIVE-06-NB2", "test/parity/test_negbin_parity.jl")
+        run_required_family_cell!("NATIVE-08-BETA", "test/parity/test_beta_parity.jl")
+        run_required_family_cell!("NATIVE-15-ORDINAL-PROBIT", "test/parity/test_ordinal_probit_parity.jl")
+        run_required_family_cell!("NATIVE-04-LOGNORMAL", "test/parity/test_lognormal_parity.jl")
+        run_required_family_cell!("NATIVE-11-TRUNCATED-POISSON", "test/parity/test_truncated_poisson_parity.jl")
+        run_required_family_group!(["NATIVE-05-GAMMA", "NATIVE-16-NB1", "NATIVE-09-BETABINOMIAL"],
+                                   "test/parity/test_nox_dispersion_parity.jl")
+        run_required_family_cell!("NATIVE-17-MULTINOMIAL-FIXED", "test/parity/test_multinomial_parity.jl")
+        run_required_family_cell!("NATIVE-12-TRUNCATED-NB2", "test/parity/test_truncated_nbinom2_parity.jl")
+        run_required_family_cell!("NATIVE-13-DELTA-LOGNORMAL", "test/parity/test_delta_lognormal_parity.jl")
+        run_required_family_cell!("NATIVE-14-DELTA-GAMMA", "test/parity/test_delta_gamma_parity.jl")
+        run_required_family_cell!("NATIVE-10-STUDENT", "test/parity/test_studentt_parity.jl")
+        run_required_family_cell!("NATIVE-07-TWEEDIE", "test/parity/test_tweedie_parity.jl")
+    end
+end
+
+function run_optional_developer_parity!()
+    for file in (
+        "test_gaussian_parity.jl", "test_binomial_parity.jl", "test_poisson_parity.jl",
+        "test_negbin_parity.jl", "test_beta_parity.jl", "test_ordinal_probit_parity.jl",
+        "test_lognormal_parity.jl", "test_truncated_poisson_parity.jl",
+        "test_nox_dispersion_parity.jl", "test_multinomial_parity.jl",
+        "test_truncated_nbinom2_parity.jl", "test_x_covariate_parity.jl",
+        "test_species_x_parity.jl", "test_delta_lognormal_parity.jl",
+        "test_delta_gamma_parity.jl", "test_studentt_parity.jl", "test_tweedie_parity.jl",
+    )
+        include(joinpath(@__DIR__, file))
+    end
+end
+
+if required
+    core070_start_run!()
+    try
+        run_required_family_smoke!()
+        core070_finish_run!()
+    catch err
+        core070_abort_run!(err)
+        rethrow()
+    end
+else
+    run_optional_developer_parity!()
+end

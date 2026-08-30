@@ -3,9 +3,8 @@
 #
 #   julia --project=. -e 'using GLLVM; include("test/test_phylo_branch_re.jl")'
 #
-# NOT wired into runtests.jl (matching the constraint not to touch runtests.jl).
-# Pulls the new src files in directly, after `using GLLVM`, exactly as
-# test_relaxed_clock.jl / test_edge_incidence.jl do.
+# Included by runtests.jl and also runnable standalone. Implementation loads
+# through GLLVM; this file does not redefine the source module.
 
 using GLLVM, Test, Random, LinearAlgebra, SparseArrays, Statistics
 
