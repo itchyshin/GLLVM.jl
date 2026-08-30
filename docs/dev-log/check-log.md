@@ -15916,3 +15916,6 @@ unpaid. No numerical source changes, outer optimization or campaign.
 -Remaining5 unchanged cases109.72s; all6 total79pass5fail, baselineprobit/Bernoulli14/14. Allnative health/likelihood/trials/count/saturation pass; Rrawgradient solefailure in5.
 -Predeclareduniform nlminb publicrefinement all6 took71.59s,2PASS4FAIL:3varying-trial gradientsstill>1e-4; alreadyhealthyprobit/Bernoulli becomescode1. Exactdata/RNG/defaultresult replay and data/map/names verified. No blanketrefinement adoption orfieldmixing.
 -Source/receipt verifier5negativesPASS; obligationsmarkedPARTIAL, no fullclaim. Next preservealreadyhealthywholefits and qualify boundedfurtherpublicoptimizer forvarying-trial residuals. FullmanifestDRAFT/M1PARTIAL, reviewunpaid.
+
+## 2026-08-30 — Binomial whole-fit stopping diagnosis
+Totoro77.26s bounded run:3Bernoulli PASS,3varying FAIL R health. rel.tol1e-14 leaves varying parameters/likelihood/gradient unchanged and returns singular convergence code1. All six finite-difference/likelihood/native-health checks pass, analytic-FDmax4.19e-7. Baseline1of6 and priorcompanion2of6 unchanged. Evidence verifier5negativesPASS; Unlazy1met/2unmet. Next curvature/step diagnosis, not further blind tolerance changes. M1PARTIAL, RoseNOTRUN. See after-task/2026-08-30-core070-binomial-stopping.md.

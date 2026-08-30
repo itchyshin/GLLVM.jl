@@ -1,0 +1,85 @@
+{
+  "status": "PARTIAL_NOT_DEFAULT_PROMOTION",
+  "cases": [
+    {
+      "id": "BINOMIAL-LOGIT-BERNOULLI",
+      "attempts": 2,
+      "gradient": 1.449009218270833e-05,
+      "code": 0,
+      "fd_delta": 2.561467010511759e-07,
+      "failures": []
+    },
+    {
+      "id": "BINOMIAL-LOGIT-VARYING",
+      "attempts": 3,
+      "gradient": 0.00013919129732020696,
+      "code": 1,
+      "fd_delta": 1.805740014459989e-07,
+      "failures": [
+        "whole_fit_health"
+      ]
+    },
+    {
+      "id": "BINOMIAL-PROBIT-BERNOULLI",
+      "attempts": 1,
+      "gradient": 7.539933155849277e-05,
+      "code": 0,
+      "fd_delta": 4.1887936452766725e-07,
+      "failures": []
+    },
+    {
+      "id": "BINOMIAL-PROBIT-VARYING",
+      "attempts": 3,
+      "gradient": 0.00011172546946114359,
+      "code": 1,
+      "fd_delta": 1.6511622447089346e-07,
+      "failures": [
+        "whole_fit_health"
+      ]
+    },
+    {
+      "id": "BINOMIAL-CLOGLOG-BERNOULLI",
+      "attempts": 2,
+      "gradient": 4.162577602517814e-05,
+      "code": 0,
+      "fd_delta": 2.5440901896267237e-07,
+      "failures": []
+    },
+    {
+      "id": "BINOMIAL-CLOGLOG-VARYING",
+      "attempts": 3,
+      "gradient": 0.0001210352022838479,
+      "code": 1,
+      "fd_delta": 2.656835395575852e-07,
+      "failures": [
+        "whole_fit_health"
+      ]
+    }
+  ],
+  "artifacts": {
+    ".unlazy/core070-aghq/binomial-stopping-01/stopping-readback.tar": "22c45af4586fb0f99dcc858e6027fa878fa8a781c2ad7e073cb1da7764a4a54c",
+    ".unlazy/core070-aghq/binomial-stopping-01/launch.py": "a40cd0b060ade3332d42bbfeeeced18b6eb0975f916aea096b4c0bb7cdd0adef",
+    ".unlazy/core070-aghq/binomial-stopping-01/stopping-plan.json": "e1fec7613c22d2e7c10dbd1bc0117f1ef93db948ccdc83fef6409107eb640d81",
+    ".unlazy/core070-aghq/binomial-stopping-01/stopping-launch.log": "ceaadbcbd56286f17bc0a327e211e0eaee3ce5f157e087ee0ce1e9f7bd44ede7",
+    ".unlazy/core070-aghq/binomial-stopping-01/stopping-process/00.log": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+    ".unlazy/core070-aghq/binomial-stopping-01/stopping-process/01.log": "6d208343ea3d3664aeae8d12b543f0db4373cd6fe272cdae29768bfae44faf82",
+    ".unlazy/core070-aghq/binomial-stopping-01/stopping-process/03.log": "dae2c50ed101a69c25aed47e93848cf696d8400844ebed4f9b7d3da9ea281dea",
+    ".unlazy/core070-aghq/binomial-stopping-01/stopping-process/02.log": "14e34e2f0e550d8e163ea5aa26e51bfcd40f44cf0c8a17c409392221d97818c0",
+    ".unlazy/core070-aghq/binomial-stopping-01/stopping-process/execution-plan.json": "e1fec7613c22d2e7c10dbd1bc0117f1ef93db948ccdc83fef6409107eb640d81",
+    ".unlazy/core070-aghq/binomial-stopping-01/stopping-process/06.log": "14e34e2f0e550d8e163ea5aa26e51bfcd40f44cf0c8a17c409392221d97818c0",
+    ".unlazy/core070-aghq/binomial-stopping-01/stopping-process/events.log": "ceaadbcbd56286f17bc0a327e211e0eaee3ce5f157e087ee0ce1e9f7bd44ede7",
+    ".unlazy/core070-aghq/binomial-stopping-01/stopping-process/07.log": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+    ".unlazy/core070-aghq/binomial-stopping-01/stopping-process/05.log": "70ed1b3a0012c3e725469d33ba7d126f49a93e25326bc42dc54803fd5a7078e0",
+    ".unlazy/core070-aghq/binomial-stopping-01/stopping-process/process-receipt.json": "2430d5ad9caf591d28f3b270f91aa455af3995f78ed02acdd9b49b7be8a9a343",
+    ".unlazy/core070-aghq/binomial-stopping-01/stopping-process/04.log": "14e34e2f0e550d8e163ea5aa26e51bfcd40f44cf0c8a17c409392221d97818c0",
+    ".unlazy/core070-aghq/binomial-stopping-01/stopping-process/progress.json": "662436dc0e876a4765a536915f820c41e68dbb305eef7095d3a46d0d718ce063",
+    ".unlazy/core070-aghq/binomial-stopping-01/stopping/BINOMIAL-LOGIT-BERNOULLI/result.toml": "6df591a7d43f689e57debc0a34e03a07c88c959a91e006723a7bc682c5ab1894",
+    ".unlazy/core070-aghq/binomial-stopping-01/stopping/BINOMIAL-PROBIT-BERNOULLI/result.toml": "75ca55d263a04a6c0b522516961d0e64d2941af6e33cc5b675de17ef8eb4b81d",
+    ".unlazy/core070-aghq/binomial-stopping-01/stopping/BINOMIAL-LOGIT-VARYING/result.toml": "e81a73f27f6b1255abfb6fae78f6cca4aa80a1d41bb3caae0d4587178ebd11dc",
+    ".unlazy/core070-aghq/binomial-stopping-01/stopping/BINOMIAL-CLOGLOG-BERNOULLI/result.toml": "36db0697a1aee009463e600f5567f25747c558858380b216b5afbf07fa78862f",
+    ".unlazy/core070-aghq/binomial-stopping-01/stopping/BINOMIAL-PROBIT-VARYING/result.toml": "560cd228842e089845f20abb6fabc4af463d61599635baa4f01ce3fbcdd36c35",
+    ".unlazy/core070-aghq/binomial-stopping-01/stopping/BINOMIAL-CLOGLOG-VARYING/result.toml": "81066c85fd5296472952aab0aea76e7fe5b847c6c381ed6a95c1c0acdf43d44d",
+    "tools/core070_binomial_optimizer.jl": "c3e102bd57b7736932251975aa2521aa517d3791d065bfa0310efcad72cf037e",
+    "docs/dev-log/core070/binomial-stopping-policy.toml": "7729eda7fbba6633cb8e9192ede0aa869175f92d3524689d7cd631ca000e2c18"
+  }
+}

@@ -554,3 +554,8 @@ No production B dispatch, full suite or long campaign was launched.
 -Predeclareduniform nlminb publicrefinement all6 took71.59s,2PASS4FAIL:3varying-trial gradientsstill>1e-4; alreadyhealthyprobit/Bernoulli becomescode1. Exactdata/RNG/defaultresult replay and data/map/names verified. No blanketrefinement adoption orfieldmixing.
 -Source/receipt verifier5negativesPASS; obligationsmarkedPARTIAL, no fullclaim. Next preservealreadyhealthywholefits and qualify boundedfurtherpublicoptimizer forvarying-trial residuals. FullmanifestDRAFT/M1PARTIAL, reviewunpaid.
 - Mission Control Julia-only correctioneb9376ac6f32b5f78481cf3eb50bfe5611b17c96 locally committed, servedHTTP200/readbackPASS, Rfields unchanged. Lease released; Unlazy1met/2unmet freshlyreverified.
+
+## 2026-08-30 — Whole-fit stopping diagnostic
+-Totoro77.26s terminalFAIL;3Bernoulli PASS,3varying FAIL. Default1of6 and prioruniform2of6 immutable. Tighter1e-14 nlminb does notmove varying parameters and returns code1 singular convergence. Not proof of Hessian singularity. Allsix nativehealth/likelihood/FD checks pass; analyticFDmax4.19e-7. Five whole-fit negative controlsPASS, Unlazy1met/2unmet.
+-Next inspect curvature and solver step at retained parameters before another control change; no enginebug established. All raw attempts retained binomial-stopping-01. FullmanifestDRAFT/M1PARTIAL; independentpanel and otherfamilyhealth unpaid. No newchildren, push, merge, cleanup or protectedlane writes.
+- Mission Control Julia-only correction32e520022040d1d348dfa70840e3c1e60362a0c8 locally committed; servedHTTP200/readbackPASS, Rfields unchanged.
