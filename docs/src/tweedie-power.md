@@ -2,9 +2,9 @@
 
 For a Tweedie response, GLLVM.jl uses
 
-\[
+```math
 \operatorname{Var}(Y_{ts})=\phi_{g(t)}\mu_{ts}^{p_t},\qquad 1 < p_t < 2,
-\]
+```
 
 with a log link and the compound Poisson-Gamma likelihood. The dispersion group
 and the power group describe different parameters: `group` selects the

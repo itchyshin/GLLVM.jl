@@ -6,6 +6,15 @@ Notable changes to GLLVM.jl. Style mirrors `gllvmTMB`'s NEWS: status labels
 ## GLLVM.jl (development version)
 
 ### Changed
+- **Local development candidate:** grouped Tweedie distinguishes fixed common,
+  shared estimated and per-species estimated power; `TweediePerTraitPowerFit`
+  stores the latter. Student fits record whether degrees of freedom were estimated
+  so information-criterion parameter counts are correct. These changes do not
+  establish full Core070 parity: the original Student-t R health gate remains
+  failed, and final candidate requalification is pending.
+- Branch-RE uses an equivalent dense marginal fallback when the auxiliary sparse
+  precision is numerically unsafe. This preserves valid marginal models without
+  a ridge, at a possible O(p²) memory cost reported by a warning.
 - **CHANGED:** Gamma's Laplace **log-determinant now uses the observed
   conditional curvature** `α·y/μ`, matching TMB and therefore `gllvmTMB`.
   It previously used the Fisher (expected) weight — the constant `α`, which is

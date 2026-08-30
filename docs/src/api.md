@@ -435,6 +435,7 @@ OrdinalPerTraitFit
 OrdinalPerTraitCovFit
 TweedieFit
 TweedieGroupedFit
+TweediePerTraitPowerFit
 StudentTFit
 LognormalFit
 MultinomialFit

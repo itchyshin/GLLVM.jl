@@ -50,7 +50,7 @@ distribution used as a marker (the GLM.jl convention):
 - `COMPoisson()` → [`fit_compoisson_gllvm`](@ref) — Laplace marginal (CMP counts;
   under- or over-dispersion). The marker's `ν` field is a tag payload — it is
   never read here; `ν` is always estimated. This is the opposite of
-  `StudentTFamily(ν)`, whose degrees of freedom are structural and held fixed.
+  `StudentTFamily(ν)`, where numeric degrees of freedom are fixed and `nothing` requests estimation.
 - `OrderedBeta()` → [`fit_ordered_beta_gllvm`](@ref) — Laplace marginal
   (proportions / cover with point masses at 0 and 1). The marker's `c0`, `c1`,
   and `φ` fields are tag payloads — they are never read here; all three are
@@ -230,8 +230,8 @@ _fit_gllvm(::Beta,     Y::AbstractMatrix; kwargs...) = fit_beta_gllvm(Y; kwargs.
 _fit_gllvm(::Ordinal,  Y::AbstractMatrix; kwargs...) = fit_ordinal_gllvm_pertrait(Y; kwargs...)
 _fit_gllvm(::Gamma,    Y::AbstractMatrix; kwargs...) = fit_gamma_gllvm(Y; kwargs...)
 _fit_gllvm(::Exponential, Y::AbstractMatrix; kwargs...) = fit_exponential_gllvm(Y; kwargs...)
-# `StudentTFamily` is not a zero-payload marker. The FIXED degrees of freedom `ν`
-# is STRUCTURAL — it defines the likelihood and is not estimated — so it travels on
+# `StudentTFamily` carries the degrees-of-freedom policy: numeric ν is fixed;
+# nothing requests estimation. This model control travels on
 # the family instance (as `ZIB`'s trials count does) and is forwarded as `nu`. A
 # separate `nu` keyword would silently win over the marker (Julia resolves a
 # duplicated keyword in favour of the splatted one), so it is rejected rather than

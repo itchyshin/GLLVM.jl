@@ -5,6 +5,15 @@ All notable changes to GLLVM.jl are documented here.
 ## Unreleased
 
 ### Changed
+- **Local development candidate:** grouped Tweedie distinguishes fixed common,
+  shared estimated and per-species estimated power; `TweediePerTraitPowerFit`
+  stores the latter. Student fits record whether degrees of freedom were estimated
+  so information-criterion parameter counts are correct. These changes do not
+  establish full Core070 parity: the original Student-t R health gate remains
+  failed, and final candidate requalification is pending.
+- Branch-RE uses an equivalent dense marginal fallback when the auxiliary sparse
+  precision is numerically unsafe. This preserves valid marginal models without
+  a ridge, at a possible O(p²) memory cost reported by a warning.
 - **AGHQ Stage-1a site evaluator now threads the Fisher-vs-observed curvature
   selector (unpark Slice 0/1, 2026-08-28)**: `aghq_stage1a_loglik_site`
   (`src/families/aghq_grid.jl`, internal, no public `aghq=` surface) gains a

@@ -26,6 +26,8 @@ makedocs(;
         "Guides & Methods" => [
             "Mathematical Model"       => "model.md",
             "Response Families"        => "response-families.md",
+            "Tweedie Power"            => "tweedie-power.md",
+            "Student-t Parity Limits"  => "studentt-parity.md",
             "Working with a Fit"       => "working-with-a-fit.md",
             "Covariance & Correlation" => "covariance-correlation.md",
             "Structured Dependence"    => "structured-dependence.md",

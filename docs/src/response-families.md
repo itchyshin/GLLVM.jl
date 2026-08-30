@@ -534,11 +534,9 @@ fit = fit_gllvm(Yp; family = Gamma(), K = 2)   # Yp > 0; shared α (no-X)
       expected to fire for this family.
     - Binomial/**cloglog** is explicitly excluded and stays `:fisher` — the
       diagnosed Laplace saturation pathology above, not a pending flip.
-    - The Tweedie **grouped** route (`fit_tweedie_gllvm_grouped`, per-species
-      dispersion) has no `hessian` selector at all and stays unconditionally
-      Fisher — a recorded scope limit, not fixed by this change; with `G = 1`
-      it therefore no longer matches the shared route's *default* (it matches
-      `hessian = :fisher` on the shared route).
+    - The Tweedie **grouped** route accepts `hessian = :observed` (default)
+      or `:fisher`. This selects the Laplace curvature; the mode-search policy
+      stays separate. Comparisons must use the same curvature and power model.
 
 ### Lognormal — `Lognormal()`
 
@@ -600,13 +598,15 @@ unsupported.
 ### Tweedie — `fit_tweedie_gllvm`
 
 Compound Poisson–Gamma for biomass / abundance with true zeros: an exact point
-mass at 0 plus a positive continuous part, `Var = φ μ^p` with `1 < p < 2`. Both
-the dispersion `φ` and the power `p` are estimated; there is no way to pin the
-power at present (the R twin's `tweedie(p = )`).
+mass at 0 plus a positive continuous part, `Var = φ μ^p` with `1 < p < 2`. The shared
+`fit_tweedie_gllvm` estimates dispersion and power. The grouped fitter also
+supports fixed common power and per-species estimated power:
 
 ```julia
 fit = fit_tweedie_gllvm(Y; K = 2)                    # Y ≥ 0; φ and p estimated
 fit = fit_tweedie_gllvm_grouped(Y; K = 2)            # φ per species, shared p
+fit = fit_tweedie_gllvm_grouped(Y; K = 2, power = 1.5) # fixed common p
+fit = fit_tweedie_gllvm_grouped(Y; K = 2, power_group = :species) # p per species
 ```
 
 `φ` and the power sit on a nearly flat joint ridge, so the reported `converged`
@@ -620,11 +620,14 @@ The same contract applies to [`fit_tweedie_gllvm_grouped`](@ref) (and therefore
 to the already-shipped `fit_gllvm(...; disp_group = :species)` route). The
 bare-marker `fit_gllvm` admit is still closed.
 
+See [Tweedie power contracts](tweedie-power.md) for parameter counts and the
+distinction between a shared reference constraint and the R default model.
+
 ### Student-t — `StudentTFamily(ν)`
 
 ```julia
 fit = fit_gllvm(Y; family = StudentTFamily(4.0), K = 2)   # heavy-tailed continuous
-fit = fit_gllvm(Y; family = StudentTFamily(), K = 2)      # same, ν = 4 by default
+fit = fit_gllvm(Y; family = StudentTFamily(), K = 2)      # estimate ν (per-species default)
 ```
 
 An outlier-robust drop-in for `Normal()` on the identity link: the
@@ -633,18 +636,22 @@ bounds the influence of extreme cells — the score `(ν+1)r/(νσ² + r²)` *de
 in the residual `r`, so a handful of gross outliers barely move `β̂`, where a
 Gaussian fit would chase them. As `ν → ∞` the family tends to `Normal(η, σ²)`.
 
-The two marker fields play different roles. The degrees of freedom `ν` is
-**structural**: it is held FIXED rather than estimated (estimating it jointly
-needs a second auxiliary, which the scalar-auxiliary path does not support), so it
-travels on the marker and `fit_gllvm` forwards it to
-[`fit_studentt_gllvm`](@ref)'s `nu`. Passing `nu` as a separate keyword alongside
-the marker is an error rather than a silent override. The scale `σ` is a **tag
+The two marker fields play different roles. A numeric `ν` fixes the degrees
+of freedom; `StudentTFamily()` carries `ν = nothing` and estimates it.
+`fit_gllvm` selects per-species scales and degrees of freedom for that default.
+The named fitter also supports `disp_group = :shared`. Set degrees of freedom
+on the family marker when using `fit_gllvm`; use the `nu` keyword on
+[`fit_studentt_gllvm`](@ref). The scale `σ` is a **tag
 payload** — it is always estimated (returned as `fit.σ`), so `StudentTFamily(4.0)`
 and `StudentTFamily(4.0, 9.0)` give the same fit; seed it with `σ_init` on the
 named fitter instead.
 
 Student-t is a **no-X** surface: `fit_gllvm` and `gllvm(@formula(y ~ 1), …)` are
-admitted, but covariates, `disp_group`, and row effects are not.
+admitted. Shared and per-species dispersion are supported; this does not
+establish arbitrary dispersion-group, covariate or row-effect support. The fit
+records `estimated_nu`, so AIC counts free degrees-of-freedom parameters only
+when they were estimated. See [Student-t parity limits](studentt-parity.md):
+the original required R fixture still fails its optimizer-health gate.
 
 ### Conway–Maxwell–Poisson — `COMPoisson()`
 
@@ -658,8 +665,8 @@ over-dispersion via the exponent `ν` (`ν = 1` ⇒ Poisson, `ν > 1` ⇒
 underdispersion, `ν < 1` ⇒ overdispersion). The named fitter
 [`fit_compoisson_gllvm`](@ref) always estimates `ν` (seeded by `ν_init`,
 default 1). The marker's `ν` field is a **tag payload** — it is never read —
-the opposite of [`StudentTFamily`](@ref), whose `ν` is structural and held
-fixed. `COMPoisson()` is the usual call; `COMPoisson(9.0)` gives the same fit.
+unlike [`StudentTFamily`](@ref), where a numeric `ν` is a fixed model control
+and `nothing` requests estimation. `COMPoisson()` is the usual call; `COMPoisson(9.0)` gives the same fit.
 
 COM-Poisson is Julia-forward (the twin has no CMP family) and a **no-X**
 surface: `fit_gllvm` and `gllvm(@formula(y ~ 1), …)` are admitted, but

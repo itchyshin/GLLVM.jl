@@ -112,10 +112,14 @@ with sparse random-effect design matrices. `GLLVM.jl` solves a
 - One-part GLM response families via a Laplace marginal: Poisson, negative binomial
   (NB2 and NB1, linear variance), Binomial / Bernoulli, beta-binomial
   (overdispersed binomial), Beta, Gamma, Exponential, Ordinal (logit or probit),
-  Tweedie, Student-t (heavy-tailed continuous, fixed `ν`; outlier-robust
+  Tweedie, Student-t (heavy-tailed continuous, fixed numeric `ν` or estimated
+  degrees of freedom with `StudentTFamily()`; outlier-robust
   alternative to Gaussian, `family = StudentTFamily(ν)`), Conway–Maxwell–Poisson
   (under- or over-dispersed counts, `family = COMPoisson()`; marker `ν` is a
   tag payload, always estimated)
+- Grouped Tweedie has explicit fixed-common, shared-estimated and per-species
+  estimated power controls; these are distinct models, with separate parameter
+  counts. Full R0.7.0 Core + AGHQ parity remains under validation.
 - Heteroscedastic Gaussian with per-species variance (`fit_gaussian_pervar_gllvm`)
 - Per-species / grouped dispersion (`disp.group`) for NB2, NB1, Beta, beta-binomial,
   Gamma, and Tweedie via the `_grouped` drivers — per-species is the `fit_gllvm`
