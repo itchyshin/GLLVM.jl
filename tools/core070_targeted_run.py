@@ -7,6 +7,7 @@ nonzero child exits even if a child writes its own successful receipt.
 import argparse
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import signal
@@ -40,44 +41,91 @@ def run(plan_path, destination):
     budget = float(plan['timeout_seconds'])
     if not 0 < budget <= 1500:
         raise ValueError('targeted batch must be bounded at 1500 seconds or less')
+    # Validate the WHOLE batch before the first child exists, including later rows.
+    timeouts = []
+    for row in plan['commands']:
+        argv = row['argv']
+        if not isinstance(argv, list) or not argv or any(not isinstance(v, str) or '\0' in v for v in argv):
+            raise ValueError('argv must be a nonempty string list without NUL')
+        timeout = float(row.get('timeout_seconds', budget))
+        if not math.isfinite(timeout) or not 0 < timeout <= 1500:
+            raise ValueError('command timeout must be finite and in (0,1500]')
+        timeouts.append(timeout)
+    overrides = plan.get('env', {})
+    if not isinstance(overrides, dict) or any(not isinstance(k, str) or not k or '=' in k or '\0' in k or
+            not isinstance(v, str) or '\0' in v for k, v in overrides.items()):
+        raise ValueError('invalid environment overrides')
+    env = dict(os.environ, **overrides)
     destination.mkdir(parents=True, exist_ok=False)
     deadline = time.monotonic() + budget
     results = []
-    env = dict(os.environ, **plan.get('env', {}))
-    for index, row in enumerate(plan['commands']):
-        remaining = deadline - time.monotonic()
-        if remaining <= 0:
-            break
-        argv = row['argv']
-        if not isinstance(argv, list) or not argv or any(not isinstance(s, str) for s in argv):
-            raise ValueError('argv must be a nonempty string list; shell execution is disabled')
-        log = destination / f'{index:02d}.log'
-        started = time.monotonic()
-        print('START', row['id'], flush=True)
-        with log.open('wb') as out:
-            try:
-                child = subprocess.Popen(argv, cwd=root, env=env, stdout=out,
-                                         stderr=subprocess.STDOUT, start_new_session=True)
-            except OSError as exc:
-                out.write(str(exc).encode())
-                code = 127
-            else:
+    active_child = None
+    batch_error = None
+
+    def stop_child(child):
+        try:
+            os.killpg(child.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        child.wait(timeout=5)
+
+    try:
+        for index, row in enumerate(plan['commands']):
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                batch_error = 'batch deadline exhausted'
+                break
+            argv = row['argv']
+            log = destination / f'{index:02d}.log'
+            started = time.monotonic()
+            supervisor_error = None
+            print('START', row['id'], flush=True)
+            with log.open('wb') as out:
                 try:
-                    code = child.wait(timeout=min(remaining, float(row.get('timeout_seconds', budget))))
-                except subprocess.TimeoutExpired:
-                    os.killpg(child.pid, signal.SIGKILL)
-                    child.wait()
-                    code = 124
-        results.append({'id': row['id'], 'argv': argv, 'exit_code': code,
-                        'elapsed_seconds': time.monotonic() - started,
-                        'log': log.name, 'log_sha256': sha(log)})
-        print('FINISH', row['id'], 'exit', code, flush=True)
-        (destination / 'progress.json').write_text(json.dumps(results, indent=2) + '\n')
-    fresh = pin_check(root, plan['pins']) and plan_path.is_file() and sha(plan_path) == plan_sha
-    passed = fresh and len(results) == len(ids) and all(r['exit_code'] == 0 for r in results)
+                    active_child = subprocess.Popen(argv, cwd=root, env=env, stdout=out,
+                                                    stderr=subprocess.STDOUT, start_new_session=True)
+                except OSError as exc:
+                    out.write(str(exc).encode())
+                    code = 127
+                else:
+                    try:
+                        code = active_child.wait(timeout=min(remaining, timeouts[index]))
+                    except subprocess.TimeoutExpired:
+                        stop_child(active_child)
+                        code = 124
+                    except BaseException as exc:
+                        supervisor_error = repr(exc)
+                        stop_child(active_child)
+                        code = 125
+                    finally:
+                        # Cleared only after successful wait/reap; outer handler is a backup.
+                        if active_child.poll() is not None:
+                            active_child = None
+            results.append({'id': row['id'], 'argv': argv, 'exit_code': code,
+                            'elapsed_seconds': time.monotonic() - started,
+                            'log': log.name, 'log_sha256': sha(log),
+                            'supervisor_error': supervisor_error})
+            print('FINISH', row['id'], 'exit', code, flush=True)
+            (destination / 'progress.json').write_text(json.dumps(results, indent=2) + '\n')
+            if supervisor_error:
+                batch_error = supervisor_error
+                break
+    except BaseException as exc:
+        batch_error = repr(exc)
+    finally:
+        if active_child is not None:
+            try:
+                stop_child(active_child)
+            except BaseException as exc:
+                batch_error = f'{batch_error}; cleanup failure: {exc!r}'
+    try:
+        fresh = pin_check(root, plan['pins']) and sha(plan_path) == plan_sha
+    except OSError:
+        fresh = False
+    passed = not batch_error and fresh and len(results) == len(ids) and all(r['exit_code'] == 0 for r in results)
     receipt = {'status': 'PASS' if passed else 'FAIL', 'scope': 'targeted_process_batch_only',
                'plan_sha256': plan_sha, 'source_pins': plan['pins'],
-               'source_unchanged': fresh, 'expected_ids': ids, 'results': results,
+               'source_unchanged': fresh, 'supervisor_error': batch_error, 'expected_ids': ids, 'results': results,
                'environment_overrides': plan.get('env', {})}
     (destination / 'process-receipt.json').write_text(json.dumps(receipt, indent=2) + '\n')
     print('CORE070_TARGETED_' + receipt['status'], flush=True)

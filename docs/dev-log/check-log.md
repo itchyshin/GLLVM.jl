@@ -15624,3 +15624,19 @@ Corrected Hessian lookup uses exact `sd_report` / `pdHess` indexing, with
 pure negative fixtures for partial names, atomic/missing reports, and positive/
 negative measured Hessians. No estimator, fixture or tolerance changed.
 R-health regression is green; a new paired replay remains required.
+
+
+## Rose repair follow-up — 2026-08-30
+
+Rose Sol/high via canonical read-only CLI reviewed6e59ef54 against129f6043.
+The TestCounts compatibility, loaded-source equality and exact sd_report lookup
+repairs withstand bounded inspection. No M1 signoff. A concrete supervisor
+fault remained: invalid command timeout validation happened after Popen.
+Fault injection reproduced failure; full-batch validation now precedes launch,
+unexpected wait errors kill/reap the child and retain exit125/failed receipt.
+Two injected-fault tests and all existing supervisor negatives pass. External
+process results still must be bound into the future full-programme aggregator;
+DRAFT currently prevents that acceptance path. Original valid process receipts
+are not invalidated by the malformed-plan counterexample.
+MissionControl Julia-only correction committed602ad06; servedHTTP200/readback
+matches and all other R0.7.1 fields unchanged; exact-file lease released.
