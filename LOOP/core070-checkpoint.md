@@ -223,3 +223,17 @@ explicit A3 scaling obligation; do not narrow the programme to one25min run.
 Next priority is the finite source-admission manifest and its remaining leaf
 contracts, plus Student reference health. Earlier targeted numerical receipts
 remain valid scoped evidence, not retroactive new-schema programme proof.
+
+
+## Family/link source-admission catalogue — 2026-08-30
+
+69 pure reference-admission checks pass on localR4.6.0 and TotoroR4.5.3, with
+raw TSV/diagnostics/receipt hash readback. Extracts frozen family_to_id rather
+than copying its rules; source functions only, no fits. Includes19 admitted
+family/link combinations, two fixed-shape controls, one Beta alias,33 rejection
+cases and14 constructor-only engine rejections. v1 misidentified the rejection
+stage for three constructors; source-confirmed v2 retains those failures and
+adds engine checks, including constructed beta-binomial cloglog rejected by
+fit-multi. No required model was removed. Omitted/stale/wrong-expectation negative
+controls fail. Current full manifest remains DRAFT; covariance/modifier/data/
+postfit/formula/bridge and multi-run aggregation remain unpaid.

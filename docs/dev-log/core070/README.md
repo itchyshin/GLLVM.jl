@@ -33,6 +33,7 @@ bytes without a circular hash.  A package version alone is insufficient.
 
 ```toml
 reference_commit = "b4d5fee64def88bc768dda1f1f77c29b295edd86"
+archive_sha256 = "0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc"
 namespace_sha256 = "9094613610789faab69c43195d3cfdafb2c7dfef284e6646b10dababa4fa132c"
 source_tree_sha256 = "f83545faa6543dbb1f64d64bbf5a9498adcdf036cc3da5851f269912698b1cc7"
 installed_tree_sha256 = "<64 lowercase hex characters>"
@@ -64,3 +65,31 @@ the checker now explicitly tests that attempted promotion. All obligation IDs
 must have frozen executable cases, including fixture hashes and model contracts.
 `isdm_source`/`isdm_sources` remain an admission question; they were not excluded
 by the user. No engine or API scope is expanded solely from their names.
+
+
+## Verified source subsets and numerical snapshot
+
+- `aghq-control-subset.json`:39 frozen-source control checks, with both R runtime
+  receipts in `aghq-control-evidence.json`; public AGHQ remains unpaid.
+- `family-admission-subset.json`:69 source-admission cases, separating19 distinct
+  admitted family/link combinations, fixed-shape controls, a Beta alias, rejected
+  routes and14 constructor-only families. These are R admission checks, not69
+  fitted models or Julia parity passes. See `family-admission-evidence.json`.
+- `targeted-replay-6e59ef54.json`: current numerical/helper snapshot's three
+  Tweedie power contracts pass28/28; Student31pass/2fail retains the R optimizer
+  health failure. No full-suite, recovery, bridge or programme claim.
+
+Required startup also needs exact oracle `build.json` and `source.json` under
+`.unlazy/core070-aghq/oracle-receipts/` and `oracle-source/`, respectively. The
+loaded GLLVM package root and entry point must equal the checkout being hashed.
+Do not hand-create source provenance from a version string.
+
+For future programme acceptance, launch through `core070_targeted_run.py` with
+an explicitly reviewed plan and a fresh relative `parity_receipts` directory
+on its command row. Retain the supervisor's complete output directory, including
+`execution-plan.json`, `process-receipt.json` and raw logs. Pass
+`--process-receipt <output>/process-receipt.json` alongside `--receipts` to the
+aggregator. Direct invocation above is still a useful developer/diagnostic run,
+but a Julia success marker alone no longer satisfies programme acceptance.
+The current full-contract checker still rejects DRAFT; aggregation across
+separately executed required leaves is the next harness scaling obligation.

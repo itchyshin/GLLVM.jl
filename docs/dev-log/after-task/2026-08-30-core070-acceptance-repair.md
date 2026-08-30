@@ -9,7 +9,10 @@ resolve the concrete interim-panel findings. This is not Milestone1 completion.
 
 Julia1.10/1.12 receipt-count compatibility, loaded-source equality, exact frozen
 R Hessian-field lookup, and supervisor prevalidation/exception cleanup.
-A separate frozen39-case R AGHQ control subset and source contract clarify B6.
+A frozen39-case R AGHQ control subset and source contract clarify B6.
+The final aggregation entry now binds externally observed exits and artifact
+hashes; a69-case R family/link admission catalogue separates callable routes
+from constructor-only descriptors.
 
 ## 3a. Decisions and Rejected Alternatives
 
@@ -38,7 +41,10 @@ Repaired paired replay: Tweedie28/28 PASS in710.62s, all three powers and
 health/count gates; maximum absolute likelihood delta5.35840e-8. Student31pass/
 2fail in34.4s, original delta0.00073058937 but Rcode1 false convergence persists.
 Combined batchFAIL. Raw run/cell/process receipts and hashes read back intact.
-The frozen39 R AGHQ helper/control checks passed on R4.6.0 and TotoroR4.5.3.
+The frozen39 R AGHQ helper/control checks and69 R family/link admission
+checks passed on R4.6.0 and TotoroR4.5.3. Five real-child process-binding tests
+and existing supervisor/evidence controls pass; internal success plus exit7
+is rejected. No new numerical run accompanies these source/gate changes.
 
 ## 6. Tests of the Tests
 
@@ -54,8 +60,8 @@ by explicitly binding the repository cwd; a status query was not used as proof.
 ## 7a. Issue Ledger
 
 Resolved with regression evidence: TestCounts API change, wrong loaded checkout,
-R partial-field match, supervisor validation after child launch. Open: external
-process-result binding in the future full aggregator; complete frozen capability
+R partial-field match, supervisor validation after child launch. External process-result binding is repaired and regression-tested. Open:
+aggregation across separately executed required leaves; complete frozen capability
 manifest; Student reference health; original failing CI environment; full-suite
 and broader capability validation. The draft aggregate remains fail-closed.
 
@@ -70,7 +76,9 @@ estimation and recovery. R0.7.1 and article fields/work remain independent.
 
 Pure local tests missed a Julia1.12 API change and the real fitted R object's
 field layout. Fresh qualification and actual paired execution caught both.
-The supervisor advertised broader failure cleanup than it implemented. Every
+The supervisor advertised broader failure cleanup than it implemented. The
+first family-admission draft conflated constructor and engine rejections for
+three invalid links; source inspection corrected the stage and added controls. Every
 failed attempt and its raw exit/log remain retained rather than rewritten.
 
 ## 10. Known Residuals
