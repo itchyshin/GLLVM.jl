@@ -846,14 +846,21 @@ zero-column design specifies zero mean; nonfinite or rank-deficient designs
 are rejected. This ML route does not reproduce R's separate fixed-residual
 plus unique-variance decomposition.
 
-```julia
-p, n = size(Y)
+```@example pervar_design
+using GLLVM, Random
+rng = MersenneTwister(7093)
+p, n = 4, 80
+site_x = collect(range(-1, 1; length=n))
+Y = [0.7, -0.4, 0.5, 0.3] * randn(rng, 1, n) .+
+    [0.5, 0.7, 0.9, 0.6] .* randn(rng, p, n) .+
+    1.2 .* reshape(site_x, 1, n)
 X = zeros(p, n, p + 1)
 for j in 1:p
     X[j, :, j] .= 1                # one intercept per trait
 end
-X[:, :, end] .= reshape(collect(range(-1, 1; length=n)), 1, n)
-fit_x = fit_gaussian_pervar_gllvm(Y; K=2, X=X)
+X[:, :, end] .= reshape(site_x, 1, n)
+fit_x = fit_gaussian_pervar_gllvm(Y; K=1, X=X)
+@assert fit_x.converged # hide
 coef(fit_x)                        # p intercepts, then one shared slope
 ```
 

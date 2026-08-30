@@ -15834,3 +15834,8 @@ unpaid. No numerical source changes, outer optimization or campaign.
 - Red1pass/2fail demonstrated ignored six-column X and wrong free count. GLS profiling now returns requested coefficients; explicit no-intercept/zero-column semantics and guards tested.
 - Expanded tests exposed Woodbury cancellation; direct pervar covariance/GLS Cholesky resolves it at O(p³) cost. Only PosDef trial errors map to Inf with warning; final likelihood reevaluated, no ridge/floor.
 - Final27 new +14 existing assertions pass on Totoro,25.38s+15.31s. All failed attempts retained, six verifier corruption controls reject. Full suite, independent review, R parity, rendering and performance remain unpaid. Earlier whole-source receipts need integrated revalidation.
+
+## 2026-08-30 — Executed per-variance example and strict local docs
+- Exact page example6 + neighboring AIC/BIC18 assertions PASS on Totoro;20.77s/35.15s. Strict Documenter content/VitePress build PASS59.29s;94 static artifacts checked. Source and separate runtime pins retained.
+- Local --local mode never deploys.36 missing documented bindings now referenced; Student decision path no longer a broken site link. Desktop/mobile Gaussian section and navigation inspected, no page-wide mobile overflow.
+- Six evidence negative controls pass. All failed attempts retained. Logo/favicon/package.json/chunk warnings and local versions.js404 remain. Search/full-site visuals/fullsuite/independent review unpaid; no C2/parity completion claim.

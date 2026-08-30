@@ -35,4 +35,4 @@ This numerical repair does not cap `nu`, change the model, or turn a failed
 optimizer diagnostic into a successful fit.
 
 The numerical record and exact oracle provenance are in
-[`2026-08-30-core070-studentt.md`](../dev-log/decisions/2026-08-30-core070-studentt.md).
+`docs/dev-log/decisions/2026-08-30-core070-studentt.md` in the source checkout.

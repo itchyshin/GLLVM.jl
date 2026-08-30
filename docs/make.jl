@@ -3,6 +3,8 @@ using DocumenterVitepress
 using GLLVM
 
 makedocs(;
+    root = @__DIR__,
+    remotes = "--local" in ARGS ? nothing : Dict(),
     sitename = "GLLVM.jl",
     authors  = "Shinichi Nakagawa",
     modules  = [GLLVM],
@@ -35,6 +37,7 @@ makedocs(;
         ],
         "Reference & Benchmarks" => [
             "API Reference"          => "api.md",
+            "Low-level Reference"    => "low-level-reference.md",
             "Benchmarks"             => "benchmarks.md",
             "Comparison vs gllvmTMB" => "comparison.md",
             "Capability Parity"      => "gllvmtmb-parity.md",
@@ -42,17 +45,19 @@ makedocs(;
             "Changelog"              => "changelog.md",
         ],
     ],
-    warnonly = true,
+    warnonly = false,
 )
 
 # Use DocumenterVitepress.deploydocs (NOT Documenter's): it flattens the Vitepress
 # build output (build/1/*) into the version root on gh-pages and rewrites the
 # site `base`. Plain Documenter.deploydocs deploys build/ verbatim, which lands
 # the site under dev/1/ with base=/dev/ — every asset/nav link then 404s.
-DocumenterVitepress.deploydocs(;
+if !("--local" in ARGS)
+    DocumenterVitepress.deploydocs(;
     repo         = "github.com/itchyshin/GLLVM.jl.git",
     target       = joinpath(@__DIR__, "build"),
     devbranch    = "main",
     branch       = "gh-pages",
     push_preview = true,
-)
+    )
+end # --local builds never call deploydocs

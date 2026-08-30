@@ -450,3 +450,10 @@ No production B dispatch, full suite or long campaign was launched.
 - README/docstrings/docs/test runner updated, but render/fullsuite/R parity and independent numerical review UNPAID. Review authorization remains unresolved; no retry or substitute external route.
 - Source change invalidates earlier whole-source parity pins; results remain historical until integrated revalidation. Master manifest DRAFT/M1 PARTIAL. Next: finite remaining contract, independent review and current-revision targeted integration, then planned downstream capabilities. No push/merge/release/cleanup.
 - Mission Control targeted correction 6b47f69c9434c2281d7562ba34d6a5ce837a55e4 served HTTP200/readback verified; all R fields preserved.
+
+## 2026-08-30 — Executed per-variance documentation checkpoint
+- Exact documented example6+18 neighboring assertions PASS; strict local content build PASS59.29s.94 static files hash-verified, desktop/mobile Gaussian section and navigation inspected. No deployment; browser/server closed.
+- Six gate negative controls reject malformed evidence. Earlier pervar27+14 candidate receipt reverified; no numerical source changes this slice. Separate .docenv uses Optim1.13.3 versus core qualified runtime.
+- C2 remains PARTIAL: branding/package configuration/chunk warnings, local versions.js404, search, mobile code/output and full-site audit unpaid. Fullsuite, numerical review and current-source parity revalidation outstanding; master manifest DRAFT/M1 PARTIAL.
+- Next: complete finite required contract and outstanding M1 numerical gates before additional production tranche. External review permission remains unresolved; no retry through another mechanism. No push/merge/release/cleanup.
+- Mission Control Julia-only correction 9eb3f04782590c945dd6ff87e0f3fd81f5db89fe committed locally; served HTTP200/readback verified and R fields unchanged. Exact board lease released. Both Unlazy gates freshly reverified PASS.
