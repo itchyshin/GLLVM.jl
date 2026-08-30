@@ -15889,3 +15889,9 @@ unpaid. No numerical source changes, outer optimization or campaign.
 - Three links×Bernoulli/varying trials, seeds90101–90106,p3/n160/K1, explicit observed curvature and original likelihood/health gates. Dataset/metric/source/terminal receipt runner prepared, not executed. No local DGP or fits.
 -26 pure preflight assertions and actual --check PASS; actual --execute with opt-ins OFF exits1 before numerical imports. Eleven malformed-contract controls plus unknown ID reject. Full manifestDRAFT/M1PARTIAL.
 -Next restore authenticated observation/recover old family-recheck-01, qualify current candidate, single-case pre-run BINOMIAL-LOGIT-BERNOULLI. Provisional2–8min/case,600s cap; full cohort12–48min needs measured sizing and approval if over30min. Remaining finite model contract and independent review unpaid. No newchild/push/merge/release/cleanup.
+
+## 2026-08-30 — Census refresh and historical readback
+-103 Julia/211 R registered;40dirty trees/80patches unchanged from retained baseline for Git-visible content. Additional5clones+13broken remnants protected,19,314 file entries and1,002 named history tips independently restored/read back.168 registered R missing/broken remain unresolved; no cleanup.
+-Totoro/Fir sockets restored. Old5be659b1 batch terminalFAIL:16group217pass/3fail, Tweedie28pass; BrokenPipeError omitted oracle-after. Separate oracle verifyPASS,153 archived source pins/raw hashes verified. Current4 changed pins make old evidence historical.
+-Raw actual_assertions273 duplicates shared fixture; unique217. Next fix supervisor logging/counts, qualify current candidate and bounded binomial pre-run. FullmanifestDRAFT/M1PARTIAL; review unpaid.
+-Mission Control380981b314abbe34f20e522aa49b9575b60f5c49 servedHTTP200/readbackPASS; Rfields unchanged.

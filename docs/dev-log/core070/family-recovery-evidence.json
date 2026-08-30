@@ -1,0 +1,188 @@
+{
+  "scope": "RECOVERED_HISTORICAL_17_FAMILY_SMOKE_NOT_CURRENT_PARITY",
+  "status": "HISTORICAL_RECEIPTS_VERIFIED_BATCH_FAILED",
+  "observed_at_utc": "2026-08-30T21:25:36.553530+00:00",
+  "source_commit": "5be659b142fbce4e978b6ff5e1abdc947fbd6f68",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "source_pins_verified": 153,
+  "current_source_differences": [
+    "src/bridge.jl",
+    "src/families/truncated_nbinom2.jl",
+    "test/parity/parity_helpers.jl",
+    "docs/dev-log/core070/frozen-r070-contract.toml"
+  ],
+  "groups": {
+    "sixteen": {
+      "exit_code": 1,
+      "elapsed_seconds": 124.22013887576759,
+      "raw_receipt_actual_assertions": 273,
+      "unique_fixture_assertions": {
+        "passed": 217,
+        "failed": 3,
+        "errored": 0,
+        "broken": 0
+      },
+      "cells": {
+        "NATIVE-01-GAUSSIAN": {
+          "passed": 31,
+          "broken": 0,
+          "failed": 0,
+          "errored": 0
+        },
+        "NATIVE-02-BINOMIAL": {
+          "passed": 6,
+          "broken": 0,
+          "failed": 0,
+          "errored": 0
+        },
+        "NATIVE-03-POISSON": {
+          "passed": 6,
+          "broken": 0,
+          "failed": 0,
+          "errored": 0
+        },
+        "NATIVE-04-LOGNORMAL": {
+          "passed": 15,
+          "broken": 0,
+          "failed": 0,
+          "errored": 0
+        },
+        "NATIVE-05-GAMMA": {
+          "passed": 28,
+          "broken": 0,
+          "failed": 0,
+          "errored": 0
+        },
+        "NATIVE-06-NB2": {
+          "passed": 8,
+          "broken": 0,
+          "failed": 0,
+          "errored": 0
+        },
+        "NATIVE-08-BETA": {
+          "passed": 8,
+          "broken": 0,
+          "failed": 0,
+          "errored": 0
+        },
+        "NATIVE-09-BETABINOMIAL": {
+          "passed": 28,
+          "broken": 0,
+          "failed": 0,
+          "errored": 0
+        },
+        "NATIVE-10-STUDENT": {
+          "passed": 31,
+          "broken": 0,
+          "failed": 2,
+          "errored": 0
+        },
+        "NATIVE-11-TRUNCATED-POISSON": {
+          "passed": 8,
+          "broken": 0,
+          "failed": 0,
+          "errored": 0
+        },
+        "NATIVE-12-TRUNCATED-NB2": {
+          "passed": 10,
+          "broken": 0,
+          "failed": 1,
+          "errored": 0
+        },
+        "NATIVE-13-DELTA-LOGNORMAL": {
+          "passed": 24,
+          "broken": 0,
+          "failed": 0,
+          "errored": 0
+        },
+        "NATIVE-14-DELTA-GAMMA": {
+          "passed": 24,
+          "broken": 0,
+          "failed": 0,
+          "errored": 0
+        },
+        "NATIVE-15-ORDINAL-PROBIT": {
+          "passed": 5,
+          "broken": 0,
+          "failed": 0,
+          "errored": 0
+        },
+        "NATIVE-16-NB1": {
+          "passed": 28,
+          "broken": 0,
+          "failed": 0,
+          "errored": 0
+        },
+        "NATIVE-17-MULTINOMIAL-FIXED": {
+          "passed": 13,
+          "broken": 0,
+          "failed": 0,
+          "errored": 0
+        }
+      }
+    },
+    "tweedie": {
+      "exit_code": 0,
+      "elapsed_seconds": 722.7968475911766,
+      "raw_receipt_actual_assertions": 28,
+      "unique_fixture_assertions": {
+        "passed": 28,
+        "failed": 0,
+        "errored": 0,
+        "broken": 0
+      },
+      "cells": {
+        "NATIVE-07-TWEEDIE": {
+          "passed": 28,
+          "broken": 0,
+          "failed": 0,
+          "errored": 0
+        }
+      }
+    }
+  },
+  "supervisor_error": "BrokenPipeError(32, 'Broken pipe')",
+  "oracle_after": "NOT_EXECUTED_BY_ORIGINAL_SUPERVISOR",
+  "restored_connection_oracle_verify": "PASS_SEPARATE_READ_ONLY_CHECK_NOT_ORIGINAL_BATCH",
+  "artifacts": {
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/readback.tar": "88fe23d551c95dd9acef2240b823199d852df7268039cb29207d07595f1b2d01",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/sixteen-receipts/cell-NATIVE-12-TRUNCATED-NB2.toml": "ec5b1de75ddc7a97471ba875d6f79832f965ec1d04388aeecd4ea1304a6c6a6e",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/sixteen-receipts/cell-NATIVE-08-BETA.toml": "2d380f448d06653fa4b9f8e384ec1c36f17143f7eb33f50a649ad574ecc0120b",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/sixteen-receipts/cell-NATIVE-06-NB2.toml": "438d81fa26ac5c63b6e906eaa052c02b667ca08f83359eca3982a821c828232d",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/sixteen-receipts/cell-NATIVE-13-DELTA-LOGNORMAL.toml": "ac32c8a657b252184620ad5f48a894c332d39f9f0c80e0bc043ec5320228050e",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/sixteen-receipts/source.json": "6b6cce9742e0c984c1bf4c93fba3759acb820fa81e509dd90dbe43b75638a997",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/sixteen-receipts/cell-NATIVE-14-DELTA-GAMMA.toml": "ae56b75ce65c22464c78c06d98ba69a6cb22f6a1f253fde7bfe146d183dfe4cd",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/sixteen-receipts/cell-NATIVE-09-BETABINOMIAL.toml": "3a9f62fbb8aebfa9df1f5153e8abb519f13ea83edc0dfa63e5df82fe843ade17",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/sixteen-receipts/run.toml": "94f3d9e4c9121d9572cfcaf188ff8e324a160e91062451c7ff255dc14e3e4039",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/sixteen-receipts/cell-NATIVE-01-GAUSSIAN.toml": "14ee3bde4ea2f3da8ebc5df9cf3a3d3ea049a601cbc01634bd726a59de595cb8",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/sixteen-receipts/cell-NATIVE-04-LOGNORMAL.toml": "c9ffcb26e977cc447bef20a50cd569210289d5f0b77f98c71524807e29fedfc3",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/sixteen-receipts/cell-NATIVE-11-TRUNCATED-POISSON.toml": "ef2894c3424974e627b8bde95abfd2f130391500028174c1eff22af524118418",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/sixteen-receipts/cell-NATIVE-05-GAMMA.toml": "39319b72ac601fec7513a2a6d00223adfc675d015cad250f13868714034ddc3e",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/sixteen-receipts/cell-NATIVE-10-STUDENT.toml": "04cf647d29d6ea9fc5f242249cc9365a8bfa301bea561295f4b0b2983289e109",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/sixteen-receipts/cell-NATIVE-16-NB1.toml": "5130316ea86983566483ba53532d2edfb88e184bfb9ddbf4d1b16ed3a70086c2",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/sixteen-receipts/cell-NATIVE-02-BINOMIAL.toml": "cacec0cd0adcd2ae6dfdc621154f7f927862f85176573ecabf0f827afaebd608",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/sixteen-receipts/cell-NATIVE-15-ORDINAL-PROBIT.toml": "ac6986491013c794761d7c805bc24e91645b98094b4821d4196cfffa98ae9843",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/sixteen-receipts/cell-NATIVE-17-MULTINOMIAL-FIXED.toml": "f964cb3bddc52de77cc98f36d53fd223fc540edea32e1c35074d43f449790f78",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/sixteen-receipts/cell-NATIVE-03-POISSON.toml": "509161b98e03329d8b84f89ea99e09270d41669e86089b05a4e41bd41c1a60d1",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/sixteen-receipts/build.json": "5c686e222fd8f56c35b2ccbec2b013a304aee862d0f964792cb5388e369483d4",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/tweedie-receipts/source.json": "6b6cce9742e0c984c1bf4c93fba3759acb820fa81e509dd90dbe43b75638a997",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/tweedie-receipts/run.toml": "dbc2d2521285ec913bc39a4db7d239b8482c066233842666e5eff71617eae87a",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/tweedie-receipts/cell-NATIVE-07-TWEEDIE.toml": "01a7649091d7f6433d21ac13e456fb5479e22cb592a3548f598aafcc707c35c6",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/tweedie-receipts/build.json": "5c686e222fd8f56c35b2ccbec2b013a304aee862d0f964792cb5388e369483d4",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/process/00.log": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/process/01.log": "b4d3aa2ba828ac6ab9b23ebc1b14d44851d9a62e492a055f1435d39bf7d5cc46",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/process/02.log": "d01434c631ad63d3bb3f465157f7fffd71a5e88864d03672ee0f61a6f18b824a",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/process/execution-plan.json": "87c0bcb73c950ddc1f36daef3f993d7a8920021e24221d80050c83f4bab38d3c",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/process/process-receipt.json": "bfdb6de4b4ee5706d74f56af9a42cf474d7cdf830809338ec6c9b80d178f2ff9",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/process/progress.json": "012856da696fbfaf354902682ac0e6adec8fb76aa4ecd8d66c75836559563a04",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/matched/delta_lognormal.toml": "28b16a40495daf91a4c8bf54b090d6e8e7ec35af88760b94692bebfbccffc799",
+    ".unlazy/core070-aghq/family-recheck/recovered-20260830/matched/delta_gamma.toml": "ec0e43324b81543eabe8c8c8493b2771481ab4693fce975c913197ddbd7c4844",
+    ".unlazy/core070-aghq/family-recheck/source3.tar": "29d13718d8becabfead9176b46b022b9835152ff0c23c816914852ac588090a3"
+  },
+  "must_not_promote": [
+    "current candidate parity",
+    "full Core or AGHQ",
+    "all17 success",
+    "full fit-health qualification"
+  ]
+}
