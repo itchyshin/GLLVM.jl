@@ -89,11 +89,11 @@ class Collection(unittest.TestCase):
         self.counter += 1
         name = 'leaf-' + str(self.counter)
         inventory = evidence.execution_inventory(self.cases, ids, self.manifest)
-        cells = {key:dict(id=key, run_id=name, status='success', fixture=self.cases[key]['fixture'],
+        cells = {key:dict(id=key, run_id=name, status='success', execution_case_ids=[key], fixture=self.cases[key]['fixture'],
             fixture_sha256=self.cases[key]['fixture_sha256'], assertions=dict(passed=1,failed=0,errored=0,broken=0),
             execution_manifest_sha256=inventory['manifest_sha256'], contract_sha256=evidence.digest(self.manifest)) for key in ids}
         run = dict(status='success', success_marker='CORE070_PARITY_SUCCESS', exit_code=0, run_id=name,
-            requested_case_ids=ids, completed_case_ids=ids, actual_assertions=len(ids),
+            requested_case_ids=ids, completed_case_ids=ids, actual_assertions=len(ids), assertion_counting='execution_groups_v1',
             source=source or self.source, execution=inventory, contract_sha256=evidence.digest(self.manifest), cells=cells)
         if edit: edit(run)
         files = {'run.toml':'\n'.join(toml(run)), **{'cell-'+key+'.toml':'\n'.join(toml(cell)) for key,cell in cells.items()},
@@ -124,6 +124,22 @@ class Collection(unittest.TestCase):
         self.assertEqual(len(report['runs']), 2)
         with self.assertRaisesRegex(evidence.EvidenceError,'INCOMPLETE_PROGRAMME'):
             evidence.verify(self.root/rows[0]['receipts'],self.manifest,self.root/rows[0]['process_receipt'])
+
+    def test_collection_counts_shared_execution_once_and_rejects_inflation(self):
+        fixtures = {}
+        for id,cell in self.cases.items():fixtures.setdefault(cell['fixture'], []).append(id)
+        members = sorted(next(ids[:2] for ids in fixtures.values() if len(ids) >= 2))
+        def grouped(run):
+            for id in members:run['cells'][id]['execution_case_ids'] = members
+            run['actual_assertions'] -= 1
+        row = self.leaf(self.ids, edit=grouped)
+        self.assertEqual(self.verify([row])['actual_assertions'], len(self.ids)-1)
+        def inflated(run):
+            grouped(run);run['actual_assertions'] += 1
+        with self.assertRaisesRegex(evidence.EvidenceError, 'INVALID_ASSERTION_TOTAL'):
+            self.verify([self.leaf(self.ids, edit=inflated)])
+        with self.assertRaisesRegex(evidence.EvidenceError, 'MISSING_EXECUTION_GROUP_SCHEMA'):
+            self.verify([self.leaf(self.ids, edit=lambda run:run.pop('assertion_counting'))])
 
     def test_missing_duplicate_and_empty_collections_reject(self):
         row = self.leaf(self.ids[:17])

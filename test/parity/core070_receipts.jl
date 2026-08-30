@@ -87,8 +87,8 @@ function _write_toml(dir::AbstractString, name::AbstractString, receipt::Dict{St
 end
 
 function _counts_dict(passed::Integer, failed::Integer, errored::Integer, broken::Integer)
-    all(x -> x >= 0, (passed, failed, errored, broken)) ||
-        throw(ArgumentError("test counts cannot be negative"))
+    all(x -> !(x isa Bool) && x >= 0, (passed, failed, errored, broken)) ||
+        throw(ArgumentError("test counts must be nonnegative integers, not booleans"))
     return Dict("passed" => Int(passed), "failed" => Int(failed),
                 "errored" => Int(errored), "broken" => Int(broken))
 end
@@ -100,13 +100,16 @@ end
 
 function _run_receipt(run::ExecutionRun, status::String; reason::Union{Nothing, String} = nothing)
     cells = Dict{String, Any}(id => cell for (id, cell) in run.cells)
+    executions = Dict(Tuple(cell["execution_case_ids"]) => cell["assertions"]
+                      for cell in values(run.cells))
     receipt = Dict{String, Any}(
         "status" => status,
         "run_id" => run.run_id,
         "requested_case_ids" => run.requested_case_ids,
         "completed_case_ids" => sort!(collect(keys(run.cells))),
         "scope" => length(run.requested_case_ids) == 17 ? "all17" : "subset",
-        "actual_assertions" => sum((cell["assertions"]["passed"] for cell in values(run.cells)); init = 0),
+        "assertion_counting" => "execution_groups_v1",
+        "actual_assertions" => sum((counts["passed"] for counts in values(executions)); init = 0),
         "source" => run.source,
         "execution" => run.inventory,
         "contract_sha256" => run.contract_sha256,
@@ -145,19 +148,33 @@ function start_run!(dir::AbstractString; requested_case_ids::AbstractVector{<:Ab
 end
 
 function record_case!(run::ExecutionRun, id::AbstractString, fixture::AbstractString;
-                      passed::Integer, failed::Integer = 0, errored::Integer = 0, broken::Integer = 0)
+                      passed::Integer, failed::Integer = 0, errored::Integer = 0, broken::Integer = 0,
+                      execution_case_ids::AbstractVector{<:AbstractString} = [id])
     run.terminal && throw(ArgumentError("cannot record a cell after a terminal receipt"))
     id_string = String(id)
     id_string in run.requested_case_ids || throw(ArgumentError("case was not requested: $id_string"))
     haskey(run.cells, id_string) && throw(ArgumentError("duplicate completed case: $id_string"))
     isfile(fixture) || throw(ArgumentError("fixture is missing: $fixture"))
     counts = _counts_dict(passed, failed, errored, broken)
+    members = sort!(String.(execution_case_ids))
+    id_string in members && length(members) == length(unique(members)) &&
+        all(member -> member in run.requested_case_ids, members) ||
+        throw(ArgumentError("execution group must contain this case and distinct requested IDs"))
+    fixture_hash = _sha256(fixture)
+    for previous in values(run.cells)
+        isempty(intersect(members, previous["execution_case_ids"])) && continue
+        members == previous["execution_case_ids"] &&
+            String(fixture) == previous["fixture"] && fixture_hash == previous["fixture_sha256"] &&
+            counts == previous["assertions"] ||
+            throw(ArgumentError("overlapping execution groups must have identical membership, fixture and counts"))
+    end
     cell = Dict{String, Any}(
         "id" => id_string,
         "run_id" => run.run_id,
         "status" => _cell_status(counts),
         "fixture" => String(fixture),
-        "fixture_sha256" => _sha256(fixture),
+        "fixture_sha256" => fixture_hash,
+        "execution_case_ids" => members,
         "assertions" => counts,
         "execution_manifest_sha256" => run.inventory["manifest_sha256"],
         "contract_sha256" => run.contract_sha256,

@@ -15900,3 +15900,8 @@ unpaid. No numerical source changes, outer optimization or campaign.
 -Real output-pipe regression red2fail; terminal unrelated-I/O neighbour red1error. Final local24 tests PASS15.94s; Totoro6 plus supervisor selftest PASS with remote source hashes.
 -Events/progress persisted before optional notification; EPIPE warning preserves remaining checks and actual child failures. Other I/O errors fail with terminal receipt. No fits; does not imply SIGHUP/host-loss survival.
 -Next fix explicit shared execution assertion counting (273attributed vs217actual), qualify current-source candidate and bounded binomial pre-run. Full manifestDRAFT/M1PARTIAL; independent review and numerical health unpaid.
+
+## 2026-08-30 — Explicit receipt execution groups
+-Shared fixture attribution now counts each execution once, retaining every required ID; independent samefile runs remain separate. Producer/helper/consumer agree; malformed groups and old schema fail closed.
+-Local45 Julia assertions+29 Python tests and aggregate selftest PASS. Totoro45 Julia+4 Python tests and cross-language33unique/5IDs/3executions PASS10.35s, remote hashes verified. No fits, fixtures/tolerances unchanged.
+-Next refresh prepared binomial helper pin/preflight after integration, qualify new candidate and run bounded pre-run. Original numerical health/fullfinite contract/review unpaid; DRAFT/M1PARTIAL. Historical receipts not rewritten.

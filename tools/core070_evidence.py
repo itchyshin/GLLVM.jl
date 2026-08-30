@@ -31,6 +31,32 @@ class EvidenceError(RuntimeError):
     pass
 
 
+def execution_assertion_counts(cells):
+    """Count each explicitly shared execution once; reject incomplete attribution."""
+    totals = dict(passed=0, failed=0, errored=0, broken=0)
+    seen = set()
+    for case_id, cell in cells.items():
+        members = cell.get('execution_case_ids')
+        if not isinstance(members, list) or not members or \
+                any(not isinstance(member, str) or not member for member in members) or \
+                len(members) != len(set(members)) or case_id not in members or not set(members) <= set(cells):
+            raise EvidenceError('INVALID_EXECUTION_GROUP')
+        counts = cell.get('assertions', {})
+        if not isinstance(counts, dict) or set(counts) != set(totals) or any(type(counts[key]) is not int or counts[key] < 0 for key in totals):
+            raise EvidenceError('INVALID_EXECUTION_COUNTS')
+        group = tuple(sorted(members))
+        signature = (cell.get('fixture'), cell.get('fixture_sha256'), counts)
+        for member in members:
+            other = cells[member]
+            if other.get('execution_case_ids') != list(group) or \
+                    (other.get('fixture'), other.get('fixture_sha256'), other.get('assertions')) != signature:
+                raise EvidenceError('INCONSISTENT_EXECUTION_GROUP')
+        if group not in seen:
+            for key in totals:totals[key] += counts[key]
+            seen.add(group)
+    return totals
+
+
 def digest(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -204,7 +230,8 @@ def _verify_loaded(run: dict, cell_files: dict[str, dict], manifest: dict,
         raise EvidenceError("MISSING_OR_EXTRA_CELL_RECEIPT")
     if len({cell.get("id") for cell in cell_files.values()}) != len(cell_files):
         raise EvidenceError("DUPLICATE_CELL_ID")
-    total_assertions = 0
+    if run.get('assertion_counting') != 'execution_groups_v1':
+        raise EvidenceError('MISSING_EXECUTION_GROUP_SCHEMA')
     for case_id in requested:
         cell = cell_files[case_id]
         frozen = case_by_id[case_id]
@@ -216,7 +243,6 @@ def _verify_loaded(run: dict, cell_files: dict[str, dict], manifest: dict,
         if not all(isinstance(counts.get(key), int) for key in ("passed", "failed", "errored", "broken")) or \
            counts.get("passed", 0) <= 0 or any(counts[key] != 0 for key in ("failed", "errored", "broken")):
             raise EvidenceError(f"INVALID_ASSERTIONS: {case_id}")
-        total_assertions += counts["passed"]
         fixture = ROOT / frozen["fixture"]
         if cell.get("fixture") != frozen["fixture"] or not fixture.is_file() or \
            cell.get("fixture_sha256") != digest(fixture) or frozen["fixture_sha256"] != digest(fixture):
@@ -224,7 +250,8 @@ def _verify_loaded(run: dict, cell_files: dict[str, dict], manifest: dict,
         if cell.get("execution_manifest_sha256") != execution["manifest_sha256"] or \
            cell.get("contract_sha256") != run["contract_sha256"]:
             raise EvidenceError(f"TRANSPLANTED_CELL: {case_id}")
-    if run.get("actual_assertions") != total_assertions or total_assertions == 0:
+    total_assertions = execution_assertion_counts(cell_files)['passed']
+    if type(run.get("actual_assertions")) is not int or run["actual_assertions"] != total_assertions or total_assertions == 0:
         raise EvidenceError("INVALID_ASSERTION_TOTAL")
     summary = run.get("cells", {})
     if not isinstance(summary, dict) or set(summary) != set(requested) or any(summary[key] != cell_files[key] for key in requested):
@@ -413,14 +440,14 @@ def self_test(manifest_path: Path) -> None:
             "tmb_version": "1", "matrix_version": "1",
         }
         run_id = "self-test-run"
-        cells = {case_id: {"id": case_id, "run_id": run_id, "status": "success",
+        cells = {case_id: {"id": case_id, "run_id": run_id, "status": "success", "execution_case_ids": [case_id],
                            "fixture": row["fixture"], "fixture_sha256": digest(ROOT / row["fixture"]),
                            "assertions": {"passed": 1, "failed": 0, "errored": 0, "broken": 0},
                            "execution_manifest_sha256": execution["manifest_sha256"],
                            "contract_sha256": digest(frozen_path)} for case_id, row in cases.items()}
         run = {"status": "success", "success_marker": "CORE070_PARITY_SUCCESS", "exit_code": 0,
                "run_id": run_id, "requested_case_ids": all_ids, "completed_case_ids": all_ids,
-               "actual_assertions": len(cells), "source": source, "execution": execution,
+               "actual_assertions": len(cells), "assertion_counting": "execution_groups_v1", "source": source, "execution": execution,
                "contract_sha256": digest(frozen_path), "cells": cells}
         receipt_dir = tmpdir / "receipts"
         receipt_dir.mkdir()

@@ -535,3 +535,9 @@ No production B dispatch, full suite or long campaign was launched.
 -Events/progress persisted before optional notification; EPIPE warning preserves remaining checks and actual child failures. Other I/O errors fail with terminal receipt. No fits; does not imply SIGHUP/host-loss survival.
 -Next fix explicit shared execution assertion counting (273attributed vs217actual), qualify current-source candidate and bounded binomial pre-run. Full manifestDRAFT/M1PARTIAL; independent review and numerical health unpaid.
 - Mission Control Julia-only correction95141a16d6971936d8a60c6a882bc3d972237b26 committed and servedHTTP200/readbackPASS; R fields unchanged, lease released. Unlazy1met/1unmet reverified.
+
+## 2026-08-30 — Explicit receipt execution groups
+-Shared fixture attribution now counts each execution once, retaining every required ID; independent samefile runs remain separate. Producer/helper/consumer agree; malformed groups and old schema fail closed.
+-Local45 Julia assertions+29 Python tests and aggregate selftest PASS. Totoro45 Julia+4 Python tests and cross-language33unique/5IDs/3executions PASS10.35s, remote hashes verified. No fits, fixtures/tolerances unchanged.
+-Next refresh prepared binomial helper pin/preflight after integration, qualify new candidate and run bounded pre-run. Original numerical health/fullfinite contract/review unpaid; DRAFT/M1PARTIAL. Historical receipts not rewritten.
+- Mission Control Julia-only correction0354e76e119c280f019d6108153ae384183b44da locally committed; servedHTTP200/readbackPASS and Rfields unchanged. Lease released; Unlazy1met/1unmet reverified.

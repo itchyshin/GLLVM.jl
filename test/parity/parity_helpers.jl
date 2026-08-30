@@ -236,6 +236,7 @@ function core070_execute_group!(ids::AbstractVector{<:AbstractString}, fixture::
     end
     counts = testset_counts(testset)
     return [record_case!(run, id, fixture;
+                         execution_case_ids = active,
                          passed = counts["passed"], failed = counts["failed"],
                          errored = counts["errored"], broken = counts["broken"]) for id in active]
 end
