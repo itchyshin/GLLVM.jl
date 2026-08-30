@@ -111,3 +111,33 @@ implementation, actual admission/rejection fits and warnings, estimator tests,
 post-fit behavior, same-model numerical comparisons, and separately designed
 recovery/coverage evidence. Those rows must enter the full capability manifest
 before its final freeze; this annex is not a substitute for them.
+
+
+## Noether follow-up: observed curvature and repair branch
+
+Noether (configured Terra/high, fresh read-only review) confirmed the ridge and
+chain-rule distinctions. The frozen R adapter uses the **observed** conditional
+Hessian (`R/fit-multi.R:9554`), while Julia's generic family default is Fisher.
+B6 must explicitly select observed adaptation and compare modes, factors and
+values at fixed parameters; a generic-default call is not sufficient.
+
+R also floors eigenvalues at1e-8 when its conditional Hessian is not positive
+definite (`R/fit-multi.R:9569`). This adaptation repair is distinct from a loading
+penalty. Julia's internal quadrature instead returns negative infinity on that
+failure (`src/families/aghq_grid.jl:238`). The repair-triggering route is therefore
+an accounted-for required compatibility gap, not an excluded model. PD-only
+fixtures may establish a scoped subcase but cannot erase this branch or certify
+general parity. Before B6 dispatch, name its owner and separate test ID, review
+whether/how the exact R repair is reproduced, and record the trigger and actual
+curvature treatment in diagnostics. Do not silently floor every Hessian or
+claim absence of a loading ridge means absence of curvature repair.
+
+The implementable outer contract is fixed k, observed adaptation, short frozen-
+surrogate steps, re-adapted merit acceptance, capped continuation/backtracking,
+and explicit frozen-gradient reporting. Verify AD versus finite differences
+with adaptation held fixed. Also inspect directional differences of the
+re-adapted objective to expose the chain term; only an implementation including
+that term may claim a total derivative. Keep R's two accepted passes, settled
+modes and satisfactory surrogate-gradient criterion distinct from a total-
+objective stationarity claim. Stagnation alone stops but does not certify.
+This review qualifies the design; it is not implementation or numerical evidence.

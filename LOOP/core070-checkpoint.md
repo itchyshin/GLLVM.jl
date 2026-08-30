@@ -174,3 +174,18 @@ AGHQ remain unpaid. Source contract documents explicit aghq_ridge=Inf for the
 approved unpenalised scope, TRUE/NULL adapters, k1/trait20 rules, actual single-k
 resolution and the missing adaptation-chain derivative proof. Full programme
 manifest remains DRAFT; no estimator or capability claim follows from this subset.
+
+
+## Paired candidate replay closed — 2026-08-30
+
+Numerical candidate6e59ef54: Tweedie28/28 PASS in710.62s (fixed/shared/species
+power, Rfreecoordinates0/1/5, total15/16/20; all fit-health checks). Maximum
+absolute logLik difference5.35840e-8. Student31pass/2fail in34.4s: original
+likelihood difference0.00073058937 meets0.001, but Rcode1 false convergence(8)
+at136iterations remains. Combined batchFAIL. All raw process/run/cell receipt
+hashes verified after retrieval. G3 Tweedie passes; Student and fullM1 stayopen.
+Noether's AGHQ follow-up confirms the derivative caveat and adds the observed
+Hessian plus R1e-8 adaptation-repair gap; no Julia publicAGHQ claim.
+Next: bind externally observed process exits into final aggregation; complete
+source-admission manifest and B6 curvature contract; diagnose Student reference
+health without changing fixture/tolerance. No active remote fit or reviewer.
