@@ -1,0 +1,667 @@
+{
+  "schema": 1,
+  "status": "SOURCE_BOUND_FAMILY_SMOKE_CATALOGUE_NOT_FROZEN_PROGRAMME",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "source_revision": "5884d1b6c1aae4236af108271266c1cbe38ac5aa",
+  "numerical_execution": false,
+  "required_family_smoke_count": 17,
+  "cases": [
+    {
+      "id": "NATIVE-01-GAUSSIAN",
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "evidence_status": "NOT_REEXECUTED",
+      "fixture": "test/parity/test_gaussian_parity.jl",
+      "fixture_pins": {
+        "test/parity/test_gaussian_parity.jl": "a1610b34559eeb8c8d37f741432c1ed4603a02fe41747b3d6167b1654db2d884",
+        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+      },
+      "seed": 42,
+      "n_traits": 5,
+      "n_units": 80,
+      "n_latent": 2,
+      "response_shape": "5 traits x 80 units; column-major long data site blocks",
+      "model": {
+        "link": "identity",
+        "dispersion": "shared residual sigma",
+        "random_block": "ordinary loadings-only; unique=FALSE",
+        "identification": "triangular loading convention; compare invariant quantities"
+      },
+      "julia_call": "fit_gaussian_gllvm(y; K = K)",
+      "formula_status": "UNPAID",
+      "bridge_status": "UNPAID",
+      "current_loglik_check": {
+        "kind": "relative",
+        "tolerance": 1e-06
+      },
+      "acceptance_status": "CURRENT_FIXTURE_IS_SMOKE_NOT_PROGRAMME_ACCEPTANCE",
+      "evidence_location": "Fresh supervised receipt required; historical outputs are not selected by this catalogue",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=gaussian(), control=gllvmTMBcontrol(n_init=1L,se=FALSE))"
+    },
+    {
+      "id": "NATIVE-02-BINOMIAL",
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "evidence_status": "NOT_REEXECUTED",
+      "fixture": "test/parity/test_binomial_parity.jl",
+      "fixture_pins": {
+        "test/parity/test_binomial_parity.jl": "e586315295b4e5715284ef061d7bd7b4f82ac4a3bd90aea34529513bf1527d45",
+        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+      },
+      "seed": 43,
+      "n_traits": 5,
+      "n_units": 60,
+      "n_latent": 2,
+      "response_shape": "5 traits x 60 units; column-major long data site blocks",
+      "model": {
+        "link": "logit",
+        "dispersion": "none; Bernoulli N=1",
+        "random_block": "ordinary loadings-only; unique=FALSE",
+        "identification": "triangular loading convention; compare invariant quantities"
+      },
+      "julia_call": "fit_binomial_gllvm(Y; K = K)",
+      "formula_status": "UNPAID",
+      "bridge_status": "UNPAID",
+      "current_loglik_check": {
+        "kind": "relative",
+        "tolerance": 1e-06
+      },
+      "acceptance_status": "CURRENT_FIXTURE_IS_SMOKE_NOT_PROGRAMME_ACCEPTANCE",
+      "evidence_location": "Fresh supervised receipt required; historical outputs are not selected by this catalogue",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=binomial(), control=gllvmTMBcontrol(n_init=1L,se=FALSE))"
+    },
+    {
+      "id": "NATIVE-03-POISSON",
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "evidence_status": "NOT_REEXECUTED",
+      "fixture": "test/parity/test_poisson_parity.jl",
+      "fixture_pins": {
+        "test/parity/test_poisson_parity.jl": "d7ca740f8daa303aae730647af53b1db461ba7c0d44a4341db17e7e3495ed204",
+        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+      },
+      "seed": 44,
+      "n_traits": 5,
+      "n_units": 60,
+      "n_latent": 2,
+      "response_shape": "5 traits x 60 units; column-major long data site blocks",
+      "model": {
+        "link": "log",
+        "dispersion": "none",
+        "random_block": "ordinary loadings-only; unique=FALSE",
+        "identification": "triangular loading convention; compare invariant quantities"
+      },
+      "julia_call": "fit_poisson_gllvm(Y; K = K)",
+      "formula_status": "UNPAID",
+      "bridge_status": "UNPAID",
+      "current_loglik_check": {
+        "kind": "relative",
+        "tolerance": 1e-06
+      },
+      "acceptance_status": "CURRENT_FIXTURE_IS_SMOKE_NOT_PROGRAMME_ACCEPTANCE",
+      "evidence_location": "Fresh supervised receipt required; historical outputs are not selected by this catalogue",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=poisson(), control=gllvmTMBcontrol(n_init=1L,se=FALSE))"
+    },
+    {
+      "id": "NATIVE-04-LOGNORMAL",
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "evidence_status": "NOT_REEXECUTED",
+      "fixture": "test/parity/test_lognormal_parity.jl",
+      "fixture_pins": {
+        "test/parity/test_lognormal_parity.jl": "937151e3737765df4e880d748fcc90729042d83cf84ae7b46d1f8b9bf9bdf0a4",
+        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+      },
+      "seed": 52,
+      "n_traits": 5,
+      "n_units": 60,
+      "n_latent": 2,
+      "response_shape": "5 traits x 60 units; column-major long data site blocks",
+      "model": {
+        "link": "log",
+        "dispersion": "shared log-scale sigma; y-scale Jacobian",
+        "random_block": "ordinary loadings-only; unique=FALSE",
+        "identification": "triangular loading convention; compare invariant quantities"
+      },
+      "julia_call": "fit_lognormal_gllvm(Y; K = K)",
+      "formula_status": "UNPAID",
+      "bridge_status": "UNPAID",
+      "current_loglik_check": {
+        "kind": "relative",
+        "tolerance": 1e-06
+      },
+      "acceptance_status": "CURRENT_FIXTURE_IS_SMOKE_NOT_PROGRAMME_ACCEPTANCE",
+      "evidence_location": "Fresh supervised receipt required; historical outputs are not selected by this catalogue",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=lognormal(), control=gllvmTMBcontrol(n_init=1L,se=FALSE))"
+    },
+    {
+      "id": "NATIVE-05-GAMMA",
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "evidence_status": "NOT_REEXECUTED",
+      "fixture": "test/parity/test_nox_dispersion_parity.jl",
+      "fixture_pins": {
+        "test/parity/test_nox_dispersion_parity.jl": "6d6f68234d6d18b06499252ec8ebf78bcf509f491f49d98b7eeacc29f675d1f4",
+        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+      },
+      "seed": 54,
+      "n_traits": 5,
+      "n_units": 120,
+      "n_latent": 1,
+      "response_shape": "5 traits x 120 units; column-major long data site blocks",
+      "model": {
+        "link": "log",
+        "dispersion": "per-trait Gamma shape",
+        "random_block": "ordinary loadings-only; unique=FALSE",
+        "identification": "triangular loading convention; compare invariant quantities"
+      },
+      "julia_call": "fit_gamma_gllvm_grouped(Y; K = K, group = collect(1:p))",
+      "formula_status": "UNPAID",
+      "bridge_status": "UNPAID",
+      "current_loglik_check": {
+        "kind": "relative",
+        "tolerance": 1e-06
+      },
+      "acceptance_status": "CURRENT_FIXTURE_IS_SMOKE_NOT_PROGRAMME_ACCEPTANCE",
+      "evidence_location": "Fresh supervised receipt required; historical outputs are not selected by this catalogue",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=Gamma(link=\"log\"), control=gllvmTMBcontrol(n_init=1L,se=FALSE))"
+    },
+    {
+      "id": "NATIVE-06-NB2",
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "evidence_status": "NOT_REEXECUTED",
+      "fixture": "test/parity/test_negbin_parity.jl",
+      "fixture_pins": {
+        "test/parity/test_negbin_parity.jl": "da4536360b1027afae1dc7f1918450a5b355279b4138787897406e83f76ae43c",
+        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+      },
+      "seed": 45,
+      "n_traits": 5,
+      "n_units": 80,
+      "n_latent": 2,
+      "response_shape": "5 traits x 80 units; column-major long data site blocks",
+      "model": {
+        "link": "log",
+        "dispersion": "per-trait NB2 size; Var=mu+mu^2/r",
+        "random_block": "ordinary loadings-only; unique=FALSE",
+        "identification": "triangular loading convention; compare invariant quantities"
+      },
+      "julia_call": "fit_gllvm(Y; family = GLLVM.NegativeBinomial(), K = K, g_tol = 1e-7, iterations = 800)",
+      "formula_status": "UNPAID",
+      "bridge_status": "UNPAID",
+      "current_loglik_check": {
+        "kind": "relative",
+        "tolerance": 0.001
+      },
+      "acceptance_status": "CURRENT_FIXTURE_IS_SMOKE_NOT_PROGRAMME_ACCEPTANCE",
+      "evidence_location": "Fresh supervised receipt required; historical outputs are not selected by this catalogue",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=nbinom2(), control=gllvmTMBcontrol(n_init=1L,se=FALSE))"
+    },
+    {
+      "id": "NATIVE-07-TWEEDIE",
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "evidence_status": "NOT_REEXECUTED",
+      "fixture": "test/parity/test_tweedie_parity.jl",
+      "fixture_pins": {
+        "test/parity/test_tweedie_parity.jl": "8723a0c7c21b6dba216ba5e5df400b45bb815eb37c5a58b8f644a4961a9394d5",
+        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+      },
+      "seed": 82,
+      "n_traits": 5,
+      "n_units": 150,
+      "n_latent": 1,
+      "response_shape": "5 traits x 150 units; column-major long data site blocks",
+      "model": {
+        "link": "log",
+        "dispersion": "per-trait dispersion; three distinct power cases",
+        "random_block": "ordinary loadings-only; unique=FALSE",
+        "identification": "triangular loading convention; compare invariant quantities"
+      },
+      "julia_call": "fit_tweedie_gllvm_grouped(Y; K = K, power = p_true, iterations = 400)",
+      "formula_status": "UNPAID",
+      "bridge_status": "UNPAID",
+      "current_loglik_check": {
+        "kind": "absolute",
+        "tolerance": 1e-06
+      },
+      "acceptance_status": "CURRENT_FIXTURE_IS_SMOKE_NOT_PROGRAMME_ACCEPTANCE",
+      "evidence_location": "Fresh supervised receipt required; historical outputs are not selected by this catalogue",
+      "reference_call": "fit_gllvmtmb_parity_tweedie(Y,K;p_fixed=1.5); separately power_group=:shared and power_group=:species; exact helper pinned",
+      "variants": [
+        {
+          "id": "TWEEDIE-FIXED",
+          "power": 1.5,
+          "free_powers": 0,
+          "reference_adapter": false
+        },
+        {
+          "id": "TWEEDIE-SHARED",
+          "power": "estimated shared",
+          "free_powers": 1,
+          "reference_adapter": true
+        },
+        {
+          "id": "TWEEDIE-SPECIES",
+          "power": "estimated per trait",
+          "free_powers": 5,
+          "reference_adapter": false
+        }
+      ]
+    },
+    {
+      "id": "NATIVE-08-BETA",
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "evidence_status": "NOT_REEXECUTED",
+      "fixture": "test/parity/test_beta_parity.jl",
+      "fixture_pins": {
+        "test/parity/test_beta_parity.jl": "74a045861439b5a6f5a56c2c427c4abd2bfcc1fc143cfe43c392044ca51dbac8",
+        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+      },
+      "seed": 45,
+      "n_traits": 5,
+      "n_units": 60,
+      "n_latent": 1,
+      "response_shape": "5 traits x 60 units; column-major long data site blocks",
+      "model": {
+        "link": "logit",
+        "dispersion": "per-trait Beta precision",
+        "random_block": "ordinary loadings-only; unique=FALSE",
+        "identification": "triangular loading convention; compare invariant quantities"
+      },
+      "julia_call": "fit_gllvm(Y; family = GLLVM.Beta(), K = K, g_tol = 1e-7, iterations = 800)",
+      "formula_status": "UNPAID",
+      "bridge_status": "UNPAID",
+      "current_loglik_check": {
+        "kind": "relative",
+        "tolerance": 1e-06
+      },
+      "acceptance_status": "CURRENT_FIXTURE_IS_SMOKE_NOT_PROGRAMME_ACCEPTANCE",
+      "evidence_location": "Fresh supervised receipt required; historical outputs are not selected by this catalogue",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=Beta(), control=gllvmTMBcontrol(n_init=1L,se=FALSE))"
+    },
+    {
+      "id": "NATIVE-09-BETABINOMIAL",
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "evidence_status": "NOT_REEXECUTED",
+      "fixture": "test/parity/test_nox_dispersion_parity.jl",
+      "fixture_pins": {
+        "test/parity/test_nox_dispersion_parity.jl": "6d6f68234d6d18b06499252ec8ebf78bcf509f491f49d98b7eeacc29f675d1f4",
+        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+      },
+      "seed": 56,
+      "n_traits": 5,
+      "n_units": 120,
+      "n_latent": 1,
+      "response_shape": "5 traits x 120 units; column-major long data site blocks",
+      "model": {
+        "link": "logit",
+        "dispersion": "per-trait precision; fixed trials N=8",
+        "random_block": "ordinary loadings-only; unique=FALSE",
+        "identification": "triangular loading convention; compare invariant quantities"
+      },
+      "julia_call": "fit_beta_binomial_gllvm_grouped(Y; K = K, N = N, group = collect(1:p))",
+      "formula_status": "UNPAID",
+      "bridge_status": "UNPAID",
+      "current_loglik_check": {
+        "kind": "relative",
+        "tolerance": 1e-06
+      },
+      "acceptance_status": "CURRENT_FIXTURE_IS_SMOKE_NOT_PROGRAMME_ACCEPTANCE",
+      "evidence_location": "Fresh supervised receipt required; historical outputs are not selected by this catalogue",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=betabinomial(), weights=as.vector(N), control=gllvmTMBcontrol(n_init=1L,se=FALSE))"
+    },
+    {
+      "id": "NATIVE-10-STUDENT",
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "evidence_status": "NOT_REEXECUTED",
+      "fixture": "test/parity/test_studentt_parity.jl",
+      "fixture_pins": {
+        "test/parity/test_studentt_parity.jl": "484aac8346fb9382ea4386cd18ce95fc85bd52a72f9f62e4984f664131711e68",
+        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+      },
+      "seed": 71,
+      "n_traits": 5,
+      "n_units": 130,
+      "n_latent": 1,
+      "response_shape": "5 traits x 130 units; column-major long data site blocks",
+      "model": {
+        "link": "identity",
+        "dispersion": "per-trait scale and fixed/free per-trait df; shared-scale diagnostic separate",
+        "random_block": "ordinary loadings-only; unique=FALSE",
+        "identification": "triangular loading convention; compare invariant quantities"
+      },
+      "julia_call": "fit_studentt_gllvm(Y; K = K, nu = nothing, disp_group = :species)",
+      "formula_status": "UNPAID",
+      "bridge_status": "UNPAID",
+      "current_loglik_check": {
+        "kind": "absolute",
+        "tolerance": 0.001,
+        "applies_to": "species fixed/free seed71 and interior seed72; seed73 only diagnostic"
+      },
+      "acceptance_status": "CURRENT_FIXTURE_IS_SMOKE_NOT_PROGRAMME_ACCEPTANCE",
+      "evidence_location": "Fresh supervised receipt required; historical outputs are not selected by this catalogue",
+      "reference_call": "fit_gllvmtmb_parity_student(Y,K;df_fixed=4.0); separately df_fixed=nothing; exact helper pinned",
+      "variants": [
+        {
+          "id": "STUDENT-FIXED",
+          "seed": 71,
+          "scale": "species",
+          "df": 4
+        },
+        {
+          "id": "STUDENT-ESTIMATED-ORIGINAL",
+          "seed": 71,
+          "scale": "species",
+          "df": "estimated per trait"
+        },
+        {
+          "id": "STUDENT-INTERIOR",
+          "seed": 72,
+          "shape": [
+            3,
+            400,
+            1
+          ],
+          "df_dgp": 4
+        },
+        {
+          "id": "STUDENT-NEAR-GAUSSIAN",
+          "seed": 73,
+          "shape": [
+            3,
+            400,
+            1
+          ],
+          "df_dgp": 1000000.0,
+          "role": "diagnostic only; cannot replace original"
+        },
+        {
+          "id": "STUDENT-SHARED-SCALE",
+          "seed": 71,
+          "role": "different-model diagnostic; cannot satisfy species-scale target"
+        }
+      ]
+    },
+    {
+      "id": "NATIVE-11-TRUNCATED-POISSON",
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "evidence_status": "NOT_REEXECUTED",
+      "fixture": "test/parity/test_truncated_poisson_parity.jl",
+      "fixture_pins": {
+        "test/parity/test_truncated_poisson_parity.jl": "a9eb28a3eee5400245054b1ac0c19f7e9dd49aada652d2c58bd4da54bc0efec1",
+        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+      },
+      "seed": 53,
+      "n_traits": 5,
+      "n_units": 60,
+      "n_latent": 2,
+      "response_shape": "5 traits x 60 units; column-major long data site blocks",
+      "model": {
+        "link": "log of untruncated mean",
+        "dispersion": "none; positive integer support",
+        "random_block": "ordinary loadings-only; unique=FALSE",
+        "identification": "triangular loading convention; compare invariant quantities"
+      },
+      "julia_call": "fit_truncated_poisson_gllvm(Y; K = K)",
+      "formula_status": "UNPAID",
+      "bridge_status": "UNPAID",
+      "current_loglik_check": {
+        "kind": "relative",
+        "tolerance": 1e-06
+      },
+      "acceptance_status": "CURRENT_FIXTURE_IS_SMOKE_NOT_PROGRAMME_ACCEPTANCE",
+      "evidence_location": "Fresh supervised receipt required; historical outputs are not selected by this catalogue",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=truncated_poisson(), control=gllvmTMBcontrol(n_init=1L,se=FALSE))"
+    },
+    {
+      "id": "NATIVE-12-TRUNCATED-NB2",
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "evidence_status": "NOT_REEXECUTED",
+      "fixture": "test/parity/test_truncated_nbinom2_parity.jl",
+      "fixture_pins": {
+        "test/parity/test_truncated_nbinom2_parity.jl": "9d8e55e10dcab771a034b414bdd59d84b16d0d18d952d86c154fe01bfe5c72af",
+        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+      },
+      "seed": 58,
+      "n_traits": 5,
+      "n_units": 120,
+      "n_latent": 1,
+      "response_shape": "5 traits x 120 units; column-major long data site blocks",
+      "model": {
+        "link": "log of untruncated mean",
+        "dispersion": "per-trait NB2 size; observed Laplace curvature",
+        "random_block": "ordinary loadings-only; unique=FALSE",
+        "identification": "triangular loading convention; compare invariant quantities"
+      },
+      "julia_call": "fit_truncated_nbinom2_gllvm_pertrait(Y; K = K)",
+      "formula_status": "UNPAID",
+      "bridge_status": "UNPAID",
+      "current_loglik_check": {
+        "kind": "relative",
+        "tolerance": 1e-06
+      },
+      "acceptance_status": "CURRENT_FIXTURE_IS_SMOKE_NOT_PROGRAMME_ACCEPTANCE",
+      "evidence_location": "Fresh supervised receipt required; historical outputs are not selected by this catalogue",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=truncated_nbinom2(), control=gllvmTMBcontrol(n_init=1L,se=FALSE))"
+    },
+    {
+      "id": "NATIVE-13-DELTA-LOGNORMAL",
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "evidence_status": "NOT_REEXECUTED",
+      "fixture": "test/parity/test_delta_lognormal_required.jl",
+      "fixture_pins": {
+        "test/parity/test_delta_lognormal_required.jl": "9d56445fa7f0c60a9ef657d04457c436e7ba6a04efa06f448d821d25032c5348",
+        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f",
+        "tools/core070_delta_matched.jl": "451b19bf7f6ff31e9c9e8ed44f5b172d56f0dcc5864c812c59c7daf25d377135",
+        "test/parity/test_delta_lognormal_parity.jl": "b276aa2384799c81366d9bfd53ddf143c05f28e0a3436703540c34f9d062359c"
+      },
+      "seed": 61,
+      "n_traits": 5,
+      "n_units": 130,
+      "n_latent": 1,
+      "response_shape": "5 traits x 130 units; column-major long data site blocks",
+      "model": {
+        "link": "shared logit occurrence / log positive",
+        "dispersion": "per-trait lognormal scale",
+        "random_block": "ordinary loadings-only; unique=FALSE",
+        "identification": "triangular loading convention; compare invariant quantities"
+      },
+      "julia_call": "fit_delta_lognormal_gllvm(Y; K=K,predictor=:shared,disp_group=:species,hessian=:observed)",
+      "formula_status": "UNPAID",
+      "bridge_status": "UNPAID",
+      "current_loglik_check": {
+        "kind": "relative",
+        "tolerance": 1e-06
+      },
+      "acceptance_status": "CURRENT_FIXTURE_IS_SMOKE_NOT_PROGRAMME_ACCEPTANCE",
+      "evidence_location": "Fresh supervised receipt required; historical outputs are not selected by this catalogue",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=delta_lognormal(), control=gllvmTMBcontrol(n_init=1L,se=FALSE))",
+      "reference_refinement": "Existing matched wrapper: start_from original fit; rel.tol=1e-12,eval.max=2000,iter.max=1500; both raw gradients<=1e-4, native re-evaluation and FD stability checks; same map/data"
+    },
+    {
+      "id": "NATIVE-14-DELTA-GAMMA",
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "evidence_status": "NOT_REEXECUTED",
+      "fixture": "test/parity/test_delta_gamma_required.jl",
+      "fixture_pins": {
+        "test/parity/test_delta_gamma_required.jl": "fee21659980e2380fd4f7ccd0000954f55a396a4dc041a1cc975d8ddd876d138",
+        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f",
+        "tools/core070_delta_matched.jl": "451b19bf7f6ff31e9c9e8ed44f5b172d56f0dcc5864c812c59c7daf25d377135",
+        "test/parity/test_delta_gamma_parity.jl": "63954e369b8e488d0f1447e10dd270913dcab2ca242c367c1393abffd1b0e349"
+      },
+      "seed": 62,
+      "n_traits": 5,
+      "n_units": 130,
+      "n_latent": 1,
+      "response_shape": "5 traits x 130 units; column-major long data site blocks",
+      "model": {
+        "link": "shared logit occurrence / log positive",
+        "dispersion": "per-trait Gamma shape",
+        "random_block": "ordinary loadings-only; unique=FALSE",
+        "identification": "triangular loading convention; compare invariant quantities"
+      },
+      "julia_call": "fit_delta_gamma_gllvm(Y; K=K,predictor=:shared,disp_group=:species,hessian=:observed)",
+      "formula_status": "UNPAID",
+      "bridge_status": "UNPAID",
+      "current_loglik_check": {
+        "kind": "relative",
+        "tolerance": 1e-06
+      },
+      "acceptance_status": "CURRENT_FIXTURE_IS_SMOKE_NOT_PROGRAMME_ACCEPTANCE",
+      "evidence_location": "Fresh supervised receipt required; historical outputs are not selected by this catalogue",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=delta_gamma(), control=gllvmTMBcontrol(n_init=1L,se=FALSE))",
+      "reference_refinement": "Existing matched wrapper: start_from original fit; rel.tol=1e-12,eval.max=2000,iter.max=1500; both raw gradients<=1e-4, native re-evaluation and FD stability checks; same map/data"
+    },
+    {
+      "id": "NATIVE-15-ORDINAL-PROBIT",
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "evidence_status": "NOT_REEXECUTED",
+      "fixture": "test/parity/test_ordinal_probit_parity.jl",
+      "fixture_pins": {
+        "test/parity/test_ordinal_probit_parity.jl": "9265782cc0907b161f7e2b98c17a428e92717fab1af4897714a42c6174095d9b",
+        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+      },
+      "seed": 46,
+      "n_traits": 5,
+      "n_units": 60,
+      "n_latent": 1,
+      "response_shape": "5 traits x 60 units; column-major long data site blocks",
+      "model": {
+        "link": "cumulative probit",
+        "dispersion": "per-trait cutpoints; first threshold fixed at zero; C=3",
+        "random_block": "ordinary loadings-only; unique=FALSE",
+        "identification": "triangular loading convention; compare invariant quantities"
+      },
+      "julia_call": "fit_ordinal_gllvm_pertrait(Y; K = K, link = ProbitLink(), g_tol = 1e-7, iterations = 1_000)",
+      "formula_status": "UNPAID",
+      "bridge_status": "UNPAID",
+      "current_loglik_check": {
+        "kind": "relative",
+        "tolerance": 1e-06
+      },
+      "acceptance_status": "CURRENT_FIXTURE_IS_SMOKE_NOT_PROGRAMME_ACCEPTANCE",
+      "evidence_location": "Fresh supervised receipt required; historical outputs are not selected by this catalogue",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=ordinal_probit(), control=gllvmTMBcontrol(n_init=1L,se=FALSE))"
+    },
+    {
+      "id": "NATIVE-16-NB1",
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "evidence_status": "NOT_REEXECUTED",
+      "fixture": "test/parity/test_nox_dispersion_parity.jl",
+      "fixture_pins": {
+        "test/parity/test_nox_dispersion_parity.jl": "6d6f68234d6d18b06499252ec8ebf78bcf509f491f49d98b7eeacc29f675d1f4",
+        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+      },
+      "seed": 55,
+      "n_traits": 5,
+      "n_units": 120,
+      "n_latent": 1,
+      "response_shape": "5 traits x 120 units; column-major long data site blocks",
+      "model": {
+        "link": "log",
+        "dispersion": "per-trait NB1 phi; Var=mu*(1+phi); observed Laplace curvature",
+        "random_block": "ordinary loadings-only; unique=FALSE",
+        "identification": "triangular loading convention; compare invariant quantities"
+      },
+      "julia_call": "fit_nb1_gllvm_grouped(Y; K = K, group = collect(1:p))",
+      "formula_status": "UNPAID",
+      "bridge_status": "UNPAID",
+      "current_loglik_check": {
+        "kind": "relative",
+        "tolerance": 1e-06
+      },
+      "acceptance_status": "CURRENT_FIXTURE_IS_SMOKE_NOT_PROGRAMME_ACCEPTANCE",
+      "evidence_location": "Fresh supervised receipt required; historical outputs are not selected by this catalogue",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=nbinom1(), control=gllvmTMBcontrol(n_init=1L,se=FALSE))"
+    },
+    {
+      "id": "NATIVE-17-MULTINOMIAL-FIXED",
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "evidence_status": "NOT_REEXECUTED",
+      "fixture": "test/parity/test_multinomial_parity.jl",
+      "fixture_pins": {
+        "test/parity/test_multinomial_parity.jl": "101723c882d1b62f41f84fbf24901f89f1b3e4905834c7d0b7c6076188d41460",
+        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+      },
+      "seed": 57,
+      "n_traits": 1,
+      "n_units": 400,
+      "n_latent": 0,
+      "response_shape": "category vector length400; four levels",
+      "model": {
+        "link": "baseline-category logit",
+        "dispersion": "none; four categories; first category baseline",
+        "random_block": "none",
+        "identification": "eta_category1=0; three free intercepts"
+      },
+      "julia_call": "fit_multinomial_gllvm(y; n_categories = ncat)",
+      "formula_status": "UNPAID",
+      "bridge_status": "UNPAID",
+      "current_loglik_check": {
+        "kind": "relative",
+        "tolerance": 1e-06
+      },
+      "acceptance_status": "CURRENT_FIXTURE_IS_SMOKE_NOT_PROGRAMME_ACCEPTANCE",
+      "evidence_location": "Fresh supervised receipt required; historical outputs are not selected by this catalogue",
+      "reference_call": "gllvmTMB(value ~ 0 + trait, data=df_long, unit=\"unit\", trait=\"trait\", family=multinomial(), control=gllvmTMBcontrol(n_init=1L,se=FALSE))"
+    }
+  ],
+  "blocking_obligations": [
+    {
+      "id": "FAMILY-LINK-PROBIT",
+      "source_admission_id": "FAMILY-01-PROBIT",
+      "status": "REQUIRED_EXECUTABLE_MODEL_CASE_MISSING",
+      "owner": "A3/B2/B5",
+      "detail": "R binomial probit admitted; 17-ID smoke uses logit only. Native/formula/bridge and actual observed curvature need paired model fixture."
+    },
+    {
+      "id": "FAMILY-LINK-CLOGLOG",
+      "source_admission_id": "FAMILY-01-CLOGLOG",
+      "status": "REQUIRED_EXECUTABLE_MODEL_CASE_MISSING",
+      "owner": "A3/B2/B5",
+      "detail": "R binomial cloglog admitted. Julia Fisher default versus R observed curvature and saturation health need explicit estimator contract; no logit substitution."
+    },
+    {
+      "id": "NB2-TOLERANCE",
+      "status": "REQUIRED_ACCEPTANCE_GAP",
+      "owner": "A3",
+      "detail": "Current seed45 test uses rtol1e-3, weaker than project R-parity1e-6. Do not promote the current passing smoke. Diagnose original case at tighter requirement; no tolerance edit or fit performed in this audit."
+    },
+    {
+      "id": "BINOMIAL-TRIALS",
+      "status": "REQUIRED_EXECUTABLE_MODEL_CASE_MISSING",
+      "owner": "A3/B4/B5",
+      "detail": "Base binomial fixture is Bernoulli. Shared R helper accepts N but currently supplies weights only for betabinomial, so passing N to binomial does not implement trials parity."
+    },
+    {
+      "id": "FAMILY-MODEL-VARIANTS",
+      "status": "REQUIRED_FINITE_EXPANSION_PENDING",
+      "owner": "A3",
+      "detail": "Default smoke does not cover all admitted dispersion grouping, masks, offsets, X, mixed family, missing data or covariance interactions. Do not form an unreviewed Cartesian product."
+    },
+    {
+      "id": "MULTINOMIAL-STRUCTURED",
+      "status": "REQUIRED_IMPLEMENTATION_AND_FIXTURE_MISSING",
+      "owner": "B3",
+      "detail": "Current row is n=400,C=4,K=0 exact fixed-effects likelihood. It pays no latent, animal or structured multinomial obligation."
+    },
+    {
+      "id": "HEALTH-AND-INTERFACES",
+      "status": "REQUIRED_ACCEPTANCE_AND_REPLAY_PENDING",
+      "owner": "A3/B4/B5",
+      "detail": "Converged flags and likelihood-only checks do not discharge original fit-health, inference, formula or public bridge requirements. Per-case numerical gates and independent review still needed."
+    }
+  ]
+}

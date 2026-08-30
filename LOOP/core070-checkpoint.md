@@ -505,3 +505,9 @@ No production B dispatch, full suite or long campaign was launched.
 - README/docstrings/page/runner updated; current render, fullsuite, R embedding, fitted replay and independent review unpaid. Whole-source old receipts historical; final narrow checks bind changed source. Full manifest DRAFT/M1 PARTIAL.
 - Remote family-recheck-01 remains UNKNOWN; recover existing job once authenticated observation returns, never restart from connection loss. Continue remaining finite contract; no new production child/push/merge/release/cleanup.
 - Mission Control Julia-only correctiond1d3cc9d07e0742e88dbaba0997ad561c9c47d18 committed; served HTTP200/readback verified, R fields unchanged and lease released. Unlazy2met/1unmet freshly reverified; no abandonment.
+
+## 2026-08-30 — Actual family model catalogue
+- Corrected17 smoke contract rows to actual seeds/dimensions/native/R calls; source hashes retained, no fixture/engine changes or new fit. Fixed multinomial is n400/C4/K0, not latent. Exact source consistency checks PASS.
+- Seven open groups explicit: probit/cloglog paired cases, NB2 rtol1e-3 versus required1e-6, binomial N accepted but weights not forwarded, finite variants, structured multinomial, health/interfaces. Master remains DRAFT/M1 PARTIAL; no smoke-to-programme promotion.
+- Next repair/qualify binomial trial and link transport, prepare actual paired cases and finish finite model contracts. Remote old job UNKNOWN and socket absent; recover before restart. No new child/push/merge/release/cleanup.
+- Mission Control correction06612d79e97bdafbef09ab213246a0c69bad409e served HTTP200/readback verified; R fields unchanged, lease released. Unlazy source gate passes; full contract gate unmet.

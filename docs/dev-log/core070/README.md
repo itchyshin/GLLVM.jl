@@ -130,3 +130,7 @@ synthetic receipts from real Python child processes, not scientific models.
 
 ## Required delta correction
 The required delta IDs now use test_delta_lognormal_required.jl and test_delta_gamma_required.jl: original seeds/data, shared predictor, per-trait dispersion, strict model/likelihood/gradient checks.48/48 pass under the exact public tight-control calls. Original shared-dispersion diagnostic fixtures remain optional and cannot pay these required rows. See delta-matched-contract.md. Full manifest remains DRAFT.
+
+## Exact existing family model catalogue
+
+[The reconciled catalogue](family-model-catalogue.md) records all17 actual smoke models and seven outstanding obligation groups, with fixture hashes in family-model-catalogue.json. It corrects dimensions and the fixed multinomial formula; it explicitly exposes NB2 rtol1e-3 and missing probit/cloglog/trial cases. This is source reconciliation, not new numerical evidence or contract freeze.
