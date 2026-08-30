@@ -15843,3 +15843,8 @@ unpaid. No numerical source changes, outer optimization or campaign.
 ## 2026-08-30 — Same-model delta required cases
 - Preserved seeds61/62 and original fixtures; replaced required-mode mismatch-only paths with species-dispersion comparisons. Both tight-control R/native fits healthy,48/48 required assertions PASS, max logLik difference2.001e-10. Totoro30.40s; no engine change.
 - Default R gradient failures, pre-fit world-age error retained. Seven negative controls/eight aggregate collection tests pass; helper/tool/DGP pins enforced. Master DRAFT/M1 PARTIAL, broader validation/review unpaid.
+
+## 2026-08-30 — Family recheck and truncated NB2 precision diagnosis
+- Started17-ID required smoke on5be659b1. Tool-read16-group result217pass/3fail (Student2, truncated NB2 R convergence1). Connection/socket lost during Tweedie; remote state UNKNOWN, raw full-run receipts not recovered. Do not restart; see runtime family-recheck/RECOVERY.md.
+- Separate original seed58 health diagnostic6pass/3fail; raw locally verified. Sixty scalar256-bit checks establish precision loss near Poisson limit: current max0.0151883 vs mean-based recurrence2.8422e-14. Diagnostic only; no engine change.
+- Evidence gate PASS, health gate FAIL, seven negative controls PASS. Full manifest/M1 incomplete; no public claims or cleanup.

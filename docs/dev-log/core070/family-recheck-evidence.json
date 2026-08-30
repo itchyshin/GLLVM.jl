@@ -1,0 +1,16 @@
+{
+  "scope": "17_FAMILY_SMOKE_NOT_CORE_COMPLETION",
+  "status": "AWAITING_REMOTE_READBACK",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "remote": "/home/snakagaw/core070-aghq-20260830/family-recheck-01",
+  "source_commit": "5be659b142fbce4e978b6ff5e1abdc947fbd6f68",
+  "observed_at_utc": "2026-08-30T19:27:38.473094+00:00",
+  "local_launcher": "TERMINAL_READBACK_FAILED",
+  "remote_tweedie": "UNKNOWN_DO_NOT_RESTART",
+  "missing_dependency": "existing authenticated Totoro ControlMaster socket",
+  "observations": {
+    "sixteen_group": "Tool-read terminal log:217 pass/3 fail; truncated NB2 R convergence1 failure, Student R convergence2 failures. Raw final receipts not yet local.",
+    "tweedie": "START observed; no terminal result retrieved"
+  },
+  "artifacts": {}
+}
