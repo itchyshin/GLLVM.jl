@@ -65,3 +65,7 @@ covariance/data/interface cases. These gates need the frozen R runtime; source
 cataloguing does not discharge them. Recover the previously launched Totoro job
 before any restart. Full manifest remains DRAFT; M1 PARTIAL; independent review
 outstanding. No campaign, fit, push, merge, release or cleanup in this slice.
+
+## Binomial transport repair checkpoint
+
+The previously recorded no-X/shared-X trial omission is repaired in the local candidate: supplied N becomes R weights, omitted N retains weights=NULL, and binomial_link is explicit.127 R argument captures and80 Julia preparation assertions pass; no fit or RCall embedding ran. Probit/cloglog, multi-trial numerical fixtures and complete parity remain unpaid. See [transport evidence](binomial-transport-contract.md). The earlier catalogue findings remain the pre-repair audit record.

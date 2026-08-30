@@ -14,7 +14,8 @@
       "fixture": "test/parity/test_gaussian_parity.jl",
       "fixture_pins": {
         "test/parity/test_gaussian_parity.jl": "a1610b34559eeb8c8d37f741432c1ed4603a02fe41747b3d6167b1654db2d884",
-        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+        "test/parity/parity_helpers.jl": "be2d0887f417964074a0b90a1e62baec1f80fc21b09663e3826e584c946044e1",
+        "test/parity/parity_trial_inputs.jl": "f4bb02fd150c306f635b7f86885272939f0b66faa4a8c5ee8843c64f6f7ea7cd"
       },
       "seed": 42,
       "n_traits": 5,
@@ -46,7 +47,8 @@
       "fixture": "test/parity/test_binomial_parity.jl",
       "fixture_pins": {
         "test/parity/test_binomial_parity.jl": "e586315295b4e5715284ef061d7bd7b4f82ac4a3bd90aea34529513bf1527d45",
-        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+        "test/parity/parity_helpers.jl": "be2d0887f417964074a0b90a1e62baec1f80fc21b09663e3826e584c946044e1",
+        "test/parity/parity_trial_inputs.jl": "f4bb02fd150c306f635b7f86885272939f0b66faa4a8c5ee8843c64f6f7ea7cd"
       },
       "seed": 43,
       "n_traits": 5,
@@ -78,7 +80,8 @@
       "fixture": "test/parity/test_poisson_parity.jl",
       "fixture_pins": {
         "test/parity/test_poisson_parity.jl": "d7ca740f8daa303aae730647af53b1db461ba7c0d44a4341db17e7e3495ed204",
-        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+        "test/parity/parity_helpers.jl": "be2d0887f417964074a0b90a1e62baec1f80fc21b09663e3826e584c946044e1",
+        "test/parity/parity_trial_inputs.jl": "f4bb02fd150c306f635b7f86885272939f0b66faa4a8c5ee8843c64f6f7ea7cd"
       },
       "seed": 44,
       "n_traits": 5,
@@ -110,7 +113,8 @@
       "fixture": "test/parity/test_lognormal_parity.jl",
       "fixture_pins": {
         "test/parity/test_lognormal_parity.jl": "937151e3737765df4e880d748fcc90729042d83cf84ae7b46d1f8b9bf9bdf0a4",
-        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+        "test/parity/parity_helpers.jl": "be2d0887f417964074a0b90a1e62baec1f80fc21b09663e3826e584c946044e1",
+        "test/parity/parity_trial_inputs.jl": "f4bb02fd150c306f635b7f86885272939f0b66faa4a8c5ee8843c64f6f7ea7cd"
       },
       "seed": 52,
       "n_traits": 5,
@@ -142,7 +146,8 @@
       "fixture": "test/parity/test_nox_dispersion_parity.jl",
       "fixture_pins": {
         "test/parity/test_nox_dispersion_parity.jl": "6d6f68234d6d18b06499252ec8ebf78bcf509f491f49d98b7eeacc29f675d1f4",
-        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+        "test/parity/parity_helpers.jl": "be2d0887f417964074a0b90a1e62baec1f80fc21b09663e3826e584c946044e1",
+        "test/parity/parity_trial_inputs.jl": "f4bb02fd150c306f635b7f86885272939f0b66faa4a8c5ee8843c64f6f7ea7cd"
       },
       "seed": 54,
       "n_traits": 5,
@@ -174,7 +179,8 @@
       "fixture": "test/parity/test_negbin_parity.jl",
       "fixture_pins": {
         "test/parity/test_negbin_parity.jl": "da4536360b1027afae1dc7f1918450a5b355279b4138787897406e83f76ae43c",
-        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+        "test/parity/parity_helpers.jl": "be2d0887f417964074a0b90a1e62baec1f80fc21b09663e3826e584c946044e1",
+        "test/parity/parity_trial_inputs.jl": "f4bb02fd150c306f635b7f86885272939f0b66faa4a8c5ee8843c64f6f7ea7cd"
       },
       "seed": 45,
       "n_traits": 5,
@@ -206,7 +212,8 @@
       "fixture": "test/parity/test_tweedie_parity.jl",
       "fixture_pins": {
         "test/parity/test_tweedie_parity.jl": "8723a0c7c21b6dba216ba5e5df400b45bb815eb37c5a58b8f644a4961a9394d5",
-        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+        "test/parity/parity_helpers.jl": "be2d0887f417964074a0b90a1e62baec1f80fc21b09663e3826e584c946044e1",
+        "test/parity/parity_trial_inputs.jl": "f4bb02fd150c306f635b7f86885272939f0b66faa4a8c5ee8843c64f6f7ea7cd"
       },
       "seed": 82,
       "n_traits": 5,
@@ -258,7 +265,8 @@
       "fixture": "test/parity/test_beta_parity.jl",
       "fixture_pins": {
         "test/parity/test_beta_parity.jl": "74a045861439b5a6f5a56c2c427c4abd2bfcc1fc143cfe43c392044ca51dbac8",
-        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+        "test/parity/parity_helpers.jl": "be2d0887f417964074a0b90a1e62baec1f80fc21b09663e3826e584c946044e1",
+        "test/parity/parity_trial_inputs.jl": "f4bb02fd150c306f635b7f86885272939f0b66faa4a8c5ee8843c64f6f7ea7cd"
       },
       "seed": 45,
       "n_traits": 5,
@@ -290,7 +298,8 @@
       "fixture": "test/parity/test_nox_dispersion_parity.jl",
       "fixture_pins": {
         "test/parity/test_nox_dispersion_parity.jl": "6d6f68234d6d18b06499252ec8ebf78bcf509f491f49d98b7eeacc29f675d1f4",
-        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+        "test/parity/parity_helpers.jl": "be2d0887f417964074a0b90a1e62baec1f80fc21b09663e3826e584c946044e1",
+        "test/parity/parity_trial_inputs.jl": "f4bb02fd150c306f635b7f86885272939f0b66faa4a8c5ee8843c64f6f7ea7cd"
       },
       "seed": 56,
       "n_traits": 5,
@@ -322,7 +331,8 @@
       "fixture": "test/parity/test_studentt_parity.jl",
       "fixture_pins": {
         "test/parity/test_studentt_parity.jl": "484aac8346fb9382ea4386cd18ce95fc85bd52a72f9f62e4984f664131711e68",
-        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+        "test/parity/parity_helpers.jl": "be2d0887f417964074a0b90a1e62baec1f80fc21b09663e3826e584c946044e1",
+        "test/parity/parity_trial_inputs.jl": "f4bb02fd150c306f635b7f86885272939f0b66faa4a8c5ee8843c64f6f7ea7cd"
       },
       "seed": 71,
       "n_traits": 5,
@@ -395,7 +405,8 @@
       "fixture": "test/parity/test_truncated_poisson_parity.jl",
       "fixture_pins": {
         "test/parity/test_truncated_poisson_parity.jl": "a9eb28a3eee5400245054b1ac0c19f7e9dd49aada652d2c58bd4da54bc0efec1",
-        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+        "test/parity/parity_helpers.jl": "be2d0887f417964074a0b90a1e62baec1f80fc21b09663e3826e584c946044e1",
+        "test/parity/parity_trial_inputs.jl": "f4bb02fd150c306f635b7f86885272939f0b66faa4a8c5ee8843c64f6f7ea7cd"
       },
       "seed": 53,
       "n_traits": 5,
@@ -427,7 +438,8 @@
       "fixture": "test/parity/test_truncated_nbinom2_parity.jl",
       "fixture_pins": {
         "test/parity/test_truncated_nbinom2_parity.jl": "9d8e55e10dcab771a034b414bdd59d84b16d0d18d952d86c154fe01bfe5c72af",
-        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+        "test/parity/parity_helpers.jl": "be2d0887f417964074a0b90a1e62baec1f80fc21b09663e3826e584c946044e1",
+        "test/parity/parity_trial_inputs.jl": "f4bb02fd150c306f635b7f86885272939f0b66faa4a8c5ee8843c64f6f7ea7cd"
       },
       "seed": 58,
       "n_traits": 5,
@@ -459,9 +471,10 @@
       "fixture": "test/parity/test_delta_lognormal_required.jl",
       "fixture_pins": {
         "test/parity/test_delta_lognormal_required.jl": "9d56445fa7f0c60a9ef657d04457c436e7ba6a04efa06f448d821d25032c5348",
-        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f",
+        "test/parity/parity_helpers.jl": "be2d0887f417964074a0b90a1e62baec1f80fc21b09663e3826e584c946044e1",
         "tools/core070_delta_matched.jl": "451b19bf7f6ff31e9c9e8ed44f5b172d56f0dcc5864c812c59c7daf25d377135",
-        "test/parity/test_delta_lognormal_parity.jl": "b276aa2384799c81366d9bfd53ddf143c05f28e0a3436703540c34f9d062359c"
+        "test/parity/test_delta_lognormal_parity.jl": "b276aa2384799c81366d9bfd53ddf143c05f28e0a3436703540c34f9d062359c",
+        "test/parity/parity_trial_inputs.jl": "f4bb02fd150c306f635b7f86885272939f0b66faa4a8c5ee8843c64f6f7ea7cd"
       },
       "seed": 61,
       "n_traits": 5,
@@ -494,9 +507,10 @@
       "fixture": "test/parity/test_delta_gamma_required.jl",
       "fixture_pins": {
         "test/parity/test_delta_gamma_required.jl": "fee21659980e2380fd4f7ccd0000954f55a396a4dc041a1cc975d8ddd876d138",
-        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f",
+        "test/parity/parity_helpers.jl": "be2d0887f417964074a0b90a1e62baec1f80fc21b09663e3826e584c946044e1",
         "tools/core070_delta_matched.jl": "451b19bf7f6ff31e9c9e8ed44f5b172d56f0dcc5864c812c59c7daf25d377135",
-        "test/parity/test_delta_gamma_parity.jl": "63954e369b8e488d0f1447e10dd270913dcab2ca242c367c1393abffd1b0e349"
+        "test/parity/test_delta_gamma_parity.jl": "63954e369b8e488d0f1447e10dd270913dcab2ca242c367c1393abffd1b0e349",
+        "test/parity/parity_trial_inputs.jl": "f4bb02fd150c306f635b7f86885272939f0b66faa4a8c5ee8843c64f6f7ea7cd"
       },
       "seed": 62,
       "n_traits": 5,
@@ -529,7 +543,8 @@
       "fixture": "test/parity/test_ordinal_probit_parity.jl",
       "fixture_pins": {
         "test/parity/test_ordinal_probit_parity.jl": "9265782cc0907b161f7e2b98c17a428e92717fab1af4897714a42c6174095d9b",
-        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+        "test/parity/parity_helpers.jl": "be2d0887f417964074a0b90a1e62baec1f80fc21b09663e3826e584c946044e1",
+        "test/parity/parity_trial_inputs.jl": "f4bb02fd150c306f635b7f86885272939f0b66faa4a8c5ee8843c64f6f7ea7cd"
       },
       "seed": 46,
       "n_traits": 5,
@@ -561,7 +576,8 @@
       "fixture": "test/parity/test_nox_dispersion_parity.jl",
       "fixture_pins": {
         "test/parity/test_nox_dispersion_parity.jl": "6d6f68234d6d18b06499252ec8ebf78bcf509f491f49d98b7eeacc29f675d1f4",
-        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+        "test/parity/parity_helpers.jl": "be2d0887f417964074a0b90a1e62baec1f80fc21b09663e3826e584c946044e1",
+        "test/parity/parity_trial_inputs.jl": "f4bb02fd150c306f635b7f86885272939f0b66faa4a8c5ee8843c64f6f7ea7cd"
       },
       "seed": 55,
       "n_traits": 5,
@@ -593,7 +609,8 @@
       "fixture": "test/parity/test_multinomial_parity.jl",
       "fixture_pins": {
         "test/parity/test_multinomial_parity.jl": "101723c882d1b62f41f84fbf24901f89f1b3e4905834c7d0b7c6076188d41460",
-        "test/parity/parity_helpers.jl": "3e846d74cabca02876ba53fcbeebcf2b736961de452c5c5e8d9f34988b7fa55f"
+        "test/parity/parity_helpers.jl": "be2d0887f417964074a0b90a1e62baec1f80fc21b09663e3826e584c946044e1",
+        "test/parity/parity_trial_inputs.jl": "f4bb02fd150c306f635b7f86885272939f0b66faa4a8c5ee8843c64f6f7ea7cd"
       },
       "seed": 57,
       "n_traits": 1,
@@ -624,14 +641,14 @@
       "source_admission_id": "FAMILY-01-PROBIT",
       "status": "REQUIRED_EXECUTABLE_MODEL_CASE_MISSING",
       "owner": "A3/B2/B5",
-      "detail": "R binomial probit admitted; 17-ID smoke uses logit only. Native/formula/bridge and actual observed curvature need paired model fixture."
+      "detail": "R binomial probit admitted; 17-ID smoke uses logit only. Native/formula/bridge and actual observed curvature need paired model fixture. The oracle helper now transports the requested link, verified by R argument capture; numerical qualification remains unpaid."
     },
     {
       "id": "FAMILY-LINK-CLOGLOG",
       "source_admission_id": "FAMILY-01-CLOGLOG",
       "status": "REQUIRED_EXECUTABLE_MODEL_CASE_MISSING",
       "owner": "A3/B2/B5",
-      "detail": "R binomial cloglog admitted. Julia Fisher default versus R observed curvature and saturation health need explicit estimator contract; no logit substitution."
+      "detail": "R binomial cloglog admitted. Julia Fisher default versus R observed curvature and saturation health need explicit estimator contract; no logit substitution. The oracle helper now transports the requested link, verified by R argument capture; numerical qualification remains unpaid."
     },
     {
       "id": "NB2-TOLERANCE",
@@ -643,7 +660,7 @@
       "id": "BINOMIAL-TRIALS",
       "status": "REQUIRED_EXECUTABLE_MODEL_CASE_MISSING",
       "owner": "A3/B4/B5",
-      "detail": "Base binomial fixture is Bernoulli. Shared R helper accepts N but currently supplies weights only for betabinomial, so passing N to binomial does not implement trials parity."
+      "detail": "No-X/shared-X helper now forwards supplied trials and preserves omitted-N Bernoulli semantics. 127 R argument captures and80 pure Julia/preparation checks pass; installed RCall and paired multi-trial numerical fixtures remain unpaid."
     },
     {
       "id": "FAMILY-MODEL-VARIANTS",
@@ -663,5 +680,8 @@
       "owner": "A3/B4/B5",
       "detail": "Converged flags and likelihood-only checks do not discharge original fit-health, inference, formula or public bridge requirements. Per-case numerical gates and independent review still needed."
     }
-  ]
+  ],
+  "revision": 2,
+  "supersedes_sha256": "2407e5c9dbe16f35012a74ed9ef57e10ff10910f4e486fed43aa7e91d8477633",
+  "revision_note": "Trial/link oracle helper repaired; argument capture and pure preparation only, fitted models still unpaid."
 }

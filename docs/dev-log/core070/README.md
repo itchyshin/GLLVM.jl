@@ -134,3 +134,7 @@ The required delta IDs now use test_delta_lognormal_required.jl and test_delta_g
 ## Exact existing family model catalogue
 
 [The reconciled catalogue](family-model-catalogue.md) records all17 actual smoke models and seven outstanding obligation groups, with fixture hashes in family-model-catalogue.json. It corrects dimensions and the fixed multinomial formula; it explicitly exposes NB2 rtol1e-3 and missing probit/cloglog/trial cases. This is source reconciliation, not new numerical evidence or contract freeze.
+
+## Binomial transport repair checkpoint
+
+The previously recorded no-X/shared-X trial omission is repaired in the local candidate: supplied N becomes R weights, omitted N retains weights=NULL, and binomial_link is explicit.127 R argument captures and80 Julia preparation assertions pass; no fit or RCall embedding ran. Probit/cloglog, multi-trial numerical fixtures and complete parity remain unpaid. See [transport evidence](binomial-transport-contract.md). The earlier catalogue findings remain the pre-repair audit record.

@@ -511,3 +511,9 @@ No production B dispatch, full suite or long campaign was launched.
 - Seven open groups explicit: probit/cloglog paired cases, NB2 rtol1e-3 versus required1e-6, binomial N accepted but weights not forwarded, finite variants, structured multinomial, health/interfaces. Master remains DRAFT/M1 PARTIAL; no smoke-to-programme promotion.
 - Next repair/qualify binomial trial and link transport, prepare actual paired cases and finish finite model contracts. Remote old job UNKNOWN and socket absent; recover before restart. No new child/push/merge/release/cleanup.
 - Mission Control correction06612d79e97bdafbef09ab213246a0c69bad409e served HTTP200/readback verified; R fields unchanged, lease released. Unlazy source gate passes; full contract gate unmet.
+
+## 2026-08-30 — Binomial oracle trial/link transport candidate
+- Both no-X/shared-X helpers forwarded no binomial N and defaulted all links to logit. Original actual R-block capture68pass/20fail; repair final127pass. Pure guards56 plus actual Julia pre-R prefixes24pass, no fit/embedding. Default omitted-N weights=NULL preserved; neighbor weight routing tested.
+- Added required source inventory pin for shared pure helper; aggregator self-test and six scoped evidence negatives pass. No engine/DGP/tolerance change. Catalogue updated without promoting paired fits; masterDRAFT/M1PARTIAL.
+- Next actual paired probit/cloglog/multi-trial fixtures, frozen model contracts and original fit-health diagnosis after remote observation returns. Totoro socket absent/oldjobUNKNOWN; never restart from failed observation. Fullsuite/review/embedding unpaid; no newchild/push/merge/release/cleanup.
+- Mission Control Julia-only correction4fe1286b66d5b855bdcc7f79671ba10a29556876 committed and served HTTP200/readback verified; R fields preserved, lease released. Unlazy2met/1unmet, no abandonment.

@@ -20,6 +20,7 @@ ORACLE_SOURCE = ROOT / ".unlazy/core070-aghq/oracle-source/source.json"
 CONTRACT_REL = "docs/dev-log/core070/frozen-r070-contract.toml"
 EXECUTION_STATIC = (
     "src", "test/parity/core070_receipts.jl", "test/parity/parity_helpers.jl",
+    "test/parity/parity_trial_inputs.jl",
     "test/parity/runparity.jl", "test/parity/r_health.R", "Project.toml", "test/Project.toml",
     "test/parity/Project.toml", "tools/core070_delta_matched.jl",
     "test/parity/test_delta_lognormal_parity.jl", "test/parity/test_delta_gamma_parity.jl",

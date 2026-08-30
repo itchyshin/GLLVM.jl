@@ -15879,3 +15879,8 @@ unpaid. No numerical source changes, outer optimization or campaign.
 - Corrected17 smoke contract rows to actual seeds/dimensions/native/R calls; source hashes retained, no fixture/engine changes or new fit. Fixed multinomial is n400/C4/K0, not latent. Exact source consistency checks PASS.
 - Seven open groups explicit: probit/cloglog paired cases, NB2 rtol1e-3 versus required1e-6, binomial N accepted but weights not forwarded, finite variants, structured multinomial, health/interfaces. Master remains DRAFT/M1 PARTIAL; no smoke-to-programme promotion.
 - Next repair/qualify binomial trial and link transport, prepare actual paired cases and finish finite model contracts. Remote old job UNKNOWN and socket absent; recover before restart. No new child/push/merge/release/cleanup.
+
+## 2026-08-30 — Binomial oracle trial/link transport candidate
+- Both no-X/shared-X helpers forwarded no binomial N and defaulted all links to logit. Original actual R-block capture68pass/20fail; repair final127pass. Pure guards56 plus actual Julia pre-R prefixes24pass, no fit/embedding. Default omitted-N weights=NULL preserved; neighbor weight routing tested.
+- Added required source inventory pin for shared pure helper; aggregator self-test and six scoped evidence negatives pass. No engine/DGP/tolerance change. Catalogue updated without promoting paired fits; masterDRAFT/M1PARTIAL.
+- Next actual paired probit/cloglog/multi-trial fixtures, frozen model contracts and original fit-health diagnosis after remote observation returns. Totoro socket absent/oldjobUNKNOWN; never restart from failed observation. Fullsuite/review/embedding unpaid; no newchild/push/merge/release/cleanup.
