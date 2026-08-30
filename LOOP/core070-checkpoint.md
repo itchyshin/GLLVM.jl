@@ -284,3 +284,16 @@ integrated-source route inspected into22 draft admission/design cases; it is
 not excluded solely by its experimental interface label. Next: execute and
 freeze remaining source-admission cases, map full native/formula/bridge fixtures,
 and resolve Student reference health. Milestone1 remains PARTIAL.
+
+
+## Continuation pointer — 2026-08-30 15:52 UTC
+
+Collection implementation a7ecc9e1 and source-admission checkpoint93ef2cd9 are
+local-only. Eight collection tests and3/3 gates freshly pass; independent
+Terra/high inspection found no blockers, not a programme signoff. Mission
+Control b6e3f89 servedHTTP200/exact field readback; all R fields unchanged and
+its exact-file lease released. No active child or remote fit. Numerical source
+still6e59ef54: Tweedie28/28 scopedPASS, Student31pass/2fail health unresolved.
+Next bounded parent task: source-admission replay for integrated multi-source
+data (see integrated-source-contract.md), then remaining full contract cells.
+No production B dispatch or full suite until the M1 checkpoint conditions hold.

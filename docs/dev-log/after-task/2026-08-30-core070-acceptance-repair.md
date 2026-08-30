@@ -73,7 +73,7 @@ by explicitly binding the repository cwd; a status query was not used as proof.
 
 Resolved with regression evidence: TestCounts API change, wrong loaded checkout,
 R partial-field match, supervisor validation after child launch. External process-result binding is repaired and regression-tested. Open:
-Complete frozen capability
+complete frozen capability
 manifest; Student reference health; original failing CI environment; full-suite
 and broader capability validation. The draft aggregate remains fail-closed.
 
@@ -113,6 +113,6 @@ required observed-curvature/repair branch; that implementation gate remains open
 
 Covers this Julia lane and a pinned R0.7.0 oracle only. Does NOT cover R0.7.1,
 the article lane, public AGHQ, recovery/coverage or full programme acceptance. Mission Control correction
-442d4d1 is served with HTTP200 and exact field readback; R0.7.1 content is
+b6e3f89 is served with HTTP200 and exact field readback; R0.7.1 content is
 unchanged. No scientific campaign or full suite was launched. The long-running
 programme remains active and its durable checkpoint will retain the next step.
