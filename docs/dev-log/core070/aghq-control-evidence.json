@@ -1,0 +1,26 @@
+{
+  "status": "R_CONTROL_SUBSET_PASS_JULIA_UNPAID",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "case_count": 39,
+  "manifest_sha256": "32f7a51a4433917a74f19c37b516d8dc4663c1be254acd6620233da9244f5d2b",
+  "source_pins": {
+    "R/gllvmTMB.R": "bf78912c192311d1ca40704cd81493c2c06773eb3eb7aea14b826a7459dd6f20",
+    "R/fit-multi.R": "768db11bd09e6de872d4a27b60fd0a096f617434ac84c95db721fac8f8d77c02",
+    "R/aghq-control.R": "e0f6857e090d2928c87cc1186a07e2534ee1f3c4633459dd806b4d40f8969895"
+  },
+  "runtimes": [
+    "Rscript (R) version 4.6.0 (2026-04-24)",
+    "Rscript (R) version 4.5.3 (2026-03-11)"
+  ],
+  "negative_controls": [
+    "omitted required ID rejected",
+    "stale source pin rejected",
+    "false assertion retained as failure"
+  ],
+  "public_fit_admission": "UNPAID",
+  "julia_estimator": "UNPAID",
+  "raw_receipts": [
+    ".unlazy/core070-aghq/aghq-control-subset/attempt2",
+    ".unlazy/core070-aghq/aghq-control-subset/totoro-readback/receipt"
+  ]
+}

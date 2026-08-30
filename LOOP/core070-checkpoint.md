@@ -163,3 +163,14 @@ DRAFT currently prevents that acceptance path. Original valid process receipts
 are not invalidated by the malformed-plan counterexample.
 MissionControl Julia-only correction committed602ad06; servedHTTP200/readback
 matches and all other R0.7.1 fields unchanged; exact-file lease released.
+
+
+## Frozen AGHQ control subset — 2026-08-30
+
+Frozen39 reference-control rows before replay. All pass against the exact source
+on local R4.6.0 and Totoro R4.5.3. Omitted-case, stale-source and forced-false
+controls reject. This is R policy behavior only; public-fit admission and Julia
+AGHQ remain unpaid. Source contract documents explicit aghq_ridge=Inf for the
+approved unpenalised scope, TRUE/NULL adapters, k1/trait20 rules, actual single-k
+resolution and the missing adaptation-chain derivative proof. Full programme
+manifest remains DRAFT; no estimator or capability claim follows from this subset.
