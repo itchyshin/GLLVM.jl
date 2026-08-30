@@ -385,3 +385,7 @@ No production B dispatch, full suite or long campaign was launched.
 - Mission Control Julia-only update verified HTTP200 at vaultd8673513; R fields
  unchanged. Full aggregate still rejects DRAFT_CONTRACT, independent of input
  subset passes. No numerical full-parity status advanced.
+- Closure probe clarification: prepared-input RDS receipts correctly reject with
+ MISSING_RECEIPT (they are not parity run.toml). Repeating with real historical
+ parity receipts rejects DRAFT_CONTRACT. Both terminal outputs are retained;
+ no source/receipt workaround was used to promote the prepared-input subset.
