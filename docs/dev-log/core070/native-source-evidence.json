@@ -1,0 +1,65 @@
+{
+  "status": "NATIVE_SOURCE_FIXED_POINTS_PASS_NOT_FITTED_PARITY",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "reference_evidence": "docs/dev-log/core070/source-fixed-point-evidence.json",
+  "reference_evidence_sha256": "30b3944288ec6ee78ef28d6a338047a3bd0089e2f5bb9f5c440258dc7578a2e0",
+  "red_receipt": ".unlazy/core070-aghq/native-source/red/process/process-receipt.json",
+  "green_receipt": ".unlazy/core070-aghq/native-source/repair/process/process-receipt.json",
+  "unit_assertions": 25,
+  "parity_assertions": 18,
+  "points": [
+    {
+      "id": "ANIMAL-LATENT-P1",
+      "abs_delta": 2.842170943040401e-14,
+      "scaled_gradient_error": 6.802648200653206e-15
+    },
+    {
+      "id": "ANIMAL-LATENT-P2",
+      "abs_delta": 7.105427357601002e-14,
+      "scaled_gradient_error": 8.920963381609483e-15
+    },
+    {
+      "id": "KERNEL-ONE-P1",
+      "abs_delta": 2.842170943040401e-14,
+      "scaled_gradient_error": 6.802648200653206e-15
+    },
+    {
+      "id": "KERNEL-ONE-P2",
+      "abs_delta": 7.105427357601002e-14,
+      "scaled_gradient_error": 8.920963381609483e-15
+    },
+    {
+      "id": "KERNEL-TWO-P1",
+      "abs_delta": 8.526512829121202e-14,
+      "scaled_gradient_error": 2.5079894361451042e-15
+    },
+    {
+      "id": "KERNEL-TWO-P2",
+      "abs_delta": 7.105427357601002e-14,
+      "scaled_gradient_error": 8.744044064077878e-15
+    }
+  ],
+  "artifacts": {
+    ".unlazy/core070-aghq/native-source/red/process/00.log": "2361e0e83c4d9a5377c3c6075cbdc90417db233f9863cf1d39c6818cc2d0041f",
+    ".unlazy/core070-aghq/native-source/red/process/execution-plan.json": "46daf3ff90f9ea62abc34ae10a2aa6bee4ccf149e01420f97779435d8c75d7a6",
+    ".unlazy/core070-aghq/native-source/red/process/process-receipt.json": "60e818b99e865968c1c002c3d75ab11f397add63effee9926dac99fb9a76bf88",
+    ".unlazy/core070-aghq/native-source/red/process/progress.json": "8fcacb3cd5208f00205f9ed92033112af4eac28bf6cd7ddfa499c26b8146c2dd",
+    ".unlazy/core070-aghq/native-source/green/process/00.log": "8d4775d45e0e827282e83d927d64376354688b3d0575502d774262838df3b838",
+    ".unlazy/core070-aghq/native-source/green/process/01.log": "59520a38e59e5513e53790d8c1c5404ff2149702d1e20236c6d1aee8d66cc50d",
+    ".unlazy/core070-aghq/native-source/green/process/execution-plan.json": "0cbeaca8e1b9a3d220ce127ffcda193cefdd08a4625dfb37d4f5c11d9dd594b0",
+    ".unlazy/core070-aghq/native-source/green/process/process-receipt.json": "8d1dd125664ce8466af6affe7301f45469fef29df3fc0b23565cb4c5a9819470",
+    ".unlazy/core070-aghq/native-source/green/process/progress.json": "ec834830f3c0468c39e4060cccad086279a86a88ae74294e2bc907aec77b3739",
+    ".unlazy/core070-aghq/native-source/repair/process/00.log": "11a75222f65867b5a35370c19e17cfac751098f69541256bb49c9d0b151666cb",
+    ".unlazy/core070-aghq/native-source/repair/process/01.log": "ffb75b4894399ffb08143c45007fc55f421775e02ba22c93e4e34406c2462d4b",
+    ".unlazy/core070-aghq/native-source/repair/process/execution-plan.json": "824d043337bd9f41cab15c510a2ad3e2f42b2a40c99bbf4b3ccf9ed04793bc18",
+    ".unlazy/core070-aghq/native-source/repair/process/process-receipt.json": "26c252628d379b668670a6f5fe18e0e0d1e336486c43fc51a6c04075b86ebf43",
+    ".unlazy/core070-aghq/native-source/repair/process/progress.json": "bb1bb50cbf92392a70f2e498f100476de8a1c5db4af511a9a5b4edf334de6d22"
+  },
+  "unpaid": [
+    "Optimized fits/health/recovery",
+    "General source modes/ranks/families/data",
+    "Formula/bridge/postfit",
+    "Full suite/performance"
+  ],
+  "first_green_receipt": ".unlazy/core070-aghq/native-source/green/process/process-receipt.json"
+}

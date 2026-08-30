@@ -414,3 +414,10 @@ No production B dispatch, full suite or long campaign was launched.
 - Animal/single-kernel use identical identity fixture; second kernel is nonidentity. Native production source model, broader source cells and fitted parity UNPAID. No B production child launched. Independent Noether Terra/high review accepted bounded representation; no inspected production route matches general source model. Review receipt retained, not milestone approval.
 - Next: finish finite required manifest and M1 numerical blockers/checkpoint; use this contract for B1/B2 representation review. No release/push/cleanup. Do not overwrite inherited historical LOOP files.
 - Mission Control Julia-only correction committed in vault255686ec; served HTTP200 matches and all R fields preserved. Full programme remains ACTIVE; no push/merge/destructive cleanup.
+
+## 2026-08-30 — Native additive source evaluator
+- Internal src/source_covariance.jl is now registered. Complete p×n Gaussian, rank-one one/two known sources, source-specific group incidence, independent scalar residual; no fitting API/export.
+- TDD red missing symbol test0pass/1fail/0errors. Green25unit +18frozen-reference assertions, maxnll8.527e-14/scaledgradient8.921e-15; current numerical sources and raw R artifacts pinned. Totoro red10.49s, green21.89s aggregate.
+- Historical reference-only native gap is closed at density level for the tested cells. Broader B1 and optimized fit/health/formula/bridge/postfit/recovery remain UNPAID. Source-contract review remains useful; independent implementation review tracked in native-source runtime.
+- No new production child; no full suite, push/merge/release/cleanup. Next remains finite required manifest/M1 blockers and checkpoint before new production tranche.
+- Noether implementation review: no blocker; added requested unequal2/3group direct-reference regression. Final25unit+18parity assertions pass in22.99s. Mission Control Julia-only update served/read-back; R fields preserved.

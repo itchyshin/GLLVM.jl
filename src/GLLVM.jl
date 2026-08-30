@@ -17,6 +17,7 @@ include("fit_verdict.jl")            # _fit_verdict: never report a failure sent
 include("packing.jl")
 include("lowrank_cholesky.jl")          # used by likelihood
 include("likelihood.jl")
+include("source_covariance.jl")          # internal Gaussian additive source reference evaluator
 include("ppca_init.jl")                  # used by fit (warm-start)
 include("em_fa.jl")                      # alternative EM solver
 include("profile.jl")                    # σ_eps profile-out (used by fit)

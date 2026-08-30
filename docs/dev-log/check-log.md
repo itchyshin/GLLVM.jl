@@ -15809,3 +15809,8 @@ unpaid. No numerical source changes, outer optimization or campaign.
 - Six frozen R animal/kernel points match independent dense covariance/gradients:44 assertions; max absolute nll difference8.527e-14.33 remote numerical artifacts hash-verified.
 - Existing matrix-normal route differs because it correlates residual noise; two valid-domain controls differ0.8717882/3.1760369. Preserve that model; additive source native implementation remains unpaid.
 - Failed precision-axis attempt retained; source/shape correction only. No engine edits, optimized fits, full suite or parity promotion. See source-covariance-contract and source-fixed-point-evidence; M1 PARTIAL.
+
+### 2026-08-30 — Native additive Gaussian source evaluator
+- Implemented internal source evaluator with independent residual noise; complete Gaussian rank-one one/two-source contract, dense Cholesky, no fitter/export or coevolution behavior change.
+- Expected red0pass/1fail/0errors; green25unit +18frozen-reference assertions on Totoro1.12.6. Six exact R points maxnll delta8.527e-14/maxscaledgradient8.921e-15; current source and raw oracle hashes pinned.
+- Three candidate rows native fixed-point PASS; general B1, optimized fits and interfaces remain UNPAID. No full suite or speed claim. See native-source-evidence and after-task report.

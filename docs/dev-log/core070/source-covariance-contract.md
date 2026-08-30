@@ -40,3 +40,7 @@ Verify retained evidence with `python3 tools/core070_verify_source_points.py`. A
 ## Independent review
 
 Noether (fresh Terra/high read-only CLI, 180 seconds, exit0) accepted this bounded representation and counterexample. See [review](source-covariance-review.md). For future long-form data use source-specific group incidence g_r(o); a literal Kronecker expression assumes complete matching order. The first native evaluator should remain Gaussian, complete p×n, fixed ordered SPD source matrices, one loading vector per source, one or two sources and scalar residual scale. Broader programme cells remain required but must be separate increments. Noether did not run tests or issue a milestone-completion verdict.
+
+## Native evaluator increment (subsequent to reference review)
+
+The internal `_gaussian_source_loglik` now implements the initial complete-data Gaussian rank-one, one/two-source contract. Six retained R points pass native value/gradient checks (18 assertions), plus 25 unit assertions. See [native evidence](native-source-evidence.json) and ../decisions/2026-08-30-gaussian-source-evaluator.md. The earlier native-unpaid statements describe the reference-only checkpoint; optimized fitting, broader B1, formula/bridge/postfit and recovery remain unpaid. No existing matrix-normal behavior changed.

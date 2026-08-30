@@ -147,6 +147,7 @@ using GLLVM
     include("test_cross_kernel.jl")
     include("test_extract_gamma.jl")
     include("test_cross_kernel_fit.jl")
+    include("test_source_covariance.jl")
     include("test_coevolution_kronecker.jl")
     include("test_coevolution_blockna.jl")
     include("test_coevolution_glm.jl")
