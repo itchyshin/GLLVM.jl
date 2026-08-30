@@ -15609,3 +15609,18 @@ A neighbouring source-binding gap was found: require the loaded package root
 and entry point to equal the evidence checkout. Regression red21pass/2fail/1error,
 then24/24 pass locally on Julia1.10. Python evidence self-test passes. Fresh
 Totoro1.12 qualification is still required before current-candidate fit evidence.
+
+
+## Fresh paired replay e5e204ef — 2026-08-30
+
+Qualification PASS on Totoro Julia1.12.6: receipt24/24, R-health logic, targeted
+model tests, and exact oracle startup (about60s total). Paired replay FAIL:
+Tweedie0pass/3errors in16s: harness used `$sdr`, partially matching atomic
+`sdreport_error` rather than the actual `sd_report` list. Student31pass/2fail
+in34s: frozen R estimated-nu optimizer code1, false convergence(8), with
+abs delta logLik0.0007305893702778121; fixed-nu control delta4.29884e-9.
+Both failed terminal receipts and process exits are retained unchanged.
+Corrected Hessian lookup uses exact `sd_report` / `pdHess` indexing, with
+pure negative fixtures for partial names, atomic/missing reports, and positive/
+negative measured Hessians. No estimator, fixture or tolerance changed.
+R-health regression is green; a new paired replay remains required.

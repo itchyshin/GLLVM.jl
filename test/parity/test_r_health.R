@@ -16,4 +16,11 @@ bad <- opt; bad$par[2] <- 21
 stopifnot(!core070_tweedie_health(bad, c(0, 0), 1, 1.5)$healthy)
 fixed <- opt; fixed$par <- c(beta = 0)
 stopifnot(core070_tweedie_health(fixed, 0, 1, 1.5)$n_power_free == 0L)
+
+# R's $ partial matching must not treat sdreport_error as an sdreport object.
+stopifnot(is.na(core070_hessian_pd(list(sdreport_error="not computed"))))
+stopifnot(is.na(core070_hessian_pd(list(sd_report=FALSE))))
+stopifnot(identical(core070_hessian_pd(list(sd_report=list(pdHess=TRUE))),TRUE))
+stopifnot(identical(core070_hessian_pd(list(sd_report=list(pdHess=FALSE))),FALSE))
+stopifnot(is.na(core070_hessian_pd(list(sd_report=list(pdHessian=TRUE)))))
 cat('CORE070_R_HEALTH_CONTROLS_PASS\n')

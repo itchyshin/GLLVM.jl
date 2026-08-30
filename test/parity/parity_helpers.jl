@@ -939,7 +939,7 @@ function fit_gllvmtmb_parity_tweedie(y::AbstractMatrix, K::Integer;
       })
     health <- core070_tweedie_health(fit_r$opt, gradient,
       as.numeric(fit_r$report$phi_tweedie), p_report,
-      hessian_pd = if (is.null(fit_r$sdr$pdHess)) NA else fit_r$sdr$pdHess)
+      hessian_pd = core070_hessian_pd(fit_r))
     health$gradient_error <- gradient_error
     .gllvm_parity_tweedie <<- list(
         health = health,

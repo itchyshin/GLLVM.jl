@@ -29,3 +29,13 @@ core070_tweedie_health <- function(opt, gradient, phi, power,
        hessian_pd = hessian_pd,
        hessian_diagnostic = if (is.na(hessian_pd)) 'not measured; se=FALSE' else 'reported, not a recovery verdict')
 }
+
+# The frozen fitted object stores sd_report, while sdreport_error may be text.
+# Exact indexing prevents both R partial matching and fabricated diagnostics.
+core070_hessian_pd <- function(fit) {
+  report <- fit[["sd_report", exact=TRUE]]
+  if (!is.list(report)) return(NA)
+  value <- report[["pdHess", exact=TRUE]]
+  if (!is.logical(value) || length(value) != 1L) return(NA)
+  value
+}
