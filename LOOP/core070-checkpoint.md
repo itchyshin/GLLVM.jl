@@ -333,3 +333,19 @@ Native mixed fitter source src/families/mixed.jl:420 and bridge:1726 enforce
 one family per trait; do not falsely label that integrated-source support.
 Tweedie28/28 scopedPASS and Student31pass/2fail remain numerical6e59ef54 results.
 No production B dispatch, full suite or long campaign was launched.
+
+## Student precision checkpoint — 2026-08-30
+
+- Source normalizer repaired for Float64/nested Dual after independent Noether
+  Terra/high design review. Precision51/51 and adjacent113/113 pass on Totoro.
+- Original seed71 unchanged: Student31/2, exit1; abs delta0.000690345 meets
+  tolerance but frozen R false-convergence/max-gradient0.22544 remain. Density
+  defect is independently proved; full R optimizer failure cause is not.
+- New exact immutable Totoro root: student-normalizer-green-01. Previous6e59
+  numerical evidence remains historical. No active remote job or reviewer.
+- Full contract still DRAFT and M1 PARTIAL. Next: finish the finite covariance,
+  modifier, data, postfit and interface manifest; design a bounded same-model
+  frozen-R optimizer diagnosis without modifying reference source or seed71.
+  No B production children before the tranche checkpoint decision.
+- Mission Control updated/read back at vaultb435e2bb; R0.7.1 and article fields
+  preserved. No push, merge, release, destructive cleanup, fullsuite or campaign.

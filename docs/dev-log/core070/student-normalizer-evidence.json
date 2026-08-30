@@ -1,0 +1,63 @@
+{
+  "status": "PRECISION_REPAIRED_STUDENT_PARITY_STILL_FAIL",
+  "source_tree_sha256": "fb6e52fd76cbbf91e2e6993da89d5c22d88d3c4f0705d1442153f12525381680",
+  "student_source_sha256": "6fe7a4f6d00722ec0591d29efb34c2752f56b074ba3ae958b57b80a820f57a10",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "qualification_process": ".unlazy/core070-aghq/student-normalizer/qualification/process/process-receipt.json",
+  "qualification_process_sha256": "7de2703f358fd4f2f76610deb5d9fb39f3dd3d0bb0d81f876812d24db7bd25ae",
+  "commands": [
+    {
+      "id": "precision",
+      "exit": 0,
+      "elapsed_seconds": 11.647564256563783,
+      "log_sha256": "d48724c5c8792aee7b0a6f5d4f26061c9414f92619f7d82c67de586f2460b085"
+    },
+    {
+      "id": "frozen-point",
+      "exit": 0,
+      "elapsed_seconds": 23.38087509199977,
+      "log_sha256": "0cb4081d54e67d8a17cda6f5b995c482ccd7a9fa039b2d8fa9352438e5bb4404"
+    },
+    {
+      "id": "student-parity",
+      "exit": 1,
+      "elapsed_seconds": 34.36170559935272,
+      "log_sha256": "dc0285f9ad69111cb1be474305f775cf1544eed762a9f45e11066347baebc34a"
+    }
+  ],
+  "precision_tests": 51,
+  "frozen_point_objective": 873.2372815841869,
+  "frozen_point_max_abs_gradient": 0.22544032399896574,
+  "frozen_point_sha256": "88c58908639e370237d216a34f7be54436a271b0aac7d478270de5469705d323",
+  "same_data_hash_verified": true,
+  "student_assertions": 31,
+  "student_cell": {
+    "passed": 31,
+    "broken": 0,
+    "failed": 2,
+    "errored": 0
+  },
+  "student_abs_delta_loglik": 0.0006903450209847506,
+  "unpaid": [
+    "Frozen R Student optimizer health",
+    "Full package tests and original failing CI environment",
+    "Recovery/coverage, complete frozen capability manifest",
+    "Final integrated candidate revalidation of affected evidence"
+  ],
+  "adjacent_regressions": {
+    "status": "PASS",
+    "tests": 113,
+    "groups": {
+      "dual_safety": 37,
+      "student_fixed_nu": 42,
+      "dispersion_group": 26,
+      "model_identity": 8
+    },
+    "elapsed_seconds": 58.92957726679742,
+    "receipt": ".unlazy/core070-aghq/student-normalizer/unit-results/process/process-receipt.json",
+    "receipt_sha256": "b4f4ff3bd21ec7a93a51cb65e6ef7a63e5e522b8a90797604d652be0292b3715",
+    "log_sha256": "cffa7d06d404b7b449f36e6401902c4285199df14a4bf1f49eb50003056cfc11",
+    "test_hash_readback": ".unlazy/core070-aghq/student-normalizer/unit-test-readback.sha256",
+    "qualification": "Three adjacent test files were hash-read back after the run; source and other pins were checked before and after by supervisor."
+  }
+}

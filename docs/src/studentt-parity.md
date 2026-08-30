@@ -28,5 +28,11 @@ fit currently reports `nlminb` code 1 (`false convergence (8)`) on that public
 estimated-ν target. This remains a visible evidence boundary: the target is
 not promoted until both engines are healthy.
 
+For large degrees of freedom, the Float64 density now evaluates its normalizing
+constant without subtracting two large log-gamma values. The calculation also
+preserves automatic first and second derivatives near the Gaussian limit.
+This numerical repair does not cap `nu`, change the model, or turn a failed
+optimizer diagnostic into a successful fit.
+
 The numerical record and exact oracle provenance are in
 [`2026-08-30-core070-studentt.md`](../dev-log/decisions/2026-08-30-core070-studentt.md).

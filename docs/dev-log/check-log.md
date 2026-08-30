@@ -15746,3 +15746,16 @@ spatial slope intersections, all Julia surfaces and recovery remain unpaid.
 Unlazy G1 freshly reverified; G2/G3 manually grounded in remote readback and
 explicit scope records. Full manifest DRAFT; M1 remains PARTIAL. No Julia fit,
 full suite, campaign, push, merge, release or foreign-lane edit.
+
+## Student normalizer precision — 2026-08-30
+
+Independent high precision exposed cancellation in the Float64 Student constant
+and its log-df derivatives. Noether Terra/high reviewed the expansion before
+implementation. New regression red29/20, then final51/51 including two extra
+BigFloat-Dual checks; adjacent Totoro regressions113/113. Original frozen R
+seed71 replay still31/2, exit1: abs delta logLik0.000690345 meets tolerance but
+R false convergence and maximum absolute gradient0.22544 remain. No model,
+fixture, R engine or tolerance changes. Evidence hashes and command exits checked;
+scoped Unlazy gate reverified. No full suite, docs build, recovery or final panel.
+Mission Control Julia-only correction HTTP200 verified, vault commitb435e2bb.
+M1 remains PARTIAL; see the Student normalizer after-task and numerical decision.

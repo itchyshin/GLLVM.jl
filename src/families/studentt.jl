@@ -27,7 +27,7 @@
 #   _glm_score  = s_η · me = (ν+1) r / (ν σ² + r²)        (me = 1)
 #   _glm_weight = I_η · me² = (ν+1) / ((ν+3) σ²)          (me = 1, ⇒ W ≥ 0)
 #
-# `_glm_logpdf` is written in CLOSED FORM via `loggamma` so ForwardDiff Duals flow
+# `_glm_logpdf` uses a stable normalizer so ForwardDiff Duals flow
 # cleanly through both η (via the residual r = y − η) and log σ (via σ in the aux),
 # which is what makes the generic scalar-aux implicit-gradient path AD-clean.
 
@@ -83,13 +83,33 @@ _glm_weight(f::StudentTFamily, μ, n, me) =
 
 # Closed-form location–scale t log-density:
 #   ℓ = logΓ((ν+1)/2) − logΓ(ν/2) − ½log(νπ) − log σ − (ν+1)/2 · log(1 + r²/(ν σ²)).
+# Limit the fixed-order series to Float64, including nested ForwardDiff Duals.
+# BigFloat and BigFloat-backed Duals retain their caller-selected precision.
+@inline _studentt_float64_backed(::Any) = false
+@inline _studentt_float64_backed(::Float64) = true
+@inline _studentt_float64_backed(x::ForwardDiff.Dual) = _studentt_float64_backed(ForwardDiff.value(x))
+
+function _studentt_log_normalizer(ν)
+    if _studentt_float64_backed(ν) && ν >= 64
+        # DLMF 5.11.8, subtracting h=1/2 and h=0 at z=ν/2.
+        # First omitted term is 691/(88ν^11), about 1.1e-19 at ν=64.
+        # Direct differentiation of this expression avoids digamma cancellation.
+        u = inv(ν)
+        u2 = u*u
+        o = one(ν)
+        correction = u * (-o/4 + u2*(o/24 + u2*(-o/20 + u2*(17o/112 - u2*31o/36))))
+        return -log(2*oftype(ν, π))/2 + correction
+    end
+    half = (ν + one(ν))/2
+    return loggamma(half) - loggamma(ν/2) - log(ν*oftype(half, π))/2
+end
+
 function _glm_logpdf(f::StudentTFamily, μ, n, y)
     ν = f.ν
     σ = f.σ
     r = y - μ
     half = (ν + one(ν)) / 2
-    return loggamma(half) - loggamma(ν / 2) -
-           0.5 * log(ν * convert(typeof(half), π)) - log(σ) -
+    return _studentt_log_normalizer(ν) - log(σ) -
            half * log1p(r^2 / (ν * σ^2))
 end
 
