@@ -349,3 +349,21 @@ No production B dispatch, full suite or long campaign was launched.
   No B production children before the tranche checkpoint decision.
 - Mission Control updated/read back at vaultb435e2bb; R0.7.1 and article fields
   preserved. No push, merge, release, destructive cleanup, fullsuite or campaign.
+
+## Covariance grammar checkpoint — 2026-08-30
+
+- Frozen covariance grammar subset95 cases passes locally and on Totoro; raw
+  evidence/negative controls retained in .unlazy/core070-aghq/covariance-admission.
+  These are parser/helper checks, not95 fits or complete source admission.
+- Source contract documents ordinary/source default Psi differences, required
+  bar forms, source-lv rejection and multi-kernel automatic companion pruning.
+- Master contract remains DRAFT; a source_subsets pointer was added. This is a
+  contract-document change and does not revalidate prior pinned numerical runs.
+- Next: actual fit-input construction for covariance/Psi/multinomial domains,
+  finite model fixtures and postfit/data/interface obligations; preserve original
+  Student reference-health failure while its bounded diagnosis remains queued.
+- No new child, active remote process, fit, fullsuite or campaign. No B production
+  before tranche checkpoint decision; parent continues required contract work.
+- Collection checker regressions8/8 still pass; current full-contract aggregation
+  rejects with DRAFT_CONTRACT (exit2). Mission Control Julia-only update verified
+  HTTP200 at vault4267e292; R fields unchanged.

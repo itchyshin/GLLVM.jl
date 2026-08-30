@@ -628,3 +628,12 @@ identification = "unique=FALSE; invariant likelihood; family-specific scale reco
 acceptance_rule = "fixture test passes and receipt binds source, fixture hash, model identity, and zero exit"
 implementation_status = "SMOKE_ONLY_NOT_FULL_CAPABILITY"
 evidence_path = "test/parity/test_multinomial_parity.jl"
+
+# Source-stage discovery receipts only; these do not discharge required model rows.
+[[source_subsets]]
+id = "covariance-grammar-and-modifiers"
+manifest = "docs/dev-log/core070/covariance-admission-subset.json"
+evidence = "docs/dev-log/core070/covariance-admission-evidence.json"
+contract_notes = "docs/dev-log/core070/covariance-source-contract.md"
+status = "SOURCE_SUBSET_PASS_MODEL_FITS_UNPAID"
+expected_cases = 95

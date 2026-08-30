@@ -15759,3 +15759,18 @@ fixture, R engine or tolerance changes. Evidence hashes and command exits checke
 scoped Unlazy gate reverified. No full suite, docs build, recovery or final panel.
 Mission Control Julia-only correction HTTP200 verified, vault commitb435e2bb.
 M1 remains PARTIAL; see the Student normalizer after-task and numerical decision.
+
+## Frozen covariance grammar — 2026-08-30
+
+Added95 executable source-stage cases: covariance marker rewrites, unique/common
+semantics, source-specific lv rejection, relatedness input aliases, augmented
+slope metadata, the17x3 family/link slope-helper table, and unsupported formula
+helpers. Both localR4.6.0 and TotoroR4.5.3 exit0; raw TSV hashes match and source
+files match the preserved oracle inventory. Omitted case/stale source/false
+assertion controls pass; Unlazy G1 freshly reverified. First two failed attempts
+retained, with invalid bar inputs and exact cli error expectations corrected.
+No engine/model/fixture tolerance changed; no fits or campaigns. Full contract
+still DRAFT. Fit-level source matrix/Psi/multinomial rules and all native/formula/
+bridge receipts remain unpaid. Documented multi-kernel automatic-Psi pruning
+versus explicit-Psi rejection. This source contract is input to B1/B2, not their
+implementation or a completed covariance grid.
