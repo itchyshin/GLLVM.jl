@@ -1,0 +1,630 @@
+schema = 2
+contract_id = "core070-oracle-contract-draft"
+status = "DRAFT_INCOMPLETE_NOT_FROZEN"
+reference_commit = "b4d5fee64def88bc768dda1f1f77c29b295edd86"
+reference_namespace_blob = "dd2d012e6326584e8a5badcfa12fca30c2ab7bb4"
+reference_namespace_sha256 = "9094613610789faab69c43195d3cfdafb2c7dfef284e6646b10dababa4fa132c"
+reference_fit_multi_blob = "6c61aee2132f1a7eee600b20ed00407c626cd284"
+reference_families_blob = "a729d2c03cc94ae27a7bdcec21bd1a9b198316d0"
+reference_archive_sha256 = "0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc"
+reference_source_tree_sha256 = "f83545faa6543dbb1f64d64bbf5a9498adcdf036cc3da5851f269912698b1cc7"
+reference_source_inventory = ".unlazy/core070-aghq/oracle-source/source.json"
+source = "git show gllvmTMB:b4d5fee64def88bc768dda1f1f77c29b295edd86"
+
+family_smoke_case_ids = ["NATIVE-01-GAUSSIAN", "NATIVE-02-BINOMIAL", "NATIVE-03-POISSON", "NATIVE-04-LOGNORMAL", "NATIVE-05-GAMMA", "NATIVE-06-NB2", "NATIVE-07-TWEEDIE", "NATIVE-08-BETA", "NATIVE-09-BETABINOMIAL", "NATIVE-10-STUDENT", "NATIVE-11-TRUNCATED-POISSON", "NATIVE-12-TRUNCATED-NB2", "NATIVE-13-DELTA-LOGNORMAL", "NATIVE-14-DELTA-GAMMA", "NATIVE-15-ORDINAL-PROBIT", "NATIVE-16-NB1", "NATIVE-17-MULTINOMIAL-FIXED"]
+unpaid_required_groups = ["links-and-parameterisation", "covariance-modes-and-modifiers", "long-wide-missing-offset-trials", "postfit-information-and-inference", "formula-interface", "public-r-bridge", "public-stage1a-aghq"]
+
+# Provisional census only.  These buckets are not a capability classification:
+# each member still needs source admission evidence and a Julia status before
+# this draft can become frozen.  The checker rejects this status outright.
+[namespace_classification]
+status = "SOURCE_COMPLETE_REVIEW_PENDING"
+inventory = "docs/dev-log/core070/frozen-r070-namespace-inventory.tsv"
+expected_entries = 215
+unmatched = "reject"
+rule = "Every numeric/postfit row is REQUIRED_INFORMATION or PUBLIC_R_BRIDGE_REQUIRED in the inventory; no unsupported route is silently R-only."
+
+[[families]]
+id = "NATIVE-01-GAUSSIAN"
+r_family = "gaussian"
+fixture = "test/parity/test_gaussian_parity.jl"
+[[families]]
+id = "NATIVE-02-BINOMIAL"
+r_family = "binomial"
+fixture = "test/parity/test_binomial_parity.jl"
+[[families]]
+id = "NATIVE-03-POISSON"
+r_family = "poisson"
+fixture = "test/parity/test_poisson_parity.jl"
+[[families]]
+id = "NATIVE-04-LOGNORMAL"
+r_family = "lognormal"
+fixture = "test/parity/test_lognormal_parity.jl"
+[[families]]
+id = "NATIVE-05-GAMMA"
+r_family = "Gamma"
+fixture = "test/parity/test_nox_dispersion_parity.jl"
+[[families]]
+id = "NATIVE-06-NB2"
+r_family = "nbinom2"
+fixture = "test/parity/test_negbin_parity.jl"
+[[families]]
+id = "NATIVE-07-TWEEDIE"
+r_family = "tweedie"
+fixture = "test/parity/test_tweedie_parity.jl"
+[[families]]
+id = "NATIVE-08-BETA"
+r_family = "Beta"
+fixture = "test/parity/test_beta_parity.jl"
+[[families]]
+id = "NATIVE-09-BETABINOMIAL"
+r_family = "betabinomial"
+fixture = "test/parity/test_nox_dispersion_parity.jl"
+[[families]]
+id = "NATIVE-10-STUDENT"
+r_family = "student"
+fixture = "test/parity/test_studentt_parity.jl"
+[[families]]
+id = "NATIVE-11-TRUNCATED-POISSON"
+r_family = "truncated_poisson"
+fixture = "test/parity/test_truncated_poisson_parity.jl"
+[[families]]
+id = "NATIVE-12-TRUNCATED-NB2"
+r_family = "truncated_nbinom2"
+fixture = "test/parity/test_truncated_nbinom2_parity.jl"
+[[families]]
+id = "NATIVE-13-DELTA-LOGNORMAL"
+r_family = "delta_lognormal"
+fixture = "test/parity/test_delta_lognormal_parity.jl"
+[[families]]
+id = "NATIVE-14-DELTA-GAMMA"
+r_family = "delta_gamma"
+fixture = "test/parity/test_delta_gamma_parity.jl"
+[[families]]
+id = "NATIVE-15-ORDINAL-PROBIT"
+r_family = "ordinal_probit"
+fixture = "test/parity/test_ordinal_probit_parity.jl"
+[[families]]
+id = "NATIVE-16-NB1"
+r_family = "nbinom1"
+fixture = "test/parity/test_nox_dispersion_parity.jl"
+[[families]]
+id = "NATIVE-17-MULTINOMIAL-FIXED"
+r_family = "multinomial"
+fixture = "test/parity/test_multinomial_parity.jl"
+
+[[unpaid_cases]]
+id = "FORMULA-01"
+status = "UNPAID_PARTIAL_JULIA_FORMULA_SURFACE"
+reason = "Existing StatsModels gllvm formula routes require per-capability qualification; R grammar need not be copied."
+[[unpaid_cases]]
+id = "RBRIDGE-01"
+status = "UNPAID_SEPARATE_QUALIFICATION"
+reason = "RCall is oracle transport, not public bridge support."
+[[unpaid_cases]]
+id = "MULTINOMIAL-STRUCTURED-01"
+status = "R_ADMITTED_JULIA_MISSING"
+reason = "Frozen R admits structured multinomial terms; Julia v1 fixed-effects softmax is only a partial cell."
+
+[[reference_admission]]
+id = "MULTINOMIAL-STRUCTURED-01"
+source = "R/fit-multi.R:1020-1051 @ b4d5fee64def88bc768dda1f1f77c29b295edd86"
+r_status = "ADMITTED_WITH_FENCES"
+julia_status = "MISSING"
+owner = "B3"
+required_fields = ["r_call", "julia_call_or_missing", "fixture", "parameterisation", "acceptance_rule", "evidence_path"]
+
+[[reference_admission]]
+id = "AGHQ-STAGE1A-PUBLIC-01"
+source = "src/families/aghq_grid.jl:104-120 @ Julia candidate; R/aghq-control.R @ b4d5fee64def88bc768dda1f1f77c29b295edd86"
+r_status = "REFERENCE_POLICY_PRESENT"
+julia_status = "INTERNAL_ONLY_NOT_PUBLIC"
+owner = "B6"
+required_fields = ["r_call", "julia_call_or_missing", "fixture", "parameterisation", "acceptance_rule", "evidence_path"]
+
+[aghq_stage1a]
+status = "REQUIRED_PUBLIC_SURFACE_UNPAID"
+random_block = "z_B"
+ordinary_loadings_only = true
+unique = false
+other_random_effects = false
+x_lv = false
+mi = false
+multinomial = false
+auto_loading_ridge = false
+broad_r_gate_helper = "NOT_A_PUBLIC_JULIA_HYBRID"
+
+# Source-complete obligation rows.  `implementation_status` is deliberately
+# independent from `obligation`: MISSING is an accounted-for debt, never a
+# rejected R feature.  `fixture_specification` is deterministic design input,
+# not a claim that a fixture already passed.
+[[obligation]]
+id = "CORE-DIRECT-01"
+scope = "direct-native-api"
+owner = "Hopper"
+source = "R/gllvmTMB.R:1-220@7d39459d781908c4d2669915a795eb66c5053f72; R/fit-multi.R:843-919@6c61aee2132f1a7eee600b20ed00407c626cd284"
+r_call = "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d=K, unique=FALSE), data=long, unit='site', trait='trait', family=F)"
+julia_call_or_missing = "fit_gllvm(Y; family=F, K=K); separate existing gllvm(@formula(...), Y, data) and long-data routes require qualification"
+fixture_specification = "seeded p=5,n=60,K=1 long matrix; family-specific support"
+parameterisation = "family-ID/link lock in fit-multi.R:843-919"
+identification = "latent unique=FALSE; compare invariant likelihood"
+acceptance_rule = "same model identity then declared logLik/object rule"
+implementation_status = "PARTIAL_NATIVE_ONLY"
+evidence_path = "test/parity/runparity.jl and family receipts"
+
+[[obligation]]
+id = "FORMULA-01"
+scope = "formula-interface"
+owner = "Boole"
+source = "R/gllvmTMB.R:1-220@7d39459d781908c4d2669915a795eb66c5053f72"
+r_call = "gllvmTMB(formula, data, unit, trait, family)"
+julia_call_or_missing = "PARTIAL: gllvm(formula::FormulaTerm, Y, data; family, K) and gllvm(formula::FormulaTerm, long_data; family, K), src/formula.jl:111,181; structured grammar remains unpaid"
+fixture_specification = "one long and one traits() wide model with identical stacked response"
+parameterisation = "same fixed and covariance design matrices"
+identification = "same latent/unique constraints"
+acceptance_rule = "formula parse and fitted-object information match native route"
+implementation_status = "MISSING"
+evidence_path = "new formula qualification receipt"
+
+[[obligation]]
+id = "BRIDGE-01"
+scope = "public-R-bridge"
+owner = "Hopper"
+source = "NAMESPACE:dd2d012e6326584e8a5badcfa12fca30c2ab7bb4:131-132; R/julia-bridge.R@b4d5fee64def88bc768dda1f1f77c29b295edd86"
+r_call = "gllvm_julia_setup(); gllvm_julia_fit(...)"
+julia_call_or_missing = "MISSING separate public bridge qualification"
+fixture_specification = "one fixed frozen model and restart process"
+parameterisation = "bridge must transfer family/link/design/constraints exactly"
+identification = "preserve native identification"
+acceptance_rule = "startup, fit, extract, and failure receipt"
+implementation_status = "MISSING"
+evidence_path = "B5 bridge receipt"
+
+[[obligation]]
+id = "COV-01"
+scope = "covariance-sources-modes"
+owner = "Gauss"
+source = "R/gllvmTMB.R:7-20@7d39459d781908c4d2669915a795eb66c5053f72; NAMESPACE:dd2d012e6326584e8a5badcfa12fca30c2ab7bb4:62-67,92,136,139-143,163-171,199-204"
+r_call = "latent()/indep()/dep()/scalar() and animal_/phylo_/spatial_/kernel_ variants"
+julia_call_or_missing = "MAPPING_OR_MISSING per source/mode row"
+fixture_specification = "balanced and caterpillar source matrices, each source × admitted mode"
+parameterisation = "source covariance plus diagonal/low-rank/full trait covariance"
+identification = "record unique/common and loading constraints"
+acceptance_rule = "invariant covariance/prediction and declared likelihood"
+implementation_status = "UNQUALIFIED"
+evidence_path = "B1 covariance receipts"
+
+[[obligation]]
+id = "COV-02"
+scope = "covariance-modifiers"
+owner = "Gauss"
+source = "NAMESPACE:dd2d012e6326584e8a5badcfa12fca30c2ab7bb4:66,80,117,139-143,152-154,169-170,198,207-209"
+r_call = "*_slope(), *_unique(), meta_V(), block_V(), confirmatory_lambda()"
+julia_call_or_missing = "MAPPING_OR_MISSING per modifier"
+fixture_specification = "one modifier-at-a-time over ordinary and source-specific base model"
+parameterisation = "freeze masks, known V, common/unique, slope design"
+identification = "state constrained loading scale and covariance rank"
+acceptance_rule = "admitted/rejected branch plus same-information output"
+implementation_status = "UNQUALIFIED"
+evidence_path = "B1/B2 receipts"
+
+[[obligation]]
+id = "DATA-01"
+scope = "long-wide-categorical-offset-trials"
+owner = "Emmy"
+source = "R/gllvmTMB.R:3-20@7d39459d781908c4d2669915a795eb66c5053f72; R/gllvmTMB.R:family/weights documentation lines 1-220"
+r_call = "gllvmTMB(value~..., long) and gllvmTMB(traits(y1,y2)~..., wide); weights/cbind/offset"
+julia_call_or_missing = "MAPPING_OR_MISSING"
+fixture_specification = "identical long/wide data, categorical predictor, count offset, binomial trials"
+parameterisation = "stacking order and family-conditioned weights fixed"
+identification = "trait level order frozen"
+acceptance_rule = "same rows/design/likelihood contribution or explicit unsupported"
+implementation_status = "UNQUALIFIED"
+evidence_path = "B4 data receipt"
+
+[[obligation]]
+id = "DATA-02"
+scope = "missingness-mixed-families"
+owner = "Emmy"
+source = "R/gllvmTMB.R:missing-data documentation lines 1-220@7d39459d781908c4d2669915a795eb66c5053f72; R/fit-multi.R:921-1014@6c61aee2132f1a7eee600b20ed00407c626cd284"
+r_call = "missing=miss_control(...), family=list(...), attr(family,'family_var')"
+julia_call_or_missing = "MAPPING_OR_MISSING"
+fixture_specification = "masked response, invalid predictor, modelled predictor, two-family selector"
+parameterisation = "family alignment and observation mask fixed"
+identification = "missing rows contribute exactly as R branch specifies"
+acceptance_rule = "branch outcome and retained-information mapping"
+implementation_status = "UNQUALIFIED"
+evidence_path = "B4 data receipt"
+
+[[obligation]]
+id = "POSTFIT-01"
+scope = "postfit-information-inference"
+owner = "Emmy"
+source = "NAMESPACE:dd2d012e6326584e8a5badcfa12fca30c2ab7bb4:3-56,69-117,145-188,206-211"
+r_call = "coef/logLik/predict/residuals/fitted/summary/vcov/confint plus extract_*/profile_*/simulate_*"
+julia_call_or_missing = "MAPPING_OR_MISSING for every namespace-inventory POSTFIT_INFORMATION_REQUIRED row"
+fixture_specification = "one converged fixed model per postfit family; include malformed and unsupported requests"
+parameterisation = "same fitted model identity; no refit substitution"
+identification = "report rotation-invariant quantities where needed"
+acceptance_rule = "same information/scale or explicit missing, never presentation-only relabel"
+implementation_status = "UNQUALIFIED"
+evidence_path = "B4 postfit/inference receipt"
+
+[[obligation]]
+id = "MULTINOMIAL-FIXED-01"
+scope = "multinomial-fixed"
+owner = "Curie"
+source = "R/fit-multi.R:862,917-918@6c61aee2132f1a7eee600b20ed00407c626cd284"
+r_call = "gllvmTMB(category ~ fixed_terms, family=multinomial())"
+julia_call_or_missing = "fit_multinomial_gllvm(Y; X=X)"
+fixture_specification = "C>=3 categorical response, fixed effects only"
+parameterisation = "baseline-category logit"
+identification = "baseline contrast fixed"
+acceptance_rule = "closed-form/intercept and likelihood agreement"
+implementation_status = "PARTIAL_QUALIFICATION"
+evidence_path = "test/parity/test_multinomial_parity.jl"
+
+[[obligation]]
+id = "MULTINOMIAL-STRUCTURED-01"
+scope = "multinomial-structured"
+owner = "Curie"
+source = "R/fit-multi.R:1020-1051@6c61aee2132f1a7eee600b20ed00407c626cd284; R/multinomial-fence.R@e4dfdaa55729e41f483f3a65874e76b195cb06ad"
+r_call = "gllvmTMB(category ~ fixed_terms + admitted covstruct, family=multinomial())"
+julia_call_or_missing = "MISSING"
+fixture_specification = "one admitted structured term and one fenced/rejected term"
+parameterisation = "baseline-category contrast with documented structural fence"
+identification = "baseline re-labelling is not treated as reparameterisation"
+acceptance_rule = "admission/rejection branch then paired model evidence"
+implementation_status = "MISSING"
+evidence_path = "B3 structured multinomial receipt"
+
+[[obligation]]
+id = "TWEEDIE-POWER-FIXED-01"
+scope = "tweedie-power-fixed"
+owner = "Curie"
+source = "R/fit-multi.R:851,901-902@6c61aee2132f1a7eee600b20ed00407c626cd284"
+r_call = "gllvmTMB(..., family=tweedie(p=p_fixed))"
+julia_call_or_missing = "MAPPING_OR_MISSING"
+fixture_specification = "p in (1,2) fixed-common, seeded support-valid matrix"
+parameterisation = "fixed p and declared phi grouping"
+identification = "p not estimated"
+acceptance_rule = "same fixed-p likelihood and parameters"
+implementation_status = "UNQUALIFIED"
+evidence_path = "A5 Tweedie fixed-power receipt"
+
+[[obligation]]
+id = "TWEEDIE-POWER-SHARED-01"
+scope = "tweedie-power-shared-estimated"
+owner = "Curie"
+source = "R/fit-multi.R:5522-5553,6031-6038,7224-7229@6c61aee2132f1a7eee600b20ed00407c626cd284"
+r_call = "REFERENCE_ENGINE_CONSTRAINT_ADAPTER: fit public tweedie(), then rebuild retained tmb_data/tmb_params/tmb_map with logit_p_tweedie=factor(rep(1L,p))"
+julia_call_or_missing = "fit_tweedie_gllvm_grouped(... shared power)"
+fixture_specification = "ordinary all-Tweedie ML, z_B-only, unique=FALSE; same frozen data/other maps/normalization/curvature"
+parameterisation = "one estimated logit p, p=1+plogis(logit_p), with declared phi grouping"
+identification = "one free power coordinate; report p_tweedie equal for all traits"
+acceptance_rule = "adapter flag, one mapped p coordinate, equal reported powers, both-engine health and likelihood receipt"
+implementation_status = "SOURCE_GROUNDED_ADAPTER_PENDING_EXECUTION"
+evidence_path = "A5 Tweedie shared-power receipt"
+
+[[obligation]]
+id = "TWEEDIE-POWER-PERTRAIT-01"
+scope = "tweedie-power-pertrait-estimated"
+owner = "Curie"
+source = "R/fit-multi.R:851,901-902@6c61aee2132f1a7eee600b20ed00407c626cd284"
+r_call = "gllvmTMB(..., family=tweedie())"
+julia_call_or_missing = "MAPPING_OR_MISSING"
+fixture_specification = "seeded p×n matrix with per-trait p/phi extraction"
+parameterisation = "R-default per-trait p and phi"
+identification = "one bounded p per trait"
+acceptance_rule = "per-trait parameter/vector likelihood receipt"
+implementation_status = "UNQUALIFIED"
+evidence_path = "A5 Tweedie per-trait receipt"
+
+[[obligation]]
+id = "STUDENT-ORIGINAL-01"
+scope = "student-original-target"
+owner = "Fisher"
+source = "R/fit-multi.R:855,907-908,921-923@6c61aee2132f1a7eee600b20ed00407c626cd284"
+r_call = "gllvmTMB(..., family=student(df=...))"
+julia_call_or_missing = "fit_studentt_gllvm(...) or explicit mismatch"
+fixture_specification = "retain original approved Student fixture unchanged"
+parameterisation = "identity link; declare fixed versus per-trait estimated df/sigma"
+identification = "same df and dispersion grouping"
+acceptance_rule = "absolute log-likelihood delta <= 1e-3 and both-engine health"
+implementation_status = "UNQUALIFIED"
+evidence_path = "A6 Student target receipt"
+
+[[obligation]]
+id = "AGHQ-PUBLIC-01"
+scope = "public-stage1a-aghq"
+owner = "Gauss"
+source = "R/aghq-control.R:237-370@0e69623354498d6393940930e04c4613f4e9acc5; R/aghq-gate.R:1-260@58b5d42c38bda7456d9a904b9052d7c94bd30d24; src/families/aghq_grid.jl:104-207"
+r_call = "gllvmTMB(..., control=gllvmTMBcontrol(aghq=k_or_auto))"
+julia_call_or_missing = "MISSING public aghq= argument; internal aghq_stage1a_* is not sufficient"
+fixture_specification = "ordinary loadings-only z_B, unique=FALSE, no other RE/X_lv/mi/multinomial; k=1, positive k, auto, invalid/ineligible controls"
+parameterisation = "mode-adapted AGHQ over z_B only"
+identification = "loadings-only latent scale fixed by existing model contract"
+acceptance_rule = "requested/actual method,k,warning/reason,convergence; k=1=Laplace; no auto ridge"
+implementation_status = "MISSING_PUBLIC_SURFACE"
+evidence_path = "B6 AGHQ receipt"
+
+[[obligation]]
+id = "AGHQ-REJECTION-01"
+scope = "stage1a-ineligible-branches"
+owner = "Gauss"
+source = "src/families/aghq_grid.jl:104-120; R/aghq-gate.R:hard exclusions 1-260@58b5d42c38bda7456d9a904b9052d7c94bd30d24"
+r_call = "ineligible aghq request with other RE, X_lv, mi, multinomial, unique=TRUE"
+julia_call_or_missing = "internal _aghq_stage1a_reject_extra only"
+fixture_specification = "one fixture per ineligible mechanism"
+parameterisation = "same requested node setting, changed mechanism only"
+identification = "not applicable"
+acceptance_rule = "explicit Laplace fallback/rejection with reason, never broad helper promotion"
+implementation_status = "PARTIAL_INTERNAL_ONLY"
+evidence_path = "B6 AGHQ negative receipt"
+
+# These are machine-readable blockers, not failures hidden by a broad claim.
+[[blocker]]
+id = "BLOCKER-TWEEDIE-SHARED-POWER"
+kind = "REFERENCE_ENGINE_CONSTRAINT_ADAPTER"
+source = "R/fit-multi.R:5522-5553,6031-6038,7224-7229@6c61aee2132f1a7eee600b20ed00407c626cd284"
+question = "Execute and verify the grounded retained-object adapter; frozen R has no public shared-p argument."
+blocks = ["TWEEDIE-POWER-SHARED-01"]
+resolution_evidence = "source-level parameter map plus one retained fit receipt"
+status = "SOURCE_GROUNDED_PENDING_EXECUTION"
+
+[[blocker]]
+id = "BLOCKER-AGHQ-PUBLIC-SEAM"
+kind = "JULIA_PUBLIC_API_DECISION"
+source = "src/families/aghq_grid.jl:104-207; R/aghq-control.R:237-370@0e69623354498d6393940930e04c4613f4e9acc5"
+question = "Which fitted public Julia API owns aghq=k/auto, method reporting, and ineligible fallback?"
+blocks = ["AGHQ-PUBLIC-01", "AGHQ-REJECTION-01"]
+resolution_evidence = "public signature, executed positive/negative cells, and fitted-object receipt"
+status = "UNRESOLVED"
+
+[[blocker]]
+id = "BLOCKER-FORMULA-SURFACE"
+kind = "REQUIRED_FORMULA_CASE_DECOMPOSITION"
+source = "R/gllvmTMB.R:1-220@7d39459d781908c4d2669915a795eb66c5053f72"
+question = "Expand and qualify the existing StatsModels-native gllvm/@formula surface; the approved plan already requires it separately from the bridge."
+blocks = ["FORMULA-01"]
+resolution_evidence = "existing src/formula.jl:111,181; required long/wide and structured parser/model cases"
+status = "UNRESOLVED"
+# Family-smoke rows are individually source-bound but remain only smoke evidence.
+# They cannot settle modifiers, data shape, inference, formula, bridge, or AGHQ obligations.
+[[obligation]]
+id = "NATIVE-01-GAUSSIAN"
+scope = "family-smoke"
+owner = "Hopper"
+source = "R/fit-multi.R:843-919@6c61aee2132f1a7eee600b20ed00407c626cd284"
+r_call = "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d=K, unique=FALSE), family=gaussian)"
+julia_call_or_missing = "fit_gaussian_gllvm / fit_gllvm"
+fixture_specification = "test/parity/test_gaussian_parity.jl; seeded p=5,n=60,K=1 with family-valid support"
+parameterisation = "family ID 0; declared frozen-R link and fixture dispersion map"
+identification = "unique=FALSE; invariant likelihood; family-specific scale recorded"
+acceptance_rule = "fixture test passes and receipt binds source, fixture hash, model identity, and zero exit"
+implementation_status = "SMOKE_ONLY_NOT_FULL_CAPABILITY"
+evidence_path = "test/parity/test_gaussian_parity.jl"
+
+[[obligation]]
+id = "NATIVE-02-BINOMIAL"
+scope = "family-smoke"
+owner = "Hopper"
+source = "R/fit-multi.R:844-919@6c61aee2132f1a7eee600b20ed00407c626cd284"
+r_call = "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d=K, unique=FALSE), family=binomial)"
+julia_call_or_missing = "fit_gllvm(Y; family=Binomial())"
+fixture_specification = "test/parity/test_binomial_parity.jl; seeded p=5,n=60,K=1 with family-valid support"
+parameterisation = "family ID 1; declared frozen-R link and fixture dispersion map"
+identification = "unique=FALSE; invariant likelihood; family-specific scale recorded"
+acceptance_rule = "fixture test passes and receipt binds source, fixture hash, model identity, and zero exit"
+implementation_status = "SMOKE_ONLY_NOT_FULL_CAPABILITY"
+evidence_path = "test/parity/test_binomial_parity.jl"
+
+[[obligation]]
+id = "NATIVE-03-POISSON"
+scope = "family-smoke"
+owner = "Hopper"
+source = "R/fit-multi.R:845-919@6c61aee2132f1a7eee600b20ed00407c626cd284"
+r_call = "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d=K, unique=FALSE), family=poisson)"
+julia_call_or_missing = "fit_gllvm(Y; family=Poisson())"
+fixture_specification = "test/parity/test_poisson_parity.jl; seeded p=5,n=60,K=1 with family-valid support"
+parameterisation = "family ID 2; declared frozen-R link and fixture dispersion map"
+identification = "unique=FALSE; invariant likelihood; family-specific scale recorded"
+acceptance_rule = "fixture test passes and receipt binds source, fixture hash, model identity, and zero exit"
+implementation_status = "SMOKE_ONLY_NOT_FULL_CAPABILITY"
+evidence_path = "test/parity/test_poisson_parity.jl"
+
+[[obligation]]
+id = "NATIVE-04-LOGNORMAL"
+scope = "family-smoke"
+owner = "Hopper"
+source = "R/fit-multi.R:846-919@6c61aee2132f1a7eee600b20ed00407c626cd284"
+r_call = "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d=K, unique=FALSE), family=lognormal)"
+julia_call_or_missing = "fit_lognormal_gllvm"
+fixture_specification = "test/parity/test_lognormal_parity.jl; seeded p=5,n=60,K=1 with family-valid support"
+parameterisation = "family ID 3; declared frozen-R link and fixture dispersion map"
+identification = "unique=FALSE; invariant likelihood; family-specific scale recorded"
+acceptance_rule = "fixture test passes and receipt binds source, fixture hash, model identity, and zero exit"
+implementation_status = "SMOKE_ONLY_NOT_FULL_CAPABILITY"
+evidence_path = "test/parity/test_lognormal_parity.jl"
+
+[[obligation]]
+id = "NATIVE-05-GAMMA"
+scope = "family-smoke"
+owner = "Hopper"
+source = "R/fit-multi.R:847-919@6c61aee2132f1a7eee600b20ed00407c626cd284"
+r_call = "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d=K, unique=FALSE), family=Gamma)"
+julia_call_or_missing = "fit_gamma_gllvm_grouped"
+fixture_specification = "test/parity/test_nox_dispersion_parity.jl; seeded p=5,n=60,K=1 with family-valid support"
+parameterisation = "family ID 4; declared frozen-R link and fixture dispersion map"
+identification = "unique=FALSE; invariant likelihood; family-specific scale recorded"
+acceptance_rule = "fixture test passes and receipt binds source, fixture hash, model identity, and zero exit"
+implementation_status = "SMOKE_ONLY_NOT_FULL_CAPABILITY"
+evidence_path = "test/parity/test_nox_dispersion_parity.jl"
+
+[[obligation]]
+id = "NATIVE-06-NB2"
+scope = "family-smoke"
+owner = "Hopper"
+source = "R/fit-multi.R:848-919@6c61aee2132f1a7eee600b20ed00407c626cd284"
+r_call = "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d=K, unique=FALSE), family=nbinom2)"
+julia_call_or_missing = "fit_nb_gllvm_grouped"
+fixture_specification = "test/parity/test_negbin_parity.jl; seeded p=5,n=60,K=1 with family-valid support"
+parameterisation = "family ID 5; declared frozen-R link and fixture dispersion map"
+identification = "unique=FALSE; invariant likelihood; family-specific scale recorded"
+acceptance_rule = "fixture test passes and receipt binds source, fixture hash, model identity, and zero exit"
+implementation_status = "SMOKE_ONLY_NOT_FULL_CAPABILITY"
+evidence_path = "test/parity/test_negbin_parity.jl"
+
+[[obligation]]
+id = "NATIVE-07-TWEEDIE"
+scope = "family-smoke"
+owner = "Hopper"
+source = "R/fit-multi.R:849-919@6c61aee2132f1a7eee600b20ed00407c626cd284"
+r_call = "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d=K, unique=FALSE), family=tweedie)"
+julia_call_or_missing = "fit_tweedie_gllvm_grouped"
+fixture_specification = "test/parity/test_tweedie_parity.jl; seeded p=5,n=60,K=1 with family-valid support"
+parameterisation = "family ID 6; declared frozen-R link and fixture dispersion map"
+identification = "unique=FALSE; invariant likelihood; family-specific scale recorded"
+acceptance_rule = "fixture test passes and receipt binds source, fixture hash, model identity, and zero exit"
+implementation_status = "SMOKE_ONLY_NOT_FULL_CAPABILITY"
+evidence_path = "test/parity/test_tweedie_parity.jl"
+
+[[obligation]]
+id = "NATIVE-08-BETA"
+scope = "family-smoke"
+owner = "Hopper"
+source = "R/fit-multi.R:850-919@6c61aee2132f1a7eee600b20ed00407c626cd284"
+r_call = "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d=K, unique=FALSE), family=Beta)"
+julia_call_or_missing = "fit_beta_gllvm_grouped"
+fixture_specification = "test/parity/test_beta_parity.jl; seeded p=5,n=60,K=1 with family-valid support"
+parameterisation = "family ID 7; declared frozen-R link and fixture dispersion map"
+identification = "unique=FALSE; invariant likelihood; family-specific scale recorded"
+acceptance_rule = "fixture test passes and receipt binds source, fixture hash, model identity, and zero exit"
+implementation_status = "SMOKE_ONLY_NOT_FULL_CAPABILITY"
+evidence_path = "test/parity/test_beta_parity.jl"
+
+[[obligation]]
+id = "NATIVE-09-BETABINOMIAL"
+scope = "family-smoke"
+owner = "Hopper"
+source = "R/fit-multi.R:851-919@6c61aee2132f1a7eee600b20ed00407c626cd284"
+r_call = "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d=K, unique=FALSE), family=betabinomial)"
+julia_call_or_missing = "fit_beta_binomial_gllvm_grouped"
+fixture_specification = "test/parity/test_nox_dispersion_parity.jl; seeded p=5,n=60,K=1 with family-valid support"
+parameterisation = "family ID 8; declared frozen-R link and fixture dispersion map"
+identification = "unique=FALSE; invariant likelihood; family-specific scale recorded"
+acceptance_rule = "fixture test passes and receipt binds source, fixture hash, model identity, and zero exit"
+implementation_status = "SMOKE_ONLY_NOT_FULL_CAPABILITY"
+evidence_path = "test/parity/test_nox_dispersion_parity.jl"
+
+[[obligation]]
+id = "NATIVE-10-STUDENT"
+scope = "family-smoke"
+owner = "Hopper"
+source = "R/fit-multi.R:852-919@6c61aee2132f1a7eee600b20ed00407c626cd284"
+r_call = "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d=K, unique=FALSE), family=student)"
+julia_call_or_missing = "fit_studentt_gllvm"
+fixture_specification = "test/parity/test_studentt_parity.jl; seeded p=5,n=60,K=1 with family-valid support"
+parameterisation = "family ID 9; declared frozen-R link and fixture dispersion map"
+identification = "unique=FALSE; invariant likelihood; family-specific scale recorded"
+acceptance_rule = "fixture test passes and receipt binds source, fixture hash, model identity, and zero exit"
+implementation_status = "SMOKE_ONLY_NOT_FULL_CAPABILITY"
+evidence_path = "test/parity/test_studentt_parity.jl"
+
+[[obligation]]
+id = "NATIVE-11-TRUNCATED-POISSON"
+scope = "family-smoke"
+owner = "Hopper"
+source = "R/fit-multi.R:853-919@6c61aee2132f1a7eee600b20ed00407c626cd284"
+r_call = "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d=K, unique=FALSE), family=truncated_poisson)"
+julia_call_or_missing = "fit_truncated_poisson_gllvm"
+fixture_specification = "test/parity/test_truncated_poisson_parity.jl; seeded p=5,n=60,K=1 with family-valid support"
+parameterisation = "family ID 10; declared frozen-R link and fixture dispersion map"
+identification = "unique=FALSE; invariant likelihood; family-specific scale recorded"
+acceptance_rule = "fixture test passes and receipt binds source, fixture hash, model identity, and zero exit"
+implementation_status = "SMOKE_ONLY_NOT_FULL_CAPABILITY"
+evidence_path = "test/parity/test_truncated_poisson_parity.jl"
+
+[[obligation]]
+id = "NATIVE-12-TRUNCATED-NB2"
+scope = "family-smoke"
+owner = "Hopper"
+source = "R/fit-multi.R:854-919@6c61aee2132f1a7eee600b20ed00407c626cd284"
+r_call = "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d=K, unique=FALSE), family=truncated_nbinom2)"
+julia_call_or_missing = "fit_truncated_nbinom2_gllvm_pertrait"
+fixture_specification = "test/parity/test_truncated_nbinom2_parity.jl; seeded p=5,n=60,K=1 with family-valid support"
+parameterisation = "family ID 11; declared frozen-R link and fixture dispersion map"
+identification = "unique=FALSE; invariant likelihood; family-specific scale recorded"
+acceptance_rule = "fixture test passes and receipt binds source, fixture hash, model identity, and zero exit"
+implementation_status = "SMOKE_ONLY_NOT_FULL_CAPABILITY"
+evidence_path = "test/parity/test_truncated_nbinom2_parity.jl"
+
+[[obligation]]
+id = "NATIVE-13-DELTA-LOGNORMAL"
+scope = "family-smoke"
+owner = "Hopper"
+source = "R/fit-multi.R:855-919@6c61aee2132f1a7eee600b20ed00407c626cd284"
+r_call = "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d=K, unique=FALSE), family=delta_lognormal)"
+julia_call_or_missing = "fit_delta_lognormal_gllvm(; predictor=:shared, disp_group=:species)"
+fixture_specification = "test/parity/test_delta_lognormal_parity.jl; seeded p=5,n=60,K=1 with family-valid support"
+parameterisation = "family ID 12; declared frozen-R link and fixture dispersion map"
+identification = "unique=FALSE; invariant likelihood; family-specific scale recorded"
+acceptance_rule = "fixture test passes and receipt binds source, fixture hash, model identity, and zero exit"
+implementation_status = "SMOKE_ONLY_NOT_FULL_CAPABILITY"
+evidence_path = "test/parity/test_delta_lognormal_parity.jl"
+
+[[obligation]]
+id = "NATIVE-14-DELTA-GAMMA"
+scope = "family-smoke"
+owner = "Hopper"
+source = "R/fit-multi.R:856-919@6c61aee2132f1a7eee600b20ed00407c626cd284"
+r_call = "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d=K, unique=FALSE), family=delta_gamma)"
+julia_call_or_missing = "fit_delta_gamma_gllvm(; predictor=:shared, disp_group=:species)"
+fixture_specification = "test/parity/test_delta_gamma_parity.jl; seeded p=5,n=60,K=1 with family-valid support"
+parameterisation = "family ID 13; declared frozen-R link and fixture dispersion map"
+identification = "unique=FALSE; invariant likelihood; family-specific scale recorded"
+acceptance_rule = "fixture test passes and receipt binds source, fixture hash, model identity, and zero exit"
+implementation_status = "SMOKE_ONLY_NOT_FULL_CAPABILITY"
+evidence_path = "test/parity/test_delta_gamma_parity.jl"
+
+[[obligation]]
+id = "NATIVE-15-ORDINAL-PROBIT"
+scope = "family-smoke"
+owner = "Hopper"
+source = "R/fit-multi.R:857-919@6c61aee2132f1a7eee600b20ed00407c626cd284"
+r_call = "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d=K, unique=FALSE), family=ordinal_probit)"
+julia_call_or_missing = "fit_ordinal_gllvm_pertrait(; link=ProbitLink())"
+fixture_specification = "test/parity/test_ordinal_probit_parity.jl; seeded p=5,n=60,K=1 with family-valid support"
+parameterisation = "family ID 14; declared frozen-R link and fixture dispersion map"
+identification = "unique=FALSE; invariant likelihood; family-specific scale recorded"
+acceptance_rule = "fixture test passes and receipt binds source, fixture hash, model identity, and zero exit"
+implementation_status = "SMOKE_ONLY_NOT_FULL_CAPABILITY"
+evidence_path = "test/parity/test_ordinal_probit_parity.jl"
+
+[[obligation]]
+id = "NATIVE-16-NB1"
+scope = "family-smoke"
+owner = "Hopper"
+source = "R/fit-multi.R:858-919@6c61aee2132f1a7eee600b20ed00407c626cd284"
+r_call = "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d=K, unique=FALSE), family=nbinom1)"
+julia_call_or_missing = "fit_nb1_gllvm_grouped"
+fixture_specification = "test/parity/test_nox_dispersion_parity.jl; seeded p=5,n=60,K=1 with family-valid support"
+parameterisation = "family ID 15; declared frozen-R link and fixture dispersion map"
+identification = "unique=FALSE; invariant likelihood; family-specific scale recorded"
+acceptance_rule = "fixture test passes and receipt binds source, fixture hash, model identity, and zero exit"
+implementation_status = "SMOKE_ONLY_NOT_FULL_CAPABILITY"
+evidence_path = "test/parity/test_nox_dispersion_parity.jl"
+
+[[obligation]]
+id = "NATIVE-17-MULTINOMIAL-FIXED"
+scope = "family-smoke"
+owner = "Hopper"
+source = "R/fit-multi.R:859-919@6c61aee2132f1a7eee600b20ed00407c626cd284"
+r_call = "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d=K, unique=FALSE), family=multinomial)"
+julia_call_or_missing = "fit_multinomial_gllvm (fixed effects only)"
+fixture_specification = "test/parity/test_multinomial_parity.jl; seeded p=5,n=60,K=1 with family-valid support"
+parameterisation = "family ID 16; declared frozen-R link and fixture dispersion map"
+identification = "unique=FALSE; invariant likelihood; family-specific scale recorded"
+acceptance_rule = "fixture test passes and receipt binds source, fixture hash, model identity, and zero exit"
+implementation_status = "SMOKE_ONLY_NOT_FULL_CAPABILITY"
+evidence_path = "test/parity/test_multinomial_parity.jl"

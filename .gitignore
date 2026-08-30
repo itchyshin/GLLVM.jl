@@ -18,3 +18,6 @@ campaigns/curvature_adjudication/prerun_out/
 # Local execution evidence and mutable acceptance state (never publish raw paths).
 .unlazy/
 .unlazy-hook-state.json
+
+# Local Python tool bytecode (not source evidence)
+/tools/__pycache__/
