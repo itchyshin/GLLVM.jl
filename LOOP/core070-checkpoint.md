@@ -316,3 +316,20 @@ spatial slope intersections, all Julia surfaces and recovery remain unpaid.
 Unlazy G1 freshly reverified; G2/G3 manually grounded in remote readback and
 explicit scope records. Full manifest DRAFT; M1 remains PARTIAL. No Julia fit,
 full suite, campaign, push, merge, release or foreign-lane edit.
+
+
+## Next continuation after integrated-source replay
+
+Implementation aea3c91c is local-only.37 source cases pass on both R runtimes;
+source-helper success does not certify fit-level DATA-ISDM-12/18/20/22 or any
+Julia interface. Raw remote receipt directory:
+/home/snakagaw/core070-aghq-20260830/isdm-admission-01/receipt. No active process.
+MissionControl9ba1b6b servedHTTP200 and exact Julia field readback; other values
+unchanged, file lease released. Next: finish the source-bound covariance,
+modifier, data/postfit/interface case matrix and Student original R health
+diagnosis. Source files include R/parse-multi-formula.R, R/kernel-keywords.R and
+R/kernel-helpers.R in the frozen oracle readback. Full manifest remains DRAFT.
+Native mixed fitter source src/families/mixed.jl:420 and bridge:1726 enforce
+one family per trait; do not falsely label that integrated-source support.
+Tweedie28/28 scopedPASS and Student31pass/2fail remain numerical6e59ef54 results.
+No production B dispatch, full suite or long campaign was launched.
