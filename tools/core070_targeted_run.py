@@ -43,6 +43,7 @@ def run(plan_path, destination):
         raise ValueError('targeted batch must be bounded at 1500 seconds or less')
     # Validate the WHOLE batch before the first child exists, including later rows.
     timeouts = []
+    parity_dirs = []
     for row in plan['commands']:
         argv = row['argv']
         if not isinstance(argv, list) or not argv or any(not isinstance(v, str) or '\0' in v for v in argv):
@@ -51,12 +52,25 @@ def run(plan_path, destination):
         if not math.isfinite(timeout) or not 0 < timeout <= 1500:
             raise ValueError('command timeout must be finite and in (0,1500]')
         timeouts.append(timeout)
+        relative = row.get('parity_receipts')
+        if relative is not None:
+            if not isinstance(relative, str) or not relative or Path(relative).is_absolute() or '..' in Path(relative).parts:
+                raise ValueError('parity receipt directory must be a relative child path')
+            directory = root / relative
+            if not directory.resolve().is_relative_to(root) or directory.exists() or directory.is_symlink():
+                raise ValueError('parity evidence directory must be fresh and inside the execution root')
+            if directory in parity_dirs:
+                raise ValueError('commands must use separate parity evidence directories')
+            parity_dirs.append(directory)
+        else:
+            parity_dirs.append(None)
     overrides = plan.get('env', {})
     if not isinstance(overrides, dict) or any(not isinstance(k, str) or not k or '=' in k or '\0' in k or
             not isinstance(v, str) or '\0' in v for k, v in overrides.items()):
         raise ValueError('invalid environment overrides')
     env = dict(os.environ, **overrides)
     destination.mkdir(parents=True, exist_ok=False)
+    (destination / 'execution-plan.json').write_bytes(plan_path.read_bytes())
     deadline = time.monotonic() + budget
     results = []
     active_child = None
@@ -80,9 +94,14 @@ def run(plan_path, destination):
             started = time.monotonic()
             supervisor_error = None
             print('START', row['id'], flush=True)
+            child_env = env.copy()
+            parity_directory = parity_dirs[index]
+            if parity_directory is not None:
+                child_env.update(GLLVM_PARITY_RECEIPT_DIR=str(parity_directory),
+                                 CORE070_PARITY_REQUIRED='1', GLLVM_PARITY_TESTS='1')
             with log.open('wb') as out:
                 try:
-                    active_child = subprocess.Popen(argv, cwd=root, env=env, stdout=out,
+                    active_child = subprocess.Popen(argv, cwd=root, env=child_env, stdout=out,
                                                     stderr=subprocess.STDOUT, start_new_session=True)
                 except OSError as exc:
                     out.write(str(exc).encode())
@@ -101,10 +120,21 @@ def run(plan_path, destination):
                         # Cleared only after successful wait/reap; outer handler is a backup.
                         if active_child.poll() is not None:
                             active_child = None
+            parity = None
+            parity_error = None
+            if parity_directory is not None:
+                retained = [p for p in parity_directory.glob('*') if
+                            p.name in {'run.toml', 'build.json', 'source.json'} or
+                            (p.name.startswith('cell-') and p.suffix == '.toml')]
+                if not (parity_directory / 'run.toml').is_file() or any(p.is_symlink() or not p.is_file() for p in retained):
+                    parity_error = 'missing or invalid parity artifacts after process exit'
+                else:
+                    parity = {'directory': row['parity_receipts'],
+                              'files': {p.name: sha(p) for p in retained}}
             results.append({'id': row['id'], 'argv': argv, 'exit_code': code,
                             'elapsed_seconds': time.monotonic() - started,
                             'log': log.name, 'log_sha256': sha(log),
-                            'supervisor_error': supervisor_error})
+                            'supervisor_error': supervisor_error, 'parity': parity, 'parity_error': parity_error})
             print('FINISH', row['id'], 'exit', code, flush=True)
             (destination / 'progress.json').write_text(json.dumps(results, indent=2) + '\n')
             if supervisor_error:
@@ -122,7 +152,7 @@ def run(plan_path, destination):
         fresh = pin_check(root, plan['pins']) and sha(plan_path) == plan_sha
     except OSError:
         fresh = False
-    passed = not batch_error and fresh and len(results) == len(ids) and all(r['exit_code'] == 0 for r in results)
+    passed = not batch_error and fresh and len(results) == len(ids) and all(r['exit_code'] == 0 and not r['parity_error'] for r in results)
     receipt = {'status': 'PASS' if passed else 'FAIL', 'scope': 'targeted_process_batch_only',
                'plan_sha256': plan_sha, 'source_pins': plan['pins'],
                'source_unchanged': fresh, 'supervisor_error': batch_error, 'expected_ids': ids, 'results': results,

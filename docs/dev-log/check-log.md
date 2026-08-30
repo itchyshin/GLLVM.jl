@@ -15666,3 +15666,18 @@ Hessian plus R1e-8 adaptation-repair gap; no Julia publicAGHQ claim.
 Next: bind externally observed process exits into final aggregation; complete
 source-admission manifest and B6 curvature contract; diagnose Student reference
 health without changing fixture/tolerance. No active remote fit or reviewer.
+
+
+## External process evidence binding — 2026-08-30
+
+Implemented supervisor parity-output declaration and post-exit hashes, portable
+retained execution-plan/log/run binding, and mandatory external-process proof
+through public full aggregation. Five real-process/negative-control tests pass;
+existing supervisor fault tests and receipt checker self-test pass. Internal
+success plus exit7 is rejected, as is a nonzero external exit through the public
+aggregation entry. No scientific runs, source/test/fixture/tolerance changes.
+Full contract remains DRAFT. Multi-run required-leaf aggregation remains an
+explicit A3 scaling obligation; do not narrow the programme to one25min run.
+Next priority is the finite source-admission manifest and its remaining leaf
+contracts, plus Student reference health. Earlier targeted numerical receipts
+remain valid scoped evidence, not retroactive new-schema programme proof.

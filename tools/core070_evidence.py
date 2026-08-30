@@ -230,7 +230,63 @@ def _verify_loaded(run: dict, cell_files: dict[str, dict], manifest: dict,
             "actual_assertions": total_assertions, "manifest_sha256": digest(manifest_path)}
 
 
-def verify(receipt_dir: Path, manifest_path: Path) -> dict:
+def verify_process(receipt_dir: Path, process_path: Path | None, inventory: dict) -> dict:
+    """Bind portable run artifacts to the exit captured by the parent supervisor."""
+    try:
+        if process_path is None:
+            raise EvidenceError("EXTERNAL_PROCESS_MISSING")
+        process_path = Path(process_path)
+        process = json.loads(process_path.read_text())
+        plan_path = process_path.parent / "execution-plan.json"
+        plan = json.loads(plan_path.read_text())
+        if process.get("status") != "PASS" or process.get("source_unchanged") is not True or process.get("supervisor_error"):
+            raise EvidenceError("EXTERNAL_PROCESS_FAILED")
+        if process.get("plan_sha256") != digest(plan_path) or process.get("source_pins") != plan.get("pins"):
+            raise EvidenceError("EXTERNAL_PROCESS_STALE_PLAN")
+        pins = process["source_pins"]
+        if not inventory.get("entries") or any(pins.get(e["path"]) != e["sha256"] for e in inventory["entries"]):
+            raise EvidenceError("EXTERNAL_PROCESS_UNPINNED_EXECUTION")
+        commands = plan["commands"]
+        expected = [c["id"] for c in commands]
+        results = process["results"]
+        if len(set(expected)) != len(expected) or process.get("expected_ids") != expected or [r["id"] for r in results] != expected:
+            raise EvidenceError("EXTERNAL_PROCESS_INCOMPLETE_BATCH")
+        run_path = receipt_dir / "run.toml"
+        run_hash = digest(run_path)
+        matched = []
+        for command, result in zip(commands, results):
+            if result.get("exit_code") != 0 or result.get("supervisor_error") or result.get("parity_error") or result.get("argv") != command["argv"]:
+                raise EvidenceError("EXTERNAL_PROCESS_NONZERO_OR_CHANGED_COMMAND")
+            log_name = result["log"]
+            if Path(log_name).name != log_name or digest(process_path.parent / log_name) != result["log_sha256"]:
+                raise EvidenceError("EXTERNAL_PROCESS_STALE_LOG")
+            parity = result.get("parity")
+            if not isinstance(parity, dict):
+                continue
+            if parity.get("directory") != command.get("parity_receipts"):
+                raise EvidenceError("EXTERNAL_PROCESS_WRONG_OUTPUT")
+            files = parity.get("files", {})
+            if files.get("run.toml") != run_hash:
+                continue
+            if any(Path(name).name != name or digest(receipt_dir / name) != pin for name, pin in files.items()):
+                raise EvidenceError("EXTERNAL_PROCESS_STALE_OUTPUT")
+            actual = {p.name for p in receipt_dir.glob('*') if p.name in {'run.toml','build.json','source.json'} or
+                      (p.name.startswith('cell-') and p.suffix == '.toml')}
+            if set(files) != actual:
+                raise EvidenceError("EXTERNAL_PROCESS_UNBOUND_OUTPUT")
+            matched.append(result["id"])
+        if len(matched) != 1:
+            raise EvidenceError("EXTERNAL_PROCESS_MISSING_OR_TRANSPLANTED_RUN")
+        loaded_root = load_toml(run_path).get("source", {}).get("julia_package_root")
+        if loaded_root is not None and loaded_root != plan.get("cwd"):
+            raise EvidenceError("EXTERNAL_PROCESS_WRONG_LOADED_ROOT")
+        return {"process_receipt_sha256": digest(process_path), "run_sha256": run_hash,
+                "command_id": matched[0], "observed_exit_code": 0}
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise EvidenceError(f"EXTERNAL_PROCESS_BAD_RECEIPT: {exc}") from exc
+
+
+def verify(receipt_dir: Path, manifest_path: Path, process_path: Path | None = None) -> dict:
     manifest = load_manifest(manifest_path)
     if not receipt_dir.is_dir():
         raise EvidenceError(f"MISSING_DEPENDENCY: receipt directory absent: {receipt_dir}")
@@ -245,7 +301,9 @@ def verify(receipt_dir: Path, manifest_path: Path) -> dict:
         if not isinstance(cell_id, str) or cell_id in cells:
             raise EvidenceError("DUPLICATE_OR_BAD_CELL_FILE")
         cells[cell_id] = cell
-    return _verify_loaded(run, cells, manifest, manifest_path, receipt_dir)
+    report = _verify_loaded(run, cells, manifest, manifest_path, receipt_dir)
+    report["external_process"] = verify_process(receipt_dir, process_path, run["execution"])
+    return report
 
 
 def _expect_error(fn, marker: str) -> None:
@@ -329,6 +387,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     parser.add_argument("--receipts", type=Path)
+    parser.add_argument("--process-receipt", type=Path)
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
     try:
@@ -337,7 +396,7 @@ def main() -> int:
             return 0
         if args.receipts is None:
             raise EvidenceError("MISSING_DEPENDENCY: --receipts is required")
-        print(json.dumps(verify(args.receipts, args.manifest), sort_keys=True))
+        print(json.dumps(verify(args.receipts, args.manifest, args.process_receipt), sort_keys=True))
         return 0
     except EvidenceError as exc:
         print(f"CORE070_EVIDENCE_FAIL: {exc}", file=sys.stderr)

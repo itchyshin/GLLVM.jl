@@ -208,3 +208,18 @@ B6 Noether contract requires observed curvature and accounts for R's separate
 No new production child before the planned tranche checkpoint; no push, merge,
 deletion, release or unsized full-suite/campaign. Existing lease expires about
 16:55UTC; refresh ownership before further writes if expired.
+
+
+## External process evidence binding — 2026-08-30
+
+Implemented supervisor parity-output declaration and post-exit hashes, portable
+retained execution-plan/log/run binding, and mandatory external-process proof
+through public full aggregation. Five real-process/negative-control tests pass;
+existing supervisor fault tests and receipt checker self-test pass. Internal
+success plus exit7 is rejected, as is a nonzero external exit through the public
+aggregation entry. No scientific runs, source/test/fixture/tolerance changes.
+Full contract remains DRAFT. Multi-run required-leaf aggregation remains an
+explicit A3 scaling obligation; do not narrow the programme to one25min run.
+Next priority is the finite source-admission manifest and its remaining leaf
+contracts, plus Student reference health. Earlier targeted numerical receipts
+remain valid scoped evidence, not retroactive new-schema programme proof.
