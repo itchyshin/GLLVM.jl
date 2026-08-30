@@ -1,7 +1,8 @@
 # Per-species (heteroscedastic) Gaussian GLLVM marginal log-likelihood + fit.
 #
-# gllvmTMB's Gaussian default places a *per-species* residual SD φ_j on each
-# trait, so V[y_{·j}] = φ_j². GLLVM.jl's shared-σ Gaussian path (src/likelihood.jl,
+# This variant places a per-species residual SD φ_j on each trait. It does not
+# reproduce R's separate fixed-residual plus unique-variance decomposition.
+# GLLVM.jl's shared-σ Gaussian path (src/likelihood.jl,
 # src/fit.jl, src/profile.jl) uses a single σ_eps and is left UNTOUCHED. This file
 # adds a parallel per-species variant.
 #
@@ -11,11 +12,10 @@
 #   shared-σ:    M = Λ Λ' + σ_eps² · I_p          (constant diagonal)
 #   per-species: M = Λ Λ' + diag(φ²_1, …, φ²_p)   (per-trait diagonal)
 #
-# Each site y_s ~ N(μ (+ X_s β), M). `low_rank_chol(Λ, d)` already accepts a
-# length-p positive diagonal `d` and provides Woodbury logdet / solves for
-# M = Λ Λ' + diag(d); per-species variance is just `d = φ²vec`. No new linear
-# algebra is introduced — the quadratic form, logdet, and β/X handling mirror
-# `gaussian_marginal_loglik` (src/likelihood.jl) exactly.
+# Each site has covariance ΛΛ' + diag(φ²). Direct covariance Cholesky is
+# deliberate here: subtractive Woodbury solves can lose the quadratic form near
+# a zero residual variance. This costs O(p³); EM retains its own fast path.
+# Fixed effects use the same complete p×n×q design convention as likelihood.jl.
 #
 # The shared-σ fit profiles the single σ_eps analytically (src/profile.jl). That
 # closed-form profile does NOT generalise to a per-species vector, so the
@@ -32,9 +32,9 @@ residual variances. `y` is `p × n_sites`, `Λ` is `p × K` unit-tier loadings, 
 (NOT SDs).
 
 Each site `y_s ~ N(X_s β, M)` with `M = Λ Λ' + diag(φ²vec)`. The marginal is
-computed via the Woodbury / matrix-determinant-lemma factorisation
-[`low_rank_chol`](@ref), exactly as the shared-σ marginal does, but with the
-constant diagonal `σ_eps²·I` replaced by the supplied per-species diagonal.
+computed by directly factoring the `p × p` covariance. This avoids subtractive
+Woodbury cancellation near a zero residual variance. The factorization costs
+O(p³); the intercept-only EM fitter retains its separate fast path.
 
 Fixed effects: pass both `X::Array{<:Real,3}` of shape `(p, n_sites, q)` and
 `β::Vector` of length `q`, or neither. When `β`/`X` are omitted the residual is
@@ -86,11 +86,14 @@ function gaussian_pervar_marginal_loglik(y::AbstractMatrix, Λ::AbstractMatrix,
         d[t] = convert(Td, φ²vec[t])
     end
 
-    # Woodbury factorisation of M = Λ Λ' + diag(d) (src/lowrank_cholesky.jl).
-    F = low_rank_chol(Λ, d)
+    all(v -> isfinite(v) && v > 0, d) ||
+        throw(ArgumentError("residual variances must be finite and positive"))
+    # Direct covariance factorization remains stable when one diagonal variance
+    # approaches zero but the loading contribution keeps the covariance SPD.
+    F = cholesky(Symmetric(Λ * Λ' + Diagonal(d)))
     logdet_M = logdet(F)
 
-    # Quadratic form Σ_s r_s' M⁻¹ r_s via the Woodbury solves.
+    # Quadratic form Σ_s r_s' M⁻¹ r_s via covariance solves.
     Minv_r = F \ resid                 # p × n
     quad   = sum(resid .* Minv_r)
 
@@ -105,7 +108,8 @@ Result of [`fit_gaussian_pervar_gllvm`](@ref): the heteroscedastic Gaussian GLLV
 fit with a per-species residual variance.
 
 Fields:
-- `β::Vector`    — per-species intercept (length `p`; the profiled column means).
+- `β::Vector`    — GLS coefficients (length `q` when `X` is supplied), or
+  per-species intercepts (length `p`) when `X=nothing`.
 - `Λ::Matrix`    — fitted unit-tier loadings (`p × K`).
 - `φ²::Vector`   — per-species residual variances `V_j = φ_j²` (length `p`).
 - `loglik`       — converged marginal log-likelihood.
@@ -132,26 +136,31 @@ end
 _loadings(fit::GaussianPerVarFit) = fit.Λ
 _loglik(fit::GaussianPerVarFit)   = fit.loglik
 
-# Free params: β (p) + reduced loadings Λ + one residual variance per species (p).
+# Free params: requested fixed effects + reduced loadings + residual variances.
 function _nparams(fit::GaussianPerVarFit)
     p, K = size(fit.Λ)
-    return p + rr_theta_len(p, K) + p   # β + Λ + p per-species variances φ²
+    return length(fit.β) + rr_theta_len(p, K) + p
 end
 
 """
     fit_gaussian_pervar_gllvm(Y; K, X=nothing, g_tol=1e-5, iterations=1000)
         -> GaussianPerVarFit
 
-Fit a heteroscedastic (per-species variance) Gaussian GLLVM by L-BFGS.
+Fit a heteroscedastic (per-species variance) Gaussian GLLVM by EM or L-BFGS.
 
 `Y` is `p × n_sites`. Optimises `θ = [vec(packed Λ); log φ²_1 … log φ²_p]` with
-the per-species intercept `β` (length `p`) profiled out analytically as the column
-means each evaluation — for an intercept-only Gaussian the sample column mean is the
-exact ML / GLS estimate regardless of the covariance, so this is profiling, not an
-approximation.
+fixed effects profiled out analytically. With `X=nothing`, the `p` trait intercepts
+are the row means of `Y`, independent of the covariance. An explicit finite,
+full-column-rank design `X` of shape `(p, n_sites, q)` defines the complete mean
+`X_s * β`; no intercept is added. Its `q` coefficients are profiled by GLS at
+each covariance evaluation. A zero-column design specifies a zero mean.
+
+`method=:em` (default) uses EM only for the intercept-only `K < p` case;
+explicit designs use L-BFGS, as does `method=:lbfgs`. This is ML profiling,
+not REML. Rank-deficient or nonfinite designs are rejected.
 
 Warm start: PPCA closed form (Tipping & Bishop 1999) for `Λ` and per-species
-residual variances initialised from the per-species sample variances of `Y`.
+residual variances initialised from the per-trait sample variances of `Y`.
 
 The shared-σ `fit_gaussian_gllvm` is untouched; this is a parallel variant.
 """
@@ -165,13 +174,33 @@ function fit_gaussian_pervar_gllvm(Y::AbstractMatrix;
     p, n = size(Y)
     @assert K ≥ 1
     @assert n ≥ 2 "Need n_sites ≥ 2 for per-species variances"
+    method in (:em, :lbfgs) || throw(ArgumentError("method must be :em or :lbfgs"))
 
     Yf = Matrix{Float64}(Y)
+    all(isfinite, Yf) || throw(ArgumentError("Y must contain only finite responses"))
+    Xf = if X === nothing
+        nothing
+    else
+        size(X, 1) == p && size(X, 2) == n ||
+            throw(DimensionMismatch("X must have shape (p=$p, n=$n, q)"))
+        all(isfinite, X) || throw(ArgumentError("X must contain only finite values"))
+        design = Array{Float64,3}(X)
+        A = reshape(design, p*n, size(design, 3))
+        rank(A) == size(A, 2) || throw(ArgumentError("X must have full column rank"))
+        design
+    end
 
-    # Per-species intercept profiled as column means. Centre Y once for the
-    # warm-start; the objective recomputes the profile internally.
+    # OLS residuals provide a mean-shift-equivariant covariance warm start.
+    # GLS coefficients for a requested design are recomputed inside nll.
     μ0 = vec(sum(Yf, dims = 2)) ./ n           # length p
-    Yc = Yf .- reshape(μ0, p, 1)               # centred
+    Yc = if Xf === nothing
+        Yf .- reshape(μ0, p, 1)
+    elseif size(Xf, 3) == 0
+        copy(Yf)
+    else
+        A = reshape(Xf, p*n, size(Xf, 3))
+        Yf .- reshape(A * (A \ vec(Yf)), p, n)
+    end
 
     # ----- Warm starts.
     # Λ via PPCA on the centred data (requires K < p); otherwise fall back to
@@ -197,7 +226,7 @@ function fit_gaussian_pervar_gllvm(Y::AbstractMatrix;
     # on the IDENTICAL Λ Λ' + diag(φ²) model. No inner AD — reaches the same ML
     # optimum 1–2 orders of magnitude faster than the L-BFGS + ForwardDiff path.
     # Requires the FA regime K < p and no fixed effects; otherwise fall through to
-    # L-BFGS. The per-species intercept is the profiled column means (β = μ0), so
+    # L-BFGS. The per-species intercept is the profiled row means (β = μ0), so
     # EM runs on the centred residual `Yc`.
     if method === :em && K < p && X === nothing
         Λ_em, φ²_em, ll_em, nit_em, conv_em =
@@ -213,18 +242,40 @@ function fit_gaussian_pervar_gllvm(Y::AbstractMatrix;
         )
     end
 
-    # Objective: profile the per-species intercept as the residual column means,
-    # then evaluate the per-species marginal NLL on the centred residual.
+    # Exact ML GLS, using the same direct covariance factorization as the
+    # likelihood. Do not subtract nearly equal Woodbury terms near a boundary.
+    function profile_coefficients(Λ, φ²)
+        q = size(Xf, 3)
+        T = promote_type(eltype(Λ), eltype(φ²))
+        q == 0 && return T[]
+        C = cholesky(Symmetric(Λ * Λ' + Diagonal(φ²)))
+        A = zeros(T, q, q)
+        b = zeros(T, q)
+        for site in 1:n
+            Xi = @view Xf[:, site, :]
+            A .+= Xi' * (C \ Xi)
+            b .+= Xi' * (C \ view(Yf, :, site))
+        end
+        return cholesky(Symmetric(A)) \ b
+    end
+    rejected_covariances = Ref(0)
     function nll(params)
         θ_Λ   = @view params[1:rrlen]
         logφ² = @view params[(rrlen + 1):(rrlen + p)]
         Λ     = unpack_lambda(θ_Λ, p, K)
         φ²    = exp.(logφ²)
-        # Profile intercept: subtract per-species column means (exact ML for the
-        # intercept-only Gaussian, any covariance). Column means are constants in
-        # the parameters, so this stays AD-clean.
-        resid = Yf .- reshape(μ0, p, 1)
-        return -gaussian_pervar_marginal_loglik(resid, Λ, φ²)
+        all(v -> isfinite(v) && v > 0, φ²) || return oftype(first(params), Inf)
+        try
+            if Xf === nothing
+                return -gaussian_pervar_marginal_loglik(Yc, Λ, φ²)
+            end
+            β = profile_coefficients(Λ, φ²)
+            return -gaussian_pervar_marginal_loglik(Yf, Λ, φ²; X = Xf, β = β)
+        catch err
+            err isa PosDefException || rethrow()
+            rejected_covariances[] += 1
+            return oftype(first(params), Inf)
+        end
     end
 
     opts = Optim.Options(g_tol = g_tol, iterations = Int(iterations),
@@ -237,10 +288,14 @@ function fit_gaussian_pervar_gllvm(Y::AbstractMatrix;
     Λ_hat     = unpack_lambda(θ_Λ_hat, p, K)
     φ²_hat    = exp.(logφ²_hat)
 
-    # Recover the profiled per-species intercept (column means).
-    β_hat = vec(sum(Yf, dims = 2)) ./ n
+    β_hat = Xf === nothing ? μ0 : profile_coefficients(Λ_hat, φ²_hat)
 
-    ll, conv, iters = _fit_verdict(res)
+    _, conv, iters = _fit_verdict(res)
+    ll = -nll(params_hat)  # report the likelihood at the returned coordinates
+    conv = conv && isfinite(ll)
+    if rejected_covariances[] > 0
+        @warn "Rejected numerically unfactorizable covariance evaluations; no ridge was added" count=rejected_covariances[]
+    end
 
     return GaussianPerVarFit(
         collect(Float64, β_hat),

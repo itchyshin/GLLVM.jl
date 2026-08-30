@@ -443,3 +443,10 @@ No production B dispatch, full suite or long campaign was launched.
 - Independent Terra/high source/log review rejected by tool approval before launch; no reviewer or workaround. Needs payload-specific authorization if that external review is required. Safe local and other capability work continues.
 - Next: finite required manifest/native capability work and same-point Student objective/mode/precision diagnosis; M1 PARTIAL, no fullsuite/campaign/push/merge/release/cleanup.
 - Mission Control Julia-only correction 0f820b26cc2c7425654238dcf2a61252db729c3e committed locally and served HTTP200/readback verified; R fields unchanged.
+
+## 2026-08-30 — Per-variance requested-design candidate
+- X was accepted but ignored. TDD red1pass/2fail; GLS profiling, correct q/counts and input/zero-column cases now implemented. Boundary regression exposed huge Woodbury cancellation; pervar-only direct covariance factorization and narrow PosDef trial rejection now pass27 new +14 old checks.
+- Totoro final commands25.38s+15.31s; no live jobs. Every intermediate failure retained. O(p³) factorization cost explicit, default EM separate; no benchmark claim.
+- README/docstrings/docs/test runner updated, but render/fullsuite/R parity and independent numerical review UNPAID. Review authorization remains unresolved; no retry or substitute external route.
+- Source change invalidates earlier whole-source parity pins; results remain historical until integrated revalidation. Master manifest DRAFT/M1 PARTIAL. Next: finite remaining contract, independent review and current-revision targeted integration, then planned downstream capabilities. No push/merge/release/cleanup.
+- Mission Control targeted correction 6b47f69c9434c2281d7562ba34d6a5ce837a55e4 served HTTP200/readback verified; all R fields preserved.

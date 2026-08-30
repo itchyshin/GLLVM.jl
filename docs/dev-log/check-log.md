@@ -15829,3 +15829,8 @@ unpaid. No numerical source changes, outer optimization or campaign.
 - Same fixture/data/model: tight nlminb9pass/2fail in32.35s; BFGS9pass/2fail in33.10s. nlminb code1/gradient0.021821/delta0.000806848; BFGS code0/gradient0.206117/delta0.004688108. Absolute likelihood gate remains0.001.
 - Native independently evaluated gradient6.177e-6 and converged=true, but boundary identification/inference unverified. No engine/helper/fixture or R change. Six verifier negative controls reject; health gate intentionally remains unmet.
 - Independent external review blocked before launch by payload-authorization policy; no sign-off or alternative dispatch. Full manifest DRAFT, M1 PARTIAL.
+
+### 2026-08-30 — Per-variance Gaussian requested-design repair candidate
+- Red1pass/2fail demonstrated ignored six-column X and wrong free count. GLS profiling now returns requested coefficients; explicit no-intercept/zero-column semantics and guards tested.
+- Expanded tests exposed Woodbury cancellation; direct pervar covariance/GLS Cholesky resolves it at O(p³) cost. Only PosDef trial errors map to Inf with warning; final likelihood reevaluated, no ridge/floor.
+- Final27 new +14 existing assertions pass on Totoro,25.38s+15.31s. All failed attempts retained, six verifier corruption controls reject. Full suite, independent review, R parity, rendering and performance remain unpaid. Earlier whole-source receipts need integrated revalidation.

@@ -120,7 +120,8 @@ with sparse random-effect design matrices. `GLLVM.jl` solves a
 - Grouped Tweedie has explicit fixed-common, shared-estimated and per-species
   estimated power controls; these are distinct models, with separate parameter
   counts. Full R0.7.0 Core + AGHQ parity remains under validation.
-- Heteroscedastic Gaussian with per-species variance (`fit_gaussian_pervar_gllvm`)
+- Heteroscedastic Gaussian with per-species variance (`fit_gaussian_pervar_gllvm`),
+  including explicit full-rank fixed-effect designs profiled by GLS.
 - Per-species / grouped dispersion (`disp.group`) for NB2, NB1, Beta, beta-binomial,
   Gamma, and Tweedie via the `_grouped` drivers — per-species is the `fit_gllvm`
   default for NB2, NB1, Beta, and beta-binomial (`family = NB1()`,

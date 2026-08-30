@@ -835,8 +835,27 @@ fit = fit_gaussian_pervar_gllvm(Y; K = 2)   # heteroscedastic Gaussian
 
 A heteroscedastic Gaussian GLLVM with a **separate residual variance per species**
 (gllvm's heteroscedastic default), in contrast to the single shared `σ_eps` of
-`fit_gaussian_gllvm`. The per-species intercepts are profiled out analytically
-(column means), so only the per-species variances and the loadings are optimised.
+`fit_gaussian_gllvm`. With `X=nothing`, trait intercepts are profiled as row means of the `p × n`
+response matrix. Supply `X` of shape `(p, n, q)` to fit a complete fixed-effect
+design; no intercept is added automatically. Its `q` coefficients are profiled
+by generalized least squares at each covariance trial and returned in `fit.β`.
+Explicit designs use L-BFGS with direct covariance Cholesky (O(p³) factorization)
+to avoid cancellation near a zero residual variance; the default intercept-only
+path can use EM. A
+zero-column design specifies zero mean; nonfinite or rank-deficient designs
+are rejected. This ML route does not reproduce R's separate fixed-residual
+plus unique-variance decomposition.
+
+```julia
+p, n = size(Y)
+X = zeros(p, n, p + 1)
+for j in 1:p
+    X[j, :, j] .= 1                # one intercept per trait
+end
+X[:, :, end] .= reshape(collect(range(-1, 1; length=n)), 1, n)
+fit_x = fit_gaussian_pervar_gllvm(Y; K=2, X=X)
+coef(fit_x)                        # p intercepts, then one shared slope
+```
 
 ### Mixed-family response vector — `fit_mixed_gllvm`
 
