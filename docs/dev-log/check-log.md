@@ -1,3 +1,25 @@
+## 2026-08-30 — independent panel correction, branch-RE
+
+Rose exposed a valid marginal model incorrectly rejected by the A4 auxiliary
+precision guard. Regression failed2pass/5fail/1error before correction. An exact
+scaled marginal fallback now passes13/13 new checks plus44/44 existing checks
+on TotoroJulia1.12.6; invalid BLUP inputs have stable errors. Dense fallback
+memory/time costs are warned and documented. Original1.12.7 CI is still open.
+
+## 2026-08-30 — Core070 execution tranche (partial)
+
+- Preserved145 functional checkouts plus available files from46 broken R paths;
+ 122 R paths remain absent. Independent readback passed. Supplement recovered
+ nine otherwise uncovered registered R commit tips; combined registered-HEAD
+ coverage95 Julia/209 R. No checkout deletion or foreign repository mutation.
+- Built and integrity-verified exact R0.7.0 oracle on Totoro. Fresh oracle and
+ evidence-checker negative controls pass. Full capability manifest stays draft.
+- Student estimated-nu metadata regression8/8; original absolute likelihood
+ delta -0.00073059 meets tolerance but frozen R code1 fails fit-health gate.
+- Phylogenetic candidate48/48 targeted tests; original CI reproduction and
+ numerical review remain open. Full package suite and final integrated evidence
+ not run. Mission Control correction verified served, local vault7fa4557.
+
 # Check Log
 
 ## 2026-08-30 — Core070 + AGHQ execution: current evidence supersedes closure claims

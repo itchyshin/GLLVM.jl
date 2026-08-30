@@ -134,7 +134,7 @@ multinomial = false
 auto_loading_ridge = false
 broad_r_gate_helper = "NOT_A_PUBLIC_JULIA_HYBRID"
 
-# Source-complete obligation rows.  `implementation_status` is deliberately
+# Provisional source-linked obligation groups (not exhaustive executable cases).  `implementation_status` is deliberately
 # independent from `obligation`: MISSING is an accounted-for debt, never a
 # rejected R feature.  `fixture_specification` is deterministic design input,
 # not a claim that a fixture already passed.
@@ -163,7 +163,7 @@ fixture_specification = "one long and one traits() wide model with identical sta
 parameterisation = "same fixed and covariance design matrices"
 identification = "same latent/unique constraints"
 acceptance_rule = "formula parse and fitted-object information match native route"
-implementation_status = "MISSING"
+implementation_status = "PARTIAL_UNQUALIFIED"
 evidence_path = "new formula qualification receipt"
 
 [[obligation]]

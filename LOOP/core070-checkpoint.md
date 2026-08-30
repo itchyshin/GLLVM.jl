@@ -8,7 +8,7 @@ Read `docs/dev-log/plans/2026-08-30-core070-aghq-execution.md` first.
 - Done: isolated worktree created without changing permission settings; canonical
   GLLVM.jl path lease granted to codex:core070-aghq-20260830 for four hours.
 - Next: census/preservation, executable gates, frozen manifest, M1 repair leaves.
-- No fits, new suite runs, push, merge, deletion or release yet.
+- Initial foundation performed no fits; later bounded Totoro checks are recorded below. No push, merge, deletion or release.
 - Never use old LOOP/GOAL.md as authorization for this programme: inherited
   historical goal retained as evidence. This file and the approved plan supersede
   its execution instructions for this lane only.
@@ -29,3 +29,93 @@ Read `docs/dev-log/plans/2026-08-30-core070-aghq-execution.md` first.
 - Before more production: review worker receipts, preserve runtime evidence
   outside temporary storage, and refresh the four-hour GLLVM.jl lane lease.
 - A5/A6 remain queued. No M1 completion claim or full-suite run yet.
+
+## Execution update — 2026-08-30, after first preservation readback
+
+- First archive/readback PASS, no verification failures:
+  `/Users/z3437171/local-scratch/preservation/core070-aghq-20260830`.
+  145 working checkouts captured; raw files from46 broken R paths preserved;
+  122 R paths missing. Overall PARTIAL, no cleanup. Fresh repeatable verifier
+  is running in exec session12074 (1200s limit). Original archive session28532
+  completed successfully; second accidental replay36846 was safely refused.
+- R oracle built/verified on Totoro in146.6s, R4.5.3; exact library:
+  `/home/snakagaw/core070-aghq-20260830/oracle-build-01/library`.
+  Use R_LIBS (preserve default dependency libs) and the in-library source marker.
+- A3 returned draft catalogue215 registrations/33 coarse obligations. Parent
+  caught existing Julia formula incorrectly labelled absent and an unapproved
+  ISDM exclusion, corrected both. Full executable case decomposition is STILL
+  REQUIRED before freeze/M1 completion. Guard rejects17-family-only promotion.
+- A4 candidate has48/48 targeted tests on Totoro Julia1.12.6. Original1.12.7
+  CI failure remains unreproduced; finite-conditioning rejection needs review.
+- A5 and A6 are active; they are production children5/6 of this tranche.
+  No further production children before checkpoint. A5 first shared reference
+  adapter failed report(fixed_par) length; parent corrected use of full vector
+  and stale cached likelihood. Same-case retry pending, not a parity pass.
+- Parent central integration: new Tweedie fit type export/union, new unit test
+  includes, and Student estimated_nu-aware parameter count. Full suite NOT RUN.
+- CI source pin/required mode/artifact retention edited locally; Ruby YAML and
+  static pin checks PASS. Not pushed and not executed in GitHub Actions.
+- Native model requests: A2 Terra medium; A3–A6 Terra high. A1 Luna low CLI
+  receipt retained. No Sol production child; no full completion panel yet.
+
+## Latest checkpoint — 2026-08-30 13:56 UTC
+
+This update supersedes the earlier in-progress worker list, not its retained history.
+
+- First archive fresh readback passed again. All 95 distinct registered Julia
+  HEADs and 209 distinct registered R HEADs are now covered. Nine R HEADs absent
+  from the first bundle were preserved in a separate verified supplement:
+  `/Users/z3437171/local-scratch/preservation/core070-aghq-20260830-head-supplement`.
+  Broken/missing working-tree bytes are still unresolved: 46/122 R paths.
+- A6 finished PARTIAL/BLOCKED. Student estimated-nu metadata and parameter-count
+  regression passes8/8. Original estimated-nu fixture meets absolute likelihood
+  tolerance (delta -0.00073059), but the pinned R optimizer returns code1,
+  false convergence(8). Both-engine health gate remains red. No fixture or
+  tolerance substitution. Local raw receipt: `.unlazy/core070-aghq/A6/`.
+- A5 fixed/shared power pinned comparisons pass at approximately2.41e-8/5.36e-8
+  absolute likelihood difference; per-species estimated power still running.
+- Evidence and oracle self-tests freshly pass. Frozen full capability manifest
+  remains incomplete; 17family smoke rows cannot be promoted to full parity.
+- Six production children used. Pause production for a fresh checkpoint review
+  after A5 returns. This is an interim audit, not M1 sign-off.
+
+
+## Independent panel and repairs — 2026-08-30 14:18 UTC
+
+- Melissa Terra/medium native; Noether Terra/high and Rose Sol/high via canonical
+  read-only CLI after native task limit. All returned PARTIAL/NOT-DONE. Requested
+  routing plus CLI dispatch receipts retained; no actual-hours estimate invented.
+- A5 prior22/22 likelihood snapshot confirmed, but its helper/test hashes differ
+  from the candidate; R health and free-coordinate assertions are insufficient.
+  A5 G1/G3 demoted pending repair and exact candidate replay. Raw old A5 stdout
+  was unavailable; retained worker report is labelled as such.
+- Rose's A4 counterexample reproduced red2pass/5fail/1error. Exact marginal
+  fallback passes13/13 new +44/44 existing tests on Totoro1.12.6. Local commit
+  e2b0c79f. Original1.12.7 CI still unverified; fallback dense costs documented.
+- Conflicted-index preservation now fails closed: three-stage fixture changed
+  from incorrect CAPTURED to UNRESOLVED_INDEX_CONFLICT; existing self-test passes.
+  Original archive staged-state recovery remains qualified, not retroactively proven.
+- A3 repair follow-up running through Terra/high CLI, session70028; exclusive
+  ownership parity_helpers/runparity/evidence checker/new receipt unit files.
+  Parent MUST NOT edit those files until return. No fits/fullsuite by worker.
+- Parent has corrected reader/API/navigation/README/changelog contradictions;
+  documentation build/visual checks remain pending.
+- Next: receive/test harness repair; strengthen R health/free-coordinate checks;
+  run exact integrated candidate with retained raw logs (15–20min, cap25min);
+  complete finite source-admission manifest. No new B-slice production yet.
+
+
+## Receipt repair integrated — 2026-08-30 14:38 UTC
+
+- Hopper CLI follow-up completed; no active production worker remains. Parent
+  owns returned helper/runner/checker files again. Receipt kernel19/19 exposed
+  a nested-test counting gap on parent review: red20pass/1fail, corrected21/21
+  on local Julia1.10.0 (pure Test/SHA/TOML only, no fits).
+- R health record and free-power0/1/p counts now wired into Tweedie tests; actual
+  numerical replay pending. Gaussian/NB2 assert their retrieved R convergence.
+- New raw process supervisor negative controls pass and Unlazy G1 is verified:
+  rejects fake-success-plus-nonzero-exit, missing executable, timeout and stale
+  source. It cannot grant programme parity; it preserves process outcomes.
+- Numerical/harness candidate commit52412350; administrative checkpoint commit
+  follows. Prepare immutable Totoro replay, first qualification then scoped
+  Tweedie/Student runs, retaining all logs and the known Student failure.

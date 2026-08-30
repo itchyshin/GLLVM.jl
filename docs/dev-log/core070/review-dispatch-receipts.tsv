@@ -1,0 +1,4 @@
+role	configured_model	configured_effort	context	elapsed_seconds	exit	receipt	limitation
+A1	gpt-5.6-luna	low	fresh_ephemeral	87	0	.unlazy/core070-aghq/dispatch/A1-events.dispatch.txt	configured route; backend routing not independently exposed
+Noether	gpt-5.6-terra	high	fresh_ephemeral	261	0	.unlazy/core070-aghq/dispatch/Noether-events.dispatch.txt	configured route; backend routing not independently exposed
+Rose	gpt-5.6-sol	high	fresh_ephemeral	244	0	.unlazy/core070-aghq/dispatch/Rose-events.dispatch.txt	configured route; backend routing not independently exposed
