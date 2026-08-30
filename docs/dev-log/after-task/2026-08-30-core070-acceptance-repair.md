@@ -93,6 +93,6 @@ required observed-curvature/repair branch; that implementation gate remains open
 
 Covers this Julia lane and a pinned R0.7.0 oracle only. Does NOT cover R0.7.1,
 the article lane, public AGHQ, recovery/coverage or full programme acceptance. Mission Control correction
-602ad06 is served with HTTP200 and exact field readback; R0.7.1 content is
+2dacdae is served with HTTP200 and exact field readback; R0.7.1 content is
 unchanged. No scientific campaign or full suite was launched. The long-running
 programme remains active and its durable checkpoint will retain the next step.

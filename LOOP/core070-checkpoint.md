@@ -189,3 +189,22 @@ Hessian plus R1e-8 adaptation-repair gap; no Julia publicAGHQ claim.
 Next: bind externally observed process exits into final aggregation; complete
 source-admission manifest and B6 curvature contract; diagnose Student reference
 health without changing fixture/tolerance. No active remote fit or reviewer.
+
+
+## Continuation boundary — 2026-08-30 15:13 UTC
+
+All remote qualification/paired processes and both review follow-ups are
+finished. Latest MissionControl vault commit2dacdae records Tweedie PASS and
+Student FAIL; served HTTP200 and exact field readback confirmed. Julia candidate4e75f2e9
+contains no src/test changes after numerical snapshot6e59ef54; later changes
+are supervisor repair, source-control subset and administrative evidence.
+Continue in this isolated lane, not the original checkout. M1 is NOT complete.
+First next implementation: external-process binding in the final aggregator,
+with success-internal/nonzero-external negative control; full contract still
+DRAFT. Then finish required-case source-admission manifest and Student diagnostic
+contract. A5 three power tests need no rerun unless relevant pins change.
+B6 Noether contract requires observed curvature and accounts for R's separate
+1e-8 adaptation repair; do not turn PD-only smoke into general parity.
+No new production child before the planned tranche checkpoint; no push, merge,
+deletion, release or unsized full-suite/campaign. Existing lease expires about
+16:55UTC; refresh ownership before further writes if expired.
