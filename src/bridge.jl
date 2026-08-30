@@ -406,6 +406,10 @@ shared scalar trials count, so `N` is **required** (there is no safe default —
 `p x n` `N` is accepted only when every entry is equal, then collapsed to that
 scalar. The value actually used is returned as `trials`.
 
+For `family = "truncated_poisson"`, responses must be finite positive integers
+exactly representable by the bridge as `Int`; fractional counts are rejected,
+never rounded.
+
 Confidence intervals are routed through `options` (all optional):
   - `"ci_method"` ∈ {`"none"` (default), `"wald"`, `"profile"`, `"bootstrap"`}.
     When not `"none"`, the returned tuple gains the `ci_*` keys documented in the
@@ -1019,12 +1023,18 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
         # No-X only. TruncatedPoissonFit has no getLV / link-residual / confint
         # adapter on this engine, so assemble the shared block ΛΛᵀ directly
         # (same honest fallback as lognormal) and fence CI / X / X_lv / masks
-        # via list membership plus a loud CI guard. Support is y ≥ 1 strictly
-        # (twin fid 10); zeros and non-positive cells fail loud.
-        all(>=(1), Yf) || throw(ArgumentError(
-            "bridge_fit: family=\"truncated_poisson\" requires y ≥ 1; found y < 1"))
+        # via list membership plus a loud CI guard. Frozen twin fid 10 admits
+        # positive integers only. Validate before conversion or CI dispatch:
+        # rounding here would fit a response different from the supplied one.
+        all(eachindex(Yf)) do i
+            v = Yf[i]
+            isfinite(v) && v >= 1 && isinteger(v) &&
+                v < Float64(typemax(Int)) && v == y[i]
+        end || throw(ArgumentError(
+            "bridge_fit: family=\"truncated_poisson\" requires positive integer " *
+            "responses y ≥ 1 exactly representable by the bridge as Int; values are not rounded"))
         _bridge_ci_guard_truncated_poisson(ci_method)
-        Yi = round.(Int, Yf)
+        Yi = Int.(Yf)
         fit = fit_truncated_poisson_gllvm(Yi; K = K)
         L = Matrix{Float64}(fit.Λ * _svd_rotation(fit.Λ))
         Σ = L * L'; Σ = (Σ + Σ') ./ 2

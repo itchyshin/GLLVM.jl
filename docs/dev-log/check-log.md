@@ -15869,3 +15869,8 @@ unpaid. No numerical source changes, outer optimization or campaign.
 ## 2026-08-30 — Frozen data shape/offset controls
 -56 source controls PASS: weight order/masks, missing-data defaults/rejections, offset admission and newdata behavior. R matrix versus traits() stacking now explicit; Julia traits×units adapter contract recorded.
 -Wrong-order live negative55pass/1fail; eight metadata negatives pass. Source-only, no fits/engine changes; native/formula/bridge numerical data parity unpaid. Full manifest DRAFT/M1 PARTIAL.
+
+## 2026-08-30 — Truncated-Poisson bridge count admission
+- Replaced silent rounding with finite positive integer and exact representation guards. Red3pass/1fail; final148 bridge assertions PASS. Current-module combined352 truncated NB2+900 Student scalar+66 curvature+148 bridge=1466PASS,22.21s. No fits. Eight evidence negative controls pass.
+- README/docstrings/page/runner updated; current render, fullsuite, R embedding, fitted replay and independent review unpaid. Whole-source old receipts historical; final narrow checks bind changed source. Full manifest DRAFT/M1 PARTIAL.
+- Remote family-recheck-01 remains UNKNOWN; recover existing job once authenticated observation returns, never restart from connection loss. Continue remaining finite contract; no new production child/push/merge/release/cleanup.

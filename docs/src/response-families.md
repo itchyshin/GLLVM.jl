@@ -187,7 +187,10 @@ Current limits: `TruncatedPoissonFit` is not in the package's Wald
 confidence-interval union, so there is no CI route for this family, and the
 R-bridge arm (`family = "truncated_poisson"`) is no-X only — `X`, `X_lv`,
 missing-response masks, and CI are loud rejects there rather than silent
-no-ops.
+no-ops. The bridge requires finite positive integer responses exactly
+representable as `Int`. Fractional counts and values that would lose precision
+during conversion are rejected before fitting; the bridge never rounds this
+family’s response.
 
 ### Right-censored Poisson — `CensoredPoisson()`
 

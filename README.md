@@ -162,6 +162,9 @@ remaining sparse-Cholesky / CHOLMOD paths stay conservative until their analytic
 gradients clear the same runtime accuracy gate; the VA estimator adds analytic
 inner and envelope-theorem outer gradients.
 
+The truncated-Poisson R→Julia bridge rejects fractional, non-finite, or
+inexactly representable counts before fitting; it never rounds the response.
+
 ## Citation
 
 If you use `GLLVM.jl` in published work, please cite:

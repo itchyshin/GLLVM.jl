@@ -222,6 +222,7 @@ using GLLVM
     include("test_bridge_zip_nox.jl")
     include("test_bridge_lognormal.jl")
     include("test_bridge_truncated_poisson.jl")
+    include("test_bridge_truncated_input.jl")
     include("test_bridge_lv_predictor.jl")
     include("test_lv_ci.jl")
     include("test_phylo_eta_realized.jl")
