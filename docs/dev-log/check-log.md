@@ -15928,3 +15928,6 @@ Relabeled real draft previously accepted; red regression reproduced. Public load
 
 ## 2026-08-30 — Fixed Student-t df input guard
 - Red 24pass/3fail on original source; green27 input+51 unchanged scalar/AD assertions, Julia1.10.0 full-package snapshot8.578s, no fits. Infinite scalar/vector/marker now reject before data; positive finite low-df native extension retained. Seven evidence negatives pass; Unlazy1met/1unmet. Reader fixed/default-df wording corrected. Full fitted parity/review still unpaid; earlier whole-source numerical evidence historical after source edit. See after-task/2026-08-30-core070-student-input.md.
+
+## 2026-08-30 — Frozen family entry mapping
+-All69 frozen R family facts accounted; R69 descriptor checks PASS,22 native no-fit entry probes PASS9.388s after own CLogLogLink typo correction (first21pass1fail retained). Six contract negativesPASS. Model distinctions explicit; full source-case mapping remains unpromoted698nonexcluded facts. No engine/fixture/tolerance change, no fits. See after-task/2026-08-30-core070-family-routes.md.

@@ -41,3 +41,6 @@ The index is explicitly **KNOWN_SOURCE_CENSUS_NOT_EXHAUSTIVE_SCOPE**. Further ad
 `python3 tools/core070_verify_manifest_coverage.py` runs24 tests across coverage, collection, assertion counting and process evidence, plus the aggregate self-test. A positive small synthetic map and pinned review exercise the mechanism; negative controls cover omissions, changed classification, fake IDs, missing reasons, stale review and source hashes. The original relabeled-draft regression changed fromFAIL toPASS. Existing binomial qualification evidence still verifies; no numerical source, fixture or acceptance threshold changed.
 
 The acceptance leaf was written after the first red regression and initial repair, rather than before them. This is recorded as a process miss; final checks were subsequently approved and re-run. No claim is made that the leaf existed before implementation.
+
+## Family entry-point supplement
+The [family route contract](family-route-contract.md) now connects all69 frozen family facts to explicit distinctions and22 tested native entry calls. These no-fit probes do not settle fitted-model/native/formula/bridge coverage, so this source-to-case map remains unpromoted.

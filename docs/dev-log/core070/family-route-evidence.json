@@ -1,0 +1,26 @@
+{
+  "status": "FAMILY_ENTRY_ONLY_FITTED_COVERAGE_UNPAID",
+  "r_descriptor_cases": 69,
+  "native_entry_probes": 22,
+  "negative_controls": 6,
+  "julia_seconds": 9.38846050016582,
+  "full_manifest": "DRAFT_INCOMPLETE_NOT_FROZEN",
+  "artifacts": {
+    "docs/dev-log/core070/family-route-contract.json": "f49e17cdf834d3693e7be4f6b40cf3fca507cfc5ed930b50fad967ab79543b62",
+    "tools/core070_family_routes.py": "c025795a31a05bac3b9b6401626abb6900467239413d771afabcaa527f416663",
+    ".unlazy/core070-aghq/family-routes-01/execution/receipt.json": "b39d87ef203f6da58cdb1b5c83fb3bcff0c756974e33ddfca81e1c79de3b9756",
+    ".unlazy/core070-aghq/family-routes-01/execution/contract-snapshot.json": "64f44d637339a05d6af0491b325561c0f48439d7cedc4c51c14805cba00bf515",
+    ".unlazy/core070-aghq/family-routes-01/execution/julia/output.log": "69d41e0a789e1d7ef565d2005fbf63b3edb492bff11b8af6197e9cbae263ba7a",
+    ".unlazy/core070-aghq/family-routes-01/execution/julia/run.jl": "b259670e6d72e5a1af5ce6328c33d7b09551fad5cc3524b5fcd8c46d8224031b",
+    ".unlazy/core070-aghq/family-routes-01/execution/r/receipt.json": "12e73b15925049fa035d55700258df01ec37aa9e80816e9ecde2dcb9eb3b4aad",
+    ".unlazy/core070-aghq/family-routes-01/execution/r/raw.tsv": "58f6f3e6b7d13efa4aceb3c563b52be606cd2ef485c55ad472a3d64b360cf252",
+    ".unlazy/core070-aghq/family-routes-01/execution2/receipt.json": "db29a8c27b9b80cf3d90cd23becfab8f55898847a0215f163942edf481c3e6a5",
+    ".unlazy/core070-aghq/family-routes-01/execution2/contract-snapshot.json": "f49e17cdf834d3693e7be4f6b40cf3fca507cfc5ed930b50fad967ab79543b62",
+    ".unlazy/core070-aghq/family-routes-01/execution2/julia/output.log": "126fafce3980df34d58581dbf39d5df8352960f38432b2f81315e523edd688e2",
+    ".unlazy/core070-aghq/family-routes-01/execution2/julia/run.jl": "f798b49af429369ea1fd939298c1aed51650c0ae69aff16a66a6d00b26ded881",
+    ".unlazy/core070-aghq/family-routes-01/execution2/r/receipt.json": "12e73b15925049fa035d55700258df01ec37aa9e80816e9ecde2dcb9eb3b4aad",
+    ".unlazy/core070-aghq/family-routes-01/execution2/r/raw.tsv": "58f6f3e6b7d13efa4aceb3c563b52be606cd2ef485c55ad472a3d64b360cf252",
+    ".unlazy/core070-aghq/family-routes-01/coverage-neighbour.log": "4073bb01ffebe41263048ca3716990ea19b67fc0c8fcbddc63b58d5f13d92e56"
+  },
+  "neighbour_checks": "Existing24 coverage/receipt/process tests and aggregate selftest PASS; prior Student input evidence reverified."
+}
