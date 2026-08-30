@@ -15824,3 +15824,8 @@ unpaid. No numerical source changes, outer optimization or campaign.
 - Unchanged required Gaussian fixture 31/31 PASS; matched explicit-intercept native/R postfit 11/11 PASS on Totoro in 39.26s. Likelihood delta 1.154e-11; prediction/residual delta <=8.176e-7; 15 free parameters each.
 - Original default R gradient 0.00157349 fails added 1e-4 gate. Public tighter-control refit passes at 8.506e-5. Default failure and all five attempts retained; no tolerance/model/oracle change.
 - Noether accepts single-fixture evidence; exact flag/control status enforced by verifier. Five negative controls reject. Full manifest remains DRAFT; no engine change, full suite, performance or milestone completion claim.
+
+### 2026-08-30 — Original Student public-control refinements fail health
+- Same fixture/data/model: tight nlminb9pass/2fail in32.35s; BFGS9pass/2fail in33.10s. nlminb code1/gradient0.021821/delta0.000806848; BFGS code0/gradient0.206117/delta0.004688108. Absolute likelihood gate remains0.001.
+- Native independently evaluated gradient6.177e-6 and converged=true, but boundary identification/inference unverified. No engine/helper/fixture or R change. Six verifier negative controls reject; health gate intentionally remains unmet.
+- Independent external review blocked before launch by payload-authorization policy; no sign-off or alternative dispatch. Full manifest DRAFT, M1 PARTIAL.

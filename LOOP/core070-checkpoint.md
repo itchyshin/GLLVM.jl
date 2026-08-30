@@ -435,3 +435,11 @@ No production B dispatch, full suite or long campaign was launched.
 - Noether accepts scoped evidence, flags that runner also permits default diagnostics; verifier requires exact --tight-r and true control flag. Full contract DRAFT, M1 PARTIAL.
 - Next: finite model/data/postfit/AGHQ contract, original Student health diagnosis, original branch-RE environment and M1 checkpoint before new production tranche. No active compute/reviewer, new production child, full suite, campaign, push/merge/release/cleanup.
 - Mission Control Julia-only update 35d938554f067099884a4ba314fa672cd2175973 served HTTP200 and read back; R fields preserved.
+
+## 2026-08-30 — Student public-control failure retained
+- Original Student seed71 data and model preserved. Warm-start tight nlminb:9pass/2fail, code1,gradient0.021821,delta0.000806848. BFGS:9pass/2fail, code0,gradient0.206117,delta0.004688108; cannot accept code0 alone.
+- Native gradient6.177e-6; first sigma≈7.59e-5 and nu≈3.03e31 remain boundary diagnostics, not identification/recovery evidence. Original fixture unchanged.
+- Current diagnostic tool and verifier preserve all3 attempts; first was import setup failure. Evidence gate passes; --require-health fails. No active remote jobs.
+- Independent Terra/high source/log review rejected by tool approval before launch; no reviewer or workaround. Needs payload-specific authorization if that external review is required. Safe local and other capability work continues.
+- Next: finite required manifest/native capability work and same-point Student objective/mode/precision diagnosis; M1 PARTIAL, no fullsuite/campaign/push/merge/release/cleanup.
+- Mission Control Julia-only correction 0f820b26cc2c7425654238dcf2a61252db729c3e committed locally and served HTTP200/readback verified; R fields unchanged.
