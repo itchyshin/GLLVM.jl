@@ -15774,3 +15774,18 @@ still DRAFT. Fit-level source matrix/Psi/multinomial rules and all native/formul
 bridge receipts remain unpaid. Documented multi-kernel automatic-Psi pruning
 versus explicit-Psi rejection. This source contract is input to B1/B2, not their
 implementation or a completed covariance grid.
+
+## Frozen R prepared inputs — 2026-08-30
+
+Public frozen R path captured before original MakeADFun body in isolated R
+processes. Qualification1.12s;14-case run1.72s. Final11prepared+3expected rejections
+pass; original13/14 failure retained (case-sensitive diagnostic mismatch only).
+Frozen installed tree/marker/build log verified before and after. Deliberately
+false predicate fails exit1; unexpected DLL rejected. Four evidence negative
+controls pass.58 remote input/record files match readback hashes. Two Gaussian
+multi-kernel auto-unique/false requests produce identical complete captured
+inputs; ordinary per-row Gaussian default fixes residual scale, while loadings-
+only keeps it free. Binomial and multinomial auto-Psi are mapped off. No TMB
+objective construction, optimization, recovery or full parity claim. Eleven
+numerical model candidates have exact R calls but Julia mappings/tolerances
+remain unpaid. Full manifest DRAFT; Student reference-health failure unchanged.

@@ -637,3 +637,11 @@ evidence = "docs/dev-log/core070/covariance-admission-evidence.json"
 contract_notes = "docs/dev-log/core070/covariance-source-contract.md"
 status = "SOURCE_SUBSET_PASS_MODEL_FITS_UNPAID"
 expected_cases = 95
+
+[[source_subsets]]
+id = "prepared-covariance-and-multinomial-inputs"
+manifest = "docs/dev-log/core070/fit-input-subset.json"
+evidence = "docs/dev-log/core070/fit-input-evidence.json"
+contract_notes = "docs/dev-log/core070/fit-input-contract.md"
+status = "INPUT_PREPARATION_PASS_FITTED_PARITY_UNPAID"
+expected_cases = 14

@@ -367,3 +367,21 @@ No production B dispatch, full suite or long campaign was launched.
 - Collection checker regressions8/8 still pass; current full-contract aggregation
   rejects with DRAFT_CONTRACT (exit2). Mission Control Julia-only update verified
   HTTP200 at vault4267e292; R fields unchanged.
+
+## Prepared-input checkpoint — 2026-08-30
+
+-14 public frozen R preparation cases verified:11 reach typed pre-MakeADFun
+ capture and3 reject with expected diagnostics/classes; no tape/optimizer built.
+- Ordinary Gaussian default versus loadings-only changes both unique and residual
+ maps. Binomial/nominal auto-Psi is suppressed. Multi-kernel auto-unique input is
+ an identical R object to explicit loadings-only; explicit companions reject.
+- Exact package tree verified before/after; all58 remote artifact bytes read back.
+ False predicate and unexpected-DLL controls reject; verifier negative controls pass.
+- Numerical candidate rows MODEL-* recorded in fit-input-subset.json, still
+ UNPAID with unresolved Julia calls/acceptance rules. Full contract DRAFT.
+- Next: broader actual source/mode/slope/mask/known-V preparation, finite paired
+ numerical/data/postfit/interface fixtures, and original Student reference health.
+ No active remote process, new child, B production, fullsuite or campaign.
+- Mission Control Julia-only update verified HTTP200 at vaultd8673513; R fields
+ unchanged. Full aggregate still rejects DRAFT_CONTRACT, independent of input
+ subset passes. No numerical full-parity status advanced.
