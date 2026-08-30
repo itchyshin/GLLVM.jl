@@ -5,7 +5,16 @@ using TOML
 using Test
 
 export ExecutionRun, abort_run!, execution_inventory, finish_run!, record_case!,
-       start_run!, testset_counts
+       start_run!, testset_counts, verify_loaded_source
+
+"""Reject evidence produced by a package loaded from a different checkout."""
+function verify_loaded_source(expected_root, loaded_root, loaded_entry)
+    root = realpath(expected_root)
+    realpath(loaded_root) == root || throw(ArgumentError("loaded GLLVM root differs from the evidence checkout"))
+    realpath(loaded_entry) == realpath(joinpath(root, "src", "GLLVM.jl")) ||
+        throw(ArgumentError("loaded GLLVM entry point differs from the evidence checkout"))
+    return true
+end
 
 """State for one immutable, terminal CORE-070 parity receipt."""
 mutable struct ExecutionRun
@@ -163,6 +172,13 @@ function testset_counts(testset)
     counts = Test.get_test_counts(testset)
     # Test.jl reports direct counts first, then recursive child counts.
     # Every family fixture nests below the runner wrapper.
+    if hasproperty(counts, :passes) # TestCounts on Julia 1.12+
+        return _counts_dict(counts.passes + counts.cumulative_passes,
+                            counts.fails + counts.cumulative_fails,
+                            counts.errors + counts.cumulative_errors,
+                            counts.broken + counts.cumulative_broken)
+    end
+    # Julia 1.10 returns a tuple with the same direct/recursive ordering.
     return _counts_dict(counts[1] + counts[5], counts[2] + counts[6],
                         counts[3] + counts[7], counts[4] + counts[8])
 end

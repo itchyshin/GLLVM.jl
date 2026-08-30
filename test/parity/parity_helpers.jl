@@ -129,6 +129,7 @@ function _core070_write_toml(name::AbstractString, receipt::Dict{String, Any})
 end
 
 function _core070_source_pin!()
+    Core070Receipts.verify_loaded_source(_core070_root(), Base.pkgdir(GLLVM), pathof(GLLVM))
     marker = get(ENV, "GLLVM_PARITY_R_SOURCE_PIN", "")
     isempty(marker) && throw(ArgumentError(
         "required parity evidence needs GLLVM_PARITY_R_SOURCE_PIN inside the installed gllvmTMB library"))

@@ -15596,3 +15596,16 @@ Fixed at the gate (trait-coincident curvatures keep the analytic path), not at t
 (bit-identical), non-default runs and differs, canonical links no-op under both
 selectors, invalid symbols throw before optimising, every fitter accepts both.
 Docstrings updated on all nine fitters.
+
+
+## Julia 1.12 qualification repair — 2026-08-30
+
+Candidate129f6043 qualification: receipt kernel exit1 (TestCounts struct API),
+R health logic exit0, targeted models exit0, exact oracle/RCall startup exit0.
+No paired fits were started. Failed raw logs retained under
+`.unlazy/core070-aghq/integrated-recheck/qualification-129f6043/`.
+The recorder now handles named TestCounts fields as well as Julia1.10 tuples.
+A neighbouring source-binding gap was found: require the loaded package root
+and entry point to equal the evidence checkout. Regression red21pass/2fail/1error,
+then24/24 pass locally on Julia1.10. Python evidence self-test passes. Fresh
+Totoro1.12 qualification is still required before current-candidate fit evidence.

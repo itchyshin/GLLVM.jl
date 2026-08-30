@@ -16,6 +16,14 @@ _sha(path) = bytes2hex(sha256(read(path)))
     @test testset_counts(nested)["passed"] == 1
 
     mktempdir() do tmp
+        expected = joinpath(tmp, "expected")
+        other = joinpath(tmp, "other")
+        mkpath(joinpath(expected, "src")); mkpath(joinpath(other, "src"))
+        write(joinpath(expected, "src", "GLLVM.jl"), "module GLLVM end")
+        write(joinpath(other, "src", "GLLVM.jl"), "module GLLVM end")
+        @test verify_loaded_source(expected, expected, joinpath(expected, "src", "GLLVM.jl"))
+        @test_throws ArgumentError verify_loaded_source(expected, other, joinpath(other, "src", "GLLVM.jl"))
+        @test_throws ArgumentError verify_loaded_source(expected, expected, joinpath(other, "src", "GLLVM.jl"))
         fixture = joinpath(tmp, "fixture.jl")
         write(fixture, "# fixture\n")
         inventory_file = joinpath(tmp, "runner.jl")
