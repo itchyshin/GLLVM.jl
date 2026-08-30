@@ -482,3 +482,9 @@ No production B dispatch, full suite or long campaign was launched.
 -Defaults and visible bootstrap-to-Wald fallback now explicit. Endpoint forwarding is not admission; actual model/target/interval numerical cases remain B4 debt. Master remains DRAFT/M1 PARTIAL.
 -Totoro socket absent at turn start; remote family-recheck-01 UNKNOWN, no restart. Continue finite contract and available safe qualification; restore observation before touching remote jobs. Scalar candidate376044e7 unchanged; package/fitted/review gates unpaid. No new production child/push/merge/release/cleanup.
 - Mission Control Julia-only correction80806332374b0062dfd116254cdbe47a05d70ea5 committed and served HTTP200/readback verified; R fields unchanged and exact lease released. Unlazy2met/1unmet, no abandonment.
+
+## 2026-08-30 — Whole-module local qualification
+-Julia1.12.6 directory was incomplete; attempt1 exit127 retained. Offline isolated Julia1.10 resolution/load succeeds44.39s. Optim1.13.3/ForwardDiff0.10.39/StatsModels0.7.10/Distributions0.25.131; new Manifest pinned in package-qualification/attempt2 only.
+-Actual using GLLVM and path assertion, unchanged352 scalar tests PASS7.41s; unchanged66 curvature census tests PASS3.17s. Nine evidence negative controls pass. Existing scalar-only evidence left unchanged; new whole-module evidence separate.
+-No engine/fixture change. Local load gap closed; fullsuite/fit replay/review unpaid. Remote family-recheck-01 UNKNOWN, socket absent, no restart. Master DRAFT/M1 PARTIAL. No new production child/push/merge/release/cleanup.
+- Mission Control Julia-only update587229601c70d30366fc5e9b3f6723adac85304f committed; served HTTP200/readback verified, R fields preserved and lease released. Unlazy2met/1unmet, no abandonment.

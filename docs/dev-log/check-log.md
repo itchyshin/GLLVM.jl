@@ -15857,3 +15857,7 @@ unpaid. No numerical source changes, outer optimization or campaign.
 ## 2026-08-30 — Frozen inference routing contract subset
 - Added98 exact source-dispatch/guard cases: target-specific defaults, nonlinear-profile rejection, SE prerequisites, weighted/MSPL fences and visible bootstrap-to-Wald fallback. Final98pass; earlier84/14 and97/1 probe failures retained.
 - Eight negative controls pass, including deliberately wrong live route expectation causing exit1. No fits, intervals, installed-package or Julia capability claim; full manifest DRAFT/M1 PARTIAL. B4 numerical and later admission obligations explicit.
+
+## 2026-08-30 — Full-module scalar qualification
+- Offline isolated Julia1.10 package resolve/load PASS44.39s; realpath module guard confirms current source copy.352 unchanged scalar tests and66 unchanged curvature census assertions PASS. Local environment pinned separately from Totoro; no fits.
+- Julia1.12.6 remnant had no binary; exit127 retained. Nine evidence negative controls pass. Fullsuite, original fitted replay and independent review unpaid; full manifest DRAFT/M1 PARTIAL. No engine/tolerance/API change.
