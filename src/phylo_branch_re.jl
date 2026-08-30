@@ -180,21 +180,15 @@ function _lambda(cache::BranchRECache, σ²::Real, σ²_eps::Real)
     return Λ
 end
 
-# Cholesky of the (SPD) sparse Λ. Λ is SPD because W ≻ 0 and σ_eps⁻²ZᵀZ ⪰ 0.
-function _lambda_chol(Λ)
-    try
-        return cholesky(Symmetric(Λ))
-    catch e
-        if isa(e, PosDefException)
-            # Add minimal numerical ridge to guarantee positive definiteness
-            Λdiag = copy(Λ)
-            @inbounds for i in 1:size(Λdiag, 1)
-                Λdiag[i, i] += max(1e-12, eps(Float64) * abs(Λdiag[i, i]))
-            end
-            return cholesky(Symmetric(Λdiag))
-        end
-        rethrow(e)
-    end
+# Cholesky of the (SPD) sparse Λ, scaled by its largest stored magnitude.
+# Λ is SPD because W ≻ 0 and σ_eps⁻²ZᵀZ ⪰ 0.  Scaling only changes the
+# numerical representation supplied to CHOLMOD: Λ = λscale * Λscaled.  It
+# never changes the objective with a ridge or other model perturbation.
+function _lambda_chol(Λ::SparseMatrixCSC{Float64,Int})
+    λscale = maximum(abs, nonzeros(Λ))
+    isfinite(λscale) && λscale > 0 ||
+        throw(DomainError(λscale, "Λ contains an unsafe numerical scale"))
+    return cholesky(Symmetric(Λ / λscale)), λscale
 end
 
 # ---------------------------------------------------------------------------
@@ -215,29 +209,74 @@ function branch_re_profile_negll(cache::BranchRECache, y::AbstractVector,
                                  σ²::Real, σ²_eps::Real)
     length(y) == cache.p ||
         throw(ArgumentError("y length $(length(y)) must equal p $(cache.p)"))
+    # Nelder–Mead is unconstrained on the log scale.  An overflowed or
+    # underflowed exponent is an invalid objective trial, not a near-optimal
+    # parameter point and not evidence that the SPD model needs a ridge.
+    isfinite(σ²) && σ² > 0 && isfinite(σ²_eps) && σ²_eps > 0 ||
+        return Inf, NaN
     inv_eps = 1.0 / σ²_eps
+    isfinite(inv_eps) || return Inf, NaN
     Λ = _lambda(cache, σ², σ²_eps)
-    cΛ = _lambda_chol(Λ)
+    all(isfinite, nonzeros(Λ)) || return Inf, NaN
+    λscale = maximum(abs, nonzeros(Λ))
+    # When E > p, Z has a non-trivial nullspace. Along it the precision is
+    # bounded above by max(W), while λmax(Λ) is at least λscale. This gives a
+    # cheap lower bound on cond(Λ); beyond Float64's square-root precision the
+    # sparse solve cannot support a trustworthy likelihood evaluation.
+    cond_lower = cache.E > cache.p ? λscale * σ² * minimum(cache.ℓ) : 1.0
+    isfinite(cond_lower) && cond_lower ≤ inv(sqrt(eps(Float64))) ||
+        return Inf, NaN
+    cΛ = try
+        _lambda_chol(Λ)[1]
+    catch e
+        e isa PosDefException || rethrow(e)
+        # A finite, but unrepresentably ill-conditioned, trial is rejected by
+        # the optimiser.  It is not repaired into a different likelihood.
+        return Inf, NaN
+    end
 
-    # Σ⁻¹ applied to an arbitrary RHS via Woodbury.
-    Σinv(b) = inv_eps .* b .- (inv_eps^2) .* (cache.Z * (cΛ \ (cache.Z' * b)))
+    # Σ⁻¹ applied to an arbitrary RHS via Woodbury.  Solve for the posterior
+    # mean first, then form the residual at b's original scale.  Expanding this
+    # to inv_eps*b - inv_eps²*Z*Λ⁻¹Z'b loses the residual when σ²_eps is small.
+    # Here Λ⁻¹ = Λscaled⁻¹ / λscale and λscale ≥ inv_eps.
+    function Σinv(b)
+        zpost = (inv_eps / λscale) .* (cΛ \ (cache.Z' * b))
+        return inv_eps .* (b .- cache.Z * zpost)
+    end
 
+    # The intercept is profiled, so centre before the sparse solves. This is
+    # translation-invariant and prevents a large mean from obscuring the
+    # residual in the Woodbury subtraction.
+    ymean = mean(y)
+    yc = y .- ymean
     one_p = ones(cache.p)
     Sinv_1 = Σinv(one_p)
-    Sinv_y = Σinv(y)
+    Sinv_y = Σinv(yc)
     a11 = dot(one_p, Sinv_1)            # 1ᵀ Σ⁻¹ 1
     a1y = dot(one_p, Sinv_y)            # 1ᵀ Σ⁻¹ y
-    μ̂ = a1y / a11                       # GLS intercept
+    isfinite(a11) && a11 > 0 && isfinite(a1y) || return Inf, NaN
+    μc = a1y / a11                       # GLS intercept of the centred data
+    μ̂ = ymean + μc
 
-    r = y .- μ̂                          # residual
-    # rᵀ Σ⁻¹ r = yᵀΣ⁻¹y − μ̂²·1ᵀΣ⁻¹1  (since 1ᵀΣ⁻¹y = μ̂·1ᵀΣ⁻¹1)
-    quad = dot(y, Sinv_y) - μ̂^2 * a11
+    r = yc .- μc                         # residual
+    # At the GLS intercept rᵀΣ⁻¹y = rᵀΣ⁻¹r.  This form avoids subtracting
+    # two O(μ̂²) terms in yᵀΣ⁻¹y − μ̂²·1ᵀΣ⁻¹1.
+    quad = dot(r, Sinv_y)
+    if !isfinite(quad)
+        return Inf, NaN
+    elseif quad < 0
+        # This subtraction can lose its non-negative quadratic-form property
+        # when the fitted intercept is large. Re-evaluate from the residual;
+        # a negative result is never accepted as a healthy likelihood.
+        quad = dot(r, Σinv(r))
+        isfinite(quad) && quad >= 0 || return Inf, NaN
+    end
 
-    logdetΣ = cache.p * log(σ²_eps) + logdet(cΛ) +
+    logdetΣ = cache.p * log(σ²_eps) + logdet(cΛ) + cache.E * log(λscale) +
               (cache.E * log(σ²) + cache.sum_log_ℓ)
 
     negll = 0.5 * (cache.p * log(2π) + logdetΣ + quad)
-    return negll, μ̂
+    return isfinite(negll) && isfinite(μ̂) ? (negll, μ̂) : (Inf, NaN)
 end
 
 # ---------------------------------------------------------------------------
@@ -257,9 +296,9 @@ function branch_blups(cache::BranchRECache, y::AbstractVector,
                       σ²::Real, σ²_eps::Real, μ::Real)
     inv_eps = 1.0 / σ²_eps
     Λ = _lambda(cache, σ², σ²_eps)
-    cΛ = _lambda_chol(Λ)
+    cΛ, λscale = _lambda_chol(Λ)
     rhs = inv_eps .* (cache.Z' * (y .- μ))
-    ẑ = cΛ \ rhs
+    ẑ = (cΛ \ rhs) ./ λscale
     sqrtℓ = sqrt.(cache.ℓ)
     std_incr = ẑ ./ sqrtℓ
     rate_e = (ẑ .^ 2) ./ cache.ℓ
@@ -348,6 +387,9 @@ function fit_branch_re(phy::EdgePhy, y::AbstractVector;
         n_iter = iters
         converged = conv
     end
+
+    isfinite(negll) && isfinite(σ²) && σ² > 0 && isfinite(σ²_eps) && σ²_eps > 0 ||
+        throw(ErrorException("branch-RE optimisation found no finite likelihood point"))
 
     _, μ̂ = branch_re_profile_negll(cache, yv, σ², σ²_eps)
     ẑ, std_incr, rate_e = branch_blups(cache, yv, σ², σ²_eps, μ̂)

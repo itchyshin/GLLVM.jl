@@ -95,6 +95,60 @@ end
         @test maximum(abs.(ẑ .- ẑ_bf)) < 1e-9
     end
 
+    # Optimiser trials can leave the representable variance domain.  They are
+    # rejected as an infinite objective value before a non-finite Λ reaches
+    # CHOLMOD; this is distinct from accepting a ridge-altered likelihood.
+    @testset "unsafe variance trial is rejected before sparse Cholesky" begin
+        phy = _balanced_edge_phy(8; bl = 0.5)
+        cache = branch_re_cache(phy)
+        y = collect(1.0:8.0)
+        for (σ², σ²_eps) in ((NaN, 1.0), (Inf, 1.0), (0.0, 1.0),
+                              (-1.0, 1.0), (1.0, NaN), (1.0, Inf),
+                              (1.0, 0.0), (1.0, -1.0), (1.0, 1e-320))
+            negll, μ̂ = branch_re_profile_negll(cache, y, σ², σ²_eps)
+            @test isinf(negll)
+            @test isnan(μ̂)
+        end
+    end
+
+    @testset "finite but ill-conditioned precision is rejected" begin
+        phy = edge_phy("((A:0.1,B:0.2):0.3,(C:0.4,D:0.5):0.1);")
+        cache = branch_re_cache(phy)
+        negll, μ̂ = branch_re_profile_negll(cache, ones(4), 1e6, 1e-6)
+        @test isinf(negll)
+        @test isnan(μ̂)
+    end
+
+    @testset "scaled sparse precision matches dense reference" begin
+        phy = edge_phy("((A:0.1,B:0.2):0.3,(C:0.4,D:0.5):0.1);")
+        cache = branch_re_cache(phy)
+        Z = path_membership(phy)
+        V = Matrix(Z * spdiagm(0 => phy.branch_lengths) * Z')
+        y = [1e8, 1e8 + 0.5, 1e8 - 0.25, 1e8 + 0.75]
+        one_p = ones(phy.n_leaves)
+
+        # Four-order signal/noise ratios exercise the scaled factor while
+        # remaining in the strict dense-reference accuracy regime.
+        for (σ², σ²_eps) in ((1e2, 1e-2), (1e-2, 1e2))
+            Σ = σ² .* V
+            @inbounds for i in 1:phy.n_leaves
+                Σ[i, i] += σ²_eps
+            end
+            μ_dense = dot(one_p, Σ \ y) / dot(one_p, Σ \ one_p)
+            r_dense = y .- μ_dense
+            negll_dense = 0.5 * (phy.n_leaves * log(2π) + logdet(Σ) +
+                                 dot(r_dense, Σ \ r_dense))
+            negll_sparse, μ_sparse = branch_re_profile_negll(cache, y, σ², σ²_eps)
+            @test negll_sparse ≈ negll_dense rtol = 1e-10 atol = 1e-8
+            @test μ_sparse ≈ μ_dense rtol = 1e-10 atol = 1e-8
+
+            D = σ² .* phy.branch_lengths
+            z_dense = D .* (Z' * (Σ \ (y .- μ_dense)))
+            z_sparse, _, _ = branch_blups(cache, y, σ², σ²_eps, μ_sparse)
+            @test z_sparse ≈ z_dense rtol = 1e-9 atol = 1e-8
+        end
+    end
+
     # -----------------------------------------------------------------------
     # HEAD-TO-HEAD: branch-RE incidence vs Hadfield–Nakagawa augmented precision.
     # GATE: identical log-likelihood at p = 100 to ~1e-8 (same model, two sparse
