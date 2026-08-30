@@ -15819,3 +15819,8 @@ unpaid. No numerical source changes, outer optimization or campaign.
 - Resolved100 frozen postfit namespace entries (99 functions +tidy reexport), exact formals/source pins; verifier freshly reparses definitions. All29 installed-frozen-R policy probes PASS in0.366s, package integrity before/after confirmed.
 - Captured scale/conditioning/count/SE rules. Truncated-Poisson response helper returns underlying rate (0.5), not expected positive count(1.270747); both quantities must be labelled separately in B4. No engine/API change.
 - Six corruption/omission/nonzero-exit controls rejected. Source probes are not fits. Master manifest remains DRAFT; fitted-object and branch cross-product obligations remain unpaid. See postfit-contract and after-task report.
+
+### 2026-08-30 — Controlled Gaussian fitted/postfit qualification
+- Unchanged required Gaussian fixture 31/31 PASS; matched explicit-intercept native/R postfit 11/11 PASS on Totoro in 39.26s. Likelihood delta 1.154e-11; prediction/residual delta <=8.176e-7; 15 free parameters each.
+- Original default R gradient 0.00157349 fails added 1e-4 gate. Public tighter-control refit passes at 8.506e-5. Default failure and all five attempts retained; no tolerance/model/oracle change.
+- Noether accepts single-fixture evidence; exact flag/control status enforced by verifier. Five negative controls reject. Full manifest remains DRAFT; no engine change, full suite, performance or milestone completion claim.

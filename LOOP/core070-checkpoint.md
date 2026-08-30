@@ -428,3 +428,10 @@ No production B dispatch, full suite or long campaign was launched.
 -B4 semantic requirement: R truncated-Poisson response helper gives underlying rate0.5, whereas expected positive count=1.270747. Native marker already documents rate link. Preserve explicit rate parity and label any conditional-mean output separately; no API decision/engine change made here.
 -Next: finite per-model data/postfit/inference/conditioning cases and M1 blockers/checkpoint. Source signatures are not completed capabilities; full manifest DRAFT, Student health unresolved. No new production child, full suite, push, merge, release or cleanup.
 -Mission Control Julia-only update358a1d3f served HTTP200/readback matches; R fields unchanged. Native-source evaluator evidence freshly reverified and unaffected by this documentation/policy slice.
+
+## 2026-08-30 — Controlled Gaussian fit and postfit
+- Original NATIVE-01-GAUSSIAN fixture unchanged, 31 checks pass. Explicit native trait intercepts match R's 15 free parameters; tighter public R controls give 11 added postfit passes. R gradient 8.506e-5; likelihood delta 1.154e-11, prediction/residual <=8.176e-7.
+- Default R gradient failure 0.00157349 retained. Attempts1–2 setup failures; attempt3 default health failure; attempt4 launcher failed to activate tight control; attempt5 verified. No fixture/model/tolerance or engine changes.
+- Noether accepts scoped evidence, flags that runner also permits default diagnostics; verifier requires exact --tight-r and true control flag. Full contract DRAFT, M1 PARTIAL.
+- Next: finite model/data/postfit/AGHQ contract, original Student health diagnosis, original branch-RE environment and M1 checkpoint before new production tranche. No active compute/reviewer, new production child, full suite, campaign, push/merge/release/cleanup.
+- Mission Control Julia-only update 35d938554f067099884a4ba314fa672cd2175973 served HTTP200 and read back; R fields preserved.
