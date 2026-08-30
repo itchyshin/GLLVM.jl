@@ -74,7 +74,7 @@ def load_toml(path: Path) -> dict:
         raise EvidenceError(f"BAD_RECEIPT {path}: {exc}") from exc
 
 
-def load_manifest(path: Path) -> dict:
+def _load_manifest_metadata(path: Path) -> dict:
     manifest = load_toml(path)
     required = manifest.get("family_smoke_case_ids", [])
     families = manifest.get("families", [])
@@ -109,6 +109,19 @@ def load_manifest(path: Path) -> dict:
         raise EvidenceError("MANIFEST_INVALID: required obligation rows are not source-complete")
     if not set(required).issubset({row["id"] for row in obligations}):
         raise EvidenceError("MANIFEST_INVALID: every family-smoke row needs its own source-bound obligation")
+    return manifest
+
+
+
+def load_manifest(path: Path) -> dict:
+    """Load a contract; a FROZEN label requires the source-to-case closure proof."""
+    manifest = _load_manifest_metadata(path)
+    if manifest.get("status") == "FROZEN":
+        from core070_manifest_coverage import CoverageError, require_frozen_manifest
+        try:
+            require_frozen_manifest(manifest, ROOT)
+        except CoverageError as error:
+            raise EvidenceError(str(error)) from error
     return manifest
 
 
@@ -422,7 +435,10 @@ def self_test(manifest_path: Path) -> None:
                             'reference_call = "self-test"\njulia_call = "self-test"\n' +
                             'model_contract = "self-test"\nacceptance_rule = "self-test"\n')
         frozen_path.write_text(frozen_text)
-        frozen = load_manifest(frozen_path)
+        # Synthetic receipt-format test only. Real entrypoints use load_manifest,
+        # which rejects this deliberately incomplete source-to-case contract.
+        _expect_error(lambda: load_manifest(frozen_path), "SOURCE_COVERAGE")
+        frozen = _load_manifest_metadata(frozen_path)
         cases = {row["id"]: row for row in frozen["executable_case"]}
         execution = execution_inventory(cases, all_ids, frozen_path)
         hashes = {row["path"]: row["sha256"] for row in execution["entries"]}

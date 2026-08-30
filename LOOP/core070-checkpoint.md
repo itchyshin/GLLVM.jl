@@ -566,3 +566,9 @@ No production B dispatch, full suite or long campaign was launched.
 -Rawruntimebinomial-curvature-01,binomial-singular-01,binomial-bfgs-01; allremoteprocessesterminal. Nativeengine hash unchanged; no Juliafitrerun inthisRdiagnosticslice.
 -Next finish the finite required-case manifest from the source-admission inventories before promoting diagnostic results; then return to original Student/truncatedNB2 health; do not treat scoped K1 cases as old K2 smoke/formula/bridge/coverage completion. Qualifiedpubliccontrol adoption independentreviewunpaid; no new Bchildren beforecheckpoint. FullmanifestDRAFT/M1PARTIAL, no push/merge/cleanup.
 - Mission Control Julia-only correctionfa5bab14c30afe1214c487954945e8638438f1bc locally committed, servedHTTP200/readbackPASS, Rfields unchanged. Curvature Unlazy1met/1unmet; singular-only1met/2unmet; final six-fit gate1met/1unmet.
+
+## 2026-08-30 — Source-to-case closure gate
+-Relabeled draftFROZEN was accepted byloader; redregression fixed. Publicload_manifest requirescoveragebinding; transport-only tests explicitly useprivate_metadata loader.24 tests+aggregateselftest PASS, existing6binomialqualificationstillPASS.
+-Knownsourceindex752facts:440requiredcore84adapters174rejected54excluded.698nonexcluded unmapped; overlapnotcapabilitycount. FrozenRbytes andexactnamespacechecked, datafixtureASTparsedwithoutmodelcalls. RealmanifestDRAFT unchanged.
+-Next fill source-to-executablecase mapping with concrete model/estimand/native/formula/bridge andnegativecase definitions; resolvealiases and inspectunrepresented branches beforeindependentscopereview/freeze. No needrerun unchanged binomialdiagnostics. Student/truncatedNB2health andAGHQ/fullsuiteunpaid. No review-transfer workaround/newBchildren/push/merge/cleanup.
+- Mission Control Julia-only correctionc8cec0465185dbafcd0fce51033d89eb5113e7f3 committed and servedHTTP200/readbackPASS; Rfields unchanged. Unlazy1met/1unmet freshlyreverified.

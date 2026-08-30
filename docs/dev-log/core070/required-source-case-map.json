@@ -1,0 +1,4519 @@
+{
+  "schema": 1,
+  "status": "MAPPING_REQUIRED_NOT_FROZEN",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "rows": [
+    {
+      "source_id": "aghq/AGHQ-AUTO-K-BINOMIAL",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-AUTO-K-DELTA",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-AUTO-K-GAUSSIAN",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-AUTO-K-NB2",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-AUTO-K-ORDINAL",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-AUTO-K-POISSON",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-AUTO-K-TWEEDIE",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-CTRL-AUTO",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-CTRL-FALSE",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-CTRL-NINE",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-CTRL-NULL",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-CTRL-ONE",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-CTRL-TRUE",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-CTRL-TWO",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-DEFAULT-OFF",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-DEFAULT-RIDGE-EXCLUDED",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "aghq/AGHQ-INVALID-EMPTY",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-INVALID-FRACTION",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-INVALID-INF",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-INVALID-NA",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-INVALID-NAN",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-INVALID-NEGATIVE",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-INVALID-STRING",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-INVALID-VECTOR",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-INVALID-ZERO",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-POLICY-AUTO-ENFORCE-CUTOFF",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-POLICY-BAD-COLUMNS",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-POLICY-BAD-DIMENSION",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-POLICY-BAD-TRAITS",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-POLICY-EMPTY-GATE",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-POLICY-EXPLICIT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-POLICY-EXPLICIT-BYPASS-CUTOFF",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-POLICY-MISSING-GATE",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-POLICY-NO-QUADRATURE",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-POLICY-OFF",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-POLICY-SITES-INDEPENDENT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-POLICY-TRAITS19",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-POLICY-TRAITS20",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "aghq/AGHQ-POLICY-UNRESOLVED-WIDTH",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-ANIMAL-DEP",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-ANIMAL-DEP-BAR-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-ANIMAL-DEP-BARE-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-ANIMAL-FOLDED-UNIQUE",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-ANIMAL-INDEP",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-ANIMAL-INDEP-BAR-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-ANIMAL-INDEP-BARE-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-ANIMAL-LATENT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-ANIMAL-LV-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-HELPER-CLUSTER",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-HELPER-S",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-HELPER-STRATA",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-HELPER-TE",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-HELPER-WEIGHTS",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-KERNEL-DEP",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-KERNEL-FOLDED-UNIQUE",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-KERNEL-INDEP",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-KERNEL-LATENT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-KERNEL-LV-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-META-EXACT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-META-LEGACY",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-ORD-DEP",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-ORD-INDEP",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-ORD-INDEP-COMMON",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-ORD-LATENT-BARE",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-ORD-LATENT-COMMON",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-ORD-LATENT-DEFAULT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-ORD-SLOPE",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-ORD-SLOPE-NOUNIQUE",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-PHYLO-A-ALIAS",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-PHYLO-CONFLICT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-PHYLO-DEP",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-PHYLO-DEP-BARE-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-PHYLO-FOLDED-UNIQUE",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-PHYLO-INDEP",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-PHYLO-INDEP-BARE-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-PHYLO-LATENT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-PHYLO-LV-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F00-L0",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F00-L1",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F00-L2",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F01-L0",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F01-L1",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F01-L2",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F02-L0",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F02-L1",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F02-L2",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F03-L0",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F03-L1",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F03-L2",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F04-L0",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F04-L1",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F04-L2",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F05-L0",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F05-L1",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F05-L2",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F06-L0",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F06-L1",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F06-L2",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F07-L0",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F07-L1",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F07-L2",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F08-L0",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F08-L1",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F08-L2",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F09-L0",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F09-L1",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F09-L2",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F10-L0",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F10-L1",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F10-L2",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F11-L0",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F11-L1",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F11-L2",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F12-L0",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F12-L1",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F12-L2",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F13-L0",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F13-L1",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F13-L2",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F14-L0",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F14-L1",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F14-L2",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F15-L0",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F15-L1",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F15-L2",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F16-L0",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F16-L1",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-F16-L2",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SLOPE-LENGTH",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SPATIAL-DEP",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SPATIAL-FOLDED-UNIQUE",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SPATIAL-INDEP",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SPATIAL-LATENT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "covariance/COV-SPATIAL-LV-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-MISS-BOTH",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-MISS-DEFAULT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-MISS-EM-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-MISS-ENGINE-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-MISS-ESTIMATOR-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-MISS-INCLUDE",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-MISS-MODEL",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-MISS-PREDICTOR-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-MISS-PROFILE-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-MISS-RESPONSE-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-OFF-ABSENT-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-OFF-ALL-COUNT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-OFF-EXPOSURE",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-OFF-LENGTH-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-OFF-MIXED",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-OFF-NA-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-OFF-NB1",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-OFF-NONCOUNT-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-OFF-NONCOUNT-ZERO",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-OFF-NONE",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-OFF-PREDICT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-OFF-PREDICT-ABSENT-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-OFF-PREDICT-NONFINITE-HELPER",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-OFF-SCALAR",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-OFF-STRING-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-OFF-TRAIN-LEGACY",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-OFF-TRAIN-STORED",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-OFF-ZERO-EXPOSURE-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-W-DF-MASK-DROP",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-W-DF-MASK-INCLUDE",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-W-DF-MATRIX-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-W-DF-SCALAR-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-W-DF-UNIT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-W-DROP-INVALID-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-W-FRACTIONAL",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-W-LONG",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-W-LONG-MATRIX-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-W-LONG-SCALAR-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-W-MASK-NA-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-W-MASK-SHAPE-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-W-MATRIX-CELLS",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-W-MATRIX-FLAT-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-W-MATRIX-MASK-DROP",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-W-MATRIX-MASK-EXTRA-NA-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-W-MATRIX-MASK-INCLUDE",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-W-MATRIX-MASK-MISSING-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-W-MATRIX-MASK-SCALAR",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-W-MATRIX-SCALAR",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-W-MATRIX-TRANSPOSE-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-W-MATRIX-UNIT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-W-NEGATIVE-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-W-NOBS-MISMATCH-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-W-NONFINITE-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-W-NONNUMERIC-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-W-NULL",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "data/DATA-W-ZERO",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/CONSTRUCTOR-ONLY-CENSORED_POISSON",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "family/CONSTRUCTOR-ONLY-DELTA_BETA",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "family/CONSTRUCTOR-ONLY-DELTA_GAMMA_MIX",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "family/CONSTRUCTOR-ONLY-DELTA_GENGAMMA",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "family/CONSTRUCTOR-ONLY-DELTA_LOGNORMAL_MIX",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "family/CONSTRUCTOR-ONLY-DELTA_POISSON_LINK_GAMMA",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "family/CONSTRUCTOR-ONLY-DELTA_POISSON_LINK_LOGNORMAL",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "family/CONSTRUCTOR-ONLY-DELTA_TRUNCATED_NBINOM1",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "family/CONSTRUCTOR-ONLY-DELTA_TRUNCATED_NBINOM2",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "family/CONSTRUCTOR-ONLY-GAMMA_MIX",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "family/CONSTRUCTOR-ONLY-GENGAMMA",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "family/CONSTRUCTOR-ONLY-LOGNORMAL_MIX",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "family/CONSTRUCTOR-ONLY-NBINOM2_MIX",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "family/CONSTRUCTOR-ONLY-TRUNCATED_NBINOM1",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "family/FAMILY-00-IDENTITY",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-00-REJECT-LINK",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-01-CLOGLOG",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-01-LOGIT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-01-PROBIT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-01-REJECT-LINK",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-02-LOG",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-02-REJECT-LINK",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-03-LOG",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-03-REJECT-LINK",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-04-LOG",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-04-REJECT-LINK",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-05-LOG",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-05-REJECT-LINK",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-06-FIXED-SHAPE",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-06-LOG",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-06-REJECT-LINK",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-06-SHAPE-INVALID-HIGH",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-06-SHAPE-INVALID-INF",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-06-SHAPE-INVALID-LOW",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-06-SHAPE-INVALID-NA",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-06-SHAPE-INVALID-VECTOR",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-07-LOGIT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-07-REJECT-LINK",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-08-CLOGLOG-ENGINE-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-08-LOGIT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-08-REJECT-LINK",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-09-FIXED-SHAPE",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-09-IDENTITY",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-09-REJECT-LINK",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-09-SHAPE-INVALID-INF",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-09-SHAPE-INVALID-LOW",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-09-SHAPE-INVALID-NA",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-09-SHAPE-INVALID-VECTOR",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-10-LOG",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-10-REJECT-LINK",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-11-LOG",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-11-REJECT-LINK",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-12-LOGIT-LOG",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-12-REJECT-POISSON-DELTA",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-12-REJECT-POSITIVE",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-12-REJECT-PRESENCE",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-13-LOGIT-LOG",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-13-REJECT-POISSON-DELTA",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-13-REJECT-POSITIVE",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-13-REJECT-PRESENCE",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-14-MUTATED-DESCRIPTOR-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-14-PROBIT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-14-REJECT-LINK",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-15-LOG",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-15-REJECT-LINK",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-16-LOGIT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-16-MUTATED-DESCRIPTOR-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-16-REJECT-LINK",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "family/FAMILY-BETA-ALIAS",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "fit-input/INPUT-ANIMAL-LATENT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "fit-input/INPUT-BINOMIAL-DEFAULT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "fit-input/INPUT-GAUSS-COMMON",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "fit-input/INPUT-GAUSS-DEFAULT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "fit-input/INPUT-GAUSS-LOADINGS",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "fit-input/INPUT-KERNEL-ONE",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "fit-input/INPUT-KERNEL-TWO",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "fit-input/INPUT-KERNEL-TWO-AUTO",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "fit-input/INPUT-KERNEL-TWO-EXPLICIT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "fit-input/INPUT-MN-ANIMAL-LATENT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "fit-input/INPUT-MN-ANIMAL-UNIQUE",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "fit-input/INPUT-MN-KERNEL-TWO",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "fit-input/INPUT-MN-LATENT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "fit-input/INPUT-POISSON-DEFAULT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-001",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-002",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-003",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-004",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-005",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-006",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-007",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-008",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-009",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-010",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-011",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-012",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-013",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-014",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-015",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-016",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-017",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-018",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-019",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-020",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-021",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-022",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-023",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-024",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-025",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-026",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-027",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-028",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-029",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-030",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-031",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-032",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-033",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-034",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-035",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-036",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-037",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-038",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-039",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-040",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-041",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-042",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-043",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-044",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-045",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-046",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-047",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-048",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-049",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-050",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-051",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-052",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-053",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-054",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-055",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-056",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-057",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-058",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-059",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-060",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-061",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-062",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-063",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-064",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-065",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-066",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-067",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-068",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-069",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-070",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-071",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-072",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-073",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-074",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-075",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-076",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-077",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-078",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-079",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-080",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-081",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-082",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-083",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-084",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-085",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-086",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-087",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-088",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-089",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-090",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-091",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-092",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-093",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-094",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-095",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-096",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-097",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-098",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-ALIASED",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-ALIGN",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-ALIGN-MISSING",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-ALL-DETECTION",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-COUNT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-DUPLICATE",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-DUPLICATE-OBS",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-EXTRA-SOURCE",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-IN-SOURCE-NA",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-LAW-4",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-LAW-5",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-LAW-6",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-LEGACY",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-MASKED-ARM",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-MASKED-COLUMNS",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-MISSING-IN-TRAIT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-MISSING-SOURCE",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-MISSING-VAR",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-MIXED",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-NO-EXEMPTION",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-NO-OFFSET",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-NO-TRAITS",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-NON-FAMILY",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-NONFINITE-OFFSET",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-ONE",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-PARTIAL",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-SUPPORT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-THREE",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-TWO-SIDED",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-UNBALANCED",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-UNNAMED",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-WITHIN-TRAIT-ADMIT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-WITHIN-TRAIT-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-WRAPPER-LAW",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-WRONG-ID",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-WRONG-LINK",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "isdm/ISDM-ZERO-ORDINARY",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/coef,gllvmTMB_julia",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/coef,gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/coef,gllvmTMB_va",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/S3method/confint,gllvmTMB_julia",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/confint,gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/confint,gllvmTMB_va",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/S3method/deviance,gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/deviance,gllvmTMB_va",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/S3method/df.residual,gllvmTMB_va",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/S3method/fitted,gllvmTMB_julia",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/fitted,gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/fitted,gllvmTMB_va",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/S3method/imputed,gllvmTMB",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/logLik,gllvmTMB_julia",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/logLik,gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/logLik,gllvmTMB_va",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/S3method/ordiplot,gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/plot,gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/plot,gllvmTMBmesh",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/plot,profile_derived",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/plot,profile_loadings",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/plot,sdmTMBmesh",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/predict,gllvmTMB_julia",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/predict,gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/predict,gllvmTMB_va",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/S3method/print,gllvmTMB_Sigma_phy_slope",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/print,gllvmTMB_check_consistency",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/print,gllvmTMB_confint_inspect",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/print,gllvmTMB_coverage_study",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/print,gllvmTMB_identifiability",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/print,gllvmTMB_julia",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/print,gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/print,gllvmTMB_reportable_table",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/print,gllvmTMB_ridge_path",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/S3method/print,gllvmTMB_screen",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/S3method/print,gllvmTMB_slope_ci",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/print,gllvmTMB_va",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/S3method/print,summary.gllvmTMB_julia",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/print,summary.gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/print,summary.gllvmTMB_va",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/S3method/residuals,gllvmTMB_julia",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/residuals,gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/residuals,gllvmTMB_va",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/S3method/simulate,gllvmTMB_julia",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/simulate,gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/stats::nobs,gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/stats::nobs,gllvmTMB_va",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/S3method/stats::weights,gllvmTMB_va",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/S3method/summary,gllvmTMB_julia",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/summary,gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/summary,gllvmTMB_va",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/S3method/tidy,gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/vcov,gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/S3method/vcov,gllvmTMB_va",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/export/.proportions_bootstrap_ci",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/.proportions_wald_ci",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/Beta",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/VP",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/export/add_utm_columns",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/animal_dep",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/animal_indep",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/animal_latent",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/animal_scalar",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/animal_slope",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/animal_unique",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/betabinomial",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/block_V",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/bootstrap_Sigma",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/categorical",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/censored_poisson",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/export/check_auto_residual",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/check_gllvmTMB",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/compare_Sigma_table",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/compare_dep_vs_two_psi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/compare_indep_vs_two_psi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/compare_loadings",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/confint_inspect",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/confirmatory_lambda",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/cumulative_logit",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/delta_beta",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/export/delta_gamma",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/delta_gamma_mix",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/export/delta_gengamma",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/export/delta_lognormal",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/delta_lognormal_mix",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/export/delta_poisson_link_gamma",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/export/delta_poisson_link_lognormal",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/export/delta_truncated_nbinom1",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/export/delta_truncated_nbinom2",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/export/dep",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/diagnose_kernel_separability",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/diagnostic_table",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/extract_Gamma",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/extract_ICC_site",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/extract_Omega",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/extract_Sigma",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/extract_Sigma_B",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/extract_Sigma_W",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/extract_Sigma_table",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/extract_coevolution_modules",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/extract_communality",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/extract_correlations",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/extract_cross_correlations",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/extract_cutpoints",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/extract_loadings",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/extract_lv_effects",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/extract_ordination",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/extract_phylo_signal",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/extract_proportions",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/extract_repeatability",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/extract_residual_cor",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/extract_residual_cov",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/extract_residual_split",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/extract_rotated_loadings_table",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/flag_unreliable_loadings",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/gamma_mix",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/export/gengamma",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/export/getLV",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/getLoadings",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/getREsd",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/getResidualCor",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/getResidualCov",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/get_crs",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/gllvmTMB",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/gllvmTMB_check_consistency",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/gllvmTMB_diagnose",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/gllvmTMB_wide",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/gllvmTMBcontrol",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/gllvm_julia_fit",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/gllvm_julia_setup",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/gr",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/impute_model",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/imputed",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/indep",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/isdm_source",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/isdm_sources",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/kernel_dep",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/kernel_indep",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/kernel_latent",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/kernel_scalar",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/kernel_unique",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/latent",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/loading_ci",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/loading_profile",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/lognormal",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/lognormal_mix",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/export/make_cross_kernel",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/make_mesh",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/meta",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/meta_V",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/meta_known_V",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/miss_control",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/multinomial",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/nbinom1",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/nbinom2",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/nbinom2_mix",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/export/ordinal_probit",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/ordiplot",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/pedigree_to_A",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/pedigree_to_Ainv_sparse",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/phylo",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/phylo_dep",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/phylo_indep",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/phylo_latent",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/phylo_rr",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/phylo_scalar",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/phylo_signal_mi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/phylo_slope",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/phylo_unique",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/plot_Sigma_comparison",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/plot_Sigma_heatmap",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/plot_Sigma_table",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/plot_anisotropy",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/plot_anisotropy2",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/plot_correlations",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/plot_loadings_confidence_eye",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/plot_rotated_loadings",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/predict_cross_covariance",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/predict_missing",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/predictive_check",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/profile_ci_phylo_signal",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/profile_ci_total_variance",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/profile_cross_rho",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/profile_cross_rho_ci",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/profile_phylo_signal",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/profile_targets",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/ridge_path",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/export/rotate_loadings",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/sanity_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/scalar",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/screen_control",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/export/screen_gllvmTMB",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/export/screen_table",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/export/simulate_site_trait",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/simulate_unit_trait",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/slope_sd_ci",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/spatial",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/spatial_dep",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/spatial_indep",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/spatial_latent",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/spatial_scalar",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/spatial_unique",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/spde",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/standard_errors",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/student",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/suggest_lambda_constraint",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/suggest_lambda_constraints",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/tidy",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/tmbprofile_wrapper",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/traits",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/truncated_nbinom1",
+      "classification": "intentionally_excluded",
+      "executable_case_ids": [],
+      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+    },
+    {
+      "source_id": "namespace/export/truncated_nbinom2",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/truncated_poisson",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/export/tweedie",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "namespace/useDynLib/gllvmTMB (.registration=TRUE)",
+      "classification": "compatibility_adapter",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit-policy/POST-COEF-EMPTY",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit-policy/POST-COEF-NAMED",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit-policy/POST-CONFINT-METHODS",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit-policy/POST-DEVIANCE",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit-policy/POST-FITTED-DEFAULT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit-policy/POST-LOGLIK-DF",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit-policy/POST-LOGLIK-NOBS",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit-policy/POST-LOGLIK-VALUE",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit-policy/POST-LOGNORMAL-RESPONSE-MEAN",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit-policy/POST-MIXED-LINK-DISPATCH",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit-policy/POST-NOBS-COUNT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit-policy/POST-NOBS-FALLBACK",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit-policy/POST-NOBS-MASK",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit-policy/POST-PREDICT-DEFAULT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit-policy/POST-RE-FORM-FULL",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit-policy/POST-RE-FORM-NA",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit-policy/POST-RE-FORM-ZERO",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit-policy/POST-RESIDUAL-CONDITIONAL",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit-policy/POST-RESIDUAL-SCALES",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit-policy/POST-RESIDUAL-TYPES",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit-policy/POST-SE-GUARD-ADMIT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit-policy/POST-SE-MISSING-PREDICTOR-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit-policy/POST-SE-MULTINOMIAL-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit-policy/POST-SE-NEWDATA-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit-policy/POST-SE-NO-SDREPORT-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit-policy/POST-SE-REML-REJECT",
+      "classification": "rejected",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit-policy/POST-SIMULATE-DEFAULT",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit-policy/POST-TIDY-EFFECTS",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit-policy/POST-TRUNCPOIS-RESPONSE-PARAMETER",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-.proportions_bootstrap_ci",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-.proportions_wald_ci",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-bootstrap_Sigma",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-check_auto_residual",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-check_gllvmTMB",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-coef.gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-compare_Sigma_table",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-compare_dep_vs_two_psi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-compare_indep_vs_two_psi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-compare_loadings",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-confint.gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-confint_inspect",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-deviance.gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-diagnose_kernel_separability",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-diagnostic_table",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_Gamma",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_ICC_site",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_Omega",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_Sigma",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_Sigma_B",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_Sigma_W",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_Sigma_table",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_coevolution_modules",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_communality",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_correlations",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_cross_correlations",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_cutpoints",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_loadings",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_lv_effects",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_ordination",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_phylo_signal",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_proportions",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_repeatability",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_residual_cor",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_residual_cov",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_residual_split",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_rotated_loadings_table",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-fitted.gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-flag_unreliable_loadings",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-getLV",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-getLoadings",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-getREsd",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-getResidualCor",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-getResidualCov",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-get_crs",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-gllvmTMB_diagnose",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-impute_model",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-imputed",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-imputed.gllvmTMB",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-loading_ci",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-loading_profile",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-logLik.gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-nobs.gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-ordiplot",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-ordiplot.gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-plot.gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-plot.gllvmTMBmesh",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-plot.profile_derived",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-plot.profile_loadings",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-plot.sdmTMBmesh",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-plot_Sigma_comparison",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-plot_Sigma_heatmap",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-plot_Sigma_table",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-plot_anisotropy",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-plot_anisotropy2",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-plot_correlations",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-plot_loadings_confidence_eye",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-plot_rotated_loadings",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-predict.gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-predict_cross_covariance",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-predict_missing",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-predictive_check",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_Sigma_phy_slope",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_check_consistency",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_confint_inspect",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_coverage_study",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_identifiability",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_reportable_table",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_slope_ci",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-print.summary.gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-profile_ci_phylo_signal",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-profile_ci_total_variance",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-profile_cross_rho",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-profile_cross_rho_ci",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-profile_phylo_signal",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-profile_targets",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-residuals.gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-rotate_loadings",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-sanity_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-simulate.gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-simulate_site_trait",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-simulate_unit_trait",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-slope_sd_ci",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-standard_errors",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-summary.gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-tidy",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-tidy.gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-tmbprofile_wrapper",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-vcov.gllvmTMB_multi",
+      "classification": "required_core",
+      "executable_case_ids": [],
+      "rationale": "Executable model/interface or rejection case mapping remains required."
+    }
+  ]
+}

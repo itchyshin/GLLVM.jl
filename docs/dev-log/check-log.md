@@ -15922,3 +15922,6 @@ Totoro77.26s bounded run:3Bernoulli PASS,3varying FAIL R health. rel.tol1e-14 le
 
 ## 2026-08-30 — Six scoped binomial models qualified with public R controls
 Curvature83.36s found positive stable Hessians; PORT control slots independently verified. Explicit sing.tol1e-14 qualifies5of6; final probit/varying public BFGS12.60s returns code0/gradient1.1164e-5. Allsix completefits now pass unchanged health/likelihood gates, maxabsdelta6.83e-11. Defaultbaseline1of6 immutable. Matrix7assertions+wholefit5negatives+bundle3negativesPASS. FullmanifestDRAFT/M1PARTIAL, independent review unpaid. See after-task/2026-08-30-core070-binomial-qualified.md.
+
+## 2026-08-30 — Source coverage before manifest freeze
+Relabeled real draft previously accepted; red regression reproduced. Public loader now requires pinned source-to-executable mapping and scope-review record before FROZEN.752 known source facts indexed,698 non-excluded remain unmapped (overlap, not capability counts).24 local tests plus aggregate self-test PASS; binomial evidence unchanged/PASS. Leaf pre-write timing missed and recorded; final gates reverified. FullmanifestDRAFT/M1PARTIAL, no numerical promotion. See after-task/2026-08-30-core070-manifest-coverage.md.

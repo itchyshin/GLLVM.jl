@@ -1,0 +1,18 @@
+{
+  "status": "FREEZE_GAP_REPAIRED_CONTRACT_STILL_DRAFT",
+  "source_facts": 752,
+  "nonexcluded_unmapped": 698,
+  "test_count": 24,
+  "artifacts": {
+    "tools/core070_evidence.py": "19a02fcbb74a8ca8b55e5e5f91a525aa833dbaec63d457fdb82f0c94fc6d5b4c",
+    "tools/core070_manifest_coverage.py": "074bc64418dab08b453e635dac2c7fdb7f3c9892a3c8c07151705dea57dd2fbd",
+    "tools/core070_data_case_index.R": "34af00c9ff9a2a8ad52e51a6be6892c8c8db612bde30ae58a282f5733f05f782",
+    "tools/test_core070_manifest_coverage.py": "acfd0d5d3193f31c5874d784a84bee1eede0ccb892ef0e76db4e4ddebf7afd41",
+    "tools/test_core070_collection.py": "69f4f875e64b4f84df023130aa36291d9f60a76d4a6054e9d51e056598d8330d",
+    "tools/core070_verify_manifest_coverage.py": "ab64b43fe501ac37892f0e7ee1ffe576abffde4f52f7ca6cd688aa8133ec5942",
+    "docs/dev-log/core070/required-source-index.json": "c651359cb150087ef58d390bd13fbc9e28ea687a8547c5c64dae26b9e6c728a0",
+    "docs/dev-log/core070/required-source-case-map.json": "cedcdd828a8bbbea0a1a086282c068d78b6fa671d52e9e23b606c935afd33e83",
+    ".unlazy/core070-aghq/manifest-coverage-01/verification.log": "d42bba96c47c2bc0f4d5b7bc52cba303a058a11b937c4b0ca7330ef078b223fb",
+    ".unlazy/core070-aghq/manifest-coverage-01/binomial-existing-evidence.log": "c1640f24bced7033889084927911ef647d38eae2e04355fa7e3556901e657f57"
+  }
+}

@@ -64,6 +64,9 @@ class Collection(unittest.TestCase):
         self.manifest.write_text(text)
         self.addCleanup(patch.stopall)
         patch.object(evidence, 'ROOT', self.root).start()
+        # These tests isolate process/receipt collection, not semantic scope.
+        # The separate manifest-coverage suite exercises the production loader.
+        patch.object(evidence, 'load_manifest', evidence._load_manifest_metadata).start()
         self.frozen = evidence.load_manifest(self.manifest)
         self.cases = {row['id']: row for row in self.frozen['executable_case']}
         build = evidence._oracle_build()
