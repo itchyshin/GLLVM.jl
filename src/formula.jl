@@ -1,71 +1,99 @@
-# @formula front-end (v1) — a thin pre-processor mapping gllvmTMB-style syntax onto
-# the matrix-level engine. Slices 1–2 of the formula-front-end design spec
+# @formula front-end — a pre-processor mapping gllvmTMB-style syntax and StatsModels
+# formulas onto the matrix-level engine. Slices 1–2 of the formula-front-end design spec
 # (docs/superpowers/specs/2026-05-31-formula-frontend-random-slopes-design.md).
 #
 #     gllvm(@formula(y ~ 1 + temp + depth), Y, site_data; family = Poisson(), K = 2)
+#     gllvm(@formula(y ~ 1 + temp + habitat), Y, site_data; contrasts = Dict(:habitat => DummyCoding()))
 #
 # Mapping (verified against the engine contract):
 #  - The intercept `1` is the engine's BUILT-IN per-species intercept (the Gaussian
 #    path profiles out the per-trait row mean — src/likelihood.jl:39; fit_gllvm_cov
 #    carries explicit per-species β). So the `1` term is dropped here, not put into X.
-#  - Each continuous main-effect covariate (a site-level column of `data`, length n)
-#    becomes a column of the engine's (p, n, q) design X, broadcast across species
-#    (X[t,s,k] = covariate[s]) ⇒ a coefficient SHARED across species. This is the
-#    direct (p,n,q)/shared-γ contract of the engine; species-specific responses
-#    (fourth-corner `temp & traits(...)`) are a later slice.
-#  - Dispatch: Normal() → fit_gaussian_gllvm(Y; X); other families → fit_gllvm_cov.
+#  - Site-level covariates (continuous, categorical contrasts via StatsModels, function
+#    terms, interactions) become columns of the engine's (p, n, q) design X, broadcast
+#    across species (X[t,s,k] = covariate[s,k]) ⇒ a coefficient SHARED across species.
+#  - Dispatch: Normal() → fit_gaussian_gllvm(Y; X); other families → fit_gllvm_cov /
+#    specialised grouped-cov fitters.
 #
-# v1 scope (errors clearly otherwise): an intercept + continuous main-effect
-# covariates resolved against a Tables-compatible `data` of site-level covariates
-# (one row per column of Y). Categorical terms, interactions, function terms, and
-# random-effect terms `(… | g)` are NOT yet wired — they are deferred slices.
+# StatsModels integration supports continuous covariates, categorical contrasts
+# (DummyCoding, EffectsCoding, HelmertCoding, etc.), function transformations (e.g. `log(x)`),
+# and interaction terms across site-level variables.
 #
-# StatsModels is imported SELECTIVELY (only the `@formula` macro + term types) so it
-# does not bring StatsAPI's `predict`/`residuals`/`fit` into the module and clash
-# with GLLVM's own post-fit generics.
+# StatsModels is imported SELECTIVELY so it does not bring StatsAPI's
+# `predict`/`residuals`/`fit` into the module and clash with GLLVM's own post-fit generics.
 
-using StatsModels: @formula, FormulaTerm, Term, ConstantTerm
+import StatsModels
+using StatsModels: @formula, FormulaTerm, Term, ConstantTerm, FunctionTerm, InteractionTerm, schema, apply_schema, modelmatrix, coefnames
 import Tables
 
-# Continuous main-effect covariate symbols from a formula RHS (intercept dropped).
-function _formula_covariates(rhs)
-    ts = rhs isa Tuple ? rhs : (rhs,)
+function _extract_formula_symbols(term)
     syms = Symbol[]
-    for t in ts
-        if t isa ConstantTerm
-            continue                                  # intercept = engine's built-in
-        elseif t isa Term
-            push!(syms, t.sym)
-        else
-            throw(ArgumentError(
-                "gllvm(@formula …) v1 supports an intercept + continuous main-effect " *
-                "covariates only; got unsupported term `$(t)`. Categorical terms, " *
-                "interactions (fourth-corner `a & b`), function terms (`log(x)`), and " *
-                "random-effect terms `(… | g)` are not yet wired — see the formula " *
-                "front-end design spec."))
+    if term isa Term
+        push!(syms, term.sym)
+    elseif term isa FunctionTerm
+        for arg in term.args
+            append!(syms, _extract_formula_symbols(arg))
+        end
+    elseif term isa InteractionTerm
+        for t in term.terms
+            append!(syms, _extract_formula_symbols(t))
+        end
+    elseif term isa Tuple
+        for t in term
+            append!(syms, _extract_formula_symbols(t))
         end
     end
     return syms
 end
 
+# Extract site-level model matrix mm (n × q) and coefficient names from formula RHS.
+function _build_site_modelmatrix(rhs, data; contrasts::AbstractDict = Dict{Symbol, Any}())
+    cols = Tables.columntable(data)
+    ts = rhs isa Tuple ? rhs : (rhs,)
+    non_const = [t for t in ts if !(t isa ConstantTerm)]
+    if isempty(non_const)
+        n = length(Tables.rows(cols))
+        return zeros(Float64, n, 0), String[]
+    end
+
+    # Validate that required symbols exist in data
+    for t in non_const
+        syms = _extract_formula_symbols(t)
+        for s in syms
+            haskey(cols, s) || throw(ArgumentError(
+                "covariate `$s` in the formula is not a column of `data`"))
+        end
+    end
+
+    rhs_term = length(non_const) == 1 ? non_const[1] : Tuple(non_const)
+    f_cov = FormulaTerm(ConstantTerm(0), rhs_term)
+    sch = StatsModels.schema(f_cov, cols, contrasts)
+    applied = StatsModels.apply_schema(f_cov, sch)
+    mm = StatsModels.modelmatrix(applied.rhs, cols)
+    cnames = StatsModels.coefnames(applied.rhs)
+    cnames_vec = cnames isa AbstractVector ? string.(cnames) : [string(cnames)]
+    return Matrix{Float64}(mm), cnames_vec
+end
+
 """
-    gllvm(formula, Y, data; family = Normal(), K, kwargs...)
+    gllvm(formula, Y, data; family = Normal(), K, contrasts = Dict(), kwargs...)
 
 Fit a GLLVM from an R-`gllvmTMB`-style `@formula` over a wide species×site response
 matrix `Y` (`p × n`) and a `Tables`-compatible `data` of **site-level** covariates
 (one row per site = per column of `Y`).
 
 ```julia
-using GLLVM, Distributions
+using GLLVM, Distributions, StatsModels
 gllvm(@formula(y ~ 1 + temp + depth), Y, site_data; family = Normal(),  K = 2)
-gllvm(@formula(y ~ 1 + temp),         Y, site_data; family = Poisson(), K = 2)
+gllvm(@formula(y ~ 1 + temp + habitat), Y, site_data; family = Poisson(), K = 2,
+      contrasts = Dict(:habitat => DummyCoding()))
 ```
 
 The response symbol on the formula LHS (`y`) names the matrix `Y` and is otherwise
 ignored. The intercept (`1`) is the engine's built-in per-species intercept; each
-continuous covariate on the RHS becomes a coefficient **shared across species**
-(the engine's `(p,n,q)` design). Dispatches to [`fit_gaussian_gllvm`](@ref) for
-`Normal()`, to [`fit_nb_gllvm_grouped_cov`](@ref) /
+covariate column on the RHS (continuous, categorical via `contrasts`, interactions)
+becomes a coefficient **shared across species** (the engine's `(p,n,q)` design).
+Dispatches to [`fit_gaussian_gllvm`](@ref) for `Normal()`, to [`fit_nb_gllvm_grouped_cov`](@ref) /
 [`fit_beta_gllvm_grouped_cov`](@ref) / [`fit_gamma_gllvm_grouped_cov`](@ref) /
 [`fit_nb1_gllvm_grouped_cov`](@ref) / `fit_beta_binomial_gllvm_grouped_cov` for
 NB2/NB1/Beta/Gamma/beta-binomial (per-trait φ/α + shared site-X; twin API B; the
@@ -75,59 +103,32 @@ shared site-X), to [`fit_zip_gllvm_cov`](@ref) for `ZIPoisson()` (separate
 `γz`/`γc`, `Λz=0`; Julia-forward), to [`fit_zinb_gllvm_cov`](@ref) for
 `ZINegBin()` (separate `γz`/`γc`, `Λz=0`, shared scalar `r`; Julia-forward),
 and to [`fit_gllvm_cov`](@ref) for the other non-Gaussian families (shared
-dispersion + X). Returns that fitter's result
-(`GllvmFit`, `NBGroupedCovFit` / `NB1GroupedCovFit` / `BetaGroupedCovFit` /
-`GammaGroupedCovFit` / `BetaBinomialGroupedCovFit` / `OrdinalPerTraitCovFit` /
-`ZIPCovFit` / `ZINBCovFit`, or `GllvmCovFit` whose `γ[k]` matches the k-th RHS
-covariate). With no covariates it reduces to the intercept-only fit
-(`ZIPoisson()` → [`fit_zip_gllvm`](@ref); `ZINegBin()` →
-[`fit_zinb_gllvm`](@ref); `ZIB(N)` → [`fit_gllvm`](@ref) / [`fit_zib_gllvm`](@ref);
-`NB1()` → [`fit_gllvm`](@ref) → [`fit_nb1_gllvm_grouped`](@ref), per-trait `φ`, the
-same estimand as the `+ X` route above; `BetaBinom()` → [`fit_gllvm`](@ref) →
-[`fit_beta_binomial_gllvm_grouped`](@ref), per-trait `φ`, with the p×n `N` trial
-counts **required** — `φ` is unidentifiable at `N = 1`).
+dispersion + X). Returns that fitter's result.
+With no covariates it reduces to the intercept-only fit.
 `ZIB` through `@formula` is **no-X only** for now (bridge still OWED; ZIB+X formula
 is fenced).
-
-**v1 scope:** intercept + continuous main-effect covariates. Categorical terms,
-interactions (`a & b` / fourth-corner), function terms, and random effects
-`(… | g)` are deferred (they error with a clear message). See the formula
-front-end design spec for the full grammar and the random-slope roadmap.
 """
 function gllvm(formula::FormulaTerm, Y::AbstractMatrix, data;
-               family = Normal(), K::Integer, kwargs...)
+               family = Normal(), K::Integer,
+               contrasts::AbstractDict = Dict{Symbol, Any}(), kwargs...)
     p, n = size(Y)
-    syms = _formula_covariates(formula.rhs)
-    q = length(syms)
-    # `columntable` accepts any Tables-compatible source (NamedTuple of vectors,
-    # DataFrame, …) and errors clearly on a non-table.
-    cols = Tables.columntable(data)
+    mm, cnames = _build_site_modelmatrix(formula.rhs, data; contrasts = contrasts)
+    q = size(mm, 2)
 
     if q == 0
         return family isa Normal ? fit_gaussian_gllvm(Y; K = K, kwargs...) :
                family isa ZIPoisson ? fit_zip_gllvm(Y; K = K, kwargs...) :
                family isa ZINegBin ? fit_zinb_gllvm(Y; K = K, kwargs...) :
                family isa ZIB ? fit_gllvm(Y; family = family, K = K, kwargs...) :
-                                      fit_gllvm(Y; family = family, K = K, kwargs...)
+                                fit_gllvm(Y; family = family, K = K, kwargs...)
     end
 
-    for s in syms
-        haskey(cols, s) || throw(ArgumentError(
-            "covariate `$s` in the formula is not a column of `data`"))
-        col = getproperty(cols, s)
-        length(col) == n || throw(DimensionMismatch(
-            "`data` column `$s` has $(length(col)) rows but Y has $n sites (columns)"))
-        eltype(col) <: Real || throw(ArgumentError(
-            "covariate `$s` is non-numeric ($(eltype(col))); categorical covariates " *
-            "are not yet supported in the @formula front-end (v1 = continuous only)"))
-    end
+    size(mm, 1) == n || throw(DimensionMismatch(
+        "`data` has $(size(mm, 1)) rows but Y has $n sites (columns)"))
 
     X = Array{Float64, 3}(undef, p, n, q)
-    @inbounds for k in 1:q
-        col = getproperty(cols, syms[k])
-        for s in 1:n, t in 1:p
-            X[t, s, k] = Float64(col[s])
-        end
+    @inbounds for k in 1:q, s in 1:n, t in 1:p
+        X[t, s, k] = mm[s, k]
     end
 
     if family isa Normal
@@ -158,27 +159,28 @@ function gllvm(formula::FormulaTerm, Y::AbstractMatrix, data;
 end
 
 """
-    gllvm(formula, long_data; family = Normal(), K, species = :species, site = :site, kwargs...)
+    gllvm(formula, long_data; family = Normal(), K, species = :species, site = :site, contrasts = Dict(), kwargs...)
 
 Long-format (melted) front door: one row per `(species, site)` observation. Pivots
 `long_data` to the wide `(Y, site_data)` representation and calls the wide
 [`gllvm`](@ref) — so the two data shapes share one engine path.
 
 ```julia
-# long_data has columns y, species, site, temp (site covariate repeated per species)
-gllvm(@formula(y ~ 1 + temp), long_data; family = Poisson(), K = 2,
-      species = :species, site = :site)
+# long_data has columns y, species, site, temp, habitat
+gllvm(@formula(y ~ 1 + temp + habitat), long_data; family = Poisson(), K = 2,
+      species = :species, site = :site, contrasts = Dict(:habitat => DummyCoding()))
 ```
 
 The formula LHS names the response column; `species`/`site` name the grouping
 keys (default `:species`/`:site`). `Y` is built in sorted species×site order, so
 `gllvm(f, long)` and `gllvm(f, Y, site_data)` give **identical** fits (a tested
-round-trip identity). v1 requires a **complete** species×site grid (no missing
+round-trip identity). Requires a **complete** species×site grid (no missing
 cells) and site covariates that are **constant within site** (both validated with
 a clear error), matching the wide-mode contract.
 """
 function gllvm(formula::FormulaTerm, long_data; family = Normal(), K::Integer,
-               species::Symbol = :species, site::Symbol = :site, kwargs...)
+               species::Symbol = :species, site::Symbol = :site,
+               contrasts::AbstractDict = Dict{Symbol, Any}(), kwargs...)
     cols = Tables.columntable(long_data)
     formula.lhs isa Term || throw(ArgumentError(
         "long-format gllvm needs a single response column on the formula LHS; got $(formula.lhs)"))
@@ -210,7 +212,7 @@ function gllvm(formula::FormulaTerm, long_data; family = Normal(), K::Integer,
         "long data is not a complete species×site grid (v1 requires every cell present; " *
         "missing-response handling is a separate capability)"))
 
-    syms = _formula_covariates(formula.rhs)
+    syms = _extract_formula_symbols(formula.rhs)
     site_data = if isempty(syms)
         NamedTuple()
     else
@@ -234,5 +236,5 @@ function gllvm(formula::FormulaTerm, long_data; family = Normal(), K::Integer,
         NamedTuple{Tuple(syms)}(Tuple(vecs))
     end
 
-    return gllvm(formula, Y, site_data; family = family, K = K, kwargs...)
+    return gllvm(formula, Y, site_data; family = family, K = K, contrasts = contrasts, kwargs...)
 end

@@ -93,3 +93,6 @@ include(joinpath(@__DIR__, "test_delta_gamma_parity.jl"))
 # own default is to estimate it per trait, a different model — see the file
 # header). disp_group = :species (2026-08-28) closes the shared-σ mismatch.
 include(joinpath(@__DIR__, "test_studentt_parity.jl"))
+# Tweedie (twin fid 6): compound Poisson–Gamma with power p ∈ (1, 2)
+# and per-trait dispersion φ.
+include(joinpath(@__DIR__, "test_tweedie_parity.jl"))

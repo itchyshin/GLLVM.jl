@@ -571,3 +571,62 @@ function fit_gllvmtmb_parity_student(y::AbstractMatrix, K::Integer; df_fixed::Un
         df_vec = rcopy(Vector{Float64}, R".gllvm_parity_student$df_vec"),
     )
 end
+
+"""
+    fit_gllvmtmb_parity_tweedie(y, K; p_fixed) -> NamedTuple
+
+Twin oracle for the Tweedie family (`gllvmTMB::tweedie()`, fid 6,
+log link). `p_fixed` is passed to `tweedie(link = "log", p = p_fixed)`
+if specified; if `p_fixed === nothing`, the power parameter is estimated
+per-trait (`p_tweedie`). `phi_tweedie` is estimated per-trait.
+
+Returns `(logLik, objective, converged, b_fix, phi_vec, p_vec)`.
+"""
+function fit_gllvmtmb_parity_tweedie(y::AbstractMatrix, K::Integer; p_fixed::Union{Nothing, Real} = nothing)
+    p_fixed !== nothing && (1.0 < p_fixed < 2.0 || throw(ArgumentError("tweedie(): p_fixed must be in (1, 2); got $p_fixed")))
+    p, n = size(y)
+    _parity_require_gllvmtmb!()
+    pv = p_fixed === nothing ? nothing : Float64(p_fixed)
+    @rput y K p n pv
+
+    R"""
+    trait_names <- paste0("t", seq_len(p))
+    df_long <- data.frame(
+        site  = factor(rep(seq_len(n), each = p)),
+        trait = factor(rep(trait_names, times = n), levels = trait_names),
+        value = as.vector(y)   # column-major on p×n ⇒ site blocks
+    )
+    fam_obj <- if (is.null(pv)) {
+        gllvmTMB::tweedie(link = "log")
+    } else {
+        gllvmTMB::tweedie(link = "log", p = pv)
+    }
+    fit_r <- gllvmTMB(
+        value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE),
+        data = df_long,
+        unit = "site",
+        trait = "trait",
+        family = fam_obj,
+        control = gllvmTMBcontrol(n_init = 1L, se = FALSE)
+    )
+    pl <- fit_r$tmb_obj$env$parList(fit_r$opt$par)
+    .gllvm_parity_tweedie <<- list(
+        logL      = as.numeric(stats::logLik(fit_r)),
+        objective = as.numeric(fit_r$opt$objective),
+        converged = identical(as.integer(fit_r$opt$convergence), 0L),
+        b_fix     = as.numeric(pl$b_fix),
+        phi_vec   = as.numeric(fit_r$report$phi_tweedie),
+        p_vec     = as.numeric(fit_r$report$p_tweedie)
+    )
+    invisible(NULL)
+    """
+
+    return (
+        logLik = rcopy(Float64, R".gllvm_parity_tweedie$logL"),
+        objective = rcopy(Float64, R".gllvm_parity_tweedie$objective"),
+        converged = rcopy(Bool, R".gllvm_parity_tweedie$converged"),
+        b_fix = rcopy(Vector{Float64}, R".gllvm_parity_tweedie$b_fix"),
+        phi_vec = rcopy(Vector{Float64}, R".gllvm_parity_tweedie$phi_vec"),
+        p_vec = rcopy(Vector{Float64}, R".gllvm_parity_tweedie$p_vec"),
+    )
+end

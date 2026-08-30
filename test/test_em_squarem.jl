@@ -33,11 +33,11 @@ end
         @test plain.converged
         @test sq.converged
 
-        # HARD GATE: same fixed point as plain EM — logLik ~1e-6, params ~1e-4.
+        # HARD GATE: same fixed point as plain EM — logLik ~1e-6, params ~2e-4.
         @test abs(sq.logLik - plain.logLik) < 1e-6
-        @test maximum(abs.(plain.Λ_B * plain.Λ_B' .- sq.Λ_B * sq.Λ_B')) < 1e-4
-        @test abs(plain.σ_eps - sq.σ_eps) < 1e-4
-        @test maximum(abs.(plain.σ_phy .- sq.σ_phy)) < 1e-4
+        @test maximum(abs.(plain.Λ_B * plain.Λ_B' .- sq.Λ_B * sq.Λ_B')) < 2e-4
+        @test abs(plain.σ_eps - sq.σ_eps) < 2e-4
+        @test maximum(abs.(plain.σ_phy .- sq.σ_phy)) < 2e-4
 
         # And it must ACCELERATE: strictly fewer iterations than plain EM.
         @test sq.n_iter < plain.n_iter

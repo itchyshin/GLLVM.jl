@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVM, Test, Random, Distributions, Statistics, StatsModels
 
 @testset "@formula front-end (v1)" begin
     @testset "Gaussian: formula == hand-built X (exact parity)" begin
@@ -45,12 +45,49 @@ using GLLVM, Test, Random, Distributions, Statistics
         @test f1.loglik ≈ f2.loglik atol = 1e-6
     end
 
-    @testset "unsupported terms error clearly" begin
+    @testset "categorical covariates and contrasts" begin
+        Random.seed!(204)
+        p, K, n = 4, 1, 60
+        # 3 habitats
+        hab = [s % 3 == 0 ? "forest" : (s % 3 == 1 ? "grassland" : "urban") for s in 1:n]
+        temp = randn(n)
+        site_data = (temp = temp, habitat = hab)
+        Y = randn(p, n)
+
+        # Default DummyCoding: intercept 1 dropped, dummy columns for habitat: grassland, habitat: urban
+        f_dummy = gllvm(@formula(y ~ 1 + temp + habitat), Y, site_data;
+                        family = Normal(), K = K, contrasts = Dict(:habitat => DummyCoding()))
+        @test f_dummy isa GllvmFit
+        @test f_dummy.converged
+        @test isfinite(f_dummy.logLik)
+
+        # EffectsCoding
+        f_eff = gllvm(@formula(y ~ 1 + temp + habitat), Y, site_data;
+                      family = Normal(), K = K, contrasts = Dict(:habitat => EffectsCoding()))
+        @test f_eff isa GllvmFit
+        @test f_eff.converged
+        @test isfinite(f_eff.logLik)
+
+        # Interaction terms
+        f_inter = gllvm(@formula(y ~ 1 + temp & habitat), Y, site_data;
+                        family = Normal(), K = K)
+        @test f_inter isa GllvmFit
+        @test f_inter.converged
+        @test isfinite(f_inter.logLik)
+
+        # Poisson family with categorical contrasts
+        f_pois = gllvm(@formula(y ~ 1 + temp + habitat), Y .|> abs .|> round .|> Int, site_data;
+                       family = Poisson(), K = K, contrasts = Dict(:habitat => DummyCoding()))
+        @test f_pois isa GllvmCovFit
+        @test length(f_pois.γ) == 3   # temp, habitat: grassland, habitat: urban
+        @test f_pois.converged
+        @test isfinite(f_pois.loglik)
+    end
+
+    @testset "validation errors" begin
         p, n = 4, 30
         Y = randn(p, n)
-        data = (temp = randn(n), depth = randn(n), grp = string.(rand(1:2, n)))
-        @test_throws ArgumentError gllvm(@formula(y ~ 1 + temp & depth), Y, data; family = Normal(), K = 1)
-        @test_throws ArgumentError gllvm(@formula(y ~ 1 + grp), Y, data; family = Normal(), K = 1)    # categorical
+        data = (temp = randn(n), depth = randn(n))
         @test_throws ArgumentError gllvm(@formula(y ~ 1 + nope), Y, data; family = Normal(), K = 1)   # missing column
     end
 
