@@ -45,8 +45,8 @@ const _CORE070_FIXTURES = Dict(
     "NATIVE-10-STUDENT" => "test/parity/test_studentt_parity.jl",
     "NATIVE-11-TRUNCATED-POISSON" => "test/parity/test_truncated_poisson_parity.jl",
     "NATIVE-12-TRUNCATED-NB2" => "test/parity/test_truncated_nbinom2_parity.jl",
-    "NATIVE-13-DELTA-LOGNORMAL" => "test/parity/test_delta_lognormal_parity.jl",
-    "NATIVE-14-DELTA-GAMMA" => "test/parity/test_delta_gamma_parity.jl",
+    "NATIVE-13-DELTA-LOGNORMAL" => "test/parity/test_delta_lognormal_required.jl",
+    "NATIVE-14-DELTA-GAMMA" => "test/parity/test_delta_gamma_required.jl",
     "NATIVE-15-ORDINAL-PROBIT" => "test/parity/test_ordinal_probit_parity.jl",
     "NATIVE-16-NB1" => "test/parity/test_nox_dispersion_parity.jl",
     "NATIVE-17-MULTINOMIAL-FIXED" => "test/parity/test_multinomial_parity.jl",
@@ -86,7 +86,9 @@ end
 function _core070_execution_paths(requested::AbstractVector{<:AbstractString})
     paths = String[
         "src", "test/parity/core070_receipts.jl", "test/parity/parity_helpers.jl",
-        "test/parity/runparity.jl", "test/parity/r_health.R", "Project.toml", "test/Project.toml",
+        "test/parity/runparity.jl", "test/parity/r_health.R",
+        "tools/core070_delta_matched.jl", "test/parity/test_delta_lognormal_parity.jl",
+        "test/parity/test_delta_gamma_parity.jl", "Project.toml", "test/Project.toml",
         "test/parity/Project.toml", "docs/dev-log/core070/frozen-r070-contract.toml",
     ]
     append!(paths, (_CORE070_FIXTURES[id] for id in requested))

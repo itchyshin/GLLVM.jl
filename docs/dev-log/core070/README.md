@@ -127,3 +127,6 @@ historical attempts. Keep earlier failures archived and document why a new
 revision supersedes them. The checker never selects a passing retry, filters a
 failure or silently deduplicates runs. The eight collection tests exercise
 synthetic receipts from real Python child processes, not scientific models.
+
+## Required delta correction
+The required delta IDs now use test_delta_lognormal_required.jl and test_delta_gamma_required.jl: original seeds/data, shared predictor, per-trait dispersion, strict model/likelihood/gradient checks.48/48 pass under the exact public tight-control calls. Original shared-dispersion diagnostic fixtures remain optional and cannot pay these required rows. See delta-matched-contract.md. Full manifest remains DRAFT.

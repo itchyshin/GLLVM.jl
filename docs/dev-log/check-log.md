@@ -15839,3 +15839,7 @@ unpaid. No numerical source changes, outer optimization or campaign.
 - Exact page example6 + neighboring AIC/BIC18 assertions PASS on Totoro;20.77s/35.15s. Strict Documenter content/VitePress build PASS59.29s;94 static artifacts checked. Source and separate runtime pins retained.
 - Local --local mode never deploys.36 missing documented bindings now referenced; Student decision path no longer a broken site link. Desktop/mobile Gaussian section and navigation inspected, no page-wide mobile overflow.
 - Six evidence negative controls pass. All failed attempts retained. Logo/favicon/package.json/chunk warnings and local versions.js404 remain. Search/full-site visuals/fullsuite/independent review unpaid; no C2/parity completion claim.
+
+## 2026-08-30 — Same-model delta required cases
+- Preserved seeds61/62 and original fixtures; replaced required-mode mismatch-only paths with species-dispersion comparisons. Both tight-control R/native fits healthy,48/48 required assertions PASS, max logLik difference2.001e-10. Totoro30.40s; no engine change.
+- Default R gradient failures, pre-fit world-age error retained. Seven negative controls/eight aggregate collection tests pass; helper/tool/DGP pins enforced. Master DRAFT/M1 PARTIAL, broader validation/review unpaid.

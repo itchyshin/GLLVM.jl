@@ -457,3 +457,9 @@ No production B dispatch, full suite or long campaign was launched.
 - C2 remains PARTIAL: branding/package configuration/chunk warnings, local versions.js404, search, mobile code/output and full-site audit unpaid. Fullsuite, numerical review and current-source parity revalidation outstanding; master manifest DRAFT/M1 PARTIAL.
 - Next: complete finite required contract and outstanding M1 numerical gates before additional production tranche. External review permission remains unresolved; no retry through another mechanism. No push/merge/release/cleanup.
 - Mission Control Julia-only correction 9eb3f04782590c945dd6ff87e0f3fd81f5db89fe committed locally; served HTTP200/readback verified and R fields unchanged. Exact board lease released. Both Unlazy gates freshly reverified PASS.
+
+## 2026-08-30 — Same-model delta checkpoint
+- Required delta cells now use separate wrappers with original seeds61/62, p5/K1/n130, shared predictors and species dispersion.48/48 assertions pass under public tighter R controls; max logLik delta2.001e-10, both raw gradients<=1e-4. Numerical source and original fixture bytes untouched.
+- Default R gradient failures and intermediate pre-fit world-age error retained. Verifier7 negative controls, collection8 tests and Unlazy2 gates pass. Required receipts bind tool and old DGP files. Full contract stays DRAFT/M1 PARTIAL.
+- No active compute/reviewer or new production child. Next finite required obligation completion and outstanding M1 numerical gates; broader execution receipts need revalidation after helper/contract changes. No push/merge/release/cleanup.
+- Mission Control correction 107cc0c52c4c053ecc359012c1f67c6a1d3c26d7 locally committed, served HTTP200/readback matches; R fields unchanged and exact board lease released.
