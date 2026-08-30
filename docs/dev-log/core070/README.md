@@ -138,3 +138,7 @@ The required delta IDs now use test_delta_lognormal_required.jl and test_delta_g
 ## Binomial transport repair checkpoint
 
 The previously recorded no-X/shared-X trial omission is repaired in the local candidate: supplied N becomes R weights, omitted N retains weights=NULL, and binomial_link is explicit.127 R argument captures and80 Julia preparation assertions pass; no fit or RCall embedding ran. Probit/cloglog, multi-trial numerical fixtures and complete parity remain unpaid. See [transport evidence](binomial-transport-contract.md). The earlier catalogue findings remain the pre-repair audit record.
+
+## Prepared binomial paired cases
+
+[Six predeclared cases](binomial-paired-plan.md) now cover three links × Bernoulli/varying trials as executable definitions.26 preflight assertions pass; no datasets or fits ran. Explicit observed cloglog does not establish default Fisher equivalence. Full paired evidence remains unpaid.

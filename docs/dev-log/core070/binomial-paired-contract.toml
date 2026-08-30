@@ -1,0 +1,98 @@
+schema = 1
+status = "PREDECLARED_CASES_NOT_EXECUTED"
+reference_commit = "b4d5fee64def88bc768dda1f1f77c29b295edd86"
+owner = "A3/Hopper"
+compute = "Totoro bounded single case; no local fits"
+initial_estimate = "2–8 minutes per case provisional; first-case pre-run required before sizing full cohort"
+full_cohort = "12–48 minutes provisional; obtain sized-run approval if measured forecast exceeds30 minutes"
+first_case = "BINOMIAL-LOGIT-BERNOULLI"
+initial_timeout_seconds = 600
+[acceptance]
+loglik_rtol = 1e-6
+gradient_max = 1e-4
+fd_stability = 1e-4
+reevaluation_atol = 1e-8
+[model]
+formula = "value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE)"
+latent_distribution = "independent standard normal; ordinary loadings only"
+identification = "triangular loadings; compare invariant likelihood, not raw signs"
+likelihood = "binomial normalization included; observed-curvature Laplace in both engines"
+cloglog_boundary = "Julia default is Fisher; explicit observed case is same-estimator reachability only, not default-estimator equivalence"
+excluded_from_this_packet = "X, formula and public bridge reach, offsets, missing data, covariance extensions, inference and recovery"
+[source_pins]
+"tools/core070_binomial_paired.jl" = "a123e7240e2a91b663816333cdbccb7a190e1b1c4434350e5083f8c9df45c258"
+"test/parity/binomial_case_contract.jl" = "46fe8e155fbcb2080aa9e096d50a998eff5861e62d5363d90195d5258397f8ba"
+"test/parity/parity_helpers.jl" = "be2d0887f417964074a0b90a1e62baec1f80fc21b09663e3826e584c946044e1"
+"test/parity/parity_trial_inputs.jl" = "f4bb02fd150c306f635b7f86885272939f0b66faa4a8c5ee8843c64f6f7ea7cd"
+
+[[case]]
+id = "BINOMIAL-LOGIT-BERNOULLI"
+seed = 90101
+p = 3
+n = 160
+K = 1
+link = "logit"
+trials = "bernoulli"
+hessian = "observed"
+classification = "required_core"
+result_status = "NOT_EXECUTED"
+
+[[case]]
+id = "BINOMIAL-LOGIT-VARYING"
+seed = 90102
+p = 3
+n = 160
+K = 1
+link = "logit"
+trials = "varying"
+hessian = "observed"
+classification = "required_core"
+result_status = "NOT_EXECUTED"
+
+[[case]]
+id = "BINOMIAL-PROBIT-BERNOULLI"
+seed = 90103
+p = 3
+n = 160
+K = 1
+link = "probit"
+trials = "bernoulli"
+hessian = "observed"
+classification = "required_core"
+result_status = "NOT_EXECUTED"
+
+[[case]]
+id = "BINOMIAL-PROBIT-VARYING"
+seed = 90104
+p = 3
+n = 160
+K = 1
+link = "probit"
+trials = "varying"
+hessian = "observed"
+classification = "required_core"
+result_status = "NOT_EXECUTED"
+
+[[case]]
+id = "BINOMIAL-CLOGLOG-BERNOULLI"
+seed = 90105
+p = 3
+n = 160
+K = 1
+link = "cloglog"
+trials = "bernoulli"
+hessian = "observed"
+classification = "required_core"
+result_status = "NOT_EXECUTED"
+
+[[case]]
+id = "BINOMIAL-CLOGLOG-VARYING"
+seed = 90106
+p = 3
+n = 160
+K = 1
+link = "cloglog"
+trials = "varying"
+hessian = "observed"
+classification = "required_core"
+result_status = "NOT_EXECUTED"

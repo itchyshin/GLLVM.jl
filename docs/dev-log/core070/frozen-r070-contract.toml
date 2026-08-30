@@ -677,3 +677,10 @@ status = "SOURCE_BOUND_SMOKE_MODELS_NOT_FULL_CONTRACT"
 manifest = "docs/dev-log/core070/family-model-catalogue.json"
 expected_cases = 17
 blocking_obligations = 7
+
+[binomial_paired_cases]
+status = "PREPARED_NOT_EXECUTED"
+manifest = "docs/dev-log/core070/binomial-paired-contract.toml"
+runner = "tools/core070_binomial_paired.jl"
+expected_cases = 6
+completion_scope = "No-X binomial three links x Bernoulli/varying trials; explicit observed curvature, not formula/public bridge or default cloglog equivalence."

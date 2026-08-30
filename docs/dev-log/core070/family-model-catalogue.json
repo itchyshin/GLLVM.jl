@@ -639,16 +639,18 @@
     {
       "id": "FAMILY-LINK-PROBIT",
       "source_admission_id": "FAMILY-01-PROBIT",
-      "status": "REQUIRED_EXECUTABLE_MODEL_CASE_MISSING",
+      "status": "REQUIRED_MODEL_CASES_PREPARED_NOT_EXECUTED",
       "owner": "A3/B2/B5",
-      "detail": "R binomial probit admitted; 17-ID smoke uses logit only. Native/formula/bridge and actual observed curvature need paired model fixture. The oracle helper now transports the requested link, verified by R argument capture; numerical qualification remains unpaid."
+      "detail": "R binomial probit admitted; 17-ID smoke uses logit only. Native/formula/bridge and actual observed curvature need paired model fixture. The oracle helper now transports the requested link, verified by R argument capture; numerical qualification remains unpaid. Six predeclared no-X cases now exist; source/preflight checks only. Observed cloglog is explicit and does not certify default Fisher equivalence.",
+      "paired_contract": "docs/dev-log/core070/binomial-paired-contract.toml"
     },
     {
       "id": "FAMILY-LINK-CLOGLOG",
       "source_admission_id": "FAMILY-01-CLOGLOG",
-      "status": "REQUIRED_EXECUTABLE_MODEL_CASE_MISSING",
+      "status": "REQUIRED_MODEL_CASES_PREPARED_NOT_EXECUTED",
       "owner": "A3/B2/B5",
-      "detail": "R binomial cloglog admitted. Julia Fisher default versus R observed curvature and saturation health need explicit estimator contract; no logit substitution. The oracle helper now transports the requested link, verified by R argument capture; numerical qualification remains unpaid."
+      "detail": "R binomial cloglog admitted. Julia Fisher default versus R observed curvature and saturation health need explicit estimator contract; no logit substitution. The oracle helper now transports the requested link, verified by R argument capture; numerical qualification remains unpaid. Six predeclared no-X cases now exist; source/preflight checks only. Observed cloglog is explicit and does not certify default Fisher equivalence.",
+      "paired_contract": "docs/dev-log/core070/binomial-paired-contract.toml"
     },
     {
       "id": "NB2-TOLERANCE",
@@ -658,9 +660,10 @@
     },
     {
       "id": "BINOMIAL-TRIALS",
-      "status": "REQUIRED_EXECUTABLE_MODEL_CASE_MISSING",
+      "status": "REQUIRED_MODEL_CASES_PREPARED_NOT_EXECUTED",
       "owner": "A3/B4/B5",
-      "detail": "No-X/shared-X helper now forwards supplied trials and preserves omitted-N Bernoulli semantics. 127 R argument captures and80 pure Julia/preparation checks pass; installed RCall and paired multi-trial numerical fixtures remain unpaid."
+      "detail": "No-X/shared-X helper now forwards supplied trials and preserves omitted-N Bernoulli semantics. 127 R argument captures and80 pure Julia/preparation checks pass; installed RCall and paired multi-trial numerical fixtures remain unpaid. Six predeclared no-X cases now exist; source/preflight checks only. Observed cloglog is explicit and does not certify default Fisher equivalence.",
+      "paired_contract": "docs/dev-log/core070/binomial-paired-contract.toml"
     },
     {
       "id": "FAMILY-MODEL-VARIANTS",
@@ -681,7 +684,7 @@
       "detail": "Converged flags and likelihood-only checks do not discharge original fit-health, inference, formula or public bridge requirements. Per-case numerical gates and independent review still needed."
     }
   ],
-  "revision": 2,
-  "supersedes_sha256": "2407e5c9dbe16f35012a74ed9ef57e10ff10910f4e486fed43aa7e91d8477633",
-  "revision_note": "Trial/link oracle helper repaired; argument capture and pure preparation only, fitted models still unpaid."
+  "revision": 3,
+  "supersedes_sha256": "6be7697d405163cc9773e080037194fcb8b083cb70c2433cebdcbf147ed17caa",
+  "revision_note": "Six paired binomial case definitions and single-case runner prepared; preflight only, no datasets generated or fits."
 }

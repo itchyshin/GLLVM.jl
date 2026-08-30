@@ -15884,3 +15884,8 @@ unpaid. No numerical source changes, outer optimization or campaign.
 - Both no-X/shared-X helpers forwarded no binomial N and defaulted all links to logit. Original actual R-block capture68pass/20fail; repair final127pass. Pure guards56 plus actual Julia pre-R prefixes24pass, no fit/embedding. Default omitted-N weights=NULL preserved; neighbor weight routing tested.
 - Added required source inventory pin for shared pure helper; aggregator self-test and six scoped evidence negatives pass. No engine/DGP/tolerance change. Catalogue updated without promoting paired fits; masterDRAFT/M1PARTIAL.
 - Next actual paired probit/cloglog/multi-trial fixtures, frozen model contracts and original fit-health diagnosis after remote observation returns. Totoro socket absent/oldjobUNKNOWN; never restart from failed observation. Fullsuite/review/embedding unpaid; no newchild/push/merge/release/cleanup.
+
+## 2026-08-30 — Six binomial paired models prepared
+- Three links×Bernoulli/varying trials, seeds90101–90106,p3/n160/K1, explicit observed curvature and original likelihood/health gates. Dataset/metric/source/terminal receipt runner prepared, not executed. No local DGP or fits.
+-26 pure preflight assertions and actual --check PASS; actual --execute with opt-ins OFF exits1 before numerical imports. Eleven malformed-contract controls plus unknown ID reject. Full manifestDRAFT/M1PARTIAL.
+-Next restore authenticated observation/recover old family-recheck-01, qualify current candidate, single-case pre-run BINOMIAL-LOGIT-BERNOULLI. Provisional2–8min/case,600s cap; full cohort12–48min needs measured sizing and approval if over30min. Remaining finite model contract and independent review unpaid. No newchild/push/merge/release/cleanup.

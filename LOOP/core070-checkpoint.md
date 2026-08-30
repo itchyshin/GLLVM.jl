@@ -517,3 +517,9 @@ No production B dispatch, full suite or long campaign was launched.
 - Added required source inventory pin for shared pure helper; aggregator self-test and six scoped evidence negatives pass. No engine/DGP/tolerance change. Catalogue updated without promoting paired fits; masterDRAFT/M1PARTIAL.
 - Next actual paired probit/cloglog/multi-trial fixtures, frozen model contracts and original fit-health diagnosis after remote observation returns. Totoro socket absent/oldjobUNKNOWN; never restart from failed observation. Fullsuite/review/embedding unpaid; no newchild/push/merge/release/cleanup.
 - Mission Control Julia-only correction4fe1286b66d5b855bdcc7f79671ba10a29556876 committed and served HTTP200/readback verified; R fields preserved, lease released. Unlazy2met/1unmet, no abandonment.
+
+## 2026-08-30 — Six binomial paired models prepared
+- Three links×Bernoulli/varying trials, seeds90101–90106,p3/n160/K1, explicit observed curvature and original likelihood/health gates. Dataset/metric/source/terminal receipt runner prepared, not executed. No local DGP or fits.
+-26 pure preflight assertions and actual --check PASS; actual --execute with opt-ins OFF exits1 before numerical imports. Eleven malformed-contract controls plus unknown ID reject. Full manifestDRAFT/M1PARTIAL.
+-Next restore authenticated observation/recover old family-recheck-01, qualify current candidate, single-case pre-run BINOMIAL-LOGIT-BERNOULLI. Provisional2–8min/case,600s cap; full cohort12–48min needs measured sizing and approval if over30min. Remaining finite model contract and independent review unpaid. No newchild/push/merge/release/cleanup.
+- Mission Control Julia-only correctionb37bbad37cc0ebd9152c2e8133ad6c3b2ba972db committed; served HTTP200/readback verified, R fields unchanged and lease released. Unlazy1met/1unmet; no numerical result implied.

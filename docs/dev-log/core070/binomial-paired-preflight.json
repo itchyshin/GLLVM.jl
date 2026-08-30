@@ -1,0 +1,25 @@
+{
+  "status": "PREPARED_NOT_FITTED",
+  "datasets_generated": 0,
+  "fits_run": 0,
+  "runtime": ".unlazy/core070-aghq/binomial-paired",
+  "artifacts": {
+    ".unlazy/core070-aghq/binomial-paired/negative-plan.json": "7b0f41d3e05d15e7e64c3af066e43023b2f26c05c4d0dcf9f3704a07518c4362",
+    ".unlazy/core070-aghq/binomial-paired/final-plan.json": "4e47d2fcc5f8734dcb86ac12a9ca7aff1c15d4ef6ec354f538efa98cdf9a26ff",
+    ".unlazy/core070-aghq/binomial-paired/preflight-plan.json": "6352a89d8d81ed453dd39debf1fa1eda3c21a243acc3f67a7d46b70135335f17",
+    ".unlazy/core070-aghq/binomial-paired/final-process/00.log": "e1c10221b1ddb17bb1b8549f20e59afc745d4b633815bb208eccffdace2a84e5",
+    ".unlazy/core070-aghq/binomial-paired/final-process/01.log": "ee1a290599f5f7a9019210424d40a1c8f1db13dd59abac69e7654bce864d5142",
+    ".unlazy/core070-aghq/binomial-paired/final-process/execution-plan.json": "4e47d2fcc5f8734dcb86ac12a9ca7aff1c15d4ef6ec354f538efa98cdf9a26ff",
+    ".unlazy/core070-aghq/binomial-paired/final-process/process-receipt.json": "48edbdefafe26980749bd609f665ea85cba8e60cc988344f5b40510d36e2824c",
+    ".unlazy/core070-aghq/binomial-paired/final-process/progress.json": "6bd6066ca04d96d836f5d1295de605acff1a3d18884a5892e48a09beaa606007",
+    ".unlazy/core070-aghq/binomial-paired/negative-process/00.log": "512a36968ba6e8e2c3ff3019aa2f1b55559a29e1a206bd4faed44a7440d9969a",
+    ".unlazy/core070-aghq/binomial-paired/negative-process/execution-plan.json": "7b0f41d3e05d15e7e64c3af066e43023b2f26c05c4d0dcf9f3704a07518c4362",
+    ".unlazy/core070-aghq/binomial-paired/negative-process/process-receipt.json": "6070dcb95defd5b54e2577fab962853ca64b73594987071cdaabf2e1cbb6fda6",
+    ".unlazy/core070-aghq/binomial-paired/negative-process/progress.json": "8b3d4cf855dc7eca138700ed9351fae26b05a830648b4cccba59a50541a5920c",
+    ".unlazy/core070-aghq/binomial-paired/preflight-process/00.log": "a5ce0e94a8b0fdad61845b01f96387d249ad3f85a3696377ca77783833c81fe5",
+    ".unlazy/core070-aghq/binomial-paired/preflight-process/01.log": "ee1a290599f5f7a9019210424d40a1c8f1db13dd59abac69e7654bce864d5142",
+    ".unlazy/core070-aghq/binomial-paired/preflight-process/execution-plan.json": "6352a89d8d81ed453dd39debf1fa1eda3c21a243acc3f67a7d46b70135335f17",
+    ".unlazy/core070-aghq/binomial-paired/preflight-process/process-receipt.json": "647bf886989576501049d8c31088aad65c8215941a13ee2e8e470b63e90fba84",
+    ".unlazy/core070-aghq/binomial-paired/preflight-process/progress.json": "2ed56a0ddb6e1cc08646fb008946915d182d59f5a90eb413fec63b4c6fe17d9f"
+  }
+}
