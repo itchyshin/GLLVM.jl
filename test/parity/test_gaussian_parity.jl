@@ -104,6 +104,7 @@ using GLLVM, RCall, Test, Random, LinearAlgebra, Statistics
     r_Σ_y    = rcopy(Matrix{Float64}, R".gllvm_parity_gauss$Sigma_y")
     r_obj    = rcopy(Float64, R".gllvm_parity_gauss$objective")
     r_conv   = rcopy(Bool, R".gllvm_parity_gauss$converged")
+    @test r_conv
 
     # Always print the numbers — verify by log, not exit code alone.
     println()

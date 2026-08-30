@@ -74,6 +74,7 @@ end
     jl_logL = jl_fit.loglik
 
     r = fit_gllvmtmb_parity_loglik(Y, K; family = :negbinomial)
+    @test r.converged
     @test isfinite(r.logLik)
 
     print_parity_loglik(
