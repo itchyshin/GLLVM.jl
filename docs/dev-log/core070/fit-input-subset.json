@@ -174,12 +174,14 @@
         "kernel_has_diag": "0"
       },
       "numerical_case_id": "MODEL-ANIMAL-LATENT",
-      "numerical_status": "UNPAID",
+      "numerical_status": "REFERENCE_FIXED_POINTS_PASS_NATIVE_ROUTE_UNPAID",
       "owner": "B1",
       "julia_call": "UNRESOLVED: map exact covariance and fixed coordinates before numerical dispatch",
       "formula_owner": "B2",
       "bridge_owner": "B5",
-      "model_acceptance": "Same normalized likelihood, identifiable covariance and predictions, with both-engine health; exact tolerances and inference cells must be predeclared before fits"
+      "model_acceptance": "Same normalized likelihood, identifiable covariance and predictions, with both-engine health; exact tolerances and inference cells must be predeclared before fits",
+      "fixed_point_evidence": "docs/dev-log/core070/source-fixed-point-evidence.json",
+      "native_density_mapping": "UNPAID: additive source covariance plus independent residual; existing matrix-normal route is a different model"
     },
     {
       "id": "INPUT-KERNEL-ONE",
@@ -202,12 +204,14 @@
         "kernel_has_diag": "0"
       },
       "numerical_case_id": "MODEL-KERNEL-ONE",
-      "numerical_status": "UNPAID",
+      "numerical_status": "REFERENCE_FIXED_POINTS_PASS_NATIVE_ROUTE_UNPAID",
       "owner": "B1",
       "julia_call": "UNRESOLVED: map exact covariance and fixed coordinates before numerical dispatch",
       "formula_owner": "B2",
       "bridge_owner": "B5",
-      "model_acceptance": "Same normalized likelihood, identifiable covariance and predictions, with both-engine health; exact tolerances and inference cells must be predeclared before fits"
+      "model_acceptance": "Same normalized likelihood, identifiable covariance and predictions, with both-engine health; exact tolerances and inference cells must be predeclared before fits",
+      "fixed_point_evidence": "docs/dev-log/core070/source-fixed-point-evidence.json",
+      "native_density_mapping": "UNPAID: additive source covariance plus independent residual; existing matrix-normal route is a different model"
     },
     {
       "id": "INPUT-KERNEL-TWO",
@@ -230,12 +234,14 @@
         "kernel_has_diag": "0,0"
       },
       "numerical_case_id": "MODEL-KERNEL-TWO",
-      "numerical_status": "UNPAID",
+      "numerical_status": "REFERENCE_FIXED_POINTS_PASS_NATIVE_ROUTE_UNPAID",
       "owner": "B1",
       "julia_call": "UNRESOLVED: map exact covariance and fixed coordinates before numerical dispatch",
       "formula_owner": "B2",
       "bridge_owner": "B5",
-      "model_acceptance": "Same normalized likelihood, identifiable covariance and predictions, with both-engine health; exact tolerances and inference cells must be predeclared before fits"
+      "model_acceptance": "Same normalized likelihood, identifiable covariance and predictions, with both-engine health; exact tolerances and inference cells must be predeclared before fits",
+      "fixed_point_evidence": "docs/dev-log/core070/source-fixed-point-evidence.json",
+      "native_density_mapping": "UNPAID: additive source covariance plus independent residual; existing matrix-normal route is a different model"
     },
     {
       "id": "INPUT-KERNEL-TWO-AUTO",

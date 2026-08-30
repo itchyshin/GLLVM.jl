@@ -407,3 +407,10 @@ No production B dispatch, full suite or long campaign was launched.
  04cd9e9b; R fields unchanged. Frozen C++ convention source hash matches the
  original oracle inventory. Final scoped evidence verifier passes; full Core
  completion remains unclaimed.
+
+## 2026-08-30 — Source covariance reference established
+- New source fixed-point runners/evidence: six points44assertions PASS. Max nll difference8.527e-14; scaled outer-gradient1.013e-14.33 remote raw outputs hash-verified, source/R package pins checked. Failed first tensor-axis attempt retained.
+- Required covariance is independent residual plus sum of projected source loading covariances. Existing matrix-normal model correlates residual and cannot substitute (valid-domain deltas0.8717882/3.1760369). See docs/dev-log/core070/source-covariance-contract.md.
+- Animal/single-kernel use identical identity fixture; second kernel is nonidentity. Native production source model, broader source cells and fitted parity UNPAID. No B production child launched. Independent Noether Terra/high review accepted bounded representation; no inspected production route matches general source model. Review receipt retained, not milestone approval.
+- Next: finish finite required manifest and M1 numerical blockers/checkpoint; use this contract for B1/B2 representation review. No release/push/cleanup. Do not overwrite inherited historical LOOP files.
+- Mission Control Julia-only correction committed in vault255686ec; served HTTP200 matches and all R fields preserved. Full programme remains ACTIVE; no push/merge/destructive cleanup.

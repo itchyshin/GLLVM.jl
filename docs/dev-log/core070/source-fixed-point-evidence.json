@@ -1,0 +1,159 @@
+{
+  "status": "SOURCE_REFERENCE_PASS_NATIVE_ADDITIVE_ROUTE_UNPAID",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "points": [
+    {
+      "id": "ANIMAL-LATENT-P1",
+      "abs_delta": 2.842170943040401e-14,
+      "scaled_gradient_error": 6.01430392319433e-15
+    },
+    {
+      "id": "ANIMAL-LATENT-P2",
+      "abs_delta": 7.105427357601002e-14,
+      "scaled_gradient_error": 1.0123789904972559e-14
+    },
+    {
+      "id": "KERNEL-ONE-P1",
+      "abs_delta": 2.842170943040401e-14,
+      "scaled_gradient_error": 6.01430392319433e-15
+    },
+    {
+      "id": "KERNEL-ONE-P2",
+      "abs_delta": 7.105427357601002e-14,
+      "scaled_gradient_error": 1.0123789904972559e-14
+    },
+    {
+      "id": "KERNEL-TWO-P1",
+      "abs_delta": 8.526512829121202e-14,
+      "scaled_gradient_error": 2.842388027631118e-15
+    },
+    {
+      "id": "KERNEL-TWO-P2",
+      "abs_delta": 4.263256414560601e-14,
+      "scaled_gradient_error": 8.379708894741299e-15
+    }
+  ],
+  "matrix_normal_mismatch": [
+    {
+      "id": "KERNEL-TWO-P1",
+      "delta": 0.8717882337923655
+    },
+    {
+      "id": "KERNEL-TWO-P2",
+      "delta": 3.176036931378597
+    }
+  ],
+  "assertions": 44,
+  "process_receipt": ".unlazy/core070-aghq/source-fixed-point/attempt2/process/process-receipt.json",
+  "process_receipt_sha256": "8c7c1502c40c37c4e8f01819724f99911c60a2f2ba984ad10ef57df5cddd0728",
+  "artifacts": {
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/remote-hashes.json": "a443018ccf8b2855f4f7c5e77849dda767b20d04ecdf284ba433daa2a25e3f96",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/summary.tsv": "da3e0e70e3a13de39d282b57713a41e9657da457cbb8ebb9f55f2d0f2dad4417",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/process/00.log": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/process/01.log": "095ba6cff4f785a8d07210f5e98c4afd3ea2d9d228ebe0a5dfa0a3e8f8bf8d47",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/process/03.log": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/process/02.log": "e27d32db81036dd890a0c52c6138951758d9fb9c8f1b3ee3888d4d2c6d75c32b",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/process/execution-plan.json": "8261ca3a7750a16d4b277665752e801ec54db24d3d8bd57db35080bca66ae43c",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/process/process-receipt.json": "8c7c1502c40c37c4e8f01819724f99911c60a2f2ba984ad10ef57df5cddd0728",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/process/progress.json": "d15e2a3888a93bf7de15c1ac9145f3016a710b1df00812180375e7e55bd3f899",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/KERNEL-ONE-P2/source-1.tsv": "0aec2a89ba416e520faeab2fb6ebc0f6a529fba9fa1cd52042c9a2103d9bf25c",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/KERNEL-ONE-P2/data.tsv": "42c7366dac8f7ca6247349d248ff6c49bc25adf2ea285b13a8962d1c3e408ca7",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/KERNEL-ONE-P2/contract.tsv": "41991b911a7eb2ef3509ace0fac546eabb4c28f92f0ac96abf4bdb907c419f1c",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/KERNEL-ONE-P2/parameters.tsv": "187014f1fa73ddc9173ca4fdadfcedf9e407e0e863e9ed3562adac8e389b8380",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/KERNEL-ONE-P2/reference.rds": "5a0791e1291e5787d8f7c3ed92a882a99befd94702ce829623cdd73da63bac66",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/ANIMAL-LATENT-P1/source-1.tsv": "0aec2a89ba416e520faeab2fb6ebc0f6a529fba9fa1cd52042c9a2103d9bf25c",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/ANIMAL-LATENT-P1/data.tsv": "42c7366dac8f7ca6247349d248ff6c49bc25adf2ea285b13a8962d1c3e408ca7",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/ANIMAL-LATENT-P1/contract.tsv": "30a5ed663358b0d5517fba15a9d8a7ef96e147229a9b82b59507ed436189453d",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/ANIMAL-LATENT-P1/parameters.tsv": "c772d73cc071b4d5ffb54ea9914cc899665ef0b5e9f82893cfb849eb6e7b7b02",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/ANIMAL-LATENT-P1/reference.rds": "cbec7b79caaa518351cb8521d4de33cdf8fdce853a8ec72ecd766b451b26c6fe",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/KERNEL-TWO-P2/source-1.tsv": "b93aef4f4e8b6f9d9915a917f2b252e662500845eaa38072ed3a326cbef70ad1",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/KERNEL-TWO-P2/data.tsv": "42c7366dac8f7ca6247349d248ff6c49bc25adf2ea285b13a8962d1c3e408ca7",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/KERNEL-TWO-P2/source-2.tsv": "9c31f40055603263e83fb2bee1bbd6dc9cd383bf22f97b903f45a590c53de7ea",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/KERNEL-TWO-P2/contract.tsv": "05a15900e29153b840acda4e36d998308fff574fac208294fa3965184b166e12",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/KERNEL-TWO-P2/parameters.tsv": "96204cfaa777a6b0fd47cf7314cd44e9dc7927ad6c16786cb0129bd8a977a816",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/KERNEL-TWO-P2/reference.rds": "7e5c06ba5a7d06a46ffcbafce9f0bdc4bbe15c19d579b24a118a07bd2d26c4f4",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/KERNEL-ONE-P1/source-1.tsv": "0aec2a89ba416e520faeab2fb6ebc0f6a529fba9fa1cd52042c9a2103d9bf25c",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/KERNEL-ONE-P1/data.tsv": "42c7366dac8f7ca6247349d248ff6c49bc25adf2ea285b13a8962d1c3e408ca7",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/KERNEL-ONE-P1/contract.tsv": "62f94b9405a81dbdb73c4d79fae6a85fcc363d10551df9a0e80d696569199c5b",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/KERNEL-ONE-P1/parameters.tsv": "c772d73cc071b4d5ffb54ea9914cc899665ef0b5e9f82893cfb849eb6e7b7b02",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/KERNEL-ONE-P1/reference.rds": "cbec7b79caaa518351cb8521d4de33cdf8fdce853a8ec72ecd766b451b26c6fe",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/ANIMAL-LATENT-P2/source-1.tsv": "0aec2a89ba416e520faeab2fb6ebc0f6a529fba9fa1cd52042c9a2103d9bf25c",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/ANIMAL-LATENT-P2/data.tsv": "42c7366dac8f7ca6247349d248ff6c49bc25adf2ea285b13a8962d1c3e408ca7",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/ANIMAL-LATENT-P2/contract.tsv": "976b9131e33283d7c257ab734c6103d8949aecb78ae417b3807f51ae048a95b4",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/ANIMAL-LATENT-P2/parameters.tsv": "187014f1fa73ddc9173ca4fdadfcedf9e407e0e863e9ed3562adac8e389b8380",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/ANIMAL-LATENT-P2/reference.rds": "5a0791e1291e5787d8f7c3ed92a882a99befd94702ce829623cdd73da63bac66",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/KERNEL-TWO-P1/source-1.tsv": "b93aef4f4e8b6f9d9915a917f2b252e662500845eaa38072ed3a326cbef70ad1",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/KERNEL-TWO-P1/data.tsv": "42c7366dac8f7ca6247349d248ff6c49bc25adf2ea285b13a8962d1c3e408ca7",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/KERNEL-TWO-P1/source-2.tsv": "9c31f40055603263e83fb2bee1bbd6dc9cd383bf22f97b903f45a590c53de7ea",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/KERNEL-TWO-P1/contract.tsv": "05113f335a46b74c4b35e4daa6add6552e11d85aea5e88d4817caa040baac510",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/KERNEL-TWO-P1/parameters.tsv": "5808afa3a1f5e15707cde97cbecd43388b9c06e7d7a3f63d37dc9c0ee74839eb",
+    ".unlazy/core070-aghq/source-fixed-point/attempt2/out/KERNEL-TWO-P1/reference.rds": "2d7529eeae1a1cfe845e48aa8ed6d4ed151a4cbd20f3e11fd526436dbbe0ff63"
+  },
+  "remote_hashes": {
+    "out/ANIMAL-LATENT-P1/contract.tsv": "30a5ed663358b0d5517fba15a9d8a7ef96e147229a9b82b59507ed436189453d",
+    "out/ANIMAL-LATENT-P1/data.tsv": "42c7366dac8f7ca6247349d248ff6c49bc25adf2ea285b13a8962d1c3e408ca7",
+    "out/ANIMAL-LATENT-P1/parameters.tsv": "c772d73cc071b4d5ffb54ea9914cc899665ef0b5e9f82893cfb849eb6e7b7b02",
+    "out/ANIMAL-LATENT-P1/reference.rds": "cbec7b79caaa518351cb8521d4de33cdf8fdce853a8ec72ecd766b451b26c6fe",
+    "out/ANIMAL-LATENT-P1/source-1.tsv": "0aec2a89ba416e520faeab2fb6ebc0f6a529fba9fa1cd52042c9a2103d9bf25c",
+    "out/ANIMAL-LATENT-P2/contract.tsv": "976b9131e33283d7c257ab734c6103d8949aecb78ae417b3807f51ae048a95b4",
+    "out/ANIMAL-LATENT-P2/data.tsv": "42c7366dac8f7ca6247349d248ff6c49bc25adf2ea285b13a8962d1c3e408ca7",
+    "out/ANIMAL-LATENT-P2/parameters.tsv": "187014f1fa73ddc9173ca4fdadfcedf9e407e0e863e9ed3562adac8e389b8380",
+    "out/ANIMAL-LATENT-P2/reference.rds": "5a0791e1291e5787d8f7c3ed92a882a99befd94702ce829623cdd73da63bac66",
+    "out/ANIMAL-LATENT-P2/source-1.tsv": "0aec2a89ba416e520faeab2fb6ebc0f6a529fba9fa1cd52042c9a2103d9bf25c",
+    "out/KERNEL-ONE-P1/contract.tsv": "62f94b9405a81dbdb73c4d79fae6a85fcc363d10551df9a0e80d696569199c5b",
+    "out/KERNEL-ONE-P1/data.tsv": "42c7366dac8f7ca6247349d248ff6c49bc25adf2ea285b13a8962d1c3e408ca7",
+    "out/KERNEL-ONE-P1/parameters.tsv": "c772d73cc071b4d5ffb54ea9914cc899665ef0b5e9f82893cfb849eb6e7b7b02",
+    "out/KERNEL-ONE-P1/reference.rds": "cbec7b79caaa518351cb8521d4de33cdf8fdce853a8ec72ecd766b451b26c6fe",
+    "out/KERNEL-ONE-P1/source-1.tsv": "0aec2a89ba416e520faeab2fb6ebc0f6a529fba9fa1cd52042c9a2103d9bf25c",
+    "out/KERNEL-ONE-P2/contract.tsv": "41991b911a7eb2ef3509ace0fac546eabb4c28f92f0ac96abf4bdb907c419f1c",
+    "out/KERNEL-ONE-P2/data.tsv": "42c7366dac8f7ca6247349d248ff6c49bc25adf2ea285b13a8962d1c3e408ca7",
+    "out/KERNEL-ONE-P2/parameters.tsv": "187014f1fa73ddc9173ca4fdadfcedf9e407e0e863e9ed3562adac8e389b8380",
+    "out/KERNEL-ONE-P2/reference.rds": "5a0791e1291e5787d8f7c3ed92a882a99befd94702ce829623cdd73da63bac66",
+    "out/KERNEL-ONE-P2/source-1.tsv": "0aec2a89ba416e520faeab2fb6ebc0f6a529fba9fa1cd52042c9a2103d9bf25c",
+    "out/KERNEL-TWO-P1/contract.tsv": "05113f335a46b74c4b35e4daa6add6552e11d85aea5e88d4817caa040baac510",
+    "out/KERNEL-TWO-P1/data.tsv": "42c7366dac8f7ca6247349d248ff6c49bc25adf2ea285b13a8962d1c3e408ca7",
+    "out/KERNEL-TWO-P1/parameters.tsv": "5808afa3a1f5e15707cde97cbecd43388b9c06e7d7a3f63d37dc9c0ee74839eb",
+    "out/KERNEL-TWO-P1/reference.rds": "2d7529eeae1a1cfe845e48aa8ed6d4ed151a4cbd20f3e11fd526436dbbe0ff63",
+    "out/KERNEL-TWO-P1/source-1.tsv": "b93aef4f4e8b6f9d9915a917f2b252e662500845eaa38072ed3a326cbef70ad1",
+    "out/KERNEL-TWO-P1/source-2.tsv": "9c31f40055603263e83fb2bee1bbd6dc9cd383bf22f97b903f45a590c53de7ea",
+    "out/KERNEL-TWO-P2/contract.tsv": "05a15900e29153b840acda4e36d998308fff574fac208294fa3965184b166e12",
+    "out/KERNEL-TWO-P2/data.tsv": "42c7366dac8f7ca6247349d248ff6c49bc25adf2ea285b13a8962d1c3e408ca7",
+    "out/KERNEL-TWO-P2/parameters.tsv": "96204cfaa777a6b0fd47cf7314cd44e9dc7927ad6c16786cb0129bd8a977a816",
+    "out/KERNEL-TWO-P2/reference.rds": "7e5c06ba5a7d06a46ffcbafce9f0bdc4bbe15c19d579b24a118a07bd2d26c4f4",
+    "out/KERNEL-TWO-P2/source-1.tsv": "b93aef4f4e8b6f9d9915a917f2b252e662500845eaa38072ed3a326cbef70ad1",
+    "out/KERNEL-TWO-P2/source-2.tsv": "9c31f40055603263e83fb2bee1bbd6dc9cd383bf22f97b903f45a590c53de7ea",
+    "out/summary.tsv": "da3e0e70e3a13de39d282b57713a41e9657da457cbb8ebb9f55f2d0f2dad4417"
+  },
+  "commands": [
+    {
+      "id": "oracle-before",
+      "exit_code": 0,
+      "elapsed_seconds": 0.16516899690032005,
+      "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+    },
+    {
+      "id": "r-points",
+      "exit_code": 0,
+      "elapsed_seconds": 1.0173184908926487,
+      "log_sha256": "095ba6cff4f785a8d07210f5e98c4afd3ea2d9d228ebe0a5dfa0a3e8f8bf8d47"
+    },
+    {
+      "id": "julia-points",
+      "exit_code": 0,
+      "elapsed_seconds": 17.709287030622363,
+      "log_sha256": "e27d32db81036dd890a0c52c6138951758d9fb9c8f1b3ee3888d4d2c6d75c32b"
+    },
+    {
+      "id": "oracle-after",
+      "exit_code": 0,
+      "elapsed_seconds": 0.11527062021195889,
+      "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+    }
+  ],
+  "unpaid": [
+    "Production native additive source model",
+    "Optimized fits and health",
+    "Higher ranks, nonidentity animal case, unique/common modes and slopes",
+    "Formula/bridge/postfit and recovery"
+  ]
+}

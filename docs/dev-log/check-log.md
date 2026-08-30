@@ -15804,3 +15804,8 @@ integrity, source pins, exits and25 remote artifact hashes verified. Scoped
 Unlazy gate reverified; native density mappings added to3 case rows. Optimized
 fit/decomposition/inference/formula/bridge and full required contract remain
 unpaid. No numerical source changes, outer optimization or campaign.
+
+### 2026-08-30 — Core070 source covariance fixed points
+- Six frozen R animal/kernel points match independent dense covariance/gradients:44 assertions; max absolute nll difference8.527e-14.33 remote numerical artifacts hash-verified.
+- Existing matrix-normal route differs because it correlates residual noise; two valid-domain controls differ0.8717882/3.1760369. Preserve that model; additive source native implementation remains unpaid.
+- Failed precision-axis attempt retained; source/shape correction only. No engine edits, optimized fits, full suite or parity promotion. See source-covariance-contract and source-fixed-point-evidence; M1 PARTIAL.
