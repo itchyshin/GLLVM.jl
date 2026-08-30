@@ -684,7 +684,8 @@
       "detail": "Converged flags and likelihood-only checks do not discharge original fit-health, inference, formula or public bridge requirements. Per-case numerical gates and independent review still needed."
     }
   ],
-  "revision": 3,
+  "revision": 4,
   "supersedes_sha256": "6be7697d405163cc9773e080037194fcb8b083cb70c2433cebdcbf147ed17caa",
-  "revision_note": "Six paired binomial case definitions and single-case runner prepared; preflight only, no datasets generated or fits."
+  "revision_note": "First paired logit/Bernoulli pre-run retained:13pass/1fail R default raw gradient; separate public-control refinement healthy, original failure not promoted. Other5cases unexecuted.",
+  "binomial_first_prerun": "docs/dev-log/core070/binomial-prerun-evidence.json"
 }

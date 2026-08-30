@@ -1,9 +1,9 @@
-# Six paired binomial link/trial cases — execution pending
+# Six paired binomial link/trial cases — first pre-run retained
 
 This packet moves three unresolved family obligations from an unimplemented
 fixture to a runnable, source-bound test definition. It does not freeze the
 whole programme or supply numerical evidence. The six seeds and model settings
-were written before any data generation; all results remain NOT_EXECUTED.
+were written before any data generation; the original declaration records NOT_EXECUTED before data generation. Current results are recorded separately below; those frozen declaration labels are not live status.
 
 | Link | Bernoulli seed | Varying trials seed | Native curvature |
 |---|---:|---:|---|
@@ -63,3 +63,13 @@ offsets, all covariance combinations, default cloglog equivalence, inference,
 recovery or fullsuite. Those obligations stay open. Independent review not run;
 full manifest DRAFT and M1 PARTIAL. Relevant production/helper pins are retained
 in binomial-paired-contract.toml; preflight receipts in binomial-paired-preflight.json.
+
+## First execution — 2026-08-30
+
+Current Julia1.12.6/RCall/frozen-R runtime qualified on Totoro after correcting missing Test/LinearAlgebra imports in the qualification command. Source fingerprint refreshed only for the repaired helper; models, seeds and acceptance rules unchanged.
+
+BINOMIAL-LOGIT-BERNOULLI seed90101 completed in23.53s:13 checks passed,1 failed. Native logLik−322.7456004572379, R default−322.7456004609432; native raw FD gradient2.8422e-8, R raw gradient2.85818e-4 exceeds the unchanged1e-4 gate. Both report convergence, all remaining checks pass. Required result is FAIL, not partial success by likelihood alone.
+
+Separate10-second R diagnostic replayed the exact retained fixture and post-DGP RNG state. Public start_from plus optArgs(control=list(rel.tol=1e-12,eval.max=2000,iter.max=1500)) preserves data/map/parameter names. R gradient improves to1.44901e-5, logLik−322.7456004572691, code0. This qualifies the stopping-tolerance diagnosis; it does not replace the failed default-control receipt. No other five cases were executed.
+
+Next: explicitly qualify reference optimizer precision for the same models while retaining default-control results and fixed gates, then size remaining link-specific checks. A single23.5-second logit fit does not measure probit/cloglog costs. No whole-cohort runtime or broad performance claim follows. See [source-bound evidence](binomial-prerun-evidence.json).

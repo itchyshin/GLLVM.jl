@@ -541,3 +541,10 @@ No production B dispatch, full suite or long campaign was launched.
 -Local45 Julia assertions+29 Python tests and aggregate selftest PASS. Totoro45 Julia+4 Python tests and cross-language33unique/5IDs/3executions PASS10.35s, remote hashes verified. No fits, fixtures/tolerances unchanged.
 -Next refresh prepared binomial helper pin/preflight after integration, qualify new candidate and run bounded pre-run. Original numerical health/fullfinite contract/review unpaid; DRAFT/M1PARTIAL. Historical receipts not rewritten.
 - Mission Control Julia-only correction0354e76e119c280f019d6108153ae384183b44da locally committed; servedHTTP200/readbackPASS and Rfields unchanged. Lease released; Unlazy1met/1unmet reverified.
+
+## 2026-08-30 — First paired binomial fit retained
+-Helper fingerprint refreshed only; models/seeds/gates unchanged,26 preflight assertions pass. Current Julia1.12.6/RCall/frozen-R qualified on Totoro after qualification-only import correction.
+-Seed90101 logit/Bernoulli23.53s:13pass1fail. Nativegrad2.84217e-8, Rdefaultgrad2.85818e-4 exceeds1e-4; logLikdelta3.71e-9. Default required result remainsFAIL.
+-Exactdata/RNG public-control Rrefinement9.99s reproducesdefault and yieldsgrad1.44901e-5/code0/logLikdelta3.13e-11; same data/map/names verified, separate diagnostic notpromotion. Other5cases notexecuted.
+-Next explicit same-model reference precision qualification retainingdefault result, then size link-specific runs. No seed/tolerance/engine change; fullmanifestDRAFT/M1PARTIAL, review unpaid.
+- Mission Control Julia-only correction7a5d7bdda9777cd8e7b4da98e7f4efd2500de056 locally committed; servedHTTP200/readbackPASS and Rfields unchanged. Lease released. Unlazy1met/2unmet freshly reverified.

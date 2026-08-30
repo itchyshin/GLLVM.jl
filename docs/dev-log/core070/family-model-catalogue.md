@@ -73,3 +73,7 @@ The previously recorded no-X/shared-X trial omission is repaired in the local ca
 ## Prepared binomial paired cases
 
 [Six predeclared cases](binomial-paired-plan.md) now cover three links × Bernoulli/varying trials as executable definitions.26 preflight assertions pass; no datasets or fits ran. Explicit observed cloglog does not establish default Fisher equivalence. Full paired evidence remains unpaid.
+
+## First paired pre-run update
+
+Logit/Bernoulli seed90101 now has a retained numerical result:13pass/1fail because R default raw gradient exceeds1e-4, despite likelihood agreement3.71e-9. Separate public-control refinement passes R health and matches native logLik3.13e-11; original required result remains failed. Other five cases and probit/cloglog/trials obligations remain unexecuted. See [first pre-run](binomial-prerun-evidence.json). Earlier prepared-only statements describe the pre-run checkpoint.
