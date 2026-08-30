@@ -389,3 +389,21 @@ No production B dispatch, full suite or long campaign was launched.
  MISSING_RECEIPT (they are not parity run.toml). Repeating with real historical
  parity receipts rejects DRAFT_CONTRACT. Both terminal outputs are retained;
  no source/receipt workaround was used to promote the prepared-input subset.
+
+## Gaussian fixed-point checkpoint — 2026-08-30
+
+- Ordinary Gaussian default/common/loadings-only model mappings now verified at
+ 2 points each:48 assertions, R/native/dense nll and gradient agreement. See
+ gaussian-fixed-point-evidence.json and contract.md; raw artifacts under
+ .unlazy/core070-aghq/gaussian-fixed-point/attempt2, with failed attempt1 retained.
+- Existing gaussian_marginal_loglik supports these density maps through σ²_B;
+ preserve the actual fixed residual scale and separate reported decomposition.
+ No fitted-interface completion follows from the fixed-point likelihood proof.
+- Next: exact native source/mode mappings and bounded matrix-input coverage,
+ followed by declared optimized-fit cases and remaining data/postfit/interface
+ contract. Original Student reference health still fails; full manifest DRAFT.
+ No active job/reviewer, new child, B production, fullsuite or campaign.
+- Mission Control targeted numerical-scope update verified HTTP200 at vault
+ 04cd9e9b; R fields unchanged. Frozen C++ convention source hash matches the
+ original oracle inventory. Final scoped evidence verifier passes; full Core
+ completion remains unclaimed.

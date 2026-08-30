@@ -1,0 +1,138 @@
+{
+  "status": "FIXED_PARAMETER_NATIVE_GAUSSIAN_PASS_NOT_FITTED_PARITY",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "models": [
+    "INPUT-GAUSS-DEFAULT",
+    "INPUT-GAUSS-COMMON",
+    "INPUT-GAUSS-LOADINGS"
+  ],
+  "points": [
+    {
+      "id": "GAUSS-DEFAULT-P1",
+      "abs_delta": 3.941948989449884e-10,
+      "scaled_gradient_error": 5.146179178822589e-10
+    },
+    {
+      "id": "GAUSS-DEFAULT-P2",
+      "abs_delta": 6.978098099352792e-10,
+      "scaled_gradient_error": 2.6192113971858894e-10
+    },
+    {
+      "id": "GAUSS-COMMON-P1",
+      "abs_delta": 1.2433076790330233e-10,
+      "scaled_gradient_error": 3.4020843149958476e-10
+    },
+    {
+      "id": "GAUSS-COMMON-P2",
+      "abs_delta": 9.253682264898089e-10,
+      "scaled_gradient_error": 1.514763342263744e-10
+    },
+    {
+      "id": "GAUSS-LOADINGS-P1",
+      "abs_delta": 0.0,
+      "scaled_gradient_error": 7.769554657042741e-15
+    },
+    {
+      "id": "GAUSS-LOADINGS-P2",
+      "abs_delta": 5.684341886080802e-14,
+      "scaled_gradient_error": 4.064572346522444e-15
+    }
+  ],
+  "assertions": 48,
+  "process_receipt": ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/process/process-receipt.json",
+  "process_receipt_sha256": "713664cfe017a2705fc6a7ef397003a9aa42398a0eda6eb6f8d81e1857a7ff76",
+  "commands": [
+    {
+      "id": "oracle-before",
+      "exit_code": 0,
+      "elapsed_seconds": 0.11550693958997726,
+      "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+    },
+    {
+      "id": "r-points",
+      "exit_code": 0,
+      "elapsed_seconds": 1.0177396349608898,
+      "log_sha256": "93ff269c8e83d26637e7fb792b2717c24f0a646c0a64b120250e238ebfd50b7e"
+    },
+    {
+      "id": "julia-points",
+      "exit_code": 0,
+      "elapsed_seconds": 24.833306459710002,
+      "log_sha256": "c21dd95919183ad7ff89c23d4596f1e82fb252fccc1cdb759e5220400cd1aa88"
+    },
+    {
+      "id": "oracle-after",
+      "exit_code": 0,
+      "elapsed_seconds": 0.11497755162417889,
+      "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+    }
+  ],
+  "artifacts": {
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/out/summary.tsv": "a04cc1f3a71ac0425661e09c1bb04cd97d747f7b7a34b1a2d0d7e16237340402",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/process/00.log": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/process/01.log": "93ff269c8e83d26637e7fb792b2717c24f0a646c0a64b120250e238ebfd50b7e",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/process/03.log": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/process/02.log": "c21dd95919183ad7ff89c23d4596f1e82fb252fccc1cdb759e5220400cd1aa88",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/process/execution-plan.json": "9d0ef425c2a9897d253a8a862c657406f9f27853bb0ba9d29c1e0c51c0ebb486",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/process/process-receipt.json": "713664cfe017a2705fc6a7ef397003a9aa42398a0eda6eb6f8d81e1857a7ff76",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/process/progress.json": "001cb11cb013cd0c36253003390eed35e7713367fc482d420c4c108064dd4a39",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/out/GAUSS-COMMON-P1/data.tsv": "0a0ea2722b3d65aec85fca6a70883baa37d72c1271a0690b8d527642241285a0",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/out/GAUSS-COMMON-P1/contract.tsv": "d091c6600c9a55ee0118c4a39eb8fe67e48e9b9c97b8b4376a571b149b80dcc4",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/out/GAUSS-COMMON-P1/parameters.tsv": "39a184425fcacdae3547000f5f6aefd44c991651b67819f0457b83dee765def6",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/out/GAUSS-COMMON-P1/reference.rds": "1b647450fb6a52ccbf998a2a039149b625fae026985b8a9eea7f07fb06cf39c0",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/out/GAUSS-LOADINGS-P1/data.tsv": "0a0ea2722b3d65aec85fca6a70883baa37d72c1271a0690b8d527642241285a0",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/out/GAUSS-LOADINGS-P1/contract.tsv": "7557ad70fab8096e3f661f68912613fe54a838f853f9ff1b2839caa31d97bff9",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/out/GAUSS-LOADINGS-P1/parameters.tsv": "4c044d5276038c5b09d2c202ce57d8213d569d543767704bb11c68c4f5995f9b",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/out/GAUSS-LOADINGS-P1/reference.rds": "377896c1dca329d73ff635a453dad8674a59d14048103bc6114b3480cf7efcf6",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/out/GAUSS-DEFAULT-P2/data.tsv": "0a0ea2722b3d65aec85fca6a70883baa37d72c1271a0690b8d527642241285a0",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/out/GAUSS-DEFAULT-P2/contract.tsv": "5619c895fb0d88153968b810b364377496f46dca7004d633df7beb146f61a781",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/out/GAUSS-DEFAULT-P2/parameters.tsv": "7a9b5dbb0aa0c012b22abeeb55177e2946b40ec3620d06d7be234b9ac8913886",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/out/GAUSS-DEFAULT-P2/reference.rds": "a76e7609379143bf8e1d200d2afcd4651b0b10c9d08c7b60de1c999a9b88588d",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/out/GAUSS-COMMON-P2/data.tsv": "0a0ea2722b3d65aec85fca6a70883baa37d72c1271a0690b8d527642241285a0",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/out/GAUSS-COMMON-P2/contract.tsv": "15805f3fd9fd41e629f8961d868efcee18a0de525bb0e63ac845cf60531ac67f",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/out/GAUSS-COMMON-P2/parameters.tsv": "7b1b5d21a95026089ecb523f3ef64185dbe9ca04110deecbb2cefda6a0cee2e4",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/out/GAUSS-COMMON-P2/reference.rds": "7d18e207700588f7f82c2f838608e11dc787ac9a43ea30101415c964d58de110",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/out/GAUSS-LOADINGS-P2/data.tsv": "0a0ea2722b3d65aec85fca6a70883baa37d72c1271a0690b8d527642241285a0",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/out/GAUSS-LOADINGS-P2/contract.tsv": "91d81410919046fd9d39bbeb7ada7544cdc374591444e2e60c647411a4ba8612",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/out/GAUSS-LOADINGS-P2/parameters.tsv": "092ae96a35c84ae722610083f2f8b34be1233d7b0b85e986ac1ec6c5ec6ccbfc",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/out/GAUSS-LOADINGS-P2/reference.rds": "7e9f3fdb2ef8ff0be769e4e17b419b37da96be861e81ee292fa348022061e98f",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/out/GAUSS-DEFAULT-P1/data.tsv": "0a0ea2722b3d65aec85fca6a70883baa37d72c1271a0690b8d527642241285a0",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/out/GAUSS-DEFAULT-P1/contract.tsv": "a9a6439101718948a7fd673c0939d11f890aa38f6da1c26a28c1a261dcb1ef46",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/out/GAUSS-DEFAULT-P1/parameters.tsv": "e2e14648e1638dba0368e19104fd1b5481609d88eab7c0573f366d906c1ba1bb",
+    ".unlazy/core070-aghq/gaussian-fixed-point/attempt2/out/GAUSS-DEFAULT-P1/reference.rds": "627d22f1d365db731312359a5ac5d3e2d592303d5365664ed5e79ac726f8ca18"
+  },
+  "remote_hashes": {
+    "out/GAUSS-COMMON-P1/contract.tsv": "d091c6600c9a55ee0118c4a39eb8fe67e48e9b9c97b8b4376a571b149b80dcc4",
+    "out/GAUSS-COMMON-P1/data.tsv": "0a0ea2722b3d65aec85fca6a70883baa37d72c1271a0690b8d527642241285a0",
+    "out/GAUSS-COMMON-P1/parameters.tsv": "39a184425fcacdae3547000f5f6aefd44c991651b67819f0457b83dee765def6",
+    "out/GAUSS-COMMON-P1/reference.rds": "1b647450fb6a52ccbf998a2a039149b625fae026985b8a9eea7f07fb06cf39c0",
+    "out/GAUSS-COMMON-P2/contract.tsv": "15805f3fd9fd41e629f8961d868efcee18a0de525bb0e63ac845cf60531ac67f",
+    "out/GAUSS-COMMON-P2/data.tsv": "0a0ea2722b3d65aec85fca6a70883baa37d72c1271a0690b8d527642241285a0",
+    "out/GAUSS-COMMON-P2/parameters.tsv": "7b1b5d21a95026089ecb523f3ef64185dbe9ca04110deecbb2cefda6a0cee2e4",
+    "out/GAUSS-COMMON-P2/reference.rds": "7d18e207700588f7f82c2f838608e11dc787ac9a43ea30101415c964d58de110",
+    "out/GAUSS-DEFAULT-P1/contract.tsv": "a9a6439101718948a7fd673c0939d11f890aa38f6da1c26a28c1a261dcb1ef46",
+    "out/GAUSS-DEFAULT-P1/data.tsv": "0a0ea2722b3d65aec85fca6a70883baa37d72c1271a0690b8d527642241285a0",
+    "out/GAUSS-DEFAULT-P1/parameters.tsv": "e2e14648e1638dba0368e19104fd1b5481609d88eab7c0573f366d906c1ba1bb",
+    "out/GAUSS-DEFAULT-P1/reference.rds": "627d22f1d365db731312359a5ac5d3e2d592303d5365664ed5e79ac726f8ca18",
+    "out/GAUSS-DEFAULT-P2/contract.tsv": "5619c895fb0d88153968b810b364377496f46dca7004d633df7beb146f61a781",
+    "out/GAUSS-DEFAULT-P2/data.tsv": "0a0ea2722b3d65aec85fca6a70883baa37d72c1271a0690b8d527642241285a0",
+    "out/GAUSS-DEFAULT-P2/parameters.tsv": "7a9b5dbb0aa0c012b22abeeb55177e2946b40ec3620d06d7be234b9ac8913886",
+    "out/GAUSS-DEFAULT-P2/reference.rds": "a76e7609379143bf8e1d200d2afcd4651b0b10c9d08c7b60de1c999a9b88588d",
+    "out/GAUSS-LOADINGS-P1/contract.tsv": "7557ad70fab8096e3f661f68912613fe54a838f853f9ff1b2839caa31d97bff9",
+    "out/GAUSS-LOADINGS-P1/data.tsv": "0a0ea2722b3d65aec85fca6a70883baa37d72c1271a0690b8d527642241285a0",
+    "out/GAUSS-LOADINGS-P1/parameters.tsv": "4c044d5276038c5b09d2c202ce57d8213d569d543767704bb11c68c4f5995f9b",
+    "out/GAUSS-LOADINGS-P1/reference.rds": "377896c1dca329d73ff635a453dad8674a59d14048103bc6114b3480cf7efcf6",
+    "out/GAUSS-LOADINGS-P2/contract.tsv": "91d81410919046fd9d39bbeb7ada7544cdc374591444e2e60c647411a4ba8612",
+    "out/GAUSS-LOADINGS-P2/data.tsv": "0a0ea2722b3d65aec85fca6a70883baa37d72c1271a0690b8d527642241285a0",
+    "out/GAUSS-LOADINGS-P2/parameters.tsv": "092ae96a35c84ae722610083f2f8b34be1233d7b0b85e986ac1ec6c5ec6ccbfc",
+    "out/GAUSS-LOADINGS-P2/reference.rds": "7e9f3fdb2ef8ff0be769e4e17b419b37da96be861e81ee292fa348022061e98f",
+    "out/summary.tsv": "a04cc1f3a71ac0425661e09c1bb04cd97d747f7b7a34b1a2d0d7e16237340402"
+  },
+  "reference_cpp_sha256": "d92e70ba28d91e26d5612b2c8c2d10f9c52c7c2f09625d89671f1e8c4afaf6cc",
+  "unpaid": [
+    "Outer optimized fit parity and fit health",
+    "Recovered covariance decomposition and intervals",
+    "Formula and R bridge reachability",
+    "Other covariance sources/modes/ranks/families and full required contract"
+  ]
+}

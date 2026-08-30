@@ -15789,3 +15789,18 @@ only keeps it free. Binomial and multinomial auto-Psi are mapped off. No TMB
 objective construction, optimization, recovery or full parity claim. Eleven
 numerical model candidates have exact R calls but Julia mappings/tolerances
 remain unpaid. Full manifest DRAFT; Student reference-health failure unchanged.
+
+## Same-model Gaussian fixed points — 2026-08-30
+
+Six fixed outer points over ordinary default/common/loadings-only Gaussian
+models agree between frozen R, existing native Julia likelihood and independent
+dense Gaussian calculations.48/48 assertions pass on Totoro1.12.6/R4.5.3;
+max abs nll difference9.254e-10; max scaled gradient error5.147e-10. Exact fixed
+residual floor and unique log-SD maps preserved; no centering or tolerance
+change. R1.02s, Julia24.83s including6.08s compilation; no timing claim. Initial
+R matrix-attribute assertion failure retained and corrected to exact values,
+dimensions and column order. Shifted-intercept controls reject equality. Package
+integrity, source pins, exits and25 remote artifact hashes verified. Scoped
+Unlazy gate reverified; native density mappings added to3 case rows. Optimized
+fit/decomposition/inference/formula/bridge and full required contract remain
+unpaid. No numerical source changes, outer optimization or campaign.
