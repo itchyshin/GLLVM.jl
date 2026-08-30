@@ -46,6 +46,7 @@ using GLLVM
     include("test_truncated_poisson.jl")
     include("test_censored_poisson.jl")
     include("test_truncated_nbinom2.jl")
+    include("test_truncnb2_precision.jl")
     include("test_negbin_laplace.jl")
     include("test_beta_laplace.jl")
     include("test_ordinal_laplace.jl")

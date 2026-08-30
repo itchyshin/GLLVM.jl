@@ -15848,3 +15848,8 @@ unpaid. No numerical source changes, outer optimization or campaign.
 - Started17-ID required smoke on5be659b1. Tool-read16-group result217pass/3fail (Student2, truncated NB2 R convergence1). Connection/socket lost during Tweedie; remote state UNKNOWN, raw full-run receipts not recovered. Do not restart; see runtime family-recheck/RECOVERY.md.
 - Separate original seed58 health diagnostic6pass/3fail; raw locally verified. Sixty scalar256-bit checks establish precision loss near Poisson limit: current max0.0151883 vs mean-based recurrence2.8422e-14. Diagnostic only; no engine change.
 - Evidence gate PASS, health gate FAIL, seven negative controls PASS. Full manifest/M1 incomplete; no public claims or cleanup.
+
+## 2026-08-30 — Truncated NB2 scalar kernel candidate
+- Stable density/moments/observed curvature and bounded large-r series; no parameterization, tolerance, ridge or R changes. Actual scalar-source TDD117pass/88fail then205pass; extended63pass/18fail then286pass; final352pass with second/mixed derivatives and formula transitions.
+- Pure local Julia1.10 checks only. Initial whole-package load failed on missing StatsModels; full package and original R/native fitted replay unpaid. Nine gate negative controls pass; Unlazy2 met/2 unmet, no abandonment. All failed attempts preserved.
+- New source makes prior whole-source receipts historical. Remote family-recheck-01 state still UNKNOWN; no restart. Independent review outstanding; full manifest DRAFT/M1 PARTIAL.
