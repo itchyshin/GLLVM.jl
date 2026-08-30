@@ -653,3 +653,12 @@ evidence = "docs/dev-log/core070/postfit-policy-subset.json"
 contract_notes = "docs/dev-log/core070/postfit-contract.md"
 status = "100_SOURCE_SURFACES_29_POLICY_PROBES_PASS_FITTED_PARITY_UNPAID"
 expected_cases = 29
+
+[inference_routing_subset]
+status = "FROZEN_SOURCE_ROUTING_SUBSET_NOT_INTERVAL_PARITY"
+fixture = "test/parity/fixtures/core070_inference_routes.tsv"
+evidence = "docs/dev-log/core070/inference-routing-subset.json"
+contract = "docs/dev-log/core070/inference-routing-contract.md"
+expected_cases = 98
+owner = "B4"
+completion_scope = "Dispatch and selected rejection boundaries only; numerical interval cases unpaid."

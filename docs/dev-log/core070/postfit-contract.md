@@ -39,3 +39,12 @@ Verify this source/policy slice with `python3 tools/core070_verify_postfit.py`. 
 A 29th probe verifies the frozen zero-truncated-Poisson response helper returns the underlying rate lambda=exp(eta). At lambda=0.5 it returns0.5, whereas the distribution in frozen C++ fid10 has E[Y|Y>0]=lambda/(1-exp(-lambda))=1.270747. The C++ likelihood explicitly subtracts log(1-exp(-lambda)), so truncation is in the model; it does not reparameterize lambda as the positive-count mean. Julia's TruncatedPoisson marker already documents the untruncated-rate link.
 
 B4 must distinguish literal reference output from the scientific expected response: test and label the rate for R correspondence, and identify any conditional-mean output separately. Do not copy a broad “all response predictions are means” claim. No R engine or Julia postfit API was changed here, and this helper probe is not a fitted prediction test. Similar semantic checks remain necessary for other truncated/two-part/ordinal responses.
+
+## Executed interval dispatch subset
+
+The [inference routing contract](inference-routing-contract.md) adds98 source-function
+cases for target-specific defaults, method forwarding, selected typed rejections,
+SE prerequisites and visible bootstrap-to-Wald fallback. All98 pass, with failed
+probe attempts retained. These are disposable source-environment probes, not an
+installed package, fitted interval or exhaustive inference contract. In particular,
+forwarding an invalid method to an intercepted endpoint does not admit that method.

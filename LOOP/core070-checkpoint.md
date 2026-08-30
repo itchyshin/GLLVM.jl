@@ -476,3 +476,9 @@ No production B dispatch, full suite or long campaign was launched.
 - Pure local Julia1.10 offline evidence, not package integration. Nine negative controls PASS; Unlazy2met/2unmet. Original fitted Totoro/R replay and independent review UNPAID. New source invalidates previous whole-source parity pins for current claims.
 - Remote family-recheck-01 still UNKNOWN; do not restart. Recover existing remote receipts after authenticated socket returns, assess against5be659b1 historically, then qualify/replay new candidate. Full manifest DRAFT/M1 PARTIAL; no new production child, push, merge, release or cleanup.
 - Mission Control Julia-only correction7c676817514ebc983b930dc8cc0dfc5957c7a9da locally committed; served HTTP200/readback verified, R fields unchanged and board lease released. Unlazy freshly reverified2met/2unmet; no abandonment.
+
+## 2026-08-30 — Inference dispatch contract advancement
+-98 frozen-source interval dispatch/guard cases PASS; eight negative controls PASS. Source-function probes only, no installed package or numerical interval claim. Initial hidden-function restoration defect and wrong rho diagnostic corrected; failed attempts retained.
+-Defaults and visible bootstrap-to-Wald fallback now explicit. Endpoint forwarding is not admission; actual model/target/interval numerical cases remain B4 debt. Master remains DRAFT/M1 PARTIAL.
+-Totoro socket absent at turn start; remote family-recheck-01 UNKNOWN, no restart. Continue finite contract and available safe qualification; restore observation before touching remote jobs. Scalar candidate376044e7 unchanged; package/fitted/review gates unpaid. No new production child/push/merge/release/cleanup.
+- Mission Control Julia-only correction80806332374b0062dfd116254cdbe47a05d70ea5 committed and served HTTP200/readback verified; R fields unchanged and exact lease released. Unlazy2met/1unmet, no abandonment.

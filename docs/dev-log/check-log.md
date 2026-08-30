@@ -15853,3 +15853,7 @@ unpaid. No numerical source changes, outer optimization or campaign.
 - Stable density/moments/observed curvature and bounded large-r series; no parameterization, tolerance, ridge or R changes. Actual scalar-source TDD117pass/88fail then205pass; extended63pass/18fail then286pass; final352pass with second/mixed derivatives and formula transitions.
 - Pure local Julia1.10 checks only. Initial whole-package load failed on missing StatsModels; full package and original R/native fitted replay unpaid. Nine gate negative controls pass; Unlazy2 met/2 unmet, no abandonment. All failed attempts preserved.
 - New source makes prior whole-source receipts historical. Remote family-recheck-01 state still UNKNOWN; no restart. Independent review outstanding; full manifest DRAFT/M1 PARTIAL.
+
+## 2026-08-30 — Frozen inference routing contract subset
+- Added98 exact source-dispatch/guard cases: target-specific defaults, nonlinear-profile rejection, SE prerequisites, weighted/MSPL fences and visible bootstrap-to-Wald fallback. Final98pass; earlier84/14 and97/1 probe failures retained.
+- Eight negative controls pass, including deliberately wrong live route expectation causing exit1. No fits, intervals, installed-package or Julia capability claim; full manifest DRAFT/M1 PARTIAL. B4 numerical and later admission obligations explicit.
