@@ -75,6 +75,10 @@ by the user. No engine or API scope is expanded solely from their names.
   admitted family/link combinations, fixed-shape controls, a Beta alias, rejected
   routes and14 constructor-only families. These are R admission checks, not69
   fitted models or Julia parity passes. See `family-admission-evidence.json`.
+- `isdm-admission-subset.json`:37 integrated-source constructor, alignment,
+  structural, observation-design and offset checks pass on both R runtimes.
+  See `isdm-admission-evidence.json`. Actual fits, fit-level weights/trials,
+  spatial slopes, missing-response behavior and Julia interfaces remain unpaid.
 - `targeted-replay-6e59ef54.json`: current numerical/helper snapshot's three
   Tweedie power contracts pass28/28; Student31pass/2fail retains the R optimizer
   health failure. No full-suite, recovery, bridge or programme claim.

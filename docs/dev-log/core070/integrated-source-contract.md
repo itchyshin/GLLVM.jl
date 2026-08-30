@@ -1,6 +1,8 @@
 # Integrated-source admission: frozen R source findings
 
-Status: **source-inspected, executable cases not yet frozen or validated**.
+Status: **37 pure R source-admission/design checks frozen and replayed; complete
+model cases not yet frozen or validated**. See `isdm-admission-subset.json` and
+`isdm-admission-evidence.json` for the exact case list and retained receipts.
 Reference: `b4d5fee64def88bc768dda1f1f77c29b295edd86`, extracted from the retained
 oracle archive. This is a required data/model contract question, not permission
 to import the separate R0.7.1 or article lane.
@@ -44,7 +46,12 @@ occupancy, detectability or a causal effect.
 ## Cases to expand into the full executable manifest
 
 These stable draft IDs distinguish constructor, structural and fit-stage gates.
-None currently counts as a numerical PASS.
+None currently counts as a fitted-model numerical PASS. The source subset
+exercises constructor, alignment, structural predicate, observation design and
+offset branches on both local R4.6.0 and Totoro R4.5.3. The masked-arm check
+tests structural admission only. Fit-level weights/trials, spatial slope,
+actual response masking, paired support likelihood/predictions and recovery
+remain unpaid; they are not replaced by source-helper success.
 
 | Draft ID | Required case and acceptance boundary |
 |---|---|
@@ -78,3 +85,19 @@ obligations. A pure source predicate replay can verify admission branches, but
 cannot substitute for design-matrix, fitted-model, native/formula/bridge or
 recovery evidence. The separate article prior repair is a risk lead for later
 covariance validation, not a reason to change this frozen R reference.
+
+## Julia mapping gap
+
+The current R bridge in `src/bridge.jl:1726` checks that the family-vector length
+equals the number of trait rows and builds one link per trait. That path does
+not implement the frozen R within-trait count/detection source contract. Merely
+stacking each source as another trait would also change the shared ecological
+predictor and covariance constraints unless those constraints were explicitly
+implemented and verified. Native, formula and bridge mappings need separate
+cases; no existing mixed-family smoke test satisfies this source-model row.
+
+The first source replay is retained as FAIL: four checks compared irrelevant
+formula environments/matrix attributes or a line-wrapped error string. The
+revision2 cases compare the original source formula object, exact design values
+and row/column labels; diagnostic matching normalizes whitespace only. Source
+code, design rank, masking requirements and admitted model rules did not change.

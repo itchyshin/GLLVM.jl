@@ -297,3 +297,22 @@ still6e59ef54: Tweedie28/28 scopedPASS, Student31pass/2fail health unresolved.
 Next bounded parent task: source-admission replay for integrated multi-source
 data (see integrated-source-contract.md), then remaining full contract cells.
 No production B dispatch or full suite until the M1 checkpoint conditions hold.
+
+
+## Integrated-source admission replay — 2026-08-30
+
+37 source-admission/design cases frozen against Rb4d5fee6 pass on localR4.6.0
+and TotoroR4.5.3; actual R process exits0 and raw TSV hashes agree. Replay loads
+only selected pinned source functions, not the fit engine. Cases cover named
+source laws, source/trait presence, alignment, source-masked fixed effects,
+reference coding, offset gates and the legacy adapter. Omitted cases and stale
+source fail before launch; a false assertion retains a failed process receipt.
+The first attempt failed four checker comparisons (formula environment, matrix
+attributes, wrapped diagnostics); values/labels/rank and admission rules were
+unchanged in the revision2 correction, and failed artifacts remain retained.
+Native fit_mixed_gllvm and the mixed bridge assign one family/link per trait;
+that is not the within-trait source-law model. Actual fits, masks, weights/trials,
+spatial slope intersections, all Julia surfaces and recovery remain unpaid.
+Unlazy G1 freshly reverified; G2/G3 manually grounded in remote readback and
+explicit scope records. Full manifest DRAFT; M1 remains PARTIAL. No Julia fit,
+full suite, campaign, push, merge, release or foreign-lane edit.

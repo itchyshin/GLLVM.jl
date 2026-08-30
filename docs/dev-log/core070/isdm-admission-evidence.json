@@ -1,0 +1,38 @@
+{
+  "status": "PASS_SOURCE_ADMISSION_SUBSET_ONLY",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "manifest_sha256": "e90e135f008b908955e1a053c358f71c84203eb5cc60513045e29ac61c5d77fb",
+  "source_pins": {
+    "R/isdm-sources.R": "e447383ffc54b62c04463764ade5454222f32d909a5a5b45330f821f93390b6d",
+    "R/fit-multi.R": "768db11bd09e6de872d4a27b60fd0a096f617434ac84c95db721fac8f8d77c02",
+    "R/offset.R": "df43a6a507da0e593d29bacca030cc4a4dc9d4cbfdac20166f66dee9b8ff1f47"
+  },
+  "fixtures_sha256": "e47b66580262c88a69e97e2cb73f1178d92d77d2e1afba3b89c062e92c16a68d",
+  "runs": [
+    {
+      "host": "local",
+      "r_runtime": "Rscript (R) version 4.6.0 (2026-04-24)",
+      "receipt": ".unlazy/core070-aghq/isdm-admission/attempt2/receipt.json",
+      "receipt_sha256": "545be5f81135d82f286a886da137e76a2076ff69b92f72469d3773ebe7c97259",
+      "actual_exit": 0,
+      "cases": 37,
+      "raw_sha256": "2b8ebcdf84b5d156a7468c3de23b7eec4879484a3579c50cad01a1bb50a8e7e8"
+    },
+    {
+      "host": "totoro",
+      "r_runtime": "Rscript (R) version 4.5.3 (2026-03-11)",
+      "receipt": ".unlazy/core070-aghq/isdm-admission/totoro-readback/receipt/receipt.json",
+      "receipt_sha256": "0b789e2d3c6d84b8492632ff5eecf36d28cae671041044a2825295d51fa16001",
+      "actual_exit": 0,
+      "cases": 37,
+      "raw_sha256": "2b8ebcdf84b5d156a7468c3de23b7eec4879484a3579c50cad01a1bb50a8e7e8"
+    }
+  ],
+  "unpaid": [
+    "Actual fits, native/formula/bridge mapping and recovery for all required routes",
+    "DATA-ISDM-18 actual likelihood/prediction support semantics",
+    "DATA-ISDM-20 fit-level weights/trials guard",
+    "DATA-ISDM-22 spatial slope and covariance intersections",
+    "DATA-ISDM-12 actual missing-response filtering/masking"
+  ]
+}

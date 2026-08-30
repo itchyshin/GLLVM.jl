@@ -58,6 +58,14 @@ a wrong-loaded-root negative control. No new Julia/R fits were run. The public
 integrated-source call path now has22 draft admission/design cases documented,
 not frozen or numerically validated.
 
+The integrated-source subset now has37 executable source-admission/design
+checks passing on both R runtimes, with matching raw TSV hashes. The source
+loader evaluates only selected function definitions and the pinned count-family
+constant; it does not execute the fit engine. Two regression groups confirm
+positive results and reject missing cases, stale source and false assertions.
+Actual Julia within-trait source mixing is still missing from the per-trait
+mixed-family fitter/bridge; actual fits and covariance intersections remain open.
+
 ## 6. Tests of the Tests
 
 Source-root mismatch fails. Recursive test counts retain nested failures.
