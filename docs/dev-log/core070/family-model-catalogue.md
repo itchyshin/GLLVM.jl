@@ -1,5 +1,7 @@
 # Family model catalogue reconciliation
 
+**Current execution update:** all six baseline cases now ran:1PASS/5R-gradient failures; uniform public refinement2PASS/4FAIL. Earlier prepared/unexecuted text records prior checkpoints. [Full retained results](binomial-six-case-results.md). No full-parity promotion.
+
 This source audit corrects the **existing smoke catalogue**, not the frozen
 programme contract. No fixtures, seeds, likelihood tolerances or engines changed.
 Numerical evidence was not regenerated. Exact fixture/helper hashes are in

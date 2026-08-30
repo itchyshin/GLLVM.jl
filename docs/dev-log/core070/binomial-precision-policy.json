@@ -1,0 +1,83 @@
+{
+  "scope": "UNIFORM_BINOMIAL_REFERENCE_PRECISION_COMPANION",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "baseline_result_policy": "Preserve all six baseline artifacts and default health verdicts; no promotion or replacement by this companion",
+  "refinement": "Always one public start_from refinement for every case, including already healthy cases; no best-of selection",
+  "controls": {
+    "n_init": 1,
+    "se": false,
+    "rel.tol": 1e-12,
+    "eval.max": 2000,
+    "iter.max": 1500
+  },
+  "acceptance": {
+    "loglik_rtol": 1e-06,
+    "gradient_max": 0.0001,
+    "r_objective_atol": 1e-10
+  },
+  "estimate_minutes": [
+    1,
+    3
+  ],
+  "batch_cap_seconds": 180,
+  "cases": [
+    {
+      "id": "BINOMIAL-LOGIT-BERNOULLI",
+      "remote_receipts": "binomial-receipts",
+      "fixture_sha256": "d10ccb1152fb2c4cc0cd76207c19fdace5ba35e27390b4fcf5915056e6aaa6fc",
+      "metrics_sha256": "179e17512eb5f8c01bd59e60f3db94d3e16059d8bf3edb904006650bc2509a99",
+      "run_sha256": "85e25a0cf6b04e68805e980561361aa87e144794fc9f1c9c57e177c68b346dbb",
+      "default_failures": [
+        "r_gradient"
+      ]
+    },
+    {
+      "id": "BINOMIAL-LOGIT-VARYING",
+      "remote_receipts": "remaining/BINOMIAL-LOGIT-VARYING",
+      "fixture_sha256": "19b32f094d88664abeff2c94bd1ed86fbc34363485432105ad2d0aaa0fdbe340",
+      "metrics_sha256": "9bad76750251101242329760b1d99f68cbe1782d1b95482634d858bb12d5509c",
+      "run_sha256": "93995d0ad047aba884efa4dad66e536f1ff2ee16a845559fea0f4fba8a1f4870",
+      "default_failures": [
+        "r_gradient"
+      ]
+    },
+    {
+      "id": "BINOMIAL-PROBIT-BERNOULLI",
+      "remote_receipts": "remaining/BINOMIAL-PROBIT-BERNOULLI",
+      "fixture_sha256": "0712c8b1858941856a14b03c39c295a864dfa1f03a69324da537d0d0ac4898ac",
+      "metrics_sha256": "0e36b4625c38f18c0ebe5f2e2c009ad1512e292bcc8da12fbdf11ede165df7f6",
+      "run_sha256": "4bbbde797fccfa9b51b501b64711c5d3bdc2420c7d576bfeefa33a46d1b60f20",
+      "default_failures": []
+    },
+    {
+      "id": "BINOMIAL-PROBIT-VARYING",
+      "remote_receipts": "remaining/BINOMIAL-PROBIT-VARYING",
+      "fixture_sha256": "7d74fa0ebbf02a2b9c26999b093d19a11e5bad3912178bf67685b872a5bbcf94",
+      "metrics_sha256": "02c2a75f143043fef3e5a17d895edc49e5eed3bf0352930656cb6c2fd62de1e7",
+      "run_sha256": "5eb080fd684afe4d746c0fdd8fa255b77a7f0635e3f2a75be0e03d7622682f93",
+      "default_failures": [
+        "r_gradient"
+      ]
+    },
+    {
+      "id": "BINOMIAL-CLOGLOG-BERNOULLI",
+      "remote_receipts": "remaining/BINOMIAL-CLOGLOG-BERNOULLI",
+      "fixture_sha256": "3c1bd98681d0c7344c52e461c270666afce075ae5bcb10e1e16b6c53fc38bcdf",
+      "metrics_sha256": "c99928bac1d65d071cebad10777d4c58762184b318d17c253c429ba08bfb309d",
+      "run_sha256": "d7a8b27187557abffb9fe189d4920bd42d0aae4b05571402f860736350ccd46e",
+      "default_failures": [
+        "r_gradient"
+      ]
+    },
+    {
+      "id": "BINOMIAL-CLOGLOG-VARYING",
+      "remote_receipts": "remaining/BINOMIAL-CLOGLOG-VARYING",
+      "fixture_sha256": "75fe6bf4b6c6c5d4a9117450f12664c836afac78b7f984c00ce27bad6d80bea9",
+      "metrics_sha256": "14d44af6638aef879793b365388fbceb06ce7e8f7042794afb3d5cf9603963b0",
+      "run_sha256": "7350c0e26482e594a0a8c797c578f76f7e2533675e840746c956863b2bff6b9b",
+      "default_failures": [
+        "r_gradient"
+      ]
+    }
+  ]
+}

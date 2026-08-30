@@ -548,3 +548,9 @@ No production B dispatch, full suite or long campaign was launched.
 -Exactdata/RNG public-control Rrefinement9.99s reproducesdefault and yieldsgrad1.44901e-5/code0/logLikdelta3.13e-11; same data/map/names verified, separate diagnostic notpromotion. Other5cases notexecuted.
 -Next explicit same-model reference precision qualification retainingdefault result, then size link-specific runs. No seed/tolerance/engine change; fullmanifestDRAFT/M1PARTIAL, review unpaid.
 - Mission Control Julia-only correction7a5d7bdda9777cd8e7b4da98e7f4efd2500de056 locally committed; servedHTTP200/readbackPASS and Rfields unchanged. Lease released. Unlazy1met/2unmet freshly reverified.
+
+## 2026-08-30 — All six binomial baselines retained
+-Remaining5 unchanged cases109.72s; all6 total79pass5fail, baselineprobit/Bernoulli14/14. Allnative health/likelihood/trials/count/saturation pass; Rrawgradient solefailure in5.
+-Predeclareduniform nlminb publicrefinement all6 took71.59s,2PASS4FAIL:3varying-trial gradientsstill>1e-4; alreadyhealthyprobit/Bernoulli becomescode1. Exactdata/RNG/defaultresult replay and data/map/names verified. No blanketrefinement adoption orfieldmixing.
+-Source/receipt verifier5negativesPASS; obligationsmarkedPARTIAL, no fullclaim. Next preservealreadyhealthywholefits and qualify boundedfurtherpublicoptimizer forvarying-trial residuals. FullmanifestDRAFT/M1PARTIAL, reviewunpaid.
+- Mission Control Julia-only correctioneb9376ac6f32b5f78481cf3eb50bfe5611b17c96 locally committed, servedHTTP200/readbackPASS, Rfields unchanged. Lease released; Unlazy1met/2unmet freshlyreverified.

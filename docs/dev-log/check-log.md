@@ -15911,3 +15911,8 @@ unpaid. No numerical source changes, outer optimization or campaign.
 -Seed90101 logit/Bernoulli23.53s:13pass1fail. Nativegrad2.84217e-8, Rdefaultgrad2.85818e-4 exceeds1e-4; logLikdelta3.71e-9. Default required result remainsFAIL.
 -Exactdata/RNG public-control Rrefinement9.99s reproducesdefault and yieldsgrad1.44901e-5/code0/logLikdelta3.13e-11; same data/map/names verified, separate diagnostic notpromotion. Other5cases notexecuted.
 -Next explicit same-model reference precision qualification retainingdefault result, then size link-specific runs. No seed/tolerance/engine change; fullmanifestDRAFT/M1PARTIAL, review unpaid.
+
+## 2026-08-30 — All six binomial baselines retained
+-Remaining5 unchanged cases109.72s; all6 total79pass5fail, baselineprobit/Bernoulli14/14. Allnative health/likelihood/trials/count/saturation pass; Rrawgradient solefailure in5.
+-Predeclareduniform nlminb publicrefinement all6 took71.59s,2PASS4FAIL:3varying-trial gradientsstill>1e-4; alreadyhealthyprobit/Bernoulli becomescode1. Exactdata/RNG/defaultresult replay and data/map/names verified. No blanketrefinement adoption orfieldmixing.
+-Source/receipt verifier5negativesPASS; obligationsmarkedPARTIAL, no fullclaim. Next preservealreadyhealthywholefits and qualify boundedfurtherpublicoptimizer forvarying-trial residuals. FullmanifestDRAFT/M1PARTIAL, reviewunpaid.

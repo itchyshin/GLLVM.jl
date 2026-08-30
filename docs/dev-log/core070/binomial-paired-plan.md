@@ -1,5 +1,7 @@
 # Six paired binomial link/trial cases — first pre-run retained
 
+**Current execution update:** all six baseline cases now ran:1PASS/5R-gradient failures; uniform public refinement2PASS/4FAIL. Earlier prepared/unexecuted text records prior checkpoints. [Full retained results](binomial-six-case-results.md). No full-parity promotion.
+
 This packet moves three unresolved family obligations from an unimplemented
 fixture to a runnable, source-bound test definition. It does not freeze the
 whole programme or supply numerical evidence. The six seeds and model settings

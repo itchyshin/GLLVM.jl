@@ -639,18 +639,20 @@
     {
       "id": "FAMILY-LINK-PROBIT",
       "source_admission_id": "FAMILY-01-PROBIT",
-      "status": "REQUIRED_MODEL_CASES_PREPARED_NOT_EXECUTED",
+      "status": "PARTIAL",
       "owner": "A3/B2/B5",
-      "detail": "R binomial probit admitted; 17-ID smoke uses logit only. Native/formula/bridge and actual observed curvature need paired model fixture. The oracle helper now transports the requested link, verified by R argument capture; numerical qualification remains unpaid. Six predeclared no-X cases now exist; source/preflight checks only. Observed cloglog is explicit and does not certify default Fisher equivalence.",
-      "paired_contract": "docs/dev-log/core070/binomial-paired-contract.toml"
+      "detail": "Bernoulli baseline passes14checks; varying-trial baseline fails only R raw gradient. Uniform refinement makes Bernoulli optimizer code1 and leaves varying-trial R gradient1.117e-4. Native observed-curvature health/likelihood pass. Formula/bridge and full qualification remain unpaid.",
+      "paired_contract": "docs/dev-log/core070/binomial-paired-contract.toml",
+      "evidence": "docs/dev-log/core070/binomial-six-case-evidence.json"
     },
     {
       "id": "FAMILY-LINK-CLOGLOG",
       "source_admission_id": "FAMILY-01-CLOGLOG",
-      "status": "REQUIRED_MODEL_CASES_PREPARED_NOT_EXECUTED",
+      "status": "PARTIAL",
       "owner": "A3/B2/B5",
-      "detail": "R binomial cloglog admitted. Julia Fisher default versus R observed curvature and saturation health need explicit estimator contract; no logit substitution. The oracle helper now transports the requested link, verified by R argument capture; numerical qualification remains unpaid. Six predeclared no-X cases now exist; source/preflight checks only. Observed cloglog is explicit and does not certify default Fisher equivalence.",
-      "paired_contract": "docs/dev-log/core070/binomial-paired-contract.toml"
+      "detail": "Both baseline cases fail only R raw gradient; native observed-curvature health/likelihood pass. Public precision companion passes Bernoulli, varying-trial gradient1.210e-4 still fails. No claim about Julia default Fisher equivalence or formula/bridge reach.",
+      "paired_contract": "docs/dev-log/core070/binomial-paired-contract.toml",
+      "evidence": "docs/dev-log/core070/binomial-six-case-evidence.json"
     },
     {
       "id": "NB2-TOLERANCE",
@@ -660,10 +662,11 @@
     },
     {
       "id": "BINOMIAL-TRIALS",
-      "status": "REQUIRED_MODEL_CASES_PREPARED_NOT_EXECUTED",
+      "status": "PARTIAL",
       "owner": "A3/B4/B5",
-      "detail": "No-X/shared-X helper now forwards supplied trials and preserves omitted-N Bernoulli semantics. 127 R argument captures and80 pure Julia/preparation checks pass; installed RCall and paired multi-trial numerical fixtures remain unpaid. Six predeclared no-X cases now exist; source/preflight checks only. Observed cloglog is explicit and does not certify default Fisher equivalence.",
-      "paired_contract": "docs/dev-log/core070/binomial-paired-contract.toml"
+      "detail": "All three varying-trial cases executed and preserve exact R trial vectors with matching free parameter counts and normalized likelihoods. Native health passes; R gradients fail baseline and remain just above1e-4 after uniform nlminb refinement. Shared-X/formula/bridge coverage remains unpaid.",
+      "paired_contract": "docs/dev-log/core070/binomial-paired-contract.toml",
+      "evidence": "docs/dev-log/core070/binomial-six-case-evidence.json"
     },
     {
       "id": "FAMILY-MODEL-VARIANTS",
@@ -684,8 +687,9 @@
       "detail": "Converged flags and likelihood-only checks do not discharge original fit-health, inference, formula or public bridge requirements. Per-case numerical gates and independent review still needed."
     }
   ],
-  "revision": 4,
+  "revision": 5,
   "supersedes_sha256": "6be7697d405163cc9773e080037194fcb8b083cb70c2433cebdcbf147ed17caa",
-  "revision_note": "First paired logit/Bernoulli pre-run retained:13pass/1fail R default raw gradient; separate public-control refinement healthy, original failure not promoted. Other5cases unexecuted.",
-  "binomial_first_prerun": "docs/dev-log/core070/binomial-prerun-evidence.json"
+  "revision_note": "All six baseline binomial cases executed:1PASS/5R-gradient failures. Uniform precision companion2PASS/4FAIL; native health and likelihood comparisons pass all6, full qualification incomplete.",
+  "binomial_first_prerun": "docs/dev-log/core070/binomial-prerun-evidence.json",
+  "binomial_six_case_evidence": "docs/dev-log/core070/binomial-six-case-evidence.json"
 }
