@@ -151,6 +151,11 @@ def snapshot_tree(source, store, excludes=(), after_read_hook=None):
 def git_state(root, store):
     before = git(root, "rev-parse", "HEAD")
     status_before = git(root, "status", "--porcelain=v1", "-z", "--untracked-files=all")
+    index = git(root, "ls-files", "--stage", "-z")
+    index_entries = {"code": index.returncode, "sha256": store.put(index.stdout),
+                     "bytes": len(index.stdout)}
+    unmerged = any(row.split(b"\t", 1)[0].split()[-1] != b"0"
+                   for row in index.stdout.split(b"\0") if row)
     patches = {}
     for label, args in (("index", ("diff", "--cached", "--binary", "--no-ext-diff")),
                         ("worktree", ("diff", "--binary", "--no-ext-diff"))):
@@ -158,15 +163,18 @@ def git_state(root, store):
         patches[label] = {"code": run.returncode, "sha256": store.put(run.stdout),
                           "bytes": len(run.stdout), "stderr": run.stderr.decode("utf-8", "replace")}
     return {"before": {"head": before.stdout.decode().strip(), "head_code": before.returncode, "status": sha_bytes(status_before.stdout),
-                         "status_bytes": len(status_before.stdout), "code": status_before.returncode},
-            "patches": patches}
+                         "status_bytes": len(status_before.stdout), "code": status_before.returncode,
+                         "index_sha256": index_entries["sha256"], "index_code": index.returncode},
+            "patches": patches, "index_entries": index_entries, "unmerged": unmerged}
 
 
 def finish_git_state(root, state):
     after = git(root, "rev-parse", "HEAD")
     status = git(root, "status", "--porcelain=v1", "-z", "--untracked-files=all")
+    index = git(root, "ls-files", "--stage", "-z")
     observed = {"head": after.stdout.decode().strip(), "head_code": after.returncode, "status": sha_bytes(status.stdout),
-                "status_bytes": len(status.stdout), "code": status.returncode}
+                "status_bytes": len(status.stdout), "code": status.returncode,
+                "index_sha256": sha_bytes(index.stdout), "index_code": index.returncode}
     state["after"] = observed
     state["race"] = observed != state["before"]
     return state
@@ -194,9 +202,14 @@ def capture_worktree(item, store):
     git_errors = [label for label, data in state["patches"].items() if data["code"] != 0]
     if state["before"]["code"] != 0 or state["after"]["code"] != 0 or state["before"]["head_code"] != 0 or state["after"]["head_code"] != 0:
         git_errors.append("status")
+    if state["before"]["index_code"] or state["after"]["index_code"]:
+        git_errors.append("index_entries")
+    if state["unmerged"]:
+        unresolved.append({"reason": "unmerged_index_not_reconstructed"})
     if git_errors:
         unresolved.append({"reason": "git_read_error", "operations": git_errors})
-    result.update(status="CAPTURED" if not unresolved and not state["race"] and not git_errors else "UNRESOLVED_RACE_OR_READ",
+    result.update(status=("UNRESOLVED_INDEX_CONFLICT" if state["unmerged"] else
+                         "CAPTURED" if not unresolved and not state["race"] and not git_errors else "UNRESOLVED_RACE_OR_READ"),
                   files=files, unresolved=unresolved, git=state)
     if state["race"]:
         result["unresolved"].append({"reason": "git_head_or_status_changed_during_capture"})
@@ -334,6 +347,11 @@ def verify_run(run_dir, require_receipt=False):
                     os.symlink(item["target"], target)
                     if not target.is_symlink() or os.readlink(target) != item["target"] or sha_bytes(os.fsencode(os.readlink(target))) != item["target_sha256"]:
                         failures.append("restore symlink mismatch " + item["path"])
+            index = worktree.get("git", {}).get("index_entries")
+            if index is not None:
+                blob = run_dir / "objects" / index["sha256"]
+                if not blob.is_file() or sha_bytes(blob.read_bytes()) != index["sha256"] or blob.stat().st_size != index["bytes"]:
+                    failures.append("bad index inventory " + worktree["id"])
             for label, patch in worktree.get("git", {}).get("patches", {}).items():
                 blob = run_dir / "objects" / patch["sha256"]
                 if not blob.is_file() or sha_bytes(blob.read_bytes()) != patch["sha256"] or blob.stat().st_size != patch["bytes"]:
@@ -407,6 +425,7 @@ def run_capture(args):
 
 
 def self_test():
+    subprocess.run([sys.executable, str(Path(__file__).with_name("test_core070_preserve_conflict.py"))], check=True)
     with tempfile.TemporaryDirectory(prefix="core070-preserve-") as temp:
         base = Path(temp); repo = base / "repo"; repo.mkdir()
         subprocess.run(["git", "init", "-q", str(repo)], check=True)

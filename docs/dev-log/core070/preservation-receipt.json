@@ -37,5 +37,11 @@
     "missing_r_checkouts": 122,
     "action": "HOLD_NO_DELETION: preserve available bytes and commit objects; missing working-tree bytes remain unknown; request owner disposition before recovery/cleanup."
   },
-  "repeat_readback": "First archive fresh Unlazy G2 rerun passed; supplement first independent clone/readback passed."
+  "repeat_readback": "First archive fresh Unlazy G2 rerun passed; supplement first independent clone/readback passed.",
+  "index_state_qualification": {
+    "original_archive": "No index-stage inventory retained; patch marker audit found no marked conflicts but is not staged-state reconstruction.",
+    "future_capture": "Unmerged indexes classified UNRESOLVED_INDEX_CONFLICT; index inventory checksummed and change-detected.",
+    "regression": "old CAPTURED -> expected UNRESOLVED_INDEX_CONFLICT; fresh self-test passed",
+    "cleanup_authority": "none"
+  }
 }

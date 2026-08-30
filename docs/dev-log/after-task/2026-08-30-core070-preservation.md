@@ -2,9 +2,10 @@
 
 ## 1. Goal
 
-Implemented `tools/core070_preserve.py` only.  This is preservation tooling,
-not a preservation outcome: no registered real worktree, ref, or stash was
-archived in this slice.
+Preserve recoverable Julia/R working-tree bytes and registered Git objects
+without modifying foreign lanes. The initial worker delivered tooling only;
+parent then performed the real archive and supplementary readback recorded below.
+Preservation checks pass; missing/broken checkout recovery remains PARTIAL.
 
 ## 2. Implemented
 
@@ -37,8 +38,8 @@ tools/core070_preserve.py` also passed.
 The real-census dry plan reports 103/103 Julia paths currently present and
 88/210 R paths present; 122 R paths remain unresolved. Its raw input-size upper
 bound is 1,484,608,777 bytes for Julia plus 7,329,643,205 bytes for R before
-deduplication and bundle overhead. This size requires Ada's review before the
-approved external destination is used.
+deduplication and bundle overhead. Ada reviewed this size and available capacity before using the approved
+external destination; retained results appear below.
 
 ## 3a. Decisions and Rejected Alternatives
 
@@ -50,8 +51,8 @@ python3 tools/core070_preserve.py \
   --dry-run
 ```
 
-After review of that plan and target capacity, run the same command without
-`--dry-run`, then:
+The archive already exists. Do not repeat its creation command. For a fresh
+non-destructive readback, use:
 
 ```sh
 python3 tools/core070_preserve.py \
@@ -148,3 +149,18 @@ Covers: available Julia/R working-tree bytes, retained refs/stashes and all
 registered commit tips at this census. Does NOT cover absent uncommitted bytes,
 portable restoration of broken .git links, source correctness, package checks,
 Core070 parity, R0.7.1 work, article work, cleanup, or release readiness.
+
+
+## Independent review correction: conflicted indexes
+
+Rose found that ordinary patches do not prove recovery of an unmerged index.
+A new real three-stage conflict fixture first returned CAPTURED (red), then
+UNRESOLVED_INDEX_CONFLICT after repair (green). Future captures record and
+checksum `git ls-files --stage -z`, compare it before/after capture, and refuse
+complete-capture status for unmerged indexes. This retains metadata without
+claiming independent staged-state reconstruction. The normal self-test passes.
+
+The original archive has no index-stage inventory. A read-only scan of its
+retained patches found no unmerged/combined-diff markers, but this is weaker
+than reconstruction and is recorded as a qualification, not a retroactive
+proof. The existing archive and all source lanes remain unchanged.
