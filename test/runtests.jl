@@ -125,6 +125,7 @@ using GLLVM
     include("test_tweedie_power_contract.jl")
     include("test_exponential.jl")
     include("test_studentt.jl")
+    include("test_studentt_input_validation.jl")
     include("test_studentt_disp_group.jl")
     include("test_studentt_core070.jl")
     include("test_studentt_normalizer_precision.jl")

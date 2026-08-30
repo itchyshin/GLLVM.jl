@@ -1,6 +1,6 @@
 # Student-t (heavy-tailed continuous) family pieces for the generic Laplace core
 # (src/families/laplace.jl). y_t ∈ ℝ; location η (IDENTITY link, so μ = η), scale
-# σ > 0 and degrees of freedom ν > 1: the per-observation law is the
+# σ > 0 and finite fixed degrees of freedom ν > 0 (estimated ν > 1): the law is the
 # location–scale t, (y − η)/σ ~ t_ν. A numeric `nu` fixes ν; `nu = nothing`
 # estimates it. The scale σ is always estimated on a log scale, and
 # `disp_group = :species` estimates one scale and (when ν is free) one ν per
@@ -35,7 +35,7 @@
     StudentTFamily(ν = nothing, σ = 1.0)
 
 Student-t (heavy-tailed continuous) family marker: location–scale t with
-degrees of freedom `ν > 0` (or `nothing` before fitting) and scale `σ > 0`,
+finite degrees of freedom `ν > 0` (or `nothing` before fitting) and scale `σ > 0`,
 identity link (location `μ = η`),
 so `(y − η)/σ ~ t_ν`. Used as the family argument to the generic Laplace core and
 to [`fit_gllvm`](@ref):
@@ -311,7 +311,10 @@ _default_hessian(::StudentTFamily, ::IdentityLink) = :observed
 Fit a Student-t GLLVM by L-BFGS over `[β; vec(Λ); log σ; log(ν-1)]` on the Laplace
 marginal (`studentt_marginal_loglik_laplace`). When `nu === nothing` (default),
 the degrees of freedom `ν` are estimated jointly per-trait (`ν_j = 1 + exp(θ_{ν,j}) > 1`),
-matching `gllvmTMB`. When `nu` is passed as a number (e.g. `nu = 4.0`), `nu` is held FIXED.
+matching `gllvmTMB`. A finite positive number (e.g. `nu = 4.0`) or a length-`p`
+vector of finite positive values fixes `nu`. Nonfinite values are rejected before
+reading responses. Fixed values `0 < nu <= 1` are a Julia extension; the frozen
+R 0.7.0 constructor requires `df > 1`. The Gaussian limit does not admit `nu = Inf`.
 `Y` is a p×n response matrix; `K` the latent dimension.
 
 Initial values: `σ₀ = 1.0`, `ν₀ = 3.0` (`log(ν₀ - 1) = log(2.0)`), matching gllvmTMB.
@@ -329,10 +332,10 @@ function fit_studentt_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     p, n = size(Y)
     if nu !== nothing
         if nu isa Real
-            nu > 0 || throw(ArgumentError("Student-t degrees of freedom nu must be > 0; got $nu"))
+            isfinite(nu) && nu > 0 || throw(ArgumentError("Student-t degrees of freedom nu must be finite and > 0; got $nu"))
         else
             length(nu) == p || throw(ArgumentError("length(nu)=$(length(nu)) must equal p=$p"))
-            all(>(0), nu) || throw(ArgumentError("All Student-t degrees of freedom nu must be > 0"))
+            all(x -> isfinite(x) && x > 0, nu) || throw(ArgumentError("All Student-t degrees of freedom nu must be finite and > 0"))
         end
     end
     hessian in (:fisher, :observed) || throw(ArgumentError(

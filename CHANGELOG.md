@@ -5,6 +5,9 @@ All notable changes to GLLVM.jl are documented here.
 ## Unreleased
 
 ### Changed
+- Student-t fitting rejects infinite fixed degrees of freedom before reading
+  responses, for scalar and per-trait inputs. Finite positive fixed values and
+  the estimated-df route are unchanged.
 - **Local development candidate:** grouped Tweedie distinguishes fixed common,
   shared estimated and per-species estimated power; `TweediePerTraitPowerFit`
   stores the latter. Student fits record whether degrees of freedom were estimated

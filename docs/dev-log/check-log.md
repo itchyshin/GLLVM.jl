@@ -15925,3 +15925,6 @@ Curvature83.36s found positive stable Hessians; PORT control slots independently
 
 ## 2026-08-30 — Source coverage before manifest freeze
 Relabeled real draft previously accepted; red regression reproduced. Public loader now requires pinned source-to-executable mapping and scope-review record before FROZEN.752 known source facts indexed,698 non-excluded remain unmapped (overlap, not capability counts).24 local tests plus aggregate self-test PASS; binomial evidence unchanged/PASS. Leaf pre-write timing missed and recorded; final gates reverified. FullmanifestDRAFT/M1PARTIAL, no numerical promotion. See after-task/2026-08-30-core070-manifest-coverage.md.
+
+## 2026-08-30 — Fixed Student-t df input guard
+- Red 24pass/3fail on original source; green27 input+51 unchanged scalar/AD assertions, Julia1.10.0 full-package snapshot8.578s, no fits. Infinite scalar/vector/marker now reject before data; positive finite low-df native extension retained. Seven evidence negatives pass; Unlazy1met/1unmet. Reader fixed/default-df wording corrected. Full fitted parity/review still unpaid; earlier whole-source numerical evidence historical after source edit. See after-task/2026-08-30-core070-student-input.md.

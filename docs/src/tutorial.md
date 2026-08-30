@@ -91,12 +91,12 @@ ft.φ, ft.p
 For continuous responses with occasional gross outliers, **Student-t** is an
 outlier-robust drop-in for `Normal()` on the identity link — the heavy tail bounds
 each cell's influence, so a few extreme values barely move `β̂`. The degrees of
-freedom `ν` sets the tail weight and is held **fixed** (it travels on the marker,
-not as a keyword); the scale `σ` is estimated:
+freedom `ν` sets the tail weight. A finite positive value on the marker fixes
+it; the empty marker requests estimation. The scale `σ` is estimated:
 
 ```julia
 fit_gllvm(Y; family = StudentTFamily(4.0), K = 2)   # ν = 4; fitted σ
-fit_gllvm(Y; family = StudentTFamily(), K = 2)      # same default ν
+fit_gllvm(Y; family = StudentTFamily(), K = 2)      # estimate ν and σ
 gllvm(@formula(y ~ 1), Y, site_data; family = StudentTFamily(4.0), K = 2)
 ```
 
@@ -105,7 +105,7 @@ Student-t is a no-X surface for now: covariates and row effects are not admitted
 For counts that are under- or over-dispersed relative to Poisson,
 **Conway–Maxwell–Poisson** estimates a shared dispersion exponent `ν`
 (`ν = 1` ⇒ Poisson). The marker's `ν` is a tag payload (always estimated) —
-the opposite of Student-t's fixed `ν`:
+unlike a numeric Student-t marker, whose `ν` fixes the degrees of freedom:
 
 ```julia
 fit_gllvm(Y; family = COMPoisson(), K = 2)          # ν estimated

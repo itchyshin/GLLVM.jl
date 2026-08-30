@@ -5,6 +5,13 @@ numeric `nu` fixes the degrees of freedom. The public default `nu = nothing`
 estimates degrees of freedom, and `disp_group = :species` estimates one scale
 and one degree-of-freedom parameter for each trait.
 
+Fixed `nu` must be finite and positive, either a number or one value per trait.
+`Inf`, `NaN`, and nonpositive values are rejected by the fitter. Julia also
+admits fixed `0 < nu <= 1`; this is an extension beyond the frozen R 0.7.0
+constructor, which requires `df > 1`. Estimated degrees of freedom remain
+greater than one. The Gaussian limiting statement does not make `nu = Inf`
+a valid Student-t input.
+
 The two calls answer different questions:
 
 ```julia

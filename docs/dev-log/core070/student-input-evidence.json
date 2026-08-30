@@ -1,0 +1,29 @@
+{
+  "status": "INPUT_REPAIR_VERIFIED_FITTED_PARITY_UNPAID",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "original_julia_commit": "5108e275ef39fd8a2422e56d497e4b4d161c4663",
+  "red": {
+    "passed": 24,
+    "failed": 3,
+    "exit": 1
+  },
+  "green": {
+    "input_passed": 27,
+    "scalar_passed": 51,
+    "exit": 0
+  },
+  "evidence_negative_controls": 7,
+  "full_manifest": "DRAFT_INCOMPLETE_NOT_FROZEN",
+  "artifacts": {
+    "src/families/studentt.jl": "c8bea259c3ac31501b9b5ac38460dfe7fe7bcb531ef9ad9f6234ba1b2e087338",
+    "test/test_studentt_input_validation.jl": "2225bff6b62233e48a49ad040efdc5919e0a304962e7666a1c35d44bf96d360e",
+    "test/test_studentt_normalizer_precision.jl": "159323ddad5c33fe7c43b4416c0d17d0e0ae0c042f071b456e27eca30a0f304a",
+    "tools/core070_student_input.py": "5432524f0a707eb0c779ec48d2e24631e805693a8841805bd58b6ab24ccc989d",
+    ".unlazy/core070-aghq/student-input-01/red/receipt.json": "cfe8b1586f0de6b67926db1bbfaf2ee84bf1a147d4a7d41a6f2b981d16ecffab",
+    ".unlazy/core070-aghq/student-input-01/red/output.log": "af59e05181e7a96fd4d05bfeffa1b1b163ac8bf4b2debffd8c855d412b53d74e",
+    ".unlazy/core070-aghq/student-input-01/red/run.jl": "f3527e37b805512e08c0d7094dca96a5c33d7d799ca081a0c10299e59308e353",
+    ".unlazy/core070-aghq/student-input-01/green/receipt.json": "f0045bf1f2adbd100817f33a729ba7631e91627a27696ce9f28e35b2bc588180",
+    ".unlazy/core070-aghq/student-input-01/green/output.log": "d40aab1cc80a311f5762cb94cc3a1ab3f8b7c12be681f2239b083e382742e9ee",
+    ".unlazy/core070-aghq/student-input-01/green/run.jl": "a88da873af8a470d657e2c1883b3a2f366ed0bc479101861f7d35c2ff52ed26e"
+  }
+}
