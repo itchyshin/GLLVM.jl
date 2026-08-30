@@ -41,5 +41,13 @@ preserves automatic first and second derivatives near the Gaussian limit.
 This numerical repair does not cap `nu`, change the model, or turn a failed
 optimizer diagnostic into a successful fit.
 
+The frozen oracle also has a numerical limit. Same-parameter checks with its
+installed TMB 1.9.21 show loss of precision in the Student-t density at very
+large degrees of freedom. On the preserved fixture, inner modes and curvature
+agree closely, but the density discrepancy changes the reported likelihood.
+Thus a small difference between two separately optimized log likelihoods is
+not sufficient evidence of parity. The original fixture and fit-health gates
+remain required; no df cap or weakened tolerance has been substituted.
+
 The numerical record and exact oracle provenance are in
 `docs/dev-log/decisions/2026-08-30-core070-studentt.md` in the source checkout.

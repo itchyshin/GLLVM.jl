@@ -15931,3 +15931,6 @@ Relabeled real draft previously accepted; red regression reproduced. Public load
 
 ## 2026-08-30 — Frozen family entry mapping
 -All69 frozen R family facts accounted; R69 descriptor checks PASS,22 native no-fit entry probes PASS9.388s after own CLogLogLink typo correction (first21pass1fail retained). Six contract negativesPASS. Model distinctions explicit; full source-case mapping remains unpromoted698nonexcluded facts. No engine/fixture/tolerance change, no fits. See after-task/2026-08-30-core070-family-routes.md.
+
+## 2026-08-30 — Original Student same-point density diagnosis
+-Totoro final23.229s diagnostic,25.038s supervisedbatch PASS; first2authoringfailures retained. OriginalR/tighterR/native points jointnll deltas0.00309359/0.00309879/119.46201 match marginal gaps. Hzzrelative<=6.34e-16, Rmodegrad<=7.99e-8, R Laplace reconstruction exact. TMB1.9.21 source directlgamma subtraction/log(1+x*x/df) scalarreplica losesprecision;15Rchecks reproduce highdf failure versusstatsdt. SixmeasurementnegativecontrolsPASS. OriginalRhealthcode1 remains; no engineedit/dfcap/tolerancechange. See after-task/2026-08-30-core070-student-samepoint.md.
