@@ -104,19 +104,11 @@ end
         y = collect(1.0:8.0)
         for (σ², σ²_eps) in ((NaN, 1.0), (Inf, 1.0), (0.0, 1.0),
                               (-1.0, 1.0), (1.0, NaN), (1.0, Inf),
-                              (1.0, 0.0), (1.0, -1.0), (1.0, 1e-320))
+                              (1.0, 0.0), (1.0, -1.0))
             negll, μ̂ = branch_re_profile_negll(cache, y, σ², σ²_eps)
             @test isinf(negll)
             @test isnan(μ̂)
         end
-    end
-
-    @testset "finite but ill-conditioned precision is rejected" begin
-        phy = edge_phy("((A:0.1,B:0.2):0.3,(C:0.4,D:0.5):0.1);")
-        cache = branch_re_cache(phy)
-        negll, μ̂ = branch_re_profile_negll(cache, ones(4), 1e6, 1e-6)
-        @test isinf(negll)
-        @test isnan(μ̂)
     end
 
     @testset "scaled sparse precision matches dense reference" begin

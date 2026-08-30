@@ -1,5 +1,9 @@
 # A4 branch-RE numerical repair
 
+> Historical candidate policy: the finite-conditioning rejection below was
+> rejected by the independent review. It is superseded by
+> [the equivalent marginal representation](2026-08-30-core070-branch-re-marginal.md).
+
 ## Decision
 
 Treat a variance trial that cannot be represented in the sparse Woodbury
