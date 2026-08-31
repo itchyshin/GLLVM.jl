@@ -16409,3 +16409,12 @@ See core070/source-docs-evidence.json and figure-audits source-guide report.
 Next: full package qualification and remaining manifest/source/multinomial/
 AGHQ/data/postfit/bridge contracts; recovery/coverage/performance still unpaid.
 No full programme claim, push, merge, deployment, release or cleanup.
+
+## Package quality pre-run — 2026-08-31
+
+Totoro current numerical sourcefb928667: fresh env3.73s; Aqua/JET12/12 in72.25s;
+packing/source subset194/194 in24.52s. No skips; pins/readback and six negative
+verifier controls pass. Unlazy4/5; full-suite gate unpaid. See core070/package-
+qualification-evidence.json and full-package-run-plan.md. Two one-thread full
+runs requested (85–100min each,120min hard stops); approval pending, no jobs
+active. M1PARTIAL/manifestDRAFT; continue manifest/capability work meanwhile.
