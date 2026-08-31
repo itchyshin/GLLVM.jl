@@ -1250,3 +1250,15 @@ launchers. Numerical unit, full regression and Documenter gates remain unmet.
 Code candidate68467770 was clean and durably backed up before this status-only
 checkpoint. MissionControl1fa1ed26afe0ca1dfa4d7db3cf85785ad6b83b90 served200,
 Rfieldsunchanged, exact-fileleaseRELEASED. No jobs or workers remain running.
+
+## Compute restored and source tests executed — 2026-08-31T14:05:22.893223+00:00
+
+Totoro + Fir/Nibi/Rorqual/Trillium/Narval shared sessions responded. Totoro
+runbook and user clarification authorize direct key-auth reconnect (no Duo);
+do not use missing socket alone to block Totoro. DRAC remains reuse-only.
+Baseline missing-API assertion exit1 in8.38s; exact candidate117/117 targeted
+checks exit0 in27.16s. Numerical receipts and pins retained in
+docs/dev-log/core070/gaussian-sources-numerical-tests.json. No fitted R parity
+for the six bindings yet. No full package/docs/recovery/coverage result.
+Next: paired source fits using frozen R reference and same retained fixtures;
+execute docs after qualification. Programme M1 PARTIAL, full manifest draft.

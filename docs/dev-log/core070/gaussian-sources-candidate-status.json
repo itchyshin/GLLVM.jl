@@ -1,21 +1,21 @@
 {
-  "created_utc": "2026-08-31T12:54:57.952374+00:00",
-  "status": "PARTIAL_UNVALIDATED",
+  "created_utc": "2026-08-31T14:05:22.893223+00:00",
+  "status": "PARTIAL_TARGETED_TESTS_PASS",
   "programme": "ACTIVE_M1_PARTIAL",
   "full_manifest": "DRAFT_NOT_FROZEN",
   "source_review": "Noether Terra high; initial plus one repair follow-up; static acceptance after wording repair",
-  "runtime_status": "API_LOAD_PASS_NUMERICAL_NOT_EXECUTED",
+  "runtime_status": "TARGETED_NUMERICAL_117_PASS_NOT_FITTED_R_PARITY",
   "syntax_status": "PASS_SYNTAX_ONLY",
   "gates": {
     "met": [
       "GS-SYNTAX",
       "GS-ORACLE",
-      "GS-LOAD"
+      "GS-LOAD",
+      "GS-UNIT",
+      "GS-REGRESSION"
     ],
     "unmet": [
-      "GS-UNIT",
-      "GS-DOCS",
-      "GS-REGRESSION"
+      "GS-DOCS"
     ],
     "abandoned": []
   },
@@ -40,8 +40,9 @@
     "gaussian-sources-local-red-02"
   ],
   "no_tdd_red": false,
-  "no_remote_job": true,
+  "no_remote_job": false,
   "closure_validator": "STRUCTURE_PASS_COMPLETION_REFUSED_UNMET_PROGRAMME_GATES",
   "api_load_evidence": "docs/dev-log/core070/gaussian-sources-api-load.json",
-  "tdd_ordering": "NOT_ACHIEVED_IMPLEMENTATION_PRECEDED_VALID_API_RED"
+  "tdd_ordering": "NOT_ACHIEVED_IMPLEMENTATION_PRECEDED_VALID_API_RED",
+  "numerical_evidence": "docs/dev-log/core070/gaussian-sources-numerical-tests.json"
 }

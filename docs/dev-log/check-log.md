@@ -16380,3 +16380,13 @@ two-kernel offsets and starts. Parent review corrected constructor misuse;
 exact36response/parameter transcription and syntax pass. Added preparation tests
 but have not run them. Three source gates met/three unmet; programme unchanged.
 See after-task/2026-08-31-core070-source-api-loading-bindings.md.
+
+### 2026-08-31 — Gaussian source targeted numerical validation
+
+Totoro Julia1.12.6: baseline intended API-negative exit1 (8.38s), candidate
+46source-model +71binding assertions pass (27.16s), exit0. Source, environment
+and log receipts verified; seven verifier negative controls pass. This does
+not establish fitted R parity, recovery, coverage, full package or Documenter.
+Totoro direct key-auth reconnect is authorized, no Duo; DRAC stays reuse-only.
+See core070/gaussian-sources-numerical-tests.json and the source numerical
+after-task report. No tolerance or fixture changes.

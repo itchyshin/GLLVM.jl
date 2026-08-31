@@ -1,0 +1,26 @@
+{
+  "checked_utc": "2026-08-31T14:05:22.893223+00:00",
+  "status": "TARGETED_TESTS_PASS_NOT_FITTED_R_PARITY",
+  "candidate_head_before_run": "154141bcc91cedd3cf9ca8c3d219f529f06b2d30",
+  "test_counts": {
+    "source_model": 46,
+    "retained_input_bindings": 71
+  },
+  "baseline_expected_exit": 1,
+  "candidate_exit": 0,
+  "tdd_ordering": "NOT_ACHIEVED_IMPLEMENTATION_PRECEDED_VALID_RED",
+  "receipt_paths": {
+    ".unlazy/core070-aghq/gaussian-sources-red-02/attempt1/process/process-receipt.json": "6c024c4d44f334f118a56337ffc8a8dbec707b9f6945e3abfdcf9c4bef31a4e0",
+    ".unlazy/core070-aghq/gaussian-sources-red-02/attempt1/process/execution-plan.json": "9db5a9354a08a746342529bab1b09ed616318bfcfbf56482fb4ef038b78f5cf4",
+    ".unlazy/core070-aghq/gaussian-sources-red-02/attempt1/process/00.log": "30b5672be0b44577c4c6b4c9965e2b14f3d697b6a9a6261fd7c6d702c765e1b3",
+    ".unlazy/core070-aghq/gaussian-sources-green-01/attempt1/process/process-receipt.json": "14d1656d8b13b44327ad29631e97b5e137d14a243c7452075d32e399ae200ce6",
+    ".unlazy/core070-aghq/gaussian-sources-green-01/attempt1/process/execution-plan.json": "43d6eb42fb9301dd961c9ae1361da29ec4395e84093216bea857ec5a3d2049af",
+    ".unlazy/core070-aghq/gaussian-sources-green-01/attempt1/process/00.log": "b9a2d924d2a4c17e3ce91e1ea51377c38d5b7d22898f09ffc4e67f6b85e6e951"
+  },
+  "limits": [
+    "No paired fitted R comparisons",
+    "No recovery or coverage",
+    "No full package tests",
+    "No Documenter execution or visual inspection"
+  ]
+}
