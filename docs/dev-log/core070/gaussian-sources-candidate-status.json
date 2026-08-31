@@ -4,12 +4,13 @@
   "programme": "ACTIVE_M1_PARTIAL",
   "full_manifest": "DRAFT_NOT_FROZEN",
   "source_review": "Noether Terra high; initial plus one repair follow-up; static acceptance after wording repair",
-  "runtime_status": "NOT_EXECUTED",
+  "runtime_status": "API_LOAD_PASS_NUMERICAL_NOT_EXECUTED",
   "syntax_status": "PASS_SYNTAX_ONLY",
   "gates": {
     "met": [
       "GS-SYNTAX",
-      "GS-ORACLE"
+      "GS-ORACLE",
+      "GS-LOAD"
     ],
     "unmet": [
       "GS-UNIT",
@@ -21,22 +22,26 @@
   "source_pins": {
     "src/source_fit.jl": "8b175fed858451ea8440382ffb1981ad1c8e8da30e612ba425ad8d4766274d64",
     "src/GLLVM.jl": "545a9f6383b942b06eb42a54ea7bef05bcd2d8d997b3a737f39373d41ec245ea",
-    "test/test_gaussian_sources.jl": "5d2a1bb17ae2977647b7be2a7c5b6e97b218f77c3d77dfe4ebdf640b286491de",
-    "test/runtests.jl": "8bac3726a6e2665a0f03c4a85dd9a53260ac034b67da53ac005194023ec77d11",
-    "tools/core070_gaussian_sources_run.jl": "383132f8ac835eb0aa32dc97382199056743066e22dc453bb676f72d31549843",
+    "test/test_gaussian_sources.jl": "b8ddda6ebd33bb1e1fbbd91c83109437b2936818eca27244c5b5b1a3888b00b9",
+    "test/runtests.jl": "ee9ece99e12ab33a3d430d1c88ed1ac9f483213be0b3ccd1b3aa77e238f8f38d",
+    "tools/core070_gaussian_sources_run.jl": "c97efc76ddaa1c17d0a5fb2663eaa5f78347dc84414c1768d0036166715a5fc5",
     "docs/dev-log/decisions/2026-08-31-gaussian-sources-fit.md": "127ee7c332a91f4a929cd6f03083d2ab795ba23750b44ad8178d8fb42fcbc698",
     "docs/src/structured-dependence.md": "47e734efbbac7649368d4be30cfe9c5b091b63b6c913ff74374c244edda864b2",
     "docs/src/api.md": "666e1565e77bcf6c44806c2af504561b99b4c16a339534809d8c3ddce0153e99",
     "README.md": "e84dcdbb6a24b4cd4d344dc75653682d3f03ed4e89199fcd8a2910fc308c8a95",
     "CHANGELOG.md": "63f88ce72a09b4f0bf140491258c115e29aac72d9b5bc5ee81c7ae526082aff3",
-    "docs/dev-log/core070/gaussian-sources-fit-leaf.md": "8b448770553d21484b3a8c21735c15593b6b6bbc96c5d8500522b59f2cb31cc0"
+    "docs/dev-log/core070/gaussian-sources-fit-leaf.md": "8b448770553d21484b3a8c21735c15593b6b6bbc96c5d8500522b59f2cb31cc0",
+    "tools/core070_gaussian_source_bindings.jl": "bc808418c313d28326fb0678779d96a4f2a0cf22cd50f46a4a59eae5de480c3b",
+    "test/test_gaussian_source_bindings.jl": "5d10e960500f03567ca19a8c37da73840d714a27c18545319fdfbfc71c30b893"
   },
   "failure_receipts": [
     "gaussian-sources-red-01",
     "gaussian-sources-local-red",
     "gaussian-sources-local-red-02"
   ],
-  "no_tdd_red": true,
+  "no_tdd_red": false,
   "no_remote_job": true,
-  "closure_validator": "STRUCTURE_PASS_COMPLETION_REFUSED_UNMET_PROGRAMME_GATES"
+  "closure_validator": "STRUCTURE_PASS_COMPLETION_REFUSED_UNMET_PROGRAMME_GATES",
+  "api_load_evidence": "docs/dev-log/core070/gaussian-sources-api-load.json",
+  "tdd_ordering": "NOT_ACHIEVED_IMPLEMENTATION_PRECEDED_VALID_API_RED"
 }

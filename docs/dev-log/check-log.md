@@ -16370,3 +16370,13 @@ Unlazy2met/3unmet/0abandoned. No numerical or docs build result: all existing SS
 sockets vanished, local availability probes failed before assertions. Retained
 all attempts; baseline/candidate Totoro launches prepared. No full-manifest row
 promoted. See after-task/2026-08-31-core070-gaussian-sources-candidate.md.
+
+## 2026-08-31 — source API loading and exact R fixture bindings (PARTIAL)
+Retained-manifest local probes now load baseline/candidate: intended baseline
+missing-API assertion39.019s, candidate availabilityPASS36.847s; no fits.
+Fixed direct ForwardDiff import in standalone test. Six nonspatial R bindings
+preserve response order, source groups/ancestors, common scale, unique terms,
+two-kernel offsets and starts. Parent review corrected constructor misuse;
+exact36response/parameter transcription and syntax pass. Added preparation tests
+but have not run them. Three source gates met/three unmet; programme unchanged.
+See after-task/2026-08-31-core070-source-api-loading-bindings.md.

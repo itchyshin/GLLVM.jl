@@ -1213,3 +1213,27 @@ reverified2met/0unmet/0abandoned; allreviews and checks terminal.
   leaseRELEASED. Provisional70–120workinghours remains an unrevised allowance.
 - No production child or completionpanel, Rengineedit,push,merge,release,cleanup.
   Keep foreign Cursor/Claude/0.7.1/article/REML lanes protected.
+
+## 2026-08-31 — pinned local API loading and six concrete bindings
+- Previous turn madeprogress; currentturn also progresses despite same absent
+  remotesockets. ProgrammeACTIVE/M1PARTIAL/fullmanifestDRAFT, notcomplete.
+- Local manifest-qualified baseline loads and fails the intended missing-API
+  assertion(39.019s); candidate loads/exposesSourceCovariance/GaussianSourcesFit/
+  fit_gaussian_sources(36.847s). No local numericalfit/derivative. Rawreceipts
+  gaussian-sources-local-load-03, tracked gaussian-sources-api-load.json.
+- ActualdirectForwardDiffresolutionnothing inparityenv. Fixed onlynewtest to
+  GLLVM.ForwardDiff. Baselinecopy and pendinggreenlauncher testsupdatedidentically.
+- Hopper freshnative requestedTerra/high, twoexclusivefiles, onerepairfollowup:
+  six sourcebindinghelper/doc. Parentcaughtindices-as-P, inverseSymmetric, mixed
+  vcat syntax anddoc placement; repaired. Parent exacttranscription checksPASS,
+  remote-onlybindingtests added. No fittedrowpromoted, full24rowsremainintact.
+- SourcegatesGS-SYNTAX/GS-ORACLE/GS-LOADmet; GS-UNIT/GS-DOCS/GS-REGRESSIONunmet.
+  The validAPIred occurredafterimplementation; retainTDDorderingdeviation.
+- Next: verifyrestoredsocket, inspect thenlaunch retainedbaseline red-02 and
+  green-01, each<5min cap300s oneJulia/BLASthread. Bothinclude6bindingpreparation
+  tests now. NoConstructor/likelihood/optimizer executionyet forbindings.
+- MC4eff416bf2610c100ac32c4e95a1bf0bb0aa3deb served200,Runchanged,leaseRELEASED.
+  Lastsocketcheck13:09UTC none; noalternateactiveSSHtool. Do notnagortriggerDuo.
+- One newproductionchild in currentcheckpointinterval, actualnative model/hours
+  receiptunavailable (requestedTerra/high). Allworkersandloadprocessesterminal.
+  Preserveforeignlanes, noRengine/push/merge/release/cleanup.
