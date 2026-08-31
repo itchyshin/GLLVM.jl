@@ -32,11 +32,14 @@ poisson_marginal_loglik_laplace(Y::AbstractMatrix,
     PoissonFit
 
 Result of [`fit_poisson_gllvm`](@ref): intercepts `β` (length p), loadings `Λ`
-(p×K), the `link`, the maximised Laplace `loglik`, the optimiser `converged`
+(p×K), the `link`, the fitted marginal `loglik`, the optimiser `converged`
 flag, and `iterations`. Fits using `X_lv` additionally retain `alpha_lv`, the
 raw latent-axis coefficients for the predictor-informed score mean; use
 [`extract_lv_effects`](@ref) for the rotation-stable trait-scale product
-`Λ * alpha_lv'`.
+`Λ * alpha_lv'`. Optional `integration` records requested/actual AGHQ, node
+counts, controls, final caches and retained start diagnostics. It is `nothing`
+for default Laplace and legacy constructors. AGHQ convergence is with respect
+to the frozen-node surrogate, not derivatives through changing adaptation.
 """
 struct PoissonFit
     β::Vector{Float64}
@@ -47,8 +50,12 @@ struct PoissonFit
     iterations::Int
     alpha_lv::Union{Nothing, Matrix{Float64}}
     theta_packed::Vector{Float64}
-    hessian::Symbol   # the Laplace log-det curvature this fit's objective used
+    hessian::Symbol   # Laplace log-det curvature; AGHQ is recorded separately
+    integration::Union{Nothing,AGHQFitInfo}
 end
+
+PoissonFit(β, Λ, link, loglik, converged, iterations, alpha_lv, theta_packed, hessian) =
+    PoissonFit(β, Λ, link, loglik, converged, iterations, alpha_lv, theta_packed, hessian, nothing)
 
 # Positional compatibility constructor (2026-08-28): every pre-existing
 # construction site builds a default-curvature fit; the `hessian` field
@@ -66,6 +73,7 @@ function Base.show(io::IO, f::PoissonFit)
     print(io, "PoissonFit(p=", p, ", K=", K, ", link=", nameof(typeof(f.link)),
           f.alpha_lv === nothing ? "" : ", X_lv=true",
           ", loglik=", round(f.loglik; sigdigits = 7),
+          f.integration===nothing ? "" : ", "*string(f.integration.actual)*"(k="*string(f.integration.k)*")",
           f.converged ? "" : ", NOT CONVERGED", ")")
 end
 
@@ -144,7 +152,7 @@ estimates the offset-free intercept.
 Fisher-scored. Default: canonical log link — the two coincide. Omitting it is exactly the pre-kwarg
 behaviour.
 """
-function fit_poisson_gllvm(Y::AbstractMatrix; K::Integer,
+function _fit_poisson_gllvm_laplace(Y::AbstractMatrix; K::Integer,
         link::Link = LogLink(), mask = nothing, offset = nothing,
         gradient::Symbol = :analytic,
         hessian::Symbol = _default_hessian(Poisson(), link),

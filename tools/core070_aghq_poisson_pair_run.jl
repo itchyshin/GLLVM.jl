@@ -27,10 +27,12 @@ out=ENV["CORE070_AGHQ_PAIR_OUTPUT"]
 open(io->TOML.print(io,Dict("responses"=>vec(Y),"p"=>p,"n"=>n,"K"=>K,
     "fixture_sha256"=>bytes2hex(sha256(source)),"dgp_sha256"=>bytes2hex(sha256(dgp)))),out*".fixture.toml","w")
 println("APP_INPUT_SHA256 ",bytes2hex(sha256(read(out*".fixture.toml"))))
+public_route=get(ENV,"CORE070_AGHQ_PUBLIC_PAIR","0")=="1"
 base=fit_poisson_gllvm(Y;K=K)
 start=vcat(base.β,GLLVM.pack_lambda(base.Λ));alt=copy(start);alt[p+1:end].=.3
 problem=GLLVM.aghq_poisson_problem(Y,K;k=5)
-multistart=GLLVM.aghq_multistart_optimize([start,alt],problem.adapt,problem.objective;n_adapt=400)
+public_fit=public_route ? fit_poisson_gllvm(Y;K=K,aghq=5) : nothing
+multistart=public_route ? public_fit.integration.result : GLLVM.aghq_multistart_optimize([start,alt],problem.adapt,problem.objective;n_adapt=400)
 multistart.usable || error("no usable Julia AGHQ start")
 runs=multistart.runs;winner=multistart.winner;fit=multistart.selected
 serialize_run(r)=Dict("parameters"=>r.parameters,"objective"=>r.objective,"usable"=>r.usable,
@@ -77,7 +79,7 @@ g1=fd(1e-5);g2=fd(2e-5)
 gf=GLLVM.ForwardDiff.gradient(x->problem.objective(x,fit.adaptation),t)
 L=GLLVM.unpack_lambda(t[p+1:end],p,K)
 refinement=[let q=GLLVM.aghq_poisson_problem(Y,K;k=k);q.objective(t,q.adapt(t));end for k in (5,9,15)]
-record=Dict("case_id"=>"APP-POISSON-SEED44-K5","scope"=>"INTERNAL_JULIA_PUBLIC_FROZEN_R_AGHQ_NOT_PUBLIC_JULIA_PARITY",
+record=Dict("case_id"=>"APP-POISSON-SEED44-K5","scope"=>(public_route ? "PUBLIC_POISSON_AGHQ_SEED44_ONLY" : "INTERNAL_JULIA_PUBLIC_FROZEN_R_AGHQ_NOT_PUBLIC_JULIA_PARITY"),
  "julia_version"=>string(VERSION),"package_root"=>pkgdir(GLLVM),"winner"=>winner,
  "native_objective"=>fit.objective,"r_objective"=>r_objective,"delta_loglik"=>abs(fit.objective-r_objective),
  "native_converged"=>fit.converged,"r_converged"=>rcopy(Bool,R"isTRUE(app_fit$aghq$converged)"),

@@ -133,3 +133,37 @@ For complete worked workflows, explore the [Community Abundance Vignette](vignet
 For ordinal fits, choose `LogitLink()` or `ProbitLink()` explicitly when translating
 a model. The frozen gllvmTMB 0.7.0 ordinal route uses probit; Julia defaults to logit.
 Other ordinal links raise `ArgumentError` before the native fitter reads responses.
+
+## Poisson quadrature (local development candidate)
+
+Ordinary log-link Poisson models can opt into adaptive Gauss–Hermite
+quadrature (AGHQ), which integrates over latent scores using a grid adapted to
+each site's conditional mode. Responses are rows and sites are columns:
+
+```@example poisson_aghq
+using GLLVM
+Y = [1 2 3 4 1 3 2 2; 3 2 4 5 1 3 2 4]
+fit = fit_poisson_gllvm(Y; K=1, aghq=3)
+fit.integration.actual                 # :aghq or :laplace
+fit.integration.reason                 # stopping or fallback reason
+fit.integration.result                 # retained optimization attempts
+predict(fit, Y)                         # conditional rates, including offsets
+intervals = confint(fit, Y; parm="beta") # fitted frozen-node objective
+(actual=fit.integration.actual, nodes=fit.integration.k,
+ converged=fit.converged, pd_hessian=intervals.pd_hessian)
+```
+
+`aghq=false` remains the default. `aghq=1` follows Laplace; `true` or `:auto`
+selects five nodes per axis, declining at 20 response traits. This route is
+unpenalized and requires one ordinary loadings-only block, a log link and
+1–5 latent dimensions. Predictor-informed latent scores and ineligible direct
+requests retain Laplace with a visible reason. Other families and structured
+routes are not qualified by this Poisson implementation.
+
+Convergence refers to the final **frozen-node surrogate gradient**; it does
+not establish stationarity of an objective that differentiates through moving
+nodes. Wald and profile intervals use that same frozen objective. Bootstrap
+refits retain failed attempts; recovery and coverage validation remain pending.
+Stored masks and offsets are used for the original data. For changed data with
+nonzero offsets, supply the offset explicitly. Inspect `fit.converged` and
+`fit.integration` before interpreting a result.

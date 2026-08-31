@@ -79,8 +79,26 @@ end
 # --- Poisson ---------------------------------------------------------------
 function _family_ci(fit::PoissonFit, Y::AbstractMatrix;
                     mask = nothing,
-                    objective::Symbol = :laplace,
+                    objective::Symbol = :fit,
                     newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    if _is_poisson_aghq(fit)
+        objective in (:fit,:aghq) || throw(ArgumentError("AGHQ inference must use objective=:fit; Laplace/VA would change the estimator"))
+        q,_=_poisson_aghq_problem(fit,Y;mask=mask,require_identity=true)
+        i=fit.integration;p,K=size(fit.Λ);n=size(Y,2)
+        theta=copy(fit.theta_packed);nll=t->q.objective(t,i.caches)
+        draw=rng->_poisson_aghq_simulate(fit,n;rng=rng)
+        refit=function(Yb)
+            fb=try
+                fit_poisson_gllvm(Yb;_poisson_aghq_refit_kwargs(fit)...)
+            catch e
+                e isa InterruptException && rethrow()
+                return nothing
+            end
+            return _is_poisson_aghq(fb) && fb.converged ? copy(fb.theta_packed) : nothing
+        end
+        return _FamilyCI(theta,nll,_glm_lin_names(p,K),fill(:linear,length(theta)),draw,refit)
+    end
+    objective===:fit && (objective=:laplace)
     fit.alpha_lv === nothing || throw(ArgumentError(
         "confint for fit_poisson_gllvm(...; X_lv=...) is not carried by confint(fit, Y); " *
         "use confint_lv_effects(fit, Y, X_lv) for Wald intervals on B_lv, " *
@@ -1930,20 +1948,23 @@ _family_estimate(ad::_FamilyCI, i::Integer) = ad.kinds[i] === :log ? exp(ad.θ[i
 # ---------------------------------------------------------------------------
 # Wald
 # ---------------------------------------------------------------------------
-function _family_wald(ad::_FamilyCI, sel::Vector{Int}, level::Real)
+function _family_wald(ad::_FamilyCI, sel::Vector{Int}, level::Real; hessian=nothing)
     m = length(ad.θ)
-    H = _fd_hessian(ad.nll, ad.θ)
-    pd = all(isfinite, H)
-    se = fill(NaN, m)
-    if pd
-        Σ = try inv(Symmetric((H .+ H') ./ 2)) catch; nothing end
-        if Σ === nothing
-            pd = false
-        else
-            for i in 1:m
-                v = Σ[i, i]
-                (isfinite(v) && v > 0) ? (se[i] = sqrt(v)) : (pd = false)
-            end
+    H = hessian===nothing ? _fd_hessian(ad.nll, ad.θ) : hessian
+    size(H)==(m,m) || throw(DimensionMismatch("Wald Hessian dimension mismatch"))
+    se=fill(NaN,m);pd=false
+    if all(isfinite,H)
+        factor=try
+            cholesky(Symmetric((H .+ H') ./ 2);check=true)
+        catch e
+            e isa InterruptException && rethrow()
+            nothing
+        end
+        if factor!==nothing
+            covariance=factor \ Matrix{Float64}(I,m,m)
+            variances=diag(covariance)
+            pd=all(v->isfinite(v) && v>0,variances)
+            pd && (se .= sqrt.(variances))
         end
     end
     z = quantile(Normal(), 0.5 + level / 2)
@@ -2068,7 +2089,7 @@ end
 # Parametric bootstrap (optionally threaded)
 # ---------------------------------------------------------------------------
 function _family_bootstrap(ad::_FamilyCI, sel::Vector{Int}, level::Real,
-                           n_boot::Integer, seed::Integer, parallel::Bool)
+                           n_boot::Integer, seed::Integer, parallel::Bool; retain_replicates::Bool=false)
     m = length(ad.θ)
     reps = fill(NaN, n_boot, m)
     ok = fill(false, n_boot)   # Vector{Bool} (one byte/elt) — safe for concurrent distinct-index writes (a BitVector is not)
@@ -2109,8 +2130,9 @@ function _family_bootstrap(ad::_FamilyCI, sel::Vector{Int}, level::Real,
             push!(lo, NaN); push!(hi, NaN)
         end
     end
-    return (term = term, estimate = est, lower = lo, upper = hi,
+    result=(term = term, estimate = est, lower = lo, upper = hi,
             n_converged = count(ok), method = :bootstrap)
+    return retain_replicates ? merge(result,(replicates=reps,converged=ok,seed=seed,)) : result
 end
 
 # ---------------------------------------------------------------------------
@@ -2119,7 +2141,7 @@ end
 """
     confint(fit, Y; method = :wald, level = 0.95, parm = nothing, N = nothing,
             mask = nothing,
-            n_boot = 200, seed = 0, parallel = false, objective = :laplace,
+            n_boot = 200, seed = 0, parallel = false, objective = :fit,
             newton_maxiter = 100, newton_tol = 1e-9,
             profile_iterations = 200, profile_g_tol = 1e-4,
             profile_max_expand = 20, profile_max_bisect = 30) -> NamedTuple
@@ -2176,8 +2198,14 @@ natural (positive) scale.
 Binomial trial counts (default all-ones / Bernoulli).
 
 `objective` selects which marginal the Hessian is taken from. The default
-`:laplace` uses the negative Laplace marginal at the fit (the behaviour for all
-fit types). `:va` instead uses the negative variational (ELBO) marginal and is
+`:fit` uses the fitted AGHQ frozen-node objective for public Poisson AGHQ fits,
+and the existing Laplace objective otherwise. AGHQ Wald uses automatic
+second derivatives; profiles hold the final adaptation fixed, and bootstrap
+refits use the stored AGHQ controls. AGHQ results identify their objective;
+bootstrap additionally returns every packed replicate (NaN on failed refits)
+and convergence flag. These are functional inference routes, not a coverage
+validation. AGHQ rejects requests for Laplace or VA intervals to avoid changing
+the estimator silently. `:laplace` explicitly selects Laplace for other fits. `:va` instead uses the negative variational (ELBO) marginal and is
 available only for the scalar-μ GLM families (`PoissonFit`, `NBFit`,
 `BinomialFit`, `BetaFit`, `GammaFit`) with `method = :wald`; combine it with a VA
 fit (e.g. `fit_poisson_gllvm_va`) for VA-consistent standard errors. Masked
@@ -2200,7 +2228,7 @@ function confint(fit::_CIFit, Y::AbstractMatrix;
                  n_boot::Integer = 200,
                  seed::Integer = 0,
                  parallel::Bool = false,
-                 objective::Symbol = :laplace,
+                 objective::Symbol = :fit,
                  newton_maxiter::Integer = 100,
                  newton_tol::Real = 1e-9,
                  profile_iterations::Integer = 200,
@@ -2208,8 +2236,11 @@ function confint(fit::_CIFit, Y::AbstractMatrix;
                  profile_max_expand::Integer = 20,
                  profile_max_bisect::Integer = 30)
     0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
-    objective in (:laplace, :va) ||
-        throw(ArgumentError("objective must be :laplace or :va; got :$objective"))
+    is_aghq=_is_poisson_aghq(fit)
+    objective===:fit && (objective=is_aghq ? :aghq : :laplace)
+    is_aghq && objective!==:aghq && throw(ArgumentError("AGHQ intervals require the fitted frozen objective; use objective=:fit"))
+    objective in (:laplace, :va, :aghq) && (objective!==:aghq || is_aghq) ||
+        throw(ArgumentError("objective must select :fit or an available estimator; got :$objective"))
     if objective === :va && !(fit isa Union{PoissonFit, NBFit, BinomialFit, BetaFit, GammaFit, DeltaGammaFit})
         throw(ArgumentError("objective=:va is only available for Poisson/NB/Binomial/Beta/Gamma/Delta-Gamma fits"))
     end
@@ -2225,15 +2256,18 @@ function confint(fit::_CIFit, Y::AbstractMatrix;
     sel = _family_select(parm, ad.names)
     isempty(sel) && throw(ArgumentError("parm selector matched no parameters"))
     if method === :wald
-        return _family_wald(ad, sel, level)
+        result=_family_wald(ad,sel,level;hessian=is_aghq ? ForwardDiff.hessian(ad.nll,ad.θ) : nothing)
+        return is_aghq ? merge(result,(objective=:aghq,gradient_kind=:frozen_surrogate,)) : result
     elseif method === :profile
-        return _family_profile(ad, sel, level;
+        result = _family_profile(ad, sel, level;
                                profile_iterations = profile_iterations,
                                profile_g_tol = profile_g_tol,
                                profile_max_expand = profile_max_expand,
                                profile_max_bisect = profile_max_bisect)
+        return is_aghq ? merge(result,(objective=:aghq,gradient_kind=:frozen_surrogate,)) : result
     elseif method === :bootstrap
-        return _family_bootstrap(ad, sel, level, n_boot, seed, parallel)
+        result=_family_bootstrap(ad,sel,level,n_boot,seed,parallel;retain_replicates=is_aghq)
+        return is_aghq ? merge(result,(objective=:aghq,gradient_kind=:frozen_surrogate,)) : result
     else
         throw(ArgumentError("method must be :wald, :profile, or :bootstrap; got :$method"))
     end

@@ -16204,3 +16204,13 @@ Mission Control local 76c958c3d546de6ac36c51d70e45c42ab0476c94: HTTP200, exact s
   Public metadata/inference contract written; public wiring remains next.
 - Evidence core070/aghq-poisson-pair-evidence.json; report
   after-task/2026-08-31-core070-aghq-poisson-pair.md. ProgrammeACTIVE/M1PARTIAL.
+
+## 2026-08-31 — public ordinary Poisson AGHQ candidate
+Public estimator metadata/control/fallback, frozen-objective Wald/profile,
+same-control bootstrap, masked-offset prediction and generic/formula forwarding
+implemented. Totoro final432 assertions PASS117.659561s; original frozen-R LL
+delta7.44e-9, same-point betaSE1.40e-8. Bootstrap8/10 converged; all attempts
+retained, no coverage claim. Strict Documenter70.261499s PASS with executed
+example; presentation warnings remain. Noether's two findings repaired/reviewed.
+Unlazy source/artifact gate reverified plus4 corruptions. Full Pkg/core not run;
+programmeACTIVE/M1PARTIAL/fullmanifestDRAFT. See after-task public-Poisson report.

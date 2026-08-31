@@ -177,3 +177,11 @@ If you use `GLLVM.jl` in published work, please cite:
 ## License
 
 MIT
+
+### Poisson AGHQ candidate
+
+`fit_poisson_gllvm(Y; K=2, aghq=5)` opts into unpenalized adaptive quadrature
+for an ordinary log-link Poisson latent block. Default fits remain Laplace.
+Inspect `fit.integration` for actual integration, fallback reasons and retained
+attempts. Inference uses the fitted frozen-node objective; full Stage 1a parity,
+recovery and coverage remain unverified. See the quickstart for controls and limits.

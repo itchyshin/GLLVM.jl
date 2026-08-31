@@ -44,6 +44,7 @@ using GLLVM
     include("test_aghq_outer.jl")
     include("test_aghq_multistart.jl")
     include("test_aghq_poisson.jl")
+    include("test_aghq_public_poisson.jl")
     include("test_aghq_gate.jl")
     include("test_aghq_kd_bound.jl")
     include("test_poisson_laplace.jl")

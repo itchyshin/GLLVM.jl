@@ -93,5 +93,6 @@ function aghq_poisson_problem(Y::AbstractMatrix, K; k, mask=nothing, offset=noth
         return -sum(aghq_frozen_logintegral(z->joint(z,beta,loading,s),caches[s],grid) for s in 1:n)
     end
     return (adapt=theta->first(checked_modes(theta)),objective=objective,
-        mode_diagnostics=theta->last(checked_modes(theta)),grid=grid,nparams=nparams)
+        mode_diagnostics=theta->last(checked_modes(theta)),grid=grid,nparams=nparams,
+        data=(responses=copy(counts),mask=copy(observed),offset=copy(off)))
 end

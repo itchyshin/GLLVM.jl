@@ -56,3 +56,19 @@ GLLVM._gauss_hermite
 GLLVM._fit_phylo_beta_xlv
 GLLVM._gaussian_source_loglik
 ```
+
+## Internal AGHQ adaptation and optimization
+
+These helpers expose the frozen-node surrogate used by the opt-in public
+Poisson route. They are internal implementation interfaces. Passing their
+checks alone does not establish public parity for other response families.
+
+```@docs
+GLLVM.AGHQAdaptation
+GLLVM.aghq_adaptation
+GLLVM.aghq_frozen_logintegral
+GLLVM.aghq_poisson_problem
+GLLVM.aghq_outer_optimize
+GLLVM.aghq_multistart_optimize
+GLLVM._fit_poisson_gllvm_laplace
+```

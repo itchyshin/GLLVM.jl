@@ -510,3 +510,33 @@ CensoredPoisson
 TruncatedNegBin2
 NB1
 ```
+
+## Poisson quadrature (local development candidate)
+
+Ordinary log-link Poisson models can opt into adaptive Gauss–Hermite
+quadrature (AGHQ), which integrates over latent scores using a grid adapted to
+each site's conditional mode. Responses are rows and sites are columns:
+
+```julia
+fit = fit_poisson_gllvm(Y; K=2, aghq=5)
+fit.integration.actual                 # :aghq or :laplace
+fit.integration.reason                 # stopping or fallback reason
+fit.integration.result                 # retained optimization attempts
+predict(fit, Y)                         # conditional rates, including offsets
+confint(fit, Y; parm="beta")            # fitted frozen-node objective
+```
+
+`aghq=false` remains the default. `aghq=1` follows Laplace; `true` or `:auto`
+selects five nodes per axis, declining at 20 response traits. This route is
+unpenalized and requires one ordinary loadings-only block, a log link and
+1–5 latent dimensions. Predictor-informed latent scores and ineligible direct
+requests retain Laplace with a visible reason. Other families and structured
+routes are not qualified by this Poisson implementation.
+
+Convergence refers to the final **frozen-node surrogate gradient**; it does
+not establish stationarity of an objective that differentiates through moving
+nodes. Wald and profile intervals use that same frozen objective. Bootstrap
+refits retain failed attempts; recovery and coverage validation remain pending.
+Stored masks and offsets are used for the original data. For changed data with
+nonzero offsets, supply the offset explicitly. Inspect `fit.converged` and
+`fit.integration` before interpreting a result.

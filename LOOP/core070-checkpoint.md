@@ -926,3 +926,37 @@ oldfamilyfreshness outstanding. No pushmergereleasecleanup/Rengine/foreignedits
 orDRACcompute. Read after-task/2026-08-31-core070-aghq-poisson-pair.md andevidence.
 
 Mission Control local 7cf26ac0af68136d966935726b0050110433eb6d: HTTP200/exact served field, R fields unchanged, exact-file lease released.
+
+## 2026-08-31 — public Poisson AGHQ implemented and bounded evidence verified
+Public PoissonFit integration metadata and fit wrapper now in aghq_fit_info.jl /
+aghq_poisson_fit.jl; old private Laplace body/constructors preserved. Metadata
+retains requested/actual k, controls/base-controls, all starts, observed caches,
+input digest and responses/mask/offset. Eligible AGHQ always observed; explicit
+other hessian rejected. Generic and intercept-only formula reach actual AGHQ.
+confint objective=:fit maps AGHQ to frozen AD-Wald/profile and same-control
+bootstrap. Generic Wald checks SPD by Cholesky; invalid=>allNaN. Postfit uses
+retained modes/input and finite masked offsets; likelihood digest ignores masked
+inputs. Bootstrap retains parameters/convergence flags, failed rowsNaN.
+
+Final aghq-public-poisson-green-07:432PASS117.659561s (53public+330numeric+8pair+
+12inference+29adjacent). Original seed44 k5 unpenalized LLdelta7.4375e-9,
+samepointbetaSE1.3967e-8, HessianFD4.0461e-5. Profilebeta1passes; bootstrap8/10,
+failedattempts5,8 kept, no finite percentile bounds/coverageclaim. Frozen vs total
+derivative distinction remains0.0193509. New resolved parity Manifest under
+aghq-public-poisson-env-01/attempt1/test/parity/Manifest.toml addsSHA only; oldpin
+preserved. Source-bound verifier core070_aghq_public_poisson_verify.py plus4
+artifactnegatives+strictdocs checksPASS; gatepublic-poisson-01 approved/reverified.
+Docsstate aghq-public-docs-02 PASS70.261499s; renderedquickstartactualAGHQ3nodes
+converged/PDtrue; HTMLreadbackhash. Missinglogos/favicon/defaultassets/chunkwarnings
+remain; no visualaudit. Alljobs terminal. NoetherfreshTerrahigh2defects repaired
+plusonefollowup; noBproductionchild/no completionpanel. MC2115d5d51d5660fcfd480623e41387b50ad08917 HTTP200/Rfieldsunchanged/leaseRELEASED.
+
+NEXT: continue remaining Stage1a family/admission contract and required manifest
+links, not internal Poisson reinvention. Preserve parent six-production-child
+checkpoint constraint; no B child until user checkpoint. Need exhaustive control
+fallback and other families, original StudentRhealth/density,17links,covariance,
+structured multinomial,data/postfit/bridge,recovery/fullsuite/performance/visual
+Documenter. FullPkg85–100min requires sized pre-run and >30min approval. Keep
+allmanifestDRAFT/M1PARTIAL/goalACTIVE. No pushmergereleasecleanup/Rengineforeign
+edits. ExistingTotoro/Fir sockets verified; no DRACcompute. Read after-task/
+2026-08-31-core070-aghq-public-poisson.md and core070/aghq-public-poisson-evidence.json.

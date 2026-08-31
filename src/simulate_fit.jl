@@ -89,7 +89,12 @@ stream).
 """
 function simulate(fit::PoissonFit, n::Integer;
                   X_lv::Union{Nothing, AbstractMatrix} = nothing,
-                  rng::AbstractRNG = default_rng())
+                  rng::AbstractRNG = default_rng(),offset=nothing)
+    if _is_poisson_aghq(fit)
+        X_lv===nothing || throw(ArgumentError("AGHQ loadings-only simulation does not use X_lv"))
+        return _poisson_aghq_simulate(fit,n;rng=rng,offset=offset)
+    end
+    offset===nothing || throw(ArgumentError("explicit simulation offset currently requires AGHQ metadata"))
     fam, link = _sim_family(fit)
     p, K = size(fit.Λ)
     Zmean = if fit.alpha_lv === nothing

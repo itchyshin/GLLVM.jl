@@ -5,6 +5,13 @@ All notable changes to GLLVM.jl are documented here.
 ## Unreleased
 
 ### Changed
+- Local candidate: ordinary log-link Poisson fits accept opt-in `aghq` controls
+  and retain integration metadata, final adaptation and every start outcome.
+  Predictions preserve offsets; Wald/profile intervals use the fitted frozen
+  objective and bootstrap refits retain failures. Other-family/structured AGHQ
+  and calibrated coverage are not established. Default Laplace is unchanged.
+- Generic family Wald intervals now require a positive-definite Hessian;
+  a positive inverse diagonal alone no longer yields apparent valid uncertainty.
 - Ordinal fitters now reject unsupported links with an early `ArgumentError`;
   logit and probit models and their likelihoods are unchanged.
 - Formula fits validate every supplied site-table column before response access,
