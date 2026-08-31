@@ -51,3 +51,8 @@ remain required; no df cap or weakened tolerance has been substituted.
 
 The numerical record and exact oracle provenance are in
 `docs/dev-log/decisions/2026-08-30-core070-studentt.md` in the source checkout.
+
+A public fixed-to-free warm start on this same fixture improves likelihood
+agreement but still fails the raw-gradient and same-parameter density checks.
+The final free-df fit remains unqualified even though its optimizer returns
+code0. Fixed initializer parameters have not replaced the original free model.

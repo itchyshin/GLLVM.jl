@@ -15934,3 +15934,13 @@ Relabeled real draft previously accepted; red regression reproduced. Public load
 
 ## 2026-08-30 — Original Student same-point density diagnosis
 -Totoro final23.229s diagnostic,25.038s supervisedbatch PASS; first2authoringfailures retained. OriginalR/tighterR/native points jointnll deltas0.00309359/0.00309879/119.46201 match marginal gaps. Hzzrelative<=6.34e-16, Rmodegrad<=7.99e-8, R Laplace reconstruction exact. TMB1.9.21 source directlgamma subtraction/log(1+x*x/df) scalarreplica losesprecision;15Rchecks reproduce highdf failure versusstatsdt. SixmeasurementnegativecontrolsPASS. OriginalRhealthcode1 remains; no engineedit/dfcap/tolerancechange. See after-task/2026-08-30-core070-student-samepoint.md.
+
+## 2026-08-31 — original Student public warm start remains unqualified
+
+Same seed71 fixture and frozen R oracle. Genuine fixed-to-free public warm start
+retains20 free coordinates/data/map. Totoro attempt01 admission failure retained;
+attempt02 11pass2fail in34.050s. Absolute logLik delta1.624e-6 passes0.001, but
+R raw gradient8.152e-4 fails1e-4 and same-point density delta3.891e-6 fails1e-6.
+Whole-fit/source/process readback and8 corruption controls pass. Default gate
+remains nonzero. No engine edits, tolerance changes or parity promotion. See
+after-task/2026-08-31-core070-student-warmstart.md. M1PARTIAL, manifestDRAFT.

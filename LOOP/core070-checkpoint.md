@@ -586,3 +586,19 @@ No production B dispatch, full suite or long campaign was launched.
 -3Totoro attempts allterminal;01directForwardDiffimportfailedbeforefit,02nu-keyword/parListdiagnosticerrors,03correctedPASS23.229s. Source/oraclebeforeafter/rawhashesverified. Originalseed71p5K1n130 datahash unchanged. ActualTMBjoint object versusJuliaactualdensity/AD atoriginalR,tighterR,native outer points: jointnll delta0.00309359253/0.00309878668/119.462009761; same marginalgap. Rmodegradient<=7.99e-8 andHzzrel<=6.34e-16; mode/curvature notcause. InstalledTMB1.9.21 dt formula directlgamma subtraction +log(1+x*x/df) losesprecision;15literal-vs-statsdt scalars show literal0atdf3e31. NoR/Juliaenginechange orparitypromotion. OriginalRcode1 unchanged.
 -Next predeclare publicmoderate-df fixed-fitwarmstart then originalfree-df Rfit; warmstart usesrealpublicfittedobject, nofabricatedfields, nofinaldfcap. Frozen Rinit-warmstart.R copiesmatchingparamsincllogdf. Need check20freecoords/data/map/rawgrad/code/LL<=.001; retainallattempts. This is proposednotexecuted. FullmanifestDRAFT/M1PARTIAL andallothergroupsunpaid. Runtime student-samepoint-01/02/03; verifier core070_verify_student_samepoint.py; sixnegativecontrolsPASS.
 - MissionControl Julia-only update fc9f2649918677b0cd10229d2bc41c515497fc17 servedHTTP200/readbackPASS,Rfieldsunchanged,leaseRELEASED; Unlazy1met1unmet freshlyreverified.
+
+## 2026-08-31 — original Student public warm start remains unqualified
+
+Same seed71 fixture and frozen R oracle. Genuine fixed-to-free public warm start
+retains20 free coordinates/data/map. Totoro attempt01 admission failure retained;
+attempt02 11pass2fail in34.050s. Absolute logLik delta1.624e-6 passes0.001, but
+R raw gradient8.152e-4 fails1e-4 and same-point density delta3.891e-6 fails1e-6.
+Whole-fit/source/process readback and8 corruption controls pass. Default gate
+remains nonzero. No engine edits, tolerance changes or parity promotion. See
+after-task/2026-08-31-core070-student-warmstart.md. M1PARTIAL, manifestDRAFT.
+
+All remote attempts terminal. Totoro and Fir existing sockets verified again.
+Next: preserve this failed public-control result, then advance required source
+case mapping and original truncated-NB2 replay; avoid repeated Student optimizer
+tuning without a discriminating hypothesis. Six production children consumed;
+no B production dispatch before user checkpoint. R reference remains read-only.
