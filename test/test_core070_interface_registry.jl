@@ -1,0 +1,52 @@
+using Test,TOML
+isdefined(@__MODULE__, :Core070Receipts) || include(joinpath(@__DIR__,"parity","core070_receipts.jl"))
+using .Core070Receipts
+
+@testset "Receipt scope is not inferred from count" begin
+    mktempdir() do root
+        write(joinpath(root,"fixture.jl"),"# synthetic")
+        inventory=execution_inventory(root,["fixture.jl"])
+        run=start_run!(joinpath(root,"receipts");requested_case_ids=["case-$i" for i in 1:17],
+            source=Dict(),inventory=inventory,contract_sha256="synthetic")
+        receipt=TOML.parsefile(joinpath(run.dir,"run.toml"))
+        @test receipt["scope"]=="subset"
+    end
+end
+
+include(joinpath(@__DIR__, "parity", "core070_case_registry.jl"))
+using .Core070CaseRegistry
+@testset "Separate family and interface registration" begin
+    @test length(FAMILY_IDS) == 17
+    @test length(INTERFACE_IDS) == 1
+    @test length(requested_ids()) == 18
+    @test isempty(intersect(FAMILY_IDS, INTERFACE_IDS))
+    @test requested_ids(only(INTERFACE_IDS)) == INTERFACE_IDS
+    for invalid in ("unknown", "NATIVE-06-NB2,NATIVE-06-NB2", "NATIVE-06-NB2,", "NATIVE-05-GAMMA")
+        @test_throws ArgumentError requested_ids(invalid)
+    end
+    @test length(requested_ids("NATIVE-05-GAMMA,NATIVE-09-BETABINOMIAL,NATIVE-16-NB1")) == 3
+    contract = TOML.parsefile(joinpath(@__DIR__, "..", "docs/dev-log/core070/frozen-r070-contract.toml"))
+    @test validate_manifest(contract)
+    for change in (
+        d -> empty!(d["interface_case_ids"]),
+        d -> push!(d["families"], deepcopy(d["families"][1])),
+        d -> (d["interfaces"][1]["fixture"] = "wrong.jl"),
+        d -> (d["family_smoke_case_ids"][1] = only(INTERFACE_IDS)),
+    )
+        bad = deepcopy(contract); change(bad)
+        @test_throws ArgumentError validate_manifest(bad)
+    end
+    for (ids, scope, count) in ((FAMILY_IDS, "all17", 17),
+                              (REGISTERED_IDS, "subset", 17),
+                              (vcat(FAMILY_IDS[2:end], INTERFACE_IDS), "subset", 16))
+        mktempdir() do root
+            write(joinpath(root,"fixture.jl"), "# scope fixture")
+            run = start_run!(joinpath(root,"receipts"); requested_case_ids=ids,
+                family_smoke_case_ids=FAMILY_IDS, source=Dict(),
+                inventory=execution_inventory(root,["fixture.jl"]), contract_sha256="synthetic")
+            r = TOML.parsefile(joinpath(run.dir,"run.toml"))
+            @test r["scope"] == scope
+            @test r["selected_family_count"] == count
+        end
+    end
+end

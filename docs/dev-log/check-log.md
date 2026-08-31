@@ -16042,3 +16042,14 @@ integration/publicbridge stillunpaid. FullmanifestDRAFT/M1PARTIAL. Older
 whole-source receipts historical; new native refresh andformula evidence JSON.
 See after-task/2026-08-31-core070-nb2-formula.md. No fullsuite/docsrender/review
 or R/foreign/push/merge/release/cleanup.
+
+### 2026-08-31 — required NB2 formula interface
+
+Separate17-family/one-interface registry; count-only scope red repaired. Original
+native NB2/truncated/formula required run58PASS54.167s Totoro1thread, three actual
+executions, both oracle checksPASS. Transitive original DGP bound even for
+formula-only selection; native/formula artifacts namespaced.22 Julia registry,
+45 receipt,3 Python registry tests,11 coverage regressions,13 artifact negatives
+and aggregate selftestPASS; Unlazy4gates fresh. FullmanifestDRAFT/M1PARTIAL;
+no numerical source edits, fullsuite/docsrender/review or foreign changes.
+Report: after-task/2026-08-31-core070-nb2-formula-required.md.

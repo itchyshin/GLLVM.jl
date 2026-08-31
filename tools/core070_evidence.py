@@ -19,8 +19,8 @@ ORACLE_BUILD = ROOT / ".unlazy/core070-aghq/oracle-receipts/build.json"
 ORACLE_SOURCE = ROOT / ".unlazy/core070-aghq/oracle-source/source.json"
 CONTRACT_REL = "docs/dev-log/core070/frozen-r070-contract.toml"
 EXECUTION_STATIC = (
-    "src", "test/parity/core070_receipts.jl", "test/parity/parity_helpers.jl",
-    "test/parity/parity_trial_inputs.jl", "test/parity/truncnb2_policy.jl", "test/parity/nb2_health.jl",
+    "src", "test/parity/core070_receipts.jl", "test/parity/core070_case_registry.jl", "test/parity/parity_helpers.jl",
+    "test/parity/parity_trial_inputs.jl", "test/parity/test_negbin_parity.jl", "test/parity/truncnb2_policy.jl", "test/parity/nb2_health.jl",
     "test/parity/runparity.jl", "test/parity/r_health.R", "Project.toml", "test/Project.toml",
     "test/parity/Project.toml", "tools/core070_delta_matched.jl",
     "test/parity/test_delta_lognormal_parity.jl", "test/parity/test_delta_gamma_parity.jl",
@@ -82,8 +82,15 @@ def _load_manifest_metadata(path: Path) -> dict:
         raise EvidenceError("STALE_SOURCE: unexpected frozen R commit")
     if len(required) != 17 or len(set(required)) != 17:
         raise EvidenceError("MANIFEST_INVALID: exactly 17 unique family-smoke IDs are required")
-    if {row.get("id") for row in families} != set(required):
+    if len(families) != 17 or {row.get("id") for row in families} != set(required):
         raise EvidenceError("MANIFEST_INVALID: family rows do not exactly bind required IDs")
+    interface_ids = manifest.get("interface_case_ids", [])
+    interfaces = manifest.get("interfaces", [])
+    if set(interface_ids) != {"CORE070-FAMILY-05-LOG-FORMULA-INTERFACE"} or len(interface_ids) != len(set(interface_ids)) or set(interface_ids) & set(required) or \
+            len(interfaces) != len(interface_ids) or {row.get("id") for row in interfaces} != set(interface_ids):
+        raise EvidenceError("MANIFEST_INVALID: interface registry must be unique and separate from families")
+    if any(not row.get("fixture") or not row.get("model_contract_id") or row.get("role") != "formula_interface" for row in interfaces):
+        raise EvidenceError("MANIFEST_INVALID: interface row needs a fixture and model contract")
     if manifest.get("reference_source_tree_sha256") != "f83545faa6543dbb1f64d64bbf5a9498adcdf036cc3da5851f269912698b1cc7":
         raise EvidenceError("STALE_SOURCE: source-tree hash differs from exact archived R pin")
     if manifest.get("reference_archive_sha256") != "0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc":
@@ -107,7 +114,7 @@ def _load_manifest_metadata(path: Path) -> dict:
     obligations = manifest.get("obligation", [])
     if not obligations or any(not obligation_fields.issubset(row) for row in obligations):
         raise EvidenceError("MANIFEST_INVALID: required obligation rows are not source-complete")
-    if not set(required).issubset({row["id"] for row in obligations}):
+    if not (set(required) | set(interface_ids)).issubset({row["id"] for row in obligations}):
         raise EvidenceError("MANIFEST_INVALID: every family-smoke row needs its own source-bound obligation")
     return manifest
 

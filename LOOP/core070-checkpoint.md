@@ -713,3 +713,25 @@ integration/publicbridge stillunpaid. FullmanifestDRAFT/M1PARTIAL. Older
 whole-source receipts historical; new native refresh andformula evidence JSON.
 See after-task/2026-08-31-core070-nb2-formula.md. No fullsuite/docsrender/review
 or R/foreign/push/merge/release/cleanup.
+
+## 2026-08-31 — required NB2 formula integration
+
+Actual required runner now separately registers17families plus interface
+CORE070-FAMILY-05-LOG-FORMULA-INTERFACE. Original native18/truncated21/formula19
+assertions =58 across3executions, Totoro54.167s, oraclebefore/afterPASS. First
+58pass63.534s retained; second replay required after transitive DGP inventory
+repair. Receipt scope compares family IDs, not any17count. Formula-only hashes
+originalNB2fixture; separate rawfit/health filenames and markers. No src changes.
+
+22Julia registry +45receipt assertions,3Python registry tests,11coverage tests,
+13artifact negatives, metric negatives and aggregate selftestPASS. Unlazy4gates
+fresh. New summary nb2-formula-required-evidence.json is current; older standalone
+formula/native refresh receipts historical afterhelper/contract changes. Family
+plan2native+1formula required bindings,94unbound,698nonexcluded source facts still
+withoutcompleteexecutablecoverage. FullmanifestDRAFT/M1PARTIAL. RoseNOTRUN.
+
+MissionControl local992a080 HTTP200/Rfieldsunchanged, leaseRELEASED. Both existing
+Totoro/DRAC sockets live, no active remotejobs, noDRACjobsubmitted. No newchildren;
+B production stillbehindusercheckpoint. Next: exact family model/interface
+contracts andStudentreferencehealth; preserveforeignR0.7.1/article/Julia work.
+No push/merge/release/cleanup. Read after-task/2026-08-31-core070-nb2-formula-required.md.

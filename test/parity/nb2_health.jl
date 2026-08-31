@@ -1,5 +1,7 @@
 """Record the original NB2 default-oracle health without changing either fit."""
-function parity_nb2_health(Y, K, native)
+function parity_nb2_health(Y, K, native; artifact_prefix="nb2", receipt_tag="NB2", case_id="NATIVE-06-NB2")
+ occursin(r"^[a-z][a-z0-9-]*$", artifact_prefix) || throw(ArgumentError("invalid NB2 artifact prefix"))
+ occursin(r"^[A-Z][A-Z0-9_]*$", receipt_tag) || throw(ArgumentError("invalid NB2 receipt tag"))
  p,n=size(Y)
  (p,K,n)==(5,2,80) || error("NB2 health is scoped to the original fixture")
  datahash=bytes2hex(sha256(reinterpret(UInt8,vec(Float64.(Y)))))
@@ -8,7 +10,7 @@ function parity_nb2_health(Y, K, native)
  helpers=source[findfirst("function _rand_poisson",source).start:findfirst("@testset \"NB2 GLLVM",source).start-1]
  dgp=source[findfirst("    Random.seed!(45)",source).start:findfirst("    jl_fit =",source).start-1]
  output=_core070_required() ? _core070_receipt_dir() : mktempdir()
- rawpath=joinpath(output,"nb2-whole-fit.rds")
+ rawpath=joinpath(output,artifact_prefix*"-whole-fit.rds")
  ispath(rawpath) && error("NB2 evidence exists; require a fresh run")
  @rput rawpath
 r=fit_gllvmtmb_parity_loglik(Y,K;family=:negbinomial)
@@ -56,11 +58,11 @@ report=Dict("source"=>_core070_source_pin!(),"data_sha256"=>datahash,
  "samepoint_native_nll"=>objective(rnative))
 report["samepoint_delta"]=report["samepoint_native_nll"]-report["r_objective"]
  report["policy"]="nb2_original_default_v1"
- report["case_id"]="NATIVE-06-NB2"
+ report["case_id"]=case_id
  report["raw_fits_sha256"]=_core070_sha256_file(rawpath)
- file=joinpath(output,"nb2-health.toml")
+ file=joinpath(output,artifact_prefix*"-health.toml")
  open(io->TOML.print(io,report),file,"w")
- println("NB2_HEALTH_SHA256 ",_core070_sha256_file(file))
- println("NB2_RAW_FITS_SHA256 ",report["raw_fits_sha256"])
+ println(receipt_tag*"_HEALTH_SHA256 ",_core070_sha256_file(file))
+ println(receipt_tag*"_RAW_FITS_SHA256 ",report["raw_fits_sha256"])
  return merge(r,(health=report,))
 end

@@ -12,6 +12,7 @@ reference_source_inventory = ".unlazy/core070-aghq/oracle-source/source.json"
 source = "git show gllvmTMB:b4d5fee64def88bc768dda1f1f77c29b295edd86"
 
 family_smoke_case_ids = ["NATIVE-01-GAUSSIAN", "NATIVE-02-BINOMIAL", "NATIVE-03-POISSON", "NATIVE-04-LOGNORMAL", "NATIVE-05-GAMMA", "NATIVE-06-NB2", "NATIVE-07-TWEEDIE", "NATIVE-08-BETA", "NATIVE-09-BETABINOMIAL", "NATIVE-10-STUDENT", "NATIVE-11-TRUNCATED-POISSON", "NATIVE-12-TRUNCATED-NB2", "NATIVE-13-DELTA-LOGNORMAL", "NATIVE-14-DELTA-GAMMA", "NATIVE-15-ORDINAL-PROBIT", "NATIVE-16-NB1", "NATIVE-17-MULTINOMIAL-FIXED"]
+interface_case_ids = ["CORE070-FAMILY-05-LOG-FORMULA-INTERFACE"]
 unpaid_required_groups = ["links-and-parameterisation", "covariance-modes-and-modifiers", "long-wide-missing-offset-trials", "postfit-information-and-inference", "formula-interface", "public-r-bridge", "public-stage1a-aghq"]
 
 # Provisional census only.  These buckets are not a capability classification:
@@ -684,3 +685,23 @@ manifest = "docs/dev-log/core070/binomial-paired-contract.toml"
 runner = "tools/core070_binomial_paired.jl"
 expected_cases = 6
 completion_scope = "No-X binomial three links x Bernoulli/varying trials; explicit observed curvature, not formula/public bridge or default cloglog equivalence."
+
+[[interfaces]]
+id = "CORE070-FAMILY-05-LOG-FORMULA-INTERFACE"
+fixture = "test/parity/test_nb2_formula_parity.jl"
+model_contract_id = "MODEL-FAMILY-05-LOG"
+role = "formula_interface"
+
+[[obligation]]
+id = "CORE070-FAMILY-05-LOG-FORMULA-INTERFACE"
+scope = "Original NB2 model through Julia wide and reversed-long formulas"
+owner = "Ada"
+source = "R/fit_multi.R:6c61aee2132f1a7eee600b20ed00407c626cd284; family model catalogue MODEL-FAMILY-05-LOG"
+r_call = "fit_gllvmtmb_parity_loglik(Y,2;family=:negbinomial), pinned original default R fit"
+julia_call_or_missing = "gllvm(@formula(y ~ 1),Y,(site=1:80,);family=NegativeBinomial(),K=2,g_tol=1e-7,iterations=800); reversed-long equivalent"
+fixture_specification = "Original NB2 seed45, p5 K2 n80, data SHA256 7abde2731134afe61afee5a7f0c29b58892ad72e550fa41cf8230e9c701a2bf9"
+parameterisation = "Per-trait sizes; observed-curvature Laplace; no site covariates"
+identification = "Triangular loading matrix, 19 free coordinates"
+acceptance_rule = "19 assertions; native/R logLik rtol1e-6 and both health checks; each formula all19 coordinates and logLik atol1e-10; malformed rows/missing/duplicate fail"
+implementation_status = "REQUIRED_REPLAY_PENDING"
+evidence_path = ".unlazy/core070-aghq/nb2-formula-required-01/"

@@ -24,7 +24,7 @@ Every planned case has a stable ID, source row hash, reference descriptor and
 expected admission, owner, coverage role, candidate native entry/fixture where
 known, dependencies, acceptance requirements and missing contract fields.
 `fixture`, `r_call` and `julia_call` are bound for the two freshly verified
-original native NB2 cases and the intercept-only NB2 formula qualification;
+original native NB2 cases and the intercept-only NB2 formula required case;
 the other94 specifications keep these fields null
 until their exact fitted contract is established. The native bindings include
 seed, dimensions, parameterization, fixture hash and required-runner evidence. The native entry calls are historical leads,
@@ -35,8 +35,8 @@ not fitted-model calls: some useK1 while their legacy fixture usesK2.
 1. Bind the native cases to exact reference/Julia calls and fixtures. Use existing
    seeded fits only when means, links, nuisance parameters, curvature and
    identification agree. The original required NB2/truncated-NB2 pair is verified;
-   the NB2 formula is now separately qualified on the same original data. Its
-   required-runner integration and public R bridge remain unpaid.
+   the NB2 formula is now verified in the required runner on the same original data.
+   The public R bridge remains unpaid.
 2. Keep probit and cloglog cases separate from the legacy logit fixture. The six
    declared binomial link/trial cases are candidate evidence; explicit observed
    cloglog is not default-Fisher equivalence.
@@ -63,3 +63,17 @@ reproduces the old failure using the archived checker, runs11 current regression
 tests, checks all752 source facts and verifies that no planned case has been
 promoted. The full manifest remains DRAFT with698 non-excluded facts lacking
 complete executable coverage.
+
+## Separate required interface registry
+
+The runner retains17 family IDs and registers the original NB2 formula under
+`CORE070-FAMILY-05-LOG-FORMULA-INTERFACE`. Default selection requests all18
+registered cases; this is still a subset of the full programme. Selecting exactly
+17 arbitrary IDs cannot earn the `all17` family label. Shared fixture assertion
+counts remain deduplicated by execution group. Formula and native NB2 artifacts
+use different filenames, and a formula-only selection hashes its original NB2
+data-generation source as an explicit dependency.
+
+The prior standalone formula and native-refresh summaries are retained as
+historical snapshots. Current bindings use `nb2-formula-required-evidence.json`;
+no independent review or full-family promotion follows from this integration.

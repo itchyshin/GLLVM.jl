@@ -118,6 +118,12 @@ if required
     core070_start_run!()
     try
         run_required_family_smoke!()
+        @testset "CORE-070 required interfaces" begin
+            for id in Core070CaseRegistry.INTERFACE_IDS
+                core070_execute_case!(id, _CORE070_FIXTURES[id],
+                    () -> include(joinpath(@__DIR__, basename(_CORE070_FIXTURES[id]))))
+            end
+        end
         core070_finish_run!()
     catch err
         core070_abort_run!(err)

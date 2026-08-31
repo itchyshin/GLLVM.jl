@@ -8,12 +8,12 @@ PLAN=coverage.PREFIX+'family-required-case-plan.json'
 INPUTS=[coverage.PREFIX+'family-admission-subset.json',
         coverage.PREFIX+'family-route-contract.json',
         coverage.PREFIX+'family-model-catalogue.json',
-        coverage.PREFIX+'nb2-required-refresh-evidence.json',
-        coverage.PREFIX+'nb2-formula-evidence.json']
+        coverage.PREFIX+'nb2-formula-required-evidence.json']
 ROLES=['native_model','formula_interface','public_r_bridge']
 
 def build():
-    admission,entry,catalogue,paired,formula=[coverage.read_json(ROOT/p) for p in INPUTS]
+    admission,entry,catalogue,paired=[coverage.read_json(ROOT/p) for p in INPUTS]
+    formula=paired["formula"]
     assert admission['reference_commit']==entry['reference_commit']==catalogue['reference_commit']==coverage.REFERENCE
     entries={r['source_id']:r for r in entry['rows']}
     candidates={r['id']:r for r in catalogue['cases']}
@@ -76,7 +76,7 @@ def build():
                     status='EXISTING_REQUIRED_NATIVE_CASE_BOUND_INTERFACES_PENDING',
                     required_runner_case_id=candidate['id'],
                     fixture_sha256=coverage.sha(ROOT/candidate['fixture']),
-                    evidence=INPUTS[-2],execution_manifest_sha256=paired['execution_manifest_sha256'],
+                    evidence=INPUTS[-1],execution_manifest_sha256=paired['execution_manifest_sha256'],
                     model=dict(seed=candidate['seed'],p=candidate['n_traits'],n=candidate['n_units'],
                         K=candidate['n_latent'],**candidate['model']))
                 case['candidate_warning']='Only the original seeded native model is bound; formula, bridge, other models and broader recovery remain unpaid.'
@@ -86,8 +86,9 @@ def build():
                     r_call=candidate['reference_call'],julia_call=formula['julia_call'],
                     candidate_is_equivalent=True,status=formula['status'],
                     model=formula['model'],evidence=INPUTS[-1],
-                    required_runner_status='NOT_INTEGRATED')
-                case['candidate_warning']='Original intercept-only wide/long formula qualified; public R bridge, broader models and required-runner integration remain unpaid.'
+                    required_runner_status='VERIFIED_ORIGINAL_MODEL',
+                    required_runner_case_id=cid,execution_manifest_sha256=paired['execution_manifest_sha256'])
+                case['candidate_warning']='Original intercept-only wide/long formula verified in required runner; public R bridge and broader models remain unpaid.'
             cases.append(case)
         rows.append(dict(source_id=sid,classification=classification,planned_case_ids=ids,
                          executable_case_ids=[],status='EXCLUDED' if not ids else 'SPECIFICATION_REQUIRED'))

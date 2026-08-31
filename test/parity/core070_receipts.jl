@@ -20,6 +20,7 @@ end
 mutable struct ExecutionRun
     dir::String
     requested_case_ids::Vector{String}
+    family_smoke_case_ids::Vector{String}
     source::Dict{String, Any}
     inventory::Dict{String, Any}
     contract_sha256::String
@@ -107,7 +108,10 @@ function _run_receipt(run::ExecutionRun, status::String; reason::Union{Nothing, 
         "run_id" => run.run_id,
         "requested_case_ids" => run.requested_case_ids,
         "completed_case_ids" => sort!(collect(keys(run.cells))),
-        "scope" => length(run.requested_case_ids) == 17 ? "all17" : "subset",
+        "scope" => length(run.family_smoke_case_ids) == 17 &&
+            Set(run.requested_case_ids) == Set(run.family_smoke_case_ids) ? "all17" : "subset",
+        "family_smoke_case_ids" => run.family_smoke_case_ids,
+        "selected_family_count" => length(intersect(run.requested_case_ids, run.family_smoke_case_ids)),
         "assertion_counting" => "execution_groups_v1",
         "actual_assertions" => sum((counts["passed"] for counts in values(executions)); init = 0),
         "source" => run.source,
@@ -128,11 +132,15 @@ function _write_run!(run::ExecutionRun, status::String; reason::Union{Nothing, S
 end
 
 function start_run!(dir::AbstractString; requested_case_ids::AbstractVector{<:AbstractString},
-                    source::AbstractDict, inventory::Dict{String, Any}, contract_sha256::AbstractString)
+                    source::AbstractDict, inventory::Dict{String, Any}, contract_sha256::AbstractString,
+                    family_smoke_case_ids::AbstractVector{<:AbstractString} = String[])
     requested = String.(requested_case_ids)
     isempty(requested) && throw(ArgumentError("required receipt run needs at least one requested case"))
     length(requested) == length(unique(requested)) ||
         throw(ArgumentError("requested case IDs must be unique"))
+    families = String.(family_smoke_case_ids)
+    isempty(families) || (length(families) == 17 && length(unique(families)) == 17) ||
+        throw(ArgumentError("family registry needs exactly 17 unique IDs when declared"))
     entries = get(inventory, "entries", nothing)
     entries isa AbstractVector || throw(ArgumentError("execution inventory has no entries"))
     get(inventory, "manifest_sha256", nothing) == _inventory_digest(entries) ||
@@ -141,7 +149,7 @@ function start_run!(dir::AbstractString; requested_case_ids::AbstractVector{<:Ab
     target = abspath(dir)
     _assert_fresh_dir(target)
     source_dict = Dict{String, Any}(String(key) => value for (key, value) in source)
-    run = ExecutionRun(target, requested, source_dict, inventory, String(contract_sha256), _run_id(target),
+    run = ExecutionRun(target, requested, families, source_dict, inventory, String(contract_sha256), _run_id(target),
                        Dict{String, Dict{String, Any}}(), false)
     _write_run!(run, "started")
     return run

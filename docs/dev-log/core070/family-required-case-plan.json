@@ -6,8 +6,7 @@
     "docs/dev-log/core070/family-admission-subset.json": "a51906ddd90bdabc2c1764623245963fb600a3bdabd3164e31404e41f7ee587b",
     "docs/dev-log/core070/family-route-contract.json": "f49e17cdf834d3693e7be4f6b40cf3fca507cfc5ed930b50fad967ab79543b62",
     "docs/dev-log/core070/family-model-catalogue.json": "bc96cd1a6109be3561c7825c413ccf9acebbbf5e6a205b748cdb2b63f9e614f1",
-    "docs/dev-log/core070/nb2-required-refresh-evidence.json": "8a38a68eccf248764c679e2cab7dd4f84240186378b71690939638209f464162",
-    "docs/dev-log/core070/nb2-formula-evidence.json": "ff68a66a84c35e55026d1fe750b4a5df93a735a18d3e545b044f89b04f666c4b"
+    "docs/dev-log/core070/nb2-formula-required-evidence.json": "6ace264482e0ffe690c9a72447d94de617cf32e415b494c777b4f72ae7edbac7"
   },
   "source_facts": 69,
   "planned_case_count": 97,
@@ -1507,8 +1506,8 @@
       "candidate_warning": "Only the original seeded native model is bound; formula, bridge, other models and broader recovery remain unpaid.",
       "required_runner_case_id": "NATIVE-06-NB2",
       "fixture_sha256": "db83f3385dc7f6de699573600b1022cf4e628f1b90caafe61a3b7d6a4590dabd",
-      "evidence": "docs/dev-log/core070/nb2-required-refresh-evidence.json",
-      "execution_manifest_sha256": "66bba04d252ec63f41b4b3ee4a400435761a85e2814fe7a29ee4f98843af04fb",
+      "evidence": "docs/dev-log/core070/nb2-formula-required-evidence.json",
+      "execution_manifest_sha256": "2ae3ba1eaf4efd1699ec8fbe5083ef7763d56497de0a762877adf2d639e62dad",
       "model": {
         "seed": 45,
         "p": 5,
@@ -1534,8 +1533,8 @@
         5,
         0
       ],
-      "status": "ORIGINAL_NB2_FORMULA_QUALIFIED_REQUIRED_RUNNER_INTEGRATION_PENDING",
-      "fixture": "tools/core070_nb2_formula.jl",
+      "status": "ORIGINAL_NB2_FORMULA_REQUIRED_CASE_VERIFIED",
+      "fixture": "test/parity/test_nb2_formula_parity.jl",
       "r_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=nbinom2(), control=gllvmTMBcontrol(n_init=1L,se=FALSE))",
       "julia_call": "gllvm(@formula(y ~ 1),Y,(site=collect(1:n),);family=GLLVM.NegativeBinomial(),K=K,g_tol=1e-7,iterations=800); separately gllvm(@formula(y ~ 1),long;family=GLLVM.NegativeBinomial(),K=K,g_tol=1e-7,iterations=800)",
       "candidate_native_entry": "fit_gllvm(Y; family=GLLVM.NegativeBinomial(), K=1, link=LogLink())",
@@ -1562,8 +1561,8 @@
       ],
       "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
       "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
-      "candidate_warning": "Original intercept-only wide/long formula qualified; public R bridge, broader models and required-runner integration remain unpaid.",
-      "fixture_sha256": "7ebefbe022d0586c82d040e9a42f13ecc06cd8873f4694497cd6a32f030cad10",
+      "candidate_warning": "Original intercept-only wide/long formula verified in required runner; public R bridge and broader models remain unpaid.",
+      "fixture_sha256": "aa043d24144559773683f089d02b43ba2af3e9b2df5220aad2bec7c166125e5c",
       "model": {
         "seed": 45,
         "p": 5,
@@ -1572,8 +1571,10 @@
         "dispersion": "per-trait NB2 size",
         "hessian": "observed"
       },
-      "evidence": "docs/dev-log/core070/nb2-formula-evidence.json",
-      "required_runner_status": "NOT_INTEGRATED"
+      "evidence": "docs/dev-log/core070/nb2-formula-required-evidence.json",
+      "required_runner_status": "VERIFIED_ORIGINAL_MODEL",
+      "required_runner_case_id": "CORE070-FAMILY-05-LOG-FORMULA-INTERFACE",
+      "execution_manifest_sha256": "2ae3ba1eaf4efd1699ec8fbe5083ef7763d56497de0a762877adf2d639e62dad"
     },
     {
       "id": "CORE070-FAMILY-05-LOG-PUBLIC-R-BRIDGE",
@@ -2510,8 +2511,8 @@
       "candidate_warning": "Only the original seeded native model is bound; formula, bridge, other models and broader recovery remain unpaid.",
       "required_runner_case_id": "NATIVE-12-TRUNCATED-NB2",
       "fixture_sha256": "0972c0993b909d4d262e46a844915f7cf79e0afe36f22a177cb6f350b0064558",
-      "evidence": "docs/dev-log/core070/nb2-required-refresh-evidence.json",
-      "execution_manifest_sha256": "66bba04d252ec63f41b4b3ee4a400435761a85e2814fe7a29ee4f98843af04fb",
+      "evidence": "docs/dev-log/core070/nb2-formula-required-evidence.json",
+      "execution_manifest_sha256": "2ae3ba1eaf4efd1699ec8fbe5083ef7763d56497de0a762877adf2d639e62dad",
       "model": {
         "seed": 58,
         "p": 5,

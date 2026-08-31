@@ -241,6 +241,7 @@ using GLLVM
     include("test_phylo_branch_re.jl")
     include("test_branch_re_marginal_fallback.jl")
     include("test_core070_receipts.jl")
+    include("test_core070_interface_registry.jl")
     include("test_parity_trial_inputs.jl")
     include("test_em_phylo.jl")
     include("test_em_squarem.jl")

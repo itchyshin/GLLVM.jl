@@ -13,45 +13,20 @@ using LinearAlgebra
 include(joinpath(@__DIR__, "parity_trial_inputs.jl"))
 include(joinpath(@__DIR__, "core070_receipts.jl"))
 using .Core070Receipts
+include(joinpath(@__DIR__, "core070_case_registry.jl"))
 
 const _CORE070_REFERENCE_COMMIT = "b4d5fee64def88bc768dda1f1f77c29b295edd86"
 const _CORE070_NAMESPACE_SHA256 = "9094613610789faab69c43195d3cfdafb2c7dfef284e6646b10dababa4fa132c"
 const _CORE070_SOURCE_TREE_SHA256 = "f83545faa6543dbb1f64d64bbf5a9498adcdf036cc3da5851f269912698b1cc7"
 const _CORE070_ARCHIVE_SHA256 = "0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc"
-const _CORE070_FAMILY_SMOKE_IDS = [
-    "NATIVE-01-GAUSSIAN", "NATIVE-02-BINOMIAL", "NATIVE-03-POISSON",
-    "NATIVE-04-LOGNORMAL", "NATIVE-05-GAMMA", "NATIVE-06-NB2",
-    "NATIVE-07-TWEEDIE", "NATIVE-08-BETA", "NATIVE-09-BETABINOMIAL",
-    "NATIVE-10-STUDENT", "NATIVE-11-TRUNCATED-POISSON",
-    "NATIVE-12-TRUNCATED-NB2", "NATIVE-13-DELTA-LOGNORMAL",
-    "NATIVE-14-DELTA-GAMMA", "NATIVE-15-ORDINAL-PROBIT", "NATIVE-16-NB1",
-    "NATIVE-17-MULTINOMIAL-FIXED",
-]
+const _CORE070_FAMILY_SMOKE_IDS = Core070CaseRegistry.FAMILY_IDS
 const _CORE070_SOURCE = Ref{Dict{String, Any}}()
 const _CORE070_RUN = Ref{Any}(nothing)
 _core070_required() = get(ENV, "CORE070_PARITY_REQUIRED", "0") == "1"
 const _CORE070_ORACLE_BUILD_RECEIPT = ".unlazy/core070-aghq/oracle-receipts/build.json"
 const _CORE070_ORACLE_SOURCE_RECEIPT = ".unlazy/core070-aghq/oracle-source/source.json"
 
-const _CORE070_FIXTURES = Dict(
-    "NATIVE-01-GAUSSIAN" => "test/parity/test_gaussian_parity.jl",
-    "NATIVE-02-BINOMIAL" => "test/parity/test_binomial_parity.jl",
-    "NATIVE-03-POISSON" => "test/parity/test_poisson_parity.jl",
-    "NATIVE-04-LOGNORMAL" => "test/parity/test_lognormal_parity.jl",
-    "NATIVE-05-GAMMA" => "test/parity/test_nox_dispersion_parity.jl",
-    "NATIVE-06-NB2" => "test/parity/test_negbin_parity.jl",
-    "NATIVE-07-TWEEDIE" => "test/parity/test_tweedie_parity.jl",
-    "NATIVE-08-BETA" => "test/parity/test_beta_parity.jl",
-    "NATIVE-09-BETABINOMIAL" => "test/parity/test_nox_dispersion_parity.jl",
-    "NATIVE-10-STUDENT" => "test/parity/test_studentt_parity.jl",
-    "NATIVE-11-TRUNCATED-POISSON" => "test/parity/test_truncated_poisson_parity.jl",
-    "NATIVE-12-TRUNCATED-NB2" => "test/parity/test_truncated_nbinom2_parity.jl",
-    "NATIVE-13-DELTA-LOGNORMAL" => "test/parity/test_delta_lognormal_required.jl",
-    "NATIVE-14-DELTA-GAMMA" => "test/parity/test_delta_gamma_required.jl",
-    "NATIVE-15-ORDINAL-PROBIT" => "test/parity/test_ordinal_probit_parity.jl",
-    "NATIVE-16-NB1" => "test/parity/test_nox_dispersion_parity.jl",
-    "NATIVE-17-MULTINOMIAL-FIXED" => "test/parity/test_multinomial_parity.jl",
-)
+const _CORE070_FIXTURES = Core070CaseRegistry.FIXTURES
 
 _core070_root() = normpath(joinpath(@__DIR__, "..", ".."))
 
@@ -65,19 +40,7 @@ function _core070_copy_oracle_receipts!(receipt_dir::AbstractString)
     return nothing
 end
 
-function core070_requested_case_ids()
-    raw = strip(get(ENV, "CORE070_PARITY_CASE_IDS", ""))
-    ids = isempty(raw) ? copy(_CORE070_FAMILY_SMOKE_IDS) : strip.(split(raw, ','))
-    any(isempty, ids) && throw(ArgumentError("CORE070_PARITY_CASE_IDS contains an empty case ID"))
-    length(ids) == length(unique(ids)) || throw(ArgumentError("CORE070_PARITY_CASE_IDS contains duplicate IDs"))
-    all(id -> id in _CORE070_FAMILY_SMOKE_IDS, ids) ||
-        throw(ArgumentError("CORE070_PARITY_CASE_IDS contains an unknown family-smoke ID"))
-    grouped = ("NATIVE-05-GAMMA", "NATIVE-09-BETABINOMIAL", "NATIVE-16-NB1")
-    selected_grouped = [id for id in ids if id in grouped]
-    isempty(selected_grouped) || length(selected_grouped) == length(grouped) ||
-        throw(ArgumentError("the grouped Gamma/NB1/BetaBinomial fixture must be requested as its exact three-case scope"))
-    return ids
-end
+core070_requested_case_ids() = Core070CaseRegistry.requested_ids(get(ENV, "CORE070_PARITY_CASE_IDS", ""))
 
 function core070_case_requested(id::AbstractString)
     run = _CORE070_RUN[]
@@ -86,8 +49,8 @@ end
 
 function _core070_execution_paths(requested::AbstractVector{<:AbstractString})
     paths = String[
-        "src", "test/parity/core070_receipts.jl", "test/parity/parity_helpers.jl",
-        "test/parity/parity_trial_inputs.jl", "test/parity/truncnb2_policy.jl", "test/parity/nb2_health.jl",
+        "src", "test/parity/core070_receipts.jl", "test/parity/core070_case_registry.jl", "test/parity/parity_helpers.jl",
+        "test/parity/parity_trial_inputs.jl", "test/parity/test_negbin_parity.jl", "test/parity/truncnb2_policy.jl", "test/parity/nb2_health.jl",
         "test/parity/runparity.jl", "test/parity/r_health.R",
         "tools/core070_delta_matched.jl", "test/parity/test_delta_lognormal_parity.jl",
         "test/parity/test_delta_gamma_parity.jl", "Project.toml", "test/Project.toml",
@@ -192,12 +155,14 @@ end
 function core070_start_run!()
     _core070_required() || return nothing
     _CORE070_RUN[] === nothing || throw(ArgumentError("CORE-070 run was already started in this Julia process"))
+    Core070CaseRegistry.validate_manifest(TOML.parsefile(joinpath(_core070_root(), "docs/dev-log/core070/frozen-r070-contract.toml")))
     requested = core070_requested_case_ids()
     source = _core070_source_pin!()
     root = _core070_root()
     inventory = execution_inventory(root, _core070_execution_paths(requested))
     run = start_run!(_core070_receipt_dir();
-        requested_case_ids = requested, source = source, inventory = inventory,
+        requested_case_ids = requested, family_smoke_case_ids = _CORE070_FAMILY_SMOKE_IDS,
+        source = source, inventory = inventory,
         contract_sha256 = _core070_sha256_file(joinpath(root, "docs/dev-log/core070/frozen-r070-contract.toml")))
     try
         _core070_copy_oracle_receipts!(run.dir)
