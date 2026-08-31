@@ -20,6 +20,7 @@ REGISTRY=(
  ('postfit-policy','postfit-policy-subset.json','cases',29),
  ('inference','inference-routing-subset.json','case_ids',98),
  ('data','data-controls-subset.json','case_ids',56),
+ ('masks-known','masks-known-subset.json','cases',17),
 )
 CLASS={
  'required_core':'required_core','required_core_model_candidate':'required_core',
@@ -108,7 +109,7 @@ def build_index(root):
             need([x['id'] for x in parsed]==rows,'data fixture ID drift')
             rows=parsed
         for row in rows:add(group,row,row['classification'],relative)
-    need(len(facts)==752 and len({f['id'] for f in facts})==752,'duplicate or missing source facts')
+    need(len(facts)==769 and len({f['id'] for f in facts})==769,'duplicate or missing source facts')
     return dict(schema=1,status='KNOWN_SOURCE_CENSUS_NOT_EXHAUSTIVE_SCOPE',reference_commit=REFERENCE,
       inventories=pins,facts=sorted(facts,key=lambda x:x['id']))
 

@@ -16310,3 +16310,16 @@ Seven master rows link nine reference contracts, zero executable promotions.
 See core070/covariance-modes-contract.md, covariance-modes-evidence.json and
 after-task/2026-08-31-core070-covariance-modes.md. FullprogrammeACTIVE/M1PARTIAL,
 manifestDRAFT; original binomialk5/Studentt/defaultunique and remainingAGHQ unpaid.
+
+
+## 2026-08-31 — loading masks and known covariance
+Seventeen frozen-R prepared/rejected calls and16 Gaussian fixed points pass.
+Loading pins, ignored upper triangle, all-fixed random effects, known-V exact
+additivity and1e-8I preparation verified; Poisson is admission-only. Maxnll
+delta2.28e-13/gradient3.82e-9. First3diagnostic predicate failures retained.
+Central census769/nonexcluded715;17 new reference links, no native promotions.
+Six verifier tests/21 corruptions and6 central census testsPASS; Unlazy3met.
+See core070/masks-known-contract.md and after-task/2026-08-31-core070-masks-known.md.
+ProgrammeACTIVE/M1PARTIAL/fullmanifestDRAFT. Noether Terra/high CLI bounded
+review: no numerical finding; independent verifierPASS. Mutation tests required
+parent writable-lane replay (allPASS). MCf0468523 HTTP200/Rfieldsunchanged.

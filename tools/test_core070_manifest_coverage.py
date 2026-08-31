@@ -20,8 +20,8 @@ class ManifestCoverage(unittest.TestCase):
     def test_known_source_inventory_matches_live_pinned_inputs(self):
         saved=coverage.read_json(evidence.ROOT/coverage.INDEX)
         self.assertEqual(saved,coverage.build_index(evidence.ROOT))
-        self.assertEqual(len(saved['facts']),752)
-        self.assertEqual(sum(f['classification']!='intentionally_excluded' for f in saved['facts']),698)
+        self.assertEqual(len(saved['facts']),769)
+        self.assertEqual(sum(f['classification']!='intentionally_excluded' for f in saved['facts']),715)
 
     def test_mapping_positive_and_negative_controls(self):
         facts=[dict(id='family/ok',classification='required_core'),dict(id='family/no',classification='rejected'),

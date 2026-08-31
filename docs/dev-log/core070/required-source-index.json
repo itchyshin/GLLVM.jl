@@ -70,7 +70,11 @@
     "test/parity/fixtures/core070_inference_routes.tsv": "5f75af28288781a5cc516bb94d38e5fdc5107b1712be54fbaabe9d0e79035db0",
     "docs/dev-log/core070/data-controls-subset.json": "c767c1b32c725f860a1fa8678a609741bc20e35b1e7483554f4c29d3a139d614",
     "test/parity/fixtures/core070_data_controls.R": "920db6968de565e7266a3429d09351ba90087ba253d4f47ab422dd16039171ab",
-    "tools/core070_data_case_index.R": "34af00c9ff9a2a8ad52e51a6be6892c8c8db612bde30ae58a282f5733f05f782"
+    "tools/core070_data_case_index.R": "34af00c9ff9a2a8ad52e51a6be6892c8c8db612bde30ae58a282f5733f05f782",
+    "docs/dev-log/core070/masks-known-subset.json": "038e019629fe48670415b309ad8fb9442794608f6309ebd59b0636c9776059b7",
+    ".unlazy/core070-aghq/oracle-source/readback/R/lambda-constraint.R": "ccd07648fdaedb0a3e5a89068278a66ada91874037ea84f3b2bcb4f8e7388a08",
+    ".unlazy/core070-aghq/oracle-source/readback/R/two-stage.R": "391e3f274dbf9a303734fcb4960698ca96e2867272369b72a1f6e53c2a44b4b5",
+    ".unlazy/core070-aghq/oracle-source/readback/src/gllvmTMB.cpp": "d92e70ba28d91e26d5612b2c8c2d10f9c52c7c2f09625d89671f1e8c4afaf6cc"
   },
   "facts": [
     {
@@ -2928,6 +2932,125 @@
       "source_classification": "required_core",
       "source_inventory": "docs/dev-log/core070/isdm-admission-subset.json",
       "source_row_sha256": "a8fe53e6bef67e3b51ddf8a59d00afb06f979fce78107f515410a96475ce02b3"
+    },
+    {
+      "id": "masks-known/KNOWN-ALIAS",
+      "classification": "compatibility_adapter",
+      "source_classification": "compatibility_adapter",
+      "source_inventory": "docs/dev-log/core070/masks-known-subset.json",
+      "source_row_sha256": "155d224aee4aea9d3828a525905db79943e8d5fbb42f647c627dd89093087a0d"
+    },
+    {
+      "id": "masks-known/KNOWN-BLOCK",
+      "classification": "required_core",
+      "source_classification": "required_core_model_candidate",
+      "source_inventory": "docs/dev-log/core070/masks-known-subset.json",
+      "source_row_sha256": "c5b452b9f0a378ceb0534f4210b5f520fb96533b5a579ba1ef2a82a86d61604d"
+    },
+    {
+      "id": "masks-known/KNOWN-DIM",
+      "classification": "rejected",
+      "source_classification": "rejected",
+      "source_inventory": "docs/dev-log/core070/masks-known-subset.json",
+      "source_row_sha256": "e9d6614a56b1042f0cfb0f181d405306f523705e5003d9141f33f9709a94a19b"
+    },
+    {
+      "id": "masks-known/KNOWN-EXACT",
+      "classification": "required_core",
+      "source_classification": "required_core_model_candidate",
+      "source_inventory": "docs/dev-log/core070/masks-known-subset.json",
+      "source_row_sha256": "9b588b322ce5e7770c9864cfc12348132f99bc59c5795df38871f236fe911009"
+    },
+    {
+      "id": "masks-known/KNOWN-LIST",
+      "classification": "rejected",
+      "source_classification": "rejected",
+      "source_inventory": "docs/dev-log/core070/masks-known-subset.json",
+      "source_row_sha256": "8b506f8748cb6e7db88d346b2f3fe53fe9b24ae4005d255abbd2e27150bd2e26"
+    },
+    {
+      "id": "masks-known/KNOWN-MISSING",
+      "classification": "rejected",
+      "source_classification": "rejected",
+      "source_inventory": "docs/dev-log/core070/masks-known-subset.json",
+      "source_row_sha256": "d8aa90e763ec0bf06981050a865a2dcc1bcc249dfa871a5adfc939664576c821"
+    },
+    {
+      "id": "masks-known/KNOWN-POISSON",
+      "classification": "required_core",
+      "source_classification": "required_core_model_candidate",
+      "source_inventory": "docs/dev-log/core070/masks-known-subset.json",
+      "source_row_sha256": "43154af4cbf2954e49e74d3ca919f9f60f94af8a83d98034ade19ab660d093ee"
+    },
+    {
+      "id": "masks-known/KNOWN-PROP",
+      "classification": "rejected",
+      "source_classification": "rejected",
+      "source_inventory": "docs/dev-log/core070/masks-known-subset.json",
+      "source_row_sha256": "f7881574358b38cc6398613a5a5ca7121b754946d5c346f07f2a4e91198fd5cb"
+    },
+    {
+      "id": "masks-known/KNOWN-ZERO",
+      "classification": "required_core",
+      "source_classification": "required_core_model_candidate",
+      "source_inventory": "docs/dev-log/core070/masks-known-subset.json",
+      "source_row_sha256": "8c9b861e317fc32fdc77431003e93fbf1aea3a3a6c9336ffb225c1ad32a12f65"
+    },
+    {
+      "id": "masks-known/MASK-B-ALLFIXED",
+      "classification": "required_core",
+      "source_classification": "required_core_model_candidate",
+      "source_inventory": "docs/dev-log/core070/masks-known-subset.json",
+      "source_row_sha256": "6d4011d9672e8eb095a5ffa9431fc743e7a8ebb7b819bf487a8a651e53e1e4fe"
+    },
+    {
+      "id": "masks-known/MASK-B-DIM",
+      "classification": "rejected",
+      "source_classification": "rejected",
+      "source_inventory": "docs/dev-log/core070/masks-known-subset.json",
+      "source_row_sha256": "9411464d42b1984b69df4a0f17accebdd1a430224b9473b37474a619152a37b9"
+    },
+    {
+      "id": "masks-known/MASK-B-NONMATRIX",
+      "classification": "rejected",
+      "source_classification": "rejected",
+      "source_inventory": "docs/dev-log/core070/masks-known-subset.json",
+      "source_row_sha256": "c3e122479655328ffc3572658ec27cc47d48c7f7cec25b0437dab08fc2a76f85"
+    },
+    {
+      "id": "masks-known/MASK-B-PINS",
+      "classification": "required_core",
+      "source_classification": "required_core_model_candidate",
+      "source_inventory": "docs/dev-log/core070/masks-known-subset.json",
+      "source_row_sha256": "480d5f2d80bc94b51a2341859b6633f013d2663054354fe49a662d795863bcc3"
+    },
+    {
+      "id": "masks-known/MASK-B-SLOPE",
+      "classification": "rejected",
+      "source_classification": "rejected",
+      "source_inventory": "docs/dev-log/core070/masks-known-subset.json",
+      "source_row_sha256": "9b4e8f208f015322103317b7cffed19695e0ef7f796ed968134c6424e9417b46"
+    },
+    {
+      "id": "masks-known/MASK-B-UPPER",
+      "classification": "compatibility_adapter",
+      "source_classification": "compatibility_adapter",
+      "source_inventory": "docs/dev-log/core070/masks-known-subset.json",
+      "source_row_sha256": "5bbaf52e18ac6c9e41315cfa833170c5ea17dac18b075498fa1d7ce0d8344ded"
+    },
+    {
+      "id": "masks-known/MASK-PHY-INDEP-CONFLICT",
+      "classification": "rejected",
+      "source_classification": "rejected",
+      "source_inventory": "docs/dev-log/core070/masks-known-subset.json",
+      "source_row_sha256": "2bd5c0a83aaf8d11b4ad8c1525fe1fbacd754f57452ae32acf7c8ce14489c3cf"
+    },
+    {
+      "id": "masks-known/MASK-PHY-PINS",
+      "classification": "required_core",
+      "source_classification": "required_core_model_candidate",
+      "source_inventory": "docs/dev-log/core070/masks-known-subset.json",
+      "source_row_sha256": "f1f47d1e0c9d7e791fd88f63ecc865b7cb976d77870d8cc16ef1d5eb931952b5"
     },
     {
       "id": "namespace/S3method/coef,gllvmTMB_julia",

@@ -1090,3 +1090,22 @@ All compute terminal. MC4ffcb72072fa48760c99653f71ff2215056c19ad: servedHTTP200,
 exact Julia-field readback, Rfieldsunchanged, exact-file leaseRELEASED.
 
 CM-CONTRACT/CM-NEGATIVES freshly reverified:2met,0unmet,0abandoned. Original failed point run remains required FAIL history.
+
+
+## 2026-08-31 — loading-mask and known-covariance reference contracts
+Seventeen actual frozen-R public calls pass expected admission/rejection;
+sixteen Gaussian fixed points pass normalization and outer FD checks.
+Read core070/masks-known-contract.md, masks-known-subset.json and evidence.
+First capture failed exact diagnostic predicates only and remains FAIL.
+All17 rows added to source census:769facts/715nonexcluded. Native/formula/bridge
+case IDs remain unassigned; fullmanifestDRAFT cannot be frozen by relabeling.
+Six verifier tests/21corruptions plus6census testsPASS, Unlazy3met.
+No Julia/Rengine/foreign edits, optimizer/campaign/DRAC/newBproduction/push/merge/release/cleanup.
+NEXT finish remaining source/rank/modifier/admission crossings and independent
+full-scope review before native capability expansion. Do not repeat these
+unchanged R checks or successful eligibleK1 pairs. Originalbinomialk5,Studentt,
+defaultunique and remainingAGHQ debts stay visible. Noether fresh Terra/high
+CLI review: no numerical correctness finding; independent evidence gatePASS.
+His sandbox prevented temporary mutation fixtures; parent testsPASS. No Rose
+programme signoff. MCf0468523a1fad7ad9fb30a2761bdf09c36ead0ee servedHTTP200,
+Rfieldsunchanged, exact-file leaseRELEASED. All compute/review processes terminal.
