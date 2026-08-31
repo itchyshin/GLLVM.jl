@@ -100,6 +100,19 @@ is still active; this document does not relabel them complete or abandoned.
 FINDINGS-OF-RECORD: the repo evidence and this committed handover are the durable
 record; no brain-vault finding was written.
 
+Closure receipts:
+
+- GLLVM.jl evidence commit: `239dbd238cbd8c50df9109ce08a15f6702307aa7`
+  (local only, unpushed).
+- Restore-tested checkpoint:
+  `/Users/z3437171/local-scratch/preservation/core070-execution-20260831-165253-latent-bare`;
+  the Git bundle and five-attempt tarball passed SHA-256 and readback checks.
+- Mission Control commit: `761222e` in the local-only Shinichi repository.
+  Canonical server verification passed and `/p/gllvmTMB/status.json` returned HTTP
+  200 containing both `239dbd23` and `PARTIAL_DIRECT_NATIVE_FIT_HEALTH_UNPAID`.
+- Noether's independent final review approved this PARTIAL handover with no
+  actionable P0-P3 findings.
+
 ## Files Created / Modified
 
 - `docs/dev-log/core070/latent-bare-model-contract.json`
