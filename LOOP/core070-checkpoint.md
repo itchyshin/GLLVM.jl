@@ -1643,3 +1643,29 @@ This replaces the previous next-action paragraph, not its historical evidence.
   Evidence core070/covariance-programme-evidence.json. Noether scopedreviewclear;
   fullprogrammepanelnotrun. Next select and qualify covariance formula bindings
   against the nine unchanged native/Rmodelcontracts before expanding families.
+
+## Latest checkpoint — 2026-08-31, covariance formula routes
+
+- Nine unchanged native/R covariance models plus9formulaIDs now pass450assertions
+  in64.0397s onTotoro1thread;18wide/reversed-long fits, maxdeltaLL2.56009e-11.
+- Independent rawRreadback/basePythonGaussian density/98negativecontrols pass.
+  Catalogue90tests+selftest passes:33bindings/12sourcefacts,703unmappednonexcluded.
+- New formula helper requires same-process native cases; fixedresidual exact,
+  ordinaryDEPtotalcovonly; noengine/API/Rsourcechanges. SourceinputC matchesnative.
+- Attempt01 retainedFAIL63.64s (6C matrices hadRroundoffasymmetry beforefit).
+  Attempt02PASS. Workerfinalhashdrift caught andpins refreshed beforeattempt02;
+  verifierhealthfield mismatch repaired andnegative-tested onretainedresults.
+- BooleTerrahigh oneboundedrepair returnedhelper; NoetherTerrahigh reviewedstatic
+  andreceipts. Parent fixedreportedissues; bothterminal. FullRosepanelNOTRUN.
+- FullmanifestDRAFT/programmeACTIVE/M1PARTIAL. OriginalStudenthealth/binomialAGHQ
+  andothercovariancemodifier/nonGaussian/multinomial/data/postfit/bridge/recovery/
+  performance/fullsuite/finaldocs unpaid. Existinglongrun/rejectedreviewboundaries.
+- NEXT qualify frozen publicRbridge behavior for these samecovariancecontracts
+  separately from native/formula; then remainingadmittedcovariance/nativefeatures.
+  Read actualfrozenbridge admission before assuming everyroute is callable.
+- NoDRACjobs, newDuo, push/merge/release ordestructivecleanup; foreignR0.7.1/article
+  andCursor/Claude workuntouched. MC+durablecheckpoint receipts follow.
+
+- MC 0ce5a2a6240becd54e3320e35ec45305c78c41bd, HTTP200, Rfieldsunchanged; targetedlease released.
+  Unlazy covariance-formulas-01 finalreverify1of2; programmeunpaid.
+  Evidence core070/covariance-formula-evidence.json; allfit/reviewhandles terminal.

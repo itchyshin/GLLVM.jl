@@ -16709,3 +16709,16 @@ First wrapper replay failed beforefits and is retained. Source engine unchanged.
 FullmanifestDRAFT/M1PARTIAL; originalStudent/binomialAGHQ and downstream gates unpaid.
 See after-task/2026-08-31-core070-covariance-programme.md and covariance programme
 receipt under core070. No foreign edits, DRACjobs, push, merge or release.
+
+## 2026-08-31 — Covariance explicit-source formula qualification
+
+Nine unchanged native/R Gaussian models now have required wide/reversed-long
+formula comparisons:18caseIDs,450deduplicatedassertions,64.0397s Totoro1thread.
+Maxformula absolute deltaLL2.56009e-11; everyformula gradient<=1e-7. Raw R readback,
+independent base-Python Gaussian density and98negative controls pass. Source engine
+unchanged. First attempt’s asymmetric R reconstruction failure retained; exact
+nativeinputC repaired, no constructor/tolerance change. Noether found stale helper
+pin and verifierhealthschema mismatch; parent corrected and reverified. Catalogue
+90tests/self-test passes,33bindings/12facts,703unmappednonexcluded facts; fullDRAFT.
+Bridge/nonGaussian/remainingprogramme unpaid. See covariance-formulas after-task
+and core070/covariance-formula-evidence.json. NoDRACjob/fullsuite/release/foreignedit.

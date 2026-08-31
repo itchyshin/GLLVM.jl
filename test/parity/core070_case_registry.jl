@@ -1,5 +1,5 @@
 module Core070CaseRegistry
-export COVARIANCE_IDS, COVARIANCE_FIXED_IDS, COVARIANCE_MODE_IDS, FAMILY_IDS, MODEL_IDS, GAUSSIAN_IDS, INTERFACE_IDS, REGISTERED_IDS, FIXTURES, requested_ids, validate_manifest
+export COVARIANCE_FORMULA_IDS, COVARIANCE_FIXED_FORMULA_IDS, COVARIANCE_MODE_FORMULA_IDS, COVARIANCE_IDS, COVARIANCE_FIXED_IDS, COVARIANCE_MODE_IDS, FAMILY_IDS, MODEL_IDS, GAUSSIAN_IDS, INTERFACE_IDS, REGISTERED_IDS, FIXTURES, requested_ids, validate_manifest
 const FAMILY_IDS = [
     "NATIVE-01-GAUSSIAN", "NATIVE-02-BINOMIAL", "NATIVE-03-POISSON",
     "NATIVE-04-LOGNORMAL", "NATIVE-05-GAMMA", "NATIVE-06-NB2",
@@ -16,7 +16,10 @@ const COVARIANCE_FIXED_IDS = ["MODE-ORD-INDEP", "MODE-ORD-COMMON"]
 const COVARIANCE_MODE_IDS = ["FIT-MODE-ORD-DEP";
     ["FIT-MODE-$source-$mode" for source in ("ANIMAL", "KERNEL") for mode in ("INDEP", "COMMON", "DEP")]]
 const COVARIANCE_IDS = vcat(COVARIANCE_FIXED_IDS, COVARIANCE_MODE_IDS)
-const REGISTERED_IDS = vcat(FAMILY_IDS, MODEL_IDS, INTERFACE_IDS, COVARIANCE_IDS)
+const COVARIANCE_FIXED_FORMULA_IDS = COVARIANCE_FIXED_IDS .* "-FORMULA-INTERFACE"
+const COVARIANCE_MODE_FORMULA_IDS = COVARIANCE_MODE_IDS .* "-FORMULA-INTERFACE"
+const COVARIANCE_FORMULA_IDS = vcat(COVARIANCE_FIXED_FORMULA_IDS,COVARIANCE_MODE_FORMULA_IDS)
+const REGISTERED_IDS = vcat(FAMILY_IDS, MODEL_IDS, INTERFACE_IDS, COVARIANCE_IDS, COVARIANCE_FORMULA_IDS)
 const FIXTURES = Dict(
     "NATIVE-01-GAUSSIAN" => "test/parity/test_gaussian_parity.jl",
     "NATIVE-02-BINOMIAL" => "test/parity/test_binomial_parity.jl",
@@ -58,6 +61,13 @@ for id in COVARIANCE_MODE_IDS
     FIXTURES[id] = "test/parity/test_covariance_modes_required.jl"
 end
 
+for id in COVARIANCE_FIXED_FORMULA_IDS
+    FIXTURES[id] = "test/parity/test_covariance_fixed_formula_required.jl"
+end
+for id in COVARIANCE_MODE_FORMULA_IDS
+    FIXTURES[id] = "test/parity/test_covariance_modes_formula_required.jl"
+end
+
 function requested_ids(raw::AbstractString = "")
     raw = strip(raw)
     ids = isempty(raw) ? copy(REGISTERED_IDS) : strip.(split(raw, ','))
@@ -72,10 +82,14 @@ function requested_ids(raw::AbstractString = "")
     selected_gaussian = [id for id in ids if id in GAUSSIAN_IDS]
     isempty(selected_gaussian) || length(selected_gaussian) == length(GAUSSIAN_IDS) ||
         throw(ArgumentError("the original Gaussian native/formula fixture must be requested as its exact two-case scope"))
-    for group in (COVARIANCE_FIXED_IDS,COVARIANCE_MODE_IDS)
+    for group in (COVARIANCE_FIXED_IDS,COVARIANCE_MODE_IDS,COVARIANCE_FIXED_FORMULA_IDS,COVARIANCE_MODE_FORMULA_IDS)
         selected = count(id -> id in group, ids)
         selected in (0,length(group)) || throw(ArgumentError(
             "a Gaussian covariance fixture must be requested as its complete group"))
+    end
+    for (formula,native) in zip(COVARIANCE_FORMULA_IDS,COVARIANCE_IDS)
+        formula in ids && !(native in ids) && throw(ArgumentError(
+            "covariance formula $formula requires native case $native in the same run"))
     end
     for (formula, native) in FORMULA_NATIVE_DEPENDENCIES
         formula in ids && !(native in ids) && throw(ArgumentError(
@@ -89,7 +103,8 @@ function validate_manifest(manifest)
     for (key, rows, expected) in (("family_smoke_case_ids", "families", FAMILY_IDS),
                                   ("interface_case_ids", "interfaces", INTERFACE_IDS),
                                   ("model_case_ids", "models", MODEL_IDS),
-                                  ("covariance_case_ids", "covariance_models", COVARIANCE_IDS))
+                                  ("covariance_case_ids", "covariance_models", COVARIANCE_IDS),
+                                  ("covariance_formula_case_ids", "covariance_interfaces", COVARIANCE_FORMULA_IDS))
         ids = get(manifest, key, String[])
         length(ids) == length(expected) && Set(ids) == Set(expected) ||
             throw(ArgumentError("contract $key differs from runner registry"))

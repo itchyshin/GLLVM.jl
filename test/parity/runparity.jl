@@ -130,6 +130,10 @@ if required
                                    "test/parity/test_covariance_fixed_required.jl")
         run_required_family_group!(Core070CaseRegistry.COVARIANCE_MODE_IDS,
                                    "test/parity/test_covariance_modes_required.jl")
+        run_required_family_group!(Core070CaseRegistry.COVARIANCE_FIXED_FORMULA_IDS,
+                                   "test/parity/test_covariance_fixed_formula_required.jl")
+        run_required_family_group!(Core070CaseRegistry.COVARIANCE_MODE_FORMULA_IDS,
+                                   "test/parity/test_covariance_modes_formula_required.jl")
         core070_finish_run!()
     catch err
         core070_abort_run!(err)

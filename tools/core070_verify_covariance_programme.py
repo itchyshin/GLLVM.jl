@@ -34,24 +34,8 @@ def readback(script,folder,marker):
     need(lines.pop()==marker,'raw R readback failed')
     return [line.split('\t') for line in lines]
 
-def verify():
-    folder=STATE/'attempt1/receipts';run,cells=e._load_receipts(folder)
-    manifest=e.load_manifest(e.DEFAULT_MANIFEST);c.validate_registry(manifest)
-    need(manifest['status']=='DRAFT_INCOMPLETE_NOT_FROZEN','unearned programme promotion')
-    cases={r['id']:r for r in manifest['executable_case']}
-    execution=e.execution_inventory(cases,c.IDS,e.DEFAULT_MANIFEST)
-    need(not any(r['path']=='test/parity/Manifest.toml' for r in execution['entries']),'unexpected local parity manifest')
-    entries=execution['entries']+[dict(path='test/parity/Manifest.toml',sha256=sha(MANIFEST))]
-    entries.sort(key=lambda r:r['path']);execution=dict(entries=entries,manifest_sha256=e._hash_inventory(entries))
-    check_run(run,cells,cases,execution);e._validate_source(run['source'],manifest,execution,folder)
-    need(run['source']['julia_threads']==run['source']['blas_threads']==1,'thread budget drift')
-    path=STATE/'attempt1/process/process-receipt.json'
-    e.verify_process(folder,path,execution)
-    process=json.loads(path.read_text());plan=json.loads((STATE/'plan.json').read_text())
-    need(process['plan_sha256']==sha(STATE/'plan.json') and process['environment_overrides']==plan['env'],'plan/environment drift')
-    need(plan['env']['CORE070_PARITY_CASE_IDS']==','.join(c.IDS) and plan['env']['CORE070_PARITY_REQUIRED']==plan['env']['GLLVM_PARITY_TESTS']=='1','wrong or optional run')
-    need([r['id'] for r in process['results']]==['oracle-before','registry','pair','oracle-after'],'missing process checks')
-    need(plan['commands'][2]['argv'][-1]=='test/parity/runparity.jl','wrong entrypoint')
+def validate_payloads(folder,plan):
+    """Independently verify native/R values reused by dependent interfaces."""
     modes=e.load_toml(folder/'covariance-modes-raw/result.toml');fixed=e.load_toml(folder/'covariance-fixed-raw/result.toml')
     need(modes['source']['reference_commit']==fixed['source']['reference_commit']==c.REFERENCE,'reference drift')
     need(modes['case_ids']==[r['id'] for r in modes['cases']]==c.MODES and modes['all_checks'] and not modes['failures'],'missing/failed mode')
@@ -80,6 +64,27 @@ def verify():
     actual=[(ident,field,int(i),float(value)) for ident,field,i,value in readback('tools/core070_source_fixed_readback.R',folder/'covariance-fixed-raw','FIXED_SOURCE_R_READBACK_PASS')]
     expected=[(row['id'],field,i,float(value)) for row in fixed['cases'] for field in ['r_loglik','r_objective','r_code','r_gradient','r_parameters','r_beta','r_source_sd','sigma_eps_fixed'] for i,value in enumerate(flat(row[field]),1)]
     need(actual==expected,'fixed raw/report mismatch')
+    return modes,fixed
+
+def verify():
+    folder=STATE/'attempt1/receipts';run,cells=e._load_receipts(folder)
+    manifest=e.load_manifest(e.DEFAULT_MANIFEST);c.validate_registry(manifest)
+    need(manifest['status']=='DRAFT_INCOMPLETE_NOT_FROZEN','unearned programme promotion')
+    cases={r['id']:r for r in manifest['executable_case']}
+    execution=e.execution_inventory(cases,c.IDS,e.DEFAULT_MANIFEST)
+    need(not any(r['path']=='test/parity/Manifest.toml' for r in execution['entries']),'unexpected local parity manifest')
+    entries=execution['entries']+[dict(path='test/parity/Manifest.toml',sha256=sha(MANIFEST))]
+    entries.sort(key=lambda r:r['path']);execution=dict(entries=entries,manifest_sha256=e._hash_inventory(entries))
+    check_run(run,cells,cases,execution);e._validate_source(run['source'],manifest,execution,folder)
+    need(run['source']['julia_threads']==run['source']['blas_threads']==1,'thread budget drift')
+    path=STATE/'attempt1/process/process-receipt.json'
+    e.verify_process(folder,path,execution)
+    process=json.loads(path.read_text());plan=json.loads((STATE/'plan.json').read_text())
+    need(process['plan_sha256']==sha(STATE/'plan.json') and process['environment_overrides']==plan['env'],'plan/environment drift')
+    need(plan['env']['CORE070_PARITY_CASE_IDS']==','.join(c.IDS) and plan['env']['CORE070_PARITY_REQUIRED']==plan['env']['GLLVM_PARITY_TESTS']=='1','wrong or optional run')
+    need([r['id'] for r in process['results']]==['oracle-before','registry','pair','oracle-after'],'missing process checks')
+    need(plan['commands'][2]['argv'][-1]=='test/parity/runparity.jl','wrong entrypoint')
+    modes,fixed=validate_payloads(folder,plan)
     controls=sum(mode_negatives(row) for row in modes['cases'])
     for mutation in ['omit','exit','stale','missing_receipt','group','count']:
         r,b=copy.deepcopy(run),copy.deepcopy(cells)

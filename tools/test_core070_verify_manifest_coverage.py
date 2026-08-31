@@ -19,7 +19,7 @@ class DraftInspection(unittest.TestCase):
         result = verifier.inspect_draft(self.index, self.mapping, self.manifest)
         self.assertEqual(result['source_facts'], 769)
         self.assertEqual(result['nonexcluded_unmapped'], 703)
-        self.assertEqual(result['executable_bindings'], 24)
+        self.assertEqual(result['executable_bindings'], 33)
 
     def test_omitted_and_duplicate_rows_reject(self):
         for mutation in ['omit', 'duplicate']:

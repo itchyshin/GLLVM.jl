@@ -395,9 +395,10 @@
       "source_id": "covariance/COV-ANIMAL-DEP",
       "classification": "required_core",
       "executable_case_ids": [
-        "FIT-MODE-ANIMAL-DEP"
+        "FIT-MODE-ANIMAL-DEP",
+        "FIT-MODE-ANIMAL-DEP-FORMULA-INTERFACE"
       ],
-      "rationale": "Partial native Gaussian fitted-model binding only; formula, public bridge, other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
+      "rationale": "Native Gaussian and explicit-source wide/long formula bindings only; public bridge, other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
       "reference_model_case_ids": [
         "MODE-ANIMAL-DEP"
       ],
@@ -433,9 +434,11 @@
       "classification": "required_core",
       "executable_case_ids": [
         "FIT-MODE-ANIMAL-INDEP",
-        "FIT-MODE-ANIMAL-COMMON"
+        "FIT-MODE-ANIMAL-COMMON",
+        "FIT-MODE-ANIMAL-INDEP-FORMULA-INTERFACE",
+        "FIT-MODE-ANIMAL-COMMON-FORMULA-INTERFACE"
       ],
-      "rationale": "Partial native Gaussian fitted-model binding only; formula, public bridge, other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
+      "rationale": "Native Gaussian and explicit-source wide/long formula bindings only; public bridge, other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
       "reference_model_case_ids": [
         "MODE-ANIMAL-INDEP",
         "MODE-ANIMAL-COMMON"
@@ -504,9 +507,10 @@
       "source_id": "covariance/COV-KERNEL-DEP",
       "classification": "required_core",
       "executable_case_ids": [
-        "FIT-MODE-KERNEL-DEP"
+        "FIT-MODE-KERNEL-DEP",
+        "FIT-MODE-KERNEL-DEP-FORMULA-INTERFACE"
       ],
-      "rationale": "Partial native Gaussian fitted-model binding only; formula, public bridge, other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
+      "rationale": "Native Gaussian and explicit-source wide/long formula bindings only; public bridge, other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
       "reference_model_case_ids": [
         "MODE-KERNEL-DEP"
       ],
@@ -529,9 +533,11 @@
       "classification": "required_core",
       "executable_case_ids": [
         "FIT-MODE-KERNEL-INDEP",
-        "FIT-MODE-KERNEL-COMMON"
+        "FIT-MODE-KERNEL-COMMON",
+        "FIT-MODE-KERNEL-INDEP-FORMULA-INTERFACE",
+        "FIT-MODE-KERNEL-COMMON-FORMULA-INTERFACE"
       ],
-      "rationale": "Partial native Gaussian fitted-model binding only; formula, public bridge, other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
+      "rationale": "Native Gaussian and explicit-source wide/long formula bindings only; public bridge, other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
       "reference_model_case_ids": [
         "MODE-KERNEL-INDEP",
         "MODE-KERNEL-COMMON"
@@ -572,9 +578,10 @@
       "source_id": "covariance/COV-ORD-DEP",
       "classification": "required_core",
       "executable_case_ids": [
-        "FIT-MODE-ORD-DEP"
+        "FIT-MODE-ORD-DEP",
+        "FIT-MODE-ORD-DEP-FORMULA-INTERFACE"
       ],
-      "rationale": "Partial native Gaussian fitted-model binding only; formula, public bridge, other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
+      "rationale": "Native Gaussian and explicit-source wide/long formula bindings only; public bridge, other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
       "reference_model_case_ids": [
         "MODE-ORD-DEP"
       ],
@@ -584,9 +591,10 @@
       "source_id": "covariance/COV-ORD-INDEP",
       "classification": "required_core",
       "executable_case_ids": [
-        "MODE-ORD-INDEP"
+        "MODE-ORD-INDEP",
+        "MODE-ORD-INDEP-FORMULA-INTERFACE"
       ],
-      "rationale": "Partial native Gaussian fitted-model binding only; formula, public bridge, other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
+      "rationale": "Native Gaussian and explicit-source wide/long formula bindings only; public bridge, other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
       "reference_model_case_ids": [
         "MODE-ORD-INDEP"
       ],
@@ -596,9 +604,10 @@
       "source_id": "covariance/COV-ORD-INDEP-COMMON",
       "classification": "required_core",
       "executable_case_ids": [
-        "MODE-ORD-COMMON"
+        "MODE-ORD-COMMON",
+        "MODE-ORD-COMMON-FORMULA-INTERFACE"
       ],
-      "rationale": "Partial native Gaussian fitted-model binding only; formula, public bridge, other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
+      "rationale": "Native Gaussian and explicit-source wide/long formula bindings only; public bridge, other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
       "reference_model_case_ids": [
         "MODE-ORD-COMMON"
       ],

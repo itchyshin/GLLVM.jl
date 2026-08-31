@@ -55,7 +55,7 @@ function _core070_execution_paths(requested::AbstractVector{<:AbstractString})
         "test/parity/poisson_beta_health.jl", "test/parity/test_poisson_parity.jl", "test/parity/test_beta_parity.jl", "docs/dev-log/core070/poisson-beta-required-contract.json", "test/parity/runparity.jl", "test/parity/r_health.R",
         "tools/core070_delta_matched.jl", "test/parity/test_delta_lognormal_parity.jl",
         "test/parity/test_delta_gamma_parity.jl", "test/parity/fixtures/core070_gaussian_original.toml",
-    "tools/core070_covariance_mode_fits.jl", "tools/core070_source_fixed_residual_pair.jl", "test/parity/fixtures/core070_covariance_modes.R", "test/parity/fixtures/core070_covariance_fits.R", "docs/dev-log/core070/covariance-programme-contract.json",
+    "test/parity/covariance_formula_cases.jl", "docs/dev-log/core070/covariance-formula-programme-contract.json", "tools/core070_covariance_mode_fits.jl", "tools/core070_source_fixed_residual_pair.jl", "test/parity/fixtures/core070_covariance_modes.R", "test/parity/fixtures/core070_covariance_fits.R", "docs/dev-log/core070/covariance-programme-contract.json",
     "test/parity/fixtures/core070_gaussian_reference.R", "Project.toml", "test/Project.toml",
         "test/parity/Project.toml", "docs/dev-log/core070/frozen-r070-contract.toml",
     ]
