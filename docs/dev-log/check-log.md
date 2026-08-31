@@ -16501,3 +16501,23 @@ family facts,710othernonexcluded facts unmapped. Rbridge still required for all5
 Evidence core070/family-formulas-evidence.json; after-task/2026-08-31-core070-family-formulas.md.
 Next public Rbridge qualification and remaining model/AGHQ/data/postfit/covariance
 requirements; fullsuite/review approvals unchanged. No src/ or original fixture edits.
+
+## 2026-08-31 — public R bridge runtime and DRAC access
+
+Fresh Totoro qualification passes13.49s using R4.5.3, Julia1.12.6 and installed
+JuliaCall0.17.6. Installed package/Julia/libunwind bytes hashed before and after;
+exact candidate load, numeric roundtrip and caught-error recovery pass. Ten
+corrupted receipt controls reject; Unlazy1/2 gates passes, model gate unpaid.
+Runtime01 failure retained: inherited LD_PRELOAD plus locally patched JuliaCall's
+unquoted child environment made a malformed shell command. Runtime02 proved the
+scoped parent-preload/clear-child-environment workaround; runtime03 adds hashes.
+No shared package edited or installed. Runtime evidence does not establish model
+parity. Source inspection corrects the prior blanket all-five bridge debt: frozen
+R dispatcher rejects truncatedNB2 and drops auto unique Gaussian Psi with warning.
+Do not replace same-model parity with changed-model success or alter the oracle.
+Next test source-admission boundaries and admitted Poisson/Beta/NB2 public fits.
+Eight DRAC logins and empty queues verified17:22UTC (Killarney requires login
+shell for squeue); Totoro reachable. No jobs submitted; at most five DRAC computers
+authorized, allocations not implied. Full-suite and external review approvals
+unchanged; no programme completion or new hours estimate. All processes terminal.
+See core070/public-bridge-runtime-evidence.json and runtime public-bridge-runtime-03.

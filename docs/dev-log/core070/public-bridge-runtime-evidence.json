@@ -1,0 +1,33 @@
+{
+  "status": "RUNTIME_ONLY_VERIFIED_NOT_MODEL_PARITY",
+  "runtime_seconds": 13.49293034337461,
+  "dependency_files": 44,
+  "dependency_manifest_sha256": "2850d9a99a7d0037fc81c7a79b394c312df8fd47d51db31767df159641264d81",
+  "process_sha256": "f540298b2a19a3da6d2136374f8e7addf0d20ab387fa0abc8a9c7626292660bb",
+  "receipt_sha256": "bb495ab2778d57ab47ef5f6023e020357ba76a956a148e597b17916cd93b3433",
+  "runtime": {
+    "parent_preload": "/home/snakagaw/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/lib/julia/libunwind.so.8",
+    "child_preload_environment": "",
+    "expected_error": "Error happens in Julia.\nCORE070_EXPECTED_RUNTIME_ERROR\nStacktrace:\n [1] error(s::String)\n   @ Base ./error.jl:44\n [2] top-level scope\n   @ none:1\n [3] eval(m::Module, e::Any)\n   @ Core ./boot.jl:489\n [4] eval_string(x::String)\n   @ Main.JuliaCall ~/R/v07-lib/JuliaCall/julia/setup.jl:203\n [5] docall(call1::Ptr{Nothing})\n   @ Main.JuliaCall ~/R/v07-lib/JuliaCall/julia/setup.jl:176",
+    "R": "R version 4.5.3 (2026-03-11)",
+    "Julia": "1.12.6",
+    "JuliaCall": "0.17.6",
+    "JuliaCall_path": "/home/snakagaw/R/v07-lib/JuliaCall",
+    "gllvmTMB_path": "/home/snakagaw/core070-aghq-20260830/oracle-build-01/library/gllvmTMB",
+    "active_project": "/home/snakagaw/core070-aghq-20260830/public-bridge-runtime-03/test/parity/Project.toml",
+    "GLLVM_source": "/home/snakagaw/core070-aghq-20260830/public-bridge-runtime-03/src/GLLVM.jl",
+    "roundtrip": 6,
+    "julia_threads": 1,
+    "blas_threads": 1,
+    "libPaths": [
+      "/home/snakagaw/core070-aghq-20260830/oracle-build-01/library",
+      "/home/snakagaw/R/v07-lib",
+      "/home/snakagaw/R/x86_64-pc-linux-gnu-library/4.5",
+      "/usr/local/lib/R/site-library",
+      "/usr/lib/R/site-library",
+      "/usr/lib/R/library"
+    ],
+    "dependencies_sha256": "2850d9a99a7d0037fc81c7a79b394c312df8fd47d51db31767df159641264d81"
+  },
+  "negative_controls": 10
+}
