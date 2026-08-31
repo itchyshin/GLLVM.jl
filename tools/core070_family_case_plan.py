@@ -14,11 +14,12 @@ INPUTS=[coverage.PREFIX+'family-admission-subset.json',
         coverage.PREFIX+'family-link-boundary-contract.json',
         coverage.PREFIX+'family-link-boundary-pb-refresh.json',
         coverage.PREFIX+'poisson-beta-required-evidence.json',
-        coverage.PREFIX+'gaussian-required-contract.json']
+        coverage.PREFIX+'gaussian-required-contract.json',
+        coverage.PREFIX+'registered-models-contract.json']
 ROLES=['native_model','formula_interface','public_r_bridge']
 
 def build():
-    admission,entry,catalogue,paired,boundary_contract,boundary_evidence,link_contract,link_evidence,pb,gaussian=[coverage.read_json(ROOT/p) for p in INPUTS]
+    admission,entry,catalogue,paired,boundary_contract,boundary_evidence,link_contract,link_evidence,pb,gaussian,registered=[coverage.read_json(ROOT/p) for p in INPUTS]
     formula=paired["formula"]
     boundaries={row["source_fact_id"]:row for row in boundary_contract["rows"]}
     links={row["source_fact_id"]:row for row in link_contract["rows"]}
@@ -143,10 +144,21 @@ def build():
                     required_runner_case_id=cid,required_runner_status='REGISTERED',
                     data_fixture=binding['data_fixture'],data_fixture_sha256=binding['data_fixture_sha256'])
                 case['candidate_warning']='Legacy candidate fields are retained as historical leads, not the selected model. Actual fixture/calls above bind the registered original Gaussian case; execution receipts are separate. Public R bridge remains unpaid.'
+            binding=next((r for r in registered['cases'] if r['planned_case_id']==cid),None)
+            if binding is not None:
+                case.update(fixture=binding['fixture'],fixture_sha256=binding['fixture_sha256'],
+                    r_call=binding['reference_call'],julia_call=binding['julia_call'],
+                    acceptance_rule=binding['acceptance_rule'],scope_boundary=binding['scope_boundary'],
+                    reference_control_policy=binding['reference_control_policy'],
+                    required_runner_case_id=binding['id'],required_runner_status='REGISTERED_SOURCE_BOUND',
+                    status='REGISTERED_EXECUTABLE_CASE_REPLAY_EVIDENCE_SEPARATE',
+                    data_sha256=binding['data_sha256'])
+                case['candidate_warning']='Actual required_runner_case_id is an existing stable runner ID; planned ID is its source-role alias. Earlier evidence is historical until replayed on current inputs; bridge and remaining models/interfaces unpaid.'
             cases.append(case)
+        executable=[r['id'] for r in gaussian['cases']+registered['cases'] if sid in r['source_fact_ids']]
         rows.append(dict(source_id=sid,classification=classification,planned_case_ids=ids,
-                         executable_case_ids=([r['id'] for r in gaussian['cases']] if sid=='family/FAMILY-00-IDENTITY' else []),
-                         status='REGISTERED_PARTIAL_BRIDGE_UNPAID' if sid=='family/FAMILY-00-IDENTITY' else ('EXCLUDED' if not ids else 'SPECIFICATION_REQUIRED')))
+                         executable_case_ids=executable,
+                         status='REGISTERED_PARTIAL_INTERFACES_UNPAID' if executable else ('EXCLUDED' if not ids else 'SPECIFICATION_REQUIRED')))
     return dict(schema=1,status='FAMILY_DECOMPOSITION_PARTIAL_EXECUTABLE_NOT_FROZEN',
         reference_commit=coverage.REFERENCE,inputs={p:coverage.sha(ROOT/p) for p in INPUTS},
         source_facts=69,planned_case_count=len(cases),rows=rows,cases=cases)

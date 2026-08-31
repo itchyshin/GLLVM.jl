@@ -12,7 +12,8 @@
     "docs/dev-log/core070/family-link-boundary-contract.json": "bf64a4037150e26d9e70430877dacd884ba944a797d9622d2362103f8abb3dcb",
     "docs/dev-log/core070/family-link-boundary-pb-refresh.json": "aac5046eb641b1d9463453852c1031247a988604256dcfbe443f18ae2eba7ac7",
     "docs/dev-log/core070/poisson-beta-required-evidence.json": "3181f53865e6ac73fb983d35ad118649df58caba45ec7a74d500e67139dcebde",
-    "docs/dev-log/core070/gaussian-required-contract.json": "93400f090057fb6a26db60b866b4b1941dcf9b1003cab0107d4fdb43df59dbb4"
+    "docs/dev-log/core070/gaussian-required-contract.json": "93400f090057fb6a26db60b866b4b1941dcf9b1003cab0107d4fdb43df59dbb4",
+    "docs/dev-log/core070/registered-models-contract.json": "631b51f5eae1306152f899f9fce16c2c2bd85d52282f75d814d0ca15458df8a9"
   },
   "source_facts": 69,
   "planned_case_count": 97,
@@ -29,7 +30,7 @@
         "CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL",
         "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE"
       ],
-      "status": "REGISTERED_PARTIAL_BRIDGE_UNPAID"
+      "status": "REGISTERED_PARTIAL_INTERFACES_UNPAID"
     },
     {
       "source_id": "family/FAMILY-00-REJECT-LINK",
@@ -68,8 +69,10 @@
         "CORE070-FAMILY-02-LOG-FORMULA-INTERFACE",
         "CORE070-FAMILY-02-LOG-PUBLIC-R-BRIDGE"
       ],
-      "executable_case_ids": [],
-      "status": "SPECIFICATION_REQUIRED"
+      "executable_case_ids": [
+        "NATIVE-03-POISSON"
+      ],
+      "status": "REGISTERED_PARTIAL_INTERFACES_UNPAID"
     },
     {
       "source_id": "family/FAMILY-02-REJECT-LINK",
@@ -128,8 +131,11 @@
         "CORE070-FAMILY-05-LOG-FORMULA-INTERFACE",
         "CORE070-FAMILY-05-LOG-PUBLIC-R-BRIDGE"
       ],
-      "executable_case_ids": [],
-      "status": "SPECIFICATION_REQUIRED"
+      "executable_case_ids": [
+        "NATIVE-06-NB2",
+        "CORE070-FAMILY-05-LOG-FORMULA-INTERFACE"
+      ],
+      "status": "REGISTERED_PARTIAL_INTERFACES_UNPAID"
     },
     {
       "source_id": "family/FAMILY-05-REJECT-LINK",
@@ -168,8 +174,10 @@
         "CORE070-FAMILY-07-LOGIT-FORMULA-INTERFACE",
         "CORE070-FAMILY-07-LOGIT-PUBLIC-R-BRIDGE"
       ],
-      "executable_case_ids": [],
-      "status": "SPECIFICATION_REQUIRED"
+      "executable_case_ids": [
+        "NATIVE-08-BETA"
+      ],
+      "status": "REGISTERED_PARTIAL_INTERFACES_UNPAID"
     },
     {
       "source_id": "family/FAMILY-07-REJECT-LINK",
@@ -248,8 +256,10 @@
         "CORE070-FAMILY-11-LOG-FORMULA-INTERFACE",
         "CORE070-FAMILY-11-LOG-PUBLIC-R-BRIDGE"
       ],
-      "executable_case_ids": [],
-      "status": "SPECIFICATION_REQUIRED"
+      "executable_case_ids": [
+        "NATIVE-12-TRUNCATED-NB2"
+      ],
+      "status": "REGISTERED_PARTIAL_INTERFACES_UNPAID"
     },
     {
       "source_id": "family/FAMILY-11-REJECT-LINK",
@@ -1013,9 +1023,9 @@
         2,
         0
       ],
-      "status": "EXISTING_REQUIRED_NATIVE_CASE_BOUND_INTERFACES_PENDING",
+      "status": "REGISTERED_EXECUTABLE_CASE_REPLAY_EVIDENCE_SEPARATE",
       "fixture": "test/parity/test_poisson_required.jl",
-      "r_call": "fit_gllvmtmb_parity_loglik(Y, K; family = :poisson)",
+      "r_call": "{ original <- gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=poisson(), control=gllvmTMBcontrol(n_init=1L,se=FALSE)); gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE),data=df_long,unit=\"site\",trait=\"trait\",family=poisson(),control=gllvmTMBcontrol(n_init=1L,se=FALSE,start_from=original,optArgs=list(control=list(rel.tol=1e-12,eval.max=2000,iter.max=1500)))) }",
       "julia_call": "fit_poisson_gllvm(Y; K = K)",
       "candidate_native_entry": "fit_poisson_gllvm(Y; K=1, link=LogLink())",
       "candidate_fixture": "test/parity/test_poisson_parity.jl",
@@ -1037,9 +1047,9 @@
         "reported estimands"
       ],
       "prerequisite_case_ids": [],
-      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
-      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
-      "candidate_warning": "Only the original seeded native model is bound with explicit public R refinement; formula, bridge, other models and recovery remain unpaid.",
+      "acceptance_rule": "Both optimizers converge; both absolute gradients<=1e-4; native finite-difference step stability<=1e-4; abs delta logLik<=1e-6*max(abs(logLik)); same-point NLL<=1e-6; objective readback<=1e-8; original data/map/free coordinate names retained. ",
+      "scope_boundary": "Original ordinary loadings-only unique=false complete-data model. Other parameter/covariance/data routes, public R bridge and full family remain unpaid.",
+      "candidate_warning": "Actual required_runner_case_id is an existing stable runner ID; planned ID is its source-role alias. Earlier evidence is historical until replayed on current inputs; bridge and remaining models/interfaces unpaid.",
       "fixture_sha256": "04ffc8f9e3d5c972993072408f4e038d4f1652e34c1f9c912bfc51e0e2047049",
       "original_dgp_fixture": "test/parity/test_poisson_parity.jl",
       "original_dgp_sha256": "404e19e607362e4682f7348dec0fc5dd127d06114fe1f9197f24001ddf537100",
@@ -1064,7 +1074,10 @@
         "dispersion": "none",
         "curvature": "canonical Fisher equals observed",
         "required_fixture": "test/parity/test_poisson_required.jl"
-      }
+      },
+      "reference_control_policy": "public_start_from_refinement_v1",
+      "required_runner_status": "REGISTERED_SOURCE_BOUND",
+      "data_sha256": "44e647ac7ff29672efa12ca03b7b628dd37a02ac0f8d2421a19d3969743e26da"
     },
     {
       "id": "CORE070-FAMILY-02-LOG-FORMULA-INTERFACE",
@@ -1540,7 +1553,7 @@
         5,
         0
       ],
-      "status": "EXISTING_REQUIRED_NATIVE_CASE_BOUND_INTERFACES_PENDING",
+      "status": "REGISTERED_EXECUTABLE_CASE_REPLAY_EVIDENCE_SEPARATE",
       "fixture": "test/parity/test_negbin_parity.jl",
       "r_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=nbinom2(), control=gllvmTMBcontrol(n_init=1L,se=FALSE))",
       "julia_call": "fit_gllvm(Y; family = GLLVM.NegativeBinomial(), K = K, g_tol = 1e-7, iterations = 800)",
@@ -1564,9 +1577,9 @@
         "reported estimands"
       ],
       "prerequisite_case_ids": [],
-      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
-      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
-      "candidate_warning": "Only the original seeded native model is bound; formula, bridge, other models and broader recovery remain unpaid.",
+      "acceptance_rule": "Both optimizers converge; both absolute gradients<=1e-4; native finite-difference step stability<=1e-4; abs delta logLik<=1e-6*max(abs(logLik)); same-point NLL<=1e-6; objective readback<=1e-8; original data/map/free coordinate names retained. ",
+      "scope_boundary": "Original ordinary loadings-only unique=false complete-data model. Other parameter/covariance/data routes, public R bridge and full family remain unpaid.",
+      "candidate_warning": "Actual required_runner_case_id is an existing stable runner ID; planned ID is its source-role alias. Earlier evidence is historical until replayed on current inputs; bridge and remaining models/interfaces unpaid.",
       "required_runner_case_id": "NATIVE-06-NB2",
       "fixture_sha256": "db83f3385dc7f6de699573600b1022cf4e628f1b90caafe61a3b7d6a4590dabd",
       "evidence": "docs/dev-log/core070/nb2-formula-required-pb-refresh.json",
@@ -1580,7 +1593,10 @@
         "dispersion": "per-trait NB2 size; Var=mu+mu^2/r",
         "random_block": "ordinary loadings-only; unique=FALSE",
         "identification": "triangular loading convention; compare invariant quantities"
-      }
+      },
+      "reference_control_policy": "nb2_original_default_v1",
+      "required_runner_status": "REGISTERED_SOURCE_BOUND",
+      "data_sha256": "7abde2731134afe61afee5a7f0c29b58892ad72e550fa41cf8230e9c701a2bf9"
     },
     {
       "id": "CORE070-FAMILY-05-LOG-FORMULA-INTERFACE",
@@ -1596,7 +1612,7 @@
         5,
         0
       ],
-      "status": "ORIGINAL_NB2_FORMULA_REQUIRED_CASE_VERIFIED",
+      "status": "REGISTERED_EXECUTABLE_CASE_REPLAY_EVIDENCE_SEPARATE",
       "fixture": "test/parity/test_nb2_formula_parity.jl",
       "r_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=nbinom2(), control=gllvmTMBcontrol(n_init=1L,se=FALSE))",
       "julia_call": "gllvm(@formula(y ~ 1),Y,(site=collect(1:n),);family=GLLVM.NegativeBinomial(),K=K,g_tol=1e-7,iterations=800); separately gllvm(@formula(y ~ 1),long;family=GLLVM.NegativeBinomial(),K=K,g_tol=1e-7,iterations=800)",
@@ -1622,9 +1638,9 @@
       "prerequisite_case_ids": [
         "CORE070-FAMILY-05-LOG-NATIVE-MODEL"
       ],
-      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
-      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
-      "candidate_warning": "Original intercept-only wide/long formula verified in required runner; public R bridge and broader models remain unpaid.",
+      "acceptance_rule": "Both optimizers converge; both absolute gradients<=1e-4; native finite-difference step stability<=1e-4; abs delta logLik<=1e-6*max(abs(logLik)); same-point NLL<=1e-6; objective readback<=1e-8; original data/map/free coordinate names retained. Wide and reversed-long formula coordinates and logLik agree with native at absolute tolerance1e-10; malformed rows/missing/duplicate inputs reject.",
+      "scope_boundary": "Original ordinary loadings-only unique=false complete-data model. Other parameter/covariance/data routes, public R bridge and full family remain unpaid.",
+      "candidate_warning": "Actual required_runner_case_id is an existing stable runner ID; planned ID is its source-role alias. Earlier evidence is historical until replayed on current inputs; bridge and remaining models/interfaces unpaid.",
       "fixture_sha256": "aa043d24144559773683f089d02b43ba2af3e9b2df5220aad2bec7c166125e5c",
       "model": {
         "seed": 45,
@@ -1635,9 +1651,11 @@
         "hessian": "observed"
       },
       "evidence": "docs/dev-log/core070/nb2-formula-required-pb-refresh.json",
-      "required_runner_status": "VERIFIED_ORIGINAL_MODEL",
+      "required_runner_status": "REGISTERED_SOURCE_BOUND",
       "required_runner_case_id": "CORE070-FAMILY-05-LOG-FORMULA-INTERFACE",
-      "execution_manifest_sha256": "cfa7291efb6f60fc1d7d6643b74ce3ec070d5e9e60879af5ed6124083e9329a0"
+      "execution_manifest_sha256": "cfa7291efb6f60fc1d7d6643b74ce3ec070d5e9e60879af5ed6124083e9329a0",
+      "reference_control_policy": "nb2_original_default_v1",
+      "data_sha256": "7abde2731134afe61afee5a7f0c29b58892ad72e550fa41cf8230e9c701a2bf9"
     },
     {
       "id": "CORE070-FAMILY-05-LOG-PUBLIC-R-BRIDGE",
@@ -1899,9 +1917,9 @@
         7,
         0
       ],
-      "status": "EXISTING_REQUIRED_NATIVE_CASE_BOUND_INTERFACES_PENDING",
+      "status": "REGISTERED_EXECUTABLE_CASE_REPLAY_EVIDENCE_SEPARATE",
       "fixture": "test/parity/test_beta_required.jl",
-      "r_call": "fit_gllvmtmb_parity_loglik(Y, K; family = :beta)",
+      "r_call": "{ original <- gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=Beta(), control=gllvmTMBcontrol(n_init=1L,se=FALSE)); gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE),data=df_long,unit=\"site\",trait=\"trait\",family=gllvmTMB::Beta(),control=gllvmTMBcontrol(n_init=1L,se=FALSE,start_from=original,optArgs=list(control=list(rel.tol=1e-12,eval.max=2000,iter.max=1500)))) }",
       "julia_call": "fit_gllvm(Y; family = GLLVM.Beta(), K = K, g_tol = 1e-7, iterations = 800)",
       "candidate_native_entry": "fit_gllvm(Y; family=GLLVM.Beta(), K=1, link=LogitLink())",
       "candidate_fixture": "test/parity/test_beta_parity.jl",
@@ -1923,9 +1941,9 @@
         "reported estimands"
       ],
       "prerequisite_case_ids": [],
-      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
-      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
-      "candidate_warning": "Only the original seeded native model is bound with explicit public R refinement; formula, bridge, other models and recovery remain unpaid.",
+      "acceptance_rule": "Both optimizers converge; both absolute gradients<=1e-4; native finite-difference step stability<=1e-4; abs delta logLik<=1e-6*max(abs(logLik)); same-point NLL<=1e-6; objective readback<=1e-8; original data/map/free coordinate names retained. ",
+      "scope_boundary": "Original ordinary loadings-only unique=false complete-data model. Other parameter/covariance/data routes, public R bridge and full family remain unpaid.",
+      "candidate_warning": "Actual required_runner_case_id is an existing stable runner ID; planned ID is its source-role alias. Earlier evidence is historical until replayed on current inputs; bridge and remaining models/interfaces unpaid.",
       "fixture_sha256": "011849881ebf54b3d5be584135a92d2b259ce8910bc2c403865e2975fd86b1f4",
       "original_dgp_fixture": "test/parity/test_beta_parity.jl",
       "original_dgp_sha256": "45c31fe9b8e846681bdabb7f4a8284bc8a1f04ada25c685a34687c617669e1ab",
@@ -1950,7 +1968,10 @@
         "dispersion": "five free per-trait precision parameters",
         "curvature": "observed",
         "required_fixture": "test/parity/test_beta_required.jl"
-      }
+      },
+      "reference_control_policy": "public_start_from_refinement_v1",
+      "required_runner_status": "REGISTERED_SOURCE_BOUND",
+      "data_sha256": "3ddd9a90ae2e933af8c9f45f72fc7edda96dc0fda2a4389d3708a003d07ce099"
     },
     {
       "id": "CORE070-FAMILY-07-LOGIT-FORMULA-INTERFACE",
@@ -2592,7 +2613,7 @@
         11,
         0
       ],
-      "status": "EXISTING_REQUIRED_NATIVE_CASE_BOUND_INTERFACES_PENDING",
+      "status": "REGISTERED_EXECUTABLE_CASE_REPLAY_EVIDENCE_SEPARATE",
       "fixture": "test/parity/test_truncated_nbinom2_parity.jl",
       "r_call": "{ original_fit <- gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=truncated_nbinom2(), control=gllvmTMBcontrol(n_init=1L,se=FALSE)); gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=truncated_nbinom2(), control=gllvmTMBcontrol(n_init=1L,se=FALSE,start_from=original_fit,optimizer=\"optim\",optArgs=list(method=\"BFGS\",control=list(reltol=1e-12,maxit=1500)))) }",
       "julia_call": "fit_truncated_nbinom2_gllvm_pertrait(Y; K = K)",
@@ -2616,9 +2637,9 @@
         "reported estimands"
       ],
       "prerequisite_case_ids": [],
-      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
-      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
-      "candidate_warning": "Only the original seeded native model is bound; formula, bridge, other models and broader recovery remain unpaid.",
+      "acceptance_rule": "Both optimizers converge; both absolute gradients<=1e-4; native finite-difference step stability<=1e-4; abs delta logLik<=1e-6*max(abs(logLik)); same-point NLL<=1e-6; objective readback<=1e-8; original data/map/free coordinate names retained. ",
+      "scope_boundary": "Original ordinary loadings-only unique=false complete-data model. Other parameter/covariance/data routes, public R bridge and full family remain unpaid.",
+      "candidate_warning": "Actual required_runner_case_id is an existing stable runner ID; planned ID is its source-role alias. Earlier evidence is historical until replayed on current inputs; bridge and remaining models/interfaces unpaid.",
       "required_runner_case_id": "NATIVE-12-TRUNCATED-NB2",
       "fixture_sha256": "0972c0993b909d4d262e46a844915f7cf79e0afe36f22a177cb6f350b0064558",
       "evidence": "docs/dev-log/core070/nb2-formula-required-pb-refresh.json",
@@ -2632,7 +2653,10 @@
         "dispersion": "per-trait NB2 size; observed Laplace curvature",
         "random_block": "ordinary loadings-only; unique=FALSE",
         "identification": "triangular loading convention; compare invariant quantities"
-      }
+      },
+      "reference_control_policy": "truncnb2_default_then_public_bfgs_v1",
+      "required_runner_status": "REGISTERED_SOURCE_BOUND",
+      "data_sha256": "ecbcf9f501c7e618131f2c3f1f0d213bb0e92364a72c0519095c52ef30930948"
     },
     {
       "id": "CORE070-FAMILY-11-LOG-FORMULA-INTERFACE",

@@ -18,8 +18,8 @@ class DraftInspection(unittest.TestCase):
     def test_current_census_is_not_historical_receipt(self):
         result = verifier.inspect_draft(self.index, self.mapping, self.manifest)
         self.assertEqual(result['source_facts'], 769)
-        self.assertEqual(result['nonexcluded_unmapped'], 714)
-        self.assertEqual(result['executable_bindings'], 2)
+        self.assertEqual(result['nonexcluded_unmapped'], 710)
+        self.assertEqual(result['executable_bindings'], 7)
 
     def test_omitted_and_duplicate_rows_reject(self):
         for mutation in ['omit', 'duplicate']:

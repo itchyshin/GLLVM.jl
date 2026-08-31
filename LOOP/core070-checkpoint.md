@@ -1365,3 +1365,17 @@ need current replay; no reuse as final-candidate proof. Next integrate remaining
 already-demonstrated native/formula required cases with real contracts, then
 address bridge/estimator/data/postfit gaps. Fullsuite/review approvals unchanged.
 Evidence: gaussian-required-evidence.json; runtime gaussian-required-01 and02.
+
+## Seven registered source-bound cases — 2026-08-31
+
+Current combined required replay: Gaussian native/formula, Poisson native, Beta
+native, NB2 native/formula, truncatedNB2 native.121assertions/6executions/7IDs in
+77.78s,registry28checks3.12s on Totoro1core. Frozen oracle before/after PASS.
+Raw R values/data/maps/names and22negativecontrols verified; all final gradients
+<=1e-4. Original truncatedNB2 default failure retained; declared public refinement
+passes. Metadata42tests+self-test pass. Source map7links across5partialfacts;
+710othernonexcluded facts unmapped and missing interfaces still block all5full
+family claims. FullmanifestDRAFT, no src/fixturechanges. Fullsuite and external
+review approvals stillpending; neither launched. Next address remaining formula
+and public bridge coverage plus unbound family/AGHQ/covariance/data/postfit cases.
+Evidence registered-models-evidence.json; runtime registered-models-01.

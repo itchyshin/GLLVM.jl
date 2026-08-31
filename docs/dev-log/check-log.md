@@ -16469,3 +16469,13 @@ Original data retained; deltaLL3.8641e-9,absolute native/R gradients<1e-4,wide a
 reversed-long fits agree. Ten corrupted receipts reject; missing bridge prevents
 full-family promotion. Local source/metadata39checks plus self-test pass. See
 core070/gaussian-required-cases.md and corresponding after-task. No engine change.
+
+### 2026-08-31 — Seven source-bound retained cases replayed
+
+Registered Poisson/Beta/NB2/truncatedNB2 native and NB2 formula source contracts;
+replayed with Gaussian native/formula:121assertions/6executions/7IDs in77.78s on
+one Totoro core,registry28checks3.12s. All final fit-health gates pass; original
+R refinement policies/failures retained. Raw fit readback and22negative controls
+PASS. Metadata42tests+self-test PASS. Master now7links/5partialfacts;710other
+nonexcluded facts unmapped. No full-family promotion; see registered-models guide
+and after-task. Numerical source and existing fixture bodies unchanged.

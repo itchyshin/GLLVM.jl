@@ -23,7 +23,8 @@ TESTS = [('test_core070_manifest_coverage.py', 6),
          ('test_core070_process_evidence.py', 5),
          ('test_core070_verify_manifest_coverage.py', 6),
          ('test_core070_interface_registry.py', 4),
-         ('test_core070_family_coverage.py', 5)]
+         ('test_core070_family_coverage.py', 5),
+         ('test_core070_registered_bindings.py', 3)]
 
 
 def run(argv, count=None):
