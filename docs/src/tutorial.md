@@ -180,7 +180,9 @@ fpv = fit_gaussian_pervar_gllvm(Y; K = 2)   # per-species residual variances
 For fixed effects, pass a complete `X` design of shape `(p, n, q)`. The fitter
 profiles its `q` coefficients by GLS, adds no implicit intercept, and returns
 them in `coef(fpv)` for a fit made with that design. See the per-species Gaussian
-section of [Response families](response-families.md) for a worked design.
+section of [Response families](response-families.md) for a worked design. Its
+explicit `fixed_residual_sd` option retains unique and total diagonal variances
+separately when the model has a known residual scale; it does not change defaults.
 
 Displaying any fit prints a summary (family, dimensions, log-likelihood, AIC,
 convergence):

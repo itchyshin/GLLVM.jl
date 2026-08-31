@@ -16418,3 +16418,16 @@ verifier controls pass. Unlazy4/5; full-suite gate unpaid. See core070/package-
 qualification-evidence.json and full-package-run-plan.md. Two one-thread full
 runs requested (85–100min each,120min hard stops); approval pending, no jobs
 active. M1PARTIAL/manifestDRAFT; continue manifest/capability work meanwhile.
+
+## Fixed-residual Gaussian native default-unique pair — 2026-08-31
+
+Implemented explicit fixed_residual_sd in per-variance Gaussian fitter; unique
+and total diagonal variances retained, old default/constructor preserved.
+23new+41adjacent tests; original p4/n120/K1 R fixture10pairedchecks,deltaLL3.864e-9,
+both absolute gradients<1e-4. Current Aqua/JET12/12,jointsubset217/217; executed
+Documenter131.47s and desktop/mobile example inspected. See default-unique-evidence
+and leaf. All failed attempts retained. No formula/bridge/interval/AGHQfallback
+claim. Specific Terra code-review payload approval and twofullsuite run approval
+still pending; neither launched. MissionControl3e53d55 served200,Rfieldsunchanged.
+Next complete those gates when authorized; meanwhile remaining manifest/model
+work is available. M1PARTIAL/manifestDRAFT; no push/merge/release/cleanup.

@@ -862,8 +862,15 @@ Explicit designs use L-BFGS with direct covariance Cholesky (O(p³) factorizatio
 to avoid cancellation near a zero residual variance; the default intercept-only
 path can use EM. A
 zero-column design specifies zero mean; nonfinite or rank-deficient designs
-are rejected. This ML route does not reproduce R's separate fixed-residual
-plus unique-variance decomposition.
+are rejected. This is maximum likelihood, not REML.
+
+The development option `fixed_residual_sd=c` fits
+`Λ*Λ′ + Diagonal(ψ² .+ c^2)` and retains `fit.ψ²` (unique variances),
+`fit.φ²` (total diagonal variances) and `fit.fixed_residual_sd`. The fixed scale
+is not an estimated parameter. Positive `c` uses L-BFGS even with `method=:em`;
+the default `c=0` leaves the existing model unchanged. It does not automatically
+choose R's data-dependent small scale. Formula/bridge routing, intervals and
+AGHQ fallback metadata for this decomposition remain unverified.
 
 ```@example pervar_design
 using GLLVM, Random
@@ -882,6 +889,21 @@ fit_x = fit_gaussian_pervar_gllvm(Y; K=1, X=X)
 @assert fit_x.converged # hide
 coef(fit_x)                        # p intercepts, then one shared slope
 ```
+
+For example, a known residual SD of `0.2` is kept fixed while the unique
+variances and requested fixed effects are estimated:
+
+```@example pervar_design
+fit_fixed = fit_gaussian_pervar_gllvm(Y; K=1, X=X, fixed_residual_sd=0.2)
+@assert fit_fixed.converged # hide
+@assert isapprox(fit_fixed.φ², fit_fixed.ψ² .+ 0.2^2; atol=1e-12) # hide
+println("Fixed residual SD: ", fit_fixed.fixed_residual_sd)
+for (trait, variance) in enumerate(fit_fixed.ψ²)
+    println("Unique variance ", trait, ": ", round(variance; digits=4))
+end
+```
+
+This example checks the decomposition, not recovery or interval calibration.
 
 ### Mixed-family response vector — `fit_mixed_gllvm`
 

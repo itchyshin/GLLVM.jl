@@ -129,7 +129,9 @@ with sparse random-effect design matrices. `GLLVM.jl` solves a
   estimated power controls; these are distinct models, with separate parameter
   counts. Full R0.7.0 Core + AGHQ parity remains under validation.
 - Heteroscedastic Gaussian with per-species variance (`fit_gaussian_pervar_gllvm`),
-  including explicit full-rank fixed-effect designs profiled by GLS.
+  including explicit full-rank fixed-effect designs profiled by GLS. The development
+  `fixed_residual_sd` option separates a supplied residual scale from estimated
+  unique variances; formula/bridge and interval parity remain unverified.
 - Per-species / grouped dispersion (`disp.group`) for NB2, NB1, Beta, beta-binomial,
   Gamma, and Tweedie via the `_grouped` drivers — per-species is the `fit_gllvm`
   default for NB2, NB1, Beta, and beta-binomial (`family = NB1()`,

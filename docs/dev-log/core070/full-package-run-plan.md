@@ -51,3 +51,10 @@ Run approval is pending: user was asked for these two Totoro runs with the state
 resource and timeout limits. No full-suite process has been launched. The approved
 programme's over30minute run rule requires that approval; safe manifest and code work
 can continue meanwhile. No push, merge, release or destructive cleanup.
+
+## Candidate update after fixed-residual work
+The later fixed-residual Gaussian change supersedes fb928667 for future current-
+candidate validation. Use the exact source hashes retained in default-unique-
+evidence.json and the refreshed package-qualify-02 environment; do not report a
+full run on the earlier source as validation of this change. Commands, two-core
+budget and120minute limits are unchanged. Run approval is still pending.

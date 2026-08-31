@@ -1,7 +1,8 @@
 # Per-species (heteroscedastic) Gaussian GLLVM marginal log-likelihood + fit.
 #
 # This variant places a per-species residual SD φ_j on each trait. It does not
-# reproduce R's separate fixed-residual plus unique-variance decomposition.
+# reproduce R's fixed-residual plus unique-variance decomposition unless the
+# fixed residual SD is supplied explicitly.
 # GLLVM.jl's shared-σ Gaussian path (src/likelihood.jl,
 # src/fit.jl, src/profile.jl) uses a single σ_eps and is left UNTOUCHED. This file
 # adds a parallel per-species variant.
@@ -111,7 +112,9 @@ Fields:
 - `β::Vector`    — GLS coefficients (length `q` when `X` is supplied), or
   per-species intercepts (length `p`) when `X=nothing`.
 - `Λ::Matrix`    — fitted unit-tier loadings (`p × K`).
-- `φ²::Vector`   — per-species residual variances `V_j = φ_j²` (length `p`).
+- `φ²::Vector`   — total per-species diagonal variances (length `p`).
+- `ψ²::Vector`   — estimated unique variances; `φ² = ψ² + fixed_residual_sd²`.
+- `fixed_residual_sd` — supplied independent residual SD, zero by default.
 - `loglik`       — converged marginal log-likelihood.
 - `converged`    — Optim convergence flag.
 - `iterations`   — Optim iteration count.
@@ -123,7 +126,13 @@ struct GaussianPerVarFit
     loglik::Float64
     converged::Bool
     iterations::Int
+    ψ²::Vector{Float64}
+    fixed_residual_sd::Float64
 end
+
+# Preserve construction of the original unconstrained per-variance result.
+GaussianPerVarFit(β, Λ, φ², loglik, converged, iterations) =
+    GaussianPerVarFit(β, Λ, φ², loglik, converged, iterations, copy(φ²), 0.0)
 
 function Base.show(io::IO, fit::GaussianPerVarFit)
     p, K = size(fit.Λ)
@@ -143,7 +152,8 @@ function _nparams(fit::GaussianPerVarFit)
 end
 
 """
-    fit_gaussian_pervar_gllvm(Y; K, X=nothing, g_tol=1e-5, iterations=1000)
+    fit_gaussian_pervar_gllvm(Y; K, X=nothing, fixed_residual_sd=0.0,
+                             g_tol=1e-5, iterations=1000)
         -> GaussianPerVarFit
 
 Fit a heteroscedastic (per-species variance) Gaussian GLLVM by EM or L-BFGS.
@@ -159,6 +169,16 @@ each covariance evaluation. A zero-column design specifies a zero mean.
 explicit designs use L-BFGS, as does `method=:lbfgs`. This is ML profiling,
 not REML. Rank-deficient or nonfinite designs are rejected.
 
+With `fixed_residual_sd=c > 0`, the covariance is
+`Λ*Λ' + Diagonal(ψ² .+ c^2)`, where each unique variance `ψ²` is estimated
+on its log scale. The fixed residual is not estimated or counted as a free
+parameter. This case always uses L-BFGS, including when `method=:em` is
+requested. `fit.ψ²` retains unique variances; `fit.φ²` remains the total
+diagonal variance. The default `c=0` retains the original model and EM route.
+There is no automatic suppression or data-derived floor: pass the fixed scale
+explicitly when matching a reference model. A fixed scale must be finite and
+nonnegative, and its square must be representable.
+
 Warm start: PPCA closed form (Tipping & Bishop 1999) for `Λ` and per-species
 residual variances initialised from the per-trait sample variances of `Y`.
 
@@ -167,6 +187,7 @@ The shared-σ `fit_gaussian_gllvm` is untouched; this is a parallel variant.
 function fit_gaussian_pervar_gllvm(Y::AbstractMatrix;
                                    K::Integer,
                                    X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                                   fixed_residual_sd::Real = 0.0,
                                    method::Symbol = :em,
                                    g_tol::Real = 1e-5,
                                    em_tol::Real = 1e-8,
@@ -175,6 +196,10 @@ function fit_gaussian_pervar_gllvm(Y::AbstractMatrix;
     @assert K ≥ 1
     @assert n ≥ 2 "Need n_sites ≥ 2 for per-species variances"
     method in (:em, :lbfgs) || throw(ArgumentError("method must be :em or :lbfgs"))
+    c = Float64(fixed_residual_sd)
+    c² = c^2
+    isfinite(c) && c >= 0 && isfinite(c²) && (c == 0 || c² > 0) ||
+        throw(ArgumentError("fixed_residual_sd must be finite and nonnegative with a representable square"))
 
     Yf = Matrix{Float64}(Y)
     all(isfinite, Yf) || throw(ArgumentError("Y must contain only finite responses"))
@@ -217,7 +242,7 @@ function fit_gaussian_pervar_gllvm(Y::AbstractMatrix;
     # Per-species variance init: per-species sample variance of the centred data,
     # floored away from zero. Use a fraction so it does not absorb the loadings.
     col_var = vec(sum(abs2, Yc, dims = 2)) ./ max(n - 1, 1)   # length p
-    φ²_0 = max.(0.5 .* col_var, 1e-3)
+    φ²_0 = max.(0.5 .* col_var .- c², 1e-3)
     logφ²_0 = log.(φ²_0)
 
     params0 = vcat(θ_Λ0, logφ²_0)
@@ -228,7 +253,7 @@ function fit_gaussian_pervar_gllvm(Y::AbstractMatrix;
     # Requires the FA regime K < p and no fixed effects; otherwise fall through to
     # L-BFGS. The per-species intercept is the profiled row means (β = μ0), so
     # EM runs on the centred residual `Yc`.
-    if method === :em && K < p && X === nothing
+    if method === :em && K < p && X === nothing && c == 0
         Λ_em, φ²_em, ll_em, nit_em, conv_em =
             em_fa(Yc, K; λ_init = Λ0, ψ_init = φ²_0, tol = em_tol,
                   max_iter = max(Int(iterations), 2000))
@@ -263,8 +288,10 @@ function fit_gaussian_pervar_gllvm(Y::AbstractMatrix;
         θ_Λ   = @view params[1:rrlen]
         logφ² = @view params[(rrlen + 1):(rrlen + p)]
         Λ     = unpack_lambda(θ_Λ, p, K)
-        φ²    = exp.(logφ²)
-        all(v -> isfinite(v) && v > 0, φ²) || return oftype(first(params), Inf)
+        ψ²    = exp.(logφ²)
+        all(v -> isfinite(v) && v > 0, ψ²) || return oftype(first(params), Inf)
+        φ²    = ψ² .+ c²
+        all(isfinite, φ²) || return oftype(first(params), Inf)
         try
             if Xf === nothing
                 return -gaussian_pervar_marginal_loglik(Yc, Λ, φ²)
@@ -286,7 +313,8 @@ function fit_gaussian_pervar_gllvm(Y::AbstractMatrix;
     θ_Λ_hat   = params_hat[1:rrlen]
     logφ²_hat = params_hat[(rrlen + 1):(rrlen + p)]
     Λ_hat     = unpack_lambda(θ_Λ_hat, p, K)
-    φ²_hat    = exp.(logφ²_hat)
+    ψ²_hat    = exp.(logφ²_hat)
+    φ²_hat    = ψ²_hat .+ c²
 
     β_hat = Xf === nothing ? μ0 : profile_coefficients(Λ_hat, φ²_hat)
 
@@ -304,5 +332,7 @@ function fit_gaussian_pervar_gllvm(Y::AbstractMatrix;
         Float64(ll),
         conv,
         iters,
+        collect(Float64, ψ²_hat),
+        c,
     )
 end

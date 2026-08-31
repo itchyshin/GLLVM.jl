@@ -5,6 +5,10 @@ All notable changes to GLLVM.jl are documented here.
 ## Unreleased
 
 ### Changed
+- **Development:** per-trait Gaussian fitting accepts an explicit fixed residual
+  SD and estimates unique variances within that constraint. Results retain unique
+  and total diagonal variances; existing defaults and parameter counts are unchanged.
+  Formula/bridge, intervals and AGHQ fallback parity are not established.
 - Fix default exact Gaussian fitting with a zero-column design or all fixed-zero
   coefficients, including ordinary and phylogenetic profiled likelihoods.
 - Restore Wald/profile intervals for these models; failed profile refits no
