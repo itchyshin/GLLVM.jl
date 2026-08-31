@@ -12,7 +12,8 @@ reference_source_inventory = ".unlazy/core070-aghq/oracle-source/source.json"
 source = "git show gllvmTMB:b4d5fee64def88bc768dda1f1f77c29b295edd86"
 
 family_smoke_case_ids = ["NATIVE-01-GAUSSIAN", "NATIVE-02-BINOMIAL", "NATIVE-03-POISSON", "NATIVE-04-LOGNORMAL", "NATIVE-05-GAMMA", "NATIVE-06-NB2", "NATIVE-07-TWEEDIE", "NATIVE-08-BETA", "NATIVE-09-BETABINOMIAL", "NATIVE-10-STUDENT", "NATIVE-11-TRUNCATED-POISSON", "NATIVE-12-TRUNCATED-NB2", "NATIVE-13-DELTA-LOGNORMAL", "NATIVE-14-DELTA-GAMMA", "NATIVE-15-ORDINAL-PROBIT", "NATIVE-16-NB1", "NATIVE-17-MULTINOMIAL-FIXED"]
-interface_case_ids = ["CORE070-FAMILY-05-LOG-FORMULA-INTERFACE"]
+interface_case_ids = ["CORE070-FAMILY-05-LOG-FORMULA-INTERFACE", "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE"]
+model_case_ids = ["CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL"]
 unpaid_required_groups = ["links-and-parameterisation", "covariance-modes-and-modifiers", "long-wide-missing-offset-trials", "postfit-information-and-inference", "formula-interface", "public-r-bridge", "public-stage1a-aghq"]
 
 # Provisional census only.  These buckets are not a capability classification:
@@ -705,3 +706,79 @@ identification = "Triangular loading matrix, 19 free coordinates"
 acceptance_rule = "19 assertions; native/R logLik rtol1e-6 and both health checks; each formula all19 coordinates and logLik atol1e-10; malformed rows/missing/duplicate fail"
 implementation_status = "REQUIRED_REPLAY_PENDING"
 evidence_path = ".unlazy/core070-aghq/nb2-formula-required-01/"
+
+[[models]]
+id = "CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL"
+fixture = "test/parity/test_gaussian_original_required.jl"
+model_contract_id = "MODEL-FAMILY-00-IDENTITY"
+role = "native_model"
+
+[[obligation]]
+id = "CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL"
+scope = "Single retained Gaussian ordinary latent/unique model; bridge, other covariance/data/inference cases and full family remain unpaid."
+owner = "Ada"
+source = "R/fit-multi.R frozen b4d5fee; family/FAMILY-00-IDENTITY"
+r_call = "gllvmTMB(value ~ 0 + latent(0 + trait | site,d=1),data=df,unit='site',trait='trait',family=gaussian(),control=gllvmTMBcontrol(aghq=FALSE,aghq_ridge=Inf,n_init=1L,se=FALSE,optimizer='optim',optArgs=list(method='BFGS',control=list(reltol=1e-14,maxit=2000))))"
+julia_call_or_missing = "fit_gaussian_pervar_gllvm(Y;K=1,X=zeros(4,120,0),fixed_residual_sd=c,method=:lbfgs,g_tol=1e-8,iterations=3000)"
+fixture_specification = "Original retained CORE070-AGHQ-K1-GAUSSIAN row, test/parity/fixtures/core070_gaussian_original.toml SHA256 52a4664c99295ec675a7b666458350bf57ff57e338c77d5ada1cf9d2e5efba92"
+parameterisation = "p4,n120,K1,seed81031; zero mean; M=Lambda*Lambda′+diag(psi^2+c^2), c=max(0.001sd(vec(Y)),1e-6) fixed; 4 loadings+4 log unique SD in R; Julia log unique variance=2logSD; exact Gaussian likelihood with constants, no penalty"
+identification = "Triangular K1 loadings, positive unique variances; compare covariance and likelihood, 8 free coordinates."
+acceptance_rule = "absolute delta logLik<=1e-3; both optimizers converge and absolute gradients<=1e-4; common-point value/gradient and cross-endpoints<=1e-6; direct/formula coordinates and logLik<=1e-7; complete reordered long data agrees, missing/duplicate long rows reject"
+implementation_status = "REQUIRED_REPLAY_PENDING"
+evidence_path = ".unlazy/core070-aghq/gaussian-required-01/"
+
+[[interfaces]]
+id = "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE"
+fixture = "test/parity/test_gaussian_original_required.jl"
+model_contract_id = "MODEL-FAMILY-00-IDENTITY"
+role = "formula_interface"
+
+[[obligation]]
+id = "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE"
+scope = "Single retained Gaussian ordinary latent/unique model; bridge, other covariance/data/inference cases and full family remain unpaid."
+owner = "Ada"
+source = "R/fit-multi.R frozen b4d5fee; family/FAMILY-00-IDENTITY"
+r_call = "gllvmTMB(value ~ 0 + latent(0 + trait | site,d=1),data=df,unit='site',trait='trait',family=gaussian(),control=gllvmTMBcontrol(aghq=FALSE,aghq_ridge=Inf,n_init=1L,se=FALSE,optimizer='optim',optArgs=list(method='BFGS',control=list(reltol=1e-14,maxit=2000))))"
+julia_call_or_missing = "gllvm(@formula(y ~ 0),Y,(site=1:120,);family=Normal(),K=1,pervar=true,fixed_residual_sd=c,method=:lbfgs,g_tol=1e-8,iterations=3000); equivalent reversed-long table"
+fixture_specification = "Original retained CORE070-AGHQ-K1-GAUSSIAN row, test/parity/fixtures/core070_gaussian_original.toml SHA256 52a4664c99295ec675a7b666458350bf57ff57e338c77d5ada1cf9d2e5efba92"
+parameterisation = "p4,n120,K1,seed81031; zero mean; M=Lambda*Lambda′+diag(psi^2+c^2), c=max(0.001sd(vec(Y)),1e-6) fixed; 4 loadings+4 log unique SD in R; Julia log unique variance=2logSD; exact Gaussian likelihood with constants, no penalty"
+identification = "Triangular K1 loadings, positive unique variances; compare covariance and likelihood, 8 free coordinates."
+acceptance_rule = "absolute delta logLik<=1e-3; both optimizers converge and absolute gradients<=1e-4; common-point value/gradient and cross-endpoints<=1e-6; direct/formula coordinates and logLik<=1e-7; complete reordered long data agrees, missing/duplicate long rows reject"
+implementation_status = "REQUIRED_REPLAY_PENDING"
+evidence_path = ".unlazy/core070-aghq/gaussian-required-01/"
+
+[[executable_case]]
+id = "CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL"
+fixture = "test/parity/test_gaussian_original_required.jl"
+fixture_sha256 = "64deb7eea79d8109632b9b1aee8af863fb6b4be135878cacac63a4f8c2f18b4c"
+data_fixture = "test/parity/fixtures/core070_gaussian_original.toml"
+data_fixture_sha256 = "52a4664c99295ec675a7b666458350bf57ff57e338c77d5ada1cf9d2e5efba92"
+reference_call = "gllvmTMB(value ~ 0 + latent(0 + trait | site,d=1),data=df,unit='site',trait='trait',family=gaussian(),control=gllvmTMBcontrol(aghq=FALSE,aghq_ridge=Inf,n_init=1L,se=FALSE,optimizer='optim',optArgs=list(method='BFGS',control=list(reltol=1e-14,maxit=2000))))"
+r_call = "gllvmTMB(value ~ 0 + latent(0 + trait | site,d=1),data=df,unit='site',trait='trait',family=gaussian(),control=gllvmTMBcontrol(aghq=FALSE,aghq_ridge=Inf,n_init=1L,se=FALSE,optimizer='optim',optArgs=list(method='BFGS',control=list(reltol=1e-14,maxit=2000))))"
+julia_call = "fit_gaussian_pervar_gllvm(Y;K=1,X=zeros(4,120,0),fixed_residual_sd=c,method=:lbfgs,g_tol=1e-8,iterations=3000)"
+model_contract = "p4,n120,K1,seed81031; zero mean; M=Lambda*Lambda′+diag(psi^2+c^2), c=max(0.001sd(vec(Y)),1e-6) fixed; 4 loadings+4 log unique SD in R; Julia log unique variance=2logSD; exact Gaussian likelihood with constants, no penalty"
+model_contract_id = "MODEL-FAMILY-00-IDENTITY"
+acceptance_rule = "absolute delta logLik<=1e-3; both optimizers converge and absolute gradients<=1e-4; common-point value/gradient and cross-endpoints<=1e-6; direct/formula coordinates and logLik<=1e-7; complete reordered long data agrees, missing/duplicate long rows reject"
+coverage_role = "native_model"
+acceptance_level = "paired_fit"
+source_fact_ids = ["family/FAMILY-00-IDENTITY"]
+execution_case_ids = ["CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL", "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE"]
+scope_boundary = "Single retained Gaussian ordinary latent/unique model; bridge, other covariance/data/inference cases and full family remain unpaid."
+
+[[executable_case]]
+id = "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE"
+fixture = "test/parity/test_gaussian_original_required.jl"
+fixture_sha256 = "64deb7eea79d8109632b9b1aee8af863fb6b4be135878cacac63a4f8c2f18b4c"
+data_fixture = "test/parity/fixtures/core070_gaussian_original.toml"
+data_fixture_sha256 = "52a4664c99295ec675a7b666458350bf57ff57e338c77d5ada1cf9d2e5efba92"
+reference_call = "gllvmTMB(value ~ 0 + latent(0 + trait | site,d=1),data=df,unit='site',trait='trait',family=gaussian(),control=gllvmTMBcontrol(aghq=FALSE,aghq_ridge=Inf,n_init=1L,se=FALSE,optimizer='optim',optArgs=list(method='BFGS',control=list(reltol=1e-14,maxit=2000))))"
+r_call = "gllvmTMB(value ~ 0 + latent(0 + trait | site,d=1),data=df,unit='site',trait='trait',family=gaussian(),control=gllvmTMBcontrol(aghq=FALSE,aghq_ridge=Inf,n_init=1L,se=FALSE,optimizer='optim',optArgs=list(method='BFGS',control=list(reltol=1e-14,maxit=2000))))"
+julia_call = "gllvm(@formula(y ~ 0),Y,(site=1:120,);family=Normal(),K=1,pervar=true,fixed_residual_sd=c,method=:lbfgs,g_tol=1e-8,iterations=3000); equivalent reversed-long table"
+model_contract = "p4,n120,K1,seed81031; zero mean; M=Lambda*Lambda′+diag(psi^2+c^2), c=max(0.001sd(vec(Y)),1e-6) fixed; 4 loadings+4 log unique SD in R; Julia log unique variance=2logSD; exact Gaussian likelihood with constants, no penalty"
+model_contract_id = "MODEL-FAMILY-00-IDENTITY"
+acceptance_rule = "absolute delta logLik<=1e-3; both optimizers converge and absolute gradients<=1e-4; common-point value/gradient and cross-endpoints<=1e-6; direct/formula coordinates and logLik<=1e-7; complete reordered long data agrees, missing/duplicate long rows reject"
+coverage_role = "formula_interface"
+acceptance_level = "paired_fit_interface"
+source_fact_ids = ["family/FAMILY-00-IDENTITY"]
+execution_case_ids = ["CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL", "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE"]
+scope_boundary = "Single retained Gaussian ordinary latent/unique model; bridge, other covariance/data/inference cases and full family remain unpaid."

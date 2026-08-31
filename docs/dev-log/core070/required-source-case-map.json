@@ -1537,8 +1537,11 @@
     {
       "source_id": "family/FAMILY-00-IDENTITY",
       "classification": "required_core",
-      "executable_case_ids": [],
-      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "executable_case_ids": [
+        "CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL",
+        "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE"
+      ],
+      "rationale": "Executable original Gaussian native and wide/long formula cases are bound; required public R bridge and wider family combinations remain unpaid. Binding is not successful execution or complete family certification.",
       "planned_case_ids": [
         "CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL",
         "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE",

@@ -118,8 +118,10 @@ if required
     core070_start_run!()
     try
         run_required_family_smoke!()
+        run_required_family_group!(Core070CaseRegistry.GAUSSIAN_IDS,
+                                   "test/parity/test_gaussian_original_required.jl")
         @testset "CORE-070 required interfaces" begin
-            for id in Core070CaseRegistry.INTERFACE_IDS
+            for id in setdiff(Core070CaseRegistry.INTERFACE_IDS, Core070CaseRegistry.GAUSSIAN_IDS)
                 core070_execute_case!(id, _CORE070_FIXTURES[id],
                     () -> include(joinpath(@__DIR__, basename(_CORE070_FIXTURES[id]))))
             end

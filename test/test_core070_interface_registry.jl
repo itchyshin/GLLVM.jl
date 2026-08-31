@@ -17,10 +17,14 @@ include(joinpath(@__DIR__, "parity", "core070_case_registry.jl"))
 using .Core070CaseRegistry
 @testset "Separate family and interface registration" begin
     @test length(FAMILY_IDS) == 17
-    @test length(INTERFACE_IDS) == 1
-    @test length(requested_ids()) == 18
+    @test length(INTERFACE_IDS) == 2
+    @test length(requested_ids()) == 20
     @test isempty(intersect(FAMILY_IDS, INTERFACE_IDS))
-    @test requested_ids(only(INTERFACE_IDS)) == INTERFACE_IDS
+    @test requested_ids(first(INTERFACE_IDS)) == [first(INTERFACE_IDS)]
+    @test length(MODEL_IDS) == 1
+    @test requested_ids(join(GAUSSIAN_IDS,",")) == GAUSSIAN_IDS
+    @test_throws ArgumentError requested_ids(first(GAUSSIAN_IDS))
+    @test_throws ArgumentError requested_ids(last(GAUSSIAN_IDS))
     for invalid in ("unknown", "NATIVE-06-NB2,NATIVE-06-NB2", "NATIVE-06-NB2,", "NATIVE-05-GAMMA")
         @test_throws ArgumentError requested_ids(invalid)
     end
@@ -31,7 +35,7 @@ using .Core070CaseRegistry
         d -> empty!(d["interface_case_ids"]),
         d -> push!(d["families"], deepcopy(d["families"][1])),
         d -> (d["interfaces"][1]["fixture"] = "wrong.jl"),
-        d -> (d["family_smoke_case_ids"][1] = only(INTERFACE_IDS)),
+        d -> (d["family_smoke_case_ids"][1] = first(INTERFACE_IDS)),
     )
         bad = deepcopy(contract); change(bad)
         @test_throws ArgumentError validate_manifest(bad)

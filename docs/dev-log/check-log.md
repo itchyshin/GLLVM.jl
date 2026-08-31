@@ -16460,3 +16460,12 @@ without parity promotion. Six new regression tests fail before repair and pass
 after. Historical receipt unchanged; fresh manifest-reconciliation-evidence.json.
 Totoro and eight existing DRAC sessions respond; no compute launched. See after-task
 2026-08-31-core070-manifest-reconciliation.md. Full contract remains draft.
+
+### 2026-08-31 — Original Gaussian required native/formula integration
+
+Two new source-bound IDs share31assertions through runparity.jl; existing17family
+smokes retained. Final Totoro32.80s,registry28checks3.88s,oracle before/after PASS.
+Original data retained; deltaLL3.8641e-9,absolute native/R gradients<1e-4,wide and
+reversed-long fits agree. Ten corrupted receipts reject; missing bridge prevents
+full-family promotion. Local source/metadata39checks plus self-test pass. See
+core070/gaussian-required-cases.md and corresponding after-task. No engine change.

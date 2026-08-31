@@ -1351,3 +1351,17 @@ facts, not model counts. No parity-complete claim. NEXT integrate existing concr
 Gaussian native/formula fixtures and calls into the required runner and source
 map; retain public bridge and independent scope-review debt. Fullsuite and
 specific external numerical-review approvals still pending; neither started.
+
+## Gaussian source-bound required runner — 2026-08-31
+
+Two stable FAMILY-00-IDENTITY native/formula cases now bind to master source map.
+Required runparity.jl final31assertions/oneexecution32.80s on Totoro; registry28checks
+3.88s; oracle before/after PASS. Original fixture unchanged,deltaLL3.8641e-9,both
+absolute gradients<1e-4. Wide/reversed-long equal native. Ten negative receipt
+controls PASS; missing Rbridge still blocks family completeness. Source metadata
+39tests+self-test pass. Full manifest DRAFT,714nonexcluded facts still unmapped
+plus partial Gaussian bridge debt. No src/engine edits. Old shared-runner receipts
+need current replay; no reuse as final-candidate proof. Next integrate remaining
+already-demonstrated native/formula required cases with real contracts, then
+address bridge/estimator/data/postfit gaps. Fullsuite/review approvals unchanged.
+Evidence: gaussian-required-evidence.json; runtime gaussian-required-01 and02.

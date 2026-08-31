@@ -21,7 +21,9 @@ TESTS = [('test_core070_manifest_coverage.py', 6),
          ('test_core070_collection.py', 9),
          ('test_core070_assertion_groups.py', 4),
          ('test_core070_process_evidence.py', 5),
-         ('test_core070_verify_manifest_coverage.py', 6)]
+         ('test_core070_verify_manifest_coverage.py', 6),
+         ('test_core070_interface_registry.py', 4),
+         ('test_core070_family_coverage.py', 5)]
 
 
 def run(argv, count=None):
@@ -64,7 +66,7 @@ def inspect_draft(index, mapping, manifest):
              'duplicate or unknown executable case')
         linked.update(ids)
         bindings += len(ids)
-        unmapped += not ids and row['classification'] not in {'intentionally_excluded', 'R-only presentation'}
+        unmapped += not ids and row['classification'] not in {'intentionally_excluded', 'r_only_presentation'}
     need(linked == set(cases), 'unaccounted executable cases')
     return dict(source_facts=len(facts), nonexcluded_unmapped=unmapped,
                 executable_bindings=bindings,

@@ -1,6 +1,7 @@
 """Synthetic programme receipts emitted by real supervised children; no model claims."""
 from copy import deepcopy
 import json
+import re
 from pathlib import Path
 import shutil
 import sys
@@ -51,6 +52,7 @@ class Collection(unittest.TestCase):
         self.ids = [row['id'] for row in draft['obligation']]
         self.manifest = self.root / evidence.CONTRACT_REL
         text = self.manifest.read_text().replace('status = "DRAFT_INCOMPLETE_NOT_FROZEN"', 'status = "FROZEN"', 1)
+        text = re.sub(r'\n\[\[executable_case\]\][\s\S]*?(?=\n\[|\Z)', '', text)
         text = 'required_case_ids = ' + json.dumps(self.ids) + '\n' + text
         families = {row['id']: row['fixture'] for row in draft['families']}
         for case_id in self.ids:

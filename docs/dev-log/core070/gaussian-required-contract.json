@@ -1,0 +1,52 @@
+{
+  "status": "SPECIFIED_REQUIRED_REPLAY_PENDING_NOT_FULL_FAMILY",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "cases": [
+    {
+      "id": "CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL",
+      "fixture": "test/parity/test_gaussian_original_required.jl",
+      "fixture_sha256": "64deb7eea79d8109632b9b1aee8af863fb6b4be135878cacac63a4f8c2f18b4c",
+      "data_fixture": "test/parity/fixtures/core070_gaussian_original.toml",
+      "data_fixture_sha256": "52a4664c99295ec675a7b666458350bf57ff57e338c77d5ada1cf9d2e5efba92",
+      "reference_call": "gllvmTMB(value ~ 0 + latent(0 + trait | site,d=1),data=df,unit='site',trait='trait',family=gaussian(),control=gllvmTMBcontrol(aghq=FALSE,aghq_ridge=Inf,n_init=1L,se=FALSE,optimizer='optim',optArgs=list(method='BFGS',control=list(reltol=1e-14,maxit=2000))))",
+      "r_call": "gllvmTMB(value ~ 0 + latent(0 + trait | site,d=1),data=df,unit='site',trait='trait',family=gaussian(),control=gllvmTMBcontrol(aghq=FALSE,aghq_ridge=Inf,n_init=1L,se=FALSE,optimizer='optim',optArgs=list(method='BFGS',control=list(reltol=1e-14,maxit=2000))))",
+      "julia_call": "fit_gaussian_pervar_gllvm(Y;K=1,X=zeros(4,120,0),fixed_residual_sd=c,method=:lbfgs,g_tol=1e-8,iterations=3000)",
+      "model_contract": "p4,n120,K1,seed81031; zero mean; M=Lambda*Lambda\u2032+diag(psi^2+c^2), c=max(0.001sd(vec(Y)),1e-6) fixed; 4 loadings+4 log unique SD in R; Julia log unique variance=2logSD; exact Gaussian likelihood with constants, no penalty",
+      "model_contract_id": "MODEL-FAMILY-00-IDENTITY",
+      "acceptance_rule": "absolute delta logLik<=1e-3; both optimizers converge and absolute gradients<=1e-4; common-point value/gradient and cross-endpoints<=1e-6; direct/formula coordinates and logLik<=1e-7; complete reordered long data agrees, missing/duplicate long rows reject",
+      "coverage_role": "native_model",
+      "acceptance_level": "paired_fit",
+      "source_fact_ids": [
+        "family/FAMILY-00-IDENTITY"
+      ],
+      "execution_case_ids": [
+        "CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL",
+        "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE"
+      ],
+      "scope_boundary": "Single retained Gaussian ordinary latent/unique model; bridge, other covariance/data/inference cases and full family remain unpaid."
+    },
+    {
+      "id": "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE",
+      "fixture": "test/parity/test_gaussian_original_required.jl",
+      "fixture_sha256": "64deb7eea79d8109632b9b1aee8af863fb6b4be135878cacac63a4f8c2f18b4c",
+      "data_fixture": "test/parity/fixtures/core070_gaussian_original.toml",
+      "data_fixture_sha256": "52a4664c99295ec675a7b666458350bf57ff57e338c77d5ada1cf9d2e5efba92",
+      "reference_call": "gllvmTMB(value ~ 0 + latent(0 + trait | site,d=1),data=df,unit='site',trait='trait',family=gaussian(),control=gllvmTMBcontrol(aghq=FALSE,aghq_ridge=Inf,n_init=1L,se=FALSE,optimizer='optim',optArgs=list(method='BFGS',control=list(reltol=1e-14,maxit=2000))))",
+      "r_call": "gllvmTMB(value ~ 0 + latent(0 + trait | site,d=1),data=df,unit='site',trait='trait',family=gaussian(),control=gllvmTMBcontrol(aghq=FALSE,aghq_ridge=Inf,n_init=1L,se=FALSE,optimizer='optim',optArgs=list(method='BFGS',control=list(reltol=1e-14,maxit=2000))))",
+      "julia_call": "gllvm(@formula(y ~ 0),Y,(site=1:120,);family=Normal(),K=1,pervar=true,fixed_residual_sd=c,method=:lbfgs,g_tol=1e-8,iterations=3000); equivalent reversed-long table",
+      "model_contract": "p4,n120,K1,seed81031; zero mean; M=Lambda*Lambda\u2032+diag(psi^2+c^2), c=max(0.001sd(vec(Y)),1e-6) fixed; 4 loadings+4 log unique SD in R; Julia log unique variance=2logSD; exact Gaussian likelihood with constants, no penalty",
+      "model_contract_id": "MODEL-FAMILY-00-IDENTITY",
+      "acceptance_rule": "absolute delta logLik<=1e-3; both optimizers converge and absolute gradients<=1e-4; common-point value/gradient and cross-endpoints<=1e-6; direct/formula coordinates and logLik<=1e-7; complete reordered long data agrees, missing/duplicate long rows reject",
+      "coverage_role": "formula_interface",
+      "acceptance_level": "paired_fit_interface",
+      "source_fact_ids": [
+        "family/FAMILY-00-IDENTITY"
+      ],
+      "execution_case_ids": [
+        "CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL",
+        "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE"
+      ],
+      "scope_boundary": "Single retained Gaussian ordinary latent/unique model; bridge, other covariance/data/inference cases and full family remain unpaid."
+    }
+  ]
+}

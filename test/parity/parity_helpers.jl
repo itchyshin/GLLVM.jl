@@ -53,7 +53,8 @@ function _core070_execution_paths(requested::AbstractVector{<:AbstractString})
         "test/parity/parity_trial_inputs.jl", "test/parity/test_negbin_parity.jl", "test/parity/truncnb2_policy.jl", "test/parity/nb2_health.jl",
         "test/parity/poisson_beta_health.jl", "test/parity/test_poisson_parity.jl", "test/parity/test_beta_parity.jl", "docs/dev-log/core070/poisson-beta-required-contract.json", "test/parity/runparity.jl", "test/parity/r_health.R",
         "tools/core070_delta_matched.jl", "test/parity/test_delta_lognormal_parity.jl",
-        "test/parity/test_delta_gamma_parity.jl", "Project.toml", "test/Project.toml",
+        "test/parity/test_delta_gamma_parity.jl", "test/parity/fixtures/core070_gaussian_original.toml",
+    "test/parity/fixtures/core070_gaussian_reference.R", "Project.toml", "test/Project.toml",
         "test/parity/Project.toml", "docs/dev-log/core070/frozen-r070-contract.toml",
     ]
     append!(paths, (_CORE070_FIXTURES[id] for id in requested))

@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "status": "FAMILY_DECOMPOSITION_NOT_FROZEN_NOT_EXECUTABLE",
+  "status": "FAMILY_DECOMPOSITION_PARTIAL_EXECUTABLE_NOT_FROZEN",
   "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
   "inputs": {
     "docs/dev-log/core070/family-admission-subset.json": "a51906ddd90bdabc2c1764623245963fb600a3bdabd3164e31404e41f7ee587b",
@@ -11,7 +11,8 @@
     "docs/dev-log/core070/family-boundary-pb-refresh.json": "eb36c80af6c43093815f70e1c749816b61f5a03a3e363532a151971e4b8efa57",
     "docs/dev-log/core070/family-link-boundary-contract.json": "bf64a4037150e26d9e70430877dacd884ba944a797d9622d2362103f8abb3dcb",
     "docs/dev-log/core070/family-link-boundary-pb-refresh.json": "aac5046eb641b1d9463453852c1031247a988604256dcfbe443f18ae2eba7ac7",
-    "docs/dev-log/core070/poisson-beta-required-evidence.json": "3181f53865e6ac73fb983d35ad118649df58caba45ec7a74d500e67139dcebde"
+    "docs/dev-log/core070/poisson-beta-required-evidence.json": "3181f53865e6ac73fb983d35ad118649df58caba45ec7a74d500e67139dcebde",
+    "docs/dev-log/core070/gaussian-required-contract.json": "93400f090057fb6a26db60b866b4b1941dcf9b1003cab0107d4fdb43df59dbb4"
   },
   "source_facts": 69,
   "planned_case_count": 97,
@@ -24,8 +25,11 @@
         "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE",
         "CORE070-FAMILY-00-IDENTITY-PUBLIC-R-BRIDGE"
       ],
-      "executable_case_ids": [],
-      "status": "SPECIFICATION_REQUIRED"
+      "executable_case_ids": [
+        "CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL",
+        "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE"
+      ],
+      "status": "REGISTERED_PARTIAL_BRIDGE_UNPAID"
     },
     {
       "source_id": "family/FAMILY-00-REJECT-LINK",
@@ -667,10 +671,10 @@
         0,
         0
       ],
-      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
-      "fixture": null,
-      "r_call": null,
-      "julia_call": null,
+      "status": "REGISTERED_EXECUTABLE_CASE_REPLAY_EVIDENCE_SEPARATE",
+      "fixture": "test/parity/test_gaussian_original_required.jl",
+      "r_call": "gllvmTMB(value ~ 0 + latent(0 + trait | site,d=1),data=df,unit='site',trait='trait',family=gaussian(),control=gllvmTMBcontrol(aghq=FALSE,aghq_ridge=Inf,n_init=1L,se=FALSE,optimizer='optim',optArgs=list(method='BFGS',control=list(reltol=1e-14,maxit=2000))))",
+      "julia_call": "fit_gaussian_pervar_gllvm(Y;K=1,X=zeros(4,120,0),fixed_residual_sd=c,method=:lbfgs,g_tol=1e-8,iterations=3000)",
       "candidate_native_entry": "fit_gaussian_gllvm(Y; K=1)",
       "candidate_fixture": "test/parity/test_gaussian_parity.jl",
       "candidate_fixture_id": "NATIVE-01-GAUSSIAN",
@@ -691,9 +695,14 @@
         "reported estimands"
       ],
       "prerequisite_case_ids": [],
-      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
-      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
-      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+      "acceptance_rule": "absolute delta logLik<=1e-3; both optimizers converge and absolute gradients<=1e-4; common-point value/gradient and cross-endpoints<=1e-6; direct/formula coordinates and logLik<=1e-7; complete reordered long data agrees, missing/duplicate long rows reject",
+      "scope_boundary": "Single retained Gaussian ordinary latent/unique model; bridge, other covariance/data/inference cases and full family remain unpaid.",
+      "candidate_warning": "Legacy candidate fields are retained as historical leads, not the selected model. Actual fixture/calls above bind the registered original Gaussian case; execution receipts are separate. Public R bridge remains unpaid.",
+      "fixture_sha256": "64deb7eea79d8109632b9b1aee8af863fb6b4be135878cacac63a4f8c2f18b4c",
+      "required_runner_case_id": "CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL",
+      "required_runner_status": "REGISTERED",
+      "data_fixture": "test/parity/fixtures/core070_gaussian_original.toml",
+      "data_fixture_sha256": "52a4664c99295ec675a7b666458350bf57ff57e338c77d5ada1cf9d2e5efba92"
     },
     {
       "id": "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE",
@@ -709,10 +718,10 @@
         0,
         0
       ],
-      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
-      "fixture": null,
-      "r_call": null,
-      "julia_call": null,
+      "status": "REGISTERED_EXECUTABLE_CASE_REPLAY_EVIDENCE_SEPARATE",
+      "fixture": "test/parity/test_gaussian_original_required.jl",
+      "r_call": "gllvmTMB(value ~ 0 + latent(0 + trait | site,d=1),data=df,unit='site',trait='trait',family=gaussian(),control=gllvmTMBcontrol(aghq=FALSE,aghq_ridge=Inf,n_init=1L,se=FALSE,optimizer='optim',optArgs=list(method='BFGS',control=list(reltol=1e-14,maxit=2000))))",
+      "julia_call": "gllvm(@formula(y ~ 0),Y,(site=1:120,);family=Normal(),K=1,pervar=true,fixed_residual_sd=c,method=:lbfgs,g_tol=1e-8,iterations=3000); equivalent reversed-long table",
       "candidate_native_entry": "fit_gaussian_gllvm(Y; K=1)",
       "candidate_fixture": "test/parity/test_gaussian_parity.jl",
       "candidate_fixture_id": "NATIVE-01-GAUSSIAN",
@@ -735,9 +744,14 @@
       "prerequisite_case_ids": [
         "CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL"
       ],
-      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
-      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
-      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+      "acceptance_rule": "absolute delta logLik<=1e-3; both optimizers converge and absolute gradients<=1e-4; common-point value/gradient and cross-endpoints<=1e-6; direct/formula coordinates and logLik<=1e-7; complete reordered long data agrees, missing/duplicate long rows reject",
+      "scope_boundary": "Single retained Gaussian ordinary latent/unique model; bridge, other covariance/data/inference cases and full family remain unpaid.",
+      "candidate_warning": "Legacy candidate fields are retained as historical leads, not the selected model. Actual fixture/calls above bind the registered original Gaussian case; execution receipts are separate. Public R bridge remains unpaid.",
+      "fixture_sha256": "64deb7eea79d8109632b9b1aee8af863fb6b4be135878cacac63a4f8c2f18b4c",
+      "required_runner_case_id": "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE",
+      "required_runner_status": "REGISTERED",
+      "data_fixture": "test/parity/fixtures/core070_gaussian_original.toml",
+      "data_fixture_sha256": "52a4664c99295ec675a7b666458350bf57ff57e338c77d5ada1cf9d2e5efba92"
     },
     {
       "id": "CORE070-FAMILY-00-IDENTITY-PUBLIC-R-BRIDGE",

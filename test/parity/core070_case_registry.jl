@@ -1,5 +1,5 @@
 module Core070CaseRegistry
-export FAMILY_IDS, INTERFACE_IDS, REGISTERED_IDS, FIXTURES, requested_ids, validate_manifest
+export FAMILY_IDS, MODEL_IDS, GAUSSIAN_IDS, INTERFACE_IDS, REGISTERED_IDS, FIXTURES, requested_ids, validate_manifest
 const FAMILY_IDS = [
     "NATIVE-01-GAUSSIAN", "NATIVE-02-BINOMIAL", "NATIVE-03-POISSON",
     "NATIVE-04-LOGNORMAL", "NATIVE-05-GAMMA", "NATIVE-06-NB2",
@@ -9,8 +9,10 @@ const FAMILY_IDS = [
     "NATIVE-14-DELTA-GAMMA", "NATIVE-15-ORDINAL-PROBIT", "NATIVE-16-NB1",
     "NATIVE-17-MULTINOMIAL-FIXED",
 ]
-const INTERFACE_IDS = ["CORE070-FAMILY-05-LOG-FORMULA-INTERFACE"]
-const REGISTERED_IDS = vcat(FAMILY_IDS, INTERFACE_IDS)
+const MODEL_IDS = ["CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL"]
+const INTERFACE_IDS = ["CORE070-FAMILY-05-LOG-FORMULA-INTERFACE", "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE"]
+const GAUSSIAN_IDS = [only(MODEL_IDS), last(INTERFACE_IDS)]
+const REGISTERED_IDS = vcat(FAMILY_IDS, MODEL_IDS, INTERFACE_IDS)
 const FIXTURES = Dict(
     "NATIVE-01-GAUSSIAN" => "test/parity/test_gaussian_parity.jl",
     "NATIVE-02-BINOMIAL" => "test/parity/test_binomial_parity.jl",
@@ -30,7 +32,11 @@ const FIXTURES = Dict(
     "NATIVE-16-NB1" => "test/parity/test_nox_dispersion_parity.jl",
     "NATIVE-17-MULTINOMIAL-FIXED" => "test/parity/test_multinomial_parity.jl",
 )
-FIXTURES[only(INTERFACE_IDS)] = "test/parity/test_nb2_formula_parity.jl"
+FIXTURES[first(INTERFACE_IDS)] = "test/parity/test_nb2_formula_parity.jl"
+
+for id in GAUSSIAN_IDS
+    FIXTURES[id] = "test/parity/test_gaussian_original_required.jl"
+end
 
 function requested_ids(raw::AbstractString = "")
     raw = strip(raw)
@@ -43,13 +49,17 @@ function requested_ids(raw::AbstractString = "")
     selected_grouped = [id for id in ids if id in grouped]
     isempty(selected_grouped) || length(selected_grouped) == length(grouped) ||
         throw(ArgumentError("the grouped Gamma/NB1/BetaBinomial fixture must be requested as its exact three-case scope"))
+    selected_gaussian = [id for id in ids if id in GAUSSIAN_IDS]
+    isempty(selected_gaussian) || length(selected_gaussian) == length(GAUSSIAN_IDS) ||
+        throw(ArgumentError("the original Gaussian native/formula fixture must be requested as its exact two-case scope"))
     return ids
 end
 
 """Bind the runner's separate family and interface registries to the draft contract."""
 function validate_manifest(manifest)
     for (key, rows, expected) in (("family_smoke_case_ids", "families", FAMILY_IDS),
-                                  ("interface_case_ids", "interfaces", INTERFACE_IDS))
+                                  ("interface_case_ids", "interfaces", INTERFACE_IDS),
+                                  ("model_case_ids", "models", MODEL_IDS))
         ids = get(manifest, key, String[])
         length(ids) == length(expected) && Set(ids) == Set(expected) ||
             throw(ArgumentError("contract $key differs from runner registry"))

@@ -1,0 +1,18 @@
+{
+  "status": "VERIFIED_GAUSSIAN_NATIVE_FORMULA_SUBSET_NOT_FULL_FAMILY",
+  "case_ids": [
+    "CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL",
+    "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE"
+  ],
+  "actual_assertions": 31,
+  "source_facts_bound": 1,
+  "execution_manifest_sha256": "fc456a56b721ff3f342800ee7986cac65083affe462630a90ea77f934d69b944",
+  "contract_sha256": "e904fceeb78c493ed165150eac5096225f95a368780dbb9a5e8dd0e489dcbc1d",
+  "process_receipt_sha256": "45e879917b88775ec79c8f9b8a8388856c526a892aff433d399c616d087f4e61",
+  "run_sha256": "33212ffca864a2dfd68e90875bd5dd9cde877b10b704145c47c0e91e52adf6f0",
+  "delta_loglik": 3.864101927320007e-09,
+  "native_gradient_max": 1.5420198451465694e-10,
+  "r_gradient_max": 4.445323898038918e-05,
+  "elapsed_seconds": 32.8047014195472,
+  "scope_boundary": "No public R bridge, wider family or full manifest certification."
+}
