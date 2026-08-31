@@ -10,9 +10,11 @@ status-tracked GLM response-family surface.
 
 Local development candidate: `SourceCovariance` and `fit_gaussian_sources`
 represent fixed covariance among source nodes with explicit observation-to-node
-projections. Numerical validation is pending. This dense Gaussian layer does
-not establish R parity, formula/bridge support or new performance claims; see
-the structured-dependence guide for its domain and covariance axes.
+projections. Targeted numerical checks and six retained comparisons with R
+0.7.0 pass. This evidence is limited to those fixed Gaussian source models;
+formula/bridge support, calibrated uncertainty and performance improvements
+remain unverified. See the structured-dependence guide for covariance axes
+and the nearly singular unique-variance case.
 
 ## Why
 

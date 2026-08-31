@@ -6,6 +6,13 @@ Notable changes to GLLVM.jl. Style mirrors `gllvmTMB`'s NEWS: status labels
 ## GLLVM.jl (development version)
 
 ### Changed
+- **PARTIAL:** `SourceCovariance` and `fit_gaussian_sources` fit fixed Gaussian
+  covariance among source groups. Targeted tests and six retained public-R
+  comparisons pass; formula/bridge support and calibrated uncertainty remain
+  unverified. The unique-variance comparison has nearly singular curvature.
+- Exact Gaussian fits and Wald/profile intervals handle an empty fixed-effect
+  design. Failed profile refits cannot supply finite bounds without a finite
+  likelihood crossing.
 - Formula fits validate every supplied site-table column before response access,
   including intercept-only fits. Empty tables remain valid without covariates.
   The original NB2 wide/long formula model matches its native fit; broader

@@ -1,18 +1,25 @@
 # Structured dependence: phylogenetic, animal-model, and spatial
 
-The Gaussian GLLVM marginal likelihood accepts any p × p positive-definite
-covariance matrix via the `Σ_phy` keyword. The three use cases below are
-mathematically the same structure (the `J3` likelihood path in `likelihood.jl`);
-only the origin of `Σ_phy` differs.
+This page covers two Gaussian covariance models that are easy to confuse. Pick
+the axis on which the covariance is defined before choosing a fitter.
 
-**Check the covariance axis first.** In this existing API, `Σ_phy` describes
-the **rows** of `Y`, and its random effect is shared across columns. It is not
-a covariance among arbitrary source groups observed by those columns. The
-new fixed-source candidate at the end of this page represents the latter model.
-Transposing a matrix or choosing a similarly named fitter does not establish
-equivalence between these models.
+| Covariance is among | Response layout and guide |
+|---|---|
+| Response rows | `Y`: entities × occasions; [row model](#row-structured-model) |
+| Source groups | `Y`: traits × units; [source model](#fixed-source-groups) |
 
-## The common model
+Use `fit_gaussian_gllvm` for the row model and `fit_gaussian_sources` for the
+source-group model. In the latter, a projection maps source groups to the
+observed units in the columns of `Y`.
+
+The first model accepts any p × p positive-definite covariance through
+`Σ_phy`; phylogenetic, animal-model, and spatial examples differ only in where
+that row covariance comes from. The fixed-source model uses one or more known
+source-node covariances projected onto observed units. Transposing `Y`, a
+covariance matrix, or a similarly named argument does not make the models
+equivalent.
+
+## [The common model](@id row-structured-model)
 
 Let `y` be a p × n matrix of continuous traits (or outcomes) measured on
 `p` entities (species, individuals, sites) at `n` occasions (sites, visits).
@@ -158,53 +165,89 @@ The ordering and dimension must match the rows, not arbitrary observation groups
 `has_phy_unique = true` flag activates per-trait structured SDs (`σ_phy`);
 `K_phy` activates structured latent axes (`Λ_phy`). Both can be used together.
 
-## Fixed covariance among source groups — development candidate
+## [Fixed covariance among source groups](@id fixed-source-groups)
 
-Numerical validation of this new local candidate is **pending**. The worked
-example below must execute during the Documenter build; its presence is not a
-build receipt, a recovery result or a full R-parity claim.
+The retained evidence includes six paired public-R/native fixed-source Gaussian
+fits and targeted unit checks. It does **not** establish broad parity,
+calibration or recovery, nor does it cover formula or bridge interfaces. In a
+retained `unique=true` case, near-zero curvature also means the current evidence
+does not support a reliable uncertainty claim. The worked example below is a
+deterministic analytic check, not a recovery simulation.
 
-Here `Y` is traits × observed units. Each [`SourceCovariance`](@ref) contains a
+Here `Y` is traits × observed units. Each [`SourceCovariance`](@ref) supplies a
 known SPD covariance `C` on source nodes and a units × nodes projection `P`.
-Integer `groups` constructs a one-hot projection. A node may be unobserved, and
-different sources may have different numbers of nodes. The exact covariance is
+Integer `groups` constructs a one-hot projection: each observed unit is assigned
+to one source node. A source node may be unobserved, and sources can have
+different numbers of nodes. The exact covariance is
 
 ```math
 \operatorname{Cov}(\operatorname{vec}(Y)) =
 \sigma_\varepsilon^2 I + \sum_r (P_r C_r P_r^\top) \otimes B_r.
 ```
 
-`mode=:latent` uses a low-rank trait covariance (default rank one), `:indep`
-uses a diagonal covariance, and `:dep` uses a full lower-triangular loading
-matrix. `unique=true` adds a diagonal term to a latent source. `common=true`
-ties the independent variances, or the unique diagonal when present; equal
-variances do not turn independent fields into one shared field. No jitter or
-loading ridge is added. Trait means are optimized jointly with covariance.
+The projection turns source-node covariance into unit covariance: `P` has one
+row per observed unit and one column per source node, so `P*C*P'` is units ×
+units. Its partner `B` is traits × traits. `mode=:latent` gives `B` a low-rank
+loading structure (rank one by default); `:indep` gives each trait an
+independent source variance; and `:dep` estimates a full lower-triangular
+loading matrix. `unique=true` adds a trait-diagonal term only to a latent
+source. `common=true` ties independent variances, or a latent source's unique
+diagonal; it does not turn independent fields into one shared field. No jitter
+or loading ridge is added, and trait intercepts are optimized jointly with the
+covariance.
 
 ```@example fixed_sources
 using GLLVM, LinearAlgebra
 groups = repeat(1:4; inner=3)
 group_means = [-1.5, -0.5, 0.5, 1.5]
 within = [-0.2, 0.0, 0.2]
-Y = reshape([0.7 + group_means[g] + within[j] for g in 1:4 for j in 1:3], 1, :)
-source = SourceCovariance(Matrix{Float64}(I, 4, 4);
+observations = [
+    0.7 + group_means[g] + within[j]
+    for g in 1:4 for j in 1:3
+]
+Y = reshape(observations, 1, :)
+C = Matrix{Float64}(I, 4, 4)
+source = SourceCovariance(C;
     groups, name=:group, mode=:indep)
-fit = fit_gaussian_sources(Y; sources=[source], g_tol=1e-7)
-@assert fit.converged && fit.gradient_norm <= 1e-7
-(intercept=coef(fit), residual_sd=fit.sigma_eps,
-    source_covariance=only(fit.trait_covariances), status=fit.stopping_reason)
+fit = fit_gaussian_sources(Y;
+    sources=[source], g_tol=1e-7)
+@assert fit.converged && fit.gradient_norm <= 1e-7 # hide
+@assert isapprox(coef(fit)[1], 0.7; atol=1e-6) # hide
+@assert isapprox(fit.sigma_eps^2, 0.04; atol=1e-6) # hide
+@assert isapprox(only(fit.trait_covariances)[1, 1], 1.25 - 0.04 / 3; atol=1e-6) # hide
+estimates = (
+    intercept=only(coef(fit)),
+    residual_variance=fit.sigma_eps^2,
+    group_variance=
+        only(fit.trait_covariances)[1, 1],
+)
+for (name, value) in pairs(estimates)
+    println(name, ": ", round(value; digits=4))
+end
+println("status: ", fit.stopping_reason)
 ```
+
+For this balanced four-group construction, the displayed intercept is `0.7`,
+the residual variance is `0.04`, and the group-level trait variance is
+`1.25 - 0.04 / 3`. These are analytic values from the deterministic construction:
+they show how the output is read, not that the estimator recovers parameters in
+general data.
 
 [`GaussianSourcesFit`](@ref) retains normalized likelihood, source snapshots,
 optimizer coordinates, stopping reason, fresh gradient norm and Hessian
-diagnostics. A positive Hessian does not prove identification or recovery.
+diagnostics. A positive Hessian does not prove identification or recovery;
+near-zero curvature for the retained unique-`Ψ` case is specifically why no
+uncertainty interpretation should be attached to this result.
 
 This layer requires complete finite Gaussian responses, at least two units and
 variation in at least one trait. It uses dense factorization over **all response
 cells**: quadratic memory and cubic factorization cost. Keep initial examples
-small. Parsing trees, pedigrees and meshes; estimating source kernels; slopes,
-loading masks, missing responses, non-Gaussian families, formula/bridge routes,
-new-data prediction and confidence intervals remain outside this layer.
+small. It does not parse trees, pedigrees or meshes; estimate source kernels;
+fit slopes or loading masks; handle missing or non-Gaussian responses; provide
+formula/bridge routes, new-unit prediction, or confidence intervals. For a
+new analysis, first decide whether the covariance belongs to rows or source
+groups, then start with a small fixed, complete Gaussian example and inspect
+the convergence and gradient diagnostics before extending the model.
 
 ```@docs
 SourceCovariance

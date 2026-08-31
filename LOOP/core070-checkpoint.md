@@ -1275,3 +1275,14 @@ bytes preserved, all executed scripts and source pins unchanged. See
 docs/dev-log/core070/gaussian-source-pair-evidence.json and pair after-task.
 Next: execute/inspect Documenter, then required larger source/multinomial/AGHQ
 contracts and recovery designs. No programme completion or full manifest freeze.
+
+## Source guide executed and inspected — 2026-08-31T14:36:20.086601+00:00
+
+Strict Documenter build passes89.01s;117unit checks and six paired fits
+reverified on identical numerical source in preceding combined build.
+Mobile chooser/output fixed after rendered inspection, no global overflow
+or broken anchors. Local versions.js fallback and packaging warnings remain.
+See core070/source-docs-evidence.json and figure-audits source-guide report.
+Next: full package qualification and remaining manifest/source/multinomial/
+AGHQ/data/postfit/bridge contracts; recovery/coverage/performance still unpaid.
+No full programme claim, push, merge, deployment, release or cleanup.

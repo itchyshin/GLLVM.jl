@@ -1,10 +1,10 @@
 {
-  "created_utc": "2026-08-31T14:18:41.448977+00:00",
-  "status": "PARTIAL_SIX_RETAINED_SOURCE_PAIRS_PASS",
+  "created_utc": "2026-08-31T14:36:20.086601+00:00",
+  "status": "PARTIAL_SOURCE_TESTS_PAIRS_AND_GUIDE_VERIFIED",
   "programme": "ACTIVE_M1_PARTIAL",
   "full_manifest": "DRAFT_NOT_FROZEN",
   "source_review": "Noether Terra high; initial plus one repair follow-up; static acceptance after wording repair",
-  "runtime_status": "TARGETED_NUMERICAL_117_PASS_NOT_FITTED_R_PARITY",
+  "runtime_status": "117_UNIT_AND_SIX_PAIRED_FITS_PASS",
   "syntax_status": "PASS_SYNTAX_ONLY",
   "gates": {
     "met": [
@@ -12,24 +12,23 @@
       "GS-ORACLE",
       "GS-LOAD",
       "GS-UNIT",
-      "GS-REGRESSION"
-    ],
-    "unmet": [
+      "GS-REGRESSION",
       "GS-DOCS"
     ],
+    "unmet": [],
     "abandoned": []
   },
   "source_pins": {
-    "src/source_fit.jl": "8b175fed858451ea8440382ffb1981ad1c8e8da30e612ba425ad8d4766274d64",
+    "src/source_fit.jl": "e4431d199a2a0cdebd07e4e5d1679b4b3ff2a0e0436f6486996c205070edd431",
     "src/GLLVM.jl": "545a9f6383b942b06eb42a54ea7bef05bcd2d8d997b3a737f39373d41ec245ea",
     "test/test_gaussian_sources.jl": "b8ddda6ebd33bb1e1fbbd91c83109437b2936818eca27244c5b5b1a3888b00b9",
     "test/runtests.jl": "ee9ece99e12ab33a3d430d1c88ed1ac9f483213be0b3ccd1b3aa77e238f8f38d",
     "tools/core070_gaussian_sources_run.jl": "c97efc76ddaa1c17d0a5fb2663eaa5f78347dc84414c1768d0036166715a5fc5",
     "docs/dev-log/decisions/2026-08-31-gaussian-sources-fit.md": "127ee7c332a91f4a929cd6f03083d2ab795ba23750b44ad8178d8fb42fcbc698",
-    "docs/src/structured-dependence.md": "47e734efbbac7649368d4be30cfe9c5b091b63b6c913ff74374c244edda864b2",
+    "docs/src/structured-dependence.md": "8892bc2cc96196c585b5aa466ac4e030c8ca17a2fef2c30357be094055931f2c",
     "docs/src/api.md": "666e1565e77bcf6c44806c2af504561b99b4c16a339534809d8c3ddce0153e99",
-    "README.md": "e84dcdbb6a24b4cd4d344dc75653682d3f03ed4e89199fcd8a2910fc308c8a95",
-    "CHANGELOG.md": "63f88ce72a09b4f0bf140491258c115e29aac72d9b5bc5ee81c7ae526082aff3",
+    "README.md": "98e509468e82cccfc22d6924ea40b0169ce079df9df95d185ae125e8a5651476",
+    "CHANGELOG.md": "a652f10acae83f0b23306207e413abcf1378087cd30671dba8152aa0babbcd52",
     "docs/dev-log/core070/gaussian-sources-fit-leaf.md": "8b448770553d21484b3a8c21735c15593b6b6bbc96c5d8500522b59f2cb31cc0",
     "tools/core070_gaussian_source_bindings.jl": "bc808418c313d28326fb0678779d96a4f2a0cf22cd50f46a4a59eae5de480c3b",
     "test/test_gaussian_source_bindings.jl": "5d10e960500f03567ca19a8c37da73840d714a27c18545319fdfbfc71c30b893"
@@ -45,5 +44,6 @@
   "api_load_evidence": "docs/dev-log/core070/gaussian-sources-api-load.json",
   "tdd_ordering": "NOT_ACHIEVED_IMPLEMENTATION_PRECEDED_VALID_API_RED",
   "numerical_evidence": "docs/dev-log/core070/gaussian-sources-numerical-tests.json",
-  "paired_fit_evidence": "docs/dev-log/core070/gaussian-source-pair-evidence.json"
+  "paired_fit_evidence": "docs/dev-log/core070/gaussian-source-pair-evidence.json",
+  "documentation_evidence": "docs/dev-log/core070/source-docs-evidence.json"
 }

@@ -16398,3 +16398,14 @@ likelihood/gradient/health checks; max fitted deltaLL2.199e-9. R evaluated
 again at native endpoints; source oracle verified before/after. Seven gate
 negative controls pass. Unique-Psi curvature nearly singular: no interval
 or recovery claim. See core070/gaussian-source-pair-evidence.json.
+
+## Source guide executed and inspected — 2026-08-31T14:36:20.086601+00:00
+
+Strict Documenter build passes89.01s;117unit checks and six paired fits
+reverified on identical numerical source in preceding combined build.
+Mobile chooser/output fixed after rendered inspection, no global overflow
+or broken anchors. Local versions.js fallback and packaging warnings remain.
+See core070/source-docs-evidence.json and figure-audits source-guide report.
+Next: full package qualification and remaining manifest/source/multinomial/
+AGHQ/data/postfit/bridge contracts; recovery/coverage/performance still unpaid.
+No full programme claim, push, merge, deployment, release or cleanup.

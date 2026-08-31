@@ -1,10 +1,3 @@
-## Unreleased — Gaussian empty fixed-effect design
-
-- Fix default exact Gaussian fitting with a zero-column design or all fixed-zero
-  coefficients, including ordinary and phylogenetic profiled likelihoods.
-- Restore Wald/profile intervals for these models; failed profile refits no
-  longer fabricate finite bounds without a finite likelihood crossing.
-
 # Changelog
 
 All notable changes to GLLVM.jl are documented here.
@@ -12,9 +5,15 @@ All notable changes to GLLVM.jl are documented here.
 ## Unreleased
 
 ### Changed
-- Local unvalidated candidate: typed fixed Gaussian source covariances, additive
+- Fix default exact Gaussian fitting with a zero-column design or all fixed-zero
+  coefficients, including ordinary and phylogenetic profiled likelihoods.
+- Restore Wald/profile intervals for these models; failed profile refits no
+  longer fabricate finite bounds without a finite likelihood crossing.
+- Development interface: typed fixed Gaussian source covariances, additive
   projected-source fitting, and explicit gradient/Hessian diagnostics. Independent,
-  latent and dependent trait modes have tests prepared; remote execution is pending.
+  latent and dependent trait modes pass targeted tests. Six retained nonspatial
+  models match public R 0.7.0 fits under the declared likelihood/health checks.
+  The unique-variance case has nearly singular curvature; intervals are unverified.
   Existing fitters are unchanged. No source-kernel estimation, formula/bridge,
   non-Gaussian, inference, recovery or performance completion claim.
 - Local binomial candidate: opt-in ordinary AGHQ with logit/probit/cloglog,

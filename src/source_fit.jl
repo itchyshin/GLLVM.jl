@@ -157,7 +157,7 @@ vector must be finite and have exactly the required length. The default start
 is deterministic. No automatic ridge, source jitter, random restart or estimator
 selection occurs. Final likelihood, ForwardDiff gradient and Hessian are recomputed.
 
-This local development candidate has not yet passed numerical validation. Its
+This development interface is limited to fixed Gaussian source matrices. Its
 dense covariance has quadratic memory and cubic factorization cost in the
 number of observed cells. It does not yet implement
 formula/bridge source terms, tree/pedigree/mesh parsing, estimated source kernels,
