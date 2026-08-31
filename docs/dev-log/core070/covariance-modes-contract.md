@@ -1,5 +1,9 @@
 # Gaussian covariance modes: numerical reference contract
 
+Subsequent native fitted evidence: [ordinary fixed residual](source-fixed-residual-contract.md)
+and [remaining seven mode shapes](covariance-mode-fits-contract.md). The report
+below remains the original fixed-parameter qualification, with its original data.
+
 The frozen R reference b4d5fee64def88bc768dda1f1f77c29b295edd86 admits all nine
 prepared models below. Eighteen fixed-parameter marginal likelihood and gradient
 checks pass against an independent dense Gaussian calculation. This closes a

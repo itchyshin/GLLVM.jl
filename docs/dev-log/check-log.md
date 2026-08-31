@@ -16659,3 +16659,22 @@ Next remainingseven exactcovariancemodefits, formula/bridge, CoreAGHQ scope and
 recovery/inference; originalStudentstillunhealthy. Fullsuite/externalreview
 approvalsunmodified. One requestedTerra/high nativeproductionchild; nofullpanel.
 Allhandles terminal. NoDRACjobs/push/merge/release/cleanup; foreignlanesuntouched.
+
+## 2026-08-31 — seven Gaussian covariance-mode fitting contracts
+
+Separate full-rank FIT-MODE fixture preserves old pointwise MODE data. Default
+public R run35.64s:164/169 assertions, four cases pass; three DEP cases fail R
+health, two also covariance. Follow-up explicit R stopping controls only,
+unchanged data/maps/free names and native defaults:34.24s,176/176 PASS, all7cases.
+Max absolute deltaLL7.44649e-12, maxRgradient2.43503e-5, maxnative8.10798e-8.
+Original default failures retained; ordinary source/residual split remains
+nonidentified, total covariance only. Independent raw readback14fits, dense
+objectives and68negative controls PASS. Unlazy1/2; fullprogramme unpaid.
+Hopper requestedTerra/high nativeworker owned driver; parent fixture/verifier;
+one repair follow-up, no full completion panel. No src/Rsource/originalfixture
+change. MC3cc32491f1415302b2843370ffa9ba434096b405 HTTP200,Rfieldsunchanged.
+Evidence covariance-mode-fits-evidence.json; contract covariance-mode-fits-contract.md.
+Next remaining covariance modifiers/interfaces, multinomial/data/postfit and
+CoreAGHQ, recovery/inference. OriginalStudentunhealthy; fullmanifestDRAFT/M1PARTIAL.
+Fullsuite/specific externalreview approvals unchanged. NoDRACjobs/push/release;
+all handles terminal, foreign lanes untouched. See covariance-mode-fits after-task.
