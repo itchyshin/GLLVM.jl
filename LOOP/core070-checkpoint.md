@@ -1323,3 +1323,18 @@ review dispatch. Bridge/AGHQfallback/intervals and full manifest/capability work
 remain. Next safe work: default-unique AGHQ fallback reporting and actual frozen
 admission behavior, or required manifest reconciliation. No code-sharing reroute.
 No jobs/workers active, no push/merge/release/cleanup. M1PARTIAL/fullmanifestDRAFT.
+
+## Default-unique Gaussian AGHQ fallback — 2026-08-31
+
+Fallback metadata/warnings now available through native/formula pervar route.
+k1 quiet; numeric/auto unique-effects requests warn, retain exact Gaussian/Laplace
+and identical optimizer coordinates. c0 plainpervar adapter remains unimplemented
+with distinct reason.59new+58adjacent checks49.14s; original R replay10native+
+9formula+29fallback checks26.92s,deltaLL3.864e-9, both gradients<1e-4. Strict docs
+97.83s; desktop/mobile inspected. Nine corruptions reject; Unlazy4/5.
+Read core070/pervar-fallback-evidence.json and after-task. Stable UNIQUE-DEFAULT
+and K1-PRECEDENCE are PARTIAL, not all-family/bridge completion. Prior receipts
+remain historical. Fullsuite/code-sharing approvals unchanged, no workaround.
+Next: reconcile/freeze required capability case mappings and complete bridge/
+interval/model gaps. Preserve full scope; no more helper-only replay without
+changed inputs. All jobs/workers terminal; no push/merge/release/cleanup.

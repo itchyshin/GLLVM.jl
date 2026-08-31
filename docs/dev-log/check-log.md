@@ -16441,3 +16441,12 @@ work is available. M1PARTIAL/manifestDRAFT; no push/merge/release/cleanup.
 - Seven verifier corruptions reject; Unlazy4/5, fullsuite/review gate unpaid.
   Full programme M1PARTIAL/manifestDRAFT. R bridge/AGHQfallback/intervals unpaid.
 - After-task: after-task/2026-08-31-core070-pervar-formula.md. Failed attempts retained.
+
+### 2026-08-31 — default-unique Gaussian AGHQ fallback
+- Baseline unsupported aghq failure37.47s;59new+58adjacent assertions pass49.14s.
+- Original R fixture default/k1/numeric/auto unchanged baseline coordinates:
+  10native+9formula+29fallback assertions26.92s; deltaLL3.864e-9, both gradients<1e-4.
+- Strict executed docs97.83s; desktop/mobile method/warning/reason inspected.
+- Nine verifier corruptions reject. Stable required obligations remain PARTIAL
+  for bridge/other-family scope; no fullsuite or independent-review claim.
+- See after-task/2026-08-31-core070-pervar-fallback.md and core070/pervar-fallback-evidence.json.

@@ -420,7 +420,9 @@ trait intercepts in `y ~ 1 + temp`, shared site slopes, and the zero-mean choice
 `y ~ 0`. An explicit `fixed_residual_sd` can separate known residual variation
 from estimated unique variance. See the executed
 [per-variance examples](response-families.md#Gaussian-with-per-species-variance-—-fit_gaussian_pervar_gllvm).
-The R bridge and AGHQ fallback for this decomposition remain under development.
+For this decomposition, AGHQ requests retain exact Gaussian/Laplace and report
+why unique effects are ineligible; `aghq=1` is quiet. The R bridge and intervals
+remain under development.
 
 ## 6. Structured latent fields
 

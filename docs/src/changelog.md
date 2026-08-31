@@ -10,8 +10,10 @@ Notable changes to GLLVM.jl. Style mirrors `gllvmTMB`'s NEWS: status labels
   SD and estimates unique variances within that constraint. Results retain unique
   and total diagonal variances; existing defaults and parameter counts are unchanged.
   The `pervar=true` Gaussian formula route preserves trait intercepts,
-  zero-mean designs, shared slopes and categorical contrasts. Bridge, intervals
-  and AGHQ fallback parity are not established.
+  zero-mean designs, shared slopes and categorical contrasts. Bridge and interval
+  parity are not established. AGHQ requests on the fixed-residual unique model
+  retain exact Gaussian/Laplace with warning and provenance; `k=1` is quiet.
+  Plain heteroscedastic AGHQ remains unimplemented and is labeled separately.
 - **PARTIAL:** `SourceCovariance` and `fit_gaussian_sources` fit fixed Gaussian
   covariance among source groups. Targeted tests and six retained public-R
   comparisons pass; formula/bridge support and calibrated uncertainty remain

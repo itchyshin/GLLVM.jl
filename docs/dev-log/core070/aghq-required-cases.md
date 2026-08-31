@@ -60,3 +60,13 @@ Next: bind public admission cases to exact same-model fixtures and calls, then
 complete native/formula/bridge case contracts across the other source domains.
 Do not spend another turn replaying these helper controls unless their inputs
 or implementation change. The full programme remains ACTIVE / M1 PARTIAL.
+
+## Incremental default-unique Gaussian evidence — 2026-08-31
+
+[Fallback receipt](pervar-fallback-evidence.json) now supplies same-model Gaussian
+native/formula evidence for CORE070-AGHQ-PUBLIC-UNIQUE-DEFAULT and the quiet
+k1 precedence requirement. The original retained p4/n120/K1 fixture matches R
+with unchanged baseline coordinates, healthy fits, numeric/auto warning and
+reason provenance. The earlier unmatched-native status is historical, retained
+in its original receipt. These obligations remain PARTIAL: this does not cover
+R bridge or all required family/interface cells. No full annex or manifest freeze.

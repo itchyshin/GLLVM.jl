@@ -870,8 +870,8 @@ The development option `fixed_residual_sd=c` fits
 is not an estimated parameter. Positive `c` uses L-BFGS even with `method=:em`;
 the default `c=0` leaves the existing model unchanged. It does not automatically
 choose R's data-dependent small scale. The formula route is available with
-`family=Normal(), pervar=true`; R bridge, intervals and AGHQ fallback metadata
-for this decomposition remain unverified.
+`family=Normal(), pervar=true`; R bridge and intervals for this decomposition
+remain unverified.
 
 ```@example pervar_design
 using GLLVM, Random
@@ -922,8 +922,29 @@ println("Formula/matrix likelihood agreement: ",
     isapprox(fit_formula.loglik, fit_fixed.loglik; atol=1e-7))
 ```
 
-These examples check model equivalence and the variance decomposition, not
-recovery or interval calibration.
+The model with a fixed residual and unique effects is outside AGHQ Stage 1a's
+loadings-only domain. `aghq=3` or `aghq=:auto` therefore warns and retains the
+exact Gaussian/Laplace fit. `aghq=1` follows the same path without an ignored-
+request warning. No ridge or quadrature approximation is introduced, and the
+fit reports which method actually ran:
+
+```@example pervar_design
+fallback = gllvm(@formula(y ~ 1 + site_x), Y, (site_x=site_x,);
+    family=GLLVM.Normal(), K=1, pervar=true, fixed_residual_sd=0.2, aghq=3)
+@assert fallback.loglik == fit_formula.loglik # hide
+@assert fallback.ψ² == fit_formula.ψ² # hide
+println("Requested nodes: ", fallback.integration.requested_k)
+println("Actual integration: ", fallback.integration.actual)
+println("Reason: ", fallback.integration.reason)
+```
+
+The warning is intentional: requesting AGHQ does not remove the unique effects.
+Without the fixed-residual decomposition (`fixed_residual_sd=0`), the plain
+heteroscedastic AGHQ adapter remains unimplemented and reports the distinct
+reason `pervar_aghq_unimplemented`; this is not a verified R structural rejection.
+The default `aghq=false` leaves `integration=nothing`. Invalid node requests and
+integration controls fail clearly. These examples check model equivalence and
+reporting, not recovery or interval calibration.
 
 ### Mixed-family response vector — `fit_mixed_gllvm`
 

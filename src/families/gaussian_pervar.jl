@@ -118,6 +118,7 @@ Fields:
 - `loglik`       — converged marginal log-likelihood.
 - `converged`    — Optim convergence flag.
 - `iterations`   — Optim iteration count.
+- `integration` — requested/actual AGHQ fallback information, or `nothing` by default.
 """
 struct GaussianPerVarFit
     β::Vector{Float64}
@@ -128,18 +129,46 @@ struct GaussianPerVarFit
     iterations::Int
     ψ²::Vector{Float64}
     fixed_residual_sd::Float64
+    integration::Union{Nothing,AbstractIntegrationInfo}
 end
 
 # Preserve construction of the original unconstrained per-variance result.
 GaussianPerVarFit(β, Λ, φ², loglik, converged, iterations) =
     GaussianPerVarFit(β, Λ, φ², loglik, converged, iterations, copy(φ²), 0.0)
+GaussianPerVarFit(β, Λ, φ², loglik, converged, iterations, ψ², fixed_residual_sd) =
+    GaussianPerVarFit(β, Λ, φ², loglik, converged, iterations, ψ², fixed_residual_sd, nothing)
 
 function Base.show(io::IO, fit::GaussianPerVarFit)
     p, K = size(fit.Λ)
     print(io, "GaussianPerVarFit(p=$p, K=$K, loglik=",
           round(fit.loglik; digits = 4),
           ", converged=", fit.converged,
-          ", iterations=", fit.iterations, ")")
+          ", iterations=", fit.iterations)
+    if fit.integration !== nothing
+        info = fit.integration
+        print(io, ", integration=exact Gaussian/Laplace, requested=", info.requested,
+              ", reason=", info.reason)
+    end
+    print(io, ")")
+end
+Base.summary(fit::GaussianPerVarFit) = sprint(show, fit)
+
+function _pervar_with_fallback(fit, request, controls)
+    request === :off && return fit
+    k = request === :auto ? 5 : request
+    reason = k == 1 ? :laplace_rule : fit.fixed_residual_sd > 0 ?
+        :other_random_blocks : :pervar_aghq_unimplemented
+    if k != 1
+        detail = reason === :other_random_blocks ?
+            "Stage 1a requires a loadings-only block; this model includes trait-specific unique effects" :
+            "the plain heteroscedastic Gaussian AGHQ adapter is not implemented"
+        @warn "AGHQ request retained exact Gaussian/Laplace" reason=reason requested=request detail=detail
+    end
+    # No quadrature ran: do not fabricate modes, gradients or adaptation results.
+    info = AGHQFitInfo(request, :laplace, 1, k, 1, reason, false, Inf, controls,
+        (fixed_residual_sd=fit.fixed_residual_sd,), nothing, AGHQAdaptation[], nothing, "", NaN)
+    return GaussianPerVarFit(fit.β, fit.Λ, fit.φ², fit.loglik, fit.converged,
+        fit.iterations, fit.ψ², fit.fixed_residual_sd, info)
 end
 
 _loadings(fit::GaussianPerVarFit) = fit.Λ
@@ -153,7 +182,7 @@ end
 
 """
     fit_gaussian_pervar_gllvm(Y; K, X=nothing, fixed_residual_sd=0.0,
-                             g_tol=1e-5, iterations=1000)
+                             aghq=false, aghq_control=(;), g_tol=1e-5, iterations=1000)
         -> GaussianPerVarFit
 
 Fit a heteroscedastic (per-species variance) Gaussian GLLVM by EM or L-BFGS.
@@ -179,6 +208,17 @@ There is no automatic suppression or data-derived floor: pass the fixed scale
 explicitly when matching a reference model. A fixed scale must be finite and
 nonnegative, and its square must be representable.
 
+`aghq=1` retains the exact Gaussian/Laplace fit without a warning. Larger node
+counts and `true`/`:auto` also retain that fit, with a warning: the fixed-residual
+model includes unique effects and is outside Stage 1a's loadings-only domain.
+The plain `c=0` heteroscedastic AGHQ adapter is still unimplemented and reports
+that distinct reason. No requested quadrature changes the model, adds a ridge,
+or runs an adaptation loop. `fit.integration` records requested/actual method,
+node counts and reason; the existing `fit.converged` reports optimizer status.
+By default `aghq=false` keeps `integration=nothing`. Invalid integration controls
+are rejected before optimization. The formula `pervar=true` route forwards these
+options; this does not establish R bridge or interval parity.
+
 Warm start: PPCA closed form (Tipping & Bishop 1999) for `Λ` and per-species
 residual variances initialised from the per-trait sample variances of `Y`.
 
@@ -188,6 +228,8 @@ function fit_gaussian_pervar_gllvm(Y::AbstractMatrix;
                                    K::Integer,
                                    X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
                                    fixed_residual_sd::Real = 0.0,
+                                   aghq = false,
+                                   aghq_control = (;),
                                    method::Symbol = :em,
                                    g_tol::Real = 1e-5,
                                    em_tol::Real = 1e-8,
@@ -200,6 +242,8 @@ function fit_gaussian_pervar_gllvm(Y::AbstractMatrix;
     c² = c^2
     isfinite(c) && c >= 0 && isfinite(c²) && (c == 0 || c² > 0) ||
         throw(ArgumentError("fixed_residual_sd must be finite and nonnegative with a representable square"))
+    request = _aghq_request(aghq)
+    integration_controls = _aghq_controls(aghq_control)
 
     Yf = Matrix{Float64}(Y)
     all(isfinite, Yf) || throw(ArgumentError("Y must contain only finite responses"))
@@ -257,7 +301,7 @@ function fit_gaussian_pervar_gllvm(Y::AbstractMatrix;
         Λ_em, φ²_em, ll_em, nit_em, conv_em =
             em_fa(Yc, K; λ_init = Λ0, ψ_init = φ²_0, tol = em_tol,
                   max_iter = max(Int(iterations), 2000))
-        return GaussianPerVarFit(
+        fit = GaussianPerVarFit(
             collect(Float64, μ0),
             Matrix{Float64}(Λ_em),
             collect(Float64, φ²_em),
@@ -265,6 +309,7 @@ function fit_gaussian_pervar_gllvm(Y::AbstractMatrix;
             conv_em,
             nit_em,
         )
+        return _pervar_with_fallback(fit, request, integration_controls)
     end
 
     # Exact ML GLS, using the same direct covariance factorization as the
@@ -325,7 +370,7 @@ function fit_gaussian_pervar_gllvm(Y::AbstractMatrix;
         @warn "Rejected numerically unfactorizable covariance evaluations; no ridge was added" count=rejected_covariances[]
     end
 
-    return GaussianPerVarFit(
+    fit = GaussianPerVarFit(
         collect(Float64, β_hat),
         Matrix{Float64}(Λ_hat),
         collect(Float64, φ²_hat),
@@ -335,4 +380,5 @@ function fit_gaussian_pervar_gllvm(Y::AbstractMatrix;
         collect(Float64, ψ²_hat),
         c,
     )
+    return _pervar_with_fallback(fit, request, integration_controls)
 end

@@ -64,3 +64,9 @@ The pervar formula source and central test registration now supersede the preced
 candidate. Bind future full checks to pervar-formula-evidence.json plus the full
 then-current source census. Its35new+50adjacent tests and strict docs are bounded
 evidence, not full-suite qualification. Command/resources/approval status unchanged.
+
+## Fallback metadata candidate update
+Per-variance AGHQ fallback now changes fit metadata/control admission, not its
+likelihood. Use pervar-fallback-evidence.json and the then-current source/test
+census for future full checks; all earlier suite qualifications predate this
+change. Run commands, budgets and pending approval are unchanged.
