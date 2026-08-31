@@ -602,3 +602,20 @@ Next: preserve this failed public-control result, then advance required source
 case mapping and original truncated-NB2 replay; avoid repeated Student optimizer
 tuning without a discriminating hypothesis. Six production children consumed;
 no B production dispatch before user checkpoint. R reference remains read-only.
+
+## 2026-08-31 — original truncated NB2 public continuation qualified
+
+Repaired Julia original seed58 per-trait observed-curvature fit now has gradient
+6.537e-6 and FD step discrepancy1.408e-7 (both pass). Unchanged Rnlminb remains
+code1: replay8pass1fail. Separate genuine public BFGS start_from gives Rcode0,
+gradient2.746e-5, abs logLikdelta8.673e-8, samepoint nll delta1.659e-7:11pass.
+Both15freeparams/data/map unchanged. Own first BFGS report parse failure retained.
+Oracle before/after all3 batches PASS; whole-fit/source/process readback and
+7+8 corruption controls PASS. Unlazy BFGS2met1unmet. Default required runner
+unmodified/stillRhealthfail; policy integration, recovery and review unpaid.
+See after-task/2026-08-31-core070-truncnb2-replay.md. M1PARTIAL/fullmanifestDRAFT.
+
+Next: integrate explicit public continuation policy as a separately recorded
+required case, revalidate required runner; also map finite model contracts.
+Do not infer default R health from BFGS. All remote processes terminal.
+No new B production child before user checkpoint; original reference read-only.

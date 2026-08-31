@@ -311,6 +311,16 @@ coincidence: `truncated_nbinom2_marginal_loglik_laplace` is implemented as the
 equal-`r_t` special case of `truncated_nbinom2_pertrait_marginal_loglik_laplace`,
 so the two routes cannot drift apart.
 
+#### Scope of the recorded R comparison
+
+The original seed-58 per-trait fixture has a verified comparison using a
+public R BFGS continuation from its default fit. Both engines pass the recorded
+fit-health checks, with absolute log-likelihood difference below `1e-7`.
+The default R fit still reports unsuccessful convergence. This result applies
+to that explicit continuation recipe; it does not establish default-R health,
+parameter-recovery performance, or complete family parity. The default parity
+runner has not yet adopted this control policy.
+
 #### Laplace curvature: `hessian = :observed` (default) or `:fisher`
 
 Both routes take a `hessian` keyword. `:observed` (the default) builds the Laplace

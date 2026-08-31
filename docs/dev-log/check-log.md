@@ -15944,3 +15944,15 @@ R raw gradient8.152e-4 fails1e-4 and same-point density delta3.891e-6 fails1e-6.
 Whole-fit/source/process readback and8 corruption controls pass. Default gate
 remains nonzero. No engine edits, tolerance changes or parity promotion. See
 after-task/2026-08-31-core070-student-warmstart.md. M1PARTIAL, manifestDRAFT.
+
+## 2026-08-31 — original truncated NB2 public continuation qualified
+
+Repaired Julia original seed58 per-trait observed-curvature fit now has gradient
+6.537e-6 and FD step discrepancy1.408e-7 (both pass). Unchanged Rnlminb remains
+code1: replay8pass1fail. Separate genuine public BFGS start_from gives Rcode0,
+gradient2.746e-5, abs logLikdelta8.673e-8, samepoint nll delta1.659e-7:11pass.
+Both15freeparams/data/map unchanged. Own first BFGS report parse failure retained.
+Oracle before/after all3 batches PASS; whole-fit/source/process readback and
+7+8 corruption controls PASS. Unlazy BFGS2met1unmet. Default required runner
+unmodified/stillRhealthfail; policy integration, recovery and review unpaid.
+See after-task/2026-08-31-core070-truncnb2-replay.md. M1PARTIAL/fullmanifestDRAFT.
