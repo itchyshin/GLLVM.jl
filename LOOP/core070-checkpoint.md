@@ -899,3 +899,30 @@ fullmanifestDRAFT/M1PARTIAL/goalACTIVE. No R0.7.1/article/foreign edits, push,
 merge, release orcleanup. Read core070/aghq-poisson-contract.md and aftertask.
 
 Mission Control local 25a5b10c666c52240485c1d69ac643656525d303: HTTP200/exact served field, R fields unchanged, exact-file lease released.
+
+## 2026-08-31 — multistart engine and frozen R Poisson AGHQ pair
+
+Added _aghq_select_run/aghq_multistart_optimize to aghq_outer.jl. Every copied
+start runs independently; usable converged beats nonconverged, then objective,
+first tie; all unusable => selected/winner nothing. No public fallback here.
+Final aghq-multistart-green-02 Totoro330numerical+8pairPASS59.669508s, initial
+missing-symbol1fail retained. Originalseed44 p5K2n60 all14free, two starts from
+Laplace and constant.3 loadings, k5 unpenalized. PairedpublicRLLdelta7.4375e-9,
+sameRtheta/cacheobjective-1.1369e-13, covariance5.93e-7/marginalmean4.91e-6.
+Bothreferencefrozenconverged; Rfreshgrad1.5974e-4 passesRELATIVEonly.
+Important: total re-adaptedFD minusfrozengradmax0.0193509, FDstepstable3.69e-8.
+Fixedtheta k5/9/15 objectives634.3176474002363/634.3179166376217/634.3179126753442.
+Do NOT claimtotalstationarity or universalnodeadequacy. BothJulia traces andR
+selectedtrace/nstarts/objectivedata retained; no claimtoRlosingtracesunreturned.
+
+NEXT reviewed aghq-public-integration-contract.md: extendPoissonFit concrete
+metadata,oldconstructors preserved, finalfrozencaches/controls/inputidentity,
+publiccontrols/admission/fallback, :fit inference usingfrozenobjective, ADWald,
+profile/samecontrolbootstrap, mask/offsetpostfit, docsAPIcascade. Existinggeneric
+_family_wald SPDweakness needsseparatefailingregression/fix. NoetherfreshTerrahigh
+source/designreview+onefollowup noactionabledefects; notcompletionpanel/noBchild.
+FullprogrammeACTIVE/M1PARTIAL/fullmanifestDRAFT; remainingcorefamilies/debtsand
+oldfamilyfreshness outstanding. No pushmergereleasecleanup/Rengine/foreignedits
+orDRACcompute. Read after-task/2026-08-31-core070-aghq-poisson-pair.md andevidence.
+
+Mission Control local 7cf26ac0af68136d966935726b0050110433eb6d: HTTP200/exact served field, R fields unchanged, exact-file lease released.

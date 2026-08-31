@@ -174,3 +174,39 @@ function aghq_outer_optimize(start::AbstractVector, adapt, objective;
         parameter_shift=maximum(abs.(best-initial)),final_mode_shift=final_shift,
         curvature_repairs=final_caches===nothing ? 0 : count(a->a.curvature_repaired,final_caches))
 end
+
+# Frozen R fit-multi.R ranks converged finite runs before raw objective.
+# Keep this shared by real-family adapters; no public fit fallback is made here.
+function _aghq_select_run(runs)
+    usable=findall(r->r.usable && isfinite(r.objective) && !isempty(r.parameters) &&
+        all(isfinite,r.parameters),runs)
+    isempty(usable) && return nothing
+    converged=filter(i->runs[i].converged,usable)
+    candidates=isempty(converged) ? usable : converged
+    return candidates[argmin([runs[i].objective for i in candidates])]
+end
+
+"""
+    aghq_multistart_optimize(starts, adapt, objective; kwargs...)
+
+Run every supplied start independently through [`aghq_outer_optimize`](@ref).
+Retain all attempts. Select a usable converged run before any nonconverged run,
+then the lowest objective (first start wins ties). If all attempts are unusable,
+`winner` and `selected` are `nothing`; public callers must report their fallback.
+Input errors and interrupts propagate. Ordinary mode/adaptation failures are
+retained by the single-start driver. All start vectors are copied and validated
+before fitting; `kwargs` are the single-start controls, not a new optimizer.
+"""
+function aghq_multistart_optimize(starts::AbstractVector,adapt,objective;kwargs...)
+    !isempty(starts) && all(t->t isa AbstractVector && !isempty(t) &&
+        all(x->x isa Real && isfinite(x),t),starts) ||
+        throw(ArgumentError("AGHQ starts must be nonempty finite numeric vectors"))
+    length(unique(length.(starts)))==1 ||
+        throw(ArgumentError("AGHQ starts must have equal parameter dimensions"))
+    owned=[Vector{Float64}(t) for t in starts]
+    all(t->all(isfinite,t),owned) || throw(ArgumentError("AGHQ starts must be finite in Float64"))
+    runs=[aghq_outer_optimize(t,adapt,objective;kwargs...) for t in owned]
+    winner=_aghq_select_run(runs)
+    return (runs=runs,winner=winner,selected=winner===nothing ? nothing : runs[winner],
+        usable=winner!==nothing)
+end

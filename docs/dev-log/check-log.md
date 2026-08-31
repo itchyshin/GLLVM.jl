@@ -16194,3 +16194,13 @@ Mission Control local 76c958c3d546de6ac36c51d70e45c42ab0476c94: HTTP200, exact s
 - Scope remains INTERNAL, no public/R AGHQ parity/recovery/full-suite/docs claim.
   Full programmeACTIVE/M1PARTIAL/manifestDRAFT; prior family receipts historical.
 - Evidence: core070/aghq-poisson-evidence.json; after-task/2026-08-31-core070-aghq-poisson.md.
+
+### 2026-08-31 — AGHQ multistart and frozen public R Poisson pair
+- Internal multistart selection implemented; final330 numerical+8paired checks
+  PASS59.669508s Totoro. Seed44 full14params k5 two starts, unpenalized.
+- LL delta7.44e-9; same-pointRcache delta1.14e-13; omitted adaptation-chain
+  gradient0.0193509 with FD stability3.69e-8. Frozen convergence only.
+- Noether fresh Terra/high review+follow-up approved bounded helper/design.
+  Public metadata/inference contract written; public wiring remains next.
+- Evidence core070/aghq-poisson-pair-evidence.json; report
+  after-task/2026-08-31-core070-aghq-poisson-pair.md. ProgrammeACTIVE/M1PARTIAL.
