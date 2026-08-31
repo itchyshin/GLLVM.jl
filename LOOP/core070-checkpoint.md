@@ -1461,3 +1461,25 @@ bridge admission model-specific, preserving required native/formula Gaussian
 and truncatedNB2 coverage. FullmanifestDRAFT, no engine/R edits; fullsuite and
 external-review approvals unchanged. No pushes/releases/DRAC jobs; checks terminal.
 Evidence public-bridge-required-evidence.json and gaussian-bridge-boundary-evidence.json.
+
+## 2026-08-31 — bridge descriptor census and bounded evidence bundle
+
+Live18:02UTC: all eight DRAC ControlMaster sessions and Totoro respond. Sandbox
+EPERM resolved by authorized outside-sandbox checks, no new DRAC login or jobs.
+Totoro descriptor03 PASS0.4155s, oracle before/after PASS; no Julia startup/fits.
+69 descriptor rows:14 excluded constructor-only,12 constructor errors,25 exact
+public matrix/formula rejection pairs,18 mapped keys (not model admission).
+Eleven required native descriptors reject in bridge; seven native-rejected
+link/descriptor variants still map. Preserve these interface differences.
+Attempt02 failed because the test demanded a named gate for delta's untagged
+error and supplied invalid one-category multinomial data. Exact source errors
+and valid three-category multinomial data repair the test; attempts01/02 retained.
+Added raw-receipt descriptor verifier with11 negative controls and bounded bundle
+reverification of runtime10/model12/Gaussian5/descriptor11 controls (38 total).
+Bundle tests pass3 tests/16 invalid-bundle mutations; existing family coverage5
+checks pass. Unlazy3/4; programme gate unpaid. Full-family checker unchanged.
+MissionControl b10202406d9dc9699bb22068380aaabd11739d45 servedHTTP200, R fields unchanged.
+FullmanifestDRAFT, M1PARTIAL; no complete-family/recovery/performance claim.
+Next integrate source/model-specific bridge admission in full manifest with
+independent scope review, preserving native/formula requirements; then remaining
+Core/AGHQ work. Fullsuite/external-review approvals unchanged. Checks terminal.

@@ -1,0 +1,164 @@
+{
+  "status": "BOUNDED_BRIDGE_EVIDENCE_VERIFIED_NOT_FULL_PARITY",
+  "scope": "Runtime, three original model cases, Gaussian model-change boundary, and 69 descriptors.",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "components": {
+    "runtime": {
+      "status": "RUNTIME_ONLY_VERIFIED_NOT_MODEL_PARITY",
+      "runtime_seconds": 13.49293034337461,
+      "dependency_files": 44,
+      "dependency_manifest_sha256": "2850d9a99a7d0037fc81c7a79b394c312df8fd47d51db31767df159641264d81",
+      "process_sha256": "f540298b2a19a3da6d2136374f8e7addf0d20ab387fa0abc8a9c7626292660bb",
+      "receipt_sha256": "bb495ab2778d57ab47ef5f6023e020357ba76a956a148e597b17916cd93b3433",
+      "runtime": {
+        "parent_preload": "/home/snakagaw/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/lib/julia/libunwind.so.8",
+        "child_preload_environment": "",
+        "expected_error": "Error happens in Julia.\nCORE070_EXPECTED_RUNTIME_ERROR\nStacktrace:\n [1] error(s::String)\n   @ Base ./error.jl:44\n [2] top-level scope\n   @ none:1\n [3] eval(m::Module, e::Any)\n   @ Core ./boot.jl:489\n [4] eval_string(x::String)\n   @ Main.JuliaCall ~/R/v07-lib/JuliaCall/julia/setup.jl:203\n [5] docall(call1::Ptr{Nothing})\n   @ Main.JuliaCall ~/R/v07-lib/JuliaCall/julia/setup.jl:176",
+        "R": "R version 4.5.3 (2026-03-11)",
+        "Julia": "1.12.6",
+        "JuliaCall": "0.17.6",
+        "JuliaCall_path": "/home/snakagaw/R/v07-lib/JuliaCall",
+        "gllvmTMB_path": "/home/snakagaw/core070-aghq-20260830/oracle-build-01/library/gllvmTMB",
+        "active_project": "/home/snakagaw/core070-aghq-20260830/public-bridge-runtime-03/test/parity/Project.toml",
+        "GLLVM_source": "/home/snakagaw/core070-aghq-20260830/public-bridge-runtime-03/src/GLLVM.jl",
+        "roundtrip": 6,
+        "julia_threads": 1,
+        "blas_threads": 1,
+        "libPaths": [
+          "/home/snakagaw/core070-aghq-20260830/oracle-build-01/library",
+          "/home/snakagaw/R/v07-lib",
+          "/home/snakagaw/R/x86_64-pc-linux-gnu-library/4.5",
+          "/usr/local/lib/R/site-library",
+          "/usr/lib/R/site-library",
+          "/usr/lib/R/library"
+        ],
+        "dependencies_sha256": "2850d9a99a7d0037fc81c7a79b394c312df8fd47d51db31767df159641264d81"
+      },
+      "negative_controls": 10
+    },
+    "models": {
+      "status": "THREE_MODEL_BRIDGE_QUALIFICATION_NOT_FULL_PARITY",
+      "families": [
+        "poisson",
+        "beta",
+        "nb2"
+      ],
+      "required_case_ids": [
+        "CORE070-FAMILY-02-LOG-PUBLIC-R-BRIDGE",
+        "CORE070-FAMILY-07-LOGIT-PUBLIC-R-BRIDGE",
+        "CORE070-FAMILY-05-LOG-PUBLIC-R-BRIDGE"
+      ],
+      "subcontract_sha256": "72597c8905af7f680984089f89fbb89a6972be02c8bef207986a035f27377e4b",
+      "public_routes": 6,
+      "rejections": 2,
+      "seconds": 58.791346210986376,
+      "result_sha256": "77ece037ccf26f7dcf50ec7e4a55689e61190325167813593321555d1fb0b5f1",
+      "process_sha256": "1c85fb962f8d182c15815a7a3ba0bba73a705023e13a2647176379e0c18fdebc",
+      "prior_process_sha256": "4b6d44ed0aab14245422b05bf885c6d8febd1b4fea424d84c193bee2d7b1d20b",
+      "r_comparison": "retained original source-bound R fits; not newly executed in this batch",
+      "results": {
+        "poisson": {
+          "matrix": {
+            "loglik": 0,
+            "alpha": 0,
+            "shared_covariance": 2.77555756156289e-17,
+            "dispersion": 0,
+            "prior_r_loglik": 1.43245415529236e-11
+          },
+          "formula": {
+            "loglik": 0,
+            "alpha": 0,
+            "shared_covariance": 2.77555756156289e-17,
+            "dispersion": 0,
+            "prior_r_loglik": 1.43245415529236e-11
+          }
+        },
+        "beta": {
+          "matrix": {
+            "loglik": 0,
+            "alpha": 0,
+            "shared_covariance": 0,
+            "dispersion": 0,
+            "prior_r_loglik": 1.78488335222937e-11
+          },
+          "formula": {
+            "loglik": 0,
+            "alpha": 0,
+            "shared_covariance": 0,
+            "dispersion": 0,
+            "prior_r_loglik": 1.78488335222937e-11
+          }
+        },
+        "nb2": {
+          "matrix": {
+            "loglik": 0,
+            "alpha": 0,
+            "shared_covariance": 5.55111512312578e-17,
+            "dispersion": 0,
+            "prior_r_loglik": 3.41282611771021e-06
+          },
+          "formula": {
+            "loglik": 0,
+            "alpha": 0,
+            "shared_covariance": 5.55111512312578e-17,
+            "dispersion": 0,
+            "prior_r_loglik": 3.41282611771021e-06
+          }
+        }
+      }
+    },
+    "gaussian": {
+      "status": "VERIFIED_REFERENCE_MODEL_CHANGE_NOT_PARITY",
+      "seconds": 40.713941656053066,
+      "actual_df": 5,
+      "required_unique_model_df": 8,
+      "zero_mean": true,
+      "reduced_loglik": -581.668831823926,
+      "sigma_eps": 0.697282597486069,
+      "warning": [
+        "! Ordinary `latent()` now includes a per-trait Psi by default (Sigma = Lambda\n  Lambda^T + Psi).\n\u2139 This changed in gllvmTMB 0.2.0; earlier `latent()` was loadings-only (Lambda\n  Lambda^T).\n\u2192 Pass `latent(..., unique = FALSE)` for the old rotation-invariant\n  loadings-only fit.",
+        "engine = 'julia' does not support the trait-specific Psi that ordinary\n`latent()` now carries by default.\n\u2139 Fitting the reduced-rank latent block only. Use `engine = \"tmb\"` for the\n  Lambda Lambda^T + Psi decomposition, or pass `latent(..., unique = FALSE)` to\n  silence this note.\nThis warning is displayed once per session."
+      ],
+      "result_sha256": "7f5e112c2400866f82eb8293723243421fbe4db71f5510d996506e8d981bb37d",
+      "process_sha256": "f293543c1efb000e513ce87ebc1fc67f5e2af892b626cae1bc7c38f4e7887c4f"
+    },
+    "descriptors": {
+      "status": "VERIFIED_DESCRIPTOR_OBSERVATIONS_NOT_MODEL_PARITY",
+      "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+      "contract_sha256": "8311e9c5499f8911ffcd57ccb3210c139f582b0fb86373ab3feb22c81d16c3cc",
+      "result_sha256": "e8e8ed4d2008d39aa9ebd3b17f11964a08848ae0b145fec8481c7ecd34554350",
+      "process_sha256": "500ab9834bbadbfd0dd0d449b47290912e67dc37d8638b1bbf91b0e923a03e0f",
+      "counts": {
+        "DESCRIPTOR_ERROR": 12,
+        "EXCLUDED_NOT_EVALUATED": 14,
+        "MAPPED_KEY_NOT_MODEL_PROOF": 18,
+        "MAPPER_REJECTED": 25
+      },
+      "seconds": 0.41552792489528656,
+      "public_rejection_pairs": 25,
+      "required_native_descriptors_rejected_by_bridge": [
+        "family/FAMILY-03-LOG",
+        "family/FAMILY-06-LOG",
+        "family/FAMILY-08-LOGIT",
+        "family/FAMILY-09-IDENTITY",
+        "family/FAMILY-10-LOG",
+        "family/FAMILY-11-LOG",
+        "family/FAMILY-12-LOGIT-LOG",
+        "family/FAMILY-13-LOGIT-LOG",
+        "family/FAMILY-16-LOGIT",
+        "family/FAMILY-06-FIXED-SHAPE",
+        "family/FAMILY-09-FIXED-SHAPE"
+      ],
+      "native_rejected_descriptors_mapping_to_bridge_keys": [
+        "family/FAMILY-00-REJECT-LINK",
+        "family/FAMILY-02-REJECT-LINK",
+        "family/FAMILY-04-REJECT-LINK",
+        "family/FAMILY-05-REJECT-LINK",
+        "family/FAMILY-07-REJECT-LINK",
+        "family/FAMILY-15-REJECT-LINK",
+        "family/FAMILY-14-MUTATED-DESCRIPTOR-REJECT"
+      ]
+    }
+  },
+  "remaining": "Model-specific admission in full manifest, remaining interfaces/models, independent scope review, full package checks, recovery/coverage, performance, final documentation."
+}
