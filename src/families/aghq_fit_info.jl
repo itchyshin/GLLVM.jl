@@ -10,7 +10,13 @@ struct AGHQBinomialData
     mask::BitMatrix
     offset::Matrix{Float64}
 end
-struct AGHQFitInfo{C,B,R}
+struct AGHQGaussianData
+    responses::Matrix{Float64}
+    mask::BitMatrix
+    offset::Matrix{Float64}
+    design::Array{Float64,3}
+end
+struct AGHQFitInfo{C,B,R} <: AbstractIntegrationInfo
     requested::Union{Symbol,Int}
     actual::Symbol
     k::Int
@@ -23,7 +29,7 @@ struct AGHQFitInfo{C,B,R}
     base_controls::B
     result::R
     caches::Vector{AGHQAdaptation}
-    data::Union{Nothing,AGHQPoissonData,AGHQBinomialData}
+    data::Union{Nothing,AGHQPoissonData,AGHQBinomialData,AGHQGaussianData}
     input_digest::String
     mode_gradient_max::Float64
 end
@@ -69,3 +75,7 @@ _aghq_data_digest(d::AGHQPoissonData)=bytes2hex(SHA.sha256(
 _aghq_data_digest(d::AGHQBinomialData)=bytes2hex(SHA.sha256(
     string(size(d.responses))*"|"*join(vec(d.responses),",")*"|"*join(vec(d.mask),",")*
     "|"*join(vec(ifelse.(d.mask,d.trials,0.0)),",")*"|"*join(vec(ifelse.(d.mask,d.offset,0.0)),",")))
+
+_aghq_data_digest(d::AGHQGaussianData)=bytes2hex(SHA.sha256(
+    string(size(d.responses))*"|"*join(vec(d.responses),",")*"|"*join(vec(d.mask),",")*
+    "|"*join(vec(ifelse.(d.mask,d.offset,0.0)),",")*"|"*string(size(d.design))*"|"*join(vec(d.design),",")))

@@ -572,3 +572,21 @@ original five-node binomial comparison fails convergence in both engines and
 has an absolute log-likelihood difference of about 0.00894 (required ≤0.001).
 Higher-node diagnostics do not replace that required case. This is a local
 implementation candidate, not completed R parity or validated interval coverage.
+
+### Gaussian integration metadata
+
+`fit_gaussian_gllvm(...; aghq=3)` retains `GllvmFit` and its parameter layout.
+The optional `integration` field distinguishes actual quadrature from exact
+Gaussian/Laplace fallback and retains node counts, controls, starting vectors,
+convergence, caches and observed-input identity. Default `aghq=false` leaves
+legacy fitting unchanged. `X=nothing` remains zero mean, and `β_fixed` retains
+fixed-zero coefficients. `mask`/missing responses and offsets are supported on
+the ordinary loadings-only route. See the executed Gaussian quickstart.
+
+`getLV`, `predict`, `residuals`, `simulate`, `confint`, `profile_ci` and
+`bootstrap_ci` use recorded data and estimator identity. Gaussian `vcov` for a
+recorded fit returns the full working-parameter covariance, not only its diagonal;
+`confint` transforms residual-SD estimates/bounds to the natural scale while
+standard errors remain on the working scale. Legacy `bootstrap_ci` outputs
+working-scale bounds. Failed bootstrap attempts remain visible. This is a local
+candidate, not a full Stage1a or calibrated-inference claim.

@@ -42,6 +42,8 @@ GllvmModel(p::Integer, K::Integer, K_W::Integer, has_diag::Bool,
            K_phy::Integer, has_phy_unique::Bool) =
     GllvmModel(Int(p), Int(K), Int(K_W), has_diag, Int(K_phy), has_phy_unique)
 
+abstract type AbstractIntegrationInfo end
+
 """
     GllvmFit
 
@@ -56,7 +58,10 @@ struct GllvmFit
     converged::Bool
     optim_result
     cputime::Float64
+    integration::Union{Nothing,AbstractIntegrationInfo}
 end
+GllvmFit(model,pars,logLik,n_iter,converged,optim_result,cputime)=
+    GllvmFit(model,pars,logLik,n_iter,converged,optim_result,cputime,nothing)
 
 """
     fit_gaussian_gllvm(y; K, K_W=0, has_diag=false, K_phy=0,
@@ -117,7 +122,7 @@ with fixed entries set to zero, `alpha_lv` is a `q_lv × K` matrix or `nothing`,
 and `Λ_W`, `σ²_B`, `σ²_W`, `Λ_phy`, `σ_phy` are `nothing` when the
 corresponding flag is off.
 """
-function fit_gaussian_gllvm(y::AbstractMatrix;
+function _fit_gaussian_gllvm_exact(y::AbstractMatrix;
                             K::Integer,
                             K_W::Integer = 0,
                             has_diag::Bool = false,

@@ -60,7 +60,7 @@ GLLVM._gaussian_source_loglik
 ## Internal AGHQ adaptation and optimization
 
 These helpers expose the frozen-node surrogate used by the opt-in public
-Poisson route. They are internal implementation interfaces. Passing their
+Poisson, binomial and Gaussian candidates. They are internal implementation interfaces. Passing their
 checks alone does not establish public parity for other response families.
 
 ```@docs
@@ -74,4 +74,5 @@ GLLVM.aghq_outer_optimize
 GLLVM.aghq_multistart_optimize
 GLLVM._fit_poisson_gllvm_laplace
 GLLVM._fit_binomial_gllvm_laplace
+GLLVM._fit_gaussian_gllvm_exact
 ```

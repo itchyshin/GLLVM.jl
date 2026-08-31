@@ -406,3 +406,13 @@ analytic-vs-finite-difference gradient checks), validated on Linux/macOS/Windows
 Gaussian + phylogenetic GLLVM pilot: closed-form Gaussian marginal, Woodbury/low-rank
 Cholesky, PPCA & EM-FA initialisation, σ_eps profile-out, the phylogenetic
 representations, and Wald/profile/bootstrap/derived confidence intervals.
+
+
+### Local Core070 candidate — public Gaussian AGHQ
+
+- Ordinary shared-SD Gaussian quadrature with explicit integration metadata;
+  preserve default exact zero-mean fitting and legacy constructors.
+- Carry fixed effects, fixed-zero coefficients, masks and offsets through
+  prediction and same-objective inference; retain bootstrap failures.
+- Original frozen-reference parity and full programme gates remain separate;
+  no calibrated-coverage or performance claim follows from functional tests.

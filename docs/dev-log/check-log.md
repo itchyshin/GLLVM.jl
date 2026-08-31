@@ -16223,3 +16223,22 @@ programmeACTIVE/M1PARTIAL/fullmanifestDRAFT. See after-task public-Poisson repor
 
 ## 2026-08-31 — Gaussian AGHQ internal adapter
 41 unit PASS28.720338s; original seed42 k5 112 prerequisite+13 paired PASS61.557242s on Totoro Julia1.12.6/pinned R. Shared residual SD, both-engine health under declared absolute-or-relative rule (R relative only), LLdelta5.443894e-10. Exact covariance-Cholesky value/AD gradient/Hessian match; heterogeneous X/offset and demonstrably failing returned-data alias regression repaired. Strict docs PASS81.232519s, existing asset warnings remain. Noether Terra/high review+one follow-up no remaining actionable numerical defect. Seven evidence corruption checks reject; Unlazy AG-VERIFY met. Public GllvmFit integration/fullsuite/recovery/performance/fullmanifest remain unpaid; M1PARTIAL/goalACTIVE. See after-task/2026-08-31-core070-aghq-gaussian.md and core070/aghq-gaussian-evidence.json. No push/merge/release/cleanup/foreign edits.
+
+
+## 2026-08-31 — public Gaussian AGHQ verified at bounded scope
+Public ordinary shared-SD Gaussian controls/metadata/fallbacks/postfit and recorded
+Wald/profile/bootstrap/derived inference implemented. Final Totoro273 assertions
+PASS133.034208s; originalseed42k5 112prereq+13pairPASS68.152257s, LLdelta5.44e-10,
+R relative-gradient rule only. StrictdocsPASS89.996033s plus executed HTMLreadback.
+NoetherTerrahigh+onefollowup source review found no remaining actionable gaps;
+no completion panel. GU-PUBLIC/GU-PAIR met,7evidencecorruptionsreject. Legacy exact
+numeric body unchanged; zero-mean default retained. Two bootstrap attempts are
+functional smoke only. FullprogrammeACTIVE/M1PARTIAL/fullmanifestDRAFT. No newB
+productionchild. Binomialoriginalk5/StudentRhealth still fail. Alljobs terminal.
+Next bounded lead: legacy default-off explicit zero-column/all-fixed X warm
+initialization; preserve current verified candidate before repair and inspect
+foreign profile.jl branch diff. Then remaining Stage1a/fullmanifest work.
+See after-task/2026-08-31-core070-aghq-public-gaussian.md and
+core070/aghq-public-gaussian-evidence.json. Fullsuite/recovery/performance/visualdocs
+remain unpaid; >30min runs need sized pre-run approval. No push/merge/release/
+cleanup/Rengine/foreign edits. Historical full-source receipts need revalidation.

@@ -171,9 +171,14 @@ function getLV(fit::GllvmFit, y::AbstractMatrix;
                X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
                X_lv::Union{Nothing, AbstractMatrix} = nothing,
                component::Symbol = :total,
-               rotate::Bool = true)
+               rotate::Bool = true,mask=nothing,offset=nothing)
     component in (:total, :innovation, :mean) ||
         throw(ArgumentError("component must be :total, :innovation, or :mean; got :$component"))
+    if _has_gaussian_record(fit)
+        X_lv===nothing || throw(ArgumentError("ordinary Gaussian integration does not use X_lv"))
+        return _gaussian_record_predict(fit,y;X=X,mask=mask,offset=offset,component=component,rotate=rotate,scores=true)
+    end
+    (mask===nothing && offset===nothing) || throw(ArgumentError("mask/offset postfit requires retained Gaussian integration data"))
     Λ = fit.pars.Λ
     K = size(Λ, 2)
     Σ = sigma_y_site(fit)
@@ -253,9 +258,14 @@ match the fit.
 function predict(fit::GllvmFit, y::AbstractMatrix;
                  type::Symbol = :response,
                  X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
-                 X_lv::Union{Nothing, AbstractMatrix} = nothing)
+                 X_lv::Union{Nothing, AbstractMatrix} = nothing,mask=nothing,offset=nothing)
     type in (:link, :response) ||
         throw(ArgumentError("type must be :link or :response; got :$type"))
+    if _has_gaussian_record(fit)
+        X_lv===nothing || throw(ArgumentError("ordinary Gaussian integration does not use X_lv"))
+        return _gaussian_record_predict(fit,y;X=X,mask=mask,offset=offset)
+    end
+    (mask===nothing && offset===nothing) || throw(ArgumentError("mask/offset postfit requires retained Gaussian integration data"))
     Z = getLV(fit, y; X = X, X_lv = X_lv, component = :total, rotate = false) # n×K
     η = _fitted_mean(fit, y, X) .+ fit.pars.Λ * Z'   # p×n
     return η                                          # identity link
@@ -306,9 +316,15 @@ residual. `μ` is the conditional fitted mean (see [`predict`](@ref)).
 function residuals(fit::GllvmFit, y::AbstractMatrix;
                    type::Symbol = :dunnsmyth,
                    X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
-                   X_lv::Union{Nothing, AbstractMatrix} = nothing)
+                   X_lv::Union{Nothing, AbstractMatrix} = nothing,mask=nothing,offset=nothing)
     type in (:dunnsmyth, :pearson) ||
         throw(ArgumentError("type must be :dunnsmyth or :pearson; got :$type"))
+    if _has_gaussian_record(fit)
+        q,_=_gaussian_record_problem(fit,y;X=X,mask=mask,offset=offset)
+        mu=predict(fit,y;X=X,X_lv=X_lv,mask=mask,offset=offset)
+        return ifelse.(q.data.mask,(q.data.responses.-mu)./fit.pars.σ_eps,NaN)
+    end
+    (mask===nothing && offset===nothing) || throw(ArgumentError("mask/offset postfit requires retained Gaussian integration data"))
     μ = predict(fit, y; type = :response, X = X, X_lv = X_lv)
     return (y .- μ) ./ fit.pars.σ_eps
 end
@@ -663,11 +679,13 @@ via observed information.
 function StatsAPI.vcov(fit::GllvmFit; y = nothing, kwargs...)
     y_mat = y !== nothing ? y : (hasproperty(fit, :y) ? fit.y : nothing)
     y_mat === nothing && throw(ArgumentError("`y` matrix must be supplied to compute vcov for GllvmFit: vcov(fit, y)"))
+    _has_gaussian_record(fit) && return _gaussian_record_vcov(fit,y_mat;kwargs...)
     ci = confint(fit; y = y_mat, kwargs...)
     return Diagonal(ci.se .^ 2)
 end
 
 function StatsAPI.vcov(fit::GllvmFit, Y::AbstractMatrix; kwargs...)
+    _has_gaussian_record(fit) && return _gaussian_record_vcov(fit,Y;kwargs...)
     ci = confint(fit; y = Y, kwargs...)
     return Diagonal(ci.se .^ 2)
 end
@@ -711,7 +729,7 @@ StatsAPI.coeftable(fit::AnyGllvmFit, Y::AbstractMatrix; kwargs...) = coef_table(
 
 Return a concise string summary of a fitted GLLVM model.
 """
-Base.summary(fit::GllvmFit) = "Gaussian GLLVM fit (p=$(fit.model.p), K=$(fit.model.K), logLik=$(round(fit.logLik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
+Base.summary(fit::GllvmFit) = (fit.integration===nothing ? "" : fit.integration.actual===:aghq ? "AGHQ(k=$(fit.integration.k)) " : "exact Gaussian/Laplace ($(fit.integration.reason)) ") * "Gaussian GLLVM fit (p=$(fit.model.p), K=$(fit.model.K), logLik=$(round(fit.logLik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
 Base.summary(fit::BinomialFit) = (fit.integration===nothing ? "" : fit.integration.actual===:aghq ? "AGHQ(k=$(fit.integration.k)) " : "Laplace ($(fit.integration.reason)) ") * "Binomial GLLVM fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
 Base.summary(fit::PoissonFit) = (fit.integration===nothing ? "" : fit.integration.actual===:aghq ? "AGHQ(k=$(fit.integration.k)) " : "Laplace ($(fit.integration.reason)) ") * "Poisson GLLVM fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
 Base.summary(fit::NBFit) = "NegativeBinomial GLLVM fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
@@ -730,6 +748,10 @@ Base.summary(fit::TwoLevelFit) = "TwoLevel GLLVM fit (p=$(size(fit.Λ_B, 1)), K_
 # Rich REPL display (the idiomatic "summary").
 function Base.show(io::IO, ::MIME"text/plain", fit::GllvmFit)
     println(io, "Gaussian GLLVM fit")
+    if fit.integration!==nothing
+        i=fit.integration
+        println(io,"  integration = ",i.actual===:aghq ? "AGHQ(k=$(i.k), observed, unpenalized)" : "exact Gaussian/Laplace ($(i.reason))")
+    end
     println(io, "  responses p = ", fit.model.p, ", latent factors K = ", fit.model.K)
     println(io, "  logLik = ", round(fit.logLik; sigdigits = 7),
             ", AIC = ", round(aic(fit); sigdigits = 7))

@@ -131,6 +131,10 @@ end
 function _tw_sigma_from_hessian(fit::GllvmFit, y::AbstractMatrix,
                                 X::Union{Nothing, AbstractArray{<:Real, 3}},
                                 Σ_phy::Union{Nothing, AbstractMatrix})
+    if _has_gaussian_record(fit)
+        covariance=_gaussian_record_vcov(fit,y;X=X,Σ_phy=Σ_phy)
+        return all(isfinite,covariance) ? (covariance,true) : (nothing,false)
+    end
     θ̂ = fit.pars.θ_packed
     nll = _confint_reconstruct_nll(fit, y, X, Σ_phy)
     H = try

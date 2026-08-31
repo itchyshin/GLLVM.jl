@@ -1,0 +1,580 @@
+{
+  "status": "PASS_SCOPED_PUBLIC_GAUSSIAN_CANDIDATE",
+  "programme_status": "ACTIVE_M1_PARTIAL",
+  "full_manifest": "DRAFT_NOT_FROZEN",
+  "reference": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "unit_assertions": 273,
+  "pair_prerequisite_assertions": 112,
+  "pair_assertions": 13,
+  "processes": {
+    "aghq-public-gaussian-boot-diag-01": {
+      "status": "PASS",
+      "receipt_sha256": "7863500fb9becb048c9697b5d7dfed9bdfc4d95fc838f74db7cd71ea34f8d07f",
+      "plan_sha256": "d08567f454a3c16651b5b8c0f474865b6c5e576f764f17b4a89afd5bb6e915b0",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11520354077219963,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 0,
+          "elapsed_seconds": 28.067115219309926,
+          "log_sha256": "f3ce4114b0790eea7e90e06768e5813396e1571ca773585271d01afd096cd49e"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11528826504945755,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "aghq-public-gaussian-derived-red-01": {
+      "status": "FAIL",
+      "receipt_sha256": "912f748db55cbd9164bb52f051ec042bf7f0835ac7d9d405b4fd6e67be3725e0",
+      "plan_sha256": "87425a5b892528d35ef60a3af5774f6fe82a7d0478845297b9f18315bfa38d10",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11516718193888664,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 1,
+          "elapsed_seconds": 34.68279720284045,
+          "log_sha256": "1a588d055b695deada77fd364dd0476076a27d2ea5923a29fcf15e8a481253ae"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11508617922663689,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "aghq-public-gaussian-derived-red-02": {
+      "status": "FAIL",
+      "receipt_sha256": "25d56baddf1b29043f9532e5d4774ceb43c63c36454d493e2033e616bee54c72",
+      "plan_sha256": "8f46882634f1aa794b40622721fd2520685236832cbc9b8c1b9a6b0ff7ffafd6",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11524572223424911,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 1,
+          "elapsed_seconds": 54.52359377592802,
+          "log_sha256": "1c19435f5dea6812554e2c6c52ba01dc88a5a2e57e178aa431d1911e0fedb534"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11529539339244366,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "aghq-public-gaussian-display-red-01": {
+      "status": "FAIL",
+      "receipt_sha256": "78f4f09fdf12e76e89e201f4b043d5be5f5bcc5fba2423f5527064754313377b",
+      "plan_sha256": "a0f10645ffb0528b48e0b99fdf8e8974de3dc490c81977a07ba951994d16b4aa",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11515468172729015,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 1,
+          "elapsed_seconds": 53.07059093937278,
+          "log_sha256": "c4c0cd397b904b5398354b5eae83c0b3ec0ab269ee32eea188773e5ee6380278"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11506087146699429,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "aghq-public-gaussian-docs-01": {
+      "status": "FAIL",
+      "receipt_sha256": "de297280c830a528cfcf5b8f64f234800f8dadfb0613c466fe764719a0992bf5",
+      "plan_sha256": "dbf7c1d6959102600ac8d24baa724ffdf0710913a8391e1af9deee56573107ff",
+      "results": [
+        {
+          "id": "strict-local-docs",
+          "exit_code": 1,
+          "elapsed_seconds": 68.23406373523176,
+          "log_sha256": "640637df6d3beb680176a29795f28b81fc5d5deebdb75ba0d31fb7867c51329e"
+        }
+      ]
+    },
+    "aghq-public-gaussian-docs-02": {
+      "status": "PASS",
+      "receipt_sha256": "45bf7e4b69d781167bca14ce6f4200d1a4c32d42714265b03a8ffbd507899df6",
+      "plan_sha256": "6e5a5b618e9b7eb8ba974235d5624acab4edf2695f226002b0634d0cb14e9e7b",
+      "results": [
+        {
+          "id": "strict-local-docs",
+          "exit_code": 0,
+          "elapsed_seconds": 89.99603292346,
+          "log_sha256": "2e8b56ae1db6eeeaa53555ba28ef1c02d2a994d4e6158288b4f67345b2bcbd01"
+        }
+      ]
+    },
+    "aghq-public-gaussian-fixed-red-01": {
+      "status": "FAIL",
+      "receipt_sha256": "2ca8f30edebd0498881fd3094a27398b75c0405673af9e11775716638fe213d3",
+      "plan_sha256": "f6415448626bad7c2314932836cd06d2fd7fceadebf4186b53a0e695eaab250a",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11513332277536392,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 1,
+          "elapsed_seconds": 56.373238030821085,
+          "log_sha256": "7a1f57cae02a53c93309b509580c5e9c7523f08df925fae1ab49d399b6f305ea"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11518483236432076,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "aghq-public-gaussian-green-01": {
+      "status": "PASS",
+      "receipt_sha256": "a769eb67cf4d3fc5717dccab232a3704ef463f525e202bf2297100200385b7e5",
+      "plan_sha256": "9032e3fc6662f77a1d8fd9abdc0e80989e7ff2640530dd45f37d96ee056fa7c0",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.1148177795112133,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 0,
+          "elapsed_seconds": 55.534553330391645,
+          "log_sha256": "cedae3aacc74c71d0d5879161d6735af88d926b3b2b66fa6c8fa55e599406cb9"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11525586433708668,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "aghq-public-gaussian-green-02": {
+      "status": "PASS",
+      "receipt_sha256": "e5639be86a74cb24b3c14e2895f686c0ad264e450d60077a8aeadb5776245b19",
+      "plan_sha256": "44577aca5612f874df41ef400a3778e3371e0db2c55451a08c45194924b1e718",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11505815200507641,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 0,
+          "elapsed_seconds": 62.982043923810124,
+          "log_sha256": "2fa67c738a65c393af1fc53897fbd1ace65dd186ea13b7740d3e4f30eefa71bf"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11496447212994099,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "aghq-public-gaussian-green-03": {
+      "status": "FAIL",
+      "receipt_sha256": "f8a4e3340b4b59393fb8d6145a65520965a9e5199b6f52ec2b68a8a516401a11",
+      "plan_sha256": "4faaa85d3590956b989e81b3e9b1f27fd5e170a6419c2465c1f995abe6322213",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.115131551399827,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 1,
+          "elapsed_seconds": 55.833062464371324,
+          "log_sha256": "c4d953e00ac00b481aa5f26d2e4011ec25ea33c74420179eabfdc68248d0f694"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.1151743121445179,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "aghq-public-gaussian-green-04": {
+      "status": "PASS",
+      "receipt_sha256": "5e3449d950bae6bab7dc1d4401113bdad6f47af173832262591cace37c6d5cc4",
+      "plan_sha256": "83c6ba1b886cd94c6066e20b9cb80b8148c6c5bbd025e5a8d6b68b3da94d97c6",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.1151269730180502,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 0,
+          "elapsed_seconds": 132.56213300861418,
+          "log_sha256": "05b368cdeb4834919b9aa998a32a0302839bccd3290b14b2c487e5c95460122e"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11517524346709251,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "aghq-public-gaussian-green-05": {
+      "status": "PASS",
+      "receipt_sha256": "a6b944cfff9e4739ae486a05e8d3f3e0e38c1eb6027048915b4394ee1dba433e",
+      "plan_sha256": "c683f49662924e189e2090ef6e27d2143f887e5b46b13f7bbb86bce60b7d0319",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11485720984637737,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 0,
+          "elapsed_seconds": 134.59179522283375,
+          "log_sha256": "955c18da162049b4be2d8ab663259aad2547504008430d9792442706b60aaaf3"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11503808945417404,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "aghq-public-gaussian-green-06": {
+      "status": "PASS",
+      "receipt_sha256": "dbfd7c6140fba9a1aaf9e963c3e2983f9846093830afd7f35e90686628d8fd12",
+      "plan_sha256": "879ba9fad98539332cf9f67da82a87ca4cd1afc2ff1fc1e6d6255f62e487cb93",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11505988985300064,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 0,
+          "elapsed_seconds": 133.03420753404498,
+          "log_sha256": "adc70d5786eb1f083d71cd515d24102296d2ad0dabab1a39b255cc76ef09a3ad"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.1152105312794447,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "aghq-public-gaussian-inference-red-01": {
+      "status": "FAIL",
+      "receipt_sha256": "02f27dc6caa57466615538917778763da8c5524a4903f2db3811e351059de2a5",
+      "plan_sha256": "6320fc136b25bb08bf0a332a991c6d77b928213492387b627fefdc446858487e",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.1151911523193121,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 1,
+          "elapsed_seconds": 39.75187769532204,
+          "log_sha256": "8703f32768701fe60f3b258ff97eeac251206340a72193a9bb2a9e75f5783b4c"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11537090502679348,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "aghq-public-gaussian-packed-red-01": {
+      "status": "FAIL",
+      "receipt_sha256": "2894aa824cd9ec706a0ae5b788c18e6b61fb3b0d8cd315b356afdf7780ddb273",
+      "plan_sha256": "8ffafba7eab0a3820f99563fdc761bac9f97506bc51396c7fee4e986539c3c2b",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.1150203812867403,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 1,
+          "elapsed_seconds": 36.2932004481554,
+          "log_sha256": "cc109e5725ae49e3f99c1d4247d6694decf4a58e40ccaea37818594e49fa93eb"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11544426344335079,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "aghq-public-gaussian-pair-01": {
+      "status": "PASS",
+      "receipt_sha256": "afa81f2caf9e21c0c0a4f487395fa5e8e2e10fa570fa68449bd3a149c0f038f9",
+      "plan_sha256": "de71837acb817027d211a8a23c41044502dfc84bed6606165f5851907e8ebf5d",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11516942270100117,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 0,
+          "elapsed_seconds": 66.31503947637975,
+          "log_sha256": "18ceb2b5094c979135b1726097e052b6a8c54632046e64cc2b26cc6cd680535d"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11540357209742069,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "aghq-public-gaussian-pair-02": {
+      "status": "PASS",
+      "receipt_sha256": "060396360666c4ffcc077d3a5b6dd26d50aade5ccc07f172696f5784854c6f51",
+      "plan_sha256": "b2a9565c9aa08458540b9f74996f55fe82688ed35c0c8e23c1e543f5db8de9c8",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11492904275655746,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 0,
+          "elapsed_seconds": 66.17387007549405,
+          "log_sha256": "849cc4b2114ed57ad907e1957713336385233ae86fb1e1fc152ce83dc90ad105"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11521310172975063,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "aghq-public-gaussian-pair-03": {
+      "status": "PASS",
+      "receipt_sha256": "1bf9faf1b7428425da4ad19452d2f5abe8b69932ec948bb33e3c800ecd07b8c4",
+      "plan_sha256": "1823eb60decc35a56c6ee497fdd97920009baed728c0776999bb05cff215ae2b",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11514152027666569,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 0,
+          "elapsed_seconds": 68.15225660428405,
+          "log_sha256": "a9b4718e5a3162705a062ca3338407e973d2ed1a9c338ff6a09ae433c45b9538"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11512921936810017,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "aghq-public-gaussian-red-01": {
+      "status": "FAIL",
+      "receipt_sha256": "e9a00792a0075075f8e85671f2cb0c096b4097f0e9d6a45e8a3968532fbbd6e1",
+      "plan_sha256": "140870d3feaf66611c654d796cf901cef4083eb9786965c079bdde530ddc6ecd",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11452432721853256,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 1,
+          "elapsed_seconds": 8.38325367309153,
+          "log_sha256": "9e4d30cd0ec3883273c9223318f4f5613b9147d2e8ed0e13676270015f94ed5d"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11526431515812874,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    }
+  },
+  "pair": {
+    "r_k": 5,
+    "delta_loglik": 5.444462658488192e-10,
+    "native_converged": true,
+    "r_nfree": 15,
+    "julia_version": "1.12.6",
+    "exact_objective_delta": 1.1368683772161603e-13,
+    "r_used": true,
+    "r_native_parameters": [
+      -7.254493179513521e-10,
+      -4.630248503982779e-09,
+      1.0119915499951175e-08,
+      1.2197558428794785e-08,
+      6.86014232846676e-09,
+      -0.36323744762260807,
+      0.793106213775348,
+      0.5397805717930843,
+      0.7170657517849371,
+      0.19668898052461117,
+      -0.26327384084495764,
+      0.13365817394347637,
+      -0.37403733459410543,
+      0.30747178762393407,
+      0.1719902131756257
+    ],
+    "r_converged": true,
+    "package_root": "/home/snakagaw/core070-aghq-20260830/aghq-public-gaussian-pair-03",
+    "r_penalised": false,
+    "sigma_delta": 1.6665460134124288e-07,
+    "scope": "PUBLIC_GAUSSIAN_ORIGINAL_K5",
+    "r_objective": 502.9141462561421,
+    "winner": 1,
+    "samepoint_delta": -1.1368683772161603e-13,
+    "r_stop_reason": "converged (adaptation mode fixed; gradient below tolerance; max |grad| = 0.000303, relative 6.03e-07)",
+    "exact_gradient_delta": 5.093703236980218e-13,
+    "exact_hessian_delta": 4.547473508864641e-13,
+    "native_objective": 502.91414625559764,
+    "case_id": "GU-GAUSSIAN-SEED42-K5",
+    "native_parameters": [
+      -4.9960036108132046e-17,
+      7.771561172376095e-17,
+      -3.191891195797325e-17,
+      -1.4710455076283324e-16,
+      2.6367796834847467e-17,
+      -0.3632372079771093,
+      0.7931081273143674,
+      0.539782723307349,
+      0.7170669391823293,
+      0.19669004611539062,
+      -0.26327447867787246,
+      0.13365865197125446,
+      -0.3740391298400086,
+      0.3074710182531778,
+      0.17198990934100825
+    ],
+    "native_gradient_max": 2.2515322939398175e-13,
+    "r_gradient_max": 0.00030333630136840774,
+    "covariance_delta": 4.257371589211356e-06,
+    "r_n_starts": 2,
+    "artifact_sha256": {
+      ".julia.toml": "7a687f339cfb5ecdabfd50748ee2b46f2a0120c35d6afc42adab7f6a43869efd",
+      ".fixture.toml": "cb3ea4cfca4bb2d0dd1f804101a9533d6357ba8c1fe2ac3aadec8d794a59df65",
+      ".rds": "a31dca4397aadf06383f3e8ef45d9074551b56d18d558a0a92f3cba086558aba"
+    }
+  },
+  "pair_sha256": "004cbc9ef7e54e5c7689411885634dab6870fb44d9c1184132c2f08e79afae96",
+  "current_runs": [
+    "aghq-public-gaussian-green-06",
+    "aghq-public-gaussian-pair-03",
+    "aghq-public-gaussian-docs-02"
+  ],
+  "render_readback": {
+    "status": "PASS",
+    "remote": "/home/snakagaw/core070-aghq-20260830/aghq-public-gaussian-docs-02/docs/build/1/quickstart.html",
+    "sha256": "f14a9a14b405a933ca5774787be2deb42a84f0b93f451a9816e564d2923c1a92",
+    "executed_output": "(actual = :aghq, nodes = 3, converged = true, reason = :converged)",
+    "visual_audit": false
+  },
+  "review": {
+    "agent": "noether_public_gaussian",
+    "requested_model": "gpt-5.6-terra",
+    "requested_effort": "high",
+    "fresh_context": true,
+    "repair_followups": 1,
+    "verdict": "No remaining actionable correctness gaps in reviewed surface; source review only, no programme signoff",
+    "receipt_sha256": "e0d1e95c0a6d0d06e0ebb20e677c11deb6972a87bfedd5b461a7fa694e8439db"
+  },
+  "gate": {
+    "ids": [
+      "GU-PUBLIC",
+      "GU-PAIR"
+    ],
+    "met": 2,
+    "unmet": 0,
+    "abandoned": 0,
+    "reverified": true
+  },
+  "negative_controls": 7,
+  "unpaid": [
+    "full source-admission manifest",
+    "original binomial k5 convergence and Student-t R health/density",
+    "legacy default-off explicit zero-column/all-fixed design defect needs bounded reproduction",
+    "covariance/structured multinomial/data/postfit/bridge",
+    "recovery/coverage/performance",
+    "full package checks/final visual documentation",
+    "worktree disposition refresh"
+  ],
+  "mission_control": {
+    "status": "PASS",
+    "http_status": 200,
+    "commit": "36305013d4dc4c6c1c26efd37dd6aceecc974926",
+    "before_sha256": "ea1c01a342bca8bc9d3906c2835d254b521f33ff43718f4f4e8a6755f7fc6e71",
+    "after_sha256": "64692afceb8f9618990ca937c3fc5798f590731139bc07379c21bfb163062c96",
+    "changed_fields": [
+      "now.next_safe_action"
+    ],
+    "r_fields_unchanged": true
+  }
+}

@@ -199,3 +199,34 @@ original five-node binomial comparison fails convergence in both engines and
 has an absolute log-likelihood difference of about 0.00894 (required ≤0.001).
 Higher-node diagnostics do not replace that required case. This is a local
 implementation candidate, not completed R parity or validated interval coverage.
+
+## Gaussian adaptive quadrature candidate
+
+The default Gaussian fitter integrates exactly and assumes zero mean without
+`X`. Opt-in quadrature keeps that model. Supply `X[p,n,q]` to define fixed effects;
+there is no implicit extra intercept. The residual SD is shared across traits.
+
+```@example gaussian_aghq
+using GLLVM, Random
+rng = MersenneTwister(714)
+Y = reshape([0.8, 0.4, -0.3], 3, 1) * randn(rng, 1, 36) + 0.7randn(rng, 3, 36)
+f = fit_gaussian_gllvm(Y; K=1, aghq=3)
+(actual=f.integration.actual, nodes=f.integration.k,
+ converged=f.converged, reason=f.integration.reason)
+```
+
+`aghq=1` retains exact Gaussian/Laplace fitting. Auto selection and ineligible
+requests follow the rules above and record fallback reasons. For ordinary models,
+missing responses, `mask`, `offset`, complete `X` and `β_fixed` are retained for
+postfit and refitting. Structured masked/offset Gaussian routes are not yet wired.
+Changed data with fixed effects or offsets requires explicit new inputs.
+
+`confint(f, Y)` and `vcov(f, Y)` differentiate the fitted objective, using a
+positive-definite observed Hessian. For AGHQ that objective freezes the quadrature
+nodes and modes. One node can give the exact Gaussian value while failing to give
+the same frozen derivatives; the numerical tests check values, gradients and
+Hessians separately. `confint(...; method=:profile)` retains that objective and
+`method=:bootstrap` reruns the recorded controls, keeping failed attempts.
+The older `bootstrap_ci` alias keeps its working-scale residual-SD convention;
+`confint` reports SD estimates and bounds on the natural scale. These functional
+checks do not establish calibrated coverage or a speed advantage.

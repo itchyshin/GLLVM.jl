@@ -975,3 +975,24 @@ Mission Control local e17d9c3ddec4e7369295fdcef6f9792b702e4aec: served HTTP200, 
 Read after-task/2026-08-31-core070-aghq-gaussian.md and core070/aghq-gaussian-evidence.json. aghq_gaussian_problem supports shared-SD, masks/offset/X, exact modes/curvature, copied input+returned data. Final41PASS28.720338s; originalseed42k5 112prereq+13pairPASS61.557242s, LLdelta5.44e-10, R relative gradient only. Strictdocs81.232519sPASS. Aliasred37PASS/4FAIL repaired; heterogeneousX/offset oracleAD value/gradient/Hessian added. NoetherTerrahigh+onefollowup found no remaining actionable mathematical/mutation defect, not programme panel. AG-VERIFY met;7corruptionsreject. Alljobs terminal; Totoro/Fir existing sockets verified. NEXT public Gaussian controls/metadata/eligibility/postfit/inference; preserve existing fit_gaussian_gllvm default zero mean (adapter default intercepts requires explicit X=zeros(p,n,0) for public zero-mean). GllvmFit defined before AGHQ metadata currently; resolve include order safely. Preserve old positional constructor and default exact fitter. No new B child before usercheckpoint. FullprogrammeACTIVE/M1PARTIAL/fullmanifestDRAFT. Priorbinomialk5/StudentRhealth remainunmet. No push/merge/release/cleanup/Rengine/foreign edits. Broadpriorreceipts historicalafternewsrcinclude; fullsuite>30minneeds sizedprerunapproval.
 
 Mission Control local ffca5680328896a1381a6c4344c0091d7e3c9af4: HTTP200, exact served Julia field, R fields unchanged; exact-file lease released.
+
+
+## 2026-08-31 — public Gaussian AGHQ verified at bounded scope
+Public ordinary shared-SD Gaussian controls/metadata/fallbacks/postfit and recorded
+Wald/profile/bootstrap/derived inference implemented. Final Totoro273 assertions
+PASS133.034208s; originalseed42k5 112prereq+13pairPASS68.152257s, LLdelta5.44e-10,
+R relative-gradient rule only. StrictdocsPASS89.996033s plus executed HTMLreadback.
+NoetherTerrahigh+onefollowup source review found no remaining actionable gaps;
+no completion panel. GU-PUBLIC/GU-PAIR met,7evidencecorruptionsreject. Legacy exact
+numeric body unchanged; zero-mean default retained. Two bootstrap attempts are
+functional smoke only. FullprogrammeACTIVE/M1PARTIAL/fullmanifestDRAFT. No newB
+productionchild. Binomialoriginalk5/StudentRhealth still fail. Alljobs terminal.
+Next bounded lead: legacy default-off explicit zero-column/all-fixed X warm
+initialization; preserve current verified candidate before repair and inspect
+foreign profile.jl branch diff. Then remaining Stage1a/fullmanifest work.
+See after-task/2026-08-31-core070-aghq-public-gaussian.md and
+core070/aghq-public-gaussian-evidence.json. Fullsuite/recovery/performance/visualdocs
+remain unpaid; >30min runs need sized pre-run approval. No push/merge/release/
+cleanup/Rengine/foreign edits. Historical full-source receipts need revalidation.
+
+Mission Control local 36305013d4dc4c6c1c26efd37dd6aceecc974926: HTTP200, exact served Julia field, R fields unchanged; exact-file lease released.

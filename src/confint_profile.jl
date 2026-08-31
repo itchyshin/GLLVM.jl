@@ -428,6 +428,16 @@ function profile_ci(fit::GllvmFit, param_index::Integer;
     y === nothing && throw(ArgumentError(
         "profile_ci requires the data matrix `y` (the same matrix passed to fit_gaussian_gllvm)"))
 
+    if _has_gaussian_record(fit)
+        terms,_=_confint_all_term_names(fit)
+        1<=param_index<=length(terms) || throw(ArgumentError("parameter index out of bounds"))
+        r=_gaussian_record_confint(fit,y;X=X,Σ_phy=Σ_phy,method=:profile,parm=terms[param_index],level=level,
+            profile_iterations=profile_iterations,profile_g_tol=profile_g_tol,
+            profile_max_expand=max_expand_eff,profile_max_bisect=max_bisect_eff)
+        lo,hi=only(r.lower),only(r.upper)
+        return (lower=lo,upper=hi,method=isnan(lo) && isnan(hi) ? :failed : isnan(lo) || isnan(hi) ? :partial : :profile)
+    end
+
     θ̂ = fit.pars.θ_packed
     N = length(θ̂)
     1 ≤ param_index ≤ N ||

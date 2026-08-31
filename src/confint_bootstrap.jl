@@ -271,6 +271,18 @@ function bootstrap_ci(fit::GllvmFit;
     _has_lv_predictor(fit) && throw(ArgumentError(
         "bootstrap_ci for fit_gaussian_gllvm(...; X_lv=...) is not admitted in the C1 predictor-informed latent-score path; use extract_lv_effects for point estimates"))
 
+    if _has_gaussian_record(fit)
+        data=y===nothing ? fit.integration.data.responses : y
+        n_sites===nothing || n_sites==size(data,2) || throw(ArgumentError("Gaussian integration bootstrap preserves the fitted site count"))
+        ad=_gaussian_record_ci(fit,data;X=X,Σ_phy=Σ_phy)
+        # This legacy alias returns working-scale sigma, unlike confint.
+        working=_FamilyCI(ad.θ,ad.nll,ad.names,fill(:linear,length(ad.θ)),ad.simulate,ad.refit)
+        sel=_confint_select_indices(parms,ad.names)
+        r=_family_bootstrap(working,sel,level,n_boot,seed,false;retain_replicates=true)
+        return (term=r.term,estimate=r.estimate,lower=r.lower,upper=r.upper,n_converged=r.n_converged,
+            replicates=r.replicates[:,sel],converged=r.converged,objective=fit.integration.actual)
+    end
+
     model = fit.model
     p     = model.p
     K_B   = model.K

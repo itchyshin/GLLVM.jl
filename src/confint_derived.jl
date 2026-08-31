@@ -54,7 +54,8 @@ end
 
 function _derived_spec(fit::GllvmFit)
     model = fit.model
-    q = fit.pars.β === nothing ? 0 : length(fit.pars.β)
+    q_full = fit.pars.β === nothing ? 0 : length(fit.pars.β)
+    q = count(!,_pars_fixed_mask(fit.pars,:β_fixed,q_full))
     return (q = q, p = model.p, K_B = model.K, K_W = model.K_W,
             has_diag = model.has_diag, K_phy = model.K_phy,
             has_phy_unique = model.has_phy_unique)
@@ -490,6 +491,12 @@ function bootstrap_ci_derived(fit::GllvmFit, derived_fn::Function;
     0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
     n_boot ≥ 1   || throw(ArgumentError("n_boot must be ≥ 1; got $n_boot"))
 
+    if _has_gaussian_record(fit)
+        data=y===nothing ? fit.integration.data.responses : y
+        return _gaussian_record_bootstrap_derived(fit,derived_fn;Y=data,X=X,Σ_phy=Σ_phy,
+            n_sites=n_sites,n_boot=n_boot,level=level,seed=seed)
+    end
+
     model = fit.model
     p     = model.p
     K_B   = model.K
@@ -686,6 +693,8 @@ function _derived_refit_with_fixed(fit::GllvmFit,
                                    g_tol::Real = 1e-4,
                                    iterations::Integer = 300)
     spec = _derived_spec(fit)
+    target_nll=_has_gaussian_record(fit) ? _gaussian_record_ci(fit,y;X=X,Σ_phy=Σ_phy).nll :
+        (theta->_derived_safe_nll(theta,y,spec,_profile_free_X(fit,X),Σ_phy))
     θ̂ = fit.pars.θ_packed
     θ0 = θ_warm === nothing ? collect(Float64, θ̂) : collect(Float64, θ_warm)
 
@@ -728,7 +737,7 @@ function _derived_refit_with_fixed(fit::GllvmFit,
     # from the previous minimiser.
     for w in schedule
         nll_pen = θ -> begin
-            nll = _derived_safe_nll(θ, y, spec, X, Σ_phy)
+            nll = target_nll(θ)
             g = derived_fn_packed(θ)
             return nll + 0.5 * w * (g - c_float)^2
         end
@@ -741,7 +750,12 @@ function _derived_refit_with_fixed(fit::GllvmFit,
     end
 
     θ_min = θ0
-    nll_unpen = _derived_safe_nll(θ_min, y, spec, X, Σ_phy)
+    nll_unpen = try
+        target_nll(θ_min)
+    catch e
+        e isa InterruptException && rethrow()
+        return (NaN,false,θ_min,NaN)
+    end
     # If the final unpenalised NLL is still at the barrier, the refit
     # landed in a non-PD region of θ-space — treat as a failure.
     if !isfinite(nll_unpen) || nll_unpen ≥ _DERIVED_NLL_BARRIER / 2

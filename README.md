@@ -191,3 +191,11 @@ binomial candidate with logit, probit or cloglog link. Trials, masks and offsets
 are retained for inference and postfit methods. `predict` returns probabilities;
 `simulate` returns counts. The original five-node binomial comparison currently
 fails both-engine convergence and the likelihood gate; do not infer full parity.
+
+`fit_gaussian_gllvm(Y; K=2, aghq=3)` adds the shared-residual-SD Gaussian
+candidate. Default fitting remains the exact Gaussian marginal with zero mean;
+use `X[p,n,q]` for fixed effects. Recorded masks, offsets and fixed-zero
+coefficients carry through prediction and inference. Gaussian AGHQ uses a real
+outer quadrature fit, even though the exact marginal is available as a check.
+Its interval objective is the fitted frozen-node surrogate. See the quickstart
+for an executed example; this does not establish the whole parity programme.
