@@ -1,0 +1,37 @@
+schema = 1
+reference_commit = "b4d5fee64def88bc768dda1f1f77c29b295edd86"
+p = 4
+n = 120
+K = 1
+loadings = [0.8, 0.55, -0.45, 0.3]
+intercepts = [0.2, 0.5, -0.1, 0.3]
+sigma = 0.7
+binomial_trials = 8
+absolute_loglik_tolerance = 0.001
+relative_loglik_tolerance = 0.000001
+absolute_gradient_tolerance = 0.0001
+relative_gradient_tolerance = 0.000001
+
+[[cases]]
+id = "CORE070-AGHQ-K1-GAUSSIAN"
+family = "gaussian"
+seed = 81031
+r_formula = "value ~ 0 + latent(0 + trait | site, d=1, unique=FALSE)"
+native_call = "fit_gaussian_gllvm(Y;K=1,aghq=1)"
+formula_call = "gllvm(@formula(y~0),Y,(site=1:120,);family=Normal(),K=1,aghq=1)"
+
+[[cases]]
+id = "CORE070-AGHQ-K1-POISSON"
+family = "poisson"
+seed = 81032
+r_formula = "value ~ 0 + trait + latent(0 + trait | site, d=1, unique=FALSE)"
+native_call = "fit_poisson_gllvm(Y;K=1,aghq=1)"
+formula_call = "gllvm(@formula(y~1),Y,(site=1:120,);family=Poisson(),K=1,aghq=1)"
+
+[[cases]]
+id = "CORE070-AGHQ-K1-BINOMIAL"
+family = "binomial"
+seed = 81033
+r_formula = "value ~ 0 + trait + latent(0 + trait | site, d=1, unique=FALSE)"
+native_call = "fit_binomial_gllvm(Y;K=1,N=fill(8,4,120),aghq=1)"
+formula_call = "gllvm(@formula(y~1),Y,(site=1:120,);family=Binomial(),K=1,N=fill(8,4,120),aghq=1)"

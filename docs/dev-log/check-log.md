@@ -16283,3 +16283,16 @@ Alljobs terminal; noDRACcompute,noBproductionchild,push,merge,release or cleanup
 ## 2026-08-31 — AGHQ required-case mapping
 
 Added source-pinned32 public/numerical obligations and21 family descriptors; all39 historical controls accounted for,16 paired normalization bindings. Frozen R39PASS; Totoro16+2 dialect checksPASS8.785s, nofits. Contract11tests plus adjacent6+5 and aggregate self-testPASS; five runtime corruptions reject. Central freeze now requires public/family obligations, not helper labels. Planned links only; fullmanifestDRAFT/M1PARTIAL. NoetherTerrahigh review+onefollowup found anchor errors, parent corrected. See after-task/2026-08-31-core070-aghq-case-manifest.md and core070/aghq-case-plan-evidence.json.
+
+
+## 2026-08-31 — matched public AGHQ k1 admission
+Three eligible Gaussian/Poisson/binomial k1 pairs pass routing and numerical
+health against frozen R, six bounded native/formula bindings; final Totoro
+48.555s, one thread. Gaussian R public BFGS required; default and tightened
+nlminb failures retained. Three source archives and identical fixtures verified.
+Absolute deltaLL <=3.22e-9. Six verifier tests with19 corruptions reject. See
+core070/aghq-admission-evidence.json and after-task/2026-08-31-core070-aghq-admission.md.
+No full obligation promotion: native default-unique parameter contract, formula
+node/reason, ineligible k1, bridge and remaining domain coverage unpaid. Original
+binomial seed43/k5 and Student-t seed71 failures unchanged. No numerical src,
+R source, public API, tolerance, release, push, merge or cleanup changes.

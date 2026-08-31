@@ -1,0 +1,299 @@
+{
+  "schema": 1,
+  "status": "VERIFIED_BOUNDED_PAIRS_FULL_MANIFEST_NOT_FROZEN",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "contract": "test/parity/core070_aghq_admission_cases.toml",
+  "contract_sha256": "acec7f7fe0ff003a61637b50bb1ca2a1aa7b70d1de0b373d6d347e7b4bc035b2",
+  "verification_command": "python3 tools/core070_aghq_admission_verify.py --require-pairs",
+  "verifier_sha256": "185ae2e9b7351abd4776010ec70ec0cfff03edbc8ab2cded9905c7ff6037b165",
+  "runner_sha256": "dbb336cc6ba329dd3d4def32240556d39e4a50c72233b75036dc58df22dfac37",
+  "attempts": [
+    {
+      "id": "aghq-admission-01",
+      "source_archive_sha256": "bf54ee980e991f6d88f8f797280f29effccb0ae9dcc1888a0ac999995baf8e33",
+      "plan_sha256": "28f36d1e1b30cab956bf048670c832880fdaf5a6c7a41500fc86bbd711e5b8ee",
+      "receipt": ".unlazy/core070-aghq/aghq-admission-01/attempt1/admission.toml",
+      "receipt_sha256": "5592a1ec6904e5316d40f983bd524e18a410ef0f568501b98fbdb509963aafa7",
+      "fixture_sha256": "52a4664c99295ec675a7b666458350bf57ff57e338c77d5ada1cf9d2e5efba92",
+      "elapsed_seconds": 48.30627962946892,
+      "cases": [
+        {
+          "id": "CORE070-AGHQ-K1-GAUSSIAN",
+          "native_loglik": -581.6688318239258,
+          "r_loglik": -581.66883183242,
+          "delta_loglik": 8.494225767208263e-09,
+          "native_gradient_max": 8.104628079763643e-14,
+          "r_gradient_max": 0.002374815199360576,
+          "native_converged": true,
+          "r_converged": true,
+          "routing_pass": true,
+          "numerical_pass": false
+        },
+        {
+          "id": "CORE070-AGHQ-K1-POISSON",
+          "native_loglik": -722.025428007717,
+          "r_loglik": -722.0254280096523,
+          "delta_loglik": 1.9352910385350697e-09,
+          "native_gradient_max": 3.999742532512229e-06,
+          "r_gradient_max": 0.00042271078942501816,
+          "native_converged": true,
+          "r_converged": true,
+          "routing_pass": true,
+          "numerical_pass": true
+        },
+        {
+          "id": "CORE070-AGHQ-K1-BINOMIAL",
+          "native_loglik": -886.6360630295146,
+          "r_loglik": -886.636063032733,
+          "delta_loglik": 3.218360689061228e-09,
+          "native_gradient_max": 3.846492492409759e-06,
+          "r_gradient_max": 0.0008600646037616455,
+          "native_converged": true,
+          "r_converged": true,
+          "routing_pass": true,
+          "numerical_pass": true
+        }
+      ],
+      "qualification": "Gaussian R health fails; design identity not recorded"
+    },
+    {
+      "id": "aghq-admission-02",
+      "source_archive_sha256": "f89d27c0910908043b026b1d2c1c143e196385748c34776192d025f0bf72660b",
+      "plan_sha256": "730c832c9f7cf93ef5be9abb9c415ce3855ca0b297281eaea3475b5869b4a78d",
+      "receipt": ".unlazy/core070-aghq/aghq-admission-02/attempt1/admission.toml",
+      "receipt_sha256": "40ab710c569743ddc303731c5277184a27e38f105a449732b3897dc4a4002f45",
+      "fixture_sha256": "52a4664c99295ec675a7b666458350bf57ff57e338c77d5ada1cf9d2e5efba92",
+      "elapsed_seconds": 48.45052635297179,
+      "cases": [
+        {
+          "id": "CORE070-AGHQ-K1-GAUSSIAN",
+          "native_loglik": -581.6688318239258,
+          "r_loglik": -581.66883183242,
+          "delta_loglik": 8.494225767208263e-09,
+          "native_gradient_max": 8.104628079763643e-14,
+          "r_gradient_max": 0.002374815199360576,
+          "native_converged": true,
+          "r_converged": false,
+          "routing_pass": true,
+          "numerical_pass": false
+        },
+        {
+          "id": "CORE070-AGHQ-K1-POISSON",
+          "native_loglik": -722.025428007717,
+          "r_loglik": -722.0254280096523,
+          "delta_loglik": 1.9352910385350697e-09,
+          "native_gradient_max": 3.999742532512229e-06,
+          "r_gradient_max": 0.00042271078942501816,
+          "native_converged": true,
+          "r_converged": true,
+          "routing_pass": true,
+          "numerical_pass": true
+        },
+        {
+          "id": "CORE070-AGHQ-K1-BINOMIAL",
+          "native_loglik": -886.6360630295146,
+          "r_loglik": -886.636063032733,
+          "delta_loglik": 3.218360689061228e-09,
+          "native_gradient_max": 3.846492492409759e-06,
+          "r_gradient_max": 0.0008600646037616455,
+          "native_converged": true,
+          "r_converged": true,
+          "routing_pass": true,
+          "numerical_pass": true
+        }
+      ],
+      "qualification": "Gaussian R singular convergence; discrete design flags false from attribute-sensitive checker"
+    },
+    {
+      "id": "aghq-admission-03",
+      "source_archive_sha256": "b10ed931829e69be6b4288c64c5976495f854702371c147aa9f3256b707011a9",
+      "plan_sha256": "62aafac7edee6726ddd485b62842ad42e02701206fdcbf65db1d602e7d15ef3c",
+      "receipt": ".unlazy/core070-aghq/aghq-admission-03/attempt1/admission.toml",
+      "receipt_sha256": "09203a68312349595040fae46de89e729f855b92b5f97291501d0791b9ee6182",
+      "fixture_sha256": "52a4664c99295ec675a7b666458350bf57ff57e338c77d5ada1cf9d2e5efba92",
+      "elapsed_seconds": 48.55480396002531,
+      "cases": [
+        {
+          "id": "CORE070-AGHQ-K1-GAUSSIAN",
+          "native_loglik": -581.6688318239258,
+          "r_loglik": -581.6688318239255,
+          "delta_loglik": 2.2737367544323206e-13,
+          "native_gradient_max": 8.104628079763643e-14,
+          "r_gradient_max": 2.2123294986063278e-07,
+          "native_converged": true,
+          "r_converged": true,
+          "routing_pass": true,
+          "numerical_pass": true
+        },
+        {
+          "id": "CORE070-AGHQ-K1-POISSON",
+          "native_loglik": -722.025428007717,
+          "r_loglik": -722.0254280096523,
+          "delta_loglik": 1.9352910385350697e-09,
+          "native_gradient_max": 3.999742532512229e-06,
+          "r_gradient_max": 0.00042271078942501816,
+          "native_converged": true,
+          "r_converged": true,
+          "routing_pass": true,
+          "numerical_pass": true
+        },
+        {
+          "id": "CORE070-AGHQ-K1-BINOMIAL",
+          "native_loglik": -886.6360630295146,
+          "r_loglik": -886.636063032733,
+          "delta_loglik": 3.218360689061228e-09,
+          "native_gradient_max": 3.846492492409759e-06,
+          "r_gradient_max": 0.0008600646037616455,
+          "native_converged": true,
+          "r_converged": true,
+          "routing_pass": true,
+          "numerical_pass": true
+        }
+      ],
+      "qualification": "All three numerical pairs pass; Gaussian R public BFGS, discrete default nlminb"
+    }
+  ],
+  "case_bindings": [
+    {
+      "id": "CORE070-AGHQ-K1-GAUSSIAN-NATIVE",
+      "model_contract_id": "CORE070-AGHQ-K1-GAUSSIAN",
+      "interface": "native",
+      "fixture": "test/parity/core070_aghq_admission_cases.toml",
+      "fixture_sha256": "acec7f7fe0ff003a61637b50bb1ca2a1aa7b70d1de0b373d6d347e7b4bc035b2",
+      "realized_fixture_sha256": "52a4664c99295ec675a7b666458350bf57ff57e338c77d5ada1cf9d2e5efba92",
+      "r_formula": "value ~ 0 + latent(0 + trait | site, d=1, unique=FALSE)",
+      "r_runner": "tools/core070_aghq_admission_run.jl:.admission_run",
+      "julia_call": "fit_gaussian_gllvm(Y;K=1,aghq=1)",
+      "status": "PASS_BOUNDED_K1_PAIR",
+      "obligation_links": [
+        "CORE070-AGHQ-PUBLIC-K1-PRECEDENCE"
+      ],
+      "obligation_discharge": "PARTIAL: eligible K1 only; ineligible structures and public R bridge remain untested",
+      "acceptance_rule": "Exact within-engine baseline equality; actual Laplace; unchanged absolute deltaLL<=0.001 AND relative<=1e-6; converged finite fits, abs gradient<=1e-4 OR relative<=1e-6. Formula exact parameters/LL and actual method only; formula node/reason not separately recorded.",
+      "r_optimizer": "optim BFGS reltol=1e-14 maxit=2000",
+      "evidence_attempt": "aghq-admission-03"
+    },
+    {
+      "id": "CORE070-AGHQ-K1-GAUSSIAN-FORMULA",
+      "model_contract_id": "CORE070-AGHQ-K1-GAUSSIAN",
+      "interface": "formula",
+      "fixture": "test/parity/core070_aghq_admission_cases.toml",
+      "fixture_sha256": "acec7f7fe0ff003a61637b50bb1ca2a1aa7b70d1de0b373d6d347e7b4bc035b2",
+      "realized_fixture_sha256": "52a4664c99295ec675a7b666458350bf57ff57e338c77d5ada1cf9d2e5efba92",
+      "r_formula": "value ~ 0 + latent(0 + trait | site, d=1, unique=FALSE)",
+      "r_runner": "tools/core070_aghq_admission_run.jl:.admission_run",
+      "julia_call": "gllvm(@formula(y~0),Y,(site=1:120,);family=Normal(),K=1,aghq=1)",
+      "status": "PASS_BOUNDED_K1_PAIR",
+      "obligation_links": [
+        "CORE070-AGHQ-PUBLIC-K1-PRECEDENCE"
+      ],
+      "obligation_discharge": "PARTIAL: eligible K1 only; ineligible structures and public R bridge remain untested",
+      "acceptance_rule": "Exact within-engine baseline equality; actual Laplace; unchanged absolute deltaLL<=0.001 AND relative<=1e-6; converged finite fits, abs gradient<=1e-4 OR relative<=1e-6. Formula exact parameters/LL and actual method only; formula node/reason not separately recorded.",
+      "r_optimizer": "optim BFGS reltol=1e-14 maxit=2000",
+      "evidence_attempt": "aghq-admission-03"
+    },
+    {
+      "id": "CORE070-AGHQ-K1-POISSON-NATIVE",
+      "model_contract_id": "CORE070-AGHQ-K1-POISSON",
+      "interface": "native",
+      "fixture": "test/parity/core070_aghq_admission_cases.toml",
+      "fixture_sha256": "acec7f7fe0ff003a61637b50bb1ca2a1aa7b70d1de0b373d6d347e7b4bc035b2",
+      "realized_fixture_sha256": "52a4664c99295ec675a7b666458350bf57ff57e338c77d5ada1cf9d2e5efba92",
+      "r_formula": "value ~ 0 + trait + latent(0 + trait | site, d=1, unique=FALSE)",
+      "r_runner": "tools/core070_aghq_admission_run.jl:.admission_run",
+      "julia_call": "fit_poisson_gllvm(Y;K=1,aghq=1)",
+      "status": "PASS_BOUNDED_K1_PAIR",
+      "obligation_links": [
+        "CORE070-AGHQ-PUBLIC-K1-PRECEDENCE"
+      ],
+      "obligation_discharge": "PARTIAL: eligible K1 only; ineligible structures and public R bridge remain untested",
+      "acceptance_rule": "Exact within-engine baseline equality; actual Laplace; unchanged absolute deltaLL<=0.001 AND relative<=1e-6; converged finite fits, abs gradient<=1e-4 OR relative<=1e-6. Formula exact parameters/LL and actual method only; formula node/reason not separately recorded.",
+      "r_optimizer": "default nlminb",
+      "evidence_attempt": "aghq-admission-03"
+    },
+    {
+      "id": "CORE070-AGHQ-K1-POISSON-FORMULA",
+      "model_contract_id": "CORE070-AGHQ-K1-POISSON",
+      "interface": "formula",
+      "fixture": "test/parity/core070_aghq_admission_cases.toml",
+      "fixture_sha256": "acec7f7fe0ff003a61637b50bb1ca2a1aa7b70d1de0b373d6d347e7b4bc035b2",
+      "realized_fixture_sha256": "52a4664c99295ec675a7b666458350bf57ff57e338c77d5ada1cf9d2e5efba92",
+      "r_formula": "value ~ 0 + trait + latent(0 + trait | site, d=1, unique=FALSE)",
+      "r_runner": "tools/core070_aghq_admission_run.jl:.admission_run",
+      "julia_call": "gllvm(@formula(y~1),Y,(site=1:120,);family=Poisson(),K=1,aghq=1)",
+      "status": "PASS_BOUNDED_K1_PAIR",
+      "obligation_links": [
+        "CORE070-AGHQ-PUBLIC-K1-PRECEDENCE"
+      ],
+      "obligation_discharge": "PARTIAL: eligible K1 only; ineligible structures and public R bridge remain untested",
+      "acceptance_rule": "Exact within-engine baseline equality; actual Laplace; unchanged absolute deltaLL<=0.001 AND relative<=1e-6; converged finite fits, abs gradient<=1e-4 OR relative<=1e-6. Formula exact parameters/LL and actual method only; formula node/reason not separately recorded.",
+      "r_optimizer": "default nlminb",
+      "evidence_attempt": "aghq-admission-03"
+    },
+    {
+      "id": "CORE070-AGHQ-K1-BINOMIAL-NATIVE",
+      "model_contract_id": "CORE070-AGHQ-K1-BINOMIAL",
+      "interface": "native",
+      "fixture": "test/parity/core070_aghq_admission_cases.toml",
+      "fixture_sha256": "acec7f7fe0ff003a61637b50bb1ca2a1aa7b70d1de0b373d6d347e7b4bc035b2",
+      "realized_fixture_sha256": "52a4664c99295ec675a7b666458350bf57ff57e338c77d5ada1cf9d2e5efba92",
+      "r_formula": "value ~ 0 + trait + latent(0 + trait | site, d=1, unique=FALSE)",
+      "r_runner": "tools/core070_aghq_admission_run.jl:.admission_run",
+      "julia_call": "fit_binomial_gllvm(Y;K=1,N=fill(8,4,120),aghq=1)",
+      "status": "PASS_BOUNDED_K1_PAIR",
+      "obligation_links": [
+        "CORE070-AGHQ-PUBLIC-K1-PRECEDENCE"
+      ],
+      "obligation_discharge": "PARTIAL: eligible K1 only; ineligible structures and public R bridge remain untested",
+      "acceptance_rule": "Exact within-engine baseline equality; actual Laplace; unchanged absolute deltaLL<=0.001 AND relative<=1e-6; converged finite fits, abs gradient<=1e-4 OR relative<=1e-6. Formula exact parameters/LL and actual method only; formula node/reason not separately recorded.",
+      "r_optimizer": "default nlminb",
+      "evidence_attempt": "aghq-admission-03"
+    },
+    {
+      "id": "CORE070-AGHQ-K1-BINOMIAL-FORMULA",
+      "model_contract_id": "CORE070-AGHQ-K1-BINOMIAL",
+      "interface": "formula",
+      "fixture": "test/parity/core070_aghq_admission_cases.toml",
+      "fixture_sha256": "acec7f7fe0ff003a61637b50bb1ca2a1aa7b70d1de0b373d6d347e7b4bc035b2",
+      "realized_fixture_sha256": "52a4664c99295ec675a7b666458350bf57ff57e338c77d5ada1cf9d2e5efba92",
+      "r_formula": "value ~ 0 + trait + latent(0 + trait | site, d=1, unique=FALSE)",
+      "r_runner": "tools/core070_aghq_admission_run.jl:.admission_run",
+      "julia_call": "gllvm(@formula(y~1),Y,(site=1:120,);family=Binomial(),K=1,N=fill(8,4,120),aghq=1)",
+      "status": "PASS_BOUNDED_K1_PAIR",
+      "obligation_links": [
+        "CORE070-AGHQ-PUBLIC-K1-PRECEDENCE"
+      ],
+      "obligation_discharge": "PARTIAL: eligible K1 only; ineligible structures and public R bridge remain untested",
+      "acceptance_rule": "Exact within-engine baseline equality; actual Laplace; unchanged absolute deltaLL<=0.001 AND relative<=1e-6; converged finite fits, abs gradient<=1e-4 OR relative<=1e-6. Formula exact parameters/LL and actual method only; formula node/reason not separately recorded.",
+      "r_optimizer": "default nlminb",
+      "evidence_attempt": "aghq-admission-03"
+    }
+  ],
+  "default_unique": {
+    "r_status": "OBSERVED_LAPLACE_FALLBACK",
+    "native_status": "BLOCKED_UNMATCHED_PARAMETER_CONTRACT",
+    "reason": "R maps residual scale off and admits one B unique diagonal; native has_diag adds B and W diagonal components plus free shared residual. Total covariance comparison is not parameter/interval equivalence."
+  },
+  "review": {
+    "agent": "Noether",
+    "requested_model": "gpt-5.6-terra",
+    "requested_effort": "high",
+    "dispatch": "native fresh context",
+    "rounds": 2,
+    "verdict": "PARTIAL; final BFGS evidence and history verifier not independently re-reviewed",
+    "accepted": [
+      "unmatched default-unique parameterization",
+      "attribute-sensitive R design comparison",
+      "audit all retained attempts"
+    ],
+    "rejected": [
+      "Binomial sign objection: exp(-eta-intercept) is logistic(eta+intercept), consistent with declared positive intercept."
+    ]
+  },
+  "boundaries": [
+    "No full AGHQ/bridge/interface or recovery claim",
+    "No replacement of original binomial seed43 k5 or Student-t seed71 fixtures",
+    "No full package suite or Documenter build performed in this developer-harness slice",
+    "No numerical engine, R source, tolerance, or public API changes"
+  ]
+}

@@ -1043,3 +1043,28 @@ Mission Control local 6f39d348e04b2e3fc2aeae0ba04025e9c593b258: servedHTTP200, e
 Read core070/aghq-required-cases.md, aghq-required-case-plan.json and after-task/2026-08-31-core070-aghq-case-manifest.md. All39 helper facts accounted;16 paired normalization checks+2dialect controls, R39PASS, Totoro8.785sPASS.32 public/numerical obligations+21family descriptors now explicit, central freeze requires real contracts.11localcontract+6manifest+5family testsPASS; five runtime corruption negatives. No publicfit promotion;22controlpolicies unbound. Master752sourcefacts unchanged, AGHQplannedlinks only; all executablelists empty. NoetherTerrahigh fresh+onefollowup reviewed source; anchor errors parent-repaired, no panel signoff. NEXT bind public admissions to same-model fixtures/calls and complete remaining domains; do not replay unchanged helper controls. Binomialk5 and Studenthealth/density failures unchanged. No src numerical changes, fits, new B child, DRACcompute, push/merge/release/cleanup. Alljobs terminal; fullprogrammeACTIVE/M1PARTIAL/fullmanifestDRAFT.
 
 Mission Control local6a94ff40505c81ac7c116a2d46eafa56dd8351ba: HTTP200/exact Julia-field readback, Rfieldsunchanged, exact-file leaseRELEASED. AC-CONTRACT/AC-EVIDENCE reverified2met/0unmet/0abandoned.
+
+
+## 2026-08-31 — matched public AGHQ k1 admission
+Three eligible Gaussian/Poisson/binomial k1 pairs pass routing and numerical
+health against frozen R, six bounded native/formula bindings; final Totoro
+48.555s, one thread. Gaussian R public BFGS required; default and tightened
+nlminb failures retained. Three source archives and identical fixtures verified.
+Absolute deltaLL <=3.22e-9. Six verifier tests with19 corruptions reject. See
+core070/aghq-admission-evidence.json and after-task/2026-08-31-core070-aghq-admission.md.
+No full obligation promotion: native default-unique parameter contract, formula
+node/reason, ineligible k1, bridge and remaining domain coverage unpaid. Original
+binomial seed43/k5 and Student-t seed71 failures unchanged. No numerical src,
+R source, public API, tolerance, release, push, merge or cleanup changes.
+
+NEXT complete remaining admission and source-domain contracts before capability
+expansion. Do not repeat successful k1 fits or substitute native has_diag for
+R default unique. All compute terminal; no DRAC job or new production child.
+Noether Terra/high fresh review+onefollowup; final BFGS/history verifier checked
+by parent, no programme completion-panel signoff. FullprogrammeACTIVE/M1PARTIAL,
+fullmanifestDRAFT. Read the six bounded case bindings and all three retained
+attempts in core070/aghq-admission-evidence.json. Foreign lanes stay protected.
+Mission Control local0a91ce888702785c34f41102c1b0780c997b5652: HTTP200,
+exact Julia-field readback, Rfieldsunchanged, exact-file leaseRELEASED.
+
+AA-EVIDENCE/AA-PAIRS/AA-NEGATIVES reverified:3met,0unmet,0abandoned;19 corruptions rejected. Whole programme remains unfinished.
