@@ -47,6 +47,8 @@ using GLLVM
     include("test_aghq_public_poisson.jl")
 include("test_aghq_gaussian.jl")
 include("test_aghq_public_gaussian.jl")
+include("test_gaussian_empty_design.jl")
+include("test_profile_failure_bounds.jl")
 include("test_aghq_binomial.jl")
 include("test_aghq_public_binomial.jl")
     include("test_aghq_gate.jl")

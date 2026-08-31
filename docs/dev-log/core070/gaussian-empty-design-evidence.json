@@ -1,0 +1,309 @@
+{
+  "status": "PASS_SCOPED_EMPTY_GAUSSIAN_DESIGN_REPAIR",
+  "programme_status": "ACTIVE_M1_PARTIAL",
+  "full_manifest": "DRAFT_NOT_FROZEN",
+  "reference": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "assertions": {
+    "targeted": 30,
+    "integrated": 312,
+    "pair_prerequisites": 112,
+    "pair": 13
+  },
+  "processes": {
+    "gaussian-empty-docs-01": {
+      "status": "PASS",
+      "receipt_sha256": "76b68b0a0968e33c872c3b98a076fad0c3ecccf8473fd0333f53dd4b4e57c366",
+      "plan_sha256": "678fc20b584224d5ca10f05f4edc71b81a3218489f9cf6937d04104439001933",
+      "results": [
+        {
+          "id": "strict-local-docs",
+          "exit_code": 0,
+          "elapsed_seconds": 89.56089139729738,
+          "log_sha256": "d19f62fae15f0205f963ce1d95fc3a75b2acdb0de707f38fa81292f991de9f0a"
+        }
+      ]
+    },
+    "gaussian-empty-green-01": {
+      "status": "FAIL",
+      "receipt_sha256": "6264664fc27d6467f7148b17c3b55d20ddfc757948048bd6203b8b3c82e1f25d",
+      "plan_sha256": "06088d2c7b8af3698e4abfd9e44d8ca796b9fac64a07e763a39cc135a618c190",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11532561480998993,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 1,
+          "elapsed_seconds": 74.08693379163742,
+          "log_sha256": "5c2b8cc4566daf53349a48c4c3d42ce05aa566e05bae4c4e9467ed9aa6bfb8d6"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11545068584382534,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "gaussian-empty-green-02": {
+      "status": "PASS",
+      "receipt_sha256": "51a3668e54518d8b8d4d96e980b02557e315f1708c89aaa83bd2f8b1b8119b74",
+      "plan_sha256": "8197ae875c1d96abe24168ef5d23efe83a882b8cbce3e7fc46e3f62b375d2f71",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11495433375239372,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 0,
+          "elapsed_seconds": 72.37839362211525,
+          "log_sha256": "d2c7f28cf3e4d724e200676cb3f7b411042afffcf5c0318ff16b9f505a44c71c"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11536390520632267,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "gaussian-empty-green-03": {
+      "status": "PASS",
+      "receipt_sha256": "2f677a43aee8441e32c3a423592d55ce4776ebe641da5aceddabbb794d0bf056",
+      "plan_sha256": "1a43c1a34bc1a74571ba7bfae3b8151afe03c3f5ae9a80eefa4c4a6f9f43a6a8",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11521065421402454,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 0,
+          "elapsed_seconds": 76.38477738201618,
+          "log_sha256": "af746fa812e73a9a7f9360deaa1ae74ced5bc916a5c24c47336aa971102990ce"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11544953659176826,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "gaussian-empty-integrated-01": {
+      "status": "PASS",
+      "receipt_sha256": "09234aa3aa296d7ca44a77680bab2385a0f5c31998517bb242b09a833d851be2",
+      "plan_sha256": "496f061c8822a583307b2e88dd3d0f9f13218a7c517361e1b14cc9fc946c8e99",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11520677246153355,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 0,
+          "elapsed_seconds": 186.9341827686876,
+          "log_sha256": "fc1e7d396261c5c5dc009bd6a5b2061c4d618f3038d1b61f5b03fa183bac4f69"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11494645290076733,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "gaussian-empty-pair-01": {
+      "status": "PASS",
+      "receipt_sha256": "ef27754d89eeee561f9f398bed17a97dc0a079783e0dece4ff986fc967521b42",
+      "plan_sha256": "e972c3dd9f54c822d0029b31745989bde2a3e80dea804afcfa702796eeeb9927",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.1148851253092289,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 0,
+          "elapsed_seconds": 66.79832103103399,
+          "log_sha256": "a0d0e833a6254a340feba3ef293feb1c4b81c28ded648f527cd40b0b32de1859"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11507435515522957,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "gaussian-empty-profile-red-01": {
+      "status": "FAIL",
+      "receipt_sha256": "78131f649dac5bbcb634d2f188894ba08c1e9bf39b393c6b5da9f47caa580deb",
+      "plan_sha256": "09b242dd5ae03b88e34b62f4565d1898f7ba06f4fc70728868e4f26fc4fe23aa",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11499948427081108,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 1,
+          "elapsed_seconds": 80.55509769544005,
+          "log_sha256": "dcac6fcbafa7f671b5721701ea6b7e1d344aeec259d85084c32375dcc428dbac"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11554152704775333,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "gaussian-empty-red-01": {
+      "status": "FAIL",
+      "receipt_sha256": "a8f60b5ee2e26105d5abe215b902eb85106abb45ce830b176aa05010cc8fefb4",
+      "plan_sha256": "0d5e4a5a0928d4bd8c4a2dca9933a8a6deb74f290f6f8a4352fe9b93e693392d",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11508983559906483,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 1,
+          "elapsed_seconds": 50.83108849264681,
+          "log_sha256": "158abfc9a283c3be7d1cfcfc89cf97a82bf8c1a1e9c9ca7028c740dbeeb24d3a"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11538810469210148,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    }
+  },
+  "pair": {
+    "r_k": 5,
+    "delta_loglik": 5.444462658488192e-10,
+    "native_converged": true,
+    "r_nfree": 15,
+    "julia_version": "1.12.6",
+    "exact_objective_delta": 1.1368683772161603e-13,
+    "r_used": true,
+    "r_native_parameters": [
+      -7.254493179513521e-10,
+      -4.630248503982779e-09,
+      1.0119915499951175e-08,
+      1.2197558428794785e-08,
+      6.86014232846676e-09,
+      -0.36323744762260807,
+      0.793106213775348,
+      0.5397805717930843,
+      0.7170657517849371,
+      0.19668898052461117,
+      -0.26327384084495764,
+      0.13365817394347637,
+      -0.37403733459410543,
+      0.30747178762393407,
+      0.1719902131756257
+    ],
+    "r_converged": true,
+    "package_root": "/home/snakagaw/core070-aghq-20260830/gaussian-empty-pair-01",
+    "r_penalised": false,
+    "sigma_delta": 1.6665460134124288e-07,
+    "scope": "PUBLIC_GAUSSIAN_ORIGINAL_K5",
+    "r_objective": 502.9141462561421,
+    "winner": 1,
+    "samepoint_delta": -1.1368683772161603e-13,
+    "r_stop_reason": "converged (adaptation mode fixed; gradient below tolerance; max |grad| = 0.000303, relative 6.03e-07)",
+    "exact_gradient_delta": 5.093703236980218e-13,
+    "exact_hessian_delta": 4.547473508864641e-13,
+    "native_objective": 502.91414625559764,
+    "case_id": "GU-GAUSSIAN-SEED42-K5",
+    "native_parameters": [
+      -4.9960036108132046e-17,
+      7.771561172376095e-17,
+      -3.191891195797325e-17,
+      -1.4710455076283324e-16,
+      2.6367796834847467e-17,
+      -0.3632372079771093,
+      0.7931081273143674,
+      0.539782723307349,
+      0.7170669391823293,
+      0.19669004611539062,
+      -0.26327447867787246,
+      0.13365865197125446,
+      -0.3740391298400086,
+      0.3074710182531778,
+      0.17198990934100825
+    ],
+    "native_gradient_max": 2.2515322939398175e-13,
+    "r_gradient_max": 0.00030333630136840774,
+    "covariance_delta": 4.257371589211356e-06,
+    "r_n_starts": 2,
+    "artifact_sha256": {
+      ".julia.toml": "7a687f339cfb5ecdabfd50748ee2b46f2a0120c35d6afc42adab7f6a43869efd",
+      ".fixture.toml": "cb3ea4cfca4bb2d0dd1f804101a9533d6357ba8c1fe2ac3aadec8d794a59df65",
+      ".rds": "a31dca4397aadf06383f3e8ef45d9074551b56d18d558a0a92f3cba086558aba"
+    }
+  },
+  "pair_sha256": "d1071203c55cb5a882077cad856d32e502753ee6d07ab3449238e6bd7c9f4bba",
+  "render_readback": {
+    "status": "PASS",
+    "remote": "/home/snakagaw/core070-aghq-20260830/gaussian-empty-docs-01/docs/build/1/quickstart.html",
+    "sha256": "89bce4324c50e4d0cb3272b3c79b5555b447fe4f0771a6da4c81eaad5ee23189",
+    "executed_output": "(actual = :aghq, nodes = 3, converged = true, reason = :converged)",
+    "visual_audit": false
+  },
+  "gates": {
+    "met": 2,
+    "unmet": 0,
+    "abandoned": 0,
+    "reverified": true
+  },
+  "negative_evidence_controls": 7,
+  "review": {
+    "requested_model": "gpt-5.6-terra",
+    "requested_effort": "high",
+    "fresh_context": true,
+    "repair_followups": 1,
+    "scope": "four residual guards and two inference adapter normalizations",
+    "root_failure_guard": "parent analytic/test review only; not Noether signoff",
+    "receipt_sha256": "1a59d82a5a6b3dfe61c555deccfe0bebb90deda2bca32db6e1999c8303cd0af3"
+  },
+  "unpaid": [
+    "full source-admission manifest and remaining Stage1a families",
+    "original binomial k5 convergence/Student-t R health and density",
+    "covariance, structured multinomial, data/postfit breadth and bridge",
+    "recovery/coverage/performance/full package/visualdocs",
+    "fresh worktree disposition"
+  ],
+  "mission_control": {
+    "status": "PASS",
+    "http_status": 200,
+    "commit": "5a6954d7575cb778325ba08365d196d7a7dcd43e",
+    "before_sha256": "64692afceb8f9618990ca937c3fc5798f590731139bc07379c21bfb163062c96",
+    "after_sha256": "3e850abf420bacaf9df03eaebf4b68f76dfd4b45bf42d2de787dc10a3bf24206",
+    "changed_fields": [
+      "now.next_safe_action"
+    ],
+    "r_fields_unchanged": true
+  }
+}

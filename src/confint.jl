@@ -195,7 +195,7 @@ function _confint_reconstruct_nll(fit::GllvmFit, y::AbstractMatrix,
     q_full = fit.pars.β === nothing ? 0 : length(fit.pars.β)
     β_fixed = _pars_fixed_mask(fit.pars, :β_fixed, q_full)
     β_free = _free_coeff_indices(β_fixed)
-    X_free = X === nothing ? nothing : Array{Float64,3}(X[:, :, β_free])
+    X_free = X === nothing || isempty(β_free) ? nothing : Array{Float64,3}(X[:, :, β_free])
     spec = (q = length(β_free), p = model.p, K_B = model.K, K_W = model.K_W,
             has_diag = model.has_diag, K_phy = model.K_phy,
             has_phy_unique = model.has_phy_unique)

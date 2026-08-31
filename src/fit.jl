@@ -96,6 +96,8 @@ Optional extensions:
 
 Optional fixed effects:
 - `X::AbstractArray{<:Real, 3}` of shape `(p, n_sites, q)`.
+  A zero-column design, or fixing every coefficient to zero, gives the same
+  zero-mean model as `X=nothing`.
 - `β_init::AbstractVector` of length q (defaults to `zeros(q)`).
 - `β_fixed` optionally fixes selected coefficients to zero; pass a Bool vector
   of length q, an integer index vector, or a Dict index=>0.

@@ -16242,3 +16242,22 @@ See after-task/2026-08-31-core070-aghq-public-gaussian.md and
 core070/aghq-public-gaussian-evidence.json. Fullsuite/recovery/performance/visualdocs
 remain unpaid; >30min runs need sized pre-run approval. No push/merge/release/
 cleanup/Rengine/foreign edits. Historical full-source receipts need revalidation.
+
+
+## 2026-08-31 — Gaussian empty design and failed-profile-bound repair
+Default empty/all-fixed-zero Gaussian models now match X=nothing. Four profile
+residual guards plus Wald/profile inference normalization. No false finite bound
+without a finite likelihood crossing; analytic negative+positive controls.
+Red2PASS10ERROR; firstrepair22PASS2FAIL; Wald24PASS; profile24PASS2FAIL;
+finaltarget30PASS76.385s and integrated312PASS186.934s. Original Gaussianpair
+112prereq+13PASS66.798s, LLdelta5.44e-10,Rrelativegradientonly. Strictdocs89.561s
+PASS plus executedHTMLchecksumreadback. GE-REGRESSION/GE-PAIR reverified,7corruptions
+reject. NoetherTerrahigh fresh+onefollowup reviewed residual/inference guards;
+root-failure return subsequently parent-reviewed only, no panel signoff.
+See after-task/2026-08-31-core070-gaussian-empty-design.md and
+core070/gaussian-empty-design-evidence.json. FullprogrammeACTIVE/M1PARTIAL/DRAFT.
+NEXT remaining Stage1a family/admission manifest and original binomial k5 outer
+convergence; don't loop on this repaired empty-design issue. Student Rhealth,
+17links,covariance,structuredmultinomial,bridge,recovery/performance/fullsuite/
+finalvisualdocs remain unpaid. Alljobs terminal,noDRACcompute,noBproductionchild.
+No push/merge/release/cleanup/Rengine/foreign edits; preserved REML sibling branch.

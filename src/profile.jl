@@ -241,7 +241,7 @@ function gaussian_profile_nll(params::AbstractVector, y::AbstractMatrix;
             quad = quad_y - dot(β_hat, vvec)
         else
             # Pass-through residual computation (β provided or no X)
-            if X === nothing
+            if X === nothing || q == 0
                 resid = y
             else
                 Tres = promote_type(Td, eltype(X), eltype(y), eltype(β))
@@ -292,7 +292,7 @@ function gaussian_profile_nll(params::AbstractVector, y::AbstractMatrix;
         B_tilde = (L_phy_aug * L_phy_aug') .* Σ_phy
 
         # Residuals
-        if X === nothing
+        if X === nothing || q == 0
             resid = y
         else
             Tres = promote_type(Td, eltype(X), eltype(y), eltype(β))
@@ -480,7 +480,7 @@ function profile_recover(params::AbstractVector, y::AbstractMatrix;
             quad = quad_y - dot(β_hat, vvec)
             β_out = collect(β_hat)
         else
-            if X === nothing
+            if X === nothing || q == 0
                 resid = y
             else
                 resid = similar(y, Float64)
@@ -529,7 +529,7 @@ function profile_recover(params::AbstractVector, y::AbstractMatrix;
         end
         B_tilde = (L_phy_aug * L_phy_aug') .* Σ_phy
 
-        if X === nothing
+        if X === nothing || q == 0
             resid = y
         else
             resid = similar(y, Float64)

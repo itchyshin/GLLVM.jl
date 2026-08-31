@@ -169,6 +169,7 @@ function _profile_free_X(fit::GllvmFit, X::Union{Nothing, AbstractArray{<:Real, 
     q_full = fit.pars.β === nothing ? 0 : length(fit.pars.β)
     β_fixed = _pars_fixed_mask(fit.pars, :β_fixed, q_full)
     β_free = _free_coeff_indices(β_fixed)
+    isempty(β_free) && return nothing
     return Array{Float64,3}(X[:, :, β_free])
 end
 
@@ -314,7 +315,9 @@ function _profile_root_falsepos(D::Function, a::Real, b::Real,
             a = c; fa = fc
         end
     end
-    return (a + b) / 2
+    # A singular/failed refit is not evidence of a likelihood crossing.
+    # Require a finite outer endpoint; otherwise expose the missing bound.
+    return isfinite(fb) ? (a + b) / 2 : NaN
 end
 
 function _profile_bisect_side(D::Function, x0::Real, step_init::Real,

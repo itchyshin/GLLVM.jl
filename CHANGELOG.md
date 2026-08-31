@@ -1,3 +1,10 @@
+## Unreleased — Gaussian empty fixed-effect design
+
+- Fix default exact Gaussian fitting with a zero-column design or all fixed-zero
+  coefficients, including ordinary and phylogenetic profiled likelihoods.
+- Restore Wald/profile intervals for these models; failed profile refits no
+  longer fabricate finite bounds without a finite likelihood crossing.
+
 # Changelog
 
 All notable changes to GLLVM.jl are documented here.
