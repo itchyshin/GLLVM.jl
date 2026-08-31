@@ -1695,3 +1695,54 @@ This replaces the previous next-action paragraph, not its historical evidence.
   fullsuites, finalDocumenter and completion panels remain unpaid. Original
   Student health and binomial AGHQ blockers remain. NoDRACjobs/push/merge/release/
   destructivecleanup; R0.7.1/article/Cursor/Claude lanes remain protected.
+
+## Claude cycle — 2026-08-31: latent-bare PASS; loop kit for the reconciled programme
+
+This update supersedes the earlier in-progress state, not its retained history.
+Goal file for every future arc: `LOOP/core070-goal.md` (immutable; the old
+`LOOP/GOAL.md` remains historical evidence only).
+
+- Handover executed: the OWED optimizer-health slice is PAID.
+  `COV-ORD-LATENT-BARE` is now `COV_ORD_LATENT_BARE_THREE_ROUTE_PASS`.
+  Identical-start 2x2 diagnosis proved an objective-roundoff BackTracking stall
+  on both mean designs; minimal repair c2a93d6d (Hager-Zhang on the default-mean
+  path) with red-first regression `test/test_source_fit_optimizer_health.jl`;
+  Totoro attempt06 frozen replay PASS (native gradient 4.349e-8 <= 1e-7,
+  contract SHA unchanged, 8/8 negative controls); fresh-context verifier
+  `CORE070_LATENT_BARE_VERIFIED`; docs/evidence commit ccd6132e.
+  Receipts: `.unlazy/core070-aghq/latent-bare-model-06/` and preservation
+  tarball `~/local-scratch/preservation/core070-execution-20260831-latent-bare-attempt06`
+  (SHA 8bb03ca3, readback 15 entries). Mission Control vault commit 33ecf62,
+  HTTP readback verified.
+- Reconciliation recorded: `docs/dev-log/plans/2026-08-31-core070-reconciliation-plan.md`
+  and `docs/dev-log/plan-actual/2026-08-31-core070-optimizer-health.md`.
+- ARCS NEXT (dependency order; PASS/PARTIAL/BLOCKED discipline throughout):
+  1. M1-suite: full package test suite on this lane (Pkg.test-equivalent core
+     run first; estimate before running). Classify any red.
+  2. M1-close: resolve/classify remaining A5 per-species power and A6 Student-t
+     both-engine health red; freeze the required-case manifest (full executable
+     case decomposition, the A3 obligation); Melissa/Noether/Rose M1 verdicts.
+  3. M2-cov: continue remaining admitted native/model covariance contracts.
+  4. M2-grammar: formula + modifier grammar rows.
+  5. M2-multinomial: latent/structured multinomial (fixed-effects multinomial
+     is NOT parity).
+  6. M2-surfaces: data + fitted-object surfaces.
+  7. M2-bridge: callable structured R-bridge adapter (currently the frozen
+     boundary: 8 structured requests stop at the named gate; ordinary DEP fails
+     earlier).
+  8. M2-aghq: public callable Stage 1a AGHQ rows.
+  9. M3: benchmarks on qualified models, measured-bottleneck optimization,
+     executed Documenter + desktop/mobile inspection, lane dispositions,
+     Mission Control refresh, independent final verdicts.
+- OPEN GATES: push/merge/release (Shinichi); any DRAC campaign (sized pre-run
+  approval); contract changes (none contemplated).
+- RESUME (paste into a fresh session in this worktree):
+  You are core070-parity-beyond — the single continuous Claude Code lane running
+  the GLLVM.jl Core 0.7.0 + AGHQ programme. READ FIRST, IN ORDER:
+  LOOP/core070-goal.md -> LOOP/core070-checkpoint.md ->
+  docs/dev-log/plans/2026-08-31-core070-reconciliation-plan.md -> AGENTS.md.
+  WORKSPACE: /private/tmp/GLLVM.jl-core070-aghq-20260830 (reattach; do NOT
+  recreate). RUN the L2 arc-loop: re-read the goal each arc; verify by LOG not
+  exit code; conductor stays lean; pause at every OPEN GATE; overwrite this
+  checkpoint section's NEXT each arc. CONTINUE FROM: arc M1-suite. Pause at any
+  push/merge/DRAC gate.
