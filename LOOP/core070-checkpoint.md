@@ -877,3 +877,25 @@ edits orDRACsubmission. Read core070/aghq-outer-contract.md and
 after-task/2026-08-31-core070-aghq-outer.md.
 
 Mission Control local 76c958c3d546de6ac36c51d70e45c42ab0476c94: HTTP200, exact served field verified, R fields unchanged, exact-file lease released.
+
+## 2026-08-31 — actual Poisson AGHQ fitting path
+
+Totoro and Fir sockets verified using existing masters; DRAC queue empty, no
+DRAC compute submitted. Internal aghq_poisson_problem now checks actual unclipped
+normalized joint modes/H and supplies the frozen objective. Input copies, masks,
+offsets, prior-only sites, malformed inputs and mode failures tested. Final316
+PASS45.862591s Totoro (48new+262adjacent+6fit); original seed44 p5K2 n60 all14
+parameters optimized, converged11passes, zero curvature repairs. Every trial in
+hashed receipt. Redmissing262pass1fail, fixture301pass1fail, then309pass+runner
+ParseError retained. Threeartifactnegativesreject. FreshNoetherTerra/highreview
+plusonefollowup closesfindings; no Bproductiondispatch orcompletionpanel.
+
+Next: public AGHQ integration contract and metadata must preserve estimator
+identity through postfit/inference; existing PoissonFit assumes Laplace, so do
+not relabel it. More families, controls/eligibility/fallback warnings, multistart,
+paired R AGHQ comparisons and recovery remain required. Internal single-start
+Poisson smoke is NOT public parity. Source-bound previousfamilyreceipts historical;
+fullmanifestDRAFT/M1PARTIAL/goalACTIVE. No R0.7.1/article/foreign edits, push,
+merge, release orcleanup. Read core070/aghq-poisson-contract.md and aftertask.
+
+Mission Control local 25a5b10c666c52240485c1d69ac643656525d303: HTTP200/exact served field, R fields unchanged, exact-file lease released.

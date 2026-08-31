@@ -63,6 +63,7 @@ include("families/aghq_grid.jl")         # Stage-1a/1b live-pin AGHQ grid + Liuâ
 include("families/aghq_outer.jl")        # Internal unpenalized outer adaptation; public fit wiring pending
 include("families/binomial.jl")          # Binomial family pieces + fit (Phase 3)
 include("families/poisson.jl")           # Poisson family pieces (Phase 3)
+include("families/aghq_poisson.jl")      # Internal checked-mode Poisson AGHQ adapter
 include("families/truncated_poisson.jl") # Zero-truncated Poisson (twin fid 10)
 include("families/censored_poisson.jl") # Right-censored Poisson (Julia-forward; twin constructor-only)
 include("families/truncated_nbinom2.jl") # Zero-truncated NB2 (twin fid 11; shared-r Arc1 + per-trait Arc1b)

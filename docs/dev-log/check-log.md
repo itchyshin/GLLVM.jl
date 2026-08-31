@@ -16183,3 +16183,14 @@ edits orDRACsubmission. Read core070/aghq-outer-contract.md and
 after-task/2026-08-31-core070-aghq-outer.md.
 
 Mission Control local 76c958c3d546de6ac36c51d70e45c42ab0476c94: HTTP200, exact served field verified, R fields unchanged, exact-file lease released.
+
+### 2026-08-31 — internal Poisson AGHQ checked modes and real fit
+- New unpenalized unclipped log-link adapter; actual joint AD mode/H validation,
+  normalized frozen objective, missing/offset/invalid inputs and diagnostics.
+- Totoro final316PASS45.862591s; original seed44 all14 parameters converged11
+  passes. No curvature repairs; independent quadrature/FD/Laplace controls.
+- Failed missing-symbol, Bool-coercion fixture and runner-token runs retained.
+  Three artifact negatives reject; fresh Noether Terra/high review closed findings.
+- Scope remains INTERNAL, no public/R AGHQ parity/recovery/full-suite/docs claim.
+  Full programmeACTIVE/M1PARTIAL/manifestDRAFT; prior family receipts historical.
+- Evidence: core070/aghq-poisson-evidence.json; after-task/2026-08-31-core070-aghq-poisson.md.
