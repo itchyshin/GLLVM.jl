@@ -16352,3 +16352,12 @@ projection/FEM, tau ties and random shapes verified. Two pedigree diagnostics
 remain explicitly blocked. Five verifier tests/26negative scenarios and6source
 census testsPASS; all three captures retained. No fitted/native parity claim.
 See core070/structured-input-contract.md and after-task/2026-08-31-core070-structured-input.md.
+
+## 2026-08-31 — native source mapping and five DRAC clusters
+24structured reference rows mapped against current Julia sources; four exact
+internal Gaussian evaluator candidates, no promoted public fits. Trait-axis
+phylogeny/matrix-normal residual structures are not interchangeable with source
+projection models. Existing spatial freeLambda+tau redundancy recorded for
+identified B1 repair. Ask-brain followed by live existing-socket checks confirms
+Fir/Nibi/Rorqual/Trillium/Narval reachable; no jobs or compute started.
+See core070/structured-native-mapping.md and drac-five-host-routing.md.

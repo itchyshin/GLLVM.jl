@@ -1164,3 +1164,28 @@ archivefiles and5readback files verify frozenR. Independent structurechecksPASS;
 read-onlyRtemp blocked fulltests there, parent fullRDS testsPASS. Allreviews and
 compute terminal. ST-CONTRACT/ST-NEGATIVES/ST-INTEGRATION3met/0unmet/0abandoned.
 Remaining Psi-loss and pedigree-diagnostic capability obligations explicit.
+
+## 2026-08-31 — next native implementation contract and DRAC5
+User authorizes up to5DRAC computers; report connectionfailures. Ask-brainMCP
+retrieved drac-setup; live existingControlMaster checksPASS onFir,Nibi,Rorqual,
+Trillium,Narval. Scheduler/accounts respond; userqueues empty; nojobs submitted.
+CPUaccount def-snakagaw_cpu onfour; Trillium def-snakagaw. Recheckatdispatch,
+neverfreshDuo; queuedallocationsonly; >30mincampaign stillneeds sizedpre-run.
+New structured-native-mapping.md/json covers24reference obligations andfour
+concreteinternalfixedparametercalls(tree,dense,pedigree,two-kernel). No public
+fit/formula/bridge route claimed or newnativefixtureexecuted. ExistingΣ_phy
+trait-axis and matrixnormal models remain distinct from sourceprojectionmodel.
+ExistingSPDElatent fitter estimates bothLambda andtau: redundant scale from
+Q=tau²Qbase, whilefrozenRsharedtau1. Source-levelfinding, notrunfailure.
+NEXT bind B1/B2 sourceobjects/fitters to long-row D_r/P_r covariancecontract;
+identify sharedspatialscale and carry source/trait/residual ordering explicitly.
+Fourcandidatecalls do notcompletepubliccoverage. FullmanifeststillDRAFT;
+remainingCore/AGHQ/native/interface/recovery/perf/Documenter workunchanged.
+Noether Terrahigh review accepted fourcall dimensions, generalcovariance and
+spatialscale redundancy as source/math findings. Explicit qualifiedcalls,
+groupmatrices and Symmetric inversewrappers nowrecorded; publicAPIs stillunpaid.
+Reviewerterminalexit0; nofits/campaigns ran. See native-mapping-review receipts.
+
+Mission Control 8972f48d687d25c6dbed8957669a13bf3e504332 Julia-only update:HTTP200/readbackPASS,
+Rfieldsunchanged, exact-file leaseRELEASED. NM-MAP/NM-REFERENCE freshly
+reverified2met/0unmet/0abandoned; allreviews and checks terminal.
