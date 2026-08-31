@@ -1,0 +1,81 @@
+{
+  "status": "ORIGINAL_NATIVE_MODELS_QUALIFIED_PUBLIC_REFINEMENT_REQUIRED_RUNNER_INTEGRATION_PENDING",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "source": {
+    "source_marker_sha256": "e14983b7d0bb423cecb4b5db3767bd5c664beb02f185ba61b3b2bd6bd5022dfe",
+    "julia_package_root": "/home/snakagaw/core070-aghq-20260830/poisson-beta-health-03",
+    "tmb_version": "1.9.21",
+    "oracle_build_receipt_sha256": "5c686e222fd8f56c35b2ccbec2b013a304aee862d0f964792cb5388e369483d4",
+    "matrix_version": "1.7.6",
+    "julia_machine": "x86_64-linux-gnu",
+    "julia_source_tree_sha256": "d857cb3fed53dc9fa93a82de3a43479db34ca1a0ac4c1a4da2778e92ba2b3dcc",
+    "source_tree_sha256": "f83545faa6543dbb1f64d64bbf5a9498adcdf036cc3da5851f269912698b1cc7",
+    "julia_version": "1.12.6",
+    "oracle_source_receipt_sha256": "6b6cce9742e0c984c1bf4c93fba3759acb820fa81e509dd90dbe43b75638a997",
+    "julia_project_sha256": "505afcac9fd3c52052f5e1043d655ef91c53223fb870084707468b04885327dc",
+    "blas_threads": 1,
+    "archive_sha256": "0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc",
+    "namespace_sha256": "9094613610789faab69c43195d3cfdafb2c7dfef284e6646b10dababa4fa132c",
+    "installed_tree_sha256": "b25f5b8838d1d476a95f4e79133a5c72fad2496d648ef97cd9422acd39bc5bb5",
+    "julia_project_path": "/home/snakagaw/core070-aghq-20260830/poisson-beta-health-03/test/parity/Project.toml",
+    "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+    "rcall_version": "0.14.13",
+    "r_library_path": "/home/snakagaw/core070-aghq-20260830/oracle-build-01/library/gllvmTMB",
+    "julia_threads": 1,
+    "julia_package_path": "/home/snakagaw/core070-aghq-20260830/poisson-beta-health-03/src/GLLVM.jl",
+    "r_version": "R version 4.5.3 (2026-03-11)",
+    "r_home": "/usr/lib/R",
+    "julia_manifest_sha256": "28bcbc2c4317dfa2e49f1be44be2fb656bdfc89a47b51aeaf4e90548603a1451"
+  },
+  "case_ids": [
+    "NATIVE-03-POISSON",
+    "NATIVE-08-BETA"
+  ],
+  "assertions_total": 32,
+  "execution_manifest_sha256": "20aa82e9e6441ed614db85ac99e0fd17e0f31729a3e79b893aada84dbe66de82",
+  "contract": "docs/dev-log/core070/poisson-beta-refinement-contract.json",
+  "contract_sha256": "4579c13599c9c1b08bb808e42efa68c1542eb1a37d5e3578c689210975547234",
+  "elapsed_seconds": 37.10690822452307,
+  "evidence_directory": ".unlazy/core070-aghq/poisson-beta-health-03",
+  "process_sha256": "8e8750c9797110ec1ae430872d3f30abd340fa44756ce0a2c25bc3db62b0f106",
+  "original_failed_directory": ".unlazy/core070-aghq/poisson-beta-health-01",
+  "original_counts": {
+    "passed": 28,
+    "failed": 2
+  },
+  "intermediate_pass_directory": ".unlazy/core070-aghq/poisson-beta-health-02",
+  "cases": [
+    {
+      "id": "NATIVE-03-POISSON",
+      "data_sha256": "44e647ac7ff29672efa12ca03b7b628dd37a02ac0f8d2421a19d3969743e26da",
+      "native_loglik": -634.171284410425,
+      "r_loglik": -634.1712844104393,
+      "native_gradient_max": 1.8774286656005279e-06,
+      "r_gradient_max": 3.452676528259424e-05,
+      "fd_stability": 2.532200885115757e-08,
+      "samepoint_delta": 0.0,
+      "r_nfree": 14,
+      "policy": "public_start_from_refinement_v1",
+      "raw_fits_sha256": "1df446f7fe8d78e250b20fd48646bad983b5eaeea78ea278d596ea92f23f6ea6"
+    },
+    {
+      "id": "NATIVE-08-BETA",
+      "data_sha256": "3ddd9a90ae2e933af8c9f45f72fc7edda96dc0fda2a4389d3708a003d07ce099",
+      "native_loglik": 173.0705263750491,
+      "r_loglik": 173.07052637502923,
+      "native_gradient_max": 3.44977517304097e-07,
+      "r_gradient_max": 1.3801814040578786e-05,
+      "fd_stability": 1.1733929160003304e-08,
+      "samepoint_delta": -4.263256414560601e-13,
+      "r_nfree": 15,
+      "policy": "public_start_from_refinement_v1",
+      "raw_fits_sha256": "7a6fce129cd7dacc1534447617033772f7710bfe6521ba1119bafbd6de5e316a"
+    }
+  ],
+  "independent_review": "Noether Terra/high source-only review: no outstanding P0-P2 after source-lock repair; runtime evidence supplied by pinned Totoro checks",
+  "limitations": [
+    "Standalone qualification is not yet integrated into the default required family runner",
+    "No formula, public R bridge, recovery or covariance qualification",
+    "Full manifest remains DRAFT; no full-family promotion"
+  ]
+}

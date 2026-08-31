@@ -785,3 +785,26 @@ Next: remaining 17 link dispositions and complete model/interface contracts;
 preserve original Student-t fit-health failure. No push, merge, release, R engine
 changes, foreign worktree edits or destructive cleanup.
 Report: docs/dev-log/after-task/2026-08-31-core070-link-boundaries.md.
+
+## 2026-08-31 — original Poisson/Beta fit health
+
+Original default R fits pass LL but fail raw-gradient1e-4: Poisson3.716e-4,
+Beta5.002e-4. Retained28pass/2fail38.861s exit1. Public start_from/nlminb refinement
+rel.tol1e-12 preserves data/map/free names and passes32 checks37.107s on final
+source-locked replay (first refinement37.156s also retained). Native estimates,
+original DGP/test bytes and native controls unchanged. Poisson14/Beta15 free
+parameters; raw R gradients3.453e-5/1.380e-5, LL differences~1e-11; native FD,
+step stability, same-point objectives and raw R readback pass. No engine changes.
+
+Pre-run contract/fixture/DGP SHA locks, two positive/four negative no-fit tests;
+26 metric and10 artifact corruptions reject. Unlazy3gates pass. Noether Terra/high
+source review: initial failure-exit finding retracted after finish_run! inspection;
+valid source-lock finding repaired, no outstanding P0-P2 in focused scope.
+This standalone qualification is not yet in default required runner. Familyplan
+19 bound/78 unbound unchanged; fullmanifestDRAFT / M1PARTIAL / goalACTIVE.
+Next integrate these health checks into original registered Poisson/Beta cases,
+then full model/interface contracts; keep17 link dispositions and Studentfailure.
+No new production child; Bcheckpointlimit unchanged. Alljobs terminal;noDRACjob.
+MC84ac7b2f8a5ddcb74c625464614af214b3f6f45a HTTP200/Runchanged/leaseRELEASED.
+Report: after-task/2026-08-31-core070-poisson-beta-health.md.
+No push/merge/release/cleanup/Rengine/foreign changes; no fullsuite/docsrender.

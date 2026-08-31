@@ -119,3 +119,19 @@ use `nb2-formula-required-link-refresh.json` and `family-boundary-link-refresh.j
 Older summaries remain historical. The plan now has2 native,1 formula and16
 boundary bindings, leaving78 specifications unbound. Required collection
 integration, full source mapping and final review remain incomplete.
+
+## Poisson/Beta original-model health qualification
+
+`poisson-beta-health-evidence.json` records a separate qualification of the
+unchanged original Poisson (seed44,p5,K2,n60) and Beta (seed45,p5,K1,n60) models.
+Both original R fits pass likelihood and optimizer-flag checks but fail raw
+gradient <=1e-4. The original failures remain retained. Public start_from with
+nlminb rel.tol1e-12 refines both without changing data, map or free parameters;
+native fits remain byte-identical. The refined packet passes32 checks, including
+both gradients, step-size stability, same-point objectives and raw R readback.
+
+Before-fit SHA locks protect the original contracts, fixtures and DGP blocks.
+This packet does not yet replace the two light checks in runparity.jl; therefore
+it does not change the19 bound cases or78 unbound case specifications above.
+Next integration must preserve the original failure receipts and expose the R
+control policy. It cannot imply formula, bridge or recovery qualification.
