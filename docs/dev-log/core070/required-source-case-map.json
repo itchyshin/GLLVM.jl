@@ -396,9 +396,10 @@
       "classification": "required_core",
       "executable_case_ids": [
         "FIT-MODE-ANIMAL-DEP",
-        "FIT-MODE-ANIMAL-DEP-FORMULA-INTERFACE"
+        "FIT-MODE-ANIMAL-DEP-FORMULA-INTERFACE",
+        "FIT-MODE-ANIMAL-DEP-PUBLIC-R-BRIDGE"
       ],
-      "rationale": "Native Gaussian and explicit-source wide/long formula bindings only; public bridge, other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
+      "rationale": "Native Gaussian and explicit-source wide/long formula bindings pass; the frozen public R bridge boundary is now characterized separately. Other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
       "reference_model_case_ids": [
         "MODE-ANIMAL-DEP"
       ],
@@ -436,9 +437,11 @@
         "FIT-MODE-ANIMAL-INDEP",
         "FIT-MODE-ANIMAL-COMMON",
         "FIT-MODE-ANIMAL-INDEP-FORMULA-INTERFACE",
-        "FIT-MODE-ANIMAL-COMMON-FORMULA-INTERFACE"
+        "FIT-MODE-ANIMAL-COMMON-FORMULA-INTERFACE",
+        "FIT-MODE-ANIMAL-INDEP-PUBLIC-R-BRIDGE",
+        "FIT-MODE-ANIMAL-COMMON-PUBLIC-R-BRIDGE"
       ],
-      "rationale": "Native Gaussian and explicit-source wide/long formula bindings only; public bridge, other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
+      "rationale": "Native Gaussian and explicit-source wide/long formula bindings pass; the frozen public R bridge boundary is now characterized separately. Other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
       "reference_model_case_ids": [
         "MODE-ANIMAL-INDEP",
         "MODE-ANIMAL-COMMON"
@@ -508,9 +511,10 @@
       "classification": "required_core",
       "executable_case_ids": [
         "FIT-MODE-KERNEL-DEP",
-        "FIT-MODE-KERNEL-DEP-FORMULA-INTERFACE"
+        "FIT-MODE-KERNEL-DEP-FORMULA-INTERFACE",
+        "FIT-MODE-KERNEL-DEP-PUBLIC-R-BRIDGE"
       ],
-      "rationale": "Native Gaussian and explicit-source wide/long formula bindings only; public bridge, other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
+      "rationale": "Native Gaussian and explicit-source wide/long formula bindings pass; the frozen public R bridge boundary is now characterized separately. Other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
       "reference_model_case_ids": [
         "MODE-KERNEL-DEP"
       ],
@@ -535,9 +539,11 @@
         "FIT-MODE-KERNEL-INDEP",
         "FIT-MODE-KERNEL-COMMON",
         "FIT-MODE-KERNEL-INDEP-FORMULA-INTERFACE",
-        "FIT-MODE-KERNEL-COMMON-FORMULA-INTERFACE"
+        "FIT-MODE-KERNEL-COMMON-FORMULA-INTERFACE",
+        "FIT-MODE-KERNEL-INDEP-PUBLIC-R-BRIDGE",
+        "FIT-MODE-KERNEL-COMMON-PUBLIC-R-BRIDGE"
       ],
-      "rationale": "Native Gaussian and explicit-source wide/long formula bindings only; public bridge, other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
+      "rationale": "Native Gaussian and explicit-source wide/long formula bindings pass; the frozen public R bridge boundary is now characterized separately. Other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
       "reference_model_case_ids": [
         "MODE-KERNEL-INDEP",
         "MODE-KERNEL-COMMON"
@@ -579,9 +585,10 @@
       "classification": "required_core",
       "executable_case_ids": [
         "FIT-MODE-ORD-DEP",
-        "FIT-MODE-ORD-DEP-FORMULA-INTERFACE"
+        "FIT-MODE-ORD-DEP-FORMULA-INTERFACE",
+        "FIT-MODE-ORD-DEP-PUBLIC-R-BRIDGE"
       ],
-      "rationale": "Native Gaussian and explicit-source wide/long formula bindings only; public bridge, other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
+      "rationale": "Native Gaussian and explicit-source wide/long formula bindings pass; the frozen public R bridge boundary is now characterized separately. Other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
       "reference_model_case_ids": [
         "MODE-ORD-DEP"
       ],
@@ -592,9 +599,10 @@
       "classification": "required_core",
       "executable_case_ids": [
         "MODE-ORD-INDEP",
-        "MODE-ORD-INDEP-FORMULA-INTERFACE"
+        "MODE-ORD-INDEP-FORMULA-INTERFACE",
+        "MODE-ORD-INDEP-PUBLIC-R-BRIDGE"
       ],
-      "rationale": "Native Gaussian and explicit-source wide/long formula bindings only; public bridge, other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
+      "rationale": "Native Gaussian and explicit-source wide/long formula bindings pass; the frozen public R bridge boundary is now characterized separately. Other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
       "reference_model_case_ids": [
         "MODE-ORD-INDEP"
       ],
@@ -605,9 +613,10 @@
       "classification": "required_core",
       "executable_case_ids": [
         "MODE-ORD-COMMON",
-        "MODE-ORD-COMMON-FORMULA-INTERFACE"
+        "MODE-ORD-COMMON-FORMULA-INTERFACE",
+        "MODE-ORD-COMMON-PUBLIC-R-BRIDGE"
       ],
-      "rationale": "Native Gaussian and explicit-source wide/long formula bindings only; public bridge, other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
+      "rationale": "Native Gaussian and explicit-source wide/long formula bindings pass; the frozen public R bridge boundary is now characterized separately. Other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
       "reference_model_case_ids": [
         "MODE-ORD-COMMON"
       ],

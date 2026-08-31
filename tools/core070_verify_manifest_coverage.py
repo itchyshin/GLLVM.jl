@@ -30,7 +30,11 @@ TESTS = [('test_core070_manifest_coverage.py', 6),
          ('test_core070_covariance_programme.py', 9),
          ('test_core070_covariance_case_plan.py', 10),
          ('test_core070_covariance_coverage.py', 5),
-         ('test_core070_covariance_formula_programme.py', 5)]
+         ('test_core070_covariance_formula_programme.py', 5),
+         ('test_core070_covariance_bridge_boundary.py', 5),
+         ('test_core070_verify_covariance_bridge_boundary.py', 5),
+         ('test_core070_family_formula_provenance.py', 3),
+         ('test_core070_programme_bridge_registry.py', 1)]
 
 
 def run(argv, count=None):

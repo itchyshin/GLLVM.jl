@@ -79,6 +79,11 @@ by the user. No engine or API scope is expanded solely from their names.
   structural, observation-design and offset checks pass on both R runtimes.
   See `isdm-admission-evidence.json`. Actual fits, fit-level weights/trials,
   spatial slopes, missing-response behavior and Julia interfaces remain unpaid.
+- `covariance-bridge-boundary-evidence.json`: the frozen public bridge rejects
+  eight of nine qualified Gaussian covariance formulas with its named structured-
+  term gate; ordinary dependent `dep()` fails earlier in the R adapter. These are
+  boundary results, not callable bridge fits. The combined bridge component binds
+  fourteen current cases while the remaining public bridge programme stays unpaid.
 - `targeted-replay-6e59ef54.json`: current numerical/helper snapshot's three
   Tweedie power contracts pass28/28; Student31pass/2fail retains the R optimizer
   health failure. No full-suite, recovery, bridge or programme claim.

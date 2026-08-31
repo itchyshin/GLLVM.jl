@@ -1,165 +1,11 @@
 {
   "schema": 1,
-  "status": "FOURTEEN_BOUND_BRIDGE_CASES_NOT_FULL_PROGRAMME",
+  "status": "EIGHT_REFERENCE_REJECTIONS_ONE_ADAPTER_FAILURE_NOT_BRIDGE_PARITY",
   "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
-  "case_ids": [
-    "CORE070-FAMILY-02-LOG-PUBLIC-R-BRIDGE",
-    "CORE070-FAMILY-07-LOGIT-PUBLIC-R-BRIDGE",
-    "CORE070-FAMILY-05-LOG-PUBLIC-R-BRIDGE",
-    "CORE070-FAMILY-00-IDENTITY-PUBLIC-R-BRIDGE",
-    "CORE070-FAMILY-11-LOG-PUBLIC-R-BRIDGE",
-    "MODE-ORD-INDEP-PUBLIC-R-BRIDGE",
-    "MODE-ORD-COMMON-PUBLIC-R-BRIDGE",
-    "FIT-MODE-ORD-DEP-PUBLIC-R-BRIDGE",
-    "FIT-MODE-ANIMAL-INDEP-PUBLIC-R-BRIDGE",
-    "FIT-MODE-ANIMAL-COMMON-PUBLIC-R-BRIDGE",
-    "FIT-MODE-ANIMAL-DEP-PUBLIC-R-BRIDGE",
-    "FIT-MODE-KERNEL-INDEP-PUBLIC-R-BRIDGE",
-    "FIT-MODE-KERNEL-COMMON-PUBLIC-R-BRIDGE",
-    "FIT-MODE-KERNEL-DEP-PUBLIC-R-BRIDGE"
-  ],
+  "formula_contract_sha256": "f3afe9852d88ed1b3de10f320184dae2cc4631fd8c7d5ebdc9ccbfebf8625c9a",
+  "frozen_bridge_source_sha256": "d6c167179b7cb9774655a3a68e401b133ac3a3d7f443028498529316d697fffa",
+  "frozen_bridge_guard_lines": "3578-3589",
   "cases": [
-    {
-      "id": "CORE070-FAMILY-02-LOG-PUBLIC-R-BRIDGE",
-      "family": "poisson",
-      "model_contract_id": "MODEL-FAMILY-02-LOG",
-      "source_fact_ids": [
-        "family/FAMILY-02-LOG"
-      ],
-      "prerequisite_native_id": "NATIVE-03-POISSON",
-      "data_sha256": "44e647ac7ff29672efa12ca03b7b628dd37a02ac0f8d2421a19d3969743e26da",
-      "p": 5,
-      "n": 60,
-      "K": 2,
-      "df": 14,
-      "reference_control_policy": "public_start_from_refinement_v1",
-      "r_call": "gllvm_julia_fit(Y,family=poisson(),num.lv=2); gllvmTMB(value~0+trait+latent(0+trait|site,d=2,unique=FALSE),data=original_reversed_long,unit=\"site\",trait=\"trait\",family=poisson(),engine=\"julia\")",
-      "julia_call": "fit_gllvm(Y;family=original_family,K=2)",
-      "fixture": "tools/core070_bridge_models.R",
-      "native_health_fixture": "tools/core070_bridge_models.jl",
-      "coverage_role": "public_r_bridge",
-      "acceptance_level": "paired_fit_interface",
-      "acceptance_rule": "Both public routes: df/shape/link/convergence valid; loglik/intercept/loading covariance absolute difference<=1e-8 from fresh default native; dispersion relative difference<=1e-8; native absolute gradient and FD stability<=1e-4, objective reconstruction<=1e-8; retained source-bound R loglik rtol<=1e-6 and original health reverified.",
-      "scope_boundary": "Original complete-data ordinary loadings-only unique=false model. Historical R oracle is reverified, not refitted in this public bridge batch. No broader models, recovery or full family promotion.",
-      "executor": "public_r_bridge",
-      "reference_call": "gllvm_julia_fit(Y,family=poisson(),num.lv=2); gllvmTMB(value~0+trait+latent(0+trait|site,d=2,unique=FALSE),data=original_reversed_long,unit=\"site\",trait=\"trait\",family=poisson(),engine=\"julia\")",
-      "model_contract": "{\"K\": 2, \"curvature\": \"canonical Fisher equals observed\", \"dispersion\": \"none\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"log\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 60, \"normalization\": \"full response log-density including constants\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 44}",
-      "fixture_sha256": "8e94c709134ba8a7b65cb3018563a844ad08343dd63ff344553a15d2b37d2ca2",
-      "bridge_subcontract": "docs/dev-log/core070/public-bridge-required-cases.json",
-      "bridge_subcontract_sha256": "72597c8905af7f680984089f89fbb89a6972be02c8bef207986a035f27377e4b"
-    },
-    {
-      "id": "CORE070-FAMILY-07-LOGIT-PUBLIC-R-BRIDGE",
-      "family": "beta",
-      "model_contract_id": "MODEL-FAMILY-07-LOGIT",
-      "source_fact_ids": [
-        "family/FAMILY-07-LOGIT"
-      ],
-      "prerequisite_native_id": "NATIVE-08-BETA",
-      "data_sha256": "3ddd9a90ae2e933af8c9f45f72fc7edda96dc0fda2a4389d3708a003d07ce099",
-      "p": 5,
-      "n": 60,
-      "K": 1,
-      "df": 15,
-      "reference_control_policy": "public_start_from_refinement_v1",
-      "r_call": "gllvm_julia_fit(Y,family=gllvmTMB::Beta(),num.lv=1); gllvmTMB(value~0+trait+latent(0+trait|site,d=1,unique=FALSE),data=original_reversed_long,unit=\"site\",trait=\"trait\",family=gllvmTMB::Beta(),engine=\"julia\")",
-      "julia_call": "fit_gllvm(Y;family=original_family,K=1)",
-      "fixture": "tools/core070_bridge_models.R",
-      "native_health_fixture": "tools/core070_bridge_models.jl",
-      "coverage_role": "public_r_bridge",
-      "acceptance_level": "paired_fit_interface",
-      "acceptance_rule": "Both public routes: df/shape/link/convergence valid; loglik/intercept/loading covariance absolute difference<=1e-8 from fresh default native; dispersion relative difference<=1e-8; native absolute gradient and FD stability<=1e-4, objective reconstruction<=1e-8; retained source-bound R loglik rtol<=1e-6 and original health reverified.",
-      "scope_boundary": "Original complete-data ordinary loadings-only unique=false model. Historical R oracle is reverified, not refitted in this public bridge batch. No broader models, recovery or full family promotion.",
-      "executor": "public_r_bridge",
-      "reference_call": "gllvm_julia_fit(Y,family=gllvmTMB::Beta(),num.lv=1); gllvmTMB(value~0+trait+latent(0+trait|site,d=1,unique=FALSE),data=original_reversed_long,unit=\"site\",trait=\"trait\",family=gllvmTMB::Beta(),engine=\"julia\")",
-      "model_contract": "{\"K\": 1, \"curvature\": \"observed Laplace\", \"dispersion\": \"per-trait Beta precision\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"logit\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 60, \"normalization\": \"full response log-density including constants\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 45}",
-      "fixture_sha256": "8e94c709134ba8a7b65cb3018563a844ad08343dd63ff344553a15d2b37d2ca2",
-      "bridge_subcontract": "docs/dev-log/core070/public-bridge-required-cases.json",
-      "bridge_subcontract_sha256": "72597c8905af7f680984089f89fbb89a6972be02c8bef207986a035f27377e4b"
-    },
-    {
-      "id": "CORE070-FAMILY-05-LOG-PUBLIC-R-BRIDGE",
-      "family": "nb2",
-      "model_contract_id": "MODEL-FAMILY-05-LOG",
-      "source_fact_ids": [
-        "family/FAMILY-05-LOG"
-      ],
-      "prerequisite_native_id": "NATIVE-06-NB2",
-      "data_sha256": "7abde2731134afe61afee5a7f0c29b58892ad72e550fa41cf8230e9c701a2bf9",
-      "p": 5,
-      "n": 80,
-      "K": 2,
-      "df": 19,
-      "reference_control_policy": "nb2_original_default_v1",
-      "r_call": "gllvm_julia_fit(Y,family=gllvmTMB::nbinom2(),num.lv=2); gllvmTMB(value~0+trait+latent(0+trait|site,d=2,unique=FALSE),data=original_reversed_long,unit=\"site\",trait=\"trait\",family=gllvmTMB::nbinom2(),engine=\"julia\")",
-      "julia_call": "fit_gllvm(Y;family=original_family,K=2)",
-      "fixture": "tools/core070_bridge_models.R",
-      "native_health_fixture": "tools/core070_bridge_models.jl",
-      "coverage_role": "public_r_bridge",
-      "acceptance_level": "paired_fit_interface",
-      "acceptance_rule": "Both public routes: df/shape/link/convergence valid; loglik/intercept/loading covariance absolute difference<=1e-8 from fresh default native; dispersion relative difference<=1e-8; native absolute gradient and FD stability<=1e-4, objective reconstruction<=1e-8; retained source-bound R loglik rtol<=1e-6 and original health reverified.",
-      "scope_boundary": "Original complete-data ordinary loadings-only unique=false model. Historical R oracle is reverified, not refitted in this public bridge batch. No broader models, recovery or full family promotion.",
-      "executor": "public_r_bridge",
-      "reference_call": "gllvm_julia_fit(Y,family=gllvmTMB::nbinom2(),num.lv=2); gllvmTMB(value~0+trait+latent(0+trait|site,d=2,unique=FALSE),data=original_reversed_long,unit=\"site\",trait=\"trait\",family=gllvmTMB::nbinom2(),engine=\"julia\")",
-      "model_contract": "{\"K\": 2, \"curvature\": \"observed Laplace\", \"dispersion\": \"per-trait NB2 size; Var=mu+mu^2/r\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"log\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 80, \"normalization\": \"full response log-density including constants\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 45}",
-      "fixture_sha256": "8e94c709134ba8a7b65cb3018563a844ad08343dd63ff344553a15d2b37d2ca2",
-      "bridge_subcontract": "docs/dev-log/core070/public-bridge-required-cases.json",
-      "bridge_subcontract_sha256": "72597c8905af7f680984089f89fbb89a6972be02c8bef207986a035f27377e4b"
-    },
-    {
-      "id": "CORE070-FAMILY-00-IDENTITY-PUBLIC-R-BRIDGE",
-      "coverage_role": "public_r_bridge",
-      "acceptance_level": "reference_bridge_boundary",
-      "source_fact_ids": [
-        "family/FAMILY-00-IDENTITY"
-      ],
-      "model_contract_id": "MODEL-FAMILY-00-IDENTITY",
-      "native_case_id": "CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL",
-      "native_contract": "docs/dev-log/core070/gaussian-required-contract.json",
-      "native_contract_row_sha256": "4b6e10a42399a8558238796674aee178e66dc91949fdd40ff7146280e4647450",
-      "native_model_contract": "p4,n120,K1,seed81031; zero mean; M=Lambda*Lambda\u2032+diag(psi^2+c^2), c=max(0.001sd(vec(Y)),1e-6) fixed; 4 loadings+4 log unique SD in R; Julia log unique variance=2logSD; exact Gaussian likelihood with constants, no penalty",
-      "model_contract": "p4,n120,K1,seed81031; zero mean; M=Lambda*Lambda\u2032+diag(psi^2+c^2), c=max(0.001sd(vec(Y)),1e-6) fixed; 4 loadings+4 log unique SD in R; Julia log unique variance=2logSD; exact Gaussian likelihood with constants, no penalty",
-      "fixture": "tools/core070_gaussian_bridge_boundary.R",
-      "fixture_sha256": "2f3a976a00180e828e455a154cfd18f92a2afa5fefa1541debef46bd97bb96d1",
-      "r_call": "gllvmTMB(value~0+latent(0+trait|site,d=1), data=original_gaussian_data, unit=\"site\", trait=\"trait\", family=gaussian(), engine=\"julia\")",
-      "julia_call": "fit_gaussian_pervar_gllvm(Y;K=1,X=zeros(4,120,0),fixed_residual_sd=c,method=:lbfgs,g_tol=1e-8,iterations=3000)",
-      "bridge_admission": "reference_model_change",
-      "acceptance_rule": "Original zero-mean p4/n120/K1 fixture: default unique request warns and equals explicit unique=false; common residual scale and df5 rather than required df8. This is reference model-change behavior, not same-model parity.",
-      "scope_boundary": "Reference bridge behavior only; native/formula same-model requirements unchanged.",
-      "data_fixture": "test/parity/fixtures/core070_gaussian_original.toml",
-      "data_fixture_sha256": "52a4664c99295ec675a7b666458350bf57ff57e338c77d5ada1cf9d2e5efba92",
-      "bridge_boundary_contract": "docs/dev-log/core070/bridge-model-admission-contract.json",
-      "bridge_boundary_contract_sha256": "723a0c123e5c694d9c8be5951efee3a8a0b9f3507a97f001d612bab33347a6f1",
-      "executor": "public_r_bridge",
-      "reference_call": "gllvmTMB(value~0+latent(0+trait|site,d=1), data=original_gaussian_data, unit=\"site\", trait=\"trait\", family=gaussian(), engine=\"julia\")"
-    },
-    {
-      "id": "CORE070-FAMILY-11-LOG-PUBLIC-R-BRIDGE",
-      "coverage_role": "public_r_bridge",
-      "acceptance_level": "reference_bridge_boundary",
-      "source_fact_ids": [
-        "family/FAMILY-11-LOG"
-      ],
-      "model_contract_id": "MODEL-FAMILY-11-LOG",
-      "native_case_id": "NATIVE-12-TRUNCATED-NB2",
-      "native_contract": "docs/dev-log/core070/registered-models-contract.json",
-      "native_contract_row_sha256": "a48376d60c4f936750e6eae0b5ac91971b5d2f5820c1f537d605d88fe2dee679",
-      "native_model_contract": "{\"K\": 1, \"curvature\": \"observed Laplace\", \"dispersion\": \"per-trait NB2 size; observed Laplace curvature\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"log of untruncated mean\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 120, \"normalization\": \"full response log-density including constants; truncated NB2 conditions on Y>=1\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 58}",
-      "model_contract": "{\"K\": 1, \"curvature\": \"observed Laplace\", \"dispersion\": \"per-trait NB2 size; observed Laplace curvature\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"log of untruncated mean\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 120, \"normalization\": \"full response log-density including constants; truncated NB2 conditions on Y>=1\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 58}",
-      "fixture": "tools/core070_bridge_descriptor_admission.R",
-      "fixture_sha256": "9bce24f0a764c3c9c93547275b2ff08118275156fcfb07d2af203503feb51d28",
-      "r_call": "gllvm_julia_fit(matrix(1,4,6),family=truncated_nbinom2(),num.lv=1); gllvmTMB(value~0+trait+latent(0+trait|site,d=1,unique=FALSE), data=valid_4_trait_6_unit_data,unit=\"site\",trait=\"trait\",family=truncated_nbinom2(),engine=\"julia\")",
-      "julia_call": "fit_truncated_nbinom2_gllvm_pertrait(Y; K = K)",
-      "bridge_admission": "reference_rejected",
-      "acceptance_rule": "Both exported public routes reproduce the exact GJL-GATE-FAMILY error on valid generic data. Frozen R/julia-bridge.R maps the family before fitting. The original seed58 p5/n120/K1 native model still needs native/formula parity.",
-      "scope_boundary": "Reference bridge behavior only; native/formula same-model requirements unchanged.",
-      "native_data_sha256": "ecbcf9f501c7e618131f2c3f1f0d213bb0e92364a72c0519095c52ef30930948",
-      "descriptor_case_id": "BRIDGE-DESCRIPTOR-FAMILY-11-LOG",
-      "bridge_boundary_contract": "docs/dev-log/core070/bridge-model-admission-contract.json",
-      "bridge_boundary_contract_sha256": "723a0c123e5c694d9c8be5951efee3a8a0b9f3507a97f001d612bab33347a6f1",
-      "executor": "public_r_bridge",
-      "reference_call": "gllvm_julia_fit(matrix(1,4,6),family=truncated_nbinom2(),num.lv=1); gllvmTMB(value~0+trait+latent(0+trait|site,d=1,unique=FALSE), data=valid_4_trait_6_unit_data,unit=\"site\",trait=\"trait\",family=truncated_nbinom2(),engine=\"julia\")"
-    },
     {
       "id": "MODE-ORD-INDEP-PUBLIC-R-BRIDGE",
       "executor": "public_r_bridge",
@@ -184,9 +30,7 @@
       "data_fixture": "test/parity/fixtures/core070_covariance_modes.R",
       "data_fixture_sha256": "fbcd0b7f359d2dcbfacfe6e5b611a5f3398100123b7eb0258a049864307840a1",
       "acceptance_rule": "The frozen public gllvmTMB engine='julia' route rejects the unchanged structured covariance formula before JuliaCall with the exact [GJL-GATE-STRUCTURED-TERMS] id. This is reference boundary evidence, not callable bridge or same-model parity.",
-      "scope_boundary": "Frozen R 0.7.0 public bridge behavior only. Native and Julia formula PASS rows remain independent; no structured payload is transported to GLLVM.jl.",
-      "covariance_bridge_boundary_contract": "docs/dev-log/core070/covariance-bridge-boundary-contract.json",
-      "covariance_bridge_boundary_contract_sha256": "d1a09b11cfe576a3fd41e2ff5c6995434ea2be4c7ec77c3f057247e8f8c1bbf8"
+      "scope_boundary": "Frozen R 0.7.0 public bridge behavior only. Native and Julia formula PASS rows remain independent; no structured payload is transported to GLLVM.jl."
     },
     {
       "id": "MODE-ORD-COMMON-PUBLIC-R-BRIDGE",
@@ -212,9 +56,7 @@
       "data_fixture": "test/parity/fixtures/core070_covariance_modes.R",
       "data_fixture_sha256": "fbcd0b7f359d2dcbfacfe6e5b611a5f3398100123b7eb0258a049864307840a1",
       "acceptance_rule": "The frozen public gllvmTMB engine='julia' route rejects the unchanged structured covariance formula before JuliaCall with the exact [GJL-GATE-STRUCTURED-TERMS] id. This is reference boundary evidence, not callable bridge or same-model parity.",
-      "scope_boundary": "Frozen R 0.7.0 public bridge behavior only. Native and Julia formula PASS rows remain independent; no structured payload is transported to GLLVM.jl.",
-      "covariance_bridge_boundary_contract": "docs/dev-log/core070/covariance-bridge-boundary-contract.json",
-      "covariance_bridge_boundary_contract_sha256": "d1a09b11cfe576a3fd41e2ff5c6995434ea2be4c7ec77c3f057247e8f8c1bbf8"
+      "scope_boundary": "Frozen R 0.7.0 public bridge behavior only. Native and Julia formula PASS rows remain independent; no structured payload is transported to GLLVM.jl."
     },
     {
       "id": "FIT-MODE-ORD-DEP-PUBLIC-R-BRIDGE",
@@ -240,9 +82,7 @@
       "data_fixture": "test/parity/fixtures/core070_covariance_fits.R",
       "data_fixture_sha256": "ef2f8a84a11106ce8037f0be52e6cebd0a0a758b2f5f8e5116522fe6b84d46d1",
       "acceptance_rule": "The frozen public gllvmTMB engine='julia' route rejects the unchanged dep() formula before JuliaCall with the observed generic cannot-coerce-symbol-to-integer error. The missing GJL-GATE-STRUCTURED-TERMS id is a frozen R presentation defect.",
-      "scope_boundary": "Frozen R 0.7.0 public bridge behavior only. Native and Julia formula PASS rows remain independent; no structured payload is transported to GLLVM.jl.",
-      "covariance_bridge_boundary_contract": "docs/dev-log/core070/covariance-bridge-boundary-contract.json",
-      "covariance_bridge_boundary_contract_sha256": "d1a09b11cfe576a3fd41e2ff5c6995434ea2be4c7ec77c3f057247e8f8c1bbf8"
+      "scope_boundary": "Frozen R 0.7.0 public bridge behavior only. Native and Julia formula PASS rows remain independent; no structured payload is transported to GLLVM.jl."
     },
     {
       "id": "FIT-MODE-ANIMAL-INDEP-PUBLIC-R-BRIDGE",
@@ -268,9 +108,7 @@
       "data_fixture": "test/parity/fixtures/core070_covariance_fits.R",
       "data_fixture_sha256": "ef2f8a84a11106ce8037f0be52e6cebd0a0a758b2f5f8e5116522fe6b84d46d1",
       "acceptance_rule": "The frozen public gllvmTMB engine='julia' route rejects the unchanged structured covariance formula before JuliaCall with the exact [GJL-GATE-STRUCTURED-TERMS] id. This is reference boundary evidence, not callable bridge or same-model parity.",
-      "scope_boundary": "Frozen R 0.7.0 public bridge behavior only. Native and Julia formula PASS rows remain independent; no structured payload is transported to GLLVM.jl.",
-      "covariance_bridge_boundary_contract": "docs/dev-log/core070/covariance-bridge-boundary-contract.json",
-      "covariance_bridge_boundary_contract_sha256": "d1a09b11cfe576a3fd41e2ff5c6995434ea2be4c7ec77c3f057247e8f8c1bbf8"
+      "scope_boundary": "Frozen R 0.7.0 public bridge behavior only. Native and Julia formula PASS rows remain independent; no structured payload is transported to GLLVM.jl."
     },
     {
       "id": "FIT-MODE-ANIMAL-COMMON-PUBLIC-R-BRIDGE",
@@ -296,9 +134,7 @@
       "data_fixture": "test/parity/fixtures/core070_covariance_fits.R",
       "data_fixture_sha256": "ef2f8a84a11106ce8037f0be52e6cebd0a0a758b2f5f8e5116522fe6b84d46d1",
       "acceptance_rule": "The frozen public gllvmTMB engine='julia' route rejects the unchanged structured covariance formula before JuliaCall with the exact [GJL-GATE-STRUCTURED-TERMS] id. This is reference boundary evidence, not callable bridge or same-model parity.",
-      "scope_boundary": "Frozen R 0.7.0 public bridge behavior only. Native and Julia formula PASS rows remain independent; no structured payload is transported to GLLVM.jl.",
-      "covariance_bridge_boundary_contract": "docs/dev-log/core070/covariance-bridge-boundary-contract.json",
-      "covariance_bridge_boundary_contract_sha256": "d1a09b11cfe576a3fd41e2ff5c6995434ea2be4c7ec77c3f057247e8f8c1bbf8"
+      "scope_boundary": "Frozen R 0.7.0 public bridge behavior only. Native and Julia formula PASS rows remain independent; no structured payload is transported to GLLVM.jl."
     },
     {
       "id": "FIT-MODE-ANIMAL-DEP-PUBLIC-R-BRIDGE",
@@ -324,9 +160,7 @@
       "data_fixture": "test/parity/fixtures/core070_covariance_fits.R",
       "data_fixture_sha256": "ef2f8a84a11106ce8037f0be52e6cebd0a0a758b2f5f8e5116522fe6b84d46d1",
       "acceptance_rule": "The frozen public gllvmTMB engine='julia' route rejects the unchanged structured covariance formula before JuliaCall with the exact [GJL-GATE-STRUCTURED-TERMS] id. This is reference boundary evidence, not callable bridge or same-model parity.",
-      "scope_boundary": "Frozen R 0.7.0 public bridge behavior only. Native and Julia formula PASS rows remain independent; no structured payload is transported to GLLVM.jl.",
-      "covariance_bridge_boundary_contract": "docs/dev-log/core070/covariance-bridge-boundary-contract.json",
-      "covariance_bridge_boundary_contract_sha256": "d1a09b11cfe576a3fd41e2ff5c6995434ea2be4c7ec77c3f057247e8f8c1bbf8"
+      "scope_boundary": "Frozen R 0.7.0 public bridge behavior only. Native and Julia formula PASS rows remain independent; no structured payload is transported to GLLVM.jl."
     },
     {
       "id": "FIT-MODE-KERNEL-INDEP-PUBLIC-R-BRIDGE",
@@ -352,9 +186,7 @@
       "data_fixture": "test/parity/fixtures/core070_covariance_fits.R",
       "data_fixture_sha256": "ef2f8a84a11106ce8037f0be52e6cebd0a0a758b2f5f8e5116522fe6b84d46d1",
       "acceptance_rule": "The frozen public gllvmTMB engine='julia' route rejects the unchanged structured covariance formula before JuliaCall with the exact [GJL-GATE-STRUCTURED-TERMS] id. This is reference boundary evidence, not callable bridge or same-model parity.",
-      "scope_boundary": "Frozen R 0.7.0 public bridge behavior only. Native and Julia formula PASS rows remain independent; no structured payload is transported to GLLVM.jl.",
-      "covariance_bridge_boundary_contract": "docs/dev-log/core070/covariance-bridge-boundary-contract.json",
-      "covariance_bridge_boundary_contract_sha256": "d1a09b11cfe576a3fd41e2ff5c6995434ea2be4c7ec77c3f057247e8f8c1bbf8"
+      "scope_boundary": "Frozen R 0.7.0 public bridge behavior only. Native and Julia formula PASS rows remain independent; no structured payload is transported to GLLVM.jl."
     },
     {
       "id": "FIT-MODE-KERNEL-COMMON-PUBLIC-R-BRIDGE",
@@ -380,9 +212,7 @@
       "data_fixture": "test/parity/fixtures/core070_covariance_fits.R",
       "data_fixture_sha256": "ef2f8a84a11106ce8037f0be52e6cebd0a0a758b2f5f8e5116522fe6b84d46d1",
       "acceptance_rule": "The frozen public gllvmTMB engine='julia' route rejects the unchanged structured covariance formula before JuliaCall with the exact [GJL-GATE-STRUCTURED-TERMS] id. This is reference boundary evidence, not callable bridge or same-model parity.",
-      "scope_boundary": "Frozen R 0.7.0 public bridge behavior only. Native and Julia formula PASS rows remain independent; no structured payload is transported to GLLVM.jl.",
-      "covariance_bridge_boundary_contract": "docs/dev-log/core070/covariance-bridge-boundary-contract.json",
-      "covariance_bridge_boundary_contract_sha256": "d1a09b11cfe576a3fd41e2ff5c6995434ea2be4c7ec77c3f057247e8f8c1bbf8"
+      "scope_boundary": "Frozen R 0.7.0 public bridge behavior only. Native and Julia formula PASS rows remain independent; no structured payload is transported to GLLVM.jl."
     },
     {
       "id": "FIT-MODE-KERNEL-DEP-PUBLIC-R-BRIDGE",
@@ -408,15 +238,7 @@
       "data_fixture": "test/parity/fixtures/core070_covariance_fits.R",
       "data_fixture_sha256": "ef2f8a84a11106ce8037f0be52e6cebd0a0a758b2f5f8e5116522fe6b84d46d1",
       "acceptance_rule": "The frozen public gllvmTMB engine='julia' route rejects the unchanged structured covariance formula before JuliaCall with the exact [GJL-GATE-STRUCTURED-TERMS] id. This is reference boundary evidence, not callable bridge or same-model parity.",
-      "scope_boundary": "Frozen R 0.7.0 public bridge behavior only. Native and Julia formula PASS rows remain independent; no structured payload is transported to GLLVM.jl.",
-      "covariance_bridge_boundary_contract": "docs/dev-log/core070/covariance-bridge-boundary-contract.json",
-      "covariance_bridge_boundary_contract_sha256": "d1a09b11cfe576a3fd41e2ff5c6995434ea2be4c7ec77c3f057247e8f8c1bbf8"
+      "scope_boundary": "Frozen R 0.7.0 public bridge behavior only. Native and Julia formula PASS rows remain independent; no structured payload is transported to GLLVM.jl."
     }
-  ],
-  "inputs": {
-    "docs/dev-log/core070/public-bridge-required-cases.json": "72597c8905af7f680984089f89fbb89a6972be02c8bef207986a035f27377e4b",
-    "docs/dev-log/core070/registered-models-contract.json": "8b49cc205616479e8ea74703e417bc72b0cf3e517684a37ad344ca8afe41353a",
-    "docs/dev-log/core070/bridge-model-admission-contract.json": "723a0c123e5c694d9c8be5951efee3a8a0b9f3507a97f001d612bab33347a6f1",
-    "docs/dev-log/core070/covariance-bridge-boundary-contract.json": "d1a09b11cfe576a3fd41e2ff5c6995434ea2be4c7ec77c3f057247e8f8c1bbf8"
-  }
+  ]
 }

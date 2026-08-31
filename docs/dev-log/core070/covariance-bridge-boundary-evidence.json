@@ -1,0 +1,20 @@
+{
+  "status": "EIGHT_REJECTIONS_ONE_ADAPTER_FAILURE_VERIFIED_NOT_BRIDGE_PARITY",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "cases": 9,
+  "named_gate_rejections": 8,
+  "adapter_failures": 1,
+  "contract_sha256": "d1a09b11cfe576a3fd41e2ff5c6995434ea2be4c7ec77c3f057247e8f8c1bbf8",
+  "result_sha256": "1b445178976fb707a48073cb2c46ffca38d1a7f4fa3177bdeaa18c8c8250d679",
+  "process_sha256": "3fa1065820369208c0403ef037437051c74995891d362c3ff032407da87264e9",
+  "supervisor_sha256": "a235921f963f2dd18fbfb78c623298626605c7fee82bd7097d1615c08c10dce8",
+  "runtime_seconds": 0.22,
+  "negative_controls": 9,
+  "failed_attempts": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "scope_boundary": "Frozen public R bridge behavior only; the native and Julia formula covariance rows remain separate evidence."
+}

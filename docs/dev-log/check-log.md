@@ -16722,3 +16722,16 @@ pin and verifierhealthschema mismatch; parent corrected and reverified. Catalogu
 90tests/self-test passes,33bindings/12facts,703unmappednonexcluded facts; fullDRAFT.
 Bridge/nonGaussian/remainingprogramme unpaid. See covariance-formulas after-task
 and core070/covariance-formula-evidence.json. NoDRACjob/fullsuite/release/foreignedit.
+
+## 2026-08-31 — Frozen covariance public-R bridge boundary
+
+Nine unchanged covariance formulas exercised through frozen R0.7.0 engine=julia:
+8 named structured-term rejections and1 ordinaryDEP adapter failure before Julia.
+This is boundary evidence, not callable bridge parity. Totoro attempt05 0.22s;
+fresh native/formula04 10cases/187assertions 97.89s and publicbridge05 3models/
+6routes 59.23s, with oracle checks unchanged. Combined registry14cases PASS.
+Draft integrity104tests;42bindings,703nonexcluded facts unmapped, fullmanifestDRAFT.
+Four setup/expectation failures retained. Installed marker, failed-attempt bytes,
+raw results and process receipts hash-verified. Hopper final review noP0-P3;
+MissionControl update pending. No src/Rsource/DRAC/fullsuite/push/release/foreignedit.
+See covariance-bridge-boundary after-task and evidence under core070.

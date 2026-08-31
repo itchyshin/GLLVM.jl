@@ -4,6 +4,11 @@ import json
 from pathlib import Path
 import core070_manifest_coverage as c
 from core070_bridge_admission import bound_rows, require_boundary, CONTRACT as BOUNDARIES
+from core070_covariance_bridge_boundary import (
+    bound_rows as covariance_bound_rows,
+    require_boundary as require_covariance_boundary,
+    CONTRACT_REL as COVARIANCE_BOUNDARIES,
+)
 
 ROOT=Path(__file__).resolve().parents[1]
 REGISTRY=c.PREFIX+'public-r-bridge-programme-registry.json'
@@ -26,10 +31,13 @@ def build_registry(root=ROOT):
             bridge_subcontract=PAIRED,bridge_subcontract_sha256=c.sha(root/PAIRED)))
     rows.extend(dict(row,executor='public_r_bridge',reference_call=row['r_call'])
                 for row in bound_rows(root))
-    c.need(len(rows)==len({r['id'] for r in rows})==5,'bridge registry count differs')
-    return dict(schema=1,status='FIVE_BOUND_BRIDGE_CASES_NOT_FULL_PROGRAMME',
+    rows.extend(dict(row,executor='public_r_bridge',reference_call=row['r_call'])
+                for row in covariance_bound_rows(root))
+    c.need(len(rows)==len({r['id'] for r in rows})==14,'bridge registry count differs')
+    return dict(schema=1,status='FOURTEEN_BOUND_BRIDGE_CASES_NOT_FULL_PROGRAMME',
         reference_commit=c.REFERENCE,case_ids=[r['id'] for r in rows],cases=rows,
-        inputs={p:c.sha(c.safe_path(root,p)) for p in [PAIRED,NATIVE,BOUNDARIES]})
+        inputs={p:c.sha(c.safe_path(root,p)) for p in
+                [PAIRED,NATIVE,BOUNDARIES,COVARIANCE_BOUNDARIES]})
 
 
 def validate_registry(manifest,root=ROOT):
@@ -41,7 +49,7 @@ def validate_registry(manifest,root=ROOT):
     c.need(registry==build_registry(root),'public R bridge registry differs from source contracts')
     c.need(manifest.get('public_r_bridge_case_ids')==registry['case_ids'],'bridge IDs differ')
     rows=[r for r in manifest.get('executable_case',[]) if r.get('executor')=='public_r_bridge']
-    c.need(len(rows)==5 and {r['id'] for r in rows}==set(registry['case_ids']),'bridge cases omitted or duplicated')
+    c.need(len(rows)==14 and {r['id'] for r in rows}==set(registry['case_ids']),'bridge cases omitted or duplicated')
     by_id={r['id']:r for r in rows}
     c.need(all(all(by_id[r['id']].get(k)==v for k,v in r.items()) for r in registry['cases']),
            'inline bridge contract differs')
@@ -69,8 +77,11 @@ def verify_component(manifest,selection,root=ROOT):
     boundaries=[]
     for row in registry['cases']:
         if row['acceptance_level']=='reference_bridge_boundary':
-            boundaries.append(require_boundary(row,dict(id=row['source_fact_ids'][0],
-                              classification='required_core'),root))
+            fact=dict(id=row['source_fact_ids'][0],classification='required_core')
+            if 'covariance_bridge_boundary_contract' in row:
+                boundaries.append(require_covariance_boundary(row,fact,root))
+            else:
+                boundaries.append(require_boundary(row,fact,root))
     return dict(status='PASS',scope='PUBLIC_R_BRIDGE_COMPONENT_ONLY',
                 case_ids=registry['case_ids'],registry_sha256=c.sha(root/REGISTRY),
                 manifest_sha256=c.sha(manifest_path),

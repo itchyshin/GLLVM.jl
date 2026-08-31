@@ -173,8 +173,11 @@ def require_frozen_manifest(manifest,root):
 
 def validate_bridge_boundary(row,fact,root):
     """Verify a model-bound reference behavior; never substitute for native fits."""
-    from core070_bridge_admission import require_boundary
     try:
+        if 'covariance_bridge_boundary_contract' in row:
+            from core070_covariance_bridge_boundary import require_boundary
+        else:
+            from core070_bridge_admission import require_boundary
         require_boundary(row,fact,root)
     except (ValueError,OSError,KeyError,TypeError) as error:
         raise CoverageError('SOURCE_COVERAGE: invalid bridge boundary: '+str(error)) from error

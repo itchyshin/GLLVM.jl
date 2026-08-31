@@ -21,8 +21,12 @@ class FormulaCovariance(unittest.TestCase):
             with self.subTest(key=key),self.assertRaises(ValueError):c.validate_registry(m)
     def test_native_and_formula_do_not_pay_bridge(self):
         import core070_manifest_coverage as v
-        m=self.manifest();mapping=v.read_json(e.ROOT/v.MAPPING)
+        m=self.manifest();mapping=copy.deepcopy(v.read_json(e.ROOT/v.MAPPING))
         facts=[f for f in v.read_json(e.ROOT/v.INDEX)['facts'] if f['id']=='covariance/COV-KERNEL-INDEP']
-        with self.assertRaisesRegex(v.CoverageError,'covariance interface coverage missing'):v.validate_covariance_roles(facts,mapping,m['executable_case'],e.ROOT)
+        cases=[r for r in m['executable_case'] if r.get('coverage_role')!='public_r_bridge']
+        for row in mapping['rows']:
+            if row['source_id']==facts[0]['id']:
+                row['executable_case_ids']=[cid for cid in row['executable_case_ids'] if not cid.endswith('-PUBLIC-R-BRIDGE')]
+        with self.assertRaisesRegex(v.CoverageError,'covariance interface coverage missing'):v.validate_covariance_roles(facts,mapping,cases,e.ROOT)
 
 if __name__=='__main__':unittest.main()

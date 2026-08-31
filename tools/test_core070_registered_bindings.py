@@ -12,12 +12,13 @@ IDS.update('CORE070-'+family+'-PUBLIC-R-BRIDGE' for family in
 from core070_covariance_programme import IDS as COVARIANCE_IDS
 IDS.update(COVARIANCE_IDS)
 IDS.update(i+"-FORMULA-INTERFACE" for i in COVARIANCE_IDS)
+IDS.update(i+"-PUBLIC-R-BRIDGE" for i in COVARIANCE_IDS)
 
 class RegisteredBindings(unittest.TestCase):
-    def test_thirty_three_explicit_cases(self):
+    def test_forty_two_explicit_cases(self):
         manifest=evidence.load_manifest(evidence.DEFAULT_MANIFEST)
         self.assertEqual({c['id'] for c in manifest['executable_case']},IDS)
-        self.assertEqual(len(manifest['executable_case']),33)
+        self.assertEqual(len(manifest['executable_case']),42)
         for case in manifest['executable_case']:
             self.assertEqual(case['fixture_sha256'],coverage.sha(evidence.ROOT/case['fixture']))
             for key in ['reference_call','julia_call','model_contract','acceptance_rule','source_fact_ids']:

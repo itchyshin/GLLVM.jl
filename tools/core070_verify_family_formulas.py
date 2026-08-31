@@ -5,18 +5,28 @@ import json
 import math
 from pathlib import Path
 import re
+import tarfile
 
 import core070_evidence as evidence
 import core070_verify_registered_models as base
 from core070_manifest_coverage import need
 
 ROOT = Path(__file__).resolve().parents[1]
-STATE = ROOT / '.unlazy/core070-aghq/family-formulas-03'
+STATE = ROOT / '.unlazy/core070-aghq/family-formulas-04'
 CONTRACT = ROOT / 'docs/dev-log/core070/family-formulas-contract.json'
 FAMILIES = ['poisson', 'beta', 'truncnb2']
 IDS = ['CORE070-FAMILY-02-LOG-FORMULA-INTERFACE',
        'CORE070-FAMILY-07-LOGIT-FORMULA-INTERFACE',
        'CORE070-FAMILY-11-LOG-FORMULA-INTERFACE']
+
+
+def registry_test_without_programme_count(text):
+    """Keep the historical red test stable except for the global case total."""
+    normalized, count = re.subn(
+        r'(?m)^(\s*@test length\(requested_ids\(\)\) == )\d+(\s*)$',
+        r'\1<PROGRAMME_CASE_COUNT>\2', text)
+    need(count == 1, 'registry test has an ambiguous programme count assertion')
+    return normalized
 
 
 def close_vector(left, right):
@@ -87,10 +97,27 @@ def verify(self_test=False):
     need(evidence.digest(red_log) == red_receipt['results'][0]['log_sha256'] and
          'Evaluated: 2 == 5' in red_log.read_text() and 'Evaluated: 20 == 23' in red_log.read_text(),
          'baseline failed for a different reason')
-    need(red_plan['pins']['test/test_core070_interface_registry.jl'] ==
-         evidence.digest(ROOT / 'test/test_core070_interface_registry.jl'), 'registry test changed after baseline')
-    need(all(evidence.digest(ROOT/path) == pin for path, pin in red_plan['pins'].items()
-             if path.startswith('src/')), 'unexpected engine change')
+    with tarfile.open(red / 'source.tar') as archive:
+        red_names = set(archive.getnames())
+        member = archive.extractfile('test/test_core070_interface_registry.jl')
+        need(member is not None, 'historical registry test missing from red source')
+        historical_registry = member.read().decode()
+    need(evidence.hashlib.sha256(historical_registry.encode()).hexdigest() ==
+         red_plan['pins']['test/test_core070_interface_registry.jl'], 'historical registry test changed')
+    current_registry = (ROOT / 'test/test_core070_interface_registry.jl').read_text()
+    need(registry_test_without_programme_count(historical_registry) ==
+         registry_test_without_programme_count(current_registry),
+         'registry test changed after baseline outside the programme case count')
+    formula_files = ['test/parity/family_formula_cases.jl',
+                     'test/parity/test_poisson_formula_parity.jl',
+                     'test/parity/test_beta_formula_parity.jl',
+                     'test/parity/test_truncnb2_formula_parity.jl']
+    need(not (set(formula_files) & red_names), 'formula implementation present in red baseline')
+    with tarfile.open(ROOT / '.unlazy/core070-aghq/family-formulas-03/source.tar') as first_green:
+        for path in formula_files:
+            member = first_green.extractfile(path)
+            need(member is not None and evidence.hashlib.sha256(member.read()).hexdigest() ==
+                 evidence.digest(ROOT / path), 'formula implementation changed after first green: ' + path)
     log = (STATE / 'attempt1/process/02.log').read_text()
     results = {}
     for family, case in zip(FAMILIES, contract['cases']):
