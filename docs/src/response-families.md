@@ -245,6 +245,12 @@ With shared site covariates (`@formula` / bridge `X`), the default is
 negative binomial collapses to Poisson. For a single shared `r` across species,
 call [`fit_nb_gllvm`](@ref) (no-X) or [`fit_gllvm_cov`](@ref) (with X).
 
+The original NB2 parity fixture currently fails the stricter likelihood and
+fit-health checks: its Julia convergence flag accompanies an unstable numerical
+gradient. A scalar-density precision problem at large size has been identified
+and is awaiting a tested repair. Do not infer verified parity or parameter
+recovery from the convergence flag alone.
+
 ### Negative binomial type-1 — `NB1()`
 
 ```julia

@@ -15969,3 +15969,15 @@ tests plus aggregate selftest pass. Unlazy1met1unmet. Draft contract reference
 call parse-checked; only this catalogue row promoted, fullmanifestDRAFT.
 See after-task/2026-08-31-core070-truncnb2-required.md. Old helper/fixture/contract/
 catalogue-bound evidence is historical; numerical src unchanged.
+
+## 2026-08-31 — ordinary NB2 density precision diagnosis
+
+Originalseed45p5K2n80,19coords,pertrait/observed, publicfits unchanged. Required
+rtol1e-6 diagnostic11pass3fail: nativegradient.05143/FDinstability.05957 and
+absLLdelta.000863911 fail; Rcode0/gradient6.509e-5 healthy. Samepoint nll atR
+parameters5.152e-7 passes. Scalar96cell/256bit reference: mean-based candidate
+maxdensityerror2.842e-14 andscore1.332e-9; current probability conversion loses
+precision at actual fitted size as well as larger grid values. No engine repair
+yet. Eight negative controls andwholeRfit/data/source/process readbackPASS.
+Unlazy1met2unmet. See after-task/2026-08-31-core070-nb2-diagnosis.md and
+decisions/2026-08-31-core070-nb2-density.md for exact next repair contract.
