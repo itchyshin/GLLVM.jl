@@ -25,8 +25,8 @@ expected admission, owner, coverage role, candidate native entry/fixture where
 known, dependencies, acceptance requirements and missing contract fields.
 `fixture`, `r_call` and `julia_call` are bound for the two freshly verified
 original native NB2 cases and the intercept-only NB2 formula required case;
-nine separately verified shape boundaries also bind their exact calls;
-the other85 specifications keep these fields null
+sixteen separately verified domain/link boundaries also bind their exact calls;
+the other78 specifications keep these fields null
 until their exact fitted contract is established. The native bindings include
 seed, dimensions, parameterization, fixture hash and required-runner evidence. The native entry calls are historical leads,
 not fitted-model calls: some useK1 while their legacy fixture usesK2.
@@ -91,9 +91,31 @@ location/scale/residual combinations. Neither entry checks nor this scalar
 identity prove successful fitting or recovery for those extensions.
 
 `family-boundary-evidence.json` binds50 assertions to the source-pinned Totoro
-run and all69 frozen R descriptor results. The remaining24 link/descriptor
-rejections are unresolved. The nine boundary cases are verified separately;
+run and all69 frozen R descriptor results. At the shape-check checkpoint,24 link/descriptor rejections remained unresolved;
+the subsequent link sweep below resolves seven. The nine boundary cases are verified separately;
 integration into the complete required evidence collection is still pending.
-They do not increase the17-family or fitted-model counts. The family plan now
-has2 native,1 formula and9 domain-boundary bindings, leaving85 specifications
-unbound. Full source coverage and independent scope review remain unpaid.
+They do not increase the17-family or fitted-model counts. That checkpoint bound2 native,1 formula and9 domain-boundary cases. Full source coverage and independent scope review remain unpaid.
+
+## Native link boundaries and ordinal guard
+
+The remaining24 reference rejections now have explicit dispositions in
+`family-link-boundary-contract.json`. Seven corresponding native link requests
+reject, ten reach native code but remain **unvalidated**, and seven have no
+Julia selector to request the R option. The last group is Gaussian-log and the
+six delta-family link/type options. No invented R-style Julia keyword is tested.
+These missing controls and the public R bridge contract remain unresolved.
+
+Ordinal only implements logit and probit CDF/density/quantile kernels. Its three
+named fitters now reject other links before response access. This propagates
+through the unified and wide-formula routes; long formulas also return the clear
+error after constructing their response table. The original supported models
+are unchanged. Regression red13pass/36fail becomes49pass; native link admission
+adds21pass, including positive controls. The original ordinal-probit fixture
+passes5 assertions with likelihood difference5.48e-9, without a broader
+fit-health or recovery claim.
+
+Current-source NB2 and shape receipts were replayed after the guard change;
+use `nb2-formula-required-link-refresh.json` and `family-boundary-link-refresh.json`.
+Older summaries remain historical. The plan now has2 native,1 formula and16
+boundary bindings, leaving78 specifications unbound. Required collection
+integration, full source mapping and final review remain incomplete.

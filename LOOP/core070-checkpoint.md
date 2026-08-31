@@ -757,3 +757,31 @@ and remaining exactfittedmodel/interfacecontracts;StudentRfithealth stillopen.
 MCe1bc274 HTTP200/Rfieldsunchanged, leaseRELEASED. Alljobs terminal;noDRACjobs.
 Read after-task/2026-08-31-core070-shape-boundaries.md. No src/R0.7.1/article/
 foreign changes, push/merge/release/cleanup. Preserveoriginal Studentrequiredcase.
+
+## 2026-08-31 — ordinal link guards and native link dispositions
+
+The three ordinal fitters now reject unsupported links before reading responses;
+LogitLink and ProbitLink numerics are unchanged. Original input regression:
+13 pass / 36 fail before repair, 49 pass after repair. Final combined input/link
+check: 70 pass in 22.075 s on Totoro. Of 24 remaining R link descriptors, seven
+native rejections now have evidence, ten native admissions remain unvalidated,
+and seven lack an equivalent Julia selector. No fitted-parity claim from entry
+checks. Family plan: 2 native + 1 formula + 16 boundary bindings; 78 unbound.
+
+Fresh affected checks: original NB2 native/truncated/formula required runner
+58 pass in 62.418 s; shape boundaries 50 pass in 10.190 s; original ordinal-probit
+diagnostic 5 pass in 22.822 s (absolute logLik difference 5.476e-9, no full
+health/recovery upgrade). Failed intermediate fixture run retained. All jobs
+terminal; source/environment/artifact receipts and negative controls verified.
+Three Unlazy gates pass. Noether Terra/high source review: no P0–P2; P3 future
+link-prerequisite comment queued. Full package checks and Documenter render unpaid.
+
+Mission Control commit 8524935639c857e7769bbcee1465544f913a0c6a: HTTP 200,
+exact served readback, R fields unchanged, exact-file lease released. Existing
+Totoro and Fir sockets verified at 02:43 UTC; Fir queue empty. No new login or
+DRAC submission. Full programme ACTIVE / M1 PARTIAL; manifest DRAFT, not frozen.
+No new production children; B dispatch still awaits the programme checkpoint.
+Next: remaining 17 link dispositions and complete model/interface contracts;
+preserve original Student-t fit-health failure. No push, merge, release, R engine
+changes, foreign worktree edits or destructive cleanup.
+Report: docs/dev-log/after-task/2026-08-31-core070-link-boundaries.md.

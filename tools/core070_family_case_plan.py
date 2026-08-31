@@ -8,15 +8,18 @@ PLAN=coverage.PREFIX+'family-required-case-plan.json'
 INPUTS=[coverage.PREFIX+'family-admission-subset.json',
         coverage.PREFIX+'family-route-contract.json',
         coverage.PREFIX+'family-model-catalogue.json',
-        coverage.PREFIX+'nb2-formula-required-evidence.json',
+        coverage.PREFIX+'nb2-formula-required-link-refresh.json',
         coverage.PREFIX+'family-boundary-contract.json',
-        coverage.PREFIX+'family-boundary-evidence.json']
+        coverage.PREFIX+'family-boundary-link-refresh.json',
+        coverage.PREFIX+'family-link-boundary-contract.json',
+        coverage.PREFIX+'family-link-boundary-evidence.json']
 ROLES=['native_model','formula_interface','public_r_bridge']
 
 def build():
-    admission,entry,catalogue,paired,boundary_contract,boundary_evidence=[coverage.read_json(ROOT/p) for p in INPUTS]
+    admission,entry,catalogue,paired,boundary_contract,boundary_evidence,link_contract,link_evidence=[coverage.read_json(ROOT/p) for p in INPUTS]
     formula=paired["formula"]
     boundaries={row["source_fact_id"]:row for row in boundary_contract["rows"]}
+    links={row["source_fact_id"]:row for row in link_contract["rows"]}
     assert admission['reference_commit']==entry['reference_commit']==catalogue['reference_commit']==coverage.REFERENCE
     entries={r['source_id']:r for r in entry['rows']}
     candidates={r['id']:r for r in catalogue['cases']}
@@ -99,9 +102,23 @@ def build():
                     r_call=boundary['reference_call'],julia_call=boundary['julia_call'],
                     julia_disposition=boundary['disposition'],
                     status='DOMAIN_BOUNDARY_VERIFIED_REQUIRED_INTEGRATION_PENDING',
-                    evidence=INPUTS[-1],reference_expected=boundary['reference_expected'],
+                    evidence=INPUTS[5],reference_expected=boundary['reference_expected'],
                     julia_expected=boundary['julia_expected'],scope_boundary=boundary['scope'],
                     acceptance_rule='Frozen R descriptor rejects; Julia named public fitter rejects invalid input or retains a documented domain extension before response access. No fitting, recovery or bridge claim.')
+            if classification=='rejected' and sid in links:
+                link=links[sid]
+                case['admission_observation']=link['disposition']
+                case['candidate_julia_call']=link['julia_call']
+                if link['disposition']=='reject':
+                    assert link['id'] in link_evidence['reject_ids']
+                    case.update(fixture=link_contract['fixture'],fixture_sha256=link_contract['fixture_sha256'],
+                        r_call=link['reference_call'],julia_call=link['julia_call'],julia_disposition='reject',
+                        status='NATIVE_LINK_REJECTION_VERIFIED_REQUIRED_INTEGRATION_PENDING',
+                        evidence=INPUTS[7],reference_expected=link['reference_expected'],
+                        julia_expected=link['expected'],scope_boundary=link['scope'],
+                        acceptance_rule='Frozen R rejects its descriptor; the corresponding native Julia link control raises ArgumentError. No fitted-model or public R bridge promotion.')
+                else:
+                    case['candidate_warning']='Observed native admission remains unvalidated, or no equivalent Julia selector exists. Resolve semantics and the public R bridge before completing this boundary.'
             cases.append(case)
         rows.append(dict(source_id=sid,classification=classification,planned_case_ids=ids,
                          executable_case_ids=[],status='EXCLUDED' if not ids else 'SPECIFICATION_REQUIRED'))
@@ -123,10 +140,10 @@ def verify():
     assert len({c['id'] for c in plan['cases']})==97
     bound=[c for c in plan['cases'] if c['fixture'] is not None]
     assert {c['required_runner_case_id'] for c in bound if c['coverage_role']=='native_model'}=={'NATIVE-06-NB2','NATIVE-12-TRUNCATED-NB2'}
-    assert len(bound)==12 and sum(c['coverage_role']=='formula_interface' for c in bound)==1
-    assert sum(c['coverage_role']=='reference_boundary' for c in bound)==9
+    assert len(bound)==19 and sum(c['coverage_role']=='formula_interface' for c in bound)==1
+    assert sum(c['coverage_role']=='reference_boundary' for c in bound)==16
     assert all(c['r_call'] is None and c['julia_call'] is None for c in plan['cases'] if c['fixture'] is None)
-    print('FAMILY_CASE_PLAN_VERIFIED 69 facts; 97 planned cases; 2 native + 1 formula + 9 boundary bindings; zero full-family promotions')
+    print('FAMILY_CASE_PLAN_VERIFIED 69 facts; 97 planned cases; 2 native + 1 formula + 16 boundary bindings; zero full-family promotions')
 
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--write',action='store_true');args=p.parse_args()

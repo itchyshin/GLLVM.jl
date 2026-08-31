@@ -111,7 +111,7 @@ with sparse random-effect design matrices. `GLLVM.jl` solves a
 - Closed-form Gaussian marginal log-likelihood (no Laplace approximation)
 - One-part GLM response families via a Laplace marginal: Poisson, negative binomial
   (NB2 and NB1, linear variance), Binomial / Bernoulli, beta-binomial
-  (overdispersed binomial), Beta, Gamma, Exponential, Ordinal (logit or probit),
+  (overdispersed binomial), Beta, Gamma, Exponential, Ordinal (logit or probit only),
   Tweedie, Student-t (heavy-tailed continuous, fixed finite positive `ν` or estimated
   degrees of freedom with `StudentTFamily()`; outlier-robust
   alternative to Gaussian, `family = StudentTFamily(ν)`), Conway–Maxwell–Poisson

@@ -129,3 +129,7 @@ species-by-species surface.
 | **Confidence intervals** | `confint(fit)` | `confint(fit)`, `profile_ci(fit, "par")`, `bootstrap_ci(fit)` | Wald, profile likelihood, and parametric bootstrap |
 
 For complete worked workflows, explore the [Community Abundance Vignette](vignettes/community-abundance.md) and the [Phylogenetic GLLVM Vignette](vignettes/phylogenetic-gllvm.md).
+
+For ordinal fits, choose `LogitLink()` or `ProbitLink()` explicitly when translating
+a model. The frozen gllvmTMB 0.7.0 ordinal route uses probit; Julia defaults to logit.
+Other ordinal links raise `ArgumentError` before the native fitter reads responses.

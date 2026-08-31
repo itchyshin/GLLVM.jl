@@ -5,6 +5,8 @@ All notable changes to GLLVM.jl are documented here.
 ## Unreleased
 
 ### Changed
+- Ordinal fitters now reject unsupported links with an early `ArgumentError`;
+  logit and probit models and their likelihoods are unchanged.
 - Formula fits validate every supplied site-table column before response access,
   including intercept-only fits. Empty tables remain valid without covariates.
   The original NB2 wide/long formula model matches its native fit; broader

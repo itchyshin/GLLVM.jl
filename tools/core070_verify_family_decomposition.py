@@ -27,10 +27,10 @@ def verify():
         assert result.returncode==0 and f'Ran {count} tests' in result.stdout,result.stdout
         print(result.stdout)
     plan.verify()
-    from core070_verify_nb2_formula_required import verify as verify_bound_cases
+    from core070_verify_link_refresh import verify as verify_bound_cases
     verify_bound_cases()
-    from core070_verify_shape_boundaries import verify as verify_boundaries
-    verify_boundaries()
+    from core070_verify_link_boundaries import verify as verify_links
+    verify_links()
     index=coverage.build_index(ROOT)
     assert index==coverage.read_json(ROOT/coverage.INDEX)
     mapping=coverage.read_json(ROOT/coverage.MAPPING)

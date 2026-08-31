@@ -42,6 +42,10 @@ fit_truncated_nbinom2_gllvm_pertrait
 
 ### Continuous, Proportion & Ordinal Fitters
 
+Ordinal fitters accept only `LogitLink()` and `ProbitLink()`. Unsupported links
+raise `ArgumentError` before response access; the frozen R 0.7.0 ordinal model
+uses `ProbitLink()`. Julia's default logit model is a separate model choice.
+
 ```@docs
 fit_beta_gllvm
 fit_gamma_gllvm

@@ -6,9 +6,11 @@
     "docs/dev-log/core070/family-admission-subset.json": "a51906ddd90bdabc2c1764623245963fb600a3bdabd3164e31404e41f7ee587b",
     "docs/dev-log/core070/family-route-contract.json": "f49e17cdf834d3693e7be4f6b40cf3fca507cfc5ed930b50fad967ab79543b62",
     "docs/dev-log/core070/family-model-catalogue.json": "bc96cd1a6109be3561c7825c413ccf9acebbbf5e6a205b748cdb2b63f9e614f1",
-    "docs/dev-log/core070/nb2-formula-required-evidence.json": "6ace264482e0ffe690c9a72447d94de617cf32e415b494c777b4f72ae7edbac7",
+    "docs/dev-log/core070/nb2-formula-required-link-refresh.json": "5a9e8424d603a1579f98d5b324d7c9204503fd23eaa4071a0639ceb016847c92",
     "docs/dev-log/core070/family-boundary-contract.json": "33ce5df1b1c6c88968a4c59b594b3172b466e48aa539eba24a16f93d67ec06d1",
-    "docs/dev-log/core070/family-boundary-evidence.json": "923070e598cd5976e903045e893d1e1bbd7461501d85913b3e619d9dab59d77d"
+    "docs/dev-log/core070/family-boundary-link-refresh.json": "9ebe221a8143963eaa4bea90afeea7f5a26eaf3497c35e0ba8eac86a22cd1f84",
+    "docs/dev-log/core070/family-link-boundary-contract.json": "bf64a4037150e26d9e70430877dacd884ba944a797d9622d2362103f8abb3dcb",
+    "docs/dev-log/core070/family-link-boundary-evidence.json": "58a8909d9b5fd7f7d07121235d801fe8094ad178b42618523455cdb9090b590d"
   },
   "source_facts": 69,
   "planned_case_count": 97,
@@ -811,7 +813,10 @@
       ],
       "prerequisite_case_ids": [],
       "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API.",
+      "admission_observation": "NO_JULIA_SELECTOR_UNRESOLVED",
+      "candidate_julia_call": null,
+      "candidate_warning": "Observed native admission remains unvalidated, or no equivalent Julia selector exists. Resolve semantics and the public R bridge before completing this boundary."
     },
     {
       "id": "CORE070-FAMILY-01-LOGIT-NATIVE-MODEL",
@@ -974,7 +979,10 @@
       ],
       "prerequisite_case_ids": [],
       "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API.",
+      "admission_observation": "ADMITTED_UNVALIDATED",
+      "candidate_julia_call": "fit_gllvm(Y;family=GLLVM.Binomial(),K=1,link=IdentityLink())",
+      "candidate_warning": "Observed native admission remains unvalidated, or no equivalent Julia selector exists. Resolve semantics and the public R bridge before completing this boundary."
     },
     {
       "id": "CORE070-FAMILY-02-LOG-NATIVE-MODEL",
@@ -1137,7 +1145,10 @@
       ],
       "prerequisite_case_ids": [],
       "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API.",
+      "admission_observation": "ADMITTED_UNVALIDATED",
+      "candidate_julia_call": "fit_poisson_gllvm(Y;K=1,link=IdentityLink())",
+      "candidate_warning": "Observed native admission remains unvalidated, or no equivalent Julia selector exists. Resolve semantics and the public R bridge before completing this boundary."
     },
     {
       "id": "CORE070-FAMILY-03-LOG-NATIVE-MODEL",
@@ -1280,10 +1291,10 @@
       "owner": "Ada/Hopper",
       "reference_descriptor_call": "lognormal(link=\"identity\")",
       "reference_admission_expected": "ERROR",
-      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
-      "fixture": null,
-      "r_call": null,
-      "julia_call": null,
+      "status": "NATIVE_LINK_REJECTION_VERIFIED_REQUIRED_INTEGRATION_PENDING",
+      "fixture": "test/test_core070_link_boundaries.jl",
+      "r_call": "lognormal(link=\"identity\")",
+      "julia_call": "fit_lognormal_gllvm(Y;K=1,link=IdentityLink())",
       "candidate_native_entry": null,
       "candidate_fixture": null,
       "candidate_fixture_id": null,
@@ -1299,8 +1310,15 @@
         "evidence location"
       ],
       "prerequisite_case_ids": [],
-      "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "julia_disposition": "reject",
+      "acceptance_rule": "Frozen R rejects its descriptor; the corresponding native Julia link control raises ArgumentError. No fitted-model or public R bridge promotion.",
+      "admission_observation": "reject",
+      "candidate_julia_call": "fit_lognormal_gllvm(Y;K=1,link=IdentityLink())",
+      "fixture_sha256": "ecf7e4ba84b078a28ff82cfa04ac9198010e1081eb9fec40d2e1512f0e2bb6a1",
+      "evidence": "docs/dev-log/core070/family-link-boundary-evidence.json",
+      "reference_expected": "ERROR",
+      "julia_expected": "ArgumentError",
+      "scope_boundary": "Native admission only; neither fit nor public R bridge qualification"
     },
     {
       "id": "CORE070-FAMILY-04-LOG-NATIVE-MODEL",
@@ -1463,7 +1481,10 @@
       ],
       "prerequisite_case_ids": [],
       "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API.",
+      "admission_observation": "ADMITTED_UNVALIDATED",
+      "candidate_julia_call": "fit_gamma_gllvm(Y;K=1,link=IdentityLink())",
+      "candidate_warning": "Observed native admission remains unvalidated, or no equivalent Julia selector exists. Resolve semantics and the public R bridge before completing this boundary."
     },
     {
       "id": "CORE070-FAMILY-05-LOG-NATIVE-MODEL",
@@ -1508,8 +1529,8 @@
       "candidate_warning": "Only the original seeded native model is bound; formula, bridge, other models and broader recovery remain unpaid.",
       "required_runner_case_id": "NATIVE-06-NB2",
       "fixture_sha256": "db83f3385dc7f6de699573600b1022cf4e628f1b90caafe61a3b7d6a4590dabd",
-      "evidence": "docs/dev-log/core070/nb2-formula-required-evidence.json",
-      "execution_manifest_sha256": "2ae3ba1eaf4efd1699ec8fbe5083ef7763d56497de0a762877adf2d639e62dad",
+      "evidence": "docs/dev-log/core070/nb2-formula-required-link-refresh.json",
+      "execution_manifest_sha256": "43f7ab0e855634f82a00df93583c4f17286a28dec6ec4714f44b882d700c5a2a",
       "model": {
         "seed": 45,
         "p": 5,
@@ -1573,10 +1594,10 @@
         "dispersion": "per-trait NB2 size",
         "hessian": "observed"
       },
-      "evidence": "docs/dev-log/core070/nb2-formula-required-evidence.json",
+      "evidence": "docs/dev-log/core070/nb2-formula-required-link-refresh.json",
       "required_runner_status": "VERIFIED_ORIGINAL_MODEL",
       "required_runner_case_id": "CORE070-FAMILY-05-LOG-FORMULA-INTERFACE",
-      "execution_manifest_sha256": "2ae3ba1eaf4efd1699ec8fbe5083ef7763d56497de0a762877adf2d639e62dad"
+      "execution_manifest_sha256": "43f7ab0e855634f82a00df93583c4f17286a28dec6ec4714f44b882d700c5a2a"
     },
     {
       "id": "CORE070-FAMILY-05-LOG-PUBLIC-R-BRIDGE",
@@ -1653,7 +1674,10 @@
       ],
       "prerequisite_case_ids": [],
       "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API.",
+      "admission_observation": "ADMITTED_UNVALIDATED",
+      "candidate_julia_call": "fit_gllvm(Y;family=GLLVM.NegativeBinomial(),K=1,link=IdentityLink())",
+      "candidate_warning": "Observed native admission remains unvalidated, or no equivalent Julia selector exists. Resolve semantics and the public R bridge before completing this boundary."
     },
     {
       "id": "CORE070-FAMILY-06-LOG-NATIVE-MODEL",
@@ -1816,7 +1840,10 @@
       ],
       "prerequisite_case_ids": [],
       "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API.",
+      "admission_observation": "ADMITTED_UNVALIDATED",
+      "candidate_julia_call": "fit_tweedie_gllvm_grouped(Y;K=1,link=IdentityLink())",
+      "candidate_warning": "Observed native admission remains unvalidated, or no equivalent Julia selector exists. Resolve semantics and the public R bridge before completing this boundary."
     },
     {
       "id": "CORE070-FAMILY-07-LOGIT-NATIVE-MODEL",
@@ -1979,7 +2006,10 @@
       ],
       "prerequisite_case_ids": [],
       "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API.",
+      "admission_observation": "ADMITTED_UNVALIDATED",
+      "candidate_julia_call": "fit_gllvm(Y;family=GLLVM.Beta(),K=1,link=IdentityLink())",
+      "candidate_warning": "Observed native admission remains unvalidated, or no equivalent Julia selector exists. Resolve semantics and the public R bridge before completing this boundary."
     },
     {
       "id": "CORE070-FAMILY-08-LOGIT-NATIVE-MODEL",
@@ -2142,7 +2172,10 @@
       ],
       "prerequisite_case_ids": [],
       "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API.",
+      "admission_observation": "ADMITTED_UNVALIDATED",
+      "candidate_julia_call": "fit_gllvm(Y;family=BetaBinom(),N=N,K=1,link=IdentityLink())",
+      "candidate_warning": "Observed native admission remains unvalidated, or no equivalent Julia selector exists. Resolve semantics and the public R bridge before completing this boundary."
     },
     {
       "id": "CORE070-FAMILY-09-IDENTITY-NATIVE-MODEL",
@@ -2305,7 +2338,10 @@
       ],
       "prerequisite_case_ids": [],
       "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API.",
+      "admission_observation": "ADMITTED_UNVALIDATED",
+      "candidate_julia_call": "fit_gllvm(Y;family=StudentTFamily(),K=1,link=LogLink())",
+      "candidate_warning": "Observed native admission remains unvalidated, or no equivalent Julia selector exists. Resolve semantics and the public R bridge before completing this boundary."
     },
     {
       "id": "CORE070-FAMILY-10-LOG-NATIVE-MODEL",
@@ -2448,10 +2484,10 @@
       "owner": "Ada/Hopper",
       "reference_descriptor_call": "truncated_poisson(link=\"identity\")",
       "reference_admission_expected": "ERROR",
-      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
-      "fixture": null,
-      "r_call": null,
-      "julia_call": null,
+      "status": "NATIVE_LINK_REJECTION_VERIFIED_REQUIRED_INTEGRATION_PENDING",
+      "fixture": "test/test_core070_link_boundaries.jl",
+      "r_call": "truncated_poisson(link=\"identity\")",
+      "julia_call": "fit_truncated_poisson_gllvm(Y;K=1,link=IdentityLink())",
       "candidate_native_entry": null,
       "candidate_fixture": null,
       "candidate_fixture_id": null,
@@ -2467,8 +2503,15 @@
         "evidence location"
       ],
       "prerequisite_case_ids": [],
-      "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "julia_disposition": "reject",
+      "acceptance_rule": "Frozen R rejects its descriptor; the corresponding native Julia link control raises ArgumentError. No fitted-model or public R bridge promotion.",
+      "admission_observation": "reject",
+      "candidate_julia_call": "fit_truncated_poisson_gllvm(Y;K=1,link=IdentityLink())",
+      "fixture_sha256": "ecf7e4ba84b078a28ff82cfa04ac9198010e1081eb9fec40d2e1512f0e2bb6a1",
+      "evidence": "docs/dev-log/core070/family-link-boundary-evidence.json",
+      "reference_expected": "ERROR",
+      "julia_expected": "ArgumentError",
+      "scope_boundary": "Native admission only; neither fit nor public R bridge qualification"
     },
     {
       "id": "CORE070-FAMILY-11-LOG-NATIVE-MODEL",
@@ -2513,8 +2556,8 @@
       "candidate_warning": "Only the original seeded native model is bound; formula, bridge, other models and broader recovery remain unpaid.",
       "required_runner_case_id": "NATIVE-12-TRUNCATED-NB2",
       "fixture_sha256": "0972c0993b909d4d262e46a844915f7cf79e0afe36f22a177cb6f350b0064558",
-      "evidence": "docs/dev-log/core070/nb2-formula-required-evidence.json",
-      "execution_manifest_sha256": "2ae3ba1eaf4efd1699ec8fbe5083ef7763d56497de0a762877adf2d639e62dad",
+      "evidence": "docs/dev-log/core070/nb2-formula-required-link-refresh.json",
+      "execution_manifest_sha256": "43f7ab0e855634f82a00df93583c4f17286a28dec6ec4714f44b882d700c5a2a",
       "model": {
         "seed": 58,
         "p": 5,
@@ -2625,10 +2668,10 @@
       "owner": "Ada/Hopper",
       "reference_descriptor_call": "truncated_nbinom2(link=\"identity\")",
       "reference_admission_expected": "ERROR",
-      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
-      "fixture": null,
-      "r_call": null,
-      "julia_call": null,
+      "status": "NATIVE_LINK_REJECTION_VERIFIED_REQUIRED_INTEGRATION_PENDING",
+      "fixture": "test/test_core070_link_boundaries.jl",
+      "r_call": "truncated_nbinom2(link=\"identity\")",
+      "julia_call": "fit_truncated_nbinom2_gllvm_pertrait(Y;K=1,link=IdentityLink())",
       "candidate_native_entry": null,
       "candidate_fixture": null,
       "candidate_fixture_id": null,
@@ -2644,8 +2687,15 @@
         "evidence location"
       ],
       "prerequisite_case_ids": [],
-      "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "julia_disposition": "reject",
+      "acceptance_rule": "Frozen R rejects its descriptor; the corresponding native Julia link control raises ArgumentError. No fitted-model or public R bridge promotion.",
+      "admission_observation": "reject",
+      "candidate_julia_call": "fit_truncated_nbinom2_gllvm_pertrait(Y;K=1,link=IdentityLink())",
+      "fixture_sha256": "ecf7e4ba84b078a28ff82cfa04ac9198010e1081eb9fec40d2e1512f0e2bb6a1",
+      "evidence": "docs/dev-log/core070/family-link-boundary-evidence.json",
+      "reference_expected": "ERROR",
+      "julia_expected": "ArgumentError",
+      "scope_boundary": "Native admission only; neither fit nor public R bridge qualification"
     },
     {
       "id": "CORE070-FAMILY-12-LOGIT-LOG-NATIVE-MODEL",
@@ -2808,7 +2858,10 @@
       ],
       "prerequisite_case_ids": [],
       "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API.",
+      "admission_observation": "NO_JULIA_SELECTOR_UNRESOLVED",
+      "candidate_julia_call": null,
+      "candidate_warning": "Observed native admission remains unvalidated, or no equivalent Julia selector exists. Resolve semantics and the public R bridge before completing this boundary."
     },
     {
       "id": "CORE070-FAMILY-12-REJECT-POSITIVE-REFERENCE-BOUNDARY",
@@ -2841,7 +2894,10 @@
       ],
       "prerequisite_case_ids": [],
       "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API.",
+      "admission_observation": "NO_JULIA_SELECTOR_UNRESOLVED",
+      "candidate_julia_call": null,
+      "candidate_warning": "Observed native admission remains unvalidated, or no equivalent Julia selector exists. Resolve semantics and the public R bridge before completing this boundary."
     },
     {
       "id": "CORE070-FAMILY-12-REJECT-POISSON-DELTA-REFERENCE-BOUNDARY",
@@ -2874,7 +2930,10 @@
       ],
       "prerequisite_case_ids": [],
       "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API.",
+      "admission_observation": "NO_JULIA_SELECTOR_UNRESOLVED",
+      "candidate_julia_call": null,
+      "candidate_warning": "Observed native admission remains unvalidated, or no equivalent Julia selector exists. Resolve semantics and the public R bridge before completing this boundary."
     },
     {
       "id": "CORE070-FAMILY-13-LOGIT-LOG-NATIVE-MODEL",
@@ -3037,7 +3096,10 @@
       ],
       "prerequisite_case_ids": [],
       "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API.",
+      "admission_observation": "NO_JULIA_SELECTOR_UNRESOLVED",
+      "candidate_julia_call": null,
+      "candidate_warning": "Observed native admission remains unvalidated, or no equivalent Julia selector exists. Resolve semantics and the public R bridge before completing this boundary."
     },
     {
       "id": "CORE070-FAMILY-13-REJECT-POSITIVE-REFERENCE-BOUNDARY",
@@ -3070,7 +3132,10 @@
       ],
       "prerequisite_case_ids": [],
       "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API.",
+      "admission_observation": "NO_JULIA_SELECTOR_UNRESOLVED",
+      "candidate_julia_call": null,
+      "candidate_warning": "Observed native admission remains unvalidated, or no equivalent Julia selector exists. Resolve semantics and the public R bridge before completing this boundary."
     },
     {
       "id": "CORE070-FAMILY-13-REJECT-POISSON-DELTA-REFERENCE-BOUNDARY",
@@ -3103,7 +3168,10 @@
       ],
       "prerequisite_case_ids": [],
       "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API.",
+      "admission_observation": "NO_JULIA_SELECTOR_UNRESOLVED",
+      "candidate_julia_call": null,
+      "candidate_warning": "Observed native admission remains unvalidated, or no equivalent Julia selector exists. Resolve semantics and the public R bridge before completing this boundary."
     },
     {
       "id": "CORE070-FAMILY-14-PROBIT-NATIVE-MODEL",
@@ -3246,10 +3314,10 @@
       "owner": "Ada/Hopper",
       "reference_descriptor_call": "ordinal_probit(link=\"identity\")",
       "reference_admission_expected": "CONSTRUCTOR_ERROR",
-      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
-      "fixture": null,
-      "r_call": null,
-      "julia_call": null,
+      "status": "NATIVE_LINK_REJECTION_VERIFIED_REQUIRED_INTEGRATION_PENDING",
+      "fixture": "test/test_core070_link_boundaries.jl",
+      "r_call": "ordinal_probit(link=\"identity\")",
+      "julia_call": "fit_ordinal_gllvm_pertrait(Y;K=1,link=IdentityLink())",
       "candidate_native_entry": null,
       "candidate_fixture": null,
       "candidate_fixture_id": null,
@@ -3265,8 +3333,15 @@
         "evidence location"
       ],
       "prerequisite_case_ids": [],
-      "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "julia_disposition": "reject",
+      "acceptance_rule": "Frozen R rejects its descriptor; the corresponding native Julia link control raises ArgumentError. No fitted-model or public R bridge promotion.",
+      "admission_observation": "reject",
+      "candidate_julia_call": "fit_ordinal_gllvm_pertrait(Y;K=1,link=IdentityLink())",
+      "fixture_sha256": "ecf7e4ba84b078a28ff82cfa04ac9198010e1081eb9fec40d2e1512f0e2bb6a1",
+      "evidence": "docs/dev-log/core070/family-link-boundary-evidence.json",
+      "reference_expected": "CONSTRUCTOR_ERROR",
+      "julia_expected": "ArgumentError",
+      "scope_boundary": "Native admission only; neither fit nor public R bridge qualification"
     },
     {
       "id": "CORE070-FAMILY-15-LOG-NATIVE-MODEL",
@@ -3429,7 +3504,10 @@
       ],
       "prerequisite_case_ids": [],
       "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API.",
+      "admission_observation": "ADMITTED_UNVALIDATED",
+      "candidate_julia_call": "fit_gllvm(Y;family=NB1(),K=1,link=IdentityLink())",
+      "candidate_warning": "Observed native admission remains unvalidated, or no equivalent Julia selector exists. Resolve semantics and the public R bridge before completing this boundary."
     },
     {
       "id": "CORE070-FAMILY-16-LOGIT-NATIVE-MODEL",
@@ -3572,10 +3650,10 @@
       "owner": "Ada/Hopper",
       "reference_descriptor_call": "multinomial(link=\"identity\")",
       "reference_admission_expected": "CONSTRUCTOR_ERROR",
-      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
-      "fixture": null,
-      "r_call": null,
-      "julia_call": null,
+      "status": "NATIVE_LINK_REJECTION_VERIFIED_REQUIRED_INTEGRATION_PENDING",
+      "fixture": "test/test_core070_link_boundaries.jl",
+      "r_call": "multinomial(link=\"identity\")",
+      "julia_call": "fit_multinomial_gllvm(Y;link=IdentityLink())",
       "candidate_native_entry": null,
       "candidate_fixture": null,
       "candidate_fixture_id": null,
@@ -3591,8 +3669,15 @@
         "evidence location"
       ],
       "prerequisite_case_ids": [],
-      "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "julia_disposition": "reject",
+      "acceptance_rule": "Frozen R rejects its descriptor; the corresponding native Julia link control raises ArgumentError. No fitted-model or public R bridge promotion.",
+      "admission_observation": "reject",
+      "candidate_julia_call": "fit_multinomial_gllvm(Y;link=IdentityLink())",
+      "fixture_sha256": "ecf7e4ba84b078a28ff82cfa04ac9198010e1081eb9fec40d2e1512f0e2bb6a1",
+      "evidence": "docs/dev-log/core070/family-link-boundary-evidence.json",
+      "reference_expected": "CONSTRUCTOR_ERROR",
+      "julia_expected": "ArgumentError",
+      "scope_boundary": "Native admission only; neither fit nor public R bridge qualification"
     },
     {
       "id": "CORE070-FAMILY-01-PROBIT-NATIVE-MODEL",
@@ -3920,7 +4005,10 @@
       ],
       "prerequisite_case_ids": [],
       "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API.",
+      "admission_observation": "ADMITTED_UNVALIDATED",
+      "candidate_julia_call": "fit_gllvm(Y;family=BetaBinom(),N=N,K=1,link=CLogLogLink())",
+      "candidate_warning": "Observed native admission remains unvalidated, or no equivalent Julia selector exists. Resolve semantics and the public R bridge before completing this boundary."
     },
     {
       "id": "CORE070-FAMILY-14-MUTATED-DESCRIPTOR-REJECT-REFERENCE-BOUNDARY",
@@ -3933,10 +4021,10 @@
       "owner": "Ada/Hopper",
       "reference_descriptor_call": "structure(list(family=\"ordinal_probit\",link=\"identity\"),class=\"family\")",
       "reference_admission_expected": "ERROR",
-      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
-      "fixture": null,
-      "r_call": null,
-      "julia_call": null,
+      "status": "NATIVE_LINK_REJECTION_VERIFIED_REQUIRED_INTEGRATION_PENDING",
+      "fixture": "test/test_core070_link_boundaries.jl",
+      "r_call": "structure(list(family=\"ordinal_probit\",link=\"identity\"),class=\"family\")",
+      "julia_call": "fit_ordinal_gllvm_pertrait(Y;K=1,link=IdentityLink())",
       "candidate_native_entry": null,
       "candidate_fixture": null,
       "candidate_fixture_id": null,
@@ -3952,8 +4040,15 @@
         "evidence location"
       ],
       "prerequisite_case_ids": [],
-      "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "julia_disposition": "reject",
+      "acceptance_rule": "Frozen R rejects its descriptor; the corresponding native Julia link control raises ArgumentError. No fitted-model or public R bridge promotion.",
+      "admission_observation": "reject",
+      "candidate_julia_call": "fit_ordinal_gllvm_pertrait(Y;K=1,link=IdentityLink())",
+      "fixture_sha256": "ecf7e4ba84b078a28ff82cfa04ac9198010e1081eb9fec40d2e1512f0e2bb6a1",
+      "evidence": "docs/dev-log/core070/family-link-boundary-evidence.json",
+      "reference_expected": "ERROR",
+      "julia_expected": "ArgumentError",
+      "scope_boundary": "Native admission only; neither fit nor public R bridge qualification"
     },
     {
       "id": "CORE070-FAMILY-16-MUTATED-DESCRIPTOR-REJECT-REFERENCE-BOUNDARY",
@@ -3966,10 +4061,10 @@
       "owner": "Ada/Hopper",
       "reference_descriptor_call": "structure(list(family=\"multinomial\",link=\"identity\"),class=\"family\")",
       "reference_admission_expected": "ERROR",
-      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
-      "fixture": null,
-      "r_call": null,
-      "julia_call": null,
+      "status": "NATIVE_LINK_REJECTION_VERIFIED_REQUIRED_INTEGRATION_PENDING",
+      "fixture": "test/test_core070_link_boundaries.jl",
+      "r_call": "structure(list(family=\"multinomial\",link=\"identity\"),class=\"family\")",
+      "julia_call": "fit_multinomial_gllvm(Y;link=IdentityLink())",
       "candidate_native_entry": null,
       "candidate_fixture": null,
       "candidate_fixture_id": null,
@@ -3985,8 +4080,15 @@
         "evidence location"
       ],
       "prerequisite_case_ids": [],
-      "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "julia_disposition": "reject",
+      "acceptance_rule": "Frozen R rejects its descriptor; the corresponding native Julia link control raises ArgumentError. No fitted-model or public R bridge promotion.",
+      "admission_observation": "reject",
+      "candidate_julia_call": "fit_multinomial_gllvm(Y;link=IdentityLink())",
+      "fixture_sha256": "ecf7e4ba84b078a28ff82cfa04ac9198010e1081eb9fec40d2e1512f0e2bb6a1",
+      "evidence": "docs/dev-log/core070/family-link-boundary-evidence.json",
+      "reference_expected": "ERROR",
+      "julia_expected": "ArgumentError",
+      "scope_boundary": "Native admission only; neither fit nor public R bridge qualification"
     },
     {
       "id": "CORE070-FAMILY-06-FIXED-SHAPE-NATIVE-MODEL",
@@ -4151,7 +4253,7 @@
       "julia_disposition": "reject",
       "acceptance_rule": "Frozen R descriptor rejects; Julia named public fitter rejects invalid input or retains a documented domain extension before response access. No fitting, recovery or bridge claim.",
       "fixture_sha256": "0001c249442d61e52c91a40df93cb5eb65b5f1e6e2b7ccd1fd7431a228889abd",
-      "evidence": "docs/dev-log/core070/family-boundary-evidence.json",
+      "evidence": "docs/dev-log/core070/family-boundary-link-refresh.json",
       "reference_expected": "CONSTRUCTOR_ERROR",
       "julia_expected": "ArgumentError",
       "scope_boundary": "Named public fitter input boundary, two traits x four unreadable responses; no fitting or R bridge qualification"
@@ -4189,7 +4291,7 @@
       "julia_disposition": "reject",
       "acceptance_rule": "Frozen R descriptor rejects; Julia named public fitter rejects invalid input or retains a documented domain extension before response access. No fitting, recovery or bridge claim.",
       "fixture_sha256": "0001c249442d61e52c91a40df93cb5eb65b5f1e6e2b7ccd1fd7431a228889abd",
-      "evidence": "docs/dev-log/core070/family-boundary-evidence.json",
+      "evidence": "docs/dev-log/core070/family-boundary-link-refresh.json",
       "reference_expected": "CONSTRUCTOR_ERROR",
       "julia_expected": "ArgumentError",
       "scope_boundary": "Named public fitter input boundary, two traits x four unreadable responses; no fitting or R bridge qualification"
@@ -4227,7 +4329,7 @@
       "julia_disposition": "reject",
       "acceptance_rule": "Frozen R descriptor rejects; Julia named public fitter rejects invalid input or retains a documented domain extension before response access. No fitting, recovery or bridge claim.",
       "fixture_sha256": "0001c249442d61e52c91a40df93cb5eb65b5f1e6e2b7ccd1fd7431a228889abd",
-      "evidence": "docs/dev-log/core070/family-boundary-evidence.json",
+      "evidence": "docs/dev-log/core070/family-boundary-link-refresh.json",
       "reference_expected": "CONSTRUCTOR_ERROR",
       "julia_expected": "ArgumentError",
       "scope_boundary": "Named public fitter input boundary, two traits x four unreadable responses; no fitting or R bridge qualification"
@@ -4265,7 +4367,7 @@
       "julia_disposition": "reject",
       "acceptance_rule": "Frozen R descriptor rejects; Julia named public fitter rejects invalid input or retains a documented domain extension before response access. No fitting, recovery or bridge claim.",
       "fixture_sha256": "0001c249442d61e52c91a40df93cb5eb65b5f1e6e2b7ccd1fd7431a228889abd",
-      "evidence": "docs/dev-log/core070/family-boundary-evidence.json",
+      "evidence": "docs/dev-log/core070/family-boundary-link-refresh.json",
       "reference_expected": "CONSTRUCTOR_ERROR",
       "julia_expected": "TypeError",
       "scope_boundary": "Named public fitter input boundary, two traits x four unreadable responses; no fitting or R bridge qualification"
@@ -4433,7 +4535,7 @@
       "julia_disposition": "documented_extension",
       "acceptance_rule": "Frozen R descriptor rejects; Julia named public fitter rejects invalid input or retains a documented domain extension before response access. No fitting, recovery or bridge claim.",
       "fixture_sha256": "0001c249442d61e52c91a40df93cb5eb65b5f1e6e2b7ccd1fd7431a228889abd",
-      "evidence": "docs/dev-log/core070/family-boundary-evidence.json",
+      "evidence": "docs/dev-log/core070/family-boundary-link-refresh.json",
       "reference_expected": "CONSTRUCTOR_ERROR",
       "julia_expected": "RESPONSE_READ_SENTINEL",
       "scope_boundary": "Named public fitter input boundary, two traits x four unreadable responses; no fitting or R bridge qualification"
@@ -4471,7 +4573,7 @@
       "julia_disposition": "reject",
       "acceptance_rule": "Frozen R descriptor rejects; Julia named public fitter rejects invalid input or retains a documented domain extension before response access. No fitting, recovery or bridge claim.",
       "fixture_sha256": "0001c249442d61e52c91a40df93cb5eb65b5f1e6e2b7ccd1fd7431a228889abd",
-      "evidence": "docs/dev-log/core070/family-boundary-evidence.json",
+      "evidence": "docs/dev-log/core070/family-boundary-link-refresh.json",
       "reference_expected": "CONSTRUCTOR_ERROR",
       "julia_expected": "ArgumentError",
       "scope_boundary": "Named public fitter input boundary, two traits x four unreadable responses; no fitting or R bridge qualification"
@@ -4509,7 +4611,7 @@
       "julia_disposition": "reject",
       "acceptance_rule": "Frozen R descriptor rejects; Julia named public fitter rejects invalid input or retains a documented domain extension before response access. No fitting, recovery or bridge claim.",
       "fixture_sha256": "0001c249442d61e52c91a40df93cb5eb65b5f1e6e2b7ccd1fd7431a228889abd",
-      "evidence": "docs/dev-log/core070/family-boundary-evidence.json",
+      "evidence": "docs/dev-log/core070/family-boundary-link-refresh.json",
       "reference_expected": "CONSTRUCTOR_ERROR",
       "julia_expected": "ArgumentError",
       "scope_boundary": "Named public fitter input boundary, two traits x four unreadable responses; no fitting or R bridge qualification"
@@ -4547,7 +4649,7 @@
       "julia_disposition": "documented_extension",
       "acceptance_rule": "Frozen R descriptor rejects; Julia named public fitter rejects invalid input or retains a documented domain extension before response access. No fitting, recovery or bridge claim.",
       "fixture_sha256": "0001c249442d61e52c91a40df93cb5eb65b5f1e6e2b7ccd1fd7431a228889abd",
-      "evidence": "docs/dev-log/core070/family-boundary-evidence.json",
+      "evidence": "docs/dev-log/core070/family-boundary-link-refresh.json",
       "reference_expected": "CONSTRUCTOR_ERROR",
       "julia_expected": "RESPONSE_READ_SENTINEL",
       "scope_boundary": "Named public fitter input boundary, two traits x four unreadable responses; no fitting or R bridge qualification"
@@ -4585,7 +4687,7 @@
       "julia_disposition": "reject",
       "acceptance_rule": "Frozen R descriptor rejects; Julia named public fitter rejects invalid input or retains a documented domain extension before response access. No fitting, recovery or bridge claim.",
       "fixture_sha256": "0001c249442d61e52c91a40df93cb5eb65b5f1e6e2b7ccd1fd7431a228889abd",
-      "evidence": "docs/dev-log/core070/family-boundary-evidence.json",
+      "evidence": "docs/dev-log/core070/family-boundary-link-refresh.json",
       "reference_expected": "CONSTRUCTOR_ERROR",
       "julia_expected": "ArgumentError",
       "scope_boundary": "Named public fitter input boundary, two traits x four unreadable responses; no fitting or R bridge qualification"
