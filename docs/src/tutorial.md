@@ -415,6 +415,13 @@ continuous main effects; dispatches to `fit_gaussian_gllvm` for `Normal()` and
 gllvm(@formula(y ~ 1 + temp + depth), Y, site_data; family = Poisson(), K = 2)
 ```
 
+For Gaussian trait-specific variances, add `pervar=true`. This route preserves
+trait intercepts in `y ~ 1 + temp`, shared site slopes, and the zero-mean choice
+`y ~ 0`. An explicit `fixed_residual_sd` can separate known residual variation
+from estimated unique variance. See the executed
+[per-variance examples](response-families.md#Gaussian-with-per-species-variance-—-fit_gaussian_pervar_gllvm).
+The R bridge and AGHQ fallback for this decomposition remain under development.
+
 ## 6. Structured latent fields
 
 The latent variables can themselves be given spatial or phylogenetic structure.

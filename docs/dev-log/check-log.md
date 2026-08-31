@@ -16431,3 +16431,13 @@ claim. Specific Terra code-review payload approval and twofullsuite run approval
 still pending; neither launched. MissionControl3e53d55 served200,Rfieldsunchanged.
 Next complete those gates when authorized; meanwhile remaining manifest/model
 work is available. M1PARTIAL/manifestDRAFT; no push/merge/release/cleanup.
+
+### 2026-08-31 — per-variance Gaussian formula route
+- Final same-test baseline reaches unsupported keyword; candidate35new formula,
+  27existing formula and23fixed-residual assertions pass (114.70s).
+- Original frozen R fixture passes10native+9formula checks (38.37s), deltaLL3.864e-9,
+  both-engine absolute gradients<1e-4. No fixture or tolerance substitution.
+- Strict executed docs107.60s and four desktop/mobile screenshots checked.
+- Seven verifier corruptions reject; Unlazy4/5, fullsuite/review gate unpaid.
+  Full programme M1PARTIAL/manifestDRAFT. R bridge/AGHQfallback/intervals unpaid.
+- After-task: after-task/2026-08-31-core070-pervar-formula.md. Failed attempts retained.

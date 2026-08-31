@@ -58,3 +58,9 @@ candidate validation. Use the exact source hashes retained in default-unique-
 evidence.json and the refreshed package-qualify-02 environment; do not report a
 full run on the earlier source as validation of this change. Commands, two-core
 budget and120minute limits are unchanged. Run approval is still pending.
+
+## Formula route candidate update
+The pervar formula source and central test registration now supersede the preceding
+candidate. Bind future full checks to pervar-formula-evidence.json plus the full
+then-current source census. Its35new+50adjacent tests and strict docs are bounded
+evidence, not full-suite qualification. Command/resources/approval status unchanged.

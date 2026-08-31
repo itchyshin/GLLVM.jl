@@ -9,7 +9,9 @@ Notable changes to GLLVM.jl. Style mirrors `gllvmTMB`'s NEWS: status labels
 - **Development:** per-trait Gaussian fitting accepts an explicit fixed residual
   SD and estimates unique variances within that constraint. Results retain unique
   and total diagonal variances; existing defaults and parameter counts are unchanged.
-  Formula/bridge, intervals and AGHQ fallback parity are not established.
+  The `pervar=true` Gaussian formula route preserves trait intercepts,
+  zero-mean designs, shared slopes and categorical contrasts. Bridge, intervals
+  and AGHQ fallback parity are not established.
 - **PARTIAL:** `SourceCovariance` and `fit_gaussian_sources` fit fixed Gaussian
   covariance among source groups. Targeted tests and six retained public-R
   comparisons pass; formula/bridge support and calibrated uncertainty remain

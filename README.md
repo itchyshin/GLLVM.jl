@@ -131,7 +131,8 @@ with sparse random-effect design matrices. `GLLVM.jl` solves a
 - Heteroscedastic Gaussian with per-species variance (`fit_gaussian_pervar_gllvm`),
   including explicit full-rank fixed-effect designs profiled by GLS. The development
   `fixed_residual_sd` option separates a supplied residual scale from estimated
-  unique variances; formula/bridge and interval parity remain unverified.
+  unique variances. `gllvm(...; family=Normal(), pervar=true)` exposes the complete
+  formula mean design; bridge, intervals and AGHQ fallback remain unverified.
 - Per-species / grouped dispersion (`disp.group`) for NB2, NB1, Beta, beta-binomial,
   Gamma, and Tweedie via the `_grouped` drivers — per-species is the `fit_gllvm`
   default for NB2, NB1, Beta, and beta-binomial (`family = NB1()`,

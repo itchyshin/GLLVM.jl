@@ -75,6 +75,38 @@ function _build_site_modelmatrix(rhs, data; contrasts::AbstractDict = Dict{Symbo
     return Matrix{Float64}(mm), cnames_vec
 end
 
+# The per-variance Gaussian fitter treats X as the complete mean design. Use
+# StatsModels' intercept/rank rules before expanding a site intercept to one
+# coefficient per trait. Keep the legacy shared-variance route separate.
+function _pervar_formula_design(rhs, cols, p, n; contrasts)
+    intercept = !StatsModels.omitsintercept(rhs)
+    terms = rhs isa Tuple ? rhs : (rhs,)
+    if all(t -> t isa ConstantTerm, terms)
+        site = zeros(n, 0)
+    else
+        f = FormulaTerm(ConstantTerm(0), rhs)
+        sch = StatsModels.schema(f, cols, contrasts)
+        applied = StatsModels.apply_schema(f, sch, StatsModels.StatisticalModel)
+        mm = Matrix{Float64}(StatsModels.modelmatrix(applied.rhs, cols))
+        names = StatsModels.coefnames(applied.rhs)
+        names = names isa AbstractVector ? string.(names) : [string(names)]
+        intercept = StatsModels.hasintercept(applied.rhs)
+        site = mm[:, findall(!=("(Intercept)"), names)]
+    end
+    size(site, 1) == n || throw(DimensionMismatch("formula design must have one row per site"))
+    q0 = intercept ? p : 0
+    X = zeros(p, n, q0 + size(site, 2))
+    if intercept
+        for t in 1:p
+            X[t, :, t] .= 1
+        end
+    end
+    for k in axes(site, 2), s in 1:n, t in 1:p
+        X[t, s, q0 + k] = site[s, k]
+    end
+    return X
+end
+
 """
     gllvm(formula, Y, data; family = Normal(), K, contrasts = Dict(), kwargs...)
 
@@ -104,6 +136,14 @@ shared site-X), to [`fit_zip_gllvm_cov`](@ref) for `ZIPoisson()` (separate
 `ZINegBin()` (separate `γz`/`γc`, `Λz=0`, shared scalar `r`; Julia-forward),
 and to [`fit_gllvm_cov`](@ref) for the other non-Gaussian families (shared
 dispersion + X). Returns that fitter's result.
+For `Normal()`, `pervar=true` instead selects
+[`fit_gaussian_pervar_gllvm`](@ref). This route constructs the complete mean:
+`y ~ 1 + x` (or `y ~ x`) has trait-specific intercepts and a shared slope;
+`y ~ 0 + x` or `y ~ -1 + x` removes those intercepts. `y ~ 0` is zero mean.
+`fixed_residual_sd=c` passes an explicit fixed residual scale to this route;
+it does not choose R's data-dependent scale automatically. Categorical contrasts
+follow StatsModels' rank rules. Do not also supply `X` with a formula.
+The default shared-variance route keeps its existing behavior.
 With no covariates it reduces to the intercept-only fit. Supplied table columns
 must still have one entry per site; an empty table is allowed for an
 intercept-only formula because `Y` supplies the site count.
@@ -111,13 +151,19 @@ intercept-only formula because `Y` supplies the site count.
 is fenced).
 """
 function gllvm(formula::FormulaTerm, Y::AbstractMatrix, data;
-               family = Normal(), K::Integer,
+               family = Normal(), K::Integer, pervar::Bool = false,
                contrasts::AbstractDict = Dict{Symbol, Any}(), kwargs...)
     p, n = size(Y)
     cols = Tables.columntable(data)
     for (name, column) in pairs(cols)
         length(column) == n || throw(DimensionMismatch(
             "`data` column `$name` has $(length(column)) rows but Y has $n sites (columns)"))
+    end
+    if pervar
+        family isa Normal || throw(ArgumentError("pervar=true requires family=Normal()"))
+        haskey(kwargs, :X) && throw(ArgumentError("do not supply X with a pervar formula; the formula defines the complete mean"))
+        X = _pervar_formula_design(formula.rhs, cols, p, n; contrasts=contrasts)
+        return fit_gllvm(Y; family=family, K=K, pervar=true, X=X, kwargs...)
     end
     mm, cnames = _build_site_modelmatrix(formula.rhs, cols; contrasts = contrasts)
     q = size(mm, 2)

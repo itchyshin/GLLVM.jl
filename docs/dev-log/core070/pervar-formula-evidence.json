@@ -1,0 +1,274 @@
+{
+  "status": "NATIVE_FORMULA_FIXTURE_PASS_NOT_FULL_PARITY",
+  "reference": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "baseline": "3edf1e067c7c0e71a5d5fe254d6cab16f2743332",
+  "ownership": "codex:core070-aghq-20260830",
+  "current_source_pins": {
+    "src/formula.jl": "36be66dcb5cc4f16e32843ab95575c7eee33c3a46fdc9d69d872adbcefdcf3ec",
+    "src/families/gaussian_pervar.jl": "fd202fe0bc5a7599853a7e6126aa051db3dee865f3fb1972743a7d44d19ae599",
+    "test/test_formula_pervar.jl": "494a42b06f0236d487f4c8c396ae355a453f3d5809b2c6e396517ae99617d430",
+    "test/runtests.jl": "6dea21f994c363d5e04b2f9def3c62406d9a71804e9f84f683d156e897e29948",
+    "tools/core070_pervar_formula_pair.jl": "5303975d7dbba731639eee6e0d15bf0fb8df51f7904edd91fe5ea00b12a6b838"
+  },
+  "attempts": [
+    {
+      "id": "pervar-formula-red-01",
+      "receipt_sha256": "de6fedc27b28bdea80b428645574b2a573821634ba823e25d0c5eb0584ca5c47",
+      "plan_sha256": "9ee9530a0c7544e23aca15ecb6ec70b58f75fb8ae680c967ff732665513f528f",
+      "archive_sha256": "1db25fca974ad2a2c1262224545874729983de24387f9f0561585f4107f19f9b",
+      "results": [
+        {
+          "id": "pervar-formula-regression",
+          "argv": [
+            "/home/snakagaw/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+            "--startup-file=no",
+            "--project=test/parity",
+            "run.jl"
+          ],
+          "exit_code": 1,
+          "elapsed_seconds": 18.606687985360622,
+          "log": "00.log",
+          "log_sha256": "dce8eabd92a71a12b050a08a1483c7645305db1f2fabb25f57c0061f42038753",
+          "supervisor_error": null,
+          "parity": null,
+          "parity_error": null
+        }
+      ]
+    },
+    {
+      "id": "pervar-formula-red-02",
+      "receipt_sha256": "c5dcc0fd74bf839e8ff4c57f80744d2e38d28d7e77ac58164362ccdde4875b2d",
+      "plan_sha256": "70051f7727e17ffb489d8de83e6a8f1477fa73301de3c53271db272c5432f396",
+      "archive_sha256": "c09067b437ae7febdc9c8a2075947b9286e121de53d6d61a8f6c18c16de453a7",
+      "results": [
+        {
+          "id": "pervar-formula-regression",
+          "argv": [
+            "/home/snakagaw/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+            "--startup-file=no",
+            "--project=.qualenv",
+            "run.jl"
+          ],
+          "exit_code": 1,
+          "elapsed_seconds": 22.01606966741383,
+          "log": "00.log",
+          "log_sha256": "9ee91e48630c7df29d1c316574bf056910be25a3e789b8156de8a7dac08b9af3",
+          "supervisor_error": null,
+          "parity": null,
+          "parity_error": null
+        }
+      ]
+    },
+    {
+      "id": "pervar-formula-red-03",
+      "receipt_sha256": "a2d4d9d136ad1d34a39728c8a8d3bf5c65bf42d48523a5639ab50b942a674ba3",
+      "plan_sha256": "f32883472a08a4ff3d5327d9b5e2c3cb7331b61f0548728c7f2ea6b44bc41928",
+      "archive_sha256": "2a02190d973073046797d5c37f8a90eb00b925096aad34b37a50f81a4bdc3556",
+      "results": [
+        {
+          "id": "pervar-formula-regression",
+          "argv": [
+            "/home/snakagaw/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+            "--startup-file=no",
+            "--project=.qualenv",
+            "run.jl"
+          ],
+          "exit_code": 1,
+          "elapsed_seconds": 30.036625523120165,
+          "log": "00.log",
+          "log_sha256": "59e69fa147d10b74e6fbcc5345cb72ab0486a098ca5ff118145f4c40ba47f7e9",
+          "supervisor_error": null,
+          "parity": null,
+          "parity_error": null
+        }
+      ]
+    },
+    {
+      "id": "pervar-formula-green-01",
+      "receipt_sha256": "5333ff405aad3977d018c96f2a79a28751fd30c098d0681e104186c552008085",
+      "plan_sha256": "688c532e5fb60441728604942a59c88c025d12f89d486c94c17a4bc82d8af5a9",
+      "archive_sha256": "47c70b95d9e0b3b29dcee8edc517a4b5848baf3937796d6ada8ddeee3bb4a80c",
+      "results": [
+        {
+          "id": "pervar-formula-regression",
+          "argv": [
+            "/home/snakagaw/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+            "--startup-file=no",
+            "--project=.qualenv",
+            "run.jl"
+          ],
+          "exit_code": 0,
+          "elapsed_seconds": 71.15444884076715,
+          "log": "00.log",
+          "log_sha256": "2e80d926382b99f20e3f2fe7823e0c6c580ff30aab4f03e8bb555fd766ab439e",
+          "supervisor_error": null,
+          "parity": null,
+          "parity_error": null
+        }
+      ]
+    },
+    {
+      "id": "pervar-formula-green-02",
+      "receipt_sha256": "2b44a43ce9580de553a2a5865cd84a074fa36f838d203c3a61ace492afca56d4",
+      "plan_sha256": "176d681dc7620ffd9d1ae96e441b9cf111770db13460b8fa67745bb251e5f746",
+      "archive_sha256": "51af8ac75ca665c407ca48b5bdf2a8abe69320b2060b7567ad945035bd0f5e47",
+      "results": [
+        {
+          "id": "pervar-formula-regression",
+          "argv": [
+            "/home/snakagaw/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+            "--startup-file=no",
+            "--project=.qualenv",
+            "run.jl"
+          ],
+          "exit_code": 0,
+          "elapsed_seconds": 114.70085947588086,
+          "log": "00.log",
+          "log_sha256": "51002fae5a3462e11ffdd7b7a5bdf5787be5421550e51f10812aca94c0401e22",
+          "supervisor_error": null,
+          "parity": null,
+          "parity_error": null
+        }
+      ]
+    },
+    {
+      "id": "pervar-formula-pair-01",
+      "receipt_sha256": "50d4aba9825e2235d97b508c8c550dbf994eb3e150bd194c80de0c2979c86bbb",
+      "plan_sha256": "93b213fd33dbd2a6dea91c462f3d6b7f8fffc22b293ecb2468eb49adc987c9d2",
+      "archive_sha256": "4fa870601ea5110a1b8cacc9928a352b4c6a620032cc96a6fc13a5bd61c78d00",
+      "results": [
+        {
+          "id": "oracle-before",
+          "argv": [
+            "python3",
+            "tools/core070_build_oracle.py",
+            "verify",
+            "--destination",
+            "/home/snakagaw/core070-aghq-20260830/oracle-build-01"
+          ],
+          "exit_code": 0,
+          "elapsed_seconds": 0.1766530591994524,
+          "log": "00.log",
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+          "supervisor_error": null,
+          "parity": null,
+          "parity_error": null
+        },
+        {
+          "id": "pair",
+          "argv": [
+            "/home/snakagaw/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+            "--startup-file=no",
+            "--project=test/parity",
+            "run.jl"
+          ],
+          "exit_code": 0,
+          "elapsed_seconds": 38.372971661388874,
+          "log": "01.log",
+          "log_sha256": "34d20864c9a76b6659cc399001d470f33881790115a038dc19698f46a290d5de",
+          "supervisor_error": null,
+          "parity": null,
+          "parity_error": null
+        },
+        {
+          "id": "oracle-after",
+          "argv": [
+            "python3",
+            "tools/core070_build_oracle.py",
+            "verify",
+            "--destination",
+            "/home/snakagaw/core070-aghq-20260830/oracle-build-01"
+          ],
+          "exit_code": 0,
+          "elapsed_seconds": 0.16633019782602787,
+          "log": "02.log",
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+          "supervisor_error": null,
+          "parity": null,
+          "parity_error": null
+        }
+      ]
+    },
+    {
+      "id": "pervar-formula-docs-01",
+      "receipt_sha256": "766c877f550f8a5a158a0810f3baa3df3cbee0caec329773967b9e175e582336",
+      "plan_sha256": "3d684261d70c9184863827be649d5d32c0a5649f8cacf8deb0b47af56a6a9626",
+      "archive_sha256": "1f5bac097997c2cdd542e3af0bd8dc5ae550fc796385960c36c2bec4a56e3b3b",
+      "results": [
+        {
+          "id": "strict-local-docs",
+          "argv": [
+            "/home/snakagaw/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+            "--startup-file=no",
+            "--project=.docenv",
+            "docs/make.jl",
+            "--local"
+          ],
+          "exit_code": 0,
+          "elapsed_seconds": 107.5978024713695,
+          "log": "00.log",
+          "log_sha256": "d15af230161d3f6c835d2e79b0a85daa8242fa3b9dd39c4d9de65c5f1ac26650",
+          "supervisor_error": null,
+          "parity": null,
+          "parity_error": null
+        }
+      ]
+    }
+  ],
+  "paired_result": {
+    "formula_loglik": -576.2849371937114,
+    "delta_loglik": 3.864101927320007e-09,
+    "fixed_effect_count": 0,
+    "pervar": true,
+    "formula": "y ~ 0",
+    "id": "CORE070-DEFAULT-UNIQUE-GAUSSIAN-FORMULA",
+    "native_formula_delta": 0.0,
+    "fixture_sha256": "52a4664c99295ec675a7b666458350bf57ff57e338c77d5ada1cf9d2e5efba92",
+    "r_loglik": -576.2849371898473,
+    "converged": true,
+    "fixed_residual_sd": 0.0008837756554325282,
+    "formula_gradient_max": 1.5420198451465694e-10,
+    "formula_unique_variances": [
+      0.8083893035297767,
+      0.1617950193449987,
+      0.5784715840665381,
+      0.4264564407064839
+    ],
+    "dof": 8
+  },
+  "assertions": {
+    "new_formula": 35,
+    "existing_formula": 27,
+    "fixed_residual": 23,
+    "direct_R_pair": 10,
+    "formula_R_pair": 9
+  },
+  "gate_negative_controls": 7,
+  "estimate_deviation": "Final expanded green ran114.70seconds against20-90second estimate; observed terminal and retained, below180second timeout. No automatic retry or fullsuite.",
+  "excluded": [
+    "R bridge",
+    "AGHQ fallback",
+    "intervals",
+    "recovery",
+    "coverage",
+    "full suites",
+    "independent review",
+    "full manifest freeze"
+  ],
+  "visual": {
+    "receipt_sha256": "f546c4e109ec845a9fc3f1fc58d1ae6fbf5daa9333cc04f645ef2698661326c0",
+    "screenshots": {
+      "desktop-output.png": "b9a480ddd0537f954b1185c3e41f6e346f9be2cd3dbd7cd2ff83d3031a97fef6",
+      "mobile-output.png": "1819cec52d6bd407a44ad81b42a9af9faeb63a08f4231898b13baeace98274bc",
+      "mobile-example.png": "1819cec52d6bd407a44ad81b42a9af9faeb63a08f4231898b13baeace98274bc",
+      "desktop-example.png": "b9a480ddd0537f954b1185c3e41f6e346f9be2cd3dbd7cd2ff83d3031a97fef6"
+    },
+    "parent_inspected": true
+  },
+  "unlazy": {
+    "met": 4,
+    "unmet": [
+      "FORMULA-FULL-REVIEW"
+    ]
+  }
+}

@@ -1308,3 +1308,18 @@ claim. Specific Terra code-review payload approval and twofullsuite run approval
 still pending; neither launched. MissionControl3e53d55 served200,Rfieldsunchanged.
 Next complete those gates when authorized; meanwhile remaining manifest/model
 work is available. M1PARTIAL/manifestDRAFT; no push/merge/release/cleanup.
+
+## Per-variance Gaussian formula route — 2026-08-31
+
+Candidate adds pervar=true Gaussian formula dispatch with complete mean design.
+Zero mean, trait intercepts, shared slopes, categorical coding and complete long
+input preserve native contract.35new+50adjacent tests pass114.70s, same final
+regression fails on preserved baseline. Original R fixture10native+9formula checks
+pass38.37s, deltaLL3.864e-9, both absolute gradients<1e-4. Strict docs107.60s and
+four desktop/mobile screenshots inspected. Seven negative verifier controls pass.
+Evidence: core070/pervar-formula-evidence.json; raw pervar-formula-* directories.
+Unlazy4/5, independent review/fullsuite approvals still pending, no substitute
+review dispatch. Bridge/AGHQfallback/intervals and full manifest/capability work
+remain. Next safe work: default-unique AGHQ fallback reporting and actual frozen
+admission behavior, or required manifest reconciliation. No code-sharing reroute.
+No jobs/workers active, no push/merge/release/cleanup. M1PARTIAL/fullmanifestDRAFT.

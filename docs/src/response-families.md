@@ -869,8 +869,9 @@ The development option `fixed_residual_sd=c` fits
 `fit.φ²` (total diagonal variances) and `fit.fixed_residual_sd`. The fixed scale
 is not an estimated parameter. Positive `c` uses L-BFGS even with `method=:em`;
 the default `c=0` leaves the existing model unchanged. It does not automatically
-choose R's data-dependent small scale. Formula/bridge routing, intervals and
-AGHQ fallback metadata for this decomposition remain unverified.
+choose R's data-dependent small scale. The formula route is available with
+`family=Normal(), pervar=true`; R bridge, intervals and AGHQ fallback metadata
+for this decomposition remain unverified.
 
 ```@example pervar_design
 using GLLVM, Random
@@ -903,7 +904,26 @@ for (trait, variance) in enumerate(fit_fixed.ψ²)
 end
 ```
 
-This example checks the decomposition, not recovery or interval calibration.
+The formula interface can build the same complete design. `y ~ 1 + site_x`
+includes one intercept per trait and a shared slope. `y ~ 0 + site_x` removes
+the intercepts; `y ~ 0` is a zero-mean model. Omitting the intercept marker
+(`y ~ site_x`) includes trait intercepts. This applies to `pervar=true`; the
+existing shared-variance formula route is unchanged. Complete long tables and
+categorical contrast choices use the same per-variance route.
+
+```@example pervar_design
+fit_formula = gllvm(@formula(y ~ 1 + site_x), Y, (site_x=site_x,);
+    family=GLLVM.Normal(), K=1, pervar=true, fixed_residual_sd=0.2)
+@assert fit_formula.converged # hide
+@assert isapprox(fit_formula.loglik, fit_fixed.loglik; atol=1e-7) # hide
+@assert isapprox(fit_formula.β, fit_fixed.β; atol=1e-6) # hide
+println("Formula coefficients: ", length(fit_formula.β))
+println("Formula/matrix likelihood agreement: ",
+    isapprox(fit_formula.loglik, fit_fixed.loglik; atol=1e-7))
+```
+
+These examples check model equivalence and the variance decomposition, not
+recovery or interval calibration.
 
 ### Mixed-family response vector — `fit_mixed_gllvm`
 
