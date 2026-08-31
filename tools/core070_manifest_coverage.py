@@ -143,6 +143,10 @@ def require_frozen_manifest(manifest,root):
     need(ids and len(set(ids))==len(ids),'no unique executable cases')
     validate_mapping(mapping,index['facts'],ids)
     validate_family_roles(index['facts'],mapping,cases,root)
+    if any(f['id'].startswith('aghq/') for f in index['facts']):
+        from core070_aghq_case_plan import require_frozen_aghq
+        try:require_frozen_aghq(manifest,root)
+        except (ValueError,OSError) as error:raise CoverageError('SOURCE_COVERAGE: '+str(error)) from error
     review_path=safe_path(root,c.get('scope_review',''))
     need(c.get('scope_review_sha256')==sha(review_path),'scope review bytes are unpinned')
     review=read_json(review_path)

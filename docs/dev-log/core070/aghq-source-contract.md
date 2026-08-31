@@ -1,7 +1,7 @@
 # Stage 1a: frozen-source contract and implementation obligations
 
 Reference: gllvmTMB `b4d5fee64def88bc768dda1f1f77c29b295edd86`.
-Status: **R control subset verified; Julia estimator and public-fit parity unpaid.**
+Historical source annex; see [current required cases](aghq-required-cases.md) for implementation and verification status. The original39 helper checks remain unchanged; partial Gaussian/Poisson/binomial public candidates now exist. Full public-fit parity remains unpaid.
 This annex does not freeze or complete the programme manifest.
 
 ## Estimator boundary

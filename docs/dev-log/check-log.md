@@ -16279,3 +16279,7 @@ frozen reference contract; no such change authorized here. FullprogrammeACTIVE,
 M1PARTIAL,manifestDRAFT. StudentRhealth/density,remainingStage1a,17links,covariance,
 structuredmultinomial,bridge,recovery/performance/fullsuite/finaldocs unpaid.
 Alljobs terminal; noDRACcompute,noBproductionchild,push,merge,release or cleanup.
+
+## 2026-08-31 — AGHQ required-case mapping
+
+Added source-pinned32 public/numerical obligations and21 family descriptors; all39 historical controls accounted for,16 paired normalization bindings. Frozen R39PASS; Totoro16+2 dialect checksPASS8.785s, nofits. Contract11tests plus adjacent6+5 and aggregate self-testPASS; five runtime corruptions reject. Central freeze now requires public/family obligations, not helper labels. Planned links only; fullmanifestDRAFT/M1PARTIAL. NoetherTerrahigh review+onefollowup found anchor errors, parent corrected. See after-task/2026-08-31-core070-aghq-case-manifest.md and core070/aghq-case-plan-evidence.json.

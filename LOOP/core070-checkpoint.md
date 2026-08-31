@@ -1037,3 +1037,9 @@ structuredmultinomial,bridge,recovery/performance/fullsuite/finaldocs unpaid.
 Alljobs terminal; noDRACcompute,noBproductionchild,push,merge,release or cleanup.
 
 Mission Control local 6f39d348e04b2e3fc2aeae0ba04025e9c593b258: servedHTTP200, exact Julia-field readback, R fields unchanged; exact-file lease released. BF-DIAGNOSTIC reverified1met/0unmet/0abandoned; original binomial parity still unmet.
+
+## 2026-08-31 — AGHQ manifest annex and source binding
+
+Read core070/aghq-required-cases.md, aghq-required-case-plan.json and after-task/2026-08-31-core070-aghq-case-manifest.md. All39 helper facts accounted;16 paired normalization checks+2dialect controls, R39PASS, Totoro8.785sPASS.32 public/numerical obligations+21family descriptors now explicit, central freeze requires real contracts.11localcontract+6manifest+5family testsPASS; five runtime corruption negatives. No publicfit promotion;22controlpolicies unbound. Master752sourcefacts unchanged, AGHQplannedlinks only; all executablelists empty. NoetherTerrahigh fresh+onefollowup reviewed source; anchor errors parent-repaired, no panel signoff. NEXT bind public admissions to same-model fixtures/calls and complete remaining domains; do not replay unchanged helper controls. Binomialk5 and Studenthealth/density failures unchanged. No src numerical changes, fits, new B child, DRACcompute, push/merge/release/cleanup. Alljobs terminal; fullprogrammeACTIVE/M1PARTIAL/fullmanifestDRAFT.
+
+Mission Control local6a94ff40505c81ac7c116a2d46eafa56dd8351ba: HTTP200/exact Julia-field readback, Rfieldsunchanged, exact-file leaseRELEASED. AC-CONTRACT/AC-EVIDENCE reverified2met/0unmet/0abandoned.

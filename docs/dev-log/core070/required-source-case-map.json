@@ -7,235 +7,389 @@
       "source_id": "aghq/AGHQ-AUTO-K-BINOMIAL",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-AUTO-K-BINOMIAL-CONTROL-CONTRACT"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-AUTO-K-DELTA",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-AUTO-K-DELTA-CONTROL-CONTRACT"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-AUTO-K-GAUSSIAN",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-AUTO-K-GAUSSIAN-CONTROL-CONTRACT"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-AUTO-K-NB2",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-AUTO-K-NB2-CONTROL-CONTRACT"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-AUTO-K-ORDINAL",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-AUTO-K-ORDINAL-CONTROL-CONTRACT"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-AUTO-K-POISSON",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-AUTO-K-POISSON-CONTROL-CONTRACT"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-AUTO-K-TWEEDIE",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-AUTO-K-TWEEDIE-CONTROL-CONTRACT"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-CTRL-AUTO",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-CTRL-AUTO-PAIRED-CONTROL"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-CTRL-FALSE",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-CTRL-FALSE-PAIRED-CONTROL"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-CTRL-NINE",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-CTRL-NINE-PAIRED-CONTROL"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-CTRL-NULL",
       "classification": "compatibility_adapter",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-CTRL-NULL-PAIRED-CONTROL"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-CTRL-ONE",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-CTRL-ONE-PAIRED-CONTROL"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-CTRL-TRUE",
       "classification": "compatibility_adapter",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-CTRL-TRUE-PAIRED-CONTROL"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-CTRL-TWO",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-CTRL-TWO-PAIRED-CONTROL"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-DEFAULT-OFF",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-DEFAULT-OFF-CONTROL-CONTRACT"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-DEFAULT-RIDGE-EXCLUDED",
       "classification": "intentionally_excluded",
       "executable_case_ids": [],
-      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-INVALID-EMPTY",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-INVALID-EMPTY-PAIRED-CONTROL"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-INVALID-FRACTION",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-INVALID-FRACTION-PAIRED-CONTROL"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-INVALID-INF",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-INVALID-INF-PAIRED-CONTROL"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-INVALID-NA",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-INVALID-NA-PAIRED-CONTROL"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-INVALID-NAN",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-INVALID-NAN-PAIRED-CONTROL"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-INVALID-NEGATIVE",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-INVALID-NEGATIVE-PAIRED-CONTROL"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-INVALID-STRING",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-INVALID-STRING-PAIRED-CONTROL"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-INVALID-VECTOR",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-INVALID-VECTOR-PAIRED-CONTROL"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-INVALID-ZERO",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-INVALID-ZERO-PAIRED-CONTROL"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-POLICY-AUTO-ENFORCE-CUTOFF",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-POLICY-AUTO-ENFORCE-CUTOFF-CONTROL-CONTRACT"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-POLICY-BAD-COLUMNS",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-POLICY-BAD-COLUMNS-CONTROL-CONTRACT"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-POLICY-BAD-DIMENSION",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-POLICY-BAD-DIMENSION-CONTROL-CONTRACT"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-POLICY-BAD-TRAITS",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-POLICY-BAD-TRAITS-CONTROL-CONTRACT"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-POLICY-EMPTY-GATE",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-POLICY-EMPTY-GATE-CONTROL-CONTRACT"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-POLICY-EXPLICIT",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-POLICY-EXPLICIT-CONTROL-CONTRACT"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-POLICY-EXPLICIT-BYPASS-CUTOFF",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-POLICY-EXPLICIT-BYPASS-CUTOFF-CONTROL-CONTRACT"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-POLICY-MISSING-GATE",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-POLICY-MISSING-GATE-CONTROL-CONTRACT"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-POLICY-NO-QUADRATURE",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-POLICY-NO-QUADRATURE-CONTROL-CONTRACT"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-POLICY-OFF",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-POLICY-OFF-CONTROL-CONTRACT"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-POLICY-SITES-INDEPENDENT",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-POLICY-SITES-INDEPENDENT-CONTROL-CONTRACT"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-POLICY-TRAITS19",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-POLICY-TRAITS19-CONTROL-CONTRACT"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-POLICY-TRAITS20",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-POLICY-TRAITS20-CONTROL-CONTRACT"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "aghq/AGHQ-POLICY-UNRESOLVED-WIDTH",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
+      "planned_case_ids": [
+        "CORE070-AGHQ-POLICY-UNRESOLVED-WIDTH-CONTROL-CONTRACT"
+      ],
+      "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
     },
     {
       "source_id": "covariance/COV-ANIMAL-DEP",
@@ -4805,5 +4959,8 @@
       "executable_case_ids": [],
       "rationale": "Executable model/interface or rejection case mapping remains required."
     }
+  ],
+  "required_case_annexes": [
+    "docs/dev-log/core070/aghq-required-case-plan.json"
   ]
 }
