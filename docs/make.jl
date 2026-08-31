@@ -48,6 +48,17 @@ makedocs(;
     warnonly = false,
 )
 
+# A standalone local preview still requests this script from the version picker.
+# Deployment supplies its own version index; do not write one for deployed builds.
+if "--local" in ARGS
+    local_sites = filter(path -> isdir(path) && isfile(joinpath(path, "index.html")),
+                         readdir(joinpath(@__DIR__, "build"); join=true))
+    isempty(local_sites) && error("No rendered local documentation site found")
+    for site in local_sites
+        write(joinpath(site, "versions.js"), "var DOC_VERSIONS = [\"dev\"];\n")
+    end
+end
+
 # Use DocumenterVitepress.deploydocs (NOT Documenter's): it flattens the Vitepress
 # build output (build/1/*) into the version root on gh-pages and rewrites the
 # site `base`. Plain Documenter.deploydocs deploys build/ verbatim, which lands

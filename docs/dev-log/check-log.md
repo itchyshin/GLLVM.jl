@@ -16639,3 +16639,23 @@ Fullsuite/specificexternalreviewapprovals unchanged. No child/review dispatched,
 noDRACjobs/push/release. Sourceandprocesspins preserved; allhandles terminal.
 See after-task/2026-08-31-core070-student-nlminb-check.md and
 core070/student-nlminb-warmstart-evidence.json. FullmanifestDRAFT, M1PARTIAL.
+
+## 2026-08-31 — native Gaussian sources with explicit fixed residual SD
+
+Gauss implemented sigma_eps_fixed in source_fit.jl after parent captured the
+unsupported-keyword red. Fixed coordinate omitted from starts/parameters/dof/
+gradients/Hessians; free default and13argument constructor retained. New37tests
+and existing117units pass. Original MODE-ORD-INDEP/COMMON pairs27assertions PASS
+in25.51s, deltaLL2.56e-11/3.98e-13, both engines healthy, exact RfixedSD and6/4dof.
+Six existing nonspatial source pairs also pass. No Rsource/fixture/tolerance edits.
+Strict Documenter final110.90s PASS. Desktop/mobile inspected: shorter code,
+localversions.js404 fixed for --local only; no deployment change. Captured browser
+errors/overflow/brokenanchors nowzero; optionalfavicon404 and buildbranding/bundle
+warnings remain M3polish. First missing-helper, old-docenv and previewfailures
+retained. Unlazy2/3 gates; fullprogramme unpaid, fullmanifestDRAFT/M1PARTIAL.
+MC94a126b1e2a8921b421b49ec71913be31393d231 servedHTTP200,Rfieldsunchanged.
+Evidence source-fixed-residual-final-evidence.json; after-task source-fixed-residual.
+Next remainingseven exactcovariancemodefits, formula/bridge, CoreAGHQ scope and
+recovery/inference; originalStudentstillunhealthy. Fullsuite/externalreview
+approvalsunmodified. One requestedTerra/high nativeproductionchild; nofullpanel.
+Allhandles terminal. NoDRACjobs/push/merge/release/cleanup; foreignlanesuntouched.
