@@ -97,11 +97,12 @@ a push, merge or release. Resume in the existing local lane. The handoff gate al
 reports the programme-wide Unlazy ledgers as unmet because the approved programme
 is still active; this document does not relabel them complete or abandoned.
 
-FINDINGS-OF-RECORD: the repo evidence and this committed handover are the durable
-record; no brain-vault finding was written.
-FINDING-OF-RECORD: `COV-ORD-LATENT-BARE` remains PARTIAL solely because the
-direct native fit reports `converged=false`; retained invariant agreement cannot
-override that failed health gate.
+FINDINGS-OF-RECORD: none
+
+The repo evidence and this committed handover are the durable task record. No new
+general brain-vault decision or reusable finding was produced. The repo-specific
+status remains: `COV-ORD-LATENT-BARE` is PARTIAL solely because the direct native
+fit reports `converged=false`; invariant agreement cannot override that health gate.
 
 Closure receipts:
 
