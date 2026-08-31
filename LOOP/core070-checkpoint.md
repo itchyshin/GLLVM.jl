@@ -1669,3 +1669,29 @@ This replaces the previous next-action paragraph, not its historical evidence.
 - MC 0ce5a2a6240becd54e3320e35ec45305c78c41bd, HTTP200, Rfieldsunchanged; targetedlease released.
   Unlazy covariance-formulas-01 finalreverify1of2; programmeunpaid.
   Evidence core070/covariance-formula-evidence.json; allfit/reviewhandles terminal.
+
+## Latest checkpoint — 2026-08-31, covariance public-R bridge boundary
+
+- Frozen public `engine="julia"` behavior is now recorded for the same9 Gaussian
+  covariance contracts:8 formulas stop at `GJL-GATE-STRUCTURED-TERMS`; ordinary
+  DEP fails earlier in the frozen R adapter. None reaches Julia or counts as a
+  callable structured bridge fit.
+- Fresh boundary05 runs9cases in0.22s. Fresh current-manifest family-formulas04
+  passes10cases/9executions/187assertions in97.89s; public-bridge-models05 passes
+  3same-model cases/6routes in59.23s. Oracle checks pass before/after both batches.
+- Combined public bridge component14cases PASS. Draft integrity104tests and
+  self-test pass:42bindings,703nonexcluded facts still unmapped. Full manifest
+  remains DRAFT; programme ACTIVE/M1PARTIAL.
+- Attempts01-04 remain retained. Installed oracle marker, failed-attempt bytes,
+  raw result/process hashes and current registry/manifest pins reverify. Hopper
+  final read-only review reports no P0-P3 finding. Rose programme panel NOT RUN.
+- Local evidence commits886d4c94+1aad48b6. MissionControl0fd633f servedstatus
+  HTTP200 with both Julia fields visible and R0.7.1 focus preserved; exact lease
+  released. Durable restore-tested checkpoint:
+  `/Users/z3437171/local-scratch/preservation/core070-execution-20260831T221516Z-delta`.
+- NEXT continue the remaining admitted native/model contracts. A callable
+  structured bridge adapter, covariance modifiers/nonGaussian routes, latent
+  multinomial, data/postfit, publicStage1aAGHQ, recovery/coverage, performance,
+  fullsuites, finalDocumenter and completion panels remain unpaid. Original
+  Student health and binomial AGHQ blockers remain. NoDRACjobs/push/merge/release/
+  destructivecleanup; R0.7.1/article/Cursor/Claude lanes remain protected.
