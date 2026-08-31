@@ -99,6 +99,9 @@ is still active; this document does not relabel them complete or abandoned.
 
 FINDINGS-OF-RECORD: the repo evidence and this committed handover are the durable
 record; no brain-vault finding was written.
+FINDING-OF-RECORD: `COV-ORD-LATENT-BARE` remains PARTIAL solely because the
+direct native fit reports `converged=false`; retained invariant agreement cannot
+override that failed health gate.
 
 Closure receipts:
 
