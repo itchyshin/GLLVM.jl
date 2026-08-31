@@ -8,6 +8,10 @@ status-tracked GLM response-family surface.
 
 > API may change before v1.0.
 
+`fit_gaussian_sources(...; sigma_eps_fixed=s)` also supports a specified positive
+residual SD; omitted means it is estimated. Fixed coordinates are excluded from
+`dof`, gradients and Hessians. This does not establish full source-model parity.
+
 Local development candidate: `SourceCovariance` and `fit_gaussian_sources`
 represent fixed covariance among source nodes with explicit observation-to-node
 projections. Targeted numerical checks and six retained comparisons with R

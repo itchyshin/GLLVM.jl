@@ -1,0 +1,99 @@
+{
+  "status": "FIXED_RESIDUAL_SOURCE_SLICE_PASS_NOT_FULL_PARITY",
+  "new_case_ids": [
+    "MODE-ORD-INDEP",
+    "MODE-ORD-COMMON"
+  ],
+  "existing_case_ids": [
+    "STRUCT-PHY-TREE-RR",
+    "STRUCT-PHY-DENSE-RR",
+    "STRUCT-PHY-TREE-PROPTO",
+    "STRUCT-ANI-PED-SPARSE",
+    "STRUCT-KER-SINGLE-PSI",
+    "STRUCT-KER-MULTI"
+  ],
+  "negative_controls": 16,
+  "process_sha256": "de04aa5d9cd53dc5813a17a098b72ae2fe4538933378babcfacc03c13041855f",
+  "result_sha256": "479ade3388a346beed728ab06680a7cf30d109795f85cba51881fae7ae3dcb1c",
+  "strict_documenter": true,
+  "unit_assertions": 154,
+  "new_pair_assertions": 27,
+  "receipts": {
+    "source-fixed-residual-green-01": "de04aa5d9cd53dc5813a17a098b72ae2fe4538933378babcfacc03c13041855f",
+    "source-fixed-residual-pair-02": "44e494270fdbb426c30c7505ccbdc769960b12d6fe5e08257cc459be6e551924",
+    "source-fixed-residual-docs-02": "35f955728ccd5ef1571f847e5ec76c692bd336a3d732e7787efceceb4c3b35a8"
+  },
+  "results": {
+    "source-fixed-residual-green-01": [
+      {
+        "id": "oracle-before",
+        "exit_code": 0,
+        "elapsed_seconds": 0.11507963575422764
+      },
+      {
+        "id": "fixed-residual",
+        "exit_code": 0,
+        "elapsed_seconds": 30.071428211405873
+      },
+      {
+        "id": "fixed-pair",
+        "exit_code": 1,
+        "elapsed_seconds": 2.7697904780507088
+      },
+      {
+        "id": "source-unit",
+        "exit_code": 0,
+        "elapsed_seconds": 22.104900807142258
+      },
+      {
+        "id": "r-public",
+        "exit_code": 0,
+        "elapsed_seconds": 0.9664598107337952
+      },
+      {
+        "id": "native",
+        "exit_code": 0,
+        "elapsed_seconds": 28.81957335025072
+      },
+      {
+        "id": "cross",
+        "exit_code": 0,
+        "elapsed_seconds": 0.7161495760083199
+      },
+      {
+        "id": "oracle-after",
+        "exit_code": 0,
+        "elapsed_seconds": 0.1149586346000433
+      },
+      {
+        "id": "strict-local-docs",
+        "exit_code": 1,
+        "elapsed_seconds": 74.83859770558774
+      }
+    ],
+    "source-fixed-residual-pair-02": [
+      {
+        "id": "oracle-before",
+        "exit_code": 0,
+        "elapsed_seconds": 0.11513734422624111
+      },
+      {
+        "id": "fixed-pair",
+        "exit_code": 0,
+        "elapsed_seconds": 25.511381097137928
+      },
+      {
+        "id": "oracle-after",
+        "exit_code": 0,
+        "elapsed_seconds": 0.1150414515286684
+      }
+    ],
+    "source-fixed-residual-docs-02": [
+      {
+        "id": "strict-local-docs",
+        "exit_code": 0,
+        "elapsed_seconds": 114.60222965292633
+      }
+    ]
+  }
+}

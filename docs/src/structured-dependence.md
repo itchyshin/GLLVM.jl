@@ -233,6 +233,33 @@ the residual variance is `0.04`, and the group-level trait variance is
 they show how the output is read, not that the estimator recovers parameters in
 general data.
 
+When residual noise is specified independently, pass its standard deviation
+explicitly. It remains fixed; `start`, `parameters` and `dof` then omit that
+coordinate. The default continues to estimate residual noise.
+
+```@example fixed_sources
+fixed_noise = fit_gaussian_sources(
+    Y; sources=[source],
+    sigma_eps_fixed=0.2,
+    g_tol=1e-7,
+)
+@assert fixed_noise.residual_fixed && fixed_noise.sigma_eps == 0.2 # hide
+@assert fixed_noise.converged && fixed_noise.gradient_norm <= 1e-7 # hide
+@assert dof(fixed_noise) == 2 # hide
+println(
+    "fixed residual SD: ",
+    fixed_noise.sigma_eps,
+)
+println(
+    "free parameters: ",
+    dof(fixed_noise),
+)
+```
+
+This option can represent reference models with fixed residual variance. It
+does not infer the noise from data or resolve variance identification by itself.
+Gradients and Hessians cover free coordinates only.
+
 [`GaussianSourcesFit`](@ref) retains normalized likelihood, source snapshots,
 optimizer coordinates, stopping reason, fresh gradient norm and Hessian
 diagnostics. A positive Hessian does not prove identification or recovery;
@@ -240,7 +267,8 @@ near-zero curvature for the retained unique-`Ψ` case is specifically why no
 uncertainty interpretation should be attached to this result.
 
 This layer requires complete finite Gaussian responses, at least two units and
-variation in at least one trait. It uses dense factorization over **all response
+variation in at least one trait when residual noise is estimated. With positive
+fixed residual noise, constant responses are also admitted. It uses dense factorization over **all response
 cells**: quadratic memory and cubic factorization cost. Keep initial examples
 small. It does not parse trees, pedigrees or meshes; estimate source kernels;
 fit slopes or loading masks; handle missing or non-Gaussian responses; provide

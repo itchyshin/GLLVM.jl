@@ -91,13 +91,33 @@ function _source_trait_covariances(sources,p,parameters)
     return result
 end
 
-function _gaussian_sources_nll(Y,sources,theta; projected=nothing)
+"""Validate and convert a user-supplied fixed residual SD to `Float64`."""
+function _source_fixed_sigma(value)
+    value isa Real && !(value isa Bool) && isfinite(value) && value>0 ||
+        throw(ArgumentError("sigma_eps_fixed must be a finite positive real representable as Float64"))
+    sigma=try
+        Float64(value)
+    catch
+        throw(ArgumentError("sigma_eps_fixed must be a finite positive real representable as Float64"))
+    end
+    isfinite(sigma) && sigma>0 ||
+        throw(ArgumentError("sigma_eps_fixed must be a finite positive real representable as Float64"))
+    return sigma
+end
+
+function _gaussian_sources_nll(Y,sources,theta; projected=nothing,sigma_eps_fixed=nothing)
     p,n=size(Y);m=p*n
-    length(theta)==p+sum(s->_source_nparams(s,p),sources;init=0)+1 || throw(DimensionMismatch("source-model parameter count differs"))
+    source_coordinates=sum(s->_source_nparams(s,p),sources;init=0)
+    residual_fixed=sigma_eps_fixed!==nothing
+    length(theta)==p+source_coordinates+(residual_fixed ? 0 : 1) ||
+        throw(DimensionMismatch("source-model parameter count differs"))
     all(isfinite,theta) || return oftype(theta[1],Inf)
-    B=_source_trait_covariances(sources,p,view(theta,p+1:length(theta)-1))
+    # Keep the internal likelihood parameterization in logSD coordinates while
+    # differentiating only the user-visible free coordinates.
+    full_theta=residual_fixed ? [theta;oftype(theta[1],log(sigma_eps_fixed))] : theta
+    B=_source_trait_covariances(sources,p,view(full_theta,p+1:p+source_coordinates))
     S=projected===nothing ? [s.projection*s.covariance*s.projection' for s in sources] : projected
-    V=exp(2theta[end])*Matrix{eltype(theta)}(I,m,m)
+    V=exp(2full_theta[end])*Matrix{eltype(full_theta)}(I,m,m)
     for r in eachindex(sources);V+=kron(S[r],B[r]);end
     all(isfinite,V) || return oftype(theta[1],Inf)
     factor=try
@@ -106,7 +126,7 @@ function _gaussian_sources_nll(Y,sources,theta; projected=nothing)
         e isa PosDefException || rethrow()
         return oftype(theta[1],Inf)
     end
-    residual=vec(Y.-view(theta,1:p))
+    residual=vec(Y.-view(full_theta,1:p))
     return (m*log(2pi)+logdet(factor)+dot(residual,factor\residual))/2
 end
 
@@ -116,7 +136,8 @@ end
 Result of [`fit_gaussian_sources`](@ref). `beta` contains trait means,
 `sigma_eps` the independent residual SD, and `trait_covariances` the estimated
 covariance for each named source in `sources` order. `parameters` is the exact
-optimizer vector (means, source coordinates, residual logSD).
+optimizer vector (means, source coordinates, and residual logSD when that SD is
+free). `residual_fixed` records whether `sigma_eps` was held fixed.
 
 `converged` requires the optimizer verdict and a fresh gradient check.
 `gradient_norm`, `hessian_min_eigenvalue`, `hessian_positive_definite`,
@@ -138,24 +159,39 @@ struct GaussianSourcesFit <: StatsAPI.StatisticalModel
     iterations::Int
     stopping_reason::Symbol
     observations::Int
+    residual_fixed::Bool
 end
 
+# Stored unconstrained fits created before `residual_fixed` was recorded remain
+# free-residual fits.
+GaussianSourcesFit(beta,sigma_eps,trait_covariances,sources,parameters,loglik,
+    converged,gradient_norm,hessian_min_eigenvalue,hessian_positive_definite,iterations,
+    stopping_reason,observations)=GaussianSourcesFit(beta,sigma_eps,
+        trait_covariances,sources,parameters,loglik,converged,gradient_norm,
+        hessian_min_eigenvalue,hessian_positive_definite,iterations,stopping_reason,
+        observations,false)
+
 """
-    fit_gaussian_sources(Y; sources, start=nothing, g_tol=1e-6, iterations=500)
+    fit_gaussian_sources(Y; sources, start=nothing, sigma_eps_fixed=nothing,
+                         g_tol=1e-6, iterations=500)
 
 Fit finite complete Gaussian data `Y` (traits × units) with trait intercepts,
 independent residual noise, and additive [`SourceCovariance`](@ref) blocks.
 The covariance of `vec(Y)` is `sigma_eps² I + sum(kron(P*C*P', B))`.
-There must be at least two units and nonzero within-trait variation. An empty
-`sources` vector fits trait intercepts and a common independent residual SD.
+There must be at least two units. By default, `sigma_eps` is estimated and at
+least one trait must vary within units. Supplying a finite, positive,
+`Float64`-representable `sigma_eps_fixed` holds the residual SD fixed and also
+allows constant responses. An empty `sources` vector fits trait intercepts and
+a common independent residual SD.
 
 Fixed source matrices/projections are validated and copied. Trait covariance
 parameters are raw packed lower loadings for latent/dependent modes, and
 logSDs for independent/unique modes. `common` ties diagonal variances. `start`
-contains means, each source's coordinates in order, and residual logSD; a supplied
-vector must be finite and have exactly the required length. The default start
-is deterministic. No automatic ridge, source jitter, random restart or estimator
-selection occurs. Final likelihood, ForwardDiff gradient and Hessian are recomputed.
+contains means, each source's coordinates in order, and residual logSD only when
+the residual SD is free; a supplied vector must be finite and have exactly the
+required length. The default start is deterministic. No automatic ridge, source
+jitter, random restart or estimator selection occurs. Final likelihood,
+ForwardDiff gradient and Hessian are recomputed over the free coordinates.
 
 This development interface is limited to fixed Gaussian source matrices. Its
 dense covariance has quadratic memory and cubic factorization cost in the
@@ -165,7 +201,7 @@ missing responses, slopes, loading masks, non-Gaussian families or intervals.
 These remain required programme work; this API is not a full R-parity claim.
 """
 function fit_gaussian_sources(Y::AbstractMatrix{<:Real}; sources,
-        start=nothing,g_tol::Real=1e-6,iterations::Integer=500)
+        start=nothing,sigma_eps_fixed=nothing,g_tol::Real=1e-6,iterations::Integer=500)
     p,n=size(Y)
     p>0 && n>=2 || throw(ArgumentError("source fitting needs at least one trait and two units"))
     all(isfinite,Y) || throw(ArgumentError("source fitting requires finite complete responses"))
@@ -173,15 +209,19 @@ function fit_gaussian_sources(Y::AbstractMatrix{<:Real}; sources,
     iterations>=0 || throw(ArgumentError("iterations must be non-negative"))
     all(s->s isa SourceCovariance,sources) || throw(ArgumentError("sources must contain SourceCovariance objects"))
     length(unique(s.name for s in sources))==length(sources) || throw(ArgumentError("source names must be unique"))
+    fixed_sigma=sigma_eps_fixed===nothing ? nothing : _source_fixed_sigma(sigma_eps_fixed)
+    residual_fixed=fixed_sigma!==nothing
     # Revalidate mutable array contents and keep snapshots independent of the caller.
     snapshots=[SourceCovariance(s.covariance,s.projection;name=s.name,mode=s.mode,
         rank=s.mode===:latent ? s.rank : nothing,unique=s.unique,common=s.common) for s in sources]
     ss=SourceCovariance[snapshots...]
     all(s->size(s.projection,1)==n,ss) || throw(DimensionMismatch("source projection rows must equal Y's unit count"))
-    total=p+sum(s->_source_nparams(s,p),ss;init=0)+1
+    source_coordinates=sum(s->_source_nparams(s,p),ss;init=0)
+    total=p+source_coordinates+(residual_fixed ? 0 : 1)
     data=Matrix{Float64}(Y);all(isfinite,data) || throw(ArgumentError("responses exceed Float64 range"))
     means=vec(mean(data,dims=2))
-    sum(abs2,data.-means)>0 || throw(ArgumentError("at least one trait must vary across units for a finite residual-variance ML estimate"))
+    (!residual_fixed && sum(abs2,data.-means)==0) &&
+        throw(ArgumentError("at least one trait must vary across units for a finite residual-variance ML estimate"))
     if start===nothing
         theta=copy(means)
         for s in ss
@@ -195,14 +235,14 @@ function fit_gaussian_sources(Y::AbstractMatrix{<:Real}; sources,
                 s.unique && append!(theta,fill(log(.25),s.common ? 1 : p))
             end
         end
-        push!(theta,log(max(std(vec(data))/2,.1)))
+        !residual_fixed && push!(theta,log(max(std(vec(data))/2,.1)))
     else
         length(start)==total || throw(DimensionMismatch("start has $(length(start)) coordinates; expected $total"))
         all(x->x isa Real && isfinite(x),start) || throw(ArgumentError("start must be finite and real"))
         theta=Float64.(start)
     end
     S=[s.projection*s.covariance*s.projection' for s in ss]
-    objective(t)=_gaussian_sources_nll(data,ss,t;projected=S)
+    objective(t)=_gaussian_sources_nll(data,ss,t;projected=S,sigma_eps_fixed=fixed_sigma)
     isfinite(objective(theta)) || throw(ArgumentError("start produces an invalid covariance"))
     optimizer=Optim.LBFGS(linesearch=Optim.LineSearches.BackTracking(order=3))
     result=Optim.optimize(objective,theta,optimizer,
@@ -222,10 +262,11 @@ function fit_gaussian_sources(Y::AbstractMatrix{<:Real}; sources,
     converged=Optim.converged(result) && isfinite(value) && isfinite(gradient_norm) && gradient_norm<=g_tol
     reason=converged ? :converged : !isfinite(value) ? :invalid_final :
         Optim.iterations(result)>=iterations ? :iteration_limit : :gradient_not_converged
-    B=_source_trait_covariances(ss,p,view(estimate,p+1:length(estimate)-1))
-    return GaussianSourcesFit(collect(estimate[1:p]),exp(estimate[end]),B,ss,
+    B=_source_trait_covariances(ss,p,view(estimate,p+1:p+source_coordinates))
+    sigma_eps=residual_fixed ? fixed_sigma : exp(estimate[end])
+    return GaussianSourcesFit(collect(estimate[1:p]),sigma_eps,B,ss,
         collect(estimate),-value,converged,gradient_norm,min_eig,pd,
-        Optim.iterations(result),reason,length(data))
+        Optim.iterations(result),reason,length(data),residual_fixed)
 end
 
 """Return the trait-intercept coefficients of a `GaussianSourcesFit`."""
@@ -234,9 +275,12 @@ coef(f::GaussianSourcesFit)=copy(f.beta)
 loglikelihood(f::GaussianSourcesFit)=f.loglik
 """Return the number of observed response cells used by a `GaussianSourcesFit`."""
 nobs(f::GaussianSourcesFit)=f.observations
+"""Return the number of free estimated parameters of a `GaussianSourcesFit`."""
+dof(f::GaussianSourcesFit)=length(f.parameters)
 
 function Base.show(io::IO,f::GaussianSourcesFit)
     print(io,"GaussianSourcesFit(",length(f.beta)," traits, ",length(f.sources),
-        " sources, loglik=",f.loglik,", status=",f.stopping_reason,
+        " sources, residual=",(f.residual_fixed ? "fixed" : "free"),
+        ", loglik=",f.loglik,", status=",f.stopping_reason,
         ", gradient_norm=",f.gradient_norm,", Hessian_PD=",f.hessian_positive_definite,")")
 end

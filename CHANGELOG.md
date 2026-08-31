@@ -20,6 +20,9 @@ All notable changes to GLLVM.jl are documented here.
   coefficients, including ordinary and phylogenetic profiled likelihoods.
 - Restore Wald/profile intervals for these models; failed profile refits no
   longer fabricate finite bounds without a finite likelihood crossing.
+- Add explicit `sigma_eps_fixed` for Gaussian source fits, retaining the free
+  residual default. Starts and parameter counts omit the fixed coordinate;
+  diagnostics differentiate only free parameters and retain fixed-noise provenance.
 - Development interface: typed fixed Gaussian source covariances, additive
   projected-source fitting, and explicit gradient/Hessian diagnostics. Independent,
   latent and dependent trait modes pass targeted tests. Six retained nonspatial

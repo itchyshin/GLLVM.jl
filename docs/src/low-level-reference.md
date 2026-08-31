@@ -55,6 +55,7 @@ GLLVM._phylo_ordinal_xlv_marginal_loglik
 GLLVM._gauss_hermite
 GLLVM._fit_phylo_beta_xlv
 GLLVM._gaussian_source_loglik
+GLLVM._source_fixed_sigma
 ```
 
 ## Internal AGHQ adaptation and optimization
