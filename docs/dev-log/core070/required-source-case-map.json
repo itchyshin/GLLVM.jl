@@ -453,7 +453,11 @@
       "source_id": "covariance/COV-ANIMAL-LATENT",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Executable model/interface or rejection case mapping remains required.",
+      "structured_case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
+      "structured_reference_case_ids": [
+        "STRUCT-ANI-PED-SPARSE"
+      ]
     },
     {
       "source_id": "covariance/COV-ANIMAL-LV-REJECT",
@@ -505,7 +509,13 @@
       "source_id": "covariance/COV-KERNEL-FOLDED-UNIQUE",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Executable model/interface or rejection case mapping remains required.",
+      "structured_case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
+      "structured_reference_case_ids": [
+        "STRUCT-KER-SINGLE-PSI",
+        "STRUCT-KER-MULTI",
+        "STRUCT-KER-MULTI-PSI-PRUNED"
+      ]
     },
     {
       "source_id": "covariance/COV-KERNEL-INDEP",
@@ -522,7 +532,13 @@
       "source_id": "covariance/COV-KERNEL-LATENT",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Executable model/interface or rejection case mapping remains required.",
+      "structured_case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
+      "structured_reference_case_ids": [
+        "STRUCT-KER-SINGLE-PSI",
+        "STRUCT-KER-MULTI",
+        "STRUCT-KER-MULTI-PSI-PRUNED"
+      ]
     },
     {
       "source_id": "covariance/COV-KERNEL-LV-REJECT",
@@ -646,7 +662,13 @@
       "source_id": "covariance/COV-PHYLO-INDEP",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Executable model/interface or rejection case mapping remains required.",
+      "structured_case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
+      "structured_reference_case_ids": [
+        "STRUCT-PHY-TREE-RR",
+        "STRUCT-PHY-DENSE-RR",
+        "STRUCT-PHY-TREE-PROPTO"
+      ]
     },
     {
       "source_id": "covariance/COV-PHYLO-INDEP-BARE-REJECT",
@@ -658,7 +680,13 @@
       "source_id": "covariance/COV-PHYLO-LATENT",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Executable model/interface or rejection case mapping remains required.",
+      "structured_case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
+      "structured_reference_case_ids": [
+        "STRUCT-PHY-TREE-RR",
+        "STRUCT-PHY-DENSE-RR",
+        "STRUCT-PHY-TREE-PROPTO"
+      ]
     },
     {
       "source_id": "covariance/COV-PHYLO-LV-REJECT",
@@ -1000,25 +1028,57 @@
       "source_id": "covariance/COV-SPATIAL-DEP",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Executable model/interface or rejection case mapping remains required.",
+      "structured_case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
+      "structured_reference_case_ids": [
+        "STRUCT-SPA-INDEP",
+        "STRUCT-SPA-LATENT",
+        "STRUCT-SPA-LATENT-PSI",
+        "STRUCT-SPA-DEP",
+        "STRUCT-SPA-COMMON-MAP"
+      ]
     },
     {
       "source_id": "covariance/COV-SPATIAL-FOLDED-UNIQUE",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Executable model/interface or rejection case mapping remains required.",
+      "structured_case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
+      "structured_reference_case_ids": [
+        "STRUCT-SPA-INDEP",
+        "STRUCT-SPA-LATENT",
+        "STRUCT-SPA-LATENT-PSI",
+        "STRUCT-SPA-DEP",
+        "STRUCT-SPA-COMMON-MAP"
+      ]
     },
     {
       "source_id": "covariance/COV-SPATIAL-INDEP",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Executable model/interface or rejection case mapping remains required.",
+      "structured_case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
+      "structured_reference_case_ids": [
+        "STRUCT-SPA-INDEP",
+        "STRUCT-SPA-LATENT",
+        "STRUCT-SPA-LATENT-PSI",
+        "STRUCT-SPA-DEP",
+        "STRUCT-SPA-COMMON-MAP"
+      ]
     },
     {
       "source_id": "covariance/COV-SPATIAL-LATENT",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Executable model/interface or rejection case mapping remains required.",
+      "structured_case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
+      "structured_reference_case_ids": [
+        "STRUCT-SPA-INDEP",
+        "STRUCT-SPA-LATENT",
+        "STRUCT-SPA-LATENT-PSI",
+        "STRUCT-SPA-DEP",
+        "STRUCT-SPA-COMMON-MAP"
+      ]
     },
     {
       "source_id": "covariance/COV-SPATIAL-LV-REJECT",
@@ -5197,6 +5257,7 @@
   ],
   "required_case_annexes": [
     "docs/dev-log/core070/aghq-required-case-plan.json",
-    "docs/dev-log/core070/slopes-required-case-plan.json"
+    "docs/dev-log/core070/slopes-required-case-plan.json",
+    "docs/dev-log/core070/structured-required-case-plan.json"
   ]
 }

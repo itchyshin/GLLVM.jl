@@ -1135,3 +1135,32 @@ Originalbinomialk5/Studentt/defaultunique/remainingAGHQ failures remain unpaid.
 All compute and reviews terminal.
 
 MC8cffb26e068f3b5895a9fe55095d9e60cf62cd60: servedHTTP200, exact Julia-field readback, Rfieldsunchanged, exact-file leaseRELEASED. SI-CONTRACT/SI-NEGATIVES/SI-INTEGRATION freshly reverified3met/0unmet/0abandoned.
+
+## 2026-08-31 — structured source preparation
+Programme ACTIVE/M1PARTIAL/fullmanifestDRAFT. Totoro qualificationPASS: ape5.8.1,
+Matrix1.7.5,fmesher0.8.0,35nodes12x35projection. Structured24call capture:
+11models prepare,12reject,1multi-kernelunique request silently losesPsi.
+Compare uniqueTRUE/FALSE: identical data/params/maps/random and no warning.
+Two badpedigree calls reject with generic missingphylo error; diagnostic-quality
+obligations explicitly blocked, not satisfied by genericrejection. TreeQ4nodes,
+pedigreeQ4nodes(observec,d), denseC+1e-8I,2kernel tensor,spatialFEM/tau/maps
+verified independently. Noobjective/fit/nativeclaims. Three captures retained:
+firstMatrixloadFAIL .666s;second4diagnosticFAIL1.316s;third24PASS1.317s.
+5structuredtests26negative scenariosPASS;6census testsPASS;earlier slope/masksPASS.
+Noether Terrahigh source review and onefollowup; see runtime review receipts.
+Fullfreeze nowrequires structurednative/formula/bridge roles or explicit
+negative/defect disposition, plus specific executed pedigree diagnostics.
+NEXT complete remaining source/interface specifications before fullscopefreeze;
+no need replay these unchanged reference captures. Nativecalls remainUNRESOLVED.
+Source annexes are prerequisite contracts, not a complete executable manifest.
+No newBproductionchild, Rengine/Julia numericalsrc/foreign edit,DRACcampaign,
+push,merge,release or cleanup. User timing update: provisional70–120working
+hours remaining plusqueue; revise atM1checkpoint, not a measured forecast.
+
+Mission Control Julia-only correction a1bf4a176e0ec33333a23c47a8951c4ee99f7bcf verifiedHTTP200/readback;
+Rfieldsunchanged, exact-file leaseRELEASED.
+Noether followup withdrew false archive provenance alarm: PAX/hash/all4332
+archivefiles and5readback files verify frozenR. Independent structurechecksPASS;
+read-onlyRtemp blocked fulltests there, parent fullRDS testsPASS. Allreviews and
+compute terminal. ST-CONTRACT/ST-NEGATIVES/ST-INTEGRATION3met/0unmet/0abandoned.
+Remaining Psi-loss and pedigree-diagnostic capability obligations explicit.

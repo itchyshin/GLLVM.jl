@@ -16343,3 +16343,12 @@ ProgrammeACTIVE/M1PARTIAL/fullmanifestDRAFT. No engine/API/R/foreign edits or
 fit/campaign/DRAC/push/merge/release/cleanup.
 
 MC8cffb26e068f3b5895a9fe55095d9e60cf62cd60: servedHTTP200, exact Julia-field readback, Rfieldsunchanged, exact-file leaseRELEASED. SI-CONTRACT/SI-NEGATIVES/SI-INTEGRATION freshly reverified3met/0unmet/0abandoned.
+
+## 2026-08-31 — structured Core070 reference input contracts
+Qualified35node mesh;24 public frozen-R calls captured before MakeADFun body:
+11requested models prepare,12reject,1multi-kernel unique request silently loses
+Psi. Exact tree/pedigree precision, dense jitter, kernel tensor/offsets, spatial
+projection/FEM, tau ties and random shapes verified. Two pedigree diagnostics
+remain explicitly blocked. Five verifier tests/26negative scenarios and6source
+census testsPASS; all three captures retained. No fitted/native parity claim.
+See core070/structured-input-contract.md and after-task/2026-08-31-core070-structured-input.md.
