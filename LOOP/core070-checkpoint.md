@@ -1425,3 +1425,23 @@ shell for squeue); Totoro reachable. No jobs submitted; at most five DRAC comput
 authorized, allocations not implied. Full-suite and external review approvals
 unchanged; no programme completion or new hours estimate. All processes terminal.
 See core070/public-bridge-runtime-evidence.json and runtime public-bridge-runtime-03.
+
+## 2026-08-31 — original public bridge model replay
+
+Totoro58.80s: original Poisson/Beta/NB2 through exported matrix gllvm_julia_fit
+and reversed-long gllvmTMB(engine="julia") match fresh default native likelihoods
+exactly, intercepts exactly, loading covariance<=6e-17, and dispersion exactly.
+Fresh native gradients<=7.37e-6, derivative-step stability<=5.17e-8. Correct p/n/K,
+parameter counts14/15/19, link labels and AIC verified. Existing source-bound R
+fits/policies are retained and reverified, not rerun here; R loglik differences
+about1.43e-11/1.78e-11/3.413e-6 respectively. No src or oracle edits.
+TruncatedNB2 family and explicit diagonal public requests reject with named R
+gates. First batch58.49s failed JSON serialization of JuliaNamedTuple after
+models passed; raw RDS retained. Recursive transport serialization repair and
+empty/missing-check guard regressions pass; second complete batch passes. Ten
+model receipt corruptions reject. Unlazy2/3 gates, full-programme gate unpaid.
+Evidence core070/public-bridge-models-final-evidence.json; runtime public-bridge-models-02.
+Next bind bridge case IDs into required manifest/harness, execute default-unique
+Gaussian warning semantics, then remaining Core070/AGHQ/covariance/data/postfit
+contracts. Full manifest DRAFT; no full-family promotion, no new hours claim.
+Fullsuite/external-review approvals unchanged. All processes terminal.

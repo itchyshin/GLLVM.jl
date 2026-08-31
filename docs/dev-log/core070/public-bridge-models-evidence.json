@@ -1,0 +1,64 @@
+{
+  "status": "THREE_MODEL_BRIDGE_QUALIFICATION_NOT_FULL_PARITY",
+  "families": [
+    "poisson",
+    "beta",
+    "nb2"
+  ],
+  "public_routes": 6,
+  "rejections": 2,
+  "seconds": 58.798264576122165,
+  "result_sha256": "bd5485323f9be7771f7f8ff9902aab2996d81dd4106b361acd86f84013e3391f",
+  "process_sha256": "d30fbe5538c637f56276394a34431b6899f619ce9afd052e23010c351ddd170f",
+  "r_comparison": "retained original source-bound R fits; not newly executed in this batch",
+  "results": {
+    "poisson": {
+      "matrix": {
+        "loglik": 0,
+        "alpha": 0,
+        "shared_covariance": 2.77555756156289e-17,
+        "dispersion": 0,
+        "prior_r_loglik": 1.43245415529236e-11
+      },
+      "formula": {
+        "loglik": 0,
+        "alpha": 0,
+        "shared_covariance": 2.77555756156289e-17,
+        "dispersion": 0,
+        "prior_r_loglik": 1.43245415529236e-11
+      }
+    },
+    "beta": {
+      "matrix": {
+        "loglik": 0,
+        "alpha": 0,
+        "shared_covariance": 0,
+        "dispersion": 0,
+        "prior_r_loglik": 1.78488335222937e-11
+      },
+      "formula": {
+        "loglik": 0,
+        "alpha": 0,
+        "shared_covariance": 0,
+        "dispersion": 0,
+        "prior_r_loglik": 1.78488335222937e-11
+      }
+    },
+    "nb2": {
+      "matrix": {
+        "loglik": 0,
+        "alpha": 0,
+        "shared_covariance": 5.55111512312578e-17,
+        "dispersion": 0,
+        "prior_r_loglik": 3.41282611771021e-06
+      },
+      "formula": {
+        "loglik": 0,
+        "alpha": 0,
+        "shared_covariance": 5.55111512312578e-17,
+        "dispersion": 0,
+        "prior_r_loglik": 3.41282611771021e-06
+      }
+    }
+  }
+}
