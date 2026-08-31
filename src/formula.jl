@@ -26,6 +26,9 @@ import StatsModels
 using StatsModels: @formula, FormulaTerm, Term, ConstantTerm, FunctionTerm, InteractionTerm, schema, apply_schema, modelmatrix, coefnames
 import Tables
 
+struct _FormulaKUnset end
+const _FORMULA_K_UNSET = _FormulaKUnset()
+
 function _extract_formula_symbols(term)
     syms = Symbol[]
     if term isa Term
@@ -78,8 +81,9 @@ end
 # The per-variance Gaussian fitter treats X as the complete mean design. Use
 # StatsModels' intercept/rank rules before expanding a site intercept to one
 # coefficient per trait. Keep the legacy shared-variance route separate.
-function _pervar_formula_design(rhs, cols, p, n; contrasts)
+function _pervar_formula_design(rhs, cols, p, n; contrasts, names::Bool=false)
     intercept = !StatsModels.omitsintercept(rhs)
+    site_names = String[]
     terms = rhs isa Tuple ? rhs : (rhs,)
     if all(t -> t isa ConstantTerm, terms)
         site = zeros(n, 0)
@@ -88,10 +92,12 @@ function _pervar_formula_design(rhs, cols, p, n; contrasts)
         sch = StatsModels.schema(f, cols, contrasts)
         applied = StatsModels.apply_schema(f, sch, StatsModels.StatisticalModel)
         mm = Matrix{Float64}(StatsModels.modelmatrix(applied.rhs, cols))
-        names = StatsModels.coefnames(applied.rhs)
-        names = names isa AbstractVector ? string.(names) : [string(names)]
+        model_names = StatsModels.coefnames(applied.rhs)
+        model_names = model_names isa AbstractVector ? string.(model_names) : [string(model_names)]
         intercept = StatsModels.hasintercept(applied.rhs)
-        site = mm[:, findall(!=("(Intercept)"), names)]
+        site_idx = findall(!=("(Intercept)"), model_names)
+        site = mm[:, site_idx]
+        site_names = model_names[site_idx]
     end
     size(site, 1) == n || throw(DimensionMismatch("formula design must have one row per site"))
     q0 = intercept ? p : 0
@@ -104,11 +110,18 @@ function _pervar_formula_design(rhs, cols, p, n; contrasts)
     for k in axes(site, 2), s in 1:n, t in 1:p
         X[t, s, q0 + k] = site[s, k]
     end
+    if names
+        coefficient_names = String[]
+        append!(coefficient_names, ("trait_$(trait)" for trait in 1:p if intercept))
+        append!(coefficient_names, site_names)
+        return X, coefficient_names
+    end
     return X
 end
 
 """
-    gllvm(formula, Y, data; family = Normal(), K, contrasts = Dict(), kwargs...)
+    gllvm(formula, Y, data; family = Normal(), K, sources = nothing,
+          contrasts = Dict(), kwargs...)
 
 Fit a GLLVM from an R-`gllvmTMB`-style `@formula` over a wide species×site response
 matrix `Y` (`p × n`) and a `Tables`-compatible `data` of **site-level** covariates
@@ -147,11 +160,19 @@ The default shared-variance route keeps its existing behavior.
 With no covariates it reduces to the intercept-only fit. Supplied table columns
 must still have one entry per site; an empty table is allowed for an
 intercept-only formula because `Y` supplies the site count.
+With explicit `sources`, only `Normal()` is admitted and `K`, `pervar=true`, and
+an explicit `X` are rejected. The formula then supplies the complete source-model
+mean design: trait-specific intercept columns (when present) and shared
+site-level coefficients, using StatsModels' contrast, interaction, and rank
+rules. This does not parse formula source terms, trees, pedigrees, meshes, or
+random slopes.
 `ZIB` through `@formula` is **no-X only** for now (bridge still OWED; ZIB+X formula
 is fenced).
 """
 function gllvm(formula::FormulaTerm, Y::AbstractMatrix, data;
-               family = Normal(), K::Integer, pervar::Bool = false,
+               family = Normal(), K::Union{Integer, _FormulaKUnset} = _FORMULA_K_UNSET,
+               sources = nothing,
+               pervar::Bool = false,
                contrasts::AbstractDict = Dict{Symbol, Any}(), kwargs...)
     p, n = size(Y)
     cols = Tables.columntable(data)
@@ -159,6 +180,18 @@ function gllvm(formula::FormulaTerm, Y::AbstractMatrix, data;
         length(column) == n || throw(DimensionMismatch(
             "`data` column `$name` has $(length(column)) rows but Y has $n sites (columns)"))
     end
+    if sources !== nothing
+        family isa Normal || throw(ArgumentError("formula source models require family=Normal()"))
+        K === _FORMULA_K_UNSET || throw(ArgumentError("do not supply K with explicit sources; each source owns its rank"))
+        pervar && throw(ArgumentError("pervar=true is incompatible with explicit sources"))
+        haskey(kwargs, :X) && throw(ArgumentError("do not supply X with a source formula; the formula defines the complete mean"))
+        haskey(kwargs, :coefficient_names) && throw(ArgumentError("do not supply coefficient_names with a source formula; the formula supplies them"))
+        X, coefficient_names = _pervar_formula_design(
+            formula.rhs, cols, p, n; contrasts=contrasts, names=true)
+        return fit_gaussian_sources(Y; sources=sources, X=X,
+            coefficient_names=coefficient_names, kwargs...)
+    end
+    K === _FORMULA_K_UNSET && throw(UndefKeywordError(:K))
     if pervar
         family isa Normal || throw(ArgumentError("pervar=true requires family=Normal()"))
         haskey(kwargs, :X) && throw(ArgumentError("do not supply X with a pervar formula; the formula defines the complete mean"))
@@ -212,7 +245,8 @@ function gllvm(formula::FormulaTerm, Y::AbstractMatrix, data;
 end
 
 """
-    gllvm(formula, long_data; family = Normal(), K, species = :species, site = :site, contrasts = Dict(), kwargs...)
+    gllvm(formula, long_data; family = Normal(), K, species = :species, site = :site,
+          contrasts = Dict(), kwargs...)
 
 Long-format (melted) front door: one row per `(species, site)` observation. Pivots
 `long_data` to the wide `(Y, site_data)` representation and calls the wide
@@ -230,8 +264,12 @@ keys (default `:species`/`:site`). `Y` is built in sorted species×site order, s
 round-trip identity). Requires a **complete** species×site grid (no missing
 cells) and site covariates that are **constant within site** (both validated with
 a clear error), matching the wide-mode contract.
+For explicit Gaussian `sources`, source projection rows must correspond to this
+same sorted site order; the long route passes that order through to the wide
+source fitter unchanged.
 """
-function gllvm(formula::FormulaTerm, long_data; family = Normal(), K::Integer,
+function gllvm(formula::FormulaTerm, long_data; family = Normal(),
+               K::Union{Integer, _FormulaKUnset} = _FORMULA_K_UNSET,
                species::Symbol = :species, site::Symbol = :site,
                contrasts::AbstractDict = Dict{Symbol, Any}(), kwargs...)
     cols = Tables.columntable(long_data)
@@ -265,7 +303,9 @@ function gllvm(formula::FormulaTerm, long_data; family = Normal(), K::Integer,
         "long data is not a complete species×site grid (v1 requires every cell present; " *
         "missing-response handling is a separate capability)"))
 
-    syms = _extract_formula_symbols(formula.rhs)
+    # Repeated terms in interactions share one site-level column. `unique`
+    # preserves first occurrence, which keeps the formula's covariate order.
+    syms = unique(_extract_formula_symbols(formula.rhs))
     site_data = if isempty(syms)
         NamedTuple()
     else
@@ -289,5 +329,9 @@ function gllvm(formula::FormulaTerm, long_data; family = Normal(), K::Integer,
         NamedTuple{Tuple(syms)}(Tuple(vecs))
     end
 
-    return gllvm(formula, Y, site_data; family = family, K = K, contrasts = contrasts, kwargs...)
+    if K === _FORMULA_K_UNSET
+        return gllvm(formula, Y, site_data; family=family, contrasts=contrasts, kwargs...)
+    end
+    return gllvm(formula, Y, site_data; family=family, K=K,
+        contrasts=contrasts, kwargs...)
 end

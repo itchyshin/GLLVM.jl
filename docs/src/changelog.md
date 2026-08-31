@@ -6,6 +6,11 @@ Notable changes to GLLVM.jl. Style mirrors `gllvmTMB`'s NEWS: status labels
 ## GLLVM.jl (development version)
 
 ### Changed
+- **Development:** fixed Gaussian source fits accept a complete mean design `X`.
+  Explicit-source wide/long formulas expose trait intercepts, shared slopes,
+  categorical contrasts and interactions. Fits retain the copied design, response
+  shape and coefficient labels. No R source-grammar, bridge, random-slope or
+  calibrated-uncertainty claim is implied.
 - **Development:** per-trait Gaussian fitting accepts an explicit fixed residual
   SD and estimates unique variances within that constraint. Results retain unique
   and total diagonal variances; existing defaults and parameter counts are unchanged.
@@ -16,7 +21,7 @@ Notable changes to GLLVM.jl. Style mirrors `gllvmTMB`'s NEWS: status labels
   Plain heteroscedastic AGHQ remains unimplemented and is labeled separately.
 - **PARTIAL:** `SourceCovariance` and `fit_gaussian_sources` fit fixed Gaussian
   covariance among source groups. Targeted tests and six retained public-R
-  comparisons pass; formula/bridge support and calibrated uncertainty remain
+  comparisons pass; bridge support and calibrated uncertainty remain
   unverified. The unique-variance comparison has nearly singular curvature.
 - Exact Gaussian fits and Wald/profile intervals handle an empty fixed-effect
   design. Failed profile refits cannot supply finite bounds without a finite

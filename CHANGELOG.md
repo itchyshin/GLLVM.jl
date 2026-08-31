@@ -5,6 +5,11 @@ All notable changes to GLLVM.jl are documented here.
 ## Unreleased
 
 ### Changed
+- **Development:** fixed Gaussian source fits accept a complete mean design `X`.
+  Explicit-source wide/long formulas expose trait intercepts, shared slopes,
+  categorical contrasts and interactions. Fits retain the copied design, response
+  shape and coefficient labels. No R source-grammar, bridge, random-slope or
+  calibrated-uncertainty claim is implied.
 - Truncated NB2 exposes its existing per-trait fitter through explicit
   `disp_group=:species` in native and intercept-only wide/long formula calls.
   Shared dispersion remains the default; partial grouping is rejected.
@@ -28,7 +33,7 @@ All notable changes to GLLVM.jl are documented here.
   latent and dependent trait modes pass targeted tests. Six retained nonspatial
   models match public R 0.7.0 fits under the declared likelihood/health checks.
   The unique-variance case has nearly singular curvature; intervals are unverified.
-  Existing fitters are unchanged. No source-kernel estimation, formula/bridge,
+  Existing fitters are unchanged. No source-kernel estimation, R source-grammar/bridge,
   non-Gaussian, inference, recovery or performance completion claim.
 - Local binomial candidate: opt-in ordinary AGHQ with logit/probit/cloglog,
   retained trials/masks/offsets, estimator metadata and frozen-objective inference.

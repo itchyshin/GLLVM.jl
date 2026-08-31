@@ -16,7 +16,8 @@ Local development candidate: `SourceCovariance` and `fit_gaussian_sources`
 represent fixed covariance among source nodes with explicit observation-to-node
 projections. Targeted numerical checks and six retained comparisons with R
 0.7.0 pass. This evidence is limited to those fixed Gaussian source models;
-formula/bridge support, calibrated uncertainty and performance improvements
+explicit-source Gaussian formulas support fixed predictors with a complete mean
+design. R bridge support, calibrated uncertainty and performance improvements
 remain unverified. See the structured-dependence guide for covariance axes
 and the nearly singular unique-variance case.
 

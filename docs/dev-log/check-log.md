@@ -16678,3 +16678,19 @@ Next remaining covariance modifiers/interfaces, multinomial/data/postfit and
 CoreAGHQ, recovery/inference. OriginalStudentunhealthy; fullmanifestDRAFT/M1PARTIAL.
 Fullsuite/specific externalreview approvals unchanged. NoDRACjobs/push/release;
 all handles terminal, foreign lanes untouched. See covariance-mode-fits after-task.
+
+## 2026-08-31 — Gaussian source complete means and explicit-source formulas
+
+- Source matrix/tensor X and wide/long formula interfaces qualified in isolated
+  codex/core070-aghq-20260830. Default trait-mean route unchanged; explicit X
+  uses diagnosed LBFGS/Hager-Zhang without ridge/tolerance/seed changes.
+- Final Totoro unit253/253 (106.92s), new public R pair33/33 (23.36s),
+  all3native/formula routes deltaLL2.02e-11 and both-engine health PASS.
+- Nine earlier covariance-mode pairs and six earlier nonspatial source pairs
+  reverified; R object readback reconstructs their normalized densities.
+- Strict executed Documenter113.66s PASS; desktop/mobile inspected. Bundle-size
+  and default-branding warnings remain. Seventeen gate negative controls PASS.
+- All red/setup/diagnostic/build attempts retained. Full suite/quality/performance
+  and programme panel gates unpaid; full manifest DRAFT/M1 PARTIAL.
+- Evidence: core070/source-design-formula-evidence.json; after-task report:
+  after-task/2026-08-31-core070-source-mean-formula.md. No release/foreign edits.

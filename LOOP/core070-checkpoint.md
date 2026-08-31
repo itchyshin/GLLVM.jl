@@ -1582,3 +1582,33 @@ Next remaining covariance modifiers/interfaces, multinomial/data/postfit and
 CoreAGHQ, recovery/inference. OriginalStudentunhealthy; fullmanifestDRAFT/M1PARTIAL.
 Fullsuite/specific externalreview approvals unchanged. NoDRACjobs/push/release;
 all handles terminal, foreign lanes untouched. See covariance-mode-fits after-task.
+
+## Latest checkpoint — 2026-08-31, complete source means and formulas
+
+This supersedes the previous next-action paragraph while retaining its history.
+
+- Native complete X (pn×q or p×n×q), q0 fixed-zero means and Gaussian explicit
+  source formulas implemented. Fits retain design/names/shape; old constructors
+  and default fitting path unchanged. Long interaction duplicates repaired.
+- Declared recovery originalbacktracking gradient2.15e-6 failed1e-7; diagnostic
+  Hager-Zhang LBFGS with same starts reached1.57e-8. Used only on explicit X.
+- Final253/253 unit,33/33 new R pair; direct/wide/reversed-long deltaLL2.02e-11,
+  nativegradient6.68e-9 and Rgradient4.00e-5. Retained9mode+6sourcepairs pass.
+- Strict docs113.66s and desktop/mobile checks pass. Examples executed; internal
+  type print removed, code shortened. Standard long-code scrolling plus existing
+  bundle/branding warnings remain M3 work. All failed attempts retained.
+- Fresh Unlazy source-design-01 leaf1/2; programme still unpaid. Independent
+  readback and17 damaged-record/dependency/source controls PASS. See
+  docs/dev-log/core070/source-design-formula-evidence.json and associated audit.
+- MC 11095c06a145539bbecc14d3ece19861e4163e69 HTTP200, Julia-only change/R fields preserved.
+- Gauss/Boole Terra-high native requested, each one repair follow-up; both idle.
+  Parent owns returned files. All launched remote checks terminal; no DRAC jobs.
+- Seven DRAC systems checked: Fir/Rorqual/Trillium/Narval/Killarney/Vulcan/Tamia;
+  Nibi no socket. At most5DRAC computers authorized; Totoro key auth allowed.
+- NEXT: remain in isolated lane, refresh canonical GLLVM.jl lease, then address
+  finite source-admission/covariance modifier/formula grammar contract and remaining
+  Core/AGHQ/multinomial/data/postfit/bridge obligations. Do not rerun known failed
+  Student warm-start paths or call the full manifest frozen. OriginalStudenthealth
+  andbinomialAGHQ failures unpaid. Fullsuite/specificexternalreview approvals unchanged.
+- No push/merge/release/destructive cleanup. Local candidate preserved separately;
+  latest durable backup path is .unlazy/core070-aghq/latest-durable-checkpoint.txt.

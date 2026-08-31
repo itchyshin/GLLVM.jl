@@ -169,7 +169,8 @@ The ordering and dimension must match the rows, not arbitrary observation groups
 
 The retained evidence includes six paired public-R/native fixed-source Gaussian
 fits and targeted unit checks. It does **not** establish broad parity,
-calibration or recovery, nor does it cover formula or bridge interfaces. In a
+calibration or broad recovery. Explicit-source formulas have a separate, bounded
+mean-design comparison described below; bridge support remains unverified. In a
 retained `unique=true` case, near-zero curvature also means the current evidence
 does not support a reliable uncertainty claim. The worked example below is a
 deterministic analytic check, not a recovery simulation.
@@ -193,8 +194,8 @@ independent source variance; and `:dep` estimates a full lower-triangular
 loading matrix. `unique=true` adds a trait-diagonal term only to a latent
 source. `common=true` ties independent variances, or a latent source's unique
 diagonal; it does not turn independent fields into one shared field. No jitter
-or loading ridge is added, and trait intercepts are optimized jointly with the
-covariance.
+or loading ridge is added. Mean coefficients and covariance coordinates are
+optimized jointly; the default mean has one intercept per trait.
 
 ```@example fixed_sources
 using GLLVM, LinearAlgebra
@@ -260,19 +261,90 @@ This option can represent reference models with fixed residual variance. It
 does not infer the noise from data or resolve variance identification by itself.
 Gradients and Hessians cover free coordinates only.
 
+### Fixed predictors with explicit sources
+
+For a measured site predictor, keep the source matrix explicit and describe the
+mean with a Julia formula. Do not supply `K`: rank belongs to each source object.
+The intercept expands to one coefficient per trait; `x` has a shared slope.
+
+```@example fixed_sources
+x = repeat([-1.0, 0.0, 1.0], 4)
+Y_predictor = Y .+ 0.6 .* x'
+with_predictor = gllvm(
+    @formula(y ~ 1 + x),
+    Y_predictor,
+    (x=x,);
+    sources=[source],
+    sigma_eps_fixed=0.2,
+    g_tol=1e-7,
+)
+@assert with_predictor.converged # hide
+@assert isapprox(coef(with_predictor)[2], 0.8; atol=1e-6) # hide
+labels = with_predictor.coefficient_names
+estimates = round.(
+    coef(with_predictor); digits=4,
+)
+for (label, value) in zip(labels, estimates)
+    println(label, ": ", value)
+end
+```
+
+The constructed response already has within-group slope `0.2`, so adding `0.6*x`
+gives the displayed slope `0.8`. Fixed positive residual noise keeps this exact
+mean construction well defined; this is an executable analytic example, not a
+recovery claim. Categorical contrasts and interactions use StatsModels.
+
+The direct equivalent supplies the **complete** design, without an implicit
+intercept:
+
+```@example fixed_sources
+X = zeros(1, length(x), 2)
+X[1, :, 1] .= 1
+X[1, :, 2] .= x
+with_design = fit_gaussian_sources(
+    Y_predictor;
+    sources=[source], X,
+    coefficient_names=["trait_1", "x"],
+    sigma_eps_fixed=0.2,
+    g_tol=1e-7,
+)
+@assert isapprox(loglikelihood(with_design), loglikelihood(with_predictor); atol=1e-8) # hide
+println("formula/design agreement: ",
+    isapprox(
+        coef(with_design),
+        coef(with_predictor); atol=1e-8,
+    ),
+)
+```
+
+`X` may be traits × units × coefficients, or an equivalent matrix with one row
+per entry of `vec(Y)` (traits vary fastest). Zero columns fix the mean at zero;
+`y ~ 0` requests the same model. A full-rank saturated design requires fixed
+positive residual noise. A long-table formula uses sorted site and trait levels;
+**source projection rows must follow the sorted site order**, even if input rows
+are shuffled. Predictor values must be constant within each site.
+
+One retained public R 0.7.0 comparison checks a known-kernel independent source
+with a shared slope through direct, wide-formula and reversed-long routes. It
+compares the actual design, free parameters, likelihood and both engines' fit
+health. This does not validate every predictor/source combination or the R bridge.
+
 [`GaussianSourcesFit`](@ref) retains normalized likelihood, source snapshots,
-optimizer coordinates, stopping reason, fresh gradient norm and Hessian
+copied mean design, coefficient labels, response shape, optimizer coordinates,
+stopping reason, fresh gradient norm and Hessian
 diagnostics. A positive Hessian does not prove identification or recovery;
 near-zero curvature for the retained unique-`Ψ` case is specifically why no
 uncertainty interpretation should be attached to this result.
 
 This layer requires complete finite Gaussian responses, at least two units and
-variation in at least one trait when residual noise is estimated. With positive
-fixed residual noise, constant responses are also admitted. It uses dense factorization over **all response
+a nonzero residual after fitting the mean when residual noise is estimated.
+With default trait intercepts, this requires variation in at least one trait.
+With positive fixed residual noise, constant responses are also admitted. It uses dense factorization over **all response
 cells**: quadratic memory and cubic factorization cost. Keep initial examples
 small. It does not parse trees, pedigrees or meshes; estimate source kernels;
-fit slopes or loading masks; handle missing or non-Gaussian responses; provide
-formula/bridge routes, new-unit prediction, or confidence intervals. For a
+fit random source slopes or loading masks; handle missing or non-Gaussian
+responses; parse R random-effect grammar; or provide bridge routes, new-unit
+prediction or confidence intervals. For a
 new analysis, first decide whether the covariance belongs to rows or source
 groups, then start with a small fixed, complete Gaussian example and inspect
 the convergence and gradient diagnostics before extending the model.

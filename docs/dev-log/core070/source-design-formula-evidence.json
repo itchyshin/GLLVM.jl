@@ -1,0 +1,97 @@
+{
+  "status": "SOURCE_DESIGN_FORMULA_SLICE_PASS_NOT_PROGRAMME",
+  "reference": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "negative_controls": 17,
+  "new_pair_routes": 3,
+  "retained_mode_pairs": 9,
+  "retained_source_pairs": 6,
+  "strict_docs": true,
+  "desktop_mobile": true,
+  "verifier_sha256": "d1cd14baecaf1a144a3046ac8e89dd1bbcc273f270017a428a980059aba1ddcf",
+  "receipts": {
+    "source-design-final-05": "c80cbd35c41f8dbed9fa5ea3e427ddfd495083c0e5feea2c614d7cec087c27f8",
+    "source-design-regress-01": "162f9c7c1292a08d750c26991a36ebd1d6d902e50a6f0b5b7bb5c1daba21b3cd",
+    "source-design-docs-03": "7e61fc540f15ea9f9d538303c26b2a4779f9cf81709fb45c2898fec2ea336804"
+  },
+  "results": {
+    "source-design-final-05": [
+      {
+        "id": "source-design-units",
+        "exit_code": 0,
+        "elapsed_seconds": 106.9182816427201
+      },
+      {
+        "id": "oracle-before",
+        "exit_code": 0,
+        "elapsed_seconds": 0.11503074876964092
+      },
+      {
+        "id": "source-design-r-pair",
+        "exit_code": 0,
+        "elapsed_seconds": 23.357153352349997
+      },
+      {
+        "id": "oracle-after",
+        "exit_code": 0,
+        "elapsed_seconds": 0.11498389020562172
+      }
+    ],
+    "source-design-regress-01": [
+      {
+        "id": "fixture-structure",
+        "exit_code": 0,
+        "elapsed_seconds": 0.16529133543372154
+      },
+      {
+        "id": "oracle-before",
+        "exit_code": 0,
+        "elapsed_seconds": 0.1148522961884737
+      },
+      {
+        "id": "covariance-fits",
+        "exit_code": 0,
+        "elapsed_seconds": 37.10185757651925
+      },
+      {
+        "id": "fixed-pair",
+        "exit_code": 0,
+        "elapsed_seconds": 22.265743046998978
+      },
+      {
+        "id": "r-public",
+        "exit_code": 0,
+        "elapsed_seconds": 0.9675772543996572
+      },
+      {
+        "id": "native",
+        "exit_code": 0,
+        "elapsed_seconds": 31.737741716206074
+      },
+      {
+        "id": "cross",
+        "exit_code": 0,
+        "elapsed_seconds": 0.7168516870588064
+      },
+      {
+        "id": "oracle-after",
+        "exit_code": 0,
+        "elapsed_seconds": 0.1153427753597498
+      }
+    ],
+    "source-design-docs-03": [
+      {
+        "id": "strict-local-docs",
+        "exit_code": 0,
+        "elapsed_seconds": 113.65623302012682
+      }
+    ]
+  },
+  "unit_assertions": 253,
+  "new_pair_assertions": 33,
+  "new_pair_max_abs_delta_loglik": 2.0179413695586845e-11,
+  "new_pair_r_gradient_max": 3.9979122097433134e-05,
+  "new_pair_native_gradient_max": 6.677517205844197e-09,
+  "recovery_gradient_max": 1.5651404644545508e-08,
+  "full_package_suites": "NOT_RUN",
+  "programme_status": "ACTIVE_M1_PARTIAL"
+}
