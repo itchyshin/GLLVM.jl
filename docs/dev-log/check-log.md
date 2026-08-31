@@ -16053,3 +16053,13 @@ formula-only selection; native/formula artifacts namespaced.22 Julia registry,
 and aggregate selftestPASS; Unlazy4gates fresh. FullmanifestDRAFT/M1PARTIAL;
 no numerical source edits, fullsuite/docsrender/review or foreign changes.
 Report: after-task/2026-08-31-core070-nb2-formula-required.md.
+
+### 2026-08-31 — frozen shape boundaries
+
+Nine Tweedie/Student native domain dispositions bound;24 other rejection rows
+unresolved. Totoro50/50 assertions10.190s, R69descriptor replayPASS, no fits.
+Seven inputsreject; Studentnu1/trait-lengthvector remain documentedextensions,
+with36df1/Cauchy densitychecks. Explicitloadedroot, source/process/artifacthashes
+verified.16negativecontrols and Unlazy2gatesPASS; wrong-call verifier red repaired.
+Family plan2native+1formula+9boundarybindings,85unbound; fullmanifestDRAFT.
+See after-task/2026-08-31-core070-shape-boundaries.md. No src/R/foreign edits.

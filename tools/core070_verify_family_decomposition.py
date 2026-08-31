@@ -29,6 +29,8 @@ def verify():
     plan.verify()
     from core070_verify_nb2_formula_required import verify as verify_bound_cases
     verify_bound_cases()
+    from core070_verify_shape_boundaries import verify as verify_boundaries
+    verify_boundaries()
     index=coverage.build_index(ROOT)
     assert index==coverage.read_json(ROOT/coverage.INDEX)
     mapping=coverage.read_json(ROOT/coverage.MAPPING)

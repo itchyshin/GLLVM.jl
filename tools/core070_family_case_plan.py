@@ -8,12 +8,15 @@ PLAN=coverage.PREFIX+'family-required-case-plan.json'
 INPUTS=[coverage.PREFIX+'family-admission-subset.json',
         coverage.PREFIX+'family-route-contract.json',
         coverage.PREFIX+'family-model-catalogue.json',
-        coverage.PREFIX+'nb2-formula-required-evidence.json']
+        coverage.PREFIX+'nb2-formula-required-evidence.json',
+        coverage.PREFIX+'family-boundary-contract.json',
+        coverage.PREFIX+'family-boundary-evidence.json']
 ROLES=['native_model','formula_interface','public_r_bridge']
 
 def build():
-    admission,entry,catalogue,paired=[coverage.read_json(ROOT/p) for p in INPUTS]
+    admission,entry,catalogue,paired,boundary_contract,boundary_evidence=[coverage.read_json(ROOT/p) for p in INPUTS]
     formula=paired["formula"]
+    boundaries={row["source_fact_id"]:row for row in boundary_contract["rows"]}
     assert admission['reference_commit']==entry['reference_commit']==catalogue['reference_commit']==coverage.REFERENCE
     entries={r['source_id']:r for r in entry['rows']}
     candidates={r['id']:r for r in catalogue['cases']}
@@ -76,7 +79,7 @@ def build():
                     status='EXISTING_REQUIRED_NATIVE_CASE_BOUND_INTERFACES_PENDING',
                     required_runner_case_id=candidate['id'],
                     fixture_sha256=coverage.sha(ROOT/candidate['fixture']),
-                    evidence=INPUTS[-1],execution_manifest_sha256=paired['execution_manifest_sha256'],
+                    evidence=INPUTS[3],execution_manifest_sha256=paired['execution_manifest_sha256'],
                     model=dict(seed=candidate['seed'],p=candidate['n_traits'],n=candidate['n_units'],
                         K=candidate['n_latent'],**candidate['model']))
                 case['candidate_warning']='Only the original seeded native model is bound; formula, bridge, other models and broader recovery remain unpaid.'
@@ -85,10 +88,20 @@ def build():
                 case.update(fixture=formula['fixture'],fixture_sha256=formula['fixture_sha256'],
                     r_call=candidate['reference_call'],julia_call=formula['julia_call'],
                     candidate_is_equivalent=True,status=formula['status'],
-                    model=formula['model'],evidence=INPUTS[-1],
+                    model=formula['model'],evidence=INPUTS[3],
                     required_runner_status='VERIFIED_ORIGINAL_MODEL',
                     required_runner_case_id=cid,execution_manifest_sha256=paired['execution_manifest_sha256'])
                 case['candidate_warning']='Original intercept-only wide/long formula verified in required runner; public R bridge and broader models remain unpaid.'
+            if classification=='rejected' and boundaries[sid]['disposition']!='UNRESOLVED':
+                boundary=boundaries[sid]
+                assert boundary['source_case_id'] in boundary_evidence['case_ids']
+                case.update(fixture=boundary['fixture'],fixture_sha256=coverage.sha(ROOT/boundary['fixture']),
+                    r_call=boundary['reference_call'],julia_call=boundary['julia_call'],
+                    julia_disposition=boundary['disposition'],
+                    status='DOMAIN_BOUNDARY_VERIFIED_REQUIRED_INTEGRATION_PENDING',
+                    evidence=INPUTS[-1],reference_expected=boundary['reference_expected'],
+                    julia_expected=boundary['julia_expected'],scope_boundary=boundary['scope'],
+                    acceptance_rule='Frozen R descriptor rejects; Julia named public fitter rejects invalid input or retains a documented domain extension before response access. No fitting, recovery or bridge claim.')
             cases.append(case)
         rows.append(dict(source_id=sid,classification=classification,planned_case_ids=ids,
                          executable_case_ids=[],status='EXCLUDED' if not ids else 'SPECIFICATION_REQUIRED'))
@@ -110,9 +123,10 @@ def verify():
     assert len({c['id'] for c in plan['cases']})==97
     bound=[c for c in plan['cases'] if c['fixture'] is not None]
     assert {c['required_runner_case_id'] for c in bound if c['coverage_role']=='native_model'}=={'NATIVE-06-NB2','NATIVE-12-TRUNCATED-NB2'}
-    assert len(bound)==3 and sum(c['coverage_role']=='formula_interface' for c in bound)==1
+    assert len(bound)==12 and sum(c['coverage_role']=='formula_interface' for c in bound)==1
+    assert sum(c['coverage_role']=='reference_boundary' for c in bound)==9
     assert all(c['r_call'] is None and c['julia_call'] is None for c in plan['cases'] if c['fixture'] is None)
-    print('FAMILY_CASE_PLAN_VERIFIED 69 facts; 97 planned cases; 2 native + 1 formula bindings; zero full-family promotions')
+    print('FAMILY_CASE_PLAN_VERIFIED 69 facts; 97 planned cases; 2 native + 1 formula + 9 boundary bindings; zero full-family promotions')
 
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--write',action='store_true');args=p.parse_args()

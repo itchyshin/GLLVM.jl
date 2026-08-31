@@ -6,7 +6,9 @@
     "docs/dev-log/core070/family-admission-subset.json": "a51906ddd90bdabc2c1764623245963fb600a3bdabd3164e31404e41f7ee587b",
     "docs/dev-log/core070/family-route-contract.json": "f49e17cdf834d3693e7be4f6b40cf3fca507cfc5ed930b50fad967ab79543b62",
     "docs/dev-log/core070/family-model-catalogue.json": "bc96cd1a6109be3561c7825c413ccf9acebbbf5e6a205b748cdb2b63f9e614f1",
-    "docs/dev-log/core070/nb2-formula-required-evidence.json": "6ace264482e0ffe690c9a72447d94de617cf32e415b494c777b4f72ae7edbac7"
+    "docs/dev-log/core070/nb2-formula-required-evidence.json": "6ace264482e0ffe690c9a72447d94de617cf32e415b494c777b4f72ae7edbac7",
+    "docs/dev-log/core070/family-boundary-contract.json": "33ce5df1b1c6c88968a4c59b594b3172b466e48aa539eba24a16f93d67ec06d1",
+    "docs/dev-log/core070/family-boundary-evidence.json": "923070e598cd5976e903045e893d1e1bbd7461501d85913b3e619d9dab59d77d"
   },
   "source_facts": 69,
   "planned_case_count": 97,
@@ -4127,10 +4129,10 @@
       "owner": "Ada/Hopper",
       "reference_descriptor_call": "tweedie(p=1)",
       "reference_admission_expected": "CONSTRUCTOR_ERROR",
-      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
-      "fixture": null,
-      "r_call": null,
-      "julia_call": null,
+      "status": "DOMAIN_BOUNDARY_VERIFIED_REQUIRED_INTEGRATION_PENDING",
+      "fixture": "test/test_core070_shape_boundaries.jl",
+      "r_call": "tweedie(p=1)",
+      "julia_call": "fit_tweedie_gllvm_grouped(Y;K=1,power=1.0)",
       "candidate_native_entry": null,
       "candidate_fixture": null,
       "candidate_fixture_id": null,
@@ -4146,8 +4148,13 @@
         "evidence location"
       ],
       "prerequisite_case_ids": [],
-      "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "julia_disposition": "reject",
+      "acceptance_rule": "Frozen R descriptor rejects; Julia named public fitter rejects invalid input or retains a documented domain extension before response access. No fitting, recovery or bridge claim.",
+      "fixture_sha256": "0001c249442d61e52c91a40df93cb5eb65b5f1e6e2b7ccd1fd7431a228889abd",
+      "evidence": "docs/dev-log/core070/family-boundary-evidence.json",
+      "reference_expected": "CONSTRUCTOR_ERROR",
+      "julia_expected": "ArgumentError",
+      "scope_boundary": "Named public fitter input boundary, two traits x four unreadable responses; no fitting or R bridge qualification"
     },
     {
       "id": "CORE070-FAMILY-06-SHAPE-INVALID-INF-REFERENCE-BOUNDARY",
@@ -4160,10 +4167,10 @@
       "owner": "Ada/Hopper",
       "reference_descriptor_call": "tweedie(p=Inf)",
       "reference_admission_expected": "CONSTRUCTOR_ERROR",
-      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
-      "fixture": null,
-      "r_call": null,
-      "julia_call": null,
+      "status": "DOMAIN_BOUNDARY_VERIFIED_REQUIRED_INTEGRATION_PENDING",
+      "fixture": "test/test_core070_shape_boundaries.jl",
+      "r_call": "tweedie(p=Inf)",
+      "julia_call": "fit_tweedie_gllvm_grouped(Y;K=1,power=Inf)",
       "candidate_native_entry": null,
       "candidate_fixture": null,
       "candidate_fixture_id": null,
@@ -4179,8 +4186,13 @@
         "evidence location"
       ],
       "prerequisite_case_ids": [],
-      "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "julia_disposition": "reject",
+      "acceptance_rule": "Frozen R descriptor rejects; Julia named public fitter rejects invalid input or retains a documented domain extension before response access. No fitting, recovery or bridge claim.",
+      "fixture_sha256": "0001c249442d61e52c91a40df93cb5eb65b5f1e6e2b7ccd1fd7431a228889abd",
+      "evidence": "docs/dev-log/core070/family-boundary-evidence.json",
+      "reference_expected": "CONSTRUCTOR_ERROR",
+      "julia_expected": "ArgumentError",
+      "scope_boundary": "Named public fitter input boundary, two traits x four unreadable responses; no fitting or R bridge qualification"
     },
     {
       "id": "CORE070-FAMILY-06-SHAPE-INVALID-NA-REFERENCE-BOUNDARY",
@@ -4193,10 +4205,10 @@
       "owner": "Ada/Hopper",
       "reference_descriptor_call": "tweedie(p=NA_real_)",
       "reference_admission_expected": "CONSTRUCTOR_ERROR",
-      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
-      "fixture": null,
-      "r_call": null,
-      "julia_call": null,
+      "status": "DOMAIN_BOUNDARY_VERIFIED_REQUIRED_INTEGRATION_PENDING",
+      "fixture": "test/test_core070_shape_boundaries.jl",
+      "r_call": "tweedie(p=NA_real_)",
+      "julia_call": "fit_tweedie_gllvm_grouped(Y;K=1,power=NaN)",
       "candidate_native_entry": null,
       "candidate_fixture": null,
       "candidate_fixture_id": null,
@@ -4212,8 +4224,13 @@
         "evidence location"
       ],
       "prerequisite_case_ids": [],
-      "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "julia_disposition": "reject",
+      "acceptance_rule": "Frozen R descriptor rejects; Julia named public fitter rejects invalid input or retains a documented domain extension before response access. No fitting, recovery or bridge claim.",
+      "fixture_sha256": "0001c249442d61e52c91a40df93cb5eb65b5f1e6e2b7ccd1fd7431a228889abd",
+      "evidence": "docs/dev-log/core070/family-boundary-evidence.json",
+      "reference_expected": "CONSTRUCTOR_ERROR",
+      "julia_expected": "ArgumentError",
+      "scope_boundary": "Named public fitter input boundary, two traits x four unreadable responses; no fitting or R bridge qualification"
     },
     {
       "id": "CORE070-FAMILY-06-SHAPE-INVALID-VECTOR-REFERENCE-BOUNDARY",
@@ -4226,10 +4243,10 @@
       "owner": "Ada/Hopper",
       "reference_descriptor_call": "tweedie(p=c(2,3))",
       "reference_admission_expected": "CONSTRUCTOR_ERROR",
-      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
-      "fixture": null,
-      "r_call": null,
-      "julia_call": null,
+      "status": "DOMAIN_BOUNDARY_VERIFIED_REQUIRED_INTEGRATION_PENDING",
+      "fixture": "test/test_core070_shape_boundaries.jl",
+      "r_call": "tweedie(p=c(2,3))",
+      "julia_call": "fit_tweedie_gllvm_grouped(Y;K=1,power=[2.0,3.0])",
       "candidate_native_entry": null,
       "candidate_fixture": null,
       "candidate_fixture_id": null,
@@ -4245,8 +4262,13 @@
         "evidence location"
       ],
       "prerequisite_case_ids": [],
-      "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "julia_disposition": "reject",
+      "acceptance_rule": "Frozen R descriptor rejects; Julia named public fitter rejects invalid input or retains a documented domain extension before response access. No fitting, recovery or bridge claim.",
+      "fixture_sha256": "0001c249442d61e52c91a40df93cb5eb65b5f1e6e2b7ccd1fd7431a228889abd",
+      "evidence": "docs/dev-log/core070/family-boundary-evidence.json",
+      "reference_expected": "CONSTRUCTOR_ERROR",
+      "julia_expected": "TypeError",
+      "scope_boundary": "Named public fitter input boundary, two traits x four unreadable responses; no fitting or R bridge qualification"
     },
     {
       "id": "CORE070-FAMILY-09-FIXED-SHAPE-NATIVE-MODEL",
@@ -4389,10 +4411,10 @@
       "owner": "Ada/Hopper",
       "reference_descriptor_call": "student(df=1)",
       "reference_admission_expected": "CONSTRUCTOR_ERROR",
-      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
-      "fixture": null,
-      "r_call": null,
-      "julia_call": null,
+      "status": "DOMAIN_BOUNDARY_VERIFIED_REQUIRED_INTEGRATION_PENDING",
+      "fixture": "test/test_core070_shape_boundaries.jl",
+      "r_call": "student(df=1)",
+      "julia_call": "fit_studentt_gllvm(Y;K=1,nu=1.0)",
       "candidate_native_entry": null,
       "candidate_fixture": null,
       "candidate_fixture_id": null,
@@ -4408,8 +4430,13 @@
         "evidence location"
       ],
       "prerequisite_case_ids": [],
-      "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "julia_disposition": "documented_extension",
+      "acceptance_rule": "Frozen R descriptor rejects; Julia named public fitter rejects invalid input or retains a documented domain extension before response access. No fitting, recovery or bridge claim.",
+      "fixture_sha256": "0001c249442d61e52c91a40df93cb5eb65b5f1e6e2b7ccd1fd7431a228889abd",
+      "evidence": "docs/dev-log/core070/family-boundary-evidence.json",
+      "reference_expected": "CONSTRUCTOR_ERROR",
+      "julia_expected": "RESPONSE_READ_SENTINEL",
+      "scope_boundary": "Named public fitter input boundary, two traits x four unreadable responses; no fitting or R bridge qualification"
     },
     {
       "id": "CORE070-FAMILY-09-SHAPE-INVALID-INF-REFERENCE-BOUNDARY",
@@ -4422,10 +4449,10 @@
       "owner": "Ada/Hopper",
       "reference_descriptor_call": "student(df=Inf)",
       "reference_admission_expected": "CONSTRUCTOR_ERROR",
-      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
-      "fixture": null,
-      "r_call": null,
-      "julia_call": null,
+      "status": "DOMAIN_BOUNDARY_VERIFIED_REQUIRED_INTEGRATION_PENDING",
+      "fixture": "test/test_core070_shape_boundaries.jl",
+      "r_call": "student(df=Inf)",
+      "julia_call": "fit_studentt_gllvm(Y;K=1,nu=Inf)",
       "candidate_native_entry": null,
       "candidate_fixture": null,
       "candidate_fixture_id": null,
@@ -4441,8 +4468,13 @@
         "evidence location"
       ],
       "prerequisite_case_ids": [],
-      "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "julia_disposition": "reject",
+      "acceptance_rule": "Frozen R descriptor rejects; Julia named public fitter rejects invalid input or retains a documented domain extension before response access. No fitting, recovery or bridge claim.",
+      "fixture_sha256": "0001c249442d61e52c91a40df93cb5eb65b5f1e6e2b7ccd1fd7431a228889abd",
+      "evidence": "docs/dev-log/core070/family-boundary-evidence.json",
+      "reference_expected": "CONSTRUCTOR_ERROR",
+      "julia_expected": "ArgumentError",
+      "scope_boundary": "Named public fitter input boundary, two traits x four unreadable responses; no fitting or R bridge qualification"
     },
     {
       "id": "CORE070-FAMILY-09-SHAPE-INVALID-NA-REFERENCE-BOUNDARY",
@@ -4455,10 +4487,10 @@
       "owner": "Ada/Hopper",
       "reference_descriptor_call": "student(df=NA_real_)",
       "reference_admission_expected": "CONSTRUCTOR_ERROR",
-      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
-      "fixture": null,
-      "r_call": null,
-      "julia_call": null,
+      "status": "DOMAIN_BOUNDARY_VERIFIED_REQUIRED_INTEGRATION_PENDING",
+      "fixture": "test/test_core070_shape_boundaries.jl",
+      "r_call": "student(df=NA_real_)",
+      "julia_call": "fit_studentt_gllvm(Y;K=1,nu=NaN)",
       "candidate_native_entry": null,
       "candidate_fixture": null,
       "candidate_fixture_id": null,
@@ -4474,8 +4506,13 @@
         "evidence location"
       ],
       "prerequisite_case_ids": [],
-      "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "julia_disposition": "reject",
+      "acceptance_rule": "Frozen R descriptor rejects; Julia named public fitter rejects invalid input or retains a documented domain extension before response access. No fitting, recovery or bridge claim.",
+      "fixture_sha256": "0001c249442d61e52c91a40df93cb5eb65b5f1e6e2b7ccd1fd7431a228889abd",
+      "evidence": "docs/dev-log/core070/family-boundary-evidence.json",
+      "reference_expected": "CONSTRUCTOR_ERROR",
+      "julia_expected": "ArgumentError",
+      "scope_boundary": "Named public fitter input boundary, two traits x four unreadable responses; no fitting or R bridge qualification"
     },
     {
       "id": "CORE070-FAMILY-09-SHAPE-INVALID-VECTOR-REFERENCE-BOUNDARY",
@@ -4488,10 +4525,10 @@
       "owner": "Ada/Hopper",
       "reference_descriptor_call": "student(df=c(2,3))",
       "reference_admission_expected": "CONSTRUCTOR_ERROR",
-      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
-      "fixture": null,
-      "r_call": null,
-      "julia_call": null,
+      "status": "DOMAIN_BOUNDARY_VERIFIED_REQUIRED_INTEGRATION_PENDING",
+      "fixture": "test/test_core070_shape_boundaries.jl",
+      "r_call": "student(df=c(2,3))",
+      "julia_call": "fit_studentt_gllvm(Y;K=1,nu=[2.0,3.0])",
       "candidate_native_entry": null,
       "candidate_fixture": null,
       "candidate_fixture_id": null,
@@ -4507,8 +4544,13 @@
         "evidence location"
       ],
       "prerequisite_case_ids": [],
-      "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "julia_disposition": "documented_extension",
+      "acceptance_rule": "Frozen R descriptor rejects; Julia named public fitter rejects invalid input or retains a documented domain extension before response access. No fitting, recovery or bridge claim.",
+      "fixture_sha256": "0001c249442d61e52c91a40df93cb5eb65b5f1e6e2b7ccd1fd7431a228889abd",
+      "evidence": "docs/dev-log/core070/family-boundary-evidence.json",
+      "reference_expected": "CONSTRUCTOR_ERROR",
+      "julia_expected": "RESPONSE_READ_SENTINEL",
+      "scope_boundary": "Named public fitter input boundary, two traits x four unreadable responses; no fitting or R bridge qualification"
     },
     {
       "id": "CORE070-FAMILY-06-SHAPE-INVALID-HIGH-REFERENCE-BOUNDARY",
@@ -4521,10 +4563,10 @@
       "owner": "Ada/Hopper",
       "reference_descriptor_call": "tweedie(p=2)",
       "reference_admission_expected": "CONSTRUCTOR_ERROR",
-      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
-      "fixture": null,
-      "r_call": null,
-      "julia_call": null,
+      "status": "DOMAIN_BOUNDARY_VERIFIED_REQUIRED_INTEGRATION_PENDING",
+      "fixture": "test/test_core070_shape_boundaries.jl",
+      "r_call": "tweedie(p=2)",
+      "julia_call": "fit_tweedie_gllvm_grouped(Y;K=1,power=2.0)",
       "candidate_native_entry": null,
       "candidate_fixture": null,
       "candidate_fixture_id": null,
@@ -4540,8 +4582,13 @@
         "evidence location"
       ],
       "prerequisite_case_ids": [],
-      "julia_disposition": "UNRESOLVED",
-      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+      "julia_disposition": "reject",
+      "acceptance_rule": "Frozen R descriptor rejects; Julia named public fitter rejects invalid input or retains a documented domain extension before response access. No fitting, recovery or bridge claim.",
+      "fixture_sha256": "0001c249442d61e52c91a40df93cb5eb65b5f1e6e2b7ccd1fd7431a228889abd",
+      "evidence": "docs/dev-log/core070/family-boundary-evidence.json",
+      "reference_expected": "CONSTRUCTOR_ERROR",
+      "julia_expected": "ArgumentError",
+      "scope_boundary": "Named public fitter input boundary, two traits x four unreadable responses; no fitting or R bridge qualification"
     }
   ]
 }

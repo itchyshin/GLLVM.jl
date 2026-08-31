@@ -735,3 +735,25 @@ Totoro/DRAC sockets live, no active remotejobs, noDRACjobsubmitted. No newchildr
 B production stillbehindusercheckpoint. Next: exact family model/interface
 contracts andStudentreferencehealth; preserveforeignR0.7.1/article/Julia work.
 No push/merge/release/cleanup. Read after-task/2026-08-31-core070-nb2-formula-required.md.
+
+## 2026-08-31 — family shape boundaries
+
+Source-bound contract retains33 rejectedRdescriptors:9native shape cases resolved
+at input/kernel scope;24otherlink/descriptorrows unresolved. TotoroJulia1.12.6
+50/50 in10.190s, R4.6.0 all69descriptorreplayPASS, oraclesbefore/afterPASS.
+First10.240s runretained; second adds explicitloadedrootassertion. No fits.
+Seveninvalidinputsreject, Studentnu1 and length-p vector preserve documented
+extensions;36Cauchy densitychecks pluspositive/adjacentnegative controls.
+16contract/artifactnegativesPASS, wrongJulia-call validation gapredrepaired.
+Unlazy2gatesPASS in family-boundaries-01/GATES.md, evidenceSTATEfamily-boundaries-02.
+
+Familycaseplan now2native+1formula+9boundarybindings;85unbound. Newinputfiles
+family-boundary-contract.json/family-boundary-evidence.json; familydecomposition
+verifier checksbothnewboundaryproofandcurrentNB2required58proof,11regressions,
+archivedfreeze-red andaggregateselftestPASS. Allmain executablelinks remain[];
+fullmanifestDRAFT/M1PARTIAL, fullrequiredcollectionintegration unpaid. No new
+productionchild; Bproductioncheckpointlimit unchanged. Next24boundarydispositions
+and remaining exactfittedmodel/interfacecontracts;StudentRfithealth stillopen.
+MCe1bc274 HTTP200/Rfieldsunchanged, leaseRELEASED. Alljobs terminal;noDRACjobs.
+Read after-task/2026-08-31-core070-shape-boundaries.md. No src/R0.7.1/article/
+foreign changes, push/merge/release/cleanup. Preserveoriginal Studentrequiredcase.

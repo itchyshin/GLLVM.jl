@@ -25,7 +25,8 @@ expected admission, owner, coverage role, candidate native entry/fixture where
 known, dependencies, acceptance requirements and missing contract fields.
 `fixture`, `r_call` and `julia_call` are bound for the two freshly verified
 original native NB2 cases and the intercept-only NB2 formula required case;
-the other94 specifications keep these fields null
+nine separately verified shape boundaries also bind their exact calls;
+the other85 specifications keep these fields null
 until their exact fitted contract is established. The native bindings include
 seed, dimensions, parameterization, fixture hash and required-runner evidence. The native entry calls are historical leads,
 not fitted-model calls: some useK1 while their legacy fixture usesK2.
@@ -77,3 +78,22 @@ data-generation source as an explicit dependency.
 The prior standalone formula and native-refresh summaries are retained as
 historical snapshots. Current bindings use `nb2-formula-required-evidence.json`;
 no independent review or full-family promotion follows from this integration.
+
+## Shape boundaries resolved separately from fitted models
+
+`family-boundary-contract.json` retains all33 frozen rejected descriptors. Nine
+shape rows have named-fitter checks: Tweedie powers1,2,Inf,NaN and vector[2,3];
+Student degrees of freedom1,Inf,NaN and vector[2,3]. Seven reject before reading
+responses. Julia intentionally admits finite fixed Student nu1 and a vector
+whose length matches the two traits; these are documented extensions, not R
+parity. The nu1 density agrees with the independent Cauchy density across36
+location/scale/residual combinations. Neither entry checks nor this scalar
+identity prove successful fitting or recovery for those extensions.
+
+`family-boundary-evidence.json` binds50 assertions to the source-pinned Totoro
+run and all69 frozen R descriptor results. The remaining24 link/descriptor
+rejections are unresolved. The nine boundary cases are verified separately;
+integration into the complete required evidence collection is still pending.
+They do not increase the17-family or fitted-model counts. The family plan now
+has2 native,1 formula and9 domain-boundary bindings, leaving85 specifications
+unbound. Full source coverage and independent scope review remain unpaid.
