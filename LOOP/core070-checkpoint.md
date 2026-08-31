@@ -1189,3 +1189,27 @@ Reviewerterminalexit0; nofits/campaigns ran. See native-mapping-review receipts.
 Mission Control 8972f48d687d25c6dbed8957669a13bf3e504332 Julia-only update:HTTP200/readbackPASS,
 Rfieldsunchanged, exact-file leaseRELEASED. NM-MAP/NM-REFERENCE freshly
 reverified2met/0unmet/0abandoned; allreviews and checks terminal.
+
+## 2026-08-31 12:57UTC — source-fit candidate / compute interruption
+- ACTIVE/M1PARTIAL/fullmanifestDRAFT. New local SourceCovariance,
+  fit_gaussian_sources, GaussianSourcesFit implemented and wired; source modes,
+  projections and independent residual covariance now have a draft native fit.
+- Source/math review NoetherTerrahigh plusonefollow-up accepted after repairs.
+  Exact analytic nonempty-source test and Documenter@example prepared; no new
+  numerical validation. GS-SYNTAX/GS-ORACLE met; GS-UNIT/GS-DOCS/GS-REGRESSION unmet.
+- All existing SSH ControlMaster sockets gone, reported to user; no freshDuo,
+  no remote job. Local availability probes fail before assertions (cache then
+  Optim unavailable). No TDDred; keep deviation visible, do not relabelinfra.
+- Once restored, check socket first. Prepared launchers (not executed):
+  .unlazy/core070-aghq/gaussian-sources-red-02/launch.py (fc2fb766 baselinearchive,
+  finaltest, no source_fit; expect missing-API assertion only after package loads)
+  and gaussian-sources-green-01/launch.py (currentcandidate). Each bounded<5min,
+  oneJulia/BLASthread, noDRACcampaign. Inspect commands/pins before dispatch.
+  Failed red-01 and bothlocal-red receipts stay immutable. Do not rerun them.
+- Then reverify gaussian-sources-checkpoint/GATES.md, qualify/build docs, run
+  broader neighboring tests and source parity/recovery before capability claims.
+  MainleafstillPARTIAL; this new dense layer does not fix SPDEfreeLambda/tau.
+- MissionControl2e01107a57f24e3030353c5d614ecf7ebed5ebf8 served200, Runchanged,
+  leaseRELEASED. Provisional70–120workinghours remains an unrevised allowance.
+- No production child or completionpanel, Rengineedit,push,merge,release,cleanup.
+  Keep foreign Cursor/Claude/0.7.1/article/REML lanes protected.

@@ -8,6 +8,12 @@ status-tracked GLM response-family surface.
 
 > API may change before v1.0.
 
+Local development candidate: `SourceCovariance` and `fit_gaussian_sources`
+represent fixed covariance among source nodes with explicit observation-to-node
+projections. Numerical validation is pending. This dense Gaussian layer does
+not establish R parity, formula/bridge support or new performance claims; see
+the structured-dependence guide for its domain and covariance axes.
+
 ## Why
 
 GLLVMs decompose a multivariate response into a low-rank latent factor

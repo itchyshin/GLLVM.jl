@@ -18,6 +18,7 @@ include("packing.jl")
 include("lowrank_cholesky.jl")          # used by likelihood
 include("likelihood.jl")
 include("source_covariance.jl")          # internal Gaussian additive source reference evaluator
+include("source_fit.jl")                 # local candidate: fixed Gaussian source covariances
 include("ppca_init.jl")                  # used by fit (warm-start)
 include("em_fa.jl")                      # alternative EM solver
 include("profile.jl")                    # σ_eps profile-out (used by fit)
@@ -171,6 +172,7 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        confint_speciescov, confint_fourthcorner, confint_rrr, confint_constrained,
        confint_lv_effects,
        fit_gaussian_gllvm, GllvmModel, GllvmFit,
+       SourceCovariance, fit_gaussian_sources, GaussianSourcesFit,
        gaussian_reml_loglik, fit_gaussian_reml, GaussianREMLFit,
        fit_gaussian_random_slope, GaussianRandomSlopeFit, gaussian_grouped_intercept_loglik,
        fit_twolevel_gaussian, TwoLevelFit, twolevel_marginal_loglik,

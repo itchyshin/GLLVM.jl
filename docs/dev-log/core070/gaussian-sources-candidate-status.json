@@ -1,0 +1,42 @@
+{
+  "created_utc": "2026-08-31T12:54:57.952374+00:00",
+  "status": "PARTIAL_UNVALIDATED",
+  "programme": "ACTIVE_M1_PARTIAL",
+  "full_manifest": "DRAFT_NOT_FROZEN",
+  "source_review": "Noether Terra high; initial plus one repair follow-up; static acceptance after wording repair",
+  "runtime_status": "NOT_EXECUTED",
+  "syntax_status": "PASS_SYNTAX_ONLY",
+  "gates": {
+    "met": [
+      "GS-SYNTAX",
+      "GS-ORACLE"
+    ],
+    "unmet": [
+      "GS-UNIT",
+      "GS-DOCS",
+      "GS-REGRESSION"
+    ],
+    "abandoned": []
+  },
+  "source_pins": {
+    "src/source_fit.jl": "8b175fed858451ea8440382ffb1981ad1c8e8da30e612ba425ad8d4766274d64",
+    "src/GLLVM.jl": "545a9f6383b942b06eb42a54ea7bef05bcd2d8d997b3a737f39373d41ec245ea",
+    "test/test_gaussian_sources.jl": "5d2a1bb17ae2977647b7be2a7c5b6e97b218f77c3d77dfe4ebdf640b286491de",
+    "test/runtests.jl": "8bac3726a6e2665a0f03c4a85dd9a53260ac034b67da53ac005194023ec77d11",
+    "tools/core070_gaussian_sources_run.jl": "383132f8ac835eb0aa32dc97382199056743066e22dc453bb676f72d31549843",
+    "docs/dev-log/decisions/2026-08-31-gaussian-sources-fit.md": "127ee7c332a91f4a929cd6f03083d2ab795ba23750b44ad8178d8fb42fcbc698",
+    "docs/src/structured-dependence.md": "47e734efbbac7649368d4be30cfe9c5b091b63b6c913ff74374c244edda864b2",
+    "docs/src/api.md": "666e1565e77bcf6c44806c2af504561b99b4c16a339534809d8c3ddce0153e99",
+    "README.md": "e84dcdbb6a24b4cd4d344dc75653682d3f03ed4e89199fcd8a2910fc308c8a95",
+    "CHANGELOG.md": "63f88ce72a09b4f0bf140491258c115e29aac72d9b5bc5ee81c7ae526082aff3",
+    "docs/dev-log/core070/gaussian-sources-fit-leaf.md": "8b448770553d21484b3a8c21735c15593b6b6bbc96c5d8500522b59f2cb31cc0"
+  },
+  "failure_receipts": [
+    "gaussian-sources-red-01",
+    "gaussian-sources-local-red",
+    "gaussian-sources-local-red-02"
+  ],
+  "no_tdd_red": true,
+  "no_remote_job": true,
+  "closure_validator": "STRUCTURE_PASS_COMPLETION_REFUSED_UNMET_PROGRAMME_GATES"
+}

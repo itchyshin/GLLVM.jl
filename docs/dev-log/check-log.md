@@ -16361,3 +16361,12 @@ projection models. Existing spatial freeLambda+tau redundancy recorded for
 identified B1 repair. Ask-brain followed by live existing-socket checks confirms
 Fir/Nibi/Rorqual/Trillium/Narval reachable; no jobs or compute started.
 See core070/structured-native-mapping.md and drac-five-host-routing.md.
+
+## 2026-08-31 — Gaussian source-fitting candidate (PARTIAL)
+Implemented typed fixed-source Gaussian fitting, health reporting, independent
+analytic tests and documentation cascade. Noether Terra/high review plus repair
+follow-up accepted source mathematics after fixes. Syntax/gate self-tests pass;
+Unlazy2met/3unmet/0abandoned. No numerical or docs build result: all existing SSH
+sockets vanished, local availability probes failed before assertions. Retained
+all attempts; baseline/candidate Totoro launches prepared. No full-manifest row
+promoted. See after-task/2026-08-31-core070-gaussian-sources-candidate.md.

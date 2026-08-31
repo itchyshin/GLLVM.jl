@@ -5,6 +5,13 @@ covariance matrix via the `Σ_phy` keyword. The three use cases below are
 mathematically the same structure (the `J3` likelihood path in `likelihood.jl`);
 only the origin of `Σ_phy` differs.
 
+**Check the covariance axis first.** In this existing API, `Σ_phy` describes
+the **rows** of `Y`, and its random effect is shared across columns. It is not
+a covariance among arbitrary source groups observed by those columns. The
+new fixed-source candidate at the end of this page represents the latter model.
+Transposing a matrix or choosing a similarly named fitter does not establish
+equivalence between these models.
+
 ## The common model
 
 Let `y` be a p × n matrix of continuous traits (or outcomes) measured on
@@ -12,7 +19,7 @@ Let `y` be a p × n matrix of continuous traits (or outcomes) measured on
 The Gaussian GLLVM with a structured random effect is:
 
 ```
-y[t, s] = (Λ_B η_s)[t] + (Λ_phy aug) φ)[t] + ε[t, s]
+y[:, s] = Λ_B η_s + u + ε[:, s]
 ```
 
 where:
@@ -20,7 +27,7 @@ where:
 - `Λ_B` (p × K) are the unit-tier loadings estimated freely,
 - `η_s ~ N(0, I_K)` are independent site-level latent variables,
 - `Λ_phy` (p × K_phy) and/or per-trait SDs `σ_phy` (length p) capture structured dependence,
-- `φ ~ MVN(0, Σ_phy)` once (shared across all sites),
+- `u ~ MVN(0, B)` is drawn once and shared across all columns,
 - `ε[t, s] ~ N(0, σ²_eps)` is the residual.
 
 The marginal covariance of `vec(y)` is `I_n ⊗ A + J_n ⊗ B` where
@@ -54,8 +61,9 @@ fit = fit_gaussian_gllvm(y;
     Σ_phy          = Σ_phy)
 ```
 
-`vcv` returns a VCV matrix on the identity scale; the result is the
-Hadfield & Nakagawa (2010) phylogenetic mixed model.
+The tree-tip ordering must match the rows of `y`. This specifies a particular
+row-structured Gaussian model; a tree covariance alone does not establish
+equivalence to a multivariate phylogenetic model with separate grouping levels.
 
 ---
 
@@ -82,14 +90,17 @@ fit = fit_gaussian_gllvm(y;
 `relatedness_cov` does NOT parse pedigrees or compute GRMs from raw markers.
 Supply a precomputed matrix.
 
-### Retrieving the heritability-analogue
+### Retrieving the structured variance fraction
 
 After fitting, the per-trait phylogenetic signal (fraction of variance explained
 by the structured effect) is available via `phylo_signal`:
 
 ```julia
-h2 = phylo_signal(fit)   # length-p vector; same formula as H² in phylo context
+fraction = phylo_signal(fit)   # length-p vector for this fitted model
 ```
+
+Interpreting this quantity as heritability requires a compatible genetic design
+and variance decomposition; a relatedness matrix alone does not establish that.
 
 ---
 
@@ -133,7 +144,7 @@ See [`spatial_cov`](@ref) and [`relatedness_cov`](@ref) for the full signatures.
 
 ---
 
-## When to use each representation
+## Row-structured representations
 
 | Use case                                           | `Σ_phy` source                             |
 |----------------------------------------------------|---------------------------------------------|
@@ -142,6 +153,60 @@ See [`spatial_cov`](@ref) and [`relatedness_cov`](@ref) for the full signatures.
 | Individual-level genomic data                      | GRM from marker tools (`rrBLUP`, PLINK)    |
 | Spatially structured community or landscape data   | `spatial_cov(coords; ...)`                 |
 
-In all cases, pass the result as `Σ_phy` to `fit_gaussian_gllvm`. The
+In these row-structured models, pass the result as `Σ_phy` to `fit_gaussian_gllvm`.
+The ordering and dimension must match the rows, not arbitrary observation groups. The
 `has_phy_unique = true` flag activates per-trait structured SDs (`σ_phy`);
 `K_phy` activates structured latent axes (`Λ_phy`). Both can be used together.
+
+## Fixed covariance among source groups — development candidate
+
+Numerical validation of this new local candidate is **pending**. The worked
+example below must execute during the Documenter build; its presence is not a
+build receipt, a recovery result or a full R-parity claim.
+
+Here `Y` is traits × observed units. Each [`SourceCovariance`](@ref) contains a
+known SPD covariance `C` on source nodes and a units × nodes projection `P`.
+Integer `groups` constructs a one-hot projection. A node may be unobserved, and
+different sources may have different numbers of nodes. The exact covariance is
+
+```math
+\operatorname{Cov}(\operatorname{vec}(Y)) =
+\sigma_\varepsilon^2 I + \sum_r (P_r C_r P_r^\top) \otimes B_r.
+```
+
+`mode=:latent` uses a low-rank trait covariance (default rank one), `:indep`
+uses a diagonal covariance, and `:dep` uses a full lower-triangular loading
+matrix. `unique=true` adds a diagonal term to a latent source. `common=true`
+ties the independent variances, or the unique diagonal when present; equal
+variances do not turn independent fields into one shared field. No jitter or
+loading ridge is added. Trait means are optimized jointly with covariance.
+
+```@example fixed_sources
+using GLLVM, LinearAlgebra
+groups = repeat(1:4; inner=3)
+group_means = [-1.5, -0.5, 0.5, 1.5]
+within = [-0.2, 0.0, 0.2]
+Y = reshape([0.7 + group_means[g] + within[j] for g in 1:4 for j in 1:3], 1, :)
+source = SourceCovariance(Matrix{Float64}(I, 4, 4);
+    groups, name=:group, mode=:indep)
+fit = fit_gaussian_sources(Y; sources=[source], g_tol=1e-7)
+@assert fit.converged && fit.gradient_norm <= 1e-7
+(intercept=coef(fit), residual_sd=fit.sigma_eps,
+    source_covariance=only(fit.trait_covariances), status=fit.stopping_reason)
+```
+
+[`GaussianSourcesFit`](@ref) retains normalized likelihood, source snapshots,
+optimizer coordinates, stopping reason, fresh gradient norm and Hessian
+diagnostics. A positive Hessian does not prove identification or recovery.
+
+This layer requires complete finite Gaussian responses, at least two units and
+variation in at least one trait. It uses dense factorization over **all response
+cells**: quadratic memory and cubic factorization cost. Keep initial examples
+small. Parsing trees, pedigrees and meshes; estimating source kernels; slopes,
+loading masks, missing responses, non-Gaussian families, formula/bridge routes,
+new-data prediction and confidence intervals remain outside this layer.
+
+```@docs
+SourceCovariance
+GaussianSourcesFit
+```

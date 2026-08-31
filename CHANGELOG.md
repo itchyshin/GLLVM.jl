@@ -12,6 +12,11 @@ All notable changes to GLLVM.jl are documented here.
 ## Unreleased
 
 ### Changed
+- Local unvalidated candidate: typed fixed Gaussian source covariances, additive
+  projected-source fitting, and explicit gradient/Hessian diagnostics. Independent,
+  latent and dependent trait modes have tests prepared; remote execution is pending.
+  Existing fitters are unchanged. No source-kernel estimation, formula/bridge,
+  non-Gaussian, inference, recovery or performance completion claim.
 - Local binomial candidate: opt-in ordinary AGHQ with logit/probit/cloglog,
   retained trials/masks/offsets, estimator metadata and frozen-objective inference.
   Public prediction returns probabilities and simulation returns counts. The

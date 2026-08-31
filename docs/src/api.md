@@ -16,6 +16,7 @@ fit_dep_gllvm
 fit_mixed_gllvm
 fit_gaussian_gllvm
 fit_gaussian_pervar_gllvm
+fit_gaussian_sources
 fit_gaussian_reml
 fit_twolevel_gaussian
 fit_gaussian_mi_fiml
