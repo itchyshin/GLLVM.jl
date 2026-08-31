@@ -351,11 +351,12 @@ function fit_gaussian_sources(Y::AbstractMatrix{<:Real}; sources, X=nothing,
         return GaussianSourcesFit(Float64[],fixed_sigma,B,ss,Float64[],-value,true,0.0,
             NaN,false,0,:converged,length(data),true,D,(p,n),names)
     end
-    # Preserve the existing trait-intercept path. With a complete design,
-    # backtracking can stop on objective roundoff before the fresh-gradient gate;
-    # Hager-Zhang reaches that gate on the declared source-design regression.
-    optimizer=default_means ?
-        Optim.LBFGS(linesearch=Optim.LineSearches.BackTracking(order=3)) : Optim.LBFGS()
+    # Armijo-only backtracking can stop on objective roundoff before the
+    # fresh-gradient gate on either mean parameterization; Hager-Zhang's
+    # approximate-Wolfe acceptance reaches that gate on both declared
+    # regressions (explicit source design, and the default-mean frozen
+    # COV-ORD-LATENT-BARE case).
+    optimizer=Optim.LBFGS()
     result=Optim.optimize(objective,theta,optimizer,
         Optim.Options(g_tol=Float64(g_tol),iterations=Int(iterations));autodiff=:forward)
     estimate=Optim.minimizer(result);value=objective(estimate)
