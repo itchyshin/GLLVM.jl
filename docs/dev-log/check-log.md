@@ -16479,3 +16479,13 @@ R refinement policies/failures retained. Raw fit readback and22negative controls
 PASS. Metadata42tests+self-test PASS. Master now7links/5partialfacts;710other
 nonexcluded facts unmapped. No full-family promotion; see registered-models guide
 and after-task. Numerical source and existing fixture bodies unchanged.
+
+## 2026-08-31 — explicit truncated-NB2 formula dispatch (local candidate)
+
+Preserved shared default; explicit per-trait native/wide/reordered-long route
+passes29regressions plus35neighbour tests. Current7case R replay121assertions/
+6executions81.90s; registry28checks; oracle before/after PASS. Strict Documenter
+with executed example passes135.70s after declaring Distributions. Source/receipt
+checks plus27negativecontrols PASS. Fullsuite/review and formula master binding
+remain unpaid; manifestdraft. See after-task/2026-08-31-core070-truncated-formula.md
+and core070/truncated-formula-evidence.json. No full-family or performance claim.

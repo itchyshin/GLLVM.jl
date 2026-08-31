@@ -90,6 +90,9 @@ the plain-call behaviour when they are at their defaults (regression safe):
   - `BetaBinom`        → [`fit_beta_binomial_gllvm_grouped`](@ref) (per-group Beta
     precision `φ`; the p×n `N` keyword is required)
   - `GLLVM.TweedieED`  → [`fit_tweedie_gllvm_grouped`](@ref) (per-species `φ`, shared power)
+  - `TruncatedNegBin2` → [`fit_truncated_nbinom2_gllvm_pertrait`](@ref) with explicit
+    `:species` or distinct positive group IDs; partial grouping is unsupported.
+    Omitting `disp_group` preserves the shared-`r` default for this family.
   Families without a grouped fitter throw a clear `ArgumentError`. Shared
   dispersion for NB/Beta/NB1/BetaBinom remains available via the named fitters
   [`fit_nb_gllvm`](@ref) / [`fit_beta_gllvm`](@ref) / [`fit_nb1_gllvm`](@ref) /
@@ -295,6 +298,18 @@ _fit_gllvm(family, Y::AbstractMatrix; kwargs...) = throw(ArgumentError(
     "(available: Normal, Binomial, Poisson, TruncatedPoisson, CensoredPoisson, TruncatedNegBin2, Lognormal, Multinomial, NegativeBinomial, NB1, Beta, BetaBinom, Ordinal, Gamma, Exponential, StudentTFamily, DeltaLogNormal, DeltaGamma, HurdlePoisson, HurdleNB, BetaHurdle, COMPoisson, OrderedBeta, GeneralizedPoisson1, ZIPoisson, ZINegBin, ZIB)"))
 
 # --- grouped-dispersion routing keyed on the family marker. ------------------
+function _fit_gllvm_grouped(::TruncatedNegBin2, Y::AbstractMatrix; group, kwargs...)
+    p = size(Y, 1)
+    length(group) == p || throw(ArgumentError(
+        "fit_gllvm: TruncatedNegBin2 needs one dispersion group ID per trait (length $p)"))
+    all(>(0), group) || throw(ArgumentError(
+        "fit_gllvm: TruncatedNegBin2 dispersion group IDs must be positive"))
+    length(unique(group)) == p || throw(ArgumentError(
+        "fit_gllvm: TruncatedNegBin2 supports only distinct per-trait dispersion groups; " *
+        "use disp_group = :species, or omit disp_group for shared dispersion"))
+    return fit_truncated_nbinom2_gllvm_pertrait(Y; kwargs...)
+end
+
 _fit_gllvm_grouped(::NegativeBinomial, Y::AbstractMatrix; kwargs...) =
     fit_nb_gllvm_grouped(Y; kwargs...)
 _fit_gllvm_grouped(::Beta,  Y::AbstractMatrix; kwargs...) = fit_beta_gllvm_grouped(Y; kwargs...)
@@ -328,4 +343,4 @@ end
 # Families without a grouped-dispersion fitter.
 _fit_gllvm_grouped(family, Y::AbstractMatrix; kwargs...) = throw(ArgumentError(
     "fit_gllvm: disp_group (grouped dispersion) is not supported for family " *
-    "$(nameof(typeof(family))) — available: NegativeBinomial, Beta, Gamma, NB1, BetaBinom, Tweedie (TweedieED), StudentTFamily"))
+    "$(nameof(typeof(family))) — available: NegativeBinomial, Beta, Gamma, NB1, BetaBinom, Tweedie (TweedieED), StudentTFamily, TruncatedNegBin2 (per-trait only)"))

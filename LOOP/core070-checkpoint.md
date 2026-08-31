@@ -1379,3 +1379,17 @@ family claims. FullmanifestDRAFT, no src/fixturechanges. Fullsuite and external
 review approvals stillpending; neither launched. Next address remaining formula
 and public bridge coverage plus unbound family/AGHQ/covariance/data/postfit cases.
 Evidence registered-models-evidence.json; runtime registered-models-01.
+
+## 2026-08-31 — explicit truncated-NB2 formula dispatch (local candidate)
+
+Preserved shared default; explicit per-trait native/wide/reordered-long route
+passes29regressions plus35neighbour tests. Current7case R replay121assertions/
+6executions81.90s; registry28checks; oracle before/after PASS. Strict Documenter
+with executed example passes135.70s after declaring Distributions. Source/receipt
+checks plus27negativecontrols PASS. Fullsuite/review and formula master binding
+remain unpaid; manifestdraft. See after-task/2026-08-31-core070-truncated-formula.md
+and core070/truncated-formula-evidence.json. No full-family or performance claim.
+
+Resume at the unregistered formula interfaces; preserve original fixtures and
+reference control policies. Runtime truncated-formula-{red-01,red-02,green-01,
+neighbours-01,pair-01,docs-01,docs-02}. All child processes terminal.

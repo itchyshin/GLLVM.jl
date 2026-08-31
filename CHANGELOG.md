@@ -5,6 +5,9 @@ All notable changes to GLLVM.jl are documented here.
 ## Unreleased
 
 ### Changed
+- Truncated NB2 exposes its existing per-trait fitter through explicit
+  `disp_group=:species` in native and intercept-only wide/long formula calls.
+  Shared dispersion remains the default; partial grouping is rejected.
 - **Development:** per-trait Gaussian fitting accepts an explicit fixed residual
   SD and estimates unique variances within that constraint. Results retain unique
   and total diagonal variances; existing defaults and parameter counts are unchanged.

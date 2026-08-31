@@ -299,12 +299,63 @@ automatically when `Yc` contains `missing`, and accept an `offset`. Only
 
 #### Dispersion: shared vs per-trait
 
-`fit_gllvm`'s only route for this family is [`fit_truncated_nbinom2_gllvm`](@ref),
-which estimates a single **shared** `r` across species, packing
-`[β; pack(Λ); log r]` (length `p+rr+1`). Per-trait dispersion `r_t` (twin
-`log_phi_truncnb2`) is [`fit_truncated_nbinom2_gllvm_pertrait`](@ref), packing
-`[β; pack(Λ); log r_1 … log r_p]` (length `p+rr+p`); it is **not** reachable
-through `fit_gllvm`, including via `disp_group`, which throws for this family.
+With `disp_group` omitted, `fit_gllvm` calls [`fit_truncated_nbinom2_gllvm`](@ref),
+which estimates a single **shared** `r` across species and packs
+`[β; pack(Λ); log r]` (length `p+rr+1`). Explicit `disp_group = :species` calls
+[`fit_truncated_nbinom2_gllvm_pertrait`](@ref), estimating per-trait `r_t`
+(twin `log_phi_truncnb2`) and packing `[β; pack(Λ); log r_1 … log r_p]`
+(length `p+rr+p`). A length-`p` vector of distinct positive integer group IDs
+also selects this per-trait model; repeated IDs and partial grouping are unsupported.
+
+```@setup truncated_nb2_dispatch
+using GLLVM, Random, Distributions
+_TNB2_SEED = 58
+function parity_loadings_p5k2()
+    return [
+        0.8   0.0
+        0.5   0.6
+        0.3  -0.4
+       -0.2   0.5
+        0.1   0.3
+    ]
+end
+Random.seed!(_TNB2_SEED)
+p, K, n = 5, 1, 120
+# Intercepts chosen so μ ≳ 3: keeps p₀ small (cheap rejection sampling), the
+# truncation correction well conditioned, and the Laplace modes stable.
+β = log.([4.0, 5.0, 3.5, 4.5, 4.0])
+r_true = 4.0
+Λ = 0.2 .* parity_loadings_p5k2()[:, 1:K]
+Z = randn(K, n)
+η = β .+ Λ * Z
+Y = Matrix{Int}(undef, p, n)
+for t in 1:p, s in 1:n
+    μ = exp(clamp(η[t, s], -3.0, 3.5))
+    while true                      # zero-truncated draw by rejection
+        v = rand(Distributions.NegativeBinomial(r_true, r_true / (r_true + μ)))
+        if v >= 1
+            Y[t, s] = v
+            break
+        end
+    end
+end
+
+Yc = Y
+```
+
+```@example truncated_nb2_dispatch
+fit = fit_gllvm(Yc; family = TruncatedNegBin2(), K = 1, disp_group = :species)
+wide = gllvm(@formula(y ~ 1), Yc, (site = 1:size(Yc, 2),);
+             family = TruncatedNegBin2(), K = 1, disp_group = :species)
+@assert fit.converged && wide.converged
+@assert isapprox(fit.loglik, wide.loglik; atol=1e-10, rtol=0)
+(length(wide.r), wide.converged)
+```
+
+A complete long table with `y`, `species` and `site` columns accepts the same keywords.
+
+This formula route admits intercept-only models. It does not add site covariates,
+new interval methods, or R-bridge qualification.
 
 The `TruncatedNegBin2` marker carries an `r` field (`TruncatedNegBin2()` fills in
 `10.0`), but **no fit path reads it** — `r` is always jointly estimated. To seed
