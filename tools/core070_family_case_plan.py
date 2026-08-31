@@ -2,6 +2,7 @@
 import argparse, json
 from pathlib import Path
 import core070_manifest_coverage as coverage
+from core070_bridge_admission import CONTRACT as BOUNDARY_CONTRACT, bound_rows
 
 ROOT=Path(__file__).resolve().parents[1]
 PLAN=coverage.PREFIX+'family-required-case-plan.json'
@@ -18,8 +19,14 @@ INPUTS=[coverage.PREFIX+'family-admission-subset.json',
         coverage.PREFIX+'registered-models-contract.json', coverage.PREFIX+'family-formulas-contract.json']
 ROLES=['native_model','formula_interface','public_r_bridge']
 BRIDGE_CONTRACT=coverage.PREFIX+'public-bridge-required-cases.json'
+DESCRIPTOR_EVIDENCE=coverage.PREFIX+'bridge-descriptor-evidence.json'
 
 def build():
+    bridge_boundaries={c['id']:c for c in bound_rows(ROOT)}
+    descriptor_evidence=coverage.read_json(ROOT/DESCRIPTOR_EVIDENCE)
+    assert descriptor_evidence['reference_commit']==coverage.REFERENCE
+    assert descriptor_evidence['contract_sha256']==coverage.sha(ROOT/(coverage.PREFIX+'bridge-descriptor-contract.json'))
+    rejected_bridge_descriptors=set(descriptor_evidence['required_native_descriptors_rejected_by_bridge'])
     bridge_contract=coverage.read_json(ROOT/BRIDGE_CONTRACT)
     bridge_cases={c['id']:c for c in bridge_contract['cases']}
     assert bridge_contract['reference_commit']==coverage.REFERENCE
@@ -144,6 +151,7 @@ def build():
                 case.update(fixture=binding['fixture'],fixture_sha256=binding['fixture_sha256'],
                     r_call=binding['r_call'],julia_call=binding['julia_call'],
                     model_contract_id=binding['model_contract_id'],
+                    model_contract=binding['model_contract'],
                     acceptance_rule=binding['acceptance_rule'],scope_boundary=binding['scope_boundary'],
                     status='REGISTERED_EXECUTABLE_CASE_REPLAY_EVIDENCE_SEPARATE',
                     required_runner_case_id=cid,required_runner_status='REGISTERED',
@@ -155,6 +163,7 @@ def build():
                     r_call=binding['reference_call'],julia_call=binding['julia_call'],
                     acceptance_rule=binding['acceptance_rule'],scope_boundary=binding['scope_boundary'],
                     reference_control_policy=binding['reference_control_policy'],
+                    model_contract=binding['model_contract'],
                     required_runner_case_id=binding['id'],required_runner_status='REGISTERED_SOURCE_BOUND',
                     status='REGISTERED_EXECUTABLE_CASE_REPLAY_EVIDENCE_SEPARATE',
                     data_sha256=binding['data_sha256'])
@@ -164,6 +173,8 @@ def build():
                 case.update(fixture=bridge['fixture'],fixture_sha256=coverage.sha(ROOT/bridge['fixture']),
                     r_call=bridge['r_call'],julia_call=bridge['julia_call'],
                     model_contract_id=bridge['model_contract_id'],data_sha256=bridge['data_sha256'],
+                    model_contract=next(r['model_contract'] for r in registered['cases']
+                        if r['coverage_role']=='native_model' and r['model_contract_id']==bridge['model_contract_id']),
                     acceptance_rule=bridge['acceptance_rule'],scope_boundary=bridge['scope_boundary'],
                     status='SEPARATE_REQUIRED_R_RUNNER_REGISTERED_AGGREGATE_PENDING',
                     required_runner_case_id=cid,required_runner_status='SEPARATE_PUBLIC_R_REGISTRY',
@@ -171,13 +182,28 @@ def build():
                     bridge_subcontract_sha256=coverage.sha(ROOT/BRIDGE_CONTRACT),
                     prerequisite_case_ids=[bridge['prerequisite_native_id']])
                 case['candidate_warning']='Separate required R runner has exact case IDs and its own verification. Main programme receipt aggregation remains pending; this row alone does not grant full-family coverage.'
+            if role=='public_r_bridge' and cid in bridge_boundaries:
+                boundary=bridge_boundaries[cid]
+                case.update(boundary)
+                case.update(status='REFERENCE_BRIDGE_BOUNDARY_BOUND_SCOPE_REVIEW_PENDING',
+                    required_runner_status='SOURCE_BOUND_REFERENCE_BEHAVIOR',
+                    evidence=coverage.PREFIX+'bridge-model-admission-evidence.json',
+                    prerequisite_case_ids=[boundary['native_case_id']])
+                case['candidate_warning']='Reference bridge rejection or model change is verified, not same-model parity. Native and formula requirements remain unchanged; full-manifest integration and independent scope review remain unpaid.'
+            elif role=='public_r_bridge' and sid in rejected_bridge_descriptors:
+                case.update(acceptance_level='reference_bridge_boundary',
+                    reference_bridge_observation='DESCRIPTOR_REJECTED_MODEL_BINDING_PENDING',
+                    descriptor_evidence=DESCRIPTOR_EVIDENCE,
+                    descriptor_evidence_sha256=coverage.sha(ROOT/DESCRIPTOR_EVIDENCE))
+                case['acceptance_rule']='Bind the required native model first, then verify its frozen-reference bridge rejection with exact source, fixture and receipt contracts. Native/formula same-model parity remains required.'
+                case['candidate_warning']='The descriptor rejects in both public R bridge routes. This observation is not yet a model-bound executable case; the strict bridge gate rejects it until a complete contract is registered.'
             cases.append(case)
         executable=[r['id'] for r in gaussian['cases']+registered['cases'] if sid in r['source_fact_ids']]
         rows.append(dict(source_id=sid,classification=classification,planned_case_ids=ids,
                          executable_case_ids=executable,
                          status='REGISTERED_PARTIAL_INTERFACES_UNPAID' if executable else ('EXCLUDED' if not ids else 'SPECIFICATION_REQUIRED')))
     return dict(schema=1,status='FAMILY_DECOMPOSITION_PARTIAL_EXECUTABLE_NOT_FROZEN',
-        reference_commit=coverage.REFERENCE,inputs={p:coverage.sha(ROOT/p) for p in INPUTS+[BRIDGE_CONTRACT]},
+        reference_commit=coverage.REFERENCE,inputs={p:coverage.sha(ROOT/p) for p in INPUTS+[BRIDGE_CONTRACT,BOUNDARY_CONTRACT,DESCRIPTOR_EVIDENCE]},
         source_facts=69,planned_case_count=len(cases),rows=rows,cases=cases)
 
 def verify():
@@ -194,15 +220,20 @@ def verify():
     assert len({c['id'] for c in plan['cases']})==97
     bound=[c for c in plan['cases'] if c['fixture'] is not None]
     assert {c['required_runner_case_id'] for c in bound if c['coverage_role']=='native_model'}=={'NATIVE-03-POISSON','NATIVE-08-BETA','NATIVE-06-NB2','NATIVE-12-TRUNCATED-NB2','CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL'}
-    assert len(bound)==29 and sum(c['coverage_role']=='formula_interface' for c in bound)==5
+    assert len(bound)==31 and sum(c['coverage_role']=='formula_interface' for c in bound)==5
     bridges=[c for c in bound if c['coverage_role']=='public_r_bridge']
-    assert {c['id'] for c in bridges}=={
+    paired_bridges=[c for c in bridges if c['acceptance_level']=='paired_fit_interface']
+    assert {c['id'] for c in paired_bridges}=={
         'CORE070-FAMILY-02-LOG-PUBLIC-R-BRIDGE','CORE070-FAMILY-07-LOGIT-PUBLIC-R-BRIDGE',
         'CORE070-FAMILY-05-LOG-PUBLIC-R-BRIDGE'}
-    assert all(c['required_runner_status']=='SEPARATE_PUBLIC_R_REGISTRY' for c in bridges)
+    assert all(c['required_runner_status']=='SEPARATE_PUBLIC_R_REGISTRY' for c in paired_bridges)
+    boundary_bridges=[c for c in bridges if c['acceptance_level']=='reference_bridge_boundary']
+    assert {c['id'] for c in boundary_bridges}=={
+        'CORE070-FAMILY-00-IDENTITY-PUBLIC-R-BRIDGE','CORE070-FAMILY-11-LOG-PUBLIC-R-BRIDGE'}
+    assert all(c['required_runner_status']=='SOURCE_BOUND_REFERENCE_BEHAVIOR' for c in boundary_bridges)
     assert sum(c['coverage_role']=='reference_boundary' for c in bound)==16
     assert all(c['r_call'] is None and c['julia_call'] is None for c in plan['cases'] if c['fixture'] is None)
-    print('FAMILY_CASE_PLAN_VERIFIED 69 facts; 97 planned cases; 5 native + 5 formula + 3 separate R bridge + 16 boundary bindings; zero full-family promotions')
+    print('FAMILY_CASE_PLAN_VERIFIED 69 facts; 97 planned cases; 5 native + 5 formula + 3 paired R bridge + 2 reference bridge behaviors + 16 boundary bindings; zero full-family promotions')
 
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--write',action='store_true');args=p.parse_args()

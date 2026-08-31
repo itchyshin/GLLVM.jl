@@ -1483,3 +1483,26 @@ FullmanifestDRAFT, M1PARTIAL; no complete-family/recovery/performance claim.
 Next integrate source/model-specific bridge admission in full manifest with
 independent scope review, preserving native/formula requirements; then remaining
 Core/AGHQ work. Fullsuite/external-review approvals unchanged. Checks terminal.
+
+## 2026-08-31 — model-bound bridge acceptance and model identity repair
+
+Two exact bridge behavior contracts now bind original Gaussian unique-model
+change and truncatedNB2 family rejection. Raw verifiers must pass; no mapped-key
+or cached-summary substitution. Native and formula same-model checks remain
+mandatory for each model. Hopper found matching model IDs could conceal a
+transplanted formula definition; reproduced then repaired with nonempty exact
+model_contract equality across all three roles. New10 tests and complete52-test
+draft-integrity battery pass. Original bridge bundle38 negative controls still
+pass. Unlazy4/5, full programme unpaid; full manifest DRAFT, central10 links.
+Family plan97cases/69facts:5native+5formula+3pairedbridges+2referencebridge
+behaviors+16otherboundaries (31bindings);10additional rejected descriptors now
+explicitly await model binding. No full-family promotion or new numerical fit.
+MissionControl 3c530b5e10b68936836fcdd9cd4f09920c84d334 servedHTTP200, R fields unchanged.
+Requested Hopper Terra/high native fresh context; one test slice plus one repair
+follow-up. No completion panel or verified hours/model billing receipt claimed.
+Next central full-manifest integration of separate bridge evidence; remaining
+Core/AGHQ contracts. Also correct copied truncated-NB2 normalization prose in
+older Poisson/Beta/NB2 model definitions with coordinated source-bound replay.
+Do not edit pinned definitions without refreshing affected receipts. Fullsuite
+and specific external numerical-review approvals unchanged. All checks terminal;
+no DRAC jobs, pushes, releases or destructive cleanup. R0.7.1/article untouched.

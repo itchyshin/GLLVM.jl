@@ -35,6 +35,7 @@ class FamilyCoverage(unittest.TestCase):
     def model_cases(self):
         return [dict(id=role, coverage_role=role, source_fact_ids=['family/FAMILY-05-LOG'],
             model_contract_id='synthetic-NB2',fixture='fixture.jl',r_call='synthetic R call',
+            model_contract='synthetic original NB2 model definition',
             julia_call='synthetic '+role,acceptance_rule='synthetic numerical rule',
             acceptance_level='paired_fit' if role=='native_model' else 'paired_fit_interface')
             for role in ['native_model','formula_interface','public_r_bridge']]

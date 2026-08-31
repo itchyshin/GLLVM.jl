@@ -167,11 +167,22 @@ def require_frozen_manifest(manifest,root):
     need(isinstance(review.get('reviewer'),str) and review['reviewer'].strip() and
          isinstance(review.get('evidence'),str) and review['evidence'].strip(),'scope review lacks reviewer/evidence')
 
+def validate_bridge_boundary(row,fact,root):
+    """Verify a model-bound reference behavior; never substitute for native fits."""
+    from core070_bridge_admission import require_boundary
+    try:
+        require_boundary(row,fact,root)
+    except (ValueError,OSError,KeyError,TypeError) as error:
+        raise CoverageError('SOURCE_COVERAGE: invalid bridge boundary: '+str(error)) from error
+
+
 def validate_family_roles(facts,mapping,cases,root):
     """A linked family fact needs model/interface evidence, not an entry probe.
 
-    This checks declared coverage structure. Actual source semantics still need
-    the independently bound scope review; numerical success needs run receipts.
+    This checks declared coverage structure. A verified model-bound reference
+    rejection or model change may pay only the public bridge behavior role.
+    Actual source semantics still need the independently bound scope review;
+    native and formula numerical success still needs same-model run receipts.
     """
     by_id={row['id']:row for row in cases}
     links={row['source_id']:row['executable_case_ids'] for row in mapping['rows']}
@@ -185,6 +196,7 @@ def validate_family_roles(facts,mapping,cases,root):
         roles={row.get('coverage_role') for row in selected}
         need(required<=roles,'family interface coverage missing '+fact['id'])
         contracts={}
+        model_definitions={}
         for role in required:
             rows=[row for row in selected if row.get('coverage_role')==role]
             for row in rows:
@@ -194,8 +206,19 @@ def validate_family_roles(facts,mapping,cases,root):
                          'family case contract missing '+field+' '+row['id'])
                 safe_path(root,row.get('fixture',''))
                 if role in model_roles:
-                    need(row.get('acceptance_level')==model_roles[role],
-                         'family interface evidence level differs '+row['id'])
+                    definition=row.get('model_contract')
+                    need(isinstance(definition,str) and definition.strip(),
+                         'family model contract missing '+row['id'])
+                    previous=model_definitions.setdefault(row['model_contract_id'],definition)
+                    need(previous==definition,'family model contract differs '+row['id'])
+                    if role=='public_r_bridge' and row.get('acceptance_level')=='reference_bridge_boundary':
+                        try:
+                            validate_bridge_boundary(row,fact,root)
+                        except (ValueError,OSError) as error:
+                            raise CoverageError('SOURCE_COVERAGE: invalid bridge boundary: '+str(error)) from error
+                    else:
+                        need(row.get('acceptance_level')==model_roles[role],
+                             'family interface evidence level differs '+row['id'])
                     contracts.setdefault(row['model_contract_id'],set()).add(role)
                 elif role=='reference_boundary':
                     need(row.get('julia_disposition') in {'reject','documented_extension'},

@@ -1,0 +1,18 @@
+{
+  "status": "VERIFIED_REFERENCE_BOUNDARIES_NOT_MODEL_PARITY",
+  "contract_sha256": "9069f7898f1dfdeae36e7e658214deca748d851f47708a06bc63ba8558b10df4",
+  "cases": [
+    {
+      "id": "CORE070-FAMILY-00-IDENTITY-PUBLIC-R-BRIDGE",
+      "disposition": "reference_model_change",
+      "model_contract_id": "MODEL-FAMILY-00-IDENTITY",
+      "process_sha256": "f293543c1efb000e513ce87ebc1fc67f5e2af892b626cae1bc7c38f4e7887c4f"
+    },
+    {
+      "id": "CORE070-FAMILY-11-LOG-PUBLIC-R-BRIDGE",
+      "disposition": "reference_rejected",
+      "model_contract_id": "MODEL-FAMILY-11-LOG",
+      "process_sha256": "500ab9834bbadbfd0dd0d449b47290912e67dc37d8638b1bbf91b0e923a03e0f"
+    }
+  ]
+}
