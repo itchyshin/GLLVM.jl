@@ -16736,3 +16736,15 @@ raw results and process receipts hash-verified. Hopper final review noP0-P3.
 MissionControl0fd633f servedstatusHTTP200,newJuliafieldsvisible,Rfocuspreserved.
 No src/Rsource/DRAC/fullsuite/push/release/foreignedit.
 See covariance-bridge-boundary after-task and evidence under core070.
+
+## 2026-08-31 — Ordinary rank-one latent Gaussian fit remains PARTIAL
+
+Frozen p3/n18/K1 unique=false model ran on Totoro with one Julia/BLAS thread.
+R, Julia formula and public engine=julia fits healthy; public bridge same-model.
+All four routes agree: max deltaLL5.72e-13, beta1.57e-7, loading-crossproduct
+5.91e-8, residual variance8.48e-10. Shared-point and8negative controls PASS.
+Direct native route matches numerically but reports converged=false with gradient
+1.6741e-6 against requested g_tol1e-7. No tolerance/engine/fixture/R-source change;
+claim withheld. Five setup/fit attempts retained. Evidence latent-bare-model-
+evidence.json; after-task latent-bare-partial; Claude handover written. Full
+programme remains DRAFT/M1PARTIAL. NoDRACjob/fullsuite/push/merge/release.

@@ -1,0 +1,182 @@
+{
+  "status": "PARTIAL_DIRECT_NATIVE_FIT_HEALTH_UNPAID",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "case_id": "CORE070-COV-COV-ORD-LATENT-BARE-MODEL",
+  "contract": "docs/dev-log/core070/latent-bare-model-contract.json",
+  "contract_sha256": "a055bd335e0a81b9e59596afe32a2f885c584ea1194132ae4c2c390e7ace1828",
+  "final_attempt": {
+    "attempt": 5,
+    "status": "FAIL",
+    "process_receipt": ".unlazy/core070-aghq/latent-bare-model-05/attempt1/process/process-receipt.json",
+    "process_sha256": "f66dcb9d900c9c7993c041abf43f7dcb83d7071d7ae0acad4cc9ef243065249c",
+    "fit_exit": 1,
+    "fit_seconds": 46.1620534863323,
+    "fit_log_sha256": "64b09ea0c381106cebaffcb48ea89d41873c032402cbfa089d753c80b1fbb393"
+  },
+  "result_path": ".unlazy/core070-aghq/latent-bare-model-05/attempt1/out/latent-bare-results.json",
+  "result_sha256": "590c7a9b34d88166b5443ae4ac8dec54dc3fcdc71d8acdc36f8e9111f348b7e7",
+  "fixed_point_dependency": {
+    "required": true,
+    "evidence": "docs/dev-log/core070/gaussian-fixed-point-evidence.json",
+    "tolerance": 1e-08,
+    "case_ids": [
+      "GAUSS-LOADINGS-P1",
+      "GAUSS-LOADINGS-P2"
+    ],
+    "max_abs_loglik": 5.6843418860808e-14,
+    "status": "PASS"
+  },
+  "route_status": {
+    "r_reference": {
+      "available": true,
+      "converged": true,
+      "gradient_max": 3.21156742339911e-06,
+      "loglik": -20.9253282433999,
+      "free_coordinates": 7,
+      "engine": "gllvmTMB frozen R",
+      "same_model": null
+    },
+    "native_julia": {
+      "available": true,
+      "converged": false,
+      "gradient_max": 1.67407170259537e-06,
+      "loglik": -20.9253282433993,
+      "free_coordinates": 7,
+      "engine": "GLLVM.jl",
+      "same_model": null
+    },
+    "julia_formula": {
+      "available": true,
+      "converged": true,
+      "gradient_max": 4.34910170099556e-08,
+      "loglik": -20.9253282433994,
+      "free_coordinates": 7,
+      "engine": "GLLVM.jl",
+      "same_model": null
+    },
+    "public_r_bridge": {
+      "available": true,
+      "converged": true,
+      "gradient_max": null,
+      "loglik": -20.9253282433994,
+      "free_coordinates": 7,
+      "engine": "julia",
+      "same_model": true
+    }
+  },
+  "comparisons": {
+    "native_julia": {
+      "abs_loglik": 5.71986902286881e-13,
+      "beta_max_abs": 1.57154851243568e-07,
+      "loading_crossproduct_max_abs": 5.53988993567955e-08,
+      "residual_variance_abs": 8.47566718198411e-10
+    },
+    "julia_formula": {
+      "abs_loglik": 4.72510919280467e-13,
+      "beta_max_abs": 1.57154851465613e-07,
+      "loading_crossproduct_max_abs": 5.91283658701869e-08,
+      "residual_variance_abs": 8.08307289157373e-10
+    },
+    "public_r_bridge": {
+      "abs_loglik": 5.00932628710871e-13,
+      "beta_max_abs": 1.57154851243568e-07,
+      "loading_crossproduct_max_abs": 5.90030597713564e-08,
+      "residual_variance_abs": 8.07228374422042e-10
+    }
+  },
+  "negative_controls": {
+    "raw_loading_sign_not_compared": true,
+    "group_projection_mismatch": true,
+    "asymmetric_source": true,
+    "rank_exceeds_traits": true,
+    "missing_long_cell": true,
+    "unique_true_is_distinct": true,
+    "duplicate_long_cell": true,
+    "nonpositive_source": true
+  },
+  "checks": {
+    "input_sha256": true,
+    "fixed_point_dependency": true,
+    "r_reference_health": true,
+    "native_julia_health": false,
+    "julia_formula_health": true,
+    "public_r_bridge_health": true,
+    "r_native_invariants": true,
+    "r_formula_invariants": true,
+    "r_bridge_invariants": true,
+    "bridge_callable": true,
+    "bridge_same_model": true,
+    "raw_loading_sign_not_compared": true,
+    "negative_controls": true
+  },
+  "passing_findings": [
+    "Frozen R fit healthy",
+    "Julia formula fit healthy",
+    "Public R engine=julia fit healthy and same-model",
+    "All four route estimates/loglikelihoods agree within frozen tolerances",
+    "Eight negative controls pass",
+    "Frozen shared-point likelihood dependency passes"
+  ],
+  "blocker": {
+    "route": "native_julia",
+    "observed_gradient_max": 1.67407170259537e-06,
+    "requested_native_g_tol": 1e-07,
+    "contract_health_gradient_max": 0.0001,
+    "reason": "fit_gaussian_sources default-mean BackTracking route returned converged=false even though objective and invariants match; formula explicit-design/Hager-Zhang route converged",
+    "next_discriminating_check": "Reproduce direct default-mean source fit versus an explicit trait-intercept X using the same starting point; decide whether the default-mean optimizer should use the already-qualified Hager-Zhang policy without changing likelihood, tolerance, fixture, or acceptance rule."
+  },
+  "attempts": [
+    {
+      "attempt": 1,
+      "status": "FAIL",
+      "process_receipt": ".unlazy/core070-aghq/latent-bare-model-01/attempt1/process/process-receipt.json",
+      "process_sha256": "5bc4e8b623c54e67115d0be1485e91b092ef20e86265f81ca06aa1c8788d9b59",
+      "fit_exit": 1,
+      "fit_seconds": 2.1691804733127356,
+      "fit_log_sha256": "32ccf6bc87509ccf481d1eb071d35981c436b89a1f85dade25604dcc8d1c1101"
+    },
+    {
+      "attempt": 2,
+      "status": "FAIL",
+      "process_receipt": ".unlazy/core070-aghq/latent-bare-model-02/attempt1/process/process-receipt.json",
+      "process_sha256": "485dfcd88ae6396f8315ae786e5745a43cc8cf53aecb214dfb9248e98381c515",
+      "fit_exit": 1,
+      "fit_seconds": 7.681340586394072,
+      "fit_log_sha256": "bce3492dabe50cc32bf5b090be1dee66914e14f8f041fc2abc6630f9aea1c313"
+    },
+    {
+      "attempt": 3,
+      "status": "FAIL",
+      "process_receipt": ".unlazy/core070-aghq/latent-bare-model-03/attempt1/process/process-receipt.json",
+      "process_sha256": "c25ea4f98ecbf964c7db8f12d4baa30b8f2b8a2c3a2bc07dc58937cbf3a25286",
+      "fit_exit": 1,
+      "fit_seconds": 8.031892506405711,
+      "fit_log_sha256": "008a7c1553b28b52dfe62be10747235ed40af6def3d9684a41edede9e3b2a02f"
+    },
+    {
+      "attempt": 4,
+      "status": "FAIL",
+      "process_receipt": ".unlazy/core070-aghq/latent-bare-model-04/attempt1/process/process-receipt.json",
+      "process_sha256": "0e140424fa909ab639d43ffb1b225a0b3518db43c302825433f013b6d2a06242",
+      "fit_exit": 1,
+      "fit_seconds": 47.81650120392442,
+      "fit_log_sha256": "f5d26b54643cb4f51d78d44ec8b6840c5d6463a30c8d9effabe2cfe2b31809fb"
+    },
+    {
+      "attempt": 5,
+      "status": "FAIL",
+      "process_receipt": ".unlazy/core070-aghq/latent-bare-model-05/attempt1/process/process-receipt.json",
+      "process_sha256": "f66dcb9d900c9c7993c041abf43f7dcb83d7071d7ae0acad4cc9ef243065249c",
+      "fit_exit": 1,
+      "fit_seconds": 46.1620534863323,
+      "fit_log_sha256": "64b09ea0c381106cebaffcb48ea89d41873c032402cbfa089d753c80b1fbb393"
+    }
+  ],
+  "claim_boundary": "One exact model has three healthy callable routes and a numerically matching but fit-health-failing direct native route. This is PARTIAL, not a four-route PASS and not wider covariance or programme parity.",
+  "compute": {
+    "host": "Totoro",
+    "threads": 1,
+    "blas_threads": 1,
+    "drac_jobs": 0
+  }
+}
