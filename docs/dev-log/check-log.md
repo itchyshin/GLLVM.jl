@@ -16450,3 +16450,13 @@ work is available. M1PARTIAL/manifestDRAFT; no push/merge/release/cleanup.
 - Nine verifier corruptions reject. Stable required obligations remain PARTIAL
   for bridge/other-family scope; no fullsuite or independent-review claim.
 - See after-task/2026-08-31-core070-pervar-fallback.md and core070/pervar-fallback-evidence.json.
+
+### 2026-08-31 — Current source-manifest verifier repair
+
+Replaced stale 752/698 historical-receipt assumptions with pinned live census and
+explicit draft-map validation. 30 local unit checks plus evidence self-test pass;
+current 769 facts/715 nonexcluded unmapped/zero executable bindings are reported
+without parity promotion. Six new regression tests fail before repair and pass
+after. Historical receipt unchanged; fresh manifest-reconciliation-evidence.json.
+Totoro and eight existing DRAC sessions respond; no compute launched. See after-task
+2026-08-31-core070-manifest-reconciliation.md. Full contract remains draft.

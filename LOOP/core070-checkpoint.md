@@ -1338,3 +1338,16 @@ remain historical. Fullsuite/code-sharing approvals unchanged, no workaround.
 Next: reconcile/freeze required capability case mappings and complete bridge/
 interval/model gaps. Preserve full scope; no more helper-only replay without
 changed inputs. All jobs/workers terminal; no push/merge/release/cleanup.
+
+## Current manifest reconciliation — 2026-08-31
+
+Totoro plus eight DRAC login sessions verified; direct Totoro reconnect requires
+no Duo. User maximum five DRAC computers unchanged; no allocation/fit launched.
+Current verifier repaired: 30 checks plus evidence self-test pass, label-only
+freeze rejects. Historical manifest-coverage-evidence.json preserved; fresh
+manifest-reconciliation-evidence.json pins current inputs. 769 source facts,
+715 nonexcluded unmapped and zero master executable bindings. These are source
+facts, not model counts. No parity-complete claim. NEXT integrate existing concrete
+Gaussian native/formula fixtures and calls into the required runner and source
+map; retain public bridge and independent scope-review debt. Fullsuite and
+specific external numerical-review approvals still pending; neither started.
