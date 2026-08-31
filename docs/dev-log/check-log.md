@@ -16767,3 +16767,13 @@ max deltaLL 5.7e-13, contract SHA unchanged (a055bd33), 8 negative controls PASS
 Fresh-context verifier: CORE070_LATENT_BARE_VERIFIED; contract test PASS.
 No tolerance, convergence flag, fixture, or R source changed. Wider programme
 still M1-partial; no DRAC/full-suite/push/merge/release.
+
+## 2026-09-01 — A5 Tweedie independent fresh-candidate replay PASS (Melissa finding 1 paid)
+
+Fresh full-lane-tree workspace on Totoro; targeted supervisor with oracle
+before/after PASS both batches. Contract: 29 assertions (incl. the 3 StatsAPI
+assertions previously unverified) exit 0. Parity vs frozen R: 28/28 in 11m35.8s
+with raw stdout retained; logLik deltas fixed 2.41e-8 / shared 5.36e-8 /
+species 3.05e-8, matching the prior retry; both engines healthy. Receipts under
+.unlazy/core070-aghq/tweedie-replay-01 and preservation tarball a2a043ce.
+First failed minimal-workspace attempt retained. No engine/tolerance change.
