@@ -15995,3 +15995,22 @@ runner. NB1/twopartneighbours open. FullmanifestDRAFT/M1PARTIAL; fullsuite,
 recovery, docsrender and independentreview unpaid. Earlierwhole-source receipts
 historical afterenginechange. No R/foreign changes orpush/merge/release/cleanup.
 See after-task/2026-08-31-core070-nb2-repair.md.
+
+## 2026-08-31 — required NB2 integration verified
+
+The actual required runner passes39 assertions across NATIVE-06-NB2 (18) and
+NATIVE-12-TRUNCATED-NB2 (21), in39.665s on pinned Totoro Julia1.12.6. NB2
+now enforces relative1e-6 plus both raw gradients<=1e-4, native FD stability,
+19-coordinate identity and same-point density agreement. Its default R controls
+are unchanged; original seed45/data retained. Complete R fit and health TOML
+hashes bind to supervisor stdout. Truncated seed58 and explicit public BFGS
+policy unchanged, including retained default Rcode1 failure. Both oracle checks
+pass. Sixteen numerical-summary and nine artifact corruptions rejected;24
+neighbour Python tests and aggregate selftest pass. Two scoped Unlazy gates
+pass, no full-manifest or independent-review claim. Source/fixture/helper-bound
+older evidence remains historical; numerical source unchanged this turn.
+
+Next: finish finite required-case mapping; Student R health/density remains
+unresolved. No B production children before the user checkpoint. No active
+jobs, no DRAC compute, no R0.7.1/article/foreign edits or push/merge/release/cleanup.
+Report: docs/dev-log/after-task/2026-08-31-core070-nb2-required.md.

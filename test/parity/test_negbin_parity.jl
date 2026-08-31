@@ -9,6 +9,7 @@
 # fit_nb_gllvm (named). Inventory #132 / default-route-phi-20260801.
 
 using GLLVM, RCall, Test, Random, LinearAlgebra
+include(joinpath(@__DIR__, "nb2_health.jl"))
 
 # parity_helpers.jl is included once by runparity.jl
 
@@ -73,7 +74,20 @@ end
     @test length(jl_fit.r_group) == p
     jl_logL = jl_fit.loglik
 
-    r = fit_gllvmtmb_parity_loglik(Y, K; family = :negbinomial)
+    r = parity_nb2_health(Y, K, jl_fit)
+    @testset "original model and complete fit health" begin
+        d = r.health
+        @test d["hessian"] == "observed"
+        @test d["native_nfree"] == d["r_nfree"] == 19
+        @test d["r_packing_delta"] <= 1e-12
+        @test d["native_gradient_max"] <= 1e-4
+        @test d["r_gradient_max"] <= 1e-4
+        @test d["fd_stability"] <= 1e-4
+        @test d["native_objective_delta"] <= 1e-8
+        @test abs(d["samepoint_delta"]) <= 1e-6
+        @test abs(d["r_objective"] + d["r_loglik"]) <= 1e-8
+        @test all(isfinite,d["native_parameters"]) && all(isfinite,d["r_parameters"])
+    end
     @test r.converged
     @test isfinite(r.logLik)
 
@@ -82,8 +96,8 @@ end
         jl_logL = jl_logL, r_logL = r.logLik, r_obj = r.objective,
     )
 
-    @testset "log-likelihood agreement (rtol=1e-3)" begin
-        @test jl_logL ≈ r.logLik rtol = 1e-3
+    @testset "log-likelihood agreement (rtol=1e-6)" begin
+        @test jl_logL ≈ r.logLik rtol = 1e-6
         @test r.logLik ≈ -r.objective rtol = 0 atol = 1e-10
     end
 end

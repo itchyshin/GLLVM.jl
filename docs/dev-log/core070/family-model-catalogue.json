@@ -175,12 +175,13 @@
       "id": "NATIVE-06-NB2",
       "classification": "required_core",
       "owner": "A3/Hopper",
-      "evidence_status": "NOT_REEXECUTED",
+      "evidence_status": "REQUIRED_SMOKE_DEFAULT_HEALTH_PASS",
       "fixture": "test/parity/test_negbin_parity.jl",
       "fixture_pins": {
-        "test/parity/test_negbin_parity.jl": "da4536360b1027afae1dc7f1918450a5b355279b4138787897406e83f76ae43c",
-        "test/parity/parity_helpers.jl": "be2d0887f417964074a0b90a1e62baec1f80fc21b09663e3826e584c946044e1",
-        "test/parity/parity_trial_inputs.jl": "f4bb02fd150c306f635b7f86885272939f0b66faa4a8c5ee8843c64f6f7ea7cd"
+        "test/parity/test_negbin_parity.jl": "db83f3385dc7f6de699573600b1022cf4e628f1b90caafe61a3b7d6a4590dabd",
+        "test/parity/parity_helpers.jl": "274b2cb5cc8d61ada1b0f17773dcf355a30ff03136894b6c36c45dd57dd9e111",
+        "test/parity/parity_trial_inputs.jl": "f4bb02fd150c306f635b7f86885272939f0b66faa4a8c5ee8843c64f6f7ea7cd",
+        "test/parity/nb2_health.jl": "8914dd433e90e88df85ae0becbe1b09c9ff1a311d050087dc47dd93dbc82e5e0"
       },
       "seed": 45,
       "n_traits": 5,
@@ -198,11 +199,13 @@
       "bridge_status": "UNPAID",
       "current_loglik_check": {
         "kind": "relative",
-        "tolerance": 0.001
+        "tolerance": 1e-06
       },
-      "acceptance_status": "CURRENT_FIXTURE_IS_SMOKE_NOT_PROGRAMME_ACCEPTANCE",
-      "evidence_location": "Fresh supervised receipt required; historical outputs are not selected by this catalogue",
-      "reference_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=nbinom2(), control=gllvmTMBcontrol(n_init=1L,se=FALSE))"
+      "acceptance_status": "TWO_REQUIRED_SMOKE_CASES_VERIFIED_NOT_FULL_CAPABILITY",
+      "evidence_location": "docs/dev-log/core070/nb2-required-evidence.json; actual required two-case runner,39 total assertions; formulas/bridge/recovery unpaid.",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=nbinom2(), control=gllvmTMBcontrol(n_init=1L,se=FALSE))",
+      "oracle_control_policy": "nb2_original_default_v1",
+      "execution_manifest_sha256": "9131983144c8381ebc8ba02d38ecb2779dda7612452734d5806b8b2cbdd2368d"
     },
     {
       "id": "NATIVE-07-TWEEDIE",
@@ -438,9 +441,10 @@
       "fixture": "test/parity/test_truncated_nbinom2_parity.jl",
       "fixture_pins": {
         "test/parity/test_truncated_nbinom2_parity.jl": "0972c0993b909d4d262e46a844915f7cf79e0afe36f22a177cb6f350b0064558",
-        "test/parity/parity_helpers.jl": "2f6a0c7ab5a4dfcc43412d1c0e1a72c944b4d17ebc78d63fc278132690253a93",
+        "test/parity/parity_helpers.jl": "274b2cb5cc8d61ada1b0f17773dcf355a30ff03136894b6c36c45dd57dd9e111",
         "test/parity/parity_trial_inputs.jl": "f4bb02fd150c306f635b7f86885272939f0b66faa4a8c5ee8843c64f6f7ea7cd",
-        "test/parity/truncnb2_policy.jl": "ec004051a92ee7b66f8f0cb52738a5ebb90e552b8c9b5b5a6f22830e726733d2"
+        "test/parity/truncnb2_policy.jl": "ec004051a92ee7b66f8f0cb52738a5ebb90e552b8c9b5b5a6f22830e726733d2",
+        "test/parity/nb2_health.jl": "8914dd433e90e88df85ae0becbe1b09c9ff1a311d050087dc47dd93dbc82e5e0"
       },
       "seed": 58,
       "n_traits": 5,
@@ -460,10 +464,11 @@
         "kind": "relative",
         "tolerance": 1e-06
       },
-      "acceptance_status": "ONE_REQUIRED_SMOKE_POLICY_VERIFIED_NOT_FULL_CAPABILITY",
-      "evidence_location": "docs/dev-log/core070/truncnb2-required-evidence.json; actual required runner selected NATIVE-12-TRUNCATED-NB2,21pass; default Rcode1 remains visible.",
+      "acceptance_status": "TWO_REQUIRED_SMOKE_CASES_VERIFIED_NOT_FULL_CAPABILITY",
+      "evidence_location": "docs/dev-log/core070/nb2-required-evidence.json; actual required two-case runner,39 total assertions; formulas/bridge/recovery unpaid.",
       "reference_call": "{ original_fit <- gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=truncated_nbinom2(), control=gllvmTMBcontrol(n_init=1L,se=FALSE)); gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=truncated_nbinom2(), control=gllvmTMBcontrol(n_init=1L,se=FALSE,start_from=original_fit,optimizer=\"optim\",optArgs=list(method=\"BFGS\",control=list(reltol=1e-12,maxit=1500)))) }",
-      "oracle_control_policy": "truncnb2_default_then_public_bfgs_v1"
+      "oracle_control_policy": "truncnb2_default_then_public_bfgs_v1",
+      "execution_manifest_sha256": "9131983144c8381ebc8ba02d38ecb2779dda7612452734d5806b8b2cbdd2368d"
     },
     {
       "id": "NATIVE-13-DELTA-LOGNORMAL",

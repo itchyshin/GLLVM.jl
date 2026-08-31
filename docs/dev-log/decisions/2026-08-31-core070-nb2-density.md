@@ -69,3 +69,14 @@ open obligations, not covered by this ordinary NB2 repair. The original
 required fixture still has its old1e-3 tolerance: next tighten to1e-6 with
 health assertions and replay the real required runner. Source changes make
 older whole-source receipts historical. Evidence: ../core070/nb2-repair-evidence.json.
+
+## Required-runner integration — 2026-08-31
+
+The pending runner step above is now verified on the original data.
+`test_negbin_parity.jl` enforces rtol1e-6 and ten additional model/health
+assertions, via the test-only `nb2_health.jl` adapter. The paired original
+R default call is unchanged. Raw fit and health report hashes are printed
+into supervisor-hashed stdout; both language execution manifests include
+the adapter. Actual runner: NB2 18pass, truncated NB2 21pass,39.665s.
+Evidence: ../core070/nb2-required-evidence.json. Full recovery and independent
+review remain pending; old source-bound diagnostics are historical.

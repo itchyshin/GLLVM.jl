@@ -7,8 +7,8 @@ All notable changes to GLLVM.jl are documented here.
 ### Changed
 - **Local development candidate:** ordinary NB2 evaluates its density directly
   from the mean and uses an overflow-safe observed curvature. The original
-  paired fit and scalar derivative checks pass; required-runner integration,
-  broader recovery and independent review remain pending.
+  paired fit, scalar derivatives and required NB2/truncated-NB2 runner pass.
+  Broader recovery, full package checks and independent review remain pending.
 - Student-t fitting rejects infinite fixed degrees of freedom before reading
   responses, for scalar and per-trait inputs. Finite positive fixed values and
   the estimated-df route are unchanged.

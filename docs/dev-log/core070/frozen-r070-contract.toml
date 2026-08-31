@@ -471,7 +471,7 @@ julia_call_or_missing = "fit_gllvm(Y; family = GLLVM.NegativeBinomial(), K = K, 
 fixture_specification = "test/parity/test_negbin_parity.jl; original seed45, p=5,n=80,K=2; see source-bound family-model-catalogue.json for subcases"
 parameterisation = "log; per-trait NB2 size; Var=mu+mu^2/r"
 identification = "triangular loading convention; compare invariant quantities; ordinary loadings-only; unique=FALSE"
-acceptance_rule = "fixture test passes and receipt binds source, fixture hash, model identity, and zero exit"
+acceptance_rule = "original fixture: logLik rtol1e-6; native/R gradients<=1e-4; native FD stability<=1e-4; samepoint nll<=1e-6;19 free coordinates; hashed whole-fit/default-policy provenance"
 implementation_status = "SMOKE_ONLY_NOT_FULL_CAPABILITY"
 evidence_path = "test/parity/test_negbin_parity.jl"
 
