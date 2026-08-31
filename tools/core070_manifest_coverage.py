@@ -144,6 +144,10 @@ def require_frozen_manifest(manifest,root):
     need(ids and len(set(ids))==len(ids),'no unique executable cases')
     validate_mapping(mapping,index['facts'],ids)
     validate_family_roles(index['facts'],mapping,cases,root)
+    if any(f['id']=='covariance/COV-ORD-SLOPE' for f in index['facts']):
+        from core070_verify_slopes_input import require_frozen_slopes
+        try:require_frozen_slopes(manifest,root)
+        except (ValueError,OSError) as error:raise CoverageError('SOURCE_COVERAGE: '+str(error)) from error
     if any(f['id'].startswith('aghq/') for f in index['facts']):
         from core070_aghq_case_plan import require_frozen_aghq
         try:require_frozen_aghq(manifest,root)

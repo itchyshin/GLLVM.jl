@@ -399,7 +399,14 @@
       "reference_model_case_ids": [
         "MODE-ANIMAL-DEP"
       ],
-      "reference_model_evidence": "docs/dev-log/core070/covariance-modes-evidence.json"
+      "reference_model_evidence": "docs/dev-log/core070/covariance-modes-evidence.json",
+      "slope_reference_case_ids": [
+        "SLOPE-ANIMAL-DEP-BAR",
+        "SLOPE-ANIMAL-DEP-DBAR",
+        "SLOPE-ANIMAL-DEP-MULTIGAUSS",
+        "SLOPE-ANIMAL-DEP-MULTIPOIS"
+      ],
+      "slope_case_plan": "docs/dev-log/core070/slopes-required-case-plan.json"
     },
     {
       "source_id": "covariance/COV-ANIMAL-DEP-BAR-REJECT",
@@ -587,13 +594,23 @@
       "source_id": "covariance/COV-ORD-SLOPE",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Executable model/interface or rejection case mapping remains required.",
+      "slope_reference_case_ids": [
+        "SLOPE-ORD-LAT-DEFAULT",
+        "SLOPE-ORD-LAT-POISDEFAULT"
+      ],
+      "slope_case_plan": "docs/dev-log/core070/slopes-required-case-plan.json"
     },
     {
       "source_id": "covariance/COV-ORD-SLOPE-NOUNIQUE",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Executable model/interface or rejection case mapping remains required.",
+      "slope_reference_case_ids": [
+        "SLOPE-ORD-LAT-NOUNIQUE",
+        "SLOPE-ORD-LAT-POISNOUNIQUE"
+      ],
+      "slope_case_plan": "docs/dev-log/core070/slopes-required-case-plan.json"
     },
     {
       "source_id": "covariance/COV-PHYLO-A-ALIAS",
@@ -653,7 +670,20 @@
       "source_id": "covariance/COV-SLOPE-F00-L0",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Executable model/interface or rejection case mapping remains required.",
+      "slope_reference_case_ids": [
+        "SLOPE-ORD-LAT-DEFAULT",
+        "SLOPE-ORD-LAT-NOUNIQUE",
+        "SLOPE-ORD-LAT-RANK4",
+        "SLOPE-ANIMAL-INDEP-BAR",
+        "SLOPE-ANIMAL-INDEP-DBAR",
+        "SLOPE-ANIMAL-DEP-BAR",
+        "SLOPE-ANIMAL-DEP-DBAR",
+        "SLOPE-ANIMAL-LAT-NOUNIQUE",
+        "SLOPE-ANIMAL-LAT-DEFAULT",
+        "SLOPE-PHYLO-DEP-MULTIGAUSS"
+      ],
+      "slope_case_plan": "docs/dev-log/core070/slopes-required-case-plan.json"
     },
     {
       "source_id": "covariance/COV-SLOPE-F00-L1",
@@ -689,7 +719,12 @@
       "source_id": "covariance/COV-SLOPE-F02-L0",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Executable model/interface or rejection case mapping remains required.",
+      "slope_reference_case_ids": [
+        "SLOPE-ORD-LAT-POISDEFAULT",
+        "SLOPE-ORD-LAT-POISNOUNIQUE"
+      ],
+      "slope_case_plan": "docs/dev-log/core070/slopes-required-case-plan.json"
     },
     {
       "source_id": "covariance/COV-SLOPE-F02-L1",
@@ -5161,6 +5196,7 @@
     }
   ],
   "required_case_annexes": [
-    "docs/dev-log/core070/aghq-required-case-plan.json"
+    "docs/dev-log/core070/aghq-required-case-plan.json",
+    "docs/dev-log/core070/slopes-required-case-plan.json"
   ]
 }

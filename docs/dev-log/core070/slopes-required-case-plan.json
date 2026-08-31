@@ -1,0 +1,538 @@
+{
+  "schema": 1,
+  "status": "REFERENCE_CONTRACT_ANNEX_NATIVE_CALLS_UNRESOLVED",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "source_pins": {
+    "R/brms-sugar.R": "001f6de37c9d2102470d39af79e21cff2ae4e3c62d2c250243cb0a2782ce27c8",
+    "R/fit-multi.R": "768db11bd09e6de872d4a27b60fd0a096f617434ac84c95db721fac8f8d77c02",
+    "R/lambda-constraint.R": "ccd07648fdaedb0a3e5a89068278a66ada91874037ea84f3b2bcb4f8e7388a08",
+    "src/gllvmTMB.cpp": "d92e70ba28d91e26d5612b2c8c2d10f9c52c7c2f09625d89671f1e8c4afaf6cc"
+  },
+  "cases": [
+    {
+      "id": "SLOPE-ORD-LAT-DEFAULT",
+      "status": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + latent(1 + x | site, d = 2), df,      cluster = \"species\", family = stats::gaussian(), control = control)",
+      "native_status": "UNPAID",
+      "executable_case_ids": [],
+      "owner": "B1",
+      "formula_owner": "B2",
+      "bridge_owner": "B5",
+      "required_roles": [
+        "native_model",
+        "formula_interface",
+        "public_r_bridge"
+      ],
+      "fixture": "test/parity/fixtures/core070_slopes_input.R",
+      "free_parameters": {
+        "b_fix": 3,
+        "log_sigma_eps": 1,
+        "theta_rr_B_slope": 11,
+        "theta_diag_B_slope": 6
+      },
+      "random": [
+        "z_B_slope",
+        "s_B_slope"
+      ],
+      "model_contract": "docs/dev-log/core070/slopes-input-contract.md",
+      "acceptance_rule": "Same covariance/design/constraints and normalized likelihood at frozen points, then both-engine healthy fits, identifiable covariance/predictions and supported inference; predeclare exact numerical fixtures before fits",
+      "native_call": "UNRESOLVED: B1/B2 representation and API contract required; do not treat this as a dispatch-ready native case"
+    },
+    {
+      "id": "SLOPE-ORD-LAT-NOUNIQUE",
+      "status": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + latent(1 + x | site, d = 2, unique = FALSE),      df, cluster = \"species\", family = stats::gaussian(), control = control)",
+      "native_status": "UNPAID",
+      "executable_case_ids": [],
+      "owner": "B1",
+      "formula_owner": "B2",
+      "bridge_owner": "B5",
+      "required_roles": [
+        "native_model",
+        "formula_interface",
+        "public_r_bridge"
+      ],
+      "fixture": "test/parity/fixtures/core070_slopes_input.R",
+      "free_parameters": {
+        "b_fix": 3,
+        "log_sigma_eps": 1,
+        "theta_rr_B_slope": 11
+      },
+      "random": [
+        "z_B_slope"
+      ],
+      "model_contract": "docs/dev-log/core070/slopes-input-contract.md",
+      "acceptance_rule": "Same covariance/design/constraints and normalized likelihood at frozen points, then both-engine healthy fits, identifiable covariance/predictions and supported inference; predeclare exact numerical fixtures before fits",
+      "native_call": "UNRESOLVED: B1/B2 representation and API contract required; do not treat this as a dispatch-ready native case"
+    },
+    {
+      "id": "SLOPE-ORD-LAT-RANK4",
+      "status": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + latent(1 + x | site, d = 4, unique = FALSE),      df, cluster = \"species\", family = stats::gaussian(), control = control)",
+      "native_status": "UNPAID",
+      "executable_case_ids": [],
+      "owner": "B1",
+      "formula_owner": "B2",
+      "bridge_owner": "B5",
+      "required_roles": [
+        "native_model",
+        "formula_interface",
+        "public_r_bridge"
+      ],
+      "fixture": "test/parity/fixtures/core070_slopes_input.R",
+      "free_parameters": {
+        "b_fix": 3,
+        "log_sigma_eps": 1,
+        "theta_rr_B_slope": 18
+      },
+      "random": [
+        "z_B_slope"
+      ],
+      "model_contract": "docs/dev-log/core070/slopes-input-contract.md",
+      "acceptance_rule": "Same covariance/design/constraints and normalized likelihood at frozen points, then both-engine healthy fits, identifiable covariance/predictions and supported inference; predeclare exact numerical fixtures before fits",
+      "native_call": "UNRESOLVED: B1/B2 representation and API contract required; do not treat this as a dispatch-ready native case"
+    },
+    {
+      "id": "SLOPE-ORD-LAT-RANK7",
+      "status": "REFERENCE_REJECTED",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + latent(1 + x | site, d = 7, unique = FALSE),      df, cluster = \"species\", family = stats::gaussian(), control = control)",
+      "native_status": "UNPAID",
+      "executable_case_ids": [],
+      "owner": "B1",
+      "formula_owner": "B2",
+      "bridge_owner": "B5",
+      "required_roles": [
+        "reference_boundary"
+      ],
+      "fixture": "test/parity/fixtures/core070_slopes_input.R",
+      "free_parameters": {},
+      "random": [],
+      "model_contract": "docs/dev-log/core070/slopes-input-contract.md",
+      "acceptance_rule": "Specific unsupported combination rejected, or separately reviewed documented Julia extension",
+      "native_call": "UNRESOLVED: B1/B2 representation and API contract required; do not treat this as a dispatch-ready native case"
+    },
+    {
+      "id": "SLOPE-ORD-INDEP-BAR",
+      "status": "REFERENCE_REJECTED",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + indep(1 + x | site), df, cluster = \"species\",      family = stats::gaussian(), control = control)",
+      "native_status": "UNPAID",
+      "executable_case_ids": [],
+      "owner": "B1",
+      "formula_owner": "B2",
+      "bridge_owner": "B5",
+      "required_roles": [
+        "reference_boundary"
+      ],
+      "fixture": "test/parity/fixtures/core070_slopes_input.R",
+      "free_parameters": {},
+      "random": [],
+      "model_contract": "docs/dev-log/core070/slopes-input-contract.md",
+      "acceptance_rule": "Specific unsupported combination rejected, or separately reviewed documented Julia extension",
+      "native_call": "UNRESOLVED: B1/B2 representation and API contract required; do not treat this as a dispatch-ready native case"
+    },
+    {
+      "id": "SLOPE-ORD-INDEP-DBAR",
+      "status": "REFERENCE_REJECTED",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + indep(1 + x || site), df, cluster = \"species\",      family = stats::gaussian(), control = control)",
+      "native_status": "UNPAID",
+      "executable_case_ids": [],
+      "owner": "B1",
+      "formula_owner": "B2",
+      "bridge_owner": "B5",
+      "required_roles": [
+        "reference_boundary"
+      ],
+      "fixture": "test/parity/fixtures/core070_slopes_input.R",
+      "free_parameters": {},
+      "random": [],
+      "model_contract": "docs/dev-log/core070/slopes-input-contract.md",
+      "acceptance_rule": "Specific unsupported combination rejected, or separately reviewed documented Julia extension",
+      "native_call": "UNRESOLVED: B1/B2 representation and API contract required; do not treat this as a dispatch-ready native case"
+    },
+    {
+      "id": "SLOPE-ORD-DEP-BAR",
+      "status": "REFERENCE_REJECTED",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + dep(1 + x | site), df, cluster = \"species\",      family = stats::gaussian(), control = control)",
+      "native_status": "UNPAID",
+      "executable_case_ids": [],
+      "owner": "B1",
+      "formula_owner": "B2",
+      "bridge_owner": "B5",
+      "required_roles": [
+        "reference_boundary"
+      ],
+      "fixture": "test/parity/fixtures/core070_slopes_input.R",
+      "free_parameters": {},
+      "random": [],
+      "model_contract": "docs/dev-log/core070/slopes-input-contract.md",
+      "acceptance_rule": "Specific unsupported combination rejected, or separately reviewed documented Julia extension",
+      "native_call": "UNRESOLVED: B1/B2 representation and API contract required; do not treat this as a dispatch-ready native case"
+    },
+    {
+      "id": "SLOPE-ORD-DEP-DBAR",
+      "status": "REFERENCE_REJECTED",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + dep(1 + x || site), df, cluster = \"species\",      family = stats::gaussian(), control = control)",
+      "native_status": "UNPAID",
+      "executable_case_ids": [],
+      "owner": "B1",
+      "formula_owner": "B2",
+      "bridge_owner": "B5",
+      "required_roles": [
+        "reference_boundary"
+      ],
+      "fixture": "test/parity/fixtures/core070_slopes_input.R",
+      "free_parameters": {},
+      "random": [],
+      "model_contract": "docs/dev-log/core070/slopes-input-contract.md",
+      "acceptance_rule": "Specific unsupported combination rejected, or separately reviewed documented Julia extension",
+      "native_call": "UNRESOLVED: B1/B2 representation and API contract required; do not treat this as a dispatch-ready native case"
+    },
+    {
+      "id": "SLOPE-ANIMAL-INDEP-BAR",
+      "status": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + animal_indep(1 + x | species, A = C),      df, cluster = \"species\", family = stats::gaussian(), control = control)",
+      "native_status": "UNPAID",
+      "executable_case_ids": [],
+      "owner": "B1",
+      "formula_owner": "B2",
+      "bridge_owner": "B5",
+      "required_roles": [
+        "native_model",
+        "formula_interface",
+        "public_r_bridge"
+      ],
+      "fixture": "test/parity/fixtures/core070_slopes_input.R",
+      "free_parameters": {
+        "b_fix": 3,
+        "log_sigma_eps": 1,
+        "theta_dep_chol": 9
+      },
+      "random": [
+        "b_phy_aug"
+      ],
+      "model_contract": "docs/dev-log/core070/slopes-input-contract.md",
+      "acceptance_rule": "Same covariance/design/constraints and normalized likelihood at frozen points, then both-engine healthy fits, identifiable covariance/predictions and supported inference; predeclare exact numerical fixtures before fits",
+      "native_call": "UNRESOLVED: B1/B2 representation and API contract required; do not treat this as a dispatch-ready native case"
+    },
+    {
+      "id": "SLOPE-ANIMAL-INDEP-DBAR",
+      "status": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + animal_indep(1 + x || species, A = C),      df, cluster = \"species\", family = stats::gaussian(), control = control)",
+      "native_status": "UNPAID",
+      "executable_case_ids": [],
+      "owner": "B1",
+      "formula_owner": "B2",
+      "bridge_owner": "B5",
+      "required_roles": [
+        "native_model",
+        "formula_interface",
+        "public_r_bridge"
+      ],
+      "fixture": "test/parity/fixtures/core070_slopes_input.R",
+      "free_parameters": {
+        "b_fix": 3,
+        "log_sigma_eps": 1,
+        "theta_dep_chol": 6
+      },
+      "random": [
+        "b_phy_aug"
+      ],
+      "model_contract": "docs/dev-log/core070/slopes-input-contract.md",
+      "acceptance_rule": "Same covariance/design/constraints and normalized likelihood at frozen points, then both-engine healthy fits, identifiable covariance/predictions and supported inference; predeclare exact numerical fixtures before fits",
+      "native_call": "UNRESOLVED: B1/B2 representation and API contract required; do not treat this as a dispatch-ready native case"
+    },
+    {
+      "id": "SLOPE-ANIMAL-DEP-BAR",
+      "status": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + animal_dep(1 + x | species, A = C),      df, cluster = \"species\", family = stats::gaussian(), control = control)",
+      "native_status": "UNPAID",
+      "executable_case_ids": [],
+      "owner": "B1",
+      "formula_owner": "B2",
+      "bridge_owner": "B5",
+      "required_roles": [
+        "native_model",
+        "formula_interface",
+        "public_r_bridge"
+      ],
+      "fixture": "test/parity/fixtures/core070_slopes_input.R",
+      "free_parameters": {
+        "b_fix": 3,
+        "log_sigma_eps": 1,
+        "theta_dep_chol": 21
+      },
+      "random": [
+        "b_phy_aug"
+      ],
+      "model_contract": "docs/dev-log/core070/slopes-input-contract.md",
+      "acceptance_rule": "Same covariance/design/constraints and normalized likelihood at frozen points, then both-engine healthy fits, identifiable covariance/predictions and supported inference; predeclare exact numerical fixtures before fits",
+      "native_call": "UNRESOLVED: B1/B2 representation and API contract required; do not treat this as a dispatch-ready native case"
+    },
+    {
+      "id": "SLOPE-ANIMAL-DEP-DBAR",
+      "status": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + animal_dep(1 + x || species, A = C),      df, cluster = \"species\", family = stats::gaussian(), control = control)",
+      "native_status": "UNPAID",
+      "executable_case_ids": [],
+      "owner": "B1",
+      "formula_owner": "B2",
+      "bridge_owner": "B5",
+      "required_roles": [
+        "native_model",
+        "formula_interface",
+        "public_r_bridge"
+      ],
+      "fixture": "test/parity/fixtures/core070_slopes_input.R",
+      "free_parameters": {
+        "b_fix": 3,
+        "log_sigma_eps": 1,
+        "theta_dep_chol": 12
+      },
+      "random": [
+        "b_phy_aug"
+      ],
+      "model_contract": "docs/dev-log/core070/slopes-input-contract.md",
+      "acceptance_rule": "Same covariance/design/constraints and normalized likelihood at frozen points, then both-engine healthy fits, identifiable covariance/predictions and supported inference; predeclare exact numerical fixtures before fits",
+      "native_call": "UNRESOLVED: B1/B2 representation and API contract required; do not treat this as a dispatch-ready native case"
+    },
+    {
+      "id": "SLOPE-ANIMAL-LAT-NOUNIQUE",
+      "status": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + animal_latent(1 + x | species, A = C,      d = 2, unique = FALSE), df, cluster = \"species\", family = stats::gaussian(),      control = control)",
+      "native_status": "UNPAID",
+      "executable_case_ids": [],
+      "owner": "B1",
+      "formula_owner": "B2",
+      "bridge_owner": "B5",
+      "required_roles": [
+        "native_model",
+        "formula_interface",
+        "public_r_bridge"
+      ],
+      "fixture": "test/parity/fixtures/core070_slopes_input.R",
+      "free_parameters": {
+        "b_fix": 3,
+        "log_sigma_eps": 1,
+        "theta_rr_phy_slope": 10
+      },
+      "random": [
+        "g_phy_slope"
+      ],
+      "model_contract": "docs/dev-log/core070/slopes-input-contract.md",
+      "acceptance_rule": "Same covariance/design/constraints and normalized likelihood at frozen points, then both-engine healthy fits, identifiable covariance/predictions and supported inference; predeclare exact numerical fixtures before fits",
+      "native_call": "UNRESOLVED: B1/B2 representation and API contract required; do not treat this as a dispatch-ready native case"
+    },
+    {
+      "id": "SLOPE-ANIMAL-LAT-DEFAULT",
+      "status": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + animal_latent(1 + x | species, A = C,      d = 2), df, cluster = \"species\", family = stats::gaussian(),      control = control)",
+      "native_status": "UNPAID",
+      "executable_case_ids": [],
+      "owner": "B1",
+      "formula_owner": "B2",
+      "bridge_owner": "B5",
+      "required_roles": [
+        "native_model",
+        "formula_interface",
+        "public_r_bridge"
+      ],
+      "fixture": "test/parity/fixtures/core070_slopes_input.R",
+      "free_parameters": {
+        "b_fix": 3,
+        "log_sigma_eps": 1,
+        "theta_rr_phy_slope": 10
+      },
+      "random": [
+        "g_phy_slope"
+      ],
+      "model_contract": "docs/dev-log/core070/slopes-input-contract.md",
+      "acceptance_rule": "Same covariance/design/constraints and normalized likelihood at frozen points, then both-engine healthy fits, identifiable covariance/predictions and supported inference; predeclare exact numerical fixtures before fits",
+      "native_call": "UNRESOLVED: B1/B2 representation and API contract required; do not treat this as a dispatch-ready native case"
+    },
+    {
+      "id": "SLOPE-ANIMAL-DEP-MULTIGAUSS",
+      "status": "BLOCKED_REFERENCE_MISROUTE",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + animal_dep(1 + x + x2 | species,      A = C), df, cluster = \"species\", family = stats::gaussian(),      control = control)",
+      "native_status": "UNPAID",
+      "executable_case_ids": [],
+      "owner": "B1",
+      "formula_owner": "B2",
+      "bridge_owner": "B5",
+      "required_roles": [
+        "reference_defect_disposition"
+      ],
+      "fixture": "test/parity/fixtures/core070_slopes_input.R",
+      "free_parameters": {
+        "b_fix": 3,
+        "log_sigma_eps": 1,
+        "theta_rr_phy": 6
+      },
+      "random": [
+        "g_phy"
+      ],
+      "model_contract": "docs/dev-log/core070/slopes-input-contract.md",
+      "acceptance_rule": "Source defect must have explicit reviewed Julia disposition; never reproduce silent term loss",
+      "native_call": "UNRESOLVED: B1/B2 representation and API contract required; do not treat this as a dispatch-ready native case"
+    },
+    {
+      "id": "SLOPE-ANIMAL-DEP-MULTIPOIS",
+      "status": "BLOCKED_REFERENCE_MISROUTE",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + animal_dep(1 + x + x2 | species,      A = C), counts, cluster = \"species\", family = stats::poisson(),      control = control)",
+      "native_status": "UNPAID",
+      "executable_case_ids": [],
+      "owner": "B1",
+      "formula_owner": "B2",
+      "bridge_owner": "B5",
+      "required_roles": [
+        "reference_defect_disposition"
+      ],
+      "fixture": "test/parity/fixtures/core070_slopes_input.R",
+      "free_parameters": {
+        "b_fix": 3,
+        "theta_rr_phy": 6
+      },
+      "random": [
+        "g_phy"
+      ],
+      "model_contract": "docs/dev-log/core070/slopes-input-contract.md",
+      "acceptance_rule": "Source defect must have explicit reviewed Julia disposition; never reproduce silent term loss",
+      "native_call": "UNRESOLVED: B1/B2 representation and API contract required; do not treat this as a dispatch-ready native case"
+    },
+    {
+      "id": "SLOPE-ORD-LAT-POISDEFAULT",
+      "status": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + latent(1 + x | site, d = 2), counts,      cluster = \"species\", family = stats::poisson(), control = control)",
+      "native_status": "UNPAID",
+      "executable_case_ids": [],
+      "owner": "B1",
+      "formula_owner": "B2",
+      "bridge_owner": "B5",
+      "required_roles": [
+        "native_model",
+        "formula_interface",
+        "public_r_bridge"
+      ],
+      "fixture": "test/parity/fixtures/core070_slopes_input.R",
+      "free_parameters": {
+        "b_fix": 3,
+        "theta_rr_B_slope": 11
+      },
+      "random": [
+        "z_B_slope"
+      ],
+      "model_contract": "docs/dev-log/core070/slopes-input-contract.md",
+      "acceptance_rule": "Same covariance/design/constraints and normalized likelihood at frozen points, then both-engine healthy fits, identifiable covariance/predictions and supported inference; predeclare exact numerical fixtures before fits",
+      "native_call": "UNRESOLVED: B1/B2 representation and API contract required; do not treat this as a dispatch-ready native case"
+    },
+    {
+      "id": "SLOPE-ORD-LAT-POISNOUNIQUE",
+      "status": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + latent(1 + x | site, d = 2, unique = FALSE),      counts, cluster = \"species\", family = stats::poisson(), control = control)",
+      "native_status": "UNPAID",
+      "executable_case_ids": [],
+      "owner": "B1",
+      "formula_owner": "B2",
+      "bridge_owner": "B5",
+      "required_roles": [
+        "native_model",
+        "formula_interface",
+        "public_r_bridge"
+      ],
+      "fixture": "test/parity/fixtures/core070_slopes_input.R",
+      "free_parameters": {
+        "b_fix": 3,
+        "theta_rr_B_slope": 11
+      },
+      "random": [
+        "z_B_slope"
+      ],
+      "model_contract": "docs/dev-log/core070/slopes-input-contract.md",
+      "acceptance_rule": "Same covariance/design/constraints and normalized likelihood at frozen points, then both-engine healthy fits, identifiable covariance/predictions and supported inference; predeclare exact numerical fixtures before fits",
+      "native_call": "UNRESOLVED: B1/B2 representation and API contract required; do not treat this as a dispatch-ready native case"
+    },
+    {
+      "id": "SLOPE-ORD-LAT-COMBINE",
+      "status": "REFERENCE_REJECTED",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + latent(1 + x | site, d = 2) + latent(0 +      trait | site, d = 1), df, cluster = \"species\", family = stats::gaussian(),      control = control)",
+      "native_status": "UNPAID",
+      "executable_case_ids": [],
+      "owner": "B1",
+      "formula_owner": "B2",
+      "bridge_owner": "B5",
+      "required_roles": [
+        "reference_boundary"
+      ],
+      "fixture": "test/parity/fixtures/core070_slopes_input.R",
+      "free_parameters": {},
+      "random": [],
+      "model_contract": "docs/dev-log/core070/slopes-input-contract.md",
+      "acceptance_rule": "Specific unsupported combination rejected, or separately reviewed documented Julia extension",
+      "native_call": "UNRESOLVED: B1/B2 representation and API contract required; do not treat this as a dispatch-ready native case"
+    },
+    {
+      "id": "SLOPE-ANIMAL-LAT-RANK4",
+      "status": "REFERENCE_REJECTED",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + animal_latent(1 + x | species, A = C,      d = 4, unique = FALSE), df, cluster = \"species\", family = stats::gaussian(),      control = control)",
+      "native_status": "UNPAID",
+      "executable_case_ids": [],
+      "owner": "B1",
+      "formula_owner": "B2",
+      "bridge_owner": "B5",
+      "required_roles": [
+        "reference_boundary"
+      ],
+      "fixture": "test/parity/fixtures/core070_slopes_input.R",
+      "free_parameters": {},
+      "random": [],
+      "model_contract": "docs/dev-log/core070/slopes-input-contract.md",
+      "acceptance_rule": "Specific unsupported combination rejected, or separately reviewed documented Julia extension",
+      "native_call": "UNRESOLVED: B1/B2 representation and API contract required; do not treat this as a dispatch-ready native case"
+    },
+    {
+      "id": "SLOPE-PHYLO-DEP-MULTIGAUSS",
+      "status": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + phylo_dep(1 + x + x2 | species,      vcv = C), df, cluster = \"species\", family = stats::gaussian(),      control = control)",
+      "native_status": "UNPAID",
+      "executable_case_ids": [],
+      "owner": "B1",
+      "formula_owner": "B2",
+      "bridge_owner": "B5",
+      "required_roles": [
+        "native_model",
+        "formula_interface",
+        "public_r_bridge"
+      ],
+      "fixture": "test/parity/fixtures/core070_slopes_input.R",
+      "free_parameters": {
+        "b_fix": 3,
+        "log_sigma_eps": 1,
+        "theta_dep_chol": 45
+      },
+      "random": [
+        "b_phy_aug"
+      ],
+      "model_contract": "docs/dev-log/core070/slopes-input-contract.md",
+      "acceptance_rule": "Same covariance/design/constraints and normalized likelihood at frozen points, then both-engine healthy fits, identifiable covariance/predictions and supported inference; predeclare exact numerical fixtures before fits",
+      "native_call": "UNRESOLVED: B1/B2 representation and API contract required; do not treat this as a dispatch-ready native case"
+    },
+    {
+      "id": "SLOPE-PHYLO-DEP-MULTIPOIS",
+      "status": "REFERENCE_REJECTED",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + phylo_dep(1 + x + x2 | species,      vcv = C), counts, cluster = \"species\", family = stats::poisson(),      control = control)",
+      "native_status": "UNPAID",
+      "executable_case_ids": [],
+      "owner": "B1",
+      "formula_owner": "B2",
+      "bridge_owner": "B5",
+      "required_roles": [
+        "reference_boundary"
+      ],
+      "fixture": "test/parity/fixtures/core070_slopes_input.R",
+      "free_parameters": {},
+      "random": [],
+      "model_contract": "docs/dev-log/core070/slopes-input-contract.md",
+      "acceptance_rule": "Specific unsupported combination rejected, or separately reviewed documented Julia extension",
+      "native_call": "UNRESOLVED: B1/B2 representation and API contract required; do not treat this as a dispatch-ready native case"
+    }
+  ]
+}

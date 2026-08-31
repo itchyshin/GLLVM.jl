@@ -1109,3 +1109,29 @@ CLI review: no numerical correctness finding; independent evidence gatePASS.
 His sandbox prevented temporary mutation fixtures; parent testsPASS. No Rose
 programme signoff. MCf0468523a1fad7ad9fb30a2761bdf09c36ead0ee servedHTTP200,
 Rfieldsunchanged, exact-file leaseRELEASED. All compute/review processes terminal.
+
+
+## 2026-08-31 — actual random-slope preparation
+22 frozen-R calls:12 requested models prepare,8 reject,2 animal multi-slope
+misroute to intercept-only. Do not promote raw MakeADFun capture to model parity.
+phylo_dep multi-Gaussian prepares9columns45coordinates; multi-Poisson rejects.
+Ordinary latent has augmented cross-basis loadings; structured latent uses
+separate basis blocks; dependent log-diagonal vs latent raw transforms retained.
+Three captures1.267s each, firstFAIL preserved; third uses exact map indexing
+after a dollar partial-match diagnostic error. Five tests/22negative scenarios
+PASS;6adjacent census testsPASS. Fullfreeze now requires slope roles and explicit
+defect disposition; native calls/numerics remain unpaid. Noether Terra/high CLI
+review+followup confirmed source defect and scoped evidence; parent full checks
+required writable Rtemp. Source review identifies11 next structured input cases.
+See core070/slopes-input-contract.md, slopes-required-case-plan.json,
+structured-source-next-cases.md, after-task/2026-08-31-core070-slopes-input.md.
+ProgrammeACTIVE/M1PARTIAL/fullmanifestDRAFT. No engine/API/R/foreign edits or
+fit/campaign/DRAC/push/merge/release/cleanup.
+NEXT freeze and capture11 remaining tree/pedigree/kernel/spatial source cases
+with negative branches, then finish native call/acceptance specifications and
+full-scope manifest review. Do not rerun unchanged successful slope captures.
+R animal_dep multi-slope repair belongs to a separate R owner; frozen pin stays.
+Originalbinomialk5/Studentt/defaultunique/remainingAGHQ failures remain unpaid.
+All compute and reviews terminal.
+
+MC8cffb26e068f3b5895a9fe55095d9e60cf62cd60: servedHTTP200, exact Julia-field readback, Rfieldsunchanged, exact-file leaseRELEASED. SI-CONTRACT/SI-NEGATIVES/SI-INTEGRATION freshly reverified3met/0unmet/0abandoned.
