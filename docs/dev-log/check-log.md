@@ -16748,3 +16748,22 @@ Direct native route matches numerically but reports converged=false with gradien
 claim withheld. Five setup/fit attempts retained. Evidence latent-bare-model-
 evidence.json; after-task latent-bare-partial; Claude handover written. Full
 programme remains DRAFT/M1PARTIAL. NoDRACjob/fullsuite/push/merge/release.
+
+## 2026-08-31 — Ordinary rank-one latent Gaussian fit PASSES (optimizer-health repair)
+
+Identical-start 2x2 diagnosis (mean parameterization x line search) on the frozen
+p3/n18/K1 case: the default-mean and explicit trait-intercept objectives are
+numerically identical; Armijo-only BackTracking(order=3) stalls at gradient
+1.674e-6 on BOTH designs because achievable decrease at the stall point is below
+objective roundoff (measured delta-f positive at every probed step 1e-10..1e-6,
+predicted decrease ~2e-13; eps(f)=3.6e-15); Hager-Zhang reaches 4.35e-8 on both.
+This answers the handover's open question affirmatively — demonstrated, not
+assumed. Repair (commit c2a93d6d): fit_gaussian_sources now uses Hager-Zhang on
+the default-mean path too; red-first regression retained at
+test/test_source_fit_optimizer_health.jl (3 red assertions pre-fix); 247/247
+across the six neighboring source suites. Totoro attempt06 frozen-gate replay:
+process PASS, all four routes converged, native gradient 4.349e-8 <= 1e-7,
+max deltaLL 5.7e-13, contract SHA unchanged (a055bd33), 8 negative controls PASS.
+Fresh-context verifier: CORE070_LATENT_BARE_VERIFIED; contract test PASS.
+No tolerance, convergence flag, fixture, or R source changed. Wider programme
+still M1-partial; no DRAC/full-suite/push/merge/release.

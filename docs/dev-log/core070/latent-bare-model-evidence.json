@@ -1,20 +1,20 @@
 {
-  "status": "PARTIAL_DIRECT_NATIVE_FIT_HEALTH_UNPAID",
+  "status": "COV_ORD_LATENT_BARE_THREE_ROUTE_PASS",
   "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
   "case_id": "CORE070-COV-COV-ORD-LATENT-BARE-MODEL",
   "contract": "docs/dev-log/core070/latent-bare-model-contract.json",
   "contract_sha256": "a055bd335e0a81b9e59596afe32a2f885c584ea1194132ae4c2c390e7ace1828",
   "final_attempt": {
-    "attempt": 5,
-    "status": "FAIL",
-    "process_receipt": ".unlazy/core070-aghq/latent-bare-model-05/attempt1/process/process-receipt.json",
-    "process_sha256": "f66dcb9d900c9c7993c041abf43f7dcb83d7071d7ae0acad4cc9ef243065249c",
-    "fit_exit": 1,
-    "fit_seconds": 46.1620534863323,
-    "fit_log_sha256": "64b09ea0c381106cebaffcb48ea89d41873c032402cbfa089d753c80b1fbb393"
+    "attempt": 6,
+    "status": "PASS",
+    "process_receipt": ".unlazy/core070-aghq/latent-bare-model-06/attempt1/process/process-receipt.json",
+    "process_sha256": "a079e0ea7393ce4ab5321c0716acf66f09899c0a66e69cac37d7c77bcfb7df9f",
+    "fit_exit": 0,
+    "fit_seconds": 46.884982984513044,
+    "fit_log_sha256": "fdaf842abca68bf6f792653c8aef82f4859a8297b71dc3c4b2a539709de5c3fe"
   },
-  "result_path": ".unlazy/core070-aghq/latent-bare-model-05/attempt1/out/latent-bare-results.json",
-  "result_sha256": "590c7a9b34d88166b5443ae4ac8dec54dc3fcdc71d8acdc36f8e9111f348b7e7",
+  "result_path": ".unlazy/core070-aghq/latent-bare-model-06/attempt1/out/latent-bare-results.json",
+  "result_sha256": "6f771d1117c8c63455799016423428945541f9d2c80a6fa4d26630520f0db789",
   "fixed_point_dependency": {
     "required": true,
     "evidence": "docs/dev-log/core070/gaussian-fixed-point-evidence.json",
@@ -29,47 +29,43 @@
   "route_status": {
     "r_reference": {
       "available": true,
+      "engine": "gllvmTMB frozen R",
       "converged": true,
       "gradient_max": 3.21156742339911e-06,
       "loglik": -20.9253282433999,
-      "free_coordinates": 7,
-      "engine": "gllvmTMB frozen R",
-      "same_model": null
+      "free_coordinates": 7
     },
     "native_julia": {
+      "loglik": -20.9253282433994,
+      "converged": true,
       "available": true,
-      "converged": false,
-      "gradient_max": 1.67407170259537e-06,
-      "loglik": -20.9253282433993,
-      "free_coordinates": 7,
       "engine": "GLLVM.jl",
-      "same_model": null
+      "free_coordinates": 7,
+      "gradient_max": 4.34910507607356e-08
     },
     "julia_formula": {
-      "available": true,
-      "converged": true,
-      "gradient_max": 4.34910170099556e-08,
       "loglik": -20.9253282433994,
-      "free_coordinates": 7,
+      "converged": true,
+      "available": true,
       "engine": "GLLVM.jl",
-      "same_model": null
+      "free_coordinates": 7,
+      "gradient_max": 4.34910170099556e-08
     },
     "public_r_bridge": {
       "available": true,
+      "engine": "julia",
       "converged": true,
-      "gradient_max": null,
       "loglik": -20.9253282433994,
       "free_coordinates": 7,
-      "engine": "julia",
       "same_model": true
     }
   },
   "comparisons": {
     "native_julia": {
-      "abs_loglik": 5.71986902286881e-13,
-      "beta_max_abs": 1.57154851243568e-07,
-      "loading_crossproduct_max_abs": 5.53988993567955e-08,
-      "residual_variance_abs": 8.47566718198411e-10
+      "abs_loglik": 4.90274487674469e-13,
+      "beta_max_abs": 1.57154851410102e-07,
+      "loading_crossproduct_max_abs": 5.91283643158746e-08,
+      "residual_variance_abs": 8.08307275279585e-10
     },
     "julia_formula": {
       "abs_loglik": 4.72510919280467e-13,
@@ -178,5 +174,11 @@
     "threads": 1,
     "blas_threads": 1,
     "drac_jobs": 0
+  },
+  "repair": {
+    "commit": "c2a93d6d",
+    "summary": "default-mean path line search BackTracking(order=3) -> Hager-Zhang; identical-start 2x2 diagnosis showed objective-roundoff stall on both mean designs",
+    "regression_test": "test/test_source_fit_optimizer_health.jl",
+    "prior_partial_attempt": 5
   }
 }
