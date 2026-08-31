@@ -318,8 +318,8 @@ public R BFGS continuation from its default fit. Both engines pass the recorded
 fit-health checks, with absolute log-likelihood difference below `1e-7`.
 The default R fit still reports unsuccessful convergence. This result applies
 to that explicit continuation recipe; it does not establish default-R health,
-parameter-recovery performance, or complete family parity. The default parity
-runner has not yet adopted this control policy.
+parameter-recovery performance, or complete family parity. The required parity case now records this policy explicitly and preserves
+the default R fit's unsuccessful convergence in its evidence.
 
 #### Laplace curvature: `hessian = :observed` (default) or `:fisher`
 

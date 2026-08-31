@@ -619,3 +619,20 @@ Next: integrate explicit public continuation policy as a separately recorded
 required case, revalidate required runner; also map finite model contracts.
 Do not infer default R health from BFGS. All remote processes terminal.
 No new B production child before user checkpoint; original reference read-only.
+
+## 2026-08-31 — original truncated NB2 required runner integration
+
+Explicit test-only public BFGS policy now wired into the unchanged seed58 model.
+Actual required runner selects NATIVE-12-TRUNCATED-NB2:21/21 pass on final contract
+(child33.449s); previous successful contract receipt retained. Default Rcode1
+remains visible; selected Rcode0/gradient2.746e-5; nativegradient6.537e-6; absLL
+delta8.673e-8 and samepointnll1.659e-7 pass. Whole-fit and policy hashes bound
+to supervisor stdout;10 policy and8 artifact negatives pass,24 neighbouring
+tests plus aggregate selftest pass. Unlazy1met1unmet. Draft contract reference
+call parse-checked; only this catalogue row promoted, fullmanifestDRAFT.
+See after-task/2026-08-31-core070-truncnb2-required.md. Old helper/fixture/contract/
+catalogue-bound evidence is historical; numerical src unchanged.
+
+Next: finite source-case contract mapping and ordinary NB2 required tolerance
+diagnosis; Student-t still open. Do not requalify other families by association.
+All remote runs terminal. No new B production child before user checkpoint.

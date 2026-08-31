@@ -29,6 +29,7 @@
 
 using GLLVM, RCall, Test, Random
 import Distributions
+include(joinpath(@__DIR__, "truncnb2_policy.jl"))
 
 # parity_helpers.jl is included once by runparity.jl
 
@@ -69,7 +70,21 @@ const _TNB2_SEED = 58
     @test length(jl_fit.r) == p          # genuinely per-trait, not shared
     jl_logL = jl_fit.loglik
 
-    r = fit_gllvmtmb_parity_loglik(Float64.(Y), K; family = :truncated_nbinom2)
+    # Explicit policy, not a silent change to the default oracle helper.
+    r = parity_truncnb2_public_bfgs(Y, K, jl_fit)
+    @testset "explicit public R continuation and complete fit health" begin
+        d=r.policy
+        @test d["policy"]=="truncnb2_default_then_public_bfgs_v1"
+        @test d["same_data_map"]
+        @test d["native_nfree"]==d["r_nfree"]==15
+        @test d["r_gradient_max"]<=1e-4
+        @test d["native_gradient_max"]<=1e-4
+        @test d["fd_stability"]<=1e-4
+        @test d["native_objective_delta"]<=1e-8
+        @test abs(d["samepoint_delta"])<=1e-6
+        @test abs(d["r_loglik"]+d["r_objective"])<=1e-8
+        @test all(isfinite,d["native_parameters"]) && all(isfinite,d["r_parameters"])
+    end
     @test r.converged
     @test isfinite(r.logLik)
 

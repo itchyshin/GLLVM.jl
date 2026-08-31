@@ -15956,3 +15956,16 @@ Oracle before/after all3 batches PASS; whole-fit/source/process readback and
 7+8 corruption controls PASS. Unlazy BFGS2met1unmet. Default required runner
 unmodified/stillRhealthfail; policy integration, recovery and review unpaid.
 See after-task/2026-08-31-core070-truncnb2-replay.md. M1PARTIAL/fullmanifestDRAFT.
+
+## 2026-08-31 — original truncated NB2 required runner integration
+
+Explicit test-only public BFGS policy now wired into the unchanged seed58 model.
+Actual required runner selects NATIVE-12-TRUNCATED-NB2:21/21 pass on final contract
+(child33.449s); previous successful contract receipt retained. Default Rcode1
+remains visible; selected Rcode0/gradient2.746e-5; nativegradient6.537e-6; absLL
+delta8.673e-8 and samepointnll1.659e-7 pass. Whole-fit and policy hashes bound
+to supervisor stdout;10 policy and8 artifact negatives pass,24 neighbouring
+tests plus aggregate selftest pass. Unlazy1met1unmet. Draft contract reference
+call parse-checked; only this catalogue row promoted, fullmanifestDRAFT.
+See after-task/2026-08-31-core070-truncnb2-required.md. Old helper/fixture/contract/
+catalogue-bound evidence is historical; numerical src unchanged.

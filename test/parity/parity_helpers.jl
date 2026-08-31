@@ -87,7 +87,7 @@ end
 function _core070_execution_paths(requested::AbstractVector{<:AbstractString})
     paths = String[
         "src", "test/parity/core070_receipts.jl", "test/parity/parity_helpers.jl",
-        "test/parity/parity_trial_inputs.jl",
+        "test/parity/parity_trial_inputs.jl", "test/parity/truncnb2_policy.jl",
         "test/parity/runparity.jl", "test/parity/r_health.R",
         "tools/core070_delta_matched.jl", "test/parity/test_delta_lognormal_parity.jl",
         "test/parity/test_delta_gamma_parity.jl", "Project.toml", "test/Project.toml",
