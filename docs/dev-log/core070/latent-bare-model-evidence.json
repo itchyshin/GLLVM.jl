@@ -94,7 +94,7 @@
     "input_sha256": true,
     "fixed_point_dependency": true,
     "r_reference_health": true,
-    "native_julia_health": false,
+    "native_julia_health": true,
     "julia_formula_health": true,
     "public_r_bridge_health": true,
     "r_native_invariants": true,
@@ -113,14 +113,7 @@
     "Eight negative controls pass",
     "Frozen shared-point likelihood dependency passes"
   ],
-  "blocker": {
-    "route": "native_julia",
-    "observed_gradient_max": 1.67407170259537e-06,
-    "requested_native_g_tol": 1e-07,
-    "contract_health_gradient_max": 0.0001,
-    "reason": "fit_gaussian_sources default-mean BackTracking route returned converged=false even though objective and invariants match; formula explicit-design/Hager-Zhang route converged",
-    "next_discriminating_check": "Reproduce direct default-mean source fit versus an explicit trait-intercept X using the same starting point; decide whether the default-mean optimizer should use the already-qualified Hager-Zhang policy without changing likelihood, tolerance, fixture, or acceptance rule."
-  },
+  "blocker": null,
   "attempts": [
     {
       "attempt": 1,
@@ -168,7 +161,7 @@
       "fit_log_sha256": "64b09ea0c381106cebaffcb48ea89d41873c032402cbfa089d753c80b1fbb393"
     }
   ],
-  "claim_boundary": "One exact model has three healthy callable routes and a numerically matching but fit-health-failing direct native route. This is PARTIAL, not a four-route PASS and not wider covariance or programme parity.",
+  "claim_boundary": "One exact model (p3/n18/K1 unique=false Gaussian latent) has four healthy fits: the frozen R reference plus three callable Julia-side routes (direct native, formula, public R engine=\"julia\" bridge), all invariants agreeing. This pays exactly COV_ORD_LATENT_BARE_THREE_ROUTE_PASS \u2014 not wider covariance, bridge, recovery, AGHQ, full-suite or programme parity.",
   "compute": {
     "host": "Totoro",
     "threads": 1,
@@ -180,5 +173,12 @@
     "summary": "default-mean path line search BackTracking(order=3) -> Hager-Zhang; identical-start 2x2 diagnosis showed objective-roundoff stall on both mean designs",
     "regression_test": "test/test_source_fit_optimizer_health.jl",
     "prior_partial_attempt": 5
+  },
+  "resolved_blocker": {
+    "route": "native_julia",
+    "observed_gradient_max_before_repair": 1.67407170259537e-06,
+    "observed_gradient_max_after_repair": 4.34910507607356e-08,
+    "requested_native_g_tol": 1e-07,
+    "resolution": "identical-start 2x2 diagnosis showed an objective-roundoff stall of the Armijo-only BackTracking line search on both mean parameterizations; repair c2a93d6d selects Hager-Zhang on the default-mean path; Totoro attempt06 frozen replay PASS"
   }
 }
