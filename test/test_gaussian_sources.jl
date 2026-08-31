@@ -1,4 +1,4 @@
-using Test, GLLVM, LinearAlgebra, ForwardDiff, Statistics
+using Test, GLLVM, LinearAlgebra, Statistics
 @testset "Gaussian source model layer" begin
     available=all(s->isdefined(GLLVM,s),(:SourceCovariance,:fit_gaussian_sources,:GaussianSourcesFit))
     @test available
@@ -17,7 +17,7 @@ using Test, GLLVM, LinearAlgebra, ForwardDiff, Statistics
         end
         r=vec(Y.-beta); expected=(6log(2pi)+logdet(V)+dot(r,V\r))/2
         @test objective(theta)≈expected atol=1e-12
-        grad=ForwardDiff.gradient(objective,theta)
+        grad=GLLVM.ForwardDiff.gradient(objective,theta)
         fd=[(objective(theta+1e-5*I(7)[:,j])-objective(theta-1e-5*I(7)[:,j]))/2e-5 for j in 1:7]
         @test maximum(abs.(grad-fd))<1e-6
         @test GLLVM._gaussian_sources_nll(Y,[s2,s1],theta[[1,2,5,6,3,4,7]])≈expected atol=1e-12
