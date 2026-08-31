@@ -1,0 +1,71 @@
+{
+  "status": "THREE_MODEL_BRIDGE_QUALIFICATION_NOT_FULL_PARITY",
+  "families": [
+    "poisson",
+    "beta",
+    "nb2"
+  ],
+  "required_case_ids": [
+    "CORE070-FAMILY-02-LOG-PUBLIC-R-BRIDGE",
+    "CORE070-FAMILY-07-LOGIT-PUBLIC-R-BRIDGE",
+    "CORE070-FAMILY-05-LOG-PUBLIC-R-BRIDGE"
+  ],
+  "subcontract_sha256": "72597c8905af7f680984089f89fbb89a6972be02c8bef207986a035f27377e4b",
+  "public_routes": 6,
+  "rejections": 2,
+  "seconds": 58.791346210986376,
+  "result_sha256": "77ece037ccf26f7dcf50ec7e4a55689e61190325167813593321555d1fb0b5f1",
+  "process_sha256": "1c85fb962f8d182c15815a7a3ba0bba73a705023e13a2647176379e0c18fdebc",
+  "prior_process_sha256": "4b6d44ed0aab14245422b05bf885c6d8febd1b4fea424d84c193bee2d7b1d20b",
+  "r_comparison": "retained original source-bound R fits; not newly executed in this batch",
+  "results": {
+    "poisson": {
+      "matrix": {
+        "loglik": 0,
+        "alpha": 0,
+        "shared_covariance": 2.77555756156289e-17,
+        "dispersion": 0,
+        "prior_r_loglik": 1.43245415529236e-11
+      },
+      "formula": {
+        "loglik": 0,
+        "alpha": 0,
+        "shared_covariance": 2.77555756156289e-17,
+        "dispersion": 0,
+        "prior_r_loglik": 1.43245415529236e-11
+      }
+    },
+    "beta": {
+      "matrix": {
+        "loglik": 0,
+        "alpha": 0,
+        "shared_covariance": 0,
+        "dispersion": 0,
+        "prior_r_loglik": 1.78488335222937e-11
+      },
+      "formula": {
+        "loglik": 0,
+        "alpha": 0,
+        "shared_covariance": 0,
+        "dispersion": 0,
+        "prior_r_loglik": 1.78488335222937e-11
+      }
+    },
+    "nb2": {
+      "matrix": {
+        "loglik": 0,
+        "alpha": 0,
+        "shared_covariance": 5.55111512312578e-17,
+        "dispersion": 0,
+        "prior_r_loglik": 3.41282611771021e-06
+      },
+      "formula": {
+        "loglik": 0,
+        "alpha": 0,
+        "shared_covariance": 5.55111512312578e-17,
+        "dispersion": 0,
+        "prior_r_loglik": 3.41282611771021e-06
+      }
+    }
+  }
+}

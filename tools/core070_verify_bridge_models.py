@@ -9,7 +9,7 @@ import struct
 import tomllib
 
 ROOT=Path(__file__).resolve().parents[1]
-STATE=ROOT/'.unlazy/core070-aghq/public-bridge-models-02'
+STATE=ROOT/'.unlazy/core070-aghq/public-bridge-models-03'
 FAMILIES=['poisson','beta','nb2']
 def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
 def need(ok,msg):
@@ -24,6 +24,8 @@ def maxdiff(a,b):
 
 def check_report(report,fixtures):
     need(report['scope']=='ORIGINAL_PUBLIC_BRIDGE_REPLAY_NOT_RECOVERY','wrong scope')
+    ids=[f['id'] for f in fixtures]
+    need(report['requested_case_ids']==report['completed_case_ids']==ids,'missing required bridge case')
     need(list(report['attempts'])==FAMILIES,'missing family')
     for f in fixtures:
         family=f['family'];a=report['attempts'][family];ref=a['native']['value']
@@ -84,6 +86,18 @@ def verify(self_test=False):
         need(plan['pins'].get(str(p.relative_to(ROOT)))==sha(p),'source changed: '+str(p))
     need(plan['pins']['bridge-fixtures.json']==sha(STATE/'fixtures.json'),'fixture file changed')
     log=(folder/'process/01.log').read_text();path=folder/'bridge-model-results.json'
+    contract_path=ROOT/'docs/dev-log/core070/public-bridge-required-cases.json'
+    contract=json.loads(contract_path.read_text())
+    need(plan['pins'][str(contract_path.relative_to(ROOT))]==sha(contract_path) and
+         'BRIDGE_REQUIRED_CONTRACT_SHA256 '+sha(contract_path) in log,'stale bridge subcontract')
+    expected=['CORE070-FAMILY-02-LOG-PUBLIC-R-BRIDGE','CORE070-FAMILY-07-LOGIT-PUBLIC-R-BRIDGE',
+              'CORE070-FAMILY-05-LOG-PUBLIC-R-BRIDGE']
+    need(contract['required_case_ids']==[c['id'] for c in contract['cases']]==[f['id'] for f in fixtures]==expected,
+         'required bridge registry changed')
+    need(contract['reference_commit']=='b4d5fee64def88bc768dda1f1f77c29b295edd86','wrong reference pin')
+    for c,f in zip(contract['cases'],fixtures):
+        need(all(c[k]==f[k] for k in ['id','family','model_contract_id','data_sha256','p','n','K','reference_control_policy']),
+             'subcontract and fixture differ')
     need('BRIDGE_MODEL_RESULTS_SHA256 '+sha(path)+'  bridge-model-results.json' in log,'unbound result')
     need(log.count('CORE070_PUBLIC_BRIDGE_MODELS_PASS')==1,'missing success marker')
     runtime=json.loads((folder/'bridge-runtime.json').read_text())
@@ -109,7 +123,9 @@ def verify(self_test=False):
       lambda r:r['attempts']['beta']['formula']['value']['loadings'][0].__setitem__(0,99),
       lambda r:r['attempts']['poisson']['checks'].pop('native_health'),
       lambda r:r['rejections']['truncated_nb2'].update(error=None),
-      lambda r:r['attempts']['beta']['matrix']['value'].update(link=['LogLink']*5)]
+      lambda r:r['attempts']['beta']['matrix']['value'].update(link=['LogLink']*5),
+      lambda r:r['completed_case_ids'].pop(),
+      lambda r:r['requested_case_ids'].__setitem__(0,'UNKNOWN')]
     if self_test:
         for mutation in mutations:
             bad=deepcopy(report);mutation(bad)
@@ -119,6 +135,7 @@ def verify(self_test=False):
         print('BRIDGE_MODELS_NEGATIVES_PASS',len(mutations))
     print('PUBLIC_BRIDGE_THREE_MODELS_VERIFIED')
     return dict(status='THREE_MODEL_BRIDGE_QUALIFICATION_NOT_FULL_PARITY',families=FAMILIES,
+                required_case_ids=expected,subcontract_sha256=sha(contract_path),
                 public_routes=6,rejections=2,seconds=process['results'][1]['elapsed_seconds'],
                 result_sha256=sha(path),process_sha256=sha(folder/'process/process-receipt.json'),
                 prior_process_sha256=sha(prior/'../process/process-receipt.json'),

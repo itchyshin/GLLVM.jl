@@ -17,8 +17,12 @@ INPUTS=[coverage.PREFIX+'family-admission-subset.json',
         coverage.PREFIX+'gaussian-required-contract.json',
         coverage.PREFIX+'registered-models-contract.json', coverage.PREFIX+'family-formulas-contract.json']
 ROLES=['native_model','formula_interface','public_r_bridge']
+BRIDGE_CONTRACT=coverage.PREFIX+'public-bridge-required-cases.json'
 
 def build():
+    bridge_contract=coverage.read_json(ROOT/BRIDGE_CONTRACT)
+    bridge_cases={c['id']:c for c in bridge_contract['cases']}
+    assert bridge_contract['reference_commit']==coverage.REFERENCE
     admission,entry,catalogue,paired,boundary_contract,boundary_evidence,link_contract,link_evidence,pb,gaussian,registered,interfaces=[coverage.read_json(ROOT/p) for p in INPUTS]
     registered=dict(cases=registered["cases"]+interfaces["cases"])
     formula=paired["formula"]
@@ -155,13 +159,25 @@ def build():
                     status='REGISTERED_EXECUTABLE_CASE_REPLAY_EVIDENCE_SEPARATE',
                     data_sha256=binding['data_sha256'])
                 case['candidate_warning']='Actual required_runner_case_id is an existing stable runner ID; planned ID is its source-role alias. Earlier evidence is historical until replayed on current inputs; bridge and remaining models/interfaces unpaid.'
+            if role=='public_r_bridge' and cid in bridge_cases:
+                bridge=bridge_cases[cid]
+                case.update(fixture=bridge['fixture'],fixture_sha256=coverage.sha(ROOT/bridge['fixture']),
+                    r_call=bridge['r_call'],julia_call=bridge['julia_call'],
+                    model_contract_id=bridge['model_contract_id'],data_sha256=bridge['data_sha256'],
+                    acceptance_rule=bridge['acceptance_rule'],scope_boundary=bridge['scope_boundary'],
+                    status='SEPARATE_REQUIRED_R_RUNNER_REGISTERED_AGGREGATE_PENDING',
+                    required_runner_case_id=cid,required_runner_status='SEPARATE_PUBLIC_R_REGISTRY',
+                    bridge_subcontract=BRIDGE_CONTRACT,
+                    bridge_subcontract_sha256=coverage.sha(ROOT/BRIDGE_CONTRACT),
+                    prerequisite_case_ids=[bridge['prerequisite_native_id']])
+                case['candidate_warning']='Separate required R runner has exact case IDs and its own verification. Main programme receipt aggregation remains pending; this row alone does not grant full-family coverage.'
             cases.append(case)
         executable=[r['id'] for r in gaussian['cases']+registered['cases'] if sid in r['source_fact_ids']]
         rows.append(dict(source_id=sid,classification=classification,planned_case_ids=ids,
                          executable_case_ids=executable,
                          status='REGISTERED_PARTIAL_INTERFACES_UNPAID' if executable else ('EXCLUDED' if not ids else 'SPECIFICATION_REQUIRED')))
     return dict(schema=1,status='FAMILY_DECOMPOSITION_PARTIAL_EXECUTABLE_NOT_FROZEN',
-        reference_commit=coverage.REFERENCE,inputs={p:coverage.sha(ROOT/p) for p in INPUTS},
+        reference_commit=coverage.REFERENCE,inputs={p:coverage.sha(ROOT/p) for p in INPUTS+[BRIDGE_CONTRACT]},
         source_facts=69,planned_case_count=len(cases),rows=rows,cases=cases)
 
 def verify():
@@ -178,10 +194,15 @@ def verify():
     assert len({c['id'] for c in plan['cases']})==97
     bound=[c for c in plan['cases'] if c['fixture'] is not None]
     assert {c['required_runner_case_id'] for c in bound if c['coverage_role']=='native_model'}=={'NATIVE-03-POISSON','NATIVE-08-BETA','NATIVE-06-NB2','NATIVE-12-TRUNCATED-NB2','CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL'}
-    assert len(bound)==26 and sum(c['coverage_role']=='formula_interface' for c in bound)==5
+    assert len(bound)==29 and sum(c['coverage_role']=='formula_interface' for c in bound)==5
+    bridges=[c for c in bound if c['coverage_role']=='public_r_bridge']
+    assert {c['id'] for c in bridges}=={
+        'CORE070-FAMILY-02-LOG-PUBLIC-R-BRIDGE','CORE070-FAMILY-07-LOGIT-PUBLIC-R-BRIDGE',
+        'CORE070-FAMILY-05-LOG-PUBLIC-R-BRIDGE'}
+    assert all(c['required_runner_status']=='SEPARATE_PUBLIC_R_REGISTRY' for c in bridges)
     assert sum(c['coverage_role']=='reference_boundary' for c in bound)==16
     assert all(c['r_call'] is None and c['julia_call'] is None for c in plan['cases'] if c['fixture'] is None)
-    print('FAMILY_CASE_PLAN_VERIFIED 69 facts; 97 planned cases; 5 native + 5 formula + 16 boundary bindings; zero full-family promotions')
+    print('FAMILY_CASE_PLAN_VERIFIED 69 facts; 97 planned cases; 5 native + 5 formula + 3 separate R bridge + 16 boundary bindings; zero full-family promotions')
 
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--write',action='store_true');args=p.parse_args()

@@ -1,0 +1,15 @@
+{
+  "status": "VERIFIED_REFERENCE_MODEL_CHANGE_NOT_PARITY",
+  "seconds": 40.713941656053066,
+  "actual_df": 5,
+  "required_unique_model_df": 8,
+  "zero_mean": true,
+  "reduced_loglik": -581.668831823926,
+  "sigma_eps": 0.697282597486069,
+  "warning": [
+    "! Ordinary `latent()` now includes a per-trait Psi by default (Sigma = Lambda\n  Lambda^T + Psi).\n\u2139 This changed in gllvmTMB 0.2.0; earlier `latent()` was loadings-only (Lambda\n  Lambda^T).\n\u2192 Pass `latent(..., unique = FALSE)` for the old rotation-invariant\n  loadings-only fit.",
+    "engine = 'julia' does not support the trait-specific Psi that ordinary\n`latent()` now carries by default.\n\u2139 Fitting the reduced-rank latent block only. Use `engine = \"tmb\"` for the\n  Lambda Lambda^T + Psi decomposition, or pass `latent(..., unique = FALSE)` to\n  silence this note.\nThis warning is displayed once per session."
+  ],
+  "result_sha256": "7f5e112c2400866f82eb8293723243421fbe4db71f5510d996506e8d981bb37d",
+  "process_sha256": "f293543c1efb000e513ce87ebc1fc67f5e2af892b626cae1bc7c38f4e7887c4f"
+}

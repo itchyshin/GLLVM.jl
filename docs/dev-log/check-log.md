@@ -16541,3 +16541,19 @@ Next bind bridge case IDs into required manifest/harness, execute default-unique
 Gaussian warning semantics, then remaining Core070/AGHQ/covariance/data/postfit
 contracts. Full manifest DRAFT; no full-family promotion, no new hours claim.
 Fullsuite/external-review approvals unchanged. All processes terminal.
+
+## 2026-08-31 — required public bridge IDs and Gaussian boundary
+
+Three bridge cases frozen before execution in public-bridge-required-cases.json:
+original Poisson/Beta/NB2, exact requested/completed IDs, six public routes;
+Totoro58.79s PASS,12negative controls reject. Family plan binds separate R runner
+without inflating central executable coverage (still10links/5partial facts).
+Gaussian original zero-mean fixture boundary40.71s PASS: default unique warns,
+drops Psi, and equals explicit unique=false common-residual model, df5 rather
+than original df8. This is not same-model parity. Five boundary negatives reject.
+Family plan97cases/69facts:5native+5formula+3separatebridge+16boundary bindings.
+Unlazy4/5 gates; programme unpaid. Next aggregate separate R receipts and make
+bridge admission model-specific, preserving required native/formula Gaussian
+and truncatedNB2 coverage. FullmanifestDRAFT, no engine/R edits; fullsuite and
+external-review approvals unchanged. No pushes/releases/DRAC jobs; checks terminal.
+Evidence public-bridge-required-evidence.json and gaussian-bridge-boundary-evidence.json.

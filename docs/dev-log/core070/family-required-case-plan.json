@@ -14,7 +14,8 @@
     "docs/dev-log/core070/poisson-beta-required-evidence.json": "3181f53865e6ac73fb983d35ad118649df58caba45ec7a74d500e67139dcebde",
     "docs/dev-log/core070/gaussian-required-contract.json": "93400f090057fb6a26db60b866b4b1941dcf9b1003cab0107d4fdb43df59dbb4",
     "docs/dev-log/core070/registered-models-contract.json": "631b51f5eae1306152f899f9fce16c2c2bd85d52282f75d814d0ca15458df8a9",
-    "docs/dev-log/core070/family-formulas-contract.json": "75db3de7b8487596d01ca392e48af57819e22afad85df2c702caa4a58f4fa030"
+    "docs/dev-log/core070/family-formulas-contract.json": "75db3de7b8487596d01ca392e48af57819e22afad85df2c702caa4a58f4fa030",
+    "docs/dev-log/core070/public-bridge-required-cases.json": "72597c8905af7f680984089f89fbb89a6972be02c8bef207986a035f27377e4b"
   },
   "source_facts": 69,
   "planned_case_count": 97,
@@ -1146,10 +1147,10 @@
         2,
         0
       ],
-      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
-      "fixture": null,
-      "r_call": null,
-      "julia_call": null,
+      "status": "SEPARATE_REQUIRED_R_RUNNER_REGISTERED_AGGREGATE_PENDING",
+      "fixture": "tools/core070_bridge_models.R",
+      "r_call": "gllvm_julia_fit(Y,family=poisson(),num.lv=2); gllvmTMB(value~0+trait+latent(0+trait|site,d=2,unique=FALSE),data=original_reversed_long,unit=\"site\",trait=\"trait\",family=poisson(),engine=\"julia\")",
+      "julia_call": "fit_gllvm(Y;family=original_family,K=2)",
       "candidate_native_entry": "fit_poisson_gllvm(Y; K=1, link=LogLink())",
       "candidate_fixture": "test/parity/test_poisson_parity.jl",
       "candidate_fixture_id": "NATIVE-03-POISSON",
@@ -1170,11 +1171,17 @@
         "reported estimands"
       ],
       "prerequisite_case_ids": [
-        "CORE070-FAMILY-02-LOG-NATIVE-MODEL"
+        "NATIVE-03-POISSON"
       ],
-      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
-      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
-      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+      "acceptance_rule": "Both public routes: df/shape/link/convergence valid; loglik/intercept/loading covariance absolute difference<=1e-8 from fresh default native; dispersion relative difference<=1e-8; native absolute gradient and FD stability<=1e-4, objective reconstruction<=1e-8; retained source-bound R loglik rtol<=1e-6 and original health reverified.",
+      "scope_boundary": "Original complete-data ordinary loadings-only unique=false model. Historical R oracle is reverified, not refitted in this public bridge batch. No broader models, recovery or full family promotion.",
+      "candidate_warning": "Separate required R runner has exact case IDs and its own verification. Main programme receipt aggregation remains pending; this row alone does not grant full-family coverage.",
+      "fixture_sha256": "8e94c709134ba8a7b65cb3018563a844ad08343dd63ff344553a15d2b37d2ca2",
+      "data_sha256": "44e647ac7ff29672efa12ca03b7b628dd37a02ac0f8d2421a19d3969743e26da",
+      "required_runner_case_id": "CORE070-FAMILY-02-LOG-PUBLIC-R-BRIDGE",
+      "required_runner_status": "SEPARATE_PUBLIC_R_REGISTRY",
+      "bridge_subcontract": "docs/dev-log/core070/public-bridge-required-cases.json",
+      "bridge_subcontract_sha256": "72597c8905af7f680984089f89fbb89a6972be02c8bef207986a035f27377e4b"
     },
     {
       "id": "CORE070-FAMILY-02-REJECT-LINK-REFERENCE-BOUNDARY",
@@ -1680,10 +1687,10 @@
         5,
         0
       ],
-      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
-      "fixture": null,
-      "r_call": null,
-      "julia_call": null,
+      "status": "SEPARATE_REQUIRED_R_RUNNER_REGISTERED_AGGREGATE_PENDING",
+      "fixture": "tools/core070_bridge_models.R",
+      "r_call": "gllvm_julia_fit(Y,family=gllvmTMB::nbinom2(),num.lv=2); gllvmTMB(value~0+trait+latent(0+trait|site,d=2,unique=FALSE),data=original_reversed_long,unit=\"site\",trait=\"trait\",family=gllvmTMB::nbinom2(),engine=\"julia\")",
+      "julia_call": "fit_gllvm(Y;family=original_family,K=2)",
       "candidate_native_entry": "fit_gllvm(Y; family=GLLVM.NegativeBinomial(), K=1, link=LogLink())",
       "candidate_fixture": "test/parity/test_negbin_parity.jl",
       "candidate_fixture_id": "NATIVE-06-NB2",
@@ -1704,11 +1711,17 @@
         "reported estimands"
       ],
       "prerequisite_case_ids": [
-        "CORE070-FAMILY-05-LOG-NATIVE-MODEL"
+        "NATIVE-06-NB2"
       ],
-      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
-      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
-      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+      "acceptance_rule": "Both public routes: df/shape/link/convergence valid; loglik/intercept/loading covariance absolute difference<=1e-8 from fresh default native; dispersion relative difference<=1e-8; native absolute gradient and FD stability<=1e-4, objective reconstruction<=1e-8; retained source-bound R loglik rtol<=1e-6 and original health reverified.",
+      "scope_boundary": "Original complete-data ordinary loadings-only unique=false model. Historical R oracle is reverified, not refitted in this public bridge batch. No broader models, recovery or full family promotion.",
+      "candidate_warning": "Separate required R runner has exact case IDs and its own verification. Main programme receipt aggregation remains pending; this row alone does not grant full-family coverage.",
+      "fixture_sha256": "8e94c709134ba8a7b65cb3018563a844ad08343dd63ff344553a15d2b37d2ca2",
+      "data_sha256": "7abde2731134afe61afee5a7f0c29b58892ad72e550fa41cf8230e9c701a2bf9",
+      "required_runner_case_id": "CORE070-FAMILY-05-LOG-PUBLIC-R-BRIDGE",
+      "required_runner_status": "SEPARATE_PUBLIC_R_REGISTRY",
+      "bridge_subcontract": "docs/dev-log/core070/public-bridge-required-cases.json",
+      "bridge_subcontract_sha256": "72597c8905af7f680984089f89fbb89a6972be02c8bef207986a035f27377e4b"
     },
     {
       "id": "CORE070-FAMILY-05-REJECT-LINK-REFERENCE-BOUNDARY",
@@ -2045,10 +2058,10 @@
         7,
         0
       ],
-      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
-      "fixture": null,
-      "r_call": null,
-      "julia_call": null,
+      "status": "SEPARATE_REQUIRED_R_RUNNER_REGISTERED_AGGREGATE_PENDING",
+      "fixture": "tools/core070_bridge_models.R",
+      "r_call": "gllvm_julia_fit(Y,family=gllvmTMB::Beta(),num.lv=1); gllvmTMB(value~0+trait+latent(0+trait|site,d=1,unique=FALSE),data=original_reversed_long,unit=\"site\",trait=\"trait\",family=gllvmTMB::Beta(),engine=\"julia\")",
+      "julia_call": "fit_gllvm(Y;family=original_family,K=1)",
       "candidate_native_entry": "fit_gllvm(Y; family=GLLVM.Beta(), K=1, link=LogitLink())",
       "candidate_fixture": "test/parity/test_beta_parity.jl",
       "candidate_fixture_id": "NATIVE-08-BETA",
@@ -2069,11 +2082,17 @@
         "reported estimands"
       ],
       "prerequisite_case_ids": [
-        "CORE070-FAMILY-07-LOGIT-NATIVE-MODEL"
+        "NATIVE-08-BETA"
       ],
-      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
-      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
-      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+      "acceptance_rule": "Both public routes: df/shape/link/convergence valid; loglik/intercept/loading covariance absolute difference<=1e-8 from fresh default native; dispersion relative difference<=1e-8; native absolute gradient and FD stability<=1e-4, objective reconstruction<=1e-8; retained source-bound R loglik rtol<=1e-6 and original health reverified.",
+      "scope_boundary": "Original complete-data ordinary loadings-only unique=false model. Historical R oracle is reverified, not refitted in this public bridge batch. No broader models, recovery or full family promotion.",
+      "candidate_warning": "Separate required R runner has exact case IDs and its own verification. Main programme receipt aggregation remains pending; this row alone does not grant full-family coverage.",
+      "fixture_sha256": "8e94c709134ba8a7b65cb3018563a844ad08343dd63ff344553a15d2b37d2ca2",
+      "data_sha256": "3ddd9a90ae2e933af8c9f45f72fc7edda96dc0fda2a4389d3708a003d07ce099",
+      "required_runner_case_id": "CORE070-FAMILY-07-LOGIT-PUBLIC-R-BRIDGE",
+      "required_runner_status": "SEPARATE_PUBLIC_R_REGISTRY",
+      "bridge_subcontract": "docs/dev-log/core070/public-bridge-required-cases.json",
+      "bridge_subcontract_sha256": "72597c8905af7f680984089f89fbb89a6972be02c8bef207986a035f27377e4b"
     },
     {
       "id": "CORE070-FAMILY-07-REJECT-LINK-REFERENCE-BOUNDARY",

@@ -4,6 +4,13 @@ source("tools/core070_bridge_receipt.R")
 suppressPackageStartupMessages(library(gllvmTMB))
 JuliaCall::julia_command('include("tools/core070_bridge_models.jl")')
 fixtures <- jsonlite::read_json("bridge-fixtures.json",simplifyVector=FALSE)
+contract_path <- "docs/dev-log/core070/public-bridge-required-cases.json"
+contract <- jsonlite::read_json(contract_path,simplifyVector=FALSE)
+required_ids <- unlist(contract$required_case_ids,use.names=FALSE)
+stopifnot(identical(contract$reference_commit,"b4d5fee64def88bc768dda1f1f77c29b295edd86"),
+    identical(vapply(fixtures,function(f) f$id,character(1)),required_ids),
+    identical(vapply(fixtures,function(f) f$family,character(1)),c("poisson","beta","nb2")))
+cat("BRIDGE_REQUIRED_CONTRACT_SHA256",system2("sha256sum",contract_path,stdout=TRUE),"\n")
 attempts <- list()
 capture <- function(expr) {
     warnings <- character()
@@ -62,6 +69,10 @@ rejections<-list(
 rejection_checks<-list(truncated_nb2=grepl("GJL-GATE-FAMILY",rejections$truncated_nb2$error,fixed=TRUE),
     explicit_diagonal=grepl("GJL-GATE-STRUCTURED-TERMS",rejections$explicit_diagonal$error,fixed=TRUE))
 result<-list(scope="ORIGINAL_PUBLIC_BRIDGE_REPLAY_NOT_RECOVERY",attempts=attempts,
+             requested_case_ids=required_ids,
+             completed_case_ids=vapply(attempts,function(a) if(core070_all_true(a$checks,
+                 c("no_errors","native_health","data_identity","prior_r_health","matrix","formula")))
+                 a$fixture$id else "FAILED",character(1),USE.NAMES=FALSE),
              rejections=rejections,rejection_checks=rejection_checks)
 saveRDS(result,"bridge-model-results.rds")
 jsonlite::write_json(core070_plain_receipt(result),"bridge-model-results.json",
