@@ -16621,3 +16621,21 @@ central mixed-language aggregation is no longer pending implementation.
 See after-task/2026-08-31-core070-mixed-language-evidence.md and current evidence
 public-r-bridge-programme-evidence.json, programme-bridge-native-replay.json,
 programme-bridge-draft-integrity.json. Current runs terminal; old evidence retained.
+
+## 2026-08-31 — original Student public nlminb path tested, still unhealthy
+
+Fresh original seed71 fixture, fixed-to-free public nlminb: Totoro26.77s,
+10/13 checks pass,3fail. Absolute deltaLL1.31578e-7 passes, but R code1/false
+convergence and rawgradient3.49241e-4 fail unchanged health gate; samepoint
+densitydelta3.13728e-6 also fails. Nativegradient6.17704e-6 passes. No model,
+fixture,engine,Rsource,tolerance or final20free-parameter changes. All prior
+failures retained. Attempt01 staleManifest failedbeforefit;02 reusedqualified
+currentparityManifest, noinstall. Rawwhole-fit readback and17negativecontrols
+PASS. Unlazy1/3: evidencePASS, healthFAIL, programmeunpaid. No Student promotion.
+MissionControl4e9a647bf48b3c47c9bd9619023741107b264df0 HTTP200, R fields unchanged.
+Next unaffected remainingCoreAGHQ/sourcecontracts; do notrepeat these exact
+Studentwarmstart routes. Extra identified/nearGaussianStudent coverage unpaid.
+Fullsuite/specificexternalreviewapprovals unchanged. No child/review dispatched,
+noDRACjobs/push/release. Sourceandprocesspins preserved; allhandles terminal.
+See after-task/2026-08-31-core070-student-nlminb-check.md and
+core070/student-nlminb-warmstart-evidence.json. FullmanifestDRAFT, M1PARTIAL.
