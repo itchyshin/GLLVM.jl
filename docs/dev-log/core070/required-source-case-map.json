@@ -1147,415 +1147,705 @@
       "source_id": "family/CONSTRUCTOR-ONLY-CENSORED_POISSON",
       "classification": "intentionally_excluded",
       "executable_case_ids": [],
-      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+      "rationale": "Constructor-only exclusion preserved.",
+      "planned_case_ids": [],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/CONSTRUCTOR-ONLY-DELTA_BETA",
       "classification": "intentionally_excluded",
       "executable_case_ids": [],
-      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+      "rationale": "Constructor-only exclusion preserved.",
+      "planned_case_ids": [],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/CONSTRUCTOR-ONLY-DELTA_GAMMA_MIX",
       "classification": "intentionally_excluded",
       "executable_case_ids": [],
-      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+      "rationale": "Constructor-only exclusion preserved.",
+      "planned_case_ids": [],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/CONSTRUCTOR-ONLY-DELTA_GENGAMMA",
       "classification": "intentionally_excluded",
       "executable_case_ids": [],
-      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+      "rationale": "Constructor-only exclusion preserved.",
+      "planned_case_ids": [],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/CONSTRUCTOR-ONLY-DELTA_LOGNORMAL_MIX",
       "classification": "intentionally_excluded",
       "executable_case_ids": [],
-      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+      "rationale": "Constructor-only exclusion preserved.",
+      "planned_case_ids": [],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/CONSTRUCTOR-ONLY-DELTA_POISSON_LINK_GAMMA",
       "classification": "intentionally_excluded",
       "executable_case_ids": [],
-      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+      "rationale": "Constructor-only exclusion preserved.",
+      "planned_case_ids": [],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/CONSTRUCTOR-ONLY-DELTA_POISSON_LINK_LOGNORMAL",
       "classification": "intentionally_excluded",
       "executable_case_ids": [],
-      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+      "rationale": "Constructor-only exclusion preserved.",
+      "planned_case_ids": [],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/CONSTRUCTOR-ONLY-DELTA_TRUNCATED_NBINOM1",
       "classification": "intentionally_excluded",
       "executable_case_ids": [],
-      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+      "rationale": "Constructor-only exclusion preserved.",
+      "planned_case_ids": [],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/CONSTRUCTOR-ONLY-DELTA_TRUNCATED_NBINOM2",
       "classification": "intentionally_excluded",
       "executable_case_ids": [],
-      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+      "rationale": "Constructor-only exclusion preserved.",
+      "planned_case_ids": [],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/CONSTRUCTOR-ONLY-GAMMA_MIX",
       "classification": "intentionally_excluded",
       "executable_case_ids": [],
-      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+      "rationale": "Constructor-only exclusion preserved.",
+      "planned_case_ids": [],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/CONSTRUCTOR-ONLY-GENGAMMA",
       "classification": "intentionally_excluded",
       "executable_case_ids": [],
-      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+      "rationale": "Constructor-only exclusion preserved.",
+      "planned_case_ids": [],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/CONSTRUCTOR-ONLY-LOGNORMAL_MIX",
       "classification": "intentionally_excluded",
       "executable_case_ids": [],
-      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+      "rationale": "Constructor-only exclusion preserved.",
+      "planned_case_ids": [],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/CONSTRUCTOR-ONLY-NBINOM2_MIX",
       "classification": "intentionally_excluded",
       "executable_case_ids": [],
-      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+      "rationale": "Constructor-only exclusion preserved.",
+      "planned_case_ids": [],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/CONSTRUCTOR-ONLY-TRUNCATED_NBINOM1",
       "classification": "intentionally_excluded",
       "executable_case_ids": [],
-      "rationale": "Approved exclusion recorded by the source inventory; remains reviewable."
+      "rationale": "Constructor-only exclusion preserved.",
+      "planned_case_ids": [],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-00-IDENTITY",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL",
+        "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE",
+        "CORE070-FAMILY-00-IDENTITY-PUBLIC-R-BRIDGE"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-00-REJECT-LINK",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-00-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-01-CLOGLOG",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-01-CLOGLOG-NATIVE-MODEL",
+        "CORE070-FAMILY-01-CLOGLOG-FORMULA-INTERFACE",
+        "CORE070-FAMILY-01-CLOGLOG-PUBLIC-R-BRIDGE"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-01-LOGIT",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-01-LOGIT-NATIVE-MODEL",
+        "CORE070-FAMILY-01-LOGIT-FORMULA-INTERFACE",
+        "CORE070-FAMILY-01-LOGIT-PUBLIC-R-BRIDGE"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-01-PROBIT",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-01-PROBIT-NATIVE-MODEL",
+        "CORE070-FAMILY-01-PROBIT-FORMULA-INTERFACE",
+        "CORE070-FAMILY-01-PROBIT-PUBLIC-R-BRIDGE"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-01-REJECT-LINK",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-01-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-02-LOG",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-02-LOG-NATIVE-MODEL",
+        "CORE070-FAMILY-02-LOG-FORMULA-INTERFACE",
+        "CORE070-FAMILY-02-LOG-PUBLIC-R-BRIDGE"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-02-REJECT-LINK",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-02-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-03-LOG",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-03-LOG-NATIVE-MODEL",
+        "CORE070-FAMILY-03-LOG-FORMULA-INTERFACE",
+        "CORE070-FAMILY-03-LOG-PUBLIC-R-BRIDGE"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-03-REJECT-LINK",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-03-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-04-LOG",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-04-LOG-NATIVE-MODEL",
+        "CORE070-FAMILY-04-LOG-FORMULA-INTERFACE",
+        "CORE070-FAMILY-04-LOG-PUBLIC-R-BRIDGE"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-04-REJECT-LINK",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-04-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-05-LOG",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-05-LOG-NATIVE-MODEL",
+        "CORE070-FAMILY-05-LOG-FORMULA-INTERFACE",
+        "CORE070-FAMILY-05-LOG-PUBLIC-R-BRIDGE"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-05-REJECT-LINK",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-05-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-06-FIXED-SHAPE",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-06-FIXED-SHAPE-NATIVE-MODEL",
+        "CORE070-FAMILY-06-FIXED-SHAPE-FORMULA-INTERFACE",
+        "CORE070-FAMILY-06-FIXED-SHAPE-PUBLIC-R-BRIDGE"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-06-LOG",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-06-LOG-NATIVE-MODEL",
+        "CORE070-FAMILY-06-LOG-FORMULA-INTERFACE",
+        "CORE070-FAMILY-06-LOG-PUBLIC-R-BRIDGE"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-06-REJECT-LINK",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-06-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-06-SHAPE-INVALID-HIGH",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-06-SHAPE-INVALID-HIGH-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-06-SHAPE-INVALID-INF",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-06-SHAPE-INVALID-INF-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-06-SHAPE-INVALID-LOW",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-06-SHAPE-INVALID-LOW-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-06-SHAPE-INVALID-NA",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-06-SHAPE-INVALID-NA-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-06-SHAPE-INVALID-VECTOR",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-06-SHAPE-INVALID-VECTOR-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-07-LOGIT",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-07-LOGIT-NATIVE-MODEL",
+        "CORE070-FAMILY-07-LOGIT-FORMULA-INTERFACE",
+        "CORE070-FAMILY-07-LOGIT-PUBLIC-R-BRIDGE"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-07-REJECT-LINK",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-07-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-08-CLOGLOG-ENGINE-REJECT",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-08-CLOGLOG-ENGINE-REJECT-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-08-LOGIT",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-08-LOGIT-NATIVE-MODEL",
+        "CORE070-FAMILY-08-LOGIT-FORMULA-INTERFACE",
+        "CORE070-FAMILY-08-LOGIT-PUBLIC-R-BRIDGE"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-08-REJECT-LINK",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-08-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-09-FIXED-SHAPE",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-09-FIXED-SHAPE-NATIVE-MODEL",
+        "CORE070-FAMILY-09-FIXED-SHAPE-FORMULA-INTERFACE",
+        "CORE070-FAMILY-09-FIXED-SHAPE-PUBLIC-R-BRIDGE"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-09-IDENTITY",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-09-IDENTITY-NATIVE-MODEL",
+        "CORE070-FAMILY-09-IDENTITY-FORMULA-INTERFACE",
+        "CORE070-FAMILY-09-IDENTITY-PUBLIC-R-BRIDGE"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-09-REJECT-LINK",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-09-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-09-SHAPE-INVALID-INF",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-09-SHAPE-INVALID-INF-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-09-SHAPE-INVALID-LOW",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-09-SHAPE-INVALID-LOW-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-09-SHAPE-INVALID-NA",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-09-SHAPE-INVALID-NA-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-09-SHAPE-INVALID-VECTOR",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-09-SHAPE-INVALID-VECTOR-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-10-LOG",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-10-LOG-NATIVE-MODEL",
+        "CORE070-FAMILY-10-LOG-FORMULA-INTERFACE",
+        "CORE070-FAMILY-10-LOG-PUBLIC-R-BRIDGE"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-10-REJECT-LINK",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-10-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-11-LOG",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-11-LOG-NATIVE-MODEL",
+        "CORE070-FAMILY-11-LOG-FORMULA-INTERFACE",
+        "CORE070-FAMILY-11-LOG-PUBLIC-R-BRIDGE"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-11-REJECT-LINK",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-11-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-12-LOGIT-LOG",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-12-LOGIT-LOG-NATIVE-MODEL",
+        "CORE070-FAMILY-12-LOGIT-LOG-FORMULA-INTERFACE",
+        "CORE070-FAMILY-12-LOGIT-LOG-PUBLIC-R-BRIDGE"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-12-REJECT-POISSON-DELTA",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-12-REJECT-POISSON-DELTA-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-12-REJECT-POSITIVE",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-12-REJECT-POSITIVE-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-12-REJECT-PRESENCE",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-12-REJECT-PRESENCE-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-13-LOGIT-LOG",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-13-LOGIT-LOG-NATIVE-MODEL",
+        "CORE070-FAMILY-13-LOGIT-LOG-FORMULA-INTERFACE",
+        "CORE070-FAMILY-13-LOGIT-LOG-PUBLIC-R-BRIDGE"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-13-REJECT-POISSON-DELTA",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-13-REJECT-POISSON-DELTA-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-13-REJECT-POSITIVE",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-13-REJECT-POSITIVE-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-13-REJECT-PRESENCE",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-13-REJECT-PRESENCE-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-14-MUTATED-DESCRIPTOR-REJECT",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-14-MUTATED-DESCRIPTOR-REJECT-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-14-PROBIT",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-14-PROBIT-NATIVE-MODEL",
+        "CORE070-FAMILY-14-PROBIT-FORMULA-INTERFACE",
+        "CORE070-FAMILY-14-PROBIT-PUBLIC-R-BRIDGE"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-14-REJECT-LINK",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-14-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-15-LOG",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-15-LOG-NATIVE-MODEL",
+        "CORE070-FAMILY-15-LOG-FORMULA-INTERFACE",
+        "CORE070-FAMILY-15-LOG-PUBLIC-R-BRIDGE"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-15-REJECT-LINK",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-15-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-16-LOGIT",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-16-LOGIT-NATIVE-MODEL",
+        "CORE070-FAMILY-16-LOGIT-FORMULA-INTERFACE",
+        "CORE070-FAMILY-16-LOGIT-PUBLIC-R-BRIDGE"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-16-MUTATED-DESCRIPTOR-REJECT",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-16-MUTATED-DESCRIPTOR-REJECT-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-16-REJECT-LINK",
       "classification": "rejected",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-16-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "family/FAMILY-BETA-ALIAS",
       "classification": "compatibility_adapter",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
+      "planned_case_ids": [
+        "CORE070-FAMILY-BETA-ALIAS-COMPATIBILITY-ADAPTER"
+      ],
+      "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
     },
     {
       "source_id": "fit-input/INPUT-ANIMAL-LATENT",

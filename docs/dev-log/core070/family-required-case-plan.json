@@ -1,0 +1,4534 @@
+{
+  "schema": 1,
+  "status": "FAMILY_DECOMPOSITION_NOT_FROZEN_NOT_EXECUTABLE",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "inputs": {
+    "docs/dev-log/core070/family-admission-subset.json": "a51906ddd90bdabc2c1764623245963fb600a3bdabd3164e31404e41f7ee587b",
+    "docs/dev-log/core070/family-route-contract.json": "f49e17cdf834d3693e7be4f6b40cf3fca507cfc5ed930b50fad967ab79543b62",
+    "docs/dev-log/core070/family-model-catalogue.json": "b31558cd9631a609d64a343187aadf72b865541771470fd98349a9cc8edf2823",
+    "docs/dev-log/core070/nb2-required-evidence.json": "fadb0eef8a3d163b4cfffadbbc28d18d003548e2019e92b8fb7b6e0ea899d3ba"
+  },
+  "source_facts": 69,
+  "planned_case_count": 97,
+  "rows": [
+    {
+      "source_id": "family/FAMILY-00-IDENTITY",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL",
+        "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE",
+        "CORE070-FAMILY-00-IDENTITY-PUBLIC-R-BRIDGE"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-00-REJECT-LINK",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-00-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-01-LOGIT",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-FAMILY-01-LOGIT-NATIVE-MODEL",
+        "CORE070-FAMILY-01-LOGIT-FORMULA-INTERFACE",
+        "CORE070-FAMILY-01-LOGIT-PUBLIC-R-BRIDGE"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-01-REJECT-LINK",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-01-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-02-LOG",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-FAMILY-02-LOG-NATIVE-MODEL",
+        "CORE070-FAMILY-02-LOG-FORMULA-INTERFACE",
+        "CORE070-FAMILY-02-LOG-PUBLIC-R-BRIDGE"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-02-REJECT-LINK",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-02-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-03-LOG",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-FAMILY-03-LOG-NATIVE-MODEL",
+        "CORE070-FAMILY-03-LOG-FORMULA-INTERFACE",
+        "CORE070-FAMILY-03-LOG-PUBLIC-R-BRIDGE"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-03-REJECT-LINK",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-03-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-04-LOG",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-FAMILY-04-LOG-NATIVE-MODEL",
+        "CORE070-FAMILY-04-LOG-FORMULA-INTERFACE",
+        "CORE070-FAMILY-04-LOG-PUBLIC-R-BRIDGE"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-04-REJECT-LINK",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-04-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-05-LOG",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-FAMILY-05-LOG-NATIVE-MODEL",
+        "CORE070-FAMILY-05-LOG-FORMULA-INTERFACE",
+        "CORE070-FAMILY-05-LOG-PUBLIC-R-BRIDGE"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-05-REJECT-LINK",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-05-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-06-LOG",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-FAMILY-06-LOG-NATIVE-MODEL",
+        "CORE070-FAMILY-06-LOG-FORMULA-INTERFACE",
+        "CORE070-FAMILY-06-LOG-PUBLIC-R-BRIDGE"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-06-REJECT-LINK",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-06-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-07-LOGIT",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-FAMILY-07-LOGIT-NATIVE-MODEL",
+        "CORE070-FAMILY-07-LOGIT-FORMULA-INTERFACE",
+        "CORE070-FAMILY-07-LOGIT-PUBLIC-R-BRIDGE"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-07-REJECT-LINK",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-07-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-08-LOGIT",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-FAMILY-08-LOGIT-NATIVE-MODEL",
+        "CORE070-FAMILY-08-LOGIT-FORMULA-INTERFACE",
+        "CORE070-FAMILY-08-LOGIT-PUBLIC-R-BRIDGE"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-08-REJECT-LINK",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-08-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-09-IDENTITY",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-FAMILY-09-IDENTITY-NATIVE-MODEL",
+        "CORE070-FAMILY-09-IDENTITY-FORMULA-INTERFACE",
+        "CORE070-FAMILY-09-IDENTITY-PUBLIC-R-BRIDGE"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-09-REJECT-LINK",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-09-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-10-LOG",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-FAMILY-10-LOG-NATIVE-MODEL",
+        "CORE070-FAMILY-10-LOG-FORMULA-INTERFACE",
+        "CORE070-FAMILY-10-LOG-PUBLIC-R-BRIDGE"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-10-REJECT-LINK",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-10-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-11-LOG",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-FAMILY-11-LOG-NATIVE-MODEL",
+        "CORE070-FAMILY-11-LOG-FORMULA-INTERFACE",
+        "CORE070-FAMILY-11-LOG-PUBLIC-R-BRIDGE"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-11-REJECT-LINK",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-11-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-12-LOGIT-LOG",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-FAMILY-12-LOGIT-LOG-NATIVE-MODEL",
+        "CORE070-FAMILY-12-LOGIT-LOG-FORMULA-INTERFACE",
+        "CORE070-FAMILY-12-LOGIT-LOG-PUBLIC-R-BRIDGE"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-12-REJECT-PRESENCE",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-12-REJECT-PRESENCE-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-12-REJECT-POSITIVE",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-12-REJECT-POSITIVE-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-12-REJECT-POISSON-DELTA",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-12-REJECT-POISSON-DELTA-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-13-LOGIT-LOG",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-FAMILY-13-LOGIT-LOG-NATIVE-MODEL",
+        "CORE070-FAMILY-13-LOGIT-LOG-FORMULA-INTERFACE",
+        "CORE070-FAMILY-13-LOGIT-LOG-PUBLIC-R-BRIDGE"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-13-REJECT-PRESENCE",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-13-REJECT-PRESENCE-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-13-REJECT-POSITIVE",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-13-REJECT-POSITIVE-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-13-REJECT-POISSON-DELTA",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-13-REJECT-POISSON-DELTA-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-14-PROBIT",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-FAMILY-14-PROBIT-NATIVE-MODEL",
+        "CORE070-FAMILY-14-PROBIT-FORMULA-INTERFACE",
+        "CORE070-FAMILY-14-PROBIT-PUBLIC-R-BRIDGE"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-14-REJECT-LINK",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-14-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-15-LOG",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-FAMILY-15-LOG-NATIVE-MODEL",
+        "CORE070-FAMILY-15-LOG-FORMULA-INTERFACE",
+        "CORE070-FAMILY-15-LOG-PUBLIC-R-BRIDGE"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-15-REJECT-LINK",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-15-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-16-LOGIT",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-FAMILY-16-LOGIT-NATIVE-MODEL",
+        "CORE070-FAMILY-16-LOGIT-FORMULA-INTERFACE",
+        "CORE070-FAMILY-16-LOGIT-PUBLIC-R-BRIDGE"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-16-REJECT-LINK",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-16-REJECT-LINK-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-01-PROBIT",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-FAMILY-01-PROBIT-NATIVE-MODEL",
+        "CORE070-FAMILY-01-PROBIT-FORMULA-INTERFACE",
+        "CORE070-FAMILY-01-PROBIT-PUBLIC-R-BRIDGE"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-01-CLOGLOG",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-FAMILY-01-CLOGLOG-NATIVE-MODEL",
+        "CORE070-FAMILY-01-CLOGLOG-FORMULA-INTERFACE",
+        "CORE070-FAMILY-01-CLOGLOG-PUBLIC-R-BRIDGE"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-BETA-ALIAS",
+      "classification": "compatibility_adapter",
+      "planned_case_ids": [
+        "CORE070-FAMILY-BETA-ALIAS-COMPATIBILITY-ADAPTER"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/CONSTRUCTOR-ONLY-GENGAMMA",
+      "classification": "intentionally_excluded",
+      "planned_case_ids": [],
+      "executable_case_ids": [],
+      "status": "EXCLUDED"
+    },
+    {
+      "source_id": "family/CONSTRUCTOR-ONLY-GAMMA_MIX",
+      "classification": "intentionally_excluded",
+      "planned_case_ids": [],
+      "executable_case_ids": [],
+      "status": "EXCLUDED"
+    },
+    {
+      "source_id": "family/CONSTRUCTOR-ONLY-LOGNORMAL_MIX",
+      "classification": "intentionally_excluded",
+      "planned_case_ids": [],
+      "executable_case_ids": [],
+      "status": "EXCLUDED"
+    },
+    {
+      "source_id": "family/CONSTRUCTOR-ONLY-NBINOM2_MIX",
+      "classification": "intentionally_excluded",
+      "planned_case_ids": [],
+      "executable_case_ids": [],
+      "status": "EXCLUDED"
+    },
+    {
+      "source_id": "family/CONSTRUCTOR-ONLY-TRUNCATED_NBINOM1",
+      "classification": "intentionally_excluded",
+      "planned_case_ids": [],
+      "executable_case_ids": [],
+      "status": "EXCLUDED"
+    },
+    {
+      "source_id": "family/CONSTRUCTOR-ONLY-CENSORED_POISSON",
+      "classification": "intentionally_excluded",
+      "planned_case_ids": [],
+      "executable_case_ids": [],
+      "status": "EXCLUDED"
+    },
+    {
+      "source_id": "family/CONSTRUCTOR-ONLY-DELTA_GAMMA_MIX",
+      "classification": "intentionally_excluded",
+      "planned_case_ids": [],
+      "executable_case_ids": [],
+      "status": "EXCLUDED"
+    },
+    {
+      "source_id": "family/CONSTRUCTOR-ONLY-DELTA_GENGAMMA",
+      "classification": "intentionally_excluded",
+      "planned_case_ids": [],
+      "executable_case_ids": [],
+      "status": "EXCLUDED"
+    },
+    {
+      "source_id": "family/CONSTRUCTOR-ONLY-DELTA_LOGNORMAL_MIX",
+      "classification": "intentionally_excluded",
+      "planned_case_ids": [],
+      "executable_case_ids": [],
+      "status": "EXCLUDED"
+    },
+    {
+      "source_id": "family/CONSTRUCTOR-ONLY-DELTA_TRUNCATED_NBINOM2",
+      "classification": "intentionally_excluded",
+      "planned_case_ids": [],
+      "executable_case_ids": [],
+      "status": "EXCLUDED"
+    },
+    {
+      "source_id": "family/CONSTRUCTOR-ONLY-DELTA_TRUNCATED_NBINOM1",
+      "classification": "intentionally_excluded",
+      "planned_case_ids": [],
+      "executable_case_ids": [],
+      "status": "EXCLUDED"
+    },
+    {
+      "source_id": "family/CONSTRUCTOR-ONLY-DELTA_POISSON_LINK_GAMMA",
+      "classification": "intentionally_excluded",
+      "planned_case_ids": [],
+      "executable_case_ids": [],
+      "status": "EXCLUDED"
+    },
+    {
+      "source_id": "family/CONSTRUCTOR-ONLY-DELTA_POISSON_LINK_LOGNORMAL",
+      "classification": "intentionally_excluded",
+      "planned_case_ids": [],
+      "executable_case_ids": [],
+      "status": "EXCLUDED"
+    },
+    {
+      "source_id": "family/CONSTRUCTOR-ONLY-DELTA_BETA",
+      "classification": "intentionally_excluded",
+      "planned_case_ids": [],
+      "executable_case_ids": [],
+      "status": "EXCLUDED"
+    },
+    {
+      "source_id": "family/FAMILY-08-CLOGLOG-ENGINE-REJECT",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-08-CLOGLOG-ENGINE-REJECT-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-14-MUTATED-DESCRIPTOR-REJECT",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-14-MUTATED-DESCRIPTOR-REJECT-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-16-MUTATED-DESCRIPTOR-REJECT",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-16-MUTATED-DESCRIPTOR-REJECT-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-06-FIXED-SHAPE",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-FAMILY-06-FIXED-SHAPE-NATIVE-MODEL",
+        "CORE070-FAMILY-06-FIXED-SHAPE-FORMULA-INTERFACE",
+        "CORE070-FAMILY-06-FIXED-SHAPE-PUBLIC-R-BRIDGE"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-06-SHAPE-INVALID-LOW",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-06-SHAPE-INVALID-LOW-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-06-SHAPE-INVALID-INF",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-06-SHAPE-INVALID-INF-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-06-SHAPE-INVALID-NA",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-06-SHAPE-INVALID-NA-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-06-SHAPE-INVALID-VECTOR",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-06-SHAPE-INVALID-VECTOR-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-09-FIXED-SHAPE",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-FAMILY-09-FIXED-SHAPE-NATIVE-MODEL",
+        "CORE070-FAMILY-09-FIXED-SHAPE-FORMULA-INTERFACE",
+        "CORE070-FAMILY-09-FIXED-SHAPE-PUBLIC-R-BRIDGE"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-09-SHAPE-INVALID-LOW",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-09-SHAPE-INVALID-LOW-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-09-SHAPE-INVALID-INF",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-09-SHAPE-INVALID-INF-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-09-SHAPE-INVALID-NA",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-09-SHAPE-INVALID-NA-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-09-SHAPE-INVALID-VECTOR",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-09-SHAPE-INVALID-VECTOR-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    },
+    {
+      "source_id": "family/FAMILY-06-SHAPE-INVALID-HIGH",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-FAMILY-06-SHAPE-INVALID-HIGH-REFERENCE-BOUNDARY"
+      ],
+      "executable_case_ids": [],
+      "status": "SPECIFICATION_REQUIRED"
+    }
+  ],
+  "cases": [
+    {
+      "id": "CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL",
+      "coverage_role": "native_model",
+      "source_fact_ids": [
+        "family/FAMILY-00-IDENTITY"
+      ],
+      "source_row_sha256": "53197664e7abd3e5926a16b37e5b505126849438c4325e39ceb9f718831f8157",
+      "model_contract_id": "MODEL-FAMILY-00-IDENTITY",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "gaussian(link=\"identity\")",
+      "reference_admission_expected": [
+        0,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_gaussian_gllvm(Y; K=1)",
+      "candidate_fixture": "test/parity/test_gaussian_parity.jl",
+      "candidate_fixture_id": "NATIVE-01-GAUSSIAN",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE",
+      "coverage_role": "formula_interface",
+      "source_fact_ids": [
+        "family/FAMILY-00-IDENTITY"
+      ],
+      "source_row_sha256": "53197664e7abd3e5926a16b37e5b505126849438c4325e39ceb9f718831f8157",
+      "model_contract_id": "MODEL-FAMILY-00-IDENTITY",
+      "owner": "B2/Boole",
+      "reference_descriptor_call": "gaussian(link=\"identity\")",
+      "reference_admission_expected": [
+        0,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_gaussian_gllvm(Y; K=1)",
+      "candidate_fixture": "test/parity/test_gaussian_parity.jl",
+      "candidate_fixture_id": "NATIVE-01-GAUSSIAN",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-00-IDENTITY-PUBLIC-R-BRIDGE",
+      "coverage_role": "public_r_bridge",
+      "source_fact_ids": [
+        "family/FAMILY-00-IDENTITY"
+      ],
+      "source_row_sha256": "53197664e7abd3e5926a16b37e5b505126849438c4325e39ceb9f718831f8157",
+      "model_contract_id": "MODEL-FAMILY-00-IDENTITY",
+      "owner": "B5/Hopper",
+      "reference_descriptor_call": "gaussian(link=\"identity\")",
+      "reference_admission_expected": [
+        0,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_gaussian_gllvm(Y; K=1)",
+      "candidate_fixture": "test/parity/test_gaussian_parity.jl",
+      "candidate_fixture_id": "NATIVE-01-GAUSSIAN",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-00-REJECT-LINK-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-00-REJECT-LINK"
+      ],
+      "source_row_sha256": "8fe82f0569e116c09b6f41c3f13dd4bb595b8e835e0a2ee3242243908f7506cb",
+      "model_contract_id": "MODEL-FAMILY-00-REJECT-LINK",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "gaussian(link=\"log\")",
+      "reference_admission_expected": "ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-01-LOGIT-NATIVE-MODEL",
+      "coverage_role": "native_model",
+      "source_fact_ids": [
+        "family/FAMILY-01-LOGIT"
+      ],
+      "source_row_sha256": "24870a89d79830a9d0cd57d89f83a1bffb44a361acb664e26db4dde634d4911b",
+      "model_contract_id": "MODEL-FAMILY-01-LOGIT",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "binomial(link=\"logit\")",
+      "reference_admission_expected": [
+        1,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_binomial_gllvm(Y; K=1, link=LogitLink())",
+      "candidate_fixture": "test/parity/test_binomial_parity.jl",
+      "candidate_fixture_id": "NATIVE-02-BINOMIAL",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-01-LOGIT-FORMULA-INTERFACE",
+      "coverage_role": "formula_interface",
+      "source_fact_ids": [
+        "family/FAMILY-01-LOGIT"
+      ],
+      "source_row_sha256": "24870a89d79830a9d0cd57d89f83a1bffb44a361acb664e26db4dde634d4911b",
+      "model_contract_id": "MODEL-FAMILY-01-LOGIT",
+      "owner": "B2/Boole",
+      "reference_descriptor_call": "binomial(link=\"logit\")",
+      "reference_admission_expected": [
+        1,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_binomial_gllvm(Y; K=1, link=LogitLink())",
+      "candidate_fixture": "test/parity/test_binomial_parity.jl",
+      "candidate_fixture_id": "NATIVE-02-BINOMIAL",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-01-LOGIT-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-01-LOGIT-PUBLIC-R-BRIDGE",
+      "coverage_role": "public_r_bridge",
+      "source_fact_ids": [
+        "family/FAMILY-01-LOGIT"
+      ],
+      "source_row_sha256": "24870a89d79830a9d0cd57d89f83a1bffb44a361acb664e26db4dde634d4911b",
+      "model_contract_id": "MODEL-FAMILY-01-LOGIT",
+      "owner": "B5/Hopper",
+      "reference_descriptor_call": "binomial(link=\"logit\")",
+      "reference_admission_expected": [
+        1,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_binomial_gllvm(Y; K=1, link=LogitLink())",
+      "candidate_fixture": "test/parity/test_binomial_parity.jl",
+      "candidate_fixture_id": "NATIVE-02-BINOMIAL",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-01-LOGIT-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-01-REJECT-LINK-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-01-REJECT-LINK"
+      ],
+      "source_row_sha256": "d8a2a5537ed354ca603acc45887120d65b750641a038fbb4dbf6fc0b1f796865",
+      "model_contract_id": "MODEL-FAMILY-01-REJECT-LINK",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "binomial(link=\"identity\")",
+      "reference_admission_expected": "ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-02-LOG-NATIVE-MODEL",
+      "coverage_role": "native_model",
+      "source_fact_ids": [
+        "family/FAMILY-02-LOG"
+      ],
+      "source_row_sha256": "e17b1b2343c97a90e692ea7ea88f20ed6f6fc79190ebdf54af5f812b1e59fa93",
+      "model_contract_id": "MODEL-FAMILY-02-LOG",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "poisson(link=\"log\")",
+      "reference_admission_expected": [
+        2,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_poisson_gllvm(Y; K=1, link=LogLink())",
+      "candidate_fixture": "test/parity/test_poisson_parity.jl",
+      "candidate_fixture_id": "NATIVE-03-POISSON",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-02-LOG-FORMULA-INTERFACE",
+      "coverage_role": "formula_interface",
+      "source_fact_ids": [
+        "family/FAMILY-02-LOG"
+      ],
+      "source_row_sha256": "e17b1b2343c97a90e692ea7ea88f20ed6f6fc79190ebdf54af5f812b1e59fa93",
+      "model_contract_id": "MODEL-FAMILY-02-LOG",
+      "owner": "B2/Boole",
+      "reference_descriptor_call": "poisson(link=\"log\")",
+      "reference_admission_expected": [
+        2,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_poisson_gllvm(Y; K=1, link=LogLink())",
+      "candidate_fixture": "test/parity/test_poisson_parity.jl",
+      "candidate_fixture_id": "NATIVE-03-POISSON",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-02-LOG-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-02-LOG-PUBLIC-R-BRIDGE",
+      "coverage_role": "public_r_bridge",
+      "source_fact_ids": [
+        "family/FAMILY-02-LOG"
+      ],
+      "source_row_sha256": "e17b1b2343c97a90e692ea7ea88f20ed6f6fc79190ebdf54af5f812b1e59fa93",
+      "model_contract_id": "MODEL-FAMILY-02-LOG",
+      "owner": "B5/Hopper",
+      "reference_descriptor_call": "poisson(link=\"log\")",
+      "reference_admission_expected": [
+        2,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_poisson_gllvm(Y; K=1, link=LogLink())",
+      "candidate_fixture": "test/parity/test_poisson_parity.jl",
+      "candidate_fixture_id": "NATIVE-03-POISSON",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-02-LOG-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-02-REJECT-LINK-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-02-REJECT-LINK"
+      ],
+      "source_row_sha256": "43f2487e31a83896ec19d6eaa62559c46a624310f3e4219273c3b8abc5f5816b",
+      "model_contract_id": "MODEL-FAMILY-02-REJECT-LINK",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "poisson(link=\"identity\")",
+      "reference_admission_expected": "ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-03-LOG-NATIVE-MODEL",
+      "coverage_role": "native_model",
+      "source_fact_ids": [
+        "family/FAMILY-03-LOG"
+      ],
+      "source_row_sha256": "a7b627eb451094afc50bb2b0bcfaa646bbf089952479e838d8d34db0916c66f5",
+      "model_contract_id": "MODEL-FAMILY-03-LOG",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "lognormal(link=\"log\")",
+      "reference_admission_expected": [
+        3,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_lognormal_gllvm(Y; K=1, link=LogLink())",
+      "candidate_fixture": "test/parity/test_lognormal_parity.jl",
+      "candidate_fixture_id": "NATIVE-04-LOGNORMAL",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-03-LOG-FORMULA-INTERFACE",
+      "coverage_role": "formula_interface",
+      "source_fact_ids": [
+        "family/FAMILY-03-LOG"
+      ],
+      "source_row_sha256": "a7b627eb451094afc50bb2b0bcfaa646bbf089952479e838d8d34db0916c66f5",
+      "model_contract_id": "MODEL-FAMILY-03-LOG",
+      "owner": "B2/Boole",
+      "reference_descriptor_call": "lognormal(link=\"log\")",
+      "reference_admission_expected": [
+        3,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_lognormal_gllvm(Y; K=1, link=LogLink())",
+      "candidate_fixture": "test/parity/test_lognormal_parity.jl",
+      "candidate_fixture_id": "NATIVE-04-LOGNORMAL",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-03-LOG-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-03-LOG-PUBLIC-R-BRIDGE",
+      "coverage_role": "public_r_bridge",
+      "source_fact_ids": [
+        "family/FAMILY-03-LOG"
+      ],
+      "source_row_sha256": "a7b627eb451094afc50bb2b0bcfaa646bbf089952479e838d8d34db0916c66f5",
+      "model_contract_id": "MODEL-FAMILY-03-LOG",
+      "owner": "B5/Hopper",
+      "reference_descriptor_call": "lognormal(link=\"log\")",
+      "reference_admission_expected": [
+        3,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_lognormal_gllvm(Y; K=1, link=LogLink())",
+      "candidate_fixture": "test/parity/test_lognormal_parity.jl",
+      "candidate_fixture_id": "NATIVE-04-LOGNORMAL",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-03-LOG-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-03-REJECT-LINK-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-03-REJECT-LINK"
+      ],
+      "source_row_sha256": "fa3db71b3b5d36cc881b0d2e6d47d0e59f9fcb0c2f856b0539988b4b575b27e2",
+      "model_contract_id": "MODEL-FAMILY-03-REJECT-LINK",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "lognormal(link=\"identity\")",
+      "reference_admission_expected": "ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-04-LOG-NATIVE-MODEL",
+      "coverage_role": "native_model",
+      "source_fact_ids": [
+        "family/FAMILY-04-LOG"
+      ],
+      "source_row_sha256": "5c07ee7b6bd25b065115f9cd9dbdb7b0885304f44f51140169a2cb76c3b667b2",
+      "model_contract_id": "MODEL-FAMILY-04-LOG",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "Gamma(link=\"log\")",
+      "reference_admission_expected": [
+        4,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_gamma_gllvm_grouped(Y; K=1, group=[1,2,3], link=LogLink())",
+      "candidate_fixture": "test/parity/test_nox_dispersion_parity.jl",
+      "candidate_fixture_id": "NATIVE-05-GAMMA",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-04-LOG-FORMULA-INTERFACE",
+      "coverage_role": "formula_interface",
+      "source_fact_ids": [
+        "family/FAMILY-04-LOG"
+      ],
+      "source_row_sha256": "5c07ee7b6bd25b065115f9cd9dbdb7b0885304f44f51140169a2cb76c3b667b2",
+      "model_contract_id": "MODEL-FAMILY-04-LOG",
+      "owner": "B2/Boole",
+      "reference_descriptor_call": "Gamma(link=\"log\")",
+      "reference_admission_expected": [
+        4,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_gamma_gllvm_grouped(Y; K=1, group=[1,2,3], link=LogLink())",
+      "candidate_fixture": "test/parity/test_nox_dispersion_parity.jl",
+      "candidate_fixture_id": "NATIVE-05-GAMMA",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-04-LOG-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-04-LOG-PUBLIC-R-BRIDGE",
+      "coverage_role": "public_r_bridge",
+      "source_fact_ids": [
+        "family/FAMILY-04-LOG"
+      ],
+      "source_row_sha256": "5c07ee7b6bd25b065115f9cd9dbdb7b0885304f44f51140169a2cb76c3b667b2",
+      "model_contract_id": "MODEL-FAMILY-04-LOG",
+      "owner": "B5/Hopper",
+      "reference_descriptor_call": "Gamma(link=\"log\")",
+      "reference_admission_expected": [
+        4,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_gamma_gllvm_grouped(Y; K=1, group=[1,2,3], link=LogLink())",
+      "candidate_fixture": "test/parity/test_nox_dispersion_parity.jl",
+      "candidate_fixture_id": "NATIVE-05-GAMMA",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-04-LOG-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-04-REJECT-LINK-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-04-REJECT-LINK"
+      ],
+      "source_row_sha256": "f081764dfb694e29d17b30999a5201a7f0e0ba4aed90425361f46a6118b93e4f",
+      "model_contract_id": "MODEL-FAMILY-04-REJECT-LINK",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "Gamma(link=\"identity\")",
+      "reference_admission_expected": "ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-05-LOG-NATIVE-MODEL",
+      "coverage_role": "native_model",
+      "source_fact_ids": [
+        "family/FAMILY-05-LOG"
+      ],
+      "source_row_sha256": "eec084d6e7f208e592ef53671396746cb079a27cde7cec67c80a2ffc6cc9beb9",
+      "model_contract_id": "MODEL-FAMILY-05-LOG",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "nbinom2(link=\"log\")",
+      "reference_admission_expected": [
+        5,
+        0
+      ],
+      "status": "EXISTING_REQUIRED_NATIVE_CASE_BOUND_INTERFACES_PENDING",
+      "fixture": "test/parity/test_negbin_parity.jl",
+      "r_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=nbinom2(), control=gllvmTMBcontrol(n_init=1L,se=FALSE))",
+      "julia_call": "fit_gllvm(Y; family = GLLVM.NegativeBinomial(), K = K, g_tol = 1e-7, iterations = 800)",
+      "candidate_native_entry": "fit_gllvm(Y; family=GLLVM.NegativeBinomial(), K=1, link=LogLink())",
+      "candidate_fixture": "test/parity/test_negbin_parity.jl",
+      "candidate_fixture_id": "NATIVE-06-NB2",
+      "candidate_is_equivalent": true,
+      "acceptance_level": "paired_fit",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Only the original seeded native model is bound; formula, bridge, other models and broader recovery remain unpaid.",
+      "required_runner_case_id": "NATIVE-06-NB2",
+      "fixture_sha256": "db83f3385dc7f6de699573600b1022cf4e628f1b90caafe61a3b7d6a4590dabd",
+      "evidence": "docs/dev-log/core070/nb2-required-evidence.json",
+      "execution_manifest_sha256": "9131983144c8381ebc8ba02d38ecb2779dda7612452734d5806b8b2cbdd2368d",
+      "model": {
+        "seed": 45,
+        "p": 5,
+        "n": 80,
+        "K": 2,
+        "link": "log",
+        "dispersion": "per-trait NB2 size; Var=mu+mu^2/r",
+        "random_block": "ordinary loadings-only; unique=FALSE",
+        "identification": "triangular loading convention; compare invariant quantities"
+      }
+    },
+    {
+      "id": "CORE070-FAMILY-05-LOG-FORMULA-INTERFACE",
+      "coverage_role": "formula_interface",
+      "source_fact_ids": [
+        "family/FAMILY-05-LOG"
+      ],
+      "source_row_sha256": "eec084d6e7f208e592ef53671396746cb079a27cde7cec67c80a2ffc6cc9beb9",
+      "model_contract_id": "MODEL-FAMILY-05-LOG",
+      "owner": "B2/Boole",
+      "reference_descriptor_call": "nbinom2(link=\"log\")",
+      "reference_admission_expected": [
+        5,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_gllvm(Y; family=GLLVM.NegativeBinomial(), K=1, link=LogLink())",
+      "candidate_fixture": "test/parity/test_negbin_parity.jl",
+      "candidate_fixture_id": "NATIVE-06-NB2",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-05-LOG-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-05-LOG-PUBLIC-R-BRIDGE",
+      "coverage_role": "public_r_bridge",
+      "source_fact_ids": [
+        "family/FAMILY-05-LOG"
+      ],
+      "source_row_sha256": "eec084d6e7f208e592ef53671396746cb079a27cde7cec67c80a2ffc6cc9beb9",
+      "model_contract_id": "MODEL-FAMILY-05-LOG",
+      "owner": "B5/Hopper",
+      "reference_descriptor_call": "nbinom2(link=\"log\")",
+      "reference_admission_expected": [
+        5,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_gllvm(Y; family=GLLVM.NegativeBinomial(), K=1, link=LogLink())",
+      "candidate_fixture": "test/parity/test_negbin_parity.jl",
+      "candidate_fixture_id": "NATIVE-06-NB2",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-05-LOG-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-05-REJECT-LINK-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-05-REJECT-LINK"
+      ],
+      "source_row_sha256": "1e140bd56ce4f2643cf1d383b4b1fd49afe3864f5f9e9f3d710dfe72b56d6ad3",
+      "model_contract_id": "MODEL-FAMILY-05-REJECT-LINK",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "nbinom2(link=\"identity\")",
+      "reference_admission_expected": "ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-06-LOG-NATIVE-MODEL",
+      "coverage_role": "native_model",
+      "source_fact_ids": [
+        "family/FAMILY-06-LOG"
+      ],
+      "source_row_sha256": "f327237a0c4fe645791fe0f7434cbc85c3d293e15da9fdb8d38930bb84d258aa",
+      "model_contract_id": "MODEL-FAMILY-06-LOG",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "tweedie(link=\"log\")",
+      "reference_admission_expected": [
+        6,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_tweedie_gllvm_grouped(Y; K=1, power_group=:species, link=LogLink())",
+      "candidate_fixture": "test/parity/test_tweedie_parity.jl",
+      "candidate_fixture_id": "NATIVE-07-TWEEDIE",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-06-LOG-FORMULA-INTERFACE",
+      "coverage_role": "formula_interface",
+      "source_fact_ids": [
+        "family/FAMILY-06-LOG"
+      ],
+      "source_row_sha256": "f327237a0c4fe645791fe0f7434cbc85c3d293e15da9fdb8d38930bb84d258aa",
+      "model_contract_id": "MODEL-FAMILY-06-LOG",
+      "owner": "B2/Boole",
+      "reference_descriptor_call": "tweedie(link=\"log\")",
+      "reference_admission_expected": [
+        6,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_tweedie_gllvm_grouped(Y; K=1, power_group=:species, link=LogLink())",
+      "candidate_fixture": "test/parity/test_tweedie_parity.jl",
+      "candidate_fixture_id": "NATIVE-07-TWEEDIE",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-06-LOG-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-06-LOG-PUBLIC-R-BRIDGE",
+      "coverage_role": "public_r_bridge",
+      "source_fact_ids": [
+        "family/FAMILY-06-LOG"
+      ],
+      "source_row_sha256": "f327237a0c4fe645791fe0f7434cbc85c3d293e15da9fdb8d38930bb84d258aa",
+      "model_contract_id": "MODEL-FAMILY-06-LOG",
+      "owner": "B5/Hopper",
+      "reference_descriptor_call": "tweedie(link=\"log\")",
+      "reference_admission_expected": [
+        6,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_tweedie_gllvm_grouped(Y; K=1, power_group=:species, link=LogLink())",
+      "candidate_fixture": "test/parity/test_tweedie_parity.jl",
+      "candidate_fixture_id": "NATIVE-07-TWEEDIE",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-06-LOG-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-06-REJECT-LINK-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-06-REJECT-LINK"
+      ],
+      "source_row_sha256": "68418ecd26db3ad2d61714a7452b8133d1360302d8110fbc6552f6853eb8f9cc",
+      "model_contract_id": "MODEL-FAMILY-06-REJECT-LINK",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "tweedie(link=\"identity\")",
+      "reference_admission_expected": "ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-07-LOGIT-NATIVE-MODEL",
+      "coverage_role": "native_model",
+      "source_fact_ids": [
+        "family/FAMILY-07-LOGIT"
+      ],
+      "source_row_sha256": "b26bc2eb8c1779473137e29d8ebadee5a166aeb1ec5c04aec538cf0e15baa925",
+      "model_contract_id": "MODEL-FAMILY-07-LOGIT",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "Beta(link=\"logit\")",
+      "reference_admission_expected": [
+        7,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_gllvm(Y; family=GLLVM.Beta(), K=1, link=LogitLink())",
+      "candidate_fixture": "test/parity/test_beta_parity.jl",
+      "candidate_fixture_id": "NATIVE-08-BETA",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-07-LOGIT-FORMULA-INTERFACE",
+      "coverage_role": "formula_interface",
+      "source_fact_ids": [
+        "family/FAMILY-07-LOGIT"
+      ],
+      "source_row_sha256": "b26bc2eb8c1779473137e29d8ebadee5a166aeb1ec5c04aec538cf0e15baa925",
+      "model_contract_id": "MODEL-FAMILY-07-LOGIT",
+      "owner": "B2/Boole",
+      "reference_descriptor_call": "Beta(link=\"logit\")",
+      "reference_admission_expected": [
+        7,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_gllvm(Y; family=GLLVM.Beta(), K=1, link=LogitLink())",
+      "candidate_fixture": "test/parity/test_beta_parity.jl",
+      "candidate_fixture_id": "NATIVE-08-BETA",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-07-LOGIT-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-07-LOGIT-PUBLIC-R-BRIDGE",
+      "coverage_role": "public_r_bridge",
+      "source_fact_ids": [
+        "family/FAMILY-07-LOGIT"
+      ],
+      "source_row_sha256": "b26bc2eb8c1779473137e29d8ebadee5a166aeb1ec5c04aec538cf0e15baa925",
+      "model_contract_id": "MODEL-FAMILY-07-LOGIT",
+      "owner": "B5/Hopper",
+      "reference_descriptor_call": "Beta(link=\"logit\")",
+      "reference_admission_expected": [
+        7,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_gllvm(Y; family=GLLVM.Beta(), K=1, link=LogitLink())",
+      "candidate_fixture": "test/parity/test_beta_parity.jl",
+      "candidate_fixture_id": "NATIVE-08-BETA",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-07-LOGIT-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-07-REJECT-LINK-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-07-REJECT-LINK"
+      ],
+      "source_row_sha256": "1368012cd348b40e4609c1ed1e10b4357cf9994994e547537be299c55ed260f6",
+      "model_contract_id": "MODEL-FAMILY-07-REJECT-LINK",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "Beta(link=\"identity\")",
+      "reference_admission_expected": "ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-08-LOGIT-NATIVE-MODEL",
+      "coverage_role": "native_model",
+      "source_fact_ids": [
+        "family/FAMILY-08-LOGIT"
+      ],
+      "source_row_sha256": "7a53841da6230383242db1a7322c661047495257fa2753f36f27b27ffc244c23",
+      "model_contract_id": "MODEL-FAMILY-08-LOGIT",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "betabinomial(link=\"logit\")",
+      "reference_admission_expected": [
+        8,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_beta_binomial_gllvm_grouped(Y; K=1, N=N, group=[1,2,3], link=LogitLink())",
+      "candidate_fixture": "test/parity/test_nox_dispersion_parity.jl",
+      "candidate_fixture_id": "NATIVE-09-BETABINOMIAL",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-08-LOGIT-FORMULA-INTERFACE",
+      "coverage_role": "formula_interface",
+      "source_fact_ids": [
+        "family/FAMILY-08-LOGIT"
+      ],
+      "source_row_sha256": "7a53841da6230383242db1a7322c661047495257fa2753f36f27b27ffc244c23",
+      "model_contract_id": "MODEL-FAMILY-08-LOGIT",
+      "owner": "B2/Boole",
+      "reference_descriptor_call": "betabinomial(link=\"logit\")",
+      "reference_admission_expected": [
+        8,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_beta_binomial_gllvm_grouped(Y; K=1, N=N, group=[1,2,3], link=LogitLink())",
+      "candidate_fixture": "test/parity/test_nox_dispersion_parity.jl",
+      "candidate_fixture_id": "NATIVE-09-BETABINOMIAL",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-08-LOGIT-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-08-LOGIT-PUBLIC-R-BRIDGE",
+      "coverage_role": "public_r_bridge",
+      "source_fact_ids": [
+        "family/FAMILY-08-LOGIT"
+      ],
+      "source_row_sha256": "7a53841da6230383242db1a7322c661047495257fa2753f36f27b27ffc244c23",
+      "model_contract_id": "MODEL-FAMILY-08-LOGIT",
+      "owner": "B5/Hopper",
+      "reference_descriptor_call": "betabinomial(link=\"logit\")",
+      "reference_admission_expected": [
+        8,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_beta_binomial_gllvm_grouped(Y; K=1, N=N, group=[1,2,3], link=LogitLink())",
+      "candidate_fixture": "test/parity/test_nox_dispersion_parity.jl",
+      "candidate_fixture_id": "NATIVE-09-BETABINOMIAL",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-08-LOGIT-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-08-REJECT-LINK-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-08-REJECT-LINK"
+      ],
+      "source_row_sha256": "fe1a7788868f16591642e07c60b540dd706613f87c378c4e6b9f0c38d7ac89ea",
+      "model_contract_id": "MODEL-FAMILY-08-REJECT-LINK",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "betabinomial(link=\"identity\")",
+      "reference_admission_expected": "CONSTRUCTOR_ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-09-IDENTITY-NATIVE-MODEL",
+      "coverage_role": "native_model",
+      "source_fact_ids": [
+        "family/FAMILY-09-IDENTITY"
+      ],
+      "source_row_sha256": "d45477c1047c42befb7ad31f5ede875c5f26fda7dd2530fb5c6ffafac34b3aa2",
+      "model_contract_id": "MODEL-FAMILY-09-IDENTITY",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "student(link=\"identity\")",
+      "reference_admission_expected": [
+        9,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_studentt_gllvm(Y; K=1, nu=nothing, disp_group=:species, link=IdentityLink())",
+      "candidate_fixture": "test/parity/test_studentt_parity.jl",
+      "candidate_fixture_id": "NATIVE-10-STUDENT",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [],
+      "acceptance_rule": "Original required Student-t fixture keeps absolute delta logLik <= 0.001 and both-engine fit health.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-09-IDENTITY-FORMULA-INTERFACE",
+      "coverage_role": "formula_interface",
+      "source_fact_ids": [
+        "family/FAMILY-09-IDENTITY"
+      ],
+      "source_row_sha256": "d45477c1047c42befb7ad31f5ede875c5f26fda7dd2530fb5c6ffafac34b3aa2",
+      "model_contract_id": "MODEL-FAMILY-09-IDENTITY",
+      "owner": "B2/Boole",
+      "reference_descriptor_call": "student(link=\"identity\")",
+      "reference_admission_expected": [
+        9,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_studentt_gllvm(Y; K=1, nu=nothing, disp_group=:species, link=IdentityLink())",
+      "candidate_fixture": "test/parity/test_studentt_parity.jl",
+      "candidate_fixture_id": "NATIVE-10-STUDENT",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-09-IDENTITY-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Original required Student-t fixture keeps absolute delta logLik <= 0.001 and both-engine fit health.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-09-IDENTITY-PUBLIC-R-BRIDGE",
+      "coverage_role": "public_r_bridge",
+      "source_fact_ids": [
+        "family/FAMILY-09-IDENTITY"
+      ],
+      "source_row_sha256": "d45477c1047c42befb7ad31f5ede875c5f26fda7dd2530fb5c6ffafac34b3aa2",
+      "model_contract_id": "MODEL-FAMILY-09-IDENTITY",
+      "owner": "B5/Hopper",
+      "reference_descriptor_call": "student(link=\"identity\")",
+      "reference_admission_expected": [
+        9,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_studentt_gllvm(Y; K=1, nu=nothing, disp_group=:species, link=IdentityLink())",
+      "candidate_fixture": "test/parity/test_studentt_parity.jl",
+      "candidate_fixture_id": "NATIVE-10-STUDENT",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-09-IDENTITY-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Original required Student-t fixture keeps absolute delta logLik <= 0.001 and both-engine fit health.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-09-REJECT-LINK-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-09-REJECT-LINK"
+      ],
+      "source_row_sha256": "46c0212c3a893bec60e920cf3cf2390a30cb8ee99668fb32488da619b3faf28f",
+      "model_contract_id": "MODEL-FAMILY-09-REJECT-LINK",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "student(link=\"log\")",
+      "reference_admission_expected": "ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-10-LOG-NATIVE-MODEL",
+      "coverage_role": "native_model",
+      "source_fact_ids": [
+        "family/FAMILY-10-LOG"
+      ],
+      "source_row_sha256": "5f2f16bdba6dcaa3cba6c8f8a5fadd6e5b348451f22ede4dcf0f4b6b0fab913b",
+      "model_contract_id": "MODEL-FAMILY-10-LOG",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "truncated_poisson(link=\"log\")",
+      "reference_admission_expected": [
+        10,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_truncated_poisson_gllvm(Y; K=1, link=LogLink())",
+      "candidate_fixture": "test/parity/test_truncated_poisson_parity.jl",
+      "candidate_fixture_id": "NATIVE-11-TRUNCATED-POISSON",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-10-LOG-FORMULA-INTERFACE",
+      "coverage_role": "formula_interface",
+      "source_fact_ids": [
+        "family/FAMILY-10-LOG"
+      ],
+      "source_row_sha256": "5f2f16bdba6dcaa3cba6c8f8a5fadd6e5b348451f22ede4dcf0f4b6b0fab913b",
+      "model_contract_id": "MODEL-FAMILY-10-LOG",
+      "owner": "B2/Boole",
+      "reference_descriptor_call": "truncated_poisson(link=\"log\")",
+      "reference_admission_expected": [
+        10,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_truncated_poisson_gllvm(Y; K=1, link=LogLink())",
+      "candidate_fixture": "test/parity/test_truncated_poisson_parity.jl",
+      "candidate_fixture_id": "NATIVE-11-TRUNCATED-POISSON",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-10-LOG-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-10-LOG-PUBLIC-R-BRIDGE",
+      "coverage_role": "public_r_bridge",
+      "source_fact_ids": [
+        "family/FAMILY-10-LOG"
+      ],
+      "source_row_sha256": "5f2f16bdba6dcaa3cba6c8f8a5fadd6e5b348451f22ede4dcf0f4b6b0fab913b",
+      "model_contract_id": "MODEL-FAMILY-10-LOG",
+      "owner": "B5/Hopper",
+      "reference_descriptor_call": "truncated_poisson(link=\"log\")",
+      "reference_admission_expected": [
+        10,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_truncated_poisson_gllvm(Y; K=1, link=LogLink())",
+      "candidate_fixture": "test/parity/test_truncated_poisson_parity.jl",
+      "candidate_fixture_id": "NATIVE-11-TRUNCATED-POISSON",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-10-LOG-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-10-REJECT-LINK-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-10-REJECT-LINK"
+      ],
+      "source_row_sha256": "c50a67fbc0c821c55896864edd33a78812bd083dda1b22d4b29f7b7229d9d2ad",
+      "model_contract_id": "MODEL-FAMILY-10-REJECT-LINK",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "truncated_poisson(link=\"identity\")",
+      "reference_admission_expected": "ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-11-LOG-NATIVE-MODEL",
+      "coverage_role": "native_model",
+      "source_fact_ids": [
+        "family/FAMILY-11-LOG"
+      ],
+      "source_row_sha256": "a2b9916d1cf0e9d04fd7ee0b1eadff728e371eef4a139e53b9416874fb7b8540",
+      "model_contract_id": "MODEL-FAMILY-11-LOG",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "truncated_nbinom2(link=\"log\")",
+      "reference_admission_expected": [
+        11,
+        0
+      ],
+      "status": "EXISTING_REQUIRED_NATIVE_CASE_BOUND_INTERFACES_PENDING",
+      "fixture": "test/parity/test_truncated_nbinom2_parity.jl",
+      "r_call": "{ original_fit <- gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=truncated_nbinom2(), control=gllvmTMBcontrol(n_init=1L,se=FALSE)); gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=truncated_nbinom2(), control=gllvmTMBcontrol(n_init=1L,se=FALSE,start_from=original_fit,optimizer=\"optim\",optArgs=list(method=\"BFGS\",control=list(reltol=1e-12,maxit=1500)))) }",
+      "julia_call": "fit_truncated_nbinom2_gllvm_pertrait(Y; K = K)",
+      "candidate_native_entry": "fit_truncated_nbinom2_gllvm_pertrait(Y; K=1, link=LogLink())",
+      "candidate_fixture": "test/parity/test_truncated_nbinom2_parity.jl",
+      "candidate_fixture_id": "NATIVE-12-TRUNCATED-NB2",
+      "candidate_is_equivalent": true,
+      "acceptance_level": "paired_fit",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Only the original seeded native model is bound; formula, bridge, other models and broader recovery remain unpaid.",
+      "required_runner_case_id": "NATIVE-12-TRUNCATED-NB2",
+      "fixture_sha256": "0972c0993b909d4d262e46a844915f7cf79e0afe36f22a177cb6f350b0064558",
+      "evidence": "docs/dev-log/core070/nb2-required-evidence.json",
+      "execution_manifest_sha256": "9131983144c8381ebc8ba02d38ecb2779dda7612452734d5806b8b2cbdd2368d",
+      "model": {
+        "seed": 58,
+        "p": 5,
+        "n": 120,
+        "K": 1,
+        "link": "log of untruncated mean",
+        "dispersion": "per-trait NB2 size; observed Laplace curvature",
+        "random_block": "ordinary loadings-only; unique=FALSE",
+        "identification": "triangular loading convention; compare invariant quantities"
+      }
+    },
+    {
+      "id": "CORE070-FAMILY-11-LOG-FORMULA-INTERFACE",
+      "coverage_role": "formula_interface",
+      "source_fact_ids": [
+        "family/FAMILY-11-LOG"
+      ],
+      "source_row_sha256": "a2b9916d1cf0e9d04fd7ee0b1eadff728e371eef4a139e53b9416874fb7b8540",
+      "model_contract_id": "MODEL-FAMILY-11-LOG",
+      "owner": "B2/Boole",
+      "reference_descriptor_call": "truncated_nbinom2(link=\"log\")",
+      "reference_admission_expected": [
+        11,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_truncated_nbinom2_gllvm_pertrait(Y; K=1, link=LogLink())",
+      "candidate_fixture": "test/parity/test_truncated_nbinom2_parity.jl",
+      "candidate_fixture_id": "NATIVE-12-TRUNCATED-NB2",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-11-LOG-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-11-LOG-PUBLIC-R-BRIDGE",
+      "coverage_role": "public_r_bridge",
+      "source_fact_ids": [
+        "family/FAMILY-11-LOG"
+      ],
+      "source_row_sha256": "a2b9916d1cf0e9d04fd7ee0b1eadff728e371eef4a139e53b9416874fb7b8540",
+      "model_contract_id": "MODEL-FAMILY-11-LOG",
+      "owner": "B5/Hopper",
+      "reference_descriptor_call": "truncated_nbinom2(link=\"log\")",
+      "reference_admission_expected": [
+        11,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_truncated_nbinom2_gllvm_pertrait(Y; K=1, link=LogLink())",
+      "candidate_fixture": "test/parity/test_truncated_nbinom2_parity.jl",
+      "candidate_fixture_id": "NATIVE-12-TRUNCATED-NB2",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-11-LOG-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-11-REJECT-LINK-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-11-REJECT-LINK"
+      ],
+      "source_row_sha256": "c84e914a5258b8977f65918a0d8780c77068f846a42bd5043d3793396c927eba",
+      "model_contract_id": "MODEL-FAMILY-11-REJECT-LINK",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "truncated_nbinom2(link=\"identity\")",
+      "reference_admission_expected": "ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-12-LOGIT-LOG-NATIVE-MODEL",
+      "coverage_role": "native_model",
+      "source_fact_ids": [
+        "family/FAMILY-12-LOGIT-LOG"
+      ],
+      "source_row_sha256": "b0dd0c6f2a14ba96fc2559e887327ca00a7ef2562243da570c7d86401eabdb4d",
+      "model_contract_id": "MODEL-FAMILY-12-LOGIT-LOG",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "delta_lognormal()",
+      "reference_admission_expected": [
+        12,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_delta_lognormal_gllvm(Y; K=1, predictor=:shared, disp_group=:species, hessian=:observed)",
+      "candidate_fixture": "test/parity/test_delta_lognormal_required.jl",
+      "candidate_fixture_id": "NATIVE-13-DELTA-LOGNORMAL",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-12-LOGIT-LOG-FORMULA-INTERFACE",
+      "coverage_role": "formula_interface",
+      "source_fact_ids": [
+        "family/FAMILY-12-LOGIT-LOG"
+      ],
+      "source_row_sha256": "b0dd0c6f2a14ba96fc2559e887327ca00a7ef2562243da570c7d86401eabdb4d",
+      "model_contract_id": "MODEL-FAMILY-12-LOGIT-LOG",
+      "owner": "B2/Boole",
+      "reference_descriptor_call": "delta_lognormal()",
+      "reference_admission_expected": [
+        12,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_delta_lognormal_gllvm(Y; K=1, predictor=:shared, disp_group=:species, hessian=:observed)",
+      "candidate_fixture": "test/parity/test_delta_lognormal_required.jl",
+      "candidate_fixture_id": "NATIVE-13-DELTA-LOGNORMAL",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-12-LOGIT-LOG-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-12-LOGIT-LOG-PUBLIC-R-BRIDGE",
+      "coverage_role": "public_r_bridge",
+      "source_fact_ids": [
+        "family/FAMILY-12-LOGIT-LOG"
+      ],
+      "source_row_sha256": "b0dd0c6f2a14ba96fc2559e887327ca00a7ef2562243da570c7d86401eabdb4d",
+      "model_contract_id": "MODEL-FAMILY-12-LOGIT-LOG",
+      "owner": "B5/Hopper",
+      "reference_descriptor_call": "delta_lognormal()",
+      "reference_admission_expected": [
+        12,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_delta_lognormal_gllvm(Y; K=1, predictor=:shared, disp_group=:species, hessian=:observed)",
+      "candidate_fixture": "test/parity/test_delta_lognormal_required.jl",
+      "candidate_fixture_id": "NATIVE-13-DELTA-LOGNORMAL",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-12-LOGIT-LOG-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-12-REJECT-PRESENCE-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-12-REJECT-PRESENCE"
+      ],
+      "source_row_sha256": "b13a3014ea69980b0ff5e5b17b1ee7d3e66100ac69b7c0db00f9529628285416",
+      "model_contract_id": "MODEL-FAMILY-12-REJECT-PRESENCE",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "delta_lognormal(link1=\"probit\")",
+      "reference_admission_expected": "ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-12-REJECT-POSITIVE-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-12-REJECT-POSITIVE"
+      ],
+      "source_row_sha256": "3f5f2ab4b379f3882b470a572e198126467bc27099ebf1c649ff1c9df54f605c",
+      "model_contract_id": "MODEL-FAMILY-12-REJECT-POSITIVE",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "delta_lognormal(link2=\"identity\")",
+      "reference_admission_expected": "ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-12-REJECT-POISSON-DELTA-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-12-REJECT-POISSON-DELTA"
+      ],
+      "source_row_sha256": "a748322d584f6b8f1d918e68919336c902c73e9d265151f3d2808d94f4c24e9a",
+      "model_contract_id": "MODEL-FAMILY-12-REJECT-POISSON-DELTA",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "delta_lognormal(type=\"poisson-link\")",
+      "reference_admission_expected": "ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-13-LOGIT-LOG-NATIVE-MODEL",
+      "coverage_role": "native_model",
+      "source_fact_ids": [
+        "family/FAMILY-13-LOGIT-LOG"
+      ],
+      "source_row_sha256": "3ed787d700b222b3c638f8a2ccd1270803c99e2746a08cb822743c65b41321bc",
+      "model_contract_id": "MODEL-FAMILY-13-LOGIT-LOG",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "delta_gamma()",
+      "reference_admission_expected": [
+        13,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_delta_gamma_gllvm(Y; K=1, predictor=:shared, disp_group=:species, hessian=:observed)",
+      "candidate_fixture": "test/parity/test_delta_gamma_required.jl",
+      "candidate_fixture_id": "NATIVE-14-DELTA-GAMMA",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-13-LOGIT-LOG-FORMULA-INTERFACE",
+      "coverage_role": "formula_interface",
+      "source_fact_ids": [
+        "family/FAMILY-13-LOGIT-LOG"
+      ],
+      "source_row_sha256": "3ed787d700b222b3c638f8a2ccd1270803c99e2746a08cb822743c65b41321bc",
+      "model_contract_id": "MODEL-FAMILY-13-LOGIT-LOG",
+      "owner": "B2/Boole",
+      "reference_descriptor_call": "delta_gamma()",
+      "reference_admission_expected": [
+        13,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_delta_gamma_gllvm(Y; K=1, predictor=:shared, disp_group=:species, hessian=:observed)",
+      "candidate_fixture": "test/parity/test_delta_gamma_required.jl",
+      "candidate_fixture_id": "NATIVE-14-DELTA-GAMMA",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-13-LOGIT-LOG-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-13-LOGIT-LOG-PUBLIC-R-BRIDGE",
+      "coverage_role": "public_r_bridge",
+      "source_fact_ids": [
+        "family/FAMILY-13-LOGIT-LOG"
+      ],
+      "source_row_sha256": "3ed787d700b222b3c638f8a2ccd1270803c99e2746a08cb822743c65b41321bc",
+      "model_contract_id": "MODEL-FAMILY-13-LOGIT-LOG",
+      "owner": "B5/Hopper",
+      "reference_descriptor_call": "delta_gamma()",
+      "reference_admission_expected": [
+        13,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_delta_gamma_gllvm(Y; K=1, predictor=:shared, disp_group=:species, hessian=:observed)",
+      "candidate_fixture": "test/parity/test_delta_gamma_required.jl",
+      "candidate_fixture_id": "NATIVE-14-DELTA-GAMMA",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-13-LOGIT-LOG-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-13-REJECT-PRESENCE-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-13-REJECT-PRESENCE"
+      ],
+      "source_row_sha256": "6cffe7f510ffc0f288ee0c9a16e881d83abbba236548e762add1f30a672f329a",
+      "model_contract_id": "MODEL-FAMILY-13-REJECT-PRESENCE",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "delta_gamma(link1=\"probit\")",
+      "reference_admission_expected": "ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-13-REJECT-POSITIVE-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-13-REJECT-POSITIVE"
+      ],
+      "source_row_sha256": "98c8c19251da407439eb3baef0b41b1908efab445f61a79f23d09a5510a1959f",
+      "model_contract_id": "MODEL-FAMILY-13-REJECT-POSITIVE",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "delta_gamma(link2=\"identity\")",
+      "reference_admission_expected": "ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-13-REJECT-POISSON-DELTA-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-13-REJECT-POISSON-DELTA"
+      ],
+      "source_row_sha256": "bb3e2ae54347acecf37ea86991ff1fca33ed3ddbef48e94547d3f35c56542918",
+      "model_contract_id": "MODEL-FAMILY-13-REJECT-POISSON-DELTA",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "delta_gamma(type=\"poisson-link\")",
+      "reference_admission_expected": "ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-14-PROBIT-NATIVE-MODEL",
+      "coverage_role": "native_model",
+      "source_fact_ids": [
+        "family/FAMILY-14-PROBIT"
+      ],
+      "source_row_sha256": "4227fd297f3c96d66dca7f8dbb9720ed1445e63237ce25c6f612c98e447c89a4",
+      "model_contract_id": "MODEL-FAMILY-14-PROBIT",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "ordinal_probit(link=\"probit\")",
+      "reference_admission_expected": [
+        14,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_ordinal_gllvm_pertrait(Y; K=1, link=ProbitLink())",
+      "candidate_fixture": "test/parity/test_ordinal_probit_parity.jl",
+      "candidate_fixture_id": "NATIVE-15-ORDINAL-PROBIT",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-14-PROBIT-FORMULA-INTERFACE",
+      "coverage_role": "formula_interface",
+      "source_fact_ids": [
+        "family/FAMILY-14-PROBIT"
+      ],
+      "source_row_sha256": "4227fd297f3c96d66dca7f8dbb9720ed1445e63237ce25c6f612c98e447c89a4",
+      "model_contract_id": "MODEL-FAMILY-14-PROBIT",
+      "owner": "B2/Boole",
+      "reference_descriptor_call": "ordinal_probit(link=\"probit\")",
+      "reference_admission_expected": [
+        14,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_ordinal_gllvm_pertrait(Y; K=1, link=ProbitLink())",
+      "candidate_fixture": "test/parity/test_ordinal_probit_parity.jl",
+      "candidate_fixture_id": "NATIVE-15-ORDINAL-PROBIT",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-14-PROBIT-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-14-PROBIT-PUBLIC-R-BRIDGE",
+      "coverage_role": "public_r_bridge",
+      "source_fact_ids": [
+        "family/FAMILY-14-PROBIT"
+      ],
+      "source_row_sha256": "4227fd297f3c96d66dca7f8dbb9720ed1445e63237ce25c6f612c98e447c89a4",
+      "model_contract_id": "MODEL-FAMILY-14-PROBIT",
+      "owner": "B5/Hopper",
+      "reference_descriptor_call": "ordinal_probit(link=\"probit\")",
+      "reference_admission_expected": [
+        14,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_ordinal_gllvm_pertrait(Y; K=1, link=ProbitLink())",
+      "candidate_fixture": "test/parity/test_ordinal_probit_parity.jl",
+      "candidate_fixture_id": "NATIVE-15-ORDINAL-PROBIT",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-14-PROBIT-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-14-REJECT-LINK-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-14-REJECT-LINK"
+      ],
+      "source_row_sha256": "a3a1bb3fb43b70d88ef55e96af8eafc1e9835d44686cb1ff3ea1b089036e0fb0",
+      "model_contract_id": "MODEL-FAMILY-14-REJECT-LINK",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "ordinal_probit(link=\"identity\")",
+      "reference_admission_expected": "CONSTRUCTOR_ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-15-LOG-NATIVE-MODEL",
+      "coverage_role": "native_model",
+      "source_fact_ids": [
+        "family/FAMILY-15-LOG"
+      ],
+      "source_row_sha256": "483dc6aaba471cfccc1fb55a139707152eba64c898b45e4ff7b7a544d6bc94bd",
+      "model_contract_id": "MODEL-FAMILY-15-LOG",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "nbinom1(link=\"log\")",
+      "reference_admission_expected": [
+        15,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_nb1_gllvm_grouped(Y; K=1, group=[1,2,3], link=LogLink())",
+      "candidate_fixture": "test/parity/test_nox_dispersion_parity.jl",
+      "candidate_fixture_id": "NATIVE-16-NB1",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-15-LOG-FORMULA-INTERFACE",
+      "coverage_role": "formula_interface",
+      "source_fact_ids": [
+        "family/FAMILY-15-LOG"
+      ],
+      "source_row_sha256": "483dc6aaba471cfccc1fb55a139707152eba64c898b45e4ff7b7a544d6bc94bd",
+      "model_contract_id": "MODEL-FAMILY-15-LOG",
+      "owner": "B2/Boole",
+      "reference_descriptor_call": "nbinom1(link=\"log\")",
+      "reference_admission_expected": [
+        15,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_nb1_gllvm_grouped(Y; K=1, group=[1,2,3], link=LogLink())",
+      "candidate_fixture": "test/parity/test_nox_dispersion_parity.jl",
+      "candidate_fixture_id": "NATIVE-16-NB1",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-15-LOG-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-15-LOG-PUBLIC-R-BRIDGE",
+      "coverage_role": "public_r_bridge",
+      "source_fact_ids": [
+        "family/FAMILY-15-LOG"
+      ],
+      "source_row_sha256": "483dc6aaba471cfccc1fb55a139707152eba64c898b45e4ff7b7a544d6bc94bd",
+      "model_contract_id": "MODEL-FAMILY-15-LOG",
+      "owner": "B5/Hopper",
+      "reference_descriptor_call": "nbinom1(link=\"log\")",
+      "reference_admission_expected": [
+        15,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_nb1_gllvm_grouped(Y; K=1, group=[1,2,3], link=LogLink())",
+      "candidate_fixture": "test/parity/test_nox_dispersion_parity.jl",
+      "candidate_fixture_id": "NATIVE-16-NB1",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-15-LOG-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Candidate fixture is a lead only; confirm exact mean, link, nuisance grouping, model and interface before binding."
+    },
+    {
+      "id": "CORE070-FAMILY-15-REJECT-LINK-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-15-REJECT-LINK"
+      ],
+      "source_row_sha256": "b3aa459da02706bbb606e0195257dbf1b2b231dddc625a460fe04b5f366d3870",
+      "model_contract_id": "MODEL-FAMILY-15-REJECT-LINK",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "nbinom1(link=\"identity\")",
+      "reference_admission_expected": "ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-16-LOGIT-NATIVE-MODEL",
+      "coverage_role": "native_model",
+      "source_fact_ids": [
+        "family/FAMILY-16-LOGIT"
+      ],
+      "source_row_sha256": "49ad68eabbca6359b0c148c9933c4ef0ddec1aac565564a2d3f97b6fd6126878",
+      "model_contract_id": "MODEL-FAMILY-16-LOGIT",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "multinomial(link=\"logit\")",
+      "reference_admission_expected": [
+        16,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_multinomial_gllvm(labels; n_categories=3)",
+      "candidate_fixture": "test/parity/test_multinomial_parity.jl",
+      "candidate_fixture_id": "NATIVE-17-MULTINOMIAL-FIXED",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Existing fixed-effects multinomial fixture is only a baseline; required latent/structured support remains separate and unpaid."
+    },
+    {
+      "id": "CORE070-FAMILY-16-LOGIT-FORMULA-INTERFACE",
+      "coverage_role": "formula_interface",
+      "source_fact_ids": [
+        "family/FAMILY-16-LOGIT"
+      ],
+      "source_row_sha256": "49ad68eabbca6359b0c148c9933c4ef0ddec1aac565564a2d3f97b6fd6126878",
+      "model_contract_id": "MODEL-FAMILY-16-LOGIT",
+      "owner": "B2/Boole",
+      "reference_descriptor_call": "multinomial(link=\"logit\")",
+      "reference_admission_expected": [
+        16,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_multinomial_gllvm(labels; n_categories=3)",
+      "candidate_fixture": "test/parity/test_multinomial_parity.jl",
+      "candidate_fixture_id": "NATIVE-17-MULTINOMIAL-FIXED",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-16-LOGIT-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Existing fixed-effects multinomial fixture is only a baseline; required latent/structured support remains separate and unpaid."
+    },
+    {
+      "id": "CORE070-FAMILY-16-LOGIT-PUBLIC-R-BRIDGE",
+      "coverage_role": "public_r_bridge",
+      "source_fact_ids": [
+        "family/FAMILY-16-LOGIT"
+      ],
+      "source_row_sha256": "49ad68eabbca6359b0c148c9933c4ef0ddec1aac565564a2d3f97b6fd6126878",
+      "model_contract_id": "MODEL-FAMILY-16-LOGIT",
+      "owner": "B5/Hopper",
+      "reference_descriptor_call": "multinomial(link=\"logit\")",
+      "reference_admission_expected": [
+        16,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_multinomial_gllvm(labels; n_categories=3)",
+      "candidate_fixture": "test/parity/test_multinomial_parity.jl",
+      "candidate_fixture_id": "NATIVE-17-MULTINOMIAL-FIXED",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-16-LOGIT-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Existing fixed-effects multinomial fixture is only a baseline; required latent/structured support remains separate and unpaid."
+    },
+    {
+      "id": "CORE070-FAMILY-16-REJECT-LINK-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-16-REJECT-LINK"
+      ],
+      "source_row_sha256": "1ac51f88aaa122d57f3263fa475636a4474fbc4d59224e54b1bb7ad578d7eb63",
+      "model_contract_id": "MODEL-FAMILY-16-REJECT-LINK",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "multinomial(link=\"identity\")",
+      "reference_admission_expected": "CONSTRUCTOR_ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-01-PROBIT-NATIVE-MODEL",
+      "coverage_role": "native_model",
+      "source_fact_ids": [
+        "family/FAMILY-01-PROBIT"
+      ],
+      "source_row_sha256": "83cbac6611d9ec3bc20ab1fe509143c136c357bb2f0fab586aedb37db2fdd6e3",
+      "model_contract_id": "MODEL-FAMILY-01-PROBIT",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "binomial(link=\"probit\")",
+      "reference_admission_expected": [
+        1,
+        1
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_binomial_gllvm(Y; K=1, link=ProbitLink())",
+      "candidate_fixture": "test/parity/test_binomial_parity.jl",
+      "candidate_fixture_id": "NATIVE-02-BINOMIAL",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "The legacy K2 binomial fixture is not this link case. Use the separately declared link/trial models only after required-runner integration; cloglog observed selection is not default-Fisher equivalence."
+    },
+    {
+      "id": "CORE070-FAMILY-01-PROBIT-FORMULA-INTERFACE",
+      "coverage_role": "formula_interface",
+      "source_fact_ids": [
+        "family/FAMILY-01-PROBIT"
+      ],
+      "source_row_sha256": "83cbac6611d9ec3bc20ab1fe509143c136c357bb2f0fab586aedb37db2fdd6e3",
+      "model_contract_id": "MODEL-FAMILY-01-PROBIT",
+      "owner": "B2/Boole",
+      "reference_descriptor_call": "binomial(link=\"probit\")",
+      "reference_admission_expected": [
+        1,
+        1
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_binomial_gllvm(Y; K=1, link=ProbitLink())",
+      "candidate_fixture": "test/parity/test_binomial_parity.jl",
+      "candidate_fixture_id": "NATIVE-02-BINOMIAL",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-01-PROBIT-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "The legacy K2 binomial fixture is not this link case. Use the separately declared link/trial models only after required-runner integration; cloglog observed selection is not default-Fisher equivalence."
+    },
+    {
+      "id": "CORE070-FAMILY-01-PROBIT-PUBLIC-R-BRIDGE",
+      "coverage_role": "public_r_bridge",
+      "source_fact_ids": [
+        "family/FAMILY-01-PROBIT"
+      ],
+      "source_row_sha256": "83cbac6611d9ec3bc20ab1fe509143c136c357bb2f0fab586aedb37db2fdd6e3",
+      "model_contract_id": "MODEL-FAMILY-01-PROBIT",
+      "owner": "B5/Hopper",
+      "reference_descriptor_call": "binomial(link=\"probit\")",
+      "reference_admission_expected": [
+        1,
+        1
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_binomial_gllvm(Y; K=1, link=ProbitLink())",
+      "candidate_fixture": "test/parity/test_binomial_parity.jl",
+      "candidate_fixture_id": "NATIVE-02-BINOMIAL",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-01-PROBIT-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "The legacy K2 binomial fixture is not this link case. Use the separately declared link/trial models only after required-runner integration; cloglog observed selection is not default-Fisher equivalence."
+    },
+    {
+      "id": "CORE070-FAMILY-01-CLOGLOG-NATIVE-MODEL",
+      "coverage_role": "native_model",
+      "source_fact_ids": [
+        "family/FAMILY-01-CLOGLOG"
+      ],
+      "source_row_sha256": "c2b39eeb702f3d1e08b88900f89f6baae00a68110041b624beef7e5164f798ab",
+      "model_contract_id": "MODEL-FAMILY-01-CLOGLOG",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "binomial(link=\"cloglog\")",
+      "reference_admission_expected": [
+        1,
+        2
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_binomial_gllvm(Y; K=1, link=CLogLogLink())",
+      "candidate_fixture": "test/parity/test_binomial_parity.jl",
+      "candidate_fixture_id": "NATIVE-02-BINOMIAL",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "The legacy K2 binomial fixture is not this link case. Use the separately declared link/trial models only after required-runner integration; cloglog observed selection is not default-Fisher equivalence."
+    },
+    {
+      "id": "CORE070-FAMILY-01-CLOGLOG-FORMULA-INTERFACE",
+      "coverage_role": "formula_interface",
+      "source_fact_ids": [
+        "family/FAMILY-01-CLOGLOG"
+      ],
+      "source_row_sha256": "c2b39eeb702f3d1e08b88900f89f6baae00a68110041b624beef7e5164f798ab",
+      "model_contract_id": "MODEL-FAMILY-01-CLOGLOG",
+      "owner": "B2/Boole",
+      "reference_descriptor_call": "binomial(link=\"cloglog\")",
+      "reference_admission_expected": [
+        1,
+        2
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_binomial_gllvm(Y; K=1, link=CLogLogLink())",
+      "candidate_fixture": "test/parity/test_binomial_parity.jl",
+      "candidate_fixture_id": "NATIVE-02-BINOMIAL",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-01-CLOGLOG-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "The legacy K2 binomial fixture is not this link case. Use the separately declared link/trial models only after required-runner integration; cloglog observed selection is not default-Fisher equivalence."
+    },
+    {
+      "id": "CORE070-FAMILY-01-CLOGLOG-PUBLIC-R-BRIDGE",
+      "coverage_role": "public_r_bridge",
+      "source_fact_ids": [
+        "family/FAMILY-01-CLOGLOG"
+      ],
+      "source_row_sha256": "c2b39eeb702f3d1e08b88900f89f6baae00a68110041b624beef7e5164f798ab",
+      "model_contract_id": "MODEL-FAMILY-01-CLOGLOG",
+      "owner": "B5/Hopper",
+      "reference_descriptor_call": "binomial(link=\"cloglog\")",
+      "reference_admission_expected": [
+        1,
+        2
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_binomial_gllvm(Y; K=1, link=CLogLogLink())",
+      "candidate_fixture": "test/parity/test_binomial_parity.jl",
+      "candidate_fixture_id": "NATIVE-02-BINOMIAL",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-01-CLOGLOG-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "The legacy K2 binomial fixture is not this link case. Use the separately declared link/trial models only after required-runner integration; cloglog observed selection is not default-Fisher equivalence."
+    },
+    {
+      "id": "CORE070-FAMILY-BETA-ALIAS-COMPATIBILITY-ADAPTER",
+      "coverage_role": "compatibility_adapter",
+      "source_fact_ids": [
+        "family/FAMILY-BETA-ALIAS"
+      ],
+      "source_row_sha256": "12bc3109e8412e164bfdfedfd1ec1c1e3a2453b8f253e782a01df0e435e7bb7e",
+      "model_contract_id": "MODEL-FAMILY-BETA-ALIAS",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "structure(list(family=\"beta\",link=\"logit\"),class=\"family\")",
+      "reference_admission_expected": [
+        7,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_gllvm(Y; family=GLLVM.Beta(), K=1, link=LogitLink())",
+      "candidate_fixture": "test/parity/test_beta_parity.jl",
+      "candidate_fixture_id": "NATIVE-08-BETA",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "adapter_equivalence",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "acceptance_rule": "Verify the R alias resolves to the same family and information contract; do not create a duplicate Julia spelling merely to copy syntax."
+    },
+    {
+      "id": "CORE070-FAMILY-08-CLOGLOG-ENGINE-REJECT-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-08-CLOGLOG-ENGINE-REJECT"
+      ],
+      "source_row_sha256": "a33439e4dac97cde214764e499b4b53f00a3dd866029ea1403922467124b0d98",
+      "model_contract_id": "MODEL-FAMILY-08-CLOGLOG-ENGINE-REJECT",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "betabinomial(link=\"cloglog\")",
+      "reference_admission_expected": "ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-14-MUTATED-DESCRIPTOR-REJECT-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-14-MUTATED-DESCRIPTOR-REJECT"
+      ],
+      "source_row_sha256": "bb30d6c6fe2e1830e092dfa8ebde2694ccdba1ed994fb33748451001d4ae3ed1",
+      "model_contract_id": "MODEL-FAMILY-14-MUTATED-DESCRIPTOR-REJECT",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "structure(list(family=\"ordinal_probit\",link=\"identity\"),class=\"family\")",
+      "reference_admission_expected": "ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-16-MUTATED-DESCRIPTOR-REJECT-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-16-MUTATED-DESCRIPTOR-REJECT"
+      ],
+      "source_row_sha256": "00d0b5dcab83ac550ffe08dbcdba2fef73d7a2d3c6527cf194bb2c135f661842",
+      "model_contract_id": "MODEL-FAMILY-16-MUTATED-DESCRIPTOR-REJECT",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "structure(list(family=\"multinomial\",link=\"identity\"),class=\"family\")",
+      "reference_admission_expected": "ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-06-FIXED-SHAPE-NATIVE-MODEL",
+      "coverage_role": "native_model",
+      "source_fact_ids": [
+        "family/FAMILY-06-FIXED-SHAPE"
+      ],
+      "source_row_sha256": "e33d605902477bc20e2b2be7078f7e5704883b6646a8338c9c3df0390e56a72c",
+      "model_contract_id": "MODEL-FAMILY-06-FIXED-SHAPE",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "tweedie(p=1.5)",
+      "reference_admission_expected": [
+        6,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_tweedie_gllvm_grouped(Y; K=1, power=1.5, link=LogLink())",
+      "candidate_fixture": "test/parity/test_tweedie_parity.jl",
+      "candidate_fixture_id": "NATIVE-07-TWEEDIE",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Select fixed common power1.5 explicitly; neither shared nor per-trait estimated power satisfies this case."
+    },
+    {
+      "id": "CORE070-FAMILY-06-FIXED-SHAPE-FORMULA-INTERFACE",
+      "coverage_role": "formula_interface",
+      "source_fact_ids": [
+        "family/FAMILY-06-FIXED-SHAPE"
+      ],
+      "source_row_sha256": "e33d605902477bc20e2b2be7078f7e5704883b6646a8338c9c3df0390e56a72c",
+      "model_contract_id": "MODEL-FAMILY-06-FIXED-SHAPE",
+      "owner": "B2/Boole",
+      "reference_descriptor_call": "tweedie(p=1.5)",
+      "reference_admission_expected": [
+        6,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_tweedie_gllvm_grouped(Y; K=1, power=1.5, link=LogLink())",
+      "candidate_fixture": "test/parity/test_tweedie_parity.jl",
+      "candidate_fixture_id": "NATIVE-07-TWEEDIE",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-06-FIXED-SHAPE-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Select fixed common power1.5 explicitly; neither shared nor per-trait estimated power satisfies this case."
+    },
+    {
+      "id": "CORE070-FAMILY-06-FIXED-SHAPE-PUBLIC-R-BRIDGE",
+      "coverage_role": "public_r_bridge",
+      "source_fact_ids": [
+        "family/FAMILY-06-FIXED-SHAPE"
+      ],
+      "source_row_sha256": "e33d605902477bc20e2b2be7078f7e5704883b6646a8338c9c3df0390e56a72c",
+      "model_contract_id": "MODEL-FAMILY-06-FIXED-SHAPE",
+      "owner": "B5/Hopper",
+      "reference_descriptor_call": "tweedie(p=1.5)",
+      "reference_admission_expected": [
+        6,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_tweedie_gllvm_grouped(Y; K=1, power=1.5, link=LogLink())",
+      "candidate_fixture": "test/parity/test_tweedie_parity.jl",
+      "candidate_fixture_id": "NATIVE-07-TWEEDIE",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-06-FIXED-SHAPE-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Select fixed common power1.5 explicitly; neither shared nor per-trait estimated power satisfies this case."
+    },
+    {
+      "id": "CORE070-FAMILY-06-SHAPE-INVALID-LOW-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-06-SHAPE-INVALID-LOW"
+      ],
+      "source_row_sha256": "31a2f551ac384cd26a81d768f0bde8065915f7d4824cc9786fbdb59758c9c145",
+      "model_contract_id": "MODEL-FAMILY-06-SHAPE-INVALID-LOW",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "tweedie(p=1)",
+      "reference_admission_expected": "CONSTRUCTOR_ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-06-SHAPE-INVALID-INF-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-06-SHAPE-INVALID-INF"
+      ],
+      "source_row_sha256": "53e02316dbd4690e7b3ae2c9ba327df4914c9f5182ab157ab61c62ef4a601bf1",
+      "model_contract_id": "MODEL-FAMILY-06-SHAPE-INVALID-INF",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "tweedie(p=Inf)",
+      "reference_admission_expected": "CONSTRUCTOR_ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-06-SHAPE-INVALID-NA-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-06-SHAPE-INVALID-NA"
+      ],
+      "source_row_sha256": "1265275b77499fba4999c4081187bcad1a329b6e5696b12c8357acc4bba07fde",
+      "model_contract_id": "MODEL-FAMILY-06-SHAPE-INVALID-NA",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "tweedie(p=NA_real_)",
+      "reference_admission_expected": "CONSTRUCTOR_ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-06-SHAPE-INVALID-VECTOR-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-06-SHAPE-INVALID-VECTOR"
+      ],
+      "source_row_sha256": "a322630f32baff6e06980552346886cd5a958c8b788c45b63a076e25234c94a8",
+      "model_contract_id": "MODEL-FAMILY-06-SHAPE-INVALID-VECTOR",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "tweedie(p=c(2,3))",
+      "reference_admission_expected": "CONSTRUCTOR_ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-09-FIXED-SHAPE-NATIVE-MODEL",
+      "coverage_role": "native_model",
+      "source_fact_ids": [
+        "family/FAMILY-09-FIXED-SHAPE"
+      ],
+      "source_row_sha256": "7c488c4c1ffc0b3e8cf47193658f5324dac6049bed01c214a1b65b885d5af079",
+      "model_contract_id": "MODEL-FAMILY-09-FIXED-SHAPE",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "student(df=4)",
+      "reference_admission_expected": [
+        9,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_studentt_gllvm(Y; K=1, nu=4.0, disp_group=:species, link=IdentityLink())",
+      "candidate_fixture": "test/parity/test_studentt_parity.jl",
+      "candidate_fixture_id": "NATIVE-10-STUDENT",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Select fixed df4 explicitly; the original estimated-df fixture cannot satisfy it."
+    },
+    {
+      "id": "CORE070-FAMILY-09-FIXED-SHAPE-FORMULA-INTERFACE",
+      "coverage_role": "formula_interface",
+      "source_fact_ids": [
+        "family/FAMILY-09-FIXED-SHAPE"
+      ],
+      "source_row_sha256": "7c488c4c1ffc0b3e8cf47193658f5324dac6049bed01c214a1b65b885d5af079",
+      "model_contract_id": "MODEL-FAMILY-09-FIXED-SHAPE",
+      "owner": "B2/Boole",
+      "reference_descriptor_call": "student(df=4)",
+      "reference_admission_expected": [
+        9,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_studentt_gllvm(Y; K=1, nu=4.0, disp_group=:species, link=IdentityLink())",
+      "candidate_fixture": "test/parity/test_studentt_parity.jl",
+      "candidate_fixture_id": "NATIVE-10-STUDENT",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-09-FIXED-SHAPE-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Select fixed df4 explicitly; the original estimated-df fixture cannot satisfy it."
+    },
+    {
+      "id": "CORE070-FAMILY-09-FIXED-SHAPE-PUBLIC-R-BRIDGE",
+      "coverage_role": "public_r_bridge",
+      "source_fact_ids": [
+        "family/FAMILY-09-FIXED-SHAPE"
+      ],
+      "source_row_sha256": "7c488c4c1ffc0b3e8cf47193658f5324dac6049bed01c214a1b65b885d5af079",
+      "model_contract_id": "MODEL-FAMILY-09-FIXED-SHAPE",
+      "owner": "B5/Hopper",
+      "reference_descriptor_call": "student(df=4)",
+      "reference_admission_expected": [
+        9,
+        0
+      ],
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": "fit_studentt_gllvm(Y; K=1, nu=4.0, disp_group=:species, link=IdentityLink())",
+      "candidate_fixture": "test/parity/test_studentt_parity.jl",
+      "candidate_fixture_id": "NATIVE-10-STUDENT",
+      "candidate_is_equivalent": false,
+      "acceptance_level": "paired_fit_interface",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location",
+        "nuisance grouping and fixed/free parameters",
+        "likelihood constants and curvature",
+        "fit-health checks in both engines",
+        "supported and excluded model combinations",
+        "reported estimands"
+      ],
+      "prerequisite_case_ids": [
+        "CORE070-FAMILY-09-FIXED-SHAPE-NATIVE-MODEL"
+      ],
+      "acceptance_rule": "Pair the same model with likelihood rtol <= 1e-6 and both-engine fit health; predeclare estimand-specific checks.",
+      "scope_boundary": "Descriptor admission is only the family axis; covariance, data, inference and other parameter variants remain separate required contracts.",
+      "candidate_warning": "Select fixed df4 explicitly; the original estimated-df fixture cannot satisfy it."
+    },
+    {
+      "id": "CORE070-FAMILY-09-SHAPE-INVALID-LOW-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-09-SHAPE-INVALID-LOW"
+      ],
+      "source_row_sha256": "bbc00b58e641ae4bc2338f21a1a111967f58f5a995fe51df816bd5161c77b0f2",
+      "model_contract_id": "MODEL-FAMILY-09-SHAPE-INVALID-LOW",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "student(df=1)",
+      "reference_admission_expected": "CONSTRUCTOR_ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-09-SHAPE-INVALID-INF-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-09-SHAPE-INVALID-INF"
+      ],
+      "source_row_sha256": "2ec9db3a131c9a199724a15e38f3d407bbd788eadd8dcd94abafc5a50139465e",
+      "model_contract_id": "MODEL-FAMILY-09-SHAPE-INVALID-INF",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "student(df=Inf)",
+      "reference_admission_expected": "CONSTRUCTOR_ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-09-SHAPE-INVALID-NA-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-09-SHAPE-INVALID-NA"
+      ],
+      "source_row_sha256": "2d4ddb2797303dc673df000db71a29199cd78e2f72daaf6412a2a690ac3d1e91",
+      "model_contract_id": "MODEL-FAMILY-09-SHAPE-INVALID-NA",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "student(df=NA_real_)",
+      "reference_admission_expected": "CONSTRUCTOR_ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-09-SHAPE-INVALID-VECTOR-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-09-SHAPE-INVALID-VECTOR"
+      ],
+      "source_row_sha256": "279686a00f301d01d91fdc6ce968337f98a6f9f4a7fb0c81694ed8b6d8f7cfb5",
+      "model_contract_id": "MODEL-FAMILY-09-SHAPE-INVALID-VECTOR",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "student(df=c(2,3))",
+      "reference_admission_expected": "CONSTRUCTOR_ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    },
+    {
+      "id": "CORE070-FAMILY-06-SHAPE-INVALID-HIGH-REFERENCE-BOUNDARY",
+      "coverage_role": "reference_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-06-SHAPE-INVALID-HIGH"
+      ],
+      "source_row_sha256": "0f6be72fb0629b0e1aadef85f8daee895c7c938e6b132de089d067ee233e4da9",
+      "model_contract_id": "MODEL-FAMILY-06-SHAPE-INVALID-HIGH",
+      "owner": "Ada/Hopper",
+      "reference_descriptor_call": "tweedie(p=2)",
+      "reference_admission_expected": "CONSTRUCTOR_ERROR",
+      "status": "SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE",
+      "fixture": null,
+      "r_call": null,
+      "julia_call": null,
+      "candidate_native_entry": null,
+      "candidate_fixture": null,
+      "candidate_fixture_id": null,
+      "candidate_is_equivalent": false,
+      "acceptance_level": "reference_boundary",
+      "required_contract_fields": [
+        "exact reference call",
+        "exact Julia call",
+        "fixture and realized data hash",
+        "parameterization and identification",
+        "source and environment pins",
+        "acceptance rule",
+        "evidence location"
+      ],
+      "prerequisite_case_ids": [],
+      "julia_disposition": "UNRESOLVED",
+      "acceptance_rule": "Verify the frozen R rejection; either verify equivalent Julia rejection or document and test an intentional supported Julia extension. Do not infer rejection from missing API."
+    }
+  ]
+}

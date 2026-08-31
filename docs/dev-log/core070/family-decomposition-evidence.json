@@ -1,0 +1,20 @@
+{
+  "status": "FAMILY_PLAN_AND_STRUCTURAL_FREEZE_REPAIR_NOT_FULL_COVERAGE",
+  "parent": "62e594416a9f885fdffa7d5d2268b5f5df34dffe",
+  "source_facts": 752,
+  "family_facts": 69,
+  "planned_cases": 97,
+  "nonexcluded_without_complete_executable_coverage": 698,
+  "tests": 11,
+  "independent_review": "NOT_RUN",
+  "artifacts": {
+    "tools/core070_manifest_coverage.py": "a810aae9a33264aa2925b5e7bb82d66f2eed12e3aa8adc55b1b079ee63e6cbda",
+    "tools/test_core070_family_coverage.py": "c650c57d2594bf0bdede7daeffe0c994d4f5b73591b5dd5558c3cb8fbe5a1b9f",
+    "tools/core070_family_case_plan.py": "c086c07051c0610191e91a3db33a51e436db7aa152e6b7e74052136eaed0b4d9",
+    "tools/core070_verify_family_decomposition.py": "95e69d050cc11ffeec8720e42f2a9b6e7f17d6517fceeea38faaae077ae7706a",
+    "docs/dev-log/core070/family-required-case-plan.json": "1cb80390c04be91e6ead98f74d89c07207a451c5c6ca3fe7ed29c76bee03c1d2",
+    "docs/dev-log/core070/required-source-case-map.json": "b1e928334af3c4c2d25ddd7950b10b2f2e1020c672c8b5c38a68eccd97b66ac7",
+    ".unlazy/core070-aghq/family-decomposition-01/red.log": "3f0a1c1ac8d12c62e6768249722819583c937b8bc185c2336340fb768cfdb078"
+  },
+  "existing_native_bindings": 2
+}

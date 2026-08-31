@@ -681,3 +681,20 @@ Next: finish finite required-case mapping; Student R health/density remains
 unresolved. No B production children before the user checkpoint. No active
 jobs, no DRAC compute, no R0.7.1/article/foreign edits or push/merge/release/cleanup.
 Report: docs/dev-log/after-task/2026-08-31-core070-nb2-required.md.
+
+## 2026-08-31 — family case decomposition and freeze guard
+
+69 family source facts now have97 typed planned cases:21 descriptors x native/
+formula/bridge=63, one alias,33 rejection-boundary cases;14 exclusions retained.
+Planned links never count as executable coverage. Archived62e59441 checker
+accepted a family mapping containing only an entry probe; regression reproduces
+exit1. Repaired checker requires fitted interface roles for each model contract,
+source/fixture/call binding and explicit rejection-versus-extension disposition.
+Five family and six coverage tests plus aggregate selftest PASS. Fullmanifest
+DRAFT,752 facts/698 nonexcluded still lack complete executable links. No new
+fits or numerical-source changes. Next bind exact family model cases and resolve
+other domains; Student and full M1 remain open. See after-task/2026-08-31-core070-family-decomposition.md.
+
+The family plan additionally binds the two already verified original native
+NB2 cases to exact calls, seed/dimensions, fixture hash and execution evidence.
+The other95 specifications remain unbound; no full-family promotion.

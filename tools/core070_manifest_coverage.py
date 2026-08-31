@@ -142,6 +142,7 @@ def require_frozen_manifest(manifest,root):
     ids=[x.get('id') for x in cases]
     need(ids and len(set(ids))==len(ids),'no unique executable cases')
     validate_mapping(mapping,index['facts'],ids)
+    validate_family_roles(index['facts'],mapping,cases,root)
     review_path=safe_path(root,c.get('scope_review',''))
     need(c.get('scope_review_sha256')==sha(review_path),'scope review bytes are unpinned')
     review=read_json(review_path)
@@ -152,6 +153,43 @@ def require_frozen_manifest(manifest,root):
     need(review.get('evidence_sha256')==sha(review_evidence),'scope review evidence bytes are unpinned')
     need(isinstance(review.get('reviewer'),str) and review['reviewer'].strip() and
          isinstance(review.get('evidence'),str) and review['evidence'].strip(),'scope review lacks reviewer/evidence')
+
+def validate_family_roles(facts,mapping,cases,root):
+    """A linked family fact needs model/interface evidence, not an entry probe.
+
+    This checks declared coverage structure. Actual source semantics still need
+    the independently bound scope review; numerical success needs run receipts.
+    """
+    by_id={row['id']:row for row in cases}
+    links={row['source_id']:row['executable_case_ids'] for row in mapping['rows']}
+    model_roles={'native_model':'paired_fit','formula_interface':'paired_fit_interface',
+                 'public_r_bridge':'paired_fit_interface'}
+    for fact in facts:
+        if not fact['id'].startswith('family/') or fact['classification']=='intentionally_excluded':continue
+        selected=[by_id[x] for x in links[fact['id']]]
+        required=set(model_roles) if fact['classification']=='required_core' else {
+            'reference_boundary' if fact['classification']=='rejected' else 'compatibility_adapter'}
+        roles={row.get('coverage_role') for row in selected}
+        need(required<=roles,'family interface coverage missing '+fact['id'])
+        contracts={}
+        for role in required:
+            rows=[row for row in selected if row.get('coverage_role')==role]
+            for row in rows:
+                need(fact['id'] in row.get('source_fact_ids',[]),'family source binding absent '+row['id'])
+                for field in ['r_call','julia_call','acceptance_rule','model_contract_id']:
+                    need(isinstance(row.get(field),str) and row[field].strip(),
+                         'family case contract missing '+field+' '+row['id'])
+                safe_path(root,row.get('fixture',''))
+                if role in model_roles:
+                    need(row.get('acceptance_level')==model_roles[role],
+                         'family interface evidence level differs '+row['id'])
+                    contracts.setdefault(row['model_contract_id'],set()).add(role)
+                elif role=='reference_boundary':
+                    need(row.get('julia_disposition') in {'reject','documented_extension'},
+                         'family rejected reference lacks Julia disposition '+row['id'])
+        if fact['classification']=='required_core':
+            need(contracts and all(set(model_roles)<=roles for roles in contracts.values()),
+                 'family interfaces change model contract '+fact['id'])
 
 if __name__=='__main__':
     import argparse,collections

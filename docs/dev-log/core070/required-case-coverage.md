@@ -44,3 +44,11 @@ The acceptance leaf was written after the first red regression and initial repai
 
 ## Family entry-point supplement
 The [family route contract](family-route-contract.md) now connects all69 frozen family facts to explicit distinctions and22 tested native entry calls. These no-fit probes do not settle fitted-model/native/formula/bridge coverage, so this source-to-case map remains unpromoted.
+
+## Family decomposition and semantic roles
+
+See [family-case-decomposition.md](family-case-decomposition.md) for97 planned
+family/interface/boundary cases and the repaired entry-probe freeze check.
+These planned links do not populate executable coverage or change the698
+unresolved-fact count. The earlier fixed-hash coverage receipt is historical;
+use `tools/core070_verify_family_decomposition.py` for the new structural checks.
