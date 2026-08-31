@@ -16027,3 +16027,18 @@ Five family and six coverage tests plus aggregate selftest PASS. Fullmanifest
 DRAFT,752 facts/698 nonexcluded still lack complete executable links. No new
 fits or numerical-source changes. Next bind exact family model cases and resolve
 other domains; Student and full M1 remain open. See after-task/2026-08-31-core070-family-decomposition.md.
+
+## 2026-08-31 — original NB2 formula and site-row repair
+
+Wide and reversed-long intercept-only NB2 formulas match original native19
+coordinates and logLik within1e-10. Red18pass1fail48.199s exposed ignored bad
+site rows; green19pass40.219s after pre-dispatch column-length validation.
+Empty no-X tables remain valid.28 unreadable-response input checks pass8.137s.
+Fresh actual native NB2/truncated pair39pass43.823s after source change. All
+oracles before/afterPASS, alljobs terminal. Eightmetric/eightartifact formula
+negatives;11 coverage regressions and aggregate selftestPASS; Unlazy3gatesPASS.
+Family plan2native+1formula bindings,94 unbound; formula required-runner
+integration/publicbridge stillunpaid. FullmanifestDRAFT/M1PARTIAL. Older
+whole-source receipts historical; new native refresh andformula evidence JSON.
+See after-task/2026-08-31-core070-nb2-formula.md. No fullsuite/docsrender/review
+or R/foreign/push/merge/release/cleanup.

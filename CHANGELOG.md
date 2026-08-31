@@ -5,6 +5,10 @@ All notable changes to GLLVM.jl are documented here.
 ## Unreleased
 
 ### Changed
+- Formula fits validate every supplied site-table column before response access,
+  including intercept-only fits. Empty tables remain valid without covariates.
+  The original NB2 wide/long formula model matches its native fit; broader
+  interface qualification remains incomplete.
 - **Local development candidate:** ordinary NB2 evaluates its density directly
   from the mean and uses an overflow-safe observed curvature. The original
   paired fit, scalar derivatives and required NB2/truncated-NB2 runner pass.

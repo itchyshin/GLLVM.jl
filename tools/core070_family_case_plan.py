@@ -8,11 +8,12 @@ PLAN=coverage.PREFIX+'family-required-case-plan.json'
 INPUTS=[coverage.PREFIX+'family-admission-subset.json',
         coverage.PREFIX+'family-route-contract.json',
         coverage.PREFIX+'family-model-catalogue.json',
-        coverage.PREFIX+'nb2-required-evidence.json']
+        coverage.PREFIX+'nb2-required-refresh-evidence.json',
+        coverage.PREFIX+'nb2-formula-evidence.json']
 ROLES=['native_model','formula_interface','public_r_bridge']
 
 def build():
-    admission,entry,catalogue,paired=[coverage.read_json(ROOT/p) for p in INPUTS]
+    admission,entry,catalogue,paired,formula=[coverage.read_json(ROOT/p) for p in INPUTS]
     assert admission['reference_commit']==entry['reference_commit']==catalogue['reference_commit']==coverage.REFERENCE
     entries={r['source_id']:r for r in entry['rows']}
     candidates={r['id']:r for r in catalogue['cases']}
@@ -75,10 +76,18 @@ def build():
                     status='EXISTING_REQUIRED_NATIVE_CASE_BOUND_INTERFACES_PENDING',
                     required_runner_case_id=candidate['id'],
                     fixture_sha256=coverage.sha(ROOT/candidate['fixture']),
-                    evidence=INPUTS[-1],execution_manifest_sha256=paired['execution_manifest_sha256'],
+                    evidence=INPUTS[-2],execution_manifest_sha256=paired['execution_manifest_sha256'],
                     model=dict(seed=candidate['seed'],p=candidate['n_traits'],n=candidate['n_units'],
                         K=candidate['n_latent'],**candidate['model']))
                 case['candidate_warning']='Only the original seeded native model is bound; formula, bridge, other models and broader recovery remain unpaid.'
+            if role=='formula_interface' and fact['id']=='FAMILY-05-LOG':
+                assert formula['case_id']==cid
+                case.update(fixture=formula['fixture'],fixture_sha256=formula['fixture_sha256'],
+                    r_call=candidate['reference_call'],julia_call=formula['julia_call'],
+                    candidate_is_equivalent=True,status=formula['status'],
+                    model=formula['model'],evidence=INPUTS[-1],
+                    required_runner_status='NOT_INTEGRATED')
+                case['candidate_warning']='Original intercept-only wide/long formula qualified; public R bridge, broader models and required-runner integration remain unpaid.'
             cases.append(case)
         rows.append(dict(source_id=sid,classification=classification,planned_case_ids=ids,
                          executable_case_ids=[],status='EXCLUDED' if not ids else 'SPECIFICATION_REQUIRED'))
@@ -99,10 +108,10 @@ def verify():
         assert linked['case_plan']==PLAN
     assert len({c['id'] for c in plan['cases']})==97
     bound=[c for c in plan['cases'] if c['fixture'] is not None]
-    assert {c['required_runner_case_id'] for c in bound}=={'NATIVE-06-NB2','NATIVE-12-TRUNCATED-NB2'}
-    assert len(bound)==2 and all(c['coverage_role']=='native_model' for c in bound)
+    assert {c['required_runner_case_id'] for c in bound if c['coverage_role']=='native_model'}=={'NATIVE-06-NB2','NATIVE-12-TRUNCATED-NB2'}
+    assert len(bound)==3 and sum(c['coverage_role']=='formula_interface' for c in bound)==1
     assert all(c['r_call'] is None and c['julia_call'] is None for c in plan['cases'] if c['fixture'] is None)
-    print('FAMILY_CASE_PLAN_VERIFIED 69 facts; 97 planned cases; 2 existing native bindings; zero full-family promotions')
+    print('FAMILY_CASE_PLAN_VERIFIED 69 facts; 97 planned cases; 2 native + 1 formula bindings; zero full-family promotions')
 
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--write',action='store_true');args=p.parse_args()

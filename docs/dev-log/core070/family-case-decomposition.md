@@ -24,7 +24,8 @@ Every planned case has a stable ID, source row hash, reference descriptor and
 expected admission, owner, coverage role, candidate native entry/fixture where
 known, dependencies, acceptance requirements and missing contract fields.
 `fixture`, `r_call` and `julia_call` are bound for the two freshly verified
-original native NB2 cases; the other95 specifications keep these fields null
+original native NB2 cases and the intercept-only NB2 formula qualification;
+the other94 specifications keep these fields null
 until their exact fitted contract is established. The native bindings include
 seed, dimensions, parameterization, fixture hash and required-runner evidence. The native entry calls are historical leads,
 not fitted-model calls: some useK1 while their legacy fixture usesK2.
@@ -34,7 +35,8 @@ not fitted-model calls: some useK1 while their legacy fixture usesK2.
 1. Bind the native cases to exact reference/Julia calls and fixtures. Use existing
    seeded fits only when means, links, nuisance parameters, curvature and
    identification agree. The original required NB2/truncated-NB2 pair is verified;
-   this does not establish its formula or public R bridge routes.
+   the NB2 formula is now separately qualified on the same original data. Its
+   required-runner integration and public R bridge remain unpaid.
 2. Keep probit and cloglog cases separate from the legacy logit fixture. The six
    declared binomial link/trial cases are candidate evidence; explicit observed
    cloglog is not default-Fisher equivalence.

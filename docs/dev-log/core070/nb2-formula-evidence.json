@@ -1,0 +1,60 @@
+{
+  "status": "ORIGINAL_NB2_FORMULA_QUALIFIED_REQUIRED_RUNNER_INTEGRATION_PENDING",
+  "case_id": "CORE070-FAMILY-05-LOG-FORMULA-INTERFACE",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "source": {
+    "source_marker_sha256": "e14983b7d0bb423cecb4b5db3767bd5c664beb02f185ba61b3b2bd6bd5022dfe",
+    "julia_package_root": "/home/snakagaw/core070-aghq-20260830/nb2-formula-green-01",
+    "tmb_version": "1.9.21",
+    "oracle_build_receipt_sha256": "5c686e222fd8f56c35b2ccbec2b013a304aee862d0f964792cb5388e369483d4",
+    "matrix_version": "1.7.6",
+    "julia_machine": "x86_64-linux-gnu",
+    "julia_source_tree_sha256": "476a831b9b3c6cac461f22b244078ca28bb45cac3dd96aa4762ced47e643dca2",
+    "source_tree_sha256": "f83545faa6543dbb1f64d64bbf5a9498adcdf036cc3da5851f269912698b1cc7",
+    "julia_version": "1.12.6",
+    "oracle_source_receipt_sha256": "6b6cce9742e0c984c1bf4c93fba3759acb820fa81e509dd90dbe43b75638a997",
+    "julia_project_sha256": "505afcac9fd3c52052f5e1043d655ef91c53223fb870084707468b04885327dc",
+    "blas_threads": 1,
+    "archive_sha256": "0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc",
+    "namespace_sha256": "9094613610789faab69c43195d3cfdafb2c7dfef284e6646b10dababa4fa132c",
+    "installed_tree_sha256": "b25f5b8838d1d476a95f4e79133a5c72fad2496d648ef97cd9422acd39bc5bb5",
+    "julia_project_path": "/home/snakagaw/core070-aghq-20260830/nb2-formula-green-01/test/parity/Project.toml",
+    "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+    "rcall_version": "0.14.13",
+    "r_library_path": "/home/snakagaw/core070-aghq-20260830/oracle-build-01/library/gllvmTMB",
+    "julia_threads": 1,
+    "julia_package_path": "/home/snakagaw/core070-aghq-20260830/nb2-formula-green-01/src/GLLVM.jl",
+    "r_version": "R version 4.5.3 (2026-03-11)",
+    "r_home": "/usr/lib/R",
+    "julia_manifest_sha256": "28bcbc2c4317dfa2e49f1be44be2fb656bdfc89a47b51aeaf4e90548603a1451"
+  },
+  "native_case_id": "NATIVE-06-NB2",
+  "assertions": {
+    "formula_model": 19,
+    "input": 28
+  },
+  "data_sha256": "7abde2731134afe61afee5a7f0c29b58892ad72e550fa41cf8230e9c701a2bf9",
+  "fixture": "tools/core070_nb2_formula.jl",
+  "fixture_sha256": "7ebefbe022d0586c82d040e9a42f13ecc06cd8873f4694497cd6a32f030cad10",
+  "julia_call": "gllvm(@formula(y ~ 1),Y,(site=collect(1:n),);family=GLLVM.NegativeBinomial(),K=K,g_tol=1e-7,iterations=800); separately gllvm(@formula(y ~ 1),long;family=GLLVM.NegativeBinomial(),K=K,g_tol=1e-7,iterations=800)",
+  "formula": "y ~ 1",
+  "model": {
+    "seed": 45,
+    "p": 5,
+    "n": 80,
+    "K": 2,
+    "dispersion": "per-trait NB2 size",
+    "hessian": "observed"
+  },
+  "required_runner_status": "NOT_INTEGRATED",
+  "public_r_bridge": "UNPAID",
+  "independent_review": "NOT_RUN",
+  "files": {
+    ".unlazy/core070-aghq/nb2-formula-green-01/plan.json": "d3e11df415bf1eb986a628aa1a6f2c66b18771a7b985e5f8a552c44e0120a0f9",
+    ".unlazy/core070-aghq/nb2-formula-green-01/source.tar": "10c9c5cce8187fddb61fee1a11e0c045c5526cf19d26adec9edb0573492cde03",
+    ".unlazy/core070-aghq/nb2-formula-green-01/attempt1/process/process-receipt.json": "22ae6fb6307e813fe184c30b87bb2de4155548de4c9a836ec59e868a11d72c40",
+    ".unlazy/core070-aghq/nb2-formula-green-01/attempt1/receipts/nb2-health.toml": "bf672500cb14d83d1d4b3cf521309c905cc73981c1ebc5b981e4b9c41040dd56",
+    ".unlazy/core070-aghq/nb2-formula-green-01/attempt1/receipts/nb2-formula.toml": "de0ef2e60ae494b51ea28e89ca65252e1e6e1b2cc88ceaf2a2e491b201c024ad",
+    ".unlazy/core070-aghq/nb2-formula-green-01/attempt1/receipts/nb2-whole-fit.rds": "f06e3aa91fe16b49f0d50409501e1facbb8a0d0720159e78c2f83274a6f9275a"
+  }
+}

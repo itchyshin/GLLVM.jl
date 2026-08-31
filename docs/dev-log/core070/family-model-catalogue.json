@@ -195,17 +195,18 @@
         "identification": "triangular loading convention; compare invariant quantities"
       },
       "julia_call": "fit_gllvm(Y; family = GLLVM.NegativeBinomial(), K = K, g_tol = 1e-7, iterations = 800)",
-      "formula_status": "UNPAID",
+      "formula_status": "ORIGINAL_INTERCEPT_WIDE_LONG_QUALIFIED_REQUIRED_RUNNER_PENDING",
       "bridge_status": "UNPAID",
       "current_loglik_check": {
         "kind": "relative",
         "tolerance": 1e-06
       },
       "acceptance_status": "TWO_REQUIRED_SMOKE_CASES_VERIFIED_NOT_FULL_CAPABILITY",
-      "evidence_location": "docs/dev-log/core070/nb2-required-evidence.json; actual required two-case runner,39 total assertions; formulas/bridge/recovery unpaid.",
+      "evidence_location": "docs/dev-log/core070/nb2-required-refresh-evidence.json; current required native pair39pass after formula row-validation repair.",
       "reference_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=nbinom2(), control=gllvmTMBcontrol(n_init=1L,se=FALSE))",
       "oracle_control_policy": "nb2_original_default_v1",
-      "execution_manifest_sha256": "9131983144c8381ebc8ba02d38ecb2779dda7612452734d5806b8b2cbdd2368d"
+      "execution_manifest_sha256": "66bba04d252ec63f41b4b3ee4a400435761a85e2814fe7a29ee4f98843af04fb",
+      "formula_evidence": "docs/dev-log/core070/nb2-formula-evidence.json"
     },
     {
       "id": "NATIVE-07-TWEEDIE",
@@ -465,10 +466,10 @@
         "tolerance": 1e-06
       },
       "acceptance_status": "TWO_REQUIRED_SMOKE_CASES_VERIFIED_NOT_FULL_CAPABILITY",
-      "evidence_location": "docs/dev-log/core070/nb2-required-evidence.json; actual required two-case runner,39 total assertions; formulas/bridge/recovery unpaid.",
+      "evidence_location": "docs/dev-log/core070/nb2-required-refresh-evidence.json; current required native pair39pass after formula row-validation repair.",
       "reference_call": "{ original_fit <- gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=truncated_nbinom2(), control=gllvmTMBcontrol(n_init=1L,se=FALSE)); gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=truncated_nbinom2(), control=gllvmTMBcontrol(n_init=1L,se=FALSE,start_from=original_fit,optimizer=\"optim\",optArgs=list(method=\"BFGS\",control=list(reltol=1e-12,maxit=1500)))) }",
       "oracle_control_policy": "truncnb2_default_then_public_bfgs_v1",
-      "execution_manifest_sha256": "9131983144c8381ebc8ba02d38ecb2779dda7612452734d5806b8b2cbdd2368d"
+      "execution_manifest_sha256": "66bba04d252ec63f41b4b3ee4a400435761a85e2814fe7a29ee4f98843af04fb"
     },
     {
       "id": "NATIVE-13-DELTA-LOGNORMAL",

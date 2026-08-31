@@ -192,6 +192,7 @@ using GLLVM
     include("test_confint_family.jl")
     include("test_summary_table.jl")
     include("test_covariates.jl")
+    include("test_formula_input.jl")
     include("test_formula.jl")
     include("test_simulate.jl")
     include("test_species_covariates.jl")

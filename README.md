@@ -145,6 +145,8 @@ with sparse random-effect design matrices. `GLLVM.jl` solves a
 - SPDE / Matérn spatial latent field, with kriging prediction
 - Offsets, response-missing masks for GLM Laplace rows, Dunn–Smyth residuals, AIC / BIC,
   `predict` / `getLV` / `ordination`, and an `@formula` front-end
+  (wide formula tables require one row per site, including intercept-only fits;
+  an empty table is allowed when there are no covariates)
 - Wald / profile / bootstrap CI routes across scalar-dispersion GLM, grouped
   NB2/NB1/Beta/Gamma, and two-part families; grouped Tweedie, per-trait
   ordinal, and bridge-only edge rows remain status-gated before promotion

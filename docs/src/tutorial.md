@@ -151,6 +151,23 @@ fit_gamma_gllvm_grouped(Yc;   K = 2)             # Gamma shape α per species
 fit_tweedie_gllvm_grouped(Y;  K = 2)             # Tweedie φ per species (shared power p)
 ```
 
+For an intercept-only NB2 model, the formula interface retains the generic
+fitter's **per-species size** parameters:
+
+```julia
+site_data = (site = collect(1:size(Y, 2)),)
+f_formula = gllvm(@formula(y ~ 1), Y, site_data;
+    family = GLLVM.NegativeBinomial(), K = 2, g_tol = 1e-7, iterations = 800)
+```
+
+The `1` means a separate intercept for each species; `K` gives the latent rank.
+Every supplied table column must have one entry per column of `Y`, even if the
+formula does not use it. An empty `NamedTuple()` is also valid when there are no
+covariates. The long-format call `gllvm(@formula(y ~ 1), long_data; ...)` sorts
+species and site keys and requires a complete, duplicate-free grid. The original
+NB2 data qualification checks both shapes against the native model; broader formula
+models and the public R bridge still require separate qualification.
+
 For continuous Gaussian data with **unequal residual variance across species**
 (heteroscedastic; gllvm's default), `fit_gaussian_pervar_gllvm` estimates a
 separate variance per species instead of the single shared `σ_eps` of

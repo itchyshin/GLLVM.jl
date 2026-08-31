@@ -104,7 +104,9 @@ shared site-X), to [`fit_zip_gllvm_cov`](@ref) for `ZIPoisson()` (separate
 `ZINegBin()` (separate `γz`/`γc`, `Λz=0`, shared scalar `r`; Julia-forward),
 and to [`fit_gllvm_cov`](@ref) for the other non-Gaussian families (shared
 dispersion + X). Returns that fitter's result.
-With no covariates it reduces to the intercept-only fit.
+With no covariates it reduces to the intercept-only fit. Supplied table columns
+must still have one entry per site; an empty table is allowed for an
+intercept-only formula because `Y` supplies the site count.
 `ZIB` through `@formula` is **no-X only** for now (bridge still OWED; ZIB+X formula
 is fenced).
 """
@@ -112,7 +114,12 @@ function gllvm(formula::FormulaTerm, Y::AbstractMatrix, data;
                family = Normal(), K::Integer,
                contrasts::AbstractDict = Dict{Symbol, Any}(), kwargs...)
     p, n = size(Y)
-    mm, cnames = _build_site_modelmatrix(formula.rhs, data; contrasts = contrasts)
+    cols = Tables.columntable(data)
+    for (name, column) in pairs(cols)
+        length(column) == n || throw(DimensionMismatch(
+            "`data` column `$name` has $(length(column)) rows but Y has $n sites (columns)"))
+    end
+    mm, cnames = _build_site_modelmatrix(formula.rhs, cols; contrasts = contrasts)
     q = size(mm, 2)
 
     if q == 0
