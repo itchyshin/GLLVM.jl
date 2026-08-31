@@ -60,6 +60,7 @@ include("relaxed_clock.jl")              # Relaxed-clock per-branch evolution ra
 include("families/links.jl")
 include("families/laplace.jl")           # generic family-dispatched Laplace marginal core
 include("families/aghq_grid.jl")         # Stage-1a/1b live-pin AGHQ grid + Liu–Pierce site (not a public knob)
+include("families/aghq_outer.jl")        # Internal unpenalized outer adaptation; public fit wiring pending
 include("families/binomial.jl")          # Binomial family pieces + fit (Phase 3)
 include("families/poisson.jl")           # Poisson family pieces (Phase 3)
 include("families/truncated_poisson.jl") # Zero-truncated Poisson (twin fid 10)

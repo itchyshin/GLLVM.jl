@@ -852,3 +852,28 @@ Read after-task/2026-08-31-core070-aghq-frozen.md and
 core070/aghq-frozen-contract.md; currentevidence core070/aghq-frozen-evidence.json.
 
 Mission Control local da7f389c4eaf250623a879d70256258a2796b8ad: HTTP200/exact served readback, R fields unchanged, exact-file lease released.
+
+## 2026-08-31 — internal AGHQ outer adaptation
+
+New aghq_outer_optimize drives short unpenalized frozen-surrogate LBFGS steps,
+re-adapted merit acceptance, halving/backtracking, permanentcapceiling, accepted
+mode/gradient convergence, nonconvergedstagnation and fresh returned diagnostics.
+ActualnormalizedGaussian latentfit agreeswithanalyticanswer<=1e-8. Redmissing
+symbol211pass11fail6error38.068s; firstgreen251pass43.782s; nondefault rho_min=.3
+red252pass1fail46.137s fixedliteralRhalving .3->.25; reviewgreen258pass46.634s;
+finalfullschedule262PASS46.840s (51outer+211prerequisites). Threeartifactnegative
+checksreject; source/process/log pins and Unlazy gate verified. Alljobs terminal.
+
+FreshNoetherTerra/highpubliccode review plusonefollowup: malformedcache tests
+added; fixedAD semantics already tested AF-03, nonfinitegrad staysnonconverged;
+no remainingP0-P2 inreviewedscope. No Bproductionchild orcompletionpanel.
+PublicAGHQ STILLNOTimplemented: NEXTfamilyobservedmode/cache adapters, mode
+health, publiccontroladmission/warnings/defaults, multistart ranking andfitted
+reporting; then publicRcomparisons/recovery. Newinternalcallbackdriver notpublic
+parityproof. Earlier21familybindings historical/currentrefreshpending;76unbound,
+fullmanifestDRAFT/M1PARTIAL/goalACTIVE. StudentRhealth/17linkdispositions/broader
+contracts/performance/finaldocs unpaid. No pushmergereleasecleanup/Rengine/foreign
+edits orDRACsubmission. Read core070/aghq-outer-contract.md and
+after-task/2026-08-31-core070-aghq-outer.md.
+
+Mission Control local 76c958c3d546de6ac36c51d70e45c42ab0476c94: HTTP200, exact served field verified, R fields unchanged, exact-file lease released.
