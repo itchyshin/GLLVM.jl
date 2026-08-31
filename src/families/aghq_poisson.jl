@@ -1,5 +1,5 @@
 # Internal real-family adapter; see docs/dev-log/core070/aghq-poisson-contract.md.
-# No public fit object is constructed: PoissonFit inference still means Laplace.
+# This adapter constructs no fit object; public wiring is in aghq_poisson_fit.jl.
 
 """
     aghq_poisson_problem(Y, K; k, mask=nothing, offset=nothing,

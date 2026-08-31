@@ -16214,3 +16214,6 @@ retained, no coverage claim. Strict Documenter70.261499s PASS with executed
 example; presentation warnings remain. Noether's two findings repaired/reviewed.
 Unlazy source/artifact gate reverified plus4 corruptions. Full Pkg/core not run;
 programmeACTIVE/M1PARTIAL/fullmanifestDRAFT. See after-task public-Poisson report.
+
+## 2026-08-31 — internal binomial AGHQ (PARTIAL)
+78 kernel assertions PASS; original paired run227 prerequisite PASS then5PASS/4FAIL. Both engines nonconverged, LLdelta0.008938>0.001. Node diagnostic3PASS; strict docsPASS70.856s. Unlazy1met/1unmet, no abandonment. No public binomial/full parity claim. See after-task/2026-08-31-core070-aghq-binomial.md.

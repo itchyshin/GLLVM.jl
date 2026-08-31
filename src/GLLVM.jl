@@ -62,6 +62,7 @@ include("families/laplace.jl")           # generic family-dispatched Laplace mar
 include("families/aghq_grid.jl")         # Stage-1a/1b live-pin AGHQ grid + Liu–Pierce site (not a public knob)
 include("families/aghq_outer.jl")        # Internal unpenalized outer adaptation; public fit wiring pending
 include("families/binomial.jl")          # Binomial family pieces + fit (Phase 3)
+include("families/aghq_binomial.jl")      # Checked normalized three-link binomial adapter
 include("families/aghq_fit_info.jl")
 include("families/poisson.jl")           # Poisson family pieces (Phase 3)
 include("families/aghq_poisson.jl")      # Internal checked-mode Poisson AGHQ adapter

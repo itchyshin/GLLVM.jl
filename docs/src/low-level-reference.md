@@ -68,6 +68,7 @@ GLLVM.AGHQAdaptation
 GLLVM.aghq_adaptation
 GLLVM.aghq_frozen_logintegral
 GLLVM.aghq_poisson_problem
+GLLVM.aghq_binomial_problem
 GLLVM.aghq_outer_optimize
 GLLVM.aghq_multistart_optimize
 GLLVM._fit_poisson_gllvm_laplace

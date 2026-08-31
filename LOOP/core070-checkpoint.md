@@ -960,3 +960,8 @@ Documenter. FullPkg85–100min requires sized pre-run and >30min approval. Keep
 allmanifestDRAFT/M1PARTIAL/goalACTIVE. No pushmergereleasecleanup/Rengineforeign
 edits. ExistingTotoro/Fir sockets verified; no DRACcompute. Read after-task/
 2026-08-31-core070-aghq-public-poisson.md and core070/aghq-public-poisson-evidence.json.
+
+## 2026-08-31 — binomial adapter PARTIAL, original k5 failure retained
+Read core070/aghq-binomial-evidence.json and after-task/2026-08-31-core070-aghq-binomial.md. Internal adapter78PASS; original paired227prereqPASS+5PASS/4FAIL, both nonconverged, LLdelta0.008938. Frozen R samepoint and all3link kernels agree. Node k5/9/15/21 diagnostic at fixed theta shows shrinking chain gap; NO refit or convergence claim. Strict docs70.856sPASS. GatesAB-KERNEL met/AB-VERIFY unmet,0abandoned. All jobs terminal; Totoro/Fir sockets live, no DRAC compute. NEXT public binomial metadata/inference and reviewed outer-adaptation diagnosis; never replace original k5 or silently change derivative/ridge/tolerance. Whole programme ACTIVE/M1PARTIAL/fullmanifestDRAFT. No new B child before checkpoint; no push/merge/release/cleanup/R-engine/foreign edits. Broad old source-bound receipts historical until reverified.
+
+Mission Control local commit57edace54bf1b4325a82fe10373854f9059e0402: served HTTP200 and exact changed field verified; R fields unchanged; exact-file lease released.
