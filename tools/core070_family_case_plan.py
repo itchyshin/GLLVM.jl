@@ -15,11 +15,12 @@ INPUTS=[coverage.PREFIX+'family-admission-subset.json',
         coverage.PREFIX+'family-link-boundary-pb-refresh.json',
         coverage.PREFIX+'poisson-beta-required-evidence.json',
         coverage.PREFIX+'gaussian-required-contract.json',
-        coverage.PREFIX+'registered-models-contract.json']
+        coverage.PREFIX+'registered-models-contract.json', coverage.PREFIX+'family-formulas-contract.json']
 ROLES=['native_model','formula_interface','public_r_bridge']
 
 def build():
-    admission,entry,catalogue,paired,boundary_contract,boundary_evidence,link_contract,link_evidence,pb,gaussian,registered=[coverage.read_json(ROOT/p) for p in INPUTS]
+    admission,entry,catalogue,paired,boundary_contract,boundary_evidence,link_contract,link_evidence,pb,gaussian,registered,interfaces=[coverage.read_json(ROOT/p) for p in INPUTS]
+    registered=dict(cases=registered["cases"]+interfaces["cases"])
     formula=paired["formula"]
     boundaries={row["source_fact_id"]:row for row in boundary_contract["rows"]}
     links={row["source_fact_id"]:row for row in link_contract["rows"]}
@@ -177,10 +178,10 @@ def verify():
     assert len({c['id'] for c in plan['cases']})==97
     bound=[c for c in plan['cases'] if c['fixture'] is not None]
     assert {c['required_runner_case_id'] for c in bound if c['coverage_role']=='native_model'}=={'NATIVE-03-POISSON','NATIVE-08-BETA','NATIVE-06-NB2','NATIVE-12-TRUNCATED-NB2','CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL'}
-    assert len(bound)==23 and sum(c['coverage_role']=='formula_interface' for c in bound)==2
+    assert len(bound)==26 and sum(c['coverage_role']=='formula_interface' for c in bound)==5
     assert sum(c['coverage_role']=='reference_boundary' for c in bound)==16
     assert all(c['r_call'] is None and c['julia_call'] is None for c in plan['cases'] if c['fixture'] is None)
-    print('FAMILY_CASE_PLAN_VERIFIED 69 facts; 97 planned cases; 5 native + 2 formula + 16 boundary bindings; zero full-family promotions')
+    print('FAMILY_CASE_PLAN_VERIFIED 69 facts; 97 planned cases; 5 native + 5 formula + 16 boundary bindings; zero full-family promotions')
 
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--write',action='store_true');args=p.parse_args()

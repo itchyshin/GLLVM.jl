@@ -10,8 +10,8 @@ const FAMILY_IDS = [
     "NATIVE-17-MULTINOMIAL-FIXED",
 ]
 const MODEL_IDS = ["CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL"]
-const INTERFACE_IDS = ["CORE070-FAMILY-05-LOG-FORMULA-INTERFACE", "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE"]
-const GAUSSIAN_IDS = [only(MODEL_IDS), last(INTERFACE_IDS)]
+const INTERFACE_IDS = ["CORE070-FAMILY-05-LOG-FORMULA-INTERFACE", "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE", "CORE070-FAMILY-02-LOG-FORMULA-INTERFACE", "CORE070-FAMILY-07-LOGIT-FORMULA-INTERFACE", "CORE070-FAMILY-11-LOG-FORMULA-INTERFACE"]
+const GAUSSIAN_IDS = [only(MODEL_IDS), "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE"]
 const REGISTERED_IDS = vcat(FAMILY_IDS, MODEL_IDS, INTERFACE_IDS)
 const FIXTURES = Dict(
     "NATIVE-01-GAUSSIAN" => "test/parity/test_gaussian_parity.jl",
@@ -34,6 +34,15 @@ const FIXTURES = Dict(
 )
 FIXTURES[first(INTERFACE_IDS)] = "test/parity/test_nb2_formula_parity.jl"
 
+const FORMULA_NATIVE_DEPENDENCIES = Dict(
+    "CORE070-FAMILY-02-LOG-FORMULA-INTERFACE" => "NATIVE-03-POISSON",
+    "CORE070-FAMILY-07-LOGIT-FORMULA-INTERFACE" => "NATIVE-08-BETA",
+    "CORE070-FAMILY-11-LOG-FORMULA-INTERFACE" => "NATIVE-12-TRUNCATED-NB2",
+)
+FIXTURES["CORE070-FAMILY-02-LOG-FORMULA-INTERFACE"] = "test/parity/test_poisson_formula_parity.jl"
+FIXTURES["CORE070-FAMILY-07-LOGIT-FORMULA-INTERFACE"] = "test/parity/test_beta_formula_parity.jl"
+FIXTURES["CORE070-FAMILY-11-LOG-FORMULA-INTERFACE"] = "test/parity/test_truncnb2_formula_parity.jl"
+
 for id in GAUSSIAN_IDS
     FIXTURES[id] = "test/parity/test_gaussian_original_required.jl"
 end
@@ -52,6 +61,10 @@ function requested_ids(raw::AbstractString = "")
     selected_gaussian = [id for id in ids if id in GAUSSIAN_IDS]
     isempty(selected_gaussian) || length(selected_gaussian) == length(GAUSSIAN_IDS) ||
         throw(ArgumentError("the original Gaussian native/formula fixture must be requested as its exact two-case scope"))
+    for (formula, native) in FORMULA_NATIVE_DEPENDENCIES
+        formula in ids && !(native in ids) && throw(ArgumentError(
+            "formula case $formula requires native case $native in the same run"))
+    end
     return ids
 end
 

@@ -22,6 +22,7 @@ CONTRACT_REL = "docs/dev-log/core070/frozen-r070-contract.toml"
 EXECUTION_STATIC = (
     "src", "test/parity/core070_receipts.jl", "test/parity/core070_case_registry.jl", "test/parity/parity_helpers.jl",
     "test/parity/parity_trial_inputs.jl", "test/parity/test_negbin_parity.jl", "test/parity/truncnb2_policy.jl", "test/parity/nb2_health.jl",
+    "test/parity/family_formula_cases.jl", "test/parity/test_truncated_nbinom2_parity.jl", "docs/dev-log/core070/family-formulas-contract.json",
     "test/parity/poisson_beta_health.jl", "test/parity/test_poisson_parity.jl", "test/parity/test_beta_parity.jl", "docs/dev-log/core070/poisson-beta-required-contract.json", "test/parity/runparity.jl", "test/parity/r_health.R", "Project.toml", "test/Project.toml",
     "test/parity/Project.toml", "tools/core070_delta_matched.jl",
     "test/parity/test_delta_lognormal_parity.jl", "test/parity/test_delta_gamma_parity.jl", "test/parity/fixtures/core070_gaussian_original.toml",
@@ -88,7 +89,7 @@ def _load_manifest_metadata(path: Path) -> dict:
         raise EvidenceError("MANIFEST_INVALID: family rows do not exactly bind required IDs")
     interface_ids = manifest.get("interface_case_ids", [])
     interfaces = manifest.get("interfaces", [])
-    if set(interface_ids) != {"CORE070-FAMILY-05-LOG-FORMULA-INTERFACE", "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE"} or len(interface_ids) != len(set(interface_ids)) or set(interface_ids) & set(required) or \
+    if set(interface_ids) != {"CORE070-FAMILY-05-LOG-FORMULA-INTERFACE", "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE", "CORE070-FAMILY-02-LOG-FORMULA-INTERFACE", "CORE070-FAMILY-07-LOGIT-FORMULA-INTERFACE", "CORE070-FAMILY-11-LOG-FORMULA-INTERFACE"} or len(interface_ids) != len(set(interface_ids)) or set(interface_ids) & set(required) or \
             len(interfaces) != len(interface_ids) or {row.get("id") for row in interfaces} != set(interface_ids):
         raise EvidenceError("MANIFEST_INVALID: interface registry must be unique and separate from families")
     if any(not row.get("fixture") or not row.get("model_contract_id") or row.get("role") != "formula_interface" for row in interfaces):

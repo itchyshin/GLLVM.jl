@@ -3,15 +3,15 @@ import unittest
 import core070_evidence as evidence
 import core070_manifest_coverage as coverage
 
-IDS={'NATIVE-03-POISSON','NATIVE-06-NB2','NATIVE-08-BETA','NATIVE-12-TRUNCATED-NB2',
+IDS={'CORE070-FAMILY-02-LOG-FORMULA-INTERFACE','CORE070-FAMILY-07-LOGIT-FORMULA-INTERFACE','CORE070-FAMILY-11-LOG-FORMULA-INTERFACE','NATIVE-03-POISSON','NATIVE-06-NB2','NATIVE-08-BETA','NATIVE-12-TRUNCATED-NB2',
      'CORE070-FAMILY-05-LOG-FORMULA-INTERFACE',
      'CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL','CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE'}
 
 class RegisteredBindings(unittest.TestCase):
-    def test_seven_explicit_cases(self):
+    def test_ten_explicit_cases(self):
         manifest=evidence.load_manifest(evidence.DEFAULT_MANIFEST)
         self.assertEqual({c['id'] for c in manifest['executable_case']},IDS)
-        self.assertEqual(len(manifest['executable_case']),7)
+        self.assertEqual(len(manifest['executable_case']),10)
         for case in manifest['executable_case']:
             self.assertEqual(case['fixture_sha256'],coverage.sha(evidence.ROOT/case['fixture']))
             for key in ['reference_call','julia_call','model_contract','acceptance_rule','source_fact_ids']:

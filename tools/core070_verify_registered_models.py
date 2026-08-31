@@ -26,6 +26,10 @@ COUNTS=dict(zip(IDS,[16,18,16,21,19,31,31]))
 sha=evidence.digest
 read=evidence.load_toml
 
+def assertion_total():
+    return sum(COUNTS[cid] for cid in IDS) - COUNTS[GAUSSIAN_IDS[0]]
+
+
 
 def check_run(run,cells,cases,execution):
     need(run['status']=='success' and run['exit_code']==0 and run['success_marker']=='CORE070_PARITY_SUCCESS','failed run')
@@ -44,8 +48,8 @@ def check_run(run,cells,cases,execution):
         need(sorted(cell['execution_case_ids'])==sorted(group),'wrong execution group')
         need(cell['assertions']==dict(passed=COUNTS[cid],failed=0,errored=0,broken=0),'case assertions failed/changed')
         need(cell['contract_sha256']==pin and cell['execution_manifest_sha256']==execution['manifest_sha256'],'cell provenance changed')
-    need(evidence.execution_assertion_counts(cells)==dict(passed=121,failed=0,errored=0,broken=0)
-         and run['actual_assertions']==121,'assertion totals inflated/incomplete')
+    need(evidence.execution_assertion_counts(cells)==dict(passed=assertion_total(),failed=0,errored=0,broken=0)
+         and run['actual_assertions']==assertion_total(),'assertion totals inflated/incomplete')
 
 
 def raw_values(path,code,expected):
@@ -147,10 +151,10 @@ def verify(self_test=False):
         except AssertionError:count+=1
         else:raise AssertionError('accepted changed formula fit')
         print('REGISTERED_MODELS_NEGATIVES_PASS',count)
-    print('REGISTERED_MODELS_REQUIRED_VERIFIED 7 cases; 6 executions; 121 assertions; no complete-family claim')
+    print(f'REGISTERED_MODELS_REQUIRED_VERIFIED {len(IDS)} cases; {len(IDS)-1} executions; {assertion_total()} assertions; no complete-family claim')
     summaries={cid:dict(loglik_delta=abs(r['native_loglik']-r['r_loglik']),native_gradient_max=r['native_gradient_max'],r_gradient_max=r['r_gradient_max']) for cid,r in reports.items()}
     summaries['Gaussian native/formula']=dict(loglik_delta=gaussian[0]['delta_loglik'],native_gradient_max=gaussian[0]['native_gradient_max'],r_gradient_max=gaussian[0]['r_gradient_max'])
-    return dict(status='VERIFIED_SEVEN_REGISTERED_CASES_NOT_FULL_FAMILY_OR_PROGRAMME',case_ids=IDS,actual_assertions=121,executions=6,elapsed_seconds=child['elapsed_seconds'],models=summaries,execution_manifest_sha256=execution['manifest_sha256'],contract_sha256=sha(evidence.DEFAULT_MANIFEST),process_receipt_sha256=sha(process_path),run_sha256=sha(folder/'run.toml'),reference_commit=manifest['reference_commit'])
+    return dict(status='VERIFIED_REGISTERED_SUBSET_NOT_FULL_FAMILY_OR_PROGRAMME',case_ids=IDS,actual_assertions=assertion_total(),executions=len(IDS)-1,elapsed_seconds=child['elapsed_seconds'],models=summaries,execution_manifest_sha256=execution['manifest_sha256'],contract_sha256=sha(evidence.DEFAULT_MANIFEST),process_receipt_sha256=sha(process_path),run_sha256=sha(folder/'run.toml'),reference_commit=manifest['reference_commit'])
 
 
 if __name__=='__main__':

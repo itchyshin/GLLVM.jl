@@ -17,8 +17,8 @@ include(joinpath(@__DIR__, "parity", "core070_case_registry.jl"))
 using .Core070CaseRegistry
 @testset "Separate family and interface registration" begin
     @test length(FAMILY_IDS) == 17
-    @test length(INTERFACE_IDS) == 2
-    @test length(requested_ids()) == 20
+    @test length(INTERFACE_IDS) == 5
+    @test length(requested_ids()) == 23
     @test isempty(intersect(FAMILY_IDS, INTERFACE_IDS))
     @test requested_ids(first(INTERFACE_IDS)) == [first(INTERFACE_IDS)]
     @test length(MODEL_IDS) == 1
@@ -58,4 +58,16 @@ end
 @testset "Required Poisson/Beta cells include complete health" begin
     @test FIXTURES["NATIVE-03-POISSON"] == "test/parity/test_poisson_required.jl"
     @test FIXTURES["NATIVE-08-BETA"] == "test/parity/test_beta_required.jl"
+end
+
+@testset "Formula cases require a fresh native comparison" begin
+    for (formula, native) in [
+        ("CORE070-FAMILY-02-LOG-FORMULA-INTERFACE", "NATIVE-03-POISSON"),
+        ("CORE070-FAMILY-07-LOGIT-FORMULA-INTERFACE", "NATIVE-08-BETA"),
+        ("CORE070-FAMILY-11-LOG-FORMULA-INTERFACE", "NATIVE-12-TRUNCATED-NB2")]
+        @test formula in INTERFACE_IDS
+        @test_throws ArgumentError requested_ids(formula)
+        @test requested_ids(native * "," * formula) == [native, formula]
+        @test_throws ArgumentError requested_ids("NATIVE-06-NB2," * formula)
+    end
 end

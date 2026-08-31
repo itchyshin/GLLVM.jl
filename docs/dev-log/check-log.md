@@ -16489,3 +16489,15 @@ with executed example passes135.70s after declaring Distributions. Source/receip
 checks plus27negativecontrols PASS. Fullsuite/review and formula master binding
 remain unpaid; manifestdraft. See after-task/2026-08-31-core070-truncated-formula.md
 and core070/truncated-formula-evidence.json. No full-family or performance claim.
+
+## 2026-08-31 — three original family formula cases registered
+
+Poisson/Beta/truncated-NB2 wide and reversed-long formulas now require their native
+case in the same run. Final ten-case subset:187assertions/9executions109.78s on
+Totoro1core, registry40checks5.08s, oracle before/after PASS. Original data/R
+policies retained; source-bound formula/native coordinates equal.43negative
+controls and42metadata tests+self-test PASS. Manifest DRAFT:10links across5partial
+family facts,710othernonexcluded facts unmapped. Rbridge still required for all5.
+Evidence core070/family-formulas-evidence.json; after-task/2026-08-31-core070-family-formulas.md.
+Next public Rbridge qualification and remaining model/AGHQ/data/postfit/covariance
+requirements; fullsuite/review approvals unchanged. No src/ or original fixture edits.

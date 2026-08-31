@@ -8,7 +8,7 @@ class InterfaceRegistry(unittest.TestCase):
     def test_real_contract(self):
         d=gate.load_manifest(gate.DEFAULT_MANIFEST)
         self.assertEqual(len(d['families']),17)
-        self.assertEqual(len(d['interfaces']),2)
+        self.assertEqual(len(d['interfaces']),5)
         self.assertEqual(len(d['models']),1)
     def test_formula_only_binds_original_dgp(self):
         d=gate.load_manifest(gate.DEFAULT_MANIFEST)
