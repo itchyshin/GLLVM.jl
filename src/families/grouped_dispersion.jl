@@ -32,7 +32,7 @@ function _nb_grouped_laplace_weight(hessian::Symbol, f::NegativeBinomial, μ, me
         "hessian must be :fisher or :observed; got :$hessian"))
     link isa LogLink || throw(ArgumentError(
         "hessian=:observed is currently supported only for NB2 with LogLink()"))
-    return f.r * μ * (f.r + y) / (f.r + μ)^2
+    return _nb2_observed_weight(μ, f.r, y)
 end
 
 # Per-site Laplace log-marginal with per-species NB dispersion markers `fams`.

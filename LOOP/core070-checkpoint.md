@@ -648,3 +648,17 @@ precision at actual fitted size as well as larger grid values. No engine repair
 yet. Eight negative controls andwholeRfit/data/source/process readbackPASS.
 Unlazy1met2unmet. See after-task/2026-08-31-core070-nb2-diagnosis.md and
 decisions/2026-08-31-core070-nb2-density.md for exact next repair contract.
+
+## 2026-08-31 — ordinary NB2 kernel repair checkpoint
+
+Stable mean-based density and overflow-safe observed weights now pass569
+assertions versus340pass/229fail before repair. Original unchanged paired fit
+passes14/14: nativegradient9.481e-7, Rgradient6.509e-5, absLLdelta3.413e-6
+withinrelative1e-6, samepointnll-3.115e-11. Unchanged truncated neighbour352pass.
+AllTotoro jobs terminal; oracles before/afterPASS. Eightartifact/eightmetric
+negatives and readback pass; Unlazy3 scoped gates pass. No new children/review.
+Requiredfixture stilloldrtol1e-3; nextintegrate strictgate+health and replayreal
+runner. NB1/twopartneighbours open. FullmanifestDRAFT/M1PARTIAL; fullsuite,
+recovery, docsrender and independentreview unpaid. Earlierwhole-source receipts
+historical afterenginechange. No R/foreign changes orpush/merge/release/cleanup.
+See after-task/2026-08-31-core070-nb2-repair.md.

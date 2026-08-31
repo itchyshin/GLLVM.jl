@@ -2,20 +2,37 @@
 # (src/families/laplace.jl). y_t ~ NegBinomial(mean μ_t, dispersion r); μ = exp(η)
 # (log link), Var = μ + μ²/r. As r → ∞ the NB collapses to Poisson. The dispersion
 # `r` is carried in the family marker `NegativeBinomial(r, ·)` — only its `r` field
-# is used; the success-probability is recomputed from μ as p = r/(r+μ).
+# is used. Evaluate the density directly from μ: forming p = r/(r+μ)
+# loses the mean as p rounds to one near the Poisson limit.
 #
 # Score/weight wrt η (with V(μ) = μ + μ²/r the NB2 variance):
 #   s = (y − μ)/V · dμ/dη,   W = (dμ/dη)²/V   (expected-information ⇒ W ≥ 0).
 _clamp_mu(::NegativeBinomial, μ) = max(μ, 1e-12)
 _glm_score(f::NegativeBinomial, μ, n, me, y) = (y - μ) / (μ + μ^2 / f.r) * me
 _glm_weight(f::NegativeBinomial, μ, n, me)   = me^2 / (μ + μ^2 / f.r)
-_glm_logpdf(f::NegativeBinomial, μ, n, y)    = logpdf(NegativeBinomial(f.r, f.r / (f.r + μ)), Int(y))
+function _nb2_logpdf_mean(μ, r, y::Int)
+    y < 0 && return oftype(μ + r, -Inf)
+    q = log1p(μ / r)
+    y == 0 && return -r * q
+    # The rising-factorial series is shared with truncated NB2. Its explicit
+    # remainder bound avoids cancellation at large r without an O(y) loop.
+    rise, admissible = _truncnb2_logrise_series(r, y)
+    if admissible
+        return rise + y * log(μ) - loggamma(float(y) + 1) - r * q - y * q
+    end
+    return -r * q + y * (log(μ) - log(r) - q) -
+           log(r + y) - logbeta(r, float(y) + 1)
+end
+_glm_logpdf(f::NegativeBinomial, μ, n, y) = _nb2_logpdf_mean(μ, f.r, Int(y))
 
 # Observed conditional curvature for NB2/log: −∂²ℓ/∂η² = μ·r·(r+y)/(r+μ)².
 # (Derivative of the score r(y−μ)/(r+μ) wrt η with μ = e^η; differs from the
 # Fisher weight μr/(r+μ) whenever y ≠ μ — log is non-canonical for NB2.)
+# Divide through by r² before evaluation; the original products overflow even
+# when the size and limiting curvature are both finite.
+_nb2_observed_weight(μ, r, y) = μ * (1 + y / r) / (1 + μ / r)^2
 _glm_obs_weight(f::NegativeBinomial, μ, n, me, y, link::LogLink, η) =
-    μ * f.r * (f.r + y) / (f.r + μ)^2
+    _nb2_observed_weight(μ, f.r, y)
 
 """
     nb_marginal_loglik_laplace(Y, Λ, β, r; link=LogLink(), kwargs...) -> Float64

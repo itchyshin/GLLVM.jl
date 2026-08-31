@@ -1,0 +1,152 @@
+{
+  "status": "SCOPED_NB2_REPAIR_VERIFIED_REQUIRED_RUNNER_PENDING",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "julia_source_tree_sha256": "13bc14b809377c10a1066ed2d09be7805f627b6cbce16269789d0c289c97f926",
+  "data_sha256": "7abde2731134afe61afee5a7f0c29b58892ad72e550fa41cf8230e9c701a2bf9",
+  "metrics": {
+    "native_gradient_max": 9.481014761282667e-07,
+    "fd_stability": 4.693571664001322e-08,
+    "r_gradient_max": 6.509060474424455e-05,
+    "loglik_delta": 3.412827027204912e-06,
+    "samepoint_delta": -3.115019353572279e-11,
+    "native_r": [
+      2.407180765773474e+24,
+      2.6887985245511685,
+      5552677558.995082,
+      2.4366558403576204,
+      2.3591840671364173
+    ],
+    "r_dispersion": [
+      2695508420.582252,
+      2.6887997311717036,
+      1068383.7110798247,
+      2.4366570513578645,
+      2.359182408383559
+    ]
+  },
+  "assertions": {
+    "red": {
+      "passed": 340,
+      "failed": 229
+    },
+    "green": 569,
+    "original_fit": 14,
+    "truncated_neighbour": 352
+  },
+  "independent_review": "NOT_RUN",
+  "full_manifest": "DRAFT_INCOMPLETE_NOT_FROZEN",
+  "runtime": {
+    "nb2-kernel-red-01": {
+      "status": "FAIL",
+      "files": {
+        ".unlazy/core070-aghq/nb2-kernel-red-01/plan.json": "da4c2f3e388d4f8d3485d7f6fb8233d7a804d4aa575645417c95776aa3fe6eb4",
+        ".unlazy/core070-aghq/nb2-kernel-red-01/source.tar": "6ed342d222436e6f8ca4c684f0abf95571e964765db3bd4f60bfa13ad0df7449",
+        ".unlazy/core070-aghq/nb2-kernel-red-01/attempt1/process/process-receipt.json": "9825bcdc908a58b38b8d660439b6e8062990ce7caab332acee03da3f621c22c5"
+      },
+      "children": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11481075175106525,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "nb2-kernel",
+          "exit_code": 1,
+          "elapsed_seconds": 11.195672450587153,
+          "log_sha256": "76162801572e589ff59654ab09e01f6b84ee1d4d70034acea5f7eab80f130556"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11526245251297951,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "nb2-kernel-green-01": {
+      "status": "PASS",
+      "files": {
+        ".unlazy/core070-aghq/nb2-kernel-green-01/plan.json": "5a71d1729f8ba98e929fb237df57f6b91c951c8ae0eaf29bd8f4b96e9e8e8e98",
+        ".unlazy/core070-aghq/nb2-kernel-green-01/source.tar": "a03c2e179fe450cd09cfdc8f864f949279da8bffff68eb7764a142e1f914b212",
+        ".unlazy/core070-aghq/nb2-kernel-green-01/attempt1/process/process-receipt.json": "399b28af3b3c12056f3ff8f6a1446f0f5d14a0cf26e450387fe56ad59e5d6ad4"
+      },
+      "children": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11549986898899078,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "nb2-kernel",
+          "exit_code": 0,
+          "elapsed_seconds": 9.638825325295329,
+          "log_sha256": "060e1ff16bc5ed4247906e504f7220d80ebf6f959b62b3f0be5745c437a38304"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11512426845729351,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "nb2-health-green-01": {
+      "status": "PASS",
+      "files": {
+        ".unlazy/core070-aghq/nb2-health-green-01/plan.json": "3fdf41702c5eab497e6a0b3917386a077fd3a8b8b7cb95877a2bd452e737117f",
+        ".unlazy/core070-aghq/nb2-health-green-01/source.tar": "e55630aaa3a7ea770fc2fdeb6f4b7043aa93ad4afdc026cfb54255617ace8a60",
+        ".unlazy/core070-aghq/nb2-health-green-01/attempt1/process/process-receipt.json": "3495c6e95262621e358933f3fd0985e34f52d180eec79346ff461023e06f1ec5"
+      },
+      "children": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11530186608433723,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "nb2-health",
+          "exit_code": 0,
+          "elapsed_seconds": 28.33345946855843,
+          "log_sha256": "22b085f87d16eeb178369b9f2aebc793584ab7952fe9c973f07f33a1e9976d79"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11515853367745876,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "nb2-neighbours-01": {
+      "status": "PASS",
+      "files": {
+        ".unlazy/core070-aghq/nb2-neighbours-01/plan.json": "b4528e40ca5828a5925eefaab4fa2847d0e8883ff5bde5833e4090b99e7a49a0",
+        ".unlazy/core070-aghq/nb2-neighbours-01/source.tar": "de06f021797e6679ada0149ff93d6381f56d7fe90e583c6866ea25d3831332ae",
+        ".unlazy/core070-aghq/nb2-neighbours-01/attempt1/process/process-receipt.json": "09040ed14875f0d4354f9c55998c608f08e8ba3d0894fffbf1584a6dcc95d23d"
+      },
+      "children": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11526479199528694,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "nb2-neighbours",
+          "exit_code": 0,
+          "elapsed_seconds": 9.688680337741971,
+          "log_sha256": "91a9568d4ed4c58128f007ef88fb27406a3d827d3860112b7ed73e53e736ce7c"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.16503020375967026,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    }
+  }
+}

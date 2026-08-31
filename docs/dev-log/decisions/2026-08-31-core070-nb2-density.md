@@ -1,6 +1,7 @@
 # Ordinary NB2 precision: diagnosis and pending repair contract
 
-Status: diagnosis verified; engine repair NOT IMPLEMENTED. Original seed45,
+Status: scoped engine repair and original fit verified; required-runner
+integration and independent review pending. The diagnosis below is retained. Original seed45,
 p5,K2,n80, per-trait dispersion and observed Laplace curvature are frozen.
 
 For integer count y>=0, mean mu>0 and size r>0,
@@ -46,3 +47,25 @@ in-repo stable truncated-NB2 implementation; algebra derived from the NB2 mass
 function. Raw paired/source/runtime evidence is bound by
 ../core070/nb2-health-evidence.json. No R source or estimator change authorized
 or performed by this diagnostic.
+
+## Repair evidence — 2026-08-31
+
+The ordinary density now reuses `_truncnb2_logrise_series` for its bounded
+rising-factorial expansion and uses a log-beta identity outside that branch.
+Zero counts use `-r*log1p(mu/r)` directly. Both ordinary observed-weight routes
+use `mu*(1+y/r)/(1+mu/r)^2`, avoiding overflowing products in r.
+No estimator, likelihood constant, optimizer control, or R source changed.
+
+The same 569 assertions gave 340 pass/229 fail before the repair and 569 pass
+after it. Original paired fit now passes14/14, native gradient9.481e-7,
+R gradient6.509e-5, abslogLik delta3.413e-6, same-point nll delta-3.115e-11.
+Truncated-NB2 neighbour352 assertions pass unchanged (only test dependency
+imports are bound through GLLVM in the qualified parity environment).
+
+NB1 and HurdleNB/ZINB retain related probability-conversion expressions. NB1
+also needs a consistent score review near zero dispersion; two-part routes
+need truncation and zero-mixture derivative contracts. They are separate
+open obligations, not covered by this ordinary NB2 repair. The original
+required fixture still has its old1e-3 tolerance: next tighten to1e-6 with
+health assertions and replay the real required runner. Source changes make
+older whole-source receipts historical. Evidence: ../core070/nb2-repair-evidence.json.
