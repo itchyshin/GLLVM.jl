@@ -1,0 +1,303 @@
+{
+  "schema": 1,
+  "status": "NINE_NATIVE_GAUSSIAN_MODE_CONTRACTS_NOT_FULL_COVARIANCE",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "cases": [
+    {
+      "id": "MODE-ORD-INDEP",
+      "executor": "julia",
+      "coverage_role": "native_model",
+      "acceptance_level": "paired_fit",
+      "source_fact_ids": [
+        "covariance/COV-ORD-INDEP"
+      ],
+      "model_contract_id": "GAUSSIAN-MODE-ORD-INDEP",
+      "model_contract": "p3,n18; original sin(index/3)+trait/5 data; independent ordinary source; residual SD c=max(.001sd(y),1e-6) fixed by reference; trait means; INDEP; native independent coordinates logSD, dependent packed lower L; normalized exact Gaussian marginal; 6 free parameters",
+      "reference_call": "gllvmTMB(value~0+trait+indep(0+trait|site),df,cluster=\"species\",control=gllvmTMBcontrol(n_init=1L,se=FALSE,aghq=FALSE))",
+      "r_call": "gllvmTMB(value~0+trait+indep(0+trait|site),df,cluster=\"species\",control=gllvmTMBcontrol(n_init=1L,se=FALSE,aghq=FALSE))",
+      "julia_call": "fit_gaussian_sources(Y;sources=[SourceCovariance(C_effective;groups,mode=:indep,common=false)],sigma_eps_fixed=c,g_tol=1e-7)",
+      "fixture": "test/parity/test_covariance_fixed_required.jl",
+      "fixture_sha256": "927cdd938b51ea0eae0cb57c7b01830d30ca852d3359145329fa37d23b0cce72",
+      "data_fixture": "test/parity/fixtures/core070_covariance_modes.R",
+      "data_fixture_sha256": "fbcd0b7f359d2dcbfacfe6e5b611a5f3398100123b7eb0258a049864307840a1",
+      "runner": "tools/core070_source_fixed_residual_pair.jl",
+      "runner_sha256": "bdf0d9e3892b415ee967ace09117cab826ad22fdc5132666e3b37d5d9f2287a1",
+      "execution_case_ids": [
+        "MODE-ORD-INDEP",
+        "MODE-ORD-COMMON"
+      ],
+      "free_parameters": 6,
+      "acceptance_rule": "Both engines converge; R max abs gradient<=1e-4 and Julia<=1e-7; abs delta logLik<=1e-6; exact data/shapes/maps/free counts; beta and identifiable covariance atol/rtol1e-5; reported objective consistency",
+      "control_policy": "reference_default_fixed_residual",
+      "scope_boundary": "Gaussian native model only. Formula/bridge, other families, complete grammar, inference/recovery/performance remain unpaid.",
+      "owner": "A3/B1"
+    },
+    {
+      "id": "MODE-ORD-COMMON",
+      "executor": "julia",
+      "coverage_role": "native_model",
+      "acceptance_level": "paired_fit",
+      "source_fact_ids": [
+        "covariance/COV-ORD-INDEP-COMMON"
+      ],
+      "model_contract_id": "GAUSSIAN-MODE-ORD-COMMON",
+      "model_contract": "p3,n18; original sin(index/3)+trait/5 data; independent ordinary source; residual SD c=max(.001sd(y),1e-6) fixed by reference; trait means; COMMON; native independent coordinates logSD, dependent packed lower L; normalized exact Gaussian marginal; 4 free parameters",
+      "reference_call": "gllvmTMB(value~0+trait+indep(0+trait|site,common=TRUE),df,cluster=\"species\",control=gllvmTMBcontrol(n_init=1L,se=FALSE,aghq=FALSE))",
+      "r_call": "gllvmTMB(value~0+trait+indep(0+trait|site,common=TRUE),df,cluster=\"species\",control=gllvmTMBcontrol(n_init=1L,se=FALSE,aghq=FALSE))",
+      "julia_call": "fit_gaussian_sources(Y;sources=[SourceCovariance(C_effective;groups,mode=:indep,common=true)],sigma_eps_fixed=c,g_tol=1e-7)",
+      "fixture": "test/parity/test_covariance_fixed_required.jl",
+      "fixture_sha256": "927cdd938b51ea0eae0cb57c7b01830d30ca852d3359145329fa37d23b0cce72",
+      "data_fixture": "test/parity/fixtures/core070_covariance_modes.R",
+      "data_fixture_sha256": "fbcd0b7f359d2dcbfacfe6e5b611a5f3398100123b7eb0258a049864307840a1",
+      "runner": "tools/core070_source_fixed_residual_pair.jl",
+      "runner_sha256": "bdf0d9e3892b415ee967ace09117cab826ad22fdc5132666e3b37d5d9f2287a1",
+      "execution_case_ids": [
+        "MODE-ORD-INDEP",
+        "MODE-ORD-COMMON"
+      ],
+      "free_parameters": 4,
+      "acceptance_rule": "Both engines converge; R max abs gradient<=1e-4 and Julia<=1e-7; abs delta logLik<=1e-6; exact data/shapes/maps/free counts; beta and identifiable covariance atol/rtol1e-5; reported objective consistency",
+      "control_policy": "reference_default_fixed_residual",
+      "scope_boundary": "Gaussian native model only. Formula/bridge, other families, complete grammar, inference/recovery/performance remain unpaid.",
+      "owner": "A3/B1"
+    },
+    {
+      "id": "FIT-MODE-ORD-DEP",
+      "executor": "julia",
+      "coverage_role": "native_model",
+      "acceptance_level": "paired_fit",
+      "source_fact_ids": [
+        "covariance/COV-ORD-DEP"
+      ],
+      "model_contract_id": "GAUSSIAN-FIT-MODE-ORD-DEP",
+      "model_contract": "p3,n36; uncentered declared known-DGP data; ORD DEP; trait means; free common residual SD; source C=I36 for ordinary, else .7I12+.3J12+1e-8I12; 12 groups with3 repeats for structured sources; native independent coordinates logSD, dependent packed lower L; normalized exact Gaussian marginal; 10 free parameters",
+      "reference_call": "gllvmTMB(value~0+trait+dep(0+trait|site),df,cluster=\"species\",control=gllvmTMBcontrol(n_init=1L,se=FALSE,aghq=FALSE,optArgs=list(control=list(rel.tol=1e-12,sing.tol=1e-12,eval.max=2000L,iter.max=1500L))))",
+      "r_call": "gllvmTMB(value~0+trait+dep(0+trait|site),df,cluster=\"species\",control=gllvmTMBcontrol(n_init=1L,se=FALSE,aghq=FALSE,optArgs=list(control=list(rel.tol=1e-12,sing.tol=1e-12,eval.max=2000L,iter.max=1500L))))",
+      "julia_call": "fit_gaussian_sources(Y;sources=[SourceCovariance(C_effective;groups,mode=:dep,common=false)],g_tol=1e-7,iterations=2000)",
+      "fixture": "test/parity/test_covariance_modes_required.jl",
+      "fixture_sha256": "f849d3fd3b5714f431350d03bd7d2f240de4c847bb067a0b0db80da365aa1cb6",
+      "data_fixture": "test/parity/fixtures/core070_covariance_fits.R",
+      "data_fixture_sha256": "ef2f8a84a11106ce8037f0be52e6cebd0a0a758b2f5f8e5116522fe6b84d46d1",
+      "runner": "tools/core070_covariance_mode_fits.jl",
+      "runner_sha256": "b7d10c052c9128f88ea2bb2ed72fc041560c9b2ce24cd830ad21aeccb0072542",
+      "execution_case_ids": [
+        "FIT-MODE-ORD-DEP",
+        "FIT-MODE-ANIMAL-INDEP",
+        "FIT-MODE-ANIMAL-COMMON",
+        "FIT-MODE-ANIMAL-DEP",
+        "FIT-MODE-KERNEL-INDEP",
+        "FIT-MODE-KERNEL-COMMON",
+        "FIT-MODE-KERNEL-DEP"
+      ],
+      "free_parameters": 10,
+      "acceptance_rule": "Both engines converge; R max abs gradient<=1e-4 and Julia<=1e-7; abs delta logLik<=1e-6; exact data/shapes/maps/free counts; beta and identifiable covariance atol/rtol1e-5; reported objective consistency; independent normalized objective and common-point checks; compare TOTAL covariance only, never separately identify source and residual",
+      "control_policy": "explicit_tight_R_controls_native_defaults",
+      "scope_boundary": "Gaussian native model only. Formula/bridge, other families, complete grammar, inference/recovery/performance remain unpaid.",
+      "owner": "A3/B1"
+    },
+    {
+      "id": "FIT-MODE-ANIMAL-INDEP",
+      "executor": "julia",
+      "coverage_role": "native_model",
+      "acceptance_level": "paired_fit",
+      "source_fact_ids": [
+        "covariance/COV-ANIMAL-INDEP"
+      ],
+      "model_contract_id": "GAUSSIAN-FIT-MODE-ANIMAL-INDEP",
+      "model_contract": "p3,n36; uncentered declared known-DGP data; ANIMAL INDEP; trait means; free common residual SD; source C=I36 for ordinary, else .7I12+.3J12+1e-8I12; 12 groups with3 repeats for structured sources; native independent coordinates logSD, dependent packed lower L; normalized exact Gaussian marginal; 7 free parameters",
+      "reference_call": "gllvmTMB(value~0+trait+animal_indep(0+trait|species,A=C),df,cluster=\"species\",control=gllvmTMBcontrol(n_init=1L,se=FALSE,aghq=FALSE,optArgs=list(control=list(rel.tol=1e-12,sing.tol=1e-12,eval.max=2000L,iter.max=1500L))))",
+      "r_call": "gllvmTMB(value~0+trait+animal_indep(0+trait|species,A=C),df,cluster=\"species\",control=gllvmTMBcontrol(n_init=1L,se=FALSE,aghq=FALSE,optArgs=list(control=list(rel.tol=1e-12,sing.tol=1e-12,eval.max=2000L,iter.max=1500L))))",
+      "julia_call": "fit_gaussian_sources(Y;sources=[SourceCovariance(C_effective;groups,mode=:indep,common=false)],g_tol=1e-7,iterations=2000)",
+      "fixture": "test/parity/test_covariance_modes_required.jl",
+      "fixture_sha256": "f849d3fd3b5714f431350d03bd7d2f240de4c847bb067a0b0db80da365aa1cb6",
+      "data_fixture": "test/parity/fixtures/core070_covariance_fits.R",
+      "data_fixture_sha256": "ef2f8a84a11106ce8037f0be52e6cebd0a0a758b2f5f8e5116522fe6b84d46d1",
+      "runner": "tools/core070_covariance_mode_fits.jl",
+      "runner_sha256": "b7d10c052c9128f88ea2bb2ed72fc041560c9b2ce24cd830ad21aeccb0072542",
+      "execution_case_ids": [
+        "FIT-MODE-ORD-DEP",
+        "FIT-MODE-ANIMAL-INDEP",
+        "FIT-MODE-ANIMAL-COMMON",
+        "FIT-MODE-ANIMAL-DEP",
+        "FIT-MODE-KERNEL-INDEP",
+        "FIT-MODE-KERNEL-COMMON",
+        "FIT-MODE-KERNEL-DEP"
+      ],
+      "free_parameters": 7,
+      "acceptance_rule": "Both engines converge; R max abs gradient<=1e-4 and Julia<=1e-7; abs delta logLik<=1e-6; exact data/shapes/maps/free counts; beta and identifiable covariance atol/rtol1e-5; reported objective consistency; independent normalized objective and common-point checks",
+      "control_policy": "explicit_tight_R_controls_native_defaults",
+      "scope_boundary": "Gaussian native model only. Formula/bridge, other families, complete grammar, inference/recovery/performance remain unpaid.",
+      "owner": "A3/B1"
+    },
+    {
+      "id": "FIT-MODE-ANIMAL-COMMON",
+      "executor": "julia",
+      "coverage_role": "native_model",
+      "acceptance_level": "paired_fit",
+      "source_fact_ids": [
+        "covariance/COV-ANIMAL-INDEP"
+      ],
+      "model_contract_id": "GAUSSIAN-FIT-MODE-ANIMAL-COMMON",
+      "model_contract": "p3,n36; uncentered declared known-DGP data; ANIMAL COMMON; trait means; free common residual SD; source C=I36 for ordinary, else .7I12+.3J12+1e-8I12; 12 groups with3 repeats for structured sources; native independent coordinates logSD, dependent packed lower L; normalized exact Gaussian marginal; 5 free parameters",
+      "reference_call": "gllvmTMB(value~0+trait+animal_indep(0+trait|species,A=C,common=TRUE),df,cluster=\"species\",control=gllvmTMBcontrol(n_init=1L,se=FALSE,aghq=FALSE,optArgs=list(control=list(rel.tol=1e-12,sing.tol=1e-12,eval.max=2000L,iter.max=1500L))))",
+      "r_call": "gllvmTMB(value~0+trait+animal_indep(0+trait|species,A=C,common=TRUE),df,cluster=\"species\",control=gllvmTMBcontrol(n_init=1L,se=FALSE,aghq=FALSE,optArgs=list(control=list(rel.tol=1e-12,sing.tol=1e-12,eval.max=2000L,iter.max=1500L))))",
+      "julia_call": "fit_gaussian_sources(Y;sources=[SourceCovariance(C_effective;groups,mode=:indep,common=true)],g_tol=1e-7,iterations=2000)",
+      "fixture": "test/parity/test_covariance_modes_required.jl",
+      "fixture_sha256": "f849d3fd3b5714f431350d03bd7d2f240de4c847bb067a0b0db80da365aa1cb6",
+      "data_fixture": "test/parity/fixtures/core070_covariance_fits.R",
+      "data_fixture_sha256": "ef2f8a84a11106ce8037f0be52e6cebd0a0a758b2f5f8e5116522fe6b84d46d1",
+      "runner": "tools/core070_covariance_mode_fits.jl",
+      "runner_sha256": "b7d10c052c9128f88ea2bb2ed72fc041560c9b2ce24cd830ad21aeccb0072542",
+      "execution_case_ids": [
+        "FIT-MODE-ORD-DEP",
+        "FIT-MODE-ANIMAL-INDEP",
+        "FIT-MODE-ANIMAL-COMMON",
+        "FIT-MODE-ANIMAL-DEP",
+        "FIT-MODE-KERNEL-INDEP",
+        "FIT-MODE-KERNEL-COMMON",
+        "FIT-MODE-KERNEL-DEP"
+      ],
+      "free_parameters": 5,
+      "acceptance_rule": "Both engines converge; R max abs gradient<=1e-4 and Julia<=1e-7; abs delta logLik<=1e-6; exact data/shapes/maps/free counts; beta and identifiable covariance atol/rtol1e-5; reported objective consistency; independent normalized objective and common-point checks",
+      "control_policy": "explicit_tight_R_controls_native_defaults",
+      "scope_boundary": "Gaussian native model only. Formula/bridge, other families, complete grammar, inference/recovery/performance remain unpaid.",
+      "owner": "A3/B1"
+    },
+    {
+      "id": "FIT-MODE-ANIMAL-DEP",
+      "executor": "julia",
+      "coverage_role": "native_model",
+      "acceptance_level": "paired_fit",
+      "source_fact_ids": [
+        "covariance/COV-ANIMAL-DEP"
+      ],
+      "model_contract_id": "GAUSSIAN-FIT-MODE-ANIMAL-DEP",
+      "model_contract": "p3,n36; uncentered declared known-DGP data; ANIMAL DEP; trait means; free common residual SD; source C=I36 for ordinary, else .7I12+.3J12+1e-8I12; 12 groups with3 repeats for structured sources; native independent coordinates logSD, dependent packed lower L; normalized exact Gaussian marginal; 10 free parameters",
+      "reference_call": "gllvmTMB(value~0+trait+animal_dep(0+trait|species,A=C),df,cluster=\"species\",control=gllvmTMBcontrol(n_init=1L,se=FALSE,aghq=FALSE,optArgs=list(control=list(rel.tol=1e-12,sing.tol=1e-12,eval.max=2000L,iter.max=1500L))))",
+      "r_call": "gllvmTMB(value~0+trait+animal_dep(0+trait|species,A=C),df,cluster=\"species\",control=gllvmTMBcontrol(n_init=1L,se=FALSE,aghq=FALSE,optArgs=list(control=list(rel.tol=1e-12,sing.tol=1e-12,eval.max=2000L,iter.max=1500L))))",
+      "julia_call": "fit_gaussian_sources(Y;sources=[SourceCovariance(C_effective;groups,mode=:dep,common=false)],g_tol=1e-7,iterations=2000)",
+      "fixture": "test/parity/test_covariance_modes_required.jl",
+      "fixture_sha256": "f849d3fd3b5714f431350d03bd7d2f240de4c847bb067a0b0db80da365aa1cb6",
+      "data_fixture": "test/parity/fixtures/core070_covariance_fits.R",
+      "data_fixture_sha256": "ef2f8a84a11106ce8037f0be52e6cebd0a0a758b2f5f8e5116522fe6b84d46d1",
+      "runner": "tools/core070_covariance_mode_fits.jl",
+      "runner_sha256": "b7d10c052c9128f88ea2bb2ed72fc041560c9b2ce24cd830ad21aeccb0072542",
+      "execution_case_ids": [
+        "FIT-MODE-ORD-DEP",
+        "FIT-MODE-ANIMAL-INDEP",
+        "FIT-MODE-ANIMAL-COMMON",
+        "FIT-MODE-ANIMAL-DEP",
+        "FIT-MODE-KERNEL-INDEP",
+        "FIT-MODE-KERNEL-COMMON",
+        "FIT-MODE-KERNEL-DEP"
+      ],
+      "free_parameters": 10,
+      "acceptance_rule": "Both engines converge; R max abs gradient<=1e-4 and Julia<=1e-7; abs delta logLik<=1e-6; exact data/shapes/maps/free counts; beta and identifiable covariance atol/rtol1e-5; reported objective consistency; independent normalized objective and common-point checks",
+      "control_policy": "explicit_tight_R_controls_native_defaults",
+      "scope_boundary": "Gaussian native model only. Formula/bridge, other families, complete grammar, inference/recovery/performance remain unpaid.",
+      "owner": "A3/B1"
+    },
+    {
+      "id": "FIT-MODE-KERNEL-INDEP",
+      "executor": "julia",
+      "coverage_role": "native_model",
+      "acceptance_level": "paired_fit",
+      "source_fact_ids": [
+        "covariance/COV-KERNEL-INDEP"
+      ],
+      "model_contract_id": "GAUSSIAN-FIT-MODE-KERNEL-INDEP",
+      "model_contract": "p3,n36; uncentered declared known-DGP data; KERNEL INDEP; trait means; free common residual SD; source C=I36 for ordinary, else .7I12+.3J12+1e-8I12; 12 groups with3 repeats for structured sources; native independent coordinates logSD, dependent packed lower L; normalized exact Gaussian marginal; 7 free parameters",
+      "reference_call": "gllvmTMB(value~0+trait+kernel_indep(species,K=C,name=\"known\"),df,cluster=\"species\",control=gllvmTMBcontrol(n_init=1L,se=FALSE,aghq=FALSE,optArgs=list(control=list(rel.tol=1e-12,sing.tol=1e-12,eval.max=2000L,iter.max=1500L))))",
+      "r_call": "gllvmTMB(value~0+trait+kernel_indep(species,K=C,name=\"known\"),df,cluster=\"species\",control=gllvmTMBcontrol(n_init=1L,se=FALSE,aghq=FALSE,optArgs=list(control=list(rel.tol=1e-12,sing.tol=1e-12,eval.max=2000L,iter.max=1500L))))",
+      "julia_call": "fit_gaussian_sources(Y;sources=[SourceCovariance(C_effective;groups,mode=:indep,common=false)],g_tol=1e-7,iterations=2000)",
+      "fixture": "test/parity/test_covariance_modes_required.jl",
+      "fixture_sha256": "f849d3fd3b5714f431350d03bd7d2f240de4c847bb067a0b0db80da365aa1cb6",
+      "data_fixture": "test/parity/fixtures/core070_covariance_fits.R",
+      "data_fixture_sha256": "ef2f8a84a11106ce8037f0be52e6cebd0a0a758b2f5f8e5116522fe6b84d46d1",
+      "runner": "tools/core070_covariance_mode_fits.jl",
+      "runner_sha256": "b7d10c052c9128f88ea2bb2ed72fc041560c9b2ce24cd830ad21aeccb0072542",
+      "execution_case_ids": [
+        "FIT-MODE-ORD-DEP",
+        "FIT-MODE-ANIMAL-INDEP",
+        "FIT-MODE-ANIMAL-COMMON",
+        "FIT-MODE-ANIMAL-DEP",
+        "FIT-MODE-KERNEL-INDEP",
+        "FIT-MODE-KERNEL-COMMON",
+        "FIT-MODE-KERNEL-DEP"
+      ],
+      "free_parameters": 7,
+      "acceptance_rule": "Both engines converge; R max abs gradient<=1e-4 and Julia<=1e-7; abs delta logLik<=1e-6; exact data/shapes/maps/free counts; beta and identifiable covariance atol/rtol1e-5; reported objective consistency; independent normalized objective and common-point checks",
+      "control_policy": "explicit_tight_R_controls_native_defaults",
+      "scope_boundary": "Gaussian native model only. Formula/bridge, other families, complete grammar, inference/recovery/performance remain unpaid.",
+      "owner": "A3/B1"
+    },
+    {
+      "id": "FIT-MODE-KERNEL-COMMON",
+      "executor": "julia",
+      "coverage_role": "native_model",
+      "acceptance_level": "paired_fit",
+      "source_fact_ids": [
+        "covariance/COV-KERNEL-INDEP"
+      ],
+      "model_contract_id": "GAUSSIAN-FIT-MODE-KERNEL-COMMON",
+      "model_contract": "p3,n36; uncentered declared known-DGP data; KERNEL COMMON; trait means; free common residual SD; source C=I36 for ordinary, else .7I12+.3J12+1e-8I12; 12 groups with3 repeats for structured sources; native independent coordinates logSD, dependent packed lower L; normalized exact Gaussian marginal; 5 free parameters",
+      "reference_call": "gllvmTMB(value~0+trait+kernel_indep(species,K=C,name=\"known\",common=TRUE),df,cluster=\"species\",control=gllvmTMBcontrol(n_init=1L,se=FALSE,aghq=FALSE,optArgs=list(control=list(rel.tol=1e-12,sing.tol=1e-12,eval.max=2000L,iter.max=1500L))))",
+      "r_call": "gllvmTMB(value~0+trait+kernel_indep(species,K=C,name=\"known\",common=TRUE),df,cluster=\"species\",control=gllvmTMBcontrol(n_init=1L,se=FALSE,aghq=FALSE,optArgs=list(control=list(rel.tol=1e-12,sing.tol=1e-12,eval.max=2000L,iter.max=1500L))))",
+      "julia_call": "fit_gaussian_sources(Y;sources=[SourceCovariance(C_effective;groups,mode=:indep,common=true)],g_tol=1e-7,iterations=2000)",
+      "fixture": "test/parity/test_covariance_modes_required.jl",
+      "fixture_sha256": "f849d3fd3b5714f431350d03bd7d2f240de4c847bb067a0b0db80da365aa1cb6",
+      "data_fixture": "test/parity/fixtures/core070_covariance_fits.R",
+      "data_fixture_sha256": "ef2f8a84a11106ce8037f0be52e6cebd0a0a758b2f5f8e5116522fe6b84d46d1",
+      "runner": "tools/core070_covariance_mode_fits.jl",
+      "runner_sha256": "b7d10c052c9128f88ea2bb2ed72fc041560c9b2ce24cd830ad21aeccb0072542",
+      "execution_case_ids": [
+        "FIT-MODE-ORD-DEP",
+        "FIT-MODE-ANIMAL-INDEP",
+        "FIT-MODE-ANIMAL-COMMON",
+        "FIT-MODE-ANIMAL-DEP",
+        "FIT-MODE-KERNEL-INDEP",
+        "FIT-MODE-KERNEL-COMMON",
+        "FIT-MODE-KERNEL-DEP"
+      ],
+      "free_parameters": 5,
+      "acceptance_rule": "Both engines converge; R max abs gradient<=1e-4 and Julia<=1e-7; abs delta logLik<=1e-6; exact data/shapes/maps/free counts; beta and identifiable covariance atol/rtol1e-5; reported objective consistency; independent normalized objective and common-point checks",
+      "control_policy": "explicit_tight_R_controls_native_defaults",
+      "scope_boundary": "Gaussian native model only. Formula/bridge, other families, complete grammar, inference/recovery/performance remain unpaid.",
+      "owner": "A3/B1"
+    },
+    {
+      "id": "FIT-MODE-KERNEL-DEP",
+      "executor": "julia",
+      "coverage_role": "native_model",
+      "acceptance_level": "paired_fit",
+      "source_fact_ids": [
+        "covariance/COV-KERNEL-DEP"
+      ],
+      "model_contract_id": "GAUSSIAN-FIT-MODE-KERNEL-DEP",
+      "model_contract": "p3,n36; uncentered declared known-DGP data; KERNEL DEP; trait means; free common residual SD; source C=I36 for ordinary, else .7I12+.3J12+1e-8I12; 12 groups with3 repeats for structured sources; native independent coordinates logSD, dependent packed lower L; normalized exact Gaussian marginal; 10 free parameters",
+      "reference_call": "gllvmTMB(value~0+trait+kernel_dep(species,K=C,name=\"known\"),df,cluster=\"species\",control=gllvmTMBcontrol(n_init=1L,se=FALSE,aghq=FALSE,optArgs=list(control=list(rel.tol=1e-12,sing.tol=1e-12,eval.max=2000L,iter.max=1500L))))",
+      "r_call": "gllvmTMB(value~0+trait+kernel_dep(species,K=C,name=\"known\"),df,cluster=\"species\",control=gllvmTMBcontrol(n_init=1L,se=FALSE,aghq=FALSE,optArgs=list(control=list(rel.tol=1e-12,sing.tol=1e-12,eval.max=2000L,iter.max=1500L))))",
+      "julia_call": "fit_gaussian_sources(Y;sources=[SourceCovariance(C_effective;groups,mode=:dep,common=false)],g_tol=1e-7,iterations=2000)",
+      "fixture": "test/parity/test_covariance_modes_required.jl",
+      "fixture_sha256": "f849d3fd3b5714f431350d03bd7d2f240de4c847bb067a0b0db80da365aa1cb6",
+      "data_fixture": "test/parity/fixtures/core070_covariance_fits.R",
+      "data_fixture_sha256": "ef2f8a84a11106ce8037f0be52e6cebd0a0a758b2f5f8e5116522fe6b84d46d1",
+      "runner": "tools/core070_covariance_mode_fits.jl",
+      "runner_sha256": "b7d10c052c9128f88ea2bb2ed72fc041560c9b2ce24cd830ad21aeccb0072542",
+      "execution_case_ids": [
+        "FIT-MODE-ORD-DEP",
+        "FIT-MODE-ANIMAL-INDEP",
+        "FIT-MODE-ANIMAL-COMMON",
+        "FIT-MODE-ANIMAL-DEP",
+        "FIT-MODE-KERNEL-INDEP",
+        "FIT-MODE-KERNEL-COMMON",
+        "FIT-MODE-KERNEL-DEP"
+      ],
+      "free_parameters": 10,
+      "acceptance_rule": "Both engines converge; R max abs gradient<=1e-4 and Julia<=1e-7; abs delta logLik<=1e-6; exact data/shapes/maps/free counts; beta and identifiable covariance atol/rtol1e-5; reported objective consistency; independent normalized objective and common-point checks",
+      "control_policy": "explicit_tight_R_controls_native_defaults",
+      "scope_boundary": "Gaussian native model only. Formula/bridge, other families, complete grammar, inference/recovery/performance remain unpaid.",
+      "owner": "A3/B1"
+    }
+  ]
+}

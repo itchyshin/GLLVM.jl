@@ -16694,3 +16694,18 @@ all handles terminal, foreign lanes untouched. See covariance-mode-fits after-ta
   and programme panel gates unpaid; full manifest DRAFT/M1 PARTIAL.
 - Evidence: core070/source-design-formula-evidence.json; after-task report:
   after-task/2026-08-31-core070-source-mean-formula.md. No release/foreign edits.
+
+## 2026-08-31 — Required covariance replay and catalogue reconciliation
+
+Nine native Gaussian MODE/FIT-MODE IDs now run through the required central
+runner:203assertions in50.926s on Totoro, max absolute deltaLL2.5594e-11, both-engine
+health, retained default-control baseline and independent R object readback.
+Seventy damaged-evidence/dependency controls pass. Catalogue integrity85tests plus
+self-test;24bindings over12sourcefacts,703nonexcluded facts unmapped.95covariance
+sourcefacts have an explicit190-obligation annex, not190passed cases. Native-only
+bindings cannot close formula/bridge/nonGaussian scope. Fresh bridge runtime and
+Gaussian model-change boundary pass; neither supplies missing bridge parity.
+First wrapper replay failed beforefits and is retained. Source engine unchanged.
+FullmanifestDRAFT/M1PARTIAL; originalStudent/binomialAGHQ and downstream gates unpaid.
+See after-task/2026-08-31-core070-covariance-programme.md and covariance programme
+receipt under core070. No foreign edits, DRACjobs, push, merge or release.

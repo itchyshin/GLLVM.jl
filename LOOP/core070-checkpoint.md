@@ -1612,3 +1612,34 @@ This supersedes the previous next-action paragraph while retaining its history.
   andbinomialAGHQ failures unpaid. Fullsuite/specificexternalreview approvals unchanged.
 - No push/merge/release/destructive cleanup. Local candidate preserved separately;
   latest durable backup path is .unlazy/core070-aghq/latest-durable-checkpoint.txt.
+
+## Latest checkpoint — 2026-08-31, required covariance registry
+
+This replaces the previous next-action paragraph, not its historical evidence.
+- Nine native covariance cases are bound in the central runner:203assertions,
+  50.926s Totoro, maxdeltaLL2.5594e-11. New independent verifier reads raw R fits
+  and rejects70 damaged-record/receipt/dependency cases. Engine source unchanged.
+- Central draft has24bindings/12sourcefacts;703nonexcluded facts remain unmapped.
+  New covariance annex:95facts,190unpaid/admission/model/boundary obligations;
+  37models still need separately declared/qualified native/formula/bridge routes.
+- Both fresh bridge-runtime04 and Gaussian-boundary02 checks pass, with boundary
+  explicitly MODEL_CHANGE_NOT_PARITY. No pin-only refresh or hidden skip.
+- Required runner firstattempt01 failed missing include beforefits; attempt02
+  passes using ordinary module wrappers. Original IDs/models/seeds/tolerances kept.
+- FullmanifestDRAFT; programmeACTIVE/M1PARTIAL. Historical source-design/formula
+  receipts predate current runner inventory; finalcandidate replay stillrequired.
+- NEXT finish source covariance interface/modelcontracts, remaining modifiers,
+  nonGaussian/latent multinomial/data/postfit/bridge/AGHQ. Do not repeat unchanged
+  failedStudent warm starts or promote originalbinomialAGHQ. Fullsuites and specific
+  externalreview boundaries remain; no release/push/merge/destructive cleanup.
+- Six DRAC sessions checked responding: Fir/Rorqual/Trillium/Narval/Killarney/Tamia.
+  Vulcan timedout; Nibi no socket. Totoro used1thread, allfitchecks terminal.
+  Maximum5DRACsystems, scheduledallocations only; noDRACjobs submitted.
+- Canonical GLLVM.jl lease renewed20:42UTC for4h as codex:core070-aghq-20260830.
+  WorkerHopper idle; Noether scoped review reports no actionable P0–P3 findings.
+  Both are terminal; programme panel remains unpaid. MC/checkpoint receipts follow.
+
+- Mission Control 91d17a81e18de0f7006d3ab903b727e2f61736d2, HTTP200, Rfieldsunchanged; MClease released.
+  Evidence core070/covariance-programme-evidence.json. Noether scopedreviewclear;
+  fullprogrammepanelnotrun. Next select and qualify covariance formula bindings
+  against the nine unchanged native/Rmodelcontracts before expanding families.

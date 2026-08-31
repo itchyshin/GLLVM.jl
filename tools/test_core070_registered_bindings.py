@@ -9,11 +9,14 @@ IDS={'CORE070-FAMILY-02-LOG-FORMULA-INTERFACE','CORE070-FAMILY-07-LOGIT-FORMULA-
 IDS.update('CORE070-'+family+'-PUBLIC-R-BRIDGE' for family in
            ['FAMILY-00-IDENTITY','FAMILY-02-LOG','FAMILY-05-LOG','FAMILY-07-LOGIT','FAMILY-11-LOG'])
 
+from core070_covariance_programme import IDS as COVARIANCE_IDS
+IDS.update(COVARIANCE_IDS)
+
 class RegisteredBindings(unittest.TestCase):
-    def test_fifteen_explicit_cases(self):
+    def test_twenty_four_explicit_cases(self):
         manifest=evidence.load_manifest(evidence.DEFAULT_MANIFEST)
         self.assertEqual({c['id'] for c in manifest['executable_case']},IDS)
-        self.assertEqual(len(manifest['executable_case']),15)
+        self.assertEqual(len(manifest['executable_case']),24)
         for case in manifest['executable_case']:
             self.assertEqual(case['fixture_sha256'],coverage.sha(evidence.ROOT/case['fixture']))
             for key in ['reference_call','julia_call','model_contract','acceptance_rule','source_fact_ids']:
@@ -24,7 +27,7 @@ class RegisteredBindings(unittest.TestCase):
         mapping=coverage.read_json(evidence.ROOT/coverage.MAPPING)
         linked={cid for row in mapping['rows'] for cid in row['executable_case_ids']}
         self.assertEqual(linked,IDS)
-        self.assertEqual(sum(bool(row['executable_case_ids']) for row in mapping['rows']),5)
+        self.assertEqual(sum(bool(row['executable_case_ids']) for row in mapping['rows']),12)
         self.assertEqual(manifest['status'],'DRAFT_INCOMPLETE_NOT_FROZEN')
         index=coverage.read_json(evidence.ROOT/coverage.INDEX)
         for fact in index['facts']:

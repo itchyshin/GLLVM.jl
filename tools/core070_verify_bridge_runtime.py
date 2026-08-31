@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-STATE = ROOT / '.unlazy/core070-aghq/public-bridge-runtime-03'
+STATE = ROOT / '.unlazy/core070-aghq/public-bridge-runtime-04'
 
 def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()

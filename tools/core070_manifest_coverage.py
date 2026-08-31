@@ -144,6 +144,7 @@ def require_frozen_manifest(manifest,root):
     need(ids and len(set(ids))==len(ids),'no unique executable cases')
     validate_mapping(mapping,index['facts'],ids)
     validate_family_roles(index['facts'],mapping,cases,root)
+    validate_covariance_roles(index['facts'],mapping,cases,root)
     if any(f['id']=='family/FAMILY-00-IDENTITY' for f in index['facts']):
         from core070_programme_bridge import validate_registry
         validate_registry(manifest,root)
@@ -180,40 +181,41 @@ def validate_bridge_boundary(row,fact,root):
 
 
 def validate_family_roles(facts,mapping,cases,root):
-    """A linked family fact needs model/interface evidence, not an entry probe.
+    """Require bound native/formula/bridge declarations for every family model."""
+    return _validate_surface_roles(facts,mapping,cases,root,'family/','family')
 
-    This checks declared coverage structure. A verified model-bound reference
-    rejection or model change may pay only the public bridge behavior role.
-    Actual source semantics still need the independently bound scope review;
-    native and formula numerical success still needs same-model run receipts.
-    """
+def validate_covariance_roles(facts,mapping,cases,root):
+    """Covariance helpers and native-only models cannot close other surfaces."""
+    return _validate_surface_roles(facts,mapping,cases,root,'covariance/','covariance')
+
+def _validate_surface_roles(facts,mapping,cases,root,prefix,label):
     by_id={row['id']:row for row in cases}
     links={row['source_id']:row['executable_case_ids'] for row in mapping['rows']}
     model_roles={'native_model':'paired_fit','formula_interface':'paired_fit_interface',
                  'public_r_bridge':'paired_fit_interface'}
     for fact in facts:
-        if not fact['id'].startswith('family/') or fact['classification']=='intentionally_excluded':continue
+        if not fact['id'].startswith(prefix) or fact['classification']=='intentionally_excluded':continue
         selected=[by_id[x] for x in links[fact['id']]]
         required=set(model_roles) if fact['classification']=='required_core' else {
             'reference_boundary' if fact['classification']=='rejected' else 'compatibility_adapter'}
         roles={row.get('coverage_role') for row in selected}
-        need(required<=roles,'family interface coverage missing '+fact['id'])
+        need(required<=roles,label+' interface coverage missing '+fact['id'])
         contracts={}
         model_definitions={}
         for role in required:
             rows=[row for row in selected if row.get('coverage_role')==role]
             for row in rows:
-                need(fact['id'] in row.get('source_fact_ids',[]),'family source binding absent '+row['id'])
+                need(fact['id'] in row.get('source_fact_ids',[]),label+' source binding absent '+row['id'])
                 for field in ['r_call','julia_call','acceptance_rule','model_contract_id']:
                     need(isinstance(row.get(field),str) and row[field].strip(),
-                         'family case contract missing '+field+' '+row['id'])
+                         label+' case contract missing '+field+' '+row['id'])
                 safe_path(root,row.get('fixture',''))
                 if role in model_roles:
                     definition=row.get('model_contract')
                     need(isinstance(definition,str) and definition.strip(),
-                         'family model contract missing '+row['id'])
+                         label+' model contract missing '+row['id'])
                     previous=model_definitions.setdefault(row['model_contract_id'],definition)
-                    need(previous==definition,'family model contract differs '+row['id'])
+                    need(previous==definition,label+' model contract differs '+row['id'])
                     if role=='public_r_bridge' and row.get('acceptance_level')=='reference_bridge_boundary':
                         try:
                             validate_bridge_boundary(row,fact,root)
@@ -221,14 +223,14 @@ def validate_family_roles(facts,mapping,cases,root):
                             raise CoverageError('SOURCE_COVERAGE: invalid bridge boundary: '+str(error)) from error
                     else:
                         need(row.get('acceptance_level')==model_roles[role],
-                             'family interface evidence level differs '+row['id'])
+                             label+' interface evidence level differs '+row['id'])
                     contracts.setdefault(row['model_contract_id'],set()).add(role)
                 elif role=='reference_boundary':
                     need(row.get('julia_disposition') in {'reject','documented_extension'},
-                         'family rejected reference lacks Julia disposition '+row['id'])
+                         label+' rejected reference lacks Julia disposition '+row['id'])
         if fact['classification']=='required_core':
             need(contracts and all(set(model_roles)<=roles for roles in contracts.values()),
-                 'family interfaces change model contract '+fact['id'])
+                 label+' interfaces change model contract '+fact['id'])
 
 if __name__=='__main__':
     import argparse,collections

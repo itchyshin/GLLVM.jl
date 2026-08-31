@@ -7,7 +7,7 @@ import tomllib
 from core070_verify_bridge_models import sha,need,maxdiff,matrix_flat,close
 
 ROOT=Path(__file__).resolve().parents[1]
-STATE=ROOT/'.unlazy/core070-aghq/gaussian-bridge-boundary-01'
+STATE=ROOT/'.unlazy/core070-aghq/gaussian-bridge-boundary-02'
 def check(r):
     need(r['scope']=='FROZEN_GAUSSIAN_BRIDGE_MODEL_CHANGE_NOT_PARITY','wrong scope')
     need(set(r['checks'])=={'no_errors','auto_warning','explicit_no_unique_warning','same_reduced_fit',

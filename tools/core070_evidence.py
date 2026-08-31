@@ -26,6 +26,7 @@ EXECUTION_STATIC = (
     "test/parity/poisson_beta_health.jl", "test/parity/test_poisson_parity.jl", "test/parity/test_beta_parity.jl", "docs/dev-log/core070/poisson-beta-required-contract.json", "test/parity/runparity.jl", "test/parity/r_health.R", "Project.toml", "test/Project.toml",
     "test/parity/Project.toml", "tools/core070_delta_matched.jl",
     "test/parity/test_delta_lognormal_parity.jl", "test/parity/test_delta_gamma_parity.jl", "test/parity/fixtures/core070_gaussian_original.toml",
+    "tools/core070_covariance_mode_fits.jl", "tools/core070_source_fixed_residual_pair.jl", "test/parity/fixtures/core070_covariance_modes.R", "test/parity/fixtures/core070_covariance_fits.R", "docs/dev-log/core070/covariance-programme-contract.json",
     "test/parity/fixtures/core070_gaussian_reference.R",
 )
 
@@ -131,6 +132,12 @@ def _load_manifest_metadata(path: Path) -> dict:
             raise EvidenceError('MANIFEST_INVALID: public R bridge '+str(error)) from error
         if not set(manifest['public_r_bridge_case_ids']) <= {r['id'] for r in obligations}:
             raise EvidenceError('MANIFEST_INVALID: public R bridge obligations missing')
+    if 'covariance_case_ids' in manifest or manifest.get('covariance_models') or any(
+            r.get('id','').startswith(('MODE-ORD-','FIT-MODE-')) for r in manifest.get('executable_case',[])):
+        from core070_covariance_programme import validate_registry
+        try:validate_registry(manifest,ROOT)
+        except (OSError,ValueError,KeyError,TypeError) as error:
+            raise EvidenceError('MANIFEST_INVALID: covariance registry '+str(error)) from error
     return manifest
 
 
@@ -175,8 +182,8 @@ def verify_public_bridge_component(manifest: dict, selection: dict | None) -> di
 
 
 def synthetic_native_contract_text(path: Path) -> str:
-    """Remove only typed-R blocks for receipt-format tests, never production."""
-    return re.sub(r'\n# BEGIN PUBLIC R BRIDGE[^\n]*\n[\s\S]*?\n# END PUBLIC R BRIDGE[^\n]*\n',
+    """Remove typed bridge/covariance blocks for synthetic format tests only."""
+    return re.sub(r'\n# BEGIN (?:PUBLIC R BRIDGE|COVARIANCE)[^\n]*\n[\s\S]*?\n# END (?:PUBLIC R BRIDGE|COVARIANCE)[^\n]*\n',
                   '\n',path.read_text())
 
 
@@ -495,7 +502,7 @@ def self_test(manifest_path: Path) -> None:
     with tempfile.TemporaryDirectory() as tmp:
         tmpdir = Path(tmp)
         frozen_path = tmpdir / "frozen.toml"
-        all_ids = [row["id"] for row in draft["obligation"] if row['id'] not in draft.get('public_r_bridge_case_ids',[])]
+        all_ids = [row["id"] for row in draft["obligation"] if row['id'] not in draft.get('public_r_bridge_case_ids',[])+draft.get('covariance_case_ids',[])]
         frozen_text = synthetic_native_contract_text(manifest_path).replace('status = "DRAFT_INCOMPLETE_NOT_FROZEN"', 'status = "FROZEN"', 1)
         frozen_text = re.sub(r"\n\[\[executable_case\]\][\s\S]*?(?=\n\[|\Z)", "", frozen_text)
         frozen_text = "required_case_ids = " + json.dumps(all_ids) + "\n" + frozen_text

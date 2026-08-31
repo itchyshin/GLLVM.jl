@@ -394,8 +394,10 @@
     {
       "source_id": "covariance/COV-ANIMAL-DEP",
       "classification": "required_core",
-      "executable_case_ids": [],
-      "rationale": "Exact Gaussian fixed-point covariance/parameter-map contracts verified; native fits, formula and bridge remain unpaid. Reference points do not discharge full model/interface obligations.",
+      "executable_case_ids": [
+        "FIT-MODE-ANIMAL-DEP"
+      ],
+      "rationale": "Partial native Gaussian fitted-model binding only; formula, public bridge, other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
       "reference_model_case_ids": [
         "MODE-ANIMAL-DEP"
       ],
@@ -429,8 +431,11 @@
     {
       "source_id": "covariance/COV-ANIMAL-INDEP",
       "classification": "required_core",
-      "executable_case_ids": [],
-      "rationale": "Exact Gaussian fixed-point covariance/parameter-map contracts verified; native fits, formula and bridge remain unpaid. Reference points do not discharge full model/interface obligations.",
+      "executable_case_ids": [
+        "FIT-MODE-ANIMAL-INDEP",
+        "FIT-MODE-ANIMAL-COMMON"
+      ],
+      "rationale": "Partial native Gaussian fitted-model binding only; formula, public bridge, other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
       "reference_model_case_ids": [
         "MODE-ANIMAL-INDEP",
         "MODE-ANIMAL-COMMON"
@@ -498,8 +503,10 @@
     {
       "source_id": "covariance/COV-KERNEL-DEP",
       "classification": "required_core",
-      "executable_case_ids": [],
-      "rationale": "Exact Gaussian fixed-point covariance/parameter-map contracts verified; native fits, formula and bridge remain unpaid. Reference points do not discharge full model/interface obligations.",
+      "executable_case_ids": [
+        "FIT-MODE-KERNEL-DEP"
+      ],
+      "rationale": "Partial native Gaussian fitted-model binding only; formula, public bridge, other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
       "reference_model_case_ids": [
         "MODE-KERNEL-DEP"
       ],
@@ -520,8 +527,11 @@
     {
       "source_id": "covariance/COV-KERNEL-INDEP",
       "classification": "required_core",
-      "executable_case_ids": [],
-      "rationale": "Exact Gaussian fixed-point covariance/parameter-map contracts verified; native fits, formula and bridge remain unpaid. Reference points do not discharge full model/interface obligations.",
+      "executable_case_ids": [
+        "FIT-MODE-KERNEL-INDEP",
+        "FIT-MODE-KERNEL-COMMON"
+      ],
+      "rationale": "Partial native Gaussian fitted-model binding only; formula, public bridge, other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
       "reference_model_case_ids": [
         "MODE-KERNEL-INDEP",
         "MODE-KERNEL-COMMON"
@@ -561,8 +571,10 @@
     {
       "source_id": "covariance/COV-ORD-DEP",
       "classification": "required_core",
-      "executable_case_ids": [],
-      "rationale": "Exact Gaussian fixed-point covariance/parameter-map contracts verified; native fits, formula and bridge remain unpaid. Reference points do not discharge full model/interface obligations.",
+      "executable_case_ids": [
+        "FIT-MODE-ORD-DEP"
+      ],
+      "rationale": "Partial native Gaussian fitted-model binding only; formula, public bridge, other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
       "reference_model_case_ids": [
         "MODE-ORD-DEP"
       ],
@@ -571,8 +583,10 @@
     {
       "source_id": "covariance/COV-ORD-INDEP",
       "classification": "required_core",
-      "executable_case_ids": [],
-      "rationale": "Exact Gaussian fixed-point covariance/parameter-map contracts verified; native fits, formula and bridge remain unpaid. Reference points do not discharge full model/interface obligations.",
+      "executable_case_ids": [
+        "MODE-ORD-INDEP"
+      ],
+      "rationale": "Partial native Gaussian fitted-model binding only; formula, public bridge, other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
       "reference_model_case_ids": [
         "MODE-ORD-INDEP"
       ],
@@ -581,8 +595,10 @@
     {
       "source_id": "covariance/COV-ORD-INDEP-COMMON",
       "classification": "required_core",
-      "executable_case_ids": [],
-      "rationale": "Exact Gaussian fixed-point covariance/parameter-map contracts verified; native fits, formula and bridge remain unpaid. Reference points do not discharge full model/interface obligations.",
+      "executable_case_ids": [
+        "MODE-ORD-COMMON"
+      ],
+      "rationale": "Partial native Gaussian fitted-model binding only; formula, public bridge, other admitted families, modifiers, inference and recovery remain unresolved in covariance-required-case-plan.json.",
       "reference_model_case_ids": [
         "MODE-ORD-COMMON"
       ],

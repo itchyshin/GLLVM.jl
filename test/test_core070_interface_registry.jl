@@ -18,7 +18,7 @@ using .Core070CaseRegistry
 @testset "Separate family and interface registration" begin
     @test length(FAMILY_IDS) == 17
     @test length(INTERFACE_IDS) == 5
-    @test length(requested_ids()) == 23
+    @test length(requested_ids()) == 32
     @test isempty(intersect(FAMILY_IDS, INTERFACE_IDS))
     @test requested_ids(first(INTERFACE_IDS)) == [first(INTERFACE_IDS)]
     @test length(MODEL_IDS) == 1

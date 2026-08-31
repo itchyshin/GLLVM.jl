@@ -26,7 +26,10 @@ TESTS = [('test_core070_manifest_coverage.py', 6),
          ('test_core070_family_coverage.py', 5),
          ('test_core070_bridge_admission.py', 10),
          ('test_core070_mixed_receipts.py', 9),
-         ('test_core070_registered_bindings.py', 3)]
+         ('test_core070_registered_bindings.py', 3),
+         ('test_core070_covariance_programme.py', 9),
+         ('test_core070_covariance_case_plan.py', 10),
+         ('test_core070_covariance_coverage.py', 5)]
 
 
 def run(argv, count=None):

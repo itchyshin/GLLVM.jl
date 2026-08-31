@@ -126,6 +126,10 @@ if required
                     () -> include(joinpath(@__DIR__, basename(_CORE070_FIXTURES[id]))))
             end
         end
+        run_required_family_group!(Core070CaseRegistry.COVARIANCE_FIXED_IDS,
+                                   "test/parity/test_covariance_fixed_required.jl")
+        run_required_family_group!(Core070CaseRegistry.COVARIANCE_MODE_IDS,
+                                   "test/parity/test_covariance_modes_required.jl")
         core070_finish_run!()
     catch err
         core070_abort_run!(err)
