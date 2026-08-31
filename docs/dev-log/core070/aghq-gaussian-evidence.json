@@ -1,0 +1,279 @@
+{
+  "status": "PASS_INTERNAL_ADAPTER_ONLY",
+  "programme_status": "ACTIVE_M1_PARTIAL",
+  "full_manifest": "DRAFT_NOT_FROZEN",
+  "reference": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "scope": "internal shared-SD Gaussian AGHQ; public GllvmFit integration remains required",
+  "unit_assertions": 41,
+  "pair_prerequisite_assertions": 112,
+  "pair_assertions": 13,
+  "processes": {
+    "aghq-gaussian-red-01": {
+      "status": "FAIL",
+      "receipt_sha256": "3084ec99fc4b394db39a65360e144c1e4aa6ba930b3645baf4ba4d8a6539bf09",
+      "plan_sha256": "372f11fd88ff4d28b4e94e2cdad58c8245ef3582038f7c6de0fea86376a201a7",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11520052328705788,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 1,
+          "elapsed_seconds": 8.431520519778132,
+          "log_sha256": "3f1b6e3421a8bc0cad32da4d2f26b985811d7c47fbef2f1850c8c02d1001452d"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11533379182219505,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "aghq-gaussian-green-01": {
+      "status": "PASS",
+      "receipt_sha256": "0ecd6d0ba19307a4dbab26c6dda40c92b64c3b870cf4239b560a84610d520759",
+      "plan_sha256": "9cb13cce4d78d37a44b0467d30b6764552ced1805dbb206e5970340b91bff2f1",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11516288295388222,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 0,
+          "elapsed_seconds": 22.057271296158433,
+          "log_sha256": "fbf27a24c74dbd6b9c4aaa091afc8daf32b5b48122701f123ca2ae4e8a0a83b3"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11450573243200779,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "aghq-gaussian-alias-red-01": {
+      "status": "FAIL",
+      "receipt_sha256": "bb01c9d52dc2243962a781c8e5f46ec42541c37a204546d4dbbbfbb0952f9a5b",
+      "plan_sha256": "b1e56c83adfc95db6e77eba6fbfda1f71c13a520cd3b60003d07fbca17df3e33",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11497569642961025,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 1,
+          "elapsed_seconds": 29.672581426799297,
+          "log_sha256": "340e6b6e0b07987f7f9c72c8daa174762625db390819d6e9525df2d6a8853172"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11467326618731022,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "aghq-gaussian-green-02": {
+      "status": "PASS",
+      "receipt_sha256": "478e9349d106fc9fbc9f58baf727c3c82e9c83e10ed0a26f272e0d96122009eb",
+      "plan_sha256": "08e4f1c2e64a5961d97d6f919a992764468e8ccffd24a8fe5b616db51e657721",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11507410742342472,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 0,
+          "elapsed_seconds": 28.72033835761249,
+          "log_sha256": "26b10540e29428b898abc6e0c21ee25c7282053acce6a5e579d2b8c6e7006b45"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11518729850649834,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "aghq-gaussian-pair-01": {
+      "status": "PASS",
+      "receipt_sha256": "9bb0e2e1094997eb3a6205e6e9836e93f19b8f647b73838a1968e3896e0e287f",
+      "plan_sha256": "8453cb79a7896cf37d6b3c7a6381254c46b2cb37b1aa107808c357e3a58c7495",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11498039215803146,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 0,
+          "elapsed_seconds": 53.783374179154634,
+          "log_sha256": "bbcf2551e4106e191e1f0cff74d9b288ae34a631266a218f032c049193fe2c90"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11548963747918606,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "aghq-gaussian-pair-02": {
+      "status": "PASS",
+      "receipt_sha256": "ea8ccfb0427fa6c33d8540e49598a418a10d99d63695228a4b38effcb7165f08",
+      "plan_sha256": "1c00c589bd98f0d75a04503a1a732da7067c7776c6565934476e4ace157370be",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11499476991593838,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 0,
+          "elapsed_seconds": 61.557242354378104,
+          "log_sha256": "4a6a73b665f70eb10c9ef685a17c193682b00eb0aeeb10de8df3ecd2cb9fe782"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11530538089573383,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "aghq-gaussian-docs-01": {
+      "status": "PASS",
+      "receipt_sha256": "8f1f9048244edf4e1912df0ad949a92097d97e33c3c7387d166374780c0247d9",
+      "plan_sha256": "208dfdce6df8bad8c980a015de55b63021021005dbd3f9efdc5be9da0d619e70",
+      "results": [
+        {
+          "id": "strict-local-docs",
+          "exit_code": 0,
+          "elapsed_seconds": 81.23251865431666,
+          "log_sha256": "b9af7503d999ef0ff734164c2a81a2ac00fdf833a00e6cd72747ebb6df4854c9"
+        }
+      ]
+    }
+  },
+  "pair": {
+    "r_k": 5,
+    "delta_loglik": 5.443894224299584e-10,
+    "native_converged": true,
+    "r_nfree": 15,
+    "julia_version": "1.12.6",
+    "exact_objective_delta": 0.0,
+    "r_used": true,
+    "r_native_parameters": [
+      -7.254493179513521e-10,
+      -4.630248503982779e-09,
+      1.0119915499951175e-08,
+      1.2197558428794785e-08,
+      6.86014232846676e-09,
+      -0.36323744762260807,
+      0.793106213775348,
+      0.5397805717930843,
+      0.7170657517849371,
+      0.19668898052461117,
+      -0.26327384084495764,
+      0.13365817394347637,
+      -0.37403733459410543,
+      0.30747178762393407,
+      0.1719902131756257
+    ],
+    "r_converged": true,
+    "package_root": "/home/snakagaw/core070-aghq-20260830/aghq-gaussian-pair-02",
+    "r_penalised": false,
+    "sigma_delta": 1.6665460123022058e-07,
+    "scope": "internal shared-SD Gaussian AGHQ; public GllvmFit integration remains required",
+    "r_objective": 502.9141462561421,
+    "winner": 1,
+    "samepoint_delta": -1.1368683772161603e-13,
+    "r_stop_reason": "converged (adaptation mode fixed; gradient below tolerance; max |grad| = 0.000303, relative 6.03e-07)",
+    "exact_gradient_delta": 6.008527009271347e-13,
+    "exact_hessian_delta": 1.0231815394945443e-12,
+    "native_objective": 502.9141462555977,
+    "case_id": "AG-GAUSSIAN-SEED42-K5",
+    "native_parameters": [
+      -4.9960036108132046e-17,
+      7.771561172376095e-17,
+      -3.191891195797325e-17,
+      -1.4710455076283324e-16,
+      2.6367796834847467e-17,
+      -0.36323720797710946,
+      0.7931081273143675,
+      0.5397827233073497,
+      0.7170669391823294,
+      0.19669004611539082,
+      -0.2632744786778725,
+      0.13365865197125434,
+      -0.37403912984000864,
+      0.3074710182531779,
+      0.17198990934100844
+    ],
+    "native_gradient_max": 2.0294876890147862e-13,
+    "r_gradient_max": 0.00030333630136840774,
+    "covariance_delta": 4.25737158987749e-06,
+    "r_n_starts": 2,
+    "artifact_sha256": {
+      ".julia.toml": "1c7e9dae0144bd3d7fef9a783a6e157ffd8434439cc9379333cde71f3d742570",
+      ".fixture.toml": "cb3ea4cfca4bb2d0dd1f804101a9533d6357ba8c1fe2ac3aadec8d794a59df65",
+      ".rds": "a31dca4397aadf06383f3e8ef45d9074551b56d18d558a0a92f3cba086558aba"
+    }
+  },
+  "pair_sha256": "a63a7fe1e9142da29f52238d2cf9fb0c6f28b2988cf416ad2fc592fa504ae14e",
+  "verifier": "tools/core070_aghq_gaussian_verify.py",
+  "review": {
+    "agent": "noether_gaussian_aghq",
+    "requested_model": "gpt-5.6-terra",
+    "requested_effort": "high",
+    "fresh_context": true,
+    "repair_followups": 1,
+    "verdict": "No remaining actionable mathematical or mutation defect; public/full parity not signed off",
+    "receipt_sha256": "b3050dea9aff6e26e7d25ba211ac1d37f1363bfac33815e74233c84f559df2b0"
+  },
+  "negative_controls": 7,
+  "unpaid": [
+    "public Gaussian controls/metadata/fallbacks/postfit/inference",
+    "full Core070 manifest",
+    "original binomial k5 and Student-t R health/density",
+    "covariance and structured multinomial",
+    "bridge qualification",
+    "recovery/coverage and performance",
+    "full package and final visual documentation"
+  ],
+  "mission_control": {
+    "status": "PASS",
+    "http_status": 200,
+    "commit": "ffca5680328896a1381a6c4344c0091d7e3c9af4",
+    "before_sha256": "2b5eea70473cab8ccd86115d412aa36da4b582838e06e6bf9a8b57ade0876f2f",
+    "after_sha256": "ea1c01a342bca8bc9d3906c2835d254b521f33ff43718f4f4e8a6755f7fc6e71",
+    "changed_fields": [
+      "now.next_safe_action"
+    ],
+    "r_fields_unchanged": true
+  },
+  "gate": {
+    "id": "AG-VERIFY",
+    "met": 1,
+    "unmet": 0,
+    "abandoned": 0,
+    "reverified": true
+  }
+}

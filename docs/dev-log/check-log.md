@@ -16220,3 +16220,6 @@ programmeACTIVE/M1PARTIAL/fullmanifestDRAFT. See after-task public-Poisson repor
 
 ## 2026-08-31 — public binomial AGHQ (PARTIAL)
 241 bounded assertions PASS 85.776s; strict executed docs PASS 76.135s. Original k5 pair149 prerequisites PASS, then5PASS/4FAIL; both nonconverged, LLdelta0.008938>0.001. Mean-component/trait-shape defects repaired in binomial and Poisson. Unlazy1met/1unmet; no parity claim. See after-task/2026-08-31-core070-aghq-public-binomial.md.
+
+## 2026-08-31 — Gaussian AGHQ internal adapter
+41 unit PASS28.720338s; original seed42 k5 112 prerequisite+13 paired PASS61.557242s on Totoro Julia1.12.6/pinned R. Shared residual SD, both-engine health under declared absolute-or-relative rule (R relative only), LLdelta5.443894e-10. Exact covariance-Cholesky value/AD gradient/Hessian match; heterogeneous X/offset and demonstrably failing returned-data alias regression repaired. Strict docs PASS81.232519s, existing asset warnings remain. Noether Terra/high review+one follow-up no remaining actionable numerical defect. Seven evidence corruption checks reject; Unlazy AG-VERIFY met. Public GllvmFit integration/fullsuite/recovery/performance/fullmanifest remain unpaid; M1PARTIAL/goalACTIVE. See after-task/2026-08-31-core070-aghq-gaussian.md and core070/aghq-gaussian-evidence.json. No push/merge/release/cleanup/foreign edits.
