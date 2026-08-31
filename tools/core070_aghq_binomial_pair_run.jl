@@ -4,7 +4,6 @@ include(joinpath(root,"test/parity/parity_helpers.jl"))
 _parity_require_gllvmtmb!()
 @testset "AB adapter and prerequisites" begin
  include(joinpath(root,"test/test_aghq_binomial.jl"))
- include(joinpath(root,"test/test_aghq_binomial.jl"))
  include(joinpath(root,"test/test_aghq_multistart.jl"))
  include(joinpath(root,"test/test_aghq_outer.jl"))
 end
@@ -24,18 +23,25 @@ open(io->TOML.print(io,Dict("responses"=>vec(Y),"p"=>p,"n"=>n,"K"=>K,
     "fixture_sha256"=>bytes2hex(sha256(source)),"dgp_sha256"=>bytes2hex(sha256(dgp)))),out*".fixture.toml","w")
 println("ABP_INPUT_SHA256 ",bytes2hex(sha256(read(out*".fixture.toml"))))
 
-base=fit_binomial_gllvm(Y;K=K)
-start=vcat(base.β,GLLVM.pack_lambda(base.Λ));alt=copy(start);alt[p+1:end].=.3
-alt[1:p]=GLLVM.linkfun.(Ref(LogitLink()),clamp.(vec(sum(Y;dims=2))./n,1/(4n),1-1/(4n)))
 problem=GLLVM.aghq_binomial_problem(Y,K;k=5)
-multistart=GLLVM.aghq_multistart_optimize([start,alt],problem.adapt,problem.objective;n_adapt=400)
+public_fit=nothing
+if get(ENV,"CORE070_AGHQ_PUBLIC_BINOMIAL_PAIR","0")=="1"
+    public_fit=fit_binomial_gllvm(Y;K=K,aghq=5)
+    public_fit.integration.actual===:aghq || error("public binomial did not use AGHQ")
+    multistart=public_fit.integration.result
+else
+    base=fit_binomial_gllvm(Y;K=K)
+    start=vcat(base.β,GLLVM.pack_lambda(base.Λ));alt=copy(start);alt[p+1:end].=.3
+    alt[1:p]=GLLVM.linkfun.(Ref(LogitLink()),clamp.(vec(sum(Y;dims=2))./n,1/(4n),1-1/(4n)))
+    multistart=GLLVM.aghq_multistart_optimize([start,alt],problem.adapt,problem.objective;n_adapt=400)
+end
 multistart.usable || error("no usable Julia AGHQ start")
 runs=multistart.runs;winner=multistart.winner;fit=multistart.selected
 serialize_run(r)=Dict("parameters"=>r.parameters,"objective"=>r.objective,"usable"=>r.usable,
     "converged"=>r.converged,"stop_reason"=>string(r.stop_reason),"passes"=>r.passes,
     "gradient_max"=>r.frozen_gradient_max,"relative_gradient"=>r.relative_gradient,
     "trace"=>[Dict(string(k)=>(v===nothing ? "uncapped" : v) for (k,v) in pairs(row)) for row in r.trace])
-open(io->TOML.print(io,Dict("winner"=>winner,"runs"=>serialize_run.(runs))),out*".julia.toml","w")
+open(io->TOML.print(io,Dict("winner"=>winner,"runs"=>serialize_run.(runs),"starts"=>(public_fit===nothing ? [start,alt] : multistart.starts))),out*".julia.toml","w")
 println("ABP_JULIA_SHA256 ",bytes2hex(sha256(read(out*".julia.toml"))))
 @rput Y K p n out
 R"""
@@ -91,7 +97,7 @@ for (lid,link) in enumerate((LogitLink(),ProbitLink(),CLogLogLink()))
  qp=GLLVM.aghq_binomial_problem(Y,K;k=5,N=Nt,offset=offsets,link=link)
  push!(kernel_deltas,qp.objective(r_theta,r_caches)-rcopy(Float64,R"ab_value"))
 end
-record=Dict("case_id"=>"ABP-BINOMIAL-SEED43-K5","scope"=>"INTERNAL_BINOMIAL_JULIA_PUBLIC_FROZEN_R_AGHQ_NOT_PUBLIC_JULIA_PARITY",
+record=Dict("case_id"=>"ABP-BINOMIAL-SEED43-K5","scope"=>(public_fit===nothing ? "INTERNAL_BINOMIAL_JULIA_PUBLIC_FROZEN_R_AGHQ_NOT_PUBLIC_JULIA_PARITY" : "PUBLIC_BINOMIAL_ORIGINAL_K5"),
  "kernel_deltas"=>kernel_deltas,
  "julia_version"=>string(VERSION),"package_root"=>pkgdir(GLLVM),"winner"=>winner,
  "native_objective"=>fit.objective,"r_objective"=>r_objective,"delta_loglik"=>abs(fit.objective-r_objective),

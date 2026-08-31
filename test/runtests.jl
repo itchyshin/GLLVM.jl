@@ -46,6 +46,7 @@ using GLLVM
     include("test_aghq_poisson.jl")
     include("test_aghq_public_poisson.jl")
 include("test_aghq_binomial.jl")
+include("test_aghq_public_binomial.jl")
     include("test_aghq_gate.jl")
     include("test_aghq_kd_bound.jl")
     include("test_poisson_laplace.jl")

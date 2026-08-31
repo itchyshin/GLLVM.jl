@@ -1,6 +1,12 @@
-# Estimator identity for the public Poisson Stage1a route. Internal types.
+# Estimator identity for the public ordinary Stage1a routes. Internal types.
 struct AGHQPoissonData
     responses::Matrix{Float64}
+    mask::BitMatrix
+    offset::Matrix{Float64}
+end
+struct AGHQBinomialData
+    responses::Matrix{Float64}
+    trials::Matrix{Float64}
     mask::BitMatrix
     offset::Matrix{Float64}
 end
@@ -17,7 +23,7 @@ struct AGHQFitInfo{C,B,R}
     base_controls::B
     result::R
     caches::Vector{AGHQAdaptation}
-    data::Union{Nothing,AGHQPoissonData}
+    data::Union{Nothing,AGHQPoissonData,AGHQBinomialData}
     input_digest::String
     mode_gradient_max::Float64
 end
@@ -59,3 +65,7 @@ _aghq_outer_controls(c)=(n_adapt=c.n_adapt,iter_cap=c.iter_cap,continuation=c.co
     grad_tol_rel=c.grad_tol_rel,f_tol=c.f_tol,rho_min=c.rho_min,optimizer_iterations=c.optimizer_iterations)
 _aghq_data_digest(d::AGHQPoissonData)=bytes2hex(SHA.sha256(
     string(size(d.responses))*"|"*join(vec(d.responses),",")*"|"*join(vec(d.mask),",")*"|"*join(vec(ifelse.(d.mask,d.offset,0.0)),",")))
+
+_aghq_data_digest(d::AGHQBinomialData)=bytes2hex(SHA.sha256(
+    string(size(d.responses))*"|"*join(vec(d.responses),",")*"|"*join(vec(d.mask),",")*
+    "|"*join(vec(ifelse.(d.mask,d.trials,0.0)),",")*"|"*join(vec(ifelse.(d.mask,d.offset,0.0)),",")))

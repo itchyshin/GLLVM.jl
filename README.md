@@ -185,3 +185,9 @@ for an ordinary log-link Poisson latent block. Default fits remain Laplace.
 Inspect `fit.integration` for actual integration, fallback reasons and retained
 attempts. Inference uses the fitted frozen-node objective; full Stage 1a parity,
 recovery and coverage remain unverified. See the quickstart for controls and limits.
+
+`fit_binomial_gllvm(Y; K=2, N=trials, aghq=5)` also exposes an ordinary
+binomial candidate with logit, probit or cloglog link. Trials, masks and offsets
+are retained for inference and postfit methods. `predict` returns probabilities;
+`simulate` returns counts. The original five-node binomial comparison currently
+fails both-engine convergence and the likelihood gate; do not infer full parity.

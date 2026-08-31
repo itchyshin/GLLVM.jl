@@ -5,6 +5,10 @@ All notable changes to GLLVM.jl are documented here.
 ## Unreleased
 
 ### Changed
+- Local binomial candidate: opt-in ordinary AGHQ with logit/probit/cloglog,
+  retained trials/masks/offsets, estimator metadata and frozen-objective inference.
+  Public prediction returns probabilities and simulation returns counts. The
+  original k5 paired convergence/likelihood gate remains failed, not waived.
 - Local candidate: ordinary log-link Poisson fits accept opt-in `aghq` controls
   and retain integration metadata, final adaptation and every start outcome.
   Predictions preserve offsets; Wald/profile intervals use the fitted frozen

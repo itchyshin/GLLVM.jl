@@ -63,6 +63,8 @@ using GLLVM,Test,LinearAlgebra,Random,Distributions
         @test_throws ArgumentError predict(fit,Y.+1)
         @test size(predict(fit,Y.+1;offset=zeros(size(Y))))==size(Y)
         @test size(simulate(fit,8;rng=MersenneTwister(1)))==size(Y)
+        @test_throws DimensionMismatch getLV(fit,Y[1:1,:];offset=zeros(1,8),component=:mean)
+        @test_throws DimensionMismatch getLV(fit,Y;mask=trues(1,1),component=:mean)
     end
 end
 @testset "PU04 Wald positive definiteness" begin

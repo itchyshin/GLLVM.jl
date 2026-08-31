@@ -52,7 +52,12 @@ draws `z_total = X_lv * alpha_lv + z` with `z ~ N(0, I_K)`.
 function simulate(fit::BinomialFit, n::Integer;
                   N::Union{Nothing, AbstractMatrix} = nothing,
                   X_lv::Union{Nothing, AbstractMatrix} = nothing,
-                  rng::AbstractRNG = default_rng())
+                  rng::AbstractRNG = default_rng(),offset=nothing)
+    if _is_binomial_aghq(fit)
+        X_lv===nothing || throw(ArgumentError("AGHQ loadings-only simulation does not use X_lv"))
+        return _binomial_aghq_simulate(fit,n;N=N,rng=rng,offset=offset)
+    end
+    offset===nothing || throw(ArgumentError("explicit offset currently requires AGHQ metadata"))
     p, K = size(fit.Λ)
     Nm = N === nothing ? fill(1, p, n) : N
     Zmean = if fit.alpha_lv === nothing

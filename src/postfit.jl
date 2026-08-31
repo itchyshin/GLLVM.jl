@@ -204,13 +204,23 @@ For fits with `X_lv`, `component` chooses which latent-score layer to return:
 `:total` is their sum. `rotate=true` applies the canonical [`rotation`](@ref)
 to whichever component is returned.
 """
-function getLV(fit::BinomialFit, Y::AbstractMatrix{<:Integer};
+function getLV(fit::BinomialFit, Y::AbstractMatrix;
                N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
                X_lv::Union{Nothing, AbstractMatrix} = nothing,
                component::Symbol = :total,
-               rotate::Bool = true, mask = nothing)
+               rotate::Bool = true, mask = nothing,offset=nothing)
     component in (:total, :innovation, :mean) ||
         throw(ArgumentError("component must be :total, :innovation, or :mean; got :$component"))
+    if _is_binomial_aghq(fit)
+        X_lv===nothing || throw(ArgumentError("AGHQ loadings-only prediction does not use X_lv"))
+        if component===:mean
+            _binomial_aghq_problem(fit,Y;N=N,mask=mask,offset=offset)
+            return zeros(size(Y,2),size(fit.Λ,2))
+        end
+        return _binomial_aghq_scores(fit,Y;N=N,rotate=rotate,mask=mask,offset=offset)
+    end
+    offset===nothing || throw(ArgumentError("explicit offset currently requires AGHQ metadata"))
+    eltype(Y)<:Integer || throw(ArgumentError("Laplace binomial getLV requires integer responses"))
     p, n = size(Y)
     Nm = N === nothing ? fill(1, p, n) : N
     K = size(fit.Λ, 2)
@@ -258,14 +268,21 @@ In-sample fitted values at the Laplace conditional mode `ẑ` (see [`getLV`](@re
 `type=:link` returns `η = β + Λ ẑ`; `type=:response` returns the inverse-link
 fitted probabilities `linkinv(link, η)`.
 """
-function predict(fit::BinomialFit, Y::AbstractMatrix{<:Integer};
+function predict(fit::BinomialFit, Y::AbstractMatrix;
                  type::Symbol = :response,
                  N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
-                 X_lv::Union{Nothing, AbstractMatrix} = nothing)
+                 X_lv::Union{Nothing, AbstractMatrix} = nothing,mask=nothing,offset=nothing)
     type in (:link, :response) ||
         throw(ArgumentError("type must be :link or :response; got :$type"))
+    if _is_binomial_aghq(fit)
+        X_lv===nothing || throw(ArgumentError("AGHQ loadings-only prediction does not use X_lv"))
+        z=_binomial_aghq_scores(fit,Y;N=N,rotate=false,mask=mask,offset=offset)
+        eta=fit.β .+ fit.Λ*z' .+ _aghq_prediction_offset(fit,Y,offset)
+        return type===:link ? eta : _binomial_aghq_probability.(eta,Ref(fit.link))
+    end
+    offset===nothing || throw(ArgumentError("explicit offset currently requires AGHQ metadata"))
     Z = getLV(fit, Y; N = N, X_lv = X_lv, component = :total,
-              rotate = false)                       # n×K
+              rotate = false,mask=mask)                       # n×K
     η = fit.β .+ fit.Λ * Z'                           # p×n
     type === :link && return η
     return linkinv.(Ref(fit.link), η)
@@ -403,16 +420,34 @@ Smyth randomized quantile residuals — `Φ⁻¹(u)`, `u` uniform on `[F(y−1),
 under `Binomial(N, μ)` — ≈ N(0,1) under a correct model (pass a fixed `rng` for
 reproducibility). `:pearson` returns `(Y − Nμ) / √(Nμ(1−μ))`.
 """
-function residuals(fit::BinomialFit, Y::AbstractMatrix{<:Integer};
+function residuals(fit::BinomialFit, Y::AbstractMatrix;
                    type::Symbol = :dunnsmyth,
                    N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
                    X_lv::Union{Nothing, AbstractMatrix} = nothing,
-                   rng::AbstractRNG = Random.default_rng())
+                   rng::AbstractRNG = Random.default_rng(),mask=nothing,offset=nothing)
     type in (:dunnsmyth, :pearson) ||
         throw(ArgumentError("type must be :dunnsmyth or :pearson; got :$type"))
+    if _is_binomial_aghq(fit)
+        q,_=_binomial_aghq_problem(fit,Y;N=N,mask=mask,offset=offset)
+        mu=predict(fit,Y;N=N,X_lv=X_lv,mask=mask,offset=offset)
+        result=fill(NaN,size(Y))
+        for j in eachindex(result)
+            q.data.mask[j] || continue
+            nt=q.data.trials[j];y=q.data.responses[j];prob=mu[j]
+            if type===:pearson
+                variance=nt*prob*(1-prob)
+                result[j]=variance>0 ? (y-nt*prob)/sqrt(variance) : NaN
+            else
+                d=Binomial(Int(nt),prob);lo=cdf(d,y-1);hi=cdf(d,y)
+                result[j]=quantile(Normal(),clamp(lo+(hi-lo)*rand(rng),1e-12,1-1e-12))
+            end
+        end
+        return result
+    end
+    offset===nothing || throw(ArgumentError("explicit offset currently requires AGHQ metadata"))
     p, n = size(Y)
     Nm = N === nothing ? fill(1, p, n) : N
-    μ = predict(fit, Y; type = :response, N = N, X_lv = X_lv)
+    μ = predict(fit, Y; type = :response, N = N, X_lv = X_lv,mask=mask)
     if type === :pearson
         return (Y .- Nm .* μ) ./ sqrt.(Nm .* μ .* (1 .- μ))
     end
@@ -677,7 +712,7 @@ StatsAPI.coeftable(fit::AnyGllvmFit, Y::AbstractMatrix; kwargs...) = coef_table(
 Return a concise string summary of a fitted GLLVM model.
 """
 Base.summary(fit::GllvmFit) = "Gaussian GLLVM fit (p=$(fit.model.p), K=$(fit.model.K), logLik=$(round(fit.logLik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
-Base.summary(fit::BinomialFit) = "Binomial GLLVM fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
+Base.summary(fit::BinomialFit) = (fit.integration===nothing ? "" : fit.integration.actual===:aghq ? "AGHQ(k=$(fit.integration.k)) " : "Laplace ($(fit.integration.reason)) ") * "Binomial GLLVM fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
 Base.summary(fit::PoissonFit) = (fit.integration===nothing ? "" : fit.integration.actual===:aghq ? "AGHQ(k=$(fit.integration.k)) " : "Laplace ($(fit.integration.reason)) ") * "Poisson GLLVM fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
 Base.summary(fit::NBFit) = "NegativeBinomial GLLVM fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
 Base.summary(fit::NB1Fit) = "NB1 GLLVM fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
@@ -703,7 +738,7 @@ end
 
 function Base.show(io::IO, ::MIME"text/plain", fit::BinomialFit)
     p, K = size(fit.Λ)
-    println(io, "Binomial GLLVM fit")
+    println(io, summary(fit))
     println(io, "  responses p = ", p, ", latent factors K = ", K,
             ", link = ", nameof(typeof(fit.link)))
     println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
@@ -751,7 +786,10 @@ function getLV(fit::PoissonFit, Y::AbstractMatrix;
         throw(ArgumentError("component must be :total, :innovation, or :mean; got :$component"))
     if _is_poisson_aghq(fit)
         X_lv===nothing || throw(ArgumentError("AGHQ loadings-only prediction does not use X_lv"))
-        component===:mean && return zeros(size(Y,2),size(fit.Λ,2))
+        if component===:mean
+            _poisson_aghq_problem(fit,Y;mask=mask,offset=offset)
+            return zeros(size(Y,2),size(fit.Λ,2))
+        end
         return _poisson_aghq_scores(fit,Y;rotate=rotate,mask=mask,offset=offset)
     end
     offset===nothing || throw(ArgumentError("explicit offset in getLV is currently carried by AGHQ fits only"))
@@ -793,7 +831,7 @@ function predict(fit::PoissonFit, Y::AbstractMatrix;
         X_lv===nothing || throw(ArgumentError("AGHQ loadings-only prediction does not use X_lv"))
         q,_=_poisson_aghq_problem(fit,Y;mask=mask,offset=offset)
         z=_poisson_aghq_scores(fit,Y;rotate=false,mask=mask,offset=offset)
-        eta=fit.β .+ fit.Λ*z' .+ _poisson_aghq_prediction_offset(fit,Y,offset)
+        eta=fit.β .+ fit.Λ*z' .+ _aghq_prediction_offset(fit,Y,offset)
         return type===:link ? eta : exp.(eta)
     end
     offset===nothing || throw(ArgumentError("explicit prediction offset currently requires AGHQ metadata"))

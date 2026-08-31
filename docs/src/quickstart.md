@@ -167,3 +167,35 @@ refits retain failed attempts; recovery and coverage validation remain pending.
 Stored masks and offsets are used for the original data. For changed data with
 nonzero offsets, supply the offset explicitly. Inspect `fit.converged` and
 `fit.integration` before interpreting a result.
+
+## Binomial quadrature (local development candidate)
+
+For successes out of known trials, supply `N` with the same responses × sites
+shape as `Y`. Omit `N` only for Bernoulli observations. The ordinary binomial
+route accepts logit, probit and complementary-log-log links, with the same
+node controls and frozen-node convergence rule as the Poisson route.
+
+```@example binomial_aghq
+using GLLVM
+Y = [0 1 2 3 1 2 0 1; 1 2 3 1 0 2 1 3]
+N = fill(3, size(Y))
+fit = fit_binomial_gllvm(Y; K=1, N=N, aghq=3,
+    aghq_control=(n_adapt=30, multistart=false))
+probabilities = predict(fit, Y) # probabilities, not expected counts
+expected_counts = N .* probabilities
+(actual=fit.integration.actual, nodes=fit.integration.k,
+ converged=fit.converged, reason=fit.integration.reason)
+```
+
+Masks, observed trial counts and offsets are retained. Intervals require the
+original observed data and use the final frozen-node objective. For changed
+responses or new sites, supply trials and offsets explicitly if the training
+model used nonunit trials or nonzero offsets. Finite trial/offset inputs at
+masked cells still define predictions and simulation there; invalid masked
+trial placeholders cannot define a simulation until valid trials are supplied.
+
+Inspect nonconvergence before interpreting coefficients or intervals. The
+original five-node binomial comparison fails convergence in both engines and
+has an absolute log-likelihood difference of about 0.00894 (required ≤0.001).
+Higher-node diagnostics do not replace that required case. This is a local
+implementation candidate, not completed R parity or validated interval coverage.

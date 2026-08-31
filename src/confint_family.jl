@@ -131,8 +131,26 @@ end
 function _family_ci(fit::BinomialFit, Y::AbstractMatrix;
                     N::Union{Nothing, AbstractMatrix} = nothing,
                     mask = nothing,
-                    objective::Symbol = :laplace,
+                    objective::Symbol = :fit,
                     newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    if _is_binomial_aghq(fit)
+        objective in (:fit,:aghq) || throw(ArgumentError("AGHQ inference must use objective=:fit; Laplace/VA would change the estimator"))
+        q,_=_binomial_aghq_problem(fit,Y;N=N,mask=mask,require_identity=true)
+        i=fit.integration;p,K=size(fit.Λ);n=size(Y,2)
+        theta=copy(fit.theta_packed);nll=t->q.objective(t,i.caches)
+        draw=rng->_binomial_aghq_simulate(fit,n;rng=rng)
+        refit=function(Yb)
+            fb=try
+                fit_binomial_gllvm(Yb;_binomial_aghq_refit_kwargs(fit)...)
+            catch e
+                e isa InterruptException && rethrow()
+                return nothing
+            end
+            return _is_binomial_aghq(fb) && fb.converged ? copy(fb.theta_packed) : nothing
+        end
+        return _FamilyCI(theta,nll,_glm_lin_names(p,K),fill(:linear,length(theta)),draw,refit)
+    end
+    objective===:fit && (objective=:laplace)
     fit.alpha_lv === nothing || throw(ArgumentError(
         "confint for fit_binomial_gllvm(...; X_lv=...) is not carried by confint(fit, Y); " *
         "use confint_lv_effects(fit, Y, X_lv) for Wald intervals on B_lv, " *
@@ -2236,7 +2254,7 @@ function confint(fit::_CIFit, Y::AbstractMatrix;
                  profile_max_expand::Integer = 20,
                  profile_max_bisect::Integer = 30)
     0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
-    is_aghq=_is_poisson_aghq(fit)
+    is_aghq=_is_aghq_fit(fit)
     objective===:fit && (objective=is_aghq ? :aghq : :laplace)
     is_aghq && objective!==:aghq && throw(ArgumentError("AGHQ intervals require the fitted frozen objective; use objective=:fit"))
     objective in (:laplace, :va, :aghq) && (objective!==:aghq || is_aghq) ||

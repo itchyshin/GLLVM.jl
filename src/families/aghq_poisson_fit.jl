@@ -22,8 +22,8 @@ AGHQ always uses observed adaptation curvature; an explicit `hessian` must be
 input identity and diagnostics. AGHQ convergence refers to the **frozen-node
 surrogate gradient**, not the total derivative through changing adaptation.
 `confint(fit,Y)` uses that fitted objective; prediction retains masks/offsets.
-This public quadrature route currently covers Poisson only, not the full family
-or structured-model Stage1a contract.
+This function covers Poisson; the separate binomial candidate does not establish
+the full family or structured-model Stage1a contract.
 """
 function fit_poisson_gllvm(Y::AbstractMatrix;K::Integer,aghq=false,aghq_control=(;),kwargs...)
     request=_aghq_request(aghq);c=_aghq_controls(aghq_control)
@@ -84,6 +84,7 @@ _poisson_with_integration(f::PoissonFit,i)=PoissonFit(f.β,f.Λ,f.link,f.loglik,
 _is_poisson_aghq(f)=f isa PoissonFit && f.integration!==nothing && f.integration.actual===:aghq
 
 function _poisson_aghq_problem(fit::PoissonFit,Y;mask=nothing,offset=nothing,require_identity=false)
+    size(Y,1)==size(fit.Λ,1) || throw(DimensionMismatch("AGHQ responses must match fitted trait count"))
     i=fit.integration;d=i.data
     # Compare only observed inputs; masked placeholders cannot alter the model.
     m=mask===nothing && size(Y)==size(d.responses) ? d.mask : mask
@@ -117,7 +118,7 @@ function _poisson_aghq_simulate(fit,n;rng=Random.default_rng(),offset=nothing)
 end
 
 # Finite supplied offsets still define predictions for cells omitted from fitting.
-function _poisson_aghq_prediction_offset(fit,Y,offset)
+function _aghq_prediction_offset(fit,Y,offset)
     d=fit.integration.data
     off=offset===nothing ? (size(Y)==size(d.offset) ? d.offset : zeros(size(Y))) : offset
     size(off)==size(Y) || throw(DimensionMismatch("prediction offset must match Y"))

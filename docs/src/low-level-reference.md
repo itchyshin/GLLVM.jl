@@ -72,4 +72,5 @@ GLLVM.aghq_binomial_problem
 GLLVM.aghq_outer_optimize
 GLLVM.aghq_multistart_optimize
 GLLVM._fit_poisson_gllvm_laplace
+GLLVM._fit_binomial_gllvm_laplace
 ```

@@ -133,7 +133,10 @@ struct BinomialFit
     theta_packed::Vector{Float64}
     hessian::Symbol   # the Laplace log-det curvature this fit's objective used
     saturation::Union{Nothing, LaplaceSaturationHealth}
+    integration::Union{Nothing,AGHQFitInfo}
 end
+BinomialFit(β,Λ,link,loglik,converged,iterations,alpha_lv,theta_packed,hessian,saturation)=
+    BinomialFit(β,Λ,link,loglik,converged,iterations,alpha_lv,theta_packed,hessian,saturation,nothing)
 
 # Positional compatibility constructor (2026-08-28): every pre-existing
 # construction site builds a default-curvature fit; the `hessian` field
@@ -308,7 +311,7 @@ Cloglog stays `:fisher` (the diagnosed Laplace saturation pathology, see
 check-log 2026-08-28 — a deliberate exception, not an oversight). Omitting the
 kwarg is exactly the default-path behaviour for every link.
 """
-function fit_binomial_gllvm(Y::AbstractMatrix; K::Integer,
+function _fit_binomial_gllvm_laplace(Y::AbstractMatrix; K::Integer,
         link::Link = LogitLink(),
         N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing, mask = nothing,
         offset = nothing, gradient::Symbol = :analytic,

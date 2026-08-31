@@ -1,0 +1,253 @@
+{
+  "status": "PARTIAL",
+  "reference": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "scope": "public ordinary binomial AGHQ implementation; original paired health/likelihood remains unmet",
+  "public_assertions": 108,
+  "kernel_assertions": 78,
+  "adjacent_poisson_wald_assertions": 55,
+  "total_public_run_assertions": 241,
+  "pair_prerequisite_assertions": 149,
+  "pair_pass": 5,
+  "pair_fail": 4,
+  "processes": {
+    "aghq-public-binomial-green-03": {
+      "status": "PASS",
+      "receipt_sha256": "3e1ea5fc874a022f28b20d6f65521bbe86acd23cc432c36b7bffa385b7547dc9",
+      "plan_sha256": "890177d4786f1ef194cd943ddb17557037beeeca7df819e4bcfc7b04cda2487e",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11528697423636913,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 0,
+          "elapsed_seconds": 85.77648815326393,
+          "log_sha256": "05d35da18561a1b1122805e581ea0610a8c56dd5abc329ce05c995f0cbda4169"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11551486700773239,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "aghq-public-binomial-pair-03": {
+      "status": "FAIL",
+      "receipt_sha256": "035ca4713bf707f8dd12888789cee5f892261a952d0e970a9044e2f1e85e9ffd",
+      "plan_sha256": "9ef410498f30854d122c115ed5ef655b9e3ad6da03d4554fd63944c06016beeb",
+      "results": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.1151166521012783,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        },
+        {
+          "id": "aghq-outer",
+          "exit_code": 1,
+          "elapsed_seconds": 56.27497039176524,
+          "log_sha256": "39347a3af07a7eca67c10fbb2f894bffa73cdccec86843e9e6d84037bb224a7d"
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11475095525383949,
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5"
+        }
+      ]
+    },
+    "aghq-public-binomial-docs-02": {
+      "status": "PASS",
+      "receipt_sha256": "9f28a351ce1404725549a7f7e16fdd6ba4e43e23a1d4aa69b4be03e518b00dbb",
+      "plan_sha256": "63c7c301d9162d1dcea2661dc565c45a97e5bc2febb1c7c57b1307ab41e2b316",
+      "results": [
+        {
+          "id": "strict-local-docs",
+          "exit_code": 0,
+          "elapsed_seconds": 76.13483956083655,
+          "log_sha256": "5c73465eaba1c3c07dab5491d052adc34a5e0cada5c9b07a22983ef3e50c1c23"
+        }
+      ]
+    }
+  },
+  "paired_case": {
+    "r_k": 5,
+    "delta_loglik": 0.008938074911668537,
+    "native_converged": false,
+    "fd_stability": 9.237055564881302e-09,
+    "r_nfree": 14,
+    "julia_version": "1.12.6",
+    "r_used": true,
+    "native_gradient": [
+      -0.0009223631704703417,
+      0.0022577546305911356,
+      -9.049263816113262e-05,
+      0.005137546292983963,
+      0.00023362102086968428,
+      0.001554072489405145,
+      0.0003429508020892924,
+      -0.0032096110129115896,
+      0.0009128699404230001,
+      -0.0019019174446852916,
+      0.0014035979013517635,
+      -0.004654537906398304,
+      0.014285639133379387,
+      0.0017104109833554482
+    ],
+    "node_refinement_at_winner": [
+      193.7930094867753,
+      193.7676157821651,
+      193.77093675278525
+    ],
+    "r_native_parameters": [
+      -0.3584157764695015,
+      0.07612499196286998,
+      1.0297216659380481,
+      -1.9928243059743325,
+      0.4687797835703784,
+      0.5126844784552247,
+      0.757272906890956,
+      -0.3159103392694296,
+      -1.0922451059798357,
+      2.1608719878461597,
+      0.49900032843320086,
+      0.787314244580932,
+      2.527419740355903,
+      -0.684023962662023
+    ],
+    "r_converged": false,
+    "r_stored_gradient": 0.012657917642209058,
+    "package_root": "/home/snakagaw/core070-aghq-20260830/aghq-public-binomial-pair-03",
+    "kernel_deltas": [
+      0.0,
+      -1.7053025658242404e-13,
+      0.0
+    ],
+    "r_penalised": false,
+    "total_fd": [
+      -0.012694083295627932,
+      -0.004008396103927225,
+      0.0063202023170561,
+      -0.07457531836507769,
+      6.871232471894473e-05,
+      0.013975456170101095,
+      0.013996869085985962,
+      0.026054136981201733,
+      0.011914673336832491,
+      -0.016094202237582067,
+      -0.011931332721815123,
+      -0.005334864283668138,
+      0.021880221368064664,
+      -0.0015599056268911224
+    ],
+    "omitted_chain_delta": 0.07971286465806166,
+    "scope": "PUBLIC_BINOMIAL_ORIGINAL_K5",
+    "r_objective": 193.78407141186364,
+    "winner": 1,
+    "samepoint_delta": -2.842170943040401e-14,
+    "r_stop_reason": "stalled (no honest descent at cap 1 after backtracking); max |grad| = 0.0127 (relative 6.53e-05) against tolerances of 0.0001 / 1e-06",
+    "native_objective": 193.7930094867753,
+    "case_id": "ABP-BINOMIAL-SEED43-K5",
+    "readapted_rpoint_delta": -2.8421709430404007e-13,
+    "native_parameters": [
+      -0.3589158231507603,
+      0.07477909415769654,
+      1.0366704101445912,
+      -2.2054549687713543,
+      0.47000568250361896,
+      -0.5010075567496222,
+      -0.7522395337281114,
+      0.29622270479641916,
+      1.0896127378689662,
+      -2.479018728956463,
+      -0.4899800006463892,
+      -0.8254084042245747,
+      -2.760742730534826,
+      0.6948001059603988
+    ],
+    "native_gradient_max": 0.014285639133379387,
+    "r_start_used": 1,
+    "r_gradient_max": 0.012660867243815157,
+    "covariance_delta": 2.710015990918892,
+    "r_n_starts": 2,
+    "total_fd_double_step": [
+      -0.012694092532683497,
+      -0.004008398235555433,
+      0.006320203738141571,
+      -0.07457531836507769,
+      6.871232471894473e-05,
+      0.013975456880643831,
+      0.013996873349242376,
+      0.026054132007402583,
+      0.011914674047375227,
+      -0.01609420152703933,
+      -0.011931324195302294,
+      -0.005334864994210874,
+      0.02188022847349202,
+      -0.0015599027847201794
+    ],
+    "r_gradient": [
+      0.0005090245081157119,
+      -0.0009252863052076267,
+      0.00022978643195313347,
+      0.008234674234802068,
+      -0.000500477529233452,
+      -0.0004586478440688996,
+      -0.0007582164165093191,
+      0.0012727997012274609,
+      -0.00031515799552035966,
+      -0.009568062073483924,
+      0.0007681491359504502,
+      0.0008511075707578371,
+      -0.012660867243815157,
+      -0.0016044175639050307
+    ],
+    "artifact_sha256": {
+      ".julia.toml": "9e2b57085885516ebf66926963ff3d943238fc85c35b3a8ca954f176c7d80422",
+      ".fixture.toml": "ffa8c3124c1f884b04574a497e592f7722ec8e0812151146b51ae74b8f4866fc",
+      ".rds": "b069cf779fb3ac9e8ae4d88c41341958b4c8a773b97b73d7aa24cc66c3bcad22"
+    }
+  },
+  "render": {
+    "status": "PASS",
+    "remote": "/home/snakagaw/core070-aghq-20260830/aghq-public-binomial-docs-02/docs/build/1/quickstart.html",
+    "sha256": "93f7f9383abff896289cfdee10853ff8db037cf59c9d6c11b6f4e289b97c4599",
+    "executed_output": "(actual = :aghq, nodes = 3, converged = false, reason = :no_merit_descent)",
+    "visual_audit": false
+  },
+  "unlazy": {
+    "met": [
+      "BU-PUBLIC"
+    ],
+    "unmet": [
+      "BU-PAIR"
+    ],
+    "abandoned": []
+  },
+  "review": {
+    "agent": "noether_public_binomial",
+    "requested_model": "gpt-5.6-terra",
+    "requested_effort": "high",
+    "followups": 1,
+    "findings": [
+      "mean component bypasses data validation",
+      "remaining fitted trait dimension not validated; Poisson neighbor shares defect",
+      "alternate start raw success mean must match frozen R"
+    ],
+    "last_review_verdict": "residual trait-dimension P2; parent subsequently repaired with failing/passing regression evidence",
+    "completion_signoff": false
+  },
+  "not_covered": [
+    "original k5 fit-health pass",
+    "full Stage1a",
+    "calibrated coverage",
+    "full package tests",
+    "performance",
+    "visual polish",
+    "release"
+  ]
+}
