@@ -831,3 +831,24 @@ Read after-task/2026-08-31-core070-poisson-beta-required.md; MCreceipt in
 .unlazy/core070-aghq/poisson-beta-required-01/mission-update.json.
 
 Mission Control local commit 6aa79144af86ed8a9cc6d5b30f660a31443e101b: HTTP200, exact served Julia field verified; R fields unchanged; exact-file lease released.
+
+## 2026-08-31 — fixed-adaptation AGHQ prerequisite
+
+Internal cache/frozen objective implemented; observed Hessian, R-compatible
+repair only on Cholesky failure, explicit repair diagnostics, normalized joint
+integral and callback AD. Existing evaluator/defaults unchanged. Red173pass
+5error; final211PASS31.641s Totoro (38new+173adjacent). Frozen R five branch
+factor/mode/logjac comparisonsPASS, three artifactcorruptionsreject. Noether
+fresh Terra/high source review plusonefollowup closed comparatorP2; nopanel.
+
+FullprogrammeACTIVE/M1PARTIAL, manifestDRAFT. Public AGHQ control/outerloop/fit
+reporting/comparisons/recovery stillNOTimplemented. Next implement reviewed
+short frozen-surrogate steps with re-adapted merit/backtracking/convergence.
+Whole-source pin changed: earlier21familybindings are HISTORICAL pending
+current-source refresh, not fresh candidate verification;76familycases unbound.
+StudentRhealth/17linkdispositions andbroader contracts remainopen. No newB
+productionchild, push/merge/release/cleanup/Rengine/foreign edits orDRACjob.
+Read after-task/2026-08-31-core070-aghq-frozen.md and
+core070/aghq-frozen-contract.md; currentevidence core070/aghq-frozen-evidence.json.
+
+Mission Control local da7f389c4eaf250623a879d70256258a2796b8ad: HTTP200/exact served readback, R fields unchanged, exact-file lease released.
