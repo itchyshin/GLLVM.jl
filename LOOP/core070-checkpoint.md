@@ -1017,3 +1017,23 @@ finalvisualdocs remain unpaid. Alljobs terminal,noDRACcompute,noBproductionchild
 No push/merge/release/cleanup/Rengine/foreign edits; preserved REML sibling branch.
 
 Mission Control local 5a6954d7575cb778325ba08365d196d7a7dcd43e: HTTP200 and exact Julia-field readback; all R fields unchanged; exact-file lease released.
+
+
+## 2026-08-31 — original binomial k5 local fixed-point conflict
+Diagnostic10assertions PASS18.155s; frozen-gradient roots reached from both
+retained native/R endpoints, but F increased .010900/.019838; totalgradient
+remains .1083166. Mode residuals<=7.5e-16,60sites,0curvature repairs. Covariance
+comparison handles sign flips (observed delta7.702e-6). NoetherTerrahigh fresh+
+onefollowup supports LOCAL conflict, not global impossibility or solver bug.
+No src/fixture/tolerance/estimator/R changes. BF-DIAGNOSTIC met;5negativecontrols
+reject. OriginalbinomialPARITY UNMET; do not substitute these roots or retry
+identical default runs. See core070/binomial-fixedpoint-evidence.json and
+ after-task/2026-08-31-core070-binomial-fixedpoint.md.
+NEXT prioritize the unfinished full Core070 required-case manifest BEFORE more
+capability expansion. Separate any proposed estimator-policy change from the
+frozen reference contract; no such change authorized here. FullprogrammeACTIVE,
+M1PARTIAL,manifestDRAFT. StudentRhealth/density,remainingStage1a,17links,covariance,
+structuredmultinomial,bridge,recovery/performance/fullsuite/finaldocs unpaid.
+Alljobs terminal; noDRACcompute,noBproductionchild,push,merge,release or cleanup.
+
+Mission Control local 6f39d348e04b2e3fc2aeae0ba04025e9c593b258: servedHTTP200, exact Julia-field readback, R fields unchanged; exact-file lease released. BF-DIAGNOSTIC reverified1met/0unmet/0abandoned; original binomial parity still unmet.
