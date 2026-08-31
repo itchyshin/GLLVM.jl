@@ -135,3 +135,17 @@ This packet does not yet replace the two light checks in runparity.jl; therefore
 it does not change the19 bound cases or78 unbound case specifications above.
 Next integration must preserve the original failure receipts and expose the R
 control policy. It cannot imply formula, bridge or recovery qualification.
+
+## Required integration supersedes the qualification-only status
+
+The new Poisson/Beta wrappers now run all32 qualified health assertions through
+`runparity.jl`, with their original required IDs. The original DGP fixtures and
+native fit controls are unchanged; public R refinement is explicit, and the
+original R failures remain retained. `poisson-beta-required-evidence.json` binds
+that execution. The earlier standalone packet remains historical qualification.
+
+Use `nb2-formula-required-pb-refresh.json`, `family-boundary-pb-refresh.json` and
+`family-link-boundary-pb-refresh.json` for the refreshed shared-harness pins.
+Current family bindings are4 native,1 formula and16 boundaries:21 bound and76
+unbound of97 planned cases. No formula/bridge/recovery or full-family promotion
+is implied, and the complete programme manifest is still unfrozen.

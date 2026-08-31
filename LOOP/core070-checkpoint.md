@@ -808,3 +808,26 @@ No new production child; Bcheckpointlimit unchanged. Alljobs terminal;noDRACjob.
 MC84ac7b2f8a5ddcb74c625464614af214b3f6f45a HTTP200/Runchanged/leaseRELEASED.
 Report: after-task/2026-08-31-core070-poisson-beta-health.md.
 No push/merge/release/cleanup/Rengine/foreign changes; no fullsuite/docsrender.
+
+## 2026-08-31 — original Poisson/Beta in the required runner
+
+Poisson/Beta wrappers now execute32 health assertions through actualrunparity,
+37.863s onTotoro. Original DGP/native controls unchanged; public R refinement
+explicit, default failures retained; health/rawRbytes exactly match qualification.
+Source inventory includes helper/originalfixtures/policy; 17family+1interface IDs
+unchanged. Refreshed NB2/truncated/formula58pass63.185s, shapes50pass10.592s,
+links70pass23.064s, originalordinaldiagnostic5pass22.120s. Alljobs terminal.
+
+Familyplan now4native+1formula+16boundarybindings=21bound/76unbound of97;
+fullmanifestDRAFT/M1PARTIAL/goalACTIVE, nofullfamilypromotion. Current summaries
+use *-pb-refresh.json plus poisson-beta-required-evidence.json; older summaries
+historical. Twelveartifact/route and26metric corruptions reject; registryred22
+pass2fail togreen24pass;11coverage regressions andaggregate freeze guardPASS.
+ThreefreshUnlazy gates. No newchildren/panel; Bproductioncheckpoint unchanged.
+No src/originalfixture/Rengine/foreign edits, push/merge/release/cleanup orDRACjob.
+Next exactnative/formula/bridgecontracts andStudentRhealth;17linkdispositions
+stillopen. Fullsuite/docsrender/recovery/perf/AGHQ unpaid.
+Read after-task/2026-08-31-core070-poisson-beta-required.md; MCreceipt in
+.unlazy/core070-aghq/poisson-beta-required-01/mission-update.json.
+
+Mission Control local commit 6aa79144af86ed8a9cc6d5b30f660a31443e101b: HTTP200, exact served Julia field verified; R fields unchanged; exact-file lease released.

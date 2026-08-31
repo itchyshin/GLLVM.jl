@@ -50,3 +50,8 @@ using .Core070CaseRegistry
         end
     end
 end
+
+@testset "Required Poisson/Beta cells include complete health" begin
+    @test FIXTURES["NATIVE-03-POISSON"] == "test/parity/test_poisson_required.jl"
+    @test FIXTURES["NATIVE-08-BETA"] == "test/parity/test_beta_required.jl"
+end

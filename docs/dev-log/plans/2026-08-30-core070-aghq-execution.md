@@ -180,3 +180,24 @@ permissions. It was inspected, NOT executed. A plain worktree on
 execution location); source commits/checkpoints remain in the shared durable Git
 object store. No permission settings changed. Preserve runtime archives outside
 temporary storage before closure. Classification: adaptive/safety, owner Ada.
+
+## 2026-08-31 — original Poisson/Beta in the required runner
+
+Poisson/Beta wrappers now execute32 health assertions through actualrunparity,
+37.863s onTotoro. Original DGP/native controls unchanged; public R refinement
+explicit, default failures retained; health/rawRbytes exactly match qualification.
+Source inventory includes helper/originalfixtures/policy; 17family+1interface IDs
+unchanged. Refreshed NB2/truncated/formula58pass63.185s, shapes50pass10.592s,
+links70pass23.064s, originalordinaldiagnostic5pass22.120s. Alljobs terminal.
+
+Familyplan now4native+1formula+16boundarybindings=21bound/76unbound of97;
+fullmanifestDRAFT/M1PARTIAL/goalACTIVE, nofullfamilypromotion. Current summaries
+use *-pb-refresh.json plus poisson-beta-required-evidence.json; older summaries
+historical. Twelveartifact/route and26metric corruptions reject; registryred22
+pass2fail togreen24pass;11coverage regressions andaggregate freeze guardPASS.
+ThreefreshUnlazy gates. No newchildren/panel; Bproductioncheckpoint unchanged.
+No src/originalfixture/Rengine/foreign edits, push/merge/release/cleanup orDRACjob.
+Next exactnative/formula/bridgecontracts andStudentRhealth;17linkdispositions
+stillopen. Fullsuite/docsrender/recovery/perf/AGHQ unpaid.
+Read after-task/2026-08-31-core070-poisson-beta-required.md; MCreceipt in
+.unlazy/core070-aghq/poisson-beta-required-01/mission-update.json.

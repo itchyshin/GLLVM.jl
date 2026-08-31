@@ -8,15 +8,16 @@ PLAN=coverage.PREFIX+'family-required-case-plan.json'
 INPUTS=[coverage.PREFIX+'family-admission-subset.json',
         coverage.PREFIX+'family-route-contract.json',
         coverage.PREFIX+'family-model-catalogue.json',
-        coverage.PREFIX+'nb2-formula-required-link-refresh.json',
+        coverage.PREFIX+'nb2-formula-required-pb-refresh.json',
         coverage.PREFIX+'family-boundary-contract.json',
-        coverage.PREFIX+'family-boundary-link-refresh.json',
+        coverage.PREFIX+'family-boundary-pb-refresh.json',
         coverage.PREFIX+'family-link-boundary-contract.json',
-        coverage.PREFIX+'family-link-boundary-evidence.json']
+        coverage.PREFIX+'family-link-boundary-pb-refresh.json',
+        coverage.PREFIX+'poisson-beta-required-evidence.json']
 ROLES=['native_model','formula_interface','public_r_bridge']
 
 def build():
-    admission,entry,catalogue,paired,boundary_contract,boundary_evidence,link_contract,link_evidence=[coverage.read_json(ROOT/p) for p in INPUTS]
+    admission,entry,catalogue,paired,boundary_contract,boundary_evidence,link_contract,link_evidence,pb=[coverage.read_json(ROOT/p) for p in INPUTS]
     formula=paired["formula"]
     boundaries={row["source_fact_id"]:row for row in boundary_contract["rows"]}
     links={row["source_fact_id"]:row for row in link_contract["rows"]}
@@ -86,6 +87,17 @@ def build():
                     model=dict(seed=candidate['seed'],p=candidate['n_traits'],n=candidate['n_units'],
                         K=candidate['n_latent'],**candidate['model']))
                 case['candidate_warning']='Only the original seeded native model is bound; formula, bridge, other models and broader recovery remain unpaid.'
+            if role=='native_model' and fact['id'] in {'FAMILY-02-LOG','FAMILY-07-LOGIT'}:
+                model=next(m for m in pb['cases'] if m['id']==candidate['id'])
+                case.update(fixture=model['required_fixture'],
+                    fixture_sha256=coverage.sha(ROOT/model['required_fixture']),
+                    original_dgp_fixture=model['fixture'],original_dgp_sha256=model['dgp_sha256'],
+                    r_call=model['reference_call'],julia_call=model['native_call'],
+                    r_optimization_policy=pb['controls'],candidate_is_equivalent=True,
+                    status='EXISTING_REQUIRED_NATIVE_CASE_BOUND_INTERFACES_PENDING',
+                    required_runner_case_id=model['id'],evidence=INPUTS[8],
+                    execution_manifest_sha256=pb['execution_manifest_sha256'],model=model)
+                case['candidate_warning']='Only the original seeded native model is bound with explicit public R refinement; formula, bridge, other models and recovery remain unpaid.'
             if role=='formula_interface' and fact['id']=='FAMILY-05-LOG':
                 assert formula['case_id']==cid
                 case.update(fixture=formula['fixture'],fixture_sha256=formula['fixture_sha256'],
@@ -139,11 +151,11 @@ def verify():
         assert linked['case_plan']==PLAN
     assert len({c['id'] for c in plan['cases']})==97
     bound=[c for c in plan['cases'] if c['fixture'] is not None]
-    assert {c['required_runner_case_id'] for c in bound if c['coverage_role']=='native_model'}=={'NATIVE-06-NB2','NATIVE-12-TRUNCATED-NB2'}
-    assert len(bound)==19 and sum(c['coverage_role']=='formula_interface' for c in bound)==1
+    assert {c['required_runner_case_id'] for c in bound if c['coverage_role']=='native_model'}=={'NATIVE-03-POISSON','NATIVE-08-BETA','NATIVE-06-NB2','NATIVE-12-TRUNCATED-NB2'}
+    assert len(bound)==21 and sum(c['coverage_role']=='formula_interface' for c in bound)==1
     assert sum(c['coverage_role']=='reference_boundary' for c in bound)==16
     assert all(c['r_call'] is None and c['julia_call'] is None for c in plan['cases'] if c['fixture'] is None)
-    print('FAMILY_CASE_PLAN_VERIFIED 69 facts; 97 planned cases; 2 native + 1 formula + 16 boundary bindings; zero full-family promotions')
+    print('FAMILY_CASE_PLAN_VERIFIED 69 facts; 97 planned cases; 4 native + 1 formula + 16 boundary bindings; zero full-family promotions')
 
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--write',action='store_true');args=p.parse_args()

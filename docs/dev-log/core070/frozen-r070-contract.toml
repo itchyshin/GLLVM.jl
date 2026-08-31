@@ -36,7 +36,7 @@ fixture = "test/parity/test_binomial_parity.jl"
 [[families]]
 id = "NATIVE-03-POISSON"
 r_family = "poisson"
-fixture = "test/parity/test_poisson_parity.jl"
+fixture = "test/parity/test_poisson_required.jl"
 [[families]]
 id = "NATIVE-04-LOGNORMAL"
 r_family = "lognormal"
@@ -56,7 +56,7 @@ fixture = "test/parity/test_tweedie_parity.jl"
 [[families]]
 id = "NATIVE-08-BETA"
 r_family = "Beta"
-fixture = "test/parity/test_beta_parity.jl"
+fixture = "test/parity/test_beta_required.jl"
 [[families]]
 id = "NATIVE-09-BETABINOMIAL"
 r_family = "betabinomial"
@@ -432,7 +432,7 @@ parameterisation = "log; none"
 identification = "triangular loading convention; compare invariant quantities; ordinary loadings-only; unique=FALSE"
 acceptance_rule = "fixture test passes and receipt binds source, fixture hash, model identity, and zero exit"
 implementation_status = "SMOKE_ONLY_NOT_FULL_CAPABILITY"
-evidence_path = "test/parity/test_poisson_parity.jl"
+evidence_path = "test/parity/test_poisson_required.jl"
 
 [[obligation]]
 id = "NATIVE-04-LOGNORMAL"
@@ -502,7 +502,7 @@ parameterisation = "logit; per-trait Beta precision"
 identification = "triangular loading convention; compare invariant quantities; ordinary loadings-only; unique=FALSE"
 acceptance_rule = "fixture test passes and receipt binds source, fixture hash, model identity, and zero exit"
 implementation_status = "SMOKE_ONLY_NOT_FULL_CAPABILITY"
-evidence_path = "test/parity/test_beta_parity.jl"
+evidence_path = "test/parity/test_beta_required.jl"
 
 [[obligation]]
 id = "NATIVE-09-BETABINOMIAL"

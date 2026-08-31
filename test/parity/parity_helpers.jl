@@ -51,7 +51,7 @@ function _core070_execution_paths(requested::AbstractVector{<:AbstractString})
     paths = String[
         "src", "test/parity/core070_receipts.jl", "test/parity/core070_case_registry.jl", "test/parity/parity_helpers.jl",
         "test/parity/parity_trial_inputs.jl", "test/parity/test_negbin_parity.jl", "test/parity/truncnb2_policy.jl", "test/parity/nb2_health.jl",
-        "test/parity/runparity.jl", "test/parity/r_health.R",
+        "test/parity/poisson_beta_health.jl", "test/parity/test_poisson_parity.jl", "test/parity/test_beta_parity.jl", "docs/dev-log/core070/poisson-beta-required-contract.json", "test/parity/runparity.jl", "test/parity/r_health.R",
         "tools/core070_delta_matched.jl", "test/parity/test_delta_lognormal_parity.jl",
         "test/parity/test_delta_gamma_parity.jl", "Project.toml", "test/Project.toml",
         "test/parity/Project.toml", "docs/dev-log/core070/frozen-r070-contract.toml",
