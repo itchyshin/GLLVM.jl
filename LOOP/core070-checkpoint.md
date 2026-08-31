@@ -1262,3 +1262,16 @@ docs/dev-log/core070/gaussian-sources-numerical-tests.json. No fitted R parity
 for the six bindings yet. No full package/docs/recovery/coverage result.
 Next: paired source fits using frozen R reference and same retained fixtures;
 execute docs after qualification. Programme M1 PARTIAL, full manifest draft.
+
+## Six source-model paired fits — 2026-08-31T14:18:41.448977+00:00
+
+R public calls plus captured TMB objectives compared to native fixed-source
+fits on all six retained nonspatial fixtures:PASS under declared likelihood
+and fit-health rules. Largest fitted deltaLL2.199e-9; source/call/fixture hashes
+retained. Total bounded batch about36s; no test tolerance changed. Unique-Psi
+case near-zero curvature remains an inference/identification caveat.
+Independent gate fixed a trailing-slash path comparison; original verifier
+bytes preserved, all executed scripts and source pins unchanged. See
+docs/dev-log/core070/gaussian-source-pair-evidence.json and pair after-task.
+Next: execute/inspect Documenter, then required larger source/multinomial/AGHQ
+contracts and recovery designs. No programme completion or full manifest freeze.

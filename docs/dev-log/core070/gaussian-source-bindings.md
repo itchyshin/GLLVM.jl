@@ -62,12 +62,17 @@ the interpretation and matrix contract are
 
 ## Boundaries that remain unpaid
 
-This is source preparation only. It gives no optimizer, likelihood,
-derivative, convergence, Hessian, recovery, or parity result. The candidate
-surface is numerically unvalidated. Fitted native support, formula support,
+This helper is source preparation only; it performs no optimization. The
+parent candidate passed46source-model and71binding unit checks on2026-08-31
+(gaussian-sources-numerical-tests.json). Those unit tests alone do not establish fitted parity. A later paired
+public-R/native run passed all six retained fixtures; see
+`gaussian-source-pair-evidence.json` for source pins, fit health and numerical
+differences. The unique-variance case has nearly zero curvature; no interval
+or calibration claim follows. Wider fitted native parity, formula support,
 bridge support, parser obligations, inference, and all spatial cases remain
 UNPAID. In particular, free-kappa spatial work and the retained 24-case
 inventory are outside this six-case nonspatial binding and remain intact.
 
-Requested native execution context: Terra/high. No runtime receipt is claimed
-here; local baseline/candidate API-load receipts are owned by the parent slice.
+Requested helper implementation context: Terra/high. Runtime input checks and
+source-model unit receipts are owned by the parent validation slice; paired
+R-model fitting is a separate leaf (gaussian-source-pair-leaf.md).

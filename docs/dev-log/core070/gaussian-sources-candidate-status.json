@@ -1,6 +1,6 @@
 {
-  "created_utc": "2026-08-31T14:05:22.893223+00:00",
-  "status": "PARTIAL_TARGETED_TESTS_PASS",
+  "created_utc": "2026-08-31T14:18:41.448977+00:00",
+  "status": "PARTIAL_SIX_RETAINED_SOURCE_PAIRS_PASS",
   "programme": "ACTIVE_M1_PARTIAL",
   "full_manifest": "DRAFT_NOT_FROZEN",
   "source_review": "Noether Terra high; initial plus one repair follow-up; static acceptance after wording repair",
@@ -44,5 +44,6 @@
   "closure_validator": "STRUCTURE_PASS_COMPLETION_REFUSED_UNMET_PROGRAMME_GATES",
   "api_load_evidence": "docs/dev-log/core070/gaussian-sources-api-load.json",
   "tdd_ordering": "NOT_ACHIEVED_IMPLEMENTATION_PRECEDED_VALID_API_RED",
-  "numerical_evidence": "docs/dev-log/core070/gaussian-sources-numerical-tests.json"
+  "numerical_evidence": "docs/dev-log/core070/gaussian-sources-numerical-tests.json",
+  "paired_fit_evidence": "docs/dev-log/core070/gaussian-source-pair-evidence.json"
 }

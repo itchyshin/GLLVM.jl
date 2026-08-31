@@ -16390,3 +16390,11 @@ not establish fitted R parity, recovery, coverage, full package or Documenter.
 Totoro direct key-auth reconnect is authorized, no Duo; DRAC stays reuse-only.
 See core070/gaussian-sources-numerical-tests.json and the source numerical
 after-task report. No tolerance or fixture changes.
+
+### 2026-08-31 — six retained Gaussian source fits
+
+Pinned R public calls and native Gaussian fixed-source fits pass six-case
+likelihood/gradient/health checks; max fitted deltaLL2.199e-9. R evaluated
+again at native endpoints; source oracle verified before/after. Seven gate
+negative controls pass. Unique-Psi curvature nearly singular: no interval
+or recovery claim. See core070/gaussian-source-pair-evidence.json.
