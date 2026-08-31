@@ -44,6 +44,9 @@ class InterfaceRegistry(unittest.TestCase):
         index=coverage.read_json(gate.ROOT/coverage.INDEX)
         facts=[f for f in index['facts'] if f['id']=='family/FAMILY-00-IDENTITY']
         mapping=coverage.read_json(gate.ROOT/coverage.MAPPING)
+        # Removing the declared bridge case must still leave this model unpaid.
+        for row in mapping['rows']:
+            row['executable_case_ids']=[cid for cid in row['executable_case_ids'] if cid!='CORE070-FAMILY-00-IDENTITY-PUBLIC-R-BRIDGE']
         with self.assertRaisesRegex(coverage.CoverageError,'family interface coverage missing'):
             coverage.validate_family_roles(facts,mapping,d['executable_case'],gate.ROOT)
 

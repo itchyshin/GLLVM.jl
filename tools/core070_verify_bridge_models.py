@@ -9,7 +9,7 @@ import struct
 import tomllib
 
 ROOT=Path(__file__).resolve().parents[1]
-STATE=ROOT/'.unlazy/core070-aghq/public-bridge-models-03'
+STATE=ROOT/'.unlazy/core070-aghq/public-bridge-models-04'
 FAMILIES=['poisson','beta','nb2']
 def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
 def need(ok,msg):
@@ -107,7 +107,7 @@ def verify(self_test=False):
         dependency=folder/f'bridge-runtime-dependencies-{phase}.json'
         need(sha(dependency)==runtime['dependencies_sha256'] and
              f'BRIDGE_DEPENDENCY_SHA256 {dependency.name} {sha(dependency)}' in log,'unbound runtime dependencies')
-    prior=ROOT/'.unlazy/core070-aghq/family-formulas-02/attempt1/receipts'
+    prior=ROOT/'.unlazy/core070-aghq/family-formulas-03/attempt1/receipts'
     for f in fixtures:
         h=tomllib.loads((prior/(f['family']+'-health.toml')).read_text())
         need(hashlib.sha256(struct.pack('<'+'d'*len(f['Y']),*f['Y'])).hexdigest()==f['data_sha256']==h['data_sha256'],'original data changed')

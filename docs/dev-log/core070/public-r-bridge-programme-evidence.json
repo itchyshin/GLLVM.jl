@@ -1,0 +1,131 @@
+{
+  "status": "PASS",
+  "scope": "PUBLIC_R_BRIDGE_COMPONENT_ONLY",
+  "case_ids": [
+    "CORE070-FAMILY-02-LOG-PUBLIC-R-BRIDGE",
+    "CORE070-FAMILY-07-LOGIT-PUBLIC-R-BRIDGE",
+    "CORE070-FAMILY-05-LOG-PUBLIC-R-BRIDGE",
+    "CORE070-FAMILY-00-IDENTITY-PUBLIC-R-BRIDGE",
+    "CORE070-FAMILY-11-LOG-PUBLIC-R-BRIDGE"
+  ],
+  "registry_sha256": "9f687d3683414b898497913d72c053103efec682add7a6a27784ab81a9836018",
+  "manifest_sha256": "9fc163de13b4b3633aac4aff0c4fecf0a066c0ddd6ef14227fd14641c1e72c80",
+  "paired": {
+    "status": "THREE_MODEL_BRIDGE_QUALIFICATION_NOT_FULL_PARITY",
+    "families": [
+      "poisson",
+      "beta",
+      "nb2"
+    ],
+    "required_case_ids": [
+      "CORE070-FAMILY-02-LOG-PUBLIC-R-BRIDGE",
+      "CORE070-FAMILY-07-LOGIT-PUBLIC-R-BRIDGE",
+      "CORE070-FAMILY-05-LOG-PUBLIC-R-BRIDGE"
+    ],
+    "subcontract_sha256": "72597c8905af7f680984089f89fbb89a6972be02c8bef207986a035f27377e4b",
+    "public_routes": 6,
+    "rejections": 2,
+    "seconds": 59.09261296503246,
+    "result_sha256": "77ece037ccf26f7dcf50ec7e4a55689e61190325167813593321555d1fb0b5f1",
+    "process_sha256": "0ca964f75e32c6375a52cddb01275992aaa282d5171d77f3384b8a5808140f03",
+    "prior_process_sha256": "ba5e73e8a20508a678e13dfb8e0b64d19a685474709076744803722ace1878da",
+    "r_comparison": "retained original source-bound R fits; not newly executed in this batch",
+    "results": {
+      "poisson": {
+        "matrix": {
+          "loglik": 0,
+          "alpha": 0,
+          "shared_covariance": 2.77555756156289e-17,
+          "dispersion": 0,
+          "prior_r_loglik": 1.43245415529236e-11
+        },
+        "formula": {
+          "loglik": 0,
+          "alpha": 0,
+          "shared_covariance": 2.77555756156289e-17,
+          "dispersion": 0,
+          "prior_r_loglik": 1.43245415529236e-11
+        }
+      },
+      "beta": {
+        "matrix": {
+          "loglik": 0,
+          "alpha": 0,
+          "shared_covariance": 0,
+          "dispersion": 0,
+          "prior_r_loglik": 1.78488335222937e-11
+        },
+        "formula": {
+          "loglik": 0,
+          "alpha": 0,
+          "shared_covariance": 0,
+          "dispersion": 0,
+          "prior_r_loglik": 1.78488335222937e-11
+        }
+      },
+      "nb2": {
+        "matrix": {
+          "loglik": 0,
+          "alpha": 0,
+          "shared_covariance": 5.55111512312578e-17,
+          "dispersion": 0,
+          "prior_r_loglik": 3.41282611771021e-06
+        },
+        "formula": {
+          "loglik": 0,
+          "alpha": 0,
+          "shared_covariance": 5.55111512312578e-17,
+          "dispersion": 0,
+          "prior_r_loglik": 3.41282611771021e-06
+        }
+      }
+    }
+  },
+  "boundaries": [
+    {
+      "id": "CORE070-FAMILY-00-IDENTITY-PUBLIC-R-BRIDGE",
+      "disposition": "reference_model_change",
+      "model_contract_id": "MODEL-FAMILY-00-IDENTITY",
+      "process_sha256": "f293543c1efb000e513ce87ebc1fc67f5e2af892b626cae1bc7c38f4e7887c4f"
+    },
+    {
+      "id": "CORE070-FAMILY-11-LOG-PUBLIC-R-BRIDGE",
+      "disposition": "reference_rejected",
+      "model_contract_id": "MODEL-FAMILY-11-LOG",
+      "process_sha256": "500ab9834bbadbfd0dd0d449b47290912e67dc37d8638b1bbf91b0e923a03e0f"
+    }
+  ],
+  "runtime": {
+    "status": "RUNTIME_ONLY_VERIFIED_NOT_MODEL_PARITY",
+    "runtime_seconds": 13.49293034337461,
+    "dependency_files": 44,
+    "dependency_manifest_sha256": "2850d9a99a7d0037fc81c7a79b394c312df8fd47d51db31767df159641264d81",
+    "process_sha256": "f540298b2a19a3da6d2136374f8e7addf0d20ab387fa0abc8a9c7626292660bb",
+    "receipt_sha256": "bb495ab2778d57ab47ef5f6023e020357ba76a956a148e597b17916cd93b3433",
+    "runtime": {
+      "parent_preload": "/home/snakagaw/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/lib/julia/libunwind.so.8",
+      "child_preload_environment": "",
+      "expected_error": "Error happens in Julia.\nCORE070_EXPECTED_RUNTIME_ERROR\nStacktrace:\n [1] error(s::String)\n   @ Base ./error.jl:44\n [2] top-level scope\n   @ none:1\n [3] eval(m::Module, e::Any)\n   @ Core ./boot.jl:489\n [4] eval_string(x::String)\n   @ Main.JuliaCall ~/R/v07-lib/JuliaCall/julia/setup.jl:203\n [5] docall(call1::Ptr{Nothing})\n   @ Main.JuliaCall ~/R/v07-lib/JuliaCall/julia/setup.jl:176",
+      "R": "R version 4.5.3 (2026-03-11)",
+      "Julia": "1.12.6",
+      "JuliaCall": "0.17.6",
+      "JuliaCall_path": "/home/snakagaw/R/v07-lib/JuliaCall",
+      "gllvmTMB_path": "/home/snakagaw/core070-aghq-20260830/oracle-build-01/library/gllvmTMB",
+      "active_project": "/home/snakagaw/core070-aghq-20260830/public-bridge-runtime-03/test/parity/Project.toml",
+      "GLLVM_source": "/home/snakagaw/core070-aghq-20260830/public-bridge-runtime-03/src/GLLVM.jl",
+      "roundtrip": 6,
+      "julia_threads": 1,
+      "blas_threads": 1,
+      "libPaths": [
+        "/home/snakagaw/core070-aghq-20260830/oracle-build-01/library",
+        "/home/snakagaw/R/v07-lib",
+        "/home/snakagaw/R/x86_64-pc-linux-gnu-library/4.5",
+        "/usr/local/lib/R/site-library",
+        "/usr/lib/R/site-library",
+        "/usr/lib/R/library"
+      ],
+      "dependencies_sha256": "2850d9a99a7d0037fc81c7a79b394c312df8fd47d51db31767df159641264d81"
+    },
+    "negative_controls": 0
+  }
+}

@@ -4,7 +4,7 @@
   "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
   "inputs": {
     "docs/dev-log/core070/gaussian-required-contract.json": "93400f090057fb6a26db60b866b4b1941dcf9b1003cab0107d4fdb43df59dbb4",
-    "docs/dev-log/core070/registered-models-contract.json": "631b51f5eae1306152f899f9fce16c2c2bd85d52282f75d814d0ca15458df8a9",
+    "docs/dev-log/core070/registered-models-contract.json": "8b49cc205616479e8ea74703e417bc72b0cf3e517684a37ad344ca8afe41353a",
     "docs/dev-log/core070/bridge-descriptor-contract.json": "8311e9c5499f8911ffcd57ccb3210c139f582b0fb86373ab3feb22c81d16c3cc"
   },
   "cases": [

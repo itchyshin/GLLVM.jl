@@ -19,6 +19,11 @@ unpaid_required_groups = ["links-and-parameterisation", "covariance-modes-and-mo
 # Provisional census only.  These buckets are not a capability classification:
 # each member still needs source admission evidence and a Julia status before
 # this draft can become frozen.  The checker rejects this status outright.
+# BEGIN PUBLIC R BRIDGE IDS
+public_r_bridge_case_ids = ["CORE070-FAMILY-02-LOG-PUBLIC-R-BRIDGE", "CORE070-FAMILY-07-LOGIT-PUBLIC-R-BRIDGE", "CORE070-FAMILY-05-LOG-PUBLIC-R-BRIDGE", "CORE070-FAMILY-00-IDENTITY-PUBLIC-R-BRIDGE", "CORE070-FAMILY-11-LOG-PUBLIC-R-BRIDGE"]
+public_r_bridge_registry = {"path" = "docs/dev-log/core070/public-r-bridge-programme-registry.json", "sha256" = "9f687d3683414b898497913d72c053103efec682add7a6a27784ab81a9836018"}
+# END PUBLIC R BRIDGE IDS
+
 [namespace_classification]
 status = "SOURCE_COMPLETE_REVIEW_PENDING"
 inventory = "docs/dev-log/core070/frozen-r070-namespace-inventory.tsv"
@@ -791,7 +796,7 @@ fixture_sha256 = "04ffc8f9e3d5c972993072408f4e038d4f1652e34c1f9c912bfc51e0e20470
 reference_call = "{ original <- gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=poisson(), control=gllvmTMBcontrol(n_init=1L,se=FALSE)); gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE),data=df_long,unit=\"site\",trait=\"trait\",family=poisson(),control=gllvmTMBcontrol(n_init=1L,se=FALSE,start_from=original,optArgs=list(control=list(rel.tol=1e-12,eval.max=2000,iter.max=1500)))) }"
 r_call = "{ original <- gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=poisson(), control=gllvmTMBcontrol(n_init=1L,se=FALSE)); gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE),data=df_long,unit=\"site\",trait=\"trait\",family=poisson(),control=gllvmTMBcontrol(n_init=1L,se=FALSE,start_from=original,optArgs=list(control=list(rel.tol=1e-12,eval.max=2000,iter.max=1500)))) }"
 julia_call = "fit_poisson_gllvm(Y; K = K)"
-model_contract = "{\"K\": 2, \"curvature\": \"canonical Fisher equals observed\", \"dispersion\": \"none\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"log\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 60, \"normalization\": \"full response log-density including constants; truncated NB2 conditions on Y>=1\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 44}"
+model_contract = "{\"K\": 2, \"curvature\": \"canonical Fisher equals observed\", \"dispersion\": \"none\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"log\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 60, \"normalization\": \"full response log-density including constants\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 44}"
 model_contract_id = "MODEL-FAMILY-02-LOG"
 coverage_role = "native_model"
 acceptance_level = "paired_fit"
@@ -809,7 +814,7 @@ fixture_sha256 = "db83f3385dc7f6de699573600b1022cf4e628f1b90caafe61a3b7d6a4590da
 reference_call = "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=nbinom2(), control=gllvmTMBcontrol(n_init=1L,se=FALSE))"
 r_call = "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=nbinom2(), control=gllvmTMBcontrol(n_init=1L,se=FALSE))"
 julia_call = "fit_gllvm(Y; family = GLLVM.NegativeBinomial(), K = K, g_tol = 1e-7, iterations = 800)"
-model_contract = "{\"K\": 2, \"curvature\": \"observed Laplace\", \"dispersion\": \"per-trait NB2 size; Var=mu+mu^2/r\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"log\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 80, \"normalization\": \"full response log-density including constants; truncated NB2 conditions on Y>=1\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 45}"
+model_contract = "{\"K\": 2, \"curvature\": \"observed Laplace\", \"dispersion\": \"per-trait NB2 size; Var=mu+mu^2/r\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"log\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 80, \"normalization\": \"full response log-density including constants\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 45}"
 model_contract_id = "MODEL-FAMILY-05-LOG"
 coverage_role = "native_model"
 acceptance_level = "paired_fit"
@@ -827,7 +832,7 @@ fixture_sha256 = "011849881ebf54b3d5be584135a92d2b259ce8910bc2c403865e2975fd86b1
 reference_call = "{ original <- gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=Beta(), control=gllvmTMBcontrol(n_init=1L,se=FALSE)); gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE),data=df_long,unit=\"site\",trait=\"trait\",family=gllvmTMB::Beta(),control=gllvmTMBcontrol(n_init=1L,se=FALSE,start_from=original,optArgs=list(control=list(rel.tol=1e-12,eval.max=2000,iter.max=1500)))) }"
 r_call = "{ original <- gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=Beta(), control=gllvmTMBcontrol(n_init=1L,se=FALSE)); gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE),data=df_long,unit=\"site\",trait=\"trait\",family=gllvmTMB::Beta(),control=gllvmTMBcontrol(n_init=1L,se=FALSE,start_from=original,optArgs=list(control=list(rel.tol=1e-12,eval.max=2000,iter.max=1500)))) }"
 julia_call = "fit_gllvm(Y; family = GLLVM.Beta(), K = K, g_tol = 1e-7, iterations = 800)"
-model_contract = "{\"K\": 1, \"curvature\": \"observed Laplace\", \"dispersion\": \"per-trait Beta precision\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"logit\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 60, \"normalization\": \"full response log-density including constants; truncated NB2 conditions on Y>=1\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 45}"
+model_contract = "{\"K\": 1, \"curvature\": \"observed Laplace\", \"dispersion\": \"per-trait Beta precision\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"logit\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 60, \"normalization\": \"full response log-density including constants\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 45}"
 model_contract_id = "MODEL-FAMILY-07-LOGIT"
 coverage_role = "native_model"
 acceptance_level = "paired_fit"
@@ -863,7 +868,7 @@ fixture_sha256 = "aa043d24144559773683f089d02b43ba2af3e9b2df5220aad2bec7c166125e
 reference_call = "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=nbinom2(), control=gllvmTMBcontrol(n_init=1L,se=FALSE))"
 r_call = "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=nbinom2(), control=gllvmTMBcontrol(n_init=1L,se=FALSE))"
 julia_call = "gllvm(@formula(y ~ 1),Y,(site=collect(1:n),);family=GLLVM.NegativeBinomial(),K=K,g_tol=1e-7,iterations=800); separately gllvm(@formula(y ~ 1),long;family=GLLVM.NegativeBinomial(),K=K,g_tol=1e-7,iterations=800)"
-model_contract = "{\"K\": 2, \"curvature\": \"observed Laplace\", \"dispersion\": \"per-trait NB2 size; Var=mu+mu^2/r\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"log\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 80, \"normalization\": \"full response log-density including constants; truncated NB2 conditions on Y>=1\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 45}"
+model_contract = "{\"K\": 2, \"curvature\": \"observed Laplace\", \"dispersion\": \"per-trait NB2 size; Var=mu+mu^2/r\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"log\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 80, \"normalization\": \"full response log-density including constants\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 45}"
 model_contract_id = "MODEL-FAMILY-05-LOG"
 coverage_role = "formula_interface"
 acceptance_level = "paired_fit_interface"
@@ -887,7 +892,7 @@ fixture_sha256 = "3970427322a2ed7eaf97a6bf5ad31eb4c8804811e6d149b7b97ad05b7970d9
 reference_call = "{ original <- gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=poisson(), control=gllvmTMBcontrol(n_init=1L,se=FALSE)); gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE),data=df_long,unit=\"site\",trait=\"trait\",family=poisson(),control=gllvmTMBcontrol(n_init=1L,se=FALSE,start_from=original,optArgs=list(control=list(rel.tol=1e-12,eval.max=2000,iter.max=1500)))) }"
 r_call = "{ original <- gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=poisson(), control=gllvmTMBcontrol(n_init=1L,se=FALSE)); gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE),data=df_long,unit=\"site\",trait=\"trait\",family=poisson(),control=gllvmTMBcontrol(n_init=1L,se=FALSE,start_from=original,optArgs=list(control=list(rel.tol=1e-12,eval.max=2000,iter.max=1500)))) }"
 julia_call = "gllvm(@formula(y ~ 1),Y,(site=collect(1:n),);family=GLLVM.Poisson(),K=K); separately gllvm(@formula(y ~ 1),long;family=GLLVM.Poisson(),K=K)"
-model_contract = "{\"K\": 2, \"curvature\": \"canonical Fisher equals observed\", \"dispersion\": \"none\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"log\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 60, \"normalization\": \"full response log-density including constants; truncated NB2 conditions on Y>=1\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 44}"
+model_contract = "{\"K\": 2, \"curvature\": \"canonical Fisher equals observed\", \"dispersion\": \"none\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"log\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 60, \"normalization\": \"full response log-density including constants\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 44}"
 model_contract_id = "MODEL-FAMILY-02-LOG"
 coverage_role = "formula_interface"
 acceptance_level = "paired_fit_interface"
@@ -912,7 +917,7 @@ fixture_sha256 = "d218f6d26837310f96658030d673c75eee5a0e7a5eca05df9949bf73679ed7
 reference_call = "{ original <- gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=Beta(), control=gllvmTMBcontrol(n_init=1L,se=FALSE)); gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE),data=df_long,unit=\"site\",trait=\"trait\",family=gllvmTMB::Beta(),control=gllvmTMBcontrol(n_init=1L,se=FALSE,start_from=original,optArgs=list(control=list(rel.tol=1e-12,eval.max=2000,iter.max=1500)))) }"
 r_call = "{ original <- gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=Beta(), control=gllvmTMBcontrol(n_init=1L,se=FALSE)); gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE),data=df_long,unit=\"site\",trait=\"trait\",family=gllvmTMB::Beta(),control=gllvmTMBcontrol(n_init=1L,se=FALSE,start_from=original,optArgs=list(control=list(rel.tol=1e-12,eval.max=2000,iter.max=1500)))) }"
 julia_call = "gllvm(@formula(y ~ 1),Y,(site=collect(1:n),);family=GLLVM.Beta(),K=K, g_tol=1e-7, iterations=800); separately gllvm(@formula(y ~ 1),long;family=GLLVM.Beta(),K=K, g_tol=1e-7, iterations=800)"
-model_contract = "{\"K\": 1, \"curvature\": \"observed Laplace\", \"dispersion\": \"per-trait Beta precision\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"logit\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 60, \"normalization\": \"full response log-density including constants; truncated NB2 conditions on Y>=1\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 45}"
+model_contract = "{\"K\": 1, \"curvature\": \"observed Laplace\", \"dispersion\": \"per-trait Beta precision\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"logit\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 60, \"normalization\": \"full response log-density including constants\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 45}"
 model_contract_id = "MODEL-FAMILY-07-LOGIT"
 coverage_role = "formula_interface"
 acceptance_level = "paired_fit_interface"
@@ -989,3 +994,208 @@ identification = "triangular loading convention; compare invariant quantities; o
 acceptance_rule = "22 assertions: original native case and R policy must run in this same required invocation; native parameters match its health record at absolute tolerance1e-10; wide/reordered-long parameters and logLik equal native at absolute tolerance1e-10; same native/R likelihood and gradient gates; malformed row count, missing and duplicate long cells reject."
 implementation_status = "REQUIRED_REPLAY_PENDING"
 evidence_path = ".unlazy/core070-aghq/family-formulas-01/"
+
+# BEGIN PUBLIC R BRIDGE CASES
+
+[[obligation]]
+id = "CORE070-FAMILY-02-LOG-PUBLIC-R-BRIDGE"
+scope = "Original complete-data ordinary loadings-only unique=false model. Historical R oracle is reverified, not refitted in this public bridge batch. No broader models, recovery or full family promotion."
+owner = "B5/Hopper"
+source = "frozen R/julia-bridge.R"
+r_call = "gllvm_julia_fit(Y,family=poisson(),num.lv=2); gllvmTMB(value~0+trait+latent(0+trait|site,d=2,unique=FALSE),data=original_reversed_long,unit=\"site\",trait=\"trait\",family=poisson(),engine=\"julia\")"
+julia_call_or_missing = "fit_gllvm(Y;family=original_family,K=2)"
+fixture_specification = "tools/core070_bridge_models.R"
+parameterisation = "{\"K\": 2, \"curvature\": \"canonical Fisher equals observed\", \"dispersion\": \"none\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"log\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 60, \"normalization\": \"full response log-density including constants\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 44}"
+identification = "Same original model contract; bridge behavior separately recorded."
+acceptance_rule = "Both public routes: df/shape/link/convergence valid; loglik/intercept/loading covariance absolute difference<=1e-8 from fresh default native; dispersion relative difference<=1e-8; native absolute gradient and FD stability<=1e-4, objective reconstruction<=1e-8; retained source-bound R loglik rtol<=1e-6 and original health reverified."
+implementation_status = "REGISTERED_SEPARATE_PUBLIC_R_COMPONENT"
+evidence_path = "docs/dev-log/core070/public-r-bridge-programme-evidence.json"
+
+[[executable_case]]
+id = "CORE070-FAMILY-02-LOG-PUBLIC-R-BRIDGE"
+family = "poisson"
+model_contract_id = "MODEL-FAMILY-02-LOG"
+source_fact_ids = ["family/FAMILY-02-LOG"]
+prerequisite_native_id = "NATIVE-03-POISSON"
+data_sha256 = "44e647ac7ff29672efa12ca03b7b628dd37a02ac0f8d2421a19d3969743e26da"
+p = 5
+n = 60
+K = 2
+df = 14
+reference_control_policy = "public_start_from_refinement_v1"
+r_call = "gllvm_julia_fit(Y,family=poisson(),num.lv=2); gllvmTMB(value~0+trait+latent(0+trait|site,d=2,unique=FALSE),data=original_reversed_long,unit=\"site\",trait=\"trait\",family=poisson(),engine=\"julia\")"
+julia_call = "fit_gllvm(Y;family=original_family,K=2)"
+fixture = "tools/core070_bridge_models.R"
+native_health_fixture = "tools/core070_bridge_models.jl"
+coverage_role = "public_r_bridge"
+acceptance_level = "paired_fit_interface"
+acceptance_rule = "Both public routes: df/shape/link/convergence valid; loglik/intercept/loading covariance absolute difference<=1e-8 from fresh default native; dispersion relative difference<=1e-8; native absolute gradient and FD stability<=1e-4, objective reconstruction<=1e-8; retained source-bound R loglik rtol<=1e-6 and original health reverified."
+scope_boundary = "Original complete-data ordinary loadings-only unique=false model. Historical R oracle is reverified, not refitted in this public bridge batch. No broader models, recovery or full family promotion."
+executor = "public_r_bridge"
+reference_call = "gllvm_julia_fit(Y,family=poisson(),num.lv=2); gllvmTMB(value~0+trait+latent(0+trait|site,d=2,unique=FALSE),data=original_reversed_long,unit=\"site\",trait=\"trait\",family=poisson(),engine=\"julia\")"
+model_contract = "{\"K\": 2, \"curvature\": \"canonical Fisher equals observed\", \"dispersion\": \"none\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"log\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 60, \"normalization\": \"full response log-density including constants\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 44}"
+fixture_sha256 = "8e94c709134ba8a7b65cb3018563a844ad08343dd63ff344553a15d2b37d2ca2"
+bridge_subcontract = "docs/dev-log/core070/public-bridge-required-cases.json"
+bridge_subcontract_sha256 = "72597c8905af7f680984089f89fbb89a6972be02c8bef207986a035f27377e4b"
+
+[[obligation]]
+id = "CORE070-FAMILY-07-LOGIT-PUBLIC-R-BRIDGE"
+scope = "Original complete-data ordinary loadings-only unique=false model. Historical R oracle is reverified, not refitted in this public bridge batch. No broader models, recovery or full family promotion."
+owner = "B5/Hopper"
+source = "frozen R/julia-bridge.R"
+r_call = "gllvm_julia_fit(Y,family=gllvmTMB::Beta(),num.lv=1); gllvmTMB(value~0+trait+latent(0+trait|site,d=1,unique=FALSE),data=original_reversed_long,unit=\"site\",trait=\"trait\",family=gllvmTMB::Beta(),engine=\"julia\")"
+julia_call_or_missing = "fit_gllvm(Y;family=original_family,K=1)"
+fixture_specification = "tools/core070_bridge_models.R"
+parameterisation = "{\"K\": 1, \"curvature\": \"observed Laplace\", \"dispersion\": \"per-trait Beta precision\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"logit\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 60, \"normalization\": \"full response log-density including constants\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 45}"
+identification = "Same original model contract; bridge behavior separately recorded."
+acceptance_rule = "Both public routes: df/shape/link/convergence valid; loglik/intercept/loading covariance absolute difference<=1e-8 from fresh default native; dispersion relative difference<=1e-8; native absolute gradient and FD stability<=1e-4, objective reconstruction<=1e-8; retained source-bound R loglik rtol<=1e-6 and original health reverified."
+implementation_status = "REGISTERED_SEPARATE_PUBLIC_R_COMPONENT"
+evidence_path = "docs/dev-log/core070/public-r-bridge-programme-evidence.json"
+
+[[executable_case]]
+id = "CORE070-FAMILY-07-LOGIT-PUBLIC-R-BRIDGE"
+family = "beta"
+model_contract_id = "MODEL-FAMILY-07-LOGIT"
+source_fact_ids = ["family/FAMILY-07-LOGIT"]
+prerequisite_native_id = "NATIVE-08-BETA"
+data_sha256 = "3ddd9a90ae2e933af8c9f45f72fc7edda96dc0fda2a4389d3708a003d07ce099"
+p = 5
+n = 60
+K = 1
+df = 15
+reference_control_policy = "public_start_from_refinement_v1"
+r_call = "gllvm_julia_fit(Y,family=gllvmTMB::Beta(),num.lv=1); gllvmTMB(value~0+trait+latent(0+trait|site,d=1,unique=FALSE),data=original_reversed_long,unit=\"site\",trait=\"trait\",family=gllvmTMB::Beta(),engine=\"julia\")"
+julia_call = "fit_gllvm(Y;family=original_family,K=1)"
+fixture = "tools/core070_bridge_models.R"
+native_health_fixture = "tools/core070_bridge_models.jl"
+coverage_role = "public_r_bridge"
+acceptance_level = "paired_fit_interface"
+acceptance_rule = "Both public routes: df/shape/link/convergence valid; loglik/intercept/loading covariance absolute difference<=1e-8 from fresh default native; dispersion relative difference<=1e-8; native absolute gradient and FD stability<=1e-4, objective reconstruction<=1e-8; retained source-bound R loglik rtol<=1e-6 and original health reverified."
+scope_boundary = "Original complete-data ordinary loadings-only unique=false model. Historical R oracle is reverified, not refitted in this public bridge batch. No broader models, recovery or full family promotion."
+executor = "public_r_bridge"
+reference_call = "gllvm_julia_fit(Y,family=gllvmTMB::Beta(),num.lv=1); gllvmTMB(value~0+trait+latent(0+trait|site,d=1,unique=FALSE),data=original_reversed_long,unit=\"site\",trait=\"trait\",family=gllvmTMB::Beta(),engine=\"julia\")"
+model_contract = "{\"K\": 1, \"curvature\": \"observed Laplace\", \"dispersion\": \"per-trait Beta precision\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"logit\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 60, \"normalization\": \"full response log-density including constants\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 45}"
+fixture_sha256 = "8e94c709134ba8a7b65cb3018563a844ad08343dd63ff344553a15d2b37d2ca2"
+bridge_subcontract = "docs/dev-log/core070/public-bridge-required-cases.json"
+bridge_subcontract_sha256 = "72597c8905af7f680984089f89fbb89a6972be02c8bef207986a035f27377e4b"
+
+[[obligation]]
+id = "CORE070-FAMILY-05-LOG-PUBLIC-R-BRIDGE"
+scope = "Original complete-data ordinary loadings-only unique=false model. Historical R oracle is reverified, not refitted in this public bridge batch. No broader models, recovery or full family promotion."
+owner = "B5/Hopper"
+source = "frozen R/julia-bridge.R"
+r_call = "gllvm_julia_fit(Y,family=gllvmTMB::nbinom2(),num.lv=2); gllvmTMB(value~0+trait+latent(0+trait|site,d=2,unique=FALSE),data=original_reversed_long,unit=\"site\",trait=\"trait\",family=gllvmTMB::nbinom2(),engine=\"julia\")"
+julia_call_or_missing = "fit_gllvm(Y;family=original_family,K=2)"
+fixture_specification = "tools/core070_bridge_models.R"
+parameterisation = "{\"K\": 2, \"curvature\": \"observed Laplace\", \"dispersion\": \"per-trait NB2 size; Var=mu+mu^2/r\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"log\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 80, \"normalization\": \"full response log-density including constants\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 45}"
+identification = "Same original model contract; bridge behavior separately recorded."
+acceptance_rule = "Both public routes: df/shape/link/convergence valid; loglik/intercept/loading covariance absolute difference<=1e-8 from fresh default native; dispersion relative difference<=1e-8; native absolute gradient and FD stability<=1e-4, objective reconstruction<=1e-8; retained source-bound R loglik rtol<=1e-6 and original health reverified."
+implementation_status = "REGISTERED_SEPARATE_PUBLIC_R_COMPONENT"
+evidence_path = "docs/dev-log/core070/public-r-bridge-programme-evidence.json"
+
+[[executable_case]]
+id = "CORE070-FAMILY-05-LOG-PUBLIC-R-BRIDGE"
+family = "nb2"
+model_contract_id = "MODEL-FAMILY-05-LOG"
+source_fact_ids = ["family/FAMILY-05-LOG"]
+prerequisite_native_id = "NATIVE-06-NB2"
+data_sha256 = "7abde2731134afe61afee5a7f0c29b58892ad72e550fa41cf8230e9c701a2bf9"
+p = 5
+n = 80
+K = 2
+df = 19
+reference_control_policy = "nb2_original_default_v1"
+r_call = "gllvm_julia_fit(Y,family=gllvmTMB::nbinom2(),num.lv=2); gllvmTMB(value~0+trait+latent(0+trait|site,d=2,unique=FALSE),data=original_reversed_long,unit=\"site\",trait=\"trait\",family=gllvmTMB::nbinom2(),engine=\"julia\")"
+julia_call = "fit_gllvm(Y;family=original_family,K=2)"
+fixture = "tools/core070_bridge_models.R"
+native_health_fixture = "tools/core070_bridge_models.jl"
+coverage_role = "public_r_bridge"
+acceptance_level = "paired_fit_interface"
+acceptance_rule = "Both public routes: df/shape/link/convergence valid; loglik/intercept/loading covariance absolute difference<=1e-8 from fresh default native; dispersion relative difference<=1e-8; native absolute gradient and FD stability<=1e-4, objective reconstruction<=1e-8; retained source-bound R loglik rtol<=1e-6 and original health reverified."
+scope_boundary = "Original complete-data ordinary loadings-only unique=false model. Historical R oracle is reverified, not refitted in this public bridge batch. No broader models, recovery or full family promotion."
+executor = "public_r_bridge"
+reference_call = "gllvm_julia_fit(Y,family=gllvmTMB::nbinom2(),num.lv=2); gllvmTMB(value~0+trait+latent(0+trait|site,d=2,unique=FALSE),data=original_reversed_long,unit=\"site\",trait=\"trait\",family=gllvmTMB::nbinom2(),engine=\"julia\")"
+model_contract = "{\"K\": 2, \"curvature\": \"observed Laplace\", \"dispersion\": \"per-trait NB2 size; Var=mu+mu^2/r\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"log\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 80, \"normalization\": \"full response log-density including constants\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 45}"
+fixture_sha256 = "8e94c709134ba8a7b65cb3018563a844ad08343dd63ff344553a15d2b37d2ca2"
+bridge_subcontract = "docs/dev-log/core070/public-bridge-required-cases.json"
+bridge_subcontract_sha256 = "72597c8905af7f680984089f89fbb89a6972be02c8bef207986a035f27377e4b"
+
+[[obligation]]
+id = "CORE070-FAMILY-00-IDENTITY-PUBLIC-R-BRIDGE"
+scope = "Reference bridge behavior only; native/formula same-model requirements unchanged."
+owner = "B5/Hopper"
+source = "frozen R/julia-bridge.R"
+r_call = "gllvmTMB(value~0+latent(0+trait|site,d=1), data=original_gaussian_data, unit=\"site\", trait=\"trait\", family=gaussian(), engine=\"julia\")"
+julia_call_or_missing = "fit_gaussian_pervar_gllvm(Y;K=1,X=zeros(4,120,0),fixed_residual_sd=c,method=:lbfgs,g_tol=1e-8,iterations=3000)"
+fixture_specification = "tools/core070_gaussian_bridge_boundary.R"
+parameterisation = "p4,n120,K1,seed81031; zero mean; M=Lambda*Lambda′+diag(psi^2+c^2), c=max(0.001sd(vec(Y)),1e-6) fixed; 4 loadings+4 log unique SD in R; Julia log unique variance=2logSD; exact Gaussian likelihood with constants, no penalty"
+identification = "Same original model contract; bridge behavior separately recorded."
+acceptance_rule = "Original zero-mean p4/n120/K1 fixture: default unique request warns and equals explicit unique=false; common residual scale and df5 rather than required df8. This is reference model-change behavior, not same-model parity."
+implementation_status = "REGISTERED_SEPARATE_PUBLIC_R_COMPONENT"
+evidence_path = "docs/dev-log/core070/public-r-bridge-programme-evidence.json"
+
+[[executable_case]]
+id = "CORE070-FAMILY-00-IDENTITY-PUBLIC-R-BRIDGE"
+coverage_role = "public_r_bridge"
+acceptance_level = "reference_bridge_boundary"
+source_fact_ids = ["family/FAMILY-00-IDENTITY"]
+model_contract_id = "MODEL-FAMILY-00-IDENTITY"
+native_case_id = "CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL"
+native_contract = "docs/dev-log/core070/gaussian-required-contract.json"
+native_contract_row_sha256 = "4b6e10a42399a8558238796674aee178e66dc91949fdd40ff7146280e4647450"
+native_model_contract = "p4,n120,K1,seed81031; zero mean; M=Lambda*Lambda′+diag(psi^2+c^2), c=max(0.001sd(vec(Y)),1e-6) fixed; 4 loadings+4 log unique SD in R; Julia log unique variance=2logSD; exact Gaussian likelihood with constants, no penalty"
+model_contract = "p4,n120,K1,seed81031; zero mean; M=Lambda*Lambda′+diag(psi^2+c^2), c=max(0.001sd(vec(Y)),1e-6) fixed; 4 loadings+4 log unique SD in R; Julia log unique variance=2logSD; exact Gaussian likelihood with constants, no penalty"
+fixture = "tools/core070_gaussian_bridge_boundary.R"
+fixture_sha256 = "2f3a976a00180e828e455a154cfd18f92a2afa5fefa1541debef46bd97bb96d1"
+r_call = "gllvmTMB(value~0+latent(0+trait|site,d=1), data=original_gaussian_data, unit=\"site\", trait=\"trait\", family=gaussian(), engine=\"julia\")"
+julia_call = "fit_gaussian_pervar_gllvm(Y;K=1,X=zeros(4,120,0),fixed_residual_sd=c,method=:lbfgs,g_tol=1e-8,iterations=3000)"
+bridge_admission = "reference_model_change"
+acceptance_rule = "Original zero-mean p4/n120/K1 fixture: default unique request warns and equals explicit unique=false; common residual scale and df5 rather than required df8. This is reference model-change behavior, not same-model parity."
+scope_boundary = "Reference bridge behavior only; native/formula same-model requirements unchanged."
+data_fixture = "test/parity/fixtures/core070_gaussian_original.toml"
+data_fixture_sha256 = "52a4664c99295ec675a7b666458350bf57ff57e338c77d5ada1cf9d2e5efba92"
+bridge_boundary_contract = "docs/dev-log/core070/bridge-model-admission-contract.json"
+bridge_boundary_contract_sha256 = "723a0c123e5c694d9c8be5951efee3a8a0b9f3507a97f001d612bab33347a6f1"
+executor = "public_r_bridge"
+reference_call = "gllvmTMB(value~0+latent(0+trait|site,d=1), data=original_gaussian_data, unit=\"site\", trait=\"trait\", family=gaussian(), engine=\"julia\")"
+
+[[obligation]]
+id = "CORE070-FAMILY-11-LOG-PUBLIC-R-BRIDGE"
+scope = "Reference bridge behavior only; native/formula same-model requirements unchanged."
+owner = "B5/Hopper"
+source = "frozen R/julia-bridge.R"
+r_call = "gllvm_julia_fit(matrix(1,4,6),family=truncated_nbinom2(),num.lv=1); gllvmTMB(value~0+trait+latent(0+trait|site,d=1,unique=FALSE), data=valid_4_trait_6_unit_data,unit=\"site\",trait=\"trait\",family=truncated_nbinom2(),engine=\"julia\")"
+julia_call_or_missing = "fit_truncated_nbinom2_gllvm_pertrait(Y; K = K)"
+fixture_specification = "tools/core070_bridge_descriptor_admission.R"
+parameterisation = "{\"K\": 1, \"curvature\": \"observed Laplace\", \"dispersion\": \"per-trait NB2 size; observed Laplace curvature\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"log of untruncated mean\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 120, \"normalization\": \"full response log-density including constants; truncated NB2 conditions on Y>=1\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 58}"
+identification = "Same original model contract; bridge behavior separately recorded."
+acceptance_rule = "Both exported public routes reproduce the exact GJL-GATE-FAMILY error on valid generic data. Frozen R/julia-bridge.R maps the family before fitting. The original seed58 p5/n120/K1 native model still needs native/formula parity."
+implementation_status = "REGISTERED_SEPARATE_PUBLIC_R_COMPONENT"
+evidence_path = "docs/dev-log/core070/public-r-bridge-programme-evidence.json"
+
+[[executable_case]]
+id = "CORE070-FAMILY-11-LOG-PUBLIC-R-BRIDGE"
+coverage_role = "public_r_bridge"
+acceptance_level = "reference_bridge_boundary"
+source_fact_ids = ["family/FAMILY-11-LOG"]
+model_contract_id = "MODEL-FAMILY-11-LOG"
+native_case_id = "NATIVE-12-TRUNCATED-NB2"
+native_contract = "docs/dev-log/core070/registered-models-contract.json"
+native_contract_row_sha256 = "a48376d60c4f936750e6eae0b5ac91971b5d2f5820c1f537d605d88fe2dee679"
+native_model_contract = "{\"K\": 1, \"curvature\": \"observed Laplace\", \"dispersion\": \"per-trait NB2 size; observed Laplace curvature\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"log of untruncated mean\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 120, \"normalization\": \"full response log-density including constants; truncated NB2 conditions on Y>=1\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 58}"
+model_contract = "{\"K\": 1, \"curvature\": \"observed Laplace\", \"dispersion\": \"per-trait NB2 size; observed Laplace curvature\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"log of untruncated mean\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 120, \"normalization\": \"full response log-density including constants; truncated NB2 conditions on Y>=1\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 58}"
+fixture = "tools/core070_bridge_descriptor_admission.R"
+fixture_sha256 = "9bce24f0a764c3c9c93547275b2ff08118275156fcfb07d2af203503feb51d28"
+r_call = "gllvm_julia_fit(matrix(1,4,6),family=truncated_nbinom2(),num.lv=1); gllvmTMB(value~0+trait+latent(0+trait|site,d=1,unique=FALSE), data=valid_4_trait_6_unit_data,unit=\"site\",trait=\"trait\",family=truncated_nbinom2(),engine=\"julia\")"
+julia_call = "fit_truncated_nbinom2_gllvm_pertrait(Y; K = K)"
+bridge_admission = "reference_rejected"
+acceptance_rule = "Both exported public routes reproduce the exact GJL-GATE-FAMILY error on valid generic data. Frozen R/julia-bridge.R maps the family before fitting. The original seed58 p5/n120/K1 native model still needs native/formula parity."
+scope_boundary = "Reference bridge behavior only; native/formula same-model requirements unchanged."
+native_data_sha256 = "ecbcf9f501c7e618131f2c3f1f0d213bb0e92364a72c0519095c52ef30930948"
+descriptor_case_id = "BRIDGE-DESCRIPTOR-FAMILY-11-LOG"
+bridge_boundary_contract = "docs/dev-log/core070/bridge-model-admission-contract.json"
+bridge_boundary_contract_sha256 = "723a0c123e5c694d9c8be5951efee3a8a0b9f3507a97f001d612bab33347a6f1"
+executor = "public_r_bridge"
+reference_call = "gllvm_julia_fit(matrix(1,4,6),family=truncated_nbinom2(),num.lv=1); gllvmTMB(value~0+trait+latent(0+trait|site,d=1,unique=FALSE), data=valid_4_trait_6_unit_data,unit=\"site\",trait=\"trait\",family=truncated_nbinom2(),engine=\"julia\")"
+
+# END PUBLIC R BRIDGE CASES

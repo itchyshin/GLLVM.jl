@@ -49,9 +49,9 @@ class Collection(unittest.TestCase):
             else:
                 shutil.copyfile(src, dst)
         draft = evidence.load_manifest(evidence.DEFAULT_MANIFEST)
-        self.ids = [row['id'] for row in draft['obligation']]
+        self.ids = [row['id'] for row in draft['obligation'] if row['id'] not in draft.get('public_r_bridge_case_ids',[])]
         self.manifest = self.root / evidence.CONTRACT_REL
-        text = self.manifest.read_text().replace('status = "DRAFT_INCOMPLETE_NOT_FROZEN"', 'status = "FROZEN"', 1)
+        text = evidence.synthetic_native_contract_text(self.manifest).replace('status = "DRAFT_INCOMPLETE_NOT_FROZEN"', 'status = "FROZEN"', 1)
         text = re.sub(r'\n\[\[executable_case\]\][\s\S]*?(?=\n\[|\Z)', '', text)
         text = 'required_case_ids = ' + json.dumps(self.ids) + '\n' + text
         families = {row['id']: row['fixture'] for row in draft['families']}

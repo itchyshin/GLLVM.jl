@@ -16602,3 +16602,22 @@ older Poisson/Beta/NB2 model definitions with coordinated source-bound replay.
 Do not edit pinned definitions without refreshing affected receipts. Fullsuite
 and specific external numerical-review approvals unchanged. All checks terminal;
 no DRAC jobs, pushes, releases or destructive cleanup. R0.7.1/article untouched.
+
+## 2026-08-31 — mixed-language evidence integrated; fresh original-model replay
+
+Typed public-R component now participates in programme collections independently
+of Julia Test.jl receipts; exact IDs, registry and current manifest pins required.
+Grace9 independent tests +61-test draft-integrity battery pass. Corrected copied
+Poisson/Beta/NB2 normalization prose only, then replayed native/formula03 on
+Totoro97.53s (10cases/187assertions) and publicR04 59.09s (3models/6routes).
+Oracle checks pass; fixtures/engines/tolerances/optimizer policies unchanged.
+Unlazy5/6: all runnable gates PASS, full programme unpaid. Source map15links,
+same5facts;710 nonexcluded unmapped. Full manifest DRAFT; no full-family claim.
+MissionControl5bb8f8a78c5fd986dd525755f7f370ea440e5b4b HTTP200, R fields unchanged.
+Seven DRAC systems and Totoro verified18:40UTC; Nibi socket absent, no new login.
+No DRAC jobs submitted. Fullsuite/specific external numerical review approvals
+unchanged. Next remaining Core/AGHQ model contracts and source-scope review;
+central mixed-language aggregation is no longer pending implementation.
+See after-task/2026-08-31-core070-mixed-language-evidence.md and current evidence
+public-r-bridge-programme-evidence.json, programme-bridge-native-replay.json,
+programme-bridge-draft-integrity.json. Current runs terminal; old evidence retained.

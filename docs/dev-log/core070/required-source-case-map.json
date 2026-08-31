@@ -1539,7 +1539,8 @@
       "classification": "required_core",
       "executable_case_ids": [
         "CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL",
-        "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE"
+        "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE",
+        "CORE070-FAMILY-00-IDENTITY-PUBLIC-R-BRIDGE"
       ],
       "rationale": "Executable original Gaussian native and wide/long formula cases are bound; required public R bridge and wider family combinations remain unpaid. Binding is not successful execution or complete family certification.",
       "planned_case_ids": [
@@ -1610,7 +1611,8 @@
       "classification": "required_core",
       "executable_case_ids": [
         "NATIVE-03-POISSON",
-        "CORE070-FAMILY-02-LOG-FORMULA-INTERFACE"
+        "CORE070-FAMILY-02-LOG-FORMULA-INTERFACE",
+        "CORE070-FAMILY-02-LOG-PUBLIC-R-BRIDGE"
       ],
       "rationale": "Existing required runner IDs explicitly bind the original native/formula model and declared R controls. Public R bridge and remaining interfaces/models prevent full-family certification. Execution requires fresh receipts.",
       "planned_case_ids": [
@@ -1679,7 +1681,8 @@
       "classification": "required_core",
       "executable_case_ids": [
         "NATIVE-06-NB2",
-        "CORE070-FAMILY-05-LOG-FORMULA-INTERFACE"
+        "CORE070-FAMILY-05-LOG-FORMULA-INTERFACE",
+        "CORE070-FAMILY-05-LOG-PUBLIC-R-BRIDGE"
       ],
       "rationale": "Existing required runner IDs explicitly bind the original native/formula model and declared R controls. Public R bridge and remaining interfaces/models prevent full-family certification. Execution requires fresh receipts.",
       "planned_case_ids": [
@@ -1788,7 +1791,8 @@
       "classification": "required_core",
       "executable_case_ids": [
         "NATIVE-08-BETA",
-        "CORE070-FAMILY-07-LOGIT-FORMULA-INTERFACE"
+        "CORE070-FAMILY-07-LOGIT-FORMULA-INTERFACE",
+        "CORE070-FAMILY-07-LOGIT-PUBLIC-R-BRIDGE"
       ],
       "rationale": "Existing required runner IDs explicitly bind the original native/formula model and declared R controls. Public R bridge and remaining interfaces/models prevent full-family certification. Execution requires fresh receipts.",
       "planned_case_ids": [
@@ -1941,7 +1945,8 @@
       "classification": "required_core",
       "executable_case_ids": [
         "NATIVE-12-TRUNCATED-NB2",
-        "CORE070-FAMILY-11-LOG-FORMULA-INTERFACE"
+        "CORE070-FAMILY-11-LOG-FORMULA-INTERFACE",
+        "CORE070-FAMILY-11-LOG-PUBLIC-R-BRIDGE"
       ],
       "rationale": "Existing required runner IDs explicitly bind the original native/formula model and declared R controls. Public R bridge and remaining interfaces/models prevent full-family certification. Execution requires fresh receipts.",
       "planned_case_ids": [

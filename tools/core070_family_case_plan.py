@@ -3,6 +3,7 @@ import argparse, json
 from pathlib import Path
 import core070_manifest_coverage as coverage
 from core070_bridge_admission import CONTRACT as BOUNDARY_CONTRACT, bound_rows
+from core070_programme_bridge import REGISTRY as PROGRAMME_BRIDGE_REGISTRY
 
 ROOT=Path(__file__).resolve().parents[1]
 PLAN=coverage.PREFIX+'family-required-case-plan.json'
@@ -22,6 +23,7 @@ BRIDGE_CONTRACT=coverage.PREFIX+'public-bridge-required-cases.json'
 DESCRIPTOR_EVIDENCE=coverage.PREFIX+'bridge-descriptor-evidence.json'
 
 def build():
+    programme_bridge=coverage.read_json(ROOT/PROGRAMME_BRIDGE_REGISTRY)
     bridge_boundaries={c['id']:c for c in bound_rows(ROOT)}
     descriptor_evidence=coverage.read_json(ROOT/DESCRIPTOR_EVIDENCE)
     assert descriptor_evidence['reference_commit']==coverage.REFERENCE
@@ -176,18 +178,18 @@ def build():
                     model_contract=next(r['model_contract'] for r in registered['cases']
                         if r['coverage_role']=='native_model' and r['model_contract_id']==bridge['model_contract_id']),
                     acceptance_rule=bridge['acceptance_rule'],scope_boundary=bridge['scope_boundary'],
-                    status='SEPARATE_REQUIRED_R_RUNNER_REGISTERED_AGGREGATE_PENDING',
+                    status='REGISTERED_PUBLIC_R_PROGRAMME_COMPONENT',
                     required_runner_case_id=cid,required_runner_status='SEPARATE_PUBLIC_R_REGISTRY',
                     bridge_subcontract=BRIDGE_CONTRACT,
                     bridge_subcontract_sha256=coverage.sha(ROOT/BRIDGE_CONTRACT),
                     prerequisite_case_ids=[bridge['prerequisite_native_id']])
-                case['candidate_warning']='Separate required R runner has exact case IDs and its own verification. Main programme receipt aggregation remains pending; this row alone does not grant full-family coverage.'
+                case['candidate_warning']='Separate required R runner has exact case IDs and its own verification. Programme-wide completeness and independent source-scope review remain pending; this row alone does not grant full-family coverage.'
             if role=='public_r_bridge' and cid in bridge_boundaries:
                 boundary=bridge_boundaries[cid]
                 case.update(boundary)
                 case.update(status='REFERENCE_BRIDGE_BOUNDARY_BOUND_SCOPE_REVIEW_PENDING',
                     required_runner_status='SOURCE_BOUND_REFERENCE_BEHAVIOR',
-                    evidence=coverage.PREFIX+'bridge-model-admission-evidence.json',
+                    evidence=coverage.PREFIX+'programme-bridge-boundary-replay.json',
                     prerequisite_case_ids=[boundary['native_case_id']])
                 case['candidate_warning']='Reference bridge rejection or model change is verified, not same-model parity. Native and formula requirements remain unchanged; full-manifest integration and independent scope review remain unpaid.'
             elif role=='public_r_bridge' and sid in rejected_bridge_descriptors:
@@ -199,11 +201,12 @@ def build():
                 case['candidate_warning']='The descriptor rejects in both public R bridge routes. This observation is not yet a model-bound executable case; the strict bridge gate rejects it until a complete contract is registered.'
             cases.append(case)
         executable=[r['id'] for r in gaussian['cases']+registered['cases'] if sid in r['source_fact_ids']]
+        executable += [r['id'] for r in programme_bridge['cases'] if sid in r['source_fact_ids']]
         rows.append(dict(source_id=sid,classification=classification,planned_case_ids=ids,
                          executable_case_ids=executable,
                          status='REGISTERED_PARTIAL_INTERFACES_UNPAID' if executable else ('EXCLUDED' if not ids else 'SPECIFICATION_REQUIRED')))
     return dict(schema=1,status='FAMILY_DECOMPOSITION_PARTIAL_EXECUTABLE_NOT_FROZEN',
-        reference_commit=coverage.REFERENCE,inputs={p:coverage.sha(ROOT/p) for p in INPUTS+[BRIDGE_CONTRACT,BOUNDARY_CONTRACT,DESCRIPTOR_EVIDENCE]},
+        reference_commit=coverage.REFERENCE,inputs={p:coverage.sha(ROOT/p) for p in INPUTS+[BRIDGE_CONTRACT,BOUNDARY_CONTRACT,DESCRIPTOR_EVIDENCE,PROGRAMME_BRIDGE_REGISTRY]},
         source_facts=69,planned_case_count=len(cases),rows=rows,cases=cases)
 
 def verify():

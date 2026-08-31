@@ -123,6 +123,14 @@ def _load_manifest_metadata(path: Path) -> dict:
         raise EvidenceError("MANIFEST_INVALID: required obligation rows are not source-complete")
     if not (set(required) | set(interface_ids) | set(model_ids)).issubset({row["id"] for row in obligations}):
         raise EvidenceError("MANIFEST_INVALID: every family-smoke row needs its own source-bound obligation")
+    if 'public_r_bridge_case_ids' in manifest or any(r.get('executor')=='public_r_bridge' for r in manifest.get('executable_case',[])):
+        from core070_programme_bridge import validate_registry
+        try:
+            validate_registry(manifest,ROOT)
+        except (OSError,ValueError,KeyError,TypeError) as error:
+            raise EvidenceError('MANIFEST_INVALID: public R bridge '+str(error)) from error
+        if not set(manifest['public_r_bridge_case_ids']) <= {r['id'] for r in obligations}:
+            raise EvidenceError('MANIFEST_INVALID: public R bridge obligations missing')
     return manifest
 
 
@@ -137,6 +145,39 @@ def load_manifest(path: Path) -> dict:
         except CoverageError as error:
             raise EvidenceError(str(error)) from error
     return manifest
+
+
+def programme_executor_ids(manifest: dict) -> dict[str, set[str]]:
+    """Partition all obligations; a bridge case cannot be paid by Julia cells."""
+    required=manifest.get('required_case_ids',[])
+    cases=manifest.get('executable_case',[])
+    ids=[row.get('id') for row in cases]
+    if not required or len(set(required))!=len(required) or len(set(ids))!=len(ids) or set(ids)!=set(required):
+        raise EvidenceError('INVALID_EXECUTOR_REGISTRY: missing or duplicate executable cases')
+    result={'julia':set(),'public_r_bridge':set()}
+    for row in cases:
+        executor=row.get('executor','julia')
+        if executor not in result:
+            raise EvidenceError('INVALID_EXECUTOR_REGISTRY: unknown executor')
+        result[executor].add(row['id'])
+    bridge_ids=manifest.get('public_r_bridge_case_ids',[])
+    if len(bridge_ids)!=len(set(bridge_ids)) or set(bridge_ids)!=result['public_r_bridge']:
+        raise EvidenceError('INVALID_EXECUTOR_REGISTRY: public R bridge registry differs')
+    return result
+
+
+def verify_public_bridge_component(manifest: dict, selection: dict | None) -> dict:
+    from core070_programme_bridge import verify_component
+    try:
+        return verify_component(manifest,selection,ROOT)
+    except (OSError,ValueError,KeyError,TypeError) as error:
+        raise EvidenceError('PUBLIC_R_BRIDGE: '+str(error)) from error
+
+
+def synthetic_native_contract_text(path: Path) -> str:
+    """Remove only typed-R blocks for receipt-format tests, never production."""
+    return re.sub(r'\n# BEGIN PUBLIC R BRIDGE[^\n]*\n[\s\S]*?\n# END PUBLIC R BRIDGE[^\n]*\n',
+                  '\n',path.read_text())
 
 
 def _hash_inventory(entries: list[dict]) -> str:
@@ -233,12 +274,15 @@ def _verify_loaded(run: dict, cell_files: dict[str, dict], manifest: dict,
     if len(cases) != len(expected_ids) or len(case_by_id) != len(expected_ids) or set(case_by_id) != set(expected_ids) or \
        any(not all(row.get(key) for key in needed) for row in cases):
         raise EvidenceError("INCOMPLETE_PROGRAMME: every obligation requires an executable frozen case")
+    executors=programme_executor_ids(manifest)
     if run.get("status") != "success" or run.get("success_marker") != "CORE070_PARITY_SUCCESS" or run.get("exit_code") != 0:
         raise EvidenceError("NONZERO_OR_INCOMPLETE_RUN: no successful parity marker")
     requested = run.get("requested_case_ids")
     completed = run.get("completed_case_ids")
+    if isinstance(requested,list) and set(requested).intersection(executors['public_r_bridge']):
+        raise EvidenceError('WRONG_EXECUTOR: Julia run contains public R bridge cases')
     if not isinstance(requested, list) or not requested or len(requested) != len(set(requested)) or \
-       not set(requested).issubset(expected_ids) or (not required_subset and set(requested) != set(expected_ids)):
+       not set(requested).issubset(executors['julia']) or (not required_subset and set(requested) != executors['julia']):
         raise EvidenceError("INCOMPLETE_PROGRAMME: run did not request every frozen executable case")
     if not isinstance(completed, list) or len(completed) != len(set(completed)) or set(completed) != set(requested):
         raise EvidenceError("UNEXECUTED_OR_DUPLICATE_CASE: completed cases do not exactly match requested cases")
@@ -283,7 +327,8 @@ def _verify_loaded(run: dict, cell_files: dict[str, dict], manifest: dict,
     summary = run.get("cells", {})
     if not isinstance(summary, dict) or set(summary) != set(requested) or any(summary[key] != cell_files[key] for key in requested):
         raise EvidenceError("CELL_RUN_MISMATCH")
-    return {"status": "PASS", "scope": "REQUIRED_SUBSET" if required_subset else "FULL_PROGRAMME",
+    return {"status": "PASS", "scope": "REQUIRED_SUBSET" if required_subset else (
+                "JULIA_COMPONENT" if executors['public_r_bridge'] else "FULL_PROGRAMME"),
             "required_cells": len(expected_ids), "verified_cells": len(requested),
             "actual_assertions": total_assertions, "manifest_sha256": digest(manifest_path)}
 
@@ -363,6 +408,8 @@ def _load_receipts(receipt_dir: Path) -> tuple[dict, dict]:
 
 def verify(receipt_dir: Path, manifest_path: Path, process_path: Path | None = None) -> dict:
     manifest = load_manifest(manifest_path)
+    if manifest.get('public_r_bridge_case_ids'):
+        raise EvidenceError('PUBLIC_R_BRIDGE_REQUIRED: use a mixed-language collection')
     run, cells = _load_receipts(receipt_dir)
     report = _verify_loaded(run, cells, manifest, manifest_path, receipt_dir)
     report["external_process"] = verify_process(receipt_dir, process_path, run["execution"])
@@ -413,12 +460,23 @@ def verify_collection(collection_path: Path, manifest_path: Path) -> dict:
             seen_runs.add(run["run_id"])
             report.update(run_id=run["run_id"], case_ids=run["requested_case_ids"])
             reports.append(report)
-        if seen_ids != set(manifest["required_case_ids"]):
+        executors=programme_executor_ids(manifest)
+        if seen_ids != executors['julia']:
             raise EvidenceError("INCOMPLETE_PROGRAMME: collection omits required cases")
-        return {"status": "PASS", "scope": "FULL_PROGRAMME", "required_cells": len(seen_ids),
+        bridge_report=None
+        if executors['public_r_bridge']:
+            bridge_report=verify_public_bridge_component(manifest,collection.get('public_r_bridge'))
+            if bridge_report.get('status')!='PASS' or set(bridge_report.get('case_ids',[]))!=executors['public_r_bridge'] or len(bridge_report.get('case_ids',[]))!=len(executors['public_r_bridge']):
+                raise EvidenceError('PUBLIC_R_BRIDGE: incomplete or failed component')
+            if bridge_report.get('manifest_sha256')!=digest(manifest_path):
+                raise EvidenceError('PUBLIC_R_BRIDGE: component binds a different programme manifest')
+        elif 'public_r_bridge' in collection:
+            raise EvidenceError('PUBLIC_R_BRIDGE: undeclared component')
+        return {"status": "PASS", "scope": "FULL_PROGRAMME", "required_cells": len(manifest['required_case_ids']),
                 "actual_assertions": sum(report["actual_assertions"] for report in reports),
+                "assertion_scope":"Julia Test.jl only; public R evidence reported separately",
                 "manifest_sha256": digest(manifest_path), "collection_sha256": digest(collection_path),
-                "runs": reports}
+                "runs": reports, "public_r_bridge":bridge_report}
     except (OSError, ValueError, KeyError, TypeError) as exc:
         raise EvidenceError(f"BAD_COLLECTION: {exc}") from exc
 
@@ -437,8 +495,8 @@ def self_test(manifest_path: Path) -> None:
     with tempfile.TemporaryDirectory() as tmp:
         tmpdir = Path(tmp)
         frozen_path = tmpdir / "frozen.toml"
-        all_ids = [row["id"] for row in draft["obligation"]]
-        frozen_text = manifest_path.read_text().replace('status = "DRAFT_INCOMPLETE_NOT_FROZEN"', 'status = "FROZEN"', 1)
+        all_ids = [row["id"] for row in draft["obligation"] if row['id'] not in draft.get('public_r_bridge_case_ids',[])]
+        frozen_text = synthetic_native_contract_text(manifest_path).replace('status = "DRAFT_INCOMPLETE_NOT_FROZEN"', 'status = "FROZEN"', 1)
         frozen_text = re.sub(r"\n\[\[executable_case\]\][\s\S]*?(?=\n\[|\Z)", "", frozen_text)
         frozen_text = "required_case_ids = " + json.dumps(all_ids) + "\n" + frozen_text
         family_fixture = {row["id"]: row["fixture"] for row in draft["families"]}

@@ -6,12 +6,14 @@ import core070_manifest_coverage as coverage
 IDS={'CORE070-FAMILY-02-LOG-FORMULA-INTERFACE','CORE070-FAMILY-07-LOGIT-FORMULA-INTERFACE','CORE070-FAMILY-11-LOG-FORMULA-INTERFACE','NATIVE-03-POISSON','NATIVE-06-NB2','NATIVE-08-BETA','NATIVE-12-TRUNCATED-NB2',
      'CORE070-FAMILY-05-LOG-FORMULA-INTERFACE',
      'CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL','CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE'}
+IDS.update('CORE070-'+family+'-PUBLIC-R-BRIDGE' for family in
+           ['FAMILY-00-IDENTITY','FAMILY-02-LOG','FAMILY-05-LOG','FAMILY-07-LOGIT','FAMILY-11-LOG'])
 
 class RegisteredBindings(unittest.TestCase):
-    def test_ten_explicit_cases(self):
+    def test_fifteen_explicit_cases(self):
         manifest=evidence.load_manifest(evidence.DEFAULT_MANIFEST)
         self.assertEqual({c['id'] for c in manifest['executable_case']},IDS)
-        self.assertEqual(len(manifest['executable_case']),10)
+        self.assertEqual(len(manifest['executable_case']),15)
         for case in manifest['executable_case']:
             self.assertEqual(case['fixture_sha256'],coverage.sha(evidence.ROOT/case['fixture']))
             for key in ['reference_call','julia_call','model_contract','acceptance_rule','source_fact_ids']:
@@ -27,8 +29,10 @@ class RegisteredBindings(unittest.TestCase):
         index=coverage.read_json(evidence.ROOT/coverage.INDEX)
         for fact in index['facts']:
             if fact['id'] in {s for c in manifest['executable_case'] for s in c['source_fact_ids']}:
-                with self.subTest(source=fact['id']),self.assertRaises(coverage.CoverageError):
+                with self.subTest(source=fact['id']):
                     coverage.validate_family_roles([fact],mapping,manifest['executable_case'],evidence.ROOT)
+        with self.assertRaises(coverage.CoverageError):
+            coverage.require_frozen_manifest(manifest,evidence.ROOT)
 
     def test_declared_refinement_is_not_silently_default(self):
         cases={c['id']:c for c in evidence.load_manifest(evidence.DEFAULT_MANIFEST)['executable_case']}

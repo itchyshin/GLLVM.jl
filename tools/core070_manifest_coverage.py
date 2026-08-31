@@ -144,6 +144,9 @@ def require_frozen_manifest(manifest,root):
     need(ids and len(set(ids))==len(ids),'no unique executable cases')
     validate_mapping(mapping,index['facts'],ids)
     validate_family_roles(index['facts'],mapping,cases,root)
+    if any(f['id']=='family/FAMILY-00-IDENTITY' for f in index['facts']):
+        from core070_programme_bridge import validate_registry
+        validate_registry(manifest,root)
     if any(f['id']=='covariance/COV-ORD-SLOPE' for f in index['facts']):
         from core070_verify_slopes_input import require_frozen_slopes
         try:require_frozen_slopes(manifest,root)

@@ -11,7 +11,7 @@ import core070_verify_registered_models as base
 from core070_manifest_coverage import need
 
 ROOT = Path(__file__).resolve().parents[1]
-STATE = ROOT / '.unlazy/core070-aghq/family-formulas-02'
+STATE = ROOT / '.unlazy/core070-aghq/family-formulas-03'
 CONTRACT = ROOT / 'docs/dev-log/core070/family-formulas-contract.json'
 FAMILIES = ['poisson', 'beta', 'truncnb2']
 IDS = ['CORE070-FAMILY-02-LOG-FORMULA-INTERFACE',
