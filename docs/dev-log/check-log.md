@@ -16732,6 +16732,7 @@ fresh native/formula04 10cases/187assertions 97.89s and publicbridge05 3models/
 6routes 59.23s, with oracle checks unchanged. Combined registry14cases PASS.
 Draft integrity104tests;42bindings,703nonexcluded facts unmapped, fullmanifestDRAFT.
 Four setup/expectation failures retained. Installed marker, failed-attempt bytes,
-raw results and process receipts hash-verified. Hopper final review noP0-P3;
-MissionControl update pending. No src/Rsource/DRAC/fullsuite/push/release/foreignedit.
+raw results and process receipts hash-verified. Hopper final review noP0-P3.
+MissionControl0fd633f servedstatusHTTP200,newJuliafieldsvisible,Rfocuspreserved.
+No src/Rsource/DRAC/fullsuite/push/release/foreignedit.
 See covariance-bridge-boundary after-task and evidence under core070.

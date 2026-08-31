@@ -102,7 +102,8 @@ performance, full package suites, Documenter or programme completion panels.
 Review verdict: Hopper scoped review PASS with no P0--P3 finding; no programme
 completion claim. Rose full programme panel: NOT RUN.
 
-Mission Control: pending scoped status update after review and local commit.
+Mission Control: local commit `0fd633f`; canonical server verified, served status
+HTTP 200, both targeted Julia fields visible and the R 0.7.1 focus preserved.
 Unlazy: boundary, combined bridge and draft-integrity gates pass. The after-task
 structure check passes; its global-ledger phase correctly exits nonzero because
 the wider AGHQ/binomial and other programme gates remain unpaid.
