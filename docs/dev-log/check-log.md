@@ -16296,3 +16296,17 @@ No full obligation promotion: native default-unique parameter contract, formula
 node/reason, ineligible k1, bridge and remaining domain coverage unpaid. Original
 binomial seed43/k5 and Student-t seed71 failures unchanged. No numerical src,
 R source, public API, tolerance, release, push, merge or cleanup changes.
+
+
+## 2026-08-31 — Gaussian covariance-mode contracts
+Nine ordinary/animal/kernel x independent/common/dependent prepared models and
+18fixed points verified against frozen R; maxnll delta2.56e-13, scaled gradient
+error1.62e-9. Capture1.067s, failedfirstpoints0.817s, finalpoints0.917s Totoro.
+Actual logSD/logvariance/raw-loading maps and dense-source C+1e-8I recorded.
+Ordinary DEP residual/covariance split unidentifiable; no fitted/recovery claim.
+NoetherTerrahigh fresh+onefollowup; parent corrected retained-source-matrix
+checker and23corruption controls pass in6tests; adjacent source-map6testsPASS.
+Seven master rows link nine reference contracts, zero executable promotions.
+See core070/covariance-modes-contract.md, covariance-modes-evidence.json and
+after-task/2026-08-31-core070-covariance-modes.md. FullprogrammeACTIVE/M1PARTIAL,
+manifestDRAFT; original binomialk5/Studentt/defaultunique and remainingAGHQ unpaid.

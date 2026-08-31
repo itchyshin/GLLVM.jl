@@ -395,7 +395,11 @@
       "source_id": "covariance/COV-ANIMAL-DEP",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Exact Gaussian fixed-point covariance/parameter-map contracts verified; native fits, formula and bridge remain unpaid. Reference points do not discharge full model/interface obligations.",
+      "reference_model_case_ids": [
+        "MODE-ANIMAL-DEP"
+      ],
+      "reference_model_evidence": "docs/dev-log/core070/covariance-modes-evidence.json"
     },
     {
       "source_id": "covariance/COV-ANIMAL-DEP-BAR-REJECT",
@@ -419,7 +423,12 @@
       "source_id": "covariance/COV-ANIMAL-INDEP",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Exact Gaussian fixed-point covariance/parameter-map contracts verified; native fits, formula and bridge remain unpaid. Reference points do not discharge full model/interface obligations.",
+      "reference_model_case_ids": [
+        "MODE-ANIMAL-INDEP",
+        "MODE-ANIMAL-COMMON"
+      ],
+      "reference_model_evidence": "docs/dev-log/core070/covariance-modes-evidence.json"
     },
     {
       "source_id": "covariance/COV-ANIMAL-INDEP-BAR-REJECT",
@@ -479,7 +488,11 @@
       "source_id": "covariance/COV-KERNEL-DEP",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Exact Gaussian fixed-point covariance/parameter-map contracts verified; native fits, formula and bridge remain unpaid. Reference points do not discharge full model/interface obligations.",
+      "reference_model_case_ids": [
+        "MODE-KERNEL-DEP"
+      ],
+      "reference_model_evidence": "docs/dev-log/core070/covariance-modes-evidence.json"
     },
     {
       "source_id": "covariance/COV-KERNEL-FOLDED-UNIQUE",
@@ -491,7 +504,12 @@
       "source_id": "covariance/COV-KERNEL-INDEP",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Exact Gaussian fixed-point covariance/parameter-map contracts verified; native fits, formula and bridge remain unpaid. Reference points do not discharge full model/interface obligations.",
+      "reference_model_case_ids": [
+        "MODE-KERNEL-INDEP",
+        "MODE-KERNEL-COMMON"
+      ],
+      "reference_model_evidence": "docs/dev-log/core070/covariance-modes-evidence.json"
     },
     {
       "source_id": "covariance/COV-KERNEL-LATENT",
@@ -521,19 +539,31 @@
       "source_id": "covariance/COV-ORD-DEP",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Exact Gaussian fixed-point covariance/parameter-map contracts verified; native fits, formula and bridge remain unpaid. Reference points do not discharge full model/interface obligations.",
+      "reference_model_case_ids": [
+        "MODE-ORD-DEP"
+      ],
+      "reference_model_evidence": "docs/dev-log/core070/covariance-modes-evidence.json"
     },
     {
       "source_id": "covariance/COV-ORD-INDEP",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Exact Gaussian fixed-point covariance/parameter-map contracts verified; native fits, formula and bridge remain unpaid. Reference points do not discharge full model/interface obligations.",
+      "reference_model_case_ids": [
+        "MODE-ORD-INDEP"
+      ],
+      "reference_model_evidence": "docs/dev-log/core070/covariance-modes-evidence.json"
     },
     {
       "source_id": "covariance/COV-ORD-INDEP-COMMON",
       "classification": "required_core",
       "executable_case_ids": [],
-      "rationale": "Executable model/interface or rejection case mapping remains required."
+      "rationale": "Exact Gaussian fixed-point covariance/parameter-map contracts verified; native fits, formula and bridge remain unpaid. Reference points do not discharge full model/interface obligations.",
+      "reference_model_case_ids": [
+        "MODE-ORD-COMMON"
+      ],
+      "reference_model_evidence": "docs/dev-log/core070/covariance-modes-evidence.json"
     },
     {
       "source_id": "covariance/COV-ORD-LATENT-BARE",
