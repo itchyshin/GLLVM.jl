@@ -1,67 +1,156 @@
 # Inner executor for the "postfit-policy" manifest-area batch (15 planned
-# EXECUTABLE_NOW cases + 2 negative controls). Reuses, rather than
-# reimplements, the exact fixture-setup idiom already proven by
-# tools/core070_gaussian_postfit.jl (include(runparity.jl) with
-# CORE070_PARITY_CASE_IDS=NATIVE-01-GAUSSIAN, then a native Julia refit from
-# the same Y/K/X); this file adds the additional native ↔ R accessor calls
-# (coef, dof, nobs, confint wald, residual scale/type, predict default,
-# simulate default) the postfit-policy cases need beyond what that file
-# already computes, plus the POST-COEF-EMPTY empty-design pair.
+# EXECUTABLE_NOW cases + 2 negative controls).
 #
-# argv (documented -- must match the outer R runner's system2() call and the
-# --self-test invocation used for local smoke):
+# REPAIR NOTE (2026-09-01, Totoro incident): the prior version of this file
+# `include()`d the ENTIRE test/parity/runparity.jl parity runner and used
+# RCall to embed a live R session, obtaining the R oracle numbers by @rput
+# fixture data into it and driving gllvmTMB(). On Totoro that first
+# segfaulted (exit 139 for the subprocess julia process; cured only by
+# LD_PRELOAD=<julia>/lib/julia/libunwind.so.8 -- an RCall/libunwind
+# interaction worth remembering if a future runner hits the same signal),
+# then failed inside test/parity/test_negbin_parity.jl -- an out-of-scope
+# RCall fixture the runparity.jl runner reaches internally, well beyond this
+# batch's 15-case scope. This file is now a pure-Julia consumer: it reads a
+# JSON oracle file the paired R runner (tools/core070_postfit_policy_batch.R)
+# writes BEFORE invoking this script -- that R process already has the
+# frozen gllvmTMB library loaded and does 100% of the live R fitting itself
+# -- refits the identical Y natively with fit_gaussian_gllvm, and compares
+# via direct `using GLLVM` module calls only. No RCall, no parity-runner
+# include, no R of any kind runs in this process.
+#
+# argv:
 #   ARGS[1]  destination path for the JSON results file (parent dir need not
 #            exist yet; this script mkpath()s it). Must not already exist.
 #
 # Env vars required (set by the outer R runner before invoking this script;
 # never defaulted silently here so a misconfigured environment fails loudly
-# rather than quietly running against the wrong library):
-#   GLLVM_PARITY_TESTS=1
-#   CORE070_PARITY_CASE_IDS=NATIVE-01-GAUSSIAN
-#   R_LIBS / GLLVM_PARITY_R_LIBS = <frozen gllvmTMB library dir>
+# rather than quietly running against stale or missing oracle data):
+#   CORE070_POSTFIT_POLICY_R_ORACLE = <path to the R-written oracle JSON>
 #
 # Invocation:
-#   julia --project=test/parity tools/core070_postfit_policy_batch.jl <out.json>
+#   julia --project=. tools/core070_postfit_policy_batch.jl <out.json>
 
-using GLLVM, Test, RCall
+using GLLVM
 
-# Minimal hand-rolled JSON writer -- test/parity/Project.toml intentionally
-# carries no JSON dependency (see its own header comment on staying minimal),
-# and the report here is a small, fully-known Dict/Vector/scalar shape, so a
-# real JSON package is unnecessary. Handles the only types this script emits:
-# Dict, Vector, AbstractString, Bool, Integer, AbstractFloat, Nothing.
-_json_str(s::AbstractString) = string('"', replace(replace(s, '\\' => "\\\\"), '"' => "\\\""), '"')
-function _json(io::IO, x)
-    if x === nothing
-        print(io, "null")
-    elseif x isa Bool
-        print(io, x ? "true" : "false")
-    elseif x isa Integer
-        print(io, x)
-    elseif x isa AbstractFloat
-        print(io, isfinite(x) ? x : "null")
-    elseif x isa AbstractString
-        print(io, _json_str(x))
-    elseif x isa AbstractDict
-        print(io, "{")
-        for (i, k) in enumerate(keys(x))
-            i > 1 && print(io, ",")
-            print(io, _json_str(string(k)), ":")
-            _json(io, x[k])
+# ---------------------------------------------------------------------------
+# Minimal JSON reader/writer (no external dependency; mirrors the existing
+# repo convention in tools/core070_postfit_1_batch.jl / core070_data_batch.jl).
+# ---------------------------------------------------------------------------
+function json_read(path::AbstractString)
+    txt = read(path, String)
+    pos = Ref(1)
+    skip_ws!() = begin
+        while pos[] <= lastindex(txt) && isspace(txt[pos[]])
+            pos[] = nextind(txt, pos[])
         end
-        print(io, "}")
-    elseif x isa AbstractVector
-        print(io, "[")
-        for (i, v) in enumerate(x)
-            i > 1 && print(io, ",")
-            _json(io, v)
-        end
-        print(io, "]")
-    else
-        error("no JSON serializer for $(typeof(x))")
     end
+    local parse_value
+    function parse_string()
+        pos[] += 1 # opening quote
+        buf = IOBuffer()
+        while true
+            c = txt[pos[]]
+            if c == '"'
+                pos[] = nextind(txt, pos[])
+                break
+            elseif c == '\\'
+                pos[] = nextind(txt, pos[])
+                e = txt[pos[]]
+                if e == 'n'; write(buf, '\n')
+                elseif e == 't'; write(buf, '\t')
+                elseif e == 'u'
+                    hex = txt[nextind(txt, pos[]):nextind(txt, pos[], 4)]
+                    write(buf, Char(parse(UInt32, hex; base = 16)))
+                    pos[] = nextind(txt, pos[], 4)
+                else write(buf, e)
+                end
+                pos[] = nextind(txt, pos[])
+            else
+                write(buf, c)
+                pos[] = nextind(txt, pos[])
+            end
+        end
+        String(take!(buf))
+    end
+    function parse_number()
+        start = pos[]
+        while pos[] <= lastindex(txt) && (isdigit(txt[pos[]]) || txt[pos[]] in ('-', '+', '.', 'e', 'E'))
+            pos[] = nextind(txt, pos[])
+        end
+        s = txt[start:prevind(txt, pos[])]
+        return occursin('.', s) || occursin('e', s) || occursin('E', s) ? parse(Float64, s) : parse(Int, s)
+    end
+    function parse_array()
+        pos[] += 1
+        out = Any[]
+        skip_ws!()
+        if txt[pos[]] == ']'
+            pos[] = nextind(txt, pos[])
+            return out
+        end
+        while true
+            skip_ws!()
+            push!(out, parse_value())
+            skip_ws!()
+            if txt[pos[]] == ','
+                pos[] = nextind(txt, pos[])
+            elseif txt[pos[]] == ']'
+                pos[] = nextind(txt, pos[])
+                break
+            end
+        end
+        out
+    end
+    function parse_object()
+        pos[] += 1
+        out = Dict{String, Any}()
+        skip_ws!()
+        if txt[pos[]] == '}'
+            pos[] = nextind(txt, pos[])
+            return out
+        end
+        while true
+            skip_ws!()
+            k = parse_string()
+            skip_ws!()
+            @assert txt[pos[]] == ':'
+            pos[] = nextind(txt, pos[])
+            skip_ws!()
+            out[k] = parse_value()
+            skip_ws!()
+            if txt[pos[]] == ','
+                pos[] = nextind(txt, pos[])
+            elseif txt[pos[]] == '}'
+                pos[] = nextind(txt, pos[])
+                break
+            end
+        end
+        out
+    end
+    parse_value = function ()
+        skip_ws!()
+        c = txt[pos[]]
+        if c == '"'; return parse_string()
+        elseif c == '['; return parse_array()
+        elseif c == '{'; return parse_object()
+        elseif c == 't'; pos[] += 4; return true
+        elseif c == 'f'; pos[] += 5; return false
+        elseif c == 'n'; pos[] += 4; return nothing
+        else; return parse_number()
+        end
+    end
+    skip_ws!()
+    parse_value()
 end
-write_json(path, x) = open(io -> _json(io, x), path, "w")
+
+json_escape(s::AbstractString) = replace(s, "\\" => "\\\\", "\"" => "\\\"", "\n" => "\\n")
+to_json(x::Bool) = x ? "true" : "false"
+to_json(x::Nothing) = "null"
+to_json(x::AbstractString) = "\"" * json_escape(x) * "\""
+to_json(x::Integer) = string(x)
+to_json(x::AbstractFloat) = isfinite(x) ? repr(x) : "null"
+to_json(x::AbstractVector) = "[" * join(to_json.(x), ",") * "]"
+to_json(x::AbstractDict) = "{" * join(("\"$(json_escape(string(k)))\":" * to_json(v) for (k, v) in x), ",") * "}"
 
 length(ARGS) == 1 || error("usage: julia tools/core070_postfit_policy_batch.jl <out.json>")
 out_path = ARGS[1]
@@ -69,75 +158,54 @@ isfile(out_path) && error("destination already exists: $out_path")
 mkpath(dirname(out_path))
 
 @assert realpath(Base.pkgdir(GLLVM)) == realpath(pwd()) "must run from the GLLVM.jl package root"
-get(ENV, "GLLVM_PARITY_TESTS", "0") == "1" ||
-    error("GLLVM_PARITY_TESTS=1 is required; refusing to silently default it")
-get(ENV, "CORE070_PARITY_CASE_IDS", "") == "NATIVE-01-GAUSSIAN" ||
-    error("CORE070_PARITY_CASE_IDS=NATIVE-01-GAUSSIAN is required; refusing to silently default it")
 
-include(joinpath(pwd(), "test/parity/runparity.jl"))
+oracle_path = get(ENV, "CORE070_POSTFIT_POLICY_R_ORACLE", "")
+isempty(oracle_path) &&
+    error("CORE070_POSTFIT_POLICY_R_ORACLE is required; refusing to silently default it")
+isfile(oracle_path) ||
+    error("CORE070_POSTFIT_POLICY_R_ORACLE points to a nonexistent file: $oracle_path")
+
+oracle = json_read(oracle_path)
 
 # ---------------------------------------------------------------------------
-# Primary fixture: same Y/K/X refit tools/core070_gaussian_postfit.jl uses.
+# Read the R-written fixture and oracle numbers. p/n/K/Y come straight from
+# the R side's own live fit -- no independent regeneration, no cross-language
+# RNG matching required.
 # ---------------------------------------------------------------------------
-Y = rcopy(Matrix{Float64}, R"y")
-K = rcopy(Int, R"K")
-p, n = size(Y)
+p = Int(oracle["p"])
+n = Int(oracle["n"])
+K = Int(oracle["K"])
+y_flat = Float64.(oracle["y"])
+length(y_flat) == p * n || error("oracle y length ($(length(y_flat))) != p*n ($(p*n))")
+Y = reshape(y_flat, p, n) # R wrote column-major (p, n): matches Julia reshape directly
+
 X = zeros(p, n, p)
 for j in 1:p
     X[j, :, j] .= 1
 end
+
+r_coef = Float64.(oracle["coef"])
+r_nobs = Int(oracle["nobs"])
+r_df = Int(oracle["df"])
+r_loglik = Float64(oracle["loglik"])
+r_loglik_nobs_attr = Int(oracle["loglik_nobs_attr"])
+r_link = reshape(Float64.(oracle["link"]), size(Y))
+r_response = reshape(Float64.(oracle["response"]), size(Y))
+r_residual = reshape(Float64.(oracle["residual"]), size(Y))
+r_predict_type_default = String(oracle["predict_type_default"])
+r_residual_type_default = String(oracle["residual_type_default"])
+r_residual_scale_default = String(oracle["residual_scale_default"])
+r_simulate_condition_on_re_default = Bool(oracle["simulate_condition_on_re_default"])
+r_ci_ok = Bool(oracle["ci_ok"])
+r_ci_lower = Float64.(oracle["ci_lower"])
+r_ci_upper = Float64.(oracle["ci_upper"])
+r_ci_error = String(oracle["ci_error"])
+r_empty_coef = Float64.(oracle["empty_coef"])
+
+# ---------------------------------------------------------------------------
+# Native Julia refit + direct GLLVM module accessor calls (no RCall).
+# ---------------------------------------------------------------------------
 fit = fit_gaussian_gllvm(Y; K = K, X = X)
-
-R"""
-.pp_get3 <- function(generic, cls) {
-  m <- tryCatch(utils::getS3method(generic, cls, envir = asNamespace("gllvmTMB")),
-                error = function(e) NULL)
-  if (is.null(m)) m <- get(paste0(generic, ".", cls), envir = asNamespace("gllvmTMB"))
-  m
-}
-.pp_predict_fun   <- .pp_get3("predict", "gllvmTMB_multi")
-.pp_residuals_fun <- .pp_get3("residuals", "gllvmTMB_multi")
-.pp_simulate_fun  <- .pp_get3("simulate", "gllvmTMB_multi")
-
-.core070_postfit_policy <- list(
-  coef      = as.numeric(coef(fit_r)),
-  nobs      = as.integer(nobs(fit_r)),
-  df        = as.integer(attr(logLik(fit_r), "df")),
-  loglik    = as.numeric(logLik(fit_r)),
-  loglik_nobs_attr = as.integer(attr(logLik(fit_r), "nobs")),
-  link      = as.numeric(predict(fit_r, type = "link")$est),
-  response  = as.numeric(fitted(fit_r)$est),
-  residual  = as.numeric(residuals(fit_r, type = "randomized_quantile", scale = "normal")$residual),
-  predict_type_default   = as.character(eval(formals(.pp_predict_fun)$type)[1]),
-  residual_type_default  = as.character(eval(formals(.pp_residuals_fun)$type)[1]),
-  residual_scale_default = as.character(eval(formals(.pp_residuals_fun)$scale)[1]),
-  simulate_condition_on_re_default = isFALSE(formals(.pp_simulate_fun)$condition_on_RE)
-)
-
-.core070_postfit_policy_ci <- tryCatch({
-  ci <- confint(fit_r, parm = fit_r$X_fix_names, method = "wald")
-  list(ok = TRUE, lower = as.numeric(ci[, 1]), upper = as.numeric(ci[, 2]),
-       error = "")
-}, error = function(e) list(ok = FALSE, lower = numeric(0), upper = numeric(0),
-                             error = conditionMessage(e)))
-"""
-
-r_coef = rcopy(Vector{Float64}, R".core070_postfit_policy$coef")
-r_nobs = rcopy(Int, R".core070_postfit_policy$nobs")
-r_df = rcopy(Int, R".core070_postfit_policy$df")
-r_loglik = rcopy(Float64, R".core070_postfit_policy$loglik")
-r_loglik_nobs_attr = rcopy(Int, R".core070_postfit_policy$loglik_nobs_attr")
-r_link = reshape(rcopy(Vector{Float64}, R".core070_postfit_policy$link"), size(Y))
-r_response = reshape(rcopy(Vector{Float64}, R".core070_postfit_policy$response"), size(Y))
-r_residual = reshape(rcopy(Vector{Float64}, R".core070_postfit_policy$residual"), size(Y))
-r_predict_type_default = rcopy(String, R".core070_postfit_policy$predict_type_default")
-r_residual_type_default = rcopy(String, R".core070_postfit_policy$residual_type_default")
-r_residual_scale_default = rcopy(String, R".core070_postfit_policy$residual_scale_default")
-r_simulate_condition_on_re_default = rcopy(Bool, R".core070_postfit_policy$simulate_condition_on_re_default")
-r_ci_ok = rcopy(Bool, R".core070_postfit_policy_ci$ok")
-r_ci_lower = rcopy(Vector{Float64}, R".core070_postfit_policy_ci$lower")
-r_ci_upper = rcopy(Vector{Float64}, R".core070_postfit_policy_ci$upper")
-r_ci_error = rcopy(String, R".core070_postfit_policy_ci$error")
 
 j_coef = GLLVM.StatsAPI.coef(fit)
 j_loglik = fit.logLik
@@ -171,25 +239,11 @@ end
 
 # ---------------------------------------------------------------------------
 # Empty-design pair (POST-COEF-EMPTY): a real no-X Julia fit vs the pinned
-# R coef.gllvmTMB_multi empty branch evaluated on a synthetic mock object.
+# R coef.gllvmTMB_multi empty branch (already evaluated by the R stage
+# against a synthetic mock object; r_empty_coef comes from the oracle file).
 # ---------------------------------------------------------------------------
 fit_no_x = fit_gaussian_gllvm(Y; K = 1)
 j_empty_coef = GLLVM.StatsAPI.coef(fit_no_x)
-
-R"""
-.pp_source_root <- Sys.getenv("GLLVM_PARITY_R_SOURCE_ROOT",
-                               unset = file.path(getwd(), ".unlazy/core070-aghq/oracle-source/readback"))
-.pp_coef_defs <- Filter(
-  function(x) is.call(x) && identical(x[[1L]], as.name("<-")) &&
-    identical(x[[2L]], as.name("coef.gllvmTMB_multi")),
-  parse(file.path(.pp_source_root, "R/vcov-coef.R"))
-)
-stopifnot(length(.pp_coef_defs) == 1L)
-.pp_coef_env <- new.env(parent = asNamespace("gllvmTMB"))
-eval(.pp_coef_defs[[1L]], .pp_coef_env)
-.pp_empty_coef <- .pp_coef_env$coef.gllvmTMB_multi(list(X_fix_names = character(0)))
-"""
-r_empty_coef = rcopy(Vector{Float64}, R".pp_empty_coef")
 
 # ---------------------------------------------------------------------------
 # Assemble the 15 case results.
@@ -303,7 +357,9 @@ report = Dict(
     "negative_controls" => negative_controls,
     "julia_version" => string(VERSION),
 )
-write_json(out_path, report)
+open(out_path, "w") do io
+    print(io, to_json(report))
+end
 println("CORE070_POSTFIT_POLICY_BATCH_RESULT ",
         overall_ok ? "PASS" : "FAIL",
         " positive=", all_positive_pass, " negatives=", negatives_behaved)
