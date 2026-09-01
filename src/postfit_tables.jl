@@ -810,3 +810,96 @@ function imputed(fitmi, x::AbstractVector)
             estimate = collect(Float64, fitmi.eblup_x), observed = isobs,
             std_error = fill(NaN, n), status = fill(:se_not_computed, n))
 end
+
+# ---------------------------------------------------------------------------
+# Item 1.13 — tidy, core tiers (mirrors methods-gllvmTMB.R:1177-1369).
+#
+# Scope reduction (this slice, tighter than the spec's already-reduced
+# "Scope now"): `fit::GllvmFit` (plain Gaussian) ONLY. Non-Gaussian family
+# fits, `spde_fit.jl` κ/τ, and rr-implied sds are NOT covered by this
+# method — an honest dispatch restriction, not a stub: only the tiers a
+# `GllvmFit` fit; `:cutpoint` is always empty-but-typed for `GllvmFit`
+# (ordinal cutpoints need `OrdinalFit`/`OrdinalPerTraitFit`, out of scope
+# here). Rows are unified across tiers to one schema (`effect, term,
+# estimate, std_error, link, conf_low, conf_high`) rather than R's per-tier
+# column sets — `link` is `:identity` for `:fixed` rows (the Gaussian
+# family) and `missing` for `:ran_pars` rows.
+# ---------------------------------------------------------------------------
+
+function _tidy_rows_from_coef_table(ct::GllvmCoefTable, effect::Symbol, link;
+                                    conf_int::Bool)
+    n = length(ct.term)
+    return [(effect = effect, term = ct.term[i], estimate = ct.estimate[i],
+            std_error = ct.std_error[i], link = link,
+            conf_low = conf_int ? ct.lower[i] : NaN,
+            conf_high = conf_int ? ct.upper[i] : NaN) for i in 1:n]
+end
+
+function _tidy_fixed_rows(fit::GllvmFit, Y::AbstractMatrix; conf_int::Bool, conf_level::Real)
+    try
+        ct = coef_table(fit, Y; parm = "beta", level = conf_level)
+        return _tidy_rows_from_coef_table(ct, :fixed, :identity; conf_int = conf_int)
+    catch e
+        e isa ArgumentError || rethrow()
+        return NamedTuple[]   # no fixed-effect coefficients on this fit
+    end
+end
+
+function _tidy_ran_pars_rows(fit::GllvmFit, Y::AbstractMatrix; conf_int::Bool, conf_level::Real)
+    fit.model.has_diag || return NamedTuple[]
+    rows = NamedTuple[]
+    for parm in ("sigma_B", "sigma_W")
+        try
+            ct = coef_table(fit, Y; parm = parm, level = conf_level)
+            append!(rows, _tidy_rows_from_coef_table(ct, :ran_pars, missing; conf_int = conf_int))
+        catch e
+            e isa ArgumentError || rethrow()
+        end
+    end
+    return rows
+end
+
+"""
+    tidy(fit::GllvmFit, Y; effects = (:fixed,), conf_int = false,
+        conf_level = 0.95) -> Vector{NamedTuple}
+
+Tidy inference table over one or more parameter TIERS, mirroring
+`gllvmTMB::tidy.gllvmTMB_multi` (`methods-gllvmTMB.R:1177-1369`).
+`effects` is a `Symbol` or collection of `Symbol`s from `(:fixed,
+:ran_pars, :cutpoint)`.
+
+- `:fixed` — the fixed-effect coefficients (`coef_table(fit, Y; parm =
+  "beta")`); empty when the fit has no `X`/no free coefficients.
+- `:ran_pars` — per-trait diagonal random-effect SDs (`sigma_B[t]`,
+  `sigma_W[t]`, `coef_table(fit, Y; parm = "sigma_B"/"sigma_W")`); empty
+  when the fit has no diagonal-RE tier (`has_diag = false`).
+- `:cutpoint` — always empty (this `GllvmFit` method has no ordinal
+  cutpoints to report; see the scope note above).
+
+`conf_int = true` adds Wald `conf_low`/`conf_high` at `conf_level`
+(`estimate ± quantile(Normal(), (1+conf_level)/2) * std_error` for the
+LINEAR-scale `:fixed` tier; the log-scale-transformed bound for `:ran_pars`,
+via [`confint`](@ref)'s existing back-transform convention). `conf_int =
+false` (default) reports `NaN` for both.
+
+Returns a `Vector{NamedTuple}`, ROW-UNIFIED across tiers: `(effect, term,
+estimate, std_error, link, conf_low, conf_high)`.
+"""
+function tidy(fit::GllvmFit, Y::AbstractMatrix;
+             effects::Union{Symbol, AbstractVector{Symbol}, NTuple{N, Symbol} where N} = (:fixed,),
+             conf_int::Bool = false, conf_level::Real = 0.95)
+    effs = effects isa Symbol ? (effects,) : effects
+    all(e -> e in (:fixed, :ran_pars, :cutpoint), effs) ||
+        throw(ArgumentError("effects entries must be :fixed, :ran_pars, or :cutpoint."))
+
+    rows = NamedTuple[]
+    for e in effs
+        if e === :fixed
+            append!(rows, _tidy_fixed_rows(fit, Y; conf_int = conf_int, conf_level = conf_level))
+        elseif e === :ran_pars
+            append!(rows, _tidy_ran_pars_rows(fit, Y; conf_int = conf_int, conf_level = conf_level))
+        end
+        # :cutpoint contributes no rows for GllvmFit.
+    end
+    return rows
+end

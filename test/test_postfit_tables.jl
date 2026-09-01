@@ -1,4 +1,5 @@
 using GLLVM, Test, Random, LinearAlgebra, Statistics
+using Distributions: Normal, quantile
 
 # src/postfit_tables.jl — final missing-surface cluster (core070 spec §1),
 # smallest-first per docs/dev-log/core070/final-surface-spec.md.
@@ -420,6 +421,73 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics
         @test_throws ArgumentError imputed(plain_fit, x)
 
         @test_throws ArgumentError imputed(fitmi, x[1:(n - 1)])
+    end
+
+    @testset "1.13 tidy — fixed / ran_pars / cutpoint core tiers" begin
+        Random.seed!(14)
+        p, K, n = 5, 2, 400
+        q = 2
+        X = randn(p, n, q)
+        β_true = 0.4 .* randn(p * q)
+        Λ_true = 0.5 .* randn(p, K)
+        Xβ = zeros(p, n)
+        for t in 1:p, s in 1:n
+            Xβ[t, s] = sum(X[t, s, j] * β_true[(t - 1) * q + j] for j in 1:q)
+        end
+        y = Xβ .+ Λ_true * randn(K, n) .+ 0.4 .* randn(p, n)
+        fit = fit_gaussian_gllvm(y; K = K, X = X, has_diag = true, K_W = 1)
+        @test fit.converged
+
+        rows_fixed = tidy(fit, y; effects = :fixed)
+        ct_beta = coef_table(fit, y; parm = "beta")
+        @test length(rows_fixed) == length(ct_beta.term)
+        for (r, i) in zip(rows_fixed, eachindex(ct_beta.term))
+            @test r.effect === :fixed
+            @test r.term == ct_beta.term[i]
+            @test r.estimate ≈ ct_beta.estimate[i]
+            @test r.std_error === ct_beta.std_error[i] || r.std_error ≈ ct_beta.std_error[i]
+            @test r.link === :identity
+            @test isnan(r.conf_low)   # conf_int = false default
+        end
+
+        rows_fixed_ci = tidy(fit, y; effects = :fixed, conf_int = true, conf_level = 0.9)
+        z = quantile(Normal(), (1 + 0.9) / 2)
+        for r in rows_fixed_ci
+            if isfinite(r.std_error)
+                @test r.conf_low ≈ r.estimate - z * r.std_error atol = 1e-8
+                @test r.conf_high ≈ r.estimate + z * r.std_error atol = 1e-8
+            end
+        end
+
+        rows_cutpoint = tidy(fit, y; effects = :cutpoint)
+        @test rows_cutpoint == NamedTuple[]   # empty-but-typed on a Gaussian fit
+
+        rows_ran = tidy(fit, y; effects = :ran_pars)
+        @test length(rows_ran) == 2p   # sigma_B[1:p] + sigma_W[1:p]
+        Σ_unit = extract_Sigma(fit; level = :unit, part = :unique).s
+        Σ_unit_obs = extract_Sigma(fit; level = :unit_obs, part = :unique).s
+        sigmaB_rows = filter(r -> startswith(r.term, "sigma_B"), rows_ran)
+        sigmaW_rows = filter(r -> startswith(r.term, "sigma_W"), rows_ran)
+        @test length(sigmaB_rows) == p
+        @test length(sigmaW_rows) == p
+        for (i, r) in enumerate(sigmaB_rows)
+            @test r.estimate ≈ sqrt(Σ_unit[i]) atol = 1e-6
+            @test r.link === missing
+        end
+        for (i, r) in enumerate(sigmaW_rows)
+            # unit_obs :unique folds sigma_eps^2 in — check against sigma_W directly.
+            @test r.estimate ≈ fit.pars.σ²_W[i]^0.5 atol = 1e-6
+        end
+
+        # combined-effects call rbinds tiers.
+        rows_all = tidy(fit, y; effects = [:fixed, :ran_pars, :cutpoint])
+        @test length(rows_all) == length(rows_fixed) + length(rows_ran)
+
+        @test_throws ArgumentError tidy(fit, y; effects = [:bogus])
+
+        # no-diag fit: ran_pars tier is empty.
+        fit_nodiag = fit_gaussian_gllvm(y; K = K)
+        @test tidy(fit_nodiag, y; effects = :ran_pars) == NamedTuple[]
     end
 
 end
