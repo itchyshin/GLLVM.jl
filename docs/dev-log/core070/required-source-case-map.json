@@ -7236,7 +7236,9 @@
   {
    "source_id": "masks-known/KNOWN-ALIAS",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-MASKS-KNOWN-ALIAS-PAIRED-CONTROL"
+   ],
    "reference_model_case_ids": [
     "KNOWN-ALIAS"
    ],
@@ -7245,12 +7247,21 @@
    "planned_case_ids": [
     "CORE070-MASKS-KNOWN-ALIAS-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/masks-known-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/masks-known-required-case-plan.json",
+   "evidence": {
+    "batch": "masks-known-batch-01",
+    "receipts": ".unlazy/core070-aghq/masks-known-batch-01",
+    "preservation_sha256": "07f1767dffe5efc87a38526966acea88d96ce65ab8fac4038ddeda7a30d64763",
+    "verifier": "CORE070_MASKS_KNOWN_RETAINED_VERIFIED",
+    "note": ""
+   }
   },
   {
    "source_id": "masks-known/KNOWN-BLOCK",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-MASKS-KNOWN-BLOCK-PAIRED-CONTROL"
+   ],
    "reference_model_case_ids": [
     "KNOWN-BLOCK"
    ],
@@ -7259,7 +7270,14 @@
    "planned_case_ids": [
     "CORE070-MASKS-KNOWN-BLOCK-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/masks-known-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/masks-known-required-case-plan.json",
+   "evidence": {
+    "batch": "masks-known-batch-01",
+    "receipts": ".unlazy/core070-aghq/masks-known-batch-01",
+    "preservation_sha256": "07f1767dffe5efc87a38526966acea88d96ce65ab8fac4038ddeda7a30d64763",
+    "verifier": "CORE070_MASKS_KNOWN_RETAINED_VERIFIED",
+    "note": ""
+   }
   },
   {
    "source_id": "masks-known/KNOWN-DIM",
@@ -7274,7 +7292,9 @@
   {
    "source_id": "masks-known/KNOWN-EXACT",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-MASKS-KNOWN-EXACT-PAIRED-CONTROL"
+   ],
    "reference_model_case_ids": [
     "KNOWN-EXACT"
    ],
@@ -7283,7 +7303,14 @@
    "planned_case_ids": [
     "CORE070-MASKS-KNOWN-EXACT-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/masks-known-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/masks-known-required-case-plan.json",
+   "evidence": {
+    "batch": "masks-known-batch-01",
+    "receipts": ".unlazy/core070-aghq/masks-known-batch-01",
+    "preservation_sha256": "07f1767dffe5efc87a38526966acea88d96ce65ab8fac4038ddeda7a30d64763",
+    "verifier": "CORE070_MASKS_KNOWN_RETAINED_VERIFIED",
+    "note": ""
+   }
   },
   {
    "source_id": "masks-known/KNOWN-LIST",
@@ -7308,7 +7335,9 @@
   {
    "source_id": "masks-known/KNOWN-POISSON",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-MASKS-KNOWN-POISSON-PAIRED-CONTROL"
+   ],
    "reference_model_case_ids": [
     "KNOWN-POISSON"
    ],
@@ -7317,7 +7346,14 @@
    "planned_case_ids": [
     "CORE070-MASKS-KNOWN-POISSON-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/masks-known-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/masks-known-required-case-plan.json",
+   "evidence": {
+    "batch": "masks-known-batch-01",
+    "receipts": ".unlazy/core070-aghq/masks-known-batch-01",
+    "preservation_sha256": "07f1767dffe5efc87a38526966acea88d96ce65ab8fac4038ddeda7a30d64763",
+    "verifier": "CORE070_MASKS_KNOWN_RETAINED_VERIFIED",
+    "note": "KNOWN-POISSON is structural-only per its own plan (no numeric comparand claimed)"
+   }
   },
   {
    "source_id": "masks-known/KNOWN-PROP",
@@ -7332,7 +7368,9 @@
   {
    "source_id": "masks-known/KNOWN-ZERO",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-MASKS-KNOWN-ZERO-PAIRED-CONTROL"
+   ],
    "reference_model_case_ids": [
     "KNOWN-ZERO"
    ],
@@ -7341,12 +7379,21 @@
    "planned_case_ids": [
     "CORE070-MASKS-KNOWN-ZERO-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/masks-known-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/masks-known-required-case-plan.json",
+   "evidence": {
+    "batch": "masks-known-batch-01",
+    "receipts": ".unlazy/core070-aghq/masks-known-batch-01",
+    "preservation_sha256": "07f1767dffe5efc87a38526966acea88d96ce65ab8fac4038ddeda7a30d64763",
+    "verifier": "CORE070_MASKS_KNOWN_RETAINED_VERIFIED",
+    "note": ""
+   }
   },
   {
    "source_id": "masks-known/MASK-B-ALLFIXED",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-MASKS-KNOWN-MASK-B-ALLFIXED-PAIRED-CONTROL"
+   ],
    "reference_model_case_ids": [
     "MASK-B-ALLFIXED"
    ],
@@ -7355,7 +7402,14 @@
    "planned_case_ids": [
     "CORE070-MASKS-KNOWN-MASK-B-ALLFIXED-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/masks-known-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/masks-known-required-case-plan.json",
+   "evidence": {
+    "batch": "masks-known-batch-01",
+    "receipts": ".unlazy/core070-aghq/masks-known-batch-01",
+    "preservation_sha256": "07f1767dffe5efc87a38526966acea88d96ce65ab8fac4038ddeda7a30d64763",
+    "verifier": "CORE070_MASKS_KNOWN_RETAINED_VERIFIED",
+    "note": ""
+   }
   },
   {
    "source_id": "masks-known/MASK-B-DIM",
@@ -7380,7 +7434,9 @@
   {
    "source_id": "masks-known/MASK-B-PINS",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-MASKS-KNOWN-MASK-B-PINS-PAIRED-CONTROL"
+   ],
    "reference_model_case_ids": [
     "MASK-B-PINS"
    ],
@@ -7389,7 +7445,14 @@
    "planned_case_ids": [
     "CORE070-MASKS-KNOWN-MASK-B-PINS-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/masks-known-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/masks-known-required-case-plan.json",
+   "evidence": {
+    "batch": "masks-known-batch-01",
+    "receipts": ".unlazy/core070-aghq/masks-known-batch-01",
+    "preservation_sha256": "07f1767dffe5efc87a38526966acea88d96ce65ab8fac4038ddeda7a30d64763",
+    "verifier": "CORE070_MASKS_KNOWN_RETAINED_VERIFIED",
+    "note": ""
+   }
   },
   {
    "source_id": "masks-known/MASK-B-SLOPE",
@@ -7404,7 +7467,9 @@
   {
    "source_id": "masks-known/MASK-B-UPPER",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-MASKS-KNOWN-MASK-B-UPPER-PAIRED-CONTROL"
+   ],
    "reference_model_case_ids": [
     "MASK-B-UPPER"
    ],
@@ -7413,7 +7478,14 @@
    "planned_case_ids": [
     "CORE070-MASKS-KNOWN-MASK-B-UPPER-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/masks-known-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/masks-known-required-case-plan.json",
+   "evidence": {
+    "batch": "masks-known-batch-01",
+    "receipts": ".unlazy/core070-aghq/masks-known-batch-01",
+    "preservation_sha256": "07f1767dffe5efc87a38526966acea88d96ce65ab8fac4038ddeda7a30d64763",
+    "verifier": "CORE070_MASKS_KNOWN_RETAINED_VERIFIED",
+    "note": ""
+   }
   },
   {
    "source_id": "masks-known/MASK-PHY-INDEP-CONFLICT",
@@ -7428,7 +7500,9 @@
   {
    "source_id": "masks-known/MASK-PHY-PINS",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-MASKS-KNOWN-MASK-PHY-PINS-PAIRED-CONTROL"
+   ],
    "reference_model_case_ids": [
     "MASK-PHY-PINS"
    ],
@@ -7437,7 +7511,14 @@
    "planned_case_ids": [
     "CORE070-MASKS-KNOWN-MASK-PHY-PINS-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/masks-known-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/masks-known-required-case-plan.json",
+   "evidence": {
+    "batch": "masks-known-batch-01",
+    "receipts": ".unlazy/core070-aghq/masks-known-batch-01",
+    "preservation_sha256": "07f1767dffe5efc87a38526966acea88d96ce65ab8fac4038ddeda7a30d64763",
+    "verifier": "CORE070_MASKS_KNOWN_RETAINED_VERIFIED",
+    "note": ""
+   }
   }
  ],
  "required_case_annexes": [

@@ -41,7 +41,10 @@ def check_report(report, contract):
     need(report.get("reference_commit") == contract["reference_commit"], "wrong reference commit")
 
     admission = report.get("admission", {})
-    need(set(admission) == set(REQUIRED_CASE_IDS) | set(NEGATIVE_CONTROL_IDS), "missing admission row")
+    # KNOWN-POISSON is admitted (fresh capture) but carries a structural-only
+    # claim — it appears in admission alongside the 8 numeric cases.
+    need(set(admission) == set(REQUIRED_CASE_IDS) | set(NEGATIVE_CONTROL_IDS)
+         | {"KNOWN-POISSON"}, "missing admission row")
     for case_id in REQUIRED_CASE_IDS:
         row = admission[case_id]
         need(row.get("matches_expected") is True and row.get("observed") == "PREPARED",
