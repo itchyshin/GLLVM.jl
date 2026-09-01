@@ -302,9 +302,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     mutation_count = self_test() if args.self_test else None
-    result = None
-    if args.state.exists() or not args.self_test:
-        result = verify_state(args.state, args.julia_receipt)
+    # A missing state is a FAILURE, never a silent skip: the vacuous-pass
+    # incident of 2026-09-01 (verifier exit 0 with only self-test output while
+    # the real batch had produced nothing) is exactly what this guards.
+    if not args.state.exists():
+        raise SystemExit(f"verify_data_batch: state does not exist: {args.state}")
+    result = verify_state(args.state, args.julia_receipt)
     if result and mutation_count:
         result["self_test_mutations_rejected"] = mutation_count
     if args.output and result:
