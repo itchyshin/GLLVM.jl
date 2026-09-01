@@ -737,3 +737,90 @@ function standard_errors(fit::GllvmFit, y::AbstractMatrix;
     return (term = res.term, estimate = res.estimate, se = res.se,
             pd_hessian = res.pd_hessian)
 end
+
+# ---------------------------------------------------------------------------
+# APPEND (core070 E-cluster, PERF+SE-machinery): bootstrap_Sigma.
+#
+# Julia analogue of R's `bootstrap_Sigma()` (`.unlazy/core070-aghq/
+# oracle-source/readback/R/bootstrap-sigma.R`): parametric bootstrap CIs for
+# the entries of the fitted trait covariance matrix. A thin driver over the
+# EXISTING derived-quantity bootstrap (`bootstrap_ci_derived`,
+# src/confint_derived.jl) plus a table assembler — no new bootstrap
+# machinery here, matching the "thin driver + table" scope in the plan for
+# this slice.
+# ---------------------------------------------------------------------------
+
+"""
+    bootstrap_Sigma(fit::GllvmFit; level=:unit, n_boot=500, conf=0.95,
+                    seed=0, y=nothing, n_sites=nothing, X=nothing,
+                    Σ_phy=nothing, verbose=false)
+        -> NamedTuple
+
+Parametric bootstrap percentile CIs for every entry of `sigma_y_site(fit)`
+(the fitted site-level trait covariance `Σ_y = Λ Λ' + diag(d_total)`), via
+`bootstrap_ci_derived` (src/confint_derived.jl) applied entrywise.
+
+`level = :unit` is the only value accepted: GLLVM.jl computes one
+site-level `Σ_y` per fit (`sigma_y_site`), not R's separate unit / unit_obs
+/ phy tiers, so `level` is kept for interface parity with R's
+`bootstrap_Sigma(level = ...)` and validated rather than silently ignored.
+
+Returns a NamedTuple table over the upper-triangle entries (`i ≤ j`, 1-based)
+of `Σ_y`:
+  - `i::Vector{Int}`, `j::Vector{Int}`
+  - `estimate::Vector{Float64}` — `Σ_y[i,j]` at θ̂
+  - `lower::Vector{Float64}`, `upper::Vector{Float64}` — percentile CI at `conf`
+  - `n_converged::Vector{Int}`, `n_valid::Vector{Int}`
+
+`y`, `n_sites`, `X`, `Σ_phy` are forwarded to `bootstrap_ci_derived` exactly
+as documented there (pass the same values used for `fit_gaussian_gllvm`).
+
+Cost: `p(p+1)/2 × n_boot` refits (one full `bootstrap_ci_derived` bootstrap
+run per matrix entry) — quadratic in `p`. Fine for the small fixtures this
+is validated on; a large-`p` production call should lower `n_boot` or
+restrict to a subset of entries computed with direct `bootstrap_ci_derived`
+calls instead of the full table.
+
+GAP (honestly recorded, matching the required-source-case-map disposition
+for the sibling `loading_ci` / `loading_profile` rows): R's
+`bootstrap_Sigma()` also bootstraps `R` (correlation), `communality`, `ICC`,
+and `cross_corr` in the SAME call, over multiple covariance tiers. This
+driver covers only the `Sigma` entries at the single `:unit` tier GLLVM.jl
+has. The other summaries are already independently reachable via
+`bootstrap_ci_derived(fit, fb -> communality(fb)[t]; ...)` /
+`bootstrap_ci_derived(fit, fb -> correlation(fb)[i,j]; ...)`; a unified
+multi-summary table matching R's return shape is future work, not built in
+this slice — see `docs/dev-log/core070/se-machinery-slice-notes.md`.
+"""
+function bootstrap_Sigma(fit::GllvmFit;
+                         level::Symbol = :unit,
+                         n_boot::Integer = 500,
+                         conf::Real = 0.95,
+                         seed::Integer = 0,
+                         y::Union{Nothing, AbstractMatrix} = nothing,
+                         n_sites::Union{Nothing, Integer} = nothing,
+                         X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                         Σ_phy::Union{Nothing, AbstractMatrix} = nothing,
+                         verbose::Bool = false)
+    level === :unit || throw(ArgumentError(
+        "bootstrap_Sigma currently supports level = :unit only " *
+        "(GLLVM.jl computes one site-level Σ_y tier); got :$level"))
+    p = fit.model.p
+
+    ii = Int[]; jj = Int[]
+    est = Float64[]; lo = Float64[]; hi = Float64[]
+    nconv = Int[]; nvalid = Int[]
+
+    for j in 1:p, i in 1:j
+        r = bootstrap_ci_derived(fit, fb -> sigma_y_site(fb)[i, j];
+                                 n_boot = n_boot, level = conf, seed = seed,
+                                 y = y, n_sites = n_sites, X = X, Σ_phy = Σ_phy,
+                                 verbose = verbose)
+        push!(ii, i); push!(jj, j)
+        push!(est, r.estimate); push!(lo, r.lower); push!(hi, r.upper)
+        push!(nconv, r.n_converged); push!(nvalid, r.n_valid)
+    end
+
+    return (i = ii, j = jj, estimate = est, lower = lo, upper = hi,
+            n_converged = nconv, n_valid = nvalid)
+end
