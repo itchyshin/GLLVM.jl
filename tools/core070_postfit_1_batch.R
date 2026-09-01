@@ -1,0 +1,121 @@
+# Retained evidence runner, R side, for the "postfit-1" manifest-area
+# batch's one EXECUTABLE_NOW case (CORE070-POSTFIT-COEF-MULTI-READBACK; see
+# docs/dev-log/core070/postfit-1-batch-contract.json for the other 50 cases'
+# NEEDS_NEW_JULIA_SURFACE bucketing). Fits `gllvmTMB(value ~ 0 + trait +
+# latent(0 + trait | site, d = K))` on the contract's frozen fixture, calls
+# the public S3 `coef.gllvmTMB_multi()` accessor, and writes a JSON receipt.
+#
+# Unlike tools/core070_data_batch.R (pure sys.source() replay of stateless
+# helper functions, no installed package needed), this runner needs the
+# actual COMPILED gllvmTMB package: coef.gllvmTMB_multi() reads state off a
+# live TMB fit, and producing that fit requires the compiled TMB template --
+# not obtainable by sourcing R/*.R files alone. This mirrors the existing
+# tools/core070_postfit_probe.R convention: <lib> is a directory containing
+# an INSTALLED gllvmTMB build pinned to this contract's reference_commit
+# (not the maintainer's ad-hoc dev install). Per AGENTS.md/CLAUDE.md, do not
+# run this locally without that frozen library; it is a Totoro-only runner.
+#
+# Usage:
+#   Rscript --vanilla tools/core070_postfit_1_batch.R <lib> <destination>
+#
+# <lib> must contain an installed `gllvmTMB` package directory (i.e.
+# file.path(lib, "gllvmTMB") is a valid package install), built from the
+# source pinned to this contract's reference_commit. <destination> must not
+# exist.
+
+args <- commandArgs(TRUE)
+stopifnot(length(args) == 2L)
+lib <- args[[1L]]
+destination <- args[[2L]]
+stopifnot(!dir.exists(destination), !file.exists(destination))
+
+root <- normalizePath(".")
+suppressPackageStartupMessages(library(jsonlite))
+
+sha256_file <- function(path) {
+  command <- if (nzchar(Sys.which("sha256sum"))) "sha256sum" else "shasum"
+  argv <- if (identical(command, "sha256sum")) path else c("-a", "256", path)
+  line <- system2(command, argv, stdout = TRUE, stderr = TRUE)
+  stopifnot(is.null(attr(line, "status")), length(line) >= 1L)
+  sub("[[:space:]].*$", "", line[[1L]])
+}
+
+contract_path <- file.path(root, "docs/dev-log/core070/postfit-1-batch-contract.json")
+contract <- jsonlite::read_json(contract_path, simplifyVector = FALSE)
+contract_sha256 <- sha256_file(contract_path)
+stopifnot(identical(contract$reference_commit, "b4d5fee64def88bc768dda1f1f77c29b295edd86"))
+eb <- contract$executable_batch
+stopifnot(identical(eb$case_id, "CORE070-POSTFIT-COEF-MULTI-READBACK"))
+
+# --- load the frozen (pinned) library, never the ambient search path -------
+.libPaths(c(lib, .libPaths()))
+suppressPackageStartupMessages(library(gllvmTMB))
+stopifnot(normalizePath(find.package("gllvmTMB")) == normalizePath(file.path(lib, "gllvmTMB")))
+
+# --- reconstruct the fixture straight from the contract (single source of
+#     truth; no fixture values duplicated by hand in this file) ------------
+fixture <- eb$fixture
+p <- fixture$p; n <- fixture$n; K <- fixture$K
+Y_rows <- fixture$Y_rows_are_species_cols_are_sites
+stopifnot(length(Y_rows) == p)
+Ymat <- matrix(NA_real_, p, n)
+for (i in seq_len(p)) {
+  row <- unlist(Y_rows[[i]])
+  stopifnot(length(row) == n)
+  Ymat[i, ] <- row
+}
+
+df <- data.frame(
+  site = factor(rep(seq_len(n), each = p)),
+  trait = factor(rep(paste0("t", seq_len(p)), times = n), levels = paste0("t", seq_len(p))),
+  value = as.vector(Ymat)
+)
+
+fit <- gllvmTMB(
+  value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE),
+  data = df, unit = "site", trait = "trait", family = gaussian(),
+  control = gllvmTMBcontrol(se = FALSE)
+)
+stopifnot("gllvmTMB_multi" %in% class(fit))
+
+r_coef <- coef(fit)
+stopifnot(is.numeric(r_coef), length(r_coef) == p,
+          identical(names(r_coef), paste0("trait", paste0("t", seq_len(p)))))
+
+dir.create(destination, recursive = TRUE)
+
+result <- list(
+  schema = "core070-postfit-1-r-results/v1",
+  scope = "CORE070_POSTFIT_1_BATCH",
+  case_id = "CORE070-POSTFIT-COEF-MULTI-READBACK",
+  reference_commit = contract$reference_commit,
+  contract_sha256 = contract_sha256,
+  gllvmTMB_lib_path = normalizePath(file.path(lib, "gllvmTMB")),
+  gllvmTMB_version = as.character(utils::packageVersion("gllvmTMB")),
+  r_version = R.version.string,
+  p = p, n = n, K = K,
+  coef_names = names(r_coef),
+  coef = as.numeric(r_coef),
+  all_checks = TRUE
+)
+results_path <- file.path(destination, "postfit-1-r-results.json")
+jsonlite::write_json(result, results_path, auto_unbox = TRUE, pretty = TRUE,
+                      null = "null", na = "null", digits = 17)
+
+receipt <- list(
+  status = "PASS",
+  scope = "CORE070_POSTFIT_1_BATCH",
+  case_id = "CORE070-POSTFIT-COEF-MULTI-READBACK",
+  reference_commit = contract$reference_commit,
+  contract_sha256 = contract_sha256,
+  gllvmTMB_lib_path = result$gllvmTMB_lib_path,
+  gllvmTMB_version = result$gllvmTMB_version,
+  results_sha256 = sha256_file(results_path),
+  r_runtime = R.version.string
+)
+receipt_path <- file.path(destination, "receipt.json")
+jsonlite::write_json(receipt, receipt_path, auto_unbox = TRUE, pretty = TRUE)
+
+cat("CORE070_POSTFIT_1_BATCH_R_RESULT coef=", paste(r_coef, collapse = ","), "\n")
+cat("CORE070_POSTFIT_1_BATCH_R_PASS\n")
+quit(status = 0L)
