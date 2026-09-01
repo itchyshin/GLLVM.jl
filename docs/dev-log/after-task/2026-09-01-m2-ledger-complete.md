@@ -95,3 +95,13 @@ Residual caveat Rose noted and this report keeps: ledger-complete ≠ parity;
 stale-tally drift is a recurring failure mode in this repo — the mechanical
 audit script should hash-check evidence pointers next time, not just
 path-check them (this round's audit only proved paths existed).
+
+## 11b. Rose verdict (rounds 2–3): OK — audit closed
+
+Round 2 confirmed the masks-known hashes byte-for-byte and 6/7 covariance
+repointings; the residual (COV-ORD-INDEP, COV-ORD-INDEP-COMMON native case
+ids unnamed in the cited files) was closed in commit 0f96f2f1 by citing
+source-fixed-residual-final-evidence.json (which names MODE-ORD-INDEP /
+MODE-ORD-COMMON as executed, 16 negative controls, retained runs exit 0),
+NOT_FULL_PARITY qualifier carried verbatim. Round 3: OK, no remaining
+blockers from rounds 1–3. The M2 completion claim stands as audited.
