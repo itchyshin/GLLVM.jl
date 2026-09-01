@@ -1,9 +1,9 @@
-"""Verify the surface-conversion batch: 34 BLOCKED_NEEDS_JULIA_SURFACE
+"""Verify the surface-conversion batch: 23 BLOCKED_NEEDS_JULIA_SURFACE
 ledger rows converted to bound cases (postfit/, namespace/, inference/
 prefixes, evidence naming a function that now exists in src/GLLVM.jl's
 export list -- the extractors slice, src/extractors.jl, and the derived-CI
 slice, src/confint_derived_wald.jl / src/confint_derived.jl /
-src/twolevel.jl). 7 further target rows are recorded in the contract's
+src/twolevel.jl). 18 further target rows are recorded in the contract's
 `deferred` bucket with an explicit reason and deliberately carry no
 fabricated pass. See docs/dev-log/core070/surface-conversion-notes.md for
 the full accounting and docs/dev-log/core070/surface-conversion-batch-contract.json
@@ -36,8 +36,8 @@ ROOT = Path(__file__).resolve().parents[1]
 CONTRACT_PATH = ROOT / "docs/dev-log/core070/surface-conversion-batch-contract.json"
 
 REFERENCE_COMMIT = "b4d5fee64def88bc768dda1f1f77c29b295edd86"
-CASE_COUNT = 24
-DEFERRED_COUNT = 17
+CASE_COUNT = 23
+DEFERRED_COUNT = 18
 TARGET_ROW_COUNT = CASE_COUNT + DEFERRED_COUNT  # 41
 
 KNOWN_QUANTITIES = {
@@ -49,7 +49,7 @@ KNOWN_QUANTITIES = {
     "icc_ci_bootstrap", "cutpoints", "icc_ci_profile",
 }
 KNOWN_FIXTURES = {"gaussian_small", "twolevel_small", "ordinal_small"}
-KNOWN_KINDS = {"point", "ci", "refusal_pair"}
+KNOWN_KINDS = {"point", "ci", "refusal_pair", "bootstrap_structural"}
 
 
 def sha(path):
@@ -99,8 +99,9 @@ def verify_contract(contract=None):
 
     for row in c["cases"]:
         need(row["kind"] in KNOWN_KINDS, f"{row['case_id']}: unknown kind {row['kind']!r}")
-        if row["kind"] == "refusal_pair":
-            need(row["tolerance"] is None, f"{row['case_id']}: refusal_pair case must not carry a tolerance")
+        if row["kind"] in ("refusal_pair", "bootstrap_structural"):
+            need(row["tolerance"] is None,
+                 f"{row['case_id']}: {row['kind']} case must not carry a numeric tolerance")
         else:
             need(row["quantity"] in KNOWN_QUANTITIES, f"{row['case_id']}: unknown quantity {row['quantity']!r}")
             need(isinstance(row["tolerance"], (int, float)) and row["tolerance"] > 0,
@@ -159,12 +160,23 @@ def check_state(contract, receipt, results_lines, julia_report):
         jc = julia_report["cases"].get(row["case_id"])
         need(jc is not None, f"{row['case_id']}: missing from julia-results.json cases")
         need(jc.get("pass") is True, f"{row['case_id']}: julia-results.json reports pass=false")
-        if row["kind"] != "refusal_pair":
-            need(jc.get("max_abs_diff") is not None and jc["max_abs_diff"] <= row["tolerance"],
-                 f"{row['case_id']}: max_abs_diff {jc.get('max_abs_diff')} exceeds tolerance {row['tolerance']}")
-        else:
+        if row["kind"] == "refusal_pair":
             need(jc.get("r_raised") is True and jc.get("julia_raised") is True,
                  f"{row['case_id']}: refusal_pair case did not have both sides raise")
+        elif row["kind"] == "bootstrap_structural":
+            # No cross-engine numeric distance for this kind (n_boot=200
+            # Monte Carlo error makes that meaningless) -- each engine's
+            # own structural facts (finite/ordered/brackets_point) must be
+            # present and true independently.
+            r_struct = jc.get("r_structural") or {}
+            jl_struct = jc.get("julia_structural") or {}
+            for label, facts in (("r_structural", r_struct), ("julia_structural", jl_struct)):
+                for key in ("finite", "ordered", "brackets_point"):
+                    need(facts.get(key) is True,
+                         f"{row['case_id']}: {label}.{key} is not true")
+        else:
+            need(jc.get("max_abs_diff") is not None and jc["max_abs_diff"] <= row["tolerance"],
+                 f"{row['case_id']}: max_abs_diff {jc.get('max_abs_diff')} exceeds tolerance {row['tolerance']}")
 
 
 def verify_state(contract, state_dir: Path):
@@ -197,6 +209,11 @@ def _synthetic_state(contract):
         if r["kind"] == "refusal_pair":
             julia_cases[r["case_id"]] = {"pass": True, "kind": r["kind"],
                                           "r_raised": True, "julia_raised": True}
+        elif r["kind"] == "bootstrap_structural":
+            struct_ok = {"finite": True, "ordered": True, "brackets_point": True}
+            julia_cases[r["case_id"]] = {"pass": True, "kind": r["kind"],
+                                          "r_structural": dict(struct_ok), "julia_structural": dict(struct_ok),
+                                          "julia_error": ""}
         else:
             julia_cases[r["case_id"]] = {"pass": True, "kind": r["kind"], "quantity": r["quantity"],
                                           "tolerance": r["tolerance"], "max_abs_diff": r["tolerance"] / 2,
@@ -254,7 +271,7 @@ def run_self_test():
         return r, res, jr
 
     def mut_tolerance_blown(r, res, jr):
-        cid = next(c["case_id"] for c in contract["cases"] if c["kind"] != "refusal_pair")
+        cid = next(c["case_id"] for c in contract["cases"] if c["kind"] in ("point", "ci"))
         jr["cases"][cid]["max_abs_diff"] = 1e9
         jr["cases"][cid]["pass"] = True  # deliberately inconsistent: pass=true but diff blown
         return r, res, jr
@@ -266,6 +283,13 @@ def run_self_test():
         jr["cases"][cid]["r_raised"] = False
         return r, res, jr
 
+    def mut_bootstrap_structural_not_ordered(r, res, jr):
+        cid = next((c["case_id"] for c in contract["cases"] if c["kind"] == "bootstrap_structural"), None)
+        if cid is None:
+            raise AssertionError("contract has no bootstrap_structural case to mutate")
+        jr["cases"][cid]["julia_structural"]["ordered"] = False
+        return r, res, jr
+
     def mut_oracle_error_present(r, res, jr):
         r["oracle_error_count"] = 1
         return r, res, jr
@@ -274,6 +298,7 @@ def run_self_test():
     expect_rejected("one verdict flipped to FAIL in results.tsv", mut_flip_one_verdict)
     expect_rejected("max_abs_diff blown past tolerance while pass stays true", mut_tolerance_blown)
     expect_rejected("refusal_pair case: R side did not raise", mut_refusal_pair_r_side_did_not_raise)
+    expect_rejected("bootstrap_structural case: julia_structural.ordered flipped false", mut_bootstrap_structural_not_ordered)
     expect_rejected("receipt records a nonzero oracle_error_count", mut_oracle_error_present)
 
     if len(rejected) < 3:

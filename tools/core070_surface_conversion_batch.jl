@@ -151,7 +151,7 @@ root = normpath(joinpath(@__DIR__, ".."))
 contract = json_read(joinpath(root, "docs/dev-log/core070/surface-conversion-batch-contract.json"))
 cases = contract["cases"]
 length(cases) == contract["expected_case_count"] || error("case count mismatch vs contract")
-Int(contract["expected_case_count"]) == 24 || error("expected_case_count drifted from 24; update this script")
+Int(contract["expected_case_count"]) == 23 || error("expected_case_count drifted from 23; update this script")
 
 # ---------------------------------------------------------------------------
 # Fixture 1: gaussian_small -- fit natively on the R oracle's simulated Y.
@@ -188,28 +188,56 @@ fit_o = fit_ordinal_gllvm_pertrait(Y_o; K = K_o, link = ProbitLink(),
 # ---------------------------------------------------------------------------
 function julia_quantity(quantity::AbstractString)
     if quantity == "loadings_crossprod"
+        # tcrossprod(L) = L*L' (p x p) is the rotation-invariant Gram
+        # matrix; L'*L (d x d) is NOT rotation-invariant in general. The
+        # first attempt used L'*L here, comparing a basis-dependent
+        # quantity across two independently-rotated fits. REPAIR
+        # (2026-09-01, wave5-conversion4): L*L', matching the R-side
+        # tcrossprod() fix.
         L = GLLVM.getLoadings(fit_g)
-        return vec(L' * L)
+        return vec(L * L')
     elseif quantity == "lv_predictor"
-        Z = GLLVM.getLV(fit_g, Y_g)
-        return vec(fit_g.pars.Λ * Z)
+        # rotate=false to match fit_g.pars.Λ, which is the model's RAW
+        # (unrotated) internal Λ -- GLLVM.getLV's own default is
+        # rotate=true, which the first attempt left implicit, mixing a
+        # rotated Z with a raw Λ and breaking the Λ*Z reconstruction
+        # invariance internally (a self-inconsistency bug, not merely a
+        # tolerance issue). REPAIR (2026-09-01, wave5-conversion4): both
+        # sides now raw, matching R's own getLoadings/getLV default
+        # rotate="none".
+        # GLLVM.getLV returns an n x K matrix (postfit.jl: `Zt =
+        # permutedims(Z)` from an internal K x n solve) -- Λ (p x K) needs
+        # Z TRANSPOSED (K x n) to reconstruct the p x n predictor. The
+        # first attempt multiplied Λ * Z directly (p x K times n x K,
+        # non-conformable for this fixture's K=2, n=80), which is why the
+        # case failed outright rather than merely missing tolerance.
+        Z = GLLVM.getLV(fit_g, Y_g; rotate = false)
+        return vec(fit_g.pars.Λ * Z')
     elseif quantity == "sigma_unit_total"
         return vec(GLLVM.extract_Sigma(fit_g; level = :unit, part = :total).Sigma)
     elseif quantity == "sigma_table"
         t = GLLVM.extract_Sigma_table(fit_g; level = :unit, part = :total)
         ts = sort(collect(t); by = r -> (r.trait_i, r.trait_j))
         return Float64[r.value for r in ts]
-    elseif quantity == "communality"
-        return vec(GLLVM.extract_communality(fit_g))
+    # communality (postfit/POSTFIT-SURFACE-extract_communality) is NOT
+    # computed here -- deferred (see contract.deferred): GLLVM.jl's
+    # communality(fit) denominator is the FULL total variance incl.
+    # sigma_eps^2, while R's extract_communality() is single-tier-scoped
+    # and never includes sigma_eps^2 for a Gaussian fit -- a genuine
+    # cross-engine estimand mismatch, not a call-shape bug.
     elseif quantity == "correlations"
         return vec(GLLVM.extract_correlations(fit_g))
     elseif quantity == "cross_correlations"
         return vec(GLLVM.extract_cross_correlations(fit_g; level = :unit,
                                                       traits_i = [1, 2], traits_j = [3, 4, 5]))
     elseif quantity == "residual_cov"
-        return vec(GLLVM.extract_residual_cov(fit_g; level = :unit_obs))
+        # REPAIR (2026-09-01, wave5-conversion4: r_len=0). gaussian_small
+        # has no unit_obs/W-tier block (K_W=0, unique=FALSE); R's
+        # getResidualCov/getResidualCor default (and now this batch's) tier
+        # is "unit", matching the R-side fix.
+        return vec(GLLVM.extract_residual_cov(fit_g; level = :unit))
     elseif quantity == "residual_cor"
-        return vec(GLLVM.extract_residual_cor(fit_g; level = :unit_obs))
+        return vec(GLLVM.extract_residual_cor(fit_g; level = :unit))
     elseif quantity == "ordination_sites"
         sites, _, _ = GLLVM.extract_ordination(fit_g, Y_g)
         S = Matrix(sites)
@@ -236,13 +264,20 @@ function julia_quantity(quantity::AbstractString)
     elseif quantity in ("icc_ci_default", "icc_ci_wald")
         ci = GLLVM.repeatability_ci(fit_tl, Y_tl, individual; method = :wald)
         return vcat(Float64[r.lower for r in ci], Float64[r.upper for r in ci])
-    elseif quantity == "icc_ci_bootstrap"
-        ci = GLLVM.repeatability_ci(fit_tl, Y_tl, individual; method = :bootstrap,
-                                     nsim = 200, seed = 11)
-        return vcat(Float64[r.lower for r in ci], Float64[r.upper for r in ci])
+    # icc_ci_bootstrap (CI-ROUTE-011) is NOT computed here -- it is a
+    # `kind = "bootstrap_structural"` case, handled in the main case loop
+    # below, not via julia_quantity()/oracle numeric comparison at all (see
+    # the matching comment in tools/core070_surface_conversion_batch.R).
     elseif quantity == "cutpoints"
+        # R's extract_cutpoints()$tau_estimate reports only the K-2 FREE
+        # cutpoints per trait (Hadfield 2015: tau_1 = 0 fixed, never
+        # reported). GLLVM.jl's OrdinalPerTraitFit.τ is p x (C-1) with
+        # column 1 the FIXED tau_1 = 0.0 (src/families/ordinal.jl:
+        # `τ[t, 1] = 0.0`). REPAIR (2026-09-01, wave5-conversion4: r_len=5
+        # vs julia_len=10): drop the fixed column so both sides report only
+        # the free cutpoints, matching R's convention exactly.
         τ = GLLVM.extract_cutpoints(fit_o).τ
-        return vec(Matrix(τ))
+        return vec(Matrix(τ)[:, 2:end])
     else
         error("BOGUS_QUANTITY: no dispatcher entry for '$(quantity)'")
     end
@@ -269,6 +304,40 @@ for cs in cases
         results[case_id] = Dict{String, Any}("pass" => ok, "kind" => kind,
                                               "r_raised" => r_raised, "julia_raised" => jl_raised,
                                               "julia_message" => jl_message)
+        global all_ok &= ok
+        continue
+    end
+
+    if kind == "bootstrap_structural"
+        # REPAIR (2026-09-01, wave5-conversion4): n_boot=200 percentile
+        # bootstrap endpoints from two INDEPENDENT stochastic simulate-
+        # refit procedures carry too much Monte Carlo error for a numeric
+        # endpoint-distance comparison. Each engine's own bootstrap CI is
+        # checked structurally against ITS OWN wald-route point estimate --
+        # finite, ordered, brackets the point -- with no cross-engine
+        # numeric distance at all (see the matching R-side comment).
+        r_val = oracle["oracle_values"][case_id]
+        r_ok = get(r_val, "finite", false) == true && get(r_val, "ordered", false) == true &&
+               get(r_val, "brackets_point", false) == true
+        jl_ok, jl_facts, jl_err = try
+            ci = GLLVM.repeatability_ci(fit_tl, Y_tl, individual; method = :bootstrap,
+                                         nsim = 200, seed = 11)
+            lower = Float64[r.lower for r in ci]; upper = Float64[r.upper for r in ci]
+            point = GLLVM.extract_repeatability(fit_tl)
+            finite = all(isfinite, lower) && all(isfinite, upper)
+            ordered = all(lower .<= upper)
+            brackets = all(lower .<= point .<= upper)
+            (finite && ordered && brackets,
+             Dict{String, Any}("lower" => lower, "upper" => upper, "point" => point,
+                                "finite" => finite, "ordered" => ordered, "brackets_point" => brackets),
+             "")
+        catch e
+            (false, Dict{String, Any}(), sprint(showerror, e))
+        end
+        ok = r_ok && jl_ok
+        results[case_id] = Dict{String, Any}("pass" => ok, "kind" => kind,
+                                              "r_structural" => r_val, "julia_structural" => jl_facts,
+                                              "julia_error" => jl_err)
         global all_ok &= ok
         continue
     end
