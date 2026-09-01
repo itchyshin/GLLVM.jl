@@ -984,6 +984,64 @@ function profile_ci_derived(fit::GllvmFit, derived_fn::Function;
 end
 
 # ---------------------------------------------------------------------------
+# Feasible-range clamp + boundary flag for a profile_ci_derived result.
+#
+# profile_ci_derived's bracket-then-bisect walk has no notion of the derived
+# quantity's natural feasible range [lo_bound, hi_bound]: a bound can
+# overshoot past it (numerical slack near a genuinely near-boundary
+# optimum), or the deviance can plateau below the χ²₁ cutoff all the way out
+# to the range edge without ever crossing it (max_expand exhausted → NaN /
+# :partial, indistinguishable from an unrelated bracketing failure). This
+# wrapper (1) clamps any bound that violates the feasible range back to the
+# edge, and (2) for a NaN bound with a finite edge, evaluates the deviance
+# AT the edge itself — if it is still below cutoff, the CI plateaus at the
+# boundary and that is reported as the bound with `boundary = true`, rather
+# than a bare NaN/:partial.
+# ---------------------------------------------------------------------------
+function _profile_ci_bounded(fit::GllvmFit, derived_fn::Function, r::NamedTuple;
+                             level::Real, y::AbstractMatrix,
+                             X::Union{Nothing, AbstractArray{<:Real, 3}},
+                             Σ_phy::Union{Nothing, AbstractMatrix},
+                             lo_bound::Real, hi_bound::Real)
+    cutoff = quantile(Chisq(1), level)
+    lower, upper, boundary = r.lower, r.upper, false
+
+    if isfinite(lower) && lower < lo_bound
+        lower, boundary = float(lo_bound), true
+    elseif isnan(lower) && isfinite(lo_bound)
+        ll_c, ok, _, _ = _derived_refit_with_fixed(fit, derived_fn, lo_bound, y, X, Σ_phy)
+        if ok
+            D = 2.0 * (fit.logLik - ll_c)
+            if isfinite(D) && D ≤ cutoff
+                lower, boundary = float(lo_bound), true
+            end
+        end
+    end
+
+    if isfinite(upper) && upper > hi_bound
+        upper, boundary = float(hi_bound), true
+    elseif isnan(upper) && isfinite(hi_bound)
+        ll_c, ok, _, _ = _derived_refit_with_fixed(fit, derived_fn, hi_bound, y, X, Σ_phy)
+        if ok
+            D = 2.0 * (fit.logLik - ll_c)
+            if isfinite(D) && D ≤ cutoff
+                upper, boundary = float(hi_bound), true
+            end
+        end
+    end
+
+    method = if isnan(lower) && isnan(upper)
+        :failed
+    elseif isnan(lower) || isnan(upper)
+        :partial
+    else
+        :profile
+    end
+
+    return merge(r, (; lower = lower, upper = upper, boundary = boundary, method = method))
+end
+
+# ---------------------------------------------------------------------------
 # Thin profile-CI wrappers named to match the missing-surface case map
 # (docs/dev-log/core070/required-source-case-map.json rows
 # namespace/export/profile_ci_total_variance,
@@ -1012,9 +1070,15 @@ Profile-likelihood CI for the per-trait total variance `Σ_y_site[t, t]`
 [`profile_ci_derived`](@ref) with `derived_fn = θ -> Σ_y_site(θ)[t, t]`; all
 keyword arguments (`penalty_weight`, `initial_step`, `max_expand`,
 `max_bisect`) are forwarded. `t` is a 1-based trait index. No transform is
-applied — the total variance is strictly positive but unbounded above, and
-the profile bracket-then-bisect search on the raw scale (mirroring how this
-file already profiles `σ²_eps`) handles that natively.
+applied — the total variance is strictly positive but unbounded above, so
+the raw-scale bracket-then-bisect search (mirroring how this file already
+profiles `σ²_eps`) can in principle return a `lower` bound that drifted at
+or below `0`, or a plateau that never crosses the χ²₁ cutoff before the
+bracket expansion gives up. [`_profile_ci_bounded`](@ref) is applied to the
+result: any `lower < 0` is clamped to `0`, and a `NaN` `lower` whose
+deviance-at-`0` is itself still below cutoff is reported as `lower = 0`
+instead — both cases set the additional `boundary::Bool` field on the
+returned NamedTuple.
 """
 function profile_ci_total_variance(fit::GllvmFit, t::Integer;
                                    level::Real = 0.95,
@@ -1024,8 +1088,10 @@ function profile_ci_total_variance(fit::GllvmFit, t::Integer;
                                    kwargs...)
     spec = _derived_spec(fit)
     f = _make_total_variance_closure(spec, t)
-    return profile_ci_derived(fit, f; level = level, y = y, X = X, Σ_phy = Σ_phy,
-                              kwargs...)
+    r = profile_ci_derived(fit, f; level = level, y = y, X = X, Σ_phy = Σ_phy,
+                           kwargs...)
+    return _profile_ci_bounded(fit, f, r; level = level, y = y, X = X, Σ_phy = Σ_phy,
+                               lo_bound = 0.0, hi_bound = Inf)
 end
 
 """
@@ -1042,6 +1108,12 @@ bit. `Σ_phy` enters only through its diagonal (standardised convention →
 unit diagonal when omitted), consistent with `phylo_signal`/
 `phylo_signal_wald_ci`. `t` is a 1-based trait index; all keyword
 arguments forward to `profile_ci_derived`.
+
+`H²[t] ∈ [0, 1]` (see [`phylo_signal`](@ref)): [`_profile_ci_bounded`](@ref)
+is applied to the result, clamping any bound outside `[0, 1]` back to the
+edge and reporting a boundary plateau (deviance-at-`0`-or-`1` already below
+the χ²₁ cutoff) as that edge instead of `NaN`/`:partial`. The returned
+NamedTuple carries the additional `boundary::Bool` field.
 """
 function profile_ci_phylo_signal(fit::GllvmFit, t::Integer;
                                  level::Real = 0.95,
@@ -1052,8 +1124,10 @@ function profile_ci_phylo_signal(fit::GllvmFit, t::Integer;
     spec = _derived_spec(fit)
     diag_Σphy = Σ_phy === nothing ? nothing : diag(Σ_phy)
     f = _make_phylo_signal_closure(spec, t; diag_Σphy = diag_Σphy)
-    return profile_ci_derived(fit, f; level = level, y = y, X = X, Σ_phy = Σ_phy,
-                              kwargs...)
+    r = profile_ci_derived(fit, f; level = level, y = y, X = X, Σ_phy = Σ_phy,
+                           kwargs...)
+    return _profile_ci_bounded(fit, f, r; level = level, y = y, X = X, Σ_phy = Σ_phy,
+                               lo_bound = 0.0, hi_bound = 1.0)
 end
 
 """

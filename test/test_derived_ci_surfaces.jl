@@ -215,10 +215,41 @@ end
         Σ = GLLVM.sigma_y_site(fit2)
         prof = GLLVM.profile_ci_total_variance(fit2, 1; y = y2)
         @test isapprox(prof.estimate, Σ[1, 1]; rtol = 1e-10)
+        @test hasproperty(prof, :boundary)
+        # Total variance is feasible on (0, Inf): a finite lower bound must
+        # never be non-positive, clamp or not.
+        if isfinite(prof.lower)
+            @test prof.lower > 0 || (prof.lower == 0 && prof.boundary)
+        end
         if prof.method === :profile
             @test prof.lower <= prof.estimate <= prof.upper
             @test prof.lower > 0
         end
+    end
+
+    @testset "_profile_ci_bounded: clamps out-of-range bounds and flags boundary" begin
+        # Direct unit test of the clamp helper (defect 7): a raw
+        # profile_ci_derived-shaped result whose lower bound drifted below
+        # the feasible edge must be clamped to the edge with boundary=true,
+        # not silently returned as a negative "total variance" bound.
+        r_bad = (lower = -0.02, upper = 1.3, estimate = 0.5, method = :profile)
+        r_fixed = GLLVM._profile_ci_bounded(fit2, θ -> 0.5, r_bad;
+                                            level = 0.95, y = y2, X = nothing,
+                                            Σ_phy = nothing, lo_bound = 0.0, hi_bound = 1.0)
+        @test r_fixed.lower == 0.0
+        @test r_fixed.upper == 1.0
+        @test r_fixed.boundary
+        @test r_fixed.method === :profile
+
+        # A result already inside the feasible range is passed through
+        # unchanged (boundary=false).
+        r_ok = (lower = 0.1, upper = 0.9, estimate = 0.5, method = :profile)
+        r_same = GLLVM._profile_ci_bounded(fit2, θ -> 0.5, r_ok;
+                                           level = 0.95, y = y2, X = nothing,
+                                           Σ_phy = nothing, lo_bound = 0.0, hi_bound = 1.0)
+        @test r_same.lower == 0.1
+        @test r_same.upper == 0.9
+        @test !r_same.boundary
     end
 
     @testset "phylo_signal: H² = sigma2_phy / (sigma2_phy + sigma2_non), bounded in [0,1]" begin
@@ -253,6 +284,29 @@ end
         for t in 1:p3
             f = GLLVM._make_phylo_signal_closure(spec, t; diag_Σphy = diag(Σ_phy3))
             @test isapprox(f(θ̂), H2[t]; rtol = 1e-10)
+        end
+    end
+
+    @testset "profile_ci_phylo_signal: bounds clamped to [0,1], boundary field present" begin
+        rng4 = MersenneTwister(11)
+        p4, K4, n4 = 3, 1, 300
+        Λtrue4 = reshape([0.8, 0.5, 0.3], p4, K4)
+        σ_eps4 = 0.3
+        σ_phy_true4 = fill(0.6, p4)
+        Σ_phy4 = Matrix{Float64}(I, p4, p4)
+        z4 = randn(rng4, K4, n4)
+        φ4 = randn(rng4, p4)
+        y4 = Λtrue4 * z4 .+ σ_eps4 .* randn(rng4, p4, n4) .+ σ_phy_true4 .* φ4
+        fit_phy4 = GLLVM.fit_gaussian_gllvm(y4; K = K4, has_phy_unique = true, Σ_phy = Σ_phy4)
+
+        prof = GLLVM.profile_ci_phylo_signal(fit_phy4, 1; y = y4, Σ_phy = Σ_phy4, max_expand = 12)
+        @test hasproperty(prof, :boundary)
+        @test 0.0 <= prof.estimate <= 1.0
+        if isfinite(prof.lower)
+            @test prof.lower >= 0.0
+        end
+        if isfinite(prof.upper)
+            @test prof.upper <= 1.0
         end
     end
 
