@@ -16951,3 +16951,10 @@ units vs the frozen R fit at n_init=1). The earlier 1.4-59-unit "NB2 gaps"
 are fully explained as the original benchmark's wrong-model comparison.
 Honest cost: the grouped-dispersion kernel is 15-60x slower than R's
 per-trait fit — recorded as the next performance target after Poisson.
+
+## 2026-09-01 — suite3 (Totoro): 13237 pass, canary-only
+
+Consolidated run at the wave-7/8 + final-surface HEAD: 13237 passed,
+5 failed (ALL in test_phylo_poisson_xlv.jl — the receipted BLOCKED canary;
+zero non-canary failures), 0 errored, 8 broken. Zero regressions across
+the postfit_tables slice and the wave-7/8 tooling.
