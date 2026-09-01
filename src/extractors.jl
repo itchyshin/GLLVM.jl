@@ -240,9 +240,21 @@ extract_rotated_loadings(fit) = (Λ = getLoadings(fit; rotate = true), R = rotat
     extract_communality(fit::GllvmFit) -> Vector
 
 Per-trait communality `c²_t = (Λ_B Λ_Bᵀ)_tt / Σ_y_site,tt`. Forwards to the
-existing [`communality`](@ref) generic. Mirrors `gllvmTMB::extract_communality()`
-at `level = "unit"` (GLLVM.jl's default site-level covariance already blends
-the unit and observation tiers — see [`sigma_y_site`](@ref)).
+existing [`communality`](@ref) generic.
+
+Deviation from R (estimand-alignment family — see
+`docs/dev-log/core070/se-machinery-slice-notes.md` and
+`docs/dev-log/core070/surface-conversion-notes.md` for the pending
+estimand-alignment decision): this is NOT R's `extract_communality(level =
+"unit")`. R's `level = "unit"` denominator is the level="unit" tier total
+alone, from `extract_Sigma(level = "unit")`. GLLVM.jl's denominator is
+Julia's TOTAL-variance composition `Σ_y_site,tt` — every non-phylo tier the
+fit carries (`(Λ_B Λ_Bᵀ)_tt + (Λ_W Λ_Wᵀ)_tt + σ²_B,t + σ²_W,t + σ²_eps`, see
+[`sigma_y_site`](@ref)), not R's per-tier `level="unit"` slice. The two
+denominators agree only when `σ_eps == 0` and there is no W-tier. The
+computation itself is unchanged pending the estimand-alignment decision;
+this docstring only corrects the earlier "mirrors R at level='unit'" claim,
+which was numerically false whenever σ_eps > 0 or a W-tier is present.
 """
 extract_communality(fit::GllvmFit) = communality(fit)
 
