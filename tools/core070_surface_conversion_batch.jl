@@ -269,7 +269,7 @@ for cs in cases
         results[case_id] = Dict{String, Any}("pass" => ok, "kind" => kind,
                                               "r_raised" => r_raised, "julia_raised" => jl_raised,
                                               "julia_message" => jl_message)
-        all_ok &= ok
+        global all_ok &= ok
         continue
     end
 
@@ -294,7 +294,7 @@ for cs in cases
                                           "tolerance" => tol, "max_abs_diff" => maxdiff,
                                           "r_len" => length(r_vec), "julia_len" => length(jl_vec),
                                           "error" => err)
-    all_ok &= ok
+    global all_ok &= ok
 end
 
 # --- negative controls: mirror the R side's rejections ---------------------
