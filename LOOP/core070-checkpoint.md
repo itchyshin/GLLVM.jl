@@ -1893,3 +1893,17 @@ slices (B: kernel, then receipted qualification of opened cells) and the
 family-exposure follow-ups. Decision-gated rows (~80: reclassifications, A6,
 ZI trio) are surfaced as PARTIAL-pending-decision, never absorbed. Checkpoint
 per batch; multi-day; honest estimate unchanged (70-120 programme hours).
+
+## Slice B — 2026-09-01: kernel terms through the bridge (72d2037c9, bridge lane)
+
+kernel_latent/indep/dep marshal the literal dense K to the sources payload
+with strict alignment/symmetry validation; live paired fits green vs tmb for
+all three; animal/phylo remain gated (Slice C: needs the covariance-vs-
+precision conversion factored safely). Bridge lane now 9 local commits.
+The ordinary+kernel structured grid on the bridge is now: ord dep/indep/
+scalar OPEN + kernel latent/indep/dep/scalar OPEN — 7 structured spellings
+crossed today, each with live paired evidence.
+NEXT ARC (M2 batch machinery): assemble the first Totoro batch of planned
+manifest cases from the *-required-case-plan.json annexes and run them
+through the targeted supervisor with receipts, starting with the covariance
+and inference annex rows that need no maintainer decision.
