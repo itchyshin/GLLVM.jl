@@ -284,4 +284,5 @@ include("test_aghq_public_binomial.jl")
     include("test_quality.jl")
     include("test_derived_ci_surfaces.jl")
     include("test_extractors.jl")
+    include("test_postfit_tables.jl")
 end

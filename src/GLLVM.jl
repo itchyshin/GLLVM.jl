@@ -2,7 +2,7 @@ module GLLVM
 
 using LinearAlgebra, Optim, ForwardDiff, Random, SparseArrays, Statistics, SHA
 using SpecialFunctions: digamma, trigamma, besselk, gamma, loggamma
-import StatsModels: coef, vcov, nobs, dof, loglikelihood, aic, bic, coeftable, stderror, confint, predict, residuals, fitted, StatsAPI
+import StatsModels: coef, vcov, nobs, dof, loglikelihood, aic, bic, coeftable, stderror, confint, predict, residuals, fitted, StatsAPI, deviance
 # Import Distributions without `Multinomial` so the Identity marker
 # `GLLVM.Multinomial` (unordered categorical, twin fid 16) can bind.
 # `Distributions.Multinomial` is the count-vector law — still available qualified.
@@ -154,6 +154,8 @@ include("boundary_inference.jl")         # χ̄² boundary LRT + boundary-aware 
 include("confint_family.jl")             # Wald / profile / bootstrap CIs for non-Gaussian families
 include("diagnostics.jl")                # check_gllvmTMB / gllvmTMB_diagnose / predictive_check / sanity_multi / compare_* / confint_inspect (core070 diagnostics/compare cluster)
 include("summary_table.jl")              # coef_table: tidy Wald inference table
+include("postfit_tables.jl")             # final missing-surface cluster (core070 §1): deviance, cross-rho profiles,
+                                          # predict_cross_covariance, predict_missing, rotate_loadings, tidy, summary, imputed
 include("formula.jl")                    # @formula front-end (v1: fixed effects → engine)
 include("bridge.jl")                      # R→Julia bridge_fit (JuliaCall flat contract); LAST
 
@@ -307,6 +309,7 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        check_auto_residual, sanity_multi, diagnostic_table,
        diagnose_kernel_separability, compare_Sigma_table,
        compare_dep_vs_two_psi, compare_indep_vs_two_psi, compare_loadings,
-       predictive_check, confint_inspect
+       predictive_check, confint_inspect,
+       deviance
 
 end # module GLLVM
