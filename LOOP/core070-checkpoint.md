@@ -1814,3 +1814,33 @@ MORNING GATES (your decisions):
 
 RESUME: unchanged from the previous section (arc M1-close next: the two
 pre-existing red test files + A6 + manifest decisions feed it).
+
+## 5 AM checkpoint — 2026-09-01 (supersedes prior NEXT; retained history unchanged)
+
+Since the morning checkpoint, in response to your parity challenge:
+- Adversarial parity panel fired (A: receipts CONFIRMED · B: unqualified
+  "parity" = OVERCLAIM · C: defensible with a now-binding qualifier).
+  Record + verbatim qualifier: docs/dev-log/core070/parity-panel-2026-09-01.md.
+- Panel mandates EXECUTED same session:
+  - S1 efe3d644: StudentTFit.nu_boundary honesty flag (red-first, 56/56).
+  - S2 51dfac3f: cross-objective identity tool + known-answer gate; applied to
+    ACC-URBMAP real data: Julia-at-R delta 2.5e-9 -> SAME likelihood, the
+    2.2e-2 crossproduct gap is one shared flat ridge. (Reverse direction owed.)
+  - Fan-out (ultracode, 4 builders + 4 fresh verifiers): 6c27b62e fix(fit)
+    warm-start bug = 6 of the 10 pre-existing suite fails fixed at root;
+    53a91b07 bridge gradient_max payload; e0c44c2f family-generic
+    cross-objective helpers. Phylo-poisson canary BLOCKED with full diagnosis
+    (profile-CI ok-gate vs NelderMead flag at boundary-degenerate sigma2_phy)
+    — needs a reviewed inference-semantics slice.
+- Final full suite running with retained log (expect 11189/4/8; the 4 = the
+  classified phylo-poisson canary only).
+- Artifact strip now separates Harness agreement (panel-qualified) from Bridge
+  reachability; brain D-64 confirms DRAC needs one morning ssh from you.
+
+ADDITIONAL MORNING GATES (beyond the earlier list):
+7. Phylo-poisson profile-CI ok-gate repair design (the one remaining red file).
+8. R-side bridge lane authorization (asked earlier; blocks reachability work).
+9. Panel follow-ups to schedule: TMB-at-Julia reverse cross-evaluation;
+   fixture wiring of cross-objective assertions into the harness (then a full
+   Totoro re-run); se=TRUE curvature/SE comparison cells; realistic-shape
+   fixtures.
