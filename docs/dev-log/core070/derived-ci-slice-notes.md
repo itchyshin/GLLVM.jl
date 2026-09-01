@@ -272,13 +272,42 @@ finite-difference cross-check of the `repeatability_wald_ci` gradient. It
 does **not** substitute for `Pkg.test()`/`test/runtests.jl` catching an
 interaction this slice might have with a file it doesn't own (e.g. a name
 collision in `GLLVM.jl`'s export list, which was hand-checked instead — see
-"Commits" below). The honest state is: **implementation verified in
-isolation; full-suite regression pass not obtained in this session due to
-environment resource contention, not a known or suspected failure.** No
-failing test has been observed anywhere in this slice's work. If the
-full-suite run (still alive in the background at finalization time)
-produces a completed tally later in this session, it should be appended
-here before this slice is considered fully closed by the maintainer.
+"Commits" below; no duplicates found by a static scan of the export list).
+The honest state is: **implementation verified in isolation; full-suite
+regression pass not obtained in this session due to environment resource
+contention, not a known or suspected failure.** No failing test has been
+observed anywhere in this slice's own work.
+
+**Corroborating baseline evidence** (not a substitute for a fresh run, but
+directly relevant): this session's scratchpad
+(`scratchpad/suite-final.log`, `scratchpad/suite-full.log`) holds two
+earlier complete `test/runtests.jl` full-suite runs from other agents'
+work in this same shared checkout, predating this slice's commits. Both
+show a small, pre-existing failure count unrelated to any file this slice
+touches:
+
+  - `suite-final.log`: `11223 passed, 4 failed, 0 errored, 8 broken` — all
+    4 failures are in `test/test_phylo_poisson_xlv.jl` ("Phylo x Poisson
+    B_eta_realized selected-entry canary"), a file this slice does not
+    touch.
+  - `suite-full.log`: `11183 passed, 10 failed, 0 errored, 8 broken`
+    (different point in the branch's history; not further triaged here
+    since it predates this slice and is not this slice's regression to
+    own).
+  - In `suite-final.log`, every existing confint-family testset relevant
+    to this slice's files passed cleanly: `confint` (14/14),
+    `derived-quantity CIs` (45/45), `transformed-Wald CIs for derived
+    bounded quantities` (115/115), `profile_ci_derived fix on phylo cell`
+    (20/20) — i.e. the machinery this slice's new functions build on
+    (`_derived_spec`, `profile_ci_derived`, `transformed_wald_ci_derived`,
+    `_tw_link`, …) was itself green at that point in the branch's history.
+
+This is offered as context, not as verification of this slice's own diff —
+a fresh `test/runtests.jl` run covering the actual patched files is still
+the outstanding item. If the full-suite run left running in the background
+at finalization time produces a completed tally later in this session, it
+should be appended here before this slice is considered fully closed by
+the maintainer.
 
 ## Commits (local only, no push)
 
