@@ -80,6 +80,31 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics
         @test c.residual.coherent
     end
 
+    @testset "gllvmTMB_diagnose — implied Σ uses ALL tiers (sigma_y_site), not just Λ_B + σ_eps" begin
+        # Regression for the post-M2 review finding: the old implied-Σ was
+        # Λ*Λ' + σ_eps²*I, ignoring the W-tier (Λ_W) diagonal contribution
+        # entirely. A strong shared Λ_B factor with a tiny σ_eps but a LARGE
+        # Λ_W diagonal variance is a genuinely low-correlation fit once the
+        # W-tier is accounted for (sigma_y_site's own convention: Λ_W
+        # contributes to the diagonal only) — but the naive Λ_B-only Σ
+        # reports it as near-boundary correlated.
+        Random.seed!(151)
+        p, K, n = 3, 1, 100
+        y = 0.5 * randn(p, n)
+        fit0 = fit_gaussian_gllvm(y; K = K, K_W = 1)
+        pars = merge(fit0.pars, (Λ = fill(1.0, p, 1), Λ_W = fill(3.0, p, 1), σ_eps = 0.01))
+        fit = GLLVM.GllvmFit(fit0.model, pars, fit0.logLik, fit0.n_iter, fit0.converged,
+                              fit0.optim_result, fit0.cputime)
+
+        Σfull = GLLVM.sigma_y_site(fit)
+        d = sqrt.(diag(Σfull))
+        Rfull = Σfull ./ (d * d')
+        @test maximum(abs, Rfull[1, 2]) < 0.995  # the true (all-tier) correlation is small
+
+        diagres = GLLVM.gllvmTMB_diagnose(fit)
+        @test !any(f -> startswith(f, "correlation_near_boundary"), diagres.boundary_flags)
+    end
+
     @testset "diagnostic_table — one row per named check, matching column lengths" begin
         Random.seed!(14)
         p, K, n = 4, 1, 200

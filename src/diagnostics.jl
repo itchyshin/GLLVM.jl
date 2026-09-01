@@ -253,7 +253,9 @@ end
 Port of R's `gllvmTMB_diagnose()` (`diagnose.R:2005-2213`), the
 holistic fit-health summary that wraps `check_gllvmTMB()`'s boundary
 scan. This port composes [`sanity_multi`](@ref) with a boundary-flag
-scan over the implied `Σ_y = ΛΛᵀ + diag(σ_eps²)`:
+scan over the implied `Σ_y`: for a `GllvmFit`, [`sigma_y_site`](@ref)
+(all non-phylo tiers — Λ_B, Λ_W, σ²_B, σ²_W, σ_eps); for any other fit
+type, `ΛΛᵀ + diag(σ_eps²)` (the only tier those fit types carry):
 
   - `variance_near_zero` — any of `σ_eps`, `σ_B`, `σ_W`, `σ_phy` (those
     present on `fit.pars`) below `var_tol`.
@@ -290,9 +292,7 @@ function gllvmTMB_diagnose(fit; y = nothing, X = nothing, Σ_phy = nothing,
         end
     end
 
-    Λ = _loadings(fit)
-    σ_eps = (hasfield(typeof(fit), :pars) && haskey(fit.pars, :σ_eps)) ? fit.pars.σ_eps : 0.0
-    Σy = Λ * Λ' .+ σ_eps^2 .* Matrix(I, size(Λ, 1), size(Λ, 1))
+    Σy = _implied_Sigma_y(fit)
     d = sqrt.(diag(Σy))
     if all(isfinite, d) && all(d .> 0)
         R = Σy ./ (d * d')
@@ -457,6 +457,13 @@ _sigma_eps_or_zero(fit) = (hasfield(typeof(fit), :pars) && haskey(fit.pars, :σ_
                           fit.pars.σ_eps :
                           (hasfield(typeof(fit), :σ_eps) ? fit.σ_eps : 0.0)
 
+# For a GllvmFit, use the full-tier sigma_y_site (Λ_B, Λ_W, σ²_B, σ²_W,
+# σ_eps — every non-phylo tier the fit carries), not just Λ (== Λ_B) and
+# σ_eps: the naive ΛΛᵀ + diag(σ_eps²) silently drops the W-tier's diagonal
+# contribution, which can report a spuriously inflated implied correlation
+# on a genuinely well-separated multi-tier fit. Other fit types (single-Λ,
+# single-σ_eps by construction) keep the exact ΛΛᵀ + diag(σ_eps²) formula.
+_implied_Sigma_y(fit::GllvmFit) = sigma_y_site(fit)
 _implied_Sigma_y(fit) = begin
     Λ = _loadings(fit)
     σ = _sigma_eps_or_zero(fit)
