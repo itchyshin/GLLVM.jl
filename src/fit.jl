@@ -271,7 +271,18 @@ function _fit_gaussian_gllvm_exact(y::AbstractMatrix;
             if isnothing(β_init)
                 β_init = β_ols
             end
-        elseif X === nothing
+        elseif q == 0
+            # X === nothing, or X has zero free columns after masking (an
+            # all-zero-column X, or every β entry fixed): there is no OLS
+            # β̂ to subtract, so PPCA on y directly is the same closed-form
+            # warm start as the X === nothing path. Gated on q == 0 rather
+            # than X === nothing so a degenerate-but-non-nothing X_fit (a
+            # p × n × 0 array from an empty or fully-fixed design) takes
+            # the identical warm start as omitting X, instead of silently
+            # falling through with no PPCA init at all (default init +
+            # σ_eps_init = 1.0), which was the root cause of a ~1e-7
+            # divergence in σ_eps / Λ / predict between the two routes
+            # despite matching logLik (2026-08-31, S4a).
             Λ_ppca, σ_ppca = ppca_init(y, K)
             σ_e₀ = σ_ppca
             λ_init = Λ_ppca
