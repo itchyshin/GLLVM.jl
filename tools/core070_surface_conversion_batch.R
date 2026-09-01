@@ -1,0 +1,370 @@
+# Receipted batch that converts the 34 BLOCKED_NEEDS_JULIA_SURFACE ledger
+# rows in docs/dev-log/core070/required-source-case-map.json whose surfaces
+# were JUST implemented by the extractors slice (src/extractors.jl, Cluster
+# 1) and the derived-CI slice (src/confint_derived_wald.jl /
+# src/confint_derived.jl / src/twolevel.jl, Cluster 2) -- see
+# docs/dev-log/core070/extractors-slice-notes.md and
+# docs/dev-log/core070/derived-ci-slice-notes.md for what those two slices
+# shipped. The exact 41-row target list (34 executable here + 7 deferred with
+# reasons) is pinned VERBATIM in
+# docs/dev-log/core070/surface-conversion-batch-contract.json
+# (`target_source_ids`).
+#
+# Design mirrors tools/core070_inference_remainder_batch.R: THIS R process
+# (the one with the frozen gllvmTMB library loaded) does 100% of the live
+# R-side computation -- fits three canonical small fixtures
+# (gaussian_small, twolevel_small, ordinal_small; gaussian_small and
+# ordinal_small are reused VERBATIM from
+# tools/core070_inference_remainder_batch.R and
+# test/parity/test_ordinal_probit_parity.jl respectively, so the same seeds
+# and true parameters are shared across batches) -- and calls each case's R
+# accessor. It hands the Julia child a plain JSON oracle; the Julia child
+# (tools/core070_surface_conversion_batch.jl) fits the SAME three fixtures
+# NATIVELY (independent optimiser run on the same simulated Y, not a replay
+# of R's numbers) and calls the corresponding NEW Julia surface, comparing
+# at the contract's per-case tolerance (paired-independent-fit precedent:
+# 1e-4 for point quantities that are direct fit outputs, 1e-6 for
+# deterministic closed-form transforms of those outputs, 1e-3 for CI
+# endpoints, 5e-2 for the one Monte-Carlo bootstrap CI case).
+#
+# argv:
+#   Rscript --vanilla tools/core070_surface_conversion_batch.R <frozen-library> <destination>
+#
+# <frozen-library> is an R library directory containing an installed
+# gllvmTMB built from the pinned reference commit (b4d5fee...).
+# <destination> must not already exist.
+
+args <- commandArgs(TRUE)
+stopifnot(length(args) == 2L)
+frozen_library <- normalizePath(args[[1]], mustWork = TRUE)
+output_dir <- args[[2]]
+stopifnot(!dir.exists(output_dir))
+dir.create(output_dir, recursive = TRUE)
+
+sha256_file <- function(path) {
+  command <- if (nzchar(Sys.which("sha256sum"))) "sha256sum" else "shasum"
+  argv <- if (identical(command, "sha256sum")) path else c("-a", "256", path)
+  line <- system2(command, argv, stdout = TRUE, stderr = TRUE)
+  stopifnot(is.null(attr(line, "status")), length(line) >= 1L)
+  sub("[[:space:]].*$", "", line[[1L]])
+}
+
+.libPaths(c(frozen_library, .libPaths()))
+suppressPackageStartupMessages(library(gllvmTMB))
+suppressPackageStartupMessages(library(jsonlite))
+stopifnot(normalizePath(find.package("gllvmTMB")) ==
+          normalizePath(file.path(frozen_library, "gllvmTMB")))
+
+root <- normalizePath(".")
+contract_path <- file.path(root, "docs/dev-log/core070/surface-conversion-batch-contract.json")
+if (!file.exists(contract_path)) {
+  stop("FATAL: contract not found at ", contract_path, " -- refusing to run with no state.")
+}
+contract <- jsonlite::read_json(contract_path, simplifyVector = FALSE)
+contract_sha256 <- sha256_file(contract_path)
+
+stopifnot(
+  identical(contract$reference_commit, "b4d5fee64def88bc768dda1f1f77c29b295edd86"),
+  identical(contract$status, "FROZEN_SURFACE_CONVERSION_BATCH_CONTRACT"),
+  length(contract$cases) == contract$expected_case_count,
+  contract$expected_case_count == 34L,
+  length(contract$deferred) == contract$expected_deferred_count,
+  contract$expected_deferred_count == 7L,
+  length(contract$negative_controls) >= 2L
+)
+
+# ---------------------------------------------------------------------------
+# Fixture 1: gaussian_small -- verbatim from
+# tools/core070_inference_remainder_batch.R.
+# ---------------------------------------------------------------------------
+set.seed(42)
+p <- 5L; K <- 2L; n <- 80L
+Lambda_true <- matrix(c(
+  0.8,  0.0,
+  0.5,  0.6,
+  0.3, -0.4,
+ -0.2,  0.5,
+  0.1,  0.3
+), nrow = p, ncol = K, byrow = TRUE)
+sigma_true <- 0.7
+eta_g <- matrix(rnorm(K * n), nrow = K, ncol = n)
+Y_g <- Lambda_true %*% eta_g + sigma_true * matrix(rnorm(p * n), nrow = p, ncol = n)
+Y_g <- Y_g - rowMeans(Y_g)
+
+trait_names <- paste0("t", seq_len(p))
+df_g <- data.frame(
+  site  = factor(rep(seq_len(n), each = p)),
+  trait = factor(rep(trait_names, times = n), levels = trait_names),
+  value = as.vector(Y_g)
+)
+fit_g <- gllvmTMB(
+  value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE),
+  data = df_g, unit = "site", trait = "trait", family = gaussian(),
+  control = gllvmTMBcontrol(n_init = 1L, se = TRUE)
+)
+stopifnot("gllvmTMB_multi" %in% class(fit_g))
+
+# ---------------------------------------------------------------------------
+# Fixture 2: twolevel_small -- genuine two-tier fit, per
+# extract-repeatability.R's own @examples formula (between=site,
+# within=site_species).
+# ---------------------------------------------------------------------------
+set.seed(1)
+p_tl <- 4L; n_ind <- 30L; reps <- 4L
+n_tl <- n_ind * reps
+Lambda_B_true <- matrix(c(0.7, 0.4, -0.3, 0.5), ncol = 1L)
+Lambda_W_true <- matrix(c(0.3, 0.5, 0.4, -0.2), ncol = 1L)
+individual <- rep(seq_len(n_ind), each = reps)
+b_true <- matrix(rnorm(n_ind), nrow = 1L)                # 1 x n_ind between score
+w_true <- matrix(rnorm(n_tl), nrow = 1L)                 # 1 x n_tl within score
+Y_tl <- Lambda_B_true %*% b_true[, individual, drop = FALSE] +
+        Lambda_W_true %*% w_true +
+        0.3 * matrix(rnorm(p_tl * n_tl), nrow = p_tl)
+Y_tl <- Y_tl - rowMeans(Y_tl)
+
+tl_trait_names <- paste0("t", seq_len(p_tl))
+df_tl <- data.frame(
+  site         = factor(rep(individual, each = p_tl)),
+  site_species = factor(rep(seq_len(n_tl), each = p_tl)),
+  trait        = factor(rep(tl_trait_names, times = n_tl), levels = tl_trait_names),
+  value        = as.vector(Y_tl)
+)
+fit_tl <- gllvmTMB(
+  value ~ 0 + trait + latent(0 + trait | site, d = 1) +
+    latent(0 + trait | site_species, d = 1),
+  data = df_tl, unit = "site_species", trait = "trait", family = gaussian(),
+  control = gllvmTMBcontrol(n_init = 1L, se = TRUE)
+)
+stopifnot("gllvmTMB_multi" %in% class(fit_tl))
+
+# ---------------------------------------------------------------------------
+# Fixture 3: ordinal_small -- verbatim from
+# test/parity/test_ordinal_probit_parity.jl.
+# ---------------------------------------------------------------------------
+set.seed(46)
+p_o <- 5L; K_o <- 1L; n_o <- 60L; C_o <- 3L
+beta_o <- c(0.30, -0.20, 0.15, -0.10, 0.05)
+Lambda_o <- matrix(c(0.8, 0.5, 0.3, -0.2, 0.1), ncol = 1L)
+tau_o <- c(0.0, 0.75)
+Z_o <- matrix(rnorm(K_o * n_o), nrow = K_o)
+eta_o <- beta_o + Lambda_o %*% Z_o
+pnorm_thresh <- function(x) pnorm(x)
+Y_o <- matrix(NA_integer_, p_o, n_o)
+for (s in seq_len(n_o)) for (t in seq_len(p_o)) {
+  u <- runif(1)
+  f1 <- pnorm_thresh(tau_o[1] - eta_o[t, s])
+  f2 <- pnorm_thresh(tau_o[2] - eta_o[t, s])
+  Y_o[t, s] <- if (u < f1) 1L else if (u < f2) 2L else 3L
+}
+o_trait_names <- paste0("t", seq_len(p_o))
+df_o <- data.frame(
+  site  = factor(rep(seq_len(n_o), each = p_o)),
+  trait = factor(rep(o_trait_names, times = n_o), levels = o_trait_names),
+  value = as.vector(Y_o)
+)
+fit_o <- gllvmTMB(
+  value ~ 0 + trait + latent(0 + trait | site, d = K_o, unique = FALSE),
+  data = df_o, unit = "site", trait = "trait", family = ordinal_probit(),
+  control = gllvmTMBcontrol(n_init = 1L, se = FALSE)
+)
+stopifnot("gllvmTMB_multi" %in% class(fit_o))
+
+# ---------------------------------------------------------------------------
+# Per-quantity R oracle computation. Each function returns a flat numeric
+# vector (or NULL for the refusal_pair case, which is checked separately).
+# Wrapped in tryCatch so a case that genuinely cannot be computed on the
+# frozen library shows up as an explicit oracle_error rather than a
+# fabricated pass.
+# ---------------------------------------------------------------------------
+r_quantity <- function(quantity) {
+  switch(quantity,
+    loadings_crossprod = as.numeric(crossprod(getLoadings(fit_g))),
+    lv_predictor = as.numeric(as.matrix(fit_g$report$Lambda_B) %*%
+                               t(as.matrix(getLV(fit_g)))),
+    sigma_unit_total = as.numeric(extract_Sigma(fit_g, level = "unit", part = "total")$Sigma),
+    sigma_table = {
+      t <- extract_Sigma_table(fit_g, level = "unit", part = "total")
+      t <- t[order(t$trait_i, t$trait_j), ]
+      as.numeric(t$value)
+    },
+    communality = as.numeric(extract_communality(fit_g)),
+    correlations = as.numeric(extract_correlations(fit_g)),
+    cross_correlations = as.numeric(extract_cross_correlations(
+      fit_g, level = "unit", traits_i = c("t1", "t2"), traits_j = c("t3", "t4", "t5"))),
+    residual_cov = as.numeric(extract_residual_cov(fit_g, level = "unit_obs")),
+    residual_cor = as.numeric(extract_residual_cor(fit_g, level = "unit_obs")),
+    ordination_sites = {
+      ord <- extract_ordination(fit_g, Y_g)
+      as.numeric(rowSums(as.matrix(ord$sites)^2))
+    },
+    proportions = as.numeric(extract_proportions(fit_g, component = "shared")),
+    omega = as.numeric(extract_Omega(fit_g)),
+    icc_site = as.numeric(extract_ICC_site(fit_g)),
+    loading_ci_wald_asym = {
+      ci <- confint(fit_g, parm = "rho", method = "wald_asym", level = 0.95)
+      as.numeric(c(ci$lower, ci$upper))
+    },
+    loading_profile = {
+      pr <- loading_profile(fit_g, trait = 1L, axis = 1L, level = 0.95)
+      as.numeric(c(pr$lower, pr$upper))
+    },
+    profile_ci_total_variance = {
+      pr <- profile_ci_total_variance(fit_g, trait = 1L, level = 0.95)
+      as.numeric(c(pr$lower, pr$upper))
+    },
+    standard_errors = as.numeric(standard_errors(fit_g)$se),
+    repeatability_point = as.numeric(extract_repeatability(fit_tl)$estimate),
+    icc_ci_default = {
+      ci <- confint(fit_tl, parm = "icc", level = 0.95)
+      as.numeric(c(ci$lower, ci$upper))
+    },
+    icc_ci_wald = {
+      ci <- confint(fit_tl, parm = "icc", method = "wald", level = 0.95)
+      as.numeric(c(ci$lower, ci$upper))
+    },
+    icc_ci_bootstrap = {
+      ci <- confint(fit_tl, parm = "icc", method = "bootstrap", level = 0.95, nsim = 200)
+      as.numeric(c(ci$lower, ci$upper))
+    },
+    cutpoints = as.numeric(extract_cutpoints(fit_o)$tau_estimate),
+    stop("BOGUS_QUANTITY: no dispatcher entry for '", quantity, "'")
+  )
+}
+
+oracle_values <- list()
+oracle_errors <- list()
+for (cs in contract$cases) {
+  if (identical(cs$kind, "refusal_pair")) {
+    res <- tryCatch({
+      confint(fit_tl, parm = "icc", method = "profile", level = 0.95)
+      list(raised = FALSE, message = "")
+    }, error = function(e) list(raised = TRUE, message = conditionMessage(e)))
+    oracle_values[[cs$case_id]] <- list(raised = res$raised, message = res$message)
+    next
+  }
+  v <- tryCatch(list(ok = TRUE, value = r_quantity(cs$quantity), error = ""),
+                error = function(e) list(ok = FALSE, value = NULL, error = conditionMessage(e)))
+  if (isTRUE(v$ok)) {
+    oracle_values[[cs$case_id]] <- v$value
+  } else {
+    oracle_errors[[cs$case_id]] <- v$error
+  }
+}
+
+# --- negative controls: a bogus quantity key and a bogus fixture key must
+#     both be rejected before the tape (never silently skipped). ---
+neg_bogus_quantity <- tryCatch({ r_quantity("this_quantity_does_not_exist"); list(rejected = FALSE) },
+                                error = function(e) list(rejected = TRUE, message = conditionMessage(e)))
+neg_wrong_fixture <- list(
+  rejected = !("bogus_fixture_key" %in% names(contract$fixtures)),
+  message = "bogus_fixture_key absent from contract$fixtures"
+)
+
+# ---------------------------------------------------------------------------
+# Write the oracle JSON for the Julia child.
+# ---------------------------------------------------------------------------
+oracle_path <- file.path(output_dir, "r-oracle.json")
+jsonlite::write_json(
+  list(
+    schema = "core070-surface-conversion-r-oracle/v1",
+    gaussian_small = list(p = p, K = K, n = n, y = as.numeric(Y_g)),
+    twolevel_small = list(p = p_tl, n_individual = n_ind, reps_per_individual = reps,
+                          individual = individual, y = as.numeric(Y_tl)),
+    ordinal_small = list(p = p_o, K = K_o, n = n_o, C = C_o, y = as.integer(as.vector(Y_o))),
+    oracle_values = oracle_values,
+    oracle_errors = oracle_errors,
+    negative_controls = list(
+      bogus_quantity = neg_bogus_quantity,
+      wrong_fixture = neg_wrong_fixture
+    )
+  ),
+  oracle_path, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = 17
+)
+
+# ---------------------------------------------------------------------------
+# Invoke the Julia child, env pass-through (matches
+# tools/core070_inference_remainder_batch.R's convention).
+# ---------------------------------------------------------------------------
+julia_out <- file.path(output_dir, "julia-results.json")
+julia_env <- c(CORE070_SURFACE_CONVERSION_R_ORACLE = oracle_path)
+julia_bin <- Sys.which("julia")
+stopifnot(nzchar(julia_bin))
+old_env <- Sys.getenv(names(julia_env), unset = NA, names = TRUE)
+do.call(Sys.setenv, as.list(julia_env))
+t0 <- Sys.time()
+julia_status <- tryCatch(
+  system2(julia_bin, c("--project=.", "tools/core070_surface_conversion_batch.jl", julia_out),
+          stdout = file.path(output_dir, "julia-stdout.log"),
+          stderr = file.path(output_dir, "julia-stderr.log")),
+  finally = {
+    unset <- names(old_env)[is.na(old_env)]
+    if (length(unset)) Sys.unsetenv(unset)
+    set <- old_env[!is.na(old_env)]
+    if (length(set)) do.call(Sys.setenv, as.list(set))
+  }
+)
+elapsed <- as.numeric(Sys.time() - t0, units = "secs")
+
+julia_report <- if (file.exists(julia_out)) {
+  jsonlite::read_json(julia_out, simplifyVector = FALSE)
+} else NULL
+
+contract_case_ids <- vapply(contract$cases, `[[`, "", "case_id")
+
+results_ok <- !is.null(julia_report) &&
+  identical(julia_status, 0L) &&
+  identical(julia_report$status, "PASS") &&
+  isTRUE(julia_report$all_checks) &&
+  isTRUE(julia_report$negative_controls_behaved_as_expected)
+
+cases_seen <- if (!is.null(julia_report)) names(julia_report$cases) else character(0)
+missing_case_ids <- setdiff(contract_case_ids, cases_seen)
+extra_case_ids <- setdiff(cases_seen, contract_case_ids)
+results_ok <- results_ok && length(missing_case_ids) == 0 && length(extra_case_ids) == 0
+
+raw_lines <- vapply(contract_case_ids, function(id) {
+  pass <- !is.null(julia_report) && id %in% names(julia_report$cases) &&
+    isTRUE(julia_report$cases[[id]]$pass)
+  paste(id, if (pass) "PASS" else "FAIL", "surface_conversion", sep = "\t")
+}, character(1))
+raw_path <- file.path(output_dir, "results.tsv")
+writeLines(raw_lines, raw_path)
+
+diag_lines <- character(0)
+if (!identical(julia_status, 0L)) diag_lines <- c(diag_lines, paste("julia_exit_code", julia_status))
+if (is.null(julia_report)) diag_lines <- c(diag_lines, "julia-results.json was not written")
+if (length(oracle_errors)) {
+  for (id in names(oracle_errors)) {
+    diag_lines <- c(diag_lines, paste0("oracle_error[", id, "]: ", oracle_errors[[id]]))
+  }
+}
+if (length(missing_case_ids)) diag_lines <- c(diag_lines, paste("missing_case_ids:", paste(missing_case_ids, collapse = ", ")))
+if (length(extra_case_ids)) diag_lines <- c(diag_lines, paste("extra_case_ids:", paste(extra_case_ids, collapse = ", ")))
+diag_path <- file.path(output_dir, "diagnostics.log")
+writeLines(diag_lines, diag_path)
+
+receipt <- list(
+  status = if (isTRUE(results_ok) && length(oracle_errors) == 0L) "PASS" else "FAIL",
+  scope = "CORE070_SURFACE_CONVERSION_BATCH",
+  reference_commit = contract$reference_commit,
+  contract_sha256 = contract_sha256,
+  source_unchanged = TRUE,
+  target_source_ids = contract$target_source_ids,
+  case_count = contract$expected_case_count,
+  deferred_count = contract$expected_deferred_count,
+  expected_case_ids = contract_case_ids,
+  oracle_error_count = length(oracle_errors),
+  julia_exit_code = julia_status,
+  julia_elapsed_seconds = elapsed,
+  julia_results_sha256 = if (file.exists(julia_out)) sha256_file(julia_out) else NA_character_,
+  raw_sha256 = sha256_file(raw_path),
+  diagnostics_sha256 = sha256_file(diag_path),
+  r_version = R.version.string,
+  gllvmTMB_version = as.character(utils::packageVersion("gllvmTMB")),
+  frozen_library = frozen_library
+)
+receipt_path <- file.path(output_dir, "receipt.json")
+jsonlite::write_json(receipt, receipt_path, auto_unbox = TRUE, pretty = TRUE, null = "null")
+
+cat("CORE070_SURFACE_CONVERSION_BATCH_", receipt$status, "\n", sep = "")
+quit(status = if (identical(receipt$status, "PASS")) 0L else 1L)

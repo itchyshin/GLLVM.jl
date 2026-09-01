@@ -1,0 +1,550 @@
+{
+  "schema": "core070-surface-conversion-batch/v1",
+  "status": "FROZEN_SURFACE_CONVERSION_BATCH_CONTRACT",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "scope": "Converts BLOCKED_NEEDS_JULIA_SURFACE ledger rows (postfit/, namespace/, inference/ prefixes) whose named function now exists in src/GLLVM.jl's export list, following the extractors (Cluster 1) and derived-CI (Cluster 2) slices.",
+  "target_source_ids": [
+    "inference/CI-ROUTE-005",
+    "inference/CI-ROUTE-008",
+    "inference/CI-ROUTE-009",
+    "inference/CI-ROUTE-010",
+    "inference/CI-ROUTE-011",
+    "namespace/export/getLoadings",
+    "namespace/export/getResidualCor",
+    "namespace/export/getResidualCov",
+    "namespace/export/loading_ci",
+    "namespace/export/loading_profile",
+    "namespace/export/profile_ci_phylo_signal",
+    "namespace/export/profile_ci_total_variance",
+    "namespace/export/slope_sd_ci",
+    "namespace/export/standard_errors",
+    "postfit/POSTFIT-SURFACE-extract_Gamma",
+    "postfit/POSTFIT-SURFACE-extract_ICC_site",
+    "postfit/POSTFIT-SURFACE-extract_Omega",
+    "postfit/POSTFIT-SURFACE-extract_Sigma",
+    "postfit/POSTFIT-SURFACE-extract_Sigma_table",
+    "postfit/POSTFIT-SURFACE-extract_communality",
+    "postfit/POSTFIT-SURFACE-extract_correlations",
+    "postfit/POSTFIT-SURFACE-extract_cross_correlations",
+    "postfit/POSTFIT-SURFACE-extract_cutpoints",
+    "postfit/POSTFIT-SURFACE-extract_loadings",
+    "postfit/POSTFIT-SURFACE-extract_lv_effects",
+    "postfit/POSTFIT-SURFACE-extract_ordination",
+    "postfit/POSTFIT-SURFACE-extract_phylo_signal",
+    "postfit/POSTFIT-SURFACE-extract_proportions",
+    "postfit/POSTFIT-SURFACE-extract_repeatability",
+    "postfit/POSTFIT-SURFACE-extract_residual_cor",
+    "postfit/POSTFIT-SURFACE-extract_residual_cov",
+    "postfit/POSTFIT-SURFACE-getLV",
+    "postfit/POSTFIT-SURFACE-getLoadings",
+    "postfit/POSTFIT-SURFACE-getResidualCor",
+    "postfit/POSTFIT-SURFACE-getResidualCov",
+    "postfit/POSTFIT-SURFACE-loading_ci",
+    "postfit/POSTFIT-SURFACE-loading_profile",
+    "postfit/POSTFIT-SURFACE-profile_ci_phylo_signal",
+    "postfit/POSTFIT-SURFACE-profile_ci_total_variance",
+    "postfit/POSTFIT-SURFACE-slope_sd_ci",
+    "postfit/POSTFIT-SURFACE-standard_errors"
+  ],
+  "expected_case_count": 34,
+  "expected_deferred_count": 7,
+  "cases": [
+    {
+      "source_id": "namespace/export/getLoadings",
+      "quantity": "loadings_crossprod",
+      "fixture": "gaussian_small",
+      "tolerance": 0.0001,
+      "kind": "point",
+      "r_call": "crossprod(getLoadings(fit_r))",
+      "julia_call": "GLLVM.getLoadings(fit) |> L -> L'L",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-NAMESPACE-EXPORT-GETLOADINGS"
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-getLoadings",
+      "quantity": "loadings_crossprod",
+      "fixture": "gaussian_small",
+      "tolerance": 0.0001,
+      "kind": "point",
+      "r_call": "crossprod(getLoadings(fit_r))",
+      "julia_call": "GLLVM.getLoadings(fit) |> L -> L'L",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-GETLOADINGS"
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_loadings",
+      "quantity": "loadings_crossprod",
+      "fixture": "gaussian_small",
+      "tolerance": 0.0001,
+      "kind": "point",
+      "r_call": "crossprod(getLoadings(fit_r))",
+      "julia_call": "GLLVM.extract_loadings(fit) |> L -> L'L",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-LOADINGS"
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-getLV",
+      "quantity": "lv_predictor",
+      "fixture": "gaussian_small",
+      "tolerance": 0.0001,
+      "kind": "point",
+      "r_call": "as.matrix(report$Lambda_B) %*% t(as.matrix(getLV(fit_r)))",
+      "julia_call": "fit.pars.\u039b * GLLVM.getLV(fit)'  # p x n predictor, rotation-invariant",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-GETLV"
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_Sigma",
+      "quantity": "sigma_unit_total",
+      "fixture": "gaussian_small",
+      "tolerance": 1e-06,
+      "kind": "point",
+      "r_call": "extract_Sigma(fit_r, level='unit', part='total')$Sigma",
+      "julia_call": "GLLVM.extract_Sigma(fit; level=:unit, part=:total).Sigma",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-SIGMA"
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_Sigma_table",
+      "quantity": "sigma_table",
+      "fixture": "gaussian_small",
+      "tolerance": 1e-06,
+      "kind": "point",
+      "r_call": "extract_Sigma_table(fit_r, level='unit', part='total')$value  # sorted (trait_i,trait_j)",
+      "julia_call": "GLLVM.extract_Sigma_table(fit; level=:unit, part=:total)  # sorted (trait_i,trait_j)",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-SIGMA-TABLE"
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_communality",
+      "quantity": "communality",
+      "fixture": "gaussian_small",
+      "tolerance": 1e-06,
+      "kind": "point",
+      "r_call": "extract_communality(fit_r)",
+      "julia_call": "GLLVM.extract_communality(fit)",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-COMMUNALITY"
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_correlations",
+      "quantity": "correlations",
+      "fixture": "gaussian_small",
+      "tolerance": 1e-06,
+      "kind": "point",
+      "r_call": "extract_correlations(fit_r)  # upper triangle incl diag",
+      "julia_call": "GLLVM.extract_correlations(fit)",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-CORRELATIONS"
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_cross_correlations",
+      "quantity": "cross_correlations",
+      "fixture": "gaussian_small",
+      "tolerance": 1e-06,
+      "kind": "point",
+      "r_call": "extract_cross_correlations(fit_r, level='unit', traits_i=c('t1','t2'), traits_j=c('t3','t4','t5'))",
+      "julia_call": "GLLVM.extract_cross_correlations(fit; level=:unit, traits_i=[1,2], traits_j=[3,4,5])",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-CROSS-CORRELATIONS"
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_residual_cov",
+      "quantity": "residual_cov",
+      "fixture": "gaussian_small",
+      "tolerance": 1e-06,
+      "kind": "point",
+      "r_call": "extract_residual_cov(fit_r, level='unit_obs')",
+      "julia_call": "GLLVM.extract_residual_cov(fit; level=:unit_obs)",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-RESIDUAL-COV"
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_residual_cor",
+      "quantity": "residual_cor",
+      "fixture": "gaussian_small",
+      "tolerance": 1e-06,
+      "kind": "point",
+      "r_call": "extract_residual_cor(fit_r, level='unit_obs')",
+      "julia_call": "GLLVM.extract_residual_cor(fit; level=:unit_obs)",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-RESIDUAL-COR"
+    },
+    {
+      "source_id": "namespace/export/getResidualCov",
+      "quantity": "residual_cov",
+      "fixture": "gaussian_small",
+      "tolerance": 1e-06,
+      "kind": "point",
+      "r_call": "getResidualCov(fit_r, level='unit_obs')",
+      "julia_call": "GLLVM.getResidualCov(fit; level=:unit_obs)",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-NAMESPACE-EXPORT-GETRESIDUALCOV"
+    },
+    {
+      "source_id": "namespace/export/getResidualCor",
+      "quantity": "residual_cor",
+      "fixture": "gaussian_small",
+      "tolerance": 1e-06,
+      "kind": "point",
+      "r_call": "getResidualCor(fit_r, level='unit_obs')",
+      "julia_call": "GLLVM.getResidualCor(fit; level=:unit_obs)",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-NAMESPACE-EXPORT-GETRESIDUALCOR"
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-getResidualCov",
+      "quantity": "residual_cov",
+      "fixture": "gaussian_small",
+      "tolerance": 1e-06,
+      "kind": "point",
+      "r_call": "getResidualCov(fit_r, level='unit_obs')",
+      "julia_call": "GLLVM.getResidualCov(fit; level=:unit_obs)",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-GETRESIDUALCOV"
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-getResidualCor",
+      "quantity": "residual_cor",
+      "fixture": "gaussian_small",
+      "tolerance": 1e-06,
+      "kind": "point",
+      "r_call": "getResidualCor(fit_r, level='unit_obs')",
+      "julia_call": "GLLVM.getResidualCor(fit; level=:unit_obs)",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-GETRESIDUALCOR"
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_ordination",
+      "quantity": "ordination_sites",
+      "fixture": "gaussian_small",
+      "tolerance": 0.0001,
+      "kind": "point",
+      "r_call": "rowSums(extract_ordination(fit_r, Y)$sites^2)  # per-obs squared radius, rotation-invariant",
+      "julia_call": "sites,_,_ = GLLVM.extract_ordination(fit,Y); vec(sum(abs2, sites; dims=2))",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-ORDINATION"
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_proportions",
+      "quantity": "proportions",
+      "fixture": "gaussian_small",
+      "tolerance": 1e-06,
+      "kind": "point",
+      "r_call": "extract_proportions(fit_r, component='shared')",
+      "julia_call": "GLLVM.extract_proportions(fit; component=:shared)",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-PROPORTIONS"
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_Omega",
+      "quantity": "omega",
+      "fixture": "gaussian_small",
+      "tolerance": 1e-06,
+      "kind": "point",
+      "r_call": "extract_Omega(fit_r)",
+      "julia_call": "GLLVM.extract_Omega(fit)",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-OMEGA"
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_ICC_site",
+      "quantity": "icc_site",
+      "fixture": "gaussian_small",
+      "tolerance": 1e-06,
+      "kind": "point",
+      "r_call": "extract_ICC_site(fit_r)",
+      "julia_call": "GLLVM.extract_ICC_site(fit)",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-ICC-SITE"
+    },
+    {
+      "source_id": "inference/CI-ROUTE-005",
+      "quantity": "loading_ci_wald_asym",
+      "fixture": "gaussian_small",
+      "tolerance": 0.001,
+      "kind": "ci",
+      "r_call": "confint(fit_r, parm='rho', method='wald_asym', level=0.95)  # standardized loading Wald (Fisher-z)",
+      "julia_call": "GLLVM.loading_ci(fit,y; method=:wald_asym, conf_level=0.95)",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-INFERENCE-CI-ROUTE-005"
+    },
+    {
+      "source_id": "namespace/export/loading_ci",
+      "quantity": "loading_ci_wald_asym",
+      "fixture": "gaussian_small",
+      "tolerance": 0.001,
+      "kind": "ci",
+      "r_call": "confint(fit_r, parm='rho', method='wald_asym', level=0.95)",
+      "julia_call": "GLLVM.loading_ci(fit,y; method=:wald_asym, conf_level=0.95)",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-NAMESPACE-EXPORT-LOADING-CI"
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-loading_ci",
+      "quantity": "loading_ci_wald_asym",
+      "fixture": "gaussian_small",
+      "tolerance": 0.001,
+      "kind": "ci",
+      "r_call": "confint(fit_r, parm='rho', method='wald_asym', level=0.95)",
+      "julia_call": "GLLVM.loading_ci(fit,y; method=:wald_asym, conf_level=0.95)",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-LOADING-CI"
+    },
+    {
+      "source_id": "namespace/export/loading_profile",
+      "quantity": "loading_profile",
+      "fixture": "gaussian_small",
+      "tolerance": 0.001,
+      "kind": "ci",
+      "r_call": "loading_profile(fit_r, trait=1, axis=1, level=0.95)  # raw scale",
+      "julia_call": "GLLVM.loading_profile(fit,1,1; level=0.95)",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-NAMESPACE-EXPORT-LOADING-PROFILE"
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-loading_profile",
+      "quantity": "loading_profile",
+      "fixture": "gaussian_small",
+      "tolerance": 0.001,
+      "kind": "ci",
+      "r_call": "loading_profile(fit_r, trait=1, axis=1, level=0.95)",
+      "julia_call": "GLLVM.loading_profile(fit,1,1; level=0.95)",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-LOADING-PROFILE"
+    },
+    {
+      "source_id": "namespace/export/profile_ci_total_variance",
+      "quantity": "profile_ci_total_variance",
+      "fixture": "gaussian_small",
+      "tolerance": 0.001,
+      "kind": "ci",
+      "r_call": "profile_ci_total_variance(fit_r, trait=1, level=0.95)",
+      "julia_call": "GLLVM.profile_ci_total_variance(fit,1; level=0.95)",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-NAMESPACE-EXPORT-PROFILE-CI-TOTAL-VARIANCE"
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-profile_ci_total_variance",
+      "quantity": "profile_ci_total_variance",
+      "fixture": "gaussian_small",
+      "tolerance": 0.001,
+      "kind": "ci",
+      "r_call": "profile_ci_total_variance(fit_r, trait=1, level=0.95)",
+      "julia_call": "GLLVM.profile_ci_total_variance(fit,1; level=0.95)",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-PROFILE-CI-TOTAL-VARIANCE"
+    },
+    {
+      "source_id": "namespace/export/standard_errors",
+      "quantity": "standard_errors",
+      "fixture": "gaussian_small",
+      "tolerance": 0.0001,
+      "kind": "point",
+      "r_call": "standard_errors(fit_r)$se  # or summary(fit_r$sd_report,'fixed')[,'Std. Error']",
+      "julia_call": "GLLVM.standard_errors(fit,y).se",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-NAMESPACE-EXPORT-STANDARD-ERRORS"
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-standard_errors",
+      "quantity": "standard_errors",
+      "fixture": "gaussian_small",
+      "tolerance": 0.0001,
+      "kind": "point",
+      "r_call": "standard_errors(fit_r)$se",
+      "julia_call": "GLLVM.standard_errors(fit,y).se",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-STANDARD-ERRORS"
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_repeatability",
+      "quantity": "repeatability_point",
+      "fixture": "twolevel_small",
+      "tolerance": 0.0001,
+      "kind": "point",
+      "r_call": "extract_repeatability(fit_r)$estimate",
+      "julia_call": "GLLVM.extract_repeatability(fit_tl)",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-REPEATABILITY"
+    },
+    {
+      "source_id": "inference/CI-ROUTE-008",
+      "quantity": "icc_ci_default",
+      "fixture": "twolevel_small",
+      "tolerance": 0.001,
+      "kind": "ci",
+      "r_call": "confint(fit_r, parm='icc', level=0.95)  # R default method (wald)",
+      "julia_call": "GLLVM.repeatability_ci(fit_tl, y, individual)  # default method=:wald",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-INFERENCE-CI-ROUTE-008"
+    },
+    {
+      "source_id": "inference/CI-ROUTE-009",
+      "quantity": "icc_ci_profile",
+      "fixture": "twolevel_small",
+      "tolerance": null,
+      "kind": "refusal_pair",
+      "r_call": "confint(fit_r, parm='icc', method='profile', level=0.95)  # must raise gllvmTMB_repeatability_profile_withdrawn",
+      "julia_call": "GLLVM.repeatability_ci(fit_tl, y, individual; method=:profile)  # must throw TwoLevelRepeatabilityProfileWithdrawn",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-INFERENCE-CI-ROUTE-009"
+    },
+    {
+      "source_id": "inference/CI-ROUTE-010",
+      "quantity": "icc_ci_wald",
+      "fixture": "twolevel_small",
+      "tolerance": 0.001,
+      "kind": "ci",
+      "r_call": "confint(fit_r, parm='icc', method='wald', level=0.95)",
+      "julia_call": "GLLVM.repeatability_ci(fit_tl, y, individual; method=:wald)",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-INFERENCE-CI-ROUTE-010"
+    },
+    {
+      "source_id": "inference/CI-ROUTE-011",
+      "quantity": "icc_ci_bootstrap",
+      "fixture": "twolevel_small",
+      "tolerance": 0.05,
+      "kind": "ci",
+      "r_call": "confint(fit_r, parm='icc', method='bootstrap', level=0.95, nsim=200)",
+      "julia_call": "GLLVM.repeatability_ci(fit_tl, y, individual; method=:bootstrap, nsim=200, seed=11)",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-INFERENCE-CI-ROUTE-011"
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_cutpoints",
+      "quantity": "cutpoints",
+      "fixture": "ordinal_small",
+      "tolerance": 0.0001,
+      "kind": "point",
+      "r_call": "extract_cutpoints(fit_r)$tau_estimate",
+      "julia_call": "GLLVM.extract_cutpoints(fit_ord).\u03c4  # free cutpoints only (drop \u03c41=0)",
+      "notes": "",
+      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-CUTPOINTS"
+    }
+  ],
+  "deferred": [
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_Gamma",
+      "reason": "Julia surface extract_Gamma already exists (src/extract_gamma.jl, exported) and is independently tested (test/test_coevolution_*.jl), so this is NOT a missing-Julia-surface case. No proven R-parity fixture for a coevolution (fit_coevolution_gaussian-class) model exists anywhere in this repo's tools/ or test/parity/ (grep -rl fit_coevolution_gaussian test/*.jl test/parity/*.jl returns only pure-Julia test files, zero RCall/gllvmTMB coevolution fixtures). Constructing one from scratch (correct R make_cross_kernel-style formula + tree + kernel spec) without live R access to verify is out of scope for this batch; would need a follow-up slice with its own proven fixture."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_lv_effects",
+      "reason": "Julia surface exists (src/postfit.jl extract_lv_effects(fit::GllvmFit; type)) but requires a fit built with fit_gaussian_gllvm(...; X_lv=...) (a constrained-ordination predictor block) -- the gaussian_small fixture this batch reuses has no X_lv term, so extract_lv_effects(fit_g) would throw ArgumentError on the very fixture the rest of this batch shares. Pairing it against R's own X_lv-analogous route needs a distinct fixture; out of scope for this batch, flagged for a follow-up slice."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_phylo_signal",
+      "reason": "Julia surface exists (src/extractors.jl forwards to phylo_signal(fit::GllvmFit; \u03a3_phy)), but GLLVM.jl's route takes an externally-supplied \u03a3_phy on an ordinary GllvmFit while R's extract_phylo_signal() reads report$Sigma_phy off a genuine phylo_latent()/phylo_indep() structured fit -- the two are not the same model class. A numerically paired comparison needs a live R phylo formula fit on the SAME tree/Y as the Julia \u03a3_phy, which cannot be safely constructed and verified without R access in this session."
+    },
+    {
+      "source_id": "namespace/export/profile_ci_phylo_signal",
+      "reason": "Same phylo model-class mismatch as extract_phylo_signal above; profile_ci_phylo_signal additionally needs a working bracket-then-bisect profile over that same R phylo fit."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-profile_ci_phylo_signal",
+      "reason": "Same as namespace/export/profile_ci_phylo_signal (duplicate ledger row, same underlying surface)."
+    },
+    {
+      "source_id": "namespace/export/slope_sd_ci",
+      "reason": "Julia surface exists (src/confint_derived_wald.jl, slope_sd_ci on GaussianRandomSlopeFit), but the R oracle route (.unlazy/core070-aghq/oracle-source/readback/R/slope-sd-ci.R) is explicitly documented in its own header as having a prior hand-indexing failure mode ('a first attempt at the phylo route indexed theta_dep_chol entries 2/5/8 instead of the correct 2/4/6') and needs an ADREPORT-differentiated packed expression read off sd_report -- the exact R formula/grouping-factor grammar for the diagonal augmented-slope route (theta_diag_B_slope) that would pair with GLLVM.jl's per-group \u03a3_b random-slope fit is not something this batch could construct and verify without live R access."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-slope_sd_ci",
+      "reason": "Same as namespace/export/slope_sd_ci (duplicate ledger row, same underlying surface)."
+    }
+  ],
+  "fixtures": {
+    "gaussian_small": {
+      "description": "Single-tier Gaussian GllvmFit, reused verbatim from tools/core070_inference_remainder_batch.R (same seed/Lambda_true/sigma_true) so both that batch's own receipted evidence and this one rest on the identical canonical fixture.",
+      "p": 5,
+      "K": 2,
+      "n": 80,
+      "seed": 42,
+      "lambda_true": [
+        [
+          0.8,
+          0.0
+        ],
+        [
+          0.5,
+          0.6
+        ],
+        [
+          0.3,
+          -0.4
+        ],
+        [
+          -0.2,
+          0.5
+        ],
+        [
+          0.1,
+          0.3
+        ]
+      ],
+      "sigma_true": 0.7,
+      "r_formula": "value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE)",
+      "r_control": "gllvmTMBcontrol(n_init = 1L, se = TRUE)",
+      "julia_call": "fit_gaussian_gllvm(Y; K=K)"
+    },
+    "twolevel_small": {
+      "description": "Genuine two-tier repeatability fixture: between-individual (site) and within-individual (site_species) latent blocks, mirroring .unlazy/core070-aghq/oracle-source/readback/R/extract-repeatability.R's own @examples formula.",
+      "p": 4,
+      "n_individual": 30,
+      "reps_per_individual": 4,
+      "seed": 1,
+      "r_formula": "value ~ 0 + trait + latent(0 + trait | site, d = 1) + latent(0 + trait | site_species, d = 1)",
+      "julia_call": "fit_twolevel_gaussian(Y, individual; K_B=1, K_W=1)"
+    },
+    "ordinal_small": {
+      "description": "Proven ordinal-probit parity fixture, reused verbatim from test/parity/test_ordinal_probit_parity.jl (same seed/beta/Lambda/tau).",
+      "p": 5,
+      "K": 1,
+      "n": 60,
+      "C": 3,
+      "seed": 46,
+      "beta": [
+        0.3,
+        -0.2,
+        0.15,
+        -0.1,
+        0.05
+      ],
+      "lambda_true": [
+        0.8,
+        0.5,
+        0.3,
+        -0.2,
+        0.1
+      ],
+      "tau": [
+        0.0,
+        0.75
+      ],
+      "r_formula": "value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE)",
+      "r_family": "ordinal_probit()",
+      "julia_call": "fit_ordinal_gllvm_pertrait(Y; K=K, link=ProbitLink())"
+    }
+  },
+  "negative_controls": [
+    {
+      "case_id": "NEG-SURFCONV-BOGUS-QUANTITY",
+      "description": "A quantity key not present in the dispatcher's known-quantity table must be rejected before the tape (both R and Julia stages), never silently skipped."
+    },
+    {
+      "case_id": "NEG-SURFCONV-WRONG-FIXTURE",
+      "description": "A case citing a fixture key not in contract.fixtures must be rejected before the tape."
+    }
+  ],
+  "runner": {
+    "r_argv": [
+      "<frozen-library>",
+      "<destination>"
+    ],
+    "julia_env_var": "CORE070_SURFACE_CONVERSION_R_ORACLE",
+    "julia_argv": [
+      "<julia-results-output-path>"
+    ]
+  }
+}
