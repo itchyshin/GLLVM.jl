@@ -16865,3 +16865,12 @@ degenerate sigma2_phy ~1e-308 — an inference-semantics repair needing its own
 reviewed slice, NOT a 4am patch (changing that gate borders on gate-widening
 and needs a principled acceptance criterion). Full suite re-running with
 retained log; expected tally 11189/4/8.
+
+## 2026-09-01 — Final overnight suite: 11223/4/8, sole red = classified canary
+
+Full core suite on the lane at 22f42630 (retained log): 11223 passed, 4
+failed, 8 broken. The 4 failures are exactly test_phylo_poisson_xlv.jl:170-174
+(the diagnosed profile-CI ok-gate/NelderMead-flag defect awaiting its reviewed
+slice). The warm-start fix held; the night's ~40 new tests (boundary honesty,
+cross-objective known-answer + helpers, bridge gradient payload, optimizer
+health) all pass. Zero unexplained reds in the suite.
