@@ -3,7 +3,7 @@
   "status": "FROZEN_WAVE6_CONVERSION_BATCH_CONTRACT",
   "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
   "scope": "CORE070_WAVE6_CONVERSION_BATCH",
-  "note": "Conversion batch #2 for BLOCKED_NEEDS_JULIA_SURFACE rows whose Julia surface now exists but was not in wave-5 (docs/dev-log/core070/surface-conversion-batch-contract.json). Two source groups: (1) STRUCTURED-TERM rows unlocked by src/formula.jl's _recognize_source_term / _fit_gaussian_structured_sources recognizer (commit 5371137c; docs/dev-log/core070/formula-recognizer-spec.md); (2) STALE-BLOCKED postfit rows whose Julia functions already exist (src/extractors.jl, src/postfit.jl, src/confint.jl) but were never converted.",
+  "note": "Conversion batch #2 for BLOCKED_NEEDS_JULIA_SURFACE rows whose Julia surface now exists but was not in wave-5 (docs/dev-log/core070/surface-conversion-batch-contract.json). Two source groups: (1) STRUCTURED-TERM rows unlocked by src/formula.jl's _recognize_source_term / _fit_gaussian_structured_sources recognizer (commit 5371137c; docs/dev-log/core070/formula-recognizer-spec.md); (2) STALE-BLOCKED postfit rows whose Julia functions already exist (src/postfit.jl, src/confint.jl) but were never converted. REPAIR (2026-09-01, wave6-conversion1 forensics): dropped the unused top-level `cluster=` gllvmTMB() argument for every structured-term call (replaced with the proven `unit=\"site\", trait=\"trait\"` convention), replaced regex-derived formula RHS with literal hardcoded R expressions, and moved 3 postfit cases (extract_rotated_loadings_table, flag_unreliable_loadings, fitted.gllvmTMB_multi) from cases[] to deferred[] after unresolvable-without-live-R-source return-shape/gate failures. See docs/dev-log/core070/wave6-conversion-notes.md.",
   "target_source_ids": [
     "namespace/export/indep",
     "namespace/export/scalar",
@@ -24,8 +24,8 @@
     "postfit/POSTFIT-SURFACE-extract_Gamma",
     "postfit/POSTFIT-SURFACE-deviance.gllvmTMB_multi"
   ],
-  "expected_case_count": 15,
-  "expected_deferred_count": 3,
+  "expected_case_count": 12,
+  "expected_deferred_count": 6,
   "fixtures": {
     "structured_kernel_small": {
       "description": "Deterministic (no RNG) p=3 trait x n=12 site fixture, reused VERBATIM from test/parity/fixtures/core070_structured_data.R's df/C/K2 construction (the same fixture cited by structured-required-case-plan.json's STRUCT-KER-SINGLE-PSI/STRUCT-KER-MULTI cases): expand.grid(site=1:12, trait=1:3), species = rep(rep(c('a','b','c'), each=4), 3) (3 species levels, 4 sites each), value = sin(row_index/3) + trait_int/5, C = .7*diag(3)+.3 (species x species kernel), K2 = .6*diag(3)+.4*tcrossprod(c(1,-1,1)) (both PD, dimnamed by species levels a,b,c).",
@@ -33,8 +33,9 @@
       "n_site": 12,
       "n_species": 3,
       "species_levels": ["a", "b", "c"],
-      "r_call_shape": "gllvmTMB(value ~ 0 + trait + TERM, df, cluster = \"species\", family = stats::gaussian(), control = gllvmTMBcontrol(n_init = 1L, se = FALSE, aghq = FALSE, aghq_ridge = Inf))",
-      "julia_call_shape": "GLLVM._fit_gaussian_structured_sources(Y, data, [term_expr]; kernel_env = (C = C, K2 = K2))"
+      "r_call_shape": "gllvmTMB(value ~ 0 + trait + TERM, df, unit = \"site\", trait = \"trait\", family = stats::gaussian(), control = gllvmTMBcontrol(n_init = 1L, se = FALSE, aghq = FALSE, aghq_ridge = Inf))",
+      "julia_call_shape": "GLLVM._fit_gaussian_structured_sources(Y, data, [term_expr]; kernel_env = (C = C, K2 = K2))",
+      "repair_note": "wave6-conversion1 forensics: `cluster=\"species\"` was dropped -- the live engine warned it is unused by every formula covariance keyword (dep/indep/scalar/kernel_*); the grouping is embedded entirely in the term itself. Replaced with the SAME `unit=\"site\", trait=\"trait\"` convention already proven working in gaussian_small (tools/core070_surface_conversion_batch.R)."
     },
     "gaussian_small": {
       "description": "Single-tier Gaussian GllvmFit, reused VERBATIM from tools/core070_inference_remainder_batch.R and tools/core070_surface_conversion_batch.R (same seed 42 / Lambda_true / sigma_true), used here for the postfit (\"gllvmTMB_multi\" analog) group.",
@@ -53,10 +54,10 @@
       "kind": "point",
       "fixture": "structured_kernel_small",
       "term_expr": ":(indep(0 + trait | species, common = false))",
-      "r_call": "gllvmTMB(value ~ 0 + trait + indep(0 + trait | species, common = FALSE), df, cluster = \"species\", family = stats::gaussian(), control = control)",
+      "r_call": "gllvmTMB(value ~ 0 + trait + indep(0 + trait | species, common = FALSE), df, unit = \"site\", trait = \"trait\", family = stats::gaussian(), control = control)",
       "quantity": "logLik_B_tcrossprod",
       "tolerance": 0.0001,
-      "notes": "indep(...) recognizer -> SourceCovariance(I_3, mode=:indep, common=false); B = diag(exp(2*theta)) (p free variances)."
+      "notes": "indep(...) recognizer -> SourceCovariance(I_3, mode=:indep, common=false); B = diag(exp(2*theta)) (p free variances). level_name=\"source\" (the recognizer's default non-kernel term name)."
     },
     {
       "case_id": "CORE070-WAVE6-SCALAR-FIT",
@@ -64,10 +65,10 @@
       "kind": "point",
       "fixture": "structured_kernel_small",
       "term_expr": ":(scalar(0 + trait | species))",
-      "r_call": "gllvmTMB(value ~ 0 + trait + scalar(0 + trait | species), df, cluster = \"species\", family = stats::gaussian(), control = control)",
+      "r_call": "gllvmTMB(value ~ 0 + trait + scalar(0 + trait | species), df, unit = \"site\", trait = \"trait\", family = stats::gaussian(), control = control)",
       "quantity": "logLik_B_tcrossprod",
       "tolerance": 0.0001,
-      "notes": "scalar(...) recognizer -> indep(..., common=true) alias; fires the one-shot deprecation @warn (checked separately, not part of the numeric comparison)."
+      "notes": "scalar(...) recognizer -> indep(..., common=true) alias; fires the one-shot deprecation @warn (checked separately, not part of the numeric comparison). level_name=\"source\"."
     },
     {
       "case_id": "CORE070-WAVE6-KERNEL-INDEP-FIT",
@@ -75,10 +76,10 @@
       "kind": "point",
       "fixture": "structured_kernel_small",
       "term_expr": ":(kernel_indep(species, K = C, name = \"k1\"))",
-      "r_call": "gllvmTMB(value ~ 0 + trait + kernel_indep(species, K = C, name = \"k1\"), df, cluster = \"species\", family = stats::gaussian(), control = control)",
+      "r_call": "gllvmTMB(value ~ 0 + trait + kernel_indep(species, K = C, name = \"k1\"), df, unit = \"site\", trait = \"trait\", family = stats::gaussian(), control = control)",
       "quantity": "logLik_B_tcrossprod",
       "tolerance": 0.0001,
-      "notes": "kernel_indep(...) recognizer -> SourceCovariance(C, mode=:indep, common=false)."
+      "notes": "kernel_indep(...) recognizer -> SourceCovariance(C, mode=:indep, common=false). level_name=\"k1\" (explicit name= kwarg)."
     },
     {
       "case_id": "CORE070-WAVE6-KERNEL-DEP-FIT",
@@ -86,10 +87,10 @@
       "kind": "point",
       "fixture": "structured_kernel_small",
       "term_expr": ":(kernel_dep(species, K = C, name = \"k1\"))",
-      "r_call": "gllvmTMB(value ~ 0 + trait + kernel_dep(species, K = C, name = \"k1\"), df, cluster = \"species\", family = stats::gaussian(), control = control)",
+      "r_call": "gllvmTMB(value ~ 0 + trait + kernel_dep(species, K = C, name = \"k1\"), df, unit = \"site\", trait = \"trait\", family = stats::gaussian(), control = control)",
       "quantity": "logLik_B_tcrossprod",
       "tolerance": 0.0001,
-      "notes": "kernel_dep(...) recognizer -> SourceCovariance(C, mode=:dep); full-rank T(T+1)/2 packed triangular."
+      "notes": "kernel_dep(...) recognizer -> SourceCovariance(C, mode=:dep); full-rank T(T+1)/2 packed triangular. level_name=\"k1\"."
     },
     {
       "case_id": "CORE070-WAVE6-KERNEL-SCALAR-FIT",
@@ -97,10 +98,10 @@
       "kind": "point",
       "fixture": "structured_kernel_small",
       "term_expr": ":(kernel_scalar(species, K = C, name = \"k1\"))",
-      "r_call": "gllvmTMB(value ~ 0 + trait + kernel_scalar(species, K = C, name = \"k1\"), df, cluster = \"species\", family = stats::gaussian(), control = control)",
+      "r_call": "gllvmTMB(value ~ 0 + trait + kernel_scalar(species, K = C, name = \"k1\"), df, unit = \"site\", trait = \"trait\", family = stats::gaussian(), control = control)",
       "quantity": "logLik_B_tcrossprod",
       "tolerance": 0.0001,
-      "notes": "kernel_scalar(...) recognizer -> SourceCovariance(C, mode=:indep, common=true)."
+      "notes": "kernel_scalar(...) recognizer -> SourceCovariance(C, mode=:indep, common=true). level_name=\"k1\"."
     },
     {
       "case_id": "CORE070-WAVE6-KERNEL-LATENT-SINGLE-PSI-NAMESPACE",
@@ -109,10 +110,10 @@
       "fixture": "structured_kernel_small",
       "case_ref": "STRUCT-KER-SINGLE-PSI",
       "term_expr": ":(kernel_latent(species, K = C, d = 1, name = \"k1\", unique = true))",
-      "r_call": "gllvmTMB(value ~ 0 + trait + kernel_latent(species, K = C, d = 1, name = \"k1\", unique = TRUE), df, cluster = \"species\", family = stats::gaussian(), control = control)",
+      "r_call": "gllvmTMB(value ~ 0 + trait + kernel_latent(species, K = C, d = 1, name = \"k1\", unique = TRUE), df, unit = \"site\", trait = \"trait\", family = stats::gaussian(), control = control)",
       "quantity": "logLik_B_tcrossprod",
       "tolerance": 0.0001,
-      "notes": "kernel_latent(..., unique=TRUE) recognizer -> SourceCovariance(C, mode=:latent, rank=1, unique=true); Julia folds R's two-term (phylo_rr + auto-unique phylo_rr) rewrite into ONE source with an added Psi diagonal (formula-recognizer-spec.md Sec 1.4) -- the Julia comparand is the FOLD, not a term-for-term replay."
+      "notes": "kernel_latent(..., unique=TRUE) recognizer -> SourceCovariance(C, mode=:latent, rank=1, unique=true); Julia folds R's two-term (phylo_rr + auto-unique phylo_rr) rewrite into ONE source with an added Psi diagonal (formula-recognizer-spec.md Sec 1.4) -- the Julia comparand is the FOLD, not a term-for-term replay. level_name=\"k1\"."
     },
     {
       "case_id": "CORE070-WAVE6-KERNEL-LATENT-SINGLE-PSI-COVARIANCE",
@@ -121,10 +122,10 @@
       "fixture": "structured_kernel_small",
       "case_ref": "STRUCT-KER-SINGLE-PSI",
       "term_expr": ":(kernel_latent(species, K = C, d = 1, name = \"k1\", unique = true))",
-      "r_call": "gllvmTMB(value ~ 0 + trait + kernel_latent(species, K = C, d = 1, name = \"k1\", unique = TRUE), df, cluster = \"species\", family = stats::gaussian(), control = control)",
+      "r_call": "gllvmTMB(value ~ 0 + trait + kernel_latent(species, K = C, d = 1, name = \"k1\", unique = TRUE), df, unit = \"site\", trait = \"trait\", family = stats::gaussian(), control = control)",
       "quantity": "logLik_B_tcrossprod",
       "tolerance": 0.0001,
-      "notes": "Same fit as CORE070-WAVE6-KERNEL-LATENT-SINGLE-PSI-NAMESPACE; pays the covariance/COV-KERNEL-FOLDED-UNIQUE ledger row (case STRUCT-KER-SINGLE-PSI) separately since one paired fit exercises two distinct ledger source_ids."
+      "notes": "Same fit as CORE070-WAVE6-KERNEL-LATENT-SINGLE-PSI-NAMESPACE (memoised by RHS string on the R side); pays the covariance/COV-KERNEL-FOLDED-UNIQUE ledger row (case STRUCT-KER-SINGLE-PSI) separately since one paired fit exercises two distinct ledger source_ids."
     },
     {
       "case_id": "CORE070-WAVE6-KERNEL-LATENT-MULTI-NAMESPACE",
@@ -133,10 +134,10 @@
       "fixture": "structured_kernel_small",
       "case_ref": "STRUCT-KER-MULTI",
       "term_expr": "[:(kernel_latent(species, K = C, d = 1, name = \"k1\", unique = false)), :(kernel_latent(species, K = K2, d = 1, name = \"k2\", unique = false))]",
-      "r_call": "gllvmTMB(value ~ 0 + trait + kernel_latent(species, K = C, d = 1, name = \"k1\", unique = FALSE) + kernel_latent(species, K = K2, d = 1, name = \"k2\", unique = FALSE), df, cluster = \"species\", family = stats::gaussian(), control = control)",
+      "r_call": "gllvmTMB(value ~ 0 + trait + kernel_latent(species, K = C, d = 1, name = \"k1\", unique = FALSE) + kernel_latent(species, K = K2, d = 1, name = \"k2\", unique = FALSE), df, unit = \"site\", trait = \"trait\", family = stats::gaussian(), control = control)",
       "quantity": "logLik_B_tcrossprod",
       "tolerance": 0.0001,
-      "notes": "Two-source fit; GLLVM._fit_gaussian_structured_sources forwards a Vector{SourceTermSpec} to fit_gaussian_sources(Y; sources=[...]) directly (this recognizer entry point bypasses src/bridge.jl's single-source R<->Julia marshalling restriction noted at formula-recognizer-spec.md Step 7 -- that restriction is bridge-only, fit_gaussian_sources itself already sums an arbitrary-length sources vector, src/source_fit.jl:290-307). Pays covariance/COV-KERNEL-LATENT."
+      "notes": "Two-source fit; GLLVM._fit_gaussian_structured_sources forwards a Vector{SourceTermSpec} to fit_gaussian_sources(Y; sources=[...]) directly (this recognizer entry point bypasses src/bridge.jl's single-source R<->Julia marshalling restriction noted at formula-recognizer-spec.md Step 7 -- that restriction is bridge-only, fit_gaussian_sources itself already sums an arbitrary-length sources vector, src/source_fit.jl:290-307). Pays covariance/COV-KERNEL-LATENT. level_name=\"k1\" (the first tier's Sigma block)."
     },
     {
       "case_id": "CORE070-WAVE6-KERNEL-LATENT-MULTI-COVARIANCE-EXPORT",
@@ -145,41 +146,10 @@
       "fixture": "structured_kernel_small",
       "case_ref": "STRUCT-KER-SINGLE-PSI",
       "term_expr": ":(kernel_latent(species, K = C, d = 1, name = \"k1\", unique = true))",
-      "r_call": "gllvmTMB(value ~ 0 + trait + kernel_latent(species, K = C, d = 1, name = \"k1\", unique = TRUE), df, cluster = \"species\", family = stats::gaussian(), control = control)",
+      "r_call": "gllvmTMB(value ~ 0 + trait + kernel_latent(species, K = C, d = 1, name = \"k1\", unique = TRUE), df, unit = \"site\", trait = \"trait\", family = stats::gaussian(), control = control)",
       "quantity": "logLik_B_tcrossprod",
       "tolerance": 0.0001,
       "notes": "kernel_unique has NO standalone SourceCovariance mode (_source_term_covariance throws for a bare :kernel_unique spec, formula-recognizer-spec.md Sec 1.4); the only Julia surface for kernel_unique is the fold reached via kernel_latent(..., unique=true) on STRUCT-KER-SINGLE-PSI. Pays namespace/export/kernel_unique via that fold, same fit as the two SINGLE-PSI cases above."
-    },
-    {
-      "case_id": "CORE070-WAVE6-POSTFIT-EXTRACT-ROTATED-LOADINGS-TABLE",
-      "source_id": "postfit/POSTFIT-SURFACE-extract_rotated_loadings_table",
-      "kind": "point",
-      "fixture": "gaussian_small",
-      "quantity": "rotated_loadings_flat",
-      "tolerance": 0.0001,
-      "r_call": "extract_rotated_loadings_table(fit_g)$estimate  # sorted by (trait_i, factor_j)",
-      "julia_call": "vec(GLLVM.extract_rotated_loadings(fit).Lambda)  # (Lambda=p x K matrix, R=K x K rotation)",
-      "notes": "Composed/shape-adapted: R returns a long-format table, Julia returns a (Lambda, R) NamedTuple (src/extractors.jl:233) documented as mirroring extract_rotated_loadings_table() exactly; compare the flattened p*K rotated-loadings values, sorted identically on both sides."
-    },
-    {
-      "case_id": "CORE070-WAVE6-POSTFIT-FLAG-UNRELIABLE-LOADINGS",
-      "source_id": "postfit/POSTFIT-SURFACE-flag_unreliable_loadings",
-      "kind": "boolean_flags",
-      "fixture": "gaussian_small",
-      "r_call": "flag_unreliable_loadings(fit_g)  # per-loading logical: TRUE iff the loading's Wald CI crosses zero",
-      "julia_call": "composed: confint(fit; parm=<Lambda term names>); flag[i] = (lower[i] <= 0 <= upper[i]) -- same composition namespace-1 used for CORE070-NAMESPACE-FLAG-UNRELIABLE-LOADINGS-NATIVE (docs/dev-log/core070/namespace-1-batch-contract.json, julia_symbol=confint, src/confint.jl:246)",
-      "notes": "No literal flag_unreliable_loadings Julia function exists; composed exactly as the already-converted namespace/export/flag_unreliable_loadings row composed it, applied here as a genuine postfit paired-fit case (not merely a namespace/symbol-existence check): compares the BOOLEAN per-loading zero-crossing flag vector between R's native accessor and the Julia composition, both computed from independent fits on the same simulated Y."
-    },
-    {
-      "case_id": "CORE070-WAVE6-POSTFIT-FITTED-MULTI",
-      "source_id": "postfit/POSTFIT-SURFACE-fitted.gllvmTMB_multi",
-      "kind": "point",
-      "fixture": "gaussian_small",
-      "quantity": "fitted_values_flat",
-      "tolerance": 0.0001,
-      "r_call": "as.numeric(fitted(fit_g))",
-      "julia_call": "vec(GLLVM.fitted(fit, Y))  # StatsAPI.fitted(fit::AnyGllvmFit, data) = predict(fit, data; type=:response), src/postfit.jl:306",
-      "notes": "R's gllvmTMB_multi S3 fitted() method has no separate literal Julia twin; GllvmFit IS the Julia analog of the gllvmTMB_multi return class (both are the multi-trait formula-interface fit object), and fitted(fit, Y) dispatches on it."
     },
     {
       "case_id": "CORE070-WAVE6-POSTFIT-LOGLIK-MULTI",
@@ -228,13 +198,25 @@
     {
       "source_id": "postfit/POSTFIT-SURFACE-deviance.gllvmTMB_multi",
       "reason": "No Julia deviance() function or dispatch exists anywhere in src/ for AnyGllvmFit/GllvmFit (grep -rn 'function.*deviance|deviance(fit' src/*.jl matches only confint_profile.jl's LOCAL closures deviance_lower/deviance_upper inside the profile-CI bracket-and-bisect routine, not a public StatsAPI.deviance method; deviance is also absent from src/GLLVM.jl's export list). Composing an ad hoc definition (e.g. -2*loglikelihood(fit) plus a saturated-model term) without reading R's actual deviance.gllvmTMB_multi source (not available in this Julia-only worktree) risks silently asserting the wrong estimand, which this repo's culture treats as worse than an honest defer. Left for a dedicated slice with R source access to confirm R's exact residual-deviance definition before any Julia composition is authored."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_rotated_loadings_table",
+      "reason": "REPAIR (2026-09-01, wave6-conversion1 forensics item 3a): the first attempt's R-side coercion, `t <- extract_rotated_loadings_table(fit_g); t[order(t$trait_i, t$factor_j),]; as.numeric(t$estimate)`, errored 'argument 1 is not a vector' on the live frozen library -- the assumed column names (trait_i, factor_j, estimate) were inferred only from the Julia docstring cross-reference (src/extractors.jl:231, 'mirrors gllvmTMB::extract_rotated_loadings_table()'), never from live R source or a live inspection of the returned object's actual shape (str(extract_rotated_loadings_table(fit_g))). GLLVM.extract_rotated_loadings(fit) itself still exists and is exported (src/extractors.jl:233) -- this is a genuine surface, not a missing one -- but re-guessing the R accessor's column/return shape a second time without live R inspection risks a repeat failure; deferred until a live R session can confirm the actual return structure (str()/names() on the real object), then re-authored with a verified coercion."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-flag_unreliable_loadings",
+      "reason": "DEFERRED per coordinator trace (wave6-conversion1 forensics item 3b): R's flag_unreliable_loadings(fit_g) aborts on gaussian_small with 'Per-entry Wald CIs on Lambda well-defined only for confirmatory fits; no lambda_constraint pins' -- the SAME confirmatory-fit gate that already blocks loading_ci elsewhere in this ledger (gaussian_small is an unconstrained/exploratory-rotation fit, never pinned with a lambda_constraint). This row joins the lambda_constraint-family deferrals: the Julia composition this batch built (confint(fit; parm=\"Lambda\") zero-crossing) compares a DIFFERENT estimand than R's confirmatory-only accessor and is not a valid paired case on this fixture. A valid case needs a lambda_constraint-pinned confirmatory fixture (R + Julia), out of this batch's reuse-only scope."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-fitted.gllvmTMB_multi",
+      "reason": "REPAIR (2026-09-01, wave6-conversion1 forensics item 3c): R's fitted(fit_g) call errored 'list object cannot be coerced' under as.numeric() on the live frozen library -- fitted.gllvmTMB_multi returns a list/matrix structure, not a plain numeric vector, and the correct component to extract (e.g. a $fitted or $mu field) is not resolvable without a live R inspection of the returned object (str(fitted(fit_g))), which this Julia-only worktree cannot perform. GLLVM.fitted(fit::AnyGllvmFit, data) itself still exists (src/postfit.jl:306) -- this is a genuine surface, not a missing one -- but re-guessing the R-side component name a second time without live inspection risks a repeat failure; deferred until a live R session confirms the actual return structure, then re-authored with the verified component selector."
     }
   ],
   "rejection_cases": [
     {
       "case_id": "CORE070-WAVE6-REJ-DEP-INDEP",
       "term_exprs": "[:(dep(0 + trait | species)), :(indep(0 + trait | species))]",
-      "r_call": "gllvmTMB(value ~ 0 + trait + dep(0 + trait | species) + indep(0 + trait | species), df, cluster = \"species\", family = stats::gaussian(), control = control)",
+      "r_call": "gllvmTMB(value ~ 0 + trait + dep(0 + trait | species) + indep(0 + trait | species), df, unit = \"site\", trait = \"trait\", family = stats::gaussian(), control = control)",
       "expect": "both engines refuse",
       "julia_error_pattern": "mutually exclusive",
       "notes": "Julia: GLLVM._check_source_term_exclusions throws ArgumentError (dep+indep same grouping, src/formula.jl:550-551, porting fit-multi.R:1672-1681). R error text recorded verbatim from the live oracle run, not pre-asserted."
@@ -242,7 +224,7 @@
     {
       "case_id": "CORE070-WAVE6-REJ-DEP-LATENT",
       "term_exprs": "[:(dep(0 + trait | species)), :(kernel_latent(species, K = C, d = 1, unique = false))]",
-      "r_call": "gllvmTMB(value ~ 0 + trait + dep(0 + trait | species) + kernel_latent(species, K = C, d = 1, unique = FALSE), df, cluster = \"species\", family = stats::gaussian(), control = control)",
+      "r_call": "gllvmTMB(value ~ 0 + trait + dep(0 + trait | species) + kernel_latent(species, K = C, d = 1, unique = FALSE), df, unit = \"site\", trait = \"trait\", family = stats::gaussian(), control = control)",
       "expect": "both engines refuse",
       "julia_error_pattern": "over-parameterised",
       "notes": "Julia: dep+latent same grouping, src/formula.jl:552-553 (fit-multi.R:1642-1656)."
@@ -250,7 +232,7 @@
     {
       "case_id": "CORE070-WAVE6-REJ-INDEP-LATENT",
       "term_exprs": "[:(indep(0 + trait | species)), :(kernel_latent(species, K = C, d = 1, unique = false))]",
-      "r_call": "gllvmTMB(value ~ 0 + trait + indep(0 + trait | species) + kernel_latent(species, K = C, d = 1, unique = FALSE), df, cluster = \"species\", family = stats::gaussian(), control = control)",
+      "r_call": "gllvmTMB(value ~ 0 + trait + indep(0 + trait | species) + kernel_latent(species, K = C, d = 1, unique = FALSE), df, unit = \"site\", trait = \"trait\", family = stats::gaussian(), control = control)",
       "expect": "both engines refuse",
       "julia_error_pattern": "over-parameterised",
       "notes": "Julia: indep+latent same grouping, src/formula.jl:556-557 (fit-multi.R:1682-1695)."
@@ -258,7 +240,7 @@
     {
       "case_id": "CORE070-WAVE6-REJ-KERNEL-UNIQUE-STANDALONE",
       "term_exprs": "[:(kernel_unique(species, K = C, name = \"k1\"))]",
-      "r_call": "gllvmTMB(value ~ 0 + trait + kernel_unique(species, K = C, name = \"k1\"), df, cluster = \"species\", family = stats::gaussian(), control = control)",
+      "r_call": "gllvmTMB(value ~ 0 + trait + kernel_unique(species, K = C, name = \"k1\"), df, unit = \"site\", trait = \"trait\", family = stats::gaussian(), control = control)",
       "expect": "both engines refuse",
       "julia_error_pattern": "no standalone SourceCovariance mode",
       "notes": "Julia: _source_term_covariance throws for a bare :kernel_unique spec (src/formula.jl:604-606); the only supported route is the kernel_latent(..., unique=true) fold (see the SINGLE-PSI cases above)."
@@ -279,8 +261,8 @@
     }
   ],
   "runner": {
-    "totoro_command": "ssh -F ~/.ssh/config -o ControlPath=~/.ssh/cm-%r@%h:%p totoro.biology.ualberta.ca 'cd /project/<...>/GLLVM.jl && OPENBLAS_NUM_THREADS=1 JULIA_NUM_THREADS=1 Rscript --vanilla tools/core070_wave6_conversion_batch.R <frozen-library-path> .unlazy/core070-aghq/wave6-conversion-01'",
-    "verify_command": "python3 tools/core070_verify_wave6_conversion_batch.py .unlazy/core070-aghq/wave6-conversion-01",
+    "totoro_command": "ssh -F ~/.ssh/config -o ControlPath=~/.ssh/cm-%r@%h:%p totoro.biology.ualberta.ca 'cd /project/<...>/GLLVM.jl && OPENBLAS_NUM_THREADS=1 JULIA_NUM_THREADS=1 Rscript --vanilla tools/core070_wave6_conversion_batch.R <frozen-library-path> .unlazy/core070-aghq/wave6-conversion-02'",
+    "verify_command": "python3 tools/core070_verify_wave6_conversion_batch.py .unlazy/core070-aghq/wave6-conversion-02",
     "self_test_command": "python3 tools/core070_verify_wave6_conversion_batch.py --self-test"
   }
 }

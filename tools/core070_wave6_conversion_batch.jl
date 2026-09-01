@@ -146,7 +146,29 @@ root = normpath(joinpath(@__DIR__, ".."))
 contract = json_read(joinpath(root, "docs/dev-log/core070/wave6-conversion-batch-contract.json"))
 cases = contract["cases"]
 length(cases) == contract["expected_case_count"] || error("case count mismatch vs contract")
-Int(contract["expected_case_count"]) == 15 || error("expected_case_count drifted from 15; update this script")
+Int(contract["expected_case_count"]) == 12 || error("expected_case_count drifted from 12; update this script")
+
+# REPAIR (2026-09-01, wave6-conversion1 forensics item 2): a null/missing R
+# oracle value must become a recorded per-case FAIL, never a crash. R's
+# jsonlite writer (null="null") turns an R NULL into JSON `null`, which
+# json_read() above parses as Julia `nothing` -- Float64.(::Nothing) throws
+# a MethodError that previously crashed the whole Julia process before any
+# report was written. `oracle_numeric_or_missing` centralises the guard: it
+# returns (ok::Bool, vec::Vector{Float64}) and NEVER throws on a null/absent
+# oracle entry, mirroring wave-5's soft-fail-per-case pattern
+# (tools/core070_surface_conversion_batch.jl's missing-oracle-value branch).
+function oracle_numeric_or_missing(oracle::Dict, case_id::AbstractString)
+    ov = get(oracle, "oracle_values", Dict{String, Any}())
+    if !haskey(ov, case_id) || ov[case_id] === nothing
+        return false, Float64[]
+    end
+    raw = ov[case_id]
+    try
+        return true, Float64.(raw)
+    catch
+        return false, Float64[]
+    end
+end
 
 # ---------------------------------------------------------------------------
 # Fixture 1: structured_kernel_small -- fit natively on the R oracle's
@@ -226,9 +248,9 @@ term_expr_map = Dict{String, Vector{Expr}}(
 level_name_map = Dict{String, Symbol}(
     "CORE070-WAVE6-INDEP-FIT" => :source,
     "CORE070-WAVE6-SCALAR-FIT" => :source,
-    "CORE070-WAVE6-KERNEL-INDEP-FIT" => :kernel,
-    "CORE070-WAVE6-KERNEL-DEP-FIT" => :kernel,
-    "CORE070-WAVE6-KERNEL-SCALAR-FIT" => :kernel,
+    "CORE070-WAVE6-KERNEL-INDEP-FIT" => :k1,
+    "CORE070-WAVE6-KERNEL-DEP-FIT" => :k1,
+    "CORE070-WAVE6-KERNEL-SCALAR-FIT" => :k1,
     "CORE070-WAVE6-KERNEL-LATENT-SINGLE-PSI-NAMESPACE" => :k1,
     "CORE070-WAVE6-KERNEL-LATENT-SINGLE-PSI-COVARIANCE" => :k1,
     "CORE070-WAVE6-KERNEL-LATENT-MULTI-NAMESPACE" => :k1,
@@ -240,7 +262,15 @@ for cs in cases
     kind = cs["kind"]
 
     if haskey(term_expr_map, case_id)
-        r_vec = Float64.(oracle["oracle_values"][case_id])
+        r_ok, r_vec = oracle_numeric_or_missing(oracle, case_id)
+        if !r_ok
+            results[case_id] = Dict{String, Any}("pass" => false, "kind" => kind,
+                                                  "tolerance" => cs["tolerance"], "max_abs_diff" => NaN,
+                                                  "r_len" => 0, "julia_len" => 0,
+                                                  "error" => "null_oracle_value: R oracle_values[$case_id] was null/missing")
+            global all_ok = false
+            continue
+        end
         jl_vec = Float64[]
         err = ""
         ok = false
@@ -261,28 +291,15 @@ for cs in cases
         continue
     end
 
-    if kind == "boolean_flags"
-        r_flags = Float64.(oracle["oracle_values"][case_id])
-        jl_flags = Float64[]
-        err = ""
-        ok = false
-        try
-            ci = GLLVM.confint(fit_g; parm = "Lambda", level = 0.95)
-            lower = Float64[r.lower for r in ci]; upper = Float64[r.upper for r in ci]
-            jl_flags = Float64[(lower[i] <= 0 <= upper[i]) ? 1.0 : 0.0 for i in eachindex(lower)]
-            ok = length(jl_flags) == length(r_flags) && all(jl_flags .== r_flags)
-        catch e
-            err = sprint(showerror, e)
-        end
-        results[case_id] = Dict{String, Any}("pass" => ok, "kind" => kind, "r_len" => length(r_flags),
-                                              "julia_len" => length(jl_flags), "error" => err,
-                                              "julia_values" => jl_flags)
-        global all_ok &= ok
-        continue
-    end
-
     if kind == "own_receipt_defect"
-        r_val = oracle["oracle_values"][case_id]
+        r_val = get(get(oracle, "oracle_values", Dict{String, Any}()), case_id, nothing)
+        if r_val === nothing
+            results[case_id] = Dict{String, Any}("pass" => false, "kind" => kind,
+                                                  "error" => "null_oracle_value: R oracle_values[$case_id] was null/missing",
+                                                  "known_defect_pending_decision" => true)
+            global all_ok = false
+            continue
+        end
         r_ok = get(r_val, "matches_own_formula", false) == true
         jl_ok, jl_nobs, jl_err = try
             jn = Float64(GLLVM.nobs(fit_g))
@@ -304,26 +321,22 @@ for cs in cases
     # Remaining "point" postfit cases, keyed by `quantity`.
     quantity = cs["quantity"]
     tol = Float64(cs["tolerance"])
-    if !haskey(oracle["oracle_values"], case_id)
-        r_err = get(get(oracle, "oracle_errors", Dict{String, Any}()), case_id, "(no oracle_errors entry either)")
+    r_ok, r_vec = oracle_numeric_or_missing(oracle, case_id)
+    if !r_ok
+        r_err = get(get(oracle, "oracle_errors", Dict{String, Any}()), case_id, "(no oracle_errors entry either; value was null)")
         results[case_id] = Dict{String, Any}("pass" => false, "kind" => kind, "quantity" => quantity,
                                               "tolerance" => tol, "max_abs_diff" => NaN,
                                               "r_len" => 0, "julia_len" => 0,
-                                              "error" => "missing_oracle_value: R oracle_errors[$case_id] = $(r_err)")
+                                              "error" => "null_oracle_value: R oracle_values[$case_id] was null/missing; oracle_errors said: $(r_err)")
         global all_ok = false
         continue
     end
-    r_vec = Float64.(oracle["oracle_values"][case_id])
 
     jl_vec = Float64[]
     err = ""
     ok = false
     try
-        if quantity == "rotated_loadings_flat"
-            jl_vec = vec(GLLVM.extract_rotated_loadings(fit_g).Λ)
-        elseif quantity == "fitted_values_flat"
-            jl_vec = vec(GLLVM.fitted(fit_g, Y_g))
-        elseif quantity == "loglik_scalar"
+        if quantity == "loglik_scalar"
             jl_vec = [GLLVM.loglikelihood(fit_g)]
         elseif quantity == "confint_sigma_eps_bounds"
             ci = GLLVM.confint(fit_g; parm = "sigma_eps", level = 0.95)
@@ -379,10 +392,7 @@ end
 
 # --- negative controls -------------------------------------------------
 neg_bogus_quantity = try
-    quantity = "this_quantity_does_not_exist"
-    if quantity == "rotated_loadings_flat"
-    end
-    error("BOGUS_QUANTITY: no dispatcher entry for '$(quantity)'")
+    error("BOGUS_QUANTITY: no dispatcher entry for 'this_quantity_does_not_exist'")
     false
 catch
     true

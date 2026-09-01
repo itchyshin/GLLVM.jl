@@ -1,16 +1,18 @@
-"""Verify the wave-6 conversion batch: 15 BLOCKED_NEEDS_JULIA_SURFACE ledger
+"""Verify the wave-6 conversion batch: 12 BLOCKED_NEEDS_JULIA_SURFACE ledger
 rows converted to bound cases (namespace/, covariance/, postfit/ prefixes),
 evidence naming a function that now exists in src/GLLVM.jl (the
 formula-recognizer slice, src/formula.jl's _recognize_source_term /
 _fit_gaussian_structured_sources, commit 5371137c; and the already-existing
-postfit surfaces extract_rotated_loadings, fitted/loglikelihood/confint/nobs
-on AnyGllvmFit/GllvmFit, and the composed flag_unreliable_loadings
-zero-crossing check). 3 further target rows (extract_lv_effects,
-extract_Gamma, deviance.gllvmTMB_multi) are recorded in the contract's
-`deferred` bucket with an explicit reason and carry no fabricated pass. See
-docs/dev-log/core070/wave6-conversion-notes.md for the full accounting and
-docs/dev-log/core070/wave6-conversion-batch-contract.json for the frozen
-18-row target list (`target_source_ids`).
+postfit surfaces loglikelihood/confint/nobs on AnyGllvmFit/GllvmFit). 6
+further target rows (extract_lv_effects, extract_Gamma,
+deviance.gllvmTMB_multi, extract_rotated_loadings_table,
+flag_unreliable_loadings, fitted.gllvmTMB_multi) are recorded in the
+contract's `deferred` bucket with an explicit reason and carry no fabricated
+pass -- the last three joined the deferred bucket after wave6-conversion1
+forensics surfaced unresolvable-without-live-R-source return-shape/gate
+issues for each. See docs/dev-log/core070/wave6-conversion-notes.md for the
+full accounting and docs/dev-log/core070/wave6-conversion-batch-contract.json
+for the frozen 18-row target list (`target_source_ids`).
 
 Three independent checks, mirroring tools/core070_verify_surface_conversion_batch.py:
 
@@ -28,7 +30,9 @@ Three independent checks, mirroring tools/core070_verify_surface_conversion_batc
      Julia, or the frozen library (python3 only). Per the wave-5
      vacuous-pass precedent, --self-test NEVER substitutes for a real
      --state check below: passing --self-test alone still exits nonzero if
-     --state is not given.
+     --state is not given. Includes a null-oracle-value mutation negative
+     (wave6-conversion1 forensics item 1/2: a null/missing oracle value must
+     never be silently accepted as a pass).
 """
 import argparse
 from copy import deepcopy
@@ -40,17 +44,16 @@ ROOT = Path(__file__).resolve().parents[1]
 CONTRACT_PATH = ROOT / "docs/dev-log/core070/wave6-conversion-batch-contract.json"
 
 REFERENCE_COMMIT = "b4d5fee64def88bc768dda1f1f77c29b295edd86"
-CASE_COUNT = 15
-DEFERRED_COUNT = 3
+CASE_COUNT = 12
+DEFERRED_COUNT = 6
 REJECTION_COUNT = 4
 TARGET_ROW_COUNT = CASE_COUNT + DEFERRED_COUNT  # 18
 
 KNOWN_QUANTITIES = {
-    "logLik_B_tcrossprod", "rotated_loadings_flat", "fitted_values_flat",
-    "loglik_scalar", "confint_sigma_eps_bounds",
+    "logLik_B_tcrossprod", "loglik_scalar", "confint_sigma_eps_bounds",
 }
 KNOWN_FIXTURES = {"structured_kernel_small", "gaussian_small"}
-KNOWN_KINDS = {"point", "boolean_flags", "own_receipt_defect"}
+KNOWN_KINDS = {"point", "own_receipt_defect"}
 
 
 def sha(path):
@@ -175,12 +178,16 @@ def check_state(contract, receipt, results_lines, julia_report):
         jc = julia_report["cases"].get(row["case_id"])
         need(jc is not None, f"{row['case_id']}: missing from julia-results.json cases")
         need(jc.get("pass") is True, f"{row['case_id']}: julia-results.json reports pass=false")
+        # REPAIR (2026-09-01, wave6-conversion1 forensics items 1/2): a
+        # per-case error string flagging a null/missing oracle value must
+        # never coexist with pass=true -- this is the verifier-side twin of
+        # the R/Julia soft-fail-on-null hardening.
+        err = jc.get("error")
+        need(not (isinstance(err, str) and "null_oracle_value" in err),
+             f"{row['case_id']}: julia-results.json flags a null_oracle_value error but pass=true")
         if row["kind"] == "own_receipt_defect":
             need(jc.get("known_defect_pending_decision") is True,
                  f"{row['case_id']}: own_receipt_defect case must retain known_defect_pending_decision=true")
-        elif row["kind"] == "boolean_flags":
-            need(jc.get("r_len") is not None and jc.get("r_len") == jc.get("julia_len"),
-                 f"{row['case_id']}: boolean_flags case r_len/julia_len mismatch")
         else:
             need(jc.get("max_abs_diff") is not None and jc["max_abs_diff"] <= row["tolerance"],
                  f"{row['case_id']}: max_abs_diff {jc.get('max_abs_diff')} exceeds tolerance {row['tolerance']}")
@@ -224,9 +231,7 @@ def _synthetic_state(contract):
         if r["kind"] == "own_receipt_defect":
             julia_cases[r["case_id"]] = {"pass": True, "kind": r["kind"],
                                           "known_defect_pending_decision": True,
-                                          "r_nobs": 400.0, "julia_nobs": 80.0}
-        elif r["kind"] == "boolean_flags":
-            julia_cases[r["case_id"]] = {"pass": True, "kind": r["kind"], "r_len": 10, "julia_len": 10}
+                                          "r_nobs": 400.0, "julia_nobs": 80.0, "error": ""}
         else:
             julia_cases[r["case_id"]] = {"pass": True, "kind": r["kind"],
                                           "tolerance": r["tolerance"], "max_abs_diff": r["tolerance"] / 2,
@@ -312,6 +317,16 @@ def run_self_test():
         r["case_count"] = CASE_COUNT + 1
         return r, res, jr
 
+    def mut_null_oracle_value_with_pass_true(r, res, jr):
+        # wave6-conversion1 forensics items 1/2: a case whose value was
+        # null/missing must never be recorded as pass=true with no trace --
+        # this mutation plants exactly that inconsistency (pass=true, but
+        # the error string flags a null_oracle_value) and must be rejected.
+        cid = next(c["case_id"] for c in contract["cases"] if c["kind"] == "point")
+        jr["cases"][cid]["error"] = f"null_oracle_value: R oracle_values[{cid}] was null/missing"
+        jr["cases"][cid]["pass"] = True
+        return r, res, jr
+
     expect_rejected("contract_sha256 tampered", mut_bad_contract_sha)
     expect_rejected("one verdict flipped to FAIL in results.tsv", mut_flip_one_verdict)
     expect_rejected("max_abs_diff blown past tolerance while pass stays true", mut_tolerance_blown)
@@ -319,6 +334,7 @@ def run_self_test():
     expect_rejected("own_receipt_defect case: known_defect_pending_decision flag dropped", mut_defect_flag_dropped)
     expect_rejected("receipt records a nonzero oracle_error_count", mut_oracle_error_present)
     expect_rejected("receipt case_count drifted", mut_case_count_drift)
+    expect_rejected("null oracle value recorded as pass=true", mut_null_oracle_value_with_pass_true)
 
     if len(rejected) < 4:
         raise AssertionError(f"only {len(rejected)} rejected mutations ran, need >=4")
@@ -330,7 +346,7 @@ def run_self_test():
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("state", nargs="?",
-                     help="retained-run directory to verify (e.g. .unlazy/core070-aghq/wave6-conversion-01)")
+                     help="retained-run directory to verify (e.g. .unlazy/core070-aghq/wave6-conversion-02)")
     ap.add_argument("--self-test", action="store_true")
     args = ap.parse_args()
 

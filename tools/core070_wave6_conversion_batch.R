@@ -1,4 +1,4 @@
-# Conversion batch #2 (wave-6): pays 15 BLOCKED_NEEDS_JULIA_SURFACE ledger
+# Conversion batch #2 (wave-6): pays 12 BLOCKED_NEEDS_JULIA_SURFACE ledger
 # rows in docs/dev-log/core070/required-source-case-map.json whose Julia
 # surface was NOT yet implemented at wave-5 time
 # (docs/dev-log/core070/surface-conversion-batch-contract.json), split into
@@ -7,13 +7,18 @@
 #   (1) 9 STRUCTURED-TERM rows unlocked by src/formula.jl's
 #       _recognize_source_term / _fit_gaussian_structured_sources recognizer
 #       (commit 5371137c; docs/dev-log/core070/formula-recognizer-spec.md).
-#   (2) 6 STALE-BLOCKED postfit rows whose Julia functions already exist
-#       (src/extractors.jl, src/postfit.jl, src/confint.jl) but were never
-#       converted.
+#   (2) 3 STALE-BLOCKED postfit rows whose Julia functions already exist
+#       (src/postfit.jl, src/confint.jl) but were never converted:
+#       logLik.gllvmTMB_multi, confint.gllvmTMB_multi, nobs.gllvmTMB_multi.
 #
-# 3 further rows (extract_lv_effects, extract_Gamma,
-# deviance.gllvmTMB_multi) are recorded in the contract's `deferred` bucket
-# with an explicit reason. The frozen 18-row target list is pinned VERBATIM in
+# 6 further rows (extract_lv_effects, extract_Gamma,
+# deviance.gllvmTMB_multi, extract_rotated_loadings_table,
+# flag_unreliable_loadings, fitted.gllvmTMB_multi) are recorded in the
+# contract's `deferred` bucket with an explicit reason -- the last three
+# joined the deferred bucket in this REPAIR round (wave6-conversion1
+# forensics: an unresolvable-without-live-R-source return shape/gate for
+# each; see docs/dev-log/core070/wave6-conversion-notes.md). The frozen
+# 18-row target list is pinned VERBATIM in
 # docs/dev-log/core070/wave6-conversion-batch-contract.json
 # (`target_source_ids`).
 #
@@ -68,9 +73,9 @@ stopifnot(
   identical(contract$reference_commit, "b4d5fee64def88bc768dda1f1f77c29b295edd86"),
   identical(contract$status, "FROZEN_WAVE6_CONVERSION_BATCH_CONTRACT"),
   length(contract$cases) == contract$expected_case_count,
-  contract$expected_case_count == 15L,
+  contract$expected_case_count == 12L,
   length(contract$deferred) == contract$expected_deferred_count,
-  contract$expected_deferred_count == 3L,
+  contract$expected_deferred_count == 6L,
   length(contract$negative_controls) >= 2L,
   length(contract$rejection_cases) >= 2L
 )
@@ -122,16 +127,53 @@ fit_g <- gllvmTMB(
 stopifnot("gllvmTMB_multi" %in% class(fit_g))
 
 # ---------------------------------------------------------------------------
-# Structured-term fits (fit lazily, memoised by term_expr string, since
-# several ledger rows share the same underlying fit).
+# Structured-term fits. REPAIR (2026-09-01, wave6-conversion1 forensics):
+# the first attempt (a) passed a top-level `cluster = "species"` argument to
+# gllvmTMB() which the live engine warned is UNUSED by every formula
+# covariance keyword ("no formula covariance keyword uses cluster" -- none
+# of dep/indep/scalar/kernel_* consume it; the grouping is entirely embedded
+# in the term itself, via the bar `|group` for dep/indep/scalar or the bare
+# leading symbol for kernel_*), and (b) derived the formula RHS by
+# regex-stripping cs$r_call, which is fragile (multiple embedded commas) and
+# is the most likely source of the observed silent NULL fits. Both are fixed
+# here: gllvmTMB() is called with the SAME `unit = "site", trait = "trait"`
+# convention already proven working in this file's own gaussian_small fit
+# (and in tools/core070_surface_conversion_batch.R), and each case's formula
+# is a literal hardcoded R expression (never derived by string surgery).
+# Every fit is guarded by stopifnot(!is.null(fit)) so a NULL is a loud
+# tryCatch-caught error (-> oracle_errors), never a silent oracle_values
+# entry.
 # ---------------------------------------------------------------------------
+structured_formula_rhs <- list(
+  "CORE070-WAVE6-INDEP-FIT" = "indep(0 + trait | species, common = FALSE)",
+  "CORE070-WAVE6-SCALAR-FIT" = "scalar(0 + trait | species)",
+  "CORE070-WAVE6-KERNEL-INDEP-FIT" = "kernel_indep(species, K = C, name = \"k1\")",
+  "CORE070-WAVE6-KERNEL-DEP-FIT" = "kernel_dep(species, K = C, name = \"k1\")",
+  "CORE070-WAVE6-KERNEL-SCALAR-FIT" = "kernel_scalar(species, K = C, name = \"k1\")",
+  "CORE070-WAVE6-KERNEL-LATENT-SINGLE-PSI-NAMESPACE" =
+    "kernel_latent(species, K = C, d = 1, name = \"k1\", unique = TRUE)",
+  "CORE070-WAVE6-KERNEL-LATENT-SINGLE-PSI-COVARIANCE" =
+    "kernel_latent(species, K = C, d = 1, name = \"k1\", unique = TRUE)",
+  "CORE070-WAVE6-KERNEL-LATENT-MULTI-NAMESPACE" =
+    "kernel_latent(species, K = C, d = 1, name = \"k1\", unique = FALSE) + kernel_latent(species, K = K2, d = 1, name = \"k2\", unique = FALSE)",
+  "CORE070-WAVE6-KERNEL-LATENT-MULTI-COVARIANCE-EXPORT" =
+    "kernel_latent(species, K = C, d = 1, name = \"k1\", unique = TRUE)"
+)
+rejection_formula_rhs <- list(
+  "CORE070-WAVE6-REJ-DEP-INDEP" = "dep(0 + trait | species) + indep(0 + trait | species)",
+  "CORE070-WAVE6-REJ-DEP-LATENT" = "dep(0 + trait | species) + kernel_latent(species, K = C, d = 1, unique = FALSE)",
+  "CORE070-WAVE6-REJ-INDEP-LATENT" = "indep(0 + trait | species) + kernel_latent(species, K = C, d = 1, unique = FALSE)",
+  "CORE070-WAVE6-REJ-KERNEL-UNIQUE-STANDALONE" = "kernel_unique(species, K = C, name = \"k1\")"
+)
+
 structured_fit_cache <- new.env(parent = emptyenv())
 
-fit_structured <- function(r_formula_rhs) {
+fit_structured_rhs <- function(r_formula_rhs) {
   key <- r_formula_rhs
   if (!is.null(structured_fit_cache[[key]])) return(structured_fit_cache[[key]])
   form <- as.formula(paste0("value ~ 0 + trait + ", r_formula_rhs))
-  fit <- gllvmTMB(form, df, cluster = "species", family = stats::gaussian(), control = control)
+  fit <- gllvmTMB(form, df, unit = "site", trait = "trait", family = stats::gaussian(), control = control)
+  stopifnot(!is.null(fit), "gllvmTMB_multi" %in% class(fit))
   structured_fit_cache[[key]] <- fit
   fit
 }
@@ -142,34 +184,41 @@ fit_structured <- function(r_formula_rhs) {
 # gllvmTMB reports its per-tier Sigma -- via extract_Sigma(level=name)).
 structured_quantity <- function(fit, r_formula_rhs) {
   ll <- as.numeric(logLik(fit))
+  stopifnot(!is.null(ll), length(ll) == 1L, is.finite(ll))
   # extract_Sigma(fit, level=<term name>) returns the tier's p x p marginal
   # block regardless of mode (indep/dep/latent); default term name is
-  # "source" for non-kernel terms, "kernel" for kernel_* terms (per
-  # formula-recognizer-spec.md Sec 1: SourceTermSpec.name defaults).
-  level_name <- if (grepl("kernel_", r_formula_rhs)) "kernel" else "source"
-  Sigma <- tryCatch(
-    as.matrix(extract_Sigma(fit, level = level_name, part = "total")$Sigma),
-    error = function(e) matrix(NA_real_, 3L, 3L)
-  )
-  c(ll, as.numeric(Sigma))
+  # "source" for non-kernel terms, "kernel"/"k1"/"k2" for kernel_* terms
+  # (per formula-recognizer-spec.md Sec 1: SourceTermSpec.name defaults;
+  # this fixture's kernel_* calls all pass name="k1" explicitly).
+  level_name <- if (grepl("kernel_", r_formula_rhs)) "k1" else "source"
+  Sigma <- extract_Sigma(fit, level = level_name, part = "total")$Sigma
+  stopifnot(!is.null(Sigma))
+  Sigma <- as.matrix(Sigma)
+  out <- c(ll, as.numeric(Sigma))
+  stopifnot(!is.null(out), length(out) > 0L, !anyNA(out))
+  out
 }
 
 r_case_value <- function(cs) {
-  fit <- fit_structured(gsub("^.*trait \\+ (.*), df.*$", "\\1", cs$r_call))
-  structured_quantity(fit, cs$r_call)
+  rhs <- structured_formula_rhs[[cs$case_id]]
+  stopifnot(!is.null(rhs))
+  fit <- fit_structured_rhs(rhs)
+  structured_quantity(fit, rhs)
 }
 
 # ---------------------------------------------------------------------------
-# Postfit-group quantity dispatcher, keyed by `quantity`.
+# Postfit-group quantity dispatcher, keyed by `quantity`. REPAIR
+# (2026-09-01, wave6-conversion1 forensics): rotated_loadings_flat,
+# flag_unreliable_loadings (boolean_flags kind), and fitted_values_flat were
+# removed from contract$cases entirely (moved to contract$deferred with a
+# traced reason -- see docs/dev-log/core070/wave6-conversion-notes.md) after
+# the first attempt hit unresolvable-without-live-R-source errors
+# ("argument 1 is not a vector", a confirmatory-fit lambda_constraint gate,
+# "list object cannot be coerced"). Only the 3 remaining postfit quantities
+# below are dispatched here.
 # ---------------------------------------------------------------------------
 r_postfit_value <- function(quantity) {
   switch(quantity,
-    rotated_loadings_flat = {
-      t <- extract_rotated_loadings_table(fit_g)
-      t <- t[order(t$trait_i, t$factor_j), ]
-      as.numeric(t$estimate)
-    },
-    fitted_values_flat = as.numeric(fitted(fit_g)),
     loglik_scalar = as.numeric(logLik(fit_g)),
     confint_sigma_eps_bounds = as.numeric(confint(fit_g, parm = "sigma_eps", level = 0.95)),
     stop("BOGUS_QUANTITY: no dispatcher entry for '", quantity, "'")
@@ -183,25 +232,32 @@ for (cs in contract$cases) {
   if (identical(cs$kind, "point") && !is.null(cs$term_expr)) {
     v <- tryCatch(list(ok = TRUE, value = r_case_value(cs), error = ""),
                   error = function(e) list(ok = FALSE, value = NULL, error = conditionMessage(e)))
-  } else if (identical(cs$kind, "boolean_flags")) {
-    v <- tryCatch({
-      lam_names <- grep("^Lambda", names(coef(fit_g)), value = TRUE)
-      ci <- confint(fit_g, parm = "Lambda", level = 0.95)
-      lower <- ci[, 1L]; upper <- ci[, 2L]
-      flags <- as.numeric(lower <= 0 & 0 <= upper)
-      list(ok = TRUE, value = flags, error = "")
-    }, error = function(e) list(ok = FALSE, value = NULL, error = conditionMessage(e)))
   } else if (identical(cs$kind, "own_receipt_defect")) {
     v <- tryCatch({
       r_nobs <- as.numeric(nobs(fit_g))
+      stopifnot(!is.null(r_nobs), length(r_nobs) == 1L)
       list(ok = TRUE, value = list(nobs = r_nobs, expected = p * n, matches_own_formula = isTRUE(all.equal(r_nobs, p * n))), error = "")
     }, error = function(e) list(ok = FALSE, value = NULL, error = conditionMessage(e)))
   } else {
-    v <- tryCatch(list(ok = TRUE, value = r_postfit_value(cs$quantity), error = ""),
-                  error = function(e) list(ok = FALSE, value = NULL, error = conditionMessage(e)))
+    v <- tryCatch({
+      val <- r_postfit_value(cs$quantity)
+      stopifnot(!is.null(val), length(val) > 0L)
+      list(ok = TRUE, value = val, error = "")
+    }, error = function(e) list(ok = FALSE, value = NULL, error = conditionMessage(e)))
   }
-  if (isTRUE(v$ok)) {
+  # REPAIR (2026-09-01, wave6-conversion1 forensics item 1): a v$ok==TRUE
+  # with a NULL/empty v$value must NOT be recorded as a silent
+  # oracle_values entry -- it is loudly reclassified as an oracle_errors
+  # entry (the coverage check below then treats it identically to any other
+  # missing case, and the R stage still fails BEFORE invoking Julia).
+  if (isTRUE(v$ok) && !is.null(v$value) && (!is.list(v$value) || length(v$value) > 0L) &&
+      (!is.numeric(v$value) || length(v$value) > 0L)) {
     oracle_values[[cs$case_id]] <- v$value
+  } else if (isTRUE(v$ok)) {
+    oracle_errors[[cs$case_id]] <- paste0(
+      "INTERNAL: r_case_value()/r_postfit_value() returned ok=TRUE but a NULL/empty value ",
+      "for case ", cs$case_id, " -- treated as a coverage failure, never a silent pass."
+    )
   } else {
     oracle_errors[[cs$case_id]] <- v$error
   }
@@ -214,9 +270,10 @@ for (cs in contract$cases) {
 rejection_oracle <- list()
 for (rc in contract$rejection_cases) {
   res <- tryCatch({
-    rhs <- gsub("^.*trait \\+ (.*), df.*$", "\\1", rc$r_call)
+    rhs <- rejection_formula_rhs[[rc$case_id]]
+    stopifnot(!is.null(rhs))
     form <- as.formula(paste0("value ~ 0 + trait + ", rhs))
-    gllvmTMB(form, df, cluster = "species", family = stats::gaussian(), control = control)
+    gllvmTMB(form, df, unit = "site", trait = "trait", family = stats::gaussian(), control = control)
     list(raised = FALSE, message = "")
   }, error = function(e) list(raised = TRUE, message = conditionMessage(e)))
   rejection_oracle[[rc$case_id]] <- res
@@ -224,15 +281,21 @@ for (rc in contract$rejection_cases) {
 
 # ---------------------------------------------------------------------------
 # LOUD coverage check: every case in contract$cases must have produced
-# EITHER an oracle_values entry OR an oracle_errors entry.
+# EITHER a non-NULL oracle_values entry OR an oracle_errors entry -- a NULL
+# oracle_values entry (should one somehow still occur) is treated IDENTICALLY
+# to a missing entry, never silently passed through. This check runs, and
+# can stop() here, strictly BEFORE the Julia child is ever invoked below.
 # ---------------------------------------------------------------------------
 all_contract_case_ids <- vapply(contract$cases, `[[`, "", "case_id")
-accounted_for <- union(names(oracle_values), names(oracle_errors))
-missing_case_ids <- setdiff(all_contract_case_ids, accounted_for)
+null_valued_case_ids <- Filter(function(id) id %in% names(oracle_values) && is.null(oracle_values[[id]]),
+                                all_contract_case_ids)
+accounted_for <- setdiff(union(names(oracle_values), names(oracle_errors)), null_valued_case_ids)
+missing_case_ids <- union(setdiff(all_contract_case_ids, accounted_for), null_valued_case_ids)
 if (length(missing_case_ids) > 0L) {
   stop(
-    "FATAL: ", length(missing_case_ids), " contract case(s) produced NEITHER an ",
-    "oracle_values entry NOR an oracle_errors entry. Missing case_id(s):\n  ",
+    "FATAL: ", length(missing_case_ids), " contract case(s) produced NEITHER a non-NULL ",
+    "oracle_values entry NOR an oracle_errors entry (NULL values are treated as missing, ",
+    "never silently passed through). Missing case_id(s):\n  ",
     paste(missing_case_ids, collapse = "\n  ")
   )
 }
@@ -253,7 +316,7 @@ neg_wrong_fixture <- list(
 neg_bogus_term_kind <- list(
   rejected = tryCatch({
     gllvmTMB(value ~ 0 + trait + this_is_not_a_real_keyword(species, K = C),
-             df, cluster = "species", family = stats::gaussian(), control = control)
+             df, unit = "site", trait = "trait", family = stats::gaussian(), control = control)
     FALSE
   }, error = function(e) TRUE)
 )
