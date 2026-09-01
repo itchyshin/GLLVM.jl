@@ -236,27 +236,103 @@ extract_rotated_loadings(fit) = (Λ = getLoadings(fit; rotate = true), R = rotat
 # Communality / correlation — forward to the existing per-family generics.
 # ---------------------------------------------------------------------------
 
-"""
-    extract_communality(fit::GllvmFit) -> Vector
+## ---------------------------------------------------------------------------
+## R-tier-scoped composition helpers (maintainer decision, round 1, item 3:
+## docs/dev-log/decisions/2026-09-01-maintainer-decisions-round1.md —
+## "align to R's tier-scoped decomposition as the DEFAULT, mirroring R's
+## level= arguments; keep the total-variance variant behind an explicit
+## option"). Traced against R source
+## (.unlazy/core070-aghq/oracle-source/readback/R/{extract-sigma,extract-
+## omega}.R) and the wave5 R-oracle repair notes
+## (docs/dev-log/core070/surface-conversion-notes.md, Repairs 3-5):
+## gllvmTMB's B/W/phy tier system NEVER folds `sigma_eps²` (the Gaussian
+## observation residual) into any tier total — `link_residual_per_trait()`
+## returns exactly 0 for the gaussian family (fid 0), and σ_eps is not one
+## of the B/W/phy component tiers R's `extract_Sigma()`/`extract_Omega()`
+## track at all. These helpers reproduce that convention exactly. They are
+## intentionally distinct from `_sigma_unit_obs` above (`extract_Sigma`'s own
+## `:unit_obs` total, which folds `σ_eps²` in unconditionally as GLLVM.jl's
+## own useful extension per its docstring, and is unchanged by this decision
+## — `extract_Sigma`'s public contract was never part of the estimand-
+## alignment ledger row).
+## ---------------------------------------------------------------------------
 
-Per-trait communality `c²_t = (Λ_B Λ_Bᵀ)_tt / Σ_y_site,tt`. Forwards to the
-existing [`communality`](@ref) generic.
+# Tier total with NO σ_eps² folded in, mirroring R's B/W tier Sigma
+# (`extract_Sigma(fit, level, part="total", link_residual="none")` on a
+# Gaussian fit — Gaussian's link_residual contributes 0 regardless).
+function _r_tier_total(fit::GllvmFit, lvl::Symbol)
+    p = fit.model.p
+    if lvl === :unit
+        Σ = fit.pars.Λ * fit.pars.Λ'
+        if fit.model.has_diag && fit.pars.σ²_B !== nothing
+            Σ = Σ + diagm(collect(Float64, fit.pars.σ²_B))
+        end
+        return Matrix(Σ)
+    else # :unit_obs
+        Σ = zeros(Float64, p, p)
+        if fit.model.K_W > 0 && fit.pars.Λ_W !== nothing
+            Σ = Σ + fit.pars.Λ_W * fit.pars.Λ_W'
+        end
+        if fit.model.has_diag && fit.pars.σ²_W !== nothing
+            Σ = Σ + diagm(collect(Float64, fit.pars.σ²_W))
+        end
+        return Matrix(Σ)
+    end
+end
 
-Deviation from R (estimand-alignment family — see
-`docs/dev-log/core070/se-machinery-slice-notes.md` and
-`docs/dev-log/core070/surface-conversion-notes.md` for the pending
-estimand-alignment decision): this is NOT R's `extract_communality(level =
-"unit")`. R's `level = "unit"` denominator is the level="unit" tier total
-alone, from `extract_Sigma(level = "unit")`. GLLVM.jl's denominator is
-Julia's TOTAL-variance composition `Σ_y_site,tt` — every non-phylo tier the
-fit carries (`(Λ_B Λ_Bᵀ)_tt + (Λ_W Λ_Wᵀ)_tt + σ²_B,t + σ²_W,t + σ²_eps`, see
-[`sigma_y_site`](@ref)), not R's per-tier `level="unit"` slice. The two
-denominators agree only when `σ_eps == 0` and there is no W-tier. The
-computation itself is unchanged pending the estimand-alignment decision;
-this docstring only corrects the earlier "mirrors R at level='unit'" claim,
-which was numerically false whenever σ_eps > 0 or a W-tier is present.
+# Tier shared (ΛΛᵀ) block alone — no diagonal, no σ_eps².
+function _r_tier_shared(fit::GllvmFit, lvl::Symbol)
+    p = fit.model.p
+    lvl === :unit && return Matrix(fit.pars.Λ * fit.pars.Λ')
+    (fit.model.K_W > 0 && fit.pars.Λ_W !== nothing) ?
+        Matrix(fit.pars.Λ_W * fit.pars.Λ_W') : zeros(Float64, p, p)
+end
+
+# Whether the fit genuinely carries a given tier at all (mirrors R's
+# `fit$use$rr_B || fit$use$diag_B` / `rr_W || diag_W` tier-presence gate).
+function _r_tier_present(fit::GllvmFit, lvl::Symbol)
+    lvl === :unit && return fit.model.K > 0 ||
+        (fit.model.has_diag && fit.pars.σ²_B !== nothing)
+    fit.model.K_W > 0 || (fit.model.has_diag && fit.pars.σ²_W !== nothing)
+end
+
+function _validate_communality_level(level::Symbol)
+    level === :total && return :total
+    lvl = _canonical_level(level)
+    lvl === :site && throw(ArgumentError(
+        "level = :site has no R tier-scoped analogue; use :unit, :unit_obs, or :total"))
+    return lvl
+end
+
 """
-extract_communality(fit::GllvmFit) = communality(fit)
+    extract_communality(fit::GllvmFit; level::Symbol = :unit) -> Vector
+
+Per-trait communality at ONE tier, `c²_t = (Λ_tier Λ_tierᵀ)_tt /
+Σ_tier,total_tt`, mirroring `gllvmTMB::extract_communality(level = ...)`.
+This is now the DEFAULT (`level = :unit`; maintainer decision round 1, item
+3 — see `docs/dev-log/estimand-alignment-notes.md`), matching R's
+tier-scoped denominator exactly: `σ_eps²` (the Gaussian observation
+residual) never enters, because it is not one of R's `B`/`W`/`phy` tier
+components. `level = :unit_obs` is the within-unit (W) twin.
+
+On a fit with no diagonal Ψ_tier component (e.g. `has_diag = false`), the
+shared and total tiers coincide exactly and `c²_t` degenerates to `1.0` for
+every trait — this is R's own degenerate behaviour on such a fit (confirmed
+against R's `gaussian_small` oracle fixture, `unique = FALSE`, no W tier:
+`extract_communality(level = "unit")` returns all-`1.0`), not a bug.
+
+`level = :total` recovers GLLVM.jl's original TOTAL-variance estimand
+(forwards to [`communality`](@ref)): shared / `sigma_y_site(fit)`, i.e.
+every non-phylo tier the fit carries plus `σ_eps²`. The two estimands agree
+only when `σ_eps == 0` and there is no W-tier.
+"""
+function extract_communality(fit::GllvmFit; level::Symbol = :unit)
+    lvl = _validate_communality_level(level)
+    lvl === :total && return communality(fit)
+    shared = diag(_r_tier_shared(fit, lvl))
+    total = diag(_r_tier_total(fit, lvl))
+    return [(isfinite(t) && t > 0) ? s / t : NaN for (s, t) in zip(shared, total)]
+end
 
 """
     extract_communality(fit::TwoLevelFit; level::Symbol = :unit) -> Vector
@@ -281,12 +357,27 @@ extract_communality(fit::Union{_NonGaussianLatentFit, BinomialFit, OrdinalFit,
                     Y::AbstractMatrix; kwargs...) = communality(fit, Y; kwargs...)
 
 """
-    extract_correlations(fit::GllvmFit) -> Matrix
+    extract_correlations(fit::GllvmFit; level::Symbol = :unit) -> Matrix
 
-Cross-trait correlation `ρ_ij = Σ_y_site,ij / √(Σ_y_site,ii · Σ_y_site,jj)`.
-Forwards to the existing [`correlation`](@ref) generic.
+Cross-trait correlation at ONE tier, `cov2cor(Σ_tier,total)`, mirroring
+`gllvmTMB::extract_correlations(tier = ...)`'s point-only route
+(`extract_Sigma(fit, level = tier, part = "total")\$R`). This is now the
+DEFAULT (`level = :unit`; maintainer decision round 1, item 3 — see
+`docs/dev-log/estimand-alignment-notes.md`): `σ_eps²` never enters the
+tier total, matching R exactly (same tier-scoping as
+[`extract_communality`](@ref)). `level = :unit_obs` is the within-unit (W)
+twin.
+
+`level = :total` recovers GLLVM.jl's original TOTAL-variance estimand
+(forwards to [`correlation`](@ref)): `ρ_ij = Σ_y_site,ij / √(Σ_y_site,ii ·
+Σ_y_site,jj)`, standardising by every non-phylo tier plus `σ_eps²`. The two
+estimands agree only when `σ_eps == 0` and there is no W-tier.
 """
-extract_correlations(fit::GllvmFit) = correlation(fit)
+function extract_correlations(fit::GllvmFit; level::Symbol = :unit)
+    lvl = _validate_communality_level(level)
+    lvl === :total && return correlation(fit)
+    return _cov2cor(_r_tier_total(fit, lvl))
+end
 
 """
     extract_correlations(fit::TwoLevelFit; level::Symbol = :unit) -> Matrix
@@ -319,11 +410,12 @@ Fisher-z confidence band and no name-based trait subsetting (positional
 integer indices only, matching GLLVM.jl's convention elsewhere — see
 [`extract_Gamma`](@ref)); the CI band is Cluster 2 (derived-CI surfaces).
 
-`level = :unit` is the only value accepted for `fit::GllvmFit` (GLLVM.jl
-computes one site-level correlation tier for a `GllvmFit`, via
-[`extract_correlations`](@ref)); any other value is validated and thrown,
-matching [`bootstrap_Sigma`](@ref)'s validate-and-throw pattern, rather
-than being silently ignored.
+`level = :unit` is the only value accepted for `fit::GllvmFit` (it forwards
+to [`extract_correlations`](@ref)'s own `level` default, R-tier-scoped as
+of the estimand-alignment decision — see `extract_correlations`'s
+docstring); any other value is validated and thrown, matching
+[`bootstrap_Sigma`](@ref)'s validate-and-throw pattern, rather than being
+silently ignored.
 """
 function extract_cross_correlations(fit::GllvmFit; level::Symbol = :unit,
                                     traits_i::AbstractVector{<:Integer},
@@ -420,13 +512,34 @@ extract_cutpoints(fit::OrdinalPerTraitFit) = (τ = copy(fit.τ), C = copy(fit.C)
 # ---------------------------------------------------------------------------
 
 """
-    extract_proportions(fit::GllvmFit; component::Symbol = :shared) -> Vector
+    extract_proportions(fit::GllvmFit; component::Symbol = :shared,
+                        level::Symbol = :unit) -> Vector
 
-Per-trait variance-share decomposition; forwards to the existing
-[`proportions`](@ref) generic. `component ∈ (:shared, :unique_W, :unique_B,
-:unique_Wd, :residual)`. Mirrors `gllvmTMB::extract_proportions()`.
+Per-trait variance-share decomposition. For `component = :shared` (the
+default), mirrors `gllvmTMB::extract_proportions()`'s `shared_unit` row:
+numerator `(Λ_B Λ_Bᵀ)_tt`, denominator the sum of every R tier component the
+fit genuinely carries (`shared_unit` + `unique_unit` + `shared_unit_obs` +
+`unique_unit_obs`, whichever are present — `σ_eps²` is never one of them,
+same tier-scoping as [`extract_communality`](@ref) /
+[`extract_correlations`](@ref)). This tier-scoped `:shared` route is now the
+DEFAULT (maintainer decision round 1, item 3 — see
+`docs/dev-log/estimand-alignment-notes.md`); on a fit with only a `:unit`
+tier and no diagonal (e.g. `has_diag = false`), it degenerates to `1.0` for
+every trait, matching R's own degenerate behaviour on such a fit.
+
+Any other `component` (`:unique_W`, `:unique_B`, `:unique_Wd`, `:residual`),
+or `level = :total`, forwards unchanged to the existing [`proportions`](@ref)
+generic (GLLVM.jl's original TOTAL-variance composition, `sigma_y_site(fit)`
+denominator) — those components/level are not part of this alignment slice.
 """
-extract_proportions(fit::GllvmFit; component::Symbol = :shared) = proportions(fit; component = component)
+function extract_proportions(fit::GllvmFit; component::Symbol = :shared, level::Symbol = :unit)
+    (component !== :shared || level === :total) && return proportions(fit; component = component)
+    total = zeros(Float64, fit.model.p)
+    _r_tier_present(fit, :unit) && (total .+= diag(_r_tier_total(fit, :unit)))
+    _r_tier_present(fit, :unit_obs) && (total .+= diag(_r_tier_total(fit, :unit_obs)))
+    shared_unit = diag(_r_tier_shared(fit, :unit))
+    return [(isfinite(t) && t > 0) ? s / t : NaN for (s, t) in zip(shared_unit, total)]
+end
 
 """
     extract_phylo_signal(fit::GllvmFit; Σ_phy = nothing) -> Vector
@@ -484,21 +597,43 @@ extract_ICC_site(fit::TwoLevelFit) = extract_repeatability(fit)
 # ---------------------------------------------------------------------------
 
 """
-    extract_Omega(fit::GllvmFit) -> Matrix
+    extract_Omega(fit::GllvmFit; level::Symbol = :auto) -> Matrix
 
-Total implied trait covariance `Ω = Σ_unit + Σ_unit_obs` (+ the
-phylogenetic block `Λ_phy_aug Λ_phy_augᵀ` when `K_phy > 0 ||
-has_phy_unique`), summing every covariance tier the fit carries. Mirrors
+Total implied trait covariance, summing only the covariance TIERS the fit
+genuinely carries — the phylogenetic block (`Λ_phy_aug Λ_phy_augᵀ` when
+`K_phy > 0 || has_phy_unique`), the `:unit` tier (when `K > 0` or a diagonal
+`σ²_B` is present), and the `:unit_obs` tier (when `K_W > 0` or a diagonal
+`σ²_W` is present) — using each present tier's R-tier-scoped total (no
+`σ_eps²`, see [`extract_communality`](@ref)). Mirrors
 `gllvmTMB::extract_Omega()` with `tiers = NULL` (auto-detected) and
-`link_residual = "none"` (Gaussian `GllvmFit` has no implicit link
-residual to add).
+`link_residual = "none"` (Gaussian `GllvmFit` has no implicit link residual
+to add). This tier-presence-gated composition is now the DEFAULT
+(`level = :auto`; maintainer decision round 1, item 3 — see
+`docs/dev-log/estimand-alignment-notes.md`): the previous default
+unconditionally summed `extract_Sigma(level=:unit_obs, part=:total)`, which
+folds in `σ_eps²` even when the fit carries no genuine W tier at all — a
+confirmed cross-engine bug (R oracle diff ≈ `σ_eps²` exactly on a
+single-tier fixture), not a deliberate estimand choice, now fixed by
+gating on tier presence.
+
+`level = :total` recovers GLLVM.jl's original unconditional-sum estimand
+(`Σ_unit + Σ_unit_obs` via `extract_Sigma`, `:unit_obs` always including
+`σ_eps²·I` regardless of W-tier presence).
 """
-function extract_Omega(fit::GllvmFit)
-    Ω = extract_Sigma(fit; level = :unit, part = :total).Sigma .+
-        extract_Sigma(fit; level = :unit_obs, part = :total).Sigma
+function extract_Omega(fit::GllvmFit; level::Symbol = :auto)
+    p = fit.model.p
+    Ω = if level === :total
+        Matrix(extract_Sigma(fit; level = :unit, part = :total).Sigma .+
+               extract_Sigma(fit; level = :unit_obs, part = :total).Sigma)
+    else
+        level === :auto || throw(ArgumentError("level must be :auto or :total; got $(level)"))
+        acc = zeros(Float64, p, p)
+        _r_tier_present(fit, :unit) && (acc .+= _r_tier_total(fit, :unit))
+        _r_tier_present(fit, :unit_obs) && (acc .+= _r_tier_total(fit, :unit_obs))
+        acc
+    end
     has_phy = (fit.model.K_phy > 0) || fit.model.has_phy_unique
     if has_phy
-        p = fit.model.p
         Λ_phy_aug = if fit.pars.Λ_phy !== nothing && fit.pars.σ_phy !== nothing
             hcat(fit.pars.Λ_phy, reshape(collect(Float64, fit.pars.σ_phy), p, 1))
         elseif fit.pars.Λ_phy !== nothing
