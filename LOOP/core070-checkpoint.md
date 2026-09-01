@@ -2031,3 +2031,18 @@ pass / 5 known-canary fails / 0 new-slice failures.
 Maintainer: "always use /ultra-code when helpful and can speed things up and
 more accurate". Multi-agent workflows are now the default for parallelizable
 or verification-heavy slices in this programme.
+
+## Wave-6 bound + adversarial review round — 2026-09-01
+
+Wave-6 green on attempt 7 (six repair rounds: R grammar/cluster arg, null
+guards, .loglik/Y-arg calls, Y ORIENTATION root cause — site-fastest reshape
+had collapsed every structured fit to the null model — confint NamedTuple,
+first-ever SE-level tolerance calibration 5e-3 justified, oracle-corrected
+rejection semantics). 10 rows bound (252 total bound); BLOCKED 142->91
+today. TWO ORACLE-BEHAVIOR discoveries: frozen R ACCEPTS indep+latent on
+one grouping (our recognizer gate removed to match) and silently FOLDS
+standalone kernel_unique (encoded asymmetry). Ultracode 4-lens review of
+the new slices CONFIRMED 8 P1s + P2s (loading_ci scale mislabel, H2
+denominator estimand bug, getREsd basis/guards/claim, tmbprofile mixed
+surfaces, principal-angle math, diagnose Sigma composition...) — committed
+as post-m2-slice-review-2026-09-01.md; two TDD repair agents in flight.
