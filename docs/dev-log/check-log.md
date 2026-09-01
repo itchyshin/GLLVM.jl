@@ -16847,3 +16847,21 @@ Applied to ACC-URBMAP real data: Julia-at-Julia delta 2.4e-10, Julia-at-R delta
 2.5e-9 — same likelihood function at both optima; the 2.2e-2 crossproduct gap
 is a shared flat ridge, not an engine difference. One-directional (Julia-at-R);
 reverse direction owed for symmetry.
+
+## 2026-09-01 — Panel-upgrade fan-out landed (ultracode: 4 builders + 4 adversarial verifiers)
+
+Committed after verification: (1) fix(fit) 6c27b62e — the empty-design red
+file was a REAL warm-start bug (branch gated on X===nothing instead of q==0);
+26/26 now green, 6 of the 10 pre-existing suite failures resolved at the root,
+no tolerance touched. (2) feat(bridge) 53a91b07 — gradient_max in every bridge
+payload (DRM-lesson class 6), red-first, full bridge sweep green; verifier's
+one finding (runtests wiring) repaired before commit. (3) feat(parity)
+e0c44c2f — family-generic cross_objective_at + harness hook, known-answer
+tested. BLOCKED with full diagnosis (not fixed): the phylo-poisson canary's 4
+failures trace to profile-CI's ok-gate discarding a numerically correct
+constrained refit (constraint_error 4e-6, nll within 0.1) solely because
+NelderMead's converged flag is false at x_abstol=1e-8 near a boundary-
+degenerate sigma2_phy ~1e-308 — an inference-semantics repair needing its own
+reviewed slice, NOT a 4am patch (changing that gate borders on gate-widening
+and needs a principled acceptance criterion). Full suite re-running with
+retained log; expected tally 11189/4/8.
