@@ -1944,3 +1944,22 @@ dispatched. REMAINING: policy 23 rows; covariance 23 still-planned;
 fit-input 9; namespace planned subset (~110, no builder yet); ~80
 decision-gated; new-surface engineering track (48 distinct surfaces
 enumerated). Receipts preserved (wave2 tarball 6830785f).
+
+## M2 wave 3 — 2026-09-01: 433/533 accounted (namespace area CLOSED)
+
+Namespace: ns1 54 cases PASS (CORE070_NAMESPACE_1_STATE_OK, tarball
+d3550349), 54 rows bound. ns2 needed two batch-SPEC repairs (never gate
+edits on accepted contracts): (a) paired-fit tolerance calibrated to the
+1e-4 precedent; (b) WIDE-NATIVE case had a wrong-model comparison —
+gllvmTMB_wide builds latent() at DEFAULT unique but the batch compared it
+to the unique=FALSE oracle (15 vs 19 df, measured logLik gap 6.38);
+repaired to a matched default-unique reference (measured agreement ~1e-8,
+tol 1e-6). ns2: 9 cases PASS (CORE070_NAMESPACE_2_BATCH_VERIFIED 9,
+tarball 942ea792), 5 rows bound. Contract triage receipted: 38
+BLOCKED_NEEDS_JULIA_SURFACE + 3 PARTIAL_PENDING_DECISION_RECLASSIFY.
+Ledger: 193 bound + 240 dispositioned = 433/533. Commit 1d15dce0.
+REMAINING 100: aghq 29 + family 17 (reconcile against existing codex-cycle
+receipts — binding audit, mostly not new compute), covariance 24,
+inference 19, fit-input 9, postfit/policy 2.
+NEXT: aghq+family reconciliation binder; then covariance/inference/fit-input
+wave 4; artifact + Mission Control refresh at this milestone.
