@@ -166,6 +166,21 @@ end
         @test pinned_row.pinned
     end
 
+    @testset "loading_ci method=:wald + loading_scale=:standardized dispatches to standardized_loading_wald_ci (not raw)" begin
+        ci_std = GLLVM.standardized_loading_wald_ci(fit2, 1, 1; y = y2)
+        ci_raw = GLLVM.raw_loading_wald_ci(fit2, 1, 1; y = y2)
+        # Sanity: raw and standardized really are different numbers for this
+        # fixture (otherwise the defect would be silently unobservable).
+        @test !isapprox(ci_std.estimate, ci_raw.estimate; rtol = 1e-6)
+
+        tbl = GLLVM.loading_ci(fit2, y2; method = :wald, loading_scale = :standardized)
+        row11 = only(filter(r -> r.trait == 1 && r.axis == 1, tbl))
+        @test row11.loading_scale === :standardized
+        @test isapprox(row11.estimate, ci_std.estimate; rtol = 1e-10)
+        @test isapprox(row11.lower, ci_std.lower; rtol = 1e-10) || (isnan(row11.lower) && isnan(ci_std.lower))
+        @test !isapprox(row11.estimate, ci_raw.estimate; rtol = 1e-6)
+    end
+
     @testset "loading_ci raw wald matches Λ point estimate; wald_asym requires standardized" begin
         tbl_raw = GLLVM.loading_ci(fit2, y2; method = :wald)
         row = only(filter(r -> r.trait == 2 && r.axis == 1, tbl_raw))

@@ -589,7 +589,10 @@ function loading_ci(fit::GllvmFit, y::AbstractMatrix;
     for k in 1:d, t in 1:p
         row += 1
         if method === :wald
-            r = raw_loading_wald_ci(fit, t, k; level = conf_level, y = y,
+            r = scale === :standardized ?
+                standardized_loading_wald_ci(fit, t, k; level = conf_level, y = y,
+                                             X = X, Σ_phy = Σ_phy, component = component) :
+                raw_loading_wald_ci(fit, t, k; level = conf_level, y = y,
                                     X = X, Σ_phy = Σ_phy, component = component)
         elseif method === :wald_asym
             r = standardized_loading_wald_ci(fit, t, k; level = conf_level, y = y,
