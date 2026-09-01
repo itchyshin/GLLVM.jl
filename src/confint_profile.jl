@@ -537,3 +537,222 @@ end
 function profile_ci(fit::GllvmFit, parm::Symbol; kwargs...)
     return profile_ci(fit, String(parm); kwargs...)
 end
+
+# ---------------------------------------------------------------------------
+# APPEND (core070 E-cluster, PERF+SE-machinery): bare profile-curve wrappers.
+#
+# `profile_ci` above reduces the bracket-then-bisect walk to a single
+# (lower, upper) bound — the Julia analogue of R's `tmbprofile_wrapper()`
+# RETURN VALUE. R's `tmbprofile_wrapper()` gets there by first calling
+# `TMB::tmbprofile()`, which returns the raw (parameter value, deviance)
+# TRACE, and only then reducing that trace to bounds via `.profile_bounds()`.
+# GLLVM.jl's `profile_ci` never materialises that trace — every constrained
+# refit's deviance is used and discarded inside `_profile_bisect_side`.
+#
+# `tmbprofile_wrapper` here fills that namespace/surface gap: it re-walks
+# the SAME bracket-then-expand loop `_profile_bisect_side` uses (reusing its
+# helpers `_profile_wald_se` / `_profile_refit_with_fixed` verbatim), but
+# records every evaluated `(θ_i value, nll)` pair instead of throwing them
+# away, and returns the sorted trace alongside the reduced bound (obtained
+# by simply calling `profile_ci` — no need to duplicate the root-finding
+# root-finding logic, since only the CURVE was the missing surface, not the
+# bound). `profile_targets` batches this over several parameters;
+# `profile_phylo_signal` is the phylo_unique-scoped convenience form — see
+# its docstring for the honest scope note (packed `sigma_phy[t]`, not the
+# composite H²-like `phylo_signal(fit)[t]` derived quantity).
+# ---------------------------------------------------------------------------
+
+# Internal: walk outward from θ̂_i on both sides, recording every evaluated
+# (θ_i, nll) pair from the constrained refits. Stops each side once the
+# deviance crosses `cutoff` (one point past the crossing) or `max_expand`
+# geometric expansions are exhausted — the same stopping rule
+# `_profile_bisect_side` uses for its OWN (discarded) trace.
+function _tmbprofile_curve(fit::GllvmFit, param_index::Integer;
+                           level::Real = 0.95,
+                           grid_extent::Real = 5,
+                           max_expand::Integer = 20,
+                           max_bisect::Integer = 30,
+                           profile_iterations::Integer = 200,
+                           profile_g_tol::Real = 1e-4,
+                           y::AbstractMatrix,
+                           X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                           Σ_phy::Union{Nothing, AbstractMatrix} = nothing)
+    θ̂ = fit.pars.θ_packed
+    N = length(θ̂)
+    1 ≤ param_index ≤ N ||
+        throw(ArgumentError("param_index $param_index out of range 1:$N"))
+
+    θ̂_i = float(θ̂[param_index])
+    ll_full = fit.logLik
+    cutoff = quantile(Chisq(1), level)
+
+    se_i = _profile_wald_se(fit, param_index, y, X, Σ_phy)
+    if isnan(se_i) || se_i ≤ 0
+        se_i = max(abs(θ̂_i) / 2, 0.1)
+    end
+    step_init = max(min(sqrt(cutoff), grid_extent) * se_i, 1e-3)
+
+    theta = Float64[θ̂_i]
+    nll   = Float64[-ll_full]
+    θ_red0 = vcat(θ̂[1:(param_index - 1)], θ̂[(param_index + 1):N])
+
+    for sgn in (-1.0, 1.0)
+        x_in = θ̂_i
+        abs_step = step_init
+        warm = θ_red0
+        for _ in 1:max_expand
+            x_out = x_in + sgn * abs_step
+            ll_c, ok, warm_new = _profile_refit_with_fixed(
+                fit, param_index, x_out, y, X, Σ_phy;
+                θ_red_warm = warm, g_tol = profile_g_tol,
+                iterations = profile_iterations)
+            ok || break
+            push!(theta, x_out)
+            push!(nll, -ll_c)
+            warm = warm_new
+            D = 2.0 * (ll_full - ll_c)
+            x_in = x_out
+            (isfinite(D) && D ≥ cutoff) && break
+            abs_step *= 2
+        end
+    end
+
+    perm = sortperm(theta)
+    theta_sorted = theta[perm]
+    nll_sorted   = nll[perm]
+
+    bound = profile_ci(fit, param_index;
+                       level = level, grid_extent = grid_extent,
+                       max_expand = max_expand, max_bisect = max_bisect,
+                       profile_iterations = profile_iterations,
+                       profile_g_tol = profile_g_tol,
+                       y = y, X = X, Σ_phy = Σ_phy)
+
+    return (theta = theta_sorted, nll = nll_sorted, estimate = θ̂_i,
+            lower = bound.lower, upper = bound.upper, method = bound.method)
+end
+
+"""
+    tmbprofile_wrapper(fit::GllvmFit, param_index::Integer; level=0.95,
+                       grid_extent=5, max_expand=20, max_bisect=30,
+                       profile_iterations=200, profile_g_tol=1e-4,
+                       y, X=nothing, Σ_phy=nothing)
+        -> NamedTuple
+
+Bare profile-CURVE variant of [`profile_ci`](@ref) — the Julia analogue of
+R's `tmbprofile_wrapper()`/`TMB::tmbprofile()` pair. `profile_ci` already
+reproduces the REDUCED bound R's function returns; this exposes the
+underlying `(θ_i value, nll)` TRACE that bound is reduced from (see the
+comment block above this method for the derivation).
+
+Returns a NamedTuple:
+  - `theta::Vector{Float64}` — evaluated `θ_i` values, sorted ascending
+    (including `θ̂_i` itself, whose `nll` equals `-fit.logLik`)
+  - `nll::Vector{Float64}` — negative log-likelihood at each constrained
+    refit, in the same order as `theta`
+  - `estimate::Float64` — `θ̂_i` (the packed value at `param_index`, on the
+    WORKING scale — no `exp` back-transform, unlike `profile_ci`'s `lower`/
+    `upper`, since a raw NLL curve is inherently on the working scale)
+  - `lower`, `upper`, `method` — identical to `profile_ci(fit, param_index;
+    kwargs...)`, i.e. already back-transformed for `:log_sd` terms
+
+`y` is required (the same data matrix passed to `fit_gaussian_gllvm`); `X`
+and `Σ_phy` are required iff the fit used them. See [`profile_ci`](@ref)
+for the full keyword contract these are forwarded to.
+"""
+function tmbprofile_wrapper(fit::GllvmFit, param_index::Integer;
+                            level::Real = 0.95,
+                            grid_extent::Real = 5,
+                            max_expand::Integer = 20,
+                            max_bisect::Integer = 30,
+                            profile_iterations::Integer = 200,
+                            profile_g_tol::Real = 1e-4,
+                            y::Union{Nothing, AbstractMatrix} = nothing,
+                            X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                            Σ_phy::Union{Nothing, AbstractMatrix} = nothing)
+    _has_lv_predictor(fit) && throw(ArgumentError(
+        "tmbprofile_wrapper for fit_gaussian_gllvm(...; X_lv=...) is not admitted in the C1 predictor-informed latent-score path"))
+    y === nothing && throw(ArgumentError(
+        "tmbprofile_wrapper requires the data matrix `y` (the same matrix passed to fit_gaussian_gllvm)"))
+    return _tmbprofile_curve(fit, param_index;
+                             level = level, grid_extent = grid_extent,
+                             max_expand = max_expand, max_bisect = max_bisect,
+                             profile_iterations = profile_iterations,
+                             profile_g_tol = profile_g_tol,
+                             y = y, X = X, Σ_phy = Σ_phy)
+end
+
+"""
+    tmbprofile_wrapper(fit::GllvmFit, parm::AbstractString; kwargs...) -> NamedTuple
+
+Convenience method resolving `parm` by name (same convention as
+[`profile_ci`](@ref), e.g. `"sigma_eps"`, `"Lambda_B[1,1]"`).
+"""
+function tmbprofile_wrapper(fit::GllvmFit, parm::AbstractString; kwargs...)
+    idx = _profile_parm_index(fit, parm)
+    return tmbprofile_wrapper(fit, idx; kwargs...)
+end
+
+tmbprofile_wrapper(fit::GllvmFit, parm::Symbol; kwargs...) =
+    tmbprofile_wrapper(fit, String(parm); kwargs...)
+
+"""
+    profile_targets(fit::GllvmFit, targets=nothing; kwargs...)
+        -> Dict{String, NamedTuple}
+
+Batch curve wrapper: calls [`tmbprofile_wrapper`](@ref) for every entry of
+`targets` (a vector of packed-parameter names or integer indices; default
+`nothing` profiles EVERY term in `confint(fit).term` order), returning a
+`Dict` keyed by term name.
+
+R's `profile_targets()` is a READINESS REGISTRY (which parameters/targets a
+fit COULD be profiled on, without running anything, because
+`TMB::tmbprofile()` needs the fit's live `tmb_obj` checkpoint machinery to
+run cheaply and reversibly). GLLVM.jl's `profile_ci` has no comparable
+checkpoint/restore step — running it IS the cheap operation — so this
+function runs every target's curve directly rather than reporting a
+separate readiness flag; a fit for which a given `parm` cannot be resolved
+(see [`profile_ci`](@ref)'s parm-name resolution) raises the same
+`ArgumentError` that resolution already raises elsewhere in this file,
+which is the honest failure mode.
+
+`kwargs` (in particular `y`, and `X`/`Σ_phy` if the fit used them) are
+forwarded verbatim to every `tmbprofile_wrapper` call.
+"""
+function profile_targets(fit::GllvmFit, targets::Union{Nothing, AbstractVector} = nothing;
+                         kwargs...)
+    terms, _ = _profile_all_term_names(fit)
+    targs = targets === nothing ? collect(1:length(terms)) : targets
+    out = Dict{String, NamedTuple}()
+    for t in targs
+        name = t isa Integer ? terms[Int(t)] : String(t)
+        out[name] = tmbprofile_wrapper(fit, t; kwargs...)
+    end
+    return out
+end
+
+"""
+    profile_phylo_signal(fit::GllvmFit, t::Integer; kwargs...) -> NamedTuple
+
+Bare profile-CURVE variant scoped to the per-trait phylogenetic-unique SD
+`sigma_phy[t]` (a raw packed parameter, present iff the fit used
+`has_phy_unique = true`).
+
+Honest scope note: this is NOT the composite phylogenetic-SIGNAL summary
+`phylo_signal(fit)[t]` (an H²-like ratio of variance components) that
+`profile_ci_phylo_signal` (`src/confint_derived.jl`) already profiles via
+its own constrained-refit-WITH-PENALTY machinery on that nonlinear derived
+quantity. Building a curve variant for THAT quantity needs the identical
+penalty-profile plumbing `confint_derived.jl` already owns; duplicating it
+here would create two divergent implementations of the same profile, so
+this function is deliberately scoped to the packed `sigma_phy[t]` term —
+the raw SCALE parameter, not the derived SIGNAL ratio. See
+`docs/dev-log/core070/se-machinery-slice-notes.md` for the full gap note.
+"""
+function profile_phylo_signal(fit::GllvmFit, t::Integer; kwargs...)
+    fit.model.has_phy_unique || throw(ArgumentError(
+        "profile_phylo_signal requires a fit with has_phy_unique = true"))
+    1 ≤ t ≤ fit.model.p ||
+        throw(ArgumentError("t = $t out of range 1:$(fit.model.p)"))
+    return tmbprofile_wrapper(fit, "sigma_phy[$t]"; kwargs...)
+end
