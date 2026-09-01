@@ -351,16 +351,21 @@ function check_gllvmTMB(fit; y = nothing, X = nothing, Σ_phy = nothing, kwargs.
 end
 
 # ---------------------------------------------------------------------
-# diagnostic_table — diagnostic-tables.R:53-151
+# fit_diagnostic_table (renamed from diagnostic_table) — diagnostic-tables.R:53-151
 # ---------------------------------------------------------------------
 
 """
-    diagnostic_table(fit; y=nothing, X=nothing, Σ_phy=nothing, kwargs...) -> NamedTuple
+    fit_diagnostic_table(fit; y=nothing, X=nothing, Σ_phy=nothing, kwargs...) -> NamedTuple
 
 Port of R's `diagnostic_table()` (`diagnostic-tables.R:53-151`), a flat
 row-per-check table over [`check_gllvmTMB`](@ref)'s components — the
 Julia-idiomatic column-vectors-of-a-NamedTuple shape rather than a
-`data.frame`.
+`data.frame`. Renamed from `diagnostic_table` (maintainer decision
+docs/dev-log/decisions/2026-09-01-maintainer-decisions-round2-3.md #5):
+R's `diagnostic_table(x, table=)` requires `x` to already carry
+`gllvmTMB_diagnostic` metadata attached by a prior call to
+`predictive_check()`/`residuals()` — a different call shape from this
+function, which takes the raw fit directly.
 
 Returns `(check::Vector{String}, status::Vector{Symbol},
 message::Vector{String})` with one row per named check
@@ -369,7 +374,7 @@ message::Vector{String})` with one row per named check
 `status` is `:pass`, `:fail`, or `:unavailable` (the GLLVM.jl-gap
 cases documented as `missing` upstream).
 """
-function diagnostic_table(fit; y = nothing, X = nothing, Σ_phy = nothing, kwargs...)
+function fit_diagnostic_table(fit; y = nothing, X = nothing, Σ_phy = nothing, kwargs...)
     verdict = check_gllvmTMB(fit; y = y, X = X, Σ_phy = Σ_phy, kwargs...)
     s = verdict.sanity
     _status(x) = x === missing ? :unavailable : (x ? :pass : :fail)
@@ -485,12 +490,18 @@ _implied_Sigma_y(fit) = begin
 end
 
 """
-    compare_Sigma_table(fit1, fit2) -> NamedTuple
+    compare_fits_Sigma_table(fit1, fit2) -> NamedTuple
 
 Port of R's `extract-sigma-table.R` comparison surface. Compares the
 implied `Σ_y = ΛΛᵀ + diag(σ_eps²)` of two fits of the same number of
 traits `p`. Rotation/sign of Λ are not identified, so this compares
 `Σ_y` itself (a tcrossprod invariant), never signed loading entries.
+
+Renamed from `compare_Sigma_table` (maintainer decision
+docs/dev-log/decisions/2026-09-01-maintainer-decisions-round2-3.md #5):
+R's `compare_Sigma_table(x, truth, ...)` compares a fit's implied Σ_y
+against a supplied GROUND-TRUTH matrix, not two fits against each other —
+a different signature and purpose from this two-fit bridge.
 
 **Gap vs R**: R's `extract_sigma_table()` also reports per-entry
 bootstrap or profile SEs for the comparison; GLLVM.jl's derived-CI
@@ -501,11 +512,11 @@ returned here.
 Returns `(Sigma1, Sigma2, diff, frobenius_norm::Float64,
 max_abs_diff::Float64)`.
 """
-function compare_Sigma_table(fit1, fit2)
+function compare_fits_Sigma_table(fit1, fit2)
     Σ1 = _implied_Sigma_y(fit1)
     Σ2 = _implied_Sigma_y(fit2)
     size(Σ1) == size(Σ2) || throw(ArgumentError(
-        "compare_Sigma_table requires fits with the same number of traits; got $(size(Σ1)) vs $(size(Σ2))"))
+        "compare_fits_Sigma_table requires fits with the same number of traits; got $(size(Σ1)) vs $(size(Σ2))"))
     d = Σ1 .- Σ2
     return (Sigma1 = Σ1, Sigma2 = Σ2, diff = d,
             frobenius_norm = LinearAlgebra.norm(d), max_abs_diff = maximum(abs.(d)))
@@ -543,7 +554,7 @@ function compare_loadings(fit1, fit2)
 end
 
 """
-    compare_dep_vs_two_psi(fit_dep, fit_alt, n::Integer) -> NamedTuple
+    compare_fits_dep_vs_two_psi(fit_dep, fit_alt, n::Integer) -> NamedTuple
 
 Port of R's `extract-two-psi-cross-check.R` dependent-vs-alternative
 model-comparison bridge. `fit_dep` is the fit under test; `fit_alt` is
@@ -552,10 +563,18 @@ sites (BIC's sample size — passed explicitly because
 `StatsAPI.nobs(fit)` requires the response matrix, which this
 comparison does not otherwise need).
 
+Renamed from `compare_dep_vs_two_psi` (maintainer decision
+docs/dev-log/decisions/2026-09-01-maintainer-decisions-round2-3.md #5):
+R's `compare_dep_vs_two_psi(fit_two_psi, ...)` takes a SINGLE fitted
+phylogenetic "two-ψ" model and internally refits an alternative "dep"
+model itself — a phylo-specific identifiability cross-check for a named
+reparameterisation GLLVM.jl does not implement, unlike this generic
+two-fit bridge.
+
 **Gap vs R**: R's "two-ψ" alternative is a specific named
 reparameterisation (two independent latent-variable blocks) that
 GLLVM.jl does not implement as a distinct family; this port is the
-generic bridge — Σ_y comparison via [`compare_Sigma_table`](@ref) plus
+generic bridge — Σ_y comparison via [`compare_fits_Sigma_table`](@ref) plus
 an information-criterion delta — applicable to any two fits of the
 same `p`, not specifically the R "two-ψ" family.
 
@@ -563,8 +582,8 @@ Returns `(sigma_comparison::NamedTuple, loglik_dep::Float64,
 loglik_alt::Float64, aic_delta::Float64, bic_delta::Float64)` where
 the deltas are `alt − dep` (negative favours `fit_dep`).
 """
-function compare_dep_vs_two_psi(fit_dep, fit_alt, n::Integer)
-    sc = compare_Sigma_table(fit_dep, fit_alt)
+function compare_fits_dep_vs_two_psi(fit_dep, fit_alt, n::Integer)
+    sc = compare_fits_Sigma_table(fit_dep, fit_alt)
     ll_dep = _loglik(fit_dep)
     ll_alt = _loglik(fit_alt)
     k_dep = _nparams(fit_dep)
@@ -578,13 +597,13 @@ function compare_dep_vs_two_psi(fit_dep, fit_alt, n::Integer)
 end
 
 """
-    compare_indep_vs_two_psi(fit_indep, fit_alt, n::Integer) -> NamedTuple
+    compare_fits_indep_vs_two_psi(fit_indep, fit_alt, n::Integer) -> NamedTuple
 
 Independent-vs-alternative counterpart of
-[`compare_dep_vs_two_psi`](@ref); same generic Σ_y + information-
+[`compare_fits_dep_vs_two_psi`](@ref); same generic Σ_y + information-
 criterion bridge and the same "two-ψ" naming gap documented there.
 """
-compare_indep_vs_two_psi(fit_indep, fit_alt, n::Integer) = compare_dep_vs_two_psi(fit_indep, fit_alt, n)
+compare_fits_indep_vs_two_psi(fit_indep, fit_alt, n::Integer) = compare_fits_dep_vs_two_psi(fit_indep, fit_alt, n)
 
 # ---------------------------------------------------------------------
 # predictive_check — predictive-diagnostics.R:78-229
@@ -708,4 +727,44 @@ function confint_inspect(fit::GllvmFit, y::AbstractMatrix; level::Real = 0.95,
 
     return (term = wald.term, wald_lower = wald.lower, wald_upper = wald.upper,
             profile_lower = prof_lower, profile_upper = prof_upper, disagree = disagree)
+end
+
+# ---------------------------------------------------------------------
+# Deprecated forwarding shims. Renamed per maintainer decision
+# docs/dev-log/decisions/2026-09-01-maintainer-decisions-round2-3.md #5:
+# each old name shadowed an R function with different semantics (see the
+# "Gap vs R" / rename notes on the corresponding new-name docstring above);
+# freeing the old name for a future true mirror of R's own surface.
+# ---------------------------------------------------------------------
+
+function diagnostic_table(args...; kwargs...)
+    Base.depwarn(
+        "diagnostic_table is renamed to fit_diagnostic_table; the name " *
+        "diagnostic_table is reserved for a future R-mirroring surface",
+        :diagnostic_table)
+    return fit_diagnostic_table(args...; kwargs...)
+end
+
+function compare_Sigma_table(args...; kwargs...)
+    Base.depwarn(
+        "compare_Sigma_table is renamed to compare_fits_Sigma_table; the " *
+        "name compare_Sigma_table is reserved for a future R-mirroring " *
+        "surface", :compare_Sigma_table)
+    return compare_fits_Sigma_table(args...; kwargs...)
+end
+
+function compare_dep_vs_two_psi(args...; kwargs...)
+    Base.depwarn(
+        "compare_dep_vs_two_psi is renamed to compare_fits_dep_vs_two_psi; " *
+        "the name compare_dep_vs_two_psi is reserved for a future " *
+        "R-mirroring surface", :compare_dep_vs_two_psi)
+    return compare_fits_dep_vs_two_psi(args...; kwargs...)
+end
+
+function compare_indep_vs_two_psi(args...; kwargs...)
+    Base.depwarn(
+        "compare_indep_vs_two_psi is renamed to compare_fits_indep_vs_two_psi; " *
+        "the name compare_indep_vs_two_psi is reserved for a future " *
+        "R-mirroring surface", :compare_indep_vs_two_psi)
+    return compare_fits_indep_vs_two_psi(args...; kwargs...)
 end

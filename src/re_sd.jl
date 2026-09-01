@@ -1,4 +1,5 @@
-# Posterior standard deviations for the latent random effects (getREsd).
+# Posterior standard deviations for the latent random effects (latent_score_sd,
+# renamed from getREsd — see the R-SURFACE SHADOWING NOTE below).
 #
 # STATISTICAL SCOPE, STATED EXPLICITLY: every quantity this file returns is a
 # CONDITIONAL-ON-θ̂ standard deviation of the latent factor scores z at the
@@ -21,9 +22,11 @@
 # core070-aghq/oracle-source/readback/R/re-uncertainty.R`) covers AUXILIARY
 # random-effect blocks (random slopes, grouping-factor intercepts, ...) and
 # explicitly routes the latent FACTOR SCORES to `getLV(se = TRUE)` instead.
-# Julia's `getREsd(fit, y)` here returns exactly the latent-score SDs — the
-# quantity R's `getREsd` does NOT cover and R's `getLV(se=TRUE)` does — under
-# the mirrored R name but a different signature and a different R surface.
+# Julia's `latent_score_sd(fit, y)` (renamed from `getREsd` — maintainer
+# decision docs/dev-log/decisions/2026-09-01-maintainer-decisions-round2-3.md
+# #5 — freeing the `getREsd` name for a future true mirror of R's auxiliary-
+# RE-block surface) here returns exactly the latent-score SDs — the quantity
+# R's `getREsd` does NOT cover and R's `getLV(se=TRUE)` does.
 #
 # TWO EXACT CASES, per family class:
 #
@@ -61,7 +64,7 @@ using LinearAlgebra
 # ---------------------------------------------------------------------------
 
 """
-    getREsd(fit::GllvmFit, y; X=nothing, rotate=true) -> Matrix{Float64}
+    latent_score_sd(fit::GllvmFit, y; X=nothing, rotate=true) -> Matrix{Float64}
 
 Posterior (conditional-on-θ̂) standard deviations of the latent factor scores
 for a Gaussian GLLVM fit. Returns an `n_sites × K` matrix. The Gaussian
@@ -95,20 +98,20 @@ unit_obs) tier, or a masked/offset/AGHQ Gaussian-record fit (`Σ_y_site` from
 [`sigma_y_site`](@ref) does not reconstruct the record objective's actual
 per-cell covariance for those fits).
 """
-function getREsd(fit::GllvmFit, y::AbstractMatrix;
+function latent_score_sd(fit::GllvmFit, y::AbstractMatrix;
                  X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
                  rotate::Bool = true)
     _has_gaussian_record(fit) && throw(ArgumentError(
-        "getREsd is not implemented for masked/offset/AGHQ Gaussian-record " *
+        "latent_score_sd is not implemented for masked/offset/AGHQ Gaussian-record " *
         "fits; sigma_y_site does not reconstruct the record objective's " *
         "actual per-cell covariance for these fits"))
     (fit.model.K_phy > 0 || fit.model.has_phy_unique) && throw(ArgumentError(
-        "getREsd is not implemented for fits with a phylogenetic block " *
+        "latent_score_sd is not implemented for fits with a phylogenetic block " *
         "(K_phy > 0 or has_phy_unique = true); the phylo effect is shared " *
         "across sites, which breaks the per-site-independent conditioning " *
         "this closed-form identity assumes"))
     fit.model.K_W > 0 && throw(ArgumentError(
-        "getREsd is not implemented for fits with a K_W (within/unit_obs) " *
+        "latent_score_sd is not implemented for fits with a K_W (within/unit_obs) " *
         "latent tier"))
     n = size(y, 2)
     Λ = fit.pars.Λ
@@ -203,7 +206,7 @@ end
 # `_laplace_mode` mode-finder (Binomial, Poisson, NegativeBinomial, Gamma,
 # Beta). AGHQ-integrated fits, Ordinal (cutpoint-based, no plain per-site
 # `_laplace_mode` signature), and every other family in src/families/ are
-# NOT covered — calling `getREsd` on them is a `MethodError`, which is the
+# NOT covered — calling `latent_score_sd` on them is a `MethodError`, which is the
 # honest failure mode rather than a silent wrong answer. Predictor-informed
 # (`X_lv`/`alpha_lv`) fits within the five covered families ALSO refuse, with
 # an honest `ArgumentError` (this method does not thread the fitted-mean
@@ -212,7 +215,7 @@ end
 # ---------------------------------------------------------------------------
 
 """
-    getREsd(fit::BinomialFit, Y; N=nothing, mask=nothing, offset=nothing) -> Matrix{Float64}
+    latent_score_sd(fit::BinomialFit, Y; N=nothing, mask=nothing, offset=nothing) -> Matrix{Float64}
 
 Laplace-approximate conditional SDs of the per-site latent scores at the
 fitted mode `ẑ_s`: `sqrt(diag((Λ' W_s Λ + I)⁻¹))`, with `W_s` the SAME
@@ -221,16 +224,16 @@ its log-det term at this fit's own `fit.hessian` (Fisher or observed).
 Returns an `n_sites × K` matrix. Conditional on θ̂ — see the module
 docstring in src/re_sd.jl.
 """
-function getREsd(fit::BinomialFit, Y::AbstractMatrix;
+function latent_score_sd(fit::BinomialFit, Y::AbstractMatrix;
                  N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
                  mask = nothing, offset = nothing)
     _is_binomial_aghq(fit) && throw(ArgumentError(
-        "getREsd is not implemented for AGHQ-integrated binomial fits"))
+        "latent_score_sd is not implemented for AGHQ-integrated binomial fits"))
     _has_lv_predictor(fit) && throw(ArgumentError(
-        "getREsd is not implemented for predictor-informed (X_lv) fits: " *
+        "latent_score_sd is not implemented for predictor-informed (X_lv) fits: " *
         "the mode/curvature at each site needs the latent-mean offset " *
         "Λ·(X_lv·α_lv)' threaded through, which this method does not do"))
-    eltype(Y) <: Integer || throw(ArgumentError("getREsd requires integer responses"))
+    eltype(Y) <: Integer || throw(ArgumentError("latent_score_sd requires integer responses"))
     p, n = size(Y)
     Nm = N === nothing ? fill(1, p, n) : N
     return _laplace_re_sd(Binomial(), Y, Nm, fit.Λ, fit.β, fit.link;
@@ -238,21 +241,21 @@ function getREsd(fit::BinomialFit, Y::AbstractMatrix;
 end
 
 """
-    getREsd(fit::PoissonFit, Y; N=nothing, mask=nothing, offset=nothing) -> Matrix{Float64}
+    latent_score_sd(fit::PoissonFit, Y; N=nothing, mask=nothing, offset=nothing) -> Matrix{Float64}
 
 Laplace-approximate conditional SDs of the per-site latent scores; see
-[`getREsd(::BinomialFit, ::AbstractMatrix)`](@ref).
+[`latent_score_sd(::BinomialFit, ::AbstractMatrix)`](@ref).
 """
-function getREsd(fit::PoissonFit, Y::AbstractMatrix;
+function latent_score_sd(fit::PoissonFit, Y::AbstractMatrix;
                  N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
                  mask = nothing, offset = nothing)
     _is_poisson_aghq(fit) && throw(ArgumentError(
-        "getREsd is not implemented for AGHQ-integrated Poisson fits"))
+        "latent_score_sd is not implemented for AGHQ-integrated Poisson fits"))
     _has_lv_predictor(fit) && throw(ArgumentError(
-        "getREsd is not implemented for predictor-informed (X_lv) fits: " *
+        "latent_score_sd is not implemented for predictor-informed (X_lv) fits: " *
         "the mode/curvature at each site needs the latent-mean offset " *
         "Λ·(X_lv·α_lv)' threaded through, which this method does not do"))
-    eltype(Y) <: Integer || throw(ArgumentError("getREsd requires integer responses"))
+    eltype(Y) <: Integer || throw(ArgumentError("latent_score_sd requires integer responses"))
     p, n = size(Y)
     Nm = N === nothing ? fill(1, p, n) : N
     return _laplace_re_sd(Poisson(), Y, Nm, fit.Λ, fit.β, fit.link;
@@ -260,16 +263,16 @@ function getREsd(fit::PoissonFit, Y::AbstractMatrix;
 end
 
 """
-    getREsd(fit::NBFit, Y; N=nothing, mask=nothing, offset=nothing) -> Matrix{Float64}
+    latent_score_sd(fit::NBFit, Y; N=nothing, mask=nothing, offset=nothing) -> Matrix{Float64}
 
 Laplace-approximate conditional SDs of the per-site latent scores at the
-fitted dispersion `r`; see [`getREsd(::BinomialFit, ::AbstractMatrix)`](@ref).
+fitted dispersion `r`; see [`latent_score_sd(::BinomialFit, ::AbstractMatrix)`](@ref).
 """
-function getREsd(fit::NBFit, Y::AbstractMatrix{<:Integer};
+function latent_score_sd(fit::NBFit, Y::AbstractMatrix{<:Integer};
                  N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
                  mask = nothing, offset = nothing)
     _has_lv_predictor(fit) && throw(ArgumentError(
-        "getREsd is not implemented for predictor-informed (X_lv) fits: " *
+        "latent_score_sd is not implemented for predictor-informed (X_lv) fits: " *
         "the mode/curvature at each site needs the latent-mean offset " *
         "Λ·(X_lv·α_lv)' threaded through, which this method does not do"))
     p, n = size(Y)
@@ -279,19 +282,19 @@ function getREsd(fit::NBFit, Y::AbstractMatrix{<:Integer};
 end
 
 """
-    getREsd(fit::GammaFit, Y; mask=nothing, offset=nothing) -> Matrix{Float64}
+    latent_score_sd(fit::GammaFit, Y; mask=nothing, offset=nothing) -> Matrix{Float64}
 
 Laplace-approximate conditional SDs of the per-site latent scores at the
-fitted shape `α`; see [`getREsd(::BinomialFit, ::AbstractMatrix)`](@ref).
+fitted shape `α`; see [`latent_score_sd(::BinomialFit, ::AbstractMatrix)`](@ref).
 Gamma defaults to the `:observed` log-det curvature (see
 src/families/laplace.jl `_default_hessian(::Gamma, ::LogLink)`), so this
 uses the observed curvature by default too — the SD matches whatever
 curvature `fit.hessian` actually recorded.
 """
-function getREsd(fit::GammaFit, Y::AbstractMatrix{<:Real};
+function latent_score_sd(fit::GammaFit, Y::AbstractMatrix{<:Real};
                  mask = nothing, offset = nothing)
     _has_lv_predictor(fit) && throw(ArgumentError(
-        "getREsd is not implemented for predictor-informed (X_lv) fits: " *
+        "latent_score_sd is not implemented for predictor-informed (X_lv) fits: " *
         "the mode/curvature at each site needs the latent-mean offset " *
         "Λ·(X_lv·α_lv)' threaded through, which this method does not do"))
     p, n = size(Y)
@@ -301,19 +304,34 @@ function getREsd(fit::GammaFit, Y::AbstractMatrix{<:Real};
 end
 
 """
-    getREsd(fit::BetaFit, Y; mask=nothing, offset=nothing) -> Matrix{Float64}
+    latent_score_sd(fit::BetaFit, Y; mask=nothing, offset=nothing) -> Matrix{Float64}
 
 Laplace-approximate conditional SDs of the per-site latent scores at the
-fitted precision `φ`; see [`getREsd(::BinomialFit, ::AbstractMatrix)`](@ref).
+fitted precision `φ`; see [`latent_score_sd(::BinomialFit, ::AbstractMatrix)`](@ref).
 """
-function getREsd(fit::BetaFit, Y::AbstractMatrix{<:Real};
+function latent_score_sd(fit::BetaFit, Y::AbstractMatrix{<:Real};
                  mask = nothing, offset = nothing)
     _has_lv_predictor(fit) && throw(ArgumentError(
-        "getREsd is not implemented for predictor-informed (X_lv) fits: " *
+        "latent_score_sd is not implemented for predictor-informed (X_lv) fits: " *
         "the mode/curvature at each site needs the latent-mean offset " *
         "Λ·(X_lv·α_lv)' threaded through, which this method does not do"))
     p, n = size(Y)
     N1 = ones(Int, p, n)
     return _laplace_re_sd(Beta(fit.φ, 1.0), Y, N1, fit.Λ, fit.β, fit.link;
                           mask = mask, offset = offset, hessian = fit.hessian)
+end
+
+# ---------------------------------------------------------------------------
+# Deprecated forwarding shim. `getREsd` is renamed to `latent_score_sd`
+# (maintainer decision docs/dev-log/decisions/2026-09-01-maintainer-decisions-
+# round2-3.md #5) so the `getREsd` name is free for a future true mirror of
+# R's `getREsd(fit, block=)` auxiliary-random-effect-block surface, which
+# this function has never covered — see the module docstring above.
+# ---------------------------------------------------------------------------
+
+function getREsd(args...; kwargs...)
+    Base.depwarn(
+        "getREsd is renamed to latent_score_sd; the name getREsd is reserved " *
+        "for a future R-mirroring surface", :getREsd)
+    return latent_score_sd(args...; kwargs...)
 end
