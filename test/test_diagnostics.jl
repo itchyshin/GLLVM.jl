@@ -104,6 +104,25 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics
         @test r.separable === missing
     end
 
+    @testset "diagnose_kernel_separability — identical (non-orthonormal) column spaces are NOT separable" begin
+        # Regression for the post-M2 review finding: svd(Λ_B'Λ_W) on raw
+        # (non-orthonormal) loadings is not cos(principal angle). Λ_B == Λ_W
+        # here (identical 1-D column space) but scaled to 0.2 so the naive
+        # M = Λ_B'Λ_W = 0.16·(sum of squares) product is well below 1 — the
+        # buggy computation reported this as "separable" (angle ≈ 1.41 rad)
+        # when the true principal angle between identical spaces is 0.
+        Random.seed!(150)
+        p, K, n = 4, 1, 100
+        y = 0.5 * randn(p, n)
+        fit = fit_gaussian_gllvm(y; K = K, K_W = 1)
+        badpars = merge(fit.pars, (Λ = fill(0.2, p, 1), Λ_W = fill(0.2, p, 1)))
+        badfit = GLLVM.GllvmFit(fit.model, badpars, fit.logLik, fit.n_iter, fit.converged,
+                                 fit.optim_result, fit.cputime)
+        r = GLLVM.diagnose_kernel_separability(badfit)
+        @test r.min_principal_angle ≈ 0.0 atol = 1e-8
+        @test r.separable === false
+    end
+
     @testset "compare_Sigma_table / compare_loadings — identical fits agree exactly" begin
         Random.seed!(16)
         p, K, n = 5, 2, 300
@@ -119,6 +138,25 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics
         cl = GLLVM.compare_loadings(fit1, fit2)
         @test cl.frobenius_norm_LLt ≈ 0.0 atol = 1e-10
         @test all(a -> isapprox(a, 0.0; atol = 1e-6), cl.principal_angles)
+    end
+
+    @testset "compare_loadings — proper principal angles for a small-magnitude identical subspace" begin
+        # Same non-orthonormal-basis trap as the diagnose_kernel_separability
+        # regression above: Λ1 == Λ2 = 0.2·ones(p,1) (identical 1-D column
+        # space) but small enough in magnitude that the raw dot product
+        # ‖Λ1‖‖Λ2‖ < 1 — the buggy `svd(Λ1'Λ2).S` computation reports this as
+        # a nonzero principal angle even though the true angle is 0.
+        Random.seed!(151)
+        p, K, n = 4, 1, 100
+        y = 0.5 * randn(p, n)
+        fit0 = fit_gaussian_gllvm(y; K = K)
+        Λ = fill(0.2, p, 1)
+        pars = merge(fit0.pars, (Λ = Λ,))
+        fit1 = GLLVM.GllvmFit(fit0.model, pars, fit0.logLik, fit0.n_iter, fit0.converged,
+                               fit0.optim_result, fit0.cputime)
+        fit2 = fit1
+        cl = GLLVM.compare_loadings(fit1, fit2)
+        @test all(a -> isapprox(a, 0.0; atol = 1e-8), cl.principal_angles)
     end
 
     @testset "compare_Sigma_table / compare_loadings — a genuinely different fit disagrees" begin

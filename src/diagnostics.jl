@@ -391,6 +391,23 @@ function diagnostic_table(fit; y = nothing, X = nothing, Σ_phy = nothing, kwarg
 end
 
 # ---------------------------------------------------------------------
+# Principal angles between two column spaces. The naive `svd(A'B).S` on
+# non-orthonormal A, B is NOT cos(angle) — it conflates the columns'
+# norms/skew with the subspace geometry (identical subspaces spanned by
+# differently-scaled bases can report a spuriously small max singular
+# value, i.e. "separable" when they are the same space). Orthonormalize
+# each column space first (thin QR basis), then take the SVD of the
+# product of the two orthonormal bases — the textbook principal-angle
+# construction (Björck & Golub 1973).
+# ---------------------------------------------------------------------
+function _principal_angles(A::AbstractMatrix, B::AbstractMatrix)
+    QA = Matrix(qr(A).Q)[:, 1:size(A, 2)]
+    QB = Matrix(qr(B).Q)[:, 1:size(B, 2)]
+    σ = svd(QA' * QB).S
+    return acos.(clamp.(σ, 0.0, 1.0))
+end
+
+# ---------------------------------------------------------------------
 # diagnose_kernel_separability — kernel-helpers.R / kernel-keywords.R
 # ---------------------------------------------------------------------
 
@@ -400,10 +417,14 @@ end
 Port of the kernel-separability check in `kernel-helpers.R` /
 `kernel-keywords.R`: whether a multi-tier fit's B-tier and W-tier
 loading column spaces are identifiably separate. Implemented here as
-the smallest principal angle between `range(Λ_B)` and `range(Λ_W)`
-(via the SVD of `Λ_B' Λ_W`, i.e. `cos(angle) = σ_max`); an angle near
-zero means the two tiers' latent axes are not separable from the
-data.
+the smallest principal angle between `range(Λ_B)` and `range(Λ_W)`,
+via the textbook principal-angle construction — orthonormalize each
+column space first (thin QR basis), then `cos(angle) = σ_max` of the
+SVD of the product of the two orthonormal bases (see
+[`_principal_angles`](@ref); the naive `svd(Λ_B'Λ_W)` on the raw,
+non-orthonormal loadings is NOT `cos(angle)` and can report identical
+column spaces as separable). An angle near zero means the two tiers'
+latent axes are not separable from the data.
 
 **Gap vs R**: R's kernel-keyword machinery covers a broader family of
 named structured-covariance kernels (spatial, phylogenetic,
@@ -418,10 +439,8 @@ function diagnose_kernel_separability(fit; angle_tol::Real = 1e-3)
     end
     Λ_B = fit.pars.Λ
     Λ_W = fit.pars.Λ_W
-    M = Λ_B' * Λ_W
-    σ = svd(M).S
-    cos_angle = isempty(σ) ? 0.0 : clamp(maximum(σ), 0.0, 1.0)
-    angle = acos(cos_angle)
+    angles = _principal_angles(Λ_B, Λ_W)
+    angle = isempty(angles) ? 0.0 : minimum(angles)
     separable = angle > angle_tol
     msg = separable ? "" : "smallest principal angle $(round(angle, digits = 6)) rad is below angle_tol"
     return (separable = separable, min_principal_angle = angle, message = msg)
@@ -480,10 +499,12 @@ sign are not identified). It compares:
 
   - `frobenius_norm_LLt` — `‖Λ1Λ1ᵀ − Λ2Λ2ᵀ‖_F`, the rotation/sign-free
     tcrossprod invariant.
-  - `principal_angles` — principal angles (radians) between
-    `range(Λ1)` and `range(Λ2)` (via `svd(Λ1' Λ2)`), `0` meaning
-    identical column spaces; only defined when both fits share the
-    same latent rank `K`, else `missing`.
+  - `principal_angles` — proper principal angles (radians) between
+    `range(Λ1)` and `range(Λ2)` (see [`_principal_angles`](@ref):
+    orthonormalize each column space first, then the SVD of the
+    orthonormal-basis product), `0` meaning identical column spaces;
+    only defined when both fits share the same latent rank `K`, else
+    `missing`.
 """
 function compare_loadings(fit1, fit2)
     Λ1 = _loadings(fit1)
@@ -495,8 +516,7 @@ function compare_loadings(fit1, fit2)
     fro = LinearAlgebra.norm(LLt1 .- LLt2)
     angles = missing
     if size(Λ1, 2) == size(Λ2, 2)
-        σ = svd(Λ1' * Λ2).S
-        angles = acos.(clamp.(σ, -1.0, 1.0))
+        angles = _principal_angles(Λ1, Λ2)
     end
     return (frobenius_norm_LLt = fro, principal_angles = angles)
 end
