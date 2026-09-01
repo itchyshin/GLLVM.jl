@@ -79,3 +79,19 @@ routing), Hopper (R↔Julia semantics), Rose (audit dispatched below).
 
 ## 11. Rose verdict
 Pending — audit dispatched at close; verdict to be appended.
+
+## 11a. Rose verdict (round 1, 2026-09-01): NOT OK — two blockers, both since fixed
+
+Recount, arithmetic, tolerance discipline, overclaim check: clean. Blockers:
+(A) all 9 masks-known bound rows cited a preservation_sha256 matching no file
+— corrected to the real tarball (3df7de88…) + results (6604a1ff…) hashes;
+the retained verifier re-passed during the audit. (B) 7 covariance bound rows
+cited only covariance-modes-evidence.json (status …NATIVE_FITS_UNPAID) —
+repointed to covariance-mode-fits-evidence.json /
+covariance-formula-evidence.json / public-r-bridge-programme-evidence.json,
+which carry the executed PASS receipts. Also fixed: check-log.md backfilled
+for waves 3–4 (rule #7 had been violated), AGENTS.md phase snapshot updated.
+Residual caveat Rose noted and this report keeps: ledger-complete ≠ parity;
+stale-tally drift is a recurring failure mode in this repo — the mechanical
+audit script should hash-check evidence pointers next time, not just
+path-check them (this round's audit only proved paths existed).

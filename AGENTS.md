@@ -209,6 +209,13 @@ Full responsibility detail lives in §2 of the reference plan.
 - **Phase 1.0 — RCall.jl parity suite (live on catch-up branch, 2026-08-01).**
   Light logLik oracles green on named routes; still not “full family parity.”
 
+- **Core 0.7.0 + AGHQ M2 ledger — COMPLETE (2026-09-01, lane codex/core070-aghq-20260830).**
+  533/533 required manifest rows accounted: 222 bound on verified Totoro batch
+  receipts + 311 receipted dispositions (142 needs-Julia-surface, 44 spec-defect,
+  125 pending maintainer decision incl. the confirmed nobs and binomial-cloglog
+  cross-engine defects). Rose audit round-1 blockers fixed. Unpushed; see
+  docs/dev-log/after-task/2026-09-01-m2-ledger-complete.md.
+
 Update this snapshot after every after-task report.
 
 ## Pre-publish gate

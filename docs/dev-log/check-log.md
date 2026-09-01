@@ -16887,3 +16887,37 @@ an audit. Aligning nobs is a PUBLIC behavior change -> maintainer decision
 (recommendation: adopt p*n). Rows dispositioned
 PARTIAL_PARITY_DEFECT_PENDING_DECISION; 12 clean cases bound.
 M2 ledger: 231/533 accounted (134 bound + 97 receipted dispositions).
+
+## 2026-09-01 — M2 waves 3–4: ledger complete, 533/533 (commit 9dc51244; corrected 511f4f04+)
+
+Wave 3 (namespace): ns1 54 cases PASS; ns2 required two batch-SPEC repairs
+before its 9 cases passed — (a) a fresh-contract paired-fit tolerance
+miscalibration (1e-6 -> the 1e-4 precedent, justified in-code; never an
+accepted-gate widening) and (b) a wrong-model wide-consistency comparison:
+gllvmTMB_wide builds latent() at the DEFAULT unique, the batch compared it
+to the unique=FALSE oracle (19 vs 15 df, measured logLik gap 6.38); repaired
+to a matched default-unique reference (measured ~1e-8, tol 1e-6).
+38 rows BLOCKED_NEEDS_JULIA_SURFACE + 3 reclassify from contract triage.
+
+Wave 4: aghq controls (16 cases PASS; 22 placeholder *-CONTROL-CONTRACT
+rows surfaced BLOCKED_SPEC_DEFECT); inference remainder (5 reject-route
+cases PASS after a fixture repair that exposed a real surface gap — R's icc
+CI routes through extract_repeatability on a two-tier fit while Julia's
+TwoLevelFit has no CI surface; 14 bound + 5 BLOCKED); fit-input-2 (13 cases
+PASS at 1e-6..1e-11; 6 rows bound + 3 BLOCKED with file:line evidence; the
+frozen R engine's kernel_latent(unique=TRUE) multi-tier silent-drop
+degeneracy receipted with a wrong-model negative control); family-links
+(probit PASS: loglik delta 1.28e-9, cross-objective identity 6.6e-12;
+CLOGLOG = CONFIRMED cross-engine likelihood disagreement, identity delta
+2.099 at R's coordinates with no saturation either side -> repair leaf);
+covariance triage (13 BLOCKED_NEEDS_JULIA_SURFACE, 11 BLOCKED_SPEC_DEFECT);
+family reconciliation audit (15 pending-decision, 0 bindable — formula and
+bridge cases unexecuted everywhere).
+
+Final: 222 bound + 311 receipted dispositions = 533/533. Rose audit
+(NOT-OK round 1) found two evidence defects, both fixed: 9 masks-known rows
+carried a preservation sha matching no file (replaced with the real tarball
++ results hashes; verifier re-passed), and 7 covariance bound rows cited
+only the UNPAID fixed-point reference file (repointed to the three evidence
+files carrying the executed PASS receipts). check-log backfilled (this
+entry) — the wave 3–4 stretch had violated rule #7 until now.

@@ -702,7 +702,12 @@
     "SLOPE-ANIMAL-DEP-MULTIGAUSS",
     "SLOPE-ANIMAL-DEP-MULTIPOIS"
    ],
-   "slope_case_plan": "docs/dev-log/core070/slopes-required-case-plan.json"
+   "slope_case_plan": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "evidence": {
+    "batch": "codex-cycle covariance qualification",
+    "receipts": "docs/dev-log/core070/covariance-mode-fits-evidence.json (SEVEN_NATIVE_GAUSSIAN_FIT_CONTRACTS_PASS_WITH_EXPLICIT_R_CONTROLS) + docs/dev-log/core070/covariance-formula-evidence.json (NINE_COVARIANCE_FORMULA_INTERFACES_PASS_NOT_PROGRAMME, max delta 2.56e-11) + docs/dev-log/core070/public-r-bridge-programme-evidence.json (status PASS)",
+    "note": "2026-09-01 Rose audit blocker B: rows previously cited only reference_model_evidence (covariance-modes-evidence.json, whose status is REFERENCE_FIXED_POINTS_NATIVE_FITS_UNPAID \u2014 the fixed-point reference stage, not the fits); repointed to the three evidence files that actually carry the executed native/formula/bridge PASS receipts for these case ids"
+   }
   },
   {
    "source_id": "covariance/COV-ANIMAL-DEP-BAR-REJECT",
@@ -752,7 +757,12 @@
     "MODE-ANIMAL-INDEP",
     "MODE-ANIMAL-COMMON"
    ],
-   "reference_model_evidence": "docs/dev-log/core070/covariance-modes-evidence.json"
+   "reference_model_evidence": "docs/dev-log/core070/covariance-modes-evidence.json",
+   "evidence": {
+    "batch": "codex-cycle covariance qualification",
+    "receipts": "docs/dev-log/core070/covariance-mode-fits-evidence.json (SEVEN_NATIVE_GAUSSIAN_FIT_CONTRACTS_PASS_WITH_EXPLICIT_R_CONTROLS) + docs/dev-log/core070/covariance-formula-evidence.json (NINE_COVARIANCE_FORMULA_INTERFACES_PASS_NOT_PROGRAMME, max delta 2.56e-11) + docs/dev-log/core070/public-r-bridge-programme-evidence.json (status PASS)",
+    "note": "2026-09-01 Rose audit blocker B: rows previously cited only reference_model_evidence (covariance-modes-evidence.json, whose status is REFERENCE_FIXED_POINTS_NATIVE_FITS_UNPAID \u2014 the fixed-point reference stage, not the fits); repointed to the three evidence files that actually carry the executed native/formula/bridge PASS receipts for these case ids"
+   }
   },
   {
    "source_id": "covariance/COV-ANIMAL-INDEP-BAR-REJECT",
@@ -840,7 +850,12 @@
    "reference_model_case_ids": [
     "MODE-KERNEL-DEP"
    ],
-   "reference_model_evidence": "docs/dev-log/core070/covariance-modes-evidence.json"
+   "reference_model_evidence": "docs/dev-log/core070/covariance-modes-evidence.json",
+   "evidence": {
+    "batch": "codex-cycle covariance qualification",
+    "receipts": "docs/dev-log/core070/covariance-mode-fits-evidence.json (SEVEN_NATIVE_GAUSSIAN_FIT_CONTRACTS_PASS_WITH_EXPLICIT_R_CONTROLS) + docs/dev-log/core070/covariance-formula-evidence.json (NINE_COVARIANCE_FORMULA_INTERFACES_PASS_NOT_PROGRAMME, max delta 2.56e-11) + docs/dev-log/core070/public-r-bridge-programme-evidence.json (status PASS)",
+    "note": "2026-09-01 Rose audit blocker B: rows previously cited only reference_model_evidence (covariance-modes-evidence.json, whose status is REFERENCE_FIXED_POINTS_NATIVE_FITS_UNPAID \u2014 the fixed-point reference stage, not the fits); repointed to the three evidence files that actually carry the executed native/formula/bridge PASS receipts for these case ids"
+   }
   },
   {
    "source_id": "covariance/COV-KERNEL-FOLDED-UNIQUE",
@@ -890,7 +905,12 @@
     "MODE-KERNEL-INDEP",
     "MODE-KERNEL-COMMON"
    ],
-   "reference_model_evidence": "docs/dev-log/core070/covariance-modes-evidence.json"
+   "reference_model_evidence": "docs/dev-log/core070/covariance-modes-evidence.json",
+   "evidence": {
+    "batch": "codex-cycle covariance qualification",
+    "receipts": "docs/dev-log/core070/covariance-mode-fits-evidence.json (SEVEN_NATIVE_GAUSSIAN_FIT_CONTRACTS_PASS_WITH_EXPLICIT_R_CONTROLS) + docs/dev-log/core070/covariance-formula-evidence.json (NINE_COVARIANCE_FORMULA_INTERFACES_PASS_NOT_PROGRAMME, max delta 2.56e-11) + docs/dev-log/core070/public-r-bridge-programme-evidence.json (status PASS)",
+    "note": "2026-09-01 Rose audit blocker B: rows previously cited only reference_model_evidence (covariance-modes-evidence.json, whose status is REFERENCE_FIXED_POINTS_NATIVE_FITS_UNPAID \u2014 the fixed-point reference stage, not the fits); repointed to the three evidence files that actually carry the executed native/formula/bridge PASS receipts for these case ids"
+   }
   },
   {
    "source_id": "covariance/COV-KERNEL-LATENT",
@@ -978,7 +998,12 @@
    "reference_model_case_ids": [
     "MODE-ORD-DEP"
    ],
-   "reference_model_evidence": "docs/dev-log/core070/covariance-modes-evidence.json"
+   "reference_model_evidence": "docs/dev-log/core070/covariance-modes-evidence.json",
+   "evidence": {
+    "batch": "codex-cycle covariance qualification",
+    "receipts": "docs/dev-log/core070/covariance-mode-fits-evidence.json (SEVEN_NATIVE_GAUSSIAN_FIT_CONTRACTS_PASS_WITH_EXPLICIT_R_CONTROLS) + docs/dev-log/core070/covariance-formula-evidence.json (NINE_COVARIANCE_FORMULA_INTERFACES_PASS_NOT_PROGRAMME, max delta 2.56e-11) + docs/dev-log/core070/public-r-bridge-programme-evidence.json (status PASS)",
+    "note": "2026-09-01 Rose audit blocker B: rows previously cited only reference_model_evidence (covariance-modes-evidence.json, whose status is REFERENCE_FIXED_POINTS_NATIVE_FITS_UNPAID \u2014 the fixed-point reference stage, not the fits); repointed to the three evidence files that actually carry the executed native/formula/bridge PASS receipts for these case ids"
+   }
   },
   {
    "source_id": "covariance/COV-ORD-INDEP",
@@ -992,7 +1017,12 @@
    "reference_model_case_ids": [
     "MODE-ORD-INDEP"
    ],
-   "reference_model_evidence": "docs/dev-log/core070/covariance-modes-evidence.json"
+   "reference_model_evidence": "docs/dev-log/core070/covariance-modes-evidence.json",
+   "evidence": {
+    "batch": "codex-cycle covariance qualification",
+    "receipts": "docs/dev-log/core070/covariance-mode-fits-evidence.json (SEVEN_NATIVE_GAUSSIAN_FIT_CONTRACTS_PASS_WITH_EXPLICIT_R_CONTROLS) + docs/dev-log/core070/covariance-formula-evidence.json (NINE_COVARIANCE_FORMULA_INTERFACES_PASS_NOT_PROGRAMME, max delta 2.56e-11) + docs/dev-log/core070/public-r-bridge-programme-evidence.json (status PASS)",
+    "note": "2026-09-01 Rose audit blocker B: rows previously cited only reference_model_evidence (covariance-modes-evidence.json, whose status is REFERENCE_FIXED_POINTS_NATIVE_FITS_UNPAID \u2014 the fixed-point reference stage, not the fits); repointed to the three evidence files that actually carry the executed native/formula/bridge PASS receipts for these case ids"
+   }
   },
   {
    "source_id": "covariance/COV-ORD-INDEP-COMMON",
@@ -1006,7 +1036,12 @@
    "reference_model_case_ids": [
     "MODE-ORD-COMMON"
    ],
-   "reference_model_evidence": "docs/dev-log/core070/covariance-modes-evidence.json"
+   "reference_model_evidence": "docs/dev-log/core070/covariance-modes-evidence.json",
+   "evidence": {
+    "batch": "codex-cycle covariance qualification",
+    "receipts": "docs/dev-log/core070/covariance-mode-fits-evidence.json (SEVEN_NATIVE_GAUSSIAN_FIT_CONTRACTS_PASS_WITH_EXPLICIT_R_CONTROLS) + docs/dev-log/core070/covariance-formula-evidence.json (NINE_COVARIANCE_FORMULA_INTERFACES_PASS_NOT_PROGRAMME, max delta 2.56e-11) + docs/dev-log/core070/public-r-bridge-programme-evidence.json (status PASS)",
+    "note": "2026-09-01 Rose audit blocker B: rows previously cited only reference_model_evidence (covariance-modes-evidence.json, whose status is REFERENCE_FIXED_POINTS_NATIVE_FITS_UNPAID \u2014 the fixed-point reference stage, not the fits); repointed to the three evidence files that actually carry the executed native/formula/bridge PASS receipts for these case ids"
+   }
   },
   {
    "source_id": "covariance/COV-ORD-LATENT-BARE",
@@ -11141,9 +11176,12 @@
    "evidence": {
     "batch": "masks-known-batch-01",
     "receipts": ".unlazy/core070-aghq/masks-known-batch-01",
-    "preservation_sha256": "07f1767dffe5efc87a38526966acea88d96ce65ab8fac4038ddeda7a30d64763",
+    "preservation_sha256": "3df7de88dd5f42579071f705fa54917b7eb760d4815c5b7cae42aabd7abc2b5f",
     "verifier": "CORE070_MASKS_KNOWN_RETAINED_VERIFIED",
-    "note": ""
+    "note": "",
+    "preservation_tarball": ".unlazy/core070-aghq/masks-known-batch-01.tar.gz",
+    "results_sha256": "6604a1ff7ba1cf60bbb584da402146dc68b1826e44e900c36c51b7c034cd1d3d",
+    "sha_correction_note": "2026-09-01 Rose audit blocker A: the original preservation_sha256 (07f1767d\u2026) matched no file; replaced with the freshly created tarball sha and the retained masks-known-results.json sha, whose verifier (tools/core070_verify_masks_known_retained.py --self-test) re-passed during the audit (CORE070_MASKS_KNOWN_RETAINED_VERIFIED, 8/8 negatives)"
    }
   },
   {
@@ -11164,9 +11202,12 @@
    "evidence": {
     "batch": "masks-known-batch-01",
     "receipts": ".unlazy/core070-aghq/masks-known-batch-01",
-    "preservation_sha256": "07f1767dffe5efc87a38526966acea88d96ce65ab8fac4038ddeda7a30d64763",
+    "preservation_sha256": "3df7de88dd5f42579071f705fa54917b7eb760d4815c5b7cae42aabd7abc2b5f",
     "verifier": "CORE070_MASKS_KNOWN_RETAINED_VERIFIED",
-    "note": ""
+    "note": "",
+    "preservation_tarball": ".unlazy/core070-aghq/masks-known-batch-01.tar.gz",
+    "results_sha256": "6604a1ff7ba1cf60bbb584da402146dc68b1826e44e900c36c51b7c034cd1d3d",
+    "sha_correction_note": "2026-09-01 Rose audit blocker A: the original preservation_sha256 (07f1767d\u2026) matched no file; replaced with the freshly created tarball sha and the retained masks-known-results.json sha, whose verifier (tools/core070_verify_masks_known_retained.py --self-test) re-passed during the audit (CORE070_MASKS_KNOWN_RETAINED_VERIFIED, 8/8 negatives)"
    }
   },
   {
@@ -11197,9 +11238,12 @@
    "evidence": {
     "batch": "masks-known-batch-01",
     "receipts": ".unlazy/core070-aghq/masks-known-batch-01",
-    "preservation_sha256": "07f1767dffe5efc87a38526966acea88d96ce65ab8fac4038ddeda7a30d64763",
+    "preservation_sha256": "3df7de88dd5f42579071f705fa54917b7eb760d4815c5b7cae42aabd7abc2b5f",
     "verifier": "CORE070_MASKS_KNOWN_RETAINED_VERIFIED",
-    "note": ""
+    "note": "",
+    "preservation_tarball": ".unlazy/core070-aghq/masks-known-batch-01.tar.gz",
+    "results_sha256": "6604a1ff7ba1cf60bbb584da402146dc68b1826e44e900c36c51b7c034cd1d3d",
+    "sha_correction_note": "2026-09-01 Rose audit blocker A: the original preservation_sha256 (07f1767d\u2026) matched no file; replaced with the freshly created tarball sha and the retained masks-known-results.json sha, whose verifier (tools/core070_verify_masks_known_retained.py --self-test) re-passed during the audit (CORE070_MASKS_KNOWN_RETAINED_VERIFIED, 8/8 negatives)"
    }
   },
   {
@@ -11240,9 +11284,12 @@
    "evidence": {
     "batch": "masks-known-batch-01",
     "receipts": ".unlazy/core070-aghq/masks-known-batch-01",
-    "preservation_sha256": "07f1767dffe5efc87a38526966acea88d96ce65ab8fac4038ddeda7a30d64763",
+    "preservation_sha256": "3df7de88dd5f42579071f705fa54917b7eb760d4815c5b7cae42aabd7abc2b5f",
     "verifier": "CORE070_MASKS_KNOWN_RETAINED_VERIFIED",
-    "note": "KNOWN-POISSON is structural-only per its own plan (no numeric comparand claimed)"
+    "note": "KNOWN-POISSON is structural-only per its own plan (no numeric comparand claimed)",
+    "preservation_tarball": ".unlazy/core070-aghq/masks-known-batch-01.tar.gz",
+    "results_sha256": "6604a1ff7ba1cf60bbb584da402146dc68b1826e44e900c36c51b7c034cd1d3d",
+    "sha_correction_note": "2026-09-01 Rose audit blocker A: the original preservation_sha256 (07f1767d\u2026) matched no file; replaced with the freshly created tarball sha and the retained masks-known-results.json sha, whose verifier (tools/core070_verify_masks_known_retained.py --self-test) re-passed during the audit (CORE070_MASKS_KNOWN_RETAINED_VERIFIED, 8/8 negatives)"
    }
   },
   {
@@ -11273,9 +11320,12 @@
    "evidence": {
     "batch": "masks-known-batch-01",
     "receipts": ".unlazy/core070-aghq/masks-known-batch-01",
-    "preservation_sha256": "07f1767dffe5efc87a38526966acea88d96ce65ab8fac4038ddeda7a30d64763",
+    "preservation_sha256": "3df7de88dd5f42579071f705fa54917b7eb760d4815c5b7cae42aabd7abc2b5f",
     "verifier": "CORE070_MASKS_KNOWN_RETAINED_VERIFIED",
-    "note": ""
+    "note": "",
+    "preservation_tarball": ".unlazy/core070-aghq/masks-known-batch-01.tar.gz",
+    "results_sha256": "6604a1ff7ba1cf60bbb584da402146dc68b1826e44e900c36c51b7c034cd1d3d",
+    "sha_correction_note": "2026-09-01 Rose audit blocker A: the original preservation_sha256 (07f1767d\u2026) matched no file; replaced with the freshly created tarball sha and the retained masks-known-results.json sha, whose verifier (tools/core070_verify_masks_known_retained.py --self-test) re-passed during the audit (CORE070_MASKS_KNOWN_RETAINED_VERIFIED, 8/8 negatives)"
    }
   },
   {
@@ -11296,9 +11346,12 @@
    "evidence": {
     "batch": "masks-known-batch-01",
     "receipts": ".unlazy/core070-aghq/masks-known-batch-01",
-    "preservation_sha256": "07f1767dffe5efc87a38526966acea88d96ce65ab8fac4038ddeda7a30d64763",
+    "preservation_sha256": "3df7de88dd5f42579071f705fa54917b7eb760d4815c5b7cae42aabd7abc2b5f",
     "verifier": "CORE070_MASKS_KNOWN_RETAINED_VERIFIED",
-    "note": ""
+    "note": "",
+    "preservation_tarball": ".unlazy/core070-aghq/masks-known-batch-01.tar.gz",
+    "results_sha256": "6604a1ff7ba1cf60bbb584da402146dc68b1826e44e900c36c51b7c034cd1d3d",
+    "sha_correction_note": "2026-09-01 Rose audit blocker A: the original preservation_sha256 (07f1767d\u2026) matched no file; replaced with the freshly created tarball sha and the retained masks-known-results.json sha, whose verifier (tools/core070_verify_masks_known_retained.py --self-test) re-passed during the audit (CORE070_MASKS_KNOWN_RETAINED_VERIFIED, 8/8 negatives)"
    }
   },
   {
@@ -11339,9 +11392,12 @@
    "evidence": {
     "batch": "masks-known-batch-01",
     "receipts": ".unlazy/core070-aghq/masks-known-batch-01",
-    "preservation_sha256": "07f1767dffe5efc87a38526966acea88d96ce65ab8fac4038ddeda7a30d64763",
+    "preservation_sha256": "3df7de88dd5f42579071f705fa54917b7eb760d4815c5b7cae42aabd7abc2b5f",
     "verifier": "CORE070_MASKS_KNOWN_RETAINED_VERIFIED",
-    "note": ""
+    "note": "",
+    "preservation_tarball": ".unlazy/core070-aghq/masks-known-batch-01.tar.gz",
+    "results_sha256": "6604a1ff7ba1cf60bbb584da402146dc68b1826e44e900c36c51b7c034cd1d3d",
+    "sha_correction_note": "2026-09-01 Rose audit blocker A: the original preservation_sha256 (07f1767d\u2026) matched no file; replaced with the freshly created tarball sha and the retained masks-known-results.json sha, whose verifier (tools/core070_verify_masks_known_retained.py --self-test) re-passed during the audit (CORE070_MASKS_KNOWN_RETAINED_VERIFIED, 8/8 negatives)"
    }
   },
   {
@@ -11372,9 +11428,12 @@
    "evidence": {
     "batch": "masks-known-batch-01",
     "receipts": ".unlazy/core070-aghq/masks-known-batch-01",
-    "preservation_sha256": "07f1767dffe5efc87a38526966acea88d96ce65ab8fac4038ddeda7a30d64763",
+    "preservation_sha256": "3df7de88dd5f42579071f705fa54917b7eb760d4815c5b7cae42aabd7abc2b5f",
     "verifier": "CORE070_MASKS_KNOWN_RETAINED_VERIFIED",
-    "note": ""
+    "note": "",
+    "preservation_tarball": ".unlazy/core070-aghq/masks-known-batch-01.tar.gz",
+    "results_sha256": "6604a1ff7ba1cf60bbb584da402146dc68b1826e44e900c36c51b7c034cd1d3d",
+    "sha_correction_note": "2026-09-01 Rose audit blocker A: the original preservation_sha256 (07f1767d\u2026) matched no file; replaced with the freshly created tarball sha and the retained masks-known-results.json sha, whose verifier (tools/core070_verify_masks_known_retained.py --self-test) re-passed during the audit (CORE070_MASKS_KNOWN_RETAINED_VERIFIED, 8/8 negatives)"
    }
   },
   {
@@ -11405,9 +11464,12 @@
    "evidence": {
     "batch": "masks-known-batch-01",
     "receipts": ".unlazy/core070-aghq/masks-known-batch-01",
-    "preservation_sha256": "07f1767dffe5efc87a38526966acea88d96ce65ab8fac4038ddeda7a30d64763",
+    "preservation_sha256": "3df7de88dd5f42579071f705fa54917b7eb760d4815c5b7cae42aabd7abc2b5f",
     "verifier": "CORE070_MASKS_KNOWN_RETAINED_VERIFIED",
-    "note": ""
+    "note": "",
+    "preservation_tarball": ".unlazy/core070-aghq/masks-known-batch-01.tar.gz",
+    "results_sha256": "6604a1ff7ba1cf60bbb584da402146dc68b1826e44e900c36c51b7c034cd1d3d",
+    "sha_correction_note": "2026-09-01 Rose audit blocker A: the original preservation_sha256 (07f1767d\u2026) matched no file; replaced with the freshly created tarball sha and the retained masks-known-results.json sha, whose verifier (tools/core070_verify_masks_known_retained.py --self-test) re-passed during the audit (CORE070_MASKS_KNOWN_RETAINED_VERIFIED, 8/8 negatives)"
    }
   }
  ],
