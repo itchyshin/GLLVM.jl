@@ -11,7 +11,13 @@
    "planned_case_ids": [
     "CORE070-AGHQ-AUTO-K-BINOMIAL-CONTROL-CONTRACT"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "aghq wave4",
+    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
+    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+   }
   },
   {
    "source_id": "aghq/AGHQ-AUTO-K-DELTA",
@@ -21,7 +27,13 @@
    "planned_case_ids": [
     "CORE070-AGHQ-AUTO-K-DELTA-CONTROL-CONTRACT"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "aghq wave4",
+    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
+    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+   }
   },
   {
    "source_id": "aghq/AGHQ-AUTO-K-GAUSSIAN",
@@ -31,7 +43,13 @@
    "planned_case_ids": [
     "CORE070-AGHQ-AUTO-K-GAUSSIAN-CONTROL-CONTRACT"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "aghq wave4",
+    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
+    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+   }
   },
   {
    "source_id": "aghq/AGHQ-AUTO-K-NB2",
@@ -41,7 +59,13 @@
    "planned_case_ids": [
     "CORE070-AGHQ-AUTO-K-NB2-CONTROL-CONTRACT"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "aghq wave4",
+    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
+    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+   }
   },
   {
    "source_id": "aghq/AGHQ-AUTO-K-ORDINAL",
@@ -51,7 +75,13 @@
    "planned_case_ids": [
     "CORE070-AGHQ-AUTO-K-ORDINAL-CONTROL-CONTRACT"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "aghq wave4",
+    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
+    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+   }
   },
   {
    "source_id": "aghq/AGHQ-AUTO-K-POISSON",
@@ -61,7 +91,13 @@
    "planned_case_ids": [
     "CORE070-AGHQ-AUTO-K-POISSON-CONTROL-CONTRACT"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "aghq wave4",
+    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
+    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+   }
   },
   {
    "source_id": "aghq/AGHQ-AUTO-K-TWEEDIE",
@@ -71,77 +107,153 @@
    "planned_case_ids": [
     "CORE070-AGHQ-AUTO-K-TWEEDIE-CONTROL-CONTRACT"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "aghq wave4",
+    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
+    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+   }
   },
   {
    "source_id": "aghq/AGHQ-CTRL-AUTO",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-CTRL-AUTO-PAIRED-CONTROL"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-CTRL-AUTO-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "evidence": {
+    "batch": "aghq wave4",
+    "receipts": ".unlazy/core070-aghq/wave4-batches/wave4-aghq",
+    "preservation_tarball": ".unlazy/core070-aghq/wave4-batches/wave4-aghq.tar.gz",
+    "preservation_sha256": "057c3e110216239bcdd36076e65063b8acd68ddfb1a9aff88ad1544dca3c7888",
+    "verifier": "tools/core070_verify_aghq_batch.py --self-test --state (CORE070_AGHQ_CONTROL_BATCH_VERIFIED 16 negative_controls 3)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-aghq"
+   }
   },
   {
    "source_id": "aghq/AGHQ-CTRL-FALSE",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-CTRL-FALSE-PAIRED-CONTROL"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-CTRL-FALSE-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "evidence": {
+    "batch": "aghq wave4",
+    "receipts": ".unlazy/core070-aghq/wave4-batches/wave4-aghq",
+    "preservation_tarball": ".unlazy/core070-aghq/wave4-batches/wave4-aghq.tar.gz",
+    "preservation_sha256": "057c3e110216239bcdd36076e65063b8acd68ddfb1a9aff88ad1544dca3c7888",
+    "verifier": "tools/core070_verify_aghq_batch.py --self-test --state (CORE070_AGHQ_CONTROL_BATCH_VERIFIED 16 negative_controls 3)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-aghq"
+   }
   },
   {
    "source_id": "aghq/AGHQ-CTRL-NINE",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-CTRL-NINE-PAIRED-CONTROL"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-CTRL-NINE-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "evidence": {
+    "batch": "aghq wave4",
+    "receipts": ".unlazy/core070-aghq/wave4-batches/wave4-aghq",
+    "preservation_tarball": ".unlazy/core070-aghq/wave4-batches/wave4-aghq.tar.gz",
+    "preservation_sha256": "057c3e110216239bcdd36076e65063b8acd68ddfb1a9aff88ad1544dca3c7888",
+    "verifier": "tools/core070_verify_aghq_batch.py --self-test --state (CORE070_AGHQ_CONTROL_BATCH_VERIFIED 16 negative_controls 3)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-aghq"
+   }
   },
   {
    "source_id": "aghq/AGHQ-CTRL-NULL",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-CTRL-NULL-PAIRED-CONTROL"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-CTRL-NULL-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "evidence": {
+    "batch": "aghq wave4",
+    "receipts": ".unlazy/core070-aghq/wave4-batches/wave4-aghq",
+    "preservation_tarball": ".unlazy/core070-aghq/wave4-batches/wave4-aghq.tar.gz",
+    "preservation_sha256": "057c3e110216239bcdd36076e65063b8acd68ddfb1a9aff88ad1544dca3c7888",
+    "verifier": "tools/core070_verify_aghq_batch.py --self-test --state (CORE070_AGHQ_CONTROL_BATCH_VERIFIED 16 negative_controls 3)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-aghq"
+   }
   },
   {
    "source_id": "aghq/AGHQ-CTRL-ONE",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-CTRL-ONE-PAIRED-CONTROL"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-CTRL-ONE-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "evidence": {
+    "batch": "aghq wave4",
+    "receipts": ".unlazy/core070-aghq/wave4-batches/wave4-aghq",
+    "preservation_tarball": ".unlazy/core070-aghq/wave4-batches/wave4-aghq.tar.gz",
+    "preservation_sha256": "057c3e110216239bcdd36076e65063b8acd68ddfb1a9aff88ad1544dca3c7888",
+    "verifier": "tools/core070_verify_aghq_batch.py --self-test --state (CORE070_AGHQ_CONTROL_BATCH_VERIFIED 16 negative_controls 3)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-aghq"
+   }
   },
   {
    "source_id": "aghq/AGHQ-CTRL-TRUE",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-CTRL-TRUE-PAIRED-CONTROL"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-CTRL-TRUE-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "evidence": {
+    "batch": "aghq wave4",
+    "receipts": ".unlazy/core070-aghq/wave4-batches/wave4-aghq",
+    "preservation_tarball": ".unlazy/core070-aghq/wave4-batches/wave4-aghq.tar.gz",
+    "preservation_sha256": "057c3e110216239bcdd36076e65063b8acd68ddfb1a9aff88ad1544dca3c7888",
+    "verifier": "tools/core070_verify_aghq_batch.py --self-test --state (CORE070_AGHQ_CONTROL_BATCH_VERIFIED 16 negative_controls 3)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-aghq"
+   }
   },
   {
    "source_id": "aghq/AGHQ-CTRL-TWO",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-CTRL-TWO-PAIRED-CONTROL"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-CTRL-TWO-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "evidence": {
+    "batch": "aghq wave4",
+    "receipts": ".unlazy/core070-aghq/wave4-batches/wave4-aghq",
+    "preservation_tarball": ".unlazy/core070-aghq/wave4-batches/wave4-aghq.tar.gz",
+    "preservation_sha256": "057c3e110216239bcdd36076e65063b8acd68ddfb1a9aff88ad1544dca3c7888",
+    "verifier": "tools/core070_verify_aghq_batch.py --self-test --state (CORE070_AGHQ_CONTROL_BATCH_VERIFIED 16 negative_controls 3)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-aghq"
+   }
   },
   {
    "source_id": "aghq/AGHQ-DEFAULT-OFF",
@@ -151,7 +263,13 @@
    "planned_case_ids": [
     "CORE070-AGHQ-DEFAULT-OFF-CONTROL-CONTRACT"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "aghq wave4",
+    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
+    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+   }
   },
   {
    "source_id": "aghq/AGHQ-DEFAULT-RIDGE-EXCLUDED",
@@ -164,92 +282,182 @@
   {
    "source_id": "aghq/AGHQ-INVALID-EMPTY",
    "classification": "rejected",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-INVALID-EMPTY-PAIRED-CONTROL"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-INVALID-EMPTY-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "evidence": {
+    "batch": "aghq wave4",
+    "receipts": ".unlazy/core070-aghq/wave4-batches/wave4-aghq",
+    "preservation_tarball": ".unlazy/core070-aghq/wave4-batches/wave4-aghq.tar.gz",
+    "preservation_sha256": "057c3e110216239bcdd36076e65063b8acd68ddfb1a9aff88ad1544dca3c7888",
+    "verifier": "tools/core070_verify_aghq_batch.py --self-test --state (CORE070_AGHQ_CONTROL_BATCH_VERIFIED 16 negative_controls 3)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-aghq"
+   }
   },
   {
    "source_id": "aghq/AGHQ-INVALID-FRACTION",
    "classification": "rejected",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-INVALID-FRACTION-PAIRED-CONTROL"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-INVALID-FRACTION-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "evidence": {
+    "batch": "aghq wave4",
+    "receipts": ".unlazy/core070-aghq/wave4-batches/wave4-aghq",
+    "preservation_tarball": ".unlazy/core070-aghq/wave4-batches/wave4-aghq.tar.gz",
+    "preservation_sha256": "057c3e110216239bcdd36076e65063b8acd68ddfb1a9aff88ad1544dca3c7888",
+    "verifier": "tools/core070_verify_aghq_batch.py --self-test --state (CORE070_AGHQ_CONTROL_BATCH_VERIFIED 16 negative_controls 3)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-aghq"
+   }
   },
   {
    "source_id": "aghq/AGHQ-INVALID-INF",
    "classification": "rejected",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-INVALID-INF-PAIRED-CONTROL"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-INVALID-INF-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "evidence": {
+    "batch": "aghq wave4",
+    "receipts": ".unlazy/core070-aghq/wave4-batches/wave4-aghq",
+    "preservation_tarball": ".unlazy/core070-aghq/wave4-batches/wave4-aghq.tar.gz",
+    "preservation_sha256": "057c3e110216239bcdd36076e65063b8acd68ddfb1a9aff88ad1544dca3c7888",
+    "verifier": "tools/core070_verify_aghq_batch.py --self-test --state (CORE070_AGHQ_CONTROL_BATCH_VERIFIED 16 negative_controls 3)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-aghq"
+   }
   },
   {
    "source_id": "aghq/AGHQ-INVALID-NA",
    "classification": "rejected",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-INVALID-NA-PAIRED-CONTROL"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-INVALID-NA-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "evidence": {
+    "batch": "aghq wave4",
+    "receipts": ".unlazy/core070-aghq/wave4-batches/wave4-aghq",
+    "preservation_tarball": ".unlazy/core070-aghq/wave4-batches/wave4-aghq.tar.gz",
+    "preservation_sha256": "057c3e110216239bcdd36076e65063b8acd68ddfb1a9aff88ad1544dca3c7888",
+    "verifier": "tools/core070_verify_aghq_batch.py --self-test --state (CORE070_AGHQ_CONTROL_BATCH_VERIFIED 16 negative_controls 3)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-aghq"
+   }
   },
   {
    "source_id": "aghq/AGHQ-INVALID-NAN",
    "classification": "rejected",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-INVALID-NAN-PAIRED-CONTROL"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-INVALID-NAN-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "evidence": {
+    "batch": "aghq wave4",
+    "receipts": ".unlazy/core070-aghq/wave4-batches/wave4-aghq",
+    "preservation_tarball": ".unlazy/core070-aghq/wave4-batches/wave4-aghq.tar.gz",
+    "preservation_sha256": "057c3e110216239bcdd36076e65063b8acd68ddfb1a9aff88ad1544dca3c7888",
+    "verifier": "tools/core070_verify_aghq_batch.py --self-test --state (CORE070_AGHQ_CONTROL_BATCH_VERIFIED 16 negative_controls 3)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-aghq"
+   }
   },
   {
    "source_id": "aghq/AGHQ-INVALID-NEGATIVE",
    "classification": "rejected",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-INVALID-NEGATIVE-PAIRED-CONTROL"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-INVALID-NEGATIVE-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "evidence": {
+    "batch": "aghq wave4",
+    "receipts": ".unlazy/core070-aghq/wave4-batches/wave4-aghq",
+    "preservation_tarball": ".unlazy/core070-aghq/wave4-batches/wave4-aghq.tar.gz",
+    "preservation_sha256": "057c3e110216239bcdd36076e65063b8acd68ddfb1a9aff88ad1544dca3c7888",
+    "verifier": "tools/core070_verify_aghq_batch.py --self-test --state (CORE070_AGHQ_CONTROL_BATCH_VERIFIED 16 negative_controls 3)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-aghq"
+   }
   },
   {
    "source_id": "aghq/AGHQ-INVALID-STRING",
    "classification": "rejected",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-INVALID-STRING-PAIRED-CONTROL"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-INVALID-STRING-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "evidence": {
+    "batch": "aghq wave4",
+    "receipts": ".unlazy/core070-aghq/wave4-batches/wave4-aghq",
+    "preservation_tarball": ".unlazy/core070-aghq/wave4-batches/wave4-aghq.tar.gz",
+    "preservation_sha256": "057c3e110216239bcdd36076e65063b8acd68ddfb1a9aff88ad1544dca3c7888",
+    "verifier": "tools/core070_verify_aghq_batch.py --self-test --state (CORE070_AGHQ_CONTROL_BATCH_VERIFIED 16 negative_controls 3)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-aghq"
+   }
   },
   {
    "source_id": "aghq/AGHQ-INVALID-VECTOR",
    "classification": "rejected",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-INVALID-VECTOR-PAIRED-CONTROL"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-INVALID-VECTOR-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "evidence": {
+    "batch": "aghq wave4",
+    "receipts": ".unlazy/core070-aghq/wave4-batches/wave4-aghq",
+    "preservation_tarball": ".unlazy/core070-aghq/wave4-batches/wave4-aghq.tar.gz",
+    "preservation_sha256": "057c3e110216239bcdd36076e65063b8acd68ddfb1a9aff88ad1544dca3c7888",
+    "verifier": "tools/core070_verify_aghq_batch.py --self-test --state (CORE070_AGHQ_CONTROL_BATCH_VERIFIED 16 negative_controls 3)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-aghq"
+   }
   },
   {
    "source_id": "aghq/AGHQ-INVALID-ZERO",
    "classification": "rejected",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-INVALID-ZERO-PAIRED-CONTROL"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-INVALID-ZERO-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "evidence": {
+    "batch": "aghq wave4",
+    "receipts": ".unlazy/core070-aghq/wave4-batches/wave4-aghq",
+    "preservation_tarball": ".unlazy/core070-aghq/wave4-batches/wave4-aghq.tar.gz",
+    "preservation_sha256": "057c3e110216239bcdd36076e65063b8acd68ddfb1a9aff88ad1544dca3c7888",
+    "verifier": "tools/core070_verify_aghq_batch.py --self-test --state (CORE070_AGHQ_CONTROL_BATCH_VERIFIED 16 negative_controls 3)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-aghq"
+   }
   },
   {
    "source_id": "aghq/AGHQ-POLICY-AUTO-ENFORCE-CUTOFF",
@@ -259,7 +467,13 @@
    "planned_case_ids": [
     "CORE070-AGHQ-POLICY-AUTO-ENFORCE-CUTOFF-CONTROL-CONTRACT"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "aghq wave4",
+    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
+    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+   }
   },
   {
    "source_id": "aghq/AGHQ-POLICY-BAD-COLUMNS",
@@ -269,7 +483,13 @@
    "planned_case_ids": [
     "CORE070-AGHQ-POLICY-BAD-COLUMNS-CONTROL-CONTRACT"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "aghq wave4",
+    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
+    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+   }
   },
   {
    "source_id": "aghq/AGHQ-POLICY-BAD-DIMENSION",
@@ -279,7 +499,13 @@
    "planned_case_ids": [
     "CORE070-AGHQ-POLICY-BAD-DIMENSION-CONTROL-CONTRACT"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "aghq wave4",
+    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
+    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+   }
   },
   {
    "source_id": "aghq/AGHQ-POLICY-BAD-TRAITS",
@@ -289,7 +515,13 @@
    "planned_case_ids": [
     "CORE070-AGHQ-POLICY-BAD-TRAITS-CONTROL-CONTRACT"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "aghq wave4",
+    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
+    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+   }
   },
   {
    "source_id": "aghq/AGHQ-POLICY-EMPTY-GATE",
@@ -299,7 +531,13 @@
    "planned_case_ids": [
     "CORE070-AGHQ-POLICY-EMPTY-GATE-CONTROL-CONTRACT"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "aghq wave4",
+    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
+    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+   }
   },
   {
    "source_id": "aghq/AGHQ-POLICY-EXPLICIT",
@@ -309,7 +547,13 @@
    "planned_case_ids": [
     "CORE070-AGHQ-POLICY-EXPLICIT-CONTROL-CONTRACT"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "aghq wave4",
+    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
+    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+   }
   },
   {
    "source_id": "aghq/AGHQ-POLICY-EXPLICIT-BYPASS-CUTOFF",
@@ -319,7 +563,13 @@
    "planned_case_ids": [
     "CORE070-AGHQ-POLICY-EXPLICIT-BYPASS-CUTOFF-CONTROL-CONTRACT"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "aghq wave4",
+    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
+    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+   }
   },
   {
    "source_id": "aghq/AGHQ-POLICY-MISSING-GATE",
@@ -329,7 +579,13 @@
    "planned_case_ids": [
     "CORE070-AGHQ-POLICY-MISSING-GATE-CONTROL-CONTRACT"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "aghq wave4",
+    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
+    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+   }
   },
   {
    "source_id": "aghq/AGHQ-POLICY-NO-QUADRATURE",
@@ -339,7 +595,13 @@
    "planned_case_ids": [
     "CORE070-AGHQ-POLICY-NO-QUADRATURE-CONTROL-CONTRACT"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "aghq wave4",
+    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
+    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+   }
   },
   {
    "source_id": "aghq/AGHQ-POLICY-OFF",
@@ -349,7 +611,13 @@
    "planned_case_ids": [
     "CORE070-AGHQ-POLICY-OFF-CONTROL-CONTRACT"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "aghq wave4",
+    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
+    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+   }
   },
   {
    "source_id": "aghq/AGHQ-POLICY-SITES-INDEPENDENT",
@@ -359,7 +627,13 @@
    "planned_case_ids": [
     "CORE070-AGHQ-POLICY-SITES-INDEPENDENT-CONTROL-CONTRACT"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "aghq wave4",
+    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
+    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+   }
   },
   {
    "source_id": "aghq/AGHQ-POLICY-TRAITS19",
@@ -369,7 +643,13 @@
    "planned_case_ids": [
     "CORE070-AGHQ-POLICY-TRAITS19-CONTROL-CONTRACT"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "aghq wave4",
+    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
+    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+   }
   },
   {
    "source_id": "aghq/AGHQ-POLICY-TRAITS20",
@@ -379,7 +659,13 @@
    "planned_case_ids": [
     "CORE070-AGHQ-POLICY-TRAITS20-CONTROL-CONTRACT"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "aghq wave4",
+    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
+    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+   }
   },
   {
    "source_id": "aghq/AGHQ-POLICY-UNRESOLVED-WIDTH",
@@ -389,7 +675,13 @@
    "planned_case_ids": [
     "CORE070-AGHQ-POLICY-UNRESOLVED-WIDTH-CONTROL-CONTRACT"
    ],
-   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "aghq wave4",
+    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
+    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+   }
   },
   {
    "source_id": "covariance/COV-ANIMAL-DEP",
