@@ -106,8 +106,10 @@ function _make_correlation_closure(spec::NamedTuple, i::Integer, j::Integer)
     return θ -> _correlation_packed(θ, spec, i, j)
 end
 
-# H²[t] from the packed θ, mirroring phylo_signal(fit). Σ_phy enters only
-# through its diagonal (standardised convention → ones). AD-friendly.
+# H²[t] from the packed θ, mirroring phylo_signal(fit): H² = σ²_phy /
+# (σ²_phy + σ²_non), the R oracle's convention (profile-derived.R:145-156).
+# Σ_phy enters only through its diagonal (standardised convention → ones).
+# AD-friendly.
 function _phylo_signal_packed(θ::AbstractVector, spec::NamedTuple, t::Integer;
                               diag_Σphy::Union{Nothing, AbstractVector} = nothing)
     u = _derived_unpack(θ, spec)
@@ -129,7 +131,8 @@ function _phylo_signal_packed(θ::AbstractVector, spec::NamedTuple, t::Integer;
         ΛΛt_tt += Λ_phy_aug[t, k]^2
     end
     d = diag_Σphy === nothing ? one(eltype(Λ_phy_aug)) : diag_Σphy[t]
-    return ΛΛt_tt * d / Σ[t, t]
+    σ²phy = ΛΛt_tt * d
+    return σ²phy / (σ²phy + Σ[t, t])
 end
 
 function _make_phylo_signal_closure(spec::NamedTuple, t::Integer;

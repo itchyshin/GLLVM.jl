@@ -292,16 +292,21 @@ end
     phylo_signal(fit::GllvmFit; Σ_phy = nothing) -> Vector
 
 Per-trait phylogenetic signal
-`H²[t] = (Λ_phy_aug Λ_phy_aug')[t, t] · Σ_phy[t, t] / Σ_y_site[t, t]`,
-where `Λ_phy_aug = hcat(Λ_phy, σ_phy)` (each piece is included only when
-its flag is on). Returns a vector of length `p`; all entries are `NaN`
-when the fit has no phylogenetic block (`K_phy == 0` and
-`has_phy_unique == false`).
+`H²[t] = σ²_phy[t] / (σ²_phy[t] + Σ_y_site[t, t])`, where
+`σ²_phy[t] = (Λ_phy_aug Λ_phy_aug')[t, t] · Σ_phy[t, t]` and
+`Λ_phy_aug = hcat(Λ_phy, σ_phy)` (each piece is included only when its
+flag is on). This is the R oracle's convention
+(`profile-derived.R:145-156`: `H² = σ²_phy / (σ²_phy + σ²_non)`) — the
+denominator INCLUDES the phylogenetic variance, not just the per-site
+(non-phylogenetic) covariance. Returns a vector of length `p` with
+entries in `[0, 1]`; all entries are `NaN` when the fit has no
+phylogenetic block (`K_phy == 0` and `has_phy_unique == false`).
 
 `Σ_phy` defaults to the identity matrix (standardised convention, diag
 == 1 per trait), so the diagonal entries reduce to
-`H²[t] = (Λ_phy_aug Λ_phy_aug')[t, t] / Σ_y_site[t, t]`. Supply the
-fitted phylogenetic VCV explicitly when the diagonal is not unit.
+`H²[t] = (Λ_phy_aug Λ_phy_aug')[t, t] / ((Λ_phy_aug Λ_phy_aug')[t, t] +
+Σ_y_site[t, t])`. Supply the fitted phylogenetic VCV explicitly when the
+diagonal is not unit.
 """
 function phylo_signal(fit::GllvmFit; Σ_phy::Union{Nothing, AbstractMatrix} = nothing)
     spec = _derived_spec(fit)
@@ -320,7 +325,10 @@ function phylo_signal(fit::GllvmFit; Σ_phy::Union{Nothing, AbstractMatrix} = no
     Σ = sigma_y_site(fit)
     diag_Σphy = Σ_phy === nothing ? ones(Float64, p) : diag(Σ_phy)
     ΛΛt = Λ_phy_aug * Λ_phy_aug'
-    return [ΛΛt[t, t] * diag_Σphy[t] / Σ[t, t] for t in 1:p]
+    return [begin
+        σ²phy = ΛΛt[t, t] * diag_Σphy[t]
+        σ²phy / (σ²phy + Σ[t, t])
+    end for t in 1:p]
 end
 
 # ---------------------------------------------------------------------------

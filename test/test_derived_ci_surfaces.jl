@@ -221,6 +221,41 @@ end
         end
     end
 
+    @testset "phylo_signal: H² = sigma2_phy / (sigma2_phy + sigma2_non), bounded in [0,1]" begin
+        rng3 = MersenneTwister(11)
+        p3, K3, n3 = 3, 1, 300
+        Λtrue3 = reshape([0.8, 0.5, 0.3], p3, K3)
+        σ_eps3 = 0.3
+        σ_phy_true = fill(0.6, p3)
+        Σ_phy3 = Matrix{Float64}(I, p3, p3)
+        z3 = randn(rng3, K3, n3)
+        φ3 = randn(rng3, p3)
+        y3 = Λtrue3 * z3 .+ σ_eps3 .* randn(rng3, p3, n3) .+ σ_phy_true .* φ3
+        fit_phy3 = GLLVM.fit_gaussian_gllvm(y3; K = K3, has_phy_unique = true, Σ_phy = Σ_phy3)
+
+        H2 = GLLVM.phylo_signal(fit_phy3; Σ_phy = Σ_phy3)
+        @test all(h -> isnan(h) || (0.0 <= h <= 1.0), H2)
+
+        # Directly verify the σ²_phy/(σ²_phy+σ²_non) formula against the raw
+        # pieces (not a tautological re-derivation of phylo_signal itself).
+        σphy_hat = fit_phy3.pars.σ_phy
+        Σnon = GLLVM.sigma_y_site(fit_phy3)
+        for t in 1:p3
+            σ2phy_t = σphy_hat[t]^2
+            expected = σ2phy_t / (σ2phy_t + Σnon[t, t])
+            @test isapprox(H2[t], expected; rtol = 1e-10)
+        end
+
+        # The packed closure (used by the Wald/profile CI routes) must agree
+        # with the public accessor at θ̂.
+        spec = GLLVM._derived_spec(fit_phy3)
+        θ̂ = fit_phy3.pars.θ_packed
+        for t in 1:p3
+            f = GLLVM._make_phylo_signal_closure(spec, t; diag_Σphy = diag(Σ_phy3))
+            @test isapprox(f(θ̂), H2[t]; rtol = 1e-10)
+        end
+    end
+
     @testset "profile_ci_phylo_signal: no-phylo fit returns NaN estimate, not a crash" begin
         # fit2 has no phylogenetic block: phylo_signal(fit2) is all-NaN by
         # contract (confint_derived.jl docstring), so the profiler should see
