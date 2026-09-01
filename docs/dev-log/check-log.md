@@ -16824,3 +16824,16 @@ the reduced model (class 5 — warned, not silent). Setup findings retained:
 two failed attempts show the bridge child requires a JULIA_PROJECT environment
 carrying RCall — an undocumented requirement (class 1 variant). Receipts:
 .unlazy/core070-aghq/tweedie-replay-01/acc-urbmap (+ fail01/fail02 retained).
+
+## 2026-09-01 — M1-suite arc: full core suite run twice, failures classified
+
+Two identical local runs (macOS, Julia 1.10, 1 BLAS thread): 11183 passed,
+10 failed, 0 errored, 8 broken — deterministic, not flaky. All 10 failures
+REPRODUCE EXACTLY at the pre-repair base commit 425cabf5 (verified in a scratch
+worktree with the same Manifest): 6 in test_gaussian_empty_design.jl (zero-
+column / all-fixed X routes vs no-X base agree in logLik but differ ~1e-7 in
+sigma_eps / loading-crossproduct / predict at 1e-8..1e-9 tolerances) and 4 in
+test_phylo_poisson_xlv.jl (B_eta_realized selected-entry canary). Zero
+regressions from c2a93d6d. Both files become M1-close repair leaves; no
+tolerance touched. Full log retained in the session scratchpad; scratch
+worktree /private/tmp/gllvm-base-425cabf5 left for morning inspection.
