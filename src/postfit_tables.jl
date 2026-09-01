@@ -429,3 +429,151 @@ function profile_cross_rho(A_H, A_P, W, refit;
 
     return (table = table, best_rho = best_rho, fits = keep_fits ? fits : nothing)
 end
+
+# ---------------------------------------------------------------------------
+# Item 1.8 — rotate_loadings (mirrors rotate-loadings.R:90-217).
+#
+# Scope reduction: `GllvmFit` / `level = :unit` only (the R contract's
+# `TwoLevelFit` :unit/:unit_obs level mapping is not built in this slice —
+# an honest omission, not a stub). Leaves the existing fixed-canonical
+# `_svd_rotation`/`rotation`/`getLoadings(rotate=true)` convention untouched.
+# ---------------------------------------------------------------------------
+
+# Kaiser-normalized orthogonal varimax (standard SVD-iteration algorithm).
+# Returns (Λ_rotated, T) with T orthogonal, T'T ≈ I.
+function _varimax_rotation(Λ::AbstractMatrix; normalize::Bool = true,
+                           maxit::Integer = 1000, tol::Real = 1e-6)
+    p, k = size(Λ)
+    if k <= 1
+        return Matrix{Float64}(Λ), Matrix{Float64}(I, k, k)
+    end
+    h = normalize ? vec(sqrt.(sum(abs2, Λ; dims = 2))) : ones(p)
+    h = max.(h, 1e-12)
+    Λn = Λ ./ h
+    T = Matrix{Float64}(I, k, k)
+    d_prev = 0.0
+    for _ in 1:maxit
+        Λ2 = Λn * T
+        colsq = vec(sum(abs2, Λ2; dims = 1)) ./ p
+        u = Λ2 .^ 3 .- Λ2 * Diagonal(colsq)
+        M = Λn' * u
+        F = svd(M)
+        T = F.U * F.Vt
+        d_new = sum(F.S)
+        (d_prev != 0 && d_new < d_prev * (1 + tol)) && break
+        d_prev = d_new
+    end
+    Λrot = normalize ? (Λn * T) .* h : Λ * T
+    return Λrot, T
+end
+
+# Oblique promax (Hendrickson & White 1964) on top of a varimax start.
+# Returns (Λ_rotated, T) with T generally NOT orthogonal.
+function _promax_rotation(Λ::AbstractMatrix; m::Real = 4)
+    Λv, Tv = _varimax_rotation(Λ)
+    k = size(Λ, 2)
+    k <= 1 && return Λv, Tv
+    Q = Λv .* abs.(Λv) .^ (m - 1)
+    U = (Λv' * Λv) \ (Λv' * Q)
+    dscale = 1.0 ./ diag(U' * U)
+    U = U * Diagonal(sqrt.(dscale))
+    T = Tv * U
+    return Λ * T, T
+end
+
+"""
+    rotate_loadings(fit::GllvmFit, Y; level = :unit, method = :varimax,
+                    order_axes = true, sign_anchor = :auto,
+                    anchor_traits = nothing) -> NamedTuple
+
+Rotate a fitted GLLVM's loadings, mirroring `gllvmTMB::rotate_loadings`
+(`rotate-loadings.R:90-217`). `method`: `:varimax` (orthogonal, Kaiser-
+normalized), `:promax` (oblique, `m = 4`), or `:none` (identity — also the
+automatic short-circuit at `d = 1`). `order_axes = true` reorders axes by
+decreasing loading sum-of-squares (`colSums(Λ²)`, computed on the raw
+rotated `Λ` before any standardization); `sign_anchor = :auto` flips each
+axis's sign so its anchor trait (the largest-`|loading|` trait, or
+`anchor_traits[k]` when supplied) loads positive; `sign_anchor = :none`
+skips sign-fixing. Permutation and sign are folded into the returned `T` so
+`Λ_rotated ≈ Λ * T` and, for orthogonal `T`, `scores ≈ getLV(fit, Y) * T`
+(`scores ≈ getLV(fit, Y) * inv(T)'` for the oblique `:promax` case).
+
+Scope reduction (this slice): `fit::GllvmFit` at `level = :unit` only — the
+R contract's `TwoLevelFit`-level mapping (`:unit`/`:unit_obs`) is not built.
+`Y` must match what was passed to the fit (as everywhere else in
+`GLLVM.jl` — the fit does not store its data).
+
+Returns `(Lambda, scores, T, method, axis_variance, axis_order, axis_sign,
+anchor_traits)`: `axis_variance` is `colSums(Λ_rotated²)` in the RETURNED
+axis order; `axis_order` is the permutation applied (`1:d` when
+`order_axes = false`); `axis_sign` is the `±1` applied per axis;
+`anchor_traits` is the resolved per-axis anchor trait index (`missing` when
+`sign_anchor = :none`).
+"""
+function rotate_loadings(fit::GllvmFit, Y::AbstractMatrix;
+                         level::Symbol = :unit, method::Symbol = :varimax,
+                         order_axes::Bool = true, sign_anchor::Symbol = :auto,
+                         anchor_traits::Union{Nothing, AbstractVector{<:Integer}} = nothing)
+    level === :unit || throw(ArgumentError(
+        "rotate_loadings currently supports level = :unit only for GllvmFit " *
+        "(TwoLevelFit level mapping is not built — core070 spec §1.8 scope note)."))
+    method in (:varimax, :promax, :none) ||
+        throw(ArgumentError("method must be :varimax, :promax, or :none; got :$method"))
+    sign_anchor in (:auto, :none) ||
+        throw(ArgumentError("sign_anchor must be :auto or :none; got :$sign_anchor"))
+
+    Λ = Matrix{Float64}(fit.pars.Λ)
+    p, d = size(Λ)
+    S = getLV(fit, Y; rotate = false)   # n×d
+
+    if anchor_traits !== nothing
+        length(anchor_traits) == d ||
+            throw(ArgumentError("anchor_traits must have length d = $d."))
+        all(t -> 1 <= t <= p, anchor_traits) ||
+            throw(ArgumentError("anchor_traits must index 1:$p."))
+    end
+
+    if method === :none || d <= 1
+        Λrot = copy(Λ)
+        T = Matrix{Float64}(I, d, d)
+        oblique = false
+    elseif method === :varimax
+        Λrot, T = _varimax_rotation(Λ)
+        oblique = false
+    else # :promax
+        Λrot, T = _promax_rotation(Λ)
+        oblique = true
+    end
+    scores = oblique ? S * inv(T)' : S * T
+
+    axis_order = collect(1:d)
+    if order_axes && d > 1
+        ss = vec(sum(abs2, Λrot; dims = 1))
+        axis_order = sortperm(ss; rev = true)
+        Λrot = Λrot[:, axis_order]
+        scores = scores[:, axis_order]
+        T = T[:, axis_order]
+    end
+
+    axis_sign = ones(Int, d)
+    resolved_anchor_traits = sign_anchor === :none ? nothing : Vector{Int}(undef, d)
+    if sign_anchor === :auto
+        for k in 1:d
+            # anchor_traits[k], when supplied, names the anchor for the k-th
+            # RETURNED axis (i.e. after any order_axes permutation).
+            at = anchor_traits === nothing ? argmax(abs.(view(Λrot, :, k))) : anchor_traits[k]
+            resolved_anchor_traits[k] = at
+            if Λrot[at, k] < 0
+                axis_sign[k] = -1
+                Λrot[:, k] .*= -1
+                scores[:, k] .*= -1
+                T[:, k] .*= -1
+            end
+        end
+    end
+
+    axis_variance = vec(sum(abs2, Λrot; dims = 1))
+    return (Lambda = Λrot, scores = scores, T = T, method = method,
+            axis_variance = axis_variance, axis_order = axis_order,
+            axis_sign = axis_sign, anchor_traits = resolved_anchor_traits)
+end

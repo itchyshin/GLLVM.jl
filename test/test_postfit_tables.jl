@@ -256,4 +256,48 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics
         @test isfinite(out_real.best_rho)
     end
 
+    @testset "1.8 rotate_loadings — varimax/promax invariants" begin
+        Random.seed!(8)
+        p, K, n = 8, 2, 500
+        Λ_true = zeros(p, K)
+        Λ_true[1:4, 1] .= 0.8 .* abs.(randn(4))
+        Λ_true[5:8, 2] .= 0.8 .* abs.(randn(4))
+        y = Λ_true * randn(K, n) + 0.4 .* randn(p, n)
+        fit = fit_gaussian_gllvm(y; K = K)
+
+        out_v = rotate_loadings(fit, y; method = :varimax)
+        @test out_v.Lambda ≈ fit.pars.Λ * out_v.T atol = 1e-8
+        @test out_v.T' * out_v.T ≈ Matrix(I, K, K) atol = 1e-8   # orthogonal
+        @test out_v.method === :varimax
+        @test issorted(out_v.axis_variance; rev = true)          # order_axes monotone
+        for k in 1:K
+            @test out_v.Lambda[out_v.anchor_traits[k], k] >= 0    # anchor loads positive
+        end
+
+        out_p = rotate_loadings(fit, y; method = :promax)
+        @test out_p.Lambda ≈ fit.pars.Λ * out_p.T atol = 1e-8
+        @test out_p.scores ≈ getLV(fit, y; rotate = false) * inv(out_p.T)' atol = 1e-6
+        @test out_p.method === :promax
+
+        # method = :none / d = 1 identity short-circuit on the ROTATION step
+        # (order_axes/sign_anchor postprocessing still applies, as in R).
+        out_none = rotate_loadings(fit, y; method = :none, order_axes = false,
+                                   sign_anchor = :none)
+        @test out_none.Lambda ≈ fit.pars.Λ
+        @test out_none.T ≈ Matrix(I, K, K)
+        @test out_none.axis_order == 1:K
+
+        fit1 = fit_gaussian_gllvm(y; K = 1)
+        out1 = rotate_loadings(fit1, y; method = :varimax, sign_anchor = :none)
+        @test out1.Lambda ≈ fit1.pars.Λ
+        @test out1.T ≈ Matrix(I, 1, 1)
+
+        # sign_anchor = :none skips the flip.
+        out_nosign = rotate_loadings(fit, y; method = :varimax, sign_anchor = :none)
+        @test out_nosign.anchor_traits === nothing
+
+        @test_throws ArgumentError rotate_loadings(fit, y; method = :bogus)
+        @test_throws ArgumentError rotate_loadings(fit, y; level = :unit_obs)
+    end
+
 end
