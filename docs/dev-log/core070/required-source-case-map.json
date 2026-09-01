@@ -9795,17 +9795,21 @@
   {
    "source_id": "postfit/POSTFIT-SURFACE-deviance.gllvmTMB_multi",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-WAVE8-DEVIANCE-MULTI"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-DEVIANCE-MULTI-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "wave6 triage",
-    "reason": "No Julia deviance() function or dispatch exists anywhere in src/ for AnyGllvmFit/GllvmFit (grep -rn 'function.*deviance|deviance(fit' src/*.jl matches only confint_profile.jl's LOCAL closures deviance_lower/deviance_upper inside the profile-CI bracket-and-bisect routine, not a public StatsAPI.deviance method; deviance is also absent from src/GLLVM.jl's export list). Composing an ad hoc definition (e.g. -2*loglikelihood(fit) plus a saturated-model term) without reading R's actual deviance.gllvmTMB_multi source (not available in this Julia-only worktree) risks silently asserting the wrong estimand, which this repo's culture treats as worse than an honest defer. Left for a dedicated slice with R source access to confirm R's exact residual-deviance definition before any Julia composition is authored.",
-    "contract": "docs/dev-log/core070/wave6-conversion-batch-contract.json (deferred)"
+    "batch": "wave8-conversion (attempt1)",
+    "receipts": ".unlazy/core070-aghq/wave8-batches/wave8-conversion1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave8-batches/wave8-conversion1.tar.gz",
+    "preservation_sha256": "e28613168eb02e91d138e4debfd3600e4a72f42cdb329187e95929e03421a92e",
+    "verifier": "tools/core070_verify_wave8_conversion_batch.py (CORE070_WAVE8_CONVERSION_STATE_OK wave8-conversion1; self-test 9 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave8-conversion1"
    }
   },
   {
@@ -9979,8 +9983,10 @@
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave8 triage",
+    "reason": "src/postfit_tables.jl:719-767's own scope note restricts this slice to scale=:shape, operating directly on a caller-supplied Sigma_shared matrix from a genuine cross-lineage coevolution fit (e.g. fit_coevolution_gaussian's Lambda*Lambda', or extract_Sigma(part=:shared) on a phylo-loadings coevolution fit). No such fixture is reused by this batch's proven recipes (gaussian_small / simulate_unit_trait_params); building and validating a coevolution/cross-kernel fixture pair (R+Julia) on both a live gllvmTMB kernel_*() formula fit and a matching GLLVM.jl fit_coevolution_gaussian call is a genuine new-fixture slice, out of this lean batch's reuse-only scope -- same class of gap as wave7's deferred extract_Gamma row (wave7-conversion-batch-contract.json's deferred[], which named the identical Sigma_phy/cross-kernel fixture absence).",
+    "contract": "docs/dev-log/core070/wave8-conversion-batch-contract.json (deferred)",
+    "note": "Julia surface implemented (src/postfit_tables.jl) but no proven paired fixture exists for the frozen oracle \u2014 fixture engineering, not surface absence"
    }
   },
   {
@@ -10233,17 +10239,21 @@
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_rotated_loadings_table",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-WAVE8-EXTRACT-ROTATED-LOADINGS-TABLE-SHAPE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-ROTATED-LOADINGS-TABLE-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "wave6 triage",
-    "reason": "REPAIR (2026-09-01, wave6-conversion1 forensics item 3a): the first attempt's R-side coercion, `t <- extract_rotated_loadings_table(fit_g); t[order(t$trait_i, t$factor_j),]; as.numeric(t$estimate)`, errored 'argument 1 is not a vector' on the live frozen library -- the assumed column names (trait_i, factor_j, estimate) were inferred only from the Julia docstring cross-reference (src/extractors.jl:231, 'mirrors gllvmTMB::extract_rotated_loadings_table()'), never from live R source or a live inspection of the returned object's actual shape (str(extract_rotated_loadings_table(fit_g))). GLLVM.extract_rotated_loadings(fit) itself still exists and is exported (src/extractors.jl:233) -- this is a genuine surface, not a missing one -- but re-guessing the R accessor's column/return shape a second time without live R inspection risks a repeat failure; deferred until a live R session can confirm the actual return structure (str()/names() on the real object), then re-authored with a verified coercion.",
-    "contract": "docs/dev-log/core070/wave6-conversion-batch-contract.json (deferred)"
+    "batch": "wave8-conversion (attempt1)",
+    "receipts": ".unlazy/core070-aghq/wave8-batches/wave8-conversion1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave8-batches/wave8-conversion1.tar.gz",
+    "preservation_sha256": "e28613168eb02e91d138e4debfd3600e4a72f42cdb329187e95929e03421a92e",
+    "verifier": "tools/core070_verify_wave8_conversion_batch.py (CORE070_WAVE8_CONVERSION_STATE_OK wave8-conversion1; self-test 9 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave8-conversion1"
    }
   },
   {
@@ -10456,8 +10466,10 @@
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave8 triage",
+    "reason": "Verified from missing-predictor.R:2597-2725: imputed.gllvmTMB(object, variable, rows, se) requires object$missing_data$predictors to be a non-empty list -- i.e. a genuine R gllvmTMB() fit using an mi() missing-predictor formula term, and aborts loudly otherwise ('This fit has no modelled missing predictors to summarize'). gaussian_small has no mi() term. Julia's imputed(fitmi, x) (src/postfit_tables.jl:801-812) instead requires a fit_gaussian_mi_fiml(...) result (a NamedTuple carrying an eblup_x field) -- a DIFFERENT Gaussian-FIML machinery, not necessarily the same estimator/model class as R's mi() formula route (R's own docstring documents its estimates as 'conditional modes, not conditional means, multiple-imputation draws, or posterior summaries' from a specific joint-likelihood augmentation; the Julia FIML route's own docstring does not claim byte-for-byte equivalence to that route). Building an R mi()-formula fixture, verifying its exact estimator equivalence to fit_gaussian_mi_fiml, and pairing the two is a genuine new-fixture + estimator-equivalence design slice, out of this lean batch's scope; the task brief's own 'imputed: RNG-independent structural checks' framing (paired with simulate_unit_trait) presupposes a fixture that does not yet exist in this worktree's receipts for the imputed()-specific case (as opposed to predict_missing's zero-row complete-data degenerate case, which needed no such fixture and is executable above).",
+    "contract": "docs/dev-log/core070/wave8-conversion-batch-contract.json (deferred)",
+    "note": "Julia surface implemented (src/postfit_tables.jl) but no proven paired fixture exists for the frozen oracle \u2014 fixture engineering, not surface absence"
    }
   },
   {
@@ -10881,24 +10893,31 @@
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave8 triage",
+    "reason": "src/postfit_tables.jl:116-140's own contract requires a genuine n x n cross-lineage kernel K (e.g. from make_cross_kernel) and extract_Gamma's Lambda_phy-bearing fit -- the identical cross-lineage/coevolution fixture gap as extract_coevolution_modules above and wave7's deferred extract_Gamma row. No such fixture is proven in this worktree's receipts; deferred rather than invented under this batch's lean scope.",
+    "contract": "docs/dev-log/core070/wave8-conversion-batch-contract.json (deferred)",
+    "note": "Julia surface implemented (src/postfit_tables.jl) but no proven paired fixture exists for the frozen oracle \u2014 fixture engineering, not surface absence"
    }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-predict_missing",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-WAVE8-PREDICT-MISSING-ZERO-ROWS"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT2-PREDICT-MISSING-NATIVE",
     "CORE070-POSTFIT2-PREDICT-MISSING-PUBLIC-R-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave8-conversion (attempt1)",
+    "receipts": ".unlazy/core070-aghq/wave8-batches/wave8-conversion1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave8-batches/wave8-conversion1.tar.gz",
+    "preservation_sha256": "e28613168eb02e91d138e4debfd3600e4a72f42cdb329187e95929e03421a92e",
+    "verifier": "tools/core070_verify_wave8_conversion_batch.py (CORE070_WAVE8_CONVERSION_STATE_OK wave8-conversion1; self-test 9 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave8-conversion1"
    }
   },
   {
@@ -11149,8 +11168,10 @@
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave8 triage",
+    "reason": "src/postfit_tables.jl:337-369's own contract requires a caller-supplied refit(K, rho) callable targeting e.g. fit_coevolution_gaussian/fit_coevolution_blockna, over the SAME cross-lineage kernel machinery (make_cross_kernel(A_H, A_P, W; rho)) as predict_cross_covariance/extract_coevolution_modules above -- no A_H/A_P/W cross-lineage fixture (host tree, parasite tree, association matrix) is proven in this worktree's receipts, and R's profile_cross_rho() (kernel-helpers.R:166-262) needs a matching live gllvmTMB kernel_*() coevolution formula fit to refit against. Same fixture-absence class as the two rows above; deferred.",
+    "contract": "docs/dev-log/core070/wave8-conversion-batch-contract.json (deferred)",
+    "note": "Julia surface implemented (src/postfit_tables.jl) but no proven paired fixture exists for the frozen oracle \u2014 fixture engineering, not surface absence"
    }
   },
   {
@@ -11165,8 +11186,10 @@
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave8 triage",
+    "reason": "profile_cross_rho_ci(rho, delta_deviance; level) (src/postfit_tables.jl:61-109) is pure grid-interpolation post-processing over a (rho, delta_deviance) TABLE -- it does not itself need a live fit -- but the only defensible way to generate a genuinely R-vs-Julia-comparable (rho, delta_deviance) table is to run profile_cross_rho on both sides first (the deferred row immediately above), since fabricating a synthetic delta_deviance grid by hand would not exercise anything about either engine's real coevolution-kernel machinery and would risk a vacuous pass. Deferred alongside profile_cross_rho for the same cross-lineage fixture absence; a follow-up wave that first lands the cross-lineage fixture pair can then chain profile_cross_rho's own table straight into this case.",
+    "contract": "docs/dev-log/core070/wave8-conversion-batch-contract.json (deferred)",
+    "note": "Julia surface implemented (src/postfit_tables.jl) but no proven paired fixture exists for the frozen oracle \u2014 fixture engineering, not surface absence"
    }
   },
   {
@@ -11229,17 +11252,22 @@
   {
    "source_id": "postfit/POSTFIT-SURFACE-rotate_loadings",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-WAVE8-ROTATE-LOADINGS-LLT-INVARIANT"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT2-ROTATE-LOADINGS-NATIVE",
     "CORE070-POSTFIT2-ROTATE-LOADINGS-PUBLIC-R-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave8-conversion (attempt1)",
+    "receipts": ".unlazy/core070-aghq/wave8-batches/wave8-conversion1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave8-batches/wave8-conversion1.tar.gz",
+    "preservation_sha256": "e28613168eb02e91d138e4debfd3600e4a72f42cdb329187e95929e03421a92e",
+    "verifier": "tools/core070_verify_wave8_conversion_batch.py (CORE070_WAVE8_CONVERSION_STATE_OK wave8-conversion1; self-test 9 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave8-conversion1"
    }
   },
   {
@@ -11300,17 +11328,22 @@
   {
    "source_id": "postfit/POSTFIT-SURFACE-simulate_unit_trait",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-WAVE8-SIMULATE-UNIT-TRAIT-STRUCTURAL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT2-SIMULATE-UNIT-TRAIT-NATIVE",
     "CORE070-POSTFIT2-SIMULATE-UNIT-TRAIT-PUBLIC-R-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave8-conversion (attempt1)",
+    "receipts": ".unlazy/core070-aghq/wave8-batches/wave8-conversion1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave8-batches/wave8-conversion1.tar.gz",
+    "preservation_sha256": "e28613168eb02e91d138e4debfd3600e4a72f42cdb329187e95929e03421a92e",
+    "verifier": "tools/core070_verify_wave8_conversion_batch.py (CORE070_WAVE8_CONVERSION_STATE_OK wave8-conversion1; self-test 9 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave8-conversion1"
    }
   },
   {
@@ -11352,17 +11385,22 @@
   {
    "source_id": "postfit/POSTFIT-SURFACE-summary.gllvmTMB_multi",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-WAVE8-SUMMARY-FIXEF-AND-LOGLIK"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT2-SUMMARY-GLLVMTMB-MULTI-NATIVE",
     "CORE070-POSTFIT2-SUMMARY-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave8-conversion (attempt1)",
+    "receipts": ".unlazy/core070-aghq/wave8-batches/wave8-conversion1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave8-batches/wave8-conversion1.tar.gz",
+    "preservation_sha256": "e28613168eb02e91d138e4debfd3600e4a72f42cdb329187e95929e03421a92e",
+    "verifier": "tools/core070_verify_wave8_conversion_batch.py (CORE070_WAVE8_CONVERSION_STATE_OK wave8-conversion1; self-test 9 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave8-conversion1"
    }
   },
   {
@@ -11388,17 +11426,22 @@
   {
    "source_id": "postfit/POSTFIT-SURFACE-tidy.gllvmTMB_multi",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-WAVE8-TIDY-FIXED-ESTIMATE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT2-TIDY-GLLVMTMB-MULTI-NATIVE",
     "CORE070-POSTFIT2-TIDY-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave8-conversion (attempt1)",
+    "receipts": ".unlazy/core070-aghq/wave8-batches/wave8-conversion1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave8-batches/wave8-conversion1.tar.gz",
+    "preservation_sha256": "e28613168eb02e91d138e4debfd3600e4a72f42cdb329187e95929e03421a92e",
+    "verifier": "tools/core070_verify_wave8_conversion_batch.py (CORE070_WAVE8_CONVERSION_STATE_OK wave8-conversion1; self-test 9 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave8-conversion1"
    }
   },
   {
