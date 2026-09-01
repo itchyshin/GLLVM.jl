@@ -2059,3 +2059,14 @@ bridge; phylo/slope fixture gaps) — annotated per row; API-alignment is a
 maintainer decision family. Remaining BLOCKED core: 24 deferred-engines +
 2 lambda-constraint + 38 collision/API-alignment + 20 missing functions
 (final-surface-builder implementing 13 per the verified spec now).
+
+## Wave-8 bound — 2026-09-01: the code-convertible frontier is closed
+
+Wave-8 green first attempt (CORE070_WAVE8_CONVERSION_STATE_OK, tarball
+e2861316): 7 postfit_tables rows bound. TOTALS: 266 bound; BLOCKED 142->77
+in one day, and every remaining row is traced to its true blocker:
+~24 unbuilt engines (phylo/animal/spatial/slopes), 2 lambda-constraint fit
+mode, 38 same-name-different-surface API-alignment decisions, 5 fixture-
+engineering gaps (surface exists, no proven frozen-oracle pairing),
+remainder decision families. Nothing left that code alone converts.
+Suite3 watcher pending (last consolidated run: 12614 pass, canary-only).
