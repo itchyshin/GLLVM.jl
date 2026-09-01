@@ -16837,3 +16837,13 @@ test_phylo_poisson_xlv.jl (B_eta_realized selected-entry canary). Zero
 regressions from c2a93d6d. Both files become M1-close repair leaves; no
 tolerance touched. Full log retained in the session scratchpad; scratch
 worktree /private/tmp/gllvm-base-425cabf5 left for morning inspection.
+
+## 2026-09-01 — Panel upgrades executed: boundary honesty + cross-objective identity
+
+S1: StudentTFit.nu_boundary shipped (efe3d644), red-first, 56/56.
+S2: cross-objective tool + known-answer gate (51dfac3f): GLLVM objective at
+frozen R's retained COV-ORD-LATENT-BARE coordinates reproduces R loglik <=1e-8.
+Applied to ACC-URBMAP real data: Julia-at-Julia delta 2.4e-10, Julia-at-R delta
+2.5e-9 — same likelihood function at both optima; the 2.2e-2 crossproduct gap
+is a shared flat ridge, not an engine difference. One-directional (Julia-at-R);
+reverse direction owed for symmetry.

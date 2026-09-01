@@ -73,3 +73,23 @@ well-conditioned surface, with the qualifier above mandatory, three named
 upgrades that would make the claim strong (cross-objective, gradient,
 curvature), and one Julia-side diagnostic defect to repair before the Student
 cell's classification can be finalized.
+
+## Addendum — panel-mandated checks EXECUTED (same session)
+
+1. Cross-objective identity tool built with a known-answer gate
+   (test/test_cross_objective_known_answer.jl): on frozen COV-ORD-LATENT-BARE,
+   GLLVM's objective at the frozen R reference's retained coordinates
+   reproduces R's loglik to <=1e-8 (4/4). Commit 51dfac3f.
+2. ACC-URBMAP cross-evaluation run (local, invariant-coordinate route,
+   eigen factor of the retained crossprods, ProbitLink, observed curvature):
+   Julia objective at Julia's coordinates delta 2.374e-10 (validation);
+   Julia objective at R's fitted coordinates delta -2.486e-9 vs R's retained
+   logLik. VERDICT on panel finding 3: the engines implement the SAME
+   likelihood at both optima on the real 52x191 data; the 2.2e-2
+   loading-crossproduct divergence is one shared flat ridge (weak
+   identification both engines inherit), not a likelihood difference.
+   Limitation stated: this is the Julia-evaluates-at-R direction; the
+   TMB-evaluates-at-Julia direction remains to run for full symmetry.
+3. Julia boundary-honesty repair shipped (commit efe3d644): StudentTFit
+   carries nu_boundary (nu > 1e6 rule), warns at fit time, prints in show();
+   converged semantics unchanged. Red-first; 56/56 Student suites.
