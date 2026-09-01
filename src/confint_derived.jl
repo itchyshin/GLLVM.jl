@@ -974,3 +974,121 @@ function profile_ci_derived(fit::GllvmFit, derived_fn::Function;
     return (lower = lower, upper = upper,
             estimate = g_hat, method = method)
 end
+
+# ---------------------------------------------------------------------------
+# Thin profile-CI wrappers named to match the missing-surface case map
+# (docs/dev-log/core070/required-source-case-map.json rows
+# namespace/export/profile_ci_total_variance,
+# namespace/export/profile_ci_phylo_signal). Both are one-line closures over
+# the generic profile_ci_derived machinery above; no new numerical method.
+# ---------------------------------------------------------------------------
+
+# Total per-trait variance Σ_y_site[t,t] from the packed θ. AD-friendly
+# (reuses _sigma_y_site_from_unpacked, already ForwardDiff-clean).
+function _total_variance_packed(θ::AbstractVector, spec::NamedTuple, t::Integer)
+    Σ = _sigma_y_site_packed(θ, spec)
+    return Σ[t, t]
+end
+
+function _make_total_variance_closure(spec::NamedTuple, t::Integer)
+    return θ -> _total_variance_packed(θ, spec, t)
+end
+
+"""
+    profile_ci_total_variance(fit::GllvmFit, t::Integer; level=0.95, y=nothing,
+                              X=nothing, Σ_phy=nothing, kwargs...)
+        -> NamedTuple
+
+Profile-likelihood CI for the per-trait total variance `Σ_y_site[t, t]`
+(see [`sigma_y_site`](@ref) for the definition). Thin wrapper around
+[`profile_ci_derived`](@ref) with `derived_fn = θ -> Σ_y_site(θ)[t, t]`; all
+keyword arguments (`penalty_weight`, `initial_step`, `max_expand`,
+`max_bisect`) are forwarded. `t` is a 1-based trait index. No transform is
+applied — the total variance is strictly positive but unbounded above, and
+the profile bracket-then-bisect search on the raw scale (mirroring how this
+file already profiles `σ²_eps`) handles that natively.
+"""
+function profile_ci_total_variance(fit::GllvmFit, t::Integer;
+                                   level::Real = 0.95,
+                                   y::Union{Nothing, AbstractMatrix} = nothing,
+                                   X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                                   Σ_phy::Union{Nothing, AbstractMatrix} = nothing,
+                                   kwargs...)
+    spec = _derived_spec(fit)
+    f = _make_total_variance_closure(spec, t)
+    return profile_ci_derived(fit, f; level = level, y = y, X = X, Σ_phy = Σ_phy,
+                              kwargs...)
+end
+
+"""
+    profile_ci_phylo_signal(fit::GllvmFit, t::Integer; level=0.95, y=nothing,
+                            X=nothing, Σ_phy=nothing, kwargs...)
+        -> NamedTuple
+
+Profile-likelihood CI for the per-trait phylogenetic signal `H²[t]` (see
+[`phylo_signal`](@ref)). Thin wrapper around [`profile_ci_derived`](@ref)
+using the packed-θ closure `GLLVM._make_phylo_signal_closure`
+(`src/confint_derived_wald.jl`) — the same closure the transformed-Wald
+route `phylo_signal_wald_ci` uses, so the point estimate matches to the
+bit. `Σ_phy` enters only through its diagonal (standardised convention →
+unit diagonal when omitted), consistent with `phylo_signal`/
+`phylo_signal_wald_ci`. `t` is a 1-based trait index; all keyword
+arguments forward to `profile_ci_derived`.
+"""
+function profile_ci_phylo_signal(fit::GllvmFit, t::Integer;
+                                 level::Real = 0.95,
+                                 y::Union{Nothing, AbstractMatrix} = nothing,
+                                 X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                                 Σ_phy::Union{Nothing, AbstractMatrix} = nothing,
+                                 kwargs...)
+    spec = _derived_spec(fit)
+    diag_Σphy = Σ_phy === nothing ? nothing : diag(Σ_phy)
+    f = _make_phylo_signal_closure(spec, t; diag_Σphy = diag_Σphy)
+    return profile_ci_derived(fit, f; level = level, y = y, X = X, Σ_phy = Σ_phy,
+                              kwargs...)
+end
+
+"""
+    loading_profile(fit::GllvmFit, t::Integer, k::Integer; level=0.95,
+                    y=nothing, X=nothing, Σ_phy=nothing, component=:B,
+                    kwargs...)
+        -> NamedTuple
+
+Profile-likelihood CI for the RAW reduced-rank loading entry `Λ[t, k]`
+(`component = :B`, default — the shared/between tier; `component = :W` for
+the within tier). This is the `loading_profile()` surface R's `loading_ci(
+method = "profile")` calls (`.unlazy/core070-aghq/oracle-source/readback/R/
+loading-profile.R`) — GLLVM.jl's dense reduced-rank fit has no separate
+grid-search profiler for Λ, so this is a thin wrapper around
+[`profile_ci_derived`](@ref) using the packed-θ closure
+`θ -> Λ_component(θ)[t, k]`; all keyword arguments forward.
+
+For `k > t` on the lower-triangular reduced-rank packing convention
+(`src/packing.jl`), the entry is structurally pinned at `0`: this returns
+`(lower = 0.0, upper = 0.0, estimate = 0.0, method = :pinned)` without
+running the profiler, matching the `pinned = TRUE` short-circuit in R's
+`loading_ci()`.
+"""
+function loading_profile(fit::GllvmFit, t::Integer, k::Integer;
+                         level::Real = 0.95,
+                         y::Union{Nothing, AbstractMatrix} = nothing,
+                         X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                         Σ_phy::Union{Nothing, AbstractMatrix} = nothing,
+                         component::Symbol = :B,
+                         kwargs...)
+    if k > t
+        return (lower = 0.0, upper = 0.0, estimate = 0.0, method = :pinned)
+    end
+    spec = _derived_spec(fit)
+    f = θ -> begin
+        u = _derived_unpack(θ, spec)
+        Λ = component === :B ? u.Λ_B :
+            component === :W ? u.Λ_W :
+            throw(ArgumentError("component must be :B or :W; got $(component)"))
+        Λ === nothing && throw(ArgumentError(
+            "fit has no Λ_$(component) block; loading_profile is undefined"))
+        Λ[t, k]
+    end
+    return profile_ci_derived(fit, f; level = level, y = y, X = X, Σ_phy = Σ_phy,
+                              kwargs...)
+end
