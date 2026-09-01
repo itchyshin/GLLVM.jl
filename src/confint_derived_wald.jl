@@ -56,16 +56,30 @@ _tw_fisher_z_inv(z) = tanh(z)
 _tw_logit(x)        = log(x / (1 - x))
 _tw_logistic(z)     = 1 / (1 + exp(-z))
 
+# log / exp for strictly positive unbounded quantities (variances, SDs) — the
+# repo's unconstrained-internal-scale convention (see σ_eps in packing.jl).
+_tw_log(x)      = log(x)
+_tw_exp(z)      = exp(z)
+
+# identity — for raw-scale quantities with no natural bound (e.g. a raw
+# loading entry Λ[t,k]), so the same generic machinery below covers them too.
+_tw_identity(x) = x
+
 # Map a transform symbol to (forward link, inverse link, natural bounds).
 function _tw_link(transform::Symbol)
     if transform === :fisher_z
         return (_tw_fisher_z, _tw_fisher_z_inv, (-1.0, 1.0))
     elseif transform === :logit
         return (_tw_logit, _tw_logistic, (0.0, 1.0))
+    elseif transform === :log
+        return (_tw_log, _tw_exp, (0.0, Inf))
+    elseif transform === :identity
+        return (_tw_identity, _tw_identity, (-Inf, Inf))
     else
         throw(ArgumentError(
-            "transform must be :fisher_z (correlations, [−1,1]) or " *
-            ":logit (communality/ICC/H², [0,1]); got $(transform)"))
+            "transform must be :fisher_z (correlations, [−1,1]), " *
+            ":logit (communality/ICC/H², [0,1]), :log (positive SDs/" *
+            "variances), or :identity (unbounded raw scale); got $(transform)"))
     end
 end
 
@@ -402,4 +416,324 @@ function phylo_signal_wald_ci(fit::GllvmFit, t::Integer;
     f = _make_phylo_signal_closure(spec, t; diag_Σphy = diag_Σphy)
     return transformed_wald_ci_derived(fit, f; transform = :logit,
                                        level = level, y = y, X = X, Σ_phy = Σ_phy)
+end
+
+# ===========================================================================
+# Standardised-loading (rho) transformed-Wald CI — the `wald_asym` route of
+# R's `loading_ci()` (.unlazy/core070-aghq/oracle-source/readback/R/loading-ci.R).
+#
+# rho[t, k] = Λ[t, k] / sqrt(Σ_y_site[t, t]) standardises the reduced-rank
+# loading entry into a correlation-like quantity on (−1, 1): the share of
+# trait t's per-site SD carried by latent axis k. The Fisher-z transform
+# (this repo's established [−1,1] convention, src/confint_derived_wald.jl
+# header) gives bounds guaranteed to stay in (−1, 1), matching R's
+# `method = "wald_asym"` (asymmetric Wald via Fisher-z on the standardised
+# scale — see `.lambda_ci_asym()` in the R oracle).
+#
+# `component` selects the loading tier: `:B` (GLLVM.jl's "unit"/shared block,
+# the R default `level = "unit"`) or `:W` (the "unit_obs"/within block).
+# Standardisation always divides by the FULL per-site total variance
+# `Σ_y_site[t,t]` (both blocks combined, plus σ²_eps and any diagonal
+# companions) — matching R's `.standardize_loadings_by_total_variance()`,
+# which standardises by model-implied total variance regardless of which
+# loading tier is being reported.
+# ===========================================================================
+
+function _standardized_loading_packed(θ::AbstractVector, spec::NamedTuple,
+                                      t::Integer, k::Integer; component::Symbol = :B)
+    u = _derived_unpack(θ, spec)
+    Λ = component === :B ? u.Λ_B :
+        component === :W ? u.Λ_W :
+        throw(ArgumentError("component must be :B or :W; got $(component)"))
+    Λ === nothing && throw(ArgumentError(
+        "fit has no Λ_$(component) block; standardized loading is undefined"))
+    Σ = _sigma_y_site_from_unpacked(u, spec)
+    return Λ[t, k] / sqrt(Σ[t, t])
+end
+
+function _make_standardized_loading_closure(spec::NamedTuple, t::Integer, k::Integer;
+                                            component::Symbol = :B)
+    return θ -> _standardized_loading_packed(θ, spec, t, k; component = component)
+end
+
+"""
+    standardized_loading_wald_ci(fit, t, k; level=0.95, y, X=nothing,
+                                 Σ_phy=nothing, component=:B)
+        -> NamedTuple
+
+Fisher-z transformed-Wald CI for the standardised loading
+`rho[t, k] = Λ[t, k] / sqrt(Σ_y_site[t, t])` (R's `loading_ci(method =
+"wald_asym", loading_scale = "standardized")`, parameter name
+`rho[trait,axis]`). Bounds are guaranteed to lie in `(−1, 1)`.
+`component = :B` (default) is R's `level = "unit"` (the shared/between
+loading tier); `component = :W` is `level = "unit_obs"` (the within tier,
+requires `fit.pars.Λ_W !== nothing`).
+
+Delta-method SE and Hessian convention are identical to
+[`transformed_wald_ci_derived`](@ref) — one ForwardDiff Hessian of the
+packed NLL, reused for every entry in a `loading_ci` table.
+"""
+function standardized_loading_wald_ci(fit::GllvmFit, t::Integer, k::Integer;
+                                      level::Real = 0.95,
+                                      y::Union{Nothing, AbstractMatrix} = nothing,
+                                      X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                                      Σ_phy::Union{Nothing, AbstractMatrix} = nothing,
+                                      component::Symbol = :B)
+    spec = _derived_spec(fit)
+    f = _make_standardized_loading_closure(spec, t, k; component = component)
+    return transformed_wald_ci_derived(fit, f; transform = :fisher_z,
+                                       level = level, y = y, X = X, Σ_phy = Σ_phy)
+end
+
+"""
+    raw_loading_wald_ci(fit, t, k; level=0.95, y, X=nothing, Σ_phy=nothing,
+                        component=:B) -> NamedTuple
+
+Symmetric (identity-link) transformed-Wald CI for the RAW loading entry
+`Λ[t, k]` on its native (unbounded) scale, built with the same one-Hessian
+machinery as [`standardized_loading_wald_ci`](@ref). This is the `method =
+"wald"` route of R's `loading_ci()` on GLLVM.jl's dense reduced-rank fit.
+For `k > t` on the lower-triangular reduced-rank packing convention
+(`src/packing.jl`), the entry is structurally pinned at `0` — `estimate ==
+0`, `se == 0`, `lower == upper == 0`, mirroring `pinned = TRUE` rows in R's
+output.
+"""
+function raw_loading_wald_ci(fit::GllvmFit, t::Integer, k::Integer;
+                             level::Real = 0.95,
+                             y::Union{Nothing, AbstractMatrix} = nothing,
+                             X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                             Σ_phy::Union{Nothing, AbstractMatrix} = nothing,
+                             component::Symbol = :B)
+    if k > t
+        return (; estimate = 0.0, lower = 0.0, upper = 0.0,
+                se_transformed = 0.0, transform = :identity,
+                pd_hessian = true, method = :pinned)
+    end
+    spec = _derived_spec(fit)
+    f = θ -> begin
+        u = _derived_unpack(θ, spec)
+        Λ = component === :B ? u.Λ_B :
+            component === :W ? u.Λ_W :
+            throw(ArgumentError("component must be :B or :W; got $(component)"))
+        Λ === nothing && throw(ArgumentError(
+            "fit has no Λ_$(component) block; raw loading is undefined"))
+        Λ[t, k]
+    end
+    return transformed_wald_ci_derived(fit, f; transform = :identity,
+                                       level = level, y = y, X = X, Σ_phy = Σ_phy)
+end
+
+"""
+    loading_ci(fit::GllvmFit, y; level=:unit, method=:wald, conf_level=0.95,
+              loading_scale=nothing, X=nothing, Σ_phy=nothing)
+        -> Vector{NamedTuple}
+
+Per-entry confidence intervals on the reduced-rank loading matrix, one row
+per `(trait, axis)` — the Julia analogue of R's `loading_ci()`
+(`.unlazy/core070-aghq/oracle-source/readback/R/loading-ci.R`).
+
+  - `level`: `:unit` (default, R's shared/between tier) or `:unit_obs` (the
+    within tier; requires the fit to carry a `Λ_W` block).
+  - `method`: `:wald` (default) — symmetric Wald on `loading_scale`;
+    `:wald_asym` — Fisher-z asymmetric Wald, only defined for
+    `loading_scale = :standardized`; `:profile` — profile-likelihood via
+    [`loading_profile`](@ref), only defined for `loading_scale = :raw`
+    (mirrors R's refusals for the same scale/method combinations).
+  - `loading_scale`: `nothing` (default) resolves to `:standardized` for
+    `:wald_asym` and `:raw` otherwise, matching R.
+
+Every row carries `trait`, `axis`, `estimate`, `se`, `lower`, `upper`,
+`method`, `loading_scale`, and `pinned` (`true` for the structurally-zero
+upper-triangular entries of the lower-triangular reduced-rank packing
+convention — GLLVM.jl's built-in identifiability device; there is no
+separate `lambda_constraint`/confirmatory-fit concept to gate on here, so
+unlike R this function does not refuse exploratory fits).
+
+**Interval calibration**: as in R, treat these as exploratory intervals —
+their empirical coverage on this repo's dense reduced-rank path is not
+separately certified; the point estimates (`estimate`) are the supported
+claim.
+"""
+function loading_ci(fit::GllvmFit, y::AbstractMatrix;
+                    level::Symbol = :unit,
+                    method::Symbol = :wald,
+                    conf_level::Real = 0.95,
+                    loading_scale::Union{Nothing, Symbol} = nothing,
+                    X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                    Σ_phy::Union{Nothing, AbstractMatrix} = nothing)
+    level ∈ (:unit, :unit_obs) || throw(ArgumentError(
+        "level must be :unit or :unit_obs; got $(level)"))
+    method ∈ (:wald, :wald_asym, :profile) || throw(ArgumentError(
+        "method must be :wald, :wald_asym, or :profile; got $(method)"))
+    scale = loading_scale === nothing ?
+        (method === :wald_asym ? :standardized : :raw) : loading_scale
+    scale ∈ (:raw, :standardized) || throw(ArgumentError(
+        "loading_scale must be :raw or :standardized; got $(scale)"))
+    method === :wald_asym && scale !== :standardized && throw(ArgumentError(
+        "method = :wald_asym is defined on the standardised-loading scale; " *
+        "pass loading_scale = :standardized, or use method = :wald for raw " *
+        "Λ intervals"))
+    method === :profile && scale !== :raw && throw(ArgumentError(
+        "standardised profile intervals are not implemented; use " *
+        "loading_scale = :raw with method = :profile, or a standardised " *
+        "Wald method"))
+
+    component = level === :unit ? :B : :W
+    Λ = component === :B ? fit.pars.Λ : fit.pars.Λ_W
+    Λ === nothing && throw(ArgumentError(
+        "fit has no Λ_$(component) block at level = $(level)"))
+    p, d = size(Λ)
+
+    out = Vector{NamedTuple}(undef, p * d)
+    row = 0
+    for k in 1:d, t in 1:p
+        row += 1
+        if method === :wald
+            r = raw_loading_wald_ci(fit, t, k; level = conf_level, y = y,
+                                    X = X, Σ_phy = Σ_phy, component = component)
+        elseif method === :wald_asym
+            r = standardized_loading_wald_ci(fit, t, k; level = conf_level, y = y,
+                                             X = X, Σ_phy = Σ_phy, component = component)
+        else # :profile
+            r = loading_profile(fit, t, k; level = conf_level, y = y, X = X,
+                                Σ_phy = Σ_phy, component = component)
+        end
+        out[row] = (; trait = t, axis = k, estimate = r.estimate,
+                    se = get(r, :se_transformed, NaN),
+                    lower = r.lower, upper = r.upper,
+                    method = method, loading_scale = scale,
+                    pinned = (k > t))
+    end
+    return out
+end
+
+# ===========================================================================
+# slope_sd_ci — Wald CI on random-slope standard deviations for
+# GaussianRandomSlopeFit (src/fit_random_effects.jl). Mirrors R's SLICE-1
+# `slope_sd_ci()` route (log-SD Wald for the univariate case, `.unlazy/
+# core070-aghq/oracle-source/readback/R/slope-sd-ci.R`), generalised via the
+# log-scale delta method for the correlated q>1 case: `Var(b_k) = Σ_b[k,k]`
+# is a nonlinear function of the log-Cholesky packing (`_unpack_chol_cov`),
+# so `log(Σ_b[k,k])` is delta-method'd and exponentiated back — the repo's
+# unconstrained-internal-scale convention for SDs (guarantees a positive
+# bound, unlike a raw-scale symmetric CI).
+# ===========================================================================
+
+# Inverse of _unpack_chol_cov (src/fit_random_effects.jl): pack a q×q SPD
+# matrix into the same log-Cholesky vector layout (diag = log, column-major
+# lower-tri off-diag = raw).
+function _pack_chol_cov(Σ_b::AbstractMatrix, q::Integer)
+    L = cholesky(Symmetric(Matrix{Float64}(Σ_b))).L
+    theta = Vector{Float64}(undef, _chol_cov_npar(q))
+    idx = 1
+    @inbounds for j in 1:q
+        theta[idx] = log(L[j, j]); idx += 1
+        for i in (j + 1):q
+            theta[idx] = L[i, j]; idx += 1
+        end
+    end
+    return theta
+end
+
+"""
+    slope_sd_ci(fit::GaussianRandomSlopeFit, y, grouping, Z; level=0.95)
+        -> Vector{NamedTuple}
+
+Log-scale transformed-Wald CI on each random-slope standard deviation
+`sd_b[k] = sqrt(Σ_b[k, k])`, `k = 1:fit.q`, of a fitted
+[`GaussianRandomSlopeFit`](@ref) (`fit_gaussian_random_slope`). Column 1 of
+`Z` conventionally carries the random intercept, so `sd_b[1]` is the
+random-intercept SD; further columns are random-slope SDs.
+
+Bounds are guaranteed positive via the `exp(log θ̂ ± z·SE_log)`
+transformed-Wald convention this repo uses for every other SD parameter
+(σ_eps in `confint.jl`, σ_B/σ_W in `confint.jl`). The observed information
+is the ForwardDiff Hessian of the packed grouped-slope NLL reconstructed
+from `y`, `grouping`, `Z` at `fit`'s converged
+`[vec(Λ); log σ_eps; logCholesky(Σ_b)]` — the same objective
+`fit_gaussian_random_slope` optimised.
+
+`y`, `grouping`, `Z` must be the same arrays passed to
+`fit_gaussian_random_slope` (this struct does not retain them).
+
+Returns a `NamedTuple` per `k` with fields `estimate` (`sd_b[k]`),
+`lower`, `upper`, `se_transformed` (SE on `log(Σ_b[k,k])`), `transform =
+:log`, `pd_hessian`, `method`.
+"""
+function slope_sd_ci(fit::GaussianRandomSlopeFit, y::AbstractMatrix,
+                     grouping::AbstractVector, Z::AbstractMatrix;
+                     level::Real = 0.95)
+    0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
+    p, K = size(fit.Λ)
+    q = fit.q
+    yf = Matrix{Float64}(y); Zf = Matrix{Float64}(Z)
+    codes, _ = _code_grouping(grouping)
+    L = maximum(codes)
+    group_idx = [findall(==(g), codes) for g in 1:L]
+    rr = rr_theta_len(p, K)
+    nc = _chol_cov_npar(q)
+
+    θ̂ = vcat(pack_lambda(fit.Λ), log(fit.σ_eps), _pack_chol_cov(fit.Σ_b, q))
+
+    nll = θ -> begin
+        Λ = unpack_lambda(θ[1:rr], p, K)
+        σe = exp(θ[rr + 1])
+        Σ_b, _ = _unpack_chol_cov(θ[(rr + 2):(rr + 1 + nc)], q)
+        -_grouped_slope_loglik(yf, group_idx, Zf, Λ, σe, Σ_b)
+    end
+
+    H = try
+        ForwardDiff.hessian(nll, θ̂)
+    catch
+        nothing
+    end
+    Σcov, pd = if H !== nothing && all(isfinite, H)
+        try
+            (inv((H .+ H') ./ 2), true)
+        catch
+            (nothing, false)
+        end
+    else
+        (nothing, false)
+    end
+
+    out = Vector{NamedTuple}(undef, q)
+    for k in 1:q
+        g = θ -> begin
+            Σ_b, _ = _unpack_chol_cov(θ[(rr + 2):(rr + 1 + nc)], q)
+            sqrt(Σ_b[k, k])
+        end
+        out[k] = _transformed_wald_ci_with_sigma(θ̂, g, Σcov, pd;
+                                                  transform = :log, level = level)
+    end
+    return out
+end
+
+"""
+    standard_errors(fit::GllvmFit, y; X=nothing, Σ_phy=nothing, level=0.95)
+        -> NamedTuple
+
+Julia analogue of R gllvmTMB's `standard_errors()` (`.unlazy/core070-aghq/
+oracle-source/readback/R/standard-errors.R`). R's version lazily defers
+TMB's `sdreport()` to a later call when a fit was made with `control =
+gllvmTMBcontrol(se = FALSE)` — a "fit fast now, get SEs later" door.
+GLLVM.jl's `GllvmFit` has no such deferred-SE control: the observed-
+information Hessian is always available on demand via [`confint`](@ref).
+
+`standard_errors` is therefore a thin, always-eager wrapper around
+`confint(fit, y; level=level, X=X, Σ_phy=Σ_phy)`, returning only the
+`term`/`estimate`/`se`/`pd_hessian` fields (the CI-bound-free subset R's
+downstream consumers — `summary()`, `getREsd()`, `confint(method =
+"wald")` — actually read off `sd_report`). Since GLLVM.jl never skips the
+computation, `fit` is returned unchanged (it is immutable) and the
+`NamedTuple` result stands in for R's "populate `sd_report` and return the
+fit" side effect.
+"""
+function standard_errors(fit::GllvmFit, y::AbstractMatrix;
+                         X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                         Σ_phy::Union{Nothing, AbstractMatrix} = nothing,
+                         level::Real = 0.95)
+    res = confint(fit; level = level, y = y, X = X, Σ_phy = Σ_phy)
+    return (term = res.term, estimate = res.estimate, se = res.se,
+            pd_hessian = res.pd_hessian)
 end
