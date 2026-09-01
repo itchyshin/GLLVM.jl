@@ -10513,10 +10513,15 @@
     "CORE070-POSTFIT2-ORDIPLOT-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "triage": "plot-family 2026-09-01",
+    "reason": "plotting/print surface: blocked on the undecided Julia plotting-stack design (CairoMakie port + Confidence Eye figure contract, Florence-owned per AGENTS.md), not on mechanical implementation \u2014 surfacing as the design decision it is",
+    "decision_needed": "choose the plotting stack and figure contract for GLLVM.jl (CairoMakie assumed by the roadmap); then this family becomes an implementable cluster",
+    "prior": {
+     "batch": "postfit-2-batch wave2 (absence receipted)",
+     "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    }
    }
   },
   {
@@ -10529,10 +10534,15 @@
     "CORE070-POSTFIT2-PLOT-GLLVMTMB-MULTI-DATA-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "triage": "plot-family 2026-09-01",
+    "reason": "plotting/print surface: blocked on the undecided Julia plotting-stack design (CairoMakie port + Confidence Eye figure contract, Florence-owned per AGENTS.md), not on mechanical implementation \u2014 surfacing as the design decision it is",
+    "decision_needed": "choose the plotting stack and figure contract for GLLVM.jl (CairoMakie assumed by the roadmap); then this family becomes an implementable cluster",
+    "prior": {
+     "batch": "postfit-2-batch wave2 (absence receipted)",
+     "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    }
    }
   },
   {
@@ -10564,10 +10574,15 @@
     "CORE070-POSTFIT2-PLOT-PROFILE-DERIVED-DATA-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "triage": "plot-family 2026-09-01",
+    "reason": "plotting/print surface: blocked on the undecided Julia plotting-stack design (CairoMakie port + Confidence Eye figure contract, Florence-owned per AGENTS.md), not on mechanical implementation \u2014 surfacing as the design decision it is",
+    "decision_needed": "choose the plotting stack and figure contract for GLLVM.jl (CairoMakie assumed by the roadmap); then this family becomes an implementable cluster",
+    "prior": {
+     "batch": "postfit-2-batch wave2 (absence receipted)",
+     "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    }
    }
   },
   {
@@ -10579,10 +10594,15 @@
     "CORE070-POSTFIT2-PLOT-PROFILE-LOADINGS-DATA-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "triage": "plot-family 2026-09-01",
+    "reason": "plotting/print surface: blocked on the undecided Julia plotting-stack design (CairoMakie port + Confidence Eye figure contract, Florence-owned per AGENTS.md), not on mechanical implementation \u2014 surfacing as the design decision it is",
+    "decision_needed": "choose the plotting stack and figure contract for GLLVM.jl (CairoMakie assumed by the roadmap); then this family becomes an implementable cluster",
+    "prior": {
+     "batch": "postfit-2-batch wave2 (absence receipted)",
+     "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    }
    }
   },
   {
@@ -10615,10 +10635,15 @@
     "CORE070-POSTFIT2-PLOT-SIGMA-COMPARISON-DATA-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "triage": "plot-family 2026-09-01",
+    "reason": "plotting/print surface: blocked on the undecided Julia plotting-stack design (CairoMakie port + Confidence Eye figure contract, Florence-owned per AGENTS.md), not on mechanical implementation \u2014 surfacing as the design decision it is",
+    "decision_needed": "choose the plotting stack and figure contract for GLLVM.jl (CairoMakie assumed by the roadmap); then this family becomes an implementable cluster",
+    "prior": {
+     "batch": "postfit-2-batch wave2 (absence receipted)",
+     "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    }
    }
   },
   {
@@ -10631,10 +10656,15 @@
     "CORE070-POSTFIT2-PLOT-SIGMA-HEATMAP-DATA-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "triage": "plot-family 2026-09-01",
+    "reason": "plotting/print surface: blocked on the undecided Julia plotting-stack design (CairoMakie port + Confidence Eye figure contract, Florence-owned per AGENTS.md), not on mechanical implementation \u2014 surfacing as the design decision it is",
+    "decision_needed": "choose the plotting stack and figure contract for GLLVM.jl (CairoMakie assumed by the roadmap); then this family becomes an implementable cluster",
+    "prior": {
+     "batch": "postfit-2-batch wave2 (absence receipted)",
+     "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    }
    }
   },
   {
@@ -10647,10 +10677,15 @@
     "CORE070-POSTFIT2-PLOT-SIGMA-TABLE-DATA-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "triage": "plot-family 2026-09-01",
+    "reason": "plotting/print surface: blocked on the undecided Julia plotting-stack design (CairoMakie port + Confidence Eye figure contract, Florence-owned per AGENTS.md), not on mechanical implementation \u2014 surfacing as the design decision it is",
+    "decision_needed": "choose the plotting stack and figure contract for GLLVM.jl (CairoMakie assumed by the roadmap); then this family becomes an implementable cluster",
+    "prior": {
+     "batch": "postfit-2-batch wave2 (absence receipted)",
+     "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    }
    }
   },
   {
@@ -10663,10 +10698,15 @@
     "CORE070-POSTFIT2-PLOT-ANISOTROPY-PUBLIC-R-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "triage": "plot-family 2026-09-01",
+    "reason": "plotting/print surface: blocked on the undecided Julia plotting-stack design (CairoMakie port + Confidence Eye figure contract, Florence-owned per AGENTS.md), not on mechanical implementation \u2014 surfacing as the design decision it is",
+    "decision_needed": "choose the plotting stack and figure contract for GLLVM.jl (CairoMakie assumed by the roadmap); then this family becomes an implementable cluster",
+    "prior": {
+     "batch": "postfit-2-batch wave2 (absence receipted)",
+     "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    }
    }
   },
   {
@@ -10679,10 +10719,15 @@
     "CORE070-POSTFIT2-PLOT-ANISOTROPY2-PUBLIC-R-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "triage": "plot-family 2026-09-01",
+    "reason": "plotting/print surface: blocked on the undecided Julia plotting-stack design (CairoMakie port + Confidence Eye figure contract, Florence-owned per AGENTS.md), not on mechanical implementation \u2014 surfacing as the design decision it is",
+    "decision_needed": "choose the plotting stack and figure contract for GLLVM.jl (CairoMakie assumed by the roadmap); then this family becomes an implementable cluster",
+    "prior": {
+     "batch": "postfit-2-batch wave2 (absence receipted)",
+     "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    }
    }
   },
   {
@@ -10695,10 +10740,15 @@
     "CORE070-POSTFIT2-PLOT-CORRELATIONS-DATA-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "triage": "plot-family 2026-09-01",
+    "reason": "plotting/print surface: blocked on the undecided Julia plotting-stack design (CairoMakie port + Confidence Eye figure contract, Florence-owned per AGENTS.md), not on mechanical implementation \u2014 surfacing as the design decision it is",
+    "decision_needed": "choose the plotting stack and figure contract for GLLVM.jl (CairoMakie assumed by the roadmap); then this family becomes an implementable cluster",
+    "prior": {
+     "batch": "postfit-2-batch wave2 (absence receipted)",
+     "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    }
    }
   },
   {
@@ -10711,10 +10761,15 @@
     "CORE070-POSTFIT2-PLOT-LOADINGS-CONFIDENCE-EYE-DATA-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "triage": "plot-family 2026-09-01",
+    "reason": "plotting/print surface: blocked on the undecided Julia plotting-stack design (CairoMakie port + Confidence Eye figure contract, Florence-owned per AGENTS.md), not on mechanical implementation \u2014 surfacing as the design decision it is",
+    "decision_needed": "choose the plotting stack and figure contract for GLLVM.jl (CairoMakie assumed by the roadmap); then this family becomes an implementable cluster",
+    "prior": {
+     "batch": "postfit-2-batch wave2 (absence receipted)",
+     "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    }
    }
   },
   {
@@ -10726,10 +10781,15 @@
     "CORE070-POSTFIT2-PLOT-ROTATED-LOADINGS-DATA-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "triage": "plot-family 2026-09-01",
+    "reason": "plotting/print surface: blocked on the undecided Julia plotting-stack design (CairoMakie port + Confidence Eye figure contract, Florence-owned per AGENTS.md), not on mechanical implementation \u2014 surfacing as the design decision it is",
+    "decision_needed": "choose the plotting stack and figure contract for GLLVM.jl (CairoMakie assumed by the roadmap); then this family becomes an implementable cluster",
+    "prior": {
+     "batch": "postfit-2-batch wave2 (absence receipted)",
+     "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    }
    }
   },
   {
@@ -10906,10 +10966,15 @@
     "CORE070-POSTFIT2-PRINT-GLLVMTMB-MULTI-DATA-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "triage": "plot-family 2026-09-01",
+    "reason": "plotting/print surface: blocked on the undecided Julia plotting-stack design (CairoMakie port + Confidence Eye figure contract, Florence-owned per AGENTS.md), not on mechanical implementation \u2014 surfacing as the design decision it is",
+    "decision_needed": "choose the plotting stack and figure contract for GLLVM.jl (CairoMakie assumed by the roadmap); then this family becomes an implementable cluster",
+    "prior": {
+     "batch": "postfit-2-batch wave2 (absence receipted)",
+     "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    }
    }
   },
   {
@@ -10962,10 +11027,15 @@
     "CORE070-POSTFIT2-PRINT-SUMMARY-GLLVMTMB-MULTI-DATA-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "triage": "plot-family 2026-09-01",
+    "reason": "plotting/print surface: blocked on the undecided Julia plotting-stack design (CairoMakie port + Confidence Eye figure contract, Florence-owned per AGENTS.md), not on mechanical implementation \u2014 surfacing as the design decision it is",
+    "decision_needed": "choose the plotting stack and figure contract for GLLVM.jl (CairoMakie assumed by the roadmap); then this family becomes an implementable cluster",
+    "prior": {
+     "batch": "postfit-2-batch wave2 (absence receipted)",
+     "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    }
    }
   },
   {
