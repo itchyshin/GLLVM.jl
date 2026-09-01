@@ -478,9 +478,16 @@ function bridge_fit(; y,
                     mask = nothing,
                     trait_names = nothing,
                     unit_names = nothing,
+                    sources = nothing,
                     options = Dict{String,Any}())
     K = Int(d)
     K >= 0 || throw(ArgumentError("d must be a non-negative integer"))
+    if sources !== nothing
+        return _bridge_fit_sources(y, family, K, sources;
+            X = X, X_lv = X_lv, mask = mask, N = N,
+            trait_names = trait_names, unit_names = unit_names,
+            options = options)
+    end
     # Fixed-effect covariates X (a p×n×q array) are wired for the Gaussian family
     # and the one-part NON-Gaussian `_BRIDGE_X_FAMILIES` (incl. nb1 grouped_cov and
     # ordinal/ordinal_probit per-trait cutpoint cov). Mixed-family X remains a
@@ -1951,3 +1958,116 @@ function _bridge_assemble(fit, family::AbstractString, model::AbstractString,
     )
     return ci === nothing ? base : merge(base, ci)
 end
+
+# --- structured-covariance sources route (Gaussian, v1) ----------------------
+# Design: docs/dev-log/julia-bridge-structured-design-julia-side.md. Single
+# source, default trait-intercept mean, no CI/mask/X composition — everything
+# unsupported rejects loudly. The native target is `fit_gaussian_sources`.
+
+function _bridge_source_from_dict(spec, n::Integer, index::Integer)
+    spec isa AbstractDict || throw(ArgumentError(
+        "bridge_fit: sources[$index] must be a Dict-like source spec"))
+    name = Symbol(String(_bridge_get(spec, "name", "source$index")))
+    C = _bridge_get(spec, "covariance", nothing)
+    C isa AbstractMatrix || throw(ArgumentError(
+        "bridge_fit: sources[$index] needs a square covariance matrix"))
+    Cm = Matrix{Float64}(C)
+    mode_raw = lowercase(strip(String(_bridge_get(spec, "mode", "latent"))))
+    mode_raw in ("latent", "indep", "dep") || throw(ArgumentError(
+        "bridge_fit: sources[$index] mode must be latent, indep, or dep; " *
+        "got \"$mode_raw\""))
+    mode = Symbol(mode_raw)
+    rank_raw = _bridge_get(spec, "rank", nothing)
+    rank = rank_raw === nothing ? nothing : Int(rank_raw)
+    mode !== :latent && rank !== nothing && throw(ArgumentError(
+        "bridge_fit: sources[$index] rank is only valid for mode = latent"))
+    uniq = Bool(_bridge_get(spec, "unique", false))
+    comm = Bool(_bridge_get(spec, "common", false))
+    proj = _bridge_get(spec, "projection", nothing)
+    groups = _bridge_get(spec, "groups", nothing)
+    if proj !== nothing
+        P = Matrix{Float64}(proj)
+        size(P, 1) == n || throw(ArgumentError(
+            "bridge_fit: sources[$index] projection needs $n rows (one per unit)"))
+        return mode === :latent ?
+            SourceCovariance(Cm, P; name = name, mode = mode,
+                rank = rank === nothing ? 1 : rank, unique = uniq, common = comm) :
+            SourceCovariance(Cm, P; name = name, mode = mode,
+                unique = uniq, common = comm)
+    end
+    groups === nothing && throw(ArgumentError(
+        "bridge_fit: sources[$index] needs groups or projection"))
+    g = [Int(x) for x in collect(groups)]
+    length(g) == n || throw(ArgumentError(
+        "bridge_fit: sources[$index] groups length $(length(g)) must equal " *
+        "the unit count $n"))
+    return mode === :latent ?
+        SourceCovariance(Cm; groups = g, name = name, mode = mode,
+            rank = rank === nothing ? 1 : rank, unique = uniq, common = comm) :
+        SourceCovariance(Cm; groups = g, name = name, mode = mode,
+            unique = uniq, common = comm)
+end
+
+function _bridge_fit_sources(y, family, K::Integer, sources;
+        X, X_lv, mask, N, trait_names, unit_names, options)
+    fam = _bridge_family_key(String(family))
+    fam == "gaussian" || throw(ArgumentError(
+        "bridge_fit: sources are supported for the gaussian family only"))
+    X === nothing || throw(ArgumentError(
+        "bridge_fit: sources and X are mutually exclusive in this slice"))
+    X_lv === nothing || throw(ArgumentError(
+        "bridge_fit: sources and X_lv are mutually exclusive"))
+    mask === nothing || throw(ArgumentError(
+        "bridge_fit: sources do not support response masks"))
+    N === nothing || throw(ArgumentError(
+        "bridge_fit: sources do not take a trials matrix"))
+    ci_method = lowercase(String(_bridge_get(options, "ci_method", "none")))
+    ci_method == "none" || throw(ArgumentError(
+        "bridge_fit: sources support ci_method = \"none\" only " *
+        "(fit_gaussian_sources has no bridge CI engine yet)"))
+    specs = collect(sources)
+    isempty(specs) && throw(ArgumentError("bridge_fit: sources is empty"))
+    length(specs) == 1 || throw(ArgumentError(
+        "bridge_fit: exactly one source is supported in this slice; " *
+        "multi-source transport is a documented follow-up"))
+    Yf = Matrix{Float64}(y)
+    p, n = size(Yf)
+    native = [_bridge_source_from_dict(specs[1], n, 1)]
+    g_tol = Float64(_bridge_get(options, "g_tol", 1e-6))
+    iterations = Int(_bridge_get(options, "iterations", 500))
+    fit = fit_gaussian_sources(Yf; sources = native, g_tol = g_tol,
+        iterations = iterations)
+    src = only(fit.sources)
+    B = Matrix{Float64}(only(fit.trait_covariances))
+    Sigma = B + fit.sigma_eps^2 * Matrix{Float64}(I, p, p)
+    dstd = sqrt.(max.(diag(Sigma), 0.0))
+    corr = Sigma ./ (dstd * dstd')
+    comm = [Sigma[i, i] > 0 ? B[i, i] / Sigma[i, i] : NaN for i in 1:p]
+    q = p   # default trait-intercept mean design
+    L = if src.mode === :latent
+        unpack_lambda(fit.parameters[(q + 1):(q + rr_theta_len(p, src.rank))],
+            p, src.rank)
+    elseif src.mode === :dep
+        unpack_lambda(fit.parameters[(q + 1):(q + rr_theta_len(p, p))], p, p)
+    else
+        zeros(p, 0)
+    end
+    traits = _bridge_names(trait_names, p, "trait")
+    units = _bridge_names(unit_names, n, "unit")
+    base = _bridge_assemble(fit, "gaussian", "gaussian_sources", traits, units;
+        alpha = fit.beta, dispersion = fill(NaN, p), sigma_eps = fit.sigma_eps,
+        link = fill("identity", p), Sigma = Sigma, corr = corr, comm = comm,
+        scores = zeros(0, n), df = length(fit.parameters),
+        loglik = fit.loglik, converged = fit.converged,
+        iterations = fit.iterations, note = "", loadings = L,
+        gradient_max = Float64(fit.gradient_norm))
+    return merge(base, (
+        source_names = [String(src.name)],
+        source_modes = [String(src.mode)],
+        source_common = [src.common],
+        source_unique = [src.unique],
+        source_rank = [src.mode === :latent ? src.rank : 0],
+        source_covariance = B,
+    ))
+end
+
