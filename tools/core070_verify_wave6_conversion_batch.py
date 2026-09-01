@@ -202,8 +202,11 @@ def check_state(contract, receipt, results_lines, julia_report):
         rc = julia_report.get("rejection_cases", {}).get(row["case_id"])
         need(rc is not None, f"{row['case_id']}: missing from julia-results.json rejection_cases")
         need(rc.get("pass") is True, f"{row['case_id']}: rejection case did not pass")
-        need(rc.get("r_raised") is True and rc.get("julia_raised") is True,
-             f"{row['case_id']}: rejection case did not have both sides raise")
+        exp_r = row.get("expect_r_raised", True)
+        exp_jl = row.get("expect_julia_raised", True)
+        need(rc.get("r_raised") is exp_r and rc.get("julia_raised") is exp_jl,
+             f"{row['case_id']}: rejection outcome mismatch vs contract expectations "
+             f"(expected r={exp_r}, julia={exp_jl}; got r={rc.get('r_raised')}, julia={rc.get('julia_raised')})")
 
 
 def verify_state(contract, state_dir: Path):
