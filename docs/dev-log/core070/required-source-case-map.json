@@ -433,7 +433,12 @@
     "CORE070-COV-ANIMAL-FOLDED-UNIQUE-FORMULA",
     "CORE070-COV-ANIMAL-FOLDED-UNIQUE-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/covariance-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/covariance-required-case-plan.json",
+   "evidence": {
+    "batch": "covariance-batch (wave1)",
+    "note": "SPEC_DEFECT: CORE070-COV-ANIMAL-FOLDED-UNIQUE-NATIVE",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef"
+   }
   },
   {
    "source_id": "covariance/COV-ANIMAL-INDEP",
@@ -592,22 +597,38 @@
   {
    "source_id": "covariance/COV-META-EXACT",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-COV-META-EXACT-FORMULA"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-COV-META-EXACT-FORMULA"
    ],
-   "case_plan": "docs/dev-log/core070/covariance-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/covariance-required-case-plan.json",
+   "evidence": {
+    "batch": "covariance-batch attempt-cov (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": ""
+   }
   },
   {
    "source_id": "covariance/COV-META-LEGACY",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-COV-META-LEGACY-ADAPTER"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-COV-META-LEGACY-ADAPTER"
    ],
-   "case_plan": "docs/dev-log/core070/covariance-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/covariance-required-case-plan.json",
+   "evidence": {
+    "batch": "covariance-batch attempt-cov (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": ""
+   }
   },
   {
    "source_id": "covariance/COV-ORD-DEP",
@@ -654,32 +675,56 @@
   {
    "source_id": "covariance/COV-ORD-LATENT-BARE",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-COV-ORD-LATENT-BARE-FORMULA"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-COV-ORD-LATENT-BARE-FORMULA"
    ],
-   "case_plan": "docs/dev-log/core070/covariance-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/covariance-required-case-plan.json",
+   "evidence": {
+    "batch": "covariance-batch attempt-cov (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": ""
+   }
   },
   {
    "source_id": "covariance/COV-ORD-LATENT-COMMON",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-COV-ORD-LATENT-COMMON-FORMULA"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-COV-ORD-LATENT-COMMON-FORMULA"
    ],
-   "case_plan": "docs/dev-log/core070/covariance-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/covariance-required-case-plan.json",
+   "evidence": {
+    "batch": "covariance-batch attempt-cov (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": ""
+   }
   },
   {
    "source_id": "covariance/COV-ORD-LATENT-DEFAULT",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-COV-ORD-LATENT-DEFAULT-FORMULA"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-COV-ORD-LATENT-DEFAULT-FORMULA"
    ],
-   "case_plan": "docs/dev-log/core070/covariance-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/covariance-required-case-plan.json",
+   "evidence": {
+    "batch": "covariance-batch attempt-cov (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": ""
+   }
   },
   {
    "source_id": "covariance/COV-ORD-SLOPE",
@@ -716,12 +761,20 @@
   {
    "source_id": "covariance/COV-PHYLO-A-ALIAS",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-COV-PHYLO-A-ALIAS-ADAPTER"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-COV-PHYLO-A-ALIAS-ADAPTER"
    ],
-   "case_plan": "docs/dev-log/core070/covariance-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/covariance-required-case-plan.json",
+   "evidence": {
+    "batch": "covariance-batch attempt-cov (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": ""
+   }
   },
   {
    "source_id": "covariance/COV-PHYLO-CONFLICT",
@@ -732,12 +785,20 @@
   {
    "source_id": "covariance/COV-PHYLO-DEP",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-COV-PHYLO-DEP-FORMULA"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-COV-PHYLO-DEP-FORMULA"
    ],
-   "case_plan": "docs/dev-log/core070/covariance-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/covariance-required-case-plan.json",
+   "evidence": {
+    "batch": "covariance-batch attempt-cov (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": ""
+   }
   },
   {
    "source_id": "covariance/COV-PHYLO-DEP-BARE-REJECT",
@@ -748,12 +809,20 @@
   {
    "source_id": "covariance/COV-PHYLO-FOLDED-UNIQUE",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-COV-PHYLO-FOLDED-UNIQUE-FORMULA"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-COV-PHYLO-FOLDED-UNIQUE-FORMULA"
    ],
-   "case_plan": "docs/dev-log/core070/covariance-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/covariance-required-case-plan.json",
+   "evidence": {
+    "batch": "covariance-batch attempt-cov (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": ""
+   }
   },
   {
    "source_id": "covariance/COV-PHYLO-INDEP",
@@ -1298,22 +1367,38 @@
   {
    "source_id": "data/DATA-MISS-BOTH",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-DATA-MISS-BOTH-CONTROL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-DATA-MISS-BOTH-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/data-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/data-required-case-plan.json",
+   "evidence": {
+    "batch": "data-batch attempt-data-r3 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": "verifier CORE070_DATA_BATCH_VERIFIED 30 julia_checked True"
+   }
   },
   {
    "source_id": "data/DATA-MISS-DEFAULT",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-DATA-MISS-DEFAULT-CONTROL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-DATA-MISS-DEFAULT-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/data-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/data-required-case-plan.json",
+   "evidence": {
+    "batch": "data-batch attempt-data-r3 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": "verifier CORE070_DATA_BATCH_VERIFIED 30 julia_checked True"
+   }
   },
   {
    "source_id": "data/DATA-MISS-EM-REJECT",
@@ -1336,22 +1421,38 @@
   {
    "source_id": "data/DATA-MISS-INCLUDE",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-DATA-MISS-INCLUDE-CONTROL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-DATA-MISS-INCLUDE-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/data-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/data-required-case-plan.json",
+   "evidence": {
+    "batch": "data-batch attempt-data-r3 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": "verifier CORE070_DATA_BATCH_VERIFIED 30 julia_checked True"
+   }
   },
   {
    "source_id": "data/DATA-MISS-MODEL",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-DATA-MISS-MODEL-CONTROL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-DATA-MISS-MODEL-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/data-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/data-required-case-plan.json",
+   "evidence": {
+    "batch": "data-batch attempt-data-r3 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": "verifier CORE070_DATA_BATCH_VERIFIED 30 julia_checked True"
+   }
   },
   {
    "source_id": "data/DATA-MISS-PREDICTOR-REJECT",
@@ -1380,22 +1481,38 @@
   {
    "source_id": "data/DATA-OFF-ALL-COUNT",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-DATA-OFF-ALL-COUNT-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-DATA-OFF-ALL-COUNT-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/data-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/data-required-case-plan.json",
+   "evidence": {
+    "batch": "data-batch attempt-data-r3 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": "verifier CORE070_DATA_BATCH_VERIFIED 30 julia_checked True"
+   }
   },
   {
    "source_id": "data/DATA-OFF-EXPOSURE",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-DATA-OFF-EXPOSURE-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-DATA-OFF-EXPOSURE-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/data-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/data-required-case-plan.json",
+   "evidence": {
+    "batch": "data-batch attempt-data-r3 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": "verifier CORE070_DATA_BATCH_VERIFIED 30 julia_checked True"
+   }
   },
   {
    "source_id": "data/DATA-OFF-LENGTH-REJECT",
@@ -1406,12 +1523,20 @@
   {
    "source_id": "data/DATA-OFF-MIXED",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-DATA-OFF-MIXED-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-DATA-OFF-MIXED-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/data-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/data-required-case-plan.json",
+   "evidence": {
+    "batch": "data-batch attempt-data-r3 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": "verifier CORE070_DATA_BATCH_VERIFIED 30 julia_checked True"
+   }
   },
   {
    "source_id": "data/DATA-OFF-NA-REJECT",
@@ -1422,12 +1547,20 @@
   {
    "source_id": "data/DATA-OFF-NB1",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-DATA-OFF-NB1-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-DATA-OFF-NB1-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/data-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/data-required-case-plan.json",
+   "evidence": {
+    "batch": "data-batch attempt-data-r3 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": "verifier CORE070_DATA_BATCH_VERIFIED 30 julia_checked True"
+   }
   },
   {
    "source_id": "data/DATA-OFF-NONCOUNT-REJECT",
@@ -1438,32 +1571,56 @@
   {
    "source_id": "data/DATA-OFF-NONCOUNT-ZERO",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-DATA-OFF-NONCOUNT-ZERO-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-DATA-OFF-NONCOUNT-ZERO-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/data-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/data-required-case-plan.json",
+   "evidence": {
+    "batch": "data-batch attempt-data-r3 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": "verifier CORE070_DATA_BATCH_VERIFIED 30 julia_checked True"
+   }
   },
   {
    "source_id": "data/DATA-OFF-NONE",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-DATA-OFF-NONE-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-DATA-OFF-NONE-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/data-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/data-required-case-plan.json",
+   "evidence": {
+    "batch": "data-batch attempt-data-r3 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": "verifier CORE070_DATA_BATCH_VERIFIED 30 julia_checked True"
+   }
   },
   {
    "source_id": "data/DATA-OFF-PREDICT",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-DATA-OFF-PREDICT-POSTFIT-READBACK"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-DATA-OFF-PREDICT-POSTFIT-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/data-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/data-required-case-plan.json",
+   "evidence": {
+    "batch": "data-batch attempt-data-r3 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": "verifier CORE070_DATA_BATCH_VERIFIED 30 julia_checked True"
+   }
   },
   {
    "source_id": "data/DATA-OFF-PREDICT-ABSENT-REJECT",
@@ -1474,22 +1631,38 @@
   {
    "source_id": "data/DATA-OFF-PREDICT-NONFINITE-HELPER",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-DATA-OFF-PREDICT-NONFINITE-HELPER-POSTFIT-READBACK"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-DATA-OFF-PREDICT-NONFINITE-HELPER-POSTFIT-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/data-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/data-required-case-plan.json",
+   "evidence": {
+    "batch": "data-batch attempt-data-r3 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": "verifier CORE070_DATA_BATCH_VERIFIED 30 julia_checked True"
+   }
   },
   {
    "source_id": "data/DATA-OFF-SCALAR",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-DATA-OFF-SCALAR-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-DATA-OFF-SCALAR-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/data-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/data-required-case-plan.json",
+   "evidence": {
+    "batch": "data-batch attempt-data-r3 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": "verifier CORE070_DATA_BATCH_VERIFIED 30 julia_checked True"
+   }
   },
   {
    "source_id": "data/DATA-OFF-STRING-REJECT",
@@ -1500,22 +1673,38 @@
   {
    "source_id": "data/DATA-OFF-TRAIN-LEGACY",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-DATA-OFF-TRAIN-LEGACY-POSTFIT-READBACK"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-DATA-OFF-TRAIN-LEGACY-POSTFIT-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/data-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/data-required-case-plan.json",
+   "evidence": {
+    "batch": "data-batch attempt-data-r3 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": "verifier CORE070_DATA_BATCH_VERIFIED 30 julia_checked True"
+   }
   },
   {
    "source_id": "data/DATA-OFF-TRAIN-STORED",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-DATA-OFF-TRAIN-STORED-POSTFIT-READBACK"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-DATA-OFF-TRAIN-STORED-POSTFIT-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/data-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/data-required-case-plan.json",
+   "evidence": {
+    "batch": "data-batch attempt-data-r3 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": "verifier CORE070_DATA_BATCH_VERIFIED 30 julia_checked True"
+   }
   },
   {
    "source_id": "data/DATA-OFF-ZERO-EXPOSURE-REJECT",
@@ -1526,22 +1715,38 @@
   {
    "source_id": "data/DATA-W-DF-MASK-DROP",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-DATA-W-DF-MASK-DROP-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-DATA-W-DF-MASK-DROP-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/data-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/data-required-case-plan.json",
+   "evidence": {
+    "batch": "data-batch attempt-data-r3 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": "verifier CORE070_DATA_BATCH_VERIFIED 30 julia_checked True"
+   }
   },
   {
    "source_id": "data/DATA-W-DF-MASK-INCLUDE",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-DATA-W-DF-MASK-INCLUDE-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-DATA-W-DF-MASK-INCLUDE-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/data-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/data-required-case-plan.json",
+   "evidence": {
+    "batch": "data-batch attempt-data-r3 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": "verifier CORE070_DATA_BATCH_VERIFIED 30 julia_checked True"
+   }
   },
   {
    "source_id": "data/DATA-W-DF-MATRIX-REJECT",
@@ -1558,12 +1763,20 @@
   {
    "source_id": "data/DATA-W-DF-UNIT",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-DATA-W-DF-UNIT-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-DATA-W-DF-UNIT-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/data-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/data-required-case-plan.json",
+   "evidence": {
+    "batch": "data-batch attempt-data-r3 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": "verifier CORE070_DATA_BATCH_VERIFIED 30 julia_checked True"
+   }
   },
   {
    "source_id": "data/DATA-W-DROP-INVALID-REJECT",
@@ -1574,22 +1787,39 @@
   {
    "source_id": "data/DATA-W-FRACTIONAL",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-DATA-W-FRACTIONAL-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-DATA-W-FRACTIONAL-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/data-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/data-required-case-plan.json",
+   "evidence": {
+    "batch": "data-batch attempt-data-r3 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": "verifier CORE070_DATA_BATCH_VERIFIED 30 julia_checked True"
+   }
   },
   {
    "source_id": "data/DATA-W-LONG",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-DATA-W-LONG-NATIVE",
+    "CORE070-DATA-W-LONG-NATIVE-NEGATIVE-CONTROL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-DATA-W-LONG-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/data-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/data-required-case-plan.json",
+   "evidence": {
+    "batch": "data-batch attempt-data-r3 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": "verifier CORE070_DATA_BATCH_VERIFIED 30 julia_checked True"
+   }
   },
   {
    "source_id": "data/DATA-W-LONG-MATRIX-REJECT",
@@ -1618,12 +1848,20 @@
   {
    "source_id": "data/DATA-W-MATRIX-CELLS",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-DATA-W-MATRIX-CELLS-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-DATA-W-MATRIX-CELLS-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/data-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/data-required-case-plan.json",
+   "evidence": {
+    "batch": "data-batch attempt-data-r3 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": "verifier CORE070_DATA_BATCH_VERIFIED 30 julia_checked True"
+   }
   },
   {
    "source_id": "data/DATA-W-MATRIX-FLAT-REJECT",
@@ -1634,12 +1872,20 @@
   {
    "source_id": "data/DATA-W-MATRIX-MASK-DROP",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-DATA-W-MATRIX-MASK-DROP-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-DATA-W-MATRIX-MASK-DROP-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/data-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/data-required-case-plan.json",
+   "evidence": {
+    "batch": "data-batch attempt-data-r3 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": "verifier CORE070_DATA_BATCH_VERIFIED 30 julia_checked True"
+   }
   },
   {
    "source_id": "data/DATA-W-MATRIX-MASK-EXTRA-NA-REJECT",
@@ -1650,12 +1896,20 @@
   {
    "source_id": "data/DATA-W-MATRIX-MASK-INCLUDE",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-DATA-W-MATRIX-MASK-INCLUDE-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-DATA-W-MATRIX-MASK-INCLUDE-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/data-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/data-required-case-plan.json",
+   "evidence": {
+    "batch": "data-batch attempt-data-r3 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": "verifier CORE070_DATA_BATCH_VERIFIED 30 julia_checked True"
+   }
   },
   {
    "source_id": "data/DATA-W-MATRIX-MASK-MISSING-REJECT",
@@ -1666,22 +1920,38 @@
   {
    "source_id": "data/DATA-W-MATRIX-MASK-SCALAR",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-DATA-W-MATRIX-MASK-SCALAR-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-DATA-W-MATRIX-MASK-SCALAR-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/data-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/data-required-case-plan.json",
+   "evidence": {
+    "batch": "data-batch attempt-data-r3 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": "verifier CORE070_DATA_BATCH_VERIFIED 30 julia_checked True"
+   }
   },
   {
    "source_id": "data/DATA-W-MATRIX-SCALAR",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-DATA-W-MATRIX-SCALAR-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-DATA-W-MATRIX-SCALAR-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/data-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/data-required-case-plan.json",
+   "evidence": {
+    "batch": "data-batch attempt-data-r3 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": "verifier CORE070_DATA_BATCH_VERIFIED 30 julia_checked True"
+   }
   },
   {
    "source_id": "data/DATA-W-MATRIX-TRANSPOSE-REJECT",
@@ -1692,12 +1962,21 @@
   {
    "source_id": "data/DATA-W-MATRIX-UNIT",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-DATA-W-MATRIX-UNIT-NATIVE",
+    "CORE070-DATA-W-MATRIX-UNIT-NATIVE-NEGATIVE-CONTROL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-DATA-W-MATRIX-UNIT-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/data-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/data-required-case-plan.json",
+   "evidence": {
+    "batch": "data-batch attempt-data-r3 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": "verifier CORE070_DATA_BATCH_VERIFIED 30 julia_checked True"
+   }
   },
   {
    "source_id": "data/DATA-W-NEGATIVE-REJECT",
@@ -1726,22 +2005,38 @@
   {
    "source_id": "data/DATA-W-NULL",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-DATA-W-NULL-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-DATA-W-NULL-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/data-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/data-required-case-plan.json",
+   "evidence": {
+    "batch": "data-batch attempt-data-r3 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": "verifier CORE070_DATA_BATCH_VERIFIED 30 julia_checked True"
+   }
   },
   {
    "source_id": "data/DATA-W-ZERO",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-DATA-W-ZERO-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-DATA-W-ZERO-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/data-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/data-required-case-plan.json",
+   "evidence": {
+    "batch": "data-batch attempt-data-r3 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": "verifier CORE070_DATA_BATCH_VERIFIED 30 julia_checked True"
+   }
   },
   {
    "source_id": "family/CONSTRUCTOR-ONLY-CENSORED_POISSON",
@@ -2580,7 +2875,12 @@
     "CORE070-FIT-INPUT-MN-ANIMAL-LATENT-FORMULA-INTERFACE",
     "CORE070-FIT-INPUT-MN-ANIMAL-LATENT-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "evidence": {
+    "batch": "fit-input-batch (wave1)",
+    "note": "SPEC_DEFECT in planned case(s): CORE070-FIT-INPUT-MN-ANIMAL-LATENT-NATIVE-MODEL,CORE070-FIT-INPUT-MN-ANIMAL-LATENT-FORMULA-INTERFACE,CORE070-FIT-INPUT-MN-ANIMAL-LATENT-PUBLIC-R-BRIDGE",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef"
+   }
   },
   {
    "source_id": "fit-input/INPUT-MN-ANIMAL-UNIQUE",
@@ -2605,7 +2905,12 @@
     "CORE070-FIT-INPUT-MN-LATENT-FORMULA-INTERFACE",
     "CORE070-FIT-INPUT-MN-LATENT-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "evidence": {
+    "batch": "fit-input-batch (wave1)",
+    "note": "SPEC_DEFECT in planned case(s): CORE070-FIT-INPUT-MN-LATENT-NATIVE-MODEL,CORE070-FIT-INPUT-MN-LATENT-FORMULA-INTERFACE,CORE070-FIT-INPUT-MN-LATENT-PUBLIC-R-BRIDGE",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef"
+   }
   },
   {
    "source_id": "fit-input/INPUT-POISSON-DEFAULT",
@@ -3494,22 +3799,38 @@
   {
    "source_id": "isdm/ISDM-ALIASED",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-ISDM-ALIASED-PAIRED-CONTROL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-ISDM-ALIASED-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json",
+   "evidence": {
+    "batch": "isdm-batch-01 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": ""
+   }
   },
   {
    "source_id": "isdm/ISDM-ALIGN",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-ISDM-ALIGN-PAIRED-CONTROL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-ISDM-ALIGN-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json",
+   "evidence": {
+    "batch": "isdm-batch-01 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": ""
+   }
   },
   {
    "source_id": "isdm/ISDM-ALIGN-MISSING",
@@ -3526,12 +3847,20 @@
   {
    "source_id": "isdm/ISDM-COUNT",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-ISDM-COUNT-PAIRED-CONTROL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-ISDM-COUNT-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json",
+   "evidence": {
+    "batch": "isdm-batch-01 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": ""
+   }
   },
   {
    "source_id": "isdm/ISDM-DUPLICATE",
@@ -3548,12 +3877,20 @@
   {
    "source_id": "isdm/ISDM-EXTRA-SOURCE",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-ISDM-EXTRA-SOURCE-PAIRED-CONTROL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-ISDM-EXTRA-SOURCE-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json",
+   "evidence": {
+    "batch": "isdm-batch-01 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": ""
+   }
   },
   {
    "source_id": "isdm/ISDM-IN-SOURCE-NA",
@@ -3582,52 +3919,92 @@
   {
    "source_id": "isdm/ISDM-LEGACY",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-ISDM-LEGACY-PAIRED-CONTROL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-ISDM-LEGACY-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json",
+   "evidence": {
+    "batch": "isdm-batch-01 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": ""
+   }
   },
   {
    "source_id": "isdm/ISDM-MASKED-ARM",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-ISDM-MASKED-ARM-PAIRED-CONTROL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-ISDM-MASKED-ARM-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json",
+   "evidence": {
+    "batch": "isdm-batch-01 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": ""
+   }
   },
   {
    "source_id": "isdm/ISDM-MASKED-COLUMNS",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-ISDM-MASKED-COLUMNS-PAIRED-CONTROL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-ISDM-MASKED-COLUMNS-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json",
+   "evidence": {
+    "batch": "isdm-batch-01 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": ""
+   }
   },
   {
    "source_id": "isdm/ISDM-MISSING-IN-TRAIT",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-ISDM-MISSING-IN-TRAIT-PAIRED-CONTROL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-ISDM-MISSING-IN-TRAIT-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json",
+   "evidence": {
+    "batch": "isdm-batch-01 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": ""
+   }
   },
   {
    "source_id": "isdm/ISDM-MISSING-SOURCE",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-ISDM-MISSING-SOURCE-PAIRED-CONTROL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-ISDM-MISSING-SOURCE-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json",
+   "evidence": {
+    "batch": "isdm-batch-01 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": ""
+   }
   },
   {
    "source_id": "isdm/ISDM-MISSING-VAR",
@@ -3638,12 +4015,20 @@
   {
    "source_id": "isdm/ISDM-MIXED",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-ISDM-MIXED-PAIRED-CONTROL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-ISDM-MIXED-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json",
+   "evidence": {
+    "batch": "isdm-batch-01 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": ""
+   }
   },
   {
    "source_id": "isdm/ISDM-NO-EXEMPTION",
@@ -3654,22 +4039,38 @@
   {
    "source_id": "isdm/ISDM-NO-OFFSET",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-ISDM-NO-OFFSET-PAIRED-CONTROL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-ISDM-NO-OFFSET-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json",
+   "evidence": {
+    "batch": "isdm-batch-01 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": ""
+   }
   },
   {
    "source_id": "isdm/ISDM-NO-TRAITS",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-ISDM-NO-TRAITS-PAIRED-CONTROL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-ISDM-NO-TRAITS-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json",
+   "evidence": {
+    "batch": "isdm-batch-01 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": ""
+   }
   },
   {
    "source_id": "isdm/ISDM-NON-FAMILY",
@@ -3698,22 +4099,38 @@
   {
    "source_id": "isdm/ISDM-SUPPORT",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-ISDM-SUPPORT-PAIRED-CONTROL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-ISDM-SUPPORT-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json",
+   "evidence": {
+    "batch": "isdm-batch-01 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": ""
+   }
   },
   {
    "source_id": "isdm/ISDM-THREE",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-ISDM-THREE-PAIRED-CONTROL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-ISDM-THREE-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json",
+   "evidence": {
+    "batch": "isdm-batch-01 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": ""
+   }
   },
   {
    "source_id": "isdm/ISDM-TWO-SIDED",
@@ -3724,12 +4141,20 @@
   {
    "source_id": "isdm/ISDM-UNBALANCED",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-ISDM-UNBALANCED-PAIRED-CONTROL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-ISDM-UNBALANCED-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json",
+   "evidence": {
+    "batch": "isdm-batch-01 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": ""
+   }
   },
   {
    "source_id": "isdm/ISDM-UNNAMED",
@@ -3740,12 +4165,20 @@
   {
    "source_id": "isdm/ISDM-WITHIN-TRAIT-ADMIT",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-ISDM-WITHIN-TRAIT-ADMIT-PAIRED-CONTROL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-ISDM-WITHIN-TRAIT-ADMIT-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json",
+   "evidence": {
+    "batch": "isdm-batch-01 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": ""
+   }
   },
   {
    "source_id": "isdm/ISDM-WITHIN-TRAIT-REJECT",
@@ -3756,42 +4189,74 @@
   {
    "source_id": "isdm/ISDM-WRAPPER-LAW",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-ISDM-WRAPPER-LAW-PAIRED-CONTROL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-ISDM-WRAPPER-LAW-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json",
+   "evidence": {
+    "batch": "isdm-batch-01 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": ""
+   }
   },
   {
    "source_id": "isdm/ISDM-WRONG-ID",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-ISDM-WRONG-ID-PAIRED-CONTROL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-ISDM-WRONG-ID-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json",
+   "evidence": {
+    "batch": "isdm-batch-01 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": ""
+   }
   },
   {
    "source_id": "isdm/ISDM-WRONG-LINK",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-ISDM-WRONG-LINK-PAIRED-CONTROL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-ISDM-WRONG-LINK-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json",
+   "evidence": {
+    "batch": "isdm-batch-01 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": ""
+   }
   },
   {
    "source_id": "isdm/ISDM-ZERO-ORDINARY",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-ISDM-ZERO-ORDINARY-PAIRED-CONTROL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-ISDM-ZERO-ORDINARY-PAIRED-CONTROL"
    ],
-   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/isdm-required-case-plan.json",
+   "evidence": {
+    "batch": "isdm-batch-01 (wave1)",
+    "receipts": ".unlazy/core070-aghq/wave1-batches",
+    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef",
+    "note": ""
+   }
   },
   {
    "source_id": "namespace/S3method/coef,gllvmTMB_julia",
