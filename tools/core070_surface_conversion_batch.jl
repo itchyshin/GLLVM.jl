@@ -151,7 +151,7 @@ root = normpath(joinpath(@__DIR__, ".."))
 contract = json_read(joinpath(root, "docs/dev-log/core070/surface-conversion-batch-contract.json"))
 cases = contract["cases"]
 length(cases) == contract["expected_case_count"] || error("case count mismatch vs contract")
-Int(contract["expected_case_count"]) == 34 || error("expected_case_count drifted from 34; update this script")
+Int(contract["expected_case_count"]) == 24 || error("expected_case_count drifted from 24; update this script")
 
 # ---------------------------------------------------------------------------
 # Fixture 1: gaussian_small -- fit natively on the R oracle's simulated Y.
@@ -275,7 +275,21 @@ for cs in cases
 
     quantity = cs["quantity"]
     tol = Float64(cs["tolerance"])
-    haskey(oracle["oracle_values"], case_id) || error("no R oracle value recorded for $case_id")
+    # REPAIR (2026-09-01, wave5-conversion3): a case_id absent from
+    # oracle_values (the R side recorded an oracle_errors entry for it
+    # instead -- see tools/core070_surface_conversion_batch.R's loud
+    # coverage check) must NOT abort the whole batch. Record a loud,
+    # forensic per-case FAIL and move on so every other case still gets a
+    # real verdict in one receipt.
+    if !haskey(oracle["oracle_values"], case_id)
+        r_err = get(get(oracle, "oracle_errors", Dict{String, Any}()), case_id, "(no oracle_errors entry either)")
+        results[case_id] = Dict{String, Any}("pass" => false, "kind" => kind, "quantity" => quantity,
+                                              "tolerance" => tol, "max_abs_diff" => NaN,
+                                              "r_len" => 0, "julia_len" => 0,
+                                              "error" => "missing_oracle_value: R oracle_errors[$case_id] = $(r_err)")
+        global all_ok = false
+        continue
+    end
     r_vec = Float64.(oracle["oracle_values"][case_id])
 
     jl_vec = Float64[]

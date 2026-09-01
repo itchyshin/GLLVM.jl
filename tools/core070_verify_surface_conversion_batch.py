@@ -36,8 +36,8 @@ ROOT = Path(__file__).resolve().parents[1]
 CONTRACT_PATH = ROOT / "docs/dev-log/core070/surface-conversion-batch-contract.json"
 
 REFERENCE_COMMIT = "b4d5fee64def88bc768dda1f1f77c29b295edd86"
-CASE_COUNT = 34
-DEFERRED_COUNT = 7
+CASE_COUNT = 24
+DEFERRED_COUNT = 17
 TARGET_ROW_COUNT = CASE_COUNT + DEFERRED_COUNT  # 41
 
 KNOWN_QUANTITIES = {

@@ -354,3 +354,151 @@ OK`; `julia -e 'Meta.parseall(...)'` → `Julia parse OK`; `python3
 tools/core070_verify_surface_conversion_batch.py --self-test` →
 `CORE070_SURFACE_CONVERSION_VERIFY_SELF_TEST_OK rejected_mutations=5
 cases=34 deferred=7`.
+
+## Repair 2 (2026-09-01): vacuous-coverage defect — 10 of 34 cases silently uncomputed
+
+Totoro run `wave5-conversion3`: the twolevel grouping fix worked, but the
+Julia stage died with `no R oracle value recorded for
+CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-CORRELATIONS`. The R
+oracle recorded only 19 of the 34 contracted cases — 15 quantities threw
+inside `r_quantity()`, were caught by the per-case `tryCatch()` into
+`oracle_errors` (correctly, not silently *dropped*), but nothing checked
+`oracle_errors` before invoking Julia, and Julia's `haskey(...) ||
+error(...)` guard turned the FIRST missing key into one opaque crash that
+hid the other 14.
+
+**Root cause, diagnosed from the R source directly (not the case-plan
+prose), function by function**, against the pinned oracle source
+(`.unlazy/core070-aghq/oracle-source/readback/R/*.R`):
+
+| quantity | bug found | fix |
+| --- | --- | --- |
+| `sigma_table` | `extract_Sigma_table()`'s numeric column is `estimate`, code read `$value` | `t$estimate` |
+| `correlations` | `extract_correlations(tier="all")` returns a long-format **data.frame** (`tier/trait_i/trait_j/correlation/...`), not a coercible matrix — `as.numeric()` on it errors | switched the R-side route to `extract_Sigma(fit_g, level="unit", part="total")$R` (the mathematically identical unit-tier correlation matrix `extract_correlations()` computes internally); Julia still calls its own target surface `GLLVM.extract_correlations(fit_g)` unchanged |
+| `ordination_sites` | `extract_ordination(fit, level, component)` takes **no data argument** — code passed `Y_g` positionally, which bound to `level` and broke `match.arg()`; also read `$sites`, real field is `$scores` | `extract_ordination(fit_g)`, `ord$scores` |
+| `proportions` | `extract_proportions(fit, link_residual, format)` has **no `component=` argument** — code passed `component="shared"` (unused-argument error) | `extract_proportions(fit_g, format="long")` then filter to `component=="shared_unit"`, read `proportion` |
+| `repeatability_point` | `extract_repeatability()`'s point column is `R`, code read `$estimate` | `$R` |
+| `icc_ci_default`/`icc_ci_wald`/`icc_ci_bootstrap` | `confint(fit, parm="icc", ...)` returns a 2-column **matrix** (`.confint_icc()`'s `cbind(...)`, column names like `"2.5 %"`), not a list with `$lower`/`$upper` | `ci[, 1L]` / `ci[, 2L]` |
+| `cross_correlations` | `extract_cross_correlations()` (extract-correlations.R) is **not** a general trait-subset extractor — it requires a multinomial trait in the fit (`No multinomial trait in this fit; use extract_correlations`) and computes nominal-vs-partner cross-correlations specifically. Model-class mismatch, not a call bug. | **moved to `deferred[]`** (reason recorded in the contract) |
+| `loading_ci_wald_asym` (×3: CI-ROUTE-005, `namespace`/`postfit` `loading_ci`) | `loading_ci()`/`standardized_loading_wald_ci()` require `fit$lambda_constraint` pins — R aborts on any exploratory (unpinned) fit: *"Per-entry Wald CIs on Lambda are well-defined only for confirmatory fits ... Lambda is identified only up to rotation."* `gaussian_small` is exploratory. GLLVM.jl's own docstring already documents this exact R/Julia deviation. | **moved to `deferred[]`** (×3) |
+| `loading_profile` (×2: `namespace`/`postfit`) | Same confirmatory-fit gate as `loading_ci` (both key off `fit$lambda_constraint`). | **moved to `deferred[]`** (×2) |
+| `profile_ci_total_variance` (×2: `namespace`/`postfit`) | `.total_variance_spec()` refuses any tier with `unique=FALSE` (no diagonal Ψ_t component): *"Fit the tier with unique = TRUE."* `gaussian_small` uses `unique=FALSE` and is shared by 24 other cases; changing it would need re-verifying every other case under the new DGP shape, out of scope for a repair pass under time pressure. | **moved to `deferred[]`** (×2) — a distinct `has_diag` fixture variant is the correct follow-up |
+| `standard_errors` (×2: `namespace`/`postfit`) | `standard_errors(fit)` returns **the fit object itself** with `sd_report` populated (a deferred-computation side effect: `if (!is.null(fit$sd_report)) return(fit)`), not an SE table — there is no `$se` field on the return value. Reading SEs would mean pulling `fit$sd_report$cov.fixed`/`summary(fit$sd_report)` and matching its fixed-parameter ordering to `GLLVM.jl`'s `confint(fit,y).se` packed order — unverifiable without a live R session. | **moved to `deferred[]`** (×2) |
+
+**Net effect**: 10 rows moved from `cases[]` to `deferred[]` (with the same
+per-row reason-string discipline as the original 7). **24 executable + 17
+deferred = 41** (unchanged total). The remaining 24 R branches were each
+re-derived from the cited source function's actual formal arguments and
+return `data.frame`/matrix column names — not guessed, not left on the
+original (buggy) call shape.
+
+### (1) Loud coverage check — added to the R runner
+
+After the case loop, before writing `r-oracle.json` or invoking Julia:
+
+```r
+all_contract_case_ids <- vapply(contract$cases, `[[`, "", "case_id")
+accounted_for <- union(names(oracle_values), names(oracle_errors))
+missing_case_ids <- setdiff(all_contract_case_ids, accounted_for)
+if (length(missing_case_ids) > 0L) {
+  stop("FATAL: ", length(missing_case_ids), " contract case(s) produced NEITHER an ",
+       "oracle_values entry NOR an oracle_errors entry ... Missing case_id(s):\n  ",
+       paste(missing_case_ids, collapse = "\n  "))
+}
+```
+
+This catches the actual defect class (a case falling through the
+`tryCatch` bookkeeping itself, e.g. a `switch()` branch that returns
+`invisible(NULL)` without erroring) — distinct from, and in addition to,
+`oracle_errors` entries, which are expected, loud, and allowed to reach
+Julia (see (3) below).
+
+### (2) `standard_errors`/`loading_ci` etc. did NOT need a coverage-check
+fix — they needed a diagnosis
+
+Per the table above: 15 real accessor-call bugs, not a coverage-tracking
+bug. The coverage check in (1) guards against a *different* failure mode
+(a case producing neither outcome) that did not actually occur in
+`wave5-conversion3` — every one of the 15 non-computed cases DID land in
+`oracle_errors` correctly; the batch's failure was that nothing acted on
+`oracle_errors` being non-empty before crashing inside Julia on the first
+missing key.
+
+### (3) Julia stage: soft per-case FAIL instead of a hard abort
+
+`tools/core070_surface_conversion_batch.jl`'s case loop previously had:
+
+```julia
+haskey(oracle["oracle_values"], case_id) || error("no R oracle value recorded for $case_id")
+```
+
+Replaced with a per-case recorded FAIL (`"missing_oracle_value: R
+oracle_errors[$case_id] = $(r_err)"`, echoing the actual R-side error
+message into the Julia results JSON) and `continue`, so one R-side gap
+can never abort the whole batch — every other case still gets a real
+verdict, and the receipt still ends `FAIL` via `all_ok` (unchanged
+semantics: `global all_ok &= ok` / `global all_ok = false`, keeping the
+"soft-scope global all_ok" fix already in the file).
+
+### (4) Dry sanity pass — case_id → R branch coverage (plain python, run in this session)
+
+```
+$ python3 - <<'PY'
+# reads tools/core070_surface_conversion_batch.R's r_quantity() switch()
+# labels and docs/dev-log/core070/surface-conversion-batch-contract.json's
+# cases[], and cross-checks coverage both ways.
+PY
+```
+
+Result: **all 24 contract cases map to a real R `switch()` branch** (23
+via `r_quantity(quantity)`, 1 — the `refusal_pair` `CI-ROUTE-009` — via the
+inline `confint(..., method="profile")` check that bypasses
+`r_quantity()` entirely by design). **Zero dead R branches** (every label
+in the `switch()` is referenced by at least one contract case). **Zero
+contract quantities without an R branch** (a drift here would hit the
+`switch()`'s `stop("BOGUS_QUANTITY...")` default — loud, not silent).
+Full per-case table:
+
+```
+[OK] CORE070-SURFCONV-INFERENCE-CI-ROUTE-009                        -> refusal_pair (inline confint check)
+[OK] CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-COMMUNALITY   -> communality
+[OK] CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-CORRELATIONS  -> correlations
+[OK] CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-CUTPOINTS     -> cutpoints
+[OK] CORE070-SURFCONV-INFERENCE-CI-ROUTE-011                        -> icc_ci_bootstrap
+[OK] CORE070-SURFCONV-INFERENCE-CI-ROUTE-008                        -> icc_ci_default
+[OK] CORE070-SURFCONV-INFERENCE-CI-ROUTE-010                        -> icc_ci_wald
+[OK] CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-ICC-SITE      -> icc_site
+[OK] CORE070-SURFCONV-NAMESPACE-EXPORT-GETLOADINGS                  -> loadings_crossprod
+[OK] CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-GETLOADINGS           -> loadings_crossprod
+[OK] CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-LOADINGS      -> loadings_crossprod
+[OK] CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-GETLV                 -> lv_predictor
+[OK] CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-OMEGA         -> omega
+[OK] CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-ORDINATION    -> ordination_sites
+[OK] CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-PROPORTIONS   -> proportions
+[OK] CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-REPEATABILITY -> repeatability_point
+[OK] CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-RESIDUAL-COR  -> residual_cor
+[OK] CORE070-SURFCONV-NAMESPACE-EXPORT-GETRESIDUALCOR               -> residual_cor
+[OK] CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-GETRESIDUALCOR        -> residual_cor
+[OK] CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-RESIDUAL-COV  -> residual_cov
+[OK] CORE070-SURFCONV-NAMESPACE-EXPORT-GETRESIDUALCOV               -> residual_cov
+[OK] CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-GETRESIDUALCOV        -> residual_cov
+[OK] CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-SIGMA-TABLE   -> sigma_table
+[OK] CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-SIGMA         -> sigma_unit_total
+```
+
+### Counts updated everywhere
+
+`docs/dev-log/core070/surface-conversion-batch-contract.json`
+(`expected_case_count`/`expected_deferred_count`: 34/7 → 24/17, cases[]
+and deferred[] arrays moved), `tools/core070_surface_conversion_batch.R`
+(`stopifnot()` literals + header comment), `tools/core070_surface_conversion_batch.jl`
+(count-drift guard), `tools/core070_verify_surface_conversion_batch.py`
+(`CASE_COUNT`/`DEFERRED_COUNT`). `target_source_ids` (41) is unchanged —
+every row is still accounted for, just redistributed between the two
+buckets.
+
+**Re-verified locally**: `Rscript -e 'parse(...)'` → R parse OK; `julia -e
+'Meta.parseall(...)'` → Julia parse OK; `python3
+tools/core070_verify_surface_conversion_batch.py --self-test` →
+`CORE070_SURFACE_CONVERSION_VERIFY_SELF_TEST_OK rejected_mutations=5
+cases=24 deferred=17`.

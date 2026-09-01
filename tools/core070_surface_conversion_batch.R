@@ -1,11 +1,11 @@
-# Receipted batch that converts the 34 BLOCKED_NEEDS_JULIA_SURFACE ledger
+# Receipted batch that converts the 24 BLOCKED_NEEDS_JULIA_SURFACE ledger
 # rows in docs/dev-log/core070/required-source-case-map.json whose surfaces
 # were JUST implemented by the extractors slice (src/extractors.jl, Cluster
 # 1) and the derived-CI slice (src/confint_derived_wald.jl /
 # src/confint_derived.jl / src/twolevel.jl, Cluster 2) -- see
 # docs/dev-log/core070/extractors-slice-notes.md and
 # docs/dev-log/core070/derived-ci-slice-notes.md for what those two slices
-# shipped. The exact 41-row target list (34 executable here + 7 deferred with
+# shipped. The exact 41-row target list (24 executable here + 17 deferred with
 # reasons) is pinned VERBATIM in
 # docs/dev-log/core070/surface-conversion-batch-contract.json
 # (`target_source_ids`).
@@ -67,9 +67,9 @@ stopifnot(
   identical(contract$reference_commit, "b4d5fee64def88bc768dda1f1f77c29b295edd86"),
   identical(contract$status, "FROZEN_SURFACE_CONVERSION_BATCH_CONTRACT"),
   length(contract$cases) == contract$expected_case_count,
-  contract$expected_case_count == 34L,
+  contract$expected_case_count == 24L,
   length(contract$deferred) == contract$expected_deferred_count,
-  contract$expected_deferred_count == 7L,
+  contract$expected_deferred_count == 17L,
   length(contract$negative_controls) >= 2L
 )
 
@@ -183,6 +183,18 @@ stopifnot("gllvmTMB_multi" %in% class(fit_o))
 # frozen library shows up as an explicit oracle_error rather than a
 # fabricated pass.
 # ---------------------------------------------------------------------------
+# REPAIR (2026-09-01, wave5-conversion3 silent-coverage failure): every
+# branch below was re-derived by reading the cited R source function
+# directly (not the case-plan prose) -- see
+# docs/dev-log/core070/surface-conversion-notes.md's "Repair 2" section for
+# the per-quantity diff against the first (buggy) version. Ten quantities
+# whose R accessor turned out to gate on a fit shape this batch's fixtures
+# do not have (a confirmatory lambda_constraint pin, a multinomial trait, a
+# diagonal Psi_t component, or an R return shape this batch could not
+# safely re-derive without a live R session) were REMOVED from this
+# dispatcher and moved to the contract's `deferred` bucket instead of
+# guessed at.
+# ---------------------------------------------------------------------------
 r_quantity <- function(quantity) {
   switch(quantity,
     loadings_crossprod = as.numeric(crossprod(getLoadings(fit_g))),
@@ -190,48 +202,65 @@ r_quantity <- function(quantity) {
                                t(as.matrix(getLV(fit_g)))),
     sigma_unit_total = as.numeric(extract_Sigma(fit_g, level = "unit", part = "total")$Sigma),
     sigma_table = {
+      # extract_Sigma_table()'s numeric column is `estimate`, not `value`
+      # (confirmed by reading extract-sigma-table.R's data.frame() call).
       t <- extract_Sigma_table(fit_g, level = "unit", part = "total")
       t <- t[order(t$trait_i, t$trait_j), ]
-      as.numeric(t$value)
+      as.numeric(t$estimate)
     },
     communality = as.numeric(extract_communality(fit_g)),
-    correlations = as.numeric(extract_correlations(fit_g)),
-    cross_correlations = as.numeric(extract_cross_correlations(
-      fit_g, level = "unit", traits_i = c("t1", "t2"), traits_j = c("t3", "t4", "t5"))),
+    correlations = {
+      # extract_correlations(tier="all") returns a long-format data.frame
+      # (columns tier/trait_i/trait_j/correlation/...), not a coercible
+      # matrix -- confirmed by reading extract-correlations.R's data.frame()
+      # call, which is exactly what made `as.numeric(extract_correlations(fit_g))`
+      # silently error in the first attempt. Read the mathematically
+      # identical unit-tier correlation matrix off extract_Sigma()$R instead
+      # (same quantity extract_correlations() computes internally at the
+      # unit tier), avoiding an unverified table-schema/pairing assumption.
+      as.numeric(extract_Sigma(fit_g, level = "unit", part = "total")$R)
+    },
     residual_cov = as.numeric(extract_residual_cov(fit_g, level = "unit_obs")),
     residual_cor = as.numeric(extract_residual_cor(fit_g, level = "unit_obs")),
     ordination_sites = {
-      ord <- extract_ordination(fit_g, Y_g)
-      as.numeric(rowSums(as.matrix(ord$sites)^2))
+      # extract_ordination(fit, level, component) takes NO data argument
+      # (confirmed by reading extractors.R's formal args) and returns
+      # $scores, not $sites.
+      ord <- extract_ordination(fit_g)
+      as.numeric(rowSums(as.matrix(ord$scores)^2))
     },
-    proportions = as.numeric(extract_proportions(fit_g, component = "shared")),
+    proportions = {
+      # extract_proportions(fit, link_residual, format) has NO `component`
+      # argument (confirmed by reading extract-omega.R's formal args);
+      # format="long" returns trait/component/variance/proportion rows --
+      # filter to the "shared_unit" component (the rr_B contribution, the
+      # only component gaussian_small's unique=FALSE single-tier fit has).
+      df <- extract_proportions(fit_g, format = "long")
+      as.numeric(df$proportion[df$component == "shared_unit"])
+    },
     omega = as.numeric(extract_Omega(fit_g)),
     icc_site = as.numeric(extract_ICC_site(fit_g)),
-    loading_ci_wald_asym = {
-      ci <- confint(fit_g, parm = "rho", method = "wald_asym", level = 0.95)
-      as.numeric(c(ci$lower, ci$upper))
+    repeatability_point = {
+      # extract_repeatability()'s point-estimate column is `R`, not
+      # `estimate` (confirmed by reading extract-repeatability.R's
+      # data.frame() call in both the wald and bootstrap branches).
+      as.numeric(extract_repeatability(fit_tl)$R)
     },
-    loading_profile = {
-      pr <- loading_profile(fit_g, trait = 1L, axis = 1L, level = 0.95)
-      as.numeric(c(pr$lower, pr$upper))
-    },
-    profile_ci_total_variance = {
-      pr <- profile_ci_total_variance(fit_g, trait = 1L, level = 0.95)
-      as.numeric(c(pr$lower, pr$upper))
-    },
-    standard_errors = as.numeric(standard_errors(fit_g)$se),
-    repeatability_point = as.numeric(extract_repeatability(fit_tl)$estimate),
     icc_ci_default = {
+      # confint(fit, parm="icc", ...) returns a 2-column MATRIX (columns
+      # named via .confint_colnames(), e.g. "2.5 %"/"97.5 %"), not a
+      # list/data.frame with $lower/$upper fields -- confirmed by reading
+      # .confint_icc()'s `out <- cbind(...)` in z-confint-gllvmTMB.R.
       ci <- confint(fit_tl, parm = "icc", level = 0.95)
-      as.numeric(c(ci$lower, ci$upper))
+      as.numeric(c(ci[, 1L], ci[, 2L]))
     },
     icc_ci_wald = {
       ci <- confint(fit_tl, parm = "icc", method = "wald", level = 0.95)
-      as.numeric(c(ci$lower, ci$upper))
+      as.numeric(c(ci[, 1L], ci[, 2L]))
     },
     icc_ci_bootstrap = {
       ci <- confint(fit_tl, parm = "icc", method = "bootstrap", level = 0.95, nsim = 200)
-      as.numeric(c(ci$lower, ci$upper))
+      as.numeric(c(ci[, 1L], ci[, 2L]))
     },
     cutpoints = as.numeric(extract_cutpoints(fit_o)$tau_estimate),
     stop("BOGUS_QUANTITY: no dispatcher entry for '", quantity, "'")
@@ -256,6 +285,28 @@ for (cs in contract$cases) {
   } else {
     oracle_errors[[cs$case_id]] <- v$error
   }
+}
+
+# ---------------------------------------------------------------------------
+# LOUD coverage check (REPAIR 2026-09-01, wave5-conversion3): every case in
+# contract$cases must have produced EITHER an oracle_values entry OR an
+# oracle_errors entry -- an accessor error caught by the tryCatch above is
+# recorded, never silently dropped. If any case_id is missing from BOTH,
+# stop() here and list every missing case_id, BEFORE invoking the Julia
+# child (which previously hard-erred instead on the first missing key,
+# hiding the other silent gaps behind a single opaque crash).
+# ---------------------------------------------------------------------------
+all_contract_case_ids <- vapply(contract$cases, `[[`, "", "case_id")
+accounted_for <- union(names(oracle_values), names(oracle_errors))
+missing_case_ids <- setdiff(all_contract_case_ids, accounted_for)
+if (length(missing_case_ids) > 0L) {
+  stop(
+    "FATAL: ", length(missing_case_ids), " contract case(s) produced NEITHER an ",
+    "oracle_values entry NOR an oracle_errors entry (a silent-coverage defect in ",
+    "r_quantity()'s switch() -- every case must compute or loudly fail, never both ",
+    "silently skip). Missing case_id(s):\n  ",
+    paste(missing_case_ids, collapse = "\n  ")
+  )
 }
 
 # --- negative controls: a bogus quantity key and a bogus fixture key must

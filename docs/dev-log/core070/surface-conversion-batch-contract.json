@@ -46,8 +46,8 @@
     "postfit/POSTFIT-SURFACE-slope_sd_ci",
     "postfit/POSTFIT-SURFACE-standard_errors"
   ],
-  "expected_case_count": 34,
-  "expected_deferred_count": 7,
+  "expected_case_count": 24,
+  "expected_deferred_count": 17,
   "cases": [
     {
       "source_id": "namespace/export/getLoadings",
@@ -136,17 +136,6 @@
       "julia_call": "GLLVM.extract_correlations(fit)",
       "notes": "",
       "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-CORRELATIONS"
-    },
-    {
-      "source_id": "postfit/POSTFIT-SURFACE-extract_cross_correlations",
-      "quantity": "cross_correlations",
-      "fixture": "gaussian_small",
-      "tolerance": 1e-06,
-      "kind": "point",
-      "r_call": "extract_cross_correlations(fit_r, level='unit', traits_i=c('t1','t2'), traits_j=c('t3','t4','t5'))",
-      "julia_call": "GLLVM.extract_cross_correlations(fit; level=:unit, traits_i=[1,2], traits_j=[3,4,5])",
-      "notes": "",
-      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-CROSS-CORRELATIONS"
     },
     {
       "source_id": "postfit/POSTFIT-SURFACE-extract_residual_cov",
@@ -259,105 +248,6 @@
       "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-ICC-SITE"
     },
     {
-      "source_id": "inference/CI-ROUTE-005",
-      "quantity": "loading_ci_wald_asym",
-      "fixture": "gaussian_small",
-      "tolerance": 0.001,
-      "kind": "ci",
-      "r_call": "confint(fit_r, parm='rho', method='wald_asym', level=0.95)  # standardized loading Wald (Fisher-z)",
-      "julia_call": "GLLVM.loading_ci(fit,y; method=:wald_asym, conf_level=0.95)",
-      "notes": "",
-      "case_id": "CORE070-SURFCONV-INFERENCE-CI-ROUTE-005"
-    },
-    {
-      "source_id": "namespace/export/loading_ci",
-      "quantity": "loading_ci_wald_asym",
-      "fixture": "gaussian_small",
-      "tolerance": 0.001,
-      "kind": "ci",
-      "r_call": "confint(fit_r, parm='rho', method='wald_asym', level=0.95)",
-      "julia_call": "GLLVM.loading_ci(fit,y; method=:wald_asym, conf_level=0.95)",
-      "notes": "",
-      "case_id": "CORE070-SURFCONV-NAMESPACE-EXPORT-LOADING-CI"
-    },
-    {
-      "source_id": "postfit/POSTFIT-SURFACE-loading_ci",
-      "quantity": "loading_ci_wald_asym",
-      "fixture": "gaussian_small",
-      "tolerance": 0.001,
-      "kind": "ci",
-      "r_call": "confint(fit_r, parm='rho', method='wald_asym', level=0.95)",
-      "julia_call": "GLLVM.loading_ci(fit,y; method=:wald_asym, conf_level=0.95)",
-      "notes": "",
-      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-LOADING-CI"
-    },
-    {
-      "source_id": "namespace/export/loading_profile",
-      "quantity": "loading_profile",
-      "fixture": "gaussian_small",
-      "tolerance": 0.001,
-      "kind": "ci",
-      "r_call": "loading_profile(fit_r, trait=1, axis=1, level=0.95)  # raw scale",
-      "julia_call": "GLLVM.loading_profile(fit,1,1; level=0.95)",
-      "notes": "",
-      "case_id": "CORE070-SURFCONV-NAMESPACE-EXPORT-LOADING-PROFILE"
-    },
-    {
-      "source_id": "postfit/POSTFIT-SURFACE-loading_profile",
-      "quantity": "loading_profile",
-      "fixture": "gaussian_small",
-      "tolerance": 0.001,
-      "kind": "ci",
-      "r_call": "loading_profile(fit_r, trait=1, axis=1, level=0.95)",
-      "julia_call": "GLLVM.loading_profile(fit,1,1; level=0.95)",
-      "notes": "",
-      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-LOADING-PROFILE"
-    },
-    {
-      "source_id": "namespace/export/profile_ci_total_variance",
-      "quantity": "profile_ci_total_variance",
-      "fixture": "gaussian_small",
-      "tolerance": 0.001,
-      "kind": "ci",
-      "r_call": "profile_ci_total_variance(fit_r, trait=1, level=0.95)",
-      "julia_call": "GLLVM.profile_ci_total_variance(fit,1; level=0.95)",
-      "notes": "",
-      "case_id": "CORE070-SURFCONV-NAMESPACE-EXPORT-PROFILE-CI-TOTAL-VARIANCE"
-    },
-    {
-      "source_id": "postfit/POSTFIT-SURFACE-profile_ci_total_variance",
-      "quantity": "profile_ci_total_variance",
-      "fixture": "gaussian_small",
-      "tolerance": 0.001,
-      "kind": "ci",
-      "r_call": "profile_ci_total_variance(fit_r, trait=1, level=0.95)",
-      "julia_call": "GLLVM.profile_ci_total_variance(fit,1; level=0.95)",
-      "notes": "",
-      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-PROFILE-CI-TOTAL-VARIANCE"
-    },
-    {
-      "source_id": "namespace/export/standard_errors",
-      "quantity": "standard_errors",
-      "fixture": "gaussian_small",
-      "tolerance": 0.0001,
-      "kind": "point",
-      "r_call": "standard_errors(fit_r)$se  # or summary(fit_r$sd_report,'fixed')[,'Std. Error']",
-      "julia_call": "GLLVM.standard_errors(fit,y).se",
-      "notes": "",
-      "case_id": "CORE070-SURFCONV-NAMESPACE-EXPORT-STANDARD-ERRORS"
-    },
-    {
-      "source_id": "postfit/POSTFIT-SURFACE-standard_errors",
-      "quantity": "standard_errors",
-      "fixture": "gaussian_small",
-      "tolerance": 0.0001,
-      "kind": "point",
-      "r_call": "standard_errors(fit_r)$se",
-      "julia_call": "GLLVM.standard_errors(fit,y).se",
-      "notes": "",
-      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-STANDARD-ERRORS"
-    },
-    {
       "source_id": "postfit/POSTFIT-SURFACE-extract_repeatability",
       "quantity": "repeatability_point",
       "fixture": "twolevel_small",
@@ -452,6 +342,46 @@
     {
       "source_id": "postfit/POSTFIT-SURFACE-slope_sd_ci",
       "reason": "Same as namespace/export/slope_sd_ci (duplicate ledger row, same underlying surface)."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_cross_correlations",
+      "reason": "Julia surface exists (src/extractors.jl extract_cross_correlations), but R's extract_cross_correlations() (extract-correlations.R) is NOT a general trait-subset correlation extractor -- it requires a multinomial trait in the fit ('No multinomial trait in this fit; use extract_correlations') and computes nominal-vs-partner cross-correlations specifically. The gaussian_small fixture has no multinomial trait; this is a model-class mismatch discovered by reading extract-correlations.R directly, not a call-syntax bug. REPAIR (2026-09-01): moved from cases[] to deferred[] after wave5-conversion3's silent-coverage failure investigation."
+    },
+    {
+      "source_id": "inference/CI-ROUTE-005",
+      "reason": "Julia surface exists (loading_ci/standardized_loading_wald_ci). R's loading_ci(method='wald_asym') (loading-ci.R) refuses any fit with no fit$lambda_constraint pins: 'Per-entry Wald CIs on Lambda are well-defined only for confirmatory fits ... Lambda is identified only up to rotation.' gaussian_small is an ordinary exploratory reduced-rank fit with no lambda_constraint. GLLVM.jl's own docstring for standardized_loading_wald_ci already documents this exact R/Julia deviation (this repo has no confirmatory/exploratory distinction to gate on). Building a genuine R confirmatory_lambda()-pinned fixture is a distinct, larger construction than a call-argument fix. REPAIR (2026-09-01): moved from cases[] to deferred[] after wave5-conversion3's silent-coverage failure investigation."
+    },
+    {
+      "source_id": "namespace/export/loading_ci",
+      "reason": "Same confirmatory-fit gate as inference/CI-ROUTE-005 (loading_ci refuses fits with no lambda_constraint pins). REPAIR (2026-09-01): moved to deferred[]."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-loading_ci",
+      "reason": "Same confirmatory-fit gate as inference/CI-ROUTE-005 (loading_ci refuses fits with no lambda_constraint pins). REPAIR (2026-09-01): moved to deferred[]."
+    },
+    {
+      "source_id": "namespace/export/loading_profile",
+      "reason": "Julia surface exists (loading_profile). R's loading_profile() (loading-profile.R) builds its per-entry pin/profile machinery off fit$lambda_constraint the same way loading_ci() does -- profiling a Lambda entry on an exploratory (unpinned) fit is not the estimand this R function targets. Same confirmatory-fit gap as loading_ci. REPAIR (2026-09-01): moved to deferred[]."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-loading_profile",
+      "reason": "Same confirmatory-fit gate as namespace/export/loading_profile. REPAIR (2026-09-01): moved to deferred[]."
+    },
+    {
+      "source_id": "namespace/export/profile_ci_total_variance",
+      "reason": "Julia surface exists (profile_ci_total_variance). R's profile_ci_total_variance() (profile-derived.R, via .total_variance_spec()) refuses any tier fit with unique=FALSE (no diagonal Psi_t component): 'Total-variance intervals at tier need the diagonal component ... Fit the tier with unique = TRUE.' The gaussian_small fixture this batch shares across 25 other cases uses unique=FALSE. Adding unique=TRUE (and the matching Julia has_diag=true) would need re-verifying every OTHER case sharing that fixture under the new DGP, which is out of scope for this repair pass; a distinct has_diag fixture variant is the correct follow-up. REPAIR (2026-09-01): moved to deferred[] rather than risk destabilising the shared fixture under time pressure."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-profile_ci_total_variance",
+      "reason": "Same diagonal-component gate as namespace/export/profile_ci_total_variance. REPAIR (2026-09-01): moved to deferred[]."
+    },
+    {
+      "source_id": "namespace/export/standard_errors",
+      "reason": "Julia surface exists (standard_errors(fit,y), a thin confint() wrapper returning term/estimate/se/pd_hessian). R's standard_errors(fit) (standard-errors.R) returns THE FIT OBJECT ITSELF with sd_report populated (a deferred-computation side effect, not an SE table) -- 'if (!is.null(fit$sd_report)) return(fit)'. There is no $se field to read off the R return value directly; the R-side SE vector would need to be read from fit$sd_report$cov.fixed or summary(fit$sd_report), and matching its fixed-parameter ordering to GLLVM.jl's confint(fit,y).se packed order needs verification against a live R session this batch does not have. REPAIR (2026-09-01): moved to deferred[] rather than guess at an unverified ordering alignment."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-standard_errors",
+      "reason": "Same R-return-shape mismatch as namespace/export/standard_errors. REPAIR (2026-09-01): moved to deferred[]."
     }
   ],
   "fixtures": {
