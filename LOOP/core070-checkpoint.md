@@ -1881,3 +1881,15 @@ THE GATE IS OPEN (Slice A). Two paired design scouts -> TDD both halves:
   structured-design-r-side.md (bridge lane).
 NEXT on this track: Slice B (kernel_*, dense V); formal frozen-oracle
 receipted qualification of the opened cells; multi-source composition.
+
+## GOAL COMMITMENT — 2026-09-01 (maintainer: "finish all the way to the end of M2")
+
+The loop now runs CONTINUOUSLY toward M2-complete as defined in
+LOOP/core070-goal.md: all 533 required manifest rows at PASS/PARTIAL/BLOCKED
+on fresh receipts. Execution shape: the 441 planned cases run as Totoro
+batches through the existing harness machinery (case plans in the
+*-required-case-plan.json annexes), interleaved with the structured-gate
+slices (B: kernel, then receipted qualification of opened cells) and the
+family-exposure follow-ups. Decision-gated rows (~80: reclassifications, A6,
+ZI trio) are surfaced as PARTIAL-pending-decision, never absorbed. Checkpoint
+per batch; multi-day; honest estimate unchanged (70-120 programme hours).
