@@ -659,3 +659,109 @@ function extract_rotated_loadings_table(fit::GllvmFit, Y::AbstractMatrix;
             sign_anchor = sign_anchor_c, anchor_trait = anchor_trait,
             loading_scale = loading_scale_c)
 end
+
+# ---------------------------------------------------------------------------
+# Item 1.11 — extract_coevolution_modules, core math (mirrors
+# extract-sigma.R:2203-2352 / .matrix_inv_sqrt:2355-2377).
+#
+# Scope now (core070 spec §1.11): `scale = :shape` only (operates directly
+# on a shared covariance matrix Λ Λᵀ, already shape-scale — e.g. from
+# `fit_coevolution_gaussian`'s `Λ * Λ'` or `extract_Sigma(part = :shared)`),
+# positional trait indices. Named kernel-tier levels and `scale = :effect`
+# (Γ·ρ, needing a stored ρ) are §2.7, not built.
+# ---------------------------------------------------------------------------
+
+# Symmetric pseudo-inverse-square-root: keeps only eigenvalues > eps (a
+# Moore-Penrose-style pseudo-inverse for the discarded near-zero subspace),
+# throws on a non-PSD matrix or a numerically-zero block.
+function _matrix_inv_sqrt(A::AbstractMatrix; eps::Real = 1e-8)
+    Asym = Symmetric((A .+ A') ./ 2)
+    ev = eigen(Asym)
+    minimum(ev.values) >= -eps ||
+        throw(ArgumentError("block is not positive semidefinite (min eigenvalue $(minimum(ev.values)))."))
+    keep = findall(v -> v > eps, ev.values)
+    isempty(keep) &&
+        throw(ArgumentError("block is numerically zero (max eigenvalue $(maximum(ev.values)) <= eps=$eps)."))
+    V = ev.vectors[:, keep]
+    return V * Diagonal(1.0 ./ sqrt.(ev.values[keep])) * V'
+end
+
+"""
+    extract_coevolution_modules(Sigma_shared; row_traits, col_traits, eps = 1e-8)
+        -> NamedTuple
+
+Cross-lineage coevolution "modules" — the SVD decomposition of the
+correlation-scaled cross block `R = Σ_row^(-1/2) Γ Σ_col^(-1/2)`. Mirrors
+`gllvmTMB::extract_coevolution_modules` (`extract-sigma.R:2203-2352`).
+
+`Sigma_shared` is a shared (`ΛΛᵀ`-type) covariance matrix indexed by the
+stacked entity set — e.g. `fit_coevolution_gaussian(...).Λ * Λ'`, or
+`extract_Sigma(fit; part = :shared).Sigma` for the phylo-loadings
+coevolution fit. `row_traits`/`col_traits` are 1-based positional index
+vectors into `Sigma_shared` selecting the host/partner sub-blocks:
+`Σ_row = Sigma_shared[row_traits, row_traits]`,
+`Σ_col = Sigma_shared[col_traits, col_traits]`,
+`Γ = Sigma_shared[row_traits, col_traits]`.
+
+`Σ_row^(-1/2)`/`Σ_col^(-1/2)` use a symmetric pseudo-inverse-square-root
+(`eps` floors near-zero eigenvalues out of the pseudo-inverse); throws
+`ArgumentError` if a block is not positive semidefinite or is numerically
+zero.
+
+Returns `(R, modules, row_axes, col_axes)`:
+- `R` — the `length(row_traits) × length(col_traits)` correlation-scaled
+  cross block.
+- `modules` — `NamedTuple` of vectors `component, singular_value,
+  squared_share` (`squared_share = d_k² / Σd²`), one row per singular value.
+- `row_axes`/`col_axes` — long tables `(trait, component, loading)` from the
+  left/right singular vectors `U`/`V` (`R = U * Diagonal(d) * V'`).
+"""
+function extract_coevolution_modules(Sigma_shared::AbstractMatrix;
+                                     row_traits::AbstractVector{<:Integer},
+                                     col_traits::AbstractVector{<:Integer},
+                                     eps::Real = 1e-8)
+    Σ_row = Sigma_shared[row_traits, row_traits]
+    Σ_col = Sigma_shared[col_traits, col_traits]
+    Γ = Sigma_shared[row_traits, col_traits]
+
+    invsqrt_row = _matrix_inv_sqrt(Σ_row; eps = eps)
+    invsqrt_col = _matrix_inv_sqrt(Σ_col; eps = eps)
+    R = invsqrt_row * Γ * invsqrt_col
+
+    F = svd(R)
+    nc = length(F.S)
+    total_sq = sum(abs2, F.S)
+    component = collect(1:nc)
+    singular_value = collect(F.S)
+    squared_share = total_sq > 0 ? (F.S .^ 2) ./ total_sq : fill(NaN, nc)
+    modules = (component = component, singular_value = singular_value,
+              squared_share = squared_share)
+
+    nrow = length(row_traits)
+    row_axes_trait = Vector{Int}(undef, nrow * nc)
+    row_axes_component = Vector{Int}(undef, nrow * nc)
+    row_axes_loading = Vector{Float64}(undef, nrow * nc)
+    idx = 0
+    for k in 1:nc, i in 1:nrow
+        idx += 1
+        row_axes_trait[idx] = row_traits[i]
+        row_axes_component[idx] = k
+        row_axes_loading[idx] = F.U[i, k]
+    end
+    row_axes = (trait = row_axes_trait, component = row_axes_component, loading = row_axes_loading)
+
+    ncol = length(col_traits)
+    col_axes_trait = Vector{Int}(undef, ncol * nc)
+    col_axes_component = Vector{Int}(undef, ncol * nc)
+    col_axes_loading = Vector{Float64}(undef, ncol * nc)
+    idx = 0
+    for k in 1:nc, j in 1:ncol
+        idx += 1
+        col_axes_trait[idx] = col_traits[j]
+        col_axes_component[idx] = k
+        col_axes_loading[idx] = F.V[j, k]
+    end
+    col_axes = (trait = col_axes_trait, component = col_axes_component, loading = col_axes_loading)
+
+    return (R = Matrix(R), modules = modules, row_axes = row_axes, col_axes = col_axes)
+end

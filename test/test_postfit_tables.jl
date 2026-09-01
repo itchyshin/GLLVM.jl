@@ -338,4 +338,44 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics
         @test_throws ArgumentError extract_rotated_loadings_table(fit, y; loading_scale = :bogus)
     end
 
+    @testset "1.11 extract_coevolution_modules — known low-rank Γ, hand SVD" begin
+        Random.seed!(11)
+        row_traits = 1:3
+        col_traits = 4:6
+        Σ_row = Diagonal(fill(2.0, 3))    # block-diagonal Σ ⇒ inv-sqrt is diagonal
+        Σ_col = Diagonal(fill(3.0, 3))
+        U0 = randn(3, 2)
+        V0 = randn(3, 2)
+        Γ = 0.5 .* (Σ_row^0.5) * U0 * V0' * (Σ_col^0.5)   # known cross block
+
+        Σ_shared = zeros(6, 6)
+        Σ_shared[1:3, 1:3] = Σ_row
+        Σ_shared[4:6, 4:6] = Σ_col
+        Σ_shared[1:3, 4:6] = Γ
+        Σ_shared[4:6, 1:3] = Γ'
+
+        out = extract_coevolution_modules(Σ_shared; row_traits = collect(row_traits),
+                                          col_traits = collect(col_traits))
+
+        R_expected = (1 / sqrt(2)) .* Γ .* (1 / sqrt(3))
+        @test out.R ≈ R_expected atol = 1e-8
+
+        F = svd(R_expected)
+        @test out.modules.singular_value ≈ F.S atol = 1e-8
+        @test sum(out.modules.squared_share) ≈ 1.0 atol = 1e-10
+        @test out.modules.squared_share ≈ (F.S .^ 2) ./ sum(abs2, F.S) atol = 1e-8
+
+        @test length(out.row_axes.trait) == 3 * length(F.S)
+        @test length(out.col_axes.trait) == 3 * length(F.S)
+        # spot-check one entry against the hand SVD (up to sign ambiguity).
+        i1 = findfirst(i -> out.row_axes.trait[i] == 1 && out.row_axes.component[i] == 1, eachindex(out.row_axes.trait))
+        @test abs(out.row_axes.loading[i1]) ≈ abs(F.U[1, 1]) atol = 1e-8
+
+        # abort on a numerically-zero Σ block.
+        Σ_shared_bad = copy(Σ_shared)
+        Σ_shared_bad[1:3, 1:3] .= 0.0
+        @test_throws ArgumentError extract_coevolution_modules(Σ_shared_bad;
+            row_traits = collect(row_traits), col_traits = collect(col_traits))
+    end
+
 end
