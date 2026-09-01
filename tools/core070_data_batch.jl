@@ -97,6 +97,7 @@ receipt = Dict(
 
 output_path = length(ARGS) >= 1 ? ARGS[1] : nothing
 if output_path !== nothing
+    mkpath(dirname(abspath(output_path)))
     open(output_path, "w") do io
         print(io, to_json(receipt))
     end
