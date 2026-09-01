@@ -4001,10 +4001,10 @@
    "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "inference-remainder wave4",
-    "contract": "docs/dev-log/core070/inference-remainder-batch-contract.json",
-    "reason": "GLLVM.jl's confint(fit, y; parm='Lambda', method=:wald) computes the RAW-scale loading Wald CI (matching R's method='wald' branch, already bound as CI-ROUTE-003). R's method='wald_asym' is a DISTINCT route: it standardizes each loading to a [-1,1] correlation-like quantity and applies the Fisher-z transform before back-transforming, renaming parameters to rho[trait,axis]. No such standardized-loading closure or entry point exists yet in src/confint.jl or src/confint_derived_wald.jl; the closest building block is the existing Fisher-z machinery (_tw_link(:fisher_z) / _tw_fisher_z / _tw_fisher_z_inv in src/confint_derived_wald.jl) applied to a per-entry closure that does not yet exist. Building it is new src/ engineering (a new public CI function plus a standardized-loading packed-theta closure), out of scope for this coverage batch; recorded here as BLOCKED pending that surface, not fudged as a raw-scale wald pass under a different name.",
-    "missing_surface": "A standardized-loading/rho Wald CI analogous to R's loading_ci(method='wald_asym', loading_scale='standardized') with 'rho[trait,axis]' parameter naming"
+    "batch": "surface-conversion wave5 triage",
+    "reason": "Julia surface exists (loading_ci/standardized_loading_wald_ci). R's loading_ci(method='wald_asym') (loading-ci.R) refuses any fit with no fit$lambda_constraint pins: 'Per-entry Wald CIs on Lambda are well-defined only for confirmatory fits ... Lambda is identified only up to rotation.' gaussian_small is an ordinary exploratory reduced-rank fit with no lambda_constraint. GLLVM.jl's own docstring for standardized_loading_wald_ci already documents this exact R/Julia deviation (this repo has no confirmatory/exploratory distinction to gate on). Building a genuine R confirmatory_lambda()-pinned fixture is a distinct, larger construction than a call-argument fix. REPAIR (2026-09-01): moved from cases[] to deferred[] after wave5-conversion3's silent-coverage failure investigation.",
+    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
+    "note": "deferred with source-traced reason"
    }
   },
   {
@@ -4046,69 +4046,85 @@
   {
    "source_id": "inference/CI-ROUTE-008",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-SURFCONV-INFERENCE-CI-ROUTE-008"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-ICC-CI-METHOD-ROUTE"
    ],
    "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "inference-remainder wave4",
-    "contract": "docs/dev-log/core070/inference-remainder-batch-contract.json",
-    "reason": "R's confint(parm='icc', method='wald'/'bootstrap') routes through extract_repeatability(), which requires a genuine TWO-TIER fit (vB>0 from a between/unit-level latent block AND vW>0 from a within/observation-level latent block -- R construction: value ~ 0 + trait + latent(0 + trait | site, d=1) + latent(0 + trait | site_species, d=1), per .unlazy/core070-aghq/oracle-source/readback/R/extract-repeatability.R's own @examples). GLLVM.jl's analogous struct is TwoLevelFit / fit_twolevel_gaussian in src/twolevel.jl (this mapping is itself pinned in docs/dev-log/core070/namespace-1-batch-contract.json: extract_repeatability -> repeatability(fit::TwoLevelFit) src/twolevel.jl:263, NOT icc_wald_ci -- the case-plan's julia_surface text pointing at icc_wald_ci for this row was a misidentification, confirmed wrong by a Totoro run failure in .confint_icc/extract_repeatability's vB/vW guard on a single-tier fixture). repeatability(fit::TwoLevelFit) returns ONLY a bare point estimate: src/twolevel.jl has no Wald, profile, or bootstrap CI machinery for it at all (grep across src/*.jl confirms no confint*.jl file references TwoLevelFit; fit_twolevel_gaussian's Optim.LBFGS fit does not even retain a Hessian/vcov to build one from), and icc_wald_ci's signature is pinned to ::GllvmFit so it cannot dispatch on a TwoLevelFit regardless. Fitting a matched two-tier model on both sides would therefore still leave nothing to call on the Julia side; recorded here as BLOCKED pending that CI surface, not forced onto the wrong estimand (single-tier communality) or a fixture the target function cannot consume.",
-    "missing_surface": "A Wald/profile/bootstrap confidence interval for the two-level repeatability/ICC estimand R_t = vB[t] / (vB[t] + vW[t]) on GLLVM.jl's TwoLevelFit"
+    "batch": "surface-conversion wave5 (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7.tar.gz",
+    "preservation_sha256": "8d22c471527ef50e6a90cf498f0610973b58d5c4434554aebdd45ed502cb5ac7",
+    "verifier": "tools/core070_verify_surface_conversion_batch.py (CORE070_SURFACE_CONVERSION_STATE_OK wave5-conversion7; self-test 6 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave5-conversion7",
+    "note": "row previously BLOCKED_NEEDS_JULIA_SURFACE; surface implemented in the post-M2 slices and paired-verified vs the frozen oracle"
    }
   },
   {
    "source_id": "inference/CI-ROUTE-009",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-SURFCONV-INFERENCE-CI-ROUTE-009"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-ICC-CI-METHOD-ROUTE"
    ],
    "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "inference-remainder wave4",
-    "contract": "docs/dev-log/core070/inference-remainder-batch-contract.json",
-    "reason": "R's confint(parm='icc', method='wald'/'bootstrap') routes through extract_repeatability(), which requires a genuine TWO-TIER fit (vB>0 from a between/unit-level latent block AND vW>0 from a within/observation-level latent block -- R construction: value ~ 0 + trait + latent(0 + trait | site, d=1) + latent(0 + trait | site_species, d=1), per .unlazy/core070-aghq/oracle-source/readback/R/extract-repeatability.R's own @examples). GLLVM.jl's analogous struct is TwoLevelFit / fit_twolevel_gaussian in src/twolevel.jl (this mapping is itself pinned in docs/dev-log/core070/namespace-1-batch-contract.json: extract_repeatability -> repeatability(fit::TwoLevelFit) src/twolevel.jl:263, NOT icc_wald_ci -- the case-plan's julia_surface text pointing at icc_wald_ci for this row was a misidentification, confirmed wrong by a Totoro run failure in .confint_icc/extract_repeatability's vB/vW guard on a single-tier fixture). repeatability(fit::TwoLevelFit) returns ONLY a bare point estimate: src/twolevel.jl has no Wald, profile, or bootstrap CI machinery for it at all (grep across src/*.jl confirms no confint*.jl file references TwoLevelFit; fit_twolevel_gaussian's Optim.LBFGS fit does not even retain a Hessian/vcov to build one from), and icc_wald_ci's signature is pinned to ::GllvmFit so it cannot dispatch on a TwoLevelFit regardless. Fitting a matched two-tier model on both sides would therefore still leave nothing to call on the Julia side; recorded here as BLOCKED pending that CI surface, not forced onto the wrong estimand (single-tier communality) or a fixture the target function cannot consume.",
-    "missing_surface": "A Wald/profile/bootstrap confidence interval for the two-level repeatability/ICC estimand R_t = vB[t] / (vB[t] + vW[t]) on GLLVM.jl's TwoLevelFit"
+    "batch": "surface-conversion wave5 (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7.tar.gz",
+    "preservation_sha256": "8d22c471527ef50e6a90cf498f0610973b58d5c4434554aebdd45ed502cb5ac7",
+    "verifier": "tools/core070_verify_surface_conversion_batch.py (CORE070_SURFACE_CONVERSION_STATE_OK wave5-conversion7; self-test 6 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave5-conversion7",
+    "note": "row previously BLOCKED_NEEDS_JULIA_SURFACE; surface implemented in the post-M2 slices and paired-verified vs the frozen oracle"
    }
   },
   {
    "source_id": "inference/CI-ROUTE-010",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-SURFCONV-INFERENCE-CI-ROUTE-010"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-ICC-CI-METHOD-ROUTE"
    ],
    "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "inference-remainder wave4",
-    "contract": "docs/dev-log/core070/inference-remainder-batch-contract.json",
-    "reason": "R's confint(parm='icc', method='wald'/'bootstrap') routes through extract_repeatability(), which requires a genuine TWO-TIER fit (vB>0 from a between/unit-level latent block AND vW>0 from a within/observation-level latent block -- R construction: value ~ 0 + trait + latent(0 + trait | site, d=1) + latent(0 + trait | site_species, d=1), per .unlazy/core070-aghq/oracle-source/readback/R/extract-repeatability.R's own @examples). GLLVM.jl's analogous struct is TwoLevelFit / fit_twolevel_gaussian in src/twolevel.jl (this mapping is itself pinned in docs/dev-log/core070/namespace-1-batch-contract.json: extract_repeatability -> repeatability(fit::TwoLevelFit) src/twolevel.jl:263, NOT icc_wald_ci -- the case-plan's julia_surface text pointing at icc_wald_ci for this row was a misidentification, confirmed wrong by a Totoro run failure in .confint_icc/extract_repeatability's vB/vW guard on a single-tier fixture). repeatability(fit::TwoLevelFit) returns ONLY a bare point estimate: src/twolevel.jl has no Wald, profile, or bootstrap CI machinery for it at all (grep across src/*.jl confirms no confint*.jl file references TwoLevelFit; fit_twolevel_gaussian's Optim.LBFGS fit does not even retain a Hessian/vcov to build one from), and icc_wald_ci's signature is pinned to ::GllvmFit so it cannot dispatch on a TwoLevelFit regardless. Fitting a matched two-tier model on both sides would therefore still leave nothing to call on the Julia side; recorded here as BLOCKED pending that CI surface, not forced onto the wrong estimand (single-tier communality) or a fixture the target function cannot consume.",
-    "missing_surface": "A Wald/profile/bootstrap confidence interval for the two-level repeatability/ICC estimand R_t = vB[t] / (vB[t] + vW[t]) on GLLVM.jl's TwoLevelFit"
+    "batch": "surface-conversion wave5 (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7.tar.gz",
+    "preservation_sha256": "8d22c471527ef50e6a90cf498f0610973b58d5c4434554aebdd45ed502cb5ac7",
+    "verifier": "tools/core070_verify_surface_conversion_batch.py (CORE070_SURFACE_CONVERSION_STATE_OK wave5-conversion7; self-test 6 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave5-conversion7",
+    "note": "row previously BLOCKED_NEEDS_JULIA_SURFACE; surface implemented in the post-M2 slices and paired-verified vs the frozen oracle"
    }
   },
   {
    "source_id": "inference/CI-ROUTE-011",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-SURFCONV-INFERENCE-CI-ROUTE-011"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-ICC-CI-METHOD-ROUTE"
    ],
    "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "inference-remainder wave4",
-    "contract": "docs/dev-log/core070/inference-remainder-batch-contract.json",
-    "reason": "R's confint(parm='icc', method='wald'/'bootstrap') routes through extract_repeatability(), which requires a genuine TWO-TIER fit (vB>0 from a between/unit-level latent block AND vW>0 from a within/observation-level latent block -- R construction: value ~ 0 + trait + latent(0 + trait | site, d=1) + latent(0 + trait | site_species, d=1), per .unlazy/core070-aghq/oracle-source/readback/R/extract-repeatability.R's own @examples). GLLVM.jl's analogous struct is TwoLevelFit / fit_twolevel_gaussian in src/twolevel.jl (this mapping is itself pinned in docs/dev-log/core070/namespace-1-batch-contract.json: extract_repeatability -> repeatability(fit::TwoLevelFit) src/twolevel.jl:263, NOT icc_wald_ci -- the case-plan's julia_surface text pointing at icc_wald_ci for this row was a misidentification, confirmed wrong by a Totoro run failure in .confint_icc/extract_repeatability's vB/vW guard on a single-tier fixture). repeatability(fit::TwoLevelFit) returns ONLY a bare point estimate: src/twolevel.jl has no Wald, profile, or bootstrap CI machinery for it at all (grep across src/*.jl confirms no confint*.jl file references TwoLevelFit; fit_twolevel_gaussian's Optim.LBFGS fit does not even retain a Hessian/vcov to build one from), and icc_wald_ci's signature is pinned to ::GllvmFit so it cannot dispatch on a TwoLevelFit regardless. Fitting a matched two-tier model on both sides would therefore still leave nothing to call on the Julia side; recorded here as BLOCKED pending that CI surface, not forced onto the wrong estimand (single-tier communality) or a fixture the target function cannot consume.",
-    "missing_surface": "A Wald/profile/bootstrap confidence interval for the two-level repeatability/ICC estimand R_t = vB[t] / (vB[t] + vW[t]) on GLLVM.jl's TwoLevelFit"
+    "batch": "surface-conversion wave5 (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7.tar.gz",
+    "preservation_sha256": "8d22c471527ef50e6a90cf498f0610973b58d5c4434554aebdd45ed502cb5ac7",
+    "verifier": "tools/core070_verify_surface_conversion_batch.py (CORE070_SURFACE_CONVERSION_STATE_OK wave5-conversion7; self-test 6 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave5-conversion7",
+    "note": "row previously BLOCKED_NEEDS_JULIA_SURFACE; surface implemented in the post-M2 slices and paired-verified vs the frozen oracle"
    }
   },
   {
@@ -7608,19 +7624,22 @@
   {
    "source_id": "namespace/export/getLoadings",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-SURFCONV-NAMESPACE-EXPORT-GETLOADINGS"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE2-GETLOADINGS-POSTFIT-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "namespace-2 wave3",
-    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
-    "missing_surface": "R getLoadings(fit, level=..., rotate=...) has no matching Julia surface",
-    "reason": "GLLVM.getLoadings(fit; rotate::Bool) exists (src/postfit.jl:74) but has no `level` tier argument and does not special-case a gllvmTMB_julia bridge fit the way R's getLoadings does (R/output-methods.R:33); confirmed already NEEDS_NEW_JULIA_SURFACE in docs/dev-log/core070/postfit-1-batch-contract.json (case CORE070-POSTFIT-GETLOADINGS-READBACK).",
-    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+    "batch": "surface-conversion wave5 (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7.tar.gz",
+    "preservation_sha256": "8d22c471527ef50e6a90cf498f0610973b58d5c4434554aebdd45ed502cb5ac7",
+    "verifier": "tools/core070_verify_surface_conversion_batch.py (CORE070_SURFACE_CONVERSION_STATE_OK wave5-conversion7; self-test 6 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave5-conversion7",
+    "note": "row previously BLOCKED_NEEDS_JULIA_SURFACE; surface implemented in the post-M2 slices and paired-verified vs the frozen oracle"
    }
   },
   {
@@ -7644,37 +7663,43 @@
   {
    "source_id": "namespace/export/getResidualCor",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-SURFCONV-NAMESPACE-EXPORT-GETRESIDUALCOR"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE2-GETRESIDUALCOR-POSTFIT-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "namespace-2 wave3",
-    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
-    "missing_surface": "no Julia function/export named or equivalent to getResidualCor()",
-    "reason": "grep -rniE 'residual.?cor' src/*.jl: 0 hits (only unrelated comment matches). Confirmed already NEEDS_NEW_JULIA_SURFACE in docs/dev-log/core070/postfit-1-batch-contract.json (POSTFIT-SURFACE-getResidualCor).",
-    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+    "batch": "surface-conversion wave5 (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7.tar.gz",
+    "preservation_sha256": "8d22c471527ef50e6a90cf498f0610973b58d5c4434554aebdd45ed502cb5ac7",
+    "verifier": "tools/core070_verify_surface_conversion_batch.py (CORE070_SURFACE_CONVERSION_STATE_OK wave5-conversion7; self-test 6 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave5-conversion7",
+    "note": "row previously BLOCKED_NEEDS_JULIA_SURFACE; surface implemented in the post-M2 slices and paired-verified vs the frozen oracle"
    }
   },
   {
    "source_id": "namespace/export/getResidualCov",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-SURFCONV-NAMESPACE-EXPORT-GETRESIDUALCOV"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE2-GETRESIDUALCOV-POSTFIT-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "namespace-2 wave3",
-    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
-    "missing_surface": "no Julia function/export named or equivalent to getResidualCov()",
-    "reason": "grep -rniE 'residual.?cov' src/*.jl: 0 hits (only unrelated comment matches). Confirmed already NEEDS_NEW_JULIA_SURFACE in docs/dev-log/core070/postfit-1-batch-contract.json (POSTFIT-SURFACE-getResidualCov).",
-    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+    "batch": "surface-conversion wave5 (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7.tar.gz",
+    "preservation_sha256": "8d22c471527ef50e6a90cf498f0610973b58d5c4434554aebdd45ed502cb5ac7",
+    "verifier": "tools/core070_verify_surface_conversion_batch.py (CORE070_SURFACE_CONVERSION_STATE_OK wave5-conversion7; self-test 6 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave5-conversion7",
+    "note": "row previously BLOCKED_NEEDS_JULIA_SURFACE; surface implemented in the post-M2 slices and paired-verified vs the frozen oracle"
    }
   },
   {
@@ -8041,11 +8066,10 @@
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "namespace-2 wave3",
-    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
-    "missing_surface": "no Julia function/export named loading_ci; confint.jl is joint, not a loading-only table",
-    "reason": "Confirmed already NEEDS_NEW_JULIA_SURFACE in docs/dev-log/core070/postfit-1-batch-contract.json (POSTFIT-SURFACE-loading_ci): 'confint.jl's confint(fit;y) returns a CI over all packed parameters jointly, not a loading-only table matching R's loading_ci() output shape; grep -rn \"function loading_ci\\b\" src/*.jl: 0 hits'.",
-    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+    "batch": "surface-conversion wave5 triage",
+    "reason": "Same confirmatory-fit gate as inference/CI-ROUTE-005 (loading_ci refuses fits with no lambda_constraint pins). REPAIR (2026-09-01): moved to deferred[].",
+    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
+    "note": "deferred with source-traced reason"
    }
   },
   {
@@ -8057,13 +8081,12 @@
     "CORE070-NAMESPACE2-LOADING-PROFILE-CI-POSTFIT-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "disposition": "PARTIAL_PARITY_DEFECT_PENDING_DECISION",
    "evidence": {
-    "batch": "namespace-2 wave3",
-    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
-    "missing_surface": "no Julia function/export named loading_profile",
-    "reason": "Confirmed already NEEDS_NEW_JULIA_SURFACE (real isdefined()+functional-probe runtime evidence) in docs/dev-log/core070/postfit-2-batch-contract.json (POSTFIT-SURFACE-loading_profile).",
-    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+    "batch": "surface-conversion wave5 triage",
+    "reason": "Julia surface exists (loading_profile). R's loading_profile() (loading-profile.R) builds its per-entry pin/profile machinery off fit$lambda_constraint the same way loading_ci() does -- profiling a Lambda entry on an exploratory (unpinned) fit is not the estimand this R function targets. Same confirmatory-fit gap as loading_ci. REPAIR (2026-09-01): moved to deferred[].",
+    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
+    "note": "estimand-alignment family: Julia surface exists; the two engines compute different estimands (traced to source both sides)"
    }
   },
   {
@@ -8636,11 +8659,10 @@
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "namespace-2 wave3",
-    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
-    "missing_surface": "no Julia function/export named profile_ci_phylo_signal",
-    "reason": "Confirmed already NEEDS_NEW_JULIA_SURFACE (real isdefined()+functional-probe runtime evidence) in docs/dev-log/core070/postfit-2-batch-contract.json (POSTFIT-SURFACE-profile_ci_phylo_signal); GLLVM.jl only has the generic point-estimate phylo_signal(fit) and the generic profiler profile_ci_derived(fit, derived_fn) (src/confint_derived.jl), not a like-named wrapper.",
-    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+    "batch": "surface-conversion wave5 triage",
+    "reason": "Same phylo model-class mismatch as extract_phylo_signal above; profile_ci_phylo_signal additionally needs a working bracket-then-bisect profile over that same R phylo fit.",
+    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
+    "note": "deferred with source-traced reason"
    }
   },
   {
@@ -8654,11 +8676,10 @@
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "namespace-2 wave3",
-    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
-    "missing_surface": "no Julia function/export named profile_ci_total_variance",
-    "reason": "Confirmed already NEEDS_NEW_JULIA_SURFACE (real isdefined()+functional-probe runtime evidence) in docs/dev-log/core070/postfit-2-batch-contract.json (POSTFIT-SURFACE-profile_ci_total_variance).",
-    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+    "batch": "surface-conversion wave5 triage",
+    "reason": "Julia surface exists (profile_ci_total_variance). R's profile_ci_total_variance() (profile-derived.R, via .total_variance_spec()) refuses any tier fit with unique=FALSE (no diagonal Psi_t component): 'Total-variance intervals at tier need the diagonal component ... Fit the tier with unique = TRUE.' The gaussian_small fixture this batch shares across 25 other cases uses unique=FALSE. Adding unique=TRUE (and the matching Julia has_diag=true) would need re-verifying every OTHER case sharing that fixture under the new DGP, which is out of scope for this repair pass; a distinct has_diag fixture variant is the correct follow-up. REPAIR (2026-09-01): moved to deferred[] rather than risk destabilising the shared fixture under time pressure.",
+    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
+    "note": "deferred with source-traced reason"
    }
   },
   {
@@ -8843,11 +8864,10 @@
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "namespace-2 wave3",
-    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
-    "missing_surface": "no Julia function/export named slope_sd_ci",
-    "reason": "grep -rniE 'randomslope|random_slope' src/confint*.jl: 0 hits (GaussianRandomSlopeFit has no CI machinery at all). Confirmed already NEEDS_NEW_JULIA_SURFACE (real isdefined()+functional-probe runtime evidence) in docs/dev-log/core070/postfit-2-batch-contract.json (POSTFIT-SURFACE-slope_sd_ci).",
-    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+    "batch": "surface-conversion wave5 triage",
+    "reason": "Julia surface exists (src/confint_derived_wald.jl, slope_sd_ci on GaussianRandomSlopeFit), but the R oracle route (.unlazy/core070-aghq/oracle-source/readback/R/slope-sd-ci.R) is explicitly documented in its own header as having a prior hand-indexing failure mode ('a first attempt at the phylo route indexed theta_dep_chol entries 2/5/8 instead of the correct 2/4/6') and needs an ADREPORT-differentiated packed expression read off sd_report -- the exact R formula/grouping-factor grammar for the diagonal augmented-slope route (theta_diag_B_slope) that would pair with GLLVM.jl's per-group \u03a3_b random-slope fit is not something this batch could construct and verify without live R access.",
+    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
+    "note": "deferred with source-traced reason"
    }
   },
   {
@@ -8965,11 +8985,10 @@
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "namespace-2 wave3",
-    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
-    "missing_surface": "no Julia function/export named or equivalent to standard_errors()",
-    "reason": "Confirmed already NEEDS_NEW_JULIA_SURFACE (real isdefined()+functional-probe runtime evidence) in docs/dev-log/core070/postfit-2-batch-contract.json (POSTFIT-SURFACE-standard_errors).",
-    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+    "batch": "surface-conversion wave5 triage",
+    "reason": "Julia surface exists (standard_errors(fit,y), a thin confint() wrapper returning term/estimate/se/pd_hessian). R's standard_errors(fit) (standard-errors.R) returns THE FIT OBJECT ITSELF with sd_report populated (a deferred-computation side effect, not an SE table) -- 'if (!is.null(fit$sd_report)) return(fit)'. There is no $se field to read off the R return value directly; the R-side SE vector would need to be read from fit$sd_report$cov.fixed or summary(fit$sd_report), and matching its fixed-parameter ordering to GLLVM.jl's confint(fit,y).se packed order needs verification against a live R session this batch does not have. REPAIR (2026-09-01): moved to deferred[] rather than guess at an unverified ordering alignment.",
+    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
+    "note": "deferred with source-traced reason"
    }
   },
   {
@@ -9801,23 +9820,31 @@
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "surface-conversion wave5 triage",
+    "reason": "Julia surface extract_Gamma already exists (src/extract_gamma.jl, exported) and is independently tested (test/test_coevolution_*.jl), so this is NOT a missing-Julia-surface case. No proven R-parity fixture for a coevolution (fit_coevolution_gaussian-class) model exists anywhere in this repo's tools/ or test/parity/ (grep -rl fit_coevolution_gaussian test/*.jl test/parity/*.jl returns only pure-Julia test files, zero RCall/gllvmTMB coevolution fixtures). Constructing one from scratch (correct R make_cross_kernel-style formula + tree + kernel spec) without live R access to verify is out of scope for this batch; would need a follow-up slice with its own proven fixture.",
+    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
+    "note": "deferred with source-traced reason"
    }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_ICC_site",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-ICC-SITE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-ICC-SITE-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "surface-conversion wave5 (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7.tar.gz",
+    "preservation_sha256": "8d22c471527ef50e6a90cf498f0610973b58d5c4434554aebdd45ed502cb5ac7",
+    "verifier": "tools/core070_verify_surface_conversion_batch.py (CORE070_SURFACE_CONVERSION_STATE_OK wave5-conversion7; self-test 6 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave5-conversion7",
+    "note": "row previously BLOCKED_NEEDS_JULIA_SURFACE; surface implemented in the post-M2 slices and paired-verified vs the frozen oracle"
    }
   },
   {
@@ -9829,25 +9856,34 @@
     "CORE070-POSTFIT-EXTRACT-OMEGA-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "disposition": "PARTIAL_PARITY_DEFECT_PENDING_DECISION",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "surface-conversion wave5 triage",
+    "reason": "Julia surface exists (extract_Omega(fit::GllvmFit), src/extractors.jl), but traced both compositions to source (wave5-conversion6). R's extract_Omega() sums ONLY the covariance tiers the fit actually carries -- gaussian_small has no W-tier (fit$use$rr_W and diag_W both FALSE), so R's tiers = 'B' only and Omega = Lambda_B Lambda_B^T exactly, with sigma_eps^2 never entering (it is not one of the B/W/phy component tiers R's tier system tracks; the Gaussian family's link_residual_per_trait() contributes 0 separately). GLLVM.jl's extract_Omega(fit::GllvmFit) UNCONDITIONALLY sums extract_Sigma(level=:unit,...).Sigma .+ extract_Sigma(level=:unit_obs,...).Sigma, and extract_Sigma(level=:unit_obs, part=:total) ALWAYS adds sigma_eps^2*I as a baseline term regardless of whether a genuine W-tier exists (src/extractors.jl's _sigma_unit_obs). So on gaussian_small, Julia's Omega = Lambda_B Lambda_B^T + sigma_eps^2*I, differing from R's by exactly sigma_eps^2 on the diagonal -- confirmed: the observed max_abs_diff (0.467) is diagonal-scale and close to sigma_true^2=0.49, matching this trace exactly. extract_Omega(fit::GllvmFit) takes NO tiers/level/link_residual kwargs at all (unlike getResidualCov's alignable level= argument), so there is no call-argument fix available. Also tried sourcing the R comparand as extract_Sigma(level='unit_obs',...)$Sigma directly (mirroring the extract_correlations substitution): R's own tier-existence gate returns NULL for level='unit_obs' on this single-tier fixture (the same gate behind wave5-conversion4's residual_cov r_len=0), so R's tier system has no way to express the Gaussian residual variance independent of a genuine W-tier at all -- the same structural gap already deferred for extract_communality/extract_correlations/extract_proportions. REPAIR (2026-09-01): moved from cases[] to deferred[], joining the estimand-alignment family (4th member: communality, correlations, proportions, Omega).",
+    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
+    "note": "estimand-alignment family: Julia surface exists; the two engines compute different estimands (traced to source both sides)"
    }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_Sigma",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-SIGMA",
+    "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-SIGMA-TABLE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-SIGMA-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "surface-conversion wave5 (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7.tar.gz",
+    "preservation_sha256": "8d22c471527ef50e6a90cf498f0610973b58d5c4434554aebdd45ed502cb5ac7",
+    "verifier": "tools/core070_verify_surface_conversion_batch.py (CORE070_SURFACE_CONVERSION_STATE_OK wave5-conversion7; self-test 6 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave5-conversion7",
+    "note": "row previously BLOCKED_NEEDS_JULIA_SURFACE; surface implemented in the post-M2 slices and paired-verified vs the frozen oracle"
    }
   },
   {
@@ -9881,16 +9917,22 @@
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_Sigma_table",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-SIGMA-TABLE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-SIGMA-TABLE-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "surface-conversion wave5 (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7.tar.gz",
+    "preservation_sha256": "8d22c471527ef50e6a90cf498f0610973b58d5c4434554aebdd45ed502cb5ac7",
+    "verifier": "tools/core070_verify_surface_conversion_batch.py (CORE070_SURFACE_CONVERSION_STATE_OK wave5-conversion7; self-test 6 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave5-conversion7",
+    "note": "row previously BLOCKED_NEEDS_JULIA_SURFACE; surface implemented in the post-M2 slices and paired-verified vs the frozen oracle"
    }
   },
   {
@@ -9918,10 +9960,12 @@
     "CORE070-POSTFIT-EXTRACT-COMMUNALITY-CI-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "disposition": "PARTIAL_PARITY_DEFECT_PENDING_DECISION",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "surface-conversion wave5 triage",
+    "reason": "Julia surface exists (extract_communality(fit::GllvmFit) = communality(fit), src/confint_derived.jl), but the two engines compute a DIFFERENT ESTIMAND, not just a different call shape -- traced both to source. GLLVM.jl's communality(fit) denominator is sigma_y_site(fit), the FULL model-implied total variance across ALL tiers PLUS sigma_eps^2 (the Gaussian observation residual). R's extract_communality(fit, level) denominator is extract_Sigma(fit, level, part='total')$Sigma -- a SINGLE TIER's total only; sigma_eps^2 never enters any R extract_communality/extract_Sigma tier computation for a Gaussian fit at all (it is not one of the 'B'/'W'/'phy' component tiers the R tier system tracks). On gaussian_small (unique=FALSE, no W tier): level='unit' degenerates to an uninformative constant 1.0 for every trait (shared_B == total_B exactly, since there is no diag_B term to make them differ) -- confirmed the observed wave5-conversion4 diff (0.871) is exactly this: R's degenerate ~1.0 vs Julia's real shared/(shared+sigma_eps^2) ratio. level='unit_obs' returns NULL outright (fit$use$rr_W is FALSE, no W-tier loadings). No R call on this fixture targets the same 'shared vs grand total including the Gaussian residual' estimand Julia computes; this is a genuine cross-engine definition mismatch, not a fixable call bug. REPAIR (2026-09-01, wave5-conversion4): moved from cases[] to deferred[].",
+    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
+    "note": "estimand-alignment family: Julia surface exists; the two engines compute different estimands (traced to source both sides)"
    }
   },
   {
@@ -9934,10 +9978,12 @@
     "CORE070-POSTFIT-EXTRACT-CORRELATIONS-CI-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "disposition": "PARTIAL_PARITY_DEFECT_PENDING_DECISION",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "surface-conversion wave5 triage",
+    "reason": "Julia surface exists (extract_correlations(fit::GllvmFit) = correlation(fit), src/confint_derived.jl), but traced both definitions to source (same class of mismatch as extract_communality). GLLVM.jl's correlation(fit) standardises by sigma_y_site(fit), the FULL model-implied total variance INCLUDING sigma_eps^2. R's route for this quantity (extract_Sigma(fit, level='unit', part='total')$R -- used because extract_correlations() itself returns an un-coercible long-format table, not a matrix) standardises by the 'unit' (B) tier total only, which never includes sigma_eps^2 for a Gaussian fit. On gaussian_small this produces a materially different correlation matrix (observed max_abs_diff 0.668, wave5-conversion5) -- a genuine cross-engine estimand mismatch, not a fixable call bug. REPAIR (2026-09-01): moved from cases[] to deferred[], joining extract_communality in the maintainer's estimand-alignment decision.",
+    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
+    "note": "estimand-alignment family: Julia surface exists; the two engines compute different estimands (traced to source both sides)"
    }
   },
   {
@@ -9951,38 +9997,52 @@
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "surface-conversion wave5 triage",
+    "reason": "Julia surface exists (src/extractors.jl extract_cross_correlations), but R's extract_cross_correlations() (extract-correlations.R) is NOT a general trait-subset correlation extractor -- it requires a multinomial trait in the fit ('No multinomial trait in this fit; use extract_correlations') and computes nominal-vs-partner cross-correlations specifically. The gaussian_small fixture has no multinomial trait; this is a model-class mismatch discovered by reading extract-correlations.R directly, not a call-syntax bug. REPAIR (2026-09-01): moved from cases[] to deferred[] after wave5-conversion3's silent-coverage failure investigation.",
+    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
+    "note": "deferred with source-traced reason"
    }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_cutpoints",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-CUTPOINTS"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-CUTPOINTS-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "surface-conversion wave5 (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7.tar.gz",
+    "preservation_sha256": "8d22c471527ef50e6a90cf498f0610973b58d5c4434554aebdd45ed502cb5ac7",
+    "verifier": "tools/core070_verify_surface_conversion_batch.py (CORE070_SURFACE_CONVERSION_STATE_OK wave5-conversion7; self-test 6 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave5-conversion7",
+    "note": "row previously BLOCKED_NEEDS_JULIA_SURFACE; surface implemented in the post-M2 slices and paired-verified vs the frozen oracle"
    }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_loadings",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-LOADINGS"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-LOADINGS-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "surface-conversion wave5 (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7.tar.gz",
+    "preservation_sha256": "8d22c471527ef50e6a90cf498f0610973b58d5c4434554aebdd45ed502cb5ac7",
+    "verifier": "tools/core070_verify_surface_conversion_batch.py (CORE070_SURFACE_CONVERSION_STATE_OK wave5-conversion7; self-test 6 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave5-conversion7",
+    "note": "row previously BLOCKED_NEEDS_JULIA_SURFACE; surface implemented in the post-M2 slices and paired-verified vs the frozen oracle"
    }
   },
   {
@@ -9996,23 +10056,31 @@
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "surface-conversion wave5 triage",
+    "reason": "Julia surface exists (src/postfit.jl extract_lv_effects(fit::GllvmFit; type)) but requires a fit built with fit_gaussian_gllvm(...; X_lv=...) (a constrained-ordination predictor block) -- the gaussian_small fixture this batch reuses has no X_lv term, so extract_lv_effects(fit_g) would throw ArgumentError on the very fixture the rest of this batch shares. Pairing it against R's own X_lv-analogous route needs a distinct fixture; out of scope for this batch, flagged for a follow-up slice.",
+    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
+    "note": "deferred with source-traced reason"
    }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_ordination",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-ORDINATION"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-ORDINATION-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "surface-conversion wave5 (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7.tar.gz",
+    "preservation_sha256": "8d22c471527ef50e6a90cf498f0610973b58d5c4434554aebdd45ed502cb5ac7",
+    "verifier": "tools/core070_verify_surface_conversion_batch.py (CORE070_SURFACE_CONVERSION_STATE_OK wave5-conversion7; self-test 6 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave5-conversion7",
+    "note": "row previously BLOCKED_NEEDS_JULIA_SURFACE; surface implemented in the post-M2 slices and paired-verified vs the frozen oracle"
    }
   },
   {
@@ -10027,8 +10095,10 @@
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "surface-conversion wave5 triage",
+    "reason": "Julia surface exists (src/extractors.jl forwards to phylo_signal(fit::GllvmFit; \u03a3_phy)), but GLLVM.jl's route takes an externally-supplied \u03a3_phy on an ordinary GllvmFit while R's extract_phylo_signal() reads report$Sigma_phy off a genuine phylo_latent()/phylo_indep() structured fit -- the two are not the same model class. A numerically paired comparison needs a live R phylo formula fit on the SAME tree/Y as the Julia \u03a3_phy, which cannot be safely constructed and verified without R access in this session.",
+    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
+    "note": "deferred with source-traced reason"
    }
   },
   {
@@ -10040,56 +10110,76 @@
     "CORE070-POSTFIT-EXTRACT-PROPORTIONS-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "disposition": "PARTIAL_PARITY_DEFECT_PENDING_DECISION",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "surface-conversion wave5 triage",
+    "reason": "Julia surface exists (extract_proportions(fit::GllvmFit; component) forwards to proportions(fit; component), src/confint_derived.jl), but traced to source: this is the SAME estimand mismatch as extract_communality, exactly -- extract_proportions(fit; component=:shared) IS communality(fit) mathematically (both \u039b\u039b^T[t,t] / sigma_y_site(fit)[t,t], the FULL total-variance denominator incl. sigma_eps^2). R's extract_proportions()'s 'shared_unit' component's proportion column denominator (total <- rowSums(M)) only ever sums the tier-scoped components R's system tracks; sigma_eps^2 is not one of them, so on gaussian_small (only the shared_unit component present) proportion degenerates to shared_unit/shared_unit == 1.0 for every trait -- the exact reason the observed max_abs_diff (0.8713, wave5-conversion5) matched extract_communality's own failure value precisely. REPAIR (2026-09-01): moved from cases[] to deferred[], joining extract_communality and extract_correlations in the maintainer's estimand-alignment decision.",
+    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
+    "note": "estimand-alignment family: Julia surface exists; the two engines compute different estimands (traced to source both sides)"
    }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_repeatability",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-REPEATABILITY"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-REPEATABILITY-READBACK",
     "CORE070-POSTFIT-EXTRACT-REPEATABILITY-CI-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "surface-conversion wave5 (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7.tar.gz",
+    "preservation_sha256": "8d22c471527ef50e6a90cf498f0610973b58d5c4434554aebdd45ed502cb5ac7",
+    "verifier": "tools/core070_verify_surface_conversion_batch.py (CORE070_SURFACE_CONVERSION_STATE_OK wave5-conversion7; self-test 6 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave5-conversion7",
+    "note": "row previously BLOCKED_NEEDS_JULIA_SURFACE; surface implemented in the post-M2 slices and paired-verified vs the frozen oracle"
    }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_residual_cor",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-RESIDUAL-COR"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-RESIDUAL-COR-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "surface-conversion wave5 (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7.tar.gz",
+    "preservation_sha256": "8d22c471527ef50e6a90cf498f0610973b58d5c4434554aebdd45ed502cb5ac7",
+    "verifier": "tools/core070_verify_surface_conversion_batch.py (CORE070_SURFACE_CONVERSION_STATE_OK wave5-conversion7; self-test 6 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave5-conversion7",
+    "note": "row previously BLOCKED_NEEDS_JULIA_SURFACE; surface implemented in the post-M2 slices and paired-verified vs the frozen oracle"
    }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_residual_cov",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-RESIDUAL-COV"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-RESIDUAL-COV-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "surface-conversion wave5 (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7.tar.gz",
+    "preservation_sha256": "8d22c471527ef50e6a90cf498f0610973b58d5c4434554aebdd45ed502cb5ac7",
+    "verifier": "tools/core070_verify_surface_conversion_batch.py (CORE070_SURFACE_CONVERSION_STATE_OK wave5-conversion7; self-test 6 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave5-conversion7",
+    "note": "row previously BLOCKED_NEEDS_JULIA_SURFACE; surface implemented in the post-M2 slices and paired-verified vs the frozen oracle"
    }
   },
   {
@@ -10155,31 +10245,43 @@
   {
    "source_id": "postfit/POSTFIT-SURFACE-getLV",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-GETLV"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-GETLV-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "surface-conversion wave5 (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7.tar.gz",
+    "preservation_sha256": "8d22c471527ef50e6a90cf498f0610973b58d5c4434554aebdd45ed502cb5ac7",
+    "verifier": "tools/core070_verify_surface_conversion_batch.py (CORE070_SURFACE_CONVERSION_STATE_OK wave5-conversion7; self-test 6 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave5-conversion7",
+    "note": "row previously BLOCKED_NEEDS_JULIA_SURFACE; surface implemented in the post-M2 slices and paired-verified vs the frozen oracle"
    }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-getLoadings",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-GETLOADINGS"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-GETLOADINGS-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "surface-conversion wave5 (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7.tar.gz",
+    "preservation_sha256": "8d22c471527ef50e6a90cf498f0610973b58d5c4434554aebdd45ed502cb5ac7",
+    "verifier": "tools/core070_verify_surface_conversion_batch.py (CORE070_SURFACE_CONVERSION_STATE_OK wave5-conversion7; self-test 6 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave5-conversion7",
+    "note": "row previously BLOCKED_NEEDS_JULIA_SURFACE; surface implemented in the post-M2 slices and paired-verified vs the frozen oracle"
    }
   },
   {
@@ -10200,31 +10302,43 @@
   {
    "source_id": "postfit/POSTFIT-SURFACE-getResidualCor",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-GETRESIDUALCOR"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-GETRESIDUALCOR-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "surface-conversion wave5 (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7.tar.gz",
+    "preservation_sha256": "8d22c471527ef50e6a90cf498f0610973b58d5c4434554aebdd45ed502cb5ac7",
+    "verifier": "tools/core070_verify_surface_conversion_batch.py (CORE070_SURFACE_CONVERSION_STATE_OK wave5-conversion7; self-test 6 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave5-conversion7",
+    "note": "row previously BLOCKED_NEEDS_JULIA_SURFACE; surface implemented in the post-M2 slices and paired-verified vs the frozen oracle"
    }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-getResidualCov",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-GETRESIDUALCOV"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-GETRESIDUALCOV-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "surface-conversion wave5 (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave5-batches/wave5-conversion7.tar.gz",
+    "preservation_sha256": "8d22c471527ef50e6a90cf498f0610973b58d5c4434554aebdd45ed502cb5ac7",
+    "verifier": "tools/core070_verify_surface_conversion_batch.py (CORE070_SURFACE_CONVERSION_STATE_OK wave5-conversion7; self-test 6 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave5-conversion7",
+    "note": "row previously BLOCKED_NEEDS_JULIA_SURFACE; surface implemented in the post-M2 slices and paired-verified vs the frozen oracle"
    }
   },
   {
@@ -10313,8 +10427,10 @@
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "surface-conversion wave5 triage",
+    "reason": "Same confirmatory-fit gate as inference/CI-ROUTE-005 (loading_ci refuses fits with no lambda_constraint pins). REPAIR (2026-09-01): moved to deferred[].",
+    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
+    "note": "deferred with source-traced reason"
    }
   },
   {
@@ -10329,8 +10445,10 @@
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "surface-conversion wave5 triage",
+    "reason": "Same confirmatory-fit gate as namespace/export/loading_profile. REPAIR (2026-09-01): moved to deferred[].",
+    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
+    "note": "deferred with source-traced reason"
    }
   },
   {
@@ -10862,8 +10980,10 @@
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "surface-conversion wave5 triage",
+    "reason": "Same as namespace/export/profile_ci_phylo_signal (duplicate ledger row, same underlying surface).",
+    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
+    "note": "deferred with source-traced reason"
    }
   },
   {
@@ -10878,8 +10998,10 @@
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "surface-conversion wave5 triage",
+    "reason": "Same diagonal-component gate as namespace/export/profile_ci_total_variance. REPAIR (2026-09-01): moved to deferred[].",
+    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
+    "note": "deferred with source-traced reason"
    }
   },
   {
@@ -11054,8 +11176,10 @@
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "surface-conversion wave5 triage",
+    "reason": "Same as namespace/export/slope_sd_ci (duplicate ledger row, same underlying surface).",
+    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
+    "note": "deferred with source-traced reason"
    }
   },
   {
@@ -11070,8 +11194,10 @@
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "surface-conversion wave5 triage",
+    "reason": "Same R-return-shape mismatch as namespace/export/standard_errors. REPAIR (2026-09-01): moved to deferred[].",
+    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
+    "note": "deferred with source-traced reason"
    }
   },
   {
