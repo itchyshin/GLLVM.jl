@@ -1930,3 +1930,17 @@ index discipline; and the VACUOUS-PASS GUARD — the data verifier silently
 skipped verification when state was missing under --self-test; now a hard
 error (84b6c1b8). Wave 2 next: inference (64 specs, some needing NEW Julia CI
 surfaces), postfit-1/2 (95), postfit-policy (23), namespace (planned subset).
+
+## M2 wave 2 — 2026-09-01: 216/533 accounted (correcting f7065df0's stale 171+)
+
+122 bound (masks-known 9, isdm 20, data 28, covariance 8, inference 45,
+fit-input/latent-bare et al 12) + 94 receipted-BLOCKED dispositions
+(postfit-1 44 + postfit-2 50: surface-absence verified by Julia
+introspection; spec-defects reasoned). Wave-2 incident log: inference-R
+needed the retained routing artifact synced; policy Julia child segfaulted
+(libunwind preload class — fix documented for subprocess julia) then exposed
+a builder design flaw (routes through the full parity runner) — repair agent
+dispatched. REMAINING: policy 23 rows; covariance 23 still-planned;
+fit-input 9; namespace planned subset (~110, no builder yet); ~80
+decision-gated; new-surface engineering track (48 distinct surfaces
+enumerated). Receipts preserved (wave2 tarball 6830785f).
