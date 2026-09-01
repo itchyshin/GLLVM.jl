@@ -2046,3 +2046,16 @@ the new slices CONFIRMED 8 P1s + P2s (loading_ci scale mislabel, H2
 denominator estimand bug, getREsd basis/guards/claim, tmbprofile mixed
 surfaces, principal-angle math, diagnose Sigma composition...) — committed
 as post-m2-slice-review-2026-09-01.md; two TDD repair agents in flight.
+
+## Wave-7 bound — 2026-09-01
+
+First-attempt green (CORE070_WAVE7_CONVERSION_STATE_OK; the wave-5/6
+template lessons paid off — the builder dry-ran vs local 0.7.1 and caught
+its own residuals()-shape assumption pre-flight). 7 rows bound (259 total);
+BLOCKED 91 -> 84, and the KEY triage finding: of 45 name-matched rows, 38
+are SAME-NAME-DIFFERENT-SURFACE collisions (R getREsd(block=) vs our
+factor-score getREsd; R truth-vs-fit compare_Sigma_table vs our two-fit
+bridge; phylo/slope fixture gaps) — annotated per row; API-alignment is a
+maintainer decision family. Remaining BLOCKED core: 24 deferred-engines +
+2 lambda-constraint + 38 collision/API-alignment + 20 missing functions
+(final-surface-builder implementing 13 per the verified spec now).
