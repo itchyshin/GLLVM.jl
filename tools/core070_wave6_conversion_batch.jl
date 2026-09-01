@@ -210,10 +210,19 @@ end
 
 function structured_quantity(fit, level_name::Symbol)
     ll = hasproperty(fit, :logLik) ? fit.logLik : fit.loglik
-    Σ = try
-        Matrix(GLLVM.extract_Sigma(fit; level = level_name, part = :total).Sigma)
-    catch
-        fill(NaN, n_species, n_species)
+    # R records the requested tier's own p x p covariance
+    # (extract_Sigma(level = <term name>, part = "total")). For the native
+    # GaussianSourcesFit the paired comparand is that source's fitted trait
+    # covariance; this batch's fixtures put the compared source (the lone
+    # term, or the kernel named "k1") FIRST in the term list, so index 1.
+    Σ = if fit isa GLLVM.GaussianSourcesFit
+        Matrix(fit.trait_covariances[1])
+    else
+        try
+            Matrix(GLLVM.extract_Sigma(fit; level = level_name, part = :total).Sigma)
+        catch
+            fill(NaN, n_species, n_species)
+        end
     end
     vcat([ll], vec(Σ))
 end
@@ -340,7 +349,9 @@ for cs in cases
             jl_vec = [GLLVM.loglikelihood(fit_g)]
         elseif quantity == "confint_sigma_eps_bounds"
             ci = GLLVM.confint(fit_g, Y_g; parm = "sigma_eps", level = 0.95)
-            jl_vec = vcat(Float64[r.lower for r in ci], Float64[r.upper for r in ci])
+            # confint returns a k x 2 matrix [lower upper]; R recorded [lower, upper]
+            cim = Matrix{Float64}(ci)
+            jl_vec = vcat(cim[:, 1], cim[:, 2])
         else
             error("BOGUS_QUANTITY: no dispatcher entry for '$(quantity)'")
         end
