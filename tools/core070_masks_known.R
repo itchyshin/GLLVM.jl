@@ -158,6 +158,10 @@ retained_inputs_dir <- file.path(
 points_inputs_dir <- file.path(output_dir, "points-inputs")
 dir.create(points_inputs_dir)
 result$points_input_provenance <- list(source_dir=retained_inputs_dir, sha256=list())
+file.copy(file.path(retained_inputs_dir, "fixtures.rds"),
+          file.path(points_inputs_dir, "fixtures.rds"))
+result$points_input_provenance$sha256[["fixtures"]] <-
+  sha256_file(file.path(retained_inputs_dir, "fixtures.rds"))
 points_ids <- c("MASK-B-PINS", "MASK-B-UPPER", "MASK-PHY-PINS", "MASK-B-ALLFIXED",
                 "KNOWN-EXACT", "KNOWN-ALIAS", "KNOWN-BLOCK", "KNOWN-ZERO")
 for (id in points_ids) {
