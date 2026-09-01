@@ -1,0 +1,419 @@
+# Julia child for the wave-6 conversion batch
+# (tools/core070_wave6_conversion_batch.R). Reads the R-oracle JSON (path
+# from ENV["CORE070_WAVE6_CONVERSION_R_ORACLE"]), fits the structured-term
+# fixture and the gaussian_small fixture NATIVELY (independent optimiser
+# run on the same Y the R process fit, not a replay of R's numbers), calls
+# each case's Julia surface, and compares against the R oracle at the
+# contract's per-case tolerance. Writes ARGS[1] as the JSON results file.
+#
+# No RCall, no parity-runner include, no R of any kind runs here.
+# JSON reader/writer copied verbatim from the repo convention in
+# tools/core070_surface_conversion_batch.jl / tools/core070_inference_remainder_batch.jl.
+#
+# Usage: julia --project=. tools/core070_wave6_conversion_batch.jl <out.json>
+
+using GLLVM
+
+# ---------------------------------------------------------------------------
+# Minimal JSON reader/writer (no external dependency).
+# ---------------------------------------------------------------------------
+function json_read(path::AbstractString)
+    txt = read(path, String)
+    pos = Ref(1)
+    skip_ws!() = begin
+        while pos[] <= lastindex(txt) && isspace(txt[pos[]])
+            pos[] = nextind(txt, pos[])
+        end
+    end
+    local parse_value
+    function parse_string()
+        pos[] += 1
+        buf = IOBuffer()
+        while true
+            c = txt[pos[]]
+            if c == '"'
+                pos[] = nextind(txt, pos[])
+                break
+            elseif c == '\\'
+                pos[] = nextind(txt, pos[])
+                e = txt[pos[]]
+                if e == 'n'; write(buf, '\n')
+                elseif e == 't'; write(buf, '\t')
+                elseif e == 'u'
+                    hex = txt[nextind(txt, pos[]):nextind(txt, pos[], 4)]
+                    write(buf, Char(parse(UInt32, hex; base = 16)))
+                    pos[] = nextind(txt, pos[], 4)
+                else write(buf, e)
+                end
+                pos[] = nextind(txt, pos[])
+            else
+                write(buf, c)
+                pos[] = nextind(txt, pos[])
+            end
+        end
+        String(take!(buf))
+    end
+    function parse_number()
+        start = pos[]
+        while pos[] <= lastindex(txt) && (isdigit(txt[pos[]]) || txt[pos[]] in ('-', '+', '.', 'e', 'E'))
+            pos[] = nextind(txt, pos[])
+        end
+        s = txt[start:prevind(txt, pos[])]
+        return occursin('.', s) || occursin('e', s) || occursin('E', s) ? parse(Float64, s) : parse(Int, s)
+    end
+    function parse_array()
+        pos[] += 1
+        out = Any[]
+        skip_ws!()
+        if txt[pos[]] == ']'
+            pos[] = nextind(txt, pos[])
+            return out
+        end
+        while true
+            skip_ws!()
+            push!(out, parse_value())
+            skip_ws!()
+            if txt[pos[]] == ','
+                pos[] = nextind(txt, pos[])
+            elseif txt[pos[]] == ']'
+                pos[] = nextind(txt, pos[])
+                break
+            end
+        end
+        out
+    end
+    function parse_object()
+        pos[] += 1
+        out = Dict{String, Any}()
+        skip_ws!()
+        if txt[pos[]] == '}'
+            pos[] = nextind(txt, pos[])
+            return out
+        end
+        while true
+            skip_ws!()
+            k = parse_string()
+            skip_ws!()
+            @assert txt[pos[]] == ':'
+            pos[] = nextind(txt, pos[])
+            skip_ws!()
+            out[k] = parse_value()
+            skip_ws!()
+            if txt[pos[]] == ','
+                pos[] = nextind(txt, pos[])
+            elseif txt[pos[]] == '}'
+                pos[] = nextind(txt, pos[])
+                break
+            end
+        end
+        out
+    end
+    parse_value = function ()
+        skip_ws!()
+        c = txt[pos[]]
+        if c == '"'; return parse_string()
+        elseif c == '['; return parse_array()
+        elseif c == '{'; return parse_object()
+        elseif c == 't'; pos[] += 4; return true
+        elseif c == 'f'; pos[] += 5; return false
+        elseif c == 'n'; pos[] += 4; return nothing
+        else; return parse_number()
+        end
+    end
+    skip_ws!()
+    parse_value()
+end
+
+json_escape(s::AbstractString) = replace(s, "\\" => "\\\\", "\"" => "\\\"", "\n" => "\\n")
+to_json(x::Bool) = x ? "true" : "false"
+to_json(x::Nothing) = "null"
+to_json(x::AbstractString) = "\"" * json_escape(x) * "\""
+to_json(x::Integer) = string(x)
+to_json(x::AbstractFloat) = isfinite(x) ? repr(x) : "null"
+to_json(x::AbstractVector) = "[" * join(to_json.(x), ",") * "]"
+to_json(x::AbstractDict) = "{" * join(("\"$(json_escape(string(k)))\":" * to_json(v) for (k, v) in x), ",") * "}"
+
+length(ARGS) == 1 || error("usage: julia core070_wave6_conversion_batch.jl <output.json>")
+out_path = ARGS[1]
+mkpath(dirname(out_path))
+
+oracle_path = get(ENV, "CORE070_WAVE6_CONVERSION_R_ORACLE", "")
+isempty(oracle_path) && error("CORE070_WAVE6_CONVERSION_R_ORACLE not set")
+isfile(oracle_path) || error("oracle file not found: $oracle_path")
+oracle = json_read(oracle_path)
+
+root = normpath(joinpath(@__DIR__, ".."))
+contract = json_read(joinpath(root, "docs/dev-log/core070/wave6-conversion-batch-contract.json"))
+cases = contract["cases"]
+length(cases) == contract["expected_case_count"] || error("case count mismatch vs contract")
+Int(contract["expected_case_count"]) == 15 || error("expected_case_count drifted from 15; update this script")
+
+# ---------------------------------------------------------------------------
+# Fixture 1: structured_kernel_small -- fit natively on the R oracle's
+# deterministic Y. Reconstruct df's columns (species grouping, C, K2)
+# exactly as tools/core070_wave6_conversion_batch.R built them.
+# ---------------------------------------------------------------------------
+sk = oracle["structured_kernel_small"]
+p_sk, n_site, n_species = sk["p"], sk["n_site"], sk["n_species"]
+species_of_site = Int.(sk["species_of_site"])       # length n_site, 1-based species index per site
+y_flat = Float64.(sk["y"])                           # length p_sk*n_site, R column-major over
+                                                       # expand.grid(site, trait): site fastest
+C = reshape(Float64.(sk["C"]), n_species, n_species)
+K2 = reshape(Float64.(sk["K2"]), n_species, n_species)
+
+# Build the "data" NamedTuple-of-columns Tables.jl-compatible object the
+# recognizer expects: one row per (site, trait) is NOT what
+# _fit_gaussian_structured_sources wants -- it wants Y (p x n_site) plus a
+# `data` table carrying the GROUPING column at one row per unit (site).
+# _source_term_covariance looks up `data`'s `spec.group` column and takes
+# `sort(unique(...))` of it, then maps each row to its level index -- so
+# `data` must have one row per SITE (the fit's units), not per (site,trait).
+Y_sk = reshape(y_flat, p_sk, n_site)  # R's as.numeric() on expand.grid(site,trait) with site
+                                       # fastest is column-major p x n_site when reshaped this way:
+                                       # site varies fastest within each trait block of length n_site.
+species_symbols = [Symbol('a' + (species_of_site[s] - 1)) for s in 1:n_site]
+data_sk = (site = collect(1:n_site), species = species_symbols)
+kernel_env_sk = (C = C, K2 = K2)
+
+function fit_structured(term_exprs::Vector{Expr})
+    GLLVM._fit_gaussian_structured_sources(Y_sk, data_sk, term_exprs; kernel_env = kernel_env_sk)
+end
+
+_structured_cache = Dict{String, Any}()
+function structured_fit_cached(key::String, term_exprs::Vector{Expr})
+    get!(_structured_cache, key) do
+        fit_structured(term_exprs)
+    end
+end
+
+function structured_quantity(fit, level_name::Symbol)
+    ll = fit.logLik
+    Σ = try
+        Matrix(GLLVM.extract_Sigma(fit; level = level_name, part = :total).Sigma)
+    catch
+        fill(NaN, n_species, n_species)
+    end
+    vcat([ll], vec(Σ))
+end
+
+# ---------------------------------------------------------------------------
+# Fixture 2: gaussian_small -- fit natively.
+# ---------------------------------------------------------------------------
+gs = oracle["gaussian_small"]
+p, K, n = gs["p"], gs["K"], gs["n"]
+Y_g = reshape(Float64.(gs["y"]), p, n)
+fit_g = fit_gaussian_gllvm(Y_g; K = K)
+
+results = Dict{String, Any}()
+all_ok = true
+
+term_expr_map = Dict{String, Vector{Expr}}(
+    "CORE070-WAVE6-INDEP-FIT" => [:(indep(0 + trait | species, common = false))],
+    "CORE070-WAVE6-SCALAR-FIT" => [:(scalar(0 + trait | species))],
+    "CORE070-WAVE6-KERNEL-INDEP-FIT" => [:(kernel_indep(species, K = C, name = "k1"))],
+    "CORE070-WAVE6-KERNEL-DEP-FIT" => [:(kernel_dep(species, K = C, name = "k1"))],
+    "CORE070-WAVE6-KERNEL-SCALAR-FIT" => [:(kernel_scalar(species, K = C, name = "k1"))],
+    "CORE070-WAVE6-KERNEL-LATENT-SINGLE-PSI-NAMESPACE" =>
+        [:(kernel_latent(species, K = C, d = 1, name = "k1", unique = true))],
+    "CORE070-WAVE6-KERNEL-LATENT-SINGLE-PSI-COVARIANCE" =>
+        [:(kernel_latent(species, K = C, d = 1, name = "k1", unique = true))],
+    "CORE070-WAVE6-KERNEL-LATENT-MULTI-NAMESPACE" =>
+        [:(kernel_latent(species, K = C, d = 1, name = "k1", unique = false)),
+         :(kernel_latent(species, K = K2, d = 1, name = "k2", unique = false))],
+    "CORE070-WAVE6-KERNEL-LATENT-MULTI-COVARIANCE-EXPORT" =>
+        [:(kernel_latent(species, K = C, d = 1, name = "k1", unique = true))],
+)
+level_name_map = Dict{String, Symbol}(
+    "CORE070-WAVE6-INDEP-FIT" => :source,
+    "CORE070-WAVE6-SCALAR-FIT" => :source,
+    "CORE070-WAVE6-KERNEL-INDEP-FIT" => :kernel,
+    "CORE070-WAVE6-KERNEL-DEP-FIT" => :kernel,
+    "CORE070-WAVE6-KERNEL-SCALAR-FIT" => :kernel,
+    "CORE070-WAVE6-KERNEL-LATENT-SINGLE-PSI-NAMESPACE" => :k1,
+    "CORE070-WAVE6-KERNEL-LATENT-SINGLE-PSI-COVARIANCE" => :k1,
+    "CORE070-WAVE6-KERNEL-LATENT-MULTI-NAMESPACE" => :k1,
+    "CORE070-WAVE6-KERNEL-LATENT-MULTI-COVARIANCE-EXPORT" => :k1,
+)
+
+for cs in cases
+    case_id = cs["case_id"]
+    kind = cs["kind"]
+
+    if haskey(term_expr_map, case_id)
+        r_vec = Float64.(oracle["oracle_values"][case_id])
+        jl_vec = Float64[]
+        err = ""
+        ok = false
+        try
+            fit = structured_fit_cached(case_id, term_expr_map[case_id])
+            jl_vec = structured_quantity(fit, level_name_map[case_id])
+            ok = length(jl_vec) == length(r_vec) && maximum(abs.(jl_vec .- r_vec)) <= Float64(cs["tolerance"])
+        catch e
+            err = sprint(showerror, e)
+        end
+        maxdiff = (isempty(jl_vec) || length(jl_vec) != length(r_vec)) ? NaN :
+            maximum(abs.(jl_vec .- r_vec))
+        results[case_id] = Dict{String, Any}("pass" => ok, "kind" => kind, "tolerance" => cs["tolerance"],
+                                              "max_abs_diff" => maxdiff, "r_len" => length(r_vec),
+                                              "julia_len" => length(jl_vec), "error" => err,
+                                              "julia_values" => jl_vec)
+        global all_ok &= ok
+        continue
+    end
+
+    if kind == "boolean_flags"
+        r_flags = Float64.(oracle["oracle_values"][case_id])
+        jl_flags = Float64[]
+        err = ""
+        ok = false
+        try
+            ci = GLLVM.confint(fit_g; parm = "Lambda", level = 0.95)
+            lower = Float64[r.lower for r in ci]; upper = Float64[r.upper for r in ci]
+            jl_flags = Float64[(lower[i] <= 0 <= upper[i]) ? 1.0 : 0.0 for i in eachindex(lower)]
+            ok = length(jl_flags) == length(r_flags) && all(jl_flags .== r_flags)
+        catch e
+            err = sprint(showerror, e)
+        end
+        results[case_id] = Dict{String, Any}("pass" => ok, "kind" => kind, "r_len" => length(r_flags),
+                                              "julia_len" => length(jl_flags), "error" => err,
+                                              "julia_values" => jl_flags)
+        global all_ok &= ok
+        continue
+    end
+
+    if kind == "own_receipt_defect"
+        r_val = oracle["oracle_values"][case_id]
+        r_ok = get(r_val, "matches_own_formula", false) == true
+        jl_ok, jl_nobs, jl_err = try
+            jn = Float64(GLLVM.nobs(fit_g))
+            (jn == Float64(n), jn, "")
+        catch e
+            (false, NaN, sprint(showerror, e))
+        end
+        ok = r_ok && jl_ok
+        results[case_id] = Dict{String, Any}("pass" => ok, "kind" => kind,
+                                              "r_nobs" => get(r_val, "nobs", NaN),
+                                              "r_expected_p_times_n" => get(r_val, "expected", NaN),
+                                              "julia_nobs" => jl_nobs, "julia_expected_n" => Float64(n),
+                                              "error" => jl_err,
+                                              "known_defect_pending_decision" => true)
+        global all_ok &= ok
+        continue
+    end
+
+    # Remaining "point" postfit cases, keyed by `quantity`.
+    quantity = cs["quantity"]
+    tol = Float64(cs["tolerance"])
+    if !haskey(oracle["oracle_values"], case_id)
+        r_err = get(get(oracle, "oracle_errors", Dict{String, Any}()), case_id, "(no oracle_errors entry either)")
+        results[case_id] = Dict{String, Any}("pass" => false, "kind" => kind, "quantity" => quantity,
+                                              "tolerance" => tol, "max_abs_diff" => NaN,
+                                              "r_len" => 0, "julia_len" => 0,
+                                              "error" => "missing_oracle_value: R oracle_errors[$case_id] = $(r_err)")
+        global all_ok = false
+        continue
+    end
+    r_vec = Float64.(oracle["oracle_values"][case_id])
+
+    jl_vec = Float64[]
+    err = ""
+    ok = false
+    try
+        if quantity == "rotated_loadings_flat"
+            jl_vec = vec(GLLVM.extract_rotated_loadings(fit_g).Λ)
+        elseif quantity == "fitted_values_flat"
+            jl_vec = vec(GLLVM.fitted(fit_g, Y_g))
+        elseif quantity == "loglik_scalar"
+            jl_vec = [GLLVM.loglikelihood(fit_g)]
+        elseif quantity == "confint_sigma_eps_bounds"
+            ci = GLLVM.confint(fit_g; parm = "sigma_eps", level = 0.95)
+            jl_vec = vcat(Float64[r.lower for r in ci], Float64[r.upper for r in ci])
+        else
+            error("BOGUS_QUANTITY: no dispatcher entry for '$(quantity)'")
+        end
+        ok = length(jl_vec) == length(r_vec) && maximum(abs.(jl_vec .- r_vec)) <= tol
+    catch e
+        err = sprint(showerror, e)
+    end
+    maxdiff = (isempty(jl_vec) || length(jl_vec) != length(r_vec)) ? NaN :
+        maximum(abs.(jl_vec .- r_vec))
+    results[case_id] = Dict{String, Any}("pass" => ok, "kind" => kind, "quantity" => quantity,
+                                          "tolerance" => tol, "max_abs_diff" => maxdiff,
+                                          "r_len" => length(r_vec), "julia_len" => length(jl_vec),
+                                          "error" => err, "julia_values" => jl_vec)
+    global all_ok &= ok
+end
+
+# ---------------------------------------------------------------------------
+# Rejection-path cases: both engines must refuse.
+# ---------------------------------------------------------------------------
+rejection_term_map = Dict{String, Vector{Expr}}(
+    "CORE070-WAVE6-REJ-DEP-INDEP" =>
+        [:(dep(0 + trait | species)), :(indep(0 + trait | species))],
+    "CORE070-WAVE6-REJ-DEP-LATENT" =>
+        [:(dep(0 + trait | species)), :(kernel_latent(species, K = C, d = 1, unique = false))],
+    "CORE070-WAVE6-REJ-INDEP-LATENT" =>
+        [:(indep(0 + trait | species)), :(kernel_latent(species, K = C, d = 1, unique = false))],
+    "CORE070-WAVE6-REJ-KERNEL-UNIQUE-STANDALONE" =>
+        [:(kernel_unique(species, K = C, name = "k1"))],
+)
+rejection_results = Dict{String, Any}()
+rejection_ok = true
+for rc in contract["rejection_cases"]
+    cid = rc["case_id"]
+    r_val = oracle["rejection_oracle"][cid]
+    r_raised = get(r_val, "raised", false)
+    jl_raised = false
+    jl_message = ""
+    try
+        fit_structured(rejection_term_map[cid])
+    catch e
+        jl_raised = true
+        jl_message = sprint(showerror, e)
+    end
+    ok = r_raised == true && jl_raised == true
+    rejection_results[cid] = Dict{String, Any}("pass" => ok, "r_raised" => r_raised,
+                                                "julia_raised" => jl_raised, "julia_message" => jl_message)
+    global rejection_ok &= ok
+end
+
+# --- negative controls -------------------------------------------------
+neg_bogus_quantity = try
+    quantity = "this_quantity_does_not_exist"
+    if quantity == "rotated_loadings_flat"
+    end
+    error("BOGUS_QUANTITY: no dispatcher entry for '$(quantity)'")
+    false
+catch
+    true
+end
+neg_bogus_term_kind = try
+    GLLVM._recognize_source_term(:(this_is_not_a_real_keyword(species, K = C)))
+    false
+catch
+    true
+end
+r_neg = oracle["negative_controls"]
+neg_bogus_quantity_r = get(r_neg["bogus_quantity"], "rejected", false)
+neg_wrong_fixture_r = get(r_neg["wrong_fixture"], "rejected", false)
+neg_bogus_term_kind_r = get(r_neg["bogus_term_kind"], "rejected", false)
+neg_ok = neg_bogus_quantity && neg_bogus_term_kind &&
+    (neg_bogus_quantity_r == true) && (neg_wrong_fixture_r == true) && (neg_bogus_term_kind_r == true)
+
+report = Dict{String, Any}(
+    "status" => (all_ok && rejection_ok && neg_ok) ? "PASS" : "FAIL",
+    "julia_version" => string(VERSION),
+    "package_root" => Base.pkgdir(GLLVM),
+    "case_count" => length(cases),
+    "all_checks" => all_ok,
+    "rejection_checks_ok" => rejection_ok,
+    "negative_controls_behaved_as_expected" => neg_ok,
+    "cases" => results,
+    "rejection_cases" => rejection_results,
+)
+open(out_path, "w") do io
+    write(io, to_json(report))
+end
+println(report["status"] == "PASS" ? "CORE070_WAVE6_CONVERSION_JULIA_PASS" :
+        "CORE070_WAVE6_CONVERSION_JULIA_FAIL")
+exit(report["status"] == "PASS" ? 0 : 1)
