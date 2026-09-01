@@ -300,4 +300,42 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics
         @test_throws ArgumentError rotate_loadings(fit, y; level = :unit_obs)
     end
 
+    @testset "1.9 extract_rotated_loadings_table — tidy wrapper" begin
+        Random.seed!(9)
+        p, K, n = 6, 2, 500
+        Λ_true = zeros(p, K)
+        Λ_true[1:3, 1] .= 0.7 .* abs.(randn(3))
+        Λ_true[4:6, 2] .= 0.7 .* abs.(randn(3))
+        y = Λ_true * randn(K, n) + 0.5 .* randn(p, n)
+        fit = fit_gaussian_gllvm(y; K = K)
+
+        rot = rotate_loadings(fit, y; method = :varimax)
+        tab = extract_rotated_loadings_table(fit, y; method = :varimax, loading_scale = :raw)
+
+        @test length(tab.trait) == p * K
+        idx = 0
+        for k in 1:K, t in 1:p
+            idx += 1
+            @test tab.trait[idx] == t
+            @test tab.axis[idx] == k
+            @test tab.loading[idx] ≈ rot.Lambda[t, k]
+            @test tab.abs_loading[idx] ≈ abs(rot.Lambda[t, k])
+            @test tab.axis_variance[idx] ≈ rot.axis_variance[k]
+        end
+        # axis_share sums to 1 across unique axes.
+        share_per_axis = [tab.axis_share[findfirst(==(k), tab.axis)] for k in 1:K]
+        @test sum(share_per_axis) ≈ 1.0 atol = 1e-10
+
+        tab_std = extract_rotated_loadings_table(fit, y; method = :varimax, loading_scale = :standardized)
+        total_var = diag(extract_Sigma(fit; level = :unit, part = :total).Sigma)
+        for k in 1:K, t in 1:p
+            i = (k - 1) * p + t
+            @test tab_std.loading[i] ≈ rot.Lambda[t, k] / sqrt(total_var[t]) atol = 1e-10
+        end
+        # axis_variance/axis_share unaffected by standardization (raw-Λ based).
+        @test tab_std.axis_variance == tab.axis_variance
+
+        @test_throws ArgumentError extract_rotated_loadings_table(fit, y; loading_scale = :bogus)
+    end
+
 end

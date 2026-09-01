@@ -577,3 +577,85 @@ function rotate_loadings(fit::GllvmFit, Y::AbstractMatrix;
             axis_variance = axis_variance, axis_order = axis_order,
             axis_sign = axis_sign, anchor_traits = resolved_anchor_traits)
 end
+
+# ---------------------------------------------------------------------------
+# Item 1.9 — extract_rotated_loadings_table (thin wrapper over §1.8; mirrors
+# rotate-loadings.R:282-378 / .standardize_loadings_by_total_variance:381-405).
+# ---------------------------------------------------------------------------
+
+"""
+    extract_rotated_loadings_table(fit::GllvmFit, Y; level = :unit,
+        method = :varimax, order_axes = true, sign_anchor = :auto,
+        anchor_traits = nothing, loading_scale = :raw) -> NamedTuple
+
+Long (tidy) table of [`rotate_loadings`](@ref)'s output, one row per
+`(trait, axis)` (axis-major order: all traits for axis 1, then axis 2, …).
+Mirrors `gllvmTMB::extract_rotated_loadings_table`
+(`rotate-loadings.R:282-378`).
+
+`loading_scale = :raw` (default) reports the rotated loadings as returned by
+`rotate_loadings`. `loading_scale = :standardized` divides each trait's row
+by `sqrt(diag(extract_Sigma(fit; level, part = :total).Sigma))` — the
+`.standardize_loadings_by_total_variance` step (`:381-405`) — and throws
+`ArgumentError` if any trait's total variance is non-positive.
+`axis_variance`/`axis_share` are always computed from the RAW rotated `Λ`
+(pre-standardization), matching R.
+
+Returns a `NamedTuple` of equal-length vectors: `level, trait, axis, loading,
+abs_loading, axis_variance, axis_share, rotation, order_axes, sign_anchor,
+anchor_trait, loading_scale`.
+"""
+function extract_rotated_loadings_table(fit::GllvmFit, Y::AbstractMatrix;
+                                        level::Symbol = :unit, method::Symbol = :varimax,
+                                        order_axes::Bool = true, sign_anchor::Symbol = :auto,
+                                        anchor_traits::Union{Nothing, AbstractVector{<:Integer}} = nothing,
+                                        loading_scale::Symbol = :raw)
+    loading_scale in (:raw, :standardized) ||
+        throw(ArgumentError("loading_scale must be :raw or :standardized; got :$loading_scale"))
+
+    rot = rotate_loadings(fit, Y; level = level, method = method, order_axes = order_axes,
+                          sign_anchor = sign_anchor, anchor_traits = anchor_traits)
+    p, d = size(rot.Lambda)
+
+    Λout = rot.Lambda
+    if loading_scale === :standardized
+        total_var = diag(extract_Sigma(fit; level = level, part = :total).Sigma)
+        all(v -> v > 0, total_var) ||
+            throw(ArgumentError("extract_rotated_loadings_table(loading_scale=:standardized) " *
+                "requires strictly positive per-trait total variance."))
+        Λout = rot.Lambda ./ sqrt.(total_var)
+    end
+
+    total_axis_var = sum(rot.axis_variance)
+    n_rows = p * d
+    level_c = fill(level, n_rows)
+    trait = Vector{Int}(undef, n_rows)
+    axis = Vector{Int}(undef, n_rows)
+    loading = Vector{Float64}(undef, n_rows)
+    abs_loading = Vector{Float64}(undef, n_rows)
+    axis_variance = Vector{Float64}(undef, n_rows)
+    axis_share = Vector{Float64}(undef, n_rows)
+    rotation_c = fill(method, n_rows)
+    order_axes_c = fill(order_axes, n_rows)
+    sign_anchor_c = fill(sign_anchor, n_rows)
+    anchor_trait = Vector{Union{Int, Missing}}(undef, n_rows)
+    loading_scale_c = fill(loading_scale, n_rows)
+
+    idx = 0
+    for k in 1:d, t in 1:p
+        idx += 1
+        trait[idx] = t
+        axis[idx] = k
+        loading[idx] = Λout[t, k]
+        abs_loading[idx] = abs(Λout[t, k])
+        axis_variance[idx] = rot.axis_variance[k]
+        axis_share[idx] = rot.axis_variance[k] / total_axis_var
+        anchor_trait[idx] = rot.anchor_traits === nothing ? missing : rot.anchor_traits[k]
+    end
+
+    return (level = level_c, trait = trait, axis = axis, loading = loading,
+            abs_loading = abs_loading, axis_variance = axis_variance,
+            axis_share = axis_share, rotation = rotation_c, order_axes = order_axes_c,
+            sign_anchor = sign_anchor_c, anchor_trait = anchor_trait,
+            loading_scale = loading_scale_c)
+end
