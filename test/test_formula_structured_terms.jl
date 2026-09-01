@@ -194,3 +194,63 @@ end
     bad_spec = GLLVM._recognize_source_term(:(kernel_latent(g, K = Kbad, d = 1)))
     @test_throws ArgumentError GLLVM._source_term_covariance(bad_spec, data; kernel_env = (Kbad = Kbad,))
 end
+
+@testset "fit_gaussian_structured: public structure= wrapper (round2-3 #6)" begin
+    # Public API surface: `fit_gaussian_structured` is exported and is a thin
+    # wrapper over `_fit_gaussian_structured_sources` (same gates, same
+    # SourceCovariance path, same named errors). Reuse the Step 1 / Step 6
+    # fixtures above to prove public ≡ internal, not to re-derive coverage.
+    rng = MersenneTwister(70100); p, n = 3, 24
+    g = repeat(1:6; inner=4)
+    data = (g = g,)
+    Y = randn(rng, p, n) .+ [1.0, -0.5, 0.2]
+    opts = (sigma_eps_fixed = 0.5, g_tol = 1e-7)
+
+    # Public path ≡ internal path on a single indep() term.
+    public_fit = fit_gaussian_structured(Y, data; structure = [:(indep(0 + trait | g))], opts...)
+    internal_fit = GLLVM._fit_gaussian_structured_sources(Y, data, [:(indep(0 + trait | g))]; opts...)
+    @test public_fit.loglik ≈ internal_fit.loglik atol = 1e-8
+    @test public_fit.beta ≈ internal_fit.beta atol = 1e-8
+
+    # Public path ≡ internal path with a kernel_env-backed kernel_latent() term
+    # (exercises the kwarg forwarding, not just the trivial no-kernel case).
+    L = randn(rng, 6, 6); K = L * L' + 6I
+    kernel_env = (K = K,)
+    structure = [:(indep(0 + trait | g)), :(kernel_latent(g, K = K, d = 1, name = "k1"))]
+    public_kernel_fit = fit_gaussian_structured(Y, data; structure = structure,
+        kernel_env = kernel_env, opts...)
+    internal_kernel_fit = GLLVM._fit_gaussian_structured_sources(Y, data, structure;
+        kernel_env = kernel_env, opts...)
+    @test public_kernel_fit.loglik ≈ internal_kernel_fit.loglik atol = 1e-8
+    @test public_kernel_fit.beta ≈ internal_kernel_fit.beta atol = 1e-8
+
+    # Named errors from the recognizer/gate pipeline surface unchanged through
+    # the public wrapper: augmented LHS...
+    @test_throws ArgumentError fit_gaussian_structured(Y, data;
+        structure = [:(indep(1 + x | g))], opts...)
+    # ...and Step 4 mutual-exclusion gate (dep + indep on the same grouping).
+    @test_throws ArgumentError fit_gaussian_structured(Y, data;
+        structure = [:(dep(0 + trait | g)), :(indep(0 + trait | g))], opts...)
+
+    # Gaussian-only gate: any non-Normal family is a named error, not a
+    # silent no-op.
+    @test_throws ArgumentError fit_gaussian_structured(Y, data;
+        structure = [:(indep(0 + trait | g))], family = GLLVM.Distributions.Poisson(), opts...)
+
+    # Default family = Normal() needs no explicit kwarg.
+    default_family_fit = fit_gaussian_structured(Y, data; structure = [:(indep(0 + trait | g))], opts...)
+    @test default_family_fit.loglik ≈ internal_fit.loglik atol = 1e-8
+
+    # Doctest-style: the docstring's worked example actually runs and returns
+    # a finite log-likelihood.
+    doctest_rng = MersenneTwister(70100)
+    doctest_p, doctest_n = 3, 24
+    doctest_g = repeat(1:6; inner=4); doctest_data = (g = doctest_g,)
+    doctest_Y = randn(doctest_rng, doctest_p, doctest_n) .+ [1.0, -0.5, 0.2]
+    doctest_L = randn(doctest_rng, 6, 6); doctest_K = doctest_L * doctest_L' + 6I
+    doctest_kernel_env = (K = doctest_K,)
+    doctest_fit = fit_gaussian_structured(doctest_Y, doctest_data;
+        structure = [:(indep(0 + trait | g)), :(kernel_latent(g, K = K, d = 1, name = "k1"))],
+        kernel_env = doctest_kernel_env, sigma_eps_fixed = 0.5, g_tol = 1e-7)
+    @test isfinite(doctest_fit.loglik)
+end

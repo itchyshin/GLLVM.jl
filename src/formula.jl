@@ -647,3 +647,94 @@ function _fit_gaussian_structured_sources(Y::AbstractMatrix{<:Real}, data, term_
     sources = SourceCovariance[_source_term_covariance(s, data; kernel_env=kernel_env) for s in specs]
     return fit_gaussian_sources(Y; sources=sources, kwargs...)
 end
+
+"""
+    fit_gaussian_structured(Y, data; structure::Vector{Expr}, family=Normal(),
+                             kernel_env=NamedTuple(), kwargs...)
+
+Public entry point for the structured-term source grammar (maintainer decision
+round2-3 #6, `docs/dev-log/decisions/2026-09-01-maintainer-decisions-round2-3.md`):
+exposes the recognizers driven by `_fit_gaussian_structured_sources` through an
+explicit `structure=` keyword, **not** a macro. This is a thin, documented
+wrapper — it runs exactly the same recognizer/gate/fit pipeline as the internal
+function: parse each `Expr` in `structure` with [`_recognize_source_term`](@ref),
+run the Step-4 mutual-exclusion gates via [`_check_source_term_exclusions`](@ref),
+materialize each spec's [`SourceCovariance`](@ref) via [`_source_term_covariance`](@ref),
+and fit with [`fit_gaussian_sources`](@ref). Every named error raised inside that
+pipeline (augmented-LHS rejection, non-literal flag rejection, unknown term name,
+mutual-exclusion violations, PD-strictness on kernel matrices, ...) surfaces
+unchanged through this wrapper.
+
+# Why `Expr`, not `@formula`
+
+StatsModels' `@formula` macro parses its right-hand side into `Term`s at
+macro-expansion time and rejects the `lhs | group` bar syntax these structured
+terms use (`indep(0 + trait | g)`, `dep(1 | grp)`, `kernel_latent(g, K=K, d=2)`,
+...) before any GLLVM code ever runs — the macro has no hook to recognize a
+`|`-headed call as anything but a parse error. Passing raw, unevaluated `Expr`s
+via `structure=` sidesteps `@formula` entirely: each `Expr` is quoted by the
+caller with `:(...)` and walked by GLLVM's own recognizer, so the grammar can
+support the bar syntax without teaching StatsModels a new dialect. A macro
+front door that lets users write `structure(indep(0 + trait | g))` directly
+(instead of quoting) is a separate, later grammar decision — this wrapper does
+not attempt it.
+
+# Family support
+
+Gaussian only, for now: `family` must be `Normal()` (`Distributions.Normal`),
+matching every fitter this wrapper delegates to (`fit_gaussian_sources`, which
+takes no `family` argument at all). Any other `family` value throws a named
+`ArgumentError` rather than silently ignoring it.
+
+# Arguments
+
+- `Y::AbstractMatrix{<:Real}`: `p × n` response matrix (species × units).
+- `data`: a Tables.jl-compatible table (or `NamedTuple` of vectors) holding the
+  grouping columns referenced inside `structure`.
+- `structure::Vector{Expr}`: one or more raw, quoted structured-term calls —
+  `indep(...)`, `dep(...)`, `scalar(...)`, `kernel_indep(...)`,
+  `kernel_scalar(...)`, `kernel_dep(...)`, or `kernel_latent(...)` — see
+  `docs/dev-log/core070/formula-recognizer-spec.md` §1 for the full grammar.
+- `family`: response family; only `Normal()` is accepted (default).
+- `kernel_env=NamedTuple()`: named kernel matrices referenced by
+  `kernel_*(...)` terms' `K=` keyword (e.g. `(K = phylogenetic_kernel,)`).
+- `kwargs...`: forwarded to [`fit_gaussian_sources`](@ref) (e.g. `X`,
+  `sigma_eps_fixed`, `start`, `g_tol`, `iterations`).
+
+# Example
+
+```jldoctest
+julia> using GLLVM, Random
+
+julia> rng = MersenneTwister(70100); p, n = 3, 24;
+
+julia> g = repeat(1:6; inner = 4); data = (g = g,);
+
+julia> Y = randn(rng, p, n) .+ [1.0, -0.5, 0.2];
+
+julia> L = randn(rng, 6, 6); K = L * L' + 6I; kernel_env = (K = K,);
+
+julia> fit = fit_gaussian_structured(Y, data;
+           structure = [:(indep(0 + trait | g)), :(kernel_latent(g, K = K, d = 1, name = "k1"))],
+           kernel_env = kernel_env, sigma_eps_fixed = 0.5, g_tol = 1e-7);
+
+julia> isfinite(fit.loglik)
+true
+```
+
+See also [`_fit_gaussian_structured_sources`](@ref) (the internal function this
+wraps), [`SourceCovariance`](@ref), [`fit_gaussian_sources`](@ref).
+
+Not wired into `gllvm(formula, ...)`; the convention-change cascade
+(README/tutorials/docs pages) for this new public symbol is deferred to the
+docs arc — this docstring and the test-file additions are the complete slice
+for this task.
+"""
+function fit_gaussian_structured(Y::AbstractMatrix{<:Real}, data;
+        structure::Vector{Expr}, family::Distribution=Normal(),
+        kernel_env=NamedTuple(), kwargs...)
+    family isa Normal || throw(ArgumentError(
+        "fit_gaussian_structured supports family=Normal() only (Gaussian-only " *
+        "for now, per maintainer decision round2-3 #6); got $(family)"))
+    return _fit_gaussian_structured_sources(Y, data, structure; kernel_env=kernel_env, kwargs...)
+end

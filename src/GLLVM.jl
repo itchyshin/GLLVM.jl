@@ -148,7 +148,7 @@ include("confint_derived_wald.jl")       # transformed-Wald CIs for bounded deri
 # adds methods to). Additive: the ::GllvmFit methods are unchanged.
 include("link_residual.jl")
 include("extractors.jl")                # extract_*/get* post-fit extractor family (core070 Cluster 1)
-include("re_sd.jl")                      # getREsd: TMB-sdreport-style conditional-on-θ̂ random-effect SDs (core070 E-cluster)
+include("re_sd.jl")                      # latent_score_sd (renamed from getREsd): TMB-sdreport-style conditional-on-θ̂ random-effect SDs (core070 E-cluster)
 include("families/mixed.jl")             # mixed-family GLLVM (cross-family VCV): fit_mixed_gllvm + MixedFamilyFit. AFTER link_residual + the family fitters so all dispatch targets exist.
 include("boundary_inference.jl")         # χ̄² boundary LRT + boundary-aware profile CI for variance components
 include("confint_family.jl")             # Wald / profile / bootstrap CIs for non-Gaussian families
@@ -178,6 +178,7 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        confint_lv_effects,
        fit_gaussian_gllvm, GllvmModel, GllvmFit,
        SourceCovariance, fit_gaussian_sources, GaussianSourcesFit,
+       fit_gaussian_structured,
        gaussian_reml_loglik, fit_gaussian_reml, GaussianREMLFit,
        fit_gaussian_random_slope, GaussianRandomSlopeFit, gaussian_grouped_intercept_loglik,
        fit_twolevel_gaussian, TwoLevelFit, twolevel_marginal_loglik,
@@ -194,7 +195,7 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        standardized_loading_wald_ci, raw_loading_wald_ci, loading_ci, loading_profile,
        profile_ci_total_variance, profile_ci_phylo_signal,
        slope_sd_ci, standard_errors,
-       getREsd, bootstrap_Sigma, tmbprofile_wrapper, profile_targets,
+       latent_score_sd, getREsd, bootstrap_Sigma, tmbprofile_wrapper, profile_targets,
        profile_phylo_signal,
        ppca_init, em_fa,
        sigma_y_site, communality, correlation, phylo_signal, link_residual,
