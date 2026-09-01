@@ -1,0 +1,276 @@
+# M2 "inference remainder batch": the 19 unbound `inference/` rows in
+# docs/dev-log/core070/required-source-case-map.json (CI-ROUTE-005, 008-014,
+# 019-021, 026-028, 033, 035, 040-042). See
+# docs/dev-log/core070/inference-remainder-batch-contract.json for the full
+# case list, the CI-ROUTE-005 needs_new_julia_surface deferral, and the
+# ground-truth R source citations for each estimand's method-dispatch
+# behaviour (read from the pinned R/z-confint-gllvmTMB.R, not from the
+# case-plan's templated per-row rationale strings).
+#
+# Design mirrors tools/core070_namespace_2_batch.R: THIS R process (the one
+# with the frozen gllvmTMB library loaded) does 100% of the live R-side
+# computation itself and hands the Julia child a plain JSON oracle file; the
+# Julia child (tools/core070_inference_remainder_batch.jl) runs zero R code.
+#
+# argv:
+#   Rscript --vanilla tools/core070_inference_remainder_batch.R <frozen-library> <destination>
+#
+# <frozen-library> is an R library directory containing an installed
+# gllvmTMB built from the pinned reference commit (b4d5fee...).
+# <destination> must not already exist.
+
+args <- commandArgs(TRUE)
+stopifnot(length(args) == 2L)
+frozen_library <- normalizePath(args[[1]], mustWork = TRUE)
+output_dir <- args[[2]]
+stopifnot(!dir.exists(output_dir))
+dir.create(output_dir, recursive = TRUE)
+
+sha256_file <- function(path) {
+  command <- if (nzchar(Sys.which("sha256sum"))) "sha256sum" else "shasum"
+  argv <- if (identical(command, "sha256sum")) path else c("-a", "256", path)
+  line <- system2(command, argv, stdout = TRUE, stderr = TRUE)
+  stopifnot(is.null(attr(line, "status")), length(line) >= 1L)
+  sub("[[:space:]].*$", "", line[[1L]])
+}
+
+.libPaths(c(frozen_library, .libPaths()))
+suppressPackageStartupMessages(library(gllvmTMB))
+suppressPackageStartupMessages(library(jsonlite))
+stopifnot(normalizePath(find.package("gllvmTMB")) ==
+          normalizePath(file.path(frozen_library, "gllvmTMB")))
+
+root <- normalizePath(".")
+contract_path <- file.path(root, "docs/dev-log/core070/inference-remainder-batch-contract.json")
+contract <- jsonlite::read_json(contract_path, simplifyVector = FALSE)
+contract_sha256 <- sha256_file(contract_path)
+
+stopifnot(identical(contract$reference_commit, "b4d5fee64def88bc768dda1f1f77c29b295edd86"),
+          identical(contract$status, "FROZEN_INFERENCE_REMAINDER_BATCH_CONTRACT"),
+          contract$manifest_row_count == 19L,
+          contract$expected_case_count == 5L,
+          length(contract$negative_controls) >= 2L)
+
+# --- validate the pinned R source used for the ground-truth citations ------
+source_root <- file.path(root, ".unlazy/core070-aghq/oracle-source/readback")
+for (rel in names(contract$source_pins)) {
+  path <- file.path(root, rel)
+  stopifnot(file.exists(path))
+  digest <- sha256_file(path)
+  stopifnot(identical(digest, contract$source_pins[[rel]]))
+}
+
+# ---------------------------------------------------------------------------
+# 1. Shared Gaussian fixture (same convention as
+#    tools/core070_namespace_2_batch.R's oracle_g; se=TRUE here because Wald
+#    CIs need vcov).
+# ---------------------------------------------------------------------------
+set.seed(42)
+p <- 5L; K <- 2L; n <- 80L
+Lambda_true <- matrix(c(
+  0.8,  0.0,
+  0.5,  0.6,
+  0.3, -0.4,
+ -0.2,  0.5,
+  0.1,  0.3
+), nrow = p, ncol = K, byrow = TRUE)
+sigma_true <- 0.7
+eta_g <- matrix(rnorm(K * n), nrow = K, ncol = n)
+Y_g <- Lambda_true %*% eta_g + sigma_true * matrix(rnorm(p * n), nrow = p, ncol = n)
+Y_g <- Y_g - rowMeans(Y_g)
+
+trait_names <- paste0("t", seq_len(p))
+df_long <- data.frame(
+  site  = factor(rep(seq_len(n), each = p)),
+  trait = factor(rep(trait_names, times = n), levels = trait_names),
+  value = as.vector(Y_g)
+)
+
+fit <- gllvmTMB(
+  value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE),
+  data = df_long, unit = "site", trait = "trait", family = gaussian(),
+  control = gllvmTMBcontrol(n_init = 1L, se = TRUE)
+)
+stopifnot("gllvmTMB_multi" %in% class(fit))
+
+# ---------------------------------------------------------------------------
+# 2. CORE070-INFERENCE-ICC-CI-METHOD-ROUTE (CI-ROUTE-008..011) is NOT
+#    exercised here. REPAIR (2026-09-01): it originally called
+#    confint(fit, parm="icc", method="wald"/"bootstrap") on this single-tier
+#    fixture, which crashed on Totoro -- .confint_icc's wald/bootstrap
+#    branches call extract_repeatability(), which requires a genuine
+#    TWO-TIER fit (vB>0 from a between/unit latent block AND vW>0 from a
+#    within/observation latent block; see
+#    .unlazy/core070-aghq/oracle-source/readback/R/extract-repeatability.R's
+#    own @examples: value ~ 0 + trait + latent(0+trait|site,d=1) +
+#    latent(0+trait|site_species,d=1)) and aborts otherwise with "Wald
+#    repeatability needs vB > 0 and vW > 0; refit with ordinary latent or
+#    standalone indep at each tier." Building the matching Julia comparand
+#    is a deeper gap than a fixture swap: GLLVM.jl's repeatability(fit) in
+#    src/twolevel.jl (the mapping namespace-1-batch-contract.json pins for
+#    extract_repeatability, NOT icc_wald_ci) returns only a bare point
+#    estimate -- there is no Wald/profile/bootstrap CI machinery for the
+#    two-level repeatability estimand in GLLVM.jl at all. This case has been
+#    moved to needs_new_julia_surface in the contract; see its `notes` and
+#    `totoro_failed_attempts`. Nothing below constructs a two-tier fit.
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# 3. Unsupported-method-reject cases. One helper reproduces the shared
+#    assertion shape (raised + message) for every (parm, method) pair. Each
+#    of these fires R's method-reject branch BEFORE the estimator function
+#    that needs a specific fit structure is ever called (verified by reading
+#    z-confint-gllvmTMB.R's dispatcher branch order for each estimand -- see
+#    the contract's per-case r_call), so the single-tier fixture above is
+#    valid evidence for all of them despite not being a two-tier fit.
+# ---------------------------------------------------------------------------
+reject_call <- function(parm, method) {
+  tryCatch({
+    confint(fit, parm = parm, level = 0.95, method = method)
+    list(raised = FALSE, message = "")
+  }, error = function(e) list(raised = TRUE, message = conditionMessage(e)))
+}
+
+reject_matches <- function(res, substrings) {
+  isTRUE(res$raised) && all(vapply(substrings, function(s) grepl(s, res$message, fixed = TRUE), logical(1)))
+}
+
+icc_reject <- lapply(c("wald_asym", "fisher-z", "bogus"), function(m) {
+  res <- reject_call("icc", m)
+  list(method = m, raised = res$raised, message = res$message,
+       matches = reject_matches(res, c("not supported", "icc")))
+})
+names(icc_reject) <- vapply(icc_reject, `[[`, "", "method")
+
+phylo_reject <- lapply(c("wald_asym", "fisher-z", "bogus"), function(m) {
+  res <- reject_call("phylo_signal", m)
+  list(method = m, raised = res$raised, message = res$message,
+       matches = reject_matches(res, c("not implemented", "phylo_signal")))
+})
+names(phylo_reject) <- vapply(phylo_reject, `[[`, "", "method")
+
+communality_reject <- lapply(c("wald_asym", "fisher-z", "bogus"), function(m) {
+  res <- reject_call("communality:unit", m)
+  list(method = m, raised = res$raised, message = res$message,
+       matches = reject_matches(res, c("not implemented", "communality")))
+})
+names(communality_reject) <- vapply(communality_reject, `[[`, "", "method")
+
+rho_reject <- lapply(c("wald_asym", "bogus"), function(m) {
+  res <- reject_call("rho:unit:1,2", m)
+  list(method = m, raised = res$raised, message = res$message,
+       matches = reject_matches(res, c("not supported", "rho")))
+})
+names(rho_reject) <- vapply(rho_reject, `[[`, "", "method")
+
+proportion_reject <- lapply(c("wald_asym", "fisher-z", "bogus"), function(m) {
+  res <- reject_call("proportion:shared_unit", m)
+  list(method = m, raised = res$raised, message = res$message,
+       matches = reject_matches(res, c("not implemented", "proportion")))
+})
+names(proportion_reject) <- vapply(proportion_reject, `[[`, "", "method")
+
+# ---------------------------------------------------------------------------
+# 4. Write the oracle JSON for the Julia child.
+# ---------------------------------------------------------------------------
+oracle_path <- file.path(output_dir, "r-oracle.json")
+jsonlite::write_json(
+  list(
+    schema = "core070-inference-remainder-r-oracle/v1",
+    gaussian = list(p = p, n = n, K = K, y = as.numeric(Y_g)),
+    icc_reject = icc_reject,
+    phylo_reject = phylo_reject,
+    communality_reject = communality_reject,
+    rho_reject = rho_reject,
+    proportion_reject = proportion_reject
+  ),
+  oracle_path, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = 17
+)
+
+# --- invoke the Julia child ---------------------------------------------
+julia_out <- file.path(output_dir, "julia-results.json")
+julia_env <- c(CORE070_INFERENCE_REMAINDER_R_ORACLE = oracle_path)
+julia_bin <- Sys.which("julia")
+stopifnot(nzchar(julia_bin))
+old_env <- Sys.getenv(names(julia_env), unset = NA, names = TRUE)
+do.call(Sys.setenv, as.list(julia_env))
+t0 <- Sys.time()
+julia_status <- tryCatch(
+  system2(julia_bin, c("--project=.", "tools/core070_inference_remainder_batch.jl", julia_out),
+          stdout = file.path(output_dir, "julia-stdout.log"),
+          stderr = file.path(output_dir, "julia-stderr.log")),
+  finally = {
+    unset <- names(old_env)[is.na(old_env)]
+    if (length(unset)) Sys.unsetenv(unset)
+    set <- old_env[!is.na(old_env)]
+    if (length(set)) do.call(Sys.setenv, as.list(set))
+  }
+)
+elapsed <- as.numeric(Sys.time() - t0, units = "secs")
+
+julia_report <- if (file.exists(julia_out)) {
+  jsonlite::read_json(julia_out, simplifyVector = FALSE)
+} else {
+  NULL
+}
+
+contract_case_ids <- vapply(contract$cases, `[[`, "", "case_id")
+
+results_ok <- !is.null(julia_report) &&
+  identical(julia_status, 0L) &&
+  identical(julia_report$status, "PASS") &&
+  isTRUE(julia_report$all_positive_pass) &&
+  isTRUE(julia_report$negative_controls_behaved_as_expected) &&
+  isTRUE(julia_report$all_checks)
+
+cases_seen <- if (!is.null(julia_report)) names(julia_report$cases) else character(0)
+missing_case_ids <- setdiff(contract_case_ids, cases_seen)
+extra_case_ids <- setdiff(cases_seen, contract_case_ids)
+results_ok <- results_ok && length(missing_case_ids) == 0 && length(extra_case_ids) == 0
+
+raw_lines <- vapply(contract_case_ids, function(id) {
+  pass <- !is.null(julia_report) && id %in% names(julia_report$cases) &&
+    isTRUE(julia_report$cases[[id]]$pass)
+  paste(id, if (pass) "PASS" else "FAIL", "positive", sep = "\t")
+}, character(1))
+neg_lines <- if (!is.null(julia_report)) {
+  vapply(names(julia_report$negative_controls), function(id) {
+    behaved <- isTRUE(julia_report$negative_controls[[id]]$behaved)
+    paste(id, if (behaved) "PASS" else "FAIL", "negative_control", sep = "\t")
+  }, character(1))
+} else character(0)
+raw_path <- file.path(output_dir, "results.tsv")
+writeLines(c(raw_lines, neg_lines), raw_path)
+
+diag_lines <- character(0)
+if (!identical(julia_status, 0L)) diag_lines <- c(diag_lines, paste("julia_exit_code", julia_status))
+if (is.null(julia_report)) diag_lines <- c(diag_lines, "julia-results.json was not written")
+if (length(missing_case_ids)) diag_lines <- c(diag_lines, paste("missing_case_ids:", paste(missing_case_ids, collapse = ", ")))
+if (length(extra_case_ids)) diag_lines <- c(diag_lines, paste("extra_case_ids:", paste(extra_case_ids, collapse = ", ")))
+diag_path <- file.path(output_dir, "diagnostics.log")
+writeLines(diag_lines, diag_path)
+
+receipt <- list(
+  status = if (isTRUE(results_ok)) "PASS" else "FAIL",
+  scope = "CORE070_INFERENCE_REMAINDER_BATCH",
+  reference_commit = contract$reference_commit,
+  contract_sha256 = contract_sha256,
+  source_pins = contract$source_pins,
+  source_unchanged = TRUE,
+  case_count = contract$expected_case_count,
+  expected_case_ids = contract_case_ids,
+  covered_source_ids = unlist(contract$covered_source_ids),
+  julia_exit_code = julia_status,
+  julia_elapsed_seconds = elapsed,
+  julia_results_sha256 = if (file.exists(julia_out)) sha256_file(julia_out) else NA_character_,
+  raw_sha256 = sha256_file(raw_path),
+  diagnostics_sha256 = sha256_file(diag_path),
+  r_version = R.version.string,
+  gllvmTMB_version = as.character(utils::packageVersion("gllvmTMB")),
+  frozen_library = frozen_library
+)
+receipt_path <- file.path(output_dir, "receipt.json")
+jsonlite::write_json(receipt, receipt_path, auto_unbox = TRUE, pretty = TRUE, null = "null")
+
+cat("CORE070_INFERENCE_REMAINDER_BATCH_", receipt$status, "\n", sep = "")
+quit(status = if (isTRUE(results_ok)) 0L else 1L)
