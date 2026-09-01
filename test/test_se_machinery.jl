@@ -260,6 +260,20 @@ using Distributions: Poisson
         end
     end
 
+    @testset "tmbprofile_wrapper refuses masked/AGHQ Gaussian-record fits (no mixed surfaces)" begin
+        rng = MersenneTwister(3)
+        p, n, K = 4, 100, 1
+        Λtrue = randn(rng, p, K)
+        σ_eps = 0.4
+        z = randn(rng, K, n)
+        y = Λtrue * z .+ σ_eps .* randn(rng, p, n)
+        mask = trues(p, n); mask[1, 1] = false
+        fit_masked = fit_gaussian_gllvm(y; K = K, aghq = 3, mask = mask)
+        @test GLLVM._has_gaussian_record(fit_masked)
+        @test_throws ArgumentError tmbprofile_wrapper(fit_masked, "sigma_eps"; y = y)
+        @test_throws ArgumentError tmbprofile_wrapper(fit_masked, 1; y = y)
+    end
+
     @testset "profile_targets batches tmbprofile_wrapper" begin
         rng = MersenneTwister(6)
         p, n, K = 3, 100, 1

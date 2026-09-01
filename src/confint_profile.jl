@@ -577,6 +577,15 @@ function _tmbprofile_curve(fit::GllvmFit, param_index::Integer;
                            y::AbstractMatrix,
                            X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
                            Σ_phy::Union{Nothing, AbstractMatrix} = nothing)
+    _has_gaussian_record(fit) && throw(ArgumentError(
+        "tmbprofile_wrapper/_tmbprofile_curve is not implemented for masked/" *
+        "offset/AGHQ Gaussian-record fits: the TRACE walk here always " *
+        "evaluates gaussian_nll_packed (the closed-form dense surface), " *
+        "while profile_ci routes these fits to the record objective " *
+        "(_gaussian_record_confint) for both the cutoff and the bounds — " *
+        "mixing the two surfaces silently would put the trace and the " *
+        "cutoff on different objectives. Use profile_ci for the bound; a " *
+        "record-objective trace is not yet implemented."))
     θ̂ = fit.pars.θ_packed
     N = length(θ̂)
     1 ≤ param_index ≤ N ||
