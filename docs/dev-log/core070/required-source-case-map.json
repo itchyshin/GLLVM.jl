@@ -7647,11 +7647,10 @@
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "namespace-2 wave3",
-    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
-    "missing_surface": "no Julia function/export named or equivalent to getREsd()",
-    "reason": "grep -rniE 'getREsd|re_sd' src/*.jl: 0 hits. Confirmed already NEEDS_NEW_JULIA_SURFACE in docs/dev-log/core070/postfit-1-batch-contract.json (POSTFIT-SURFACE-getREsd).",
-    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+    "batch": "wave7 triage",
+    "reason": "SAME-NAME, DIFFERENT-SURFACE collision, verified from re-uncertainty.R:1-99 and src/re_sd.jl:1-27 module docstrings: R's getREsd(fit, block=) covers AUXILIARY random-effect blocks (diag_unit, diag_unit_obs, diag_species, phylo, re_int, equalto) that gaussian_small's plain latent(0+trait|site) fit carries none of; Julia's getREsd(fit,y) instead computes the ordinary latent FACTOR SCORE conditional SDs, which is what R's getLV(se=TRUE) covers, not what R's getREsd covers. No numeric comparison is possible against R's getREsd on this fixture; a genuine pairing would need a fixture with an indep()/re_int()/phylo block AND would need to be compared against R's getLV(se=TRUE) for the score-SD half, which is a different source_id not in this ledger row.",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -7742,11 +7741,10 @@
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "namespace-2 wave3",
-    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
-    "missing_surface": "no Julia function/export named or equivalent to gllvmTMB_check_consistency()",
-    "reason": "grep -rniE 'check_consistency' src/*.jl: 0 hits; only scattered raw components (gradient norm in confint.jl, SE via vcov) exist without a packaged diagnostic surface, same gap class as the sibling gllvmTMB_diagnose row below.",
-    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+    "batch": "wave7 triage",
+    "reason": "NEW FINDING: gllvmTMB_check_consistency(fit,y) is a Monte-Carlo (n_sim re-simulations) score-centring diagnostic on both sides (R via TMB::checkConsistency(), Julia via a Hotelling T2 test on re-simulated packed-NLL scores per src/diagnostics.jl:24-133's own docstring), with independently-seeded RNGs in the two languages -- only a structural comparison (marginal_p_value in [0,1], no crash) is possible, and Julia's own docstring already documents this port does NOT reproduce TMB's internal joint/marginal Laplace split (re-simulates the generative model directly instead). Designing a defensible structural pass criterion is out of this lean batch's scope.",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -7760,11 +7758,10 @@
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "namespace-2 wave3",
-    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
-    "missing_surface": "no Julia function/export named or equivalent to gllvmTMB_diagnose()",
-    "reason": "grep -rniE 'diagnose' src/*.jl: 0 hits. Confirmed already NEEDS_NEW_JULIA_SURFACE in docs/dev-log/core070/postfit-1-batch-contract.json (POSTFIT-SURFACE-gllvmTMB_diagnose).",
-    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+    "batch": "wave7 triage",
+    "reason": "NEW FINDING, verified from diagnose.R:2005-2213 (gllvmTMB_diagnose returns invisibly a list with components sanity/rotation/Sigma_B/Sigma_W/ICC_site/communality_B/communality_W/hints -- no single pass boolean) and Julia's gllvmTMB_diagnose (src/diagnostics.jl:281-324, returns (pass, sanity, boundary_flags, messages)): R's return shape is a rich human-report list keyed by biological summaries (ICC, communality per tier), not a boolean-plus-flags verdict; Julia's is a boolean pass over a generic variance/correlation boundary scan documented in its own docstring as NOT covering R's per-family boundary rows (binomial-prevalence, multinomial degeneracy, ordinal cutpoint span, spatial-domain diameter). A defensible coarse verdict bridge (e.g. R's $hints being empty vs Julia's pass=true) is plausible but was not attempted here given the remaining scope in this batch; left for a follow-up wave with a dedicated comparison-design pass rather than guessed at under time pressure.",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -8073,10 +8070,10 @@
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "surface-conversion wave5 triage",
-    "reason": "Same confirmatory-fit gate as inference/CI-ROUTE-005 (loading_ci refuses fits with no lambda_constraint pins). REPAIR (2026-09-01): moved to deferred[].",
-    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
-    "note": "deferred with source-traced reason"
+    "batch": "wave7 triage",
+    "reason": "Carried forward from docs/dev-log/core070/surface-conversion-batch-contract.json's deferred[]: loading_ci refuses fits with no explicit lambda_constraint pins (the same confirmatory-fit gate as inference/CI-ROUTE-005); gaussian_small is an exploratory (unconstrained) fit and does not carry a lambda_constraint. Building a lambda-constrained fixture pair (R+Julia) is a genuine new-fixture slice, out of this lean batch's reuse-only scope.",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -8648,11 +8645,10 @@
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "namespace-2 wave3",
-    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
-    "missing_surface": "no Julia function/export named or equivalent to predictive_check()",
-    "reason": "Confirmed already NEEDS_NEW_JULIA_SURFACE (real isdefined()+functional-probe runtime evidence) in docs/dev-log/core070/postfit-2-batch-contract.json (POSTFIT-SURFACE-predictive_check).",
-    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+    "batch": "wave7 triage",
+    "reason": "Same RNG-decoupling issue as postfit/POSTFIT-SURFACE-predictive_check (duplicate ledger row).",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -8666,10 +8662,10 @@
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "surface-conversion wave5 triage",
-    "reason": "Same phylo model-class mismatch as extract_phylo_signal above; profile_ci_phylo_signal additionally needs a working bracket-then-bisect profile over that same R phylo fit.",
-    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
-    "note": "deferred with source-traced reason"
+    "batch": "wave7 triage",
+    "reason": "Per the task brief's phylo-fixture instruction: no proven paired phylo fixture exists in this worktree's receipts (test/parity/ and .unlazy/core070-aghq/ contain no executed STRUCT-PHY paired R+Julia fit). R's profile_ci_phylo_signal() additionally needs a genuine phylo_latent()/phylo_indep() R formula fit (structured-native-mapping.md documents this is NOT the same model class as GLLVM.jl's externally-supplied-Sigma_phy route). Inventing and validating a phylo fixture pair is out of this lean batch's reuse-only scope; deferred with this trace rather than guessed at.",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -8683,10 +8679,10 @@
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "surface-conversion wave5 triage",
-    "reason": "Julia surface exists (profile_ci_total_variance). R's profile_ci_total_variance() (profile-derived.R, via .total_variance_spec()) refuses any tier fit with unique=FALSE (no diagonal Psi_t component): 'Total-variance intervals at tier need the diagonal component ... Fit the tier with unique = TRUE.' The gaussian_small fixture this batch shares across 25 other cases uses unique=FALSE. Adding unique=TRUE (and the matching Julia has_diag=true) would need re-verifying every OTHER case sharing that fixture under the new DGP, which is out of scope for this repair pass; a distinct has_diag fixture variant is the correct follow-up. REPAIR (2026-09-01): moved to deferred[] rather than risk destabilising the shared fixture under time pressure.",
-    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
-    "note": "deferred with source-traced reason"
+    "batch": "wave7 triage",
+    "reason": "Carried forward from surface-conversion-batch-contract.json's deferred[]: R's profile_ci_total_variance() refuses any tier fit with unique=FALSE (no diagonal Psi_t component) -- gaussian_small (this batch's only reused fixture) uses unique=FALSE. A dedicated has_diag=TRUE / unique=TRUE fixture variant is the correct follow-up but would need re-verifying every other case sharing gaussian_small under a changed DGP, out of scope here.",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -8730,11 +8726,10 @@
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "namespace-2 wave3",
-    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
-    "missing_surface": "no Julia function/export named profile_phylo_signal",
-    "reason": "Confirmed already NEEDS_NEW_JULIA_SURFACE (real isdefined()+functional-probe runtime evidence) in docs/dev-log/core070/postfit-2-batch-contract.json (POSTFIT-SURFACE-profile_phylo_signal).",
-    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+    "batch": "wave7 triage",
+    "reason": "Per the task brief's phylo-fixture instruction: no proven paired phylo fixture exists in this worktree's receipts. Julia's profile_phylo_signal(fit,t) docstring is explicit that it is scoped to the raw packed sigma_phy[t] SCALE parameter, present iff has_phy_unique=true -- gaussian_small has no phylo tier at all, so this case cannot even be attempted on the reused fixture, let alone paired against an R phylo fit.",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -8748,11 +8743,10 @@
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "namespace-2 wave3",
-    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
-    "missing_surface": "no Julia function/export named or equivalent to profile_targets()",
-    "reason": "Confirmed already NEEDS_NEW_JULIA_SURFACE (real isdefined()+functional-probe runtime evidence) in docs/dev-log/core070/postfit-2-batch-contract.json (POSTFIT-SURFACE-profile_targets).",
-    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+    "batch": "wave7 triage",
+    "reason": "NEW FINDING (verified from profile-targets.R against src/confint_profile.jl's own docstring): R's profile_targets() is a READINESS REGISTRY -- which parameters/targets COULD be profiled, without running anything, because TMB::tmbprofile() needs the fit's live tmb_obj checkpoint machinery to run cheaply and reversibly. Julia's profile_targets(fit, targets) instead RUNS every target's curve directly (no comparable checkpoint/readiness step exists in GLLVM.jl -- running profile_ci IS the cheap operation). A structural comparison (R's readiness set vs Julia successfully computing curves for the same named terms) is conceivable but needs a dedicated design pass and its own runtime budget for confirming R's readiness-flag semantics against the live oracle; out of this lean batch's scope.",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -8779,19 +8773,21 @@
   {
    "source_id": "namespace/export/sanity_multi",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-WAVE7-SANITY-MULTI"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE2-SANITY-MULTI-POSTFIT-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "namespace-2 wave3",
-    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
-    "missing_surface": "no Julia function/export named or equivalent to sanity_multi()",
-    "reason": "Confirmed already NEEDS_NEW_JULIA_SURFACE (real isdefined()+functional-probe runtime evidence) in docs/dev-log/core070/postfit-2-batch-contract.json (POSTFIT-SURFACE-sanity_multi); see the receipt behind tools/core070_postfit_2_batch.jl.",
-    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+    "batch": "wave7-conversion (attempt1)",
+    "receipts": ".unlazy/core070-aghq/wave7-batches/wave7-conversion1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave7-batches/wave7-conversion1.tar.gz",
+    "preservation_sha256": "ade0d1d228b1743394c1c69129c3a6612a95e2933aa976cd7abde31bbbf6330d",
+    "verifier": "tools/core070_verify_wave7_conversion_batch.py --self-test (CORE070_WAVE7_CONVERSION_STATE_OK wave7-conversion1; 9 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave7-conversion1"
    }
   },
   {
@@ -8869,10 +8865,10 @@
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "surface-conversion wave5 triage",
-    "reason": "Julia surface exists (src/confint_derived_wald.jl, slope_sd_ci on GaussianRandomSlopeFit), but the R oracle route (.unlazy/core070-aghq/oracle-source/readback/R/slope-sd-ci.R) is explicitly documented in its own header as having a prior hand-indexing failure mode ('a first attempt at the phylo route indexed theta_dep_chol entries 2/5/8 instead of the correct 2/4/6') and needs an ADREPORT-differentiated packed expression read off sd_report -- the exact R formula/grouping-factor grammar for the diagonal augmented-slope route (theta_diag_B_slope) that would pair with GLLVM.jl's per-group \u03a3_b random-slope fit is not something this batch could construct and verify without live R access.",
-    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
-    "note": "deferred with source-traced reason"
+    "batch": "wave7 triage",
+    "reason": "Carried forward from surface-conversion-batch-contract.json's deferred[]: the R oracle route (.unlazy/core070-aghq/oracle-source/readback/R/slope-sd-ci.R) documents its own prior hand-indexing failure mode on the phylo augmented-slope route, and per the task brief no healthy GaussianRandomSlopeFit fixture exists in this worktree's receipts (R's random-slope path is documented elsewhere as 7/12 smoke-healthy). Building and validating a small healthy slope fixture pair is out of this lean batch's reuse-only scope.",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -8990,10 +8986,10 @@
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "surface-conversion wave5 triage",
-    "reason": "Julia surface exists (standard_errors(fit,y), a thin confint() wrapper returning term/estimate/se/pd_hessian). R's standard_errors(fit) (standard-errors.R) returns THE FIT OBJECT ITSELF with sd_report populated (a deferred-computation side effect, not an SE table) -- 'if (!is.null(fit$sd_report)) return(fit)'. There is no $se field to read off the R return value directly; the R-side SE vector would need to be read from fit$sd_report$cov.fixed or summary(fit$sd_report), and matching its fixed-parameter ordering to GLLVM.jl's confint(fit,y).se packed order needs verification against a live R session this batch does not have. REPAIR (2026-09-01): moved to deferred[] rather than guess at an unverified ordering alignment.",
-    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
-    "note": "deferred with source-traced reason"
+    "batch": "wave7 triage",
+    "reason": "Carried forward from surface-conversion-batch-contract.json's deferred[]: R's standard_errors(fit) (standard-errors.R) returns THE FIT OBJECT ITSELF with sd_report populated as a deferred-computation side effect, not an SE table -- there is no $se field to read directly; the R-side SE vector needs to be read from fit$sd_report$cov.fixed or summary(fit$sd_report), and matching its fixed-parameter ordering to GLLVM.jl's confint(fit,y).se packed order needs live-R verification this batch does not have budget for.",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -9065,11 +9061,10 @@
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "namespace-2 wave3",
-    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
-    "missing_surface": "no Julia function/export named tmbprofile_wrapper",
-    "reason": "Confirmed already NEEDS_NEW_JULIA_SURFACE (real isdefined()+functional-probe runtime evidence) in docs/dev-log/core070/postfit-2-batch-contract.json (POSTFIT-SURFACE-tmbprofile_wrapper); GLLVM.jl's profile_ci(fit, param_index; ...) (src/confint_profile.jl) is a same-purpose but differently-named/shaped bracket-then-bisect kernel, not a like-named wrapper.",
-    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+    "batch": "wave7 triage",
+    "reason": "Same TMB-profile-vs-Wald-route verification gap as postfit/POSTFIT-SURFACE-tmbprofile_wrapper (duplicate ledger row).",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -9625,23 +9620,30 @@
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave7 triage",
+    "reason": "NEW FINDING: R's bootstrap_Sigma() (bootstrap-sigma.R) and Julia's bootstrap_Sigma(fit; level=:unit, n_boot=500, ...) (src/confint_derived_wald.jl:801-830) are genuinely comparable in shape (per-entry Sigma bootstrap percentile CIs), but the comparison is inherently STRUCTURAL, not exact-numeric (independent bootstrap draws in each language, per the task brief's 'bootstrap cases structural-only' guidance), AND the point estimate itself needs R's bootstrap_Sigma()'s exact reconstruct-formula machinery (.reconstruct_gllvmTMB_formula, referenced at the top of bootstrap-sigma.R) read and verified before a paired point-estimate case can be built safely. That verification pass was not completed within this batch's remaining scope; deferred rather than guessed at.",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-check_auto_residual",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-WAVE7-CHECK-AUTO-RESIDUAL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-CHECK-AUTO-RESIDUAL-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave7-conversion (attempt1)",
+    "receipts": ".unlazy/core070-aghq/wave7-batches/wave7-conversion1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave7-batches/wave7-conversion1.tar.gz",
+    "preservation_sha256": "ade0d1d228b1743394c1c69129c3a6612a95e2933aa976cd7abde31bbbf6330d",
+    "verifier": "tools/core070_verify_wave7_conversion_batch.py --self-test (CORE070_WAVE7_CONVERSION_STATE_OK wave7-conversion1; 9 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave7-conversion1"
    }
   },
   {
@@ -9655,8 +9657,10 @@
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave7 triage",
+    "reason": "NEW FINDING, verified from diagnose.R:1548-1958: R's check_gllvmTMB() returns a data.frame TABLE of named checks (optimizer_convergence, max_gradient, sdreport, ...) each with a PASS/WARN/FAIL/INFO status column and ~19 configurable thresholds, not a single pass boolean; Julia's check_gllvmTMB (src/diagnostics.jl:344-351) aggregates sanity_multi + check_auto_residual + the gllvmTMB_diagnose boundary scan into one pass::Bool. A coarse bridge (no FAIL row in R's table vs Julia pass=true) is plausible but needs the same dedicated comparison-design pass noted on gllvmTMB_diagnose above; deferred rather than guessed at under time pressure.",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -9688,8 +9692,10 @@
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave7 triage",
+    "reason": "NEW FINDING, verified from extract-sigma-table.R:494-544: R's compare_Sigma_table(x, truth, ...) compares a fit's implied Sigma table against a supplied GROUND-TRUTH matrix (typically the simulation's true covariance), not two fits against each other. Julia's compare_Sigma_table(fit1, fit2) (src/diagnostics.jl:487-512) is a two-fit bridge -- a genuinely different signature and purpose. gaussian_small's simulation truth (Lambda_true, sigma_true from tools/core070_surface_conversion_batch.R) COULD in principle be threaded through as R's `truth` argument, but that requires re-deriving R's `entries`/`measure`/`part` table-row semantics from extract_Sigma_table() to know which rows to compare against Julia's dense Sigma_y -- out of this batch's remaining scope; deferred.",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -9703,8 +9709,10 @@
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave7 triage",
+    "reason": "NEW FINDING, verified from extract-two-psi-cross-check.R:488-556: R's compare_dep_vs_two_psi(fit_two_psi, threshold, phylo_vcv, phylo_tree) takes a SINGLE fitted phylogenetic 'two-psi' model and internally REFITS an alternative 'dep' model via .refit_alt(), comparing Sigma_phy/Sigma_non components -- a phylo-specific identifiability cross-check for a named reparameterisation GLLVM.jl does not implement as a distinct family. Julia's compare_dep_vs_two_psi(fit_dep, fit_alt, n) (src/diagnostics.jl:546-578) is explicitly documented as the generic two-fit bridge this gap forces, per its own docstring's 'Gap vs R' note. Not pairable without a phylo two-psi fixture, which per the task brief's phylo instruction does not exist in this worktree's receipts.",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -9718,23 +9726,30 @@
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave7 triage",
+    "reason": "Same phylo-specific two-psi refit-and-compare mismatch as postfit/POSTFIT-SURFACE-compare_dep_vs_two_psi (extract-two-psi-cross-check.R:616-, the indep counterpart of the same construction).",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-compare_loadings",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-WAVE7-COMPARE-LOADINGS-SELF-CONSISTENCY"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-COMPARE-LOADINGS-NATIVE"
    ],
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave7-conversion (attempt1)",
+    "receipts": ".unlazy/core070-aghq/wave7-batches/wave7-conversion1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave7-batches/wave7-conversion1.tar.gz",
+    "preservation_sha256": "ade0d1d228b1743394c1c69129c3a6612a95e2933aa976cd7abde31bbbf6330d",
+    "verifier": "tools/core070_verify_wave7_conversion_batch.py --self-test (CORE070_WAVE7_CONVERSION_STATE_OK wave7-conversion1; 9 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave7-conversion1"
    }
   },
   {
@@ -9771,8 +9786,10 @@
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave7 triage",
+    "reason": "R's confint_inspect() (confint-inspect.R:128-388) and Julia's confint_inspect(fit,y) (src/diagnostics.jl:667-711) are genuinely comparable in shape (both compare Wald vs profile-likelihood bounds per term and flag disagreement), but a live paired run needs per-term profile-likelihood CIs on BOTH engines for every packed term (~16 terms on gaussian_small: 5 trait coefficients + Lambda entries + sigma_eps), each requiring TMB::tmbprofile()-style bracket-then-bisect constrained refits on the R side and GLLVM.jl's own bracket-then-bisect profile_ci on the Julia side. That per-term profile-CI runtime budget is beyond what this lean batch attempted to verify feasible; deferred to a follow-up wave with a dedicated runtime budget rather than risking an unverified multi-minute R-side profile loop.",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -9802,8 +9819,10 @@
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave7 triage",
+    "reason": "Julia's diagnose_kernel_separability(fit) (src/diagnostics.jl:449-461) only has a comparable non-trivial answer for a fit with a K_W (within/unit_obs) loading tier (Lambda_B vs Lambda_W); gaussian_small (K_W=0, single-tier) returns separable=missing by construction ('nothing to separate'). R's kernel-helpers.R/kernel-keywords.R separability check is scoped to kernel_* structured terms (a different structured-covariance mechanism than the K_W tier), so no fixture reused by this batch exercises a genuinely comparable non-trivial case on either side.",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -9817,8 +9836,10 @@
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave7 triage",
+    "reason": "NEW FINDING, verified from diagnostic-tables.R:53-151: R's diagnostic_table(x, table=...) requires x to ALREADY carry gllvmTMB_diagnostic metadata (attr(x,'gllvmTMB_diagnostic')), attached by a prior call to predictive_check() or residuals() -- calling it on a bare gllvmTMB_multi fit aborts with 'x does not carry gllvmTMB diagnostic metadata'. Julia's diagnostic_table(fit; ...) (src/diagnostics.jl:372-405) instead takes the raw fit directly and computes everything itself. A genuine call-shape mismatch requiring an extra R-side pre-step (predictive_check(fit_g, Y_g) or residuals(fit_g) first) that was not designed and verified in this batch; deferred rather than guessed at.",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -9832,9 +9853,10 @@
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "wave6 triage",
-    "reason": "Julia surface extract_Gamma(fit::GllvmFit; row_traits, col_traits) already exists (src/extract_gamma.jl:36, exported) and is independently tested, so this is NOT a missing-Julia-surface case. It requires a Lambda_phy-bearing fit built via fit_gaussian_gllvm(Y; K_phy>0, Sigma_phy=K*) with K* from make_cross_kernel (a two-lineage cross-kernel construction) -- none of this batch's fixtures (structured_kernel_small, gaussian_small, or wave-5's twolevel_small/ordinal_small) carry a phylo/cross-kernel tier. Per formula-recognizer-spec.md Sec 1.5, the native Sigma_phy= route puts phylogeny on the TRAIT axis and is explicitly NOT the same model as any R gllvmTMB coevolution formula (docs/dev-log/core070/structured-native-mapping.md:49-56) -- confirmed independently here, matching the identical deferral already recorded in docs/dev-log/core070/surface-conversion-batch-contract.json's deferred[] for the same row in wave-5. No defensible R-paired numeric case exists without inventing and validating a dedicated coevolution fixture against a live R gllvmTMB coevolution fit, which is out of this batch's fixture-reuse scope.",
-    "contract": "docs/dev-log/core070/wave6-conversion-batch-contract.json (deferred)"
+    "batch": "wave7 triage",
+    "reason": "Carried forward from wave6-conversion-batch-contract.json's deferred[]: extract_Gamma(fit; row_traits, col_traits) requires a Lambda_phy-bearing fit built via fit_gaussian_gllvm(Y; K_phy>0, Sigma_phy=K*) from a two-lineage cross-kernel construction -- none of this batch's reused fixtures carry a phylo/cross-kernel tier, and the native Sigma_phy= route is explicitly NOT the same model as any R gllvmTMB coevolution formula (structured-native-mapping.md:49-56). No defensible R-paired case exists without inventing a dedicated coevolution fixture, out of scope here.",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -10008,10 +10030,10 @@
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "surface-conversion wave5 triage",
-    "reason": "Julia surface exists (src/extractors.jl extract_cross_correlations), but R's extract_cross_correlations() (extract-correlations.R) is NOT a general trait-subset correlation extractor -- it requires a multinomial trait in the fit ('No multinomial trait in this fit; use extract_correlations') and computes nominal-vs-partner cross-correlations specifically. The gaussian_small fixture has no multinomial trait; this is a model-class mismatch discovered by reading extract-correlations.R directly, not a call-syntax bug. REPAIR (2026-09-01): moved from cases[] to deferred[] after wave5-conversion3's silent-coverage failure investigation.",
-    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
-    "note": "deferred with source-traced reason"
+    "batch": "wave7 triage",
+    "reason": "Carried forward from surface-conversion-batch-contract.json's deferred[]: R's extract_cross_correlations() requires a multinomial trait in the fit ('No multinomial trait in this fit; use extract_correlations'); gaussian_small has no multinomial trait. A model-class mismatch discovered by reading extract-correlations.R directly, not a call-syntax bug.",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -10067,9 +10089,10 @@
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "wave6 triage",
-    "reason": "GLLVM.extract_lv_effects(fit::GllvmFit; type=:trait_effect) exists and is exported (src/postfit.jl:353) but HARD-gates on _has_lv_predictor(fit) -- it throws ArgumentError unless the fit came from fit_gaussian_gllvm(...; X_lv=...) (a concurrent/constrained-ordination fit with a predictor-informed latent axis). None of this batch's reused fixtures (gaussian_small, structured_kernel_small) carry an X_lv predictor; gaussian_small is a plain unconstrained-latent fit, so calling extract_lv_effects(fit_g) would throw on the Julia side by design, and the presumed R equivalent (a num.lv.c concurrent-ordination gllvmTMB formula) was never fit either. Building and validating a dedicated X_lv/num.lv.c fixture pair (R + Julia) is a genuine new-fixture slice, out of this lean batch's reuse-only scope; left for a follow-up wave.",
-    "contract": "docs/dev-log/core070/wave6-conversion-batch-contract.json (deferred)"
+    "batch": "wave7 triage",
+    "reason": "Carried forward from wave6-conversion-batch-contract.json's deferred[]: Julia's extract_lv_effects(fit; type=:trait_effect) hard-gates on _has_lv_predictor(fit), requiring a fit_gaussian_gllvm(...; X_lv=...) concurrent/constrained-ordination fit; gaussian_small carries no X_lv predictor. Building and validating a dedicated X_lv/num.lv.c fixture pair (R+Julia) is a genuine new-fixture slice, out of this lean batch's scope.",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -10105,10 +10128,10 @@
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "surface-conversion wave5 triage",
-    "reason": "Julia surface exists (src/extractors.jl forwards to phylo_signal(fit::GllvmFit; \u03a3_phy)), but GLLVM.jl's route takes an externally-supplied \u03a3_phy on an ordinary GllvmFit while R's extract_phylo_signal() reads report$Sigma_phy off a genuine phylo_latent()/phylo_indep() structured fit -- the two are not the same model class. A numerically paired comparison needs a live R phylo formula fit on the SAME tree/Y as the Julia \u03a3_phy, which cannot be safely constructed and verified without R access in this session.",
-    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
-    "note": "deferred with source-traced reason"
+    "batch": "wave7 triage",
+    "reason": "Carried forward from surface-conversion-batch-contract.json's deferred[], reconfirmed by the task brief's phylo-fixture instruction: GLLVM.jl's phylo_signal(fit; Sigma_phy) takes an externally-supplied Sigma_phy on an ordinary GllvmFit while R's extract_phylo_signal() reads report$Sigma_phy off a genuine phylo_latent()/phylo_indep() structured fit -- not the same model class, and no proven paired phylo fixture exists in this worktree's receipts to bridge the two.",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -10226,17 +10249,21 @@
   {
    "source_id": "postfit/POSTFIT-SURFACE-fitted.gllvmTMB_multi",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-WAVE7-FITTED-MULTI"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-FITTED-MULTI-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "wave6 triage",
-    "reason": "REPAIR (2026-09-01, wave6-conversion1 forensics item 3c): R's fitted(fit_g) call errored 'list object cannot be coerced' under as.numeric() on the live frozen library -- fitted.gllvmTMB_multi returns a list/matrix structure, not a plain numeric vector, and the correct component to extract (e.g. a $fitted or $mu field) is not resolvable without a live R inspection of the returned object (str(fitted(fit_g))), which this Julia-only worktree cannot perform. GLLVM.fitted(fit::AnyGllvmFit, data) itself still exists (src/postfit.jl:306) -- this is a genuine surface, not a missing one -- but re-guessing the R-side component name a second time without live inspection risks a repeat failure; deferred until a live R session confirms the actual return structure, then re-authored with the verified component selector.",
-    "contract": "docs/dev-log/core070/wave6-conversion-batch-contract.json (deferred)"
+    "batch": "wave7-conversion (attempt1)",
+    "receipts": ".unlazy/core070-aghq/wave7-batches/wave7-conversion1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave7-batches/wave7-conversion1.tar.gz",
+    "preservation_sha256": "ade0d1d228b1743394c1c69129c3a6612a95e2933aa976cd7abde31bbbf6330d",
+    "verifier": "tools/core070_verify_wave7_conversion_batch.py --self-test (CORE070_WAVE7_CONVERSION_STATE_OK wave7-conversion1; 9 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave7-conversion1"
    }
   },
   {
@@ -10308,8 +10335,10 @@
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave7 triage",
+    "reason": "Same surface-name collision as namespace/export/getREsd (duplicate ledger row, identical underlying gap).",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -10381,8 +10410,10 @@
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave7 triage",
+    "reason": "Same rich-report-vs-boolean-verdict shape gap as namespace/export/gllvmTMB_diagnose (duplicate ledger row).",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -10440,10 +10471,10 @@
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "surface-conversion wave5 triage",
-    "reason": "Same confirmatory-fit gate as inference/CI-ROUTE-005 (loading_ci refuses fits with no lambda_constraint pins). REPAIR (2026-09-01): moved to deferred[].",
-    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
-    "note": "deferred with source-traced reason"
+    "batch": "wave7 triage",
+    "reason": "Same confirmatory-fit gate as namespace/export/loading_ci (duplicate ledger row).",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -10458,10 +10489,10 @@
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "surface-conversion wave5 triage",
-    "reason": "Same confirmatory-fit gate as namespace/export/loading_profile. REPAIR (2026-09-01): moved to deferred[].",
-    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
-    "note": "deferred with source-traced reason"
+    "batch": "wave7 triage",
+    "reason": "Same confirmatory-fit gate as postfit/POSTFIT-SURFACE-loading_ci / namespace/export/loading_ci (no lambda_constraint pins on the reused unconstrained gaussian_small fixture).",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -10820,17 +10851,22 @@
   {
    "source_id": "postfit/POSTFIT-SURFACE-predict.gllvmTMB_multi",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-WAVE7-PREDICT-MULTI"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT2-PREDICT-GLLVMTMB-MULTI-NATIVE",
     "CORE070-POSTFIT2-PREDICT-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave7-conversion (attempt1)",
+    "receipts": ".unlazy/core070-aghq/wave7-batches/wave7-conversion1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave7-batches/wave7-conversion1.tar.gz",
+    "preservation_sha256": "ade0d1d228b1743394c1c69129c3a6612a95e2933aa976cd7abde31bbbf6330d",
+    "verifier": "tools/core070_verify_wave7_conversion_batch.py --self-test (CORE070_WAVE7_CONVERSION_STATE_OK wave7-conversion1; 9 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave7-conversion1"
    }
   },
   {
@@ -10877,8 +10913,10 @@
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave7 triage",
+    "reason": "NEW FINDING: R's predictive_check() and Julia's predictive_check(fit,y) are both genuine simulate-and-summarise checks with the same conceptual shape, but their RNG streams are not coupled across languages (R's stats::simulate() vs Julia's simulate(fit,n;rng)) -- only a STRUCTURAL comparison (matching (stat,trait) grid, p-values in [0,1] on both sides, no crash) is possible, never a numeric-tolerance comparison. Designing and validating that structural pass criterion (what counts as 'agreeing' between two independently-seeded Monte Carlo runs) needs its own design pass and is out of this lean batch's scope; the per-quantity comparison design in this contract is 'point' or 'verdict' only, neither of which fits an unpaired stochastic table.",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -11075,10 +11113,10 @@
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "surface-conversion wave5 triage",
-    "reason": "Same as namespace/export/profile_ci_phylo_signal (duplicate ledger row, same underlying surface).",
-    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
-    "note": "deferred with source-traced reason"
+    "batch": "wave7 triage",
+    "reason": "Same phylo-fixture absence as namespace/export/profile_ci_phylo_signal (duplicate ledger row).",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -11093,10 +11131,10 @@
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "surface-conversion wave5 triage",
-    "reason": "Same diagonal-component gate as namespace/export/profile_ci_total_variance. REPAIR (2026-09-01): moved to deferred[].",
-    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
-    "note": "deferred with source-traced reason"
+    "batch": "wave7 triage",
+    "reason": "Same diagonal-component gate as namespace/export/profile_ci_total_variance (duplicate ledger row).",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -11143,8 +11181,10 @@
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave7 triage",
+    "reason": "Same phylo-fixture absence as namespace/export/profile_phylo_signal (duplicate ledger row).",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -11159,24 +11199,31 @@
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave7 triage",
+    "reason": "Same readiness-registry-vs-curve-runner surface-shape mismatch as namespace/export/profile_targets (duplicate ledger row).",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-residuals.gllvmTMB_multi",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-WAVE7-RESIDUALS-MULTI"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT2-RESIDUALS-GLLVMTMB-MULTI-NATIVE",
     "CORE070-POSTFIT2-RESIDUALS-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave7-conversion (attempt1)",
+    "receipts": ".unlazy/core070-aghq/wave7-batches/wave7-conversion1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave7-batches/wave7-conversion1.tar.gz",
+    "preservation_sha256": "ade0d1d228b1743394c1c69129c3a6612a95e2933aa976cd7abde31bbbf6330d",
+    "verifier": "tools/core070_verify_wave7_conversion_batch.py --self-test (CORE070_WAVE7_CONVERSION_STATE_OK wave7-conversion1; 9 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave7-conversion1"
    }
   },
   {
@@ -11198,17 +11245,22 @@
   {
    "source_id": "postfit/POSTFIT-SURFACE-sanity_multi",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-WAVE7-SANITY-MULTI"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "uncertain": true,
    "planned_case_ids": [
     "CORE070-POSTFIT2-SANITY-MULTI-DATA-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave7-conversion (attempt1)",
+    "receipts": ".unlazy/core070-aghq/wave7-batches/wave7-conversion1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave7-batches/wave7-conversion1.tar.gz",
+    "preservation_sha256": "ade0d1d228b1743394c1c69129c3a6612a95e2933aa976cd7abde31bbbf6330d",
+    "verifier": "tools/core070_verify_wave7_conversion_batch.py --self-test (CORE070_WAVE7_CONVERSION_STATE_OK wave7-conversion1; 9 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave7-conversion1"
    }
   },
   {
@@ -11223,8 +11275,10 @@
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave7 triage",
+    "reason": "R's simulate.gllvmTMB_multi() (methods-gllvmTMB.R:1431-) and Julia's simulate(fit::GllvmFit,n;rng) (src/families/aghq_gaussian_fit.jl:171) both draw parametric replicates from the fitted model, but their RNG streams are not coupled across languages -- only a structural comparison (matching shape, finite values, same marginal moments up to Monte Carlo error) is possible, and designing that structural pass criterion was not completed within this batch; same class of gap as predictive_check above.",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -11271,10 +11325,10 @@
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "surface-conversion wave5 triage",
-    "reason": "Same as namespace/export/slope_sd_ci (duplicate ledger row, same underlying surface).",
-    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
-    "note": "deferred with source-traced reason"
+    "batch": "wave7 triage",
+    "reason": "Same GaussianRandomSlopeFit fixture absence as namespace/export/slope_sd_ci (duplicate ledger row).",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -11289,10 +11343,10 @@
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "surface-conversion wave5 triage",
-    "reason": "Same R-return-shape mismatch as namespace/export/standard_errors. REPAIR (2026-09-01): moved to deferred[].",
-    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
-    "note": "deferred with source-traced reason"
+    "batch": "wave7 triage",
+    "reason": "Same R-return-shape mismatch as namespace/export/standard_errors (duplicate ledger row).",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -11359,8 +11413,10 @@
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave7 triage",
+    "reason": "Julia's tmbprofile_wrapper(fit,param_index) (src/confint_profile.jl:643-690) forwards its lower/upper bounds from the already-tested profile_ci kernel, so a numeric pairing against R's confint(fit_g,parm='sigma_eps') (the exact quantity wave6's confint_sigma_eps_bounds case already proved pairable at 5e-3, see docs/dev-log/core070/wave6-conversion-batch-contract.json) is plausible in principle. It was not built here because R's TMB::tmbprofile()-backed tmbprofile_wrapper() is a genuinely different code path from confint()'s Wald route (checkpoint-based profile-curve machinery, not a Wald delta-method bound), and asserting the two converge to the same 5e-3-tolerance interval needs that TMB profile path exercised live, which this batch's remaining scope did not budget for; deferred to a follow-up wave with tmbprofile_wrapper's OWN R call, not confint()'s.",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
@@ -11375,8 +11431,10 @@
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave7 triage",
+    "reason": "NEW FINDING, verified from vcov-coef.R:69-98: R's vcov.gllvmTMB_multi(object) returns the FULL (potentially off-diagonal) covariance block of the FIXED-EFFECT (X_fix) coefficients only, read from sd_report$cov.fixed's 'b_fix' rows. Julia's vcov(fit,y) (src/postfit.jl:679-693) instead returns a Diagonal() over confint(fit,y)'s FULL packed-parameter set (fixed effects, loadings, sigma_eps, ...), with zero off-diagonal entries BY CONSTRUCTION. A partial diagonal-only comparison restricted to the trait-fixed-effect entries is conceivable (ignoring R's off-diagonal terms) but was not attempted here -- risks silently declaring victory on a genuinely different-scope quantity; deferred with this trace instead.",
+    "contract": "docs/dev-log/core070/wave7-conversion-batch-contract.json (deferred)",
+    "note": "same-name-different-surface collisions and unproven-fixture gaps traced per function; the Julia symbol exists but mirrors a DIFFERENT R surface where noted \u2014 API-alignment is a maintainer decision"
    }
   },
   {
