@@ -1907,3 +1907,16 @@ NEXT ARC (M2 batch machinery): assemble the first Totoro batch of planned
 manifest cases from the *-required-case-plan.json annexes and run them
 through the targeted supervisor with receipts, starting with the covariance
 and inference annex rows that need no maintainer decision.
+
+## M2 batch 1 — 2026-09-01: masks-known BOUND (e7b75f7b)
+
+Template proven end-to-end: annex specs -> frozen contract + retained runner
+(reusing committed machinery) + independent Julia reconstruction + strict
+verifier -> pinned Totoro batch (3rd attempt; two invocation-plumbing
+failures retained: fresh-object identical() vs retained frozen inputs;
+missing fixtures.rds copy — both lessons now in the template) -> verified ->
+9 rows bound. REQUIRED ROWS BOUND: 21/533. Wave-1 builders (fit-input, data,
+isdm, covariance) still building; each follows this exact pipeline on
+landing. M2 wall estimate given to maintainer: 40-60 focused hours
+(fixture rows 15-25h; new-Julia-surface rows ~20-35h; his ~80 decisions
+batched separately).
