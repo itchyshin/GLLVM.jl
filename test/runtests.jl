@@ -279,4 +279,6 @@ include("test_aghq_public_binomial.jl")
     include("test_spatial_cov.jl")
     include("test_cv.jl")
     include("test_quality.jl")
+    include("test_derived_ci_surfaces.jl")
+    include("test_extractors.jl")
 end
