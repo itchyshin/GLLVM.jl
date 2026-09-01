@@ -16777,3 +16777,17 @@ with raw stdout retained; logLik deltas fixed 2.41e-8 / shared 5.36e-8 /
 species 3.05e-8, matching the prior retry; both engines healthy. Receipts under
 .unlazy/core070-aghq/tweedie-replay-01 and preservation tarball a2a043ce.
 First failed minimal-workspace attempt retained. No engine/tolerance change.
+
+## 2026-09-01 — Fresh required family-smoke parity: 284/286 on the current candidate
+
+Full runparity.jl required mode on Totoro (attempt2, per-cell receipts, oracle
+verified): all 17 required family-smoke cells ran against the frozen R oracle;
+284/286 assertions pass in 12m58.6s. The only 2 failures are the already
+classified A6 Student-t Cell 9 both-engine-health assertions (R-side false
+convergence on the boundary-flat estimated-nu fixture); no new failure
+anywhere. NOTE the run aborted after the family-smoke testset (Julia testset
+failure semantics), so Gaussian-original/interface/covariance phases did NOT
+run in attempt2 — they are re-running as attempt3 (post-smoke runner) because
+their prior receipts predate the c2a93d6d optimizer repair. Receipts:
+.unlazy/core070-aghq/tweedie-replay-01/attempt2 (17 cell TOMLs), preservation
+tarball 4f973ace (readback 36 entries).
