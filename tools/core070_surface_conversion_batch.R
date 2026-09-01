@@ -105,9 +105,15 @@ fit_g <- gllvmTMB(
 stopifnot("gllvmTMB_multi" %in% class(fit_g))
 
 # ---------------------------------------------------------------------------
-# Fixture 2: twolevel_small -- genuine two-tier fit, per
-# extract-repeatability.R's own @examples formula (between=site,
-# within=site_species).
+# Fixture 2: twolevel_small -- genuine two-tier fit, copied verbatim (call
+# shape) from .unlazy/core070-aghq/oracle-source/readback/R/extract-repeatability.R's
+# own @examples: value ~ 0+trait+latent(0+trait|site,d=1)+latent(0+trait|site_species,d=1),
+# unit="site", unit_obs="site_species". REPAIR (2026-09-01): a first attempt
+# in this file passed unit="site_species" alone (no unit_obs), which the
+# frozen engine rejected -- "Unsupported grouping 'site' and 'site' for
+# rr()/diag() ... if you meant the within-unit grouping, pass
+# unit_obs='site'" (Totoro wave5-conversion, no receipt). Both unit AND
+# unit_obs must be passed, exactly as the doc example shows.
 # ---------------------------------------------------------------------------
 set.seed(1)
 p_tl <- 4L; n_ind <- 30L; reps <- 4L
@@ -132,7 +138,8 @@ df_tl <- data.frame(
 fit_tl <- gllvmTMB(
   value ~ 0 + trait + latent(0 + trait | site, d = 1) +
     latent(0 + trait | site_species, d = 1),
-  data = df_tl, unit = "site_species", trait = "trait", family = gaussian(),
+  data = df_tl, unit = "site", unit_obs = "site_species", trait = "trait",
+  family = gaussian(),
   control = gllvmTMBcontrol(n_init = 1L, se = TRUE)
 )
 stopifnot("gllvmTMB_multi" %in% class(fit_tl))

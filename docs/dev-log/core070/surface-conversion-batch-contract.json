@@ -489,13 +489,18 @@
       "julia_call": "fit_gaussian_gllvm(Y; K=K)"
     },
     "twolevel_small": {
-      "description": "Genuine two-tier repeatability fixture: between-individual (site) and within-individual (site_species) latent blocks, mirroring .unlazy/core070-aghq/oracle-source/readback/R/extract-repeatability.R's own @examples formula.",
+      "description": "Genuine two-tier repeatability fixture, call shape copied verbatim from .unlazy/core070-aghq/oracle-source/readback/R/extract-repeatability.R's own @examples (unit='site', unit_obs='site_species' -- REPAIR 2026-09-01: a first attempt passed unit='site_species' alone, which the frozen engine rejected on Totoro wave5-conversion; fixed to pass both unit and unit_obs exactly as the doc example shows).",
       "p": 4,
       "n_individual": 30,
       "reps_per_individual": 4,
       "seed": 1,
       "r_formula": "value ~ 0 + trait + latent(0 + trait | site, d = 1) + latent(0 + trait | site_species, d = 1)",
-      "julia_call": "fit_twolevel_gaussian(Y, individual; K_B=1, K_W=1)"
+      "julia_call": "fit_twolevel_gaussian(Y, individual; K_B=1, K_W=1)",
+      "r_call_args": {
+        "unit": "site",
+        "unit_obs": "site_species",
+        "trait": "trait"
+      }
     },
     "ordinal_small": {
       "description": "Proven ordinal-probit parity fixture, reused verbatim from test/parity/test_ordinal_probit_parity.jl (same seed/beta/Lambda/tau).",

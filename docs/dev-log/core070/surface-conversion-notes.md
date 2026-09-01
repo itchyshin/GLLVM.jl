@@ -284,3 +284,73 @@ locally, once a frozen `gllvmTMB` library is available) is sufficient.
   this session) — if the real Totoro run fails only this one case with a
   length-matched-but-permuted-looking `max_abs_diff`, that ordering
   assumption is the first thing to check, not the underlying CI machinery.
+
+## Repair (2026-09-01): twolevel_small fixture grouping fix
+
+Totoro run `wave5-conversion` failed in the R stage before any receipt:
+`gllvmTMB_multi_fit()`: `Unsupported grouping "site" and "site" for
+rr()/diag(). Supported groupings: "site_species", "site_species", "species"
+(slots: unit, unit_obs, cluster) → if you meant the within-unit grouping,
+pass unit_obs="site"` (log:
+`totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave5-conversion-r.log`).
+
+**Root cause**: `fit_tl <- gllvmTMB(...)` passed `unit = "site_species"`
+only. The correct call, per
+`.unlazy/core070-aghq/oracle-source/readback/R/extract-repeatability.R`'s
+own `@examples` (lines 68–77), needs **both** `unit = "site"` and
+`unit_obs = "site_species"` as separate arguments — the formula's two
+`latent()` terms were already correct; only the `gllvmTMB()` call
+arguments were wrong.
+
+**What I checked before fixing**: the coordinator's message said to copy
+the construction "verbatim" from `tools/core070_namespace_1_batch.R`, but
+that file contains **no `gllvmTMB()` call at all** — it is a pure Tier-0
+existence/registration text-scan over the pinned R source, not a
+model-fitting script (confirmed: `grep -n "gllvmTMB(" tools/core070_namespace_1_batch.R`
+returns nothing, and the file's own header says so explicitly). The 4
+case_ids the coordinator named
+(`CORE070-NAMESPACE-EXTRACT-ICC-SITE`/`EXTRACT-REPEATABILITY-TWOLEVEL`/
+`EXTRACT-SIGMA-B-TWOLEVEL`/`EXTRACT-SIGMA-W-TWOLEVEL`) are indeed real rows
+in `docs/dev-log/core070/namespace-1-batch-contract.json`, but each is a
+`r_namespace_line`/`r_definition_pattern` text-match check, not a fitted
+model. The actual proven construction lives in the pinned R docstring
+(`extract-repeatability.R`'s `@examples`), which I used instead — same
+grouping columns (`site`, `site_species`), same formula shape, corrected
+`unit=`/`unit_obs=` arguments.
+
+**Fix applied**: `tools/core070_surface_conversion_batch.R`'s `fit_tl <-
+gllvmTMB(...)` call now passes `unit = "site", unit_obs = "site_species",
+trait = "trait"` (previously `unit = "site_species"` only). No change to
+the data-frame construction (`df_tl`'s `site`/`site_species` columns were
+already correct) and no change to the formula
+(`latent(0+trait|site,d=1) + latent(0+trait|site_species,d=1)`).
+
+**Other fixtures scanned for the same class of mistake**: compared
+`gaussian_small`'s and `ordinal_small`'s `gllvmTMB()` calls line-by-line
+against their proven sources (`tools/core070_inference_remainder_batch.R`
+and `test/parity/test_ordinal_probit_parity.jl` respectively) — both match
+verbatim (only variable-name renames: `df_long`→`df_g`, `fit`→`fit_g`, and
+`fit_o`/`df_o` for the ordinal fixture), including the single `unit =
+"site"` argument each (neither needs `unit_obs`, since neither has a
+second grouping tier). No further groupings mismatches found.
+
+**Julia side**: no change needed. `GLLVM.fit_twolevel_gaussian(Y_tl,
+individual; K_B=1, K_W=1)` already receives `individual` as the
+between-group vector (equivalent to R's `unit = "site"`); GLLVM.jl's
+two-level model has no separate `unit_obs` argument because each column of
+`Y` is already one within-individual observation by construction — R's
+`unit_obs = "site_species"` (naming which rows are distinct observations)
+has no Julia-side analogue to break. `tools/core070_surface_conversion_batch.jl`
+was not modified.
+
+**Contract file**: `docs/dev-log/core070/surface-conversion-batch-contract.json`'s
+`fixtures.twolevel_small` entry updated to record the corrected `r_formula`
+and an explicit `r_call_args: {unit: "site", unit_obs: "site_species",
+trait: "trait"}` field, plus the repair note.
+
+**Re-verified locally** (same three checks as before, all still green):
+`Rscript -e 'parse("tools/core070_surface_conversion_batch.R")'` → `R parse
+OK`; `julia -e 'Meta.parseall(...)'` → `Julia parse OK`; `python3
+tools/core070_verify_surface_conversion_batch.py --self-test` →
+`CORE070_SURFACE_CONVERSION_VERIFY_SELF_TEST_OK rejected_mutations=5
+cases=34 deferred=7`.
