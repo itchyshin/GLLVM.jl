@@ -180,3 +180,55 @@ function predict_cross_covariance(fit::GllvmFit, K::AbstractMatrix;
             kernel_value = kernel_value, gamma_shape = gamma_shape,
             covariance = covariance)
 end
+
+# ---------------------------------------------------------------------------
+# Item 1.4 — predict_missing, explicit-args form (mirrors
+# methods-gllvmTMB.R:3948-4085; predict(object, type) restricted to masked
+# rows).
+# ---------------------------------------------------------------------------
+
+"""
+    predict_missing(fit, Y; mask = nothing, type = :link) -> NamedTuple
+
+Predicted values at the MASKED (unobserved) cells only. Mirrors
+`gllvmTMB::predict.gllvmTMB_multi` restricted to `which(is_y_observed == 0)`
+(`methods-gllvmTMB.R:3948-4085`).
+
+`mask` is a `p × n` `Bool` matrix (`true` = observed, `false` = masked —
+`GLLVM.jl`'s existing mask convention, `src/families/laplace.jl:96-133`);
+`mask = nothing` (default) means every cell is observed, giving a zero-row
+result (R's complete-data behaviour). `type` is forwarded to `predict`
+(`:link` or `:response`; `src/postfit.jl:174-242`). `fit` (and hence
+`predict`) must support the `mask` keyword for the masked call to succeed —
+currently the AGHQ Gaussian route and the dense-Laplace non-Gaussian
+families (e.g. Binomial). GLLVM.jl's `GllvmFit`/`Y` do not store their own
+mask, so it is re-supplied by the caller here (the fit-stored mask, R's
+zero-argument `predict_missing(fit)` shape, needs a `GllvmFit` mask field —
+core070 spec §2.5, not built).
+
+Returns `(row, col, est)`: `row`/`col` are the 1-based `(trait, site)`
+indices of each masked cell (findall order — column-major, i.e. `row` varies
+fastest, matching Julia's native `p × n` layout rather than R's long-format
+`original_row`/`model_row` columns), and `est` is `predict(fit, Y; type,
+mask)` at that cell.
+
+Deviation from R: the `ordinal_probit` `type = "response"` expected-category
+replacement (`methods-gllvmTMB.R:4076-4083`) and the experimental `se=`
+routes (core070 spec §3.8, not ported) are out of scope for this slice.
+"""
+function predict_missing(fit, Y::AbstractMatrix;
+                         mask::Union{Nothing, AbstractMatrix{Bool}} = nothing,
+                         type::Symbol = :link)
+    p, n = size(Y)
+    m = mask === nothing ? trues(p, n) : mask
+    size(m) == (p, n) ||
+        throw(ArgumentError("mask must be p×n = $(p)×$(n); got $(size(m))."))
+
+    est_full = predict(fit, Y; type = type, mask = mask)
+
+    idx = findall(!, m)
+    row = [I[1] for I in idx]
+    col = [I[2] for I in idx]
+    est = [est_full[I] for I in idx]
+    return (row = row, col = col, est = est)
+end

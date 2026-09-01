@@ -127,4 +127,38 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics
             row_traits = collect(row_traits), col_traits = collect(col_traits))
     end
 
+    @testset "1.4 predict_missing — masked-cell table" begin
+        Random.seed!(4)
+        p, K, n = 5, 2, 300
+        Λ_true = 0.6 .* randn(p, K)
+        Y = Λ_true * randn(K, n) + 0.4 .* randn(p, n)
+
+        mask = trues(p, n)
+        cells = [(2, 3), (4, 10), (1, 200)]
+        for (r, c) in cells
+            mask[r, c] = false
+        end
+
+        fit = fit_gaussian_gllvm(Y; K = K, mask = mask)
+        @test fit.converged
+
+        out = predict_missing(fit, Y; mask = mask, type = :link)
+        @test length(out.row) == length(cells)
+        got = Set(zip(out.row, out.col))
+        @test got == Set(cells)
+
+        full_pred = predict(fit, Y; type = :link, mask = mask)
+        for i in eachindex(out.row)
+            @test out.est[i] == full_pred[out.row[i], out.col[i]]
+        end
+
+        # complete data (mask === nothing) ⇒ zero-row result.
+        out_full = predict_missing(fit, Y)
+        @test length(out_full.row) == 0
+        @test length(out_full.col) == 0
+        @test length(out_full.est) == 0
+
+        @test_throws ArgumentError predict_missing(fit, Y; mask = trues(p + 1, n))
+    end
+
 end
