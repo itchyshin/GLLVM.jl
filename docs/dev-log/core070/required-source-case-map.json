@@ -6668,7 +6668,10 @@
   {
    "source_id": "namespace/export/animal_dep",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "SLOPE-ANIMAL-DEP-BAR",
+    "SLOPE-ANIMAL-DEP-DBAR"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "SLOPE-ANIMAL-DEP-BAR",
@@ -6676,11 +6679,9 @@
    ],
    "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json",
    "reused_from": "docs/dev-log/core070/slopes-required-case-plan.json",
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "batch": "namespace-1 wave3",
-    "status": "REUSED_OR_RECLASSIFY",
-    "pointer": {
+    "batch": "bulk triage acceptance (maintainer decision round2-3 #9, 2026-09-01)",
+    "reuse_pointer": {
      "kind": "reused_from",
      "annex": "docs/dev-log/core070/slopes-required-case-plan.json",
      "planned_case_ids": [
@@ -6688,13 +6689,30 @@
       "SLOPE-ANIMAL-DEP-DBAR"
      ]
     },
-    "reason": "contract triage: reuse existing receipted evidence or reclassify"
+    "triage_status": "REUSED_OR_RECLASSIFY",
+    "note": "contract-triage reuse pointer accepted in bulk; original triage evidence preserved",
+    "prior": {
+     "batch": "namespace-1 wave3",
+     "status": "REUSED_OR_RECLASSIFY",
+     "pointer": {
+      "kind": "reused_from",
+      "annex": "docs/dev-log/core070/slopes-required-case-plan.json",
+      "planned_case_ids": [
+       "SLOPE-ANIMAL-DEP-BAR",
+       "SLOPE-ANIMAL-DEP-DBAR"
+      ]
+     },
+     "reason": "contract triage: reuse existing receipted evidence or reclassify"
+    }
    }
   },
   {
    "source_id": "namespace/export/animal_indep",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "SLOPE-ANIMAL-INDEP-BAR",
+    "SLOPE-ANIMAL-INDEP-DBAR"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "SLOPE-ANIMAL-INDEP-BAR",
@@ -6702,11 +6720,9 @@
    ],
    "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json",
    "reused_from": "docs/dev-log/core070/slopes-required-case-plan.json",
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "batch": "namespace-1 wave3",
-    "status": "REUSED_OR_RECLASSIFY",
-    "pointer": {
+    "batch": "bulk triage acceptance (maintainer decision round2-3 #9, 2026-09-01)",
+    "reuse_pointer": {
      "kind": "reused_from",
      "annex": "docs/dev-log/core070/slopes-required-case-plan.json",
      "planned_case_ids": [
@@ -6714,13 +6730,31 @@
       "SLOPE-ANIMAL-INDEP-DBAR"
      ]
     },
-    "reason": "contract triage: reuse existing receipted evidence or reclassify"
+    "triage_status": "REUSED_OR_RECLASSIFY",
+    "note": "contract-triage reuse pointer accepted in bulk; original triage evidence preserved",
+    "prior": {
+     "batch": "namespace-1 wave3",
+     "status": "REUSED_OR_RECLASSIFY",
+     "pointer": {
+      "kind": "reused_from",
+      "annex": "docs/dev-log/core070/slopes-required-case-plan.json",
+      "planned_case_ids": [
+       "SLOPE-ANIMAL-INDEP-BAR",
+       "SLOPE-ANIMAL-INDEP-DBAR"
+      ]
+     },
+     "reason": "contract triage: reuse existing receipted evidence or reclassify"
+    }
    }
   },
   {
    "source_id": "namespace/export/animal_latent",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "SLOPE-ANIMAL-LAT-DEFAULT",
+    "SLOPE-ANIMAL-LAT-NOUNIQUE",
+    "SLOPE-ANIMAL-LAT-RANK4"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "SLOPE-ANIMAL-LAT-DEFAULT",
@@ -6729,11 +6763,9 @@
    ],
    "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json",
    "reused_from": "docs/dev-log/core070/slopes-required-case-plan.json",
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "batch": "namespace-1 wave3",
-    "status": "REUSED_OR_RECLASSIFY",
-    "pointer": {
+    "batch": "bulk triage acceptance (maintainer decision round2-3 #9, 2026-09-01)",
+    "reuse_pointer": {
      "kind": "reused_from",
      "annex": "docs/dev-log/core070/slopes-required-case-plan.json",
      "planned_case_ids": [
@@ -6742,7 +6774,22 @@
       "SLOPE-ANIMAL-LAT-RANK4"
      ]
     },
-    "reason": "contract triage: reuse existing receipted evidence or reclassify"
+    "triage_status": "REUSED_OR_RECLASSIFY",
+    "note": "contract-triage reuse pointer accepted in bulk; original triage evidence preserved",
+    "prior": {
+     "batch": "namespace-1 wave3",
+     "status": "REUSED_OR_RECLASSIFY",
+     "pointer": {
+      "kind": "reused_from",
+      "annex": "docs/dev-log/core070/slopes-required-case-plan.json",
+      "planned_case_ids": [
+       "SLOPE-ANIMAL-LAT-DEFAULT",
+       "SLOPE-ANIMAL-LAT-NOUNIQUE",
+       "SLOPE-ANIMAL-LAT-RANK4"
+      ]
+     },
+     "reason": "contract triage: reuse existing receipted evidence or reclassify"
+    }
    }
   },
   {
@@ -9205,17 +9252,24 @@
   {
    "source_id": "postfit-policy/POST-DEVIANCE",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-POSTFIT-DEVIANCE-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-DEVIANCE-NATIVE"
    ],
    "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "triage": "wave-4 2026-09-01",
-    "reason": "planned case CORE070-POSTFIT-DEVIANCE-NATIVE was never authored into the policy batch runner; the same source fact (deviance on gllvmTMB_multi, native) is fresh-receipted PASS as CORE070-NAMESPACE-DEVIANCE-MULTI-NATIVE in namespace-1 wave3 \u2014 propose reclassify/bind-by-substitution, maintainer to confirm",
-    "pointer": ".unlazy/core070-aghq/wave3-batches/wave3-ns1 (results.tsv: CORE070-NAMESPACE-DEVIANCE-MULTI-NATIVE PASS)"
+    "batch": "bulk triage acceptance (maintainer decision round2-3 #9, 2026-09-01)",
+    "reuse_pointer": ".unlazy/core070-aghq/wave3-batches/wave3-ns1 (results.tsv: CORE070-NAMESPACE-DEVIANCE-MULTI-NATIVE PASS)",
+    "triage_status": null,
+    "note": "contract-triage reuse pointer accepted in bulk; original triage evidence preserved",
+    "prior": {
+     "triage": "wave-4 2026-09-01",
+     "reason": "planned case CORE070-POSTFIT-DEVIANCE-NATIVE was never authored into the policy batch runner; the same source fact (deviance on gllvmTMB_multi, native) is fresh-receipted PASS as CORE070-NAMESPACE-DEVIANCE-MULTI-NATIVE in namespace-1 wave3 \u2014 propose reclassify/bind-by-substitution, maintainer to confirm",
+     "pointer": ".unlazy/core070-aghq/wave3-batches/wave3-ns1 (results.tsv: CORE070-NAMESPACE-DEVIANCE-MULTI-NATIVE PASS)"
+    }
    }
   },
   {
