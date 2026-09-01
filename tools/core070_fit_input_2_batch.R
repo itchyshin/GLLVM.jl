@@ -1,0 +1,354 @@
+# Retained evidence runner for the "fit-input-2" (M2) batch: paired-fit
+# coverage of the 9 unbound `fit-input/` rows in
+# docs/dev-log/core070/required-source-case-map.json (INPUT-ANIMAL-LATENT,
+# INPUT-BINOMIAL-DEFAULT, INPUT-GAUSS-COMMON, INPUT-GAUSS-DEFAULT,
+# INPUT-GAUSS-LOADINGS, INPUT-KERNEL-ONE, INPUT-KERNEL-TWO,
+# INPUT-KERNEL-TWO-AUTO, INPUT-POISSON-DEFAULT). See
+# docs/dev-log/core070/fit-input-2-batch-contract.json for the full case
+# list, r_call/julia_call mapping, tolerance justification, and the
+# needs_new_julia_surface rows (GAUSS-COMMON, POISSON-DEFAULT, and
+# GAUSS-LOADINGS' formula-interface case) that this runner does NOT attempt
+# to fit.
+#
+# Design follows tools/core070_namespace_2_batch.R's repair pattern: THIS R
+# process (the one with the frozen gllvmTMB library loaded) does 100% of the
+# live R-side computation itself and hands the Julia child a plain JSON
+# oracle file; the Julia child (tools/core070_fit_input_2_batch.jl) runs zero
+# R code and carries no RCall dependency at all.
+#
+# argv (matches the contract's runner.outer_argv):
+#   Rscript --vanilla tools/core070_fit_input_2_batch.R <frozen-library> <destination>
+#
+# <frozen-library> is an R library directory containing an installed
+# gllvmTMB built from the pinned reference commit (b4d5fee...) -- the FROZEN,
+# INSTALLED library, matching masks_known.R's arg 1, not a source tree.
+# <destination> must not already exist; it is created and holds
+# r-oracle.json, julia-results.json, julia-stdout.log, julia-stderr.log,
+# results.tsv, diagnostics.log, and receipt.json.
+
+args <- commandArgs(TRUE)
+stopifnot(length(args) == 2L)
+frozen_library <- normalizePath(args[[1]], mustWork = TRUE)
+output_dir <- args[[2]]
+stopifnot(!dir.exists(output_dir))
+dir.create(output_dir, recursive = TRUE)
+
+sha256_file <- function(path) {
+  command <- if (nzchar(Sys.which("sha256sum"))) "sha256sum" else "shasum"
+  argv <- if (identical(command, "sha256sum")) path else c("-a", "256", path)
+  line <- system2(command, argv, stdout = TRUE, stderr = TRUE)
+  stopifnot(is.null(attr(line, "status")), length(line) >= 1L)
+  sub("[[:space:]].*$", "", line[[1L]])
+}
+
+.libPaths(c(frozen_library, .libPaths()))
+suppressPackageStartupMessages(library(gllvmTMB))
+suppressPackageStartupMessages(library(jsonlite))
+stopifnot(normalizePath(find.package("gllvmTMB")) ==
+          normalizePath(file.path(frozen_library, "gllvmTMB")))
+
+root <- normalizePath(".")
+contract_path <- file.path(root, "docs/dev-log/core070/fit-input-2-batch-contract.json")
+contract <- jsonlite::read_json(contract_path, simplifyVector = FALSE)
+contract_sha256 <- sha256_file(contract_path)
+
+stopifnot(identical(contract$reference_commit, "b4d5fee64def88bc768dda1f1f77c29b295edd86"),
+          identical(contract$status, "FROZEN_FIT_INPUT_2_BATCH_CONTRACT"),
+          contract$expected_executable_case_count == 13L,
+          contract$expected_needs_surface_case_count == 5L,
+          length(contract$negative_controls) >= 3L)
+
+# --- validate pinned R source ------------------------------------------
+source_root <- file.path(root, ".unlazy/core070-aghq/oracle-source/readback")
+for (rel in names(contract$source_pins)) {
+  path <- file.path(source_root, rel)
+  stopifnot(file.exists(path))
+  digest <- sha256_file(path)
+  stopifnot(identical(digest, contract$source_pins[[rel]]))
+}
+
+control <- gllvmTMBcontrol(n_init = 1L, se = FALSE)
+
+# ---------------------------------------------------------------------------
+# 1. GAUSS-DEFAULT / GAUSS-LOADINGS fixture (shared: same Y, same species
+#    intercepts, differing only in the `unique` argument).
+# ---------------------------------------------------------------------------
+set.seed(31)
+p_g <- 3L; n_g <- 12L; K_g <- 1L
+Lambda_g <- matrix(c(0.6, 0.4, -0.3), ncol = K_g)
+eta_g <- matrix(rnorm(K_g * n_g), K_g, n_g)
+Y_g <- Lambda_g %*% eta_g + matrix(rnorm(p_g * n_g, sd = 0.5), p_g, n_g)
+trait_names_g <- paste0("t", seq_len(p_g))
+df_g <- data.frame(
+  site  = factor(rep(seq_len(n_g), each = p_g)),
+  trait = factor(rep(trait_names_g, times = n_g), levels = trait_names_g),
+  value = as.vector(Y_g)
+)
+
+fit_default <- gllvmTMB(
+  value ~ 0 + trait + latent(0 + trait | site, d = K_g),
+  data = df_g, unit = "site", trait = "trait", family = gaussian(), control = control
+)
+fit_loadings <- gllvmTMB(
+  value ~ 0 + trait + latent(0 + trait | site, d = K_g, unique = FALSE),
+  data = df_g, unit = "site", trait = "trait", family = gaussian(), control = control
+)
+fixed_residual_sd_default <- sd(df_g$value) / 1000
+
+oracle_default <- list(loglik = as.numeric(logLik(fit_default)),
+                        coef = as.numeric(coef(fit_default)))
+oracle_loadings <- list(loglik = as.numeric(logLik(fit_loadings)),
+                         coef = as.numeric(coef(fit_loadings)))
+
+# ---------------------------------------------------------------------------
+# 2. BINOMIAL-DEFAULT fixture.
+# ---------------------------------------------------------------------------
+set.seed(41)
+p_b <- 3L; n_b <- 15L; K_b <- 1L
+Lambda_b <- matrix(c(0.5, -0.3, 0.2), ncol = K_b)
+eta_b <- matrix(rnorm(K_b * n_b), K_b, n_b)
+beta_b_true <- c(0.2, -0.1, 0.3)
+lin_b <- Lambda_b %*% eta_b + beta_b_true
+prob_b <- plogis(as.vector(lin_b))
+Y_b <- rbinom(p_b * n_b, size = 1, prob = prob_b)
+trait_names_b <- paste0("t", seq_len(p_b))
+df_b <- data.frame(
+  site  = factor(rep(seq_len(n_b), each = p_b)),
+  trait = factor(rep(trait_names_b, times = n_b), levels = trait_names_b),
+  value = Y_b
+)
+fit_binom <- gllvmTMB(
+  value ~ 0 + trait + latent(0 + trait | site, d = K_b),
+  data = df_b, unit = "site", trait = "trait", family = binomial(), control = control
+)
+oracle_binom <- list(loglik = as.numeric(logLik(fit_binom)),
+                      coef = as.numeric(coef(fit_binom)))
+
+# ---------------------------------------------------------------------------
+# 3. ANIMAL-LATENT fixture (animal_latent mirrors phylo_latent; A supplied
+#    directly on the cluster factor's own levels -- one row per id).
+# ---------------------------------------------------------------------------
+set.seed(7)
+p_a <- 3L; n_ids <- 6L
+A_animal <- diag(n_ids)
+A_animal[1, 2] <- A_animal[2, 1] <- 0.5
+A_animal[3, 4] <- A_animal[4, 3] <- 0.5
+A_animal[1, 3] <- A_animal[3, 1] <- 0.1
+rownames(A_animal) <- colnames(A_animal) <- paste0("i", seq_len(n_ids))
+Lambda_a_true <- matrix(c(0.6, 0.4, -0.3), ncol = 1)
+eta_a <- MASS::mvrnorm(1, mu = rep(0, n_ids), Sigma = A_animal)
+Y_a <- Lambda_a_true %*% matrix(eta_a, nrow = 1) +
+       matrix(rnorm(p_a * n_ids, sd = 0.5), p_a, n_ids)
+trait_names_a <- paste0("t", seq_len(p_a))
+df_a <- data.frame(
+  species = factor(rep(paste0("i", seq_len(n_ids)), each = p_a), levels = paste0("i", seq_len(n_ids))),
+  trait   = factor(rep(trait_names_a, times = n_ids), levels = trait_names_a),
+  value   = as.vector(Y_a)
+)
+fit_animal <- gllvmTMB(
+  value ~ 0 + trait + animal_latent(species, A = A_animal, d = 1),
+  data = df_a, unit = "species", trait = "trait", cluster = "species", control = control
+)
+oracle_animal <- list(loglik = as.numeric(logLik(fit_animal)),
+                       coef = as.numeric(coef(fit_animal)))
+
+# ---------------------------------------------------------------------------
+# 4. KERNEL-ONE / KERNEL-TWO / KERNEL-TWO-AUTO fixture (shared K=A, K=B and
+#    Y; KERNEL-TWO-AUTO reuses the SAME two-kernel data as KERNEL-TWO and
+#    additionally requests unique=TRUE on both tiers).
+# ---------------------------------------------------------------------------
+set.seed(11)
+p_k <- 3L; n_units <- 6L
+A_kernel <- diag(n_units)
+A_kernel[1, 2] <- A_kernel[2, 1] <- 0.4
+A_kernel[3, 4] <- A_kernel[4, 3] <- 0.3
+A_kernel[5, 6] <- A_kernel[6, 5] <- 0.2
+rownames(A_kernel) <- colnames(A_kernel) <- paste0("u", seq_len(n_units))
+Lambda_k1_true <- matrix(c(0.7, -0.3, 0.2), ncol = 1)
+eta_k1 <- MASS::mvrnorm(1, mu = rep(0, n_units), Sigma = A_kernel)
+Y_k1 <- Lambda_k1_true %*% matrix(eta_k1, nrow = 1) +
+        matrix(rnorm(p_k * n_units, sd = 0.4), p_k, n_units)
+trait_names_k <- paste0("t", seq_len(p_k))
+df_k1 <- data.frame(
+  site  = factor(rep(paste0("u", seq_len(n_units)), each = p_k), levels = paste0("u", seq_len(n_units))),
+  trait = factor(rep(trait_names_k, times = n_units), levels = trait_names_k),
+  value = as.vector(Y_k1)
+)
+fit_kernel_one <- gllvmTMB(
+  value ~ 0 + trait + kernel_latent(site, K = A_kernel, d = 1, name = "a"),
+  data = df_k1, unit = "site", trait = "trait", cluster = "site", control = control
+)
+oracle_kernel_one <- list(loglik = as.numeric(logLik(fit_kernel_one)),
+                           coef = as.numeric(coef(fit_kernel_one)))
+
+set.seed(21)
+B_kernel <- diag(n_units)
+B_kernel[2, 3] <- B_kernel[3, 2] <- 0.25
+B_kernel[5, 6] <- B_kernel[6, 5] <- 0.15
+rownames(B_kernel) <- colnames(B_kernel) <- paste0("u", seq_len(n_units))
+LambdaA_k2 <- matrix(c(0.6, -0.2, 0.3), ncol = 1)
+LambdaB_k2 <- matrix(c(-0.4, 0.5, 0.1), ncol = 1)
+etaA_k2 <- MASS::mvrnorm(1, mu = rep(0, n_units), Sigma = A_kernel)
+etaB_k2 <- MASS::mvrnorm(1, mu = rep(0, n_units), Sigma = B_kernel)
+Y_k2 <- LambdaA_k2 %*% matrix(etaA_k2, nrow = 1) + LambdaB_k2 %*% matrix(etaB_k2, nrow = 1) +
+        matrix(rnorm(p_k * n_units, sd = 0.4), p_k, n_units)
+df_k2 <- data.frame(
+  site  = factor(rep(paste0("u", seq_len(n_units)), each = p_k), levels = paste0("u", seq_len(n_units))),
+  trait = factor(rep(trait_names_k, times = n_units), levels = trait_names_k),
+  value = as.vector(Y_k2)
+)
+fit_kernel_two <- gllvmTMB(
+  value ~ 0 + trait + kernel_latent(site, K = A_kernel, d = 1, name = "a") +
+                       kernel_latent(site, K = B_kernel, d = 1, name = "b"),
+  data = df_k2, unit = "site", trait = "trait", cluster = "site", control = control
+)
+fit_kernel_two_auto <- gllvmTMB(
+  value ~ 0 + trait + kernel_latent(site, K = A_kernel, d = 1, name = "a", unique = TRUE) +
+                       kernel_latent(site, K = B_kernel, d = 1, name = "b", unique = TRUE),
+  data = df_k2, unit = "site", trait = "trait", cluster = "site", control = control
+)
+oracle_kernel_two <- list(loglik = as.numeric(logLik(fit_kernel_two)),
+                           coef = as.numeric(coef(fit_kernel_two)))
+oracle_kernel_two_auto <- list(loglik = as.numeric(logLik(fit_kernel_two_auto)),
+                                coef = as.numeric(coef(fit_kernel_two_auto)))
+# Frozen-contract internal consistency guard: KERNEL-TWO-AUTO must silently
+# degenerate to the SAME model as KERNEL-TWO (see the contract's
+# critical_finding_kernel_two_auto). If gllvmTMB's own behaviour ever
+# changes, fail loudly here instead of silently comparing Julia against a
+# stale mental model of what the R side does.
+kernel_two_auto_matches_kernel_two <-
+  isTRUE(abs(oracle_kernel_two_auto$loglik - oracle_kernel_two$loglik) <= 1e-8) &&
+  length(oracle_kernel_two_auto$coef) == length(oracle_kernel_two$coef)
+stopifnot(kernel_two_auto_matches_kernel_two)
+
+# ---------------------------------------------------------------------------
+# 5. Write the oracle JSON (all fixtures + R-side values) for the Julia child.
+# ---------------------------------------------------------------------------
+oracle_path <- file.path(output_dir, "r-oracle.json")
+jsonlite::write_json(
+  list(
+    schema = "core070-fit-input-2-r-oracle/v1",
+    gauss_default = list(p = p_g, n = n_g, K = K_g, y = as.numeric(Y_g),
+                          loglik = oracle_default$loglik, coef = oracle_default$coef,
+                          fixed_residual_sd = fixed_residual_sd_default),
+    gauss_loadings = list(p = p_g, n = n_g, K = K_g, y = as.numeric(Y_g),
+                           loglik = oracle_loadings$loglik, coef = oracle_loadings$coef),
+    binomial_default = list(p = p_b, n = n_b, K = K_b, y = as.integer(Y_b),
+                             loglik = oracle_binom$loglik, coef = oracle_binom$coef),
+    animal_latent = list(p = p_a, n_ids = n_ids, A = A_animal, y = as.numeric(Y_a),
+                          loglik = oracle_animal$loglik, coef = oracle_animal$coef),
+    kernel_one = list(p = p_k, n_units = n_units, A = A_kernel, y = as.numeric(Y_k1),
+                       loglik = oracle_kernel_one$loglik, coef = oracle_kernel_one$coef),
+    kernel_two = list(p = p_k, n_units = n_units, A = A_kernel, B = B_kernel, y = as.numeric(Y_k2),
+                       loglik = oracle_kernel_two$loglik, coef = oracle_kernel_two$coef),
+    kernel_two_auto = list(p = p_k, n_units = n_units, A = A_kernel, B = B_kernel, y = as.numeric(Y_k2),
+                            loglik = oracle_kernel_two_auto$loglik, coef = oracle_kernel_two_auto$coef,
+                            matches_kernel_two = kernel_two_auto_matches_kernel_two)
+  ),
+  oracle_path, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = 17
+)
+
+# --- invoke the Julia child ---------------------------------------------
+julia_out <- file.path(output_dir, "julia-results.json")
+julia_env <- c(CORE070_FIT_INPUT_2_R_ORACLE = oracle_path)
+julia_bin <- Sys.which("julia")
+stopifnot(nzchar(julia_bin))
+old_env <- Sys.getenv(names(julia_env), unset = NA, names = TRUE)
+do.call(Sys.setenv, as.list(julia_env))
+t0 <- Sys.time()
+julia_status <- tryCatch(
+  system2(julia_bin, c("--project=.", "tools/core070_fit_input_2_batch.jl", julia_out),
+          stdout = file.path(output_dir, "julia-stdout.log"),
+          stderr = file.path(output_dir, "julia-stderr.log")),
+  finally = {
+    unset <- names(old_env)[is.na(old_env)]
+    if (length(unset)) Sys.unsetenv(unset)
+    set <- old_env[!is.na(old_env)]
+    if (length(set)) do.call(Sys.setenv, as.list(set))
+  }
+)
+elapsed <- as.numeric(Sys.time() - t0, units = "secs")
+
+# --- read back and evaluate ----------------------------------------------
+julia_report <- if (file.exists(julia_out)) {
+  jsonlite::read_json(julia_out, simplifyVector = FALSE)
+} else {
+  NULL
+}
+
+all_executable_case_ids <- unlist(lapply(contract$rows, function(row) {
+  vapply(row$cases, function(c) if (identical(c$status, "EXECUTABLE_NOW")) c$case_id else NA_character_,
+         character(1))
+}))
+all_executable_case_ids <- all_executable_case_ids[!is.na(all_executable_case_ids)]
+needs_surface_case_ids <- vapply(contract$needs_new_julia_surface, `[[`, "", "case_id")
+contract_neg_ids <- vapply(contract$negative_controls, `[[`, "", "control_id")
+
+results_ok <- !is.null(julia_report) &&
+  identical(julia_status, 0L) &&
+  identical(julia_report$status, "PASS") &&
+  isTRUE(julia_report$all_positive_pass) &&
+  isTRUE(julia_report$negative_controls_behaved_as_expected) &&
+  isTRUE(julia_report$all_checks) &&
+  all(vapply(julia_report$cases, function(x) isTRUE(x$pass), logical(1)))
+
+seen_case_ids <- if (!is.null(julia_report)) names(julia_report$cases) else character(0)
+missing_case_ids <- setdiff(all_executable_case_ids, seen_case_ids)
+extra_case_ids <- setdiff(seen_case_ids, all_executable_case_ids)
+results_ok <- results_ok && length(missing_case_ids) == 0 && length(extra_case_ids) == 0 &&
+  length(all_executable_case_ids) == 13L
+
+raw_lines <- vapply(all_executable_case_ids, function(id) {
+  pass <- !is.null(julia_report) && id %in% names(julia_report$cases) &&
+    isTRUE(julia_report$cases[[id]]$pass)
+  paste(id, if (pass) "PASS" else "FAIL", "positive", sep = "\t")
+}, character(1))
+surface_lines <- vapply(needs_surface_case_ids, function(id) {
+  paste(id, "NEEDS_NEW_JULIA_SURFACE", "not_attempted", sep = "\t")
+}, character(1))
+neg_lines <- if (!is.null(julia_report)) {
+  vapply(contract_neg_ids, function(id) {
+    behaved <- isTRUE(julia_report$negative_controls[[id]]$behaved)
+    paste(id, if (behaved) "PASS" else "FAIL", "negative_control", sep = "\t")
+  }, character(1))
+} else character(0)
+raw_path <- file.path(output_dir, "results.tsv")
+writeLines(c(raw_lines, surface_lines, neg_lines), raw_path)
+
+diag_lines <- character(0)
+if (!identical(julia_status, 0L)) diag_lines <- c(diag_lines, paste("julia_exit_code", julia_status))
+if (is.null(julia_report)) diag_lines <- c(diag_lines, "julia-results.json was not written")
+if (length(missing_case_ids)) diag_lines <- c(diag_lines, paste("missing_case_ids:", paste(missing_case_ids, collapse = ", ")))
+if (length(extra_case_ids)) diag_lines <- c(diag_lines, paste("extra_case_ids:", paste(extra_case_ids, collapse = ", ")))
+if (!kernel_two_auto_matches_kernel_two) diag_lines <- c(diag_lines, "KERNEL-TWO-AUTO no longer degenerates to KERNEL-TWO in this gllvmTMB build")
+diag_path <- file.path(output_dir, "diagnostics.log")
+writeLines(diag_lines, diag_path)
+
+receipt <- list(
+  status = if (isTRUE(results_ok)) "PASS" else "FAIL",
+  scope = "CORE070_FIT_INPUT_2_BATCH",
+  reference_commit = contract$reference_commit,
+  contract_sha256 = contract_sha256,
+  source_pins = contract$source_pins,
+  source_unchanged = TRUE,
+  executable_case_count = length(all_executable_case_ids),
+  needs_surface_case_count = length(needs_surface_case_ids),
+  negative_control_count = length(contract$negative_controls),
+  expected_case_ids = all_executable_case_ids,
+  needs_surface_case_ids = needs_surface_case_ids,
+  negative_control_case_ids = contract_neg_ids,
+  kernel_two_auto_matches_kernel_two = kernel_two_auto_matches_kernel_two,
+  julia_exit_code = julia_status,
+  julia_elapsed_seconds = elapsed,
+  julia_results_sha256 = if (file.exists(julia_out)) sha256_file(julia_out) else NA_character_,
+  raw_sha256 = sha256_file(raw_path),
+  diagnostics_sha256 = sha256_file(diag_path),
+  r_version = R.version.string,
+  gllvmTMB_version = as.character(utils::packageVersion("gllvmTMB")),
+  frozen_library = frozen_library
+)
+receipt_path <- file.path(output_dir, "receipt.json")
+jsonlite::write_json(receipt, receipt_path, auto_unbox = TRUE, pretty = TRUE, null = "null")
+
+cat("CORE070_FIT_INPUT_2_BATCH_", receipt$status, "\n", sep = "")
+quit(status = if (isTRUE(results_ok)) 0L else 1L)

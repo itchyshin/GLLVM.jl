@@ -2742,7 +2742,12 @@
     "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE",
     "CORE070-FAMILY-00-IDENTITY-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "evidence": {
+    "batch": "codex-cycle family qualification (pre-dates the evidence-field convention)",
+    "receipts": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts (native+formula) + public-bridge evidence (docs/dev-log/core070, families 02/05/07) \u2014 cross-referenced by docs/dev-log/core070/family-reconciliation-2026-09-01.json which confirmed these are the fully-executed families",
+    "note": "evidence field added 2026-09-01 for ledger normalization; binding itself unchanged"
+   }
   },
   {
    "source_id": "family/FAMILY-00-REJECT-LINK",
@@ -2764,7 +2769,17 @@
     "CORE070-FAMILY-01-CLOGLOG-FORMULA-INTERFACE",
     "CORE070-FAMILY-01-CLOGLOG-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "disposition": "PARTIAL_PARITY_DEFECT_PENDING_DECISION",
+   "evidence": {
+    "batch": "family-links wave4 (attempt2)",
+    "receipts": ".unlazy/core070-aghq/wave4-batches/wave4-famlinks2 (+ attempt1 wave4-famlinks)",
+    "preservation_sha256": "c5dd4780bc07a4e5d256beb96b5ba05c8889c82d95801ad1537ac0ced3ad2719",
+    "detail": "CONFIRMED cross-engine likelihood disagreement for binomial cloglog: at R's fitted coordinates, Julia's objective is -309.9947 vs R's reported -307.8958 (identity delta 2.099), while the probit case on the same transport path shows identity delta 6.6e-12 \u2014 so this is a cloglog likelihood/marginalization implementation difference, not coordinate transport or an optimizer miss. Neither engine flags saturation (n_clamp=0, n_wcollapse=0). Julia's own optimum -309.3413; naive fit deltas: loglik 1.445, coef 0.0385.",
+    "suspects": "GLLVM cloglog Laplace-objective handling (see the 2026-08-28 cloglog saturation-region machinery in src/families/binomial.jl) vs the frozen TMB cloglog kernel; repair leaf owns the root cause",
+    "recommendation": "open a reviewed repair leaf: reproduce the identity gap on the retained fixture (seed 81012), bisect the per-cell contribution difference at R's coordinates",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-famlinks2"
+   }
   },
   {
    "source_id": "family/FAMILY-01-LOGIT",
@@ -2796,14 +2811,25 @@
   {
    "source_id": "family/FAMILY-01-PROBIT",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-FAMILY-01-PROBIT-NATIVE-MODEL"
+   ],
    "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
    "planned_case_ids": [
     "CORE070-FAMILY-01-PROBIT-NATIVE-MODEL",
     "CORE070-FAMILY-01-PROBIT-FORMULA-INTERFACE",
     "CORE070-FAMILY-01-PROBIT-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "evidence": {
+    "batch": "family-links wave4 (attempt2)",
+    "receipts": ".unlazy/core070-aghq/wave4-batches/wave4-famlinks2",
+    "preservation_tarball": ".unlazy/core070-aghq/wave4-batches/wave4-famlinks.tar.gz",
+    "preservation_sha256": "c5dd4780bc07a4e5d256beb96b5ba05c8889c82d95801ad1537ac0ced3ad2719",
+    "detail": "probit case PASS: loglik_delta 1.28e-9, coef_delta 4.1e-6, no saturation; all 4 negative controls PASS; cross-objective identity at R coordinates 6.6e-12 (probe tools/probe_famlinks_identity.jl)",
+    "caveat": "overall batch receipt.json status=FAIL solely because the sibling cloglog case is a confirmed cross-engine likelihood disagreement (dispositioned separately); the strict state verifier therefore refuses the whole state \u2014 the probit PASS is evidenced by results.tsv + julia-results.json in the retained tarball",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-famlinks2"
+   }
   },
   {
    "source_id": "family/FAMILY-01-REJECT-LINK",
@@ -2829,7 +2855,12 @@
     "CORE070-FAMILY-02-LOG-FORMULA-INTERFACE",
     "CORE070-FAMILY-02-LOG-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "evidence": {
+    "batch": "codex-cycle family qualification (pre-dates the evidence-field convention)",
+    "receipts": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts (native+formula) + public-bridge evidence (docs/dev-log/core070, families 02/05/07) \u2014 cross-referenced by docs/dev-log/core070/family-reconciliation-2026-09-01.json which confirmed these are the fully-executed families",
+    "note": "evidence field added 2026-09-01 for ledger normalization; binding itself unchanged"
+   }
   },
   {
    "source_id": "family/FAMILY-02-REJECT-LINK",
@@ -2929,7 +2960,12 @@
     "CORE070-FAMILY-05-LOG-FORMULA-INTERFACE",
     "CORE070-FAMILY-05-LOG-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "evidence": {
+    "batch": "codex-cycle family qualification (pre-dates the evidence-field convention)",
+    "receipts": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts (native+formula) + public-bridge evidence (docs/dev-log/core070, families 02/05/07) \u2014 cross-referenced by docs/dev-log/core070/family-reconciliation-2026-09-01.json which confirmed these are the fully-executed families",
+    "note": "evidence field added 2026-09-01 for ledger normalization; binding itself unchanged"
+   }
   },
   {
    "source_id": "family/FAMILY-05-REJECT-LINK",
@@ -3069,7 +3105,12 @@
     "CORE070-FAMILY-07-LOGIT-FORMULA-INTERFACE",
     "CORE070-FAMILY-07-LOGIT-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "evidence": {
+    "batch": "codex-cycle family qualification (pre-dates the evidence-field convention)",
+    "receipts": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts (native+formula) + public-bridge evidence (docs/dev-log/core070, families 02/05/07) \u2014 cross-referenced by docs/dev-log/core070/family-reconciliation-2026-09-01.json which confirmed these are the fully-executed families",
+    "note": "evidence field added 2026-09-01 for ledger normalization; binding itself unchanged"
+   }
   },
   {
    "source_id": "family/FAMILY-07-REJECT-LINK",
@@ -3283,7 +3324,12 @@
     "CORE070-FAMILY-11-LOG-FORMULA-INTERFACE",
     "CORE070-FAMILY-11-LOG-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "evidence": {
+    "batch": "codex-cycle family qualification (pre-dates the evidence-field convention)",
+    "receipts": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts (native+formula) + public-bridge evidence (docs/dev-log/core070, families 02/05/07) \u2014 cross-referenced by docs/dev-log/core070/family-reconciliation-2026-09-01.json which confirmed these are the fully-executed families",
+    "note": "evidence field added 2026-09-01 for ledger normalization; binding itself unchanged"
+   }
   },
   {
    "source_id": "family/FAMILY-11-REJECT-LINK",
@@ -3568,26 +3614,48 @@
   {
    "source_id": "fit-input/INPUT-ANIMAL-LATENT",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-FIT-INPUT-ANIMAL-LATENT-NATIVE-MODEL",
+    "CORE070-FIT-INPUT-ANIMAL-LATENT-FORMULA-INTERFACE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-FIT-INPUT-ANIMAL-LATENT-NATIVE-MODEL",
     "CORE070-FIT-INPUT-ANIMAL-LATENT-FORMULA-INTERFACE",
     "CORE070-FIT-INPUT-ANIMAL-LATENT-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "evidence": {
+    "batch": "fit-input-2 wave4",
+    "receipts": ".unlazy/core070-aghq/wave4-batches/wave4-fitinput",
+    "preservation_tarball": ".unlazy/core070-aghq/wave4-batches/wave4-fitinput.tar.gz",
+    "preservation_sha256": "767cc80c18063f03d2171a5ad8fe08429444c7124b290fe5e6c392658158902f",
+    "verifier": "tools/core070_verify_fit_input_2_batch.py --self-test (CORE070_FIT_INPUT_2_BATCH_VERIFIED, 9 negatives)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-fitinput"
+   }
   },
   {
    "source_id": "fit-input/INPUT-BINOMIAL-DEFAULT",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-FIT-INPUT-BINOMIAL-DEFAULT-NATIVE-MODEL",
+    "CORE070-FIT-INPUT-BINOMIAL-DEFAULT-FORMULA-INTERFACE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-FIT-INPUT-BINOMIAL-DEFAULT-NATIVE-MODEL",
     "CORE070-FIT-INPUT-BINOMIAL-DEFAULT-FORMULA-INTERFACE",
     "CORE070-FIT-INPUT-BINOMIAL-DEFAULT-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "evidence": {
+    "batch": "fit-input-2 wave4",
+    "receipts": ".unlazy/core070-aghq/wave4-batches/wave4-fitinput",
+    "preservation_tarball": ".unlazy/core070-aghq/wave4-batches/wave4-fitinput.tar.gz",
+    "preservation_sha256": "767cc80c18063f03d2171a5ad8fe08429444c7124b290fe5e6c392658158902f",
+    "verifier": "tools/core070_verify_fit_input_2_batch.py --self-test (CORE070_FIT_INPUT_2_BATCH_VERIFIED, 9 negatives)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-fitinput"
+   }
   },
   {
    "source_id": "fit-input/INPUT-GAUSS-COMMON",
@@ -3599,19 +3667,44 @@
     "CORE070-FIT-INPUT-GAUSS-COMMON-FORMULA-INTERFACE",
     "CORE070-FIT-INPUT-GAUSS-COMMON-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "fit-input-2 wave4",
+    "receipts": ".unlazy/core070-aghq/wave4-batches/wave4-fitinput",
+    "preservation_tarball": ".unlazy/core070-aghq/wave4-batches/wave4-fitinput.tar.gz",
+    "preservation_sha256": "767cc80c18063f03d2171a5ad8fe08429444c7124b290fe5e6c392658158902f",
+    "verifier": "tools/core070_verify_fit_input_2_batch.py --self-test (CORE070_FIT_INPUT_2_BATCH_VERIFIED, 9 negatives)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-fitinput",
+    "reason": "contract-receipted Julia surface absence for the non-PASS planned cases (file:line evidence in fit-input-2-batch-contract.json needs_new_julia_surface); PASS receipts retained for the executable subset",
+    "case_statuses": {
+     "CORE070-FIT-INPUT-GAUSS-COMMON-NATIVE-MODEL": "NEEDS_NEW_JULIA_SURFACE",
+     "CORE070-FIT-INPUT-GAUSS-COMMON-FORMULA-INTERFACE": "NEEDS_NEW_JULIA_SURFACE"
+    }
+   }
   },
   {
    "source_id": "fit-input/INPUT-GAUSS-DEFAULT",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-FIT-INPUT-GAUSS-DEFAULT-NATIVE-MODEL",
+    "CORE070-FIT-INPUT-GAUSS-DEFAULT-FORMULA-INTERFACE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-FIT-INPUT-GAUSS-DEFAULT-NATIVE-MODEL",
     "CORE070-FIT-INPUT-GAUSS-DEFAULT-FORMULA-INTERFACE",
     "CORE070-FIT-INPUT-GAUSS-DEFAULT-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "evidence": {
+    "batch": "fit-input-2 wave4",
+    "receipts": ".unlazy/core070-aghq/wave4-batches/wave4-fitinput",
+    "preservation_tarball": ".unlazy/core070-aghq/wave4-batches/wave4-fitinput.tar.gz",
+    "preservation_sha256": "767cc80c18063f03d2171a5ad8fe08429444c7124b290fe5e6c392658158902f",
+    "verifier": "tools/core070_verify_fit_input_2_batch.py --self-test (CORE070_FIT_INPUT_2_BATCH_VERIFIED, 9 negatives)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-fitinput"
+   }
   },
   {
    "source_id": "fit-input/INPUT-GAUSS-LOADINGS",
@@ -3623,43 +3716,90 @@
     "CORE070-FIT-INPUT-GAUSS-LOADINGS-FORMULA-INTERFACE",
     "CORE070-FIT-INPUT-GAUSS-LOADINGS-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "fit-input-2 wave4",
+    "receipts": ".unlazy/core070-aghq/wave4-batches/wave4-fitinput",
+    "preservation_tarball": ".unlazy/core070-aghq/wave4-batches/wave4-fitinput.tar.gz",
+    "preservation_sha256": "767cc80c18063f03d2171a5ad8fe08429444c7124b290fe5e6c392658158902f",
+    "verifier": "tools/core070_verify_fit_input_2_batch.py --self-test (CORE070_FIT_INPUT_2_BATCH_VERIFIED, 9 negatives)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-fitinput",
+    "reason": "contract-receipted Julia surface absence for the non-PASS planned cases (file:line evidence in fit-input-2-batch-contract.json needs_new_julia_surface); PASS receipts retained for the executable subset",
+    "case_statuses": {
+     "CORE070-FIT-INPUT-GAUSS-LOADINGS-NATIVE-MODEL": "PASS",
+     "CORE070-FIT-INPUT-GAUSS-LOADINGS-FORMULA-INTERFACE": "NEEDS_NEW_JULIA_SURFACE"
+    }
+   }
   },
   {
    "source_id": "fit-input/INPUT-KERNEL-ONE",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-FIT-INPUT-KERNEL-ONE-NATIVE-MODEL",
+    "CORE070-FIT-INPUT-KERNEL-ONE-FORMULA-INTERFACE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-FIT-INPUT-KERNEL-ONE-NATIVE-MODEL",
     "CORE070-FIT-INPUT-KERNEL-ONE-FORMULA-INTERFACE",
     "CORE070-FIT-INPUT-KERNEL-ONE-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "evidence": {
+    "batch": "fit-input-2 wave4",
+    "receipts": ".unlazy/core070-aghq/wave4-batches/wave4-fitinput",
+    "preservation_tarball": ".unlazy/core070-aghq/wave4-batches/wave4-fitinput.tar.gz",
+    "preservation_sha256": "767cc80c18063f03d2171a5ad8fe08429444c7124b290fe5e6c392658158902f",
+    "verifier": "tools/core070_verify_fit_input_2_batch.py --self-test (CORE070_FIT_INPUT_2_BATCH_VERIFIED, 9 negatives)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-fitinput"
+   }
   },
   {
    "source_id": "fit-input/INPUT-KERNEL-TWO",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-FIT-INPUT-KERNEL-TWO-NATIVE-MODEL",
+    "CORE070-FIT-INPUT-KERNEL-TWO-FORMULA-INTERFACE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-FIT-INPUT-KERNEL-TWO-NATIVE-MODEL",
     "CORE070-FIT-INPUT-KERNEL-TWO-FORMULA-INTERFACE",
     "CORE070-FIT-INPUT-KERNEL-TWO-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "evidence": {
+    "batch": "fit-input-2 wave4",
+    "receipts": ".unlazy/core070-aghq/wave4-batches/wave4-fitinput",
+    "preservation_tarball": ".unlazy/core070-aghq/wave4-batches/wave4-fitinput.tar.gz",
+    "preservation_sha256": "767cc80c18063f03d2171a5ad8fe08429444c7124b290fe5e6c392658158902f",
+    "verifier": "tools/core070_verify_fit_input_2_batch.py --self-test (CORE070_FIT_INPUT_2_BATCH_VERIFIED, 9 negatives)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-fitinput"
+   }
   },
   {
    "source_id": "fit-input/INPUT-KERNEL-TWO-AUTO",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-FIT-INPUT-KERNEL-TWO-AUTO-NATIVE-MODEL",
+    "CORE070-FIT-INPUT-KERNEL-TWO-AUTO-FORMULA-INTERFACE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-FIT-INPUT-KERNEL-TWO-AUTO-NATIVE-MODEL",
     "CORE070-FIT-INPUT-KERNEL-TWO-AUTO-FORMULA-INTERFACE",
     "CORE070-FIT-INPUT-KERNEL-TWO-AUTO-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "evidence": {
+    "batch": "fit-input-2 wave4",
+    "receipts": ".unlazy/core070-aghq/wave4-batches/wave4-fitinput",
+    "preservation_tarball": ".unlazy/core070-aghq/wave4-batches/wave4-fitinput.tar.gz",
+    "preservation_sha256": "767cc80c18063f03d2171a5ad8fe08429444c7124b290fe5e6c392658158902f",
+    "verifier": "tools/core070_verify_fit_input_2_batch.py --self-test (CORE070_FIT_INPUT_2_BATCH_VERIFIED, 9 negatives)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-fitinput"
+   }
   },
   {
    "source_id": "fit-input/INPUT-KERNEL-TWO-EXPLICIT",
@@ -3727,7 +3867,21 @@
     "CORE070-FIT-INPUT-POISSON-DEFAULT-FORMULA-INTERFACE",
     "CORE070-FIT-INPUT-POISSON-DEFAULT-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "fit-input-2 wave4",
+    "receipts": ".unlazy/core070-aghq/wave4-batches/wave4-fitinput",
+    "preservation_tarball": ".unlazy/core070-aghq/wave4-batches/wave4-fitinput.tar.gz",
+    "preservation_sha256": "767cc80c18063f03d2171a5ad8fe08429444c7124b290fe5e6c392658158902f",
+    "verifier": "tools/core070_verify_fit_input_2_batch.py --self-test (CORE070_FIT_INPUT_2_BATCH_VERIFIED, 9 negatives)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-fitinput",
+    "reason": "contract-receipted Julia surface absence for the non-PASS planned cases (file:line evidence in fit-input-2-batch-contract.json needs_new_julia_surface); PASS receipts retained for the executable subset",
+    "case_statuses": {
+     "CORE070-FIT-INPUT-POISSON-DEFAULT-NATIVE-MODEL": "NEEDS_NEW_JULIA_SURFACE",
+     "CORE070-FIT-INPUT-POISSON-DEFAULT-FORMULA-INTERFACE": "NEEDS_NEW_JULIA_SURFACE"
+    }
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-001",
