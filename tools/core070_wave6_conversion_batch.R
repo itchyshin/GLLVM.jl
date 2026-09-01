@@ -1,24 +1,30 @@
-# Conversion batch #2 (wave-6): pays 12 BLOCKED_NEEDS_JULIA_SURFACE ledger
+# Conversion batch #2 (wave-6): pays 10 BLOCKED_NEEDS_JULIA_SURFACE ledger
 # rows in docs/dev-log/core070/required-source-case-map.json whose Julia
 # surface was NOT yet implemented at wave-5 time
 # (docs/dev-log/core070/surface-conversion-batch-contract.json), split into
 # two groups:
 #
-#   (1) 9 STRUCTURED-TERM rows unlocked by src/formula.jl's
+#   (1) 7 STRUCTURED-TERM rows unlocked by src/formula.jl's
 #       _recognize_source_term / _fit_gaussian_structured_sources recognizer
 #       (commit 5371137c; docs/dev-log/core070/formula-recognizer-spec.md).
 #   (2) 3 STALE-BLOCKED postfit rows whose Julia functions already exist
 #       (src/postfit.jl, src/confint.jl) but were never converted:
 #       logLik.gllvmTMB_multi, confint.gllvmTMB_multi, nobs.gllvmTMB_multi.
 #
-# 6 further rows (extract_lv_effects, extract_Gamma,
-# deviance.gllvmTMB_multi, extract_rotated_loadings_table,
-# flag_unreliable_loadings, fitted.gllvmTMB_multi) are recorded in the
-# contract's `deferred` bucket with an explicit reason -- the last three
-# joined the deferred bucket in this REPAIR round (wave6-conversion1
-# forensics: an unresolvable-without-live-R-source return shape/gate for
-# each; see docs/dev-log/core070/wave6-conversion-notes.md). The frozen
-# 18-row target list is pinned VERBATIM in
+# 8 further rows (namespace/export/indep, namespace/export/scalar,
+# extract_lv_effects, extract_Gamma, deviance.gllvmTMB_multi,
+# extract_rotated_loadings_table, flag_unreliable_loadings,
+# fitted.gllvmTMB_multi) are recorded in the contract's `deferred` bucket
+# with an explicit reason -- extract_rotated_loadings_table/
+# flag_unreliable_loadings/fitted.gllvmTMB_multi joined in the
+# wave6-conversion1 REPAIR round (unresolvable-without-live-R-source return
+# shape/gate for each); namespace/export/{indep,scalar} joined in the
+# wave6-conversion3 REPAIR round (the frozen 0.7.0 gllvmTMB engine rejects a
+# lone indep()/scalar() term at ANY grouping -- "Custom level=\"source\" is
+# not yet supported", confirmed at both |species and |site -- so these rows
+# are unpairable against the frozen oracle until the 0.7.1 lane); see
+# docs/dev-log/core070/wave6-conversion-notes.md. The frozen 18-row target
+# list is pinned VERBATIM in
 # docs/dev-log/core070/wave6-conversion-batch-contract.json
 # (`target_source_ids`).
 #
@@ -73,9 +79,9 @@ stopifnot(
   identical(contract$reference_commit, "b4d5fee64def88bc768dda1f1f77c29b295edd86"),
   identical(contract$status, "FROZEN_WAVE6_CONVERSION_BATCH_CONTRACT"),
   length(contract$cases) == contract$expected_case_count,
-  contract$expected_case_count == 12L,
+  contract$expected_case_count == 10L,
   length(contract$deferred) == contract$expected_deferred_count,
-  contract$expected_deferred_count == 6L,
+  contract$expected_deferred_count == 8L,
   length(contract$negative_controls) >= 2L,
   length(contract$rejection_cases) >= 2L
 )
@@ -144,9 +150,13 @@ stopifnot("gllvmTMB_multi" %in% class(fit_g))
 # tryCatch-caught error (-> oracle_errors), never a silent oracle_values
 # entry.
 # ---------------------------------------------------------------------------
+# CORE070-WAVE6-INDEP-FIT / -SCALAR-FIT REPAIR (2026-09-01,
+# wave6-conversion3 forensics): removed -- the frozen 0.7.0 gllvmTMB engine
+# rejects a lone indep()/scalar() term at ANY grouping ("Custom
+# level=\"source\" is not yet supported", confirmed at both |species and
+# |site); these two rows moved to contract$deferred and are no longer in
+# contract$cases, so no formula/fit is ever attempted for them here.
 structured_formula_rhs <- list(
-  "CORE070-WAVE6-INDEP-FIT" = "indep(0 + trait | site, common = FALSE)",
-  "CORE070-WAVE6-SCALAR-FIT" = "scalar(0 + trait | site)",
   "CORE070-WAVE6-KERNEL-INDEP-FIT" = "kernel_indep(species, K = C, name = \"k1\")",
   "CORE070-WAVE6-KERNEL-DEP-FIT" = "kernel_dep(species, K = C, name = \"k1\")",
   "CORE070-WAVE6-KERNEL-SCALAR-FIT" = "kernel_scalar(species, K = C, name = \"k1\")",

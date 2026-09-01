@@ -93,6 +93,63 @@ remain executable — that group's failure was purely a calling-convention
 and extraction-mechanism bug (items 1/2 above), not an estimand or
 return-shape uncertainty.
 
+## REPAIR round 2 (2026-09-01, wave6-conversion3 forensics)
+
+Attempt 3 forensics + division of labour. The coordinator committed two fixes
+directly to `tools/core070_wave6_conversion_batch.jl`:
+
+- (a) `structured_quantity()` now reads `fit.trait_covariances[1]` for a
+  `GaussianSourcesFit` (R records the tier's own Σ via
+  `extract_Sigma(level=name, part="total")`; `extract_Sigma` has no
+  `GaussianSourcesFit` method, so the old path NaN'd).
+- (b) the `confint_sigma_eps_bounds` case now flattens the k×2 CI matrix
+  correctly, and `nobs`/`confint` calls now pass the `Y_g` data argument.
+
+This session's remaining task: **move `CORE070-WAVE6-INDEP-FIT` and
+`CORE070-WAVE6-SCALAR-FIT` from `cases[]` to `deferred[]`.** The frozen 0.7.0
+`gllvmTMB` engine rejects a lone `indep()`/`scalar()` term at ANY grouping
+with `'Custom level="source" is not yet supported'` (confirmed twice, at
+both `|species` and `|site`) — the lone-structured-term R capability arrived
+in the 0.7.1 lane, so these two rows are unpairable against the frozen
+oracle. Deferral reason used verbatim in the contract for both rows:
+`"frozen-reference gap: lone indep()/scalar() unfittable in gllvmTMB 0.7.0
+(custom source level unsupported); pairable only against >=0.7.1; Julia
+surface exists and is live-paired green in the 0.7.1 bridge lane"`.
+
+Changes made in this round, in the 4 owned files:
+
+- **Contract** (`wave6-conversion-batch-contract.json`): removed the
+  `CORE070-WAVE6-INDEP-FIT`/`CORE070-WAVE6-SCALAR-FIT` case objects from
+  `cases[]`; added `namespace/export/indep` and `namespace/export/scalar` to
+  `deferred[]` with the reason above; `expected_case_count` 12→10,
+  `expected_deferred_count` 6→8 (`target_source_ids` unchanged at 18);
+  updated the top-level `note` and the `runner` totoro/verify commands to
+  target `wave6-conversion-04`.
+- **R runner**: removed the `CORE070-WAVE6-INDEP-FIT`/`-SCALAR-FIT` entries
+  from `structured_formula_rhs` (dead entries — the loop is entirely
+  contract-driven via `for (cs in contract$cases)`, so removing the case
+  objects from the contract already stops any formula/fit attempt for them;
+  the lookup-table entries were removed for hygiene, not because the loop
+  itself needed logic changes). Updated the `stopifnot()` count checks
+  (10L/8L) and the header comment's row tally.
+- **Julia child**: removed the two case_ids from `term_expr_map` and
+  `level_name_map` (the coordinator's `GaussianSourcesFit`/confint fixes in
+  `structured_quantity()` and the `own_receipt_defect`/`confint` branches
+  were left untouched). Updated the `expected_case_count` hard check
+  (10). Confirmed via grep that the coordinator's edits
+  (`fit.trait_covariances[1]`, `cim[:, 1]`/`cim[:, 2]`, `GLLVM.nobs(fit_g,
+  Y_g)`, `GLLVM.confint(fit_g, Y_g; ...)`) are all still present.
+- **Verifier**: `CASE_COUNT` 12→10, `DEFERRED_COUNT` 8; docstring updated.
+
+Net effect: **10 executable contract cases / 18 target source_ids (10
+executable + 8 deferred) / 4 rejection-path validation cases / 3 negative
+controls.** Group 1 (structured-term) drops from 9 executable/0 deferred to
+**7 executable / 2 deferred** (the deferred 2 being `indep`/`scalar`); the
+remaining 7 (kernel_indep, kernel_dep, kernel_scalar, kernel_latent ×2 route,
+kernel_unique via the fold, covariance ×2) are unaffected — none of them are
+a *lone* `indep`/`scalar` term, so the 0.7.0 "Custom level" gap does not
+apply to them. Group 2 (postfit) is unchanged at 3 executable / 6 deferred.
+
 ## Scope
 
 Batch #2 targets `BLOCKED_NEEDS_JULIA_SURFACE` rows in
@@ -185,42 +242,48 @@ into scope; the remaining ~43 stay untouched for a future wave).
 All postfit cases use `gaussian_small`, reused **verbatim** (seed 42,
 `Lambda_true`, `sigma_true`) from `tools/core070_surface_conversion_batch.R`.
 
-## Executable / deferred tally (post-REPAIR)
+## Executable / deferred tally (post-REPAIR, wave6-conversion3)
 
 Contract-verified totals (asserted by `docs/dev-log/core070/wave6-conversion-batch-contract.json`
 and checked by `tools/core070_verify_wave6_conversion_batch.py`):
-**12 executable contract cases / 18 target `source_id`s (12 executable + 6
+**10 executable contract cases / 18 target `source_id`s (10 executable + 8
 deferred) / 4 rejection-path validation cases / 3 negative controls.**
 
 Breakdown by group:
 
-- **Group 1 (structured-term): 9 target source_ids, all 9 executable, 0
-  deferred.** 7 namespace exports (`indep, scalar, kernel_indep, kernel_dep,
-  kernel_scalar, kernel_latent, kernel_unique`) + 2 covariance rows
-  (`COV-KERNEL-LATENT, COV-KERNEL-FOLDED-UNIQUE`), paid by **9 contract
-  cases** (some `source_id`s share an underlying fit: the `kernel_latent`
-  namespace row, `kernel_unique` namespace row, and `COV-KERNEL-FOLDED-UNIQUE`
-  covariance row are all paid by the single `STRUCT-KER-SINGLE-PSI` fit,
-  under 3 distinct `case_id`s each recording its own `source_id`; `STRUCT-KER-MULTI`
-  pays `COV-KERNEL-LATENT` directly). Plus 4 rejection-path cases (not
-  counted toward `target_source_ids`).
+- **Group 1 (structured-term): 9 target source_ids, 7 executable, 2
+  deferred.** `indep` and `scalar` moved to `deferred[]` this round (frozen
+  0.7.0 gllvmTMB rejects a lone `indep()`/`scalar()` term at any grouping).
+  5 remaining namespace exports (`kernel_indep, kernel_dep, kernel_scalar,
+  kernel_latent, kernel_unique`) + 2 covariance rows (`COV-KERNEL-LATENT,
+  COV-KERNEL-FOLDED-UNIQUE`), paid by **7 contract cases** (some `source_id`s
+  share an underlying fit: the `kernel_latent` namespace row, `kernel_unique`
+  namespace row, and `COV-KERNEL-FOLDED-UNIQUE` covariance row are all paid
+  by the single `STRUCT-KER-SINGLE-PSI` fit, under 3 distinct `case_id`s each
+  recording its own `source_id`; `STRUCT-KER-MULTI` pays `COV-KERNEL-LATENT`
+  directly). Plus 4 rejection-path cases (not counted toward
+  `target_source_ids`; none of them are a *lone* `indep`/`scalar` term, so
+  they are unaffected by the 0.7.0 gap).
 - **Group 2 (postfit): 9 target source_ids, 3 executable, 6 deferred.**
-  Executable (3 contract cases, 1:1 with source_ids): `logLik.gllvmTMB_multi`,
-  `confint.gllvmTMB_multi`, `nobs.gllvmTMB_multi` (defect-flagged). Deferred
-  (6): `extract_lv_effects`, `extract_Gamma`, `deviance.gllvmTMB_multi`,
-  `extract_rotated_loadings_table`, `flag_unreliable_loadings`,
-  `fitted.gllvmTMB_multi`.
+  Unchanged from the previous round. Executable (3 contract cases, 1:1 with
+  source_ids): `logLik.gllvmTMB_multi`, `confint.gllvmTMB_multi`,
+  `nobs.gllvmTMB_multi` (defect-flagged). Deferred (6): `extract_lv_effects`,
+  `extract_Gamma`, `deviance.gllvmTMB_multi`, `extract_rotated_loadings_table`,
+  `flag_unreliable_loadings`, `fitted.gllvmTMB_multi`.
 
-9 (group 1) + 3 (group 2) = **12 executable contract cases**. 0 (group 1) + 6
-(group 2) = **6 deferred**. 9 + 9 = **18 target source_ids**.
+7 (group 1) + 3 (group 2) = **10 executable contract cases**. 2 (group 1) + 6
+(group 2) = **8 deferred**. 9 + 9 = **18 target source_ids**.
 
 ## Dry mapping: case -> R branch (from `tools/core070_wave6_conversion_batch.R`)
 
+`CORE070-WAVE6-INDEP-FIT` and `CORE070-WAVE6-SCALAR-FIT` are no longer in
+`contract$cases` (moved to `deferred[]` this round) and no longer appear in
+the R runner's `structured_formula_rhs` lookup table or in the Julia child's
+`term_expr_map`/`level_name_map`.
+
 | case_id | R branch |
 |---|---|
-| `CORE070-WAVE6-INDEP-FIT` | `r_case_value()` -> `structured_formula_rhs[[case_id]]` = `"indep(0 + trait \| species, common = FALSE)"` -> `fit_structured_rhs(rhs)` -> `structured_quantity(fit, rhs)`, `level_name="source"` |
-| `CORE070-WAVE6-SCALAR-FIT` | same route, RHS `"scalar(0 + trait \| species)"` |
-| `CORE070-WAVE6-KERNEL-INDEP-FIT` | same route, RHS `"kernel_indep(species, K = C, name = \"k1\")"`, `level_name="k1"` |
+| `CORE070-WAVE6-KERNEL-INDEP-FIT` | `r_case_value()` -> `structured_formula_rhs[[case_id]]` = `"kernel_indep(species, K = C, name = \"k1\")"` -> `fit_structured_rhs(rhs)` -> `structured_quantity(fit, rhs)`, `level_name="k1"` |
 | `CORE070-WAVE6-KERNEL-DEP-FIT` | RHS `"kernel_dep(species, K = C, name = \"k1\")"` |
 | `CORE070-WAVE6-KERNEL-SCALAR-FIT` | RHS `"kernel_scalar(species, K = C, name = \"k1\")"` |
 | `CORE070-WAVE6-KERNEL-LATENT-SINGLE-PSI-NAMESPACE` / `-COVARIANCE` | RHS `"kernel_latent(species, K = C, d = 1, name = \"k1\", unique = TRUE)"` (same fit, memoised by RHS string in `structured_fit_cache`) |
@@ -236,53 +299,59 @@ Breakdown by group:
 - `Rscript -e "parse(file='tools/core070_wave6_conversion_batch.R')"` — **PARSE_OK**.
 - `julia -e 'Meta.parseall(read("tools/core070_wave6_conversion_batch.jl", String))'` — **JULIA_PARSE_OK**.
 - `python3 tools/core070_verify_wave6_conversion_batch.py --self-test` —
-  **CORE070_WAVE6_CONVERSION_VERIFY_SELF_TEST_OK rejected_mutations=8 cases=12 deferred=6**
-  (8 independent mutations rejected, including the new null-oracle-value
+  **CORE070_WAVE6_CONVERSION_VERIFY_SELF_TEST_OK rejected_mutations=8 cases=10 deferred=8**
+  (8 independent mutations rejected, including the null-oracle-value
   mutation, exceeds the >=4 hard-rule floor).
 - `python3 tools/core070_verify_wave6_conversion_batch.py` (no `--state`) —
-  contract-only check prints OK, then hard `SystemExit` (no state given).
+  contract-only check prints OK (`cases=10 deferred=8`), then hard
+  `SystemExit` (no state given).
 - `python3 tools/core070_verify_wave6_conversion_batch.py /nonexistent/dir` —
   hard `SystemExit: --state directory does not exist`.
-- Confirmed programmatically: no `cluster` string remains in any `r_call` in
-  `cases[]` or `rejection_cases[]`; `target_source_ids` union/count checks
-  all pass (12 cases + 6 deferred = 18 target rows, no duplicates, disjoint).
-- Confirmed by line-number grep: the R coverage `stop()` call
-  (`~line 296`) textually precedes the Julia `system2()` invocation
-  (`~line 360`) — the R stage fails before invoking Julia on incomplete
-  coverage.
+- Confirmed programmatically: `namespace/export/indep` and
+  `namespace/export/scalar` are present in `deferred[]` (not `cases[]`);
+  `target_source_ids` union/count checks all pass (10 cases + 8 deferred = 18
+  target rows, no duplicates, disjoint).
+- Confirmed by grep: the coordinator's wave6-conversion3 edits
+  (`fit.trait_covariances[1]`, `cim[:, 1]`/`cim[:, 2]`, `GLLVM.nobs(fit_g,
+  Y_g)`, `GLLVM.confint(fit_g, Y_g; ...)`) are all still present in the
+  Julia child after this round's edits.
 
 No live R (frozen `gllvmTMB` library) or live Julia (`using GLLVM`) run was
 performed — that requires the frozen reference library and this repo's Julia
 project environment, run on Totoro per the command below.
 
-## Totoro run command (wave6-conversion2)
+## Totoro run command (wave6-conversion4)
 
 ```sh
 ssh -F ~/.ssh/config -o ControlPath=~/.ssh/cm-%r@%h:%p totoro.biology.ualberta.ca \
   'cd /project/<path>/GLLVM.jl && \
    OPENBLAS_NUM_THREADS=1 JULIA_NUM_THREADS=1 \
    Rscript --vanilla tools/core070_wave6_conversion_batch.R \
-     <frozen-library-path> .unlazy/core070-aghq/wave6-conversion-02'
+     <frozen-library-path> .unlazy/core070-aghq/wave6-conversion-04'
 
 # then, locally or on Totoro:
-python3 tools/core070_verify_wave6_conversion_batch.py .unlazy/core070-aghq/wave6-conversion-02
+python3 tools/core070_verify_wave6_conversion_batch.py .unlazy/core070-aghq/wave6-conversion-04
 ```
 
 ## Remaining risk for the live re-run
 
-- `indep`/`scalar` don't have a prior verbatim R call in any case-plan file
-  (only the `kernel_latent`/`kernel_dep` family had a proven `add()`-helper
-  precedent, and even that helper's `cluster=` turned out to be unused).
-  This batch now uses the SAME `unit=`/`trait=` convention proven in
-  `gaussian_small`'s own fit for every structured term, for internal
-  consistency — but that convention has only been proven for the *plain*
-  `latent(...)` term, not yet for `dep`/`indep`/`scalar`/`kernel_*`
-  specifically. If `unit=`/`trait=` also turns out to be unconsumed or
-  wrong for these terms, the fix is the same class of change (drop/adjust
-  the top-level gllvmTMB() kwargs) and will surface as a loud
-  `oracle_errors` entry per case, never a silent NULL, given this round's
-  hardening.
-- The three items 3(a)/3(b)/3(c) postfit deferrals remain **genuinely
+- `dep` (used only inside the rejection-path cases, never as a standalone
+  paired-numerics case) and the `kernel_*` family don't have as much prior
+  verbatim-call precedent as `kernel_latent`/`kernel_dep` (from
+  `test/parity/fixtures/core070_structured_input.R`'s `add()` helper). This
+  batch uses the SAME `unit=`/`trait=` convention proven in `gaussian_small`'s
+  own fit for every remaining structured term, for internal consistency —
+  but that convention has only been directly proven for the *plain*
+  `latent(...)` term. If `unit=`/`trait=` also turns out to be unconsumed or
+  wrong for `kernel_indep`/`kernel_dep`/`kernel_scalar` specifically, the fix
+  is the same class of change (drop/adjust the top-level gllvmTMB() kwargs)
+  and will surface as a loud `oracle_errors` entry per case, never a silent
+  NULL, given the wave6-conversion1 hardening.
+- `namespace/export/indep` and `namespace/export/scalar` are now deferred
+  pending the 0.7.1 frozen-library lane — re-attempt only once a 0.7.1
+  frozen `gllvmTMB` library is the batch's reference, not against 0.7.0.
+- The three items 3(a)/3(b)/3(c) postfit deferrals (`extract_rotated_loadings_table`,
+  `flag_unreliable_loadings`, `fitted.gllvmTMB_multi`) remain **genuinely
   deferred pending a live R session** (not merely postponed by choice) —
   re-authoring them needs `str()`/`names()` output from the actual returned
   R objects, which this Julia-only worktree cannot produce.

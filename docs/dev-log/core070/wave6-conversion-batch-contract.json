@@ -3,7 +3,7 @@
   "status": "FROZEN_WAVE6_CONVERSION_BATCH_CONTRACT",
   "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
   "scope": "CORE070_WAVE6_CONVERSION_BATCH",
-  "note": "Conversion batch #2 for BLOCKED_NEEDS_JULIA_SURFACE rows whose Julia surface now exists but was not in wave-5 (docs/dev-log/core070/surface-conversion-batch-contract.json). Two source groups: (1) STRUCTURED-TERM rows unlocked by src/formula.jl's _recognize_source_term / _fit_gaussian_structured_sources recognizer (commit 5371137c; docs/dev-log/core070/formula-recognizer-spec.md); (2) STALE-BLOCKED postfit rows whose Julia functions already exist (src/postfit.jl, src/confint.jl) but were never converted. REPAIR (2026-09-01, wave6-conversion1 forensics): dropped the unused top-level `cluster=` gllvmTMB() argument for every structured-term call (replaced with the proven `unit=\"site\", trait=\"trait\"` convention), replaced regex-derived formula RHS with literal hardcoded R expressions, and moved 3 postfit cases (extract_rotated_loadings_table, flag_unreliable_loadings, fitted.gllvmTMB_multi) from cases[] to deferred[] after unresolvable-without-live-R-source return-shape/gate failures. See docs/dev-log/core070/wave6-conversion-notes.md.",
+  "note": "Conversion batch #2 for BLOCKED_NEEDS_JULIA_SURFACE rows whose Julia surface now exists but was not in wave-5 (docs/dev-log/core070/surface-conversion-batch-contract.json). Two source groups: (1) STRUCTURED-TERM rows unlocked by src/formula.jl's _recognize_source_term / _fit_gaussian_structured_sources recognizer (commit 5371137c; docs/dev-log/core070/formula-recognizer-spec.md); (2) STALE-BLOCKED postfit rows whose Julia functions already exist (src/postfit.jl, src/confint.jl) but were never converted. REPAIR (2026-09-01, wave6-conversion1 forensics): dropped the unused top-level `cluster=` gllvmTMB() argument for every structured-term call (replaced with the proven `unit=\"site\", trait=\"trait\"` convention), replaced regex-derived formula RHS with literal hardcoded R expressions, and moved 3 postfit cases (extract_rotated_loadings_table, flag_unreliable_loadings, fitted.gllvmTMB_multi) from cases[] to deferred[] after unresolvable-without-live-R-source return-shape/gate failures. REPAIR (2026-09-01, wave6-conversion3 forensics): coordinator fixed structured_quantity() to read GaussianSourcesFit.trait_covariances[1] (extract_Sigma has no GaussianSourcesFit method) and flattened the confint k x 2 matrix; moved namespace/export/indep and namespace/export/scalar from cases[] to deferred[] -- the frozen 0.7.0 gllvmTMB engine rejects a lone indep()/scalar() term at ANY grouping ('Custom level=\"source\" is not yet supported', confirmed at both |species and |site), so these two rows are unpairable against the frozen oracle until the 0.7.1 lane; the Julia surfaces themselves exist and are live-paired green in the 0.7.1 bridge lane. See docs/dev-log/core070/wave6-conversion-notes.md.",
   "target_source_ids": [
     "namespace/export/indep",
     "namespace/export/scalar",
@@ -24,8 +24,8 @@
     "postfit/POSTFIT-SURFACE-extract_Gamma",
     "postfit/POSTFIT-SURFACE-deviance.gllvmTMB_multi"
   ],
-  "expected_case_count": 12,
-  "expected_deferred_count": 6,
+  "expected_case_count": 10,
+  "expected_deferred_count": 8,
   "fixtures": {
     "structured_kernel_small": {
       "description": "Deterministic (no RNG) p=3 trait x n=12 site fixture, reused VERBATIM from test/parity/fixtures/core070_structured_data.R's df/C/K2 construction (the same fixture cited by structured-required-case-plan.json's STRUCT-KER-SINGLE-PSI/STRUCT-KER-MULTI cases): expand.grid(site=1:12, trait=1:3), species = rep(rep(c('a','b','c'), each=4), 3) (3 species levels, 4 sites each), value = sin(row_index/3) + trait_int/5, C = .7*diag(3)+.3 (species x species kernel), K2 = .6*diag(3)+.4*tcrossprod(c(1,-1,1)) (both PD, dimnamed by species levels a,b,c).",
@@ -48,28 +48,6 @@
     }
   },
   "cases": [
-    {
-      "case_id": "CORE070-WAVE6-INDEP-FIT",
-      "source_id": "namespace/export/indep",
-      "kind": "point",
-      "fixture": "structured_kernel_small",
-      "term_expr": ":(indep(0 + trait | species, common = false))",
-      "r_call": "gllvmTMB(value ~ 0 + trait + indep(0 + trait | species, common = FALSE), df, unit = \"site\", trait = \"trait\", family = stats::gaussian(), control = control)",
-      "quantity": "logLik_B_tcrossprod",
-      "tolerance": 0.0001,
-      "notes": "indep(...) recognizer -> SourceCovariance(I_3, mode=:indep, common=false); B = diag(exp(2*theta)) (p free variances). level_name=\"source\" (the recognizer's default non-kernel term name)."
-    },
-    {
-      "case_id": "CORE070-WAVE6-SCALAR-FIT",
-      "source_id": "namespace/export/scalar",
-      "kind": "point",
-      "fixture": "structured_kernel_small",
-      "term_expr": ":(scalar(0 + trait | species))",
-      "r_call": "gllvmTMB(value ~ 0 + trait + scalar(0 + trait | species), df, unit = \"site\", trait = \"trait\", family = stats::gaussian(), control = control)",
-      "quantity": "logLik_B_tcrossprod",
-      "tolerance": 0.0001,
-      "notes": "scalar(...) recognizer -> indep(..., common=true) alias; fires the one-shot deprecation @warn (checked separately, not part of the numeric comparison). level_name=\"source\"."
-    },
     {
       "case_id": "CORE070-WAVE6-KERNEL-INDEP-FIT",
       "source_id": "namespace/export/kernel_indep",
@@ -188,6 +166,14 @@
   ],
   "deferred": [
     {
+      "source_id": "namespace/export/indep",
+      "reason": "frozen-reference gap: lone indep()/scalar() unfittable in gllvmTMB 0.7.0 (custom source level unsupported); pairable only against >=0.7.1; Julia surface exists and is live-paired green in the 0.7.1 bridge lane"
+    },
+    {
+      "source_id": "namespace/export/scalar",
+      "reason": "frozen-reference gap: lone indep()/scalar() unfittable in gllvmTMB 0.7.0 (custom source level unsupported); pairable only against >=0.7.1; Julia surface exists and is live-paired green in the 0.7.1 bridge lane"
+    },
+    {
       "source_id": "postfit/POSTFIT-SURFACE-extract_lv_effects",
       "reason": "GLLVM.extract_lv_effects(fit::GllvmFit; type=:trait_effect) exists and is exported (src/postfit.jl:353) but HARD-gates on _has_lv_predictor(fit) -- it throws ArgumentError unless the fit came from fit_gaussian_gllvm(...; X_lv=...) (a concurrent/constrained-ordination fit with a predictor-informed latent axis). None of this batch's reused fixtures (gaussian_small, structured_kernel_small) carry an X_lv predictor; gaussian_small is a plain unconstrained-latent fit, so calling extract_lv_effects(fit_g) would throw on the Julia side by design, and the presumed R equivalent (a num.lv.c concurrent-ordination gllvmTMB formula) was never fit either. Building and validating a dedicated X_lv/num.lv.c fixture pair (R + Julia) is a genuine new-fixture slice, out of this lean batch's reuse-only scope; left for a follow-up wave."
     },
@@ -261,8 +247,8 @@
     }
   ],
   "runner": {
-    "totoro_command": "ssh -F ~/.ssh/config -o ControlPath=~/.ssh/cm-%r@%h:%p totoro.biology.ualberta.ca 'cd /project/<...>/GLLVM.jl && OPENBLAS_NUM_THREADS=1 JULIA_NUM_THREADS=1 Rscript --vanilla tools/core070_wave6_conversion_batch.R <frozen-library-path> .unlazy/core070-aghq/wave6-conversion-02'",
-    "verify_command": "python3 tools/core070_verify_wave6_conversion_batch.py .unlazy/core070-aghq/wave6-conversion-02",
+    "totoro_command": "ssh -F ~/.ssh/config -o ControlPath=~/.ssh/cm-%r@%h:%p totoro.biology.ualberta.ca 'cd /project/<...>/GLLVM.jl && OPENBLAS_NUM_THREADS=1 JULIA_NUM_THREADS=1 Rscript --vanilla tools/core070_wave6_conversion_batch.R <frozen-library-path> .unlazy/core070-aghq/wave6-conversion-04'",
+    "verify_command": "python3 tools/core070_verify_wave6_conversion_batch.py .unlazy/core070-aghq/wave6-conversion-04",
     "self_test_command": "python3 tools/core070_verify_wave6_conversion_batch.py --self-test"
   }
 }

@@ -1,18 +1,24 @@
-"""Verify the wave-6 conversion batch: 12 BLOCKED_NEEDS_JULIA_SURFACE ledger
+"""Verify the wave-6 conversion batch: 10 BLOCKED_NEEDS_JULIA_SURFACE ledger
 rows converted to bound cases (namespace/, covariance/, postfit/ prefixes),
 evidence naming a function that now exists in src/GLLVM.jl (the
 formula-recognizer slice, src/formula.jl's _recognize_source_term /
 _fit_gaussian_structured_sources, commit 5371137c; and the already-existing
-postfit surfaces loglikelihood/confint/nobs on AnyGllvmFit/GllvmFit). 6
-further target rows (extract_lv_effects, extract_Gamma,
-deviance.gllvmTMB_multi, extract_rotated_loadings_table,
-flag_unreliable_loadings, fitted.gllvmTMB_multi) are recorded in the
-contract's `deferred` bucket with an explicit reason and carry no fabricated
-pass -- the last three joined the deferred bucket after wave6-conversion1
-forensics surfaced unresolvable-without-live-R-source return-shape/gate
-issues for each. See docs/dev-log/core070/wave6-conversion-notes.md for the
-full accounting and docs/dev-log/core070/wave6-conversion-batch-contract.json
-for the frozen 18-row target list (`target_source_ids`).
+postfit surfaces loglikelihood/confint/nobs on AnyGllvmFit/GllvmFit). 8
+further target rows (namespace/export/indep, namespace/export/scalar,
+extract_lv_effects, extract_Gamma, deviance.gllvmTMB_multi,
+extract_rotated_loadings_table, flag_unreliable_loadings,
+fitted.gllvmTMB_multi) are recorded in the contract's `deferred` bucket with
+an explicit reason and carry no fabricated pass -- extract_rotated_loadings_table
+/flag_unreliable_loadings/fitted.gllvmTMB_multi joined the deferred bucket
+after wave6-conversion1 forensics surfaced unresolvable-without-live-R-source
+return-shape/gate issues for each; namespace/export/{indep,scalar} joined
+after wave6-conversion3 forensics confirmed the frozen 0.7.0 gllvmTMB engine
+rejects a lone indep()/scalar() term at ANY grouping ("Custom
+level=\"source\" is not yet supported", confirmed at both |species and
+|site) -- unpairable against the frozen oracle until the 0.7.1 lane. See
+docs/dev-log/core070/wave6-conversion-notes.md for the full accounting and
+docs/dev-log/core070/wave6-conversion-batch-contract.json for the frozen
+18-row target list (`target_source_ids`).
 
 Three independent checks, mirroring tools/core070_verify_surface_conversion_batch.py:
 
@@ -44,8 +50,8 @@ ROOT = Path(__file__).resolve().parents[1]
 CONTRACT_PATH = ROOT / "docs/dev-log/core070/wave6-conversion-batch-contract.json"
 
 REFERENCE_COMMIT = "b4d5fee64def88bc768dda1f1f77c29b295edd86"
-CASE_COUNT = 12
-DEFERRED_COUNT = 6
+CASE_COUNT = 10
+DEFERRED_COUNT = 8
 REJECTION_COUNT = 4
 TARGET_ROW_COUNT = CASE_COUNT + DEFERRED_COUNT  # 18
 

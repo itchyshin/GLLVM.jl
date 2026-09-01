@@ -146,7 +146,7 @@ root = normpath(joinpath(@__DIR__, ".."))
 contract = json_read(joinpath(root, "docs/dev-log/core070/wave6-conversion-batch-contract.json"))
 cases = contract["cases"]
 length(cases) == contract["expected_case_count"] || error("case count mismatch vs contract")
-Int(contract["expected_case_count"]) == 12 || error("expected_case_count drifted from 12; update this script")
+Int(contract["expected_case_count"]) == 10 || error("expected_case_count drifted from 10; update this script")
 
 # REPAIR (2026-09-01, wave6-conversion1 forensics item 2): a null/missing R
 # oracle value must become a recorded per-case FAIL, never a crash. R's
@@ -239,8 +239,12 @@ results = Dict{String, Any}()
 all_ok = true
 
 term_expr_map = Dict{String, Vector{Expr}}(
-    "CORE070-WAVE6-INDEP-FIT" => [:(indep(0 + trait | site, common = false))],
-    "CORE070-WAVE6-SCALAR-FIT" => [:(scalar(0 + trait | site))],
+    # CORE070-WAVE6-INDEP-FIT / -SCALAR-FIT REPAIR (2026-09-01,
+    # wave6-conversion3 forensics): moved to contract.deferred[] -- the
+    # frozen 0.7.0 gllvmTMB engine rejects a lone indep()/scalar() term at
+    # ANY grouping ("Custom level=\"source\" is not yet supported",
+    # confirmed at both |species and |site), so no oracle_values entry is
+    # ever produced for them and they no longer appear in contract.cases.
     "CORE070-WAVE6-KERNEL-INDEP-FIT" => [:(kernel_indep(species, K = C, name = "k1"))],
     "CORE070-WAVE6-KERNEL-DEP-FIT" => [:(kernel_dep(species, K = C, name = "k1"))],
     "CORE070-WAVE6-KERNEL-SCALAR-FIT" => [:(kernel_scalar(species, K = C, name = "k1"))],
@@ -255,8 +259,6 @@ term_expr_map = Dict{String, Vector{Expr}}(
         [:(kernel_latent(species, K = C, d = 1, name = "k1", unique = true))],
 )
 level_name_map = Dict{String, Symbol}(
-    "CORE070-WAVE6-INDEP-FIT" => :source,
-    "CORE070-WAVE6-SCALAR-FIT" => :source,
     "CORE070-WAVE6-KERNEL-INDEP-FIT" => :k1,
     "CORE070-WAVE6-KERNEL-DEP-FIT" => :k1,
     "CORE070-WAVE6-KERNEL-SCALAR-FIT" => :k1,
