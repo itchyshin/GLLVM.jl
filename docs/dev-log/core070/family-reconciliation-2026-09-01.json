@@ -1,0 +1,207 @@
+{
+  "scope": "Evidence-audit reconciliation of the 17 unbound family/ rows in docs/dev-log/core070/required-source-case-map.json (worktree /private/tmp/GLLVM.jl-core070-aghq-20260830, branch codex/core070-aghq-20260830)",
+  "method_note": "All 49 planned cases carry plan status SPECIFICATION_REQUIRED_NOT_EXECUTABLE_EVIDENCE with no fixture/runner fields in docs/dev-log/core070/family-required-case-plan.json. Retained executed evidence was therefore hunted independently. The 40/40 green required parity harness (attempt5) lives at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/ (cell-*.toml receipts, EXIT=0, run.toml completed_case_ids lists 40 cells); attempt2 at .unlazy/core070-aghq/tweedie-replay-01/attempt2/parity-receipts/ additionally ran NATIVE-10-STUDENT (status=failed, 31 pass / 2 fail). Formula-interface cells exist ONLY for families 00/02/05/07/11 and public-R-bridge evidence ONLY for families 02/05/07 (docs/dev-log/core070/public-bridge-required-evidence.json, required_case_ids = FAMILY-02/07/05 PUBLIC-R-BRIDGE) — i.e. none of the 17 unbound rows has any formula-interface or public-R-bridge execution. Harness receipts execute under NATIVE-XX case ids, not the planned CORE070-FAMILY-* ids, so binding requires a registration decision; per parity-panel-2026-09-01.md these are toy fixtures (p<=5, n<=150), Tier-A likelihood-level agreement only.",
+  "rows": [
+    {
+      "source_id": "family/FAMILY-01-LOGIT",
+      "planned_case_ids": ["CORE070-FAMILY-01-LOGIT-NATIVE-MODEL", "CORE070-FAMILY-01-LOGIT-FORMULA-INTERFACE", "CORE070-FAMILY-01-LOGIT-PUBLIC-R-BRIDGE"],
+      "verdict": "PARTIAL_EVIDENCE",
+      "evidenced_cases": ["CORE070-FAMILY-01-LOGIT-NATIVE-MODEL"],
+      "unevidenced_cases": ["CORE070-FAMILY-01-LOGIT-FORMULA-INTERFACE", "CORE070-FAMILY-01-LOGIT-PUBLIC-R-BRIDGE"],
+      "evidence": [
+        {"case_id": "CORE070-FAMILY-01-LOGIT-NATIVE-MODEL", "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-02-BINOMIAL.toml", "detail": "status=\"success\", passed=6/failed=0, fixture=test/parity/test_binomial_parity.jl; helper default binomial_link=:logit (test/parity/parity_helpers.jl), so this is binomial(link=logit) native-model parity, executed under harness id NATIVE-02-BINOMIAL"}
+      ],
+      "recommended_disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+      "reason": "Native binomial-logit parity executed and green in the 40/40 harness under id NATIVE-02-BINOMIAL, but formula-interface and public-R-bridge cases have no executed artifact anywhere; a registration decision is needed to bind the smoke receipt to the planned native case."
+    },
+    {
+      "source_id": "family/FAMILY-01-PROBIT",
+      "planned_case_ids": ["CORE070-FAMILY-01-PROBIT-NATIVE-MODEL", "CORE070-FAMILY-01-PROBIT-FORMULA-INTERFACE", "CORE070-FAMILY-01-PROBIT-PUBLIC-R-BRIDGE"],
+      "verdict": "NO_EVIDENCE",
+      "evidenced_cases": [],
+      "unevidenced_cases": ["CORE070-FAMILY-01-PROBIT-NATIVE-MODEL", "CORE070-FAMILY-01-PROBIT-FORMULA-INTERFACE", "CORE070-FAMILY-01-PROBIT-PUBLIC-R-BRIDGE"],
+      "evidence": [],
+      "recommended_disposition": "needs_fresh_batch",
+      "reason": "The oracle helper admits binomial_link=:probit (test/parity/parity_helpers.jl) but no retained fixture or receipt executes a binomial-probit fit; test_binomial_parity.jl uses the default logit link and ordinal-probit cells (NATIVE-15) are family 14, not binomial."
+    },
+    {
+      "source_id": "family/FAMILY-01-CLOGLOG",
+      "planned_case_ids": ["CORE070-FAMILY-01-CLOGLOG-NATIVE-MODEL", "CORE070-FAMILY-01-CLOGLOG-FORMULA-INTERFACE", "CORE070-FAMILY-01-CLOGLOG-PUBLIC-R-BRIDGE"],
+      "verdict": "NO_EVIDENCE",
+      "evidenced_cases": [],
+      "unevidenced_cases": ["CORE070-FAMILY-01-CLOGLOG-NATIVE-MODEL", "CORE070-FAMILY-01-CLOGLOG-FORMULA-INTERFACE", "CORE070-FAMILY-01-CLOGLOG-PUBLIC-R-BRIDGE"],
+      "evidence": [],
+      "recommended_disposition": "needs_fresh_batch",
+      "reason": "No retained artifact executes a binomial-cloglog fit; the only cloglog artifact is FAMILY-08-CLOGLOG-ENGINE-REJECT in family-link-boundary-evidence.json, a rejection probe for betabinomial, and its own status is NATIVE_LINK_BOUNDARIES_VERIFIED_NOT_FIT_PARITY."
+    },
+    {
+      "source_id": "family/FAMILY-03-LOG",
+      "planned_case_ids": ["CORE070-FAMILY-03-LOG-NATIVE-MODEL", "CORE070-FAMILY-03-LOG-FORMULA-INTERFACE", "CORE070-FAMILY-03-LOG-PUBLIC-R-BRIDGE"],
+      "verdict": "PARTIAL_EVIDENCE",
+      "evidenced_cases": ["CORE070-FAMILY-03-LOG-NATIVE-MODEL"],
+      "unevidenced_cases": ["CORE070-FAMILY-03-LOG-FORMULA-INTERFACE", "CORE070-FAMILY-03-LOG-PUBLIC-R-BRIDGE"],
+      "evidence": [
+        {"case_id": "CORE070-FAMILY-03-LOG-NATIVE-MODEL", "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-04-LOGNORMAL.toml", "detail": "status=\"success\", passed=15/failed=0, fixture=test/parity/test_lognormal_parity.jl (lognormal(link=log) native-model parity)"}
+      ],
+      "recommended_disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+      "reason": "Native lognormal parity green in the 40/40 harness (NATIVE-04); formula and bridge cases unexecuted everywhere."
+    },
+    {
+      "source_id": "family/FAMILY-04-LOG",
+      "planned_case_ids": ["CORE070-FAMILY-04-LOG-NATIVE-MODEL", "CORE070-FAMILY-04-LOG-FORMULA-INTERFACE", "CORE070-FAMILY-04-LOG-PUBLIC-R-BRIDGE"],
+      "verdict": "PARTIAL_EVIDENCE",
+      "evidenced_cases": ["CORE070-FAMILY-04-LOG-NATIVE-MODEL"],
+      "unevidenced_cases": ["CORE070-FAMILY-04-LOG-FORMULA-INTERFACE", "CORE070-FAMILY-04-LOG-PUBLIC-R-BRIDGE"],
+      "evidence": [
+        {"case_id": "CORE070-FAMILY-04-LOG-NATIVE-MODEL", "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-05-GAMMA.toml", "detail": "status=\"success\", passed=28/failed=0, fixture=test/parity/test_nox_dispersion_parity.jl; oracle maps gamma -> stats::Gamma(link=\"log\") (parity_helpers.jl), matching the planned descriptor Gamma(link=\"log\")"}
+      ],
+      "recommended_disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+      "reason": "Native Gamma-log parity green in the 40/40 harness (NATIVE-05); formula and bridge cases unexecuted everywhere."
+    },
+    {
+      "source_id": "family/FAMILY-06-LOG",
+      "planned_case_ids": ["CORE070-FAMILY-06-LOG-NATIVE-MODEL", "CORE070-FAMILY-06-LOG-FORMULA-INTERFACE", "CORE070-FAMILY-06-LOG-PUBLIC-R-BRIDGE"],
+      "verdict": "PARTIAL_EVIDENCE",
+      "evidenced_cases": ["CORE070-FAMILY-06-LOG-NATIVE-MODEL"],
+      "unevidenced_cases": ["CORE070-FAMILY-06-LOG-FORMULA-INTERFACE", "CORE070-FAMILY-06-LOG-PUBLIC-R-BRIDGE"],
+      "evidence": [
+        {"case_id": "CORE070-FAMILY-06-LOG-NATIVE-MODEL", "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-07-TWEEDIE.toml", "detail": "status=\"success\", passed=28/failed=0, fixture=test/parity/test_tweedie_parity.jl covering three distinct frozen-R Tweedie power contracts (fixed common power, reference-constrained shared power, public per-species default; see decision doc 2026-08-30-core070-tweedie-power.md)"}
+      ],
+      "recommended_disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+      "reason": "Native tweedie(link=log) parity green in the 40/40 harness (NATIVE-07); formula and bridge cases unexecuted everywhere."
+    },
+    {
+      "source_id": "family/FAMILY-06-FIXED-SHAPE",
+      "planned_case_ids": ["CORE070-FAMILY-06-FIXED-SHAPE-NATIVE-MODEL", "CORE070-FAMILY-06-FIXED-SHAPE-FORMULA-INTERFACE", "CORE070-FAMILY-06-FIXED-SHAPE-PUBLIC-R-BRIDGE"],
+      "verdict": "PARTIAL_EVIDENCE",
+      "evidenced_cases": ["CORE070-FAMILY-06-FIXED-SHAPE-NATIVE-MODEL"],
+      "unevidenced_cases": ["CORE070-FAMILY-06-FIXED-SHAPE-FORMULA-INTERFACE", "CORE070-FAMILY-06-FIXED-SHAPE-PUBLIC-R-BRIDGE"],
+      "evidence": [
+        {"case_id": "CORE070-FAMILY-06-FIXED-SHAPE-NATIVE-MODEL", "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-07-TWEEDIE.toml", "detail": "status=\"success\", passed=28/failed=0; the fixture's first testset (test/parity/test_tweedie_parity.jl line 27, 'fixed common power is the same public model on both engines') fits fit_tweedie_gllvm_grouped(power=p_true) against gllvmTMB with n_power_free=0 asserted — the tweedie(p=fixed) contract"}
+      ],
+      "recommended_disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+      "reason": "The fixed-common-power Tweedie contract was executed and verified inside the green NATIVE-07 cell; formula and bridge cases unexecuted everywhere. Whether p=1.5 specifically vs p_true satisfies the planned descriptor tweedie(p=1.5) is a registration detail for the reclassify decision."
+    },
+    {
+      "source_id": "family/FAMILY-08-LOGIT",
+      "planned_case_ids": ["CORE070-FAMILY-08-LOGIT-NATIVE-MODEL", "CORE070-FAMILY-08-LOGIT-FORMULA-INTERFACE", "CORE070-FAMILY-08-LOGIT-PUBLIC-R-BRIDGE"],
+      "verdict": "PARTIAL_EVIDENCE",
+      "evidenced_cases": ["CORE070-FAMILY-08-LOGIT-NATIVE-MODEL"],
+      "unevidenced_cases": ["CORE070-FAMILY-08-LOGIT-FORMULA-INTERFACE", "CORE070-FAMILY-08-LOGIT-PUBLIC-R-BRIDGE"],
+      "evidence": [
+        {"case_id": "CORE070-FAMILY-08-LOGIT-NATIVE-MODEL", "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-09-BETABINOMIAL.toml", "detail": "status=\"success\", passed=28/failed=0, fixture=test/parity/test_nox_dispersion_parity.jl (betabinomial(logit) via gllvmTMB::betabinomial() oracle mapping in parity_helpers.jl)"}
+      ],
+      "recommended_disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+      "reason": "Native betabinomial-logit parity green in the 40/40 harness (NATIVE-09); formula and bridge cases unexecuted everywhere."
+    },
+    {
+      "source_id": "family/FAMILY-09-IDENTITY",
+      "planned_case_ids": ["CORE070-FAMILY-09-IDENTITY-NATIVE-MODEL", "CORE070-FAMILY-09-IDENTITY-FORMULA-INTERFACE", "CORE070-FAMILY-09-IDENTITY-PUBLIC-R-BRIDGE"],
+      "verdict": "PARTIAL_EVIDENCE",
+      "evidenced_cases": ["CORE070-FAMILY-09-IDENTITY-NATIVE-MODEL (contested — executed but cell failed 2/33 assertions)"],
+      "unevidenced_cases": ["CORE070-FAMILY-09-IDENTITY-FORMULA-INTERFACE", "CORE070-FAMILY-09-IDENTITY-PUBLIC-R-BRIDGE"],
+      "evidence": [
+        {"case_id": "CORE070-FAMILY-09-IDENTITY-NATIVE-MODEL", "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt2/parity-receipts/cell-NATIVE-10-STUDENT.toml", "detail": "status=\"failed\", passed=31/failed=2, fixture=test/parity/test_studentt_parity.jl; A6 rerun (.unlazy/core070-aghq/A6/original-final2.log) reproduces 31 pass / 2 fail with logLik agreement passing and the 2 failures on R-health assertions; NATIVE-10-STUDENT was excluded from the green attempt5 40-cell set"}
+      ],
+      "recommended_disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
+      "reason": "Student native parity was executed twice with the same 2 health-assertion failures, and parity-panel-2026-09-01.md (Panel C, finding 4) overturned the 'R-side only' classification — both engines sit on the nu->infinity boundary and Julia missed it — so the cell cannot be credited as verified; formula and bridge cases unexecuted."
+    },
+    {
+      "source_id": "family/FAMILY-09-FIXED-SHAPE",
+      "planned_case_ids": ["CORE070-FAMILY-09-FIXED-SHAPE-NATIVE-MODEL", "CORE070-FAMILY-09-FIXED-SHAPE-FORMULA-INTERFACE", "CORE070-FAMILY-09-FIXED-SHAPE-PUBLIC-R-BRIDGE"],
+      "verdict": "PARTIAL_EVIDENCE",
+      "evidenced_cases": ["CORE070-FAMILY-09-FIXED-SHAPE-NATIVE-MODEL (contested — fixed-df control executed inside a failed cell)"],
+      "unevidenced_cases": ["CORE070-FAMILY-09-FIXED-SHAPE-FORMULA-INTERFACE", "CORE070-FAMILY-09-FIXED-SHAPE-PUBLIC-R-BRIDGE"],
+      "evidence": [
+        {"case_id": "CORE070-FAMILY-09-FIXED-SHAPE-NATIVE-MODEL", "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt2/parity-receipts/cell-NATIVE-10-STUDENT.toml", "detail": "test/parity/test_studentt_parity.jl lines 59-73 run a fixed-nu control (gllvmTMB::student(df=nu_true) vs fit_studentt_gllvm(nu=nu_true)) inside the NATIVE-10-STUDENT cell; the fixed-df subtests passed, but the enclosing cell status=\"failed\" (31 pass / 2 fail)"}
+      ],
+      "recommended_disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
+      "reason": "The fixed-df student contract was exercised and its own subtests passed, but only inside the failed/contested NATIVE-10-STUDENT cell whose health classification the D-43 panel overturned; formula and bridge cases unexecuted."
+    },
+    {
+      "source_id": "family/FAMILY-10-LOG",
+      "planned_case_ids": ["CORE070-FAMILY-10-LOG-NATIVE-MODEL", "CORE070-FAMILY-10-LOG-FORMULA-INTERFACE", "CORE070-FAMILY-10-LOG-PUBLIC-R-BRIDGE"],
+      "verdict": "PARTIAL_EVIDENCE",
+      "evidenced_cases": ["CORE070-FAMILY-10-LOG-NATIVE-MODEL"],
+      "unevidenced_cases": ["CORE070-FAMILY-10-LOG-FORMULA-INTERFACE", "CORE070-FAMILY-10-LOG-PUBLIC-R-BRIDGE"],
+      "evidence": [
+        {"case_id": "CORE070-FAMILY-10-LOG-NATIVE-MODEL", "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-11-TRUNCATED-POISSON.toml", "detail": "status=\"success\", passed=8/failed=0, fixture=test/parity/test_truncated_poisson_parity.jl (truncated_poisson(link=log))"}
+      ],
+      "recommended_disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+      "reason": "Native truncated-Poisson parity green in the 40/40 harness (NATIVE-11); formula and bridge cases unexecuted everywhere."
+    },
+    {
+      "source_id": "family/FAMILY-12-LOGIT-LOG",
+      "planned_case_ids": ["CORE070-FAMILY-12-LOGIT-LOG-NATIVE-MODEL", "CORE070-FAMILY-12-LOGIT-LOG-FORMULA-INTERFACE", "CORE070-FAMILY-12-LOGIT-LOG-PUBLIC-R-BRIDGE"],
+      "verdict": "PARTIAL_EVIDENCE",
+      "evidenced_cases": ["CORE070-FAMILY-12-LOGIT-LOG-NATIVE-MODEL"],
+      "unevidenced_cases": ["CORE070-FAMILY-12-LOGIT-LOG-FORMULA-INTERFACE", "CORE070-FAMILY-12-LOGIT-LOG-PUBLIC-R-BRIDGE"],
+      "evidence": [
+        {"case_id": "CORE070-FAMILY-12-LOGIT-LOG-NATIVE-MODEL", "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-13-DELTA-LOGNORMAL.toml", "detail": "status=\"success\", passed=24/failed=0, fixture=test/parity/test_delta_lognormal_required.jl (delta_lognormal())"}
+      ],
+      "recommended_disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+      "reason": "Native delta-lognormal parity green in the 40/40 harness (NATIVE-13) using the *_required.jl fixture; formula and bridge cases unexecuted everywhere."
+    },
+    {
+      "source_id": "family/FAMILY-13-LOGIT-LOG",
+      "planned_case_ids": ["CORE070-FAMILY-13-LOGIT-LOG-NATIVE-MODEL", "CORE070-FAMILY-13-LOGIT-LOG-FORMULA-INTERFACE", "CORE070-FAMILY-13-LOGIT-LOG-PUBLIC-R-BRIDGE"],
+      "verdict": "PARTIAL_EVIDENCE",
+      "evidenced_cases": ["CORE070-FAMILY-13-LOGIT-LOG-NATIVE-MODEL"],
+      "unevidenced_cases": ["CORE070-FAMILY-13-LOGIT-LOG-FORMULA-INTERFACE", "CORE070-FAMILY-13-LOGIT-LOG-PUBLIC-R-BRIDGE"],
+      "evidence": [
+        {"case_id": "CORE070-FAMILY-13-LOGIT-LOG-NATIVE-MODEL", "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-14-DELTA-GAMMA.toml", "detail": "status=\"success\", passed=24/failed=0, fixture=test/parity/test_delta_gamma_required.jl (delta_gamma())"}
+      ],
+      "recommended_disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+      "reason": "Native delta-gamma parity green in the 40/40 harness (NATIVE-14); formula and bridge cases unexecuted everywhere."
+    },
+    {
+      "source_id": "family/FAMILY-14-PROBIT",
+      "planned_case_ids": ["CORE070-FAMILY-14-PROBIT-NATIVE-MODEL", "CORE070-FAMILY-14-PROBIT-FORMULA-INTERFACE", "CORE070-FAMILY-14-PROBIT-PUBLIC-R-BRIDGE"],
+      "verdict": "PARTIAL_EVIDENCE",
+      "evidenced_cases": ["CORE070-FAMILY-14-PROBIT-NATIVE-MODEL"],
+      "unevidenced_cases": ["CORE070-FAMILY-14-PROBIT-FORMULA-INTERFACE", "CORE070-FAMILY-14-PROBIT-PUBLIC-R-BRIDGE"],
+      "evidence": [
+        {"case_id": "CORE070-FAMILY-14-PROBIT-NATIVE-MODEL", "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-15-ORDINAL-PROBIT.toml", "detail": "status=\"success\", passed=5/failed=0, fixture=test/parity/test_ordinal_probit_parity.jl (ordinal_probit(link=probit)); note noether-ordinal-link-review.md exists for the link identity"}
+      ],
+      "recommended_disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+      "reason": "Native ordinal-probit parity green in the 40/40 harness (NATIVE-15, only 5 assertions — thin); formula and bridge cases unexecuted everywhere."
+    },
+    {
+      "source_id": "family/FAMILY-15-LOG",
+      "planned_case_ids": ["CORE070-FAMILY-15-LOG-NATIVE-MODEL", "CORE070-FAMILY-15-LOG-FORMULA-INTERFACE", "CORE070-FAMILY-15-LOG-PUBLIC-R-BRIDGE"],
+      "verdict": "PARTIAL_EVIDENCE",
+      "evidenced_cases": ["CORE070-FAMILY-15-LOG-NATIVE-MODEL"],
+      "unevidenced_cases": ["CORE070-FAMILY-15-LOG-FORMULA-INTERFACE", "CORE070-FAMILY-15-LOG-PUBLIC-R-BRIDGE"],
+      "evidence": [
+        {"case_id": "CORE070-FAMILY-15-LOG-NATIVE-MODEL", "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-16-NB1.toml", "detail": "status=\"success\", passed=28/failed=0, fixture=test/parity/test_nox_dispersion_parity.jl (nbinom1(link=log) via gllvmTMB::nbinom1() oracle mapping in parity_helpers.jl)"}
+      ],
+      "recommended_disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+      "reason": "Native NB1 parity green in the 40/40 harness (NATIVE-16); formula and bridge cases unexecuted everywhere."
+    },
+    {
+      "source_id": "family/FAMILY-16-LOGIT",
+      "planned_case_ids": ["CORE070-FAMILY-16-LOGIT-NATIVE-MODEL", "CORE070-FAMILY-16-LOGIT-FORMULA-INTERFACE", "CORE070-FAMILY-16-LOGIT-PUBLIC-R-BRIDGE"],
+      "verdict": "PARTIAL_EVIDENCE",
+      "evidenced_cases": ["CORE070-FAMILY-16-LOGIT-NATIVE-MODEL (narrower model: fixed-effect softmax only, no latent variables)"],
+      "unevidenced_cases": ["CORE070-FAMILY-16-LOGIT-FORMULA-INTERFACE", "CORE070-FAMILY-16-LOGIT-PUBLIC-R-BRIDGE"],
+      "evidence": [
+        {"case_id": "CORE070-FAMILY-16-LOGIT-NATIVE-MODEL", "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-17-MULTINOMIAL-FIXED.toml", "detail": "status=\"success\", passed=13/failed=0, fixture=test/parity/test_multinomial_parity.jl; fixture header declares baseline-category logit with NO latent variables in v1 (fit_multinomial_gllvm throws on K/num_lv), per 2026-08-18-multinomial-identity.md"}
+      ],
+      "recommended_disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
+      "reason": "The only executed multinomial evidence is a fixed-effect-only model (no latent variables); whether that satisfies the required multinomial(logit) native-model obligation, or the latent multinomial is a documented exclusion, is an open scope question — plus formula and bridge cases unexecuted."
+    },
+    {
+      "source_id": "family/FAMILY-BETA-ALIAS",
+      "planned_case_ids": ["CORE070-FAMILY-BETA-ALIAS-COMPATIBILITY-ADAPTER"],
+      "verdict": "PARTIAL_EVIDENCE",
+      "evidenced_cases": ["CORE070-FAMILY-BETA-ALIAS-COMPATIBILITY-ADAPTER (admission/entry-probe level only, no fit)"],
+      "unevidenced_cases": [],
+      "evidence": [
+        {"case_id": "CORE070-FAMILY-BETA-ALIAS-COMPATIBILITY-ADAPTER", "artifact": ".unlazy/core070-aghq/family-routes-01/execution2/julia/output.log", "detail": "line 22: 'ENTRY-FAMILY-BETA-ALIAS\\tRESPONSE_READ_SENTINEL' — the probe fit_gllvm(Y; family=GLLVM.Beta(), K=1, link=LogitLink()) reached response read as expected; receipt.json scope is explicitly ENTRY_ONLY_NO_FITS, and docs/dev-log/core070/family-route-evidence.json status is FAMILY_ENTRY_ONLY_FITTED_COVERAGE_UNPAID; R-side descriptor admission of the alias is inside docs/dev-log/core070/family-admission-evidence.json (status R_ADMISSION_SUBSET_PASS_JULIA_UNPAID, classifications include compatibility_adapter: 1)"}
+      ],
+      "recommended_disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+      "reason": "The alias descriptor's admission was exercised on both engines (R admission subset pass; Julia entry probe hit the expected sentinel) but no fit was executed; a decision is needed on whether an adapter obligation is satisfiable at admission level or requires an equivalence fit."
+    }
+  ],
+  "summary_counts": {"BIND": 0, "PARTIAL_EVIDENCE": 15, "NO_EVIDENCE": 2}
+}

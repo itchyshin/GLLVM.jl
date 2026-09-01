@@ -2484,7 +2484,22 @@
     "CORE070-FAMILY-01-LOGIT-FORMULA-INTERFACE",
     "CORE070-FAMILY-01-LOGIT-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "triage": "family reconciliation audit 2026-09-01",
+    "verdict": "PARTIAL_EVIDENCE",
+    "reason": "Native binomial-logit parity executed and green in the 40/40 harness under id NATIVE-02-BINOMIAL, but formula-interface and public-R-bridge cases have no executed artifact anywhere; a registration decision is needed to bind the smoke receipt to the planned native case.",
+    "evidence_items": [
+     {
+      "case_id": "CORE070-FAMILY-01-LOGIT-NATIVE-MODEL",
+      "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-02-BINOMIAL.toml",
+      "detail": "status=\"success\", passed=6/failed=0, fixture=test/parity/test_binomial_parity.jl; helper default binomial_link=:logit (test/parity/parity_helpers.jl), so this is binomial(link=logit) native-model parity, executed under harness id NATIVE-02-BINOMIAL"
+     }
+    ],
+    "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+    "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+   }
   },
   {
    "source_id": "family/FAMILY-01-PROBIT",
@@ -2544,7 +2559,22 @@
     "CORE070-FAMILY-03-LOG-FORMULA-INTERFACE",
     "CORE070-FAMILY-03-LOG-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "triage": "family reconciliation audit 2026-09-01",
+    "verdict": "PARTIAL_EVIDENCE",
+    "reason": "Native lognormal parity green in the 40/40 harness (NATIVE-04); formula and bridge cases unexecuted everywhere.",
+    "evidence_items": [
+     {
+      "case_id": "CORE070-FAMILY-03-LOG-NATIVE-MODEL",
+      "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-04-LOGNORMAL.toml",
+      "detail": "status=\"success\", passed=15/failed=0, fixture=test/parity/test_lognormal_parity.jl (lognormal(link=log) native-model parity)"
+     }
+    ],
+    "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+    "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+   }
   },
   {
    "source_id": "family/FAMILY-03-REJECT-LINK",
@@ -2566,7 +2596,22 @@
     "CORE070-FAMILY-04-LOG-FORMULA-INTERFACE",
     "CORE070-FAMILY-04-LOG-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "triage": "family reconciliation audit 2026-09-01",
+    "verdict": "PARTIAL_EVIDENCE",
+    "reason": "Native Gamma-log parity green in the 40/40 harness (NATIVE-05); formula and bridge cases unexecuted everywhere.",
+    "evidence_items": [
+     {
+      "case_id": "CORE070-FAMILY-04-LOG-NATIVE-MODEL",
+      "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-05-GAMMA.toml",
+      "detail": "status=\"success\", passed=28/failed=0, fixture=test/parity/test_nox_dispersion_parity.jl; oracle maps gamma -> stats::Gamma(link=\"log\") (parity_helpers.jl), matching the planned descriptor Gamma(link=\"log\")"
+     }
+    ],
+    "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+    "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+   }
   },
   {
    "source_id": "family/FAMILY-04-REJECT-LINK",
@@ -2614,7 +2659,22 @@
     "CORE070-FAMILY-06-FIXED-SHAPE-FORMULA-INTERFACE",
     "CORE070-FAMILY-06-FIXED-SHAPE-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "triage": "family reconciliation audit 2026-09-01",
+    "verdict": "PARTIAL_EVIDENCE",
+    "reason": "The fixed-common-power Tweedie contract was executed and verified inside the green NATIVE-07 cell; formula and bridge cases unexecuted everywhere. Whether p=1.5 specifically vs p_true satisfies the planned descriptor tweedie(p=1.5) is a registration detail for the reclassify decision.",
+    "evidence_items": [
+     {
+      "case_id": "CORE070-FAMILY-06-FIXED-SHAPE-NATIVE-MODEL",
+      "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-07-TWEEDIE.toml",
+      "detail": "status=\"success\", passed=28/failed=0; the fixture's first testset (test/parity/test_tweedie_parity.jl line 27, 'fixed common power is the same public model on both engines') fits fit_tweedie_gllvm_grouped(power=p_true) against gllvmTMB with n_power_free=0 asserted \u2014 the tweedie(p=fixed) contract"
+     }
+    ],
+    "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+    "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+   }
   },
   {
    "source_id": "family/FAMILY-06-LOG",
@@ -2626,7 +2686,22 @@
     "CORE070-FAMILY-06-LOG-FORMULA-INTERFACE",
     "CORE070-FAMILY-06-LOG-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "triage": "family reconciliation audit 2026-09-01",
+    "verdict": "PARTIAL_EVIDENCE",
+    "reason": "Native tweedie(link=log) parity green in the 40/40 harness (NATIVE-07); formula and bridge cases unexecuted everywhere.",
+    "evidence_items": [
+     {
+      "case_id": "CORE070-FAMILY-06-LOG-NATIVE-MODEL",
+      "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-07-TWEEDIE.toml",
+      "detail": "status=\"success\", passed=28/failed=0, fixture=test/parity/test_tweedie_parity.jl covering three distinct frozen-R Tweedie power contracts (fixed common power, reference-constrained shared power, public per-species default; see decision doc 2026-08-30-core070-tweedie-power.md)"
+     }
+    ],
+    "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+    "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+   }
   },
   {
    "source_id": "family/FAMILY-06-REJECT-LINK",
@@ -2734,7 +2809,22 @@
     "CORE070-FAMILY-08-LOGIT-FORMULA-INTERFACE",
     "CORE070-FAMILY-08-LOGIT-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "triage": "family reconciliation audit 2026-09-01",
+    "verdict": "PARTIAL_EVIDENCE",
+    "reason": "Native betabinomial-logit parity green in the 40/40 harness (NATIVE-09); formula and bridge cases unexecuted everywhere.",
+    "evidence_items": [
+     {
+      "case_id": "CORE070-FAMILY-08-LOGIT-NATIVE-MODEL",
+      "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-09-BETABINOMIAL.toml",
+      "detail": "status=\"success\", passed=28/failed=0, fixture=test/parity/test_nox_dispersion_parity.jl (betabinomial(logit) via gllvmTMB::betabinomial() oracle mapping in parity_helpers.jl)"
+     }
+    ],
+    "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+    "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+   }
   },
   {
    "source_id": "family/FAMILY-08-REJECT-LINK",
@@ -2756,7 +2846,22 @@
     "CORE070-FAMILY-09-FIXED-SHAPE-FORMULA-INTERFACE",
     "CORE070-FAMILY-09-FIXED-SHAPE-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
+   "evidence": {
+    "triage": "family reconciliation audit 2026-09-01",
+    "verdict": "PARTIAL_EVIDENCE",
+    "reason": "The fixed-df student contract was exercised and its own subtests passed, but only inside the failed/contested NATIVE-10-STUDENT cell whose health classification the D-43 panel overturned; formula and bridge cases unexecuted.",
+    "evidence_items": [
+     {
+      "case_id": "CORE070-FAMILY-09-FIXED-SHAPE-NATIVE-MODEL",
+      "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt2/parity-receipts/cell-NATIVE-10-STUDENT.toml",
+      "detail": "test/parity/test_studentt_parity.jl lines 59-73 run a fixed-nu control (gllvmTMB::student(df=nu_true) vs fit_studentt_gllvm(nu=nu_true)) inside the NATIVE-10-STUDENT cell; the fixed-df subtests passed, but the enclosing cell status=\"failed\" (31 pass / 2 fail)"
+     }
+    ],
+    "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+    "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+   }
   },
   {
    "source_id": "family/FAMILY-09-IDENTITY",
@@ -2768,7 +2873,22 @@
     "CORE070-FAMILY-09-IDENTITY-FORMULA-INTERFACE",
     "CORE070-FAMILY-09-IDENTITY-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
+   "evidence": {
+    "triage": "family reconciliation audit 2026-09-01",
+    "verdict": "PARTIAL_EVIDENCE",
+    "reason": "Student native parity was executed twice with the same 2 health-assertion failures, and parity-panel-2026-09-01.md (Panel C, finding 4) overturned the 'R-side only' classification \u2014 both engines sit on the nu->infinity boundary and Julia missed it \u2014 so the cell cannot be credited as verified; formula and bridge cases unexecuted.",
+    "evidence_items": [
+     {
+      "case_id": "CORE070-FAMILY-09-IDENTITY-NATIVE-MODEL",
+      "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt2/parity-receipts/cell-NATIVE-10-STUDENT.toml",
+      "detail": "status=\"failed\", passed=31/failed=2, fixture=test/parity/test_studentt_parity.jl; A6 rerun (.unlazy/core070-aghq/A6/original-final2.log) reproduces 31 pass / 2 fail with logLik agreement passing and the 2 failures on R-health assertions; NATIVE-10-STUDENT was excluded from the green attempt5 40-cell set"
+     }
+    ],
+    "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+    "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+   }
   },
   {
    "source_id": "family/FAMILY-09-REJECT-LINK",
@@ -2830,7 +2950,22 @@
     "CORE070-FAMILY-10-LOG-FORMULA-INTERFACE",
     "CORE070-FAMILY-10-LOG-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "triage": "family reconciliation audit 2026-09-01",
+    "verdict": "PARTIAL_EVIDENCE",
+    "reason": "Native truncated-Poisson parity green in the 40/40 harness (NATIVE-11); formula and bridge cases unexecuted everywhere.",
+    "evidence_items": [
+     {
+      "case_id": "CORE070-FAMILY-10-LOG-NATIVE-MODEL",
+      "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-11-TRUNCATED-POISSON.toml",
+      "detail": "status=\"success\", passed=8/failed=0, fixture=test/parity/test_truncated_poisson_parity.jl (truncated_poisson(link=log))"
+     }
+    ],
+    "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+    "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+   }
   },
   {
    "source_id": "family/FAMILY-10-REJECT-LINK",
@@ -2878,7 +3013,22 @@
     "CORE070-FAMILY-12-LOGIT-LOG-FORMULA-INTERFACE",
     "CORE070-FAMILY-12-LOGIT-LOG-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "triage": "family reconciliation audit 2026-09-01",
+    "verdict": "PARTIAL_EVIDENCE",
+    "reason": "Native delta-lognormal parity green in the 40/40 harness (NATIVE-13) using the *_required.jl fixture; formula and bridge cases unexecuted everywhere.",
+    "evidence_items": [
+     {
+      "case_id": "CORE070-FAMILY-12-LOGIT-LOG-NATIVE-MODEL",
+      "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-13-DELTA-LOGNORMAL.toml",
+      "detail": "status=\"success\", passed=24/failed=0, fixture=test/parity/test_delta_lognormal_required.jl (delta_lognormal())"
+     }
+    ],
+    "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+    "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+   }
   },
   {
    "source_id": "family/FAMILY-12-REJECT-POISSON-DELTA",
@@ -2920,7 +3070,22 @@
     "CORE070-FAMILY-13-LOGIT-LOG-FORMULA-INTERFACE",
     "CORE070-FAMILY-13-LOGIT-LOG-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "triage": "family reconciliation audit 2026-09-01",
+    "verdict": "PARTIAL_EVIDENCE",
+    "reason": "Native delta-gamma parity green in the 40/40 harness (NATIVE-14); formula and bridge cases unexecuted everywhere.",
+    "evidence_items": [
+     {
+      "case_id": "CORE070-FAMILY-13-LOGIT-LOG-NATIVE-MODEL",
+      "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-14-DELTA-GAMMA.toml",
+      "detail": "status=\"success\", passed=24/failed=0, fixture=test/parity/test_delta_gamma_required.jl (delta_gamma())"
+     }
+    ],
+    "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+    "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+   }
   },
   {
    "source_id": "family/FAMILY-13-REJECT-POISSON-DELTA",
@@ -2972,7 +3137,22 @@
     "CORE070-FAMILY-14-PROBIT-FORMULA-INTERFACE",
     "CORE070-FAMILY-14-PROBIT-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "triage": "family reconciliation audit 2026-09-01",
+    "verdict": "PARTIAL_EVIDENCE",
+    "reason": "Native ordinal-probit parity green in the 40/40 harness (NATIVE-15, only 5 assertions \u2014 thin); formula and bridge cases unexecuted everywhere.",
+    "evidence_items": [
+     {
+      "case_id": "CORE070-FAMILY-14-PROBIT-NATIVE-MODEL",
+      "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-15-ORDINAL-PROBIT.toml",
+      "detail": "status=\"success\", passed=5/failed=0, fixture=test/parity/test_ordinal_probit_parity.jl (ordinal_probit(link=probit)); note noether-ordinal-link-review.md exists for the link identity"
+     }
+    ],
+    "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+    "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+   }
   },
   {
    "source_id": "family/FAMILY-14-REJECT-LINK",
@@ -2994,7 +3174,22 @@
     "CORE070-FAMILY-15-LOG-FORMULA-INTERFACE",
     "CORE070-FAMILY-15-LOG-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "triage": "family reconciliation audit 2026-09-01",
+    "verdict": "PARTIAL_EVIDENCE",
+    "reason": "Native NB1 parity green in the 40/40 harness (NATIVE-16); formula and bridge cases unexecuted everywhere.",
+    "evidence_items": [
+     {
+      "case_id": "CORE070-FAMILY-15-LOG-NATIVE-MODEL",
+      "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-16-NB1.toml",
+      "detail": "status=\"success\", passed=28/failed=0, fixture=test/parity/test_nox_dispersion_parity.jl (nbinom1(link=log) via gllvmTMB::nbinom1() oracle mapping in parity_helpers.jl)"
+     }
+    ],
+    "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+    "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+   }
   },
   {
    "source_id": "family/FAMILY-15-REJECT-LINK",
@@ -3016,7 +3211,22 @@
     "CORE070-FAMILY-16-LOGIT-FORMULA-INTERFACE",
     "CORE070-FAMILY-16-LOGIT-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
+   "evidence": {
+    "triage": "family reconciliation audit 2026-09-01",
+    "verdict": "PARTIAL_EVIDENCE",
+    "reason": "The only executed multinomial evidence is a fixed-effect-only model (no latent variables); whether that satisfies the required multinomial(logit) native-model obligation, or the latent multinomial is a documented exclusion, is an open scope question \u2014 plus formula and bridge cases unexecuted.",
+    "evidence_items": [
+     {
+      "case_id": "CORE070-FAMILY-16-LOGIT-NATIVE-MODEL",
+      "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-17-MULTINOMIAL-FIXED.toml",
+      "detail": "status=\"success\", passed=13/failed=0, fixture=test/parity/test_multinomial_parity.jl; fixture header declares baseline-category logit with NO latent variables in v1 (fit_multinomial_gllvm throws on K/num_lv), per 2026-08-18-multinomial-identity.md"
+     }
+    ],
+    "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+    "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+   }
   },
   {
    "source_id": "family/FAMILY-16-MUTATED-DESCRIPTOR-REJECT",
@@ -3046,7 +3256,22 @@
    "planned_case_ids": [
     "CORE070-FAMILY-BETA-ALIAS-COMPATIBILITY-ADAPTER"
    ],
-   "case_plan": "docs/dev-log/core070/family-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "triage": "family reconciliation audit 2026-09-01",
+    "verdict": "PARTIAL_EVIDENCE",
+    "reason": "The alias descriptor's admission was exercised on both engines (R admission subset pass; Julia entry probe hit the expected sentinel) but no fit was executed; a decision is needed on whether an adapter obligation is satisfiable at admission level or requires an equivalence fit.",
+    "evidence_items": [
+     {
+      "case_id": "CORE070-FAMILY-BETA-ALIAS-COMPATIBILITY-ADAPTER",
+      "artifact": ".unlazy/core070-aghq/family-routes-01/execution2/julia/output.log",
+      "detail": "line 22: 'ENTRY-FAMILY-BETA-ALIAS\\tRESPONSE_READ_SENTINEL' \u2014 the probe fit_gllvm(Y; family=GLLVM.Beta(), K=1, link=LogitLink()) reached response read as expected; receipt.json scope is explicitly ENTRY_ONLY_NO_FITS, and docs/dev-log/core070/family-route-evidence.json status is FAMILY_ENTRY_ONLY_FITTED_COVERAGE_UNPAID; R-side descriptor admission of the alias is inside docs/dev-log/core070/family-admission-evidence.json (status R_ADMISSION_SUBSET_PASS_JULIA_UNPAID, classifications include compatibility_adapter: 1)"
+     }
+    ],
+    "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+    "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+   }
   },
   {
    "source_id": "fit-input/INPUT-ANIMAL-LATENT",
