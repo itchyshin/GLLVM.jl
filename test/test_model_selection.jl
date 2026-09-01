@@ -32,6 +32,13 @@ using GLLVM, Test, Random, Distributions, Statistics
         # AIC default agrees with the BIC selection consistency: best row is the
         # argmin of the chosen criterion (default :bic).
         @test sel.best_k == sel.K[argmin(sel.bic)]
+
+        # bic uses nobs(fit, Y), R's p·n observed-cell count, not the site
+        # count n (docs/dev-log/decisions/2026-09-01-maintainer-decisions-round1.md
+        # #1); complete-data Y here has no missing cells, so nobs == p * n.
+        for i in eachindex(sel.K)
+            @test sel.bic[i] ≈ sel.nparams[i] * log(p * n) - 2 * sel.loglik[i]
+        end
     end
 
     @testset ":aic criterion selects argmin AIC" begin

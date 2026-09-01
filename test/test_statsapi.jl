@@ -4,6 +4,9 @@ using GLLVM: StatsAPI, coef, vcov, nobs, dof, loglikelihood, aic, bic, stderror,
 @testset "StatsAPI extractors" begin
     Random.seed!(42)
     p, K, n = 4, 1, 60
+    # nobs(fit, Y) is R's p·n observed-cell count, not the site count n
+    # (docs/dev-log/decisions/2026-09-01-maintainer-decisions-round1.md #1).
+    pn = p * n
 
     # 1. Gaussian GllvmFit
     Λt = 0.6 .* randn(p, K)
@@ -15,8 +18,8 @@ using GLLVM: StatsAPI, coef, vcov, nobs, dof, loglikelihood, aic, bic, stderror,
         @test StatsAPI.loglikelihood(fit_gauss) ≈ fit_gauss.logLik
         @test StatsAPI.aic(fit_gauss) ≈ 2 * StatsAPI.dof(fit_gauss) - 2 * StatsAPI.loglikelihood(fit_gauss)
         @test StatsAPI.bic(fit_gauss, n) ≈ StatsAPI.dof(fit_gauss) * log(n) - 2 * StatsAPI.loglikelihood(fit_gauss)
-        @test StatsAPI.bic(fit_gauss, y_gauss) ≈ StatsAPI.bic(fit_gauss, n)
-        @test StatsAPI.nobs(fit_gauss, y_gauss) == n
+        @test StatsAPI.bic(fit_gauss, y_gauss) ≈ StatsAPI.bic(fit_gauss, pn)
+        @test StatsAPI.nobs(fit_gauss, y_gauss) == pn
         @test isempty(StatsAPI.coef(fit_gauss)) # intercept-only / no fixed effects β
 
         V = StatsAPI.vcov(fit_gauss, y_gauss)
@@ -34,6 +37,30 @@ using GLLVM: StatsAPI, coef, vcov, nobs, dof, loglikelihood, aic, bic, stderror,
         @test occursin("logLik", s)
     end
 
+    @testset "nobs/bic masked-cell counting (p·n convention)" begin
+        # docs/dev-log/decisions/2026-09-01-maintainer-decisions-round1.md #1:
+        # nobs(fit, Y) counts observed p×n response cells, not sites — with a
+        # `missing`-carrying Y or an explicit `mask`, masked-out cells must be
+        # excluded from both nobs and bic.
+        mask = trues(p, n)
+        mask[1, 3] = false
+        mask[2, 10] = false
+        n_masked = count(mask)
+        @test n_masked == pn - 2
+
+        @test StatsAPI.nobs(fit_gauss, y_gauss; mask = mask) == n_masked
+        @test StatsAPI.bic(fit_gauss, y_gauss; mask = mask) ≈
+              StatsAPI.dof(fit_gauss) * log(n_masked) - 2 * StatsAPI.loglikelihood(fit_gauss)
+        @test !isapprox(StatsAPI.bic(fit_gauss, y_gauss; mask = mask),
+                        StatsAPI.bic(fit_gauss, y_gauss))
+
+        y_missing = Matrix{Union{Float64, Missing}}(y_gauss)
+        y_missing[1, 3] = missing
+        y_missing[2, 10] = missing
+        @test StatsAPI.nobs(fit_gauss, y_missing) == n_masked
+        @test StatsAPI.bic(fit_gauss, y_missing) ≈ StatsAPI.bic(fit_gauss, y_gauss; mask = mask)
+    end
+
     # 2. BinomialFit
     η_bin = 0.2 .+ Λt * randn(K, n)
     μ_bin = inv.(1 .+ exp.(-η_bin))
@@ -45,7 +72,7 @@ using GLLVM: StatsAPI, coef, vcov, nobs, dof, loglikelihood, aic, bic, stderror,
         @test StatsAPI.loglikelihood(fit_bin) ≈ fit_bin.loglik
         @test StatsAPI.aic(fit_bin) ≈ 2 * StatsAPI.dof(fit_bin) - 2 * fit_bin.loglik
         @test StatsAPI.bic(fit_bin, n) ≈ StatsAPI.dof(fit_bin) * log(n) - 2 * fit_bin.loglik
-        @test StatsAPI.nobs(fit_bin, Y_bin) == n
+        @test StatsAPI.nobs(fit_bin, Y_bin) == pn
         @test length(StatsAPI.coef(fit_bin)) == p # β intercepts
 
         s = summary(fit_bin)
@@ -62,7 +89,7 @@ using GLLVM: StatsAPI, coef, vcov, nobs, dof, loglikelihood, aic, bic, stderror,
         @test StatsAPI.loglikelihood(fit_pois) ≈ fit_pois.loglik
         @test StatsAPI.aic(fit_pois) ≈ 2 * StatsAPI.dof(fit_pois) - 2 * fit_pois.loglik
         @test StatsAPI.bic(fit_pois, n) ≈ StatsAPI.dof(fit_pois) * log(n) - 2 * fit_pois.loglik
-        @test StatsAPI.nobs(fit_pois, Y_pois) == n
+        @test StatsAPI.nobs(fit_pois, Y_pois) == pn
         @test length(StatsAPI.coef(fit_pois)) == p
 
         s = summary(fit_pois)
@@ -75,7 +102,7 @@ using GLLVM: StatsAPI, coef, vcov, nobs, dof, loglikelihood, aic, bic, stderror,
         @test StatsAPI.dof(fit_nb) == GLLVM._nparams(fit_nb)
         @test StatsAPI.loglikelihood(fit_nb) ≈ fit_nb.loglik
         @test StatsAPI.aic(fit_nb) ≈ 2 * StatsAPI.dof(fit_nb) - 2 * fit_nb.loglik
-        @test StatsAPI.nobs(fit_nb, Y_pois) == n
+        @test StatsAPI.nobs(fit_nb, Y_pois) == pn
 
         s = summary(fit_nb)
         @test occursin("NegativeBinomial", s)
@@ -88,7 +115,7 @@ using GLLVM: StatsAPI, coef, vcov, nobs, dof, loglikelihood, aic, bic, stderror,
         @test StatsAPI.dof(fit_beta) == GLLVM._nparams(fit_beta)
         @test StatsAPI.loglikelihood(fit_beta) ≈ fit_beta.loglik
         @test StatsAPI.aic(fit_beta) ≈ 2 * StatsAPI.dof(fit_beta) - 2 * fit_beta.loglik
-        @test StatsAPI.nobs(fit_beta, Y_beta) == n
+        @test StatsAPI.nobs(fit_beta, Y_beta) == pn
 
         s = summary(fit_beta)
         @test occursin("Beta GLLVM fit", s)
@@ -101,7 +128,7 @@ using GLLVM: StatsAPI, coef, vcov, nobs, dof, loglikelihood, aic, bic, stderror,
         @test StatsAPI.dof(fit_gamma) == GLLVM._nparams(fit_gamma)
         @test StatsAPI.loglikelihood(fit_gamma) ≈ fit_gamma.loglik
         @test StatsAPI.aic(fit_gamma) ≈ 2 * StatsAPI.dof(fit_gamma) - 2 * fit_gamma.loglik
-        @test StatsAPI.nobs(fit_gamma, Y_gamma) == n
+        @test StatsAPI.nobs(fit_gamma, Y_gamma) == pn
 
         s = summary(fit_gamma)
         @test occursin("Gamma GLLVM fit", s)
@@ -115,7 +142,7 @@ using GLLVM: StatsAPI, coef, vcov, nobs, dof, loglikelihood, aic, bic, stderror,
         @test StatsAPI.dof(fit_cov) == GLLVM._nparams(fit_cov)
         @test StatsAPI.loglikelihood(fit_cov) ≈ fit_cov.loglik
         @test length(StatsAPI.coef(fit_cov)) == length(fit_cov.γ)
-        @test StatsAPI.nobs(fit_cov, Y_pois) == n
+        @test StatsAPI.nobs(fit_cov, Y_pois) == pn
         s = summary(fit_cov)
         @test occursin("GLLVM Covariates fit", s)
     end
@@ -133,7 +160,7 @@ using GLLVM: StatsAPI, coef, vcov, nobs, dof, loglikelihood, aic, bic, stderror,
         @test StatsAPI.dof(fit_ord) == GLLVM._nparams(fit_ord)
         @test StatsAPI.loglikelihood(fit_ord) ≈ fit_ord.loglik
         @test StatsAPI.aic(fit_ord) ≈ 2 * StatsAPI.dof(fit_ord) - 2 * fit_ord.loglik
-        @test StatsAPI.nobs(fit_ord, Y_ord) == n
+        @test StatsAPI.nobs(fit_ord, Y_ord) == pn
         @test length(StatsAPI.coef(fit_ord)) == length(fit_ord.τ)
         s = summary(fit_ord)
         @test occursin("Ordinal GLLVM fit", s)
@@ -146,7 +173,7 @@ using GLLVM: StatsAPI, coef, vcov, nobs, dof, loglikelihood, aic, bic, stderror,
         @test StatsAPI.dof(fit_tw) == GLLVM._nparams(fit_tw)
         @test StatsAPI.loglikelihood(fit_tw) ≈ fit_tw.loglik
         @test StatsAPI.aic(fit_tw) ≈ 2 * StatsAPI.dof(fit_tw) - 2 * fit_tw.loglik
-        @test StatsAPI.nobs(fit_tw, Y_tw) == n
+        @test StatsAPI.nobs(fit_tw, Y_tw) == pn
         s = summary(fit_tw)
         @test occursin("Tweedie GLLVM fit", s)
     end

@@ -27,6 +27,15 @@ using Random
         @test isapprox(br.loadings, getLoadings(direct; rotate = true); atol = 1e-8, rtol = 0)
         @test isapprox(br.scores, scores; atol = 1e-8, rtol = 0)
 
+        # BIC must agree with the `nobs` field it is built from — R's p·n
+        # observed-cell count (docs/dev-log/decisions/2026-09-01-maintainer-decisions-round1.md
+        # #1), NOT the site count `n`. Before the fix `bic` used `log(n)`
+        # while `nobs` already used `log(count(mask))`, so the two disagreed
+        # whenever any cell was masked.
+        @test isapprox(br.bic, br.df * log(br.nobs) - 2 * br.loglik; atol = 1e-8, rtol = 0)
+        @test br.nobs != n
+        @test !isapprox(br.bic, br.df * log(n) - 2 * br.loglik; atol = 1e-8, rtol = 0)
+
         br_garbage = bridge_fit(; y = Ygarbage, family = "poisson", d = K, mask = mask)
         @test isapprox(br_garbage.loglik, br.loglik; atol = 1e-8, rtol = 0)
         @test isapprox(br_garbage.alpha, br.alpha; atol = 1e-8, rtol = 0)
