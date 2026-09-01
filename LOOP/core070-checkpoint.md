@@ -2025,3 +2025,9 @@ cross-correlations fixture gap) surfaced as PARTIAL_PARITY_DEFECT_PENDING_
 DECISION — Julia total-variance vs R tier-scoped compositions.
 BLOCKED_NEEDS_JULIA_SURFACE 142 -> 117. Consolidated Totoro suite: 11362
 pass / 5 known-canary fails / 0 new-slice failures.
+
+## Standing directive — 2026-09-01: ultracode by default
+
+Maintainer: "always use /ultra-code when helpful and can speed things up and
+more accurate". Multi-agent workflows are now the default for parallelizable
+or verification-heavy slices in this programme.
