@@ -210,7 +210,9 @@
    "r_call": "gllvmTMB(value ~ 0 + trait + dep(0 + trait | species) + indep(0 + trait | species), df, unit = \"site\", trait = \"trait\", family = stats::gaussian(), control = control)",
    "expect": "both engines refuse",
    "julia_error_pattern": "mutually exclusive",
-   "notes": "Julia: GLLVM._check_source_term_exclusions throws ArgumentError (dep+indep same grouping, src/formula.jl:550-551, porting fit-multi.R:1672-1681). R error text recorded verbatim from the live oracle run, not pre-asserted."
+   "notes": "Julia: GLLVM._check_source_term_exclusions throws ArgumentError (dep+indep same grouping, src/formula.jl:550-551, porting fit-multi.R:1672-1681). R error text recorded verbatim from the live oracle run, not pre-asserted.",
+   "expect_r_raised": true,
+   "expect_julia_raised": true
   },
   {
    "case_id": "CORE070-WAVE6-REJ-DEP-LATENT",
@@ -218,23 +220,19 @@
    "r_call": "gllvmTMB(value ~ 0 + trait + dep(0 + trait | species) + kernel_latent(species, K = C, d = 1, unique = FALSE), df, unit = \"site\", trait = \"trait\", family = stats::gaussian(), control = control)",
    "expect": "both engines refuse",
    "julia_error_pattern": "over-parameterised",
-   "notes": "Julia: dep+latent same grouping, src/formula.jl:552-553 (fit-multi.R:1642-1656)."
-  },
-  {
-   "case_id": "CORE070-WAVE6-REJ-INDEP-LATENT",
-   "term_exprs": "[:(indep(0 + trait | species)), :(kernel_latent(species, K = C, d = 1, unique = false))]",
-   "r_call": "gllvmTMB(value ~ 0 + trait + indep(0 + trait | species) + kernel_latent(species, K = C, d = 1, unique = FALSE), df, unit = \"site\", trait = \"trait\", family = stats::gaussian(), control = control)",
-   "expect": "both engines refuse",
-   "julia_error_pattern": "over-parameterised",
-   "notes": "Julia: indep+latent same grouping, src/formula.jl:556-557 (fit-multi.R:1682-1695)."
+   "notes": "Julia: dep+latent same grouping, src/formula.jl:552-553 (fit-multi.R:1642-1656).",
+   "expect_r_raised": true,
+   "expect_julia_raised": true
   },
   {
    "case_id": "CORE070-WAVE6-REJ-KERNEL-UNIQUE-STANDALONE",
    "term_exprs": "[:(kernel_unique(species, K = C, name = \"k1\"))]",
    "r_call": "gllvmTMB(value ~ 0 + trait + kernel_unique(species, K = C, name = \"k1\"), df, unit = \"site\", trait = \"trait\", family = stats::gaussian(), control = control)",
-   "expect": "both engines refuse",
+   "expect": "asymmetric documented behavior: R silently FOLDS standalone kernel_unique (fits successfully via the two-term rewrite); Julia refuses with a named error pointing at the kernel_latent(..., unique=true) fold",
    "julia_error_pattern": "no standalone SourceCovariance mode",
-   "notes": "Julia: _source_term_covariance throws for a bare :kernel_unique spec (src/formula.jl:604-606); the only supported route is the kernel_latent(..., unique=true) fold (see the SINGLE-PSI cases above)."
+   "notes": "Julia: _source_term_covariance throws for a bare :kernel_unique spec (src/formula.jl:604-606); the only supported route is the kernel_latent(..., unique=true) fold (see the SINGLE-PSI cases above).",
+   "expect_r_raised": false,
+   "expect_julia_raised": true
   }
  ],
  "negative_controls": [
@@ -255,5 +253,7 @@
   "totoro_command": "ssh -F ~/.ssh/config -o ControlPath=~/.ssh/cm-%r@%h:%p totoro.biology.ualberta.ca 'cd /project/<...>/GLLVM.jl && OPENBLAS_NUM_THREADS=1 JULIA_NUM_THREADS=1 Rscript --vanilla tools/core070_wave6_conversion_batch.R <frozen-library-path> .unlazy/core070-aghq/wave6-conversion-04'",
   "verify_command": "python3 tools/core070_verify_wave6_conversion_batch.py .unlazy/core070-aghq/wave6-conversion-04",
   "self_test_command": "python3 tools/core070_verify_wave6_conversion_batch.py --self-test"
- }
+ },
+ "rejection_case_count": 3,
+ "indep_latent_resolution": "REJ-INDEP-LATENT removed 2026-09-01: wave6-conversion6 receipt showed the frozen R oracle ACCEPTS indep + kernel_latent on one grouping (the diag + reduced-rank model); the Julia recognizer's over-parameterisation gate contradicted the oracle and was removed from src/formula.jl \u2014 oracle behavior is the contract."
 }

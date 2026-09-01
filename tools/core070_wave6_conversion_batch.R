@@ -172,7 +172,6 @@ structured_formula_rhs <- list(
 rejection_formula_rhs <- list(
   "CORE070-WAVE6-REJ-DEP-INDEP" = "dep(0 + trait | species) + indep(0 + trait | species)",
   "CORE070-WAVE6-REJ-DEP-LATENT" = "dep(0 + trait | species) + kernel_latent(species, K = C, d = 1, unique = FALSE)",
-  "CORE070-WAVE6-REJ-INDEP-LATENT" = "indep(0 + trait | species) + kernel_latent(species, K = C, d = 1, unique = FALSE)",
   "CORE070-WAVE6-REJ-KERNEL-UNIQUE-STANDALONE" = "kernel_unique(species, K = C, name = \"k1\")"
 )
 

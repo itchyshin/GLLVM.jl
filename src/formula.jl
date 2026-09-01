@@ -553,8 +553,12 @@ function _check_source_term_exclusions(specs::Vector{SourceTermSpec})
             "group `$g`: dep(...) and latent(...) (kernel_latent) on the same grouping are over-parameterised"))
         has_dep && has_unique && throw(ArgumentError(
             "group `$g`: dep(...) and a unique(-folded latent) term on the same grouping are mutually exclusive"))
-        has_indep && has_latent && throw(ArgumentError(
-            "group `$g`: indep/scalar(...) and latent(...) (kernel_latent) on the same grouping are over-parameterised"))
+        # indep + latent on one grouping is deliberately ALLOWED: it is the
+        # diag + reduced-rank model (Sigma = K.*(LL') + diag), which the
+        # frozen R oracle ACCEPTS (wave6-conversion6 receipt: the R fit for
+        # indep + kernel_latent on `species` succeeded). The spec's original
+        # Step-4 over-parameterisation guess contradicted the oracle and was
+        # removed — observed oracle behavior is the contract.
     end
     return nothing
 end

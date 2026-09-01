@@ -399,7 +399,11 @@ for rc in contract["rejection_cases"]
         jl_raised = true
         jl_message = sprint(showerror, e)
     end
-    ok = r_raised == true && jl_raised == true
+    exp_r = get(rc, "expect_r_raised", true)
+    exp_jl = get(rc, "expect_julia_raised", true)
+    pat = get(rc, "julia_error_pattern", "")
+    ok = (r_raised == exp_r) && (jl_raised == exp_jl) &&
+         (!jl_raised || isempty(pat) || occursin(pat, jl_message))
     rejection_results[cid] = Dict{String, Any}("pass" => ok, "r_raised" => r_raised,
                                                 "julia_raised" => jl_raised, "julia_message" => jl_message)
     global rejection_ok &= ok

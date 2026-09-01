@@ -106,7 +106,9 @@ end
     @test_throws ArgumentError GLLVM._check_source_term_exclusions(specs([dep_g, indep_g]))
     @test_throws ArgumentError GLLVM._check_source_term_exclusions(specs([dep_g, scalar_g]))
     @test_throws ArgumentError GLLVM._check_source_term_exclusions(specs([dep_g, klatent_g]))
-    @test_throws ArgumentError GLLVM._check_source_term_exclusions(specs([indep_g, klatent_g]))
+    # indep + latent on one grouping is ALLOWED (diag + reduced-rank; the
+    # frozen R oracle accepts it — wave6-conversion6 receipt). Gate removed.
+    @test GLLVM._check_source_term_exclusions(specs([indep_g, klatent_g])) === nothing
     @test_throws ArgumentError GLLVM._check_source_term_exclusions(specs([dep_g, klatent_unique_g]))
     @test_throws ArgumentError GLLVM._check_source_term_exclusions(specs([dep_g, kunique_g]))
     # Non-conflicting: different groupings never gate each other.
