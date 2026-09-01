@@ -6235,9 +6235,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "print.gllvmTMB_Sigma_phy_slope (extract-sigma.R) only formats an already-computed R diagnostic object (the phylogenetic-slope Sigma table already covered by extract_Sigma-family required cases) for console display; it carries no independent numeric content."
+    "proposal_reason": "print.gllvmTMB_Sigma_phy_slope (extract-sigma.R) only formats an already-computed R diagnostic object (the phylogenetic-slope Sigma table already covered by extract_Sigma-family required cases) for console display; it carries no independent numeric content.",
+    "post_reclass_state": "print/plot-family: joins the plotting/print cluster (CairoMakie committed, build-later per decision round2-3 #10)"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION"
   },
   {
    "source_id": "namespace/S3method/print,gllvmTMB_check_consistency",
@@ -6251,9 +6253,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "print.gllvmTMB_check_consistency (check-consistency.R) only formats an already-computed R diagnostic object (check_gllvmTMB()'s internal consistency diagnostic, already required_core via check_gllvmTMB) for console display; it carries no independent numeric content."
+    "proposal_reason": "print.gllvmTMB_check_consistency (check-consistency.R) only formats an already-computed R diagnostic object (check_gllvmTMB()'s internal consistency diagnostic, already required_core via check_gllvmTMB) for console display; it carries no independent numeric content.",
+    "post_reclass_state": "print/plot-family: joins the plotting/print cluster (CairoMakie committed, build-later per decision round2-3 #10)"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION"
   },
   {
    "source_id": "namespace/S3method/print,gllvmTMB_confint_inspect",
@@ -6267,9 +6271,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "print.gllvmTMB_confint_inspect (confint-inspect.R) only formats an already-computed R diagnostic object (the confint_inspect() object, already required_core via confint_inspect) for console display; it carries no independent numeric content."
+    "proposal_reason": "print.gllvmTMB_confint_inspect (confint-inspect.R) only formats an already-computed R diagnostic object (the confint_inspect() object, already required_core via confint_inspect) for console display; it carries no independent numeric content.",
+    "post_reclass_state": "print/plot-family: joins the plotting/print cluster (CairoMakie committed, build-later per decision round2-3 #10)"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION"
   },
   {
    "source_id": "namespace/S3method/print,gllvmTMB_coverage_study",
@@ -6283,9 +6289,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "print.gllvmTMB_coverage_study (coverage-study.R) only formats an already-computed R diagnostic object (a simulation coverage-study summary object (dev/reporting tooling, not a fitted-model accessor)) for console display; it carries no independent numeric content."
+    "proposal_reason": "print.gllvmTMB_coverage_study (coverage-study.R) only formats an already-computed R diagnostic object (a simulation coverage-study summary object (dev/reporting tooling, not a fitted-model accessor)) for console display; it carries no independent numeric content.",
+    "post_reclass_state": "print/plot-family: joins the plotting/print cluster (CairoMakie committed, build-later per decision round2-3 #10)"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION"
   },
   {
    "source_id": "namespace/S3method/print,gllvmTMB_identifiability",
@@ -6299,9 +6307,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "print.gllvmTMB_identifiability (diagnose.R) only formats an already-computed R diagnostic object (an identifiability-diagnostic object produced by check_gllvmTMB()) for console display; it carries no independent numeric content."
+    "proposal_reason": "print.gllvmTMB_identifiability (diagnose.R) only formats an already-computed R diagnostic object (an identifiability-diagnostic object produced by check_gllvmTMB()) for console display; it carries no independent numeric content.",
+    "post_reclass_state": "print/plot-family: joins the plotting/print cluster (CairoMakie committed, build-later per decision round2-3 #10)"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION"
   },
   {
    "source_id": "namespace/S3method/print,gllvmTMB_julia",
@@ -6315,9 +6325,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "Pure R-side console formatting of bridge-object fields that are separately covered as required_core (coef/confint/fitted/logLik/predict/residuals/simulate,gllvmTMB_julia). No numeric parity target of its own."
+    "proposal_reason": "Pure R-side console formatting of bridge-object fields that are separately covered as required_core (coef/confint/fitted/logLik/predict/residuals/simulate,gllvmTMB_julia). No numeric parity target of its own.",
+    "post_reclass_state": "print/plot-family: joins the plotting/print cluster (CairoMakie committed, build-later per decision round2-3 #10)"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION"
   },
   {
    "source_id": "namespace/S3method/print,gllvmTMB_multi",
@@ -6332,9 +6344,11 @@
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per the adversarially verified draft-v2 proposal, maintainer-approved in bulk 2026-09-01",
     "proposal_reason": "Console formatting only; underlying numeric accessors are separately required_core.",
-    "prior_note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Console formatting only; underlying numeric accessors are separately required_core.\"}"
+    "prior_note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Console formatting only; underlying numeric accessors are separately required_core.\"}",
+    "post_reclass_state": "print/plot-family: joins the plotting/print cluster (CairoMakie committed, build-later per decision round2-3 #10)"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION"
   },
   {
    "source_id": "namespace/S3method/print,gllvmTMB_reportable_table",
@@ -6348,9 +6362,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "print.gllvmTMB_reportable_table (reportable-table.R) only formats an already-computed R diagnostic object (a formatted reporting table assembled from already-validated diagnostic values) for console display; it carries no independent numeric content."
+    "proposal_reason": "print.gllvmTMB_reportable_table (reportable-table.R) only formats an already-computed R diagnostic object (a formatted reporting table assembled from already-validated diagnostic values) for console display; it carries no independent numeric content.",
+    "post_reclass_state": "print/plot-family: joins the plotting/print cluster (CairoMakie committed, build-later per decision round2-3 #10)"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION"
   },
   {
    "source_id": "namespace/S3method/print,gllvmTMB_ridge_path",
@@ -6376,9 +6392,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "print.gllvmTMB_slope_ci (slope-sd-ci.R) only formats an already-computed R diagnostic object (the slope-SD CI object, already required_core via the slope confint machinery) for console display; it carries no independent numeric content."
+    "proposal_reason": "print.gllvmTMB_slope_ci (slope-sd-ci.R) only formats an already-computed R diagnostic object (the slope-SD CI object, already required_core via the slope confint machinery) for console display; it carries no independent numeric content.",
+    "post_reclass_state": "print/plot-family: joins the plotting/print cluster (CairoMakie committed, build-later per decision round2-3 #10)"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION"
   },
   {
    "source_id": "namespace/S3method/print,gllvmTMB_va",
@@ -6399,9 +6417,11 @@
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per the adversarially verified draft-v2 proposal, maintainer-approved in bulk 2026-09-01",
     "proposal_reason": "Console formatting of a summary object whose numeric content is separately required_core (summary,gllvmTMB_julia). No distinct Julia surface.",
-    "prior_note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Console formatting of a summary object whose numeric content is separately required_core (summary,gllvmTMB_julia). No disti"
+    "prior_note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Console formatting of a summary object whose numeric content is separately required_core (summary,gllvmTMB_julia). No disti",
+    "post_reclass_state": "print/plot-family: joins the plotting/print cluster (CairoMakie committed, build-later per decision round2-3 #10)"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION"
   },
   {
    "source_id": "namespace/S3method/print,summary.gllvmTMB_multi",
@@ -6416,9 +6436,11 @@
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per the adversarially verified draft-v2 proposal, maintainer-approved in bulk 2026-09-01",
     "proposal_reason": "Console formatting only; the summary object's numeric content is separately required_core.",
-    "prior_note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Console formatting only; the summary object's numeric content is separately required_core.\"}"
+    "prior_note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Console formatting only; the summary object's numeric content is separately required_core.\"}",
+    "post_reclass_state": "print/plot-family: joins the plotting/print cluster (CairoMakie committed, build-later per decision round2-3 #10)"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION"
   },
   {
    "source_id": "namespace/S3method/print,summary.gllvmTMB_va",
@@ -6715,9 +6737,11 @@
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified compatibility_adapter -> compatibility_adapter per the adversarially verified draft-v2 proposal, maintainer-approved in bulk 2026-09-01",
     "proposal_reason": "Pure R coordinate-system convenience utility outside GLLVM.jl's modeling surface (no CRS/UTM equivalent in src/).",
-    "prior_note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Pure R coordinate-system convenience utility outside GLLVM.jl's modeling surface (no CRS/UTM equivalent in src/).\"}"
+    "prior_note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Pure R coordinate-system convenience utility outside GLLVM.jl's modeling surface (no CRS/UTM equivalent in src/).\"}",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "compatibility_adapter"
+   "original_classification": "compatibility_adapter",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/animal_dep",
@@ -6898,9 +6922,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "animal_unique() (animal-keyword.R:89-96) carries an explicit lifecycle::badge(\"deprecated\") in its own docstring: 'soft-deprecated as compatibility syntax in gllvmTMB 0.2.0. Use animal_indep() for standalone marginal diagonal animal-model terms ... use animal_latent(..., unique = TRUE) when the folded latent term itself should carry this diagonal companion.' It is a deprecated alias whose behaviour is already covered by the required_core animal_indep and animal_latent(unique=TRUE) cases (SLOPE-ANIMAL-INDEP-*, SLOPE-ANIMAL-LAT-*)."
+    "proposal_reason": "animal_unique() (animal-keyword.R:89-96) carries an explicit lifecycle::badge(\"deprecated\") in its own docstring: 'soft-deprecated as compatibility syntax in gllvmTMB 0.2.0. Use animal_indep() for standalone marginal diagonal animal-model terms ... use animal_latent(..., unique = TRUE) when the folded latent term itself should carry this diagonal companion.' It is a deprecated alias whose behaviour is already covered by the required_core animal_indep and animal_latent(unique=TRUE) cases (SLOPE-ANIMAL-INDEP-*, SLOPE-ANIMAL-LAT-*).",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/betabinomial",
@@ -6967,9 +6993,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified compatibility_adapter -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "categorical() (R/missing-predictor.R:143) is a formula-grammar sentinel marking a predictor's imputation type at parse time; it carries no independent Julia numeric surface of its own."
+    "proposal_reason": "categorical() (R/missing-predictor.R:143) is a formula-grammar sentinel marking a predictor's imputation type at parse time; it carries no independent Julia numeric surface of its own.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "compatibility_adapter"
+   "original_classification": "compatibility_adapter",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/censored_poisson",
@@ -6989,9 +7017,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "check_auto_residual(fit) (check-auto-residual.R:60) reads fit$tmb_data$family_id_vec and fit$tmb_data$trait_id -- metadata already built by the fitting call -- and checks for within-trait family mixing / ordinal-family conflicts, returning a status/messages list. It computes no numeric quantity of its own (no likelihood, no covariance, no residual value); it is a pure R-side consistency validator over fields the fit already carries, so there is no independent Julia surface to compare against."
+    "proposal_reason": "check_auto_residual(fit) (check-auto-residual.R:60) reads fit$tmb_data$family_id_vec and fit$tmb_data$trait_id -- metadata already built by the fitting call -- and checks for within-trait family mixing / ordinal-family conflicts, returning a status/messages list. It computes no numeric quantity of its own (no likelihood, no covariance, no residual value); it is a pure R-side consistency validator over fields the fit already carries, so there is no independent Julia surface to compare against.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/check_gllvmTMB",
@@ -7025,9 +7055,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "compare_Sigma_table operates on already-extracted R objects and compares two already-extracted Sigma tables; it is a comparison/diagnostic utility, not itself a fitted-model accessor with an independent Julia numeric surface."
+    "proposal_reason": "compare_Sigma_table operates on already-extracted R objects and compares two already-extracted Sigma tables; it is a comparison/diagnostic utility, not itself a fitted-model accessor with an independent Julia numeric surface.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/compare_dep_vs_two_psi",
@@ -7041,9 +7073,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "compare_dep_vs_two_psi operates on already-extracted R objects and cross-checks the dep vs. two-psi covariance parameterizations against each other (an R-internal consistency check between two R parameterizations); it is a comparison/diagnostic utility, not itself a fitted-model accessor with an independent Julia numeric surface."
+    "proposal_reason": "compare_dep_vs_two_psi operates on already-extracted R objects and cross-checks the dep vs. two-psi covariance parameterizations against each other (an R-internal consistency check between two R parameterizations); it is a comparison/diagnostic utility, not itself a fitted-model accessor with an independent Julia numeric surface.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/compare_indep_vs_two_psi",
@@ -7057,9 +7091,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "compare_indep_vs_two_psi operates on already-extracted R objects and cross-checks the indep vs. two-psi covariance parameterizations against each other; it is a comparison/diagnostic utility, not itself a fitted-model accessor with an independent Julia numeric surface."
+    "proposal_reason": "compare_indep_vs_two_psi operates on already-extracted R objects and cross-checks the indep vs. two-psi covariance parameterizations against each other; it is a comparison/diagnostic utility, not itself a fitted-model accessor with an independent Julia numeric surface.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/compare_loadings",
@@ -7073,9 +7109,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "compare_loadings operates on already-extracted R objects and compares two already-extracted loadings matrices (Lambda_a, Lambda_b) generically; it is a comparison/diagnostic utility, not itself a fitted-model accessor with an independent Julia numeric surface."
+    "proposal_reason": "compare_loadings operates on already-extracted R objects and compares two already-extracted loadings matrices (Lambda_a, Lambda_b) generically; it is a comparison/diagnostic utility, not itself a fitted-model accessor with an independent Julia numeric surface.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/confint_inspect",
@@ -7109,9 +7147,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "confirmatory_lambda(species, group, d, loads_on, ...) (confirmatory-lambda.R:72) is pure R-side construction: it validates its arguments and builds an n x d NA/0 fixed-zero pattern matrix from the loads_on group->axis mapping, with no call into a fit or the TMB/Julia engine. It is the same class of R-only helper as suggest_lambda_constraint(s) (already compatibility_adapter in this manifest): a specification/advisory object with no numeric quantity to compare against a Julia surface."
+    "proposal_reason": "confirmatory_lambda(species, group, d, loads_on, ...) (confirmatory-lambda.R:72) is pure R-side construction: it validates its arguments and builds an n x d NA/0 fixed-zero pattern matrix from the loads_on group->axis mapping, with no call into a fit or the TMB/Julia engine. It is the same class of R-only helper as suggest_lambda_constraint(s) (already compatibility_adapter in this manifest): a specification/advisory object with no numeric quantity to compare against a Julia surface.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/cumulative_logit",
@@ -7125,9 +7165,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified compatibility_adapter -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "cumulative_logit() (R/missing-predictor.R:104) is a formula-grammar link-name sentinel used when parsing ordinal formulas; the underlying cumulative-logit likelihood is already required_core via the Ordinal family plan (GLLVM.jl families/ordinal.jl), so this sentinel constructor has no independent numeric content."
+    "proposal_reason": "cumulative_logit() (R/missing-predictor.R:104) is a formula-grammar link-name sentinel used when parsing ordinal formulas; the underlying cumulative-logit likelihood is already required_core via the Ordinal family plan (GLLVM.jl families/ordinal.jl), so this sentinel constructor has no independent numeric content.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "compatibility_adapter"
+   "original_classification": "compatibility_adapter",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/delta_beta",
@@ -7243,9 +7285,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "diagnose_kernel_separability(...) (kernel-helpers.R:581) takes user-supplied kernel matrices directly as its ... arguments (not a fitted model) and computes a pairwise Frobenius-style similarity between them in pure R, returning an advisory classification (near_orthogonal/high overlap) and recommendation text. It never touches a gllvmTMB fit or the TMB/Julia engine, so it has no Julia numeric surface to compare against -- the same class as suggest_lambda_constraint(s)."
+    "proposal_reason": "diagnose_kernel_separability(...) (kernel-helpers.R:581) takes user-supplied kernel matrices directly as its ... arguments (not a fitted model) and computes a pairwise Frobenius-style similarity between them in pure R, returning an advisory classification (near_orthogonal/high overlap) and recommendation text. It never touches a gllvmTMB fit or the TMB/Julia engine, so it has no Julia numeric surface to compare against -- the same class as suggest_lambda_constraint(s).",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/diagnostic_table",
@@ -7259,9 +7303,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "Aggregates already-validated diagnostic values (from check_gllvmTMB and friends, separately required_core) into an R display table; no independent numeric content of its own."
+    "proposal_reason": "Aggregates already-validated diagnostic values (from check_gllvmTMB and friends, separately required_core) into an R display table; no independent numeric content of its own.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/extract_Gamma",
@@ -7396,9 +7442,11 @@
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per the adversarially verified draft-v2 proposal, maintainer-approved in bulk 2026-09-01",
     "proposal_reason": "Display-table wrapper around extract_Sigma() and its CIs, both separately required_core; no independent numeric content.",
-    "prior_note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Display-table wrapper around extract_Sigma() and its CIs, both separately required_core; no independent numeric content.\"}"
+    "prior_note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Display-table wrapper around extract_Sigma() and its CIs, both separately required_core; no independent numeric content.\"}",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/extract_coevolution_modules",
@@ -7845,9 +7893,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/gllvmTMB",
@@ -8012,9 +8062,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/imputed",
@@ -8029,9 +8081,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/indep",
@@ -8062,9 +8116,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/isdm_sources",
@@ -8079,9 +8135,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/kernel_dep",
@@ -8274,9 +8332,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/make_mesh",
@@ -8291,9 +8351,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/meta",
@@ -8465,9 +8527,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/pedigree_to_Ainv_sparse",
@@ -8482,9 +8546,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/phylo",
@@ -8498,9 +8564,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified compatibility_adapter -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "confirms input classification: phylo() (R/brms-sugar.R:343-355) is a marker function whose body is explicitly commented 'Body unused -- never called at evaluation time' -- it is a pure argument-sniffing dispatcher onto phylo_dep/phylo_indep/phylo_latent/phylo_scalar/phylo_rr/phylo_slope/phylo_unique, each already carrying its own required_core planned case in this manifest."
+    "proposal_reason": "confirms input classification: phylo() (R/brms-sugar.R:343-355) is a marker function whose body is explicitly commented 'Body unused -- never called at evaluation time' -- it is a pure argument-sniffing dispatcher onto phylo_dep/phylo_indep/phylo_latent/phylo_scalar/phylo_rr/phylo_slope/phylo_unique, each already carrying its own required_core planned case in this manifest.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "compatibility_adapter"
+   "original_classification": "compatibility_adapter",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/phylo_dep",
@@ -8605,9 +8673,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/phylo_slope",
@@ -8809,9 +8879,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/predictive_check",
@@ -9016,9 +9088,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "R-side ADEMP data-generating simulator for its own recovery-test suite. GLLVM.jl carries an independent simulator (src/simulate.jl); the two are not required to reproduce identical RNG streams or call signatures, only DGP-level parameter recovery, which is a separate validation programme (see repo AGENTS.md 'recovery-over-pdHess'), not a bridge/native/formula call-parity fact. Reclassify to compatibility_adapter."
+    "proposal_reason": "R-side ADEMP data-generating simulator for its own recovery-test suite. GLLVM.jl carries an independent simulator (src/simulate.jl); the two are not required to reproduce identical RNG streams or call signatures, only DGP-level parameter recovery, which is a separate validation programme (see repo AGENTS.md 'recovery-over-pdHess'), not a bridge/native/formula call-parity fact. Reclassify to compatibility_adapter.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/simulate_unit_trait",
@@ -9033,9 +9107,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "R-side ADEMP data-generating simulator for its own recovery-test suite. GLLVM.jl carries an independent simulator (src/simulate.jl); the two are not required to reproduce identical RNG streams or call signatures, only DGP-level parameter recovery, which is a separate validation programme (see repo AGENTS.md 'recovery-over-pdHess'), not a bridge/native/formula call-parity fact. Reclassify to compatibility_adapter."
+    "proposal_reason": "R-side ADEMP data-generating simulator for its own recovery-test suite. GLLVM.jl carries an independent simulator (src/simulate.jl); the two are not required to reproduce identical RNG streams or call signatures, only DGP-level parameter recovery, which is a separate validation programme (see repo AGENTS.md 'recovery-over-pdHess'), not a bridge/native/formula call-parity fact. Reclassify to compatibility_adapter.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/slope_sd_ci",
@@ -9066,9 +9142,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified compatibility_adapter -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "confirms input classification: spatial() (R/brms-sugar.R:1309-1317) is a marker function whose body is explicitly commented 'Body unused -- never called at evaluation time' -- it is a pure argument-sniffing dispatcher onto spatial_dep/spatial_indep/spatial_latent/spatial_scalar/spatial_unique, which are separately reclassified compatibility_adapter elsewhere in this manifest."
+    "proposal_reason": "confirms input classification: spatial() (R/brms-sugar.R:1309-1317) is a marker function whose body is explicitly commented 'Body unused -- never called at evaluation time' -- it is a pure argument-sniffing dispatcher onto spatial_dep/spatial_indep/spatial_latent/spatial_scalar/spatial_unique, which are separately reclassified compatibility_adapter elsewhere in this manifest.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "compatibility_adapter"
+   "original_classification": "compatibility_adapter",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/spatial_dep",
@@ -9083,9 +9161,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/spatial_indep",
@@ -9100,9 +9180,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/spatial_latent",
@@ -9117,9 +9199,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/spatial_scalar",
@@ -9134,9 +9218,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/spatial_unique",
@@ -9151,9 +9237,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/spde",
@@ -9168,9 +9256,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/standard_errors",
@@ -9216,9 +9306,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified compatibility_adapter -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "confirms input classification: suggest_lambda_constraint() (R/suggest-lambda-constraint.R:90) inspects a single already-fitted R model and prints/returns advisory constraint-suggestion text; it is a singular convenience wrapper around suggest_lambda_constraints() with no numeric quantity and no Julia bridge surface to compare against."
+    "proposal_reason": "confirms input classification: suggest_lambda_constraint() (R/suggest-lambda-constraint.R:90) inspects a single already-fitted R model and prints/returns advisory constraint-suggestion text; it is a singular convenience wrapper around suggest_lambda_constraints() with no numeric quantity and no Julia bridge surface to compare against.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "compatibility_adapter"
+   "original_classification": "compatibility_adapter",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/suggest_lambda_constraints",
@@ -9232,9 +9324,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified compatibility_adapter -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "confirms input classification: suggest_lambda_constraints() (R/suggest-lambda-constraint.R:544) produces human-readable advisory guidance text from R-side fit internals (not a numeric quantity), so it has no Julia comparand to test against."
+    "proposal_reason": "confirms input classification: suggest_lambda_constraints() (R/suggest-lambda-constraint.R:544) produces human-readable advisory guidance text from R-side fit internals (not a numeric quantity), so it has no Julia comparand to test against.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "compatibility_adapter"
+   "original_classification": "compatibility_adapter",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/tidy",
@@ -9249,9 +9343,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "R/generics-imports.R re-exports generics::tidy as a bare S3 generic (`generics::tidy`) with no package-specific body; the only package behavior is the tidy.gllvmTMB_multi method, a tabular-summary view whose postfit numeric content is already exercised by the standard_errors / gllvmTMB_check_consistency / sanity_multi required cases. Testing the bare generic re-export would duplicate that coverage without adding a distinct contract. Reclassify to compatibility_adapter."
+    "proposal_reason": "R/generics-imports.R re-exports generics::tidy as a bare S3 generic (`generics::tidy`) with no package-specific body; the only package behavior is the tidy.gllvmTMB_multi method, a tabular-summary view whose postfit numeric content is already exercised by the standard_errors / gllvmTMB_check_consistency / sanity_multi required cases. Testing the bare generic re-export would duplicate that coverage without adding a distinct contract. Reclassify to compatibility_adapter.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "namespace/export/tmbprofile_wrapper",
@@ -9351,9 +9447,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified compatibility_adapter -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "confirms input classification: NAMESPACE:237 'useDynLib(gllvmTMB, .registration = TRUE)' registers the package's compiled TMB shared object at load time; it is a package-loading directive, not an R function with observable public behaviour, so it has no executable case of its own."
+    "proposal_reason": "confirms input classification: NAMESPACE:237 'useDynLib(gllvmTMB, .registration = TRUE)' registers the package's compiled TMB shared object at load time; it is a package-loading directive, not an R function with observable public behaviour, so it has no executable case of its own.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "compatibility_adapter"
+   "original_classification": "compatibility_adapter",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "postfit-policy/POST-COEF-EMPTY",
@@ -9631,9 +9729,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "NA-as-alias-for-~0 is an R argument-parsing convenience with no independent numerical content once POST-RE-FORM-ZERO's fixed-effects-only mode exists in Julia; it belongs with that adapter work rather than as its own required_core fact, and has no Julia surface to compare against until then."
+    "proposal_reason": "NA-as-alias-for-~0 is an R argument-parsing convenience with no independent numerical content once POST-RE-FORM-ZERO's fixed-effects-only mode exists in Julia; it belongs with that adapter work rather than as its own required_core fact, and has no Julia surface to compare against until then.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "postfit-policy/POST-RE-FORM-ZERO",
@@ -9813,9 +9913,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "Unexported R-internal helper (leading dot, no @export) invoked only via confint.gllvmTMB_multi(parm=\"proportions\", method=\"bootstrap\"); no standalone public surface for GLLVM.jl to twin beyond what the confint.gllvmTMB_multi row already covers."
+    "proposal_reason": "Unexported R-internal helper (leading dot, no @export) invoked only via confint.gllvmTMB_multi(parm=\"proportions\", method=\"bootstrap\"); no standalone public surface for GLLVM.jl to twin beyond what the confint.gllvmTMB_multi row already covers.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-.proportions_wald_ci",
@@ -9829,9 +9931,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "Unexported R-internal helper (leading dot, no @export) invoked only via confint.gllvmTMB_multi(parm=\"proportions\", method=\"wald\"); no standalone public surface beyond the confint.gllvmTMB_multi row."
+    "proposal_reason": "Unexported R-internal helper (leading dot, no @export) invoked only via confint.gllvmTMB_multi(parm=\"proportions\", method=\"wald\"); no standalone public surface beyond the confint.gllvmTMB_multi row.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-bootstrap_Sigma",
@@ -10159,9 +10263,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "Soft-deprecated legacy alias (lifecycle::deprecate_soft since 0.7.0) that only calls extract_Sigma(level=\"unit\"); the numeric surface is fully covered by the extract_Sigma required row. A Julia twin need only keep an alias, not an independent verified case."
+    "proposal_reason": "Soft-deprecated legacy alias (lifecycle::deprecate_soft since 0.7.0) that only calls extract_Sigma(level=\"unit\"); the numeric surface is fully covered by the extract_Sigma required row. A Julia twin need only keep an alias, not an independent verified case.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_Sigma_W",
@@ -10175,9 +10281,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "Soft-deprecated legacy alias (lifecycle::deprecate_soft since 0.7.0) that only calls extract_Sigma(level=\"unit_obs\"); covered by the extract_Sigma required row."
+    "proposal_reason": "Soft-deprecated legacy alias (lifecycle::deprecate_soft since 0.7.0) that only calls extract_Sigma(level=\"unit_obs\"); covered by the extract_Sigma required row.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_Sigma_table",
@@ -10681,9 +10789,11 @@
    "evidence": {
     "batch": "bulk triage acceptance round2-3 #9",
     "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
-    "proposal_reason": "Pure S3 generic dispatcher (`UseMethod(\"imputed\")`) with zero independent logic; the numeric surface is entirely in imputed.gllvmTMB, already a required row. A Julia twin needs only a matching function name/dispatch, not a separately verified numeric case."
+    "proposal_reason": "Pure S3 generic dispatcher (`UseMethod(\"imputed\")`) with zero independent logic; the numeric surface is entirely in imputed.gllvmTMB, already a required row. A Julia twin needs only a matching function name/dispatch, not a separately verified numeric case.",
+    "post_reclass_state": "reclassified to compatibility_adapter (still required); Julia surface absent \u2014 needs-surface state restored after the bulk pass erroneously left the row free"
    },
-   "original_classification": "required_core"
+   "original_classification": "required_core",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE"
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-imputed.gllvmTMB",
