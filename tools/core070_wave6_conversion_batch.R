@@ -145,8 +145,8 @@ stopifnot("gllvmTMB_multi" %in% class(fit_g))
 # entry.
 # ---------------------------------------------------------------------------
 structured_formula_rhs <- list(
-  "CORE070-WAVE6-INDEP-FIT" = "indep(0 + trait | species, common = FALSE)",
-  "CORE070-WAVE6-SCALAR-FIT" = "scalar(0 + trait | species)",
+  "CORE070-WAVE6-INDEP-FIT" = "indep(0 + trait | site, common = FALSE)",
+  "CORE070-WAVE6-SCALAR-FIT" = "scalar(0 + trait | site)",
   "CORE070-WAVE6-KERNEL-INDEP-FIT" = "kernel_indep(species, K = C, name = \"k1\")",
   "CORE070-WAVE6-KERNEL-DEP-FIT" = "kernel_dep(species, K = C, name = \"k1\")",
   "CORE070-WAVE6-KERNEL-SCALAR-FIT" = "kernel_scalar(species, K = C, name = \"k1\")",

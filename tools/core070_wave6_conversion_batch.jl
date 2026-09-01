@@ -209,7 +209,7 @@ function structured_fit_cached(key::String, term_exprs::Vector{Expr})
 end
 
 function structured_quantity(fit, level_name::Symbol)
-    ll = fit.logLik
+    ll = hasproperty(fit, :logLik) ? fit.logLik : fit.loglik
     Σ = try
         Matrix(GLLVM.extract_Sigma(fit; level = level_name, part = :total).Sigma)
     catch
@@ -230,8 +230,8 @@ results = Dict{String, Any}()
 all_ok = true
 
 term_expr_map = Dict{String, Vector{Expr}}(
-    "CORE070-WAVE6-INDEP-FIT" => [:(indep(0 + trait | species, common = false))],
-    "CORE070-WAVE6-SCALAR-FIT" => [:(scalar(0 + trait | species))],
+    "CORE070-WAVE6-INDEP-FIT" => [:(indep(0 + trait | site, common = false))],
+    "CORE070-WAVE6-SCALAR-FIT" => [:(scalar(0 + trait | site))],
     "CORE070-WAVE6-KERNEL-INDEP-FIT" => [:(kernel_indep(species, K = C, name = "k1"))],
     "CORE070-WAVE6-KERNEL-DEP-FIT" => [:(kernel_dep(species, K = C, name = "k1"))],
     "CORE070-WAVE6-KERNEL-SCALAR-FIT" => [:(kernel_scalar(species, K = C, name = "k1"))],
@@ -302,7 +302,7 @@ for cs in cases
         end
         r_ok = get(r_val, "matches_own_formula", false) == true
         jl_ok, jl_nobs, jl_err = try
-            jn = Float64(GLLVM.nobs(fit_g))
+            jn = Float64(GLLVM.nobs(fit_g, Y_g))
             (jn == Float64(n), jn, "")
         catch e
             (false, NaN, sprint(showerror, e))
@@ -339,7 +339,7 @@ for cs in cases
         if quantity == "loglik_scalar"
             jl_vec = [GLLVM.loglikelihood(fit_g)]
         elseif quantity == "confint_sigma_eps_bounds"
-            ci = GLLVM.confint(fit_g; parm = "sigma_eps", level = 0.95)
+            ci = GLLVM.confint(fit_g, Y_g; parm = "sigma_eps", level = 0.95)
             jl_vec = vcat(Float64[r.lower for r in ci], Float64[r.upper for r in ci])
         else
             error("BOGUS_QUANTITY: no dispatcher entry for '$(quantity)'")
