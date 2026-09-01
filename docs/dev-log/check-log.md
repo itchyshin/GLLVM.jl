@@ -16805,3 +16805,22 @@ attempt3 (fresh receipt dir broke intra-run health dependencies) and attempt4
 (missing tight-control baseline) — both invocation errors, not parity failures.
 This freshens every covariance/interface receipt that predated the c2a93d6d
 optimizer repair. Student Cell 9 remains the single classified open item (A6).
+
+## 2026-09-01 — ACC-URBMAP-01: first real-user model through engine="julia" (mixed result, honestly split)
+
+Real data: urbanisation_map Stage-1 map model (52 binary indicators x 191
+reviews, binomial probit, latent(1|review, d=2, unique=FALSE)), run
+non-interactively via Rscript on Totoro against the frozen oracle library.
+PASS side: no session gate blocked the run (DRM-lesson class 1); both engines
+converged; absolute logLik difference 1.37e-7. FLAGGED side: (a) loading
+crossproduct max |diff| 2.2e-2 under Laplace-saturation warnings (74/9932
+cells, |Lambda|~9.2) — near-tied likelihoods with different Lambda structure;
+weak-identification ridge or saturation inflation; NOT claimed as parity;
+(b) bridge fit took 556s vs R 10.2s (~55x) at this shape — a class-7
+feasibility finding and a direct M3 target; (c) coef() shape differs through
+the bridge (class 4 — name/shape translation), blocking a beta comparison;
+(d) the default-unique spelling is downgraded with explicit warnings then fits
+the reduced model (class 5 — warned, not silent). Setup findings retained:
+two failed attempts show the bridge child requires a JULIA_PROJECT environment
+carrying RCall — an undocumented requirement (class 1 variant). Receipts:
+.unlazy/core070-aghq/tweedie-replay-01/acc-urbmap (+ fail01/fail02 retained).
