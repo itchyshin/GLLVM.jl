@@ -473,6 +473,25 @@ function repeatability_wald_ci(fit::TwoLevelFit, y::AbstractMatrix,
 end
 
 """
+    _psd_sqrt_factor(Σ::AbstractMatrix) -> Matrix
+
+A PSD-safe square-root factor `L` with `L*L' ≈ Σ`, for simulating
+`N(0, Σ)` draws (`L * randn(size(Σ,1))`) when `Σ` is only positive
+SEMI-definite (e.g. a boundary two-level fit with `σ²_B == 0` and
+`K_B < p`, where `Σ_B = Λ_B Λ_Bᵀ + diag(σ²_B)` is rank-deficient and
+plain `cholesky` throws `PosDefException`). Uses the eigendecomposition
+of the symmetrized `Σ` with tiny/negative eigenvalues clamped to `0`
+(never a jitter term added to the diagonal) — any orthonormal-basis
+square root works for simulation, `L` need not be lower-triangular.
+"""
+function _psd_sqrt_factor(Σ::AbstractMatrix)
+    Σs = Symmetric((Σ .+ Σ') ./ 2)
+    ev = eigen(Σs)
+    λ = clamp.(ev.values, 0.0, Inf)
+    return Matrix(ev.vectors) * Diagonal(sqrt.(λ))
+end
+
+"""
     repeatability_bootstrap_ci(fit::TwoLevelFit, individual; nsim=200,
                                level=0.95, seed=nothing, center=true)
         -> Vector{NamedTuple}
@@ -490,6 +509,16 @@ matching `_derived_percentile` / R `type = 7`).
 Returns a `NamedTuple` per trait with fields `estimate` (`R_t` on the
 ORIGINAL fit), `lower`, `upper`, `n_boot` (successful replicates), `method
 = :bootstrap`.
+
+`Σ_B = Λ_B Λ_Bᵀ + diag(σ²_B)` is only positive SEMI-definite at a boundary
+fit (e.g. `σ²_B == 0` with `K_B < p`); this simulates from it via the
+PSD-safe [`_psd_sqrt_factor`](@ref) (eigendecomposition, tiny/negative
+eigenvalues clamped to `0` — never a jitter term) rather than a plain
+`cholesky`, which throws `PosDefException` and would otherwise abort the
+whole call. If even that safe factorisation is not possible (non-finite
+`Σ_B`/`Σ_W`), every trait's row falls back to the standard NaN-row
+convention used elsewhere in this file (`lower = upper = NaN`, `n_boot =
+0`) instead of raising.
 """
 function repeatability_bootstrap_ci(fit::TwoLevelFit, individual::AbstractVector;
                                     nsim::Integer = 200, level::Real = 0.95,
@@ -505,8 +534,16 @@ function repeatability_bootstrap_ci(fit::TwoLevelFit, individual::AbstractVector
     ntot = length(individual)
 
     rng = seed === nothing ? Random.default_rng() : Random.MersenneTwister(seed)
-    LB = cholesky(Symmetric(fit.Σ_B)).L
-    LW = cholesky(Symmetric(fit.Σ_W)).L
+    R_hat = repeatability(fit)
+    LB, LW = try
+        (_psd_sqrt_factor(fit.Σ_B), _psd_sqrt_factor(fit.Σ_W))
+    catch
+        # Σ_B / Σ_W is boundary-degenerate in a way even the PSD-safe
+        # eigendecomposition cannot simulate from (e.g. non-finite entries).
+        # Never abort the whole call — report the standard NaN-row convention.
+        return [(; estimate = R_hat[t], lower = NaN, upper = NaN,
+                 n_boot = 0, method = :bootstrap) for t in 1:p]
+    end
 
     R_reps = [Float64[] for _ in 1:p]
     n_boot = 0
@@ -533,7 +570,6 @@ function repeatability_bootstrap_ci(fit::TwoLevelFit, individual::AbstractVector
     end
 
     α = 1 - level
-    R_hat = repeatability(fit)
     out = Vector{NamedTuple}(undef, p)
     for t in 1:p
         if length(R_reps[t]) < 2

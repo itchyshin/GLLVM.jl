@@ -321,4 +321,36 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics
         fit = fit_gaussian_gllvm(y; K = K, K_W = 1, has_diag = true)
         @test_throws ArgumentError GLLVM.gllvmTMB_check_consistency(fit, y)
     end
+
+    # ---------------------------------------------------------------------
+    # src/twolevel.jl regression (no dedicated owned twolevel test file for
+    # this repair pass; kept here since test_diagnostics.jl is the owned
+    # test file closest in scope).
+    # ---------------------------------------------------------------------
+
+    @testset "repeatability_bootstrap_ci — boundary Σ_B (PSD, not PD) does not abort the call" begin
+        # Regression for the post-M2 review finding: cholesky(Symmetric(Σ_B)).L
+        # was called with no PosDefException guard, but a boundary fit's
+        # Σ_B = Λ_B Λ_B' + diag(σ²_B) is only PSD (rank-deficient at σ²_B == 0
+        # with K_B < p), so plain Cholesky throws and aborts the whole call —
+        # inconsistent with the NaN-row convention used everywhere else in
+        # this file (e.g. repeatability_wald_ci's `failed` row).
+        p, K_B, K_W = 3, 1, 1
+        Λ_B = reshape([1.0, 0.0, 0.0], p, K_B)   # rank-1, boundary σ²_B == 0
+        σ²_B = zeros(p)
+        Λ_W = reshape([0.5, 0.4, 0.3], p, K_W)
+        σ²_W = fill(0.2, p)
+        Σ_B = Λ_B * Λ_B' .+ Diagonal(σ²_B)
+        Σ_W = Λ_W * Λ_W' .+ Diagonal(σ²_W)
+        @test_throws LinearAlgebra.PosDefException cholesky(Symmetric(Σ_B))
+
+        nindiv, nobs = 20, 3
+        individual = repeat(1:nindiv, inner = nobs)
+        fit = GLLVM.TwoLevelFit(Λ_B, σ²_B, Λ_W, σ²_W, Σ_B, Σ_W, nindiv, -100.0, true, 5)
+
+        out = GLLVM.repeatability_bootstrap_ci(fit, individual; nsim = 5, seed = 1)
+        @test length(out) == p
+        @test all(r -> r.estimate isa Real && isfinite(r.estimate), out)
+        @test all(r -> r.method === :bootstrap, out)
+    end
 end
