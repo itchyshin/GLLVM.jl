@@ -753,3 +753,79 @@ cases=21 deferred=20`. A fresh case_id → R-branch dry-mapping (same python
 cross-check method as Repair 2) confirms all 21 cases map to a real
 `r_quantity()` branch or the `refusal_pair`/`bootstrap_structural`
 bypasses, zero dead branches.
+
+## Repair 5 (2026-09-01): wave5-conversion6 — EXTRACT-OMEGA, and forensic storage
+
+`wave5-conversion6` ran 20/21 PASS; only `EXTRACT-OMEGA` failed
+(`max_abs_diff=0.467`, `r_len=25`, diagonal-scale: R's `Omega` diagonal
+`[0.572, 0.457, 0.176, 0.351, 0.069]`).
+
+### (1) Forensic storage — Julia now stores `julia_values` for every numeric case
+
+`tools/core070_surface_conversion_batch.jl`'s per-case results `Dict` now
+carries a `"julia_values" => jl_vec` field alongside the existing
+`max_abs_diff`/`r_len`/`julia_len`/`error` fields, for every `point`/`ci`
+kind case (not gated on pass/fail — cheap for these small vectors, ≤25
+entries, and simpler than a conditional). R already writes its own numbers
+into `oracle_values` in `r-oracle.json`. Together, a failing case's full
+forensic record — both engines' actual numbers — is now retained in
+`julia-results.json`/`r-oracle.json` without needing a refit to diagnose.
+
+### (2) EXTRACT-OMEGA — traced to source, confirmed as the 4th estimand-alignment member, deferred
+
+Read `extract_Omega()`'s full body and GLLVM.jl's `extract_Omega` side by
+side:
+
+- **R**: builds `tiers` from the fit's ACTUAL structure only —
+  `"B"` iff `fit$use$rr_B || diag_B`, `"W"` iff `fit$use$rr_W || diag_W`,
+  `"phy"` iff `phylo_rr || phylo_diag` — then sums
+  `extract_Sigma(level=tier, part="total", link_residual="none")` for each
+  tier present. `gaussian_small` has no W-tier at all
+  (`rr_W=FALSE, diag_W=FALSE`), so R's `tiers = "B"` only:
+  `Omega = Lambda_B Lambda_B^T` exactly. `sigma_eps^2` never enters — it
+  is not one of the `B`/`W`/`phy` component tiers R's system tracks (same
+  structural gap already found for `communality`/`correlations`/
+  `proportions`), and the Gaussian family's `link_residual_per_trait()`
+  separately contributes `0`.
+- **Julia**: `extract_Omega(fit::GllvmFit)` **unconditionally** computes
+  `extract_Sigma(level=:unit,...).Sigma .+ extract_Sigma(level=:unit_obs,...).Sigma`
+  — no tier-presence check at all. `extract_Sigma(level=:unit_obs,
+  part=:total)`'s own body (`_sigma_unit_obs`, `src/extractors.jl`)
+  **always** adds `sigma_eps^2 * I` as a baseline term, regardless of
+  whether a genuine W-tier (`Λ_W`) exists. So on `gaussian_small`, Julia's
+  `Omega = Lambda_B Lambda_B^T + sigma_eps^2 * I` — differing from R's by
+  exactly `sigma_eps^2` on the diagonal. **Confirmed**: the observed
+  `max_abs_diff` (`0.467`) is diagonal-scale and close to
+  `sigma_true^2 = 0.49` (the true simulated residual variance), matching
+  this trace exactly — precisely the "Ψ/σ²_eps inclusion difference on the
+  diagonal" the coordinator predicted.
+
+**No alignment argument exists**: `extract_Omega(fit::GllvmFit)` takes no
+`tiers`/`level`/`link_residual` keyword at all (unlike `getResidualCov`'s
+alignable `level=` argument, which *was* fixable in Repair 3) — there is
+no call that narrows Julia's composition to match R's. Also tried
+sourcing the R comparand as `extract_Sigma(fit_g, level="unit_obs",
+...)$Sigma` directly instead of `extract_Omega()` (mirroring the
+`extract_correlations` substitution from Repair 2): R's own
+tier-existence gate returns `NULL` for `level="unit_obs"` on this
+single-tier fixture — the identical gate behind `wave5-conversion4`'s
+`residual_cov` `r_len=0` failure — so R's tier system has genuinely no way
+to express "the Gaussian residual variance" independent of an actual
+W-tier. **Moved from `cases[]` to `deferred[]`**, joining `communality`,
+`correlations`, and `proportions` as the 4th member of the
+estimand-alignment family (plus `cross_correlations`, which is a
+different kind of mismatch — a multinomial-only R route, not a
+tier-scoping one).
+
+### Net counts
+
+`extract_Omega` moved to `deferred[]`: **21 → 20 executable, 20 → 21
+deferred, 41 total unchanged.**
+
+**Re-verified locally**: `Rscript -e 'parse(...)'` → R parse OK; `julia -e
+'Meta.parseall(...)'` → Julia parse OK; `python3
+tools/core070_verify_surface_conversion_batch.py --self-test` →
+`CORE070_SURFACE_CONVERSION_VERIFY_SELF_TEST_OK rejected_mutations=6
+cases=20 deferred=21`. Fresh dry-mapping: all 20 cases map to a real
+`r_quantity()` branch or the `refusal_pair`/`bootstrap_structural`
+bypasses, zero dead branches.

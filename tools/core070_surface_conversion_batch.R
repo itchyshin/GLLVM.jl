@@ -1,11 +1,11 @@
-# Receipted batch that converts the 21 BLOCKED_NEEDS_JULIA_SURFACE ledger
+# Receipted batch that converts the 20 BLOCKED_NEEDS_JULIA_SURFACE ledger
 # rows in docs/dev-log/core070/required-source-case-map.json whose surfaces
 # were JUST implemented by the extractors slice (src/extractors.jl, Cluster
 # 1) and the derived-CI slice (src/confint_derived_wald.jl /
 # src/confint_derived.jl / src/twolevel.jl, Cluster 2) -- see
 # docs/dev-log/core070/extractors-slice-notes.md and
 # docs/dev-log/core070/derived-ci-slice-notes.md for what those two slices
-# shipped. The exact 41-row target list (21 executable here + 20 deferred with
+# shipped. The exact 41-row target list (20 executable here + 21 deferred with
 # reasons) is pinned VERBATIM in
 # docs/dev-log/core070/surface-conversion-batch-contract.json
 # (`target_source_ids`).
@@ -74,9 +74,9 @@ stopifnot(
   identical(contract$reference_commit, "b4d5fee64def88bc768dda1f1f77c29b295edd86"),
   identical(contract$status, "FROZEN_SURFACE_CONVERSION_BATCH_CONTRACT"),
   length(contract$cases) == contract$expected_case_count,
-  contract$expected_case_count == 21L,
+  contract$expected_case_count == 20L,
   length(contract$deferred) == contract$expected_deferred_count,
-  contract$expected_deferred_count == 20L,
+  contract$expected_deferred_count == 21L,
   length(contract$negative_controls) >= 2L
 )
 
@@ -278,7 +278,40 @@ r_quantity <- function(quantity) {
     # identical to communality(fit) (both ΛΛ^T[t,t] / sigma_y_site(fit)[t,t],
     # the FULL total-variance denominator) -- confirming this is the exact
     # same cross-engine estimand mismatch, not a second independent bug.
-    omega = as.numeric(extract_Omega(fit_g)$Omega),
+    # omega (postfit/POSTFIT-SURFACE-extract_Omega) is NOT computed here --
+    # deferred (see contract.deferred, REPAIR 2026-09-01 wave5-conversion6):
+    # traced both compositions to source. R's extract_Omega() sums ONLY the
+    # tiers the fit actually carries (tiers <- character(0); "B" appended
+    # iff fit$use$rr_B||diag_B, "W" appended iff fit$use$rr_W||diag_W, "phy"
+    # iff phylo_rr||phylo_diag), each tier read via extract_Sigma(level=tier,
+    # part="total", link_residual="none"). gaussian_small has NO W-tier
+    # (rr_W=FALSE, diag_W=FALSE), so R's tiers = "B" only -> Omega =
+    # Lambda_B Lambda_B^T exactly, sigma_eps^2 never enters (it is not one
+    # of the B/W/phy tiers R's system tracks; the Gaussian family's
+    # link_residual_per_trait() contributes 0 to the diagonal separately).
+    # GLLVM.jl's extract_Omega(fit::GllvmFit) UNCONDITIONALLY sums
+    # extract_Sigma(level=:unit,...).Sigma .+ extract_Sigma(level=:unit_obs,...).Sigma
+    # (src/extractors.jl) -- and extract_Sigma(level=:unit_obs, part=:total)
+    # ALWAYS adds sigma_eps^2*I as a baseline term (src/extractors.jl's
+    # _sigma_unit_obs: "Sigma = Sigma + (fit.pars.sigma_eps^2) * I"),
+    # regardless of whether a genuine W-tier exists. So Julia's Omega on
+    # gaussian_small = Lambda_B Lambda_B^T + sigma_eps^2*I, differing from
+    # R's by exactly sigma_eps^2 on the diagonal -- confirmed: observed
+    # max_abs_diff (0.467, wave5-conversion6) is diagonal-scale and close to
+    # sigma_true^2=0.49, matching this trace exactly. No Julia-side argument
+    # selects a narrower composition (extract_Omega(fit::GllvmFit) takes NO
+    # tiers/level/link_residual kwargs at all, unlike getResidualCov's
+    # alignable level= argument) -- there is no call fix available. Tried
+    # sourcing the R comparand as extract_Sigma(level="unit_obs",...)$Sigma
+    # directly instead of extract_Omega() (mirroring the extract_correlations
+    # substitution in Repair 2): R's own tier-existence gate returns NULL for
+    # level="unit_obs" on this single-tier fixture (same gate that produced
+    # wave5-conversion4's residual_cov r_len=0), so R's tier system has no
+    # way to express "the Gaussian residual variance" independent of a
+    # genuine W-tier at all -- the same structural gap already deferred for
+    # extract_communality/extract_correlations/extract_proportions. REPAIR
+    # (2026-09-01): moved to deferred[], joining the estimand-alignment
+    # family.
     # REPAIR (2026-09-01, wave5-conversion5: R returned empty on
     # gaussian_small). extract_ICC_site()'s vB/vW ratio needs BOTH a
     # "unit" (B) tier AND a "unit_obs" (W) tier to be non-degenerate;

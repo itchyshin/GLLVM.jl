@@ -151,7 +151,7 @@ root = normpath(joinpath(@__DIR__, ".."))
 contract = json_read(joinpath(root, "docs/dev-log/core070/surface-conversion-batch-contract.json"))
 cases = contract["cases"]
 length(cases) == contract["expected_case_count"] || error("case count mismatch vs contract")
-Int(contract["expected_case_count"]) == 21 || error("expected_case_count drifted from 21; update this script")
+Int(contract["expected_case_count"]) == 20 || error("expected_case_count drifted from 20; update this script")
 
 # ---------------------------------------------------------------------------
 # Fixture 1: gaussian_small -- fit natively on the R oracle's simulated Y.
@@ -254,8 +254,18 @@ function julia_quantity(quantity::AbstractString)
     # mathematically (both ΛΛ^T[t,t] / sigma_y_site(fit)[t,t]); confirmed
     # by the observed max_abs_diff (0.8713) exactly matching
     # extract_communality's own failure.
-    elseif quantity == "omega"
-        return vec(GLLVM.extract_Omega(fit_g))
+    # omega (postfit/POSTFIT-SURFACE-extract_Omega) is NOT computed here --
+    # deferred (see contract.deferred, REPAIR 2026-09-01 wave5-conversion6):
+    # GLLVM.jl's extract_Omega(fit::GllvmFit) unconditionally sums
+    # extract_Sigma(level=:unit,...) .+ extract_Sigma(level=:unit_obs,...),
+    # and the :unit_obs total ALWAYS adds sigma_eps^2*I as a baseline term
+    # regardless of whether a genuine W-tier exists; R's extract_Omega()
+    # only sums tiers the fit actually carries (gaussian_small has none at
+    # unit_obs), so sigma_eps^2 never enters R's sum. Diagonal-scale diff
+    # (0.467, close to sigma_true^2=0.49) confirms this exactly. No
+    # tiers/level kwarg exists on extract_Omega(fit::GllvmFit) to align the
+    # call with R's narrower composition -- see the matching R-side trace
+    # for the full source citation.
     elseif quantity == "icc_site"
         # REPAIR (2026-09-01, wave5-conversion5): R's extract_ICC_site()
         # needs BOTH a "unit" and a "unit_obs" tier; gaussian_small
@@ -396,7 +406,13 @@ for cs in cases
     results[case_id] = Dict{String, Any}("pass" => ok, "kind" => kind, "quantity" => quantity,
                                           "tolerance" => tol, "max_abs_diff" => maxdiff,
                                           "r_len" => length(r_vec), "julia_len" => length(jl_vec),
-                                          "error" => err)
+                                          "error" => err,
+                                          # REPAIR (2026-09-01, wave5-conversion6 coordinator ask):
+                                          # store the actual Julia-side vector alongside R's (already
+                                          # in r-oracle.json's oracle_values) so future forensics on a
+                                          # failing case can read both sides' numbers straight out of
+                                          # the retained julia-results.json, without needing a refit.
+                                          "julia_values" => jl_vec)
     global all_ok &= ok
 end
 

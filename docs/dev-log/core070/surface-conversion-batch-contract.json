@@ -46,8 +46,8 @@
     "postfit/POSTFIT-SURFACE-slope_sd_ci",
     "postfit/POSTFIT-SURFACE-standard_errors"
   ],
-  "expected_case_count": 21,
-  "expected_deferred_count": 20,
+  "expected_case_count": 20,
+  "expected_deferred_count": 21,
   "cases": [
     {
       "source_id": "namespace/export/getLoadings",
@@ -199,18 +199,6 @@
       "julia_call": "sites,_,_ = GLLVM.extract_ordination(fit,Y); vec(sum(abs2, sites; dims=2))",
       "notes": "",
       "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-ORDINATION"
-    },
-    {
-      "source_id": "postfit/POSTFIT-SURFACE-extract_Omega",
-      "quantity": "omega",
-      "fixture": "gaussian_small",
-      "tolerance": 0.0001,
-      "kind": "point",
-      "r_call": "extract_Omega(fit_r)",
-      "julia_call": "GLLVM.extract_Omega(fit)",
-      "notes": "",
-      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-OMEGA",
-      "tolerance_note": "Recalibrated from an earlier (miscalibrated) 1e-6 'same-process deterministic transform' tier to the 1e-4 paired-independent-fit precedent: this quantity is a transform of Lambda/sigma^2 estimated by TWO SEPARATE optimiser runs (R's TMB fit, Julia's LBFGS fit) on the same simulated Y, never the same fitted numbers passed through a single process. REPAIR 2026-09-01 (wave5-conversion4: EXTRACT-SIGMA/EXTRACT-SIGMA-TABLE failed at max_abs_diff=2.42e-6 vs the old 1e-6 bar, which is exactly the class of drift two independent LBFGS/TMB runs produce -- not a bug, a miscalibrated tolerance)."
     },
     {
       "source_id": "postfit/POSTFIT-SURFACE-extract_ICC_site",
@@ -374,6 +362,10 @@
     {
       "source_id": "postfit/POSTFIT-SURFACE-extract_proportions",
       "reason": "Julia surface exists (extract_proportions(fit::GllvmFit; component) forwards to proportions(fit; component), src/confint_derived.jl), but traced to source: this is the SAME estimand mismatch as extract_communality, exactly -- extract_proportions(fit; component=:shared) IS communality(fit) mathematically (both \u039b\u039b^T[t,t] / sigma_y_site(fit)[t,t], the FULL total-variance denominator incl. sigma_eps^2). R's extract_proportions()'s 'shared_unit' component's proportion column denominator (total <- rowSums(M)) only ever sums the tier-scoped components R's system tracks; sigma_eps^2 is not one of them, so on gaussian_small (only the shared_unit component present) proportion degenerates to shared_unit/shared_unit == 1.0 for every trait -- the exact reason the observed max_abs_diff (0.8713, wave5-conversion5) matched extract_communality's own failure value precisely. REPAIR (2026-09-01): moved from cases[] to deferred[], joining extract_communality and extract_correlations in the maintainer's estimand-alignment decision."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_Omega",
+      "reason": "Julia surface exists (extract_Omega(fit::GllvmFit), src/extractors.jl), but traced both compositions to source (wave5-conversion6). R's extract_Omega() sums ONLY the covariance tiers the fit actually carries -- gaussian_small has no W-tier (fit$use$rr_W and diag_W both FALSE), so R's tiers = 'B' only and Omega = Lambda_B Lambda_B^T exactly, with sigma_eps^2 never entering (it is not one of the B/W/phy component tiers R's tier system tracks; the Gaussian family's link_residual_per_trait() contributes 0 separately). GLLVM.jl's extract_Omega(fit::GllvmFit) UNCONDITIONALLY sums extract_Sigma(level=:unit,...).Sigma .+ extract_Sigma(level=:unit_obs,...).Sigma, and extract_Sigma(level=:unit_obs, part=:total) ALWAYS adds sigma_eps^2*I as a baseline term regardless of whether a genuine W-tier exists (src/extractors.jl's _sigma_unit_obs). So on gaussian_small, Julia's Omega = Lambda_B Lambda_B^T + sigma_eps^2*I, differing from R's by exactly sigma_eps^2 on the diagonal -- confirmed: the observed max_abs_diff (0.467) is diagonal-scale and close to sigma_true^2=0.49, matching this trace exactly. extract_Omega(fit::GllvmFit) takes NO tiers/level/link_residual kwargs at all (unlike getResidualCov's alignable level= argument), so there is no call-argument fix available. Also tried sourcing the R comparand as extract_Sigma(level='unit_obs',...)$Sigma directly (mirroring the extract_correlations substitution): R's own tier-existence gate returns NULL for level='unit_obs' on this single-tier fixture (the same gate behind wave5-conversion4's residual_cov r_len=0), so R's tier system has no way to express the Gaussian residual variance independent of a genuine W-tier at all -- the same structural gap already deferred for extract_communality/extract_correlations/extract_proportions. REPAIR (2026-09-01): moved from cases[] to deferred[], joining the estimand-alignment family (4th member: communality, correlations, proportions, Omega)."
     }
   ],
   "fixtures": {
