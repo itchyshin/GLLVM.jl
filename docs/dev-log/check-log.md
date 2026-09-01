@@ -16933,3 +16933,21 @@ frozen-r070-contract.toml) — after syncing the TOML the registry test passes
 (12/12 + neighbors). Zero failures attributable to the new slices. The
 formula-recognizer slice (5371137c) landed after this sync and carries its
 own 58/58 standalone tests; it rides the next consolidated run.
+
+## 2026-09-01 — consolidated suite2 (Totoro) at dba6476f + matched NB2 rerun
+
+suite2: 12614 passed, 5 failed, 0 errored, 8 broken — all 5 failures are the
+KNOWN phylo-poisson canary (test_phylo_poisson_xlv.jl:170-174, receipted
+BLOCKED repair leaf; its [:failed]==[:profile] assertion is the profile-CI
+ok-gate discard). Zero regressions from the day's slices (extractors,
+derived CIs, diagnostics, SE machinery, recognizers, 13 review repairs,
+waves 5-6 tooling). Registry TOML error from run 1 resolved by the docs
+sync.
+
+NB2 matched-model benchmark rerun (per-trait grouped dispersion, 11/14
+cells): logLik agreement EXACT (to printed precision) on 9 cells; on
+(5,500) and (10,500) Julia finds the BETTER optimum (+2.20 and +5.19
+units vs the frozen R fit at n_init=1). The earlier 1.4-59-unit "NB2 gaps"
+are fully explained as the original benchmark's wrong-model comparison.
+Honest cost: the grouped-dispersion kernel is 15-60x slower than R's
+per-trait fit — recorded as the next performance target after Poisson.
