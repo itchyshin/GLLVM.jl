@@ -1997,3 +1997,19 @@ profiling dispatched; full benchmark campaign (>30 min) awaits maintainer
 approval per D-139. Next after Wave A: receipted conversion batches to
 re-bind BLOCKED rows; Wave B formula recognizers (grammar = maintainer
 approval class, build-only).
+
+## DRAC + benchmark campaigns launched — 2026-09-01
+
+Maintainer approved the full benchmark campaign and directed clever DRAC use
+(/ask-brain answered: job arrays one-seed-per-task doctrine; sockets ALIVE —
+re-auth happened). TOTORO: full timing benchmark running detached (4 families
+x 14 cells x 5 reps, bench-full/). NARVAL: staged repo+depot at
+~/projects/def-snakagaw/snakagaw/gllvm-recovery-01 (julia/1.10.10 = exact
+Manifest match); pre-run array 2206979 GREEN (10/10 COMPLETED, all converged,
+~20s/task = mostly compile) -> full campaign RESHAPED to chunked arrays (25
+seeds/task, 400 tasks, 5 families x {5,25}x{50,200} x 500 seeds = 10,000
+fits) submitted as job 2207075 with watcher. CI-coverage cells deliberately
+NOT in this campaign (profile-CI cost; separate decision). Wave A agents:
+derived-CI slice committed (12 exports, 66/66 slice tests, suite tally
+pending); extractors finishing; Poisson perf repair in progress (diagnosis
+committed: chunked-FD mode-resolve waste).
