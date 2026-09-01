@@ -1844,3 +1844,22 @@ ADDITIONAL MORNING GATES (beyond the earlier list):
    fixture wiring of cross-objective assertions into the harness (then a full
    Totoro re-run); se=TRUE curvature/SE comparison cells; realistic-shape
    fixtures.
+
+## Bridge-lane update — 2026-09-01 (maintainer authorized "open the R-side bridge lane")
+
+- New lane: gllvmTMB claude/julia-bridge-expansion-20260901 at
+  ~/local-scratch/lanes/gllvmTMB-julia-bridge-20260901 (off main 65e41e1d7;
+  leased narrowly; disjoint from all 11 live lanes there). Commits (local,
+  unpushed): 5c94daa08 lognormal exposure · 2a4b374b0 scout specs ·
+  b60b0ed38 dispositions/ZI-parked · ff9e75962 truncated_poisson +
+  betabinomial + CI-defect fix + drift registry contract.
+- Method: 5 ultracode read-only scouts -> red-first sequential implementation
+  (single shared file). One scout finding fixed a same-day defect
+  (CI list silently advertising intervals Julia refuses).
+- Live paired round-trips green for all three families vs engine="tmb"
+  (lognormal <1e-4; truncated_poisson <1e-4; betabinomial <1e-3).
+  Final post-registry verification run in flight; three pre-existing live
+  failures vs this Julia pairing unchanged in count throughout.
+- PARKED for maintainer: zip/zinb/zib (no native R family — engine-only
+  exposure is a public-surface design decision); X/mask follow-up slices for
+  betabinomial (+ nb1 precedent); structured-term gate = next big slice.
