@@ -1982,3 +1982,18 @@ DECISION QUEUE (maintainer): 99 reclassify + 22 open-question + 4 parity-
 defect rows; nobs adoption; cloglog repair leaf; A6 Student-t fixture;
 ZI trio; missing-surface engineering track (142 BLOCKED rows, 48+ surfaces);
 push/PR of both lanes; DRAC re-auth. No push/merge/release/DRAC occurred.
+
+## Post-M2 stretch opened — 2026-09-01: missing-surface track + M3
+
+Maintainer: "keep going with M3 and the missing-surface track". Work order
+committed (docs/dev-log/core070/missing-surface-work-order.md): 4 clusters
+(extractors ~30 rows; derived CIs ~10; formula recognizers 38+13;
+diagnostics/plot last). Wave A in flight: extractors module (src/extractors.jl),
+derived-CI surfaces (confint_derived*/twolevel), Documenter shell audit —
+disjoint file ownership. M3 perf: D-139 pre-run DONE on Totoro
+(bench-prerun-findings.md): Gaussian 20-103x FASTER, Poisson 0.45-0.80x
+SLOWER with the gap widening in p — honest negative; read-only Poisson
+profiling dispatched; full benchmark campaign (>30 min) awaits maintainer
+approval per D-139. Next after Wave A: receipted conversion batches to
+re-bind BLOCKED rows; Wave B formula recognizers (grammar = maintainer
+approval class, build-only).
