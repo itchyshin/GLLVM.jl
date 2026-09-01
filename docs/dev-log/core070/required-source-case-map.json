@@ -8310,7 +8310,13 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-DEVIANCE-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "triage": "wave-4 2026-09-01",
+    "reason": "planned case CORE070-POSTFIT-DEVIANCE-NATIVE was never authored into the policy batch runner; the same source fact (deviance on gllvmTMB_multi, native) is fresh-receipted PASS as CORE070-NAMESPACE-DEVIANCE-MULTI-NATIVE in namespace-1 wave3 \u2014 propose reclassify/bind-by-substitution, maintainer to confirm",
+    "pointer": ".unlazy/core070-aghq/wave3-batches/wave3-ns1 (results.tsv: CORE070-NAMESPACE-DEVIANCE-MULTI-NATIVE PASS)"
+   }
   },
   {
    "source_id": "postfit-policy/POST-FITTED-DEFAULT",
@@ -8751,12 +8757,20 @@
   {
    "source_id": "postfit/POSTFIT-SURFACE-coef.gllvmTMB_multi",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-POSTFIT-COEF-MULTI-READBACK"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-COEF-MULTI-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "evidence": {
+    "batch": "postfit-1 wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches/wave2-pf1-r + wave2-pf1-julia",
+    "detail": "R and Julia readback both all_checks true; coef agreement ~2.7e-7 (p=4,n=24,K=1); pf1 verifier passed in wave2",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-compare_Sigma_table",
