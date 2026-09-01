@@ -310,6 +310,6 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        diagnose_kernel_separability, compare_Sigma_table,
        compare_dep_vs_two_psi, compare_indep_vs_two_psi, compare_loadings,
        predictive_check, confint_inspect,
-       deviance
+       deviance, profile_cross_rho_ci
 
 end # module GLLVM
