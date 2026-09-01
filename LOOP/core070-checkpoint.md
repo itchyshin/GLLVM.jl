@@ -1863,3 +1863,21 @@ ADDITIONAL MORNING GATES (beyond the earlier list):
 - PARKED for maintainer: zip/zinb/zib (no native R family — engine-only
   exposure is a public-surface design decision); X/mask follow-up slices for
   betabinomial (+ nb1 precedent); structured-term gate = next big slice.
+
+## Structured-gate slice — 2026-09-01 (maintainer: "start the structured-term gate slice")
+
+THE GATE IS OPEN (Slice A). Two paired design scouts -> TDD both halves:
+- Julia half (this lane, 17df4f42): bridge_fit sources payload (single source,
+  Gaussian, loud rejects for CI/mask/X/multi-source); 18/18 red-first incl.
+  exact frozen COV-ORD-LATENT-BARE loglik through the route; 310/310 neighbors.
+- R half (bridge lane, e9ec044d4): deferred-d resolution (kills the dep()
+  EARLY-GENERIC-ERROR crash class), lone dep/indep/scalar Gaussian carve-out
+  to the sources payload, NAMED refusal for dep everywhere else (red-testing
+  caught a silent plain-rr substitution hazard), phylo/kernel/animal still
+  gated per design (Slice B = kernel next, C = animal/phylo deferred on
+  covariance-vs-precision risk). Pure-R 588/0; live paired dep/indep/scalar
+  fits green vs engine="tmb"; inherited pairing fails unchanged (3, named).
+- Designs on disk: julia-bridge-structured-design-julia-side.md (here) +
+  structured-design-r-side.md (bridge lane).
+NEXT on this track: Slice B (kernel_*, dense V); formal frozen-oracle
+receipted qualification of the opened cells; multi-source composition.
