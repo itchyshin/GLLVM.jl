@@ -257,8 +257,14 @@ scan over the implied `Σ_y`: for a `GllvmFit`, [`sigma_y_site`](@ref)
 (all non-phylo tiers — Λ_B, Λ_W, σ²_B, σ²_W, σ_eps); for any other fit
 type, `ΛΛᵀ + diag(σ_eps²)` (the only tier those fit types carry):
 
-  - `variance_near_zero` — any of `σ_eps`, `σ_B`, `σ_W`, `σ_phy` (those
-    present on `fit.pars`) below `var_tol`.
+  - `variance_near_zero` — any of `σ_eps`, `σ_B`, `σ_W`, `σ_phy` within
+    `var_tol` of the zero boundary **on the variance scale**: `σ_eps` and
+    `σ_phy` are SD-parameterised (`fit.pars`), so they are SQUARED before
+    comparison against `var_tol`; `σ²_B` and `σ²_W` are already
+    variance-parameterised and compared directly. Mixing an SD-scale and a
+    variance-scale threshold under one tolerance would flag inconsistently
+    across parameterisations by orders of magnitude; comparing everything
+    on the variance scale avoids that.
   - `correlation_near_boundary` — any off-diagonal entry of the
     Σ_y-implied correlation matrix with `|ρ| > corr_tol`.
 
@@ -278,14 +284,22 @@ function gllvmTMB_diagnose(fit; y = nothing, X = nothing, Σ_phy = nothing,
     boundary_flags = String[]
     messages = String[]
 
+    # σ_eps and σ_phy are SD-parameterised; σ²_B and σ²_W are already
+    # variance-parameterised. Compare all four on the VARIANCE scale so one
+    # var_tol threshold means the same thing for every parameterisation.
     for nm in (:σ_eps, :σ²_B, :σ²_W, :σ_phy)
         if hasfield(typeof(fit), :pars) && haskey(fit.pars, nm) && fit.pars[nm] !== nothing
+            is_sd = nm === :σ_eps || nm === :σ_phy
             v = fit.pars[nm]
             vals = v isa AbstractArray ? v : (v,)
             for x in vals
-                if isfinite(x) && abs(x) < var_tol
+                xvar = is_sd ? x^2 : x
+                if isfinite(xvar) && abs(xvar) < var_tol
                     push!(boundary_flags, "variance_near_zero:$(nm)")
-                    push!(messages, "$(nm) is within $(var_tol) of the zero boundary")
+                    scale_label = is_sd ? "SD, variance = $(round(xvar, digits = 10))" :
+                                           "variance = $(round(xvar, digits = 10))"
+                    push!(messages, "$(nm) ($(scale_label)) is within var_tol=$(var_tol) " *
+                                     "of the zero boundary (variance scale)")
                     break
                 end
             end

@@ -80,6 +80,27 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics
         @test c.residual.coherent
     end
 
+    @testset "gllvmTMB_diagnose — var_tol applied on a consistent (variance) scale" begin
+        # Regression for the post-M2 review finding: var_tol was compared
+        # directly against σ_eps/σ_phy (SD-scale parameters) AND σ²_B/σ²_W
+        # (variance-scale parameters) with the SAME threshold, mixing scales
+        # by orders of magnitude. Convention adopted here: everything is
+        # compared on the VARIANCE scale — SD parameters are squared first.
+        # σ_eps = 0.005 has SD = 0.005 (> var_tol on the old SD-scale
+        # comparison, so it would NOT have flagged) but variance = 2.5e-5,
+        # which IS within var_tol = 1e-4 of the zero boundary.
+        Random.seed!(152)
+        p, K, n = 4, 1, 200
+        Λ_true = reshape([0.7, 0.5, 0.4, -0.3], p, K)
+        y = Λ_true * randn(K, n) + 0.5 * randn(p, n)
+        fit0 = fit_gaussian_gllvm(y; K = K)
+        pars = merge(fit0.pars, (σ_eps = 0.005,))
+        fit = GLLVM.GllvmFit(fit0.model, pars, fit0.logLik, fit0.n_iter, fit0.converged,
+                              fit0.optim_result, fit0.cputime)
+        d = GLLVM.gllvmTMB_diagnose(fit; var_tol = 1e-4)
+        @test any(f -> startswith(f, "variance_near_zero:σ_eps"), d.boundary_flags)
+    end
+
     @testset "gllvmTMB_diagnose — implied Σ uses ALL tiers (sigma_y_site), not just Λ_B + σ_eps" begin
         # Regression for the post-M2 review finding: the old implied-Σ was
         # Λ*Λ' + σ_eps²*I, ignoring the W-tier (Λ_W) diagonal contribution
