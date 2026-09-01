@@ -860,7 +860,9 @@
   {
    "source_id": "covariance/COV-KERNEL-FOLDED-UNIQUE",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-WAVE6-KERNEL-LATENT-SINGLE-PSI-COVARIANCE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "structured_case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
    "structured_reference_case_ids": [
@@ -874,19 +876,14 @@
     "STRUCT-KER-MULTI-PSI-PRUNED"
    ],
    "case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "triage": "covariance wave-4 triage 2026-09-01",
-    "reason": "all authored planned cases carry julia_call UNRESOLVED (no structured formula/bridge surface in the frozen programme); reference calls prepared with pinned free-parameter counts but paired numerics unpaid; note: includes a BLOCKED_REFERENCE_PARAMETER_LOSS reference-defect case",
-    "case_statuses": {
-     "STRUCT-KER-SINGLE-PSI": "PREPARED_REFERENCE_NUMERICS_UNPAID",
-     "STRUCT-KER-MULTI": "PREPARED_REFERENCE_NUMERICS_UNPAID",
-     "STRUCT-KER-MULTI-PSI-PRUNED": "BLOCKED_REFERENCE_PARAMETER_LOSS"
-    },
-    "plans": [
-     "docs/dev-log/core070/structured-required-case-plan.json",
-     "docs/dev-log/core070/slopes-required-case-plan.json"
-    ]
+    "batch": "wave6-conversion (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave6-batches/wave6-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave6-batches/wave6-conversion7.tar.gz",
+    "preservation_sha256": "03fd4da6617b272b218e2bbf4648ed64cea8475f83713e4f46707e503979213e",
+    "verifier": "tools/core070_verify_wave6_conversion_batch.py (CORE070_WAVE6_CONVERSION_STATE_OK wave6-conversion7; self-test 8 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave6-conversion7",
+    "note": "structured-term recognizer rows paired-verified vs the frozen oracle (Y-orientation and comparand conventions per contract); nobs case records the known n-vs-p*n defect explicitly"
    }
   },
   {
@@ -915,7 +912,9 @@
   {
    "source_id": "covariance/COV-KERNEL-LATENT",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-WAVE6-KERNEL-LATENT-MULTI-NAMESPACE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "structured_case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
    "structured_reference_case_ids": [
@@ -929,19 +928,14 @@
     "STRUCT-KER-MULTI-PSI-PRUNED"
    ],
    "case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "triage": "covariance wave-4 triage 2026-09-01",
-    "reason": "all authored planned cases carry julia_call UNRESOLVED (no structured formula/bridge surface in the frozen programme); reference calls prepared with pinned free-parameter counts but paired numerics unpaid; note: includes a BLOCKED_REFERENCE_PARAMETER_LOSS reference-defect case",
-    "case_statuses": {
-     "STRUCT-KER-SINGLE-PSI": "PREPARED_REFERENCE_NUMERICS_UNPAID",
-     "STRUCT-KER-MULTI": "PREPARED_REFERENCE_NUMERICS_UNPAID",
-     "STRUCT-KER-MULTI-PSI-PRUNED": "BLOCKED_REFERENCE_PARAMETER_LOSS"
-    },
-    "plans": [
-     "docs/dev-log/core070/structured-required-case-plan.json",
-     "docs/dev-log/core070/slopes-required-case-plan.json"
-    ]
+    "batch": "wave6-conversion (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave6-batches/wave6-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave6-batches/wave6-conversion7.tar.gz",
+    "preservation_sha256": "03fd4da6617b272b218e2bbf4648ed64cea8475f83713e4f46707e503979213e",
+    "verifier": "tools/core070_verify_wave6_conversion_batch.py (CORE070_WAVE6_CONVERSION_STATE_OK wave6-conversion7; self-test 8 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave6-conversion7",
+    "note": "structured-term recognizer rows paired-verified vs the frozen oracle (Y-orientation and comparand conventions per contract); nobs case records the known n-vs-p*n defect explicitly"
    }
   },
   {
@@ -7908,13 +7902,11 @@
     "CORE070-NAMESPACE2-INDEP-FORMULA-TERM"
    ],
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
    "evidence": {
-    "batch": "namespace-2 wave3",
-    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
-    "missing_surface": "GLLVM.jl's @formula front-end (src/formula.jl) has no term-recognizer for 'indep(...)'",
-    "reason": "src/formula.jl (module header: 'Slices 1-2 of the formula-front-end design spec') implements only plain StatsModels covariate/interaction terms; grep -rniE '\"indep\"' src/formula.jl src/bridge.jl: 0 hits for a term-name dispatch. gllvmTMB's brms-sugar keyword grammar (indep() and its 19 siblings, all defined in R/brms-sugar.R, R/kernel-keywords.R or R/traits-keyword.R) is parsed entirely on the R side into structured arguments (K, mode, tree, kernel spec, ...) before ever reaching the Julia bridge; bridge_fit/fit_gllvm receive those already-decomposed keyword arguments directly, never the literal term text. Some underlying mechanisms exist elsewhere in the engine (e.g. phylo_glm.jl, cross_kernel.jl) but there is no formula-term parser that would let a user write @formula(y ~ indep(...)) in Julia the way R parses ~ indep(...).",
-    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+    "batch": "wave6 triage",
+    "reason": "frozen-reference gap: lone indep()/scalar() unfittable in gllvmTMB 0.7.0 (custom source level unsupported); pairable only against >=0.7.1; Julia surface exists and is live-paired green in the 0.7.1 bridge lane",
+    "contract": "docs/dev-log/core070/wave6-conversion-batch-contract.json (deferred)"
    }
   },
   {
@@ -7950,91 +7942,106 @@
   {
    "source_id": "namespace/export/kernel_dep",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-WAVE6-KERNEL-DEP-FIT"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE2-KERNEL-DEP-FORMULA-TERM"
    ],
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "namespace-2 wave3",
-    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
-    "missing_surface": "GLLVM.jl's @formula front-end (src/formula.jl) has no term-recognizer for 'kernel_dep(...)'",
-    "reason": "src/formula.jl (module header: 'Slices 1-2 of the formula-front-end design spec') implements only plain StatsModels covariate/interaction terms; grep -rniE '\"kernel_dep\"' src/formula.jl src/bridge.jl: 0 hits for a term-name dispatch. gllvmTMB's brms-sugar keyword grammar (kernel_dep() and its 19 siblings, all defined in R/brms-sugar.R, R/kernel-keywords.R or R/traits-keyword.R) is parsed entirely on the R side into structured arguments (K, mode, tree, kernel spec, ...) before ever reaching the Julia bridge; bridge_fit/fit_gllvm receive those already-decomposed keyword arguments directly, never the literal term text. Some underlying mechanisms exist elsewhere in the engine (e.g. phylo_glm.jl, cross_kernel.jl) but there is no formula-term parser that would let a user write @formula(y ~ kernel_dep(...)) in Julia the way R parses ~ kernel_dep(...).",
-    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+    "batch": "wave6-conversion (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave6-batches/wave6-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave6-batches/wave6-conversion7.tar.gz",
+    "preservation_sha256": "03fd4da6617b272b218e2bbf4648ed64cea8475f83713e4f46707e503979213e",
+    "verifier": "tools/core070_verify_wave6_conversion_batch.py (CORE070_WAVE6_CONVERSION_STATE_OK wave6-conversion7; self-test 8 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave6-conversion7",
+    "note": "structured-term recognizer rows paired-verified vs the frozen oracle (Y-orientation and comparand conventions per contract); nobs case records the known n-vs-p*n defect explicitly"
    }
   },
   {
    "source_id": "namespace/export/kernel_indep",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-WAVE6-KERNEL-INDEP-FIT"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE2-KERNEL-INDEP-FORMULA-TERM"
    ],
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "namespace-2 wave3",
-    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
-    "missing_surface": "GLLVM.jl's @formula front-end (src/formula.jl) has no term-recognizer for 'kernel_indep(...)'",
-    "reason": "src/formula.jl (module header: 'Slices 1-2 of the formula-front-end design spec') implements only plain StatsModels covariate/interaction terms; grep -rniE '\"kernel_indep\"' src/formula.jl src/bridge.jl: 0 hits for a term-name dispatch. gllvmTMB's brms-sugar keyword grammar (kernel_indep() and its 19 siblings, all defined in R/brms-sugar.R, R/kernel-keywords.R or R/traits-keyword.R) is parsed entirely on the R side into structured arguments (K, mode, tree, kernel spec, ...) before ever reaching the Julia bridge; bridge_fit/fit_gllvm receive those already-decomposed keyword arguments directly, never the literal term text. Some underlying mechanisms exist elsewhere in the engine (e.g. phylo_glm.jl, cross_kernel.jl) but there is no formula-term parser that would let a user write @formula(y ~ kernel_indep(...)) in Julia the way R parses ~ kernel_indep(...).",
-    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+    "batch": "wave6-conversion (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave6-batches/wave6-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave6-batches/wave6-conversion7.tar.gz",
+    "preservation_sha256": "03fd4da6617b272b218e2bbf4648ed64cea8475f83713e4f46707e503979213e",
+    "verifier": "tools/core070_verify_wave6_conversion_batch.py (CORE070_WAVE6_CONVERSION_STATE_OK wave6-conversion7; self-test 8 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave6-conversion7",
+    "note": "structured-term recognizer rows paired-verified vs the frozen oracle (Y-orientation and comparand conventions per contract); nobs case records the known n-vs-p*n defect explicitly"
    }
   },
   {
    "source_id": "namespace/export/kernel_latent",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-WAVE6-KERNEL-LATENT-SINGLE-PSI-NAMESPACE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE2-KERNEL-LATENT-FORMULA-TERM"
    ],
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "namespace-2 wave3",
-    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
-    "missing_surface": "GLLVM.jl's @formula front-end (src/formula.jl) has no term-recognizer for 'kernel_latent(...)'",
-    "reason": "src/formula.jl (module header: 'Slices 1-2 of the formula-front-end design spec') implements only plain StatsModels covariate/interaction terms; grep -rniE '\"kernel_latent\"' src/formula.jl src/bridge.jl: 0 hits for a term-name dispatch. gllvmTMB's brms-sugar keyword grammar (kernel_latent() and its 19 siblings, all defined in R/brms-sugar.R, R/kernel-keywords.R or R/traits-keyword.R) is parsed entirely on the R side into structured arguments (K, mode, tree, kernel spec, ...) before ever reaching the Julia bridge; bridge_fit/fit_gllvm receive those already-decomposed keyword arguments directly, never the literal term text. Some underlying mechanisms exist elsewhere in the engine (e.g. phylo_glm.jl, cross_kernel.jl) but there is no formula-term parser that would let a user write @formula(y ~ kernel_latent(...)) in Julia the way R parses ~ kernel_latent(...).",
-    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+    "batch": "wave6-conversion (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave6-batches/wave6-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave6-batches/wave6-conversion7.tar.gz",
+    "preservation_sha256": "03fd4da6617b272b218e2bbf4648ed64cea8475f83713e4f46707e503979213e",
+    "verifier": "tools/core070_verify_wave6_conversion_batch.py (CORE070_WAVE6_CONVERSION_STATE_OK wave6-conversion7; self-test 8 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave6-conversion7",
+    "note": "structured-term recognizer rows paired-verified vs the frozen oracle (Y-orientation and comparand conventions per contract); nobs case records the known n-vs-p*n defect explicitly"
    }
   },
   {
    "source_id": "namespace/export/kernel_scalar",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-WAVE6-KERNEL-SCALAR-FIT"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE2-KERNEL-SCALAR-FORMULA-TERM"
    ],
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "namespace-2 wave3",
-    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
-    "missing_surface": "GLLVM.jl's @formula front-end (src/formula.jl) has no term-recognizer for 'kernel_scalar(...)'",
-    "reason": "src/formula.jl (module header: 'Slices 1-2 of the formula-front-end design spec') implements only plain StatsModels covariate/interaction terms; grep -rniE '\"kernel_scalar\"' src/formula.jl src/bridge.jl: 0 hits for a term-name dispatch. gllvmTMB's brms-sugar keyword grammar (kernel_scalar() and its 19 siblings, all defined in R/brms-sugar.R, R/kernel-keywords.R or R/traits-keyword.R) is parsed entirely on the R side into structured arguments (K, mode, tree, kernel spec, ...) before ever reaching the Julia bridge; bridge_fit/fit_gllvm receive those already-decomposed keyword arguments directly, never the literal term text. Some underlying mechanisms exist elsewhere in the engine (e.g. phylo_glm.jl, cross_kernel.jl) but there is no formula-term parser that would let a user write @formula(y ~ kernel_scalar(...)) in Julia the way R parses ~ kernel_scalar(...).",
-    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+    "batch": "wave6-conversion (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave6-batches/wave6-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave6-batches/wave6-conversion7.tar.gz",
+    "preservation_sha256": "03fd4da6617b272b218e2bbf4648ed64cea8475f83713e4f46707e503979213e",
+    "verifier": "tools/core070_verify_wave6_conversion_batch.py (CORE070_WAVE6_CONVERSION_STATE_OK wave6-conversion7; self-test 8 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave6-conversion7",
+    "note": "structured-term recognizer rows paired-verified vs the frozen oracle (Y-orientation and comparand conventions per contract); nobs case records the known n-vs-p*n defect explicitly"
    }
   },
   {
    "source_id": "namespace/export/kernel_unique",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-WAVE6-KERNEL-LATENT-MULTI-COVARIANCE-EXPORT"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE2-KERNEL-UNIQUE-FORMULA-TERM"
    ],
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "namespace-2 wave3",
-    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
-    "missing_surface": "GLLVM.jl's @formula front-end (src/formula.jl) has no term-recognizer for 'kernel_unique(...)'",
-    "reason": "src/formula.jl (module header: 'Slices 1-2 of the formula-front-end design spec') implements only plain StatsModels covariate/interaction terms; grep -rniE '\"kernel_unique\"' src/formula.jl src/bridge.jl: 0 hits for a term-name dispatch. gllvmTMB's brms-sugar keyword grammar (kernel_unique() and its 19 siblings, all defined in R/brms-sugar.R, R/kernel-keywords.R or R/traits-keyword.R) is parsed entirely on the R side into structured arguments (K, mode, tree, kernel spec, ...) before ever reaching the Julia bridge; bridge_fit/fit_gllvm receive those already-decomposed keyword arguments directly, never the literal term text. Some underlying mechanisms exist elsewhere in the engine (e.g. phylo_glm.jl, cross_kernel.jl) but there is no formula-term parser that would let a user write @formula(y ~ kernel_unique(...)) in Julia the way R parses ~ kernel_unique(...).",
-    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+    "batch": "wave6-conversion (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave6-batches/wave6-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave6-batches/wave6-conversion7.tar.gz",
+    "preservation_sha256": "03fd4da6617b272b218e2bbf4648ed64cea8475f83713e4f46707e503979213e",
+    "verifier": "tools/core070_verify_wave6_conversion_batch.py (CORE070_WAVE6_CONVERSION_STATE_OK wave6-conversion7; self-test 8 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave6-conversion7",
+    "note": "structured-term recognizer rows paired-verified vs the frozen oracle (Y-orientation and comparand conventions per contract); nobs case records the known n-vs-p*n defect explicitly"
    }
   },
   {
@@ -8796,13 +8803,11 @@
     "CORE070-NAMESPACE2-SCALAR-FORMULA-TERM"
    ],
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
    "evidence": {
-    "batch": "namespace-2 wave3",
-    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
-    "missing_surface": "GLLVM.jl's @formula front-end (src/formula.jl) has no term-recognizer for 'scalar(...)'",
-    "reason": "src/formula.jl (module header: 'Slices 1-2 of the formula-front-end design spec') implements only plain StatsModels covariate/interaction terms; grep -rniE '\"scalar\"' src/formula.jl src/bridge.jl: 0 hits for a term-name dispatch. gllvmTMB's brms-sugar keyword grammar (scalar() and its 19 siblings, all defined in R/brms-sugar.R, R/kernel-keywords.R or R/traits-keyword.R) is parsed entirely on the R side into structured arguments (K, mode, tree, kernel spec, ...) before ever reaching the Julia bridge; bridge_fit/fit_gllvm receive those already-decomposed keyword arguments directly, never the literal term text. Some underlying mechanisms exist elsewhere in the engine (e.g. phylo_glm.jl, cross_kernel.jl) but there is no formula-term parser that would let a user write @formula(y ~ scalar(...)) in Julia the way R parses ~ scalar(...).",
-    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+    "batch": "wave6 triage",
+    "reason": "frozen-reference gap: lone indep()/scalar() unfittable in gllvmTMB 0.7.0 (custom source level unsupported); pairable only against >=0.7.1; Julia surface exists and is live-paired green in the 0.7.1 bridge lane",
+    "contract": "docs/dev-log/core070/wave6-conversion-batch-contract.json (deferred)"
    }
   },
   {
@@ -9735,7 +9740,9 @@
   {
    "source_id": "postfit/POSTFIT-SURFACE-confint.gllvmTMB_multi",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-WAVE6-POSTFIT-CONFINT-MULTI"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-CONFINT-MULTI-WALD-READBACK",
@@ -9743,10 +9750,14 @@
     "CORE070-POSTFIT-CONFINT-MULTI-BOOTSTRAP-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave6-conversion (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave6-batches/wave6-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave6-batches/wave6-conversion7.tar.gz",
+    "preservation_sha256": "03fd4da6617b272b218e2bbf4648ed64cea8475f83713e4f46707e503979213e",
+    "verifier": "tools/core070_verify_wave6_conversion_batch.py (CORE070_WAVE6_CONVERSION_STATE_OK wave6-conversion7; self-test 8 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave6-conversion7",
+    "note": "structured-term recognizer rows paired-verified vs the frozen oracle (Y-orientation and comparand conventions per contract); nobs case records the known n-vs-p*n defect explicitly"
    }
   },
   {
@@ -9775,8 +9786,9 @@
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave6 triage",
+    "reason": "No Julia deviance() function or dispatch exists anywhere in src/ for AnyGllvmFit/GllvmFit (grep -rn 'function.*deviance|deviance(fit' src/*.jl matches only confint_profile.jl's LOCAL closures deviance_lower/deviance_upper inside the profile-CI bracket-and-bisect routine, not a public StatsAPI.deviance method; deviance is also absent from src/GLLVM.jl's export list). Composing an ad hoc definition (e.g. -2*loglikelihood(fit) plus a saturated-model term) without reading R's actual deviance.gllvmTMB_multi source (not available in this Julia-only worktree) risks silently asserting the wrong estimand, which this repo's culture treats as worse than an honest defer. Left for a dedicated slice with R source access to confirm R's exact residual-deviance definition before any Julia composition is authored.",
+    "contract": "docs/dev-log/core070/wave6-conversion-batch-contract.json (deferred)"
    }
   },
   {
@@ -9820,10 +9832,9 @@
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "surface-conversion wave5 triage",
-    "reason": "Julia surface extract_Gamma already exists (src/extract_gamma.jl, exported) and is independently tested (test/test_coevolution_*.jl), so this is NOT a missing-Julia-surface case. No proven R-parity fixture for a coevolution (fit_coevolution_gaussian-class) model exists anywhere in this repo's tools/ or test/parity/ (grep -rl fit_coevolution_gaussian test/*.jl test/parity/*.jl returns only pure-Julia test files, zero RCall/gllvmTMB coevolution fixtures). Constructing one from scratch (correct R make_cross_kernel-style formula + tree + kernel spec) without live R access to verify is out of scope for this batch; would need a follow-up slice with its own proven fixture.",
-    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
-    "note": "deferred with source-traced reason"
+    "batch": "wave6 triage",
+    "reason": "Julia surface extract_Gamma(fit::GllvmFit; row_traits, col_traits) already exists (src/extract_gamma.jl:36, exported) and is independently tested, so this is NOT a missing-Julia-surface case. It requires a Lambda_phy-bearing fit built via fit_gaussian_gllvm(Y; K_phy>0, Sigma_phy=K*) with K* from make_cross_kernel (a two-lineage cross-kernel construction) -- none of this batch's fixtures (structured_kernel_small, gaussian_small, or wave-5's twolevel_small/ordinal_small) carry a phylo/cross-kernel tier. Per formula-recognizer-spec.md Sec 1.5, the native Sigma_phy= route puts phylogeny on the TRAIT axis and is explicitly NOT the same model as any R gllvmTMB coevolution formula (docs/dev-log/core070/structured-native-mapping.md:49-56) -- confirmed independently here, matching the identical deferral already recorded in docs/dev-log/core070/surface-conversion-batch-contract.json's deferred[] for the same row in wave-5. No defensible R-paired numeric case exists without inventing and validating a dedicated coevolution fixture against a live R gllvmTMB coevolution fit, which is out of this batch's fixture-reuse scope.",
+    "contract": "docs/dev-log/core070/wave6-conversion-batch-contract.json (deferred)"
    }
   },
   {
@@ -10056,10 +10067,9 @@
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "surface-conversion wave5 triage",
-    "reason": "Julia surface exists (src/postfit.jl extract_lv_effects(fit::GllvmFit; type)) but requires a fit built with fit_gaussian_gllvm(...; X_lv=...) (a constrained-ordination predictor block) -- the gaussian_small fixture this batch reuses has no X_lv term, so extract_lv_effects(fit_g) would throw ArgumentError on the very fixture the rest of this batch shares. Pairing it against R's own X_lv-analogous route needs a distinct fixture; out of scope for this batch, flagged for a follow-up slice.",
-    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
-    "note": "deferred with source-traced reason"
+    "batch": "wave6 triage",
+    "reason": "GLLVM.extract_lv_effects(fit::GllvmFit; type=:trait_effect) exists and is exported (src/postfit.jl:353) but HARD-gates on _has_lv_predictor(fit) -- it throws ArgumentError unless the fit came from fit_gaussian_gllvm(...; X_lv=...) (a concurrent/constrained-ordination fit with a predictor-informed latent axis). None of this batch's reused fixtures (gaussian_small, structured_kernel_small) carry an X_lv predictor; gaussian_small is a plain unconstrained-latent fit, so calling extract_lv_effects(fit_g) would throw on the Julia side by design, and the presumed R equivalent (a num.lv.c concurrent-ordination gllvmTMB formula) was never fit either. Building and validating a dedicated X_lv/num.lv.c fixture pair (R + Julia) is a genuine new-fixture slice, out of this lean batch's reuse-only scope; left for a follow-up wave.",
+    "contract": "docs/dev-log/core070/wave6-conversion-batch-contract.json (deferred)"
    }
   },
   {
@@ -10208,8 +10218,9 @@
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave6 triage",
+    "reason": "REPAIR (2026-09-01, wave6-conversion1 forensics item 3a): the first attempt's R-side coercion, `t <- extract_rotated_loadings_table(fit_g); t[order(t$trait_i, t$factor_j),]; as.numeric(t$estimate)`, errored 'argument 1 is not a vector' on the live frozen library -- the assumed column names (trait_i, factor_j, estimate) were inferred only from the Julia docstring cross-reference (src/extractors.jl:231, 'mirrors gllvmTMB::extract_rotated_loadings_table()'), never from live R source or a live inspection of the returned object's actual shape (str(extract_rotated_loadings_table(fit_g))). GLLVM.extract_rotated_loadings(fit) itself still exists and is exported (src/extractors.jl:233) -- this is a genuine surface, not a missing one -- but re-guessing the R accessor's column/return shape a second time without live R inspection risks a repeat failure; deferred until a live R session can confirm the actual return structure (str()/names() on the real object), then re-authored with a verified coercion.",
+    "contract": "docs/dev-log/core070/wave6-conversion-batch-contract.json (deferred)"
    }
   },
   {
@@ -10223,8 +10234,9 @@
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave6 triage",
+    "reason": "REPAIR (2026-09-01, wave6-conversion1 forensics item 3c): R's fitted(fit_g) call errored 'list object cannot be coerced' under as.numeric() on the live frozen library -- fitted.gllvmTMB_multi returns a list/matrix structure, not a plain numeric vector, and the correct component to extract (e.g. a $fitted or $mu field) is not resolvable without a live R inspection of the returned object (str(fitted(fit_g))), which this Julia-only worktree cannot perform. GLLVM.fitted(fit::AnyGllvmFit, data) itself still exists (src/postfit.jl:306) -- this is a genuine surface, not a missing one -- but re-guessing the R-side component name a second time without live inspection risks a repeat failure; deferred until a live R session confirms the actual return structure, then re-authored with the verified component selector.",
+    "contract": "docs/dev-log/core070/wave6-conversion-batch-contract.json (deferred)"
    }
   },
   {
@@ -10238,8 +10250,9 @@
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
    "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave6 triage",
+    "reason": "DEFERRED per coordinator trace (wave6-conversion1 forensics item 3b): R's flag_unreliable_loadings(fit_g) aborts on gaussian_small with 'Per-entry Wald CIs on Lambda well-defined only for confirmatory fits; no lambda_constraint pins' -- the SAME confirmatory-fit gate that already blocks loading_ci elsewhere in this ledger (gaussian_small is an unconstrained/exploratory-rotation fit, never pinned with a lambda_constraint). This row joins the lambda_constraint-family deferrals: the Julia composition this batch built (confint(fit; parm=\"Lambda\") zero-crossing) compares a DIFFERENT estimand than R's confirmatory-only accessor and is not a valid paired case on this fixture. A valid case needs a lambda_constraint-pinned confirmatory fixture (R + Julia), out of this batch's reuse-only scope.",
+    "contract": "docs/dev-log/core070/wave6-conversion-batch-contract.json (deferred)"
    }
   },
   {
@@ -10454,33 +10467,45 @@
   {
    "source_id": "postfit/POSTFIT-SURFACE-logLik.gllvmTMB_multi",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-WAVE6-POSTFIT-LOGLIK-MULTI"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT2-LOGLIK-GLLVMTMB-MULTI-NATIVE",
     "CORE070-POSTFIT2-LOGLIK-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave6-conversion (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave6-batches/wave6-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave6-batches/wave6-conversion7.tar.gz",
+    "preservation_sha256": "03fd4da6617b272b218e2bbf4648ed64cea8475f83713e4f46707e503979213e",
+    "verifier": "tools/core070_verify_wave6_conversion_batch.py (CORE070_WAVE6_CONVERSION_STATE_OK wave6-conversion7; self-test 8 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave6-conversion7",
+    "note": "structured-term recognizer rows paired-verified vs the frozen oracle (Y-orientation and comparand conventions per contract); nobs case records the known n-vs-p*n defect explicitly"
    }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-nobs.gllvmTMB_multi",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-WAVE6-POSTFIT-NOBS-MULTI"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT2-NOBS-GLLVMTMB-MULTI-NATIVE",
     "CORE070-POSTFIT2-NOBS-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
-   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "postfit-2-batch wave2 (absence receipted)",
-    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+    "batch": "wave6-conversion (attempt7)",
+    "receipts": ".unlazy/core070-aghq/wave6-batches/wave6-conversion7",
+    "preservation_tarball": ".unlazy/core070-aghq/wave6-batches/wave6-conversion7.tar.gz",
+    "preservation_sha256": "03fd4da6617b272b218e2bbf4648ed64cea8475f83713e4f46707e503979213e",
+    "verifier": "tools/core070_verify_wave6_conversion_batch.py (CORE070_WAVE6_CONVERSION_STATE_OK wave6-conversion7; self-test 8 mutations)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave6-conversion7",
+    "note": "structured-term recognizer rows paired-verified vs the frozen oracle (Y-orientation and comparand conventions per contract); nobs case records the known n-vs-p*n defect explicitly"
    }
   },
   {
