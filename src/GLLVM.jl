@@ -148,9 +148,11 @@ include("confint_derived_wald.jl")       # transformed-Wald CIs for bounded deri
 # adds methods to). Additive: the ::GllvmFit methods are unchanged.
 include("link_residual.jl")
 include("extractors.jl")                # extract_*/get* post-fit extractor family (core070 Cluster 1)
+include("re_sd.jl")                      # getREsd: TMB-sdreport-style conditional-on-θ̂ random-effect SDs (core070 E-cluster)
 include("families/mixed.jl")             # mixed-family GLLVM (cross-family VCV): fit_mixed_gllvm + MixedFamilyFit. AFTER link_residual + the family fitters so all dispatch targets exist.
 include("boundary_inference.jl")         # χ̄² boundary LRT + boundary-aware profile CI for variance components
 include("confint_family.jl")             # Wald / profile / bootstrap CIs for non-Gaussian families
+include("diagnostics.jl")                # check_gllvmTMB / gllvmTMB_diagnose / predictive_check / sanity_multi / compare_* / confint_inspect (core070 diagnostics/compare cluster)
 include("summary_table.jl")              # coef_table: tidy Wald inference table
 include("formula.jl")                    # @formula front-end (v1: fixed effects → engine)
 include("bridge.jl")                      # R→Julia bridge_fit (JuliaCall flat contract); LAST
@@ -190,6 +192,8 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        standardized_loading_wald_ci, raw_loading_wald_ci, loading_ci, loading_profile,
        profile_ci_total_variance, profile_ci_phylo_signal,
        slope_sd_ci, standard_errors,
+       getREsd, bootstrap_Sigma, tmbprofile_wrapper, profile_targets,
+       profile_phylo_signal,
        ppca_init, em_fa,
        sigma_y_site, communality, correlation, phylo_signal, link_residual,
        extract_Sigma, extract_Sigma_table, extract_loadings, extract_rotated_loadings,
@@ -298,6 +302,11 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        cv_gllvm, CVResult,
        StatsAPI, coef, vcov, nobs, dof, loglikelihood, stderror, coeftable,
        predict, fitted, residuals, aic, bic, simulate,
-       bridge_fit, bridge_capabilities
+       bridge_fit, bridge_capabilities,
+       gllvmTMB_check_consistency, gllvmTMB_diagnose, check_gllvmTMB,
+       check_auto_residual, sanity_multi, diagnostic_table,
+       diagnose_kernel_separability, compare_Sigma_table,
+       compare_dep_vs_two_psi, compare_indep_vs_two_psi, compare_loadings,
+       predictive_check, confint_inspect
 
 end # module GLLVM
