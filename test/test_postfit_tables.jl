@@ -161,4 +161,40 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics
         @test_throws ArgumentError predict_missing(fit, Y; mask = trues(p + 1, n))
     end
 
+    @testset "1.5 simulate_unit_trait — ADEMP recovery + seed reproducibility" begin
+        rng = Random.MersenneTwister(55)
+        n_traits, K_B, K_W = 3, 1, 1
+        ΛB_true = reshape([0.9, 0.7, 0.5], n_traits, K_B)
+        ΛW_true = reshape([0.6, 0.4, 0.3], n_traits, K_W)
+        ψ_B = fill(0.3, n_traits)
+        ψ_W = fill(0.2, n_traits)
+        σ2eps = 0.4
+
+        sim = simulate_unit_trait(rng; n_units = 400, n_obs_per_unit = 4,
+                                  n_traits = n_traits, K_B = K_B, K_W = K_W,
+                                  Lambda_B = ΛB_true, Lambda_W = ΛW_true,
+                                  psi_B = ψ_B, psi_W = ψ_W, sigma2_eps = σ2eps)
+        @test size(sim.Y) == (n_traits, 400 * 4)
+        @test length(sim.individual) == 400 * 4
+        @test sim.truth.Sigma_B ≈ ΛB_true * ΛB_true' + Diagonal(ψ_B) atol = 1e-10
+        @test sim.truth.Sigma_W ≈ ΛW_true * ΛW_true' + Diagonal(ψ_W .+ σ2eps) atol = 1e-10
+
+        fitted = fit_twolevel_gaussian(sim.Y, sim.individual; K_B = K_B, K_W = K_W)
+        @test fitted.converged
+        @test cor(vec(fitted.Σ_B), vec(sim.truth.Sigma_B)) > 0.85
+        @test cor(vec(fitted.Σ_W), vec(sim.truth.Sigma_W)) > 0.85
+        @test maximum(abs.(diag(fitted.Σ_W) .- diag(sim.truth.Sigma_W))) < 0.15
+
+        # Seed reproducibility: same rng state ⇒ identical draws.
+        sim_a = simulate_unit_trait(Random.MersenneTwister(9); n_units = 10,
+                                    n_obs_per_unit = 2, n_traits = 3)
+        sim_b = simulate_unit_trait(Random.MersenneTwister(9); n_units = 10,
+                                    n_obs_per_unit = 2, n_traits = 3)
+        @test sim_a.Y == sim_b.Y
+        @test sim_a.individual == sim_b.individual
+
+        @test_throws ArgumentError simulate_unit_trait(; n_units = 0)
+        @test_throws ArgumentError simulate_unit_trait(; alpha = [1.0, 2.0])
+    end
+
 end

@@ -232,3 +232,90 @@ function predict_missing(fit, Y::AbstractMatrix;
     est = [est_full[I] for I in idx]
     return (row = row, col = col, est = est)
 end
+
+# ---------------------------------------------------------------------------
+# Item 1.5 — simulate_unit_trait (mirrors simulate-unit-trait.R:78-164).
+#
+# Ownership note: the spec's landing spot is `src/simulate.jl` (the
+# designated placeholder for Julia-side simulators); this slice is confined
+# to `src/postfit_tables.jl` by lane ownership (see
+# docs/dev-log/core070/final-surface-slice-notes.md), so it lands here
+# instead — a location deviation, not a scope reduction.
+# ---------------------------------------------------------------------------
+
+"""
+    simulate_unit_trait([rng]; n_units=50, n_obs_per_unit=3, n_traits=5,
+                        K_B=1, K_W=1, alpha=zeros(n_traits),
+                        Lambda_B=nothing, Lambda_W=nothing,
+                        psi_B=fill(0.5, n_traits), psi_W=fill(0.5, n_traits),
+                        sigma2_eps=0.5)
+        -> (Y, individual, truth)
+
+Balanced two-level Gaussian DGP, mirroring `gllvmTMB::simulate_unit_trait`
+(`simulate-unit-trait.R:78-164`):
+`y_uot = α_t + b_ut(Λ_B z + ψ_B) + w_uot(Λ_W z + ψ_W) + N(0, σ²_eps)`, i.e.
+`b_u ~ N(0, Σ_B)` (one draw per unit `u`, shared across that unit's
+`n_obs_per_unit` observations) and `w_uo ~ N(0, Σ_W)` (one draw per
+observation), with `Σ_B = Λ_B Λ_Bᵀ + diag(ψ_B)` and
+`Σ_W = Λ_W Λ_Wᵀ + diag(ψ_W .+ σ²_eps)` — this is exactly what
+[`fit_twolevel_gaussian`](@ref) fits (its `Σ_W` has no separate
+measurement-error term, so `σ²_eps` is folded into `ψ_W`, matching R's own
+"psi recycling reflected in truth" note).
+
+`Lambda_B`/`Lambda_W` default to `0.7 .* randn(rng, n_traits, K_B)` /
+`0.5 .* randn(rng, n_traits, K_W)` when not supplied.
+
+Output shape is GLLVM.jl-native (core070 spec §3.4: NamedTuple/matrix, no
+DataFrame dependency), not R's long-format `(data, truth)` data frame:
+returns `(Y, individual, truth)` — `Y` is `n_traits × (n_units*n_obs_per_unit)`,
+`individual` is the length-matching grouping vector `fit_twolevel_gaussian`
+expects, and `truth` is a `NamedTuple` with fields `alpha, Lambda_B, Lambda_W,
+psi_B, psi_W, sigma2_eps, Sigma_B, Sigma_W`.
+"""
+function simulate_unit_trait(rng::Random.AbstractRNG = Random.default_rng();
+                             n_units::Integer = 50, n_obs_per_unit::Integer = 3,
+                             n_traits::Integer = 5, K_B::Integer = 1, K_W::Integer = 1,
+                             alpha::AbstractVector{<:Real} = zeros(n_traits),
+                             Lambda_B::Union{Nothing, AbstractMatrix{<:Real}} = nothing,
+                             Lambda_W::Union{Nothing, AbstractMatrix{<:Real}} = nothing,
+                             psi_B::AbstractVector{<:Real} = fill(0.5, n_traits),
+                             psi_W::AbstractVector{<:Real} = fill(0.5, n_traits),
+                             sigma2_eps::Real = 0.5)
+    n_units >= 1 && n_obs_per_unit >= 1 ||
+        throw(ArgumentError("n_units and n_obs_per_unit must be ≥ 1."))
+    length(alpha) == n_traits ||
+        throw(ArgumentError("alpha must have length n_traits = $n_traits."))
+    length(psi_B) == n_traits && length(psi_W) == n_traits ||
+        throw(ArgumentError("psi_B and psi_W must have length n_traits = $n_traits."))
+    sigma2_eps >= 0 || throw(ArgumentError("sigma2_eps must be ≥ 0."))
+
+    ΛB = Lambda_B === nothing ? 0.7 .* randn(rng, n_traits, K_B) : Matrix{Float64}(Lambda_B)
+    ΛW = Lambda_W === nothing ? 0.5 .* randn(rng, n_traits, K_W) : Matrix{Float64}(Lambda_W)
+    size(ΛB) == (n_traits, K_B) || throw(ArgumentError("Lambda_B must be n_traits × K_B."))
+    size(ΛW) == (n_traits, K_W) || throw(ArgumentError("Lambda_W must be n_traits × K_W."))
+
+    Σ_B = ΛB * ΛB' + Diagonal(collect(Float64, psi_B))
+    ψ_W_total = collect(Float64, psi_W) .+ sigma2_eps
+    Σ_W = ΛW * ΛW' + Diagonal(ψ_W_total)
+
+    LB = _psd_sqrt_factor(Σ_B)
+    LW = _psd_sqrt_factor(Σ_W)
+
+    n_obs = n_units * n_obs_per_unit
+    Y = Matrix{Float64}(undef, n_traits, n_obs)
+    individual = Vector{Int}(undef, n_obs)
+    col = 0
+    for u in 1:n_units
+        b_u = LB * randn(rng, n_traits)
+        for _ in 1:n_obs_per_unit
+            col += 1
+            individual[col] = u
+            Y[:, col] = alpha .+ b_u .+ LW * randn(rng, n_traits)
+        end
+    end
+
+    truth = (alpha = collect(Float64, alpha), Lambda_B = ΛB, Lambda_W = ΛW,
+            psi_B = collect(Float64, psi_B), psi_W = ψ_W_total,
+            sigma2_eps = Float64(sigma2_eps), Sigma_B = Matrix(Σ_B), Sigma_W = Matrix(Σ_W))
+    return (Y = Y, individual = individual, truth = truth)
+end
