@@ -107,3 +107,76 @@ function profile_cross_rho_ci(rho::AbstractVector{<:Real}, delta_deviance::Abstr
             lower_bounded = lower_bounded, upper_bounded = upper_bounded,
             threshold = threshold)
 end
+
+# ---------------------------------------------------------------------------
+# Item 1.3 — predict_cross_covariance, positional form (mirrors
+# extract-sigma.R:1837-1957; kernel from `.kernel_level_matrix`, :1961-2005).
+# ---------------------------------------------------------------------------
+
+"""
+    predict_cross_covariance(fit, K; row_levels, col_levels, row_traits, col_traits)
+        -> NamedTuple of vectors
+
+Cross-lineage predicted covariance table `covariance = kernel_value * gamma_shape`
+for every combination of `(row_level, col_level, row_trait, col_trait)`, one row
+per combination (nested loop order: `row_levels` outer, `col_levels`, `row_traits`,
+`col_traits` inner). Mirrors `gllvmTMB::predict_cross_covariance`
+(`extract-sigma.R:1837-1957`), point estimates only.
+
+`K` is the `n × n` cross-lineage kernel (e.g. from [`make_cross_kernel`](@ref));
+`row_levels`/`col_levels` are 1-based integer indices into `K`. `gamma_shape`
+is `Γ = (Λ_phy Λ_phyᵀ)[row_traits, col_traits]` via [`extract_Gamma`](@ref)
+(already on R's "shape" scale) — `row_traits`/`col_traits` are 1-based integer
+indices into the stacked two-lineage entity set that `fit` was fitted on.
+
+Returns a `NamedTuple` of equal-length vectors with fields
+`row_level, col_level, row_trait, col_trait, kernel_value, gamma_shape,
+covariance` — the positional analogue of R's table (R's `rho` /
+`kernel_includes_rho` metadata columns are deferred to the `CrossKernel`
+metadata wrapper, core070 spec §2.6, since GLLVM.jl's kernel is presently an
+unnamed matrix with no stored `rho`).
+
+Throws `ArgumentError` if any level index falls outside `axes(K)` (mirroring
+R's abort at `extract-sigma.R:1885-1908`).
+"""
+function predict_cross_covariance(fit::GllvmFit, K::AbstractMatrix;
+                                  row_levels::AbstractVector{<:Integer},
+                                  col_levels::AbstractVector{<:Integer},
+                                  row_traits::AbstractVector{<:Integer},
+                                  col_traits::AbstractVector{<:Integer})
+    nK1, nK2 = size(K)
+    all(l -> 1 <= l <= nK1, row_levels) ||
+        throw(ArgumentError("row_levels must index 1:$nK1 (rows of K)."))
+    all(l -> 1 <= l <= nK2, col_levels) ||
+        throw(ArgumentError("col_levels must index 1:$nK2 (columns of K)."))
+
+    Γ = extract_Gamma(fit; row_traits = row_traits, col_traits = col_traits)
+
+    n = length(row_levels) * length(col_levels) * length(row_traits) * length(col_traits)
+    row_level = Vector{Int}(undef, n)
+    col_level = Vector{Int}(undef, n)
+    row_trait = Vector{Int}(undef, n)
+    col_trait = Vector{Int}(undef, n)
+    kernel_value = Vector{Float64}(undef, n)
+    gamma_shape = Vector{Float64}(undef, n)
+    covariance = Vector{Float64}(undef, n)
+
+    idx = 0
+    for rl in row_levels, cl in col_levels, (ti, rt) in enumerate(row_traits), (tj, ct) in enumerate(col_traits)
+        idx += 1
+        kv = Float64(K[rl, cl])
+        gs = Γ[ti, tj]
+        row_level[idx] = rl
+        col_level[idx] = cl
+        row_trait[idx] = rt
+        col_trait[idx] = ct
+        kernel_value[idx] = kv
+        gamma_shape[idx] = gs
+        covariance[idx] = kv * gs
+    end
+
+    return (row_level = row_level, col_level = col_level,
+            row_trait = row_trait, col_trait = col_trait,
+            kernel_value = kernel_value, gamma_shape = gamma_shape,
+            covariance = covariance)
+end

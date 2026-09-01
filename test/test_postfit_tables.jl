@@ -74,4 +74,57 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics
         @test_throws ArgumentError profile_cross_rho_ci([NaN, 0.0], [NaN, 1.0])
     end
 
+    @testset "1.3 predict_cross_covariance — positional, hand-loop oracle" begin
+        Random.seed!(3)
+        n_H, n_P = 2, 2
+        p = n_H + n_P
+        A_H = [1.0 0.3; 0.3 1.0]
+        A_P = [1.0 0.2; 0.2 1.0]
+        W = [1.0 0.0; 0.5 1.0]
+        K_star = Matrix(make_cross_kernel(A_H, A_P, W; rho = 0.4))
+
+        L_phy_true = cholesky(Symmetric(K_star)).L
+        n = 400
+        Λ_unit = 0.5 .* randn(p, 1)
+        y = Λ_unit * randn(1, n) .+ (L_phy_true * randn(p, n)) .+ 0.3 .* randn(p, n)
+        fit = fit_gaussian_gllvm(y; K = 1, K_phy = 1, Σ_phy = K_star)
+        @test fit.converged
+
+        row_traits = 1:n_H
+        col_traits = (n_H + 1):p
+        Γ = extract_Gamma(fit; row_traits = row_traits, col_traits = col_traits)
+
+        # Level kernel is a separate small artificial matrix (e.g. site-level
+        # replication kernel) — independent axis from the trait axis.
+        Klvl = [1.0 0.3 0.1; 0.3 1.0 0.2; 0.1 0.2 1.0]
+        row_levels = [1, 2]
+        col_levels = [2, 3]
+
+        out = predict_cross_covariance(fit, Klvl; row_levels = row_levels,
+                                       col_levels = col_levels,
+                                       row_traits = collect(row_traits),
+                                       col_traits = collect(col_traits))
+
+        @test length(out.covariance) == length(row_levels) * length(col_levels) *
+                                        length(row_traits) * length(col_traits)
+        idx = 0
+        for rl in row_levels, cl in col_levels, (ti, rt) in enumerate(row_traits), (tj, ct) in enumerate(col_traits)
+            idx += 1
+            @test out.row_level[idx] == rl
+            @test out.col_level[idx] == cl
+            @test out.row_trait[idx] == rt
+            @test out.col_trait[idx] == ct
+            @test out.kernel_value[idx] == Klvl[rl, cl]
+            @test out.gamma_shape[idx] == Γ[ti, tj]
+            @test out.covariance[idx] ≈ Γ[ti, tj] * Klvl[rl, cl]
+        end
+
+        @test_throws ArgumentError predict_cross_covariance(fit, Klvl;
+            row_levels = [0], col_levels = col_levels,
+            row_traits = collect(row_traits), col_traits = collect(col_traits))
+        @test_throws ArgumentError predict_cross_covariance(fit, Klvl;
+            row_levels = row_levels, col_levels = [99],
+            row_traits = collect(row_traits), col_traits = collect(col_traits))
+    end
+
 end
