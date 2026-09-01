@@ -1,5 +1,5 @@
 # Standalone tests for the core070 E-cluster SE-machinery slice:
-#   getREsd, bootstrap_Sigma, tmbprofile_wrapper / profile_targets /
+#   latent_score_sd, bootstrap_Sigma, tmbprofile_wrapper / profile_targets /
 #   profile_phylo_signal.
 #
 # Run standalone:
@@ -17,13 +17,13 @@ using Distributions: Poisson
 @testset "core070 E-cluster: SE machinery" begin
 
     # -----------------------------------------------------------------
-    # getREsd — Gaussian closed-form path: exact identity vs a direct
+    # latent_score_sd — Gaussian closed-form path: exact identity vs a direct
     # dense computation via a DIFFERENT formula (Cov(z|y) = I - Λ'Σ_y⁻¹Λ,
     # the standard joint-Gaussian conditioning identity) than the one
-    # `getREsd` itself uses (M⁻¹, M = I + Λ'Ψ⁻¹Λ via Woodbury). Agreement
+    # `latent_score_sd` itself uses (M⁻¹, M = I + Λ'Ψ⁻¹Λ via Woodbury). Agreement
     # to ≤ 1e-10 is a genuine cross-check, not a tautology.
     # -----------------------------------------------------------------
-    @testset "getREsd Gaussian: exact vs direct dense (≤1e-10)" begin
+    @testset "latent_score_sd Gaussian: exact vs direct dense (≤1e-10)" begin
         rng = MersenneTwister(1)
         p, n, K = 6, 200, 2
         Λtrue = randn(rng, p, K)
@@ -32,7 +32,7 @@ using Distributions: Poisson
         y = Λtrue * z' .+ σ_eps .* randn(rng, p, n)
 
         fit = fit_gaussian_gllvm(y; K = K)
-        sd = getREsd(fit, y; rotate = false)
+        sd = latent_score_sd(fit, y; rotate = false)
         @test size(sd) == (n, K)
 
         Λ = fit.pars.Λ
@@ -50,12 +50,32 @@ using Distributions: Poisson
     end
 
     # -----------------------------------------------------------------
-    # getREsd — rotate kwarg: DEFAULT must match getLV's default basis
+    # getREsd — deprecated name, forwards to latent_score_sd (maintainer
+    # decision docs/dev-log/decisions/2026-09-01-maintainer-decisions-
+    # round2-3.md #5). Assert both the depwarn fires and the numeric result
+    # agrees exactly with a direct latent_score_sd call.
+    # -----------------------------------------------------------------
+    @testset "getREsd: deprecated forwarding to latent_score_sd" begin
+        rng = MersenneTwister(1)
+        p, n, K = 6, 200, 2
+        Λtrue = randn(rng, p, K)
+        σ_eps = 0.4
+        z = randn(rng, n, K)
+        y = Λtrue * z' .+ σ_eps .* randn(rng, p, n)
+
+        fit = fit_gaussian_gllvm(y; K = K)
+        direct = latent_score_sd(fit, y; rotate = false)
+        forwarded = @test_deprecated getREsd(fit, y; rotate = false)
+        @test forwarded == direct
+    end
+
+    # -----------------------------------------------------------------
+    # latent_score_sd — rotate kwarg: DEFAULT must match getLV's default basis
     # (rotate=true, canonical SVD-rotated basis: diag(R'M⁻¹R)), not the
     # unrotated diag(M⁻¹) from the test above. rotate=false must still
     # give the unrotated identity (the sd from the previous testset).
     # -----------------------------------------------------------------
-    @testset "getREsd Gaussian: rotate kwarg matches getLV's default basis" begin
+    @testset "latent_score_sd Gaussian: rotate kwarg matches getLV's default basis" begin
         rng = MersenneTwister(1)
         p, n, K = 6, 200, 2
         Λtrue = randn(rng, p, K)
@@ -74,9 +94,9 @@ using Distributions: Poisson
         sd_rotated = sqrt.(max.(diag(M_rotated), 0.0))
         @test !isapprox(sd_rotated, sd_unrotated; atol = 1e-8)  # sanity: rotation matters here
 
-        sd_default = getREsd(fit, y)
-        sd_explicit_rotate = getREsd(fit, y; rotate = true)
-        sd_explicit_norotate = getREsd(fit, y; rotate = false)
+        sd_default = latent_score_sd(fit, y)
+        sd_explicit_rotate = latent_score_sd(fit, y; rotate = true)
+        sd_explicit_norotate = latent_score_sd(fit, y; rotate = false)
 
         for s in 1:n
             @test isapprox(collect(sd_default[s, :]), sd_rotated; atol = 1e-10, rtol = 1e-10)
@@ -86,12 +106,12 @@ using Distributions: Poisson
     end
 
     # -----------------------------------------------------------------
-    # getREsd — Poisson dense-Laplace path: vs a direct per-site Hessian
+    # latent_score_sd — Poisson dense-Laplace path: vs a direct per-site Hessian
     # inversion built from the textbook Poisson/log-link Fisher weight
     # W_t = μ_t (independent of `_laplace_re_precision_site`'s internals —
     # this recomputes μ and W from scratch with a hand-written formula).
     # -----------------------------------------------------------------
-    @testset "getREsd Poisson: vs direct per-site Hessian inversion" begin
+    @testset "latent_score_sd Poisson: vs direct per-site Hessian inversion" begin
         rng = MersenneTwister(2)
         p, n, K = 8, 60, 1
         Λtrue = 0.6 .* randn(rng, p, K)
@@ -102,7 +122,7 @@ using Distributions: Poisson
         Y = [rand(rng, Poisson(μ[t, s])) for t in 1:p, s in 1:n]
 
         fit = fit_poisson_gllvm(Y; K = K, iterations = 60)
-        sd = getREsd(fit, Y)
+        sd = latent_score_sd(fit, Y)
         @test size(sd) == (n, K)
 
         Λ̂ = fit.Λ
@@ -118,7 +138,7 @@ using Distributions: Poisson
         end
     end
 
-    @testset "getREsd Binomial: predictor-informed (X_lv) fit refuses (honest ArgumentError)" begin
+    @testset "latent_score_sd Binomial: predictor-informed (X_lv) fit refuses (honest ArgumentError)" begin
         rng = MersenneTwister(21)
         p, n, K = 5, 60, 1
         Λtrue = 0.6 .* randn(rng, p, K)
@@ -132,10 +152,10 @@ using Distributions: Poisson
 
         fit_lv = fit_binomial_gllvm(Y; K = K, X_lv = X_lv, iterations = 20)
         @test GLLVM._has_lv_predictor(fit_lv)
-        @test_throws ArgumentError getREsd(fit_lv, Y)
+        @test_throws ArgumentError latent_score_sd(fit_lv, Y)
     end
 
-    @testset "getREsd Poisson: AGHQ fit refuses (honest MethodError/ArgumentError)" begin
+    @testset "latent_score_sd Poisson: AGHQ fit refuses (honest MethodError/ArgumentError)" begin
         rng = MersenneTwister(3)
         p, n, K = 5, 40, 1
         Λtrue = 0.5 .* randn(rng, p, K)
@@ -145,15 +165,15 @@ using Distributions: Poisson
         μ = exp.(η)
         Y = [rand(rng, Poisson(μ[t, s])) for t in 1:p, s in 1:n]
         fit_aghq = fit_poisson_gllvm(Y; K = K, iterations = 5, aghq = 3)
-        @test_throws ArgumentError getREsd(fit_aghq, Y)
+        @test_throws ArgumentError latent_score_sd(fit_aghq, Y)
     end
 
     # -----------------------------------------------------------------
-    # getREsd — structural guards: refuse (honest ArgumentError) rather than
+    # latent_score_sd — structural guards: refuse (honest ArgumentError) rather than
     # silently returning a wrong "EXACT" answer for fits the closed-form
     # identity does not cover (phylo block, K_W tier, masked Gaussian-record).
     # -----------------------------------------------------------------
-    @testset "getREsd Gaussian: structural guards refuse phylo / K_W / masked-record fits" begin
+    @testset "latent_score_sd Gaussian: structural guards refuse phylo / K_W / masked-record fits" begin
         rng = MersenneTwister(9)
         p, n, K = 4, 100, 1
         Λtrue = randn(rng, p, K)
@@ -166,7 +186,7 @@ using Distributions: Poisson
         y_w = Λtrue * z' .+ Λ_W_true * w' .+ σ_eps .* randn(rng, p, n)
         fit_w = fit_gaussian_gllvm(y_w; K = K, K_W = 1)
         @test fit_w.model.K_W > 0
-        @test_throws ArgumentError getREsd(fit_w, y_w)
+        @test_throws ArgumentError latent_score_sd(fit_w, y_w)
 
         # Phylogenetic block (has_phy_unique).
         Σ_phy = Matrix{Float64}(I, p, p)
@@ -175,7 +195,7 @@ using Distributions: Poisson
         y_phy = Λtrue * z' .+ σ_eps .* randn(rng, p, n) .+ σ_phy_true .* φ
         fit_phy = fit_gaussian_gllvm(y_phy; K = K, has_phy_unique = true, Σ_phy = Σ_phy)
         @test fit_phy.model.has_phy_unique
-        @test_throws ArgumentError getREsd(fit_phy, y_phy)
+        @test_throws ArgumentError latent_score_sd(fit_phy, y_phy)
 
         # Masked Gaussian-record fit.
         y_plain = Λtrue * z' .+ σ_eps .* randn(rng, p, n)
@@ -183,7 +203,7 @@ using Distributions: Poisson
         mask[1, 1] = false
         fit_masked = fit_gaussian_gllvm(y_plain; K = K, aghq = 3, mask = mask)
         @test GLLVM._has_gaussian_record(fit_masked)
-        @test_throws ArgumentError getREsd(fit_masked, y_plain)
+        @test_throws ArgumentError latent_score_sd(fit_masked, y_plain)
     end
 
     # -----------------------------------------------------------------

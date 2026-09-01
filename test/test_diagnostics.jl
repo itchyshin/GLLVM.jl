@@ -126,13 +126,13 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics
         @test !any(f -> startswith(f, "correlation_near_boundary"), diagres.boundary_flags)
     end
 
-    @testset "diagnostic_table — one row per named check, matching column lengths" begin
+    @testset "fit_diagnostic_table — one row per named check, matching column lengths" begin
         Random.seed!(14)
         p, K, n = 4, 1, 200
         Λ_true = reshape([0.7, 0.5, 0.4, -0.3], p, K)
         y = Λ_true * randn(K, n) + 0.5 * randn(p, n)
         fit = fit_gaussian_gllvm(y; K = K)
-        tbl = GLLVM.diagnostic_table(fit; y = y)
+        tbl = GLLVM.fit_diagnostic_table(fit; y = y)
         @test length(tbl.check) == length(tbl.status) == length(tbl.message)
         @test "converged" in tbl.check
         @test "pd_hessian" in tbl.check
@@ -169,7 +169,7 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics
         @test r.separable === false
     end
 
-    @testset "compare_Sigma_table / compare_loadings — identical fits agree exactly" begin
+    @testset "compare_fits_Sigma_table / compare_loadings — identical fits agree exactly" begin
         Random.seed!(16)
         p, K, n = 5, 2, 300
         Λ_true = randn(p, K)
@@ -177,7 +177,7 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics
         fit1 = fit_gaussian_gllvm(y; K = K)
         fit2 = fit1
 
-        sc = GLLVM.compare_Sigma_table(fit1, fit2)
+        sc = GLLVM.compare_fits_Sigma_table(fit1, fit2)
         @test sc.frobenius_norm ≈ 0.0 atol = 1e-10
         @test sc.max_abs_diff ≈ 0.0 atol = 1e-10
 
@@ -205,7 +205,7 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics
         @test all(a -> isapprox(a, 0.0; atol = 1e-8), cl.principal_angles)
     end
 
-    @testset "compare_Sigma_table / compare_loadings — a genuinely different fit disagrees" begin
+    @testset "compare_fits_Sigma_table / compare_loadings — a genuinely different fit disagrees" begin
         Random.seed!(17)
         p, K, n = 5, 1, 300
         Λ_true = reshape([0.7, 0.5, 0.4, -0.3, 0.2], p, K)
@@ -214,28 +214,53 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics
         fit1 = fit_gaussian_gllvm(y1; K = K)
         fit2 = fit_gaussian_gllvm(y2; K = K)
 
-        sc = GLLVM.compare_Sigma_table(fit1, fit2)
+        sc = GLLVM.compare_fits_Sigma_table(fit1, fit2)
         @test sc.frobenius_norm > 1.0
 
         cl = GLLVM.compare_loadings(fit1, fit2)
         @test cl.frobenius_norm_LLt > 0.1
 
-        @test_throws ArgumentError GLLVM.compare_Sigma_table(fit1, fit_gaussian_gllvm(y1[1:3, :]; K = K))
+        @test_throws ArgumentError GLLVM.compare_fits_Sigma_table(fit1, fit_gaussian_gllvm(y1[1:3, :]; K = K))
     end
 
-    @testset "compare_dep_vs_two_psi / compare_indep_vs_two_psi — bridge shape and self-comparison" begin
+    @testset "compare_fits_dep_vs_two_psi / compare_fits_indep_vs_two_psi — bridge shape and self-comparison" begin
         Random.seed!(18)
         p, K, n = 4, 1, 250
         Λ_true = reshape([0.7, 0.5, 0.4, -0.3], p, K)
         y = Λ_true * randn(K, n) + 0.4 * randn(p, n)
         fit = fit_gaussian_gllvm(y; K = K)
-        r = GLLVM.compare_dep_vs_two_psi(fit, fit, n)
+        r = GLLVM.compare_fits_dep_vs_two_psi(fit, fit, n)
         @test r.aic_delta ≈ 0.0 atol = 1e-8
         @test r.bic_delta ≈ 0.0 atol = 1e-8
         @test r.loglik_dep ≈ r.loglik_alt
 
-        r2 = GLLVM.compare_indep_vs_two_psi(fit, fit, n)
+        r2 = GLLVM.compare_fits_indep_vs_two_psi(fit, fit, n)
         @test r2.aic_delta ≈ 0.0 atol = 1e-8
+    end
+
+    @testset "deprecated names forward to their renamed target (maintainer decision round2-3 #5)" begin
+        Random.seed!(18)
+        p, K, n = 4, 1, 250
+        Λ_true = reshape([0.7, 0.5, 0.4, -0.3], p, K)
+        y = Λ_true * randn(K, n) + 0.4 * randn(p, n)
+        fit1 = fit_gaussian_gllvm(y; K = K)
+        fit2 = fit1
+
+        tbl_new = GLLVM.fit_diagnostic_table(fit1; y = y)
+        tbl_old = @test_deprecated GLLVM.diagnostic_table(fit1; y = y)
+        @test tbl_old == tbl_new
+
+        sc_new = GLLVM.compare_fits_Sigma_table(fit1, fit2)
+        sc_old = @test_deprecated GLLVM.compare_Sigma_table(fit1, fit2)
+        @test sc_old == sc_new
+
+        r_new = GLLVM.compare_fits_dep_vs_two_psi(fit1, fit2, n)
+        r_old = @test_deprecated GLLVM.compare_dep_vs_two_psi(fit1, fit2, n)
+        @test r_old == r_new
+
+        r2_new = GLLVM.compare_fits_indep_vs_two_psi(fit1, fit2, n)
+        r2_old = @test_deprecated GLLVM.compare_indep_vs_two_psi(fit1, fit2, n)
+        @test r2_old == r2_new
     end
 
     @testset "predictive_check — a well-fitting Poisson model does not flag" begin
