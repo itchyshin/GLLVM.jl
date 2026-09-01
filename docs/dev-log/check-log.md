@@ -16791,3 +16791,17 @@ run in attempt2 — they are re-running as attempt3 (post-smoke runner) because
 their prior receipts predate the c2a93d6d optimizer repair. Receipts:
 .unlazy/core070-aghq/tweedie-replay-01/attempt2 (17 cell TOMLs), preservation
 tarball 4f973ace (readback 36 entries).
+
+## 2026-09-01 — Full required parity harness GREEN on the repaired candidate (40/40 cells)
+
+runparity.jl required mode, attempt5, CORE070_PARITY_CASE_IDS = all 41 required
+IDs minus NATIVE-10-STUDENT (whose fresh attempt2 receipt retains its two known
+R-side health failures). All phases pass: 17-minus-1 family smokes, Gaussian
+originals, interfaces, covariance fixed + modes (tight-control against the
+leaf-named retained baseline from covariance-fits-02), and both formula
+covariance phases. run.toml status=success; 40 cell receipts; preservation
+tarball 33e7ebd1 (readback 83). Two setup defects retained honestly:
+attempt3 (fresh receipt dir broke intra-run health dependencies) and attempt4
+(missing tight-control baseline) — both invocation errors, not parity failures.
+This freshens every covariance/interface receipt that predated the c2a93d6d
+optimizer repair. Student Cell 9 remains the single classified open item (A6).
