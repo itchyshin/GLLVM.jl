@@ -2927,42 +2927,74 @@
   {
    "source_id": "inference/CI-ROUTE-001",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-LAMBDA-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-LAMBDA-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-002",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-LAMBDA-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-LAMBDA-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-003",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-LAMBDA-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-LAMBDA-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-004",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-LAMBDA-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-LAMBDA-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-005",
@@ -2977,22 +3009,38 @@
   {
    "source_id": "inference/CI-ROUTE-006",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-LAMBDA-CI-UNSUPPORTED-METHOD-REJECT"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-LAMBDA-CI-UNSUPPORTED-METHOD-REJECT"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-007",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-LAMBDA-CI-UNSUPPORTED-METHOD-REJECT"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-LAMBDA-CI-UNSUPPORTED-METHOD-REJECT"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-008",
@@ -3067,42 +3115,74 @@
   {
    "source_id": "inference/CI-ROUTE-015",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-PHYLO-SIGNAL-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-PHYLO-SIGNAL-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-016",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-PHYLO-SIGNAL-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-PHYLO-SIGNAL-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-017",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-PHYLO-SIGNAL-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-PHYLO-SIGNAL-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-018",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-PHYLO-SIGNAL-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-PHYLO-SIGNAL-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-019",
@@ -3137,42 +3217,74 @@
   {
    "source_id": "inference/CI-ROUTE-022",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-COMMUNALITY-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-COMMUNALITY-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-023",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-COMMUNALITY-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-COMMUNALITY-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-024",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-COMMUNALITY-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-COMMUNALITY-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-025",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-COMMUNALITY-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-COMMUNALITY-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-026",
@@ -3207,22 +3319,38 @@
   {
    "source_id": "inference/CI-ROUTE-029",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-RHO-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-RHO-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-030",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-RHO-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-RHO-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-031",
@@ -3237,12 +3365,20 @@
   {
    "source_id": "inference/CI-ROUTE-032",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-RHO-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-RHO-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-033",
@@ -3257,12 +3393,20 @@
   {
    "source_id": "inference/CI-ROUTE-034",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-RHO-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-RHO-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-035",
@@ -3277,42 +3421,74 @@
   {
    "source_id": "inference/CI-ROUTE-036",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-PROPORTION-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-PROPORTION-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-037",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-PROPORTION-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-PROPORTION-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-038",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-PROPORTION-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-PROPORTION-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-039",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-PROPORTION-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-PROPORTION-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-040",
@@ -3347,62 +3523,110 @@
   {
    "source_id": "inference/CI-ROUTE-043",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-044",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-045",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-046",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-047",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-048",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-049",
@@ -3467,92 +3691,164 @@
   {
    "source_id": "inference/CI-ROUTE-055",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-056",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-057",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-058",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-059",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-060",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-061",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-SIGMA-PHY-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-SIGMA-PHY-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-062",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-SIGMA-PHY-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-SIGMA-PHY-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-063",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-SIGMA-PHY-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-SIGMA-PHY-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-064",
@@ -3563,62 +3859,110 @@
   {
    "source_id": "inference/CI-ROUTE-065",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-BETA-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-BETA-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-066",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-BETA-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-BETA-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-067",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-BETA-BOOTSTRAP-FALLBACK-DIVERGENCE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-BETA-BOOTSTRAP-FALLBACK-DIVERGENCE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-068",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-SIGMA-EPS-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-SIGMA-EPS-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-069",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-SIGMA-EPS-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-SIGMA-EPS-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-070",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-SIGMA-EPS-BOOTSTRAP-FALLBACK-DIVERGENCE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-SIGMA-EPS-BOOTSTRAP-FALLBACK-DIVERGENCE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-071",
@@ -3683,12 +4027,20 @@
   {
    "source_id": "inference/CI-ROUTE-081",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-BETA-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-BETA-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-082",
@@ -3705,12 +4057,20 @@
   {
    "source_id": "inference/CI-ROUTE-084",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-INFERENCE-SIGMA-EPS-CI-METHOD-ROUTE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-INFERENCE-SIGMA-EPS-CI-METHOD-ROUTE"
    ],
-   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/inference-required-case-plan.json",
+   "evidence": {
+    "batch": "inference-batch wave2",
+    "receipts": ".unlazy/core070-aghq/wave2-batches",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "CORE070_INFERENCE_BATCH_FULLY_VERIFIED"
+   }
   },
   {
    "source_id": "inference/CI-ROUTE-085",
@@ -6639,7 +6999,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-BOOTSTRAP-SIGMA-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-check_auto_residual",
@@ -6649,7 +7014,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-CHECK-AUTO-RESIDUAL-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-check_gllvmTMB",
@@ -6659,7 +7029,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-CHECK-GLLVMTMB-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-coef.gllvmTMB_multi",
@@ -6679,7 +7054,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-COMPARE-SIGMA-TABLE-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-compare_dep_vs_two_psi",
@@ -6689,7 +7069,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-COMPARE-DEP-TWO-PSI-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-compare_indep_vs_two_psi",
@@ -6699,7 +7084,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-COMPARE-INDEP-TWO-PSI-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-compare_loadings",
@@ -6709,7 +7099,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-COMPARE-LOADINGS-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-confint.gllvmTMB_multi",
@@ -6721,7 +7116,12 @@
     "CORE070-POSTFIT-CONFINT-MULTI-PROFILE-BRIDGE",
     "CORE070-POSTFIT-CONFINT-MULTI-BOOTSTRAP-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-confint_inspect",
@@ -6731,7 +7131,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-CONFINT-INSPECT-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-deviance.gllvmTMB_multi",
@@ -6741,7 +7146,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-DEVIANCE-MULTI-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-diagnose_kernel_separability",
@@ -6751,7 +7161,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-KERNEL-SEPARABILITY-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-diagnostic_table",
@@ -6761,7 +7176,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-DIAGNOSTIC-TABLE-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_Gamma",
@@ -6771,7 +7191,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-GAMMA-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_ICC_site",
@@ -6781,7 +7206,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-ICC-SITE-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_Omega",
@@ -6791,7 +7221,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-OMEGA-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_Sigma",
@@ -6801,7 +7236,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-SIGMA-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_Sigma_B",
@@ -6831,7 +7271,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-SIGMA-TABLE-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_coevolution_modules",
@@ -6841,7 +7286,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-COEVOLUTION-MODULES-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_communality",
@@ -6852,7 +7302,12 @@
     "CORE070-POSTFIT-EXTRACT-COMMUNALITY-READBACK",
     "CORE070-POSTFIT-EXTRACT-COMMUNALITY-CI-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_correlations",
@@ -6863,7 +7318,12 @@
     "CORE070-POSTFIT-EXTRACT-CORRELATIONS-POINT-READBACK",
     "CORE070-POSTFIT-EXTRACT-CORRELATIONS-CI-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_cross_correlations",
@@ -6873,7 +7333,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-CROSS-CORRELATIONS-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_cutpoints",
@@ -6883,7 +7348,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-CUTPOINTS-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_loadings",
@@ -6893,7 +7363,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-LOADINGS-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_lv_effects",
@@ -6903,7 +7378,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-LV-EFFECTS-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_ordination",
@@ -6913,7 +7393,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-ORDINATION-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_phylo_signal",
@@ -6924,7 +7409,12 @@
     "CORE070-POSTFIT-EXTRACT-PHYLO-SIGNAL-READBACK",
     "CORE070-POSTFIT-EXTRACT-PHYLO-SIGNAL-CI-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_proportions",
@@ -6934,7 +7424,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-PROPORTIONS-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_repeatability",
@@ -6945,7 +7440,12 @@
     "CORE070-POSTFIT-EXTRACT-REPEATABILITY-READBACK",
     "CORE070-POSTFIT-EXTRACT-REPEATABILITY-CI-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_residual_cor",
@@ -6955,7 +7455,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-RESIDUAL-COR-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_residual_cov",
@@ -6965,7 +7470,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-RESIDUAL-COV-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_residual_split",
@@ -6975,7 +7485,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-RESIDUAL-SPLIT-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_rotated_loadings_table",
@@ -6985,7 +7500,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-ROTATED-LOADINGS-TABLE-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-fitted.gllvmTMB_multi",
@@ -6995,7 +7515,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-FITTED-MULTI-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-flag_unreliable_loadings",
@@ -7005,7 +7530,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-FLAG-UNRELIABLE-LOADINGS-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-getLV",
@@ -7015,7 +7545,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-GETLV-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-getLoadings",
@@ -7025,7 +7560,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-GETLOADINGS-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-getREsd",
@@ -7035,7 +7575,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-GETRESD-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-getResidualCor",
@@ -7045,7 +7590,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-GETRESIDUALCOR-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-getResidualCov",
@@ -7055,7 +7605,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-GETRESIDUALCOV-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-get_crs",
@@ -7066,7 +7621,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-GET-CRS-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-gllvmTMB_diagnose",
@@ -7076,7 +7636,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-GLLVMTMB-DIAGNOSE-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-impute_model",
@@ -7086,7 +7651,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-IMPUTE-MODEL-FORMULA"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-imputed",
@@ -7106,7 +7676,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-IMPUTED-GLLVMTMB-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-loading_ci",
@@ -7116,7 +7691,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-LOADING-CI-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-1-batch wave2 (surface-absence verified by julia introspection)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-loading_profile",
@@ -7127,7 +7707,12 @@
     "CORE070-POSTFIT2-LOADING-PROFILE-NATIVE",
     "CORE070-POSTFIT2-LOADING-PROFILE-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-logLik.gllvmTMB_multi",
@@ -7138,7 +7723,12 @@
     "CORE070-POSTFIT2-LOGLIK-GLLVMTMB-MULTI-NATIVE",
     "CORE070-POSTFIT2-LOGLIK-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-nobs.gllvmTMB_multi",
@@ -7149,7 +7739,12 @@
     "CORE070-POSTFIT2-NOBS-GLLVMTMB-MULTI-NATIVE",
     "CORE070-POSTFIT2-NOBS-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-ordiplot",
@@ -7163,7 +7758,13 @@
    "planned_case_ids": [
     "CORE070-POSTFIT2-ORDIPLOT-COMPATIBILITY-ADAPTER"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "postfit-2-batch wave2",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "case has null r_call and empty comparands by design (evidence_kind=compatibility_adapter); there is no numeric contract for a receipts-producing batch to execute or compare -- not an error in the mani"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-ordiplot.gllvmTMB_multi",
@@ -7174,7 +7775,12 @@
     "CORE070-POSTFIT2-ORDIPLOT-GLLVMTMB-MULTI-NATIVE",
     "CORE070-POSTFIT2-ORDIPLOT-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-plot.gllvmTMB_multi",
@@ -7185,7 +7791,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT2-PLOT-GLLVMTMB-MULTI-DATA-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-plot.gllvmTMBmesh",
@@ -7199,7 +7810,13 @@
    "planned_case_ids": [
     "CORE070-POSTFIT2-PLOT-GLLVMTMBMESH-COMPATIBILITY-ADAPTER"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "postfit-2-batch wave2",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "case has null r_call and empty comparands by design (evidence_kind=compatibility_adapter); there is no numeric contract for a receipts-producing batch to execute or compare -- not an error in the mani"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-plot.profile_derived",
@@ -7209,7 +7826,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT2-PLOT-PROFILE-DERIVED-DATA-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-plot.profile_loadings",
@@ -7219,7 +7841,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT2-PLOT-PROFILE-LOADINGS-DATA-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-plot.sdmTMBmesh",
@@ -7233,7 +7860,13 @@
    "planned_case_ids": [
     "CORE070-POSTFIT2-PLOT-SDMTMBMESH-COMPATIBILITY-ADAPTER"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "postfit-2-batch wave2",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "case has null r_call and empty comparands by design (evidence_kind=compatibility_adapter); there is no numeric contract for a receipts-producing batch to execute or compare -- not an error in the mani"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-plot_Sigma_comparison",
@@ -7244,7 +7877,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT2-PLOT-SIGMA-COMPARISON-DATA-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-plot_Sigma_heatmap",
@@ -7255,7 +7893,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT2-PLOT-SIGMA-HEATMAP-DATA-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-plot_Sigma_table",
@@ -7266,7 +7909,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT2-PLOT-SIGMA-TABLE-DATA-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-plot_anisotropy",
@@ -7277,7 +7925,12 @@
     "CORE070-POSTFIT2-PLOT-ANISOTROPY-NATIVE",
     "CORE070-POSTFIT2-PLOT-ANISOTROPY-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-plot_anisotropy2",
@@ -7288,7 +7941,12 @@
     "CORE070-POSTFIT2-PLOT-ANISOTROPY2-NATIVE",
     "CORE070-POSTFIT2-PLOT-ANISOTROPY2-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-plot_correlations",
@@ -7299,7 +7957,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT2-PLOT-CORRELATIONS-DATA-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-plot_loadings_confidence_eye",
@@ -7310,7 +7973,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT2-PLOT-LOADINGS-CONFIDENCE-EYE-DATA-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-plot_rotated_loadings",
@@ -7320,7 +7988,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT2-PLOT-ROTATED-LOADINGS-DATA-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-predict.gllvmTMB_multi",
@@ -7331,7 +8004,12 @@
     "CORE070-POSTFIT2-PREDICT-GLLVMTMB-MULTI-NATIVE",
     "CORE070-POSTFIT2-PREDICT-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-predict_cross_covariance",
@@ -7342,7 +8020,12 @@
     "CORE070-POSTFIT2-PREDICT-CROSS-COVARIANCE-NATIVE",
     "CORE070-POSTFIT2-PREDICT-CROSS-COVARIANCE-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-predict_missing",
@@ -7353,7 +8036,12 @@
     "CORE070-POSTFIT2-PREDICT-MISSING-NATIVE",
     "CORE070-POSTFIT2-PREDICT-MISSING-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-predictive_check",
@@ -7364,7 +8052,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT2-PREDICTIVE-CHECK-DATA-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_Sigma_phy_slope",
@@ -7378,7 +8071,13 @@
    "planned_case_ids": [
     "CORE070-POSTFIT2-PRINT-GLLVMTMB-SIGMA-PHY-SLOPE-COMPATIBILITY-ADAPTER"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "postfit-2-batch wave2",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "case has null r_call and empty comparands by design (evidence_kind=compatibility_adapter); there is no numeric contract for a receipts-producing batch to execute or compare -- not an error in the mani"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_check_consistency",
@@ -7392,7 +8091,13 @@
    "planned_case_ids": [
     "CORE070-POSTFIT2-PRINT-GLLVMTMB-CHECK-CONSISTENCY-COMPATIBILITY-ADAPTER"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "postfit-2-batch wave2",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "case has null r_call and empty comparands by design (evidence_kind=compatibility_adapter); there is no numeric contract for a receipts-producing batch to execute or compare -- not an error in the mani"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_confint_inspect",
@@ -7406,7 +8111,13 @@
    "planned_case_ids": [
     "CORE070-POSTFIT2-PRINT-GLLVMTMB-CONFINT-INSPECT-COMPATIBILITY-ADAPTER"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "postfit-2-batch wave2",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "case has null r_call and empty comparands by design (evidence_kind=compatibility_adapter); there is no numeric contract for a receipts-producing batch to execute or compare -- not an error in the mani"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_coverage_study",
@@ -7420,7 +8131,13 @@
    "planned_case_ids": [
     "CORE070-POSTFIT2-PRINT-GLLVMTMB-COVERAGE-STUDY-COMPATIBILITY-ADAPTER"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "postfit-2-batch wave2",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "case has null r_call and empty comparands by design (evidence_kind=compatibility_adapter); there is no numeric contract for a receipts-producing batch to execute or compare -- not an error in the mani"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_identifiability",
@@ -7434,7 +8151,13 @@
    "planned_case_ids": [
     "CORE070-POSTFIT2-PRINT-GLLVMTMB-IDENTIFIABILITY-COMPATIBILITY-ADAPTER"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "postfit-2-batch wave2",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "case has null r_call and empty comparands by design (evidence_kind=compatibility_adapter); there is no numeric contract for a receipts-producing batch to execute or compare -- not an error in the mani"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_multi",
@@ -7445,7 +8168,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT2-PRINT-GLLVMTMB-MULTI-DATA-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_reportable_table",
@@ -7459,7 +8187,13 @@
    "planned_case_ids": [
     "CORE070-POSTFIT2-PRINT-GLLVMTMB-REPORTABLE-TABLE-COMPATIBILITY-ADAPTER"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "postfit-2-batch wave2",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "case has null r_call and empty comparands by design (evidence_kind=compatibility_adapter); there is no numeric contract for a receipts-producing batch to execute or compare -- not an error in the mani"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_slope_ci",
@@ -7473,7 +8207,13 @@
    "planned_case_ids": [
     "CORE070-POSTFIT2-PRINT-GLLVMTMB-SLOPE-CI-COMPATIBILITY-ADAPTER"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "postfit-2-batch wave2",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "case has null r_call and empty comparands by design (evidence_kind=compatibility_adapter); there is no numeric contract for a receipts-producing batch to execute or compare -- not an error in the mani"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-print.summary.gllvmTMB_multi",
@@ -7484,7 +8224,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT2-PRINT-SUMMARY-GLLVMTMB-MULTI-DATA-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-profile_ci_phylo_signal",
@@ -7495,7 +8240,12 @@
     "CORE070-POSTFIT2-PROFILE-CI-PHYLO-SIGNAL-NATIVE",
     "CORE070-POSTFIT2-PROFILE-CI-PHYLO-SIGNAL-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-profile_ci_total_variance",
@@ -7506,7 +8256,12 @@
     "CORE070-POSTFIT2-PROFILE-CI-TOTAL-VARIANCE-NATIVE",
     "CORE070-POSTFIT2-PROFILE-CI-TOTAL-VARIANCE-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-profile_cross_rho",
@@ -7517,7 +8272,12 @@
     "CORE070-POSTFIT2-PROFILE-CROSS-RHO-NATIVE",
     "CORE070-POSTFIT2-PROFILE-CROSS-RHO-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-profile_cross_rho_ci",
@@ -7528,7 +8288,12 @@
     "CORE070-POSTFIT2-PROFILE-CROSS-RHO-CI-NATIVE",
     "CORE070-POSTFIT2-PROFILE-CROSS-RHO-CI-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-profile_phylo_signal",
@@ -7539,7 +8304,12 @@
     "CORE070-POSTFIT2-PROFILE-PHYLO-SIGNAL-NATIVE",
     "CORE070-POSTFIT2-PROFILE-PHYLO-SIGNAL-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-profile_targets",
@@ -7550,7 +8320,12 @@
     "CORE070-POSTFIT2-PROFILE-TARGETS-NATIVE",
     "CORE070-POSTFIT2-PROFILE-TARGETS-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-residuals.gllvmTMB_multi",
@@ -7561,7 +8336,12 @@
     "CORE070-POSTFIT2-RESIDUALS-GLLVMTMB-MULTI-NATIVE",
     "CORE070-POSTFIT2-RESIDUALS-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-rotate_loadings",
@@ -7572,7 +8352,12 @@
     "CORE070-POSTFIT2-ROTATE-LOADINGS-NATIVE",
     "CORE070-POSTFIT2-ROTATE-LOADINGS-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-sanity_multi",
@@ -7583,7 +8368,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT2-SANITY-MULTI-DATA-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-simulate.gllvmTMB_multi",
@@ -7594,7 +8384,12 @@
     "CORE070-POSTFIT2-SIMULATE-GLLVMTMB-MULTI-NATIVE",
     "CORE070-POSTFIT2-SIMULATE-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-simulate_site_trait",
@@ -7605,7 +8400,12 @@
     "CORE070-POSTFIT2-SIMULATE-SITE-TRAIT-NATIVE",
     "CORE070-POSTFIT2-SIMULATE-SITE-TRAIT-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-simulate_unit_trait",
@@ -7616,7 +8416,12 @@
     "CORE070-POSTFIT2-SIMULATE-UNIT-TRAIT-NATIVE",
     "CORE070-POSTFIT2-SIMULATE-UNIT-TRAIT-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-slope_sd_ci",
@@ -7627,7 +8432,12 @@
     "CORE070-POSTFIT2-SLOPE-SD-CI-NATIVE",
     "CORE070-POSTFIT2-SLOPE-SD-CI-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-standard_errors",
@@ -7638,7 +8448,12 @@
     "CORE070-POSTFIT2-STANDARD-ERRORS-NATIVE",
     "CORE070-POSTFIT2-STANDARD-ERRORS-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-summary.gllvmTMB_multi",
@@ -7649,7 +8464,12 @@
     "CORE070-POSTFIT2-SUMMARY-GLLVMTMB-MULTI-NATIVE",
     "CORE070-POSTFIT2-SUMMARY-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-tidy",
@@ -7663,7 +8483,13 @@
    "planned_case_ids": [
     "CORE070-POSTFIT2-TIDY-COMPATIBILITY-ADAPTER"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "batch": "postfit-2-batch wave2",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d",
+    "note": "case has null r_call and empty comparands by design (evidence_kind=compatibility_adapter); there is no numeric contract for a receipts-producing batch to execute or compare -- not an error in the mani"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-tidy.gllvmTMB_multi",
@@ -7674,7 +8500,12 @@
     "CORE070-POSTFIT2-TIDY-GLLVMTMB-MULTI-NATIVE",
     "CORE070-POSTFIT2-TIDY-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-tmbprofile_wrapper",
@@ -7685,7 +8516,12 @@
     "CORE070-POSTFIT2-TMBPROFILE-WRAPPER-NATIVE",
     "CORE070-POSTFIT2-TMBPROFILE-WRAPPER-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-vcov.gllvmTMB_multi",
@@ -7696,7 +8532,12 @@
     "CORE070-POSTFIT2-VCOV-GLLVMTMB-MULTI-NATIVE",
     "CORE070-POSTFIT2-VCOV-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "postfit-2-batch wave2 (absence receipted)",
+    "preservation_sha256": "6830785f9e2340f64344c00638cc3c41592e443f347813b3633421e74a5b037d"
+   }
   },
   {
    "source_id": "masks-known/KNOWN-ALIAS",
