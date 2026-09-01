@@ -1946,7 +1946,13 @@ function _bridge_assemble(fit, family::AbstractString, model::AbstractString,
         scores       = Matrix{Float64}(scores),
         loglik       = ll,
         aic          = 2 * df - 2 * ll,
-        bic          = df * log(n) - 2 * ll,
+        # nobs_val (not `n`, the site count) — R's p·n cell-count convention
+        # (docs/dev-log/decisions/2026-09-01-maintainer-decisions-round1.md
+        # #1): stats::BIC.default(object) uses nobs(object), which counts
+        # observed cells, not sites. Was `df * log(n) - 2 * ll` (disagreed
+        # with the `nobs` field two lines below, which already used the
+        # cell count).
+        bic          = df * log(nobs_val) - 2 * ll,
         df           = df,
         nobs         = nobs_val,
         converged    = converged,

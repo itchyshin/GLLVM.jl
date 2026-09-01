@@ -588,29 +588,50 @@ Akaike information criterion `2k − 2ℓ`: `k` the free-parameter count (`dof(f
 StatsAPI.aic(fit::AnyGllvmFit) = 2 * StatsAPI.dof(fit) - 2 * StatsAPI.loglikelihood(fit)
 
 """
-    bic(fit, n_sites) -> Float64
-    bic(fit, Y) -> Float64
+    bic(fit, n) -> Float64
+    bic(fit, Y; mask = nothing) -> Float64
 
-Bayesian information criterion `k·log(n_sites) − 2ℓ`. `n_sites` is the number of
-independent sites/rows, or inferred from `size(Y, 2)`.
+Bayesian information criterion `k·log(n) − 2ℓ`. `n` is a directly supplied
+observation count (pass [`nobs`](@ref) explicitly if a non-default count is
+wanted); the `bic(fit, Y)` form infers it as `nobs(fit, Y; mask)` — R's p·n
+cell-count convention (docs/dev-log/decisions/2026-09-01-maintainer-decisions-round1.md
+#1), not the number of sites.
 """
-StatsAPI.bic(fit::AnyGllvmFit, n_sites::Integer) = StatsAPI.dof(fit) * log(n_sites) - 2 * StatsAPI.loglikelihood(fit)
-StatsAPI.bic(fit::AnyGllvmFit, Y::AbstractMatrix) = StatsAPI.bic(fit, size(Y, 2))
+StatsAPI.bic(fit::AnyGllvmFit, n::Integer) = StatsAPI.dof(fit) * log(n) - 2 * StatsAPI.loglikelihood(fit)
+StatsAPI.bic(fit::AnyGllvmFit, Y::AbstractMatrix; mask = nothing) =
+    StatsAPI.bic(fit, StatsAPI.nobs(fit, Y; mask = mask))
 
 """
-    nobs(fit, [Y]) -> Integer
+    nobs(fit, [Y]; mask = nothing) -> Integer
 
-Number of observations (sites / independent observation units). If `Y` is provided,
-returns `size(Y, 2)`. For fit structs that store observation or level counts,
-`nobs(fit)` returns that count directly.
+Number of observed response cells: R's `p·n` cell-count convention
+(docs/dev-log/decisions/2026-09-01-maintainer-decisions-round1.md #1), i.e.
+`length(Y)` minus any missing/masked cells — matching `nobs.gllvmTMB_multi`,
+which counts `is_y_observed == 1` cells rather than the number of sites.
+
+If `Y` is provided, returns `count(mask)` when `mask` is given, otherwise
+`count(!ismissing, Y)` when `Y`'s eltype allows `missing`, otherwise
+`length(Y)` (== `p * n`, complete data). `mask` is `p×n` with `true` meaning
+*observed* (the same convention as `fit_*_gllvm(...; mask)`); a fit struct
+does not retain the mask it was fitted with, so pass it explicitly here for a
+masked fit.
+
+For fit structs that store observation/level counts instead of a response
+matrix (e.g. two-level, random-slope, SPDE), `nobs(fit)` returns the
+cell-count analogue (`p` times the stored unit count) so the convention holds
+without requiring `Y`.
 """
-StatsAPI.nobs(fit::AnyGllvmFit, Y::AbstractMatrix) = size(Y, 2)
-StatsAPI.nobs(fit::TwoLevelFit) = fit.nindiv
-StatsAPI.nobs(fit::GaussianRandomSlopeFit) = fit.nlevels
-StatsAPI.nobs(fit::PoissonRandomSlopeFit) = fit.nlevels
-StatsAPI.nobs(fit::RowEffectFit) = length(fit.ρ)
-StatsAPI.nobs(fit::SPDEGaussianFit) = size(fit.nodes, 1)
-StatsAPI.nobs(fit::SPDELatentFit) = size(fit.nodes, 1)
+function StatsAPI.nobs(fit::AnyGllvmFit, Y::AbstractMatrix; mask = nothing)
+    mask !== nothing && return count(mask)
+    Missing <: eltype(Y) && return count(!ismissing, Y)
+    return length(Y)
+end
+StatsAPI.nobs(fit::TwoLevelFit) = size(fit.Λ_B, 1) * fit.nindiv
+StatsAPI.nobs(fit::GaussianRandomSlopeFit) = size(fit.Λ, 1) * fit.nlevels
+StatsAPI.nobs(fit::PoissonRandomSlopeFit) = size(fit.Λ, 1) * fit.nlevels
+StatsAPI.nobs(fit::RowEffectFit) = size(fit.Λ, 1) * length(fit.ρ)
+StatsAPI.nobs(fit::SPDEGaussianFit) = size(fit.nodes, 1)   # univariate spatial GP (p = 1); unchanged
+StatsAPI.nobs(fit::SPDELatentFit) = size(fit.Λ, 1) * size(fit.nodes, 1)
 function StatsAPI.nobs(fit::AnyGllvmFit)
     if hasfield(typeof(fit), :nindiv)
         return fit.nindiv
