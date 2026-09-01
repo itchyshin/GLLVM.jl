@@ -1963,3 +1963,22 @@ receipts — binding audit, mostly not new compute), covariance 24,
 inference 19, fit-input 9, postfit/policy 2.
 NEXT: aghq+family reconciliation binder; then covariance/inference/fit-input
 wave 4; artifact + Mission Control refresh at this milestone.
+
+## M2 COMPLETE — 2026-09-01: 533/533 required rows accounted (commit 9dc51244)
+
+Final waves: aghq closed (16 control cases PASS, 7 bound + 22 spec-defect
+placeholders surfaced); inference closed (5 reject-route cases PASS, 14
+bound + 5 needs-surface incl. the TwoLevelFit-has-no-CI-surface finding);
+family reconciliation audit (15 pending-decision + probit/cloglog fresh
+batch); fit-input-2 (6 bound + 3 needs-surface with file:line evidence;
+kernel unique=TRUE multi-tier silent-drop receipted); covariance triage
+(13 needs-surface + 11 spec-defect).
+FINAL TALLY: 222 bound on fresh verified receipts + 311 receipted
+dispositions = 533/533. Mechanical audit clean (0 free rows, 0 dangling
+receipt paths). NEW CONFIRMED PARITY DEFECTS surfaced this stretch:
+(1) nobs n-vs-p·n (wave2); (2) binomial CLOGLOG likelihood disagreement —
+identity delta 2.099 at shared coordinates, probit 6.6e-12 (wave4).
+DECISION QUEUE (maintainer): 99 reclassify + 22 open-question + 4 parity-
+defect rows; nobs adoption; cloglog repair leaf; A6 Student-t fixture;
+ZI trio; missing-surface engineering track (142 BLOCKED rows, 48+ surfaces);
+push/PR of both lanes; DRAC re-auth. No push/merge/release/DRAC occurred.
