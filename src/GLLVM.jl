@@ -147,6 +147,7 @@ include("confint_derived_wald.jl")       # transformed-Wald CIs for bounded deri
 # family fit structs + predict) and confint_derived.jl (the Gaussian generics it
 # adds methods to). Additive: the ::GllvmFit methods are unchanged.
 include("link_residual.jl")
+include("extractors.jl")                # extract_*/get* post-fit extractor family (core070 Cluster 1)
 include("families/mixed.jl")             # mixed-family GLLVM (cross-family VCV): fit_mixed_gllvm + MixedFamilyFit. AFTER link_residual + the family fitters so all dispatch targets exist.
 include("boundary_inference.jl")         # χ̄² boundary LRT + boundary-aware profile CI for variance components
 include("confint_family.jl")             # Wald / profile / bootstrap CIs for non-Gaussian families
@@ -177,6 +178,8 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        fit_gaussian_random_slope, GaussianRandomSlopeFit, gaussian_grouped_intercept_loglik,
        fit_twolevel_gaussian, TwoLevelFit, twolevel_marginal_loglik,
        repeatability, communality_B, communality_W, correlation_B, correlation_W,
+       repeatability_wald_ci, repeatability_bootstrap_ci, repeatability_ci,
+       TwoLevelRepeatabilityProfileWithdrawn,
        fit_poisson_random_slope, PoissonRandomSlopeFit, random_slope_marginal_loglik_laplace,
        fit_gaussian_pervar_gllvm, GaussianPerVarFit, gaussian_pervar_marginal_loglik,
        fit_compoisson_gllvm, COMPoisson, COMPoissonFit, compoisson_marginal_loglik_laplace,
@@ -184,8 +187,16 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        confint, profile_ci, bootstrap_ci,
        transformed_wald_ci_derived, correlation_wald_ci, communality_wald_ci,
        icc_wald_ci, phylo_signal_wald_ci,
+       standardized_loading_wald_ci, raw_loading_wald_ci, loading_ci, loading_profile,
+       profile_ci_total_variance, profile_ci_phylo_signal,
+       slope_sd_ci, standard_errors,
        ppca_init, em_fa,
        sigma_y_site, communality, correlation, phylo_signal, link_residual,
+       extract_Sigma, extract_Sigma_table, extract_loadings, extract_rotated_loadings,
+       extract_communality, extract_correlations, extract_cross_correlations,
+       extract_residual_cov, extract_residual_cor, getResidualCov, getResidualCor,
+       extract_ordination, extract_cutpoints, extract_proportions, extract_phylo_signal,
+       extract_repeatability, extract_ICC_site, extract_Omega,
        chibar2_pvalue, variance_lrt, profile_ci_variance,
        augmented_phy, AugmentedPhy, random_balanced_tree, sigma_phy_dense, make_phy,
        gaussian_marginal_loglik_sparse_phy,
