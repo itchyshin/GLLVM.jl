@@ -335,3 +335,311 @@ function gllvm(formula::FormulaTerm, long_data; family = Normal(),
     return gllvm(formula, Y, site_data; family=family, K=K,
         contrasts=contrasts, kwargs...)
 end
+
+# ===========================================================================
+# Structured-term recognizer (core070 formula-recognizer-spec, §2 Steps 0-6)
+#
+# STATUS: SPEC + lane implementation only. Formula grammar changes are
+# maintainer-approval-required to merge (AGENTS.md merge authority: "any ...
+# formula grammar change"; see docs/dev-log/core070/formula-recognizer-spec.md
+# and docs/dev-log/core070/formula-recognizer-impl-notes.md). Nothing below
+# is wired into the public `gllvm(formula, ...)` front door, and none of it
+# is authorized to reach `main` without Shinichi's explicit approval.
+#
+# StatsModels' `@formula` macro does not understand the R `lhs | group` bar
+# sugar (`@formula(y ~ indep(0 + trait | g))` errors at macro-expansion —
+# verified against StatsModels 0.7; `|` has no Term method). This recognizer
+# therefore walks *raw, unevaluated* Julia `Expr` trees — e.g.
+# `:(indep(0 + trait | g, common = true))` — rather than `@formula`-produced
+# `FormulaTerm`s. Callers assemble those Exprs themselves (`Meta.parse` or
+# `:(...)` quoting).
+# ===========================================================================
+
+const _STRUCTURED_TERM_KINDS = (:dep, :indep, :scalar,
+    :kernel_indep, :kernel_dep, :kernel_scalar, :kernel_latent, :kernel_unique)
+
+"""
+    SourceTermSpec
+
+Parsed, not-yet-materialized structured source term recognized from a raw
+formula `Expr` by [`GLLVM._recognize_source_term`](@ref). `kind` is one of
+`:dep, :indep, :scalar, :kernel_indep, :kernel_dep, :kernel_scalar,
+:kernel_latent, :kernel_unique`. `group` names the grouping column (the bar
+RHS). `common`/`unique` are literal booleans, `nothing` when not applicable
+to `kind`. `name` defaults to `:source` (non-kernel kinds) or `:kernel`
+(kernel kinds). `K` carries the *raw, unresolved* kernel-matrix expression
+for `kernel_*` kinds (`nothing` otherwise); `d` is the requested rank for
+`kernel_latent` (`nothing` otherwise). Lane-internal; not exported.
+"""
+struct SourceTermSpec
+    kind::Symbol
+    group::Symbol
+    common::Union{Bool,Nothing}
+    unique::Union{Bool,Nothing}
+    name::Symbol
+    K::Union{Nothing,Expr,Symbol,QuoteNode}
+    d::Union{Nothing,Int}
+end
+
+_is_structured_call(expr) = expr isa Expr && expr.head === :call &&
+    !isempty(expr.args) && expr.args[1] isa Symbol && expr.args[1] in _STRUCTURED_TERM_KINDS
+
+"""Port of R `.assert_no_augmented_lhs` (brms-sugar.R:2172-2215): the bar LHS
+of a structured source term must be exactly `0 + trait` or `1`; anything else
+(e.g. an augmented `1 + x | g`) aborts."""
+function _assert_no_augmented_lhs(lhs, kind::Symbol)
+    (lhs isa Integer && !(lhs isa Bool) && lhs == 1) && return nothing
+    if lhs isa Expr && lhs.head === :call && length(lhs.args) == 3 &&
+            lhs.args[1] === :+ && lhs.args[2] == 0 && lhs.args[3] === :trait
+        return nothing
+    end
+    throw(ArgumentError("$(kind)(...) does not support an augmented random-effect " *
+        "LHS (only `0 + trait | g` or `1 | g` are recognized); got `$lhs`"))
+end
+
+"""Port of R `.read_common_flag` / the kernel `unique=` gate
+(brms-sugar.R:2464-2483, :3364-3372): the flag must be a literal `true`/
+`false`, never an expression or symbol."""
+function _read_literal_flag(expr, key::Symbol)
+    expr isa Bool || throw(ArgumentError("`$key` must be a literal `true` or `false`"))
+    return expr
+end
+
+_read_optional_flag(kwargs::AbstractDict, key::Symbol, default::Bool) =
+    haskey(kwargs, key) ? _read_literal_flag(kwargs[key], key) : default
+
+function _literal_symbol(expr, key::Symbol)
+    expr isa Symbol && return expr
+    expr isa QuoteNode && expr.value isa Symbol && return expr.value
+    expr isa String && return Symbol(expr)
+    throw(ArgumentError("`$key` must be a literal name"))
+end
+
+function _literal_positive_int(expr, key::Symbol)
+    expr isa Integer && !(expr isa Bool) && expr > 0 && return Int(expr)
+    throw(ArgumentError("`$key` must be a positive integer literal"))
+end
+
+function _structured_call_kwargs(args)
+    kwargs = Dict{Symbol,Any}()
+    for a in args
+        (a isa Expr && a.head === :kw && length(a.args) == 2) ||
+            throw(ArgumentError("structured term arguments after the bar formula must be named (key = value); got `$a`"))
+        key = a.args[1]::Symbol
+        haskey(kwargs, key) && throw(ArgumentError("duplicate keyword `$key`"))
+        kwargs[key] = a.args[2]
+    end
+    return kwargs
+end
+
+function _reject_unknown_kwargs(kwargs::AbstractDict, allowed, kind::Symbol)
+    extra = setdiff(keys(kwargs), allowed)
+    isempty(extra) || throw(ArgumentError("$(kind)(...) does not accept keyword(s) " *
+        join(sort(String.(collect(extra))), ", ")))
+end
+
+const _KERNEL_TERM_KINDS = (:kernel_indep, :kernel_dep, :kernel_scalar, :kernel_latent, :kernel_unique)
+
+"""
+    _recognize_source_term(expr::Expr) -> SourceTermSpec
+
+Recognize one structured source term from a raw `Expr`. `dep(...)`,
+`indep(...)`, and `scalar(...)` take an R-style bar formula as their first
+argument (`dep(0 + trait | g)`, matching R signatures `dep(formula)` /
+`indep(form, common=FALSE)`); the bar is split off here and validated. The
+`kernel_*(...)` siblings instead take a **bare grouping symbol** as their
+first argument (R signature `kernel_latent(unit, K, d=1, name="kernel",
+unique=FALSE)` — kernel-keywords.R:55-57 — no bar). Throws `ArgumentError` on
+an unrecognized shape, an augmented LHS, or a non-literal flag. Lane-internal
+(core070 formula-recognizer-spec §2 Step 0); not exported.
+"""
+function _recognize_source_term(expr::Expr)
+    _is_structured_call(expr) || throw(ArgumentError("not a recognized structured source term: `$expr`"))
+    kind = expr.args[1]::Symbol
+    rest = expr.args[2:end]
+    isempty(rest) && throw(ArgumentError("$(kind)(...) requires a grouping argument"))
+    if kind in _KERNEL_TERM_KINDS
+        group_expr = rest[1]
+        group_expr isa Symbol || throw(ArgumentError("$(kind)(...) requires a bare grouping symbol as its first argument; got `$group_expr`"))
+        kwargs = _structured_call_kwargs(rest[2:end])
+        return _build_source_term_spec(kind, group_expr::Symbol, kwargs)
+    end
+    bar = rest[1]
+    (bar isa Expr && bar.head === :call && length(bar.args) == 3 && bar.args[1] === :(|)) ||
+        throw(ArgumentError("$(kind)(...) requires a `lhs | group` bar expression as its first argument"))
+    lhs, group_expr = bar.args[2], bar.args[3]
+    _assert_no_augmented_lhs(lhs, kind)
+    group_expr isa Symbol || throw(ArgumentError("$(kind)(...) group must be a bare column symbol; got `$group_expr`"))
+    group = group_expr::Symbol
+    kwargs = _structured_call_kwargs(rest[2:end])
+    return _build_source_term_spec(kind, group, kwargs)
+end
+
+function _build_source_term_spec(kind::Symbol, group::Symbol, kwargs::AbstractDict)
+    if kind === :dep
+        _reject_unknown_kwargs(kwargs, (), kind)
+        return SourceTermSpec(:dep, group, nothing, nothing, :source, nothing, nothing)
+    elseif kind === :indep
+        _reject_unknown_kwargs(kwargs, (:common,), kind)
+        common = _read_optional_flag(kwargs, :common, false)
+        return SourceTermSpec(:indep, group, common, nothing, :source, nothing, nothing)
+    elseif kind === :scalar
+        _reject_unknown_kwargs(kwargs, (), kind)
+        _warn_scalar_deprecated_once()
+        return SourceTermSpec(:scalar, group, true, nothing, :source, nothing, nothing)
+    elseif kind in (:kernel_indep, :kernel_dep, :kernel_scalar, :kernel_latent, :kernel_unique)
+        haskey(kwargs, :K) || throw(ArgumentError("$(kind)(...) requires a named `K` matrix"))
+        K = kwargs[:K]
+        name = haskey(kwargs, :name) ? _literal_symbol(kwargs[:name], :name) : :kernel
+        if kind === :kernel_latent
+            _reject_unknown_kwargs(kwargs, (:K, :d, :name, :unique), kind)
+            d = haskey(kwargs, :d) ? _literal_positive_int(kwargs[:d], :d) : 1
+            unique = _read_optional_flag(kwargs, :unique, false)
+            return SourceTermSpec(:kernel_latent, group, nothing, unique, name, K, d)
+        elseif kind === :kernel_indep
+            _reject_unknown_kwargs(kwargs, (:K, :name, :common), kind)
+            common = _read_optional_flag(kwargs, :common, false)
+            return SourceTermSpec(:kernel_indep, group, common, nothing, name, K, nothing)
+        elseif kind === :kernel_scalar
+            _reject_unknown_kwargs(kwargs, (:K, :name), kind)
+            return SourceTermSpec(:kernel_scalar, group, true, nothing, name, K, nothing)
+        elseif kind === :kernel_dep
+            _reject_unknown_kwargs(kwargs, (:K, :name), kind)
+            return SourceTermSpec(:kernel_dep, group, nothing, nothing, name, K, nothing)
+        else # :kernel_unique
+            _reject_unknown_kwargs(kwargs, (:K, :name), kind)
+            return SourceTermSpec(:kernel_unique, group, nothing, nothing, name, K, nothing)
+        end
+    end
+    throw(ArgumentError("unrecognized structured term kind `$kind`"))
+end
+
+# One-shot deprecation warning mirroring R `.gllvmTMB_warn_scalar_family_deprecated`
+# (brms-sugar.R:150-167, fired at :4170). Session-scoped, matching the R helper's
+# once-per-session behaviour (no persistent option store on the Julia side).
+const _SCALAR_DEPRECATION_WARNED = Ref(false)
+
+function _warn_scalar_deprecated_once()
+    if !_SCALAR_DEPRECATION_WARNED[]
+        _SCALAR_DEPRECATION_WARNED[] = true
+        @warn "scalar(...) is deprecated; use indep(..., common = true) instead"
+    end
+    return nothing
+end
+
+"""Port of the fit-multi.R exclusion-gate quartet (dep+latent same grouping
+fit-multi.R:1642-1656; dep+unique :1657-1671; dep+indep :1672-1681;
+indep+latent :1682-1695), generalized over this recognizer's kind vocabulary
+(`kernel_indep`/`kernel_scalar` count as `indep`-family; `kernel_latent`
+counts as `latent`; a `kernel_latent(unique=true)` term is the Julia
+unique-folded analogue of R's separate `unique` term). Throws `ArgumentError`
+naming both terms and the shared group on any forbidden pairing within one
+grouping column. Lane-internal (core070 formula-recognizer-spec §2 Step 4)."""
+function _check_source_term_exclusions(specs::Vector{SourceTermSpec})
+    by_group = Dict{Symbol,Vector{Symbol}}()
+    for s in specs
+        push!(get!(by_group, s.group, Symbol[]), s.kind)
+    end
+    indep_family = (:indep, :scalar, :kernel_indep, :kernel_scalar)
+    for (g, kinds) in by_group
+        has_dep = :dep in kinds || :kernel_dep in kinds
+        has_indep = any(k -> k in indep_family, kinds)
+        has_latent = :kernel_latent in kinds
+        has_unique = :kernel_unique in kinds ||
+            any(s -> s.group === g && s.kind === :kernel_latent && s.unique === true, specs)
+        has_dep && has_indep && throw(ArgumentError(
+            "group `$g`: dep(...) and indep/scalar(...) on the same grouping are mutually exclusive (redundant covariance structure)"))
+        has_dep && has_latent && throw(ArgumentError(
+            "group `$g`: dep(...) and latent(...) (kernel_latent) on the same grouping are over-parameterised"))
+        has_dep && has_unique && throw(ArgumentError(
+            "group `$g`: dep(...) and a unique(-folded latent) term on the same grouping are mutually exclusive"))
+        has_indep && has_latent && throw(ArgumentError(
+            "group `$g`: indep/scalar(...) and latent(...) (kernel_latent) on the same grouping are over-parameterised"))
+    end
+    return nothing
+end
+
+"""Resolve a recognized `K=` reference (a bare `Symbol`/`QuoteNode` captured
+by [`GLLVM._recognize_source_term`](@ref)) against `kernel_env` — a
+`NamedTuple`/`Dict`-like environment supplied by the caller, mirroring R's
+calling-environment lookup for `K=A`. Lane-internal."""
+function _resolve_kernel(K, kernel_env)
+    key = K isa Symbol ? K :
+          (K isa QuoteNode && K.value isa Symbol) ? K.value :
+          throw(ArgumentError("K= must be a bare symbol naming a matrix in `kernel_env`; got `$K`"))
+    env = kernel_env isa NamedTuple ? kernel_env : NamedTuple(kernel_env)
+    haskey(env, key) || throw(ArgumentError("K=$key not found in kernel_env"))
+    M = getproperty(env, key)
+    M isa AbstractMatrix || throw(ArgumentError("K=$key must resolve to a matrix; got $(typeof(M))"))
+    return M
+end
+
+"""
+    _source_term_covariance(spec::SourceTermSpec, data; kernel_env=NamedTuple())
+        -> SourceCovariance
+
+Materialize a [`SourceCovariance`](@ref) (src/source_fit.jl) from a recognized
+[`SourceTermSpec`](@ref). `data` supplies the grouping column named by
+`spec.group`; its levels (sorted, matching `SourceCovariance(C; groups=...)`'s
+one-based convention) define an identity/kernel covariance over the group
+nodes with a one-hot projection built by unit row. `kernel_env` resolves
+`K=` for `kernel_*` kinds. `:kernel_unique` has no standalone
+`SourceCovariance` mode; fold it as `kernel_latent(..., unique=true)` per
+formula-recognizer-spec.md §1.4 ("Julia folds the Ψ companion into the SAME
+source"). Lane-internal (core070 formula-recognizer-spec §2 Steps 1,3,5,6).
+"""
+function _source_term_covariance(spec::SourceTermSpec, data; kernel_env=NamedTuple())
+    cols = Tables.columntable(data)
+    haskey(cols, spec.group) || throw(ArgumentError("group column `$(spec.group)` not found in data"))
+    gcol = getproperty(cols, spec.group)
+    levels = sort(unique(gcol))
+    level_index = Dict(v => i for (i, v) in enumerate(levels))
+    ids = [level_index[v] for v in gcol]
+    if spec.kind in (:indep, :dep, :scalar)
+        C = Matrix{Float64}(I, length(levels), length(levels))
+        mode = spec.kind === :dep ? :dep : :indep
+        common = spec.kind === :scalar ? true : (spec.common === nothing ? false : spec.common)
+        return mode === :dep ? SourceCovariance(C; groups=ids, name=spec.name, mode=:dep) :
+            SourceCovariance(C; groups=ids, name=spec.name, mode=:indep, common=common)
+    elseif spec.kind === :kernel_unique
+        throw(ArgumentError("kernel_unique(...) has no standalone SourceCovariance mode; " *
+            "fold it via kernel_latent(..., unique=true) (formula-recognizer-spec.md §1.4)"))
+    else
+        K = _resolve_kernel(spec.K, kernel_env)
+        size(K, 1) == length(levels) || throw(DimensionMismatch(
+            "$(spec.kind)(...) K has $(size(K,1)) rows but group `$(spec.group)` has $(length(levels)) levels"))
+        if spec.kind === :kernel_latent
+            return SourceCovariance(K; groups=ids, name=spec.name, mode=:latent,
+                rank=spec.d, unique=(spec.unique === true))
+        elseif spec.kind === :kernel_indep
+            common = spec.common === nothing ? false : spec.common
+            return SourceCovariance(K; groups=ids, name=spec.name, mode=:indep, common=common)
+        elseif spec.kind === :kernel_scalar
+            return SourceCovariance(K; groups=ids, name=spec.name, mode=:indep, common=true)
+        else # :kernel_dep
+            return SourceCovariance(K; groups=ids, name=spec.name, mode=:dep)
+        end
+    end
+end
+
+"""
+    _fit_gaussian_structured_sources(Y, data, term_exprs; kernel_env=NamedTuple(), kwargs...)
+
+Lane-only recognizer entry point (core070 formula-recognizer-spec §2, Steps
+1-6): recognizes each raw structured-term `Expr` in `term_exprs` against
+`data`, runs the Step 4 mutual-exclusion gates over the full set, materializes
+their `SourceCovariance`s, and fits them via [`fit_gaussian_sources`](@ref).
+**Not wired into the public `gllvm(formula, ...)` front door** — StatsModels'
+`@formula` macro does not parse the `lhs | group` bar syntax these terms use
+(see module header note above); surface integration is a separate,
+maintainer-approval-gated grammar decision. `kwargs` forward to
+`fit_gaussian_sources` (e.g. `X`, `sigma_eps_fixed`, `start`). Lane-internal;
+not exported.
+"""
+function _fit_gaussian_structured_sources(Y::AbstractMatrix{<:Real}, data, term_exprs;
+        kernel_env=NamedTuple(), kwargs...)
+    specs = SourceTermSpec[_recognize_source_term(e) for e in term_exprs]
+    _check_source_term_exclusions(specs)
+    sources = SourceCovariance[_source_term_covariance(s, data; kernel_env=kernel_env) for s in specs]
+    return fit_gaussian_sources(Y; sources=sources, kwargs...)
+end
