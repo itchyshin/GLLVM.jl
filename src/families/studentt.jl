@@ -261,7 +261,14 @@ struct StudentTFit
     hessian::Symbol   # the Laplace log-det curvature this fit's objective used
     disp_group::Symbol
     estimated_nu::Bool
+    # Flat Gaussian-limit boundary honesty (panel 2026-09-01): true when an
+    # ESTIMATED ν reached the ν→∞ boundary (any ν > 1e6, the same rule the
+    # parity fixture diagnoses). Additive; `converged` semantics unchanged.
+    nu_boundary::Bool
 end
+
+_studentt_nu_boundary(estimated::Bool, ν) =
+    estimated && any(>(1e6), ν isa Real ? (ν,) : ν)
 
 # Positional compatibility constructors (2026-08-28): every pre-existing
 # construction site builds a default-curvature, shared-dispersion fit; the
@@ -278,6 +285,11 @@ StudentTFit(β, Λ, ν, σ, link, loglik, converged, iterations, hessian::Symbol
             disp_group::Symbol) =
     StudentTFit(β, Λ, ν, σ, link, loglik, converged, iterations, hessian,
                 disp_group, false)
+# 11-positional compatibility (pre-nu_boundary sites): derive the flag.
+StudentTFit(β, Λ, ν, σ, link, loglik, converged, iterations, hessian::Symbol,
+            disp_group::Symbol, estimated_nu::Bool) =
+    StudentTFit(β, Λ, ν, σ, link, loglik, converged, iterations, hessian,
+                disp_group, estimated_nu, _studentt_nu_boundary(estimated_nu, ν))
 
 function Base.show(io::IO, f::StudentTFit)
     p, K = size(f.Λ)
@@ -288,6 +300,7 @@ function Base.show(io::IO, f::StudentTFit)
           ", σ=", σstr,
           ", link=", nameof(typeof(f.link)),
           ", loglik=", round(f.loglik; sigdigits = 7),
+          f.nu_boundary ? ", ν at Gaussian-limit boundary" : "",
           f.converged ? "" : ", NOT CONVERGED", ")")
 end
 
@@ -415,6 +428,9 @@ function fit_studentt_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     else
         ν_fixed
     end
+    estimated = nu === nothing
+    boundary = _studentt_nu_boundary(estimated, ν̂)
+    boundary && @warn "Student-t estimated ν reached the flat Gaussian-limit boundary (ν > 1e6); the Student model is not distinguishable from Gaussian on this data, and optimizer convergence flags are unreliable at this boundary. Consider a fixed ν or the Gaussian family." maxlog=1
     return StudentTFit(β̂, Λ̂, ν̂, σ̂, link, _fit_verdict(res)..., hessian,
-                       disp_group, nu === nothing)
+                       disp_group, estimated, boundary)
 end
