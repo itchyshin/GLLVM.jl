@@ -32,12 +32,12 @@ using Distributions: Poisson
         y = Λtrue * z' .+ σ_eps .* randn(rng, p, n)
 
         fit = fit_gaussian_gllvm(y; K = K)
-        sd = getREsd(fit, y)
+        sd = getREsd(fit, y; rotate = false)
         @test size(sd) == (n, K)
 
         Λ = fit.pars.Λ
         Σy = sigma_y_site(fit)
-        M_direct = I - Λ' * (Symmetric((Σy + Σy') / 2) \ Λ)   # Cov(z|y) directly
+        M_direct = I - Λ' * (Symmetric((Σy + Σy') / 2) \ Λ)   # Cov(z|y) directly, UNROTATED
         sd_direct = sqrt.(max.(diag(M_direct), 0.0))
 
         for s in 1:n
@@ -46,6 +46,42 @@ using Distributions: Poisson
         # Every row identical (site-independent conditional covariance).
         for s in 2:n
             @test isapprox(collect(sd[s, :]), collect(sd[1, :]); atol = 1e-12)
+        end
+    end
+
+    # -----------------------------------------------------------------
+    # getREsd — rotate kwarg: DEFAULT must match getLV's default basis
+    # (rotate=true, canonical SVD-rotated basis: diag(R'M⁻¹R)), not the
+    # unrotated diag(M⁻¹) from the test above. rotate=false must still
+    # give the unrotated identity (the sd from the previous testset).
+    # -----------------------------------------------------------------
+    @testset "getREsd Gaussian: rotate kwarg matches getLV's default basis" begin
+        rng = MersenneTwister(1)
+        p, n, K = 6, 200, 2
+        Λtrue = randn(rng, p, K)
+        σ_eps = 0.4
+        z = randn(rng, n, K)
+        y = Λtrue * z' .+ σ_eps .* randn(rng, p, n)
+
+        fit = fit_gaussian_gllvm(y; K = K)
+        Λ = fit.pars.Λ
+        Σy = sigma_y_site(fit)
+        M_direct = I - Λ' * (Symmetric((Σy + Σy') / 2) \ Λ)
+        sd_unrotated = sqrt.(max.(diag(M_direct), 0.0))
+
+        R = GLLVM._svd_rotation(Λ)
+        M_rotated = Symmetric(R' * M_direct * R)
+        sd_rotated = sqrt.(max.(diag(M_rotated), 0.0))
+        @test !isapprox(sd_rotated, sd_unrotated; atol = 1e-8)  # sanity: rotation matters here
+
+        sd_default = getREsd(fit, y)
+        sd_explicit_rotate = getREsd(fit, y; rotate = true)
+        sd_explicit_norotate = getREsd(fit, y; rotate = false)
+
+        for s in 1:n
+            @test isapprox(collect(sd_default[s, :]), sd_rotated; atol = 1e-10, rtol = 1e-10)
+            @test isapprox(collect(sd_explicit_rotate[s, :]), sd_rotated; atol = 1e-10, rtol = 1e-10)
+            @test isapprox(collect(sd_explicit_norotate[s, :]), sd_unrotated; atol = 1e-10, rtol = 1e-10)
         end
     end
 
@@ -82,6 +118,23 @@ using Distributions: Poisson
         end
     end
 
+    @testset "getREsd Binomial: predictor-informed (X_lv) fit refuses (honest ArgumentError)" begin
+        rng = MersenneTwister(21)
+        p, n, K = 5, 60, 1
+        Λtrue = 0.6 .* randn(rng, p, K)
+        β_true = randn(rng, p) .* 0.2
+        X_lv = randn(rng, n, 1)
+        α_true = randn(rng, 1, K)
+        z = randn(rng, n, K)
+        η = β_true .+ Λtrue * (X_lv * α_true .+ z)'
+        μ = 1.0 ./ (1.0 .+ exp.(-η))
+        Y = [rand(rng) < μ[t, s] ? 1 : 0 for t in 1:p, s in 1:n]
+
+        fit_lv = fit_binomial_gllvm(Y; K = K, X_lv = X_lv, iterations = 20)
+        @test GLLVM._has_lv_predictor(fit_lv)
+        @test_throws ArgumentError getREsd(fit_lv, Y)
+    end
+
     @testset "getREsd Poisson: AGHQ fit refuses (honest MethodError/ArgumentError)" begin
         rng = MersenneTwister(3)
         p, n, K = 5, 40, 1
@@ -93,6 +146,44 @@ using Distributions: Poisson
         Y = [rand(rng, Poisson(μ[t, s])) for t in 1:p, s in 1:n]
         fit_aghq = fit_poisson_gllvm(Y; K = K, iterations = 5, aghq = 3)
         @test_throws ArgumentError getREsd(fit_aghq, Y)
+    end
+
+    # -----------------------------------------------------------------
+    # getREsd — structural guards: refuse (honest ArgumentError) rather than
+    # silently returning a wrong "EXACT" answer for fits the closed-form
+    # identity does not cover (phylo block, K_W tier, masked Gaussian-record).
+    # -----------------------------------------------------------------
+    @testset "getREsd Gaussian: structural guards refuse phylo / K_W / masked-record fits" begin
+        rng = MersenneTwister(9)
+        p, n, K = 4, 100, 1
+        Λtrue = randn(rng, p, K)
+        σ_eps = 0.4
+
+        # K_W tier.
+        Λ_W_true = 0.3 .* randn(rng, p, 1)
+        z = randn(rng, n, K)
+        w = randn(rng, n, 1)
+        y_w = Λtrue * z' .+ Λ_W_true * w' .+ σ_eps .* randn(rng, p, n)
+        fit_w = fit_gaussian_gllvm(y_w; K = K, K_W = 1)
+        @test fit_w.model.K_W > 0
+        @test_throws ArgumentError getREsd(fit_w, y_w)
+
+        # Phylogenetic block (has_phy_unique).
+        Σ_phy = Matrix{Float64}(I, p, p)
+        σ_phy_true = fill(0.3, p)
+        φ = randn(rng, p)
+        y_phy = Λtrue * z' .+ σ_eps .* randn(rng, p, n) .+ σ_phy_true .* φ
+        fit_phy = fit_gaussian_gllvm(y_phy; K = K, has_phy_unique = true, Σ_phy = Σ_phy)
+        @test fit_phy.model.has_phy_unique
+        @test_throws ArgumentError getREsd(fit_phy, y_phy)
+
+        # Masked Gaussian-record fit.
+        y_plain = Λtrue * z' .+ σ_eps .* randn(rng, p, n)
+        mask = trues(p, n)
+        mask[1, 1] = false
+        fit_masked = fit_gaussian_gllvm(y_plain; K = K, aghq = 3, mask = mask)
+        @test GLLVM._has_gaussian_record(fit_masked)
+        @test_throws ArgumentError getREsd(fit_masked, y_plain)
     end
 
     # -----------------------------------------------------------------
