@@ -16921,3 +16921,15 @@ carried a preservation sha matching no file (replaced with the real tarball
 only the UNPAID fixed-point reference file (repointed to the three evidence
 files carrying the executed PASS receipts). check-log backfilled (this
 entry) — the wave 3–4 stretch had violated rule #7 until now.
+
+## 2026-09-01 — consolidated full suite (Totoro) for the post-M2 slices
+
+suite-run-01 @ 0dae872d (extractors + derived-CI + Poisson-perf slices):
+11362 passed, 5 failed, 1 errored, 8 broken. The 5 failures are the KNOWN
+pre-existing phylo-poisson canary (test_phylo_poisson_xlv.jl:170-174,
+receipted BLOCKED repair leaf); the 1 error was a sync artifact (docs/dev-log
+excluded from rsync; test_core070_interface_registry.jl reads
+frozen-r070-contract.toml) — after syncing the TOML the registry test passes
+(12/12 + neighbors). Zero failures attributable to the new slices. The
+formula-recognizer slice (5371137c) landed after this sync and carries its
+own 58/58 standalone tests; it rides the next consolidated run.
