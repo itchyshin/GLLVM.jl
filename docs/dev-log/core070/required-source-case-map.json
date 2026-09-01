@@ -435,10 +435,14 @@
    ],
    "case_plan": "docs/dev-log/core070/covariance-required-case-plan.json",
    "evidence": {
-    "batch": "covariance-batch (wave1)",
-    "note": "SPEC_DEFECT: CORE070-COV-ANIMAL-FOLDED-UNIQUE-NATIVE",
-    "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef"
-   }
+    "triage": "covariance wave-4 triage 2026-09-01",
+    "reason": "planned_case_ids are not authored in any executable case plan (structured/slopes plans checked); the manifest names cases that were never specified \u2014 case-plan authoring required before execution",
+    "checked_plans": [
+     "docs/dev-log/core070/structured-required-case-plan.json",
+     "docs/dev-log/core070/slopes-required-case-plan.json"
+    ]
+   },
+   "disposition": "BLOCKED_SPEC_DEFECT"
   },
   {
    "source_id": "covariance/COV-ANIMAL-INDEP",
@@ -482,7 +486,19 @@
    "planned_case_ids": [
     "STRUCT-ANI-PED-SPARSE"
    ],
-   "case_plan": "docs/dev-log/core070/structured-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "triage": "covariance wave-4 triage 2026-09-01",
+    "reason": "all authored planned cases carry julia_call UNRESOLVED (no structured formula/bridge surface in the frozen programme); reference calls prepared with pinned free-parameter counts but paired numerics unpaid",
+    "case_statuses": {
+     "STRUCT-ANI-PED-SPARSE": "PREPARED_REFERENCE_NUMERICS_UNPAID"
+    },
+    "plans": [
+     "docs/dev-log/core070/structured-required-case-plan.json",
+     "docs/dev-log/core070/slopes-required-case-plan.json"
+    ]
+   }
   },
   {
    "source_id": "covariance/COV-ANIMAL-LV-REJECT",
@@ -550,7 +566,21 @@
     "STRUCT-KER-MULTI",
     "STRUCT-KER-MULTI-PSI-PRUNED"
    ],
-   "case_plan": "docs/dev-log/core070/structured-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "triage": "covariance wave-4 triage 2026-09-01",
+    "reason": "all authored planned cases carry julia_call UNRESOLVED (no structured formula/bridge surface in the frozen programme); reference calls prepared with pinned free-parameter counts but paired numerics unpaid; note: includes a BLOCKED_REFERENCE_PARAMETER_LOSS reference-defect case",
+    "case_statuses": {
+     "STRUCT-KER-SINGLE-PSI": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "STRUCT-KER-MULTI": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "STRUCT-KER-MULTI-PSI-PRUNED": "BLOCKED_REFERENCE_PARAMETER_LOSS"
+    },
+    "plans": [
+     "docs/dev-log/core070/structured-required-case-plan.json",
+     "docs/dev-log/core070/slopes-required-case-plan.json"
+    ]
+   }
   },
   {
    "source_id": "covariance/COV-KERNEL-INDEP",
@@ -586,7 +616,21 @@
     "STRUCT-KER-MULTI",
     "STRUCT-KER-MULTI-PSI-PRUNED"
    ],
-   "case_plan": "docs/dev-log/core070/structured-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "triage": "covariance wave-4 triage 2026-09-01",
+    "reason": "all authored planned cases carry julia_call UNRESOLVED (no structured formula/bridge surface in the frozen programme); reference calls prepared with pinned free-parameter counts but paired numerics unpaid; note: includes a BLOCKED_REFERENCE_PARAMETER_LOSS reference-defect case",
+    "case_statuses": {
+     "STRUCT-KER-SINGLE-PSI": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "STRUCT-KER-MULTI": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "STRUCT-KER-MULTI-PSI-PRUNED": "BLOCKED_REFERENCE_PARAMETER_LOSS"
+    },
+    "plans": [
+     "docs/dev-log/core070/structured-required-case-plan.json",
+     "docs/dev-log/core070/slopes-required-case-plan.json"
+    ]
+   }
   },
   {
    "source_id": "covariance/COV-KERNEL-LV-REJECT",
@@ -740,7 +784,20 @@
     "SLOPE-ORD-LAT-DEFAULT",
     "SLOPE-ORD-LAT-POISDEFAULT"
    ],
-   "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "triage": "covariance wave-4 triage 2026-09-01",
+    "reason": "all authored planned cases carry julia_call UNRESOLVED (no structured formula/bridge surface in the frozen programme); reference calls prepared with pinned free-parameter counts but paired numerics unpaid",
+    "case_statuses": {
+     "SLOPE-ORD-LAT-DEFAULT": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "SLOPE-ORD-LAT-POISDEFAULT": "PREPARED_REFERENCE_NUMERICS_UNPAID"
+    },
+    "plans": [
+     "docs/dev-log/core070/structured-required-case-plan.json",
+     "docs/dev-log/core070/slopes-required-case-plan.json"
+    ]
+   }
   },
   {
    "source_id": "covariance/COV-ORD-SLOPE-NOUNIQUE",
@@ -756,7 +813,20 @@
     "SLOPE-ORD-LAT-NOUNIQUE",
     "SLOPE-ORD-LAT-POISNOUNIQUE"
    ],
-   "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "triage": "covariance wave-4 triage 2026-09-01",
+    "reason": "all authored planned cases carry julia_call UNRESOLVED (no structured formula/bridge surface in the frozen programme); reference calls prepared with pinned free-parameter counts but paired numerics unpaid",
+    "case_statuses": {
+     "SLOPE-ORD-LAT-NOUNIQUE": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "SLOPE-ORD-LAT-POISNOUNIQUE": "PREPARED_REFERENCE_NUMERICS_UNPAID"
+    },
+    "plans": [
+     "docs/dev-log/core070/structured-required-case-plan.json",
+     "docs/dev-log/core070/slopes-required-case-plan.json"
+    ]
+   }
   },
   {
    "source_id": "covariance/COV-PHYLO-A-ALIAS",
@@ -840,7 +910,21 @@
     "STRUCT-PHY-DENSE-RR",
     "STRUCT-PHY-TREE-PROPTO"
    ],
-   "case_plan": "docs/dev-log/core070/structured-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "triage": "covariance wave-4 triage 2026-09-01",
+    "reason": "all authored planned cases carry julia_call UNRESOLVED (no structured formula/bridge surface in the frozen programme); reference calls prepared with pinned free-parameter counts but paired numerics unpaid",
+    "case_statuses": {
+     "STRUCT-PHY-TREE-RR": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "STRUCT-PHY-DENSE-RR": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "STRUCT-PHY-TREE-PROPTO": "PREPARED_REFERENCE_NUMERICS_UNPAID"
+    },
+    "plans": [
+     "docs/dev-log/core070/structured-required-case-plan.json",
+     "docs/dev-log/core070/slopes-required-case-plan.json"
+    ]
+   }
   },
   {
    "source_id": "covariance/COV-PHYLO-INDEP-BARE-REJECT",
@@ -864,7 +948,21 @@
     "STRUCT-PHY-DENSE-RR",
     "STRUCT-PHY-TREE-PROPTO"
    ],
-   "case_plan": "docs/dev-log/core070/structured-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "triage": "covariance wave-4 triage 2026-09-01",
+    "reason": "all authored planned cases carry julia_call UNRESOLVED (no structured formula/bridge surface in the frozen programme); reference calls prepared with pinned free-parameter counts but paired numerics unpaid",
+    "case_statuses": {
+     "STRUCT-PHY-TREE-RR": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "STRUCT-PHY-DENSE-RR": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "STRUCT-PHY-TREE-PROPTO": "PREPARED_REFERENCE_NUMERICS_UNPAID"
+    },
+    "plans": [
+     "docs/dev-log/core070/structured-required-case-plan.json",
+     "docs/dev-log/core070/slopes-required-case-plan.json"
+    ]
+   }
   },
   {
    "source_id": "covariance/COV-PHYLO-LV-REJECT",
@@ -902,7 +1000,28 @@
     "SLOPE-ANIMAL-LAT-DEFAULT",
     "SLOPE-PHYLO-DEP-MULTIGAUSS"
    ],
-   "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "triage": "covariance wave-4 triage 2026-09-01",
+    "reason": "all authored planned cases carry julia_call UNRESOLVED (no structured formula/bridge surface in the frozen programme); reference calls prepared with pinned free-parameter counts but paired numerics unpaid",
+    "case_statuses": {
+     "SLOPE-ORD-LAT-DEFAULT": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "SLOPE-ORD-LAT-NOUNIQUE": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "SLOPE-ORD-LAT-RANK4": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "SLOPE-ANIMAL-INDEP-BAR": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "SLOPE-ANIMAL-INDEP-DBAR": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "SLOPE-ANIMAL-DEP-BAR": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "SLOPE-ANIMAL-DEP-DBAR": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "SLOPE-ANIMAL-LAT-NOUNIQUE": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "SLOPE-ANIMAL-LAT-DEFAULT": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "SLOPE-PHYLO-DEP-MULTIGAUSS": "PREPARED_REFERENCE_NUMERICS_UNPAID"
+    },
+    "plans": [
+     "docs/dev-log/core070/structured-required-case-plan.json",
+     "docs/dev-log/core070/slopes-required-case-plan.json"
+    ]
+   }
   },
   {
    "source_id": "covariance/COV-SLOPE-F00-L1",
@@ -925,7 +1044,16 @@
     "CORE070-COV-SLOPE-F01L0-NATIVE",
     "CORE070-COV-SLOPE-F01L0-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "triage": "covariance wave-4 triage 2026-09-01",
+    "reason": "planned_case_ids are not authored in any executable case plan (structured/slopes plans checked); the manifest names cases that were never specified \u2014 case-plan authoring required before execution",
+    "checked_plans": [
+     "docs/dev-log/core070/structured-required-case-plan.json",
+     "docs/dev-log/core070/slopes-required-case-plan.json"
+    ]
+   }
   },
   {
    "source_id": "covariance/COV-SLOPE-F01-L1",
@@ -936,7 +1064,16 @@
     "CORE070-COV-SLOPE-F01L1-NATIVE",
     "CORE070-COV-SLOPE-F01L1-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "triage": "covariance wave-4 triage 2026-09-01",
+    "reason": "planned_case_ids are not authored in any executable case plan (structured/slopes plans checked); the manifest names cases that were never specified \u2014 case-plan authoring required before execution",
+    "checked_plans": [
+     "docs/dev-log/core070/structured-required-case-plan.json",
+     "docs/dev-log/core070/slopes-required-case-plan.json"
+    ]
+   }
   },
   {
    "source_id": "covariance/COV-SLOPE-F01-L2",
@@ -958,7 +1095,20 @@
     "SLOPE-ORD-LAT-POISDEFAULT",
     "SLOPE-ORD-LAT-POISNOUNIQUE"
    ],
-   "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "triage": "covariance wave-4 triage 2026-09-01",
+    "reason": "all authored planned cases carry julia_call UNRESOLVED (no structured formula/bridge surface in the frozen programme); reference calls prepared with pinned free-parameter counts but paired numerics unpaid",
+    "case_statuses": {
+     "SLOPE-ORD-LAT-POISDEFAULT": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "SLOPE-ORD-LAT-POISNOUNIQUE": "PREPARED_REFERENCE_NUMERICS_UNPAID"
+    },
+    "plans": [
+     "docs/dev-log/core070/structured-required-case-plan.json",
+     "docs/dev-log/core070/slopes-required-case-plan.json"
+    ]
+   }
   },
   {
    "source_id": "covariance/COV-SLOPE-F02-L1",
@@ -981,7 +1131,16 @@
     "CORE070-COV-SLOPE-F03L0-NATIVE",
     "CORE070-COV-SLOPE-F03L0-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "triage": "covariance wave-4 triage 2026-09-01",
+    "reason": "planned_case_ids are not authored in any executable case plan (structured/slopes plans checked); the manifest names cases that were never specified \u2014 case-plan authoring required before execution",
+    "checked_plans": [
+     "docs/dev-log/core070/structured-required-case-plan.json",
+     "docs/dev-log/core070/slopes-required-case-plan.json"
+    ]
+   }
   },
   {
    "source_id": "covariance/COV-SLOPE-F03-L1",
@@ -1004,7 +1163,16 @@
     "CORE070-COV-SLOPE-F04L0-NATIVE",
     "CORE070-COV-SLOPE-F04L0-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "triage": "covariance wave-4 triage 2026-09-01",
+    "reason": "planned_case_ids are not authored in any executable case plan (structured/slopes plans checked); the manifest names cases that were never specified \u2014 case-plan authoring required before execution",
+    "checked_plans": [
+     "docs/dev-log/core070/structured-required-case-plan.json",
+     "docs/dev-log/core070/slopes-required-case-plan.json"
+    ]
+   }
   },
   {
    "source_id": "covariance/COV-SLOPE-F04-L1",
@@ -1027,7 +1195,16 @@
     "CORE070-COV-SLOPE-F05L0-NATIVE",
     "CORE070-COV-SLOPE-F05L0-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "triage": "covariance wave-4 triage 2026-09-01",
+    "reason": "planned_case_ids are not authored in any executable case plan (structured/slopes plans checked); the manifest names cases that were never specified \u2014 case-plan authoring required before execution",
+    "checked_plans": [
+     "docs/dev-log/core070/structured-required-case-plan.json",
+     "docs/dev-log/core070/slopes-required-case-plan.json"
+    ]
+   }
   },
   {
    "source_id": "covariance/COV-SLOPE-F05-L1",
@@ -1068,7 +1245,16 @@
     "CORE070-COV-SLOPE-F07L0-NATIVE",
     "CORE070-COV-SLOPE-F07L0-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "triage": "covariance wave-4 triage 2026-09-01",
+    "reason": "planned_case_ids are not authored in any executable case plan (structured/slopes plans checked); the manifest names cases that were never specified \u2014 case-plan authoring required before execution",
+    "checked_plans": [
+     "docs/dev-log/core070/structured-required-case-plan.json",
+     "docs/dev-log/core070/slopes-required-case-plan.json"
+    ]
+   }
   },
   {
    "source_id": "covariance/COV-SLOPE-F07-L1",
@@ -1091,7 +1277,16 @@
     "CORE070-COV-SLOPE-F08L0-NATIVE",
     "CORE070-COV-SLOPE-F08L0-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "triage": "covariance wave-4 triage 2026-09-01",
+    "reason": "planned_case_ids are not authored in any executable case plan (structured/slopes plans checked); the manifest names cases that were never specified \u2014 case-plan authoring required before execution",
+    "checked_plans": [
+     "docs/dev-log/core070/structured-required-case-plan.json",
+     "docs/dev-log/core070/slopes-required-case-plan.json"
+    ]
+   }
   },
   {
    "source_id": "covariance/COV-SLOPE-F08-L1",
@@ -1114,7 +1309,16 @@
     "CORE070-COV-SLOPE-F09L0-NATIVE",
     "CORE070-COV-SLOPE-F09L0-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "triage": "covariance wave-4 triage 2026-09-01",
+    "reason": "planned_case_ids are not authored in any executable case plan (structured/slopes plans checked); the manifest names cases that were never specified \u2014 case-plan authoring required before execution",
+    "checked_plans": [
+     "docs/dev-log/core070/structured-required-case-plan.json",
+     "docs/dev-log/core070/slopes-required-case-plan.json"
+    ]
+   }
   },
   {
    "source_id": "covariance/COV-SLOPE-F09-L1",
@@ -1209,7 +1413,16 @@
     "CORE070-COV-SLOPE-F14L0-NATIVE",
     "CORE070-COV-SLOPE-F14L0-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "triage": "covariance wave-4 triage 2026-09-01",
+    "reason": "planned_case_ids are not authored in any executable case plan (structured/slopes plans checked); the manifest names cases that were never specified \u2014 case-plan authoring required before execution",
+    "checked_plans": [
+     "docs/dev-log/core070/structured-required-case-plan.json",
+     "docs/dev-log/core070/slopes-required-case-plan.json"
+    ]
+   }
   },
   {
    "source_id": "covariance/COV-SLOPE-F14-L1",
@@ -1232,7 +1445,16 @@
     "CORE070-COV-SLOPE-F15L0-NATIVE",
     "CORE070-COV-SLOPE-F15L0-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "disposition": "BLOCKED_SPEC_DEFECT",
+   "evidence": {
+    "triage": "covariance wave-4 triage 2026-09-01",
+    "reason": "planned_case_ids are not authored in any executable case plan (structured/slopes plans checked); the manifest names cases that were never specified \u2014 case-plan authoring required before execution",
+    "checked_plans": [
+     "docs/dev-log/core070/structured-required-case-plan.json",
+     "docs/dev-log/core070/slopes-required-case-plan.json"
+    ]
+   }
   },
   {
    "source_id": "covariance/COV-SLOPE-F15-L1",
@@ -1290,7 +1512,23 @@
     "STRUCT-SPA-DEP",
     "STRUCT-SPA-COMMON-MAP"
    ],
-   "case_plan": "docs/dev-log/core070/structured-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "triage": "covariance wave-4 triage 2026-09-01",
+    "reason": "all authored planned cases carry julia_call UNRESOLVED (no structured formula/bridge surface in the frozen programme); reference calls prepared with pinned free-parameter counts but paired numerics unpaid",
+    "case_statuses": {
+     "STRUCT-SPA-INDEP": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "STRUCT-SPA-LATENT": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "STRUCT-SPA-LATENT-PSI": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "STRUCT-SPA-DEP": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "STRUCT-SPA-COMMON-MAP": "PREPARED_REFERENCE_NUMERICS_UNPAID"
+    },
+    "plans": [
+     "docs/dev-log/core070/structured-required-case-plan.json",
+     "docs/dev-log/core070/slopes-required-case-plan.json"
+    ]
+   }
   },
   {
    "source_id": "covariance/COV-SPATIAL-FOLDED-UNIQUE",
@@ -1312,7 +1550,23 @@
     "STRUCT-SPA-DEP",
     "STRUCT-SPA-COMMON-MAP"
    ],
-   "case_plan": "docs/dev-log/core070/structured-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "triage": "covariance wave-4 triage 2026-09-01",
+    "reason": "all authored planned cases carry julia_call UNRESOLVED (no structured formula/bridge surface in the frozen programme); reference calls prepared with pinned free-parameter counts but paired numerics unpaid",
+    "case_statuses": {
+     "STRUCT-SPA-INDEP": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "STRUCT-SPA-LATENT": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "STRUCT-SPA-LATENT-PSI": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "STRUCT-SPA-DEP": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "STRUCT-SPA-COMMON-MAP": "PREPARED_REFERENCE_NUMERICS_UNPAID"
+    },
+    "plans": [
+     "docs/dev-log/core070/structured-required-case-plan.json",
+     "docs/dev-log/core070/slopes-required-case-plan.json"
+    ]
+   }
   },
   {
    "source_id": "covariance/COV-SPATIAL-INDEP",
@@ -1334,7 +1588,23 @@
     "STRUCT-SPA-DEP",
     "STRUCT-SPA-COMMON-MAP"
    ],
-   "case_plan": "docs/dev-log/core070/structured-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "triage": "covariance wave-4 triage 2026-09-01",
+    "reason": "all authored planned cases carry julia_call UNRESOLVED (no structured formula/bridge surface in the frozen programme); reference calls prepared with pinned free-parameter counts but paired numerics unpaid",
+    "case_statuses": {
+     "STRUCT-SPA-INDEP": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "STRUCT-SPA-LATENT": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "STRUCT-SPA-LATENT-PSI": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "STRUCT-SPA-DEP": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "STRUCT-SPA-COMMON-MAP": "PREPARED_REFERENCE_NUMERICS_UNPAID"
+    },
+    "plans": [
+     "docs/dev-log/core070/structured-required-case-plan.json",
+     "docs/dev-log/core070/slopes-required-case-plan.json"
+    ]
+   }
   },
   {
    "source_id": "covariance/COV-SPATIAL-LATENT",
@@ -1356,7 +1626,23 @@
     "STRUCT-SPA-DEP",
     "STRUCT-SPA-COMMON-MAP"
    ],
-   "case_plan": "docs/dev-log/core070/structured-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "triage": "covariance wave-4 triage 2026-09-01",
+    "reason": "all authored planned cases carry julia_call UNRESOLVED (no structured formula/bridge surface in the frozen programme); reference calls prepared with pinned free-parameter counts but paired numerics unpaid",
+    "case_statuses": {
+     "STRUCT-SPA-INDEP": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "STRUCT-SPA-LATENT": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "STRUCT-SPA-LATENT-PSI": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "STRUCT-SPA-DEP": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+     "STRUCT-SPA-COMMON-MAP": "PREPARED_REFERENCE_NUMERICS_UNPAID"
+    },
+    "plans": [
+     "docs/dev-log/core070/structured-required-case-plan.json",
+     "docs/dev-log/core070/slopes-required-case-plan.json"
+    ]
+   }
   },
   {
    "source_id": "covariance/COV-SPATIAL-LV-REJECT",
