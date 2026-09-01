@@ -129,10 +129,14 @@ function poisson_laplace_grad(Y::AbstractMatrix, Λ::AbstractMatrix, β::Abstrac
     # mode for the WRONG Λ (caught by the FD gate in test_poisson_grad_perf.jl).
     βv = θ̂[1:p]
     Λv = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
+    # R3 (workspace reuse, core070): one Float64 workspace shared across all n site
+    # mode solves in this hoist loop (concrete solve only — see LaplaceModeWorkspace).
+    ws = LaplaceModeWorkspace(Float64, p, K)
     ẑs = Vector{Vector{Float64}}(undef, size(Y, 2))
+    Nunit = ones(Int, p)
     @inbounds for s in axes(Y, 2)
         mi = mask === nothing ? nothing : view(mask, :, s)
-        ẑs[s] = _laplace_mode(Poisson(), view(Y, :, s), ones(Int, p), Λv, βv, LogLink(); mask = mi)
+        ẑs[s] = _laplace_mode(Poisson(), view(Y, :, s), Nunit, Λv, βv, LogLink(); mask = mi, ws = ws)
     end
     function marg(θ)
         b = θ[1:p]

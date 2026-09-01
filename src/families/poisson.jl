@@ -246,13 +246,21 @@ function _fit_poisson_gllvm_laplace(Y::AbstractMatrix; K::Integer,
 
     θ0 = vcat(β0, pack_lambda(Λ0))
     N1 = ones(Int, size(Yc))                     # unit trials, hoisted out of the per-eval closure
+    # R3 (workspace reuse, core070): one Float64 LaplaceModeWorkspace shared across
+    # every site of every `negll` evaluation, instead of `_laplace_mode` allocating
+    # its nine buffers fresh per site (543MB churn measured at p=50 — see
+    # docs/dev-log/core070/poisson-perf-diagnosis.md). Concrete-only: `negll` is
+    # always evaluated at a plain Float64 θ (the analytic gradient below never
+    # differentiates through this closure), so this workspace's element type never
+    # needs to be a dual.
+    ws_negll = LaplaceModeWorkspace(Float64, p, K)
     function negll(θ)
         β = θ[1:p]
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
         v = try
             -marginal_loglik_laplace(Poisson(), Yc, N1, Λ, β, link; mask = msk, offset = offset,
                                      hessian = hessian,
-                                     maxiter = newton_maxiter, tol = newton_tol)
+                                     maxiter = newton_maxiter, tol = newton_tol, ws = ws_negll)
         catch
             return 1e12
         end
