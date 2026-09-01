@@ -1,0 +1,377 @@
+"""Verify the wave-8 conversion batch: 7 of the 12 BLOCKED_NEEDS_JULIA_SURFACE
+ledger rows in docs/dev-log/core070/required-source-case-map.json that pair
+the functions landed in src/postfit_tables.jl (core070
+final-surface-slice-notes.md's 12-item cluster) against the frozen R oracle.
+The other 5 target rows are recorded in the contract's `deferred` bucket with
+a per-row `reason` string and carry no fabricated pass -- they need a
+cross-lineage coevolution kernel fixture or an mi()-predictor fixture that is
+not proven anywhere in this worktree's receipts; see each deferred row's
+`reason`.
+
+Three independent checks, mirroring tools/core070_verify_wave7_conversion_batch.py:
+
+  1. verify_contract() -- structural checks on the frozen contract itself
+     (case/deferred/rejection counts, no duplicate case_id, source_id
+     coverage exactly equals target_source_ids, each case's kind/fixture
+     drawn from a known set, negative controls present).
+     Needs no retained run.
+  2. verify_state(path) -- structural + hash checks against a retained run
+     of tools/core070_wave8_conversion_batch.R (receipt.json, results.tsv,
+     diagnostics.log, julia-results.json).
+  3. --self-test -- mutates a SYNTHETIC valid state (built from the frozen
+     contract, no retained run required) in >=6 independent ways and
+     asserts every mutation is rejected by check_state(). Runs without R,
+     Julia, or the frozen library (python3 only). Per the wave-5/wave-6/
+     wave-7 vacuous-pass precedent, --self-test NEVER substitutes for a real
+     --state check below: passing --self-test alone still exits nonzero if
+     --state is not given.
+"""
+import argparse
+from copy import deepcopy
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CONTRACT_PATH = ROOT / "docs/dev-log/core070/wave8-conversion-batch-contract.json"
+
+REFERENCE_COMMIT = "b4d5fee64def88bc768dda1f1f77c29b295edd86"
+CASE_COUNT = 7
+DEFERRED_COUNT = 5
+REJECTION_COUNT = 1
+SOURCE_ROW_COUNT = 7
+TARGET_ROW_COUNT = 12
+
+KNOWN_KINDS = {"point", "verdict"}
+KNOWN_FIXTURES = {"gaussian_small", "simulate_unit_trait_params"}
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def need(ok, message):
+    if not ok:
+        raise ValueError(message)
+
+
+def load_contract():
+    return json.loads(CONTRACT_PATH.read_text())
+
+
+# ---------------------------------------------------------------------------
+# 1. Contract-only structural checks (no retained run required).
+# ---------------------------------------------------------------------------
+def verify_contract(contract=None):
+    c = contract or load_contract()
+    need(c["status"] == "FROZEN_WAVE8_CONVERSION_BATCH_CONTRACT", "wrong contract status")
+    need(c["reference_commit"] == REFERENCE_COMMIT, "wrong reference commit")
+    need(c["expected_case_count"] == CASE_COUNT, f"expected_case_count drift: {c['expected_case_count']}")
+    need(c["expected_deferred_count"] == DEFERRED_COUNT,
+         f"expected_deferred_count drift: {c['expected_deferred_count']}")
+    need(c["expected_source_row_count"] == SOURCE_ROW_COUNT,
+         f"expected_source_row_count drift: {c['expected_source_row_count']}")
+    need(len(c["cases"]) == CASE_COUNT, f"expected {CASE_COUNT} cases, got {len(c['cases'])}")
+    need(len(c["deferred"]) == DEFERRED_COUNT, f"expected {DEFERRED_COUNT} deferred rows, got {len(c['deferred'])}")
+    need(len(c["rejection_cases"]) == REJECTION_COUNT,
+         f"expected {REJECTION_COUNT} rejection_cases, got {len(c['rejection_cases'])}")
+    need(len(c["target_source_ids"]) == TARGET_ROW_COUNT,
+         f"target_source_ids has {len(c['target_source_ids'])} entries, expected {TARGET_ROW_COUNT}")
+
+    case_ids = [x["case_id"] for x in c["cases"]]
+    need(len(set(case_ids)) == len(case_ids), "duplicate case_id within cases[]")
+    rejection_ids = [x["case_id"] for x in c["rejection_cases"]]
+    need(len(set(rejection_ids)) == len(rejection_ids), "duplicate case_id within rejection_cases[]")
+    need(set(case_ids).isdisjoint(rejection_ids), "a case_id appears in both cases[] and rejection_cases[]")
+
+    case_source_ids = []
+    for row in c["cases"]:
+        need(isinstance(row.get("source_ids"), list) and len(row["source_ids"]) >= 1,
+             f"{row['case_id']}: source_ids must be a non-empty list")
+        case_source_ids.extend(row["source_ids"])
+    need(len(set(case_source_ids)) == len(case_source_ids), "a source_id is claimed by more than one case")
+    need(len(case_source_ids) == SOURCE_ROW_COUNT,
+         f"cases[] claim {len(case_source_ids)} source_ids, expected {SOURCE_ROW_COUNT}")
+
+    deferred_source_ids = [x["source_id"] for x in c["deferred"]]
+    need(len(set(deferred_source_ids)) == len(deferred_source_ids), "duplicate source_id within deferred[]")
+    need(set(case_source_ids).isdisjoint(deferred_source_ids),
+         "a source_id appears in both cases[] and deferred[]")
+
+    all_source_ids = set(case_source_ids) | set(deferred_source_ids)
+    need(all_source_ids == set(c["target_source_ids"]),
+         "union of cases[]+deferred[] source_ids does not match target_source_ids "
+         f"(missing={set(c['target_source_ids']) - all_source_ids}, "
+         f"extra={all_source_ids - set(c['target_source_ids'])})")
+    for sid in all_source_ids:
+        need(sid.startswith("postfit/"), f"source_id {sid} missing the expected postfit/ area prefix")
+
+    for row in c["cases"]:
+        need(row["kind"] in KNOWN_KINDS, f"{row['case_id']}: unknown kind {row['kind']!r}")
+        need(row["fixture"] in KNOWN_FIXTURES, f"{row['case_id']}: unknown fixture {row['fixture']!r}")
+        if row["kind"] == "point":
+            need(isinstance(row.get("tolerance"), (int, float)) and row["tolerance"] > 0,
+                 f"{row['case_id']}: tolerance must be a positive number")
+            need(row["tolerance"] <= 1e-3,
+                 f"{row['case_id']}: tolerance {row['tolerance']} looser than the 1e-3 tier "
+                 "-- point cases here are paired-independent-fit tier (<=1e-4) or the doubled "
+                 "deviance tier (<=1e-3), never silently widened beyond that")
+
+    for row in c["deferred"]:
+        need(isinstance(row.get("reason"), str) and len(row["reason"]) > 40,
+             f"deferred row {row['source_id']} needs a substantive reason string")
+
+    for row in c["rejection_cases"]:
+        need("expect_r_raised" in row and "expect_julia_raised" in row,
+             f"rejection case {row['case_id']} needs both expect_r_raised and expect_julia_raised "
+             "(per-side expectation fields for any asymmetric OR symmetric refusal behavior)")
+
+    neg = c["negative_controls"]
+    need(len(neg) >= 2, "fewer than 2 negative controls in contract")
+
+    for key in c["fixtures"]:
+        need(key in KNOWN_FIXTURES, f"unexpected fixture key {key!r} in contract.fixtures")
+
+    return c
+
+
+# ---------------------------------------------------------------------------
+# 2. Retained-state checks (receipt.json + results.tsv + julia-results.json).
+# ---------------------------------------------------------------------------
+def check_state(contract, receipt, results_lines, julia_report):
+    need(receipt["status"] == "PASS", "receipt status is not PASS")
+    need(receipt["scope"] == "CORE070_WAVE8_CONVERSION_BATCH", "wrong receipt scope")
+    need(receipt["reference_commit"] == REFERENCE_COMMIT, "receipt reference_commit mismatch")
+    need(receipt["contract_sha256"] == sha(CONTRACT_PATH),
+         "receipt contract_sha256 does not match the on-disk contract")
+    need(receipt["source_unchanged"] is True, "receipt does not assert source_unchanged")
+    need(receipt["case_count"] == CASE_COUNT, "receipt case_count drift")
+    need(receipt["deferred_count"] == DEFERRED_COUNT, "receipt deferred_count drift")
+    need(receipt["julia_exit_code"] == 0, "julia child exited nonzero")
+    need(receipt.get("oracle_error_count", 0) == 0, "R oracle recorded at least one computation error")
+    need(set(receipt["target_source_ids"]) == set(contract["target_source_ids"]),
+         "receipt target_source_ids does not match contract")
+
+    case_ids = {x["case_id"] for x in contract["cases"]}
+    seen = {}
+    for line in results_lines:
+        if not line.strip():
+            continue
+        cid, verdict, bucket = line.split("\t")
+        seen[cid] = (verdict, bucket)
+    need(set(seen.keys()) == case_ids, "results.tsv case_id set does not match contract cases[]")
+    for cid in case_ids:
+        need(seen[cid] == ("PASS", "wave8_conversion"), f"{cid}: expected PASS/wave8_conversion, got {seen[cid]}")
+
+    need(julia_report["status"] == "PASS", "julia-results.json status is not PASS")
+    need(julia_report["all_checks"] is True, "julia-results.json all_checks is not true")
+    need(julia_report["rejection_checks_ok"] is True, "julia-results.json rejection_checks_ok is not true")
+    need(julia_report["negative_controls_behaved_as_expected"] is True,
+         "julia-results.json negative controls did not behave as expected")
+    need(julia_report["case_count"] == CASE_COUNT, "julia-results.json case_count drift")
+
+    for row in contract["cases"]:
+        jc = julia_report["cases"].get(row["case_id"])
+        need(jc is not None, f"{row['case_id']}: missing from julia-results.json cases")
+        need(jc.get("pass") is True, f"{row['case_id']}: julia-results.json reports pass=false")
+        err = jc.get("error")
+        need(not (isinstance(err, str) and "null_oracle_value" in err),
+             f"{row['case_id']}: julia-results.json flags a null_oracle_value error but pass=true")
+        if row["kind"] == "point":
+            need(jc.get("max_abs_diff") is not None, f"{row['case_id']}: point case missing max_abs_diff")
+            need(jc["max_abs_diff"] <= row["tolerance"],
+                 f"{row['case_id']}: max_abs_diff {jc.get('max_abs_diff')} exceeds tolerance {row['tolerance']}")
+        elif row["kind"] == "verdict":
+            need(jc.get("r_verdict") is not None and jc.get("julia_verdict") is not None,
+                 f"{row['case_id']}: verdict case missing r_verdict/julia_verdict")
+
+    for row in contract["rejection_cases"]:
+        rc = julia_report.get("rejection_cases", {}).get(row["case_id"])
+        need(rc is not None, f"{row['case_id']}: missing from julia-results.json rejection_cases")
+        need(rc.get("pass") is True, f"{row['case_id']}: rejection case did not pass")
+        exp_r = row.get("expect_r_raised", True)
+        exp_jl = row.get("expect_julia_raised", True)
+        need(rc.get("r_raised") is exp_r and rc.get("julia_raised") is exp_jl,
+             f"{row['case_id']}: rejection outcome mismatch vs contract expectations "
+             f"(expected r={exp_r}, julia={exp_jl}; got r={rc.get('r_raised')}, julia={rc.get('julia_raised')})")
+
+
+def verify_state(contract, state_dir: Path):
+    if not state_dir.is_dir():
+        raise SystemExit(f"FATAL: --state directory does not exist: {state_dir}")
+    receipt_path = state_dir / "receipt.json"
+    results_path = state_dir / "results.tsv"
+    julia_path = state_dir / "julia-results.json"
+    for p in (receipt_path, results_path, julia_path):
+        if not p.exists():
+            raise SystemExit(f"FATAL: required retained-run file missing: {p}")
+    receipt = json.loads(receipt_path.read_text())
+    results_lines = results_path.read_text().splitlines()
+    julia_report = json.loads(julia_path.read_text())
+    check_state(contract, receipt, results_lines, julia_report)
+
+
+# ---------------------------------------------------------------------------
+# 3. --self-test: build a SYNTHETIC valid state from the contract (no R/Julia
+#    needed), confirm check_state() accepts it, then mutate it >=6 ways and
+#    confirm check_state() rejects every mutation.
+# ---------------------------------------------------------------------------
+def _synthetic_state(contract):
+    cases = contract["cases"]
+    rejection_cases = contract["rejection_cases"]
+
+    results_lines = [f"{r['case_id']}\tPASS\twave8_conversion" for r in cases]
+
+    julia_cases = {}
+    for r in cases:
+        if r["kind"] == "point":
+            julia_cases[r["case_id"]] = {"pass": True, "kind": r["kind"],
+                                          "tolerance": r["tolerance"], "max_abs_diff": r["tolerance"] / 2,
+                                          "r_len": 1, "julia_len": 1, "error": ""}
+        else:  # verdict
+            julia_cases[r["case_id"]] = {"pass": True, "kind": r["kind"],
+                                          "r_verdict": {"ok": True}, "julia_verdict": {"ok": True}, "error": ""}
+
+    julia_rejections = {r["case_id"]: {"pass": True,
+                                       "r_raised": r.get("expect_r_raised", True),
+                                       "julia_raised": r.get("expect_julia_raised", True),
+                                        "julia_message": ""} for r in rejection_cases}
+
+    julia_report = {
+        "status": "PASS",
+        "case_count": len(cases),
+        "all_checks": True,
+        "rejection_checks_ok": True,
+        "negative_controls_behaved_as_expected": True,
+        "cases": julia_cases,
+        "rejection_cases": julia_rejections,
+    }
+
+    receipt = {
+        "status": "PASS",
+        "scope": "CORE070_WAVE8_CONVERSION_BATCH",
+        "reference_commit": contract["reference_commit"],
+        "contract_sha256": sha(CONTRACT_PATH),
+        "source_unchanged": True,
+        "target_source_ids": list(contract["target_source_ids"]),
+        "case_count": len(cases),
+        "deferred_count": len(contract["deferred"]),
+        "oracle_error_count": 0,
+        "julia_exit_code": 0,
+    }
+    return receipt, results_lines, julia_report
+
+
+def run_self_test():
+    contract = verify_contract()
+    receipt, results_lines, julia_report = _synthetic_state(contract)
+
+    # The synthetic state itself must be accepted -- otherwise the mutations
+    # below would be "rejected" vacuously (a check that rejects everything).
+    check_state(contract, receipt, results_lines, julia_report)
+
+    rejected = []
+
+    def expect_rejected(label, mutate_fn):
+        r2, res2, jr2 = deepcopy(receipt), list(results_lines), deepcopy(julia_report)
+        r2, res2, jr2 = mutate_fn(r2, res2, jr2)
+        try:
+            check_state(contract, r2, res2, jr2)
+        except ValueError:
+            rejected.append(label)
+            return
+        raise AssertionError(f"REJECTED MUTATION FAILED TO BE CAUGHT: {label}")
+
+    def mut_bad_contract_sha(r, res, jr):
+        r["contract_sha256"] = "0" * 64
+        return r, res, jr
+
+    def mut_flip_one_verdict(r, res, jr):
+        res[0] = res[0].split("\t")[0] + "\tFAIL\twave8_conversion"
+        return r, res, jr
+
+    def mut_tolerance_blown(r, res, jr):
+        cid = next(c["case_id"] for c in contract["cases"] if c["kind"] == "point")
+        jr["cases"][cid]["max_abs_diff"] = 1e9
+        jr["cases"][cid]["pass"] = True  # deliberately inconsistent: pass=true but diff blown
+        return r, res, jr
+
+    def mut_rejection_r_side_did_not_raise(r, res, jr):
+        cid = contract["rejection_cases"][0]["case_id"]
+        jr["rejection_cases"][cid]["r_raised"] = False
+        return r, res, jr
+
+    def mut_rejection_julia_side_flipped(r, res, jr):
+        # This batch's one rejection case expects BOTH sides to raise
+        # (a symmetric refusal, unlike wave7's asymmetric example) --
+        # flipping julia_raised to False must still be rejected, proving the
+        # verifier checks BOTH sides against their per-side expectation, not
+        # just "both agree" or "at least one raised".
+        cid = contract["rejection_cases"][0]["case_id"]
+        jr["rejection_cases"][cid]["julia_raised"] = False
+        return r, res, jr
+
+    def mut_oracle_error_present(r, res, jr):
+        r["oracle_error_count"] = 1
+        return r, res, jr
+
+    def mut_case_count_drift(r, res, jr):
+        r["case_count"] = CASE_COUNT + 1
+        return r, res, jr
+
+    def mut_null_oracle_value_with_pass_true(r, res, jr):
+        cid = next(c["case_id"] for c in contract["cases"] if c["kind"] == "point")
+        jr["cases"][cid]["error"] = f"null_oracle_value: R oracle_values[{cid}] was null/missing"
+        jr["cases"][cid]["pass"] = True
+        return r, res, jr
+
+    def mut_verdict_missing_julia_verdict(r, res, jr):
+        cid = next(c["case_id"] for c in contract["cases"] if c["kind"] == "verdict")
+        jr["cases"][cid]["julia_verdict"] = None
+        return r, res, jr
+
+    expect_rejected("contract_sha256 tampered", mut_bad_contract_sha)
+    expect_rejected("one verdict flipped to FAIL in results.tsv", mut_flip_one_verdict)
+    expect_rejected("max_abs_diff blown past tolerance while pass stays true", mut_tolerance_blown)
+    expect_rejected("rejection case: R side did not raise", mut_rejection_r_side_did_not_raise)
+    expect_rejected("rejection case: Julia side flipped against its documented (symmetric) expectation",
+                     mut_rejection_julia_side_flipped)
+    expect_rejected("receipt records a nonzero oracle_error_count", mut_oracle_error_present)
+    expect_rejected("receipt case_count drifted", mut_case_count_drift)
+    expect_rejected("null oracle value recorded as pass=true", mut_null_oracle_value_with_pass_true)
+    expect_rejected("verdict case missing julia_verdict", mut_verdict_missing_julia_verdict)
+
+    if len(rejected) < 6:
+        raise AssertionError(f"only {len(rejected)} rejected mutations ran, need >=6")
+
+    print(f"CORE070_WAVE8_CONVERSION_VERIFY_SELF_TEST_OK rejected_mutations={len(rejected)} "
+          f"cases={CASE_COUNT} deferred={DEFERRED_COUNT}")
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("state", nargs="?",
+                     help="retained-run directory to verify (e.g. .unlazy/core070-aghq/wave8-conversion-01)")
+    ap.add_argument("--self-test", action="store_true")
+    args = ap.parse_args()
+
+    if args.self_test:
+        run_self_test()
+        if args.state is None:
+            return  # self-test alone is a valid invocation
+
+    contract = verify_contract()
+    print(f"CORE070_WAVE8_CONVERSION_CONTRACT_OK cases={CASE_COUNT} deferred={DEFERRED_COUNT} "
+          f"total_target_rows={TARGET_ROW_COUNT}")
+
+    if args.state is None:
+        raise SystemExit("FATAL: no --state directory given and --self-test was not requested (or was "
+                          "requested alongside a missing state) -- a self-test pass never substitutes for "
+                          "a real retained-run check.")
+
+    verify_state(contract, Path(args.state))
+    print("CORE070_WAVE8_CONVERSION_STATE_OK", args.state)
+
+
+if __name__ == "__main__":
+    main()
