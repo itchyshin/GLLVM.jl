@@ -124,6 +124,14 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics
         # extract_cross_correlations is a positional submatrix slice.
         sub = extract_cross_correlations(fit; traits_i = [1, 2], traits_j = [3, 4])
         @test sub ≈ R[[1, 2], [3, 4]] atol = 1e-12
+
+        # Regression: `level` was accepted and silently ignored for a
+        # GllvmFit (which computes one site-level correlation tier). Match
+        # bootstrap_Sigma's validate-and-throw pattern instead.
+        @test_throws ArgumentError extract_cross_correlations(fit; level = :unit_obs,
+                                                                traits_i = [1, 2], traits_j = [3, 4])
+        @test_throws ArgumentError extract_cross_correlations(fit; level = :bogus,
+                                                                traits_i = [1, 2], traits_j = [3, 4])
     end
 
     @testset "extract_proportions / extract_phylo_signal forward to internals" begin

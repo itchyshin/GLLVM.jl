@@ -306,10 +306,20 @@ intent of `gllvmTMB::extract_cross_correlations()`. Deviation from R: no
 Fisher-z confidence band and no name-based trait subsetting (positional
 integer indices only, matching GLLVM.jl's convention elsewhere — see
 [`extract_Gamma`](@ref)); the CI band is Cluster 2 (derived-CI surfaces).
+
+`level = :unit` is the only value accepted for `fit::GllvmFit` (GLLVM.jl
+computes one site-level correlation tier for a `GllvmFit`, via
+[`extract_correlations`](@ref)); any other value is validated and thrown,
+matching [`bootstrap_Sigma`](@ref)'s validate-and-throw pattern, rather
+than being silently ignored.
 """
 function extract_cross_correlations(fit::GllvmFit; level::Symbol = :unit,
                                     traits_i::AbstractVector{<:Integer},
                                     traits_j::AbstractVector{<:Integer})
+    lvl = _canonical_level(level)
+    lvl === :unit || throw(ArgumentError(
+        "extract_cross_correlations(::GllvmFit) currently supports level = :unit only " *
+        "(GLLVM.jl computes one site-level correlation tier for GllvmFit); got :$level"))
     R = extract_correlations(fit)
     return Matrix(R[traits_i, traits_j])
 end
